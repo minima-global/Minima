@@ -1,0 +1,210 @@
+Minima transactions are a series of inputs, a series of outputs and a variable list from 0-255 known as the state, which you can access from the script with GETSTATE. The state can be accessed by all the input scripts, and is stored in the MMR database, so can be accessed by PREVSTATE in the next transaction the outputs are added to, as inputs. 
+
+The sum of the outputs must be less than or equal to the sum of the inputs, for every tokenid used. The difference in raw minima is the Burn. 
+
+A Minima input script returns true or false. The default is return FALSE, so all inputs must explicitly return true for the transaction to be valid.
+
+A transaction can be signed, in full, by one or more public keys.
+
+Minima allows input scripts to have perfect knowledge of the entire transaction. How many, their token type, the amount and address of all inputs and outputs are available. An input knows it's own script ( @SCRIPT ) and can ensure an output of a similar address exists in the outputs. 
+
+Using REPLVAR new addresses can be created by replacing existing variables in the current  or pre-existing scripts, and checking of complex addresses can be achieved by using MAST and a list a variables before the main bulk of the hashed script.
+
+The addition of the state variables in the MMR Proof DB, allow for complex scripts with knowledge of their past to be created.
+
+Minima transactions are complex Logic Gates, with analogue inputs and outputs, a simple yet powerful control language, and a single-shot history state mechanic. I think of them as "Script Gates".    
+
+Grammar
+-------
+
+ADDRESS     ::= SHA3 ( BLOCK )
+BLOCK       ::= STATEMENT_1 STATEMENT_2 ... STATEMENT_n
+STATEMENT   ::= LET VARIABLE = EXPRESSION | 
+                IF EXPRESSION THEN BLOCK 
+                [ELSEIF EXPRESSION THEN BLOCK]* 
+                [ELSE BLOCK] ENDIF | 
+                MAST BLOCK [ORMAST BLOCK]* ENDMAST |
+                RETURN EXPRESSION
+EXPRESSION  ::= RELATION AND RELATION  | RELATION OR RELATION  |  
+                RELATION XOR RELATION  | RELATION NAND RELATION | 
+                RELATION NOR RELATION  |  RELATION NXOR RELATION | RELATION
+RELATION    ::= LOGIC EQ LOGIC  | LOGIC NEQ LOGIC  | 
+                LOGIC GT LOGIC  | LOGIC GTE LOGIC  | 
+                LOGIC LT LOGIC  | LOGIC LTE LOGIC  | LOGIC
+LOGIC       ::= LOGIC & OPERATION | LOGIC | OPERATION | 
+                LOGIC ^ OPERATION | OPERATION
+OPERATION   ::= OPERATION + MULDIV | OPERATION - MULDIV | 
+                OPERATION % MULDIV | 
+                OPERATION << MULDIV | OPERATION >> MULDIV | MULDIV
+MULDIV      ::= MULDIV * PRIME | MULDIV / PRIME | PRIME
+PRIME       ::= NOT PRIME |  NEG PRIME | BASEUNIT
+BASEUNIT    ::= VAR | VALUE | GLOBAL | FUNCTION | ( EXPRESSION )
+VAR         ::= ^[a-z]{1,10}$
+VALUE       ::= NUMBER | DATA | BINARY
+DATA        ::= HEX | SCRIPT
+BINARY      ::= TRUE | FALSE
+GLOBAL      ::= @BLKNUM | @INPUTNUM |
+      	        @AMOUNT | @ADDRESS | @TOKENID | @COINID |
+                @SCRIPT | @TOTIN | @TOTOUT
+NUMBER      ::= "^-?\\d*(\\.\\d+)?$"
+BYTE        ::= [0-255]
+HEX         ::= 0x[0-9A-F]{2}*
+SCRIPT      ::= [ ASCII ]
+FALSE       ::= 0
+TRUE        ::= NOT FALSE
+MASTBLK     ::= $HEX
+FUNCTION    ::= FUNC ( EXPRESSION1 EXPRESSION2 .. EXPRESSIONn ) 
+FUNC        ::= CONCAT | LEN | REV | SUBSET | RPLVAR |
+                ASCII | BOOL | HEX | NUMBER | SCRIPT |
+                ABS | CEIL | FLOOR | MIN | MAX | INC | DEC |
+                BITSET | BITGET | PROOF | SHA3 | SHA2 |
+                SIGNEDBY | MULTISIGNEDBY | CHECKSIG |
+                GETOUTADDR | GETOUTAMT | GETOUTTOK | VERIFYOUT |
+                GETINADDR | GETINAMT | GETINTOK | GETINID | VERIFYIN |
+                SUMINTOK | SUMOUTTOK | STATE | PREVSTATE | *DYNSTATE
+
+Globals
+-------
+
+@BLKNUM    : Block number this transaction is in
+@INPUT     : Input number in the transaction
+@AMOUNT    : Amount of this input
+@ADDRESS   : Address of this input
+@TOKENID   : TokenID of this input
+@COINID    : CoinID of this input
+@SCRIPT    : Script for this input
+@TOTIN     : Total number of inputs for this transaction
+@TOTOUT    : Total number of outputs for this transaction
+@INBLKNUM  : Block number this output was created - useful for OP_CSV
+
+Functions
+---------
+
+CONCAT ( DATA DATA )
+Concatenate the 2 data values into 1 value . Both values must be the same DATA type. 
+
+LEN ( HEX )
+Length of the data
+
+REV ( HEX )
+Reverse the Data structure
+
+SUBSET ( HEX NUMBER NUMBER )
+Return a subset of the data start length
+
+RPLVAR ( SCRIPT SCRIPT SCRIPT ) 
+Replace a variable definition in a script with the following Expression. Can be used on @SCRIPT or other to create a covenant with new variables and check outputs.
+
+ASCII ( HEX )
+Convert the HEX value of a script value to a script
+
+BOOLEAN ( VALUE )
+Convert to TRUE or FALSE value.
+
+HEX ( SCRIPT )
+Convert SCRIPT to HEX
+
+NUMBER ( HEX )
+Convert HEX to NUMBER
+
+SCRIPT ( HEX ) 
+Convert a HEX value to SCRIPT
+
+ABS ( NUMBER )
+Return the absolute value of a number
+
+CEIL ( NUMBER )
+Return the number rounded up
+
+FLOOR ( NUMBER ) 
+Return the number rounded down
+
+MIN ( NUMBER NUMBER )
+Return the minimum value of the 2 numbers
+
+MAX ( NUMBER NUMBER )
+Return the maximum value of the 2 numbers
+
+INC ( NUMBER )
+Increment a number
+
+DEC ( NUMBER )
+Decrement a number
+
+BITSET ( HEX NUMBER BINARY )
+Set the value of the BIT at that Position to 0 or 1
+
+BITGET ( HEX NUMBER ) 
+Get the BINARY value of the bit at the position.
+
+CHAINSHA ( HEX HEX ) 
+Recursively hash the first HEX value with the proof provided in the second. A proof is a BYTE denoting left or right with a hex data value. Returns the final result that can be checked in script. 
+
+SHA3 ( HEX ) 
+Returns the SHA3 value of the HEX value
+
+SHA2 ( HEX ) 
+Returns the SHA2 value of the HEX value
+
+SIGNEDBY ( HEX )
+Returns true if the transaction is signed by this public key
+
+MULTISIG ( BYTE HEX1 HEX2 .. HEXn )
+Returns true if the transaction is signed by N of the public keys
+
+CHECKSIG ( HEX HEX )
+Check valid signature with provided public key.
+
+GETOUTADDR ( BYTE ) 
+Return the HEX address of the specified output
+
+GETOUTAMT ( BYTE ) 
+Return the amount of the specified output 
+
+GETOUTTOK ( BYTE ) 
+Return the token id of the specified output
+
+VERIFYOUT ( BYTE HEX NUMBER HEX )
+Verify the specified output has the specified address, amount and tokenid. 
+
+GETINADDR ( BYTE ) 
+Return the HEX address of the specified input
+
+GETINAMT ( BYTE ) 
+Return the amount of the specified input
+
+GETINTOK ( BYTE ) 
+Return the token id of the specified input
+
+VERIFYIN ( BYTE HEX NUMBER HEX )
+Verify the specified input has the specified address, amount and tokenid. 
+
+SUMINTOK ( HEX )
+Sum the input values of a certain token 
+
+SUMOUTTOK ( HEX )
+Sum the output values of a certain token 
+
+*STATE ( BYTE )
+Return the state value 0-255
+
+*PREVSTATE ( BYTE )
+Return the state value 0-255 of the input stored in the MMR data in the initial transaction this input was created. Allows for a state to be maintained from 1 spend to the next.
+
+*DYNSTATE ( BYTE  EXPRESSION )
+Can be called only once per transaction. Will change the State value to the expression value.  N = N+1. This way rolling transactions are possible. Multiple calls to the same input in the same block. If called twice must be =.
+
+Examples
+--------
+
+RETURN SIGNEDBY ( 0x12345.. )
+
+IF SIGNEDBY ( 0x123456.. ) AND SIGNEDBY ( 0x987654.. ) THEN
+   RETURN TRUE
+ELSE IF @BLKNUM GT 198765 AND SIGNEDBY ( 0x12345.. ) THEN
+   RETURN TRUE
+ENDIF
+
+LET x = GETSATE ( 23 )
+LET shax = SHA3 ( x )
+IF shax EQ 0x6785456 AND SIGNEDBY ( 0x12345.. ) THEN RETURN TRUE ENDIF
