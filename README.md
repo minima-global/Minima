@@ -16,7 +16,6 @@ cd into the folder where the class files are compiled and run as follows :
 cd ./bin
 
 java org.minima.Start
-
 ```
 
 For a full list of parameters run :
@@ -62,7 +61,6 @@ For a complete explanation of the Minima Scripting language use
 
 ```
 tutorial
-
 ```
 
 To show how simple the language actually is.. here it is :
