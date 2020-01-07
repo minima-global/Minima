@@ -76,7 +76,7 @@ public class Start {
 		String relcoin     = "";
 		
 		boolean connect         = true;
-		String connecthost      = "35.240.94.70";
+		String connecthost      = "34.65.196.63";
 		int connectport         = 9001;
 		
 		boolean clean           = false;
