@@ -172,6 +172,8 @@ public class NetworkHandler extends SystemHandler{
 			String host = zMessage.getString("host");
 			int port 	= zMessage.getInteger("port");
 			
+			MinimaLogger.log("Attempting to connect to "+host+":"+port);
+			
 			//Create a NetClient
 			NetClient client = new NetClient(host, port, this);
 			

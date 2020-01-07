@@ -2,6 +2,7 @@ package org.minima.system.network;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Random;
@@ -82,12 +83,16 @@ public class NetClient extends MessageProcessor {
 				
 		//Store
 		try {
-			mSocket = new Socket(zHost, zPort);
+//			mSocket = new Socket(zHost, zPort);
+			
+			mSocket = new Socket();
+			mSocket.connect(new InetSocketAddress(zHost, zPort), 10000);
+			
 		}catch (Exception e) {
 			MinimaLogger.log("Error @ connection start : "+zHost+":"+zPort);
 			
 			// Error - let the handler know
-//			mNetworkMain.PostMessage(new Message(NetworkHandler.NETWORK_CLIENTERROR).addObject("client", this));
+			mNetworkMain.PostMessage(new Message(NetworkHandler.NETWORK_CLIENTERROR).addObject("client", this));
 			
 			return;
 		}	
