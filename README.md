@@ -37,7 +37,7 @@ java org.minima.Start -connect 127.0.0.1 9001 -port 9010 -rpcport 9011 -clean
 ```
 Note that this will set the port of the 2nd instance to 9010 and the rpc port to 9011.. otherwise the app will not allow you to start, as the ports will already be in use.
 
-Using the `-clean` deletes any previous data and ensures you can resysnc to the current chain.
+Using the `-clean` parameter deletes any previous data and ensures you can resysnc to the current chain.
 
 ### Demo Session
 
@@ -49,7 +49,7 @@ Start by seeing all the functions at your disposal
 help
 ```
 
-You an give yourself 50 testnet Mini with
+You can give yourself 50 testnet Mini with
 
 ```
 gimme50
