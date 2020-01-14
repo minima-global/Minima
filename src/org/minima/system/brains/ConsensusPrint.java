@@ -3,6 +3,7 @@ package org.minima.system.brains;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Iterator;
 
 import org.minima.GlobalParams;
 import org.minima.database.MinimaDB;
@@ -96,21 +97,24 @@ public class ConsensusPrint {
 			MiniNumber top = getMainDB().getTopBlock();
 			
 			//Now get the balance..
-			Hashtable<MiniData32, MiniNumber> totals_confirmed   = new Hashtable<>();
-			Hashtable<MiniData32, MiniNumber> totals_unconfirmed = new Hashtable<>();
+			Hashtable<String, MiniNumber> totals_confirmed   = new Hashtable<>();
+			Hashtable<String, MiniNumber> totals_unconfirmed = new Hashtable<>();
 			
 			ArrayList<CoinDBRow> coins = getMainDB().getCoinDB().getComplete();
 			for(CoinDBRow coin : coins) {
 				if(coin.isInBlock()) {
 					//What Token..
-					MiniData32 tokid = coin.getCoin().getTokenID();
+					String     tokid = coin.getCoin().getTokenID().to0xString();
 					MiniNumber depth = top.sub(coin.getInBlockNumber());
 					
 					if(!coin.isSpent()) {
 						if(depth.isMoreEqual(GlobalParams.MINIMA_CONFIRM_DEPTH)) {
 							//Get the Current total..
 							MiniNumber curr = totals_confirmed.get(tokid);
-							if(curr == null) {curr = MiniNumber.ZERO;}
+							
+							if(curr == null) {
+								curr = MiniNumber.ZERO;
+							}
 							
 							//Add it..
 							curr = curr.add(coin.getCoin().getAmount());
@@ -137,13 +141,13 @@ public class ConsensusPrint {
 			JSONArray totbal = new JSONArray();
 			
 			//Now create a JSON Object
-			Enumeration<MiniData32> keys = totals_confirmed.keys();
+			Enumeration<String> keys = totals_confirmed.keys();
 			while(keys.hasMoreElements())  {
-				MiniData32 key = keys.nextElement();
+				String key     = keys.nextElement();
 				MiniNumber tot = totals_confirmed.get(key);
 				
 				JSONObject minbal = new JSONObject();
-				minbal.put("tokenid", key.toString());
+				minbal.put("tokenid", key);
 				minbal.put("amount", tot.toString());
 				
 				totbal.add(minbal);
@@ -156,11 +160,11 @@ public class ConsensusPrint {
 			//Now create a JSON Object
 			keys = totals_unconfirmed.keys();
 			while(keys.hasMoreElements())  {
-				MiniData32 key = keys.nextElement();
+				String key = keys.nextElement();
 				MiniNumber tot = totals_unconfirmed.get(key);
 				
 				JSONObject minbal = new JSONObject();
-				minbal.put("tokenid", key.toString());
+				minbal.put("tokenid", key);
 				minbal.put("amount", tot.toString());
 				
 				totbal.add(minbal);
@@ -388,6 +392,19 @@ public class ConsensusPrint {
 //				}
 //			}
 		}
+	}
+	
+	private MiniNumber getIfExists(Hashtable<MiniData32, MiniNumber> zHashTable, MiniData32 zToken) {
+		Enumeration<MiniData32> keys = zHashTable.keys();
+		
+		while(keys.hasMoreElements()) {
+			MiniData32 key = keys.nextElement();
+			if(key.isExactlyEqual(zToken)) {
+				return zHashTable.get(key);	
+			}
+		}
+		
+		return null;
 	}
 	
 }
