@@ -78,7 +78,6 @@ public class Main extends MessageProcessor {
 	 */
 	MiniNumber mCurrentTopBlock;
 	
-	
 	/**
 	 * When did this node start up..
 	 */

@@ -12,6 +12,8 @@ public class quit extends CommandFunction{
 	@Override
 	public void doFunction(String[] zInput) throws Exception {
 		getMainHandler().SystemShutDown();
+		
+		getResponseStream().endStatus(true, "Minima System shutting down..");
 	}
 
 	@Override
