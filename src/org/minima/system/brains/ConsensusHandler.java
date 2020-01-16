@@ -52,6 +52,7 @@ public class ConsensusHandler extends SystemHandler {
 	/**
 	 * Notification Messages
 	 */
+	public static final String CONSENSUS_NOTIFY_QUIT 	    = "CONSENSUS_NOTIFY_QUIT";
 	public static final String CONSENSUS_NOTIFY_BALANCE 	= "CONSENSUS_NOTIFY_BALANCE";
 	public static final String CONSENSUS_NOTIFY_NEWBLOCK 	= "CONSENSUS_NOTIFY_NEWBLOCK";
 	public static final String CONSENSUS_NOTIFY_RELCOIN 	= "CONSENSUS_NOTIFY_RELCOIN";
@@ -144,6 +145,13 @@ public class ConsensusHandler extends SystemHandler {
 	public void updateListeners(Message zMessage) {
 		for(NativeListener listen : mListeners) {
 			listen.processMessage(zMessage);
+		}
+	}
+	
+	public void updateListeners(String zMessageType) {
+		Message msg = new Message(zMessageType);
+		for(NativeListener listen : mListeners) {
+			listen.processMessage(msg);
 		}
 	}
 	

@@ -270,6 +270,9 @@ public class Main extends MessageProcessor {
 			//And shut this down too..
 			stopMessageProcessor();
 			
+			//Notify Listeners..
+			mConsensus.updateListeners(ConsensusHandler.CONSENSUS_NOTIFY_QUIT);
+			
 			//All done..
 			MinimaLogger.log("Minima Stopped. Bye Bye..");
 			
