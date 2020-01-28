@@ -148,12 +148,12 @@ public class ConsensusHandler extends SystemHandler {
 		}
 	}
 	
-	public void updateListeners(String zMessageType) {
-		Message msg = new Message(zMessageType);
-		for(NativeListener listen : mListeners) {
-			listen.processMessage(msg);
-		}
-	}
+//	public void updateListeners(String zMessageType) {
+//		Message msg = new Message(zMessageType);
+//		for(NativeListener listen : mListeners) {
+//			listen.processMessage(msg);
+//		}
+//	}
 	
 	/**
 	 * Are we initialising the Genesis block
