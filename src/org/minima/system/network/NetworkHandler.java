@@ -128,7 +128,8 @@ public class NetworkHandler extends SystemHandler{
 			//Shutdown all the clients
 			Message msg = new Message(NetClient.NETCLIENT_SHUTDOWN);
 			for(NetClient client : mClients) {
-				client.PostMessage(msg);
+				client.stopMessageProcessor();
+//				client.PostMessage(msg);
 			}
 			
 			//And finish up..

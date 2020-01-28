@@ -57,6 +57,8 @@ public class NetClientReader implements Runnable {
 
 	@Override
 	public void run() {
+		System.out.println("NetClientReader started");
+		
 		try {
 			//Create an input stream
 			DataInputStream mInput = new DataInputStream(new BufferedInputStream(mNetClient.getSocket().getInputStream()));
@@ -135,6 +137,9 @@ public class NetClientReader implements Runnable {
 //			exc.printStackTrace();
 			MinimaLogger.log("NetClientReader closed UID "+mNetClient.getUID()+" exc:"+exc);
 		}
+		
+		System.out.println("NetClientReader stopped");
+		
 		
 		//Tell the network Handler
 		mNetClient.getNetworkHandler().PostMessage(new Message(NetworkHandler.NETWORK_CLIENTERROR).addObject("client", mNetClient));

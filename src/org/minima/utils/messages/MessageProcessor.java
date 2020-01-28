@@ -37,14 +37,17 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
 	protected boolean mLogON = false;
 	
 	/**
+	 * Processor Name
+	 */
+	String mName;
+	
+	/**
 	 * Constructor
 	 */
-    public MessageProcessor(){
-    	this("");
-    }
-    
     public MessageProcessor(String zName){
     	super();
+    	
+    	mName = zName;
     	
     	mRunning = true;
         
@@ -65,10 +68,6 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
     public void stopMessageProcessor(){
         mRunning = false;
     }
-    
-//    public synchronized void PostTimerMessage(int zDelay, String zMessageType) {
-//    	mTimerMessages.add(new TimedMessage(zDelay, zMessageType));
-//    }
     
     public synchronized void PostTimerMessage(TimerMessage zMessage) {
     	mTimerMessages.add(zMessage);

@@ -61,14 +61,12 @@ public class RPCServer implements Runnable{
 			
 		} catch (BindException e) {
 			//Socket shut down..
-			MinimaLogger.log("RPCServer : Port "+mPort+" allready in use!.. restart required..");
+			MinimaLogger.log("RPCServer : Port "+mPort+" already in use!.. restart required..");
 			
 		} catch (SocketException e) {
-			if(!mRunning) {
+			if(mRunning) {
 				//Socket shut down..
-				MinimaLogger.log("RPCServer : Socket Shutdown..");
-			}else {
-				e.printStackTrace();
+				MinimaLogger.log("RPCServer : Socket Shutdown.. "+e);
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

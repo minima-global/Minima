@@ -23,6 +23,8 @@ public class NetClient extends MessageProcessor {
 	/**
 	 * NetClient Messages
 	 */
+	public static final String NETCLIENT_INITCONNECT 	= "NETCLIENT_INITCONNECT";
+	
 	public static final String NETCLIENT_STARTUP 		= "NETCLIENT_STARTUP";
 	public static final String NETCLIENT_SHUTDOWN 		= "NETCLIENT_SHUTDOWN";
 	
@@ -80,25 +82,27 @@ public class NetClient extends MessageProcessor {
 		
 		//Create a UID
 		mUID = ""+Math.abs(new Random().nextInt());
-				
-		//Store
-		try {
-//			mSocket = new Socket(zHost, zPort);
-			
-			mSocket = new Socket();
-			mSocket.connect(new InetSocketAddress(zHost, zPort), 10000);
-			
-		}catch (Exception e) {
-			MinimaLogger.log("Error @ connection start : "+zHost+":"+zPort);
-			
-			// Error - let the handler know
-			mNetworkMain.PostMessage(new Message(NetworkHandler.NETWORK_CLIENTERROR).addObject("client", this));
-			
-			return;
-		}	
 		
-		//Start the system..
-		PostMessage(NETCLIENT_STARTUP);
+		//Start the connection
+		PostMessage(NETCLIENT_INITCONNECT);
+		
+//		//Store
+//		try {
+////			mSocket = new Socket(zHost, zPort);
+//			mSocket = new Socket();
+//			mSocket.connect(new InetSocketAddress(zHost, zPort), 10000);
+//			
+//		}catch (Exception e) {
+//			MinimaLogger.log("Error @ connection start : "+zHost+":"+zPort);
+//			
+//			// Error - let the handler know
+//			mNetworkMain.PostMessage(new Message(NetworkHandler.NETWORK_CLIENTERROR).addObject("client", this));
+//			
+//			return;
+//		}	
+//		
+//		//Start the system..
+//		PostMessage(NETCLIENT_STARTUP);
 	}
 	
 	public NetClient(Socket zSock, NetworkHandler zNetwork) {
@@ -172,9 +176,39 @@ public class NetClient extends MessageProcessor {
 	}
 	
 	@Override
+	public void stopMessageProcessor() {
+		try {mOutput.close();}catch(Exception exc) {}
+		try {mInputThread.interrupt();}catch(Exception exc) {}
+		try {mSocket.close();}catch(Exception exc) {}
+		
+		super.stopMessageProcessor();
+	}
+	
+	@Override
 	protected void processMessage(Message zMessage) throws Exception {
 		
-		if(zMessage.isMessageType(NETCLIENT_STARTUP)) {
+		if(zMessage.isMessageType(NETCLIENT_INITCONNECT)) {
+			//Store
+			try {
+				//Crtaeter socket
+				mSocket = new Socket();
+				
+				//Connect with timeout
+				mSocket.connect(new InetSocketAddress(mHost, mPort), 10000);
+				
+			}catch (Exception e) {
+				MinimaLogger.log("Error @ connection start : "+mHost+":"+mPort);
+				
+				// Error - let the handler know
+				mNetworkMain.PostMessage(new Message(NetworkHandler.NETWORK_CLIENTERROR).addObject("client", this));
+				
+				return;
+			}	
+			
+			//Start the system..
+			PostMessage(NETCLIENT_STARTUP);
+			
+		}else if(zMessage.isMessageType(NETCLIENT_STARTUP)) {
 			
 			//Create the streams on this thread
 			mOutput 	= new DataOutputStream(mSocket.getOutputStream());
