@@ -1,5 +1,13 @@
 package org.minima.system.network.webproxy;
 
+
+public class RPCWebSocketServer{
+	
+	public RPCWebSocketServer() {
+		// TODO Auto-generated constructor stub
+	}
+	
+}
 /*public class RPCWebSocketServer extends WebSocketServer {
 
 	int mPort;
