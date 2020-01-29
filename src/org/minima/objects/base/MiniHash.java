@@ -9,7 +9,7 @@ import org.minima.utils.Crypto;
 import org.minima.utils.Maths;
 
 /**
- * This is a RamData object with a fixed length of 32 bytes. 
+ * This is a MiniData object with a fixed length of 32 bytes. 
  * 
  * If it is initialised with an array of less than 32 bytes in length it is zero padded. 
  * More it is truncated.
