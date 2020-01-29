@@ -39,6 +39,15 @@ Note that this will set the port of the 2nd instance to 9010 and the rpc port to
 
 Using the `-clean` parameter deletes any previous data and ensures you can resysnc to the current chain.
 
+If you can't - or don't want to compile from scratch - just use the JAR file in the jar folder..
+
+```
+java -jar minima.jar
+```
+
+You can add -private and all the other parameters to that.
+
+
 ### Demo Session
 
 Once you are in..
