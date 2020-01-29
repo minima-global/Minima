@@ -196,8 +196,6 @@ public class TxPOWChecker {
 				int val = big.intValue();
 				
 			}
-				
-			
 			
 			if(output.getTokenID().isNumericallyEqual(Coin.TOKENID_CREATE)) {
 				//Set the TokenID to the CoinID..
@@ -224,7 +222,6 @@ public class TxPOWChecker {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				
 				
 			}
 			
