@@ -7,6 +7,8 @@ import java.util.ArrayList;
 
 import org.minima.database.mmr.MMRProof;
 import org.minima.objects.base.MiniKeyValue;
+import org.minima.objects.base.MiniNumber;
+import org.minima.objects.base.MiniString;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniHash;
@@ -54,8 +56,10 @@ public class Witness implements Streamable {
 	ArrayList<MiniKeyValue> mTokenProof;
 	
 	
-	
-	
+	//Token generation..
+	public MiniNumber mTokenScale 			= new MiniNumber();
+	public MiniNumber mTokenTotalAmount 	= new MiniNumber();
+	public MiniString mTokenName 			= new MiniString("");
 	
 	/**
 	 * General Constructor
@@ -165,6 +169,11 @@ public class Witness implements Streamable {
 		}
 		obj.put("mmrproofs", arr);
 
+		//Token Generation..
+		obj.put("tokenscale", mTokenScale);
+		obj.put("tokenamount", mTokenTotalAmount);
+		obj.put("tokenname", mTokenName.toString());
+		
 		return obj;
 	}
 		
@@ -204,6 +213,11 @@ public class Witness implements Streamable {
 		for(MMRProof proof : mProofs) {
 			proof.writeDataStream(zOut);
 		}
+		
+		//Token generation
+		mTokenScale.writeDataStream(zOut);
+		mTokenTotalAmount.writeDataStream(zOut);
+		mTokenName.writeDataStream(zOut);
 	}
 
 	@Override
@@ -232,5 +246,10 @@ public class Witness implements Streamable {
 		for(int i=0;i<prlen;i++) {
 			mProofs.add(MMRProof.ReadFromStream(zIn));
 		}
+		
+		//Token generation
+		mTokenScale.readDataStream(zIn);
+		mTokenTotalAmount.readDataStream(zIn);
+		mTokenName.readDataStream(zIn);
 	}
 }

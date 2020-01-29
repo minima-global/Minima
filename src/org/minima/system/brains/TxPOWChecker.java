@@ -1,5 +1,8 @@
 package org.minima.system.brains;
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 
@@ -201,6 +204,28 @@ public class TxPOWChecker {
 				tokid = coinid;
 				
 				//Make it the HASH ( CoinID | Total Amount )
+				ByteArrayOutputStream baos = new ByteArrayOutputStream();
+				DataOutputStream daos = new DataOutputStream(baos);
+				try {
+					zWit.mTokenName.writeDataStream(daos);
+					zWit.mTokenScale.writeDataStream(daos);
+					zWit.mTokenTotalAmount.writeDataStream(daos);
+					
+					//Push It
+					daos.flush();
+					
+					//Create a MiniData..
+					MiniData tokdat = new MiniData(baos.toByteArray());
+					
+					//Now Hash it..
+					MiniHash newtokid = Crypto.getInstance().hashObject(tokdat);
+					
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+				
 			}
 			
 			if(zTouchMMR) {
