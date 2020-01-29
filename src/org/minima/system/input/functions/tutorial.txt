@@ -185,10 +185,10 @@ Sum the input values of a certain token
 SUMOUTTOK ( HEX )
 Sum the output values of a certain token 
 
-*STATE ( BYTE )
+STATE ( BYTE )
 Return the state value 0-255
 
-*PREVSTATE ( BYTE )
+PREVSTATE ( BYTE )
 Return the state value 0-255 of the input stored in the MMR data in the initial transaction this input was created. Allows for a state to be maintained from 1 spend to the next.
 
 *DYNSTATE ( BYTE  EXPRESSION )

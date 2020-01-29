@@ -109,6 +109,8 @@ public class ConsensusHandler extends SystemHandler {
 	public ConsensusHandler(Main zMain) {
 		super(zMain, "CONSENSUS");
 		
+//		mLogON = true;
+		
 		//Create a database..
 		mMainDB = new MinimaDB();
 		
