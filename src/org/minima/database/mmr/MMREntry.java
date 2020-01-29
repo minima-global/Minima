@@ -7,7 +7,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
 
-import org.minima.objects.base.MiniData32;
+import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
@@ -88,7 +88,7 @@ public class MMREntry implements Comparable<MMREntry>, Streamable{
 		return mBlockTime;
 	}
 	
-	public MiniData32 getHashValue() {
+	public MiniHash getHashValue() {
 		if(isEmpty()) {
 			MinimaLogger.log("ERROR NULL Entry : "+this);
 		}

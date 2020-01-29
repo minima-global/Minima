@@ -8,7 +8,7 @@ import org.minima.database.txpowdb.TxPOWDBRow;
 import org.minima.database.txpowtree.BlockTreeNode;
 import org.minima.objects.TxPOW;
 import org.minima.objects.base.MiniByte;
-import org.minima.objects.base.MiniData32;
+import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.backup.SyncPackage;
 import org.minima.system.backup.SyncPacket;
@@ -151,8 +151,8 @@ public class ConsensusNet {
 						TxPOW txpow = spack.getTxPOW();
 						
 						//Txns
-						ArrayList<MiniData32> txns = txpow.getBlockTxns();
-						for(MiniData32 txn : txns) {
+						ArrayList<MiniHash> txns = txpow.getBlockTxns();
+						for(MiniHash txn : txns) {
 							if(!getMainDB().isTxPOWFound(txn)) {
 								//Request it!
 								sendNetMessage(zMessage, NetClientReader.NETMESSAGE_TXPOW_REQUEST, txn);
@@ -174,7 +174,7 @@ public class ConsensusNet {
 			
 		}else if ( zMessage.isMessageType(CONSENSUS_NET_TXPOWID)) {
 			//Get the ID
-			MiniData32 txpowid = (MiniData32) zMessage.getObject("txpowid");
+			MiniHash txpowid = (MiniHash) zMessage.getObject("txpowid");
 			
 			//Do we have it..?
 			TxPOW txpow = getMainDB().getTxPOW(txpowid);
@@ -185,7 +185,7 @@ public class ConsensusNet {
 		
 		}else if(zMessage.isMessageType(CONSENSUS_NET_TXPOWREQUEST)) {
 			//Request for a previously sent txpowid
-			MiniData32 txpowid = (MiniData32) zMessage.getObject("txpowid");
+			MiniHash txpowid = (MiniHash) zMessage.getObject("txpowid");
 			
 			//Get it..
 			TxPOW txpow = getMainDB().getTxPOW(txpowid);
@@ -247,8 +247,8 @@ public class ConsensusNet {
 			}
 
 			//And now check the Txn list.. basically a mempool sync
-			ArrayList<MiniData32> txns = txpow.getBlockTxns();
-			for(MiniData32 txn : txns) {
+			ArrayList<MiniHash> txns = txpow.getBlockTxns();
+			for(MiniHash txn : txns) {
 				if(getMainDB().getTxPOW(txn) == null) {
 					//We don't have it, get it..
 					sendNetMessage(zMessage, NetClientReader.NETMESSAGE_TXPOW_REQUEST, txn);

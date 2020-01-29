@@ -3,7 +3,7 @@ package org.minima.database.txpowtree;
 import java.math.BigInteger;
 import java.util.ArrayList;
 
-import org.minima.objects.base.MiniData32;
+import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.Maths;
 import org.minima.utils.MinimaLogger;
@@ -16,7 +16,7 @@ public class BlockTreePrinter {
 	
 	long mCascadeNode=0;
 	
-	MiniData32 mTipID;
+	MiniHash mTipID;
 	
 	boolean mSimple = false;
 	

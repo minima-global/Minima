@@ -20,7 +20,13 @@ import org.minima.utils.Streamable;
  */
 public class MiniData implements Streamable {
 
-	public static byte[] hexStringToByteArray(String zHex) {
+	/**
+	 * Utility HEX conversion functions
+	 * 
+	 * @param zHex
+	 * @return
+	 */
+	private static byte[] hexStringToByteArray(String zHex) {
 		String hex = zHex;
 		if(hex.startsWith("0x")) {
 			hex = zHex.substring(2);
@@ -46,7 +52,7 @@ public class MiniData implements Streamable {
 	}
 	
 	private final static char[] hexArray = "0123456789ABCDEF".toCharArray();
-	public static String bytesToHex(byte[] bytes) {
+	private static String bytesToHex(byte[] bytes) {
 	    char[] hexChars = new char[bytes.length * 2];
 	    for ( int j = 0; j < bytes.length; j++ ) {
 	        int v = bytes[j] & 0xFF;
@@ -65,7 +71,6 @@ public class MiniData implements Streamable {
 	 * The numeric value of the data
 	 */
 	protected BigInteger mDataVal;
-	
 	
 	public MiniData() {
 		this("00");

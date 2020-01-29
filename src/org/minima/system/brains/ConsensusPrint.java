@@ -19,7 +19,7 @@ import org.minima.objects.Address;
 import org.minima.objects.Coin;
 import org.minima.objects.PubPrivKey;
 import org.minima.objects.TxPOW;
-import org.minima.objects.base.MiniData32;
+import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
 import org.minima.system.input.InputHandler;
@@ -214,7 +214,7 @@ public class ConsensusPrint {
 		
 		}else if(zMessage.isMessageType(CONSENSUS_TXPOW)){
 			String txpow = zMessage.getString("txpow");
-			MiniData32 txp = new MiniData32(txpow);
+			MiniHash txp = new MiniHash(txpow);
 			
 			TxPOW pow = getMainDB().getTxPOW(txp);
 			
@@ -394,11 +394,11 @@ public class ConsensusPrint {
 		}
 	}
 	
-	private MiniNumber getIfExists(Hashtable<MiniData32, MiniNumber> zHashTable, MiniData32 zToken) {
-		Enumeration<MiniData32> keys = zHashTable.keys();
+	private MiniNumber getIfExists(Hashtable<MiniHash, MiniNumber> zHashTable, MiniHash zToken) {
+		Enumeration<MiniHash> keys = zHashTable.keys();
 		
 		while(keys.hasMoreElements()) {
-			MiniData32 key = keys.nextElement();
+			MiniHash key = keys.nextElement();
 			if(key.isExactlyEqual(zToken)) {
 				return zHashTable.get(key);	
 			}

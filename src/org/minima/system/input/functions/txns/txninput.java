@@ -1,6 +1,6 @@
 package org.minima.system.input.functions.txns;
 
-import org.minima.objects.base.MiniData32;
+import org.minima.objects.base.MiniHash;
 import org.minima.system.brains.ConsensusTxn;
 import org.minima.system.input.CommandFunction;
 import org.minima.utils.messages.Message;
@@ -19,7 +19,7 @@ public class txninput extends CommandFunction {
 		
 		//Get the coinid of the input
 		String coinid = zInput[2];
-		MiniData32 cid = new MiniData32(coinid);
+		MiniHash cid = new MiniHash(coinid);
 				
 		//Send to the consensus Handler
 		Message msg = getResponseMessage(ConsensusTxn.CONSENSUS_TXNINPUT);

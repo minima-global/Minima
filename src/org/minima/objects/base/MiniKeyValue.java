@@ -11,7 +11,7 @@ public class MiniKeyValue implements Streamable {
 	/**
 	 * A hash value for the key..
 	 */
-	MiniData32 mKey;
+	MiniHash mKey;
 	
 	/**
 	 * The data..
@@ -23,7 +23,7 @@ public class MiniKeyValue implements Streamable {
 	 */
 	public MiniKeyValue() {}
 		
-	public MiniKeyValue(MiniData32 zKey, MiniData zValue) {
+	public MiniKeyValue(MiniHash zKey, MiniData zValue) {
 		mKey   = zKey;
 		mValue = zValue;
 	}
@@ -36,7 +36,7 @@ public class MiniKeyValue implements Streamable {
 
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
-		mKey   = MiniData32.ReadFromStream(zIn);
+		mKey   = MiniHash.ReadFromStream(zIn);
 		mValue = MiniData.ReadFromStream(zIn);
 	}
 	

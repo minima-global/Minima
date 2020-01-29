@@ -8,7 +8,7 @@ import java.io.DataOutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-import org.minima.objects.base.MiniData32;
+import org.minima.objects.base.MiniHash;
 
 /**
  * @author Spartacus Rex
@@ -100,7 +100,7 @@ public class Crypto {
 		return null;
 	}
 
-	public MiniData32 hashObject(Streamable zObject) {
+	public MiniHash hashObject(Streamable zObject) {
 		try {
 			//Get the Data..
 			ByteArrayOutputStream baos 	= new ByteArrayOutputStream();
@@ -118,7 +118,7 @@ public class Crypto {
 			//Hash That
 			byte[] hashdata = hashData(objdata);
 			
-			return new MiniData32(hashdata);
+			return new MiniHash(hashdata);
 		
 		}catch (Exception e) {
 			//Error Hashing!?
@@ -128,7 +128,7 @@ public class Crypto {
 		return null;
 	}
 	
-	public MiniData32 hashObjects(Streamable zLeftObject, Streamable zRightObject2) {
+	public MiniHash hashObjects(Streamable zLeftObject, Streamable zRightObject2) {
 		try {
 			//Get the Data..
 			ByteArrayOutputStream baos 	= new ByteArrayOutputStream();
@@ -150,7 +150,7 @@ public class Crypto {
 			byte[] hashdata = hashData(objdata);
 		
 			//Final Answer
-			return new MiniData32(hashdata);
+			return new MiniHash(hashdata);
 		
 		}catch (Exception e) {
 			e.printStackTrace();
@@ -161,7 +161,7 @@ public class Crypto {
 		return null;
 	}
 	
-	public MiniData32 hashAllObjects(Streamable... zObjects) {
+	public MiniHash hashAllObjects(Streamable... zObjects) {
 		try {
 			//Get the Data..
 			ByteArrayOutputStream baos 	= new ByteArrayOutputStream();
@@ -182,7 +182,7 @@ public class Crypto {
 			byte[] hashdata = hashData(objdata);
 		
 			//Final Answer
-			return new MiniData32(hashdata);
+			return new MiniHash(hashdata);
 		
 		}catch (Exception e) {
 			e.printStackTrace();

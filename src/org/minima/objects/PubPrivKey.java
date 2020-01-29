@@ -5,7 +5,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniData32;
+import org.minima.objects.base.MiniHash;
 import org.minima.utils.Streamable;
 
 public class PubPrivKey implements Streamable {
@@ -44,7 +44,7 @@ public class PubPrivKey implements Streamable {
 	 */
 	public PubPrivKey(boolean empty) {}
 	
-	public MiniData sign(MiniData32 zData) {
+	public MiniData sign(MiniHash zData) {
 //		//Create a WOTS
 //		WinternitzOTSignature wots = new WinternitzOTSignature(mPrivateSeed.getData(), getHashFunction(), WinternitzNumber);
 //		
@@ -58,11 +58,11 @@ public class PubPrivKey implements Streamable {
 		return MiniData.getRandomData(64);
 	}
 	
-	public boolean verify(MiniData32 zData, MiniData zSignature) {
+	public boolean verify(MiniHash zData, MiniData zSignature) {
 		return verify(mPublicKey, zData, zSignature);
 	}
 	
-	public static boolean verify(MiniData zPubKey, MiniData32 zData, MiniData zSignature) {
+	public static boolean verify(MiniData zPubKey, MiniHash zData, MiniData zSignature) {
 //		//WOTS Verify
 //		WinternitzOTSVerify wver = new WinternitzOTSVerify(getHashFunction(), WinternitzNumber);
 //		

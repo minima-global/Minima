@@ -8,7 +8,7 @@ import java.util.ArrayList;
 
 import org.minima.objects.Coin;
 import org.minima.objects.base.MiniByte;
-import org.minima.objects.base.MiniData32;
+import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
@@ -59,7 +59,7 @@ public class MMRSet implements Streamable {
 	 */
 	boolean mFinalized;
 	
-	MiniData32 mFinalizedRoot;
+	MiniHash mFinalizedRoot;
 	ArrayList<MMREntry> mFinalizedPeaks;
 	ArrayList<MMREntry> mFinalizedZeroRow;
 	
@@ -204,7 +204,7 @@ public class MMRSet implements Streamable {
 	 * @param zCoinID
 	 * @return
 	 */
-	public MMREntry findEntry(MiniData32 zCoinID) {
+	public MMREntry findEntry(MiniHash zCoinID) {
 		//Get the zero row - no parents..
 		ArrayList<MMREntry> zero=getZeroRow();
 		
@@ -299,7 +299,7 @@ public class MMRSet implements Streamable {
 			MMREntry sibling = getEntry(entry.getRow(), entry.getLeftSibling(),true);
 			
 			//Create the new row - hash LEFT + RIGHT
-			MiniData32 combined = Crypto.getInstance().hashObjects(sibling.getHashValue(), entry.getHashValue());
+			MiniHash combined = Crypto.getInstance().hashObjects(sibling.getHashValue(), entry.getHashValue());
 			MMRData data = new MMRData(combined);
 			
 			//Set the Parent Entry
@@ -342,14 +342,14 @@ public class MMRSet implements Streamable {
 		
 		//Is an input missing or is it a less recent update 
 		int pcount = 0;
-		MiniData32 phash = zProof.getProof(pcount++);
+		MiniHash phash = zProof.getProof(pcount++);
 		
 		//Do we need to fill it in..
 		if(sibling.isEmpty()) {
 			sibling = setEntry(sibling.getRow(), sibling.getEntry(), new MMRData(phash));
 		}else if(sibling.getBlockTime().isLessEqual(zProof.getBlockTime())) {
 			//Is it the original.. has all the micro details.. internal nodes are just the hash anyway
-			MiniData32 orighash = sibling.getData().getFinalHash();
+			MiniHash orighash = sibling.getData().getFinalHash();
 			if(!orighash.isExactlyEqual(phash)) {
 				sibling = setEntry(sibling.getRow(), sibling.getEntry(), new MMRData(phash));
 			}
@@ -358,7 +358,7 @@ public class MMRSet implements Streamable {
 		//Now go up the tree..
 		while(!sibling.isEmpty()) {
 			//Create the new parent
-			MiniData32 combined = null;
+			MiniHash combined = null;
 			if(entry.isLeft()) {
 				combined = Crypto.getInstance().hashObjects(entry.getHashValue(),sibling.getHashValue());
 			}else {
@@ -392,7 +392,7 @@ public class MMRSet implements Streamable {
 					sibling = setEntry(sibling.getRow(), sibling.getEntry(), new MMRData(phash));		
 				}else if(sibling.getBlockTime().isLessEqual(zProof.getBlockTime())) {
 					//Is it the original.. has all the micro details.. internal nodes are just the hash anyway
-					MiniData32 orighash = sibling.getData().getFinalHash();
+					MiniHash orighash = sibling.getData().getFinalHash();
 					if(!orighash.isExactlyEqual(phash)) {
 						sibling = setEntry(sibling.getRow(), sibling.getEntry(), new MMRData(phash));	
 					}	
@@ -541,7 +541,7 @@ public class MMRSet implements Streamable {
 		ArrayList<MMREntry> peaks = proofset.getMMRPeaks();
 		
 		//Calculate the proof..
-		MiniData32 proofpeak = zProof.calculateProof();
+		MiniHash proofpeak = zProof.calculateProof();
 		
 		//Is this is a Peak ? - if so, go no further..
 		boolean found = false;
@@ -605,7 +605,7 @@ public class MMRSet implements Streamable {
 	 * 
 	 * @return
 	 */
-	public MiniData32 getMMRRoot() {
+	public MiniHash getMMRRoot() {
 		//Are we final
 		if(mFinalized) {
 			return mFinalizedRoot;

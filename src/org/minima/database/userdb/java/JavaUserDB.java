@@ -13,7 +13,7 @@ import org.minima.objects.Coin;
 import org.minima.objects.PubPrivKey;
 import org.minima.objects.Transaction;
 import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniData32;
+import org.minima.objects.base.MiniHash;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 
@@ -113,7 +113,7 @@ public class JavaUserDB implements UserDB, Streamable{
 	
 
 	@Override
-	public boolean isSimpleAddress(MiniData32 zAddress) {
+	public boolean isSimpleAddress(MiniHash zAddress) {
 		for(Address addr : mAddresses) {
 			if(addr.isEqual(zAddress)) {
 				return true;
@@ -152,7 +152,7 @@ public class JavaUserDB implements UserDB, Streamable{
 	}
 	
 	@Override
-	public String getScript(MiniData32 zAddress) {
+	public String getScript(MiniHash zAddress) {
 		//Check the Addresses
 		for(Address addr : mTotalAddresses) {
 			if(addr.getAddressData().isExactlyEqual(zAddress)) {
@@ -165,7 +165,7 @@ public class JavaUserDB implements UserDB, Streamable{
 
 	
 	@Override
-	public boolean isAddressRelevant(MiniData32 zAddress) {
+	public boolean isAddressRelevant(MiniHash zAddress) {
 		for(Address addr : mTotalAddresses) {
 			if(addr.getAddressData().isExactlyEqual(zAddress)) {
 				return true;
@@ -198,7 +198,7 @@ public class JavaUserDB implements UserDB, Streamable{
 	}
 
 	@Override
-	public MiniData getPublicKey(MiniData32 zAddress) {
+	public MiniData getPublicKey(MiniHash zAddress) {
 		for(Address addr : mAddresses) {
 			if(addr.isEqual(zAddress)) {
 				//What is the Public key!

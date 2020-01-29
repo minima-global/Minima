@@ -14,7 +14,7 @@ import org.minima.database.txpowtree.BlockTreeNode;
 import org.minima.database.txpowtree.BlockTreeStore;
 import org.minima.database.userdb.java.JavaUserDB;
 import org.minima.objects.TxPOW;
-import org.minima.objects.base.MiniData32;
+import org.minima.objects.base.MiniHash;
 import org.minima.system.Main;
 import org.minima.system.SystemHandler;
 import org.minima.system.brains.ConsensusBackup;

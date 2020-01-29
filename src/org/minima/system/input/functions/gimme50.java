@@ -1,6 +1,6 @@
 package org.minima.system.input.functions;
 
-import org.minima.objects.base.MiniData32;
+import org.minima.objects.base.MiniHash;
 import org.minima.system.brains.ConsensusHandler;
 import org.minima.system.input.CommandFunction;
 import org.minima.utils.messages.Message;
@@ -12,7 +12,7 @@ public class gimme50 extends CommandFunction {
 	/**
 	 * TEST Net Input coin that is always accepted
 	 */
-	public static MiniData32 COINID_INPUT = new MiniData32("0xFEED50FEED50FEED50FEED50");
+	public static MiniHash COINID_INPUT = new MiniHash("0xFEED50FEED50FEED50FEED50");
 	
 	public gimme50() {
 		super("gimme50");

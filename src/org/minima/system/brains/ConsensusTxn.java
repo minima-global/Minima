@@ -12,7 +12,7 @@ import org.minima.objects.PubPrivKey;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniData32;
+import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.input.InputHandler;
 import org.minima.system.network.NetworkHandler;
@@ -102,7 +102,7 @@ public class ConsensusTxn {
 		}else if(zMessage.isMessageType(CONSENSUS_TXNINPUT)) {
 			//Add input to a custom transaction
 			int trans 			= zMessage.getInteger("transaction");
-			MiniData32 coinid 	= (MiniData32) zMessage.getObject("coinid");
+			MiniHash coinid 	= (MiniHash) zMessage.getObject("coinid");
 			
 			//Check valid..
 			if(!checkTransactionValid(trans)) {
@@ -154,7 +154,7 @@ public class ConsensusTxn {
 			String tokenid = zMessage.getString("tokenid");
 			
 			//Create a coin
-			Coin out = new Coin(Coin.COINID_OUTPUT,addr.getAddressData(),new MiniNumber(value), new MiniData32(tokenid));
+			Coin out = new Coin(Coin.COINID_OUTPUT,addr.getAddressData(),new MiniNumber(value), new MiniHash(tokenid));
 			
 			//Get the Transaction..
 			Transaction trx = getMainDB().getUserDB().getUserRow(trans).getTransaction();
@@ -238,7 +238,7 @@ public class ConsensusTxn {
 			Transaction trx =  row.getTransaction();
 			Witness wit     = row.getWitness();
 			
-			MiniData32 transhash = Crypto.getInstance().hashObject(trx);
+			MiniHash transhash = Crypto.getInstance().hashObject(trx);
 			
 			MiniData signature = key.sign(transhash);
 			

@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import org.minima.database.txpowdb.TxPOWDBRow;
 import org.minima.database.txpowdb.TxPowDB;
 import org.minima.objects.TxPOW;
-import org.minima.objects.base.MiniData32;
+import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
 
 public class JavaDB implements TxPowDB{
@@ -34,7 +34,7 @@ public class JavaDB implements TxPowDB{
 	}
 
 	@Override
-	public TxPOWDBRow findTxPOWDBRow(MiniData32 zTxPOWID) {
+	public TxPOWDBRow findTxPOWDBRow(MiniHash zTxPOWID) {
 		for(JavaDBRow row : mRows) {
 			if(row.getTxPOW().getTxPowID().isExactlyEqual(zTxPOWID)) {
 				return row;
@@ -106,7 +106,7 @@ public class JavaDB implements TxPowDB{
 	}
 
 	@Override
-	public void removeTxPOW(MiniData32 zTxPOWID) {
+	public void removeTxPOW(MiniHash zTxPOWID) {
 		ArrayList<JavaDBRow> newRows = new ArrayList<>();
 		
 		for(JavaDBRow row : mRows) {
@@ -120,7 +120,7 @@ public class JavaDB implements TxPowDB{
 	}
 
 	@Override
-	public ArrayList<TxPOWDBRow> getChildBlocksTxPOW(MiniData32 zParent) {
+	public ArrayList<TxPOWDBRow> getChildBlocksTxPOW(MiniHash zParent) {
 		ArrayList<TxPOWDBRow> ret = new ArrayList<>();
 		
 		for(JavaDBRow row : mRows) {

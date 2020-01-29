@@ -7,7 +7,7 @@ import java.util.ArrayList;
 
 import org.minima.objects.Coin;
 import org.minima.objects.base.MiniByte;
-import org.minima.objects.base.MiniData32;
+import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.Crypto;
 import org.minima.utils.Streamable;
@@ -34,7 +34,7 @@ public class MMRProof implements Streamable {
 	/**
 	 * The list of Hash values.. Left or right can be worked out from the original Entry Number..
 	 */
-	ArrayList<MiniData32> mProofChain;
+	ArrayList<MiniHash> mProofChain;
 	ArrayList<MiniByte>   mLeftHash;
 	
 	public MMRProof() {
@@ -50,7 +50,7 @@ public class MMRProof implements Streamable {
 		mBlockTime   = zBlockTime;
 	}
 	
-	public void addHash(MiniData32 zHash, boolean zLeft) {
+	public void addHash(MiniHash zHash, boolean zLeft) {
 		mProofChain.add(zHash);	
 		if(zLeft) {
 			mLeftHash.add(MiniByte.TRUE);
@@ -75,7 +75,7 @@ public class MMRProof implements Streamable {
 		return mLeftHash.get(zProof);
 	}
 	
-	public MiniData32 getProof(int zProof) {
+	public MiniHash getProof(int zProof) {
 		return mProofChain.get(zProof);
 	}
 	
@@ -83,9 +83,9 @@ public class MMRProof implements Streamable {
 		return mProofChain.size();
 	}
 	
-	public MiniData32 calculateProof() {
+	public MiniHash calculateProof() {
 		//Get the Final Hash of the Data
-		MiniData32 current = mData.getFinalHash();
+		MiniHash current = mData.getFinalHash();
 		
 		int len = getProofLen();
 		for(int i=0;i<len;i++) {
@@ -173,7 +173,7 @@ public class MMRProof implements Streamable {
 		int len = zIn.readInt();
 		for(int i=0;i<len;i++) {
 			mLeftHash.add(MiniByte.ReadFromStream(zIn));
-			mProofChain.add(MiniData32.ReadFromStream(zIn));
+			mProofChain.add(MiniHash.ReadFromStream(zIn));
 		}
 	}
 	

@@ -9,7 +9,7 @@ import org.minima.database.mmr.MMRProof;
 import org.minima.objects.base.MiniKeyValue;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniData32;
+import org.minima.objects.base.MiniHash;
 import org.minima.utils.Crypto;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONArray;

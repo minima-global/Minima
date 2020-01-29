@@ -11,7 +11,7 @@ import org.minima.objects.TxPOW;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniData32;
+import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
 import org.minima.system.SystemHandler;
@@ -277,8 +277,8 @@ public class ConsensusHandler extends SystemHandler {
 			String amount  = zMessage.getString("amount");
 			
 			String tokenid = zMessage.getString("tokenid");
-			MiniData32 tok       = new MiniData32(tokenid);
-			MiniData32 changetok = new MiniData32(tokenid);
+			MiniHash tok       = new MiniHash(tokenid);
+			MiniHash changetok = new MiniHash(tokenid);
 			
 			MiniNumber sendamount = new MiniNumber(amount);
 			
@@ -303,7 +303,7 @@ public class ConsensusHandler extends SystemHandler {
 				
 			}else {
 				//Continue constructing the transaction - outputs don't need scripts
-				Address recipient= new Address(new MiniData32(address));
+				Address recipient= new Address(new MiniHash(address));
 				
 				//Blank address - check change is non-null
 				Address change = new Address(); 
@@ -357,13 +357,13 @@ public class ConsensusHandler extends SystemHandler {
 			Transaction trans = new Transaction();
 			Witness wit = new Witness();
 			
-			Coin in = new Coin(gimme50.COINID_INPUT,Address.TRUE_ADDRESS.getAddressData(),new MiniNumber("1"), MiniData32.ZERO32);
+			Coin in = new Coin(gimme50.COINID_INPUT,Address.TRUE_ADDRESS.getAddressData(),new MiniNumber("1"), MiniHash.ZERO32);
 			trans.addInput(in);
 			wit.addScript(Address.TRUE_ADDRESS.getScript());
 			
 			//And send to the new address
-			Address outaddr = new Address(new MiniData32(MiniData.getRandomData(32).getData()));
-			Coin out = new Coin(Coin.COINID_OUTPUT,outaddr.getAddressData(),new MiniNumber("1"), MiniData32.ZERO32);
+			Address outaddr = new Address(new MiniHash(MiniData.getRandomData(32).getData()));
+			Coin out = new Coin(Coin.COINID_OUTPUT,outaddr.getAddressData(),new MiniNumber("1"), MiniHash.ZERO32);
 			trans .addOutput(out);
 			
 			//Now send it..
@@ -385,7 +385,7 @@ public class ConsensusHandler extends SystemHandler {
 			Witness wit = new Witness();
 					
 			//Create the correct inputs..
-			Coin in = new Coin(gimme50.COINID_INPUT,Address.TRUE_ADDRESS.getAddressData(),new MiniNumber("50"), MiniData32.ZERO32);
+			Coin in = new Coin(gimme50.COINID_INPUT,Address.TRUE_ADDRESS.getAddressData(),new MiniNumber("50"), MiniHash.ZERO32);
 			
 			//Add to the transaction
 			trans.addInput(in);
@@ -394,7 +394,7 @@ public class ConsensusHandler extends SystemHandler {
 			wit.addScript(Address.TRUE_ADDRESS.getScript());
 			
 			//And send to the new address
-			Coin out = new Coin(Coin.COINID_OUTPUT,addr.getAddressData(),new MiniNumber("50"), MiniData32.ZERO32);
+			Coin out = new Coin(Coin.COINID_OUTPUT,addr.getAddressData(),new MiniNumber("50"), MiniHash.ZERO32);
 			trans .addOutput(out);
 			
 			//Now send it..
@@ -436,7 +436,7 @@ public class ConsensusHandler extends SystemHandler {
 		ArrayList<Coin> outs = trans.getAllOutputs();
 		
 		//The HASH of the Transaction.. needed for coinid
-		MiniData32 transhash = Crypto.getInstance().hashObject(trans);
+		MiniHash transhash = Crypto.getInstance().hashObject(trans);
 		
 		//Check them - adding the script to outputs we own
 		boolean rel = false;
@@ -471,7 +471,7 @@ public class ConsensusHandler extends SystemHandler {
 				rel = true;
 				
 				//Now calculate the CoinID / TokenID
-				MiniData32 coinid = Crypto.getInstance().hashObjects(transhash, new MiniByte(i));
+				MiniHash coinid = Crypto.getInstance().hashObjects(transhash, new MiniByte(i));
 				
 				//Create a new Coin..
 				Coin fullcoin = new Coin(coinid, out.getAddress(), out.getAmount(), out.getTokenID());

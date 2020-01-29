@@ -9,7 +9,7 @@ import org.minima.miniscript.values.ScriptValue;
 import org.minima.miniscript.values.Value;
 import org.minima.objects.Transaction;
 import org.minima.objects.base.MiniByte;
-import org.minima.objects.base.MiniData32;
+import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
 
 public class STATE extends MinimaFunction {

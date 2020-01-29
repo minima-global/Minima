@@ -11,7 +11,7 @@ import org.minima.miniscript.functions.cast.HEX;
 import org.minima.miniscript.values.HEXValue;
 import org.minima.miniscript.values.Value;
 import org.minima.objects.base.MiniByte;
-import org.minima.objects.base.MiniData32;
+import org.minima.objects.base.MiniHash;
 import org.minima.utils.Crypto;
 
 public class CHAINSHA extends MinimaFunction {
@@ -44,7 +44,7 @@ public class CHAINSHA extends MinimaFunction {
 		int loop = chdata.length / 33;
 		
 		//The running total
-		MiniData32 total = new MiniData32(indata);
+		MiniHash total = new MiniHash(indata);
 		
 		ByteArrayInputStream bais = new ByteArrayInputStream(chdata);
 		DataInputStream dis = new DataInputStream(bais);
@@ -54,7 +54,7 @@ public class CHAINSHA extends MinimaFunction {
 			MiniByte leftrigt = MiniByte.ReadFromStream(dis);
 			
 			//What data to hash
-			MiniData32 data = MiniData32.ReadFromStream(dis);
+			MiniHash data = MiniHash.ReadFromStream(dis);
 		
 			//Do it!
 			if(leftrigt.isTrue()) {

@@ -8,7 +8,7 @@ import org.minima.miniscript.values.BooleanValue;
 import org.minima.miniscript.values.HEXValue;
 import org.minima.miniscript.values.Value;
 import org.minima.objects.PubPrivKey;
-import org.minima.objects.base.MiniData32;
+import org.minima.objects.base.MiniHash;
 
 /**
  * for now only retur  true..
@@ -35,7 +35,7 @@ public class CHECKSIG extends MinimaFunction {
 		HEXValue sig    = (HEXValue) getParameter(2).getValue(zContract);
 		
 		//Check it..
-		boolean ok = PubPrivKey.verify(pubkey.getMiniData(), new MiniData32(data.getRawData()), sig.getMiniData());
+		boolean ok = PubPrivKey.verify(pubkey.getMiniData(), new MiniHash(data.getRawData()), sig.getMiniData());
 		
 		// TODO Auto-generated method stub
 		return new BooleanValue(ok);
