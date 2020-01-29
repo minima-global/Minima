@@ -7,6 +7,7 @@ import java.io.IOException;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
 import org.minima.utils.Streamable;
+import org.minima.utils.json.JSONObject;
 
 public class TokenDetails implements Streamable{
 
@@ -51,6 +52,16 @@ public class TokenDetails implements Streamable{
 		return mTokenName;
 	}
 	
+	public JSONObject toJSON() {
+		JSONObject obj = new JSONObject();
+		
+		obj.put("name", mTokenName);
+		obj.put("scale", mTokenScale);
+		obj.put("amount", mTokenTotalAmount);
+		
+		return obj;
+	}
+	
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
 		mTokenScale.writeDataStream(zOut);
@@ -64,6 +75,4 @@ public class TokenDetails implements Streamable{
 		mTokenTotalAmount.readDataStream(zIn);
 		mTokenName.readDataStream(zIn);
 	}
-
-	
 }
