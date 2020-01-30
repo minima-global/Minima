@@ -11,6 +11,7 @@ import org.minima.miniscript.Contract;
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
 import org.minima.objects.PubPrivKey;
+import org.minima.objects.TokenDetails;
 import org.minima.objects.Transaction;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniHash;
@@ -28,12 +29,21 @@ public class JavaUserDB implements UserDB, Streamable{
 	
 	ArrayList<Address> mTotalAddresses;
 	
+	/**
+	 * Token Details
+	 */
+	ArrayList<TokenDetails> mAllTokens;
+	
+	/**
+	 * Base constructor
+	 */
 	public JavaUserDB() {
 		mPubPrivKeys 	 = new ArrayList<>();
 		mAddresses 		 = new ArrayList<>();
 		mScriptAddresses = new ArrayList<>();
 		mTotalAddresses  = new ArrayList<>();
-	
+		mAllTokens		 = new ArrayList<>();
+		
 		mCounter = 0;
 		mRows  = new ArrayList<>();
 	}
@@ -294,6 +304,26 @@ public class JavaUserDB implements UserDB, Streamable{
 			row.readDataStream(zIn);
 			mRows.add(row);
 		}
+	}
+
+	@Override
+	public ArrayList<TokenDetails> getAllKnownTokens() {
+		return mAllTokens;
+	}
+
+	@Override
+	public TokenDetails getTokenDetail(MiniHash zTokenID) {
+		for(TokenDetails td : mAllTokens) {
+//			if(td.get)
+		}
+		
+		return null;
+	}
+
+	@Override
+	public void addTokenDetails(TokenDetails zToken) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

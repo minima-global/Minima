@@ -7,6 +7,7 @@ import org.minima.NativeListener;
 import org.minima.database.MinimaDB;
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
+import org.minima.objects.TokenDetails;
 import org.minima.objects.Transaction;
 import org.minima.objects.TxPOW;
 import org.minima.objects.Witness;
@@ -435,7 +436,7 @@ public class ConsensusHandler extends SystemHandler {
 			
 			//How much do we have..
 			MiniNumber total = new MiniNumber(); 
-			ArrayList<Coin> confirmed = confirmed = getMainDB().getTotalSimpleSpendableCoins(Coin.MINIMA_TOKENID);
+			ArrayList<Coin> confirmed = getMainDB().getTotalSimpleSpendableCoins(Coin.MINIMA_TOKENID);
 			
 			//Add all the available outputs to the list
 			for(Coin cc : confirmed) {
@@ -459,9 +460,15 @@ public class ConsensusHandler extends SystemHandler {
 				
 				//Get the witness and add relevant info..
 				Witness wit = (Witness) ret.getObject("witness");
-				wit.mTokenName  		= new MiniString(name);
-				wit.mTokenScale 		= new MiniNumber(scale+"");
-				wit.mTokenTotalAmount 	= sendamount;
+				
+				//Create the token gen details
+				TokenDetails tgen = new TokenDetails(Coin.COINID_OUTPUT, 
+													 new MiniNumber(scale+""), 
+													 sendamount, 
+													 new MiniString(name));
+				
+				//Set it
+				wit.setTokenGenDetails(tgen);
 				
 				//Continue the log output trail
 				InputHandler.addResponseMesage(ret, zMessage);

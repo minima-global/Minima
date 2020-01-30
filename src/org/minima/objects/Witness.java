@@ -56,10 +56,15 @@ public class Witness implements Streamable {
 	ArrayList<MiniKeyValue> mTokenProof;
 	
 	
-	//Token generation..
-	public MiniNumber mTokenScale 			= new MiniNumber();
-	public MiniNumber mTokenTotalAmount 	= new MiniNumber();
-	public MiniString mTokenName 			= new MiniString("");
+	/**
+	 * Token generation details.. one per transaction
+	 */
+	TokenDetails mTokenGenDetails = new TokenDetails();
+	
+	/**
+	 * Any tokens used in any inputs must provide the Token Details
+	 */
+	ArrayList<TokenDetails> mTokenDetails = new ArrayList<>();
 	
 	/**
 	 * General Constructor
@@ -137,6 +142,13 @@ public class Witness implements Streamable {
 //		for(Mini)  
 //	}
 	
+	public void setTokenGenDetails(TokenDetails zTokGenDetails) {
+		mTokenGenDetails = zTokGenDetails;
+	}
+	
+	public TokenDetails getTokenGenDetails() {
+		return mTokenGenDetails;
+	}
 	
 	public JSONObject toJSON() {
 		JSONObject obj = new JSONObject();
@@ -170,9 +182,7 @@ public class Witness implements Streamable {
 		obj.put("mmrproofs", arr);
 
 		//Token Generation..
-		obj.put("tokenscale", mTokenScale);
-		obj.put("tokenamount", mTokenTotalAmount);
-		obj.put("tokenname", mTokenName.toString());
+		obj.put("tokengen", mTokenGenDetails.toJSON());
 		
 		return obj;
 	}
@@ -215,9 +225,7 @@ public class Witness implements Streamable {
 		}
 		
 		//Token generation
-		mTokenScale.writeDataStream(zOut);
-		mTokenTotalAmount.writeDataStream(zOut);
-		mTokenName.writeDataStream(zOut);
+		mTokenGenDetails.writeDataStream(zOut);
 	}
 
 	@Override
@@ -248,8 +256,6 @@ public class Witness implements Streamable {
 		}
 		
 		//Token generation
-		mTokenScale.readDataStream(zIn);
-		mTokenTotalAmount.readDataStream(zIn);
-		mTokenName.readDataStream(zIn);
+		mTokenGenDetails.readDataStream(zIn);
 	}
 }

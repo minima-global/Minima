@@ -21,6 +21,7 @@ import org.minima.miniscript.values.ScriptValue;
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
 import org.minima.objects.PubPrivKey;
+import org.minima.objects.TokenDetails;
 import org.minima.objects.Transaction;
 import org.minima.objects.TxPOW;
 import org.minima.objects.Witness;
@@ -187,44 +188,23 @@ public class TxPOWChecker {
 			MiniHash coinid = Crypto.getInstance().hashObjects(transhash, new MiniByte(i));
 			
 			//Is this a token create output..
-			MiniHash tokid = output.getTokenID();
+			MiniHash tokid 			= output.getTokenID();
+			TokenDetails newtoken 	= null;
 			
-			if(output.getTokenID().isLessEqual(Coin.TOKENID_CREATE)) {
-				//It's a token..
-				BigInteger big = output.getTokenID().getDataVaue();
-				
-				int val = big.intValue();
-				
-			}
-			
+			//Are we creating a Token
 			if(output.getTokenID().isNumericallyEqual(Coin.TOKENID_CREATE)) {
 				//Set the TokenID to the CoinID..
 				tokid = coinid;
 				
 				//Make it the HASH ( CoinID | Total Amount )
-				ByteArrayOutputStream baos = new ByteArrayOutputStream();
-				DataOutputStream daos = new DataOutputStream(baos);
-				try {
-					zWit.mTokenName.writeDataStream(daos);
-					zWit.mTokenScale.writeDataStream(daos);
-					zWit.mTokenTotalAmount.writeDataStream(daos);
-					
-					//Push It
-					daos.flush();
-					
-					//Create a MiniData..
-					MiniData tokdat = new MiniData(baos.toByteArray());
-					
-					//Now Hash it..
-					MiniHash newtokid = Crypto.getInstance().hashObject(tokdat);
-					
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+				TokenDetails gentoken = zWit.getTokenGenDetails();
+				newtoken = new TokenDetails(coinid,gentoken.getScale(), gentoken.getAmount(), gentoken.getName());
 				
+				//Set the Globally Unique TokenID!
+				tokid = newtoken.getTokenID();
 			}
-			
+	
+			//Are we writing to the MMR
 			if(zTouchMMR) {
 				//Create a new Coin..
 				Coin mmrcoin = new Coin(coinid, output.getAddress(), output.getAmount(), tokid);
@@ -241,6 +221,7 @@ public class TxPOWChecker {
 					zMMRSet.addKeeper(unspent.getEntry());	
 					
 					//Keep the token generation numbers
+					//..
 				}
 			}
 			

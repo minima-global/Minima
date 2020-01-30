@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import org.minima.objects.Address;
 import org.minima.objects.PubPrivKey;
+import org.minima.objects.TokenDetails;
 import org.minima.objects.Transaction;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniHash;
@@ -47,4 +48,14 @@ public interface UserDB {
 	public UserDBRow addUserRow();
 
 	public void deleteUserRow(int zID);
+	
+	/**
+	 * Token Details
+	 */
+	public ArrayList<TokenDetails> getAllKnownTokens();
+	
+	public TokenDetails getTokenDetail(MiniHash zTokenID);
+	
+	public void addTokenDetails(TokenDetails zToken);
+	
 }
