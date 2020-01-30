@@ -196,7 +196,7 @@ public class TxPOWChecker {
 				//Set the TokenID to the CoinID..
 				tokid = coinid;
 				
-				//Make it the HASH ( CoinID | Total Amount )
+				//Make it the HASH ( CoinID | Total Amount..the token details )
 				TokenDetails gentoken = zWit.getTokenGenDetails();
 				newtoken = new TokenDetails(coinid,gentoken.getScale(), gentoken.getAmount(), gentoken.getName());
 				
