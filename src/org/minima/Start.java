@@ -68,7 +68,7 @@ public class Start {
 		int port 				= 9001;
 		int rpcport 			= 8999;
 		
-		//Currently DISABLED .. 
+		//Currently DISABLED .. will re-enable later
 		//Is a function called when there is a new relevant transaction..
 		//This function could put the data in a web database etc..
 		String txnfunction = "";
