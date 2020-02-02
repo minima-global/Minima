@@ -11,12 +11,11 @@ import java.util.ArrayList;
 
 import org.minima.system.Main;
 import org.minima.system.backup.BackupManager;
-import org.minima.system.bootstrap.GenesisTransaction;
 import org.minima.system.input.InputMessage;
 import org.minima.utils.MiniFormat;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.ResponseStream;
 import org.minima.utils.messages.Message;
-import org.minima.utils.MinimaLogger;
 
 /**
  * @author Paddy Cerri
@@ -69,7 +68,7 @@ public class Start {
 		int port 				= 9001;
 		int rpcport 			= 8999;
 		
-		//Currently DISABLED
+		//Currently DISABLED .. 
 		//Is a function called when there is a new relevant transaction..
 		//This function could put the data in a web database etc..
 		String txnfunction = "";
