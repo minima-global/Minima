@@ -7,10 +7,14 @@ import java.nio.charset.Charset;
 
 import org.minima.utils.Streamable;
 
-/*public class MiniString extends MiniData {
+public class MiniString extends MiniData {
 	
 	public MiniString(String zString) {
 		super(zString.getBytes(Charset.forName("US-ASCII")));
+	}
+	
+	public MiniString(MiniString zString) {
+		this(zString.to0xString());
 	}
 	
 	@Override
@@ -31,9 +35,9 @@ import org.minima.utils.Streamable;
 		return data;
 	}
 	
-}*/
+}
 
-public class MiniString implements Streamable{
+/*public class MiniString implements Streamable{
 
 	String mString;
 	
@@ -74,4 +78,4 @@ public class MiniString implements Streamable{
 		return data;
 	}
 	
-}
+}*/
