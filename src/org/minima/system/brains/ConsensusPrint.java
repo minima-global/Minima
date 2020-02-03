@@ -225,29 +225,8 @@ public class ConsensusPrint {
 			}
 			allbal.put("unconfirmed", totbal);
 			
+			//All good
 			InputHandler.endResponse(zMessage, true, "");
-			
-//			MiniNumber unconfirmed_total 		= new MiniNumber();
-//			MiniNumber confirmed_total 			= new MiniNumber();
-//			MiniNumber top = getMainDB().getTopBlock();
-//			ArrayList<CoinDBRow> coins = getMainDB().getCoinDB().getComplete();
-//			for(CoinDBRow coin : coins) {
-//				if(coin.isInBlock()) {
-//					MiniNumber depth = top.sub(coin.getInBlockNumber());
-//					if(!coin.isSpent()) {
-//						if(depth.isMoreEqual(GlobalParams.MINIMA_CONFIRM_DEPTH)) {
-//							confirmed_total = confirmed_total.add(coin.getCoin().getAmount());
-//						}else {
-//							unconfirmed_total = unconfirmed_total.add(coin.getCoin().getAmount());
-//						}
-//					}
-//				}
-//			}
-//			
-//			//The Object
-//			JSONObject minbal = InputHandler.getResponseJSON(zMessage);
-//			minbal.put("confirmed", confirmed_total.toString());
-//			minbal.put("unconfirmed", unconfirmed_total.toString());
 			
 		}else if(zMessage.isMessageType(CONSENSUS_COINS)){
 			//get the MMR
@@ -328,7 +307,6 @@ public class ConsensusPrint {
 			status.put("host", main.getNetworkHandler().getServer().getHost());
 			status.put("port", main.getNetworkHandler().getServer().getPort());
 			status.put("rpcport", main.getNetworkHandler().getRPCServer().getPort());
-			status.put("pulse", main.getsimulator().mMiningON);
 			
 			status.put("root", root.getTxPow().toJSON());
 			status.put("tip", tip.getTxPow().toJSON());
@@ -336,6 +314,8 @@ public class ConsensusPrint {
 			
 			status.put("lastblock", lastblock.toString());
 			status.put("totalpow", root.getTotalWeight().toString());
+			
+			status.put("IBD ", +getMainDB().getIntroSyncSize());
 			
 			//Add the network connections
 			ArrayList<NetClient> nets = main.getNetworkHandler().getNetClients();
@@ -354,22 +334,7 @@ public class ConsensusPrint {
 			if(true) {
 				return;	
 			}
-			
-//			SimpleLogger.log("------------");
-//			SimpleLogger.log("Node Details");
-//			SimpleLogger.log("------------");
-//			SimpleLogger.log("Version   : 0.4");
-//			SimpleLogger.log("Uptime    : "+uptime);
-//			SimpleLogger.log("Conf      : "+main.getBackupManager().getRootFolder());
-//			SimpleLogger.log("Host      : "+main.getNetworkHandler().getServer().getHost());
-//			SimpleLogger.log("Port      : "+main.getNetworkHandler().getServer().getPort());
-//			SimpleLogger.log("Pulse     : ["+main.getsimulator().mMiningON+"] "+main.getsimulator().mCounter);
-//			SimpleLogger.log("ROOT      : "+root);
-//			SimpleLogger.log("TIP       : "+tip);
-//			SimpleLogger.log("Top Block : "+lastblock);
-//			SimpleLogger.log("Total POW : "+root.getTotalWeight());
-//			SimpleLogger.log("IBD bytes : "+getMainDB().getIntroSyncSize());
-//			
+
 			MinimaLogger.log("");
 			MinimaLogger.log("-----");
 			MinimaLogger.log("Wallet");
@@ -394,57 +359,6 @@ public class ConsensusPrint {
 			MiniNumber confirmed_total 			= new MiniNumber();
 			MiniNumber confirmed_total_spent 	= new MiniNumber();
 			
-//			//get the MMR
-//			MMRSet baseset = tip.getMMRSet();
-//			
-//			MiniNumber top = getMainDB().getTopBlock();
-//			ArrayList<CoinDBRow> coins = getMainDB().getCoinDB().getComplete();
-//			for(CoinDBRow coin : coins) {
-//				if(!coin.isSpent()) {
-//					//Print it..
-//					SimpleLogger.log("Coin       : "+coin.toString());
-//					MMRProof proof = baseset.getProof(coin.getMMREntry());
-//					SimpleLogger.log("Proof      : "+proof.toString()+" valid:"+baseset.checkProof(proof));
-//					if(!coin.getCoin().getTokenID().isExactlyEqual(Coin.MINIMA_TOKENID)) {
-//						SimpleLogger.log("Token      : "+coin.getCoin().getTokenID());
-//					}
-//					SimpleLogger.log("Amount     : "+coin.getCoin().getAmount());
-//					SimpleLogger.log("");
-//				}
-//				
-//				if(coin.isInBlock()) {
-//					MiniNumber depth = top.sub(coin.getInBlockNumber());
-//					if(coin.isSpent()) {
-//						if(depth.isMoreEqual(GlobalParams.MINIMA_CONFIRM_DEPTH)) {
-//							confirmed_total_spent = confirmed_total_spent.add(coin.getCoin().getAmount());
-//						}else {
-//							unconfirmed_total_spent = unconfirmed_total_spent.add(coin.getCoin().getAmount());
-//						}
-//					}else {
-//						if(depth.isMoreEqual(GlobalParams.MINIMA_CONFIRM_DEPTH)) {
-//							confirmed_total = confirmed_total.add(coin.getCoin().getAmount());
-//						}else {
-//							unconfirmed_total = unconfirmed_total.add(coin.getCoin().getAmount());
-//						}
-//					}
-//				}
-//			}
-//			
-////			SimpleLogger.log("  UNCONFIRMED SPENT : "+unconfirmed_total_spent);
-////			SimpleLogger.log("    CONFIRMED SPENT : "+confirmed_total_spent);
-//			SimpleLogger.log("UNCONFIRMED : "+unconfirmed_total);
-//			SimpleLogger.log("  CONFIRMED : "+confirmed_total);
-//			
-//			//Get main
-//			ArrayList<NetClient> nets = main.getNetworkHandler().getNetClients();
-//			if(nets.size()>0) {
-//				SimpleLogger.log("---------------");
-//				SimpleLogger.log("Network Clients");
-//				SimpleLogger.log("---------------");
-//				for(NetClient net : nets) {
-//					SimpleLogger.log(""+net);
-//				}
-//			}
 		}
 	}
 	
