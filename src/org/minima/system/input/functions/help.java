@@ -40,9 +40,9 @@ public class help extends CommandFunction{
 			} else {
 				String desc = found.getDescription().trim();
 				if(desc.equals("")) {
-					getResponseStream().getDataJSON().put("description", found.getSimple());
+					getResponseStream().getDataJSON().put("description", found.getParams()+" - "+found.getSimple());
 				}else {
-					getResponseStream().getDataJSON().put("description", desc);	
+					getResponseStream().getDataJSON().put("description", found.getParams()+" - "+desc);	
 				}
 				
 				getResponseStream().endStatus(true, "");
@@ -56,7 +56,7 @@ public class help extends CommandFunction{
 			addJSONDesc(new printchain());
 			addJSONDesc(new printtree());
 	
-			//			addJSONDesc(new trace());
+			addJSONDesc(new trace());
 			addJSONDesc(new minetrans());
 			addJSONDesc(new backup());
 			
@@ -108,7 +108,6 @@ public class help extends CommandFunction{
 		}else {
 			getResponseStream().getDataJSON().put(zFunc.getName(), params+ " - " + zFunc.getSimple());
 		}
-		
 	}
 	
 	@Override

@@ -626,6 +626,54 @@ public class MinimaDB {
 	}
 	
 	/**
+	 * Create a proofed 
+	 * 
+	 * @param zAmount
+	 * @param zToAddress
+	 * @param zChangeAddress
+	 * @param zConfirmed
+	 * @return
+	 */
+	public Witness createValidWitness(Transaction zTransaction, Witness zWitness) {
+		//The Base current MMRSet
+		MMRSet basemmr  = getMainTree().getChainTip().getMMRSet();
+		
+		//Get proofs from a while back so reorgs don't invalidate them..
+		MMRSet proofmmr = basemmr.getParentAtTime(getTopBlock().sub(GlobalParams.MINIMA_CONFIRM_DEPTH));
+		
+		//Clear the proofs..
+		zWitness.clearProofs();
+		
+		//Cycle thrugh the inputs..
+		ArrayList<Coin> ins = zTransaction.getAllInputs();
+		for(Coin cc : ins) {
+			//Make sure script is set
+			String script = getUserDB().getScript(cc.getAddress());
+			if(script.equals("")) {
+				System.out.println("ERROR UNKNOWN ADDRESS "+cc.getAddress()+" not in database..");
+				return null;
+			}
+			
+			//The CoinDB Entry
+			CoinDBRow row  = getCoinDB().getCoinRow(cc.getCoinID());
+			
+			//Get a proof from a while back.. more than confirmed depth, less than cascade
+//			MMRProof proof = getMainTree().getChainTip().getMMRSet().getProof(row.getMMREntry());
+			MMRProof proof = proofmmr.getProof(row.getMMREntry());
+			
+			if(proof == null) {
+				MinimaLogger.log("ERROR NULL PROOF "+row);
+				return null;
+			}
+			
+			//Add the proof for this coin..
+			zWitness.addMMRProof(proof);				
+		}
+		
+		return zWitness;
+	}
+	
+	/**
 	 * Create both the transaction and th witness data
 	 * 
 	 * @param zAmount

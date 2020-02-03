@@ -147,7 +147,10 @@ public class ConsensusTxn {
 			int trans    = zMessage.getInteger("transaction");
 			
 			//Check valid..
-			if(!checkTransactionValid(trans)) {System.out.println("Invalid TXN chosen : "+trans); return;}
+			if(!checkTransactionValid(trans)) {
+				InputHandler.endResponse(zMessage, false, "Invalid TXN chosen : "+trans);
+				return;
+			}
 			
 			//Get the Address
 			Address addr = (Address) zMessage.getObject("address");
@@ -197,14 +200,32 @@ public class ConsensusTxn {
 			int trans    = zMessage.getInteger("transaction");
 			
 			//Check valid..
-			if(!checkTransactionValid(trans)) {System.out.println("Invalid TXN chosen : "+trans); return;}
+			if(!checkTransactionValid(trans)) {
+				InputHandler.endResponse(zMessage, false, "Invalid TXN chosen : "+trans);
+				return;
+			}
 			
 			//Get the Transaction..
 			Transaction trx =  getMainDB().getUserDB().getUserRow(trans).getTransaction();
 			Witness wit     =  getMainDB().getUserDB().getUserRow(trans).getWitness();
 			
+			//Create the correct MMR Proofs
+			Witness newwit = getMainDB().createValidWitness(trx, wit);
+			if(newwit == null) {
+				InputHandler.endResponse(zMessage, false, "ERROR creating valid Witness. MMR Proofs wrong..");
+				return;
+			}
+			
+			//Create the message
+			Message msg = new Message(ConsensusHandler.CONSENSUS_SENDTRANS)
+								.addObject("transaction", trx)
+								.addObject("witness", wit);
+			
+			//Add the response message..
+			InputHandler.addResponseMesage(msg, zMessage);
+			
 			//Post it..
-			mHandler.PostMessage(new Message(ConsensusHandler.CONSENSUS_SENDTRANS).addObject("transaction", trx).addObject("witness", wit));
+			mHandler.PostMessage(msg);
 			
 		}else if(zMessage.isMessageType(CONSENSUS_TXNVALIDATE)) {
 			//Which transaction
@@ -212,7 +233,7 @@ public class ConsensusTxn {
 			
 			//Check valid..
 			if(!checkTransactionValid(trans)) {
-				System.out.println("Invalid TXN chosen : "+trans); 
+				InputHandler.endResponse(zMessage, false, "Invalid TXN chosen : "+trans);
 				return;
 			}
 			
@@ -233,13 +254,27 @@ public class ConsensusTxn {
 			resp.put("inputs_sum", ins.toString());
 			resp.put("outputs_sum", outs.toString());
 			resp.put("burn", burn.toString());
-			resp.put("valid_amounts", ins.isLess(outs));
+			resp.put("valid_amounts", outs.isLessEqual(ins));
 			
-//			//And Check the actual Transaction..
-//			boolean checkok = TxPOWChecker.checkTransactionMMR(trx, wit, getMainDB(),
-//					getMainDB().getTopBlock(),getMainDB().getMainTree().getChainTip().getMMRSet(),false);
-//			
-//			resp.put("mmr", checkok);
+			//Create a complete transaction
+			Witness newwit = getMainDB().createValidWitness(trx, wit);
+			
+			//Null valu means there is something wrong
+			if(newwit == null) {
+				resp.put("mmr_proof", false);
+				resp.put("mmr_check", false);
+				InputHandler.endResponse(zMessage, true, "");
+				return;
+			}else {
+				resp.put("mmr_proof", true);
+			}
+			
+			//And Check the actual Transaction..
+			boolean checkok = TxPOWChecker.checkTransactionMMR(trx, wit, getMainDB(),
+					getMainDB().getTopBlock(),
+					getMainDB().getMainTree().getChainTip().getMMRSet(),false);
+			
+			resp.put("mmr_check", checkok);
 			
 			InputHandler.endResponse(zMessage, true, "");
 			
@@ -250,7 +285,10 @@ public class ConsensusTxn {
 			MiniData pubk = new MiniData(pubkey);
 			
 			//Check valid..
-			if(!checkTransactionValid(trans)) {System.out.println("Invalid TXN chosen : "+trans); return;}
+			if(!checkTransactionValid(trans)) {
+				InputHandler.endResponse(zMessage, false, "Invalid TXN chosen : "+trans);
+				return;
+			}
 			
 			//Get the public key
 			PubPrivKey key = getMainDB().getUserDB().getPubPrivKey(pubk);

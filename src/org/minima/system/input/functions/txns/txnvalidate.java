@@ -17,7 +17,7 @@ public class txnvalidate extends CommandFunction{
 		int txn = Integer.parseInt(zInput[1]);
 		
 		//Send to the consensus Handler
-		Message msg = new Message(ConsensusTxn.CONSENSUS_TXNVALIDATE);
+		Message msg = getResponseMessage(ConsensusTxn.CONSENSUS_TXNVALIDATE);
 		msg.addInt("transaction", txn);
 	
 		getMainHandler().getConsensusHandler().PostMessage(msg);		

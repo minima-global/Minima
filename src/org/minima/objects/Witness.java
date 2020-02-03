@@ -50,7 +50,6 @@ public class Witness implements Streamable {
 	 */
 	public Witness() {
 		mPublicKeys = new ArrayList<>();
-		
 		mSignatures = new ArrayList<>();
 		
 		mScripts    = new ArrayList<>();
@@ -70,6 +69,10 @@ public class Witness implements Streamable {
 	
 	public void addMMRProof(MMRProof zProof) {
 		mProofs.add(zProof);
+	}
+	
+	public void clearProofs(){
+		mProofs.clear();	
 	}
 	
 	public ArrayList<MMRProof> getAllProofs(){

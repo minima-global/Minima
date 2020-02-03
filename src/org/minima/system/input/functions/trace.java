@@ -17,6 +17,9 @@ public class trace extends CommandFunction{
 		
 		//Set the trace on for all the handlers
 		getMainHandler().setTrace(on);
+		
+		//It's worked
+		getResponseStream().endStatus(true, "Trace : "+on);
 	}
 
 	@Override
