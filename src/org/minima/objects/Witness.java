@@ -82,8 +82,6 @@ public class Witness implements Streamable {
 		
 		//Add to signatures
 		mSignatures.add(zSig);
-		
-//		KeyValueMiniData pubk = new KeyValueMiniData(zPublicKey, zSig);
 	}
 	
 	public MiniData getPublicKey(int zPubk) {
