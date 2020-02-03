@@ -277,10 +277,9 @@ public class ConsensusHandler extends SystemHandler {
 			
 		}else if ( zMessage.isMessageType(CONSENSUS_CREATETRANS) ) {
 			//How much to who ?
-			String address = zMessage.getString("address");
-			String amount  = zMessage.getString("amount");
-			
-			String tokenid 	   = zMessage.getString("tokenid");
+			String address 		= zMessage.getString("address");
+			String amount  		= zMessage.getString("amount");
+			String tokenid 	   	= zMessage.getString("tokenid");
 			
 			//Is this a token amount or a minima amount
 			if(!tokenid.equals(Coin.MINIMA_TOKENID.to0xString())) {
@@ -443,8 +442,9 @@ public class ConsensusHandler extends SystemHandler {
 			//Get a new address to receive the tokens..
 			Address recipient = getMainDB().getUserDB().newSimpleAddress();
 			
-			//How much Minima will it take to colour.. for now lets stay under 0.1 minima
-			BigDecimal max    = new BigDecimal("0.01");
+			//How much Minima will it take to colour.. for now lets stay under 0.001 minima
+			//This is not protocol specific and can change later
+			BigDecimal max    = new BigDecimal("0.001");
 			BigDecimal num    = new BigDecimal(amount);
 			BigDecimal actnum = new BigDecimal(amount);
 			
