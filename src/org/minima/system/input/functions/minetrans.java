@@ -11,11 +11,8 @@ public class minetrans extends CommandFunction{
 	public minetrans() {
 		super("minetrans");
 		
-		setHelp("[number|auto|off] {stress}", 
-				"Mine a transaction and only publish if a block is found. Or stress to mine a published transaction.", 
-				"This function simulates a User sending a random transaction. "
-				+ "If not stress then this will only publish if a block is found : an off-chain transaction. "
-				+ "If you use auto it will fire a transaction every 200 millisecs.");
+		setHelp("", 
+				"Mine a blank transaction","Useful when debugging and MINIMA_ZERO_DIFF_BLK setr to true");
 	}
 	
 	@Override

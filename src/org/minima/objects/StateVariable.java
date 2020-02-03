@@ -4,6 +4,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+import org.minima.miniscript.Contract;
 import org.minima.miniscript.values.Value;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
@@ -33,11 +34,18 @@ public class StateVariable implements Streamable {
 	 * @param zData
 	 */
 	public StateVariable(MiniNumber zPort, String zData) {
-		mData     = new MiniString(zData);
+		//All state vars are actually script variables..
+		String cleanvar = Contract.cleanScript(zData);
+		
+		mData     = new MiniString(cleanvar);
 		mPort	  = zPort;
 	}
 	
 	private StateVariable() {}
+	
+	public void resetData(MiniString zData) {
+		mData = zData;
+	}
 	
 	public MiniString getData() {
 		return mData;

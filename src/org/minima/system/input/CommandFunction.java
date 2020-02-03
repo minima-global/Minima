@@ -36,6 +36,7 @@ import org.minima.system.input.functions.txns.txnlist;
 import org.minima.system.input.functions.txns.txnoutput;
 import org.minima.system.input.functions.txns.txnpost;
 import org.minima.system.input.functions.txns.txnsign;
+import org.minima.system.input.functions.txns.txnstatevar;
 import org.minima.system.input.functions.txns.txnvalidate;
 import org.minima.utils.ResponseStream;
 import org.minima.utils.messages.Message;
@@ -52,7 +53,7 @@ public abstract class CommandFunction {
 			new newscript(), new printchain(), new printtree(), new quit(),new reconnect(), new runscript(), 
 			new send(), new status(), new test(), new trace(), new tutorial(),
 			new exportkey(), new importkey(), 
-			new txncreate(), new txndelete(), new txninput(), new txnlist(), 
+			new txncreate(), new txndelete(), new txninput(), new txnlist(), new txnstatevar(), 
 			new txnoutput(), new txnpost(), new txnsign(), new txnvalidate()
 		};  
 	

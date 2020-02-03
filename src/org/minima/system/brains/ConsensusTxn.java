@@ -9,6 +9,7 @@ import org.minima.miniscript.Contract;
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
 import org.minima.objects.PubPrivKey;
+import org.minima.objects.StateVariable;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
@@ -32,11 +33,15 @@ public class ConsensusTxn {
 	public static final String CONSENSUS_TXNCREATE 			= CONSENSUS_PREFIX+"TXNCREATE";
 	public static final String CONSENSUS_TXNDELETE 			= CONSENSUS_PREFIX+"TXNDELETE";
 	public static final String CONSENSUS_TXNLIST 			= CONSENSUS_PREFIX+"TXNLIST";
+	
 	public static final String CONSENSUS_TXNINPUT 			= CONSENSUS_PREFIX+"TXNINPUT";
-	public static final String CONSENSUS_TXNINPARAM 		= CONSENSUS_PREFIX+"TXNINPARAM";
 	public static final String CONSENSUS_TXNOUTPUT 			= CONSENSUS_PREFIX+"TXNOUTPUT";
+	
+	public static final String CONSENSUS_TXNSTATEVAR 		= CONSENSUS_PREFIX+"TXNSTATEVAR";
+	
 	public static final String CONSENSUS_TXNSIGN 			= CONSENSUS_PREFIX+"TXNSIGN";
 	public static final String CONSENSUS_TXNVALIDATE 		= CONSENSUS_PREFIX+"TXNVALIDATE";
+	
 	public static final String CONSENSUS_TXNPOST 			= CONSENSUS_PREFIX+"TXNPOST";
 	
 	MinimaDB mDB;
@@ -161,6 +166,29 @@ public class ConsensusTxn {
 		
 			//Add the output
 			trx.addOutput(out);
+			
+			listTransactions(zMessage);
+			
+		}else if(zMessage.isMessageType(CONSENSUS_TXNSTATEVAR)) {
+			//Which transaction
+			int trans    		= zMessage.getInteger("transaction");
+			int port     		= zMessage.getInteger("stateport");
+			String variable		= zMessage.getString("statevariable");
+			
+			//Check valid..
+			if(!checkTransactionValid(trans)) {
+				InputHandler.endResponse(zMessage, false, "Invalid TXN chosen : "+trans);
+				return;
+			}
+			
+			//Get the Transaction..
+			Transaction trx = getMainDB().getUserDB().getUserRow(trans).getTransaction();
+		
+			//Create a new State Variable
+			StateVariable sv = new StateVariable(new MiniNumber(port+""), variable);
+			
+			//Add it to the transaction
+			trx.addStateVariable(sv);
 			
 			listTransactions(zMessage);
 			

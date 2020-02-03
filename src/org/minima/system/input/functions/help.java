@@ -10,6 +10,7 @@ import org.minima.system.input.functions.txns.txnlist;
 import org.minima.system.input.functions.txns.txnoutput;
 import org.minima.system.input.functions.txns.txnpost;
 import org.minima.system.input.functions.txns.txnsign;
+import org.minima.system.input.functions.txns.txnstatevar;
 import org.minima.system.input.functions.txns.txnvalidate;
 
 public class help extends CommandFunction{
@@ -53,7 +54,8 @@ public class help extends CommandFunction{
 			
 			addJSONDesc(new status());
 			addJSONDesc(new printchain());
-
+			addJSONDesc(new printtree());
+	
 			//			addJSONDesc(new trace());
 			addJSONDesc(new minetrans());
 			addJSONDesc(new backup());
@@ -61,7 +63,7 @@ public class help extends CommandFunction{
 			addJSONDesc(new connect());
 			addJSONDesc(new disconnect());
 			addJSONDesc(new reconnect());
-			addJSONDesc(new weblink());
+//			addJSONDesc(new weblink());
 			
 			addJSONDesc(new gimme50());
 			addJSONDesc(new send());
@@ -75,6 +77,7 @@ public class help extends CommandFunction{
 			addJSONDesc(new newaddress());
 			addJSONDesc(new newscript());
 			addJSONDesc(new runscript());
+			
 			addJSONDesc(new exportkey());
 			addJSONDesc(new importkey());
 			
@@ -83,12 +86,12 @@ public class help extends CommandFunction{
 			addJSONDesc(new txndelete());
 			addJSONDesc(new txninput());
 			addJSONDesc(new txnoutput());
+			addJSONDesc(new txnstatevar());
 			addJSONDesc(new txnsign());
 			addJSONDesc(new txnvalidate());
 			addJSONDesc(new txnpost());
 			
 			addJSONDesc(new quit());
-			
 			
 			//It's worked
 			getResponseStream().endStatus(true, "");

@@ -85,7 +85,13 @@ public class Transaction implements Streamable {
 	 * @param zValue
 	 */
 	public void addStateVariable(StateVariable zValue) {
-		mState.add(zValue);
+		//If it exists overwrite it..
+		StateVariable sv = getStateValue(zValue.getPort());
+		if(sv != null) {
+			sv.resetData(zValue.getData());
+		}else {
+			mState.add(zValue);
+		}
 	}
 	
 	/**
