@@ -281,10 +281,33 @@ public class ConsensusHandler extends SystemHandler {
 			String amount  = zMessage.getString("amount");
 			
 			String tokenid 	   = zMessage.getString("tokenid");
-			MiniHash tok       = new MiniHash(tokenid);
-			MiniHash changetok = new MiniHash(tokenid);
 			
-			MiniNumber sendamount = new MiniNumber(amount);
+			//Is this a token amount or a minima amount
+			if(!tokenid.equals(Coin.MINIMA_TOKENID.to0xString())) {
+				//It's a token.. scale it..
+				MiniNumber samount = new MiniNumber(amount);
+				
+				//Now divide by the scale factor..
+				TokenDetails td = getMainDB().getUserDB().getTokenDetail(new MiniHash(tokenid));
+				
+				//Do we have it,.
+				if(td == null) {
+					//Unknown token!
+					InputHandler.endResponse(zMessage, false, "No details found for the specified token : "+tokenid);
+					return;
+				}
+				
+				//Scale..
+				samount = samount.div(td.getScaleFactor());
+				
+				//And set the new value..
+				amount = samount.toString();
+			}
+			
+			//Send details..
+			MiniHash tok       		= new MiniHash(tokenid);
+			MiniHash changetok 		= new MiniHash(tokenid);
+			MiniNumber sendamount 	= new MiniNumber(amount);
 			
 			//How much do we have..
 			MiniNumber total = new MiniNumber(); 
@@ -304,6 +327,7 @@ public class ConsensusHandler extends SystemHandler {
 			if(total.isLess(sendamount)) {
 				//Insufficient funds!
 				InputHandler.endResponse(zMessage, false, "Insufficient funds! You only have : "+total);
+				return;
 				
 			}else {
 				//Continue constructing the transaction - outputs don't need scripts
@@ -420,7 +444,7 @@ public class ConsensusHandler extends SystemHandler {
 			Address recipient = getMainDB().getUserDB().newSimpleAddress();
 			
 			//How much Minima will it take to colour.. for now lets stay under 0.1 minima
-			BigDecimal max    = new BigDecimal("0.1");
+			BigDecimal max    = new BigDecimal("0.01");
 			BigDecimal num    = new BigDecimal(amount);
 			BigDecimal actnum = new BigDecimal(amount);
 			

@@ -18,6 +18,7 @@ import org.minima.database.txpowtree.BlockTreePrinter;
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
 import org.minima.objects.PubPrivKey;
+import org.minima.objects.TokenDetails;
 import org.minima.objects.TxPOW;
 import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
@@ -146,10 +147,37 @@ public class ConsensusPrint {
 				String key     = keys.nextElement();
 				MiniNumber tot = totals_confirmed.get(key);
 				
+				//Store to the JSON Object
 				JSONObject minbal = new JSONObject();
 				minbal.put("tokenid", key);
+				
+				//Is this a token amount!
+				if(!key.equals(Coin.MINIMA_TOKENID.to0xString())) {
+					//Create the Token Hash
+					MiniHash tokenid = new MiniHash(key);
+					
+					//Get the token details
+					TokenDetails td = getMainDB().getUserDB().getTokenDetail(tokenid);
+					if(td == null) {
+						//ERROR you own tokens you have no details about
+						minbal.put("token", "ERROR_UNKNOWN");
+						minbal.put("tokenamount", "-1");
+					}else{
+						MiniNumber tottok = tot.mult(td.getScaleFactor());
+						minbal.put("token", td.getName());
+						minbal.put("tokenamount", tottok.toString());	
+					}
+					
+					MiniNumber tottok = totals_confirmed.get(key);
+				}else {
+					minbal.put("token", "Minima");
+					minbal.put("tokenamount", tot.toString());
+				}
+				
+				//And the Amount in Minima
 				minbal.put("amount", tot.toString());
 				
+				//Add to the Total balance sheet
 				totbal.add(minbal);
 			}	
 			
@@ -165,6 +193,32 @@ public class ConsensusPrint {
 				
 				JSONObject minbal = new JSONObject();
 				minbal.put("tokenid", key);
+				
+				//Is this a token amount!
+				if(!key.equals(Coin.MINIMA_TOKENID.to0xString())) {
+					//Create the Token Hash
+					MiniHash tokenid = new MiniHash(key);
+					
+					//Get the token details
+					TokenDetails td = getMainDB().getUserDB().getTokenDetail(tokenid);
+					if(td == null) {
+						//ERROR you own tokens you have no details about
+						minbal.put("token", "ERROR_UNKNOWN");
+						minbal.put("tokenamount", "-1");
+					}else{
+						MiniNumber tottok = tot.mult(td.getScaleFactor());
+						minbal.put("token", td.getName());
+						minbal.put("tokenamount", tottok.toString());	
+					}
+					
+					MiniNumber tottok = totals_confirmed.get(key);
+				
+				}else {
+					minbal.put("token", "Minima");
+					minbal.put("tokenamount", tot.toString());
+				}
+				
+				//The Amount in Minima
 				minbal.put("amount", tot.toString());
 				
 				totbal.add(minbal);

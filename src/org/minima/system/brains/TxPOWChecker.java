@@ -1,19 +1,12 @@
 package org.minima.system.brains;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.math.BigInteger;
 import java.util.ArrayList;
 
 import org.minima.database.MinimaDB;
-import org.minima.database.coindb.CoinDB;
-import org.minima.database.coindb.CoinDBRow;
 import org.minima.database.mmr.MMRData;
 import org.minima.database.mmr.MMREntry;
 import org.minima.database.mmr.MMRProof;
 import org.minima.database.mmr.MMRSet;
-import org.minima.database.txpowdb.TxPOWDBRow;
 import org.minima.miniscript.Contract;
 import org.minima.miniscript.values.HEXValue;
 import org.minima.miniscript.values.NumberValue;
@@ -31,7 +24,6 @@ import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.input.functions.gimme50;
 import org.minima.utils.Crypto;
-import org.minima.utils.MinimaLogger;
 
 public class TxPOWChecker {
 	
@@ -192,16 +184,14 @@ public class TxPOWChecker {
 			TokenDetails newtoken 	= null;
 			
 			//Are we creating a Token
+			TokenDetails newtokdets = null;
 			if(output.getTokenID().isNumericallyEqual(Coin.TOKENID_CREATE)) {
-				//Set the TokenID to the CoinID..
-				tokid = coinid;
-				
 				//Make it the HASH ( CoinID | Total Amount..the token details )
 				TokenDetails gentoken = zWit.getTokenGenDetails();
-				newtoken = new TokenDetails(coinid,gentoken.getScale(), gentoken.getAmount(), gentoken.getName());
+				newtokdets = new TokenDetails(coinid,gentoken.getScale(), gentoken.getAmount(), gentoken.getName());
 				
 				//Set the Globally Unique TokenID!
-				tokid = newtoken.getTokenID();
+				tokid = newtokdets.getTokenID();
 			}
 	
 			//Are we writing to the MMR
@@ -221,7 +211,9 @@ public class TxPOWChecker {
 					zMMRSet.addKeeper(unspent.getEntry());	
 					
 					//Keep the token generation numbers
-					//..
+					if(newtokdets != null) {
+						zDB.getUserDB().addTokenDetails(newtokdets);
+					}
 				}
 			}
 			

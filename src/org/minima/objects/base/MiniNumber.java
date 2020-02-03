@@ -41,6 +41,7 @@ public class MiniNumber implements Streamable {
 	public static final MiniNumber ONE 		    = new MiniNumber("1");
 	public static final MiniNumber TWO 		    = new MiniNumber("2");
 	public static final MiniNumber EIGHT        = new MiniNumber("8");
+	public static final MiniNumber TEN          = new MiniNumber("10");
 	
 	public static final MiniNumber MINUSONE 	= new MiniNumber("-1");
 	
@@ -118,6 +119,10 @@ public class MiniNumber implements Streamable {
 	
 	public MiniNumber mult(MiniNumber zNumber) {
 		return new MiniNumber( mNumber.multiply(zNumber.getAsBigDecimal(),mMathContext) );
+	}
+	
+	public MiniNumber pow(int zNumber) {
+		return new MiniNumber( mNumber.pow(zNumber,mMathContext) );
 	}
 	
 	public MiniNumber modulo(MiniNumber zNumber) {

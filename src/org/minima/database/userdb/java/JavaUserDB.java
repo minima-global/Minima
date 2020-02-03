@@ -249,6 +249,13 @@ public class JavaUserDB implements UserDB, Streamable{
 			addr.writeDataStream(zOut);
 		}
 		
+		//Token Details
+		len = mAllTokens.size();
+		zOut.writeInt(len);
+		for(TokenDetails td : mAllTokens) {
+			td.writeDataStream(zOut);
+		}
+		
 		//transactions..
 		zOut.writeInt(mCounter);
 		
@@ -268,7 +275,8 @@ public class JavaUserDB implements UserDB, Streamable{
 		mScriptAddresses = new ArrayList<>();
 		mTotalAddresses  = new ArrayList<>();
 		mRows            = new ArrayList<>();	
-
+		mAllTokens		 = new ArrayList<>();
+		
 		//Pub Priv Keys
 		int len = zIn.readInt();
 		for(int i=0;i<len;i++) {
@@ -295,6 +303,12 @@ public class JavaUserDB implements UserDB, Streamable{
 			mTotalAddresses.add(addr);
 		}
 		
+		//Token Details
+		len = zIn.readInt();
+		for(int i=0;i<len;i++) {
+			mAllTokens.add(TokenDetails.ReadFromStream(zIn));
+		}
+		
 		//transaction..
 		mCounter = zIn.readInt();
 		
@@ -314,7 +328,9 @@ public class JavaUserDB implements UserDB, Streamable{
 	@Override
 	public TokenDetails getTokenDetail(MiniHash zTokenID) {
 		for(TokenDetails td : mAllTokens) {
-//			if(td.get)
+			if(td.getTokenID().isExactlyEqual(zTokenID)) {
+				return td;
+			}
 		}
 		
 		return null;
@@ -322,8 +338,11 @@ public class JavaUserDB implements UserDB, Streamable{
 
 	@Override
 	public void addTokenDetails(TokenDetails zToken) {
-		// TODO Auto-generated method stub
-		
+		//Check if we have it..
+		if(getTokenDetail(zToken.getTokenID()) == null) {
+			//We don't have it - add it
+			mAllTokens.add(zToken);	
+		}
 	}
 
 }

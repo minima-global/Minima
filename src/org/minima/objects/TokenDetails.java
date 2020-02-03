@@ -61,6 +61,10 @@ public class TokenDetails implements Streamable{
 		calculateTokenID();
 	}
 	
+	public MiniNumber getScaleFactor() {
+		return MiniNumber.TEN.pow(mTokenScale.getAsInt());
+	}
+	
 	public MiniNumber getScale() {
 		return mTokenScale;
 	}
