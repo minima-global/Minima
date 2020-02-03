@@ -282,22 +282,23 @@ public class ConsensusHandler extends SystemHandler {
 			String tokenid 	   	= zMessage.getString("tokenid");
 			
 			//Is this a token amount or a minima amount
+			TokenDetails tokendets = null;
 			if(!tokenid.equals(Coin.MINIMA_TOKENID.to0xString())) {
 				//It's a token.. scale it..
 				MiniNumber samount = new MiniNumber(amount);
 				
 				//Now divide by the scale factor..
-				TokenDetails td = getMainDB().getUserDB().getTokenDetail(new MiniHash(tokenid));
+				tokendets = getMainDB().getUserDB().getTokenDetail(new MiniHash(tokenid));
 				
 				//Do we have it,.
-				if(td == null) {
+				if(tokendets == null) {
 					//Unknown token!
 					InputHandler.endResponse(zMessage, false, "No details found for the specified token : "+tokenid);
 					return;
 				}
 				
 				//Scale..
-				samount = samount.div(td.getScaleFactor());
+				samount = samount.div(tokendets.getScaleFactor());
 				
 				//And set the new value..
 				amount = samount.toString();
@@ -325,7 +326,14 @@ public class ConsensusHandler extends SystemHandler {
 			//Do we have that much..
 			if(total.isLess(sendamount)) {
 				//Insufficient funds!
-				InputHandler.endResponse(zMessage, false, "Insufficient funds! You only have : "+total);
+				if(!tokenid.equals(Coin.MINIMA_TOKENID.to0xString())) {
+					total = total.mult(tokendets.getScaleFactor());
+					InputHandler.endResponse(zMessage, false, "Insufficient funds! You only have : "+total);
+				}else {
+					InputHandler.endResponse(zMessage, false, "Insufficient funds! You only have : "+total);
+				}
+				
+				
 				return;
 				
 			}else {
