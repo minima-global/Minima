@@ -102,12 +102,32 @@ public class help extends CommandFunction{
 		//Need to HACK swap {} for () .. JSON..
 		String params = zFunc.getParams().replaceAll("\\{", "\\(").replaceAll("\\}", "\\)").trim();
 		
+		//The Name.. same length for better reading
+		String name = getStrOfLength(12, zFunc.getName());
+		
 		//Auto fill
 		if(params.equals("")) {
-			getResponseStream().getDataJSON().put(zFunc.getName(), zFunc.getSimple());
+			getResponseStream().getDataJSON().put(name, zFunc.getSimple());
 		}else {
-			getResponseStream().getDataJSON().put(zFunc.getName(), params+ " - " + zFunc.getSimple());
+			getResponseStream().getDataJSON().put(name, params+ " - " + zFunc.getSimple());
 		}
+	}
+	
+	public String getStrOfLength(int zDesiredLen, String zString) {
+		String ret = new String(zString);
+		int len    = ret.length();
+		
+		//The same or longer
+		if(len >= zDesiredLen) {
+			return ret.substring(0, zDesiredLen);
+		}
+		
+		//If Shorter add zeros
+		for(int i=0;i< zDesiredLen-len;i++) {
+			ret = ret.concat(" ");
+		}
+		
+		return ret;
 	}
 	
 	@Override

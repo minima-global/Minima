@@ -11,7 +11,7 @@ public class tutorial extends CommandFunction{
 
 	public tutorial() {
 		super("tutorial");
-		setHelp("", "Explain Minima and go through Scripting!", "");
+		setHelp("", "Explain Minima and go through Scripting", "");
 	}
 	
 	@Override

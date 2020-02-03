@@ -11,7 +11,7 @@ public class minetrans extends CommandFunction{
 	public minetrans() {
 		super("minetrans");
 		
-		setHelp("{ number of txns }", 
+		setHelp("(number of txns)", 
 				"Mine a blank transaction","1 sec pause between multiple transactions. Useful when debugging and MINIMA_ZERO_DIFF_BLK set to true");
 	}
 	

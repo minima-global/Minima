@@ -9,7 +9,7 @@ public class txpowinfo extends CommandFunction {
 	public txpowinfo() {
 		super("txpowinfo");
 		
-		setHelp("[ txpowid ]", "Return info about a specific TxPOW", "");
+		setHelp("[txpowid]", "Return info about a specific TxPOW", "");
 	}
 	
 	@Override

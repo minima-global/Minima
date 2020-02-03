@@ -9,7 +9,7 @@ public class reconnect extends CommandFunction{
 
 	public reconnect() {
 		super("reconnect");
-		setHelp("[ on | off ]", "Set global reconnect ability on or off", "");
+		setHelp("[on|off]", "Set global reconnect ability on or off", "");
 	}
 	
 	@Override
