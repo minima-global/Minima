@@ -44,7 +44,6 @@ public class ConsensusHandler extends SystemHandler {
 	 * Create Tokens
 	 */
 	public static final String CONSENSUS_CREATETOKEN 		= "CONSENSUS_CREATETOKEN";
-	public static final String CONSENSUS_CREATEFULLTOKEN 	= "CONSENSUS_CREATEFULLTOKEN";
 	
 	/**
 	 * Other functions
@@ -440,7 +439,7 @@ public class ConsensusHandler extends SystemHandler {
 			
 			PostMessage(mine);
 		
-		}else if(zMessage.isMessageType(CONSENSUS_CREATEFULLTOKEN)) {
+		}else if(zMessage.isMessageType(CONSENSUS_CREATETOKEN)) {
 			//Get the amount
 			String amount 		= zMessage.getString("amount");
 			String name  	 	= zMessage.getString("name");
@@ -509,21 +508,6 @@ public class ConsensusHandler extends SystemHandler {
 				PostMessage(ret);
 			}
 			
-		}else if(zMessage.isMessageType(CONSENSUS_CREATETOKEN)) {
-			//Get the amount
-			String amount = zMessage.getString("amount");
-			
-			//Get a new address to receive the tokens..
-			Address addr = getMainDB().getUserDB().newSimpleAddress();
-			
-			//Sent to CreateTrans
-			Message createtoken = new Message(CONSENSUS_CREATETRANS);
-					createtoken.addString("amount", amount);
-					createtoken.addString("address", addr.toString());
-					createtoken.addString("tokenid", Coin.TOKENID_CREATE.toString());
-			InputHandler.addResponseMesage(createtoken, zMessage);
-			
-			PostMessage(createtoken);
 		}
 	}
 	

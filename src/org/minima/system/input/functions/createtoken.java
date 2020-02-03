@@ -8,18 +8,21 @@ public class createtoken extends CommandFunction {
 	
 	public createtoken() {
 		super("createtoken");
-		setHelp("[amount]", "Create a token with the given amount. The TokenID is one time and globally unique.", "");
+		setHelp("[name/descrip[tion] [total tokens] {token script hash}", "Create a token with the given name or description, amount, and with the optional script. This currently colors upto 0.001 Minima. The TokenID generated is one time and globaly unique.", "");
 	}
 	
 	@Override
 	public void doFunction(String[] zInput) throws Exception {
 		//Take the Amount..
-		String amount = zInput[1];
+		String name   = zInput[1];
+		String amount = zInput[2];
 		
 		//Send to the consensus Handler
 		Message msg = getResponseMessage(ConsensusHandler.CONSENSUS_CREATETOKEN);
+		msg.addString("name", name);
 		msg.addString("amount", amount);
 	
+		//Post it!
 		getMainHandler().getConsensusHandler().PostMessage(msg);
 	}
 	
