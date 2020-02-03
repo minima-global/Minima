@@ -6,13 +6,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import org.minima.database.mmr.MMRProof;
-import org.minima.objects.base.MiniKeyValue;
-import org.minima.objects.base.MiniNumber;
-import org.minima.objects.base.MiniString;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniHash;
-import org.minima.utils.Crypto;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
@@ -40,22 +35,6 @@ public class Witness implements Streamable {
 	 */
 	ArrayList<String> mScripts;
 	
-	
-	
-	//--------------NEW WAY ----------------//
-	
-	/**
-	 * An array of the public keys and the corresponding signatures
-	 */
-//	ArrayList<KeyValueMiniData> mPubkSigs;
-	
-	
-	ArrayList<MiniKeyValue> mAllScripts;
-	
-	
-	ArrayList<MiniKeyValue> mTokenProof;
-	
-	
 	/**
 	 * Token generation details.. one per transaction
 	 */
@@ -70,17 +49,12 @@ public class Witness implements Streamable {
 	 * General Constructor
 	 */
 	public Witness() {
-//		mPubkSigs = new ArrayList<>();
-		
 		mPublicKeys = new ArrayList<>();
 		
 		mSignatures = new ArrayList<>();
 		
 		mScripts    = new ArrayList<>();
 		mProofs     = new ArrayList<>();
-		
-		mAllScripts = new ArrayList<MiniKeyValue>();
-		mTokenProof = new ArrayList<MiniKeyValue>();
 		
 		//Token details..
 		mTokenDetails = new ArrayList<>();
