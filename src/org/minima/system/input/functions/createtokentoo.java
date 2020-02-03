@@ -32,27 +32,4 @@ public class createtokentoo extends CommandFunction {
 	public CommandFunction getNewFunction() {
 		return new createtokentoo();
 	}
-	
-	public static void main(String[] zArgs) {
-		
-		String number = "1560000200078878";
-		
-		BigDecimal max    = new BigDecimal("0.1");
-		BigDecimal num    = new BigDecimal(number);
-		BigDecimal actnum = new BigDecimal(number);
-		
-		//Cylce to the right size..
-		int scale = 0;
-		while(actnum.compareTo(max)>0) {
-			System.out.println("Was : "+actnum);
-			actnum = actnum.divide(BigDecimal.TEN);
-			System.out.println("Now : "+actnum);
-			scale++;
-		}
-		
-		System.out.println("Start : "+num);
-		System.out.println("Final : "+actnum);
-		System.out.println("Scale : "+scale);
-		
-	}
 }
