@@ -18,33 +18,40 @@ public class TokenDetails implements Streamable{
 	/**
 	 * The CoinID used when creating the token initially
 	 */
-	MiniHash  mCoinID				= new MiniHash();
+	MiniHash  mCoinID;
 	
 	/**
 	 * The Scale of the Token vs the amount
 	 */
-	MiniNumber mTokenScale 			= new MiniNumber();
+	MiniNumber mTokenScale;
 	
 	/**
 	 * The total amount of Minima Used
 	 */
-	MiniNumber mTokenTotalAmount 	= new MiniNumber();
+	MiniNumber mTokenTotalAmount;
 	
 	/**
 	 * The Token Name
 	 */
-	MiniString mTokenName 			= new MiniString("");
+	MiniString mTokenName;
 	
 	/**
 	 * TTokenID created after all the details are set
 	 */
-	MiniHash mTokenID			    = new MiniHash();
+	MiniHash mTokenID;
 	
 	/**
-	 * Blank Constructor
+	 * Blank Constructor for ReadDataStream
 	 */
-	public TokenDetails() {}
-		
+	private TokenDetails() {}
+	
+	/**
+	 * The Only Public Constructor
+	 * @param zCoindID
+	 * @param zScale
+	 * @param zAmount
+	 * @param zName
+	 */
 	public TokenDetails(MiniHash zCoindID, MiniNumber zScale, MiniNumber zAmount, MiniString zName) {
 		mTokenScale 		= zScale;
 		mTokenTotalAmount 	= zAmount;
@@ -68,6 +75,10 @@ public class TokenDetails implements Streamable{
 	
 	public MiniHash getCoinID() {
 		return mCoinID;
+	}
+	
+	public MiniHash getTokenID() {
+		return mTokenID;
 	}
 	
 	public JSONObject toJSON() {
@@ -111,10 +122,6 @@ public class TokenDetails implements Streamable{
 		}
 	}
 	
-	public MiniHash getTokenID() {
-		return mTokenID;
-	}
-	
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
 		mCoinID.writeDataStream(zOut);
@@ -125,11 +132,25 @@ public class TokenDetails implements Streamable{
 
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
-		mCoinID.readDataStream(zIn);
-		mTokenScale.readDataStream(zIn);
-		mTokenTotalAmount.readDataStream(zIn);
-		mTokenName.readDataStream(zIn);
+		mCoinID 			= MiniHash.ReadFromStream(zIn);
+		mTokenScale 		= MiniNumber.ReadFromStream(zIn);
+		mTokenTotalAmount	= MiniNumber.ReadFromStream(zIn);
+		mTokenName 			= MiniString.ReadFromStream(zIn);
 		
 		calculateTokenID();
+	}
+	
+	public static TokenDetails ReadFromStream(DataInputStream zIn){
+		TokenDetails td = new TokenDetails();
+		
+		try {
+			td.readDataStream(zIn);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
+		
+		return td;
 	}
 }

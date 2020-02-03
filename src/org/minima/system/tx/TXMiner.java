@@ -53,8 +53,8 @@ public class TXMiner extends SystemHandler{
 			//Do so many then recalculate.. to have the latest block data
 			long currentTime  = System.currentTimeMillis();
 			
-			//2 seconds
-			long maxTime  	  = currentTime + 100;
+			//should be about 10..
+			long maxTime  	  = currentTime + 10000;
 			
 			while(mining && currentTime < maxTime) {
 				//Set the Nonce..

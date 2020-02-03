@@ -368,7 +368,7 @@ public class ConsensusHandler extends SystemHandler {
 			//And send to the new address
 			Address outaddr = new Address(new MiniHash(MiniData.getRandomData(32).getData()));
 			Coin out = new Coin(Coin.COINID_OUTPUT,outaddr.getAddressData(),new MiniNumber("1"), MiniHash.ZERO32);
-			trans .addOutput(out);
+			trans.addOutput(out);
 			
 			//Now send it..
 			Message mine = new Message(ConsensusHandler.CONSENSUS_SENDTRANS)
