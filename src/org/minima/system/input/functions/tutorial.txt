@@ -87,13 +87,13 @@ LEN ( HEX )
 Length of the data
 
 REV ( HEX )
-Reverse the Data structure
+Reverse the data
 
 SUBSET ( HEX NUMBER NUMBER )
 Return a subset of the data start length
 
 RPLVAR ( SCRIPT SCRIPT SCRIPT ) 
-Replace a variable definition in a script with the following Expression. Can be used on @SCRIPT or other to create a covenant with new variables and check outputs.
+In a script, replace a variable definition with the following Expression. Can be used on @SCRIPT or other to create a covenant with new variables and check outputs.
 
 ASCII ( HEX )
 Convert the HEX value of a script value to a script
@@ -136,6 +136,9 @@ Set the value of the BIT at that Position to 0 or 1
 
 BITGET ( HEX NUMBER ) 
 Get the BINARY value of the bit at the position.
+
+ADDR ( SCRIPT )
+Convert the SCRIPT into a HEX address
 
 CHAINSHA ( HEX HEX ) 
 Recursively hash the first HEX value with the proof provided in the second. A proof is a BYTE denoting left or right with a hex data value. Returns the final result that can be checked in script. 
@@ -208,3 +211,4 @@ ENDIF
 LET x = GETSATE ( 23 )
 LET shax = SHA3 ( x )
 IF shax EQ 0x6785456 AND SIGNEDBY ( 0x12345.. ) THEN RETURN TRUE ENDIF
+
