@@ -193,10 +193,6 @@ public class TxPOWChecker {
 				//Set the Globally Unique TokenID!
 				tokid = newtokdets.getTokenID();
 			
-			}else if(!tokid.isExactlyEqual(Coin.MINIMA_TOKENID)) {
-				//Its a token transaction - get the token details which will be sent in the witness..
-				
-				
 			}
 	
 			//Are we writing to the MMR
