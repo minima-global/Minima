@@ -28,6 +28,7 @@ import org.minima.miniscript.functions.maths.FLOOR;
 import org.minima.miniscript.functions.maths.INC;
 import org.minima.miniscript.functions.maths.MAX;
 import org.minima.miniscript.functions.maths.MIN;
+import org.minima.miniscript.functions.sha.ADDR;
 import org.minima.miniscript.functions.sha.CHAINSHA;
 import org.minima.miniscript.functions.sha.SHA2;
 import org.minima.miniscript.functions.sha.SHA3;
@@ -41,6 +42,7 @@ import org.minima.miniscript.functions.txn.output.GETOUTAMT;
 import org.minima.miniscript.functions.txn.output.GETOUTTOK;
 import org.minima.miniscript.functions.txn.output.VERIFYOUT;
 import org.minima.miniscript.values.Value;
+import org.minima.system.input.functions.newaddress;
 
 /**
  * @author Spartacus Rex
@@ -56,7 +58,7 @@ public abstract class MinimaFunction {
 				new CONCAT(), new LEN(), new RPLVAR(),new REV(),new SUBSET(), 
 				new BOOL(), new NUMBER(), new HEX(), new SCRIPT(), new ASCII(),
 				new ABS(), new CEIL(), new FLOOR(),new MAX(), new MIN(), new DEC(), new INC(),
-				new SHA3(), new SHA2(), new CHAINSHA(), new BITSET(), new BITGET(), 
+				new SHA3(), new SHA2(), new CHAINSHA(), new BITSET(), new BITGET(), new ADDR(), 
 				new SIGNEDBY(), new MULTISIG(), new CHECKSIG(),
 				new GETOUTADDR(), new GETOUTAMT(), new GETOUTTOK(),new VERIFYOUT(),
 				new STATE(), new PREVSTATE()
