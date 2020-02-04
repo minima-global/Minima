@@ -82,7 +82,7 @@ public class Start {
 		boolean genesis 		= false;
 		boolean daemon          = false;
 		
-		String conffolder = System.getProperty("user.home")+"/minima"; 
+		String conffolder = System.getProperty("user.home"); 
 		
 		if(arglen > 0) {
 			int counter	=	0;

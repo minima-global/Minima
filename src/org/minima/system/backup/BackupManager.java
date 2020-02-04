@@ -110,7 +110,7 @@ public class BackupManager extends SystemHandler {
 			initFolders();
 			
 		}else if(zMessage.isMessageType(BACKUP_CLEAR)) {
-			File root = new File(new File(mHomeFolder), "minima");
+			File root = new File(new File(mHomeFolder), ".minima");
 			
 			if(root.exists()) {
 				MinimaLogger.log("Wiping Minima Folder : "+root.getAbsolutePath());
@@ -228,7 +228,7 @@ public class BackupManager extends SystemHandler {
 	
 	private void initFolders() {
 		//The Root
-		mRoot = ensureFolder(new File(new File(mHomeFolder), "minima"));
+		mRoot = ensureFolder(new File(new File(mHomeFolder), ".minima"));
 		
 		//Current used TxPOW
 		mTxPOWDB = ensureFolder(new File(mRoot,"txpow"));
