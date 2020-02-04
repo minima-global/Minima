@@ -5,6 +5,7 @@ import org.minima.objects.Witness;
 import org.minima.system.brains.ConsensusHandler;
 import org.minima.system.input.CommandFunction;
 import org.minima.utils.messages.Message;
+import org.minima.utils.messages.TimerMessage;
 
 public class minetrans extends CommandFunction{
 

@@ -26,6 +26,7 @@ import org.minima.objects.Address;
 import org.minima.objects.Coin;
 import org.minima.objects.PubPrivKey;
 import org.minima.objects.StateVariable;
+import org.minima.objects.TokenDetails;
 import org.minima.objects.Transaction;
 import org.minima.objects.TxPOW;
 import org.minima.objects.Witness;
@@ -775,7 +776,7 @@ public class MinimaDB {
 			//Add to the witness..
 			wit.addSignature(pubk, signature);	
 		}
-		
+				
 		//The return package
 		Message ret = new Message(ConsensusHandler.CONSENSUS_SENDTRANS);
 		ret.addObject("transaction", trx);

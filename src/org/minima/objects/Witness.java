@@ -123,6 +123,10 @@ public class Witness implements Streamable {
 		return mTokenDetails;
 	}
 	
+	public void addTokenDetails(TokenDetails zDetails) {
+		mTokenDetails.add(zDetails);
+	}
+	
 	public JSONObject toJSON() {
 		JSONObject obj = new JSONObject();
 		

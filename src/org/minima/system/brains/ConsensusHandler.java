@@ -249,7 +249,37 @@ public class ConsensusHandler extends SystemHandler {
 				InputHandler.addResponseMesage(upd, zMessage);
 				updateListeners(upd);
 			}
+		
+		/**
+		 * Network Messages
+		 */
+		}else if(zMessage.getMessageType().startsWith(ConsensusNet.CONSENSUS_PREFIX)) {
+			mConsensusNet.processMessage(zMessage);
 			
+		/**
+		 * Custom Transactions
+		 */
+		}else if(zMessage.getMessageType().startsWith(ConsensusTxn.CONSENSUS_PREFIX)) {
+			mConsensusTxn.processMessage(zMessage);
+		
+		/**
+		 * User Messages
+		 */
+		}else if(zMessage.getMessageType().startsWith(ConsensusUser.CONSENSUS_PREFIX)) {
+			mConsensusUser.processMessage(zMessage);
+		
+		/**
+		 * Print Messages
+		 */
+		}else if(zMessage.getMessageType().startsWith(ConsensusPrint.CONSENSUS_PREFIX)) {
+			mConsensusPrint.processMessage(zMessage);
+		
+		/**
+		 * Backup Messages
+		 */
+		}else if(zMessage.getMessageType().startsWith(ConsensusBackup.CONSENSUS_PREFIX)) {
+			mConsensusBackup.processMessage(zMessage);
+		
 			/**
 			 * Transaction management
 			 */
@@ -347,41 +377,22 @@ public class ConsensusHandler extends SystemHandler {
 				
 				//Create the Transaction
 				Message ret = getMainDB().createTransaction(sendamount, recipient, change, confirmed, tok, changetok);
+				
+				//Is this a token transaction
+				if(tokendets != null) {
+					//Get the witness and add relevant info..
+					Witness wit = (Witness) ret.getObject("witness");
+					
+					//Get the token details..
+					wit.addTokenDetails(tokendets);
+				}
+				
+				//Get the message ready
 				InputHandler.addResponseMesage(ret, zMessage);
 				
 				//Send it..
 				PostMessage(ret);
 			}
-			
-		/**
-		 * Network Messages
-		 */
-		}else if(zMessage.getMessageType().startsWith(ConsensusNet.CONSENSUS_PREFIX)) {
-			mConsensusNet.processMessage(zMessage);
-			
-		/**
-		 * Custom Transactions
-		 */
-		}else if(zMessage.getMessageType().startsWith(ConsensusTxn.CONSENSUS_PREFIX)) {
-			mConsensusTxn.processMessage(zMessage);
-		
-		/**
-		 * User Messages
-		 */
-		}else if(zMessage.getMessageType().startsWith(ConsensusUser.CONSENSUS_PREFIX)) {
-			mConsensusUser.processMessage(zMessage);
-		
-		/**
-		 * Print Messages
-		 */
-		}else if(zMessage.getMessageType().startsWith(ConsensusPrint.CONSENSUS_PREFIX)) {
-			mConsensusPrint.processMessage(zMessage);
-		
-		/**
-		 * Backup Messages
-		 */
-		}else if(zMessage.getMessageType().startsWith(ConsensusBackup.CONSENSUS_PREFIX)) {
-			mConsensusBackup.processMessage(zMessage);
 			
 		/**
 		 * Other Functions

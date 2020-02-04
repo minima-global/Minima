@@ -183,15 +183,20 @@ public class TxPOWChecker {
 			MiniHash tokid 			= output.getTokenID();
 			TokenDetails newtoken 	= null;
 			
-			//Are we creating a Token
+			//Is this a token or are we creating a Token
 			TokenDetails newtokdets = null;
-			if(output.getTokenID().isNumericallyEqual(Coin.TOKENID_CREATE)) {
+			if(tokid.isExactlyEqual(Coin.TOKENID_CREATE)) {
 				//Make it the HASH ( CoinID | Total Amount..the token details )
 				TokenDetails gentoken = zWit.getTokenGenDetails();
 				newtokdets = new TokenDetails(coinid,gentoken.getScale(), gentoken.getAmount(), gentoken.getName());
 				
 				//Set the Globally Unique TokenID!
 				tokid = newtokdets.getTokenID();
+			
+			}else if(!tokid.isExactlyEqual(Coin.MINIMA_TOKENID)) {
+				//Its a token transaction - get the token details which will be sent in the witness..
+				
+				
 			}
 	
 			//Are we writing to the MMR

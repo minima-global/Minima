@@ -91,7 +91,7 @@ public class TokenDetails implements Streamable{
 		obj.put("coinid", mCoinID);
 		obj.put("name", mTokenName);
 		obj.put("scale", mTokenScale);
-		obj.put("amount", mTokenTotalAmount);
+		obj.put("totalamount", mTokenTotalAmount);
 		
 		obj.put("tokenid", mTokenID);
 		
