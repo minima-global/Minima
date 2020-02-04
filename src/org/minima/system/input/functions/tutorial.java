@@ -148,6 +148,9 @@ public class tutorial extends CommandFunction{
 			"BITGET ( HEX NUMBER ) \n" + 
 			"Get the BINARY value of the bit at the position.\n" + 
 			"\n" + 
+			"ADDR ( SCRIPT )\n" + 
+			"Convert the SCRIPT into a HEX address\n" + 
+			"\n" + 
 			"CHAINSHA ( HEX HEX ) \n" + 
 			"Recursively hash the first HEX value with the proof provided in the second. A proof is a BYTE denoting left or right with a hex data value. Returns the final result that can be checked in script. \n" + 
 			"\n" + 
@@ -219,6 +222,7 @@ public class tutorial extends CommandFunction{
 			"LET x = GETSATE ( 23 )\n" + 
 			"LET shax = SHA3 ( x )\n" + 
 			"IF shax EQ 0x6785456 AND SIGNEDBY ( 0x12345.. ) THEN RETURN TRUE ENDIF\n" + 
+			"\n" + 
 			"";
 	
 	public tutorial() {
