@@ -82,7 +82,9 @@ public class Start {
 		boolean genesis 		= false;
 		boolean daemon          = false;
 		
-		String conffolder = System.getProperty("user.home"); 
+		//Configuration folder
+		File conf = new File(System.getProperty("user.home"),".minima");
+		String conffolder = conf.getAbsolutePath();
 		
 		if(arglen > 0) {
 			int counter	=	0;
