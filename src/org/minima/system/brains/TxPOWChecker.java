@@ -193,6 +193,15 @@ public class TxPOWChecker {
 				//Set the Globally Unique TokenID!
 				tokid = newtokdets.getTokenID();
 			
+				//Its a regular token transaction
+			}else if(!tokid.isExactlyEqual(Coin.MINIMA_TOKENID)) {
+				//Get the token..
+				newtokdets = zWit.getTokenDetail(tokid);
+				
+				//Check it..
+				if(newtokdets == null) {
+					return false;
+				}
 			}
 	
 			//Are we writing to the MMR

@@ -310,9 +310,13 @@ public class ConsensusHandler extends SystemHandler {
 			String amount  		= zMessage.getString("amount");
 			String tokenid 	   	= zMessage.getString("tokenid");
 			
+			//The Token Hash
+			MiniHash tok       		= new MiniHash(tokenid);
+			MiniHash changetok 		= new MiniHash(tokenid);
+			
 			//Is this a token amount or a minima amount
 			TokenDetails tokendets = null;
-			if(!tokenid.equals(Coin.MINIMA_TOKENID.to0xString())) {
+			if(!tok.isExactlyEqual(Coin.MINIMA_TOKENID)) {
 				//It's a token.. scale it..
 				MiniNumber samount = new MiniNumber(amount);
 				
@@ -334,8 +338,6 @@ public class ConsensusHandler extends SystemHandler {
 			}
 			
 			//Send details..
-			MiniHash tok       		= new MiniHash(tokenid);
-			MiniHash changetok 		= new MiniHash(tokenid);
 			MiniNumber sendamount 	= new MiniNumber(amount);
 			
 			//How much do we have..
