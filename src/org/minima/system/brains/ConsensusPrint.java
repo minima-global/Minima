@@ -26,6 +26,7 @@ import org.minima.system.Main;
 import org.minima.system.input.InputHandler;
 import org.minima.system.network.NetClient;
 import org.minima.utils.Maths;
+import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
@@ -97,6 +98,9 @@ public class ConsensusPrint {
 			//Current top block
 			MiniNumber top = getMainDB().getTopBlock();
 			
+			//A complete details of the TokenID..
+			Hashtable<String, JSONObject> full_details = new Hashtable<>();
+			
 			//Now get the balance..
 			Hashtable<String, MiniNumber> totals_confirmed   = new Hashtable<>();
 			Hashtable<String, MiniNumber> totals_unconfirmed = new Hashtable<>();
@@ -105,8 +109,31 @@ public class ConsensusPrint {
 			for(CoinDBRow coin : coins) {
 				if(coin.isInBlock()) {
 					//What Token..
-					String     tokid = coin.getCoin().getTokenID().to0xString();
-					MiniNumber depth = top.sub(coin.getInBlockNumber());
+					String     tokid 	= coin.getCoin().getTokenID().to0xString();
+					MiniHash   tokhash 	= new MiniHash(tokid);
+					MiniNumber depth 	= top.sub(coin.getInBlockNumber());
+					
+					//Get the Token Details.
+					TokenDetails td = getMainDB().getUserDB().getTokenDetail(tokhash);
+					
+					//Get the JSON object for this Token..
+					JSONObject jobj = null;
+					if(full_details.containsKey(tokid)) {
+						jobj = full_details.get(tokid);
+					}else {
+						jobj = new JSONObject();
+						jobj.put("tokenid", tokid);
+						jobj.put("confirmed", MiniNumber.ZERO);
+						jobj.put("unconfirmed", MiniNumber.ZERO);
+						if(tokid.equals(Coin.MINIMA_TOKENID.to0xString())) {
+							jobj.put("token", "Minima");
+						}else {
+							jobj.put("token", td.getName());
+						}
+						
+						//Add it..
+						full_details.put(tokid, jobj);
+					}
 					
 					if(!coin.isSpent()) {
 						if(depth.isMoreEqual(GlobalParams.MINIMA_CONFIRM_DEPTH)) {
@@ -122,6 +149,10 @@ public class ConsensusPrint {
 							
 							//Re-add..
 							totals_confirmed.put(tokid, curr);
+							
+							//Add to the JSON object
+							jobj.put("confirmed", curr);
+							
 						}else {
 							//Get the Current total..
 							MiniNumber curr = totals_unconfirmed.get(tokid);
@@ -132,98 +163,149 @@ public class ConsensusPrint {
 							
 							//Re-add..
 							totals_unconfirmed.put(tokid, curr);
+							
+							//Add to the JSON object
+							jobj.put("unconfirmed", curr);
 						}
 					}
 				}
 			}
 			
+//			//All the balances..
+//			JSONObject allbal = InputHandler.getResponseJSON(zMessage);
+//			JSONArray totbal = new JSONArray();
+//			
+//			//Now create a JSON Object
+//			Enumeration<String> keys = totals_confirmed.keys();
+//			while(keys.hasMoreElements())  {
+//				String key     = keys.nextElement();
+//				MiniNumber tot = totals_confirmed.get(key);
+//				
+//				//Store to the JSON Object
+//				JSONObject minbal = new JSONObject();
+//				minbal.put("tokenid", key);
+//				
+//				//Is this a token amount!
+//				if(!key.equals(Coin.MINIMA_TOKENID.to0xString())) {
+//					//Create the Token Hash
+//					MiniHash tokenid = new MiniHash(key);
+//					
+//					//Get the token details
+//					TokenDetails td = getMainDB().getUserDB().getTokenDetail(tokenid);
+//					if(td == null) {
+//						//ERROR you own tokens you have no details about
+//						minbal.put("token", "ERROR_UNKNOWN");
+//						minbal.put("tokenamount", "-1");
+//					}else{
+//						MiniNumber tottok = tot.mult(td.getScaleFactor());
+//						minbal.put("token", td.getName());
+//						minbal.put("tokenamount", tottok.toString());	
+//					}
+//					
+//					MiniNumber tottok = totals_confirmed.get(key);
+//				}else {
+//					minbal.put("token", "Minima");
+//					minbal.put("tokenamount", tot.toString());
+//				}
+//				
+//				//And the Amount in Minima
+//				minbal.put("amount", tot.toString());
+//				
+//				//Add to the Total balance sheet
+//				totbal.add(minbal);
+//			}	
+//			
+//			//Confirmed
+//			allbal.put("confirmed", totbal);
+//			totbal = new JSONArray();
+//			
+//			//Now create a JSON Object
+//			keys = totals_unconfirmed.keys();
+//			while(keys.hasMoreElements())  {
+//				String key = keys.nextElement();
+//				MiniNumber tot = totals_unconfirmed.get(key);
+//				
+//				JSONObject minbal = new JSONObject();
+//				minbal.put("tokenid", key);
+//				
+//				//Is this a token amount!
+//				if(!key.equals(Coin.MINIMA_TOKENID.to0xString())) {
+//					//Create the Token Hash
+//					MiniHash tokenid = new MiniHash(key);
+//					
+//					//Get the token details
+//					TokenDetails td = getMainDB().getUserDB().getTokenDetail(tokenid);
+//					if(td == null) {
+//						//ERROR you own tokens you have no details about
+//						minbal.put("token", "ERROR_UNKNOWN");
+//						minbal.put("tokenamount", "-1");
+//					}else{
+//						MiniNumber tottok = tot.mult(td.getScaleFactor());
+//						minbal.put("token", td.getName());
+//						minbal.put("tokenamount", tottok.toString());	
+//					}
+//					
+//					MiniNumber tottok = totals_confirmed.get(key);
+//				
+//				}else {
+//					minbal.put("token", "Minima");
+//					minbal.put("tokenamount", tot.toString());
+//				}
+//				
+//				//The Amount in Minima
+//				minbal.put("amount", tot.toString());
+//				
+//				totbal.add(minbal);
+//			}
+//			allbal.put("unconfirmed", totbal);
+
 			//All the balances..
 			JSONObject allbal = InputHandler.getResponseJSON(zMessage);
 			JSONArray totbal = new JSONArray();
 			
-			//Now create a JSON Object
-			Enumeration<String> keys = totals_confirmed.keys();
-			while(keys.hasMoreElements())  {
-				String key     = keys.nextElement();
-				MiniNumber tot = totals_confirmed.get(key);
+			//Tester..
+			Enumeration<String> fulls = full_details.keys();
+			while(fulls.hasMoreElements())  {
+				String full = fulls.nextElement();
 				
-				//Store to the JSON Object
-				JSONObject minbal = new JSONObject();
-				minbal.put("tokenid", key);
+				//Get the JSON object
+				JSONObject jobj = full_details.get(full);
 				
-				//Is this a token amount!
-				if(!key.equals(Coin.MINIMA_TOKENID.to0xString())) {
-					//Create the Token Hash
-					MiniHash tokenid = new MiniHash(key);
+				//Get the Token ID
+				String tokenid 	= (String) jobj.get("tokenid");
+				MiniHash tok 	= new MiniHash(tokenid);
+				if(tok.isExactlyEqual(Coin.MINIMA_TOKENID)) {
+					//Now work out the actual amounts..
+					MiniNumber tot_conf     = (MiniNumber) jobj.get("confirmed");
+					MiniNumber tot_unconf   = (MiniNumber) jobj.get("unconfirmed");
 					
-					//Get the token details
-					TokenDetails td = getMainDB().getUserDB().getTokenDetail(tokenid);
-					if(td == null) {
-						//ERROR you own tokens you have no details about
-						minbal.put("token", "ERROR_UNKNOWN");
-						minbal.put("tokenamount", "-1");
-					}else{
-						MiniNumber tottok = tot.mult(td.getScaleFactor());
-						minbal.put("token", td.getName());
-						minbal.put("tokenamount", tottok.toString());	
-					}
-					
-					MiniNumber tottok = totals_confirmed.get(key);
+					//And re-add
+					jobj.put("confirmed", tot_conf.toString());
+					jobj.put("unconfirmed", tot_unconf.toString());
+					jobj.put("total", "1000000000");
 				}else {
-					minbal.put("token", "Minima");
-					minbal.put("tokenamount", tot.toString());
+					TokenDetails td = getMainDB().getUserDB().getTokenDetail(tok);
+					
+					//Now work out the actual amounts..
+					MiniNumber tot_conf     = (MiniNumber) jobj.get("confirmed");
+					MiniNumber tot_scconf   = tot_conf.mult(td.getScaleFactor());
+					MiniNumber tot_unconf   = (MiniNumber) jobj.get("unconfirmed");
+					MiniNumber tot_scunconf = tot_unconf.mult(td.getScaleFactor());
+					MiniNumber tot_toks 	= td.getAmount().mult(td.getScaleFactor());
+					
+					//And re-add
+					jobj.put("confirmed", tot_scconf.toString());
+					jobj.put("unconfirmed", tot_scunconf.toString());
+					jobj.put("total", tot_toks.toString());
 				}
 				
-				//And the Amount in Minima
-				minbal.put("amount", tot.toString());
-				
-				//Add to the Total balance sheet
-				totbal.add(minbal);
-			}	
-			
-			//Confirmed
-			allbal.put("confirmed", totbal);
-			totbal = new JSONArray();
-			
-			//Now create a JSON Object
-			keys = totals_unconfirmed.keys();
-			while(keys.hasMoreElements())  {
-				String key = keys.nextElement();
-				MiniNumber tot = totals_unconfirmed.get(key);
-				
-				JSONObject minbal = new JSONObject();
-				minbal.put("tokenid", key);
-				
-				//Is this a token amount!
-				if(!key.equals(Coin.MINIMA_TOKENID.to0xString())) {
-					//Create the Token Hash
-					MiniHash tokenid = new MiniHash(key);
-					
-					//Get the token details
-					TokenDetails td = getMainDB().getUserDB().getTokenDetail(tokenid);
-					if(td == null) {
-						//ERROR you own tokens you have no details about
-						minbal.put("token", "ERROR_UNKNOWN");
-						minbal.put("tokenamount", "-1");
-					}else{
-						MiniNumber tottok = tot.mult(td.getScaleFactor());
-						minbal.put("token", td.getName());
-						minbal.put("tokenamount", tottok.toString());	
-					}
-					
-					MiniNumber tottok = totals_confirmed.get(key);
-				
-				}else {
-					minbal.put("token", "Minima");
-					minbal.put("tokenamount", tot.toString());
-				}
-				
-				//The Amount in Minima
-				minbal.put("amount", tot.toString());
-				
-				totbal.add(minbal);
+				//add it to the mix
+				totbal.add(jobj);
+//				System.out.println(MiniFormat.PrettyJSON(jobj.toJSONString()));
 			}
-			allbal.put("unconfirmed", totbal);
+			
+			//Add it to all ball
+			allbal.put("balance",totbal);
 			
 			//All good
 			InputHandler.endResponse(zMessage, true, "");
