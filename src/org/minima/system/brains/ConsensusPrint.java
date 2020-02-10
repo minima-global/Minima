@@ -123,13 +123,15 @@ public class ConsensusPrint {
 					}else {
 						jobj = new JSONObject();
 						jobj.put("tokenid", tokid);
-						jobj.put("confirmed", MiniNumber.ZERO);
-						jobj.put("unconfirmed", MiniNumber.ZERO);
 						if(tokid.equals(Coin.MINIMA_TOKENID.to0xString())) {
 							jobj.put("token", "Minima");
 						}else {
 							jobj.put("token", td.getName().toString());
 						}
+						
+						//Default Values
+						jobj.put("confirmed", MiniNumber.ZERO);
+						jobj.put("unconfirmed", MiniNumber.ZERO);
 						
 						//Add it..
 						full_details.put(tokid, jobj);
@@ -301,7 +303,6 @@ public class ConsensusPrint {
 				
 				//add it to the mix
 				totbal.add(jobj);
-//				System.out.println(MiniFormat.PrettyJSON(jobj.toJSONString()));
 			}
 			
 			//Add it to all ball
