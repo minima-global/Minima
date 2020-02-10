@@ -128,7 +128,7 @@ public class ConsensusPrint {
 						if(tokid.equals(Coin.MINIMA_TOKENID.to0xString())) {
 							jobj.put("token", "Minima");
 						}else {
-							jobj.put("token", td.getName());
+							jobj.put("token", td.getName().toString());
 						}
 						
 						//Add it..
