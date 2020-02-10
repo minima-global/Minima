@@ -364,7 +364,6 @@ public class ConsensusHandler extends SystemHandler {
 					InputHandler.endResponse(zMessage, false, "Insufficient funds! You only have : "+total);
 				}
 				
-				
 				return;
 				
 			}else {
