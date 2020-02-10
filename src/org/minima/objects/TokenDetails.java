@@ -88,12 +88,12 @@ public class TokenDetails implements Streamable{
 	public JSONObject toJSON() {
 		JSONObject obj = new JSONObject();
 		
-		obj.put("coinid", mCoinID);
-		obj.put("name", mTokenName);
-		obj.put("scale", mTokenScale);
-		obj.put("totalamount", mTokenTotalAmount);
+		obj.put("coinid", mCoinID.toString());
+		obj.put("name", mTokenName.toString());
+		obj.put("scale", mTokenScale.toString());
+		obj.put("totalamount", mTokenTotalAmount.toString());
 		
-		obj.put("tokenid", mTokenID);
+		obj.put("tokenid", mTokenID.toString());
 		
 		return obj;
 	}
