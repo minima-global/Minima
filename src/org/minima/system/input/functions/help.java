@@ -63,7 +63,7 @@ public class help extends CommandFunction{
 			addJSONDesc(new connect());
 			addJSONDesc(new disconnect());
 			addJSONDesc(new reconnect());
-//			addJSONDesc(new weblink());
+			addJSONDesc(new weblink());
 			
 			addJSONDesc(new gimme50());
 			addJSONDesc(new send());

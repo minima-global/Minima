@@ -1,10 +1,12 @@
 package org.minima.system.network;
 
+import java.net.URLEncoder;
 import java.util.ArrayList;
 
 import org.minima.system.Main;
 import org.minima.system.SystemHandler;
 import org.minima.system.input.InputHandler;
+import org.minima.system.network.rpc.RPCClient;
 import org.minima.system.network.rpc.RPCServer;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.messages.Message;
@@ -104,7 +106,7 @@ public class NetworkHandler extends SystemHandler{
 			mRPCServer = new RPCServer(getMainHandler().getInputHandler(), rpcport);
 			Thread rpc = new Thread(mRPCServer);
 			rpc.start();
-	
+			
 //			mRPCWebSocketServer = new RPCWebSocketServer(getMainHandler().getInputHandler(), 8998);
 //			mRPCWebSocketServer.start();
 			
@@ -154,20 +156,20 @@ public class NetworkHandler extends SystemHandler{
 			
 		}else if(zMessage.isMessageType(NETWORK_WEBPROXY)) {
 			//Connect to a web proxy and listen for RPC calls..
-			String host 	= zMessage.getString("host");
-			int port 		= zMessage.getInteger("port");
-			String webhost 	= zMessage.getString("webhostid");
+			String uuid 	= zMessage.getString("uuid");
 			
-			//Shut down the old..
-			if(mProxyManager != null) {
-				mProxyManager.PostMessage(WebProxyManager.WEBPROXY_SHUTDOWN);
-			}
+			//Create the IP
+			String ip = uuid+"#"+getRPCServer().getHost()+":"+getRPCServer().getPort();
 			
-			//Start a new one..
-			mProxyManager = new WebProxyManager(host, port, webhost, this);
+			//Call the Minima Proxy - this should be user definable..#TODO
+			String url = "http://127.0.0.1:9000/"+URLEncoder.encode(ip, "UTF-8");
+		
+			//Call it..
+			RPCClient.sendGET(url);
 			
 			//Tell the user
-			InputHandler.endResponse(zMessage, true, "ProxyWebLink started..");
+			InputHandler.getResponseJSON(zMessage).put("url", url);
+			InputHandler.endResponse(zMessage, true,"");
 			
 		}else if(zMessage.isMessageType(NETWORK_CONNECT)) {
 			String host = zMessage.getString("host");

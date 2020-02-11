@@ -32,6 +32,8 @@ import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
 
+import sun.management.BaseOperatingSystemImpl;
+
 public class ConsensusPrint {
 
 
@@ -100,6 +102,15 @@ public class ConsensusPrint {
 			
 			//A complete details of the TokenID..
 			Hashtable<String, JSONObject> full_details = new Hashtable<>();
+			
+			//Add zero for Minima
+			JSONObject basejobj = new JSONObject();
+			basejobj.put("tokenid", Coin.MINIMA_TOKENID.to0xString());
+			basejobj.put("token", "Minima");
+			basejobj.put("total", "1000000000");
+			basejobj.put("confirmed", MiniNumber.ZERO);
+			basejobj.put("unconfirmed", MiniNumber.ZERO);
+			full_details.put(Coin.MINIMA_TOKENID.to0xString(), basejobj);
 			
 			//Now get the balance..
 			Hashtable<String, MiniNumber> totals_confirmed   = new Hashtable<>();
@@ -387,7 +398,7 @@ public class ConsensusPrint {
 			status.put("milliuptime", timediff);
 			status.put("stringuptime", uptime);
 			status.put("conf", main.getBackupManager().getRootFolder());
-			status.put("host", main.getNetworkHandler().getServer().getHost());
+			status.put("host", main.getNetworkHandler().getRPCServer().getHost());
 			status.put("port", main.getNetworkHandler().getServer().getPort());
 			status.put("rpcport", main.getNetworkHandler().getRPCServer().getPort());
 			

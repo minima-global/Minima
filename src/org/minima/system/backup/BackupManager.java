@@ -250,14 +250,20 @@ public class BackupManager extends SystemHandler {
 				if(ff.isDirectory()) {
 					deleteFolder(ff);
 				}else {
-					ff.delete();
+					//ONLY delete files in the minima folder
+					//Prevents errors.. 
+					if(ff.getAbsolutePath().toLowerCase().contains("minima")) {
+						ff.delete();
+					}
 				}
 			}
 		}
 		
 		//Finally delete the folder
 		if(zFolder != null && zFolder.exists()) {
-			zFolder.delete();
+			if(zFolder.getAbsolutePath().toLowerCase().contains("minima")) {
+				zFolder.delete();
+			}
 		}
 	}
 }
