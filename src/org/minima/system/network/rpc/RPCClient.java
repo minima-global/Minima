@@ -22,10 +22,6 @@ public class RPCClient {
 		int responseCode = con.getResponseCode();
 		
 //		System.out.println("GET Response Code :: " + responseCode);
-//		System.out.println("GET Response Code :: " + responseCode);
-//		System.out.println("GET Response Code :: " + responseCode);
-//		System.out.println("GET Response Code :: " + responseCode);
-//		System.out.println("GET Response Code :: " + responseCode);
 		StringBuffer response = new StringBuffer();
 		
 		if (responseCode == HttpURLConnection.HTTP_OK) { // success
@@ -91,8 +87,8 @@ public class RPCClient {
 //		String request = zArgs[2];
 		
 		String host = "127.0.0.1";
-		int port    = 8001;
-		String request = "balance";
+		int port    = 9000;
+		String request = "26777#127.0.0.1:9001";
 		
 		try {
 			//Construct
@@ -102,6 +98,7 @@ public class RPCClient {
 			
 			//Do it..
 			sendGET(url);
+			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
