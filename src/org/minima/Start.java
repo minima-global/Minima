@@ -24,6 +24,14 @@ import org.minima.utils.messages.Message;
 public class Start {
 	
 	/**
+	 * A static link to the main server
+	 */
+	public static Main mMainServer;
+	public static Main getServer() {
+		return mMainServer;
+	}
+	
+	/**
 	 * Simple constructor for iOS and Android
 	 */
 	public Start() {
@@ -36,6 +44,7 @@ public class Start {
 				//Start up Variables
 				ArrayList<String> vars = new ArrayList<>();
 				
+				vars.add("-daemon");
 				vars.add("-clean");
 				vars.add("-port");
 				vars.add("9001");
@@ -161,6 +170,9 @@ public class Start {
 		//Start the main Minima server
 		Main rcmainserver = new Main(port, rpcport, genesis, conffolder);
 		
+		//Link it.
+		mMainServer = rcmainserver;
+		
 		//Set the connect properties
 		rcmainserver.setAutoConnect(connect);
 		rcmainserver.mAutoHost = connecthost;
@@ -212,7 +224,7 @@ public class Start {
 		            //New response packet..
 		            ResponseStream response = new ResponseStream();
 		            
-		            if(!input.equals("")) {
+		            if(input!=null && !input.equals("")) {
 		            	//Set the output stream
 			            InputMessage inmsg = new InputMessage(input, response);
 			            
