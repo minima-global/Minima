@@ -3,14 +3,12 @@ package org.minima.system.brains;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
-import java.util.Iterator;
 
 import org.minima.GlobalParams;
 import org.minima.database.MinimaDB;
 import org.minima.database.coindb.CoinDBPrinter;
 import org.minima.database.coindb.CoinDBRow;
 import org.minima.database.mmr.MMRPrint;
-import org.minima.database.mmr.MMRProof;
 import org.minima.database.mmr.MMRSet;
 import org.minima.database.txpowdb.TxPowDBPrinter;
 import org.minima.database.txpowtree.BlockTreeNode;
@@ -26,13 +24,10 @@ import org.minima.system.Main;
 import org.minima.system.input.InputHandler;
 import org.minima.system.network.NetClient;
 import org.minima.utils.Maths;
-import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
-
-import sun.management.BaseOperatingSystemImpl;
 
 public class ConsensusPrint {
 
