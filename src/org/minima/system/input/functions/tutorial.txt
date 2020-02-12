@@ -12,7 +12,9 @@ Using REPLVAR new addresses can be created by replacing existing variables in th
 
 The addition of the state variables in the MMR Proof DB, allow for complex scripts with knowledge of their past to be created.
 
-Minima transactions are complex Logic Gates, with analogue inputs and outputs, a simple yet powerful control language, and a single-shot history state mechanic. I think of them as "Script Gates".    
+Minima transactions are complex Logic Gates, with analogue inputs and outputs, a simple yet powerful control language, and a single-shot history state mechanic.
+
+I think of them as "Script Gates".    
 
 Grammar
 -------
@@ -52,13 +54,13 @@ HEX         ::= 0x[0-9A-F]{2}*
 SCRIPT      ::= [ ASCII ]
 FALSE       ::= 0
 TRUE        ::= NOT FALSE
-MASTBLK     ::= $HEX
+MAST        ::= $HEX
 FUNCTION    ::= FUNC ( EXPRESSION1 EXPRESSION2 .. EXPRESSIONn ) 
 FUNC        ::= CONCAT | LEN | REV | SUBSET | RPLVAR |
                 ASCII | BOOL | HEX | NUMBER | SCRIPT |
                 ABS | CEIL | FLOOR | MIN | MAX | INC | DEC |
-                BITSET | BITGET | PROOF | SHA3 | SHA2 | ADDR |
-                SIGNEDBY | MULTISIGNEDBY | CHECKSIG |
+                BITSET | BITGET | PROOF | SHA3 | SHA2 |
+                SIGNEDBY | MULTISIG | CHECKSIG |
                 GETOUTADDR | GETOUTAMT | GETOUTTOK | VERIFYOUT |
                 GETINADDR | GETINAMT | GETINTOK | GETINID | VERIFYIN |
                 SUMINTOK | SUMOUTTOK | STATE | PREVSTATE | *DYNSTATE
@@ -137,9 +139,6 @@ Set the value of the BIT at that Position to 0 or 1
 BITGET ( HEX NUMBER ) 
 Get the BINARY value of the bit at the position.
 
-ADDR ( SCRIPT )
-Convert the SCRIPT into a HEX address
-
 CHAINSHA ( HEX HEX ) 
 Recursively hash the first HEX value with the proof provided in the second. A proof is a BYTE denoting left or right with a hex data value. Returns the final result that can be checked in script. 
 
@@ -211,4 +210,3 @@ ENDIF
 LET x = GETSATE ( 23 )
 LET shax = SHA3 ( x )
 IF shax EQ 0x6785456 AND SIGNEDBY ( 0x12345.. ) THEN RETURN TRUE ENDIF
-

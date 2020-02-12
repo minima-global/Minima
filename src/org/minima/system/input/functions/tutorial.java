@@ -23,7 +23,9 @@ public class tutorial extends CommandFunction{
 			"\n" + 
 			"The addition of the state variables in the MMR Proof DB, allow for complex scripts with knowledge of their past to be created.\n" + 
 			"\n" + 
-			"Minima transactions are complex Logic Gates, with analogue inputs and outputs, a simple yet powerful control language, and a single-shot history state mechanic. I think of them as \"Script Gates\".    \n" + 
+			"Minima transactions are complex Logic Gates, with analogue inputs and outputs, a simple yet powerful control language, and a single-shot history state mechanic.\n" + 
+			"\n" + 
+			"I think of them as \"Script Gates\".    \n" + 
 			"\n" + 
 			"Grammar\n" + 
 			"-------\n" + 
@@ -63,13 +65,13 @@ public class tutorial extends CommandFunction{
 			"SCRIPT      ::= [ ASCII ]\n" + 
 			"FALSE       ::= 0\n" + 
 			"TRUE        ::= NOT FALSE\n" + 
-			"MASTBLK     ::= $HEX\n" + 
+			"MAST        ::= $HEX\n" + 
 			"FUNCTION    ::= FUNC ( EXPRESSION1 EXPRESSION2 .. EXPRESSIONn ) \n" + 
 			"FUNC        ::= CONCAT | LEN | REV | SUBSET | RPLVAR |\n" + 
 			"                ASCII | BOOL | HEX | NUMBER | SCRIPT |\n" + 
 			"                ABS | CEIL | FLOOR | MIN | MAX | INC | DEC |\n" + 
 			"                BITSET | BITGET | PROOF | SHA3 | SHA2 |\n" + 
-			"                SIGNEDBY | MULTISIGNEDBY | CHECKSIG |\n" + 
+			"                SIGNEDBY | MULTISIG | CHECKSIG |\n" + 
 			"                GETOUTADDR | GETOUTAMT | GETOUTTOK | VERIFYOUT |\n" + 
 			"                GETINADDR | GETINAMT | GETINTOK | GETINID | VERIFYIN |\n" + 
 			"                SUMINTOK | SUMOUTTOK | STATE | PREVSTATE | *DYNSTATE\n" + 
@@ -148,9 +150,6 @@ public class tutorial extends CommandFunction{
 			"BITGET ( HEX NUMBER ) \n" + 
 			"Get the BINARY value of the bit at the position.\n" + 
 			"\n" + 
-			"ADDR ( SCRIPT )\n" + 
-			"Convert the SCRIPT into a HEX address\n" + 
-			"\n" + 
 			"CHAINSHA ( HEX HEX ) \n" + 
 			"Recursively hash the first HEX value with the proof provided in the second. A proof is a BYTE denoting left or right with a hex data value. Returns the final result that can be checked in script. \n" + 
 			"\n" + 
@@ -221,9 +220,7 @@ public class tutorial extends CommandFunction{
 			"\n" + 
 			"LET x = GETSATE ( 23 )\n" + 
 			"LET shax = SHA3 ( x )\n" + 
-			"IF shax EQ 0x6785456 AND SIGNEDBY ( 0x12345.. ) THEN RETURN TRUE ENDIF\n" + 
-			"\n" + 
-			"";
+			"IF shax EQ 0x6785456 AND SIGNEDBY ( 0x12345.. ) THEN RETURN TRUE ENDIF";
 	
 	public tutorial() {
 		super("tutorial");
