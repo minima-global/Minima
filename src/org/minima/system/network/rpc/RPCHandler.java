@@ -67,7 +67,7 @@ public class RPCHandler implements Runnable {
 			String method = parse.nextToken().toUpperCase(); // we get the HTTP method of the client
 			
 			// we get file requested
-			fileRequested = parse.nextToken().toLowerCase();
+			fileRequested = parse.nextToken();
 			
 			// we support only GET and HEAD methods, we check
 			if (method.equals("GET")){
