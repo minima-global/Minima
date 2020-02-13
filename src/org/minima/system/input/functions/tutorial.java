@@ -198,11 +198,11 @@ public class tutorial extends CommandFunction{
 			"SUMOUTTOK ( HEX )\n" + 
 			"Sum the output values of a certain token \n" + 
 			"\n" + 
-			"STATE ( BYTE )\n" + 
-			"Return the state value 0-255\n" + 
+			"STATE ( NUMBER )\n" + 
+			"Return the state value for the given number\n" + 
 			"\n" + 
-			"PREVSTATE ( BYTE )\n" + 
-			"Return the state value 0-255 of the input stored in the MMR data in the initial transaction this input was created. Allows for a state to be maintained from 1 spend to the next.\n" + 
+			"PREVSTATE ( NUMBER )\n" + 
+			"Return the state value stored in the MMR data in the initial transaction this input was created. Allows for a state to be maintained from 1 spend to the next.\n" + 
 			"\n" + 
 			"*DYNSTATE ( BYTE  EXPRESSION )\n" + 
 			"Can be called only once per transaction. Will change the State value to the expression value.  N = N+1. This way rolling transactions are possible. Multiple calls to the same input in the same block.\n" + 
@@ -220,7 +220,8 @@ public class tutorial extends CommandFunction{
 			"\n" + 
 			"LET x = GETSATE ( 23 )\n" + 
 			"LET shax = SHA3 ( x )\n" + 
-			"IF shax EQ 0x6785456 AND SIGNEDBY ( 0x12345.. ) THEN RETURN TRUE ENDIF";
+			"IF shax EQ 0x6785456 AND SIGNEDBY ( 0x12345.. ) THEN RETURN TRUE ENDIF"
+			+ "\n";
 	
 	public tutorial() {
 		super("tutorial");

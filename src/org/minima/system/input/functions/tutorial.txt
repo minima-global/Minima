@@ -187,11 +187,11 @@ Sum the input values of a certain token
 SUMOUTTOK ( HEX )
 Sum the output values of a certain token 
 
-STATE ( BYTE )
-Return the state value 0-255
+STATE ( NUMBER )
+Return the state value for the given number
 
-PREVSTATE ( BYTE )
-Return the state value 0-255 of the input stored in the MMR data in the initial transaction this input was created. Allows for a state to be maintained from 1 spend to the next.
+PREVSTATE ( NUMBER )
+Return the state value stored in the MMR data in the initial transaction this input was created. Allows for a state to be maintained from 1 spend to the next.
 
 *DYNSTATE ( BYTE  EXPRESSION )
 Can be called only once per transaction. Will change the State value to the expression value.  N = N+1. This way rolling transactions are possible. Multiple calls to the same input in the same block.
