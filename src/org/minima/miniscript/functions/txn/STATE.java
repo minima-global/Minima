@@ -21,20 +21,17 @@ public class STATE extends MinimaFunction {
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
 		//Which Output - must be from 0-255
-		int statenum = getParameter(0).getValue(zContract).getNumber().getAsInt();
+		MiniNumber statenum = getParameter(0).getValue(zContract).getNumber();
 				
 		//Get the Transaction
 		Transaction trans = zContract.getTransaction();
 		
-		//State number
-		MiniNumber sv = new MiniNumber(""+statenum);
-		
 		//Get the state variable..
-		if(!trans.stateExists(sv)) {
-			throw new ExecutionException("Invalid State Variable "+sv);
+		if(!trans.stateExists(statenum)) {
+			throw new ExecutionException("Invalid State Variable "+statenum);
 		}
 		
-		String stateval = trans.getStateValue(sv).getData().toString();
+		String stateval = trans.getStateValue(statenum).getData().toString();
 		
 		//Clean it..
 		stateval = Contract.cleanScript(stateval);
