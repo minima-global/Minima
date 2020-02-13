@@ -16,6 +16,7 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.utils.Crypto;
 import org.minima.utils.Streamable;
 import org.minima.utils.SuperBlockLevels;
+import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
 /**
@@ -207,7 +208,11 @@ public class TxPOW implements Streamable {
 		txpow.put("witness", mWitness.toJSON());
 		
 		//Need to make it into a JSON array
-		txpow.put("txnlist", mTxPowIDList);
+		JSONArray txns = new JSONArray();
+		for(MiniHash txn : mTxPowIDList) {
+			txns.add(txn.to0xString());
+		}
+		txpow.put("txnlist", txns);
 		
 		txpow.put("magic", mMagic.toString());
 		txpow.put("nonce", mNonce.toString());
