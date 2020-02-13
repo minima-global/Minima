@@ -314,6 +314,9 @@ public class ConsensusHandler extends SystemHandler {
 			MiniHash tok       		= new MiniHash(tokenid);
 			MiniHash changetok 		= new MiniHash(tokenid);
 			
+			//Replace with the HASH value.. 
+			tokenid = tok.to0xString();
+			
 			//Is this a token amount or a minima amount
 			TokenDetails tokendets = null;
 			if(!tok.isExactlyEqual(Coin.MINIMA_TOKENID)) {

@@ -88,9 +88,20 @@ public class TxPOW implements Streamable {
 	public MiniHash mMMRRoot = new MiniHash();
 	
 	/**
-	 * A Random Magicx number so that everyone is working on a different TxPOW (since there is no coinbase..)
+	 * A Random Magic number so that everyone is working on a different TxPOW (since there is no coinbase..)
 	 */
 	public MiniHash mMagic = MiniHash.getRandomData();
+	
+	/**
+	 * A Chain ID. Useful when running side-chains, as only this TokenID will be valid to POS mine it. 
+	 * 0x00 is the main chain
+	 */
+	public MiniHash mChainID = new MiniHash("0x00");
+
+	/**
+	 * A Custom Hash. Can be anything the user wants..
+	 */
+	public MiniHash mCustom = new MiniHash("0x00");
 	
 	/**
 	 * These are used internally ONLY
@@ -120,6 +131,22 @@ public class TxPOW implements Streamable {
 	
 	public void setNonce(MiniNumber zNonce) {
 		mNonce = zNonce;
+	}
+	
+	public void setChainID(MiniHash zChainID) {
+		mChainID = zChainID;
+	}
+	
+	public MiniHash getChainID() {
+		return mChainID;
+	}
+	
+	public void setCustom(MiniHash zCustom) {
+		mCustom = zCustom;
+	}
+	
+	public MiniHash getCustom() {
+		return mCustom;
 	}
 	
 	public void setTxDifficulty(int zDifficulty) {
@@ -205,7 +232,6 @@ public class TxPOW implements Streamable {
 		txpow.put("txndiff", mTxnDifficulty);
 		txpow.put("txn", mTransaction.toJSON());
 		txpow.put("witness", mWitness.toJSON());
-		txpow.put("witness", mWitness.toJSON());
 		
 		//Need to make it into a JSON array
 		JSONArray txns = new JSONArray();
@@ -215,6 +241,8 @@ public class TxPOW implements Streamable {
 		txpow.put("txnlist", txns);
 		
 		txpow.put("magic", mMagic.toString());
+		txpow.put("chainid", mChainID.toString());
+		txpow.put("custom", mCustom.toString());
 		txpow.put("nonce", mNonce.toString());
 		txpow.put("mmr", mMMRRoot.toString());
 		
@@ -233,6 +261,8 @@ public class TxPOW implements Streamable {
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
 		mNonce.writeDataStream(zOut);
 		mMagic.writeDataStream(zOut);
+		mChainID.writeDataStream(zOut);
+		mCustom.writeDataStream(zOut);
 		mTimeMilli.writeDataStream(zOut);
 		mTxnDifficulty.writeDataStream(zOut);
 		mTransaction.writeDataStream(zOut);
@@ -289,6 +319,8 @@ public class TxPOW implements Streamable {
 	public void readDataStream(DataInputStream zIn) throws IOException {
 		mNonce.readDataStream(zIn);
 		mMagic.readDataStream(zIn);
+		mChainID.readDataStream(zIn);
+		mCustom.readDataStream(zIn);
 		mTimeMilli.readDataStream(zIn);
 		mTxnDifficulty = MiniByte.ReadFromStream(zIn);
 		mTransaction.readDataStream(zIn);
