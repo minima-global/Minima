@@ -13,7 +13,7 @@ public class GlobalParams {
 	 * Just create a block every transaction. Useful when not mining 
 	 * and just want a block every single transaction to debug.
 	 */
-	public static final boolean MINIMA_ZERO_DIFF_BLK  = true;
+	public static final boolean MINIMA_ZERO_DIFF_BLK  = false;
 	
 	/**
 	 * Speed in blocks per second

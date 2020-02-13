@@ -66,7 +66,7 @@ public class UserSimulator extends SystemHandler {
 				}
 					
 				//Send it..
-//				getMainHandler().getConsensusHandler().PostMessage(mine);
+				getMainHandler().getConsensusHandler().PostMessage(mine);
 			
 				//Update the counter
 				if(mCounter != -1) {
