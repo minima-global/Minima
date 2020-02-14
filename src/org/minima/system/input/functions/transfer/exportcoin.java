@@ -9,6 +9,10 @@ public class exportcoin extends CommandFunction{
 
 	public exportcoin() {
 		super("exportcoin");
+		
+		setHelp("[coinid]", "export the proof of a single coin. Share it.", 
+				"Never worry about losing your coin proofs. Share the details with friends, "
+				+ "they can't spend the coins, and retrieve them when you need them.");
 	}
 	
 	@Override
