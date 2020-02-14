@@ -1,6 +1,15 @@
 package org.minima.system.brains;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+
+import org.minima.GlobalParams;
 import org.minima.database.MinimaDB;
+import org.minima.database.coindb.CoinDBRow;
+import org.minima.database.mmr.MMRProof;
+import org.minima.database.mmr.MMRSet;
 import org.minima.miniscript.Contract;
 import org.minima.miniscript.values.HEXValue;
 import org.minima.miniscript.values.NumberValue;
@@ -9,6 +18,7 @@ import org.minima.objects.Address;
 import org.minima.objects.PubPrivKey;
 import org.minima.objects.Transaction;
 import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.input.InputHandler;
 import org.minima.utils.MinimaLogger;
@@ -87,6 +97,87 @@ public class ConsensusUser {
 			//Run it!
 			cc.run();
 		
+		}else if(zMessage.isMessageType(CONSENSUS_IMPORTCOIN)) {
+			MiniData data = (MiniData)zMessage.getObject("proof");
+			
+			ByteArrayInputStream bais = new ByteArrayInputStream(data.getData());
+			DataInputStream dis = new DataInputStream(bais);
+			
+			//Now make the proof..
+			MMRProof proof = MMRProof.ReadFromStream(dis);
+			
+			//Get the MMRSet
+			MMRSet basemmr  = getMainDB().getMainTree().getChainTip().getMMRSet();
+			
+			//Check it..
+			boolean valid = basemmr.checkProof(proof);
+			
+			//Stop if invalid.. 
+			if(!valid) {
+				//Now you have the proof..
+				JSONObject resp = InputHandler.getResponseJSON(zMessage);
+				resp.put("proof", proof.toJSON());
+				resp.put("valid", false);
+				InputHandler.endResponse(zMessage, true, "");	
+			}
+			
+			//Do we already have it..
+			MiniNumber entry = proof.getEntryNumber();
+			MMRProof checker = basemmr.getProof(entry);
+			if(checker != null) {
+				//is It Complete..
+				if(!checker.getMMRData().isHashOnly()) {
+					//We have a complete copy already..
+					JSONObject resp = InputHandler.getResponseJSON(zMessage);
+					resp.put("proof", proof.toJSON());
+					resp.put("valid", true);
+					InputHandler.endResponse(zMessage, true, "");	
+				}
+			}
+			
+			//Get proofs from a while back so reorgs don't invalidate them..
+			MMRSet proofmmr = basemmr.getParentAtTime(proof.getBlockTime());
+			
+			//Now you have the proof..
+			JSONObject resp = InputHandler.getResponseJSON(zMessage);
+			resp.put("proof", proof.toJSON());
+			resp.put("added", true);
+			resp.put("valid", true);
+			InputHandler.endResponse(zMessage, true, "");
+			
+		
+		}else if(zMessage.isMessageType(CONSENSUS_EXPORTCOIN)) {
+			MiniHash coinid = (MiniHash)zMessage.getObject("coinid");
+			
+			//The Base current MMRSet
+			MMRSet basemmr  = getMainDB().getMainTree().getChainTip().getMMRSet();
+			
+			//Get proofs from a while back so reorgs don't invalidate them..
+			MMRSet proofmmr = basemmr.getParentAtTime(getMainDB().getTopBlock().sub(GlobalParams.MINIMA_CONFIRM_DEPTH));
+			
+			//Find this coin..
+			CoinDBRow row  = getMainDB().getCoinDB().getCoinRow(coinid);
+			
+			//Get a proof from a while back.. more than confirmed depth, less than cascade
+//			MMRProof proof = getMainTree().getChainTip().getMMRSet().getProof(row.getMMREntry());
+			MMRProof proof = proofmmr.getProof(row.getMMREntry());
+			
+			//Now write this out to  MiniData Block
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			DataOutputStream dos = new DataOutputStream(baos);
+			proof.writeDataStream(dos);
+			dos.flush();
+			
+			//Now get the data..
+			MiniData pd = new MiniData(baos.toByteArray());
+			
+			//Now you have the proof..
+			JSONObject resp = InputHandler.getResponseJSON(zMessage);
+			resp.put("coinid", coinid.to0xString());
+			resp.put("proof", proof.toJSON());
+			resp.put("data", pd.to0xString());
+			InputHandler.endResponse(zMessage, true, "");
+			
 		}else if(zMessage.isMessageType(CONSENSUS_EXPORTKEY)) {
 			MiniData pubk = (MiniData)zMessage.getObject("publickey");
 			

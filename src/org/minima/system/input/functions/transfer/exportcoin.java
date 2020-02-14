@@ -16,8 +16,9 @@ public class exportcoin extends CommandFunction{
 		//The CoinID
 		String pubks = zInput[1];
 		
-		//Connect to a specific host:port
-		Message export  = new Message(ConsensusUser.CONSENSUS_EXPORTCOIN).addObject("coinid", new MiniHash(pubks));
+		Message export  = getResponseMessage(ConsensusUser.CONSENSUS_EXPORTCOIN)
+								.addObject("coinid", new MiniHash(pubks));
+		
 		getMainHandler().getConsensusHandler().PostMessage(export);
 	}
 	
