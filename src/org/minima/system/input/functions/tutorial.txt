@@ -60,7 +60,7 @@ FUNC        ::= CONCAT | LEN | REV | SUBSET | RPLVAR |
                 ASCII | BOOL | HEX | NUMBER | SCRIPT |
                 ABS | CEIL | FLOOR | MIN | MAX | INC | DEC |
                 BITSET | BITGET | PROOF | SHA3 | SHA2 |
-                SIGNEDBY | MULTISIG | CHECKSIG | ASSERT
+                SIGNEDBY | MULTISIG | CHECKSIG | ASSERT |
                 GETOUTADDR | GETOUTAMT | GETOUTTOK | VERIFYOUT |
                 GETINADDR | GETINAMT | GETINTOK | GETINID | VERIFYIN |
                 SUMINTOK | SUMOUTTOK | STATE | PREVSTATE | *DYNSTATE
