@@ -119,7 +119,7 @@ public class ConsensusUser {
 				return;
 			}
 			
-//			//Do we already have it..
+//			//Do we already have it.. test
 //			MiniNumber entry = proof.getEntryNumber();
 //			MMRProof checker = basemmr.getProof(entry);
 //			if(checker != null) {
