@@ -33,6 +33,10 @@ public class LexicalTokenizer{
 		mPos--;
 	}
 	
+	public boolean checkAllTokensUsed() {
+		return mPos == mTokens.size();
+	}
+	
 	public boolean hasMoreElements() {
 		return mPos<mSize;
 	}
