@@ -23,6 +23,7 @@ public class Token {
 					{"LET",
 					 "IF","THEN","ELSEIF","ELSE","ENDIF",
 					 "RETURN",
+					 "ASSERT",
 					 "WHILE","DO","ENDWHILE",
 					 "EXEC",
 					 "MAST","MASTOR","MASTEND"};

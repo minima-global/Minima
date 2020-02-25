@@ -10,6 +10,7 @@ import org.minima.miniscript.exceptions.MinimaParseException;
 import org.minima.miniscript.expressions.ConstantExpression;
 import org.minima.miniscript.expressions.Expression;
 import org.minima.miniscript.expressions.ExpressionParser;
+import org.minima.miniscript.statements.commands.ASSERTstatement;
 import org.minima.miniscript.statements.commands.EXECstatement;
 import org.minima.miniscript.statements.commands.IFstatement;
 import org.minima.miniscript.statements.commands.LETstatement;
@@ -190,6 +191,17 @@ public class StatementParser {
 				//Add..
 				stats.add(ws);
 				
+			}else if(token.equalsIgnoreCase("ASSERT")) {
+				//The Next tokens are the Expression..
+				List<Token> returntokens = getTokensToNextCommand(zTokens, currentPosition);
+				currentPosition += returntokens.size();
+				
+				//Now create an expression from those tokens..
+				Expression exp = ExpressionParser.getExpression(returntokens);
+				
+				//Create a new RETURN statement
+				stats.add(new ASSERTstatement(exp));
+			
 			}else if(token.equalsIgnoreCase("RETURN")) {
 				//The Next tokens are the Expression..
 				List<Token> returntokens = getTokensToNextCommand(zTokens, currentPosition);
@@ -200,7 +212,7 @@ public class StatementParser {
 				
 				//Create a new RETURN statement
 				stats.add(new RETURNstatement(exp));
-				
+			
 			}else {
 				throw new MinimaParseException("Invalid Token where there should be a Command - "+token); 
 			}

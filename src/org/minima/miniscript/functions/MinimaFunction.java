@@ -42,7 +42,6 @@ import org.minima.miniscript.functions.txn.output.GETOUTAMT;
 import org.minima.miniscript.functions.txn.output.GETOUTTOK;
 import org.minima.miniscript.functions.txn.output.VERIFYOUT;
 import org.minima.miniscript.values.Value;
-import org.minima.system.input.functions.newaddress;
 
 /**
  * @author Spartacus Rex
