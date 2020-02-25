@@ -462,7 +462,7 @@ public class Contract {
 
 		//String RamScript = "let t = @SCRIPT let f = @AMOUNT +1 let g = State(1001) + [ sha3(123)]";
 
-		String RamScript = "let t = 1 + 21 assert ( t eq 21) return true";
+		String RamScript = "let t = NEG 1 assert ( t eq -1) return true";
 		
 		Transaction tt = new Transaction();
 //		tt.setStateValue(1001, new StateVariable("[ let y = 0xFF ]"));
