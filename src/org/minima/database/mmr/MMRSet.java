@@ -325,10 +325,10 @@ public class MMRSet implements Streamable {
 		MMREntry ret = entry;
 		
 		//And now use the proof to add the missing tree data..
-//		int len = zProof.getProofLen();
-//		for(int i=0;i<len;i++){
-//			//Now get the proof and HARD add them..
-//		}
+		int len = zProof.getProofLen();
+		for(int i=0;i<len;i++){
+			//Now get the proof and HARD add them..
+		}
 		
 		//Now go up the tree..
 		while(entry.isRight()) {
