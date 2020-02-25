@@ -60,7 +60,7 @@ FUNC        ::= CONCAT | LEN | REV | SUBSET | RPLVAR |
                 ASCII | BOOL | HEX | NUMBER | SCRIPT |
                 ABS | CEIL | FLOOR | MIN | MAX | INC | DEC |
                 BITSET | BITGET | PROOF | SHA3 | SHA2 |
-                SIGNEDBY | MULTISIG | CHECKSIG |
+                SIGNEDBY | MULTISIG | CHECKSIG | ASSERT
                 GETOUTADDR | GETOUTAMT | GETOUTTOK | VERIFYOUT |
                 GETINADDR | GETINAMT | GETINTOK | GETINID | VERIFYIN |
                 SUMINTOK | SUMOUTTOK | STATE | PREVSTATE | *DYNSTATE
@@ -156,6 +156,9 @@ Returns true if the transaction is signed by N of the public keys
 
 CHECKSIG ( HEX HEX )
 Check valid signature with provided public key.
+
+ASSERT ( EXPRESSION )
+If EXPRESSION is FALSE return FALSE otherwise continue.
 
 GETOUTADDR ( BYTE ) 
 Return the HEX address of the specified output
