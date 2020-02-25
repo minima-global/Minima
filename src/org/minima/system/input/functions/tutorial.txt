@@ -1,4 +1,4 @@
-Minima transactions are a series of inputs, a series of outputs and a variable list from 0-255 known as the state, which you can access from the script with GETSTATE. The state can be accessed by all the input scripts, and is stored in the MMR database, so can be accessed by PREVSTATE in the next transaction the outputs are added to, as inputs. 
+Minima transactions are a series of inputs, a series of outputs and a variable list known as the state, which you can access from the script with GETSTATE. The state can be accessed by all the input scripts, and is stored in the MMR database, so can be accessed by PREVSTATE in the next transaction the outputs are added to, as inputs. 
 
 The sum of the outputs must be less than or equal to the sum of the inputs, for every tokenid used. The difference in raw minima is the Burn. 
 
@@ -196,7 +196,7 @@ Return the state value for the given number
 PREVSTATE ( NUMBER )
 Return the state value stored in the MMR data in the initial transaction this input was created. Allows for a state to be maintained from 1 spend to the next.
 
-*DYNSTATE ( BYTE  EXPRESSION )
+*DYNSTATE ( NUMBER  EXPRESSION )
 Can be called only once per transaction. Will change the State value to the expression value.  N = N+1. This way rolling transactions are possible. Multiple calls to the same input in the same block.
 
 Examples
