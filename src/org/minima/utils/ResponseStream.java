@@ -79,7 +79,7 @@ public class ResponseStream {
 		mJSON.put("response", mDataJSON);
 	
 		//Create the final response
-		mFinalResponse = mJSON.toString();
+		mFinalResponse = mJSON.toString().replaceAll ("\\\\/", "/");
 		
 		//It's finished
 		mFinished = true;
