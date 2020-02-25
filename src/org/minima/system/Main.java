@@ -131,6 +131,10 @@ public class Main extends MessageProcessor {
 		mAutoConnect = zAuto;
 	}
 	
+	public void setMiFiProxy(String zProxy){
+		mNetwork.setProxy(zProxy);
+	}
+	
 	public void setAutoConnectHostPort(String zHost, int zPort) {
 		mAutoHost = zHost;
 		mAutoPort = zPort;

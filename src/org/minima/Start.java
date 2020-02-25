@@ -86,6 +86,7 @@ public class Start {
 		boolean connect         = true;
 		String connecthost      = "34.90.172.118";
 		int connectport         = 9001;
+		String mifiProxy 		= "http://mifi.minima.global:9000/";
 		
 		boolean clean           = false;
 		boolean genesis 		= false;
@@ -118,6 +119,7 @@ public class Start {
 					MinimaLogger.log("        -private               : Run a private chain. Don't connect to MainNet. Create a genesis tx-pow. Simulate some users.");
 					MinimaLogger.log("        -noconnect             : Don't connect to MainNet. Can then connect to private chains.");
 					MinimaLogger.log("        -connect [host] [port] : Don't connect to MainNet. Connect to this node.");
+					MinimaLogger.log("        -mifiproxy [host:port] : Use this address for MiFi proxy requests and not the default.");
 //					SimpleLogger.log("        -relcoin [POST_URL]    : HTTP POST of new coins in json format (all in 'data') that are relevant to this wallet.");
 					MinimaLogger.log("        -clean                 : Wipe user files and chain backup. Start afresh.");
 					MinimaLogger.log("        -daemon                : Accepts no input from STDIN. Can run in background process.");
@@ -142,6 +144,9 @@ public class Start {
 					connect = true;
 					connecthost = zArgs[counter++];
 					connectport = Integer.parseInt(zArgs[counter++]);
+				
+				}else if(arg.equals("-mifiproxy")) {
+					mifiProxy = zArgs[counter++];
 					
 				}else if(arg.equals("-clean")) {
 					clean = true;
@@ -177,6 +182,9 @@ public class Start {
 		rcmainserver.setAutoConnect(connect);
 		rcmainserver.mAutoHost = connecthost;
 		rcmainserver.mAutoPort = connectport;
+		
+		//Set the proxy
+		rcmainserver.setMiFiProxy(mifiProxy);
 		
 		if(!txnfunction.equals("")) {
 			MinimaLogger.log("New Txn function : "+txnfunction);
