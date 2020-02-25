@@ -66,7 +66,7 @@ public class MMRData implements Streamable{
 		mFinalHash = zData;
 		
 		//It is ONLY the HASH
-		mHashOnly  = true;
+		mHashOnly  = true; 
 	}
 	
 	/**
