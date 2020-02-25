@@ -13,7 +13,7 @@ public class GlobalParams {
 	 * Just create a block every transaction. Useful when not mining 
 	 * and just want a block every single transaction to debug.
 	 */
-	public static final boolean MINIMA_ZERO_DIFF_BLK  = false;
+	public static final boolean MINIMA_ZERO_DIFF_BLK  = true;
 	
 	/**
 	 * Speed in blocks per second
@@ -26,11 +26,11 @@ public class GlobalParams {
 	/**
 	 * How deep before we think confirmed..
 	 */
-	public static final MiniNumber MINIMA_CONFIRM_DEPTH  = new MiniNumber("3");
+	public static final MiniNumber MINIMA_CONFIRM_DEPTH  = new MiniNumber("1");
 	
 	/**
 	 * Depth before we cascade..
 	 */
-	public static final int MINIMA_CASCADE_DEPTH     = 256;
+	public static final int MINIMA_CASCADE_DEPTH     = 8;
 	
 }

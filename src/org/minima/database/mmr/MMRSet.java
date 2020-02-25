@@ -310,6 +310,45 @@ public class MMRSet implements Streamable {
 	}
 	
 	/**
+	 * Add data - an UNSPENT coin - Must be added to the correct mmrset
+	 */
+	public MMREntry addExternalUnspentCoin(MiniNumber zEntryNumber, MMRData zData, MMRProof zProof) {
+		//Do we already have this Entry..
+		MMREntry entry = getEntry(0, zEntryNumber, true);
+		if(!entry.isEmpty() && !entry.getData().isHashOnly()) {
+			//We have it..
+			return entry;
+		}
+		
+		//Create a new entry
+		entry = setEntry(0, zEntryNumber, zData);
+		MMREntry ret = entry;
+		
+		//And now use the proof to add the missing tree data..
+//		int len = zProof.getProofLen();
+//		for(int i=0;i<len;i++){
+//			//Now get the proof and HARD add them..
+//		}
+		
+		//Now go up the tree..
+		while(entry.isRight()) {
+			//Get the Sibling.. will be the left
+			MMREntry sibling = getEntry(entry.getRow(), entry.getLeftSibling(),true);
+			
+			//Do we add our own..
+			
+			//Create the new row - hash LEFT + RIGHT
+			MiniHash combined = Crypto.getInstance().hashObjects(sibling.getHashValue(), entry.getHashValue());
+			MMRData data = new MMRData(combined);
+			
+			//Set the Parent Entry
+			entry = setEntry(entry.getParentRow(),entry.getParentEntry(),data);
+		}
+		
+		return ret;
+	}
+	
+	/**
 	 * Set entry to SPENT
 	 * 
 	 * @param zProof
