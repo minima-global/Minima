@@ -53,6 +53,7 @@ public class help extends CommandFunction{
 			addJSONDesc(new tutorial());
 			
 			addJSONDesc(new status());
+			addJSONDesc(new history());
 			addJSONDesc(new printchain());
 			addJSONDesc(new printtree());
 	
@@ -103,7 +104,7 @@ public class help extends CommandFunction{
 		String params = zFunc.getParams().replaceAll("\\{", "\\(").replaceAll("\\}", "\\)").trim();
 		
 		//The Name.. same length for better reading
-		String name = getStrOfLength(12, zFunc.getName());
+		String name = getStrOfLength(14, zFunc.getName());
 		
 		//Auto fill
 		if(params.equals("")) {

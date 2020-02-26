@@ -14,6 +14,7 @@ import org.minima.database.txpowdb.TxPowDBPrinter;
 import org.minima.database.txpowtree.BlockTreeNode;
 import org.minima.database.txpowtree.BlockTreePrinter;
 import org.minima.database.userdb.UserDB;
+import org.minima.database.userdb.java.reltxpow;
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
 import org.minima.objects.PubPrivKey;
@@ -39,6 +40,8 @@ public class ConsensusPrint {
 	public static final String CONSENSUS_COINS 				= CONSENSUS_PREFIX+"COINS";
 	public static final String CONSENSUS_TXPOW 				= CONSENSUS_PREFIX+"TXPOW";
 	public static final String CONSENSUS_KEYS 				= CONSENSUS_PREFIX+"KEYS";
+	
+	public static final String CONSENSUS_HISTORY 		    = CONSENSUS_PREFIX+"HISTORY";
 	
 	public static final String CONSENSUS_STATUS 			= CONSENSUS_PREFIX+"STATUS";
 	public static final String CONSENSUS_PRINTCHAIN 		= CONSENSUS_PREFIX+"PRINTCHAIN";
@@ -338,6 +341,29 @@ public class ConsensusPrint {
 			}
 			
 			//Add it to the output
+			InputHandler.endResponse(zMessage, true, "");
+		
+		}else if(zMessage.isMessageType(CONSENSUS_HISTORY)){
+			//Is it a clear..
+			if(zMessage.exists("clear")) {
+				getMainDB().getUserDB().clearHistory();
+			}
+			
+			//Get the HIstory
+			ArrayList<reltxpow> history = getMainDB().getUserDB().getHistory();
+			
+			//All the relevant transactions..
+			JSONObject allbal = InputHandler.getResponseJSON(zMessage);
+			JSONArray totbal = new JSONArray();
+			
+			for(reltxpow rpow : history) {
+				totbal.add(rpow.toJSON());
+			}
+			
+			//And add to the final response
+			allbal.put("history",totbal);
+			
+			//All good
 			InputHandler.endResponse(zMessage, true, "");
 		
 		}else if(zMessage.isMessageType(CONSENSUS_TXPOW)){

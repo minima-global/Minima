@@ -2,12 +2,15 @@ package org.minima.database.userdb;
 
 import java.util.ArrayList;
 
+import org.minima.database.userdb.java.reltxpow;
 import org.minima.objects.Address;
 import org.minima.objects.PubPrivKey;
 import org.minima.objects.TokenDetails;
 import org.minima.objects.Transaction;
+import org.minima.objects.TxPOW;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniHash;
+import org.minima.objects.base.MiniNumber;
 
 public interface UserDB {
 
@@ -57,5 +60,13 @@ public interface UserDB {
 	public TokenDetails getTokenDetail(MiniHash zTokenID);
 	
 	public void addTokenDetails(TokenDetails zToken);
+	
+	/**
+	 * Transaction History
+	 */
+	public ArrayList<reltxpow> getHistory();
+	public void addToHistory(TxPOW zTxPOW, MiniNumber zValue);
+//	public void removeHistory(MiniHash zTxPowID);
+	public void clearHistory();
 	
 }

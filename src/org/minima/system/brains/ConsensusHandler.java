@@ -546,7 +546,6 @@ public class ConsensusHandler extends SystemHandler {
 		MiniNumber tot = MiniNumber.ZERO;
 		for(Coin in : ins) {
 			if(getMainDB().getUserDB().isAddressRelevant(in.getAddress())) {
-//				SimpleLogger.log("MINIMA SPENT : "+in.getAmount()+" ( unconfirmed )");
 				rel = true;
 				
 				Message relmsg = new Message(ProcessManager.PROCESS_RELCOIN)
@@ -570,7 +569,6 @@ public class ConsensusHandler extends SystemHandler {
 			Coin out = outs.get(i);
 			
 			if(getMainDB().getUserDB().isAddressRelevant(out.getAddress())) {
-//				SimpleLogger.log("MINIMA RECEIVED : "+out.getAmount()+" ( unconfirmed )");
 				rel = true;
 				
 				//Now calculate the CoinID / TokenID
@@ -600,6 +598,9 @@ public class ConsensusHandler extends SystemHandler {
 			Message upd = new Message(CONSENSUS_NOTIFY_BALANCE).addString("change", tot.toString());
 			InputHandler.addResponseMesage(upd, zOriginal);
 			updateListeners(upd);
+			
+			//Store ion the database..
+			getMainDB().getUserDB().addToHistory(zTxPOW,tot);
 			
 			//And do we need to call a local function..
 			Message command = new Message(ProcessManager.PROCESS_TXNCALL)
