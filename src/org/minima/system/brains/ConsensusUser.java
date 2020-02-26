@@ -8,6 +8,7 @@ import java.io.DataOutputStream;
 import org.minima.GlobalParams;
 import org.minima.database.MinimaDB;
 import org.minima.database.coindb.CoinDBRow;
+import org.minima.database.mmr.MMREntry;
 import org.minima.database.mmr.MMRProof;
 import org.minima.database.mmr.MMRSet;
 import org.minima.miniscript.Contract;
@@ -15,6 +16,7 @@ import org.minima.miniscript.values.HEXValue;
 import org.minima.miniscript.values.NumberValue;
 import org.minima.miniscript.values.ScriptValue;
 import org.minima.objects.Address;
+import org.minima.objects.Coin;
 import org.minima.objects.PubPrivKey;
 import org.minima.objects.Transaction;
 import org.minima.objects.base.MiniData;
@@ -142,16 +144,32 @@ public class ConsensusUser {
 			}
 			
 			//Now add this proof to the set.. if not already added
-//			proofmmr.
+			MMREntry entry =  proofmmr.addExternalUnspentCoin(proof);
+			
+			//Error.
+			if(entry == null) {
+				InputHandler.endResponse(zMessage, false, "Consensus error addding proof !");
+				return;
+			}
+			
+			//And now refinalize..
+			proofmmr.finalizeSet();
+			
+			//Get the coin
+			Coin cc = entry.getData().getCoin();
+			
+			//add it to the database
+			CoinDBRow crow = getMainDB().getCoinDB().addCoinRow(cc);
+			crow.setIsSpent(entry.getData().isSpent());
+			crow.setIsInBlock(true);
+			crow.setInBlockNumber(entry.getData().getInBlock());
+			crow.setMMREntry(entry.getEntry());
 			
 			//Now you have the proof..
 			JSONObject resp = InputHandler.getResponseJSON(zMessage);
 			resp.put("proof", proof.toJSON());
-			resp.put("added", true);
-			resp.put("valid", true);
 			InputHandler.endResponse(zMessage, true, "");
 			
-		
 		}else if(zMessage.isMessageType(CONSENSUS_EXPORTCOIN)) {
 			MiniHash coinid = (MiniHash)zMessage.getObject("coinid");
 			

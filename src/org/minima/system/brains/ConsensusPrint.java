@@ -13,6 +13,7 @@ import org.minima.database.mmr.MMRSet;
 import org.minima.database.txpowdb.TxPowDBPrinter;
 import org.minima.database.txpowtree.BlockTreeNode;
 import org.minima.database.txpowtree.BlockTreePrinter;
+import org.minima.database.userdb.UserDB;
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
 import org.minima.objects.PubPrivKey;
@@ -111,9 +112,14 @@ public class ConsensusPrint {
 			Hashtable<String, MiniNumber> totals_confirmed   = new Hashtable<>();
 			Hashtable<String, MiniNumber> totals_unconfirmed = new Hashtable<>();
 			
+			UserDB userdb = getMainDB().getUserDB();
 			ArrayList<CoinDBRow> coins = getMainDB().getCoinDB().getComplete();
 			for(CoinDBRow coin : coins) {
-				if(coin.isInBlock()) {
+				
+				//Is this one of ours ? Could be an import of someone elses 
+				boolean rel = userdb.isAddressRelevant(coin.getCoin().getAddress());
+				
+				if(coin.isInBlock() && rel) {
 					//What Token..
 					String     tokid 	= coin.getCoin().getTokenID().to0xString();
 					MiniHash   tokhash 	= new MiniHash(tokid);

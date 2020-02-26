@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
 
+import org.minima.system.input.InputHandler;
 import org.minima.utils.MinimaLogger;
 
 /**
@@ -97,6 +98,8 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
                 }catch(Exception exc){
                     MinimaLogger.log("Error processing message : "+msg);
                     exc.printStackTrace();
+                    
+                    InputHandler.endResponse(msg, false, "SYSTEM ERROR PROCESSING : "+msg+" exception:"+exc);
                 } 
                 
                 //Timer messages..

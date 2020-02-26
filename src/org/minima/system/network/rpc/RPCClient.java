@@ -2,6 +2,7 @@ package org.minima.system.network.rpc;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
@@ -28,19 +29,23 @@ public class RPCClient {
 		StringBuffer response = new StringBuffer();
 		
 		if (responseCode == HttpURLConnection.HTTP_OK) { // success
-			BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+			InputStream is = con.getInputStream();
+			
+			BufferedReader in = new BufferedReader(new InputStreamReader(is));
 			String inputLine;
 			
 
 			while ((inputLine = in.readLine()) != null) {
 				response.append(inputLine);
 			}
+			
 			in.close();
-		
+			is.close();
+			
 		} else {
 //			System.out.println("GET request not worked");
 		}
-		
+			
 		return response.toString(); 
 	}
 
