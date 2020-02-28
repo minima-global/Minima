@@ -35,7 +35,7 @@ public class ASSERTstatement implements Statement{
 		
 		//Tell the Contract
 		if(!success) {
-			zContract.setRETURNValue(success);
+			zContract.setRETURNValue(false);
 		}
 	}
 	
