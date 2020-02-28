@@ -229,10 +229,12 @@ public class Start {
 		            //Get a line of input
 		            String input = bis.readLine().trim();
 		            
-		            //New response packet..
-		            ResponseStream response = new ResponseStream();
-		            
+		            //Check valid..
 		            if(input!=null && !input.equals("")) {
+		            	
+		            	//New response packet..
+			            ResponseStream response = new ResponseStream();
+			            
 		            	//Set the output stream
 			            InputMessage inmsg = new InputMessage(input, response);
 			            

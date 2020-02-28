@@ -89,7 +89,7 @@ public class PubPrivKey implements Streamable {
 	
 	@Override
 	public String toString() {
-		return mPublicKey.toString();
+		return mPublicKey.to0xString();
 	}
 
 	@Override

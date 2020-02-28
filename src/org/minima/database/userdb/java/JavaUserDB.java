@@ -90,8 +90,8 @@ public class JavaUserDB implements UserDB, Streamable{
 	}
 
 	@Override
-	public UserDBRow addUserRow() {
-		UserDBRow row = new JavaUserDBRow(mCounter++);
+	public UserDBRow addUserRow(int zID) {
+		UserDBRow row = new JavaUserDBRow(zID);
 		mRows.add(row);
 		return row;
 	}
@@ -163,6 +163,9 @@ public class JavaUserDB implements UserDB, Streamable{
 		//A simple script.. 
 		Address addr = new Address(zScript);
 		
+		//Do we allready have it ?
+		//..
+		
 		//Add to the simple wallet
 		mScriptAddresses.add(addr);
 		mTotalAddresses.add(addr);
@@ -179,7 +182,7 @@ public class JavaUserDB implements UserDB, Streamable{
 			}
 		}
 		
-		return "NULL";
+		return "";
 	}
 
 	

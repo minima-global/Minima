@@ -48,8 +48,8 @@ public interface UserDB {
 	
 	public UserDBRow getUserRow(int zID);
 	
-	public UserDBRow addUserRow();
-
+	public UserDBRow addUserRow(int zID);
+	
 	public void deleteUserRow(int zID);
 	
 	/**

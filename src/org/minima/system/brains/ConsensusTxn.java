@@ -1,6 +1,7 @@
 package org.minima.system.brains;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.coindb.CoinDBRow;
@@ -80,7 +81,12 @@ public class ConsensusTxn {
 		 * Custom Transactions
 		 */
 		if(zMessage.isMessageType(CONSENSUS_TXNCREATE)) {
-			getMainDB().getUserDB().addUserRow();
+			int id = new Random().nextInt();
+			if(zMessage.exists("id")) {
+				id = zMessage.getInteger("id");
+			}
+			
+			getMainDB().getUserDB().addUserRow(id);
 			
 			listTransactions(zMessage);
 		

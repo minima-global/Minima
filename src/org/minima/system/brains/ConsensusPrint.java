@@ -325,20 +325,34 @@ public class ConsensusPrint {
 			
 			//All good
 			InputHandler.endResponse(zMessage, true, "");
-			
+	
 		}else if(zMessage.isMessageType(CONSENSUS_COINS)){
+			//Return all or some
+			String address = "";
+			if(zMessage.exists("address")) {
+				address = zMessage.getString("address");
+			}
+			
 			//get the MMR
 			BlockTreeNode tip  		= getMainDB().getMainTree().getChainTip();
 			MMRSet baseset 			= tip.getMMRSet();
 			
-			MiniNumber top = getMainDB().getTopBlock();
+			JSONObject allcoins = InputHandler.getResponseJSON(zMessage);
+			JSONArray totcoins = new JSONArray();
+			
 			ArrayList<CoinDBRow> coins = getMainDB().getCoinDB().getComplete();
-			int counter=0;
 			for(CoinDBRow coin : coins) {
 				if(!coin.isSpent()) {
-					InputHandler.getResponseJSON(zMessage).put(counter++, baseset.getProof(coin.getMMREntry()) );
+					if(address.equals("")) {
+						totcoins.add(baseset.getProof(coin.getMMREntry()).toJSON());	
+					}else if(address.equals(coin.getCoin().getAddress().to0xString())) {
+						totcoins.add(baseset.getProof(coin.getMMREntry()).toJSON());
+					}
 				}
 			}
+			
+			//Add to the main JSON
+			allcoins.put("coins", totcoins);
 			
 			//Add it to the output
 			InputHandler.endResponse(zMessage, true, "");

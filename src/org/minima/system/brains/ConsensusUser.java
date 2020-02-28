@@ -32,6 +32,8 @@ public class ConsensusUser {
 
 	public static final String CONSENSUS_PREFIX 			= "CONSENSUSUSER_";
 	
+	public static final String CONSENSUS_NEWKEY 			= CONSENSUS_PREFIX+"NEWKEY";
+	
 	public static final String CONSENSUS_NEWSIMPLE 			= CONSENSUS_PREFIX+"NEWSIMPLE";
 	public static final String CONSENSUS_NEWSCRIPT 			= CONSENSUS_PREFIX+"NEWSCRIPT";
 	public static final String CONSENSUS_RUNSCRIPT 			= CONSENSUS_PREFIX+"RUNSCRIPT";
@@ -69,11 +71,28 @@ public class ConsensusUser {
 			//Get the script
 			String script = zMessage.getString("script");
 			
+			//Check we don't already have it..
+			Address addrchk = new Address(script);
+			String scriptcheck = getMainDB().getUserDB().getScript(addrchk.getAddressData());
+			if(!scriptcheck.equals("")) {
+				InputHandler.endResponse(zMessage, false, "Address already exists..");
+				return;	
+			}
+			
 			Address addr = getMainDB().getUserDB().newScriptAddress(script);
 			
 			JSONObject resp = InputHandler.getResponseJSON(zMessage);
 			resp.put("address", addr.getAddressData().toString());
 			resp.put("script", addr.getScript().toString());
+			InputHandler.endResponse(zMessage, true, "");
+		
+		}else if(zMessage.isMessageType(CONSENSUS_NEWKEY)) {
+			//Create a new key pair..
+			PubPrivKey key = getMainDB().getUserDB().newPublicKey();
+			
+			//return to sender!
+			JSONObject resp = InputHandler.getResponseJSON(zMessage);
+			resp.put("key", key.toString());
 			InputHandler.endResponse(zMessage, true, "");
 			
 		}else if(zMessage.isMessageType(CONSENSUS_RUNSCRIPT)) {
