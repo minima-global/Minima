@@ -124,7 +124,7 @@ public class RPCHandler implements Runnable {
 					StringTokenizer functions = new StringTokenizer(function,";");
 					
 					while(functions.hasMoreElements()) {
-						String func = functions.nextToken();
+						String func = functions.nextToken().trim();
 					
 						//Now make this request
 						ResponseStream response = new ResponseStream();

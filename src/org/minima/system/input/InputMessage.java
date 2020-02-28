@@ -24,7 +24,7 @@ public class InputMessage extends Message{
 		super(InputHandler.INPUT_COMMAND);
 		
 		//Add the Input Message
-		addObject(InputHandler.INPUT_FUNCTION, zInput);
+		addObject(InputHandler.INPUT_FUNCTION, zInput.trim());
 		
 		//Where do we send the response..
 		addObject(InputHandler.INPUT_RESPONSE, zResponseStream);
