@@ -81,9 +81,18 @@ public class ConsensusTxn {
 		 * Custom Transactions
 		 */
 		if(zMessage.isMessageType(CONSENSUS_TXNCREATE)) {
+			//Get a new Random ID
 			int id = new Random().nextInt();
+			while(getMainDB().getUserDB().getUserRow(id)!=null) {
+				id = new Random().nextInt();
+			}
+			
+			//Now see if one is specified..
 			if(zMessage.exists("id")) {
 				id = zMessage.getInteger("id");
+				
+				//Delete if exists..
+				getMainDB().getUserDB().deleteUserRow(id);
 			}
 			
 			getMainDB().getUserDB().addUserRow(id);
