@@ -9,7 +9,7 @@ import org.minima.utils.MinimaLogger;
 
 public class tutorial extends CommandFunction{
 
-	public static String TUTORIAL_TEXT = "Minima transactions are a series of inputs, a series of outputs and a variable list from 0-255 known as the state, which you can access from the script with GETSTATE. The state can be accessed by all the input scripts, and is stored in the MMR database, so can be accessed by PREVSTATE in the next transaction the outputs are added to, as inputs. \n" + 
+	public static String TUTORIAL_TEXT = "Minima transactions are a series of inputs, a series of outputs and a variable list known as the state, which you can access from the script with GETSTATE. The state can be accessed by all the input scripts, and is stored in the MMR database, so can be accessed by PREVSTATE in the next transaction the outputs are added to, as inputs. \n" + 
 			"\n" + 
 			"The sum of the outputs must be less than or equal to the sum of the inputs, for every tokenid used. The difference in raw minima is the Burn. \n" + 
 			"\n" + 
@@ -37,6 +37,7 @@ public class tutorial extends CommandFunction{
 			"                [ELSEIF EXPRESSION THEN BLOCK]* \n" + 
 			"                [ELSE BLOCK] ENDIF | \n" + 
 			"                MAST BLOCK [ORMAST BLOCK]* ENDMAST |\n" + 
+			"                ASSERT EXPRESSION |\n" + 
 			"                RETURN EXPRESSION\n" + 
 			"EXPRESSION  ::= RELATION AND RELATION  | RELATION OR RELATION  |  \n" + 
 			"                RELATION XOR RELATION  | RELATION NAND RELATION | \n" + 
@@ -204,7 +205,7 @@ public class tutorial extends CommandFunction{
 			"PREVSTATE ( NUMBER )\n" + 
 			"Return the state value stored in the MMR data in the initial transaction this input was created. Allows for a state to be maintained from 1 spend to the next.\n" + 
 			"\n" + 
-			"*DYNSTATE ( BYTE  EXPRESSION )\n" + 
+			"*DYNSTATE ( NUMBER  EXPRESSION )\n" + 
 			"Can be called only once per transaction. Will change the State value to the expression value.  N = N+1. This way rolling transactions are possible. Multiple calls to the same input in the same block.\n" + 
 			"\n" + 
 			"Examples\n" + 
@@ -220,8 +221,7 @@ public class tutorial extends CommandFunction{
 			"\n" + 
 			"LET x = GETSATE ( 23 )\n" + 
 			"LET shax = SHA3 ( x )\n" + 
-			"IF shax EQ 0x6785456 AND SIGNEDBY ( 0x12345.. ) THEN RETURN TRUE ENDIF"
-			+ "\n";
+			"IF shax EQ 0x6785456 AND SIGNEDBY ( 0x12345.. ) THEN RETURN TRUE ENDIF";
 	
 	public tutorial() {
 		super("tutorial");
