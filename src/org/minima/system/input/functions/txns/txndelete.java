@@ -8,7 +8,7 @@ public class txndelete extends CommandFunction{
 
 	public txndelete() {
 		super("txndelete");
-		setHelp("[txn_num]", "Delete the custom transaction", "");
+		setHelp("[id]", "Delete the custom transaction", "");
 	}
 	
 	@Override

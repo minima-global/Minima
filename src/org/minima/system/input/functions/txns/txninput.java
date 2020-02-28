@@ -9,7 +9,7 @@ public class txninput extends CommandFunction {
 
 	public txninput() {
 		super("txninput");
-		setHelp("[txn_num] [coinID]", "Add a specific Coin as an input to the specified transaction", "");
+		setHelp("[id] [coinID]", "Add a specific Coin as an input to the specified transaction", "");
 	}
 
 	@Override

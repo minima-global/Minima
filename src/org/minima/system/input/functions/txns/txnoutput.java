@@ -11,7 +11,7 @@ public class txnoutput extends CommandFunction {
 
 	public txnoutput() {
 		super("txnoutput");
-		setHelp("[txn_num] [amount] [address] {tokenID}", "Add an output to the specified transaction", "");
+		setHelp("[id] [amount] [address] {tokenID}", "Add an output to the specified transaction", "");
 	}
 
 	@Override

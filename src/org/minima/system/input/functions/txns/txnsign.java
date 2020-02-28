@@ -8,7 +8,7 @@ public class txnsign extends CommandFunction {
 
 	public txnsign() {
 		super("txnsign");
-		setHelp("[txn_num] [public key]", "Sign the Transaction with the chosen Public Key", "");
+		setHelp("[id] [public key]", "Sign the Transaction with the chosen Public Key", "");
 	}
 
 	@Override

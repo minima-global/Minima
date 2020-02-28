@@ -8,7 +8,7 @@ public class txnvalidate extends CommandFunction{
 
 	public txnvalidate() {
 		super("txnvalidate");
-		setHelp("[txn_num]", "Check the validity (params scripts sigs) of the transaction", "");
+		setHelp("[id]", "Check the validity (params scripts sigs) of the transaction", "");
 	}
 
 	@Override

@@ -8,7 +8,7 @@ public class txnstatevar extends CommandFunction {
 
 	public txnstatevar() {
 		super("txnstatevar");
-		setHelp("[txn_num] [port] [variable]", "Add a state variable to the transaction", "");
+		setHelp("[id] [port] [variable]", "Add a state variable to the transaction", "");
 	}
 
 	@Override
