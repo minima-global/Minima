@@ -256,7 +256,9 @@ public class ConsensusTxn {
 			MiniNumber ins  = trx.sumInputs();
 			MiniNumber outs = trx.sumOutputs();
 			MiniNumber burn = ins.sub(outs);
-					
+			
+			boolean vamounts = outs.isLessEqual(ins);
+			
 			resp.put("inputs_sum", ins.toString());
 			resp.put("outputs_sum", outs.toString());
 			resp.put("burn", burn.toString());
@@ -265,10 +267,11 @@ public class ConsensusTxn {
 			//Create a complete transaction
 			Witness newwit = getMainDB().createValidWitness(trx, wit);
 			
-			//Null valu means there is something wrong
+			//Null value means there is something wrong
 			if(newwit == null) {
 				resp.put("mmr_proof", false);
-				resp.put("mmr_check", false);
+				resp.put("script_check", false);
+				resp.put("txnvalid", false);
 				InputHandler.endResponse(zMessage, true, "");
 				return;
 			}else {
@@ -280,7 +283,10 @@ public class ConsensusTxn {
 					getMainDB().getTopBlock(),
 					getMainDB().getMainTree().getChainTip().getMMRSet(),false);
 			
-			resp.put("mmr_check", checkok);
+			resp.put("script_check", checkok);
+			
+			//Final full check..
+			resp.put("txnvalid", vamounts && checkok);
 			
 			InputHandler.endResponse(zMessage, true, "");
 			

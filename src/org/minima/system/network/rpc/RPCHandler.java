@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.URLDecoder;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.StringTokenizer;
 
@@ -13,6 +14,8 @@ import org.minima.system.input.InputHandler;
 import org.minima.system.input.InputMessage;
 import org.minima.utils.MiniFormat;
 import org.minima.utils.ResponseStream;
+import org.minima.utils.json.JSONArray;
+import org.minima.utils.json.JSONObject;
 
 /**
  * This class handles a single request then exits
@@ -81,30 +84,77 @@ public class RPCHandler implements Runnable {
 				//decode URL message
 				function = URLDecoder.decode(function,"UTF-8").trim();
 				
-				//Now make this request
-				ResponseStream response = new ResponseStream();
-	            
-				//Make sure vbaliue
-				if(!function.equals("")) {
-					//Send it..
-					InputMessage inmsg = new InputMessage(function, response);
-
-					//Post it..
-					mInputHandler.PostMessage(inmsg);
-					
-					//Is it quit..
-	                if(!input.toLowerCase().equals("quit")) {
-	                	//Wait for the function to finish
-		                response.waitToFinish();
-		            }
+				//Is this a multi function..
+				boolean multi = false;
+				if(function.indexOf(";")!=-1) {
+					//It's a multi
+					multi = true;
 				}
 				
-                //Get the response..
-                String resp = response.getResponse();
-                
+				//The final result
+				String result = "";
+				
+				if(!multi) {
+					//Now make this request
+					ResponseStream response = new ResponseStream();
+		            
+					//Make sure vbaliue
+					if(!function.equals("")) {
+						//Send it..
+						InputMessage inmsg = new InputMessage(function, response);
+	
+						//Post it..
+						mInputHandler.PostMessage(inmsg);
+						
+						//Is it quit..
+		                if(!input.toLowerCase().equals("quit")) {
+		                	//Wait for the function to finish
+			                response.waitToFinish();
+			            }
+					}
+					
+					//Get the response..
+					result = response.getResponse();
+					
+				}else {
+					//A full JSON array of responses
+					JSONArray responses = new JSONArray();
+					
+					//Cycle through each request..	
+					StringTokenizer functions = new StringTokenizer(function,";");
+					
+					while(functions.hasMoreElements()) {
+						String func = functions.nextToken();
+					
+						//Now make this request
+						ResponseStream response = new ResponseStream();
+			            
+						//Make sure vbaliue
+						if(!func.equals("")) {
+							//Send it..
+							InputMessage inmsg = new InputMessage(func, response);
+		
+							//Post it..
+							mInputHandler.PostMessage(inmsg);
+							
+							//Is it quit..
+			                if(!input.toLowerCase().equals("quit")) {
+			                	//Wait for the function to finish
+				                response.waitToFinish();
+				            }
+			                
+			                //Add it to the array
+			                responses.add(response.getFinalJSON());
+						}
+					}
+					
+					//And now get all the answers in one go..
+					result = responses.toString();
+				}
+				
                 //Check it's a JSON
-                if(resp.startsWith("{") || resp.startsWith("[")) {
-                	resp = MiniFormat.PrettyJSON(resp);
+                if(result.startsWith("{") || result.startsWith("[")) {
+                	result = MiniFormat.PrettyJSON(result);
                 }
 				
 				// send HTTP Headers
@@ -112,21 +162,12 @@ public class RPCHandler implements Runnable {
 				out.println("Server: HTTP RPC Server from Minima : 1.0");
 				out.println("Date: " + new Date());
 				out.println("Content-type: text/plain");
-				out.println("Content-length: " + resp.length());
+				out.println("Content-length: " + result.length());
 				out.println("Access-Control-Allow-Origin: *");
 				out.println(); // blank line between headers and content, very important !
-//				out.flush(); // flush character output stream buffer
-				
-				out.println(resp);
+				out.println(result);
 				out.flush(); // flush character output stream buffer
 			}
-			
-//		} catch (FileNotFoundException fnfe) {
-//			try {
-//				fileNotFound(out, dataOut, fileRequested);
-//			} catch (IOException ioe) {
-//				System.err.println("Error with file not found exception : " + ioe.getMessage());
-//			}
 			
 		} catch (Exception ioe) {
 			System.err.println("Server error : " + ioe);
@@ -138,58 +179,7 @@ public class RPCHandler implements Runnable {
 				mSocket.close(); // we close socket connection
 			} catch (Exception e) {
 				System.err.println("Error closing stream : " + e.getMessage());
-			} 
-			
-//			if (verbose) {
-//				System.out.println("Connection closed.\n");
-//			}
-		}
-		
-		
+			} 	
+		}	
 	}
-	
-//	private byte[] readFileData(File file, int fileLength) throws IOException {
-//		FileInputStream fileIn = null;
-//		byte[] fileData = new byte[fileLength];
-//		
-//		try {
-//			fileIn = new FileInputStream(file);
-//			fileIn.read(fileData);
-//		} finally {
-//			if (fileIn != null) 
-//				fileIn.close();
-//		}
-//		
-//		return fileData;
-//	}
-//	
-//	// return supported MIME Types
-//	private String getContentType(String fileRequested) {
-//		if (fileRequested.endsWith(".htm")  ||  fileRequested.endsWith(".html"))
-//			return "text/html";
-//		else
-//			return "text/plain";
-//	}
-//	
-//	private void fileNotFound(PrintWriter out, OutputStream dataOut, String fileRequested) throws IOException {
-//		File file = new File(WEB_ROOT, FILE_NOT_FOUND);
-//		int fileLength = (int) file.length();
-//		String content = "text/html";
-//		byte[] fileData = readFileData(file, fileLength);
-//		
-//		out.println("HTTP/1.1 404 File Not Found");
-//		out.println("Server: Java HTTP Server from SSaurel : 1.0");
-//		out.println("Date: " + new Date());
-//		out.println("Content-type: " + content);
-//		out.println("Content-length: " + fileLength);
-//		out.println(); // blank line between headers and content, very important !
-//		out.flush(); // flush character output stream buffer
-//		
-//		dataOut.write(fileData, 0, fileLength);
-//		dataOut.flush();
-//		
-//		if (verbose) {
-//			System.out.println("File " + fileRequested + " not found");
-//		}
-//	}
 }
