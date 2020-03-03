@@ -33,7 +33,8 @@ public class ExpressionParser {
 		
 		//Did we use all the tokens..
 		if(!lt.checkAllTokensUsed()) {
-			throw new MinimaParseException("Incorrect token number in expression!");
+			throw new MinimaParseException("Incorrect token number in expression @ "
+						+lt.getNextToken().getToken());
 		}
 		
 		//return the final expression

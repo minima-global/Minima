@@ -37,6 +37,7 @@ public class ConsensusUser {
 	public static final String CONSENSUS_NEWSIMPLE 			= CONSENSUS_PREFIX+"NEWSIMPLE";
 	public static final String CONSENSUS_NEWSCRIPT 			= CONSENSUS_PREFIX+"NEWSCRIPT";
 	public static final String CONSENSUS_RUNSCRIPT 			= CONSENSUS_PREFIX+"RUNSCRIPT";
+	public static final String CONSENSUS_CLEANSCRIPT 		= CONSENSUS_PREFIX+"CLEANSCRIPT";
 	
 	public static final String CONSENSUS_EXPORTKEY 			= CONSENSUS_PREFIX+"EXPORTKEY";
 	public static final String CONSENSUS_IMPORTKEY 			= CONSENSUS_PREFIX+"IMPORTKEY";
@@ -95,6 +96,22 @@ public class ConsensusUser {
 			resp.put("key", key.toString());
 			InputHandler.endResponse(zMessage, true, "");
 			
+		}else if(zMessage.isMessageType(CONSENSUS_CLEANSCRIPT)) {
+			String script = zMessage.getString("script");
+			
+			//Clean it..
+//			String clean = Contract.cleanScript(script);
+			
+			//Create a contract
+			Contract cc = new Contract(script, "",new Transaction(),false);
+			
+			JSONObject resp = InputHandler.getResponseJSON(zMessage);
+			resp.put("script", script);
+			resp.put("clean", cc.getRamScript());
+			resp.put("parseok", cc.isParseOK());
+			resp.put("parse", cc.getCompleteTraceLog());
+			InputHandler.endResponse(zMessage, true, "");
+		
 		}else if(zMessage.isMessageType(CONSENSUS_RUNSCRIPT)) {
 			String script = zMessage.getString("script");
 			String sigs   = zMessage.getString("sigs");

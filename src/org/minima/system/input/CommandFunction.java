@@ -4,6 +4,7 @@ import org.minima.miniscript.exceptions.MinimaParseException;
 import org.minima.system.Main;
 import org.minima.system.input.functions.backup;
 import org.minima.system.input.functions.balance;
+import org.minima.system.input.functions.cleanscript;
 import org.minima.system.input.functions.coins;
 import org.minima.system.input.functions.connect;
 import org.minima.system.input.functions.createtoken;
@@ -53,7 +54,7 @@ public abstract class CommandFunction {
 		{
 			new backup(), new balance(), new connect(), new createtoken(), new disconnect(), new weblink(),
 			new gimme50(), new help(), new intro(), new minetrans(), new newaddress(), new coins(), new txpowinfo(), new keys(),
-			new newscript(), new printchain(), new printtree(), new quit(),new reconnect(), new runscript(), 
+			new newscript(), new printchain(), new printtree(), new quit(),new reconnect(), new runscript(), new cleanscript(), 
 			new send(), new status(), new test(), new trace(), new tutorial(), new history(), 
 			new exportkey(), new importkey(), new exportcoin(), new importcoin(),
 			new txncreate(), new txndelete(), new txninput(), new txnlist(), new txnstatevar(), 

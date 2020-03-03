@@ -28,7 +28,11 @@ public class LexicalTokenizer{
 		}
 		return mTokens.get(mPos++);
 	}
-		
+	
+	public int getCurrentPosition() {
+		return mPos;
+	}
+	
 	public void goBackToken() {
 		mPos--;
 	}

@@ -73,7 +73,7 @@ public class Contract {
 	/**
 	 * Trace shows debug info as the program is parsed and executed
 	 */
-	boolean mTraceON = true;
+	boolean mTraceON = false;
 	
 	/**
 	 * Did the contract script parse ok
@@ -156,7 +156,8 @@ public class Contract {
 			mParseOK = true;
 			
 		} catch (MinimaParseException e) {
-			e.printStackTrace();
+//			e.printStackTrace();
+			traceLog("PARSE ERROR : "+e.getMessage());
 		}
 	}
 	
