@@ -73,7 +73,7 @@ public class Contract {
 	/**
 	 * Trace shows debug info as the program is parsed and executed
 	 */
-	boolean mTraceON = false;
+	boolean mTraceON = true;
 	
 	/**
 	 * Did the contract script parse ok
@@ -459,11 +459,12 @@ public class Contract {
 //		String RamScript = "if 1 EQ 1 THEN let y = 3 endif";
 //		String RamScript = "let x = true or false let y = [return x] Exec y";
 		
-//		String RamScript = "let g = 1";
+//		String RamScript = "ASSERT VERIFYOUT ( ( @INPUT + 1 ) @ADDRESS ( @AMOUNT - amt ) @TOKENID )";
+		String RamScript = "ASSERT VERIFYOUT ( ( @INPUT + 1 ) @ADDRESS ( @AMOUNT - amt ) @TOKENID )";
 
 		//String RamScript = "let t = @SCRIPT let f = @AMOUNT +1 let g = State(1001) + [ sha3(123)]";
 
-		String RamScript = "let gg = [hello] let ff = 0x45678 let t = CONCAT ( gg [if signedby] SCRIPT(ff) [and @blknum gt 12345])";
+//		String RamScript = "let gg = [hello] let ff = 0x45678 let t = CONCAT ( gg [if signedby] SCRIPT(ff) [and @blknum gt 12345])";
 		
 		Transaction tt = new Transaction();
 //		tt.setStateValue(1001, new StateVariable("[ let y = 0xFF ]"));

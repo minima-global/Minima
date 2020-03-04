@@ -99,11 +99,20 @@ public class ConsensusUser {
 		}else if(zMessage.isMessageType(CONSENSUS_CLEANSCRIPT)) {
 			String script = zMessage.getString("script");
 			
-			//Clean it..
-//			String clean = Contract.cleanScript(script);
+			//Do a bit of cleaning..
+			String ns = script.replaceAll("\\s+"," ").trim();
+			
+			//Remove comments
+			int comment = ns.indexOf("/*");
+			while(comment != -1) {
+				int endcomment = ns.indexOf("*/",comment);
+				int len = ns.length();
+				ns = " "+ns.substring(0,comment)+" "+ns.substring(endcomment+2, len)+" ";
+				comment = ns.indexOf("/*");
+			}
 			
 			//Create a contract
-			Contract cc = new Contract(script, "",new Transaction(),false);
+			Contract cc = new Contract(ns, "",new Transaction(),false);
 			
 			JSONObject resp = InputHandler.getResponseJSON(zMessage);
 			resp.put("script", script);
