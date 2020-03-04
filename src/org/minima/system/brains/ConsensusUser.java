@@ -114,9 +114,13 @@ public class ConsensusUser {
 			//Create a contract
 			Contract cc = new Contract(ns, "",new Transaction(),false);
 			
+			//Create an address
+			Address ccaddress = new Address(cc.getRamScript());
+			
 			JSONObject resp = InputHandler.getResponseJSON(zMessage);
 			resp.put("script", script);
 			resp.put("clean", cc.getRamScript());
+			resp.put("address", ccaddress.getAddressData().to0xString());
 			resp.put("parseok", cc.isParseOK());
 			resp.put("parse", cc.getCompleteTraceLog());
 			InputHandler.endResponse(zMessage, true, "");
