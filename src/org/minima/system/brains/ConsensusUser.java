@@ -4,6 +4,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.util.ArrayList;
+import java.util.StringTokenizer;
 
 import org.minima.GlobalParams;
 import org.minima.database.MinimaDB;
@@ -15,9 +17,11 @@ import org.minima.miniscript.Contract;
 import org.minima.miniscript.values.HEXValue;
 import org.minima.miniscript.values.NumberValue;
 import org.minima.miniscript.values.ScriptValue;
+import org.minima.miniscript.values.Value;
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
 import org.minima.objects.PubPrivKey;
+import org.minima.objects.StateVariable;
 import org.minima.objects.Transaction;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniHash;
@@ -99,55 +103,159 @@ public class ConsensusUser {
 		}else if(zMessage.isMessageType(CONSENSUS_CLEANSCRIPT)) {
 			String script = zMessage.getString("script");
 			
-			//Do a bit of cleaning..
-			String ns = script.replaceAll("\\s+"," ").trim();
+//			//Create a contract
+//			Contract cc = new Contract(script, "",new Transaction(),false);
+//			
+//			//Create an address
+//			Address ccaddress = new Address(cc.getRamScript());
+//			
+//			JSONObject resp = InputHandler.getResponseJSON(zMessage);
+//			resp.put("script", script);
+//			resp.put("clean", cc.getRamScript());
+//			resp.put("address", ccaddress.getAddressData().to0xString());
+//			resp.put("parseok", cc.isParseOK());
+//			resp.put("parse", cc.getCompleteTraceLog());
+//			InputHandler.endResponse(zMessage, true, "");
+		
+		}else if(zMessage.isMessageType(CONSENSUS_RUNSCRIPT)) {
+			String script    = zMessage.getString("script").trim();
+			String sigs      = Contract.cleanScript(zMessage.getString("sigs").trim());
+			String state     = Contract.cleanScript(zMessage.getString("state").trim());
+			String prevstate = Contract.cleanScript(zMessage.getString("prevstate").trim());
+			String globals   = Contract.cleanScript(zMessage.getString("globals").trim());
+			String outputs   = Contract.cleanScript(zMessage.getString("outputs").trim());
 			
-			//Remove comments
-			int comment = ns.indexOf("/*");
-			while(comment != -1) {
-				int endcomment = ns.indexOf("*/",comment);
-				int len = ns.length();
-				ns = " "+ns.substring(0,comment)+" "+ns.substring(endcomment+2, len)+" ";
-				comment = ns.indexOf("/*");
+			//Create the transaction..
+			Transaction trans = new Transaction();
+			
+			//OUTPUTS
+			if(!outputs.equals("")) {
+				//Add the outputs to the Transaction..
+				StringTokenizer strtok = new StringTokenizer(outputs,";");
+				while(strtok.hasMoreElements()){
+					String tok = strtok.nextToken().trim();
+					
+					//Now split this token..
+					if(!tok.equals("")) {
+						//Address
+						int index = tok.indexOf(":");
+						String address = tok.substring(0,index).trim();
+						
+						//Amount
+						int oldindex = index;
+						index = tok.indexOf(":", index+1);
+						String amount = tok.substring(oldindex+1,index).trim();
+						
+						//Tokenid
+						String tokenid = tok.substring(index+1).trim();
+						
+						//Create this coin
+						Coin outcoin = new Coin(MiniHash.ZERO32, 
+												new MiniHash(address), 
+												new MiniNumber(amount), 
+												new MiniHash(tokenid));
+						
+						//Add this output to the transaction..
+						trans.addOutput(outcoin);
+					}
+				}
+			}
+			
+			//STATE
+			if(!state.equals("")) {
+				//Add all the state variables..
+				StringTokenizer strtok = new StringTokenizer(state,";");
+				while(strtok.hasMoreElements()){
+					String tok = strtok.nextToken().trim();
+					
+					//Now split this token..
+					if(!tok.equals("")) {
+						int split = tok.indexOf(":");
+						String statenum = tok.substring(0,split).trim();
+						String value = tok.substring(split+1).trim();
+						
+						//Set it..
+						trans.addStateVariable(new StateVariable(new MiniNumber(statenum), value));
+					}
+				}
+			}
+			
+			//PREVSTATE
+			ArrayList<StateVariable> pstate = new ArrayList<>();
+			if(!prevstate.equals("")) {
+				//Add all the state variables..
+				StringTokenizer strtok = new StringTokenizer(prevstate,";");
+				while(strtok.hasMoreElements()){
+					String tok = strtok.nextToken().trim();
+					
+					//Now split this token..
+					if(!tok.equals("")) {
+						int split = tok.indexOf(":");
+						String statenum = tok.substring(0,split).trim();
+						String value = tok.substring(split+1).trim();
+						
+						//Set it..
+						pstate.add(new StateVariable(new MiniNumber(statenum), value));
+					}
+				}
 			}
 			
 			//Create a contract
-			Contract cc = new Contract(ns, "",new Transaction(),false);
+			Contract cc = new Contract(script, sigs, trans, pstate);
 			
 			//Create an address
 			Address ccaddress = new Address(cc.getRamScript());
 			
+			//Set the environment
+			MiniNumber blocknum  = getMainDB().getTopBlock();
+			
+			//These 2 are set automatically..
+			cc.setGlobalVariable("@ADDRESS", new HEXValue(ccaddress.getAddressData()));
+			cc.setGlobalVariable("@SCRIPT", new ScriptValue(script));
+			
+			//These can be played with..
+			cc.setGlobalVariable("@BLKNUM", new NumberValue(blocknum));
+			cc.setGlobalVariable("@INPUT", new NumberValue(0));
+			cc.setGlobalVariable("@INBLKNUM", new NumberValue(0));
+			cc.setGlobalVariable("@AMOUNT", new NumberValue(0));
+			cc.setGlobalVariable("@TOKENID", new HEXValue(MiniHash.ZERO32));
+			cc.setGlobalVariable("@COINID", new HEXValue(MiniHash.ZERO32));
+			cc.setGlobalVariable("@TOTIN", new NumberValue(1));
+			cc.setGlobalVariable("@TOTOUT", new NumberValue(trans.getAllOutputs().size()));
+			
+			//GLOBALS.. Overide if set..
+			if(!globals.equals("")) {
+				//Add all the state variables..
+				StringTokenizer strtok = new StringTokenizer(globals,";");
+				while(strtok.hasMoreElements()){
+					String tok = strtok.nextToken().trim();
+					
+					//Now split this token..
+					if(!tok.equals("")) {
+						int split = tok.indexOf(":");
+						String global = tok.substring(0,split).trim();
+						String value = tok.substring(split+1).trim();
+						
+						//Set it..
+						cc.setGlobalVariable(global, Value.getValue(value));
+					}
+				}
+			}
+			
+			//Run it!
+			cc.run();
+		
+			//Detailed results..
 			JSONObject resp = InputHandler.getResponseJSON(zMessage);
 			resp.put("script", script);
 			resp.put("clean", cc.getRamScript());
 			resp.put("address", ccaddress.getAddressData().to0xString());
 			resp.put("parseok", cc.isParseOK());
+			resp.put("return", cc.isSuccess());
 			resp.put("parse", cc.getCompleteTraceLog());
+			
 			InputHandler.endResponse(zMessage, true, "");
-		
-		}else if(zMessage.isMessageType(CONSENSUS_RUNSCRIPT)) {
-			String script = zMessage.getString("script");
-			String sigs   = zMessage.getString("sigs");
 			
-			//Set up a contract
-			script = Contract.cleanScript(script);
-			sigs   = Contract.cleanScript(sigs);
-			
-			//Create a contract
-			Contract cc = new Contract(script, sigs,new Transaction(),true);
-			
-			//set the environment
-			MiniNumber blocknum  = getMainDB().getTopBlock();
-			String address = "0x00";
-			
-			cc.setGlobalVariable("@BLKNUM", new NumberValue(blocknum));
-			cc.setGlobalVariable("@ADDRESS", new HEXValue(address));
-			cc.setGlobalVariable("@AMOUNT", new NumberValue(MiniNumber.ZERO));
-			cc.setGlobalVariable("@SCRIPT", new ScriptValue(script));
-			
-			//Run it!
-			cc.run();
-		
 		}else if(zMessage.isMessageType(CONSENSUS_IMPORTCOIN)) {
 			MiniData data = (MiniData)zMessage.getObject("proof");
 			

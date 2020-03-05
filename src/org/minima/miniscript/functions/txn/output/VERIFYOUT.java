@@ -11,6 +11,8 @@ import org.minima.miniscript.values.NumberValue;
 import org.minima.miniscript.values.Value;
 import org.minima.objects.Coin;
 import org.minima.objects.Transaction;
+import org.minima.objects.base.MiniHash;
+import org.minima.objects.base.MiniNumber;
 import org.minima.utils.MinimaLogger;
 
 /**
@@ -31,9 +33,9 @@ public class VERIFYOUT extends MinimaFunction{
 		int output    = getParameter(0).getValue(zContract).getNumber().getAsInt();
 		
 		//Get the details
-		Value address = getParameter(1).getValue(zContract);
-		Value amount  = getParameter(2).getValue(zContract);
-		Value tokenid = getParameter(3).getValue(zContract);
+		MiniHash address  = new MiniHash(getParameter(1).getValue(zContract).getRawData());
+		MiniNumber amount = getParameter(2).getValue(zContract).getNumber();
+		MiniHash tokenid  = new MiniHash(getParameter(3).getValue(zContract).getRawData());
 		
 		//Check an output exists..
 		Transaction trans = zContract.getTransaction();
@@ -48,9 +50,9 @@ public class VERIFYOUT extends MinimaFunction{
 		Coin cc = outs.get(output);
 		
 		//Now Check
-		boolean addr = address.getMiniData().isExactlyEqual(cc.getAddress());  
-		boolean amt  = amount.getNumber().isEqual(cc.getAmount());  
-		boolean tok  = tokenid.getMiniData().isExactlyEqual(cc.getTokenID());  
+		boolean addr = address.isExactlyEqual(cc.getAddress());  
+		boolean amt  = amount.isEqual(cc.getAmount());  
+		boolean tok  = tokenid.isExactlyEqual(cc.getTokenID());  
 		
 		//Return if all true
 		return new BooleanValue( addr && amt && tok );

@@ -9,25 +9,55 @@ public class runscript extends CommandFunction{
 	public runscript() {
 		super("runscript");
 		
-		setHelp("[script] {sigs}", "Run the specified script with the specified signatures.","");
+//		setHelp("[script] {sigs}", "Run the specified script with the specified signatures.","");
+		
+		setHelp("[script] {sigs:..} {state:..} {prevstate:..} {globals:..} {outputs:..}", "Use 'help runscript' for details..","");
+		
 	}
 	
 	@Override
 	public void doFunction(String[] zInput) throws Exception {
 		//get the Contract
 		String script = zInput[1];
-		String sigs   = "";
 		
-		if(zInput.length>2) {
-			sigs   = zInput[2];
+		//How much extra data
+		int len = zInput.length;
+		
+		//The extra data
+		String sigs        = "";
+		String state       = "";
+		String prevstate   = "";
+		String globals     = "";
+		String outputs     = "";
+		
+		//Cycle through..
+		for(int i=2;i<len;i++) {
+			String param = zInput[i];
+			
+			if(param.startsWith("sigs:")) {
+				sigs = param.substring(5);
+			}else if(param.startsWith("state:")) {
+				state = param.substring(6);
+			}else if(param.startsWith("prevstate:")) {
+				prevstate = param.substring(10);
+			}else if(param.startsWith("globals:")) {
+				globals = param.substring(8);
+			}else if(param.startsWith("outputs:")) {
+				outputs = param.substring(8);
+			} 	
 		}
 		
-		//Create a message
-		Message rscript = new Message(ConsensusUser.CONSENSUS_RUNSCRIPT);
+		//Create the message
+		Message rscript = getResponseMessage(ConsensusUser.CONSENSUS_RUNSCRIPT);
 		rscript.addString("script", script);
 		rscript.addString("sigs", sigs);
+		rscript.addString("state", state);
+		rscript.addString("prevstate", prevstate);
+		rscript.addString("globals", globals);
+		rscript.addString("outputs", outputs);
 		
-		getMainHandler().getConsensusHandler().PostMessage(rscript);
+		//Post it..
+		getMainHandler().getConsensusHandler().PostMessage(rscript);	
 	}
 	@Override
 	public CommandFunction getNewFunction() {

@@ -256,7 +256,10 @@ public class Start {
 		                if(resp.startsWith("{") || resp.startsWith("[")) {
 		                	resp = MiniFormat.PrettyJSON(resp);
 		                }
-		                 
+		                
+		                //Convert \n..
+		                resp = resp.replaceAll("\\\\n", "\n");
+		                		
 		                //And then print out the result
 		                System.out.println(resp);
 		            }

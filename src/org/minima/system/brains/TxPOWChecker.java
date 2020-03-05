@@ -133,7 +133,7 @@ public class TxPOWChecker {
 				}
 				
 				//Create the Contract to check..
-				Contract cc = new Contract(script,sigs,zTrans,false);
+				Contract cc = new Contract(script,sigs,zTrans,proof.getMMRData().getPrevState());
 				
 				//set the environment
 				String address = input.getAddress().toString();
@@ -148,9 +148,6 @@ public class TxPOWChecker {
 				cc.setGlobalVariable("@TOTIN", new NumberValue(zTrans.getAllInputs().size()));
 				cc.setGlobalVariable("@TOTOUT", new NumberValue(zTrans.getAllOutputs().size()));
 				cc.setGlobalVariable("@INBLKNUM", new NumberValue(proof.getMMRData().getInBlock()));
-				
-				//Set the Prev State
-				cc.setPrevState(proof.getMMRData().getPrevState());
 				
 				//Run it!
 				cc.run();

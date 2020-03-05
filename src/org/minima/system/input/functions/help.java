@@ -78,7 +78,7 @@ public class help extends CommandFunction{
 			addJSONDesc(new newaddress());
 			addJSONDesc(new newscript());
 			addJSONDesc(new runscript());
-			addJSONDesc(new cleanscript());
+//			addJSONDesc(new cleanscript());
 			
 			addJSONDesc(new exportkey());
 			addJSONDesc(new importkey());
