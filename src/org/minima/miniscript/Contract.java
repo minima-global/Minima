@@ -116,7 +116,7 @@ public class Contract {
 		mNumInstructions = 0;
 				
 		//Load the Signatures
-		StringTokenizer strtok = new StringTokenizer(zSigs, ";");
+		StringTokenizer strtok = new StringTokenizer(zSigs, "#");
 		while(strtok.hasMoreTokens()) {
 			String sig = strtok.nextToken().trim();
 			traceLog("Signature : "+sig);
@@ -239,7 +239,7 @@ public class Contract {
 			mBlock.run(this);
 			
 		} catch (Exception e) {
-			e.printStackTrace();
+			//e.printStackTrace();
 			
 			//AUTOMATIC FAIL
 			traceLog("Execution Error - "+e);
@@ -380,6 +380,7 @@ public class Contract {
 		script = script.replaceAll(",", " , ");
 		script = script.replaceAll(";", " ; ");
 		script = script.replaceAll(":", " : ");
+		script = script.replaceAll("#", " # ");
 		
 		//Double up the spaces.. in case of double NOT 
 		script = script.replaceAll(" ", "  ");

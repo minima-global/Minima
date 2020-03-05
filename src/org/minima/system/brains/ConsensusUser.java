@@ -131,7 +131,7 @@ public class ConsensusUser {
 			//OUTPUTS
 			if(!outputs.equals("")) {
 				//Add the outputs to the Transaction..
-				StringTokenizer strtok = new StringTokenizer(outputs,";");
+				StringTokenizer strtok = new StringTokenizer(outputs,"#");
 				while(strtok.hasMoreElements()){
 					String tok = strtok.nextToken().trim();
 					
@@ -164,7 +164,7 @@ public class ConsensusUser {
 			//STATE
 			if(!state.equals("")) {
 				//Add all the state variables..
-				StringTokenizer strtok = new StringTokenizer(state,";");
+				StringTokenizer strtok = new StringTokenizer(state,"#");
 				while(strtok.hasMoreElements()){
 					String tok = strtok.nextToken().trim();
 					
@@ -184,7 +184,7 @@ public class ConsensusUser {
 			ArrayList<StateVariable> pstate = new ArrayList<>();
 			if(!prevstate.equals("")) {
 				//Add all the state variables..
-				StringTokenizer strtok = new StringTokenizer(prevstate,";");
+				StringTokenizer strtok = new StringTokenizer(prevstate,"#");
 				while(strtok.hasMoreElements()){
 					String tok = strtok.nextToken().trim();
 					
@@ -226,7 +226,7 @@ public class ConsensusUser {
 			//GLOBALS.. Overide if set..
 			if(!globals.equals("")) {
 				//Add all the state variables..
-				StringTokenizer strtok = new StringTokenizer(globals,";");
+				StringTokenizer strtok = new StringTokenizer(globals,"#");
 				while(strtok.hasMoreElements()){
 					String tok = strtok.nextToken().trim();
 					
