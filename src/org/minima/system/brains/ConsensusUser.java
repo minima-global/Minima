@@ -252,7 +252,7 @@ public class ConsensusUser {
 			resp.put("address", ccaddress.getAddressData().to0xString());
 			resp.put("parseok", cc.isParseOK());
 			resp.put("exception", cc.isException());
-			resp.put("return", cc.isSuccess());
+			resp.put("result", cc.isSuccess());
 			resp.put("parse", cc.getCompleteTraceLog());
 			
 			InputHandler.endResponse(zMessage, true, "");
