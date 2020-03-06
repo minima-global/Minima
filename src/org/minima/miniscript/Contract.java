@@ -81,6 +81,11 @@ public class Contract {
 	boolean mParseOK;
 	
 	/**
+	 * Was there an Exception error
+	 */
+	boolean mException;
+	
+	/**
 	 * The Number Of Instructions!
 	 */
 	int mNumInstructions;
@@ -112,6 +117,7 @@ public class Contract {
 		mSuccess    = false;
 		mSuccessSet = false;
 		mParseOK    = false;
+		mException  = false;
 		
 		mNumInstructions = 0;
 				
@@ -128,13 +134,6 @@ public class Contract {
 		
 		//Transaction..
 		traceLog("Transaction   : "+mTransaction.toString());
-		
-//		//Signatures
-//		int counter = 0;
-//		for(Value val : mSignatures) {
-//			traceLog("Signatures["+counter+"] : "+val.toString());
-//			counter++;
-//		}
 		
 		//State Variables
 		ArrayList<StateVariable> svs = mTransaction.getCompleteState();
@@ -202,6 +201,10 @@ public class Contract {
 		return mParseOK;
 	}
 	
+	public boolean isException() {
+		return mException;
+	}
+	
 	public boolean isTrace() {
 		return mTraceON;
 	}
@@ -240,6 +243,7 @@ public class Contract {
 			
 		} catch (Exception e) {
 			//e.printStackTrace();
+			mException = true;
 			
 			//AUTOMATIC FAIL
 			traceLog("Execution Error - "+e);

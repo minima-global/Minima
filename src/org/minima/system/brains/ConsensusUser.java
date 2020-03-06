@@ -233,7 +233,7 @@ public class ConsensusUser {
 					//Now split this token..
 					if(!tok.equals("")) {
 						int split = tok.indexOf(":");
-						String global = tok.substring(0,split).trim();
+						String global = tok.substring(0,split).trim().toUpperCase();
 						String value = tok.substring(split+1).trim();
 						
 						//Set it..
@@ -251,6 +251,7 @@ public class ConsensusUser {
 			resp.put("clean", cc.getRamScript());
 			resp.put("address", ccaddress.getAddressData().to0xString());
 			resp.put("parseok", cc.isParseOK());
+			resp.put("exception", cc.isException());
 			resp.put("return", cc.isSuccess());
 			resp.put("parse", cc.getCompleteTraceLog());
 			
