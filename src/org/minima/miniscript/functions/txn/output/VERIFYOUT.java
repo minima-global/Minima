@@ -54,8 +54,13 @@ public class VERIFYOUT extends MinimaFunction{
 		boolean amt  = amount.isEqual(cc.getAmount());  
 		boolean tok  = tokenid.isExactlyEqual(cc.getTokenID());  
 		
+		boolean ver = addr && amt && tok;
+		
+		//Log it..
+		zContract.traceLog("VERIFYOUT returns "+ver+" address:"+addr+" amount:"+amt+" tokenid:"+tok);
+		
 		//Return if all true
-		return new BooleanValue( addr && amt && tok );
+		return new BooleanValue( ver );
 	}
 	
 	@Override

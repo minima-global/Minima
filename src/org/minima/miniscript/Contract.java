@@ -100,9 +100,14 @@ public class Contract {
 	 * Main Constructor
 	 * @param zRamScript - the RamScript in ASCII
 	 */
-	public Contract(String zRamScript, String zSigs, Transaction zTransaction, ArrayList<StateVariable> zPrevState) {
+	public Contract(String zRamScript, String zSigs, Transaction zTransaction, ArrayList<StateVariable> zPrevState) {	
+		this(zRamScript, zSigs, zTransaction, zPrevState, false);
+	}
+	
+	public Contract(String zRamScript, String zSigs, Transaction zTransaction, ArrayList<StateVariable> zPrevState, boolean zTrace) {
 		//Trace?
 		mCompleteLog ="";
+		mTraceON     = zTrace;
 		
 		//Clean the RamScript
 		mRamScript = cleanScript(zRamScript);
@@ -178,11 +183,7 @@ public class Contract {
 		traceLog("Global ["+zGlobal+"] : "+zValue);
 	}
 	
-//	public void setPrevState(ArrayList<StateVariable> zPrevState) {
-//		mPrevState = zPrevState;
-//	}
-	
-	public Value getPrevState(MiniNumber zPrev) {
+	public Value getPrevState(MiniNumber zPrev) throws ExecutionException {
 		//Get the state variable..
 		for(StateVariable sv : mPrevState) {
 			if(sv.getPort().isEqual(zPrev)) {
@@ -194,7 +195,7 @@ public class Contract {
 			}
 		}
 		
-		return null;
+		throw new ExecutionException("PREVSTATE Missing : "+zPrev);
 	}
 	
 	public boolean isParseOK() {
@@ -242,7 +243,10 @@ public class Contract {
 			mBlock.run(this);
 			
 		} catch (Exception e) {
-			//e.printStackTrace();
+			if(mTraceON) {
+				e.printStackTrace();
+			}
+			
 			mException = true;
 			
 			//AUTOMATIC FAIL
@@ -283,7 +287,7 @@ public class Contract {
 	public Value getVariable(String zName) throws ExecutionException {
 		Value ret = mVariables.get(zName);
 		if(ret==null) {
-			throw new ExecutionException("Variable not found - "+zName);
+			throw new ExecutionException("VARIABLE Missing : "+zName);
 		}
 		return ret;
 	}
@@ -498,7 +502,7 @@ public class Contract {
 //		String RamScript = "let x = true or false let y = [return x] Exec y";
 		
 //		String RamScript = "ASSERT VERIFYOUT ( ( @INPUT + 1 ) @ADDRESS ( @AMOUNT - amt ) @TOKENID )";
-		String RamScript = "ASSERT     VERIFYOUT ( (    @INPUT + 1 ) @ADDRESS ( @AMOUNT - 0.1 ) @TOKENID )";
+		String RamScript = "LET pkcold = 0x7B23F0670FE0DFE17EE74D5DCB3AF4AE00E454044F1CF1DA4FDADC133EC7A3E6 LET pkhot = 0x74A2222436C592046A6F576F67200C75DB3D9051BE31262BD0A0BF0DB30137C4 IF SIGNEDBY ( pkcold ) THEN RETURN TRUE ENDIF LET amt = STATE ( 20 ) LET recip = STATE ( 21 ) LET safehouse = [ LET pkcold = 0x7B23F0670FE0DFE17EE74D5DCB3AF4AE00E454044F1CF1DA4FDADC133EC7A3E6 LET pkhot = 0x74A2222436C592046A6F576F67200C75DB3D9051BE31262BD0A0BF0DB30137C4 IF SIGNEDBY ( pkcold ) THEN RETURN TRUE ENDIF IF SIGNEDBY ( pkhot ) THEN LET blkdiff = @BLKNUM - @INBLKNUM IF blkdiff GT 20 THEN RETURN VERIFYOUT ( @INPUT PREVSTATE ( 21 ) @AMOUNT @TOKENID ) ENDIF ENDIF ] ASSERT VERIFYOUT ( @INPUT SHA3 ( safehouse ) amt @TOKENID ) LET chg = 10 ASSERT VERIFYOUT ( ( @INPUT + 1 ) @ADDRESS ( @AMOUNT - amt ) @TOKENID ) IF SIGNEDBY ( pkhot ) THEN RETURN TRUE ENDIF";
 
 		//String RamScript = "let t = @SCRIPT let f = @AMOUNT +1 let g = State(1001) + [ sha3(123)]";
 
@@ -508,10 +512,11 @@ public class Contract {
 //		tt.setStateValue(1001, new StateVariable("[ let y = 0xFF ]"));
 //		tt.setStateValue(2, new StateVariable("1.2345"));
 		
-		Contract ctr = new Contract(RamScript,"0x1234,0x00FF",tt,null);
+		Contract ctr = new Contract(RamScript,"0x74A2222436C592046A6F576F67200C75DB3D9051BE31262BD0A0BF0DB30137C4",tt,null,true);
 		
 		ctr.setGlobalVariable("@SCRIPT", new ScriptValue(RamScript));
-		ctr.setGlobalVariable("@BLKNUM", new NumberValue(new MiniNumber("10")));
+		ctr.setGlobalVariable("@BLKNUM", new NumberValue(new MiniNumber("31")));
+		ctr.setGlobalVariable("@INBLKNUM", new NumberValue(new MiniNumber("10")));
 		ctr.setGlobalVariable("@INPUT", new NumberValue(new MiniNumber("1")));
 		ctr.setGlobalVariable("@ADDRESS", new HEXValue("0x67876AB"));
 		ctr.setGlobalVariable("@TOKENID", new HEXValue("0x00"));
