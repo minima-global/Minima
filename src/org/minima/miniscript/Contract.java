@@ -63,6 +63,9 @@ public class Contract {
 	//A list of all the global variables available to scripts, like Blocknumber etc..
 	Hashtable<String, Value> mGlobals;
 	
+	//The ARRAYS are all kept in the String hashtable
+	Hashtable<String, Value> mArray;
+		
 	//The previous state variables - accessed from the MMR data
 	ArrayList<StateVariable> mPrevState = new ArrayList<StateVariable>();
 		
@@ -117,6 +120,7 @@ public class Contract {
 		mSignatures = new ArrayList<>();
 		mVariables  = new Hashtable<>();
 		mGlobals    = new Hashtable<>();
+		mArray      = new Hashtable<>();
 		
 		mBlock      = null;
 		mSuccess    = false;
@@ -181,6 +185,25 @@ public class Contract {
 	public void setGlobalVariable(String zGlobal, Value zValue) {
 		mGlobals.put(zGlobal, zValue);
 		traceLog("Global ["+zGlobal+"] : "+zValue);
+	}
+	
+	/**
+	 * Return the array value if found or ZERO if not found
+	 * @param zString
+	 * @return
+	 */
+	public Value getArrayValue(String zString) {
+		if(mArray.contains(zString)) {
+			mArray.get(zString);
+		}
+		
+		return new NumberValue(0);
+	}
+	
+	public int setArrayValue(String zPosition, Value zValue) {
+		mArray.put(zPosition, zValue);
+		
+		return mArray.size();
 	}
 	
 	public Value getPrevState(MiniNumber zPrev) throws ExecutionException {

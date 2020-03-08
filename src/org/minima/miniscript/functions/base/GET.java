@@ -9,10 +9,10 @@ import org.minima.miniscript.functions.MinimaFunction;
 import org.minima.miniscript.values.NumberValue;
 import org.minima.miniscript.values.Value;
 
-public class ARRGET extends MinimaFunction{
+public class GET extends MinimaFunction{
 
-	public ARRGET() {
-		super("ARRGET");
+	public GET() {
+		super("GET");
 	}
 	
 	@Override
@@ -27,13 +27,11 @@ public class ARRGET extends MinimaFunction{
 		}
 		
 		//Now get this string value from the Contract
-		
-		
-		return new NumberValue(0);
+		return zContract.getArrayValue(ps);
 	}
 
 	@Override
 	public MinimaFunction getNewFunction() {
-		return new ARRGET();
+		return new GET();
 	}
 }

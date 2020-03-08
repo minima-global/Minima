@@ -9,10 +9,10 @@ import org.minima.miniscript.functions.MinimaFunction;
 import org.minima.miniscript.values.NumberValue;
 import org.minima.miniscript.values.Value;
 
-public class ARRSET extends MinimaFunction{
+public class SET extends MinimaFunction{
 
-	public ARRSET() {
-		super("ARRSET");
+	public SET() {
+		super("SET");
 	}
 	
 	@Override
@@ -26,22 +26,23 @@ public class ARRSET extends MinimaFunction{
 		Value tval = null;
 		for(Expression exp : params) {
 			if(first) {
+				first = false;
 				//This is the value to set
 				tval = exp.getValue(zContract);
 			}else {
 				ps += exp.getValue(zContract).getNumber().toString()+",";	
 			}
-					
 		}
 		
 		//Now set this string value in the Contract
+		int size = zContract.setArrayValue(ps, tval);
 		
-		
-		return new NumberValue(0);
+		//Return the size of the Array..
+		return new NumberValue(size);
 	}
 
 	@Override
 	public MinimaFunction getNewFunction() {
-		return new ARRSET();
+		return new SET();
 	}
 }
