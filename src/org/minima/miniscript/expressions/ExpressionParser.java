@@ -48,7 +48,7 @@ public class ExpressionParser {
 	 * @param zPos
 	 * @return
 	 */
-	private static Expression getExpression(LexicalTokenizer zTokens) throws MinimaParseException{
+	public static Expression getExpression(LexicalTokenizer zTokens) throws MinimaParseException{
 		//Top level..
 		Expression exp = getRelation(zTokens);
 		

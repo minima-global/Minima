@@ -64,7 +64,7 @@ public class Contract {
 	Hashtable<String, Value> mGlobals;
 	
 	//The ARRAYS are all kept in the String hashtable
-	Hashtable<String, Value> mArray;
+	Hashtable<String, Value> mArrayVariables;
 		
 	//The previous state variables - accessed from the MMR data
 	ArrayList<StateVariable> mPrevState = new ArrayList<StateVariable>();
@@ -121,7 +121,7 @@ public class Contract {
 		mSignatures = new ArrayList<>();
 		mVariables  = new Hashtable<>();
 		mGlobals    = new Hashtable<>();
-		mArray      = new Hashtable<>();
+		mArrayVariables      = new Hashtable<>();
 		
 		mBlock      = null;
 		mSuccess    = false;
@@ -191,22 +191,23 @@ public class Contract {
 	}
 	
 	/**
-	 * Return the array value if found or ZERO if not found
-	 * @param zString
+	 * Return the array value if found or Number ZERO if not found
+	 * @param zPosition
 	 * @return
 	 */
-	public Value getArrayValue(String zString) {
-		if(mArray.contains(zString)) {
-			mArray.get(zString);
+	public Value getArrayValue(String zPosition) {
+		//Get the value
+		Value val = mArrayVariables.get(zPosition);
+		if(val == null) {
+			return new NumberValue(0);
 		}
 		
-		return new NumberValue(0);
+		return val;
 	}
 	
-	public int setArrayValue(String zPosition, Value zValue) {
-		mArray.put(zPosition, zValue);
-		
-		return mArray.size();
+	public void setArrayVariable(String zPosition, Value zValue) {
+		mArrayVariables.put(zPosition, zValue);
+		traceVariables();
 	}
 	
 	public Value getPrevState(MiniNumber zPrev) throws ExecutionException {
@@ -330,8 +331,44 @@ public class Contract {
 	public void setVariable(String zName, Value zValue) {
 		mVariables.put(zName, zValue);
 		
+		traceVariables();
+		
+//		//Output..
+//		String varlist = "{ ";
+//		Enumeration<String> keys = mVariables.keys();
+//		while(keys.hasMoreElements()) {
+//			//Get the Key
+//			String key = keys.nextElement();
+//			
+//			//Get the Value
+//			Value val = mVariables.get(key);
+//			
+//			//Log it.. 
+//			int type = val.getValueType();
+//			switch (type)  {
+//				case BooleanValue.VALUE_BOOLEAN :
+//					varlist += key+" = "+Boolean.toString(val.isTrue()).toUpperCase()+", ";
+//				break;
+//				case HEXValue.VALUE_HEX :
+//					varlist += key+" = "+val+", ";
+//				break;
+//				case NumberValue.VALUE_NUMBER :
+//					varlist += key+" = "+val+", ";
+//				break;
+//				case ScriptValue.VALUE_SCRIPT :
+//					varlist += key+" = [ "+val+" ], ";
+//				break;
+//			}		
+//		}
+//
+//		traceLog(varlist+"}");
+	}
+	
+	public void traceVariables() {
 		//Output..
 		String varlist = "{ ";
+		
+		//First the normal variables
 		Enumeration<String> keys = mVariables.keys();
 		while(keys.hasMoreElements()) {
 			//Get the Key
@@ -346,18 +383,40 @@ public class Contract {
 				case BooleanValue.VALUE_BOOLEAN :
 					varlist += key+" = "+Boolean.toString(val.isTrue()).toUpperCase()+", ";
 				break;
-				case HEXValue.VALUE_HEX :
-					varlist += key+" = "+val+", ";
-				break;
-				case NumberValue.VALUE_NUMBER :
-					varlist += key+" = "+val+", ";
-				break;
 				case ScriptValue.VALUE_SCRIPT :
 					varlist += key+" = [ "+val+" ], ";
+				break;
+				default:
+					varlist += key+" = "+val+", ";
 				break;
 			}		
 		}
 
+		//Now the array variables
+		keys = mArrayVariables.keys();
+		while(keys.hasMoreElements()) {
+			//Get the Key
+			String key = keys.nextElement();
+			
+			//Get the Value
+			Value val = mArrayVariables.get(key);
+			
+			//Log it.. 
+			String kk = "("+key+")"; 
+			int type = val.getValueType();
+			switch (type)  {
+				case BooleanValue.VALUE_BOOLEAN :
+					varlist += kk+" = "+Boolean.toString(val.isTrue()).toUpperCase()+", ";
+				break;
+				case ScriptValue.VALUE_SCRIPT :
+					varlist += kk+" = [ "+val+" ], ";
+				break;
+				default:
+					varlist += kk+" = "+val+", ";
+				break;
+			}		
+		}
+		
 		traceLog(varlist+"}");
 	}
 	
@@ -538,7 +597,7 @@ public class Contract {
 //		String RamScript = "let x = true or false let y = [return x] Exec y";
 		
 //		String RamScript = "ASSERT VERIFYOUT ( ( @INPUT + 1 ) @ADDRESS ( @AMOUNT - amt ) @TOKENID )";
-		String RamScript = "LET pkcold = 0x7B23F0670FE0DFE17EE74D5DCB3AF4AE00E454044F1CF1DA4FDADC133EC7A3E6 LET pkhot = 0x74A2222436C592046A6F576F67200C75DB3D9051BE31262BD0A0BF0DB30137C4 IF SIGNEDBY ( pkcold ) THEN RETURN TRUE ENDIF LET amt = STATE ( 20 ) LET recip = STATE ( 21 ) LET safehouse = [ LET pkcold = 0x7B23F0670FE0DFE17EE74D5DCB3AF4AE00E454044F1CF1DA4FDADC133EC7A3E6 LET pkhot = 0x74A2222436C592046A6F576F67200C75DB3D9051BE31262BD0A0BF0DB30137C4 IF SIGNEDBY ( pkcold ) THEN RETURN TRUE ENDIF IF SIGNEDBY ( pkhot ) THEN LET blkdiff = @BLKNUM - @INBLKNUM IF blkdiff GT 20 THEN RETURN VERIFYOUT ( @INPUT PREVSTATE ( 21 ) @AMOUNT @TOKENID ) ENDIF ENDIF ] ASSERT VERIFYOUT ( @INPUT SHA3 ( safehouse ) amt @TOKENID ) LET chg = 10 ASSERT VERIFYOUT ( ( @INPUT + 1 ) @ADDRESS ( @AMOUNT - amt ) @TOKENID ) IF SIGNEDBY ( pkhot ) THEN RETURN TRUE ENDIF";
+		String RamScript = "let t = 1 LET ( t (3 - t*2) t ) = 123 let gg = get ( 1 1 t )";
 
 		//String RamScript = "let t = @SCRIPT let f = @AMOUNT +1 let g = State(1001) + [ sha3(123)]";
 

@@ -3,6 +3,8 @@
  */
 package org.minima.miniscript.statements.commands;
 
+import java.util.ArrayList;
+
 import org.minima.miniscript.Contract;
 import org.minima.miniscript.exceptions.ExecutionException;
 import org.minima.miniscript.expressions.Expression;
@@ -15,12 +17,51 @@ import org.minima.miniscript.values.Value;
  */
 public class LETstatement implements Statement{
 
+	/**
+	 * Which type of LET statement is it.
+	 */
+	public static int LET_VARIABLE = 0;
+	public static int LET_ARRAY    = 1;
+	
+	int mLETType;
+	
+	/**
+	 * The Array of array params
+	 */
+	ArrayList<Expression> mArrayPos;
+	
+	/**
+	 * Variable Name
+	 */
 	String 		mName;
+	
+	/**
+	 * The Value
+	 */
 	Expression 	mValue;
 	
+	/**
+	 * The VARIABLE Constructor
+	 * 
+	 * @param zVariableName
+	 * @param zExpression
+	 */
 	public LETstatement(String zVariableName, Expression zExpression) {
-		mName  = zVariableName;
-		mValue = zExpression; 
+		mLETType = LET_VARIABLE;
+		mName    = zVariableName;
+		mValue   = zExpression;
+	}
+	
+	/**
+	 * The ARRAY constructor
+	 * 
+	 * @param zArrayPos
+	 * @param zExpression
+	 */
+	public LETstatement(ArrayList<Expression> zArrayPos, Expression zExpression) {
+		mLETType  = LET_ARRAY;
+		mArrayPos = zArrayPos;
+		mValue    = zExpression;
 	}
 	
 	@Override
@@ -28,12 +69,35 @@ public class LETstatement implements Statement{
 		//Trace log
 		zContract.traceLog(toString());
 		
-		//Do it..
-		zContract.setVariable(mName, mValue.getValue(zContract));
+		if(mLETType == LET_VARIABLE) {
+			zContract.setVariable(mName, mValue.getValue(zContract));
+		}else {
+			//The final array pos
+			String pos = "";
+			
+			//Calculate all the expressions..
+			for(Expression exp : mArrayPos) {
+				pos += exp.getValue(zContract).getNumber().toString()+",";
+			}
+			
+			//Now ask the contract to set that array variable..
+			zContract.setArrayVariable(pos, mValue.getValue(zContract));
+		}
 	}
 	
 	@Override
 	public String toString() {
-		return "LET "+mName+" = "+mValue;
+		if(mLETType == LET_VARIABLE) {
+			return "LET "+mName+" = "+mValue;
+		}
+		
+		//It's an array LET
+		String let = "LET ( ";
+		for(Expression exp : mArrayPos) {
+			let += exp.toString()+",";
+		}
+		let += " ) = "+mValue;
+		
+		return let;
 	}
 }

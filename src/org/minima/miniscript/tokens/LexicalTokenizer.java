@@ -23,7 +23,7 @@ public class LexicalTokenizer{
 	}
 	
 	public Token getNextToken() throws MinimaParseException {
-		if(mPos >= mTokens.size()) {
+		if(mPos >= mSize) {
 			throw new MinimaParseException("Run out of tokens!..");
 		}
 		return mTokens.get(mPos++);
@@ -38,7 +38,7 @@ public class LexicalTokenizer{
 	}
 	
 	public boolean checkAllTokensUsed() {
-		return mPos == mTokens.size();
+		return mPos == mSize;
 	}
 	
 	public boolean hasMoreElements() {
