@@ -119,6 +119,11 @@ public class ConsensusUser {
 		
 		}else if(zMessage.isMessageType(CONSENSUS_RUNSCRIPT)) {
 			String script    = zMessage.getString("script").trim();
+			if(script.equals("")) {
+				InputHandler.endResponse(zMessage, false, "Cannot have a blank script!");
+				return;
+			}
+			
 			String sigs      = Contract.cleanScript(zMessage.getString("sigs").trim());
 			String state     = Contract.cleanScript(zMessage.getString("state").trim());
 			String prevstate = Contract.cleanScript(zMessage.getString("prevstate").trim());
