@@ -142,6 +142,7 @@ public class Contract {
 		
 		//Begin..
 		traceLog("Contract   : "+mRamScript);
+		traceLog("Size       : "+mRamScript.length());
 		
 		//Transaction..
 		traceLog("Transaction   : "+mTransaction.toString());
