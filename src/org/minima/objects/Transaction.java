@@ -4,8 +4,6 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.Hashtable;
 
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniNumber;
