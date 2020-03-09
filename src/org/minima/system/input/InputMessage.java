@@ -36,22 +36,25 @@ public class InputMessage extends Message{
 	 * @param zString
 	 * @return
 	 */
-	public static String[] splitString(String zString) {
+	public static String[] splitString(String zInput) {
 		ArrayList<String> token = new ArrayList<>();
+		String ss = zInput.trim();
 		
 		//Cycle through looking for spaces or quotes..
 		String current = new String();
 		boolean quoted = false;
-		int len = zString.length();
+		int len = ss.length();
 		for(int i=0;i<len;i++) {
-			char cc = zString.charAt(i);
+			char cc = ss.charAt(i);
 			
 			if(cc == ' ') {
 				//End of the line..
 				if(!quoted) {
 					//Add current
-					token.add(current);
-					
+					if(!current.equals("")) {
+						token.add(current);
+					}
+						
 					//New Current
 					current = new String();
 				}else {
@@ -71,7 +74,9 @@ public class InputMessage extends Message{
 		}
 		
 		//Add the last bit..
-		token.add(current);
+		if(!current.equals("")) {
+			token.add(current);
+		}
 		
 		return token.toArray(new String[0]);
 	}
@@ -79,7 +84,8 @@ public class InputMessage extends Message{
 	
 	public static void main(String[] zArgs) {
 		
-		String tester = "let there be \" the light of ages\"";
+		//String tester = "let there be \" the light of ages\"";
+		String tester = "  send   0   0xff  ";
 		
 		String[] tt = splitString(tester);
 		for(int i=0;i<tt.length;i++) {

@@ -107,7 +107,7 @@ public class Witness implements Streamable {
 	public String getAllPubKeysCSV(){
 		String ret = "";
 		for(MiniData sig : mPublicKeys) {
-			ret += sig.toString()+",";
+			ret += sig.toString()+"#";
 		}
 		return ret.trim();
 	}
