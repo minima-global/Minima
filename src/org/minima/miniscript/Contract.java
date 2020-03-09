@@ -87,6 +87,7 @@ public class Contract {
 	 * Was there an Exception error
 	 */
 	boolean mException;
+	String  mExceptionString;
 	
 	/**
 	 * The Number Of Instructions!
@@ -127,6 +128,7 @@ public class Contract {
 		mSuccessSet = false;
 		mParseOK    = false;
 		mException  = false;
+		mExceptionString = "";
 		
 		mNumInstructions = 0;
 				
@@ -229,6 +231,10 @@ public class Contract {
 		return mException;
 	}
 	
+	public String getException() {
+		return mExceptionString;
+	}
+	
 	public boolean isTrace() {
 		return mTraceON;
 	}
@@ -246,11 +252,15 @@ public class Contract {
 		return mCompleteLog;
 	}
 	
-	public void countInstructions() throws ExecutionException {
+	public void incrementInstructions() throws ExecutionException {
 		mNumInstructions++;
 		if(mNumInstructions > MAX_INSTRUCTIONS) {
 			throw new ExecutionException("MAX instruction number reached! "+mNumInstructions);
 		}
+	}
+	
+	public int getNumberOfInstructions() {
+		return mNumInstructions;
 	}
 	
 	public void run() {
@@ -271,6 +281,7 @@ public class Contract {
 			}
 			
 			mException = true;
+			mExceptionString = e.toString();
 			
 			//AUTOMATIC FAIL
 			traceLog("Execution Error - "+e);
@@ -299,7 +310,7 @@ public class Contract {
 		return mSuccessSet;
 	}
 	
-	public String getRamScript() {
+	public String getMiniScript() {
 		return mRamScript;
 	}
 	

@@ -204,7 +204,7 @@ public class ConsensusUser {
 			Contract cc = new Contract(script, sigs, trans, pstate);
 			
 			//Create an address
-			Address ccaddress = new Address(cc.getRamScript());
+			Address ccaddress = new Address(cc.getMiniScript());
 			
 			//Set the environment
 			MiniNumber blocknum  = getMainDB().getTopBlock();
@@ -248,12 +248,14 @@ public class ConsensusUser {
 			//Detailed results..
 			JSONObject resp = InputHandler.getResponseJSON(zMessage);
 			resp.put("script", script);
-			resp.put("clean", cc.getRamScript());
+			resp.put("clean", cc.getMiniScript());
+			resp.put("size", cc.getMiniScript().length());
+			resp.put("instructions", cc.getNumberOfInstructions());
 			resp.put("address", ccaddress.getAddressData().to0xString());
 			resp.put("parseok", cc.isParseOK());
+			resp.put("parse", cc.getCompleteTraceLog());
 			resp.put("exception", cc.isException());
 			resp.put("result", cc.isSuccess());
-			resp.put("parse", cc.getCompleteTraceLog());
 			
 			InputHandler.endResponse(zMessage, true, "");
 			

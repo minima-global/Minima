@@ -43,7 +43,7 @@ public class StatementBlock {
 			}
 			
 			//This action counts as one instruction
-			zContract.countInstructions();
+			zContract.incrementInstructions();
 			
 			//Run the next Statement
 			stat.execute(zContract);
