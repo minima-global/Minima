@@ -203,7 +203,7 @@ public class ConsensusTxn {
 			Transaction trx = getMainDB().getUserDB().getUserRow(trans).getTransaction();
 		
 			//Create a new State Variable
-			StateVariable sv = new StateVariable(new MiniNumber(port+""), variable);
+			StateVariable sv = new StateVariable(port, variable);
 			
 			//Add it to the transaction
 			trx.addStateVariable(sv);

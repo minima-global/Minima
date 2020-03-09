@@ -210,10 +210,10 @@ public class Contract {
 		traceVariables();
 	}
 	
-	public Value getPrevState(MiniNumber zPrev) throws ExecutionException {
+	public Value getPrevState(int zPrev) throws ExecutionException {
 		//Get the state variable..
 		for(StateVariable sv : mPrevState) {
-			if(sv.getPort().isEqual(zPrev)) {
+			if(sv.getPort() == zPrev) {
 				//Clean it..
 				String stateval = Contract.cleanScript(sv.getData().toString());
 				

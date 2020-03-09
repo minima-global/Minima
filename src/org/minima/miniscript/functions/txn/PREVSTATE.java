@@ -21,7 +21,7 @@ public class PREVSTATE extends MinimaFunction {
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
 		//Which Output - must be from 0-255
-		MiniNumber statenum = getParameter(0).getValue(zContract).getNumber();
+		int statenum = getParameter(0).getValue(zContract).getNumber().getAsInt();
 				
 		//Work it out
 		return zContract.getPrevState( statenum );

@@ -1,11 +1,6 @@
 package org.minima.system.input.functions;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-
 import org.minima.system.input.CommandFunction;
-import org.minima.utils.MinimaLogger;
 
 public class tutorial extends CommandFunction{
 
@@ -32,10 +27,11 @@ public class tutorial extends CommandFunction{
 			"\n" + 
 			"ADDRESS     ::= SHA3 ( BLOCK )\n" + 
 			"BLOCK       ::= STATEMENT_1 STATEMENT_2 ... STATEMENT_n\n" + 
-			"STATEMENT   ::= LET VARIABLE = EXPRESSION | \n" + 
-			"                IF EXPRESSION THEN BLOCK \n" + 
-			"                [ELSEIF EXPRESSION THEN BLOCK]* \n" + 
-			"                [ELSE BLOCK] ENDIF | \n" + 
+			"STATEMENT   ::= LET VARIABLE = EXPRESSION |\n" + 
+			"                LET ( EXPRESSION_1 EXPRESSION_2 ... EXPRESSION_n ) = EXPRESSION |\n" + 
+			"                IF EXPRESSION THEN BLOCK [ELSEIF EXPRESSION THEN BLOCK]* [ELSE BLOCK] ENDIF | \n" + 
+			"                WHILE EXPRESSION DO BLOCK ENDWHILE |\n" + 
+			"                EXEC EXPRESSION |\n" + 
 			"                MAST BLOCK [ORMAST BLOCK]* ENDMAST |\n" + 
 			"                ASSERT EXPRESSION |\n" + 
 			"                RETURN EXPRESSION\n" + 
@@ -67,20 +63,22 @@ public class tutorial extends CommandFunction{
 			"FALSE       ::= 0\n" + 
 			"TRUE        ::= NOT FALSE\n" + 
 			"MAST        ::= $HEX\n" + 
-			"FUNCTION    ::= FUNC ( EXPRESSION1 EXPRESSION2 .. EXPRESSIONn ) \n" + 
-			"FUNC        ::= CONCAT | LEN | REV | SUBSET | RPLVAR |\n" + 
+			"FUNCTION    ::= FUNC ( EXPRESSION_1 EXPRESSION_2 .. EXPRESSION_n ) \n" + 
+			"FUNC        ::= CONCAT | LEN | REV | SUBSET | RPLVAR | GET |\n" + 
 			"                ASCII | BOOL | HEX | NUMBER | SCRIPT |\n" + 
 			"                ABS | CEIL | FLOOR | MIN | MAX | INC | DEC |\n" + 
 			"                BITSET | BITGET | PROOF | SHA3 | SHA2 |\n" + 
 			"                SIGNEDBY | MULTISIG | CHECKSIG |\n" + 
 			"                GETOUTADDR | GETOUTAMT | GETOUTTOK | VERIFYOUT |\n" + 
 			"                GETINADDR | GETINAMT | GETINTOK | GETINID | VERIFYIN |\n" + 
-			"                SUMINTOK | SUMOUTTOK | STATE | PREVSTATE | *DYNSTATE\n" + 
+			"                SUMINTOK | SUMOUTTOK | STATE | PREVSTATE | SAMESTATE | *DYNSTATE\n" + 
 			"\n" + 
 			"Globals\n" + 
 			"-------\n" + 
 			"\n" + 
 			"@BLKNUM    : Block number this transaction is in\n" + 
+			"@INBLKNUM  : Block number when this output was created\n" + 
+			"@BLKDIFF   : Difference between BLKNUM and INBLKNUM\n" + 
 			"@INPUT     : Input number in the transaction\n" + 
 			"@AMOUNT    : Amount of this input\n" + 
 			"@ADDRESS   : Address of this input\n" + 
@@ -89,17 +87,15 @@ public class tutorial extends CommandFunction{
 			"@SCRIPT    : Script for this input\n" + 
 			"@TOTIN     : Total number of inputs for this transaction\n" + 
 			"@TOTOUT    : Total number of outputs for this transaction\n" + 
-			"@INBLKNUM  : Block number this output was created - useful for OP_CSV\n" + 
 			"\n" + 
 			"Functions\n" + 
 			"---------\n" + 
 			"\n" + 
-			"CONCAT ( DATA DATA )\n" + 
-			"Concatenate the 2 data values into 1 value . Both values must be the same DATA type. \n" + 
+			"CONCAT ( DATA_1 DATA_2 ... DATA_n )\n" + 
+			"Concatenate all the values into 1 value. All values must be the same DATA type \n" + 
 			"\n" + 
 			"LEN ( HEX )\n" + 
 			"Length of the data\n" + 
-			"\n" + 
 			"REV ( HEX )\n" + 
 			"Reverse the data\n" + 
 			"\n" + 
@@ -109,11 +105,14 @@ public class tutorial extends CommandFunction{
 			"RPLVAR ( SCRIPT SCRIPT SCRIPT ) \n" + 
 			"In a script, replace a variable definition with the following Expression. Can be used on @SCRIPT or other to create a covenant with new variables and check outputs.\n" + 
 			"\n" + 
+			"GET ( NUMBER NUMBER .. NUMBER )\n" + 
+			"Return the array value set with LET ( EXPRESSION EXPRESSION .. EXPRESSION )  \n" + 
+			"\n" + 
 			"ASCII ( HEX )\n" + 
 			"Convert the HEX value of a script value to a script\n" + 
 			"\n" + 
-			"BOOLEAN ( VALUE )\n" + 
-			"Convert to TRUE or FALSE value.\n" + 
+			"BOOL ( VALUE )\n" + 
+			"Convert to TRUE or FALSE value\n" + 
 			"\n" + 
 			"HEX ( SCRIPT )\n" + 
 			"Convert SCRIPT to HEX\n" + 
@@ -152,7 +151,7 @@ public class tutorial extends CommandFunction{
 			"Get the BINARY value of the bit at the position.\n" + 
 			"\n" + 
 			"CHAINSHA ( HEX HEX ) \n" + 
-			"Recursively hash the first HEX value with the proof provided in the second. A proof is a BYTE denoting left or right with a hex data value. Returns the final result that can be checked in script. \n" + 
+			"Recursively hash the first HEX value with the proof provided in the second. A proof is a BYTE denoting left or right with a hex data value. Returns the final result that can be checked in script \n" + 
 			"\n" + 
 			"SHA3 ( HEX ) \n" + 
 			"Returns the SHA3 value of the HEX value\n" + 
@@ -167,7 +166,7 @@ public class tutorial extends CommandFunction{
 			"Returns true if the transaction is signed by N of the public keys\n" + 
 			"\n" + 
 			"CHECKSIG ( HEX HEX )\n" + 
-			"Check valid signature with provided public key.\n" + 
+			"Check valid signature with provided public key\n" + 
 			"\n" + 
 			"GETOUTADDR ( BYTE ) \n" + 
 			"Return the HEX address of the specified output\n" + 
@@ -179,7 +178,7 @@ public class tutorial extends CommandFunction{
 			"Return the token id of the specified output\n" + 
 			"\n" + 
 			"VERIFYOUT ( BYTE HEX NUMBER HEX )\n" + 
-			"Verify the specified output has the specified address, amount and tokenid. \n" + 
+			"Verify the specified output has the specified address, amount and tokenid\n" + 
 			"\n" + 
 			"GETINADDR ( BYTE ) \n" + 
 			"Return the HEX address of the specified input\n" + 
@@ -191,7 +190,7 @@ public class tutorial extends CommandFunction{
 			"Return the token id of the specified input\n" + 
 			"\n" + 
 			"VERIFYIN ( BYTE HEX NUMBER HEX )\n" + 
-			"Verify the specified input has the specified address, amount and tokenid. \n" + 
+			"Verify the specified input has the specified address, amount and tokenid\n" + 
 			"\n" + 
 			"SUMINTOK ( HEX )\n" + 
 			"Sum the input values of a certain token \n" + 
@@ -203,7 +202,10 @@ public class tutorial extends CommandFunction{
 			"Return the state value for the given number\n" + 
 			"\n" + 
 			"PREVSTATE ( NUMBER )\n" + 
-			"Return the state value stored in the MMR data in the initial transaction this input was created. Allows for a state to be maintained from 1 spend to the next.\n" + 
+			"Return the state value stored in the MMR data in the initial transaction this input was created. Allows for a state to be maintained from 1 spend to the next\n" + 
+			"\n" + 
+			"SAMESTATE ( NUMBER [NUMBER] )\n" + 
+			"Return TRUE if the previous state and current state are the same. If 2 parameters are set then checks all the values inbetween the 2 values inclusively\n" + 
 			"\n" + 
 			"*DYNSTATE ( NUMBER  EXPRESSION )\n" + 
 			"Can be called only once per transaction. Will change the State value to the expression value.  N = N+1. This way rolling transactions are possible. Multiple calls to the same input in the same block.\n" + 

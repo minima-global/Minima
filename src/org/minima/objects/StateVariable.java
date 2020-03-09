@@ -16,16 +16,16 @@ import org.minima.utils.json.JSONObject;
 public class StateVariable implements Streamable {
 
 	/**
+	 * Integer for the port.. 0-255
+	 * @param zData
+	 */
+	MiniByte mPort;
+	
+	/**
 	 * The data can represent any of the value types used in script..
 	 * HEX, Number or Script
 	 */
 	MiniString mData; 
-	
-	/**
-	 * Integer for the port..
-	 * @param zData
-	 */
-	MiniNumber mPort;
 	
 	/**
 	 * Port and Data..
@@ -33,12 +33,9 @@ public class StateVariable implements Streamable {
 	 * @param zPort
 	 * @param zData
 	 */
-	public StateVariable(MiniNumber zPort, String zData) {
-		//All state vars are actually script variables..
-		String cleanvar = Contract.cleanScript(zData);
-		
-		mData     = new MiniString(cleanvar);
-		mPort	  = zPort;
+	public StateVariable(int zPort, String zData) {
+		mPort	  = new MiniByte(zPort);
+		mData     = new MiniString(Contract.cleanScript(zData));
 	}
 	
 	private StateVariable() {}
@@ -51,8 +48,8 @@ public class StateVariable implements Streamable {
 		return mData;
 	}
 	
-	public MiniNumber getPort() {
-		return mPort;
+	public int getPort() {
+		return mPort.getValue();
 	}
 	
 	public JSONObject toJSON() {
@@ -75,7 +72,7 @@ public class StateVariable implements Streamable {
 
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
-		mPort = MiniNumber.ReadFromStream(zIn);
+		mPort = MiniByte.ReadFromStream(zIn);
 		mData = MiniString.ReadFromStream(zIn);
 	}
 	

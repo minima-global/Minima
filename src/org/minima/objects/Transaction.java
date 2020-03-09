@@ -98,9 +98,9 @@ public class Transaction implements Streamable {
 	 * @param zStateNum
 	 * @return
 	 */
-	public StateVariable getStateValue(MiniNumber zStateNum) {
+	public StateVariable getStateValue(int zStateNum) {
 		for(StateVariable sv : mState) {
-			if(sv.getPort().isEqual(zStateNum)){
+			if(sv.getPort() == zStateNum){
 				return sv;
 			}
 		}
@@ -113,9 +113,9 @@ public class Transaction implements Streamable {
 	 * @param zStateNum
 	 * @return
 	 */
-	public boolean stateExists(MiniNumber zStateNum) {
+	public boolean stateExists(int zStateNum) {
 		for(StateVariable sv : mState) {
-			if(sv.getPort().isEqual(zStateNum)){
+			if(sv.getPort() == zStateNum){
 				return true;
 			}
 		}
