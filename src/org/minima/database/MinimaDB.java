@@ -356,64 +356,6 @@ public class MinimaDB {
 		}
 	}
 	
-//	private void storeRelevantCoins(TxPOW zTxpow, MiniNumber zBlock) {
-//		//get the Transaction
-//		Transaction trans    = zTxpow.getTransaction();
-//				
-//		//Base MMR.. get the one at this block time as may have changed infuture..
-//		MMRSet basemmr = getMainTree().getChainTip().getMMRSet().getParentAtTime(zBlock);
-//		
-//		//Cycle ins and outs
-//		ArrayList<Coin> ins  = trans.getAllInputs();
-//		for(Coin in : ins) {
-//			if(getUserDB().isAddressRelevant(in.getAddress())) {
-//				//Get the MMREntry
-//				MMREntry mmr = basemmr.findEntry(in.getCoinID());
-//				
-//				CoinDBRow inrow = getCoinDB().addCoinRow(in);
-//				
-//				inrow.setIsSpent(true);
-//				inrow.setIsInBlock(true);
-//				inrow.setInBlockNumber(zBlock);
-//				inrow.setMMREntry(mmr.getEntry());
-//			}
-//		}
-//		
-//		//The HASH of the Transaction.. needed for CoinID
-//		MiniData32 transhash = Crypto.getInstance().hashObject(trans);
-//		int counter=0;
-//		
-//		ArrayList<Coin> outs = trans.getAllOutputs();
-//		for(Coin out : outs) {
-//			if(getUserDB().isAddressRelevant(out.getAddress())) {
-//				//Now calculate the CoinID / TokenID
-//				MiniData32 coinid = Crypto.getInstance().hashObjects(transhash, new MiniByte(counter));
-//
-//				//Is this a token create output..
-//				MiniData32 tokid = out.getTokenID();
-//				if(out.getTokenID().isNumericallyEqual(Coin.TOKENID_CREATE)) {
-//					//Set the TokenID to the COinID..
-//					tokid = coinid;
-//				}
-//				
-//				//Get the MMREntry
-//				MMREntry mmr = basemmr.findEntry(coinid);
-//				
-//				//Store it..
-//				Coin cc = new Coin(coinid, out.getAddress(), out.getAmount(), tokid);
-//
-//				//Store it..
-//				CoinDBRow outrow = getCoinDB().addCoinRow(cc);
-//				
-//				outrow.setIsSpent(false);
-//				outrow.setIsInBlock(true);
-//				outrow.setInBlockNumber(zBlock);
-//				outrow.setMMREntry(mmr.getEntry());
-//			}
-//			counter++;
-//		}
-//	}
-	
 	/**
 	 * Recursively adds any unaccounted for children
 	 * @param zParentID
