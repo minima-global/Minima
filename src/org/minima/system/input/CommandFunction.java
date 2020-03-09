@@ -22,6 +22,7 @@ import org.minima.system.input.functions.printtree;
 import org.minima.system.input.functions.quit;
 import org.minima.system.input.functions.reconnect;
 import org.minima.system.input.functions.runscript;
+import org.minima.system.input.functions.search;
 import org.minima.system.input.functions.send;
 import org.minima.system.input.functions.status;
 import org.minima.system.input.functions.test;
@@ -56,7 +57,7 @@ public abstract class CommandFunction {
 			new gimme50(), new help(), new intro(), new minetrans(), new newaddress(), new coins(), new txpowinfo(), new keys(),
 			new newscript(), new printchain(), new printtree(), new quit(),new reconnect(), new runscript(), new cleanscript(), 
 			new send(), new status(), new test(), new trace(), new tutorial(), new history(), 
-			new exportkey(), new importkey(), new exportcoin(), new importcoin(),
+			new exportkey(), new importkey(), new exportcoin(), new importcoin(), new search(),
 			new txncreate(), new txndelete(), new txninput(), new txnlist(), new txnstatevar(), 
 			new txnoutput(), new txnpost(), new txnsign(), new txnvalidate()
 		};  

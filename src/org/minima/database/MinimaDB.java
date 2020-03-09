@@ -330,27 +330,33 @@ public class MinimaDB {
 					//And add to our list..
 					CoinDBRow inrow = getCoinDB().addCoinRow(cc);
 					
+					//Update
+					inrow.setIsSpent(mmrcoin.getData().isSpent());
+					inrow.setIsInBlock(true);
+					inrow.setInBlockNumber(zMMRSet.getBlockTime());
+					inrow.setMMREntry(mmrcoin.getEntry());
+					
 //					SimpleLogger.log("Coin found "+inrow);
 					
-					//Is this an unnecessary update..
-					boolean doit = true;
-					boolean spent = mmrcoin.getData().isSpent();
-					if(inrow.isInBlock()) {
-						if(inrow.isSpent() == spent) {
-							//Nothing to do just leave.. updating the same info
-							doit = false;
-						}
-					}
-					
-					if(doit) {
-						//Update
-						inrow.setIsSpent(mmrcoin.getData().isSpent());
-						inrow.setIsInBlock(true);
-						inrow.setInBlockNumber(zMMRSet.getBlockTime());
-						inrow.setMMREntry(mmrcoin.getEntry());
-					
-//						SimpleLogger.log("Coin added to DB from MMRSET.. "+cc+" spent:"+mmrcoin.getData().isSpent()+" time:"+zMMRSet.getBlockTime());
-					}
+//					//Is this an unnecessary update..
+//					boolean doit = true;
+//					boolean spent = mmrcoin.getData().isSpent();
+//					if(inrow.isInBlock()) {
+//						if(inrow.isSpent() == spent) {
+//							//Nothing to do just leave.. updating the same info
+//							doit = false;
+//						}
+//					}
+//					
+//					if(doit) {
+//						//Update
+//						inrow.setIsSpent(mmrcoin.getData().isSpent());
+//						inrow.setIsInBlock(true);
+//						inrow.setInBlockNumber(zMMRSet.getBlockTime());
+//						inrow.setMMREntry(mmrcoin.getEntry());
+//					
+////						SimpleLogger.log("Coin added to DB from MMRSET.. "+cc+" spent:"+mmrcoin.getData().isSpent()+" time:"+zMMRSet.getBlockTime());
+//					}
 				}
 			}
 		}
@@ -554,9 +560,9 @@ public class MinimaDB {
 		//Do we have any inputs with this address..
 		ArrayList<CoinDBRow> relevant = getCoinDB().getComplete();
 		for(CoinDBRow row : relevant) {
-			if(row.isInBlock() && !row.isSpent()){
+			if(row.isInBlock() && !row.isSpent() && row.getCoin().getTokenID().isExactlyEqual(zTokenID)){
 				MiniNumber depth = top.sub(row.getInBlockNumber());
-				if(depth.isMoreEqual(GlobalParams.MINIMA_CONFIRM_DEPTH) && row.getCoin().getTokenID().isExactlyEqual(zTokenID)) {
+				if(depth.isMoreEqual(GlobalParams.MINIMA_CONFIRM_DEPTH)) {
 					//Is this a simple address..
 					if(getUserDB().isSimpleAddress(row.getCoin().getAddress())) {
 						confirmed.add(row.getCoin());	

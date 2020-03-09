@@ -8,6 +8,7 @@ import org.minima.GlobalParams;
 import org.minima.database.MinimaDB;
 import org.minima.database.coindb.CoinDBPrinter;
 import org.minima.database.coindb.CoinDBRow;
+import org.minima.database.mmr.MMREntry;
 import org.minima.database.mmr.MMRPrint;
 import org.minima.database.mmr.MMRSet;
 import org.minima.database.txpowdb.TxPOWDBRow;
@@ -100,20 +101,45 @@ public class ConsensusPrint {
 		
 		}else if(zMessage.isMessageType(CONSENSUS_SEARCH)){
 			String address = zMessage.getString("address");
-			
-			JSONArray allcoins = new JSONArray();
+			MiniHash addr  = new MiniHash(address);
+			 
 			
 			//Now search for that address..
-			ArrayList<TxPOWDBRow> alltxpow = getMainDB().getTxPowDB().getAllTxPOWDBRow();
-			for(TxPOWDBRow txpow : alltxpow) {
-				//Is it in a block..
-				if(txpow.isInBlock()) {
-					//Check the address
-					Transaction trans = txpow.getTxPOW().getTransaction();
-					
+			BlockTreeNode topblk = getMainDB().getMainTree().getChainTip();
+			JSONArray allcoins = new JSONArray();
+			
+			MMRSet topmmr = topblk.getMMRSet().
+					getParentAtTime(topblk.getTxPow().getBlockNumber().sub(GlobalParams.MINIMA_CONFIRM_DEPTH));
+			
+			MMRSet mmrset = topmmr;
+			ArrayList<String> addedcoins = new ArrayList<String>();
+			while(mmrset != null) {
+				//Search for the address..
+				ArrayList<MMREntry> zero = mmrset.getZeroRow();
+				
+				for(MMREntry coinmmr : zero) {
+					if(!coinmmr.getData().isHashOnly()) {
+						if(!coinmmr.getData().isSpent() && coinmmr.getData().getCoin().getAddress().isExactlyEqual(addr)) {
+							String entry = coinmmr.getEntry().toString();
+							
+							//Only add once..
+							if(!addedcoins.contains(entry)) {
+								addedcoins.add(entry);
+								allcoins.add(topmmr.getProof(coinmmr.getEntry()));
+//								System.out.println("ADDED : "+mmrset.getBlockTime()+" "+coinmmr.getEntry()+") "+coinmmr.getData());
+							}
+						}
+					}
 				}
 				
+				//Get the parent..
+				mmrset = mmrset.getParent();
 			}
+			
+			//Now check whether they are unspent..
+			JSONObject dets = InputHandler.getResponseJSON(zMessage);
+			dets.put("coins", allcoins);
+			InputHandler.endResponse(zMessage, true, "");
 			
 		}else if(zMessage.isMessageType(CONSENSUS_BALANCE)){
 			//Current top block
@@ -138,7 +164,7 @@ public class ConsensusPrint {
 			UserDB userdb = getMainDB().getUserDB();
 			ArrayList<CoinDBRow> coins = getMainDB().getCoinDB().getComplete();
 			for(CoinDBRow coin : coins) {
-				//Is this one of ours ? Could be an import of someone elses 
+				//Is this one of ours ? Could be an import or someone elses 
 				boolean rel = userdb.isAddressRelevant(coin.getCoin().getAddress());
 				
 				if(coin.isInBlock() && rel) {
