@@ -242,6 +242,11 @@ public class ConsensusUser {
 				}
 			}
 			
+			//Set the BLKDIFF
+			MiniNumber blk   = cc.getGlobal("@BLKNUM").getNumber();
+			MiniNumber blkin = cc.getGlobal("@INBLKNUM").getNumber();
+			cc.setGlobalVariable("@BLKDIFF", new NumberValue(blk.sub(blkin)));
+			
 			//Run it!
 			cc.run();
 		

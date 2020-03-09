@@ -484,6 +484,7 @@ public class Contract {
 		script = script.replaceAll(" @totin "	, " @TOTIN "); 
 		script = script.replaceAll(" @totout "	, " @TOTOUT ");
 		script = script.replaceAll(" @inblknum ", " @INBLKNUM ");
+		script = script.replaceAll(" @blkdiff ", " @BLKDIFF ");
 		
 		//And now do all the functions
 		for(MinimaFunction func : MinimaFunction.ALL_FUNCTIONS) {

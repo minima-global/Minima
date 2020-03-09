@@ -139,6 +139,8 @@ public class TxPOWChecker {
 				String address = input.getAddress().toString();
 				
 				cc.setGlobalVariable("@BLKNUM", new NumberValue(zBlockNumber));
+				cc.setGlobalVariable("@INBLKNUM", new NumberValue(proof.getMMRData().getInBlock()));
+				cc.setGlobalVariable("@BLKDIFF", new NumberValue(zBlockNumber.sub(proof.getMMRData().getInBlock())));
 				cc.setGlobalVariable("@INPUT", new NumberValue(i));
 				cc.setGlobalVariable("@AMOUNT", new NumberValue(input.getAmount()));
 				cc.setGlobalVariable("@ADDRESS", new HEXValue(address));
@@ -147,7 +149,6 @@ public class TxPOWChecker {
 				cc.setGlobalVariable("@SCRIPT", new ScriptValue(script));
 				cc.setGlobalVariable("@TOTIN", new NumberValue(zTrans.getAllInputs().size()));
 				cc.setGlobalVariable("@TOTOUT", new NumberValue(zTrans.getAllOutputs().size()));
-				cc.setGlobalVariable("@INBLKNUM", new NumberValue(proof.getMMRData().getInBlock()));
 				
 				//Run it!
 				cc.run();
