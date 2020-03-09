@@ -10,6 +10,7 @@ import org.minima.database.coindb.CoinDBPrinter;
 import org.minima.database.coindb.CoinDBRow;
 import org.minima.database.mmr.MMRPrint;
 import org.minima.database.mmr.MMRSet;
+import org.minima.database.txpowdb.TxPOWDBRow;
 import org.minima.database.txpowdb.TxPowDBPrinter;
 import org.minima.database.txpowtree.BlockTreeNode;
 import org.minima.database.txpowtree.BlockTreePrinter;
@@ -19,6 +20,7 @@ import org.minima.objects.Address;
 import org.minima.objects.Coin;
 import org.minima.objects.PubPrivKey;
 import org.minima.objects.TokenDetails;
+import org.minima.objects.Transaction;
 import org.minima.objects.TxPOW;
 import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
@@ -40,6 +42,7 @@ public class ConsensusPrint {
 	public static final String CONSENSUS_COINS 				= CONSENSUS_PREFIX+"COINS";
 	public static final String CONSENSUS_TXPOW 				= CONSENSUS_PREFIX+"TXPOW";
 	public static final String CONSENSUS_KEYS 				= CONSENSUS_PREFIX+"KEYS";
+	public static final String CONSENSUS_SEARCH 			= CONSENSUS_PREFIX+"SEARCH";
 	
 	public static final String CONSENSUS_HISTORY 		    = CONSENSUS_PREFIX+"HISTORY";
 	
@@ -95,6 +98,23 @@ public class ConsensusPrint {
 			BlockTreePrinter treeprint = new BlockTreePrinter(getMainDB().getMainTree(), true);
 			treeprint.printtree();
 		
+		}else if(zMessage.isMessageType(CONSENSUS_SEARCH)){
+			String address = zMessage.getString("address");
+			
+			JSONArray allcoins = new JSONArray();
+			
+			//Now search for that address..
+			ArrayList<TxPOWDBRow> alltxpow = getMainDB().getTxPowDB().getAllTxPOWDBRow();
+			for(TxPOWDBRow txpow : alltxpow) {
+				//Is it in a block..
+				if(txpow.isInBlock()) {
+					//Check the address
+					Transaction trans = txpow.getTxPOW().getTransaction();
+					
+				}
+				
+			}
+			
 		}else if(zMessage.isMessageType(CONSENSUS_BALANCE)){
 			//Current top block
 			MiniNumber top = getMainDB().getTopBlock();
@@ -118,7 +138,6 @@ public class ConsensusPrint {
 			UserDB userdb = getMainDB().getUserDB();
 			ArrayList<CoinDBRow> coins = getMainDB().getCoinDB().getComplete();
 			for(CoinDBRow coin : coins) {
-				
 				//Is this one of ours ? Could be an import of someone elses 
 				boolean rel = userdb.isAddressRelevant(coin.getCoin().getAddress());
 				
