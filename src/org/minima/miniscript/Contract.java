@@ -131,7 +131,11 @@ public class Contract {
 		mExceptionString = "";
 		
 		mNumInstructions = 0;
-				
+		
+		//Begin..
+		traceLog("Contract   : "+mRamScript);
+		traceLog("Size       : "+mRamScript.length());
+		
 		//Load the Signatures
 		StringTokenizer strtok = new StringTokenizer(zSigs, "#");
 		while(strtok.hasMoreTokens()) {
@@ -139,10 +143,6 @@ public class Contract {
 			traceLog("Signature : "+sig);
 			mSignatures.add( Value.getValue(sig) );
 		}
-		
-		//Begin..
-		traceLog("Contract   : "+mRamScript);
-		traceLog("Size       : "+mRamScript.length());
 		
 		//Transaction..
 		traceLog("Transaction   : "+mTransaction.toString());

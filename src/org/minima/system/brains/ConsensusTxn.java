@@ -279,23 +279,21 @@ public class ConsensusTxn {
 			//Null value means there is something wrong
 			if(newwit == null) {
 				resp.put("mmr_proof", false);
-				resp.put("script_check", false);
-				resp.put("txnvalid", false);
-				InputHandler.endResponse(zMessage, true, "");
-				return;
 			}else {
 				resp.put("mmr_proof", true);
 			}
 			
 			//And Check the actual Transaction..
+			JSONArray contractlogs = new JSONArray();
 			boolean checkok = TxPOWChecker.checkTransactionMMR(trx, wit, getMainDB(),
 					getMainDB().getTopBlock(),
-					getMainDB().getMainTree().getChainTip().getMMRSet(),false);
+					getMainDB().getMainTree().getChainTip().getMMRSet(),false,contractlogs);
 			
 			resp.put("script_check", checkok);
+			resp.put("contracts", contractlogs);
 			
 			//Final full check..
-			resp.put("txnvalid", vamounts && checkok);
+			resp.put("txnvalid", vamounts && checkok && (newwit!=null) );
 			
 			InputHandler.endResponse(zMessage, true, "");
 			

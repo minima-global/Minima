@@ -293,6 +293,12 @@ public class ConsensusHandler extends SystemHandler {
 			//Add it to the current TX-POW
 			TxPOW txpow = getMainDB().getCurrentTxPow(trans, wit);
 			
+			//Is is valid.. ?
+			if(txpow==null) {
+				InputHandler.endResponse(zMessage, false, "Invalid Transaction");
+				return;
+			}
+			
 			//Send it to the Miner..
 			Message mine = new Message(TXMiner.TXMINER_MINETXPOW).addObject("txpow", txpow);
 			InputHandler.addResponseMesage(mine, zMessage);
@@ -306,9 +312,9 @@ public class ConsensusHandler extends SystemHandler {
 			
 		}else if ( zMessage.isMessageType(CONSENSUS_CREATETRANS) ) {
 			//How much to who ?
-			String address 		= zMessage.getString("address");
+			String address 		= new MiniHash(zMessage.getString("address")).to0xString();
+			String tokenid 	   	= new MiniHash(zMessage.getString("tokenid")).to0xString();
 			String amount  		= zMessage.getString("amount");
-			String tokenid 	   	= zMessage.getString("tokenid");
 			
 			//The Token Hash
 			MiniHash tok       		= new MiniHash(tokenid);

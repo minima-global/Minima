@@ -24,6 +24,8 @@ import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.input.functions.gimme50;
 import org.minima.utils.Crypto;
+import org.minima.utils.json.JSONArray;
+import org.minima.utils.json.JSONObject;
 
 public class TxPOWChecker {
 	
@@ -72,11 +74,11 @@ public class TxPOWChecker {
 		return checkTransactionMMR(zTxPOW.getTransaction(), zTxPOW.getWitness(), zDB, zDB.getTopBlock(), zDB.getMainTree().getChainTip().getMMRSet(), false);
 	}
 	
-//	public static boolean checkTransactionMMR(Transaction zTrans, Witness zWit, MinimaDB zDB, MiniNumber zBlockNumber, MMRSet zMMRSet) {
-//		return checkTransactionMMR(zTrans, zWit, zDB, zBlockNumber, zMMRSet, true);
-//	}
-		
 	public static boolean checkTransactionMMR(Transaction zTrans, Witness zWit, MinimaDB zDB, MiniNumber zBlockNumber, MMRSet zMMRSet, boolean zTouchMMR) {
+		return checkTransactionMMR(zTrans, zWit, zDB, zBlockNumber, zMMRSet, zTouchMMR, new JSONArray());	
+	}
+	
+	public static boolean checkTransactionMMR(Transaction zTrans, Witness zWit, MinimaDB zDB, MiniNumber zBlockNumber, MMRSet zMMRSet, boolean zTouchMMR, JSONArray zContractLog) {
 		//Check the input scripts
 		ArrayList<Coin> inputs  = zTrans.getAllInputs();
 		
@@ -90,16 +92,27 @@ public class TxPOWChecker {
 			//Get the Input
 			Coin input = inputs.get(i);
 
+			//The contract execution log
+			JSONObject contractlog = new JSONObject();
+			zContractLog.add(contractlog);
+			
 			//Get the Script..
 			String script = zWit.getScript(i);
+			
+			contractlog.put("input", i);
+			contractlog.put("script", script);
 			
 			if(input.getCoinID().isExactlyEqual(gimme50.COINID_INPUT) && input.getAmount().isLessEqual(new MiniNumber("50"))){
 				//We good.. TESTNET allows up to 50 printed..
 				//..
+				contractlog.put("isgimme50", true);
 			}else {
+				contractlog.put("isgimme50", false);
+				
 				//Check the Address is the hash of the SCRIPT
 				Address scraddr = new Address(script);
 				if(!scraddr.getAddressData().isExactlyEqual(input.getAddress())) {
+					contractlog.put("error", "Serious - Invalid Address for script!");
 					return false;
 				}
 				
@@ -114,11 +127,13 @@ public class TxPOWChecker {
 				//Is the proof chain valid
 				boolean valid = zMMRSet.checkProof(proof);
 				if(!valid) {
+					contractlog.put("error", "Invalid MMR Proof");
 					return false;
 				}
 				
 				//Is this input for the correct details..
 				if(!proof.checkCoin(input)) {
+					contractlog.put("error", "Coin details proof miss-match");
 					return false;
 				}
 				
@@ -152,6 +167,15 @@ public class TxPOWChecker {
 				
 				//Run it!
 				cc.run();
+				
+				contractlog.put("script", cc.getMiniScript());
+				contractlog.put("size", cc.getMiniScript().length());
+				contractlog.put("instructions", cc.getNumberOfInstructions());
+				contractlog.put("address", input.getAddress().to0xString());
+				contractlog.put("parseok", cc.isParseOK());
+				contractlog.put("parse", cc.getCompleteTraceLog());
+				contractlog.put("exception", cc.isException());
+				contractlog.put("result", cc.isSuccess());
 				
 				//and.. ?
 				if(!cc.isSuccess()) {

@@ -43,7 +43,7 @@ public class VERIFYOUT extends MinimaFunction{
 		//Check output exists..
 		ArrayList<Coin> outs = trans.getAllOutputs();
 		if(outs.size()<=output) {
-			throw new ExecutionException("Output number too high "+output+"/"+outs.size());
+			throw new ExecutionException("VERIFYOUT Output number too high "+output+"/"+outs.size());
 		}
 		
 		//Get it..
@@ -55,9 +55,6 @@ public class VERIFYOUT extends MinimaFunction{
 		boolean tok  = tokenid.isExactlyEqual(cc.getTokenID());  
 		
 		boolean ver = addr && amt && tok;
-		
-		//Log it..
-		zContract.traceLog("VERIFYOUT returns "+ver+" address:"+addr+" amount:"+amt+" tokenid:"+tok);
 		
 		//Return if all true
 		return new BooleanValue( ver );
