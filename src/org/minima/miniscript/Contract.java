@@ -432,6 +432,7 @@ public class Contract {
 		if(ret==null) {
 			throw new ExecutionException("Global not found - "+zGlobal);
 		}
+		
 		return ret;
 	}
 	
