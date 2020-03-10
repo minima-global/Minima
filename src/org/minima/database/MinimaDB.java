@@ -330,11 +330,15 @@ public class MinimaDB {
 					//And add to our list..
 					CoinDBRow inrow = getCoinDB().addCoinRow(cc);
 					
-					//Update
-					inrow.setIsSpent(mmrcoin.getData().isSpent());
-					inrow.setIsInBlock(true);
-					inrow.setInBlockNumber(zMMRSet.getBlockTime());
-					inrow.setMMREntry(mmrcoin.getEntry());
+					//Exsts already
+					boolean spent = mmrcoin.getData().isSpent();
+					if(!inrow.isInBlock() || inrow.isSpent() != spent) {
+						//Update
+						inrow.setIsSpent(spent);
+						inrow.setIsInBlock(true);
+						inrow.setInBlockNumber(zMMRSet.getBlockTime());
+						inrow.setMMREntry(mmrcoin.getEntry());
+					}
 					
 //					SimpleLogger.log("Coin found "+inrow);
 					

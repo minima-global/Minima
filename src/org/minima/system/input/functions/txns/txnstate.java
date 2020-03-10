@@ -4,11 +4,11 @@ import org.minima.system.brains.ConsensusTxn;
 import org.minima.system.input.CommandFunction;
 import org.minima.utils.messages.Message;
 
-public class txnstatevar extends CommandFunction {
+public class txnstate extends CommandFunction {
 
-	public txnstatevar() {
-		super("txnstatevar");
-		setHelp("[id] [port] [variable]", "Add a state variable to the transaction", "");
+	public txnstate() {
+		super("txnstate");
+		setHelp("[id] [port] [value]", "Add a state variable to the transaction", "");
 	}
 
 	@Override
@@ -30,6 +30,6 @@ public class txnstatevar extends CommandFunction {
 	@Override
 	public CommandFunction getNewFunction() {
 		// TODO Auto-generated method stub
-		return new txnstatevar();
+		return new txnstate();
 	}
 }

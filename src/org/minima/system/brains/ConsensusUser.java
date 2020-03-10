@@ -79,16 +79,13 @@ public class ConsensusUser {
 			//Check we don't already have it..
 			Address addrchk = new Address(script);
 			String scriptcheck = getMainDB().getUserDB().getScript(addrchk.getAddressData());
-			if(!scriptcheck.equals("")) {
-				InputHandler.endResponse(zMessage, false, "Address already exists..");
-				return;	
+			if(scriptcheck.equals("")) {
+				getMainDB().getUserDB().newScriptAddress(script);
 			}
 			
-			Address addr = getMainDB().getUserDB().newScriptAddress(script);
-			
 			JSONObject resp = InputHandler.getResponseJSON(zMessage);
-			resp.put("address", addr.getAddressData().toString());
-			resp.put("script", addr.getScript().toString());
+			resp.put("address", addrchk.getAddressData().toString());
+			resp.put("script", addrchk.getScript().toString());
 			InputHandler.endResponse(zMessage, true, "");
 		
 		}else if(zMessage.isMessageType(CONSENSUS_NEWKEY)) {

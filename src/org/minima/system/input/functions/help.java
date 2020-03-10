@@ -10,7 +10,7 @@ import org.minima.system.input.functions.txns.txnlist;
 import org.minima.system.input.functions.txns.txnoutput;
 import org.minima.system.input.functions.txns.txnpost;
 import org.minima.system.input.functions.txns.txnsign;
-import org.minima.system.input.functions.txns.txnstatevar;
+import org.minima.system.input.functions.txns.txnstate;
 import org.minima.system.input.functions.txns.txnvalidate;
 
 public class help extends CommandFunction{
@@ -88,7 +88,7 @@ public class help extends CommandFunction{
 			addJSONDesc(new txndelete());
 			addJSONDesc(new txninput());
 			addJSONDesc(new txnoutput());
-			addJSONDesc(new txnstatevar());
+			addJSONDesc(new txnstate());
 			addJSONDesc(new txnsign());
 			addJSONDesc(new txnvalidate());
 			addJSONDesc(new txnpost());

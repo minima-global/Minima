@@ -142,6 +142,12 @@ public class ConsensusPrint {
 			InputHandler.endResponse(zMessage, true, "");
 			
 		}else if(zMessage.isMessageType(CONSENSUS_BALANCE)){
+			//Is this for a single address
+			String onlyaddress = "";
+			if(zMessage.exists("address")) {
+				onlyaddress = new MiniHash(zMessage.getString("address")).to0xString() ;
+			}
+			
 			//Current top block
 			MiniNumber top = getMainDB().getTopBlock();
 			
@@ -167,11 +173,17 @@ public class ConsensusPrint {
 				//Is this one of ours ? Could be an import or someone elses 
 				boolean rel = userdb.isAddressRelevant(coin.getCoin().getAddress());
 				
+				//Are we only checking one address
+				if(!onlyaddress.equals("")) {
+					rel = rel && ( coin.getCoin().getAddress().to0xString().equals(onlyaddress) );
+				}
+				
 				if(coin.isInBlock() && rel) {
 					//What Token..
 					String     tokid 	= coin.getCoin().getTokenID().to0xString();
 					MiniHash   tokhash 	= new MiniHash(tokid);
-					MiniNumber depth 	= top.sub(coin.getInBlockNumber());
+					MiniNumber blknum   = coin.getInBlockNumber();
+					MiniNumber depth 	= top.sub(blknum);
 					
 					//Get the Token Details.
 					TokenDetails td = getMainDB().getUserDB().getTokenDetail(tokhash);
@@ -233,94 +245,6 @@ public class ConsensusPrint {
 				}
 			}
 			
-//			//All the balances..
-//			JSONObject allbal = InputHandler.getResponseJSON(zMessage);
-//			JSONArray totbal = new JSONArray();
-//			
-//			//Now create a JSON Object
-//			Enumeration<String> keys = totals_confirmed.keys();
-//			while(keys.hasMoreElements())  {
-//				String key     = keys.nextElement();
-//				MiniNumber tot = totals_confirmed.get(key);
-//				
-//				//Store to the JSON Object
-//				JSONObject minbal = new JSONObject();
-//				minbal.put("tokenid", key);
-//				
-//				//Is this a token amount!
-//				if(!key.equals(Coin.MINIMA_TOKENID.to0xString())) {
-//					//Create the Token Hash
-//					MiniHash tokenid = new MiniHash(key);
-//					
-//					//Get the token details
-//					TokenDetails td = getMainDB().getUserDB().getTokenDetail(tokenid);
-//					if(td == null) {
-//						//ERROR you own tokens you have no details about
-//						minbal.put("token", "ERROR_UNKNOWN");
-//						minbal.put("tokenamount", "-1");
-//					}else{
-//						MiniNumber tottok = tot.mult(td.getScaleFactor());
-//						minbal.put("token", td.getName());
-//						minbal.put("tokenamount", tottok.toString());	
-//					}
-//					
-//					MiniNumber tottok = totals_confirmed.get(key);
-//				}else {
-//					minbal.put("token", "Minima");
-//					minbal.put("tokenamount", tot.toString());
-//				}
-//				
-//				//And the Amount in Minima
-//				minbal.put("amount", tot.toString());
-//				
-//				//Add to the Total balance sheet
-//				totbal.add(minbal);
-//			}	
-//			
-//			//Confirmed
-//			allbal.put("confirmed", totbal);
-//			totbal = new JSONArray();
-//			
-//			//Now create a JSON Object
-//			keys = totals_unconfirmed.keys();
-//			while(keys.hasMoreElements())  {
-//				String key = keys.nextElement();
-//				MiniNumber tot = totals_unconfirmed.get(key);
-//				
-//				JSONObject minbal = new JSONObject();
-//				minbal.put("tokenid", key);
-//				
-//				//Is this a token amount!
-//				if(!key.equals(Coin.MINIMA_TOKENID.to0xString())) {
-//					//Create the Token Hash
-//					MiniHash tokenid = new MiniHash(key);
-//					
-//					//Get the token details
-//					TokenDetails td = getMainDB().getUserDB().getTokenDetail(tokenid);
-//					if(td == null) {
-//						//ERROR you own tokens you have no details about
-//						minbal.put("token", "ERROR_UNKNOWN");
-//						minbal.put("tokenamount", "-1");
-//					}else{
-//						MiniNumber tottok = tot.mult(td.getScaleFactor());
-//						minbal.put("token", td.getName());
-//						minbal.put("tokenamount", tottok.toString());	
-//					}
-//					
-//					MiniNumber tottok = totals_confirmed.get(key);
-//				
-//				}else {
-//					minbal.put("token", "Minima");
-//					minbal.put("tokenamount", tot.toString());
-//				}
-//				
-//				//The Amount in Minima
-//				minbal.put("amount", tot.toString());
-//				
-//				totbal.add(minbal);
-//			}
-//			allbal.put("unconfirmed", totbal);
-
 			//All the balances..
 			JSONObject allbal = InputHandler.getResponseJSON(zMessage);
 			JSONArray totbal = new JSONArray();
@@ -375,7 +299,7 @@ public class ConsensusPrint {
 			//Return all or some
 			String address = "";
 			if(zMessage.exists("address")) {
-				address = zMessage.getString("address");
+				address = new MiniHash(zMessage.getString("address")).to0xString() ;
 			}
 			
 			//get the MMR
