@@ -304,6 +304,9 @@ public class ConsensusTxn {
 			//Final full check..
 			resp.put("txnvalid", vamounts && checkok && (newwit!=null) );
 			
+			//Clear the Witness proofs..
+			wit.clearProofs();
+			
 			InputHandler.endResponse(zMessage, true, "");
 			
 		}else if(zMessage.isMessageType(CONSENSUS_TXNSIGN)) {
