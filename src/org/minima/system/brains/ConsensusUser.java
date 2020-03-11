@@ -369,6 +369,9 @@ public class ConsensusUser {
 			resp.put("data", pd.to0xString());
 			InputHandler.endResponse(zMessage, true, "");
 			
+			dos.close();
+			baos.close();
+			
 		}else if(zMessage.isMessageType(CONSENSUS_EXPORTKEY)) {
 			MiniData pubk = (MiniData)zMessage.getObject("publickey");
 			

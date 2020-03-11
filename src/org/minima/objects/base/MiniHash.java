@@ -67,7 +67,7 @@ public class MiniHash extends MiniData {
 			hex = hex.substring(len-(HASH_LENGTH*2),len);	
 		}
 		
-		return "0x"+hex;
+		return "0x"+hex.toUpperCase();
 	}
 	
 	/**

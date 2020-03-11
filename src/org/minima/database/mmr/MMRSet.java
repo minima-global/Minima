@@ -151,7 +151,9 @@ public class MMRSet implements Streamable {
 	}
 	
 	public void addKeeper(MiniNumber zEntry) {
-		mKeepers.add(zEntry);
+		if(!isKeptAllready(zEntry)) {
+			mKeepers.add(zEntry);
+		}
 	}
 	
 	public MMRSet getParent() {

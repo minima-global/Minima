@@ -10,6 +10,8 @@ public class importcoin extends CommandFunction{
 
 	public importcoin() {
 		super("importcoin");
+		
+		setHelp("[data]", "Import the proof of a coin.", "");
 	}
 	
 	@Override

@@ -1,7 +1,9 @@
 package org.minima.system.input.functions;
 
 import org.minima.system.input.CommandFunction;
+import org.minima.system.input.functions.transfer.exportcoin;
 import org.minima.system.input.functions.transfer.exportkey;
+import org.minima.system.input.functions.transfer.importcoin;
 import org.minima.system.input.functions.transfer.importkey;
 import org.minima.system.input.functions.txns.txncreate;
 import org.minima.system.input.functions.txns.txndelete;
@@ -69,8 +71,14 @@ public class help extends CommandFunction{
 			addJSONDesc(new gimme50());
 			addJSONDesc(new send());
 			addJSONDesc(new balance());
+			
 			addJSONDesc(new coins());
+			addJSONDesc(new exportcoin());
+			addJSONDesc(new importcoin());
+			
 			addJSONDesc(new keys());
+			addJSONDesc(new exportkey());
+			addJSONDesc(new importkey());
 			
 			addJSONDesc(new txpowinfo());
 			
@@ -79,9 +87,6 @@ public class help extends CommandFunction{
 			addJSONDesc(new newscript());
 			addJSONDesc(new runscript());
 //			addJSONDesc(new cleanscript());
-			
-			addJSONDesc(new exportkey());
-			addJSONDesc(new importkey());
 			
 			addJSONDesc(new txnlist());
 			addJSONDesc(new txncreate());

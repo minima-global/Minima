@@ -1,5 +1,7 @@
 package org.minima.system.brains;
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -44,6 +46,9 @@ public class ConsensusTxn {
 	public static final String CONSENSUS_TXNVALIDATE 		= CONSENSUS_PREFIX+"TXNVALIDATE";
 	
 	public static final String CONSENSUS_TXNPOST 			= CONSENSUS_PREFIX+"TXNPOST";
+	
+	public static final String CONSENSUS_TXNEXPORT 			= CONSENSUS_PREFIX+"TXNEXPORT";
+	public static final String CONSENSUS_TXNIMPORT 			= CONSENSUS_PREFIX+"TXNIMPORT";
 	
 	MinimaDB mDB;
 	
@@ -331,6 +336,36 @@ public class ConsensusTxn {
 			wit.addSignature(pubk, signature);
 			
 			listTransactions(zMessage);
+		
+		}else if(zMessage.isMessageType(CONSENSUS_TXNEXPORT)) {
+			//Export the entire transaction as HEX data.. 
+			int trans     = zMessage.getInteger("transaction");
+			
+			//Check valid..
+			if(!checkTransactionValid(trans)) {
+				InputHandler.endResponse(zMessage, false, "Invalid TXN chosen : "+trans);
+				return;
+			}
+			
+			//Get the user row
+			UserDBRow row = getMainDB().getUserDB().getUserRow(trans);
+			
+			//Get the Transaction..
+			Transaction trx =  row.getTransaction();
+			Witness wit     = row.getWitness();
+			
+			//Output data stream
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			DataOutputStream dos = new DataOutputStream(baos);
+			
+			//We need to output all the Coins.. 
+			ArrayList<Coin> ins = trx.getAllInputs();
+			for(Coin in : ins) {
+				
+			}
+			
+			
+		
 		}
 		
 		
