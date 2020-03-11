@@ -23,7 +23,7 @@ public class GET extends MinimaFunction{
 		//Get all the parameters
 		ArrayList<Expression> params = getAllParameters();
 		for(Expression exp : params) {
-			ps += exp.getValue(zContract).getNumber().toString()+",";		
+			ps += exp.getValue(zContract).toString().trim()+",";		
 		}
 		
 		//Now get this string value from the Contract

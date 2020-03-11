@@ -598,7 +598,7 @@ public class Contract {
 //		String RamScript = "let x = true or false let y = [return x] Exec y";
 		
 //		String RamScript = "ASSERT VERIFYOUT ( ( @INPUT + 1 ) @ADDRESS ( @AMOUNT - amt ) @TOKENID )";
-		String RamScript = "let t = 1 LET ( t (3 - t*2) t ) = 123 let gg = get ( 1 1 t )";
+		String RamScript = "let t = 1 LET ( [ hello ] (3 - t*2) t ) = 123 let gg = get ( [hello] 1 t )";
 
 		//String RamScript = "let t = @SCRIPT let f = @AMOUNT +1 let g = State(1001) + [ sha3(123)]";
 
