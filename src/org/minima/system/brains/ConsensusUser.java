@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
@@ -288,20 +289,6 @@ public class ConsensusUser {
 				return;
 			}
 			
-//			//Do we already have it..
-//			MiniNumber entry = proof.getEntryNumber();
-//			MMRProof checker = basemmr.getProof(entry);
-//			if(checker != null) {
-//				//is It Complete..
-//				if(!checker.getMMRData().isHashOnly()) {
-//					//We have a complete copy already..
-//					JSONObject resp = InputHandler.getResponseJSON(zMessage);
-//					resp.put("proof", proof.toJSON());
-//					resp.put("valid", true);
-//					InputHandler.endResponse(zMessage, true, "");	
-//				}
-//			}
-			
 			//Get the MMRSet where this proof was made..
 			MMRSet proofmmr = basemmr.getParentAtTime(proof.getBlockTime());
 			if(proofmmr == null) {
@@ -391,6 +378,77 @@ public class ConsensusUser {
 				getMainDB().getUserDB().newSimpleAddress(newkey);
 			}
 		}
-			
+	}
+	
+	public static MMRProof importCoin(MinimaDB zDB, MiniData zCoinData) throws IOException{
+		ByteArrayInputStream bais = new ByteArrayInputStream(zCoinData.getData());
+		DataInputStream dis = new DataInputStream(bais);
+		
+		//Now make the proof..
+		MMRProof proof = MMRProof.ReadFromStream(dis);
+		
+		dis.close();
+		
+		//Get the MMRSet
+		MMRSet basemmr = zDB.getMainTree().getChainTip().getMMRSet();
+		
+		//Check it..
+		boolean valid  = basemmr.checkProof(proof);
+		
+		//Stop if invalid.. 
+		if(!valid) {
+			return null;
+		}
+		
+		//Get the MMRSet where this proof was made..
+		MMRSet proofmmr = basemmr.getParentAtTime(proof.getBlockTime());
+		if(proofmmr == null) {
+			return null;
+		}
+		
+		//Now add this proof to the set.. if not already added
+		MMREntry entry =  proofmmr.addExternalUnspentCoin(proof);
+		
+		//Error..
+		if(entry == null) {
+			return null;
+		}
+		
+		//And now refinalize..
+		proofmmr.finalizeSet();
+		
+		//Get the coin
+		Coin cc = entry.getData().getCoin();
+		
+		//add it to the database
+		CoinDBRow crow = zDB.getCoinDB().addCoinRow(cc);
+		crow.setIsSpent(entry.getData().isSpent());
+		crow.setIsInBlock(true);
+		crow.setInBlockNumber(entry.getData().getInBlock());
+		crow.setMMREntry(entry.getEntry());
+		
+		return proof;
+	}
+	
+	public static MiniData exportCoin(MinimaDB zDB, MiniHash zCoinID) throws IOException {
+		//The Base current MMRSet
+		MMRSet basemmr  = zDB.getMainTree().getChainTip().getMMRSet();
+		
+		//Get proofs from a while back so reorgs don't invalidate them..
+		MMRSet proofmmr = basemmr.getParentAtTime(zDB.getTopBlock().sub(GlobalParams.MINIMA_CONFIRM_DEPTH));
+		
+		//Find this coin..
+		CoinDBRow row  = zDB.getCoinDB().getCoinRow(zCoinID);
+		
+		//Get a proof from a while back.. more than confirmed depth, less than cascade
+		MMRProof proof = proofmmr.getProof(row.getMMREntry());
+		
+		//Now write this out to  MiniData Block
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		DataOutputStream dos = new DataOutputStream(baos);
+		proof.writeDataStream(dos);
+		dos.flush();
+		
+		return new MiniData(baos.toByteArray());
 	}
 }

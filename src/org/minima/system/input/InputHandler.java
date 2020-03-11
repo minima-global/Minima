@@ -74,6 +74,9 @@ public class InputHandler extends SystemHandler{
 					found.doFunction(inputs);	
 					
 				}catch(Exception exc) {
+					//Write the HELP for that function..
+					output.getDataJSON().put("help", found.getName()+" "+ found.getParams()+ " - " + found.getSimple());
+					
 					//Write error
 					output.endStatus(false,exc.toString());
 				}

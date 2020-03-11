@@ -1,12 +1,15 @@
 package org.minima.system.brains;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.util.ArrayList;
 import java.util.Random;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.coindb.CoinDBRow;
+import org.minima.database.mmr.MMRProof;
 import org.minima.database.userdb.UserDBRow;
 import org.minima.miniscript.Contract;
 import org.minima.objects.Address;
@@ -159,6 +162,7 @@ public class ConsensusTxn {
 			
 			//Set Script
 			wit.addScript(script);
+			
 			
 			listTransactions(zMessage);
 			
@@ -339,7 +343,7 @@ public class ConsensusTxn {
 		
 		}else if(zMessage.isMessageType(CONSENSUS_TXNEXPORT)) {
 			//Export the entire transaction as HEX data.. 
-			int trans     = zMessage.getInteger("transaction");
+			int trans = zMessage.getInteger("transaction");
 			
 			//Check valid..
 			if(!checkTransactionValid(trans)) {
@@ -354,18 +358,73 @@ public class ConsensusTxn {
 			Transaction trx =  row.getTransaction();
 			Witness wit     = row.getWitness();
 			
+			//Create the Correct Proofs..
+			getMainDB().createValidWitness(trx, wit);
+			
 			//Output data stream
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			DataOutputStream dos = new DataOutputStream(baos);
 			
-			//We need to output all the Coins.. 
-			ArrayList<Coin> ins = trx.getAllInputs();
-			for(Coin in : ins) {
-				
-			}
+//			//We need to output all the Coins.. 
+//			ArrayList<Coin> ins = trx.getAllInputs();
+//			
+//			//Tell the stream how many inputs proofs to come..
+//			dos.writeInt(ins.size());
+//			for(Coin in : ins) {
+//				//Export to Data..
+//				MiniData data = ConsensusUser.exportCoin(getMainDB(), in.getCoinID());
+//				
+//				//Now write to the collective..
+//				data.writeDataStream(dos);
+//			}
 			
+			//Now the whole transaction..
+			trx.writeDataStream(dos);
 			
+			//Now all the witness data
+			wit.writeDataStream(dos);
+			dos.flush();
+			
+			//Get the final Data..
+			MiniData transdata = new MiniData(baos.toByteArray()); 
+			
+			JSONObject resp = InputHandler.getResponseJSON(zMessage);
+			resp.put("transaction", transdata.to0xString());
+			InputHandler.endResponse(zMessage, true, "");
+			
+			dos.close();
 		
+		}else if(zMessage.isMessageType(CONSENSUS_TXNIMPORT)) {
+			//Import to this transaction 
+			int trans = zMessage.getInteger("transaction");
+			String data = zMessage.getString("data");
+			MiniData md = new MiniData(data);
+			
+			//Delete if Exists
+			getMainDB().getUserDB().deleteUserRow(trans);
+			UserDBRow row =  getMainDB().getUserDB().addUserRow(trans);
+			
+			//Convert to a data stream
+			ByteArrayInputStream bais = new ByteArrayInputStream(md.getData());
+			DataInputStream dis = new DataInputStream(bais);
+
+//			//Import all the proofs..
+//			int prooflen = dis.readInt();
+//			for(int i=0;i<prooflen;i++) {
+//				MiniData proofdata = MiniData.ReadFromStream(dis);
+//				
+//				MMRProof proof = ConsensusUser.importCoin(getMainDB(), proofdata);
+//				
+//				System.out.println("PROOF : "+proof.toJSON());
+//			}
+			
+			//Now get the TRansaction
+			row.getTransaction().readDataStream(dis);
+			
+			//And the Witness..
+			row.getWitness().readDataStream(dis);
+			
+			listTransactions(zMessage);
 		}
 		
 		

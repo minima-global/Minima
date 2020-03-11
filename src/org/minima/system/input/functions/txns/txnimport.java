@@ -9,16 +9,18 @@ public class txnimport extends CommandFunction{
 	public txnimport() {
 		super("txnimport");
 		
-		setHelp("[data]", "Import a transasction. Can then sign, edit and post it.", "");
+		setHelp("[id] [data]", "Import a transasction. Can then sign, edit and post it.", "");
 	}
 	
 	@Override
 	public void doFunction(String[] zInput) throws Exception {
 		//Which transaction
-		String data = zInput[1];
+		int id = Integer.parseInt(zInput[1]);
+		String data = zInput[2];
 		
 		//Send to the consensus Handler
 		Message msg = getResponseMessage(ConsensusTxn.CONSENSUS_TXNIMPORT);
+		msg.addInt("transaction", id);
 		msg.addString("data", data);
 	
 		getMainHandler().getConsensusHandler().PostMessage(msg);
