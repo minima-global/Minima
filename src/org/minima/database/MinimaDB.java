@@ -599,13 +599,22 @@ public class MinimaDB {
 		
 		//Cycle thrugh the inputs..
 		ArrayList<Coin> ins = zTransaction.getAllInputs();
+		int counter = 0;
 		for(Coin cc : ins) {
 			//Make sure script is set
-			String script = getUserDB().getScript(cc.getAddress());
-			if(script.equals("")) {
+			String script = zWitness.getScript(counter);
+			Address addr = new Address(script);
+			
+			if(!addr.getAddressData().isExactlyEqual(cc.getAddress())) {
 				System.out.println("ERROR UNKNOWN ADDRESS "+cc.getAddress()+" not in database..");
 				return null;
 			}
+			
+//			String script = getUserDB().getScript(cc.getAddress());
+//			if(script.equals("")) {
+//				System.out.println("ERROR UNKNOWN ADDRESS "+cc.getAddress()+" not in database..");
+//				return null;
+//			}
 			
 			//The CoinDB Entry
 			CoinDBRow row  = getCoinDB().getCoinRow(cc.getCoinID());
@@ -620,7 +629,9 @@ public class MinimaDB {
 			}
 			
 			//Add the proof for this coin..
-			zWitness.addMMRProof(proof);				
+			zWitness.addMMRProof(proof);
+			
+			counter++;
 		}
 		
 		return zWitness;

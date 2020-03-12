@@ -32,6 +32,6 @@ public class GlobalParams {
 	/**
 	 * Depth before we cascade..
 	 */
-	public static final int MINIMA_CASCADE_DEPTH     = 8;
+	public static final int MINIMA_CASCADE_DEPTH     = 16;
 	
 }

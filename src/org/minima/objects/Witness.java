@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import org.minima.database.mmr.MMRProof;
+import org.minima.miniscript.Contract;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniHash;
@@ -61,7 +62,7 @@ public class Witness implements Streamable {
 	}
 	
 	public void addScript(String zScript) {
-		mScripts.add(zScript);
+		mScripts.add(Contract.cleanScript(zScript));
 	}
 	
 	public String getScript(int zScript) {

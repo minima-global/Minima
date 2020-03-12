@@ -282,14 +282,20 @@ public class ConsensusTxn {
 			resp.put("burn", burn.toString());
 			resp.put("valid_amounts", outs.isLessEqual(ins));
 			
-			//Create a complete transaction
-			Witness newwit = getMainDB().createValidWitness(trx, wit);
-			
-			//Null value means there is something wrong
-			if(newwit == null) {
-				resp.put("mmr_proof", false);
+			//Only check if no proof
+			if(wit.getAllProofs().size()==0) {
+				//Create a complete transaction
+				Witness newwit = getMainDB().createValidWitness(trx, wit);
+				
+//				//Null value means there is something wrong
+//				if(newwit == null) {
+//					resp.put("mmr_proof", false);
+//				}else {
+//					resp.put("mmr_proof", true);
+//				}
+				resp.put("mmr_proofs_available", false);
 			}else {
-				resp.put("mmr_proof", true);
+				resp.put("mmr_proofs_available", true);
 			}
 			
 			//And Check the actual Transaction..
@@ -302,10 +308,7 @@ public class ConsensusTxn {
 			resp.put("contracts", contractlogs);
 			
 			//Final full check..
-			resp.put("txnvalid", vamounts && checkok && (newwit!=null) );
-			
-			//Clear the Witness proofs..
-			wit.clearProofs();
+			resp.put("txnvalid", vamounts && checkok);
 			
 			InputHandler.endResponse(zMessage, true, "");
 			

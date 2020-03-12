@@ -228,6 +228,46 @@ public class TxPOW implements Streamable {
 		txpow.put("isblock", _mIsBlockPOW);
 		txpow.put("txpowid", _mTxPOWID.toString());
 		txpow.put("parent", mParent.toString());
+		
+		//The Super parents are efficiently encoded in RLE
+		JSONArray supers = new JSONArray();
+		MiniHash old = null;
+		int counter=0;
+		for(int i=0;i<SUPERPARENT_NUM;i++) {
+			MiniHash curr = mSuperParents[i];
+			
+			if(old == null) {
+				old = curr;
+				counter++;
+			}else {
+				if(old.isExactlyEqual(curr)) {
+					counter++;
+					//Is this the last one..
+					if(i==SUPERPARENT_NUM-1) {
+						//Write it anyway..
+						JSONObject sp = new JSONObject();
+						sp.put("difficulty", i);
+						sp.put("count", counter);
+						sp.put("parent", curr.to0xString());
+						supers.add(sp);						
+					}
+					
+				}else {
+					//Write the old one..
+					JSONObject sp = new JSONObject();
+					sp.put("difficulty", i);
+					sp.put("count", counter);
+					sp.put("parent", old.to0xString());
+					supers.add(sp);
+					
+					//Reset
+					old=curr;
+					counter=1;
+				}
+			}
+		}
+		txpow.put("superparents", supers);
+		
 		txpow.put("blkdiff", mBlockDifficulty);
 		txpow.put("txndiff", mTxnDifficulty);
 		txpow.put("txn", mTransaction.toJSON());
