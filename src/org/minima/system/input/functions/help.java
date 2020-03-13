@@ -7,6 +7,8 @@ import org.minima.system.input.functions.transfer.importcoin;
 import org.minima.system.input.functions.transfer.importkey;
 import org.minima.system.input.functions.txns.txncreate;
 import org.minima.system.input.functions.txns.txndelete;
+import org.minima.system.input.functions.txns.txnexport;
+import org.minima.system.input.functions.txns.txnimport;
 import org.minima.system.input.functions.txns.txninput;
 import org.minima.system.input.functions.txns.txnlist;
 import org.minima.system.input.functions.txns.txnoutput;
@@ -91,6 +93,8 @@ public class help extends CommandFunction{
 			addJSONDesc(new txnlist());
 			addJSONDesc(new txncreate());
 			addJSONDesc(new txndelete());
+			addJSONDesc(new txnexport());
+			addJSONDesc(new txnimport());
 			addJSONDesc(new txninput());
 			addJSONDesc(new txnoutput());
 			addJSONDesc(new txnstate());
