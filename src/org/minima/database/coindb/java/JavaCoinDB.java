@@ -57,7 +57,7 @@ public class JavaCoinDB implements CoinDB{
 	@Override
 	public CoinDBRow getCoinRow(MiniHash zCoinID) {
 		for(CoinDBRow row : mRows) {
-			if(row.getCoin().getCoinID().isNumericallyEqual(zCoinID)) {
+			if(row.getCoin().getCoinID().isExactlyEqual(zCoinID)) {
 				return row;
 			}
 		}

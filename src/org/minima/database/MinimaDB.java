@@ -321,46 +321,31 @@ public class MinimaDB {
 		for(MMREntry mmrcoin : entries) {
 			if(!mmrcoin.getData().isHashOnly()) {
 				Coin cc = mmrcoin.getData().getCoin();
-				if(getUserDB().isAddressRelevant(cc.getAddress())) {
-					if(zAddKeeper) {
-						//Add it..
-						zMMRSet.addKeeper(mmrcoin.getEntry());
-					}
+				
+				boolean rel = getUserDB().isAddressRelevant(cc.getAddress());
 					
-					//And add to our list..
-					CoinDBRow inrow = getCoinDB().addCoinRow(cc);
-					
-					//Exsts already
-					boolean spent = mmrcoin.getData().isSpent();
-					if(!inrow.isInBlock() || inrow.isSpent() != spent) {
-						//Update
-						inrow.setIsSpent(spent);
-						inrow.setIsInBlock(true);
-						inrow.setInBlockNumber(zMMRSet.getBlockTime());
-						inrow.setMMREntry(mmrcoin.getEntry());
-					}
-					
-//					SimpleLogger.log("Coin found "+inrow);
-					
-//					//Is this an unnecessary update..
-//					boolean doit = true;
-//					boolean spent = mmrcoin.getData().isSpent();
-//					if(inrow.isInBlock()) {
-//						if(inrow.isSpent() == spent) {
-//							//Nothing to do just leave.. updating the same info
-//							doit = false;
-//						}
-//					}
-//					
-//					if(doit) {
-//						//Update
-//						inrow.setIsSpent(mmrcoin.getData().isSpent());
-//						inrow.setIsInBlock(true);
-//						inrow.setInBlockNumber(zMMRSet.getBlockTime());
-//						inrow.setMMREntry(mmrcoin.getEntry());
-//					
-////						SimpleLogger.log("Coin added to DB from MMRSET.. "+cc+" spent:"+mmrcoin.getData().isSpent()+" time:"+zMMRSet.getBlockTime());
-//					}
+				if(zAddKeeper && rel) {
+					//Add it..
+					zMMRSet.addKeeper(mmrcoin.getEntry());
+				}
+				
+				//Do we have it or not..
+				CoinDBRow oldrow = getCoinDB().getCoinRow(cc.getCoinID());
+				if(oldrow == null && !rel) {
+					continue;
+				}
+				
+				//And add to our list..
+				CoinDBRow inrow = getCoinDB().addCoinRow(cc);
+				
+				//Exsts already
+				boolean spent = mmrcoin.getData().isSpent();
+				if(!inrow.isInBlock() || inrow.isSpent() != spent) {
+					//Update
+					inrow.setIsSpent(spent);
+					inrow.setIsInBlock(true);
+					inrow.setInBlockNumber(zMMRSet.getBlockTime());
+					inrow.setMMREntry(mmrcoin.getEntry());
 				}
 			}
 		}

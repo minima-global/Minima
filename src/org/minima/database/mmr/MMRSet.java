@@ -822,6 +822,12 @@ public class MMRSet implements Streamable {
 			//Get that LATEST entry and all the entries it uses on the way up..
 			MMREntry entry = getEntry(0, keep, true);
 			
+			//Check valid..
+			if(entry.isEmpty() || entry.getData().isHashOnly()) {
+				System.out.println("copyKeepers on NULL Keeper Entry! "+keep);
+				continue;
+			}
+			
 			//If it's spent we don't keep it..
 			if(entry.getData().isSpent()) {
 				continue;

@@ -36,7 +36,11 @@ public class CascadeTree {
 	public void recurseParentMMR(MiniNumber zCascade, MMRSet zNode) {
 		if(zNode.getBlockTime().isMore(zCascade.increment())) {
 			//Do all the parents
-			recurseParentMMR(zCascade, zNode.getParent());
+			if(zNode.getParent() == null) {
+				System.out.println("RECURSE TREE NULL PARENT : CASC:"+zCascade+" BLKTIME:"+zNode.getBlockTime());	
+			}else {
+				recurseParentMMR(zCascade, zNode.getParent());	
+			}
 		}
 			
 		//The you do it..

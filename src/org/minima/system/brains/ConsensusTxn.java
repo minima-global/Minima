@@ -282,20 +282,14 @@ public class ConsensusTxn {
 			resp.put("burn", burn.toString());
 			resp.put("valid_amounts", outs.isLessEqual(ins));
 			
-			//Only check if no proof
-			if(wit.getAllProofs().size()==0) {
-				//Create a complete transaction
-				Witness newwit = getMainDB().createValidWitness(trx, wit);
-				
-//				//Null value means there is something wrong
-//				if(newwit == null) {
-//					resp.put("mmr_proof", false);
-//				}else {
-//					resp.put("mmr_proof", true);
-//				}
-				resp.put("mmr_proofs_available", false);
+			//Create a complete transaction
+			Witness newwit = getMainDB().createValidWitness(trx, wit);
+			
+			//Null value means there is something wrong
+			if(newwit == null) {
+				resp.put("mmr_proof", false);
 			}else {
-				resp.put("mmr_proofs_available", true);
+				resp.put("mmr_proof", true);
 			}
 			
 			//And Check the actual Transaction..
@@ -308,7 +302,7 @@ public class ConsensusTxn {
 			resp.put("contracts", contractlogs);
 			
 			//Final full check..
-			resp.put("txnvalid", vamounts && checkok);
+			resp.put("txnvalid", vamounts && checkok && (newwit != null));
 			
 			InputHandler.endResponse(zMessage, true, "");
 			
@@ -413,22 +407,26 @@ public class ConsensusTxn {
 			//Convert to a data stream
 			ByteArrayInputStream bais = new ByteArrayInputStream(md.getData());
 			DataInputStream dis = new DataInputStream(bais);
-
-//			//Import all the proofs..
-//			int prooflen = dis.readInt();
-//			for(int i=0;i<prooflen;i++) {
-//				MiniData proofdata = MiniData.ReadFromStream(dis);
-//				
-//				MMRProof proof = ConsensusUser.importCoin(getMainDB(), proofdata);
-//				
-//				System.out.println("PROOF : "+proof.toJSON());
-//			}
 			
 			//Now get the TRansaction
 			row.getTransaction().readDataStream(dis);
 			
 			//And the Witness..
 			row.getWitness().readDataStream(dis);
+			
+			//Import all the proofs..
+			JSONObject resp = InputHandler.getResponseJSON(zMessage);
+			for(MMRProof proof : row.getWitness().getAllProofs()) {
+				boolean valid = ConsensusUser.importCoin(getMainDB(), proof);
+			
+				if(!valid) {
+					resp.put("error", "INVALID PROOF!");
+					resp.put("proof", proof.toJSON());	
+					InputHandler.endResponse(zMessage, true, "");
+					
+					return;
+				}
+			}
 			
 			listTransactions(zMessage);
 		}

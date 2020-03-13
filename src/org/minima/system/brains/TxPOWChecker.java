@@ -120,9 +120,10 @@ public class TxPOWChecker {
 				MMRProof proof = zWit.getAllProofs().get(i);
 				
 				//MUST be a full proof - this done in checkproof..
-//				if(proof.getMMRData().isHashOnly()) {
-//					return false;
-//				}
+				if(proof.getMMRData().isHashOnly()) {
+					contractlog.put("error", "Invalid MMR Proof (HASH Only)");
+					return false;
+				}
 				
 				//Is the proof chain valid
 				boolean valid = zMMRSet.checkProof(proof);

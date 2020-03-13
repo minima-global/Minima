@@ -380,38 +380,30 @@ public class ConsensusUser {
 		}
 	}
 	
-	public static MMRProof importCoin(MinimaDB zDB, MiniData zCoinData) throws IOException{
-		ByteArrayInputStream bais = new ByteArrayInputStream(zCoinData.getData());
-		DataInputStream dis = new DataInputStream(bais);
-		
-		//Now make the proof..
-		MMRProof proof = MMRProof.ReadFromStream(dis);
-		
-		dis.close();
-		
+	public static boolean importCoin(MinimaDB zDB, MMRProof zProof) throws IOException{
 		//Get the MMRSet
 		MMRSet basemmr = zDB.getMainTree().getChainTip().getMMRSet();
 		
 		//Check it..
-		boolean valid  = basemmr.checkProof(proof);
+		boolean valid  = basemmr.checkProof(zProof);
 		
 		//Stop if invalid.. 
 		if(!valid) {
-			return null;
+			return false;
 		}
 		
 		//Get the MMRSet where this proof was made..
-		MMRSet proofmmr = basemmr.getParentAtTime(proof.getBlockTime());
+		MMRSet proofmmr = basemmr.getParentAtTime(zProof.getBlockTime());
 		if(proofmmr == null) {
-			return null;
+			return false;
 		}
 		
 		//Now add this proof to the set.. if not already added
-		MMREntry entry =  proofmmr.addExternalUnspentCoin(proof);
+		MMREntry entry =  proofmmr.addExternalUnspentCoin(zProof);
 		
 		//Error..
 		if(entry == null) {
-			return null;
+			return false;
 		}
 		
 		//And now refinalize..
@@ -427,7 +419,7 @@ public class ConsensusUser {
 		crow.setInBlockNumber(entry.getData().getInBlock());
 		crow.setMMREntry(entry.getEntry());
 		
-		return proof;
+		return true;
 	}
 	
 	public static MiniData exportCoin(MinimaDB zDB, MiniHash zCoinID) throws IOException {
