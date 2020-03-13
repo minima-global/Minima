@@ -156,6 +156,10 @@ public class Token {
 				tokens.add(new Token(TOKEN_GLOBAL, tok));
 			
 			}else if(isVariable(tok)){
+				if(tok.length()>10) {
+					throw new MinimaParseException("MAX variable name length is 10 : "+tok);	
+				}
+				
 				tokens.add(new Token(TOKEN_VARIABLE, tok));
 			}else{
 				throw new MinimaParseException("Incorrect token in parse : "+tok);
