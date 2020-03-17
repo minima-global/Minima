@@ -558,76 +558,76 @@ public class MMRSet implements Streamable {
 		return proof;
 	}
 	
-//	/**
-//	 * Get Proof to ROOT
-//	 */
-//	private MMRProof getPeakToRoot(MiniData32 zPeak) {
-//		//Sum of all the initial proofs...
-//		MMRProof totalproof = new MMRProof();
-//		
-//		//Get the Peaks..
-//		ArrayList<MMREntry> peaks = getMMRPeaks();
-//		
-//		//Now take all those values and put THEM in an MMR..
-//		MMREntry keeper      = null;
-//		MiniData32 keepvalue = zPeak;
-//		while(peaks.size() > 1) {
-//			//Create a new MMR
-//			MMRSet newmmr = new MMRSet();
-//			
-//			//Add all the peaks to it..
-//			for(MMREntry peak : peaks) {
-//				//Create the new input..
-//				MMRData data = new MMRData(peak.getHashValue());
-//				
-//				//Is this the one to follow..
-//				if(peak.getHashValue().isExactlyEqual(keepvalue)) {
-//					keeper = newmmr.addUnspentCoin(data);	
-//				}else {
-//					newmmr.addUnspentCoin(data);	
-//				}	
-//			}
-//			
-//			//Now get the keeper proof..
-//			MMRProof proof = newmmr.getProofToPeak(keeper.getEntry());
-//			
-//			//Now add thatto the totsl proof..
-//			int len = proof.getProofLen();
-//			for(int i=0;i<len;i++) {
-//				totalproof.addHash(proof.getProof(i), proof.getLeftHash(i).isTrue());
-//			}
-//			
-//			//Now get the peaks.. repeat..
-//			peaks = newmmr.getMMRPeaks();
-//		}
-//		
-//		return totalproof;
-//	}
+	/**
+	 * Get Proof to ROOT
+	 */
+	private MMRProof getPeakToRoot(MiniHash zPeak) {
+		//Sum of all the initial proofs...
+		MMRProof totalproof = new MMRProof();
+		
+		//Get the Peaks..
+		ArrayList<MMREntry> peaks = getMMRPeaks();
+		
+		//Now take all those values and put THEM in an MMR..
+		MMREntry keeper      = null;
+		MiniHash keepvalue = zPeak;
+		while(peaks.size() > 1) {
+			//Create a new MMR
+			MMRSet newmmr = new MMRSet();
+			
+			//Add all the peaks to it..
+			for(MMREntry peak : peaks) {
+				//Create the new input..
+				MMRData data = new MMRData(peak.getHashValue());
+				
+				//Is this the one to follow..
+				if(peak.getHashValue().isExactlyEqual(keepvalue)) {
+					keeper = newmmr.addUnspentCoin(data);	
+				}else {
+					newmmr.addUnspentCoin(data);	
+				}	
+			}
+			
+			//Now get the keeper proof..
+			MMRProof proof = newmmr.getProof(keeper.getEntry());
+			
+			//Now add thatto the totsl proof..
+			int len = proof.getProofLen();
+			for(int i=0;i<len;i++) {
+				totalproof.addHash(proof.getProof(i), proof.getLeftHash(i).isTrue());
+			}
+			
+			//Now get the peaks.. repeat..
+			peaks = newmmr.getMMRPeaks();
+		}
+		
+		return totalproof;
+	}
 	
-//	/**
-//	 * Get the full proof to the root of the MMR
-//	 * 
-//	 * @param zEntry
-//	 * @return
-//	 */
-//	public MMRProof getFullProofToRoot(MiniNumber zEntry) {
-//		//Get the Basic Proof..
-//		MMRProof proof = getProofToPeak(zEntry);
-//		
-//		//Now get the peak this points to..
-//		MiniData32 peak = proof.calculateProof();
-//		
-//		//Now find the path to root for this peak
-//		MMRProof rootproof = getPeakToRoot(peak);
-//		
-//		//Now add the two..
-//		int len = rootproof.getProofLen();
-//		for(int i=0;i<len;i++) {
-//			proof.addHash(rootproof.getProof(i), rootproof.getLeftHash(i).isTrue());
-//		}
-//		
-//		return proof;
-//	}
+	/**
+	 * Get the full proof to the root of the MMR
+	 * 
+	 * @param zEntry
+	 * @return
+	 */
+	public MMRProof getFullProofToRoot(MiniNumber zEntry) {
+		//Get the Basic Proof..
+		MMRProof proof = getProof(zEntry);
+		
+		//Now get the peak this points to..
+		MiniHash peak = proof.calculateProof();
+		
+		//Now find the path to root for this peak
+		MMRProof rootproof = getPeakToRoot(peak);
+		
+		//Now add the two..
+		int len = rootproof.getProofLen();
+		for(int i=0;i<len;i++) {
+			proof.addHash(rootproof.getProof(i), rootproof.getLeftHash(i).isTrue());
+		}
+		
+		return proof;
+	}
 	
 	
 	/**

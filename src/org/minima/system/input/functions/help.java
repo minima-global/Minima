@@ -1,6 +1,7 @@
 package org.minima.system.input.functions;
 
 import org.minima.system.input.CommandFunction;
+import org.minima.system.input.functions.raw.mmrtree;
 import org.minima.system.input.functions.transfer.exportcoin;
 import org.minima.system.input.functions.transfer.exportkey;
 import org.minima.system.input.functions.transfer.importcoin;
@@ -87,8 +88,11 @@ public class help extends CommandFunction{
 			addJSONDesc(new createtoken());
 			addJSONDesc(new newaddress());
 			addJSONDesc(new newscript());
+			addJSONDesc(new cleanscript());
 			addJSONDesc(new runscript());
-//			addJSONDesc(new cleanscript());
+			
+			addJSONDesc(new mmrtree());
+			
 			
 			addJSONDesc(new txnlist());
 			addJSONDesc(new txncreate());

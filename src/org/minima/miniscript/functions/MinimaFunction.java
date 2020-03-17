@@ -11,9 +11,11 @@ import org.minima.miniscript.exceptions.MinimaParseException;
 import org.minima.miniscript.expressions.Expression;
 import org.minima.miniscript.functions.base.CONCAT;
 import org.minima.miniscript.functions.base.GET;
+import org.minima.miniscript.functions.base.HEXCAT;
 import org.minima.miniscript.functions.base.LEN;
 import org.minima.miniscript.functions.base.REV;
 import org.minima.miniscript.functions.base.RPLVAR;
+import org.minima.miniscript.functions.base.SCRIPTCAT;
 import org.minima.miniscript.functions.base.SUBSET;
 import org.minima.miniscript.functions.cast.ASCII;
 import org.minima.miniscript.functions.cast.BOOL;
@@ -56,7 +58,7 @@ public abstract class MinimaFunction {
 	 */
 	public static MinimaFunction[] ALL_FUNCTIONS = 
 			{ 
-				new CONCAT(), new LEN(), new RPLVAR(),new REV(),new SUBSET(), new GET(),
+				new CONCAT(), new SCRIPTCAT(), new HEXCAT(), new LEN(), new RPLVAR(),new REV(),new SUBSET(), new GET(),
 				new BOOL(), new NUMBER(), new HEX(), new SCRIPT(), new ASCII(),
 				new ABS(), new CEIL(), new FLOOR(),new MAX(), new MIN(), new DEC(), new INC(),
 				new SHA3(), new SHA2(), new CHAINSHA(), new BITSET(), new BITGET(), new ADDR(), 
