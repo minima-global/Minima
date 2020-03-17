@@ -6,6 +6,7 @@ import org.minima.database.mmr.MMRData;
 import org.minima.database.mmr.MMREntry;
 import org.minima.database.mmr.MMRProof;
 import org.minima.database.mmr.MMRSet;
+import org.minima.miniscript.Contract;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniString;
@@ -19,7 +20,7 @@ public class mmrtree extends CommandFunction{
 
 	public mmrtree() {
 		super("mmrtree");
-		setHelp("[ LIST_OF_DATA ]", "Build MMR Tree from data list (nodes hashed as STRINGS)", "");
+		setHelp("[ LIST_OF_DATA ]", "Build an MMR Tree from data list (leaf nodes hashed as STRINGS)", "");
 	}
 	
 	@Override
@@ -27,10 +28,10 @@ public class mmrtree extends CommandFunction{
 		//Get a response message
 		Message msg = getResponseMessage(ConsensusUser.CONSENSUS_MMRTREE);
 		
-		//Get all of the input params..
+		//Get all of the input params.. clean and send..
 		ArrayList<MiniString> data = new ArrayList<>();
 		for(int i=1;i<zInput.length;i++) {
-			data.add(new MiniString(zInput[i]));			
+			data.add(new MiniString(Contract.cleanScript(zInput[i])));			
 		}
 		
 		//Send a backup message - with no request to shutdown at the end..

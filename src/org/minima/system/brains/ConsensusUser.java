@@ -115,44 +115,21 @@ public class ConsensusUser {
 			//Now add each 
 			JSONObject mmrnodes = new JSONObject();
 			for(MiniString leaf : leaves) {
-				//Clean it..
-				String sc = Contract.cleanScript(leaf.toString());
-				
-//				//Is this a complex object..
-//				String data = "";
-//					
-//				//Break it up..
-//				StringTokenizer strtok = new StringTokenizer(sc,"#");
-//				while(strtok.hasMoreElements()) {
-//					String tok = strtok.nextToken().trim();
-//					if(!tok.equals("")) {
-//						data += tok+" ";
-//					}
-//				}
-				
-				//And Hash..
-//				MiniString fstr = new MiniString(data.trim());
-				
-				MiniString fstr = new MiniString(sc);
-				MiniHash finalhash = new MiniHash(Crypto.getInstance().hashData(fstr.getData()));
-				
-				//Add to the MMR tree..
+				byte[] hash = Crypto.getInstance().hashData(leaf.getData());
+				MiniHash finalhash = new MiniHash(hash);
 				mmr.addUnspentCoin(new MMRData(finalhash));
 				
 				//Add to the response..
-				mmrnodes.put(fstr.toString(), finalhash.to0xString());
+				mmrnodes.put(leaf.toString(), finalhash.to0xString());
 			}
 			
 			//Now finalize..
 			mmr.finalizeSet();
 			
-			//Now get the root..
-			MiniHash root = mmr.getMMRRoot();
-			
 			//return to sender!
 			JSONObject resp = InputHandler.getResponseJSON(zMessage);
 			resp.put("nodes", mmrnodes);
-			resp.put("root", root.to0xString());
+			resp.put("root", mmr.getMMRRoot().to0xString());
 			InputHandler.endResponse(zMessage, true, "");
 			
 		}else if(zMessage.isMessageType(CONSENSUS_CLEANSCRIPT)) {
