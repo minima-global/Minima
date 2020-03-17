@@ -24,6 +24,8 @@ import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.MinimaLogger;
+import org.minima.utils.json.JSONArray;
+import org.minima.utils.json.JSONObject;
 
 /**
  * A RamScript Contract. Executes a given script, with the 
@@ -62,9 +64,6 @@ public class Contract {
 	
 	//A list of all the global variables available to scripts, like Blocknumber etc..
 	Hashtable<String, Value> mGlobals;
-	
-	//The ARRAYS are all kept in the String hashtable
-	Hashtable<String, Value> mArrayVariables;
 		
 	//The previous state variables - accessed from the MMR data
 	ArrayList<StateVariable> mPrevState = new ArrayList<StateVariable>();
@@ -121,7 +120,6 @@ public class Contract {
 		mSignatures = new ArrayList<>();
 		mVariables  = new Hashtable<>();
 		mGlobals    = new Hashtable<>();
-		mArrayVariables      = new Hashtable<>();
 		
 		mBlock      = null;
 		mSuccess    = false;
@@ -188,26 +186,6 @@ public class Contract {
 	public void setGlobalVariable(String zGlobal, Value zValue) {
 		mGlobals.put(zGlobal, zValue);
 		traceLog("Global ["+zGlobal+"] : "+zValue);
-	}
-	
-	/**
-	 * Return the array value if found or Number ZERO if not found
-	 * @param zPosition
-	 * @return
-	 */
-	public Value getArrayValue(String zPosition) {
-		//Get the value
-		Value val = mArrayVariables.get(zPosition);
-		if(val == null) {
-			return new NumberValue(0);
-		}
-		
-		return val;
-	}
-	
-	public void setArrayVariable(String zPosition, Value zValue) {
-		mArrayVariables.put(zPosition, zValue);
-		traceVariables();
 	}
 	
 	public Value getPrevState(int zPrev) throws ExecutionException {
@@ -320,50 +298,47 @@ public class Contract {
 		return mTransaction;
 	}
 	
+	public JSONObject getAllVariables() {
+		JSONObject variables = new JSONObject();
+		
+		//First the normal variables
+		Enumeration<String> keys = mVariables.keys();
+		while(keys.hasMoreElements()) {
+			//Get the Key
+			String key = keys.nextElement();
+			
+			//Get the Value
+			Value val = mVariables.get(key);
+			
+			//Remove the commas for JSON formating
+			if(key.contains(",")) {
+				key = key.replace(",", " ");
+				key = "( "+key.trim()+" )";
+			}
+			
+			if(val.getValueType() == ScriptValue.VALUE_SCRIPT) {
+				variables.put(key, "[ "+val.toString()+" ]");
+			}else{
+				variables.put(key, val.toString());
+			}
+		}
+		
+		return variables;
+	}
+	
 	public Value getVariable(String zName) throws ExecutionException {
 		Value ret = mVariables.get(zName);
-		if(ret==null) {
-			throw new ExecutionException("VARIABLE Missing : "+zName);
-		}
 		return ret;
 	}
 	
 	public void setVariable(String zName, Value zValue) {
 		mVariables.put(zName, zValue);
-		
 		traceVariables();
-		
-//		//Output..
-//		String varlist = "{ ";
-//		Enumeration<String> keys = mVariables.keys();
-//		while(keys.hasMoreElements()) {
-//			//Get the Key
-//			String key = keys.nextElement();
-//			
-//			//Get the Value
-//			Value val = mVariables.get(key);
-//			
-//			//Log it.. 
-//			int type = val.getValueType();
-//			switch (type)  {
-//				case BooleanValue.VALUE_BOOLEAN :
-//					varlist += key+" = "+Boolean.toString(val.isTrue()).toUpperCase()+", ";
-//				break;
-//				case HEXValue.VALUE_HEX :
-//					varlist += key+" = "+val+", ";
-//				break;
-//				case NumberValue.VALUE_NUMBER :
-//					varlist += key+" = "+val+", ";
-//				break;
-//				case ScriptValue.VALUE_SCRIPT :
-//					varlist += key+" = [ "+val+" ], ";
-//				break;
-//			}		
-//		}
-//
-//		traceLog(varlist+"}");
 	}
 	
+	/**
+	 * Could use the JSON but this looks better as no quotes.. ;p
+	 */
 	public void traceVariables() {
 		//Output..
 		String varlist = "{ ";
@@ -377,6 +352,12 @@ public class Contract {
 			//Get the Value
 			Value val = mVariables.get(key);
 			
+			//Remove the commas for JSON formating
+			if(key.contains(",")) {
+				key = key.replace(",", " ");
+				key = "( "+key.trim()+" )";
+			}
+			
 			//Log it.. 
 			int type = val.getValueType();
 			switch (type)  {
@@ -388,31 +369,6 @@ public class Contract {
 				break;
 				default:
 					varlist += key+" = "+val+", ";
-				break;
-			}		
-		}
-
-		//Now the array variables
-		keys = mArrayVariables.keys();
-		while(keys.hasMoreElements()) {
-			//Get the Key
-			String key = keys.nextElement();
-			
-			//Get the Value
-			Value val = mArrayVariables.get(key);
-			
-			//Log it.. 
-			String kk = "("+key+")"; 
-			int type = val.getValueType();
-			switch (type)  {
-				case BooleanValue.VALUE_BOOLEAN :
-					varlist += kk+" = "+Boolean.toString(val.isTrue()).toUpperCase()+", ";
-				break;
-				case ScriptValue.VALUE_SCRIPT :
-					varlist += kk+" = [ "+val+" ], ";
-				break;
-				default:
-					varlist += kk+" = "+val+", ";
 				break;
 			}		
 		}

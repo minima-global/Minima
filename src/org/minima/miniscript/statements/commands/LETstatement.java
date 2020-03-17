@@ -81,7 +81,7 @@ public class LETstatement implements Statement{
 			}
 			
 			//Now ask the contract to set that array variable..
-			zContract.setArrayVariable(pos, mValue.getValue(zContract));
+			zContract.setVariable(pos, mValue.getValue(zContract));
 		}
 	}
 	
@@ -94,9 +94,9 @@ public class LETstatement implements Statement{
 		//It's an array LET
 		String let = "LET ( ";
 		for(Expression exp : mArrayPos) {
-			let += exp.toString().trim()+",";
+			let += exp.toString().trim()+" ";
 		}
-		let += " ) = "+mValue;
+		let = let.trim()+" ) = "+mValue;
 		
 		return let;
 	}

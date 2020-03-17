@@ -26,8 +26,15 @@ public class GET extends MinimaFunction{
 			ps += exp.getValue(zContract).toString().trim()+",";		
 		}
 		
-		//Now get this string value from the Contract
-		return zContract.getArrayValue(ps);
+		//Get the Value.. 
+		Value val = zContract.getVariable(ps);
+		
+		//Array Variables return 0 if nothing found..
+		if(val == null) {
+			return new NumberValue(0);
+		}
+		
+		return val;
 	}
 
 	@Override
