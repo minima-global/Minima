@@ -5,6 +5,8 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Random;
 
+import org.minima.miniscript.Contract;
+import org.minima.miniscript.values.ScriptValue;
 import org.minima.utils.Crypto;
 import org.minima.utils.Maths;
 

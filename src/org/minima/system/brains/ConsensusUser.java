@@ -28,7 +28,9 @@ import org.minima.objects.Transaction;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
+import org.minima.objects.base.MiniString;
 import org.minima.system.input.InputHandler;
+import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
@@ -105,14 +107,38 @@ public class ConsensusUser {
 		
 		}else if(zMessage.isMessageType(CONSENSUS_MMRTREE)) {
 			//Create an MMR TREE from the array of inputs..
-			ArrayList<MiniHash> leaves = (ArrayList<MiniHash>) zMessage.getObject("leaves");
+			ArrayList<MiniString> leaves = (ArrayList<MiniString>) zMessage.getObject("leaves");
 		
 			//First create an MMR Tree..
 			MMRSet mmr = new MMRSet();
 			
 			//Now add each 
-			for(MiniHash leaf : leaves) {
-				mmr.addUnspentCoin(new MMRData(leaf));
+			JSONObject mmrnodes = new JSONObject();
+			for(MiniString leaf : leaves) {
+				//Clean it..
+				String sc = Contract.cleanScript(leaf.toString());
+				
+				//Is this a complex object..
+				String data = "";
+					
+				//Break it up..
+				StringTokenizer strtok = new StringTokenizer(sc,"#");
+				while(strtok.hasMoreElements()) {
+					String tok = strtok.nextToken().trim();
+					if(!tok.equals("")) {
+						data += tok+" ";
+					}
+				}
+				
+				//And Hash..
+				MiniString fstr = new MiniString(data.trim());
+				MiniHash finalhash = new MiniHash(Crypto.getInstance().hashData(fstr.getData()));
+				
+				//Add to the MMR tree..
+				mmr.addUnspentCoin(new MMRData(finalhash));
+				
+				//Add to the response..
+				mmrnodes.put(fstr.toString(), finalhash.to0xString());
 			}
 			
 			//Now finalize..
@@ -123,7 +149,8 @@ public class ConsensusUser {
 			
 			//return to sender!
 			JSONObject resp = InputHandler.getResponseJSON(zMessage);
-			resp.put("mmr", root.to0xString());
+			resp.put("nodes", mmrnodes);
+			resp.put("root", root.to0xString());
 			InputHandler.endResponse(zMessage, true, "");
 			
 		}else if(zMessage.isMessageType(CONSENSUS_CLEANSCRIPT)) {

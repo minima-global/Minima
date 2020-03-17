@@ -16,10 +16,10 @@ import org.minima.miniscript.values.Value;
  * @author Spartacus Rex
  *
  */
-public class SCRIPTCAT extends MinimaFunction{
+public class STRCAT extends MinimaFunction{
 
-	public SCRIPTCAT() {
-		super("SCRIPTCAT");
+	public STRCAT() {
+		super("STRCAT");
 	}
 
 	/* (non-Javadoc)
@@ -45,7 +45,7 @@ public class SCRIPTCAT extends MinimaFunction{
 	
 	@Override
 	public MinimaFunction getNewFunction() {
-		return new SCRIPTCAT();
+		return new STRCAT();
 	}
 
 }
