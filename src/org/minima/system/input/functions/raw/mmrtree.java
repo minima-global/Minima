@@ -19,7 +19,7 @@ public class mmrtree extends CommandFunction{
 
 	public mmrtree() {
 		super("mmrtree");
-		setHelp("[ LIST_OF_DATA ]", "Create an MMR Tree from the data list, which can be # split", "");
+		setHelp("[ LIST_OF_DATA ]", "Build MMR Tree from data list (nodes hashed as STRINGS)", "");
 	}
 	
 	@Override

@@ -31,7 +31,7 @@ public class STRCAT extends MinimaFunction{
 		ArrayList<Expression> params = getAllParameters();
 		
 		if(params.size() < 1) {
-			throw new ExecutionException("SCRIPTCAT requires at least 1 parameter");
+			throw new ExecutionException("STRCAT requires at least 1 parameter");
 		}
 			
 		//Sum them

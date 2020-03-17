@@ -118,20 +118,22 @@ public class ConsensusUser {
 				//Clean it..
 				String sc = Contract.cleanScript(leaf.toString());
 				
-				//Is this a complex object..
-				String data = "";
-					
-				//Break it up..
-				StringTokenizer strtok = new StringTokenizer(sc,"#");
-				while(strtok.hasMoreElements()) {
-					String tok = strtok.nextToken().trim();
-					if(!tok.equals("")) {
-						data += tok+" ";
-					}
-				}
+//				//Is this a complex object..
+//				String data = "";
+//					
+//				//Break it up..
+//				StringTokenizer strtok = new StringTokenizer(sc,"#");
+//				while(strtok.hasMoreElements()) {
+//					String tok = strtok.nextToken().trim();
+//					if(!tok.equals("")) {
+//						data += tok+" ";
+//					}
+//				}
 				
 				//And Hash..
-				MiniString fstr = new MiniString(data.trim());
+//				MiniString fstr = new MiniString(data.trim());
+				
+				MiniString fstr = new MiniString(sc);
 				MiniHash finalhash = new MiniHash(Crypto.getInstance().hashData(fstr.getData()));
 				
 				//Add to the MMR tree..
