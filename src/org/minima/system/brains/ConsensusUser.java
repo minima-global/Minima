@@ -11,6 +11,7 @@ import java.util.StringTokenizer;
 import org.minima.GlobalParams;
 import org.minima.database.MinimaDB;
 import org.minima.database.coindb.CoinDBRow;
+import org.minima.database.mmr.MMRData;
 import org.minima.database.mmr.MMREntry;
 import org.minima.database.mmr.MMRProof;
 import org.minima.database.mmr.MMRSet;
@@ -29,6 +30,7 @@ import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.input.InputHandler;
 import org.minima.utils.MinimaLogger;
+import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
 
@@ -48,6 +50,8 @@ public class ConsensusUser {
 	public static final String CONSENSUS_IMPORTKEY 			= CONSENSUS_PREFIX+"IMPORTKEY";
 	public static final String CONSENSUS_EXPORTCOIN 		= CONSENSUS_PREFIX+"EXPORTCOIN";
 	public static final String CONSENSUS_IMPORTCOIN 		= CONSENSUS_PREFIX+"IMPORTCOIN";
+	
+	public static final String CONSENSUS_MMRTREE 		    = CONSENSUS_PREFIX+"MMRTREE";
 	
     MinimaDB mDB;
 	
@@ -98,22 +102,41 @@ public class ConsensusUser {
 			resp.put("key", key.toString());
 			InputHandler.endResponse(zMessage, true, "");
 			
+		
+		}else if(zMessage.isMessageType(CONSENSUS_MMRTREE)) {
+			//Create an MMR TREE from the array of inputs..
+			ArrayList<MiniHash> leaves = (ArrayList<MiniHash>) zMessage.getObject("leaves");
+		
+			//First create an MMR Tree..
+			MMRSet mmr = new MMRSet();
+			
+			//Now add each 
+			for(MiniHash leaf : leaves) {
+				mmr.addUnspentCoin(new MMRData(leaf));
+			}
+			
+			//Now finalize..
+			mmr.finalizeSet();
+			
+			//Now get the root..
+			MiniHash root = mmr.getMMRRoot();
+			
+			//return to sender!
+			JSONObject resp = InputHandler.getResponseJSON(zMessage);
+			resp.put("mmr", root.to0xString());
+			InputHandler.endResponse(zMessage, true, "");
+			
 		}else if(zMessage.isMessageType(CONSENSUS_CLEANSCRIPT)) {
+			//Get the Script
 			String script = zMessage.getString("script");
 			
-//			//Create a contract
-//			Contract cc = new Contract(script, "",new Transaction(),false);
-//			
-//			//Create an address
-//			Address ccaddress = new Address(cc.getRamScript());
-//			
-//			JSONObject resp = InputHandler.getResponseJSON(zMessage);
-//			resp.put("script", script);
-//			resp.put("clean", cc.getRamScript());
-//			resp.put("address", ccaddress.getAddressData().to0xString());
-//			resp.put("parseok", cc.isParseOK());
-//			resp.put("parse", cc.getCompleteTraceLog());
-//			InputHandler.endResponse(zMessage, true, "");
+			//Clean it..
+			String clean = Contract.cleanScript(script);
+			
+			JSONObject resp = InputHandler.getResponseJSON(zMessage);
+			resp.put("script", script);
+			resp.put("clean", clean);
+			InputHandler.endResponse(zMessage, true, "");
 		
 		}else if(zMessage.isMessageType(CONSENSUS_RUNSCRIPT)) {
 			String script    = zMessage.getString("script").trim();
@@ -261,10 +284,10 @@ public class ConsensusUser {
 			resp.put("instructions", cc.getNumberOfInstructions());
 			resp.put("address", ccaddress.getAddressData().to0xString());
 			resp.put("parseok", cc.isParseOK());
+			resp.put("variables",cc.getAllVariables());
 			resp.put("parse", cc.getCompleteTraceLog());
 			resp.put("exception", cc.isException());
 			resp.put("result", cc.isSuccess());
-			
 			InputHandler.endResponse(zMessage, true, "");
 			
 		}else if(zMessage.isMessageType(CONSENSUS_IMPORTCOIN)) {
