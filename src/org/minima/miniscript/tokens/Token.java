@@ -26,7 +26,7 @@ public class Token {
 					 "ASSERT",
 					 "WHILE","DO","ENDWHILE",
 					 "EXEC",
-					 "MAST","MASTOR","MASTEND"};
+					 "MAST"};
 
 	public static final int TOKEN_FUNCTIION 		= 1;
 	
@@ -156,8 +156,8 @@ public class Token {
 				tokens.add(new Token(TOKEN_GLOBAL, tok));
 			
 			}else if(isVariable(tok)){
-				if(tok.length()>10) {
-					throw new MinimaParseException("MAX variable name length is 10 : "+tok);	
+				if(tok.length()>16) {
+					throw new MinimaParseException("MAX variable name length is 16 : "+tok);	
 				}
 				
 				tokens.add(new Token(TOKEN_VARIABLE, tok));

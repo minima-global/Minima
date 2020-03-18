@@ -10,6 +10,9 @@ import org.minima.miniscript.Contract;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniHash;
+import org.minima.objects.base.MiniString;
+import org.minima.objects.proofs.ScriptProof;
+import org.minima.utils.Proof;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
@@ -48,6 +51,12 @@ public class Witness implements Streamable {
 	ArrayList<TokenDetails> mTokenDetails;
 	
 	/**
+	 * Proofs for all the scripts used in the Transaction
+	 */
+	ArrayList<ScriptProof> mScriptProofs = new ArrayList<>();
+	
+	
+	/**
 	 * General Constructor
 	 */
 	public Witness() {
@@ -60,6 +69,12 @@ public class Witness implements Streamable {
 		//Token details..
 		mTokenDetails = new ArrayList<>();
 	}
+	
+	public void addScriptProof(String zScript, Proof zProof) {
+//		MiniString str = new MiniString(zString)
+//		mScriptProofs.add(new ScriptProof(zScript, zProof));
+	}
+	
 	
 	public void addScript(String zScript) {
 		mScripts.add(Contract.cleanScript(zScript));

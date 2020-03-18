@@ -7,6 +7,7 @@ import java.util.ArrayList;
 
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniNumber;
+import org.minima.objects.proofs.ScriptProof;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;

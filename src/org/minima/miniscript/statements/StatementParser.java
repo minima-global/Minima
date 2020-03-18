@@ -14,6 +14,7 @@ import org.minima.miniscript.statements.commands.ASSERTstatement;
 import org.minima.miniscript.statements.commands.EXECstatement;
 import org.minima.miniscript.statements.commands.IFstatement;
 import org.minima.miniscript.statements.commands.LETstatement;
+import org.minima.miniscript.statements.commands.MASTstatement;
 import org.minima.miniscript.statements.commands.RETURNstatement;
 import org.minima.miniscript.statements.commands.WHILEstatement;
 import org.minima.miniscript.tokens.LexicalTokenizer;
@@ -49,7 +50,7 @@ public class StatementParser {
 			int type 		= tok.getTokenType();
 			
 			if(type != Token.TOKEN_COMMAND) {
-				throw new MinimaParseException("Invalid Token where there should be a Command - "+token); 
+				throw new MinimaParseException("Invalid Token where there should be a COMMMAND - "+token); 
 			}
 			
 			//Cycle through commands
@@ -135,6 +136,17 @@ public class StatementParser {
 				
 				//And finally create the LET statement..
 				stats.add(new EXECstatement(exp));
+					
+			}else if(token.equalsIgnoreCase("MAST")) {
+				//Now find the next Command, and everything in between is the expression
+				List<Token> masttokens = getTokensToNextCommand(zTokens, currentPosition);
+				currentPosition += masttokens.size();
+				
+				//Now create an expression from those tokens..
+				Expression exp = ExpressionParser.getExpression(masttokens);
+				
+				//And finally create the LET statement..
+				stats.add(new MASTstatement(exp));
 					
 			}else if(token.equalsIgnoreCase("IF")) {
 				//An IFX
