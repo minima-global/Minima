@@ -1,7 +1,6 @@
 package org.minima.system.input.functions;
 
 import org.minima.system.input.CommandFunction;
-import org.minima.system.input.functions.raw.mmrtree;
 import org.minima.system.input.functions.transfer.exportcoin;
 import org.minima.system.input.functions.transfer.exportkey;
 import org.minima.system.input.functions.transfer.importcoin;

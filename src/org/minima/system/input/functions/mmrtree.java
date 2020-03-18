@@ -1,4 +1,4 @@
-package org.minima.system.input.functions.raw;
+package org.minima.system.input.functions;
 
 import java.util.ArrayList;
 
@@ -20,7 +20,7 @@ public class mmrtree extends CommandFunction{
 
 	public mmrtree() {
 		super("mmrtree");
-		setHelp("[ LIST_OF_DATA ]", "Build an MMR Tree from data list (leaf nodes hashed as STRINGS)", "");
+		setHelp("[ data_list ]", "Build an MMR Tree from data list each treated as a SCRIPT", "");
 	}
 	
 	@Override
