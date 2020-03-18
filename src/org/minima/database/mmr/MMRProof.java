@@ -1,5 +1,6 @@
 package org.minima.database.mmr;
 
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -7,6 +8,7 @@ import java.util.ArrayList;
 
 import org.minima.objects.Coin;
 import org.minima.objects.base.MiniByte;
+import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.Crypto;
@@ -117,6 +119,34 @@ public class MMRProof implements Streamable {
 		return coinidcheck && amountcheck && addresscheck && tokencheck;
 	}
 	
+	public MiniData getChainSHAProof() throws IOException {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		DataOutputStream dos = new DataOutputStream(baos);
+		
+		int len = mProofChain.size();
+		for(int i=0;i<len;i++){
+			mLeftHash.get(i).writeDataStream(dos);
+			mProofChain.get(i).writeDataStream(dos);
+		}
+		
+		//Convert to MiniData..
+		MiniData proof = new MiniData(baos.toByteArray());
+		
+		return proof;
+	}
+	
+	public JSONArray proofChainOnly() {
+		JSONArray proof = new JSONArray();
+		int len = mProofChain.size();
+		for(int i=0;i<len;i++){
+			JSONObject chunk = new JSONObject();
+			chunk.put("leftside", mLeftHash.get(i).isTrue());
+			chunk.put("hash", mProofChain.get(i).toString());
+			proof.add(chunk);
+		}
+		return proof;
+	}
+	
 	public JSONObject toJSON() {
 		JSONObject obj = new JSONObject(); 
 		
@@ -128,7 +158,6 @@ public class MMRProof implements Streamable {
 		int len = mProofChain.size();
 		for(int i=0;i<len;i++){
 			JSONObject chunk = new JSONObject();
-			chunk.put("index", i);
 			chunk.put("leftside", mLeftHash.get(i).isTrue());
 			chunk.put("hash", mProofChain.get(i).toString());
 			

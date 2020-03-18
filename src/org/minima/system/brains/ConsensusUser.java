@@ -113,22 +113,40 @@ public class ConsensusUser {
 			MMRSet mmr = new MMRSet();
 			
 			//Now add each 
-			JSONObject mmrnodes = new JSONObject();
+			JSONArray nodearray = new JSONArray();
 			for(MiniString leaf : leaves) {
 				byte[] hash = Crypto.getInstance().hashData(leaf.getData());
 				MiniHash finalhash = new MiniHash(hash);
 				mmr.addUnspentCoin(new MMRData(finalhash));
 				
 				//Add to the response..
-				mmrnodes.put(leaf.toString(), finalhash.to0xString());
+				JSONObject mmrnode = new JSONObject();
+				mmrnode.put("data","[ "+leaf.toString()+" ]");
+				mmrnode.put("hash", finalhash.to0xString());
+				
+				nodearray.add(mmrnode);
 			}
-			
+
 			//Now finalize..
 			mmr.finalizeSet();
 			
+			//Now add the proofs..
+			int size=nodearray.size();
+			for(int i=0;i<size;i++) {
+				JSONObject node = (JSONObject) nodearray.get(i);
+				
+				//Get the proof..
+				MMRProof proof = mmr.getFullProofToRoot(new MiniNumber(i));
+				
+				//Calculate the CHAINSHA proof..
+				JSONArray pr = proof.proofChainOnly();
+				node.put("chainsha", proof.getChainSHAProof().to0xString());
+				node.put("proof", pr);
+			}
+			
 			//return to sender!
 			JSONObject resp = InputHandler.getResponseJSON(zMessage);
-			resp.put("nodes", mmrnodes);
+			resp.put("nodes", nodearray);
 			resp.put("root", mmr.getMMRRoot().to0xString());
 			InputHandler.endResponse(zMessage, true, "");
 			

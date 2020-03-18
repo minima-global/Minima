@@ -74,7 +74,7 @@ public class MiniData implements Streamable {
 	protected BigInteger mDataVal;
 	
 	public MiniData() {
-		this("00");
+		this("");
 	}
 	
 	public MiniData(String zHexString) {

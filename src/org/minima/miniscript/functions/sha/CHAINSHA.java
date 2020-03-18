@@ -32,11 +32,12 @@ public class CHAINSHA extends MinimaFunction {
 		byte[] indata = input.getRawData();
 		byte[] chdata = chain.getRawData();
 		
-		//indata must be 32 bytes long
-		if(indata.length != 32) {
-			throw new ExecutionException("Input data must be 32 bytes long.");
-		}
-		//Chdata MUST be a multiple of 32
+//		//indata must be 32 bytes long
+//		if(indata.length != 32) {
+//			throw new ExecutionException("Input data must be 32 bytes long.");
+//		}
+		
+		//Chaindata MUST be a multiple of 32
 		if(chdata.length % 33 != 0) {
 			throw new ExecutionException("Chain data not a multiple of 33 bytes long.");
 		}
