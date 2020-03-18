@@ -8,7 +8,8 @@ public class createtoken extends CommandFunction {
 	
 	public createtoken() {
 		super("createtoken");
-		setHelp("[name|description] [total tokens] (token script hash)", "Create a token with the given name or description, amount, and with the optional script. This currently colors upto 0.001 Minima. The TokenID generated is one time and globaly unique.", "");
+		setHelp("[name] [total] (token script hash)", 
+				"Create a token with the given name or description, total amount, and with the optional script.", "");
 	}
 	
 	@Override
