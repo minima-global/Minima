@@ -141,7 +141,7 @@ public class ConsensusUser {
 				//Calculate the CHAINSHA proof..
 				JSONArray pr = proof.proofChainOnly();
 				node.put("chainsha", proof.getChainSHAProof().to0xString());
-				node.put("proof", pr);
+//				node.put("proof", pr);
 			}
 			
 			//return to sender!
