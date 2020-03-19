@@ -214,7 +214,6 @@ public class MMRProof implements Streamable {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			return null;
 		}
 		
 		return proof;
