@@ -11,7 +11,7 @@ public class runscript extends CommandFunction{
 		
 //		setHelp("[script] {sigs}", "Run the specified script with the specified signatures.","");
 		
-		setHelp("[script] {sigs:..} {state:..} {prevstate:..} {globals:..} {outputs:..}", "Use 'help runscript' for details..","");
+		setHelp("[script] {sigs:..} {state:..} {prevstate:..} {globals:..} {outputs:..} (scripts:..)", "Use 'help runscript' for details..","");
 		
 	}
 	
@@ -29,6 +29,7 @@ public class runscript extends CommandFunction{
 		String prevstate   = "";
 		String globals     = "";
 		String outputs     = "";
+		String scripts     = "";
 		
 		//Cycle through..
 		for(int i=2;i<len;i++) {
@@ -44,6 +45,8 @@ public class runscript extends CommandFunction{
 				globals = param.substring(8);
 			}else if(param.startsWith("outputs:")) {
 				outputs = param.substring(8);
+			}else if(param.startsWith("scripts:")) {
+				scripts = param.substring(8);
 			} 	
 		}
 		
@@ -55,6 +58,7 @@ public class runscript extends CommandFunction{
 		rscript.addString("prevstate", prevstate);
 		rscript.addString("globals", globals);
 		rscript.addString("outputs", outputs);
+		rscript.addString("scripts", scripts);
 		
 		//Post it..
 		getMainHandler().getConsensusHandler().PostMessage(rscript);	

@@ -166,13 +166,12 @@ public class Transaction implements Streamable {
 			mScripts.add(zScriptProof);		
 			return true;
 		}
-		
 		return false;
 	}
 	
 	public ScriptProof getScript(MiniHash zHash) {
 		for(ScriptProof proof : mScripts) {
-			if(proof.getProof().calculateFinalHash().isExactlyEqual(zHash)) {
+			if(proof.getProofHash().isExactlyEqual(zHash)) {
 				return proof;
 			}
 		}

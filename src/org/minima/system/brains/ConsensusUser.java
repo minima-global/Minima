@@ -29,6 +29,7 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
+import org.minima.objects.proofs.ScriptProof;
 import org.minima.system.input.InputHandler;
 import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
@@ -174,6 +175,7 @@ public class ConsensusUser {
 			String prevstate = Contract.cleanScript(zMessage.getString("prevstate").trim());
 			String globals   = Contract.cleanScript(zMessage.getString("globals").trim());
 			String outputs   = Contract.cleanScript(zMessage.getString("outputs").trim());
+			String scripts   = Contract.cleanScript(zMessage.getString("scripts").trim());
 			
 			//Create the transaction..
 			Transaction trans = new Transaction();
@@ -246,6 +248,30 @@ public class ConsensusUser {
 						
 						//Set it..
 						pstate.add(new StateVariable(Integer.parseInt(statenum), value));
+					}
+				}
+			}
+			
+			//SCRIPTS
+			if(!scripts.equals("")) {
+				//Add all the state variables..
+				StringTokenizer strtok = new StringTokenizer(scripts,"#");
+				while(strtok.hasMoreElements()){
+					String tok = strtok.nextToken().trim();
+					
+					//Now split this token..
+					if(!tok.equals("")) {
+						int split = tok.indexOf(":");
+						
+						String mastscript = tok.substring(0,split).trim();
+						String chainsha   = tok.substring(split+1).trim();
+						
+						//Set it..
+						if(chainsha.length()<=32) {
+							trans.addScript(new ScriptProof(mastscript));
+						}else {
+							trans.addScript(new ScriptProof(mastscript, chainsha));	
+						}
 					}
 				}
 			}

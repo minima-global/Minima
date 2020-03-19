@@ -14,6 +14,7 @@ import org.minima.database.userdb.UserDBRow;
 import org.minima.miniscript.Contract;
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
+import org.minima.objects.Proof;
 import org.minima.objects.PubPrivKey;
 import org.minima.objects.StateVariable;
 import org.minima.objects.Transaction;
@@ -145,16 +146,17 @@ public class ConsensusTxn {
 				return;
 			}
 		
-			//DO it..
-			ScriptProof sp = null;
-			if(proof.equals("")) {
-				sp = new ScriptProof(script);
-			}else {
-				
-			}
+			//Get the Transaction..
+			Transaction trx =  getMainDB().getUserDB().getUserRow(trans).getTransaction();
 			
+			//Create it..
+			ScriptProof sp = new ScriptProof(script, proof);
 			
+			//Add it to the Transaction..
+			trx.addScript(sp);
 		
+			listTransactions(zMessage);
+			
 		}else if(zMessage.isMessageType(CONSENSUS_TXNINPUT)) {
 			//Add input to a custom transaction
 			int trans 			= zMessage.getInteger("transaction");

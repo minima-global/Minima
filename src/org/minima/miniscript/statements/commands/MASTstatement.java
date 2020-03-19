@@ -38,9 +38,21 @@ public class MASTstatement implements Statement {
 		//Now get that Script from the transaction..
 		Transaction trans = zContract.getTransaction();
 		
-		//get the script of this hash value
-		String script = trans.getScript(scripthash).toString();
+		//Get the Script Proof
+		ScriptProof scrpr = trans.getScript(scripthash);
 		
+		if(scrpr == null) {
+			//Trace log
+			zContract.traceLog("MAST "+mMASTScript);
+			throw new ExecutionException("No script found for MAST "+scripthash);
+		}
+		
+		//get the script of this hash value
+		String script = scrpr.getScript().toString();
+		
+		//Trace log
+		zContract.traceLog("MAST "+mMASTScript+" [ "+script+" ]");
+				
 		try {
 			//Convert the script to KISSVM!
 			List<Token> tokens = Token.tokenize(script);
@@ -48,9 +60,6 @@ public class MASTstatement implements Statement {
 			//And now convert to a statement block..
 			StatementBlock mBlock = StatementParser.parseTokens(tokens);
 
-			//Trace log
-			zContract.traceLog("MAST [ "+script.toString()+" ]");
-			
 			//Now run it..
 			mBlock.run(zContract);
 		

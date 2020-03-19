@@ -7,6 +7,7 @@ import java.io.IOException;
 import org.minima.miniscript.Contract;
 import org.minima.objects.Address;
 import org.minima.objects.Proof;
+import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniString;
 import org.minima.utils.Streamable;
@@ -32,6 +33,15 @@ public class ScriptProof implements Streamable {
 		//Now create the proof..
 		mProof  = new Proof(addr.getAddressData());
 		mProof.finalizeHash();
+	}
+	
+	public ScriptProof(String zScript, String zChainSHAProof) {
+		mScript = new MiniString(Contract.cleanScript(zScript));
+		
+		//Create an address
+		Address addr = new Address(mScript.toString());
+				
+		mProof  = new Proof(addr.getAddressData(), new MiniData(zChainSHAProof));
 	}
 	
 	public ScriptProof(String zScript, Proof zProof) {
