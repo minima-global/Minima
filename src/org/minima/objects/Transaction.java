@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import org.minima.objects.base.MiniByte;
+import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.proofs.ScriptProof;
 import org.minima.utils.Streamable;
@@ -36,6 +37,15 @@ public class Transaction implements Streamable {
 	 * The State values of the Transaction
 	 */
 	ArrayList<StateVariable> mState = new ArrayList<>();
+	
+	/**
+	 * The Scripts used in the transactions 
+	 * 
+	 * Addresses
+	 * Tokens
+	 * MAST
+	 */
+	ArrayList<ScriptProof> mScripts = new ArrayList<>();
 	
 	/**
 	 * Constructor
@@ -137,6 +147,22 @@ public class Transaction implements Streamable {
 		return mState;
 	}
 	
+	/**
+	 * ALl the scripts
+	 */
+	public void addScript(ScriptProof zScriptProof) {
+		mScripts.add(zScriptProof);
+	}
+	
+	public ScriptProof getScript(MiniHash zHash) {
+		for(ScriptProof proof : mScripts) {
+			if(proof.getProof().calculateFinalHash().isExactlyEqual(zHash)) {
+				return proof;
+			}
+		}
+		return null;
+	}
+	
 	@Override
 	public String toString() {
 		return toJSON().toString();
@@ -166,6 +192,13 @@ public class Transaction implements Streamable {
 		}
 		ret.put("state", outs);
 		
+		//Script Proofs..
+		outs = new JSONArray();
+		for(ScriptProof proof : mScripts) {
+			outs.add(proof.toJSON());	
+		}
+		ret.put("scripts", outs);
+		
 		return ret;
 	}
 
@@ -173,22 +206,14 @@ public class Transaction implements Streamable {
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
 		//Max 255 inputs or outputs
 		MiniByte ins = new MiniByte(mInputs.size());
-
-		//Write it out..
 		ins.writeDataStream(zOut);
-		
-		//Now the coins
 		for(Coin coin : mInputs) {
 			coin.writeDataStream(zOut);
 		}
 		
 		//Max 255 inputs or outputs
 		MiniByte outs = new MiniByte(mOutputs.size());
-
-		//Write it out..
 		outs.writeDataStream(zOut);
-		
-		//Now the coins
 		for(Coin coin : mOutputs) {
 			coin.writeDataStream(zOut);
 		}
@@ -196,10 +221,15 @@ public class Transaction implements Streamable {
 		//How many state variables..
 		int len = mState.size();
 		zOut.writeInt(len);
-		
-		//Now the state
 		for(StateVariable sv : mState) {
 			sv.writeDataStream(zOut);
+		}
+		
+		//Now the Scripts
+		len = mScripts.size();
+		zOut.writeInt(len);
+		for(ScriptProof script : mScripts) {
+			script.writeDataStream(zOut);
 		}
 	}
 
@@ -208,6 +238,7 @@ public class Transaction implements Streamable {
 		mInputs  = new ArrayList<>();
 		mOutputs = new ArrayList<>();
 		mState 	 = new  ArrayList<>();
+		mScripts = new ArrayList<>();
 		
 		//Inputs
 		MiniByte ins = new MiniByte();
@@ -230,12 +261,17 @@ public class Transaction implements Streamable {
 		}
 		
 		//State Variables
-		int sl = zIn.readInt();
-		for(int i=0;i<sl;i++){
+		len = zIn.readInt();
+		for(int i=0;i<len;i++){
 			StateVariable sv = StateVariable.ReadFromStream(zIn);
-			
-			//Add it..
 			mState.add(sv);
+		}
+		
+		//Scripts
+		len = zIn.readInt();
+		for(int i=0;i<len;i++){
+			ScriptProof sp = ScriptProof.ReadFromStream(zIn);
+			mScripts.add(sp);
 		}
 	}
 }
