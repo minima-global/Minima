@@ -24,14 +24,12 @@ public class MiniString extends MiniData {
 
 	public static MiniString ReadFromStream(DataInputStream zIn){
 		MiniString data = new MiniString("");
-		
 		try {
 			data.readDataStream(zIn);
 		} catch (IOException e) {
 			e.printStackTrace();
 			return null;
 		}
-		
 		return data;
 	}
 	

@@ -97,7 +97,8 @@ public class TxPOWChecker {
 			zContractLog.add(contractlog);
 			
 			//Get the Script..
-			String script = zWit.getScript(i);
+			String script = zTrans.getScript(input.getAddress()).getScript().toString();
+//			String script = zWit.getScript(i);
 			
 			contractlog.put("input", i);
 			contractlog.put("script", script);

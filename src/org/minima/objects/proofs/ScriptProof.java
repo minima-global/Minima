@@ -4,9 +4,11 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+import org.minima.miniscript.Contract;
+import org.minima.objects.Address;
+import org.minima.objects.Proof;
 import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniString;
-import org.minima.utils.Proof;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONObject;
 
@@ -17,8 +19,23 @@ public class ScriptProof implements Streamable {
 	
 	private ScriptProof() {}
 	
-	public ScriptProof(MiniString zScript, Proof zProof) {
-		mScript = zScript;
+	/**
+	 * Create a simple one hash Proof for a script
+	 * @param zScript
+	 */
+	public ScriptProof(String zScript) {
+		mScript = new MiniString(Contract.cleanScript(zScript));
+		
+		//Create an address
+		Address addr = new Address(mScript.toString());
+		
+		//Now create the proof..
+		mProof  = new Proof(addr.getAddressData());
+		mProof.finalizeHash();
+	}
+	
+	public ScriptProof(String zScript, Proof zProof) {
+		mScript = new MiniString(Contract.cleanScript(zScript));
 		mProof  = zProof;
 	}
 	

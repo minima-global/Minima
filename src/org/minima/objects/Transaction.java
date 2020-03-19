@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
+import org.minima.objects.base.MiniString;
 import org.minima.objects.proofs.ScriptProof;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONArray;
@@ -148,10 +149,25 @@ public class Transaction implements Streamable {
 	}
 	
 	/**
-	 * ALl the scripts
+	 * All the scripts
 	 */
-	public void addScript(ScriptProof zScriptProof) {
-		mScripts.add(zScriptProof);
+	public boolean addScript(String zScript) {
+		//Create a new simple scriptproof
+		ScriptProof sp = new ScriptProof(zScript);
+		if(!scriptExists(sp.getProofHash())) {
+			mScripts.add(sp);		
+			return true;
+		}
+		return false;
+	}
+	
+	public boolean addScript(ScriptProof zScriptProof) {
+		if(!scriptExists(zScriptProof.getProofHash())) {
+			mScripts.add(zScriptProof);		
+			return true;
+		}
+		
+		return false;
 	}
 	
 	public ScriptProof getScript(MiniHash zHash) {
@@ -161,6 +177,15 @@ public class Transaction implements Streamable {
 			}
 		}
 		return null;
+	}
+	
+	public boolean scriptExists(MiniHash zHash) {
+		for(ScriptProof proof : mScripts) {
+			if(proof.getProofHash().isExactlyEqual(zHash)) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	@Override

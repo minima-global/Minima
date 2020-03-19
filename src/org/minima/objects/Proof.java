@@ -1,5 +1,6 @@
-package org.minima.utils;
+package org.minima.objects;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -10,6 +11,9 @@ import org.minima.database.mmr.MMRProof;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniHash;
+import org.minima.objects.proofs.ScriptProof;
+import org.minima.utils.Crypto;
+import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
@@ -49,6 +53,38 @@ public class Proof implements Streamable {
 		mData       = zData;
 		mProofChain = new ArrayList<>();
 		mFinalized  = false;
+	}
+	
+	public Proof(MiniHash zData, MiniData zChainSHAProof) {
+		mData       = zData;
+		setProof(zChainSHAProof);
+	}
+
+	public void setProof(MiniData zChainSHAProof) {
+		mFinalized  = false;
+		mProofChain = new ArrayList<>();
+		
+		byte[] chdata = zChainSHAProof.getData();
+		
+		ByteArrayInputStream bais = new ByteArrayInputStream(chdata);
+		DataInputStream dis = new DataInputStream(bais);
+		
+		int len  = chdata.length;  
+		int read = 0;
+		while(read<len) {
+			//Is it to the left or the right 
+			MiniByte leftrigt = MiniByte.ReadFromStream(dis);
+			read++;
+			
+			//What data to hash
+			MiniHash data = MiniHash.ReadFromStream(dis);
+			read += data.getLength();
+			
+			//Add to the Proof..
+			addProofChunk(leftrigt, data);
+		}
+		
+		finalizeHash();
 	}
 	
 	public void addProofChunk(MiniByte zLeft, MiniHash zHash) {
@@ -127,7 +163,7 @@ public class Proof implements Streamable {
 			ProofChunk chunk = mProofChain.get(i);
 			jsonchunk.put("left", chunk.getLeft().isTrue());
 			jsonchunk.put("hash", chunk.getHash().to0xString());
-			proof.add(chunk);
+			proof.add(jsonchunk);
 		}
 		
 		json.put("proofchain", proof);
@@ -174,5 +210,25 @@ public class Proof implements Streamable {
 		}
 		
 		return proof;
+	}
+	
+	public static void main(String[] zArgs) {
+		MiniHash dd = new MiniHash("0xFF");
+		
+		Proof sp = new Proof(dd);
+		sp.addProofChunk(MiniByte.TRUE, new MiniHash("0xEE"));
+		sp.addProofChunk(MiniByte.FALSE, new MiniHash("0xCC"));
+		
+		System.out.println("FH  : "+sp.calculateFinalHash());
+		System.out.println("PR  : "+sp.toJSON());
+		
+		MiniData dat = sp.getChainSHAProof();
+		System.out.println("CHAINSHA : "+dat);
+		
+		Proof wp = new Proof(dd, dat);
+		System.out.println("FH2 : "+wp.calculateFinalHash());
+		System.out.println("PR2 : "+wp.toJSON());
+		
+		
 	}
 }

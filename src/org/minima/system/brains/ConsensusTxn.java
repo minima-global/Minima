@@ -21,6 +21,7 @@ import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
+import org.minima.objects.proofs.ScriptProof;
 import org.minima.system.input.InputHandler;
 import org.minima.system.network.NetworkHandler;
 import org.minima.utils.Crypto;
@@ -47,6 +48,8 @@ public class ConsensusTxn {
 	
 	public static final String CONSENSUS_TXNSIGN 			= CONSENSUS_PREFIX+"TXNSIGN";
 	public static final String CONSENSUS_TXNVALIDATE 		= CONSENSUS_PREFIX+"TXNVALIDATE";
+	
+	public static final String CONSENSUS_TXNSCRIPT 		    = CONSENSUS_PREFIX+"TXNSCRIPT";
 	
 	public static final String CONSENSUS_TXNPOST 			= CONSENSUS_PREFIX+"TXNPOST";
 	
@@ -127,6 +130,31 @@ public class ConsensusTxn {
 			InputHandler.getResponseJSON(zMessage).put("transactions", arr);
 			InputHandler.endResponse(zMessage, true, "");
 			
+		}else if(zMessage.isMessageType(CONSENSUS_TXNSCRIPT)) {
+			//Add input to a custom transaction
+			int trans 			= zMessage.getInteger("transaction");
+			String script 	    = zMessage.getString("script");
+			String proof  = "";
+			if(zMessage.exists("proof")) {
+				proof = zMessage.getString("proof");
+			}
+			
+			//Check valid..
+			if(!checkTransactionValid(trans)) {
+				InputHandler.endResponse(zMessage, false, "Invalid TXN chosen : "+trans);
+				return;
+			}
+		
+			//DO it..
+			ScriptProof sp = null;
+			if(proof.equals("")) {
+				sp = new ScriptProof(script);
+			}else {
+				
+			}
+			
+			
+		
 		}else if(zMessage.isMessageType(CONSENSUS_TXNINPUT)) {
 			//Add input to a custom transaction
 			int trans 			= zMessage.getInteger("transaction");
@@ -159,9 +187,10 @@ public class ConsensusTxn {
 			
 			//Add it..
 			trx.addInput(cc);
+			trx.addScript(script);
 			
 			//Set Script
-			wit.addScript(script);
+//			wit.addScript(script);
 			
 			
 			listTransactions(zMessage);

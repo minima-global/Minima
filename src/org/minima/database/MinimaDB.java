@@ -587,13 +587,14 @@ public class MinimaDB {
 		int counter = 0;
 		for(Coin cc : ins) {
 			//Make sure script is set
-			String script = zWitness.getScript(counter);
-			Address addr = new Address(script);
-			
-			if(!addr.getAddressData().isExactlyEqual(cc.getAddress())) {
-				System.out.println("ERROR UNKNOWN ADDRESS "+cc.getAddress()+" not in database..");
-				return null;
-			}
+//			
+//			String script = zWitness.getScript(counter);
+//			Address addr = new Address(script);
+//			
+//			if(!addr.getAddressData().isExactlyEqual(cc.getAddress())) {
+//				System.out.println("ERROR UNKNOWN ADDRESS "+cc.getAddress()+" not in database..");
+//				return null;
+//			}
 			
 //			String script = getUserDB().getScript(cc.getAddress());
 //			if(script.equals("")) {
@@ -662,9 +663,10 @@ public class MinimaDB {
 				
 				//Add this coin to the inputs..
 				trx.addInput(cc);
+				trx.addScript(script);
 				
-				//Add the script
-				wit.addScript(script);
+//				//Add the script
+//				wit.addScript(script);
 				
 				//Add the MMRProof..
 				CoinDBRow row  = getCoinDB().getCoinRow(cc.getCoinID());
