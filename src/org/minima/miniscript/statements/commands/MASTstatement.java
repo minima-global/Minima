@@ -35,17 +35,17 @@ public class MASTstatement implements Statement {
 			
 			
 			
-			//Convert the script to MINIVM!
-			List<Token> tokens = Token.tokenize(script.toString());	
-		
-			//And now convert to a statement block..
-			StatementBlock mBlock = StatementParser.parseTokens(tokens);
-
-			//Trace log
-			zContract.traceLog("EXEC [ "+script.toString()+" ]");
-			
-			//Now run it..
-			mBlock.run(zContract);
+//			//Convert the script to MINIVM!
+//			List<Token> tokens = Token.tokenize(script.toString());	
+//		
+//			//And now convert to a statement block..
+//			StatementBlock mBlock = StatementParser.parseTokens(tokens);
+//
+//			//Trace log
+//			zContract.traceLog("EXEC [ "+script.toString()+" ]");
+//			
+//			//Now run it..
+//			mBlock.run(zContract);
 			
 		}catch(Exception exc) {
 			throw new ExecutionException(exc.toString());			
