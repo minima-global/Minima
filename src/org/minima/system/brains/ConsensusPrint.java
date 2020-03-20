@@ -43,6 +43,7 @@ public class ConsensusPrint {
 	public static final String CONSENSUS_COINS 				= CONSENSUS_PREFIX+"COINS";
 	public static final String CONSENSUS_TXPOW 				= CONSENSUS_PREFIX+"TXPOW";
 	public static final String CONSENSUS_KEYS 				= CONSENSUS_PREFIX+"KEYS";
+	public static final String CONSENSUS_ADDRESSES 			= CONSENSUS_PREFIX+"ADDRESSES";
 	public static final String CONSENSUS_SEARCH 			= CONSENSUS_PREFIX+"SEARCH";
 	
 	public static final String CONSENSUS_HISTORY 		    = CONSENSUS_PREFIX+"HISTORY";
@@ -362,6 +363,16 @@ public class ConsensusPrint {
 				InputHandler.endResponse(zMessage, true, "");
 			}
 		
+		}else if(zMessage.isMessageType(CONSENSUS_ADDRESSES)){
+			//Addresses
+			ArrayList<Address> addresses = getMainDB().getUserDB().getAllAddresses();
+			JSONArray arraddr = new JSONArray();
+			for(Address addr : addresses) {
+				arraddr.add(addr.toJSON());
+			}
+			InputHandler.getResponseJSON(zMessage).put("addresses", arraddr);
+			InputHandler.endResponse(zMessage, true, "");
+			
 		}else if(zMessage.isMessageType(CONSENSUS_KEYS)){
 			//Public Keys
 			ArrayList<PubPrivKey> keys = getMainDB().getUserDB().getKeys();
@@ -371,13 +382,13 @@ public class ConsensusPrint {
 			}
 			InputHandler.getResponseJSON(zMessage).put("publickeys", arrpub);
 			
-			//Addresses
-			ArrayList<Address> addresses = getMainDB().getUserDB().getAllAddresses();
-			JSONArray arraddr = new JSONArray();
-			for(Address addr : addresses) {
-				arraddr.add(addr.toJSON());
-			}
-			InputHandler.getResponseJSON(zMessage).put("addresses", arraddr);
+//			//Addresses
+//			ArrayList<Address> addresses = getMainDB().getUserDB().getAllAddresses();
+//			JSONArray arraddr = new JSONArray();
+//			for(Address addr : addresses) {
+//				arraddr.add(addr.toJSON());
+//			}
+//			InputHandler.getResponseJSON(zMessage).put("addresses", arraddr);
 			
 			InputHandler.endResponse(zMessage, true, "");
 			

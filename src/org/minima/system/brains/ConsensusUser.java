@@ -109,6 +109,9 @@ public class ConsensusUser {
 			
 		
 		}else if(zMessage.isMessageType(CONSENSUS_MMRTREE)) {
+			//What type SCRIPT or HASHES
+			String type = zMessage.getString("type");
+			
 			//Create an MMR TREE from the array of inputs..
 			ArrayList<MiniString> leaves = (ArrayList<MiniString>) zMessage.getObject("leaves");
 		
@@ -118,16 +121,23 @@ public class ConsensusUser {
 			//Now add each 
 			JSONArray nodearray = new JSONArray();
 			for(MiniString leaf : leaves) {
-				byte[] hash = Crypto.getInstance().hashData(leaf.getData());
-				MiniHash finalhash = new MiniHash(hash);
-				mmr.addUnspentCoin(new MMRData(finalhash));
-				
-				//Add to the response..
 				JSONObject mmrnode = new JSONObject();
-				mmrnode.put("data","[ "+leaf.toString()+" ]");
+				
+				MiniHash finalhash = null;
+				if(type.equals("hash")) {
+					finalhash = new MiniHash(leaf.toString());
+					mmrnode.put("data",leaf.toString());
+				}else{
+					byte[] hash = Crypto.getInstance().hashData(leaf.getData());
+					finalhash = new MiniHash(hash);
+					mmrnode.put("data","[ "+leaf.toString()+" ]");
+				}
 				mmrnode.put("hash", finalhash.to0xString());
 				
 				nodearray.add(mmrnode);
+				
+				//Add to the MMR
+				mmr.addUnspentCoin(new MMRData(finalhash));
 			}
 
 			//Now finalize..
@@ -143,8 +153,7 @@ public class ConsensusUser {
 				
 				//Calculate the CHAINSHA proof..
 				JSONArray pr = proof.proofChainOnly();
-				node.put("chainsha", proof.getChainSHAProof().to0xString());
-//				node.put("proof", pr);
+				node.put("proof", proof.getChainSHAProof().to0xString());
 			}
 			
 			//return to sender!

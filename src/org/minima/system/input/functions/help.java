@@ -87,11 +87,12 @@ public class help extends CommandFunction{
 			addJSONDesc(new search());
 			addJSONDesc(new txpowinfo());
 			
-			addJSONDesc(new createtoken());
+			addJSONDesc(new addresses());
 			addJSONDesc(new newaddress());
 			addJSONDesc(new newscript());
 			addJSONDesc(new cleanscript());
 			addJSONDesc(new runscript());
+			addJSONDesc(new createtoken());
 			
 			addJSONDesc(new mmrtree());
 			

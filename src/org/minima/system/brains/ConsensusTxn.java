@@ -180,20 +180,17 @@ public class ConsensusTxn {
 			}
 			Coin cc = crow.getCoin();
 			
+			//Add it..
+			trx.addInput(cc);
+			
 			//Get the Script associated with this coin
 			String script = getMainDB().getUserDB().getScript(cc.getAddress());
 			if(script.equals("")) {
-				InputHandler.endResponse(zMessage, false, "UNKNOWN ADDRESS "+cc.getAddress()+" not in database..");
-				return;
+				JSONObject resp = InputHandler.getResponseJSON(zMessage);
+				resp.put("info", "UNKNOWN ADDRESS "+cc.getAddress()+" not in Script database..");
+			}else {
+				trx.addScript(script);
 			}
-			
-			//Add it..
-			trx.addInput(cc);
-			trx.addScript(script);
-			
-			//Set Script
-//			wit.addScript(script);
-			
 			
 			listTransactions(zMessage);
 			

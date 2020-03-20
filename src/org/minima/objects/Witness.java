@@ -99,9 +99,9 @@ public class Witness implements Streamable {
 		return mSignatures.get(zSig);
 	}
 	
-	public ArrayList<MiniData> getAllSignatures(){
-		return mSignatures;
-	}
+//	public ArrayList<MiniData> getAllSignatures(){
+//		return mSignatures;
+//	}
 	
 	public ArrayList<MiniData> getAllPubKeys(){
 		return mPublicKeys;

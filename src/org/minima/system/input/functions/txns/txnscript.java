@@ -17,7 +17,7 @@ public class txnscript extends CommandFunction {
 		int txn = Integer.parseInt(zInput[1]);
 		
 		//Send to the consensus Handler
-		Message msg = getResponseMessage(ConsensusTxn.CONSENSUS_TXNINPUT);
+		Message msg = getResponseMessage(ConsensusTxn.CONSENSUS_TXNSCRIPT);
 		msg.addInt("transaction", txn);
 				
 		//Get the coinid of the input

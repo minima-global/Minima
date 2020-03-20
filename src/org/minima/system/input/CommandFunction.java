@@ -2,6 +2,7 @@ package org.minima.system.input;
 
 import org.minima.miniscript.exceptions.MinimaParseException;
 import org.minima.system.Main;
+import org.minima.system.input.functions.addresses;
 import org.minima.system.input.functions.backup;
 import org.minima.system.input.functions.balance;
 import org.minima.system.input.functions.cleanscript;
@@ -63,7 +64,7 @@ public abstract class CommandFunction {
 			new newscript(), new printchain(), new printtree(), new quit(),new reconnect(), new runscript(), new cleanscript(), 
 			new send(), new status(), new test(), new trace(), new tutorial(), new history(), 
 			new exportkey(), new importkey(), new exportcoin(), new importcoin(), new search(),
-			new mmrtree(), new keepcoin(),
+			new mmrtree(), new keepcoin(), new addresses(),
 			new txncreate(), new txndelete(), new txninput(), new txnlist(), 
 			new txnstate(), new txnexport(), new txnimport(), new txnscript(),
 			new txnoutput(), new txnpost(), new txnsign(), new txnvalidate()
