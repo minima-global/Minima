@@ -98,6 +98,10 @@ public class TxPOWChecker {
 			
 			//Get the Script..
 			String script = zTrans.getScript(input.getAddress()).getScript().toString();
+			if(script == null) {
+				contractlog.put("error", "Script not found for "+input.getAddress());
+				return false;
+			}
 //			String script = zWit.getScript(i);
 			
 			contractlog.put("input", i);

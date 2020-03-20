@@ -151,27 +151,21 @@ public class Transaction implements Streamable {
 	/**
 	 * All the scripts
 	 */
-	public boolean addScript(String zScript) {
-		//Create a new simple scriptproof
-		ScriptProof sp = new ScriptProof(zScript);
-		if(!scriptExists(sp.getProofHash())) {
-			mScripts.add(sp);		
-			return true;
-		}
-		return false;
-	}
-	
 	public boolean addScript(ScriptProof zScriptProof) {
-		if(!scriptExists(zScriptProof.getProofHash())) {
+		if(!scriptExists(zScriptProof.getFinalHash())) {
 			mScripts.add(zScriptProof);		
 			return true;
 		}
 		return false;
 	}
 	
+	public boolean addScript(String zScript) {
+		return addScript(new ScriptProof(zScript));
+	}
+	
 	public ScriptProof getScript(MiniHash zHash) {
 		for(ScriptProof proof : mScripts) {
-			if(proof.getProofHash().isExactlyEqual(zHash)) {
+			if(proof.getFinalHash().isExactlyEqual(zHash)) {
 				return proof;
 			}
 		}
@@ -179,12 +173,7 @@ public class Transaction implements Streamable {
 	}
 	
 	public boolean scriptExists(MiniHash zHash) {
-		for(ScriptProof proof : mScripts) {
-			if(proof.getProofHash().isExactlyEqual(zHash)) {
-				return true;
-			}
-		}
-		return false;
+		return getScript(zHash)!=null;
 	}
 	
 	@Override

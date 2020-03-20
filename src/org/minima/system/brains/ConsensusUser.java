@@ -49,6 +49,8 @@ public class ConsensusUser {
 	public static final String CONSENSUS_RUNSCRIPT 			= CONSENSUS_PREFIX+"RUNSCRIPT";
 	public static final String CONSENSUS_CLEANSCRIPT 		= CONSENSUS_PREFIX+"CLEANSCRIPT";
 	
+	public static final String CONSENSUS_KEEPCOIN 			= CONSENSUS_PREFIX+"KEEPCOIN";
+	
 	public static final String CONSENSUS_EXPORTKEY 			= CONSENSUS_PREFIX+"EXPORTKEY";
 	public static final String CONSENSUS_IMPORTKEY 			= CONSENSUS_PREFIX+"IMPORTKEY";
 	public static final String CONSENSUS_EXPORTCOIN 		= CONSENSUS_PREFIX+"EXPORTCOIN";
@@ -338,6 +340,36 @@ public class ConsensusUser {
 			resp.put("parse", cc.getCompleteTraceLog());
 			resp.put("exception", cc.isException());
 			resp.put("result", cc.isSuccess());
+			InputHandler.endResponse(zMessage, true, "");
+		
+		}else if(zMessage.isMessageType(CONSENSUS_KEEPCOIN)) {
+			String cid = zMessage.getString("coinid");
+			
+			//Get the MMRSet
+			MMRSet basemmr = getMainDB().getMainTree().getChainTip().getMMRSet();
+			
+			//Search for the coin..
+			MiniHash coinid = new MiniHash(cid);
+			MMREntry entry =  basemmr.findEntry(coinid, true);
+			
+			//Now ask to keep it..
+			MMRSet coinset = basemmr.getParentAtTime(entry.getBlockTime());
+			coinset.addKeeper(entry.getEntry());
+			coinset.finalizeSet();
+			
+			//Get the coin
+			Coin cc = entry.getData().getCoin();
+			
+			//add it to the database
+			CoinDBRow crow = getMainDB().getCoinDB().addCoinRow(cc);
+			crow.setIsSpent(entry.getData().isSpent());
+			crow.setIsInBlock(true);
+			crow.setInBlockNumber(entry.getData().getInBlock());
+			crow.setMMREntry(entry.getEntry());
+			
+			//Now you have the proof..
+			JSONObject resp = InputHandler.getResponseJSON(zMessage);
+			resp.put("coin", cc.toJSON());
 			InputHandler.endResponse(zMessage, true, "");
 			
 		}else if(zMessage.isMessageType(CONSENSUS_IMPORTCOIN)) {

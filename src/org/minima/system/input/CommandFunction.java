@@ -13,6 +13,7 @@ import org.minima.system.input.functions.gimme50;
 import org.minima.system.input.functions.help;
 import org.minima.system.input.functions.history;
 import org.minima.system.input.functions.intro;
+import org.minima.system.input.functions.keepcoin;
 import org.minima.system.input.functions.keys;
 import org.minima.system.input.functions.minetrans;
 import org.minima.system.input.functions.mmrtree;
@@ -62,7 +63,7 @@ public abstract class CommandFunction {
 			new newscript(), new printchain(), new printtree(), new quit(),new reconnect(), new runscript(), new cleanscript(), 
 			new send(), new status(), new test(), new trace(), new tutorial(), new history(), 
 			new exportkey(), new importkey(), new exportcoin(), new importcoin(), new search(),
-			new mmrtree(),
+			new mmrtree(), new keepcoin(),
 			new txncreate(), new txndelete(), new txninput(), new txnlist(), 
 			new txnstate(), new txnexport(), new txnimport(), new txnscript(),
 			new txnoutput(), new txnpost(), new txnsign(), new txnvalidate()

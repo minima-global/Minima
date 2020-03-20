@@ -16,7 +16,7 @@ import org.minima.utils.json.JSONObject;
 public class StateVariable implements Streamable {
 
 	/**
-	 * Integer for the port.. 0-255
+	 * Byte for the port.. 0-255
 	 * @param zData
 	 */
 	MiniByte mPort;

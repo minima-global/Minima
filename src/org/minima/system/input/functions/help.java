@@ -75,14 +75,16 @@ public class help extends CommandFunction{
 			addJSONDesc(new send());
 			addJSONDesc(new balance());
 			
-			addJSONDesc(new coins());
-			addJSONDesc(new exportcoin());
-			addJSONDesc(new importcoin());
-			
 			addJSONDesc(new keys());
 			addJSONDesc(new exportkey());
 			addJSONDesc(new importkey());
 			
+			addJSONDesc(new coins());
+			addJSONDesc(new exportcoin());
+			addJSONDesc(new importcoin());
+			addJSONDesc(new keepcoin());
+			
+			addJSONDesc(new search());
 			addJSONDesc(new txpowinfo());
 			
 			addJSONDesc(new createtoken());
@@ -92,7 +94,6 @@ public class help extends CommandFunction{
 			addJSONDesc(new runscript());
 			
 			addJSONDesc(new mmrtree());
-			
 			
 			addJSONDesc(new txnlist());
 			addJSONDesc(new txncreate());

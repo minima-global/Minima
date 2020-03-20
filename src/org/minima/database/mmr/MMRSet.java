@@ -206,7 +206,7 @@ public class MMRSet implements Streamable {
 	 * @param zCoinID
 	 * @return
 	 */
-	public MMREntry findEntry(MiniHash zCoinID) {
+	public MMREntry findEntry(MiniHash zCoinID, boolean zSearchParent) {
 		//Get the zero row - no parents..
 		ArrayList<MMREntry> zero=getZeroRow();
 		
@@ -218,6 +218,12 @@ public class MMRSet implements Streamable {
 			}
 		}
 			
+		if(zSearchParent) {
+			if(mParent!=null) {
+				return mParent.findEntry(zCoinID, true);
+			}
+		}
+		
 		return null;
 	}
 	
