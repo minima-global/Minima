@@ -2,7 +2,7 @@ package org.minima.database.coindb.java;
 
 import org.minima.database.coindb.CoinDBRow;
 import org.minima.objects.Coin;
-import org.minima.objects.base.MiniData32;
+import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
 
 public class JavaCoinDBRow implements CoinDBRow{

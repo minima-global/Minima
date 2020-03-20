@@ -11,9 +11,12 @@ import org.minima.miniscript.Contract;
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
 import org.minima.objects.PubPrivKey;
+import org.minima.objects.TokenDetails;
 import org.minima.objects.Transaction;
+import org.minima.objects.TxPOW;
 import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniData32;
+import org.minima.objects.base.MiniHash;
+import org.minima.objects.base.MiniNumber;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 
@@ -28,14 +31,30 @@ public class JavaUserDB implements UserDB, Streamable{
 	
 	ArrayList<Address> mTotalAddresses;
 	
+	/**
+	 * Token Details
+	 */
+	ArrayList<TokenDetails> mAllTokens;
+	
+	/**
+	 * Transaction History
+	 */
+	ArrayList<reltxpow> mHistory;
+	
+	/**
+	 * Base constructor
+	 */
 	public JavaUserDB() {
 		mPubPrivKeys 	 = new ArrayList<>();
 		mAddresses 		 = new ArrayList<>();
 		mScriptAddresses = new ArrayList<>();
 		mTotalAddresses  = new ArrayList<>();
-	
+		mAllTokens		 = new ArrayList<>();
+		
 		mCounter = 0;
 		mRows  = new ArrayList<>();
+		
+		mHistory = new ArrayList<>();
 	}
 	
 	@Override
@@ -71,8 +90,8 @@ public class JavaUserDB implements UserDB, Streamable{
 	}
 
 	@Override
-	public UserDBRow addUserRow() {
-		UserDBRow row = new JavaUserDBRow(mCounter++);
+	public UserDBRow addUserRow(int zID) {
+		UserDBRow row = new JavaUserDBRow(zID);
 		mRows.add(row);
 		return row;
 	}
@@ -113,7 +132,7 @@ public class JavaUserDB implements UserDB, Streamable{
 	
 
 	@Override
-	public boolean isSimpleAddress(MiniData32 zAddress) {
+	public boolean isSimpleAddress(MiniHash zAddress) {
 		for(Address addr : mAddresses) {
 			if(addr.isEqual(zAddress)) {
 				return true;
@@ -144,6 +163,9 @@ public class JavaUserDB implements UserDB, Streamable{
 		//A simple script.. 
 		Address addr = new Address(zScript);
 		
+		//Do we allready have it ?
+		//..
+		
 		//Add to the simple wallet
 		mScriptAddresses.add(addr);
 		mTotalAddresses.add(addr);
@@ -152,7 +174,7 @@ public class JavaUserDB implements UserDB, Streamable{
 	}
 	
 	@Override
-	public String getScript(MiniData32 zAddress) {
+	public String getScript(MiniHash zAddress) {
 		//Check the Addresses
 		for(Address addr : mTotalAddresses) {
 			if(addr.getAddressData().isExactlyEqual(zAddress)) {
@@ -160,12 +182,12 @@ public class JavaUserDB implements UserDB, Streamable{
 			}
 		}
 		
-		return "NULL";
+		return "";
 	}
 
 	
 	@Override
-	public boolean isAddressRelevant(MiniData32 zAddress) {
+	public boolean isAddressRelevant(MiniHash zAddress) {
 		for(Address addr : mTotalAddresses) {
 			if(addr.getAddressData().isExactlyEqual(zAddress)) {
 				return true;
@@ -198,7 +220,7 @@ public class JavaUserDB implements UserDB, Streamable{
 	}
 
 	@Override
-	public MiniData getPublicKey(MiniData32 zAddress) {
+	public MiniData getPublicKey(MiniHash zAddress) {
 		for(Address addr : mAddresses) {
 			if(addr.isEqual(zAddress)) {
 				//What is the Public key!
@@ -239,6 +261,13 @@ public class JavaUserDB implements UserDB, Streamable{
 			addr.writeDataStream(zOut);
 		}
 		
+		//Token Details
+		len = mAllTokens.size();
+		zOut.writeInt(len);
+		for(TokenDetails td : mAllTokens) {
+			td.writeDataStream(zOut);
+		}
+		
 		//transactions..
 		zOut.writeInt(mCounter);
 		
@@ -248,6 +277,13 @@ public class JavaUserDB implements UserDB, Streamable{
 			JavaUserDBRow jrow = (JavaUserDBRow) row;		
 			jrow.writeDataStream(zOut);
 		}	
+		
+		//History
+		len = mHistory.size();
+		zOut.writeInt(len);
+		for(reltxpow rtxpow : mHistory) {
+			rtxpow.writeDataStream(zOut);
+		}
 	}
 
 	@Override
@@ -258,7 +294,8 @@ public class JavaUserDB implements UserDB, Streamable{
 		mScriptAddresses = new ArrayList<>();
 		mTotalAddresses  = new ArrayList<>();
 		mRows            = new ArrayList<>();	
-
+		mAllTokens		 = new ArrayList<>();
+		
 		//Pub Priv Keys
 		int len = zIn.readInt();
 		for(int i=0;i<len;i++) {
@@ -285,6 +322,12 @@ public class JavaUserDB implements UserDB, Streamable{
 			mTotalAddresses.add(addr);
 		}
 		
+		//Token Details
+		len = zIn.readInt();
+		for(int i=0;i<len;i++) {
+			mAllTokens.add(TokenDetails.ReadFromStream(zIn));
+		}
+		
 		//transaction..
 		mCounter = zIn.readInt();
 		
@@ -294,6 +337,71 @@ public class JavaUserDB implements UserDB, Streamable{
 			row.readDataStream(zIn);
 			mRows.add(row);
 		}
+		
+		//History
+		mHistory = new ArrayList<reltxpow>();
+		len = zIn.readInt();
+		for(int i=0;i<len;i++) {
+			reltxpow rpow = new reltxpow();
+			rpow.readDataStream(zIn);
+			mHistory.add(rpow);
+		}
+	}
+
+	@Override
+	public ArrayList<TokenDetails> getAllKnownTokens() {
+		return mAllTokens;
+	}
+
+	@Override
+	public TokenDetails getTokenDetail(MiniHash zTokenID) {
+		for(TokenDetails td : mAllTokens) {
+			if(td.getTokenID().isExactlyEqual(zTokenID)) {
+				return td;
+			}
+		}
+		
+		return null;
+	}
+
+	@Override
+	public void addTokenDetails(TokenDetails zToken) {
+		//Check if we have it..
+		if(getTokenDetail(zToken.getTokenID()) == null) {
+			//We don't have it - add it
+			mAllTokens.add(zToken);	
+		}
+	}
+
+	/**
+	 * Transasction History 
+	 */
+	@Override
+	public ArrayList<reltxpow> getHistory() {
+		return mHistory;
+	}
+
+	@Override
+	public void addToHistory(TxPOW zTxPOW, MiniNumber zValue) {
+		mHistory.add(new reltxpow(zTxPOW, zValue));
+	}
+
+//	@Override
+//	public void removeHistory(MiniHash zTxPowID) {
+//		ArrayList<TxPOW> newhist = new ArrayList<TxPOW>();
+//		
+//		for(TxPOW txpow : mHistory) {
+//			if(!txpow.getTxPowID().isExactlyEqual(zTxPowID)) {
+//				newhist.add(txpow);
+//			}
+//		}
+//		
+//		mHistory = newhist;
+//	}
+
+	@Override
+	public void clearHistory() {
+		mHistory.clear();
 	}
 
 }

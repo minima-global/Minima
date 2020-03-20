@@ -1,15 +1,21 @@
 package org.minima.system.input.functions;
 
 import org.minima.system.input.CommandFunction;
+import org.minima.system.input.functions.transfer.exportcoin;
 import org.minima.system.input.functions.transfer.exportkey;
+import org.minima.system.input.functions.transfer.importcoin;
 import org.minima.system.input.functions.transfer.importkey;
 import org.minima.system.input.functions.txns.txncreate;
 import org.minima.system.input.functions.txns.txndelete;
+import org.minima.system.input.functions.txns.txnexport;
+import org.minima.system.input.functions.txns.txnimport;
 import org.minima.system.input.functions.txns.txninput;
 import org.minima.system.input.functions.txns.txnlist;
 import org.minima.system.input.functions.txns.txnoutput;
 import org.minima.system.input.functions.txns.txnpost;
+import org.minima.system.input.functions.txns.txnscript;
 import org.minima.system.input.functions.txns.txnsign;
+import org.minima.system.input.functions.txns.txnstate;
 import org.minima.system.input.functions.txns.txnvalidate;
 
 public class help extends CommandFunction{
@@ -39,9 +45,9 @@ public class help extends CommandFunction{
 			} else {
 				String desc = found.getDescription().trim();
 				if(desc.equals("")) {
-					getResponseStream().getDataJSON().put("description", found.getSimple());
+					getResponseStream().getDataJSON().put("description", found.getParams()+" - "+found.getSimple());
 				}else {
-					getResponseStream().getDataJSON().put("description", desc);	
+					getResponseStream().getDataJSON().put("description", found.getParams()+" - "+desc);	
 				}
 				
 				getResponseStream().endStatus(true, "");
@@ -52,9 +58,11 @@ public class help extends CommandFunction{
 			addJSONDesc(new tutorial());
 			
 			addJSONDesc(new status());
+			addJSONDesc(new history());
 			addJSONDesc(new printchain());
-
-			//			addJSONDesc(new trace());
+			addJSONDesc(new printtree());
+	
+			addJSONDesc(new trace());
 			addJSONDesc(new minetrans());
 			addJSONDesc(new backup());
 			
@@ -66,29 +74,41 @@ public class help extends CommandFunction{
 			addJSONDesc(new gimme50());
 			addJSONDesc(new send());
 			addJSONDesc(new balance());
-			addJSONDesc(new coins());
-			addJSONDesc(new keys());
 			
+			addJSONDesc(new keys());
+			addJSONDesc(new exportkey());
+			addJSONDesc(new importkey());
+			
+			addJSONDesc(new coins());
+			addJSONDesc(new exportcoin());
+			addJSONDesc(new importcoin());
+			addJSONDesc(new keepcoin());
+			
+			addJSONDesc(new search());
 			addJSONDesc(new txpowinfo());
 			
 			addJSONDesc(new createtoken());
 			addJSONDesc(new newaddress());
 			addJSONDesc(new newscript());
+			addJSONDesc(new cleanscript());
 			addJSONDesc(new runscript());
-			addJSONDesc(new exportkey());
-			addJSONDesc(new importkey());
+			
+			addJSONDesc(new mmrtree());
 			
 			addJSONDesc(new txnlist());
 			addJSONDesc(new txncreate());
 			addJSONDesc(new txndelete());
+			addJSONDesc(new txnexport());
+			addJSONDesc(new txnimport());
 			addJSONDesc(new txninput());
 			addJSONDesc(new txnoutput());
+			addJSONDesc(new txnstate());
+			addJSONDesc(new txnscript());
 			addJSONDesc(new txnsign());
 			addJSONDesc(new txnvalidate());
 			addJSONDesc(new txnpost());
 			
 			addJSONDesc(new quit());
-			
 			
 			//It's worked
 			getResponseStream().endStatus(true, "");
@@ -99,13 +119,32 @@ public class help extends CommandFunction{
 		//Need to HACK swap {} for () .. JSON..
 		String params = zFunc.getParams().replaceAll("\\{", "\\(").replaceAll("\\}", "\\)").trim();
 		
+		//The Name.. same length for better reading
+		String name = getStrOfLength(14, zFunc.getName());
+		
 		//Auto fill
 		if(params.equals("")) {
-			getResponseStream().getDataJSON().put(zFunc.getName(), zFunc.getSimple());
+			getResponseStream().getDataJSON().put(name, zFunc.getSimple());
 		}else {
-			getResponseStream().getDataJSON().put(zFunc.getName(), params+ " - " + zFunc.getSimple());
+			getResponseStream().getDataJSON().put(name, params+ " - " + zFunc.getSimple());
+		}
+	}
+	
+	public String getStrOfLength(int zDesiredLen, String zString) {
+		String ret = new String(zString);
+		int len    = ret.length();
+		
+		//The same or longer
+		if(len >= zDesiredLen) {
+			return ret.substring(0, zDesiredLen);
 		}
 		
+		//If Shorter add zeros
+		for(int i=0;i< zDesiredLen-len;i++) {
+			ret = ret.concat(" ");
+		}
+		
+		return ret;
 	}
 	
 	@Override

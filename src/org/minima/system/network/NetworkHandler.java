@@ -1,10 +1,13 @@
 package org.minima.system.network;
 
+import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 
 import org.minima.system.Main;
 import org.minima.system.SystemHandler;
 import org.minima.system.input.InputHandler;
+import org.minima.system.network.rpc.RPCClient;
 import org.minima.system.network.rpc.RPCServer;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.messages.Message;
@@ -62,6 +65,11 @@ public class NetworkHandler extends SystemHandler{
 	boolean mGlobalReconnect = true;
 	
 	/**
+	 * Which Host for the Minima Web MiFi Proxy
+	 */
+	String mMifiProxy = "http://mifi.minima.global:9000/";
+	
+	/**
 	 * 
 	 * @param zMain
 	 */
@@ -76,10 +84,13 @@ public class NetworkHandler extends SystemHandler{
 	public RPCServer getRPCServer() {
 		return mRPCServer;
 	}
-	
-//	public RPCWebSocketServer getRPCWebSocketServer() {
-//		return mRPCWebSocketServer;
-//	}
+
+	public void setProxy(String zProxy) {
+		mMifiProxy = zProxy; 
+		if(!mMifiProxy.endsWith("/")) {
+			mMifiProxy +="/";
+		}
+	}
 	
 	public void setGlobalReconnect(boolean zGlobalReconnect) {
 		mGlobalReconnect = zGlobalReconnect;
@@ -104,9 +115,9 @@ public class NetworkHandler extends SystemHandler{
 			mRPCServer = new RPCServer(getMainHandler().getInputHandler(), rpcport);
 			Thread rpc = new Thread(mRPCServer);
 			rpc.start();
-	
-//			mRPCWebSocketServer = new RPCWebSocketServer(getMainHandler().getInputHandler(), 8998);
-//			mRPCWebSocketServer.start();
+			
+			//Log it..
+			MinimaLogger.log("MiFi proxy set : "+mMifiProxy);
 			
 		}else if(zMessage.isMessageType(NETWORK_SHUTDOWN)) {
 			//Stop the server
@@ -114,16 +125,6 @@ public class NetworkHandler extends SystemHandler{
 			
 			//Stop the RPC server
 			try {mRPCServer.stop();}catch(Exception exc) {}
-			
-			//Stop the weblink
-			try {
-				if(mProxyManager != null) {
-					mProxyManager.PostMessage(WebProxyManager.WEBPROXY_SHUTDOWN);
-				}
-			}catch(Exception exc) {}
-			
-			//Stop the WebSocketServer
-//			mRPCWebSocketServer.stop();
 			
 			//Shutdown all the clients
 			Message msg = new Message(NetClient.NETCLIENT_SHUTDOWN);
@@ -144,30 +145,34 @@ public class NetworkHandler extends SystemHandler{
 //			PostMessage(connect);
 		
 		}else if(zMessage.isMessageType(NETWORK_NOTIFY)) {
-			//Broadcast a message to the web socket listeners..
-//			mRPCWebSocketServer.broadcast("Your balance has changed.");
-			
-			//Tell the proxy manage
-			if(mProxyManager != null) {
-				mProxyManager.PostMessage(WebProxyManager.WEBPROXY_NOTIFY);
-			}
+			//Notify users that something has changed,,.
 			
 		}else if(zMessage.isMessageType(NETWORK_WEBPROXY)) {
 			//Connect to a web proxy and listen for RPC calls..
-			String host 	= zMessage.getString("host");
-			int port 		= zMessage.getInteger("port");
-			String webhost 	= zMessage.getString("webhostid");
+			String uuid 	= zMessage.getString("uuid");
 			
-			//Shut down the old..
-			if(mProxyManager != null) {
-				mProxyManager.PostMessage(WebProxyManager.WEBPROXY_SHUTDOWN);
+			//Create the IP
+			String ip = uuid+"#"+getRPCServer().getHost()+":"+getRPCServer().getPort();
+			
+			//Call the Minima Proxy - this should be user definable..#TODO
+			String url = mMifiProxy+URLEncoder.encode(ip, "UTF-8");
+		
+			//Call it..
+			String resp ="";
+			try {
+				resp = RPCClient.sendGET(url);
+			}catch(IOException exc) {
+				//Tell the user
+				InputHandler.getResponseJSON(zMessage).put("url", url);
+				InputHandler.getResponseJSON(zMessage).put("resp", exc);
+				InputHandler.endResponse(zMessage, true,"");
+				return;
 			}
 			
-			//Start a new one..
-			mProxyManager = new WebProxyManager(host, port, webhost, this);
-			
 			//Tell the user
-			InputHandler.endResponse(zMessage, true, "ProxyWebLink started..");
+			InputHandler.getResponseJSON(zMessage).put("url", url);
+			InputHandler.getResponseJSON(zMessage).put("resp", resp);
+			InputHandler.endResponse(zMessage, true,"");
 			
 		}else if(zMessage.isMessageType(NETWORK_CONNECT)) {
 			String host = zMessage.getString("host");

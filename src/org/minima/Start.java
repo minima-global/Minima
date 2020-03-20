@@ -11,18 +11,25 @@ import java.util.ArrayList;
 
 import org.minima.system.Main;
 import org.minima.system.backup.BackupManager;
-import org.minima.system.bootstrap.GenesisTransaction;
 import org.minima.system.input.InputMessage;
 import org.minima.utils.MiniFormat;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.ResponseStream;
 import org.minima.utils.messages.Message;
-import org.minima.utils.MinimaLogger;
 
 /**
  * @author Paddy Cerri
  *
  */
 public class Start {
+	
+	/**
+	 * A static link to the main server
+	 */
+	public static Main mMainServer;
+	public static Main getServer() {
+		return mMainServer;
+	}
 	
 	/**
 	 * Simple constructor for iOS and Android
@@ -37,6 +44,7 @@ public class Start {
 				//Start up Variables
 				ArrayList<String> vars = new ArrayList<>();
 				
+				vars.add("-daemon");
 				vars.add("-clean");
 				vars.add("-port");
 				vars.add("9001");
@@ -69,7 +77,7 @@ public class Start {
 		int port 				= 9001;
 		int rpcport 			= 8999;
 		
-		//Currently DISABLED
+		//Currently DISABLED .. will re-enable later
 		//Is a function called when there is a new relevant transaction..
 		//This function could put the data in a web database etc..
 		String txnfunction = "";
@@ -78,12 +86,15 @@ public class Start {
 		boolean connect         = true;
 		String connecthost      = "34.90.172.118";
 		int connectport         = 9001;
+		String mifiProxy 		= "http://mifi.minima.global:9000/";
 		
 		boolean clean           = false;
 		boolean genesis 		= false;
 		boolean daemon          = false;
 		
-		String conffolder = System.getProperty("user.home")+"/minima"; 
+		//Configuration folder
+		File conf = new File(System.getProperty("user.home"),".minima");
+		String conffolder = conf.getAbsolutePath();
 		
 		if(arglen > 0) {
 			int counter	=	0;
@@ -108,6 +119,7 @@ public class Start {
 					MinimaLogger.log("        -private               : Run a private chain. Don't connect to MainNet. Create a genesis tx-pow. Simulate some users.");
 					MinimaLogger.log("        -noconnect             : Don't connect to MainNet. Can then connect to private chains.");
 					MinimaLogger.log("        -connect [host] [port] : Don't connect to MainNet. Connect to this node.");
+					MinimaLogger.log("        -mifiproxy [host:port] : Use this address for MiFi proxy requests and not the default.");
 //					SimpleLogger.log("        -relcoin [POST_URL]    : HTTP POST of new coins in json format (all in 'data') that are relevant to this wallet.");
 					MinimaLogger.log("        -clean                 : Wipe user files and chain backup. Start afresh.");
 					MinimaLogger.log("        -daemon                : Accepts no input from STDIN. Can run in background process.");
@@ -132,6 +144,9 @@ public class Start {
 					connect = true;
 					connecthost = zArgs[counter++];
 					connectport = Integer.parseInt(zArgs[counter++]);
+				
+				}else if(arg.equals("-mifiproxy")) {
+					mifiProxy = zArgs[counter++];
 					
 				}else if(arg.equals("-clean")) {
 					clean = true;
@@ -160,10 +175,16 @@ public class Start {
 		//Start the main Minima server
 		Main rcmainserver = new Main(port, rpcport, genesis, conffolder);
 		
+		//Link it.
+		mMainServer = rcmainserver;
+		
 		//Set the connect properties
 		rcmainserver.setAutoConnect(connect);
 		rcmainserver.mAutoHost = connecthost;
 		rcmainserver.mAutoPort = connectport;
+		
+		//Set the proxy
+		rcmainserver.setMiFiProxy(mifiProxy);
 		
 		if(!txnfunction.equals("")) {
 			MinimaLogger.log("New Txn function : "+txnfunction);
@@ -208,10 +229,12 @@ public class Start {
 		            //Get a line of input
 		            String input = bis.readLine().trim();
 		            
-		            //New response packet..
-		            ResponseStream response = new ResponseStream();
-		            
-		            if(!input.equals("")) {
+		            //Check valid..
+		            if(input!=null && !input.equals("")) {
+		            	
+		            	//New response packet..
+			            ResponseStream response = new ResponseStream();
+			            
 		            	//Set the output stream
 			            InputMessage inmsg = new InputMessage(input, response);
 			            
@@ -233,7 +256,10 @@ public class Start {
 		                if(resp.startsWith("{") || resp.startsWith("[")) {
 		                	resp = MiniFormat.PrettyJSON(resp);
 		                }
-		                 
+		                
+		                //Convert \n..
+		                resp = resp.replaceAll("\\\\n", "\n");
+		                		
 		                //And then print out the result
 		                System.out.println(resp);
 		            }

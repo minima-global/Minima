@@ -8,7 +8,7 @@ public class txnsign extends CommandFunction {
 
 	public txnsign() {
 		super("txnsign");
-		setHelp("[txn_num] [public key]", "Sign the Transaction with the chosen Public Key", "");
+		setHelp("[id] [public key]", "Sign the Transaction with the chosen Public Key", "");
 	}
 
 	@Override
@@ -17,7 +17,7 @@ public class txnsign extends CommandFunction {
 		String PublicKey   	= zInput[2];
 		
 		//Send to the consensus Handler
-		Message msg = new Message(ConsensusTxn.CONSENSUS_TXNSIGN);
+		Message msg = getResponseMessage(ConsensusTxn.CONSENSUS_TXNSIGN);
 		msg.addInt("transaction", txn);
 		msg.addString("pubkey", PublicKey);
 		

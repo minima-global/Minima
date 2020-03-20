@@ -8,12 +8,19 @@ public class txncreate extends CommandFunction {
 
 	public txncreate() {
 		super("txncreate");
-		setHelp("", "Create a new custom transaction", "");
+		setHelp("", "(id) Create a new custom transaction with either a random or specified ID", "");
 	}
 
 	@Override
 	public void doFunction(String[] zInput) throws Exception {
-		getMainHandler().getConsensusHandler().PostMessage(getResponseMessage(ConsensusTxn.CONSENSUS_TXNCREATE));
+		Message msg = getResponseMessage(ConsensusTxn.CONSENSUS_TXNCREATE);
+		
+		if(zInput.length>1) {
+			//Specified the id
+			msg.addInt("id", Integer.parseInt(zInput[1]));
+		}
+		
+		getMainHandler().getConsensusHandler().PostMessage(msg);
 	}
 	
 	@Override

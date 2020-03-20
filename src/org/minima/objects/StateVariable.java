@@ -4,6 +4,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+import org.minima.miniscript.Contract;
 import org.minima.miniscript.values.Value;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
@@ -15,16 +16,16 @@ import org.minima.utils.json.JSONObject;
 public class StateVariable implements Streamable {
 
 	/**
+	 * Byte for the port.. 0-255
+	 * @param zData
+	 */
+	MiniByte mPort;
+	
+	/**
 	 * The data can represent any of the value types used in script..
 	 * HEX, Number or Script
 	 */
 	MiniString mData; 
-	
-	/**
-	 * Integer for the port..
-	 * @param zData
-	 */
-	MiniNumber mPort;
 	
 	/**
 	 * Port and Data..
@@ -32,19 +33,23 @@ public class StateVariable implements Streamable {
 	 * @param zPort
 	 * @param zData
 	 */
-	public StateVariable(MiniNumber zPort, String zData) {
-		mData     = new MiniString(zData);
-		mPort	  = zPort;
+	public StateVariable(int zPort, String zData) {
+		mPort	  = new MiniByte(zPort);
+		mData     = new MiniString(Contract.cleanScript(zData));
 	}
 	
 	private StateVariable() {}
+	
+	public void resetData(MiniString zData) {
+		mData = zData;
+	}
 	
 	public MiniString getData() {
 		return mData;
 	}
 	
-	public MiniNumber getPort() {
-		return mPort;
+	public int getPort() {
+		return mPort.getValue();
 	}
 	
 	public JSONObject toJSON() {
@@ -67,7 +72,7 @@ public class StateVariable implements Streamable {
 
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
-		mPort = MiniNumber.ReadFromStream(zIn);
+		mPort = MiniByte.ReadFromStream(zIn);
 		mData = MiniString.ReadFromStream(zIn);
 	}
 	

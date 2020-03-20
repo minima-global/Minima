@@ -14,7 +14,7 @@ import org.minima.database.txpowtree.BlockTreeNode;
 import org.minima.database.txpowtree.BlockTreeStore;
 import org.minima.database.userdb.java.JavaUserDB;
 import org.minima.objects.TxPOW;
-import org.minima.objects.base.MiniData32;
+import org.minima.objects.base.MiniHash;
 import org.minima.system.Main;
 import org.minima.system.SystemHandler;
 import org.minima.system.brains.ConsensusBackup;
@@ -39,9 +39,9 @@ public class BackupManager extends SystemHandler {
 	public static final String BACKUP_POSTACTION_HANDLER = "BACKUP_POSTACTION_HANDLER"; 
 	
 	/**
-	 * User home folder
+	 * User Configuration
 	 */
-	String mHomeFolder = "";
+	String mConfigurationFolder = "";
 	
 	/**
 	 * The Root directory..
@@ -52,10 +52,10 @@ public class BackupManager extends SystemHandler {
 	
 	File mTxPOWDB;
 	
-	public BackupManager(Main zMain, String zHomeFolder) {
+	public BackupManager(Main zMain, String zConfFolder) {
 		super(zMain, "Backup Manager");
 		
-		mHomeFolder = zHomeFolder;
+		mConfigurationFolder = zConfFolder;
 	
 		//Start init
 		PostMessage(BACKUP_INIT);
@@ -110,7 +110,7 @@ public class BackupManager extends SystemHandler {
 			initFolders();
 			
 		}else if(zMessage.isMessageType(BACKUP_CLEAR)) {
-			File root = new File(new File(mHomeFolder), "minima");
+			File root = new File(mConfigurationFolder);
 			
 			if(root.exists()) {
 				MinimaLogger.log("Wiping Minima Folder : "+root.getAbsolutePath());
@@ -228,7 +228,7 @@ public class BackupManager extends SystemHandler {
 	
 	private void initFolders() {
 		//The Root
-		mRoot = ensureFolder(new File(new File(mHomeFolder), "minima"));
+		mRoot = ensureFolder(new File(mConfigurationFolder));
 		
 		//Current used TxPOW
 		mTxPOWDB = ensureFolder(new File(mRoot,"txpow"));
@@ -250,14 +250,20 @@ public class BackupManager extends SystemHandler {
 				if(ff.isDirectory()) {
 					deleteFolder(ff);
 				}else {
-					ff.delete();
+					//ONLY delete files in the minima folder
+					//Prevents errors.. 
+					if(ff.getAbsolutePath().toLowerCase().contains("minima")) {
+						ff.delete();
+					}
 				}
 			}
 		}
 		
 		//Finally delete the folder
 		if(zFolder != null && zFolder.exists()) {
-			zFolder.delete();
+			if(zFolder.getAbsolutePath().toLowerCase().contains("minima")) {
+				zFolder.delete();
+			}
 		}
 	}
 }

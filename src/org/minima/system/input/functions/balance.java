@@ -9,13 +9,18 @@ public class balance extends CommandFunction {
 	public balance() {
 		super("balance");
 		
-		setHelp("", "Return the current Minima balance", "");
+		setHelp("(address)", "Return the global Minima balance for all coins or just a specific address", "");
 	}
 	
 	@Override
 	public void doFunction(String[] zInput) throws Exception {
 		//Get the current balance of the user for all tokens..
 		Message msg = getResponseMessage(ConsensusPrint.CONSENSUS_BALANCE);
+		
+		//Can specify to check ONLY a single address..
+		if(zInput.length>1) {
+			msg.addString("address", zInput[1]);
+		}
 			
 		//Post It..
 		getMainHandler().getConsensusHandler().PostMessage(msg);

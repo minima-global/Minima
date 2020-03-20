@@ -1,24 +1,27 @@
 package org.minima.system.input.functions;
 
 import org.minima.system.brains.ConsensusPrint;
+import org.minima.system.brains.ConsensusUser;
 import org.minima.system.input.CommandFunction;
-import org.minima.utils.messages.Message;
 
 public class keys extends CommandFunction {
 
 	public keys() {
 		super("keys");
 		
-		setHelp("", "Return a list of all the addresses and public keys in this account", "");
+		setHelp("(new)", "Create a new key pair or return a list of all the addresses and public keys in this account", "");
 	}
 	
 	@Override
 	public void doFunction(String[] zInput) throws Exception {
-		//Get the current balance of the user for all tokens..
-		Message msg = getResponseMessage(ConsensusPrint.CONSENSUS_KEYS);
+		if(zInput.length>1) {
+			//Create a new Key..
+			getMainHandler().getConsensusHandler().PostMessage(getResponseMessage(ConsensusUser.CONSENSUS_NEWKEY));
+			return;
+		}
 			
 		//Post It..
-		getMainHandler().getConsensusHandler().PostMessage(msg);
+		getMainHandler().getConsensusHandler().PostMessage(getResponseMessage(ConsensusPrint.CONSENSUS_KEYS));
 	}
 
 	@Override

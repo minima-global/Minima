@@ -8,7 +8,7 @@ public class txnpost extends CommandFunction {
 
 	public txnpost() {
 		super("txnpost");
-		setHelp("[txn_num]", "Post the transaction the the network", "");
+		setHelp("[id]", "Post the transaction the the network", "");
 	}
 
 	@Override
@@ -17,7 +17,7 @@ public class txnpost extends CommandFunction {
 		int txn = Integer.parseInt(zInput[1]);
 		
 		//Send to the consensus Handler
-		Message msg = new Message(ConsensusTxn.CONSENSUS_TXNPOST);
+		Message msg = getResponseMessage(ConsensusTxn.CONSENSUS_TXNPOST);
 		msg.addInt("transaction", txn);
 	
 		getMainHandler().getConsensusHandler().PostMessage(msg);

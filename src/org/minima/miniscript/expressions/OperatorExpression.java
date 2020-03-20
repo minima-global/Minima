@@ -58,7 +58,7 @@ public class OperatorExpression implements Expression{
 	@Override
 	public Value getValue(Contract zContract) throws ExecutionException {
 		//This action counts as one instruction
-		zContract.countInstructions();
+		zContract.incrementInstructions();
 				
 		Value ret = null;
 		

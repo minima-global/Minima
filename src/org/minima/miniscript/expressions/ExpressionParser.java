@@ -25,7 +25,20 @@ public class ExpressionParser {
 	 * @return
 	 */
 	public static Expression getExpression(List<Token> zTokens) throws MinimaParseException{
-		return getExpression(new LexicalTokenizer(zTokens));
+		//Create a Lexical Tokenizer..
+		LexicalTokenizer lt = new LexicalTokenizer(zTokens);
+		
+		//get the complete expression..
+		Expression exp = getExpression(lt);
+		
+		//Did we use all the tokens..
+		if(!lt.checkAllTokensUsed()) {
+			throw new MinimaParseException("Incorrect token number in expression @ "
+						+lt.getNextToken().getToken());
+		}
+		
+		//return the final expression
+		return exp;
 	}
 	
 	/**
@@ -35,7 +48,7 @@ public class ExpressionParser {
 	 * @param zPos
 	 * @return
 	 */
-	private static Expression getExpression(LexicalTokenizer zTokens) throws MinimaParseException{
+	public static Expression getExpression(LexicalTokenizer zTokens) throws MinimaParseException{
 		//Top level..
 		Expression exp = getRelation(zTokens);
 		

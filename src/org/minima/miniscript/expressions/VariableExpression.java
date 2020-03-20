@@ -24,7 +24,14 @@ public class VariableExpression implements Expression {
 
 	@Override
 	public Value getValue(Contract zContract) throws ExecutionException {
-		return zContract.getVariable(mVariableName);
+		//Get the Value.. 
+		Value val = zContract.getVariable(mVariableName);
+		
+		if(val == null) {
+			throw new ExecutionException("Variable does not exist : "+mVariableName);
+		}
+		
+		return val;
 	}
 	
 	@Override

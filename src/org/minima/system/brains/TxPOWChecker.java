@@ -1,16 +1,12 @@
 package org.minima.system.brains;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
 
 import org.minima.database.MinimaDB;
-import org.minima.database.coindb.CoinDB;
-import org.minima.database.coindb.CoinDBRow;
 import org.minima.database.mmr.MMRData;
 import org.minima.database.mmr.MMREntry;
 import org.minima.database.mmr.MMRProof;
 import org.minima.database.mmr.MMRSet;
-import org.minima.database.txpowdb.TxPOWDBRow;
 import org.minima.miniscript.Contract;
 import org.minima.miniscript.values.HEXValue;
 import org.minima.miniscript.values.NumberValue;
@@ -18,16 +14,18 @@ import org.minima.miniscript.values.ScriptValue;
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
 import org.minima.objects.PubPrivKey;
+import org.minima.objects.TokenDetails;
 import org.minima.objects.Transaction;
 import org.minima.objects.TxPOW;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniData32;
+import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.input.functions.gimme50;
 import org.minima.utils.Crypto;
-import org.minima.utils.MinimaLogger;
+import org.minima.utils.json.JSONArray;
+import org.minima.utils.json.JSONObject;
 
 public class TxPOWChecker {
 	
@@ -42,7 +40,7 @@ public class TxPOWChecker {
 		Transaction trans = zTxPOW.getTransaction();
 		
 		//Get the Hash
-		MiniData32 transhash = Crypto.getInstance().hashObject(trans);
+		MiniHash transhash = Crypto.getInstance().hashObject(trans);
 		
 		//Now cycle
 		Witness wit = zTxPOW.getWitness();
@@ -76,11 +74,11 @@ public class TxPOWChecker {
 		return checkTransactionMMR(zTxPOW.getTransaction(), zTxPOW.getWitness(), zDB, zDB.getTopBlock(), zDB.getMainTree().getChainTip().getMMRSet(), false);
 	}
 	
-//	public static boolean checkTransactionMMR(Transaction zTrans, Witness zWit, MinimaDB zDB, MiniNumber zBlockNumber, MMRSet zMMRSet) {
-//		return checkTransactionMMR(zTrans, zWit, zDB, zBlockNumber, zMMRSet, true);
-//	}
-		
 	public static boolean checkTransactionMMR(Transaction zTrans, Witness zWit, MinimaDB zDB, MiniNumber zBlockNumber, MMRSet zMMRSet, boolean zTouchMMR) {
+		return checkTransactionMMR(zTrans, zWit, zDB, zBlockNumber, zMMRSet, zTouchMMR, new JSONArray());	
+	}
+	
+	public static boolean checkTransactionMMR(Transaction zTrans, Witness zWit, MinimaDB zDB, MiniNumber zBlockNumber, MMRSet zMMRSet, boolean zTouchMMR, JSONArray zContractLog) {
 		//Check the input scripts
 		ArrayList<Coin> inputs  = zTrans.getAllInputs();
 		
@@ -94,16 +92,32 @@ public class TxPOWChecker {
 			//Get the Input
 			Coin input = inputs.get(i);
 
+			//The contract execution log
+			JSONObject contractlog = new JSONObject();
+			zContractLog.add(contractlog);
+			
 			//Get the Script..
-			String script = zWit.getScript(i);
+			String script = zTrans.getScript(input.getAddress()).getScript().toString();
+			if(script == null) {
+				contractlog.put("error", "Script not found for "+input.getAddress());
+				return false;
+			}
+//			String script = zWit.getScript(i);
+			
+			contractlog.put("input", i);
+			contractlog.put("script", script);
 			
 			if(input.getCoinID().isExactlyEqual(gimme50.COINID_INPUT) && input.getAmount().isLessEqual(new MiniNumber("50"))){
 				//We good.. TESTNET allows up to 50 printed..
 				//..
+				contractlog.put("isgimme50", true);
 			}else {
+				contractlog.put("isgimme50", false);
+				
 				//Check the Address is the hash of the SCRIPT
 				Address scraddr = new Address(script);
 				if(!scraddr.getAddressData().isExactlyEqual(input.getAddress())) {
+					contractlog.put("error", "Serious - Invalid Address for script!");
 					return false;
 				}
 				
@@ -111,18 +125,21 @@ public class TxPOWChecker {
 				MMRProof proof = zWit.getAllProofs().get(i);
 				
 				//MUST be a full proof - this done in checkproof..
-//				if(proof.getMMRData().isHashOnly()) {
-//					return false;
-//				}
+				if(proof.getMMRData().isHashOnly()) {
+					contractlog.put("error", "Invalid MMR Proof (HASH Only)");
+					return false;
+				}
 				
 				//Is the proof chain valid
 				boolean valid = zMMRSet.checkProof(proof);
 				if(!valid) {
+					contractlog.put("error", "Invalid MMR Proof");
 					return false;
 				}
 				
 				//Is this input for the correct details..
 				if(!proof.checkCoin(input)) {
+					contractlog.put("error", "Coin details proof miss-match");
 					return false;
 				}
 				
@@ -137,12 +154,14 @@ public class TxPOWChecker {
 				}
 				
 				//Create the Contract to check..
-				Contract cc = new Contract(script,sigs,zTrans,false);
+				Contract cc = new Contract(script,sigs,zTrans,proof.getMMRData().getPrevState());
 				
 				//set the environment
 				String address = input.getAddress().toString();
 				
 				cc.setGlobalVariable("@BLKNUM", new NumberValue(zBlockNumber));
+				cc.setGlobalVariable("@INBLKNUM", new NumberValue(proof.getMMRData().getInBlock()));
+				cc.setGlobalVariable("@BLKDIFF", new NumberValue(zBlockNumber.sub(proof.getMMRData().getInBlock())));
 				cc.setGlobalVariable("@INPUT", new NumberValue(i));
 				cc.setGlobalVariable("@AMOUNT", new NumberValue(input.getAmount()));
 				cc.setGlobalVariable("@ADDRESS", new HEXValue(address));
@@ -151,13 +170,18 @@ public class TxPOWChecker {
 				cc.setGlobalVariable("@SCRIPT", new ScriptValue(script));
 				cc.setGlobalVariable("@TOTIN", new NumberValue(zTrans.getAllInputs().size()));
 				cc.setGlobalVariable("@TOTOUT", new NumberValue(zTrans.getAllOutputs().size()));
-				cc.setGlobalVariable("@INBLKNUM", new NumberValue(proof.getMMRData().getInBlock()));
-				
-				//Set the Prev State
-				cc.setPrevState(proof.getMMRData().getPrevState());
 				
 				//Run it!
 				cc.run();
+				
+				contractlog.put("script", cc.getMiniScript());
+				contractlog.put("size", cc.getMiniScript().length());
+				contractlog.put("instructions", cc.getNumberOfInstructions());
+				contractlog.put("address", input.getAddress().to0xString());
+				contractlog.put("parseok", cc.isParseOK());
+				contractlog.put("parse", cc.getCompleteTraceLog());
+				contractlog.put("exception", cc.isException());
+				contractlog.put("result", cc.isSuccess());
 				
 				//and.. ?
 				if(!cc.isSuccess()) {
@@ -170,7 +194,7 @@ public class TxPOWChecker {
 		}
 		
 		//The HASH of the Transaction.. needed for coinid
-		MiniData32 transhash = Crypto.getInstance().hashObject(zTrans);
+		MiniHash transhash = Crypto.getInstance().hashObject(zTrans);
 				
 		//Get outputs - add them to the MMR also..
 		MiniNumber totalout = MiniNumber.ZERO;
@@ -181,28 +205,34 @@ public class TxPOWChecker {
 			Coin output = outputs.get(i);
 			
 			//Now calculate the CoinID / TokenID
-			MiniData32 coinid = Crypto.getInstance().hashObjects(transhash, new MiniByte(i));
+			MiniHash coinid = Crypto.getInstance().hashObjects(transhash, new MiniByte(i));
 			
 			//Is this a token create output..
-			MiniData32 tokid = output.getTokenID();
+			MiniHash tokid 			= output.getTokenID();
+			TokenDetails newtoken 	= null;
 			
-			if(output.getTokenID().isLessEqual(Coin.TOKENID_CREATE)) {
-				//It's a token..
-				BigInteger big = output.getTokenID().getDataVaue();
+			//Is this a token or are we creating a Token
+			TokenDetails newtokdets = null;
+			if(tokid.isExactlyEqual(Coin.TOKENID_CREATE)) {
+				//Make it the HASH ( CoinID | Total Amount..the token details )
+				TokenDetails gentoken = zWit.getTokenGenDetails();
+				newtokdets = new TokenDetails(coinid,gentoken.getScale(), gentoken.getAmount(), gentoken.getName());
 				
-				int val = big.intValue();
+				//Set the Globally Unique TokenID!
+				tokid = newtokdets.getTokenID();
+			
+				//Its a regular token transaction
+			}else if(!tokid.isExactlyEqual(Coin.MINIMA_TOKENID)) {
+				//Get the token..
+				newtokdets = zWit.getTokenDetail(tokid);
 				
+				//Check it..
+				if(newtokdets == null) {
+					return false;
+				}
 			}
-				
-			
-			
-			if(output.getTokenID().isNumericallyEqual(Coin.TOKENID_CREATE)) {
-				//Set the TokenID to the CoinID..
-				tokid = coinid;
-				
-				//Make it the HASH ( CoinID | Total Amount )
-			}
-			
+	
+			//Are we writing to the MMR
 			if(zTouchMMR) {
 				//Create a new Coin..
 				Coin mmrcoin = new Coin(coinid, output.getAddress(), output.getAmount(), tokid);
@@ -219,6 +249,9 @@ public class TxPOWChecker {
 					zMMRSet.addKeeper(unspent.getEntry());	
 					
 					//Keep the token generation numbers
+					if(newtokdets != null) {
+						zDB.getUserDB().addTokenDetails(newtokdets);
+					}
 				}
 			}
 			

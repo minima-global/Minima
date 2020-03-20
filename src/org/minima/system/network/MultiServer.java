@@ -15,11 +15,11 @@ public class MultiServer implements Runnable{
 	
 	ServerSocket mServerSocket;
 	int mPort;
-	String mHost ="0.0.0.0";
+	String mHost ="127.0.0.1";
 	
 	//Have we specified our host..
 	boolean mHardHostSet = false; 
-	String mHardHost = "0.0.0.0";
+	String mHardHost = "127.0.0.1";
 	
 	boolean mRunning = true;
 	

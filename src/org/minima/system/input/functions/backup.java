@@ -9,7 +9,7 @@ public class backup extends CommandFunction{
 
 	public backup() {
 		super("backup");
-		setHelp("", "Backup the current User details (done automatically when you quit)", "");
+		setHelp("", "Backup the current User details (done automatically when you quit or your balance changes)", "");
 	}
 	
 	@Override

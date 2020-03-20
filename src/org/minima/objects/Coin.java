@@ -6,7 +6,7 @@ import java.io.IOException;
 
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniData32;
+import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONObject;
@@ -16,11 +16,11 @@ public class Coin implements Streamable {
 	/**
 	 * Outputs don't specify a coinid
 	 */
-	public static final MiniData32 MINIMA_TOKENID = new MiniData32("0x00");
+	public static final MiniHash MINIMA_TOKENID = new MiniHash("0x00");
 	
-	public static final MiniData32 COINID_OUTPUT  = new MiniData32("0x00");
+	public static final MiniHash COINID_OUTPUT  = new MiniHash("0x00");
 	
-	public static final MiniData32 TOKENID_CREATE = new MiniData32("0xFF");
+	public static final MiniHash TOKENID_CREATE = new MiniHash("0xFF");
 	
 	/**
 	 * The GLOBAL UNIQUE CoinID for this coin.
@@ -33,14 +33,14 @@ public class Coin implements Streamable {
 	 * 
 	 * SHA3 ( TXN_HASH | OUTPUT_NUM_IN_TXN ) 
 	 */
-	MiniData32 	mCoinID;
+	MiniHash 	mCoinID;
 	
 	/**
 	 * The RamAddress.
 	 *  
 	 * This is the hash of the RamScript that controls this coin. This is ALWAYS present
 	 */
-	MiniData32 	mAddress;
+	MiniHash 	mAddress;
 	
 	/**
 	 * The Value of this Coin. This is ALWAYS present
@@ -50,7 +50,7 @@ public class Coin implements Streamable {
 	/**
 	 * Tokens are Native in Minima. All inputs and outputs have them. MINIMA the default is 0x00
 	 */
-	MiniData32  mTokenID;
+	MiniHash  mTokenID;
 	
 //	/**
 //	 * The TokenID is proved by the hash of the coinid (MiniData32) | total minima used (MiniNumber) | and total digits (MinByte).
@@ -61,7 +61,7 @@ public class Coin implements Streamable {
 	/**
 	 * Main Constructor
 	 */
-	public Coin(MiniData32 zCoinID, MiniData32 zAddress, MiniNumber zAmount, MiniData32 zTokenID) {
+	public Coin(MiniHash zCoinID, MiniHash zAddress, MiniNumber zAmount, MiniHash zTokenID) {
 		mCoinID  = zCoinID;
 		mAddress = zAddress;
 		mAmount  = zAmount;
@@ -73,11 +73,11 @@ public class Coin implements Streamable {
 	 */
 	private Coin() {}
 		
-	public MiniData32 getCoinID() {
+	public MiniHash getCoinID() {
 		return mCoinID;
 	}
 	
-	public MiniData32 getAddress() {
+	public MiniHash getAddress() {
 		return mAddress;
 	}
 	
@@ -85,14 +85,14 @@ public class Coin implements Streamable {
 		return mAmount;
 	}
 
-	public MiniData32 getTokenID() {
+	public MiniHash getTokenID() {
 		return mTokenID;
 	}
 	
 	/**
 	 * When creating a token a token of LESS THANN 255 tells how many decimal places to use..
 	 */
-	public static MiniData32 getTokenCreationID(int zDecimalPlaces) {
+	public static MiniHash getTokenCreationID(int zDecimalPlaces) {
 		int totplaces = zDecimalPlaces;
 		if(totplaces > 255) {
 			totplaces = 255;
@@ -105,7 +105,7 @@ public class Coin implements Streamable {
 		byte[] data = new byte[1];
 		data[0] = tot.getByteValue();
 		
-		return new MiniData32(data);
+		return new MiniHash(data);
 	}
 	
 	@Override
@@ -134,10 +134,10 @@ public class Coin implements Streamable {
 
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
-		mCoinID  = MiniData32.ReadFromStream(zIn);
-		mAddress = MiniData32.ReadFromStream(zIn);
+		mCoinID  = MiniHash.ReadFromStream(zIn);
+		mAddress = MiniHash.ReadFromStream(zIn);
 		mAmount  = MiniNumber.ReadFromStream(zIn);
-		mTokenID = MiniData32.ReadFromStream(zIn);
+		mTokenID = MiniHash.ReadFromStream(zIn);
 	}	
 	
 	public static Coin ReadFromStream(DataInputStream zIn) throws IOException {

@@ -3,7 +3,7 @@ package org.minima.utils;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import org.minima.objects.base.MiniData32;
+import org.minima.objects.base.MiniHash;
 
 public class SuperBlockLevels {
 
@@ -40,7 +40,7 @@ public class SuperBlockLevels {
 		return mPOW2[zExponent];
 	}
 	
-	public int getSuperBlockLevel(MiniData32 zData) {
+	public int getSuperBlockLevel(MiniHash zData) {
 		for(int i=MAX_LEVELS-1;i>=0;i--) {
 			String hex = zData.toPureHexString();
 			

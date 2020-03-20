@@ -6,7 +6,7 @@ import org.minima.miniscript.functions.MinimaFunction;
 import org.minima.miniscript.functions.base.RPLVAR;
 import org.minima.miniscript.values.HEXValue;
 import org.minima.miniscript.values.Value;
-import org.minima.objects.base.MiniData32;
+import org.minima.objects.base.MiniHash;
 import org.minima.utils.Crypto;
 
 public class SHA2 extends MinimaFunction {
@@ -30,7 +30,7 @@ public class SHA2 extends MinimaFunction {
 		byte[] ans = Crypto.getInstance().hashSHA2(data);
 		
 		//Ensure a 32 byte hash
-		MiniData32 hash = new MiniData32(ans);
+		MiniHash hash = new MiniHash(ans);
 		
 		//return the New HEXValue
 		return new HEXValue(hash.getData());

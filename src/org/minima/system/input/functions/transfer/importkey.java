@@ -10,7 +10,7 @@ public class importkey extends CommandFunction{
 	public importkey() {
 		super("importkey");
 		
-		setHelp("[ private key seed ]", "Import the private key seed of the public key", "");
+		setHelp("[private key seed]", "Import the private key seed of the public key", "");
 	}
 	
 	@Override

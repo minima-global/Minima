@@ -13,7 +13,7 @@ import org.minima.miniscript.values.Value;
 import org.minima.objects.Coin;
 import org.minima.objects.Transaction;
 import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniData32;
+import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
 
 public class SUMOUTTOK  extends MinimaFunction{
@@ -25,7 +25,7 @@ public class SUMOUTTOK  extends MinimaFunction{
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
 		//Which token to check for
-		MiniData32 token = new MiniData32(getParameter(0).getValue(zContract).getRawData()); 
+		MiniHash token = new MiniHash(getParameter(0).getValue(zContract).getRawData()); 
 		
 		//Check an output exists..
 		Transaction trans = zContract.getTransaction();

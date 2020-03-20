@@ -10,11 +10,14 @@ import org.minima.miniscript.exceptions.MinimaParseException;
 import org.minima.miniscript.expressions.ConstantExpression;
 import org.minima.miniscript.expressions.Expression;
 import org.minima.miniscript.expressions.ExpressionParser;
+import org.minima.miniscript.statements.commands.ASSERTstatement;
 import org.minima.miniscript.statements.commands.EXECstatement;
 import org.minima.miniscript.statements.commands.IFstatement;
 import org.minima.miniscript.statements.commands.LETstatement;
+import org.minima.miniscript.statements.commands.MASTstatement;
 import org.minima.miniscript.statements.commands.RETURNstatement;
 import org.minima.miniscript.statements.commands.WHILEstatement;
+import org.minima.miniscript.tokens.LexicalTokenizer;
 import org.minima.miniscript.tokens.Token;
 import org.minima.miniscript.values.BooleanValue;
 
@@ -47,36 +50,82 @@ public class StatementParser {
 			int type 		= tok.getTokenType();
 			
 			if(type != Token.TOKEN_COMMAND) {
-				throw new MinimaParseException("Invalid Token where there should be a Command - "+token); 
+				throw new MinimaParseException("Invalid Token where there should be a COMMMAND - "+token); 
 			}
 			
 			//Cycle through commands
 			if(token.equalsIgnoreCase("LET")) {
-				//The next token is the variable name
+				//The next token is either the variable name or an array position..
 				Token var = zTokens.get(currentPosition++);
-				if(var.getTokenType() != Token.TOKEN_VARIABLE) {
-					throw new MinimaParseException("Not a variable after LET (.."+var.getToken()+")");
+				
+				//Is it a simple variable LET or an ARRAY set LET
+				if(var.getTokenType() == Token.TOKEN_OPENBRACKET) {
+					//Get the tokens to the equals signn
+					List<Token> arraypos = getTokensToNextEquals(zTokens, currentPosition);
+					currentPosition += arraypos.size();
+					
+					//Check the last token is a close bracket
+					int arrsize = arraypos.size();
+					var = arraypos.get(arrsize-1);
+					if(var.getTokenType() != Token.TOKEN_CLOSEBRACKET) {
+						throw new MinimaParseException("Incorrect LET statement, missing ) .. "+var.getToken()+")");
+					}
+					
+					//The next token is always =
+					var = zTokens.get(currentPosition++);
+					if(var.getTokenType() != Token.TOKEN_OPERATOR && !var.getToken().equals("=")) {
+						throw new MinimaParseException("Incorrect LET statement, missing = (.."+var.getToken()+")");
+					}
+	
+					//Remove the last token..
+					arraypos.remove(arrsize-1);
+					
+					//Create a Lexical Tokenizer.. there may be multiple expressions..
+					LexicalTokenizer lt = new LexicalTokenizer(arraypos);
+					
+					ArrayList<Expression> exps = new ArrayList<Expression>();
+					while(!lt.checkAllTokensUsed()) {
+						//Now get each of the expressions
+						Expression letexp = ExpressionParser.getExpression(lt);
+						
+						//Add it to out list for the LET statement
+						exps.add(letexp);
+					}
+					
+					//Now find the next Command, and everything in between is the expression
+					List<Token> lettokens = getTokensToNextCommand(zTokens, currentPosition);
+					currentPosition += lettokens.size();
+					
+					//Now create an expression from those tokens..
+					Expression exp = ExpressionParser.getExpression(lettokens);
+					
+					//And finally create the LET statement..
+					stats.add(new LETstatement(exps, exp));
+					
+				}else if(var.getTokenType() == Token.TOKEN_VARIABLE) {
+					//The Variable name
+					String varname = var.getToken();
+					
+					//The next token is always =
+					var = zTokens.get(currentPosition++);
+					if(var.getTokenType() != Token.TOKEN_OPERATOR && !var.getToken().equals("=")) {
+						throw new MinimaParseException("Incorrect LET statement, missing = (.."+var.getToken()+")");
+					}
+				
+					//Now find the next Command, and everything in between is the expression
+					List<Token> lettokens = getTokensToNextCommand(zTokens, currentPosition);
+					currentPosition += lettokens.size();
+					
+					//Now create an expression from those tokens..
+					Expression exp = ExpressionParser.getExpression(lettokens);
+					
+					//And finally create the LET statement..
+					stats.add(new LETstatement(varname, exp));
+					
+				}else {
+					throw new MinimaParseException("Not a variable or array after LET (.."+var.getToken()+")");
 				}
 				
-				//The Variable name
-				String varname = var.getToken();
-				
-				//The next token is always =
-				var = zTokens.get(currentPosition++);
-				if(var.getTokenType() != Token.TOKEN_OPERATOR && !var.getToken().equals("=")) {
-					throw new MinimaParseException("Incorrect LET statement, missing = (.."+var.getToken()+")");
-				}
-				
-				//Now find the next Command, and everything in between is the expression
-				List<Token> lettokens = getTokensToNextCommand(zTokens, currentPosition);
-				currentPosition += lettokens.size();
-				
-				//Now create an expression from those tokens..
-				Expression exp = ExpressionParser.getExpression(lettokens);
-				
-				//And finally create the LET statement..
-				stats.add(new LETstatement(varname, exp));
-			
 			}else if(token.equalsIgnoreCase("EXEC")) {
 				//Now find the next Command, and everything in between is the expression
 				List<Token> exectokens = getTokensToNextCommand(zTokens, currentPosition);
@@ -87,6 +136,17 @@ public class StatementParser {
 				
 				//And finally create the LET statement..
 				stats.add(new EXECstatement(exp));
+					
+			}else if(token.equalsIgnoreCase("MAST")) {
+				//Now find the next Command, and everything in between is the expression
+				List<Token> masttokens = getTokensToNextCommand(zTokens, currentPosition);
+				currentPosition += masttokens.size();
+				
+				//Now create an expression from those tokens..
+				Expression exp = ExpressionParser.getExpression(masttokens);
+				
+				//And finally create the LET statement..
+				stats.add(new MASTstatement(exp));
 					
 			}else if(token.equalsIgnoreCase("IF")) {
 				//An IFX
@@ -190,6 +250,17 @@ public class StatementParser {
 				//Add..
 				stats.add(ws);
 				
+			}else if(token.equalsIgnoreCase("ASSERT")) {
+				//The Next tokens are the Expression..
+				List<Token> returntokens = getTokensToNextCommand(zTokens, currentPosition);
+				currentPosition += returntokens.size();
+				
+				//Now create an expression from those tokens..
+				Expression exp = ExpressionParser.getExpression(returntokens);
+				
+				//Create a new RETURN statement
+				stats.add(new ASSERTstatement(exp));
+			
 			}else if(token.equalsIgnoreCase("RETURN")) {
 				//The Next tokens are the Expression..
 				List<Token> returntokens = getTokensToNextCommand(zTokens, currentPosition);
@@ -200,7 +271,7 @@ public class StatementParser {
 				
 				//Create a new RETURN statement
 				stats.add(new RETURNstatement(exp));
-				
+			
 			}else {
 				throw new MinimaParseException("Invalid Token where there should be a Command - "+token); 
 			}
@@ -370,6 +441,32 @@ public class StatementParser {
 		}
 	
 		
+		return rettokens;
+	}
+	
+	
+	/**
+	 * Get all the tokens to the next = sign.. 
+	 * @param zTokens
+	 * @param zCurrentPosition
+	 * @return
+	 */
+	private static List<Token> getTokensToNextEquals(List<Token> zTokens, int zCurrentPosition){
+		List<Token> rettokens = new ArrayList<>();
+		
+		int ret   = zCurrentPosition;
+		int total = zTokens.size();
+		while(ret<total) {
+			Token tok = zTokens.get(ret);
+			if(tok.getTokenType() == Token.TOKEN_OPERATOR && tok.getToken().equals("=")) {
+				return rettokens;
+			}else {
+				//Add it to the list
+				rettokens.add(tok);
+			}
+			ret++;
+		}
+	
 		return rettokens;
 	}
 }

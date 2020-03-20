@@ -2,7 +2,7 @@ package org.minima.objects;
 
 import java.math.BigInteger;
 
-import org.minima.objects.base.MiniData32;
+import org.minima.objects.base.MiniHash;
 
 public class Difficulty {
 	
@@ -46,7 +46,7 @@ public class Difficulty {
 		mDifficulty = MAX_VAL.divide(DIFF_TWO.pow(zDifficulty)) ;
 	}
 	
-	public boolean isOK(MiniData32 zValue) {
+	public boolean isOK(MiniHash zValue) {
 		return zValue.getDataVaue().compareTo(mDifficulty) <= 0;
 	}
 

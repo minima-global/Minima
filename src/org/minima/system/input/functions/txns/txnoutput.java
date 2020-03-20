@@ -1,7 +1,7 @@
 package org.minima.system.input.functions.txns;
 
 import org.minima.objects.Address;
-import org.minima.objects.base.MiniData32;
+import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.brains.ConsensusTxn;
 import org.minima.system.input.CommandFunction;
@@ -11,7 +11,7 @@ public class txnoutput extends CommandFunction {
 
 	public txnoutput() {
 		super("txnoutput");
-		setHelp("[txn_num] [amount] [address] {tokenID}", "Add an output to the specified transaction", "");
+		setHelp("[id] [amount] [address] {tokenID}", "Add an output to the specified transaction", "");
 	}
 
 	@Override
@@ -28,7 +28,7 @@ public class txnoutput extends CommandFunction {
 		}
 		
 		String address = zInput[3];
-		Address addr = new Address(new MiniData32(address));
+		Address addr = new Address(new MiniHash(address));
 
 		// is there a TokenID
 		String tokenid = "0x00";

@@ -10,7 +10,7 @@ public class exportkey extends CommandFunction{
 	public exportkey() {
 		super("exportkey");
 		
-		setHelp("[ public key ]", "Export the private key seed of the public key", "");
+		setHelp("[public key]", "Export the private key seed of the public key", "");
 	}
 	
 	@Override

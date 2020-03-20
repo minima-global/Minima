@@ -7,7 +7,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 import org.minima.objects.base.MiniByte;
-import org.minima.objects.base.MiniData32;
+import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.Streamable;
 

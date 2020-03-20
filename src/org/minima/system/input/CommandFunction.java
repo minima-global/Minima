@@ -1,17 +1,22 @@
 package org.minima.system.input;
 
+import org.minima.miniscript.exceptions.MinimaParseException;
 import org.minima.system.Main;
 import org.minima.system.input.functions.backup;
 import org.minima.system.input.functions.balance;
+import org.minima.system.input.functions.cleanscript;
 import org.minima.system.input.functions.coins;
 import org.minima.system.input.functions.connect;
 import org.minima.system.input.functions.createtoken;
 import org.minima.system.input.functions.disconnect;
 import org.minima.system.input.functions.gimme50;
 import org.minima.system.input.functions.help;
+import org.minima.system.input.functions.history;
 import org.minima.system.input.functions.intro;
+import org.minima.system.input.functions.keepcoin;
 import org.minima.system.input.functions.keys;
 import org.minima.system.input.functions.minetrans;
+import org.minima.system.input.functions.mmrtree;
 import org.minima.system.input.functions.newaddress;
 import org.minima.system.input.functions.newscript;
 import org.minima.system.input.functions.printchain;
@@ -19,6 +24,7 @@ import org.minima.system.input.functions.printtree;
 import org.minima.system.input.functions.quit;
 import org.minima.system.input.functions.reconnect;
 import org.minima.system.input.functions.runscript;
+import org.minima.system.input.functions.search;
 import org.minima.system.input.functions.send;
 import org.minima.system.input.functions.status;
 import org.minima.system.input.functions.test;
@@ -26,15 +32,21 @@ import org.minima.system.input.functions.trace;
 import org.minima.system.input.functions.tutorial;
 import org.minima.system.input.functions.txpowinfo;
 import org.minima.system.input.functions.weblink;
+import org.minima.system.input.functions.transfer.exportcoin;
 import org.minima.system.input.functions.transfer.exportkey;
+import org.minima.system.input.functions.transfer.importcoin;
 import org.minima.system.input.functions.transfer.importkey;
 import org.minima.system.input.functions.txns.txncreate;
 import org.minima.system.input.functions.txns.txndelete;
+import org.minima.system.input.functions.txns.txnexport;
+import org.minima.system.input.functions.txns.txnimport;
 import org.minima.system.input.functions.txns.txninput;
 import org.minima.system.input.functions.txns.txnlist;
 import org.minima.system.input.functions.txns.txnoutput;
 import org.minima.system.input.functions.txns.txnpost;
+import org.minima.system.input.functions.txns.txnscript;
 import org.minima.system.input.functions.txns.txnsign;
+import org.minima.system.input.functions.txns.txnstate;
 import org.minima.system.input.functions.txns.txnvalidate;
 import org.minima.utils.ResponseStream;
 import org.minima.utils.messages.Message;
@@ -48,10 +60,12 @@ public abstract class CommandFunction {
 		{
 			new backup(), new balance(), new connect(), new createtoken(), new disconnect(), new weblink(),
 			new gimme50(), new help(), new intro(), new minetrans(), new newaddress(), new coins(), new txpowinfo(), new keys(),
-			new newscript(), new printchain(), new printtree(), new quit(),new reconnect(), new runscript(), 
-			new send(), new status(), new test(), new trace(), new tutorial(),
-			new exportkey(), new importkey(), 
+			new newscript(), new printchain(), new printtree(), new quit(),new reconnect(), new runscript(), new cleanscript(), 
+			new send(), new status(), new test(), new trace(), new tutorial(), new history(), 
+			new exportkey(), new importkey(), new exportcoin(), new importcoin(), new search(),
+			new mmrtree(), new keepcoin(),
 			new txncreate(), new txndelete(), new txninput(), new txnlist(), 
+			new txnstate(), new txnexport(), new txnimport(), new txnscript(),
 			new txnoutput(), new txnpost(), new txnsign(), new txnvalidate()
 		};  
 	

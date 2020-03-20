@@ -1,5 +1,6 @@
 package org.minima.system.bootstrap;
 
+import org.minima.GlobalParams;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
 import org.minima.system.Main;
@@ -65,8 +66,10 @@ public class UserSimulator extends SystemHandler {
 					
 				}
 					
-				//Send it..
-				getMainHandler().getConsensusHandler().PostMessage(mine);
+				//Send it.. unless we are in heavy debug mode
+				if(!GlobalParams.MINIMA_ZERO_DIFF_BLK) {
+					getMainHandler().getConsensusHandler().PostMessage(mine);
+				}
 			
 				//Update the counter
 				if(mCounter != -1) {

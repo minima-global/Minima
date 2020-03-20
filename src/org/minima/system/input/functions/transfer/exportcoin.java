@@ -1,6 +1,6 @@
 package org.minima.system.input.functions.transfer;
 
-import org.minima.objects.base.MiniData32;
+import org.minima.objects.base.MiniHash;
 import org.minima.system.brains.ConsensusUser;
 import org.minima.system.input.CommandFunction;
 import org.minima.utils.messages.Message;
@@ -9,6 +9,10 @@ public class exportcoin extends CommandFunction{
 
 	public exportcoin() {
 		super("exportcoin");
+		
+		setHelp("[coinid]", "export the proof of a single coin. Share it.", 
+				"Never worry about losing your coin proofs. Share the details with friends, "
+				+ "they can't spend the coins, and retrieve them when you need them.");
 	}
 	
 	@Override
@@ -16,8 +20,9 @@ public class exportcoin extends CommandFunction{
 		//The CoinID
 		String pubks = zInput[1];
 		
-		//Connect to a specific host:port
-		Message export  = new Message(ConsensusUser.CONSENSUS_EXPORTCOIN).addObject("coinid", new MiniData32(pubks));
+		Message export  = getResponseMessage(ConsensusUser.CONSENSUS_EXPORTCOIN)
+								.addObject("coinid", new MiniHash(pubks));
+		
 		getMainHandler().getConsensusHandler().PostMessage(export);
 	}
 	

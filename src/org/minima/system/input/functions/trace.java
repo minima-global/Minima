@@ -7,7 +7,7 @@ public class trace extends CommandFunction{
 	public trace() {
 		super("trace");
 		
-		setHelp("[on/off]", "Turn ON/OFF debug info as new transaction and block are found", "");
+		setHelp("[on|off]", "Turn ON|OFF debug info as new transaction and block are found", "");
 	}
 	
 	@Override
@@ -17,6 +17,9 @@ public class trace extends CommandFunction{
 		
 		//Set the trace on for all the handlers
 		getMainHandler().setTrace(on);
+		
+		//It's worked
+		getResponseStream().endStatus(true, "Trace : "+on);
 	}
 
 	@Override

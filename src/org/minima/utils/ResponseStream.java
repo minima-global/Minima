@@ -67,6 +67,10 @@ public class ResponseStream {
 		return mDataJSON;
 	}
 	
+	public JSONObject getFinalJSON() {
+		return mJSON;
+	}
+	
 	public void endStatus(boolean zValid, String zError) {
 		mJSON.put("status", zValid);
 		mJSON.put("minifunc", mFunction);
@@ -79,7 +83,7 @@ public class ResponseStream {
 		mJSON.put("response", mDataJSON);
 	
 		//Create the final response
-		mFinalResponse = mJSON.toString();
+		mFinalResponse = mJSON.toString().replaceAll ("\\\\/", "/");
 		
 		//It's finished
 		mFinished = true;

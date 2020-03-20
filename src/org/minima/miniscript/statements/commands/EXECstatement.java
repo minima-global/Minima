@@ -31,7 +31,7 @@ public class EXECstatement implements Statement{
 		ScriptValue script = (ScriptValue) mScript.getValue(zContract);
 		
 		try {
-			//Convert the script to MINIVM!
+			//Convert the script to KISSVM!
 			List<Token> tokens = Token.tokenize(script.toString());	
 		
 			//And now convert to a statement block..
@@ -52,5 +52,4 @@ public class EXECstatement implements Statement{
 	public String toString() {
 		return "EXEC "+mScript;
 	}
-
 }

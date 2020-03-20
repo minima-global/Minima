@@ -4,11 +4,12 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.Hashtable;
 
 import org.minima.objects.base.MiniByte;
+import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
+import org.minima.objects.base.MiniString;
+import org.minima.objects.proofs.ScriptProof;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
@@ -37,6 +38,15 @@ public class Transaction implements Streamable {
 	 * The State values of the Transaction
 	 */
 	ArrayList<StateVariable> mState = new ArrayList<>();
+	
+	/**
+	 * The Scripts used in the transactions 
+	 * 
+	 * Addresses
+	 * Tokens
+	 * MAST
+	 */
+	ArrayList<ScriptProof> mScripts = new ArrayList<>();
 	
 	/**
 	 * Constructor
@@ -85,16 +95,22 @@ public class Transaction implements Streamable {
 	 * @param zValue
 	 */
 	public void addStateVariable(StateVariable zValue) {
-		mState.add(zValue);
+		//If it exists overwrite it..
+		StateVariable sv = getStateValue(zValue.getPort());
+		if(sv != null) {
+			sv.resetData(zValue.getData());
+		}else {
+			mState.add(zValue);
+		}
 	}
 	
 	/**
 	 * @param zStateNum
 	 * @return
 	 */
-	public StateVariable getStateValue(MiniNumber zStateNum) {
+	public StateVariable getStateValue(int zStateNum) {
 		for(StateVariable sv : mState) {
-			if(sv.getPort().isEqual(zStateNum)){
+			if(sv.getPort() == zStateNum){
 				return sv;
 			}
 		}
@@ -107,9 +123,9 @@ public class Transaction implements Streamable {
 	 * @param zStateNum
 	 * @return
 	 */
-	public boolean stateExists(MiniNumber zStateNum) {
+	public boolean stateExists(int zStateNum) {
 		for(StateVariable sv : mState) {
-			if(sv.getPort().isEqual(zStateNum)){
+			if(sv.getPort() == zStateNum){
 				return true;
 			}
 		}
@@ -130,6 +146,34 @@ public class Transaction implements Streamable {
 	 */
 	public ArrayList<StateVariable> getCompleteState(){
 		return mState;
+	}
+	
+	/**
+	 * All the scripts
+	 */
+	public boolean addScript(ScriptProof zScriptProof) {
+		if(!scriptExists(zScriptProof.getFinalHash())) {
+			mScripts.add(zScriptProof);		
+			return true;
+		}
+		return false;
+	}
+	
+	public boolean addScript(String zScript) {
+		return addScript(new ScriptProof(zScript));
+	}
+	
+	public ScriptProof getScript(MiniHash zHash) {
+		for(ScriptProof proof : mScripts) {
+			if(proof.getFinalHash().isExactlyEqual(zHash)) {
+				return proof;
+			}
+		}
+		return null;
+	}
+	
+	public boolean scriptExists(MiniHash zHash) {
+		return getScript(zHash)!=null;
 	}
 	
 	@Override
@@ -161,6 +205,13 @@ public class Transaction implements Streamable {
 		}
 		ret.put("state", outs);
 		
+		//Script Proofs..
+		outs = new JSONArray();
+		for(ScriptProof proof : mScripts) {
+			outs.add(proof.toJSON());	
+		}
+		ret.put("scripts", outs);
+		
 		return ret;
 	}
 
@@ -168,22 +219,14 @@ public class Transaction implements Streamable {
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
 		//Max 255 inputs or outputs
 		MiniByte ins = new MiniByte(mInputs.size());
-
-		//Write it out..
 		ins.writeDataStream(zOut);
-		
-		//Now the coins
 		for(Coin coin : mInputs) {
 			coin.writeDataStream(zOut);
 		}
 		
 		//Max 255 inputs or outputs
 		MiniByte outs = new MiniByte(mOutputs.size());
-
-		//Write it out..
 		outs.writeDataStream(zOut);
-		
-		//Now the coins
 		for(Coin coin : mOutputs) {
 			coin.writeDataStream(zOut);
 		}
@@ -191,10 +234,15 @@ public class Transaction implements Streamable {
 		//How many state variables..
 		int len = mState.size();
 		zOut.writeInt(len);
-		
-		//Now the state
 		for(StateVariable sv : mState) {
 			sv.writeDataStream(zOut);
+		}
+		
+		//Now the Scripts
+		len = mScripts.size();
+		zOut.writeInt(len);
+		for(ScriptProof script : mScripts) {
+			script.writeDataStream(zOut);
 		}
 	}
 
@@ -203,6 +251,7 @@ public class Transaction implements Streamable {
 		mInputs  = new ArrayList<>();
 		mOutputs = new ArrayList<>();
 		mState 	 = new  ArrayList<>();
+		mScripts = new ArrayList<>();
 		
 		//Inputs
 		MiniByte ins = new MiniByte();
@@ -225,12 +274,17 @@ public class Transaction implements Streamable {
 		}
 		
 		//State Variables
-		int sl = zIn.readInt();
-		for(int i=0;i<sl;i++){
+		len = zIn.readInt();
+		for(int i=0;i<len;i++){
 			StateVariable sv = StateVariable.ReadFromStream(zIn);
-			
-			//Add it..
 			mState.add(sv);
+		}
+		
+		//Scripts
+		len = zIn.readInt();
+		for(int i=0;i<len;i++){
+			ScriptProof sp = ScriptProof.ReadFromStream(zIn);
+			mScripts.add(sp);
 		}
 	}
 }

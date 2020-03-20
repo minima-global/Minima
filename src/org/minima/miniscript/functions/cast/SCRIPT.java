@@ -22,11 +22,11 @@ public class SCRIPT extends MinimaFunction {
 		int type  = val.getValueType();
 		
 		if(type == NumberValue.VALUE_NUMBER) {
-			return new ScriptValue(""+val.getNumber().toString());
+			return new ScriptValue(val.getNumber().toString());
 		}else if(type == HEXValue.VALUE_HEX) {
-			return new ScriptValue(""+val.getMiniData().toString());
+			return new ScriptValue(val.getMiniData().to0xString());
 		}else if(type == BooleanValue.VALUE_BOOLEAN) {
-			return new ScriptValue(""+val.toString());
+			return new ScriptValue(val.toString());
 		}else if(type == ScriptValue.VALUE_SCRIPT) {
 			return val;
 		}

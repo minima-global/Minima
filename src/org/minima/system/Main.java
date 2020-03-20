@@ -88,7 +88,7 @@ public class Main extends MessageProcessor {
 	 * @param zPort
 	 * @param zGenesis
 	 */
-	public Main(int zPort, int zRPCPort, boolean zGenesis, String zHomeFolder) {
+	public Main(int zPort, int zRPCPort, boolean zGenesis, String zConfFolder) {
 		super("MAIN     ");
 		
 		//What time do we start..
@@ -113,7 +113,7 @@ public class Main extends MessageProcessor {
 		
 		mNetwork 	= new NetworkHandler(this);
 		mTXMiner 	= new TXMiner(this);
-		mBackup     = new BackupManager(this,zHomeFolder);
+		mBackup     = new BackupManager(this,zConfFolder);
 		
 		mProcessManager = new ProcessManager(this);
 		
@@ -129,6 +129,10 @@ public class Main extends MessageProcessor {
 	
 	public void setAutoConnect(boolean zAuto) {
 		mAutoConnect = zAuto;
+	}
+	
+	public void setMiFiProxy(String zProxy){
+		mNetwork.setProxy(zProxy);
 	}
 	
 	public void setAutoConnectHostPort(String zHost, int zPort) {

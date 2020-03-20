@@ -9,12 +9,12 @@ import org.minima.objects.Transaction;
 import org.minima.objects.TxPOW;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniData32;
+import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
 
 public class GenesisTxPOW extends TxPOW{
 	
-	public static MiniData32 GENESIS_INPUT = new MiniData32("0xFFEEDDCCBBAA998877665544332211");
+	public static MiniHash GENESIS_INPUT = new MiniHash("0xFFEEDDCCBBAA998877665544332211");
 	
 	public GenesisTxPOW() {
 		super();
@@ -29,7 +29,7 @@ public class GenesisTxPOW extends TxPOW{
 		setTimeMilli(new MiniNumber(""+System.currentTimeMillis()));
 		setBlockNumber(new MiniNumber("0"));
 		setBlockDifficulty(0);
-		setParent(new MiniData32());
+		setParent(new MiniHash());
 		
 		//Set Transaction and Witness..
 		Transaction trans = new Transaction();
@@ -66,7 +66,7 @@ public class GenesisTxPOW extends TxPOW{
 //		//Now add to the TXPOW..
 //		setMMRState(mmrstate);
 		
-		mSuperParents[0] = new MiniData32(MiniData.getRandomData(32).getData());
+		mSuperParents[0] = new MiniHash(MiniData.getRandomData(32).getData());
 		
 		//Set the TXPOW
 		calculateTXPOWID();

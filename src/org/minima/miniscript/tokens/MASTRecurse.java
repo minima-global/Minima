@@ -4,13 +4,13 @@ import java.util.Hashtable;
 import java.util.StringTokenizer;
 
 import org.minima.miniscript.Contract;
-import org.minima.objects.base.MiniData32;
+import org.minima.objects.base.MiniHash;
 import org.minima.utils.Crypto;
 
 public class MASTRecurse {
 	
 	
-	public static MiniData32 MAST(String zRamScript, Hashtable<MiniData32, String> zTable) {
+	public static MiniHash MAST(String zRamScript, Hashtable<MiniHash, String> zTable) {
 		//Clean it..
 		String script = Contract.cleanScript(zRamScript);
 				
@@ -23,7 +23,7 @@ public class MASTRecurse {
 		if(mindex == -1) {
 			//Hash It..
 			byte[] hdata = Crypto.getInstance().hashData(script.getBytes());
-			MiniData32 hsh = new MiniData32(hdata);
+			MiniHash hsh = new MiniHash(hdata);
 			
 			//That is the script code
 			zTable.put(hsh, script);
@@ -64,7 +64,7 @@ public class MASTRecurse {
 	
 	public static void main(String[] zArgs) {
 		
-		Hashtable<MiniData32, String> mast = new Hashtable<MiniData32, String>();
+		Hashtable<MiniHash, String> mast = new Hashtable<MiniHash, String>();
 		
 		String RamScript = "let t = 1 MASt let y=t+1 MASTor let y=t+2 mastend if y GT 3 then return false endif return true";
 		

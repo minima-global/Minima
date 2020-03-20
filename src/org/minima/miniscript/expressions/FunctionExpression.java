@@ -27,7 +27,7 @@ public class FunctionExpression implements Expression {
 	@Override
 	public Value getValue(Contract zContract) throws ExecutionException {
 		//This action counts as one instruction
-		zContract.countInstructions();
+		zContract.incrementInstructions();
 				
 		return mFunction.runFunction(zContract);
 	}

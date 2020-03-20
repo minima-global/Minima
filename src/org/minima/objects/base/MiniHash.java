@@ -5,11 +5,13 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Random;
 
+import org.minima.miniscript.Contract;
+import org.minima.miniscript.values.ScriptValue;
 import org.minima.utils.Crypto;
 import org.minima.utils.Maths;
 
 /**
- * This is a RamData object with a fixed length of 32 bytes. 
+ * This is a MiniData object with a fixed length of 32 bytes. 
  * 
  * If it is initialised with an array of less than 32 bytes in length it is zero padded. 
  * More it is truncated.
@@ -17,25 +19,27 @@ import org.minima.utils.Maths;
  * @author spartacus
  *
  */
-public class MiniData32 extends MiniData {
+public class MiniHash extends MiniData {
 
+	/**
+	 * The full length of this HASH
+	 */
+	public static final int HASH_LENGTH = 32;
+	
 	/**
 	 * A zero filled hash
 	 */
-	public static MiniData32 ZERO32 = new MiniData32("0x00");
+	public static MiniHash ZERO32 = new MiniHash("0x00");
 	
-	
-	private static final int MAX_LENGTH = 32;
-	
-	public MiniData32() {
+	public MiniHash() {
 		this("0x00");
 	}
 	
-	public MiniData32(byte[] zData) {
+	public MiniHash(byte[] zData) {
 		this(Maths.getDataAsString(zData));
 	}
 	
-	public MiniData32(String zHex) {
+	public MiniHash(String zHex) {
 		super(ensureSize(zHex));
 	}
 	
@@ -56,16 +60,16 @@ public class MiniData32 extends MiniData {
 		
 		//Now how long are we ? MUST be 64 bytes..
 		int rlen = len/2;
-		if(rlen<MAX_LENGTH){
-			int diff = MAX_LENGTH-rlen;
+		if(rlen<HASH_LENGTH){
+			int diff = HASH_LENGTH-rlen;
 			for(int i=0;i<diff;i++) {
 				hex = "00"+hex;
 			}
-		}else if(len>MAX_LENGTH){
-			hex = hex.substring(len-(MAX_LENGTH*2),len);	
+		}else if(len>HASH_LENGTH){
+			hex = hex.substring(len-(HASH_LENGTH*2),len);	
 		}
 		
-		return "0x"+hex;
+		return "0x"+hex.toUpperCase();
 	}
 	
 	/**
@@ -74,11 +78,11 @@ public class MiniData32 extends MiniData {
 	 * @param len
 	 * @return
 	 */
-	public static MiniData32 getRandomData() {
+	public static MiniHash getRandomData() {
 		Random rand = new Random();
 		byte[] data = new byte[32];
 		rand.nextBytes(data);
-		return new MiniData32(data);
+		return new MiniHash(data);
 	}
 	
 	@Override
@@ -95,8 +99,8 @@ public class MiniData32 extends MiniData {
 		setDataValue();
 	}
 	
-	public static MiniData32 ReadFromStream(DataInputStream zIn){
-		MiniData32 data = new MiniData32();
+	public static MiniHash ReadFromStream(DataInputStream zIn){
+		MiniHash data = new MiniHash();
 		
 		try {
 			data.readDataStream(zIn);
@@ -111,16 +115,16 @@ public class MiniData32 extends MiniData {
 	
 	public static void main(String[] zArgs) {
 
-		MiniData32 hash32 = new MiniData32("0xeeccffffeeccff");
+		MiniHash hash32 = new MiniHash("0xeeccffffeeccff");
 		
-		MiniData32 hhash32 = Crypto.getInstance().hashObject(hash32);
+		MiniHash hhash32 = Crypto.getInstance().hashObject(hash32);
 		
 		System.out.println("Hash32 : "+hash32+" "+hash32.getLength()+" "+hhash32);
 		System.out.println(hash32.getDataVaue());
 		
 		byte[] hashdata = Crypto.getInstance().hashData(hash32.getData());
 		
-		hhash32 = new MiniData32(hashdata);
+		hhash32 = new MiniHash(hashdata);
 		
 		System.out.println("Hash32 : "+hash32+" "+hash32.getLength()+" "+hhash32);
 		System.out.println(hash32.getDataVaue());

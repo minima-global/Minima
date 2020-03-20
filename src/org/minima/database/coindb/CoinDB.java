@@ -3,7 +3,7 @@ package org.minima.database.coindb;
 import java.util.ArrayList;
 
 import org.minima.objects.Coin;
-import org.minima.objects.base.MiniData32;
+import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
 
 public interface CoinDB {
@@ -26,7 +26,7 @@ public interface CoinDB {
 	 * @param zAddress
 	 * @return all coins that have this address
 	 */
-	public ArrayList<CoinDBRow> checkForRelevantCoins(MiniData32 zAddress);
+	public ArrayList<CoinDBRow> checkForRelevantCoins(MiniHash zAddress);
 	
 	/**
 	 * Get the coin row with this CoinID or NULL if none present
@@ -34,7 +34,7 @@ public interface CoinDB {
 	 * @param zCoin
 	 * @return
 	 */
-	public CoinDBRow getCoinRow(MiniData32 zCoinID);
+	public CoinDBRow getCoinRow(MiniHash zCoinID);
 	
 	/**
 	 * Add a coinRow

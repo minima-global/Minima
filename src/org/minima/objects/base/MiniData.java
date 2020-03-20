@@ -11,6 +11,7 @@ import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Random;
 
+import org.minima.miniscript.Contract;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 
@@ -20,7 +21,13 @@ import org.minima.utils.Streamable;
  */
 public class MiniData implements Streamable {
 
-	public static byte[] hexStringToByteArray(String zHex) {
+	/**
+	 * Utility HEX conversion functions
+	 * 
+	 * @param zHex
+	 * @return
+	 */
+	private static byte[] hexStringToByteArray(String zHex) {
 		String hex = zHex;
 		if(hex.startsWith("0x")) {
 			hex = zHex.substring(2);
@@ -46,7 +53,7 @@ public class MiniData implements Streamable {
 	}
 	
 	private final static char[] hexArray = "0123456789ABCDEF".toCharArray();
-	public static String bytesToHex(byte[] bytes) {
+	private static String bytesToHex(byte[] bytes) {
 	    char[] hexChars = new char[bytes.length * 2];
 	    for ( int j = 0; j < bytes.length; j++ ) {
 	        int v = bytes[j] & 0xFF;
@@ -66,9 +73,8 @@ public class MiniData implements Streamable {
 	 */
 	protected BigInteger mDataVal;
 	
-	
 	public MiniData() {
-		this("00");
+		this("");
 	}
 	
 	public MiniData(String zHexString) {
@@ -235,6 +241,37 @@ public class MiniData implements Streamable {
 		return new MiniData(data);
 	}
 	
+	/**
+	 * Convert any string data into a byte array
+	 * 
+	 * @param zInput
+	 * @return
+	 */
+	public static MiniData convertValueToData(String zInput) {
+		//Its HEX
+		if(zInput.startsWith("0x")) {
+			return new MiniData(zInput);
+			
+		//It's SCRIPT	
+		}else if(zInput.startsWith("[")) {
+			//Nothing isn;t a script in Minima
+			String clean = Contract.cleanScript(zInput.substring(1,zInput.length()-1));
+			
+			//Convert to s nice string..
+			MiniString ms = new MiniString(clean);
+			
+			//Now get the data..
+			return new MiniData(ms.getData());
+		
+		//It's a NUMBER
+		}else{
+			//Convert to s nice string..
+			MiniString ms = new MiniString(zInput);
+			
+			//Now get the data..
+			return new MiniData(ms.getData());
+		}
+	}
 	
 	public static void main(String[] zArgs) {
 		MiniData data = new MiniData("00000FFF");

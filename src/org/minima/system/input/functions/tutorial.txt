@@ -1,4 +1,4 @@
-Minima transactions are a series of inputs, a series of outputs and a variable list from 0-255 known as the state, which you can access from the script with GETSTATE. The state can be accessed by all the input scripts, and is stored in the MMR database, so can be accessed by PREVSTATE in the next transaction the outputs are added to, as inputs. 
+Minima transactions are a series of inputs, a series of outputs and a variable list known as the state, which you can access from the script with GETSTATE. The state can be accessed by all the input scripts, and is stored in the MMR database, so can be accessed by PREVSTATE in the next transaction the outputs are added to, as inputs. 
 
 The sum of the outputs must be less than or equal to the sum of the inputs, for every tokenid used. The difference in raw minima is the Burn. 
 
@@ -12,18 +12,22 @@ Using REPLVAR new addresses can be created by replacing existing variables in th
 
 The addition of the state variables in the MMR Proof DB, allow for complex scripts with knowledge of their past to be created.
 
-Minima transactions are complex Logic Gates, with analogue inputs and outputs, a simple yet powerful control language, and a single-shot history state mechanic. I think of them as "Script Gates".    
+Minima transactions are complex Logic Gates, with analogue inputs and outputs, a simple yet powerful control language, and a single-shot history state mechanic.
+
+I think of them as "Script Gates".    
 
 Grammar
 -------
 
 ADDRESS     ::= SHA3 ( BLOCK )
 BLOCK       ::= STATEMENT_1 STATEMENT_2 ... STATEMENT_n
-STATEMENT   ::= LET VARIABLE = EXPRESSION | 
-                IF EXPRESSION THEN BLOCK 
-                [ELSEIF EXPRESSION THEN BLOCK]* 
-                [ELSE BLOCK] ENDIF | 
+STATEMENT   ::= LET VARIABLE = EXPRESSION |
+                LET ( EXPRESSION_1 EXPRESSION_2 ... EXPRESSION_n ) = EXPRESSION |
+                IF EXPRESSION THEN BLOCK [ELSEIF EXPRESSION THEN BLOCK]* [ELSE BLOCK] ENDIF | 
+                WHILE EXPRESSION DO BLOCK ENDWHILE |
+                EXEC EXPRESSION |
                 MAST BLOCK [ORMAST BLOCK]* ENDMAST |
+                ASSERT EXPRESSION |
                 RETURN EXPRESSION
 EXPRESSION  ::= RELATION AND RELATION  | RELATION OR RELATION  |  
                 RELATION XOR RELATION  | RELATION NAND RELATION | 
@@ -38,12 +42,12 @@ OPERATION   ::= OPERATION + MULDIV | OPERATION - MULDIV |
                 OPERATION << MULDIV | OPERATION >> MULDIV | MULDIV
 MULDIV      ::= MULDIV * PRIME | MULDIV / PRIME | PRIME
 PRIME       ::= NOT PRIME |  NEG PRIME | BASEUNIT
-BASEUNIT    ::= VAR | VALUE | GLOBAL | FUNCTION | ( EXPRESSION )
-VAR         ::= ^[a-z]{1,10}$
+BASEUNIT    ::= VARIABLE | VALUE | GLOBAL | FUNCTION | ( EXPRESSION )
+VARIABLE    ::= ^[a-z]{1,10}$
 VALUE       ::= NUMBER | DATA | BINARY
 DATA        ::= HEX | SCRIPT
 BINARY      ::= TRUE | FALSE
-GLOBAL      ::= @BLKNUM | @INPUTNUM |
+GLOBAL      ::= @BLKNUM | @INPUT | @INBLKNUM | @BLKDIFF
       	        @AMOUNT | @ADDRESS | @TOKENID | @COINID |
                 @SCRIPT | @TOTIN | @TOTOUT
 NUMBER      ::= "^-?\\d*(\\.\\d+)?$"
@@ -52,21 +56,23 @@ HEX         ::= 0x[0-9A-F]{2}*
 SCRIPT      ::= [ ASCII ]
 FALSE       ::= 0
 TRUE        ::= NOT FALSE
-MASTBLK     ::= $HEX
-FUNCTION    ::= FUNC ( EXPRESSION1 EXPRESSION2 .. EXPRESSIONn ) 
-FUNC        ::= CONCAT | LEN | REV | SUBSET | RPLVAR |
+MAST        ::= $HEX
+FUNCTION    ::= FUNC ( EXPRESSION_1 EXPRESSION_2 .. EXPRESSION_n ) 
+FUNC        ::= CONCAT | LEN | REV | SUBSET | RPLVAR | GET |
                 ASCII | BOOL | HEX | NUMBER | SCRIPT |
                 ABS | CEIL | FLOOR | MIN | MAX | INC | DEC |
                 BITSET | BITGET | PROOF | SHA3 | SHA2 |
-                SIGNEDBY | MULTISIGNEDBY | CHECKSIG |
+                SIGNEDBY | MULTISIG | CHECKSIG |
                 GETOUTADDR | GETOUTAMT | GETOUTTOK | VERIFYOUT |
                 GETINADDR | GETINAMT | GETINTOK | GETINID | VERIFYIN |
-                SUMINTOK | SUMOUTTOK | STATE | PREVSTATE | *DYNSTATE
+                SUMINTOK | SUMOUTTOK | STATE | PREVSTATE | SAMESTATE | *DYNSTATE
 
 Globals
 -------
 
 @BLKNUM    : Block number this transaction is in
+@INBLKNUM  : Block number when this output was created
+@BLKDIFF   : Difference between BLKNUM and INBLKNUM
 @INPUT     : Input number in the transaction
 @AMOUNT    : Amount of this input
 @ADDRESS   : Address of this input
@@ -75,31 +81,32 @@ Globals
 @SCRIPT    : Script for this input
 @TOTIN     : Total number of inputs for this transaction
 @TOTOUT    : Total number of outputs for this transaction
-@INBLKNUM  : Block number this output was created - useful for OP_CSV
 
 Functions
 ---------
 
-CONCAT ( DATA DATA )
-Concatenate the 2 data values into 1 value . Both values must be the same DATA type. 
+CONCAT ( DATA_1 DATA_2 ... DATA_n )
+Concatenate all the values into 1 value. All values must be the same DATA type 
 
 LEN ( HEX )
 Length of the data
-
 REV ( HEX )
-Reverse the Data structure
+Reverse the data
 
 SUBSET ( HEX NUMBER NUMBER )
 Return a subset of the data start length
 
 RPLVAR ( SCRIPT SCRIPT SCRIPT ) 
-Replace a variable definition in a script with the following Expression. Can be used on @SCRIPT or other to create a covenant with new variables and check outputs.
+In a script, replace a variable definition with the following Expression. Can be used on @SCRIPT or other to create a covenant with new variables and check outputs.
+
+GET ( NUMBER NUMBER .. NUMBER )
+Return the array value set with LET ( EXPRESSION EXPRESSION .. EXPRESSION )  
 
 ASCII ( HEX )
 Convert the HEX value of a script value to a script
 
-BOOLEAN ( VALUE )
-Convert to TRUE or FALSE value.
+BOOL ( VALUE )
+Convert to TRUE or FALSE value
 
 HEX ( SCRIPT )
 Convert SCRIPT to HEX
@@ -138,7 +145,7 @@ BITGET ( HEX NUMBER )
 Get the BINARY value of the bit at the position.
 
 CHAINSHA ( HEX HEX ) 
-Recursively hash the first HEX value with the proof provided in the second. A proof is a BYTE denoting left or right with a hex data value. Returns the final result that can be checked in script. 
+Recursively hash the first HEX value with the proof provided in the second. A proof is a BYTE denoting left or right with a hex data value. Returns the final result that can be checked in script 
 
 SHA3 ( HEX ) 
 Returns the SHA3 value of the HEX value
@@ -153,7 +160,7 @@ MULTISIG ( BYTE HEX1 HEX2 .. HEXn )
 Returns true if the transaction is signed by N of the public keys
 
 CHECKSIG ( HEX HEX )
-Check valid signature with provided public key.
+Check valid signature with provided public key
 
 GETOUTADDR ( BYTE ) 
 Return the HEX address of the specified output
@@ -165,7 +172,7 @@ GETOUTTOK ( BYTE )
 Return the token id of the specified output
 
 VERIFYOUT ( BYTE HEX NUMBER HEX )
-Verify the specified output has the specified address, amount and tokenid. 
+Verify the specified output has the specified address, amount and tokenid
 
 GETINADDR ( BYTE ) 
 Return the HEX address of the specified input
@@ -177,7 +184,7 @@ GETINTOK ( BYTE )
 Return the token id of the specified input
 
 VERIFYIN ( BYTE HEX NUMBER HEX )
-Verify the specified input has the specified address, amount and tokenid. 
+Verify the specified input has the specified address, amount and tokenid
 
 SUMINTOK ( HEX )
 Sum the input values of a certain token 
@@ -185,14 +192,17 @@ Sum the input values of a certain token
 SUMOUTTOK ( HEX )
 Sum the output values of a certain token 
 
-STATE ( BYTE )
-Return the state value 0-255
+STATE ( NUMBER )
+Return the state value for the given number
 
-PREVSTATE ( BYTE )
-Return the state value 0-255 of the input stored in the MMR data in the initial transaction this input was created. Allows for a state to be maintained from 1 spend to the next.
+PREVSTATE ( NUMBER )
+Return the state value stored in the MMR data in the initial transaction this input was created. Allows for a state to be maintained from 1 spend to the next
 
-*DYNSTATE ( BYTE  EXPRESSION )
-Can be called only once per transaction. Will change the State value to the expression value.  N = N+1. This way rolling transactions are possible. Multiple calls to the same input in the same block. If called twice must be =.
+SAMESTATE ( NUMBER [NUMBER] )
+Return TRUE if the previous state and current state are the same. If 2 parameters are set then checks all the values inbetween the 2 values inclusively
+
+*DYNSTATE ( NUMBER  EXPRESSION )
+Can be called only once per transaction. Will change the State value to the expression value.  N = N+1. This way rolling transactions are possible. Multiple calls to the same input in the same block.
 
 Examples
 --------

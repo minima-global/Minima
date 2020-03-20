@@ -10,9 +10,12 @@ import org.minima.miniscript.exceptions.ExecutionException;
 import org.minima.miniscript.exceptions.MinimaParseException;
 import org.minima.miniscript.expressions.Expression;
 import org.minima.miniscript.functions.base.CONCAT;
+import org.minima.miniscript.functions.base.GET;
+import org.minima.miniscript.functions.base.HEXCAT;
 import org.minima.miniscript.functions.base.LEN;
 import org.minima.miniscript.functions.base.REV;
 import org.minima.miniscript.functions.base.RPLVAR;
+import org.minima.miniscript.functions.base.STRCAT;
 import org.minima.miniscript.functions.base.SUBSET;
 import org.minima.miniscript.functions.cast.ASCII;
 import org.minima.miniscript.functions.cast.BOOL;
@@ -28,6 +31,7 @@ import org.minima.miniscript.functions.maths.FLOOR;
 import org.minima.miniscript.functions.maths.INC;
 import org.minima.miniscript.functions.maths.MAX;
 import org.minima.miniscript.functions.maths.MIN;
+import org.minima.miniscript.functions.sha.ADDR;
 import org.minima.miniscript.functions.sha.CHAINSHA;
 import org.minima.miniscript.functions.sha.SHA2;
 import org.minima.miniscript.functions.sha.SHA3;
@@ -35,6 +39,7 @@ import org.minima.miniscript.functions.sigs.CHECKSIG;
 import org.minima.miniscript.functions.sigs.MULTISIG;
 import org.minima.miniscript.functions.sigs.SIGNEDBY;
 import org.minima.miniscript.functions.txn.PREVSTATE;
+import org.minima.miniscript.functions.txn.SAMESTATE;
 import org.minima.miniscript.functions.txn.STATE;
 import org.minima.miniscript.functions.txn.output.GETOUTADDR;
 import org.minima.miniscript.functions.txn.output.GETOUTAMT;
@@ -53,13 +58,13 @@ public abstract class MinimaFunction {
 	 */
 	public static MinimaFunction[] ALL_FUNCTIONS = 
 			{ 
-				new CONCAT(), new LEN(), new RPLVAR(),new REV(),new SUBSET(), 
+				new CONCAT(), new STRCAT(), new HEXCAT(), new LEN(), new RPLVAR(),new REV(),new SUBSET(), new GET(),
 				new BOOL(), new NUMBER(), new HEX(), new SCRIPT(), new ASCII(),
 				new ABS(), new CEIL(), new FLOOR(),new MAX(), new MIN(), new DEC(), new INC(),
-				new SHA3(), new SHA2(), new CHAINSHA(), new BITSET(), new BITGET(), 
+				new SHA3(), new SHA2(), new CHAINSHA(), new BITSET(), new BITGET(),
 				new SIGNEDBY(), new MULTISIG(), new CHECKSIG(),
 				new GETOUTADDR(), new GETOUTAMT(), new GETOUTTOK(),new VERIFYOUT(),
-				new STATE(), new PREVSTATE()
+				new STATE(), new PREVSTATE(), new SAMESTATE()
 			};
 	
 	/**

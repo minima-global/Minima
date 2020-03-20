@@ -24,6 +24,8 @@ import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.MinimaLogger;
+import org.minima.utils.json.JSONArray;
+import org.minima.utils.json.JSONObject;
 
 /**
  * A RamScript Contract. Executes a given script, with the 
@@ -62,7 +64,7 @@ public class Contract {
 	
 	//A list of all the global variables available to scripts, like Blocknumber etc..
 	Hashtable<String, Value> mGlobals;
-	
+		
 	//The previous state variables - accessed from the MMR data
 	ArrayList<StateVariable> mPrevState = new ArrayList<StateVariable>();
 		
@@ -73,12 +75,18 @@ public class Contract {
 	/**
 	 * Trace shows debug info as the program is parsed and executed
 	 */
-	boolean mTraceON = true;
+	boolean mTraceON = false;
 	
 	/**
 	 * Did the contract script parse ok
 	 */
 	boolean mParseOK;
+	
+	/**
+	 * Was there an Exception error
+	 */
+	boolean mException;
+	String  mExceptionString;
 	
 	/**
 	 * The Number Of Instructions!
@@ -95,10 +103,14 @@ public class Contract {
 	 * Main Constructor
 	 * @param zRamScript - the RamScript in ASCII
 	 */
-	public Contract(String zRamScript, String zSigs, Transaction zTransaction, boolean zTraceON) {
+	public Contract(String zRamScript, String zSigs, Transaction zTransaction, ArrayList<StateVariable> zPrevState) {	
+		this(zRamScript, zSigs, zTransaction, zPrevState, false);
+	}
+	
+	public Contract(String zRamScript, String zSigs, Transaction zTransaction, ArrayList<StateVariable> zPrevState, boolean zTrace) {
 		//Trace?
-		mTraceON     = zTraceON;
 		mCompleteLog ="";
+		mTraceON     = zTrace;
 		
 		//Clean the RamScript
 		mRamScript = cleanScript(zRamScript);
@@ -113,30 +125,40 @@ public class Contract {
 		mSuccess    = false;
 		mSuccessSet = false;
 		mParseOK    = false;
+		mException  = false;
+		mExceptionString = "";
 		
 		mNumInstructions = 0;
-				
-		//Load the Signatures
-		StringTokenizer strtok = new StringTokenizer(zSigs, ",");
-		while(strtok.hasMoreTokens()) {
-			String sig = strtok.nextToken().trim();
-			mSignatures.add( Value.getValue(sig) );
-		}
 		
 		//Begin..
 		traceLog("Contract   : "+mRamScript);
+		traceLog("Size       : "+mRamScript.length());
+		
+		//Load the Signatures
+		StringTokenizer strtok = new StringTokenizer(zSigs, "#");
+		while(strtok.hasMoreTokens()) {
+			String sig = strtok.nextToken().trim();
+			traceLog("Signature : "+sig);
+			mSignatures.add( Value.getValue(sig) );
+		}
+		
+		//Transaction..
+		traceLog("Transaction   : "+mTransaction.toString());
 		
 		//State Variables
 		ArrayList<StateVariable> svs = mTransaction.getCompleteState();
 		for(StateVariable sv : svs) {
 			traceLog("State["+sv.getPort()+"] : "+sv.getData().toString());
 		}
-		
-		//Signatures
-		int counter = 0;
-		for(Value val : mSignatures) {
-			traceLog("Signatures["+counter+"] : "+val.toString());
-			counter++;
+
+		//PREVSTATE
+		if(zPrevState == null) {
+			mPrevState = new ArrayList<StateVariable>();	
+		}else {
+			mPrevState = zPrevState;
+			for(StateVariable sv : mPrevState) {
+				traceLog("PrevState["+sv.getPort()+"] : "+sv.getData().toString());
+			}	
 		}
 		
 		//Parse the tokens
@@ -156,7 +178,8 @@ public class Contract {
 			mParseOK = true;
 			
 		} catch (MinimaParseException e) {
-			e.printStackTrace();
+//			e.printStackTrace();
+			traceLog("PARSE ERROR : "+e.getMessage());
 		}
 	}
 	
@@ -165,14 +188,10 @@ public class Contract {
 		traceLog("Global ["+zGlobal+"] : "+zValue);
 	}
 	
-	public void setPrevState(ArrayList<StateVariable> zPrevState) {
-		mPrevState = zPrevState;
-	}
-	
-	public Value getPrevState(MiniNumber zPrev) {
+	public Value getPrevState(int zPrev) throws ExecutionException {
 		//Get the state variable..
 		for(StateVariable sv : mPrevState) {
-			if(sv.getPort().isEqual(zPrev)) {
+			if(sv.getPort() == zPrev) {
 				//Clean it..
 				String stateval = Contract.cleanScript(sv.getData().toString());
 				
@@ -181,11 +200,19 @@ public class Contract {
 			}
 		}
 		
-		return null;
+		throw new ExecutionException("PREVSTATE Missing : "+zPrev);
 	}
 	
 	public boolean isParseOK() {
 		return mParseOK;
+	}
+	
+	public boolean isException() {
+		return mException;
+	}
+	
+	public String getException() {
+		return mExceptionString;
 	}
 	
 	public boolean isTrace() {
@@ -198,18 +225,22 @@ public class Contract {
 		}
 		
 		//Store the complete Log
-		mCompleteLog += zLog+"\n";
+		mCompleteLog += "INST["+mNumInstructions+"] - "+zLog+"\n";
 	}
 	
 	public String getCompleteTraceLog() {
 		return mCompleteLog;
 	}
 	
-	public void countInstructions() throws ExecutionException {
+	public void incrementInstructions() throws ExecutionException {
 		mNumInstructions++;
 		if(mNumInstructions > MAX_INSTRUCTIONS) {
 			throw new ExecutionException("MAX instruction number reached! "+mNumInstructions);
 		}
+	}
+	
+	public int getNumberOfInstructions() {
+		return mNumInstructions;
 	}
 	
 	public void run() {
@@ -225,7 +256,12 @@ public class Contract {
 			mBlock.run(this);
 			
 		} catch (Exception e) {
-			e.printStackTrace();
+			if(mTraceON) {
+				e.printStackTrace();
+			}
+			
+			mException = true;
+			mExceptionString = e.toString();
 			
 			//AUTOMATIC FAIL
 			traceLog("Execution Error - "+e);
@@ -254,7 +290,7 @@ public class Contract {
 		return mSuccessSet;
 	}
 	
-	public String getRamScript() {
+	public String getMiniScript() {
 		return mRamScript;
 	}
 	
@@ -262,19 +298,10 @@ public class Contract {
 		return mTransaction;
 	}
 	
-	public Value getVariable(String zName) throws ExecutionException {
-		Value ret = mVariables.get(zName);
-		if(ret==null) {
-			throw new ExecutionException("Variable not found - "+zName);
-		}
-		return ret;
-	}
-	
-	public void setVariable(String zName, Value zValue) {
-		mVariables.put(zName, zValue);
+	public JSONObject getAllVariables() {
+		JSONObject variables = new JSONObject();
 		
-		//Output..
-		String varlist = "{ ";
+		//First the normal variables
 		Enumeration<String> keys = mVariables.keys();
 		while(keys.hasMoreElements()) {
 			//Get the Key
@@ -283,24 +310,69 @@ public class Contract {
 			//Get the Value
 			Value val = mVariables.get(key);
 			
+			//Remove the commas for JSON formating
+			if(key.contains(",")) {
+				key = key.replace(",", " ");
+				key = "( "+key.trim()+" )";
+			}
+			
+			if(val.getValueType() == ScriptValue.VALUE_SCRIPT) {
+				variables.put(key, "[ "+val.toString()+" ]");
+			}else{
+				variables.put(key, val.toString());
+			}
+		}
+		
+		return variables;
+	}
+	
+	public Value getVariable(String zName) throws ExecutionException {
+		Value ret = mVariables.get(zName);
+		return ret;
+	}
+	
+	public void setVariable(String zName, Value zValue) {
+		mVariables.put(zName, zValue);
+		traceVariables();
+	}
+	
+	/**
+	 * Could use the JSON but this looks better as no quotes.. ;p
+	 */
+	public void traceVariables() {
+		//Output..
+		String varlist = "{ ";
+		
+		//First the normal variables
+		Enumeration<String> keys = mVariables.keys();
+		while(keys.hasMoreElements()) {
+			//Get the Key
+			String key = keys.nextElement();
+			
+			//Get the Value
+			Value val = mVariables.get(key);
+			
+			//Remove the commas for JSON formating
+			if(key.contains(",")) {
+				key = key.replace(",", " ");
+				key = "( "+key.trim()+" )";
+			}
+			
 			//Log it.. 
 			int type = val.getValueType();
 			switch (type)  {
 				case BooleanValue.VALUE_BOOLEAN :
 					varlist += key+" = "+Boolean.toString(val.isTrue()).toUpperCase()+", ";
 				break;
-				case HEXValue.VALUE_HEX :
-					varlist += key+" = "+val+", ";
-				break;
-				case NumberValue.VALUE_NUMBER :
-					varlist += key+" = "+val+", ";
-				break;
 				case ScriptValue.VALUE_SCRIPT :
 					varlist += key+" = [ "+val+" ], ";
 				break;
+				default:
+					varlist += key+" = "+val+", ";
+				break;
 			}		
 		}
-
+		
 		traceLog(varlist+"}");
 	}
 	
@@ -316,6 +388,7 @@ public class Contract {
 		if(ret==null) {
 			throw new ExecutionException("Global not found - "+zGlobal);
 		}
+		
 		return ret;
 	}
 	
@@ -337,15 +410,36 @@ public class Contract {
 	}
 	
 	/**
-	 * Convert a string into the Required format for MiniScript.
+	 * Convert a SCRIPT into the Required Format for MiniScript.
 	 * @param zScript
 	 * @return The Converted Script
 	 */
 	public static String cleanScript(String zScript) {
+		//Quick check for empty..
+		if(zScript.equals("")) {
+			return "";
+		}
+		
+		//Start cleaning..
 		String script = new String(" "+zScript.toLowerCase()+" ");
 		
-		//Incase this is a param string
+		//Replace whitespace with a single space
+		script = script.replaceAll("\\s+"," ");
+		
+		//Remove comments /* .. */
+		int comment = script.indexOf("/*");
+		while(comment != -1) {
+			int endcomment = script.indexOf("*/",comment);
+			int len = script.length();
+			script = " "+script.substring(0,comment)+" "+script.substring(endcomment+2, len)+" ";
+			comment = script.indexOf("/*");
+		}
+		
+		//Incase this is a 'param' string
 		script = script.replaceAll(",", " , ");
+		script = script.replaceAll(";", " ; ");
+		script = script.replaceAll(":", " : ");
+		script = script.replaceAll("#", " # ");
 		
 		//Double up the spaces.. in case of double NOT 
 		script = script.replaceAll(" ", "  ");
@@ -406,6 +500,7 @@ public class Contract {
 		script = script.replaceAll(" @totin "	, " @TOTIN "); 
 		script = script.replaceAll(" @totout "	, " @TOTOUT ");
 		script = script.replaceAll(" @inblknum ", " @INBLKNUM ");
+		script = script.replaceAll(" @blkdiff ", " @BLKDIFF ");
 		
 		//And now do all the functions
 		for(MinimaFunction func : MinimaFunction.ALL_FUNCTIONS) {
@@ -415,11 +510,8 @@ public class Contract {
 			//replace
 			script = script.replaceAll(" "+name.toLowerCase()+" ", " "+name+" ");
 		}
-		
-		//Remove all the excess white space
-		script = script.replaceAll("\\s+"," ").trim();
 			
-		//And finally convert the HEX to upper case..
+		//Convert the HEX to upper case..
 		String finalstring = "";
 		StringTokenizer strtok = new StringTokenizer(script," ");
 		while(strtok.hasMoreTokens()) {
@@ -430,7 +522,10 @@ public class Contract {
 				finalstring = finalstring.concat(" "+tok);
 			}
 		}
-					
+		
+		//Remove all the excess white space
+		script = script.replaceAll("\\s+"," ").trim();
+				
 		//Boom..
 		return finalstring.trim();
 	}
@@ -458,21 +553,25 @@ public class Contract {
 //		String RamScript = "if 1 EQ 1 THEN let y = 3 endif";
 //		String RamScript = "let x = true or false let y = [return x] Exec y";
 		
-//		String RamScript = "let g = 1";
+//		String RamScript = "ASSERT VERIFYOUT ( ( @INPUT + 1 ) @ADDRESS ( @AMOUNT - amt ) @TOKENID )";
+		String RamScript = "let t = 1 LET ( [ hello ] (3 - t*2) t ) = 123 let gg = get ( [hello] 1 t )";
 
 		//String RamScript = "let t = @SCRIPT let f = @AMOUNT +1 let g = State(1001) + [ sha3(123)]";
 
-		String RamScript = "let t = 1 let y=t+1 let y=t+2 if y GT 3 then return false endif return true";
+//		String RamScript = "let gg = [hello] let ff = 0x45678 let t = CONCAT ( gg [if signedby] SCRIPT(ff) [and @blknum gt 12345])";
 		
 		Transaction tt = new Transaction();
 //		tt.setStateValue(1001, new StateVariable("[ let y = 0xFF ]"));
 //		tt.setStateValue(2, new StateVariable("1.2345"));
 		
-		Contract ctr = new Contract(RamScript,"0x1234,0x00FF",tt,true);
+		Contract ctr = new Contract(RamScript,"0x74A2222436C592046A6F576F67200C75DB3D9051BE31262BD0A0BF0DB30137C4",tt,null,true);
 		
 		ctr.setGlobalVariable("@SCRIPT", new ScriptValue(RamScript));
-		ctr.setGlobalVariable("@BLKNUM", new NumberValue(new MiniNumber("10")));
+		ctr.setGlobalVariable("@BLKNUM", new NumberValue(new MiniNumber("31")));
+		ctr.setGlobalVariable("@INBLKNUM", new NumberValue(new MiniNumber("10")));
+		ctr.setGlobalVariable("@INPUT", new NumberValue(new MiniNumber("1")));
 		ctr.setGlobalVariable("@ADDRESS", new HEXValue("0x67876AB"));
+		ctr.setGlobalVariable("@TOKENID", new HEXValue("0x00"));
 		ctr.setGlobalVariable("@AMOUNT", new NumberValue(new MiniNumber("1")));
 		
 		ctr.run();
