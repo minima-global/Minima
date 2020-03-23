@@ -59,12 +59,13 @@ public class help extends CommandFunction{
 			
 			addJSONDesc(new status());
 			addJSONDesc(new history());
+			addJSONDesc(new backup());
+			
 			addJSONDesc(new printchain());
 			addJSONDesc(new printtree());
 	
-			addJSONDesc(new trace());
-			addJSONDesc(new minetrans());
-			addJSONDesc(new backup());
+//			addJSONDesc(new trace());
+//			addJSONDesc(new minetrans());
 			
 			addJSONDesc(new connect());
 			addJSONDesc(new disconnect());
@@ -73,6 +74,7 @@ public class help extends CommandFunction{
 			
 			addJSONDesc(new gimme50());
 			addJSONDesc(new send());
+			addJSONDesc(new newaddress());
 			addJSONDesc(new balance());
 			
 			addJSONDesc(new keys());
@@ -88,7 +90,6 @@ public class help extends CommandFunction{
 			addJSONDesc(new txpowinfo());
 			
 			addJSONDesc(new addresses());
-			addJSONDesc(new newaddress());
 			addJSONDesc(new newscript());
 			addJSONDesc(new cleanscript());
 			addJSONDesc(new runscript());
@@ -129,6 +130,10 @@ public class help extends CommandFunction{
 		}else {
 			getResponseStream().getDataJSON().put(name, params+ " - " + zFunc.getSimple());
 		}
+	}
+	
+	public void addBlankLine() {
+		getResponseStream().getDataJSON().put("---", "");
 	}
 	
 	public String getStrOfLength(int zDesiredLen, String zString) {
