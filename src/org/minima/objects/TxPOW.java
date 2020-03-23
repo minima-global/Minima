@@ -88,7 +88,8 @@ public class TxPOW implements Streamable {
 	public MiniHash mMMRRoot = new MiniHash();
 	
 	/**
-	 * A Random Magic number so that everyone is working on a different TxPOW (since there is no coinbase..)
+	 * A Random Magic number so that everyone is working on a different TxPOW in the pulse 
+	 * (since there is no coinbase..)
 	 */
 	public MiniHash mMagic = MiniHash.getRandomData();
 	
@@ -97,6 +98,11 @@ public class TxPOW implements Streamable {
 	 * 0x00 is the main chain
 	 */
 	public MiniHash mChainID = new MiniHash("0x00");
+	
+	/**
+	 * Every Side chain has a parent chain
+	 */
+	public MiniHash mParentChainID = new MiniHash("0x00");
 
 	/**
 	 * A Custom Hash. Can be anything the user wants..
@@ -137,8 +143,16 @@ public class TxPOW implements Streamable {
 		mChainID = zChainID;
 	}
 	
+	public void setParentChainID(MiniHash zChainID) {
+		mParentChainID = zChainID;
+	}
+	
 	public MiniHash getChainID() {
 		return mChainID;
+	}
+	
+	public MiniHash getParentChainID() {
+		return mParentChainID;
 	}
 	
 	public void setCustom(MiniHash zCustom) {
@@ -282,6 +296,7 @@ public class TxPOW implements Streamable {
 		
 		txpow.put("magic", mMagic.toString());
 		txpow.put("chainid", mChainID.toString());
+		txpow.put("parentchainid", mParentChainID.toString());
 		txpow.put("custom", mCustom.toString());
 		txpow.put("nonce", mNonce.toString());
 		txpow.put("mmr", mMMRRoot.toString());
@@ -302,6 +317,7 @@ public class TxPOW implements Streamable {
 		mNonce.writeDataStream(zOut);
 		mMagic.writeDataStream(zOut);
 		mChainID.writeDataStream(zOut);
+		mParentChainID.writeDataStream(zOut);
 		mCustom.writeDataStream(zOut);
 		mTimeMilli.writeDataStream(zOut);
 		mTxnDifficulty.writeDataStream(zOut);
@@ -360,6 +376,7 @@ public class TxPOW implements Streamable {
 		mNonce.readDataStream(zIn);
 		mMagic.readDataStream(zIn);
 		mChainID.readDataStream(zIn);
+		mParentChainID.readDataStream(zIn);
 		mCustom.readDataStream(zIn);
 		mTimeMilli.readDataStream(zIn);
 		mTxnDifficulty = MiniByte.ReadFromStream(zIn);
