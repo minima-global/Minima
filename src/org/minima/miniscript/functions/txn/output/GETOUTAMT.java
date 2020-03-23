@@ -9,7 +9,9 @@ import org.minima.miniscript.functions.cast.HEX;
 import org.minima.miniscript.values.NumberValue;
 import org.minima.miniscript.values.Value;
 import org.minima.objects.Coin;
+import org.minima.objects.TokenDetails;
 import org.minima.objects.Transaction;
+import org.minima.objects.base.MiniNumber;
 
 public class GETOUTAMT extends MinimaFunction {
 
@@ -33,6 +35,13 @@ public class GETOUTAMT extends MinimaFunction {
 		
 		//Get it..
 		Coin cc = outs.get(output);
+		
+		//Is it a Token..
+		if(!cc.getTokenID().isExactlyEqual(Coin.MINIMA_TOKENID)) {
+			//Get the Multiple..
+			TokenDetails td = zContract.getWitness().getTokenDetail(cc.getTokenID());
+			return new NumberValue(cc.getAmount().mult(td.getScaleFactor()));
+		}
 		
 		//Return the address	
 		return new NumberValue(cc.getAmount());
