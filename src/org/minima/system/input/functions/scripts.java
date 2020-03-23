@@ -4,12 +4,12 @@ import org.minima.system.brains.ConsensusPrint;
 import org.minima.system.brains.ConsensusUser;
 import org.minima.system.input.CommandFunction;
 
-public class addresses extends CommandFunction {
+public class scripts extends CommandFunction {
 
-	public addresses() {
-		super("addresses");
+	public scripts() {
+		super("scripts");
 		
-		setHelp("", "List all your addresses", "");
+		setHelp("", "List all your scripts & addresses", "");
 	}
 	
 	@Override
@@ -21,6 +21,6 @@ public class addresses extends CommandFunction {
 	@Override
 	public CommandFunction getNewFunction() {
 		// TODO Auto-generated method stub
-		return new addresses();
+		return new scripts();
 	}
 }

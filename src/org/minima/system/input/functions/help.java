@@ -89,7 +89,7 @@ public class help extends CommandFunction{
 			addJSONDesc(new search());
 			addJSONDesc(new txpowinfo());
 			
-			addJSONDesc(new addresses());
+			addJSONDesc(new scripts());
 			addJSONDesc(new newscript());
 			addJSONDesc(new cleanscript());
 			addJSONDesc(new runscript());
