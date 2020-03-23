@@ -85,7 +85,6 @@ public class MMRProof extends Proof {
 		obj.put("blocktime", mBlockTime.toString());
 		obj.put("entry", mEntryNumber.toString());
 		obj.put("data", mData.toJSON());
-		
 		obj.put("proof",super.toJSON());
 		
 		return obj;
