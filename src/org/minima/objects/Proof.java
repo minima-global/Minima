@@ -94,6 +94,10 @@ public class Proof implements Streamable {
 		return mProofChain.size();
 	}
 	
+	public ProofChunk getProofChunk(int zNum) {
+		return mProofChain.get(zNum);
+	}
+	
 	public void finalizeHash() {
 		//Reset so that can be recalculated
 		mFinalized = false;
@@ -209,25 +213,5 @@ public class Proof implements Streamable {
 		}
 		
 		return proof;
-	}
-	
-	public static void main(String[] zArgs) {
-		MiniHash dd = new MiniHash("0xFF");
-		
-//		Proof sp = new Proof(dd);
-//		sp.addProofChunk(MiniByte.TRUE, new MiniHash("0xEE"));
-//		sp.addProofChunk(MiniByte.FALSE, new MiniHash("0xCC"));
-//		
-//		System.out.println("FH  : "+sp.calculateFinalHash());
-//		System.out.println("PR  : "+sp.toJSON());
-//		
-//		MiniData dat = sp.getChainSHAProof();
-//		System.out.println("CHAINSHA : "+dat);
-//		
-//		Proof wp = new Proof(dd, dat);
-//		System.out.println("FH2 : "+wp.calculateFinalHash());
-//		System.out.println("PR2 : "+wp.toJSON());
-		
-		
 	}
 }

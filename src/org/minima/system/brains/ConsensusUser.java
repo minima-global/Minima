@@ -152,8 +152,7 @@ public class ConsensusUser {
 				MMRProof proof = mmr.getFullProofToRoot(new MiniNumber(i));
 				
 				//Calculate the CHAINSHA proof..
-				JSONArray pr = proof.proofChainOnly();
-				node.put("proof", proof.getChainSHAProof().to0xString());
+				node.put("proof", proof.toJSON());
 			}
 			
 			//return to sender!
