@@ -22,6 +22,7 @@ import org.minima.miniscript.values.ScriptValue;
 import org.minima.miniscript.values.Value;
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
+import org.minima.objects.Proof;
 import org.minima.objects.PubPrivKey;
 import org.minima.objects.StateVariable;
 import org.minima.objects.Transaction;
@@ -132,7 +133,7 @@ public class ConsensusUser {
 					finalhash = new MiniHash(hash);
 					mmrnode.put("data","[ "+leaf.toString()+" ]");
 				}
-				mmrnode.put("hash", finalhash.to0xString());
+				mmrnode.put("leaf", finalhash.to0xString());
 				
 				nodearray.add(mmrnode);
 				
@@ -152,7 +153,7 @@ public class ConsensusUser {
 				MMRProof proof = mmr.getFullProofToRoot(new MiniNumber(i));
 				
 				//Calculate the CHAINSHA proof..
-				node.put("proof", proof.toJSON());
+				node.put("chainsha", proof.getChainSHAProof().to0xString());
 			}
 			
 			//return to sender!

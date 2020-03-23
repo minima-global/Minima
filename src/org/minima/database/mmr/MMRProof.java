@@ -8,6 +8,7 @@ import java.util.ArrayList;
 
 import org.minima.objects.Coin;
 import org.minima.objects.Proof;
+import org.minima.objects.Proof.ProofChunk;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniHash;
@@ -77,6 +78,7 @@ public class MMRProof extends Proof {
 		return coinidcheck && amountcheck && addresscheck && tokencheck;
 	}
 	
+	@Override
 	public JSONObject toJSON() {
 		JSONObject obj = new JSONObject(); 
 		
@@ -88,6 +90,15 @@ public class MMRProof extends Proof {
 		
 		return obj;
 	}
+	
+//	public JSONObject toProofChainJSONOnly() {
+//		JSONObject json = new JSONObject();
+//		
+//		json.put("data", mData);
+//		json.put("chainsha", getChainSHAProof().to0xString());
+//		
+//		return json;
+//	}
 	
 	@Override
 	public String toString() {

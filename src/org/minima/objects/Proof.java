@@ -37,15 +37,15 @@ public class Proof implements Streamable {
 	}
 	
 	//The data you are trying to prove..
-	MiniHash mData;
+	protected MiniHash mData;
 	
 	//The Merkle Branch that when applied to the data gives the final proof;
-	ArrayList<ProofChunk> mProofChain;
+	protected ArrayList<ProofChunk> mProofChain;
 	
 	//Calculate this once
-	MiniHash mFinalHash;
-	MiniData mChainSHA;
-	boolean mFinalized;
+	protected MiniHash mFinalHash;
+	protected MiniData mChainSHA;
+	protected boolean mFinalized;
 		
 	protected Proof(){
 		mProofChain = new ArrayList<>();
