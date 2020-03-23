@@ -22,6 +22,8 @@ import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
+import org.minima.objects.proofs.ScriptProof;
+import org.minima.objects.proofs.SignatureProof;
 import org.minima.system.input.functions.gimme50;
 import org.minima.utils.Crypto;
 import org.minima.utils.json.JSONArray;
@@ -44,18 +46,38 @@ public class TxPOWChecker {
 		
 		//Now cycle
 		Witness wit = zTxPOW.getWitness();
-		int len     = wit.getAllPubKeys().size();
 		
-		for(int i=0;i<len;i++) {
-			MiniData pubk = wit.getPublicKey(i);
-			MiniData sig  = wit.getSignature(i);
+		//Get all the signatures..
+		ArrayList<SignatureProof> sigs = wit.getAllSignatures();
+		
+		//Check each one and add.. this is only done once..
+		for(SignatureProof sig : sigs) {
+			//This is the actual public key that is being represented..
+//			MiniHash finalPubKey = sig.getFinalHash();
 			
+			//Now check the leaf of the tree
+			MiniHash leafkey   = sig.getData();
+			MiniData signature = sig.getSignature();
+		
 			//Check it..
-			boolean ok = PubPrivKey.verify(pubk, transhash, sig);
+			boolean ok = PubPrivKey.verify(leafkey, transhash, signature);
 			if(!ok) {
 				return false;
 			}
 		}
+		
+//		int len     = wit.getAllPubKeys().size();
+//		
+//		for(int i=0;i<len;i++) {
+//			MiniData pubk = wit.getPublicKey(i);
+//			MiniData sig  = wit.getSignature(i);
+//			
+//			//Check it..
+//			boolean ok = PubPrivKey.verify(pubk, transhash, sig);
+//			if(!ok) {
+//				return false;
+//			}
+//		}
 		
 		return true;
 	}
@@ -92,17 +114,18 @@ public class TxPOWChecker {
 			//Get the Input
 			Coin input = inputs.get(i);
 
-			//The contract execution log
+			//The contract execution log - will be updated later, but added now
 			JSONObject contractlog = new JSONObject();
 			zContractLog.add(contractlog);
 			
 			//Get the Script..
-			String script = zTrans.getScript(input.getAddress()).getScript().toString();
-			if(script == null) {
+			ScriptProof sp =  zTrans.getScript(input.getAddress());
+			if(sp == null) {
 				contractlog.put("error", "Script not found for "+input.getAddress());
 				return false;
 			}
-//			String script = zWit.getScript(i);
+			
+			String script = sp.getScript().toString();
 			
 			contractlog.put("input", i);
 			contractlog.put("script", script);

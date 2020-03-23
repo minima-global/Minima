@@ -12,6 +12,7 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniString;
 import org.minima.objects.proofs.ScriptProof;
+import org.minima.objects.proofs.SignatureProof;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
@@ -40,6 +41,11 @@ public class Witness implements Streamable {
 //	ArrayList<String> mScripts;
 //	
 	/**
+	 * The Signatures
+	 */
+	ArrayList<SignatureProof> mSignatureProofs;
+	
+	/**
 	 * Token generation details.. one per transaction
 	 */
 	TokenDetails mTokenGenDetails = null;
@@ -59,17 +65,23 @@ public class Witness implements Streamable {
 //		mScripts    = new ArrayList<>();
 		mProofs     = new ArrayList<>();
 		
+		mSignatureProofs = new ArrayList<>();
+		
 		//Token details..
 		mTokenDetails = new ArrayList<>();
 	}
 	
-//	public void addScript(String zScript) {
-//		mScripts.add(Contract.cleanScript(zScript));
-//	}
+	public void addSignature(MiniHash zPubKey, MiniData zSignature) {
+		mSignatureProofs.add(new SignatureProof(zPubKey, zSignature));
+	}
 	
-//	public String getScript(int zScript) {
-//		return mScripts.get(zScript);
-//	}
+	public void addSignature(SignatureProof zSigProof) {
+		mSignatureProofs.add(zSigProof);
+	}
+	
+	public ArrayList<SignatureProof> getAllSignatures(){
+		return mSignatureProofs;
+	}
 	
 	public void addMMRProof(MMRProof zProof) {
 		mProofs.add(zProof);
@@ -82,36 +94,13 @@ public class Witness implements Streamable {
 	public ArrayList<MMRProof> getAllProofs(){
 		return mProofs;
 	}
-	
-	public void addSignature(MiniData zPublicKey, MiniData zSig) {
-		//Add the public Key
-		mPublicKeys.add(zPublicKey);
-		
-		//Add to signatures
-		mSignatures.add(zSig);
-	}
-	
-	public MiniData getPublicKey(int zPubk) {
-		return mPublicKeys.get(zPubk);
-	}
-	
-	public MiniData getSignature(int zSig) {
-		return mSignatures.get(zSig);
-	}
-	
-//	public ArrayList<MiniData> getAllSignatures(){
-//		return mSignatures;
-//	}
-	
-	public ArrayList<MiniData> getAllPubKeys(){
-		return mPublicKeys;
-	}
-	
+
 	public String getAllPubKeysCSV(){
 		String ret = "";
-		for(MiniData sig : mPublicKeys) {
-			ret += sig.toString()+"#";
+		for(SignatureProof sig : mSignatureProofs) {
+			ret += sig.getFinalHash().to0xString()+"#";
 		}
+
 		return ret.trim();
 	}
 	
@@ -144,27 +133,13 @@ public class Witness implements Streamable {
 	public JSONObject toJSON() {
 		JSONObject obj = new JSONObject();
 		
-		//Pub Keys
-		JSONArray arr = new JSONArray();
-		for(MiniData pubk : mPublicKeys) {
-			arr.add(pubk.toString());
-		}
-		obj.put("publickeys", arr);
-		
 		//Signatures
-		arr = new JSONArray();
-		for(MiniData sig : mSignatures) {
-			arr.add(sig.toString());
+		JSONArray arr = new JSONArray();
+		for(SignatureProof sg : mSignatureProofs) {
+			arr.add(sg.toJSON());
 		}
 		obj.put("signatures", arr);
-		
-//		//Scripts
-//		arr = new JSONArray();
-//		for(String script : mScripts) {
-//			arr.add(script);
-//		}
-//		obj.put("scripts", arr);
-		
+
 		//MMRProofs
 		arr = new JSONArray();
 		for(MMRProof proof : mProofs) {
@@ -194,27 +169,13 @@ public class Witness implements Streamable {
 	
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
-		//Pub Keys
-		int pklen = mPublicKeys.size();
+		//Signatures 
+		int pklen = mSignatureProofs.size();
 		zOut.writeInt(pklen);
-		for(MiniData pubk : mPublicKeys) {
+		for(SignatureProof sp : mSignatureProofs) {
 			//The Pub Key
-			pubk.writeDataStream(zOut);
+			sp.writeDataStream(zOut);
 		}
-		
-		//Signatures
-		zOut.writeInt(mSignatures.size());
-		for(MiniData sig : mSignatures) {
-			//The Pub Key
-			sig.writeDataStream(zOut);
-		}
-		
-//		//Scripts
-//		int sclen = mScripts.size();
-//		zOut.writeInt(sclen);
-//		for(String script : mScripts) {
-//			zOut.writeUTF(script);
-//		}
 		
 		//MMRProofs
 		int mmrlen = mProofs.size();
@@ -241,24 +202,11 @@ public class Witness implements Streamable {
 
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
-		mPublicKeys = new ArrayList<>();
+		mSignatureProofs = new ArrayList<>();
 		int prlen = zIn.readInt();
 		for(int i=0;i<prlen;i++) {
-			mPublicKeys.add(MiniData.ReadFromStream(zIn));
+			mSignatureProofs.add(SignatureProof.ReadFromStream(zIn));
 		}
-	
-		//Read in the combined sig hash
-		mSignatures = new ArrayList<>();
-		int siglen = zIn.readInt();
-		for(int i=0;i<siglen;i++) {
-			mSignatures.add(MiniData.ReadFromStream(zIn));
-		}
-		
-//		mScripts = new ArrayList<>();
-//		prlen = zIn.readInt();
-//		for(int i=0;i<prlen;i++) {
-//			mScripts.add(zIn.readUTF());
-//		}
 		
 		mProofs = new ArrayList<>();
 		prlen = zIn.readInt();

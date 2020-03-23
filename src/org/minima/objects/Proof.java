@@ -55,6 +55,10 @@ public class Proof implements Streamable {
 		mData       = zData;
 	}
 	
+	public MiniHash getData() {
+		return mData;
+	}
+	
 	public void setProof(MiniData zChainSHAProof) {
 		mFinalized  = false;
 		mProofChain = new ArrayList<>();
@@ -161,6 +165,7 @@ public class Proof implements Streamable {
 			proof.add(jsonchunk);
 		}
 		
+		json.put("data", mData);
 		json.put("proofchain", proof);
 		json.put("chainsha", getChainSHAProof().to0xString());
 		json.put("finalhash", getFinalHash().to0xString());
@@ -171,7 +176,6 @@ public class Proof implements Streamable {
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
 		mData.writeDataStream(zOut);
-		
 		int len = mProofChain.size();
 		zOut.writeInt(len);
 		for(int i=0;i<len;i++) {

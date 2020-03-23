@@ -220,7 +220,7 @@ public class JavaUserDB implements UserDB, Streamable{
 	}
 
 	@Override
-	public MiniData getPublicKey(MiniHash zAddress) {
+	public MiniHash getPublicKey(MiniHash zAddress) {
 		for(Address addr : mAddresses) {
 			if(addr.isEqual(zAddress)) {
 				//What is the Public key!
@@ -230,7 +230,7 @@ public class JavaUserDB implements UserDB, Streamable{
 				
 				String pubk = script.substring(index, end);
 				
-				return new MiniData(pubk);
+				return new MiniHash(pubk);
 			}
 		}
 		return null;

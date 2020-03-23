@@ -6,13 +6,14 @@ import java.io.IOException;
 
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniHash;
+import org.minima.utils.Crypto;
 import org.minima.utils.Streamable;
 
 public class PubPrivKey implements Streamable {
 	
 	MiniData mPrivateSeed;
 	
-	MiniData mPublicKey;
+	MiniHash mPublicKey;
 	
 	//HACK NO BOUNCY
 //	private static final int WinternitzNumber = 8;
@@ -35,7 +36,7 @@ public class PubPrivKey implements Streamable {
 //		mPublicKey  = new MiniData(wots.getPublicKey());
 		
 		//HACK NO BOUNCY
-		mPublicKey = MiniData.getRandomData(32);
+		mPublicKey = Crypto.getInstance().hashObject(zPrivateSeed);
 	}
 	
 	/**
@@ -62,7 +63,7 @@ public class PubPrivKey implements Streamable {
 		return verify(mPublicKey, zData, zSignature);
 	}
 	
-	public static boolean verify(MiniData zPubKey, MiniHash zData, MiniData zSignature) {
+	public static boolean verify(MiniHash zPubKey, MiniHash zData, MiniData zSignature) {
 //		//WOTS Verify
 //		WinternitzOTSVerify wver = new WinternitzOTSVerify(getHashFunction(), WinternitzNumber);
 //		
@@ -79,7 +80,7 @@ public class PubPrivKey implements Streamable {
 		return true;
 	}
 	
-	public MiniData getPublicKey() {
+	public MiniHash getPublicKey() {
 		return mPublicKey;
 	}
 	
@@ -100,7 +101,7 @@ public class PubPrivKey implements Streamable {
 
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
-		mPublicKey   = MiniData.ReadFromStream(zIn);
+		mPublicKey   = MiniHash.ReadFromStream(zIn);
 		mPrivateSeed = MiniData.ReadFromStream(zIn);
 	}
 }

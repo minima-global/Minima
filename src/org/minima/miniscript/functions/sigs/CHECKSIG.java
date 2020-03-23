@@ -35,7 +35,8 @@ public class CHECKSIG extends MinimaFunction {
 		HEXValue sig    = (HEXValue) getParameter(2).getValue(zContract);
 		
 		//Check it..
-		boolean ok = PubPrivKey.verify(pubkey.getMiniData(), new MiniHash(data.getRawData()), sig.getMiniData());
+		MiniHash pubk = new MiniHash(pubkey.getMiniData().getData());
+		boolean ok = PubPrivKey.verify(pubk, new MiniHash(data.getRawData()), sig.getMiniData());
 		
 		// TODO Auto-generated method stub
 		return new BooleanValue(ok);

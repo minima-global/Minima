@@ -23,6 +23,7 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.proofs.ScriptProof;
+import org.minima.objects.proofs.SignatureProof;
 import org.minima.system.input.InputHandler;
 import org.minima.system.network.NetworkHandler;
 import org.minima.utils.Crypto;
@@ -365,7 +366,7 @@ public class ConsensusTxn {
 			MiniData signature = key.sign(transhash);
 			
 			//Now set the SIG.. 
-			wit.addSignature(pubk, signature);
+			wit.addSignature(key.getPublicKey(), signature);
 			
 			listTransactions(zMessage);
 		

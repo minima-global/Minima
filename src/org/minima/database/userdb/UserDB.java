@@ -28,7 +28,7 @@ public interface UserDB {
 	public Address newSimpleAddress();
 	public Address newSimpleAddress(PubPrivKey zPubPriv);
 	public boolean isSimpleAddress(MiniHash zAddress);
-	public MiniData getPublicKey(MiniHash zAddress);
+	public MiniHash getPublicKey(MiniHash zAddress);
 	
 	public ArrayList<Address> getScriptAddresses();
 	public Address newScriptAddress(String zScript);

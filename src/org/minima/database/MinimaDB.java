@@ -642,7 +642,7 @@ public class MinimaDB {
 		Witness wit 	= new Witness();
 		
 		//Which signatures are required
-		ArrayList<MiniData> sigpubk = new ArrayList<>();
+		ArrayList<MiniHash> sigpubk = new ArrayList<>();
 
 		//The Base current MMRSet
 		MMRSet basemmr  = getMainTree().getChainTip().getMMRSet();
@@ -683,7 +683,7 @@ public class MinimaDB {
 				wit.addMMRProof(proof);				
 				
 				//And finally sign!
-				MiniData pubk = getUserDB().getPublicKey(cc.getAddress());
+				MiniHash pubk = getUserDB().getPublicKey(cc.getAddress());
 				
 				//Add to list of signatures..
 				sigpubk.add(pubk);
@@ -716,7 +716,7 @@ public class MinimaDB {
 		
 		//Now we have a full transaction we can sign it!
 		MiniHash transhash = Crypto.getInstance().hashObject(trx);
-		for(MiniData pubk : sigpubk) {
+		for(MiniHash pubk : sigpubk) {
 			//Get the Pub Priv..
 			PubPrivKey signer = getUserDB().getPubPrivKey(pubk);
 			
