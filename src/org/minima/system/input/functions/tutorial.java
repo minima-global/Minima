@@ -4,7 +4,7 @@ import org.minima.system.input.CommandFunction;
 
 public class tutorial extends CommandFunction{
 
-	public static String TUTORIAL_TEXT = "Minima transactions are a series of inputs, a series of outputs and a variable list known as the state, which you can access from the script with GETSTATE. The state can be accessed by all the input scripts, and is stored in the MMR database, so can be accessed by PREVSTATE in the next transaction the outputs are added to, as inputs. \n" + 
+	public static String TUTORIAL_TEXT = "Minima transactions are a series of inputs, a series of outputs and a variable list known as the state, which you can access from the script with STATE. The state can be accessed by all the input scripts, and is stored in the MMR database, so can be accessed by PREVSTATE in the next transaction the outputs are added to, as inputs. \n" + 
 			"\n" + 
 			"The sum of the outputs must be less than or equal to the sum of the inputs, for every tokenid used. The difference in raw minima is the Burn. \n" + 
 			"\n" + 
@@ -12,13 +12,13 @@ public class tutorial extends CommandFunction{
 			"\n" + 
 			"A transaction can be signed, in full, by one or more public keys.\n" + 
 			"\n" + 
-			"Minima allows input scripts to have perfect knowledge of the entire transaction. How many, their token type, the amount and address of all inputs and outputs are available. An input knows it's own script ( @SCRIPT ) and can ensure an output of a similar address exists in the outputs. \n" + 
+			"Minima allows input scripts to have perfect knowledge of the entire transaction. How many, token type, amount and the address of all inputs and outputs are available. An input knows it's own script ( @SCRIPT ) and can ensure an output of a similar address exists in the outputs. \n" + 
 			"\n" + 
-			"Using REPLVAR new addresses can be created by replacing existing variables in the current  or pre-existing scripts, and checking of complex addresses can be achieved by using MAST and a list a variables before the main bulk of the hashed script.\n" + 
+			"Using RPLVAR new addresses can be created by replacing existing variables in the current  or pre-existing scripts, and checking of complex addresses can be achieved by using MAST and a list a variables before the main bulk of the hashed script.\n" + 
 			"\n" + 
-			"The addition of the state variables in the MMR Proof DB, allow for complex scripts with knowledge of their past to be created.\n" + 
+			"The addition of the state variables in the MMR Proof DB, allow for complex scripts with knowledge of their past to be created. A simple state mechanic for transactional history rather than a global state for ALL transactions.\n" + 
 			"\n" + 
-			"Minima transactions are complex Logic Gates, with analogue inputs and outputs, a simple yet powerful control language, and a single-shot history state mechanic.\n" + 
+			"Minima transactions are scriptable Logic Gates, with analogue inputs and outputs, a simple yet powerful control language, and a previous history state mechanic.\n" + 
 			"\n" + 
 			"I think of them as \"Script Gates\".    \n" + 
 			"\n" + 
