@@ -20,7 +20,7 @@ public class mmrtree extends CommandFunction{
 
 	public mmrtree() {
 		super("mmrtree");
-		setHelp("[script|hash] [ data_list ]", "Build an MMR Tree from data list treated as either SCRIPTs or HASHes", "");
+		setHelp("[script|hash] [ data_list ]", "Build an MMR Hash Tree from the data list", "");
 	}
 	
 	@Override

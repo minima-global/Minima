@@ -9,7 +9,7 @@ public class createtoken extends CommandFunction {
 	public createtoken() {
 		super("createtoken");
 		setHelp("[name] [total] (token script hash)", 
-				"Create a token with the given name or description, total amount, and with the optional script.", "");
+				"Create a token.", "");
 	}
 	
 	@Override
