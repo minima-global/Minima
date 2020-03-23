@@ -26,6 +26,7 @@ import org.minima.objects.Proof;
 import org.minima.objects.PubPrivKey;
 import org.minima.objects.StateVariable;
 import org.minima.objects.Transaction;
+import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
@@ -190,6 +191,7 @@ public class ConsensusUser {
 			
 			//Create the transaction..
 			Transaction trans = new Transaction();
+			Witness wit       = new Witness();
 			
 			//OUTPUTS
 			if(!outputs.equals("")) {
@@ -288,7 +290,7 @@ public class ConsensusUser {
 			}
 			
 			//Create a contract
-			Contract cc = new Contract(script, sigs, trans, pstate);
+			Contract cc = new Contract(script, sigs, wit, trans, pstate);
 			
 			//Create an address
 			Address ccaddress = new Address(cc.getMiniScript());

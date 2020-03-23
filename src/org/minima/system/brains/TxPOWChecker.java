@@ -177,7 +177,7 @@ public class TxPOWChecker {
 				}
 				
 				//Create the Contract to check..
-				Contract cc = new Contract(script,sigs,zTrans,proof.getMMRData().getPrevState());
+				Contract cc = new Contract(script,sigs, zWit, zTrans,proof.getMMRData().getPrevState());
 				
 				//set the environment
 				String address = input.getAddress().toString();

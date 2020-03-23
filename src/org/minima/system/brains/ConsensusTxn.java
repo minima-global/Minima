@@ -236,7 +236,24 @@ public class ConsensusTxn {
 			
 			//Get the Transaction..
 			Transaction trx = getMainDB().getUserDB().getUserRow(trans).getTransaction();
-		
+			Witness wit     =  getMainDB().getUserDB().getUserRow(trans).getWitness();
+			
+			//Is it a Token ? 
+			if(!out.getTokenID().isExactlyEqual(Coin.MINIMA_TOKENID)) {
+				//Add the Token details..
+				TokenDetails tokendets = getMainDB().getUserDB().getTokenDetail(out.getTokenID());
+				
+				//Do we have it,.
+				if(tokendets == null) {
+					//Unknown token!
+					InputHandler.endResponse(zMessage, false, "No details found for the specified token : "+out.getTokenID());
+					return;
+				}
+				
+				//Add it..
+				wit.addTokenDetails(tokendets);
+			}
+			
 			//Add the output
 			trx.addOutput(out);
 			

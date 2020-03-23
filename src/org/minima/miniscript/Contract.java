@@ -20,6 +20,7 @@ import org.minima.miniscript.values.ScriptValue;
 import org.minima.miniscript.values.Value;
 import org.minima.objects.StateVariable;
 import org.minima.objects.Transaction;
+import org.minima.objects.Witness;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
@@ -27,28 +28,13 @@ import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
-/**
- * A RamScript Contract. Executes a given script, with the 
- * given Witness, and returns either TRUE or FALSE
- * 
- * The language is a BASIC variant and very simple with only 3 commands.
- * 
- * LET | IF | RETURN
- * 
- * coupled with a comprehensive EXPRESSION parser
- * 
- * Exception handling IS CONSENSUS CRITICAL. When an exception is thrown 
- * the script immediately exits with a FAIL. Clearly everyone needs to agree on what does
- * and what does not count as an exception. RamScriptExceptions has juicy details.
- * 
- * @author Spartacus Rex
- *
- */
-
 public class Contract {
 	
 	//The Transaction this Contract is being run on
 	Transaction mTransaction;
+	
+	//The Witness
+	Witness mWitness;
 		
 	//The final version of the script
 	String mRamScript; 
@@ -103,11 +89,11 @@ public class Contract {
 	 * Main Constructor
 	 * @param zRamScript - the RamScript in ASCII
 	 */
-	public Contract(String zRamScript, String zSigs, Transaction zTransaction, ArrayList<StateVariable> zPrevState) {	
-		this(zRamScript, zSigs, zTransaction, zPrevState, false);
+	public Contract(String zRamScript, String zSigs, Witness zWitness, Transaction zTransaction, ArrayList<StateVariable> zPrevState) {	
+		this(zRamScript, zSigs, zWitness, zTransaction, zPrevState, false);
 	}
 	
-	public Contract(String zRamScript, String zSigs, Transaction zTransaction, ArrayList<StateVariable> zPrevState, boolean zTrace) {
+	public Contract(String zRamScript, String zSigs, Witness zWitness, Transaction zTransaction, ArrayList<StateVariable> zPrevState, boolean zTrace) {
 		//Trace?
 		mCompleteLog ="";
 		mTraceON     = zTrace;
@@ -116,7 +102,8 @@ public class Contract {
 		mRamScript = cleanScript(zRamScript);
 	
 		mTransaction = zTransaction;
-		
+		mWitness     = zWitness;
+	
 		mSignatures = new ArrayList<>();
 		mVariables  = new Hashtable<>();
 		mGlobals    = new Hashtable<>();
@@ -144,6 +131,7 @@ public class Contract {
 		
 		//Transaction..
 		traceLog("Transaction   : "+mTransaction.toString());
+		traceLog("Witness       : "+mWitness.toString());
 		
 		//State Variables
 		ArrayList<StateVariable> svs = mTransaction.getCompleteState();
@@ -296,6 +284,10 @@ public class Contract {
 	
 	public Transaction getTransaction() {
 		return mTransaction;
+	}
+	
+	public Witness getWitness() {
+		return mWitness;
 	}
 	
 	public JSONObject getAllVariables() {
@@ -564,7 +556,10 @@ public class Contract {
 //		tt.setStateValue(1001, new StateVariable("[ let y = 0xFF ]"));
 //		tt.setStateValue(2, new StateVariable("1.2345"));
 		
-		Contract ctr = new Contract(RamScript,"0x74A2222436C592046A6F576F67200C75DB3D9051BE31262BD0A0BF0DB30137C4",tt,null,true);
+		Contract ctr = new Contract(RamScript,
+				"0x74A2222436C592046A6F576F67200C75DB3D9051BE31262BD0A0BF0DB30137C4",
+				new Witness(),
+				tt,null,true);
 		
 		ctr.setGlobalVariable("@SCRIPT", new ScriptValue(RamScript));
 		ctr.setGlobalVariable("@BLKNUM", new NumberValue(new MiniNumber("31")));
