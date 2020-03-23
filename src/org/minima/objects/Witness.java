@@ -63,7 +63,7 @@ public class Witness implements Streamable {
 		mMMRProofs.clear();	
 	}
 	
-	public ArrayList<MMRProof> getAllProofs(){
+	public ArrayList<MMRProof> getAllMMRProofs(){
 		return mMMRProofs;
 	}
 

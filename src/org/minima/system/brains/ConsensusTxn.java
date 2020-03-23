@@ -428,19 +428,6 @@ public class ConsensusTxn {
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			DataOutputStream dos = new DataOutputStream(baos);
 			
-//			//We need to output all the Coins.. 
-//			ArrayList<Coin> ins = trx.getAllInputs();
-//			
-//			//Tell the stream how many inputs proofs to come..
-//			dos.writeInt(ins.size());
-//			for(Coin in : ins) {
-//				//Export to Data..
-//				MiniData data = ConsensusUser.exportCoin(getMainDB(), in.getCoinID());
-//				
-//				//Now write to the collective..
-//				data.writeDataStream(dos);
-//			}
-			
 			//Now the whole transaction..
 			trx.writeDataStream(dos);
 			
@@ -479,7 +466,7 @@ public class ConsensusTxn {
 			
 			//Import all the proofs..
 			JSONObject resp = InputHandler.getResponseJSON(zMessage);
-			for(MMRProof proof : row.getWitness().getAllProofs()) {
+			for(MMRProof proof : row.getWitness().getAllMMRProofs()) {
 				boolean valid = ConsensusUser.importCoin(getMainDB(), proof);
 			
 				if(!valid) {

@@ -146,7 +146,7 @@ public class TxPOWChecker {
 				}
 				
 				//Is it a valid input.. UNSPENT in MMR
-				MMRProof proof = zWit.getAllProofs().get(i);
+				MMRProof proof = zWit.getAllMMRProofs().get(i);
 				
 				//MUST be a full proof - this done in checkproof..
 				if(proof.getMMRData().isHashOnly()) {
