@@ -34,11 +34,11 @@ public class Witness implements Streamable {
 	 */
 	ArrayList<MMRProof> mProofs;
 	
-	/**
-	 * The Scripts for the Inputs
-	 */
-	ArrayList<String> mScripts;
-	
+//	/**
+//	 * The Scripts for the Inputs
+//	 */
+//	ArrayList<String> mScripts;
+//	
 	/**
 	 * Token generation details.. one per transaction
 	 */
@@ -56,7 +56,7 @@ public class Witness implements Streamable {
 		mPublicKeys = new ArrayList<>();
 		mSignatures = new ArrayList<>();
 		
-		mScripts    = new ArrayList<>();
+//		mScripts    = new ArrayList<>();
 		mProofs     = new ArrayList<>();
 		
 		//Token details..
@@ -158,12 +158,12 @@ public class Witness implements Streamable {
 		}
 		obj.put("signatures", arr);
 		
-		//Scripts
-		arr = new JSONArray();
-		for(String script : mScripts) {
-			arr.add(script);
-		}
-		obj.put("scripts", arr);
+//		//Scripts
+//		arr = new JSONArray();
+//		for(String script : mScripts) {
+//			arr.add(script);
+//		}
+//		obj.put("scripts", arr);
 		
 		//MMRProofs
 		arr = new JSONArray();
@@ -209,12 +209,12 @@ public class Witness implements Streamable {
 			sig.writeDataStream(zOut);
 		}
 		
-		//Scripts
-		int sclen = mScripts.size();
-		zOut.writeInt(sclen);
-		for(String script : mScripts) {
-			zOut.writeUTF(script);
-		}
+//		//Scripts
+//		int sclen = mScripts.size();
+//		zOut.writeInt(sclen);
+//		for(String script : mScripts) {
+//			zOut.writeUTF(script);
+//		}
 		
 		//MMRProofs
 		int mmrlen = mProofs.size();
@@ -254,11 +254,11 @@ public class Witness implements Streamable {
 			mSignatures.add(MiniData.ReadFromStream(zIn));
 		}
 		
-		mScripts = new ArrayList<>();
-		prlen = zIn.readInt();
-		for(int i=0;i<prlen;i++) {
-			mScripts.add(zIn.readUTF());
-		}
+//		mScripts = new ArrayList<>();
+//		prlen = zIn.readInt();
+//		for(int i=0;i<prlen;i++) {
+//			mScripts.add(zIn.readUTF());
+//		}
 		
 		mProofs = new ArrayList<>();
 		prlen = zIn.readInt();
