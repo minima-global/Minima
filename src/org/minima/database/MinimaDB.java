@@ -44,6 +44,7 @@ import org.minima.system.tx.TXMiner;
 import org.minima.utils.Crypto;
 import org.minima.utils.Maths;
 import org.minima.utils.MinimaLogger;
+import org.minima.utils.json.JSONArray;
 import org.minima.utils.messages.Message;
 
 public class MinimaDB {
@@ -739,7 +740,7 @@ public class MinimaDB {
 	 * @param zWitness
 	 * @return
 	 */
-	public TxPOW getCurrentTxPow(Transaction zTrans, Witness zWitness) {
+	public TxPOW getCurrentTxPow(Transaction zTrans, Witness zWitness, JSONArray zContractLogs) {
 		//Get the current best block..
 		BlockTreeNode tip = mMainTree.getChainTip();
 		
@@ -808,11 +809,12 @@ public class MinimaDB {
 		
 		//Check the first transaction
 		if(!zTrans.isEmpty()) {
-			boolean valid = TxPOWChecker.checkTransactionMMR(zTrans, zWitness, this, txpow.getBlockNumber(),newset,true);
+			boolean valid = TxPOWChecker.checkTransactionMMR(zTrans, zWitness, this, 
+					txpow.getBlockNumber(),newset,true, zContractLogs);
 			
 			//MUST be valid.. ?
 			if(!valid) {
-				MinimaLogger.log("ERROR: Your own transaction is invalid !?");
+//				MinimaLogger.log("ERROR: Your own transaction is invalid !?");
 				return null;
 			}
 		}

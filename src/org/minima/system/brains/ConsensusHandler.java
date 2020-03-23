@@ -26,6 +26,7 @@ import org.minima.system.network.NetClientReader;
 import org.minima.system.network.NetworkHandler;
 import org.minima.system.tx.TXMiner;
 import org.minima.utils.Crypto;
+import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
 
@@ -290,11 +291,15 @@ public class ConsensusHandler extends SystemHandler {
 			//Get the Witness data if a valid transaction and not just an off chain zero transaction
 			Witness wit = (Witness) zMessage.getObject("witness");
 			
+			JSONObject resp = InputHandler.getResponseJSON(zMessage);
+			
 			//Add it to the current TX-POW
-			TxPOW txpow = getMainDB().getCurrentTxPow(trans, wit);
+			JSONArray contractlogs = new JSONArray();
+			TxPOW txpow = getMainDB().getCurrentTxPow(trans, wit, contractlogs);
 			
 			//Is is valid.. ?
 			if(txpow==null) {
+				resp.put("contractlogs", contractlogs);
 				InputHandler.endResponse(zMessage, false, "Invalid Transaction");
 				return;
 			}
@@ -302,10 +307,8 @@ public class ConsensusHandler extends SystemHandler {
 			//Send it to the Miner..
 			Message mine = new Message(TXMiner.TXMINER_MINETXPOW).addObject("txpow", txpow);
 			InputHandler.addResponseMesage(mine, zMessage);
-			
 			getMainHandler().getMiner().PostMessage(mine);
 		
-			JSONObject resp = InputHandler.getResponseJSON(zMessage);
 			resp.put("txpow", txpow);
 			
 			InputHandler.endResponse(zMessage, true, "");
@@ -466,6 +469,8 @@ public class ConsensusHandler extends SystemHandler {
 			//Get the amount
 			String amount 		= zMessage.getString("amount");
 			String name  	 	= zMessage.getString("name");
+			String script       = zMessage.getString("script");
+			
 			MiniHash tok  		= Coin.TOKENID_CREATE;
 			MiniHash changetok 	= Coin.MINIMA_TOKENID;
 			
@@ -520,7 +525,8 @@ public class ConsensusHandler extends SystemHandler {
 				TokenDetails tgen = new TokenDetails(Coin.COINID_OUTPUT, 
 													 new MiniNumber(scale+""), 
 													 sendamount, 
-													 new MiniString(name));
+													 new MiniString(name),
+													 new MiniString(script));
 				
 				//Set it
 				trx.setTokenGenerationDetails(tgen);

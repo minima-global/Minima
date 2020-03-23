@@ -250,7 +250,6 @@ public class ConsensusPrint {
 			JSONObject allbal = InputHandler.getResponseJSON(zMessage);
 			JSONArray totbal = new JSONArray();
 			
-			//Tester..
 			Enumeration<String> fulls = full_details.keys();
 			while(fulls.hasMoreElements())  {
 				String full = fulls.nextElement();
@@ -283,6 +282,7 @@ public class ConsensusPrint {
 					//And re-add
 					jobj.put("confirmed", tot_scconf.toString());
 					jobj.put("unconfirmed", tot_scunconf.toString());
+					jobj.put("script", td.getTokenScript().toString());
 					jobj.put("total", tot_toks.toString());
 				}
 				

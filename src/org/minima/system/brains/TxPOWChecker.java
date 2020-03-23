@@ -22,6 +22,7 @@ import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
+import org.minima.objects.base.MiniString;
 import org.minima.objects.proofs.ScriptProof;
 import org.minima.objects.proofs.SignatureProof;
 import org.minima.system.input.functions.gimme50;
@@ -210,6 +211,59 @@ public class TxPOWChecker {
 				if(!cc.isSuccess()) {
 					return false;
 				}
+				
+				//Is this a Token ?
+				if(!input.getTokenID().isExactlyEqual(Coin.MINIMA_TOKENID)) {
+					//Do we have a token Script..
+					TokenDetails tokdets = zWit.getTokenDetail(input.getTokenID());
+					
+					if(tokdets == null) {
+						contractlog.put("error", "Token Details for coin missing! "+input.getTokenID());
+						return false;	
+					}
+					
+					//Is there a script.
+					String tokscript = tokdets.getTokenScript().toString();
+					if(!tokscript.equals("RETURN TRUE")) {
+						//Check the Script!
+						cc = new Contract(tokscript,sigs, zWit, zTrans,proof.getMMRData().getPrevState());
+						
+						//set the environment
+						address = input.getAddress().toString();
+						
+						cc.setGlobalVariable("@BLKNUM", new NumberValue(zBlockNumber));
+						cc.setGlobalVariable("@INBLKNUM", new NumberValue(proof.getMMRData().getInBlock()));
+						cc.setGlobalVariable("@BLKDIFF", new NumberValue(zBlockNumber.sub(proof.getMMRData().getInBlock())));
+						cc.setGlobalVariable("@INPUT", new NumberValue(i));
+						cc.setGlobalVariable("@AMOUNT", new NumberValue(input.getAmount()));
+						cc.setGlobalVariable("@ADDRESS", new HEXValue(address));
+						cc.setGlobalVariable("@TOKENID", new HEXValue(input.getTokenID()));
+						cc.setGlobalVariable("@COINID", new HEXValue(input.getCoinID()));
+						cc.setGlobalVariable("@SCRIPT", new ScriptValue(tokscript));
+						cc.setGlobalVariable("@TOTIN", new NumberValue(zTrans.getAllInputs().size()));
+						cc.setGlobalVariable("@TOTOUT", new NumberValue(zTrans.getAllOutputs().size()));
+						
+						//Run it!
+						cc.run();
+						
+						JSONObject toklog = new JSONObject();
+						contractlog.put("tokencontract", toklog);
+						
+						toklog.put("script", cc.getMiniScript());
+						toklog.put("size", cc.getMiniScript().length());
+						toklog.put("instructions", cc.getNumberOfInstructions());
+						toklog.put("address", input.getAddress().to0xString());
+						toklog.put("parseok", cc.isParseOK());
+						toklog.put("parse", cc.getCompleteTraceLog());
+						toklog.put("exception", cc.isException());
+						toklog.put("result", cc.isSuccess());
+						
+						//and.. ?
+						if(!cc.isSuccess()) {
+							return false;
+						}
+					}
+				}
 			}
 			
 			//Add to the total
@@ -239,7 +293,8 @@ public class TxPOWChecker {
 			if(tokid.isExactlyEqual(Coin.TOKENID_CREATE)) {
 				//Make it the HASH ( CoinID | Total Amount..the token details )
 				TokenDetails gentoken = zTrans.getTokenGenerationDetails();
-				newtokdets = new TokenDetails(coinid,gentoken.getScale(), gentoken.getAmount(), gentoken.getName());
+				newtokdets = new TokenDetails(coinid, 
+						gentoken.getScale(), gentoken.getAmount(), gentoken.getName(), gentoken.getTokenScript());
 				
 				//Set the Globally Unique TokenID!
 				tokid = newtokdets.getTokenID();

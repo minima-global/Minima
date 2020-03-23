@@ -5,6 +5,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+import org.minima.miniscript.Contract;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
@@ -36,6 +37,11 @@ public class TokenDetails implements Streamable{
 	MiniString mTokenName;
 	
 	/**
+	 * The Token Script
+	 */
+	MiniString mTokenScript;
+	
+	/**
 	 * TTokenID created after all the details are set
 	 */
 	MiniHash mTokenID;
@@ -53,10 +59,16 @@ public class TokenDetails implements Streamable{
 	 * @param zName
 	 */
 	public TokenDetails(MiniHash zCoindID, MiniNumber zScale, MiniNumber zAmount, MiniString zName) {
+		this(zCoindID, zScale, zAmount, zName, new MiniString("RETURN TRUE"));
+	}
+		
+	public TokenDetails(MiniHash zCoindID, MiniNumber zScale, MiniNumber zAmount, MiniString zName, MiniString zTokenScript) {
+				
 		mTokenScale 		= zScale;
 		mTokenTotalAmount 	= zAmount;
 		mTokenName 			= zName;
 		mCoinID 			= zCoindID;
+		mTokenScript        = new MiniString(Contract.cleanScript(zTokenScript.toString())) ;
 		
 		calculateTokenID();
 	}
@@ -77,6 +89,10 @@ public class TokenDetails implements Streamable{
 		return mTokenName;
 	}
 	
+	public MiniString getTokenScript() {
+		return mTokenScript;
+	}
+	
 	public MiniHash getCoinID() {
 		return mCoinID;
 	}
@@ -90,6 +106,7 @@ public class TokenDetails implements Streamable{
 		
 		obj.put("coinid", mCoinID.to0xString());
 		obj.put("name", mTokenName.toString());
+		obj.put("script", mTokenScript.toString());
 		obj.put("scale", mTokenScale.toString());
 		obj.put("totalamount", mTokenTotalAmount.toString());
 		
@@ -132,6 +149,7 @@ public class TokenDetails implements Streamable{
 		mTokenScale.writeDataStream(zOut);
 		mTokenTotalAmount.writeDataStream(zOut);
 		mTokenName.writeDataStream(zOut);
+		mTokenScript.writeDataStream(zOut);
 	}
 
 	@Override
@@ -140,6 +158,7 @@ public class TokenDetails implements Streamable{
 		mTokenScale 		= MiniNumber.ReadFromStream(zIn);
 		mTokenTotalAmount	= MiniNumber.ReadFromStream(zIn);
 		mTokenName 			= MiniString.ReadFromStream(zIn);
+		mTokenScript        = MiniString.ReadFromStream(zIn);
 		
 		calculateTokenID();
 	}
