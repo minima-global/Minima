@@ -30,11 +30,6 @@ public class Witness implements Streamable {
 	ArrayList<SignatureProof> mSignatureProofs;
 	
 	/**
-	 * Token generation details.. one per transaction
-	 */
-	TokenDetails mTokenGenDetails = null;
-	
-	/**
 	 * Any tokens used in any inputs must provide the Token Details
 	 */
 	ArrayList<TokenDetails> mTokenDetails;
@@ -44,10 +39,7 @@ public class Witness implements Streamable {
 	 */
 	public Witness() {
 		mMMRProofs     = new ArrayList<>();
-		
 		mSignatureProofs = new ArrayList<>();
-		
-		//Token details..
 		mTokenDetails = new ArrayList<>();
 	}
 	
@@ -84,20 +76,14 @@ public class Witness implements Streamable {
 		return ret.trim();
 	}
 	
-	public void setTokenGenDetails(TokenDetails zTokGenDetails) {
-		mTokenGenDetails = zTokGenDetails;
-	}
-	
-	public TokenDetails getTokenGenDetails() {
-		return mTokenGenDetails;
-	}
-	
 	public ArrayList<TokenDetails> getAllTokenDetails(){
 		return mTokenDetails;
 	}
 	
 	public void addTokenDetails(TokenDetails zDetails) {
-		mTokenDetails.add(zDetails);
+		if(getTokenDetail(zDetails.getTokenID()) == null){
+			mTokenDetails.add(zDetails);	
+		}
 	}
 	
 	public TokenDetails getTokenDetail(MiniHash zTokenID) {
@@ -106,7 +92,6 @@ public class Witness implements Streamable {
 				return td;
 			}
 		}
-		
 		return null;
 	}
 	
@@ -133,11 +118,6 @@ public class Witness implements Streamable {
 			arr.add(td.toJSON());
 		}
 		obj.put("tokens", arr);
-				
-		//Token Generation..
-		if(mTokenGenDetails != null) {
-			obj.put("tokengen", mTokenGenDetails.toJSON());
-		}
 		
 		return obj;
 	}
@@ -170,14 +150,6 @@ public class Witness implements Streamable {
 		for(TokenDetails td : mTokenDetails) {
 			td.writeDataStream(zOut);
 		}
-		
-		//Token generation
-		if(mTokenGenDetails == null) {
-			MiniByte.FALSE.writeDataStream(zOut);
-		}else {
-			MiniByte.TRUE.writeDataStream(zOut);
-			mTokenGenDetails.writeDataStream(zOut);
-		}
 	}
 
 	@Override
@@ -198,14 +170,6 @@ public class Witness implements Streamable {
 		prlen = zIn.readInt();
 		for(int i=0;i<prlen;i++) {
 			mTokenDetails.add(TokenDetails.ReadFromStream(zIn));
-		}
-		
-		//Token generation
-		MiniByte tokgen = MiniByte.ReadFromStream(zIn);
-		if(tokgen.isTrue()) {
-			mTokenGenDetails = TokenDetails.ReadFromStream(zIn);
-		}else {
-			mTokenGenDetails = null;
 		}
 	}
 }

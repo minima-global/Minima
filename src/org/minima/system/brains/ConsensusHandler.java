@@ -513,7 +513,8 @@ public class ConsensusHandler extends SystemHandler {
 				Message ret = getMainDB().createTransaction(sendamount, recipient, change, confirmed, tok, changetok);
 				
 				//Get the witness and add relevant info..
-				Witness wit = (Witness) ret.getObject("witness");
+//				Witness wit     = (Witness) ret.getObject("witness");
+				Transaction trx = (Transaction) ret.getObject("transaction");
 				
 				//Create the token gen details
 				TokenDetails tgen = new TokenDetails(Coin.COINID_OUTPUT, 
@@ -522,7 +523,7 @@ public class ConsensusHandler extends SystemHandler {
 													 new MiniString(name));
 				
 				//Set it
-				wit.setTokenGenDetails(tgen);
+				trx.setTokenGenerationDetails(tgen);
 				
 				//Continue the log output trail
 				InputHandler.addResponseMesage(ret, zMessage);

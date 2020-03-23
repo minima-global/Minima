@@ -238,7 +238,7 @@ public class TxPOWChecker {
 			TokenDetails newtokdets = null;
 			if(tokid.isExactlyEqual(Coin.TOKENID_CREATE)) {
 				//Make it the HASH ( CoinID | Total Amount..the token details )
-				TokenDetails gentoken = zWit.getTokenGenDetails();
+				TokenDetails gentoken = zTrans.getTokenGenerationDetails();
 				newtokdets = new TokenDetails(coinid,gentoken.getScale(), gentoken.getAmount(), gentoken.getName());
 				
 				//Set the Globally Unique TokenID!

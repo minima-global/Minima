@@ -17,6 +17,7 @@ import org.minima.objects.Coin;
 import org.minima.objects.Proof;
 import org.minima.objects.PubPrivKey;
 import org.minima.objects.StateVariable;
+import org.minima.objects.TokenDetails;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
@@ -180,6 +181,22 @@ public class ConsensusTxn {
 				return;
 			}
 			Coin cc = crow.getCoin();
+			
+			//Is it a Token ? 
+			if(!cc.getTokenID().isExactlyEqual(Coin.MINIMA_TOKENID)) {
+				//Add the Token details..
+				TokenDetails tokendets = getMainDB().getUserDB().getTokenDetail(cc.getTokenID());
+				
+				//Do we have it,.
+				if(tokendets == null) {
+					//Unknown token!
+					InputHandler.endResponse(zMessage, false, "No details found for the specified token : "+cc.getTokenID());
+					return;
+				}
+				
+				//Add it..
+				wit.addTokenDetails(tokendets);
+			}
 			
 			//Add it..
 			trx.addInput(cc);

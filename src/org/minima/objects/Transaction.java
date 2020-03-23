@@ -52,6 +52,8 @@ public class Transaction implements Streamable {
 	 * If you are generating a TOKEN.. here are the details..
 	 * Needs to be here instead of witness so noone can alter it - you sign this.
 	 */
+	TokenDetails mTokenGenDetails = null;
+	
 	
 	/**
 	 * Constructor
@@ -181,6 +183,14 @@ public class Transaction implements Streamable {
 		return getScript(zHash)!=null;
 	}
 	
+	public void setTokenGenerationDetails(TokenDetails zTokenDetails) {
+		mTokenGenDetails = zTokenDetails;
+	}
+	
+	public TokenDetails getTokenGenerationDetails() {
+		return mTokenGenDetails;
+	}
+	
 	@Override
 	public String toString() {
 		return toJSON().toString();
@@ -217,6 +227,11 @@ public class Transaction implements Streamable {
 		}
 		ret.put("scripts", outs);
 		
+		//Token Generation..
+		if(mTokenGenDetails != null) {
+			ret.put("tokengen", mTokenGenDetails.toJSON());
+		}
+				
 		return ret;
 	}
 
@@ -248,6 +263,14 @@ public class Transaction implements Streamable {
 		zOut.writeInt(len);
 		for(ScriptProof script : mScripts) {
 			script.writeDataStream(zOut);
+		}
+		
+		//Token generation
+		if(mTokenGenDetails == null) {
+			MiniByte.FALSE.writeDataStream(zOut);
+		}else {
+			MiniByte.TRUE.writeDataStream(zOut);
+			mTokenGenDetails.writeDataStream(zOut);
 		}
 	}
 
@@ -290,6 +313,14 @@ public class Transaction implements Streamable {
 		for(int i=0;i<len;i++){
 			ScriptProof sp = ScriptProof.ReadFromStream(zIn);
 			mScripts.add(sp);
+		}
+		
+		//Token generation
+		MiniByte tokgen = MiniByte.ReadFromStream(zIn);
+		if(tokgen.isTrue()) {
+			mTokenGenDetails = TokenDetails.ReadFromStream(zIn);
+		}else {
+			mTokenGenDetails = null;
 		}
 	}
 }
