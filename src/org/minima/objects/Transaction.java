@@ -49,6 +49,11 @@ public class Transaction implements Streamable {
 	ArrayList<ScriptProof> mScripts = new ArrayList<>();
 	
 	/**
+	 * If you are generating a TOKEN.. here are the details..
+	 * Needs to be here instead of witness so noone can alter it - you sign this.
+	 */
+	
+	/**
 	 * Constructor
 	 */
 	public Transaction() {}

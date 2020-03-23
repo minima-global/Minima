@@ -20,26 +20,10 @@ import org.minima.utils.json.JSONObject;
 public class Witness implements Streamable {
 	
 	/**
-	 * All the signatures required for all the Inputs to succeed. 
-	 * You sign the TXN_ID. 
-	 */
-	ArrayList<MiniData> mPublicKeys;
-	
-	/**
-	 * The Signatures - These are a LARGE part of the data. And ONLY checked once on entry to the system. 
-	 */
-	ArrayList<MiniData> mSignatures;
-	
-	/**
 	 * The MMR Proofs that each input Coin is valid and unspent.
 	 */
-	ArrayList<MMRProof> mProofs;
+	ArrayList<MMRProof> mMMRProofs;
 	
-//	/**
-//	 * The Scripts for the Inputs
-//	 */
-//	ArrayList<String> mScripts;
-//	
 	/**
 	 * The Signatures
 	 */
@@ -59,11 +43,7 @@ public class Witness implements Streamable {
 	 * General Constructor
 	 */
 	public Witness() {
-		mPublicKeys = new ArrayList<>();
-		mSignatures = new ArrayList<>();
-		
-//		mScripts    = new ArrayList<>();
-		mProofs     = new ArrayList<>();
+		mMMRProofs     = new ArrayList<>();
 		
 		mSignatureProofs = new ArrayList<>();
 		
@@ -84,15 +64,15 @@ public class Witness implements Streamable {
 	}
 	
 	public void addMMRProof(MMRProof zProof) {
-		mProofs.add(zProof);
+		mMMRProofs.add(zProof);
 	}
 	
 	public void clearProofs(){
-		mProofs.clear();	
+		mMMRProofs.clear();	
 	}
 	
 	public ArrayList<MMRProof> getAllProofs(){
-		return mProofs;
+		return mMMRProofs;
 	}
 
 	public String getAllPubKeysCSV(){
@@ -142,7 +122,7 @@ public class Witness implements Streamable {
 
 		//MMRProofs
 		arr = new JSONArray();
-		for(MMRProof proof : mProofs) {
+		for(MMRProof proof : mMMRProofs) {
 			arr.add(proof.toJSON());
 		}
 		obj.put("mmrproofs", arr);
@@ -178,9 +158,9 @@ public class Witness implements Streamable {
 		}
 		
 		//MMRProofs
-		int mmrlen = mProofs.size();
+		int mmrlen = mMMRProofs.size();
 		zOut.writeInt(mmrlen);
-		for(MMRProof proof : mProofs) {
+		for(MMRProof proof : mMMRProofs) {
 			proof.writeDataStream(zOut);
 		}
 		
@@ -208,10 +188,10 @@ public class Witness implements Streamable {
 			mSignatureProofs.add(SignatureProof.ReadFromStream(zIn));
 		}
 		
-		mProofs = new ArrayList<>();
+		mMMRProofs = new ArrayList<>();
 		prlen = zIn.readInt();
 		for(int i=0;i<prlen;i++) {
-			mProofs.add(MMRProof.ReadFromStream(zIn));
+			mMMRProofs.add(MMRProof.ReadFromStream(zIn));
 		}
 		
 		mTokenDetails = new ArrayList<>();
