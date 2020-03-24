@@ -15,6 +15,7 @@ import org.minima.database.txpowdb.TxPOWDBRow;
 import org.minima.database.txpowdb.TxPowDBPrinter;
 import org.minima.database.txpowtree.BlockTreeNode;
 import org.minima.database.txpowtree.BlockTreePrinter;
+import org.minima.database.txpowtree.BlockTreePrinter2;
 import org.minima.database.userdb.UserDB;
 import org.minima.database.userdb.java.reltxpow;
 import org.minima.objects.Address;
@@ -97,9 +98,18 @@ public class ConsensusPrint {
 		
 		}else if(zMessage.isMessageType(CONSENSUS_PRINTCHAIN_TREE)){
 			//Print the Tree
-			BlockTreePrinter treeprint = new BlockTreePrinter(getMainDB().getMainTree(), true);
-			treeprint.printtree();
-		
+//			BlockTreePrinter treeprint = new BlockTreePrinter(getMainDB().getMainTree(), true);
+//			treeprint.printtree();
+			
+			BlockTreePrinter2 treeprint = new BlockTreePrinter2(getMainDB().getMainTree(), true);
+			String tree = treeprint.printtree();
+			
+			//Now check whether they are unspent..
+			JSONObject dets = InputHandler.getResponseJSON(zMessage);
+			dets.put("tree", "\n"+tree);
+			InputHandler.endResponse(zMessage, true, "");
+			
+			
 		}else if(zMessage.isMessageType(CONSENSUS_SEARCH)){
 			String address = zMessage.getString("address");
 			MiniHash addr  = new MiniHash(address);
