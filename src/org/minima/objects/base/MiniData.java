@@ -183,10 +183,14 @@ public class MiniData implements Streamable {
 	}
 	
 	public String toShort0xString() {
+		return toShort0xString(8);
+	}
+	
+	public String toShort0xString(int zLen) {
 		String data = to0xString();
 		int len = data.length();
-		if(len > 8) {
-			len = 8;
+		if(len > zLen) {
+			len = zLen;
 		}
 		return data.substring(0, len).concat("..");
 	}

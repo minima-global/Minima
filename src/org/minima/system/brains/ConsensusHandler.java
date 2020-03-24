@@ -38,7 +38,7 @@ public class ConsensusHandler extends SystemHandler {
 	public static final String CONSENSUS_PROCESSTXPOW 		   = "CONSENSUS_PROCESSTXPOW";
 	public static final String CONSENSUS_PRE_PROCESSTXPOW 	   = "CONSENSUS_PREPROCESSTXPOW";
 	
-	public static final String CONSENSUS_MINETRANS 			   = "CONSENSUS_MINETRANS";
+	public static final String CONSENSUS_MINEBLOCK 			   = "CONSENSUS_MINEBLOCK";
 	public static final String CONSENSUS_SENDTRANS 			   = "CONSENSUS_SENDTRANS";
 	public static final String CONSENSUS_CREATETRANS 		   = "CONSENSUS_CREATETRANS";
 	
@@ -314,7 +314,7 @@ public class ConsensusHandler extends SystemHandler {
 			
 			InputHandler.endResponse(zMessage, true, "");
 			
-		}else if ( zMessage.isMessageType(CONSENSUS_MINETRANS) ) {
+		}else if ( zMessage.isMessageType(CONSENSUS_MINEBLOCK) ) {
 			//Fresh TXPOW
 			TxPOW txpow = getMainDB().getCurrentTxPow(new Transaction(), new Witness(), new JSONArray());
 			

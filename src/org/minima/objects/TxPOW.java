@@ -29,7 +29,7 @@ public class TxPOW implements Streamable {
 	/**
 	 * The NONCE - the user definable data you cycle through to change the final hash of this TxPow
 	 */
-	private MiniNumber 	mNonce	= new MiniNumber();
+	private MiniNumber 	mNonce	= new MiniNumber(0);
 	
 	/**
 	 * TimeMilli  
@@ -115,9 +115,9 @@ public class TxPOW implements Streamable {
 	 */
 	private MiniHash _mTxPOWID = new MiniHash();
 	
-	protected boolean _mIsBlockPOW;
-	protected boolean _mIsTxnPOW;
-	protected int     _mSuperBlock;
+	protected boolean _mIsBlockPOW  = false;
+	protected boolean _mIsTxnPOW    = false;
+	protected int     _mSuperBlock  = 0;
 	
 	/**
 	 * Static date format
@@ -138,6 +138,10 @@ public class TxPOW implements Streamable {
 	
 	public void setNonce(MiniNumber zNonce) {
 		mNonce = zNonce;
+	}
+	
+	public MiniNumber getNonce() {
+		return mNonce;
 	}
 	
 	public void setChainID(MiniHash zChainID) {
@@ -443,9 +447,6 @@ public class TxPOW implements Streamable {
 		//The TXPOW ID
 		_mTxPOWID = Crypto.getInstance().hashObject(this);
 		
-//		Difficulty blkdiff = new Difficulty(getBlockDifficulty()); 
-//		Difficulty txndiff = new Difficulty(getTxnDifficulty());
-		
 		//Valid Block
 		_mIsBlockPOW = false;
 		if(_mTxPOWID.isLess(getBlockDifficulty())) {
@@ -460,10 +461,5 @@ public class TxPOW implements Streamable {
 		
 		//What Super Level are we..
 		_mSuperBlock = SuperBlockLevels.getSuperLevel(getBlockDifficulty(), _mTxPOWID);
-
-		//		_mSuperBlock = 0;//SuperBlockLevels.getSupers().getSuperBlockLevel(_mTxPOWID);
-//		if(_mSuperBlock>=TxPOW.SUPERPARENT_NUM) {
-//			_mSuperBlock = TxPOW.SUPERPARENT_NUM-1;
-//		}
 	}
 }

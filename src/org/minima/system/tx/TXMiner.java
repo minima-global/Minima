@@ -17,9 +17,7 @@ public class TXMiner extends SystemHandler{
 	public static final MiniHash BASE_BLOCK = MiniHash.MAX_HASH;
 	
 	public static final String TXMINER_TESTHASHING = "MINE_TESTHASHING";
-	
 	public static final String TXMINER_MINETXPOW   = "MINE_MINETXPOW";
-	
 	public static final String TXMINER_MEGAMINER   = "MINE_MEGAMINER";
 	
 	public TXMiner(Main zMain) {
@@ -87,47 +85,33 @@ public class TXMiner extends SystemHandler{
 				getMainHandler().getConsensusHandler().PostMessage(msg);
 			}
 			
-			
 //			System.out.println("FINISHED @ "+txdiff+" "+nonce);
 			
 		}else if(zMessage.isMessageType(TXMINER_MEGAMINER)) {
 			//Get TXPOW..
 			TxPOW txpow = (TxPOW) zMessage.getObject("txpow");
 			
-			MiniNumber nonce = MiniNumber.ZERO;
+			//Is it ready
+			txpow.calculateTXPOWID();
 			
-			//And now start hashing.. 
-			MiniHash hash = null;
-			boolean mining 	= true;
-
-			while(mining) {
+			//Keep cycling until it is ready 
+			while(!txpow.isBlock()) {
 				//Set the Nonce..
-				txpow.setNonce(nonce);
+				txpow.setNonce(txpow.getNonce().increment());
 				
-				//Now Hash it..
-				hash = Crypto.getInstance().hashObject(txpow);
-				
-				if(hash.isLess(txpow.getTxnDifficulty())) {
-					//For Now..
-					mining = false;
-				}
-				
-				//Increment the nonce..
-				nonce = nonce.increment();
+				//Set the TxPOW
+				txpow.calculateTXPOWID();
 			}
 							
-			//Set the TxPOW
-			txpow.calculateTXPOWID();
-				
 			//We have a valid TX-POW.. tell main
 			Message msg = new Message(ConsensusHandler.CONSENSUS_PRE_PROCESSTXPOW).addObject("txpow", txpow);
 			getMainHandler().getConsensusHandler().PostMessage(msg);
 			
 			//Pause for breath
-			Thread.sleep(250);
+			Thread.sleep(200);
 			
 			//And start the whole Mining thing again..
-			getMainHandler().getConsensusHandler().PostMessage(ConsensusHandler.CONSENSUS_MINETRANS);
+			getMainHandler().getConsensusHandler().PostMessage(ConsensusHandler.CONSENSUS_MINEBLOCK);
 			
 		}else if(zMessage.isMessageType(TXMINER_TESTHASHING)) {
 			//See how many hashes this machine can do..

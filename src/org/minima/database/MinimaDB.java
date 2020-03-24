@@ -788,7 +788,6 @@ public class MinimaDB {
 				
 				//Check if more than maximum..
 				if(newdiff.compareTo(BlockTreeNode.MAX_VAL)>0) {
-					System.out.println("MIN DIFFICULTY ALREADY!");
 					newdiff = BlockTreeNode.MAX_VAL;
 				}
 				//Create the hash

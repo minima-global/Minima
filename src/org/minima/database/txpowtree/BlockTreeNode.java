@@ -55,8 +55,9 @@ public class BlockTreeNode implements Comparable<BlockTreeNode> {
 	/**
 	 * When calculating the heaviest Branch - what is the weight of this block
 	 */
-	private BigInteger		mTotalWeight		= new BigInteger("0");
-	private BigInteger		mWeight				= new BigInteger("0");
+	private BigInteger		mTotalWeight		= BigInteger.ZERO;
+	private BigInteger		mWeight				= BigInteger.ZERO;
+	private BigDecimal		mRealWeight		    = BigDecimal.ZERO;
 	
 	/**
 	 * The Finalized MMRset for this block
@@ -87,6 +88,9 @@ public class BlockTreeNode implements Comparable<BlockTreeNode> {
 		//Start at the block difficulty
 		mCurrentLevel	 = 0;
 		
+		//Get the Block Difficulty
+		mRealWeight = MAX_VALDEC.divide(getTxPow().getBlockDifficulty().getDataValueDecimal(), MathContext.DECIMAL128);
+				
 		//Set the current weight
 		resetCurrentWeight();
 	}
@@ -101,6 +105,9 @@ public class BlockTreeNode implements Comparable<BlockTreeNode> {
 		//Start at the block difficulty
 		mCurrentLevel	 = zNode.getCurrentLevel();
 		
+		//Get the Block Difficulty
+		mRealWeight = MAX_VALDEC.divide(getTxPow().getBlockDifficulty().getDataValueDecimal(), MathContext.DECIMAL128);
+				
 		//Set the correct MMR
 		setMMRset(zNode.getMMRSet());
 		
@@ -139,14 +146,11 @@ public class BlockTreeNode implements Comparable<BlockTreeNode> {
 	}
 	
 	public void resetCurrentWeight() {
-		//Get the Block Difficulty
-		BigDecimal realdiff = MAX_VALDEC.divide(getTxPow().getBlockDifficulty().getDataValueDecimal(), MathContext.DECIMAL128);
-		
 		//Now multiply by the current level pow 2
 		BigDecimal factor = new BigDecimal(BIG_TWO.pow(getCurrentLevel()), MathContext.DECIMAL128) ;
 		
 		//Set the Weight
-		mWeight = realdiff.multiply(factor).toBigInteger();
+		mWeight = mRealWeight.multiply(factor, MathContext.DECIMAL128).toBigInteger();
 		
 		//Reset the total weight..
 		mTotalWeight = mWeight;

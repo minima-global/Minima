@@ -223,7 +223,7 @@ public class Main extends MessageProcessor {
 //				mSim.setMining(true, -1, false);
 				
 				//Send a message to the miner..
-				mConsensus.PostTimerMessage(new TimerMessage(1000, ConsensusHandler.CONSENSUS_MINETRANS));
+				mConsensus.PostTimerMessage(new TimerMessage(1000, ConsensusHandler.CONSENSUS_MINEBLOCK));
 				
 				//And init..
 				PostMessage(SYSTEM_INIT);

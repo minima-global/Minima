@@ -1,5 +1,6 @@
 package org.minima.database.txpowtree;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 
