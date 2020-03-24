@@ -209,6 +209,7 @@ public class tutorial extends CommandFunction{
 			"--------\n" + 
 			"\n" + 
 			"LET thing = 23\n" + 
+			"LET ( 12 2 ) = 45.345\n" + 
 			"LET ( 0 0 1 ) = 0xFF\n" + 
 			"LET ( 0xFF ( thing + 1 ) ) = [ RETURN TRUE ]\n" + 
 			"\n" + 
@@ -226,7 +227,7 @@ public class tutorial extends CommandFunction{
 			"\n" + 
 			"--\n" + 
 			"\n" + 
-			"LET x = GETSATE ( 23 )\n" + 
+			"LET x = STATE ( 23 )\n" + 
 			"LET shax = SHA3 ( x )\n" + 
 			"IF shax EQ 0x6785456.. AND SIGNEDBY ( 0x12345.. ) THEN \n" + 
 			"  RETURN TRUE \n" + 
@@ -238,13 +239,18 @@ public class tutorial extends CommandFunction{
 			"\n" + 
 			"--\n" + 
 			"\n" + 
-			"The Hash of RETURN TRUE is 0xA6657D2133E29B0A343871CAE44224BBA6BB87A972A5247A38A45D3D2065F7E4\n" + 
 			"MAST 0xA6657D2133E29B0A343871CAE44224BBA6BB87A972A5247A38A45D3D2065F7E4\n" + 
 			"\n" + 
 			"--\n" + 
 			"\n" + 
 			"LET old = [ LET add = 0xFFEEDDFFEEDD ]\n" + 
 			"LET new = RPLVAR ( old [ add ] [ 0xEE ]] )\n" + 
+			"\n" + 
+			"--\n" + 
+			"\n" + 
+			"ASSERT STATE ( 0 ) EQ INC ( PREVSTATE ( 0 ) )\n" + 
+			"\n" + 
+			"--\n" + 
 			"";
 	
 	public tutorial() {
