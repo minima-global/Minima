@@ -310,42 +310,36 @@ public class BlockTree {
 		//The Total..
 		BigInteger total = new BigInteger("0");
 		
-		//Cycle back fropm the tip..
+		//Cycle back from the tip..
 		MiniHash casc 			= mCascadeNode.getTxPowID();
 		BlockTreeNode current 	= mTip;
 		int num=0;
 		while(current != null) {
-			if(current.getTxPowID().equals(casc)) {
+			//Add to the total
+			total = total.add(current.getTxPow().getBlockDifficulty().getDataVaue());
+			num++;
+			
+			if(current.getTxPowID().isExactlyEqual(casc)) {
 				//It's the final node.. quit
 				break;
 			}
 			
-			//Add to the total
-			int diff = current.getTxPow().getBlockDifficulty();
-			BigInteger rval 		= two.pow(diff);
-			total 					= total.add(rval);
-			num++;
 			
 			//Get thew parent
 			current = current.getParent();
 		}
 		
-//		SimpleLogger.log("Total Diff : "+total+" number of blocks:"+num);
-		
-		//Check for zero..
 		if(num == 0) {
-			return MiniNumber.ZERO;
+			return MiniHash.MAX_HASH;
 		}
 		
-		//The Totals
-		MiniNumber totram = new MiniNumber(total);
-		MiniNumber avg 	 = totram.div(new MiniNumber(""+num));
+		//The Average
+		BigInteger avg = total.divide(new BigInteger(""+num));
 		
-		//Now Calculate the Log..
-//		double log = Maths.log2BI(avg.getAsBigInteger());
-				
-//		return new RamNumber(log);
-		return avg;
+		//Create a HASH
+		MiniHash avghash = new MiniHash("0x"+avg.toString(16));
+		
+		return avghash;
 	}
 	
 //	public MiniNumber getAvgChainDifficulty() {

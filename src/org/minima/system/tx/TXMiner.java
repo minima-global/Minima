@@ -17,8 +17,8 @@ import org.minima.utils.messages.Message;
 
 public class TXMiner extends SystemHandler{
 
-	public static final int BASE_TXN 	= 0;
-	public static final int BASE_BLOCK 	= 0;
+	public static final MiniHash BASE_TXN 	= MiniHash.MAX_HASH;
+	public static final MiniHash BASE_BLOCK = MiniHash.MAX_HASH;
 	
 	public static final String TXMINER_TESTHASHING = "MINE_TESTHASHING";
 	
@@ -36,7 +36,7 @@ public class TXMiner extends SystemHandler{
 			TxPOW txpow = (TxPOW) zMessage.getObject("txpow");
 			
 			//What is the minimum difficulty
-			Difficulty txdiff 	= new Difficulty(txpow.getTxnDifficulty());
+//			Difficulty txdiff 	= new Difficulty(txpow.getTxnDifficulty());
 			
 //			System.out.println("MINING @ "+txdiff);
 			
@@ -63,10 +63,14 @@ public class TXMiner extends SystemHandler{
 				//Now Hash it..
 				hash = Crypto.getInstance().hashObject(txpow);
 				
-				if(txdiff.isOK(hash)) {
+				if(hash.isLess(txpow.getTxnDifficulty())) {
 					//For Now..
 					mining = false;
 				}
+				
+//				if(txdiff.isOK(hash)) {
+//					
+//				}
 				
 				//Increment the nonce..
 				nonce = nonce.increment();

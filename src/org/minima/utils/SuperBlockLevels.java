@@ -2,6 +2,7 @@ package org.minima.utils;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.MathContext;
 
 import org.minima.objects.base.MiniHash;
 
@@ -56,6 +57,23 @@ public class SuperBlockLevels {
 	
 	public BigInteger getSuperValue(int zLevel) {
 		return mSuperLevels[zLevel];
+	}
+	
+	public static int getSuperLevel(MiniHash zDifficulty, MiniHash zActual) {
+		
+//		System.out.println(zActual.to0xString()+" / "+zDifficulty.to0xString());
+		
+		BigDecimal bigdiff = new BigDecimal(zDifficulty.getDataVaue(), MathContext.DECIMAL128);
+		BigDecimal bigact  = new BigDecimal(zActual.getDataVaue(), MathContext.DECIMAL128);
+		
+		//Divide the 2..
+		BigDecimal sup = bigdiff.divide(bigact, MathContext.DECIMAL128);
+		
+		int ll2 = (int)Maths.log2(sup.doubleValue());
+		
+//		System.out.println(bigact+" / "+bigdiff+" = "+sup+" log2:"+ll2);
+		
+		return ll2;
 	}
 	
 }

@@ -64,7 +64,7 @@ public class BlockTreePrinter {
 		MinimaLogger.log("Cascade   : "+mCascadeNode);
 		MinimaLogger.log("Speed     : "+mTree.getChainSpeed()+" blocks / sec");
 		
-		MiniNumber diff 	= mTree.getAvgChainDifficulty();
+		MiniNumber diff 	= MiniNumber.ZERO;//mTree.getAvgChainDifficulty();
 		BigInteger diffbi 	= diff.getAsBigInteger();
 		
 		double log = Maths.log2BI(diffbi);

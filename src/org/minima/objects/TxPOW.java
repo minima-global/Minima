@@ -459,7 +459,9 @@ public class TxPOW implements Streamable {
 		}	
 		
 		//What Super Level are we..
-		_mSuperBlock = 0;//SuperBlockLevels.getSupers().getSuperBlockLevel(_mTxPOWID);
+		_mSuperBlock = SuperBlockLevels.getSuperLevel(getBlockDifficulty(), _mTxPOWID);
+
+		//		_mSuperBlock = 0;//SuperBlockLevels.getSupers().getSuperBlockLevel(_mTxPOWID);
 //		if(_mSuperBlock>=TxPOW.SUPERPARENT_NUM) {
 //			_mSuperBlock = TxPOW.SUPERPARENT_NUM-1;
 //		}

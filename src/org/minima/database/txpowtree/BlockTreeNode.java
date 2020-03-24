@@ -72,7 +72,7 @@ public class BlockTreeNode implements Comparable<BlockTreeNode> {
 		mSuperBlockLevel = mTXPOW.getSuperLevel();
 		
 		//Start at the block difficulty
-		mCurrentLevel	 = mTXPOW.getBlockDifficulty();
+		mCurrentLevel	 = 0;
 		
 		//Set the current weight
 		resetCurrentWeight();

@@ -20,7 +20,7 @@ public class GenesisTxPOW extends TxPOW{
 		super();
 		
 		//no GENESIS for now
-		setTxDifficulty(0);
+		setTxDifficulty(MiniHash.MAX_HASH);
 		
 		//Pre-calculated
 		setNonce(new MiniNumber("256"));
@@ -28,7 +28,7 @@ public class GenesisTxPOW extends TxPOW{
 		//Block details
 		setTimeMilli(new MiniNumber(""+System.currentTimeMillis()));
 		setBlockNumber(new MiniNumber("0"));
-		setBlockDifficulty(0);
+		setBlockDifficulty(MiniHash.MAX_HASH);
 		setParent(new MiniHash());
 		
 		//Set Transaction and Witness..

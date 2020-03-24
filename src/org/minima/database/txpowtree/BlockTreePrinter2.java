@@ -82,19 +82,20 @@ public class BlockTreePrinter2 {
 		
 		String ss = zNode.toString();
 		
-		String add = "";
+		String add = zNode.getTxPowID().toShort0xString()+" "
+					+zNode.getTxPow().getBlockDifficulty().toShort0xString()+" "
+					+getStarString(slev);
+		
 		if(mCascadeNode == zNode.getTxPow().getBlockNumber().getAsLong()) {
 			add += " [++CASCADING++]";
 		}
 		
-		if(zNode.getTxPowID().isNumericallyEqual(mTipID)) {
+		if(zNode.getTxPowID().isExactlyEqual(mTipID)) {
 			add += " [++THE TIP++]";
 		}
 
 		if(mSimple) {
-			return weight + zNode.getTxPow().getBlockNumber()+" "
-					+"["+clev+" / "+slev+"] "
-					+getStarString(slev)+" "+add;
+			return weight + zNode.getTxPow().getBlockNumber()+" "+"["+clev+" / "+slev+"] "+add;
 		}
 		
 		return weight + ss +" "+getStarString(slev)+" "+add;

@@ -40,75 +40,75 @@ public class SyncPackage implements Streamable{
 		return mNodes;
 	}
 
-	public BigInteger calculateWeight() {
-		ArrayList<SyncPacket> rev = new ArrayList<SyncPacket>();
-	
-		MiniNumber lastblock = MiniNumber.ONE;
-		
-		//First reverse the stream
-		for(SyncPacket spack : mNodes) {
-			rev.add(0,spack);
-			lastblock = spack.getTxPOW().getBlockNumber();
-		}
-		
-		lastblock = lastblock.increment();
-		
-		BigInteger totalweight = BigInteger.ZERO;
-		boolean cascadestarted = false;
-		
-		int lastdiff = 0;
-		int lastsup  = 0;
-		
-		//Now calculate the total weight
-		int num = 0;
-		for(SyncPacket spack : rev) {
-			TxPOW txpow = spack.getTxPOW();
-			
-			BigInteger normweight = Maths.BI_TWO.pow(txpow.getBlockDifficulty());
-			BigInteger supweight  = Maths.BI_TWO.pow(txpow.getSuperLevel());
-			
-			//Check if started..
-			if(num>GlobalParams.MINIMA_CASCADE_DEPTH) {
-				cascadestarted = true;
-			}
-			
-			if(!cascadestarted && txpow.getBlockNumber().isEqual(lastblock.decrement())) {
-				//Still normal..
-				totalweight = totalweight.add(normweight);
-				
-				MinimaLogger.log(num + ") ["+txpow.getBlockDifficulty()+"/"+txpow.getSuperLevel()+"] "+txpow.getBlockNumber()+" *"+normweight+" "+supweight);
-				
-				lastdiff = txpow.getBlockDifficulty();
-				lastsup  = txpow.getSuperLevel();
-				
-			}else {
-				//First time..
-				if(!cascadestarted) {
-					//Fix the last one.. Cascading tree does it like this..
-					BigInteger weight = Maths.BI_TWO.pow(lastdiff);
-					totalweight = totalweight.subtract(weight);
-					
-					//Add as a super.
-					weight = Maths.BI_TWO.pow(lastsup);
-					totalweight = totalweight.add(weight);
-					
-					cascadestarted = true;
-				}
-				
-				//And as normal
-				totalweight = totalweight.add(supweight);
-				
-				MinimaLogger.log(num + ") "+txpow.getBlockNumber()+" "+normweight+" *"+supweight);
-			}
-			
-			num++;
-			lastblock = txpow.getBlockNumber();
-		}
-		
-		MinimaLogger.log("Total : "+totalweight);
-		
-		return totalweight;
-	}
+//	public BigInteger calculateWeight() {
+//		ArrayList<SyncPacket> rev = new ArrayList<SyncPacket>();
+//	
+//		MiniNumber lastblock = MiniNumber.ONE;
+//		
+//		//First reverse the stream
+//		for(SyncPacket spack : mNodes) {
+//			rev.add(0,spack);
+//			lastblock = spack.getTxPOW().getBlockNumber();
+//		}
+//		
+//		lastblock = lastblock.increment();
+//		
+//		BigInteger totalweight = BigInteger.ZERO;
+//		boolean cascadestarted = false;
+//		
+//		int lastdiff = 0;
+//		int lastsup  = 0;
+//		
+//		//Now calculate the total weight
+//		int num = 0;
+//		for(SyncPacket spack : rev) {
+//			TxPOW txpow = spack.getTxPOW();
+//			
+//			BigInteger normweight = Maths.BI_TWO.pow(txpow.getBlockDifficulty());
+//			BigInteger supweight  = Maths.BI_TWO.pow(txpow.getSuperLevel());
+//			
+//			//Check if started..
+//			if(num>GlobalParams.MINIMA_CASCADE_DEPTH) {
+//				cascadestarted = true;
+//			}
+//			
+//			if(!cascadestarted && txpow.getBlockNumber().isEqual(lastblock.decrement())) {
+//				//Still normal..
+//				totalweight = totalweight.add(normweight);
+//				
+//				MinimaLogger.log(num + ") ["+txpow.getBlockDifficulty()+"/"+txpow.getSuperLevel()+"] "+txpow.getBlockNumber()+" *"+normweight+" "+supweight);
+//				
+//				lastdiff = txpow.getBlockDifficulty();
+//				lastsup  = txpow.getSuperLevel();
+//				
+//			}else {
+//				//First time..
+//				if(!cascadestarted) {
+//					//Fix the last one.. Cascading tree does it like this..
+//					BigInteger weight = Maths.BI_TWO.pow(lastdiff);
+//					totalweight = totalweight.subtract(weight);
+//					
+//					//Add as a super.
+//					weight = Maths.BI_TWO.pow(lastsup);
+//					totalweight = totalweight.add(weight);
+//					
+//					cascadestarted = true;
+//				}
+//				
+//				//And as normal
+//				totalweight = totalweight.add(supweight);
+//				
+//				MinimaLogger.log(num + ") "+txpow.getBlockNumber()+" "+normweight+" *"+supweight);
+//			}
+//			
+//			num++;
+//			lastblock = txpow.getBlockNumber();
+//		}
+//		
+//		MinimaLogger.log("Total : "+totalweight);
+//		
+//		return totalweight;
+//	}
 	
 	
 	@Override
