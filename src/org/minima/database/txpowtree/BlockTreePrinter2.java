@@ -94,7 +94,7 @@ public class BlockTreePrinter2 {
 		
 		String add = zNode.getTxPowID().toShort0xString(16)+" "
 					+zNode.getTxPow().getBlockDifficulty().toShort0xString(16)+" "
-					+getStarString(slev);
+					+"["+getStarString(slev)+"] - "+getStarString(clev);
 		
 		if(mCascadeNode == zNode.getTxPow().getBlockNumber().getAsLong()) {
 			add += " [++CASCADING++]";
