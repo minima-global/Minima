@@ -1,6 +1,8 @@
 package org.minima.database.txpowtree;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -11,6 +13,17 @@ import org.minima.utils.Maths;
 
 public class BlockTreeNode implements Comparable<BlockTreeNode> {
 
+	public static final BigInteger BIG_TWO = new BigInteger("2");
+	
+	public static final BigInteger MAX_VAL = new BigInteger(
+								  "FFFFFFFFFFFFFFFFFFFF"+
+								  "FFFFFFFFFFFFFFFFFFFF"+
+								  "FFFFFFFFFFFFFFFFFFFF"+
+								  "FFFF", 16); 
+	
+	public static final BigDecimal MAX_VALDEC = new BigDecimal(MAX_VAL); 
+	
+	
 	/**
 	 * Block States
 	 */
@@ -125,13 +138,18 @@ public class BlockTreeNode implements Comparable<BlockTreeNode> {
 		return mCascade;
 	}
 	
-	
 	public void resetCurrentWeight() {
+		//Get the Block Difficulty
+		BigDecimal realdiff = MAX_VALDEC.divide(getTxPow().getBlockDifficulty().getDataValueDecimal(), MathContext.DECIMAL128);
+		
+		//Now multiply by the current level pow 2
+		BigDecimal factor = new BigDecimal(BIG_TWO.pow(getCurrentLevel()), MathContext.DECIMAL128) ;
+		
 		//Set the Weight
-		mWeight			= Maths.BI_TWO.pow(getCurrentLevel());
+		mWeight = realdiff.multiply(factor).toBigInteger();
 		
 		//Reset the total weight..
-		mTotalWeight 	= mWeight;
+		mTotalWeight = mWeight;
 	}
 	
 	public BigInteger getWeight() {
@@ -198,11 +216,6 @@ public class BlockTreeNode implements Comparable<BlockTreeNode> {
 		return mChildren.get(zChild);
 	}
 
-	public void resetNode() {
-		mParent = null;
-		mChildren.clear();
-	}
-	
 	@Override
 	public int compareTo(BlockTreeNode o) {
 		return o.getTxPowID().compare(getTxPowID());

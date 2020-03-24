@@ -1,7 +1,6 @@
 
 package org.minima.system;
 
-import org.minima.NativeListener;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.backup.BackupManager;
 import org.minima.system.bootstrap.UserSimulator;
@@ -15,6 +14,7 @@ import org.minima.system.tx.TXMiner;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageProcessor;
+import org.minima.utils.messages.TimerMessage;
 
 public class Main extends MessageProcessor {
 
@@ -220,7 +220,10 @@ public class Main extends MessageProcessor {
 				mConsensus.genesis();
 				
 				//Start the user simulator..
-				mSim.setMining(true, -1, false);
+//				mSim.setMining(true, -1, false);
+				
+				//Send a message to the miner..
+				mConsensus.PostTimerMessage(new TimerMessage(1000, ConsensusHandler.CONSENSUS_MINETRANS));
 				
 				//And init..
 				PostMessage(SYSTEM_INIT);

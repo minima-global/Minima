@@ -53,6 +53,16 @@ public class BlockTreePrinter2 {
 		//And finally print it..
 		String output = TreePrinter.toString(mRoot);
 
+		BigInteger avgdiff = mTree.getAvgChainDifficulty();
+		MiniHash avghash = new MiniHash("0x"+avgdiff.toString(16));
+		
+		output += "\n\nSpeed              : "+mTree.getChainSpeed()+" blocks / sec";
+		output += "\nAVG Difficulty     : "+avgdiff;
+		output += "\nAVG HASH           : "+avghash;
+		output += "\nCurrent Difficulty : "+mTree.getChainTip().getTxPow().getBlockDifficulty().to0xString();
+		
+//		MinimaLogger.log("Speed     : "+mTree.getChainSpeed()+" blocks / sec");
+
 		//And out it goes..
 //		MinimaLogger.log(output);
 	

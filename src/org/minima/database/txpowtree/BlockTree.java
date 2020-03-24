@@ -284,20 +284,23 @@ public class BlockTree {
 	 * 
 	 * Calculated as the different between the cascade node and the tip..
 	 */
-	public double getChainSpeed() {
+	public MiniNumber getChainSpeed() {
 		//Time difference between the cascade node and the tip
-		long millistart = mCascadeNode.getTxPow().getTimeMilli().getAsLong();
-		long milliend   = mTip.getTxPow().getTimeMilli().getAsLong();
-		long timediff 	= milliend - millistart;
+		MiniNumber millistart = mCascadeNode.getTxPow().getTimeMilli();
+		MiniNumber milliend   = mTip.getTxPow().getTimeMilli();
+		MiniNumber timediff   = milliend.sub(millistart);
 		
 		//How many blocks..
-		long blockstart = mCascadeNode.getTxPow().getBlockNumber().getAsLong();
-		long blockend   = mTip.getTxPow().getBlockNumber().getAsLong();
-		long blockdiff  = blockend - blockstart; 
+		MiniNumber blockstart = mCascadeNode.getTxPow().getBlockNumber();
+		MiniNumber blockend   = mTip.getTxPow().getBlockNumber();
+		MiniNumber blockdiff  = blockend.sub(blockstart); 
 		
 		//So.. 
-		double timesecs = (double)timediff / (double)1000;
-		double speed    = (double)blockdiff / timesecs;
+		MiniNumber timesecs = timediff.div(MiniNumber.THOUSAND);
+		if(timesecs.isEqual(MiniNumber.ZERO)) {
+			return MiniNumber.ZERO;
+		}
+		MiniNumber speed    = blockdiff.div(timesecs);
 		
 		return speed;
 	}
@@ -305,8 +308,7 @@ public class BlockTree {
 	/**
 	 * Get the current average difficulty
 	 */
-	public MiniHash getAvgChainDifficulty() {
-		
+	public BigInteger getAvgChainDifficulty() {
 		//The Total..
 		BigInteger total = new BigInteger("0");
 		
@@ -324,22 +326,18 @@ public class BlockTree {
 				break;
 			}
 			
-			
 			//Get thew parent
 			current = current.getParent();
 		}
 		
 		if(num == 0) {
-			return MiniHash.MAX_HASH;
+			return BigInteger.ZERO;
 		}
 		
 		//The Average
 		BigInteger avg = total.divide(new BigInteger(""+num));
 		
-		//Create a HASH
-		MiniHash avghash = new MiniHash("0x"+avg.toString(16));
-		
-		return avghash;
+		return avg;
 	}
 	
 //	public MiniNumber getAvgChainDifficulty() {

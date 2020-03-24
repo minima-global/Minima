@@ -38,6 +38,7 @@ public class ConsensusHandler extends SystemHandler {
 	public static final String CONSENSUS_PROCESSTXPOW 		   = "CONSENSUS_PROCESSTXPOW";
 	public static final String CONSENSUS_PRE_PROCESSTXPOW 	   = "CONSENSUS_PREPROCESSTXPOW";
 	
+	public static final String CONSENSUS_MINETRANS 			   = "CONSENSUS_MINETRANS";
 	public static final String CONSENSUS_SENDTRANS 			   = "CONSENSUS_SENDTRANS";
 	public static final String CONSENSUS_CREATETRANS 		   = "CONSENSUS_CREATETRANS";
 	
@@ -312,6 +313,16 @@ public class ConsensusHandler extends SystemHandler {
 			resp.put("txpow", txpow);
 			
 			InputHandler.endResponse(zMessage, true, "");
+			
+		}else if ( zMessage.isMessageType(CONSENSUS_MINETRANS) ) {
+			//Fresh TXPOW
+			TxPOW txpow = getMainDB().getCurrentTxPow(new Transaction(), new Witness(), new JSONArray());
+			
+			//Send it to the Miner..
+			Message mine = new Message(TXMiner.TXMINER_MEGAMINER).addObject("txpow", txpow);
+			
+			//Post to the Miner
+			getMainHandler().getMiner().PostMessage(mine);
 			
 		}else if ( zMessage.isMessageType(CONSENSUS_CREATETRANS) ) {
 			//How much to who ?

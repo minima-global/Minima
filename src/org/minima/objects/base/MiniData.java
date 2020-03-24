@@ -6,6 +6,7 @@ package org.minima.objects.base;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.util.Arrays;
@@ -100,6 +101,10 @@ public class MiniData implements Streamable {
 	
 	public BigInteger getDataVaue() {
 		return mDataVal;
+	}
+	
+	public BigDecimal getDataValueDecimal() {
+		return new BigDecimal(mDataVal);
 	}
 	
 	@Override

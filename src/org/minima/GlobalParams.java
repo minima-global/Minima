@@ -23,8 +23,7 @@ public class GlobalParams {
 	 * 0.05 = 20 second block time
 	 */
 //	public static final double MINIMA_BLOCK_SPEED  = 0.1;
-	
-	public static final double MINIMA_BLOCK_SPEED  = 1;
+	public static final MiniNumber MINIMA_BLOCK_SPEED  = new MiniNumber("1");
 	
 	/**
 	 * How deep before we think confirmed..
@@ -34,6 +33,6 @@ public class GlobalParams {
 	/**
 	 * Depth before we cascade..
 	 */
-	public static final int MINIMA_CASCADE_DEPTH     = 5;
+	public static final int MINIMA_CASCADE_DEPTH     = 16;
 	
 }

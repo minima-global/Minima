@@ -2,6 +2,7 @@ package org.minima.database;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -766,30 +767,37 @@ public class MinimaDB {
 		//Previous block
 		txpow.setParent(tip.getTxPowID());
 		
-//		if(!GlobalParams.MINIMA_ZERO_DIFF_BLK) {
-//			//Calculate New Chain Speed
-//			int len = mMainTree.getAsList().size();
-//			 
-//			if(len > GlobalParams.MINIMA_CASCADE_DEPTH ) {
-//				//Desired Speed.. in blocks per second
-//				double actualspeed 	= mMainTree.getChainSpeed();
-//				
-//				//Calculate the speed ratio
-//				double speedratio   = actualspeed / GlobalParams.MINIMA_BLOCK_SPEED;
-//				
-//				//Current avg
-//				MiniHash avgdiff = mMainTree.getAvgChainDifficulty();
-//	
-//				//Mutily by the ratio
-//				MiniNumber newdiff   = avgdiff.getDataVaue().multiply(new BigInteger(""+speedratio) );
-//	
-//				//Now take the log..
-//				double log = Maths.log2BI(newdiff.getAsBigInteger());
-//				
-//				//Now set the new difficulty
-//				txpow.setBlockDifficulty((int)log);
-//			}
-//		}
+		if(!GlobalParams.MINIMA_ZERO_DIFF_BLK) {
+			//Calculate New Chain Speed
+			int len = mMainTree.getAsList().size();
+			 
+			if(len > GlobalParams.MINIMA_CASCADE_DEPTH ) {
+				//Desired Speed.. in blocks per second
+				MiniNumber actualspeed 	= mMainTree.getChainSpeed();
+				
+				//Calculate the speed ratio
+				MiniNumber speedratio   = GlobalParams.MINIMA_BLOCK_SPEED.div(actualspeed);
+				
+				//Current avg
+				BigInteger avgdiff = mMainTree.getAvgChainDifficulty();
+				BigDecimal avgdiffdec = new BigDecimal(avgdiff);
+				
+				//Mutily by the ratio
+				BigDecimal newdiffdec = avgdiffdec.multiply(speedratio.getAsBigDecimal());
+				BigInteger newdiff    = newdiffdec.toBigInteger();
+				
+				//Check if more than maximum..
+				if(newdiff.compareTo(BlockTreeNode.MAX_VAL)>0) {
+					System.out.println("MIN DIFFICULTY ALREADY!");
+					newdiff = BlockTreeNode.MAX_VAL;
+				}
+				//Create the hash
+				MiniHash diffhash = new MiniHash("0x"+newdiff.toString(16)); 
+				
+				//Now set the new difficulty
+				txpow.setBlockDifficulty(diffhash);
+			}
+		}
 		
 		//Super Block Levels..
 		for(int i=0;i<TxPOW.SUPERPARENT_NUM;i++) {
