@@ -185,9 +185,9 @@ public class ConsensusHandler extends SystemHandler {
 			getMainDB().processTxPOW(txpow);
 		
 			//Print the tree..
-			if(mPrintChain) {
+			if(true || mPrintChain) {
 				Message print = new Message(ConsensusPrint.CONSENSUS_PRINTCHAIN_TREE);
-				InputHandler.addResponseMesage(print, zMessage);
+//				InputHandler.addResponseMesage(print, zMessage);
 				PostMessage(print);
 			}
 			

@@ -76,6 +76,7 @@ public class BlockTreePrinter2 {
 	
 	private String convertNodeToString(BlockTreeNode zNode) {
 		int slev 	= zNode.getSuperBlockLevel();
+		int clev 	= zNode.getCurrentLevel();
 		
 		String weight= "{WEIGHT:"+zNode.getWeight()+"/"+zNode.getTotalWeight()+"} ";
 		
@@ -91,7 +92,9 @@ public class BlockTreePrinter2 {
 		}
 
 		if(mSimple) {
-			return weight + zNode.getTxPow().getBlockNumber() +" "+getStarString(slev)+" "+add;
+			return weight + zNode.getTxPow().getBlockNumber()+" "
+					+"["+clev+" / "+slev+"] "
+					+getStarString(slev)+" "+add;
 		}
 		
 		return weight + ss +" "+getStarString(slev)+" "+add;
