@@ -13,7 +13,7 @@ import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniString;
 import org.minima.objects.proofs.ScriptProof;
 import org.minima.objects.proofs.SignatureProof;
-import org.minima.objects.proofs.TokenProofs;
+import org.minima.objects.proofs.TokenProof;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
@@ -33,7 +33,7 @@ public class Witness implements Streamable {
 	/**
 	 * Any tokens used in any inputs must provide the Token Details
 	 */
-	ArrayList<TokenProofs> mTokenProofs;
+	ArrayList<TokenProof> mTokenProofs;
 	
 	/**
 	 * General Constructor
@@ -88,18 +88,18 @@ public class Witness implements Streamable {
 	 * Token Proofs
 	 */
 	
-	public ArrayList<TokenProofs> getAllTokenDetails(){
+	public ArrayList<TokenProof> getAllTokenDetails(){
 		return mTokenProofs;
 	}
 	
-	public void addTokenDetails(TokenProofs zDetails) {
+	public void addTokenDetails(TokenProof zDetails) {
 		if(getTokenDetail(zDetails.getTokenID()) == null){
 			mTokenProofs.add(zDetails);	
 		}
 	}
 	
-	public TokenProofs getTokenDetail(MiniHash zTokenID) {
-		for(TokenProofs td : mTokenProofs) {
+	public TokenProof getTokenDetail(MiniHash zTokenID) {
+		for(TokenProof td : mTokenProofs) {
 			if(td.getTokenID().isExactlyEqual(zTokenID)) {
 				return td;
 			}
@@ -126,7 +126,7 @@ public class Witness implements Streamable {
 
 		//Token Details
 		arr = new JSONArray();
-		for(TokenProofs td : mTokenProofs) {
+		for(TokenProof td : mTokenProofs) {
 			arr.add(td.toJSON());
 		}
 		obj.put("tokens", arr);
@@ -159,7 +159,7 @@ public class Witness implements Streamable {
 		//Token Details
 		int toklen = mTokenProofs.size();
 		zOut.writeInt(toklen);
-		for(TokenProofs td : mTokenProofs) {
+		for(TokenProof td : mTokenProofs) {
 			td.writeDataStream(zOut);
 		}
 	}
@@ -181,7 +181,7 @@ public class Witness implements Streamable {
 		mTokenProofs = new ArrayList<>();
 		prlen = zIn.readInt();
 		for(int i=0;i<prlen;i++) {
-			mTokenProofs.add(TokenProofs.ReadFromStream(zIn));
+			mTokenProofs.add(TokenProof.ReadFromStream(zIn));
 		}
 	}
 }

@@ -14,7 +14,7 @@ import org.minima.utils.Crypto;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONObject;
 
-public class TokenProofs implements Streamable{
+public class TokenProof implements Streamable{
 
 	/**
 	 * The CoinID used when creating the token initially
@@ -49,7 +49,7 @@ public class TokenProofs implements Streamable{
 	/**
 	 * Blank Constructor for ReadDataStream
 	 */
-	private TokenProofs() {}
+	private TokenProof() {}
 	
 	/**
 	 * The Only Public Constructor
@@ -58,11 +58,11 @@ public class TokenProofs implements Streamable{
 	 * @param zAmount
 	 * @param zName
 	 */
-	public TokenProofs(MiniHash zCoindID, MiniNumber zScale, MiniNumber zAmount, MiniString zName) {
+	public TokenProof(MiniHash zCoindID, MiniNumber zScale, MiniNumber zAmount, MiniString zName) {
 		this(zCoindID, zScale, zAmount, zName, new MiniString("RETURN TRUE"));
 	}
 		
-	public TokenProofs(MiniHash zCoindID, MiniNumber zScale, MiniNumber zAmount, MiniString zName, MiniString zTokenScript) {
+	public TokenProof(MiniHash zCoindID, MiniNumber zScale, MiniNumber zAmount, MiniString zName, MiniString zTokenScript) {
 				
 		mTokenScale 		= zScale;
 		mTokenTotalAmount 	= zAmount;
@@ -146,25 +146,25 @@ public class TokenProofs implements Streamable{
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
 		mCoinID.writeDataStream(zOut);
+		mTokenScript.writeDataStream(zOut);
 		mTokenScale.writeDataStream(zOut);
 		mTokenTotalAmount.writeDataStream(zOut);
 		mTokenName.writeDataStream(zOut);
-		mTokenScript.writeDataStream(zOut);
 	}
 
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
 		mCoinID 			= MiniHash.ReadFromStream(zIn);
+		mTokenScript        = MiniString.ReadFromStream(zIn);
 		mTokenScale 		= MiniNumber.ReadFromStream(zIn);
 		mTokenTotalAmount	= MiniNumber.ReadFromStream(zIn);
 		mTokenName 			= MiniString.ReadFromStream(zIn);
-		mTokenScript        = MiniString.ReadFromStream(zIn);
 		
 		calculateTokenID();
 	}
 	
-	public static TokenProofs ReadFromStream(DataInputStream zIn){
-		TokenProofs td = new TokenProofs();
+	public static TokenProof ReadFromStream(DataInputStream zIn){
+		TokenProof td = new TokenProof();
 		
 		try {
 			td.readDataStream(zIn);

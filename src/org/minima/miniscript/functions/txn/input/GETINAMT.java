@@ -11,7 +11,7 @@ import org.minima.miniscript.values.NumberValue;
 import org.minima.miniscript.values.Value;
 import org.minima.objects.Coin;
 import org.minima.objects.Transaction;
-import org.minima.objects.proofs.TokenProofs;
+import org.minima.objects.proofs.TokenProof;
 
 public class GETINAMT extends MinimaFunction {
 
@@ -40,7 +40,7 @@ public class GETINAMT extends MinimaFunction {
 		//Is it a Token..
 		if(!cc.getTokenID().isExactlyEqual(Coin.MINIMA_TOKENID)) {
 			//Get the Multiple..
-			TokenProofs td = zContract.getWitness().getTokenDetail(cc.getTokenID());
+			TokenProof td = zContract.getWitness().getTokenDetail(cc.getTokenID());
 			return new NumberValue(cc.getAmount().mult(td.getScaleFactor()));
 		}
 		

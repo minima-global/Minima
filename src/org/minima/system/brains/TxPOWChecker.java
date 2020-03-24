@@ -24,7 +24,7 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
 import org.minima.objects.proofs.ScriptProof;
 import org.minima.objects.proofs.SignatureProof;
-import org.minima.objects.proofs.TokenProofs;
+import org.minima.objects.proofs.TokenProof;
 import org.minima.system.input.functions.gimme50;
 import org.minima.utils.Crypto;
 import org.minima.utils.json.JSONArray;
@@ -215,7 +215,7 @@ public class TxPOWChecker {
 				//Is this a Token ?
 				if(!input.getTokenID().isExactlyEqual(Coin.MINIMA_TOKENID)) {
 					//Do we have a token Script..
-					TokenProofs tokdets = zWit.getTokenDetail(input.getTokenID());
+					TokenProof tokdets = zWit.getTokenDetail(input.getTokenID());
 					
 					if(tokdets == null) {
 						contractlog.put("error", "Token Details for coin missing! "+input.getTokenID());
@@ -286,14 +286,14 @@ public class TxPOWChecker {
 			
 			//Is this a token create output..
 			MiniHash tokid 			= output.getTokenID();
-			TokenProofs newtoken 	= null;
+			TokenProof newtoken 	= null;
 			
 			//Is this a token or are we creating a Token
-			TokenProofs newtokdets = null;
+			TokenProof newtokdets = null;
 			if(tokid.isExactlyEqual(Coin.TOKENID_CREATE)) {
 				//Make it the HASH ( CoinID | Total Amount..the token details )
-				TokenProofs gentoken = zTrans.getTokenGenerationDetails();
-				newtokdets = new TokenProofs(coinid, 
+				TokenProof gentoken = zTrans.getTokenGenerationDetails();
+				newtokdets = new TokenProof(coinid, 
 						gentoken.getScale(), gentoken.getAmount(), gentoken.getName(), gentoken.getTokenScript());
 				
 				//Set the Globally Unique TokenID!

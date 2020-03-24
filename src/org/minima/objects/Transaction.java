@@ -10,7 +10,7 @@ import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
 import org.minima.objects.proofs.ScriptProof;
-import org.minima.objects.proofs.TokenProofs;
+import org.minima.objects.proofs.TokenProof;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
@@ -53,7 +53,7 @@ public class Transaction implements Streamable {
 	 * If you are generating a TOKEN.. here are the details..
 	 * Needs to be here instead of witness so noone can alter it - you sign this.
 	 */
-	TokenProofs mTokenGenDetails = null;
+	TokenProof mTokenGenDetails = null;
 	
 	
 	/**
@@ -184,11 +184,11 @@ public class Transaction implements Streamable {
 		return getScript(zHash)!=null;
 	}
 	
-	public void setTokenGenerationDetails(TokenProofs zTokenDetails) {
+	public void setTokenGenerationDetails(TokenProof zTokenDetails) {
 		mTokenGenDetails = zTokenDetails;
 	}
 	
-	public TokenProofs getTokenGenerationDetails() {
+	public TokenProof getTokenGenerationDetails() {
 		return mTokenGenDetails;
 	}
 	
@@ -319,7 +319,7 @@ public class Transaction implements Streamable {
 		//Token generation
 		MiniByte tokgen = MiniByte.ReadFromStream(zIn);
 		if(tokgen.isTrue()) {
-			mTokenGenDetails = TokenProofs.ReadFromStream(zIn);
+			mTokenGenDetails = TokenProof.ReadFromStream(zIn);
 		}else {
 			mTokenGenDetails = null;
 		}

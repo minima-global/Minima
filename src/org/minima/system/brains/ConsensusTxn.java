@@ -24,7 +24,7 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.objects.proofs.Proof;
 import org.minima.objects.proofs.ScriptProof;
 import org.minima.objects.proofs.SignatureProof;
-import org.minima.objects.proofs.TokenProofs;
+import org.minima.objects.proofs.TokenProof;
 import org.minima.system.input.InputHandler;
 import org.minima.system.network.NetworkHandler;
 import org.minima.utils.Crypto;
@@ -185,7 +185,7 @@ public class ConsensusTxn {
 			//Is it a Token ? 
 			if(!cc.getTokenID().isExactlyEqual(Coin.MINIMA_TOKENID)) {
 				//Add the Token details..
-				TokenProofs tokendets = getMainDB().getUserDB().getTokenDetail(cc.getTokenID());
+				TokenProof tokendets = getMainDB().getUserDB().getTokenDetail(cc.getTokenID());
 				
 				//Do we have it,.
 				if(tokendets == null) {
@@ -241,7 +241,7 @@ public class ConsensusTxn {
 			//Is it a Token ? 
 			if(!out.getTokenID().isExactlyEqual(Coin.MINIMA_TOKENID)) {
 				//Add the Token details..
-				TokenProofs tokendets = getMainDB().getUserDB().getTokenDetail(out.getTokenID());
+				TokenProof tokendets = getMainDB().getUserDB().getTokenDetail(out.getTokenID());
 				
 				//Do we have it,.
 				if(tokendets == null) {

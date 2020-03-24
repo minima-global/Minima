@@ -16,7 +16,7 @@ import org.minima.objects.TxPOW;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
-import org.minima.objects.proofs.TokenProofs;
+import org.minima.objects.proofs.TokenProof;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 
@@ -34,7 +34,7 @@ public class JavaUserDB implements UserDB, Streamable{
 	/**
 	 * Token Details
 	 */
-	ArrayList<TokenProofs> mAllTokens;
+	ArrayList<TokenProof> mAllTokens;
 	
 	/**
 	 * Transaction History
@@ -264,7 +264,7 @@ public class JavaUserDB implements UserDB, Streamable{
 		//Token Details
 		len = mAllTokens.size();
 		zOut.writeInt(len);
-		for(TokenProofs td : mAllTokens) {
+		for(TokenProof td : mAllTokens) {
 			td.writeDataStream(zOut);
 		}
 		
@@ -325,7 +325,7 @@ public class JavaUserDB implements UserDB, Streamable{
 		//Token Details
 		len = zIn.readInt();
 		for(int i=0;i<len;i++) {
-			mAllTokens.add(TokenProofs.ReadFromStream(zIn));
+			mAllTokens.add(TokenProof.ReadFromStream(zIn));
 		}
 		
 		//transaction..
@@ -349,13 +349,13 @@ public class JavaUserDB implements UserDB, Streamable{
 	}
 
 	@Override
-	public ArrayList<TokenProofs> getAllKnownTokens() {
+	public ArrayList<TokenProof> getAllKnownTokens() {
 		return mAllTokens;
 	}
 
 	@Override
-	public TokenProofs getTokenDetail(MiniHash zTokenID) {
-		for(TokenProofs td : mAllTokens) {
+	public TokenProof getTokenDetail(MiniHash zTokenID) {
+		for(TokenProof td : mAllTokens) {
 			if(td.getTokenID().isExactlyEqual(zTokenID)) {
 				return td;
 			}
@@ -365,7 +365,7 @@ public class JavaUserDB implements UserDB, Streamable{
 	}
 
 	@Override
-	public void addTokenDetails(TokenProofs zToken) {
+	public void addTokenDetails(TokenProof zToken) {
 		//Check if we have it..
 		if(getTokenDetail(zToken.getTokenID()) == null) {
 			//We don't have it - add it
