@@ -51,13 +51,7 @@ public class Coin implements Streamable {
 	 * Tokens are Native in Minima. All inputs and outputs have them. MINIMA the default is 0x00
 	 */
 	MiniHash  mTokenID;
-	
-//	/**
-//	 * The TokenID is proved by the hash of the coinid (MiniData32) | total minima used (MiniNumber) | and total digits (MinByte).
-//	 * If TokenID = 0x00 than this is blank..
-//	 */
-//	MiniData 	mTokenProof;
-	
+
 	/**
 	 * Main Constructor
 	 */
@@ -87,25 +81,6 @@ public class Coin implements Streamable {
 
 	public MiniHash getTokenID() {
 		return mTokenID;
-	}
-	
-	/**
-	 * When creating a token a token of LESS THANN 255 tells how many decimal places to use..
-	 */
-	public static MiniHash getTokenCreationID(int zDecimalPlaces) {
-		int totplaces = zDecimalPlaces;
-		if(totplaces > 255) {
-			totplaces = 255;
-		}
-		
-		//create the number
-		MiniByte tot = new MiniByte(totplaces);
-		
-		//Now generate..
-		byte[] data = new byte[1];
-		data[0] = tot.getByteValue();
-		
-		return new MiniHash(data);
 	}
 	
 	@Override
