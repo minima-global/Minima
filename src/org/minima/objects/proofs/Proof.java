@@ -1,4 +1,4 @@
-package org.minima.objects;
+package org.minima.objects.proofs;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -11,7 +11,6 @@ import org.minima.database.mmr.MMRProof;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniHash;
-import org.minima.objects.proofs.ScriptProof;
 import org.minima.utils.Crypto;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONArray;

@@ -6,7 +6,6 @@ import java.io.IOException;
 
 import org.minima.miniscript.Contract;
 import org.minima.objects.Address;
-import org.minima.objects.Proof;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniString;
 import org.minima.utils.json.JSONObject;

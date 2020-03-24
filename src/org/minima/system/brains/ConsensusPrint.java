@@ -20,11 +20,11 @@ import org.minima.database.userdb.java.reltxpow;
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
 import org.minima.objects.PubPrivKey;
-import org.minima.objects.TokenDetails;
 import org.minima.objects.Transaction;
 import org.minima.objects.TxPOW;
 import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
+import org.minima.objects.proofs.TokenProofs;
 import org.minima.system.Main;
 import org.minima.system.input.InputHandler;
 import org.minima.system.network.NetClient;
@@ -187,7 +187,7 @@ public class ConsensusPrint {
 					MiniNumber depth 	= top.sub(blknum);
 					
 					//Get the Token Details.
-					TokenDetails td = getMainDB().getUserDB().getTokenDetail(tokhash);
+					TokenProofs td = getMainDB().getUserDB().getTokenDetail(tokhash);
 					
 					//Get the JSON object for this Token..
 					JSONObject jobj = null;
@@ -270,7 +270,7 @@ public class ConsensusPrint {
 					jobj.put("unconfirmed", tot_unconf.toString());
 					jobj.put("total", "1000000000");
 				}else {
-					TokenDetails td = getMainDB().getUserDB().getTokenDetail(tok);
+					TokenProofs td = getMainDB().getUserDB().getTokenDetail(tok);
 					
 					//Now work out the actual amounts..
 					MiniNumber tot_conf     = (MiniNumber) jobj.get("confirmed");

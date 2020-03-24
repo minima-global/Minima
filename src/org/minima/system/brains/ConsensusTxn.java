@@ -14,17 +14,17 @@ import org.minima.database.userdb.UserDBRow;
 import org.minima.miniscript.Contract;
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
-import org.minima.objects.Proof;
 import org.minima.objects.PubPrivKey;
 import org.minima.objects.StateVariable;
-import org.minima.objects.TokenDetails;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
+import org.minima.objects.proofs.Proof;
 import org.minima.objects.proofs.ScriptProof;
 import org.minima.objects.proofs.SignatureProof;
+import org.minima.objects.proofs.TokenProofs;
 import org.minima.system.input.InputHandler;
 import org.minima.system.network.NetworkHandler;
 import org.minima.utils.Crypto;
@@ -185,7 +185,7 @@ public class ConsensusTxn {
 			//Is it a Token ? 
 			if(!cc.getTokenID().isExactlyEqual(Coin.MINIMA_TOKENID)) {
 				//Add the Token details..
-				TokenDetails tokendets = getMainDB().getUserDB().getTokenDetail(cc.getTokenID());
+				TokenProofs tokendets = getMainDB().getUserDB().getTokenDetail(cc.getTokenID());
 				
 				//Do we have it,.
 				if(tokendets == null) {
@@ -241,7 +241,7 @@ public class ConsensusTxn {
 			//Is it a Token ? 
 			if(!out.getTokenID().isExactlyEqual(Coin.MINIMA_TOKENID)) {
 				//Add the Token details..
-				TokenDetails tokendets = getMainDB().getUserDB().getTokenDetail(out.getTokenID());
+				TokenProofs tokendets = getMainDB().getUserDB().getTokenDetail(out.getTokenID());
 				
 				//Do we have it,.
 				if(tokendets == null) {

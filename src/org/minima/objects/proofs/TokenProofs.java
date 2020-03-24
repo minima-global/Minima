@@ -1,4 +1,4 @@
-package org.minima.objects;
+package org.minima.objects.proofs;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -14,7 +14,7 @@ import org.minima.utils.Crypto;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONObject;
 
-public class TokenDetails implements Streamable{
+public class TokenProofs implements Streamable{
 
 	/**
 	 * The CoinID used when creating the token initially
@@ -49,7 +49,7 @@ public class TokenDetails implements Streamable{
 	/**
 	 * Blank Constructor for ReadDataStream
 	 */
-	private TokenDetails() {}
+	private TokenProofs() {}
 	
 	/**
 	 * The Only Public Constructor
@@ -58,11 +58,11 @@ public class TokenDetails implements Streamable{
 	 * @param zAmount
 	 * @param zName
 	 */
-	public TokenDetails(MiniHash zCoindID, MiniNumber zScale, MiniNumber zAmount, MiniString zName) {
+	public TokenProofs(MiniHash zCoindID, MiniNumber zScale, MiniNumber zAmount, MiniString zName) {
 		this(zCoindID, zScale, zAmount, zName, new MiniString("RETURN TRUE"));
 	}
 		
-	public TokenDetails(MiniHash zCoindID, MiniNumber zScale, MiniNumber zAmount, MiniString zName, MiniString zTokenScript) {
+	public TokenProofs(MiniHash zCoindID, MiniNumber zScale, MiniNumber zAmount, MiniString zName, MiniString zTokenScript) {
 				
 		mTokenScale 		= zScale;
 		mTokenTotalAmount 	= zAmount;
@@ -163,8 +163,8 @@ public class TokenDetails implements Streamable{
 		calculateTokenID();
 	}
 	
-	public static TokenDetails ReadFromStream(DataInputStream zIn){
-		TokenDetails td = new TokenDetails();
+	public static TokenProofs ReadFromStream(DataInputStream zIn){
+		TokenProofs td = new TokenProofs();
 		
 		try {
 			td.readDataStream(zIn);

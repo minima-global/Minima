@@ -7,7 +7,6 @@ import org.minima.NativeListener;
 import org.minima.database.MinimaDB;
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
-import org.minima.objects.TokenDetails;
 import org.minima.objects.Transaction;
 import org.minima.objects.TxPOW;
 import org.minima.objects.Witness;
@@ -16,6 +15,7 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
+import org.minima.objects.proofs.TokenProofs;
 import org.minima.system.Main;
 import org.minima.system.SystemHandler;
 import org.minima.system.external.ProcessManager;
@@ -327,7 +327,7 @@ public class ConsensusHandler extends SystemHandler {
 			tokenid = tok.to0xString();
 			
 			//Is this a token amount or a minima amount
-			TokenDetails tokendets = null;
+			TokenProofs tokendets = null;
 			if(!tok.isExactlyEqual(Coin.MINIMA_TOKENID)) {
 				//It's a token.. scale it..
 				MiniNumber samount = new MiniNumber(amount);
@@ -522,7 +522,7 @@ public class ConsensusHandler extends SystemHandler {
 				Transaction trx = (Transaction) ret.getObject("transaction");
 				
 				//Create the token gen details
-				TokenDetails tgen = new TokenDetails(Coin.COINID_OUTPUT, 
+				TokenProofs tgen = new TokenProofs(Coin.COINID_OUTPUT, 
 													 new MiniNumber(scale+""), 
 													 sendamount, 
 													 new MiniString(name),

@@ -7,10 +7,10 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 
 import org.minima.objects.Coin;
-import org.minima.objects.Proof.ProofChunk;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
+import org.minima.objects.proofs.Proof.ProofChunk;
 import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;

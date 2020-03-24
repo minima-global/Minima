@@ -13,6 +13,7 @@ import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniString;
 import org.minima.objects.proofs.ScriptProof;
 import org.minima.objects.proofs.SignatureProof;
+import org.minima.objects.proofs.TokenProofs;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
@@ -32,7 +33,7 @@ public class Witness implements Streamable {
 	/**
 	 * Any tokens used in any inputs must provide the Token Details
 	 */
-	ArrayList<TokenDetails> mTokenDetails;
+	ArrayList<TokenProofs> mTokenProofs;
 	
 	/**
 	 * General Constructor
@@ -40,9 +41,12 @@ public class Witness implements Streamable {
 	public Witness() {
 		mMMRProofs     = new ArrayList<>();
 		mSignatureProofs = new ArrayList<>();
-		mTokenDetails = new ArrayList<>();
+		mTokenProofs = new ArrayList<>();
 	}
 	
+	/**
+	 * Signature functions
+	 */
 	public void addSignature(MiniHash zPubKey, MiniData zSignature) {
 		mSignatureProofs.add(new SignatureProof(zPubKey, zSignature));
 	}
@@ -55,6 +59,18 @@ public class Witness implements Streamable {
 		return mSignatureProofs;
 	}
 	
+	public String getAllPubKeysCSV(){
+		String ret = "";
+		for(SignatureProof sig : mSignatureProofs) {
+			ret += sig.getFinalHash().to0xString()+"#";
+		}
+
+		return ret.trim();
+	}
+	
+	/**
+	 * MMR Functions
+	 */
 	public void addMMRProof(MMRProof zProof) {
 		mMMRProofs.add(zProof);
 	}
@@ -67,27 +83,23 @@ public class Witness implements Streamable {
 		return mMMRProofs;
 	}
 
-	public String getAllPubKeysCSV(){
-		String ret = "";
-		for(SignatureProof sig : mSignatureProofs) {
-			ret += sig.getFinalHash().to0xString()+"#";
-		}
-
-		return ret.trim();
+	
+	/**
+	 * Token Proofs
+	 */
+	
+	public ArrayList<TokenProofs> getAllTokenDetails(){
+		return mTokenProofs;
 	}
 	
-	public ArrayList<TokenDetails> getAllTokenDetails(){
-		return mTokenDetails;
-	}
-	
-	public void addTokenDetails(TokenDetails zDetails) {
+	public void addTokenDetails(TokenProofs zDetails) {
 		if(getTokenDetail(zDetails.getTokenID()) == null){
-			mTokenDetails.add(zDetails);	
+			mTokenProofs.add(zDetails);	
 		}
 	}
 	
-	public TokenDetails getTokenDetail(MiniHash zTokenID) {
-		for(TokenDetails td : mTokenDetails) {
+	public TokenProofs getTokenDetail(MiniHash zTokenID) {
+		for(TokenProofs td : mTokenProofs) {
 			if(td.getTokenID().isExactlyEqual(zTokenID)) {
 				return td;
 			}
@@ -114,7 +126,7 @@ public class Witness implements Streamable {
 
 		//Token Details
 		arr = new JSONArray();
-		for(TokenDetails td : mTokenDetails) {
+		for(TokenProofs td : mTokenProofs) {
 			arr.add(td.toJSON());
 		}
 		obj.put("tokens", arr);
@@ -145,9 +157,9 @@ public class Witness implements Streamable {
 		}
 		
 		//Token Details
-		int toklen = mTokenDetails.size();
+		int toklen = mTokenProofs.size();
 		zOut.writeInt(toklen);
-		for(TokenDetails td : mTokenDetails) {
+		for(TokenProofs td : mTokenProofs) {
 			td.writeDataStream(zOut);
 		}
 	}
@@ -166,10 +178,10 @@ public class Witness implements Streamable {
 			mMMRProofs.add(MMRProof.ReadFromStream(zIn));
 		}
 		
-		mTokenDetails = new ArrayList<>();
+		mTokenProofs = new ArrayList<>();
 		prlen = zIn.readInt();
 		for(int i=0;i<prlen;i++) {
-			mTokenDetails.add(TokenDetails.ReadFromStream(zIn));
+			mTokenProofs.add(TokenProofs.ReadFromStream(zIn));
 		}
 	}
 }
