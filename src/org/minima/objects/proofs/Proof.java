@@ -168,7 +168,7 @@ public class Proof implements Streamable {
 			proof.add(jsonchunk);
 		}
 		
-		json.put("data", mData);
+		json.put("data", mData.to0xString());
 		json.put("proofchain", proof);
 		json.put("chainsha", getChainSHAProof().to0xString());
 		json.put("finalhash", getFinalHash().to0xString());
