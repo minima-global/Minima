@@ -6,6 +6,9 @@ import org.minima.objects.base.MiniHash;
 
 public class Difficulty {
 	
+	public MiniHash MAX_DIFFICULTY = new MiniHash("");
+	
+	
 	/**
 	 * MAX 32 Byte Value 
 	 */

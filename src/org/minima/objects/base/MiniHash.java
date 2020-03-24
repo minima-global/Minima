@@ -27,6 +27,15 @@ public class MiniHash extends MiniData {
 	public static final int HASH_LENGTH = 32;
 	
 	/**
+	 * The Maximum HASH Value Possible
+	 */
+	public static final MiniHash MAX_HASH = new MiniHash(
+							"0xFFFFFFFFFFFFFFFFFFFF"+
+							  "FFFFFFFFFFFFFFFFFFFF"+
+							  "FFFFFFFFFFFFFFFFFFFF"+
+							  "FFFF");
+	
+	/**
 	 * A zero filled hash
 	 */
 	public static MiniHash ZERO32 = new MiniHash("0x00");

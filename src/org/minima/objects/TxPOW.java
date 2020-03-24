@@ -43,7 +43,8 @@ public class TxPOW implements Streamable {
 	 * 
 	 * The amount of work (Proof-of-work) that has gone into it.
 	 */
-	private MiniByte 	mTxnDifficulty = new MiniByte();
+	
+	private MiniHash 	mTxnDifficulty = new MiniHash();
 	
 	/**
 	 * The Transaction the user is trying to send
@@ -68,7 +69,7 @@ public class TxPOW implements Streamable {
 	/**
 	 * The BASE Block Difficulty
 	 */
-	private MiniByte mBlockDifficulty = new MiniByte();
+	private MiniHash mBlockDifficulty = new MiniHash();
 	
 	/**
 	 * The list of the current TX-POWs the user 
@@ -163,12 +164,12 @@ public class TxPOW implements Streamable {
 		return mCustom;
 	}
 	
-	public void setTxDifficulty(int zDifficulty) {
-		mTxnDifficulty = new MiniByte(zDifficulty);
+	public void setTxDifficulty(MiniHash zDifficulty) {
+		mTxnDifficulty = zDifficulty;
 	}
 	
-	public int getTxnDifficulty() {
-		return mTxnDifficulty.getValue();
+	public MiniHash getTxnDifficulty() {
+		return mTxnDifficulty;
 	}
 	
 	public void setTimeMilli(MiniNumber zMilli) {
@@ -191,12 +192,12 @@ public class TxPOW implements Streamable {
 		return mTxPowIDList;
 	}
 	
-	public int getBlockDifficulty() {
-		return mBlockDifficulty.getValue();
+	public MiniHash getBlockDifficulty() {
+		return mBlockDifficulty;
 	}
 	
-	public void setBlockDifficulty(int zBlockDifficulty) {
-		mBlockDifficulty = new MiniByte(zBlockDifficulty);
+	public void setBlockDifficulty(MiniHash zBlockDifficulty) {
+		mBlockDifficulty = zBlockDifficulty;
 	}
 	
 	public void setParent(MiniHash zData) {
@@ -379,7 +380,7 @@ public class TxPOW implements Streamable {
 		mParentChainID.readDataStream(zIn);
 		mCustom.readDataStream(zIn);
 		mTimeMilli.readDataStream(zIn);
-		mTxnDifficulty = MiniByte.ReadFromStream(zIn);
+		mTxnDifficulty = MiniHash.ReadFromStream(zIn);
 		mTransaction.readDataStream(zIn);
 		mWitness.readDataStream(zIn);
 		mBlockNumber.readDataStream(zIn);
@@ -442,22 +443,25 @@ public class TxPOW implements Streamable {
 		//The TXPOW ID
 		_mTxPOWID = Crypto.getInstance().hashObject(this);
 		
-		Difficulty blkdiff = new Difficulty(getBlockDifficulty()); 
-		Difficulty txndiff = new Difficulty(getTxnDifficulty());
+//		Difficulty blkdiff = new Difficulty(getBlockDifficulty()); 
+//		Difficulty txndiff = new Difficulty(getTxnDifficulty());
 		
+		//Valid Block
 		_mIsBlockPOW = false;
-		if(blkdiff.isOK(_mTxPOWID)){
+		if(_mTxPOWID.isLess(getBlockDifficulty())) {
 			_mIsBlockPOW = true;
 		}
 		
+		//Valid Transaction
 		_mIsTxnPOW = false;
-		if(txndiff.isOK(_mTxPOWID) && !getTransaction().isEmpty()) {
+		if(_mTxPOWID.isLess(getTxnDifficulty()) && !getTransaction().isEmpty()) {
 			_mIsTxnPOW = true;
 		}	
 		
-		_mSuperBlock = SuperBlockLevels.getSupers().getSuperBlockLevel(_mTxPOWID);
-		if(_mSuperBlock>=TxPOW.SUPERPARENT_NUM) {
-			_mSuperBlock = TxPOW.SUPERPARENT_NUM-1;
-		}
+		//What Super Level are we..
+		_mSuperBlock = 0;//SuperBlockLevels.getSupers().getSuperBlockLevel(_mTxPOWID);
+//		if(_mSuperBlock>=TxPOW.SUPERPARENT_NUM) {
+//			_mSuperBlock = TxPOW.SUPERPARENT_NUM-1;
+//		}
 	}
 }
