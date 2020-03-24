@@ -50,7 +50,7 @@ public class Difficulty {
 	}
 	
 	public boolean isOK(MiniHash zValue) {
-		return zValue.getDataVaue().compareTo(mDifficulty) <= 0;
+		return zValue.getDataValue().compareTo(mDifficulty) <= 0;
 	}
 
 	@Override

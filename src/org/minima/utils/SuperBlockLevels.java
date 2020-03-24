@@ -63,8 +63,8 @@ public class SuperBlockLevels {
 		
 //		System.out.println(zActual.to0xString()+" / "+zDifficulty.to0xString());
 		
-		BigDecimal bigdiff = new BigDecimal(zDifficulty.getDataVaue(), MathContext.DECIMAL128);
-		BigDecimal bigact  = new BigDecimal(zActual.getDataVaue(), MathContext.DECIMAL128);
+		BigDecimal bigdiff = new BigDecimal(zDifficulty.getDataValue(), MathContext.DECIMAL128);
+		BigDecimal bigact  = new BigDecimal(zActual.getDataValue(), MathContext.DECIMAL128);
 		
 		//Divide the 2..
 		BigDecimal sup = bigdiff.divide(bigact, MathContext.DECIMAL128);

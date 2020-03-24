@@ -18,7 +18,7 @@ public class HEXValue extends Value {
 		mData   = new MiniData(zData);
 		
 		//And now
-		mNumber = new MiniNumber(mData.getDataVaue());
+		mNumber = new MiniNumber(mData.getDataValue());
 	}
 	
 	public HEXValue(MiniNumber zNumber) {
@@ -30,7 +30,7 @@ public class HEXValue extends Value {
 		mData 	= new MiniData(zHex);
 		
 		//THE NUMBER is only to 128 BIT (not complete). The full BigInteger value is stored in the RamData
-		mNumber = new MiniNumber(mData.getDataVaue());
+		mNumber = new MiniNumber(mData.getDataValue());
 	}
 	
 	@Override

@@ -319,7 +319,7 @@ public class BlockTree {
 		int num=0;
 		while(current != null) {
 			//Add to the total
-			total = total.add(current.getTxPow().getBlockDifficulty().getDataVaue());
+			total = total.add(current.getTxPow().getBlockDifficulty().getDataValue());
 			num++;
 			
 			if(current.getTxPowID().isExactlyEqual(casc)) {

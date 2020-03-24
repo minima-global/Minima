@@ -129,14 +129,14 @@ public class MiniHash extends MiniData {
 		MiniHash hhash32 = Crypto.getInstance().hashObject(hash32);
 		
 		System.out.println("Hash32 : "+hash32+" "+hash32.getLength()+" "+hhash32);
-		System.out.println(hash32.getDataVaue());
+		System.out.println(hash32.getDataValue());
 		
 		byte[] hashdata = Crypto.getInstance().hashData(hash32.getData());
 		
 		hhash32 = new MiniHash(hashdata);
 		
 		System.out.println("Hash32 : "+hash32+" "+hash32.getLength()+" "+hhash32);
-		System.out.println(hash32.getDataVaue());
+		System.out.println(hash32.getDataValue());
 		
 	}
 	

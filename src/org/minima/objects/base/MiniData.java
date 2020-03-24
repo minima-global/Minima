@@ -99,7 +99,7 @@ public class MiniData implements Streamable {
 		mDataVal = new BigInteger(1,mData);
 	}
 	
-	public BigInteger getDataVaue() {
+	public BigInteger getDataValue() {
 		return mDataVal;
 	}
 	
@@ -118,27 +118,27 @@ public class MiniData implements Streamable {
 			return false;
 		}
 		
-		return mDataVal.compareTo(zCompare.getDataVaue()) == 0;
+		return mDataVal.compareTo(zCompare.getDataValue()) == 0;
 	}
 	
 	public boolean isNumericallyEqual(MiniData zCompare) {
-		return mDataVal.compareTo(zCompare.getDataVaue()) == 0;
+		return mDataVal.compareTo(zCompare.getDataValue()) == 0;
 	}
 	
 	public boolean isLess(MiniData zCompare) {
-		return mDataVal.compareTo(zCompare.getDataVaue()) < 0;
+		return mDataVal.compareTo(zCompare.getDataValue()) < 0;
 	}
 	
 	public boolean isLessEqual(MiniData zCompare) {
-		return mDataVal.compareTo(zCompare.getDataVaue()) <= 0;
+		return mDataVal.compareTo(zCompare.getDataValue()) <= 0;
 	}
 	
 	public boolean isMore(MiniData zCompare) {
-		return mDataVal.compareTo(zCompare.getDataVaue()) > 0;
+		return mDataVal.compareTo(zCompare.getDataValue()) > 0;
 	}
 	
 	public boolean isMoreEqual(MiniData zCompare) {
-		return mDataVal.compareTo(zCompare.getDataVaue()) >= 0;
+		return mDataVal.compareTo(zCompare.getDataValue()) >= 0;
 	}
 	
 	public MiniData shiftr(int zNumber) {
@@ -150,7 +150,7 @@ public class MiniData implements Streamable {
 	}
 	
 	public int compare(MiniData zCompare) {
-		return mDataVal.compareTo(zCompare.getDataVaue());
+		return mDataVal.compareTo(zCompare.getDataValue());
 	}
 	
 	public MiniData concat(MiniData zConcat) {
@@ -286,6 +286,6 @@ public class MiniData implements Streamable {
 		MiniData data = new MiniData("00000FFF");
 		
 		MinimaLogger.log("data    : "+data.toString());
-		MinimaLogger.log("value   : "+data.getDataVaue().toString());
+		MinimaLogger.log("value   : "+data.getDataValue().toString());
 	}
 }
