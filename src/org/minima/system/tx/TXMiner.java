@@ -1,6 +1,5 @@
 package org.minima.system.tx;
 
-import org.minima.objects.Difficulty;
 import org.minima.objects.TxPOW;
 import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
@@ -133,16 +132,6 @@ public class TXMiner extends SystemHandler{
 			//Speed
 			double speed =   ( 10000000 / diff ) / 1000000;
 			MinimaLogger.log("Speed : "+speed+" MHashes/sec");
-		}
-		
-		
+		}	
 	}
-
-	//Test the difficulty
-	public static void main(String[] zArgs) {
-		for(int i=0;i<256;i++) {
-			System.out.println(i+" \t: "+new Difficulty(i));
-		}
-	}
-	
 }
