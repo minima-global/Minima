@@ -206,7 +206,7 @@ public class MMRSet implements Streamable {
 	}
 	
 	/**
-	 * Search for the first valid Address and Amount coin
+	 * Search for the first valid unspent Address and Amount coin
 	 * @param zCoinID
 	 * @return
 	 */
@@ -218,10 +218,11 @@ public class MMRSet implements Streamable {
 			if(!entry.getData().isHashOnly()) {
 				Coin cc = entry.getData().getCoin();
 				
+				boolean spent  = entry.getData().isSpent();
 				boolean addr   = cc.getAddress().isExactlyEqual(zAddress);
 				boolean amount = cc.getAmount().isMoreEqual(zAmount);
 				
-				if(addr && amount){
+				if(addr && amount && !spent){
 					return entry;
 				}
 			}
@@ -684,6 +685,10 @@ public class MMRSet implements Streamable {
 	 * @return
 	 */
 	public boolean checkProof(MMRProof zProof) {
+		return checkProof(zProof, true);
+	}
+	
+	public boolean checkProof(MMRProof zProof, boolean zCheckSpent) {
 		//Hmm.. this is not good..
 		if(zProof.getMMRData().isHashOnly()) {
 			System.out.println("Invalid PROOF check HASHONLY! : "+zProof);
@@ -731,14 +736,17 @@ public class MMRSet implements Streamable {
 			return false;
 		}
 		
-		//So the proof was valid at that time.. if it has been SPENT, it will have been AFTER this block - and in our MMR
-		MMREntry checker = getEntry(0, zProof.getEntryNumber(), true);
-		
-		//Is it there ?
-		if(!checker.isEmpty()) {
-			//Get the DATA - could be the original UNSPENT or the SPENT
-			if(checker.getData().isSpent()) {
-				return false;
+		//DO we check if it's spent - floating inputs do this differently
+		if(zCheckSpent) {
+			//So the proof was valid at that time.. if it has been SPENT, it will have been AFTER this block - and in our MMR
+			MMREntry checker = getEntry(0, zProof.getEntryNumber(), true);
+			
+			//Is it there ?
+			if(!checker.isEmpty()) {
+				//Get the DATA - could be the original UNSPENT or the SPENT
+				if(checker.getData().isSpent()) {
+					return false;
+				}
 			}
 		}
 		
