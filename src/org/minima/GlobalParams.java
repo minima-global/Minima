@@ -18,9 +18,6 @@ public class GlobalParams {
 	
 	/**
 	 * Speed in blocks per second
-	 * 
-	 * 0.1 = 1 block every 10 seconds
-	 * 0.05 = 20 second block time
 	 */
 	public static final MiniNumber MINIMA_BLOCK_SPEED  = new MiniNumber("1");
 	
@@ -42,6 +39,6 @@ public class GlobalParams {
 	/**
 	 * How Many Cascade Levels are there
 	 */
-	public static final int MINIMA_CASCADE_LEVELS  = 20;
+	public static final int MINIMA_CASCADE_LEVELS  = 21;
 	
 }
