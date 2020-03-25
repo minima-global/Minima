@@ -800,7 +800,7 @@ public class MinimaDB {
 		}
 		
 		//Super Block Levels..
-		for(int i=0;i<TxPOW.SUPERPARENT_NUM;i++) {
+		for(int i=0;i<GlobalParams.MINIMA_CASCADE_LEVELS;i++) {
 			txpow.mSuperParents[i] = tip.getTxPow().mSuperParents[i];
 		}
 

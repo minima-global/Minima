@@ -58,9 +58,9 @@ public class BlockTreePrinter2 {
 		MiniHash avghash = new MiniHash("0x"+avgdiff.toString(16));
 		
 		output += "\n\nSpeed              : "+mTree.getChainSpeed()+" blocks / sec";
-		output += "\nAVG HASH           : "+avghash;
+//		output += "\nAVG HASH           : "+avghash;
 		output += "\nCurrent Difficulty : "+mTree.getChainTip().getTxPow().getBlockDifficulty().to0xString();
-		output += "\nTOTAL WEIGHT       : "+mTree.getChainRoot().getTotalWeight();
+		output += "\nTotal Weight       : "+mTree.getChainRoot().getTotalWeight();
 		
 //		MinimaLogger.log("Speed     : "+mTree.getChainSpeed()+" blocks / sec");
 

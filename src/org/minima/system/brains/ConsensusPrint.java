@@ -104,13 +104,13 @@ public class ConsensusPrint {
 			BlockTreePrinter2 treeprint = new BlockTreePrinter2(getMainDB().getMainTree(), true);
 			String tree = treeprint.printtree();
 			
-			BlockTreePrinter2.clearScreen();
-			MinimaLogger.log(tree);
+//			BlockTreePrinter2.clearScreen();
+//			MinimaLogger.log(tree);
 			
-//			//Now check whether they are unspent..
-//			JSONObject dets = InputHandler.getResponseJSON(zMessage);
-//			dets.put("tree", "\n"+tree);
-//			InputHandler.endResponse(zMessage, true, "");
+			//Now check whether they are unspent..
+			JSONObject dets = InputHandler.getResponseJSON(zMessage);
+			dets.put("tree", tree);
+			InputHandler.endResponse(zMessage, true, "");
 			
 			
 		}else if(zMessage.isMessageType(CONSENSUS_SEARCH)){

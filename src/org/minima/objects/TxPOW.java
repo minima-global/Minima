@@ -10,6 +10,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
+import org.minima.GlobalParams;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
@@ -80,8 +81,7 @@ public class TxPOW implements Streamable {
 	/**
 	 * A list of all the parent blocks at all the Super Block Levels..
 	 */
-	public static final int SUPERPARENT_NUM = 256;
-	public MiniHash[] mSuperParents = new MiniHash[SUPERPARENT_NUM];
+	public MiniHash[] mSuperParents = new MiniHash[GlobalParams.MINIMA_CASCADE_LEVELS];
 	
 	/**
 	 * The MMR Root!
@@ -131,7 +131,7 @@ public class TxPOW implements Streamable {
 		mTxPowIDList = new ArrayList<>();
 		
 		//Super Block Levels..
-		for(int i=0;i<SUPERPARENT_NUM;i++) {
+		for(int i=0;i<GlobalParams.MINIMA_CASCADE_LEVELS;i++) {
 			mSuperParents[i] = new MiniHash();
 		}
 	}
@@ -256,7 +256,7 @@ public class TxPOW implements Streamable {
 		JSONArray supers = new JSONArray();
 		MiniHash old = null;
 		int counter=0;
-		for(int i=0;i<SUPERPARENT_NUM;i++) {
+		for(int i=0;i<GlobalParams.MINIMA_CASCADE_LEVELS;i++) {
 			MiniHash curr = mSuperParents[i];
 			
 			if(old == null) {
@@ -266,7 +266,7 @@ public class TxPOW implements Streamable {
 				if(old.isExactlyEqual(curr)) {
 					counter++;
 					//Is this the last one..
-					if(i==SUPERPARENT_NUM-1) {
+					if(i==GlobalParams.MINIMA_CASCADE_LEVELS-1) {
 						//Write it anyway..
 						JSONObject sp = new JSONObject();
 						sp.put("difficulty", i);
@@ -346,7 +346,7 @@ public class TxPOW implements Streamable {
 		//The Super parents are efficiently encoded in RLE
 		MiniHash old = null;
 		int counter=0;
-		for(int i=0;i<SUPERPARENT_NUM;i++) {
+		for(int i=0;i<GlobalParams.MINIMA_CASCADE_LEVELS;i++) {
 			MiniHash curr = mSuperParents[i];
 			if(old == null) {
 				old = curr;
@@ -355,7 +355,7 @@ public class TxPOW implements Streamable {
 				if(old.isExactlyEqual(curr)) {
 					counter++;
 					//Is this the last one..
-					if(i==SUPERPARENT_NUM-1) {
+					if(i==GlobalParams.MINIMA_CASCADE_LEVELS-1) {
 						//Write it anyway..
 						MiniByte count = new MiniByte(counter);
 						count.writeDataStream(zOut);
@@ -404,7 +404,7 @@ public class TxPOW implements Streamable {
 		
 		//And the super parents - RLE
 		int tot   = 0;
-		while(tot<SUPERPARENT_NUM) {
+		while(tot<GlobalParams.MINIMA_CASCADE_LEVELS) {
 			MiniByte len   = MiniByte.ReadFromStream(zIn);
 			MiniHash sup = MiniHash.ReadFromStream(zIn);
 			int count = len.getValue();
