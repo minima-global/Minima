@@ -9,7 +9,7 @@ import org.minima.database.txpowdb.TxPOWDBRow;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.MinimaLogger;
 
-public class CascadeTree2 {
+public class MultiLevelCascadeTree {
 
 	MinimaDB mDB;
 	
@@ -19,7 +19,7 @@ public class CascadeTree2 {
 	
 	ArrayList<BlockTreeNode> mRemovals;
 	
-	public CascadeTree2(BlockTree zMainTree, MinimaDB zDB) {
+	public MultiLevelCascadeTree(BlockTree zMainTree, MinimaDB zDB) {
 		mMainTree = zMainTree;
 		mRemovals = new ArrayList<>();
 		mDB = zDB;

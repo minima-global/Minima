@@ -11,7 +11,7 @@ import org.minima.utils.MinimaLogger;
 import org.minima.utils.bretty.TreeNode;
 import org.minima.utils.bretty.TreePrinter;
 
-public class BlockTreePrinter2 {
+public class SimpleBlockTreePrinter {
 
 	BlockTree mTree;
 	
@@ -21,21 +21,16 @@ public class BlockTreePrinter2 {
 	
 	boolean mSimple = true;
 	
-	public BlockTreePrinter2(BlockTree zTree, boolean zSimple) {
+	public SimpleBlockTreePrinter(BlockTree zTree, boolean zSimple) {
 		mTree = zTree;
 		mSimple = zSimple;
 	}
 	
 	public String printtree() {
-//		MinimaLogger.log("---------");
-//		MinimaLogger.log("Full Tree");
-//		MinimaLogger.log("---------");
-		
 		//The root node
 		BlockTreeNode root = mTree.getChainRoot();
 		
 		if(root == null) {
-//			MinimaLogger.log("No tree root..");
 			return "No tree root..";
 		}
 		
@@ -58,30 +53,9 @@ public class BlockTreePrinter2 {
 		MiniHash avghash = new MiniHash("0x"+avgdiff.toString(16));
 		
 		output += "\n\nSpeed              : "+mTree.getChainSpeed()+" blocks / sec";
-//		output += "\nAVG HASH           : "+avghash;
 		output += "\nCurrent Difficulty : "+mTree.getChainTip().getTxPow().getBlockDifficulty().to0xString();
 		output += "\nTotal Weight       : "+mTree.getChainRoot().getTotalWeight();
-		
-//		MinimaLogger.log("Speed     : "+mTree.getChainSpeed()+" blocks / sec");
 
-		//And out it goes..
-//		MinimaLogger.log(output);
-	
-//		//And some added details..
-//		MinimaLogger.log("Total POW : "+mTree.getChainRoot().getTotalWeight());
-//		MinimaLogger.log("Root      : "+mTree.getChainRoot());
-//		MinimaLogger.log("Tip       : "+mTree.getChainTip());
-//		MinimaLogger.log("Length    : "+mTree.getAsList().size());
-//		MinimaLogger.log("Cascade   : "+mCascadeNode);
-//		MinimaLogger.log("Speed     : "+mTree.getChainSpeed()+" blocks / sec");
-//		
-//		MiniNumber diff 	= mTree.getAvgChainDifficulty();
-//		BigInteger diffbi 	= diff.getAsBigInteger();
-//		
-//		double log = Maths.log2BI(diffbi);
-//		MinimaLogger.log("AVG Diff  : "+diff);
-//		MinimaLogger.log("LOG Diff  : "+log);
-		
 		return output;
 	}
 	
@@ -94,8 +68,6 @@ public class BlockTreePrinter2 {
 		MiniHash parent  = txpow.getSuperParent(clev);
 		MiniHash parent2 = txpow.getSuperParent(clev+1);
 				
-		String ss = zNode.toString();
-		
 		String parents = "[blk]"+zNode.getTxPowID().toShort0xString(16)+" "
 						 +"[parent:"+clev+"]"+parent.toShort0xString(16)+" "
 						 +"[parent:"+(clev+1)+"]"+parent2.toShort0xString(16);
@@ -110,11 +82,7 @@ public class BlockTreePrinter2 {
 			add += " [++THE TIP++]";
 		}
 
-		if(mSimple) {
-			return weight + zNode.getTxPow().getBlockNumber()+" "+"["+clev+" / "+slev+"] "+add;
-		}
-		
-		return weight + ss +" "+getStarString(slev)+" "+add;
+		return weight + zNode.getTxPow().getBlockNumber()+" "+"["+clev+" / "+slev+"] "+add;
 	}
 	
 	private String getStarString(int zLen) {

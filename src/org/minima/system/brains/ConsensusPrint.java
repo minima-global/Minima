@@ -15,7 +15,7 @@ import org.minima.database.txpowdb.TxPOWDBRow;
 import org.minima.database.txpowdb.TxPowDBPrinter;
 import org.minima.database.txpowtree.BlockTreeNode;
 import org.minima.database.txpowtree.BlockTreePrinter;
-import org.minima.database.txpowtree.BlockTreePrinter2;
+import org.minima.database.txpowtree.SimpleBlockTreePrinter;
 import org.minima.database.userdb.UserDB;
 import org.minima.database.userdb.java.reltxpow;
 import org.minima.objects.Address;
@@ -101,7 +101,7 @@ public class ConsensusPrint {
 //			BlockTreePrinter treeprint = new BlockTreePrinter(getMainDB().getMainTree(), true);
 //			treeprint.printtree();
 			
-			BlockTreePrinter2 treeprint = new BlockTreePrinter2(getMainDB().getMainTree(), true);
+			SimpleBlockTreePrinter treeprint = new SimpleBlockTreePrinter(getMainDB().getMainTree(), true);
 			String tree = treeprint.printtree();
 			
 //			BlockTreePrinter2.clearScreen();
