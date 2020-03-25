@@ -108,7 +108,7 @@ public class SyncPacket implements Streamable {
 			//Read in the MMR
 			mMMR = new MMRSet();
 			mMMR.readDataStream(zIn);
-			mMMR.finalizeSet();
+//			mMMR.finalizeSet();
 		}
 	}
 	

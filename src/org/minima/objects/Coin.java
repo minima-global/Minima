@@ -53,20 +53,34 @@ public class Coin implements Streamable {
 	MiniHash  mTokenID;
 
 	/**
+	 * Floating Input Coins can be attached to any coin with the correct address and AT LEAST the amount.
+	 */
+	boolean mFloating = false;
+	
+	/**
 	 * Main Constructor
 	 */
 	public Coin(MiniHash zCoinID, MiniHash zAddress, MiniNumber zAmount, MiniHash zTokenID) {
+		this(zCoinID, zAddress, zAmount, zTokenID, false);
+	}
+		
+	public Coin(MiniHash zCoinID, MiniHash zAddress, MiniNumber zAmount, MiniHash zTokenID, boolean zFLoating) {
 		mCoinID  = zCoinID;
 		mAddress = zAddress;
 		mAmount  = zAmount;
 		mTokenID = zTokenID;
 	}
 	
-	/**
-	 * Required For Streamable.
-	 */
 	private Coin() {}
-		
+	
+	public void setFloating(boolean zFloating) {
+		mFloating = zFloating;
+	}
+	
+	public boolean isFloating() {
+		return mFloating;
+	}
+	
 	public MiniHash getCoinID() {
 		return mCoinID;
 	}
@@ -85,7 +99,7 @@ public class Coin implements Streamable {
 	
 	@Override
 	public String toString() {
-		return  toJSON().toString();
+		return toJSON().toString();
 	}
 	
 	public JSONObject toJSON() {
@@ -95,6 +109,7 @@ public class Coin implements Streamable {
 		obj.put("address", mAddress.toString());
 		obj.put("amount", mAmount.toString());
 		obj.put("tokenid", mTokenID.toString());
+		obj.put("floating", mFloating);
 		
 		return obj;
 	}
@@ -105,15 +120,21 @@ public class Coin implements Streamable {
 		mAddress.writeDataStream(zOut);
 		mAmount.writeDataStream(zOut);
 		mTokenID.writeDataStream(zOut);
+		if(mFloating) {
+			MiniByte.TRUE.writeDataStream(zOut);
+		}else {
+			MiniByte.FALSE.writeDataStream(zOut);
+		}
 	}
 
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
-		mCoinID  = MiniHash.ReadFromStream(zIn);
-		mAddress = MiniHash.ReadFromStream(zIn);
-		mAmount  = MiniNumber.ReadFromStream(zIn);
-		mTokenID = MiniHash.ReadFromStream(zIn);
-	}	
+		mCoinID   = MiniHash.ReadFromStream(zIn);
+		mAddress  = MiniHash.ReadFromStream(zIn);
+		mAmount   = MiniNumber.ReadFromStream(zIn);
+		mTokenID  = MiniHash.ReadFromStream(zIn);
+		mFloating = MiniByte.ReadFromStream(zIn).isTrue();
+	}
 	
 	public static Coin ReadFromStream(DataInputStream zIn) throws IOException {
 		Coin coin = new Coin();

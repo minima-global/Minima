@@ -126,6 +126,9 @@ public class MMRSet implements Streamable {
 	}
 	
 	public void finalizeSet() {
+		//Reset
+		mFinalized = false;
+				
 		//The peaks..
 		mFinalizedPeaks = getMMRPeaks();
 		
@@ -203,7 +206,37 @@ public class MMRSet implements Streamable {
 	}
 	
 	/**
-	 * Find an entry - but don't serach parents.
+	 * Search for the first valid Address and Amount coin
+	 * @param zCoinID
+	 * @return
+	 */
+	public MMREntry searchAddress(MiniHash zAddress, MiniNumber zAmount) {
+		//Get the zero row - no parents..
+		ArrayList<MMREntry> zero=getZeroRow();
+		
+		for(MMREntry entry : zero) {
+			if(!entry.getData().isHashOnly()) {
+				Coin cc = entry.getData().getCoin();
+				
+				boolean addr   = cc.getAddress().isExactlyEqual(zAddress);
+				boolean amount = cc.getAmount().isMoreEqual(zAmount);
+				
+				if(addr && amount){
+					return entry;
+				}
+			}
+		}
+			
+		//Cycle up the parents.. 
+		if(mParent!=null) {
+			return mParent.searchAddress(zAddress, zAmount);
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * Find an entry
 	 * @param zCoinID
 	 * @return
 	 */
@@ -979,6 +1012,9 @@ public class MMRSet implements Streamable {
 				mEntries.add(entry);
 			}
 		}
+		
+		//Finalize..
+		finalizeSet();
 	}
 	
 }
