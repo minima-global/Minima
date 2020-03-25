@@ -104,6 +104,7 @@ public class ConsensusPrint {
 			BlockTreePrinter2 treeprint = new BlockTreePrinter2(getMainDB().getMainTree(), true);
 			String tree = treeprint.printtree();
 			
+			BlockTreePrinter2.clearScreen();
 			MinimaLogger.log(tree);
 			
 //			//Now check whether they are unspent..

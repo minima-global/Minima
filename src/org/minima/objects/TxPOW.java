@@ -212,6 +212,10 @@ public class TxPOW implements Streamable {
 		return mParent;
 	}
 	
+	public MiniHash getSuperParent(int zLevel) {
+		return mSuperParents[zLevel];
+	}
+	
 	public MiniNumber getTimeMilli() {
 		return mTimeMilli;
 	}
@@ -286,6 +290,13 @@ public class TxPOW implements Streamable {
 			}
 		}
 		txpow.put("superparents", supers);
+		
+//		//The Super parents
+//		JSONArray supers = new JSONArray();
+//		for(int i=0;i<16;i++) {
+//			supers.add(mSuperParents[i].toShort0xString(16));
+//		}
+//		txpow.put("superparents", supers);
 		
 		txpow.put("blkdiff", mBlockDifficulty);
 		txpow.put("txndiff", mTxnDifficulty);

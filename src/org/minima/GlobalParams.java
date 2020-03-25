@@ -22,7 +22,6 @@ public class GlobalParams {
 	 * 0.1 = 1 block every 10 seconds
 	 * 0.05 = 20 second block time
 	 */
-//	public static final double MINIMA_BLOCK_SPEED  = 0.1;
 	public static final MiniNumber MINIMA_BLOCK_SPEED  = new MiniNumber("1");
 	
 	/**
@@ -33,6 +32,12 @@ public class GlobalParams {
 	/**
 	 * Depth before we cascade..
 	 */
-	public static final int MINIMA_CASCADE_DEPTH     = 16;
+	public static final int MINIMA_CASCADE_DEPTH   = 16;
+	
+	
+	/**
+	 * Minimum number of blocks at each cascade level 
+	 */
+	public static final int MINIMA_MINUMUM_CASCADE_LEVEL  = 4;
 	
 }

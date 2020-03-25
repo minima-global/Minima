@@ -3,6 +3,7 @@ package org.minima.database.txpowtree;
 import java.math.BigInteger;
 import java.util.ArrayList;
 
+import org.minima.objects.TxPOW;
 import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.Maths;
@@ -51,15 +52,15 @@ public class BlockTreePrinter2 {
 		drillNode(root, mRoot);
 		
 		//And finally print it..
-		String output = TreePrinter.toString(mRoot);
+		String output = "\n"+TreePrinter.toString(mRoot);
 
 		BigInteger avgdiff = mTree.getAvgChainDifficulty();
 		MiniHash avghash = new MiniHash("0x"+avgdiff.toString(16));
 		
 		output += "\n\nSpeed              : "+mTree.getChainSpeed()+" blocks / sec";
-		output += "\nAVG Difficulty     : "+avgdiff;
 		output += "\nAVG HASH           : "+avghash;
 		output += "\nCurrent Difficulty : "+mTree.getChainTip().getTxPow().getBlockDifficulty().to0xString();
+		output += "\nTOTAL WEIGHT       : "+mTree.getChainRoot().getTotalWeight();
 		
 //		MinimaLogger.log("Speed     : "+mTree.getChainSpeed()+" blocks / sec");
 
@@ -87,14 +88,19 @@ public class BlockTreePrinter2 {
 	private String convertNodeToString(BlockTreeNode zNode) {
 		int slev 	= zNode.getSuperBlockLevel();
 		int clev 	= zNode.getCurrentLevel();
-		
 		String weight= "{WEIGHT:"+zNode.getWeight()+"/"+zNode.getTotalWeight()+"} ";
 		
+		TxPOW txpow = zNode.getTxPow();
+		MiniHash parent  = txpow.getSuperParent(clev);
+		MiniHash parent2 = txpow.getSuperParent(clev+1);
+				
 		String ss = zNode.toString();
 		
-		String add = zNode.getTxPowID().toShort0xString(16)+" "
-					+zNode.getTxPow().getBlockDifficulty().toShort0xString(16)+" "
-					+"["+getStarString(slev)+"] - "+getStarString(clev);
+		String parents = "[blk]"+zNode.getTxPowID().toShort0xString(16)+" "
+						 +"[parent:"+clev+"]"+parent.toShort0xString(16)+" "
+						 +"[parent:"+(clev+1)+"]"+parent2.toShort0xString(16);
+								
+		String add = parents +" ["+getStarString(slev)+"] - "+getStarString(clev);
 		
 		if(mCascadeNode == zNode.getTxPow().getBlockNumber().getAsLong()) {
 			add += " [++CASCADING++]";

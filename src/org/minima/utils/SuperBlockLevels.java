@@ -17,7 +17,7 @@ public class SuperBlockLevels {
 	}
 
 
-	public static final int MAX_LEVELS = 256;
+	public static final int MAX_LEVELS = 32;
 	
 	BigInteger[] mSuperLevels = new BigInteger[MAX_LEVELS];
 	
@@ -69,7 +69,12 @@ public class SuperBlockLevels {
 		//Divide the 2..
 		BigDecimal sup = bigdiff.divide(bigact, MathContext.DECIMAL128);
 		
-		int ll2 = (int)Maths.log2(sup.doubleValue());
+		//Get as a BigInteger..
+		BigInteger supbig = sup.toBigInteger();
+		
+		int ll2 = (int) Maths.log2BI(supbig);
+		
+//		int ll2 = (int)Maths.log2(sup.doubleValue());
 		
 //		System.out.println(bigact+" / "+bigdiff+" = "+sup+" log2:"+ll2);
 		

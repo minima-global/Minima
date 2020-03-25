@@ -61,8 +61,9 @@ public class CascadeTree2 {
 		
 		//First get the block PRE_CASCADE_CHAIN_LENGTH back..
 		int counter=0;
-//		while((oldtip!=null) && (counter<GlobalParams.MINIMA_CASCADE_DEPTH) && (oldtip.getTxPow().getBlockNumber().isMore(casc)) ) {
-		while((oldtip!=null) && (counter<GlobalParams.MINIMA_CASCADE_DEPTH) ) {
+		while(  (oldtip!=null) && 
+				(counter<GlobalParams.MINIMA_CASCADE_DEPTH) && 
+				(oldtip.getTxPow().getBlockNumber().isMore(casc)) ) {
 			counter++;
 			oldtip = oldtip.getParent();
 		}
@@ -92,7 +93,6 @@ public class CascadeTree2 {
 			node.setState(BlockTreeNode.BLOCKSTATE_VALID);
 			
 			//Add a node
-//			cascnodes.add(0,node);
 			cascnodes.add(node);
 			
 			//Go up the tree..
@@ -102,21 +102,33 @@ public class CascadeTree2 {
 		//Now have 2 parts of the tree.. a full part and a cascade part
 		ArrayList<BlockTreeNode> finalnodes = new ArrayList<>();
 		
-		
 		//Now cycle through the nodes removing a higher level if enough of the lower levels are there..
-		int casclevel=1;
+		int casclevel=0;
 		int totlevel = 0;
+		boolean moveup = false;
 		for(BlockTreeNode node : cascnodes) {
-			if(node.getSuperBlockLevel()>=casclevel) {
+			int superlev = node.getSuperBlockLevel();
+			
+			//Are we above the minimum power
+			if(superlev>=casclevel) {
 				//we keep it..
 				node.setCurrentLevel(casclevel);
 				finalnodes.add(0,node);
 				totlevel++;
-				if(totlevel>=3) {
-					//Move up a level..
+				
+				//Keep at least this many at each level..
+				if(totlevel>=GlobalParams.MINIMA_MINUMUM_CASCADE_LEVEL) {
+					moveup = true;
+				}
+				
+				//Are we going up a level..
+				if(moveup && (superlev >= casclevel+1)) {
+					//Allow Move up a level.. when you hit the next valid node..
 					casclevel++;
 					totlevel = 0;
+					moveup   = false;	
 				}
+				
 			}else{
 				//We can't keep it..
 				TxPOWDBRow row = mDB.getTxPOWRow(node.getTxPowID());
@@ -128,16 +140,6 @@ public class CascadeTree2 {
 				mRemovals.add(node);
 			}
 		}	
-		
-		
-//		//Remove all of these..
-//		for(BlockTreeNode node : cascnodes) {
-//			//Add the node..
-//			finalnodes.add(node);
-//			
-//			//Now cascade
-//			finalnodes = removeLowerLevels(finalnodes, node.getSuperBlockLevel());
-//		}
 			
 		//Now add all this to the final tree
 		for(BlockTreeNode node : finalnodes) {
