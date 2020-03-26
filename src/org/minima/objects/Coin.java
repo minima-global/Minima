@@ -105,7 +105,7 @@ public class Coin implements Streamable {
 	}
 	
 	/**
-	 * Floating inputs change the Amount
+	 * Floating inputs or Remainder Outputs change the Amount
 	 */
 	public void resetAmount(MiniNumber zAmount) {
 		mAmount = zAmount;

@@ -143,7 +143,6 @@ public class ConsensusPrint {
 							if(!addedcoins.contains(entry)) {
 								addedcoins.add(entry);
 								allcoins.add(topmmr.getProof(coinmmr.getEntry()));
-//								System.out.println("ADDED : "+mmrset.getBlockTime()+" "+coinmmr.getEntry()+") "+coinmmr.getData());
 							}
 						}
 					}

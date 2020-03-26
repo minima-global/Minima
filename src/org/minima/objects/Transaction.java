@@ -6,6 +6,8 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.Hashtable;
 
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniHash;
@@ -84,21 +86,95 @@ public class Transaction implements Streamable {
 	}
 	
 	public MiniNumber sumInputs() {
-		MiniNumber tot = new MiniNumber();
+		MiniNumber tot = MiniNumber.ZERO;
 		for(Coin cc : mInputs) {
 			tot = tot.add(cc.mAmount);
 		}
 		return tot;
 	}
 	
+	public MiniNumber sumInputs(MiniHash zTokenID) {
+		MiniNumber tot = MiniNumber.ZERO;
+		for(Coin cc : mInputs) {
+			if(cc.getTokenID().isExactlyEqual(zTokenID)) {
+				tot = tot.add(cc.mAmount);	
+			}
+		}
+		return tot;
+	}
+	
 	public MiniNumber sumOutputs() {
-		MiniNumber tot = new MiniNumber();
+		MiniNumber tot = MiniNumber.ZERO;
 		for(Coin cc : mOutputs) {
 			tot = tot.add(cc.mAmount);
 		}
 		return tot;
 	}
+	
+	public MiniNumber sumOutputs(MiniHash zTokenID) {
+		MiniNumber tot = MiniNumber.ZERO;
+		for(Coin cc : mOutputs) {
+			if(cc.getTokenID().isExactlyEqual(zTokenID)) {
+				tot = tot.add(cc.mAmount);	
+			}
+		}
+		return tot;
+	}
 
+	/**
+	 * Get the Remainder Output Coin for a specific token..
+	 */
+	public Coin getRemainderCoin(MiniHash zTokenID) {
+		for(Coin cc : mOutputs) {
+			if(cc.isRemainder() && cc.getTokenID().isExactlyEqual(zTokenID)) {
+				return cc;
+			}
+		}
+		return null;
+	}
+	
+	/**
+	 * You only need to check that there are enough Inputs for the Outputs.
+	 * The rest is BURN..
+	 * @return
+	 */
+	public boolean checkValidInOutPerToken(){
+		//First get a list of all the Ouput tokens..
+		ArrayList<String> tokens = new ArrayList<>();
+		for(Coin cc : mOutputs) {
+			String tok = cc.getTokenID().to0xString();
+			if(!tokens.contains(tok)) {
+				tokens.add(tok);	
+			}
+		}
+		
+		//Now get all the Output Amounts...
+		Hashtable<String, MiniNumber> outamounts = new Hashtable<>();
+		for(String token : tokens) {
+			outamounts.put(token, sumOutputs(new MiniHash(token)));
+		}
+		
+		//Now cycle through and check there is enough inputs..
+		Enumeration<String> keys = outamounts.keys();
+		while(keys.hasMoreElements()) {
+			//The token
+			String tok = keys.nextElement();
+			
+			//The output total amount
+			MiniNumber outamt = outamounts.get(tok);
+			
+			//The input total amount
+			MiniNumber inamt = sumInputs(new MiniHash(tok));
+			
+			//Do the check..
+			if(inamt.isLess(outamt)) {
+				return false;	
+			}
+		}
+		
+		return true;
+	}
+	
 	/**
 	 * Set a state value from 0-255 to a certain value
 	 * @param zStateNum

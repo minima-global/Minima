@@ -68,7 +68,9 @@ public class SimpleBlockTreePrinter {
 		MiniHash parent  = txpow.getSuperParent(clev);
 		MiniHash parent2 = txpow.getSuperParent(clev+1);
 				
-		String parents = "[blk]"+zNode.getTxPowID().toShort0xString(16)+" "
+		String parents = "[blk:"+zNode.getTxPow().getBlockNumber()+"] "
+						 +"diff:"+zNode.getTxPow().getBlockDifficulty().toShort0xString(16)+" "
+					     +"txpowid:"+zNode.getTxPowID().toShort0xString(16)+" "
 						 +"[parent:"+clev+"]"+parent.toShort0xString(16)+" "
 						 +"[parent:"+(clev+1)+"]"+parent2.toShort0xString(16);
 								
@@ -82,7 +84,7 @@ public class SimpleBlockTreePrinter {
 			add += " [++THE TIP++]";
 		}
 
-		return weight + zNode.getTxPow().getBlockNumber()+" "+"["+clev+" / "+slev+"] "+add;
+		return weight+"["+clev+" / "+slev+"] "+add;
 	}
 	
 	private String getStarString(int zLen) {

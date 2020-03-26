@@ -2,6 +2,7 @@ package org.minima.system.brains;
 
 import java.time.temporal.IsoFields;
 import java.util.ArrayList;
+import java.util.Hashtable;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.mmr.MMRData;
@@ -106,6 +107,15 @@ public class TxPOWChecker {
 		//Make a deep copy.. as we may need to edit it.. with floating values and DYN_STATE
 		Transaction trans = zTrans.deepCopy();
 		
+		//Simplest check first.. valid amounts..
+		if(!trans.checkValidInOutPerToken()) {
+			//The contract execution log - will be updated later, but added now
+			JSONObject contractlog = new JSONObject();
+			zContractLog.add(contractlog);
+			contractlog.put("error", "Total Inputs are LESS than Total Outputs for certain Tokens");
+			return false;
+		}
+		
 		//Check the input scripts
 		ArrayList<Coin> inputs  = trans.getAllInputs();
 		
@@ -116,7 +126,6 @@ public class TxPOWChecker {
 		boolean isfloating = false;
 
 		//First Inputs..
-		MiniNumber totalin = MiniNumber.ZERO;
 		int ins = inputs.size();
 		for(int i=0;i<ins;i++) {
 			//Get the Input
@@ -290,16 +299,49 @@ public class TxPOWChecker {
 					}
 				}
 			}
-			
-			//Add to the total
-			totalin = totalin.add(input.getAmount());
 		}
 		
-		//Do we need to check the Remainders
+		//Do we need to check the Remainders - Reset the amount if a 
+		//floating coin has changed the input amounts.. This will only ever be MORE..
 		if(isfloating) {
-			//Check all the outputs..
+			ArrayList<String> tokens = new ArrayList<>();
+			for(Coin cc : trans.getAllInputs()) {
+				String tok = cc.getTokenID().to0xString();
+				if(!tokens.contains(tok)) {
+					tokens.add(tok);	
+				}
+			}
 			
+			//Now get all the Input Amounts...
+			Hashtable<String, MiniNumber> inamounts = new Hashtable<>();
+			for(String token : tokens) {
+				inamounts.put(token, trans.sumInputs(new MiniHash(token)));
+			}
 			
+			//Now get the output amounts..
+			for(String token : tokens) {
+				MiniHash tok = new MiniHash(token);
+				
+				//Summthe outputs for this token type
+				MiniNumber outamt = trans.sumOutputs(tok);
+				
+				//Do we need to reset the remainder amount - if one exists ?
+				MiniNumber inamt = inamounts.get(token);
+				
+				//Calculate the remainder
+				MiniNumber remainder = inamt.sub(outamt);
+				
+				//OK - some resetting to do..
+				if(!remainder.isEqual(MiniNumber.ZERO)) {
+					//Find the Remainder output for this token type..
+					Coin remainderoutput = trans.getRemainderCoin(tok);
+					
+					if(remainderoutput != null) {
+						//Reset the output amount..
+						remainderoutput.resetAmount(remainderoutput.getAmount().add(remainder));	
+					}
+				}
+			}
 		}
 		
 		//The HASH of the Transaction.. needed for coinid
@@ -307,7 +349,6 @@ public class TxPOWChecker {
 		MiniHash transhash = Crypto.getInstance().hashObject(trans);
 				
 		//Get outputs - add them to the MMR also..
-		MiniNumber totalout = MiniNumber.ZERO;
 		ArrayList<Coin> outputs  = trans.getAllOutputs();
 		int outs = outputs.size();
 		for(int i=0;i<outs;i++) {
@@ -365,15 +406,6 @@ public class TxPOWChecker {
 					}
 				}
 			}
-			
-			//Check the total..
-			totalout = totalout.add(outputs.get(i).getAmount());
-		}
-		
-		//And final check..
-		//TODO.. check tokens as well as base Minima
-		if(totalout.isMore(totalin)) {
-			return false;
 		}
 		
 		//All OK!

@@ -338,12 +338,12 @@ public class ConsensusTxn {
 			MiniNumber outs = trx.sumOutputs();
 			MiniNumber burn = ins.sub(outs);
 			
-			boolean vamounts = outs.isLessEqual(ins);
+			boolean vamounts = trx.checkValidInOutPerToken();
 			
 			resp.put("inputs_sum", ins.toString());
 			resp.put("outputs_sum", outs.toString());
 			resp.put("burn", burn.toString());
-			resp.put("valid_amounts", outs.isLessEqual(ins));
+			resp.put("valid_amounts", vamounts);
 			
 			//Create a complete transaction
 			Witness newwit = getMainDB().createValidWitness(trx, wit);
