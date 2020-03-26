@@ -12,17 +12,19 @@ import org.minima.utils.json.JSONObject;
  * @author spartacusrex
  *
  */
-public class FeeTransaction extends Transaction {
+public class BurnTransaction extends Transaction {
 
 	/**
 	 * This FEE transaction pays for this Transaction only..
 	 */
-	MiniHash mMainTransaction;
+	MiniHash mMainTransaction = new MiniHash();
 	
-	public FeeTransaction(MiniHash zMainTransaction) {
+	public BurnTransaction() {
 		super();		
-		
-		mMainTransaction = zMainTransaction;
+	}
+	
+	public void setTransaction(MiniHash zTransaction){
+		mMainTransaction = zTransaction;
 	}
 	
 	@Override

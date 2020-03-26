@@ -77,6 +77,8 @@ public class ResponseStream {
 		
 		if(!zValid) {
 			mJSON.put("error", zError);
+		}else {
+			mJSON.put("message", zError);
 		}
 		
 		//Add the data to the JSON

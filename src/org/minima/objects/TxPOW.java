@@ -58,6 +58,16 @@ public class TxPOW implements Streamable {
 	private Witness		mWitness = new Witness();
 	
 	/**
+	 * The BURN paying for the Transaction the user is trying to send - can be empty
+	 */
+	private BurnTransaction	mBurnTransaction = new BurnTransaction();
+	
+	/**
+	 * The Witness data for the FeeTransaction - can be empty
+	 */
+	private Witness	   mBurnWitness = new Witness();
+	
+	/**
 	 * The Block Number
 	 */
 	private MiniNumber  mBlockNumber = new MiniNumber();
@@ -303,6 +313,10 @@ public class TxPOW implements Streamable {
 		txpow.put("txn", mTransaction.toJSON());
 		txpow.put("witness", mWitness.toJSON());
 		
+		//The BURN transaction.. normally empty
+		txpow.put("burntxn", mBurnTransaction.toJSON());
+		txpow.put("burnwitness", mBurnWitness.toJSON());
+		
 		//Need to make it into a JSON array
 		JSONArray txns = new JSONArray();
 		for(MiniHash txn : mTxPowIDList) {
@@ -339,6 +353,8 @@ public class TxPOW implements Streamable {
 		mTxnDifficulty.writeDataStream(zOut);
 		mTransaction.writeDataStream(zOut);
 		mWitness.writeDataStream(zOut);
+		mBurnTransaction.writeDataStream(zOut);
+		mBurnWitness.writeDataStream(zOut);
 		mBlockNumber.writeDataStream(zOut);
 		mParent.writeDataStream(zOut);
 		mBlockDifficulty.writeDataStream(zOut);
@@ -398,6 +414,8 @@ public class TxPOW implements Streamable {
 		mTxnDifficulty = MiniHash.ReadFromStream(zIn);
 		mTransaction.readDataStream(zIn);
 		mWitness.readDataStream(zIn);
+		mBurnTransaction.readDataStream(zIn);
+		mBurnWitness.readDataStream(zIn);
 		mBlockNumber.readDataStream(zIn);
 		mParent = MiniHash.ReadFromStream(zIn);
 		mBlockDifficulty.readDataStream(zIn);

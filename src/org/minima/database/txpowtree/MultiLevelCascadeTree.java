@@ -111,23 +111,54 @@ public class MultiLevelCascadeTree {
 			
 			//Are we above the minimum power
 			if(superlev>=casclevel) {
-				//we keep it..
+				
+				//METHOD1
+//				node.setCurrentLevel(casclevel);
+//				finalnodes.add(0,node);
+//				totlevel++;
+//				
+//				//Keep at least this many at each level..
+//				if(totlevel>=GlobalParams.MINIMA_MINUMUM_CASCADE_LEVEL) {
+//					moveup = true;
+//				}
+//				
+//				//Are we going up a level..
+//				if(moveup && (superlev >= casclevel+1)) {
+//					//Allow Move up a level.. when you hit the next valid node..
+//					casclevel++;
+//					totlevel = 0;
+//					moveup   = false;	
+//				}
+				
+				//METHOD2
 				node.setCurrentLevel(casclevel);
 				finalnodes.add(0,node);
 				totlevel++;
 				
 				//Keep at least this many at each level..
 				if(totlevel>=GlobalParams.MINIMA_MINUMUM_CASCADE_LEVEL) {
-					moveup = true;
-				}
-				
-				//Are we going up a level..
-				if(moveup && (superlev >= casclevel+1)) {
-					//Allow Move up a level.. when you hit the next valid node..
 					casclevel++;
 					totlevel = 0;
-					moveup   = false;	
 				}
+				
+//				//METHOD3
+//				node.setCurrentLevel(casclevel);
+//				finalnodes.add(0,node);
+//				totlevel++;
+//				
+//				//Keep at least this many at each level..
+//				if(totlevel>GlobalParams.MINIMA_MINUMUM_CASCADE_LEVEL) {
+//					moveup = true;
+//				}
+//				
+//				//Are we going up a level..
+//				if(moveup && (superlev > casclevel)) {
+//					//Allow Move up a level.. when you hit the next valid node..
+//					casclevel++;
+//					node.setCurrentLevel(casclevel);
+//					totlevel = 1;
+//					moveup   = false;	
+//				}
 				
 			}else{
 				//We can't keep it..

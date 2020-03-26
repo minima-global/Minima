@@ -186,10 +186,16 @@ public class ConsensusHandler extends SystemHandler {
 			getMainDB().processTxPOW(txpow);
 		
 			//Print the tree..
-			if(true || mPrintChain) {
-				Message print = new Message(ConsensusPrint.CONSENSUS_PRINTCHAIN_TREE).addBoolean("systemout", true);
-				PostMessage(print);
-			}
+//			if(true || mPrintChain) {
+//				Message print = new Message(ConsensusPrint.CONSENSUS_PRINTCHAIN_TREE).addBoolean("systemout", true);
+//				PostMessage(print);
+//			}
+			
+			//Add a chartpoint
+			Message chart = new Message(ConsensusPrint.CONSENSUS_ADDCHARTPOINT);
+			chart.addString("block", getMainDB().getMainTree().getChainTip().getTxPow().getBlockNumber().toString());
+			chart.addString("weight", getMainDB().getMainTree().getChainRoot().getTotalWeight().toString());
+			PostMessage(chart);
 			
 			/**
 			 * One time run the first time you see a txpow..

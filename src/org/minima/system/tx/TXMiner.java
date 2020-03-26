@@ -94,14 +94,14 @@ public class TXMiner extends SystemHandler{
 			txpow.calculateTXPOWID();
 			
 			//Keep cycling until it is ready 
-			while(!txpow.isBlock()) {
+			while(!txpow.isBlock() && isRunning()) {
 				//Set the Nonce..
 				txpow.setNonce(txpow.getNonce().increment());
 				
 				//Set the TxPOW
 				txpow.calculateTXPOWID();
 			}
-							
+			
 			//We have a valid TX-POW.. tell main
 			Message msg = new Message(ConsensusHandler.CONSENSUS_PRE_PROCESSTXPOW).addObject("txpow", txpow);
 			getMainHandler().getConsensusHandler().PostMessage(msg);

@@ -1,5 +1,9 @@
 package org.minima.system.brains;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.PrintWriter;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -38,7 +42,19 @@ import org.minima.utils.messages.Message;
 
 public class ConsensusPrint {
 
+	public class chartpoint{
+		public long mBlock;
+		public long mTotalWeight;
+		
+		public chartpoint(long zBlock, long zWeight) {
+			mBlock = zBlock;
+			mTotalWeight = zWeight;
+		}
+	}
+	ArrayList<chartpoint> mChart = new ArrayList<>();
 
+	
+	
 	public static final String CONSENSUS_PREFIX 			= "CONSENSUSPRINT_";
 	
 	public static final String CONSENSUS_BALANCE 			= CONSENSUS_PREFIX+"BALANCE";
@@ -54,6 +70,10 @@ public class ConsensusPrint {
 	public static final String CONSENSUS_PRINTCHAIN 		= CONSENSUS_PREFIX+"PRINTCHAIN";
 	
 	public static final String CONSENSUS_PRINTCHAIN_TREE 	= CONSENSUS_PREFIX+"PRINTCHAIN_TREE";
+	
+	public static final String CONSENSUS_ADDCHARTPOINT 		= CONSENSUS_PREFIX+"ADDCHARTPOINT";
+	public static final String CONSENSUS_OUTPUTCHART 		= CONSENSUS_PREFIX+"OUTPUTCHART";
+	public static final String CONSENSUS_CLEARCHART 		= CONSENSUS_PREFIX+"CLEARCHART";
 	
     MinimaDB mDB;
 	
@@ -96,6 +116,32 @@ public class ConsensusPrint {
 			MinimaLogger.log("---");
 			MMRSet set = getMainDB().getMainTree().getChainTip().getMMRSet();
 			MMRPrint.Print(set);
+		
+		}else if(zMessage.isMessageType(CONSENSUS_ADDCHARTPOINT)){
+			long block  = Long.parseLong(zMessage.getString("block"));
+			long weight = Long.parseLong(zMessage.getString("weight"));
+			mChart.add(new chartpoint(block, weight));
+			
+		}else if(zMessage.isMessageType(CONSENSUS_OUTPUTCHART)){
+			String filename = "chart.csv";//zMessage.getString("filename");
+			File chart = new File(System.getProperty("user.home"),filename);
+			if(chart.exists()) {
+				chart.delete();
+			}
+			
+			PrintWriter pw = new PrintWriter(chart);
+			pw.println("Block,Weight,");
+			for(chartpoint point : mChart) {
+				pw.println(point.mBlock+","+point.mTotalWeight+",");
+			}
+			
+			pw.flush();
+			pw.close();
+			
+			InputHandler.endResponse(zMessage, true, "Chart output to "+chart.getAbsolutePath());
+			
+		}else if(zMessage.isMessageType(CONSENSUS_CLEARCHART)){
+			mChart.clear();
 		
 		}else if(zMessage.isMessageType(CONSENSUS_PRINTCHAIN_TREE)){
 			SimpleBlockTreePrinter treeprint = new SimpleBlockTreePrinter(getMainDB().getMainTree(), true);
