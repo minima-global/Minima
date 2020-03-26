@@ -1,4 +1,4 @@
-package org.minima.miniscript.functions.txn;
+package org.minima.miniscript.functions.state;
 
 import org.minima.miniscript.Contract;
 import org.minima.miniscript.exceptions.ExecutionException;

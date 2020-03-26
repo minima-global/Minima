@@ -34,7 +34,7 @@ public class GlobalParams {
 	/**
 	 * Minimum number of blocks at each cascade level 
 	 */
-	public static final int MINIMA_MINUMUM_CASCADE_LEVEL  = 2;
+	public static final int MINIMA_MINUMUM_CASCADE_LEVEL  = 8;
 	
 	/**
 	 * How Many Cascade Levels are there
