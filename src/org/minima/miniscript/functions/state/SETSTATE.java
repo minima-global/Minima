@@ -13,7 +13,7 @@ import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
 
 /**
- * Can ONLY be called once per state per transaction..
+ * Can ONLY be called ONCE per State variable per transaction..
  * 
  * @author spartacusrex
  *
