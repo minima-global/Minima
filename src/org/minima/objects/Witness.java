@@ -39,9 +39,9 @@ public class Witness implements Streamable {
 	 * General Constructor
 	 */
 	public Witness() {
-		mMMRProofs     = new ArrayList<>();
+		mMMRProofs       = new ArrayList<>();
 		mSignatureProofs = new ArrayList<>();
-		mTokenProofs = new ArrayList<>();
+		mTokenProofs     = new ArrayList<>();
 	}
 	
 	/**

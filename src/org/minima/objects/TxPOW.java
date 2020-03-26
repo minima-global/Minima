@@ -33,9 +33,9 @@ public class TxPOW implements Streamable {
 	private MiniNumber 	mNonce	= new MiniNumber(0);
 	
 	/**
-	 * TimeMilli  
+	 * Time Secs  
 	 */
-	private MiniNumber 	mTimeMilli= new MiniNumber();
+	private MiniNumber 	mTimeSecs= new MiniNumber();
 	
 	/**
 	 * The Difficulty for this TXPOW to be valid.
@@ -176,8 +176,8 @@ public class TxPOW implements Streamable {
 		return mTxnDifficulty;
 	}
 	
-	public void setTimeMilli(MiniNumber zMilli) {
-		mTimeMilli = zMilli;
+	public void setTimeSecs(MiniNumber zSecs) {
+		mTimeSecs = zSecs;
 	}
 	
 	public Transaction getTransaction() {
@@ -216,8 +216,8 @@ public class TxPOW implements Streamable {
 		return mSuperParents[zLevel];
 	}
 	
-	public MiniNumber getTimeMilli() {
-		return mTimeMilli;
+	public MiniNumber getTimeSecs() {
+		return mTimeSecs;
 	}
 	
 	public void setBlockNumber(MiniNumber zBlockNum) {
@@ -317,8 +317,8 @@ public class TxPOW implements Streamable {
 		txpow.put("nonce", mNonce.toString());
 		txpow.put("mmr", mMMRRoot.toString());
 		
-		txpow.put("timemilli", mTimeMilli.toString());
-		txpow.put("date", new Date(mTimeMilli.getAsLong()).toString());
+		txpow.put("timesecs", mTimeSecs.toString());
+		txpow.put("date", new Date(mTimeSecs.getAsLong()*1000).toString());
 		
 		return txpow;
 	}
@@ -335,7 +335,7 @@ public class TxPOW implements Streamable {
 		mChainID.writeDataStream(zOut);
 		mParentChainID.writeDataStream(zOut);
 		mCustom.writeDataStream(zOut);
-		mTimeMilli.writeDataStream(zOut);
+		mTimeSecs.writeDataStream(zOut);
 		mTxnDifficulty.writeDataStream(zOut);
 		mTransaction.writeDataStream(zOut);
 		mWitness.writeDataStream(zOut);
@@ -394,7 +394,7 @@ public class TxPOW implements Streamable {
 		mChainID.readDataStream(zIn);
 		mParentChainID.readDataStream(zIn);
 		mCustom.readDataStream(zIn);
-		mTimeMilli.readDataStream(zIn);
+		mTimeSecs.readDataStream(zIn);
 		mTxnDifficulty = MiniHash.ReadFromStream(zIn);
 		mTransaction.readDataStream(zIn);
 		mWitness.readDataStream(zIn);

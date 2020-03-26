@@ -287,9 +287,9 @@ public class BlockTree {
 	 */
 	public MiniNumber getChainSpeed() {
 		//Time difference between the cascade node and the tip
-		MiniNumber millistart = mCascadeNode.getTxPow().getTimeMilli();
-		MiniNumber milliend   = mTip.getTxPow().getTimeMilli();
-		MiniNumber timediff   = milliend.sub(millistart);
+		MiniNumber start      = mCascadeNode.getTxPow().getTimeSecs();
+		MiniNumber end        = mTip.getTxPow().getTimeSecs();
+		MiniNumber timediff   = end.sub(start);
 		
 		//How many blocks..
 		MiniNumber blockstart = mCascadeNode.getTxPow().getBlockNumber();
@@ -297,11 +297,10 @@ public class BlockTree {
 		MiniNumber blockdiff  = blockend.sub(blockstart); 
 		
 		//So.. 
-		MiniNumber timesecs = timediff.div(MiniNumber.THOUSAND);
-		if(timesecs.isEqual(MiniNumber.ZERO)) {
-			return MiniNumber.ZERO;
+		if(timediff.isEqual(MiniNumber.ZERO)) {
+			return MiniNumber.ONE;
 		}
-		MiniNumber speed    = blockdiff.div(timesecs);
+		MiniNumber speed    = blockdiff.div(timediff);
 		
 		return speed;
 	}

@@ -99,22 +99,27 @@ public class ConsensusPrint {
 		
 		}else if(zMessage.isMessageType(CONSENSUS_PRINTCHAIN_TREE)){
 			SimpleBlockTreePrinter treeprint = new SimpleBlockTreePrinter(getMainDB().getMainTree(), true);
-			String tree = treeprint.printtree();
+			String treeinfo = treeprint.printtree();
 	
-			//DEBUGGING
+			BlockTree tree = getMainDB().getMainTree();
+			
+					//DEBUGGING
 			if(zMessage.exists("systemout")) {
 //				BlockTreePrinter2.clearScreen();
-				MinimaLogger.log(tree);
+				treeinfo += "\n\nSpeed              : "+tree.getChainSpeed()+" blocks / sec";
+				treeinfo += "\nCurrent Difficulty : "+tree.getChainTip().getTxPow().getBlockDifficulty().to0xString();
+				treeinfo += "\nTotal Weight       : "+tree.getChainRoot().getTotalWeight();
+
+				MinimaLogger.log(treeinfo);
+			}else {
+				//Now check whether they are unspent..
+				JSONObject dets = InputHandler.getResponseJSON(zMessage);
+				dets.put("tree", treeinfo);
+				dets.put("speed", tree.getChainSpeed());
+				dets.put("difficulty", tree.getChainTip().getTxPow().getBlockDifficulty().to0xString());
+				dets.put("weight", tree.getChainRoot().getTotalWeight());
+				InputHandler.endResponse(zMessage, true, "");	
 			}
-			
-			//Now check whether they are unspent..
-			JSONObject dets = InputHandler.getResponseJSON(zMessage);
-			dets.put("tree", tree);
-			dets.put("speed", getMainDB().getMainTree().getChainSpeed());
-			dets.put("difficulty", getMainDB().getMainTree().getChainTip().getTxPow().getBlockDifficulty().to0xString());
-			dets.put("weight", getMainDB().getMainTree().getChainRoot().getTotalWeight());
-			
-			InputHandler.endResponse(zMessage, true, "");
 			
 		}else if(zMessage.isMessageType(CONSENSUS_SEARCH)){
 			String address = zMessage.getString("address");
@@ -431,8 +436,8 @@ public class ConsensusPrint {
 			//Up time..
 			long timediff     = System.currentTimeMillis() - getHandler().getMainHandler().getNodeStartTime();
 			String uptime     = Maths.ConvertMilliToTime(timediff);	
-			status.put("milliuptime", timediff);
-			status.put("stringuptime", uptime);
+//			status.put("milliuptime", timediff);
+			status.put("uptime", uptime);
 			status.put("conf", main.getBackupManager().getRootFolder());
 			status.put("host", main.getNetworkHandler().getRPCServer().getHost());
 			status.put("port", main.getNetworkHandler().getServer().getPort());

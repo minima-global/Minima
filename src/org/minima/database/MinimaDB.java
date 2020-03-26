@@ -751,7 +751,7 @@ public class MinimaDB {
 		TxPOW txpow = new TxPOW();
 				
 		//Set the time
-		txpow.setTimeMilli(new MiniNumber(""+System.currentTimeMillis()));
+		txpow.setTimeSecs(new MiniNumber(""+(System.currentTimeMillis()/1000)));
 			
 		//Set the Transaction..
 		txpow.setTransaction(zTrans);

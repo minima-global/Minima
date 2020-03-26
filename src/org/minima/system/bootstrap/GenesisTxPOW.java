@@ -23,7 +23,7 @@ public class GenesisTxPOW extends TxPOW{
 		
 		setNonce(new MiniNumber("256"));
 		 
-		setTimeMilli(new MiniNumber(""+System.currentTimeMillis()));
+		setTimeSecs(new MiniNumber(""+(System.currentTimeMillis()/1000)));
 		
 		setBlockNumber(new MiniNumber("0"));
 		
