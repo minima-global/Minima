@@ -12,6 +12,12 @@ import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
 
+/**
+ * Can ONLY be called once per state per transaction..
+ * 
+ * @author spartacusrex
+ *
+ */
 public class SETSTATE extends MinimaFunction {
 
 	public SETSTATE() {
