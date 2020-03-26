@@ -32,17 +32,17 @@ public class Transaction implements Streamable {
 	/**
 	 * The Inputs that make up the Transaction
 	 */
-	ArrayList<Coin> mInputs  = new ArrayList<>();
+	protected ArrayList<Coin> mInputs  = new ArrayList<>();
 	
 	/**
 	 * All the Outputs
 	 */
-	ArrayList<Coin> mOutputs = new ArrayList<>();
+	protected ArrayList<Coin> mOutputs = new ArrayList<>();
 	
 	/**
 	 * The State values of the Transaction
 	 */
-	ArrayList<StateVariable> mState = new ArrayList<>();
+	protected ArrayList<StateVariable> mState = new ArrayList<>();
 	
 	/**
 	 * The Scripts used in the transactions 
@@ -51,14 +51,13 @@ public class Transaction implements Streamable {
 	 * Tokens
 	 * MAST
 	 */
-	ArrayList<ScriptProof> mScripts = new ArrayList<>();
+	protected ArrayList<ScriptProof> mScripts = new ArrayList<>();
 	
 	/**
 	 * If you are generating a TOKEN.. here are the details..
-	 * Needs to be here instead of witness so noone can alter it - you sign this.
+	 * Needs to be here instead of witness so no-one can alter it - you sign this.
 	 */
-	TokenProof mTokenGenDetails = null;
-	
+	protected TokenProof mTokenGenDetails = null;
 	
 	/**
 	 * Constructor
@@ -69,12 +68,12 @@ public class Transaction implements Streamable {
 		mInputs.add(zCoin);
 	}
 	
-	public boolean isEmpty() {
-		return mInputs.size() == 0 && mOutputs.size() == 0;
-	}
-	
 	public void addOutput(Coin zCoin) {
 		mOutputs.add(zCoin);
+	}
+	
+	public boolean isEmpty() {
+		return mInputs.size() == 0 && mOutputs.size() == 0;
 	}
 	
 	public ArrayList<Coin> getAllInputs(){
