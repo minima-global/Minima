@@ -142,7 +142,12 @@ public class Transaction implements Streamable {
 		//First get a list of all the Ouput tokens..
 		ArrayList<String> tokens = new ArrayList<>();
 		for(Coin cc : mOutputs) {
-			String tok = cc.getTokenID().to0xString();
+			MiniHash tokenhash = cc.getTokenID();
+			if(tokenhash.isExactlyEqual(Coin.TOKENID_CREATE)){
+				tokenhash = Coin.MINIMA_TOKENID;
+			}
+			
+			String tok = tokenhash.to0xString();
 			if(!tokens.contains(tok)) {
 				tokens.add(tok);	
 			}

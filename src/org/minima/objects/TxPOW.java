@@ -298,8 +298,8 @@ public class TxPOW implements Streamable {
 //		}
 //		txpow.put("superparents", supers);
 		
-		txpow.put("blkdiff", mBlockDifficulty);
-		txpow.put("txndiff", mTxnDifficulty);
+		txpow.put("blkdiff", mBlockDifficulty.to0xString());
+		txpow.put("txndiff", mTxnDifficulty.to0xString());
 		txpow.put("txn", mTransaction.toJSON());
 		txpow.put("witness", mWitness.toJSON());
 		
