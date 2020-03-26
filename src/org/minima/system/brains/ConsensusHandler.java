@@ -186,11 +186,10 @@ public class ConsensusHandler extends SystemHandler {
 			getMainDB().processTxPOW(txpow);
 		
 			//Print the tree..
-			if(mPrintChain) {
-				Message print = new Message(ConsensusPrint.CONSENSUS_PRINTCHAIN_TREE);
-//				InputHandler.addResponseMesage(print, zMessage);
-				PostMessage(print);
-			}
+//			if(true || mPrintChain) {
+//				Message print = new Message(ConsensusPrint.CONSENSUS_PRINTCHAIN_TREE).addBoolean("systemout", true);
+//				PostMessage(print);
+//			}
 			
 			/**
 			 * One time run the first time you see a txpow..

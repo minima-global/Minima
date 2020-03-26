@@ -13,6 +13,7 @@ import org.minima.database.mmr.MMRPrint;
 import org.minima.database.mmr.MMRSet;
 import org.minima.database.txpowdb.TxPOWDBRow;
 import org.minima.database.txpowdb.TxPowDBPrinter;
+import org.minima.database.txpowtree.BlockTree;
 import org.minima.database.txpowtree.BlockTreeNode;
 import org.minima.database.txpowtree.BlockTreePrinter;
 import org.minima.database.txpowtree.SimpleBlockTreePrinter;
@@ -97,21 +98,23 @@ public class ConsensusPrint {
 			MMRPrint.Print(set);
 		
 		}else if(zMessage.isMessageType(CONSENSUS_PRINTCHAIN_TREE)){
-			//Print the Tree
-//			BlockTreePrinter treeprint = new BlockTreePrinter(getMainDB().getMainTree(), true);
-//			treeprint.printtree();
-			
 			SimpleBlockTreePrinter treeprint = new SimpleBlockTreePrinter(getMainDB().getMainTree(), true);
 			String tree = treeprint.printtree();
-			
-//			BlockTreePrinter2.clearScreen();
-//			MinimaLogger.log(tree);
+	
+			//DEBUGGING
+			if(zMessage.exists("systemout")) {
+//				BlockTreePrinter2.clearScreen();
+				MinimaLogger.log(tree);
+			}
 			
 			//Now check whether they are unspent..
 			JSONObject dets = InputHandler.getResponseJSON(zMessage);
 			dets.put("tree", tree);
-			InputHandler.endResponse(zMessage, true, "");
+			dets.put("speed", getMainDB().getMainTree().getChainSpeed());
+			dets.put("difficulty", getMainDB().getMainTree().getChainTip().getTxPow().getBlockDifficulty().to0xString());
+			dets.put("weight", getMainDB().getMainTree().getChainRoot().getTotalWeight());
 			
+			InputHandler.endResponse(zMessage, true, "");
 			
 		}else if(zMessage.isMessageType(CONSENSUS_SEARCH)){
 			String address = zMessage.getString("address");

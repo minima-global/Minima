@@ -206,11 +206,11 @@ public class MMRSet implements Streamable {
 	}
 	
 	/**
-	 * Search for the first valid unspent Address and Amount coin
+	 * Search for the first valid unspent Address and Tokenid with AT LEAST Amount coin
 	 * @param zCoinID
 	 * @return
 	 */
-	public MMREntry searchAddress(MiniHash zAddress, MiniNumber zAmount) {
+	public MMREntry searchAddress(MiniHash zAddress, MiniNumber zAmount, MiniHash zTokenID) {
 		//Get the zero row - no parents..
 		ArrayList<MMREntry> zero=getZeroRow();
 		
@@ -218,11 +218,12 @@ public class MMRSet implements Streamable {
 			if(!entry.getData().isHashOnly()) {
 				Coin cc = entry.getData().getCoin();
 				
-				boolean spent  = entry.getData().isSpent();
-				boolean addr   = cc.getAddress().isExactlyEqual(zAddress);
-				boolean amount = cc.getAmount().isMoreEqual(zAmount);
+				boolean notspent  = !entry.getData().isSpent();
+				boolean addr      = cc.getAddress().isExactlyEqual(zAddress);
+				boolean amount    = cc.getAmount().isMoreEqual(zAmount);
+				boolean tok       = cc.getTokenID().isExactlyEqual(zTokenID);
 				
-				if(addr && amount && !spent){
+				if(addr && amount && tok && notspent){
 					return entry;
 				}
 			}
@@ -230,7 +231,7 @@ public class MMRSet implements Streamable {
 			
 		//Cycle up the parents.. 
 		if(mParent!=null) {
-			return mParent.searchAddress(zAddress, zAmount);
+			return mParent.searchAddress(zAddress, zAmount, zTokenID);
 		}
 		
 		return null;

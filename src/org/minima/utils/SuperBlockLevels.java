@@ -26,14 +26,15 @@ public class SuperBlockLevels {
 		//Get as a BigInteger..
 		BigInteger supbig = sup.toBigInteger();
 		
-		int ll2 = (int) Maths.log2BI(supbig);
+//		int ll2 = (int) Maths.log2BI(supbig);
+		long ll2 =  Math.round(Maths.log2BI(supbig));
 		
 		if(ll2 > GlobalParams.MINIMA_CASCADE_LEVELS-1) {
 			ll2 = GlobalParams.MINIMA_CASCADE_LEVELS-1;
 		}
 //		int ll2 = (int)Maths.log2(sup.doubleValue());
 		
-		return ll2;
+		return (int)ll2;
 	}
 	
 }

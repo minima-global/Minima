@@ -49,12 +49,12 @@ public class SimpleBlockTreePrinter {
 		//And finally print it..
 		String output = "\n"+TreePrinter.toString(mRoot);
 
-		BigInteger avgdiff = mTree.getAvgChainDifficulty();
-		MiniHash avghash = new MiniHash("0x"+avgdiff.toString(16));
-		
-		output += "\n\nSpeed              : "+mTree.getChainSpeed()+" blocks / sec";
-		output += "\nCurrent Difficulty : "+mTree.getChainTip().getTxPow().getBlockDifficulty().to0xString();
-		output += "\nTotal Weight       : "+mTree.getChainRoot().getTotalWeight();
+//		BigInteger avgdiff = mTree.getAvgChainDifficulty();
+//		MiniHash avghash = new MiniHash("0x"+avgdiff.toString(16));
+//		
+//		output += "\n\nSpeed              : "+mTree.getChainSpeed()+" blocks / sec";
+//		output += "\nCurrent Difficulty : "+mTree.getChainTip().getTxPow().getBlockDifficulty().to0xString();
+//		output += "\nTotal Weight       : "+mTree.getChainRoot().getTotalWeight();
 
 		return output;
 	}

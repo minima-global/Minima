@@ -1,5 +1,7 @@
 package org.minima.objects;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -323,5 +325,37 @@ public class Transaction implements Streamable {
 		}else {
 			mTokenGenDetails = null;
 		}
+	}
+	
+	/**
+	 * Get a DEEP copy of this transaction
+	 */
+	public Transaction deepCopy() {
+		try {
+			//First write transaction out to a byte array
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			DataOutputStream dos = new DataOutputStream(baos);
+			writeDataStream(dos);
+			dos.flush();
+			dos.close();
+			
+			//Now read it into a new transaction..
+			byte[] transbytes = baos.toByteArray();
+			ByteArrayInputStream bais = new ByteArrayInputStream(transbytes);
+			DataInputStream dis = new DataInputStream(bais);
+			
+			Transaction deepcopy = new Transaction();
+			deepcopy.readDataStream(dis);
+			
+			dis.close();
+			
+			return deepcopy;
+
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return null;
 	}
 }
