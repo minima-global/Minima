@@ -19,7 +19,7 @@ public class PubPrivKey implements Streamable {
 	
 	MiniHash mPublicKey;
 	
-	private static final int WinternitzNumber = 8;
+	private static final int WinternitzNumber = 12;
 	private static Digest getHashFunction() {
 		return new KeccakDigest(256);
 	}
