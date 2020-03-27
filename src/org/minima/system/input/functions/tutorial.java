@@ -74,17 +74,18 @@ public class tutorial extends CommandFunction{
 			"Globals\n" + 
 			"-------\n" + 
 			"\n" + 
-			"@BLKNUM    : Block number this transaction is in\n" + 
-			"@INBLKNUM  : Block number when this output was created\n" + 
-			"@BLKDIFF   : Difference between BLKNUM and INBLKNUM\n" + 
-			"@INPUT     : Input number in the transaction\n" + 
-			"@AMOUNT    : Amount of this input\n" + 
-			"@ADDRESS   : Address of this input\n" + 
-			"@TOKENID   : TokenID of this input\n" + 
-			"@COINID    : CoinID of this input\n" + 
-			"@SCRIPT    : Script for this input\n" + 
-			"@TOTIN     : Total number of inputs for this transaction\n" + 
-			"@TOTOUT    : Total number of outputs for this transaction\n" + 
+			"@BLKNUM      : Block number this transaction is in\n" + 
+			"@INBLKNUM    : Block number when this output was created\n" + 
+			"@BLKDIFF     : Difference between BLKNUM and INBLKNUM\n" + 
+			"@INPUT       : Input number in the transaction\n" + 
+			"@AMOUNT      : Amount of this input\n" + 
+			"@ADDRESS     : Address of this input\n" + 
+			"@TOKENID     : TokenID of this input\n" + 
+			"@COINID      : CoinID of this input\n" + 
+			"@SCRIPT      : Script for this input\n" + 
+			"@TOKENSCRIPT : Script for this input\n" + 
+			"@TOTIN       : Total number of inputs for this transaction\n" + 
+			"@TOTOUT      : Total number of outputs for this transaction\n" + 
 			"\n" + 
 			"Functions\n" + 
 			"---------\n" + 
@@ -196,14 +197,17 @@ public class tutorial extends CommandFunction{
 			"VERIFYIN ( BYTE HEX NUMBER HEX )\n" + 
 			"Verify the specified input has the specified address, amount and tokenid\n" + 
 			"\n" + 
-			"STATE ( NUMBER )\n" + 
+			"STATE ( BYTE )\n" + 
 			"Return the state value for the given number\n" + 
 			"\n" + 
-			"PREVSTATE ( NUMBER )\n" + 
+			"PREVSTATE ( BYTE )\n" + 
 			"Return the state value stored in the MMR data in the initial transaction this input was created. Allows for a state to be maintained from 1 spend to the next\n" + 
 			"\n" + 
-			"SAMESTATE ( NUMBER [NUMBER] )\n" + 
+			"SAMESTATE ( BYTE [BYTE] )\n" + 
 			"Return TRUE if the previous state and current state are the same. If 2 parameters are set then checks all the values inbetween the 2 values inclusively\n" + 
+			"\n" + 
+			"DYNSTATE ( BYTE EXPRESSION )\n" + 
+			"Dynamically change the state value. You only need this for 'Floating' inputs. So that you can set the state correctly given the previous state.\n" + 
 			"\n" + 
 			"Examples\n" + 
 			"--------\n" + 

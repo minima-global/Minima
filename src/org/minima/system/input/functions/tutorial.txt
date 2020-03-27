@@ -68,17 +68,18 @@ FUNC        ::= HEXCAT | STRCAT | LEN | REV | SUBSET | RPLVAR | GET |
 Globals
 -------
 
-@BLKNUM    : Block number this transaction is in
-@INBLKNUM  : Block number when this output was created
-@BLKDIFF   : Difference between BLKNUM and INBLKNUM
-@INPUT     : Input number in the transaction
-@AMOUNT    : Amount of this input
-@ADDRESS   : Address of this input
-@TOKENID   : TokenID of this input
-@COINID    : CoinID of this input
-@SCRIPT    : Script for this input
-@TOTIN     : Total number of inputs for this transaction
-@TOTOUT    : Total number of outputs for this transaction
+@BLKNUM      : Block number this transaction is in
+@INBLKNUM    : Block number when this output was created
+@BLKDIFF     : Difference between BLKNUM and INBLKNUM
+@INPUT       : Input number in the transaction
+@AMOUNT      : Amount of this input
+@ADDRESS     : Address of this input
+@TOKENID     : TokenID of this input
+@COINID      : CoinID of this input
+@SCRIPT      : Script for this input
+@TOKENSCRIPT : Script for this input
+@TOTIN       : Total number of inputs for this transaction
+@TOTOUT      : Total number of outputs for this transaction
 
 Functions
 ---------
@@ -190,14 +191,17 @@ Return the token id of the specified input
 VERIFYIN ( BYTE HEX NUMBER HEX )
 Verify the specified input has the specified address, amount and tokenid
 
-STATE ( NUMBER )
+STATE ( BYTE )
 Return the state value for the given number
 
-PREVSTATE ( NUMBER )
+PREVSTATE ( BYTE )
 Return the state value stored in the MMR data in the initial transaction this input was created. Allows for a state to be maintained from 1 spend to the next
 
-SAMESTATE ( NUMBER [NUMBER] )
+SAMESTATE ( BYTE [BYTE] )
 Return TRUE if the previous state and current state are the same. If 2 parameters are set then checks all the values inbetween the 2 values inclusively
+
+DYNSTATE ( BYTE EXPRESSION )
+Dynamically change the state value. You only need this for 'Floating' inputs. So that you can set the state correctly given the previous state.
 
 Examples
 --------
