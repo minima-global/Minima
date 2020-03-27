@@ -9,7 +9,7 @@ public class search extends CommandFunction{
 	public search() {
 		super("search");
 		
-		setHelp("[address]", "Search for all coins of the given address", "");
+		setHelp("[address]", "Search for all unspent coins of the given address", "");
 	}
 	
 	@Override

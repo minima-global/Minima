@@ -9,7 +9,7 @@ public class keys extends CommandFunction {
 	public keys() {
 		super("keys");
 		
-		setHelp("(new)", "Create a new key pair or return a list of all the addresses and public keys in this account", "");
+		setHelp("(new)", "List all your public keys or create a new one", "");
 	}
 	
 	@Override

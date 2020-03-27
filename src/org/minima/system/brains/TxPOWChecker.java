@@ -1,20 +1,23 @@
 package org.minima.system.brains;
 
+import java.time.temporal.IsoFields;
 import java.util.ArrayList;
+import java.util.Hashtable;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.mmr.MMRData;
 import org.minima.database.mmr.MMREntry;
 import org.minima.database.mmr.MMRProof;
 import org.minima.database.mmr.MMRSet;
+import org.minima.database.txpowtree.BlockTreeNode;
 import org.minima.miniscript.Contract;
+import org.minima.miniscript.values.BooleanValue;
 import org.minima.miniscript.values.HEXValue;
 import org.minima.miniscript.values.NumberValue;
 import org.minima.miniscript.values.ScriptValue;
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
 import org.minima.objects.PubPrivKey;
-import org.minima.objects.TokenDetails;
 import org.minima.objects.Transaction;
 import org.minima.objects.TxPOW;
 import org.minima.objects.Witness;
@@ -22,6 +25,10 @@ import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
+import org.minima.objects.base.MiniString;
+import org.minima.objects.proofs.ScriptProof;
+import org.minima.objects.proofs.SignatureProof;
+import org.minima.objects.proofs.TokenProof;
 import org.minima.system.input.functions.gimme50;
 import org.minima.utils.Crypto;
 import org.minima.utils.json.JSONArray;
@@ -44,18 +51,38 @@ public class TxPOWChecker {
 		
 		//Now cycle
 		Witness wit = zTxPOW.getWitness();
-		int len     = wit.getAllPubKeys().size();
 		
-		for(int i=0;i<len;i++) {
-			MiniData pubk = wit.getPublicKey(i);
-			MiniData sig  = wit.getSignature(i);
+		//Get all the signatures..
+		ArrayList<SignatureProof> sigs = wit.getAllSignatures();
+		
+		//Check each one and add.. this is only done once..
+		for(SignatureProof sig : sigs) {
+			//This is the actual public key that is being represented..
+//			MiniHash finalPubKey = sig.getFinalHash();
 			
+			//Now check the leaf of the tree
+			MiniHash leafkey   = sig.getData();
+			MiniData signature = sig.getSignature();
+		
 			//Check it..
-			boolean ok = PubPrivKey.verify(pubk, transhash, sig);
+			boolean ok = PubPrivKey.verify(leafkey, transhash, signature);
 			if(!ok) {
 				return false;
 			}
 		}
+		
+//		int len     = wit.getAllPubKeys().size();
+//		
+//		for(int i=0;i<len;i++) {
+//			MiniData pubk = wit.getPublicKey(i);
+//			MiniData sig  = wit.getSignature(i);
+//			
+//			//Check it..
+//			boolean ok = PubPrivKey.verify(pubk, transhash, sig);
+//			if(!ok) {
+//				return false;
+//			}
+//		}
 		
 		return true;
 	}
@@ -69,9 +96,33 @@ public class TxPOWChecker {
 	 * @param zMMRSet
 	 * @return
 	 */
-	
 	public static boolean checkTransactionMMR(TxPOW zTxPOW, MinimaDB zDB) {
-		return checkTransactionMMR(zTxPOW.getTransaction(), zTxPOW.getWitness(), zDB, zDB.getTopBlock(), zDB.getMainTree().getChainTip().getMMRSet(), false);
+		//And use the chaintip for all the parameters..
+		BlockTreeNode tip = zDB.getMainTree().getChainTip();
+		return checkTransactionMMR(zTxPOW, zDB, tip.getTxPow().getBlockNumber(), tip.getMMRSet(), false);
+	}
+	
+	public static boolean checkTransactionMMR(TxPOW zTxPOW, MinimaDB zDB, MiniNumber zBlockNumber, MMRSet zMMRSet, boolean zTouchMMR) {
+		//Burn Transaction check!.. 
+		if(!zTxPOW.getBurnTransaction().isEmpty()) {
+			//Get MAIN Transaction Hash - make sure is correct in Burn Transaction
+			MiniHash transid = zTxPOW.getTransID();
+			
+			//Check is correct on Burn Transaction..
+			if(!zTxPOW.getBurnTransaction().getMainTransactionHash().isExactlyEqual(transid)) {
+				return false;
+			}
+			
+			boolean burntrans = checkTransactionMMR(zTxPOW.getBurnTransaction(), 
+													zTxPOW.getBurnWitness(), 
+													zDB, zBlockNumber, zMMRSet, zTouchMMR, 
+													new JSONArray());
+			if(!burntrans) {
+				return false;
+			}
+		}
+		
+		return checkTransactionMMR(zTxPOW.getTransaction(), zTxPOW.getWitness(), zDB, zBlockNumber, zMMRSet, zTouchMMR, new JSONArray());	
 	}
 	
 	public static boolean checkTransactionMMR(Transaction zTrans, Witness zWit, MinimaDB zDB, MiniNumber zBlockNumber, MMRSet zMMRSet, boolean zTouchMMR) {
@@ -79,30 +130,51 @@ public class TxPOWChecker {
 	}
 	
 	public static boolean checkTransactionMMR(Transaction zTrans, Witness zWit, MinimaDB zDB, MiniNumber zBlockNumber, MMRSet zMMRSet, boolean zTouchMMR, JSONArray zContractLog) {
+		//Make a deep copy.. as we may need to edit it.. with floating values and DYN_STATE
+		Transaction trans = zTrans.deepCopy();
+		
+		//The DYNState variables..
+		String[] DYNState = new String[256];
+		for(int i=0;i<256;i++) {
+			DYNState[i] = null;
+		}
+		
+		//Simplest check first.. valid amounts..
+		if(!trans.checkValidInOutPerToken()) {
+			//The contract execution log - will be updated later, but added now
+			JSONObject contractlog = new JSONObject();
+			zContractLog.add(contractlog);
+			contractlog.put("error", "Total Inputs are LESS than Total Outputs for certain Tokens");
+			return false;
+		}
+		
 		//Check the input scripts
-		ArrayList<Coin> inputs  = zTrans.getAllInputs();
+		ArrayList<Coin> inputs  = trans.getAllInputs();
 		
 		//The Signatures
 		String sigs = zWit.getAllPubKeysCSV();
-				
+		
+		//If ANY of the inputs are floating.. check for remainder outputs.
+		boolean isfloating = false;
+
 		//First Inputs..
-		MiniNumber totalin = MiniNumber.ZERO;
 		int ins = inputs.size();
 		for(int i=0;i<ins;i++) {
 			//Get the Input
 			Coin input = inputs.get(i);
-
-			//The contract execution log
+			
+			//The contract execution log - will be updated later, but added now
 			JSONObject contractlog = new JSONObject();
 			zContractLog.add(contractlog);
 			
 			//Get the Script..
-			String script = zTrans.getScript(input.getAddress()).getScript().toString();
-			if(script == null) {
+			ScriptProof sp =  zWit.getScript(input.getAddress());
+			if(sp == null) {
 				contractlog.put("error", "Script not found for "+input.getAddress());
 				return false;
 			}
-//			String script = zWit.getScript(i);
+			
+			String script = sp.getScript().toString();
 			
 			contractlog.put("input", i);
 			contractlog.put("script", script);
@@ -122,7 +194,7 @@ public class TxPOWChecker {
 				}
 				
 				//Is it a valid input.. UNSPENT in MMR
-				MMRProof proof = zWit.getAllProofs().get(i);
+				MMRProof proof = zWit.getAllMMRProofs().get(i);
 				
 				//MUST be a full proof - this done in checkproof..
 				if(proof.getMMRData().isHashOnly()) {
@@ -133,14 +205,36 @@ public class TxPOWChecker {
 				//Is the proof chain valid
 				boolean valid = zMMRSet.checkProof(proof);
 				if(!valid) {
-					contractlog.put("error", "Invalid MMR Proof");
-					return false;
-				}
-				
-				//Is this input for the correct details..
-				if(!proof.checkCoin(input)) {
-					contractlog.put("error", "Coin details proof miss-match");
-					return false;
+					//Are we a floating input.. ?
+					if(input.isFloating()) {
+						//See if there is a valid address/amount..
+						MMREntry fladdr = zMMRSet.searchAddress(input.getAddress(), input.getAmount(), input.getTokenID());
+						if(fladdr != null) {
+							//There is a valid coin  we can use..!
+							proof = zMMRSet.getProof(fladdr.getEntry());	
+							
+							//Now CHANGE the Transaction with this new CoinID AND AMOUNT..
+							Coin flinput = proof.getMMRData().getCoin();
+							input.resetCoinID(flinput.getCoinID());
+							input.resetAmount(flinput.getAmount());
+							
+							//And you may have to change the remainder output..
+							isfloating = true;
+								
+						}else {
+							contractlog.put("error", "Invalid MMR Proof and NO VALID FLOATING COIN Found..");
+							return false;
+						}
+					}else {
+						contractlog.put("error", "Invalid MMR Proof");
+						return false;	
+					}
+				}else {
+					//Is this input for the correct details..
+					if(!proof.checkCoin(input)) {
+						contractlog.put("error", "Coin details proof miss-match");
+						return false;
+					}	
 				}
 				
 				if(zTouchMMR) {
@@ -153,23 +247,44 @@ public class TxPOWChecker {
 					}
 				}
 				
+				//Is this a Token ?
+				String tokscript = "";
+				if(!input.getTokenID().isExactlyEqual(Coin.MINIMA_TOKENID)) {
+					//Do we have a token Script..
+					TokenProof tokdets = zWit.getTokenDetail(input.getTokenID());
+					
+					if(tokdets == null) {
+						contractlog.put("error", "Token Details for coin missing! "+input.getTokenID());
+						return false;	
+					}
+					
+					//Is there a script.
+					tokscript = tokdets.getTokenScript().toString();
+				}
+				
 				//Create the Contract to check..
-				Contract cc = new Contract(script,sigs,zTrans,proof.getMMRData().getPrevState());
+				Contract cc = new Contract(script,sigs, zWit, trans,proof.getMMRData().getPrevState());
 				
 				//set the environment
-				String address = input.getAddress().toString();
-				
 				cc.setGlobalVariable("@BLKNUM", new NumberValue(zBlockNumber));
 				cc.setGlobalVariable("@INBLKNUM", new NumberValue(proof.getMMRData().getInBlock()));
 				cc.setGlobalVariable("@BLKDIFF", new NumberValue(zBlockNumber.sub(proof.getMMRData().getInBlock())));
 				cc.setGlobalVariable("@INPUT", new NumberValue(i));
 				cc.setGlobalVariable("@AMOUNT", new NumberValue(input.getAmount()));
-				cc.setGlobalVariable("@ADDRESS", new HEXValue(address));
+				cc.setGlobalVariable("@ADDRESS", new HEXValue(input.getAddress()));
 				cc.setGlobalVariable("@TOKENID", new HEXValue(input.getTokenID()));
 				cc.setGlobalVariable("@COINID", new HEXValue(input.getCoinID()));
 				cc.setGlobalVariable("@SCRIPT", new ScriptValue(script));
-				cc.setGlobalVariable("@TOTIN", new NumberValue(zTrans.getAllInputs().size()));
-				cc.setGlobalVariable("@TOTOUT", new NumberValue(zTrans.getAllOutputs().size()));
+				cc.setGlobalVariable("@TOKENSCRIPT", new ScriptValue(tokscript));
+				cc.setGlobalVariable("@FLOATING", new BooleanValue(input.isFloating()));
+				cc.setGlobalVariable("@TOTIN", new NumberValue(trans.getAllInputs().size()));
+				cc.setGlobalVariable("@TOTOUT", new NumberValue(trans.getAllOutputs().size()));
+				
+				//Is it a floating coin..
+				cc.setFloating(input.isFloating());
+				
+				//Set the DYNState..
+				cc.setCompleteDYNState(DYNState);
 				
 				//Run it!
 				cc.run();
@@ -183,22 +298,127 @@ public class TxPOWChecker {
 				contractlog.put("exception", cc.isException());
 				contractlog.put("result", cc.isSuccess());
 				
+				//Get the DynState
+				DYNState = cc.getCompleteDYNState();
+				
 				//and.. ?
 				if(!cc.isSuccess()) {
 					return false;
 				}
+				
+				//Is this a Token ?
+				if(!input.getTokenID().isExactlyEqual(Coin.MINIMA_TOKENID)) {
+//					//Do we have a token Script..
+//					TokenProof tokdets = zWit.getTokenDetail(input.getTokenID());
+//					
+//					if(tokdets == null) {
+//						contractlog.put("error", "Token Details for coin missing! "+input.getTokenID());
+//						return false;	
+//					}
+//					
+//					//Is there a script.
+//					String tokscript = tokdets.getTokenScript().toString();
+					if(!tokscript.equals("RETURN TRUE")) {
+						//Check the Script!
+						cc = new Contract(tokscript,sigs, zWit, trans,proof.getMMRData().getPrevState());
+						
+						//set the environment
+						cc.setGlobalVariable("@BLKNUM", new NumberValue(zBlockNumber));
+						cc.setGlobalVariable("@INBLKNUM", new NumberValue(proof.getMMRData().getInBlock()));
+						cc.setGlobalVariable("@BLKDIFF", new NumberValue(zBlockNumber.sub(proof.getMMRData().getInBlock())));
+						cc.setGlobalVariable("@INPUT", new NumberValue(i));
+						cc.setGlobalVariable("@AMOUNT", new NumberValue(input.getAmount()));
+						cc.setGlobalVariable("@ADDRESS", new HEXValue(input.getAddress()));
+						cc.setGlobalVariable("@TOKENID", new HEXValue(input.getTokenID()));
+						cc.setGlobalVariable("@COINID", new HEXValue(input.getCoinID()));
+						cc.setGlobalVariable("@SCRIPT", new ScriptValue(script));
+						cc.setGlobalVariable("@TOKENSCRIPT", new ScriptValue(tokscript));
+						cc.setGlobalVariable("@FLOATING", new BooleanValue(input.isFloating()));
+						cc.setGlobalVariable("@TOTIN", new NumberValue(trans.getAllInputs().size()));
+						cc.setGlobalVariable("@TOTOUT", new NumberValue(trans.getAllOutputs().size()));
+						
+						//Is it a floating coin..
+						cc.setFloating(input.isFloating());
+						
+						//Set the DYNState..
+						cc.setCompleteDYNState(DYNState);
+						
+						//Run it!
+						cc.run();
+						
+						//Get the DynState
+						DYNState = cc.getCompleteDYNState();
+						
+						JSONObject toklog = new JSONObject();
+						contractlog.put("tokencontract", toklog);
+						
+						toklog.put("script", cc.getMiniScript());
+						toklog.put("size", cc.getMiniScript().length());
+						toklog.put("instructions", cc.getNumberOfInstructions());
+						toklog.put("address", input.getAddress().to0xString());
+						toklog.put("parseok", cc.isParseOK());
+						toklog.put("parse", cc.getCompleteTraceLog());
+						toklog.put("exception", cc.isException());
+						toklog.put("result", cc.isSuccess());
+						
+						//and.. ?
+						if(!cc.isSuccess()) {
+							return false;
+						}
+					}
+				}
+			}
+		}
+		
+		//Do we need to check the Remainders - Reset the amount if a 
+		//floating coin has changed the input amounts.. This will only ever be MORE..
+		if(isfloating) {
+			ArrayList<String> tokens = new ArrayList<>();
+			for(Coin cc : trans.getAllInputs()) {
+				String tok = cc.getTokenID().to0xString();
+				if(!tokens.contains(tok)) {
+					tokens.add(tok);	
+				}
 			}
 			
-			//Add to the total
-			totalin = totalin.add(input.getAmount());
+			//Now get all the Input Amounts...
+			Hashtable<String, MiniNumber> inamounts = new Hashtable<>();
+			for(String token : tokens) {
+				inamounts.put(token, trans.sumInputs(new MiniHash(token)));
+			}
+			
+			//Now get the output amounts..
+			for(String token : tokens) {
+				MiniHash tok = new MiniHash(token);
+				
+				//Summthe outputs for this token type
+				MiniNumber outamt = trans.sumOutputs(tok);
+				
+				//Do we need to reset the remainder amount - if one exists ?
+				MiniNumber inamt = inamounts.get(token);
+				
+				//Calculate the remainder
+				MiniNumber remainder = inamt.sub(outamt);
+				
+				//OK - some resetting to do..
+				if(!remainder.isEqual(MiniNumber.ZERO)) {
+					//Find the Remainder output for this token type..
+					Coin remainderoutput = trans.getRemainderCoin(tok);
+					
+					if(remainderoutput != null) {
+						//Reset the output amount..
+						remainderoutput.resetAmount(remainderoutput.getAmount().add(remainder));	
+					}
+				}
+			}
 		}
 		
 		//The HASH of the Transaction.. needed for coinid
-		MiniHash transhash = Crypto.getInstance().hashObject(zTrans);
+		//The transaction may have been altered by floating inputs..
+		MiniHash transhash = Crypto.getInstance().hashObject(trans);
 				
 		//Get outputs - add them to the MMR also..
-		MiniNumber totalout = MiniNumber.ZERO;
-		ArrayList<Coin> outputs  = zTrans.getAllOutputs();
+		ArrayList<Coin> outputs  = trans.getAllOutputs();
 		int outs = outputs.size();
 		for(int i=0;i<outs;i++) {
 			//Get the coin..
@@ -209,14 +429,15 @@ public class TxPOWChecker {
 			
 			//Is this a token create output..
 			MiniHash tokid 			= output.getTokenID();
-			TokenDetails newtoken 	= null;
+			TokenProof newtoken 	= null;
 			
 			//Is this a token or are we creating a Token
-			TokenDetails newtokdets = null;
+			TokenProof newtokdets = null;
 			if(tokid.isExactlyEqual(Coin.TOKENID_CREATE)) {
 				//Make it the HASH ( CoinID | Total Amount..the token details )
-				TokenDetails gentoken = zWit.getTokenGenDetails();
-				newtokdets = new TokenDetails(coinid,gentoken.getScale(), gentoken.getAmount(), gentoken.getName());
+				TokenProof gentoken = trans.getTokenGenerationDetails();
+				newtokdets = new TokenProof(coinid, 
+						gentoken.getScale(), gentoken.getAmount(), gentoken.getName(), gentoken.getTokenScript());
 				
 				//Set the Globally Unique TokenID!
 				tokid = newtokdets.getTokenID();
@@ -238,7 +459,7 @@ public class TxPOWChecker {
 				Coin mmrcoin = new Coin(coinid, output.getAddress(), output.getAmount(), tokid);
 				
 				//Now add as an unspent to the MMR
-				MMRData mmrdata = new MMRData(MiniByte.FALSE, mmrcoin, zBlockNumber, zTrans.getCompleteState());
+				MMRData mmrdata = new MMRData(MiniByte.FALSE, mmrcoin, zBlockNumber, trans.getCompleteState());
 				
 				//And Add it..
 				MMREntry unspent = zMMRSet.addUnspentCoin(mmrdata);
@@ -254,15 +475,6 @@ public class TxPOWChecker {
 					}
 				}
 			}
-			
-			//Check the total..
-			totalout = totalout.add(outputs.get(i).getAmount());
-		}
-		
-		//And final check..
-		//TODO.. check tokens as well as base Minima
-		if(totalout.isMore(totalin)) {
-			return false;
 		}
 		
 		//All OK!

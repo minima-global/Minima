@@ -15,7 +15,6 @@ public class TxPowDBPrinter {
 		MinimaLogger.log("--------");
 		MinimaLogger.log("Total TXPOWDB Size : "+rows.size());
 		
-		
 		int counter = 0;
 		for(TxPOWDBRow row : rows) {
 //			if(row.getTxPOW().isBlock()) {

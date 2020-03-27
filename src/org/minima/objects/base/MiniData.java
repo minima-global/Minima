@@ -6,6 +6,7 @@ package org.minima.objects.base;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.util.Arrays;
@@ -98,8 +99,12 @@ public class MiniData implements Streamable {
 		mDataVal = new BigInteger(1,mData);
 	}
 	
-	public BigInteger getDataVaue() {
+	public BigInteger getDataValue() {
 		return mDataVal;
+	}
+	
+	public BigDecimal getDataValueDecimal() {
+		return new BigDecimal(mDataVal);
 	}
 	
 	@Override
@@ -113,27 +118,27 @@ public class MiniData implements Streamable {
 			return false;
 		}
 		
-		return mDataVal.compareTo(zCompare.getDataVaue()) == 0;
+		return mDataVal.compareTo(zCompare.getDataValue()) == 0;
 	}
 	
 	public boolean isNumericallyEqual(MiniData zCompare) {
-		return mDataVal.compareTo(zCompare.getDataVaue()) == 0;
+		return mDataVal.compareTo(zCompare.getDataValue()) == 0;
 	}
 	
 	public boolean isLess(MiniData zCompare) {
-		return mDataVal.compareTo(zCompare.getDataVaue()) < 0;
+		return mDataVal.compareTo(zCompare.getDataValue()) < 0;
 	}
 	
 	public boolean isLessEqual(MiniData zCompare) {
-		return mDataVal.compareTo(zCompare.getDataVaue()) <= 0;
+		return mDataVal.compareTo(zCompare.getDataValue()) <= 0;
 	}
 	
 	public boolean isMore(MiniData zCompare) {
-		return mDataVal.compareTo(zCompare.getDataVaue()) > 0;
+		return mDataVal.compareTo(zCompare.getDataValue()) > 0;
 	}
 	
 	public boolean isMoreEqual(MiniData zCompare) {
-		return mDataVal.compareTo(zCompare.getDataVaue()) >= 0;
+		return mDataVal.compareTo(zCompare.getDataValue()) >= 0;
 	}
 	
 	public MiniData shiftr(int zNumber) {
@@ -145,7 +150,7 @@ public class MiniData implements Streamable {
 	}
 	
 	public int compare(MiniData zCompare) {
-		return mDataVal.compareTo(zCompare.getDataVaue());
+		return mDataVal.compareTo(zCompare.getDataValue());
 	}
 	
 	public MiniData concat(MiniData zConcat) {
@@ -178,10 +183,14 @@ public class MiniData implements Streamable {
 	}
 	
 	public String toShort0xString() {
+		return toShort0xString(8);
+	}
+	
+	public String toShort0xString(int zLen) {
 		String data = to0xString();
 		int len = data.length();
-		if(len > 8) {
-			len = 8;
+		if(len > zLen) {
+			len = zLen;
 		}
 		return data.substring(0, len).concat("..");
 	}
@@ -277,6 +286,6 @@ public class MiniData implements Streamable {
 		MiniData data = new MiniData("00000FFF");
 		
 		MinimaLogger.log("data    : "+data.toString());
-		MinimaLogger.log("value   : "+data.getDataVaue().toString());
+		MinimaLogger.log("value   : "+data.getDataValue().toString());
 	}
 }

@@ -1,5 +1,9 @@
 package org.minima.system.brains;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.PrintWriter;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -13,18 +17,20 @@ import org.minima.database.mmr.MMRPrint;
 import org.minima.database.mmr.MMRSet;
 import org.minima.database.txpowdb.TxPOWDBRow;
 import org.minima.database.txpowdb.TxPowDBPrinter;
+import org.minima.database.txpowtree.BlockTree;
 import org.minima.database.txpowtree.BlockTreeNode;
 import org.minima.database.txpowtree.BlockTreePrinter;
+import org.minima.database.txpowtree.SimpleBlockTreePrinter;
 import org.minima.database.userdb.UserDB;
 import org.minima.database.userdb.java.reltxpow;
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
 import org.minima.objects.PubPrivKey;
-import org.minima.objects.TokenDetails;
 import org.minima.objects.Transaction;
 import org.minima.objects.TxPOW;
 import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
+import org.minima.objects.proofs.TokenProof;
 import org.minima.system.Main;
 import org.minima.system.input.InputHandler;
 import org.minima.system.network.NetClient;
@@ -36,13 +42,26 @@ import org.minima.utils.messages.Message;
 
 public class ConsensusPrint {
 
+	public class chartpoint{
+		public long mBlock;
+		public long mTotalWeight;
+		
+		public chartpoint(long zBlock, long zWeight) {
+			mBlock = zBlock;
+			mTotalWeight = zWeight;
+		}
+	}
+	ArrayList<chartpoint> mChart = new ArrayList<>();
 
+	
+	
 	public static final String CONSENSUS_PREFIX 			= "CONSENSUSPRINT_";
 	
 	public static final String CONSENSUS_BALANCE 			= CONSENSUS_PREFIX+"BALANCE";
 	public static final String CONSENSUS_COINS 				= CONSENSUS_PREFIX+"COINS";
 	public static final String CONSENSUS_TXPOW 				= CONSENSUS_PREFIX+"TXPOW";
 	public static final String CONSENSUS_KEYS 				= CONSENSUS_PREFIX+"KEYS";
+	public static final String CONSENSUS_ADDRESSES 			= CONSENSUS_PREFIX+"ADDRESSES";
 	public static final String CONSENSUS_SEARCH 			= CONSENSUS_PREFIX+"SEARCH";
 	
 	public static final String CONSENSUS_HISTORY 		    = CONSENSUS_PREFIX+"HISTORY";
@@ -51,6 +70,10 @@ public class ConsensusPrint {
 	public static final String CONSENSUS_PRINTCHAIN 		= CONSENSUS_PREFIX+"PRINTCHAIN";
 	
 	public static final String CONSENSUS_PRINTCHAIN_TREE 	= CONSENSUS_PREFIX+"PRINTCHAIN_TREE";
+	
+	public static final String CONSENSUS_ADDCHARTPOINT 		= CONSENSUS_PREFIX+"ADDCHARTPOINT";
+	public static final String CONSENSUS_OUTPUTCHART 		= CONSENSUS_PREFIX+"OUTPUTCHART";
+	public static final String CONSENSUS_CLEARCHART 		= CONSENSUS_PREFIX+"CLEARCHART";
 	
     MinimaDB mDB;
 	
@@ -94,11 +117,57 @@ public class ConsensusPrint {
 			MMRSet set = getMainDB().getMainTree().getChainTip().getMMRSet();
 			MMRPrint.Print(set);
 		
-		}else if(zMessage.isMessageType(CONSENSUS_PRINTCHAIN_TREE)){
-			//Print the Tree
-			BlockTreePrinter treeprint = new BlockTreePrinter(getMainDB().getMainTree(), true);
-			treeprint.printtree();
+		}else if(zMessage.isMessageType(CONSENSUS_ADDCHARTPOINT)){
+			long block  = Long.parseLong(zMessage.getString("block"));
+			long weight = Long.parseLong(zMessage.getString("weight"));
+			mChart.add(new chartpoint(block, weight));
+			
+		}else if(zMessage.isMessageType(CONSENSUS_OUTPUTCHART)){
+			String filename = "chart.csv";//zMessage.getString("filename");
+			File chart = new File(System.getProperty("user.home"),filename);
+			if(chart.exists()) {
+				chart.delete();
+			}
+			
+			PrintWriter pw = new PrintWriter(chart);
+			pw.println("Block,Weight,");
+			for(chartpoint point : mChart) {
+				pw.println(point.mBlock+","+point.mTotalWeight+",");
+			}
+			
+			pw.flush();
+			pw.close();
+			
+			InputHandler.endResponse(zMessage, true, "Chart output to "+chart.getAbsolutePath());
+			
+		}else if(zMessage.isMessageType(CONSENSUS_CLEARCHART)){
+			mChart.clear();
 		
+		}else if(zMessage.isMessageType(CONSENSUS_PRINTCHAIN_TREE)){
+			SimpleBlockTreePrinter treeprint = new SimpleBlockTreePrinter(getMainDB().getMainTree(), true);
+			String treeinfo = treeprint.printtree();
+	
+			BlockTree tree = getMainDB().getMainTree();
+			
+			//DEBUGGING
+			if(zMessage.exists("systemout")) {
+//				BlockTreePrinter2.clearScreen();
+				treeinfo += "\n\nSpeed              : "+tree.getChainSpeed()+" blocks / sec";
+				treeinfo += "\nCurrent Difficulty : "+tree.getChainTip().getTxPow().getBlockDifficulty().to0xString();
+				treeinfo += "\nTotal Weight       : "+tree.getChainRoot().getTotalWeight();
+
+				MinimaLogger.log(treeinfo);
+			}else {
+				//Now check whether they are unspent..
+				JSONObject dets = InputHandler.getResponseJSON(zMessage);
+				dets.put("tree", treeinfo);
+				dets.put("length", tree.getAsList().size());
+				dets.put("speed", tree.getChainSpeed());
+				dets.put("difficulty", tree.getChainTip().getTxPow().getBlockDifficulty().to0xString());
+				dets.put("weight", tree.getChainRoot().getTotalWeight());
+				InputHandler.endResponse(zMessage, true, "");	
+			}
+			
 		}else if(zMessage.isMessageType(CONSENSUS_SEARCH)){
 			String address = zMessage.getString("address");
 			MiniHash addr  = new MiniHash(address);
@@ -126,7 +195,6 @@ public class ConsensusPrint {
 							if(!addedcoins.contains(entry)) {
 								addedcoins.add(entry);
 								allcoins.add(topmmr.getProof(coinmmr.getEntry()));
-//								System.out.println("ADDED : "+mmrset.getBlockTime()+" "+coinmmr.getEntry()+") "+coinmmr.getData());
 							}
 						}
 					}
@@ -186,7 +254,7 @@ public class ConsensusPrint {
 					MiniNumber depth 	= top.sub(blknum);
 					
 					//Get the Token Details.
-					TokenDetails td = getMainDB().getUserDB().getTokenDetail(tokhash);
+					TokenProof td = getMainDB().getUserDB().getTokenDetail(tokhash);
 					
 					//Get the JSON object for this Token..
 					JSONObject jobj = null;
@@ -249,7 +317,6 @@ public class ConsensusPrint {
 			JSONObject allbal = InputHandler.getResponseJSON(zMessage);
 			JSONArray totbal = new JSONArray();
 			
-			//Tester..
 			Enumeration<String> fulls = full_details.keys();
 			while(fulls.hasMoreElements())  {
 				String full = fulls.nextElement();
@@ -270,7 +337,7 @@ public class ConsensusPrint {
 					jobj.put("unconfirmed", tot_unconf.toString());
 					jobj.put("total", "1000000000");
 				}else {
-					TokenDetails td = getMainDB().getUserDB().getTokenDetail(tok);
+					TokenProof td = getMainDB().getUserDB().getTokenDetail(tok);
 					
 					//Now work out the actual amounts..
 					MiniNumber tot_conf     = (MiniNumber) jobj.get("confirmed");
@@ -282,6 +349,7 @@ public class ConsensusPrint {
 					//And re-add
 					jobj.put("confirmed", tot_scconf.toString());
 					jobj.put("unconfirmed", tot_scunconf.toString());
+					jobj.put("script", td.getTokenScript().toString());
 					jobj.put("total", tot_toks.toString());
 				}
 				
@@ -362,6 +430,16 @@ public class ConsensusPrint {
 				InputHandler.endResponse(zMessage, true, "");
 			}
 		
+		}else if(zMessage.isMessageType(CONSENSUS_ADDRESSES)){
+			//Addresses
+			ArrayList<Address> addresses = getMainDB().getUserDB().getAllAddresses();
+			JSONArray arraddr = new JSONArray();
+			for(Address addr : addresses) {
+				arraddr.add(addr.toJSON());
+			}
+			InputHandler.getResponseJSON(zMessage).put("addresses", arraddr);
+			InputHandler.endResponse(zMessage, true, "");
+			
 		}else if(zMessage.isMessageType(CONSENSUS_KEYS)){
 			//Public Keys
 			ArrayList<PubPrivKey> keys = getMainDB().getUserDB().getKeys();
@@ -371,13 +449,13 @@ public class ConsensusPrint {
 			}
 			InputHandler.getResponseJSON(zMessage).put("publickeys", arrpub);
 			
-			//Addresses
-			ArrayList<Address> addresses = getMainDB().getUserDB().getAllAddresses();
-			JSONArray arraddr = new JSONArray();
-			for(Address addr : addresses) {
-				arraddr.add(addr.toJSON());
-			}
-			InputHandler.getResponseJSON(zMessage).put("addresses", arraddr);
+//			//Addresses
+//			ArrayList<Address> addresses = getMainDB().getUserDB().getAllAddresses();
+//			JSONArray arraddr = new JSONArray();
+//			for(Address addr : addresses) {
+//				arraddr.add(addr.toJSON());
+//			}
+//			InputHandler.getResponseJSON(zMessage).put("addresses", arraddr);
 			
 			InputHandler.endResponse(zMessage, true, "");
 			
@@ -405,8 +483,8 @@ public class ConsensusPrint {
 			//Up time..
 			long timediff     = System.currentTimeMillis() - getHandler().getMainHandler().getNodeStartTime();
 			String uptime     = Maths.ConvertMilliToTime(timediff);	
-			status.put("milliuptime", timediff);
-			status.put("stringuptime", uptime);
+//			status.put("milliuptime", timediff);
+			status.put("uptime", uptime);
 			status.put("conf", main.getBackupManager().getRootFolder());
 			status.put("host", main.getNetworkHandler().getRPCServer().getHost());
 			status.put("port", main.getNetworkHandler().getServer().getPort());

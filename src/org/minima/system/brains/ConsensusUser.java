@@ -25,10 +25,12 @@ import org.minima.objects.Coin;
 import org.minima.objects.PubPrivKey;
 import org.minima.objects.StateVariable;
 import org.minima.objects.Transaction;
+import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
+import org.minima.objects.proofs.Proof;
 import org.minima.objects.proofs.ScriptProof;
 import org.minima.system.input.InputHandler;
 import org.minima.utils.Crypto;
@@ -109,6 +111,9 @@ public class ConsensusUser {
 			
 		
 		}else if(zMessage.isMessageType(CONSENSUS_MMRTREE)) {
+			//What type SCRIPT or HASHES
+			String type = zMessage.getString("type");
+			
 			//Create an MMR TREE from the array of inputs..
 			ArrayList<MiniString> leaves = (ArrayList<MiniString>) zMessage.getObject("leaves");
 		
@@ -118,16 +123,23 @@ public class ConsensusUser {
 			//Now add each 
 			JSONArray nodearray = new JSONArray();
 			for(MiniString leaf : leaves) {
-				byte[] hash = Crypto.getInstance().hashData(leaf.getData());
-				MiniHash finalhash = new MiniHash(hash);
-				mmr.addUnspentCoin(new MMRData(finalhash));
-				
-				//Add to the response..
 				JSONObject mmrnode = new JSONObject();
-				mmrnode.put("data","[ "+leaf.toString()+" ]");
-				mmrnode.put("hash", finalhash.to0xString());
+				
+				MiniHash finalhash = null;
+				if(type.equals("hash")) {
+					finalhash = new MiniHash(leaf.toString());
+					mmrnode.put("data",leaf.toString());
+				}else{
+					byte[] hash = Crypto.getInstance().hashData(leaf.getData());
+					finalhash = new MiniHash(hash);
+					mmrnode.put("data","[ "+leaf.toString()+" ]");
+				}
+				mmrnode.put("leaf", finalhash.to0xString());
 				
 				nodearray.add(mmrnode);
+				
+				//Add to the MMR
+				mmr.addUnspentCoin(new MMRData(finalhash));
 			}
 
 			//Now finalize..
@@ -142,9 +154,7 @@ public class ConsensusUser {
 				MMRProof proof = mmr.getFullProofToRoot(new MiniNumber(i));
 				
 				//Calculate the CHAINSHA proof..
-				JSONArray pr = proof.proofChainOnly();
 				node.put("chainsha", proof.getChainSHAProof().to0xString());
-//				node.put("proof", pr);
 			}
 			
 			//return to sender!
@@ -181,6 +191,7 @@ public class ConsensusUser {
 			
 			//Create the transaction..
 			Transaction trans = new Transaction();
+			Witness wit       = new Witness();
 			
 			//OUTPUTS
 			if(!outputs.equals("")) {
@@ -270,16 +281,16 @@ public class ConsensusUser {
 						
 						//Set it..
 						if(chainsha.length()<=32) {
-							trans.addScript(new ScriptProof(mastscript));
+							wit.addScript(new ScriptProof(mastscript));
 						}else {
-							trans.addScript(new ScriptProof(mastscript, chainsha));	
+							wit.addScript(new ScriptProof(mastscript, chainsha));	
 						}
 					}
 				}
 			}
 			
 			//Create a contract
-			Contract cc = new Contract(script, sigs, trans, pstate);
+			Contract cc = new Contract(script, sigs, wit, trans, pstate);
 			
 			//Create an address
 			Address ccaddress = new Address(cc.getMiniScript());

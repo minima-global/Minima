@@ -24,7 +24,7 @@ public class UserSimulator extends SystemHandler {
 		setLOG(false);
 		
 		//Start the process..
-		PostTimerMessage(new TimerMessage(1000, "DO_WORK"));
+//		PostTimerMessage(new TimerMessage(1000, "DO_WORK"));
 		
 		mLogON = false;
 		mStressTest = false;
@@ -81,7 +81,7 @@ public class UserSimulator extends SystemHandler {
 			}
 			
 			//And again...
-			PostTimerMessage(new TimerMessage(1000, "DO_WORK"));
+			PostTimerMessage(new TimerMessage(500, "DO_WORK"));
 		}
 	}
 

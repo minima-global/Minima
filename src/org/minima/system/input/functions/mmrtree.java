@@ -20,17 +20,18 @@ public class mmrtree extends CommandFunction{
 
 	public mmrtree() {
 		super("mmrtree");
-		setHelp("[ data_list ]", "Build an MMR Tree from data list each treated as a SCRIPT", "");
+		setHelp("[script|hash] [ data_list ]", "Build an MMR Hash Tree from the data list", "");
 	}
 	
 	@Override
 	public void doFunction(String[] zInput) throws Exception {
 		//Get a response message
 		Message msg = getResponseMessage(ConsensusUser.CONSENSUS_MMRTREE);
+		msg.addString("type", zInput[1].toLowerCase());
 		
 		//Get all of the input params.. clean and send..
 		ArrayList<MiniString> data = new ArrayList<>();
-		for(int i=1;i<zInput.length;i++) {
+		for(int i=2;i<zInput.length;i++) {
 			data.add(new MiniString(Contract.cleanScript(zInput[i])));			
 		}
 		

@@ -2,6 +2,7 @@ package org.minima.system.input.functions;
 
 import org.minima.system.brains.ConsensusPrint;
 import org.minima.system.input.CommandFunction;
+import org.minima.utils.messages.Message;
 
 public class printtree extends CommandFunction{
 
@@ -12,11 +13,10 @@ public class printtree extends CommandFunction{
 	
 	@Override
 	public void doFunction(String[] zInput) throws Exception {
-		//Print the Tree..
-		getMainHandler().getConsensusHandler().PostMessage(ConsensusPrint.CONSENSUS_PRINTCHAIN_TREE);
+		Message msg = getResponseMessage(ConsensusPrint.CONSENSUS_PRINTCHAIN_TREE);
 		
-		//It's worked
-		getResponseStream().endStatus(true, "");
+		//Print the Tree..
+		getMainHandler().getConsensusHandler().PostMessage(msg);
 	}
 	
 	@Override

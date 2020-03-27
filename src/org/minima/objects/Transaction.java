@@ -1,15 +1,18 @@
 package org.minima.objects;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.Hashtable;
 
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
-import org.minima.objects.base.MiniString;
-import org.minima.objects.proofs.ScriptProof;
+import org.minima.objects.proofs.TokenProof;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
@@ -27,26 +30,23 @@ public class Transaction implements Streamable {
 	/**
 	 * The Inputs that make up the Transaction
 	 */
-	ArrayList<Coin> mInputs  = new ArrayList<>();
+	protected ArrayList<Coin> mInputs  = new ArrayList<>();
 	
 	/**
 	 * All the Outputs
 	 */
-	ArrayList<Coin> mOutputs = new ArrayList<>();
+	protected ArrayList<Coin> mOutputs = new ArrayList<>();
 	
 	/**
 	 * The State values of the Transaction
 	 */
-	ArrayList<StateVariable> mState = new ArrayList<>();
+	protected ArrayList<StateVariable> mState = new ArrayList<>();
 	
 	/**
-	 * The Scripts used in the transactions 
-	 * 
-	 * Addresses
-	 * Tokens
-	 * MAST
+	 * If you are generating a TOKEN.. here are the details..
+	 * Needs to be here instead of witness so no-one can alter it - you sign this.
 	 */
-	ArrayList<ScriptProof> mScripts = new ArrayList<>();
+	protected TokenProof mTokenGenDetails = null;
 	
 	/**
 	 * Constructor
@@ -57,12 +57,12 @@ public class Transaction implements Streamable {
 		mInputs.add(zCoin);
 	}
 	
-	public boolean isEmpty() {
-		return mInputs.size() == 0 && mOutputs.size() == 0;
-	}
-	
 	public void addOutput(Coin zCoin) {
 		mOutputs.add(zCoin);
+	}
+	
+	public boolean isEmpty() {
+		return mInputs.size() == 0 && mOutputs.size() == 0;
 	}
 	
 	public ArrayList<Coin> getAllInputs(){
@@ -74,21 +74,100 @@ public class Transaction implements Streamable {
 	}
 	
 	public MiniNumber sumInputs() {
-		MiniNumber tot = new MiniNumber();
+		MiniNumber tot = MiniNumber.ZERO;
 		for(Coin cc : mInputs) {
 			tot = tot.add(cc.mAmount);
 		}
 		return tot;
 	}
 	
+	public MiniNumber sumInputs(MiniHash zTokenID) {
+		MiniNumber tot = MiniNumber.ZERO;
+		for(Coin cc : mInputs) {
+			if(cc.getTokenID().isExactlyEqual(zTokenID)) {
+				tot = tot.add(cc.mAmount);	
+			}
+		}
+		return tot;
+	}
+	
 	public MiniNumber sumOutputs() {
-		MiniNumber tot = new MiniNumber();
+		MiniNumber tot = MiniNumber.ZERO;
 		for(Coin cc : mOutputs) {
 			tot = tot.add(cc.mAmount);
 		}
 		return tot;
 	}
+	
+	public MiniNumber sumOutputs(MiniHash zTokenID) {
+		MiniNumber tot = MiniNumber.ZERO;
+		for(Coin cc : mOutputs) {
+			if(cc.getTokenID().isExactlyEqual(zTokenID)) {
+				tot = tot.add(cc.mAmount);	
+			}
+		}
+		return tot;
+	}
 
+	/**
+	 * Get the Remainder Output Coin for a specific token..
+	 */
+	public Coin getRemainderCoin(MiniHash zTokenID) {
+		for(Coin cc : mOutputs) {
+			if(cc.isRemainder() && cc.getTokenID().isExactlyEqual(zTokenID)) {
+				return cc;
+			}
+		}
+		return null;
+	}
+	
+	/**
+	 * You only need to check that there are enough Inputs for the Outputs.
+	 * The rest is BURN..
+	 * @return
+	 */
+	public boolean checkValidInOutPerToken(){
+		//First get a list of all the Ouput tokens..
+		ArrayList<String> tokens = new ArrayList<>();
+		for(Coin cc : mOutputs) {
+			MiniHash tokenhash = cc.getTokenID();
+			if(tokenhash.isExactlyEqual(Coin.TOKENID_CREATE)){
+				tokenhash = Coin.MINIMA_TOKENID;
+			}
+			
+			String tok = tokenhash.to0xString();
+			if(!tokens.contains(tok)) {
+				tokens.add(tok);	
+			}
+		}
+		
+		//Now get all the Output Amounts...
+		Hashtable<String, MiniNumber> outamounts = new Hashtable<>();
+		for(String token : tokens) {
+			outamounts.put(token, sumOutputs(new MiniHash(token)));
+		}
+		
+		//Now cycle through and check there is enough inputs..
+		Enumeration<String> keys = outamounts.keys();
+		while(keys.hasMoreElements()) {
+			//The token
+			String tok = keys.nextElement();
+			
+			//The output total amount
+			MiniNumber outamt = outamounts.get(tok);
+			
+			//The input total amount
+			MiniNumber inamt = sumInputs(new MiniHash(tok));
+			
+			//Do the check..
+			if(inamt.isLess(outamt)) {
+				return false;	
+			}
+		}
+		
+		return true;
+	}
+	
 	/**
 	 * Set a state value from 0-255 to a certain value
 	 * @param zStateNum
@@ -149,31 +228,14 @@ public class Transaction implements Streamable {
 	}
 	
 	/**
-	 * All the scripts
+	 * Token Generation
 	 */
-	public boolean addScript(ScriptProof zScriptProof) {
-		if(!scriptExists(zScriptProof.getFinalHash())) {
-			mScripts.add(zScriptProof);		
-			return true;
-		}
-		return false;
+	public void setTokenGenerationDetails(TokenProof zTokenDetails) {
+		mTokenGenDetails = zTokenDetails;
 	}
 	
-	public boolean addScript(String zScript) {
-		return addScript(new ScriptProof(zScript));
-	}
-	
-	public ScriptProof getScript(MiniHash zHash) {
-		for(ScriptProof proof : mScripts) {
-			if(proof.getFinalHash().isExactlyEqual(zHash)) {
-				return proof;
-			}
-		}
-		return null;
-	}
-	
-	public boolean scriptExists(MiniHash zHash) {
-		return getScript(zHash)!=null;
+	public TokenProof getTokenGenerationDetails() {
+		return mTokenGenDetails;
 	}
 	
 	@Override
@@ -205,13 +267,11 @@ public class Transaction implements Streamable {
 		}
 		ret.put("state", outs);
 		
-		//Script Proofs..
-		outs = new JSONArray();
-		for(ScriptProof proof : mScripts) {
-			outs.add(proof.toJSON());	
+		//Token Generation..
+		if(mTokenGenDetails != null) {
+			ret.put("tokengen", mTokenGenDetails.toJSON());
 		}
-		ret.put("scripts", outs);
-		
+				
 		return ret;
 	}
 
@@ -238,11 +298,12 @@ public class Transaction implements Streamable {
 			sv.writeDataStream(zOut);
 		}
 		
-		//Now the Scripts
-		len = mScripts.size();
-		zOut.writeInt(len);
-		for(ScriptProof script : mScripts) {
-			script.writeDataStream(zOut);
+		//Token generation
+		if(mTokenGenDetails == null) {
+			MiniByte.FALSE.writeDataStream(zOut);
+		}else {
+			MiniByte.TRUE.writeDataStream(zOut);
+			mTokenGenDetails.writeDataStream(zOut);
 		}
 	}
 
@@ -251,7 +312,6 @@ public class Transaction implements Streamable {
 		mInputs  = new ArrayList<>();
 		mOutputs = new ArrayList<>();
 		mState 	 = new  ArrayList<>();
-		mScripts = new ArrayList<>();
 		
 		//Inputs
 		MiniByte ins = new MiniByte();
@@ -280,11 +340,44 @@ public class Transaction implements Streamable {
 			mState.add(sv);
 		}
 		
-		//Scripts
-		len = zIn.readInt();
-		for(int i=0;i<len;i++){
-			ScriptProof sp = ScriptProof.ReadFromStream(zIn);
-			mScripts.add(sp);
+		//Token generation
+		MiniByte tokgen = MiniByte.ReadFromStream(zIn);
+		if(tokgen.isTrue()) {
+			mTokenGenDetails = TokenProof.ReadFromStream(zIn);
+		}else {
+			mTokenGenDetails = null;
 		}
+	}
+	
+	/**
+	 * Get a DEEP copy of this transaction
+	 */
+	public Transaction deepCopy() {
+		try {
+			//First write transaction out to a byte array
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			DataOutputStream dos = new DataOutputStream(baos);
+			writeDataStream(dos);
+			dos.flush();
+			dos.close();
+			
+			//Now read it into a new transaction..
+			byte[] transbytes = baos.toByteArray();
+			ByteArrayInputStream bais = new ByteArrayInputStream(transbytes);
+			DataInputStream dis = new DataInputStream(bais);
+			
+			Transaction deepcopy = new Transaction();
+			deepcopy.readDataStream(dis);
+			
+			dis.close();
+			
+			return deepcopy;
+
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return null;
 	}
 }

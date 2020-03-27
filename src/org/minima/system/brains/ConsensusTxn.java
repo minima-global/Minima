@@ -14,7 +14,6 @@ import org.minima.database.userdb.UserDBRow;
 import org.minima.miniscript.Contract;
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
-import org.minima.objects.Proof;
 import org.minima.objects.PubPrivKey;
 import org.minima.objects.StateVariable;
 import org.minima.objects.Transaction;
@@ -22,7 +21,10 @@ import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
+import org.minima.objects.proofs.Proof;
 import org.minima.objects.proofs.ScriptProof;
+import org.minima.objects.proofs.SignatureProof;
+import org.minima.objects.proofs.TokenProof;
 import org.minima.system.input.InputHandler;
 import org.minima.system.network.NetworkHandler;
 import org.minima.utils.Crypto;
@@ -147,13 +149,13 @@ public class ConsensusTxn {
 			}
 		
 			//Get the Transaction..
-			Transaction trx =  getMainDB().getUserDB().getUserRow(trans).getTransaction();
+			Witness wit     =  getMainDB().getUserDB().getUserRow(trans).getWitness();
 			
 			//Create it..
 			ScriptProof sp = new ScriptProof(script, proof);
 			
 			//Add it to the Transaction..
-			trx.addScript(sp);
+			wit.addScript(sp);
 		
 			listTransactions(zMessage);
 			
@@ -180,20 +182,33 @@ public class ConsensusTxn {
 			}
 			Coin cc = crow.getCoin();
 			
-			//Get the Script associated with this coin
-			String script = getMainDB().getUserDB().getScript(cc.getAddress());
-			if(script.equals("")) {
-				InputHandler.endResponse(zMessage, false, "UNKNOWN ADDRESS "+cc.getAddress()+" not in database..");
-				return;
+			//Is it a Token ? 
+			if(!cc.getTokenID().isExactlyEqual(Coin.MINIMA_TOKENID)) {
+				//Add the Token details..
+				TokenProof tokendets = getMainDB().getUserDB().getTokenDetail(cc.getTokenID());
+				
+				//Do we have it,.
+				if(tokendets == null) {
+					//Unknown token!
+					InputHandler.endResponse(zMessage, false, "No details found for the specified token : "+cc.getTokenID());
+					return;
+				}
+				
+				//Add it..
+				wit.addTokenDetails(tokendets);
 			}
 			
 			//Add it..
 			trx.addInput(cc);
-			trx.addScript(script);
 			
-			//Set Script
-//			wit.addScript(script);
-			
+			//Get the Script associated with this coin
+			String script = getMainDB().getUserDB().getScript(cc.getAddress());
+			if(script.equals("")) {
+				JSONObject resp = InputHandler.getResponseJSON(zMessage);
+				resp.put("info", "UNKNOWN ADDRESS "+cc.getAddress()+" not in Script database..");
+			}else {
+				wit.addScript(script);
+			}
 			
 			listTransactions(zMessage);
 			
@@ -221,7 +236,24 @@ public class ConsensusTxn {
 			
 			//Get the Transaction..
 			Transaction trx = getMainDB().getUserDB().getUserRow(trans).getTransaction();
-		
+			Witness wit     =  getMainDB().getUserDB().getUserRow(trans).getWitness();
+			
+			//Is it a Token ? 
+			if(!out.getTokenID().isExactlyEqual(Coin.MINIMA_TOKENID)) {
+				//Add the Token details..
+				TokenProof tokendets = getMainDB().getUserDB().getTokenDetail(out.getTokenID());
+				
+				//Do we have it,.
+				if(tokendets == null) {
+					//Unknown token!
+					InputHandler.endResponse(zMessage, false, "No details found for the specified token : "+out.getTokenID());
+					return;
+				}
+				
+				//Add it..
+				wit.addTokenDetails(tokendets);
+			}
+			
 			//Add the output
 			trx.addOutput(out);
 			
@@ -306,12 +338,12 @@ public class ConsensusTxn {
 			MiniNumber outs = trx.sumOutputs();
 			MiniNumber burn = ins.sub(outs);
 			
-			boolean vamounts = outs.isLessEqual(ins);
+			boolean vamounts = trx.checkValidInOutPerToken();
 			
 			resp.put("inputs_sum", ins.toString());
 			resp.put("outputs_sum", outs.toString());
 			resp.put("burn", burn.toString());
-			resp.put("valid_amounts", outs.isLessEqual(ins));
+			resp.put("valid_amounts", vamounts);
 			
 			//Create a complete transaction
 			Witness newwit = getMainDB().createValidWitness(trx, wit);
@@ -368,7 +400,7 @@ public class ConsensusTxn {
 			MiniData signature = key.sign(transhash);
 			
 			//Now set the SIG.. 
-			wit.addSignature(pubk, signature);
+			wit.addSignature(key.getPublicKey(), signature);
 			
 			listTransactions(zMessage);
 		
@@ -395,19 +427,6 @@ public class ConsensusTxn {
 			//Output data stream
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			DataOutputStream dos = new DataOutputStream(baos);
-			
-//			//We need to output all the Coins.. 
-//			ArrayList<Coin> ins = trx.getAllInputs();
-//			
-//			//Tell the stream how many inputs proofs to come..
-//			dos.writeInt(ins.size());
-//			for(Coin in : ins) {
-//				//Export to Data..
-//				MiniData data = ConsensusUser.exportCoin(getMainDB(), in.getCoinID());
-//				
-//				//Now write to the collective..
-//				data.writeDataStream(dos);
-//			}
 			
 			//Now the whole transaction..
 			trx.writeDataStream(dos);
@@ -447,7 +466,7 @@ public class ConsensusTxn {
 			
 			//Import all the proofs..
 			JSONObject resp = InputHandler.getResponseJSON(zMessage);
-			for(MMRProof proof : row.getWitness().getAllProofs()) {
+			for(MMRProof proof : row.getWitness().getAllMMRProofs()) {
 				boolean valid = ConsensusUser.importCoin(getMainDB(), proof);
 			
 				if(!valid) {

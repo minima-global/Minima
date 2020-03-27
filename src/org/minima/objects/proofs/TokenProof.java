@@ -1,10 +1,11 @@
-package org.minima.objects;
+package org.minima.objects.proofs;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+import org.minima.miniscript.Contract;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
@@ -13,7 +14,7 @@ import org.minima.utils.Crypto;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONObject;
 
-public class TokenDetails implements Streamable{
+public class TokenProof implements Streamable{
 
 	/**
 	 * The CoinID used when creating the token initially
@@ -36,6 +37,11 @@ public class TokenDetails implements Streamable{
 	MiniString mTokenName;
 	
 	/**
+	 * The Token Script
+	 */
+	MiniString mTokenScript;
+	
+	/**
 	 * TTokenID created after all the details are set
 	 */
 	MiniHash mTokenID;
@@ -43,7 +49,7 @@ public class TokenDetails implements Streamable{
 	/**
 	 * Blank Constructor for ReadDataStream
 	 */
-	private TokenDetails() {}
+	private TokenProof() {}
 	
 	/**
 	 * The Only Public Constructor
@@ -52,11 +58,17 @@ public class TokenDetails implements Streamable{
 	 * @param zAmount
 	 * @param zName
 	 */
-	public TokenDetails(MiniHash zCoindID, MiniNumber zScale, MiniNumber zAmount, MiniString zName) {
+	public TokenProof(MiniHash zCoindID, MiniNumber zScale, MiniNumber zAmount, MiniString zName) {
+		this(zCoindID, zScale, zAmount, zName, new MiniString("RETURN TRUE"));
+	}
+		
+	public TokenProof(MiniHash zCoindID, MiniNumber zScale, MiniNumber zAmount, MiniString zName, MiniString zTokenScript) {
+				
 		mTokenScale 		= zScale;
 		mTokenTotalAmount 	= zAmount;
 		mTokenName 			= zName;
 		mCoinID 			= zCoindID;
+		mTokenScript        = new MiniString(Contract.cleanScript(zTokenScript.toString())) ;
 		
 		calculateTokenID();
 	}
@@ -77,6 +89,10 @@ public class TokenDetails implements Streamable{
 		return mTokenName;
 	}
 	
+	public MiniString getTokenScript() {
+		return mTokenScript;
+	}
+	
 	public MiniHash getCoinID() {
 		return mCoinID;
 	}
@@ -90,6 +106,7 @@ public class TokenDetails implements Streamable{
 		
 		obj.put("coinid", mCoinID.to0xString());
 		obj.put("name", mTokenName.toString());
+		obj.put("script", mTokenScript.toString());
 		obj.put("scale", mTokenScale.toString());
 		obj.put("totalamount", mTokenTotalAmount.toString());
 		
@@ -129,6 +146,7 @@ public class TokenDetails implements Streamable{
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
 		mCoinID.writeDataStream(zOut);
+		mTokenScript.writeDataStream(zOut);
 		mTokenScale.writeDataStream(zOut);
 		mTokenTotalAmount.writeDataStream(zOut);
 		mTokenName.writeDataStream(zOut);
@@ -137,6 +155,7 @@ public class TokenDetails implements Streamable{
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
 		mCoinID 			= MiniHash.ReadFromStream(zIn);
+		mTokenScript        = MiniString.ReadFromStream(zIn);
 		mTokenScale 		= MiniNumber.ReadFromStream(zIn);
 		mTokenTotalAmount	= MiniNumber.ReadFromStream(zIn);
 		mTokenName 			= MiniString.ReadFromStream(zIn);
@@ -144,8 +163,8 @@ public class TokenDetails implements Streamable{
 		calculateTokenID();
 	}
 	
-	public static TokenDetails ReadFromStream(DataInputStream zIn){
-		TokenDetails td = new TokenDetails();
+	public static TokenProof ReadFromStream(DataInputStream zIn){
+		TokenProof td = new TokenProof();
 		
 		try {
 			td.readDataStream(zIn);

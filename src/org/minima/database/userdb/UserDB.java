@@ -5,12 +5,12 @@ import java.util.ArrayList;
 import org.minima.database.userdb.java.reltxpow;
 import org.minima.objects.Address;
 import org.minima.objects.PubPrivKey;
-import org.minima.objects.TokenDetails;
 import org.minima.objects.Transaction;
 import org.minima.objects.TxPOW;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
+import org.minima.objects.proofs.TokenProof;
 
 public interface UserDB {
 
@@ -28,7 +28,7 @@ public interface UserDB {
 	public Address newSimpleAddress();
 	public Address newSimpleAddress(PubPrivKey zPubPriv);
 	public boolean isSimpleAddress(MiniHash zAddress);
-	public MiniData getPublicKey(MiniHash zAddress);
+	public MiniHash getPublicKey(MiniHash zAddress);
 	
 	public ArrayList<Address> getScriptAddresses();
 	public Address newScriptAddress(String zScript);
@@ -55,11 +55,11 @@ public interface UserDB {
 	/**
 	 * Token Details
 	 */
-	public ArrayList<TokenDetails> getAllKnownTokens();
+	public ArrayList<TokenProof> getAllKnownTokens();
 	
-	public TokenDetails getTokenDetail(MiniHash zTokenID);
+	public TokenProof getTokenDetail(MiniHash zTokenID);
 	
-	public void addTokenDetails(TokenDetails zToken);
+	public void addTokenDetails(TokenProof zToken);
 	
 	/**
 	 * Transaction History

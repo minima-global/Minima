@@ -11,7 +11,8 @@ public class runscript extends CommandFunction{
 		
 //		setHelp("[script] {sigs}", "Run the specified script with the specified signatures.","");
 		
-		setHelp("[script] {sigs:..} {state:..} {prevstate:..} {globals:..} {outputs:..} (scripts:..)", "Use 'help runscript' for details..","");
+		setHelp("[script] {sigs:..} {state:..} {prevstate:..} {globals:..} {outputs:..} (scripts:..)", "",
+				"Test a script and give all the relevant data as # seperated : value key pairs..");
 		
 	}
 	

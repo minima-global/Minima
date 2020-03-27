@@ -7,7 +7,6 @@ import org.minima.NativeListener;
 import org.minima.database.MinimaDB;
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
-import org.minima.objects.TokenDetails;
 import org.minima.objects.Transaction;
 import org.minima.objects.TxPOW;
 import org.minima.objects.Witness;
@@ -16,6 +15,7 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
+import org.minima.objects.proofs.TokenProof;
 import org.minima.system.Main;
 import org.minima.system.SystemHandler;
 import org.minima.system.external.ProcessManager;
@@ -26,6 +26,7 @@ import org.minima.system.network.NetClientReader;
 import org.minima.system.network.NetworkHandler;
 import org.minima.system.tx.TXMiner;
 import org.minima.utils.Crypto;
+import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
 
@@ -37,6 +38,7 @@ public class ConsensusHandler extends SystemHandler {
 	public static final String CONSENSUS_PROCESSTXPOW 		   = "CONSENSUS_PROCESSTXPOW";
 	public static final String CONSENSUS_PRE_PROCESSTXPOW 	   = "CONSENSUS_PREPROCESSTXPOW";
 	
+	public static final String CONSENSUS_MINEBLOCK 			   = "CONSENSUS_MINEBLOCK";
 	public static final String CONSENSUS_SENDTRANS 			   = "CONSENSUS_SENDTRANS";
 	public static final String CONSENSUS_CREATETRANS 		   = "CONSENSUS_CREATETRANS";
 	
@@ -184,11 +186,16 @@ public class ConsensusHandler extends SystemHandler {
 			getMainDB().processTxPOW(txpow);
 		
 			//Print the tree..
-			if(mPrintChain) {
-				Message print = new Message(ConsensusPrint.CONSENSUS_PRINTCHAIN_TREE);
-				InputHandler.addResponseMesage(print, zMessage);
-				PostMessage(print);
-			}
+//			if(true || mPrintChain) {
+//				Message print = new Message(ConsensusPrint.CONSENSUS_PRINTCHAIN_TREE).addBoolean("systemout", true);
+//				PostMessage(print);
+//			}
+			
+//			//Add a chartpoint
+//			Message chart = new Message(ConsensusPrint.CONSENSUS_ADDCHARTPOINT);
+//			chart.addString("block", getMainDB().getMainTree().getChainTip().getTxPow().getBlockNumber().toString());
+//			chart.addString("weight", getMainDB().getMainTree().getChainRoot().getTotalWeight().toString());
+//			PostMessage(chart);
 			
 			/**
 			 * One time run the first time you see a txpow..
@@ -290,11 +297,15 @@ public class ConsensusHandler extends SystemHandler {
 			//Get the Witness data if a valid transaction and not just an off chain zero transaction
 			Witness wit = (Witness) zMessage.getObject("witness");
 			
+			JSONObject resp = InputHandler.getResponseJSON(zMessage);
+			
 			//Add it to the current TX-POW
-			TxPOW txpow = getMainDB().getCurrentTxPow(trans, wit);
+			JSONArray contractlogs = new JSONArray();
+			TxPOW txpow = getMainDB().getCurrentTxPow(trans, wit, contractlogs);
 			
 			//Is is valid.. ?
 			if(txpow==null) {
+				resp.put("contractlogs", contractlogs);
 				InputHandler.endResponse(zMessage, false, "Invalid Transaction");
 				return;
 			}
@@ -302,13 +313,21 @@ public class ConsensusHandler extends SystemHandler {
 			//Send it to the Miner..
 			Message mine = new Message(TXMiner.TXMINER_MINETXPOW).addObject("txpow", txpow);
 			InputHandler.addResponseMesage(mine, zMessage);
-			
 			getMainHandler().getMiner().PostMessage(mine);
 		
-			JSONObject resp = InputHandler.getResponseJSON(zMessage);
 			resp.put("txpow", txpow);
 			
 			InputHandler.endResponse(zMessage, true, "");
+			
+		}else if ( zMessage.isMessageType(CONSENSUS_MINEBLOCK) ) {
+			//Fresh TXPOW
+			TxPOW txpow = getMainDB().getCurrentTxPow(new Transaction(), new Witness(), new JSONArray());
+			
+			//Send it to the Miner..
+			Message mine = new Message(TXMiner.TXMINER_MEGAMINER).addObject("txpow", txpow);
+			
+			//Post to the Miner
+			getMainHandler().getMiner().PostMessage(mine);
 			
 		}else if ( zMessage.isMessageType(CONSENSUS_CREATETRANS) ) {
 			//How much to who ?
@@ -324,7 +343,7 @@ public class ConsensusHandler extends SystemHandler {
 			tokenid = tok.to0xString();
 			
 			//Is this a token amount or a minima amount
-			TokenDetails tokendets = null;
+			TokenProof tokendets = null;
 			if(!tok.isExactlyEqual(Coin.MINIMA_TOKENID)) {
 				//It's a token.. scale it..
 				MiniNumber samount = new MiniNumber(amount);
@@ -414,8 +433,7 @@ public class ConsensusHandler extends SystemHandler {
 			
 			Coin in = new Coin(gimme50.COINID_INPUT,Address.TRUE_ADDRESS.getAddressData(),new MiniNumber("1"), MiniHash.ZERO32);
 			trans.addInput(in);
-			trans.addScript(Address.TRUE_ADDRESS.getScript());
-//			wit.addScript(Address.TRUE_ADDRESS.getScript());
+			wit.addScript(Address.TRUE_ADDRESS.getScript());
 			
 			//And send to the new address
 			Address outaddr = new Address(new MiniHash(MiniData.getRandomData(32).getData()));
@@ -445,10 +463,7 @@ public class ConsensusHandler extends SystemHandler {
 			
 			//Add to the transaction
 			trans.addInput(in);
-			trans.addScript(Address.TRUE_ADDRESS.getScript());
-			
-			//And the Witness.. no parameters required..
-//			wit.addScript(Address.TRUE_ADDRESS.getScript());
+			wit.addScript(Address.TRUE_ADDRESS.getScript());
 			
 			//And send to the new address
 			Coin out = new Coin(Coin.COINID_OUTPUT,addr.getAddressData(),new MiniNumber("50"), MiniHash.ZERO32);
@@ -466,6 +481,8 @@ public class ConsensusHandler extends SystemHandler {
 			//Get the amount
 			String amount 		= zMessage.getString("amount");
 			String name  	 	= zMessage.getString("name");
+			String script       = zMessage.getString("script");
+			
 			MiniHash tok  		= Coin.TOKENID_CREATE;
 			MiniHash changetok 	= Coin.MINIMA_TOKENID;
 			
@@ -513,16 +530,18 @@ public class ConsensusHandler extends SystemHandler {
 				Message ret = getMainDB().createTransaction(sendamount, recipient, change, confirmed, tok, changetok);
 				
 				//Get the witness and add relevant info..
-				Witness wit = (Witness) ret.getObject("witness");
+//				Witness wit     = (Witness) ret.getObject("witness");
+				Transaction trx = (Transaction) ret.getObject("transaction");
 				
 				//Create the token gen details
-				TokenDetails tgen = new TokenDetails(Coin.COINID_OUTPUT, 
+				TokenProof tgen = new TokenProof(Coin.COINID_OUTPUT, 
 													 new MiniNumber(scale+""), 
 													 sendamount, 
-													 new MiniString(name));
+													 new MiniString(name),
+													 new MiniString(script));
 				
 				//Set it
-				wit.setTokenGenDetails(tgen);
+				trx.setTokenGenerationDetails(tgen);
 				
 				//Continue the log output trail
 				InputHandler.addResponseMesage(ret, zMessage);

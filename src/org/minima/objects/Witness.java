@@ -12,6 +12,8 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniString;
 import org.minima.objects.proofs.ScriptProof;
+import org.minima.objects.proofs.SignatureProof;
+import org.minima.objects.proofs.TokenProof;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
@@ -19,170 +21,161 @@ import org.minima.utils.json.JSONObject;
 public class Witness implements Streamable {
 	
 	/**
-	 * All the signatures required for all the Inputs to succeed. 
-	 * You sign the TXN_ID. 
-	 */
-	ArrayList<MiniData> mPublicKeys;
-	
-	/**
-	 * The Signatures - These are a LARGE part of the data. And ONLY checked once on entry to the system. 
-	 */
-	ArrayList<MiniData> mSignatures;
-	
-	/**
 	 * The MMR Proofs that each input Coin is valid and unspent.
 	 */
-	ArrayList<MMRProof> mProofs;
+	ArrayList<MMRProof> mMMRProofs;
 	
 	/**
-	 * The Scripts for the Inputs
+	 * The Signatures
 	 */
-	ArrayList<String> mScripts;
-	
-	/**
-	 * Token generation details.. one per transaction
-	 */
-	TokenDetails mTokenGenDetails = null;
+	ArrayList<SignatureProof> mSignatureProofs;
 	
 	/**
 	 * Any tokens used in any inputs must provide the Token Details
 	 */
-	ArrayList<TokenDetails> mTokenDetails;
+	ArrayList<TokenProof> mTokenProofs;
+	
+	/**
+	 * The Scripts used in the transactions 
+	 * 
+	 * Addresses
+	 * Tokens
+	 * MAST
+	 */
+	protected ArrayList<ScriptProof> mScriptProofs;
 	
 	/**
 	 * General Constructor
 	 */
 	public Witness() {
-		mPublicKeys = new ArrayList<>();
-		mSignatures = new ArrayList<>();
-		
-		mScripts    = new ArrayList<>();
-		mProofs     = new ArrayList<>();
-		
-		//Token details..
-		mTokenDetails = new ArrayList<>();
+		mMMRProofs       = new ArrayList<>();
+		mSignatureProofs = new ArrayList<>();
+		mTokenProofs     = new ArrayList<>();
+		mScriptProofs         = new ArrayList<>();
 	}
 	
-//	public void addScript(String zScript) {
-//		mScripts.add(Contract.cleanScript(zScript));
-//	}
-	
-//	public String getScript(int zScript) {
-//		return mScripts.get(zScript);
-//	}
-	
-	public void addMMRProof(MMRProof zProof) {
-		mProofs.add(zProof);
+	/**
+	 * Signature functions
+	 */
+	public void addSignature(MiniHash zPubKey, MiniData zSignature) {
+		mSignatureProofs.add(new SignatureProof(zPubKey, zSignature));
 	}
 	
-	public void clearProofs(){
-		mProofs.clear();	
+	public void addSignature(SignatureProof zSigProof) {
+		mSignatureProofs.add(zSigProof);
 	}
 	
-	public ArrayList<MMRProof> getAllProofs(){
-		return mProofs;
-	}
-	
-	public void addSignature(MiniData zPublicKey, MiniData zSig) {
-		//Add the public Key
-		mPublicKeys.add(zPublicKey);
-		
-		//Add to signatures
-		mSignatures.add(zSig);
-	}
-	
-	public MiniData getPublicKey(int zPubk) {
-		return mPublicKeys.get(zPubk);
-	}
-	
-	public MiniData getSignature(int zSig) {
-		return mSignatures.get(zSig);
-	}
-	
-	public ArrayList<MiniData> getAllSignatures(){
-		return mSignatures;
-	}
-	
-	public ArrayList<MiniData> getAllPubKeys(){
-		return mPublicKeys;
+	public ArrayList<SignatureProof> getAllSignatures(){
+		return mSignatureProofs;
 	}
 	
 	public String getAllPubKeysCSV(){
 		String ret = "";
-		for(MiniData sig : mPublicKeys) {
-			ret += sig.toString()+"#";
+		for(SignatureProof sig : mSignatureProofs) {
+			ret += sig.getFinalHash().to0xString()+"#";
 		}
+
 		return ret.trim();
 	}
 	
-	public void setTokenGenDetails(TokenDetails zTokGenDetails) {
-		mTokenGenDetails = zTokGenDetails;
+	/**
+	 * MMR Functions
+	 */
+	public void addMMRProof(MMRProof zProof) {
+		mMMRProofs.add(zProof);
 	}
 	
-	public TokenDetails getTokenGenDetails() {
-		return mTokenGenDetails;
+	public void clearProofs(){
+		mMMRProofs.clear();	
 	}
 	
-	public ArrayList<TokenDetails> getAllTokenDetails(){
-		return mTokenDetails;
+	public ArrayList<MMRProof> getAllMMRProofs(){
+		return mMMRProofs;
+	}
+
+	
+	/**
+	 * Token Proofs
+	 */
+	
+	public ArrayList<TokenProof> getAllTokenDetails(){
+		return mTokenProofs;
 	}
 	
-	public void addTokenDetails(TokenDetails zDetails) {
-		mTokenDetails.add(zDetails);
+	public void addTokenDetails(TokenProof zDetails) {
+		if(getTokenDetail(zDetails.getTokenID()) == null){
+			mTokenProofs.add(zDetails);	
+		}
 	}
 	
-	public TokenDetails getTokenDetail(MiniHash zTokenID) {
-		for(TokenDetails td : mTokenDetails) {
+	public TokenProof getTokenDetail(MiniHash zTokenID) {
+		for(TokenProof td : mTokenProofs) {
 			if(td.getTokenID().isExactlyEqual(zTokenID)) {
 				return td;
 			}
 		}
-		
 		return null;
 	}
+	
+	/**
+	 * Script Proofs
+	 */
+	public boolean addScript(ScriptProof zScriptProof) {
+		if(!scriptExists(zScriptProof.getFinalHash())) {
+			mScriptProofs.add(zScriptProof);		
+			return true;
+		}
+		return false;
+	}
+	
+	public boolean addScript(String zScript) {
+		return addScript(new ScriptProof(zScript));
+	}
+	
+	public ScriptProof getScript(MiniHash zHash) {
+		for(ScriptProof proof : mScriptProofs) {
+			if(proof.getFinalHash().isExactlyEqual(zHash)) {
+				return proof;
+			}
+		}
+		return null;
+	}
+	
+	public boolean scriptExists(MiniHash zHash) {
+		return getScript(zHash)!=null;
+	}
+	
 	
 	public JSONObject toJSON() {
 		JSONObject obj = new JSONObject();
 		
-		//Pub Keys
-		JSONArray arr = new JSONArray();
-		for(MiniData pubk : mPublicKeys) {
-			arr.add(pubk.toString());
-		}
-		obj.put("publickeys", arr);
-		
 		//Signatures
-		arr = new JSONArray();
-		for(MiniData sig : mSignatures) {
-			arr.add(sig.toString());
+		JSONArray arr = new JSONArray();
+		for(SignatureProof sg : mSignatureProofs) {
+			arr.add(sg.toJSON());
 		}
 		obj.put("signatures", arr);
-		
-		//Scripts
-		arr = new JSONArray();
-		for(String script : mScripts) {
-			arr.add(script);
-		}
-		obj.put("scripts", arr);
-		
+
 		//MMRProofs
 		arr = new JSONArray();
-		for(MMRProof proof : mProofs) {
+		for(MMRProof proof : mMMRProofs) {
 			arr.add(proof.toJSON());
 		}
 		obj.put("mmrproofs", arr);
 
 		//Token Details
 		arr = new JSONArray();
-		for(TokenDetails td : mTokenDetails) {
+		for(TokenProof td : mTokenProofs) {
 			arr.add(td.toJSON());
 		}
 		obj.put("tokens", arr);
-				
-		//Token Generation..
-		if(mTokenGenDetails != null) {
-			obj.put("tokengen", mTokenGenDetails.toJSON());
+		
+		//Scripts
+		arr = new JSONArray();
+		for(ScriptProof sp : mScriptProofs) {
+			arr.add(sp.toJSON());
 		}
+		obj.put("scripts", arr);
 		
 		return obj;
 	}
@@ -194,90 +187,60 @@ public class Witness implements Streamable {
 	
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
-		//Pub Keys
-		int pklen = mPublicKeys.size();
+		//Signatures 
+		int pklen = mSignatureProofs.size();
 		zOut.writeInt(pklen);
-		for(MiniData pubk : mPublicKeys) {
+		for(SignatureProof sp : mSignatureProofs) {
 			//The Pub Key
-			pubk.writeDataStream(zOut);
-		}
-		
-		//Signatures
-		zOut.writeInt(mSignatures.size());
-		for(MiniData sig : mSignatures) {
-			//The Pub Key
-			sig.writeDataStream(zOut);
-		}
-		
-		//Scripts
-		int sclen = mScripts.size();
-		zOut.writeInt(sclen);
-		for(String script : mScripts) {
-			zOut.writeUTF(script);
+			sp.writeDataStream(zOut);
 		}
 		
 		//MMRProofs
-		int mmrlen = mProofs.size();
+		int mmrlen = mMMRProofs.size();
 		zOut.writeInt(mmrlen);
-		for(MMRProof proof : mProofs) {
+		for(MMRProof proof : mMMRProofs) {
 			proof.writeDataStream(zOut);
 		}
 		
-		//Token Details
-		int toklen = mTokenDetails.size();
+		//Tokens
+		int toklen = mTokenProofs.size();
 		zOut.writeInt(toklen);
-		for(TokenDetails td : mTokenDetails) {
+		for(TokenProof td : mTokenProofs) {
 			td.writeDataStream(zOut);
 		}
 		
-		//Token generation
-		if(mTokenGenDetails == null) {
-			MiniByte.FALSE.writeDataStream(zOut);
-		}else {
-			MiniByte.TRUE.writeDataStream(zOut);
-			mTokenGenDetails.writeDataStream(zOut);
+		//Scripts
+		int scriptlen = mScriptProofs.size();
+		zOut.writeInt(scriptlen);
+		for(ScriptProof sp : mScriptProofs) {
+			sp.writeDataStream(zOut);
 		}
 	}
 
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
-		mPublicKeys = new ArrayList<>();
+		mSignatureProofs = new ArrayList<>();
 		int prlen = zIn.readInt();
 		for(int i=0;i<prlen;i++) {
-			mPublicKeys.add(MiniData.ReadFromStream(zIn));
-		}
-	
-		//Read in the combined sig hash
-		mSignatures = new ArrayList<>();
-		int siglen = zIn.readInt();
-		for(int i=0;i<siglen;i++) {
-			mSignatures.add(MiniData.ReadFromStream(zIn));
+			mSignatureProofs.add(SignatureProof.ReadFromStream(zIn));
 		}
 		
-		mScripts = new ArrayList<>();
+		mMMRProofs = new ArrayList<>();
 		prlen = zIn.readInt();
 		for(int i=0;i<prlen;i++) {
-			mScripts.add(zIn.readUTF());
+			mMMRProofs.add(MMRProof.ReadFromStream(zIn));
 		}
 		
-		mProofs = new ArrayList<>();
+		mTokenProofs = new ArrayList<>();
 		prlen = zIn.readInt();
 		for(int i=0;i<prlen;i++) {
-			mProofs.add(MMRProof.ReadFromStream(zIn));
+			mTokenProofs.add(TokenProof.ReadFromStream(zIn));
 		}
 		
-		mTokenDetails = new ArrayList<>();
+		mScriptProofs = new ArrayList<>();
 		prlen = zIn.readInt();
 		for(int i=0;i<prlen;i++) {
-			mTokenDetails.add(TokenDetails.ReadFromStream(zIn));
-		}
-		
-		//Token generation
-		MiniByte tokgen = MiniByte.ReadFromStream(zIn);
-		if(tokgen.isTrue()) {
-			mTokenGenDetails = TokenDetails.ReadFromStream(zIn);
-		}else {
-			mTokenGenDetails = null;
+			mScriptProofs.add(ScriptProof.ReadFromStream(zIn));
 		}
 	}
 }

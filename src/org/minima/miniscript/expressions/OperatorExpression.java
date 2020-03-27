@@ -71,8 +71,8 @@ public class OperatorExpression implements Expression{
 		MiniData ldata  = lval.getMiniData();
 		MiniData rdata  = rval.getMiniData();
 		
-		BigInteger lbig = ldata.getDataVaue();
-		BigInteger rbig = rdata.getDataVaue();
+		BigInteger lbig = ldata.getDataValue();
+		BigInteger rbig = rdata.getDataValue();
 		
 		//Which Operator..
 		switch (mOperatorType) {

@@ -51,28 +51,67 @@ public class Coin implements Streamable {
 	 * Tokens are Native in Minima. All inputs and outputs have them. MINIMA the default is 0x00
 	 */
 	MiniHash  mTokenID;
-	
-//	/**
-//	 * The TokenID is proved by the hash of the coinid (MiniData32) | total minima used (MiniNumber) | and total digits (MinByte).
-//	 * If TokenID = 0x00 than this is blank..
-//	 */
-//	MiniData 	mTokenProof;
+
+	/**
+	 * Floating Input Coins can be attached to any coin with the correct address and tokenid and AT LEAST the amount.
+	 */
+	boolean mFloating = false;
+
+	/**
+	 * Outputs can be designated as REMAINDERS for all the value remaining of a certain tokenid.. should the floating input change it.
+	 */
+	boolean mRemainder = false;
 	
 	/**
 	 * Main Constructor
 	 */
 	public Coin(MiniHash zCoinID, MiniHash zAddress, MiniNumber zAmount, MiniHash zTokenID) {
+		this(zCoinID, zAddress, zAmount, zTokenID, false, false);
+	}
+		
+	public Coin(MiniHash zCoinID, MiniHash zAddress, MiniNumber zAmount, MiniHash zTokenID, boolean zFloating, boolean zRemainder) {
 		mCoinID  = zCoinID;
 		mAddress = zAddress;
 		mAmount  = zAmount;
 		mTokenID = zTokenID;
+		
+		mFloating  = zFloating;
+		mRemainder = zRemainder;
+	}
+	
+	private Coin() {}
+	
+	public void setFloating(boolean zFloating) {
+		mFloating = zFloating;
+	}
+	
+	public boolean isFloating() {
+		return mFloating;
+	}
+	
+	public void setRemainder(boolean zRemainder) {
+		mRemainder = zRemainder;
+	}
+	
+	public boolean isRemainder() {
+		return mRemainder;
 	}
 	
 	/**
-	 * Required For Streamable.
+	 * Floating inputs change the CoinID
 	 */
-	private Coin() {}
-		
+	public void resetCoinID(MiniHash zCoinID) {
+		mCoinID = zCoinID;
+	}
+	
+	/**
+	 * Floating inputs or Remainder Outputs change the Amount
+	 */
+	public void resetAmount(MiniNumber zAmount) {
+		mAmount = zAmount;
+	}
+	
+	
 	public MiniHash getCoinID() {
 		return mCoinID;
 	}
@@ -89,28 +128,9 @@ public class Coin implements Streamable {
 		return mTokenID;
 	}
 	
-	/**
-	 * When creating a token a token of LESS THANN 255 tells how many decimal places to use..
-	 */
-	public static MiniHash getTokenCreationID(int zDecimalPlaces) {
-		int totplaces = zDecimalPlaces;
-		if(totplaces > 255) {
-			totplaces = 255;
-		}
-		
-		//create the number
-		MiniByte tot = new MiniByte(totplaces);
-		
-		//Now generate..
-		byte[] data = new byte[1];
-		data[0] = tot.getByteValue();
-		
-		return new MiniHash(data);
-	}
-	
 	@Override
 	public String toString() {
-		return  toJSON().toString();
+		return toJSON().toString();
 	}
 	
 	public JSONObject toJSON() {
@@ -120,6 +140,7 @@ public class Coin implements Streamable {
 		obj.put("address", mAddress.toString());
 		obj.put("amount", mAmount.toString());
 		obj.put("tokenid", mTokenID.toString());
+		obj.put("floating", mFloating);
 		
 		return obj;
 	}
@@ -130,15 +151,30 @@ public class Coin implements Streamable {
 		mAddress.writeDataStream(zOut);
 		mAmount.writeDataStream(zOut);
 		mTokenID.writeDataStream(zOut);
+		
+		if(mFloating) {
+			MiniByte.TRUE.writeDataStream(zOut);
+		}else {
+			MiniByte.FALSE.writeDataStream(zOut);
+		}
+		
+		if(mRemainder) {
+			MiniByte.TRUE.writeDataStream(zOut);
+		}else {
+			MiniByte.FALSE.writeDataStream(zOut);
+		}
 	}
 
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
-		mCoinID  = MiniHash.ReadFromStream(zIn);
-		mAddress = MiniHash.ReadFromStream(zIn);
-		mAmount  = MiniNumber.ReadFromStream(zIn);
-		mTokenID = MiniHash.ReadFromStream(zIn);
-	}	
+		mCoinID   = MiniHash.ReadFromStream(zIn);
+		mAddress  = MiniHash.ReadFromStream(zIn);
+		mAmount   = MiniNumber.ReadFromStream(zIn);
+		mTokenID  = MiniHash.ReadFromStream(zIn);
+		
+		mFloating  = MiniByte.ReadFromStream(zIn).isTrue();
+		mRemainder = MiniByte.ReadFromStream(zIn).isTrue();
+	}
 	
 	public static Coin ReadFromStream(DataInputStream zIn) throws IOException {
 		Coin coin = new Coin();

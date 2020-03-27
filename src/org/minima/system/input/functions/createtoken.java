@@ -9,7 +9,7 @@ public class createtoken extends CommandFunction {
 	public createtoken() {
 		super("createtoken");
 		setHelp("[name] [total] (token script hash)", 
-				"Create a token with the given name or description, total amount, and with the optional script.", "");
+				"Create a token.", "");
 	}
 	
 	@Override
@@ -17,12 +17,18 @@ public class createtoken extends CommandFunction {
 		//Take the Amount..
 		String name   = zInput[1];
 		String amount = zInput[2];
+		String script = "RETURN TRUE";
+		
+		if(zInput.length>3) {
+			script = zInput[3];
+		}
 		
 		//Send to the consensus Handler
 		Message msg = getResponseMessage(ConsensusHandler.CONSENSUS_CREATETOKEN);
 		msg.addString("name", name);
 		msg.addString("amount", amount);
-	
+		msg.addString("script", script);
+		
 		//Post it!
 		getMainHandler().getConsensusHandler().PostMessage(msg);
 	}

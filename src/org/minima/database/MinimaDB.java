@@ -2,6 +2,9 @@ package org.minima.database;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Hashtable;
@@ -20,13 +23,13 @@ import org.minima.database.txpowdb.java.JavaDB;
 import org.minima.database.txpowtree.BlockTree;
 import org.minima.database.txpowtree.BlockTreeNode;
 import org.minima.database.txpowtree.CascadeTree;
+import org.minima.database.txpowtree.MultiLevelCascadeTree;
 import org.minima.database.userdb.UserDB;
 import org.minima.database.userdb.java.JavaUserDB;
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
 import org.minima.objects.PubPrivKey;
 import org.minima.objects.StateVariable;
-import org.minima.objects.TokenDetails;
 import org.minima.objects.Transaction;
 import org.minima.objects.TxPOW;
 import org.minima.objects.Witness;
@@ -34,6 +37,7 @@ import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
+import org.minima.objects.proofs.TokenProof;
 import org.minima.system.backup.BackupManager;
 import org.minima.system.backup.SyncPackage;
 import org.minima.system.backup.SyncPacket;
@@ -44,6 +48,7 @@ import org.minima.system.tx.TXMiner;
 import org.minima.utils.Crypto;
 import org.minima.utils.Maths;
 import org.minima.utils.MinimaLogger;
+import org.minima.utils.json.JSONArray;
 import org.minima.utils.messages.Message;
 
 public class MinimaDB {
@@ -278,17 +283,53 @@ public class MinimaDB {
 				}
 			}
 			
+			//Whats the weight of the tree now..
+			BigInteger weight = mMainTree.getChainRoot().getTotalWeight();
+			
 			/**
 			 * Cascade the tree
 			 */
 			//Create a cascaded version
-			CascadeTree casc = new CascadeTree(mMainTree, this);
+			MultiLevelCascadeTree casc = new MultiLevelCascadeTree(mMainTree);
 			
 			//Do it..
 			ArrayList<BlockTreeNode> removals = casc.cascadedTree();
 			
+			//Was it worth it..
+			BigInteger cascweight = casc.getCascadeTree().getChainRoot().getTotalWeight();
+			
+			//See what the difference is..
+			BigDecimal ratio = new BigDecimal(cascweight).divide(new BigDecimal(weight), MathContext.DECIMAL128);
+			
+			if(ratio.compareTo(new BigDecimal(GlobalParams.MINIMA_CASCADE_RATIO)) < 0) {
+				//Too much power lost.. wait..
+//				System.out.println("Cascade Power Loss : "+ratio+" cas: "
+//						+mMainTree.getCascadeNode().getTxPow().getBlockNumber()
+//						+" tip:"+mMainTree.getChainTip().getTxPow().getBlockNumber());
+				return;
+			}
+			
 			//Set it
 			mMainTree = casc.getCascadeTree();
+			
+			//Fix the MMR
+			BlockTreeNode newcascade  = mMainTree.getCascadeNode();
+			if(newcascade != null && newcascade.getMMRSet()!=null){
+				//Sort the MMR..
+				casc.recurseParentMMR(oldcascade,newcascade.getMMRSet());
+			}
+			
+			//Remove the deleted blocks..
+			for(BlockTreeNode node : removals) {
+				//We can't keep it..
+				TxPOWDBRow row = getTxPOWRow(node.getTxPowID());
+				
+				//Discard.. no longer an onchain block..
+				row.setOnChainBlock(false);
+				
+				//And delete / move to different folder any file backups..
+				getBackup().deleteTxpow(node.getTxPow());
+			}
 			
 			//Remove all TXPowRows that are less than the cascade node.. they will not be used again..
 			MiniNumber cascade 	= mMainTree.getCascadeNode().getTxPow().getBlockNumber();
@@ -301,10 +342,17 @@ public class MinimaDB {
 				getBackup().deleteTxpow(remrow.getTxPOW());
 			}
 			
-			//Remove the deleted blocks..
-			for(BlockTreeNode node : removals) {
-				getBackup().deleteTxpow(node.getTxPow());
-			}
+//			//Remove the deleted blocks..
+//			for(BlockTreeNode node : removals) {
+//				//We can't keep it..
+//				TxPOWDBRow row = getTxPOWRow(node.getTxPowID());
+//				
+//				//Discard.. no longer an onchain block..
+//				row.setOnChainBlock(false);
+//				
+//				//And delete / move to different folder any file backups..
+//				getBackup().deleteTxpow(node.getTxPow());
+//			}
 			
 			//Remove all the coins no longer needed.. SPENT
 			mCoinDB.removeOldSpentCoins(cascade);
@@ -430,13 +478,7 @@ public class MinimaDB {
 	private boolean checkFullTxPOW(TxPOW zBlock, MMRSet zMMRSet) {
 		//First check the main transaction..
 		if(zBlock.isTransaction()) {
-			//Get the details..
-			Witness wit       = zBlock.getWitness();
-			Transaction trans = zBlock.getTransaction();
-			
-			//Check the Proof..
-			boolean inputvalid = TxPOWChecker.checkTransactionMMR(trans, wit, this, zBlock.getBlockNumber(), zMMRSet,true);
-		
+			boolean inputvalid = TxPOWChecker.checkTransactionMMR(zBlock, this, zBlock.getBlockNumber(), zMMRSet,true);
 			if(!inputvalid) {
 				return false;
 			}
@@ -448,13 +490,8 @@ public class MinimaDB {
 			TxPOWDBRow row = getTxPOWRow(txn);
 			TxPOW txpow = row.getTxPOW();
 			
-			//Get the details..
-			Witness wit       = txpow.getWitness();
-			Transaction trans = txpow.getTransaction();
-			
 			//Check the Proof..
-			boolean inputvalid = TxPOWChecker.checkTransactionMMR(trans, wit, this, zBlock.getBlockNumber(), zMMRSet,true);
-		
+			boolean inputvalid = TxPOWChecker.checkTransactionMMR(txpow, this, zBlock.getBlockNumber(), zMMRSet,true);
 			if(!inputvalid) {
 				return false;
 			}
@@ -493,37 +530,7 @@ public class MinimaDB {
 		
 		//Sort the MMR..
 		node.setMMRset(zMMR);
-		
-//		if(zMMR != null) {
-//			//Sort the MMR..
-//			node.setMMRset(zMMR);
-//			
-//			//Check if any of the outputs are relevant to us..
-//			ArrayList<MMREntry> zero =  zMMR.getZeroRow();
-//			for(MMREntry mmrcoin : zero) {
-//				//The coin
-//				Coin cc = mmrcoin.getData().getCoin();
-//				
-//				//is it relevant..
-//				if(getUserDB().isAddressRelevant(cc.getAddress())) {
-//					CoinDBRow inrow = getCoinDB().addCoinRow(cc);
-//					
-//					inrow.setIsSpent(mmrcoin.getData().isSpent());
-//					inrow.setIsInBlock(true);
-//					inrow.setInBlockNumber(zRoot.getBlockNumber());
-//					inrow.setMMREntry(mmrcoin.getEntry());
-//					
-//					//Tell the MMR
-////					zMMR.addKeeper(mmrcoin.getEntry());
-//					
-//					//Tell 
-//					SimpleLogger.log("BACKUP Coin found "+inrow.getCoin()+" spent:"+mmrcoin.getData().isSpent());
-//				}
-//			}
-//		}else {
-//			node.setMMRset(null);
-//		}
-		
+
 		//Add it..
 		mMainTree.hardAddNode(node, true);
 		
@@ -536,7 +543,7 @@ public class MinimaDB {
 	
 	public void hardResetChain() {
 		//Cascade it.. and then reset it..
-		CascadeTree casc = new CascadeTree(mMainTree, this);
+		MultiLevelCascadeTree casc = new MultiLevelCascadeTree(mMainTree);
 		casc.cascadedTree();
 		mMainTree = casc.getCascadeTree();
 	}
@@ -642,7 +649,7 @@ public class MinimaDB {
 		Witness wit 	= new Witness();
 		
 		//Which signatures are required
-		ArrayList<MiniData> sigpubk = new ArrayList<>();
+		ArrayList<MiniHash> sigpubk = new ArrayList<>();
 
 		//The Base current MMRSet
 		MMRSet basemmr  = getMainTree().getChainTip().getMMRSet();
@@ -663,10 +670,7 @@ public class MinimaDB {
 				
 				//Add this coin to the inputs..
 				trx.addInput(cc);
-				trx.addScript(script);
-				
-//				//Add the script
-//				wit.addScript(script);
+				wit.addScript(script);
 				
 				//Add the MMRProof..
 				CoinDBRow row  = getCoinDB().getCoinRow(cc.getCoinID());
@@ -683,7 +687,7 @@ public class MinimaDB {
 				wit.addMMRProof(proof);				
 				
 				//And finally sign!
-				MiniData pubk = getUserDB().getPublicKey(cc.getAddress());
+				MiniHash pubk = getUserDB().getPublicKey(cc.getAddress());
 				
 				//Add to list of signatures..
 				sigpubk.add(pubk);
@@ -716,7 +720,7 @@ public class MinimaDB {
 		
 		//Now we have a full transaction we can sign it!
 		MiniHash transhash = Crypto.getInstance().hashObject(trx);
-		for(MiniData pubk : sigpubk) {
+		for(MiniHash pubk : sigpubk) {
 			//Get the Pub Priv..
 			PubPrivKey signer = getUserDB().getPubPrivKey(pubk);
 			
@@ -742,15 +746,17 @@ public class MinimaDB {
 	 * @param zWitness
 	 * @return
 	 */
-	public TxPOW getCurrentTxPow(Transaction zTrans, Witness zWitness) {
+	public TxPOW getCurrentTxPow(Transaction zTrans, Witness zWitness, JSONArray zContractLogs) {
 		//Get the current best block..
 		BlockTreeNode tip = mMainTree.getChainTip();
+		
+		//TODO - Add Burn Transaction and Witness!
 		
 		//Fresh TxPOW
 		TxPOW txpow = new TxPOW();
 				
 		//Set the time
-		txpow.setTimeMilli(new MiniNumber(""+System.currentTimeMillis()));
+		txpow.setTimeSecs(new MiniNumber(""+(System.currentTimeMillis()/1000)));
 			
 		//Set the Transaction..
 		txpow.setTransaction(zTrans);
@@ -771,29 +777,35 @@ public class MinimaDB {
 			//Calculate New Chain Speed
 			int len = mMainTree.getAsList().size();
 			 
-			if(len > GlobalParams.MINIMA_CASCADE_DEPTH ) {
+			if(len > GlobalParams.MINIMA_CASCADE_START_DEPTH ) {
 				//Desired Speed.. in blocks per second
-				double actualspeed 	= mMainTree.getChainSpeed();
+				MiniNumber actualspeed 	= mMainTree.getChainSpeed();
 				
 				//Calculate the speed ratio
-				double speedratio   = actualspeed / GlobalParams.MINIMA_BLOCK_SPEED;
+				MiniNumber speedratio   = GlobalParams.MINIMA_BLOCK_SPEED.div(actualspeed);
 				
 				//Current avg
-				MiniNumber avgdiff = mMainTree.getAvgChainDifficulty();
-	
+				BigInteger avgdiff = mMainTree.getAvgChainDifficulty();
+				BigDecimal avgdiffdec = new BigDecimal(avgdiff);
+				
 				//Mutily by the ratio
-				MiniNumber newdiff   = avgdiff.mult(new MiniNumber(""+speedratio));
-	
-				//Now take the log..
-				double log = Maths.log2BI(newdiff.getAsBigInteger());
+				BigDecimal newdiffdec = avgdiffdec.multiply(speedratio.getAsBigDecimal());
+				BigInteger newdiff    = newdiffdec.toBigInteger();
+				
+				//Check if more than maximum..
+				if(newdiff.compareTo(BlockTreeNode.MAX_VAL)>0) {
+					newdiff = BlockTreeNode.MAX_VAL;
+				}
+				//Create the hash
+				MiniHash diffhash = new MiniHash("0x"+newdiff.toString(16)); 
 				
 				//Now set the new difficulty
-				txpow.setBlockDifficulty((int)log);
+				txpow.setBlockDifficulty(diffhash);
 			}
 		}
 		
 		//Super Block Levels..
-		for(int i=0;i<TxPOW.SUPERPARENT_NUM;i++) {
+		for(int i=0;i<GlobalParams.MINIMA_CASCADE_LEVELS;i++) {
 			txpow.mSuperParents[i] = tip.getTxPow().mSuperParents[i];
 		}
 
@@ -811,11 +823,12 @@ public class MinimaDB {
 		
 		//Check the first transaction
 		if(!zTrans.isEmpty()) {
-			boolean valid = TxPOWChecker.checkTransactionMMR(zTrans, zWitness, this, txpow.getBlockNumber(),newset,true);
+			boolean valid = TxPOWChecker.checkTransactionMMR(zTrans, zWitness, this, 
+					txpow.getBlockNumber(),newset,true, zContractLogs);
 			
 			//MUST be valid.. ?
 			if(!valid) {
-				MinimaLogger.log("ERROR: Your own transaction is invalid !?");
+//				MinimaLogger.log("ERROR: Your own transaction is invalid !?");
 				return null;
 			}
 		}
@@ -828,19 +841,13 @@ public class MinimaDB {
 			
 			//Make sure is at least a transaction
 			if(txp.isTransaction()) {
-				//Check it..
-				Transaction trans = txp.getTransaction();
-				Witness wit = txp.getWitness();
-				
-				boolean valid = TxPOWChecker.checkTransactionMMR(trans, wit, this, txpow.getBlockNumber(),newset,true);
+				boolean valid = TxPOWChecker.checkTransactionMMR(txp, this, txpow.getBlockNumber(),newset,true);
 				
 				if(valid) {
 					//Add it..
 					txpow.addBlockTxPOW(txp);	
 				
 				}else {
-//					SimpleLogger.log("Strange invalid TXPOW.. "+txp);
-					
 					//Remove this!.. It WAS valid but now not.. :(.. dump it..
 					mTxPOWDB.removeTxPOW(txp.getTxPowID());
 					

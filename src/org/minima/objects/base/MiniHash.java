@@ -27,6 +27,15 @@ public class MiniHash extends MiniData {
 	public static final int HASH_LENGTH = 32;
 	
 	/**
+	 * The Maximum HASH Value Possible
+	 */
+	public static final MiniHash MAX_HASH = new MiniHash(
+							"0xFFFFFFFFFFFFFFFFFFFF"+
+							  "FFFFFFFFFFFFFFFFFFFF"+
+							  "FFFFFFFFFFFFFFFFFFFF"+
+							  "FFFF");
+	
+	/**
 	 * A zero filled hash
 	 */
 	public static MiniHash ZERO32 = new MiniHash("0x00");
@@ -120,14 +129,14 @@ public class MiniHash extends MiniData {
 		MiniHash hhash32 = Crypto.getInstance().hashObject(hash32);
 		
 		System.out.println("Hash32 : "+hash32+" "+hash32.getLength()+" "+hhash32);
-		System.out.println(hash32.getDataVaue());
+		System.out.println(hash32.getDataValue());
 		
 		byte[] hashdata = Crypto.getInstance().hashData(hash32.getData());
 		
 		hhash32 = new MiniHash(hashdata);
 		
 		System.out.println("Hash32 : "+hash32+" "+hash32.getLength()+" "+hhash32);
-		System.out.println(hash32.getDataVaue());
+		System.out.println(hash32.getDataValue());
 		
 	}
 	

@@ -1,4 +1,4 @@
-Minima transactions are a series of inputs, a series of outputs and a variable list known as the state, which you can access from the script with GETSTATE. The state can be accessed by all the input scripts, and is stored in the MMR database, so can be accessed by PREVSTATE in the next transaction the outputs are added to, as inputs. 
+Minima transactions are a series of inputs, a series of outputs and a variable list known as the state, which you can access from the script with STATE. The state can be accessed by all the input scripts, and is stored in the MMR database, so can be accessed by PREVSTATE in the next transaction the outputs are added to, as inputs. 
 
 The sum of the outputs must be less than or equal to the sum of the inputs, for every tokenid used. The difference in raw minima is the Burn. 
 
@@ -6,13 +6,13 @@ A Minima input script returns true or false. The default is return FALSE, so all
 
 A transaction can be signed, in full, by one or more public keys.
 
-Minima allows input scripts to have perfect knowledge of the entire transaction. How many, their token type, the amount and address of all inputs and outputs are available. An input knows it's own script ( @SCRIPT ) and can ensure an output of a similar address exists in the outputs. 
+Minima allows input scripts to have perfect knowledge of the entire transaction. How many, token type, amount and the address of all inputs and outputs are available. An input knows it's own script ( @SCRIPT ) and can ensure an output of a similar address exists in the outputs. 
 
-Using REPLVAR new addresses can be created by replacing existing variables in the current  or pre-existing scripts, and checking of complex addresses can be achieved by using MAST and a list a variables before the main bulk of the hashed script.
+Using RPLVAR new addresses can be created by replacing existing variables in the current  or pre-existing scripts, and checking of complex addresses can be achieved by using MAST and a list a variables before the main bulk of the hashed script.
 
-The addition of the state variables in the MMR Proof DB, allow for complex scripts with knowledge of their past to be created.
+The addition of the state variables in the MMR Proof DB, allow for complex scripts with knowledge of their past to be created. A simple state mechanic for transactional history rather than a global state for ALL transactions.
 
-Minima transactions are complex Logic Gates, with analogue inputs and outputs, a simple yet powerful control language, and a single-shot history state mechanic.
+Minima transactions are scriptable Logic Gates, with analogue inputs and outputs, a simple yet powerful control language, and a previous history state mechanic.
 
 I think of them as "Script Gates".    
 
@@ -26,7 +26,7 @@ STATEMENT   ::= LET VARIABLE = EXPRESSION |
                 IF EXPRESSION THEN BLOCK [ELSEIF EXPRESSION THEN BLOCK]* [ELSE BLOCK] ENDIF | 
                 WHILE EXPRESSION DO BLOCK ENDWHILE |
                 EXEC EXPRESSION |
-                MAST BLOCK [ORMAST BLOCK]* ENDMAST |
+                MAST EXPRESSION |
                 ASSERT EXPRESSION |
                 RETURN EXPRESSION
 EXPRESSION  ::= RELATION AND RELATION  | RELATION OR RELATION  |  
@@ -44,28 +44,26 @@ MULDIV      ::= MULDIV * PRIME | MULDIV / PRIME | PRIME
 PRIME       ::= NOT PRIME |  NEG PRIME | BASEUNIT
 BASEUNIT    ::= VARIABLE | VALUE | GLOBAL | FUNCTION | ( EXPRESSION )
 VARIABLE    ::= ^[a-z]{1,10}$
-VALUE       ::= NUMBER | DATA | BINARY
-DATA        ::= HEX | SCRIPT
-BINARY      ::= TRUE | FALSE
-GLOBAL      ::= @BLKNUM | @INPUT | @INBLKNUM | @BLKDIFF
-      	        @AMOUNT | @ADDRESS | @TOKENID | @COINID |
-                @SCRIPT | @TOTIN | @TOTOUT
+VALUE       ::= NUMBER | BYTE | HEX | SCRIPT | BINARY
 NUMBER      ::= "^-?\\d*(\\.\\d+)?$"
 BYTE        ::= [0-255]
 HEX         ::= 0x[0-9A-F]{2}*
 SCRIPT      ::= [ ASCII ]
+BINARY      ::= TRUE | FALSE
 FALSE       ::= 0
 TRUE        ::= NOT FALSE
-MAST        ::= $HEX
+GLOBAL      ::= @BLKNUM | @INPUT | @INBLKNUM | @BLKDIFF
+      	        @AMOUNT | @ADDRESS | @TOKENID | @COINID |
+                @SCRIPT | @TOTIN | @TOTOUT
 FUNCTION    ::= FUNC ( EXPRESSION_1 EXPRESSION_2 .. EXPRESSION_n ) 
-FUNC        ::= CONCAT | LEN | REV | SUBSET | RPLVAR | GET |
+FUNC        ::= HEXCAT | STRCAT | LEN | REV | SUBSET | RPLVAR | GET |
                 ASCII | BOOL | HEX | NUMBER | SCRIPT |
                 ABS | CEIL | FLOOR | MIN | MAX | INC | DEC |
                 BITSET | BITGET | PROOF | SHA3 | SHA2 |
                 SIGNEDBY | MULTISIG | CHECKSIG |
                 GETOUTADDR | GETOUTAMT | GETOUTTOK | VERIFYOUT |
                 GETINADDR | GETINAMT | GETINTOK | GETINID | VERIFYIN |
-                SUMINTOK | SUMOUTTOK | STATE | PREVSTATE | SAMESTATE | *DYNSTATE
+                STATE | PREVSTATE | SAMESTATE
 
 Globals
 -------
@@ -85,19 +83,24 @@ Globals
 Functions
 ---------
 
-CONCAT ( DATA_1 DATA_2 ... DATA_n )
-Concatenate all the values into 1 value. All values must be the same DATA type 
+HEXCAT ( HEX_1 HEX_2 ... HEX_n )
+Concatenate the values. All values are treated as HEX values 
+
+STRCAT ( SCRIPT_1 SCRIPT_2 ... SCRIPT_n )
+Concatenate the values. All values are treated as SCRIPT values. 
+A space is added between each and then the script is CLEANED. 
 
 LEN ( HEX )
 Length of the data
+
 REV ( HEX )
 Reverse the data
 
 SUBSET ( HEX NUMBER NUMBER )
-Return a subset of the data start length
+Return the HEX subset of the data - start - length
 
 RPLVAR ( SCRIPT SCRIPT SCRIPT ) 
-In a script, replace a variable definition with the following Expression. Can be used on @SCRIPT or other to create a covenant with new variables and check outputs.
+In a script, replace a variable definition with the following Expression. Can be used with @SCRIPT for recursive covenants.
 
 GET ( NUMBER NUMBER .. NUMBER )
 Return the array value set with LET ( EXPRESSION EXPRESSION .. EXPRESSION )  
@@ -145,7 +148,8 @@ BITGET ( HEX NUMBER )
 Get the BINARY value of the bit at the position.
 
 CHAINSHA ( HEX HEX ) 
-Recursively hash the first HEX value with the proof provided in the second. A proof is a BYTE denoting left or right with a hex data value. Returns the final result that can be checked in script 
+Recursively hash the first HEX value with the proof provided in the second. A proof is a BYTE denoting left or right with a hex data value. 
+Returns the final result that can be checked in script. Use the 'mmrtree' function in Minima to construct Hash Trees.   
 
 SHA3 ( HEX ) 
 Returns the SHA3 value of the HEX value
@@ -159,8 +163,8 @@ Returns true if the transaction is signed by this public key
 MULTISIG ( BYTE HEX1 HEX2 .. HEXn )
 Returns true if the transaction is signed by N of the public keys
 
-CHECKSIG ( HEX HEX )
-Check valid signature with provided public key
+CHECKSIG ( HEX HEX HEX)
+Check public key, data and signature 
 
 GETOUTADDR ( BYTE ) 
 Return the HEX address of the specified output
@@ -186,12 +190,6 @@ Return the token id of the specified input
 VERIFYIN ( BYTE HEX NUMBER HEX )
 Verify the specified input has the specified address, amount and tokenid
 
-SUMINTOK ( HEX )
-Sum the input values of a certain token 
-
-SUMOUTTOK ( HEX )
-Sum the output values of a certain token 
-
 STATE ( NUMBER )
 Return the state value for the given number
 
@@ -201,13 +199,19 @@ Return the state value stored in the MMR data in the initial transaction this in
 SAMESTATE ( NUMBER [NUMBER] )
 Return TRUE if the previous state and current state are the same. If 2 parameters are set then checks all the values inbetween the 2 values inclusively
 
-*DYNSTATE ( NUMBER  EXPRESSION )
-Can be called only once per transaction. Will change the State value to the expression value.  N = N+1. This way rolling transactions are possible. Multiple calls to the same input in the same block.
-
 Examples
 --------
 
+LET thing = 23
+LET ( 12 2 ) = 45.345
+LET ( 0 0 1 ) = 0xFF
+LET ( 0xFF ( thing + 1 ) ) = [ RETURN TRUE ]
+
+--
+
 RETURN SIGNEDBY ( 0x12345.. )
+
+--
 
 IF SIGNEDBY ( 0x123456.. ) AND SIGNEDBY ( 0x987654.. ) THEN
    RETURN TRUE
@@ -215,6 +219,29 @@ ELSE IF @BLKNUM GT 198765 AND SIGNEDBY ( 0x12345.. ) THEN
    RETURN TRUE
 ENDIF
 
-LET x = GETSATE ( 23 )
+--
+
+LET x = STATE ( 23 )
 LET shax = SHA3 ( x )
-IF shax EQ 0x6785456 AND SIGNEDBY ( 0x12345.. ) THEN RETURN TRUE ENDIF
+IF shax EQ 0x6785456.. AND SIGNEDBY ( 0x12345.. ) THEN 
+  RETURN TRUE 
+ENDIF
+
+--
+
+EXEC [ RETURN TRUE ]
+
+--
+
+MAST 0xA6657D2133E29B0A343871CAE44224BBA6BB87A972A5247A38A45D3D2065F7E4
+
+--
+
+LET old = [ LET add = 0xFFEEDDFFEEDD ]
+LET new = RPLVAR ( old [ add ] [ 0xEE ]] )
+
+--
+
+ASSERT STATE ( 0 ) EQ INC ( PREVSTATE ( 0 ) )
+
+--

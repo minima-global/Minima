@@ -1,4 +1,4 @@
-package org.minima.objects;
+package org.minima.objects.proofs;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -11,7 +11,6 @@ import org.minima.database.mmr.MMRProof;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniHash;
-import org.minima.objects.proofs.ScriptProof;
 import org.minima.utils.Crypto;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONArray;
@@ -37,15 +36,15 @@ public class Proof implements Streamable {
 	}
 	
 	//The data you are trying to prove..
-	MiniHash mData;
+	protected MiniHash mData;
 	
 	//The Merkle Branch that when applied to the data gives the final proof;
-	ArrayList<ProofChunk> mProofChain;
+	protected ArrayList<ProofChunk> mProofChain;
 	
 	//Calculate this once
-	MiniHash mFinalHash;
-	MiniData mChainSHA;
-	boolean mFinalized;
+	protected MiniHash mFinalHash;
+	protected MiniData mChainSHA;
+	protected boolean mFinalized;
 		
 	protected Proof(){
 		mProofChain = new ArrayList<>();
@@ -53,6 +52,10 @@ public class Proof implements Streamable {
 
 	public void setData(MiniHash zData) {
 		mData       = zData;
+	}
+	
+	public MiniHash getData() {
+		return mData;
 	}
 	
 	public void setProof(MiniData zChainSHAProof) {
@@ -88,6 +91,10 @@ public class Proof implements Streamable {
 	
 	public int getProofLen() {
 		return mProofChain.size();
+	}
+	
+	public ProofChunk getProofChunk(int zNum) {
+		return mProofChain.get(zNum);
 	}
 	
 	public void finalizeHash() {
@@ -161,6 +168,7 @@ public class Proof implements Streamable {
 			proof.add(jsonchunk);
 		}
 		
+		json.put("data", mData.to0xString());
 		json.put("proofchain", proof);
 		json.put("chainsha", getChainSHAProof().to0xString());
 		json.put("finalhash", getFinalHash().to0xString());
@@ -171,7 +179,6 @@ public class Proof implements Streamable {
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
 		mData.writeDataStream(zOut);
-		
 		int len = mProofChain.size();
 		zOut.writeInt(len);
 		for(int i=0;i<len;i++) {
@@ -205,25 +212,5 @@ public class Proof implements Streamable {
 		}
 		
 		return proof;
-	}
-	
-	public static void main(String[] zArgs) {
-		MiniHash dd = new MiniHash("0xFF");
-		
-//		Proof sp = new Proof(dd);
-//		sp.addProofChunk(MiniByte.TRUE, new MiniHash("0xEE"));
-//		sp.addProofChunk(MiniByte.FALSE, new MiniHash("0xCC"));
-//		
-//		System.out.println("FH  : "+sp.calculateFinalHash());
-//		System.out.println("PR  : "+sp.toJSON());
-//		
-//		MiniData dat = sp.getChainSHAProof();
-//		System.out.println("CHAINSHA : "+dat);
-//		
-//		Proof wp = new Proof(dd, dat);
-//		System.out.println("FH2 : "+wp.calculateFinalHash());
-//		System.out.println("PR2 : "+wp.toJSON());
-		
-		
 	}
 }

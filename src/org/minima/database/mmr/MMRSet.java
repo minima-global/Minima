@@ -10,6 +10,7 @@ import org.minima.objects.Coin;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
+import org.minima.objects.proofs.Proof.ProofChunk;
 import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
@@ -125,6 +126,9 @@ public class MMRSet implements Streamable {
 	}
 	
 	public void finalizeSet() {
+		//Reset
+		mFinalized = false;
+				
 		//The peaks..
 		mFinalizedPeaks = getMMRPeaks();
 		
@@ -202,7 +206,39 @@ public class MMRSet implements Streamable {
 	}
 	
 	/**
-	 * Find an entry - but don't serach parents.
+	 * Search for the first valid unspent Address and Tokenid with AT LEAST Amount coin
+	 * @param zCoinID
+	 * @return
+	 */
+	public MMREntry searchAddress(MiniHash zAddress, MiniNumber zAmount, MiniHash zTokenID) {
+		//Get the zero row - no parents..
+		ArrayList<MMREntry> zero=getZeroRow();
+		
+		for(MMREntry entry : zero) {
+			if(!entry.getData().isHashOnly()) {
+				Coin cc = entry.getData().getCoin();
+				
+				boolean notspent  = !entry.getData().isSpent();
+				boolean addr      = cc.getAddress().isExactlyEqual(zAddress);
+				boolean amount    = cc.getAmount().isMoreEqual(zAmount);
+				boolean tok       = cc.getTokenID().isExactlyEqual(zTokenID);
+				
+				if(addr && amount && tok && notspent){
+					return entry;
+				}
+			}
+		}
+			
+		//Cycle up the parents.. 
+		if(mParent!=null) {
+			return mParent.searchAddress(zAddress, zAmount, zTokenID);
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * Find an entry
 	 * @param zCoinID
 	 * @return
 	 */
@@ -350,7 +386,7 @@ public class MMRSet implements Streamable {
 			MMREntry sibling = getEntry(entry.getRow(), entry.getSibling(),true);
 			
 			//Do we add our own..
-			MMRData pdata = new MMRData(zProof.getProof(proofnum++));
+			MMRData pdata = new MMRData(zProof.getProofChunk(proofnum++).getHash());
 			if(sibling.isEmpty()) {
 				//Set the data
 				sibling = setEntry(sibling.getRow(), sibling.getEntry(), pdata);
@@ -477,7 +513,7 @@ public class MMRSet implements Streamable {
 		
 		//Is an input missing or is it a less recent update 
 		int pcount = 0;
-		MiniHash phash = zProof.getProof(pcount++);
+		MiniHash phash = zProof.getProofChunk(pcount++).getHash();
 		
 		//Do we need to fill it in..
 		if(sibling.isEmpty()) {
@@ -522,7 +558,7 @@ public class MMRSet implements Streamable {
 			
 			//Check for a valid sibling
 			if(pcount < zProof.getProofLen()) {
-				phash = zProof.getProof(pcount++);
+				phash = zProof.getProofChunk(pcount++).getHash();
 				if(sibling.isEmpty()) {
 					sibling = setEntry(sibling.getRow(), sibling.getEntry(), new MMRData(phash));		
 				}else if(sibling.getBlockTime().isLessEqual(zProof.getBlockTime())) {
@@ -552,7 +588,8 @@ public class MMRSet implements Streamable {
 		MMREntry sibling = getEntry(entry.getRow(), entry.getSibling(), true);
 		while(!sibling.isEmpty()) {
 			//Add to our Proof..
-			proof.addHash(sibling.getHashValue(), sibling.isLeft());	
+//			proof.addHash(sibling.getHashValue(), sibling.isLeft());	
+			proof.addProofChunk(new MiniByte(sibling.isLeft()), sibling.getHashValue());	
 			
 			//Now get the Parent.. just need a reference even if is empty. To find the sibling.
 			MMREntry parent = new MMREntry( sibling.getParentRow(), sibling.getParentEntry() );
@@ -600,7 +637,9 @@ public class MMRSet implements Streamable {
 			//Now add thatto the totsl proof..
 			int len = proof.getProofLen();
 			for(int i=0;i<len;i++) {
-				totalproof.addHash(proof.getProof(i), proof.getLeftHash(i).isTrue());
+				ProofChunk chunk = proof.getProofChunk(i);
+//				totalproof.addHash(proof.getProof(i), proof.getLeftHash(i).isTrue());
+				totalproof.addProofChunk(chunk.getLeft(), chunk.getHash());
 			}
 			
 			//Now get the peaks.. repeat..
@@ -621,7 +660,7 @@ public class MMRSet implements Streamable {
 		MMRProof proof = getProof(zEntry);
 		
 		//Now get the peak this points to..
-		MiniHash peak = proof.calculateProof();
+		MiniHash peak = proof.getFinalHash();
 		
 		//Now find the path to root for this peak
 		MMRProof rootproof = getPeakToRoot(peak);
@@ -629,7 +668,9 @@ public class MMRSet implements Streamable {
 		//Now add the two..
 		int len = rootproof.getProofLen();
 		for(int i=0;i<len;i++) {
-			proof.addHash(rootproof.getProof(i), rootproof.getLeftHash(i).isTrue());
+			ProofChunk chunk = proof.getProofChunk(i);
+			proof.addProofChunk(chunk.getLeft(), chunk.getHash());
+//			proof.addHash(rootproof.getProof(i), rootproof.getLeftHash(i).isTrue());
 		}
 		
 		return proof;
@@ -645,6 +686,10 @@ public class MMRSet implements Streamable {
 	 * @return
 	 */
 	public boolean checkProof(MMRProof zProof) {
+		return checkProof(zProof, true);
+	}
+	
+	public boolean checkProof(MMRProof zProof, boolean zCheckSpent) {
 		//Hmm.. this is not good..
 		if(zProof.getMMRData().isHashOnly()) {
 			System.out.println("Invalid PROOF check HASHONLY! : "+zProof);
@@ -676,7 +721,7 @@ public class MMRSet implements Streamable {
 		ArrayList<MMREntry> peaks = proofset.getMMRPeaks();
 		
 		//Calculate the proof..
-		MiniHash proofpeak = zProof.calculateProof();
+		MiniHash proofpeak = zProof.getFinalHash();
 		
 		//Is this is a Peak ? - if so, go no further..
 		boolean found = false;
@@ -692,14 +737,17 @@ public class MMRSet implements Streamable {
 			return false;
 		}
 		
-		//So the proof was valid at that time.. if it has been SPENT, it will have been AFTER this block - and in our MMR
-		MMREntry checker = getEntry(0, zProof.getEntryNumber(), true);
-		
-		//Is it there ?
-		if(!checker.isEmpty()) {
-			//Get the DATA - could be the original UNSPENT or the SPENT
-			if(checker.getData().isSpent()) {
-				return false;
+		//DO we check if it's spent - floating inputs do this differently
+		if(zCheckSpent) {
+			//So the proof was valid at that time.. if it has been SPENT, it will have been AFTER this block - and in our MMR
+			MMREntry checker = getEntry(0, zProof.getEntryNumber(), true);
+			
+			//Is it there ?
+			if(!checker.isEmpty()) {
+				//Get the DATA - could be the original UNSPENT or the SPENT
+				if(checker.getData().isSpent()) {
+					return false;
+				}
 			}
 		}
 		
@@ -973,6 +1021,9 @@ public class MMRSet implements Streamable {
 				mEntries.add(entry);
 			}
 		}
+		
+		//Finalize..
+		finalizeSet();
 	}
 	
 }

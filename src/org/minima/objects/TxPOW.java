@@ -10,6 +10,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
+import org.minima.GlobalParams;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
@@ -29,12 +30,12 @@ public class TxPOW implements Streamable {
 	/**
 	 * The NONCE - the user definable data you cycle through to change the final hash of this TxPow
 	 */
-	private MiniNumber 	mNonce	= new MiniNumber();
+	private MiniNumber 	mNonce	= new MiniNumber(0);
 	
 	/**
-	 * TimeMilli  
+	 * Time Secs  
 	 */
-	private MiniNumber 	mTimeMilli= new MiniNumber();
+	private MiniNumber 	mTimeSecs= new MiniNumber();
 	
 	/**
 	 * The Difficulty for this TXPOW to be valid.
@@ -43,7 +44,8 @@ public class TxPOW implements Streamable {
 	 * 
 	 * The amount of work (Proof-of-work) that has gone into it.
 	 */
-	private MiniByte 	mTxnDifficulty = new MiniByte();
+	
+	private MiniHash 	mTxnDifficulty = new MiniHash();
 	
 	/**
 	 * The Transaction the user is trying to send
@@ -54,6 +56,16 @@ public class TxPOW implements Streamable {
 	 * The Witness data for the Transaction
 	 */
 	private Witness		mWitness = new Witness();
+	
+	/**
+	 * The BURN paying for the Transaction the user is trying to send - can be empty
+	 */
+	private TransactionBurn	mBurnTransaction = new TransactionBurn();
+	
+	/**
+	 * The Witness data for the FeeTransaction - can be empty
+	 */
+	private Witness	   mBurnWitness = new Witness();
 	
 	/**
 	 * The Block Number
@@ -68,7 +80,7 @@ public class TxPOW implements Streamable {
 	/**
 	 * The BASE Block Difficulty
 	 */
-	private MiniByte mBlockDifficulty = new MiniByte();
+	private MiniHash mBlockDifficulty = new MiniHash();
 	
 	/**
 	 * The list of the current TX-POWs the user 
@@ -79,8 +91,7 @@ public class TxPOW implements Streamable {
 	/**
 	 * A list of all the parent blocks at all the Super Block Levels..
 	 */
-	public static final int SUPERPARENT_NUM = 256;
-	public MiniHash[] mSuperParents = new MiniHash[SUPERPARENT_NUM];
+	public MiniHash[] mSuperParents = new MiniHash[GlobalParams.MINIMA_CASCADE_LEVELS];
 	
 	/**
 	 * The MMR Root!
@@ -88,7 +99,8 @@ public class TxPOW implements Streamable {
 	public MiniHash mMMRRoot = new MiniHash();
 	
 	/**
-	 * A Random Magic number so that everyone is working on a different TxPOW (since there is no coinbase..)
+	 * A Random Magic number so that everyone is working on a different TxPOW in the pulse 
+	 * (since there is no coinbase..)
 	 */
 	public MiniHash mMagic = MiniHash.getRandomData();
 	
@@ -97,6 +109,11 @@ public class TxPOW implements Streamable {
 	 * 0x00 is the main chain
 	 */
 	public MiniHash mChainID = new MiniHash("0x00");
+	
+	/**
+	 * Every Side chain has a parent chain
+	 */
+	public MiniHash mParentChainID = new MiniHash("0x00");
 
 	/**
 	 * A Custom Hash. Can be anything the user wants..
@@ -107,10 +124,11 @@ public class TxPOW implements Streamable {
 	 * These are used internally ONLY
 	 */
 	private MiniHash _mTxPOWID = new MiniHash();
+	private MiniHash _mTransID = new MiniHash();
 	
-	protected boolean _mIsBlockPOW;
-	protected boolean _mIsTxnPOW;
-	protected int     _mSuperBlock;
+	protected boolean _mIsBlockPOW  = false;
+	protected boolean _mIsTxnPOW    = false;
+	protected int     _mSuperBlock  = 0;
 	
 	/**
 	 * Static date format
@@ -124,7 +142,7 @@ public class TxPOW implements Streamable {
 		mTxPowIDList = new ArrayList<>();
 		
 		//Super Block Levels..
-		for(int i=0;i<SUPERPARENT_NUM;i++) {
+		for(int i=0;i<GlobalParams.MINIMA_CASCADE_LEVELS;i++) {
 			mSuperParents[i] = new MiniHash();
 		}
 	}
@@ -133,12 +151,24 @@ public class TxPOW implements Streamable {
 		mNonce = zNonce;
 	}
 	
+	public MiniNumber getNonce() {
+		return mNonce;
+	}
+	
 	public void setChainID(MiniHash zChainID) {
 		mChainID = zChainID;
 	}
 	
+	public void setParentChainID(MiniHash zChainID) {
+		mParentChainID = zChainID;
+	}
+	
 	public MiniHash getChainID() {
 		return mChainID;
+	}
+	
+	public MiniHash getParentChainID() {
+		return mParentChainID;
 	}
 	
 	public void setCustom(MiniHash zCustom) {
@@ -149,20 +179,24 @@ public class TxPOW implements Streamable {
 		return mCustom;
 	}
 	
-	public void setTxDifficulty(int zDifficulty) {
-		mTxnDifficulty = new MiniByte(zDifficulty);
+	public void setTxDifficulty(MiniHash zDifficulty) {
+		mTxnDifficulty = zDifficulty;
 	}
 	
-	public int getTxnDifficulty() {
-		return mTxnDifficulty.getValue();
+	public MiniHash getTxnDifficulty() {
+		return mTxnDifficulty;
 	}
 	
-	public void setTimeMilli(MiniNumber zMilli) {
-		mTimeMilli = zMilli;
+	public void setTimeSecs(MiniNumber zSecs) {
+		mTimeSecs = zSecs;
 	}
 	
 	public Transaction getTransaction() {
 		return mTransaction;
+	}
+	
+	public TransactionBurn getBurnTransaction() {
+		return mBurnTransaction;
 	}
 	
 	public void setTransaction(Transaction zTran) {
@@ -177,12 +211,12 @@ public class TxPOW implements Streamable {
 		return mTxPowIDList;
 	}
 	
-	public int getBlockDifficulty() {
-		return mBlockDifficulty.getValue();
+	public MiniHash getBlockDifficulty() {
+		return mBlockDifficulty;
 	}
 	
-	public void setBlockDifficulty(int zBlockDifficulty) {
-		mBlockDifficulty = new MiniByte(zBlockDifficulty);
+	public void setBlockDifficulty(MiniHash zBlockDifficulty) {
+		mBlockDifficulty = zBlockDifficulty;
 	}
 	
 	public void setParent(MiniHash zData) {
@@ -193,8 +227,12 @@ public class TxPOW implements Streamable {
 		return mParent;
 	}
 	
-	public MiniNumber getTimeMilli() {
-		return mTimeMilli;
+	public MiniHash getSuperParent(int zLevel) {
+		return mSuperParents[zLevel];
+	}
+	
+	public MiniNumber getTimeSecs() {
+		return mTimeSecs;
 	}
 	
 	public void setBlockNumber(MiniNumber zBlockNum) {
@@ -211,6 +249,10 @@ public class TxPOW implements Streamable {
 	
 	public Witness getWitness() {
 		return mWitness;
+	}
+	
+	public Witness getBurnWitness() {
+		return mBurnWitness;
 	}
 	
 	public MiniHash getMMRRoot() {
@@ -233,7 +275,7 @@ public class TxPOW implements Streamable {
 		JSONArray supers = new JSONArray();
 		MiniHash old = null;
 		int counter=0;
-		for(int i=0;i<SUPERPARENT_NUM;i++) {
+		for(int i=0;i<GlobalParams.MINIMA_CASCADE_LEVELS;i++) {
 			MiniHash curr = mSuperParents[i];
 			
 			if(old == null) {
@@ -243,7 +285,7 @@ public class TxPOW implements Streamable {
 				if(old.isExactlyEqual(curr)) {
 					counter++;
 					//Is this the last one..
-					if(i==SUPERPARENT_NUM-1) {
+					if(i==GlobalParams.MINIMA_CASCADE_LEVELS-1) {
 						//Write it anyway..
 						JSONObject sp = new JSONObject();
 						sp.put("difficulty", i);
@@ -268,10 +310,21 @@ public class TxPOW implements Streamable {
 		}
 		txpow.put("superparents", supers);
 		
-		txpow.put("blkdiff", mBlockDifficulty);
-		txpow.put("txndiff", mTxnDifficulty);
+//		//The Super parents
+//		JSONArray supers = new JSONArray();
+//		for(int i=0;i<16;i++) {
+//			supers.add(mSuperParents[i].toShort0xString(16));
+//		}
+//		txpow.put("superparents", supers);
+		
+		txpow.put("blkdiff", mBlockDifficulty.to0xString());
+		txpow.put("txndiff", mTxnDifficulty.to0xString());
 		txpow.put("txn", mTransaction.toJSON());
 		txpow.put("witness", mWitness.toJSON());
+		
+		//The BURN transaction.. normally empty
+		txpow.put("burntxn", mBurnTransaction.toJSON());
+		txpow.put("burnwitness", mBurnWitness.toJSON());
 		
 		//Need to make it into a JSON array
 		JSONArray txns = new JSONArray();
@@ -282,12 +335,13 @@ public class TxPOW implements Streamable {
 		
 		txpow.put("magic", mMagic.toString());
 		txpow.put("chainid", mChainID.toString());
+		txpow.put("parentchainid", mParentChainID.toString());
 		txpow.put("custom", mCustom.toString());
 		txpow.put("nonce", mNonce.toString());
 		txpow.put("mmr", mMMRRoot.toString());
 		
-		txpow.put("timemilli", mTimeMilli.toString());
-		txpow.put("date", new Date(mTimeMilli.getAsLong()).toString());
+		txpow.put("timesecs", mTimeSecs.toString());
+		txpow.put("date", new Date(mTimeSecs.getAsLong()*1000).toString());
 		
 		return txpow;
 	}
@@ -302,11 +356,14 @@ public class TxPOW implements Streamable {
 		mNonce.writeDataStream(zOut);
 		mMagic.writeDataStream(zOut);
 		mChainID.writeDataStream(zOut);
+		mParentChainID.writeDataStream(zOut);
 		mCustom.writeDataStream(zOut);
-		mTimeMilli.writeDataStream(zOut);
+		mTimeSecs.writeDataStream(zOut);
 		mTxnDifficulty.writeDataStream(zOut);
 		mTransaction.writeDataStream(zOut);
 		mWitness.writeDataStream(zOut);
+		mBurnTransaction.writeDataStream(zOut);
+		mBurnWitness.writeDataStream(zOut);
 		mBlockNumber.writeDataStream(zOut);
 		mParent.writeDataStream(zOut);
 		mBlockDifficulty.writeDataStream(zOut);
@@ -314,7 +371,7 @@ public class TxPOW implements Streamable {
 		//The Super parents are efficiently encoded in RLE
 		MiniHash old = null;
 		int counter=0;
-		for(int i=0;i<SUPERPARENT_NUM;i++) {
+		for(int i=0;i<GlobalParams.MINIMA_CASCADE_LEVELS;i++) {
 			MiniHash curr = mSuperParents[i];
 			if(old == null) {
 				old = curr;
@@ -323,7 +380,7 @@ public class TxPOW implements Streamable {
 				if(old.isExactlyEqual(curr)) {
 					counter++;
 					//Is this the last one..
-					if(i==SUPERPARENT_NUM-1) {
+					if(i==GlobalParams.MINIMA_CASCADE_LEVELS-1) {
 						//Write it anyway..
 						MiniByte count = new MiniByte(counter);
 						count.writeDataStream(zOut);
@@ -360,18 +417,21 @@ public class TxPOW implements Streamable {
 		mNonce.readDataStream(zIn);
 		mMagic.readDataStream(zIn);
 		mChainID.readDataStream(zIn);
+		mParentChainID.readDataStream(zIn);
 		mCustom.readDataStream(zIn);
-		mTimeMilli.readDataStream(zIn);
-		mTxnDifficulty = MiniByte.ReadFromStream(zIn);
+		mTimeSecs.readDataStream(zIn);
+		mTxnDifficulty = MiniHash.ReadFromStream(zIn);
 		mTransaction.readDataStream(zIn);
 		mWitness.readDataStream(zIn);
+		mBurnTransaction.readDataStream(zIn);
+		mBurnWitness.readDataStream(zIn);
 		mBlockNumber.readDataStream(zIn);
 		mParent = MiniHash.ReadFromStream(zIn);
 		mBlockDifficulty.readDataStream(zIn);
 		
 		//And the super parents - RLE
 		int tot   = 0;
-		while(tot<SUPERPARENT_NUM) {
+		while(tot<GlobalParams.MINIMA_CASCADE_LEVELS) {
 			MiniByte len   = MiniByte.ReadFromStream(zIn);
 			MiniHash sup = MiniHash.ReadFromStream(zIn);
 			int count = len.getValue();
@@ -405,6 +465,10 @@ public class TxPOW implements Streamable {
 		return _mTxPOWID;
 	}
 	
+	public MiniHash getTransID() {
+		return _mTransID;
+	}
+	
 	public int getSuperLevel() {
 		return _mSuperBlock;
 	}
@@ -417,7 +481,6 @@ public class TxPOW implements Streamable {
 		return _mIsTxnPOW;
 	}
 	
-	
 	/**
 	 * This is only done once at creation. TXPOW structures are immutable.
 	 */
@@ -425,22 +488,22 @@ public class TxPOW implements Streamable {
 		//The TXPOW ID
 		_mTxPOWID = Crypto.getInstance().hashObject(this);
 		
-		Difficulty blkdiff = new Difficulty(getBlockDifficulty()); 
-		Difficulty txndiff = new Difficulty(getTxnDifficulty());
+		//The Transaction ID
+		_mTransID = Crypto.getInstance().hashObject(mTransaction);
 		
+		//Valid Block
 		_mIsBlockPOW = false;
-		if(blkdiff.isOK(_mTxPOWID)){
+		if(_mTxPOWID.isLess(getBlockDifficulty())) {
 			_mIsBlockPOW = true;
 		}
 		
+		//Valid Transaction
 		_mIsTxnPOW = false;
-		if(txndiff.isOK(_mTxPOWID) && !getTransaction().isEmpty()) {
+		if(_mTxPOWID.isLess(getTxnDifficulty()) && !getTransaction().isEmpty()) {
 			_mIsTxnPOW = true;
 		}	
 		
-		_mSuperBlock = SuperBlockLevels.getSupers().getSuperBlockLevel(_mTxPOWID);
-		if(_mSuperBlock>=TxPOW.SUPERPARENT_NUM) {
-			_mSuperBlock = TxPOW.SUPERPARENT_NUM-1;
-		}
+		//What Super Level are we..
+		_mSuperBlock = SuperBlockLevels.getSuperLevel(getBlockDifficulty(), _mTxPOWID);
 	}
 }

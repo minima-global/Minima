@@ -18,20 +18,33 @@ public class GlobalParams {
 	
 	/**
 	 * Speed in blocks per second
-	 * 
-	 * 0.1 = 1 block every 10 seconds
-	 * 0.05 = 20 second block time
 	 */
-	public static final double MINIMA_BLOCK_SPEED  = 0.1;
+	public static final MiniNumber MINIMA_BLOCK_SPEED  = new MiniNumber("0.2");
 	
 	/**
 	 * How deep before we think confirmed..
 	 */
-	public static final MiniNumber MINIMA_CONFIRM_DEPTH  = new MiniNumber("1");
+	public static final MiniNumber MINIMA_CONFIRM_DEPTH  = new MiniNumber("2");
 	
 	/**
 	 * Depth before we cascade..
 	 */
-	public static final int MINIMA_CASCADE_DEPTH     = 16;
+	public static final int MINIMA_CASCADE_START_DEPTH   = 32;
+	
+	/**
+	 * Minimum number of blocks at each cascade level 
+	 */
+	public static final int MINIMA_MINUMUM_CASCADE_LEVEL_NODES  = 16;
+	
+	/**
+	 * How Many Cascade Levels are there
+	 */
+	public static final int MINIMA_CASCADE_LEVELS  = 21;
+	
+	/**
+	 * Ratio of Cascade tree vs Old tree allowed
+	 */
+	public static final String MINIMA_CASCADE_RATIO  = "0.9";
+	
 	
 }

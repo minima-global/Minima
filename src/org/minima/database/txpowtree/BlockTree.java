@@ -1,5 +1,6 @@
 package org.minima.database.txpowtree;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 
@@ -284,20 +285,22 @@ public class BlockTree {
 	 * 
 	 * Calculated as the different between the cascade node and the tip..
 	 */
-	public double getChainSpeed() {
+	public MiniNumber getChainSpeed() {
 		//Time difference between the cascade node and the tip
-		long millistart = mCascadeNode.getTxPow().getTimeMilli().getAsLong();
-		long milliend   = mTip.getTxPow().getTimeMilli().getAsLong();
-		long timediff 	= milliend - millistart;
+		MiniNumber start      = mCascadeNode.getTxPow().getTimeSecs();
+		MiniNumber end        = mTip.getTxPow().getTimeSecs();
+		MiniNumber timediff   = end.sub(start);
 		
 		//How many blocks..
-		long blockstart = mCascadeNode.getTxPow().getBlockNumber().getAsLong();
-		long blockend   = mTip.getTxPow().getBlockNumber().getAsLong();
-		long blockdiff  = blockend - blockstart; 
+		MiniNumber blockstart = mCascadeNode.getTxPow().getBlockNumber();
+		MiniNumber blockend   = mTip.getTxPow().getBlockNumber();
+		MiniNumber blockdiff  = blockend.sub(blockstart); 
 		
 		//So.. 
-		double timesecs = (double)timediff / (double)1000;
-		double speed    = (double)blockdiff / timesecs;
+		if(timediff.isEqual(MiniNumber.ZERO)) {
+			return MiniNumber.ONE;
+		}
+		MiniNumber speed    = blockdiff.div(timediff);
 		
 		return speed;
 	}
@@ -305,46 +308,71 @@ public class BlockTree {
 	/**
 	 * Get the current average difficulty
 	 */
-	public MiniNumber getAvgChainDifficulty() {
-		//Sum the block difficulty
-		BigInteger two 	 = new BigInteger("2");
+	public BigInteger getAvgChainDifficulty() {
+		//The Total..
 		BigInteger total = new BigInteger("0");
 		
-		//Cycle back fropm the tip..
+		//Cycle back from the tip..
 		MiniHash casc 			= mCascadeNode.getTxPowID();
 		BlockTreeNode current 	= mTip;
 		int num=0;
 		while(current != null) {
-			if(current.getTxPowID().equals(casc)) {
+			//Add to the total
+			total = total.add(current.getTxPow().getBlockDifficulty().getDataValue());
+			num++;
+			
+			if(current.getTxPowID().isExactlyEqual(casc)) {
 				//It's the final node.. quit
 				break;
 			}
-			
-			//Add to the total
-			int diff = current.getTxPow().getBlockDifficulty();
-			BigInteger rval 		= two.pow(diff);
-			total 					= total.add(rval);
-			num++;
 			
 			//Get thew parent
 			current = current.getParent();
 		}
 		
-//		SimpleLogger.log("Total Diff : "+total+" number of blocks:"+num);
-		
-		//Check for zero..
 		if(num == 0) {
-			return MiniNumber.ZERO;
+			return BigInteger.ZERO;
 		}
 		
-		//The Totals
-		MiniNumber totram = new MiniNumber(total);
-		MiniNumber avg 	 = totram.div(new MiniNumber(""+num));
+		//The Average
+		BigInteger avg = total.divide(new BigInteger(""+num));
 		
-		//Now Calculate the Log..
-//		double log = Maths.log2BI(avg.getAsBigInteger());
-				
-//		return new RamNumber(log);
 		return avg;
 	}
+	
+//	public MiniNumber getAvgChainDifficulty() {
+//		//Sum the block difficulty
+//		BigInteger two 	 = new BigInteger("2");
+//		BigInteger total = new BigInteger("0");
+//		
+//		//Cycle back fropm the tip..
+//		MiniHash casc 			= mCascadeNode.getTxPowID();
+//		BlockTreeNode current 	= mTip;
+//		int num=0;
+//		while(current != null) {
+//			if(current.getTxPowID().equals(casc)) {
+//				//It's the final node.. quit
+//				break;
+//			}
+//			
+//			//Add to the total
+//			int diff = current.getTxPow().getBlockDifficulty();
+//			BigInteger rval 		= two.pow(diff);
+//			total 					= total.add(rval);
+//			num++;
+//			
+//			//Get thew parent
+//			current = current.getParent();
+//		}
+//		//Check for zero..
+//		if(num == 0) {
+//			return MiniNumber.ZERO;
+//		}
+//		
+//		//The Totals
+//		MiniNumber totram = new MiniNumber(total);
+//		MiniNumber avg 	 = totram.div(new MiniNumber(""+num));
+//		
+//		return avg;
+//	}
 }
