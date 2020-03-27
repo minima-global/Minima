@@ -247,6 +247,21 @@ public class TxPOWChecker {
 					}
 				}
 				
+				//Is this a Token ?
+				String tokscript = "";
+				if(!input.getTokenID().isExactlyEqual(Coin.MINIMA_TOKENID)) {
+					//Do we have a token Script..
+					TokenProof tokdets = zWit.getTokenDetail(input.getTokenID());
+					
+					if(tokdets == null) {
+						contractlog.put("error", "Token Details for coin missing! "+input.getTokenID());
+						return false;	
+					}
+					
+					//Is there a script.
+					tokscript = tokdets.getTokenScript().toString();
+				}
+				
 				//Create the Contract to check..
 				Contract cc = new Contract(script,sigs, zWit, trans,proof.getMMRData().getPrevState());
 				
@@ -260,7 +275,7 @@ public class TxPOWChecker {
 				cc.setGlobalVariable("@TOKENID", new HEXValue(input.getTokenID()));
 				cc.setGlobalVariable("@COINID", new HEXValue(input.getCoinID()));
 				cc.setGlobalVariable("@SCRIPT", new ScriptValue(script));
-				cc.setGlobalVariable("@TOKENSCRIPT", new ScriptValue(""));
+				cc.setGlobalVariable("@TOKENSCRIPT", new ScriptValue(tokscript));
 				cc.setGlobalVariable("@FLOATING", new BooleanValue(input.isFloating()));
 				cc.setGlobalVariable("@TOTIN", new NumberValue(trans.getAllInputs().size()));
 				cc.setGlobalVariable("@TOTOUT", new NumberValue(trans.getAllOutputs().size()));
@@ -293,16 +308,16 @@ public class TxPOWChecker {
 				
 				//Is this a Token ?
 				if(!input.getTokenID().isExactlyEqual(Coin.MINIMA_TOKENID)) {
-					//Do we have a token Script..
-					TokenProof tokdets = zWit.getTokenDetail(input.getTokenID());
-					
-					if(tokdets == null) {
-						contractlog.put("error", "Token Details for coin missing! "+input.getTokenID());
-						return false;	
-					}
-					
-					//Is there a script.
-					String tokscript = tokdets.getTokenScript().toString();
+//					//Do we have a token Script..
+//					TokenProof tokdets = zWit.getTokenDetail(input.getTokenID());
+//					
+//					if(tokdets == null) {
+//						contractlog.put("error", "Token Details for coin missing! "+input.getTokenID());
+//						return false;	
+//					}
+//					
+//					//Is there a script.
+//					String tokscript = tokdets.getTokenScript().toString();
 					if(!tokscript.equals("RETURN TRUE")) {
 						//Check the Script!
 						cc = new Contract(tokscript,sigs, zWit, trans,proof.getMMRData().getPrevState());
