@@ -24,6 +24,7 @@ import org.minima.objects.Witness;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.objects.base.MiniString;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
@@ -53,6 +54,10 @@ public class Contract {
 		
 	//The previous state variables - accessed from the MMR data
 	ArrayList<StateVariable> mPrevState = new ArrayList<StateVariable>();
+	
+	//A list of all the user-defined variables
+	boolean mFloatingCoin = false;
+	String[] mDYNState;
 		
 	//Has the Script returned TRUE or FALSE
 	private boolean mSuccess;
@@ -107,6 +112,12 @@ public class Contract {
 		mSignatures = new ArrayList<>();
 		mVariables  = new Hashtable<>();
 		mGlobals    = new Hashtable<>();
+
+		mFloatingCoin = false;
+		mDYNState     = new String[256];
+		for(int i=0;i<256;i++) {
+			mDYNState[i] = null;
+		}
 		
 		mBlock      = null;
 		mSuccess    = false;
@@ -329,6 +340,48 @@ public class Contract {
 	}
 	
 	/**
+	 * DYN State
+	 */
+	public void setFloating(boolean zFloating) {
+		mFloatingCoin = zFloating;
+	}
+	
+	public boolean setDYNState(int zStateNum, String zValue) throws ExecutionException {
+		//ONLY on Floating coins..
+		if(!mFloatingCoin) {
+			throw new ExecutionException("DYNSTATE only on Floating coins : "+zStateNum);
+		}
+		
+		//Have we already used this one..
+		if(mDYNState[zStateNum] != null) {
+			return mDYNState[zStateNum].equals(zValue);
+		}
+		
+		//Set It
+		mDYNState[zStateNum] = zValue;
+	
+		return true;
+	}
+	
+	public String getState(int zStateNum) throws ExecutionException {
+		//Has it been set in DYNSTATE
+		if(mDYNState[zStateNum] != null) {
+			return mDYNState[zStateNum];
+		}
+
+		if(!mTransaction.stateExists(zStateNum)) {
+			throw new ExecutionException("State Variable does not exist "+zStateNum);
+		}
+
+		//Get it from the Transaction..
+		return mTransaction.getStateValue(zStateNum).getData().toString();
+	}
+	
+	public String[] getCompleteDYNState() {
+		return mDYNState;
+	}
+	
+	/**
 	 * Could use the JSON but this looks better as no quotes.. ;p
 	 */
 	public void traceVariables() {
@@ -546,20 +599,25 @@ public class Contract {
 //		String RamScript = "let x = true or false let y = [return x] Exec y";
 		
 //		String RamScript = "ASSERT VERIFYOUT ( ( @INPUT + 1 ) @ADDRESS ( @AMOUNT - amt ) @TOKENID )";
-		String RamScript = "let t = 1 LET ( [ hello ] (3 - t*2) t ) = 123 let gg = get ( [hello] 1 t )";
+//		String RamScript = "let t = 1 LET ( [ hello ] (3 - t*2) t ) = 123 let gg = get ( [hello] 1 t )";
+
+		String RamScript = "let g = [ goodbye ] let t = DYNSTATE ( 0 [hello] ) let tt = DYNSTATE ( 0 0xFFE ) let y  = state(0)";
 
 		//String RamScript = "let t = @SCRIPT let f = @AMOUNT +1 let g = State(1001) + [ sha3(123)]";
 
 //		String RamScript = "let gg = [hello] let ff = 0x45678 let t = CONCAT ( gg [if signedby] SCRIPT(ff) [and @blknum gt 12345])";
 		
 		Transaction tt = new Transaction();
-//		tt.setStateValue(1001, new StateVariable("[ let y = 0xFF ]"));
+		tt.addStateVariable(new StateVariable(0, "987"));
+		//tt.setStateValue(0, new StateVariable("[ let y = 0xFF ]"));
 //		tt.setStateValue(2, new StateVariable("1.2345"));
 		
 		Contract ctr = new Contract(RamScript,
 				"0x74A2222436C592046A6F576F67200C75DB3D9051BE31262BD0A0BF0DB30137C4",
 				new Witness(),
 				tt,null,true);
+		
+		ctr.setFloating(true);
 		
 		ctr.setGlobalVariable("@SCRIPT", new ScriptValue(RamScript));
 		ctr.setGlobalVariable("@BLKNUM", new NumberValue(new MiniNumber("31")));

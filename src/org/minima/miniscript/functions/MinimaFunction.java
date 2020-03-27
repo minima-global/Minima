@@ -36,6 +36,7 @@ import org.minima.miniscript.functions.sha.SHA3;
 import org.minima.miniscript.functions.sigs.CHECKSIG;
 import org.minima.miniscript.functions.sigs.MULTISIG;
 import org.minima.miniscript.functions.sigs.SIGNEDBY;
+import org.minima.miniscript.functions.state.DYNSTATE;
 import org.minima.miniscript.functions.state.PREVSTATE;
 import org.minima.miniscript.functions.state.SAMESTATE;
 import org.minima.miniscript.functions.state.STATE;
@@ -62,7 +63,7 @@ public abstract class MinimaFunction {
 				new SHA3(), new SHA2(), new CHAINSHA(), new BITSET(), new BITGET(),
 				new SIGNEDBY(), new MULTISIG(), new CHECKSIG(),
 				new GETOUTADDR(), new GETOUTAMT(), new GETOUTTOK(),new VERIFYOUT(),
-				new STATE(), new PREVSTATE(), new SAMESTATE()
+				new STATE(), new PREVSTATE(), new SAMESTATE(), new DYNSTATE()
 			};
 	
 	/**

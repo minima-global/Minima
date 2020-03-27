@@ -23,17 +23,7 @@ public class STATE extends MinimaFunction {
 		//Which Output - must be from 0-255
 		int statenum = getParameter(0).getValue(zContract).getNumber().getAsInt();
 				
-		//Get the Transaction
-		Transaction trans = zContract.getTransaction();
-		
-		//Get the state variable..
-		if(!trans.stateExists(statenum)) {
-			throw new ExecutionException("Invalid State Variable "+statenum);
-		}
-		
-		String stateval = trans.getStateValue(statenum).getData().toString();
-		
-		//Clean it..
+		String stateval = zContract.getState(statenum).toString();
 		stateval = Contract.cleanScript(stateval);
 		
 		//Work it out

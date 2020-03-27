@@ -30,19 +30,12 @@ public class SAMESTATE extends MinimaFunction {
 			end = getParameter(1).getValue(zContract).getNumber().getAsInt();
 		}
 		
-		//Get the Transaction
-		Transaction trans = zContract.getTransaction();
-				
 		//Now check the old state and the current state are the same
 		for(int i=start;i<=end;i++) {
 			//Get the state variable..
-			if(!trans.stateExists(i)) {
-				throw new ExecutionException("Invalid State Variable check in SAMESTATE "+i);
-			}
-			
 			//Get the old state..
 			String olds = zContract.getPrevState(i).toString();
-			String news = trans.getStateValue(i).getData().toString();
+			String news = zContract.getState(i).toString();
 			
 			//check the same
 			if(!olds.equals(news)) {
@@ -50,7 +43,6 @@ public class SAMESTATE extends MinimaFunction {
 			}
 		}
 		
-		//Work it out
 		return BooleanValue.TRUE;
 	}
 
