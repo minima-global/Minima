@@ -61,7 +61,7 @@ public class CascadeTree {
 		
 		//First get the block PRE_CASCADE_CHAIN_LENGTH back..
 		int counter=0;
-		while((oldtip!=null) && (counter<GlobalParams.MINIMA_CASCADE_DEPTH) && (oldtip.getTxPow().getBlockNumber().isMore(casc)) ) {
+		while((oldtip!=null) && (counter<GlobalParams.MINIMA_CASCADE_START_DEPTH) && (oldtip.getTxPow().getBlockNumber().isMore(casc)) ) {
 			counter++;
 			oldtip = oldtip.getParent();
 		}

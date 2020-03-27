@@ -9,7 +9,7 @@ public class chart extends CommandFunction {
 	public chart() {
 		super("chart");
 		
-		setHelp("", "Return the global Minima balance for all coins or just a specific address", "");
+		setHelp("", "Charts!", "");
 	}
 	
 	@Override

@@ -11,18 +11,15 @@ import org.minima.utils.MinimaLogger;
 
 public class MultiLevelCascadeTree {
 
-	MinimaDB mDB;
-	
 	BlockTree mMainTree;
 	
 	BlockTree mCascadeTree;
 	
 	ArrayList<BlockTreeNode> mRemovals;
 	
-	public MultiLevelCascadeTree(BlockTree zMainTree, MinimaDB zDB) {
+	public MultiLevelCascadeTree(BlockTree zMainTree) {
 		mMainTree = zMainTree;
 		mRemovals = new ArrayList<>();
-		mDB = zDB;
 	}
 	
 	public BlockTree getCascadeTree() {
@@ -62,7 +59,7 @@ public class MultiLevelCascadeTree {
 		//First get the block PRE_CASCADE_CHAIN_LENGTH back..
 		int counter=0;
 		while(  (oldtip!=null) && 
-				(counter<GlobalParams.MINIMA_CASCADE_DEPTH) && 
+				(counter<GlobalParams.MINIMA_CASCADE_START_DEPTH) && 
 				(oldtip.getTxPow().getBlockNumber().isMore(casc)) ) {
 			counter++;
 			oldtip = oldtip.getParent();
@@ -77,12 +74,13 @@ public class MultiLevelCascadeTree {
 		//All this we keep
 		BlockTreeNode fullkeep = copyNodeTree(oldtip);
 		
-		//The rest of the tree.. that we CAN cascade
+//		//The rest of the tree.. that we CAN cascade
 		BlockTreeNode newcascade  = oldtip.getParent();
-		if(newcascade != null && newcascade.getMMRSet()!=null){
-			//Sort the MMR.. DO this on a cascade node so not added to the user syncup.
-			recurseParentMMR(casc,newcascade.getMMRSet());
-		}
+		
+//		if(newcascade != null && newcascade.getMMRSet()!=null){
+//			//Sort the MMR.. DO this on a cascade node so not added to the user syncup.
+//			recurseParentMMR(casc,newcascade.getMMRSet());
+//		}
 				
 		//Now add all that
 		ArrayList<BlockTreeNode> cascnodes = new ArrayList<>();
@@ -147,7 +145,7 @@ public class MultiLevelCascadeTree {
 				totlevel++;
 				
 				//Keep at least this many at each level..
-				if(totlevel>GlobalParams.MINIMA_MINUMUM_CASCADE_LEVEL) {
+				if(totlevel>GlobalParams.MINIMA_MINUMUM_CASCADE_LEVEL_NODES) {
 					moveup = true;
 				}
 				
@@ -161,11 +159,11 @@ public class MultiLevelCascadeTree {
 				}
 				
 			}else{
-				//We can't keep it..
-				TxPOWDBRow row = mDB.getTxPOWRow(node.getTxPowID());
-				
-				//Discard.. no longer an onchain block..
-				row.setOnChainBlock(false);
+//				//We can't keep it..
+//				TxPOWDBRow row = mDB.getTxPOWRow(node.getTxPowID());
+//				
+//				//Discard.. no longer an onchain block..
+//				row.setOnChainBlock(false);
 				
 				//Add to the removals..
 				mRemovals.add(node);
@@ -193,31 +191,31 @@ public class MultiLevelCascadeTree {
 		return mRemovals;
 	}
 	
-	private ArrayList<BlockTreeNode> removeLowerLevels(ArrayList<BlockTreeNode> zCurrent, int zMinLevel){
-		ArrayList<BlockTreeNode> ret = new ArrayList<>();
-		
-		//Do we keep or do we discard..
-		for(BlockTreeNode node : zCurrent) {
-			if(node.getSuperBlockLevel() >= zMinLevel) {
-				//Up the Current Level
-				node.setCurrentLevel(node.getSuperBlockLevel());
-				
-				//Create new node.. 
-				BlockTreeNode copy = new BlockTreeNode(node);
-				ret.add(copy);
-			}else {
-				TxPOWDBRow row = mDB.getTxPOWRow(node.getTxPowID());
-				
-				//Discard.. no longer an onchain block..
-				row.setOnChainBlock(false);
-				
-				//Add to the removals..
-				mRemovals.add(node);
-			}
-		}
-		
-		return ret;
-	}
+//	private ArrayList<BlockTreeNode> removeLowerLevels(ArrayList<BlockTreeNode> zCurrent, int zMinLevel){
+//		ArrayList<BlockTreeNode> ret = new ArrayList<>();
+//		
+//		//Do we keep or do we discard..
+//		for(BlockTreeNode node : zCurrent) {
+//			if(node.getSuperBlockLevel() >= zMinLevel) {
+//				//Up the Current Level
+//				node.setCurrentLevel(node.getSuperBlockLevel());
+//				
+//				//Create new node.. 
+//				BlockTreeNode copy = new BlockTreeNode(node);
+//				ret.add(copy);
+//			}else {
+//				TxPOWDBRow row = mDB.getTxPOWRow(node.getTxPowID());
+//				
+//				//Discard.. no longer an onchain block..
+//				row.setOnChainBlock(false);
+//				
+//				//Add to the removals..
+//				mRemovals.add(node);
+//			}
+//		}
+//		
+//		return ret;
+//	}
 	
 	/**
 	 * Deep copy a Block treenode..

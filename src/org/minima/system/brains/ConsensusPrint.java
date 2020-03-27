@@ -161,6 +161,7 @@ public class ConsensusPrint {
 				//Now check whether they are unspent..
 				JSONObject dets = InputHandler.getResponseJSON(zMessage);
 				dets.put("tree", treeinfo);
+				dets.put("length", tree.getAsList().size());
 				dets.put("speed", tree.getChainSpeed());
 				dets.put("difficulty", tree.getChainTip().getTxPow().getBlockDifficulty().to0xString());
 				dets.put("weight", tree.getChainRoot().getTotalWeight());

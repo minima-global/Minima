@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Hashtable;
@@ -282,17 +283,53 @@ public class MinimaDB {
 				}
 			}
 			
+			//Whats the weight of the tree now..
+			BigInteger weight = mMainTree.getChainRoot().getTotalWeight();
+			
 			/**
 			 * Cascade the tree
 			 */
 			//Create a cascaded version
-			MultiLevelCascadeTree casc = new MultiLevelCascadeTree(mMainTree, this);
+			MultiLevelCascadeTree casc = new MultiLevelCascadeTree(mMainTree);
 			
 			//Do it..
 			ArrayList<BlockTreeNode> removals = casc.cascadedTree();
 			
+			//Was it worth it..
+			BigInteger cascweight = casc.getCascadeTree().getChainRoot().getTotalWeight();
+			
+			//See what the difference is..
+			BigDecimal ratio = new BigDecimal(cascweight).divide(new BigDecimal(weight), MathContext.DECIMAL128);
+			
+			if(ratio.compareTo(new BigDecimal(0.99)) < 0) {
+				//Too much power lost.. wait..
+				System.out.println("Cascade Power Loss : "+ratio+" cas: "
+						+mMainTree.getCascadeNode().getTxPow().getBlockNumber()
+						+" tip:"+mMainTree.getChainTip().getTxPow().getBlockNumber());
+				return;
+			}
+			
 			//Set it
 			mMainTree = casc.getCascadeTree();
+			
+			//Fix the MMR
+			BlockTreeNode newcascade  = mMainTree.getCascadeNode();
+			if(newcascade != null && newcascade.getMMRSet()!=null){
+				//Sort the MMR.. DO this on a cascade node so not added to the user syncup.
+				casc.recurseParentMMR(oldcascade,newcascade.getMMRSet());
+			}
+			
+			//Remove the deleted blocks..
+			for(BlockTreeNode node : removals) {
+				//We can't keep it..
+				TxPOWDBRow row = getTxPOWRow(node.getTxPowID());
+				
+				//Discard.. no longer an onchain block..
+				row.setOnChainBlock(false);
+				
+				//And delete / move to different folder any file backups..
+				getBackup().deleteTxpow(node.getTxPow());
+			}
 			
 			//Remove all TXPowRows that are less than the cascade node.. they will not be used again..
 			MiniNumber cascade 	= mMainTree.getCascadeNode().getTxPow().getBlockNumber();
@@ -305,10 +342,17 @@ public class MinimaDB {
 				getBackup().deleteTxpow(remrow.getTxPOW());
 			}
 			
-			//Remove the deleted blocks..
-			for(BlockTreeNode node : removals) {
-				getBackup().deleteTxpow(node.getTxPow());
-			}
+//			//Remove the deleted blocks..
+//			for(BlockTreeNode node : removals) {
+//				//We can't keep it..
+//				TxPOWDBRow row = getTxPOWRow(node.getTxPowID());
+//				
+//				//Discard.. no longer an onchain block..
+//				row.setOnChainBlock(false);
+//				
+//				//And delete / move to different folder any file backups..
+//				getBackup().deleteTxpow(node.getTxPow());
+//			}
 			
 			//Remove all the coins no longer needed.. SPENT
 			mCoinDB.removeOldSpentCoins(cascade);
@@ -540,7 +584,7 @@ public class MinimaDB {
 	
 	public void hardResetChain() {
 		//Cascade it.. and then reset it..
-		MultiLevelCascadeTree casc = new MultiLevelCascadeTree(mMainTree, this);
+		MultiLevelCascadeTree casc = new MultiLevelCascadeTree(mMainTree);
 		casc.cascadedTree();
 		mMainTree = casc.getCascadeTree();
 	}
@@ -772,7 +816,7 @@ public class MinimaDB {
 			//Calculate New Chain Speed
 			int len = mMainTree.getAsList().size();
 			 
-			if(len > GlobalParams.MINIMA_CASCADE_DEPTH ) {
+			if(len > GlobalParams.MINIMA_CASCADE_START_DEPTH ) {
 				//Desired Speed.. in blocks per second
 				MiniNumber actualspeed 	= mMainTree.getChainSpeed();
 				

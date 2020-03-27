@@ -96,6 +96,8 @@ public class TxPOWChecker {
 	 */
 	
 	public static boolean checkTransactionMMR(TxPOW zTxPOW, MinimaDB zDB) {
+		//TODO - Add BurnTransaction check.. 
+		//And use the chaintip for all the parameters..
 		return checkTransactionMMR(zTxPOW.getTransaction(), zTxPOW.getWitness(), zDB, zDB.getTopBlock(), zDB.getMainTree().getChainTip().getMMRSet(), false);
 	}
 	
