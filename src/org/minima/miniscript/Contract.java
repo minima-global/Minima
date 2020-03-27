@@ -381,6 +381,10 @@ public class Contract {
 		return mDYNState;
 	}
 	
+	public void setCompleteDYNState(String[] zDYNState) {
+		mDYNState = zDYNState;
+	}
+	
 	/**
 	 * Could use the JSON but this looks better as no quotes.. ;p
 	 */

@@ -132,6 +132,12 @@ public class TxPOWChecker {
 		//Make a deep copy.. as we may need to edit it.. with floating values and DYN_STATE
 		Transaction trans = zTrans.deepCopy();
 		
+		//The DYNState variables..
+		String[] DYNState = new String[256];
+		for(int i=0;i<256;i++) {
+			DYNState[i] = null;
+		}
+		
 		//Simplest check first.. valid amounts..
 		if(!trans.checkValidInOutPerToken()) {
 			//The contract execution log - will be updated later, but added now
@@ -256,6 +262,12 @@ public class TxPOWChecker {
 				cc.setGlobalVariable("@TOTIN", new NumberValue(trans.getAllInputs().size()));
 				cc.setGlobalVariable("@TOTOUT", new NumberValue(trans.getAllOutputs().size()));
 				
+				//Is it a floating coin..
+				cc.setFloating(input.isFloating());
+				
+				//Set the DYNState..
+				cc.setCompleteDYNState(DYNState);
+				
 				//Run it!
 				cc.run();
 				
@@ -267,6 +279,9 @@ public class TxPOWChecker {
 				contractlog.put("parse", cc.getCompleteTraceLog());
 				contractlog.put("exception", cc.isException());
 				contractlog.put("result", cc.isSuccess());
+				
+				//Get the DynState
+				DYNState = cc.getCompleteDYNState();
 				
 				//and.. ?
 				if(!cc.isSuccess()) {
@@ -302,8 +317,17 @@ public class TxPOWChecker {
 						cc.setGlobalVariable("@TOTIN", new NumberValue(trans.getAllInputs().size()));
 						cc.setGlobalVariable("@TOTOUT", new NumberValue(trans.getAllOutputs().size()));
 						
+						//Is it a floating coin..
+						cc.setFloating(input.isFloating());
+						
+						//Set the DYNState..
+						cc.setCompleteDYNState(DYNState);
+						
 						//Run it!
 						cc.run();
+						
+						//Get the DynState
+						DYNState = cc.getCompleteDYNState();
 						
 						JSONObject toklog = new JSONObject();
 						contractlog.put("tokencontract", toklog);
