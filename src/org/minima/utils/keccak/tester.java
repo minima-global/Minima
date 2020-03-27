@@ -17,9 +17,9 @@ public class tester {
 		Random rand = new Random();
 		rand.nextBytes(seed);
 		
-//		for(int i=0;i<seed.length;i++) {
-//			seed[i] = (byte) i;
-//		}
+		for(int i=0;i<seed.length;i++) {
+			seed[i] = (byte) i;
+		}
 				
 		Digest digest = new KeccakDigest(256);
 
