@@ -301,7 +301,7 @@ public class MinimaDB {
 			//See what the difference is..
 			BigDecimal ratio = new BigDecimal(cascweight).divide(new BigDecimal(weight), MathContext.DECIMAL128);
 			
-			if(ratio.compareTo(new BigDecimal(0.99)) < 0) {
+			if(ratio.compareTo(new BigDecimal(GlobalParams.MINIMA_CASCADE_RATIO)) < 0) {
 				//Too much power lost.. wait..
 				System.out.println("Cascade Power Loss : "+ratio+" cas: "
 						+mMainTree.getCascadeNode().getTxPow().getBlockNumber()
