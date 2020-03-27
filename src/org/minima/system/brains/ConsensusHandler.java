@@ -191,11 +191,11 @@ public class ConsensusHandler extends SystemHandler {
 //				PostMessage(print);
 //			}
 			
-			//Add a chartpoint
-			Message chart = new Message(ConsensusPrint.CONSENSUS_ADDCHARTPOINT);
-			chart.addString("block", getMainDB().getMainTree().getChainTip().getTxPow().getBlockNumber().toString());
-			chart.addString("weight", getMainDB().getMainTree().getChainRoot().getTotalWeight().toString());
-			PostMessage(chart);
+//			//Add a chartpoint
+//			Message chart = new Message(ConsensusPrint.CONSENSUS_ADDCHARTPOINT);
+//			chart.addString("block", getMainDB().getMainTree().getChainTip().getTxPow().getBlockNumber().toString());
+//			chart.addString("weight", getMainDB().getMainTree().getChainRoot().getTotalWeight().toString());
+//			PostMessage(chart);
 			
 			/**
 			 * One time run the first time you see a txpow..
