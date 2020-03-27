@@ -15,6 +15,8 @@ import org.minima.objects.base.MiniNumber;
 /**
  * Can ONLY be called ONCE per State variable per transaction..
  * 
+ * Can ONLY be used on a FLOATING Input
+ * 
  * @author spartacusrex
  *
  */

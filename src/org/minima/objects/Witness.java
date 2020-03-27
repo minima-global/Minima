@@ -35,6 +35,9 @@ public class Witness implements Streamable {
 	 */
 	ArrayList<TokenProof> mTokenProofs;
 	
+	
+	
+	
 	/**
 	 * General Constructor
 	 */
