@@ -149,7 +149,7 @@ public class ConsensusPrint {
 	
 			BlockTree tree = getMainDB().getMainTree();
 			
-					//DEBUGGING
+			//DEBUGGING
 			if(zMessage.exists("systemout")) {
 //				BlockTreePrinter2.clearScreen();
 				treeinfo += "\n\nSpeed              : "+tree.getChainSpeed()+" blocks / sec";
