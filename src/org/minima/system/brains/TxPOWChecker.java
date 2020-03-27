@@ -11,6 +11,7 @@ import org.minima.database.mmr.MMRProof;
 import org.minima.database.mmr.MMRSet;
 import org.minima.database.txpowtree.BlockTreeNode;
 import org.minima.miniscript.Contract;
+import org.minima.miniscript.values.BooleanValue;
 import org.minima.miniscript.values.HEXValue;
 import org.minima.miniscript.values.NumberValue;
 import org.minima.miniscript.values.ScriptValue;
@@ -259,6 +260,8 @@ public class TxPOWChecker {
 				cc.setGlobalVariable("@TOKENID", new HEXValue(input.getTokenID()));
 				cc.setGlobalVariable("@COINID", new HEXValue(input.getCoinID()));
 				cc.setGlobalVariable("@SCRIPT", new ScriptValue(script));
+				cc.setGlobalVariable("@TOKENSCRIPT", new ScriptValue(""));
+				cc.setGlobalVariable("@FLOATING", new BooleanValue(input.isFloating()));
 				cc.setGlobalVariable("@TOTIN", new NumberValue(trans.getAllInputs().size()));
 				cc.setGlobalVariable("@TOTOUT", new NumberValue(trans.getAllOutputs().size()));
 				
@@ -313,7 +316,9 @@ public class TxPOWChecker {
 						cc.setGlobalVariable("@ADDRESS", new HEXValue(input.getAddress()));
 						cc.setGlobalVariable("@TOKENID", new HEXValue(input.getTokenID()));
 						cc.setGlobalVariable("@COINID", new HEXValue(input.getCoinID()));
-						cc.setGlobalVariable("@SCRIPT", new ScriptValue(tokscript));
+						cc.setGlobalVariable("@SCRIPT", new ScriptValue(script));
+						cc.setGlobalVariable("@TOKENSCRIPT", new ScriptValue(tokscript));
+						cc.setGlobalVariable("@FLOATING", new BooleanValue(input.isFloating()));
 						cc.setGlobalVariable("@TOTIN", new NumberValue(trans.getAllInputs().size()));
 						cc.setGlobalVariable("@TOTOUT", new NumberValue(trans.getAllOutputs().size()));
 						
