@@ -478,13 +478,7 @@ public class MinimaDB {
 	private boolean checkFullTxPOW(TxPOW zBlock, MMRSet zMMRSet) {
 		//First check the main transaction..
 		if(zBlock.isTransaction()) {
-			//Get the details..
-			Witness wit       = zBlock.getWitness();
-			Transaction trans = zBlock.getTransaction();
-			
-			//Check the Proof..
-			boolean inputvalid = TxPOWChecker.checkTransactionMMR(trans, wit, this, zBlock.getBlockNumber(), zMMRSet,true);
-		
+			boolean inputvalid = TxPOWChecker.checkTransactionMMR(zBlock, this, zBlock.getBlockNumber(), zMMRSet,true);
 			if(!inputvalid) {
 				return false;
 			}
@@ -496,13 +490,8 @@ public class MinimaDB {
 			TxPOWDBRow row = getTxPOWRow(txn);
 			TxPOW txpow = row.getTxPOW();
 			
-			//Get the details..
-			Witness wit       = txpow.getWitness();
-			Transaction trans = txpow.getTransaction();
-			
 			//Check the Proof..
-			boolean inputvalid = TxPOWChecker.checkTransactionMMR(trans, wit, this, zBlock.getBlockNumber(), zMMRSet,true);
-		
+			boolean inputvalid = TxPOWChecker.checkTransactionMMR(txpow, this, zBlock.getBlockNumber(), zMMRSet,true);
 			if(!inputvalid) {
 				return false;
 			}
@@ -541,37 +530,7 @@ public class MinimaDB {
 		
 		//Sort the MMR..
 		node.setMMRset(zMMR);
-		
-//		if(zMMR != null) {
-//			//Sort the MMR..
-//			node.setMMRset(zMMR);
-//			
-//			//Check if any of the outputs are relevant to us..
-//			ArrayList<MMREntry> zero =  zMMR.getZeroRow();
-//			for(MMREntry mmrcoin : zero) {
-//				//The coin
-//				Coin cc = mmrcoin.getData().getCoin();
-//				
-//				//is it relevant..
-//				if(getUserDB().isAddressRelevant(cc.getAddress())) {
-//					CoinDBRow inrow = getCoinDB().addCoinRow(cc);
-//					
-//					inrow.setIsSpent(mmrcoin.getData().isSpent());
-//					inrow.setIsInBlock(true);
-//					inrow.setInBlockNumber(zRoot.getBlockNumber());
-//					inrow.setMMREntry(mmrcoin.getEntry());
-//					
-//					//Tell the MMR
-////					zMMR.addKeeper(mmrcoin.getEntry());
-//					
-//					//Tell 
-//					SimpleLogger.log("BACKUP Coin found "+inrow.getCoin()+" spent:"+mmrcoin.getData().isSpent());
-//				}
-//			}
-//		}else {
-//			node.setMMRset(null);
-//		}
-		
+
 		//Add it..
 		mMainTree.hardAddNode(node, true);
 		
@@ -791,6 +750,8 @@ public class MinimaDB {
 		//Get the current best block..
 		BlockTreeNode tip = mMainTree.getChainTip();
 		
+		//TODO - Add Burn Transaction and Witness!
+		
 		//Fresh TxPOW
 		TxPOW txpow = new TxPOW();
 				
@@ -880,19 +841,13 @@ public class MinimaDB {
 			
 			//Make sure is at least a transaction
 			if(txp.isTransaction()) {
-				//Check it..
-				Transaction trans = txp.getTransaction();
-				Witness wit = txp.getWitness();
-				
-				boolean valid = TxPOWChecker.checkTransactionMMR(trans, wit, this, txpow.getBlockNumber(),newset,true);
+				boolean valid = TxPOWChecker.checkTransactionMMR(txp, this, txpow.getBlockNumber(),newset,true);
 				
 				if(valid) {
 					//Add it..
 					txpow.addBlockTxPOW(txp);	
 				
 				}else {
-//					SimpleLogger.log("Strange invalid TXPOW.. "+txp);
-					
 					//Remove this!.. It WAS valid but now not.. :(.. dump it..
 					mTxPOWDB.removeTxPOW(txp.getTxPowID());
 					

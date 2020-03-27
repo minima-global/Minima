@@ -9,6 +9,7 @@ import org.minima.database.mmr.MMRData;
 import org.minima.database.mmr.MMREntry;
 import org.minima.database.mmr.MMRProof;
 import org.minima.database.mmr.MMRSet;
+import org.minima.database.txpowtree.BlockTreeNode;
 import org.minima.miniscript.Contract;
 import org.minima.miniscript.values.HEXValue;
 import org.minima.miniscript.values.NumberValue;
@@ -94,11 +95,28 @@ public class TxPOWChecker {
 	 * @param zMMRSet
 	 * @return
 	 */
-	
 	public static boolean checkTransactionMMR(TxPOW zTxPOW, MinimaDB zDB) {
-		//TODO - Add BurnTransaction check.. 
 		//And use the chaintip for all the parameters..
-		return checkTransactionMMR(zTxPOW.getTransaction(), zTxPOW.getWitness(), zDB, zDB.getTopBlock(), zDB.getMainTree().getChainTip().getMMRSet(), false);
+		BlockTreeNode tip = zDB.getMainTree().getChainTip();
+		return checkTransactionMMR(zTxPOW, zDB, tip.getTxPow().getBlockNumber(), tip.getMMRSet(), false);
+	}
+	
+	public static boolean checkTransactionMMR(TxPOW zTxPOW, MinimaDB zDB, MiniNumber zBlockNumber, MMRSet zMMRSet, boolean zTouchMMR) {
+		//Burn Transaction check!.. 
+		if(!zTxPOW.getBurnTransaction().isEmpty()) {
+			//Get MAIN Transaction Hash - make sure is correct in Burn Transaction
+			//..TODO
+			
+			boolean burntrans = checkTransactionMMR(zTxPOW.getBurnTransaction(), 
+													zTxPOW.getBurnWitness(), 
+													zDB, zBlockNumber, zMMRSet, zTouchMMR, 
+													new JSONArray());
+			if(!burntrans) {
+				return false;
+			}
+		}
+		
+		return checkTransactionMMR(zTxPOW.getTransaction(), zTxPOW.getWitness(), zDB, zBlockNumber, zMMRSet, zTouchMMR, new JSONArray());	
 	}
 	
 	public static boolean checkTransactionMMR(Transaction zTrans, Witness zWit, MinimaDB zDB, MiniNumber zBlockNumber, MMRSet zMMRSet, boolean zTouchMMR) {

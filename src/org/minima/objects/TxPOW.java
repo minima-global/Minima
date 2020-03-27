@@ -194,6 +194,10 @@ public class TxPOW implements Streamable {
 		return mTransaction;
 	}
 	
+	public TransactionBurn getBurnTransaction() {
+		return mBurnTransaction;
+	}
+	
 	public void setTransaction(Transaction zTran) {
 		mTransaction = zTran;
 	}
@@ -244,6 +248,10 @@ public class TxPOW implements Streamable {
 	
 	public Witness getWitness() {
 		return mWitness;
+	}
+	
+	public Witness getBurnWitness() {
+		return mBurnWitness;
 	}
 	
 	public MiniHash getMMRRoot() {
