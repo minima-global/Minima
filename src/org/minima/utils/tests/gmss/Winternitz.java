@@ -3,6 +3,8 @@
  */
 package org.minima.utils.tests.gmss;
 
+import java.util.Random;
+
 /**
  * @author Spartacus Rex
  *
@@ -12,21 +14,21 @@ public class Winternitz {
 	public static void main(String[] zArgs){
 		
 		//Get some bytes..
-//		String sdata = "Hello from Ramcash!! This is a really long message! And it "
-//				+ "needs to be som that I can cjeck it..Hello from Ramcash!! This is ";
+		String sdata = "Hello from Ramcash!! This is a really long message! And it "
+				+ "needs to be som that I can cjeck it..Hello from Ramcash!! This is ";
 		
 //		String sdata = "0x58bf01092e67681f4e172ed9a5e99907a95e045a10acebf1f5800e2f3137c84e";
 //		
-//		byte[] data  = sdata.getBytes();
+		byte[] data  = sdata.getBytes();
 //
 //		//Need a Random Seed..
-//		byte[] seed = new byte[64];
-//		for(int i=0;i<seed.length;i++) {
-//			seed[i] = (byte) i;
-//		}
+		byte[] seed = new byte[64];
+		for(int i=0;i<seed.length;i++) {
+			seed[i] = (byte) i;
+		}
 //		
-////		Random rand = new Random();
-////		rand.nextBytes(seed);
+		Random rand = new Random();
+		rand.nextBytes(seed);
 //		
 //		//Get  the Digest.`
 ////		Digest digest = new SHA256Digest();
@@ -35,7 +37,7 @@ public class Winternitz {
 ////		Digest digest = new SHA3Digest();
 ////		Digest digest = new SHA384Digest();
 ////		Digest digest = new RIPEMD160Digest();
-////		Digest digest = new SHA1Digest();
+//		Digest digest = new SHA1Digest();
 //		
 ////		Digest digest = new SHA512Digest();
 //		
