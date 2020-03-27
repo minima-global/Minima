@@ -149,13 +149,13 @@ public class ConsensusTxn {
 			}
 		
 			//Get the Transaction..
-			Transaction trx =  getMainDB().getUserDB().getUserRow(trans).getTransaction();
+			Witness wit     =  getMainDB().getUserDB().getUserRow(trans).getWitness();
 			
 			//Create it..
 			ScriptProof sp = new ScriptProof(script, proof);
 			
 			//Add it to the Transaction..
-			trx.addScript(sp);
+			wit.addScript(sp);
 		
 			listTransactions(zMessage);
 			
@@ -207,7 +207,7 @@ public class ConsensusTxn {
 				JSONObject resp = InputHandler.getResponseJSON(zMessage);
 				resp.put("info", "UNKNOWN ADDRESS "+cc.getAddress()+" not in Script database..");
 			}else {
-				trx.addScript(script);
+				wit.addScript(script);
 			}
 			
 			listTransactions(zMessage);

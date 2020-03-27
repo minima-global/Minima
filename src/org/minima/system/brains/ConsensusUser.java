@@ -281,9 +281,9 @@ public class ConsensusUser {
 						
 						//Set it..
 						if(chainsha.length()<=32) {
-							trans.addScript(new ScriptProof(mastscript));
+							wit.addScript(new ScriptProof(mastscript));
 						}else {
-							trans.addScript(new ScriptProof(mastscript, chainsha));	
+							wit.addScript(new ScriptProof(mastscript, chainsha));	
 						}
 					}
 				}

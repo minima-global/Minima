@@ -13,6 +13,7 @@ import org.minima.miniscript.tokens.Token;
 import org.minima.miniscript.values.HEXValue;
 import org.minima.miniscript.values.ScriptValue;
 import org.minima.objects.Transaction;
+import org.minima.objects.Witness;
 import org.minima.objects.base.MiniHash;
 import org.minima.objects.proofs.ScriptProof;
 
@@ -36,10 +37,10 @@ public class MASTstatement implements Statement {
 		MiniHash scripthash = new MiniHash(mast.getRawData());
 		
 		//Now get that Script from the transaction..
-		Transaction trans = zContract.getTransaction();
+		Witness wit = zContract.getWitness();
 		
 		//Get the Script Proof
-		ScriptProof scrpr = trans.getScript(scripthash);
+		ScriptProof scrpr = wit.getScript(scripthash);
 		
 		if(scrpr == null) {
 			//Trace log

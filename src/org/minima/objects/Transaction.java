@@ -45,15 +45,6 @@ public class Transaction implements Streamable {
 	protected ArrayList<StateVariable> mState = new ArrayList<>();
 	
 	/**
-	 * The Scripts used in the transactions 
-	 * 
-	 * Addresses
-	 * Tokens
-	 * MAST
-	 */
-	protected ArrayList<ScriptProof> mScripts = new ArrayList<>();
-	
-	/**
 	 * If you are generating a TOKEN.. here are the details..
 	 * Needs to be here instead of witness so no-one can alter it - you sign this.
 	 */
@@ -239,33 +230,8 @@ public class Transaction implements Streamable {
 	}
 	
 	/**
-	 * All the scripts
+	 * Token Generation
 	 */
-	public boolean addScript(ScriptProof zScriptProof) {
-		if(!scriptExists(zScriptProof.getFinalHash())) {
-			mScripts.add(zScriptProof);		
-			return true;
-		}
-		return false;
-	}
-	
-	public boolean addScript(String zScript) {
-		return addScript(new ScriptProof(zScript));
-	}
-	
-	public ScriptProof getScript(MiniHash zHash) {
-		for(ScriptProof proof : mScripts) {
-			if(proof.getFinalHash().isExactlyEqual(zHash)) {
-				return proof;
-			}
-		}
-		return null;
-	}
-	
-	public boolean scriptExists(MiniHash zHash) {
-		return getScript(zHash)!=null;
-	}
-	
 	public void setTokenGenerationDetails(TokenProof zTokenDetails) {
 		mTokenGenDetails = zTokenDetails;
 	}
@@ -303,13 +269,6 @@ public class Transaction implements Streamable {
 		}
 		ret.put("state", outs);
 		
-		//Script Proofs..
-		outs = new JSONArray();
-		for(ScriptProof proof : mScripts) {
-			outs.add(proof.toJSON());	
-		}
-		ret.put("scripts", outs);
-		
 		//Token Generation..
 		if(mTokenGenDetails != null) {
 			ret.put("tokengen", mTokenGenDetails.toJSON());
@@ -341,13 +300,6 @@ public class Transaction implements Streamable {
 			sv.writeDataStream(zOut);
 		}
 		
-		//Now the Scripts
-		len = mScripts.size();
-		zOut.writeInt(len);
-		for(ScriptProof script : mScripts) {
-			script.writeDataStream(zOut);
-		}
-		
 		//Token generation
 		if(mTokenGenDetails == null) {
 			MiniByte.FALSE.writeDataStream(zOut);
@@ -362,7 +314,6 @@ public class Transaction implements Streamable {
 		mInputs  = new ArrayList<>();
 		mOutputs = new ArrayList<>();
 		mState 	 = new  ArrayList<>();
-		mScripts = new ArrayList<>();
 		
 		//Inputs
 		MiniByte ins = new MiniByte();
@@ -389,13 +340,6 @@ public class Transaction implements Streamable {
 		for(int i=0;i<len;i++){
 			StateVariable sv = StateVariable.ReadFromStream(zIn);
 			mState.add(sv);
-		}
-		
-		//Scripts
-		len = zIn.readInt();
-		for(int i=0;i<len;i++){
-			ScriptProof sp = ScriptProof.ReadFromStream(zIn);
-			mScripts.add(sp);
 		}
 		
 		//Token generation

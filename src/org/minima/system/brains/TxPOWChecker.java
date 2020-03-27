@@ -138,7 +138,7 @@ public class TxPOWChecker {
 			zContractLog.add(contractlog);
 			
 			//Get the Script..
-			ScriptProof sp =  trans.getScript(input.getAddress());
+			ScriptProof sp =  zWit.getScript(input.getAddress());
 			if(sp == null) {
 				contractlog.put("error", "Script not found for "+input.getAddress());
 				return false;

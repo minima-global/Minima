@@ -711,7 +711,7 @@ public class MinimaDB {
 				
 				//Add this coin to the inputs..
 				trx.addInput(cc);
-				trx.addScript(script);
+				wit.addScript(script);
 				
 				//Add the MMRProof..
 				CoinDBRow row  = getCoinDB().getCoinRow(cc.getCoinID());

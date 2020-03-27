@@ -433,8 +433,7 @@ public class ConsensusHandler extends SystemHandler {
 			
 			Coin in = new Coin(gimme50.COINID_INPUT,Address.TRUE_ADDRESS.getAddressData(),new MiniNumber("1"), MiniHash.ZERO32);
 			trans.addInput(in);
-			trans.addScript(Address.TRUE_ADDRESS.getScript());
-//			wit.addScript(Address.TRUE_ADDRESS.getScript());
+			wit.addScript(Address.TRUE_ADDRESS.getScript());
 			
 			//And send to the new address
 			Address outaddr = new Address(new MiniHash(MiniData.getRandomData(32).getData()));
@@ -464,10 +463,7 @@ public class ConsensusHandler extends SystemHandler {
 			
 			//Add to the transaction
 			trans.addInput(in);
-			trans.addScript(Address.TRUE_ADDRESS.getScript());
-			
-			//And the Witness.. no parameters required..
-//			wit.addScript(Address.TRUE_ADDRESS.getScript());
+			wit.addScript(Address.TRUE_ADDRESS.getScript());
 			
 			//And send to the new address
 			Coin out = new Coin(Coin.COINID_OUTPUT,addr.getAddressData(),new MiniNumber("50"), MiniHash.ZERO32);

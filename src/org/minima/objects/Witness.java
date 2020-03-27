@@ -35,8 +35,14 @@ public class Witness implements Streamable {
 	 */
 	ArrayList<TokenProof> mTokenProofs;
 	
-	
-	
+	/**
+	 * The Scripts used in the transactions 
+	 * 
+	 * Addresses
+	 * Tokens
+	 * MAST
+	 */
+	protected ArrayList<ScriptProof> mScriptProofs;
 	
 	/**
 	 * General Constructor
@@ -45,6 +51,7 @@ public class Witness implements Streamable {
 		mMMRProofs       = new ArrayList<>();
 		mSignatureProofs = new ArrayList<>();
 		mTokenProofs     = new ArrayList<>();
+		mScriptProofs         = new ArrayList<>();
 	}
 	
 	/**
@@ -110,6 +117,35 @@ public class Witness implements Streamable {
 		return null;
 	}
 	
+	/**
+	 * Script Proofs
+	 */
+	public boolean addScript(ScriptProof zScriptProof) {
+		if(!scriptExists(zScriptProof.getFinalHash())) {
+			mScriptProofs.add(zScriptProof);		
+			return true;
+		}
+		return false;
+	}
+	
+	public boolean addScript(String zScript) {
+		return addScript(new ScriptProof(zScript));
+	}
+	
+	public ScriptProof getScript(MiniHash zHash) {
+		for(ScriptProof proof : mScriptProofs) {
+			if(proof.getFinalHash().isExactlyEqual(zHash)) {
+				return proof;
+			}
+		}
+		return null;
+	}
+	
+	public boolean scriptExists(MiniHash zHash) {
+		return getScript(zHash)!=null;
+	}
+	
+	
 	public JSONObject toJSON() {
 		JSONObject obj = new JSONObject();
 		
@@ -133,6 +169,13 @@ public class Witness implements Streamable {
 			arr.add(td.toJSON());
 		}
 		obj.put("tokens", arr);
+		
+		//Scripts
+		arr = new JSONArray();
+		for(ScriptProof sp : mScriptProofs) {
+			arr.add(sp.toJSON());
+		}
+		obj.put("scripts", arr);
 		
 		return obj;
 	}
@@ -159,11 +202,18 @@ public class Witness implements Streamable {
 			proof.writeDataStream(zOut);
 		}
 		
-		//Token Details
+		//Tokens
 		int toklen = mTokenProofs.size();
 		zOut.writeInt(toklen);
 		for(TokenProof td : mTokenProofs) {
 			td.writeDataStream(zOut);
+		}
+		
+		//Scripts
+		int scriptlen = mScriptProofs.size();
+		zOut.writeInt(scriptlen);
+		for(ScriptProof sp : mScriptProofs) {
+			sp.writeDataStream(zOut);
 		}
 	}
 
@@ -185,6 +235,12 @@ public class Witness implements Streamable {
 		prlen = zIn.readInt();
 		for(int i=0;i<prlen;i++) {
 			mTokenProofs.add(TokenProof.ReadFromStream(zIn));
+		}
+		
+		mScriptProofs = new ArrayList<>();
+		prlen = zIn.readInt();
+		for(int i=0;i<prlen;i++) {
+			mScriptProofs.add(ScriptProof.ReadFromStream(zIn));
 		}
 	}
 }
