@@ -105,7 +105,12 @@ public class TxPOWChecker {
 		//Burn Transaction check!.. 
 		if(!zTxPOW.getBurnTransaction().isEmpty()) {
 			//Get MAIN Transaction Hash - make sure is correct in Burn Transaction
-			//..TODO
+			MiniHash transid = zTxPOW.getTransID();
+			
+			//Check is correct on Burn Transaction..
+			if(!zTxPOW.getBurnTransaction().getMainTransactionHash().isExactlyEqual(transid)) {
+				return false;
+			}
 			
 			boolean burntrans = checkTransactionMMR(zTxPOW.getBurnTransaction(), 
 													zTxPOW.getBurnWitness(), 

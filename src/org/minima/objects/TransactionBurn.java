@@ -28,6 +28,10 @@ public class TransactionBurn extends Transaction {
 		mMainTransaction = zTransaction;
 	}
 	
+	public MiniHash getMainTransactionHash() {
+		return mMainTransaction;
+	}
+	
 	@Override
 	public void addInput(Coin zCoin) {
 		if(mInputs.size()<1) {

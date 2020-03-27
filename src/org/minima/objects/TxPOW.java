@@ -124,6 +124,7 @@ public class TxPOW implements Streamable {
 	 * These are used internally ONLY
 	 */
 	private MiniHash _mTxPOWID = new MiniHash();
+	private MiniHash _mTransID = new MiniHash();
 	
 	protected boolean _mIsBlockPOW  = false;
 	protected boolean _mIsTxnPOW    = false;
@@ -464,6 +465,10 @@ public class TxPOW implements Streamable {
 		return _mTxPOWID;
 	}
 	
+	public MiniHash getTransID() {
+		return _mTransID;
+	}
+	
 	public int getSuperLevel() {
 		return _mSuperBlock;
 	}
@@ -476,13 +481,15 @@ public class TxPOW implements Streamable {
 		return _mIsTxnPOW;
 	}
 	
-	
 	/**
 	 * This is only done once at creation. TXPOW structures are immutable.
 	 */
 	public void calculateTXPOWID() {
 		//The TXPOW ID
 		_mTxPOWID = Crypto.getInstance().hashObject(this);
+		
+		//The Transaction ID
+		_mTransID = Crypto.getInstance().hashObject(mTransaction);
 		
 		//Valid Block
 		_mIsBlockPOW = false;
