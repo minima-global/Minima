@@ -303,9 +303,9 @@ public class MinimaDB {
 			
 			if(ratio.compareTo(new BigDecimal(GlobalParams.MINIMA_CASCADE_RATIO)) < 0) {
 				//Too much power lost.. wait..
-				System.out.println("Cascade Power Loss : "+ratio+" cas: "
-						+mMainTree.getCascadeNode().getTxPow().getBlockNumber()
-						+" tip:"+mMainTree.getChainTip().getTxPow().getBlockNumber());
+//				System.out.println("Cascade Power Loss : "+ratio+" cas: "
+//						+mMainTree.getCascadeNode().getTxPow().getBlockNumber()
+//						+" tip:"+mMainTree.getChainTip().getTxPow().getBlockNumber());
 				return;
 			}
 			
