@@ -1,4 +1,4 @@
-package org.minima.utils.tests.winternitz;
+package org.minima.utils.keccak;
 
 public class Objects
 {

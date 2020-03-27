@@ -1,4 +1,4 @@
-package org.minima.utils.tests.winternitz;
+package org.minima.utils.keccak;
 
 /**
  * implementation of Keccak based on following KeccakNISTInterface.c from http://keccak.noekeon.org/

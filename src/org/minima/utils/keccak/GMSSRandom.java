@@ -1,4 +1,4 @@
-package org.minima.utils.tests.winternitz;
+package org.minima.utils.keccak;
 
 /**
  * This class provides a PRNG for GMSS

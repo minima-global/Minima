@@ -1,4 +1,4 @@
-package org.minima.utils.tests.winternitz;
+package org.minima.utils.keccak;
 
 /**
  * This class implements key pair generation and signature generation of the

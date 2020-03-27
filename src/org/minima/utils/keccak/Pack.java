@@ -1,4 +1,4 @@
-package org.minima.utils.tests.winternitz;
+package org.minima.utils.keccak;
 
 /**
  * Utility methods for converting byte arrays into ints and longs, and back again.

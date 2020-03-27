@@ -1,4 +1,4 @@
-package org.minima.utils.tests.winternitz;
+package org.minima.utils.keccak;
 
 import java.util.Random;
 
@@ -23,7 +23,7 @@ public class tester {
 				
 		Digest digest = new KeccakDigest(256);
 
-		WinternitzOTSignature wots = new WinternitzOTSignature(seed, digest, 8);
+		WinternitzOTSignature wots = new WinternitzOTSignature(seed, digest, 12);
 		
 		byte[] pubk = wots.getPublicKey();
 		MiniData pubkey  = new MiniData(pubk);
@@ -33,9 +33,10 @@ public class tester {
 
 		MiniData sig  = new MiniData(signature);
 		System.out.println("Signature : "+sig.to0xString());
+		System.out.println("Signature Length : "+sig.getLength());
 		
 		//Verify
-		WinternitzOTSVerify wver = new WinternitzOTSVerify(digest, 8);
+		WinternitzOTSVerify wver = new WinternitzOTSVerify(digest, 12);
 		byte[] key = wver.Verify(data, signature);
 		
 		MiniData pub = new MiniData(key);
