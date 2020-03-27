@@ -18,10 +18,10 @@ import org.minima.objects.base.MiniNumber;
  * @author spartacusrex
  *
  */
-public class SETSTATE extends MinimaFunction {
+public class DYNSTATE extends MinimaFunction {
 
-	public SETSTATE() {
-		super("SETSTATE");
+	public DYNSTATE() {
+		super("DYNSTATE");
 	}
 	
 	@Override
@@ -48,6 +48,6 @@ public class SETSTATE extends MinimaFunction {
 
 	@Override
 	public MinimaFunction getNewFunction() {
-		return new SETSTATE();
+		return new DYNSTATE();
 	}
 }

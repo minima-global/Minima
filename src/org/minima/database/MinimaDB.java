@@ -315,7 +315,7 @@ public class MinimaDB {
 			//Fix the MMR
 			BlockTreeNode newcascade  = mMainTree.getCascadeNode();
 			if(newcascade != null && newcascade.getMMRSet()!=null){
-				//Sort the MMR.. DO this on a cascade node so not added to the user syncup.
+				//Sort the MMR..
 				casc.recurseParentMMR(oldcascade,newcascade.getMMRSet());
 			}
 			
