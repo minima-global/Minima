@@ -60,7 +60,7 @@ public class TxPOW implements Streamable {
 	/**
 	 * The BURN paying for the Transaction the user is trying to send - can be empty
 	 */
-	private BurnTransaction	mBurnTransaction = new BurnTransaction();
+	private TransactionBurn	mBurnTransaction = new TransactionBurn();
 	
 	/**
 	 * The Witness data for the FeeTransaction - can be empty
