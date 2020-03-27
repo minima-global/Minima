@@ -14,8 +14,10 @@ import org.minima.utils.keccak.WinternitzOTSignature;
 
 public class PubPrivKey implements Streamable {
 	
+	/**
+	 * Key details
+	 */
 	MiniData mPrivateSeed;
-	
 	MiniHash mPublicKey;
 	
 	private static final int WinternitzNumber = 12;
