@@ -28,6 +28,12 @@ import org.minima.utils.json.JSONObject;
 public class Transaction implements Streamable {
 
 	/**
+	 * The Hash of a prior transaction if this is a burn transaction
+	 * Or a custom or random valuevalue
+	 */
+	protected MiniHash mLinkHash = new MiniHash("0x00");
+	
+	/**
 	 * The Inputs that make up the Transaction
 	 */
 	protected ArrayList<Coin> mInputs  = new ArrayList<>();
@@ -228,6 +234,13 @@ public class Transaction implements Streamable {
 	}
 	
 	/**
+	 * The Link Hash - for the Burn Transaction
+	 */
+	public MiniHash getLinkHash() {
+		return mLinkHash;
+	}
+	
+	/**
 	 * Token Generation
 	 */
 	public void setTokenGenerationDetails(TokenProof zTokenDetails) {
@@ -271,7 +284,9 @@ public class Transaction implements Streamable {
 		if(mTokenGenDetails != null) {
 			ret.put("tokengen", mTokenGenDetails.toJSON());
 		}
-				
+		
+		ret.put("linkhash", mLinkHash.to0xString());
+		
 		return ret;
 	}
 
@@ -305,6 +320,9 @@ public class Transaction implements Streamable {
 			MiniByte.TRUE.writeDataStream(zOut);
 			mTokenGenDetails.writeDataStream(zOut);
 		}
+	
+		//The Link Hash
+		mLinkHash.writeDataStream(zOut);
 	}
 
 	@Override
@@ -347,6 +365,8 @@ public class Transaction implements Streamable {
 		}else {
 			mTokenGenDetails = null;
 		}
+		
+		mLinkHash = MiniHash.ReadFromStream(zIn);
 	}
 	
 	/**

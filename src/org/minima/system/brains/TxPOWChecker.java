@@ -109,7 +109,7 @@ public class TxPOWChecker {
 			MiniHash transid = zTxPOW.getTransID();
 			
 			//Check is correct on Burn Transaction..
-			if(!zTxPOW.getBurnTransaction().getMainTransactionHash().isExactlyEqual(transid)) {
+			if(!zTxPOW.getBurnTransaction().getLinkHash().isExactlyEqual(transid)) {
 				return false;
 			}
 			
