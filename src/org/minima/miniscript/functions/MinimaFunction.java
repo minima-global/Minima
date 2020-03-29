@@ -30,6 +30,7 @@ import org.minima.miniscript.functions.maths.FLOOR;
 import org.minima.miniscript.functions.maths.INC;
 import org.minima.miniscript.functions.maths.MAX;
 import org.minima.miniscript.functions.maths.MIN;
+import org.minima.miniscript.functions.maths.POW;
 import org.minima.miniscript.functions.maths.SIGDIG;
 import org.minima.miniscript.functions.sha.CHAINSHA;
 import org.minima.miniscript.functions.sha.SHA2;
@@ -60,7 +61,8 @@ public abstract class MinimaFunction {
 			{ 
 				new STRCAT(), new HEXCAT(), new LEN(), new RPLVAR(),new REV(),new SUBSET(), new GET(),
 				new BOOL(), new NUMBER(), new HEX(), new SCRIPT(), new ASCII(),
-				new ABS(), new CEIL(), new FLOOR(),new MAX(), new MIN(), new DEC(), new INC(), new SIGDIG(),
+				new ABS(), new CEIL(), new FLOOR(),new MAX(), new MIN(), new DEC(), new INC(), 
+				new SIGDIG(), new POW(),
 				new SHA3(), new SHA2(), new CHAINSHA(), new BITSET(), new BITGET(),
 				new SIGNEDBY(), new MULTISIG(), new CHECKSIG(),
 				new GETOUTADDR(), new GETOUTAMT(), new GETOUTTOK(),new VERIFYOUT(),

@@ -142,6 +142,9 @@ Increment a number
 DEC ( NUMBER )
 Decrement a number
 
+POW ( NUMBER NUMBER )
+Returns the power of N of the number
+
 SIGDIG ( NUMBER NUMBER )
 Set the significant digits of the number
 
@@ -179,7 +182,7 @@ Return the amount of the specified output
 GETOUTTOK ( BYTE ) 
 Return the token id of the specified output
 
-VERIFYOUT ( BYTE HEX NUMBER HEX [-1 0 1])
+VERIFYOUT ( BYTE HEX NUMBER HEX [NUMBER])
 Verify the specified output has the specified address, amount and tokenid. Optional 4 th parameter. -1 LTE, 0 EQ, 1 GTE. Default EQ.
 
 GETINADDR ( BYTE ) 
@@ -191,7 +194,7 @@ Return the amount of the specified input
 GETINTOK ( BYTE ) 
 Return the token id of the specified input
 
-VERIFYIN ( BYTE HEX NUMBER HEX [-1 0 1])
+VERIFYIN ( BYTE HEX NUMBER HEX [NUMBER])
 Verify the specified input has the specified address, amount and tokenid. Optional 4 th parameter. -1 LTE, 0 EQ, 1 GTE. Default EQ.
 
 STATE ( BYTE )

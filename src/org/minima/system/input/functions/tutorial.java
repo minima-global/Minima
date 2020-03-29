@@ -148,6 +148,9 @@ public class tutorial extends CommandFunction{
 			"DEC ( NUMBER )\n" + 
 			"Decrement a number\n" + 
 			"\n" + 
+			"POW ( NUMBER NUMBER )\n" + 
+			"Returns the power of N of the number\n" + 
+			"\n" + 
 			"SIGDIG ( NUMBER NUMBER )\n" + 
 			"Set the significant digits of the number\n" + 
 			"\n" + 
@@ -185,7 +188,7 @@ public class tutorial extends CommandFunction{
 			"GETOUTTOK ( BYTE ) \n" + 
 			"Return the token id of the specified output\n" + 
 			"\n" + 
-			"VERIFYOUT ( BYTE HEX NUMBER HEX [-1 0 1])\n" + 
+			"VERIFYOUT ( BYTE HEX NUMBER HEX [NUMBER])\n" + 
 			"Verify the specified output has the specified address, amount and tokenid. Optional 4 th parameter. -1 LTE, 0 EQ, 1 GTE. Default EQ.\n" + 
 			"\n" + 
 			"GETINADDR ( BYTE ) \n" + 
@@ -197,7 +200,7 @@ public class tutorial extends CommandFunction{
 			"GETINTOK ( BYTE ) \n" + 
 			"Return the token id of the specified input\n" + 
 			"\n" + 
-			"VERIFYIN ( BYTE HEX NUMBER HEX [-1 0 1])\n" + 
+			"VERIFYIN ( BYTE HEX NUMBER HEX [NUMBER])\n" + 
 			"Verify the specified input has the specified address, amount and tokenid. Optional 4 th parameter. -1 LTE, 0 EQ, 1 GTE. Default EQ.\n" + 
 			"\n" + 
 			"STATE ( BYTE )\n" + 
