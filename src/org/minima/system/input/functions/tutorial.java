@@ -64,7 +64,7 @@ public class tutorial extends CommandFunction{
 			"FUNCTION    ::= FUNC ( EXPRESSION_1 EXPRESSION_2 .. EXPRESSION_n ) \n" + 
 			"FUNC        ::= HEXCAT | STRCAT | LEN | REV | SUBSET | RPLVAR | GET |\n" + 
 			"                ASCII | BOOL | HEX | NUMBER | SCRIPT |\n" + 
-			"                ABS | CEIL | FLOOR | MIN | MAX | INC | DEC |\n" + 
+			"                ABS | CEIL | FLOOR | MIN | MAX | INC | DEC | SIGDIG |\n" + 
 			"                BITSET | BITGET | PROOF | SHA3 | SHA2 |\n" + 
 			"                SIGNEDBY | MULTISIG | CHECKSIG |\n" + 
 			"                GETOUTADDR | GETOUTAMT | GETOUTTOK | VERIFYOUT |\n" + 
@@ -148,6 +148,9 @@ public class tutorial extends CommandFunction{
 			"DEC ( NUMBER )\n" + 
 			"Decrement a number\n" + 
 			"\n" + 
+			"SIGDIG ( NUMBER NUMBER )\n" + 
+			"Set the significant digits of the number\n" + 
+			"\n" + 
 			"BITSET ( HEX NUMBER BINARY )\n" + 
 			"Set the value of the BIT at that Position to 0 or 1\n" + 
 			"\n" + 
@@ -182,8 +185,8 @@ public class tutorial extends CommandFunction{
 			"GETOUTTOK ( BYTE ) \n" + 
 			"Return the token id of the specified output\n" + 
 			"\n" + 
-			"VERIFYOUT ( BYTE HEX NUMBER HEX )\n" + 
-			"Verify the specified output has the specified address, amount and tokenid\n" + 
+			"VERIFYOUT ( BYTE HEX NUMBER HEX [-1 0 1])\n" + 
+			"Verify the specified output has the specified address, amount and tokenid. Optional 4 th parameter. -1 LTE, 0 EQ, 1 GTE. Default EQ.\n" + 
 			"\n" + 
 			"GETINADDR ( BYTE ) \n" + 
 			"Return the HEX address of the specified input\n" + 
@@ -194,8 +197,8 @@ public class tutorial extends CommandFunction{
 			"GETINTOK ( BYTE ) \n" + 
 			"Return the token id of the specified input\n" + 
 			"\n" + 
-			"VERIFYIN ( BYTE HEX NUMBER HEX )\n" + 
-			"Verify the specified input has the specified address, amount and tokenid\n" + 
+			"VERIFYIN ( BYTE HEX NUMBER HEX [-1 0 1])\n" + 
+			"Verify the specified input has the specified address, amount and tokenid. Optional 4 th parameter. -1 LTE, 0 EQ, 1 GTE. Default EQ.\n" + 
 			"\n" + 
 			"STATE ( BYTE )\n" + 
 			"Return the state value for the given number\n" + 

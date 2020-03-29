@@ -58,7 +58,7 @@ GLOBAL      ::= @BLKNUM | @INPUT | @INBLKNUM | @BLKDIFF
 FUNCTION    ::= FUNC ( EXPRESSION_1 EXPRESSION_2 .. EXPRESSION_n ) 
 FUNC        ::= HEXCAT | STRCAT | LEN | REV | SUBSET | RPLVAR | GET |
                 ASCII | BOOL | HEX | NUMBER | SCRIPT |
-                ABS | CEIL | FLOOR | MIN | MAX | INC | DEC |
+                ABS | CEIL | FLOOR | MIN | MAX | INC | DEC | SIGDIG |
                 BITSET | BITGET | PROOF | SHA3 | SHA2 |
                 SIGNEDBY | MULTISIG | CHECKSIG |
                 GETOUTADDR | GETOUTAMT | GETOUTTOK | VERIFYOUT |
@@ -142,6 +142,9 @@ Increment a number
 DEC ( NUMBER )
 Decrement a number
 
+SIGDIG ( NUMBER NUMBER )
+Set the significant digits of the number
+
 BITSET ( HEX NUMBER BINARY )
 Set the value of the BIT at that Position to 0 or 1
 
@@ -176,8 +179,8 @@ Return the amount of the specified output
 GETOUTTOK ( BYTE ) 
 Return the token id of the specified output
 
-VERIFYOUT ( BYTE HEX NUMBER HEX )
-Verify the specified output has the specified address, amount and tokenid
+VERIFYOUT ( BYTE HEX NUMBER HEX [-1 0 1])
+Verify the specified output has the specified address, amount and tokenid. Optional 4 th parameter. -1 LTE, 0 EQ, 1 GTE. Default EQ.
 
 GETINADDR ( BYTE ) 
 Return the HEX address of the specified input
@@ -188,8 +191,8 @@ Return the amount of the specified input
 GETINTOK ( BYTE ) 
 Return the token id of the specified input
 
-VERIFYIN ( BYTE HEX NUMBER HEX )
-Verify the specified input has the specified address, amount and tokenid
+VERIFYIN ( BYTE HEX NUMBER HEX [-1 0 1])
+Verify the specified input has the specified address, amount and tokenid. Optional 4 th parameter. -1 LTE, 0 EQ, 1 GTE. Default EQ.
 
 STATE ( BYTE )
 Return the state value for the given number
