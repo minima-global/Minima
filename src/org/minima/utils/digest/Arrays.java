@@ -1,4 +1,4 @@
-package org.minima.utils.keccak;
+package org.minima.utils.digest;
 
 import java.math.BigInteger;
 import java.util.NoSuchElementException;

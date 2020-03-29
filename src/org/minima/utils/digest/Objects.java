@@ -1,4 +1,4 @@
-package org.minima.utils.keccak;
+package org.minima.utils.digest;
 
 public class Objects
 {

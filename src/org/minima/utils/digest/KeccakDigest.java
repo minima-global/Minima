@@ -1,4 +1,4 @@
-package org.minima.utils.keccak;
+package org.minima.utils.digest;
 
 /**
  * implementation of Keccak based on following KeccakNISTInterface.c from http://keccak.noekeon.org/

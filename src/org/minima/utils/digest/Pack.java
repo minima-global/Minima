@@ -1,4 +1,4 @@
-package org.minima.utils.keccak;
+package org.minima.utils.digest;
 
 /**
  * Utility methods for converting byte arrays into ints and longs, and back again.

@@ -7,10 +7,10 @@ import java.io.IOException;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniHash;
 import org.minima.utils.Streamable;
-import org.minima.utils.keccak.Digest;
-import org.minima.utils.keccak.KeccakDigest;
-import org.minima.utils.keccak.WinternitzOTSVerify;
-import org.minima.utils.keccak.WinternitzOTSignature;
+import org.minima.utils.digest.Digest;
+import org.minima.utils.digest.KeccakDigest;
+import org.minima.utils.digest.WinternitzOTSVerify;
+import org.minima.utils.digest.WinternitzOTSignature;
 
 public class PubPrivKey implements Streamable {
 	

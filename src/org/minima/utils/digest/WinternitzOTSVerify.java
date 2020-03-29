@@ -1,4 +1,4 @@
-package org.minima.utils.keccak;
+package org.minima.utils.digest;
 
 /**
  * This class implements signature verification of the Winternitz one-time
