@@ -9,6 +9,9 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 import org.minima.objects.base.MiniHash;
+import org.minima.utils.digest.Digest;
+import org.minima.utils.digest.KeccakDigest;
+import org.minima.utils.digest.SHA256Digest;
 
 /**
  * @author Spartacus Rex
@@ -16,10 +19,6 @@ import org.minima.objects.base.MiniHash;
  */
 public class Crypto {
 
-	/**
-	 * May need to remove Bouncy Castle..
-	 */
-	public static boolean USE_KECCAK = true;
 	
 	/**
 	 * Get the default instance..
@@ -49,21 +48,21 @@ public class Crypto {
 //		}
 	}
 	
-	private MessageDigest getDigest() throws NoSuchAlgorithmException {
-		return MessageDigest.getInstance("SHA-256");
-	}
+//	private MessageDigest getDigest() throws NoSuchAlgorithmException {
+//		return MessageDigest.getInstance("SHA-256");
+//	}
 	
 	public byte[] hashData(byte[] zData){
 		try {
-//			//Bouncy..
-//			Digest keccak = new KeccakDigest(256);
-//			byte[] output = new byte[keccak.getDigestSize()];
-//			keccak.update(zData, 0, zData.length);
-//			keccak.doFinal(output, 0);
-//			return output;
+			//Bouncy..
+			Digest keccak = new KeccakDigest(256);
+			byte[] output = new byte[keccak.getDigestSize()];
+			keccak.update(zData, 0, zData.length);
+			keccak.doFinal(output, 0);
+			return output;
 			
 			//Do it..
-			return getDigest().digest(zData);
+//			return getDigest().digest(zData);
 		}catch(Exception exc) {
 			exc.printStackTrace();
 		}
@@ -84,16 +83,16 @@ public class Crypto {
 		
 	public byte[] hashSHA2(byte[] zData){
 		try {
-//			//Bouncy..
-//			Digest sha2 = new SHA256Digest();
-//			byte[] output = new byte[sha2.getDigestSize()];
-//			sha2.update(zData, 0, zData.length);
-//			sha2.doFinal(output, 0);
-//			
-//			return output;
+			//Bouncy..
+			Digest sha2 = new SHA256Digest();
+			byte[] output = new byte[sha2.getDigestSize()];
+			sha2.update(zData, 0, zData.length);
+			sha2.doFinal(output, 0);
+			
+			return output;
 			
 			//Do it..
-			return getDigest().digest(zData);
+//			return getDigest().digest(zData);
 		}catch(Exception exc) {
 			exc.printStackTrace();
 		}

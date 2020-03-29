@@ -66,9 +66,7 @@ public class CHAINSHA extends MinimaFunction {
 		}
 		
 		//Clean up
-		try {dis.close();} catch (IOException e) {
-			throw new ExecutionException("Strange IO Exception at CHAINSHA !? "+e);
-		}
+		try {dis.close();} catch (IOException e) {}
 		
 		//Return..
 		return new HEXValue(total.getData());
