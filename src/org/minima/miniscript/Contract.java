@@ -607,8 +607,10 @@ public class Contract {
 //		String RamScript = "ASSERT VERIFYOUT ( ( @INPUT + 1 ) @ADDRESS ( @AMOUNT - amt ) @TOKENID )";
 //		String RamScript = "let t = 1 LET ( [ hello ] (3 - t*2) t ) = 123 let gg = get ( [hello] 1 t )";
 
-		String RamScript = "let g = [ goodbye ] let t = DYNSTATE ( 0 [hello] ) let tt = DYNSTATE ( 0 0xFFE ) let y  = state(0)";
+//		String RamScript = "let g = [ goodbye ] let t = DYNSTATE ( 0 [hello] ) let tt = DYNSTATE ( 0 0xFFE ) let y  = state(0)";
 
+		String RamScript = "let t = sigdig( 1 0.1234)";
+		
 		//String RamScript = "let t = @SCRIPT let f = @AMOUNT +1 let g = State(1001) + [ sha3(123)]";
 
 //		String RamScript = "let gg = [hello] let ff = 0x45678 let t = CONCAT ( gg [if signedby] SCRIPT(ff) [and @blknum gt 12345])";

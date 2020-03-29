@@ -140,6 +140,13 @@ public class MiniNumber implements Streamable {
 		return new MiniNumber( mNumber.setScale(0, RoundingMode.CEILING) ) ;
 	}
 	
+	public MiniNumber setSignificantDigits(int zSignificantDigits) {
+		if(zSignificantDigits>18) {
+			return this;	
+		}
+		return new MiniNumber( mNumber.round(new MathContext(zSignificantDigits, RoundingMode.DOWN))) ;
+	}
+	
 	public MiniNumber abs() {
 		return new MiniNumber( mNumber.abs() ) ;
 	}

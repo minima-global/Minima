@@ -28,7 +28,6 @@ public class VERIFYOUT extends MinimaFunction{
 	
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
-		
 		//Which Output
 		int output    = getParameter(0).getValue(zContract).getNumber().getAsInt();
 		
@@ -37,13 +36,19 @@ public class VERIFYOUT extends MinimaFunction{
 		MiniNumber amount = getParameter(2).getValue(zContract).getNumber();
 		MiniHash tokenid  = new MiniHash(getParameter(3).getValue(zContract).getRawData());
 		
+		//Is there a 4th Parameter ?
+		int amountchecktype = 0 ;
+		if(getParameterNum()>4) {
+			amountchecktype = getParameter(4).getValue(zContract).getNumber().getAsInt();
+		}
+			
 		//Check an output exists..
 		Transaction trans = zContract.getTransaction();
 	
 		//Check output exists..
 		ArrayList<Coin> outs = trans.getAllOutputs();
 		if(outs.size()<=output) {
-			throw new ExecutionException("VERIFYOUT Output number too high "+output+"/"+outs.size());
+			return new BooleanValue( false );
 		}
 		
 		//Get it..
@@ -51,8 +56,17 @@ public class VERIFYOUT extends MinimaFunction{
 		
 		//Now Check
 		boolean addr = address.isExactlyEqual(cc.getAddress());  
-		boolean amt  = amount.isEqual(cc.getAmount());  
 		boolean tok  = tokenid.isExactlyEqual(cc.getTokenID());  
+		
+		//Amount can be 3 type.. EQ, LTE, GTE
+		boolean amt  = false;
+		if(amountchecktype == 0) {
+			amt  = amount.isEqual(cc.getAmount());
+		}else if(amountchecktype == -1) {
+			amt  = cc.getAmount().isLessEqual(amount);
+		}else {
+			amt  = cc.getAmount().isMoreEqual(amount);
+		}
 		
 		boolean ver = addr && amt && tok;
 		
