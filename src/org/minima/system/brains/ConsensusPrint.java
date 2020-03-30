@@ -514,6 +514,8 @@ public class ConsensusPrint {
 			status.put("port", main.getNetworkHandler().getServer().getPort());
 			status.put("rpcport", main.getNetworkHandler().getRPCServer().getPort());
 			
+			status.put("automine", main.getMiner().isAutoMining());
+			
 			status.put("root", root.getTxPowID().to0xString());
 			status.put("tip", tip.getTxPowID().to0xString());
 			
