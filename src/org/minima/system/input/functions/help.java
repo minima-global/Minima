@@ -63,9 +63,8 @@ public class help extends CommandFunction{
 			
 			addJSONDesc(new printchain());
 			addJSONDesc(new printtree());
-	
-//			addJSONDesc(new trace());
-//			addJSONDesc(new minetrans());
+			addJSONDesc(new automine());
+			addJSONDesc(new trace());
 			
 			addJSONDesc(new network());
 			addJSONDesc(new connect());

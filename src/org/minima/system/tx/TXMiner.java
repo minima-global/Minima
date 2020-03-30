@@ -9,6 +9,7 @@ import org.minima.system.brains.ConsensusHandler;
 import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.messages.Message;
+import org.minima.utils.messages.TimerMessage;
 
 public class TXMiner extends SystemHandler{
 
@@ -19,8 +20,18 @@ public class TXMiner extends SystemHandler{
 	public static final String TXMINER_MINETXPOW   = "MINE_MINETXPOW";
 	public static final String TXMINER_MEGAMINER   = "MINE_MEGAMINER";
 	
+	boolean mAutoMining = false;
+	
 	public TXMiner(Main zMain) {
 		super(zMain,"TXMINER");
+	}
+	
+	public void setAutoMining(boolean zMining) {
+		mAutoMining = zMining;
+	}
+	
+	public boolean isAutoMining() {
+		return mAutoMining;
 	}
 	
 	@Override
@@ -90,10 +101,16 @@ public class TXMiner extends SystemHandler{
 			//Get TXPOW..
 			TxPOW txpow = (TxPOW) zMessage.getObject("txpow");
 			
+			//Do so many then recalculate.. to have the latest block data
+			long currentTime  = System.currentTimeMillis();
+			
+			//should be about 10..
+			long maxTime  	  = currentTime + 1000;
+			
 			//Keep cycling until it is ready 
 			boolean mining = true;
 			MiniHash hash = null;
-			while(mining && isRunning()) {
+			while(mining && currentTime<maxTime && isRunning()) {
 				//Now Hash it..
 				hash = Crypto.getInstance().hashObject(txpow);
 				
@@ -104,6 +121,9 @@ public class TXMiner extends SystemHandler{
 					//Set the Nonce..
 					txpow.setNonce(txpow.getNonce().increment());	
 				}
+				
+				//New time
+				currentTime  = System.currentTimeMillis();
 			}
 			
 			if(!isRunning()) {
@@ -113,9 +133,13 @@ public class TXMiner extends SystemHandler{
 			//Set all the correct internal variables..
 			txpow.calculateTXPOWID();
 			
-			//We have a valid TX-POW.. tell main
-			Message msg = new Message(ConsensusHandler.CONSENSUS_PRE_PROCESSTXPOW).addObject("txpow", txpow);
-			getMainHandler().getConsensusHandler().PostMessage(msg);
+			if(txpow.isBlock()) {
+				System.out.println("BLOCK FOUND : "+txpow.getBlockNumber());
+				
+				//We have a valid TX-POW.. tell main
+				Message msg = new Message(ConsensusHandler.CONSENSUS_PRE_PROCESSTXPOW).addObject("txpow", txpow);
+				getMainHandler().getConsensusHandler().PostMessage(msg);
+			}
 			
 			//Pause for breath
 			Thread.sleep(200);

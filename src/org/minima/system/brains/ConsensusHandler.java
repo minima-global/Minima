@@ -29,6 +29,7 @@ import org.minima.utils.Crypto;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
+import org.minima.utils.messages.TimerMessage;
 
 public class ConsensusHandler extends SystemHandler {
 
@@ -38,6 +39,7 @@ public class ConsensusHandler extends SystemHandler {
 	public static final String CONSENSUS_PROCESSTXPOW 		   = "CONSENSUS_PROCESSTXPOW";
 	public static final String CONSENSUS_PRE_PROCESSTXPOW 	   = "CONSENSUS_PREPROCESSTXPOW";
 	
+	public static final String CONSENSUS_ACTIVATEMINE 		   = "CONSENSUS_ACTIVATEMINE";
 	public static final String CONSENSUS_MINEBLOCK 			   = "CONSENSUS_MINEBLOCK";
 	public static final String CONSENSUS_SENDTRANS 			   = "CONSENSUS_SENDTRANS";
 	public static final String CONSENSUS_CREATETRANS 		   = "CONSENSUS_CREATETRANS";
@@ -128,6 +130,8 @@ public class ConsensusHandler extends SystemHandler {
 		mConsensusUser   = new ConsensusUser(mMainDB, this);
 		mConsensusPrint  = new ConsensusPrint(mMainDB, this);
 		mConsensusBackup = new ConsensusBackup(mMainDB, this);
+		
+		PostTimerMessage(new TimerMessage(2000, CONSENSUS_MINEBLOCK));
 	}
 	
 	public void setBackUpManager() {
@@ -186,10 +190,10 @@ public class ConsensusHandler extends SystemHandler {
 			getMainDB().processTxPOW(txpow);
 		
 			//Print the tree..
-//			if(true || mPrintChain) {
-//				Message print = new Message(ConsensusPrint.CONSENSUS_PRINTCHAIN_TREE).addBoolean("systemout", true);
-//				PostMessage(print);
-//			}
+			if(true || mPrintChain) {
+				Message print = new Message(ConsensusPrint.CONSENSUS_PRINTCHAIN_TREE).addBoolean("systemout", true);
+				PostMessage(print);
+			}
 			
 //			//Add a chartpoint
 //			Message chart = new Message(ConsensusPrint.CONSENSUS_ADDCHARTPOINT);
@@ -319,7 +323,21 @@ public class ConsensusHandler extends SystemHandler {
 			
 			InputHandler.endResponse(zMessage, true, "");
 			
+		}else if ( zMessage.isMessageType(CONSENSUS_ACTIVATEMINE) ) {
+			boolean mining = zMessage.getBoolean("automining");
+			getMainHandler().getMiner().setAutoMining(mining);
+			
+			JSONObject resp = InputHandler.getResponseJSON(zMessage);
+			resp.put("automining", mining);			
+			InputHandler.endResponse(zMessage, true, "");
+			
 		}else if ( zMessage.isMessageType(CONSENSUS_MINEBLOCK) ) {
+			//Are we Mining..
+			if(!getMainHandler().getMiner().isAutoMining()) {
+				PostTimerMessage(new TimerMessage(1000, CONSENSUS_MINEBLOCK));
+				return;
+			}
+			
 			//Fresh TXPOW
 			TxPOW txpow = getMainDB().getCurrentTxPow(new Transaction(), new Witness(), new JSONArray());
 			

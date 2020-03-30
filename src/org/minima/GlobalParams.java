@@ -29,12 +29,12 @@ public class GlobalParams {
 	/**
 	 * Depth before we cascade..
 	 */
-	public static final int MINIMA_CASCADE_START_DEPTH   = 32;
+	public static final int MINIMA_CASCADE_START_DEPTH   = 8;
 	
 	/**
 	 * Minimum number of blocks at each cascade level 
 	 */
-	public static final int MINIMA_MINUMUM_CASCADE_LEVEL_NODES  = 32;
+	public static final int MINIMA_MINUMUM_CASCADE_LEVEL_NODES  = 2;
 	
 	/**
 	 * How Many Cascade Levels are there
@@ -44,7 +44,7 @@ public class GlobalParams {
 	/**
 	 * Ratio of Cascade tree vs Old tree allowed
 	 */
-	public static final String MINIMA_CASCADE_RATIO  = "0.9";
+	public static final String MINIMA_CASCADE_RATIO  = "0.5";
 	
 	
 }

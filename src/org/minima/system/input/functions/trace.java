@@ -7,7 +7,7 @@ public class trace extends CommandFunction{
 	public trace() {
 		super("trace");
 		
-		setHelp("[on|off]", "Turn ON|OFF debug info as new transaction and block are found", "");
+		setHelp("[on|off]", "Turn ON|OFF full debug info as messages are processed", "");
 	}
 	
 	@Override

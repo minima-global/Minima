@@ -150,14 +150,22 @@ public class ConsensusNet {
 						//Request all the TXPOW required.. txn first then block..
 						TxPOW txpow = spack.getTxPOW();
 						
+						//Get the NetClient...
+						NetClient client = (NetClient) zMessage.getObject("netclient");
+//						System.out.println("Netclient sync "+client);
+						
 						//Post it as a normal TxPOW..
 						Message msg = new Message(CONSENSUS_NET_TXPOW);
 						msg.addObject("txpow", txpow);
+						
+						//Add the client as requests will be made for TXPOWs we don't have
+						msg.addObject("netclient", client);
 						
 						mHandler.PostMessage(msg);
 						
 						totalreq++;
 						
+						//SIMPLE - JUST ASK AGAIN INNEFFICIENT
 //						//Txns
 //						ArrayList<MiniHash> txns = txpow.getBlockTxns();
 //						for(MiniHash txn : txns) {
@@ -174,6 +182,7 @@ public class ConsensusNet {
 //							sendNetMessage(zMessage, NetClientReader.NETMESSAGE_TXPOW_REQUEST, txpow.getTxPowID());
 //							totalreq++;
 //						}
+						
 					}
 				}
 				

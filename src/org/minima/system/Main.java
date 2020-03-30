@@ -62,7 +62,11 @@ public class Main extends MessageProcessor {
 	/**
 	 * User Simulator.. for testing..
 	 */
-	UserSimulator mSim;
+//	UserSimulator mSim;
+	
+	/**
+	 * Are we creating a network from scratch
+	 */
 	boolean mGenesis = false;
 
 	public int mPort;
@@ -121,10 +125,6 @@ public class Main extends MessageProcessor {
 		mConsensus  = new ConsensusHandler(this);
 		
 		mGenesis 	= zGenesis;
-		
-		mSim		= new UserSimulator(this);
-		
-//		setTrace(true);
 	}
 	
 	public void setAutoConnect(boolean zAuto) {
@@ -155,10 +155,6 @@ public class Main extends MessageProcessor {
 	
 	public void setNewRelCoin(String zPostURL) {
 		mProcessManager.setRelCoin(zPostURL);
-	}
-	
-	public void setSimulator(boolean zON, int zCount, boolean zStress) {
-		mSim.setMining(zON,zCount,zStress);
 	}
 	
 	public void SystemShutDown() {
@@ -201,10 +197,6 @@ public class Main extends MessageProcessor {
 	public TXMiner getMiner() {
 		return mTXMiner;
 	}
-	
-	public UserSimulator getsimulator() {
-		return mSim;
-	}
 		
 	@Override
 	protected void processMessage(Message zMessage) throws Exception {
@@ -219,11 +211,8 @@ public class Main extends MessageProcessor {
 				//Sort the genesis Block
 				mConsensus.genesis();
 				
-				//Start the user simulator..
-//				mSim.setMining(true, -1, false);
-				
-				//Send a message to the miner..
-				mConsensus.PostTimerMessage(new TimerMessage(1000, ConsensusHandler.CONSENSUS_MINEBLOCK));
+				//Tell miner we are auto mining..
+				mTXMiner.setAutoMining(true);
 				
 				//And init..
 				PostMessage(SYSTEM_INIT);
@@ -268,8 +257,6 @@ public class Main extends MessageProcessor {
 			mConsensus.stopMessageProcessor();
 			mBackup	.stopMessageProcessor();
 			mProcessManager.stopMessageProcessor();
-			
-			mSim.stopMessageProcessor();
 			
 			//Wait..
 			Thread.sleep(250);
