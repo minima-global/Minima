@@ -3,7 +3,6 @@ package org.minima.system;
 
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.backup.BackupManager;
-import org.minima.system.bootstrap.UserSimulator;
 import org.minima.system.brains.ConsensusBackup;
 import org.minima.system.brains.ConsensusHandler;
 import org.minima.system.external.ProcessManager;
@@ -14,7 +13,6 @@ import org.minima.system.tx.TXMiner;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageProcessor;
-import org.minima.utils.messages.TimerMessage;
 
 public class Main extends MessageProcessor {
 
