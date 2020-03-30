@@ -90,17 +90,28 @@ public class TXMiner extends SystemHandler{
 			//Get TXPOW..
 			TxPOW txpow = (TxPOW) zMessage.getObject("txpow");
 			
-			//Is it ready
-			txpow.calculateTXPOWID();
-			
 			//Keep cycling until it is ready 
-			while(!txpow.isBlock() && isRunning()) {
-				//Set the Nonce..
-				txpow.setNonce(txpow.getNonce().increment());
+			boolean mining = true;
+			MiniHash hash = null;
+			while(mining && isRunning()) {
+				//Now Hash it..
+				hash = Crypto.getInstance().hashObject(txpow);
 				
-				//Set the TxPOW
-				txpow.calculateTXPOWID();
+				//Success ?
+				if(hash.isLess(txpow.getBlockDifficulty())) {
+					mining = false;
+				}else {
+					//Set the Nonce..
+					txpow.setNonce(txpow.getNonce().increment());	
+				}
 			}
+			
+			if(!isRunning()) {
+				return;
+			}
+
+			//Set all the correct internal variables..
+			txpow.calculateTXPOWID();
 			
 			//We have a valid TX-POW.. tell main
 			Message msg = new Message(ConsensusHandler.CONSENSUS_PRE_PROCESSTXPOW).addObject("txpow", txpow);

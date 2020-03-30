@@ -150,26 +150,34 @@ public class ConsensusNet {
 						//Request all the TXPOW required.. txn first then block..
 						TxPOW txpow = spack.getTxPOW();
 						
-						//Txns
-						ArrayList<MiniHash> txns = txpow.getBlockTxns();
-						for(MiniHash txn : txns) {
-							if(!getMainDB().isTxPOWFound(txn)) {
-								//Request it!
-								sendNetMessage(zMessage, NetClientReader.NETMESSAGE_TXPOW_REQUEST, txn);
-								totalreq++;
-							}
-						}
+						//Post it as a normal TxPOW..
+						Message msg = new Message(CONSENSUS_NET_TXPOW);
+						msg.addObject("txpow", txpow);
 						
-						//Main Txpow
-						if(!getMainDB().isTxPOWFound(txpow.getTxPowID())) {
-							//Request it!
-							sendNetMessage(zMessage, NetClientReader.NETMESSAGE_TXPOW_REQUEST, txpow.getTxPowID());
-							totalreq++;
-						}
+						mHandler.PostMessage(msg);
+						
+						totalreq++;
+						
+//						//Txns
+//						ArrayList<MiniHash> txns = txpow.getBlockTxns();
+//						for(MiniHash txn : txns) {
+//							if(!getMainDB().isTxPOWFound(txn)) {
+//								//Request it!
+//								sendNetMessage(zMessage, NetClientReader.NETMESSAGE_TXPOW_REQUEST, txn);
+//								totalreq++;
+//							}
+//						}
+//						
+//						//Main Txpow
+//						if(!getMainDB().isTxPOWFound(txpow.getTxPowID())) {
+//							//Request it!
+//							sendNetMessage(zMessage, NetClientReader.NETMESSAGE_TXPOW_REQUEST, txpow.getTxPowID());
+//							totalreq++;
+//						}
 					}
 				}
 				
-				MinimaLogger.log("Sync complete. "+totalreq+" requests made.. ");
+				MinimaLogger.log("Sync complete. "+totalreq+" blocks added.. ");
 			}
 			
 		}else if ( zMessage.isMessageType(CONSENSUS_NET_TXPOWID)) {

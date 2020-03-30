@@ -69,6 +69,8 @@ public class ConsensusPrint {
 	public static final String CONSENSUS_STATUS 			= CONSENSUS_PREFIX+"STATUS";
 	public static final String CONSENSUS_PRINTCHAIN 		= CONSENSUS_PREFIX+"PRINTCHAIN";
 	
+	public static final String CONSENSUS_NETWORK 			= CONSENSUS_PREFIX+"NETWORK";
+	
 	public static final String CONSENSUS_PRINTCHAIN_TREE 	= CONSENSUS_PREFIX+"PRINTCHAIN_TREE";
 	
 	public static final String CONSENSUS_ADDCHARTPOINT 		= CONSENSUS_PREFIX+"ADDCHARTPOINT";
@@ -478,29 +480,43 @@ public class ConsensusPrint {
 			JSONObject status = InputHandler.getResponseJSON(zMessage);
 			
 			//Version
-			status.put("version", 0.4);
+			status.put("version", 0.8);
 			
 			//Up time..
 			long timediff     = System.currentTimeMillis() - getHandler().getMainHandler().getNodeStartTime();
 			String uptime     = Maths.ConvertMilliToTime(timediff);	
-//			status.put("milliuptime", timediff);
+
 			status.put("uptime", uptime);
 			status.put("conf", main.getBackupManager().getRootFolder());
 			status.put("host", main.getNetworkHandler().getRPCServer().getHost());
 			status.put("port", main.getNetworkHandler().getServer().getPort());
 			status.put("rpcport", main.getNetworkHandler().getRPCServer().getPort());
 			
-			status.put("root", root.getTxPow().toJSON());
-			status.put("tip", tip.getTxPow().toJSON());
-			status.put("chainspeed", getMainDB().getMainTree().getChainSpeed());
+			status.put("root", root.getTxPowID());
+			status.put("tip", tip.getTxPowID());
+			status.put("lastblock", tip.getTxPow().getBlockNumber());
 			
-			status.put("lastblock", lastblock.toString());
-			status.put("totalpow", root.getTotalWeight().toString());
+			status.put("chainlength", getMainDB().getMainTree().getAsList().size());
+			status.put("chainspeed", getMainDB().getMainTree().getChainSpeed());
+			status.put("chainweight", root.getTotalWeight().toString());
 			
 			status.put("IBD ", +getMainDB().getIntroSyncSize());
 			
 			//Add the network connections
 			ArrayList<NetClient> nets = main.getNetworkHandler().getNetClients();
+			status.put("connections", nets.size());
+			
+			//Add it to the output
+			InputHandler.endResponse(zMessage, true, "");
+		
+		}else if(zMessage.isMessageType(CONSENSUS_NETWORK)){
+			//Get the response JSON
+			JSONObject network = InputHandler.getResponseJSON(zMessage);
+			
+			//Add the network connections
+			ArrayList<NetClient> nets = getHandler().getMainHandler().getNetworkHandler().getNetClients();
+			network.put("connections", nets.size());
+			
 			JSONArray netarr = new JSONArray();
 			if(nets.size()>0) {
 				for(NetClient net : nets) {
@@ -508,39 +524,10 @@ public class ConsensusPrint {
 				}
 				
 			}
-			status.put("network", netarr);
+			network.put("network", netarr);
 			
 			//Add it to the output
 			InputHandler.endResponse(zMessage, true, "");
-			
-			if(true) {
-				return;	
-			}
-
-			MinimaLogger.log("");
-			MinimaLogger.log("-----");
-			MinimaLogger.log("Wallet");
-			MinimaLogger.log("-----");
-			
-			//Public Keys
-			ArrayList<PubPrivKey> keys = getMainDB().getUserDB().getKeys();
-			for(PubPrivKey key : keys) {
-				MinimaLogger.log("Public Key : "+key.toString());
-			}
-			if(keys.size()>0) {MinimaLogger.log("------------");}
-			
-			//Addresses
-			ArrayList<Address> addresses = getMainDB().getUserDB().getAllAddresses();
-			for(Address addr : addresses) {
-				MinimaLogger.log("Address    : "+addr.toFullString());
-			}
-			if(addresses.size()>0) {MinimaLogger.log("------------");}
-			
-			MiniNumber unconfirmed_total 		= new MiniNumber();
-			MiniNumber unconfirmed_total_spent 	= new MiniNumber();
-			MiniNumber confirmed_total 			= new MiniNumber();
-			MiniNumber confirmed_total_spent 	= new MiniNumber();
-			
 		}
 	}
 	

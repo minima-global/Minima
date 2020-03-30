@@ -58,12 +58,12 @@ GLOBAL      ::= @BLKNUM | @INPUT | @INBLKNUM | @BLKDIFF
 FUNCTION    ::= FUNC ( EXPRESSION_1 EXPRESSION_2 .. EXPRESSION_n ) 
 FUNC        ::= HEXCAT | STRCAT | LEN | REV | SUBSET | RPLVAR | GET |
                 ASCII | BOOL | HEX | NUMBER | SCRIPT |
-                ABS | CEIL | FLOOR | MIN | MAX | INC | DEC | SIGDIG |
+                ABS | CEIL | FLOOR | MIN | MAX | INC | DEC | SIGDIG | POW |
                 BITSET | BITGET | PROOF | SHA3 | SHA2 |
                 SIGNEDBY | MULTISIG | CHECKSIG |
                 GETOUTADDR | GETOUTAMT | GETOUTTOK | VERIFYOUT |
                 GETINADDR | GETINAMT | GETINTOK | GETINID | VERIFYIN |
-                STATE | PREVSTATE | SAMESTATE
+                STATE | PREVSTATE | SAMESTATE | DYNSTATE
 
 Globals
 -------
@@ -143,7 +143,7 @@ DEC ( NUMBER )
 Decrement a number
 
 POW ( NUMBER NUMBER )
-Returns the power of N of the number
+Returns the power of N of a number. N must be a whole number.
 
 SIGDIG ( NUMBER NUMBER )
 Set the significant digits of the number
