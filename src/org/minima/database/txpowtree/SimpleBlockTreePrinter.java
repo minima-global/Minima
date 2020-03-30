@@ -10,6 +10,7 @@ import org.minima.utils.Maths;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.bretty.TreeNode;
 import org.minima.utils.bretty.TreePrinter;
+import org.omg.CORBA.Current;
 
 public class SimpleBlockTreePrinter {
 
@@ -41,7 +42,7 @@ public class SimpleBlockTreePrinter {
 		TreeNode mRoot = new TreeNode(convertNodeToString(root));
 		
 		//Drill it..
-		drillNode(root, mRoot);
+		drillNode(root, mRoot, 1);
 		
 		//And finally print it..
 		String output = "\n"+TreePrinter.toString(mRoot);
@@ -85,7 +86,7 @@ public class SimpleBlockTreePrinter {
 		return ret;
 	}
 	
-	private void drillNode(BlockTreeNode zNode, TreeNode zTreeNode) {
+	private void drillNode(BlockTreeNode zNode, TreeNode zTreeNode, int zLevel) {
 		//And all the children..
 		ArrayList<BlockTreeNode> children = zNode.getChildren();
 		
@@ -98,9 +99,64 @@ public class SimpleBlockTreePrinter {
 			zTreeNode.addChild(chilnode);
 
 			//And drill the child
-			drillNode(child, chilnode);
+			drillNode(child, chilnode, child.getCurrentLevel());
 		}
 	}
+	
+	
+//	private void drillNode(BlockTreeNode zNode, TreeNode zTreeNode, int zLevelNum) {
+//		//The Current level
+//		int clev = zNode.getCurrentLevel();
+//		
+//		//And all the children..
+//		ArrayList<BlockTreeNode> children = zNode.getChildren();
+//		
+//		//now do it..
+//		for(BlockTreeNode child : children) {
+//			//What level is the Child..
+//			int childclev = child.getCurrentLevel();
+//			
+//			if(childclev == 0) {
+//				//Create a tree node..
+//				TreeNode chilnode = new TreeNode(convertNodeToString(child));
+//				
+//				//Add to the Root node
+//				zTreeNode.addChild(chilnode);
+//			
+//				//And drill the child
+//				drillNode(child, chilnode,0);
+//			
+//			}else if(childclev == clev) {
+//				//add it to the Current
+//				int totlevel = zLevelNum+1;
+//				
+//				//Create a tree node..
+//				TreeNode chilnode = new TreeNode(convertNodeToString(child));
+//				
+//				//Add to the Root node
+//				zTreeNode.addChild(chilnode);
+//				
+////				if(totlevel < 2) {
+////					//And drill the child
+////					drillNode(child, chilnode, totlevel);
+////				}else {
+//					//And drill the child
+//					drillNode(child, zTreeNode,totlevel);
+////				}
+//			
+//			}else{
+//				//Add it start again..
+//				TreeNode chilnode = new TreeNode(convertNodeToString(child));
+//				
+//				//Add to the Root node
+//				zTreeNode.addChild(chilnode);
+//			
+//				//And drill the child
+//				drillNode(child, chilnode,0);
+//				
+//			}
+//		}
+//	}
 	
 	
 	public static void clearScreen() {  

@@ -516,13 +516,17 @@ public class ConsensusPrint {
 			
 			status.put("root", root.getTxPowID().to0xString());
 			status.put("tip", tip.getTxPowID().to0xString());
+			
 			status.put("lastblock", tip.getTxPow().getBlockNumber());
+			status.put("difficulty", tip.getTxPow().getBlockDifficulty().to0xString());
 			
 			status.put("chainlength", getMainDB().getMainTree().getAsList().size());
 			status.put("chainspeed", getMainDB().getMainTree().getChainSpeed());
 			status.put("chainweight", root.getTotalWeight().toString());
 			
-			status.put("IBD ", +getMainDB().getIntroSyncSize());
+			int ibd = getMainDB().getIntroSyncSize();
+//			status.put("IBD", ibd);
+			status.put("IBD", formatSize(ibd));
 			
 			//Add the network connections
 			ArrayList<NetClient> nets = main.getNetworkHandler().getNetClients();
@@ -553,17 +557,23 @@ public class ConsensusPrint {
 		}
 	}
 	
-	private MiniNumber getIfExists(Hashtable<MiniHash, MiniNumber> zHashTable, MiniHash zToken) {
-		Enumeration<MiniHash> keys = zHashTable.keys();
-		
-		while(keys.hasMoreElements()) {
-			MiniHash key = keys.nextElement();
-			if(key.isExactlyEqual(zToken)) {
-				return zHashTable.get(key);	
-			}
-		}
-		
-		return null;
+	public static String formatSize(long v) {
+	    if (v < 1024) return v + " bytes";
+	    int z = (63 - Long.numberOfLeadingZeros(v)) / 10;
+	    return String.format("%.1f %sB", (double)v / (1L << (z*10)), " KMGTPE".charAt(z));
 	}
+	
+//	private MiniNumber getIfExists(Hashtable<MiniHash, MiniNumber> zHashTable, MiniHash zToken) {
+//		Enumeration<MiniHash> keys = zHashTable.keys();
+//		
+//		while(keys.hasMoreElements()) {
+//			MiniHash key = keys.nextElement();
+//			if(key.isExactlyEqual(zToken)) {
+//				return zHashTable.get(key);	
+//			}
+//		}
+//		
+//		return null;
+//	}
 	
 }
