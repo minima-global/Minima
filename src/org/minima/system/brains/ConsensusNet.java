@@ -133,6 +133,8 @@ public class ConsensusNet {
 					return;
 				}
 				
+				MinimaLogger.log("CROSSOVER BLOCK FOUND.. @ "+cross);
+				
 				//Otherwise.. 
 				ArrayList<SyncPacket> intro = sp.getAllNodes();
 				boolean requeston= false;
