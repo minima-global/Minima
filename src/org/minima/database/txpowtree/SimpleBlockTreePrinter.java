@@ -1,16 +1,11 @@
 package org.minima.database.txpowtree;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
 
 import org.minima.objects.TxPOW;
 import org.minima.objects.base.MiniHash;
-import org.minima.objects.base.MiniNumber;
-import org.minima.utils.Maths;
-import org.minima.utils.MinimaLogger;
 import org.minima.utils.bretty.TreeNode;
 import org.minima.utils.bretty.TreePrinter;
-import org.omg.CORBA.Current;
 
 public class SimpleBlockTreePrinter {
 
