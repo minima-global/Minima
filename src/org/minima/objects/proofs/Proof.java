@@ -46,12 +46,12 @@ public class Proof implements Streamable {
 	protected MiniData mChainSHA;
 	protected boolean mFinalized;
 		
-	protected Proof(){
+	public Proof(){
 		mProofChain = new ArrayList<>();
 	}
 
 	public void setData(MiniHash zData) {
-		mData       = zData;
+		mData = zData;
 	}
 	
 	public MiniHash getData() {

@@ -12,6 +12,7 @@ import org.minima.miniscript.values.HEXValue;
 import org.minima.miniscript.values.Value;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniHash;
+import org.minima.objects.proofs.Proof;
 import org.minima.utils.Crypto;
 
 public class CHAINSHA extends MinimaFunction {
@@ -32,44 +33,20 @@ public class CHAINSHA extends MinimaFunction {
 		byte[] indata = input.getRawData();
 		byte[] chdata = chain.getRawData();
 		
-//		//indata must be 32 bytes long
-//		if(indata.length != 32) {
-//			throw new ExecutionException("Input data must be 32 bytes long.");
-//		}
-		
-		//Chaindata MUST be a multiple of 32
-		if(chdata.length % 33 != 0) {
-			throw new ExecutionException("Chain data not a multiple of 33 bytes long.");
+		//indata must be 32 bytes long - FOR NOW
+		if(indata.length != 32) {
+			throw new ExecutionException("Input data must be 32 bytes long.");
 		}
 		
-		int loop = chdata.length / 33;
+		//Create a proof..
+		Proof chainproof = new Proof();
+		chainproof.setData(new MiniHash(indata));
+		chainproof.setProof(chain.getMiniData());
 		
-		//The running total
-		MiniHash total = new MiniHash(indata);
-		
-		ByteArrayInputStream bais = new ByteArrayInputStream(chdata);
-		DataInputStream dis = new DataInputStream(bais);
-		
-		for(int i=0;i<loop;i++) {
-			//Is it to the left or the right 
-			MiniByte leftrigt = MiniByte.ReadFromStream(dis);
-			
-			//What data to hash
-			MiniHash data = MiniHash.ReadFromStream(dis);
-		
-			//Do it!
-			if(leftrigt.isTrue()) {
-				total = Crypto.getInstance().hashObjects(data, total);	
-			}else {
-				total = Crypto.getInstance().hashObjects(total, data);
-			}
-		}
-		
-		//Clean up
-		try {dis.close();} catch (IOException e) {}
+		MiniHash fv = chainproof.getFinalHash();
 		
 		//Return..
-		return new HEXValue(total.getData());
+		return new HEXValue(fv.getData());
 	}
 	
 	@Override

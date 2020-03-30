@@ -496,8 +496,8 @@ public class ConsensusPrint {
 			status.put("port", main.getNetworkHandler().getServer().getPort());
 			status.put("rpcport", main.getNetworkHandler().getRPCServer().getPort());
 			
-			status.put("root", root.getTxPowID());
-			status.put("tip", tip.getTxPowID());
+			status.put("root", root.getTxPowID().to0xString());
+			status.put("tip", tip.getTxPowID().to0xString());
 			status.put("lastblock", tip.getTxPow().getBlockNumber());
 			
 			status.put("chainlength", getMainDB().getMainTree().getAsList().size());
