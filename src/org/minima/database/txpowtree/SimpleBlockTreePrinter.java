@@ -19,11 +19,8 @@ public class SimpleBlockTreePrinter {
 	
 	MiniHash mTipID;
 	
-	boolean mSimple = true;
-	
-	public SimpleBlockTreePrinter(BlockTree zTree, boolean zSimple) {
+	public SimpleBlockTreePrinter(BlockTree zTree) {
 		mTree = zTree;
-		mSimple = zSimple;
 	}
 	
 	public String printtree() {
@@ -34,7 +31,7 @@ public class SimpleBlockTreePrinter {
 			return "No tree root..";
 		}
 		
-		//Which node is the cascader
+		//Which node is the cascade
 		mCascadeNode = mTree.getCascadeNode().getTxPow().getBlockNumber().getAsLong();
 		
 		//Which block is the tip..
@@ -48,13 +45,6 @@ public class SimpleBlockTreePrinter {
 		
 		//And finally print it..
 		String output = "\n"+TreePrinter.toString(mRoot);
-
-//		BigInteger avgdiff = mTree.getAvgChainDifficulty();
-//		MiniHash avghash = new MiniHash("0x"+avgdiff.toString(16));
-//		
-//		output += "\n\nSpeed              : "+mTree.getChainSpeed()+" blocks / sec";
-//		output += "\nCurrent Difficulty : "+mTree.getChainTip().getTxPow().getBlockDifficulty().to0xString();
-//		output += "\nTotal Weight       : "+mTree.getChainRoot().getTotalWeight();
 
 		return output;
 	}

@@ -190,7 +190,7 @@ public class ConsensusHandler extends SystemHandler {
 			getMainDB().processTxPOW(txpow);
 		
 			//Print the tree..
-			if(true || mPrintChain) {
+			if(mPrintChain) {
 				Message print = new Message(ConsensusPrint.CONSENSUS_PRINTCHAIN_TREE).addBoolean("systemout", true);
 				PostMessage(print);
 			}

@@ -146,7 +146,11 @@ public class ConsensusPrint {
 			mChart.clear();
 		
 		}else if(zMessage.isMessageType(CONSENSUS_PRINTCHAIN_TREE)){
-			SimpleBlockTreePrinter treeprint = new SimpleBlockTreePrinter(getMainDB().getMainTree(), true);
+			if(zMessage.exists("auto")) {
+				getHandler().getMainHandler().getConsensusHandler().mPrintChain = zMessage.getBoolean("auto");
+			}
+
+			SimpleBlockTreePrinter treeprint = new SimpleBlockTreePrinter(getMainDB().getMainTree());
 			String treeinfo = treeprint.printtree();
 	
 			BlockTree tree = getMainDB().getMainTree();
