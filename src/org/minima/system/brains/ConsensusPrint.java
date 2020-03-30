@@ -342,6 +342,15 @@ public class ConsensusPrint {
 					jobj.put("confirmed", tot_conf.toString());
 					jobj.put("unconfirmed", tot_unconf.toString());
 					jobj.put("total", "1000000000");
+					
+					//SIMPLE SENDS
+					MiniNumber tot_simple = MiniNumber.ZERO;
+					ArrayList<Coin> confirmed = getMainDB().getTotalSimpleSpendableCoins(Coin.MINIMA_TOKENID);
+					for(Coin confc : confirmed) {
+						tot_simple = tot_simple.add(confc.getAmount());
+					}
+					jobj.put("sendable", tot_simple.toString());
+					
 				}else {
 					TokenProof td = getMainDB().getUserDB().getTokenDetail(tok);
 					
@@ -357,6 +366,15 @@ public class ConsensusPrint {
 					jobj.put("unconfirmed", tot_scunconf.toString());
 					jobj.put("script", td.getTokenScript().toString());
 					jobj.put("total", tot_toks.toString());
+					
+					//SIMPLE SENDS
+					MiniNumber tot_simple = MiniNumber.ZERO;
+					ArrayList<Coin> confirmed = getMainDB().getTotalSimpleSpendableCoins(tok);
+					for(Coin confc : confirmed) {
+						tot_simple = tot_simple.add(confc.getAmount());
+					}
+					jobj.put("sendable", tot_simple.toString());
+					
 				}
 				
 				//add it to the mix
