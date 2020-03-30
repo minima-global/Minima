@@ -522,6 +522,8 @@ public class ConsensusPrint {
 			status.put("lastblock", tip.getTxPow().getBlockNumber());
 			status.put("difficulty", tip.getTxPow().getBlockDifficulty().to0xString());
 			
+			status.put("txpowdb", getMainDB().getTxPowDB().getSize());
+			
 			status.put("chainlength", getMainDB().getMainTree().getAsList().size());
 			status.put("chainspeed", getMainDB().getMainTree().getChainSpeed());
 			status.put("chainweight", root.getTotalWeight().toString());

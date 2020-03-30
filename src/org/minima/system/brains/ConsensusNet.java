@@ -137,33 +137,29 @@ public class ConsensusNet {
 				
 				//Otherwise.. 
 				ArrayList<SyncPacket> intro = sp.getAllNodes();
-				boolean requeston= false;
 				int totalreq = 0;
 				for(SyncPacket spack : intro) {
-					//Is this the crossover..
 					if(spack.getTxPOW().getBlockNumber().isMoreEqual(cross)) {
-						//OK - from here on we ASK for the TXPOW..!
-						requeston = true;
-					}
-					
-					if(requeston) {
 						//Request all the TXPOW required.. txn first then block..
 						TxPOW txpow = spack.getTxPOW();
-						
-						//Get the NetClient...
-						NetClient client = (NetClient) zMessage.getObject("netclient");
-//						System.out.println("Netclient sync "+client);
-						
-						//Post it as a normal TxPOW..
-						Message msg = new Message(CONSENSUS_NET_TXPOW);
-						msg.addObject("txpow", txpow);
-						
-						//Add the client as requests will be made for TXPOWs we don't have
-						msg.addObject("netclient", client);
-						
-						mHandler.PostMessage(msg);
-						
-						totalreq++;
+					
+						//Do we have it..
+						if(getMainDB().getTxPOW(txpow.getTxPowID()) == null){
+							//Get the NetClient...
+							NetClient client = (NetClient) zMessage.getObject("netclient");
+	//						System.out.println("Netclient sync "+client);
+							
+							//Post it as a normal TxPOW..
+							Message msg = new Message(CONSENSUS_NET_TXPOW);
+							msg.addObject("txpow", txpow);
+							
+							//Add the client as requests will be made for TXPOWs we don't have
+							msg.addObject("netclient", client);
+							
+							mHandler.PostMessage(msg);
+							
+							totalreq++;
+						}
 						
 						//SIMPLE - JUST ASK AGAIN INNEFFICIENT
 //						//Txns
@@ -267,6 +263,8 @@ public class ConsensusNet {
 			ArrayList<MiniHash> txns = txpow.getBlockTxns();
 			for(MiniHash txn : txns) {
 				if(getMainDB().getTxPOW(txn) == null) {
+					MinimaLogger.log("REQUEST MISSING TXPOW IN BLOCK ("+txpow.getBlockNumber()+") "+txn);
+					
 					//We don't have it, get it..
 					sendNetMessage(zMessage, NetClientReader.NETMESSAGE_TXPOW_REQUEST, txn);
 				}
