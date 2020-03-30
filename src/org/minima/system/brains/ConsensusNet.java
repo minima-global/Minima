@@ -129,7 +129,7 @@ public class ConsensusNet {
 				
 				//Do we intersect.. 
 				if(cross.isEqual(MiniNumber.ZERO)) {
-					MinimaLogger.log("IRREGULAR POW INTRO CHAIN. NO CROSSOVER BLOCK.. "+sp);
+					MinimaLogger.log("IRREGULAR POW INTRO CHAIN. NO CROSSOVER BLOCK.. !");
 					return;
 				}
 				
@@ -322,16 +322,22 @@ public class ConsensusNet {
 		
 		//Cycle..
 		for(BlockTreeNode block : chain) {
-			MiniNumber bnum = block.getTxPow().getBlockNumber();
+			//BLock number and hash.. BOTH have to match
+			MiniNumber bnum  = block.getTxPow().getBlockNumber();
+			MiniHash txpowid = block.getTxPowID();
+			
 			//only use nodes after our cascade..
 			if(bnum.isMore(maincascade)) {
 				//Run through the intro chain..
 				for(SyncPacket spack : introchain) {
 					if(spack.getTxPOW().getBlockNumber().isEqual(bnum)) {
-						//Crossover!
-						found = true;
-						crossover = bnum;
-						break;
+						//Check the TxPOWID..
+						if(spack.getTxPOW().getTxPowID().isExactlyEqual(txpowid)) {
+							//Crossover!
+							found = true;
+							crossover = bnum;
+							break;
+						}
 					}
 				}
 			}
