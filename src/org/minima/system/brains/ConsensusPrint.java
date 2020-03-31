@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.io.PrintWriter;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
@@ -520,9 +521,10 @@ public class ConsensusPrint {
 			status.put("tip", tip.getTxPowID().to0xString());
 			
 			status.put("lastblock", tip.getTxPow().getBlockNumber());
+			status.put("lasttime", new Date(tip.getTxPow().getTimeSecs().getAsLong()*1000).toString());
 			status.put("difficulty", tip.getTxPow().getBlockDifficulty().to0xString());
 			
-			status.put("txpowdb", getMainDB().getTxPowDB().getSize());
+			status.put("txpowdb", getMainDB().getTxPowDB().getCompleteSize());
 			
 			status.put("chainlength", getMainDB().getMainTree().getAsList().size());
 			status.put("chainspeed", getMainDB().getMainTree().getChainSpeed());

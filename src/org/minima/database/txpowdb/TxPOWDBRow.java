@@ -6,29 +6,15 @@ import org.minima.objects.base.MiniNumber;
 public interface TxPOWDBRow {
 	
 	/**
-	 * The states a TXPOW block entry can be in
-	 */
-	
-	/**
-	 * An uchecked block is added
+	 * An unchecked block is added
 	 */
 	public static int TXPOWDBROW_STATE_BASIC   = 0;
 	
 	/**
-	 * This block has ALL it's transctions available
+	 * This block has ALL it's transactions available
 	 */
 	public static int TXPOWDBROW_STATE_FULL    = 1;
 	
-//	/**
-//	 * This is a valid block.. all transaction check. It's parent is valid.
-//	 */
-//	public static int TXPOWDBROW_STATE_VALID   = 2;
-//	
-//	/**
-//	 * This is a IN-valid block.. all child blocks are INVALID.
-//	 */
-//	public static int TXPOWDBROW_STATE_INVALID = 3;
-//	
 	/**
 	 * The TXPOW
 	 * @return
@@ -59,4 +45,10 @@ public interface TxPOWDBRow {
 	 */
 	public int getBlockState();
 	public void setBlockState(int zState);
+	
+	/**
+	 * When you want to delete a block - sets timemilli
+	 */
+	public void deleteRow();
+	public long getDeleteTime();
 }

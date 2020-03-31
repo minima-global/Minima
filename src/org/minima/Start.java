@@ -49,7 +49,7 @@ public class Start {
 				vars.add("-port");
 				vars.add("9001");
 				vars.add("-connect");
-				vars.add("34.65.19.123");
+				vars.add("34.90.172.118");
 				vars.add("9001");
 				//etc..
 				

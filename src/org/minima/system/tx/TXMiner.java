@@ -51,7 +51,7 @@ public class TXMiner extends SystemHandler{
 			long currentTime  = System.currentTimeMillis();
 			
 			//should be about 10..
-			long maxTime  	  = currentTime + 10000;
+			long maxTime  	  = currentTime + 2000;
 			
 			while(mining && currentTime < maxTime) {
 				//Set the Nonce..
@@ -105,7 +105,7 @@ public class TXMiner extends SystemHandler{
 			long currentTime  = System.currentTimeMillis();
 			
 			//should be about 10..
-			long maxTime  	  = currentTime + 1000;
+			long maxTime  	  = currentTime + 2000;
 			
 			//Keep cycling until it is ready 
 			boolean mining = true;

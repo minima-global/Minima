@@ -16,11 +16,14 @@ public class JavaDBRow implements TxPOWDBRow {
 	
 	private int mBlockState;
 	
+	private long mDeleteTime;
+	
 	public JavaDBRow(TxPOW zTxPOW) {
 		mTxPOW 				= zTxPOW;
 		mIsInBlock 			= false;
 		mIsOnChainBlock     = false;
 		mBlockState         = TXPOWDBROW_STATE_BASIC;
+		mDeleteTime          = 0;
 	}
 
 	@Override
@@ -87,5 +90,18 @@ public class JavaDBRow implements TxPOWDBRow {
 	@Override
 	public void setBlockState(int zState) {
 		mBlockState = zState;
+	}
+
+	@Override
+	public void deleteRow() {
+		if(mDeleteTime == 0) {
+			mDeleteTime = System.currentTimeMillis();
+//			System.out.println("Row deleted "+mTxPOW.getBlockNumber()+" "+mDeleteTime);
+		}
+	}
+
+	@Override
+	public long getDeleteTime() {
+		return mDeleteTime;
 	}
 }

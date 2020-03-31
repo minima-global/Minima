@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import org.minima.objects.TxPOW;
 import org.minima.objects.base.MiniHash;
+import org.minima.objects.base.MiniNumber;
 import org.minima.utils.bretty.TreeNode;
 import org.minima.utils.bretty.TreePrinter;
 
@@ -32,58 +33,59 @@ public class SimpleBlockTreePrinter {
 		
 		//Which block is the tip..
 		mTipID = mTree.getChainTip().getTxPowID();
+		MiniNumber starttree = mTree.getChainTip().getTxPow().getBlockNumber().sub(MiniNumber.TEN);
+		
+//		//Now construct a tree..
+//		TreeNode rootnode = new TreeNode(convertNodeToString(root));
+//		TreeNode treenode = rootnode;
+//		
+//		BlockTreeNode current = root;
+//		int currentlev = current.getCurrentLevel();
+//		int counter = 1;
+//		int tot     = 1;
+//		
+//		while(true && current.getTxPow().getBlockNumber().isLess(starttree)) {
+//			//Get the child..
+//			if(current.getChildren().size()<1) {
+//				//Add the last
+//				TreeNode newnode = new TreeNode(tot+" @ "+currentlev);
+//				treenode.addChild(newnode);
+//				treenode = newnode;
+//				
+//				break;
+//			}
+//			
+//			BlockTreeNode child = current.getChild(0);
+//			counter++;
+//			
+//			//Child level
+//			int clev = child.getCurrentLevel();
+//			if(clev == currentlev) {
+//				tot++;
+//			
+//			}else {
+//				//Add the last
+//				TreeNode newnode = new TreeNode(tot+" @ "+currentlev);
+//				treenode.addChild(newnode);
+//				treenode = newnode;
+//				
+//				tot = 1;
+//			}
+//			
+//			currentlev = clev;
+//			current    = child;
+//		}
+		
+//		String output = "\n"+TreePrinter.toString(rootnode);
 		
 		//Now construct a tree..
-		TreeNode rootnode = new TreeNode(convertNodeToString(root));
-		TreeNode treenode = rootnode;
-		
-		BlockTreeNode current = root;
-		int currentlev = current.getCurrentLevel();
-		
-		int counter=1;
-		int tot  = 1;
-		while(true) {
-			//Get the child..
-			if(current.getChildren().size()<1) {
-				//Add the last
-				TreeNode newnode = new TreeNode(tot+" @ "+currentlev);
-				treenode.addChild(newnode);
-				treenode = newnode;
-				
-				break;
-			}
-			
-			BlockTreeNode child = current.getChild(0);
-			counter++;
-			
-			//Child level
-			int clev = child.getCurrentLevel();
-			if(clev == currentlev) {
-				tot++;
-			
-			}else {
-				//Add the last
-				TreeNode newnode = new TreeNode(tot+" @ "+currentlev);
-				treenode.addChild(newnode);
-				treenode = newnode;
-				
-				tot = 1;
-			}
-			
-			currentlev = clev;
-			current    = child;
-		}
-		
-		String output = "\n"+TreePrinter.toString(rootnode);
-		
-		//Now construct a tree..
-//		TreeNode mRoot = new TreeNode(convertNodeToString(root));
+		TreeNode mRoot = new TreeNode(convertNodeToString(root));
 				
 		//Drill it..
-//		drillNode(root, mRoot, 1);
+		drillNode(root , mRoot, 1);
 		
 		//And finally print it..
-//		String output = "\n"+TreePrinter.toString(mRoot);
+		String output = "\n"+TreePrinter.toString(mRoot);
 
 		return output;
 	}

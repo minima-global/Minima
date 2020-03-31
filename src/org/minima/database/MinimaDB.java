@@ -334,10 +334,10 @@ public class MinimaDB {
 			//Which txpow have been removed..
 			ArrayList<TxPOWDBRow> remrows =  mTxPOWDB.removeTxPOWInBlockLessThan(cascade);
 			
-			//Remove the deleted txpow..
-			for(TxPOWDBRow remrow : remrows) {
-				getBackup().deleteTxpow(remrow.getTxPOW());
-			}
+//			//Remove the deleted txpow..
+//			for(TxPOWDBRow remrow : remrows) {
+//				getBackup().deleteTxpow(remrow.getTxPOW());
+//			}
 			
 //			//Remove the deleted blocks..
 //			for(BlockTreeNode node : removals) {
@@ -837,7 +837,7 @@ public class MinimaDB {
 			TxPOW txp = row.getTxPOW();
 			
 			//Make sure is at least a transaction
-			if(txp.isTransaction()) {
+//			if(txp.isTransaction()) {
 				boolean valid = TxPOWChecker.checkTransactionMMR(txp, this, txpow.getBlockNumber(),newset,true);
 				
 				if(valid) {
@@ -853,7 +853,7 @@ public class MinimaDB {
 					
 					MinimaLogger.log("Removing invalid TXPOW.. "+txp);
 				}
-			}
+//			}
 		}
 		
 		//Set the current MMR
