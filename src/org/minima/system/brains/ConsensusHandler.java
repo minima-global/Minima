@@ -334,7 +334,7 @@ public class ConsensusHandler extends SystemHandler {
 		}else if ( zMessage.isMessageType(CONSENSUS_MINEBLOCK) ) {
 			//Are we Mining..
 			if(!getMainHandler().getMiner().isAutoMining()) {
-				PostTimerMessage(new TimerMessage(10000, CONSENSUS_MINEBLOCK));
+				PostTimerMessage(new TimerMessage(5000, CONSENSUS_MINEBLOCK));
 				return;
 			}
 			
