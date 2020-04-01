@@ -17,11 +17,11 @@ public class tester {
 		Random rand = new Random();
 		rand.nextBytes(seed);
 		
-		for(int i=0;i<seed.length;i++) {
-			seed[i] = (byte) i;
-		}
+//		for(int i=0;i<seed.length;i++) {
+//			seed[i] = (byte) i;
+//		}
 				
-		Digest digest = new KeccakDigest(256);
+		Digest digest = new KeccakDigest(160);
 
 		WinternitzOTSignature wots = new WinternitzOTSignature(seed, digest, 12);
 		
