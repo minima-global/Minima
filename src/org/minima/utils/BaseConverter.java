@@ -41,7 +41,7 @@ public class BaseConverter {
 	}
 	
 	public static String encode32(byte[] zData) throws ArithmeticException{
-		if(zData.length % 8 != 0) {
+		if(zData.length % 5 != 0) {
 			throw new ArithmeticException("Base32 encoder data length MUST be a multiple of 8");
 		}
 		
@@ -156,8 +156,8 @@ public class BaseConverter {
 ////			System.out.println("Decode32 "+i+") "+data[i]);
 ////		}
 //		
-		byte[] oo = new byte[1];
-		oo[0] = 1;	
+//		byte[] oo = new byte[1];
+//		oo[0] = 1;	
 //		oo[1] = 1;
 //		oo[2] = 1;
 //		oo[3] = 1;
@@ -166,42 +166,57 @@ public class BaseConverter {
 //		oo[6] = 1;
 //		oo[7] = 1;
 		
-		System.out.println(new BigInteger(1,oo).toString(32).toUpperCase());
+//		System.out.println(new BigInteger(1,oo).toString(32).toUpperCase());
 	
 	
 //	String base32Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
 	String base32Chars = "0123456789ABCDEFGHIJKLMNOPQRSTUV";
 	
 	//BASE32
-	byte[] data = new byte[8];
+	byte[] data = new byte[5];
 	data[0] = 8;
-	data[1] = 8;
-	data[2] = 8;
-	data[3] = 8;
-	data[4] = 8;
-	data[5] = 8;
-	data[6] = 8;
-	data[7] = 8;
+	data[1] = 66;
+	data[2] = 16;
+	data[3] = (byte) 132;
+	data[4] = 33;
 	
+	int[] data32 = new int[8];
 	String hex32 = "";
 	int counter=0;
+	int currByte, digit;
 	
-	int cbyte = data[counter++] & 255;
+	//1
+	currByte  = data[counter++] & 255;
+    data32[0] = currByte >> 3;
+    digit     = (currByte & 7) << 2;
+
+    //2
+    currByte  = data[counter++] & 255;
+    data32[1] = digit | (currByte >> 6);
+    data32[2] = (currByte >> 1) & 31;
+    digit     = (currByte & 1) << 4;
+    
+    //3
+    currByte  = data[counter++] & 255;
+    data32[3] = digit | (currByte >> 4);
+    digit     = (currByte & 15) << 1;
+    
+    //4
+    currByte  = data[counter++] & 255;
+    data32[4] = digit | (currByte >> 7);
+    data32[5] = (currByte >> 2) & 31;
+    digit     = (currByte & 3) << 3;
+    
+    //5
+    currByte  = data[counter++] & 255;
+    data32[6] = digit | (currByte >> 5);
+    data32[7] = currByte & 31;
+    
+	for(int i=0;i<8;i++) {
+		System.out.println(i+") "+data32[i]);	
+	}
 	
-	int digit = cbyte >> 3;
-	hex32 += base32Chars.charAt(digit);
-	
-	digit = (cbyte & 7) << 2;
-	
-	cbyte = data[counter++] & 255;
-	
-	digit = digit | (cbyte & 192);
-	hex32 += base32Chars.charAt(digit);
-	
-	
-	System.out.println(hex32);
-	
-	
+	//Now decode..
 	
 	
 	
