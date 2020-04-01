@@ -169,9 +169,6 @@ public class BaseConverter {
 //		System.out.println(new BigInteger(1,oo).toString(32).toUpperCase());
 	
 	
-//	String base32Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
-	String base32Chars = "0123456789ABCDEFGHIJKLMNOPQRSTUV";
-	
 	//BASE32
 	byte[] data = new byte[5];
 	data[0] = 8;
@@ -212,14 +209,37 @@ public class BaseConverter {
     data32[6] = digit | (currByte >> 5);
     data32[7] = currByte & 31;
     
+    String res = "";
 	for(int i=0;i<8;i++) {
-		System.out.println(i+") "+data32[i]);	
+		res += base32Chars.charAt(data32[i]);
+		System.out.println(i+") "+data32[i]+" "+base32Chars.charAt(data32[i]));	
+	}
+	System.out.println(res);
+	
+	//Get all the digits..
+	int[] digits = new int[8];
+	for(int i=0;i<8;i++) {
+		digits[i] = findChar(res.charAt(i));
 	}
 	
 	//Now decode..
+	int[] redata = new int[5];
+	
+	redata[0] = (digits[0] << 3) | digits[1] >> 2;  
+	redata[1] = digits[1] << 6 | digits[2] << 1 | digits[3] >> 4;  
 	
 	
+	for(int i=0;i<2;i++) {
+		System.out.println("Reconstruct "+i+" "+redata[i]);
+	}
 	
 	
+	}
+	
+//	static String base32Chars = "0123456789ABCDEFGHIJKLMNOPQRSTUV";
+	static String base32Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+	
+	public static int findChar(char zChar){
+		return base32Chars.indexOf(zChar);
 	}
 }
