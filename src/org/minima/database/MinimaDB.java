@@ -325,7 +325,7 @@ public class MinimaDB {
 				row.setOnChainBlock(false);
 				
 				//And delete / move to different folder any file backups..
-				getBackup().deleteTxpow(node.getTxPow());
+//				getBackup().deleteTxpow(node.getTxPow());
 			}
 			
 			//Remove all TXPowRows that are less than the cascade node.. they will not be used again..
@@ -337,18 +337,6 @@ public class MinimaDB {
 //			//Remove the deleted txpow..
 //			for(TxPOWDBRow remrow : remrows) {
 //				getBackup().deleteTxpow(remrow.getTxPOW());
-//			}
-			
-//			//Remove the deleted blocks..
-//			for(BlockTreeNode node : removals) {
-//				//We can't keep it..
-//				TxPOWDBRow row = getTxPOWRow(node.getTxPowID());
-//				
-//				//Discard.. no longer an onchain block..
-//				row.setOnChainBlock(false);
-//				
-//				//And delete / move to different folder any file backups..
-//				getBackup().deleteTxpow(node.getTxPow());
 //			}
 			
 			//Remove all the coins no longer needed.. SPENT
@@ -836,8 +824,11 @@ public class MinimaDB {
 			//Check is still VALID..
 			TxPOW txp = row.getTxPOW();
 			
-			//Make sure is at least a transaction
-//			if(txp.isTransaction()) {
+			/**
+			 * MUST be a transaction as that prevents double entry. A block with no transaction 
+			 * is valid.. but no way to check it has already been added
+			 */
+			if(txp.isTransaction()) {
 				boolean valid = TxPOWChecker.checkTransactionMMR(txp, this, txpow.getBlockNumber(),newset,true);
 				
 				if(valid) {
@@ -853,7 +844,7 @@ public class MinimaDB {
 					
 					MinimaLogger.log("Removing invalid TXPOW.. "+txp);
 				}
-//			}
+			}
 		}
 		
 		//Set the current MMR
