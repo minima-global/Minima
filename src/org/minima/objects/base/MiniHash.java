@@ -42,15 +42,18 @@ public class MiniHash extends MiniData {
 	public static MiniHash ZERO32 = new MiniHash("0x00");
 	
 	public MiniHash() {
-		this("0x00");
+//		this("0x00");
+		super();
 	}
 	
 	public MiniHash(byte[] zData) {
-		this(BaseConverter.encode16(zData));
+		//this(BaseConverter.encode16(zData));
+		super(zData);
 	}
 	
 	public MiniHash(String zHex) {
-		super(ensureSize(zHex));
+//		super(ensureSize(zHex));
+		super(zHex);
 	}
 	
 	public static String ensureSize(String zHEX) {
@@ -88,26 +91,26 @@ public class MiniHash extends MiniData {
 	 * @param len
 	 * @return
 	 */
-	public static MiniHash getRandomData() {
-		Random rand = new Random();
-		byte[] data = new byte[32];
-		rand.nextBytes(data);
-		return new MiniHash(data);
-	}
+//	public static MiniHash getRandomData() {
+//		Random rand = new Random();
+//		byte[] data = new byte[32];
+//		rand.nextBytes(data);
+//		return new MiniHash(data);
+//	}
 	
-	@Override
-	public void writeDataStream(DataOutputStream zOut) throws IOException {
-		zOut.write(mData);
-	}
-
-	@Override
-	public void readDataStream(DataInputStream zIn) throws IOException {
-		mData = new byte[32];
-		zIn.readFully(mData);
-		
-		//Set the data value
-		setDataValue();
-	}
+//	@Override
+//	public void writeDataStream(DataOutputStream zOut) throws IOException {
+//		zOut.write(mData);
+//	}
+//
+//	@Override
+//	public void readDataStream(DataInputStream zIn) throws IOException {
+//		mData = new byte[32];
+//		zIn.readFully(mData);
+//		
+//		//Set the data value
+//		setDataValue();
+//	}
 	
 	public static MiniHash ReadFromStream(DataInputStream zIn){
 		MiniHash data = new MiniHash();

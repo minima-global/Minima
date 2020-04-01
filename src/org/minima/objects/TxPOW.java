@@ -102,7 +102,7 @@ public class TxPOW implements Streamable {
 	 * A Random Magic number so that everyone is working on a different TxPOW in the pulse 
 	 * (since there is no coinbase..)
 	 */
-	public MiniHash mMagic = MiniHash.getRandomData();
+	public MiniHash mMagic = new MiniHash();//MiniHash.getRandomData();
 	
 	/**
 	 * A Chain ID. Useful when running side-chains, as only this TokenID will be valid to POS mine it. 
