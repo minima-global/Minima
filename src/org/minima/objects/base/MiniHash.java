@@ -7,6 +7,7 @@ import java.util.Random;
 
 import org.minima.miniscript.Contract;
 import org.minima.miniscript.values.ScriptValue;
+import org.minima.utils.BaseConverter;
 import org.minima.utils.Crypto;
 import org.minima.utils.Maths;
 
@@ -45,8 +46,7 @@ public class MiniHash extends MiniData {
 	}
 	
 	public MiniHash(byte[] zData) {
-//		this(Maths.getDataAsString(zData));
-		this(bytesToHex(zData));
+		this(BaseConverter.encode16(zData));
 	}
 	
 	public MiniHash(String zHex) {
@@ -125,19 +125,11 @@ public class MiniHash extends MiniData {
 	
 	public static void main(String[] zArgs) {
 
-		MiniHash hash32 = new MiniHash("0xeeccffffeeccff");
+		MiniData dat = new MiniData("0xFF");
+		MiniHash hash32 = new MiniHash("0xff");
 		
-		MiniHash hhash32 = Crypto.getInstance().hashObject(hash32);
-		
-		System.out.println("Hash32 : "+hash32+" "+hash32.getLength()+" "+hhash32);
-		System.out.println(hash32.getDataValue());
-		
-		byte[] hashdata = Crypto.getInstance().hashData(hash32.getData());
-		
-		hhash32 = new MiniHash(hashdata);
-		
-		System.out.println("Hash32 : "+hash32+" "+hash32.getLength()+" "+hhash32);
-		System.out.println(hash32.getDataValue());
+		System.out.println(dat+" "+dat.getDataValue());
+		System.out.println(hash32+" "+hash32.getDataValue());
 		
 	}
 	

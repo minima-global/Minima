@@ -13,6 +13,7 @@ import java.util.Arrays;
 import java.util.Random;
 
 import org.minima.miniscript.Contract;
+import org.minima.utils.BaseConverter;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 
@@ -22,47 +23,47 @@ import org.minima.utils.Streamable;
  */
 public class MiniData implements Streamable {
 
-	/**
-	 * Utility HEX conversion functions
-	 * 
-	 * @param zHex
-	 * @return
-	 */
-	protected static byte[] hexStringToByteArray(String zHex) {
-		String hex = zHex;
-		if(hex.startsWith("0x")) {
-			hex = zHex.substring(2);
-		}		
-		
-		//Go Upper case - make sure always the same
-		hex = hex.toUpperCase();
-		int len = hex.length();
-	
-		//Must be 2 digits per byte
-		if(len % 2 != 0) {
-			//Need a leading zero
-			hex="0"+hex;
-			len = hex.length();
-		}
-		
-		byte[] data = new byte[len / 2];
-	    for (int i = 0; i < len; i += 2) {
-	        data[i / 2] = (byte) ((Character.digit(hex.charAt(i), 16) << 4) + Character.digit(hex.charAt(i+1), 16));
-	    }
-	    
-	    return data;
-	}
-	
-	private final static char[] hexArray = "0123456789ABCDEF".toCharArray();
-	protected static String bytesToHex(byte[] bytes) {
-	    char[] hexChars = new char[bytes.length * 2];
-	    for ( int j = 0; j < bytes.length; j++ ) {
-	        int v = bytes[j] & 0xFF;
-	        hexChars[j * 2] = hexArray[v >>> 4];
-	        hexChars[j * 2 + 1] = hexArray[v & 0x0F];
-	    }
-	    return new String(hexChars);
-	}
+//	/**
+//	 * Utility HEX conversion functions
+//	 * 
+//	 * @param zHex
+//	 * @return
+//	 */
+//	protected static byte[] hexStringToByteArray(String zHex) {
+//		String hex = zHex;
+//		if(hex.startsWith("0x")) {
+//			hex = zHex.substring(2);
+//		}		
+//		
+//		//Go Upper case - make sure always the same
+//		hex = hex.toUpperCase();
+//		int len = hex.length();
+//	
+//		//Must be 2 digits per byte
+//		if(len % 2 != 0) {
+//			//Need a leading zero
+//			hex="0"+hex;
+//			len = hex.length();
+//		}
+//		
+//		byte[] data = new byte[len / 2];
+//	    for (int i = 0; i < len; i += 2) {
+//	        data[i / 2] = (byte) ((Character.digit(hex.charAt(i), 16) << 4) + Character.digit(hex.charAt(i+1), 16));
+//	    }
+//	    
+//	    return data;
+//	}
+//	
+//	private final static char[] hexArray = "0123456789ABCDEF".toCharArray();
+//	protected static String bytesToHex(byte[] bytes) {
+//	    char[] hexChars = new char[bytes.length * 2];
+//	    for ( int j = 0; j < bytes.length; j++ ) {
+//	        int v = bytes[j] & 0xFF;
+//	        hexChars[j * 2] = hexArray[v >>> 4];
+//	        hexChars[j * 2 + 1] = hexArray[v & 0x0F];
+//	    }
+//	    return new String(hexChars);
+//	}
 	
 	/**
 	 * The byte data
@@ -79,7 +80,7 @@ public class MiniData implements Streamable {
 	}
 	
 	public MiniData(String zHexString) {
-		this(hexStringToByteArray(zHexString));
+		this(BaseConverter.decode16(zHexString));
 	}
 	
 	public MiniData(byte[] zData) {
@@ -196,14 +197,7 @@ public class MiniData implements Streamable {
 	}
 
 	public String to0xString() {
-		String hex = bytesToHex(mData);
-		
-		//Always show full byte
-		if(hex.length() % 2 != 0) {
-			hex = "0"+hex;
-		}
-		
-		return "0x"+hex;
+		return BaseConverter.encode16(mData);
 	}
 	
 	@Override
