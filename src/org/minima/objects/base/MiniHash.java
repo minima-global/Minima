@@ -45,7 +45,8 @@ public class MiniHash extends MiniData {
 	}
 	
 	public MiniHash(byte[] zData) {
-		this(Maths.getDataAsString(zData));
+//		this(Maths.getDataAsString(zData));
+		this(bytesToHex(zData));
 	}
 	
 	public MiniHash(String zHex) {

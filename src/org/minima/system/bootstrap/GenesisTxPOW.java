@@ -11,6 +11,8 @@ import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
+import org.minima.utils.Crypto;
+import org.minima.utils.SuperBlockLevels;
 
 public class GenesisTxPOW extends TxPOW{
 	
@@ -66,7 +68,7 @@ public class GenesisTxPOW extends TxPOW{
 //		//Now add to the TXPOW..
 //		setMMRState(mmrstate);
 		
-		mSuperParents[0] = new MiniHash(MiniData.getRandomData(32).getData());
+//		mSuperParents[0] = new MiniHash(MiniData.getRandomData(32).getData());
 		
 		//Set the TXPOW
 		calculateTXPOWID();

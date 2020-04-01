@@ -9,6 +9,8 @@ import org.minima.objects.base.MiniHash;
 
 public class SuperBlockLevels {
 
+	public static MiniHash GENESIS_HASH = new MiniHash();
+	
 	private static BigInteger TWO = new BigInteger("2");
 	
 	/**

@@ -21,9 +21,9 @@ public class Maths {
 		return Math.log10(zDD) / Math.log10(2);
 	}
 	
-	public static String getDataAsString(byte[] zData){
-		return "0x"+new BigInteger(1,zData).toString(16).toUpperCase();
-	}
+//	public static String getDataAsString(byte[] zData){
+//		return "0x"+new BigInteger(1,zData).toString(16).toUpperCase();
+//	}
 	
 	public static double log2BI(BigInteger val)
 	{

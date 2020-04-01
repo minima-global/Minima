@@ -28,7 +28,7 @@ public class MiniData implements Streamable {
 	 * @param zHex
 	 * @return
 	 */
-	private static byte[] hexStringToByteArray(String zHex) {
+	protected static byte[] hexStringToByteArray(String zHex) {
 		String hex = zHex;
 		if(hex.startsWith("0x")) {
 			hex = zHex.substring(2);
@@ -54,7 +54,7 @@ public class MiniData implements Streamable {
 	}
 	
 	private final static char[] hexArray = "0123456789ABCDEF".toCharArray();
-	private static String bytesToHex(byte[] bytes) {
+	protected static String bytesToHex(byte[] bytes) {
 	    char[] hexChars = new char[bytes.length * 2];
 	    for ( int j = 0; j < bytes.length; j++ ) {
 	        int v = bytes[j] & 0xFF;

@@ -1,9 +1,7 @@
 package org.minima.system.brains;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.PrintWriter;
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
@@ -16,18 +14,15 @@ import org.minima.database.coindb.CoinDBRow;
 import org.minima.database.mmr.MMREntry;
 import org.minima.database.mmr.MMRPrint;
 import org.minima.database.mmr.MMRSet;
-import org.minima.database.txpowdb.TxPOWDBRow;
 import org.minima.database.txpowdb.TxPowDBPrinter;
 import org.minima.database.txpowtree.BlockTree;
 import org.minima.database.txpowtree.BlockTreeNode;
-import org.minima.database.txpowtree.BlockTreePrinter;
 import org.minima.database.txpowtree.SimpleBlockTreePrinter;
 import org.minima.database.userdb.UserDB;
 import org.minima.database.userdb.java.reltxpow;
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
 import org.minima.objects.PubPrivKey;
-import org.minima.objects.Transaction;
 import org.minima.objects.TxPOW;
 import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
@@ -98,10 +93,6 @@ public class ConsensusPrint {
 	public void processMessage(Message zMessage) throws Exception {
 	
 		if(zMessage.isMessageType(CONSENSUS_PRINTCHAIN)) {
-			//Print the Tree
-			BlockTreePrinter treeprint = new BlockTreePrinter(getMainDB().getMainTree(), false);
-			treeprint.printtree();
-			
 			//Print the TxPowDB
 			TxPowDBPrinter.PrintDB(getMainDB().getTxPowDB());
 			

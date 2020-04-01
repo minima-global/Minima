@@ -7,7 +7,6 @@ import java.math.BigInteger;
 import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Hashtable;
 
 import org.minima.GlobalParams;
 import org.minima.database.coindb.CoinDB;
@@ -22,7 +21,6 @@ import org.minima.database.txpowdb.TxPowDB;
 import org.minima.database.txpowdb.java.JavaDB;
 import org.minima.database.txpowtree.BlockTree;
 import org.minima.database.txpowtree.BlockTreeNode;
-import org.minima.database.txpowtree.CascadeTree;
 import org.minima.database.txpowtree.MultiLevelCascadeTree;
 import org.minima.database.userdb.UserDB;
 import org.minima.database.userdb.java.JavaUserDB;
@@ -37,7 +35,6 @@ import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
-import org.minima.objects.proofs.TokenProof;
 import org.minima.system.backup.BackupManager;
 import org.minima.system.backup.SyncPackage;
 import org.minima.system.backup.SyncPacket;
@@ -46,7 +43,6 @@ import org.minima.system.brains.ConsensusHandler;
 import org.minima.system.brains.TxPOWChecker;
 import org.minima.system.tx.TXMiner;
 import org.minima.utils.Crypto;
-import org.minima.utils.Maths;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.messages.Message;
@@ -120,6 +116,8 @@ public class MinimaDB {
 		
 		//Get the root
 		gen.setMMRRoot(base.getMMRRoot());
+		
+//		SuperBlockLevels.GENESIS_HASH = Crypto.getInstance().hashObject(gen);
 		
 		//Need to recalculate the TxPOWID
 		gen.calculateTXPOWID();

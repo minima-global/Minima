@@ -3,18 +3,9 @@ package org.minima.system.backup;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Collections;
 
-import org.minima.GlobalParams;
-import org.minima.database.txpowtree.BlockTree;
-import org.minima.database.txpowtree.BlockTreeNode;
-import org.minima.database.txpowtree.CascadeTree;
-import org.minima.objects.TxPOW;
 import org.minima.objects.base.MiniNumber;
-import org.minima.utils.Maths;
-import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 
 public class SyncPackage implements Streamable{

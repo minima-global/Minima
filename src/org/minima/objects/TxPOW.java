@@ -506,5 +506,12 @@ public class TxPOW implements Streamable {
 		
 		//What Super Level are we..
 		_mSuperBlock = SuperBlockLevels.getSuperLevel(getBlockDifficulty(), _mTxPOWID);
+		
+		//Is this the Genesis..
+//		if(getBlockNumber().isEqual(MiniNumber.ZERO) && _mTxPOWID.isExactlyEqual(SuperBlockLevels.GENESIS_HASH)){
+//			_mSuperBlock = 20;
+////			System.out.println("SuperBlock set : "+_mSuperBlock+" "+_mTxPOWID);
+//		}
+		
 	}
 }
