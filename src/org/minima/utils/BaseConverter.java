@@ -171,11 +171,11 @@ public class BaseConverter {
 	
 	//BASE32
 	byte[] data = new byte[5];
-	data[0] = 8;
-	data[1] = 66;
-	data[2] = 16;
-	data[3] = (byte) 132;
-	data[4] = 33;
+	data[0] = (byte) 255;
+	data[1] = (byte) 255;
+	data[2] = (byte) 255;
+	data[3] = (byte) 255;
+	data[4] = (byte) 255;
 	
 	int[] data32 = new int[8];
 	String hex32 = "";
@@ -225,18 +225,20 @@ public class BaseConverter {
 	//Now decode..
 	int[] redata = new int[5];
 	
-	redata[0] = (digits[0] << 3) | digits[1] >> 2;  
-	redata[1] = digits[1] << 6 | digits[2] << 1 | digits[3] >> 4;  
+	redata[0] = (digits[0] << 3 | digits[1] >> 2) & 255;  
+	redata[1] = (digits[1] << 6 | digits[2] << 1 | digits[3] >> 4) & 255;  
+	redata[2] = (digits[3] << 4 | digits[4] >> 1) & 255;
+	redata[3] = (digits[4] << 7 | digits[5] << 2 | digits[6] >> 3) & 255;
+	redata[4] = (digits[6] << 5 | digits[7]) & 255;
 	
-	
-	for(int i=0;i<2;i++) {
+	for(int i=0;i<5;i++) {
 		System.out.println("Reconstruct "+i+" "+redata[i]);
 	}
 	
 	
 	}
 	
-//	static String base32Chars = "0123456789ABCDEFGHIJKLMNOPQRSTUV";
+//	static String base32Chars = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
 	static String base32Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
 	
 	public static int findChar(char zChar){
