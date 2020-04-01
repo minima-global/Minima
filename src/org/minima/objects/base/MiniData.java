@@ -244,37 +244,6 @@ public class MiniData implements Streamable {
 		return new MiniData(data);
 	}
 	
-	/**
-	 * Convert any string data into a byte array
-	 * 
-	 * @param zInput
-	 * @return
-	 */
-	public static MiniData convertValueToData(String zInput) {
-		//Its HEX
-		if(zInput.startsWith("0x")) {
-			return new MiniData(zInput);
-			
-		//It's SCRIPT	
-		}else if(zInput.startsWith("[")) {
-			//Nothing isn;t a script in Minima
-			String clean = Contract.cleanScript(zInput.substring(1,zInput.length()-1));
-			
-			//Convert to s nice string..
-			MiniString ms = new MiniString(clean);
-			
-			//Now get the data..
-			return new MiniData(ms.getData());
-		
-		//It's a NUMBER
-		}else{
-			//Convert to s nice string..
-			MiniString ms = new MiniString(zInput);
-			
-			//Now get the data..
-			return new MiniData(ms.getData());
-		}
-	}
 	
 	public static void main(String[] zArgs) {
 		MiniData data = new MiniData("00000FFF");
