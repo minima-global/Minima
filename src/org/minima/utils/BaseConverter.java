@@ -153,34 +153,53 @@ public class BaseConverter {
 	
 	public static void main(String[] zArgs) {
 
-		//BASE32
-		byte[] data = new byte[10];
+		MiniData hash = MiniData.getRandomData(64);
+		byte[] hdata = hash.getData();
+		byte[] checkhash = Crypto.getInstance().hashData(hash.getData());
 		
-		data[0] = (byte) 1;
-		data[1] = (byte) 13;
-		data[2] = (byte) 34;
-		data[3] = (byte) 44;
-		data[4] = (byte) 33;
-		data[5] = (byte) 56;
-		data[6] = (byte) 99;
-		data[7] = (byte) 76;
-		data[8] = (byte) 9;
-		data[9] = (byte) 12;
-
-		String tt = encode32(data);
-		
-		System.out.println("32 "+tt);
-		
-		byte[] reda = decode32(tt);
-		
-		for(int i=0;i<10;i++) {
-			System.out.println(i+") "+( reda[i] & 255 ) );	
+		byte[] addr = new byte[65];
+		for(int i=0;i<32;i++) {
+			addr[i] = hdata[i];
 		}
 		
-		byte[] hh = new byte[2];
-		hh[0] = (byte) 15;
-		hh[1] = (byte) 15;
+//		addr[32] = checkhash[0];
+//		addr[33] = checkhash[1];
+//		addr[34] = checkhash[2];
 		
-		System.out.println("HEX : "+encode16(hh));	
+		
+		String address = "Mx"+encode32(addr);
+		
+		System.out.println(hash.to0xString());
+		System.out.println(address);
+		
+//		//BASE32
+//		byte[] data = new byte[10];
+//		
+//		data[0] = (byte) 1;
+//		data[1] = (byte) 13;
+//		data[2] = (byte) 34;
+//		data[3] = (byte) 44;
+//		data[4] = (byte) 33;
+//		data[5] = (byte) 56;
+//		data[6] = (byte) 99;
+//		data[7] = (byte) 76;
+//		data[8] = (byte) 9;
+//		data[9] = (byte) 12;
+//
+//		String tt = encode32(data);
+//		
+//		System.out.println("32 "+tt);
+//		
+//		byte[] reda = decode32(tt);
+//		
+//		for(int i=0;i<10;i++) {
+//			System.out.println(i+") "+( reda[i] & 255 ) );	
+//		}
+//		
+//		byte[] hh = new byte[2];
+//		hh[0] = (byte) 15;
+//		hh[1] = (byte) 15;
+//		
+//		System.out.println("HEX : "+encode16(hh));	
 	}
 }
