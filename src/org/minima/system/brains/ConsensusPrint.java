@@ -150,6 +150,7 @@ public class ConsensusPrint {
 			//DEBUGGING
 			if(zMessage.exists("systemout")) {
 //				BlockTreePrinter2.clearScreen();
+				
 				treeinfo += "\n\nSpeed              : "+tree.getChainSpeed()+" blocks / sec";
 				treeinfo += "\nCurrent Difficulty : "+tree.getChainTip().getTxPow().getBlockDifficulty().to0xString();
 				treeinfo += "\nTotal Weight       : "+tree.getChainRoot().getTotalWeight();
