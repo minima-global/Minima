@@ -27,6 +27,11 @@ public class Address implements Streamable{
 	 */
 	MiniData mAddressData; 
 	
+	/**
+	 * The SMALL format Minima Address..
+	 */
+	MiniData mSmallAddress; 
+	
 	public Address() {}
 		
 	public Address(String zScript) {
@@ -38,17 +43,28 @@ public class Address implements Streamable{
 		
 		//Set the Address..
 		mAddressData = new MiniData(hdata);
+		
+		//The small address
+		mSmallAddress = new MiniData(Crypto.getInstance().hashData(mAddressData.getData(), 160)); 
 	}
 	
 	public Address(MiniData zAddressData) {
 		mAddressData 	= zAddressData;
-		mScript 		= "";
+		
+		if(mAddressData.getLength() == 64) {
+			mSmallAddress = new MiniData(Crypto.getInstance().hashData(mAddressData.getData(), 160));
+		}else {
+			mSmallAddress = mAddressData;
+		}
+		
+		mScript = "";
 	}
 	
 	public JSONObject toJSON() {
 		JSONObject addr = new JSONObject();
-		addr.put("address", mAddressData.toString());
 		addr.put("script", mScript);
+		addr.put("address", mAddressData.toString());
+		addr.put("miniaddress", mSmallAddress.toString());
 		return addr;
 	}
 	
@@ -73,7 +89,7 @@ public class Address implements Streamable{
 	}
 
 	public boolean isEqual(MiniData zAddress) {
-		return mAddressData.isEqual(zAddress);
+		return mAddressData.isEqual(zAddress) || mSmallAddress.isEqual(zAddress);
 	}
 	
 	@Override
@@ -84,7 +100,13 @@ public class Address implements Streamable{
 
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
-		mAddressData = MiniData.ReadFromStream(zIn);
-		mScript      = zIn.readUTF();
+		mAddressData  = MiniData.ReadFromStream(zIn);
+		mScript       = zIn.readUTF();
+		
+		if(mAddressData.getLength() == 64) {
+			mSmallAddress = new MiniData(Crypto.getInstance().hashData(mAddressData.getData(), 160));
+		}else {
+			mSmallAddress = mAddressData;
+		}
 	}	
 }

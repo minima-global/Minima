@@ -161,7 +161,10 @@ public class JavaUserDB implements UserDB, Streamable{
 		Address addr = new Address(zScript);
 		
 		//Do we allready have it ?
-		//..
+		if(isAddressRelevant(addr.getAddressData())) {
+			//We have it..
+			return addr;
+		}
 		
 		//Add to the simple wallet
 		mScriptAddresses.add(addr);
@@ -174,7 +177,7 @@ public class JavaUserDB implements UserDB, Streamable{
 	public String getScript(MiniData zAddress) {
 		//Check the Addresses
 		for(Address addr : mTotalAddresses) {
-			if(addr.getAddressData().isEqual(zAddress)) {
+			if(addr.isEqual(zAddress)) {
 				return addr.getScript();
 			}
 		}
@@ -186,7 +189,7 @@ public class JavaUserDB implements UserDB, Streamable{
 	@Override
 	public boolean isAddressRelevant(MiniData zAddress) {
 		for(Address addr : mTotalAddresses) {
-			if(addr.getAddressData().isEqual(zAddress)) {
+			if(addr.isEqual(zAddress)) {
 				return true;
 			}
 		}

@@ -20,7 +20,7 @@ public class GenesisTxPOW extends TxPOW{
 	public GenesisTxPOW() {
 		super();
 		
-		setTxDifficulty(TXMiner.MAX_HASH);
+		setTxDifficulty(Crypto.MAX_HASH);
 		
 		setNonce(new MiniNumber("256"));
 		 
@@ -28,7 +28,7 @@ public class GenesisTxPOW extends TxPOW{
 		
 		setBlockNumber(new MiniNumber("0"));
 		
-		setBlockDifficulty(TXMiner.MAX_HASH);
+		setBlockDifficulty(Crypto.MAX_HASH);
 		
 		setParent(new MiniData());
 		

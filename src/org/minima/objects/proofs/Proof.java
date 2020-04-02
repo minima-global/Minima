@@ -44,6 +44,8 @@ public class Proof implements Streamable {
 	protected MiniData mChainSHA;
 	protected boolean mFinalized;
 		
+	int HASH_BITS = 512;
+	
 	public Proof(){
 		mProofChain = new ArrayList<>();
 	}
@@ -143,9 +145,9 @@ public class Proof implements Streamable {
 			ProofChunk chunk = mProofChain.get(i);
 			
 			if(chunk.getLeft().isTrue()) {
-				current = Crypto.getInstance().hashObjects(chunk.getHash(), current);
+				current = Crypto.getInstance().hashObjects(chunk.getHash(), current, HASH_BITS);
 			}else {
-				current = Crypto.getInstance().hashObjects(current, chunk.getHash());
+				current = Crypto.getInstance().hashObjects(current, chunk.getHash(), HASH_BITS);
 			}
 		}
 		
@@ -167,6 +169,7 @@ public class Proof implements Streamable {
 		}
 		
 		json.put("data", mData.to0xString());
+		json.put("hashbits", HASH_BITS);
 		json.put("proofchain", proof);
 		json.put("chainsha", getChainSHAProof().to0xString());
 		json.put("finalhash", getFinalHash().to0xString());
@@ -176,6 +179,7 @@ public class Proof implements Streamable {
 	
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
+		zOut.writeInt(HASH_BITS);
 		mData.writeDataStream(zOut);
 		int len = mProofChain.size();
 		zOut.writeInt(len);
@@ -188,6 +192,7 @@ public class Proof implements Streamable {
 
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
+		HASH_BITS = zIn.readInt();
 		mData = MiniData.ReadFromStream(zIn);
 		mProofChain = new ArrayList<>();
 		int len = zIn.readInt();

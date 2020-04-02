@@ -128,9 +128,14 @@ public class Witness implements Streamable {
 		return addScript(new ScriptProof(zScript));
 	}
 	
-	public ScriptProof getScript(MiniData zHash) {
+	public ScriptProof getScript(MiniData zAddress) {
+		//Check the Length..
+		int len = zAddress.getLength();
+		
+		//32 is the default.. any less and it's a double hash..
+		
 		for(ScriptProof proof : mScriptProofs) {
-			if(proof.getFinalHash().isEqual(zHash)) {
+			if(proof.getFinalHash().isEqual(zAddress)) {
 				return proof;
 			}
 		}

@@ -13,15 +13,20 @@ import org.minima.utils.digest.WinternitzOTSignature;
 
 public class PubPrivKey implements Streamable {
 	
+	private static final int WINTERNITZ_NUMBER = 12;
+	
 	/**
 	 * Key details
 	 */
 	MiniData mPrivateSeed;
 	MiniData mPublicKey;
 	
-	private static final int WinternitzNumber = 12;
 	private static Digest getHashFunction() {
-		return new KeccakDigest(256);
+		return getHashFunction(256);
+	}
+	
+	private static Digest getHashFunction(int zBitLength) {
+		return new KeccakDigest(zBitLength);
 	}
 	
 	public PubPrivKey() {
@@ -33,7 +38,7 @@ public class PubPrivKey implements Streamable {
 		mPrivateSeed = zPrivateSeed;
 
 		//Create a WOTS
-		WinternitzOTSignature wots = new WinternitzOTSignature(mPrivateSeed.getData(), getHashFunction(), WinternitzNumber);
+		WinternitzOTSignature wots = new WinternitzOTSignature(mPrivateSeed.getData(), getHashFunction(), WINTERNITZ_NUMBER);
 		
 		//Get the Public Key..
 		mPublicKey  = new MiniData(wots.getPublicKey());
@@ -47,7 +52,7 @@ public class PubPrivKey implements Streamable {
 	
 	public MiniData sign(MiniData zData) {
 		//Create a WOTS
-		WinternitzOTSignature wots = new WinternitzOTSignature(mPrivateSeed.getData(), getHashFunction(), WinternitzNumber);
+		WinternitzOTSignature wots = new WinternitzOTSignature(mPrivateSeed.getData(), getHashFunction(), WINTERNITZ_NUMBER);
 		
 		//Sign the data..
 		byte[] signature = wots.getSignature(zData.getData());
@@ -62,7 +67,7 @@ public class PubPrivKey implements Streamable {
 	
 	public static boolean verify(MiniData zPubKey, MiniData zData, MiniData zSignature) {
 		//WOTS Verify
-		WinternitzOTSVerify wver = new WinternitzOTSVerify(getHashFunction(), WinternitzNumber);
+		WinternitzOTSVerify wver = new WinternitzOTSVerify(getHashFunction(), WINTERNITZ_NUMBER);
 		
 		//Do it.. get the pubkey..
 		byte[] pubkey = wver.Verify(zData.getData(), zSignature.getData());

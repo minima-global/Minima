@@ -8,6 +8,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.security.SecureRandom;
 import java.util.Random;
 
 import org.minima.utils.BaseConverter;
@@ -187,7 +188,8 @@ public class MiniData implements Streamable {
 	 * @return
 	 */
 	public static MiniData getRandomData(int len) {
-		Random rand = new Random();
+		SecureRandom rand = new SecureRandom();
+//		Random rand = new Random();
 		byte[] data = new byte[len];
 		rand.nextBytes(data);
 		return new MiniData(data);

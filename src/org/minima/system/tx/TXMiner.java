@@ -11,19 +11,9 @@ import org.minima.utils.MinimaLogger;
 import org.minima.utils.messages.Message;
 
 public class TXMiner extends SystemHandler{
-
-	/**
-	 * The Maximum HASH Value Possible
-	 */
-	public static final MiniData MAX_HASH = new MiniData(
-							"0xFFFFFFFFFFFFFFFFFFFF"+
-							  "FFFFFFFFFFFFFFFFFFFF"+
-							  "FFFFFFFFFFFFFFFFFFFF"+
-							  "FFFF");
 	
-	
-	public static final MiniData BASE_TXN 	= MAX_HASH;
-	public static final MiniData BASE_BLOCK = MAX_HASH;
+	public static final MiniData BASE_TXN 	= Crypto.MAX_HASH;
+	public static final MiniData BASE_BLOCK = Crypto.MAX_HASH;
 	
 	public static final String TXMINER_TESTHASHING = "MINE_TESTHASHING";
 	public static final String TXMINER_MINETXPOW   = "MINE_MINETXPOW";

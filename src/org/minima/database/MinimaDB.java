@@ -284,6 +284,10 @@ public class MinimaDB {
 			//Whats the weight of the tree now..
 			BigInteger weight = mMainTree.getChainRoot().getTotalWeight();
 			
+			if(weight.compareTo(BigInteger.ZERO) == 0) {
+				System.out.println("ZERO WEIGHT ERROR!");
+			}
+			
 			/**
 			 * Cascade the tree
 			 */
@@ -642,6 +646,13 @@ public class MinimaDB {
 				return null;
 			}
 			
+			//Which block was this transaction added
+			MiniNumber inblock = proof.getMMRData().getInBlock();
+			
+			//Now get an earlier proof..
+			//TODO!
+			
+			
 			//Add the proof for this coin..
 			zWitness.addMMRProof(proof);
 			
@@ -814,8 +825,8 @@ public class MinimaDB {
 				BigInteger newdiff    = newdiffdec.toBigInteger();
 				
 				//Check if more than maximum..
-				if(newdiff.compareTo(BlockTreeNode.MAX_VAL)>0) {
-					newdiff = BlockTreeNode.MAX_VAL;
+				if(newdiff.compareTo(Crypto.MAX_VAL)>0) {
+					newdiff = Crypto.MAX_VAL;
 				}
 				//Create the hash
 				MiniData diffhash = new MiniData("0x"+newdiff.toString(16)); 

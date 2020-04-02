@@ -78,8 +78,7 @@ public class ConsensusUser {
 			Address addr = getMainDB().getUserDB().newSimpleAddress();
 			
 			JSONObject resp = InputHandler.getResponseJSON(zMessage);
-			resp.put("address", addr.getAddressData().toString());
-			resp.put("script", addr.getScript().toString());
+			resp.put("address", addr.toJSON());
 			InputHandler.endResponse(zMessage, true, "");
 			
 		}else if(zMessage.isMessageType(CONSENSUS_NEWSCRIPT)) {

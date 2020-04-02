@@ -44,7 +44,7 @@ public class TxPOWChecker {
 		Transaction trans = zTxPOW.getTransaction();
 		
 		//Get the Hash
-		MiniData transhash = Crypto.getInstance().hashObject(trans);
+		MiniData transhash = zTxPOW.getTransID();
 		
 		//Now cycle
 		Witness wit = zTxPOW.getWitness();
@@ -55,7 +55,7 @@ public class TxPOWChecker {
 		//Check each one and add.. this is only done once..
 		for(SignatureProof sig : sigs) {
 			//This is the actual public key that is being represented..
-//			MiniData finalPubKey = sig.getFinalHash();
+//			MiniData leafkey = sig.getFinalHash();
 			
 			//Now check the leaf of the tree
 			MiniData leafkey   = sig.getData();
@@ -67,19 +67,6 @@ public class TxPOWChecker {
 				return false;
 			}
 		}
-		
-//		int len     = wit.getAllPubKeys().size();
-//		
-//		for(int i=0;i<len;i++) {
-//			MiniData pubk = wit.getPublicKey(i);
-//			MiniData sig  = wit.getSignature(i);
-//			
-//			//Check it..
-//			boolean ok = PubPrivKey.verify(pubk, transhash, sig);
-//			if(!ok) {
-//				return false;
-//			}
-//		}
 		
 		return true;
 	}
