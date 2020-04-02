@@ -24,17 +24,17 @@ public class GlobalParams {
 	/**
 	 * How deep before we think confirmed..
 	 */
-	public static final MiniNumber MINIMA_CONFIRM_DEPTH  = new MiniNumber("2");
+	public static final MiniNumber MINIMA_CONFIRM_DEPTH  = new MiniNumber("3");
 	
 	/**
 	 * Depth before we cascade..
 	 */
-	public static final int MINIMA_CASCADE_START_DEPTH   = 32;
+	public static final int MINIMA_CASCADE_START_DEPTH   = 256;
 	
 	/**
 	 * Minimum number of blocks at each cascade level 
 	 */
-	public static final int MINIMA_MINUMUM_CASCADE_LEVEL_NODES  = 4;
+	public static final int MINIMA_MINUMUM_CASCADE_LEVEL_NODES  = 32;
 	
 	/**
 	 * How Many Cascade Levels are there
