@@ -6,11 +6,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import org.minima.database.mmr.MMRProof;
-import org.minima.miniscript.Contract;
-import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniHash;
-import org.minima.objects.base.MiniString;
 import org.minima.objects.proofs.ScriptProof;
 import org.minima.objects.proofs.SignatureProof;
 import org.minima.objects.proofs.TokenProof;
@@ -57,7 +53,7 @@ public class Witness implements Streamable {
 	/**
 	 * Signature functions
 	 */
-	public void addSignature(MiniHash zPubKey, MiniData zSignature) {
+	public void addSignature(MiniData zPubKey, MiniData zSignature) {
 		mSignatureProofs.add(new SignatureProof(zPubKey, zSignature));
 	}
 	
@@ -108,7 +104,7 @@ public class Witness implements Streamable {
 		}
 	}
 	
-	public TokenProof getTokenDetail(MiniHash zTokenID) {
+	public TokenProof getTokenDetail(MiniData zTokenID) {
 		for(TokenProof td : mTokenProofs) {
 			if(td.getTokenID().isExactlyEqual(zTokenID)) {
 				return td;
@@ -132,7 +128,7 @@ public class Witness implements Streamable {
 		return addScript(new ScriptProof(zScript));
 	}
 	
-	public ScriptProof getScript(MiniHash zHash) {
+	public ScriptProof getScript(MiniData zHash) {
 		for(ScriptProof proof : mScriptProofs) {
 			if(proof.getFinalHash().isExactlyEqual(zHash)) {
 				return proof;
@@ -141,7 +137,7 @@ public class Witness implements Streamable {
 		return null;
 	}
 	
-	public boolean scriptExists(MiniHash zHash) {
+	public boolean scriptExists(MiniData zHash) {
 		return getScript(zHash)!=null;
 	}
 	

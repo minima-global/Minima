@@ -8,7 +8,6 @@ import java.util.StringTokenizer;
 
 import org.minima.miniscript.exceptions.ExecutionException;
 import org.minima.miniscript.exceptions.MinimaParseException;
-import org.minima.miniscript.expressions.GlobalExpression;
 import org.minima.miniscript.functions.MinimaFunction;
 import org.minima.miniscript.statements.StatementBlock;
 import org.minima.miniscript.statements.StatementParser;
@@ -21,12 +20,9 @@ import org.minima.miniscript.values.Value;
 import org.minima.objects.StateVariable;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
-import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
-import org.minima.objects.base.MiniString;
 import org.minima.utils.MinimaLogger;
-import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
 public class Contract {

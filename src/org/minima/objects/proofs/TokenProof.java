@@ -7,7 +7,6 @@ import java.io.IOException;
 
 import org.minima.miniscript.Contract;
 import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
 import org.minima.utils.Crypto;
@@ -19,7 +18,7 @@ public class TokenProof implements Streamable{
 	/**
 	 * The CoinID used when creating the token initially
 	 */
-	MiniHash  mCoinID;
+	MiniData  mCoinID;
 	
 	/**
 	 * The Scale of the Token vs the amount
@@ -44,7 +43,7 @@ public class TokenProof implements Streamable{
 	/**
 	 * TTokenID created after all the details are set
 	 */
-	MiniHash mTokenID;
+	MiniData mTokenID;
 	
 	/**
 	 * Blank Constructor for ReadDataStream
@@ -58,11 +57,11 @@ public class TokenProof implements Streamable{
 	 * @param zAmount
 	 * @param zName
 	 */
-	public TokenProof(MiniHash zCoindID, MiniNumber zScale, MiniNumber zAmount, MiniString zName) {
+	public TokenProof(MiniData zCoindID, MiniNumber zScale, MiniNumber zAmount, MiniString zName) {
 		this(zCoindID, zScale, zAmount, zName, new MiniString("RETURN TRUE"));
 	}
 		
-	public TokenProof(MiniHash zCoindID, MiniNumber zScale, MiniNumber zAmount, MiniString zName, MiniString zTokenScript) {
+	public TokenProof(MiniData zCoindID, MiniNumber zScale, MiniNumber zAmount, MiniString zName, MiniString zTokenScript) {
 				
 		mTokenScale 		= zScale;
 		mTokenTotalAmount 	= zAmount;
@@ -93,11 +92,11 @@ public class TokenProof implements Streamable{
 		return mTokenScript;
 	}
 	
-	public MiniHash getCoinID() {
+	public MiniData getCoinID() {
 		return mCoinID;
 	}
 	
-	public MiniHash getTokenID() {
+	public MiniData getTokenID() {
 		return mTokenID;
 	}
 	
@@ -154,7 +153,7 @@ public class TokenProof implements Streamable{
 
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
-		mCoinID 			= MiniHash.ReadFromStream(zIn);
+		mCoinID 			= MiniData.ReadFromStream(zIn);
 		mTokenScript        = MiniString.ReadFromStream(zIn);
 		mTokenScale 		= MiniNumber.ReadFromStream(zIn);
 		mTokenTotalAmount	= MiniNumber.ReadFromStream(zIn);

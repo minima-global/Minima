@@ -8,7 +8,7 @@ import org.minima.objects.PubPrivKey;
 import org.minima.objects.Transaction;
 import org.minima.objects.TxPOW;
 import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniHash;
+import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.proofs.TokenProof;
 
@@ -27,18 +27,18 @@ public interface UserDB {
 	public ArrayList<Address> getSimpleAddresses();
 	public Address newSimpleAddress();
 	public Address newSimpleAddress(PubPrivKey zPubPriv);
-	public boolean isSimpleAddress(MiniHash zAddress);
-	public MiniHash getPublicKey(MiniHash zAddress);
+	public boolean isSimpleAddress(MiniData zAddress);
+	public MiniData getPublicKey(MiniData zAddress);
 	
 	public ArrayList<Address> getScriptAddresses();
 	public Address newScriptAddress(String zScript);
 	public ArrayList<Address> getAllAddresses();
-	public String getScript(MiniHash zAddress);
+	public String getScript(MiniData zAddress);
 	
 	/**
 	 * Check if an address matters
 	 */
-	public boolean isAddressRelevant(MiniHash zAddress);
+	public boolean isAddressRelevant(MiniData zAddress);
 	public boolean isTransactionRelevant(Transaction zTrans);
 	
 	/**
@@ -57,7 +57,7 @@ public interface UserDB {
 	 */
 	public ArrayList<TokenProof> getAllKnownTokens();
 	
-	public TokenProof getTokenDetail(MiniHash zTokenID);
+	public TokenProof getTokenDetail(MiniData zTokenID);
 	
 	public void addTokenDetails(TokenProof zToken);
 	
@@ -66,7 +66,7 @@ public interface UserDB {
 	 */
 	public ArrayList<reltxpow> getHistory();
 	public void addToHistory(TxPOW zTxPOW, MiniNumber zValue);
-//	public void removeHistory(MiniHash zTxPowID);
+//	public void removeHistory(MiniData zTxPowID);
 	public void clearHistory();
 	
 }

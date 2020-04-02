@@ -5,8 +5,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 import org.minima.miniscript.Contract;
-import org.minima.objects.base.MiniByte;
-import org.minima.objects.base.MiniHash;
+import org.minima.objects.base.MiniData;
 import org.minima.utils.Crypto;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONObject;
@@ -26,7 +25,7 @@ public class Address implements Streamable{
 	/**
 	 * The actual address hash in byte format
 	 */
-	MiniHash mAddressData; 
+	MiniData mAddressData; 
 	
 	public Address() {}
 		
@@ -38,10 +37,10 @@ public class Address implements Streamable{
 		byte[] hdata = Crypto.getInstance().hashData(mScript.getBytes());
 		
 		//Set the Address..
-		mAddressData = new MiniHash(hdata);
+		mAddressData = new MiniData(hdata);
 	}
 	
-	public Address(MiniHash zAddressData) {
+	public Address(MiniData zAddressData) {
 		mAddressData 	= zAddressData;
 		mScript 		= "";
 	}
@@ -69,11 +68,11 @@ public class Address implements Streamable{
 		return mScript;
 	}
 	
-	public MiniHash getAddressData() {
+	public MiniData getAddressData() {
 		return mAddressData;
 	}
 
-	public boolean isEqual(MiniHash zAddress) {
+	public boolean isEqual(MiniData zAddress) {
 		return mAddressData.isNumericallyEqual(zAddress);
 	}
 	
@@ -85,7 +84,7 @@ public class Address implements Streamable{
 
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
-		mAddressData = MiniHash.ReadFromStream(zIn);
+		mAddressData = MiniData.ReadFromStream(zIn);
 		mScript      = zIn.readUTF();
 	}	
 }

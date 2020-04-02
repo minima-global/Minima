@@ -8,11 +8,8 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.nio.charset.Charset;
-import java.util.Arrays;
 import java.util.Random;
 
-import org.minima.miniscript.Contract;
 import org.minima.utils.BaseConverter;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;

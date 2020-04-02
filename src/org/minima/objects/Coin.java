@@ -6,7 +6,6 @@ import java.io.IOException;
 
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONObject;
@@ -16,9 +15,9 @@ public class Coin implements Streamable {
 	/**
 	 * Outputs don't specify a coinid
 	 */
-	public static final MiniHash MINIMA_TOKENID = new MiniHash("0x00");
-	public static final MiniHash COINID_OUTPUT  = new MiniHash("0x00");
-	public static final MiniHash TOKENID_CREATE = new MiniHash("0xFF");
+	public static final MiniData MINIMA_TOKENID = new MiniData("0x00");
+	public static final MiniData COINID_OUTPUT  = new MiniData("0x00");
+	public static final MiniData TOKENID_CREATE = new MiniData("0xFF");
 	
 	/**
 	 * The GLOBAL UNIQUE CoinID for this coin.
@@ -31,14 +30,14 @@ public class Coin implements Streamable {
 	 * 
 	 * SHA3 ( TXN_HASH | OUTPUT_NUM_IN_TXN ) 
 	 */
-	MiniHash 	mCoinID;
+	MiniData 	mCoinID;
 	
 	/**
 	 * The RamAddress.
 	 *  
 	 * This is the hash of the RamScript that controls this coin. This is ALWAYS present
 	 */
-	MiniHash 	mAddress;
+	MiniData 	mAddress;
 	
 	/**
 	 * The Value of this Coin. This is ALWAYS present
@@ -48,7 +47,7 @@ public class Coin implements Streamable {
 	/**
 	 * Tokens are Native in Minima. All inputs and outputs have them. MINIMA the default is 0x00
 	 */
-	MiniHash  mTokenID;
+	MiniData  mTokenID;
 
 	/**
 	 * Floating Input Coins can be attached to any coin with the correct address and tokenid and AT LEAST the amount.
@@ -63,11 +62,11 @@ public class Coin implements Streamable {
 	/**
 	 * Main Constructor
 	 */
-	public Coin(MiniHash zCoinID, MiniHash zAddress, MiniNumber zAmount, MiniHash zTokenID) {
+	public Coin(MiniData zCoinID, MiniData zAddress, MiniNumber zAmount, MiniData zTokenID) {
 		this(zCoinID, zAddress, zAmount, zTokenID, false, false);
 	}
 		
-	public Coin(MiniHash zCoinID, MiniHash zAddress, MiniNumber zAmount, MiniHash zTokenID, boolean zFloating, boolean zRemainder) {
+	public Coin(MiniData zCoinID, MiniData zAddress, MiniNumber zAmount, MiniData zTokenID, boolean zFloating, boolean zRemainder) {
 		mCoinID  = zCoinID;
 		mAddress = zAddress;
 		mAmount  = zAmount;
@@ -98,7 +97,7 @@ public class Coin implements Streamable {
 	/**
 	 * Floating inputs change the CoinID
 	 */
-	public void resetCoinID(MiniHash zCoinID) {
+	public void resetCoinID(MiniData zCoinID) {
 		mCoinID = zCoinID;
 	}
 	
@@ -110,11 +109,11 @@ public class Coin implements Streamable {
 	}
 	
 	
-	public MiniHash getCoinID() {
+	public MiniData getCoinID() {
 		return mCoinID;
 	}
 	
-	public MiniHash getAddress() {
+	public MiniData getAddress() {
 		return mAddress;
 	}
 	
@@ -122,7 +121,7 @@ public class Coin implements Streamable {
 		return mAmount;
 	}
 
-	public MiniHash getTokenID() {
+	public MiniData getTokenID() {
 		return mTokenID;
 	}
 	
@@ -165,10 +164,10 @@ public class Coin implements Streamable {
 
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
-		mCoinID   = MiniHash.ReadFromStream(zIn);
-		mAddress  = MiniHash.ReadFromStream(zIn);
+		mCoinID   = MiniData.ReadFromStream(zIn);
+		mAddress  = MiniData.ReadFromStream(zIn);
 		mAmount   = MiniNumber.ReadFromStream(zIn);
-		mTokenID  = MiniHash.ReadFromStream(zIn);
+		mTokenID  = MiniData.ReadFromStream(zIn);
 		
 		mFloating  = MiniByte.ReadFromStream(zIn).isTrue();
 		mRemainder = MiniByte.ReadFromStream(zIn).isTrue();

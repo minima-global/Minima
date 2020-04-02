@@ -2,11 +2,10 @@ package org.minima.database.txpowdb.java;
 
 import java.util.ArrayList;
 
-import org.minima.GlobalParams;
 import org.minima.database.txpowdb.TxPOWDBRow;
 import org.minima.database.txpowdb.TxPowDB;
 import org.minima.objects.TxPOW;
-import org.minima.objects.base.MiniHash;
+import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 
 public class JavaDB implements TxPowDB{
@@ -40,7 +39,7 @@ public class JavaDB implements TxPowDB{
 	 * Searched the Deleted Rows TOO!
 	 */
 	@Override
-	public TxPOWDBRow findTxPOWDBRow(MiniHash zTxPOWID) {
+	public TxPOWDBRow findTxPOWDBRow(MiniData zTxPOWID) {
 		for(JavaDBRow row : mRows) {
 			if(row.getTxPOW().getTxPowID().isExactlyEqual(zTxPOWID)) {
 				return row;
@@ -138,7 +137,7 @@ public class JavaDB implements TxPowDB{
 	}
 
 	@Override
-	public void removeTxPOW(MiniHash zTxPOWID) {
+	public void removeTxPOW(MiniData zTxPOWID) {
 		ArrayList<JavaDBRow> newRows = new ArrayList<>();
 		
 		for(JavaDBRow row : mRows) {
@@ -156,7 +155,7 @@ public class JavaDB implements TxPowDB{
 	}
 
 	@Override
-	public ArrayList<TxPOWDBRow> getChildBlocksTxPOW(MiniHash zParent) {
+	public ArrayList<TxPOWDBRow> getChildBlocksTxPOW(MiniData zParent) {
 		ArrayList<TxPOWDBRow> ret = new ArrayList<>();
 		
 		for(JavaDBRow row : mRows) {

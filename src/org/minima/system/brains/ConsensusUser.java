@@ -27,10 +27,8 @@ import org.minima.objects.StateVariable;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
-import org.minima.objects.proofs.Proof;
 import org.minima.objects.proofs.ScriptProof;
 import org.minima.system.input.InputHandler;
 import org.minima.utils.Crypto;
@@ -125,13 +123,13 @@ public class ConsensusUser {
 			for(MiniString leaf : leaves) {
 				JSONObject mmrnode = new JSONObject();
 				
-				MiniHash finalhash = null;
+				MiniData finalhash = null;
 				if(type.equals("hash")) {
-					finalhash = new MiniHash(leaf.toString());
+					finalhash = new MiniData(leaf.toString());
 					mmrnode.put("data",leaf.toString());
 				}else{
 					byte[] hash = Crypto.getInstance().hashData(leaf.getData());
-					finalhash = new MiniHash(hash);
+					finalhash = new MiniData(hash);
 					mmrnode.put("data","[ "+leaf.toString()+" ]");
 				}
 				mmrnode.put("leaf", finalhash.to0xString());
@@ -215,10 +213,10 @@ public class ConsensusUser {
 						String tokenid = tok.substring(index+1).trim();
 						
 						//Create this coin
-						Coin outcoin = new Coin(new MiniHash("0x00"), 
-												new MiniHash(address), 
+						Coin outcoin = new Coin(new MiniData("0x00"), 
+												new MiniData(address), 
 												new MiniNumber(amount), 
-												new MiniHash(tokenid));
+												new MiniData(tokenid));
 						
 						//Add this output to the transaction..
 						trans.addOutput(outcoin);
@@ -360,7 +358,7 @@ public class ConsensusUser {
 			MMRSet basemmr = getMainDB().getMainTree().getChainTip().getMMRSet();
 			
 			//Search for the coin..
-			MiniHash coinid = new MiniHash(cid);
+			MiniData coinid = new MiniData(cid);
 			MMREntry entry =  basemmr.findEntry(coinid, true);
 			
 			//Now ask to keep it..
@@ -441,7 +439,7 @@ public class ConsensusUser {
 			InputHandler.endResponse(zMessage, true, "");
 			
 		}else if(zMessage.isMessageType(CONSENSUS_EXPORTCOIN)) {
-			MiniHash coinid = (MiniHash)zMessage.getObject("coinid");
+			MiniData coinid = (MiniData)zMessage.getObject("coinid");
 			
 			//The Base current MMRSet
 			MMRSet basemmr  = getMainDB().getMainTree().getChainTip().getMMRSet();
@@ -538,7 +536,7 @@ public class ConsensusUser {
 		return true;
 	}
 	
-	public static MiniData exportCoin(MinimaDB zDB, MiniHash zCoinID) throws IOException {
+	public static MiniData exportCoin(MinimaDB zDB, MiniData zCoinID) throws IOException {
 		//The Base current MMRSet
 		MMRSet basemmr  = zDB.getMainTree().getChainTip().getMMRSet();
 		

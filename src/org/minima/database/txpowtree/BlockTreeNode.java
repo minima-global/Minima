@@ -8,8 +8,7 @@ import java.util.Collections;
 
 import org.minima.database.mmr.MMRSet;
 import org.minima.objects.TxPOW;
-import org.minima.objects.base.MiniHash;
-import org.minima.utils.Maths;
+import org.minima.objects.base.MiniData;
 
 public class BlockTreeNode implements Comparable<BlockTreeNode> {
 
@@ -184,7 +183,7 @@ public class BlockTreeNode implements Comparable<BlockTreeNode> {
 		resetCurrentWeight();
 	}
 	
-	public MiniHash getTxPowID() {
+	public MiniData getTxPowID() {
 		return getTxPow().getTxPowID();
 	}
 	

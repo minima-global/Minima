@@ -1,19 +1,12 @@
 package org.minima.miniscript.functions.sha;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.IOException;
-
 import org.minima.miniscript.Contract;
 import org.minima.miniscript.exceptions.ExecutionException;
 import org.minima.miniscript.functions.MinimaFunction;
-import org.minima.miniscript.functions.cast.HEX;
 import org.minima.miniscript.values.HEXValue;
 import org.minima.miniscript.values.Value;
-import org.minima.objects.base.MiniByte;
-import org.minima.objects.base.MiniHash;
+import org.minima.objects.base.MiniData;
 import org.minima.objects.proofs.Proof;
-import org.minima.utils.Crypto;
 
 public class CHAINSHA extends MinimaFunction {
 
@@ -40,10 +33,10 @@ public class CHAINSHA extends MinimaFunction {
 		
 		//Create a proof..
 		Proof chainproof = new Proof();
-		chainproof.setData(new MiniHash(indata));
+		chainproof.setData(new MiniData(indata));
 		chainproof.setProof(chain.getMiniData());
 		
-		MiniHash fv = chainproof.getFinalHash();
+		MiniData fv = chainproof.getFinalHash();
 		
 		//Return..
 		return new HEXValue(fv.getData());

@@ -5,19 +5,18 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniHash;
 import org.minima.utils.json.JSONObject;
 
 public class SignatureProof extends Proof {
 
 	/**
-	 * The actual signature from the MiniHash data..
+	 * The actual signature from the MiniData data..
 	 */
 	MiniData mSignature;
 	
 	private SignatureProof() {}
 	
-	public SignatureProof(MiniHash mPublicKey, MiniData zSignature) {
+	public SignatureProof(MiniData mPublicKey, MiniData zSignature) {
 		super();
 		
 		setData(mPublicKey);

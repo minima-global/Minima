@@ -6,7 +6,6 @@ import org.minima.objects.Coin;
 import org.minima.objects.StateVariable;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
 
 public class MMRDB {
@@ -75,10 +74,10 @@ public class MMRDB {
 	
 	public static MMRData getRandomCoin() {
 		//New coin
-		MiniHash coin = new MiniHash(MiniData.getRandomData(32).getData());
-		MiniHash address  = new MiniHash("0xABBA");
+		MiniData coin = new MiniData(MiniData.getRandomData(32).getData());
+		MiniData address  = new MiniData("0xABBA");
 		MiniNumber amount   = new MiniNumber("100");
-		MiniHash tokenid  = new MiniHash("0x00");
+		MiniData tokenid  = new MiniData("0x00");
 		
 		Coin cc = new Coin( coin, address, amount, tokenid);
 		

@@ -6,10 +6,9 @@ package org.minima.miniscript.functions.sha;
 import org.minima.miniscript.Contract;
 import org.minima.miniscript.exceptions.ExecutionException;
 import org.minima.miniscript.functions.MinimaFunction;
-import org.minima.miniscript.functions.base.RPLVAR;
 import org.minima.miniscript.values.HEXValue;
 import org.minima.miniscript.values.Value;
-import org.minima.objects.base.MiniHash;
+import org.minima.objects.base.MiniData;
 import org.minima.utils.Crypto;
 
 /**
@@ -39,7 +38,7 @@ public class SHA3 extends MinimaFunction {
 		byte[] ans = Crypto.getInstance().hashData(data);
 		
 		//Ensure a 32 byte hash
-		MiniHash hash = new MiniHash(ans);
+		MiniData hash = new MiniData(ans);
 		
 		//return the New HEXValue
 		return new HEXValue(hash.getData());

@@ -1,7 +1,7 @@
 package org.minima.system.input.functions.transfer;
 
 import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniHash;
+import org.minima.objects.base.MiniData;
 import org.minima.system.brains.ConsensusUser;
 import org.minima.system.input.CommandFunction;
 import org.minima.utils.messages.Message;

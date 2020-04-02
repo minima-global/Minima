@@ -2,16 +2,13 @@ package org.minima.system.network;
 
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
-import java.net.SocketException;
 
 import org.minima.objects.TxPOW;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniHash;
 import org.minima.system.backup.SyncPackage;
 import org.minima.system.brains.ConsensusHandler;
 import org.minima.system.brains.ConsensusNet;
-import org.minima.system.input.InputMessage;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.messages.Message;
 
@@ -93,7 +90,7 @@ public class NetClientReader implements Runnable {
 					
 				}else if(msgtype.isEqual(NETMESSAGE_TXPOWID)) {
 					//Peer now has this TXPOW - if you don't you can request the full version
-					MiniHash hash  = new MiniHash();
+					MiniData hash  = new MiniData();
 					hash.readDataStream(mInput);
 					
 					//Add this ID
@@ -109,7 +106,7 @@ public class NetClientReader implements Runnable {
 					
 				}else if(msgtype.isEqual(NETMESSAGE_TXPOW_REQUEST)) {
 					//Requesting a TxPOW
-					MiniHash hash  = new MiniHash();
+					MiniData hash  = new MiniData();
 					hash.readDataStream(mInput);
 					
 					//Add this ID

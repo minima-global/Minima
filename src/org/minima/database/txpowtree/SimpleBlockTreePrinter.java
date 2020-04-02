@@ -3,7 +3,7 @@ package org.minima.database.txpowtree;
 import java.util.ArrayList;
 
 import org.minima.objects.TxPOW;
-import org.minima.objects.base.MiniHash;
+import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.bretty.TreeNode;
 import org.minima.utils.bretty.TreePrinter;
@@ -14,7 +14,7 @@ public class SimpleBlockTreePrinter {
 	
 	long mCascadeNode=0;
 	
-	MiniHash mTipID;
+	MiniData mTipID;
 	
 	public SimpleBlockTreePrinter(BlockTree zTree) {
 		mTree = zTree;
@@ -96,8 +96,8 @@ public class SimpleBlockTreePrinter {
 		String weight= "{WEIGHT:"+zNode.getWeight()+"/"+zNode.getTotalWeight()+"} ";
 		
 		TxPOW txpow = zNode.getTxPow();
-		MiniHash parent  = txpow.getSuperParent(clev);
-		MiniHash parent2 = txpow.getSuperParent(clev+1);
+		MiniData parent  = txpow.getSuperParent(clev);
+		MiniData parent2 = txpow.getSuperParent(clev+1);
 				
 		String parents = "[blk:"+zNode.getTxPow().getBlockNumber()+"] "
 						 +"diff:"+zNode.getTxPow().getBlockDifficulty().toShort0xString(16)+" "

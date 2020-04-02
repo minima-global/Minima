@@ -1,6 +1,5 @@
 package org.minima.system.brains;
 
-import java.time.temporal.IsoFields;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
@@ -23,9 +22,7 @@ import org.minima.objects.TxPOW;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
-import org.minima.objects.base.MiniString;
 import org.minima.objects.proofs.ScriptProof;
 import org.minima.objects.proofs.SignatureProof;
 import org.minima.objects.proofs.TokenProof;
@@ -47,7 +44,7 @@ public class TxPOWChecker {
 		Transaction trans = zTxPOW.getTransaction();
 		
 		//Get the Hash
-		MiniHash transhash = Crypto.getInstance().hashObject(trans);
+		MiniData transhash = Crypto.getInstance().hashObject(trans);
 		
 		//Now cycle
 		Witness wit = zTxPOW.getWitness();
@@ -58,10 +55,10 @@ public class TxPOWChecker {
 		//Check each one and add.. this is only done once..
 		for(SignatureProof sig : sigs) {
 			//This is the actual public key that is being represented..
-//			MiniHash finalPubKey = sig.getFinalHash();
+//			MiniData finalPubKey = sig.getFinalHash();
 			
 			//Now check the leaf of the tree
-			MiniHash leafkey   = sig.getData();
+			MiniData leafkey   = sig.getData();
 			MiniData signature = sig.getSignature();
 		
 			//Check it..
@@ -106,7 +103,7 @@ public class TxPOWChecker {
 		//Burn Transaction check!.. 
 		if(!zTxPOW.getBurnTransaction().isEmpty()) {
 			//Get MAIN Transaction Hash - make sure is correct in Burn Transaction
-			MiniHash transid = zTxPOW.getTransID();
+			MiniData transid = zTxPOW.getTransID();
 			
 			//Check is correct on Burn Transaction..
 			if(!zTxPOW.getBurnTransaction().getLinkHash().isExactlyEqual(transid)) {
@@ -384,12 +381,12 @@ public class TxPOWChecker {
 			//Now get all the Input Amounts...
 			Hashtable<String, MiniNumber> inamounts = new Hashtable<>();
 			for(String token : tokens) {
-				inamounts.put(token, trans.sumInputs(new MiniHash(token)));
+				inamounts.put(token, trans.sumInputs(new MiniData(token)));
 			}
 			
 			//Now get the output amounts..
 			for(String token : tokens) {
-				MiniHash tok = new MiniHash(token);
+				MiniData tok = new MiniData(token);
 				
 				//Summthe outputs for this token type
 				MiniNumber outamt = trans.sumOutputs(tok);
@@ -415,7 +412,7 @@ public class TxPOWChecker {
 		
 		//The HASH of the Transaction.. needed for coinid
 		//The transaction may have been altered by floating inputs..
-		MiniHash transhash = Crypto.getInstance().hashObject(trans);
+		MiniData transhash = Crypto.getInstance().hashObject(trans);
 				
 		//Get outputs - add them to the MMR also..
 		ArrayList<Coin> outputs  = trans.getAllOutputs();
@@ -425,10 +422,10 @@ public class TxPOWChecker {
 			Coin output = outputs.get(i);
 			
 			//Now calculate the CoinID / TokenID
-			MiniHash coinid = Crypto.getInstance().hashObjects(transhash, new MiniByte(i));
+			MiniData coinid = Crypto.getInstance().hashObjects(transhash, new MiniByte(i));
 			
 			//Is this a token create output..
-			MiniHash tokid 			= output.getTokenID();
+			MiniData tokid 			= output.getTokenID();
 			TokenProof newtoken 	= null;
 			
 			//Is this a token or are we creating a Token

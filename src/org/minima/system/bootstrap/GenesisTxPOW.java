@@ -9,7 +9,7 @@ import org.minima.objects.Transaction;
 import org.minima.objects.TxPOW;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniHash;
+import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.tx.TXMiner;
 import org.minima.utils.Crypto;
@@ -30,7 +30,7 @@ public class GenesisTxPOW extends TxPOW{
 		
 		setBlockDifficulty(TXMiner.MAX_HASH);
 		
-		setParent(new MiniHash());
+		setParent(new MiniData());
 		
 		//Set Transaction and Witness..
 		Transaction trans = new Transaction();
@@ -67,7 +67,7 @@ public class GenesisTxPOW extends TxPOW{
 //		//Now add to the TXPOW..
 //		setMMRState(mmrstate);
 		
-//		mSuperParents[0] = new MiniHash(MiniData.getRandomData(32).getData());
+//		mSuperParents[0] = new MiniData(MiniData.getRandomData(32).getData());
 		
 		//Set the TXPOW
 		calculateTXPOWID();

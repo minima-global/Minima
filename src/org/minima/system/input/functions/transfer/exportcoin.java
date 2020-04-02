@@ -1,6 +1,6 @@
 package org.minima.system.input.functions.transfer;
 
-import org.minima.objects.base.MiniHash;
+import org.minima.objects.base.MiniData;
 import org.minima.system.brains.ConsensusUser;
 import org.minima.system.input.CommandFunction;
 import org.minima.utils.messages.Message;
@@ -21,7 +21,7 @@ public class exportcoin extends CommandFunction{
 		String pubks = zInput[1];
 		
 		Message export  = getResponseMessage(ConsensusUser.CONSENSUS_EXPORTCOIN)
-								.addObject("coinid", new MiniHash(pubks));
+								.addObject("coinid", new MiniData(pubks));
 		
 		getMainHandler().getConsensusHandler().PostMessage(export);
 	}

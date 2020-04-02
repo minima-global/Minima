@@ -3,7 +3,7 @@ package org.minima.database.txpowdb;
 import java.util.ArrayList;
 
 import org.minima.objects.TxPOW;
-import org.minima.objects.base.MiniHash;
+import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 
 public interface TxPowDB {
@@ -23,7 +23,7 @@ public interface TxPowDB {
 	 * @param zTxID
 	 * @return the TxPOW if found or NULL
 	 */
-	public TxPOWDBRow findTxPOWDBRow(MiniHash zTxPOWID);
+	public TxPOWDBRow findTxPOWDBRow(MiniData zTxPOWID);
 	
 	public ArrayList<TxPOWDBRow> getAllTxPOWDBRow();
 	
@@ -34,7 +34,7 @@ public interface TxPowDB {
 	 * Remove a single row
 	 * @param zTxPOWID
 	 */
-	public void removeTxPOW(MiniHash zTxPOWID);
+	public void removeTxPOW(MiniData zTxPOWID);
 	
 	/**
 	 * Remove all TxPOW rows from the database that are in blocks earlier than this.
@@ -46,7 +46,7 @@ public interface TxPowDB {
 	
 	public ArrayList<TxPOWDBRow> getAllUnusedTxPOW();
 	
-	public ArrayList<TxPOWDBRow> getChildBlocksTxPOW(MiniHash zParent);
+	public ArrayList<TxPOWDBRow> getChildBlocksTxPOW(MiniData zParent);
 	
 	public ArrayList<TxPOWDBRow> getAllBlocksMissingTransactions();
 	

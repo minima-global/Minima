@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.minima.objects.Coin;
-import org.minima.objects.base.MiniHash;
+import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.json.JSONObject;
 

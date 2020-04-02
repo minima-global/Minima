@@ -1,7 +1,7 @@
 package org.minima.database.coindb;
 
 import org.minima.objects.Coin;
-import org.minima.objects.base.MiniHash;
+import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 
 public interface CoinDBRow {

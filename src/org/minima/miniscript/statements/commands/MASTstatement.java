@@ -14,7 +14,7 @@ import org.minima.miniscript.values.HEXValue;
 import org.minima.miniscript.values.ScriptValue;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
-import org.minima.objects.base.MiniHash;
+import org.minima.objects.base.MiniData;
 import org.minima.objects.proofs.ScriptProof;
 
 public class MASTstatement implements Statement {
@@ -34,7 +34,7 @@ public class MASTstatement implements Statement {
 		HEXValue mast = (HEXValue) mMASTScript.getValue(zContract);
 		
 		//Convert to a hash
-		MiniHash scripthash = new MiniHash(mast.getRawData());
+		MiniData scripthash = new MiniData(mast.getRawData());
 		
 		//Now get that Script from the transaction..
 		Witness wit = zContract.getWitness();

@@ -14,7 +14,6 @@ import org.minima.database.coindb.CoinDBRow;
 import org.minima.database.mmr.MMREntry;
 import org.minima.database.mmr.MMRPrint;
 import org.minima.database.mmr.MMRSet;
-import org.minima.database.txpowdb.TxPOWDBRow;
 import org.minima.database.txpowdb.TxPowDBPrinter;
 import org.minima.database.txpowtree.BlockTree;
 import org.minima.database.txpowtree.BlockTreeNode;
@@ -25,7 +24,7 @@ import org.minima.objects.Address;
 import org.minima.objects.Coin;
 import org.minima.objects.PubPrivKey;
 import org.minima.objects.TxPOW;
-import org.minima.objects.base.MiniHash;
+import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.proofs.TokenProof;
 import org.minima.system.Main;
@@ -169,7 +168,7 @@ public class ConsensusPrint {
 			
 		}else if(zMessage.isMessageType(CONSENSUS_SEARCH)){
 			String address = zMessage.getString("address");
-			MiniHash addr  = new MiniHash(address);
+			MiniData addr  = new MiniData(address);
 			 
 			
 			//Now search for that address..
@@ -212,7 +211,7 @@ public class ConsensusPrint {
 			//Is this for a single address
 			String onlyaddress = "";
 			if(zMessage.exists("address")) {
-				onlyaddress = new MiniHash(zMessage.getString("address")).to0xString() ;
+				onlyaddress = new MiniData(zMessage.getString("address")).to0xString() ;
 			}
 			
 			//Current top block
@@ -248,7 +247,7 @@ public class ConsensusPrint {
 				if(coin.isInBlock() && rel) {
 					//What Token..
 					String     tokid 	= coin.getCoin().getTokenID().to0xString();
-					MiniHash   tokhash 	= new MiniHash(tokid);
+					MiniData   tokhash 	= new MiniData(tokid);
 					MiniNumber blknum   = coin.getInBlockNumber();
 					MiniNumber depth 	= top.sub(blknum);
 					
@@ -328,7 +327,7 @@ public class ConsensusPrint {
 				
 				//Get the Token ID
 				String tokenid 	= (String) jobj.get("tokenid");
-				MiniHash tok 	= new MiniHash(tokenid);
+				MiniData tok 	= new MiniData(tokenid);
 				if(tok.isExactlyEqual(Coin.MINIMA_TOKENID)) {
 					//Now work out the actual amounts..
 					MiniNumber tot_conf     = (MiniNumber) jobj.get("confirmed");
@@ -399,7 +398,7 @@ public class ConsensusPrint {
 			//Return all or some
 			String address = "";
 			if(zMessage.exists("address")) {
-				address = new MiniHash(zMessage.getString("address")).to0xString() ;
+				address = new MiniData(zMessage.getString("address")).to0xString() ;
 			}
 			
 			//get the MMR
@@ -451,7 +450,7 @@ public class ConsensusPrint {
 		
 		}else if(zMessage.isMessageType(CONSENSUS_TXPOW)){
 			String txpow = zMessage.getString("txpow");
-			MiniHash txp = new MiniHash(txpow);
+			MiniData txp = new MiniData(txpow);
 			
 			TxPOW pow = getMainDB().getTxPOW(txp);
 			
@@ -576,11 +575,11 @@ public class ConsensusPrint {
 	    return String.format("%.1f %sB", (double)v / (1L << (z*10)), " KMGTPE".charAt(z));
 	}
 	
-//	private MiniNumber getIfExists(Hashtable<MiniHash, MiniNumber> zHashTable, MiniHash zToken) {
-//		Enumeration<MiniHash> keys = zHashTable.keys();
+//	private MiniNumber getIfExists(Hashtable<MiniData, MiniNumber> zHashTable, MiniData zToken) {
+//		Enumeration<MiniData> keys = zHashTable.keys();
 //		
 //		while(keys.hasMoreElements()) {
-//			MiniHash key = keys.nextElement();
+//			MiniData key = keys.nextElement();
 //			if(key.isExactlyEqual(zToken)) {
 //				return zHashTable.get(key);	
 //			}

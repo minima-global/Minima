@@ -8,7 +8,7 @@ import org.minima.database.txpowdb.TxPOWDBRow;
 import org.minima.database.txpowtree.BlockTreeNode;
 import org.minima.objects.TxPOW;
 import org.minima.objects.base.MiniByte;
-import org.minima.objects.base.MiniHash;
+import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.backup.SyncPackage;
 import org.minima.system.backup.SyncPacket;
@@ -163,8 +163,8 @@ public class ConsensusNet {
 						
 						//SIMPLE - JUST ASK AGAIN INNEFFICIENT
 //						//Txns
-//						ArrayList<MiniHash> txns = txpow.getBlockTxns();
-//						for(MiniHash txn : txns) {
+//						ArrayList<MiniData> txns = txpow.getBlockTxns();
+//						for(MiniData txn : txns) {
 //							if(!getMainDB().isTxPOWFound(txn)) {
 //								//Request it!
 //								sendNetMessage(zMessage, NetClientReader.NETMESSAGE_TXPOW_REQUEST, txn);
@@ -187,7 +187,7 @@ public class ConsensusNet {
 			
 		}else if ( zMessage.isMessageType(CONSENSUS_NET_TXPOWID)) {
 			//Get the ID
-			MiniHash txpowid = (MiniHash) zMessage.getObject("txpowid");
+			MiniData txpowid = (MiniData) zMessage.getObject("txpowid");
 			
 			//Do we have it..?
 			TxPOW txpow = getMainDB().getTxPOW(txpowid);
@@ -198,7 +198,7 @@ public class ConsensusNet {
 		
 		}else if(zMessage.isMessageType(CONSENSUS_NET_TXPOWREQUEST)) {
 			//Request for a previously sent txpowid
-			MiniHash txpowid = (MiniHash) zMessage.getObject("txpowid");
+			MiniData txpowid = (MiniData) zMessage.getObject("txpowid");
 			
 			//Get it..
 			TxPOW txpow = getMainDB().getTxPOW(txpowid);
@@ -260,8 +260,8 @@ public class ConsensusNet {
 			}
 
 			//And now check the Txn list.. basically a mempool sync
-			ArrayList<MiniHash> txns = txpow.getBlockTxns();
-			for(MiniHash txn : txns) {
+			ArrayList<MiniData> txns = txpow.getBlockTxns();
+			for(MiniData txn : txns) {
 				if(getMainDB().getTxPOW(txn) == null) {
 					MinimaLogger.log("REQUEST MISSING TXPOW IN BLOCK ("+txpow.getBlockNumber()+") "+txn);
 					
@@ -322,7 +322,7 @@ public class ConsensusNet {
 		for(BlockTreeNode block : chain) {
 			//BLock number and hash.. BOTH have to match
 			MiniNumber bnum  = block.getTxPow().getBlockNumber();
-			MiniHash txpowid = block.getTxPowID();
+			MiniData txpowid = block.getTxPowID();
 			
 			//only use nodes after our cascade..
 			if(bnum.isMore(maincascade)) {

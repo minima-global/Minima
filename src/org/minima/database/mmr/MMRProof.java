@@ -1,21 +1,12 @@
 package org.minima.database.mmr;
 
-import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 
 import org.minima.objects.Coin;
-import org.minima.objects.base.MiniByte;
-import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.proofs.Proof;
-import org.minima.objects.proofs.Proof.ProofChunk;
-import org.minima.utils.Crypto;
-import org.minima.utils.Streamable;
-import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
 public class MMRProof extends Proof {

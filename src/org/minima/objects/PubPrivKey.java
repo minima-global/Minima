@@ -5,7 +5,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniHash;
 import org.minima.utils.Streamable;
 import org.minima.utils.digest.Digest;
 import org.minima.utils.digest.KeccakDigest;
@@ -18,7 +17,7 @@ public class PubPrivKey implements Streamable {
 	 * Key details
 	 */
 	MiniData mPrivateSeed;
-	MiniHash mPublicKey;
+	MiniData mPublicKey;
 	
 	private static final int WinternitzNumber = 12;
 	private static Digest getHashFunction() {
@@ -37,7 +36,7 @@ public class PubPrivKey implements Streamable {
 		WinternitzOTSignature wots = new WinternitzOTSignature(mPrivateSeed.getData(), getHashFunction(), WinternitzNumber);
 		
 		//Get the Public Key..
-		mPublicKey  = new MiniHash(wots.getPublicKey());
+		mPublicKey  = new MiniData(wots.getPublicKey());
 	}
 	
 	/**
@@ -46,7 +45,7 @@ public class PubPrivKey implements Streamable {
 	 */
 	public PubPrivKey(boolean empty) {}
 	
-	public MiniData sign(MiniHash zData) {
+	public MiniData sign(MiniData zData) {
 		//Create a WOTS
 		WinternitzOTSignature wots = new WinternitzOTSignature(mPrivateSeed.getData(), getHashFunction(), WinternitzNumber);
 		
@@ -57,11 +56,11 @@ public class PubPrivKey implements Streamable {
 		return new MiniData(signature);
 	}
 	
-	public boolean verify(MiniHash zData, MiniData zSignature) {
+	public boolean verify(MiniData zData, MiniData zSignature) {
 		return verify(mPublicKey, zData, zSignature);
 	}
 	
-	public static boolean verify(MiniHash zPubKey, MiniHash zData, MiniData zSignature) {
+	public static boolean verify(MiniData zPubKey, MiniData zData, MiniData zSignature) {
 		//WOTS Verify
 		WinternitzOTSVerify wver = new WinternitzOTSVerify(getHashFunction(), WinternitzNumber);
 		
@@ -75,7 +74,7 @@ public class PubPrivKey implements Streamable {
 		return resp.isExactlyEqual(zPubKey);
 	}
 	
-	public MiniHash getPublicKey() {
+	public MiniData getPublicKey() {
 		return mPublicKey;
 	}
 	
@@ -96,7 +95,7 @@ public class PubPrivKey implements Streamable {
 
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
-		mPublicKey   = MiniHash.ReadFromStream(zIn);
+		mPublicKey   = MiniData.ReadFromStream(zIn);
 		mPrivateSeed = MiniData.ReadFromStream(zIn);
 	}
 }

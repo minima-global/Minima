@@ -3,7 +3,7 @@ package org.minima.utils;
 import java.math.BigInteger;
 
 import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniHash;
+import org.minima.objects.base.MiniData;
 
 public class BaseConverter {
 	

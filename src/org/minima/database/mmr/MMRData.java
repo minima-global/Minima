@@ -5,14 +5,11 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.Hashtable;
 
 import org.minima.objects.Coin;
 import org.minima.objects.StateVariable;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.Crypto;
 import org.minima.utils.Streamable;
@@ -44,7 +41,7 @@ public class MMRData implements Streamable{
 	/**
 	 * The final Hash this represents in the MMR tree
 	 */
-	MiniHash mFinalHash;
+	MiniData mFinalHash;
 	
 	/**
 	 * Is this a HASH only affair
@@ -61,7 +58,7 @@ public class MMRData implements Streamable{
 	 * 
 	 * @param zData
 	 */
-	public MMRData(MiniHash zData) {
+	public MMRData(MiniData zData) {
 		//Only the final hash
 		mFinalHash = zData;
 		
@@ -114,7 +111,7 @@ public class MMRData implements Streamable{
 		}
 	}
 	
-	public MiniHash getFinalHash() {
+	public MiniData getFinalHash() {
 		return mFinalHash;
 	}
 	
@@ -203,7 +200,7 @@ public class MMRData implements Streamable{
 		mHashOnly         = hashonly.isTrue();
 		
 		if(mHashOnly) {
-			mFinalHash 	 = MiniHash.ReadFromStream(zIn);
+			mFinalHash 	 = MiniData.ReadFromStream(zIn);
 		}else {
 			mSpent   	 = MiniByte.ReadFromStream(zIn);
 			mCoin    	 = Coin.ReadFromStream(zIn);

@@ -8,7 +8,7 @@ import org.minima.database.mmr.MMRProof;
 import org.minima.database.mmr.MMRSet;
 import org.minima.miniscript.Contract;
 import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniHash;
+import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniString;
 import org.minima.system.brains.ConsensusBackup;
 import org.minima.system.brains.ConsensusUser;

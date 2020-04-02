@@ -1,7 +1,7 @@
 package org.minima.system.tx;
 
 import org.minima.objects.TxPOW;
-import org.minima.objects.base.MiniHash;
+import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
 import org.minima.system.SystemHandler;
@@ -9,22 +9,21 @@ import org.minima.system.brains.ConsensusHandler;
 import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.messages.Message;
-import org.minima.utils.messages.TimerMessage;
 
 public class TXMiner extends SystemHandler{
 
 	/**
 	 * The Maximum HASH Value Possible
 	 */
-	public static final MiniHash MAX_HASH = new MiniHash(
+	public static final MiniData MAX_HASH = new MiniData(
 							"0xFFFFFFFFFFFFFFFFFFFF"+
 							  "FFFFFFFFFFFFFFFFFFFF"+
 							  "FFFFFFFFFFFFFFFFFFFF"+
 							  "FFFF");
 	
 	
-	public static final MiniHash BASE_TXN 	= MAX_HASH;
-	public static final MiniHash BASE_BLOCK = MAX_HASH;
+	public static final MiniData BASE_TXN 	= MAX_HASH;
+	public static final MiniData BASE_BLOCK = MAX_HASH;
 	
 	public static final String TXMINER_TESTHASHING = "MINE_TESTHASHING";
 	public static final String TXMINER_MINETXPOW   = "MINE_MINETXPOW";
@@ -54,7 +53,7 @@ public class TXMiner extends SystemHandler{
 			MiniNumber nonce = MiniNumber.ZERO;
 			
 			//And now start hashing.. 
-			MiniHash hash = null;
+			MiniData hash = null;
 			boolean mining 	= true;
 			
 			//Do so many then recalculate.. to have the latest block data
@@ -119,7 +118,7 @@ public class TXMiner extends SystemHandler{
 			
 			//Keep cycling until it is ready 
 			boolean mining = true;
-			MiniHash hash = null;
+			MiniData hash = null;
 			while(mining && currentTime<maxTime && isRunning()) {
 				//Now Hash it..
 				hash = Crypto.getInstance().hashObject(txpow);

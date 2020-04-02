@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import org.minima.objects.Coin;
 import org.minima.objects.Transaction;
 import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniHash;
+import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
 import org.minima.system.SystemHandler;
@@ -70,8 +70,8 @@ public class ProcessManager extends SystemHandler {
 			if(!mRelCoin.equals("")) {
 				//Get the Coin..
 				Coin cc            = (Coin)zMessage.getObject("coin");
-				MiniHash transid = (MiniHash)zMessage.getObject("transid");
-				MiniHash txpowid = (MiniHash)zMessage.getObject("txpowid");
+				MiniData transid = (MiniData)zMessage.getObject("transid");
+				MiniData txpowid = (MiniData)zMessage.getObject("txpowid");
 				boolean spent      = zMessage.getBoolean("spent");
 				
 				//Make  JSON Object..

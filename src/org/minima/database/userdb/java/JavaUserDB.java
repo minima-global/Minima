@@ -7,17 +7,14 @@ import java.util.ArrayList;
 
 import org.minima.database.userdb.UserDB;
 import org.minima.database.userdb.UserDBRow;
-import org.minima.miniscript.Contract;
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
 import org.minima.objects.PubPrivKey;
 import org.minima.objects.Transaction;
 import org.minima.objects.TxPOW;
 import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.proofs.TokenProof;
-import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 
 public class JavaUserDB implements UserDB, Streamable{
@@ -132,7 +129,7 @@ public class JavaUserDB implements UserDB, Streamable{
 	
 
 	@Override
-	public boolean isSimpleAddress(MiniHash zAddress) {
+	public boolean isSimpleAddress(MiniData zAddress) {
 		for(Address addr : mAddresses) {
 			if(addr.isEqual(zAddress)) {
 				return true;
@@ -174,7 +171,7 @@ public class JavaUserDB implements UserDB, Streamable{
 	}
 	
 	@Override
-	public String getScript(MiniHash zAddress) {
+	public String getScript(MiniData zAddress) {
 		//Check the Addresses
 		for(Address addr : mTotalAddresses) {
 			if(addr.getAddressData().isExactlyEqual(zAddress)) {
@@ -187,7 +184,7 @@ public class JavaUserDB implements UserDB, Streamable{
 
 	
 	@Override
-	public boolean isAddressRelevant(MiniHash zAddress) {
+	public boolean isAddressRelevant(MiniData zAddress) {
 		for(Address addr : mTotalAddresses) {
 			if(addr.getAddressData().isExactlyEqual(zAddress)) {
 				return true;
@@ -220,7 +217,7 @@ public class JavaUserDB implements UserDB, Streamable{
 	}
 
 	@Override
-	public MiniHash getPublicKey(MiniHash zAddress) {
+	public MiniData getPublicKey(MiniData zAddress) {
 		for(Address addr : mAddresses) {
 			if(addr.isEqual(zAddress)) {
 				//What is the Public key!
@@ -230,7 +227,7 @@ public class JavaUserDB implements UserDB, Streamable{
 				
 				String pubk = script.substring(index, end);
 				
-				return new MiniHash(pubk);
+				return new MiniData(pubk);
 			}
 		}
 		return null;
@@ -354,7 +351,7 @@ public class JavaUserDB implements UserDB, Streamable{
 	}
 
 	@Override
-	public TokenProof getTokenDetail(MiniHash zTokenID) {
+	public TokenProof getTokenDetail(MiniData zTokenID) {
 		for(TokenProof td : mAllTokens) {
 			if(td.getTokenID().isExactlyEqual(zTokenID)) {
 				return td;
@@ -387,7 +384,7 @@ public class JavaUserDB implements UserDB, Streamable{
 	}
 
 //	@Override
-//	public void removeHistory(MiniHash zTxPowID) {
+//	public void removeHistory(MiniData zTxPowID) {
 //		ArrayList<TxPOW> newhist = new ArrayList<TxPOW>();
 //		
 //		for(TxPOW txpow : mHistory) {

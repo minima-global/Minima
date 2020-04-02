@@ -1,11 +1,9 @@
 package org.minima.database.txpowtree;
 
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 
-import org.minima.database.txpowdb.TxPOWDBRow;
-import org.minima.objects.base.MiniHash;
+import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.MinimaLogger;
 
@@ -73,7 +71,7 @@ public class BlockTree {
 		}
 		
 		//Otherwise get the parent block and add this to that
-		MiniHash prevblock = zNode.getTxPow().getParentID();
+		MiniData prevblock = zNode.getTxPow().getParentID();
 		
 		//Find the parent block.. from last uncascaded node onwards
 		BlockTreeNode parent = findNode(prevblock);
@@ -220,7 +218,7 @@ public class BlockTree {
 	 * @param zTxPOWID
 	 * @return
 	 */
-	public BlockTreeNode findNode(MiniHash zTxPOWID) {
+	public BlockTreeNode findNode(MiniData zTxPOWID) {
 		if(getChainRoot() == null) {
 			return null;
 		}
@@ -228,7 +226,7 @@ public class BlockTree {
 		return _findNode(getChainRoot(), zTxPOWID);
 	}
 	
-	private BlockTreeNode _findNode(BlockTreeNode zRoot, MiniHash zTxPOWID) {
+	private BlockTreeNode _findNode(BlockTreeNode zRoot, MiniData zTxPOWID) {
 		//Check..
 		if(zRoot.getTxPowID().isExactlyEqual(zTxPOWID)) {
 			return zRoot;
@@ -313,7 +311,7 @@ public class BlockTree {
 		BigInteger total = new BigInteger("0");
 		
 		//Cycle back from the tip..
-		MiniHash casc 			= mCascadeNode.getTxPowID();
+		MiniData casc 			= mCascadeNode.getTxPowID();
 		BlockTreeNode current 	= mTip;
 		int num=0;
 		while(current != null) {
@@ -346,7 +344,7 @@ public class BlockTree {
 //		BigInteger total = new BigInteger("0");
 //		
 //		//Cycle back fropm the tip..
-//		MiniHash casc 			= mCascadeNode.getTxPowID();
+//		MiniData casc 			= mCascadeNode.getTxPowID();
 //		BlockTreeNode current 	= mTip;
 //		int num=0;
 //		while(current != null) {

@@ -5,12 +5,10 @@ import java.util.ArrayList;
 import org.minima.miniscript.Contract;
 import org.minima.miniscript.exceptions.ExecutionException;
 import org.minima.miniscript.functions.MinimaFunction;
-import org.minima.miniscript.functions.cast.HEX;
 import org.minima.miniscript.values.NumberValue;
 import org.minima.miniscript.values.Value;
 import org.minima.objects.Coin;
 import org.minima.objects.Transaction;
-import org.minima.objects.base.MiniNumber;
 import org.minima.objects.proofs.TokenProof;
 
 public class GETOUTAMT extends MinimaFunction {

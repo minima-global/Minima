@@ -5,9 +5,8 @@ import java.util.ArrayList;
 import org.minima.database.coindb.CoinDB;
 import org.minima.database.coindb.CoinDBRow;
 import org.minima.objects.Coin;
-import org.minima.objects.base.MiniHash;
+import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
-import org.minima.utils.MinimaLogger;
 
 public class JavaCoinDB implements CoinDB{
 
@@ -44,7 +43,7 @@ public class JavaCoinDB implements CoinDB{
 	}
 
 	@Override
-	public ArrayList<CoinDBRow> checkForRelevantCoins(MiniHash zAddress) {
+	public ArrayList<CoinDBRow> checkForRelevantCoins(MiniData zAddress) {
 		ArrayList<CoinDBRow> ret = new ArrayList<>();
 		for(CoinDBRow row : mRows) {
 			if(row.getCoin().getAddress().isExactlyEqual(zAddress)) {
@@ -55,7 +54,7 @@ public class JavaCoinDB implements CoinDB{
 	}
 
 	@Override
-	public CoinDBRow getCoinRow(MiniHash zCoinID) {
+	public CoinDBRow getCoinRow(MiniData zCoinID) {
 		for(CoinDBRow row : mRows) {
 			if(row.getCoin().getCoinID().isExactlyEqual(zCoinID)) {
 				return row;

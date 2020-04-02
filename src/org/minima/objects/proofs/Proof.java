@@ -7,10 +7,8 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import org.minima.database.mmr.MMRProof;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniHash;
 import org.minima.utils.Crypto;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONArray;
@@ -19,9 +17,9 @@ import org.minima.utils.json.JSONObject;
 public class Proof implements Streamable {
 
 	public class ProofChunk {
-		MiniHash mHash;
+		MiniData mHash;
 		MiniByte mLeftRight;
-		public ProofChunk(MiniByte zLeft, MiniHash zHash) {
+		public ProofChunk(MiniByte zLeft, MiniData zHash) {
 			mLeftRight = zLeft;
 			mHash = zHash;
 		}
@@ -30,19 +28,19 @@ public class Proof implements Streamable {
 			return mLeftRight;
 		}
 		
-		public MiniHash getHash() {
+		public MiniData getHash() {
 			return mHash;
 		}
 	}
 	
 	//The data you are trying to prove..
-	protected MiniHash mData;
+	protected MiniData mData;
 	
 	//The Merkle Branch that when applied to the data gives the final proof;
 	protected ArrayList<ProofChunk> mProofChain;
 	
 	//Calculate this once
-	protected MiniHash mFinalHash;
+	protected MiniData mFinalHash;
 	protected MiniData mChainSHA;
 	protected boolean mFinalized;
 		
@@ -50,11 +48,11 @@ public class Proof implements Streamable {
 		mProofChain = new ArrayList<>();
 	}
 
-	public void setData(MiniHash zData) {
+	public void setData(MiniData zData) {
 		mData = zData;
 	}
 	
-	public MiniHash getData() {
+	public MiniData getData() {
 		return mData;
 	}
 	
@@ -75,7 +73,7 @@ public class Proof implements Streamable {
 			read++;
 			
 			//What data to hash
-			MiniHash data = MiniHash.ReadFromStream(dis);
+			MiniData data = MiniData.ReadFromStream(dis);
 			read += data.getLength();
 			
 			//Add to the Proof..
@@ -85,7 +83,7 @@ public class Proof implements Streamable {
 		finalizeHash();
 	}
 	
-	public void addProofChunk(MiniByte zLeft, MiniHash zHash) {
+	public void addProofChunk(MiniByte zLeft, MiniData zHash) {
 		mProofChain.add(new ProofChunk(zLeft, zHash));
 	}
 	
@@ -132,13 +130,13 @@ public class Proof implements Streamable {
 		return new MiniData(baos.toByteArray());
 	}
 	
-	public MiniHash getFinalHash() {
+	public MiniData getFinalHash() {
 		if(mFinalized) {
 			return mFinalHash;
 		}
 		
 		//Get the Final Hash of the Data
-		MiniHash current = mData;
+		MiniData current = mData;
 		
 		int len = getProofLen();
 		for(int i=0;i<len;i++) {
@@ -190,12 +188,12 @@ public class Proof implements Streamable {
 
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
-		mData = MiniHash.ReadFromStream(zIn);
+		mData = MiniData.ReadFromStream(zIn);
 		mProofChain = new ArrayList<>();
 		int len = zIn.readInt();
 		for(int i=0;i<len;i++) {
 			MiniByte left = MiniByte.ReadFromStream(zIn);
-			MiniHash hash = MiniHash.ReadFromStream(zIn);
+			MiniData hash = MiniData.ReadFromStream(zIn);
 			mProofChain.add(new ProofChunk(left, hash));
 		}
 		

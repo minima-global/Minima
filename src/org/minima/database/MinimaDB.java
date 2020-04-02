@@ -34,7 +34,6 @@ import org.minima.objects.TxPOW;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.backup.BackupManager;
 import org.minima.system.backup.SyncPackage;
@@ -111,7 +110,7 @@ public class MinimaDB {
 		MMRSet base = new MMRSet();
 		
 		//Add a single zero entry to create the first peak..
-		Coin gencoin    = new Coin(new MiniHash("0x00"), Address.TRUE_ADDRESS.getAddressData(), MiniNumber.ZERO, Coin.MINIMA_TOKENID);
+		Coin gencoin    = new Coin(new MiniData("0x00"), Address.TRUE_ADDRESS.getAddressData(), MiniNumber.ZERO, Coin.MINIMA_TOKENID);
 		MMRData gendata = new MMRData(MiniByte.FALSE, gencoin, MiniNumber.ZERO, new ArrayList<StateVariable>());
 		base.addUnspentCoin(gendata);
 		
@@ -139,7 +138,7 @@ public class MinimaDB {
 //		getBackup().backupFullBlock(gen, new ArrayList<>());
 	}
 	
-	public TxPOW getTxPOW(MiniHash zTxPOWID) {
+	public TxPOW getTxPOW(MiniData zTxPOWID) {
 		TxPOWDBRow row = mTxPOWDB.findTxPOWDBRow(zTxPOWID);
 		if(row == null) {
 			return null;
@@ -147,15 +146,15 @@ public class MinimaDB {
 		return row.getTxPOW();
 	}
 	
-	public boolean isTxPOWFound(MiniHash zTxPOWID) {
+	public boolean isTxPOWFound(MiniData zTxPOWID) {
 		return getTxPOW(zTxPOWID)!=null;
 	}
 	
-	public TxPOWDBRow getTxPOWRow(MiniHash zTxPOWID) {
+	public TxPOWDBRow getTxPOWRow(MiniData zTxPOWID) {
 		return mTxPOWDB.findTxPOWDBRow(zTxPOWID);
 	}
 	
-	public BlockTreeNode getBlockTreeNode(MiniHash zTxPowID) {
+	public BlockTreeNode getBlockTreeNode(MiniData zTxPowID) {
 		return mMainTree.findNode(zTxPowID);
 	}
 	
@@ -186,8 +185,8 @@ public class MinimaDB {
 		boolean newfullblock = false;
 		for(TxPOWDBRow unblock : unfinishedblocks) {
 			boolean allok = true;
-			ArrayList<MiniHash> txns = unblock.getTxPOW().getBlockTxns();
-			for(MiniHash txnid : txns) {
+			ArrayList<MiniData> txns = unblock.getTxPOW().getBlockTxns();
+			for(MiniData txnid : txns) {
 				if(getTxPOW(txnid) == null) {
 					allok = false;
 					break;
@@ -270,8 +269,8 @@ public class MinimaDB {
 				}
 				
 				//Now the Txns..
-				ArrayList<MiniHash> txpowlist = txpow.getBlockTxns();
-				for(MiniHash txid : txpowlist) {
+				ArrayList<MiniData> txpowlist = txpow.getBlockTxns();
+				for(MiniData txid : txpowlist) {
 					trow = mTxPOWDB.findTxPOWDBRow(txid);
 					if(trow!=null) {
 						//Set that it is in this block
@@ -387,7 +386,7 @@ public class MinimaDB {
 	 * Recursively adds any unaccounted for children
 	 * @param zParentID
 	 */
-	private void addTreeChildren(MiniHash zParentID) {
+	private void addTreeChildren(MiniData zParentID) {
 		ArrayList<TxPOWDBRow> unused_children = mTxPOWDB.getChildBlocksTxPOW(zParentID);
 		for(TxPOWDBRow txp : unused_children) {
 			//We can now add this one..
@@ -434,7 +433,7 @@ public class MinimaDB {
 				
 				//Check the root MMR..
 				if(allok) {
-					MiniHash root = mmrset.getMMRRoot();
+					MiniData root = mmrset.getMMRRoot();
 					if(!row.getTxPOW().getMMRRoot().isExactlyEqual(root)) {
 						allok = false;	
 					}
@@ -469,8 +468,8 @@ public class MinimaDB {
 		}
 		
 		//Now cycle through all the transactions in the block..
-		ArrayList<MiniHash> txns = zBlock.getBlockTxns();
-		for(MiniHash txn : txns) {
+		ArrayList<MiniData> txns = zBlock.getBlockTxns();
+		for(MiniData txn : txns) {
 			TxPOWDBRow row = getTxPOWRow(txn);
 			TxPOW txpow = row.getTxPOW();
 			
@@ -532,7 +531,7 @@ public class MinimaDB {
 		mMainTree = casc.getCascadeTree();
 	}
 	
-	public ArrayList<Coin> getTotalSimpleSpendableCoins(MiniHash zTokenID) {
+	public ArrayList<Coin> getTotalSimpleSpendableCoins(MiniData zTokenID) {
 		ArrayList<Coin> confirmed   = new ArrayList<>();
 		
 		MiniNumber top = getTopBlock();
@@ -664,14 +663,14 @@ public class MinimaDB {
 	public Message createTransaction(MiniNumber zAmount, Address zToAddress, 
 									 Address zChangeAddress, 
 									 ArrayList<Coin> zConfirmed,
-									 MiniHash zTokenID,
-									 MiniHash zChangeTokenID) {
+									 MiniData zTokenID,
+									 MiniData zChangeTokenID) {
 		//The Transaction
 		Transaction trx = new Transaction();
 		Witness wit 	= new Witness();
 		
 		//Which signatures are required
-		ArrayList<MiniHash> sigpubk = new ArrayList<>();
+		ArrayList<MiniData> sigpubk = new ArrayList<>();
 
 		//The Base current MMRSet
 		MMRSet basemmr  = getMainTree().getChainTip().getMMRSet();
@@ -709,7 +708,7 @@ public class MinimaDB {
 				wit.addMMRProof(proof);				
 				
 				//And finally sign!
-				MiniHash pubk = getUserDB().getPublicKey(cc.getAddress());
+				MiniData pubk = getUserDB().getPublicKey(cc.getAddress());
 				
 				//Add to list of signatures..
 				sigpubk.add(pubk);
@@ -741,8 +740,8 @@ public class MinimaDB {
 		}
 		
 		//Now we have a full transaction we can sign it!
-		MiniHash transhash = Crypto.getInstance().hashObject(trx);
-		for(MiniHash pubk : sigpubk) {
+		MiniData transhash = Crypto.getInstance().hashObject(trx);
+		for(MiniData pubk : sigpubk) {
 			//Get the Pub Priv..
 			PubPrivKey signer = getUserDB().getPubPrivKey(pubk);
 			
@@ -819,7 +818,7 @@ public class MinimaDB {
 					newdiff = BlockTreeNode.MAX_VAL;
 				}
 				//Create the hash
-				MiniHash diffhash = new MiniHash("0x"+newdiff.toString(16)); 
+				MiniData diffhash = new MiniData("0x"+newdiff.toString(16)); 
 				
 				//Now set the new difficulty
 				txpow.setBlockDifficulty(diffhash);
@@ -835,7 +834,7 @@ public class MinimaDB {
 		int sbl = tip.getSuperBlockLevel();
 		
 		//All levels below this now point to the last block..
-		MiniHash tiptxid = tip.getTxPowID();
+		MiniData tiptxid = tip.getTxPowID();
 		for(int i=sbl;i>=0;i--) {
 			txpow.mSuperParents[i] = tiptxid;
 		}			
@@ -885,7 +884,7 @@ public class MinimaDB {
 		}
 		
 		//Set the current MMR
-		MiniHash root =  newset.getMMRRoot();
+		MiniData root =  newset.getMMRRoot();
 		txpow.setMMRRoot(root);
 		
 		//And return..
