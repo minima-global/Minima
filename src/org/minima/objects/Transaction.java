@@ -90,7 +90,7 @@ public class Transaction implements Streamable {
 	public MiniNumber sumInputs(MiniData zTokenID) {
 		MiniNumber tot = MiniNumber.ZERO;
 		for(Coin cc : mInputs) {
-			if(cc.getTokenID().isExactlyEqual(zTokenID)) {
+			if(cc.getTokenID().isEqual(zTokenID)) {
 				tot = tot.add(cc.mAmount);	
 			}
 		}
@@ -108,7 +108,7 @@ public class Transaction implements Streamable {
 	public MiniNumber sumOutputs(MiniData zTokenID) {
 		MiniNumber tot = MiniNumber.ZERO;
 		for(Coin cc : mOutputs) {
-			if(cc.getTokenID().isExactlyEqual(zTokenID)) {
+			if(cc.getTokenID().isEqual(zTokenID)) {
 				tot = tot.add(cc.mAmount);	
 			}
 		}
@@ -120,7 +120,7 @@ public class Transaction implements Streamable {
 	 */
 	public Coin getRemainderCoin(MiniData zTokenID) {
 		for(Coin cc : mOutputs) {
-			if(cc.isRemainder() && cc.getTokenID().isExactlyEqual(zTokenID)) {
+			if(cc.isRemainder() && cc.getTokenID().isEqual(zTokenID)) {
 				return cc;
 			}
 		}
@@ -137,7 +137,7 @@ public class Transaction implements Streamable {
 		ArrayList<String> tokens = new ArrayList<>();
 		for(Coin cc : mOutputs) {
 			MiniData tokenhash = cc.getTokenID();
-			if(tokenhash.isExactlyEqual(Coin.TOKENID_CREATE)){
+			if(tokenhash.isEqual(Coin.TOKENID_CREATE)){
 				tokenhash = Coin.MINIMA_TOKENID;
 			}
 			

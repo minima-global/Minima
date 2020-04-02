@@ -41,13 +41,13 @@ public class JavaDB implements TxPowDB{
 	@Override
 	public TxPOWDBRow findTxPOWDBRow(MiniData zTxPOWID) {
 		for(JavaDBRow row : mRows) {
-			if(row.getTxPOW().getTxPowID().isExactlyEqual(zTxPOWID)) {
+			if(row.getTxPOW().getTxPowID().isEqual(zTxPOWID)) {
 				return row;
 			}
 		}
 		
 		for(JavaDBRow row : mDeletedRows) {
-			if(row.getTxPOW().getTxPowID().isExactlyEqual(zTxPOWID)) {
+			if(row.getTxPOW().getTxPowID().isEqual(zTxPOWID)) {
 				return row;
 			}
 		}
@@ -141,7 +141,7 @@ public class JavaDB implements TxPowDB{
 		ArrayList<JavaDBRow> newRows = new ArrayList<>();
 		
 		for(JavaDBRow row : mRows) {
-			if( !row.getTxPOW().getTxPowID().isExactlyEqual(zTxPOWID)) {
+			if( !row.getTxPOW().getTxPowID().isEqual(zTxPOWID)) {
 				newRows.add(row);
 				
 				//Add to the deleted rows..
@@ -159,7 +159,7 @@ public class JavaDB implements TxPowDB{
 		ArrayList<TxPOWDBRow> ret = new ArrayList<>();
 		
 		for(JavaDBRow row : mRows) {
-			if(row.getTxPOW().isBlock() && row.getTxPOW().getParentID().isExactlyEqual(zParent)) {
+			if(row.getTxPOW().isBlock() && row.getTxPOW().getParentID().isEqual(zParent)) {
 				ret.add(row);
 			}
 		}

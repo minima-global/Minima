@@ -178,7 +178,7 @@ public class ConsensusTxn {
 			Coin cc = crow.getCoin();
 			
 			//Is it a Token ? 
-			if(!cc.getTokenID().isExactlyEqual(Coin.MINIMA_TOKENID)) {
+			if(!cc.getTokenID().isEqual(Coin.MINIMA_TOKENID)) {
 				//Add the Token details..
 				TokenProof tokendets = getMainDB().getUserDB().getTokenDetail(cc.getTokenID());
 				
@@ -234,7 +234,7 @@ public class ConsensusTxn {
 			Witness wit     =  getMainDB().getUserDB().getUserRow(trans).getWitness();
 			
 			//Is it a Token ? 
-			if(!out.getTokenID().isExactlyEqual(Coin.MINIMA_TOKENID)) {
+			if(!out.getTokenID().isEqual(Coin.MINIMA_TOKENID)) {
 				//Add the Token details..
 				TokenProof tokendets = getMainDB().getUserDB().getTokenDetail(out.getTokenID());
 				

@@ -40,7 +40,7 @@ public class HEXValue extends Value {
 	
 	@Override
 	public boolean isEqual(Value zValue) {
-		return mData.isExactlyEqual(zValue.getMiniData());
+		return mData.isEqual(zValue.getMiniData());
 	}
 	
 	@Override

@@ -106,7 +106,7 @@ public class TxPOWChecker {
 			MiniData transid = zTxPOW.getTransID();
 			
 			//Check is correct on Burn Transaction..
-			if(!zTxPOW.getBurnTransaction().getLinkHash().isExactlyEqual(transid)) {
+			if(!zTxPOW.getBurnTransaction().getLinkHash().isEqual(transid)) {
 				return false;
 			}
 			
@@ -176,7 +176,7 @@ public class TxPOWChecker {
 			contractlog.put("input", i);
 			contractlog.put("script", script);
 			
-			if(input.getCoinID().isExactlyEqual(gimme50.COINID_INPUT) && input.getAmount().isLessEqual(new MiniNumber("50"))){
+			if(input.getCoinID().isEqual(gimme50.COINID_INPUT) && input.getAmount().isLessEqual(new MiniNumber("50"))){
 				//We good.. TESTNET allows up to 50 printed..
 				//..
 				contractlog.put("isgimme50", true);
@@ -185,7 +185,7 @@ public class TxPOWChecker {
 				
 				//Check the Address is the hash of the SCRIPT
 				Address scraddr = new Address(script);
-				if(!scraddr.getAddressData().isExactlyEqual(input.getAddress())) {
+				if(!scraddr.getAddressData().isEqual(input.getAddress())) {
 					contractlog.put("error", "Serious - Invalid Address for script!");
 					return false;
 				}
@@ -246,7 +246,7 @@ public class TxPOWChecker {
 				
 				//Is this a Token ?
 				String tokscript = "";
-				if(!input.getTokenID().isExactlyEqual(Coin.MINIMA_TOKENID)) {
+				if(!input.getTokenID().isEqual(Coin.MINIMA_TOKENID)) {
 					//Do we have a token Script..
 					TokenProof tokdets = zWit.getTokenDetail(input.getTokenID());
 					
@@ -304,7 +304,7 @@ public class TxPOWChecker {
 				}
 				
 				//Is this a Token ?
-				if(!input.getTokenID().isExactlyEqual(Coin.MINIMA_TOKENID)) {
+				if(!input.getTokenID().isEqual(Coin.MINIMA_TOKENID)) {
 //					//Do we have a token Script..
 //					TokenProof tokdets = zWit.getTokenDetail(input.getTokenID());
 //					
@@ -430,7 +430,7 @@ public class TxPOWChecker {
 			
 			//Is this a token or are we creating a Token
 			TokenProof newtokdets = null;
-			if(tokid.isExactlyEqual(Coin.TOKENID_CREATE)) {
+			if(tokid.isEqual(Coin.TOKENID_CREATE)) {
 				//Make it the HASH ( CoinID | Total Amount..the token details )
 				TokenProof gentoken = trans.getTokenGenerationDetails();
 				newtokdets = new TokenProof(coinid, 
@@ -440,7 +440,7 @@ public class TxPOWChecker {
 				tokid = newtokdets.getTokenID();
 			
 				//Its a regular token transaction
-			}else if(!tokid.isExactlyEqual(Coin.MINIMA_TOKENID)) {
+			}else if(!tokid.isEqual(Coin.MINIMA_TOKENID)) {
 				//Get the token..
 				newtokdets = zWit.getTokenDetail(tokid);
 				

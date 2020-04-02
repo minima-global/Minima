@@ -61,10 +61,10 @@ public class MMRProof extends Proof {
 		Coin cc = getMMRData().getCoin();
 		
 		//Is this input for the correct details..
-		boolean coinidcheck  = cc.getCoinID().isExactlyEqual(zCoin.getCoinID());
+		boolean coinidcheck  = cc.getCoinID().isEqual(zCoin.getCoinID());
 		boolean amountcheck  = cc.getAmount().isEqual(zCoin.getAmount());
-		boolean addresscheck = cc.getAddress().isExactlyEqual(zCoin.getAddress());
-		boolean tokencheck   = cc.getTokenID().isExactlyEqual(zCoin.getTokenID());
+		boolean addresscheck = cc.getAddress().isEqual(zCoin.getAddress());
+		boolean tokencheck   = cc.getTokenID().isEqual(zCoin.getTokenID());
 		
 		return coinidcheck && amountcheck && addresscheck && tokencheck;
 	}

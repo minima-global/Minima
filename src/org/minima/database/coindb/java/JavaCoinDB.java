@@ -46,7 +46,7 @@ public class JavaCoinDB implements CoinDB{
 	public ArrayList<CoinDBRow> checkForRelevantCoins(MiniData zAddress) {
 		ArrayList<CoinDBRow> ret = new ArrayList<>();
 		for(CoinDBRow row : mRows) {
-			if(row.getCoin().getAddress().isExactlyEqual(zAddress)) {
+			if(row.getCoin().getAddress().isEqual(zAddress)) {
 				ret.add(row);
 			}
 		}
@@ -56,7 +56,7 @@ public class JavaCoinDB implements CoinDB{
 	@Override
 	public CoinDBRow getCoinRow(MiniData zCoinID) {
 		for(CoinDBRow row : mRows) {
-			if(row.getCoin().getCoinID().isExactlyEqual(zCoinID)) {
+			if(row.getCoin().getCoinID().isEqual(zCoinID)) {
 				return row;
 			}
 		}

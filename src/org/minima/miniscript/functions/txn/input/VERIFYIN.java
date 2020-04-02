@@ -53,8 +53,8 @@ public class VERIFYIN extends MinimaFunction{
 		Coin cc = ins.get(input);
 		
 		//Now Check
-		boolean addr = address.isExactlyEqual(cc.getAddress());  
-		boolean tok  = tokenid.isExactlyEqual(cc.getTokenID());  
+		boolean addr = address.isEqual(cc.getAddress());  
+		boolean tok  = tokenid.isEqual(cc.getTokenID());  
 		
 		//Amount can be 3 type.. EQ, LTE, GTE
 		boolean amt  = false;

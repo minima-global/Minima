@@ -111,7 +111,7 @@ public class SimpleBlockTreePrinter {
 			add += " [++CASCADING++]";
 		}
 		
-		if(zNode.getTxPowID().isExactlyEqual(mTipID)) {
+		if(zNode.getTxPowID().isEqual(mTipID)) {
 			add += " [++THE TIP++]";
 		}
 

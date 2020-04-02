@@ -106,7 +106,7 @@ public class Witness implements Streamable {
 	
 	public TokenProof getTokenDetail(MiniData zTokenID) {
 		for(TokenProof td : mTokenProofs) {
-			if(td.getTokenID().isExactlyEqual(zTokenID)) {
+			if(td.getTokenID().isEqual(zTokenID)) {
 				return td;
 			}
 		}
@@ -130,7 +130,7 @@ public class Witness implements Streamable {
 	
 	public ScriptProof getScript(MiniData zHash) {
 		for(ScriptProof proof : mScriptProofs) {
-			if(proof.getFinalHash().isExactlyEqual(zHash)) {
+			if(proof.getFinalHash().isEqual(zHash)) {
 				return proof;
 			}
 		}

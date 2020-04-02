@@ -73,7 +73,7 @@ public class Address implements Streamable{
 	}
 
 	public boolean isEqual(MiniData zAddress) {
-		return mAddressData.isNumericallyEqual(zAddress);
+		return mAddressData.isEqual(zAddress);
 	}
 	
 	@Override

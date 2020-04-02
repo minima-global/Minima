@@ -186,7 +186,7 @@ public class ConsensusPrint {
 				
 				for(MMREntry coinmmr : zero) {
 					if(!coinmmr.getData().isHashOnly()) {
-						if(!coinmmr.getData().isSpent() && coinmmr.getData().getCoin().getAddress().isExactlyEqual(addr)) {
+						if(!coinmmr.getData().isSpent() && coinmmr.getData().getCoin().getAddress().isEqual(addr)) {
 							String entry = coinmmr.getEntry().toString();
 							
 							//Only add once..
@@ -328,7 +328,7 @@ public class ConsensusPrint {
 				//Get the Token ID
 				String tokenid 	= (String) jobj.get("tokenid");
 				MiniData tok 	= new MiniData(tokenid);
-				if(tok.isExactlyEqual(Coin.MINIMA_TOKENID)) {
+				if(tok.isEqual(Coin.MINIMA_TOKENID)) {
 					//Now work out the actual amounts..
 					MiniNumber tot_conf     = (MiniNumber) jobj.get("confirmed");
 					MiniNumber tot_unconf   = (MiniNumber) jobj.get("unconfirmed");

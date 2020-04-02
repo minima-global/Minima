@@ -52,8 +52,8 @@ public class VERIFYOUT extends MinimaFunction{
 		Coin cc = outs.get(output);
 		
 		//Now Check
-		boolean addr = address.isExactlyEqual(cc.getAddress());  
-		boolean tok  = tokenid.isExactlyEqual(cc.getTokenID());  
+		boolean addr = address.isEqual(cc.getAddress());  
+		boolean tok  = tokenid.isEqual(cc.getTokenID());  
 		
 		//Amount can be 3 type.. EQ, LTE, GTE
 		boolean amt  = false;

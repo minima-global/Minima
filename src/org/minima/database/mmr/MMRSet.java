@@ -219,9 +219,9 @@ public class MMRSet implements Streamable {
 				Coin cc = entry.getData().getCoin();
 				
 				boolean notspent  = !entry.getData().isSpent();
-				boolean addr      = cc.getAddress().isExactlyEqual(zAddress);
+				boolean addr      = cc.getAddress().isEqual(zAddress);
 				boolean amount    = cc.getAmount().isMoreEqual(zAmount);
-				boolean tok       = cc.getTokenID().isExactlyEqual(zTokenID);
+				boolean tok       = cc.getTokenID().isEqual(zTokenID);
 				
 				if(addr && amount && tok && notspent){
 					return entry;
@@ -248,7 +248,7 @@ public class MMRSet implements Streamable {
 		
 		for(MMREntry entry : zero) {
 			if(!entry.getData().isHashOnly()) {
-				if(entry.getData().getCoin().getCoinID().isExactlyEqual(zCoinID)){
+				if(entry.getData().getCoin().getCoinID().isEqual(zCoinID)){
 					return entry;
 				}
 			}
@@ -393,7 +393,7 @@ public class MMRSet implements Streamable {
 				
 			}else {
 				//Check the value is what we expect it to be
-				if(!sibling.getData().getFinalHash().isExactlyEqual(pdata.getFinalHash())) {
+				if(!sibling.getData().getFinalHash().isEqual(pdata.getFinalHash())) {
 					//Hmm..
 					System.out.println("Sibling Inconsistency!! in MMR @ "+entrynum+" when hard adding proof");
 					
@@ -418,7 +418,7 @@ public class MMRSet implements Streamable {
 			//Check if we have it..
 			MMREntry parent = getEntry(entry.getParentRow(),entry.getParentEntry(), true);  
 			if(!parent.isEmpty()) {
-				if(!parent.getData().getFinalHash().isExactlyEqual(combined)) {
+				if(!parent.getData().getFinalHash().isEqual(combined)) {
 					//Hmm..
 					System.out.println("Parent Inconsistency!! in MMR @ "+entrynum+" when hard adding proof");
 					
@@ -521,7 +521,7 @@ public class MMRSet implements Streamable {
 		}else if(sibling.getBlockTime().isLessEqual(zProof.getBlockTime())) {
 			//Is it the original.. has all the micro details.. internal nodes are just the hash anyway
 			MiniData orighash = sibling.getData().getFinalHash();
-			if(!orighash.isExactlyEqual(phash)) {
+			if(!orighash.isEqual(phash)) {
 				sibling = setEntry(sibling.getRow(), sibling.getEntry(), new MMRData(phash));
 			}
 		}
@@ -564,7 +564,7 @@ public class MMRSet implements Streamable {
 				}else if(sibling.getBlockTime().isLessEqual(zProof.getBlockTime())) {
 					//Is it the original.. has all the micro details.. internal nodes are just the hash anyway
 					MiniData orighash = sibling.getData().getFinalHash();
-					if(!orighash.isExactlyEqual(phash)) {
+					if(!orighash.isEqual(phash)) {
 						sibling = setEntry(sibling.getRow(), sibling.getEntry(), new MMRData(phash));	
 					}	
 				}
@@ -624,7 +624,7 @@ public class MMRSet implements Streamable {
 				MMRData data = new MMRData(peak.getHashValue());
 				
 				//Is this the one to follow..
-				if(peak.getHashValue().isExactlyEqual(keepvalue)) {
+				if(peak.getHashValue().isEqual(keepvalue)) {
 					keeper = newmmr.addUnspentCoin(data);	
 				}else {
 					newmmr.addUnspentCoin(data);	
@@ -726,7 +726,7 @@ public class MMRSet implements Streamable {
 		//Is this is a Peak ? - if so, go no further..
 		boolean found = false;
 		for(MMREntry peak : peaks) {
-			if(proofpeak.isExactlyEqual(peak.getHashValue())) {
+			if(proofpeak.isEqual(peak.getHashValue())) {
 				found = true;
 				break;
 			}

@@ -71,7 +71,7 @@ public class PubPrivKey implements Streamable {
 		MiniData resp = new MiniData(pubkey);
 		
 		//Check..
-		return resp.isExactlyEqual(zPubKey);
+		return resp.isEqual(zPubKey);
 	}
 	
 	public MiniData getPublicKey() {

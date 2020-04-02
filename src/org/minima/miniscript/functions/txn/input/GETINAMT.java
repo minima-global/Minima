@@ -36,7 +36,7 @@ public class GETINAMT extends MinimaFunction {
 		Coin cc = ins.get(input);
 		
 		//Is it a Token..
-		if(!cc.getTokenID().isExactlyEqual(Coin.MINIMA_TOKENID)) {
+		if(!cc.getTokenID().isEqual(Coin.MINIMA_TOKENID)) {
 			//Get the Multiple..
 			TokenProof td = zContract.getWitness().getTokenDetail(cc.getTokenID());
 			return new NumberValue(cc.getAmount().mult(td.getScaleFactor()));

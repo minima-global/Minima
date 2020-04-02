@@ -142,7 +142,7 @@ public class JavaUserDB implements UserDB, Streamable{
 	@Override
 	public PubPrivKey getPubPrivKey(MiniData zPubKey) {
 		for(PubPrivKey key : mPubPrivKeys) {
-			if(key.getPublicKey().isExactlyEqual(zPubKey)) {
+			if(key.getPublicKey().isEqual(zPubKey)) {
 				return key;
 			}
 		}
@@ -174,7 +174,7 @@ public class JavaUserDB implements UserDB, Streamable{
 	public String getScript(MiniData zAddress) {
 		//Check the Addresses
 		for(Address addr : mTotalAddresses) {
-			if(addr.getAddressData().isExactlyEqual(zAddress)) {
+			if(addr.getAddressData().isEqual(zAddress)) {
 				return addr.getScript();
 			}
 		}
@@ -186,7 +186,7 @@ public class JavaUserDB implements UserDB, Streamable{
 	@Override
 	public boolean isAddressRelevant(MiniData zAddress) {
 		for(Address addr : mTotalAddresses) {
-			if(addr.getAddressData().isExactlyEqual(zAddress)) {
+			if(addr.getAddressData().isEqual(zAddress)) {
 				return true;
 			}
 		}
@@ -353,7 +353,7 @@ public class JavaUserDB implements UserDB, Streamable{
 	@Override
 	public TokenProof getTokenDetail(MiniData zTokenID) {
 		for(TokenProof td : mAllTokens) {
-			if(td.getTokenID().isExactlyEqual(zTokenID)) {
+			if(td.getTokenID().isEqual(zTokenID)) {
 				return td;
 			}
 		}

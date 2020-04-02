@@ -20,48 +20,6 @@ import org.minima.utils.Streamable;
  */
 public class MiniData implements Streamable {
 
-//	/**
-//	 * Utility HEX conversion functions
-//	 * 
-//	 * @param zHex
-//	 * @return
-//	 */
-//	protected static byte[] hexStringToByteArray(String zHex) {
-//		String hex = zHex;
-//		if(hex.startsWith("0x")) {
-//			hex = zHex.substring(2);
-//		}		
-//		
-//		//Go Upper case - make sure always the same
-//		hex = hex.toUpperCase();
-//		int len = hex.length();
-//	
-//		//Must be 2 digits per byte
-//		if(len % 2 != 0) {
-//			//Need a leading zero
-//			hex="0"+hex;
-//			len = hex.length();
-//		}
-//		
-//		byte[] data = new byte[len / 2];
-//	    for (int i = 0; i < len; i += 2) {
-//	        data[i / 2] = (byte) ((Character.digit(hex.charAt(i), 16) << 4) + Character.digit(hex.charAt(i+1), 16));
-//	    }
-//	    
-//	    return data;
-//	}
-//	
-//	private final static char[] hexArray = "0123456789ABCDEF".toCharArray();
-//	protected static String bytesToHex(byte[] bytes) {
-//	    char[] hexChars = new char[bytes.length * 2];
-//	    for ( int j = 0; j < bytes.length; j++ ) {
-//	        int v = bytes[j] & 0xFF;
-//	        hexChars[j * 2] = hexArray[v >>> 4];
-//	        hexChars[j * 2 + 1] = hexArray[v & 0x0F];
-//	    }
-//	    return new String(hexChars);
-//	}
-	
 	/**
 	 * The byte data
 	 */
@@ -73,7 +31,7 @@ public class MiniData implements Streamable {
 	protected BigInteger mDataVal;
 	
 	public MiniData() {
-		this("");
+		this(new byte[0]);
 	}
 	
 	public MiniData(String zHexString) {
@@ -85,16 +43,16 @@ public class MiniData implements Streamable {
 		setDataValue();
 	}
 	
+	private void setDataValue() {
+		mDataVal = new BigInteger(1,mData);
+	}
+	
 	public int getLength() {
 		return mData.length;
 	}
 	
 	public byte[] getData() {
 		return mData;
-	}
-	
-	protected void setDataValue() {
-		mDataVal = new BigInteger(1,mData);
 	}
 	
 	public BigInteger getDataValue() {
@@ -107,19 +65,13 @@ public class MiniData implements Streamable {
 	
 	@Override
 	public boolean equals(Object o) {
-		MiniData data = (MiniData)o;
-		return isExactlyEqual(data);
+		return isEqual((MiniData)o);
 	}
 	
-	public boolean isExactlyEqual(MiniData zCompare) {
+	public boolean isEqual(MiniData zCompare) {
 		if(getLength() != zCompare.getLength()) {
 			return false;
 		}
-		
-		return mDataVal.compareTo(zCompare.getDataValue()) == 0;
-	}
-	
-	public boolean isNumericallyEqual(MiniData zCompare) {
 		return mDataVal.compareTo(zCompare.getDataValue()) == 0;
 	}
 	
@@ -243,7 +195,7 @@ public class MiniData implements Streamable {
 	
 	
 	public static void main(String[] zArgs) {
-		MiniData data = new MiniData("00000FFF");
+		MiniData data = new MiniData();
 		
 		MinimaLogger.log("data    : "+data.toString());
 		MinimaLogger.log("value   : "+data.getDataValue().toString());

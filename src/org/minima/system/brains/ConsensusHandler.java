@@ -361,7 +361,7 @@ public class ConsensusHandler extends SystemHandler {
 			
 			//Is this a token amount or a minima amount
 			TokenProof tokendets = null;
-			if(!tok.isExactlyEqual(Coin.MINIMA_TOKENID)) {
+			if(!tok.isEqual(Coin.MINIMA_TOKENID)) {
 				//It's a token.. scale it..
 				MiniNumber samount = new MiniNumber(amount);
 				
@@ -388,7 +388,7 @@ public class ConsensusHandler extends SystemHandler {
 			//How much do we have..
 			MiniNumber total = new MiniNumber(); 
 			ArrayList<Coin> confirmed = null;
-			if(tok.isExactlyEqual(Coin.TOKENID_CREATE)) {
+			if(tok.isEqual(Coin.TOKENID_CREATE)) {
 				confirmed = getMainDB().getTotalSimpleSpendableCoins(Coin.MINIMA_TOKENID);
 				changetok = Coin.MINIMA_TOKENID;
 			}else {

@@ -214,7 +214,7 @@ public class MinimaDB {
 			
 			//Is there a new tip..
 			BlockTreeNode newtip = mMainTree.getChainTip();
-			if(newtip.getTxPowID().isExactlyEqual(tip.getTxPowID())) {
+			if(newtip.getTxPowID().isEqual(tip.getTxPowID())) {
 				//Same tip.. no change..
 				return;
 			}
@@ -223,7 +223,7 @@ public class MinimaDB {
 			ArrayList<BlockTreeNode> list = null;
 			
 			//Is it just one block difference
-			if(newtip.getParent().getTxPowID().isExactlyEqual(tip.getTxPowID())) {
+			if(newtip.getParent().getTxPowID().isEqual(tip.getTxPowID())) {
 				//Just one block difference.. no need to reset everything..
 				list = new ArrayList<>();
 				list.add(newtip);
@@ -434,7 +434,7 @@ public class MinimaDB {
 				//Check the root MMR..
 				if(allok) {
 					MiniData root = mmrset.getMMRRoot();
-					if(!row.getTxPOW().getMMRRoot().isExactlyEqual(root)) {
+					if(!row.getTxPOW().getMMRRoot().isEqual(root)) {
 						allok = false;	
 					}
 				}
@@ -539,7 +539,7 @@ public class MinimaDB {
 		//Do we have any inputs with this address..
 		ArrayList<CoinDBRow> relevant = getCoinDB().getComplete();
 		for(CoinDBRow row : relevant) {
-			if(row.isInBlock() && !row.isSpent() && row.getCoin().getTokenID().isExactlyEqual(zTokenID)){
+			if(row.isInBlock() && !row.isSpent() && row.getCoin().getTokenID().isEqual(zTokenID)){
 				MiniNumber depth = top.sub(row.getInBlockNumber());
 				if(depth.isMoreEqual(GlobalParams.MINIMA_CONFIRM_DEPTH)) {
 					//Is this a simple address..

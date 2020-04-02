@@ -330,7 +330,7 @@ public class ConsensusNet {
 				for(SyncPacket spack : introchain) {
 					if(spack.getTxPOW().getBlockNumber().isEqual(bnum)) {
 						//Check the TxPOWID..
-						if(spack.getTxPOW().getTxPowID().isExactlyEqual(txpowid)) {
+						if(spack.getTxPOW().getTxPowID().isEqual(txpowid)) {
 							//Crossover!
 							found = true;
 							crossover = bnum;

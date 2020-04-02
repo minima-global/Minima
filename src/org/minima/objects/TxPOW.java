@@ -282,7 +282,7 @@ public class TxPOW implements Streamable {
 				old = curr;
 				counter++;
 			}else {
-				if(old.isExactlyEqual(curr)) {
+				if(old.isEqual(curr)) {
 					counter++;
 					//Is this the last one..
 					if(i==GlobalParams.MINIMA_CASCADE_LEVELS-1) {
@@ -378,7 +378,7 @@ public class TxPOW implements Streamable {
 				old = curr;
 				counter++;
 			}else {
-				if(old.isExactlyEqual(curr)) {
+				if(old.isEqual(curr)) {
 					counter++;
 					//Is this the last one..
 					if(i==GlobalParams.MINIMA_CASCADE_LEVELS-1) {

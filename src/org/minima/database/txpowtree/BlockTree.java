@@ -113,7 +113,7 @@ public class BlockTree {
 		//Link the MMR..
 		if(zNode.getMMRSet() != null) {
 			if(zLinkAll) {
-				if(mTip.getTxPowID().isExactlyEqual(zNode.getTxPow().getParentID())) {
+				if(mTip.getTxPowID().isEqual(zNode.getTxPow().getParentID())) {
 					//Correct Parent.. can link the MMR!
 					zNode.getMMRSet().setParent(mTip.getMMRSet());
 				}
@@ -122,7 +122,7 @@ public class BlockTree {
 //					zNode.getMMRSet().setParent(mTip.getMMRSet());
 //				}
 				
-				if(!mTip.isCascade() && mTip.getTxPowID().isExactlyEqual(zNode.getTxPow().getParentID())) {
+				if(!mTip.isCascade() && mTip.getTxPowID().isEqual(zNode.getTxPow().getParentID())) {
 					//Correct Parent.. can link the MMR!
 					zNode.getMMRSet().setParent(mTip.getMMRSet());
 				}
@@ -228,7 +228,7 @@ public class BlockTree {
 	
 	private BlockTreeNode _findNode(BlockTreeNode zRoot, MiniData zTxPOWID) {
 		//Check..
-		if(zRoot.getTxPowID().isExactlyEqual(zTxPOWID)) {
+		if(zRoot.getTxPowID().isEqual(zTxPOWID)) {
 			return zRoot;
 		}
 		
@@ -319,7 +319,7 @@ public class BlockTree {
 			total = total.add(current.getTxPow().getBlockDifficulty().getDataValue());
 			num++;
 			
-			if(current.getTxPowID().isExactlyEqual(casc)) {
+			if(current.getTxPowID().isEqual(casc)) {
 				//It's the final node.. quit
 				break;
 			}

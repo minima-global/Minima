@@ -446,7 +446,7 @@ public class Contract {
 		MiniData checksig = zSignature.getMiniData();
 		
 		for(Value sig : mSignatures) {
-			if(sig.getMiniData().isNumericallyEqual(checksig)) {
+			if(sig.getMiniData().isEqual(checksig)) {
 				return true;
 			}
 		}
