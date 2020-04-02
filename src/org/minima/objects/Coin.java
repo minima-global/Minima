@@ -137,7 +137,9 @@ public class Coin implements Streamable {
 		obj.put("address", mAddress.toString());
 		obj.put("amount", mAmount.toString());
 		obj.put("tokenid", mTokenID.toString());
+		
 		obj.put("floating", mFloating);
+		obj.put("remainder", mRemainder);
 		
 		return obj;
 	}
