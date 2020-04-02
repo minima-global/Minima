@@ -10,6 +10,7 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.proofs.ScriptProof;
 import org.minima.objects.proofs.SignatureProof;
 import org.minima.objects.proofs.TokenProof;
+import org.minima.utils.Crypto;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
@@ -133,10 +134,26 @@ public class Witness implements Streamable {
 		int len = zAddress.getLength();
 		
 		//32 is the default.. any less and it's a double hash..
-		
 		for(ScriptProof proof : mScriptProofs) {
-			if(proof.getFinalHash().isEqual(zAddress)) {
+			MiniData fulladdr = proof.getFinalHash();
+			
+			//A normal 64 byte address
+			if(fulladdr.isEqual(zAddress)) {
 				return proof;
+			}
+			
+			//It's the smaller version
+			if(len != 64) {
+				//Try the hash..
+				int bitlength = len * 8;
+				
+				//Hash it..
+				MiniData hash = new MiniData(Crypto.getInstance().hashData(fulladdr.getData(), bitlength));
+				
+				//Check it..
+				if(hash.isEqual(zAddress)) {
+					return proof;
+				}
 			}
 		}
 		return null;

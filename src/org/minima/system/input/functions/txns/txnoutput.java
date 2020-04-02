@@ -27,7 +27,16 @@ public class txnoutput extends CommandFunction {
 			return;
 		}
 		
+		//Check the Address for Minima Address
 		String address = zInput[3];
+		if(address.startsWith("0x")) {
+			//It's a regular HASH address
+			address = new MiniData(address).to0xString();
+		}else if(address.startsWith("Mx")) {
+			//It's a Minima Address!
+			address = Address.convertMinimAddress(address).to0xString();
+		}
+		
 		Address addr = new Address(new MiniData(address));
 
 		// is there a TokenID

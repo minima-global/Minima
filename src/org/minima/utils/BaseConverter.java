@@ -60,7 +60,7 @@ public class BaseConverter {
 	
 	public static String encode32(byte[] zData) throws ArithmeticException {
 		if(zData.length % 5 != 0) {
-			throw new ArithmeticException("Encode32 data MUST be multiples of 5 in length");
+			throw new ArithmeticException("Minima Address Encode32 data MUST be multiples of 5 in length");
 		}
 		
 		//The final length
@@ -122,7 +122,7 @@ public class BaseConverter {
 		int strlen = zHex32.length();
 		
 		if(strlen % 8 != 0) {
-			throw new ArithmeticException("Base 32 String must be multiple of 8 in length");
+			throw new ArithmeticException("Minima Address Base 32 String must be multiple of 8 in length");
 		}
 		
 		//Get the Len..

@@ -172,7 +172,7 @@ public class TxPOWChecker {
 				
 				//Check the Address is the hash of the SCRIPT
 				Address scraddr = new Address(script);
-				if(!scraddr.getAddressData().isEqual(input.getAddress())) {
+				if(!scraddr.isEqual(input.getAddress())) {
 					contractlog.put("error", "Serious - Invalid Address for script!");
 					return false;
 				}

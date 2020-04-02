@@ -348,7 +348,15 @@ public class ConsensusHandler extends SystemHandler {
 			
 		}else if ( zMessage.isMessageType(CONSENSUS_CREATETRANS) ) {
 			//How much to who ?
-			String address 		= new MiniData(zMessage.getString("address")).to0xString();
+			String address 	= zMessage.getString("address");
+			if(address.startsWith("0x")) {
+				//It's a regular HASH address
+				address = new MiniData(address).to0xString();
+			}else if(address.startsWith("Mx")) {
+				//It's a Minima Address!
+				address = Address.convertMinimAddress(address).to0xString();
+			}
+			
 			String tokenid 	   	= new MiniData(zMessage.getString("tokenid")).to0xString();
 			String amount  		= zMessage.getString("amount");
 			
