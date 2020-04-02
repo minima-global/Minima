@@ -13,8 +13,18 @@ import org.minima.utils.messages.TimerMessage;
 
 public class TXMiner extends SystemHandler{
 
-	public static final MiniHash BASE_TXN 	= MiniHash.MAX_HASH;
-	public static final MiniHash BASE_BLOCK = MiniHash.MAX_HASH;
+	/**
+	 * The Maximum HASH Value Possible
+	 */
+	public static final MiniHash MAX_HASH = new MiniHash(
+							"0xFFFFFFFFFFFFFFFFFFFF"+
+							  "FFFFFFFFFFFFFFFFFFFF"+
+							  "FFFFFFFFFFFFFFFFFFFF"+
+							  "FFFF");
+	
+	
+	public static final MiniHash BASE_TXN 	= MAX_HASH;
+	public static final MiniHash BASE_BLOCK = MAX_HASH;
 	
 	public static final String TXMINER_TESTHASHING = "MINE_TESTHASHING";
 	public static final String TXMINER_MINETXPOW   = "MINE_MINETXPOW";

@@ -215,7 +215,7 @@ public class ConsensusUser {
 						String tokenid = tok.substring(index+1).trim();
 						
 						//Create this coin
-						Coin outcoin = new Coin(MiniHash.ZERO32, 
+						Coin outcoin = new Coin(new MiniHash("0x00"), 
 												new MiniHash(address), 
 												new MiniNumber(amount), 
 												new MiniHash(tokenid));
@@ -307,8 +307,8 @@ public class ConsensusUser {
 			cc.setGlobalVariable("@INPUT", new NumberValue(0));
 			cc.setGlobalVariable("@INBLKNUM", new NumberValue(0));
 			cc.setGlobalVariable("@AMOUNT", new NumberValue(0));
-			cc.setGlobalVariable("@TOKENID", new HEXValue(MiniHash.ZERO32));
-			cc.setGlobalVariable("@COINID", new HEXValue(MiniHash.ZERO32));
+			cc.setGlobalVariable("@TOKENID", new HEXValue("0x00"));
+			cc.setGlobalVariable("@COINID", new HEXValue("0x00"));
 			cc.setGlobalVariable("@TOTIN", new NumberValue(1));
 			cc.setGlobalVariable("@TOTOUT", new NumberValue(trans.getAllOutputs().size()));
 			

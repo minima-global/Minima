@@ -11,17 +11,16 @@ import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
+import org.minima.system.tx.TXMiner;
 import org.minima.utils.Crypto;
 import org.minima.utils.SuperBlockLevels;
 
 public class GenesisTxPOW extends TxPOW{
 	
-	public static MiniHash GENESIS_INPUT = new MiniHash("0xFFEEDDCCBBAA998877665544332211");
-	
 	public GenesisTxPOW() {
 		super();
 		
-		setTxDifficulty(MiniHash.MAX_HASH);
+		setTxDifficulty(TXMiner.MAX_HASH);
 		
 		setNonce(new MiniNumber("256"));
 		 
@@ -29,7 +28,7 @@ public class GenesisTxPOW extends TxPOW{
 		
 		setBlockNumber(new MiniNumber("0"));
 		
-		setBlockDifficulty(MiniHash.MAX_HASH);
+		setBlockDifficulty(TXMiner.MAX_HASH);
 		
 		setParent(new MiniHash());
 		

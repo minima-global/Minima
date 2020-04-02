@@ -29,7 +29,7 @@ public class Transaction implements Streamable {
 
 	/**
 	 * The Hash of a prior transaction if this is a burn transaction
-	 * Or a custom or random valuevalue
+	 * MUST Be 0x00 to be a normal transaction.
 	 */
 	protected MiniHash mLinkHash = new MiniHash("0x00");
 	
@@ -114,7 +114,7 @@ public class Transaction implements Streamable {
 		}
 		return tot;
 	}
-
+	
 	/**
 	 * Get the Remainder Output Coin for a specific token..
 	 */

@@ -12,6 +12,7 @@ import java.util.Date;
 
 import org.minima.GlobalParams;
 import org.minima.objects.base.MiniByte;
+import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniHash;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.Crypto;
@@ -102,7 +103,7 @@ public class TxPOW implements Streamable {
 	 * A Random Magic number so that everyone is working on a different TxPOW in the pulse 
 	 * (since there is no coinbase..)
 	 */
-	public MiniHash mMagic = new MiniHash();//MiniHash.getRandomData();
+	public MiniData mMagic = MiniData.getRandomData(32);
 	
 	/**
 	 * A Chain ID. Useful when running side-chains, as only this TokenID will be valid to POS mine it. 

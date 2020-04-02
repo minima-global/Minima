@@ -66,7 +66,7 @@ public class ConsensusHandler extends SystemHandler {
 	
 	//DEBUG FUNCTION
 	public static final String CONSENSUS_GIMME50 			= "CONSENSUS_GIMME50";
-	public static final String CONSENSUS_STRESS_TRANS 		= "CONSENSUS_STRESS_TRANS";
+//	public static final String CONSENSUS_STRESS_TRANS 		= "CONSENSUS_STRESS_TRANS";
 	
 		
 	/**
@@ -444,28 +444,29 @@ public class ConsensusHandler extends SystemHandler {
 		/**
 		 * Other Functions
 		 */
-		}else if(zMessage.isMessageType(CONSENSUS_STRESS_TRANS)) {
-			//Send a random transaction!
-			Transaction trans = new Transaction();
-			Witness wit = new Witness();
+//		}else if(zMessage.isMessageType(CONSENSUS_STRESS_TRANS)) {
+//			//Send a random transaction!
+//			Transaction trans = new Transaction();
+//			Witness wit = new Witness();
+//			
+//			Coin in = new Coin(gimme50.COINID_INPUT,Address.TRUE_ADDRESS.getAddressData(),new MiniNumber("1"), MiniHash.ZERO32);
+//			trans.addInput(in);
+//			wit.addScript(Address.TRUE_ADDRESS.getScript());
+//			
+//			//And send to the new address
+//			Address outaddr = new Address(new MiniHash(MiniData.getRandomData(32).getData()));
+//			Coin out = new Coin(Coin.COINID_OUTPUT,outaddr.getAddressData(),new MiniNumber("1"), MiniHash.ZERO32);
+//			trans.addOutput(out);
+//			
+//			//Now send it..
+//			Message mine = new Message(ConsensusHandler.CONSENSUS_SENDTRANS)
+//								.addObject("transaction", trans)
+//								.addObject("witness", wit);
+//			InputHandler.addResponseMesage(mine, zMessage);
+//			
+//			PostMessage(mine);
+//		
 			
-			Coin in = new Coin(gimme50.COINID_INPUT,Address.TRUE_ADDRESS.getAddressData(),new MiniNumber("1"), MiniHash.ZERO32);
-			trans.addInput(in);
-			wit.addScript(Address.TRUE_ADDRESS.getScript());
-			
-			//And send to the new address
-			Address outaddr = new Address(new MiniHash(MiniData.getRandomData(32).getData()));
-			Coin out = new Coin(Coin.COINID_OUTPUT,outaddr.getAddressData(),new MiniNumber("1"), MiniHash.ZERO32);
-			trans.addOutput(out);
-			
-			//Now send it..
-			Message mine = new Message(ConsensusHandler.CONSENSUS_SENDTRANS)
-								.addObject("transaction", trans)
-								.addObject("witness", wit);
-			InputHandler.addResponseMesage(mine, zMessage);
-			
-			PostMessage(mine);
-		
 		}else if(zMessage.isMessageType(CONSENSUS_GIMME50)) {
 			//construct a special transaction that pays 50 mini to an address this user controls..
 			Address addr = getMainDB().getUserDB().newSimpleAddress();
@@ -477,14 +478,14 @@ public class ConsensusHandler extends SystemHandler {
 			Witness wit = new Witness();
 					
 			//Create the correct inputs..
-			Coin in = new Coin(gimme50.COINID_INPUT,Address.TRUE_ADDRESS.getAddressData(),new MiniNumber("50"), MiniHash.ZERO32);
+			Coin in = new Coin(gimme50.COINID_INPUT,Address.TRUE_ADDRESS.getAddressData(),new MiniNumber("50"), Coin.MINIMA_TOKENID);
 			
 			//Add to the transaction
 			trans.addInput(in);
 			wit.addScript(Address.TRUE_ADDRESS.getScript());
 			
 			//And send to the new address
-			Coin out = new Coin(Coin.COINID_OUTPUT,addr.getAddressData(),new MiniNumber("50"), MiniHash.ZERO32);
+			Coin out = new Coin(Coin.COINID_OUTPUT,addr.getAddressData(),new MiniNumber("50"), Coin.MINIMA_TOKENID);
 			trans .addOutput(out);
 			
 			//Now send it..

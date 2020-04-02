@@ -17,9 +17,7 @@ public class Coin implements Streamable {
 	 * Outputs don't specify a coinid
 	 */
 	public static final MiniHash MINIMA_TOKENID = new MiniHash("0x00");
-	
 	public static final MiniHash COINID_OUTPUT  = new MiniHash("0x00");
-	
 	public static final MiniHash TOKENID_CREATE = new MiniHash("0xFF");
 	
 	/**

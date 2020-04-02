@@ -22,24 +22,19 @@ import org.minima.utils.Maths;
  */
 public class MiniHash extends MiniData {
 
-	/**
-	 * The full length of this HASH
-	 */
-	public static final int HASH_LENGTH = 32;
-	
-	/**
-	 * The Maximum HASH Value Possible
-	 */
-	public static final MiniHash MAX_HASH = new MiniHash(
-							"0xFFFFFFFFFFFFFFFFFFFF"+
-							  "FFFFFFFFFFFFFFFFFFFF"+
-							  "FFFFFFFFFFFFFFFFFFFF"+
-							  "FFFF");
-	
+//	/**
+//	 * The Maximum HASH Value Possible
+//	 */
+//	public static final MiniHash MAX_HASH = new MiniHash(
+//							"0xFFFFFFFFFFFFFFFFFFFF"+
+//							  "FFFFFFFFFFFFFFFFFFFF"+
+//							  "FFFFFFFFFFFFFFFFFFFF"+
+//							  "FFFF");
+//	
 	/**
 	 * A zero filled hash
 	 */
-	public static MiniHash ZERO32 = new MiniHash("0x00");
+//	public static MiniHash ZERO32 = new MiniHash("0x00");
 	
 	public MiniHash() {
 //		this("0x00");
@@ -56,34 +51,34 @@ public class MiniHash extends MiniData {
 		super(zHex);
 	}
 	
-	public static String ensureSize(String zHEX) {
-		String hex = zHEX;
-		if(hex.startsWith("0x")) {
-			hex = zHEX.substring(2);
-		}	
-		
-		int len = hex.length();
-		
-		//Must be 2 digits per byte
-		if(len % 2 != 0) {
-			//Need a leading zero
-			hex="0"+hex;
-			len = hex.length();
-		}
-		
-		//Now how long are we ? MUST be 64 bytes..
-		int rlen = len/2;
-		if(rlen<HASH_LENGTH){
-			int diff = HASH_LENGTH-rlen;
-			for(int i=0;i<diff;i++) {
-				hex = "00"+hex;
-			}
-		}else if(len>HASH_LENGTH){
-			hex = hex.substring(len-(HASH_LENGTH*2),len);	
-		}
-		
-		return "0x"+hex.toUpperCase();
-	}
+//	public static String ensureSize(String zHEX) {
+//		String hex = zHEX;
+//		if(hex.startsWith("0x")) {
+//			hex = zHEX.substring(2);
+//		}	
+//		
+//		int len = hex.length();
+//		
+//		//Must be 2 digits per byte
+//		if(len % 2 != 0) {
+//			//Need a leading zero
+//			hex="0"+hex;
+//			len = hex.length();
+//		}
+//		
+//		//Now how long are we ? MUST be 64 bytes..
+//		int rlen = len/2;
+//		if(rlen<HASH_LENGTH){
+//			int diff = HASH_LENGTH-rlen;
+//			for(int i=0;i<diff;i++) {
+//				hex = "00"+hex;
+//			}
+//		}else if(len>HASH_LENGTH){
+//			hex = hex.substring(len-(HASH_LENGTH*2),len);	
+//		}
+//		
+//		return "0x"+hex.toUpperCase();
+//	}
 	
 	/**
 	 * Get a random chunk of data

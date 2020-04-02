@@ -111,7 +111,7 @@ public class MinimaDB {
 		MMRSet base = new MMRSet();
 		
 		//Add a single zero entry to create the first peak..
-		Coin gencoin    = new Coin(new MiniHash(), Address.TRUE_ADDRESS.getAddressData(), MiniNumber.ZERO, MiniHash.ZERO32);
+		Coin gencoin    = new Coin(new MiniHash("0x00"), Address.TRUE_ADDRESS.getAddressData(), MiniNumber.ZERO, Coin.MINIMA_TOKENID);
 		MMRData gendata = new MMRData(MiniByte.FALSE, gencoin, MiniNumber.ZERO, new ArrayList<StateVariable>());
 		base.addUnspentCoin(gendata);
 		
