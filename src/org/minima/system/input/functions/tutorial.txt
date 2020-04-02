@@ -151,7 +151,7 @@ Set the significant digits of the number
 BITSET ( HEX NUMBER BINARY )
 Set the value of the BIT at that Position to 0 or 1
 
-BITGET ( HEX NUMBER [bitlength] ) 
+BITGET ( HEX NUMBER ) 
 Get the BINARY value of the bit at the position.
 
 CHAINSHA ( HEX HEX [bitlength] ) 

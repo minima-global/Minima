@@ -157,7 +157,7 @@ public class tutorial extends CommandFunction{
 			"BITSET ( HEX NUMBER BINARY )\n" + 
 			"Set the value of the BIT at that Position to 0 or 1\n" + 
 			"\n" + 
-			"BITGET ( HEX NUMBER [bitlength] ) \n" + 
+			"BITGET ( HEX NUMBER ) \n" + 
 			"Get the BINARY value of the bit at the position.\n" + 
 			"\n" + 
 			"CHAINSHA ( HEX HEX [bitlength] ) \n" + 
