@@ -14,6 +14,7 @@ import org.minima.database.coindb.CoinDBRow;
 import org.minima.database.mmr.MMREntry;
 import org.minima.database.mmr.MMRPrint;
 import org.minima.database.mmr.MMRSet;
+import org.minima.database.txpowdb.TxPOWDBRow;
 import org.minima.database.txpowdb.TxPowDBPrinter;
 import org.minima.database.txpowtree.BlockTree;
 import org.minima.database.txpowtree.BlockTreeNode;
@@ -311,6 +312,9 @@ public class ConsensusPrint {
 				}
 			}
 			
+			//Get all the mempool amounts..
+			Hashtable<String, MiniNumber> mempool = getMainDB().getTotalUnusedAmount();
+			
 			//All the balances..
 			JSONObject allbal = InputHandler.getResponseJSON(zMessage);
 			JSONArray totbal = new JSONArray();
@@ -335,6 +339,13 @@ public class ConsensusPrint {
 					jobj.put("unconfirmed", tot_unconf.toString());
 					jobj.put("total", "1000000000");
 					
+					//MEMPOOL
+					MiniNumber memp = mempool.get(Coin.MINIMA_TOKENID.to0xString());
+					if(memp == null) {
+						memp = MiniNumber.ZERO;
+					}
+					jobj.put("mempool", memp.toString());
+					
 					//SIMPLE SENDS
 					MiniNumber tot_simple = MiniNumber.ZERO;
 					ArrayList<Coin> confirmed = getMainDB().getTotalSimpleSpendableCoins(Coin.MINIMA_TOKENID);
@@ -342,7 +353,6 @@ public class ConsensusPrint {
 						tot_simple = tot_simple.add(confc.getAmount());
 					}
 					jobj.put("sendable", tot_simple.toString());
-					
 				}else {
 					TokenProof td = getMainDB().getUserDB().getTokenDetail(tok);
 					
@@ -359,6 +369,13 @@ public class ConsensusPrint {
 					jobj.put("script", td.getTokenScript().toString());
 					jobj.put("total", tot_toks.toString());
 					
+					//MEMPOOL
+					MiniNumber memp = mempool.get(tok.to0xString());
+					if(memp == null) {
+						memp = MiniNumber.ZERO;
+					}
+					jobj.put("mempool", memp.toString());
+					
 					//SIMPLE SENDS
 					MiniNumber tot_simple = MiniNumber.ZERO;
 					ArrayList<Coin> confirmed = getMainDB().getTotalSimpleSpendableCoins(tok);
@@ -366,7 +383,6 @@ public class ConsensusPrint {
 						tot_simple = tot_simple.add(confc.getAmount());
 					}
 					jobj.put("sendable", tot_simple.toString());
-					
 				}
 				
 				//add it to the mix
