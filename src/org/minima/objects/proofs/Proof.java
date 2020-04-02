@@ -44,7 +44,7 @@ public class Proof implements Streamable {
 	protected MiniData mChainSHA;
 	protected boolean mFinalized;
 		
-	int HASH_BITS = 512;
+	private int HASH_BITS = 512;
 	
 	public Proof(){
 		mProofChain = new ArrayList<>();
@@ -83,6 +83,10 @@ public class Proof implements Streamable {
 		}
 		
 		finalizeHash();
+	}
+	
+	public void setHashBitLength(int zBitLength) {
+		HASH_BITS = zBitLength;
 	}
 	
 	public void addProofChunk(MiniByte zLeft, MiniData zHash) {

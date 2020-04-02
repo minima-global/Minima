@@ -34,14 +34,21 @@ public class SHA3 extends MinimaFunction {
 		//get the Input Data
 		byte[] data = getParameter(0).getValue(zContract).getRawData();
 		
-		//Perform the SHA3 Operation
-		byte[] ans = Crypto.getInstance().hashData(data);
+		//Is there a second parameter
+		int bitlength = 512;
+		if(getParameterNum()>1) {
+			bitlength = getParameter(1).getValue(zContract).getNumber().getAsInt();
+		}
 		
-		//Ensure a 32 byte hash
-		MiniData hash = new MiniData(ans);
+		if ( bitlength>512 || bitlength<160 || (bitlength%32!=0) ) {
+			throw new ExecutionException("Bitlength incompatible with SHA3 "+bitlength);
+		}
+		
+		//Perform the SHA3 Operation
+		byte[] ans = Crypto.getInstance().hashData(data,bitlength);
 		
 		//return the New HEXValue
-		return new HEXValue(hash.getData());
+		return new HEXValue(ans);
 	}
 	
 	@Override

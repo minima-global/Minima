@@ -151,18 +151,18 @@ Set the significant digits of the number
 BITSET ( HEX NUMBER BINARY )
 Set the value of the BIT at that Position to 0 or 1
 
-BITGET ( HEX NUMBER ) 
+BITGET ( HEX NUMBER [bitlength] ) 
 Get the BINARY value of the bit at the position.
 
-CHAINSHA ( HEX HEX ) 
-Recursively hash the first HEX value with the proof provided in the second. A proof is a BYTE denoting left or right with a hex data value. 
-Returns the final result that can be checked in script. Use the 'mmrtree' function in Minima to construct Hash Trees.   
+CHAINSHA ( HEX HEX [bitlength] ) 
+Recursively SHA3 hash the first HEX value with the proof provided in the second. A proof is a series of BYTEs denoting left or right with the hex data value. 
+Returns the final result that can be checked in script. Use the 'mmrtree' function in Minima to construct Hash Trees. Can specify the SHA3 bitlength from 160 to 512 multiples of 32. Default 512.   
 
-SHA3 ( HEX ) 
-Returns the SHA3 value of the HEX value
+SHA3 ( HEX [bitlength] ) 
+Returns the SHA3 value of the HEX value. Can specify the SHA3 bitlength from 160 to 512 multiples of 32. Default 512.
 
 SHA2 ( HEX ) 
-Returns the SHA2 value of the HEX value
+Returns the SHA2 value of the HEX value. 256 bits.
 
 SIGNEDBY ( HEX )
 Returns true if the transaction is signed by this public key

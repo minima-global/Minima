@@ -64,12 +64,12 @@ public class tutorial extends CommandFunction{
 			"FUNCTION    ::= FUNC ( EXPRESSION_1 EXPRESSION_2 .. EXPRESSION_n ) \n" + 
 			"FUNC        ::= HEXCAT | STRCAT | LEN | REV | SUBSET | RPLVAR | GET |\n" + 
 			"                ASCII | BOOL | HEX | NUMBER | SCRIPT |\n" + 
-			"                ABS | CEIL | FLOOR | MIN | MAX | INC | DEC | SIGDIG |\n" + 
+			"                ABS | CEIL | FLOOR | MIN | MAX | INC | DEC | SIGDIG | POW |\n" + 
 			"                BITSET | BITGET | PROOF | SHA3 | SHA2 |\n" + 
 			"                SIGNEDBY | MULTISIG | CHECKSIG |\n" + 
 			"                GETOUTADDR | GETOUTAMT | GETOUTTOK | VERIFYOUT |\n" + 
 			"                GETINADDR | GETINAMT | GETINTOK | GETINID | VERIFYIN |\n" + 
-			"                STATE | PREVSTATE | SAMESTATE\n" + 
+			"                STATE | PREVSTATE | SAMESTATE | DYNSTATE\n" + 
 			"\n" + 
 			"Globals\n" + 
 			"-------\n" + 
@@ -149,7 +149,7 @@ public class tutorial extends CommandFunction{
 			"Decrement a number\n" + 
 			"\n" + 
 			"POW ( NUMBER NUMBER )\n" + 
-			"Returns the power of N of the number\n" + 
+			"Returns the power of N of a number. N must be a whole number.\n" + 
 			"\n" + 
 			"SIGDIG ( NUMBER NUMBER )\n" + 
 			"Set the significant digits of the number\n" + 
@@ -157,18 +157,18 @@ public class tutorial extends CommandFunction{
 			"BITSET ( HEX NUMBER BINARY )\n" + 
 			"Set the value of the BIT at that Position to 0 or 1\n" + 
 			"\n" + 
-			"BITGET ( HEX NUMBER ) \n" + 
+			"BITGET ( HEX NUMBER [bitlength] ) \n" + 
 			"Get the BINARY value of the bit at the position.\n" + 
 			"\n" + 
-			"CHAINSHA ( HEX HEX ) \n" + 
-			"Recursively hash the first HEX value with the proof provided in the second. A proof is a BYTE denoting left or right with a hex data value. \n" + 
-			"Returns the final result that can be checked in script. Use the 'mmrtree' function in Minima to construct Hash Trees.   \n" + 
+			"CHAINSHA ( HEX HEX [bitlength] ) \n" + 
+			"Recursively SHA3 hash the first HEX value with the proof provided in the second. A proof is a series of BYTEs denoting left or right with the hex data value. \n" + 
+			"Returns the final result that can be checked in script. Use the 'mmrtree' function in Minima to construct Hash Trees. Can specify the SHA3 bitlength from 160 to 512 multiples of 32. Default 512.   \n" + 
 			"\n" + 
-			"SHA3 ( HEX ) \n" + 
-			"Returns the SHA3 value of the HEX value\n" + 
+			"SHA3 ( HEX [bitlength] ) \n" + 
+			"Returns the SHA3 value of the HEX value. Can specify the SHA3 bitlength from 160 to 512 multiples of 32. Default 512.\n" + 
 			"\n" + 
 			"SHA2 ( HEX ) \n" + 
-			"Returns the SHA2 value of the HEX value\n" + 
+			"Returns the SHA2 value of the HEX value. 256 bits.\n" + 
 			"\n" + 
 			"SIGNEDBY ( HEX )\n" + 
 			"Returns true if the transaction is signed by this public key\n" + 
