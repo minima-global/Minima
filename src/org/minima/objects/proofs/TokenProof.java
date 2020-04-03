@@ -103,13 +103,19 @@ public class TokenProof implements Streamable{
 	public JSONObject toJSON() {
 		JSONObject obj = new JSONObject();
 		
-		obj.put("coinid", mCoinID.to0xString());
-		obj.put("name", mTokenName.toString());
-		obj.put("script", mTokenScript.toString());
-		obj.put("scale", mTokenScale.toString());
-		obj.put("totalamount", mTokenTotalAmount.toString());
-		
 		obj.put("tokenid", mTokenID.to0xString());
+		obj.put("name", mTokenName.toString());
+		
+		MiniNumber total = mTokenTotalAmount.mult(getScaleFactor());
+		obj.put("total", total);
+		
+		obj.put("script", mTokenScript.toString());
+		
+		
+		obj.put("coinid", mCoinID.to0xString());
+		obj.put("totalamount", mTokenTotalAmount.toString());
+		obj.put("scale", mTokenScale.toString());
+		
 		
 		return obj;
 	}
