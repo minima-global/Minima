@@ -2,6 +2,7 @@ package org.minima.system.brains;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Hashtable;
 
 import org.minima.NativeListener;
 import org.minima.database.MinimaDB;
@@ -430,7 +431,7 @@ public class ConsensusHandler extends SystemHandler {
 				}
 				
 				//Create the Transaction
-				Message ret = getMainDB().createTransaction(sendamount, recipient, change, confirmed, tok, changetok);
+				Message ret = getMainDB().createTransaction(sendamount, recipient, change, confirmed, tok, changetok,null);
 				
 				//Is this a token transaction
 				if(tokendets != null) {
@@ -552,22 +553,15 @@ public class ConsensusHandler extends SystemHandler {
 					change = getMainDB().getUserDB().newSimpleAddress();
 				}
 				
-				//Create the Transaction
-				Message ret = getMainDB().createTransaction(sendamount, recipient, change, confirmed, tok, changetok);
-				
-				//Get the witness and add relevant info..
-//				Witness wit     = (Witness) ret.getObject("witness");
-				Transaction trx = (Transaction) ret.getObject("transaction");
-				
 				//Create the token gen details
-				TokenProof tgen = new TokenProof(Coin.COINID_OUTPUT, 
+				TokenProof tokengen = new TokenProof(Coin.COINID_OUTPUT, 
 													 new MiniNumber(scale+""), 
 													 sendamount, 
 													 new MiniString(name),
 													 new MiniString(script));
 				
-				//Set it
-				trx.setTokenGenerationDetails(tgen);
+				//Create the Transaction
+				Message ret = getMainDB().createTransaction(sendamount, recipient, change, confirmed, tok, changetok,tokengen);
 				
 				//Continue the log output trail
 				InputHandler.addResponseMesage(ret, zMessage);
@@ -652,8 +646,11 @@ public class ConsensusHandler extends SystemHandler {
 			InputHandler.addResponseMesage(upd, zOriginal);
 			updateListeners(upd);
 			
+			//Get the Token Amounts..
+			Hashtable<String, MiniNumber> tokamt = getMainDB().getTransactionTokenAmounts(zTxPOW);
+			
 			//Store ion the database..
-			getMainDB().getUserDB().addToHistory(zTxPOW,tot);
+			getMainDB().getUserDB().addToHistory(zTxPOW.getTxPowID(),tokamt);
 			
 			//And do we need to call a local function..
 			Message command = new Message(ProcessManager.PROCESS_TXNCALL)
