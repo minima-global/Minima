@@ -501,17 +501,9 @@ public class ConsensusPrint {
 			ArrayList<PubPrivKey> keys = getMainDB().getUserDB().getKeys();
 			JSONArray arrpub = new JSONArray();
 			for(PubPrivKey key : keys) {
-				arrpub.add(key.toString());
+				arrpub.add(key.toJSON());
 			}
 			InputHandler.getResponseJSON(zMessage).put("publickeys", arrpub);
-			
-//			//Addresses
-//			ArrayList<Address> addresses = getMainDB().getUserDB().getAllAddresses();
-//			JSONArray arraddr = new JSONArray();
-//			for(Address addr : addresses) {
-//				arraddr.add(addr.toJSON());
-//			}
-//			InputHandler.getResponseJSON(zMessage).put("addresses", arraddr);
 			
 			InputHandler.endResponse(zMessage, true, "");
 			
@@ -534,7 +526,8 @@ public class ConsensusPrint {
 			JSONObject status = InputHandler.getResponseJSON(zMessage);
 			
 			//Version
-			status.put("version", 0.8);
+			status.put("version", GlobalParams.MINIMA_VERSION);
+			status.put("time", new Date().toString());
 			
 			//Up time..
 			long timediff     = System.currentTimeMillis() - getHandler().getMainHandler().getNodeStartTime();

@@ -10,6 +10,7 @@ import org.minima.utils.digest.Digest;
 import org.minima.utils.digest.KeccakDigest;
 import org.minima.utils.digest.WinternitzOTSVerify;
 import org.minima.utils.digest.WinternitzOTSignature;
+import org.minima.utils.json.JSONObject;
 
 public class PubPrivKey implements Streamable {
 	
@@ -20,6 +21,8 @@ public class PubPrivKey implements Streamable {
 	 */
 	MiniData mPrivateSeed;
 	MiniData mPublicKey;
+	
+	int mBitLength;
 	
 	private static Digest getHashFunction(int zBitLength) {
 		return new KeccakDigest(zBitLength);
@@ -34,13 +37,13 @@ public class PubPrivKey implements Streamable {
 	}
 	
 	private void initKeys(MiniData zPrivateSeed) {
-		int bitLength = zPrivateSeed.getLength()*8;
+		mBitLength = zPrivateSeed.getLength()*8;
 		
 		//Create a random seed
 		mPrivateSeed = zPrivateSeed;
 
 		//Create a WOTS
-		WinternitzOTSignature wots = new WinternitzOTSignature(mPrivateSeed.getData(), getHashFunction(bitLength), WINTERNITZ_NUMBER);
+		WinternitzOTSignature wots = new WinternitzOTSignature(mPrivateSeed.getData(), getHashFunction(mBitLength), WINTERNITZ_NUMBER);
 		
 		//Get the Public Key..
 		mPublicKey  = new MiniData(wots.getPublicKey());
@@ -53,10 +56,8 @@ public class PubPrivKey implements Streamable {
 	public PubPrivKey(boolean empty) {}
 	
 	public MiniData sign(MiniData zData) {
-		int bitLength = mPrivateSeed.getLength()*8;
-		
 		//Create a WOTS
-		WinternitzOTSignature wots = new WinternitzOTSignature(mPrivateSeed.getData(), getHashFunction(bitLength), WINTERNITZ_NUMBER);
+		WinternitzOTSignature wots = new WinternitzOTSignature(mPrivateSeed.getData(), getHashFunction(mBitLength), WINTERNITZ_NUMBER);
 		
 		//Sign the data..
 		byte[] signature = wots.getSignature(zData.getData());
@@ -85,6 +86,15 @@ public class PubPrivKey implements Streamable {
 		return resp.isEqual(zPubKey);
 	}
 	
+	public JSONObject toJSON() {
+		JSONObject ret = new JSONObject();
+		
+		ret.put("bits", mBitLength);
+		ret.put("publickey", mPublicKey.to0xString());
+		
+		return ret;
+	}
+	
 	public MiniData getPublicKey() {
 		return mPublicKey;
 	}
@@ -108,5 +118,6 @@ public class PubPrivKey implements Streamable {
 	public void readDataStream(DataInputStream zIn) throws IOException {
 		mPublicKey   = MiniData.ReadFromStream(zIn);
 		mPrivateSeed = MiniData.ReadFromStream(zIn);
+		mBitLength   = mPrivateSeed.getLength()*8;
 	}
 }

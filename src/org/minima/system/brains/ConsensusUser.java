@@ -106,7 +106,7 @@ public class ConsensusUser {
 			
 			//return to sender!
 			JSONObject resp = InputHandler.getResponseJSON(zMessage);
-			resp.put("key", key.toString());
+			resp.put("key", key.toJSON());
 			InputHandler.endResponse(zMessage, true, "");
 			
 		

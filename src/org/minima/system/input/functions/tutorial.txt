@@ -156,7 +156,7 @@ Get the BINARY value of the bit at the position.
 
 CHAINSHA ( HEX HEX ) 
 Recursively SHA3 hash the first HEX value with the proof provided in the second. A proof is a series of BYTEs denoting left or right with the hex data value. 
-Returns the final result that can be checked in script. Use the 'mmrtree' function in Minima to construct Hash Trees.   
+Returns the final result that can be checked in script. Use the 'mmrtree' function in Minima to construct Hash Trees for MAST and Signature Public Keys.   
 
 SHA3 ( HEX [bitlength] ) 
 Returns the SHA3 value of the HEX value. Can specify the SHA3 bitlength from 160, 256 or 512. Default 512.
