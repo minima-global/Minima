@@ -34,12 +34,17 @@ public class ScriptProof extends Proof {
 		Address addr = new Address(mScript.toString());
 		
 		if(zChainSHAProof.startsWith("0x0200")) {
-			setData(addr.getAddressData());	
+			setData(addr.getAddressData());
+			setHashBitLength(512);
+			
 		}else if(zChainSHAProof.startsWith("0x0100")) {
 			setData(addr.getMediumAddressData());	
+			setHashBitLength(256);
+			
 		}else if(zChainSHAProof.startsWith("0x00A0")) {
 			setData(addr.getShortAddressData());	
-		
+			setHashBitLength(160);
+			
 		}else {
 			//ERROR
 			throw new Exception("Invalid ChainSHA.. must be 160, 256 or 512");
