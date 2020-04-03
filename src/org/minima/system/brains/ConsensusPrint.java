@@ -398,7 +398,7 @@ public class ConsensusPrint {
 					if(memp == null) {
 						memp = MiniNumber.ZERO;
 					}
-					jobj.put("mempool", memp.toString());
+					jobj.put("mempool", memp.mult(td.getScaleFactor()).toString());
 					
 					//SIMPLE SENDS
 					MiniNumber tot_simple = MiniNumber.ZERO;
@@ -406,7 +406,7 @@ public class ConsensusPrint {
 					for(Coin confc : confirmed) {
 						tot_simple = tot_simple.add(confc.getAmount());
 					}
-					jobj.put("sendable", tot_simple.toString());
+					jobj.put("sendable", tot_simple.mult(td.getScaleFactor()).toString());
 				}
 				
 				//add it to the mix
@@ -464,7 +464,7 @@ public class ConsensusPrint {
 			JSONArray totbal = new JSONArray();
 			
 			for(reltxpow rpow : history) {
-				totbal.add(rpow.toJSON());
+				totbal.add(rpow.toJSON(getMainDB()));
 			}
 			
 			//And add to the final response

@@ -7,6 +7,7 @@ import java.math.BigInteger;
 import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.Hashtable;
 
 import org.minima.GlobalParams;
@@ -35,6 +36,7 @@ import org.minima.objects.Witness;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.objects.proofs.TokenProof;
 import org.minima.system.backup.BackupManager;
 import org.minima.system.backup.SyncPackage;
 import org.minima.system.backup.SyncPacket;
@@ -629,6 +631,32 @@ public class MinimaDB {
 		return amounts;
 	}
 	
+//	private Hashtable<String, MiniNumber> convertTokenAmounts(Hashtable<String, MiniNumber> zAmounts) {
+//		//Now convert the values with the token scale
+//		Hashtable<String, MiniNumber> scaledamounts = new Hashtable<>();
+//		
+//		Enumeration<String> tokens = zAmounts.keys();
+//		while(tokens.hasMoreElements()) {
+//			String token = tokens.nextElement();
+//			MiniNumber amt = zAmounts.get(token);
+//			
+//			TokenProof tokproof = getUserDB().getTokenDetail(new MiniData(token));
+//			
+//			if(tokproof!=null) {
+//				//Scale it..
+//				MiniNumber scale     = getUserDB().getTokenDetail(new MiniData(token)).getScaleFactor();
+//				MiniNumber newamount = amt.mult(scale);
+//				
+//				//Add it..
+//				scaledamounts.put(token, newamount);
+//			}else {
+//				//Add it..
+//				scaledamounts.put(token, amt);
+//			}
+//		}
+//		
+//		return scaledamounts;	
+//	}
 	
 	
 	/**
@@ -711,7 +739,8 @@ public class MinimaDB {
 									 Address zChangeAddress, 
 									 ArrayList<Coin> zConfirmed,
 									 MiniData zTokenID,
-									 MiniData zChangeTokenID) {
+									 MiniData zChangeTokenID,
+									 TokenProof zTokenGen) {
 		//The Transaction
 		Transaction trx = new Transaction();
 		Witness wit 	= new Witness();
@@ -744,7 +773,6 @@ public class MinimaDB {
 				CoinDBRow row  = getCoinDB().getCoinRow(cc.getCoinID());
 				
 				//Get a proof from a while back.. more than confirmed depth, less than cascade
-//				MMRProof proof = getMainTree().getChainTip().getMMRSet().getProof(row.getMMREntry());
 				MMRProof proof = proofmmr.getProof(row.getMMREntry());
 				
 				if(proof == null) {
@@ -784,6 +812,11 @@ public class MinimaDB {
 		if(!change.isEqual(MiniNumber.ZERO)) {
 			Coin chg = new Coin(Coin.COINID_OUTPUT, zChangeAddress.getAddressData(), change, zChangeTokenID);
 			trx.addOutput(chg);	
+		}
+		
+		//And FINALLY - Is there Token generation
+		if(zTokenGen != null) {
+			trx.setTokenGenerationDetails(zTokenGen);
 		}
 		
 		//Now we have a full transaction we can sign it!

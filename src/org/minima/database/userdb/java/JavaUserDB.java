@@ -4,6 +4,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Hashtable;
 
 import org.minima.database.userdb.UserDB;
 import org.minima.database.userdb.UserDBRow;
@@ -382,8 +383,8 @@ public class JavaUserDB implements UserDB, Streamable{
 	}
 
 	@Override
-	public void addToHistory(TxPOW zTxPOW, MiniNumber zValue) {
-		mHistory.add(new reltxpow(zTxPOW, zValue));
+	public void addToHistory(MiniData zTxPOWID, Hashtable<String, MiniNumber> zValues) {
+		mHistory.add(new reltxpow( zTxPOWID, zValues));
 	}
 
 //	@Override

@@ -1,6 +1,7 @@
 package org.minima.database.userdb;
 
 import java.util.ArrayList;
+import java.util.Hashtable;
 
 import org.minima.database.userdb.java.reltxpow;
 import org.minima.objects.Address;
@@ -65,8 +66,7 @@ public interface UserDB {
 	 * Transaction History
 	 */
 	public ArrayList<reltxpow> getHistory();
-	public void addToHistory(TxPOW zTxPOW, MiniNumber zValue);
-//	public void removeHistory(MiniData zTxPowID);
+	public void addToHistory(MiniData zTxPOWID, Hashtable<String, MiniNumber> zValues);
 	public void clearHistory();
 	
 }
