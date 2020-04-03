@@ -33,19 +33,16 @@ public class MASTstatement implements Statement {
 		//get the MAST Value..
 		HEXValue mast = (HEXValue) mMASTScript.getValue(zContract);
 		
-		//Convert to a hash
-		MiniData scripthash = new MiniData(mast.getRawData());
-		
 		//Now get that Script from the transaction..
 		Witness wit = zContract.getWitness();
 		
 		//Get the Script Proof
-		ScriptProof scrpr = wit.getScript(scripthash);
+		ScriptProof scrpr = wit.getScript(mast.getMiniData());
 		
 		if(scrpr == null) {
 			//Trace log
 			zContract.traceLog("MAST "+mMASTScript);
-			throw new ExecutionException("No script found for MAST "+scripthash);
+			throw new ExecutionException("No script found for MAST "+mast.getMiniData());
 		}
 		
 		//get the script of this hash value

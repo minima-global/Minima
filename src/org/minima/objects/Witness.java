@@ -125,7 +125,7 @@ public class Witness implements Streamable {
 		return false;
 	}
 	
-	public boolean addScript(String zScript) {
+	public boolean addScript(String zScript) throws Exception {
 		return addScript(new ScriptProof(zScript));
 	}
 	

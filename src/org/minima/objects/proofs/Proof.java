@@ -69,6 +69,16 @@ public class Proof implements Streamable {
 		
 		int len  = chdata.length;  
 		int read = 0;
+		
+		//The HASH_BITS is first
+		try {
+			HASH_BITS = dis.readShort();
+			read += 2;
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 		while(read<len) {
 			//Is it to the left or the right 
 			MiniByte leftrigt = MiniByte.ReadFromStream(dis);
@@ -76,7 +86,9 @@ public class Proof implements Streamable {
 			
 			//What data to hash
 			MiniData data = MiniData.ReadFromStream(dis);
-			read += data.getLength();
+			
+			//4 bytes for the len and the data itself..
+			read += 4 + data.getLength();
 			
 			//Add to the Proof..
 			addProofChunk(leftrigt, data);
@@ -122,6 +134,10 @@ public class Proof implements Streamable {
 		DataOutputStream dos = new DataOutputStream(baos);
 		
 		try {
+			//First write out the HASH_BITS
+			dos.writeShort(HASH_BITS);
+			
+			//Now write out the data..
 			int len = mProofChain.size();
 			for(int i=0;i<len;i++){
 				ProofChunk chunk = mProofChain.get(i);

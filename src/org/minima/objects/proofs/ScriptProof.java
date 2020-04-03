@@ -21,18 +21,30 @@ public class ScriptProof extends Proof {
 	/**
 	 * Create a simple one hash Proof for a script
 	 * @param zScript
+	 * @throws Exception 
 	 */
-	public ScriptProof(String zScript) {
-		this(zScript,"");
+	public ScriptProof(String zScript) throws Exception {
+		this(zScript,"0x0200");
 	}
 	
-	public ScriptProof(String zScript, String zChainSHAProof) {
+	public ScriptProof(String zScript, String zChainSHAProof) throws Exception {
 		mScript = new MiniString(Contract.cleanScript(zScript));
 		
 		//Create an address
 		Address addr = new Address(mScript.toString());
 		
-		setData(addr.getAddressData());
+		if(zChainSHAProof.startsWith("0x0200")) {
+			setData(addr.getAddressData());	
+		}else if(zChainSHAProof.startsWith("0x0100")) {
+			setData(addr.getMediumAddressData());	
+		}else if(zChainSHAProof.startsWith("0x00A0")) {
+			setData(addr.getShortAddressData());	
+		
+		}else {
+			//ERROR
+			throw new Exception("Invalid ChainSHA.. must be 160, 256 or 512");
+		}
+		
 		setProof(new MiniData(zChainSHAProof));
 		
 		finalizeHash();

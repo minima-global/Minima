@@ -22,22 +22,11 @@ public class CHAINSHA extends MinimaFunction {
 		//Get the 32 byte hash data chain + 1 byte for left right 
 		HEXValue chain = (HEXValue) getParameter(1).getValue(zContract);
 		
-		int bitlength = 512;
-		if(getParameterNum()>2) {
-			bitlength = getParameter(2).getValue(zContract).getNumber().getAsInt();
-		}
-		
-		if ( bitlength>512 || bitlength<160 || (bitlength%32!=0) ) {
-			throw new ExecutionException("Bitlength incompatible with SHA3 "+bitlength);
-		}
-		
 		//Create a proof..
 		Proof chainproof = new Proof();
+				
 		chainproof.setData(input.getMiniData());
 		chainproof.setProof(chain.getMiniData());
-		
-		//How many bits..
-		chainproof.setHashBitLength(bitlength);
 		
 		MiniData fv = chainproof.getFinalHash();
 		

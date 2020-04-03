@@ -131,7 +131,16 @@ public class ConsensusUser {
 					finalhash = new MiniData(leaf.toString());
 					mmrnode.put("data",leaf.toString());
 				}else{
-					byte[] hash = Crypto.getInstance().hashData(leaf.getData(), bitlength);
+					//First hash with 512 as normal..
+					byte[] hash = Crypto.getInstance().hashData(leaf.getData());
+					
+					//Then Hash that with the smaller if needed
+					if(bitlength != 512) {
+						hash = Crypto.getInstance().hashData(hash, bitlength);
+					}
+					
+//					byte[] hash = Crypto.getInstance().hashData(leaf.getData(), bitlength);
+					
 					finalhash = new MiniData(hash);
 					mmrnode.put("data","[ "+leaf.toString()+" ]");
 				}
@@ -153,6 +162,9 @@ public class ConsensusUser {
 				
 				//Get the proof..
 				MMRProof proof = mmr.getFullProofToRoot(new MiniNumber(i));
+				
+				//Set the Bits
+				proof.setHashBitLength(bitlength);
 				
 				//Calculate the CHAINSHA proof..
 				node.put("chainsha", proof.getChainSHAProof().to0xString());
@@ -281,11 +293,7 @@ public class ConsensusUser {
 						String chainsha   = tok.substring(split+1).trim();
 						
 						//Set it..
-						if(chainsha.length()<=32) {
-							wit.addScript(new ScriptProof(mastscript));
-						}else {
-							wit.addScript(new ScriptProof(mastscript, chainsha));	
-						}
+						wit.addScript(new ScriptProof(mastscript, chainsha));
 					}
 				}
 			}
