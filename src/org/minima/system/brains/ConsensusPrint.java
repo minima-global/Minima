@@ -61,6 +61,7 @@ public class ConsensusPrint {
 	public static final String CONSENSUS_SEARCH 			= CONSENSUS_PREFIX+"SEARCH";
 	
 	public static final String CONSENSUS_HISTORY 		    = CONSENSUS_PREFIX+"HISTORY";
+	public static final String CONSENSUS_TOKENS 			= CONSENSUS_PREFIX+"TOKENS";
 	
 	public static final String CONSENSUS_STATUS 			= CONSENSUS_PREFIX+"STATUS";
 	public static final String CONSENSUS_PRINTCHAIN 		= CONSENSUS_PREFIX+"PRINTCHAIN";
@@ -207,6 +208,26 @@ public class ConsensusPrint {
 			JSONObject dets = InputHandler.getResponseJSON(zMessage);
 			dets.put("coins", allcoins);
 			InputHandler.endResponse(zMessage, true, "");
+		
+		}else if(zMessage.isMessageType(CONSENSUS_TOKENS)){
+			//Get all the tokens..
+			ArrayList<TokenProof> tokens = getMainDB().getUserDB().getAllKnownTokens();
+			
+			JSONArray tokarray = new JSONArray();
+			
+			JSONObject baseobj = new JSONObject();
+			baseobj.put("tokenid", Coin.MINIMA_TOKENID.to0xString());
+			baseobj.put("token", "Minima");
+			baseobj.put("total", "1000000000");
+			tokarray.add(baseobj);
+			
+			for(TokenProof tok : tokens) {
+				tokarray.add(tok.toJSON());	
+			}
+			
+			JSONObject dets = InputHandler.getResponseJSON(zMessage);
+			dets.put("tokens", tokarray);
+			InputHandler.endResponse(zMessage, true, "");
 			
 		}else if(zMessage.isMessageType(CONSENSUS_BALANCE)){
 			//Is this for a single address
@@ -228,6 +249,9 @@ public class ConsensusPrint {
 			basejobj.put("total", "1000000000");
 			basejobj.put("confirmed", MiniNumber.ZERO);
 			basejobj.put("unconfirmed", MiniNumber.ZERO);
+			basejobj.put("mempool", MiniNumber.ZERO.toString());
+			basejobj.put("sendable", MiniNumber.ZERO.toString());
+			
 			full_details.put(Coin.MINIMA_TOKENID.to0xString(), basejobj);
 			
 			//Now get the balance..

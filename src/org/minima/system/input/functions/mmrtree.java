@@ -20,7 +20,7 @@ public class mmrtree extends CommandFunction{
 
 	public mmrtree() {
 		super("mmrtree");
-		setHelp("[script|hash] [ data_list ]", "Build an MMR Hash Tree from the data list", "");
+		setHelp("[script|hash] [bitlength] [data_list]", "Build an MMR Hash Tree from the data list", "");
 	}
 	
 	@Override
@@ -28,10 +28,11 @@ public class mmrtree extends CommandFunction{
 		//Get a response message
 		Message msg = getResponseMessage(ConsensusUser.CONSENSUS_MMRTREE);
 		msg.addString("type", zInput[1].toLowerCase());
+		msg.addInt("bitlength", Integer.parseInt(zInput[2])  );
 		
 		//Get all of the input params.. clean and send..
 		ArrayList<MiniString> data = new ArrayList<>();
-		for(int i=2;i<zInput.length;i++) {
+		for(int i=3;i<zInput.length;i++) {
 			data.add(new MiniString(Contract.cleanScript(zInput[i])));			
 		}
 		

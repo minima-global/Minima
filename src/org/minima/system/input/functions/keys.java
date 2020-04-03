@@ -3,20 +3,33 @@ package org.minima.system.input.functions;
 import org.minima.system.brains.ConsensusPrint;
 import org.minima.system.brains.ConsensusUser;
 import org.minima.system.input.CommandFunction;
+import org.minima.utils.messages.Message;
 
 public class keys extends CommandFunction {
 
 	public keys() {
 		super("keys");
 		
-		setHelp("(new)", "List all your public keys or create a new one", "");
+		setHelp("(new) (bitlength)", "List all your public keys or create a new one. Default is 256 bits can specify.", "");
 	}
 	
 	@Override
 	public void doFunction(String[] zInput) throws Exception {
 		if(zInput.length>1) {
 			//Create a new Key..
-			getMainHandler().getConsensusHandler().PostMessage(getResponseMessage(ConsensusUser.CONSENSUS_NEWKEY));
+			Message newkey  = getResponseMessage(ConsensusUser.CONSENSUS_NEWKEY);
+			
+			if(zInput.length>2) {
+				//Get the bitlength
+				int bitl = Integer.parseInt(zInput[2]);
+				
+				newkey.addInt("bitlength", bitl);
+			}else {
+				newkey.addInt("bitlength", 256);
+			}
+			
+			getMainHandler().getConsensusHandler().PostMessage(newkey);
+			
 			return;
 		}
 			

@@ -80,6 +80,7 @@ public class Address implements Streamable{
 		JSONObject addr = new JSONObject();
 		addr.put("script", mScript);
 		addr.put("address", mAddressData.toString());
+		addr.put("address160", mShortAddress.toString());
 		addr.put("miniaddress", mMinimaAddress);
 		return addr;
 	}

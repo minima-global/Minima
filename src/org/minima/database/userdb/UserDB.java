@@ -18,7 +18,7 @@ public interface UserDB {
 	 * Get all the public private Keys 
 	 */
 	public ArrayList<PubPrivKey> getKeys();
-	public PubPrivKey newPublicKey();
+	public PubPrivKey newPublicKey(int zBitLength);
 	public PubPrivKey getPubPrivKey(MiniData zPubKey);
 	
 	/**

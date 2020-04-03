@@ -61,7 +61,7 @@ public class help extends CommandFunction{
 			addJSONDesc(new history());
 			addJSONDesc(new backup());
 			
-			addJSONDesc(new printchain());
+//			addJSONDesc(new printchain());
 			addJSONDesc(new printtree());
 			addJSONDesc(new automine());
 			addJSONDesc(new trace());
@@ -93,7 +93,9 @@ public class help extends CommandFunction{
 			addJSONDesc(new newscript());
 			addJSONDesc(new cleanscript());
 			addJSONDesc(new runscript());
+			
 			addJSONDesc(new createtoken());
+			addJSONDesc(new tokens());
 			
 			addJSONDesc(new mmrtree());
 			

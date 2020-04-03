@@ -98,8 +98,11 @@ public class ConsensusUser {
 			InputHandler.endResponse(zMessage, true, "");
 		
 		}else if(zMessage.isMessageType(CONSENSUS_NEWKEY)) {
+			//Get the bitlength
+			int bitl = zMessage.getInteger("bitlength");
+			
 			//Create a new key pair..
-			PubPrivKey key = getMainDB().getUserDB().newPublicKey();
+			PubPrivKey key = getMainDB().getUserDB().newPublicKey(bitl);
 			
 			//return to sender!
 			JSONObject resp = InputHandler.getResponseJSON(zMessage);
@@ -109,13 +112,14 @@ public class ConsensusUser {
 		
 		}else if(zMessage.isMessageType(CONSENSUS_MMRTREE)) {
 			//What type SCRIPT or HASHES
-			String type = zMessage.getString("type");
+			String type   = zMessage.getString("type");
+			int bitlength = zMessage.getInteger("bitlength");
 			
 			//Create an MMR TREE from the array of inputs..
 			ArrayList<MiniString> leaves = (ArrayList<MiniString>) zMessage.getObject("leaves");
 		
 			//First create an MMR Tree..
-			MMRSet mmr = new MMRSet();
+			MMRSet mmr = new MMRSet(bitlength);
 			
 			//Now add each 
 			JSONArray nodearray = new JSONArray();
@@ -127,7 +131,7 @@ public class ConsensusUser {
 					finalhash = new MiniData(leaf.toString());
 					mmrnode.put("data",leaf.toString());
 				}else{
-					byte[] hash = Crypto.getInstance().hashData(leaf.getData());
+					byte[] hash = Crypto.getInstance().hashData(leaf.getData(), bitlength);
 					finalhash = new MiniData(hash);
 					mmrnode.put("data","[ "+leaf.toString()+" ]");
 				}

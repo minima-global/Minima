@@ -595,6 +595,42 @@ public class MinimaDB {
 		return amounts;
 	}
 	
+	public Hashtable<String, MiniNumber> getTransactionTokenAmounts(TxPOW zTxPOW) {
+		Hashtable<String, MiniNumber> amounts = new Hashtable<>();
+	
+		if(zTxPOW.isTransaction()) {
+			ArrayList<Coin> inputs = zTxPOW.getTransaction().getAllInputs();	
+			for(Coin cc : inputs) {
+				if(getUserDB().isAddressRelevant(cc.getAddress())) {
+					String token = cc.getTokenID().to0xString();
+					//Subtract..
+					MiniNumber amt = amounts.get(token);
+					if(amt == null){
+						amt = MiniNumber.ZERO;
+					}
+					amounts.put(token, amt.sub(cc.getAmount()));
+				}
+			}
+			
+			ArrayList<Coin> outputs = zTxPOW.getTransaction().getAllOutputs();	
+			for(Coin cc : outputs) {
+				if(getUserDB().isAddressRelevant(cc.getAddress())) {
+					String token = cc.getTokenID().to0xString();
+					//Add..
+					MiniNumber amt = amounts.get(token);
+					if(amt == null){
+						amt = MiniNumber.ZERO;
+					}
+					amounts.put(token, amt.add(cc.getAmount()));
+				}
+			}
+		}
+	
+		return amounts;
+	}
+	
+	
+	
 	/**
 	 * Create a proofed 
 	 * 

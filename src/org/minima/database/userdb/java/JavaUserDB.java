@@ -65,8 +65,8 @@ public class JavaUserDB implements UserDB, Streamable{
 	}
 
 	@Override
-	public PubPrivKey newPublicKey() {
-		PubPrivKey pubkey = new PubPrivKey();
+	public PubPrivKey newPublicKey(int zBitLength) {
+		PubPrivKey pubkey = new PubPrivKey(zBitLength);
 		mPubPrivKeys.add(pubkey);
 		return pubkey;
 	}
@@ -106,7 +106,7 @@ public class JavaUserDB implements UserDB, Streamable{
 	
 	@Override
 	public Address newSimpleAddress() {
-		return newSimpleAddress(new PubPrivKey());
+		return newSimpleAddress(new PubPrivKey(256));
 	}
 	
 	@Override

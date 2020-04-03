@@ -21,24 +21,26 @@ public class PubPrivKey implements Streamable {
 	MiniData mPrivateSeed;
 	MiniData mPublicKey;
 	
-	private static Digest getHashFunction() {
-		return getHashFunction(256);
-	}
-	
 	private static Digest getHashFunction(int zBitLength) {
 		return new KeccakDigest(zBitLength);
 	}
 	
-	public PubPrivKey() {
-		this(MiniData.getRandomData(32));
+	public PubPrivKey(int zBitLength) {
+		initKeys(MiniData.getRandomData(zBitLength/8));
 	}
 	
 	public PubPrivKey(MiniData zPrivateSeed) {
+		initKeys(zPrivateSeed);
+	}
+	
+	private void initKeys(MiniData zPrivateSeed) {
+		int bitLength = zPrivateSeed.getLength()*8;
+		
 		//Create a random seed
 		mPrivateSeed = zPrivateSeed;
 
 		//Create a WOTS
-		WinternitzOTSignature wots = new WinternitzOTSignature(mPrivateSeed.getData(), getHashFunction(), WINTERNITZ_NUMBER);
+		WinternitzOTSignature wots = new WinternitzOTSignature(mPrivateSeed.getData(), getHashFunction(bitLength), WINTERNITZ_NUMBER);
 		
 		//Get the Public Key..
 		mPublicKey  = new MiniData(wots.getPublicKey());
@@ -51,8 +53,10 @@ public class PubPrivKey implements Streamable {
 	public PubPrivKey(boolean empty) {}
 	
 	public MiniData sign(MiniData zData) {
+		int bitLength = mPrivateSeed.getLength()*8;
+		
 		//Create a WOTS
-		WinternitzOTSignature wots = new WinternitzOTSignature(mPrivateSeed.getData(), getHashFunction(), WINTERNITZ_NUMBER);
+		WinternitzOTSignature wots = new WinternitzOTSignature(mPrivateSeed.getData(), getHashFunction(bitLength), WINTERNITZ_NUMBER);
 		
 		//Sign the data..
 		byte[] signature = wots.getSignature(zData.getData());
@@ -66,8 +70,10 @@ public class PubPrivKey implements Streamable {
 	}
 	
 	public static boolean verify(MiniData zPubKey, MiniData zData, MiniData zSignature) {
+		int bitLength = zPubKey.getLength()*8;
+		
 		//WOTS Verify
-		WinternitzOTSVerify wver = new WinternitzOTSVerify(getHashFunction(), WINTERNITZ_NUMBER);
+		WinternitzOTSVerify wver = new WinternitzOTSVerify(getHashFunction(bitLength), WINTERNITZ_NUMBER);
 		
 		//Do it.. get the pubkey..
 		byte[] pubkey = wver.Verify(zData.getData(), zSignature.getData());
