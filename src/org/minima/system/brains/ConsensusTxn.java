@@ -132,7 +132,7 @@ public class ConsensusTxn {
 			//Add input to a custom transaction
 			int trans 			= zMessage.getInteger("transaction");
 			String script 	    = zMessage.getString("script");
-			String proof  = "";
+			String proof        = "0x0200";
 			if(zMessage.exists("proof")) {
 				proof = zMessage.getString("proof");
 			}
