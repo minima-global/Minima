@@ -24,36 +24,52 @@ public class ScriptProof extends Proof {
 	 * @throws Exception 
 	 */
 	public ScriptProof(String zScript) throws Exception {
-		this(zScript,"0x0200");
+		super();
+		init(zScript,"0x0200");
+	}
+	
+	public ScriptProof(String zScript, int zBitLength) throws Exception {
+		super();
+		
+		if(zBitLength == 512) {
+			init(zScript,"0x0200");
+		}else if(zBitLength == 256) {
+			init(zScript,"0x0100");
+		}else if(zBitLength == 160) {
+			init(zScript,"0x00A0");
+		} 
 	}
 	
 	public ScriptProof(String zScript, String zChainSHAProof) throws Exception {
+		super();
+		init(zScript,"0x0200");
+	}
+	
+	private void init(String zScript, String zChainSHAProof) throws Exception {
 		mScript = new MiniString(Contract.cleanScript(zScript));
 		
-		//Create an address
-		Address addr = new Address(mScript.toString());
-		
+		int bits = 512;
 		if(zChainSHAProof.startsWith("0x0200")) {
-			setData(addr.getAddressData());
-			setHashBitLength(512);
-			
+			bits = 512;
 		}else if(zChainSHAProof.startsWith("0x0100")) {
-			setData(addr.getMediumAddressData());	
-			setHashBitLength(256);
-			
+			bits = 256;
 		}else if(zChainSHAProof.startsWith("0x00A0")) {
-			setData(addr.getShortAddressData());	
-			setHashBitLength(160);
-			
+			bits = 160;
 		}else {
 			//ERROR
 			throw new Exception("Invalid ChainSHA.. must be 160, 256 or 512");
 		}
 		
+		//Create an address
+		Address addr = new Address(mScript.toString(),bits);
+		setData(addr.getAddressData());
+		setHashBitLength(bits);
+		
 		setProof(new MiniData(zChainSHAProof));
 		
 		finalizeHash();
 	}
+	
 	
 	public MiniString getScript() {
 		return mScript;

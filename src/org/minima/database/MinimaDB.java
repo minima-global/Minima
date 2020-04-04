@@ -768,7 +768,7 @@ public class MinimaDB {
 				//Add this coin to the inputs..
 				trx.addInput(cc);
 				try {
-					wit.addScript(script);
+					wit.addScript(script, cc.getAddress().getLength()*8);
 				} catch (Exception e) {
 					MinimaLogger.log("Invalid Script.. "+script);
 					return null;

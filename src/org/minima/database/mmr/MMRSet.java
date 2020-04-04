@@ -65,7 +65,7 @@ public class MMRSet implements Streamable {
 	ArrayList<MMREntry> mFinalizedZeroRow;
 	
 	//HASH Function bit length..
-	int HASH_BITS= 512;
+	int MMR_HASH_BITS=512;
 	
 	/**
 	 * Main Constructor
@@ -100,7 +100,7 @@ public class MMRSet implements Streamable {
 		mFinalized = false;
 		
 		//What HASH strength - ALL MMR database is 512
-		HASH_BITS = zBitLength;
+		MMR_HASH_BITS = zBitLength;
 		
 		//Now add the peaks..
 		if(mParent != null) {
@@ -360,7 +360,7 @@ public class MMRSet implements Streamable {
 			MMREntry sibling = getEntry(entry.getRow(), entry.getLeftSibling(),true);
 			
 			//Create the new row - hash LEFT + RIGHT
-			MiniData combined = Crypto.getInstance().hashObjects(sibling.getHashValue(), entry.getHashValue(), HASH_BITS);
+			MiniData combined = Crypto.getInstance().hashObjects(sibling.getHashValue(), entry.getHashValue(), MMR_HASH_BITS);
 			MMRData data = new MMRData(combined);
 			
 			//Set the Parent Entry
@@ -421,9 +421,9 @@ public class MMRSet implements Streamable {
 			//Create the new combined value..
 			MiniData combined = null;
 			if(entry.isLeft()) {
-				combined = Crypto.getInstance().hashObjects(entry.getHashValue(),sibling.getHashValue(), HASH_BITS);
+				combined = Crypto.getInstance().hashObjects(entry.getHashValue(),sibling.getHashValue(), MMR_HASH_BITS);
 			}else {
-				combined = Crypto.getInstance().hashObjects(sibling.getHashValue(), entry.getHashValue(), HASH_BITS);
+				combined = Crypto.getInstance().hashObjects(sibling.getHashValue(), entry.getHashValue(), MMR_HASH_BITS);
 			}
 			
 			//CCreate a new data proof
@@ -504,9 +504,9 @@ public class MMRSet implements Streamable {
 			//Create the new parent
 			MiniData combined = null;
 			if(entry.isLeft()) {
-				combined = Crypto.getInstance().hashObjects(entry.getHashValue(),sibling.getHashValue(), HASH_BITS);
+				combined = Crypto.getInstance().hashObjects(entry.getHashValue(),sibling.getHashValue(), MMR_HASH_BITS);
 			}else {
-				combined = Crypto.getInstance().hashObjects(sibling.getHashValue(), entry.getHashValue(), HASH_BITS);
+				combined = Crypto.getInstance().hashObjects(sibling.getHashValue(), entry.getHashValue(), MMR_HASH_BITS);
 			}
 			
 			//Create the new MMR Data
@@ -556,6 +556,7 @@ public class MMRSet implements Streamable {
 		
 		//Now get all the hashes in the tree to a peak..
 		MMRProof proof = new MMRProof(zEntryNumber, entry.getData(), mBlockTime);
+		proof.setHashBitLength(MMR_HASH_BITS);
 		
 		//Go up to the MMR Peak..
 		MMREntry sibling = getEntry(entry.getRow(), entry.getSibling(), true);
@@ -580,6 +581,7 @@ public class MMRSet implements Streamable {
 	private MMRProof getPeakToRoot(MiniData zPeak) {
 		//Sum of all the initial proofs...
 		MMRProof totalproof = new MMRProof();
+		totalproof.setHashBitLength(MMR_HASH_BITS);
 		
 		//Get the Peaks..
 		ArrayList<MMREntry> peaks = getMMRPeaks();
@@ -589,7 +591,7 @@ public class MMRSet implements Streamable {
 		MiniData keepvalue = zPeak;
 		while(peaks.size() > 1) {
 			//Create a new MMR
-			MMRSet newmmr = new MMRSet();
+			MMRSet newmmr = new MMRSet(MMR_HASH_BITS);
 			
 			//Add all the peaks to it..
 			for(MMREntry peak : peaks) {
@@ -611,7 +613,6 @@ public class MMRSet implements Streamable {
 			int len = proof.getProofLen();
 			for(int i=0;i<len;i++) {
 				ProofChunk chunk = proof.getProofChunk(i);
-//				totalproof.addHash(proof.getProof(i), proof.getLeftHash(i).isTrue());
 				totalproof.addProofChunk(chunk.getLeft(), chunk.getHash());
 			}
 			
@@ -641,9 +642,8 @@ public class MMRSet implements Streamable {
 		//Now add the two..
 		int len = rootproof.getProofLen();
 		for(int i=0;i<len;i++) {
-			ProofChunk chunk = proof.getProofChunk(i);
+			ProofChunk chunk = rootproof.getProofChunk(i);
 			proof.addProofChunk(chunk.getLeft(), chunk.getHash());
-//			proof.addHash(rootproof.getProof(i), rootproof.getLeftHash(i).isTrue());
 		}
 		
 		return proof;
@@ -774,7 +774,7 @@ public class MMRSet implements Streamable {
 		while(peaks.size() > 1) {
 		
 			//Create a new MMR
-			MMRSet newmmr = new MMRSet();
+			MMRSet newmmr = new MMRSet(MMR_HASH_BITS);
 			
 			//Add all the peaks to it..
 			for(MMREntry peak : peaks) {

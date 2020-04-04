@@ -490,7 +490,7 @@ public class ConsensusHandler extends SystemHandler {
 			
 			//Add to the transaction
 			trans.addInput(in);
-			wit.addScript(Address.TRUE_ADDRESS.getScript());
+			wit.addScript(Address.TRUE_ADDRESS.getScript(), in.getAddress().getLength()*8);
 			
 			//And send to the new address
 			Coin out = new Coin(Coin.COINID_OUTPUT,addr.getAddressData(),new MiniNumber("50"), Coin.MINIMA_TOKENID);

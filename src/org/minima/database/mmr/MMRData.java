@@ -102,8 +102,8 @@ public class MMRData implements Streamable{
 			//Get the data
 			MiniData data = new MiniData( baos.toByteArray() );
 			
-			//And Hash IT..
-			mFinalHash = Crypto.getInstance().hashObject(data);
+			//And Hash IT.. ALWYS 512
+			mFinalHash = Crypto.getInstance().hashObject(data,512);
 			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

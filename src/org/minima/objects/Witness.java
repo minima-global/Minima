@@ -117,16 +117,16 @@ public class Witness implements Streamable {
 	/**
 	 * Script Proofs
 	 */
+	public boolean addScript(String zScript, int zBitLength) throws Exception {
+		return addScript(new ScriptProof(zScript,zBitLength));
+	}
+	
 	public boolean addScript(ScriptProof zScriptProof) {
 		if(!scriptExists(zScriptProof.getFinalHash())) {
 			mScriptProofs.add(zScriptProof);		
 			return true;
 		}
 		return false;
-	}
-	
-	public boolean addScript(String zScript) throws Exception {
-		return addScript(new ScriptProof(zScript));
 	}
 	
 	public ScriptProof getScript(MiniData zAddress) {
@@ -142,19 +142,19 @@ public class Witness implements Streamable {
 				return proof;
 			}
 			
-			//It's the smaller version
-			if(len != 64) {
-				//Try the hash..
-				int bitlength = len * 8;
-				
-				//Hash it..
-				MiniData hash = new MiniData(Crypto.getInstance().hashData(fulladdr.getData(), bitlength));
-				
-				//Check it..
-				if(hash.isEqual(zAddress)) {
-					return proof;
-				}
-			}
+//			//It's the smaller version
+//			if(len != 64) {
+//				//Try the hash..
+//				int bitlength = len * 8;
+//				
+//				//Hash it..
+//				MiniData hash = new MiniData(Crypto.getInstance().hashData(fulladdr.getData(), bitlength));
+//				
+//				//Check it..
+//				if(hash.isEqual(zAddress)) {
+//					return proof;
+//				}
+//			}
 		}
 		
 		return null;

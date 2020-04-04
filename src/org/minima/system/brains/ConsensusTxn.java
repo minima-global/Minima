@@ -202,7 +202,7 @@ public class ConsensusTxn {
 				JSONObject resp = InputHandler.getResponseJSON(zMessage);
 				resp.put("info", "UNKNOWN ADDRESS "+cc.getAddress()+" not in Script database..");
 			}else {
-				wit.addScript(script);
+				wit.addScript(script, cc.getAddress().getLength()*8);
 			}
 			
 			listTransactions(zMessage);

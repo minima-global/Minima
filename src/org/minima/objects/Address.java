@@ -29,80 +29,43 @@ public class Address implements Streamable{
 	MiniData mAddressData; 
 	
 	/**
-	 * Medium size address
-	 */
-	MiniData mMediumAddress; 
-	
-	/**
-	 * The SMALL format Minima Address..
-	 */
-	MiniData mShortAddress; 
-	
-	/**
 	 * The Minima Mx address that has error detection and uses base 32!
 	 */
 	String mMinimaAddress;
 	
 	public Address() {}
-		
+	
 	public Address(String zScript) {
+		this(zScript, 256);
+	}
+	
+	public Address(String zScript, int zBitLength) {
 		//Convert script..
 		mScript = Contract.cleanScript(zScript);
 		
-		//Hash It..
-		byte[] hdata = Crypto.getInstance().hashData(mScript.getBytes());
-		
 		//Set the Address..
-		mAddressData = new MiniData(hdata);
-		
-		//Medium Size
-		mMediumAddress = new MiniData(Crypto.getInstance().hashData(hdata, 256));
-		
-		//The smallest address
-		mShortAddress  = new MiniData(Crypto.getInstance().hashData(hdata, 160)); 
+		mAddressData = new MiniData(Crypto.getInstance().hashData(mScript.getBytes(),zBitLength));
 		
 		//The Minima address as short as can be..
-		mMinimaAddress = makeMinimaAddress(mShortAddress);
+		mMinimaAddress = makeMinimaAddress(mAddressData);
 	}
 	
 	public Address(MiniData zAddressData) {
 		mAddressData 	= zAddressData;
-		mMediumAddress  = new MiniData();
-		mShortAddress   = new MiniData();
-		mMinimaAddress  = "";
-		mScript         = "";
 		
-			//FULL address is always 64 bytes long
-		if(mAddressData.getLength() == 64) {
-			mMediumAddress = new MiniData(Crypto.getInstance().hashData(mAddressData.getData(), 256));
-			mShortAddress  = new MiniData(Crypto.getInstance().hashData(mAddressData.getData(), 160));
-			mMinimaAddress = makeMinimaAddress(mShortAddress);
+		//DEBUG HACK
+		if(zAddressData.getLength() == 1) {
+			mMinimaAddress  = zAddressData.to0xString();
+		}else {
+			mMinimaAddress  = makeMinimaAddress(mAddressData);	
 		}
-		
-//		else if(mAddressData.getLength() == 32) {
-//			mMediumAddress = mAddressData;
-//			mMinimaAddress = makeMinimaAddress(mMediumAddress);
-//			
-//		}else if(mAddressData.getLength() == 20) {
-//			mShortAddress  = mAddressData;
-//			mMinimaAddress = makeMinimaAddress(mShortAddress);
-//			
-//			//HACK FOR DEBUGGING
-//		}else{
-//			mShortAddress  = new MiniData(Crypto.getInstance().hashData(mAddressData.getData(), 160));
-//			mMediumAddress = new MiniData(Crypto.getInstance().hashData(mAddressData.getData(), 256));
-//			mMinimaAddress = makeMinimaAddress(mShortAddress);
-//		}
-//		
-//		mScript = "";
+		mScript         = "";
 	}
 	
 	public JSONObject toJSON() {
 		JSONObject addr = new JSONObject();
 		addr.put("script", mScript);
 		addr.put("address", mAddressData.toString());
-//		addr.put("address256", mMediumAddress.toString());
-		addr.put("address160", mShortAddress.toString());
 		addr.put("miniaddress", mMinimaAddress);
 		return addr;
 	}
@@ -127,16 +90,8 @@ public class Address implements Streamable{
 		return mAddressData;
 	}
 	
-	public MiniData getMediumAddressData() {
-		return mMediumAddress;
-	}
-	
-	public MiniData getShortAddressData() {
-		return mShortAddress;
-	}
-
 	public boolean isEqual(MiniData zAddress) {
-		return mAddressData.isEqual(zAddress) || mShortAddress.isEqual(zAddress) || mMediumAddress.isEqual(zAddress);
+		return mAddressData.isEqual(zAddress);
 	}
 	
 	@Override
@@ -149,24 +104,12 @@ public class Address implements Streamable{
 	public void readDataStream(DataInputStream zIn) throws IOException {
 		mAddressData   = MiniData.ReadFromStream(zIn);
 		mScript        = zIn.readUTF();
-		mShortAddress  = new MiniData();
-		mMediumAddress = new MiniData();
-		mMinimaAddress = "";
-				
-		if(mAddressData.getLength() == 64) {
-			mMediumAddress = new MiniData(Crypto.getInstance().hashData(mAddressData.getData(), 256));
-			mShortAddress  = new MiniData(Crypto.getInstance().hashData(mAddressData.getData(), 160));
-			mMinimaAddress = makeMinimaAddress(mShortAddress);
-		}
 		
-//		else if(mAddressData.getLength() == 32) {
-//			mMediumAddress = mAddressData;
-//			mMinimaAddress = makeMinimaAddress(mMediumAddress);
-//			
-//		}else {
-//			mShortAddress = mAddressData;
-//			mMinimaAddress = makeMinimaAddress(mShortAddress);
-//		}
+		if(mAddressData.getLength() == 1) {
+			mMinimaAddress  = mAddressData.to0xString();
+		}else {
+			mMinimaAddress  = makeMinimaAddress(mAddressData);	
+		}		
 	}
 	
 	
@@ -260,27 +203,6 @@ public class Address implements Streamable{
 		}
 		
 		return new MiniData(newdata);
-	}
-	
-	public static void main(String[] zArgs) {
-		
-		Address addr = new Address("RETURN TRUE");
-		
-//		System.out.println(addr.toJSON().toString());
-		
-		String maddr = Address.makeMinimaAddress(addr.getShortAddressData());
-		
-		System.out.println(addr.getShortAddressData());
-		
-		System.out.println(maddr);
-
-//		MiniData dat = Address.convertMinimAddress("Mx5BZBK3BQ2HKJYRRIPUIENMTPYAXVMPWOEEXTJVFV"); 
-		MiniData dat = Address.convertMinimAddress(maddr); 
-		
-		System.out.println(dat);
-		
-		
-		
 	}
 	
 }
