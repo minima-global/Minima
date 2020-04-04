@@ -126,22 +126,17 @@ public class ConsensusUser {
 			for(MiniString leaf : leaves) {
 				JSONObject mmrnode = new JSONObject();
 				
-				MiniData finalhash = null;
+				MiniData finaldata = null;
 				if(type.equals("hash")) {
-					finalhash = new MiniData(leaf.toString());
+					finaldata = new MiniData(leaf.toString());
 					mmrnode.put("data",leaf.toString());
 				}else{
-//					//First hash with 512 as normal..
-//					byte[] hash = Crypto.getInstance().hashData(leaf.getData());
-//					if(bitlength != 512) {
-//						hash = Crypto.getInstance().hashData(hash, bitlength);
-//					}
-					
-					byte[] hash = Crypto.getInstance().hashData(leaf.getData(), bitlength);
-					
-					finalhash = new MiniData(hash);
+					finaldata = new MiniData(leaf.getData());
 					mmrnode.put("data","[ "+leaf.toString()+" ]");
 				}
+				byte[] hash = Crypto.getInstance().hashData(finaldata.getData(), bitlength);
+				MiniData finalhash = new MiniData(hash);
+				
 				mmrnode.put("leaf", finalhash.to0xString());
 				
 				nodearray.add(mmrnode);
