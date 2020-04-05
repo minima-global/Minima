@@ -139,9 +139,9 @@ public class SimpleBlockTreePrinter {
 				
 		String parents = "[blk:"+txpow.getBlockNumber()+"] "
 //						 +"diff:"+txpow.getBlockDifficulty().toShort0xString(16)+" "
-					     +"txpowid:"+zNode.getTxPowID().toShort0xString(16)+" "
-						 +"[parent:"+clev+"]"+parent.toShort0xString(16)+" "
-						 +"[parent:"+(clev+1)+"]"+parent2.toShort0xString(16)
+					     +"txpowid:"+zNode.getTxPowID().to0xString(16)+" "
+						 +"[parent:"+clev+"]"+parent.to0xString(16)+" "
+						 +"[parent:"+(clev+1)+"]"+parent2.to0xString(16)
 						 +"[txns:"+txpow.getBlockTxns().size()+"]";
 								
 		String add = parents +" ["+getStarString(slev)+"] - "+getStarString(clev);

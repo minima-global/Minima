@@ -125,29 +125,17 @@ public class MiniData implements Streamable {
 		return to0xString();
 	}
 	
-	/**
-	 * Remove the 0x at the beginning
-	 * @return
-	 */
-	public String toPureHexString() {
-		return toString().substring(2);
+	public String to0xString() {
+		return BaseConverter.encode16(mData);
 	}
 	
-	public String toShort0xString() {
-		return toShort0xString(8);
-	}
-	
-	public String toShort0xString(int zLen) {
+	public String to0xString(int zLen) {
 		String data = to0xString();
 		int len = data.length();
 		if(len > zLen) {
 			len = zLen;
 		}
 		return data.substring(0, len).concat("..");
-	}
-
-	public String to0xString() {
-		return BaseConverter.encode16(mData);
 	}
 	
 	@Override
