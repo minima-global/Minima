@@ -4,6 +4,7 @@ import org.minima.miniscript.Contract;
 import org.minima.miniscript.exceptions.ExecutionException;
 import org.minima.miniscript.functions.MinimaFunction;
 import org.minima.miniscript.values.HEXValue;
+import org.minima.miniscript.values.NumberValue;
 import org.minima.miniscript.values.ScriptValue;
 import org.minima.miniscript.values.Value;
 import org.minima.objects.base.MiniData;
@@ -18,21 +19,10 @@ public class CHAINSHA extends MinimaFunction {
 	
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
-		//Get the Input.. Could be HEX, SCRIPT or NUMBER
-//		Value val = getParameter(0).getValue(zContract);
-//		MiniData data = val.getMiniData();
-		
-//		int type = val.getValueType();
-//		if(type == HEXValue.VALUE_HEX) {
-//			data = val.getMiniData();
-//			
-//		}else if(type == ScriptValue.VALUE_SCRIPT) {
-//			
-//		}
-		
-		//Get the input hash...
-		HEXValue input = (HEXValue) getParameter(0).getValue(zContract);
-		
+		//Get the Input.. Could be HEX, SCRIPT, NUMBER
+		Value val     = getParameter(0).getValue(zContract);
+		MiniData data = val.getMiniData();
+
 		//Get the 32 byte hash data chain + 1 byte for left right 
 		HEXValue chain = (HEXValue) getParameter(1).getValue(zContract);
 		
@@ -45,7 +35,7 @@ public class CHAINSHA extends MinimaFunction {
 		}
 		
 		//Hash the data
-		byte[] hash = Crypto.getInstance().hashData(input.getRawData(), bits);
+		byte[] hash = Crypto.getInstance().hashData(data.getData(), bits);
 		MiniData finalhash = new MiniData(hash);
 		
 		//Create a proof..
@@ -55,10 +45,8 @@ public class CHAINSHA extends MinimaFunction {
 		chainproof.setData(finalhash);
 		chainproof.setProof(chain.getMiniData());
 		
-		MiniData fv = chainproof.getFinalHash();
-		
 		//Return..
-		return new HEXValue(fv);
+		return new HEXValue(chainproof.getFinalHash());
 	}
 	
 	@Override

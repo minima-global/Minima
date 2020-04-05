@@ -3,6 +3,7 @@
  */
 package org.minima.objects.base;
 
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -169,6 +170,20 @@ public class MiniData implements Streamable {
 		return data;
 	}
 
+	public static MiniData getMiniDataVersion(Streamable zObject) {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		DataOutputStream dos = new DataOutputStream(baos);
+		
+		try {
+			zObject.writeDataStream(dos);
+			dos.flush();
+		} catch (IOException e) {
+			return null;
+		}
+		
+		return new MiniData(baos.toByteArray());
+	}
+	
 	/**
 	 * Get a random chunk of data
 	 * 
@@ -182,7 +197,6 @@ public class MiniData implements Streamable {
 		rand.nextBytes(data);
 		return new MiniData(data);
 	}
-	
 	
 	public static void main(String[] zArgs) {
 		MiniData data = new MiniData();

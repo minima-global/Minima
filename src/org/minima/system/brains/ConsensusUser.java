@@ -16,6 +16,7 @@ import org.minima.database.mmr.MMREntry;
 import org.minima.database.mmr.MMRProof;
 import org.minima.database.mmr.MMRSet;
 import org.minima.miniscript.Contract;
+import org.minima.miniscript.values.BooleanValue;
 import org.minima.miniscript.values.HEXValue;
 import org.minima.miniscript.values.NumberValue;
 import org.minima.miniscript.values.ScriptValue;
@@ -112,7 +113,6 @@ public class ConsensusUser {
 		
 		}else if(zMessage.isMessageType(CONSENSUS_MMRTREE)) {
 			//What type SCRIPT or HASHES
-			String type   = zMessage.getString("type");
 			int bitlength = zMessage.getInteger("bitlength");
 			
 			//Create an MMR TREE from the array of inputs..
@@ -124,21 +124,45 @@ public class ConsensusUser {
 			//Now add each 
 			JSONArray nodearray = new JSONArray();
 			for(MiniString leaf : leaves) {
+				String leafstr = leaf.toString();
 				JSONObject mmrnode = new JSONObject();
-				
 				MiniData finaldata = null;
-				if(type.equals("hash")) {
-					finaldata = new MiniData(leaf.toString());
-					mmrnode.put("data",leaf.toString());
+				
+				//What type of data..
+				int valtype = Value.getValueType(leafstr);
+				if(valtype == HEXValue.VALUE_HEX ) {
+					finaldata = new MiniData(leafstr);
+					mmrnode.put("data",finaldata.toString());
+					
+				}else if(valtype == BooleanValue.VALUE_BOOLEAN ) {
+					MiniNumber num = MiniNumber.ZERO;
+					if(leaf.toString().equals("TRUE")) {
+						num = MiniNumber.ONE;	
+					}
+					finaldata = MiniData.getMiniDataVersion(num);
+					mmrnode.put("data",num.toString());
+					
+				}else if(valtype == NumberValue.VALUE_NUMBER) {
+					MiniNumber num = new MiniNumber(leaf.toString());
+					finaldata = MiniData.getMiniDataVersion(num);
+					mmrnode.put("data",num.toString());
+					
+					
 				}else{
+					//DEFAULT IS SCRIPT
 					finaldata = new MiniData(leaf.getData());
-					mmrnode.put("data","[ "+leaf.toString()+" ]");
+					mmrnode.put("data",leafstr);
 				}
+				
+				
+				//Now HASH what we have..
 				byte[] hash = Crypto.getInstance().hashData(finaldata.getData(), bitlength);
 				MiniData finalhash = new MiniData(hash);
 				
+				//That hash is the actual leaf node of the tree
 				mmrnode.put("leaf", finalhash.to0xString());
 				
+				//Add to the complete array
 				nodearray.add(mmrnode);
 				
 				//Add to the MMR

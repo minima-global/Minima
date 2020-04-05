@@ -3,7 +3,7 @@ package org.minima.miniscript.values;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 
-public class NumberValue extends Value{
+public class NumberValue extends Value {
 
 	public static final int VALUE_NUMBER = 2;
 	
@@ -28,7 +28,7 @@ public class NumberValue extends Value{
 		mNumber = new MiniNumber(zNumber);
 	
 		//The raw data is just the bytes of the string version.. at least unique for the input
-		mData = new MiniData(mNumber.toString().getBytes());
+		mData = MiniData.getMiniDataVersion(mNumber);
 	}
 	
 	@Override

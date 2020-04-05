@@ -8,6 +8,7 @@ import java.math.BigInteger;
 import org.minima.miniscript.Contract;
 import org.minima.miniscript.exceptions.MinimaParseException;
 import org.minima.miniscript.expressions.ConstantExpression;
+import org.minima.miniscript.tokens.Token;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 
@@ -124,8 +125,12 @@ public abstract class Value {
 		}else if(zValue.equals("FALSE")) {
 			return BooleanValue.VALUE_BOOLEAN;
 
-		}else {
+		}else if(Token.isNumeric(zValue)){
 			return NumberValue.VALUE_NUMBER;
+	
+		}else {
+			//ERROR
+			return -99;
 		}
 	}
 	
