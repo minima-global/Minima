@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
+import org.minima.GlobalParams;
 import org.minima.database.userdb.UserDB;
 import org.minima.database.userdb.UserDBRow;
 import org.minima.objects.Address;
@@ -107,7 +108,12 @@ public class JavaUserDB implements UserDB, Streamable{
 	
 	@Override
 	public Address newSimpleAddress() {
-		return newSimpleAddress(new PubPrivKey(256));
+		return newSimpleAddress(GlobalParams.MINIMA_HASH_STRENGTH);
+	}
+	
+	@Override
+	public Address newSimpleAddress(int zBitLength) {
+		return newSimpleAddress(new PubPrivKey(zBitLength));
 	}
 	
 	@Override
@@ -117,7 +123,7 @@ public class JavaUserDB implements UserDB, Streamable{
 		
 		//A simple script.. 
 		String script = "RETURN SIGNEDBY ( "+zPubPriv.getPublicKey()+" )";
-		Address addr  = new Address(script);
+		Address addr  = new Address(script, zPubPriv.getBitLength());
 		
 		//Add to the simple wallet
 		mAddresses.add(addr);
@@ -300,7 +306,7 @@ public class JavaUserDB implements UserDB, Streamable{
 		//Pub Priv Keys
 		int len = zIn.readInt();
 		for(int i=0;i<len;i++) {
-			PubPrivKey pp = new PubPrivKey(true);
+			PubPrivKey pp = new PubPrivKey();
 			pp.readDataStream(zIn);
 			mPubPrivKeys.add(pp);
 		}

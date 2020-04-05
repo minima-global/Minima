@@ -27,6 +27,7 @@ public interface UserDB {
 	 */
 	public ArrayList<Address> getSimpleAddresses();
 	public Address newSimpleAddress();
+	public Address newSimpleAddress(int zBitLength);
 	public Address newSimpleAddress(PubPrivKey zPubPriv);
 	public boolean isSimpleAddress(MiniData zAddress);
 	public MiniData getPublicKey(MiniData zAddress);

@@ -56,5 +56,5 @@ public class GlobalParams {
 	 * All the MMR data automatically uses 512. But addresses, scripts, and public keys..
 	 * can be set to less. This way signatures and addresses are shorter.
 	 */
-	public static final int MINIMA_HASH_STRENGTH = 160;
+	public static final int MINIMA_HASH_STRENGTH = 256;
 }

@@ -53,7 +53,7 @@ public class PubPrivKey implements Streamable {
 	 * For reading from stream
 	 * @param empty
 	 */
-	public PubPrivKey(boolean empty) {}
+	public PubPrivKey() {}
 	
 	public MiniData sign(MiniData zData) {
 		//Create a WOTS
@@ -101,6 +101,10 @@ public class PubPrivKey implements Streamable {
 	
 	public MiniData getPrivateSeed() {
 		return mPrivateSeed;
+	}
+	
+	public int getBitLength() {
+		return mBitLength;
 	}
 	
 	@Override

@@ -75,8 +75,13 @@ public class ConsensusUser {
 	public void processMessage(Message zMessage) throws Exception {
 		
 		if(zMessage.isMessageType(CONSENSUS_NEWSIMPLE)) {
+			int bitlength = GlobalParams.MINIMA_HASH_STRENGTH;
+			if(zMessage.exists("bitlength")) {
+				bitlength = zMessage.getInteger("bitlength");
+			}
+			
 			//Create a new simple address
-			Address addr = getMainDB().getUserDB().newSimpleAddress();
+			Address addr = getMainDB().getUserDB().newSimpleAddress(bitlength);
 			
 			JSONObject resp = InputHandler.getResponseJSON(zMessage);
 			resp.put("address", addr.toJSON());
