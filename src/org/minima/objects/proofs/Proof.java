@@ -236,4 +236,17 @@ public class Proof implements Streamable {
 		
 		return proof;
 	}
+	
+	public static int getChainSHABits(String zChainSHA) throws Exception {
+		if(zChainSHA.startsWith("0x0200")) {
+			return 512;
+		}else if(zChainSHA.startsWith("0x0100")) {
+			return 256;
+		}else if(zChainSHA.startsWith("0x00A0")) {
+			return 160;
+		}
+		
+		//ERROR
+		throw new Exception("Invalid ChainSHA.. must be 160, 256 or 512");
+	}
 }

@@ -48,17 +48,8 @@ public class ScriptProof extends Proof {
 	private void init(String zScript, String zChainSHAProof) throws Exception {
 		mScript = new MiniString(Contract.cleanScript(zScript));
 		
-		int bits = 512;
-		if(zChainSHAProof.startsWith("0x0200")) {
-			bits = 512;
-		}else if(zChainSHAProof.startsWith("0x0100")) {
-			bits = 256;
-		}else if(zChainSHAProof.startsWith("0x00A0")) {
-			bits = 160;
-		}else {
-			//ERROR
-			throw new Exception("Invalid ChainSHA.. must be 160, 256 or 512");
-		}
+		//How many Bits in HASH
+		int bits = Proof.getChainSHABits(zChainSHAProof);
 		
 		//Create an address
 		Address addr = new Address(mScript.toString(),bits);
