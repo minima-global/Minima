@@ -42,7 +42,7 @@ public class ScriptProof extends Proof {
 	
 	public ScriptProof(String zScript, String zChainSHAProof) throws Exception {
 		super();
-		init(zScript,"0x0200");
+		init(zScript,zChainSHAProof);
 	}
 	
 	private void init(String zScript, String zChainSHAProof) throws Exception {
