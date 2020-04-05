@@ -27,7 +27,10 @@ public class MiniNumber implements Streamable {
 	 * 
 	 * But all Minima values are actually in significant digit format anyway.. so semi-infinite precision..
 	 */
-	public static final MathContext mMathContext = new MathContext(18, RoundingMode.DOWN);
+	private static final MathContext mMainMathContext = new MathContext(18, RoundingMode.DOWN);
+	protected MathContext getMathContext() {
+		return mMainMathContext;
+	}
 	
 	/**
 	 * The decimal precision of the significant digits.
@@ -62,7 +65,7 @@ public class MiniNumber implements Streamable {
 	}
 	
 	public MiniNumber(int zNumber){
-		mNumber = new BigDecimal(zNumber,mMathContext);
+		mNumber = new BigDecimal(zNumber,getMathContext());
 	}
 
 //	public MiniNumber(long zNumber){
@@ -74,7 +77,7 @@ public class MiniNumber implements Streamable {
 //	}
 	
 	public MiniNumber(BigInteger zNumber){
-		mNumber = new BigDecimal(zNumber,mMathContext);
+		mNumber = new BigDecimal(zNumber,getMathContext());
 	}
 	
 	public MiniNumber(BigDecimal zBigD){
@@ -82,7 +85,7 @@ public class MiniNumber implements Streamable {
 	}
 	
 	public MiniNumber(String zNumber){
-		mNumber = new BigDecimal(zNumber,mMathContext);
+		mNumber = new BigDecimal(zNumber,getMathContext());
 	}
 	
 	public BigDecimal getAsBigDecimal() {
@@ -106,31 +109,31 @@ public class MiniNumber implements Streamable {
 	}
 	
 	public MiniNumber add(MiniNumber zNumber) {
-		return new MiniNumber( mNumber.add(zNumber.getAsBigDecimal(),mMathContext) );
+		return new MiniNumber( mNumber.add(zNumber.getAsBigDecimal(),getMathContext()) );
 	}
 	
 	public MiniNumber sub(MiniNumber zNumber) {
-		return new MiniNumber( mNumber.subtract(zNumber.getAsBigDecimal(),mMathContext) );
+		return new MiniNumber( mNumber.subtract(zNumber.getAsBigDecimal(),getMathContext()) );
 	}
 	
 	public MiniNumber div(MiniNumber zNumber) {
-		return new MiniNumber( mNumber.divide(zNumber.getAsBigDecimal(), mMathContext) );
+		return new MiniNumber( mNumber.divide(zNumber.getAsBigDecimal(), getMathContext()) );
 	}
 	
 	public MiniNumber divRoundDown(MiniNumber zNumber) {
-		return new MiniNumber( mNumber.divide(zNumber.getAsBigDecimal(), RoundingMode.DOWN) );
+		return new MiniNumber( mNumber.divide(zNumber.getAsBigDecimal(), getMathContext()) );
 	}
 	
 	public MiniNumber mult(MiniNumber zNumber) {
-		return new MiniNumber( mNumber.multiply(zNumber.getAsBigDecimal(),mMathContext) );
+		return new MiniNumber( mNumber.multiply(zNumber.getAsBigDecimal(),getMathContext()) );
 	}
 	
 	public MiniNumber pow(int zNumber) {
-		return new MiniNumber( mNumber.pow(zNumber,mMathContext) );
+		return new MiniNumber( mNumber.pow(zNumber,getMathContext()) );
 	}
 	
 	public MiniNumber modulo(MiniNumber zNumber) {
-		return new MiniNumber( mNumber.remainder(zNumber.getAsBigDecimal(),mMathContext) );
+		return new MiniNumber( mNumber.remainder(zNumber.getAsBigDecimal(),getMathContext()) );
 	}
 	
 	public MiniNumber floor() {
@@ -153,11 +156,11 @@ public class MiniNumber implements Streamable {
 	}
 		
 	public MiniNumber increment() {
-		return new MiniNumber( mNumber.add(BigDecimal.ONE,mMathContext) );
+		return new MiniNumber( mNumber.add(BigDecimal.ONE,getMathContext()) );
 	}
 	
 	public MiniNumber decrement() {
-		return new MiniNumber( mNumber.subtract(BigDecimal.ONE,mMathContext) );
+		return new MiniNumber( mNumber.subtract(BigDecimal.ONE,getMathContext()) );
 	}
 
 	public int compareTo(MiniNumber zCompare) {
@@ -220,7 +223,7 @@ public class MiniNumber implements Streamable {
 		
 		//And create..
 		BigInteger unscaled = new BigInteger(data);
-		mNumber = new BigDecimal(unscaled,scale,mMathContext);
+		mNumber = new BigDecimal(unscaled,scale,getMathContext());
 		
 		//Simples
 //		mNumber = new BigDecimal(zIn.readUTF(),mMathContext);
