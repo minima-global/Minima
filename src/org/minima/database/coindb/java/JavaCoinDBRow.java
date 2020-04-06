@@ -3,6 +3,7 @@ package org.minima.database.coindb.java;
 import org.minima.database.coindb.CoinDBRow;
 import org.minima.objects.Coin;
 import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniInteger;
 import org.minima.objects.base.MiniNumber;
 
 public class JavaCoinDBRow implements CoinDBRow{
@@ -14,7 +15,7 @@ public class JavaCoinDBRow implements CoinDBRow{
 	boolean mIsInBlock;
 	MiniNumber mInBlockNumber = MiniNumber.ZERO;
 	
-	MiniNumber mEntryNumber = MiniNumber.ZERO;
+	MiniInteger mEntryNumber = MiniInteger.ZERO;
 	
 	public JavaCoinDBRow(Coin zCoin) {
 		mCoin 			= zCoin;
@@ -63,29 +64,12 @@ public class JavaCoinDBRow implements CoinDBRow{
 	}
 
 	@Override
-	public void setMMREntry(MiniNumber zEntry) {
+	public void setMMREntry(MiniInteger zEntry) {
 		mEntryNumber = zEntry;
 	}
 
 	@Override
-	public MiniNumber getMMREntry() {
+	public MiniInteger getMMREntry() {
 		return mEntryNumber;
 	}
-	
-//
-//	@Override
-//	public void setConfirmed(boolean zConfirmed) {
-//		mConfirmed = zConfirmed;
-//	}
-//
-//	@Override
-//	public boolean isConfirmed() {
-//		return mConfirmed;
-//	}
-//
-//	@Override
-//	public MiniData32 getInBlockHash() {
-//		// TODO Auto-generated method stub
-//		return null;
-//	}
 }

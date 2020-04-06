@@ -8,6 +8,7 @@ import java.math.BigInteger;
 import java.math.RoundingMode;
 
 import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniInteger;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
@@ -15,16 +16,10 @@ import org.minima.utils.Streamable;
 public class MMREntry implements Comparable<MMREntry>, Streamable{
 
 	/**
-	 * Used many times..
-	 */
-	private static final BigInteger MMR_TWO 		= new BigInteger("2");
-	private static final BigDecimal MMR_TWO_DEC 	= new BigDecimal("2");
-	
-	/**
 	 * Global MMR position
 	 */
 	
-	MiniNumber mEntryNumber;
+	MiniInteger mEntryNumber;
 	int mRow;
 	
 	/**
@@ -48,7 +43,7 @@ public class MMREntry implements Comparable<MMREntry>, Streamable{
 	 * @param zRow
 	 * @param zEntry
 	 */
-	public MMREntry(int zRow, MiniNumber zEntry) {
+	public MMREntry(int zRow, MiniInteger zEntry) {
 		mRow = zRow;
 		mEntryNumber = zEntry;
 		mIsEmpty = true;
@@ -58,7 +53,7 @@ public class MMREntry implements Comparable<MMREntry>, Streamable{
 		return mIsEmpty;
 	}
 	
-	public boolean checkPosition(int zRow, MiniNumber zEntry) {
+	public boolean checkPosition(int zRow, MiniInteger zEntry) {
 		return (zRow == mRow) && zEntry.isEqual(mEntryNumber);
 	}
 	
@@ -105,7 +100,7 @@ public class MMREntry implements Comparable<MMREntry>, Streamable{
 	 * UTILITY FUNCTIONS FOR NAVIGATING THE MMR
 	 * 
 	 */
-	public MiniNumber getEntry() {
+	public MiniInteger getEntry() {
 		return mEntryNumber;
 	}
 	
@@ -122,23 +117,22 @@ public class MMREntry implements Comparable<MMREntry>, Streamable{
 	}
 	
 	public boolean isLeft() {
-//		return mEntryNumber.getAsBigInteger().mod(MMR_TWO) == BigInteger.ZERO;
-		return mEntryNumber.modulo(MiniNumber.TWO).isEqual(MiniNumber.ZERO);
+		return mEntryNumber.modulo(MiniInteger.TWO).isEqual(MiniInteger.ZERO);
 	}
 	
 	public boolean isRight() {
 		return !isLeft();
 	}
 	
-	public MiniNumber getLeftSibling() {
-		return mEntryNumber.sub(MiniNumber.ONE);
+	public MiniInteger getLeftSibling() {
+		return mEntryNumber.sub(MiniInteger.ONE);
 	}
 	
-	public MiniNumber getRightSibling() {
-		return mEntryNumber.add(MiniNumber.ONE);
+	public MiniInteger getRightSibling() {
+		return mEntryNumber.add(MiniInteger.ONE);
 	}
 	
-	public MiniNumber getSibling() {
+	public MiniInteger getSibling() {
 		if(isLeft()) {
 			return getRightSibling();
 		}else {
@@ -146,27 +140,21 @@ public class MMREntry implements Comparable<MMREntry>, Streamable{
 		}
 	}
 	
-	public MiniNumber getParentEntry() {
-		//Rounds Down..
-//		BigDecimal par  = mEntryNumber.getAsBigDecimal().divide(MMR_TWO_DEC,RoundingMode.DOWN);
-//		return new MiniNumber(par);
-		return mEntryNumber.divRoundDown(MiniNumber.TWO);
+	public MiniInteger getParentEntry() {
+		return mEntryNumber.divRoundDown(MiniInteger.TWO);
 	}
 	
-	public MiniNumber getLeftChildEntry() {
-//		BigInteger par = mEntryNumber.getAsBigInteger().multiply(MMR_TWO);
-//		return new MiniNumber(par);
-		return mEntryNumber.mult(MiniNumber.TWO);
+	public MiniInteger getLeftChildEntry() {
+		return mEntryNumber.mult(MiniInteger.TWO);
 	}
 	
-	public MiniNumber getRightChildEntry() {
-		return getLeftChildEntry().add(MiniNumber.ONE);
+	public MiniInteger getRightChildEntry() {
+		return getLeftChildEntry().add(MiniInteger.ONE);
 	}
 
 	@Override
 	public int compareTo(MMREntry zEntry) {
-		return zEntry.getEntry().compareTo(mEntryNumber);
-//		return mEntryNumber.compareTo(zEntry.getEntry());
+		return zEntry.getEntry().getNumber().compareTo(mEntryNumber.getNumber());
 	}
 
 	@Override
@@ -183,7 +171,7 @@ public class MMREntry implements Comparable<MMREntry>, Streamable{
 
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
-		mEntryNumber = MiniNumber.ReadFromStream(zIn);
+		mEntryNumber = MiniInteger.ReadFromStream(zIn);
 		mRow         = zIn.readInt();
 		mData        = MMRData.ReadFromStream(zIn);
 		mIsEmpty     = false;

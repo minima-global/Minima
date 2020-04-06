@@ -28,6 +28,7 @@ import org.minima.objects.StateVariable;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniInteger;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
 import org.minima.objects.proofs.ScriptProof;
@@ -183,7 +184,7 @@ public class ConsensusUser {
 				JSONObject node = (JSONObject) nodearray.get(i);
 				
 				//Get the proof..
-				MMRProof proof = mmr.getFullProofToRoot(new MiniNumber(i));
+				MMRProof proof = mmr.getFullProofToRoot(new MiniInteger(i));
 				
 				//Set the Bits
 				proof.setHashBitLength(bitlength);
