@@ -117,7 +117,8 @@ public class MinimaDB {
 		base.addUnspentCoin(gendata);
 		
 		//Get the root
-		gen.setMMRRoot(base.getMMRRoot());
+		gen.setMMRRoot(base.getMMRRoot().getFinalHash());
+		gen.setMMRTotal(MiniNumber.ZERO);
 		
 //		SuperBlockLevels.GENESIS_HASH = Crypto.getInstance().hashObject(gen);
 		
@@ -439,7 +440,7 @@ public class MinimaDB {
 				
 				//Check the root MMR..
 				if(allok) {
-					MiniData root = mmrset.getMMRRoot();
+					MiniData root = mmrset.getMMRRoot().getFinalHash();
 					if(!row.getTxPOW().getMMRRoot().isEqual(root)) {
 						allok = false;	
 					}
@@ -969,8 +970,9 @@ public class MinimaDB {
 		}
 		
 		//Set the current MMR
-		MiniData root =  newset.getMMRRoot();
-		txpow.setMMRRoot(root);
+		MMRData root = newset.getMMRRoot();
+		txpow.setMMRRoot(root.getFinalHash());
+		txpow.setMMRTotal(root.getValueSum());
 		
 		//And return..
 		return txpow;

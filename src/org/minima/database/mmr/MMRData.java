@@ -44,6 +44,11 @@ public class MMRData implements Streamable{
 	MiniData mFinalHash;
 	
 	/**
+	 * The Amount of this Output - used for the Sum Tree
+	 */
+	MiniNumber mValueSum;
+	
+	/**
 	 * Is this a HASH only affair
 	 */
 	boolean mHashOnly;
@@ -58,9 +63,12 @@ public class MMRData implements Streamable{
 	 * 
 	 * @param zData
 	 */
-	public MMRData(MiniData zData) {
+	public MMRData(MiniData zData, MiniNumber zValueSum) {
 		//Only the final hash
 		mFinalHash = zData;
+		
+		//The COmbined Value of the Children
+		mValueSum = zValueSum;
 		
 		//It is ONLY the HASH
 		mHashOnly  = true; 
@@ -82,6 +90,13 @@ public class MMRData implements Streamable{
 		
 		//Full  Data
 		mHashOnly = false;
+		
+		//The Sum Value
+		if(zSpent.isTrue()) {
+			mValueSum = MiniNumber.ZERO;	
+		}else {
+			mValueSum = zCoin.getAmount();	
+		}
 		
 		//Calculate the hash
 		calculateDataHash();
@@ -115,6 +130,10 @@ public class MMRData implements Streamable{
 		return mFinalHash;
 	}
 	
+	public MiniNumber getValueSum() {
+		return mValueSum;
+	}
+	
 	//Must be NOT hashonly
 	public boolean isSpent() {
 		return mSpent.isEqual(MiniByte.TRUE);
@@ -140,9 +159,10 @@ public class MMRData implements Streamable{
 		JSONObject obj = new JSONObject();
 		
 		obj.put("hashonly", mHashOnly);
+		obj.put("value", mValueSum.toString());
 		
 		if(mHashOnly) {
-			obj.put("finalhash", mFinalHash.toString());	
+			obj.put("finalhash", mFinalHash.toString());
 		}else {
 			obj.put("finalhash", mFinalHash.toString());
 			obj.put("spent", isSpent());
@@ -174,6 +194,8 @@ public class MMRData implements Streamable{
 			//Only write the hash
 			mFinalHash.writeDataStream(zOut);
 		
+			//And the SUM
+			mValueSum.writeDataStream(zOut);
 		}else {
 			MiniByte.FALSE.writeDataStream(zOut);
 		
@@ -201,6 +223,8 @@ public class MMRData implements Streamable{
 		
 		if(mHashOnly) {
 			mFinalHash 	 = MiniData.ReadFromStream(zIn);
+			mValueSum    = MiniNumber.ReadFromStream(zIn);
+			
 		}else {
 			mSpent   	 = MiniByte.ReadFromStream(zIn);
 			mCoin    	 = Coin.ReadFromStream(zIn);
@@ -215,6 +239,13 @@ public class MMRData implements Streamable{
 				
 				//Add it..
 				mPrevState.add(sv);
+			}
+			
+			//The Sum Value
+			if(mSpent.isTrue()) {
+				mValueSum = MiniNumber.ZERO;	
+			}else {
+				mValueSum = mCoin.getAmount();	
 			}
 			
 			//Calculate the Hash..

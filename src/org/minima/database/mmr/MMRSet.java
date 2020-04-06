@@ -12,6 +12,7 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniInteger;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.proofs.Proof.ProofChunk;
+import org.minima.objects.proofs.SumTreeProof.STProofChunk;
 import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
@@ -61,7 +62,7 @@ public class MMRSet implements Streamable {
 	 */
 	boolean mFinalized;
 	
-	MiniData mFinalizedRoot;
+	MMRData mFinalizedRoot;
 	ArrayList<MMREntry> mFinalizedPeaks;
 	ArrayList<MMREntry> mFinalizedZeroRow;
 	
@@ -362,7 +363,12 @@ public class MMRSet implements Streamable {
 			
 			//Create the new row - hash LEFT + RIGHT
 			MiniData combined = Crypto.getInstance().hashObjects(sibling.getHashValue(), entry.getHashValue(), MMR_HASH_BITS);
-			MMRData data = new MMRData(combined);
+			
+			//Combine the Values..
+			MiniNumber sumvalue = entry.getData().getValueSum().add(sibling.getData().mValueSum);
+			
+			//The New MMRData
+			MMRData data = new MMRData(combined,sumvalue);
 			
 			//Set the Parent Entry
 			entry = setEntry(entry.getParentRow(),entry.getParentEntry(),data);
@@ -397,11 +403,11 @@ public class MMRSet implements Streamable {
 		int prooflen = zProof.getProofLen();
 		int proofnum = 0;
 		while(proofnum < prooflen) {
-			//Get the Sibling.. will be the left
 			MMREntry sibling = getEntry(entry.getRow(), entry.getSibling(),true);
 			
 			//Do we add our own..
-			MMRData pdata = new MMRData(zProof.getProofChunk(proofnum++).getHash());
+			STProofChunk chunk = zProof.getProofChunk(proofnum++);
+			MMRData pdata = new MMRData(chunk.getHash(), chunk.getValue());
 			if(sibling.isEmpty()) {
 				//Set the data
 				sibling = setEntry(sibling.getRow(), sibling.getEntry(), pdata);
@@ -427,8 +433,11 @@ public class MMRSet implements Streamable {
 				combined = Crypto.getInstance().hashObjects(sibling.getHashValue(), entry.getHashValue(), MMR_HASH_BITS);
 			}
 			
+			//Combine the Values..
+			MiniNumber sumvalue = entry.getData().getValueSum().add(sibling.getData().mValueSum);
+			
 			//CCreate a new data proof
-			MMRData data = new MMRData(combined);
+			MMRData data = new MMRData(combined,sumvalue);
 			
 			//Check if we have it..
 			MMREntry parent = getEntry(entry.getParentRow(),entry.getParentEntry(), true);  
@@ -487,16 +496,17 @@ public class MMRSet implements Streamable {
 		
 		//Is an input missing or is it a less recent update 
 		int pcount = 0;
-		MiniData phash = zProof.getProofChunk(pcount++).getHash();
+		MiniData phash  = zProof.getProofChunk(pcount++).getHash();
+		MiniNumber pval = zProof.getProofChunk(pcount++).getValue();
 		
 		//Do we need to fill it in..
 		if(sibling.isEmpty()) {
-			sibling = setEntry(sibling.getRow(), sibling.getEntry(), new MMRData(phash));
+			sibling = setEntry(sibling.getRow(), sibling.getEntry(), new MMRData(phash, pval));
 		}else if(sibling.getBlockTime().isLessEqual(zProof.getBlockTime())) {
 			//Is it the original.. has all the micro details.. internal nodes are just the hash anyway
 			MiniData orighash = sibling.getData().getFinalHash();
 			if(!orighash.isEqual(phash)) {
-				sibling = setEntry(sibling.getRow(), sibling.getEntry(), new MMRData(phash));
+				sibling = setEntry(sibling.getRow(), sibling.getEntry(), new MMRData(phash, pval));
 			}
 		}
 		
@@ -510,8 +520,11 @@ public class MMRSet implements Streamable {
 				combined = Crypto.getInstance().hashObjects(sibling.getHashValue(), entry.getHashValue(), MMR_HASH_BITS);
 			}
 			
+			//Combine the Values..
+			MiniNumber sumvalue = entry.getData().getValueSum().add(sibling.getData().mValueSum);
+			
 			//Create the new MMR Data
-			MMRData data = new MMRData(combined);
+			MMRData data = new MMRData(combined,sumvalue);
 			
 			//Set the Sibling in this MMRSET!.. this way the MMR peaks still work.. 
 			//(as the max in a row MUST be on the left to be a peak ))
@@ -533,13 +546,14 @@ public class MMRSet implements Streamable {
 			//Check for a valid sibling
 			if(pcount < zProof.getProofLen()) {
 				phash = zProof.getProofChunk(pcount++).getHash();
+				pval  = zProof.getProofChunk(pcount++).getValue();
 				if(sibling.isEmpty()) {
-					sibling = setEntry(sibling.getRow(), sibling.getEntry(), new MMRData(phash));		
+					sibling = setEntry(sibling.getRow(), sibling.getEntry(), new MMRData(phash,pval));		
 				}else if(sibling.getBlockTime().isLessEqual(zProof.getBlockTime())) {
 					//Is it the original.. has all the micro details.. internal nodes are just the hash anyway
 					MiniData orighash = sibling.getData().getFinalHash();
 					if(!orighash.isEqual(phash)) {
-						sibling = setEntry(sibling.getRow(), sibling.getEntry(), new MMRData(phash));	
+						sibling = setEntry(sibling.getRow(), sibling.getEntry(), new MMRData(phash,pval));	
 					}	
 				}
 			}
@@ -563,8 +577,7 @@ public class MMRSet implements Streamable {
 		MMREntry sibling = getEntry(entry.getRow(), entry.getSibling(), true);
 		while(!sibling.isEmpty()) {
 			//Add to our Proof..
-//			proof.addHash(sibling.getHashValue(), sibling.isLeft());	
-			proof.addProofChunk(new MiniByte(sibling.isLeft()), sibling.getHashValue());	
+			proof.addProofChunk(new MiniByte(sibling.isLeft()), sibling.getHashValue(), sibling.getData().getValueSum());	
 			
 			//Now get the Parent.. just need a reference even if is empty. To find the sibling.
 			MMREntry parent = new MMREntry( sibling.getParentRow(), sibling.getParentEntry() );
@@ -597,7 +610,7 @@ public class MMRSet implements Streamable {
 			//Add all the peaks to it..
 			for(MMREntry peak : peaks) {
 				//Create the new input..
-				MMRData data = new MMRData(peak.getHashValue());
+				MMRData data = new MMRData(peak.getHashValue(), peak.getData().getValueSum());
 				
 				//Is this the one to follow..
 				if(peak.getHashValue().isEqual(keepvalue)) {
@@ -613,8 +626,8 @@ public class MMRSet implements Streamable {
 			//Now add thatto the totsl proof..
 			int len = proof.getProofLen();
 			for(int i=0;i<len;i++) {
-				ProofChunk chunk = proof.getProofChunk(i);
-				totalproof.addProofChunk(chunk.getLeft(), chunk.getHash());
+				STProofChunk chunk = proof.getProofChunk(i);
+				totalproof.addProofChunk(chunk.getLeft(), chunk.getHash(), chunk.getValue());
 			}
 			
 			//Now get the peaks.. repeat..
@@ -643,8 +656,8 @@ public class MMRSet implements Streamable {
 		//Now add the two..
 		int len = rootproof.getProofLen();
 		for(int i=0;i<len;i++) {
-			ProofChunk chunk = rootproof.getProofChunk(i);
-			proof.addProofChunk(chunk.getLeft(), chunk.getHash());
+			STProofChunk chunk = rootproof.getProofChunk(i);
+			proof.addProofChunk(chunk.getLeft(), chunk.getHash(), chunk.getValue());
 		}
 		
 		return proof;
@@ -762,7 +775,7 @@ public class MMRSet implements Streamable {
 	 * 
 	 * @return
 	 */
-	public MiniData getMMRRoot() {
+	public MMRData getMMRRoot() {
 		//Are we final
 		if(mFinalized) {
 			return mFinalizedRoot;
@@ -779,14 +792,14 @@ public class MMRSet implements Streamable {
 			
 			//Add all the peaks to it..
 			for(MMREntry peak : peaks) {
-				newmmr.addUnspentCoin(new MMRData(peak.getHashValue()));	
+				newmmr.addUnspentCoin(new MMRData(peak.getHashValue(), peak.getData().getValueSum()));	
 			}
 			
 			//Now get the peaks.. repeat..
 			peaks = newmmr.getMMRPeaks();
 		}
 		
-		return peaks.get(0).getHashValue();
+		return peaks.get(0).getData();
 	}
 	
 	/**
