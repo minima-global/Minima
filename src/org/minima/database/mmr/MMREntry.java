@@ -25,7 +25,7 @@ public class MMREntry implements Comparable<MMREntry>, Streamable{
 	/**
 	 * The blocktime..
 	 */
-	MiniNumber mBlockTime = MiniNumber.ZERO;
+	MiniNumber mBlockTime = new MiniNumber(0);
 	
 	/**
 	 * The data stored here

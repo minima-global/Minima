@@ -15,12 +15,12 @@ public class MMRProof extends Proof {
 	/**
 	 * The block time this proof points to
 	 */
-	MiniNumber mBlockTime = MiniNumber.ZERO;
+	MiniNumber mBlockTime = new MiniNumber(0);
 	
 	/**
 	 * The Entry number in the MMR
 	 */
-	MiniInteger mEntryNumber = MiniInteger.ZERO;
+	MiniInteger mEntryNumber = new MiniInteger(0);
 	
 	/**
 	 * The Provable data

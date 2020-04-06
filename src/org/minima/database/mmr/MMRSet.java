@@ -33,7 +33,7 @@ public class MMRSet implements Streamable {
 	/**
 	 * What is the current entry number..
 	 */
-	public MiniInteger mEntryNumber = MiniInteger.ZERO;
+	public MiniInteger mEntryNumber = new MiniInteger(0);
 	
 	/**
 	 * All the entries in this set 
