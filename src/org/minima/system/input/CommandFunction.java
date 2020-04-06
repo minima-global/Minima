@@ -18,7 +18,7 @@ import org.minima.system.input.functions.intro;
 import org.minima.system.input.functions.keepcoin;
 import org.minima.system.input.functions.keys;
 import org.minima.system.input.functions.automine;
-import org.minima.system.input.functions.mmrtree;
+import org.minima.system.input.functions.chainsha;
 import org.minima.system.input.functions.network;
 import org.minima.system.input.functions.newaddress;
 import org.minima.system.input.functions.newscript;
@@ -67,7 +67,7 @@ public abstract class CommandFunction {
 			new newscript(), new printchain(), new printtree(), new quit(),new reconnect(), new runscript(), new cleanscript(), 
 			new send(), new status(), new test(), new trace(), new tutorial(), new history(), new tokens(),
 			new exportkey(), new importkey(), new exportcoin(), new importcoin(), new search(),
-			new mmrtree(), new keepcoin(), new scripts(), new chart(), new network(),
+			new chainsha(), new keepcoin(), new scripts(), new chart(), new network(),
 			new txncreate(), new txndelete(), new txninput(), new txnlist(), 
 			new txnstate(), new txnexport(), new txnimport(), new txnscript(),
 			new txnoutput(), new txnpost(), new txnsign(), new txnvalidate()

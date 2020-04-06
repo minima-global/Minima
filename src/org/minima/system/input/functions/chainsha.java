@@ -16,11 +16,11 @@ import org.minima.system.input.CommandFunction;
 import org.minima.utils.MiniFormat;
 import org.minima.utils.messages.Message;
 
-public class mmrtree extends CommandFunction{
+public class chainsha extends CommandFunction{
 
-	public mmrtree() {
-		super("mmrtree");
-		setHelp("[bitlength] [data_list]", "Build an MMR Hash Tree from the data list", "");
+	public chainsha() {
+		super("chainsha");
+		setHelp("[bitlength] [data_list]", "Build an MMR Hash Tree from the data list. Use with CHAINSHA in script.", "");
 	}
 	
 	@Override
@@ -43,6 +43,6 @@ public class mmrtree extends CommandFunction{
 	@Override
 	public CommandFunction getNewFunction() {
 		// TODO Auto-generated method stub
-		return new mmrtree();
+		return new chainsha();
 	}
 }

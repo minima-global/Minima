@@ -97,7 +97,7 @@ public class help extends CommandFunction{
 			addJSONDesc(new createtoken());
 			addJSONDesc(new tokens());
 			
-			addJSONDesc(new mmrtree());
+			addJSONDesc(new chainsha());
 			
 			addJSONDesc(new txnlist());
 			addJSONDesc(new txncreate());
