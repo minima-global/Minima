@@ -106,6 +106,11 @@ public class TxPOWChecker {
 			}
 		}
 		
+		//Now Check the Transaction Link Hash..
+		if(!zTxPOW.getTransaction().getLinkHash().isEqual(MiniData.MINIDATA_ZERO)) {
+			return false;
+		}
+		
 		return checkTransactionMMR(zTxPOW.getTransaction(), zTxPOW.getWitness(), zDB, zBlockNumber, zMMRSet, zTouchMMR, new JSONArray());	
 	}
 	
@@ -121,15 +126,6 @@ public class TxPOWChecker {
 		String[] DYNState = new String[256];
 		for(int i=0;i<256;i++) {
 			DYNState[i] = null;
-		}
-		
-		//Simplest check first.. valid amounts..
-		if(!trans.checkValidInOutPerToken()) {
-			//The contract execution log - will be updated later, but added now
-			JSONObject contractlog = new JSONObject();
-			zContractLog.add(contractlog);
-			contractlog.put("error", "Total Inputs are LESS than Total Outputs for certain Tokens");
-			return false;
 		}
 		
 		//Check the input scripts
@@ -433,6 +429,10 @@ public class TxPOWChecker {
 				
 				//Check it..
 				if(newtokdets == null) {
+					//The contract execution log - will be updated later, but added now
+					JSONObject errorlog = new JSONObject();
+					zContractLog.add(errorlog);
+					errorlog.put("error", "Total Details Missing for "+tokid);
 					return false;
 				}
 			}
@@ -461,6 +461,16 @@ public class TxPOWChecker {
 			}
 		}
 		
+		
+		//Now check after all that -  valid amounts..
+		if(!trans.checkValidInOutPerToken()) {
+			//The contract execution log - will be updated later, but added now
+			JSONObject errorlog = new JSONObject();
+			zContractLog.add(errorlog);
+			errorlog.put("error", "Total Inputs are LESS than Total Outputs for certain Tokens");
+			return false;
+		}
+				
 		//All OK!
 		return true;
 	}
