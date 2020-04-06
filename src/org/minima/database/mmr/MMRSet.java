@@ -496,8 +496,9 @@ public class MMRSet implements Streamable {
 		
 		//Is an input missing or is it a less recent update 
 		int pcount = 0;
-		MiniData phash  = zProof.getProofChunk(pcount++).getHash();
-		MiniNumber pval = zProof.getProofChunk(pcount++).getValue();
+		STProofChunk chunk = zProof.getProofChunk(pcount++);
+		MiniData phash  = chunk.getHash();
+		MiniNumber pval = chunk.getValue();
 		
 		//Do we need to fill it in..
 		if(sibling.isEmpty()) {
@@ -545,8 +546,9 @@ public class MMRSet implements Streamable {
 			
 			//Check for a valid sibling
 			if(pcount < zProof.getProofLen()) {
-				phash = zProof.getProofChunk(pcount++).getHash();
-				pval  = zProof.getProofChunk(pcount++).getValue();
+				chunk = zProof.getProofChunk(pcount++);
+				phash = chunk.getHash();
+				pval  = chunk.getValue();
 				if(sibling.isEmpty()) {
 					sibling = setEntry(sibling.getRow(), sibling.getEntry(), new MMRData(phash,pval));		
 				}else if(sibling.getBlockTime().isLessEqual(zProof.getBlockTime())) {
