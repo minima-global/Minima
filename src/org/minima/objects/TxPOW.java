@@ -13,6 +13,7 @@ import java.util.Date;
 import org.minima.GlobalParams;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniInteger;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.Crypto;
 import org.minima.utils.Streamable;
@@ -30,7 +31,7 @@ public class TxPOW implements Streamable {
 	/**
 	 * The NONCE - the user definable data you cycle through to change the final hash of this TxPow
 	 */
-	private MiniNumber 	mNonce	= new MiniNumber(0);
+	private MiniInteger mNonce	= MiniInteger.ZERO;
 	
 	/**
 	 * Time Secs  
@@ -147,11 +148,11 @@ public class TxPOW implements Streamable {
 		}
 	}
 	
-	public void setNonce(MiniNumber zNonce) {
+	public void setNonce(MiniInteger zNonce) {
 		mNonce = zNonce;
 	}
 	
-	public MiniNumber getNonce() {
+	public MiniInteger getNonce() {
 		return mNonce;
 	}
 	

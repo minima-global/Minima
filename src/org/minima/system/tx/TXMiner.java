@@ -2,6 +2,7 @@ package org.minima.system.tx;
 
 import org.minima.objects.TxPOW;
 import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniInteger;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
 import org.minima.system.SystemHandler;
@@ -40,7 +41,7 @@ public class TXMiner extends SystemHandler{
 			//Get TXPOW..
 			TxPOW txpow = (TxPOW) zMessage.getObject("txpow");
 			
-			MiniNumber nonce = MiniNumber.ZERO;
+			MiniInteger nonce = MiniInteger.ZERO;
 			
 			//And now start hashing.. 
 			MiniData hash = null;
