@@ -31,7 +31,7 @@ public class TxPOW implements Streamable {
 	/**
 	 * The NONCE - the user definable data you cycle through to change the final hash of this TxPow
 	 */
-	private MiniInteger mNonce	= MiniInteger.ZERO;
+	private MiniInteger mNonce	= new MiniInteger(0);
 	
 	/**
 	 * Time Secs  
