@@ -13,9 +13,9 @@ public class JavaCoinDBRow implements CoinDBRow{
 	boolean mIsSpent;
 	
 	boolean mIsInBlock;
-	MiniNumber mInBlockNumber = MiniNumber.ZERO;
+	MiniNumber mInBlockNumber = new MiniNumber(0);
 	
-	MiniInteger mEntryNumber = MiniInteger.ZERO;
+	MiniInteger mEntryNumber  = new MiniInteger(0);
 	
 	public JavaCoinDBRow(Coin zCoin) {
 		mCoin 			= zCoin;

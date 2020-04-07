@@ -21,7 +21,7 @@ public class MMRSet implements Streamable {
 	/**
 	 * What Block time does this MMR represent. Each represents 1 block.
 	 */
-	MiniNumber mBlockTime = MiniNumber.ZERO;
+	MiniNumber mBlockTime = new MiniNumber(0);
 	
 	/**
 	 * The parent MMRData..

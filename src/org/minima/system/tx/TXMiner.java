@@ -41,7 +41,7 @@ public class TXMiner extends SystemHandler{
 			//Get TXPOW..
 			TxPOW txpow = (TxPOW) zMessage.getObject("txpow");
 			
-			MiniInteger nonce = MiniInteger.ZERO;
+			MiniInteger nonce = new MiniInteger(0);
 			
 			//And now start hashing.. 
 			MiniData hash = null;

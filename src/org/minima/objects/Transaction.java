@@ -31,7 +31,7 @@ public class Transaction implements Streamable {
 	 * The Hash of a prior transaction if this is a burn transaction
 	 * MUST Be 0x00 to be a normal transaction.
 	 */
-	protected MiniData mLinkHash = MiniData.MINIDATA_ZERO;
+	protected MiniData mLinkHash = new MiniData("0x00");
 	
 	/**
 	 * The Inputs that make up the Transaction
@@ -332,8 +332,7 @@ public class Transaction implements Streamable {
 		mState 	 = new  ArrayList<>();
 		
 		//Inputs
-		MiniByte ins = new MiniByte();
-		ins.readDataStream(zIn);
+		MiniByte ins = MiniByte.ReadFromStream(zIn);
 		
 		int len = ins.getValue();
 		for(int i=0;i<len;i++) {
@@ -342,8 +341,7 @@ public class Transaction implements Streamable {
 		}
 		
 		//Outputs
-		MiniByte outs = new MiniByte();
-		outs.readDataStream(zIn);
+		MiniByte outs = MiniByte.ReadFromStream(zIn);
 		
 		len = outs.getValue();
 		for(int i=0;i<len;i++) {

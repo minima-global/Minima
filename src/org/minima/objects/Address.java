@@ -6,6 +6,7 @@ import java.io.IOException;
 
 import org.minima.kissvm.Contract;
 import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniScript;
 import org.minima.utils.BaseConverter;
 import org.minima.utils.Crypto;
 import org.minima.utils.Streamable;
@@ -21,7 +22,7 @@ public class Address implements Streamable{
 	/**
 	 * The script that this address represents
 	 */
-	String mScript;
+	MiniScript mScript;
 	
 	/**
 	 * The actual address hash in byte format
@@ -41,10 +42,10 @@ public class Address implements Streamable{
 	
 	public Address(String zScript, int zBitLength) {
 		//Convert script..
-		mScript = Contract.cleanScript(zScript);
+		mScript = new MiniScript(zScript);
 		
 		//Set the Address..
-		mAddressData = new MiniData(Crypto.getInstance().hashData(mScript.getBytes(),zBitLength));
+		mAddressData = new MiniData(Crypto.getInstance().hashData(mScript.getData(),zBitLength));
 		
 		//The Minima address as short as can be..
 		mMinimaAddress = makeMinimaAddress(mAddressData);
@@ -52,14 +53,8 @@ public class Address implements Streamable{
 	
 	public Address(MiniData zAddressData) {
 		mAddressData 	= zAddressData;
-		
-		//DEBUG HACK
-		if(zAddressData.getLength() == 1) {
-			mMinimaAddress  = zAddressData.to0xString();
-		}else {
-			mMinimaAddress  = makeMinimaAddress(mAddressData);	
-		}
-		mScript         = "";
+		mMinimaAddress  = zAddressData.to0xString();
+		mScript         = new MiniScript("");
 	}
 	
 	public JSONObject toJSON() {
@@ -83,7 +78,7 @@ public class Address implements Streamable{
 	 * @return the script
 	 */
 	public String getScript() {
-		return mScript;
+		return mScript.toString();
 	}
 	
 	public MiniData getAddressData() {
@@ -97,18 +92,18 @@ public class Address implements Streamable{
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
 		mAddressData.writeDataStream(zOut);
-		zOut.writeUTF(mScript);
+		mScript.writeDataStream(zOut);
 	}
 
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
 		mAddressData   = MiniData.ReadFromStream(zIn);
-		mScript        = zIn.readUTF();
+		mScript        = MiniScript.ReadFromStream(zIn);
 		
-		if(mAddressData.getLength() == 1) {
+		if(mScript.toString().equals("")) {
 			mMinimaAddress  = mAddressData.to0xString();
 		}else {
-			mMinimaAddress  = makeMinimaAddress(mAddressData);	
+			mMinimaAddress  = makeMinimaAddress(mAddressData);
 		}		
 	}
 	

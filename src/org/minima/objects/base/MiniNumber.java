@@ -27,12 +27,12 @@ public class MiniNumber implements Streamable {
 	 * 
 	 * But all Minima values are actually in significant digit format anyway.. so semi-infinite precision..
 	 */
-	public static final MathContext mMathContext = new MathContext(18, RoundingMode.DOWN);
+	public static final MathContext mMathContext = new MathContext(20, RoundingMode.DOWN);
 	
 	/**
 	 * The decimal precision of the significant digits.
 	 */
-	public static final DecimalFormat MINIMA_SIGNIFICANT_FORMAT = new DecimalFormat("0.#################E0");
+	public static final DecimalFormat MINIMA_SIGNIFICANT_FORMAT = new DecimalFormat("0.###################E0");
 	
 	/**
 	 * Useful numbers

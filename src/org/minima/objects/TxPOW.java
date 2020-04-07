@@ -432,25 +432,27 @@ public class TxPOW implements Streamable {
 
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
-		mNonce.readDataStream(zIn);
-		mMagic.readDataStream(zIn);
-		mChainID.readDataStream(zIn);
-		mParentChainID.readDataStream(zIn);
-		mCustom.readDataStream(zIn);
-		mTimeSecs.readDataStream(zIn);
-		mTxnDifficulty = MiniData.ReadFromStream(zIn);
+		mNonce          = MiniInteger.ReadFromStream(zIn);
+		mMagic          = MiniData.ReadFromStream(zIn);
+		mChainID        = MiniData.ReadFromStream(zIn);
+		mParentChainID  = MiniData.ReadFromStream(zIn);
+		mCustom         = MiniData.ReadFromStream(zIn);
+		mTimeSecs       = MiniNumber.ReadFromStream(zIn);
+		mTxnDifficulty  = MiniData.ReadFromStream(zIn);
+		
 		mTransaction.readDataStream(zIn);
 		mWitness.readDataStream(zIn);
 		mBurnTransaction.readDataStream(zIn);
 		mBurnWitness.readDataStream(zIn);
-		mBlockNumber.readDataStream(zIn);
-		mParent = MiniData.ReadFromStream(zIn);
-		mBlockDifficulty.readDataStream(zIn);
+		
+		mBlockNumber    = MiniNumber.ReadFromStream(zIn);
+		mParent         = MiniData.ReadFromStream(zIn);
+		mBlockDifficulty= MiniData.ReadFromStream(zIn);
 		
 		//And the super parents - RLE
 		int tot   = 0;
 		while(tot<GlobalParams.MINIMA_CASCADE_LEVELS) {
-			MiniByte len   = MiniByte.ReadFromStream(zIn);
+			MiniByte len = MiniByte.ReadFromStream(zIn);
 			MiniData sup = MiniData.ReadFromStream(zIn);
 			int count = len.getValue();
 			for(int i=0;i<count;i++) {
@@ -460,15 +462,14 @@ public class TxPOW implements Streamable {
 		
 		//Read in  the TxPOW list
 		mTxPowIDList = new ArrayList<>();
-		MiniNumber ramlen = new MiniNumber();
-		ramlen.readDataStream(zIn);
+		MiniNumber ramlen = MiniNumber.ReadFromStream(zIn);
 		int len = ramlen.getAsInt();
 		for(int i=0;i<len;i++) {
 			mTxPowIDList.add(MiniData.ReadFromStream(zIn));
 		}
 		
 		//read in the MMR state..
-		mMMRRoot.readDataStream(zIn);
+		mMMRRoot  = MiniData.ReadFromStream(zIn);
 		mMMRTotal = MiniNumber.ReadFromStream(zIn);
 		
 		//The ID

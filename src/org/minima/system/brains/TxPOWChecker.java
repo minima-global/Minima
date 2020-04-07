@@ -107,7 +107,7 @@ public class TxPOWChecker {
 		}
 		
 		//Now Check the Transaction Link Hash..
-		if(!zTxPOW.getTransaction().getLinkHash().isEqual(MiniData.MINIDATA_ZERO)) {
+		if(!zTxPOW.getTransaction().getLinkHash().isEqual(new MiniData("0x00"))) {
 			return false;
 		}
 		
