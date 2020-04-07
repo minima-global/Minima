@@ -69,8 +69,9 @@ public class JavaDB implements TxPowDB{
 				newRows.add(row);
 				
 				//If NOT in a block and not TOO Old..
-			}else if(!row.isInBlock() && row.getTxPOW().getBlockNumber().isMore(minblock)) {
-				newRows.add(row);
+//			}else if(!row.isInBlock() && row.getTxPOW().getBlockNumber().isMore(minblock)) {
+			}else if(!row.isInBlock()) {
+					newRows.add(row);
 				
 				//If in a block and NOT past the cascade point
 			}else if(row.isInBlock() && row.getInBlockNumber().isMoreEqual(zBlockNumber)) {
