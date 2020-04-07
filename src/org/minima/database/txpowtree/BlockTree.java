@@ -196,17 +196,21 @@ public class BlockTree {
 			//Get the heaviest child branch
 			ArrayList<BlockTreeNode> children = zStartNode.getChildren();
 			for(BlockTreeNode node : children) {
-				if(max == null) {
-					max = node;
-				}else {
-					if(node.getTotalWeight().compareTo(max.getTotalWeight()) > 0) {
+				//ONLY VALID BLOCKS
+				if(node.getState() == BlockTreeNode.BLOCKSTATE_VALID) {
+					if(max == null) {
 						max = node;
+					}else {
+						if(node.getTotalWeight().compareTo(max.getTotalWeight()) > 0) {
+							max = node;
+						}
 					}
 				}
 			}
 
-			//Now scour that branch for the heaviest twiglets
-			return getHeaviestBranchTip(max);
+			if(max != null) {
+				return getHeaviestBranchTip(max);
+			}
 		}
 		
 		return zStartNode;

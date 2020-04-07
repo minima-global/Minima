@@ -8,9 +8,10 @@ import org.minima.objects.Coin;
 import org.minima.objects.base.MiniInteger;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.proofs.Proof;
+import org.minima.objects.proofs.SumTreeProof;
 import org.minima.utils.json.JSONObject;
 
-public class MMRProof extends Proof {
+public class MMRProof extends SumTreeProof {
 	
 	/**
 	 * The block time this proof points to

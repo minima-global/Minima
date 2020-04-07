@@ -68,11 +68,11 @@ public class JavaDB implements TxPowDB{
 			if(row.isOnChainBlock()) {
 				newRows.add(row);
 				
-				//If NOT in a block and not TOO Old..
+				//Other wise the proofs are too old..
 			}else if(!row.isInBlock() && row.getTxPOW().getBlockNumber().isMore(minblock)) {
-				newRows.add(row);
-				
-				//If in a block and NOT past the cascade point
+					newRows.add(row);
+			
+				//It's in the chain
 			}else if(row.isInBlock() && row.getInBlockNumber().isMoreEqual(zBlockNumber)) {
 				newRows.add(row);
 			

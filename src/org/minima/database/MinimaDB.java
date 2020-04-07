@@ -117,7 +117,8 @@ public class MinimaDB {
 		base.addUnspentCoin(gendata);
 		
 		//Get the root
-		gen.setMMRRoot(base.getMMRRoot());
+		gen.setMMRRoot(base.getMMRRoot().getFinalHash());
+		gen.setMMRTotal(MiniNumber.ZERO);
 		
 //		SuperBlockLevels.GENESIS_HASH = Crypto.getInstance().hashObject(gen);
 		
@@ -439,7 +440,7 @@ public class MinimaDB {
 				
 				//Check the root MMR..
 				if(allok) {
-					MiniData root = mmrset.getMMRRoot();
+					MiniData root = mmrset.getMMRRoot().getFinalHash();
 					if(!row.getTxPOW().getMMRRoot().isEqual(root)) {
 						allok = false;	
 					}
@@ -542,6 +543,9 @@ public class MinimaDB {
 		
 		MiniNumber top = getTopBlock();
 		
+		//Now Check NONE of these are in the mempool.
+		ArrayList<Coin> memcoins = getMempoolCoins();
+				
 		//Do we have any inputs with this address..
 		ArrayList<CoinDBRow> relevant = getCoinDB().getComplete();
 		for(CoinDBRow row : relevant) {
@@ -550,13 +554,42 @@ public class MinimaDB {
 				if(depth.isMoreEqual(GlobalParams.MINIMA_CONFIRM_DEPTH)) {
 					//Is this a simple address..
 					if(getUserDB().isSimpleAddress(row.getCoin().getAddress())) {
-						confirmed.add(row.getCoin());	
-					}	
+						boolean found = false;
+						for(Coin memcoin : memcoins) {
+							if(memcoin.getCoinID().isEqual(row.getCoin().getCoinID())) {
+								found = true;
+								break;
+							}
+						}
+						
+						if(!found) {
+							confirmed.add(row.getCoin());	
+						}	
+					}
 				}
 			}
 		}	
 		
 		return confirmed;
+	}
+	
+	public ArrayList<Coin> getMempoolCoins(){
+		ArrayList<Coin> coins = new ArrayList<>();
+		
+		ArrayList<TxPOWDBRow> rows = getTxPowDB().getAllUnusedTxPOW();
+		for(TxPOWDBRow row : rows) {
+			TxPOW txpow = row.getTxPOW();
+			if(txpow.isTransaction()) {
+				ArrayList<Coin> inputs = txpow.getTransaction().getAllInputs();	
+				for(Coin cc : inputs) {
+					if(getUserDB().isAddressRelevant(cc.getAddress())) {
+						coins.add(cc);	
+					}
+				}
+			}
+		}
+		
+		return coins;
 	}
 	
 	public Hashtable<String, MiniNumber> getTotalUnusedAmount() {
@@ -969,8 +1002,9 @@ public class MinimaDB {
 		}
 		
 		//Set the current MMR
-		MiniData root =  newset.getMMRRoot();
-		txpow.setMMRRoot(root);
+		MMRData root = newset.getMMRRoot();
+		txpow.setMMRRoot(root.getFinalHash());
+		txpow.setMMRTotal(root.getValueSum());
 		
 		//And return..
 		return txpow;

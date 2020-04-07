@@ -172,7 +172,7 @@ public class ConsensusUser {
 				nodearray.add(mmrnode);
 				
 				//Add to the MMR
-				mmr.addUnspentCoin(new MMRData(finalhash));
+				mmr.addUnspentCoin(new MMRData(finalhash,MiniNumber.ZERO));
 			}
 
 			//Now finalize..
@@ -196,7 +196,7 @@ public class ConsensusUser {
 			//return to sender!
 			JSONObject resp = InputHandler.getResponseJSON(zMessage);
 			resp.put("nodes", nodearray);
-			resp.put("root", mmr.getMMRRoot().to0xString());
+			resp.put("root", mmr.getMMRRoot().getFinalHash().to0xString());
 			InputHandler.endResponse(zMessage, true, "");
 			
 		}else if(zMessage.isMessageType(CONSENSUS_CLEANSCRIPT)) {

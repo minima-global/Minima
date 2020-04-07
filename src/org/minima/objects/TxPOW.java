@@ -100,6 +100,11 @@ public class TxPOW implements Streamable {
 	public MiniData mMMRRoot = new MiniData();
 	
 	/**
+	 * The Total Sum Of All coins in the system
+	 */
+	public MiniNumber mMMRTotal = MiniNumber.ZERO;
+	
+	/**
 	 * A Random Magic number so that everyone is working on a different TxPOW in the pulse 
 	 * (since there is no coinbase..)
 	 */
@@ -264,6 +269,14 @@ public class TxPOW implements Streamable {
 		mMMRRoot = zRoot;
 	}
 	
+	public MiniNumber getMMRTotal() {
+		return mMMRTotal;
+	}
+	
+	public void setMMRTotal(MiniNumber zTotal) {
+		mMMRTotal= zTotal;
+	}
+	
 	public JSONObject toJSON() {
 		JSONObject txpow = new JSONObject();
 		
@@ -340,7 +353,9 @@ public class TxPOW implements Streamable {
 		txpow.put("parentchainid", mParentChainID.toString());
 		txpow.put("custom", mCustom.toString());
 		txpow.put("nonce", mNonce.toString());
+		
 		txpow.put("mmr", mMMRRoot.toString());
+		txpow.put("total", mMMRTotal.toString());
 		
 		txpow.put("timesecs", mTimeSecs.toString());
 		txpow.put("date", new Date(mTimeSecs.getAsLong()*1000).toString());
@@ -412,6 +427,7 @@ public class TxPOW implements Streamable {
 		
 		//Write out the MMR DB
 		mMMRRoot.writeDataStream(zOut);
+		mMMRTotal.writeDataStream(zOut);
 	}
 
 	@Override
@@ -453,6 +469,7 @@ public class TxPOW implements Streamable {
 		
 		//read in the MMR state..
 		mMMRRoot.readDataStream(zIn);
+		mMMRTotal = MiniNumber.ReadFromStream(zIn);
 		
 		//The ID
 		calculateTXPOWID();
