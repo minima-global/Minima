@@ -383,7 +383,7 @@ public class MMRSet implements Streamable {
 	public MMREntry addExternalUnspentCoin(MMRProof zProof) {
 		//The Details
 		MiniInteger entrynum = zProof.getEntryNumber();
-		MMRData proofdata   = zProof.getMMRData();
+		MMRData proofdata    = zProof.getMMRData();
 		
 		//Do we already have this Entry..
 		MMREntry entry = getEntry(0, entrynum, true);
@@ -670,15 +670,11 @@ public class MMRSet implements Streamable {
 	 * Check this is a valid UNSPENT output.
 	 * 
 	 * The Proof can point to a previous block. But must 
-	 * be within the range that everyone store.. say 256 blocks.
+	 * be within the range that everyone store.. 
 	 * 
 	 * @return
 	 */
 	public boolean checkProof(MMRProof zProof) {
-		return checkProof(zProof, true);
-	}
-	
-	public boolean checkProof(MMRProof zProof, boolean zCheckSpent) {
 		//Hmm.. this is not good..
 		if(zProof.getMMRData().isHashOnly()) {
 			System.out.println("Invalid PROOF check HASHONLY! : "+zProof);
@@ -698,7 +694,7 @@ public class MMRSet implements Streamable {
 			return false;
 		}
 		
-		//Get the MMRSet at the time this proof was made.. must be a recent proof.. last 256 blocks.
+		//Get the MMRSet at the time this proof was made.. must be a recent proof..
 		MMRSet proofset = getParentAtTime(zProof.getBlockTime());
 		
 		//The proof is it too old.. we can't check it. It's invalid.
@@ -714,9 +710,11 @@ public class MMRSet implements Streamable {
 		
 		//Is this is a Peak ? - if so, go no further..
 		boolean found = false;
+		MiniNumber peakvalue = null;
 		for(MMREntry peak : peaks) {
 			if(proofpeak.isEqual(peak.getHashValue())) {
-				found = true;
+				found     = true;
+				peakvalue = peak.getData().getValueSum();
 				break;
 			}
 		}
@@ -726,18 +724,50 @@ public class MMRSet implements Streamable {
 			return false;
 		}
 		
-		//DO we check if it's spent - floating inputs do this differently
-		if(zCheckSpent) {
-			//So the proof was valid at that time.. if it has been SPENT, it will have been AFTER this block - and in our MMR
-			MMREntry checker = getEntry(0, zProof.getEntryNumber(), true);
+		//So the proof was valid at that time.. if it has been SPENT, it will have been AFTER this block - and in our MMR
+		MMREntry entry = getEntry(0, zProof.getEntryNumber(), true);
+		
+		//Is it there ?
+		if(!entry.isEmpty()) {
+			//Get the DATA - could be the original UNSPENT or the SPENT
+			if(entry.getData().isSpent()) {
+				return false;
+			}
+		}
+	
+		//Check the SUMTREE - we've checked the HASH tree already..
+		int proofnum      = 0;
+		int prooflen      = zProof.getProofLen();
+		MiniNumber totval = zProof.getMMRData().getValueSum();
+		
+		if(!entry.isEmpty()) {
+			if(!totval.isEqual(entry.getData().getValueSum())) {
+				return false;
+			}
+		}
+		
+		while(proofnum < prooflen) {
+			MMREntry sibling = getEntry(entry.getRow(), entry.getSibling(),true);
 			
-			//Is it there ?
-			if(!checker.isEmpty()) {
-				//Get the DATA - could be the original UNSPENT or the SPENT
-				if(checker.getData().isSpent()) {
+			//Do we add our own..
+			STProofChunk chunk = zProof.getProofChunk(proofnum++);
+			MiniNumber value   = chunk.getValue();
+			if(!sibling.isEmpty()) {
+				if(!value.isEqual(sibling.getData().getValueSum())) {
 					return false;
 				}
 			}
+			
+			//Create the new combined value..
+			totval = totval.add(value);
+			
+			//Get the Parent - can be empty..
+			entry = getEntry(entry.getParentRow(),entry.getParentEntry(), true);
+		}
+		
+		//Now check that value..
+		if(!totval.isEqual(peakvalue)) {
+			return false;
 		}
 		
 		//It was valid at the parent.. there is NO SPEND since.. so it's Valid!
