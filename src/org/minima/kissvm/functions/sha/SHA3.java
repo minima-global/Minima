@@ -31,15 +31,13 @@ public class SHA3 extends MinimaFunction {
 	 */
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
+		//The Bit Length
+		int bitlength = getParameter(0).getValue(zContract).getNumber().getAsInt();
+		
 		//get the Input Data
-		byte[] data = getParameter(0).getValue(zContract).getRawData();
+		byte[] data = getParameter(1).getValue(zContract).getRawData();
 		
-		//Is there a second parameter
-		int bitlength = 512;
-		if(getParameterNum()>1) {
-			bitlength = getParameter(1).getValue(zContract).getNumber().getAsInt();
-		}
-		
+		//Check valid..
 		if ( bitlength>512 || bitlength<160 || (bitlength%32!=0) ) {
 			throw new ExecutionException("Bitlength incompatible with SHA3 "+bitlength);
 		}
