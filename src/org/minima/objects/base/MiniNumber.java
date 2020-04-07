@@ -23,9 +23,9 @@ public class MiniNumber implements Streamable {
 	/**
 	 * The Math Context used for ALL real numbers
 	 * 
-	 * Can represent 1 billion with 8 zeros ( 10 + 8 ) digits with no loss of precision.. 
+	 * Can represent 1 billion with 10 zeros ( 10 + 10 ) digits with no loss of precision.. 
 	 * 
-	 * But all Minima values are actually in significant digit format anyway.. so semi-infinite precision..
+	 * But all Minima values are actually in significant digit format anyway.. so infinite precision..
 	 */
 	public static final MathContext mMathContext = new MathContext(20, RoundingMode.DOWN);
 	
