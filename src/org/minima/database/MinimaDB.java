@@ -701,12 +701,12 @@ public class MinimaDB {
 	 * @param zConfirmed
 	 * @return
 	 */
-	public Witness createValidWitness(Transaction zTransaction, Witness zWitness) {
+	public Witness createValidMMRPRoofs(Transaction zTransaction, Witness zWitness) {
 		//The Base current MMRSet
 		MMRSet basemmr  = getMainTree().getChainTip().getMMRSet();
 		
-		//Get proofs from a while back so reorgs don't invalidate them..
-		MMRSet proofmmr = basemmr.getParentAtTime(getTopBlock().sub(GlobalParams.MINIMA_CONFIRM_DEPTH));
+		//What Block are we on..
+		MiniNumber currentblock = basemmr.getBlockTime();
 		
 		//Clear the proofs..
 		zWitness.clearProofs();
@@ -719,24 +719,27 @@ public class MinimaDB {
 			CoinDBRow row  = getCoinDB().getCoinRow(cc.getCoinID());
 			
 			//Which MMRSet to use for the proof..
+			MiniNumber inblock = row.getInBlockNumber();
 			
+			//How far in the past..
+			MiniNumber howdeep = currentblock.sub(inblock);
 			
+			//MAX 64 blocks in the past should be fine.. so reorgs won't invalidate it..
+			if(howdeep.isMore(MiniNumber.SIXTYFOUR)) {
+				howdeep = MiniNumber.SIXTYFOUR;
+			}
+		
+			//The Actual MMR block we will use..
+			MiniNumber proofblock = currentblock.sub(howdeep);
+			MMRSet proofmmr = basemmr.getParentAtTime(proofblock);
 			
 			//Get a proof from a while back.. more than confirmed depth, less than cascade
-//			MMRProof proof = getMainTree().getChainTip().getMMRSet().getProof(row.getMMREntry());
 			MMRProof proof = proofmmr.getProof(row.getMMREntry());
 			
 			if(proof == null) {
 				MinimaLogger.log("ERROR NULL PROOF "+row);
 				return null;
 			}
-			
-			//Which block was this transaction added
-			MiniNumber inblock = proof.getMMRData().getInBlock();
-			
-			//Now get an earlier proof..
-			//TODO!
-			
 			
 			//Add the proof for this coin..
 			zWitness.addMMRProof(proof);
@@ -748,7 +751,7 @@ public class MinimaDB {
 	}
 	
 	/**
-	 * Create both the transaction and th witness data
+	 * Create both the transaction and the witness data
 	 * 
 	 * @param zAmount
 	 * @param zToAddress
@@ -768,12 +771,6 @@ public class MinimaDB {
 		
 		//Which signatures are required
 		ArrayList<MiniData> sigpubk = new ArrayList<>();
-
-		//The Base current MMRSet
-		MMRSet basemmr  = getMainTree().getChainTip().getMMRSet();
-		
-		//Get proofs from a while back so reorgs don't invalidate them..
-		MMRSet proofmmr = basemmr.getParentAtTime(getTopBlock().sub(GlobalParams.MINIMA_CONFIRM_DEPTH));
 		
 		//Sort the iputs
 		MiniNumber currentin = new MiniNumber();
@@ -794,20 +791,7 @@ public class MinimaDB {
 					MinimaLogger.log("Invalid Script.. "+script);
 					return null;
 				}
-				
-				//Add the MMRProof..
-				CoinDBRow row  = getCoinDB().getCoinRow(cc.getCoinID());
-				
-				//Get a proof from a while back.. more than confirmed depth, less than cascade
-				MMRProof proof = proofmmr.getProof(row.getMMREntry());
-				
-				if(proof == null) {
-					MinimaLogger.log("ERROR NULL PROOF "+row);
-					return null;
-				}
-				
-				wit.addMMRProof(proof);				
-				
+								
 				//And finally sign!
 				MiniData pubk = getUserDB().getPublicKey(cc.getAddress());
 				
@@ -829,7 +813,6 @@ public class MinimaDB {
 		}
 		
 		//And now the Outputs - one for the recipient
-		//Create a NEW address that does not include the script
 		Coin out = new Coin(Coin.COINID_OUTPUT,zToAddress.getAddressData(),zAmount,zTokenID);
 		trx.addOutput(out);
 		
@@ -843,6 +826,21 @@ public class MinimaDB {
 		//And FINALLY - Is there Token generation
 		if(zTokenGen != null) {
 			trx.setTokenGenerationDetails(zTokenGen);
+		}
+		
+		//Check all the inputs..
+		if(!trx.checkValidInOutPerToken()) {
+			//ERROR!
+			MinimaLogger.log("ERROR Inputs and Outpus do not add up! "+trx);
+			return null;
+		}
+		
+		//And Now add the Proofs..
+		Witness witcheck = createValidMMRPRoofs(trx, wit);
+		if(witcheck == null) {
+			//ERROR!
+			MinimaLogger.log("ERROR MMR Proofs could not be found for transaction "+trx);
+			return null;
 		}
 		
 		//Now we have a full transaction we can sign it!

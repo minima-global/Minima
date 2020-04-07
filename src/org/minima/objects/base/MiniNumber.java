@@ -42,6 +42,7 @@ public class MiniNumber implements Streamable {
 	public static final MiniNumber TWO 		    = new MiniNumber("2");
 	public static final MiniNumber EIGHT        = new MiniNumber("8");
 	public static final MiniNumber THIRTYTWO    = new MiniNumber("32");
+	public static final MiniNumber SIXTYFOUR    = new MiniNumber("64");
 	
 	public static final MiniNumber TEN          = new MiniNumber("10");
 	public static final MiniNumber HUNDRED      = new MiniNumber("100");

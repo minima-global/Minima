@@ -292,7 +292,7 @@ public class ConsensusTxn {
 			Witness wit     =  getMainDB().getUserDB().getUserRow(trans).getWitness();
 			
 			//Create the correct MMR Proofs
-			Witness newwit = getMainDB().createValidWitness(trx, wit);
+			Witness newwit = getMainDB().createValidMMRPRoofs(trx, wit);
 			if(newwit == null) {
 				InputHandler.endResponse(zMessage, false, "ERROR creating valid Witness. MMR Proofs wrong..");
 				return;
@@ -341,7 +341,7 @@ public class ConsensusTxn {
 			resp.put("valid_amounts", vamounts);
 			
 			//Create a complete transaction
-			Witness newwit = getMainDB().createValidWitness(trx, wit);
+			Witness newwit = getMainDB().createValidMMRPRoofs(trx, wit);
 			
 			//Null value means there is something wrong
 			if(newwit == null) {
@@ -417,7 +417,7 @@ public class ConsensusTxn {
 			Witness wit     = row.getWitness();
 			
 			//Create the Correct Proofs..
-			getMainDB().createValidWitness(trx, wit);
+			getMainDB().createValidMMRPRoofs(trx, wit);
 			
 			//Output data stream
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
