@@ -6,7 +6,7 @@ import org.minima.database.mmr.MMRData;
 import org.minima.database.mmr.MMREntry;
 import org.minima.database.mmr.MMRProof;
 import org.minima.database.mmr.MMRSet;
-import org.minima.miniscript.Contract;
+import org.minima.kissvm.Contract;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniString;

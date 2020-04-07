@@ -1,6 +1,6 @@
 package org.minima.system.input;
 
-import org.minima.miniscript.exceptions.MinimaParseException;
+import org.minima.kissvm.exceptions.MinimaParseException;
 import org.minima.system.Main;
 import org.minima.system.input.functions.scripts;
 import org.minima.system.input.functions.backup;
