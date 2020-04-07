@@ -32,7 +32,7 @@ public class chainsha extends CommandFunction{
 		//Get all of the input params.. clean and send..
 		ArrayList<MiniString> data = new ArrayList<>();
 		for(int i=2;i<zInput.length;i++) {
-			data.add(new MiniString(Contract.cleanScript(zInput[i])));			
+			data.add(new MiniString(zInput[i]));			
 		}
 		
 		//Send a backup message - with no request to shutdown at the end..

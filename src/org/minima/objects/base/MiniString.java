@@ -5,16 +5,17 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
 
+import org.minima.kissvm.Contract;
 import org.minima.utils.Streamable;
 
 public class MiniString extends MiniData {
 	
-	public MiniString(String zString) {
-		super(zString.getBytes(Charset.forName("US-ASCII")));
+	private MiniString() {
+		super();
 	}
 	
-	public MiniString(MiniString zString) {
-		this(zString.to0xString());
+	public MiniString(String zString) {
+		super(Contract.cleanScript(zString).getBytes(Charset.forName("US-ASCII")));
 	}
 	
 	@Override
@@ -23,15 +24,16 @@ public class MiniString extends MiniData {
 	}
 
 	public static MiniString ReadFromStream(DataInputStream zIn){
-		MiniString data = new MiniString("");
+		MiniString data = new MiniString();
+		
 		try {
 			data.readDataStream(zIn);
 		} catch (IOException e) {
 			e.printStackTrace();
 			return null;
 		}
+		
 		return data;
 	}
-	
 }
 

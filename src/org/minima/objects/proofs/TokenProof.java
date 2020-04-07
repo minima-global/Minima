@@ -67,7 +67,7 @@ public class TokenProof implements Streamable{
 		mTokenTotalAmount 	= zAmount;
 		mTokenName 			= zName;
 		mCoinID 			= zCoindID;
-		mTokenScript        = new MiniString(Contract.cleanScript(zTokenScript.toString())) ;
+		mTokenScript        = new MiniString(zTokenScript.toString()) ;
 		
 		calculateTokenID();
 	}

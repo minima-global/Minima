@@ -46,7 +46,7 @@ public class ScriptProof extends Proof {
 	}
 	
 	private void init(String zScript, String zChainSHAProof) throws Exception {
-		mScript = new MiniString(Contract.cleanScript(zScript));
+		mScript = new MiniString(zScript);
 		
 		//How many Bits in HASH
 		int bits = Proof.getChainSHABits(zChainSHAProof);

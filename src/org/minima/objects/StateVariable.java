@@ -35,7 +35,7 @@ public class StateVariable implements Streamable {
 	 */
 	public StateVariable(int zPort, String zData) {
 		mPort	  = new MiniByte(zPort);
-		mData     = new MiniString(Contract.cleanScript(zData));
+		mData     = new MiniString(zData);
 	}
 	
 	private StateVariable() {}
