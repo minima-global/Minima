@@ -66,14 +66,6 @@ public class MiniNumber implements Streamable {
 		mNumber = new BigDecimal(zNumber,mMathContext);
 	}
 
-//	public MiniNumber(long zNumber){
-//		mNumber = new BigDecimal(zNumber,mMathContext);
-//	}
-	
-//	public MiniNumber(double zNumber){
-//		mNumber = new BigDecimal(zNumber,mMathContext);
-//	}
-	
 	public MiniNumber(BigInteger zNumber){
 		mNumber = new BigDecimal(zNumber,mMathContext);
 	}
@@ -188,7 +180,7 @@ public class MiniNumber implements Streamable {
 		
 	@Override
 	public String toString(){
-		return mNumber.toPlainString();
+		return mNumber.stripTrailingZeros().toPlainString();
 	}
 
 	/**
@@ -234,19 +226,10 @@ public class MiniNumber implements Streamable {
 		try {
 			data.readDataStream(zIn);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return null;
 		}
 		
 		return data;
-	}
-	
-	public static void main(String[] zArgs) {
-		
-		MiniNumber num = new MiniNumber("10000.001");
-		
-		System.out.println(num);
-		
 	}
 }

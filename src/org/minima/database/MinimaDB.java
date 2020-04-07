@@ -664,34 +664,6 @@ public class MinimaDB {
 		return amounts;
 	}
 	
-//	private Hashtable<String, MiniNumber> convertTokenAmounts(Hashtable<String, MiniNumber> zAmounts) {
-//		//Now convert the values with the token scale
-//		Hashtable<String, MiniNumber> scaledamounts = new Hashtable<>();
-//		
-//		Enumeration<String> tokens = zAmounts.keys();
-//		while(tokens.hasMoreElements()) {
-//			String token = tokens.nextElement();
-//			MiniNumber amt = zAmounts.get(token);
-//			
-//			TokenProof tokproof = getUserDB().getTokenDetail(new MiniData(token));
-//			
-//			if(tokproof!=null) {
-//				//Scale it..
-//				MiniNumber scale     = getUserDB().getTokenDetail(new MiniData(token)).getScaleFactor();
-//				MiniNumber newamount = amt.mult(scale);
-//				
-//				//Add it..
-//				scaledamounts.put(token, newamount);
-//			}else {
-//				//Add it..
-//				scaledamounts.put(token, amt);
-//			}
-//		}
-//		
-//		return scaledamounts;	
-//	}
-	
-	
 	/**
 	 * Create a proofed 
 	 * 
@@ -713,38 +685,45 @@ public class MinimaDB {
 		
 		//Cycle through the inputs..
 		ArrayList<Coin> ins = zTransaction.getAllInputs();
-		int counter = 0;
+		
+		//What's the most recent coin used..
+		MiniNumber recent = null;
 		for(Coin cc : ins) {
 			//The CoinDB Entry
-			CoinDBRow row  = getCoinDB().getCoinRow(cc.getCoinID());
+			MiniNumber inblock = getCoinDB().getCoinRow(cc.getCoinID()).getInBlockNumber();
 			
-			//Which MMRSet to use for the proof..
-			MiniNumber inblock = row.getInBlockNumber();
-			
-			//How far in the past..
-			MiniNumber howdeep = currentblock.sub(inblock);
-			
-			//MAX 64 blocks in the past should be fine.. so reorgs won't invalidate it..
-			if(howdeep.isMore(MiniNumber.SIXTYFOUR)) {
-				howdeep = MiniNumber.SIXTYFOUR;
+			if(recent == null) {
+				recent = inblock;
+			}else {
+				if(inblock.isMore(recent)) {
+					recent = inblock; 
+				}
 			}
+		}
 		
-			//The Actual MMR block we will use..
-			MiniNumber proofblock = currentblock.sub(howdeep);
-			MMRSet proofmmr = basemmr.getParentAtTime(proofblock);
-			
+		//Which MMRSet to use.. use the same one for the wholetransaction
+		MiniNumber howdeep = currentblock.sub(recent);
+		
+		//MAX 64 blocks in the past should be fine.. so reorgs won't invalidate it..
+		if(howdeep.isMore(MiniNumber.SIXTYFOUR)) {
+			howdeep = MiniNumber.SIXTYFOUR;
+		}
+	
+		//The Actual MMR block we will use..
+		MMRSet proofmmr = basemmr.getParentAtTime(currentblock.sub(howdeep));
+		
+		//Now add the actual MMR Proofs..
+		for(Coin cc : ins) {
 			//Get a proof from a while back.. more than confirmed depth, less than cascade
-			MMRProof proof = proofmmr.getProof(row.getMMREntry());
+			MMRProof proof = proofmmr.getProof(getCoinDB().getCoinRow(cc.getCoinID()).getMMREntry());
 			
+			//Hmm.. this should not happen
 			if(proof == null) {
-				MinimaLogger.log("ERROR NULL PROOF "+row);
 				return null;
 			}
 			
 			//Add the proof for this coin..
 			zWitness.addMMRProof(proof);
-			
-			counter++;
 		}
 		
 		return zWitness;
