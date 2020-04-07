@@ -12,7 +12,6 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniInteger;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.proofs.Proof.ProofChunk;
-import org.minima.objects.proofs.SumTreeProof.STProofChunk;
 import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
@@ -406,7 +405,7 @@ public class MMRSet implements Streamable {
 			MMREntry sibling = getEntry(entry.getRow(), entry.getSibling(),true);
 			
 			//Do we add our own..
-			STProofChunk chunk = zProof.getProofChunk(proofnum++);
+			ProofChunk chunk = zProof.getProofChunk(proofnum++);
 			MMRData pdata = new MMRData(chunk.getHash(), chunk.getValue());
 			if(sibling.isEmpty()) {
 				//Set the data
@@ -496,7 +495,7 @@ public class MMRSet implements Streamable {
 		
 		//Is an input missing or is it a less recent update 
 		int pcount = 0;
-		STProofChunk chunk = zProof.getProofChunk(pcount++);
+		ProofChunk chunk = zProof.getProofChunk(pcount++);
 		MiniData phash  = chunk.getHash();
 		MiniNumber pval = chunk.getValue();
 		
@@ -628,7 +627,7 @@ public class MMRSet implements Streamable {
 			//Now add thatto the totsl proof..
 			int len = proof.getProofLen();
 			for(int i=0;i<len;i++) {
-				STProofChunk chunk = proof.getProofChunk(i);
+				ProofChunk chunk = proof.getProofChunk(i);
 				totalproof.addProofChunk(chunk.getLeft(), chunk.getHash(), chunk.getValue());
 			}
 			
@@ -658,7 +657,7 @@ public class MMRSet implements Streamable {
 		//Now add the two..
 		int len = rootproof.getProofLen();
 		for(int i=0;i<len;i++) {
-			STProofChunk chunk = rootproof.getProofChunk(i);
+			ProofChunk chunk = rootproof.getProofChunk(i);
 			proof.addProofChunk(chunk.getLeft(), chunk.getHash(), chunk.getValue());
 		}
 		
@@ -750,7 +749,7 @@ public class MMRSet implements Streamable {
 			MMREntry sibling = getEntry(entry.getRow(), entry.getSibling(),true);
 			
 			//Do we add our own..
-			STProofChunk chunk = zProof.getProofChunk(proofnum++);
+			ProofChunk chunk = zProof.getProofChunk(proofnum++);
 			MiniNumber value   = chunk.getValue();
 			if(!sibling.isEmpty()) {
 				if(!value.isEqual(sibling.getData().getValueSum())) {
