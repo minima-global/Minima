@@ -8,7 +8,7 @@ import java.io.IOException;
 import org.minima.kissvm.Contract;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
-import org.minima.objects.base.MiniString;
+import org.minima.objects.base.MiniScript;
 import org.minima.utils.Crypto;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONObject;
@@ -33,12 +33,12 @@ public class TokenProof implements Streamable{
 	/**
 	 * The Token Name
 	 */
-	MiniString mTokenName;
+	MiniScript mTokenName;
 	
 	/**
 	 * The Token Script
 	 */
-	MiniString mTokenScript;
+	MiniScript mTokenScript;
 	
 	/**
 	 * TTokenID created after all the details are set
@@ -57,17 +57,17 @@ public class TokenProof implements Streamable{
 	 * @param zAmount
 	 * @param zName
 	 */
-	public TokenProof(MiniData zCoindID, MiniNumber zScale, MiniNumber zAmount, MiniString zName) {
-		this(zCoindID, zScale, zAmount, zName, new MiniString("RETURN TRUE"));
+	public TokenProof(MiniData zCoindID, MiniNumber zScale, MiniNumber zAmount, MiniScript zName) {
+		this(zCoindID, zScale, zAmount, zName, new MiniScript("RETURN TRUE"));
 	}
 		
-	public TokenProof(MiniData zCoindID, MiniNumber zScale, MiniNumber zAmount, MiniString zName, MiniString zTokenScript) {
+	public TokenProof(MiniData zCoindID, MiniNumber zScale, MiniNumber zAmount, MiniScript zName, MiniScript zTokenScript) {
 				
 		mTokenScale 		= zScale;
 		mTokenTotalAmount 	= zAmount;
 		mTokenName 			= zName;
 		mCoinID 			= zCoindID;
-		mTokenScript        = new MiniString(zTokenScript.toString()) ;
+		mTokenScript        = new MiniScript(zTokenScript.toString()) ;
 		
 		calculateTokenID();
 	}
@@ -84,11 +84,11 @@ public class TokenProof implements Streamable{
 		return mTokenTotalAmount;
 	}
 	
-	public MiniString getName() {
+	public MiniScript getName() {
 		return mTokenName;
 	}
 	
-	public MiniString getTokenScript() {
+	public MiniScript getTokenScript() {
 		return mTokenScript;
 	}
 	
@@ -160,10 +160,10 @@ public class TokenProof implements Streamable{
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
 		mCoinID 			= MiniData.ReadFromStream(zIn);
-		mTokenScript        = MiniString.ReadFromStream(zIn);
+		mTokenScript        = MiniScript.ReadFromStream(zIn);
 		mTokenScale 		= MiniNumber.ReadFromStream(zIn);
 		mTokenTotalAmount	= MiniNumber.ReadFromStream(zIn);
-		mTokenName 			= MiniString.ReadFromStream(zIn);
+		mTokenName 			= MiniScript.ReadFromStream(zIn);
 		
 		calculateTokenID();
 	}

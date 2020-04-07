@@ -7,12 +7,12 @@ import java.io.IOException;
 import org.minima.kissvm.Contract;
 import org.minima.objects.Address;
 import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniString;
+import org.minima.objects.base.MiniScript;
 import org.minima.utils.json.JSONObject;
 
 public class ScriptProof extends Proof {
 
-	MiniString mScript;
+	MiniScript mScript;
 	
 	private ScriptProof() {
 		super();
@@ -46,7 +46,7 @@ public class ScriptProof extends Proof {
 	}
 	
 	private void init(String zScript, String zChainSHAProof) throws Exception {
-		mScript = new MiniString(zScript);
+		mScript = new MiniScript(zScript);
 		
 		//How many Bits in HASH
 		int bits = Proof.getChainSHABits(zChainSHAProof);
@@ -62,7 +62,7 @@ public class ScriptProof extends Proof {
 	}
 	
 	
-	public MiniString getScript() {
+	public MiniScript getScript() {
 		return mScript;
 	}
 	
@@ -82,7 +82,7 @@ public class ScriptProof extends Proof {
 
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
-		mScript = MiniString.ReadFromStream(zIn);
+		mScript = MiniScript.ReadFromStream(zIn);
 		super.readDataStream(zIn);
 	}
 	

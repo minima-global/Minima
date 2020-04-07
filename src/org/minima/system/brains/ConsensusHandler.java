@@ -14,7 +14,7 @@ import org.minima.objects.Witness;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
-import org.minima.objects.base.MiniString;
+import org.minima.objects.base.MiniScript;
 import org.minima.objects.proofs.TokenProof;
 import org.minima.system.Main;
 import org.minima.system.SystemHandler;
@@ -557,8 +557,8 @@ public class ConsensusHandler extends SystemHandler {
 				TokenProof tokengen = new TokenProof(Coin.COINID_OUTPUT, 
 													 new MiniNumber(scale+""), 
 													 sendamount, 
-													 new MiniString(name),
-													 new MiniString(script));
+													 new MiniScript(name),
+													 new MiniScript(script));
 				
 				//Create the Transaction
 				Message ret = getMainDB().createTransaction(sendamount, recipient, change, confirmed, tok, changetok,tokengen);

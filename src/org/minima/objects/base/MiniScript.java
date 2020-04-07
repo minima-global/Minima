@@ -8,13 +8,13 @@ import java.nio.charset.Charset;
 import org.minima.kissvm.Contract;
 import org.minima.utils.Streamable;
 
-public class MiniString extends MiniData {
+public class MiniScript extends MiniData {
 	
-	private MiniString() {
+	private MiniScript() {
 		super();
 	}
 	
-	public MiniString(String zString) {
+	public MiniScript(String zString) {
 		super(Contract.cleanScript(zString).getBytes(Charset.forName("US-ASCII")));
 	}
 	
@@ -23,8 +23,8 @@ public class MiniString extends MiniData {
 		return new String(getData(),Charset.forName("US-ASCII"));
 	}
 
-	public static MiniString ReadFromStream(DataInputStream zIn){
-		MiniString data = new MiniString();
+	public static MiniScript ReadFromStream(DataInputStream zIn){
+		MiniScript data = new MiniScript();
 		
 		try {
 			data.readDataStream(zIn);
