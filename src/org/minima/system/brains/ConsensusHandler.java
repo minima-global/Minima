@@ -518,7 +518,7 @@ public class ConsensusHandler extends SystemHandler {
 			
 			//How much Minima will it take to colour.. for now lets stay under 0.001 minima
 			//This is not protocol specific and can change later
-			BigDecimal max    = new BigDecimal("0.001");
+			BigDecimal max    = new BigDecimal("0.01");
 			BigDecimal num    = new BigDecimal(amount);
 			BigDecimal actnum = new BigDecimal(amount);
 			
