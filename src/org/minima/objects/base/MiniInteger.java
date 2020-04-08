@@ -16,9 +16,9 @@ import org.minima.utils.Streamable;
  */
 public class MiniInteger implements Streamable {
 
-	public static MiniInteger ZERO = new MiniInteger("0");
-	public static MiniInteger ONE  = new MiniInteger("1");
-	public static MiniInteger TWO  = new MiniInteger("2");
+	public static MiniInteger ZERO = new MiniInteger(0);
+	public static MiniInteger ONE  = new MiniInteger(1);
+	public static MiniInteger TWO  = new MiniInteger(2);
 		
 	private BigInteger mNumber;
 	
@@ -26,10 +26,6 @@ public class MiniInteger implements Streamable {
 	
 	public MiniInteger(BigInteger zNumber) {
 		mNumber = zNumber;
-	}
-	
-	public MiniInteger(String zNumber) {
-		mNumber = new BigInteger(zNumber);
 	}
 	
 	public MiniInteger(int zNumber) {
@@ -48,17 +44,17 @@ public class MiniInteger implements Streamable {
 		return mNumber.compareTo(zNumber.getNumber()) < 0;
 	}
 	
-	public boolean isLessEqual(MiniInteger zNumber) {
-		return mNumber.compareTo(zNumber.getNumber()) <= 0;
-	}
-	
-	public boolean isMore(MiniInteger zNumber) {
-		return mNumber.compareTo(zNumber.getNumber()) > 0;
-	}
-
-	public boolean isMoreEqual(MiniInteger zNumber) {
-		return mNumber.compareTo(zNumber.getNumber()) >= 0;
-	}
+//	public boolean isLessEqual(MiniInteger zNumber) {
+//		return mNumber.compareTo(zNumber.getNumber()) <= 0;
+//	}
+//	
+//	public boolean isMore(MiniInteger zNumber) {
+//		return mNumber.compareTo(zNumber.getNumber()) > 0;
+//	}
+//
+//	public boolean isMoreEqual(MiniInteger zNumber) {
+//		return mNumber.compareTo(zNumber.getNumber()) >= 0;
+//	}
 	
 	public MiniInteger modulo(MiniInteger zNumber) {
 		return new MiniInteger(mNumber.mod(zNumber.getNumber()));
@@ -88,9 +84,9 @@ public class MiniInteger implements Streamable {
 		return add(ONE);
 	}
 	
-	public long getAsLong() {
-		return new Long(toString()).longValue();
-	}
+//	public long getAsLong() {
+//		return new Long(toString()).longValue();
+//	}
 	
 	@Override
 	public String toString() {

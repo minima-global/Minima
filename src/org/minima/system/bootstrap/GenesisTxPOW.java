@@ -23,7 +23,7 @@ public class GenesisTxPOW extends TxPOW{
 		
 		setTxDifficulty(Crypto.MAX_HASH);
 		
-		setNonce(new MiniInteger("256"));
+		setNonce(new MiniInteger(256));
 		 
 		setTimeSecs(new MiniNumber(""+(System.currentTimeMillis()/1000)));
 		
