@@ -650,7 +650,7 @@ public class ConsensusHandler extends SystemHandler {
 			Hashtable<String, MiniNumber> tokamt = getMainDB().getTransactionTokenAmounts(zTxPOW);
 			
 			//Store ion the database..
-			getMainDB().getUserDB().addToHistory(zTxPOW.getTxPowID(),tokamt);
+			getMainDB().getUserDB().addToHistory(zTxPOW,tokamt);
 			
 			//And do we need to call a local function..
 			Message command = new Message(ProcessManager.PROCESS_TXNCALL)

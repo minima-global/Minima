@@ -67,7 +67,7 @@ public interface UserDB {
 	 * Transaction History
 	 */
 	public ArrayList<reltxpow> getHistory();
-	public void addToHistory(MiniData zTxPOWID, Hashtable<String, MiniNumber> zValues);
+	public void addToHistory(TxPOW zTxPOW, Hashtable<String, MiniNumber> zValues);
 	public void clearHistory();
 	
 }
