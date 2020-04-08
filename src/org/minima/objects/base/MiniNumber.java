@@ -15,6 +15,10 @@ import java.text.DecimalFormat;
 import org.minima.utils.Streamable;
 
 /**
+ * All the Inputs and Outputs of transactions use this class.
+ * 
+ * Too high precision would be too slow.
+ * 
  * @author Spartacus Rex
  *
  */
@@ -23,16 +27,16 @@ public class MiniNumber implements Streamable {
 	/**
 	 * The Math Context used for ALL real numbers
 	 * 
-	 * Can represent 1 billion with 10 zeros ( 10 + 10 ) digits with no loss of precision.. 
+	 * Can represent 1 billion with 8 zeros ( 10 + 8 ) digits with no loss of precision.. 
 	 * 
 	 * But all Minima values are actually in significant digit format anyway.. so infinite precision..
 	 */
-	public static final MathContext mMathContext = new MathContext(20, RoundingMode.DOWN);
+	public static final MathContext mMathContext = new MathContext(18, RoundingMode.DOWN);
 	
 	/**
 	 * The decimal precision of the significant digits.
 	 */
-//	public static final DecimalFormat MINIMA_SIGNIFICANT_FORMAT = new DecimalFormat("0.###################E0");
+//	public static final DecimalFormat MINIMA_SIGNIFICANT_FORMAT = new DecimalFormat("0.#################E0");
 	
 	/**
 	 * Useful numbers
