@@ -506,7 +506,7 @@ public class MMRSet implements Streamable {
 			
 			//Do we need to fill it in..
 			if(sibling.isEmpty()) {
-				System.out.println("EMPTY SIBLING");
+//				System.out.println("EMPTY SIBLING");
 				sibling = setEntry(sibling.getRow(), sibling.getEntry(), new MMRData(phash, pval));
 			}else if(sibling.getBlockTime().isLessEqual(zProof.getBlockTime())) {
 				//Is it the original.. has all the micro details.. internal nodes are just the hash anyway
@@ -516,6 +516,9 @@ public class MMRSet implements Streamable {
 					sibling = setEntry(sibling.getRow(), sibling.getEntry(), new MMRData(phash, pval));
 				}
 			}
+			
+			//Set the Sibling in this MMRSET!.. this way the MMR peaks still work.. (as the max in a row MUST be on the left to be a peak ))
+			setEntry(sibling.getRow(), sibling.getEntry(),sibling.getData());
 		}
 		
 		//Now go up the tree..
@@ -534,8 +537,7 @@ public class MMRSet implements Streamable {
 			//Create the new MMR Data
 			MMRData data = new MMRData(combined,sumvalue);
 			
-			//Set the Sibling in this MMRSET!.. this way the MMR peaks still work.. 
-			//(as the max in a row MUST be on the left to be a peak ))
+			//Set the Sibling in this MMRSET!.. this way the MMR peaks still work.. (as the max in a row MUST be on the left to be a peak ))
 			setEntry(sibling.getRow(), sibling.getEntry(),sibling.getData());
 			
 			//Set the Parent
@@ -557,7 +559,7 @@ public class MMRSet implements Streamable {
 				phash = chunk.getHash();
 				pval  = chunk.getValue();
 				if(sibling.isEmpty()) {
-					System.out.println("EMPTY SIBLING 2");
+//					System.out.println("EMPTY SIBLING 2");
 					sibling = setEntry(sibling.getRow(), sibling.getEntry(), new MMRData(phash,pval));		
 				}else if(sibling.getBlockTime().isLessEqual(zProof.getBlockTime())) {
 					//Is it the original.. has all the micro details.. internal nodes are just the hash anyway
