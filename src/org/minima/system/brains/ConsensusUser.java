@@ -77,7 +77,7 @@ public class ConsensusUser {
 	public void processMessage(Message zMessage) throws Exception {
 		
 		if(zMessage.isMessageType(CONSENSUS_NEWSIMPLE)) {
-			int bitlength = GlobalParams.MINIMA_HASH_STRENGTH;
+			int bitlength = GlobalParams.MINIMA_DEFAULT_HASH_STRENGTH;
 			if(zMessage.exists("bitlength")) {
 				bitlength = zMessage.getInteger("bitlength");
 			}

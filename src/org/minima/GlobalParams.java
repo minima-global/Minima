@@ -7,7 +7,7 @@ public class GlobalParams {
 	/**
 	 * Which Version
 	 */
-	public static final String MINIMA_VERSION = "0.85";
+	public static final String MINIMA_VERSION = "0.86";
 	
 	/**
 	 * Number of seconds before sending a pulse message
@@ -56,5 +56,5 @@ public class GlobalParams {
 	 * All the MMR data automatically uses 512. But addresses, scripts, and public keys..
 	 * can be set to less. This way signatures and addresses are shorter.
 	 */
-	public static final int MINIMA_HASH_STRENGTH = 256;
+	public static final int MINIMA_DEFAULT_HASH_STRENGTH = 256;
 }

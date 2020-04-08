@@ -108,7 +108,7 @@ public class JavaUserDB implements UserDB, Streamable{
 	
 	@Override
 	public Address newSimpleAddress() {
-		return newSimpleAddress(GlobalParams.MINIMA_HASH_STRENGTH);
+		return newSimpleAddress(GlobalParams.MINIMA_DEFAULT_HASH_STRENGTH);
 	}
 	
 	@Override
