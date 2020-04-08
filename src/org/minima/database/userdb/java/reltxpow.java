@@ -7,16 +7,12 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 
 import org.minima.database.MinimaDB;
-import org.minima.database.userdb.UserDB;
-import org.minima.objects.TxPOW;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.proofs.TokenProof;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
-
-import sun.nio.cs.ext.MacIceland;
 
 public class reltxpow implements Streamable {
 	
