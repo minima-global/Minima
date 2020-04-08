@@ -1,8 +1,14 @@
 package org.minima.objects.base;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.math.MathContext;
 import java.math.RoundingMode;
+
+import org.minima.utils.Streamable;
 
 
 /**
@@ -13,14 +19,18 @@ import java.math.RoundingMode;
  * @author spartacusrex
  *
  */
-public class MMRSumNumber {
-
-	public static final MathContext mMathContext = new MathContext(64, RoundingMode.DOWN);
+public class MMRSumNumber implements Streamable {
+	
+	private static final MathContext mMathContext = new MathContext(100, RoundingMode.DOWN);
 	
 	/**
 	 * The number representation
 	 */
 	private BigDecimal mNumber;
+	
+	public MMRSumNumber() {
+		mNumber = new BigDecimal("0");
+	}
 	
 	private MMRSumNumber(BigDecimal zNumber) {
 		mNumber = zNumber;
@@ -40,5 +50,54 @@ public class MMRSumNumber {
 	
 	public boolean isEqual(MMRSumNumber zNumber) {
 		return zNumber.getNumber().compareTo(mNumber) == 0;
+	}
+	
+	@Override
+	public String toString() {
+		return mNumber.stripTrailingZeros().toPlainString();
+	}
+	
+	/**
+	 * Output the scale and unscaled value..
+	 */
+	@Override
+	public void writeDataStream(DataOutputStream zOut) throws IOException {
+		//Write out the scale..
+		zOut.writeInt(mNumber.scale());
+		
+		//And now the unscaled value..
+		byte[] data = mNumber.unscaledValue().toByteArray();
+		int len = data.length;
+		
+		zOut.writeInt(len);
+		zOut.write(data);
+	}
+
+	@Override
+	public void readDataStream(DataInputStream zIn) throws IOException {
+		//Read in the scale
+		int scale = zIn.readInt();
+		
+		//Read in the byte array for unscaled BigInteger
+		int len = zIn.readInt();
+		byte[] data = new byte[len];
+		zIn.readFully(data);
+		
+		//And create..
+		BigInteger unscaled = new BigInteger(data);
+		mNumber = new BigDecimal(unscaled,scale,mMathContext);
+	}
+
+	public static MMRSumNumber ReadFromStream(DataInputStream zIn){
+		MMRSumNumber data = new MMRSumNumber();
+		
+		try {
+			data.readDataStream(zIn);
+		} catch (IOException e) {
+			e.printStackTrace();
+			return null;
+		}
+		
+		return data;
 	}
 }
