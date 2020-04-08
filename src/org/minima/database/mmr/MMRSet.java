@@ -489,18 +489,16 @@ public class MMRSet implements Streamable {
 		MMREntry sibling = getEntry(0, entry.getSibling());
 		
 		//Is this a peak..
-		if(sibling.isEmpty() && zProof.getProofLen()==0) {
+		int prooflen = zProof.getProofLen();
+		if(sibling.isEmpty() && prooflen==0) {
 			return ret;
 		}
-		
-		//Is an input missing or is it a less recent update 
-		int pcount   = 0;
-		int prooflen = zProof.getProofLen();
 		
 		//Are there any proof chunks
 		ProofChunk chunk = null;
 		MiniData phash   = null;
 		MiniNumber pval  = null;
+		int pcount   = 0;
 		if(prooflen>0) {
 			chunk = zProof.getProofChunk(pcount++);
 			phash = chunk.getHash();
@@ -508,7 +506,7 @@ public class MMRSet implements Streamable {
 			
 			//Do we need to fill it in..
 			if(sibling.isEmpty()) {
-				System.out.println("EMPTY SIBLING ");
+				System.out.println("EMPTY SIBLING");
 				sibling = setEntry(sibling.getRow(), sibling.getEntry(), new MMRData(phash, pval));
 			}else if(sibling.getBlockTime().isLessEqual(zProof.getBlockTime())) {
 				//Is it the original.. has all the micro details.. internal nodes are just the hash anyway
@@ -554,7 +552,7 @@ public class MMRSet implements Streamable {
 			sibling = getEntry(entry.getRow(), entry.getSibling());
 			
 			//Check for a valid sibling
-			if(pcount < zProof.getProofLen()) {
+			if(pcount < prooflen) {
 				chunk = zProof.getProofChunk(pcount++);
 				phash = chunk.getHash();
 				pval  = chunk.getValue();
