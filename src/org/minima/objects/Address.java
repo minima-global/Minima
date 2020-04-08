@@ -59,8 +59,8 @@ public class Address implements Streamable{
 	
 	public JSONObject toJSON() {
 		JSONObject addr = new JSONObject();
-		addr.put("script", mScript);
-		addr.put("address", mAddressData.toString());
+		addr.put("script", mScript.toString());
+		addr.put("hexaddress", mAddressData.toString());
 		addr.put("miniaddress", mMinimaAddress);
 		return addr;
 	}
