@@ -7,6 +7,7 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 
 import org.minima.database.MinimaDB;
+import org.minima.objects.TxPOW;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.proofs.TokenProof;
@@ -16,21 +17,21 @@ import org.minima.utils.json.JSONObject;
 
 public class reltxpow implements Streamable {
 	
-	MiniData 	mTxPowID;
+	TxPOW 	mTxPow;
 	
 	Hashtable<String, MiniNumber> mTokenValues;
 	
 	public reltxpow() {}
 	
-	public reltxpow(MiniData zTxPowID, Hashtable<String, MiniNumber> zValues) {
-		mTxPowID      = zTxPowID;
+	public reltxpow(TxPOW zTxPow, Hashtable<String, MiniNumber> zValues) {
+		mTxPow        = zTxPow;
 		mTokenValues  = zValues;
 	}
 	
 	public JSONObject toJSON(MinimaDB zDB) {
 		JSONObject ret = new JSONObject();
 		
-		ret.put("txpowid", mTxPowID.to0xString());
+		ret.put("txpow", mTxPow.toJSON());
 		
 		JSONArray tokarray = new JSONArray();
 		Enumeration<String> tokens = mTokenValues.keys();
@@ -69,7 +70,7 @@ public class reltxpow implements Streamable {
 
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
-		mTxPowID.writeDataStream(zOut);
+		mTxPow.writeDataStream(zOut);
 		
 		//Write out the hashtable..
 		int len = mTokenValues.size();
@@ -86,7 +87,8 @@ public class reltxpow implements Streamable {
 
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
-		mTxPowID = MiniData.ReadFromStream(zIn);
+		mTxPow = new TxPOW();
+		mTxPow.readDataStream(zIn);
 		
 		//read in the HashTable..
 		mTokenValues = new Hashtable<>();
