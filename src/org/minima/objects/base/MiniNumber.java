@@ -32,7 +32,7 @@ public class MiniNumber implements Streamable {
 	/**
 	 * The decimal precision of the significant digits.
 	 */
-	public static final DecimalFormat MINIMA_SIGNIFICANT_FORMAT = new DecimalFormat("0.###################E0");
+//	public static final DecimalFormat MINIMA_SIGNIFICANT_FORMAT = new DecimalFormat("0.###################E0");
 	
 	/**
 	 * Useful numbers

@@ -10,7 +10,7 @@ import java.math.RoundingMode;
 import org.minima.utils.Streamable;
 
 /**
- * Potentially Infinitely LARGE whole numbers for the MMR Entry..
+ * Potentially Very Large whole numbers for the MMR Entry..
  * @author spartacusrex
  *
  */
@@ -19,9 +19,7 @@ public class MiniInteger implements Streamable {
 	public static MiniInteger ZERO = new MiniInteger("0");
 	public static MiniInteger ONE  = new MiniInteger("1");
 	public static MiniInteger TWO  = new MiniInteger("2");
-	public static MiniInteger TEN  = new MiniInteger("10");
-	public static MiniInteger THIRTYTWO  = new MiniInteger("32");
-	
+		
 	private BigInteger mNumber;
 	
 	private MiniInteger() {}
