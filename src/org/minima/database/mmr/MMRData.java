@@ -92,10 +92,10 @@ public class MMRData implements Streamable{
 		mHashOnly = false;
 		
 		//The Sum Value
-		if(zSpent.isTrue()) {
+		if(mSpent.isTrue() || !mCoin.getTokenID().isEqual(Coin.MINIMA_TOKENID)) {
 			mValueSum = MiniNumber.ZERO;	
 		}else {
-			mValueSum = zCoin.getAmount();	
+			mValueSum = mCoin.getAmount();	
 		}
 		
 		//Calculate the hash
@@ -242,7 +242,7 @@ public class MMRData implements Streamable{
 			}
 			
 			//The Sum Value
-			if(mSpent.isTrue()) {
+			if(mSpent.isTrue() || !mCoin.getTokenID().isEqual(Coin.MINIMA_TOKENID)) {
 				mValueSum = MiniNumber.ZERO;	
 			}else {
 				mValueSum = mCoin.getAmount();	

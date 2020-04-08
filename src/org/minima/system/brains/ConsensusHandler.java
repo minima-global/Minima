@@ -321,7 +321,7 @@ public class ConsensusHandler extends SystemHandler {
 		
 			resp.put("txpow", txpow);
 			
-			InputHandler.endResponse(zMessage, true, "");
+			InputHandler.endResponse(zMessage, true, "Send Success");
 			
 		}else if ( zMessage.isMessageType(CONSENSUS_ACTIVATEMINE) ) {
 			boolean mining = zMessage.getBoolean("automining");
