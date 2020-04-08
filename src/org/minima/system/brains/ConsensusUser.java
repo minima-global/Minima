@@ -101,8 +101,7 @@ public class ConsensusUser {
 			}
 			
 			JSONObject resp = InputHandler.getResponseJSON(zMessage);
-			resp.put("address", addrchk.getAddressData().toString());
-			resp.put("script", addrchk.getScript().toString());
+			resp.put("address", addrchk.toJSON());
 			InputHandler.endResponse(zMessage, true, "");
 		
 		}else if(zMessage.isMessageType(CONSENSUS_NEWKEY)) {

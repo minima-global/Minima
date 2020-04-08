@@ -119,7 +119,8 @@ public class BaseConverter {
 	}
 	
 	public static byte[] decode32(String zHex32) throws ArithmeticException {
-		int strlen = zHex32.length();
+		String hex = zHex32.toUpperCase();
+		int strlen = hex.length();
 		
 		if(strlen % 8 != 0) {
 			throw new ArithmeticException("Minima Address Base 32 String must be multiple of 8 in length");
@@ -132,7 +133,7 @@ public class BaseConverter {
 		//Get all the digits..
 		int[] digits = new int[strlen];
 		for(int i=0;i<strlen;i++) {
-			digits[i] = findChar32(zHex32.charAt(i));
+			digits[i] = findChar32(hex.charAt(i));
 		}
 		
 		//Now decode..

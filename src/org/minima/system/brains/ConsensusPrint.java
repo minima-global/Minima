@@ -543,7 +543,7 @@ public class ConsensusPrint {
 			
 			status.put("root", root.getTxPowID().to0xString());
 			status.put("tip", tip.getTxPowID().to0xString());
-			status.put("total", tip.getTxPow().getMMRTotal());
+			status.put("total", tip.getTxPow().getMMRTotal().toString());
 			
 			status.put("lastblock", tip.getTxPow().getBlockNumber());
 			status.put("lasttime", new Date(tip.getTxPow().getTimeSecs().getAsLong()*1000).toString());
