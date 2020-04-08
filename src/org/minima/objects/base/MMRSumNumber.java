@@ -23,14 +23,14 @@ public class MMRSumNumber implements Streamable {
 	
 	private static final MathContext mMathContext = new MathContext(100, RoundingMode.DOWN);
 	
+	public static final MMRSumNumber ZERO = new MMRSumNumber(BigDecimal.ZERO);
+	
 	/**
 	 * The number representation
 	 */
 	private BigDecimal mNumber;
 	
-	public MMRSumNumber() {
-		mNumber = new BigDecimal("0");
-	}
+	private MMRSumNumber() {}
 	
 	private MMRSumNumber(BigDecimal zNumber) {
 		mNumber = zNumber;

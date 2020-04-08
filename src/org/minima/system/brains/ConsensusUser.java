@@ -27,6 +27,7 @@ import org.minima.objects.PubPrivKey;
 import org.minima.objects.StateVariable;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
+import org.minima.objects.base.MMRSumNumber;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniInteger;
 import org.minima.objects.base.MiniNumber;
@@ -172,7 +173,7 @@ public class ConsensusUser {
 				nodearray.add(mmrnode);
 				
 				//Add to the MMR
-				mmr.addUnspentCoin(new MMRData(finalhash,MiniNumber.ZERO));
+				mmr.addUnspentCoin(new MMRData(finalhash,MMRSumNumber.ZERO));
 			}
 
 			//Now finalize..

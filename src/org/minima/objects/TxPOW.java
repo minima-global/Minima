@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import org.minima.GlobalParams;
+import org.minima.objects.base.MMRSumNumber;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniInteger;
@@ -102,7 +103,7 @@ public class TxPOW implements Streamable {
 	/**
 	 * The Total Sum Of All coins in the system
 	 */
-	public MiniNumber mMMRTotal = MiniNumber.ZERO;
+	public MMRSumNumber mMMRTotal = MMRSumNumber.ZERO;
 	
 	/**
 	 * A Random Magic number so that everyone is working on a different TxPOW in the pulse 
@@ -135,11 +136,6 @@ public class TxPOW implements Streamable {
 	protected boolean _mIsBlockPOW  = false;
 	protected boolean _mIsTxnPOW    = false;
 	protected int     _mSuperBlock  = 0;
-	
-	/**
-	 * Static date format
-	 */
-	private static SimpleDateFormat mSDF = new SimpleDateFormat("HH:mm:ss.SSS");
 	
 	/**
 	 * Main Constructor
@@ -269,11 +265,11 @@ public class TxPOW implements Streamable {
 		mMMRRoot = zRoot;
 	}
 	
-	public MiniNumber getMMRTotal() {
+	public MMRSumNumber getMMRTotal() {
 		return mMMRTotal;
 	}
 	
-	public void setMMRTotal(MiniNumber zTotal) {
+	public void setMMRTotal(MMRSumNumber zTotal) {
 		mMMRTotal= zTotal;
 	}
 	
@@ -470,7 +466,7 @@ public class TxPOW implements Streamable {
 		
 		//read in the MMR state..
 		mMMRRoot  = MiniData.ReadFromStream(zIn);
-		mMMRTotal = MiniNumber.ReadFromStream(zIn);
+		mMMRTotal = MMRSumNumber.ReadFromStream(zIn);
 		
 		//The ID
 		calculateTXPOWID();

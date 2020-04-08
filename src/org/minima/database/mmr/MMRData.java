@@ -8,6 +8,7 @@ import java.util.ArrayList;
 
 import org.minima.objects.Coin;
 import org.minima.objects.StateVariable;
+import org.minima.objects.base.MMRSumNumber;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
@@ -46,7 +47,7 @@ public class MMRData implements Streamable{
 	/**
 	 * The Amount of this Output - used for the Sum Tree
 	 */
-	MiniNumber mValueSum;
+	private MMRSumNumber mValueSum;
 	
 	/**
 	 * Is this a HASH only affair
@@ -63,7 +64,7 @@ public class MMRData implements Streamable{
 	 * 
 	 * @param zData
 	 */
-	public MMRData(MiniData zData, MiniNumber zValueSum) {
+	public MMRData(MiniData zData, MMRSumNumber zValueSum) {
 		//Only the final hash
 		mFinalHash = zData;
 		
@@ -93,9 +94,9 @@ public class MMRData implements Streamable{
 		
 		//The Sum Value
 		if(mSpent.isTrue() || !mCoin.getTokenID().isEqual(Coin.MINIMA_TOKENID)) {
-			mValueSum = MiniNumber.ZERO;	
+			mValueSum = MMRSumNumber.ZERO;	
 		}else {
-			mValueSum = mCoin.getAmount();	
+			mValueSum = new MMRSumNumber(mCoin.getAmount());	
 		}
 		
 		//Calculate the hash
@@ -130,7 +131,7 @@ public class MMRData implements Streamable{
 		return mFinalHash;
 	}
 	
-	public MiniNumber getValueSum() {
+	public MMRSumNumber getValueSum() {
 		return mValueSum;
 	}
 	
@@ -165,6 +166,7 @@ public class MMRData implements Streamable{
 			obj.put("finalhash", mFinalHash.toString());
 		}else {
 			obj.put("finalhash", mFinalHash.toString());
+			
 			obj.put("spent", isSpent());
 			obj.put("coin", mCoin);
 			obj.put("inblock", mBlockNumber.toString());
@@ -223,7 +225,7 @@ public class MMRData implements Streamable{
 		
 		if(mHashOnly) {
 			mFinalHash 	 = MiniData.ReadFromStream(zIn);
-			mValueSum    = MiniNumber.ReadFromStream(zIn);
+			mValueSum    = MMRSumNumber.ReadFromStream(zIn);
 			
 		}else {
 			mSpent   	 = MiniByte.ReadFromStream(zIn);
@@ -243,9 +245,9 @@ public class MMRData implements Streamable{
 			
 			//The Sum Value
 			if(mSpent.isTrue() || !mCoin.getTokenID().isEqual(Coin.MINIMA_TOKENID)) {
-				mValueSum = MiniNumber.ZERO;	
+				mValueSum = MMRSumNumber.ZERO;	
 			}else {
-				mValueSum = mCoin.getAmount();	
+				mValueSum = new MMRSumNumber(mCoin.getAmount());	
 			}
 			
 			//Calculate the Hash..
