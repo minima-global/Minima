@@ -56,7 +56,7 @@ public class reltxpow implements Streamable {
 				if(tp == null) {
 					json.put("name", "null");
 				}else {
-					json.put("name", tp.getName());
+					json.put("name", tp.getName().toString());
 					scale = tp.getScaleFactor();
 				}
 			}
