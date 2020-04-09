@@ -417,7 +417,10 @@ public class TxPOWChecker {
 				//Make it the HASH ( CoinID | Total Amount..the token details )
 				TokenProof gentoken = trans.getTokenGenerationDetails();
 				newtokdets = new TokenProof(coinid, 
-						gentoken.getScale(), gentoken.getAmount(), gentoken.getName(), gentoken.getTokenScript());
+											gentoken.getScale(), 
+											gentoken.getAmount(), 
+											gentoken.getName(), 
+											gentoken.getTokenScript());
 				
 				//Set the Globally Unique TokenID!
 				tokid = newtokdets.getTokenID();

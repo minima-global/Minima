@@ -553,11 +553,14 @@ public class ConsensusHandler extends SystemHandler {
 					change = getMainDB().getUserDB().newSimpleAddress();
 				}
 				
+				//CHECK NAME of TOKEN IS VALID!
+				//TODO
+				
 				//Create the token gen details
 				TokenProof tokengen = new TokenProof(Coin.COINID_OUTPUT, 
 													 new MiniNumber(scale+""), 
 													 sendamount, 
-													 new MiniScript(name),
+													 new MiniScript(name,false),
 													 new MiniScript(script));
 				
 				//Create the Transaction

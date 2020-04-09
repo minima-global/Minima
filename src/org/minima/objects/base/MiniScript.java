@@ -15,7 +15,19 @@ public class MiniScript extends MiniData {
 	}
 	
 	public MiniScript(String zString) {
-		super(Contract.cleanScript(zString).getBytes(Charset.forName("US-ASCII")));
+		this(zString,true);
+	}
+	
+	public MiniScript(String zString, boolean zContractClean) {
+		super(initMiniScript(zString, zContractClean));
+	}
+	
+	private static byte[] initMiniScript(String zString, boolean zContractClean) {
+		if(zContractClean) {
+			return Contract.cleanScript(zString).getBytes(Charset.forName("US-ASCII"));
+		}
+		
+		return zString.getBytes(Charset.forName("US-ASCII"));
 	}
 	
 	@Override

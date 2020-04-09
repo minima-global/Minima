@@ -57,10 +57,6 @@ public class TokenProof implements Streamable{
 	 * @param zAmount
 	 * @param zName
 	 */
-	public TokenProof(MiniData zCoindID, MiniNumber zScale, MiniNumber zAmount, MiniScript zName) {
-		this(zCoindID, zScale, zAmount, zName, new MiniScript("RETURN TRUE"));
-	}
-		
 	public TokenProof(MiniData zCoindID, MiniNumber zScale, MiniNumber zAmount, MiniScript zName, MiniScript zTokenScript) {
 				
 		mTokenScale 		= zScale;
