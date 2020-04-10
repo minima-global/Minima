@@ -7,7 +7,7 @@ public class ResponseStream {
 	/**
 	 * Maximum Amount of time to wait for a response finish
 	 */
-	public static final long MAX_WAITTIME = 5000;
+	public static final long MAX_WAITTIME = 10000;
 	
 	/**
 	 * What is the response
@@ -112,8 +112,8 @@ public class ResponseStream {
 		
 		//5 second max wait..
 		while(!mFinished && timediff<MAX_WAITTIME) {
-			//Wait 100ms..
-			try {Thread.sleep(100);} catch (InterruptedException e) {}
+			//Wait 20ms..
+			try {Thread.sleep(20);} catch (InterruptedException e) {}
 			
 			//Calculate
 			timediff = System.currentTimeMillis() - timestart;
