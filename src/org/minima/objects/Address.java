@@ -159,7 +159,7 @@ public class Address implements Streamable{
 	 * @param zMinimaAddress
 	 * @return
 	 */
-	public static MiniData convertMinimAddress(String zMinimaAddress) throws ArithmeticException {
+	public static MiniData convertMinimaAddress(String zMinimaAddress) throws ArithmeticException {
 		if(!zMinimaAddress.startsWith("Mx")) {
 			throw new ArithmeticException("Minima Addresses must start with Mx");
 		}

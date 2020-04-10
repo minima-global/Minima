@@ -34,7 +34,7 @@ public class txnoutput extends CommandFunction {
 			address = new MiniData(address).to0xString();
 		}else if(address.startsWith("Mx")) {
 			//It's a Minima Address!
-			address = Address.convertMinimAddress(address).to0xString();
+			address = Address.convertMinimaAddress(address).to0xString();
 		}
 		
 		Address addr = new Address(new MiniData(address));

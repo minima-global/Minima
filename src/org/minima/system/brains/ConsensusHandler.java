@@ -355,7 +355,7 @@ public class ConsensusHandler extends SystemHandler {
 				address = new MiniData(address).to0xString();
 			}else if(address.startsWith("Mx")) {
 				//It's a Minima Address!
-				address = Address.convertMinimAddress(address).to0xString();
+				address = Address.convertMinimaAddress(address).to0xString();
 			}
 			
 			String tokenid 	   	= new MiniData(zMessage.getString("tokenid")).to0xString();
