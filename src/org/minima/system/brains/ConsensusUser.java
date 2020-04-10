@@ -424,6 +424,12 @@ public class ConsensusUser {
 			//Now make the proof..
 			MMRProof proof = MMRProof.ReadFromStream(dis);
 			
+			if(proof.getMMRData().isSpent()) {
+				//ONLY UNSPENT COINS..
+				InputHandler.endResponse(zMessage, false, "Coin already SPENT!");
+				return;
+			}
+			
 			//Get the MMRSet
 			MMRSet basemmr = getMainDB().getMainTree().getChainTip().getMMRSet();
 			
