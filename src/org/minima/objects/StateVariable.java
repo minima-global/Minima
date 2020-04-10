@@ -39,11 +39,8 @@ public class StateVariable implements Streamable {
 		
 		//Cannot add Mx addresses.. only HEX addresses in SCRIPT
 		if(zData.startsWith("Mx")) {
-			//Convert it..
-			MiniData hex = Address.convertMinimaAddress(zData);
-			
-			//Now make it..
-			mData = new MiniScript(hex.to0xString());
+			//Convert to HEX
+			mData = new MiniScript(Address.convertMinimaAddress(zData).to0xString());
 		}else {
 			mData = new MiniScript(zData);	
 		}
