@@ -31,7 +31,7 @@ public class ASSERTstatement implements Statement{
 		boolean success = mAssertValue.getValue(zContract).isTrue();
 		
 		//Trace log
-		zContract.traceLog(toString()+" result:"+success);
+		//zContract.traceLog(toString()+" result:"+success);
 		
 		//Tell the Contract
 		if(!success) {

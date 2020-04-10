@@ -39,11 +39,16 @@ public class StatementBlock {
 		for(Statement stat : mStatements) {
 			//Check for EXIT
 			if(zContract.isSuccessSet()) {
+				//Trace it
+				zContract.traceLog("SUCCESS SET : "+zContract.isSuccess());
 				return;
 			}
 			
 			//This action counts as one instruction
 			zContract.incrementInstructions();
+			
+			//Trace it
+			zContract.traceLog(stat.toString());
 			
 			//Run the next Statement
 			stat.execute(zContract);

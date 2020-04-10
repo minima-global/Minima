@@ -66,9 +66,6 @@ public class LETstatement implements Statement{
 	
 	@Override
 	public void execute(Contract zContract)  throws ExecutionException {
-		//Trace log
-		zContract.traceLog(toString());
-		
 		if(mLETType == LET_VARIABLE) {
 			zContract.setVariable(mName, mValue.getValue(zContract));
 		}else {

@@ -42,23 +42,6 @@ public class IFstatement implements Statement {
 		mActions    = new ArrayList<>();
 	}
 	
-	/*public IFstatement(Expression zSingleCondition, StatementBlock zSingleCodeBlock , StatementBlock zELSECodeBlock) {
-		this();
-		
-		//Add the defaults..
-		mConditions.add(zSingleCondition);
-		mActions.add(zSingleCodeBlock);
-		
-		//Is there an ELSE
-		if(zELSECodeBlock != null) {
-			//Else is TRUE
-			mConditions.add( new ConstantExpression(BooleanValue.TRUE) );
-			
-			//Add theactions
-			mActions.add(zELSECodeBlock);
-		}
-	}*/
-
 	public void addCondition(Expression zCondition, StatementBlock zCodeBlock) {
 		mConditions.add(zCondition);
 		mActions.add(zCodeBlock);
@@ -69,9 +52,6 @@ public class IFstatement implements Statement {
 	 */
 	@Override
 	public void execute(Contract zContract) throws ExecutionException {
-		//Trace log
-		zContract.traceLog(toString());
-				
 		//How many..
 		int size = mConditions.size();
 		

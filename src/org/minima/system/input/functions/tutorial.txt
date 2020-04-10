@@ -183,7 +183,7 @@ GETOUTTOK ( BYTE )
 Return the token id of the specified output
 
 VERIFYOUT ( BYTE HEX NUMBER HEX [NUMBER])
-Verify the specified output has the specified address, amount and tokenid. Optional 4 th parameter. -1 LTE, 0 EQ, 1 GTE. Default EQ.
+Verify the specified output has the specified address, amount and tokenid. Optional 4th parameter relates to AMOUNT. -1 LTE, 0 EQ, 1 GTE. Default EQ.
 
 GETINADDR ( BYTE ) 
 Return the HEX address of the specified input
@@ -195,7 +195,7 @@ GETINTOK ( BYTE )
 Return the token id of the specified input
 
 VERIFYIN ( BYTE HEX NUMBER HEX [NUMBER])
-Verify the specified input has the specified address, amount and tokenid. Optional 4 th parameter. -1 LTE, 0 EQ, 1 GTE. Default EQ.
+Verify the specified input has the specified address, amount and tokenid. Optional 4th parameter relates to AMOUNT. -1 LTE, 0 EQ, 1 GTE. Default EQ.
 
 STATE ( BYTE )
 Return the state value for the given number

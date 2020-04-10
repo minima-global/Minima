@@ -29,7 +29,13 @@ public class FunctionExpression implements Expression {
 		//This action counts as one instruction
 		zContract.incrementInstructions();
 				
-		return mFunction.runFunction(zContract);
+		//Get the Value
+		Value val = mFunction.runFunction(zContract);
+		
+		//And trace it..
+		zContract.traceLog(toString()+" returns:"+val.toString());
+		
+		return val;
 	}
 	
 	@Override

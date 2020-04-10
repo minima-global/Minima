@@ -31,7 +31,7 @@ public class RETURNstatement implements Statement{
 		boolean success = mReturnValue.getValue(zContract).isTrue();
 		
 		//Trace log
-		zContract.traceLog(toString()+" result:"+success);
+//		zContract.traceLog(toString()+" result:"+success);
 		
 		//Tell the Contract
 		zContract.setRETURNValue(success);

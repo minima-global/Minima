@@ -40,17 +40,12 @@ public class MASTstatement implements Statement {
 		ScriptProof scrpr = wit.getScript(mast.getMiniData());
 		
 		if(scrpr == null) {
-			//Trace log
-			zContract.traceLog("MAST "+mMASTScript);
 			throw new ExecutionException("No script found for MAST "+mast.getMiniData());
 		}
 		
 		//get the script of this hash value
 		String script = scrpr.getScript().toString();
 		
-		//Trace log
-		zContract.traceLog("MAST "+mMASTScript+" [ "+script+" ]");
-				
 		try {
 			//Convert the script to KISSVM!
 			List<Token> tokens = Token.tokenize(script);

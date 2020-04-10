@@ -111,6 +111,9 @@ public class BooleanExpression implements Expression {
 				break;	
 		}
 		
+		//And trace it..
+		zContract.traceLog(toString()+" returns:"+ret.toString());
+				
 		return ret;
 	}
 

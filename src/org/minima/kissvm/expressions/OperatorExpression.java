@@ -127,6 +127,9 @@ public class OperatorExpression implements Expression{
 			
 		}
 		
+		//And trace it..
+		zContract.traceLog(toString()+" returns:"+ret.toString());
+				
 		return ret;
 	}
 	
