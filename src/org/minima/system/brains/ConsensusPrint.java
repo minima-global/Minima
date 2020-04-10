@@ -420,15 +420,16 @@ public class ConsensusPrint {
 			Collections.sort(totbal,new Comparator<JSONObject>() {
 				@Override
 				public int compare(JSONObject o1, JSONObject o2) {
-					String tok1 = (String) o1.get("token");
-					String tok2 = (String) o2.get("token");
-					
-					if(tok1.equals("Minima")) {
+					String tok1id = (String) o1.get("tokenid");
+					String tok2id = (String) o2.get("tokenid");
+					if(tok1id.equals("0x00")) {
 						return -1;
-					}else if(tok2.equals("Minima")) {
+					}else if(tok2id.equals("0x00")) {
 						return 1;
 					}
 					
+					String tok1 = (String) o1.get("token");
+					String tok2 = (String) o2.get("token");
 					return tok1.compareTo(tok2);
 				} 
 			});
