@@ -39,6 +39,8 @@ public class ConsensusTxn {
 	public static final String CONSENSUS_TXNDELETE 			= CONSENSUS_PREFIX+"TXNDELETE";
 	public static final String CONSENSUS_TXNLIST 			= CONSENSUS_PREFIX+"TXNLIST";
 	
+	public static final String CONSENSUS_TXNAUTO 			= CONSENSUS_PREFIX+"TXNAUTO";
+	
 	public static final String CONSENSUS_TXNINPUT 			= CONSENSUS_PREFIX+"TXNINPUT";
 	public static final String CONSENSUS_TXNOUTPUT 			= CONSENSUS_PREFIX+"TXNOUTPUT";
 	
@@ -129,13 +131,9 @@ public class ConsensusTxn {
 			InputHandler.endResponse(zMessage, true, "");
 			
 		}else if(zMessage.isMessageType(CONSENSUS_TXNSCRIPT)) {
-			//Add input to a custom transaction
 			int trans 			= zMessage.getInteger("transaction");
 			String script 	    = zMessage.getString("script");
-			String proof        = "0x0200";
-			if(zMessage.exists("proof")) {
-				proof = zMessage.getString("proof");
-			}
+			String proof        = zMessage.getString("proof");
 			
 			//Check valid..
 			if(!checkTransactionValid(trans)) {
@@ -154,6 +152,116 @@ public class ConsensusTxn {
 		
 			listTransactions(zMessage);
 			
+		}else if(zMessage.isMessageType(CONSENSUS_TXNAUTO)) {
+			int trans 			= zMessage.getInteger("transaction");
+			
+			//Check valid..
+			if(!checkTransactionValid(trans)) {
+				InputHandler.endResponse(zMessage, false, "Invalid TXN chosen : "+trans);
+				return;
+			}
+			
+			String amount  = zMessage.getString("amount");
+			String address = zMessage.getString("address");
+			String tokenid = zMessage.getString("tokenid");
+			
+			//How much to who ?
+			if(address.startsWith("0x")) {
+				//It's a regular HASH address
+				address = new MiniData(address).to0xString();
+			}else if(address.startsWith("Mx")) {
+				//It's a Minima Address!
+				address = Address.convertMinimaAddress(address).to0xString();
+			}
+			
+			//The Token Hash
+			MiniData tok       		= new MiniData(tokenid);
+			MiniData changetok 		= new MiniData(tokenid);
+			
+			//Replace with the HASH value.. 
+			tokenid = tok.to0xString();
+			
+			//Is this a token amount or a minima amount
+			TokenProof tokendets = null;
+			if(!tok.isEqual(Coin.MINIMA_TOKENID)) {
+				//It's a token.. scale it..
+				MiniNumber samount = new MiniNumber(amount);
+				
+				//Now divide by the scale factor..
+				tokendets = getMainDB().getUserDB().getTokenDetail(new MiniData(tokenid));
+				
+				//Do we have it,.
+				if(tokendets == null) {
+					//Unknown token!
+					InputHandler.endResponse(zMessage, false, "No details found for the specified token : "+tokenid);
+					return;
+				}
+				
+				//Scale..
+				samount = samount.div(tokendets.getScaleFactor());
+				
+				//And set the new value..
+				amount = samount.toString();
+			}
+			
+			//Send details..
+			MiniNumber sendamount 	= new MiniNumber(amount);
+			
+			//How much do we have..
+			MiniNumber total = new MiniNumber(); 
+			ArrayList<Coin> confirmed = null;
+			if(tok.isEqual(Coin.TOKENID_CREATE)) {
+				confirmed = getMainDB().getTotalSimpleSpendableCoins(Coin.MINIMA_TOKENID);
+				changetok = Coin.MINIMA_TOKENID;
+			}else {
+				confirmed = getMainDB().getTotalSimpleSpendableCoins(tok);
+			}
+			
+			for(Coin cc : confirmed) {
+				total = total.add(cc.getAmount());
+			}
+
+			//Do we have that much..
+			if(total.isLess(sendamount)) {
+				//Insufficient funds!
+				if(!tokenid.equals(Coin.MINIMA_TOKENID.to0xString())) {
+					total = total.mult(tokendets.getScaleFactor());
+					InputHandler.endResponse(zMessage, false, "Insufficient funds! You only have : "+total);
+				}else {
+					InputHandler.endResponse(zMessage, false, "Insufficient funds! You only have : "+total);
+				}
+				
+				return;
+			}
+			
+			//Continue constructing the transaction - outputs don't need scripts
+			Address recipient= new Address(new MiniData(address));
+			
+			//Blank address - check change is non-null
+			Address change = new Address(); 
+			if(!total.isEqual(sendamount)) {
+				change = getMainDB().getUserDB().newSimpleAddress();
+			}
+			
+			//Create the Transaction
+			Message ret = getMainDB().createTransaction(sendamount, recipient, change, confirmed, tok, changetok,null);
+			
+			//Is this a token transaction
+			if(tokendets != null) {
+				//Get the witness and add relevant info..
+				Witness wit = (Witness) ret.getObject("witness");
+				
+				//Get the token details..
+				wit.addTokenDetails(tokendets);
+			}
+			
+			
+			//Now We gave a valid transaction and witness.!
+			getMainDB().getUserDB().getUserRow(trans).setTransaction((Transaction) ret.getObject("transaction"));
+			getMainDB().getUserDB().getUserRow(trans).setWitness((Witness) ret.getObject("witness"));
+	
+			listTransactions(zMessage);
+		
 		}else if(zMessage.isMessageType(CONSENSUS_TXNINPUT)) {
 			//Add input to a custom transaction
 			int trans 			= zMessage.getInteger("transaction");

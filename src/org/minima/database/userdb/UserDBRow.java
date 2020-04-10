@@ -9,9 +9,11 @@ public interface UserDBRow {
 	public int getID();
 	
 	public Witness getWitness();
-	
 	public Transaction getTransaction();
 		
+	public void setTransaction(Transaction zTrans);
+	public void setWitness(Witness zWitness);
+	
 	public JSONObject toJSON();
 	
 }

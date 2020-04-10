@@ -40,6 +40,7 @@ import org.minima.system.input.functions.transfer.exportcoin;
 import org.minima.system.input.functions.transfer.exportkey;
 import org.minima.system.input.functions.transfer.importcoin;
 import org.minima.system.input.functions.transfer.importkey;
+import org.minima.system.input.functions.txns.txnauto;
 import org.minima.system.input.functions.txns.txncreate;
 import org.minima.system.input.functions.txns.txndelete;
 import org.minima.system.input.functions.txns.txnexport;
@@ -68,7 +69,7 @@ public abstract class CommandFunction {
 			new send(), new status(), new test(), new trace(), new tutorial(), new history(), new tokens(),
 			new exportkey(), new importkey(), new exportcoin(), new importcoin(), new search(),
 			new chainsha(), new keepcoin(), new scripts(), new chart(), new network(),
-			new txncreate(), new txndelete(), new txninput(), new txnlist(), 
+			new txncreate(), new txndelete(), new txninput(), new txnlist(), new txnauto(),
 			new txnstate(), new txnexport(), new txnimport(), new txnscript(),
 			new txnoutput(), new txnpost(), new txnsign(), new txnvalidate()
 		};  

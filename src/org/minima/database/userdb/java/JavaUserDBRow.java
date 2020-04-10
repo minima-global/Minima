@@ -40,6 +40,16 @@ public class JavaUserDBRow implements UserDBRow, Streamable {
 	public Transaction getTransaction() {
 		return mTransaction;
 	}
+
+	@Override
+	public void setTransaction(Transaction zTrans) {
+		mTransaction = zTrans;
+	}
+
+	@Override
+	public void setWitness(Witness zWitness) {
+		mWitness = zWitness;
+	}
 	
 	@Override
 	public String toString() {
