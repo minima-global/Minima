@@ -3,6 +3,9 @@ package org.minima.system.brains;
 import java.io.File;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -412,6 +415,24 @@ public class ConsensusPrint {
 				//add it to the mix
 				totbal.add(jobj);
 			}
+			
+			//Sort by name
+			Collections.sort(totbal,new Comparator<JSONObject>() {
+				@Override
+				public int compare(JSONObject o1, JSONObject o2) {
+					String tok1 = (String) o1.get("token");
+					String tok2 = (String) o2.get("token");
+					
+					if(tok1.equals("Minima")) {
+						return -1;
+					}else if(tok2.equals("Minima")) {
+						return 1;
+					}
+					
+					return tok1.compareTo(tok2);
+				} 
+			});
+			
 			
 			//Add it to all ball
 			allbal.put("balance",totbal);
