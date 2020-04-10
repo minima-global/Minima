@@ -9,7 +9,7 @@ public class keepcoin extends CommandFunction{
 	public keepcoin() {
 		super("keepcoin");
 		
-		setHelp("[coinid]", "Add a coin to the list of coins you keep track of.", "");
+		setHelp("[coinid]", "Add a coin to the list of coins you keep track of. MUST be a recent coin in the current blocks.", "");
 	}
 	
 	@Override

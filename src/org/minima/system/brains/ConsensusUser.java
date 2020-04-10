@@ -393,7 +393,7 @@ public class ConsensusUser {
 			
 			//Search for the coin..
 			MiniData coinid = new MiniData(cid);
-			MMREntry entry =  basemmr.findEntry(coinid, true);
+			MMREntry entry =  basemmr.findEntry(coinid);
 			
 			//Now ask to keep it..
 			MMRSet coinset = basemmr.getParentAtTime(entry.getBlockTime());
