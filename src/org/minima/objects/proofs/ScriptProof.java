@@ -23,10 +23,10 @@ public class ScriptProof extends Proof {
 	 * @param zScript
 	 * @throws Exception 
 	 */
-	public ScriptProof(String zScript) throws Exception {
-		super();
-		init(zScript,"0x0200");
-	}
+//	public ScriptProof(String zScript) throws Exception {
+//		super();
+//		init(zScript,"0x0200");
+//	}
 	
 	public ScriptProof(String zScript, int zBitLength) throws Exception {
 		super();
