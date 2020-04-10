@@ -21,6 +21,9 @@ public class SignatureProof extends Proof {
 		
 		setData(mPublicKey);
 		
+		//For Now..
+		setHashBitLength(mPublicKey.getLength()*8);
+		
 		mSignature = zSignature;
 	}
 	
