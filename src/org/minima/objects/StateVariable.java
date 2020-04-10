@@ -10,6 +10,7 @@ import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniScript;
+import org.minima.utils.BaseConverter;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONObject;
 
@@ -35,7 +36,17 @@ public class StateVariable implements Streamable {
 	 */
 	public StateVariable(int zPort, String zData) {
 		mPort	  = new MiniByte(zPort);
-		mData     = new MiniScript(zData);
+		
+		//Cannot add Mx addresses.. only HEX addresses in SCRIPT
+		if(zData.startsWith("Mx")) {
+			//Convert it..
+			MiniData hex = Address.convertMinimaAddress(zData);
+			
+			//Now make it..
+			mData = new MiniScript(hex.to0xString());
+		}else {
+			mData = new MiniScript(zData);	
+		}
 	}
 	
 	private StateVariable() {}
