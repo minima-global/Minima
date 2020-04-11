@@ -1,17 +1,9 @@
 package org.minima.system.external;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-
 import org.minima.objects.Coin;
-import org.minima.objects.Transaction;
 import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
 import org.minima.system.SystemHandler;
-import org.minima.utils.PostReqEx;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
 
