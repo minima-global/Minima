@@ -45,16 +45,6 @@ public class NetworkHandler extends SystemHandler{
 	RPCServer mRPCServer;
 	
 	/**
-	 * The Web proxy manager
-	 */
-	WebProxyManager mProxyManager;
-	
-	/**
-	 * The WebSocket Server
-	 */
-//	RPCWebSocketServer mRPCWebSocketServer;
-	
-	/**
 	 * All the network channels..
 	 */
 	ArrayList<NetClient> mClients 	= new ArrayList<>();
