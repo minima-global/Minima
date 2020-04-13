@@ -56,7 +56,6 @@ public class DAPPHandler implements Runnable {
 			in = new BufferedReader(new InputStreamReader(mSocket.getInputStream()));
 			
 			// Output Stream
-//			out = new PrintWriter(mSocket.getOutputStream());
 			out = new PrintStream(mSocket.getOutputStream());
 			
 			// get first line of the request from the client
@@ -97,9 +96,9 @@ public class DAPPHandler implements Runnable {
 				//Get the File..
 				byte[] file = getResourceBytes(fileRequested, "text");
 				int filelen = file.length;
+				
 				//Found it ?
-				if(file == null) {
-					//ERROR
+				if(filelen == 0) {
 					out.println("HTTP/1.1 404 Not Found");
 					out.println("Server: HTTP Server from Minima : 1.0");
 					out.println("Date: " + new Date());
@@ -110,13 +109,11 @@ public class DAPPHandler implements Runnable {
 					out.flush(); // flush character output stream buffer
 				
 				}else {
-					
 					int dot        = fileRequested.lastIndexOf(".");
 					String content = "text/plain";
 					if(dot != -1) {
 						content = getContentType(fileRequested.substring(dot+1));
 					}
-					System.out.println("Content "+content);
 					 
 					// send HTTP Headers
 					out.println("HTTP/1.1 200 OK");
@@ -136,7 +133,6 @@ public class DAPPHandler implements Runnable {
 				
 			}else {
 				System.out.println("NON GET REQUEST ! ");
-				
 			}
 			
 		} catch (Exception ioe) {
@@ -163,7 +159,7 @@ public class DAPPHandler implements Runnable {
 		
 		//Doesn't exist..
 		if(in == null) {
-			return null;
+			return new byte[0];
 		}
 		
 		DataInputStream dis = new DataInputStream(in);
@@ -181,6 +177,7 @@ public class DAPPHandler implements Runnable {
 	}
 	
 	public static String getContentType(String zEnding) {
+		
 		if(zEnding.equals("html")) {
 			return "text/html";
 		}else if(zEnding.equals("htm")) {
@@ -189,6 +186,12 @@ public class DAPPHandler implements Runnable {
 			return "text/css";
 		}else if(zEnding.equals("js")) {
 			return "text/javascript";
+		}else if(zEnding.equals("txt")) {
+			return "text/plain";
+		}else if(zEnding.equals("xml")) {
+			return "text/xml";
+		
+			
 		}else if(zEnding.equals("jpg")) {
 			return "image/jpeg";
 		}else if(zEnding.equals("jpeg")) {
@@ -197,14 +200,19 @@ public class DAPPHandler implements Runnable {
 			return "image/png";
 		}else if(zEnding.equals("gif")) {
 			return "image/gif";
-		}else if(zEnding.equals("pdf")) {
-			return "application/pdf";
-		}else if(zEnding.equals("txt")) {
-			return "text/plain";
-		}else if(zEnding.equals("xml")) {
-			return "text/xml";
+		}else if(zEnding.equals("ico")) {
+			return "image/ico";
+		
+		
 		}else if(zEnding.equals("zip")) {
 			return "application/zip";
+		}else if(zEnding.equals("pdf")) {
+			return "application/pdf";
+			
+		}else if(zEnding.equals("mp3")) {
+			return "audio/mp3";
+		}else if(zEnding.equals("wav")) {
+			return "audio/wav";
 		}
 		
 		return "text/plain";

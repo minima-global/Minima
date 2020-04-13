@@ -1,0 +1,31 @@
+.maintitle {
+  background-color: #ccc;
+  border-radius: 10px;
+  font-size:32px;
+  font-weight:bold;
+  font-family:monospace;
+}
+
+.mainbody {
+  background-color: #ccc;
+  border-radius: 10px;
+  font-size:32px;
+  font-weight:bold;
+  font-family:monospace;
+}
+
+.mainfooter {
+  background-color: #ccc;
+  border-radius: 10px;
+  font-size:24px;
+  font-weight:bold;
+  font-family:monospace;
+}
+
+.installdapp{
+  background-color: #ddf;
+  border-radius: 10px;
+  font-size:24px;
+  font-weight:bold;
+  font-family:monospace;
+}
