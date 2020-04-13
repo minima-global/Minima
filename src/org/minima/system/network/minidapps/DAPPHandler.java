@@ -5,6 +5,7 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.URLDecoder;
@@ -46,7 +47,7 @@ public class DAPPHandler implements Runnable {
 	public void run() {
 		// we manage our particular client connection
 		BufferedReader in 	 		 	= null; 
-		PrintWriter out 	 			= null; 
+		PrintStream out 	 			= null; 
 		
 		String fileRequested 			= null;
 		
@@ -55,17 +56,24 @@ public class DAPPHandler implements Runnable {
 			in = new BufferedReader(new InputStreamReader(mSocket.getInputStream()));
 			
 			// Output Stream
-			out = new PrintWriter(mSocket.getOutputStream());
+//			out = new PrintWriter(mSocket.getOutputStream());
+			out = new PrintStream(mSocket.getOutputStream());
 			
 			// get first line of the request from the client
 			String input = in.readLine();
-//			while (!input.isEmpty()) { 
+			if(input == null) {
+				throw new Exception("ZERO Input Request..");
+			}
+			String firstline = input;
+			
+			//Content headers..
+//			while (input!=null && !input.isEmpty()) { 
 //				System.out.println(input); 
 //				input = in.readLine(); 
 //			}
 			
 			// we parse the request with a string tokenizer
-			StringTokenizer parse = new StringTokenizer(input);
+			StringTokenizer parse = new StringTokenizer(firstline);
 			String method = parse.nextToken().toUpperCase(); // we get the HTTP method of the client
 			
 			// we get file requested
@@ -73,8 +81,10 @@ public class DAPPHandler implements Runnable {
 			
 			// we support only GET and HEAD methods, we check
 			if (method.equals("GET")){
-				System.out.println("DAPP Request : "+fileRequested);
-			
+				if(fileRequested.endsWith("/")) {
+					fileRequested = fileRequested.concat("index.html");
+				}
+				
 				if(fileRequested.startsWith("/")) {
 					fileRequested = fileRequested.substring(1);
 				}
@@ -82,39 +92,56 @@ public class DAPPHandler implements Runnable {
 				//decode URL message
 				fileRequested = URLDecoder.decode(fileRequested,"UTF-8").trim();
 				
-				//The Blank file is index.htm
-				if(fileRequested.equals("")) {
-					fileRequested = "index.html";
-				}
+				System.out.println("DAPP Request : "+fileRequested);
 				
 				//Get the File..
 				byte[] file = getResourceBytes(fileRequested, "text");
+				int filelen = file.length;
+				//Found it ?
+				if(file == null) {
+					//ERROR
+					out.println("HTTP/1.1 404 Not Found");
+					out.println("Server: HTTP Server from Minima : 1.0");
+					out.println("Date: " + new Date());
+					out.println("Content-type: text/html");
+					out.println("Content-length: 0");
+					out.println("Access-Control-Allow-Origin: *");
+					out.println(); // blank line between headers and content, very important !
+					out.flush(); // flush character output stream buffer
 				
-				//Is it an image or a html file
-				if(fileRequested.endsWith(".html")) {
+				}else {
 					
+					int dot        = fileRequested.lastIndexOf(".");
+					String content = "text/plain";
+					if(dot != -1) {
+						content = getContentType(fileRequested.substring(dot+1));
+					}
+					System.out.println("Content "+content);
+					 
+					// send HTTP Headers
+					out.println("HTTP/1.1 200 OK");
+					out.println("Server: HTTP RPC Server from Minima : 1.0");
+					out.println("Date: " + new Date());
+					out.println("Content-type: "+content);
+					out.println("Content-length: " + filelen);
+					
+					//May turn this off.. for now ok
+					out.println("Access-Control-Allow-Origin: *");
+					out.println(); // blank line between headers and content, very important !
+					
+					//Now write the file data
+					out.write(file, 0, filelen);
+					out.flush(); // flush character output stream buffer
 				}
 				
-//				if(file == null) {
-//					//ERROR
-//					System.out.println("FILE "+fileRequested+" not found..");
-//					file = "FILE "+fileRequested+" not found..";
-//				}
+			}else {
+				System.out.println("NON GET REQUEST ! ");
 				
-				// send HTTP Headers
-				out.println("HTTP/1.1 200 OK");
-				out.println("Server: HTTP RPC Server from Minima : 1.0");
-				out.println("Date: " + new Date());
-				out.println("Content-type: text/html");
-//				out.println("Content-length: " + file.length());
-//				out.println("Access-Control-Allow-Origin: *");
-//				out.println(); // blank line between headers and content, very important !
-//				out.println(file);
-				out.flush(); // flush character output stream buffer
 			}
 			
 		} catch (Exception ioe) {
-			System.err.println("Server error : " + ioe);
+//			ioe.printStackTrace();
+			System.err.println("Server : " +fileRequested+" "+ioe);
 			
 		} finally {
 			try {
@@ -153,4 +180,33 @@ public class DAPPHandler implements Runnable {
         return buf;
 	}
 	
+	public static String getContentType(String zEnding) {
+		if(zEnding.equals("html")) {
+			return "text/html";
+		}else if(zEnding.equals("htm")) {
+			return "text/html";
+		}else if(zEnding.equals("css")) {
+			return "text/css";
+		}else if(zEnding.equals("js")) {
+			return "text/javascript";
+		}else if(zEnding.equals("jpg")) {
+			return "image/jpeg";
+		}else if(zEnding.equals("jpeg")) {
+			return "image/jpeg";
+		}else if(zEnding.equals("png")) {
+			return "image/png";
+		}else if(zEnding.equals("gif")) {
+			return "image/gif";
+		}else if(zEnding.equals("pdf")) {
+			return "application/pdf";
+		}else if(zEnding.equals("txt")) {
+			return "text/plain";
+		}else if(zEnding.equals("xml")) {
+			return "text/xml";
+		}else if(zEnding.equals("zip")) {
+			return "application/zip";
+		}
+		
+		return "text/plain";
+	}
 }

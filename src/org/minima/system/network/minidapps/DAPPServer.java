@@ -109,8 +109,8 @@ public class DAPPServer implements Runnable{
 	            if(input.equals("quit")) {
 	            	sever.stop();
 	            	break;
-	            }else {
-	            	System.out.println("Unknown command : "+input);
+	            }else if(!input.equals("")) {
+		            System.out.println("Unknown command : "+input);
 	            }
 		    }
 		}catch(Exception exc) {
