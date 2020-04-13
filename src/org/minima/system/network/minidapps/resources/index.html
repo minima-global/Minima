@@ -21,6 +21,8 @@
 		  console.log("SIZE : "+fileList[0].size);
 		  console.log("TYPE : "+fileList[0].type);
 			
+		  //Auto post the form..
+		  //document.getElementById("install").submit();
 		}
 	});
 	
@@ -28,7 +30,6 @@
 	function installDAPP(){
 		//Open a file dialog..
 		document.getElementById('file-input').click();
-		
 	}
 
 </script>
@@ -40,7 +41,15 @@
 	<!-- MAIN TITLE -->
 	<table class="maintitle" width=100%>
 		<tr>
-			<td><img src="icon.png" width=100></td> <td style="text-align:center;vertical-align:middle" width=100%>MINIDAPPS</td> <td><img src="icon.png" width=100></td>	
+			<td><img src="icon.png" width=100></td> 
+			<td width=100%><b>MINIDAPPS</b><br>
+			<div style="font-size:12;">
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			&nbsp;&nbsp;&nbsp;
+			Powered by Minima</div>
+			</td> 
+			<td><img src="icon.png" width=100></td>	
 		</tr>
 	</table>
 	
@@ -50,13 +59,19 @@
 <tr>
 <td height=100%>
 	
-	
-	<table class="mainbody" width=100% height=100%>
-	<tr>
-	<td>HELLO!</td>
-	</tr>
+	<table width=100% height=100%>
+		<tr>
+			<td width=50% class="mainbody" >
+				sdfsf	
+			</td>	
+		
+			<td width=50% class="mainbody">
+				ertertertert
+			</td>
+		
+		</tr>
 	</table>
-	
+		
 </td>
 </tr>
 
@@ -66,10 +81,14 @@
 	<table class="mainfooter" width=100%>
 		<tr>
 			<td width=10% style="text-align:left;" nowrap> BlockTime : 987 </td>
-			<td width=80% style="text-align:center;"> Minima - The Evolution will not be Centralised </td>
+			<td width=80% style="text-align:center;"> The Evolution will not be Centralised </td>
 			<td width=10% style="text-align:right;" nowrap> 
 				<button class="installdapp" onclick="installDAPP();">INSTALL DAPP</button> 
-				<input id="file-input" type="file" name="name" style="display:none;" />	
+				
+				<form id="install" action="installdapp.html" method="post">
+					<input id="file-input" type="file" name="name" style="display:none;" />	
+				</form>
+				
 			</td>
 		</tr>
 	</table>

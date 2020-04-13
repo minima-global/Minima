@@ -1,9 +1,10 @@
 .maintitle {
   background-color: #ccc;
   border-radius: 10px;
-  font-size:32px;
-  font-weight:bold;
+  font-size:48px;
   font-family:monospace;
+  text-align:center;
+  vertical-align:middle
 }
 
 .mainbody {

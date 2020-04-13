@@ -66,10 +66,10 @@ public class DAPPHandler implements Runnable {
 			String firstline = input;
 			
 			//Content headers..
-//			while (input!=null && !input.isEmpty()) { 
-//				System.out.println(input); 
-//				input = in.readLine(); 
-//			}
+			while (input!=null && !input.isEmpty()) { 
+				System.out.println(input); 
+				input = in.readLine(); 
+			}
 			
 			// we parse the request with a string tokenizer
 			StringTokenizer parse = new StringTokenizer(firstline);
