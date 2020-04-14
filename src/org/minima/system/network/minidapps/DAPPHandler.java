@@ -263,7 +263,7 @@ public class DAPPHandler implements Runnable {
 					"				        <div onclick='alert(\"HELLO\");return false;' style='color:red;cursor:pointer;position:absolute;right:10;top:10'>UNINSTALL</div>" + 
 					"						<br>" + 
 					"						<div onclick=\"window.open('"+webpage+"','_blank');\" style='cursor:pointer;font-size:18'><b>"+name.toUpperCase()+"</b></div>" + 
-					"						<div onclick=\"window.open('"+webpage+"','_blank');\" style='cursor:pointer;font-size:14'>"+desc+"</div>" + 
+					"						<br><div onclick=\"window.open('"+webpage+"','_blank');\" style='cursor:pointer;font-size:12'>"+desc+"</div>" + 
 					"					</div>"+
 					"                     </td>" + 
 					"				</tr>" + 
