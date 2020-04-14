@@ -30,6 +30,7 @@ import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.json.parser.JSONParser;
 import org.minima.utils.json.parser.ParseException;
+import org.minima.utils.messages.Message;
 
 /**
  * This class handles a single request then exits
@@ -169,7 +170,7 @@ public class DAPPHandler implements Runnable {
 
 				//POST requests 
 				if (method.equals("POST")){
-					System.out.println("Readng POST Request Headers"); 
+//					System.out.println("Readng POST Request Headers"); 
 					
 					//The data buffer for all the data 
 					char[] alldata = new char[contentlength]; 
@@ -179,7 +180,7 @@ public class DAPPHandler implements Runnable {
 					
 					//Decode..
 					String decoded = URLDecoder.decode(complete,"UTF-8");
-					System.out.println(decoded);
+//					System.out.println(decoded);
 					
 					//Base64 decode..
 					int index = decoded.indexOf("base64,");
@@ -190,13 +191,16 @@ public class DAPPHandler implements Runnable {
 					//Convert to Byte..
 					byte[] bdata = Base64.getDecoder().decode(data);
 					
-					System.out.println("Data len : "+bdata.length);
+//					System.out.println("Data len : "+bdata.length);
 					
 					//Now send this off to the DAPPManager.. to be converted into a minidapp..
 					MiniData dapp = new MiniData(bdata);
 					
 					//POST it..
+					Message msg = new Message(DAPPManager.DAPP_INSTALL);
+					msg.addObject("minidapp", dapp);
 					
+					mDAPPManager.PostMessage(msg);
 				}
 				 
 				// send HTTP Headers
@@ -269,6 +273,10 @@ public class DAPPHandler implements Runnable {
 					"				</tr>" + 
 					"			</table>" + 
 					"		</td></tr>");
+		}
+		
+		if(len == 0) {
+			list.append("<tr><td>NO DAPPS INSTALLED YET..</td></tr>");
 		}
 		
 		list.append("</table>");

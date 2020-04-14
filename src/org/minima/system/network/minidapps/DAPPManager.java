@@ -144,6 +144,7 @@ public class DAPPManager extends SystemHandler {
 			
 			//And the actual folder...
 			File dapp  = new File(alldapps,hash.to0xString());
+			dapp.mkdirs();
 			
 			//Now extract the contents to that folder..
 			byte[] buffer = new byte[2048];
@@ -151,26 +152,32 @@ public class DAPPManager extends SystemHandler {
 			
 			BufferedInputStream bis = new BufferedInputStream(bais);
             ZipInputStream stream   = new ZipInputStream(bis);
-            
-	        ZipEntry entry;
+	        ZipEntry entry          = null;
 	        
+	        //Cycle through all the files..
 	        while ((entry = stream.getNextEntry()) != null) {
 	        	//Where does this file go
 	            File filePath = new File(dapp,entry.getName());
 	
-	            //Check the parent folder exists
+	            //Check the Parent
 	            File parent = filePath.getParentFile();
 	            if(!parent.exists()) {
 	            	parent.mkdirs();
 	            }
 	            
-	            FileOutputStream fos     = new FileOutputStream(filePath);
-	            BufferedOutputStream bos = new BufferedOutputStream(fos, buffer.length);
-	            
-                int len;
-                while ((len = stream.read(buffer)) > 0) {
-                    bos.write(buffer, 0, len);
-                }
+	            //Do we need to make the directory
+				if(entry.isDirectory()) {
+					filePath.mkdirs();	
+	            }else {
+					//read it in and pump it out
+		            FileOutputStream fos     = new FileOutputStream(filePath);
+		            BufferedOutputStream bos = new BufferedOutputStream(fos, buffer.length);
+		            
+	                int len;
+	                while ((len = stream.read(buffer)) > 0) {
+	                    bos.write(buffer, 0, len);
+	                }
+	            }
 	        }
 	        
 	        //It's done!

@@ -52,7 +52,7 @@
 }
 
 .minidapp {
-  background-color: #fdd;
+  background-color: #ddf;
   border-radius: 10px;
   font-size:32px;
   font-family:monospace;
@@ -64,4 +64,8 @@
   font-size:24px;
   font-weight:bold;
   font-family:monospace;
+}
+
+.categoryselect{
+	font-size:20px;
 }

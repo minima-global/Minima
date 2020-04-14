@@ -11,6 +11,25 @@
 
 	//Wait for the page to load..
 	window.addEventListener("load", function(){
+		
+		//Read the file in and convert to BASE64
+		var reader = new FileReader();
+		reader.onload = function(event) {
+		    //What's been read in..
+			var contents = event.target.result;
+		    console.log("File contents: " + contents);
+		
+		    //Set it..
+			document.getElementById("minidapp64").value = contents;
+		    
+		    //POST it
+			document.getElementById("actual_minidapp").submit();
+		};
+
+		reader.onerror = function(event) {
+		    console.error("File could not be read! Code " + event.target.error.code);
+		};
+		
 		const inputElement = document.getElementById("file-input");
 		inputElement.addEventListener("change", handleFiles, false);
 		
@@ -21,8 +40,9 @@
 		  console.log("SIZE : "+fileList[0].size);
 		  console.log("TYPE : "+fileList[0].type);
 			
-		  //Auto post the form..
-		  document.getElementById("install").submit();
+		  //Read in the file
+		  reader.readAsDataURL(fileList[0]);
+		  //document.getElementById("install").submit();
 		}
 	});
 	
@@ -64,7 +84,8 @@
 
 <td width=50% height=100% class="minidapplist">
 	
-	<!--  <table width=100%>
+	<!--<table width=100%>
+		
 		
 		<tr><td>
 			
@@ -90,8 +111,7 @@
 			
 		</td></tr>
 		
-	</table>
-	-->
+	</table>-->
 	
 	######
 		
@@ -120,7 +140,7 @@ They make interacting with Smart Contracts easy.<br>
 <br>
 <br>
 
-<b>Given a functioning Minima network..</b><br>
+<b>What is a MiniDAPP ?</b><br>
 <br>
 1) No one can stop you using it<br>
 <br>
@@ -141,8 +161,7 @@ They make interacting with Smart Contracts easy.<br>
 	<table class="mainfooter" width=100%>
 		<tr>
 			<td width=10% style="text-align:left;" nowrap>
-				&nbsp;The Evolution will not be Centralised
-				<!--  <button class="installdapp" onclick="window.open('https://minima.global', '_blank');">DAPP CENTER</button>-->
+				&nbsp;<b>The Evolution will not be Centralised</b>
 			</td>
 			
 			<td width=80% style="text-align:center;"> </td>
@@ -152,9 +171,16 @@ They make interacting with Smart Contracts easy.<br>
 			</td>
 		</tr>
 	</table>
-
+	
+	<!-- The actual form that is used to upload minidapps -->
+	<form id="actual_minidapp" action="installdapp.html" method="post">
+        <input type=hidden name=filename value="">
+	    <input type=hidden name=filesize value="">
+		<input type=hidden id=minidapp64 name=minidata value=""> 
+	</form>
+	
 	<!-- Used to open the select File Dialog.. -->
-	<input id="file-input" type="file" name="minidapp" style="display:none;" />
+	<input accept=".minidapp" id="file-input" value="nofile" type="file" name="minidapp" style="display:none;" />
 </td>
 </tr>
 </table>
