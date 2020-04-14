@@ -9,7 +9,12 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.URLDecoder;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Date;
 import java.util.StringTokenizer;
 
@@ -53,7 +58,8 @@ public class DAPPHandler implements Runnable {
 		
 		try {
 			// Input Stream
-			in = new BufferedReader(new InputStreamReader(mSocket.getInputStream()));
+			InputStreamReader is = new InputStreamReader(mSocket.getInputStream());
+			in = new BufferedReader(is);
 			
 			// Output Stream
 			out = new PrintStream(mSocket.getOutputStream());
@@ -66,8 +72,24 @@ public class DAPPHandler implements Runnable {
 			String firstline = input;
 			
 			//Content headers..
+			int contentlength = 0;
+			String boundary = "";
 			while (input!=null && !input.isEmpty()) { 
-				System.out.println(input); 
+				System.out.println(input);
+				
+				//Find the Length..
+				if(input.indexOf("Content-Length:") != -1) {
+					String contlen = input.substring(15);
+					System.out.println("LENGTH : "+contlen);
+					contentlength = Integer.parseInt(contlen.trim());
+				}
+				
+				//Find the Boundary if required in POST
+				int bound = input.indexOf("boundary=");
+				if(bound != -1) {
+					boundary = input.substring(bound+9);
+					System.out.println("BOUNDARY : "+boundary);
+				}
 				input = in.readLine(); 
 			}
 			
@@ -78,37 +100,36 @@ public class DAPPHandler implements Runnable {
 			// we get file requested
 			fileRequested = parse.nextToken();
 			
-			// we support only GET and HEAD methods, we check
-			if (method.equals("GET")){
-				if(fileRequested.endsWith("/")) {
-					fileRequested = fileRequested.concat("index.html");
-				}
+			if(fileRequested.endsWith("/")) {
+				fileRequested = fileRequested.concat("index.html");
+			}
+			
+			if(fileRequested.startsWith("/")) {
+				fileRequested = fileRequested.substring(1);
+			}
+			
+			//decode URL message
+			fileRequested = URLDecoder.decode(fileRequested,"UTF-8").trim();
+			
+			//Get the File..
+			byte[] file = getResourceBytes(fileRequested, "text");
+			int filelen = file.length;
+			
+			//Did we find it.. ?
+			if(filelen == 0) {
+				out.println("HTTP/1.1 404 Not Found");
+				out.println("Server: HTTP Server from Minima : 1.0");
+				out.println("Date: " + new Date());
+				out.println("Content-type: text/html");
+				out.println("Content-length: 0");
+				out.println("Access-Control-Allow-Origin: *");
+				out.println(); // blank line between headers and content, very important !
+				out.flush(); // flush character output stream buffer
+			
+			}else {
+			
+				if (method.equals("GET")){
 				
-				if(fileRequested.startsWith("/")) {
-					fileRequested = fileRequested.substring(1);
-				}
-				
-				//decode URL message
-				fileRequested = URLDecoder.decode(fileRequested,"UTF-8").trim();
-				
-				System.out.println("DAPP Request : "+fileRequested);
-				
-				//Get the File..
-				byte[] file = getResourceBytes(fileRequested, "text");
-				int filelen = file.length;
-				
-				//Found it ?
-				if(filelen == 0) {
-					out.println("HTTP/1.1 404 Not Found");
-					out.println("Server: HTTP Server from Minima : 1.0");
-					out.println("Date: " + new Date());
-					out.println("Content-type: text/html");
-					out.println("Content-length: 0");
-					out.println("Access-Control-Allow-Origin: *");
-					out.println(); // blank line between headers and content, very important !
-					out.flush(); // flush character output stream buffer
-				
-				}else {
 					int dot        = fileRequested.lastIndexOf(".");
 					String content = "text/plain";
 					if(dot != -1) {
@@ -129,15 +150,121 @@ public class DAPPHandler implements Runnable {
 					//Now write the file data
 					out.write(file, 0, filelen);
 					out.flush(); // flush character output stream buffer
-				}
 				
-			}else {
-				System.out.println("NON GET REQUEST ! ");
+				}else if (method.equals("POST")){
+					System.out.println("Readng POST Request Headers"); 
+					
+					//The data buffer for all the data 
+					char[] alldata = new char[contentlength]; 
+					in.read(alldata, 0, contentlength);
+					
+					String complete = new String(alldata);
+					
+					//Decode..
+					String decoded = URLDecoder.decode(complete,"UTF-8");
+					System.out.println(decoded);
+					
+					//Base64 decode..
+					int index = decoded.indexOf("base64,");
+					
+					//Just the Base64 bit
+					String data = decoded.substring(index+7);
+					
+					//Convert to Byte..
+					byte[] bdata = Base64.getDecoder().decode(data);
+					
+					System.out.println("Data len : "+bdata.length);
+					
+//					input = in.readLine();
+//					while(!input.isEmpty()) {
+//						System.out.println(input);
+//						input = in.readLine();
+//					}
+//					
+//					//Now read the Data
+//					input = in.readLine();
+//					while(!input.isEmpty()) {
+//						System.out.println(input);
+//						input = in.readLine();
+//					}
+//					
+//					//Now the finale
+//					input = in.readLine();
+//					while(!input.isEmpty()) {
+//						System.out.println(input);
+//						input = in.readLine();
+//					}
+					
+					//Read it ALL in..
+//					byte[] strdata = new byte[contentlength];
+//					for(int i=0;i<contentlength;i++) {
+//						strdata[i] = (byte) (in.read() & 0xFF);
+//					}
+//					
+//					char[] alldata = new char[contentlength]; 
+//					
+//					//ALL the data..
+//					in.read(alldata, 0, contentlength);
+//					
+////					//Create a String..
+////					byte[] strdata = new String(alldata).getBytes(StandardCharsets.UTF_8);
+//					
+//					ByteBuffer bb  = Charset.forName("UTF-8").encode(CharBuffer.wrap(alldata));
+//					byte[] strdata = new byte[bb.remaining()];
+//					bb.get(strdata);
+//					
+////					System.out.println(Arrays.toString(b));
+//					
+//					System.out.println("STRLEN : "+strdata.length);
+//					
+//					//START of file.. 
+//					byte[] startFile  = new String("\r\n\r\n").getBytes(StandardCharsets.UTF_8);
+//					
+//					//Now find the the first \r\n
+//					int boundstart = indexOf(strdata,startFile,0)+4;
+//					
+//					//END of file.. 
+//					byte[] endFile = new String("\r\n--"+boundary).getBytes(StandardCharsets.UTF_8);
+//					
+//					//And Now get the END of the file..
+//					int boundend = indexOf(strdata,endFile,boundstart);
+//					
+//					//Now get that Data..
+//					int datalen = boundend - boundstart;
+//					
+//					System.out.println("DATA : "+datalen);
+					
+					
+					int dot        = fileRequested.lastIndexOf(".");
+					String content = "text/plain";
+					if(dot != -1) {
+						content = getContentType(fileRequested.substring(dot+1));
+					}
+					 
+					// send HTTP Headers
+					out.println("HTTP/1.1 200 OK");
+					out.println("Server: HTTP RPC Server from Minima : 1.0");
+					out.println("Date: " + new Date());
+					out.println("Content-type: "+content);
+					out.println("Content-length: " + filelen);
+					
+					//May turn this off.. for now ok
+					out.println("Access-Control-Allow-Origin: *");
+					out.println(); // blank line between headers and content, very important !
+					
+					//Now write the file data
+					out.write(file, 0, filelen);
+					out.flush(); // flush character output stream buffer
+				
+					
+				}else {
+					System.out.println("NON GET REQUEST ! ");
+				}
 			}
 			
 		} catch (Exception ioe) {
-//			ioe.printStackTrace();
-			System.err.println("Server : " +fileRequested+" "+ioe);
+			ioe.printStackTrace();
+//			System.err.println("Server : " +fileRequested+" "+ioe);
 			
 		} finally {
 			try {
@@ -216,5 +343,30 @@ public class DAPPHandler implements Runnable {
 		}
 		
 		return "text/plain";
+	}
+	
+	public static int indexOf(byte[] outerArray, byte[] smallerArray, int zOffSet) {
+		
+		for(int i = zOffSet; i < outerArray.length - smallerArray.length+1; ++i) {
+	        boolean found = true;
+	        for(int j=0; j<smallerArray.length; ++j) {
+	           if (outerArray[i+j] != smallerArray[j]) {
+	               found = false;
+	               break;
+	           }
+	        }
+	        if (found) return i;
+	     }
+	   return -1;  
+	}
+	
+	public static void main(String[] zArgs) {
+		
+		byte[] big = new byte[] {1,2,3,0,4,5,6,7,0,8,9,0,0,1,3,4,56};
+		byte[] small = new byte[] {7,0,8,9,0,0,1};
+		
+		System.out.println(indexOf(big, small,0));
+		
+		
 	}
 }

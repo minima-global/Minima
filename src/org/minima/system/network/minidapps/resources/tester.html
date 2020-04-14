@@ -1,0 +1,83 @@
+<html>
+
+
+<head>
+
+</head>
+
+
+<body>
+
+<script type="text/javascript">
+
+	//Wait for the page to load..
+	window.addEventListener("load", function(){
+		
+		var reader = new FileReader();
+		reader.onload = function(event) {
+		    var contents = event.target.result;
+		    console.log("File contents: " + contents);
+		
+		    //Set it..
+			document.getElementById("minidapp64").value = contents;
+		    
+			document.getElementById("actual_minidapp").submit();
+		};
+
+		reader.onerror = function(event) {
+		    console.error("File could not be read! Code " + event.target.error.code);
+		};
+		
+		const inputElement = document.getElementById("file-input");
+		inputElement.addEventListener("change", handleFiles, false);
+		
+		function handleFiles() {
+		  const fileList = this.files; /* now you can work with the file list */
+		  
+		  console.log("FILE : "+fileList[0].name);
+		  console.log("SIZE : "+fileList[0].size);
+		  console.log("TYPE : "+fileList[0].type);
+			
+		  
+		  reader.readAsDataURL(fileList[0]);
+		  
+		  //Auto post the form..
+		  //document.getElementById("install").submit();
+		}
+	});
+	
+
+	function installDAPP(){
+		//Open a file dialog..
+		document.getElementById('file-input').click();
+	}
+
+</script>
+
+Simple test..<br>
+
+<button class="installdapp" onclick="installDAPP();">INSTALL DAPP</button> 
+<br>
+<br>				
+
+Main Form..!
+<form id="actual_minidapp" action="installdapp.html" method="post">
+    
+    <input type=text name=some value="1234">
+    <input type=text name=somefr value="1werwer234">
+    
+	<input type=hidden id=minidapp64 name=minidata value=""> 
+	
+	<input type=submit value="SEND">
+		
+</form>
+
+<br><br>
+
+OTHER Form..!
+<input id="file-input" type="file" name="minidapp" style="display:none;" />	
+
+
+</body>
+
+</html>

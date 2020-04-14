@@ -22,7 +22,7 @@
 		  console.log("TYPE : "+fileList[0].type);
 			
 		  //Auto post the form..
-		  //document.getElementById("install").submit();
+		  document.getElementById("install").submit();
 		}
 	});
 	
@@ -36,7 +36,7 @@
 
 <table width=100% height=100% border=0 style="padding:50;">
 <tr>
-<td>
+<td colspan=2>
 	
 	<!-- MAIN TITLE -->
 	<table class="maintitle" width=100%>
@@ -57,36 +57,38 @@
 </tr>
 
 <tr>
-<td height=100%>
-	
-	<table width=100% height=100%>
-		<tr>
-			<td width=50% class="mainbody" >
-				sdfsf	
-			</td>	
-		
-			<td width=50% class="mainbody">
-				ertertertert
-			</td>
-		
-		</tr>
-	</table>
+
+<td height=100% class="maintitle">
+	sdfsdf
 		
 </td>
+
+<td height=100% class="maintitle">
+	
+sdfsdf		
+</td>
+
+
 </tr>
 
 <tr>
-<td>
+<td colspan=2>
 
 	<table class="mainfooter" width=100%>
 		<tr>
-			<td width=10% style="text-align:left;" nowrap> BlockTime : 987 </td>
+			<td width=10% style="text-align:left;" nowrap>
+				<button class="installdapp" onclick="window.open('https://minima.global', '_blank');">DAPP CENTER</button>
+			</td>
+			
 			<td width=80% style="text-align:center;"> The Evolution will not be Centralised </td>
+			
 			<td width=10% style="text-align:right;" nowrap> 
 				<button class="installdapp" onclick="installDAPP();">INSTALL DAPP</button> 
 				
-				<form id="install" action="installdapp.html" method="post">
-					<input id="file-input" type="file" name="name" style="display:none;" />	
+				<form enctype="multipart/form-data" id="install" action="installdapp.html" method="post">
+					<!--  <input type=hidden name=filename value=myfile.txt>
+					<input type=hidden name=fielsize value=3456>-->
+					<input id="file-input" type="file" name="minidapp" style="display:none;" />	
 				</form>
 				
 			</td>
