@@ -1,7 +1,10 @@
 package org.minima.system.network.minidapps;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -25,6 +28,8 @@ import org.minima.utils.MiniFormat;
 import org.minima.utils.ResponseStream;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
+import org.minima.utils.json.parser.JSONParser;
+import org.minima.utils.json.parser.ParseException;
 
 /**
  * This class handles a single request then exits
@@ -39,13 +44,16 @@ public class DAPPHandler implements Runnable {
 	 */
 	Socket mSocket;
 	
+	DAPPManager mDAPPManager;
+	
 	/**
 	 * Main Constructor
 	 * @param zSocket
 	 */
-	public DAPPHandler(Socket zSocket) {
+	public DAPPHandler(Socket zSocket, DAPPManager zDAPPManager) {
 		//Store..
-		mSocket = zSocket;
+		mSocket      = zSocket;
+		mDAPPManager = zDAPPManager;
 	}
 
 	@Override
@@ -111,12 +119,43 @@ public class DAPPHandler implements Runnable {
 			//decode URL message
 			fileRequested = URLDecoder.decode(fileRequested,"UTF-8").trim();
 			
-			//Get the File..
-			byte[] file = getResourceBytes(fileRequested, "text");
-			int filelen = file.length;
+			//Get the File.. index.html is a resource.. everything else is hosted in the minidapps folder
+			byte[] file = null;
+			int filelen = 0;
+			
+			if(fileRequested.endsWith("/minima.js")) {
+				file    = getResourceBytes("js/minima.js");
+				filelen = file.length;
+				
+			}else if(fileRequested.startsWith("minidapps/")) {
+				//Look in the minidapps folder
+				String fullfile = mDAPPManager.getMiniDAPPSFolder()+"/"+fileRequested.substring(10);
+				file    = getFileBytes(fullfile);
+				filelen = file.length;
+				
+			}else {
+				file    = getResourceBytes(fileRequested);
+				
+				if(fileRequested.equals("index.html")) {
+					String page = new String(file,StandardCharsets.UTF_8);
+					String newpage = page.replace("######", createMiniDAPPList());
+					
+					file = newpage.getBytes();
+				}
+				
+				filelen = file.length;
+			}
+			
+			//Now serve the Page
+			int dot        = fileRequested.lastIndexOf(".");
+			String content = "text/plain";
+			if(dot != -1) {
+				content = getContentType(fileRequested.substring(dot+1));
+			}
 			
 			//Did we find it.. ?
 			if(filelen == 0) {
+				
 				out.println("HTTP/1.1 404 Not Found");
 				out.println("Server: HTTP Server from Minima : 1.0");
 				out.println("Date: " + new Date());
@@ -126,32 +165,10 @@ public class DAPPHandler implements Runnable {
 				out.println(); // blank line between headers and content, very important !
 				out.flush(); // flush character output stream buffer
 			
-			}else {
-			
-				if (method.equals("GET")){
-				
-					int dot        = fileRequested.lastIndexOf(".");
-					String content = "text/plain";
-					if(dot != -1) {
-						content = getContentType(fileRequested.substring(dot+1));
-					}
-					 
-					// send HTTP Headers
-					out.println("HTTP/1.1 200 OK");
-					out.println("Server: HTTP RPC Server from Minima : 1.0");
-					out.println("Date: " + new Date());
-					out.println("Content-type: "+content);
-					out.println("Content-length: " + filelen);
-					
-					//May turn this off.. for now ok
-					out.println("Access-Control-Allow-Origin: *");
-					out.println(); // blank line between headers and content, very important !
-					
-					//Now write the file data
-					out.write(file, 0, filelen);
-					out.flush(); // flush character output stream buffer
-				
-				}else if (method.equals("POST")){
+			}else{
+
+				//POST requests 
+				if (method.equals("POST")){
 					System.out.println("Readng POST Request Headers"); 
 					
 					//The data buffer for all the data 
@@ -175,91 +192,28 @@ public class DAPPHandler implements Runnable {
 					
 					System.out.println("Data len : "+bdata.length);
 					
-//					input = in.readLine();
-//					while(!input.isEmpty()) {
-//						System.out.println(input);
-//						input = in.readLine();
-//					}
-//					
-//					//Now read the Data
-//					input = in.readLine();
-//					while(!input.isEmpty()) {
-//						System.out.println(input);
-//						input = in.readLine();
-//					}
-//					
-//					//Now the finale
-//					input = in.readLine();
-//					while(!input.isEmpty()) {
-//						System.out.println(input);
-//						input = in.readLine();
-//					}
+					//Now send this off to the DAPPManager.. to be converted into a minidapp..
+					MiniData dapp = new MiniData(bdata);
 					
-					//Read it ALL in..
-//					byte[] strdata = new byte[contentlength];
-//					for(int i=0;i<contentlength;i++) {
-//						strdata[i] = (byte) (in.read() & 0xFF);
-//					}
-//					
-//					char[] alldata = new char[contentlength]; 
-//					
-//					//ALL the data..
-//					in.read(alldata, 0, contentlength);
-//					
-////					//Create a String..
-////					byte[] strdata = new String(alldata).getBytes(StandardCharsets.UTF_8);
-//					
-//					ByteBuffer bb  = Charset.forName("UTF-8").encode(CharBuffer.wrap(alldata));
-//					byte[] strdata = new byte[bb.remaining()];
-//					bb.get(strdata);
-//					
-////					System.out.println(Arrays.toString(b));
-//					
-//					System.out.println("STRLEN : "+strdata.length);
-//					
-//					//START of file.. 
-//					byte[] startFile  = new String("\r\n\r\n").getBytes(StandardCharsets.UTF_8);
-//					
-//					//Now find the the first \r\n
-//					int boundstart = indexOf(strdata,startFile,0)+4;
-//					
-//					//END of file.. 
-//					byte[] endFile = new String("\r\n--"+boundary).getBytes(StandardCharsets.UTF_8);
-//					
-//					//And Now get the END of the file..
-//					int boundend = indexOf(strdata,endFile,boundstart);
-//					
-//					//Now get that Data..
-//					int datalen = boundend - boundstart;
-//					
-//					System.out.println("DATA : "+datalen);
+					//POST it..
 					
-					
-					int dot        = fileRequested.lastIndexOf(".");
-					String content = "text/plain";
-					if(dot != -1) {
-						content = getContentType(fileRequested.substring(dot+1));
-					}
-					 
-					// send HTTP Headers
-					out.println("HTTP/1.1 200 OK");
-					out.println("Server: HTTP RPC Server from Minima : 1.0");
-					out.println("Date: " + new Date());
-					out.println("Content-type: "+content);
-					out.println("Content-length: " + filelen);
-					
-					//May turn this off.. for now ok
-					out.println("Access-Control-Allow-Origin: *");
-					out.println(); // blank line between headers and content, very important !
-					
-					//Now write the file data
-					out.write(file, 0, filelen);
-					out.flush(); // flush character output stream buffer
-				
-					
-				}else {
-					System.out.println("NON GET REQUEST ! ");
 				}
+				 
+				// send HTTP Headers
+				out.println("HTTP/1.1 200 OK");
+				out.println("Server: HTTP RPC Server from Minima : 1.0");
+				out.println("Date: " + new Date());
+				out.println("Content-type: "+content);
+				out.println("Content-length: " + filelen);
+				
+				//May turn this off.. for now ok
+				out.println("Access-Control-Allow-Origin: *");
+				out.println(); // blank line between headers and content, very important !
+				
+				//Now write the file data
+				out.write(file, 0, filelen);
+				out.flush(); // flush character output stream buffer
+				
 			}
 			
 		} catch (Exception ioe) {
@@ -278,9 +232,56 @@ public class DAPPHandler implements Runnable {
 	}
 	
 	
+	public String createMiniDAPPList() throws Exception {
+		StringBuilder list = new StringBuilder();
+		
+		JSONArray alldapps = mDAPPManager.getMiniDAPPS();
+		
+		list.append("<table width=100%>");
+		
+		int len = alldapps.size();
+		for(int i=0;i<len;i++) {
+			JSONObject app = (JSONObject) alldapps.get(i);
+			
+			//Now do it..
+			String root  = (String) app.get("root");
+			String name  = (String) app.get("name");
+			String desc  = (String) app.get("description");
+			String backg = root+"/"+(String) app.get("background");
+			String icon  = root+"/"+(String) app.get("icon");
+			String webpage  = root+"/index.html";
+			
+			//Now do it..
+			list.append("<tr><td>" + 
+					"			<table style='background-size:100%;background-image: url("+backg+");' width=100% height=100 class=minidapp>" + 
+					"			 	<tr>" + 
+					"					<td style='cursor:pointer;' rowspan=2 onclick=\"window.open('"+webpage+"', '_blank');\">" + 
+					"						<img src='"+icon+"' height=100>" + 
+					"					</td>" + 
+					"					<td width=100% class='minidappdescription'>" + 
+					"                   <div style='position:relative'>" + 
+					"				        <div onclick='alert(\"HELLO\");return false;' style='color:red;cursor:pointer;position:absolute;right:10;top:10'>UNINSTALL</div>" + 
+					"						<br>" + 
+					"						<div onclick=\"window.open('"+webpage+"','_blank');\" style='cursor:pointer;font-size:18'><b>"+name.toUpperCase()+"</b></div>" + 
+					"						<div onclick=\"window.open('"+webpage+"','_blank');\" style='cursor:pointer;font-size:14'>"+desc+"</div>" + 
+					"					</div>"+
+					"                     </td>" + 
+					"				</tr>" + 
+					"			</table>" + 
+					"		</td></tr>");
+		}
+		
+		list.append("</table>");
+		
+		return list.toString();
+	}
+	
+	
+	
+	
 	private static final String RESOURCE_BASE = "org/minima/system/network/minidapps/resources/";
 	
-	public byte[] getResourceBytes(String zResource, String zType) throws IOException {
+	public byte[] getResourceBytes(String zResource) throws IOException {
 		
 		InputStream in = getClass().getClassLoader().getResourceAsStream(RESOURCE_BASE+zResource);
 		
@@ -301,6 +302,28 @@ public class DAPPHandler implements Runnable {
         dis.readFully(buf);
         
         return buf;
+	}
+	
+    public byte[] getFileBytes(String zFile) throws IOException {
+    	File ff = new File(zFile);
+    	
+    	long size = ff.length();
+    	byte[] ret = new byte[(int) size];
+    	
+    	try {
+			FileInputStream fis     = new FileInputStream(zFile);
+			BufferedInputStream bis = new BufferedInputStream(fis);
+			
+			bis.read(ret);
+	        
+	        bis.close();
+	        fis.close();
+	        
+		} catch (IOException e) {
+			e.printStackTrace();
+		} 
+        
+        return ret;
 	}
 	
 	public static String getContentType(String zEnding) {
@@ -362,11 +385,21 @@ public class DAPPHandler implements Runnable {
 	
 	public static void main(String[] zArgs) {
 		
-		byte[] big = new byte[] {1,2,3,0,4,5,6,7,0,8,9,0,0,1,3,4,56};
-		byte[] small = new byte[] {7,0,8,9,0,0,1};
+//		byte[] big = new byte[] {1,2,3,0,4,5,6,7,0,8,9,0,0,1,3,4,56};
+//		byte[] small = new byte[] {7,0,8,9,0,0,1};
+//		
+//		System.out.println(indexOf(big, small,0));
 		
-		System.out.println(indexOf(big, small,0));
-		
+		JSONParser parse = new JSONParser();
+		 try {
+			JSONObject json =  (JSONObject) parse.parse("{\"number\": 10 }");
+			
+			System.out.println(json.toString());
+			
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 	}
 }

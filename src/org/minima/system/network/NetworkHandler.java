@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import org.minima.system.Main;
 import org.minima.system.SystemHandler;
 import org.minima.system.input.InputHandler;
+import org.minima.system.network.minidapps.DAPPManager;
 import org.minima.system.network.minidapps.DAPPServer;
 import org.minima.system.network.rpc.RPCClient;
 import org.minima.system.network.rpc.RPCServer;
@@ -48,7 +49,7 @@ public class NetworkHandler extends SystemHandler{
 	/**
 	 * DAPP Server
 	 */
-//	DAPPServer mDAPPServer;
+	DAPPManager mDAPPManager;
 	
 	/**
 	 * All the network channels..
@@ -113,7 +114,7 @@ public class NetworkHandler extends SystemHandler{
 			rpc.start();
 			
 			//Start the DAPP Server
-//			mDAPPServer = new DAPPServer(21000);
+			mDAPPManager = new DAPPManager(getMainHandler(),21000);
 			
 			//Log it..
 			MinimaLogger.log("MiFi proxy set : "+mMifiProxy);
@@ -126,7 +127,7 @@ public class NetworkHandler extends SystemHandler{
 			try {mRPCServer.stop();}catch(Exception exc) {}
 			
 			//Stop the RPC server
-//			try {mDAPPServer.stop();}catch(Exception exc) {}
+			try {mDAPPManager.stop();}catch(Exception exc) {}
 			
 			//Shutdown all the clients
 			Message msg = new Message(NetClient.NETCLIENT_SHUTDOWN);

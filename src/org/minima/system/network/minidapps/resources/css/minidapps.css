@@ -16,6 +16,26 @@
   vertical-align:top
 }
 
+.minidapptitle {
+  background-color: #fff;
+  border-radius: 5px;
+  font-size:28px;
+  font-family:monospace;
+  text-align:left;
+  vertical-align:top
+}
+
+.minidappdescription {
+  background-color: #fff;
+  opacity: 0.9;
+  border-radius: 10px;
+  font-size:14px;
+  font-family:monospace;
+  text-align:left;
+  vertical-align:top;
+  padding-left:10;
+}
+
 .mainbody {
   background-color: #ccc;
   border-radius: 10px;
@@ -36,7 +56,6 @@
   border-radius: 10px;
   font-size:32px;
   font-family:monospace;
-  cursor:pointer;
 }
 
 .installdapp{

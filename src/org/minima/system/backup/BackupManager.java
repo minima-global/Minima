@@ -44,6 +44,8 @@ public class BackupManager extends SystemHandler {
 	
 	File mTxPOWDB;
 	
+	File mMiniDAPPS;
+	
 	public BackupManager(Main zMain, String zConfFolder) {
 		super(zMain, "Backup Manager");
 		
@@ -227,6 +229,14 @@ public class BackupManager extends SystemHandler {
 		
 		//The Backup folder
 		mBackup  = ensureFolder(new File(mRoot,"backup"));
+		
+		//The MiniDAPPS folder
+		mMiniDAPPS = ensureFolder(new File(mRoot,"minidapps"));
+	}
+	
+	public static void deleteAllButMiniDAPPS(File zFolder) {
+		deleteFolder(new File(zFolder,"txpow"));
+		deleteFolder(new File(zFolder,"backup"));
 	}
 	
 	/**
