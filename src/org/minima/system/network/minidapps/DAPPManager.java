@@ -19,7 +19,6 @@ public class DAPPManager extends SystemHandler {
 	public static String DAPP_INSTALL = "DAPP_INSTALL";
 	
 	
-	
 	public DAPPManager(Main zMain) {
 		super(zMain, "DAPPMAnager");
 	}
@@ -75,5 +74,5 @@ public class DAPPManager extends SystemHandler {
 		}
 		
 	}
-
+	
 }
