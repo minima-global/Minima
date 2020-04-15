@@ -24,6 +24,9 @@ public class PubPrivKey implements Streamable {
 	
 	int mBitLength;
 	
+	int mMAX   = 0;
+	int mUses  = 0;
+	
 	private static Digest getHashFunction(int zBitLength) {
 		return new KeccakDigest(zBitLength);
 	}
@@ -47,6 +50,9 @@ public class PubPrivKey implements Streamable {
 		
 		//Get the Public Key..
 		mPublicKey  = new MiniData(wots.getPublicKey());
+		
+		mMAX  = 1;
+		mUses = 0;
 	}
 	
 	/**
