@@ -135,11 +135,11 @@ public class DAPPHandler implements Runnable {
 						//Create the complete folder..
 						File appfolder = new File(mDAPPManager.getMiniDAPPSFolder(),query.substring(uninstall+10));
 						
-						//Check is the actual folder..
-						String parent = appfolder.getParentFile().getName();
-						if(!parent.equals("minidapps")) {
-							appfolder = appfolder.getParentFile();
-						}
+//						//Check is the actual folder..
+//						String parent = appfolder.getParentFile().getName();
+//						if(!parent.equals("minidapps")) {
+//							appfolder = appfolder.getParentFile();
+//						}
 						
 						//Delete the app root..
 						BackupManager.deleteFolder(appfolder);
@@ -154,7 +154,7 @@ public class DAPPHandler implements Runnable {
 			byte[] file = null;
 			int filelen = 0;
 			
-			if(fileRequested.endsWith("/minima.js")) {
+			if(fileRequested.endsWith("minima.js")) {
 				file    = getResourceBytes("js/minima.js");
 				filelen = file.length;
 				
@@ -163,6 +163,10 @@ public class DAPPHandler implements Runnable {
 				String fullfile = mDAPPManager.getMiniDAPPSFolder()+"/"+fileRequested.substring(10);
 				file    = getFileBytes(fullfile);
 				filelen = file.length;
+			
+			}else if(fileRequested.startsWith("rpc/")) {
+				//It's an RPC request
+				
 				
 			}else {
 				file    = getResourceBytes(fileRequested);
@@ -302,7 +306,7 @@ public class DAPPHandler implements Runnable {
 		}
 		
 		if(len == 0) {
-			list.append("<tr><td>NO DAPPS INSTALLED YET..</td></tr>");
+			list.append("<tr><td><br><br>&nbsp;&nbsp;<b>NO DAPPS INSTALLED YET..</b></td></tr>");
 		}
 		
 		list.append("</table>");

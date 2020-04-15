@@ -82,7 +82,12 @@ public class DAPPManager extends SystemHandler {
 	        String root = zConf.getParent();
 	        int start = root.indexOf("/minidapps/");
 	        String webroot = root.substring(start);
+	        
 	        String approot = root.substring(start+11);
+	        int firstfolder = approot.indexOf("/");
+	        if(firstfolder != -1) {
+	        	approot = approot.substring(0,firstfolder);
+	        }
 	        
 	        ret.put("root", webroot);
 	        ret.put("approot", approot);
