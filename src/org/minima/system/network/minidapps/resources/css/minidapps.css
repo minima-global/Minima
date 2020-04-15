@@ -70,6 +70,16 @@
 	font-size:20px;
 }
 
+.helptext {
+  background-color: #ccc;
+  border-radius: 10px;
+  font-size:14px;
+  font-family:monospace;
+  text-align:left;
+  vertical-align:top;
+  font-weight:plain;
+}
+
 .loader {
   border: 16px solid #f3f3f3; /* Light grey */
   border-top: 16px solid #3498db; /* Blue */
@@ -83,3 +93,4 @@
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
