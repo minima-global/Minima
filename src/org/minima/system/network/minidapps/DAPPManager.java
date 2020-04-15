@@ -79,7 +79,13 @@ public class DAPPManager extends SystemHandler {
 	        ret = (JSONObject) parser.parse(tot.toString());
 	        
 	        //And add the root folder..
-	        ret.put("root", "minidapps/"+zConf.getParentFile().getName());
+	        String root = zConf.getParent();
+	        int start = root.indexOf("/minidapps/");
+	        String webroot = root.substring(start);
+	        String approot = root.substring(start+11);
+	        
+	        ret.put("root", webroot);
+	        ret.put("approot", approot);
 	        
 	        bis.close();
 	        fis.close();
@@ -115,6 +121,20 @@ public class DAPPManager extends SystemHandler {
 			//Open it up..
 			File conf = new File(app,"minidapp.conf");
 			
+			//Does it exist..
+			if(!conf.exists()) {
+				//Could be 1 folder down..
+				File[] subapps = app.listFiles();
+	
+				//Has to be the first file
+				if(subapps != null) {
+					if(subapps[0].isDirectory()) {
+						conf = new File(subapps[0],"minidapp.conf");
+					}
+				}
+			}
+			
+			//Check it exists..
 			if(conf.exists()) {
 				//Load it..
 				JSONObject confjson = loadConfFile(conf);
@@ -169,7 +189,12 @@ public class DAPPManager extends SystemHandler {
 				if(entry.isDirectory()) {
 					filePath.mkdirs();	
 	            }else {
-					//read it in and pump it out
+					//Delete if exists..
+	            	if(filePath.exists()){
+	            		filePath.delete();
+	            	}
+	            	
+	            	//read it in and pump it out
 		            FileOutputStream fos     = new FileOutputStream(filePath);
 		            BufferedOutputStream bos = new BufferedOutputStream(fos, buffer.length);
 		            
@@ -177,6 +202,9 @@ public class DAPPManager extends SystemHandler {
 	                while ((len = stream.read(buffer)) > 0) {
 	                    bos.write(buffer, 0, len);
 	                }
+	                
+	                //Flush the system..
+	                bos.flush();
 	            }
 	        }
 	        

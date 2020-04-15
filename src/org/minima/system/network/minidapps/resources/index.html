@@ -42,7 +42,6 @@
 			
 		  //Read in the file
 		  reader.readAsDataURL(fileList[0]);
-		  //document.getElementById("install").submit();
 		}
 	});
 	
@@ -52,8 +51,11 @@
 		document.getElementById('file-input').click();
 	}
 	
-	function uninstallDAPP(app){
-		confirm("Are you sure you wish to uninstall "+app+" ?");
+	function uninstallDAPP(name, root){
+		if(confirm("Are you sure you wish to uninstall "+name+" ?")){
+			//Uninstall this root app..
+			window.location.href="index.html?uninstall="+root;
+		}
 	}
 
 </script>
@@ -139,8 +141,8 @@ They are front-ends to Smart Contracts.<br>
 They make interacting with Smart Contracts easy.<br>
 <br>
 <br>
-
-<b>What is a MiniDAPP ?</b><br>
+When using a <b>TRUE</b> DAPP..
+<br>
 <br>
 1) No one can stop you using it<br>
 <br>
@@ -149,7 +151,9 @@ They make interacting with Smart Contracts easy.<br>
 3) No one can force a change to it<br>
 <br>
 4) No one can turn it off<br>
-
+<br>
+<br>
+<b>MINIDAPPS</b> allow for this type of DAPP.
 </div>
 
 </td>
@@ -160,13 +164,13 @@ They make interacting with Smart Contracts easy.<br>
 
 	<table class="mainfooter" width=100%>
 		<tr>
-			<td width=10% style="text-align:left;" nowrap>
+			<td width=40% style="text-align:left;" nowrap>
 				&nbsp;<b>The Evolution will not be Centralised</b>
 			</td>
 			
-			<td width=80% style="text-align:center;"> </td>
+			<td width=20% style="text-align:center;"> <a href='help.html'>HELP</a></td>
 			
-			<td width=10% style="text-align:right;" nowrap> 
+			<td width=40% style="text-align:right;" nowrap> 
 				<button class="installdapp" onclick="installDAPP();">INSTALL DAPP</button> 	
 			</td>
 		</tr>

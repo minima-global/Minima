@@ -22,6 +22,7 @@ import java.util.Date;
 import java.util.StringTokenizer;
 
 import org.minima.objects.base.MiniData;
+import org.minima.system.backup.BackupManager;
 import org.minima.system.input.InputHandler;
 import org.minima.system.input.InputMessage;
 import org.minima.utils.MiniFormat;
@@ -84,12 +85,12 @@ public class DAPPHandler implements Runnable {
 			int contentlength = 0;
 			String boundary = "";
 			while (input!=null && !input.isEmpty()) { 
-				System.out.println(input);
+//				System.out.println(input);
 				
 				//Find the Length..
 				if(input.indexOf("Content-Length:") != -1) {
 					String contlen = input.substring(15);
-					System.out.println("LENGTH : "+contlen);
+//					System.out.println("LENGTH : "+contlen);
 					contentlength = Integer.parseInt(contlen.trim());
 				}
 				
@@ -97,7 +98,7 @@ public class DAPPHandler implements Runnable {
 				int bound = input.indexOf("boundary=");
 				if(bound != -1) {
 					boundary = input.substring(bound+9);
-					System.out.println("BOUNDARY : "+boundary);
+//					System.out.println("BOUNDARY : "+boundary);
 				}
 				input = in.readLine(); 
 			}
@@ -119,6 +120,35 @@ public class DAPPHandler implements Runnable {
 			
 			//decode URL message
 			fileRequested = URLDecoder.decode(fileRequested,"UTF-8").trim();
+			
+			//Remove anything after the ?
+			int questionmark = fileRequested.indexOf("?");
+			if(questionmark != -1) {
+				String query  = fileRequested.substring(questionmark+1);
+				fileRequested = fileRequested.substring(0,questionmark);
+			
+				//Are we uninstalling..
+				if(fileRequested.equals("index.html") && !query.contains("..")) {
+					//Is it uninstall..
+					int uninstall = query.indexOf("uninstall=");
+					if(uninstall != -1) {
+						//Create the complete folder..
+						File appfolder = new File(mDAPPManager.getMiniDAPPSFolder(),query.substring(uninstall+10));
+						
+						//Check is the actual folder..
+						String parent = appfolder.getParentFile().getName();
+						if(!parent.equals("minidapps")) {
+							appfolder = appfolder.getParentFile();
+						}
+						
+						//Delete the app root..
+						BackupManager.deleteFolder(appfolder);
+						
+						//Recalculate the MINIDAPPS
+						mDAPPManager.recalculateMiniDAPPS();
+					}
+				}
+			}
 			
 			//Get the File.. index.html is a resource.. everything else is hosted in the minidapps folder
 			byte[] file = null;
@@ -170,8 +200,6 @@ public class DAPPHandler implements Runnable {
 
 				//POST requests 
 				if (method.equals("POST")){
-//					System.out.println("Readng POST Request Headers"); 
-					
 					//The data buffer for all the data 
 					char[] alldata = new char[contentlength]; 
 					in.read(alldata, 0, contentlength);
@@ -180,7 +208,6 @@ public class DAPPHandler implements Runnable {
 					
 					//Decode..
 					String decoded = URLDecoder.decode(complete,"UTF-8");
-//					System.out.println(decoded);
 					
 					//Base64 decode..
 					int index = decoded.indexOf("base64,");
@@ -190,8 +217,6 @@ public class DAPPHandler implements Runnable {
 					
 					//Convert to Byte..
 					byte[] bdata = Base64.getDecoder().decode(data);
-					
-//					System.out.println("Data len : "+bdata.length);
 					
 					//Now send this off to the DAPPManager.. to be converted into a minidapp..
 					MiniData dapp = new MiniData(bdata);
@@ -221,7 +246,7 @@ public class DAPPHandler implements Runnable {
 			}
 			
 		} catch (Exception ioe) {
-			ioe.printStackTrace();
+//			ioe.printStackTrace();
 //			System.err.println("Server : " +fileRequested+" "+ioe);
 			
 		} finally {
@@ -230,7 +255,7 @@ public class DAPPHandler implements Runnable {
 				out.close();
 				mSocket.close(); // we close socket connection
 			} catch (Exception e) {
-				System.err.println("Error closing stream : " + e.getMessage());
+//				System.err.println("Error closing stream : " + e.getMessage());
 			} 	
 		}	
 	}
@@ -249,6 +274,7 @@ public class DAPPHandler implements Runnable {
 			
 			//Now do it..
 			String root  = (String) app.get("root");
+			String approot  = (String) app.get("approot");
 			String name  = (String) app.get("name");
 			String desc  = (String) app.get("description");
 			String backg = root+"/"+(String) app.get("background");
@@ -264,7 +290,7 @@ public class DAPPHandler implements Runnable {
 					"					</td>" + 
 					"					<td width=100% class='minidappdescription'>" + 
 					"                   <div style='position:relative'>" + 
-					"				        <div onclick='uninstallDAPP(\""+name+"\");' style='color:red;cursor:pointer;position:absolute;right:10;top:10'>UNINSTALL</div>" + 
+					"				        <div onclick='uninstallDAPP(\""+name+"\",\""+approot+"\");' style='color:red;cursor:pointer;position:absolute;right:10;top:10'>UNINSTALL</div>" + 
 					"						<br>" + 
 					"						<div onclick=\"window.open('"+webpage+"','_blank');\" style='cursor:pointer;font-size:18'><b>"+name.toUpperCase()+"</b></div>" + 
 					"						<br><div onclick=\"window.open('"+webpage+"','_blank');\" style='cursor:pointer;font-size:12'>"+desc+"</div>" + 
@@ -391,23 +417,22 @@ public class DAPPHandler implements Runnable {
 	   return -1;  
 	}
 	
-	public static void main(String[] zArgs) {
-		
-//		byte[] big = new byte[] {1,2,3,0,4,5,6,7,0,8,9,0,0,1,3,4,56};
-//		byte[] small = new byte[] {7,0,8,9,0,0,1};
+//	public static void main(String[] zArgs) {
 //		
-//		System.out.println(indexOf(big, small,0));
-		
-		JSONParser parse = new JSONParser();
-		 try {
-			JSONObject json =  (JSONObject) parse.parse("{\"number\": 10 }");
-			
-			System.out.println(json.toString());
-			
-		} catch (ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-	}
+////		byte[] big = new byte[] {1,2,3,0,4,5,6,7,0,8,9,0,0,1,3,4,56};
+////		byte[] small = new byte[] {7,0,8,9,0,0,1};
+////		System.out.println(indexOf(big, small,0));
+//		
+//		JSONParser parse = new JSONParser();
+//		 try {
+//			JSONObject json =  (JSONObject) parse.parse("{\"number\": 10 }");
+//			
+//			System.out.println(json.toString());
+//			
+//		} catch (ParseException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//		
+//	}
 }
