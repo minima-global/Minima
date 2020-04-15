@@ -64,6 +64,7 @@
   font-size:24px;
   font-weight:bold;
   font-family:monospace;
+  outline: none;
 }
 
 .categoryselect{
