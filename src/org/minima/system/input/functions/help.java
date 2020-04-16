@@ -99,6 +99,7 @@ public class help extends CommandFunction{
 			addJSONDesc(new createtoken());
 			addJSONDesc(new tokens());
 			
+			addJSONDesc(new sign());
 			addJSONDesc(new chainsha());
 			
 			addJSONDesc(new txnlist());

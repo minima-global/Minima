@@ -91,6 +91,34 @@ public class ConsensusUser {
 			JSONObject resp = InputHandler.getResponseJSON(zMessage);
 			resp.put("address", addr.toJSON());
 			InputHandler.endResponse(zMessage, true, "");
+		
+			
+		}else if(zMessage.isMessageType(CONSENSUS_SIGN)) {
+			String data   = zMessage.getString("data");
+			String pubkey = zMessage.getString("publickey");
+			
+			//Convert
+			MiniData hexdat  = new MiniData(data);
+			MiniData hexpubk = new MiniData(pubkey);
+			
+			//Get the public key..
+			PubPrivKey key = getMainDB().getUserDB().getPubPrivKey(hexpubk);
+			
+			if(key == null) {
+				InputHandler.endResponse(zMessage, false, "Public key not found");
+				return;
+			}
+			
+			//Now do it..
+			MiniData result = key.sign(hexdat);
+		
+			//Output
+			JSONObject resp = InputHandler.getResponseJSON(zMessage);
+			resp.put("data", hexdat.to0xString());
+			resp.put("publickey", hexpubk.getLength());
+			resp.put("signature", result.to0xString());
+			resp.put("length", result.getLength());
+			InputHandler.endResponse(zMessage, true, "");
 			
 		}else if(zMessage.isMessageType(CONSENSUS_EXTRASCRIPT)) {
 			//Get the script
