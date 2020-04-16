@@ -21,14 +21,6 @@ public interface CoinDB {
 	ArrayList<CoinDBRow> getComplete();
 	
 	/**
-	 * Return all coins that have this address
-	 * 
-	 * @param zAddress
-	 * @return all coins that have this address
-	 */
-	public ArrayList<CoinDBRow> checkForRelevantCoins(MiniData zAddress);
-	
-	/**
 	 * Get the coin row with this CoinID or NULL if none present
 	 * 
 	 * @param zCoin

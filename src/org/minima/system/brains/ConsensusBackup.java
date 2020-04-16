@@ -193,7 +193,7 @@ public class ConsensusBackup {
 				//Check all MMR in the unbroken chain.. no point in cascade as may have changed..
 				if(mmrset!=null) {
 					if(mmrset.getBlockTime().isMoreEqual(casc)) {
-						getMainDB().scanMMRSetForCoins(mmrset,true);
+						getMainDB().scanMMRSetForCoins(mmrset);
 					}
 				}
 				

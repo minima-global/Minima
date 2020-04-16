@@ -20,37 +20,14 @@ public class JavaCoinDB implements CoinDB{
 	
 	@Override
 	public void clearDB() {
-//		SimpleLogger.log("CLEAR COIN DB!");
 		mRows = new ArrayList<>();
 	}
 	
-//	@Override
-//	public void clearOldCoins(long zCurrentBlock) {
-//		ArrayList<CoinDBRow> newrows = new ArrayList<>();
-//		for(CoinDBRow row : mRows) {
-//			boolean old = row.isInBlock() && row.getInBlockNumber()<(zCurrentBlock-COINDB_LIMIT);
-//			
-//			if(!old) {
-//				newrows.add(row);
-//			}
-//		}
-//		mRows = newrows;
-//	}
+
 
 	@Override
 	public ArrayList<CoinDBRow> getComplete() {
 		return mRows;
-	}
-
-	@Override
-	public ArrayList<CoinDBRow> checkForRelevantCoins(MiniData zAddress) {
-		ArrayList<CoinDBRow> ret = new ArrayList<>();
-		for(CoinDBRow row : mRows) {
-			if(row.getCoin().getAddress().isEqual(zAddress)) {
-				ret.add(row);
-			}
-		}
-		return ret;
 	}
 
 	@Override

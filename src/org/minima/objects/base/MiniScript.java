@@ -34,7 +34,7 @@ public class MiniScript extends MiniData {
 	public String toString() {
 		return new String(getData(),Charset.forName("US-ASCII"));
 	}
-
+	
 	public static MiniScript ReadFromStream(DataInputStream zIn){
 		MiniScript data = new MiniScript();
 		

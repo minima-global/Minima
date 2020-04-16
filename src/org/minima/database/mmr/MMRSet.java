@@ -170,12 +170,6 @@ public class MMRSet implements Streamable {
 		return mBlockTime;
 	}
 	
-	public void addKeeper(MiniInteger zEntry) {
-		if(!isKeptAllready(zEntry)) {
-			mKeepers.add(zEntry);
-		}
-	}
-	
 	public MMRSet getParent() {
 		return mParent;
 	}
@@ -844,6 +838,19 @@ public class MMRSet implements Streamable {
 	}
 	
 	/**
+	 * Add a Keeper - once only..
+	 * @param zEntry
+	 */
+	public boolean addKeeper(MiniInteger zEntry) {
+		if(!isKeptAllready(zEntry)) {
+			mKeepers.add(zEntry);
+			return true;
+		}
+		
+		return false;
+	}
+	
+	/**
 	 * Get the Keeper
 	 */
 	public ArrayList<MiniInteger> getKeepers() {
@@ -851,21 +858,11 @@ public class MMRSet implements Streamable {
 	}
 	
 	/**
-	 * Get a Parent block at a certain time..
+	 * Do we already keep this entry..
+	 * 
+	 * @param zNumber
+	 * @return
 	 */
-	public MMRSet getParentAtTime(MiniNumber zTime) {
-		if(mBlockTime.isEqual(zTime)) {
-			return this;
-		}
-		
-		if(mParent != null) {
-			return mParent.getParentAtTime(zTime);
-		}
-		
-		return null;
-	}
-	
-
 	public boolean isKeptAllready(MiniInteger zNumber) {
 		for(MiniInteger keep : mKeepers) {
 			if(keep.isEqual(zNumber)) {
@@ -882,9 +879,9 @@ public class MMRSet implements Streamable {
 	 */
 	public void copyParentKeepers() {
 		//First get the Keepers..
-		ArrayList<MiniInteger> keepers = new ArrayList<>();
+		ArrayList<MiniInteger> parentkeepers = new ArrayList<>();
 		if(mParent!=null) {
-			keepers = mParent.getKeepers();
+			parentkeepers = mParent.getKeepers();
 		}
 		
 		//Cycle through the current crop..
@@ -896,15 +893,16 @@ public class MMRSet implements Streamable {
 				newkeepers.add(keep);
 			}
 		}
+		
 		//Reset
 		mKeepers = newkeepers;
 		
 		//Cycle through the Keepers..
-		for(MiniInteger keep : keepers) {
+		for(MiniInteger keep : parentkeepers) {
 			//Get that LATEST entry and all the entries it uses on the way up..
 			MMREntry entry = getEntry(0, keep);
 			
-			//Check valid..
+			//Check valid.. SHOULD NOT HAPPEN
 			if(entry.isEmpty() || entry.getData().isHashOnly()) {
 				System.out.println("copyKeepers on NULL Keeper Entry! "+keep);
 				continue;
@@ -915,10 +913,11 @@ public class MMRSet implements Streamable {
 				continue;
 			}
 			
-			if(!isKeptAllready(keep)) {
-				//Add to our list..
-				mKeepers.add(keep);
+			//Keep it..
+			boolean added = addKeeper(keep);
 			
+			//Has it already been added..
+//			if(added) {
 				//Add it.. to THIS set.. not the parent..
 				entry = setEntry(0, keep, entry.getData());
 				
@@ -934,7 +933,7 @@ public class MMRSet implements Streamable {
 					//And get the Sibling of the Parent..
 					sibling = getEntry(parent.getRow(), parent.getSibling());
 				}
-			}
+//			}
 		}
 		
 		//Now we have all the data stored for the keeper coins.. We can remove the parent..		
@@ -957,6 +956,21 @@ public class MMRSet implements Streamable {
 		return mParent.getRootParent();
 	}
 	
+	/**
+	 * Get a Parent block at a certain time..
+	 */
+	public MMRSet getParentAtTime(MiniNumber zTime) {
+		if(mBlockTime.isEqual(zTime)) {
+			return this;
+		}
+		
+		if(mParent != null) {
+			return mParent.getParentAtTime(zTime);
+		}
+		
+		return null;
+	}
+	
 	public MMRSet getPenultimateParent() {
 		if(mParent != null) {
 			if(mParent.getParent() == null) {
@@ -976,23 +990,6 @@ public class MMRSet implements Streamable {
 		
 		return 1;
 	}
-	
-//	/**
-//	 * Cascade away the final blocks.. 
-//	 * Keep all the important proofs
-//	 */
-//	public void cascadeKeeperBlock() {
-//		//How long.. from here
-//		int len = getParentLength();
-//		
-//		if(len>3) {
-//			//Get the last but one
-//			MMRSet prebase = getPenultimateParent();
-//			
-//			//Copy the important bits and remove..
-//			prebase.copyParentKeepers();
-//		}
-//	}
 
 	/**
 	 * Write out this MMR set

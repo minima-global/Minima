@@ -6,6 +6,8 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
@@ -273,6 +275,16 @@ public class Transaction implements Streamable {
 		}
 		ret.put("outputs", outs);
 		
+		//Order the state
+		Collections.sort(mState,new Comparator<StateVariable>() {
+			@Override
+			public int compare(StateVariable o1, StateVariable o2) {
+				int s1 = o1.getPort();
+				int s2 = o2.getPort();
+				return Integer.compare(s1, s2);
+			}
+		});
+		
 		//State
 		outs = new JSONArray();
 		for(StateVariable sv : mState) {
@@ -305,6 +317,16 @@ public class Transaction implements Streamable {
 		for(Coin coin : mOutputs) {
 			coin.writeDataStream(zOut);
 		}
+		
+		//Order the state
+		Collections.sort(mState,new Comparator<StateVariable>() {
+			@Override
+			public int compare(StateVariable o1, StateVariable o2) {
+				int s1 = o1.getPort();
+				int s2 = o2.getPort();
+				return Integer.compare(s1, s2);
+			}
+		});
 		
 		//How many state variables..
 		int len = mState.size();
@@ -342,7 +364,6 @@ public class Transaction implements Streamable {
 		
 		//Outputs
 		MiniByte outs = MiniByte.ReadFromStream(zIn);
-		
 		len = outs.getValue();
 		for(int i=0;i<len;i++) {
 			Coin coin = Coin.ReadFromStream(zIn);

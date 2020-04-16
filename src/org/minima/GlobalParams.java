@@ -24,7 +24,7 @@ public class GlobalParams {
 	/**
 	 * Speed in blocks per second
 	 */
-	public static final MiniNumber MINIMA_BLOCK_SPEED  = new MiniNumber("0.05");
+	public static final MiniNumber MINIMA_BLOCK_SPEED  = new MiniNumber("0.5");
 	
 	/**
 	 * How deep before we think confirmed..

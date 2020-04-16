@@ -10,6 +10,7 @@ import org.minima.database.mmr.MMRProof;
 import org.minima.database.mmr.MMRSet;
 import org.minima.database.txpowtree.BlockTreeNode;
 import org.minima.kissvm.Contract;
+import org.minima.kissvm.functions.state.DYNSTATE;
 import org.minima.kissvm.values.BooleanValue;
 import org.minima.kissvm.values.HEXValue;
 import org.minima.kissvm.values.NumberValue;
@@ -17,6 +18,7 @@ import org.minima.kissvm.values.ScriptValue;
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
 import org.minima.objects.PubPrivKey;
+import org.minima.objects.StateVariable;
 import org.minima.objects.Transaction;
 import org.minima.objects.TxPOW;
 import org.minima.objects.Witness;
@@ -122,6 +124,9 @@ public class TxPOWChecker {
 		//Make a deep copy.. as we may need to edit it.. with floating values and DYN_STATE
 		Transaction trans = zTrans.deepCopy();
 		
+		//Is the STATE relevant.. does it have a KEY we own..
+		boolean relstate = zDB.getUserDB().isStateListRelevant(trans.getCompleteState());
+		
 		//The DYNState variables..
 		String[] DYNState = new String[256];
 		for(int i=0;i<256;i++) {
@@ -168,7 +173,7 @@ public class TxPOWChecker {
 				
 				//Check the Address is the hash of the SCRIPT
 				Address scraddr = new Address(script,input.getAddress().getLength()*8);
-				if(!scraddr.isEqual(input.getAddress())) {
+				if(!scraddr.getAddressData().isEqual(input.getAddress())) {
 					contractlog.put("error", "Serious - Invalid Address for script!");
 					return false;
 				}
@@ -391,6 +396,14 @@ public class TxPOWChecker {
 					}
 				}
 			}
+			
+			//Reset any changed DYNSTATE
+			for(int i=0;i<256;i++) {
+				if(DYNState[i] != null) {
+					//Set it..
+					trans.addStateVariable(new StateVariable(i, DYNState[i]));
+				}
+			}
 		}
 		
 		//The HASH of the Transaction.. needed for coinid
@@ -451,8 +464,14 @@ public class TxPOWChecker {
 				//And Add it..
 				MMREntry unspent = zMMRSet.addUnspentCoin(mmrdata);
 				
+				//Do we keep this output..
+				boolean rel = zDB.getUserDB().isAddressRelevant(output.getAddress());
+				if(!rel) {
+					rel = zDB.getUserDB().isStateListRelevant(trans.getCompleteState());
+				}
+				
 				//Do we keep it..
-				if(zDB.getUserDB().isAddressRelevant(output.getAddress())) {
+				if(rel) {
 					//Keep this MMR record
 					zMMRSet.addKeeper(unspent.getEntry());	
 					

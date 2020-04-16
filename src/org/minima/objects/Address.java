@@ -85,8 +85,8 @@ public class Address implements Streamable{
 		return mAddressData;
 	}
 	
-	public boolean isEqual(MiniData zAddress) {
-		return mAddressData.isEqual(zAddress);
+	public boolean isEqual(Address zAddress) {
+		return mAddressData.isEqual(zAddress.getAddressData());
 	}
 	
 	@Override
@@ -106,7 +106,6 @@ public class Address implements Streamable{
 			mMinimaAddress  = makeMinimaAddress(mAddressData);
 		}		
 	}
-	
 	
 	/**
 	 * Convert an address into a Minima Checksum Base32 address

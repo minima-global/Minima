@@ -60,7 +60,7 @@ public class JavaDB implements TxPowDB{
 		ArrayList<TxPOWDBRow> removed = new ArrayList<>();
 		ArrayList<JavaDBRow> newRows = new ArrayList<>();
 		
-		//The minimum block before its too late
+		//The minimum block before its too late - TODO!
 		MiniNumber minblock = zBlockNumber.add(MiniNumber.TEN);
 		
 		for(JavaDBRow row : mRows) {

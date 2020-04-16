@@ -269,7 +269,7 @@ public class MinimaDB {
 				
 				if(treenode.getTxPow().getBlockNumber().isMoreEqual(oldcascade)) {
 					//Check for coins in the MMR
-					scanMMRSetForCoins(treenode.getMMRSet(), false);
+					scanMMRSetForCoins(treenode.getMMRSet());
 				}
 				
 				//Now the Txns..
@@ -350,8 +350,9 @@ public class MinimaDB {
 		}
 	}
 	
-	public void scanMMRSetForCoins(MMRSet zMMRSet, boolean zAddKeeper) {
+	public void scanMMRSetForCoins(MMRSet zMMRSet) {
 		if(zMMRSet == null) {
+//			System.out.println("Scanning NULL MMRSET..! ");
 			return;
 		}
 		
@@ -361,10 +362,17 @@ public class MinimaDB {
 			if(!mmrcoin.getData().isHashOnly()) {
 				Coin cc = mmrcoin.getData().getCoin();
 				
+				//Is the address one of ours..
 				boolean rel = getUserDB().isAddressRelevant(cc.getAddress());
 					
-				if(zAddKeeper && rel) {
-					//Add it..
+				//Check the PREV State - could be a KEY we own..
+				if(!rel) {
+					rel = getUserDB().isStateListRelevant(mmrcoin.getData().getPrevState());
+				}
+				
+				//Keep it if it's relevant
+				if(rel) {
+					//It's to be kept..
 					zMMRSet.addKeeper(mmrcoin.getEntry());
 				}
 				
@@ -377,7 +385,7 @@ public class MinimaDB {
 				//And add to our list..
 				CoinDBRow inrow = getCoinDB().addCoinRow(cc);
 				
-				//Exsts already
+				//Exists already - only want to update if something has changed..
 				boolean spent = mmrcoin.getData().isSpent();
 				if(!inrow.isInBlock() || inrow.isSpent() != spent) {
 					//Update
@@ -773,7 +781,7 @@ public class MinimaDB {
 				}
 								
 				//And finally sign!
-				MiniData pubk = getUserDB().getPublicKey(cc.getAddress());
+				MiniData pubk = getUserDB().getPublicKeyForSimpleAddress(cc.getAddress());
 				
 				//Add to list of signatures..
 				sigpubk.add(pubk);

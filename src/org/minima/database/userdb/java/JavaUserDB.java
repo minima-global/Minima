@@ -12,23 +12,40 @@ import org.minima.database.userdb.UserDBRow;
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
 import org.minima.objects.PubPrivKey;
+import org.minima.objects.StateVariable;
 import org.minima.objects.Transaction;
 import org.minima.objects.TxPOW;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.objects.base.MiniScript;
 import org.minima.objects.proofs.TokenProof;
 import org.minima.utils.Streamable;
 
 public class JavaUserDB implements UserDB, Streamable{
 	
+	/**
+	 * Minima stores any output that has a key you own in the STATE
+	 */
 	ArrayList<PubPrivKey> mPubPrivKeys;
-	ArrayList<Address>    mAddresses;
+	
+	/**
+	 * Both of these for the user.. if any output found they will be stored
+	 */
+	ArrayList<Address>    mSimpleAddresses;
 	ArrayList<Address>    mScriptAddresses;
 	
-	int mCounter;
-	ArrayList<UserDBRow> mRows;
-	
+	//The Sum of the simple and script addresses
 	ArrayList<Address> mTotalAddresses;
+	
+	/**
+	 * These addresses are extra - are known and used when you have the KEY in the STATE
+	 */
+	ArrayList<Address>    mExtraAddresses;
+	
+	/**
+	 * Custom Transactions
+	 */
+	ArrayList<UserDBRow> mRows;
 	
 	/**
 	 * Token Details
@@ -45,12 +62,13 @@ public class JavaUserDB implements UserDB, Streamable{
 	 */
 	public JavaUserDB() {
 		mPubPrivKeys 	 = new ArrayList<>();
-		mAddresses 		 = new ArrayList<>();
+		mSimpleAddresses 		 = new ArrayList<>();
 		mScriptAddresses = new ArrayList<>();
 		mTotalAddresses  = new ArrayList<>();
+		mExtraAddresses  = new ArrayList<>();
+		
 		mAllTokens		 = new ArrayList<>();
 		
-		mCounter = 0;
 		mRows  = new ArrayList<>();
 		
 		mHistory = new ArrayList<>();
@@ -58,7 +76,17 @@ public class JavaUserDB implements UserDB, Streamable{
 	
 	@Override
 	public ArrayList<Address> getAllAddresses(){
-		return mTotalAddresses;
+		ArrayList<Address> alladdr = new ArrayList<>();
+		
+		for(Address addr : mTotalAddresses) {
+			alladdr.add(addr);
+		}
+		
+		for(Address addr : mExtraAddresses) {
+			alladdr.add(addr);
+		}
+		
+		return alladdr;
 	}
 
 	@Override
@@ -103,7 +131,7 @@ public class JavaUserDB implements UserDB, Streamable{
 	
 	@Override
 	public ArrayList<Address> getSimpleAddresses() {
-		return mAddresses;
+		return mSimpleAddresses;
 	}
 	
 	@Override
@@ -126,7 +154,7 @@ public class JavaUserDB implements UserDB, Streamable{
 		Address addr  = new Address(script, zPubPriv.getBitLength());
 		
 		//Add to the simple wallet
-		mAddresses.add(addr);
+		mSimpleAddresses.add(addr);
 		
 		//Add to the Total
 		mTotalAddresses.add(addr);
@@ -137,8 +165,8 @@ public class JavaUserDB implements UserDB, Streamable{
 
 	@Override
 	public boolean isSimpleAddress(MiniData zAddress) {
-		for(Address addr : mAddresses) {
-			if(addr.isEqual(zAddress)) {
+		for(Address addr : mSimpleAddresses) {
+			if(addr.getAddressData().isEqual(zAddress)) {
 				return true;
 			}
 		}
@@ -155,11 +183,6 @@ public class JavaUserDB implements UserDB, Streamable{
 		}
 		
 		return null;
-	}
-
-	@Override
-	public ArrayList<Address> getScriptAddresses() {
-		return mScriptAddresses;
 	}
 
 	@Override
@@ -181,10 +204,37 @@ public class JavaUserDB implements UserDB, Streamable{
 	}
 	
 	@Override
+	public Address newExtraAddress(String zScript) {
+		//An EXTRA script
+		Address extraaddr = new Address(zScript);
+		
+		//Only add it if we don't have it..
+		for(Address addr : mExtraAddresses) {
+			if(extraaddr.isEqual(addr)) {
+				//We have it..
+				return extraaddr;
+			}
+		}
+		
+		//Add it..
+		mExtraAddresses.add(extraaddr);
+		
+		return extraaddr;
+	}
+	
+	
+	@Override
 	public String getScript(MiniData zAddress) {
 		//Check the Addresses
 		for(Address addr : mTotalAddresses) {
-			if(addr.isEqual(zAddress)) {
+			if(addr.getAddressData().isEqual(zAddress)) {
+				return addr.getScript();
+			}
+		}
+		
+		for(Address addr : mExtraAddresses) {
+			if(zAddress.isEqual(addr.getAddressData())) {
+				//We have it..
 				return addr.getScript();
 			}
 		}
@@ -196,7 +246,7 @@ public class JavaUserDB implements UserDB, Streamable{
 	@Override
 	public boolean isAddressRelevant(MiniData zAddress) {
 		for(Address addr : mTotalAddresses) {
-			if(addr.isEqual(zAddress)) {
+			if(addr.getAddressData().isEqual(zAddress)) {
 				return true;
 			}
 		}
@@ -205,31 +255,34 @@ public class JavaUserDB implements UserDB, Streamable{
 	}
 
 	@Override
-	public boolean isTransactionRelevant(Transaction zTrans) {
-		ArrayList<Coin> ins  = zTrans.getAllInputs();
-		ArrayList<Coin> outs = zTrans.getAllOutputs();
-		
-		//Check them - adding the script to outputs we own
-		boolean rel = false;
-		for(Coin in : ins) {
-			if(isAddressRelevant(in.getAddress())) {
-				rel = true;
-			}
-		}
+	public boolean isStateListRelevant(ArrayList<StateVariable> zStateVarList) {
+		for(StateVariable sv : zStateVarList) {
+			//Get the data
+			MiniScript data = sv.getData();
 			
-		for(Coin out : outs) {
-			if(isAddressRelevant(out.getAddress())) {
-				rel = true;
+			//Is it a KNOWN key..
+			if(data.toString().startsWith("0x")) {
+				//Create the MiniData
+				MiniData posskey = new MiniData(data.toString());
+				
+				//Check against the keys..
+				for(PubPrivKey key : mPubPrivKeys) {
+					MiniData pubkey = key.getPublicKey();
+					
+					if(pubkey.isEqual(posskey)) {
+						return true;
+					}
+				}
 			}
 		}
 		
-		return rel;
+		return false;
 	}
 
 	@Override
-	public MiniData getPublicKey(MiniData zAddress) {
-		for(Address addr : mAddresses) {
-			if(addr.isEqual(zAddress)) {
+	public MiniData getPublicKeyForSimpleAddress(MiniData zAddress) {
+		for(Address addr : mSimpleAddresses) {
+			if(addr.getAddressData().isEqual(zAddress)) {
 				//What is the Public key!
 				String script = addr.getScript();
 				int index = script.indexOf("0x");
@@ -255,9 +308,9 @@ public class JavaUserDB implements UserDB, Streamable{
 		}
 		
 		//Addresses..
-		len = mAddresses.size();
+		len = mSimpleAddresses.size();
 		zOut.writeInt(len);
-		for(Address addr : mAddresses) {
+		for(Address addr : mSimpleAddresses) {
 			addr.writeDataStream(zOut);
 		}
 		
@@ -265,6 +318,13 @@ public class JavaUserDB implements UserDB, Streamable{
 		len = mScriptAddresses.size();
 		zOut.writeInt(len);
 		for(Address addr : mScriptAddresses) {
+			addr.writeDataStream(zOut);
+		}
+		
+		//Extra Addresses..
+		len = mExtraAddresses.size();
+		zOut.writeInt(len);
+		for(Address addr : mExtraAddresses) {
 			addr.writeDataStream(zOut);
 		}
 		
@@ -276,8 +336,6 @@ public class JavaUserDB implements UserDB, Streamable{
 		}
 		
 		//transactions..
-		zOut.writeInt(mCounter);
-		
 		len = mRows.size();
 		zOut.writeInt(len);
 		for(UserDBRow row : mRows) {
@@ -297,9 +355,10 @@ public class JavaUserDB implements UserDB, Streamable{
 	public void readDataStream(DataInputStream zIn) throws IOException {
 		//reset
 		mPubPrivKeys     = new ArrayList<>();
-		mAddresses       = new ArrayList<>();
+		mSimpleAddresses = new ArrayList<>();
 		mScriptAddresses = new ArrayList<>();
 		mTotalAddresses  = new ArrayList<>();
+		mExtraAddresses  = new ArrayList<>();
 		mRows            = new ArrayList<>();	
 		mAllTokens		 = new ArrayList<>();
 		
@@ -316,7 +375,7 @@ public class JavaUserDB implements UserDB, Streamable{
 		for(int i=0;i<len;i++) {
 			Address addr = new Address();
 			addr.readDataStream(zIn);
-			mAddresses.add(addr);
+			mSimpleAddresses.add(addr);
 			mTotalAddresses.add(addr);
 		}
 		
@@ -329,6 +388,14 @@ public class JavaUserDB implements UserDB, Streamable{
 			mTotalAddresses.add(addr);
 		}
 		
+		//Extra Address
+		len = zIn.readInt();
+		for(int i=0;i<len;i++) {
+			Address addr = new Address();
+			addr.readDataStream(zIn);
+			mExtraAddresses.add(addr);
+		}
+		
 		//Token Details
 		len = zIn.readInt();
 		for(int i=0;i<len;i++) {
@@ -336,8 +403,6 @@ public class JavaUserDB implements UserDB, Streamable{
 		}
 		
 		//transaction..
-		mCounter = zIn.readInt();
-		
 		len = zIn.readInt();
 		for(int i=0;i<len;i++) {
 			JavaUserDBRow row = new JavaUserDBRow();
