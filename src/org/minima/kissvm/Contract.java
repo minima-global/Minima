@@ -605,7 +605,7 @@ public class Contract {
 
 //		String RamScript = "let g = [ goodbye ] let t = DYNSTATE ( 0 [hello] ) let tt = DYNSTATE ( 0 0xFFE ) let y  = state(0)";
 
-		String RamScript = "let t = sigdig( 1 0.1234)";
+		String RamScript = "return true";
 		
 		//String RamScript = "let t = @SCRIPT let f = @AMOUNT +1 let g = State(1001) + [ sha3(123)]";
 
