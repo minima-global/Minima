@@ -47,8 +47,11 @@ public class ConsensusUser {
 	
 	public static final String CONSENSUS_NEWKEY 			= CONSENSUS_PREFIX+"NEWKEY";
 	
+	public static final String CONSENSUS_SIGN 			    = CONSENSUS_PREFIX+"SIGN";
+	
 	public static final String CONSENSUS_NEWSIMPLE 			= CONSENSUS_PREFIX+"NEWSIMPLE";
 	public static final String CONSENSUS_NEWSCRIPT 			= CONSENSUS_PREFIX+"NEWSCRIPT";
+	public static final String CONSENSUS_EXTRASCRIPT 		= CONSENSUS_PREFIX+"EXTRASCRIPT";
 	public static final String CONSENSUS_RUNSCRIPT 			= CONSENSUS_PREFIX+"RUNSCRIPT";
 	public static final String CONSENSUS_CLEANSCRIPT 		= CONSENSUS_PREFIX+"CLEANSCRIPT";
 	
@@ -89,6 +92,21 @@ public class ConsensusUser {
 			resp.put("address", addr.toJSON());
 			InputHandler.endResponse(zMessage, true, "");
 			
+		}else if(zMessage.isMessageType(CONSENSUS_EXTRASCRIPT)) {
+			//Get the script
+			String script = zMessage.getString("script");
+			
+			//Check we don't already have it..
+			Address addrchk = new Address(script);
+			String scriptcheck = getMainDB().getUserDB().getScript(addrchk.getAddressData());
+			if(scriptcheck.equals("")) {
+				getMainDB().getUserDB().newExtraAddress(script);
+			}
+			
+			JSONObject resp = InputHandler.getResponseJSON(zMessage);
+			resp.put("address", addrchk.toJSON());
+			InputHandler.endResponse(zMessage, true, "");
+		
 		}else if(zMessage.isMessageType(CONSENSUS_NEWSCRIPT)) {
 			//Get the script
 			String script = zMessage.getString("script");

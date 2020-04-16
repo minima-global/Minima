@@ -92,6 +92,7 @@ public class help extends CommandFunction{
 			
 			addJSONDesc(new scripts());
 			addJSONDesc(new newscript());
+			addJSONDesc(new extrascript());
 			addJSONDesc(new cleanscript());
 			addJSONDesc(new runscript());
 			

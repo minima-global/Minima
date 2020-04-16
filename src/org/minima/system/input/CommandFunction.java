@@ -11,6 +11,7 @@ import org.minima.system.input.functions.coins;
 import org.minima.system.input.functions.connect;
 import org.minima.system.input.functions.createtoken;
 import org.minima.system.input.functions.disconnect;
+import org.minima.system.input.functions.extrascript;
 import org.minima.system.input.functions.gimme50;
 import org.minima.system.input.functions.help;
 import org.minima.system.input.functions.history;
@@ -71,7 +72,8 @@ public abstract class CommandFunction {
 			new chainsha(), new keepcoin(), new scripts(), new chart(), new network(),
 			new txncreate(), new txndelete(), new txninput(), new txnlist(), new txnauto(),
 			new txnstate(), new txnexport(), new txnimport(), new txnscript(),
-			new txnoutput(), new txnpost(), new txnsign(), new txnvalidate()
+			new txnoutput(), new txnpost(), new txnsign(), new txnvalidate(),
+			new extrascript()
 		};  
 	
 	/**
