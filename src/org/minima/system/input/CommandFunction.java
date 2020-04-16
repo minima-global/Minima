@@ -30,6 +30,7 @@ import org.minima.system.input.functions.reconnect;
 import org.minima.system.input.functions.runscript;
 import org.minima.system.input.functions.search;
 import org.minima.system.input.functions.send;
+import org.minima.system.input.functions.sign;
 import org.minima.system.input.functions.status;
 import org.minima.system.input.functions.test;
 import org.minima.system.input.functions.tokens;
@@ -73,7 +74,7 @@ public abstract class CommandFunction {
 			new txncreate(), new txndelete(), new txninput(), new txnlist(), new txnauto(),
 			new txnstate(), new txnexport(), new txnimport(), new txnscript(),
 			new txnoutput(), new txnpost(), new txnsign(), new txnvalidate(),
-			new extrascript()
+			new extrascript(), new sign()
 		};  
 	
 	/**
