@@ -19,6 +19,8 @@ public class tutorial extends CommandFunction{
 			"\n" + 
 			"The addition of the state variables in the MMR Proof DB, allow for complex scripts with knowledge of their past to be created. A simple state mechanic for transactional history rather than a global state for ALL transactions.\n" + 
 			"\n" + 
+			"Minima tracks all coins that are to an address you possess and also all coins that have a Public Key you possess in the STATE or PREVSTATE.\n" + 
+			"\n" + 
 			"Minima transactions are scriptable Logic Gates, with analogue inputs and outputs, a simple yet powerful control language, and a previous history state mechanic.\n" + 
 			"\n" + 
 			"I think of them as \"Script Gates\".\n" + 
@@ -189,7 +191,7 @@ public class tutorial extends CommandFunction{
 			"Return the token id of the specified output\n" + 
 			"\n" + 
 			"VERIFYOUT ( BYTE HEX NUMBER HEX [NUMBER])\n" + 
-			"Verify the specified output has the specified address, amount and tokenid. Optional 4 th parameter. -1 LTE, 0 EQ, 1 GTE. Default EQ.\n" + 
+			"Verify the specified output has the specified address, amount and tokenid. Optional 4th parameter relates to AMOUNT. -1 LTE, 0 EQ, 1 GTE. Default EQ.\n" + 
 			"\n" + 
 			"GETINADDR ( BYTE ) \n" + 
 			"Return the HEX address of the specified input\n" + 
@@ -201,7 +203,7 @@ public class tutorial extends CommandFunction{
 			"Return the token id of the specified input\n" + 
 			"\n" + 
 			"VERIFYIN ( BYTE HEX NUMBER HEX [NUMBER])\n" + 
-			"Verify the specified input has the specified address, amount and tokenid. Optional 4 th parameter. -1 LTE, 0 EQ, 1 GTE. Default EQ.\n" + 
+			"Verify the specified input has the specified address, amount and tokenid. Optional 4th parameter relates to AMOUNT. -1 LTE, 0 EQ, 1 GTE. Default EQ.\n" + 
 			"\n" + 
 			"STATE ( BYTE )\n" + 
 			"Return the state value for the given number\n" + 

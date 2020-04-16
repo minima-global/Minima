@@ -13,6 +13,8 @@ A script can run for 512 instructions. An instruction is any operation or functi
 
 The addition of the state variables in the MMR Proof DB, allow for complex scripts with knowledge of their past to be created. A simple state mechanic for transactional history rather than a global state for ALL transactions.
 
+Minima tracks all coins that are to an address you possess and also all coins that have a Public Key you possess in the STATE or PREVSTATE.
+
 Minima transactions are scriptable Logic Gates, with analogue inputs and outputs, a simple yet powerful control language, and a previous history state mechanic.
 
 I think of them as "Script Gates".
