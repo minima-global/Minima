@@ -189,6 +189,16 @@ public class Transaction implements Streamable {
 		}else {
 			mState.add(zValue);
 		}
+		
+		//Order the state
+		Collections.sort(mState,new Comparator<StateVariable>() {
+			@Override
+			public int compare(StateVariable o1, StateVariable o2) {
+				int s1 = o1.getPort();
+				int s2 = o2.getPort();
+				return Integer.compare(s1, s2);
+			}
+		});
 	}
 	
 	/**
@@ -275,16 +285,6 @@ public class Transaction implements Streamable {
 		}
 		ret.put("outputs", outs);
 		
-		//Order the state
-		Collections.sort(mState,new Comparator<StateVariable>() {
-			@Override
-			public int compare(StateVariable o1, StateVariable o2) {
-				int s1 = o1.getPort();
-				int s2 = o2.getPort();
-				return Integer.compare(s1, s2);
-			}
-		});
-		
 		//State
 		outs = new JSONArray();
 		for(StateVariable sv : mState) {
@@ -317,16 +317,6 @@ public class Transaction implements Streamable {
 		for(Coin coin : mOutputs) {
 			coin.writeDataStream(zOut);
 		}
-		
-		//Order the state
-		Collections.sort(mState,new Comparator<StateVariable>() {
-			@Override
-			public int compare(StateVariable o1, StateVariable o2) {
-				int s1 = o1.getPort();
-				int s2 = o2.getPort();
-				return Integer.compare(s1, s2);
-			}
-		});
 		
 		//How many state variables..
 		int len = mState.size();
