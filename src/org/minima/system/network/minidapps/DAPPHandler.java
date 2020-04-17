@@ -74,7 +74,7 @@ public class DAPPHandler implements Runnable {
 			int contentlength = 0;
 			String boundary = "";
 			while (input!=null && !input.isEmpty()) { 
-//				System.out.println(input);
+				//System.out.println(input);
 				
 				//Find the Length..
 				if(input.indexOf("Content-Length:") != -1) {
@@ -98,6 +98,8 @@ public class DAPPHandler implements Runnable {
 			
 			// we get file requested
 			fileRequested = parse.nextToken();
+			
+//			System.out.println("GET "+fileRequested);
 			
 			if(fileRequested.endsWith("/")) {
 				fileRequested = fileRequested.concat("index.html");
