@@ -8,7 +8,7 @@ public class txnauto extends CommandFunction {
 
 	public txnauto() {
 		super("txnauto");
-		setHelp("[id] [amount] [address] {tokenid}", "Create a complete transaction but don't post it. Like 'send'. You can then add state variables and post when ready.", "");
+		setHelp("[id] [amount] [address] {tokenid}", "Create a complete transaction but don't post it. Like 'send'. Add state variables FIRST and then post.", "");
 	}
 
 	@Override
