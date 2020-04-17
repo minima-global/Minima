@@ -3,7 +3,7 @@ Minima transactions are a series of inputs, a series of outputs and a variable l
 
 The sum of the outputs must be less than or equal to the sum of the inputs, for every tokenid used. The difference in raw minima is the Burn. 
 
-A Minima input script returns true or false. The default is return FALSE, so all inputs must explicitly return true for the transaction to be valid.
+A Minima input script returns TRUE or FALSE. The default is return FALSE, so all inputs must explicitly RETURN TRUE for the transaction to be valid.
 
 A transaction can be signed, in full, by one or more public keys.
 

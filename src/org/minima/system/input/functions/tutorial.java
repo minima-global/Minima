@@ -9,7 +9,7 @@ public class tutorial extends CommandFunction{
 			"\n" + 
 			"The sum of the outputs must be less than or equal to the sum of the inputs, for every tokenid used. The difference in raw minima is the Burn. \n" + 
 			"\n" + 
-			"A Minima input script returns true or false. The default is return FALSE, so all inputs must explicitly return true for the transaction to be valid.\n" + 
+			"A Minima input script returns TRUE or FALSE. The default is return FALSE, so all inputs must explicitly RETURN TRUE for the transaction to be valid.\n" + 
 			"\n" + 
 			"A transaction can be signed, in full, by one or more public keys.\n" + 
 			"\n" + 
