@@ -20,6 +20,7 @@ import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.proofs.ScriptProof;
+import org.minima.objects.proofs.SignatureProof;
 import org.minima.objects.proofs.TokenProof;
 import org.minima.system.input.InputHandler;
 import org.minima.utils.Crypto;
@@ -243,8 +244,12 @@ public class ConsensusTxn {
 				change = getMainDB().getUserDB().newSimpleAddress();
 			}
 			
+			//May already have had some state variables set..
+			Transaction trx =  getMainDB().getUserDB().getUserRow(trans).getTransaction();
+			
 			//Create the Transaction
-			Message ret = getMainDB().createTransaction(sendamount, recipient, change, confirmed, tok, changetok,null);
+			Message ret = getMainDB().createTransaction(sendamount, 
+					recipient, change, confirmed, tok, changetok,null,trx);
 			
 			//Is this a token transaction
 			if(tokendets != null) {
@@ -255,11 +260,10 @@ public class ConsensusTxn {
 				wit.addTokenDetails(tokendets);
 			}
 			
-			
 			//Now We gave a valid transaction and witness.!
 			getMainDB().getUserDB().getUserRow(trans).setTransaction((Transaction) ret.getObject("transaction"));
 			getMainDB().getUserDB().getUserRow(trans).setWitness((Witness) ret.getObject("witness"));
-	
+			
 			listTransactions(zMessage);
 		
 		}else if(zMessage.isMessageType(CONSENSUS_TXNINPUT)) {
@@ -467,8 +471,31 @@ public class ConsensusTxn {
 			resp.put("script_check", checkok);
 			resp.put("contracts", contractlogs);
 			
+			//Check Signatures
+			MiniData transhash = Crypto.getInstance().hashObject(trx);
+			
+			//Get all the signatures..
+			ArrayList<SignatureProof> sigs = wit.getAllSignatures();
+			
+			//Check each one and add.. this is only done once..
+			boolean sigsok = true;
+			for(SignatureProof sig : sigs) {
+				//This is the actual public key that is being represented..
+//				MiniData leafkey = sig.getFinalHash();
+				//Now check the leaf of the tree
+				MiniData leafkey   = sig.getData();
+				MiniData signature = sig.getSignature();
+			
+				//Check it..
+				boolean ok = PubPrivKey.verify(leafkey, transhash, signature);
+				if(!ok) {
+					sigsok = false;
+				}
+			}
+			resp.put("signatures", sigsok);
+			
 			//Final full check..
-			resp.put("txnvalid", vamounts && checkok && (newwit != null));
+			resp.put("txnvalid", sigsok && vamounts && checkok && (newwit != null));
 			
 			InputHandler.endResponse(zMessage, true, "");
 			

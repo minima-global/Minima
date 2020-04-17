@@ -77,9 +77,10 @@ public class JavaDB implements TxPowDB{
 				newRows.add(row);
 			
 			}else {
-				if(!row.isInBlock()) {
-					System.out.println("UNUSED TXPoW Removed.. too old "+row.getTxPOW().getBlockNumber()+" "+minblock);	
-				}
+//				if(!row.isInBlock()) {
+//					System.out.println("UNUSED TXPoW Removed.. too old "
+//						+row.getTxPOW().getBlockNumber()+" "+minblock+" "+row.getTxPOW().toJSON());	
+//				}
 				
 				//Remove it..
 				removed.add(row);

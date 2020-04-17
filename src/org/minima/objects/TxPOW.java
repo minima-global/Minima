@@ -331,6 +331,7 @@ public class TxPOW implements Streamable {
 		txpow.put("superblock", _mSuperBlock);
 		txpow.put("txndiff", mTxnDifficulty.to0xString());
 		txpow.put("txn", mTransaction.toJSON());
+		txpow.put("txnid", getTransID());
 		txpow.put("witness", mWitness.toJSON());
 		
 		//The BURN transaction.. normally empty

@@ -696,7 +696,7 @@ public class MinimaDB {
 		ArrayList<Coin> ins = zTransaction.getAllInputs();
 		
 		//What's the most recent coin used..
-		MiniNumber recent = null;
+		MiniNumber recent = currentblock;
 		for(Coin cc : ins) {
 			//The CoinDB Entry
 			MiniNumber inblock = getCoinDB().getCoinRow(cc.getCoinID()).getInBlockNumber();
@@ -753,8 +753,20 @@ public class MinimaDB {
 									 MiniData zTokenID,
 									 MiniData zChangeTokenID,
 									 TokenProof zTokenGen) {
-		//The Transaction
-		Transaction trx = new Transaction();
+		
+		return createTransaction(zAmount, zToAddress, zChangeAddress, 
+				zConfirmed, zTokenID, zChangeTokenID, zTokenGen, new Transaction());
+	}
+		
+	public Message createTransaction(MiniNumber zAmount, Address zToAddress, 
+				 Address zChangeAddress, 
+				 ArrayList<Coin> zConfirmed,
+				 MiniData zTokenID,
+				 MiniData zChangeTokenID,
+				 TokenProof zTokenGen, Transaction zUseThisTransaction) {
+		
+		//The Transaction - couls already have some state variables set.. TXN_AUTO etc..
+		Transaction trx = zUseThisTransaction;
 		Witness wit 	= new Witness();
 		
 		//Which signatures are required
