@@ -93,10 +93,14 @@ public class ConsensusNet {
 				hardreset = true;
 				
 			}else{
-				//What weight is this chain..
+				//What weight is this chain.. 
+				//THIS WRONG.. Needs to compare both chains.. 
+				//Only uses the bits after the first crossover..
+				
+				//FOR NOW..
 				BigInteger netweight = sp.calculateWeight();
 				
-				//Is there a cross over
+				//Is there a cross over - doesn't check before the cscade
 				cross = checkCrossover(sp);
 				
 				if(cross.isEqual(MiniNumber.MINUSONE)) {
