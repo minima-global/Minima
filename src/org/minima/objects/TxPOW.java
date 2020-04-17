@@ -130,8 +130,8 @@ public class TxPOW implements Streamable {
 	/**
 	 * These are used internally ONLY
 	 */
-	private MiniData _mTxPOWID = new MiniData();
-	private MiniData _mTransID = new MiniData();
+	private MiniData _mTxPOWID = new MiniData("0x00");
+	private MiniData _mTransID = new MiniData("0x00");
 	
 	protected boolean _mIsBlockPOW  = false;
 	protected boolean _mIsTxnPOW    = false;
@@ -331,7 +331,7 @@ public class TxPOW implements Streamable {
 		txpow.put("superblock", _mSuperBlock);
 		txpow.put("txndiff", mTxnDifficulty.to0xString());
 		txpow.put("txn", mTransaction.toJSON());
-		txpow.put("txnid", getTransID());
+		txpow.put("txnid", getTransID().to0xString());
 		txpow.put("witness", mWitness.toJSON());
 		
 		//The BURN transaction.. normally empty
