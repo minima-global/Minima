@@ -24,11 +24,6 @@ public class BlockTree {
 	BlockTreeNode mCascadeNode;
 	
 	/**
-	 * The Block beyond which you will not accept blocks - some time before the cascade starts
-	 */
-	BlockTreeNode mLastNode;
-	
-	/**
 	 * Main Constructor
 	 */
 	public BlockTree() {}
@@ -50,10 +45,6 @@ public class BlockTree {
 	
 	public BlockTreeNode getCascadeNode() {
 		return mCascadeNode;
-	}
-	
-	public BlockTreeNode getLastNode() {
-		return mLastNode;
 	}
 	
 	/**
@@ -341,40 +332,11 @@ public class BlockTree {
 		
 		return avg;
 	}
-	
-//	public MiniNumber getAvgChainDifficulty() {
-//		//Sum the block difficulty
-//		BigInteger two 	 = new BigInteger("2");
-//		BigInteger total = new BigInteger("0");
-//		
-//		//Cycle back fropm the tip..
-//		MiniData casc 			= mCascadeNode.getTxPowID();
-//		BlockTreeNode current 	= mTip;
-//		int num=0;
-//		while(current != null) {
-//			if(current.getTxPowID().equals(casc)) {
-//				//It's the final node.. quit
-//				break;
-//			}
-//			
-//			//Add to the total
-//			int diff = current.getTxPow().getBlockDifficulty();
-//			BigInteger rval 		= two.pow(diff);
-//			total 					= total.add(rval);
-//			num++;
-//			
-//			//Get thew parent
-//			current = current.getParent();
-//		}
-//		//Check for zero..
-//		if(num == 0) {
-//			return MiniNumber.ZERO;
-//		}
-//		
-//		//The Totals
-//		MiniNumber totram = new MiniNumber(total);
-//		MiniNumber avg 	 = totram.div(new MiniNumber(""+num));
-//		
-//		return avg;
-//	}
+
+	public void clearTree() {
+		mRoot 			= null;
+		mTip 			= null;
+		mCascadeNode 	= null;
+	}
+
 }

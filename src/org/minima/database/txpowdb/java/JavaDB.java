@@ -70,13 +70,17 @@ public class JavaDB implements TxPowDB{
 				
 				//Other wise the proofs are too old..
 			}else if(!row.isInBlock() && row.getTxPOW().getBlockNumber().isMore(minblock)) {
-					newRows.add(row);
+				newRows.add(row);
 			
 				//It's in the chain
 			}else if(row.isInBlock() && row.getInBlockNumber().isMoreEqual(zBlockNumber)) {
 				newRows.add(row);
 			
 			}else {
+				if(!row.isInBlock()) {
+					System.out.println("UNUSED TXPoW Removed.. too old "+row.getTxPOW().getBlockNumber()+" "+minblock);	
+				}
+				
 				//Remove it..
 				removed.add(row);
 				

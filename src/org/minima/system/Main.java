@@ -212,6 +212,9 @@ public class Main extends MessageProcessor {
 				//Tell miner we are auto mining..
 				mTXMiner.setAutoMining(true);
 				
+				//No Hard Reset..
+				mConsensus.setHardResetAllowed(false);
+				
 				//And init..
 				PostMessage(SYSTEM_INIT);
 				

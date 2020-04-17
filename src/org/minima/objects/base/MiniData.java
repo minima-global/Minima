@@ -163,7 +163,7 @@ public class MiniData implements Streamable {
 			data.readDataStream(zIn);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+//			e.printStackTrace();
 			return null;
 		}
 		

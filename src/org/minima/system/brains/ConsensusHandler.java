@@ -159,18 +159,20 @@ public class ConsensusHandler extends SystemHandler {
 		}
 	}
 	
-//	public void updateListeners(String zMessageType) {
-//		Message msg = new Message(zMessageType);
-//		for(NativeListener listen : mListeners) {
-//			listen.processMessage(msg);
-//		}
-//	}
-	
 	/**
 	 * Are we initialising the Genesis block
 	 */
 	public void genesis() {
 		getMainDB().DoGenesis();
+	}
+	
+	/**
+	 * Hard code whether we can reset the chain on intro messages
+	 * 
+	 * @param zHardResetAllowed
+	 */
+	public void setHardResetAllowed(boolean zHardResetAllowed){
+		mConsensusNet.setHardResest(zHardResetAllowed);
 	}
 	
 	private MinimaDB getMainDB() {

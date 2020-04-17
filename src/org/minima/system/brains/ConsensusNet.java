@@ -1,5 +1,6 @@
 package org.minima.system.brains;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 
 import org.minima.database.MinimaDB;
@@ -35,6 +36,8 @@ public class ConsensusNet {
 	MinimaDB mDB;
 	ConsensusHandler mHandler;
 	
+	boolean mHardResetAllowed = true;
+	
 	public ConsensusNet(MinimaDB zDB, ConsensusHandler zHandler) {
 		mDB = zDB;
 		mHandler = zHandler;
@@ -44,6 +47,10 @@ public class ConsensusNet {
 		return mDB;
 	}
 	 
+	public void setHardResest(boolean zHardResetAllowed) {
+		mHardResetAllowed = zHardResetAllowed;
+	}
+	
 	public void processMessage(Message zMessage) throws Exception {
 		
 		if(zMessage.isMessageType(CONSENSUS_NET_INITIALISE)) {
@@ -71,31 +78,53 @@ public class ConsensusNet {
 			//Get the Sync Package..
 			SyncPackage sp = (SyncPackage) zMessage.getObject("sync");
 			
-			//Find a crossover.. and request valid txpow you don't have..
-			boolean hardhack = false;
-//			MiniNumber cross = MiniNumber.ZERO;
-//			
-//			//Do we have anything
-//			if(getMainDB().getMainTree().getAsList().size()>0) {
-//				//Is there a cross over
-//				cross = checkCrossover(sp);
-//				
-//				//Do we intersect.. 
-//				if(cross.isEqual(MiniNumber.ZERO)) {
-//					SimpleLogger.log("IRREGULAR POW INTRO CHAIN.NO CROSSOVER BLOCK.. RESETTING TO NEW CHAIN!"+sp);
-//				
-//					//Which chain has the most POW
-//					hardhack = true;
-//				
-//				}
-//			}
-
-//			SimpleLogger.log("Check Weights!!");
-//			sp.calculateWeight();
+			boolean hardreset = false;
+			MiniNumber cross = MiniNumber.MINUSONE;
 			
-			//FRESH? - Initial User no previous cascade.
-			if(hardhack || getMainDB().getMainTree().getAsList().size()==0) {
+			//How much POW do you currently have
+			BigInteger myweight = BigInteger.ZERO;
+			if(getMainDB().getMainTree().getAsList().size()!=0) {
+				myweight = getMainDB().getMainTree().getChainRoot().getTotalWeight();
+			}
+			
+			//Are we fresh ?
+			if(myweight.compareTo(BigInteger.ZERO)<=0) {
+				//Refresh completely.. nothing else you can do..
+				hardreset = true;
+				
+			}else{
+				//What weight is this chain..
+				BigInteger netweight = sp.calculateWeight();
+				
+				//Is there a cross over
+				cross = checkCrossover(sp);
+				
+				if(cross.isEqual(MiniNumber.MINUSONE)) {
+					MinimaLogger.log("IRREGULAR POW INTRO CHAIN. NO CROSSOVER BLOCK.. !");
+					
+					if(netweight.compareTo(myweight)>0) {
+						MinimaLogger.log("INTRO CHAIN HEAVIER.. ");
+					}else {
+						MinimaLogger.log("YOUR CHAIN HEAVIER.. NO CHANGE REQUIRED");
+						return;
+					}
+					
+					if(mHardResetAllowed) {
+						hardreset = true;
+						MinimaLogger.log("HARD RESETTING.. ");
+					}else {
+						MinimaLogger.log("NO HARD RESET ALLOWED.. ");
+						hardreset = false;
+						return;
+					}
+				}
+			}
+			
+			//Complete Refresh..
+			if(hardreset) {
 				//Clear the database..
+				getMainDB().getMainTree().clearTree();
+				getMainDB().getCoinDB().clearDB();
 				getMainDB().getTxPowDB().ClearDB();
 				
 				//Drill down 
@@ -121,18 +150,7 @@ public class ConsensusNet {
 				MinimaLogger.log("Sync Complete.. Current block : "+getMainDB().getMainTree().getChainTip());
 				
 			}else {
-				//Check the chain Parents!
-				//..TODO
-				
-				//Find a crossover.. and request valid txpow you don't have..
-				MiniNumber cross = checkCrossover(sp);
-				
-				//Do we intersect.. 
-				if(cross.isEqual(MiniNumber.ZERO)) {
-					MinimaLogger.log("IRREGULAR POW INTRO CHAIN. NO CROSSOVER BLOCK.. !");
-					return;
-				}
-				
+				//Some crossover was found..
 				MinimaLogger.log("CROSSOVER BLOCK FOUND.. @ "+cross);
 				
 				//Otherwise.. 
@@ -140,45 +158,22 @@ public class ConsensusNet {
 				int totalreq = 0;
 				for(SyncPacket spack : intro) {
 					if(spack.getTxPOW().getBlockNumber().isMoreEqual(cross)) {
-						//Request all the TXPOW required.. txn first then block..
+						//Just repost it..
 						TxPOW txpow = spack.getTxPOW();
-					
-						//Do we have it..
-						if(getMainDB().getTxPOW(txpow.getTxPowID()) == null){
+						
+						if(getMainDB().getTxPOW(txpow.getTxPowID()) == null) {
 							//Get the NetClient...
 							NetClient client = (NetClient) zMessage.getObject("netclient");
-	//						System.out.println("Netclient sync "+client);
 							
 							//Post it as a normal TxPOW..
 							Message msg = new Message(CONSENSUS_NET_TXPOW);
 							msg.addObject("txpow", txpow);
-							
-							//Add the client as requests will be made for TXPOWs we don't have
 							msg.addObject("netclient", client);
 							
 							mHandler.PostMessage(msg);
 							
 							totalreq++;
 						}
-						
-						//SIMPLE - JUST ASK AGAIN INNEFFICIENT
-//						//Txns
-//						ArrayList<MiniData> txns = txpow.getBlockTxns();
-//						for(MiniData txn : txns) {
-//							if(!getMainDB().isTxPOWFound(txn)) {
-//								//Request it!
-//								sendNetMessage(zMessage, NetClientReader.NETMESSAGE_TXPOW_REQUEST, txn);
-//								totalreq++;
-//							}
-//						}
-//						
-//						//Main Txpow
-//						if(!getMainDB().isTxPOWFound(txpow.getTxPowID())) {
-//							//Request it!
-//							sendNetMessage(zMessage, NetClientReader.NETMESSAGE_TXPOW_REQUEST, txpow.getTxPowID());
-//							totalreq++;
-//						}
-						
 					}
 				}
 				
@@ -300,23 +295,46 @@ public class ConsensusNet {
 		//Post it..
 		client.PostMessage(msg);
 		
-		//Create a timer message to check.. 
+		//Create a timer message to check.. ?
 		//.. 
 	}
 
 	/**
-	 * Find a crossover node.. Check 2 chains and find where they intersect.
+	 * Find a crossover node.. Check 2 chains and find where they FIRST intersect.
 	 */
-	public MiniNumber checkCrossover(SyncPackage zIntro) {
+	public MiniNumber checkCrossover(SyncPackage zIntro){
 		//Our Chain.. FROM root onwards..
+//		ArrayList<BlockTreeNode> chain = getMainDB().getMainTree().getAsList();
+		//Our Chain.. FROM TIP backwards..
 		ArrayList<BlockTreeNode> chain = getMainDB().getMainTree().getAsList();
+				
+		//Our cascade node..
+		MiniNumber maintip     = getMainDB().getMainTree().getChainTip().getTxPow().getBlockNumber();
 		MiniNumber maincascade = getMainDB().getMainTree().getCascadeNode().getTxPow().getBlockNumber();
 		
 		//The incoming chain
 		ArrayList<SyncPacket> introchain = zIntro.getAllNodes();
+		int len = introchain.size();
+		SyncPacket tip = introchain.get(len-1);
+		
+		//The Intro cascade node..
+		MiniNumber introtip     = tip.getTxPOW().getBlockNumber();
+		MiniNumber introcascade = zIntro.getCascadeNode();
+	
+		MinimaLogger.log("CROSSOVER mytip:"+maintip+" mycasc:"+maincascade);
+		MinimaLogger.log("CROSSOVER introtip:"+introtip+" introcasc:"+introcascade);
+		
+		//Simple check first..
+		boolean tipgood  = maintip.isLessEqual(introtip) && maintip.isMoreEqual(introcascade);
+		boolean cascgood = maincascade.isLessEqual(introtip) && maincascade.isMoreEqual(introcascade);
 		
 		boolean found        = false;
-		MiniNumber crossover = MiniNumber.ZERO;
+		MiniNumber crossover = MiniNumber.MINUSONE;
+		
+		//No chance of a crossover..
+		if(!tipgood && !cascgood) {
+			return crossover;	
+		}
 		
 		//Cycle..
 		for(BlockTreeNode block : chain) {
@@ -326,15 +344,21 @@ public class ConsensusNet {
 			
 			//only use nodes after our cascade..
 			if(bnum.isMore(maincascade)) {
+				
 				//Run through the intro chain..
 				for(SyncPacket spack : introchain) {
-					if(spack.getTxPOW().getBlockNumber().isEqual(bnum)) {
-						//Check the TxPOWID..
-						if(spack.getTxPOW().getTxPowID().isEqual(txpowid)) {
-							//Crossover!
-							found = true;
-							crossover = bnum;
-							break;
+					MiniNumber snum  = spack.getTxPOW().getBlockNumber();
+					
+					//Only use nodes after intro cascade
+					if(snum.isMore(introcascade)) {
+						if(spack.getTxPOW().getBlockNumber().isEqual(bnum)) {
+							//Check the TxPOWID..
+							if(spack.getTxPOW().getTxPowID().isEqual(txpowid)) {
+								//Crossover!
+								found     = true;
+								crossover = bnum;
+								break;
+							}
 						}
 					}
 				}

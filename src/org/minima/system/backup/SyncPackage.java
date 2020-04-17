@@ -3,8 +3,16 @@ package org.minima.system.backup;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.ArrayList;
 
+import org.minima.GlobalParams;
+import org.minima.database.mmr.MMRSet;
+import org.minima.database.txpowtree.BlockTree;
+import org.minima.database.txpowtree.BlockTreeNode;
+import org.minima.database.txpowtree.MultiLevelCascadeTree;
+import org.minima.database.txpowtree.SimpleBlockTreePrinter;
+import org.minima.objects.TxPOW;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.Streamable;
 
@@ -31,75 +39,48 @@ public class SyncPackage implements Streamable{
 		return mNodes;
 	}
 
-//	public BigInteger calculateWeight() {
-//		ArrayList<SyncPacket> rev = new ArrayList<SyncPacket>();
-//	
-//		MiniNumber lastblock = MiniNumber.ONE;
-//		
-//		//First reverse the stream
-//		for(SyncPacket spack : mNodes) {
-//			rev.add(0,spack);
-//			lastblock = spack.getTxPOW().getBlockNumber();
-//		}
-//		
-//		lastblock = lastblock.increment();
-//		
-//		BigInteger totalweight = BigInteger.ZERO;
-//		boolean cascadestarted = false;
-//		
-//		int lastdiff = 0;
-//		int lastsup  = 0;
-//		
-//		//Now calculate the total weight
-//		int num = 0;
-//		for(SyncPacket spack : rev) {
-//			TxPOW txpow = spack.getTxPOW();
-//			
-//			BigInteger normweight = Maths.BI_TWO.pow(txpow.getBlockDifficulty());
-//			BigInteger supweight  = Maths.BI_TWO.pow(txpow.getSuperLevel());
-//			
-//			//Check if started..
-//			if(num>GlobalParams.MINIMA_CASCADE_DEPTH) {
-//				cascadestarted = true;
-//			}
-//			
-//			if(!cascadestarted && txpow.getBlockNumber().isEqual(lastblock.decrement())) {
-//				//Still normal..
-//				totalweight = totalweight.add(normweight);
-//				
-//				MinimaLogger.log(num + ") ["+txpow.getBlockDifficulty()+"/"+txpow.getSuperLevel()+"] "+txpow.getBlockNumber()+" *"+normweight+" "+supweight);
-//				
-//				lastdiff = txpow.getBlockDifficulty();
-//				lastsup  = txpow.getSuperLevel();
-//				
-//			}else {
-//				//First time..
-//				if(!cascadestarted) {
-//					//Fix the last one.. Cascading tree does it like this..
-//					BigInteger weight = Maths.BI_TWO.pow(lastdiff);
-//					totalweight = totalweight.subtract(weight);
-//					
-//					//Add as a super.
-//					weight = Maths.BI_TWO.pow(lastsup);
-//					totalweight = totalweight.add(weight);
-//					
-//					cascadestarted = true;
-//				}
-//				
-//				//And as normal
-//				totalweight = totalweight.add(supweight);
-//				
-//				MinimaLogger.log(num + ") "+txpow.getBlockNumber()+" "+normweight+" *"+supweight);
-//			}
-//			
-//			num++;
-//			lastblock = txpow.getBlockNumber();
-//		}
-//		
-//		MinimaLogger.log("Total : "+totalweight);
-//		
-//		return totalweight;
-//	}
+	public BigInteger calculateWeight() {
+		//Create a Tree and add all these blocks.. then calculate the weight..
+		BlockTree blktree = new BlockTree();
+		
+		//Drill down 
+		for(SyncPacket spack : mNodes) {
+			TxPOW txpow = spack.getTxPOW();
+			MMRSet mmr  = spack.getMMRSet();
+			boolean cascade = spack.isCascade();
+			
+			BlockTreeNode node = new BlockTreeNode(txpow);
+			node.setCascade(cascade);
+			node.setState(BlockTreeNode.BLOCKSTATE_VALID);
+			
+			//Sort the MMR..
+			node.setMMRset(mmr);
+
+			//Add it..
+			blktree.hardAddNode(node, true);
+			
+			//Is this the cascade block
+			if(txpow.getBlockNumber().isEqual(getCascadeNode())) {
+				blktree.hardSetCascadeNode(node);
+			}
+		}
+		
+		//Now reset..
+		MultiLevelCascadeTree casc = new MultiLevelCascadeTree(blktree);
+		casc.cascadedTree();
+		
+		//Get the cascaded version..
+		BlockTree newtree = casc.getCascadeTree();
+		
+//		SimpleBlockTreePrinter print = new SimpleBlockTreePrinter(newtree);
+//		String tp = print.printtree();
+//		System.out.println(tp);
+		
+		//Whats the weight..
+		BigInteger totweight = newtree.getChainRoot().getTotalWeight();
+		
+		return totweight;
+	}
 	
 	
 	@Override
