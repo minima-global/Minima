@@ -31,7 +31,7 @@ public class GenesisTxPOW extends TxPOW{
 		
 		setBlockDifficulty(Crypto.MAX_HASH);
 		
-		setParent(new MiniData());
+		setParent(new MiniData("0x00"));
 		
 		//Set Transaction and Witness..
 		Transaction trans = new Transaction();
