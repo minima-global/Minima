@@ -9,28 +9,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
-import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.URLDecoder;
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Date;
 import java.util.StringTokenizer;
 
 import org.minima.objects.base.MiniData;
 import org.minima.system.backup.BackupManager;
-import org.minima.system.input.InputHandler;
-import org.minima.system.input.InputMessage;
-import org.minima.utils.MiniFormat;
-import org.minima.utils.ResponseStream;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
-import org.minima.utils.json.parser.JSONParser;
-import org.minima.utils.json.parser.ParseException;
 import org.minima.utils.messages.Message;
 
 /**

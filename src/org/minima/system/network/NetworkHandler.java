@@ -8,7 +8,6 @@ import org.minima.system.Main;
 import org.minima.system.SystemHandler;
 import org.minima.system.input.InputHandler;
 import org.minima.system.network.minidapps.DAPPManager;
-import org.minima.system.network.minidapps.DAPPServer;
 import org.minima.system.network.rpc.RPCClient;
 import org.minima.system.network.rpc.RPCServer;
 import org.minima.utils.MinimaLogger;

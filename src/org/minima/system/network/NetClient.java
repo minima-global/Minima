@@ -10,7 +10,6 @@ import java.util.Random;
 import org.minima.objects.TxPOW;
 import org.minima.objects.base.MiniByte;
 import org.minima.system.Main;
-import org.minima.system.brains.ConsensusHandler;
 import org.minima.system.brains.ConsensusNet;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;

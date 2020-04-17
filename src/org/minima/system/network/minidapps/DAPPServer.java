@@ -1,17 +1,11 @@
 package org.minima.system.network.minidapps;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.BindException;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
-import java.util.Enumeration;
 
-import org.minima.system.input.InputHandler;
 import org.minima.utils.MinimaLogger;
 
 public class DAPPServer implements Runnable{
