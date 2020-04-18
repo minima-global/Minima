@@ -209,7 +209,7 @@ SAMESTATE ( BYTE [BYTE] )
 Return TRUE if the previous state and current state are the same. If 2 parameters are set then checks all the values inbetween the 2 values inclusively
 
 DYNSTATE ( BYTE EXPRESSION )
-Dynamically change the state value. You only need this for 'Floating' inputs. So that you can set the state correctly given the previous state.
+Dynamically set the state value. You can only use this ONCE per state per transaction. MUST be used before STATE or SAMESTATE.
 
 Examples
 --------

@@ -54,6 +54,9 @@ public class Contract {
 	//A list of all the user-defined variables
 	boolean mFloatingCoin = false;
 	String[] mDYNState;
+	
+	//Has this state been checked..
+	boolean[] mCheckState;
 		
 	//Has the Script returned TRUE or FALSE
 	private boolean mSuccess;
@@ -113,6 +116,11 @@ public class Contract {
 		mDYNState     = new String[256];
 		for(int i=0;i<256;i++) {
 			mDYNState[i] = null;
+		}
+		
+		mCheckState     = new boolean[256];
+		for(int i=0;i<256;i++) {
+			mCheckState[i] = false;
 		}
 		
 		mBlock      = null;
@@ -344,13 +352,18 @@ public class Contract {
 	
 	public boolean setDYNState(int zStateNum, String zValue) throws ExecutionException {
 		//ONLY on Floating coins..
-		if(!mFloatingCoin) {
-			throw new ExecutionException("DYNSTATE only on Floating coins : "+zStateNum);
-		}
+//		if(!mFloatingCoin) {
+//			throw new ExecutionException("DYNSTATE only on Floating coins : "+zStateNum);
+//		}
 		
+		//Can only call this BEFORE any call to STATE or SAMESTATE
+		if(mCheckState[zStateNum]) {
+			throw new ExecutionException("Can only call DYNSTATE before STATE or SAMESTATE");
+		}
+			
 		//Have we already used this one..
 		if(mDYNState[zStateNum] != null) {
-			return mDYNState[zStateNum].equals(zValue);
+			throw new ExecutionException("Can only call DYNSTATE once per state per transaction!");
 		}
 		
 		//Set It
@@ -360,6 +373,9 @@ public class Contract {
 	}
 	
 	public String getState(int zStateNum) throws ExecutionException {
+		//We are checking the state
+		mCheckState[zStateNum] = true;
+		
 		//Has it been set in DYNSTATE
 		if(mDYNState[zStateNum] != null) {
 			return mDYNState[zStateNum];

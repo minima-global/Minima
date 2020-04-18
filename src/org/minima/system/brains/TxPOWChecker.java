@@ -293,14 +293,6 @@ public class TxPOWChecker {
 				
 				//Is this a Token ?
 				if(!input.getTokenID().isEqual(Coin.MINIMA_TOKENID)) {
-//					//Do we have a token Script..
-//					TokenProof tokdets = zWit.getTokenDetail(input.getTokenID());
-//					
-//					if(tokdets == null) {
-//						contractlog.put("error", "Token Details for coin missing! "+input.getTokenID());
-//						return false;	
-//					}
-//					
 //					//Is there a script.
 //					String tokscript = tokdets.getTokenScript().toString();
 					if(!tokscript.equals("RETURN TRUE")) {
