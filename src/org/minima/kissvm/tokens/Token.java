@@ -178,7 +178,7 @@ public class Token {
 	}
 	
 	public static boolean isVariable(String str){
-		 return str.matches("[a-z]*");  //match a number with optional '-' and decimal.
+		 return str.matches("[a-z]*"); 
 	}
 	
 	

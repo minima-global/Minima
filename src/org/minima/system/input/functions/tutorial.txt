@@ -17,7 +17,7 @@ Minima tracks all coins that are to an address you possess and also all coins th
 
 Minima transactions are scriptable Logic Gates, with analogue inputs and outputs, a simple yet powerful control language, and a previous history state mechanic.
 
-I think of them as "Script Gates".
+I think of them as Script Gates.
 
 Grammar
 -------
@@ -46,9 +46,9 @@ OPERATION   ::= OPERATION + MULDIV | OPERATION - MULDIV |
 MULDIV      ::= MULDIV * PRIME | MULDIV / PRIME | PRIME
 PRIME       ::= NOT PRIME |  NEG PRIME | BASEUNIT
 BASEUNIT    ::= VARIABLE | VALUE | GLOBAL | FUNCTION | ( EXPRESSION )
-VARIABLE    ::= ^[a-z]{1,10}$
+VARIABLE    ::= ^[a-z]{1,16}$
 VALUE       ::= NUMBER | BYTE | HEX | SCRIPT | BINARY
-NUMBER      ::= "^-?\\d*(\\.\\d+)?$"
+NUMBER      ::= ^-?\\d*(\\.\\d+)?$
 BYTE        ::= [0-255]
 HEX         ::= 0x[0-9A-F]{2}*
 SCRIPT      ::= [ ASCII ]

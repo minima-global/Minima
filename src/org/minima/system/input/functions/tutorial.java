@@ -23,7 +23,7 @@ public class tutorial extends CommandFunction{
 			"\n" + 
 			"Minima transactions are scriptable Logic Gates, with analogue inputs and outputs, a simple yet powerful control language, and a previous history state mechanic.\n" + 
 			"\n" + 
-			"I think of them as \"Script Gates\".\n" + 
+			"I think of them as Script Gates.\n" + 
 			"\n" + 
 			"Grammar\n" + 
 			"-------\n" + 
@@ -52,9 +52,9 @@ public class tutorial extends CommandFunction{
 			"MULDIV      ::= MULDIV * PRIME | MULDIV / PRIME | PRIME\n" + 
 			"PRIME       ::= NOT PRIME |  NEG PRIME | BASEUNIT\n" + 
 			"BASEUNIT    ::= VARIABLE | VALUE | GLOBAL | FUNCTION | ( EXPRESSION )\n" + 
-			"VARIABLE    ::= ^[a-z]{1,10}$\n" + 
+			"VARIABLE    ::= ^[a-z]{1,16}$\n" + 
 			"VALUE       ::= NUMBER | BYTE | HEX | SCRIPT | BINARY\n" + 
-			"NUMBER      ::= \"^-?\\\\d*(\\\\.\\\\d+)?$\"\n" + 
+			"NUMBER      ::= ^-?\\\\d*(\\\\.\\\\d+)?$\n" + 
 			"BYTE        ::= [0-255]\n" + 
 			"HEX         ::= 0x[0-9A-F]{2}*\n" + 
 			"SCRIPT      ::= [ ASCII ]\n" + 
@@ -215,7 +215,7 @@ public class tutorial extends CommandFunction{
 			"Return TRUE if the previous state and current state are the same. If 2 parameters are set then checks all the values inbetween the 2 values inclusively\n" + 
 			"\n" + 
 			"DYNSTATE ( BYTE EXPRESSION )\n" + 
-			"Dynamically change the state value. You only need this for 'Floating' inputs. So that you can set the state correctly given the previous state.\n" + 
+			"Dynamically set the state value. You can only use this ONCE per state per transaction. MUST be used before STATE or SAMESTATE.\n" + 
 			"\n" + 
 			"Examples\n" + 
 			"--------\n" + 
@@ -272,41 +272,12 @@ public class tutorial extends CommandFunction{
 	
 	@Override
 	public void doFunction(String[] zInput) throws Exception {
-//		InputStream in = getClass().getClassLoader().getResourceAsStream("org/minima/system/input/functions/tutorial.txt");
-//		BufferedReader br = new BufferedReader(new InputStreamReader(in));
-//		
-//		int linenumber=1;
-//		String line  = null;
-//        String total = "";
-//		while ( (line = br.readLine()) != null) {
-//            // do something with the line here
-//        	getResponseStream().getDataJSON().put(getLineNumber(linenumber++), line);
-//        	
-//        	total += line+"\n";
-//        }
-		
-//		getResponseStream().getDataJSON().put("Tutorial", TUTORIAL_TEXT);
-//		getResponseStream().endStatus(true, "");
-//		
-		getResponseStream().hardEndStatus(TUTORIAL_TEXT);
-		
-//        if(getResponseStream().isLocal()) {
-//        	
-//        }else {
-//        	getResponseStream().endStatus(true, "");
-//        }
+		//Just print out the Tutorial Text
+		getResponseStream().getDataJSON().put("Tutorial", TUTORIAL_TEXT);
+		getResponseStream().endStatus(true, "");
+
+//		getResponseStream().hardEndStatus(TUTORIAL_TEXT);
 	}
-	
-	public String getLineNumber(int zLine) {
-		if(zLine<10) {
-			return "00"+zLine;
-		}else if(zLine<100) {
-			return "0"+zLine;
-		}
-		
-		return ""+zLine;
-	}
-	
 	
 	@Override
 	public CommandFunction getNewFunction() {
