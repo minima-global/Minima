@@ -26,6 +26,7 @@ import org.minima.system.network.NetClientReader;
 import org.minima.system.network.NetworkHandler;
 import org.minima.system.tx.TXMiner;
 import org.minima.utils.Crypto;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
@@ -313,6 +314,17 @@ public class ConsensusHandler extends SystemHandler {
 			if(txpow==null) {
 				resp.put("contractlogs", contractlogs);
 				InputHandler.endResponse(zMessage, false, "Invalid Transaction");
+				return;
+			}
+			
+			//Create the correct transID..
+			txpow.calculateTXPOWID();
+			
+			//Check the SIGS!
+			boolean sigsok = TxPOWChecker.checkSigs(txpow);
+			if(!sigsok) {
+				//Reject
+				InputHandler.endResponse(zMessage, false, "Invalid Signatures! - TXNAUTO must be done AFTER adding state variables ?");
 				return;
 			}
 			
