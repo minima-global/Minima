@@ -144,6 +144,7 @@ public class TxPOWChecker {
 		//If ANY of the inputs are floating.. check for remainder outputs.
 		boolean isfloating = false;
 
+		
 		//First Inputs..
 		int ins = inputs.size();
 		for(int i=0;i<ins;i++) {
@@ -296,8 +297,7 @@ public class TxPOWChecker {
 				
 				//Is this a Token ?
 				if(!input.getTokenID().isEqual(Coin.MINIMA_TOKENID)) {
-//					//Is there a script.
-//					String tokscript = tokdets.getTokenScript().toString();
+					//Complex Script ?
 					if(!tokscript.equals("RETURN TRUE")) {
 						//Check the Script!
 						cc = new Contract(tokscript,sigs, zWit, trans,proof.getMMRData().getPrevState());

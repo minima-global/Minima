@@ -241,6 +241,23 @@ public class BlockTree {
 		return null;
 	}
 	
+	public BlockTreeNode getOnChainBlock(MiniNumber zBlockNumber) {
+			return _getOnChainBlock(zBlockNumber, mTip);
+	}
+	
+	private BlockTreeNode _getOnChainBlock(MiniNumber zBlockNumber, BlockTreeNode zTip) {
+		if(zTip == null) {
+			return null;
+		}
+		
+		if(zTip.getTxPow().getBlockNumber().isEqual(zBlockNumber)) {
+			return zTip;
+		}
+		
+		return _getOnChainBlock(zBlockNumber, zTip.getParent());
+	}
+	
+	
 	/**
 	 * Get the list of TreeNodes in the LongestChain
 	 */

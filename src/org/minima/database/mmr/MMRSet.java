@@ -162,7 +162,7 @@ public class MMRSet implements Streamable {
 		return mFinalized;
 	}
 	
-	public void setBlockTime(MiniNumber zTime) {
+	private void setBlockTime(MiniNumber zTime) {
 		mBlockTime = zTime;
 	}
 	
