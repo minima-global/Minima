@@ -94,12 +94,12 @@ public class Token {
 	}
 	
 	/**
-	 * Tokenize a RamScript into a list of Tokens
-	 * @param zRamScript
+	 * Tokenize a MiniScript into a list of Tokens
+	 * @param zMiniScript
 	 * @return A list of all the tokens
 	 * @throws MinimaParseException 
 	 */
-	public static List<Token> tokenize(String zRamScript) throws MinimaParseException{
+	public static List<Token> tokenize(String zMiniScript) throws MinimaParseException{
 		List<Token> tokens = new ArrayList<Token>();
 		
 		//Get the defaults..
@@ -112,10 +112,9 @@ public class Token {
 		}
 		
 		//Quote are represented as [ and ] for ease of parsing.
-		QuotedString qs = new QuotedString(zRamScript);
+		QuotedString qs = new QuotedString(zMiniScript);
 		
 		//Now run through..
-//		StringTokenizer strtok = new StringTokenizer(zRamScript," ");
 		StringTokenizer strtok = new StringTokenizer(qs.getDeQuotedString()," ");
 		while(strtok.hasMoreTokens()) {
 			String tok = strtok.nextToken().trim();
@@ -130,11 +129,16 @@ public class Token {
 				tokens.add(new Token(TOKEN_OPERATOR, tok));
 			
 			}else if(tok.startsWith(":")) {
-				//which quote
-				int quote = Integer.parseInt(tok.substring(1));
-				
-				//Add THAT entire quote
-				tokens.add(new Token(TOKEN_VALUE, qs.getQuote(quote)));
+				try {
+					//which quote
+					int quote = Integer.parseInt(tok.substring(1));
+					
+					//Add THAT entire quote
+					tokens.add(new Token(TOKEN_VALUE, qs.getQuote(quote)));
+					
+				}catch(NumberFormatException exc) {
+					throw new MinimaParseException("Incorrect Number Format in quoted parse : "+tok);
+				}
 				
 			}else if(tok.startsWith("0x") || isNumeric(tok)) {
 				tokens.add(new Token(TOKEN_VALUE, tok));
