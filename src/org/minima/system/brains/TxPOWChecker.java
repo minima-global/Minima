@@ -128,9 +128,11 @@ public class TxPOWChecker {
 		boolean relstate = zDB.getUserDB().isStateListRelevant(trans.getCompleteState());
 		
 		//The DYNState variables..
-		String[] DYNState = new String[256];
+		String[] DYNState    = new String[256];
+		boolean[] checkState = new boolean[256];
 		for(int i=0;i<256;i++) {
-			DYNState[i] = null;
+			DYNState[i]   = null;
+			checkState[i] = false;
 		}
 		
 		//Check the input scripts
@@ -269,7 +271,7 @@ public class TxPOWChecker {
 				cc.setFloating(input.isFloating());
 				
 				//Set the DYNState..
-				cc.setCompleteDYNState(DYNState);
+				cc.setCompleteDYNState(DYNState,checkState);
 				
 				//Run it!
 				cc.run();
@@ -284,7 +286,8 @@ public class TxPOWChecker {
 				contractlog.put("result", cc.isSuccess());
 				
 				//Get the DynState
-				DYNState = cc.getCompleteDYNState();
+				DYNState   = cc.getCompleteDYNState();
+				checkState = cc.getCompleteCheckState();
 				
 				//and.. ?
 				if(!cc.isSuccess()) {
@@ -318,14 +321,15 @@ public class TxPOWChecker {
 						cc.setFloating(input.isFloating());
 						
 						//Set the DYNState..
-						cc.setCompleteDYNState(DYNState);
+						cc.setCompleteDYNState(DYNState,checkState);
 						
 						//Run it!
 						cc.run();
 						
 						//Get the DynState
-						DYNState = cc.getCompleteDYNState();
-						
+						DYNState   = cc.getCompleteDYNState();
+						checkState = cc.getCompleteCheckState();
+									
 						JSONObject toklog = new JSONObject();
 						contractlog.put("tokencontract", toklog);
 						

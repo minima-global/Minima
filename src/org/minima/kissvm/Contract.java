@@ -393,8 +393,13 @@ public class Contract {
 		return mDYNState;
 	}
 	
-	public void setCompleteDYNState(String[] zDYNState) {
-		mDYNState = zDYNState;
+	public boolean[] getCompleteCheckState() {
+		return mCheckState;
+	}
+	
+	public void setCompleteDYNState(String[] zDYNState, boolean[] zCheckState) {
+		mDYNState   = zDYNState;
+		mCheckState = zCheckState;
 	}
 	
 	/**
