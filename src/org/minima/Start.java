@@ -228,10 +228,12 @@ public class Start {
 		    while(rcmainserver.isRunning()){
 		        try {
 		            //Get a line of input
-		            String input = bis.readLine().trim();
+		            String input = bis.readLine();
 		            
 		            //Check valid..
 		            if(input!=null && !input.equals("")) {
+		            	//trim it..
+		            	input = input.trim();
 		            	
 		            	//New response packet..
 			            ResponseStream response = new ResponseStream();

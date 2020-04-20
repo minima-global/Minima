@@ -103,6 +103,9 @@ public class DAPPManager extends SystemHandler {
 	}
 	
 	public JSONArray recalculateMiniDAPPS() {
+		//Clear the OLD
+		CURRENT_MINIDAPPS.clear();
+		
 		//This is the folder..
 		String root = getMainHandler().getBackupManager().getRootFolder();
 		
@@ -119,31 +122,32 @@ public class DAPPManager extends SystemHandler {
 		File[] apps = alldapps.listFiles();
 		
 		//Cycle through them..
-		CURRENT_MINIDAPPS.clear();
-		for(File app : apps) {
-			//Open it up..
-			File conf = new File(app,"minidapp.conf");
-			
-			//Does it exist..
-			if(!conf.exists()) {
-				//Could be 1 folder down..
-				File[] subapps = app.listFiles();
-	
-				//Has to be the first file
-				if(subapps != null) {
-					if(subapps[0].isDirectory()) {
-						conf = new File(subapps[0],"minidapp.conf");
+		if(apps != null) {
+			for(File app : apps) {
+				//Open it up..
+				File conf = new File(app,"minidapp.conf");
+				
+				//Does it exist..
+				if(!conf.exists()) {
+					//Could be 1 folder down..
+					File[] subapps = app.listFiles();
+		
+					//Has to be the first file
+					if(subapps != null) {
+						if(subapps[0].isDirectory()) {
+							conf = new File(subapps[0],"minidapp.conf");
+						}
 					}
 				}
-			}
-			
-			//Check it exists..
-			if(conf.exists()) {
-				//Load it..
-				JSONObject confjson = loadConfFile(conf);
 				
-				//Add it..
-				CURRENT_MINIDAPPS.add(confjson);
+				//Check it exists..
+				if(conf.exists()) {
+					//Load it..
+					JSONObject confjson = loadConfFile(conf);
+					
+					//Add it..
+					CURRENT_MINIDAPPS.add(confjson);
+				}
 			}
 		}
 		
