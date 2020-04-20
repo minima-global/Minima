@@ -183,8 +183,10 @@ public class ConsensusPrint {
 			BlockTreeNode topblk = getMainDB().getMainTree().getChainTip();
 			JSONArray allcoins = new JSONArray();
 			
-			MMRSet topmmr = topblk.getMMRSet().
-					getParentAtTime(topblk.getTxPow().getBlockNumber().sub(GlobalParams.MINIMA_CONFIRM_DEPTH));
+			MMRSet topmmr = topblk.getMMRSet();
+					
+//			MMRSet topmmr = topblk.getMMRSet().
+//					getParentAtTime(topblk.getTxPow().getBlockNumber().sub(GlobalParams.MINIMA_CONFIRM_DEPTH));
 			
 			MMRSet mmrset = topmmr;
 			ArrayList<String> addedcoins = new ArrayList<String>();
