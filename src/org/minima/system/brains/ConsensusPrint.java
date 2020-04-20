@@ -173,8 +173,11 @@ public class ConsensusPrint {
 			
 		}else if(zMessage.isMessageType(CONSENSUS_SEARCH)){
 			String address = zMessage.getString("address");
+			if(address.startsWith("Mx")) {
+				//It's a Minima Address!
+				address = Address.convertMinimaAddress(address).to0xString();
+			}
 			MiniData addr  = new MiniData(address);
-			 
 			
 			//Now search for that address..
 			BlockTreeNode topblk = getMainDB().getMainTree().getChainTip();
@@ -191,13 +194,18 @@ public class ConsensusPrint {
 				
 				for(MMREntry coinmmr : zero) {
 					if(!coinmmr.getData().isHashOnly()) {
-						if(!coinmmr.getData().isSpent() && coinmmr.getData().getCoin().getAddress().isEqual(addr)) {
-							String entry = coinmmr.getEntry().toString();
+						boolean okaddress = coinmmr.getData().getCoin().getAddress().isEqual(addr);
+						if(okaddress) {
+							//OK - is it spent.. 	
+							boolean spent     = coinmmr.getData().isSpent();
 							
-							//Only add once..
+							//Add this entry..
+							String entry = coinmmr.getEntry().toString();
 							if(!addedcoins.contains(entry)) {
 								addedcoins.add(entry);
-								allcoins.add(topmmr.getProof(coinmmr.getEntry()));
+								if(!spent) {
+									allcoins.add(topmmr.getProof(coinmmr.getEntry()));	
+								}
 							}
 						}
 					}
