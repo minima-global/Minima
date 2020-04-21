@@ -211,14 +211,15 @@ public class ConsensusPrint {
 				//It's a Minima Address!
 				address = Address.convertMinimaAddress(address).to0xString();
 			}
-			MiniData addr  = new MiniData(address);
+			MiniData addr     = new MiniData(address);
+			
+			boolean wantspent = zMessage.getBoolean("spent");
 			
 			//Now search for that address..
 			BlockTreeNode topblk = getMainDB().getMainTree().getChainTip();
 			JSONArray allcoins = new JSONArray();
 			
 			MMRSet topmmr = topblk.getMMRSet();
-					
 //			MMRSet topmmr = topblk.getMMRSet().
 //					getParentAtTime(topblk.getTxPow().getBlockNumber().sub(GlobalParams.MINIMA_CONFIRM_DEPTH));
 			
@@ -239,7 +240,7 @@ public class ConsensusPrint {
 							String entry = coinmmr.getEntry().toString();
 							if(!addedcoins.contains(entry)) {
 								addedcoins.add(entry);
-								if(!spent) {
+								if(spent == wantspent) {
 									allcoins.add(topmmr.getProof(coinmmr.getEntry()));	
 								}
 							}
@@ -551,6 +552,20 @@ public class ConsensusPrint {
 				getMainDB().getUserDB().clearHistory();
 			}
 			
+			boolean useaddress = false;
+			MiniData addr = null;
+			if(zMessage.exists("address")) {
+				useaddress = true;
+				String address = zMessage.getString("address");
+				if(address.startsWith("0x")) {
+					//It's a regular HASH address
+					addr = new MiniData(address);
+				}else if(address.startsWith("Mx")) {
+					//It's a Minima Address!
+					addr = Address.convertMinimaAddress(address);
+				}
+			}
+			
 			//Get the History
 			ArrayList<reltxpow> history = getMainDB().getUserDB().getHistory();
 			
@@ -559,7 +574,35 @@ public class ConsensusPrint {
 			JSONArray totbal = new JSONArray();
 			
 			for(reltxpow rpow : history) {
-				totbal.add(rpow.toJSON(getMainDB()));
+				if(useaddress) {
+					boolean found = false;
+					TxPOW txpow   = rpow.getTxPOW();
+					
+					ArrayList<Coin> inputs = txpow.getTransaction().getAllInputs();
+					for(Coin in : inputs) {
+						if(in.getAddress().isEqual(addr)) {
+							found = true;
+							break;
+						}
+					}
+					
+//					if(!found) {
+//						ArrayList<Coin> outputs = txpow.getTransaction().getAllOutputs();
+//						for(Coin out : outputs) {
+//							if(in.getAddress().isEqual(addr)) {
+//								found = true;
+//								break;
+//							}
+//						}	
+//					}
+					
+					if(found) {
+						totbal.add(rpow.toJSON(getMainDB()));
+					}
+					
+				}else {
+					totbal.add(rpow.toJSON(getMainDB()));	
+				}
 			}
 			
 			//And add to the final response

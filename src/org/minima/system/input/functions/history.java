@@ -9,7 +9,7 @@ public class history extends CommandFunction {
 	public history() {
 		super("history");
 		
-		setHelp("(clear)", "Return a list of relevant past transactions or clear them all", "");
+		setHelp("(address) (clear)", "Return a list of past transactions or clear them all", "");
 	}
 	
 	@Override
@@ -19,9 +19,17 @@ public class history extends CommandFunction {
 		if(zInput.length>1) {
 			if(zInput[1].equalsIgnoreCase("clear") ) {
 				msg.addBoolean("clear", true);
+			}else {
+				msg.addString("address", zInput[1]);
 			}
 		}
 		
+		if(zInput.length>2) {
+			if(zInput[2].equalsIgnoreCase("clear") ) {
+				msg.addBoolean("clear", true);
+			}
+		}
+			
 		//Post It..
 		getMainHandler().getConsensusHandler().PostMessage(msg);
 	}

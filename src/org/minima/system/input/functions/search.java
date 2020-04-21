@@ -9,7 +9,7 @@ public class search extends CommandFunction{
 	public search() {
 		super("search");
 		
-		setHelp("[address]", "Search for any unspent coins of the given address", "");
+		setHelp("[address] (spent|unspent)", "Search for coins of the given address. Deafaults to UNSPENT", "");
 	}
 	
 	@Override
@@ -20,6 +20,13 @@ public class search extends CommandFunction{
 		//Create a message
 		Message sender = getResponseMessage(ConsensusPrint.CONSENSUS_SEARCH);
 		sender.addString("address", address);
+		
+		sender.addBoolean("spent", false);
+		if(zInput.length>2) {
+			if(zInput[2].equals("spent")) {
+				sender.addBoolean("spent", true);
+			}
+		}
 		
 		//Send it to the miner..
 		getMainHandler().getConsensusHandler().PostMessage(sender);

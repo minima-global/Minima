@@ -30,6 +30,10 @@ public class reltxpow implements Streamable {
 		mTokenValues  = zValues;
 	}
 	
+	public TxPOW getTxPOW() {
+		return mTxPow;
+	}
+	
 	public JSONObject toJSON(MinimaDB zDB) {
 		//Never changes so only do it once..
 		if(mJSON != null) {
