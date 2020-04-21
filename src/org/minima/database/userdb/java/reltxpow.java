@@ -21,6 +21,8 @@ public class reltxpow implements Streamable {
 	
 	Hashtable<String, MiniNumber> mTokenValues;
 	
+	JSONObject mJSON = null;
+	
 	public reltxpow() {}
 	
 	public reltxpow(TxPOW zTxPow, Hashtable<String, MiniNumber> zValues) {
@@ -29,9 +31,15 @@ public class reltxpow implements Streamable {
 	}
 	
 	public JSONObject toJSON(MinimaDB zDB) {
-		JSONObject ret = new JSONObject();
+		//Never changes so only do it once..
+		if(mJSON != null) {
+			return mJSON;	
+		}
 		
-		ret.put("txpow", mTxPow.toJSON());
+		//Start fresh
+		mJSON = new JSONObject();
+		
+		mJSON.put("txpow", mTxPow.toJSON());
 		
 		JSONArray tokarray = new JSONArray();
 		Enumeration<String> tokens = mTokenValues.keys();
@@ -54,7 +62,7 @@ public class reltxpow implements Streamable {
 				TokenProof tp = zDB.getUserDB().getTokenDetail(new MiniData(token));
 				
 				if(tp == null) {
-					json.put("name", "null");
+					json.put("name", "null (UNKNOWN)");
 				}else {
 					json.put("name", tp.getName().toString());
 					scale = tp.getScaleFactor();
@@ -63,9 +71,9 @@ public class reltxpow implements Streamable {
 			json.put("amount", amt.mult(scale).toString());
 			tokarray.add(json);
 		}
-		ret.put("values", tokarray);
+		mJSON.put("values", tokarray);
 		
-		return ret;
+		return mJSON;
 	}
 
 	@Override
@@ -99,5 +107,8 @@ public class reltxpow implements Streamable {
 			
 			mTokenValues.put(token, amt);
 		}
+		
+		//Reset the JSON
+		mJSON = null;
 	}
 }

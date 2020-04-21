@@ -71,10 +71,23 @@ public class MiniData implements Streamable {
 	}
 	
 	public boolean isEqual(MiniData zCompare) {
-		if(getLength() != zCompare.getLength()) {
+		int len = getLength();
+		if(len != zCompare.getLength()) {
 			return false;
 		}
-		return mDataVal.compareTo(zCompare.getDataValue()) == 0;
+		
+		//Get both data sets..
+		byte[] data = zCompare.getData();
+		
+		//Chack the data..
+		for(int i=0;i<len;i++) {
+			if(data[i] != mData[i]) {
+				return false;
+			}
+		}
+	
+		return true;
+//		return mDataVal.compareTo(zCompare.getDataValue()) == 0;
 	}
 	
 	public boolean isLess(MiniData zCompare) {
@@ -199,9 +212,21 @@ public class MiniData implements Streamable {
 	}
 	
 	public static void main(String[] zArgs) {
-		MiniData data = new MiniData();
 		
-		MinimaLogger.log("data    : "+data.toString());
-		MinimaLogger.log("value   : "+data.getDataValue().toString());
+		MiniData data1 = getRandomData(128);
+		MiniData data2 = getRandomData(128);
+		
+		long timenow = System.currentTimeMillis();
+		boolean allsame = true;
+		for(int i=0;i<10000000;i++) {
+			boolean same = data1.isEqual(data2);
+			if(!same) {
+				allsame = false;
+			}
+		}
+		
+		long timediff = System.currentTimeMillis() - timenow;
+		System.out.println(allsame+" "+timediff);
+		
 	}
 }

@@ -17,6 +17,7 @@ import org.minima.database.coindb.CoinDBRow;
 import org.minima.database.mmr.MMREntry;
 import org.minima.database.mmr.MMRPrint;
 import org.minima.database.mmr.MMRSet;
+import org.minima.database.txpowdb.TxPOWDBRow;
 import org.minima.database.txpowdb.TxPowDBPrinter;
 import org.minima.database.txpowtree.BlockTree;
 import org.minima.database.txpowtree.BlockTreeNode;
@@ -28,6 +29,7 @@ import org.minima.objects.Coin;
 import org.minima.objects.PubPrivKey;
 import org.minima.objects.TxPOW;
 import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniInteger;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.proofs.TokenProof;
 import org.minima.system.Main;
@@ -65,6 +67,7 @@ public class ConsensusPrint {
 	public static final String CONSENSUS_KEYS 				= CONSENSUS_PREFIX+"KEYS";
 	public static final String CONSENSUS_ADDRESSES 			= CONSENSUS_PREFIX+"ADDRESSES";
 	public static final String CONSENSUS_SEARCH 			= CONSENSUS_PREFIX+"SEARCH";
+	public static final String CONSENSUS_TXPOWSEARCH 		= CONSENSUS_PREFIX+"TXPOWSEARCH";
 	
 	public static final String CONSENSUS_HISTORY 		    = CONSENSUS_PREFIX+"HISTORY";
 	public static final String CONSENSUS_TOKENS 			= CONSENSUS_PREFIX+"TOKENS";
@@ -173,6 +176,34 @@ public class ConsensusPrint {
 				dets.put("weight", tree.getChainRoot().getTotalWeight());
 				InputHandler.endResponse(zMessage, true, "");	
 			}
+		
+		}else if(zMessage.isMessageType(CONSENSUS_TXPOWSEARCH)){
+			String address = zMessage.getString("address");
+			if(address.startsWith("Mx")) {
+				//It's a Minima Address!
+				address = Address.convertMinimaAddress(address).to0xString();
+			}
+			MiniData addr  = new MiniData(address);
+			
+			//The ones we find..
+			JSONArray txpowlist = new JSONArray();
+			
+			//Get all the TXPOWDB
+			UserDB udb = getMainDB().getUserDB();
+			ArrayList<TxPOWDBRow> alltxpow = getMainDB().getTxPowDB().getAllTxPOWDBRow();
+			for(TxPOWDBRow txpow : alltxpow) {
+				ArrayList<Coin> inputs = txpow.getTxPOW().getTransaction().getAllInputs();
+				for(Coin input : inputs) {
+					if(input.getAddress().isEqual(addr)) {
+						txpowlist.add(txpow.getTxPOW().toJSON());	
+						break;
+					}
+				}
+			}
+			
+			JSONObject finds = InputHandler.getResponseJSON(zMessage);
+			finds.put("txpowlist", txpowlist);
+			InputHandler.endResponse(zMessage, true, "");
 			
 		}else if(zMessage.isMessageType(CONSENSUS_SEARCH)){
 			String address = zMessage.getString("address");
@@ -520,7 +551,7 @@ public class ConsensusPrint {
 				getMainDB().getUserDB().clearHistory();
 			}
 			
-			//Get the HIstory
+			//Get the History
 			ArrayList<reltxpow> history = getMainDB().getUserDB().getHistory();
 			
 			//All the relevant transactions..
