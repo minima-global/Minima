@@ -9,7 +9,7 @@ public class txninput extends CommandFunction {
 
 	public txninput() {
 		super("txninput");
-		setHelp("[id] [coinID]", "Add a specific Coin as an input to the specified transaction", "");
+		setHelp("[id] [coinid] (input_num)", "Add a specific Coin as an input to the specified transaction. Can specify position - usually to add at 0.", "");
 	}
 
 	@Override
@@ -20,11 +20,16 @@ public class txninput extends CommandFunction {
 		//Get the coinid of the input
 		String coinid = zInput[2];
 		MiniData cid = new MiniData(coinid);
-				
+		
 		//Send to the consensus Handler
 		Message msg = getResponseMessage(ConsensusTxn.CONSENSUS_TXNINPUT);
 		msg.addInt("transaction", txn);
 		msg.addObject("coinid", cid);
+		
+		if(zInput.length>3) {
+			int position = Integer.parseInt(zInput[3]); 
+			msg.addObject("position", position);
+		}
 		
 		getMainHandler().getConsensusHandler().PostMessage(msg);
 	}
