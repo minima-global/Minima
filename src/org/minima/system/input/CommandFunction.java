@@ -8,6 +8,7 @@ import org.minima.system.input.functions.balance;
 import org.minima.system.input.functions.chart;
 import org.minima.system.input.functions.cleanscript;
 import org.minima.system.input.functions.coins;
+import org.minima.system.input.functions.coinsimple;
 import org.minima.system.input.functions.connect;
 import org.minima.system.input.functions.createtoken;
 import org.minima.system.input.functions.disconnect;
@@ -53,6 +54,7 @@ import org.minima.system.input.functions.txns.txnoutput;
 import org.minima.system.input.functions.txns.txnpost;
 import org.minima.system.input.functions.txns.txnscript;
 import org.minima.system.input.functions.txns.txnsign;
+import org.minima.system.input.functions.txns.txnsignauto;
 import org.minima.system.input.functions.txns.txnstate;
 import org.minima.system.input.functions.txns.txnvalidate;
 import org.minima.utils.ResponseStream;
@@ -66,14 +68,14 @@ public abstract class CommandFunction {
 	public static CommandFunction[] ALL_FUNCTIONS = 
 		{
 			new backup(), new balance(), new connect(), new createtoken(), new disconnect(), new weblink(),
-			new gimme50(), new help(), new intro(), new automine(), new newaddress(), new coins(), new txpowinfo(), new keys(),
+			new gimme50(), new help(), new intro(), new automine(), new newaddress(), new coins(), new coinsimple(), new txpowinfo(), new keys(),
 			new newscript(), new printchain(), new printtree(), new quit(),new reconnect(), new runscript(), new cleanscript(), 
 			new send(), new status(), new test(), new trace(), new tutorial(), new history(), new tokens(),
 			new exportkey(), new importkey(), new exportcoin(), new importcoin(), new search(),
 			new chainsha(), new keepcoin(), new scripts(), new chart(), new network(),
 			new txncreate(), new txndelete(), new txninput(), new txnlist(), new txnauto(),
 			new txnstate(), new txnexport(), new txnimport(), new txnscript(),
-			new txnoutput(), new txnpost(), new txnsign(), new txnvalidate(),
+			new txnoutput(), new txnpost(), new txnsign(), new txnvalidate(),new txnsignauto(),
 			new extrascript(), new sign()
 		};  
 	
