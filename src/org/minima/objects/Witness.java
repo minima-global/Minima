@@ -66,10 +66,14 @@ public class Witness implements Streamable {
 		return mSignatureProofs;
 	}
 	
+	public void clearSignatures() {
+		mSignatureProofs.clear();
+	}
+	
 	public String getAllPubKeysCSV(){
 		String ret = "";
 		for(SignatureProof sig : mSignatureProofs) {
-			ret += sig.getFinalHash().to0xString()+"#";
+			ret += sig.getFinalHash().to0xString()+" # ";
 		}
 
 		return ret.trim();
