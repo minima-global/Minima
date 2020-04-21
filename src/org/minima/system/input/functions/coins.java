@@ -8,7 +8,7 @@ public class coins extends CommandFunction {
 
 	public coins() {
 		super("coins");
-		setHelp("", "(address) Either return all your coins or all your coins of a given address", "");
+		setHelp("(address)", "Return all your tracked coins ( can specify a specific address )", "");
 	}
 	
 	@Override
