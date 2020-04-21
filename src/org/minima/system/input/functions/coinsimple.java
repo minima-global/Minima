@@ -8,7 +8,7 @@ public class coinsimple extends CommandFunction {
 
 	public coinsimple() {
 		super("coinsimple");
-		setHelp("[tokenid]", "Return all your simple sendable coins of the given tokenid that can be auto-signed with txnsignauto", "");
+		setHelp("[tokenid]", "Return all your simple sendable coins of the given tokenid.", "");
 	}
 	
 	@Override

@@ -57,7 +57,10 @@ public class ConsensusPrint {
 	public static final String CONSENSUS_PREFIX 			= "CONSENSUSPRINT_";
 	
 	public static final String CONSENSUS_BALANCE 			= CONSENSUS_PREFIX+"BALANCE";
+	
 	public static final String CONSENSUS_COINS 				= CONSENSUS_PREFIX+"COINS";
+	public static final String CONSENSUS_COINSIMPLE 		= CONSENSUS_PREFIX+"COINSIMPLE";
+	
 	public static final String CONSENSUS_TXPOW 				= CONSENSUS_PREFIX+"TXPOW";
 	public static final String CONSENSUS_KEYS 				= CONSENSUS_PREFIX+"KEYS";
 	public static final String CONSENSUS_ADDRESSES 			= CONSENSUS_PREFIX+"ADDRESSES";
@@ -451,6 +454,35 @@ public class ConsensusPrint {
 			//All good
 			InputHandler.endResponse(zMessage, true, "");
 	
+		}else if(zMessage.isMessageType(CONSENSUS_COINSIMPLE)){
+			//Which token..
+			String tokenid = zMessage.getString("tokenid");
+			
+			//get the MMR
+			BlockTreeNode tip  		= getMainDB().getMainTree().getChainTip();
+			MMRSet baseset 			= tip.getMMRSet();
+			
+			JSONObject allcoins = InputHandler.getResponseJSON(zMessage);
+			JSONArray totcoins = new JSONArray();
+			
+			ArrayList<Coin> coins = getMainDB().getTotalSimpleSpendableCoins(new MiniData(tokenid));
+			for(Coin coin : coins) {
+				//Get the Public Key..
+				MiniData pubk = getMainDB().getUserDB().getPublicKeyForSimpleAddress(coin.getAddress());
+				
+				JSONObject simplecoin = new JSONObject();
+				simplecoin.put("coin",coin.toJSON());
+				simplecoin.put("key",pubk.to0xString());
+				
+				totcoins.add(simplecoin);
+			}
+			
+			//Add to the main JSON
+			allcoins.put("coins", totcoins);
+			
+			//Add it to the output
+			InputHandler.endResponse(zMessage, true, "");
+		
 		}else if(zMessage.isMessageType(CONSENSUS_COINS)){
 			//Return all or some
 			String address = "";
