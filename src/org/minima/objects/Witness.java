@@ -86,7 +86,7 @@ public class Witness implements Streamable {
 		mMMRProofs.add(zProof);
 	}
 	
-	public void clearProofs(){
+	public void clearMMRProofs(){
 		mMMRProofs.clear();	
 	}
 	

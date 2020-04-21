@@ -690,7 +690,7 @@ public class MinimaDB {
 		MiniNumber currentblock = basemmr.getBlockTime();
 		
 		//Clear the proofs..
-		zWitness.clearProofs();
+		zWitness.clearMMRProofs();
 		
 		//Cycle through the inputs..
 		ArrayList<Coin> ins = zTransaction.getAllInputs();

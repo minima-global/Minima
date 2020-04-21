@@ -65,8 +65,16 @@ public class Transaction implements Streamable {
 		mInputs.add(zCoin);
 	}
 	
+	public void addInput(Coin zCoin, int zPosition) {
+		mInputs.add(zPosition, zCoin);
+	}
+	
 	public void addOutput(Coin zCoin) {
 		mOutputs.add(zCoin);
+	}
+	
+	public void addOutput(Coin zCoin, int zPosition) {
+		mOutputs.add(zPosition, zCoin);
 	}
 	
 	public boolean isEmpty() {
