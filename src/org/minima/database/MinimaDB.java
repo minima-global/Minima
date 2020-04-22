@@ -594,9 +594,9 @@ public class MinimaDB {
 			if(txpow.isTransaction()) {
 				ArrayList<Coin> inputs = txpow.getTransaction().getAllInputs();	
 				for(Coin cc : inputs) {
-					if(getUserDB().isAddressRelevant(cc.getAddress())) {
+//					if(getUserDB().isAddressRelevant(cc.getAddress())) {
 						coins.add(cc);	
-					}
+//					}
 				}
 			}
 		}

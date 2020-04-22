@@ -18,6 +18,7 @@ import org.minima.system.network.NetClientReader;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 import org.minima.utils.messages.Message;
+import org.minima.utils.messages.TimerMessage;
 
 public class ConsensusNet {
 
@@ -266,6 +267,9 @@ public class ConsensusNet {
 					
 					//We don't have it, get it..
 					sendNetMessage(zMessage, NetClientReader.NETMESSAGE_TXPOW_REQUEST, txn);
+					
+					//something funny.. FLUSH MEMPOOL
+					mHandler.PostTimerMessage(new TimerMessage(10000, ConsensusUser.CONSENSUS_FLUSHMEMPOOL));
 				}
 			}
 			

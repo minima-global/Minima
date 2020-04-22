@@ -435,6 +435,9 @@ public class ConsensusHandler extends SystemHandler {
 					InputHandler.endResponse(zMessage, false, "Insufficient funds! You only have : "+total);
 				}
 				
+				//something funny.. FLUSH MEMPOOL
+				PostTimerMessage(new TimerMessage(10000, ConsensusUser.CONSENSUS_FLUSHMEMPOOL));
+				
 				return;
 				
 			}else {

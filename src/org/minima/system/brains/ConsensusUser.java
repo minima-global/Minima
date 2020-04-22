@@ -15,6 +15,7 @@ import org.minima.database.mmr.MMRData;
 import org.minima.database.mmr.MMREntry;
 import org.minima.database.mmr.MMRProof;
 import org.minima.database.mmr.MMRSet;
+import org.minima.database.txpowdb.TxPOWDBRow;
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.values.BooleanValue;
 import org.minima.kissvm.values.HEXValue;
@@ -26,6 +27,7 @@ import org.minima.objects.Coin;
 import org.minima.objects.PubPrivKey;
 import org.minima.objects.StateVariable;
 import org.minima.objects.Transaction;
+import org.minima.objects.TxPOW;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MMRSumNumber;
 import org.minima.objects.base.MiniData;
@@ -57,6 +59,8 @@ public class ConsensusUser {
 	
 	public static final String CONSENSUS_KEEPCOIN 			= CONSENSUS_PREFIX+"KEEPCOIN";
 	public static final String CONSENSUS_UNKEEPCOIN 		= CONSENSUS_PREFIX+"UNKEEPCOIN";
+	
+	public static final String CONSENSUS_FLUSHMEMPOOL 		= CONSENSUS_PREFIX+"FLUSHMEMPOOL";
 	
 	public static final String CONSENSUS_EXPORTKEY 			= CONSENSUS_PREFIX+"EXPORTKEY";
 	public static final String CONSENSUS_IMPORTKEY 			= CONSENSUS_PREFIX+"IMPORTKEY";
@@ -432,6 +436,37 @@ public class ConsensusUser {
 			resp.put("result", cc.isSuccess());
 			InputHandler.endResponse(zMessage, true, "");
 		
+		}else if(zMessage.isMessageType(CONSENSUS_FLUSHMEMPOOL)) {
+			//Check the MEMPOOL transactions..
+			ArrayList<TxPOWDBRow> unused = getMainDB().getTxPowDB().getAllUnusedTxPOW();
+			ArrayList<MiniData> remove = new ArrayList<>();
+			
+			//Check them all..
+			MinimaLogger.log("FLUSHING MEMPOOL!");
+			for(TxPOWDBRow txrow : unused) {
+				TxPOW txpow    = txrow.getTxPOW();
+				
+				//Check it..
+				boolean sigsok = TxPOWChecker.checkSigs(txpow);
+				boolean trxok  = TxPOWChecker.checkTransactionMMR(txpow, getMainDB());
+					
+				if(!sigsok || !trxok) {
+					remove.add(txpow.getTxPowID());
+				}
+			}
+			
+			//Now remove these..
+			JSONArray rem = new JSONArray();
+			for(MiniData remtxp : remove) {
+				rem.add(remtxp.to0xString());
+				getMainDB().getTxPowDB().removeTxPOW(remtxp);
+			}
+			
+			//Now you have the proof..
+			JSONObject resp = InputHandler.getResponseJSON(zMessage);
+			resp.put("removed", rem);
+			InputHandler.endResponse(zMessage, true, "Mempool Flushed");
+			
 		}else if(zMessage.isMessageType(CONSENSUS_UNKEEPCOIN)) {
 			//Once a coin has been used - say in a DEX.. you can remove it from your coinDB
 			String cid = zMessage.getString("coinid");
