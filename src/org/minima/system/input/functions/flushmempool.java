@@ -9,13 +9,21 @@ public class flushmempool extends CommandFunction{
 	public flushmempool() {
 		super("flushmempool");
 		
-		setHelp("", "Check mempool transactions and remove invalid - they may be stuck..", "");
+		setHelp("(hard)", "Check mempool transactions and remove invalid - they may be stuck. HARD removes all.", "");
 	}
 	
 	@Override
 	public void doFunction(String[] zInput) throws Exception {
 		//Create a message
 		Message sender = getResponseMessage(ConsensusUser.CONSENSUS_FLUSHMEMPOOL);
+		
+		boolean hard = false;
+		if(zInput.length>1) {
+			hard = true;
+		}
+		
+		//HARD reset simply remove them all..
+		sender.addBoolean("hard", hard);
 		
 		//Send it to the miner..
 		getMainHandler().getConsensusHandler().PostMessage(sender);

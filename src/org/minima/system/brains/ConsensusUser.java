@@ -437,21 +437,28 @@ public class ConsensusUser {
 			InputHandler.endResponse(zMessage, true, "");
 		
 		}else if(zMessage.isMessageType(CONSENSUS_FLUSHMEMPOOL)) {
+			boolean hard = zMessage.getBoolean("hard");
+			
 			//Check the MEMPOOL transactions..
 			ArrayList<TxPOWDBRow> unused = getMainDB().getTxPowDB().getAllUnusedTxPOW();
 			ArrayList<MiniData> remove = new ArrayList<>();
 			
 			//Check them all..
-			MinimaLogger.log("FLUSHING MEMPOOL!");
+			MinimaLogger.log("FLUSHING MEMPOOL! "+hard);
 			for(TxPOWDBRow txrow : unused) {
 				TxPOW txpow    = txrow.getTxPOW();
 				
-				//Check it..
-				boolean sigsok = TxPOWChecker.checkSigs(txpow);
-				boolean trxok  = TxPOWChecker.checkTransactionMMR(txpow, getMainDB());
-					
-				if(!sigsok || !trxok) {
+				//Do we just remove them all.. ?
+				if(hard) {
 					remove.add(txpow.getTxPowID());
+				}else {
+					//Check it..
+					boolean sigsok = TxPOWChecker.checkSigs(txpow);
+					boolean trxok  = TxPOWChecker.checkTransactionMMR(txpow, getMainDB());
+						
+					if(!sigsok || !trxok) {
+						remove.add(txpow.getTxPowID());
+					}	
 				}
 			}
 			
@@ -464,6 +471,7 @@ public class ConsensusUser {
 			
 			//Now you have the proof..
 			JSONObject resp = InputHandler.getResponseJSON(zMessage);
+			resp.put("hard", hard);
 			resp.put("removed", rem);
 			InputHandler.endResponse(zMessage, true, "Mempool Flushed");
 			
