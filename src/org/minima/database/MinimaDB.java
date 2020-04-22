@@ -307,9 +307,12 @@ public class MinimaDB {
 			//See what the difference is..
 			BigDecimal ratio = new BigDecimal(cascweight).divide(new BigDecimal(weight), MathContext.DECIMAL128);
 			
+			//If the cascade levels are long enough this shuld NEVER happen
 			if(ratio.compareTo(new BigDecimal(GlobalParams.MINIMA_CASCADE_RATIO)) < 0) {
 				//Too much power lost.. wait..
-				return;
+				MinimaLogger.log("Cascade Tree LOST more than "+GlobalParams.MINIMA_CASCADE_RATIO+" "+ratio);
+				//For NOW continue..
+//				return;
 			}
 			
 			//Set it

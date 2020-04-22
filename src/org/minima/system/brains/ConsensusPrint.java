@@ -191,11 +191,47 @@ public class ConsensusPrint {
 			//Get all the TXPOWDB
 			UserDB udb = getMainDB().getUserDB();
 			ArrayList<TxPOWDBRow> alltxpow = getMainDB().getTxPowDB().getAllTxPOWDBRow();
-			for(TxPOWDBRow txpow : alltxpow) {
-				ArrayList<Coin> inputs = txpow.getTxPOW().getTransaction().getAllInputs();
+			for(TxPOWDBRow txpowrow : alltxpow) {
+				ArrayList<Coin> inputs = txpowrow.getTxPOW().getTransaction().getAllInputs();
 				for(Coin input : inputs) {
 					if(input.getAddress().isEqual(addr)) {
-						txpowlist.add(txpow.getTxPOW().toJSON());	
+						//Create a JSON Object
+						JSONObject txp = new JSONObject();
+						
+						//Is it relevant to us..?
+						boolean relevant = udb.isTransactionRelevant(txpowrow.getTxPOW().getTransaction());
+						txp.put("relevant", relevant);
+						JSONArray values = new JSONArray();
+						if(relevant) {
+							//Add the Value Transfer Amounts..
+							Hashtable<String, MiniNumber> tokamt = getMainDB().getTransactionTokenAmounts(txpowrow.getTxPOW());
+							
+							//And add.. 
+							Enumeration<String> tokens = tokamt.keys();
+							while(tokens.hasMoreElements()) {
+								String token   = tokens.nextElement();
+								MiniNumber amt = tokamt.get(token);
+								
+								JSONObject value = new JSONObject();
+								value.put("token",token);
+								value.put("value",amt);
+								
+								values.add(value);
+							}
+						}
+						txp.put("values", values);
+						
+						//Details
+						boolean isin = txpowrow.isInBlock();
+						txp.put("isinblock", isin);
+						if(isin) {
+							txp.put("inblock", txpowrow.getInBlockNumber().toString());	
+						}else {
+							txp.put("inblock", "-1");
+						}
+						txp.put("txpow", txpowrow.getTxPOW().toJSON());
+						
+						txpowlist.add(txp);	
 						break;
 					}
 				}

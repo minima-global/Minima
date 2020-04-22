@@ -253,6 +253,26 @@ public class JavaUserDB implements UserDB, Streamable{
 		
 		return false;
 	}
+	
+	@Override
+	public boolean isTransactionRelevant(Transaction zTrans) {
+		//Check them - adding the script to outputs we own
+		ArrayList<Coin> ins  = zTrans.getAllInputs();
+		for(Coin in : ins) {
+			if(isAddressRelevant(in.getAddress())) {
+				return true;
+			}
+		}
+			
+		ArrayList<Coin> outs = zTrans.getAllOutputs();
+		for(Coin out : outs) {
+			if(isAddressRelevant(out.getAddress())) {
+				return true;
+			}
+		}
+		
+		return false;
+	}
 
 	@Override
 	public boolean isStateListRelevant(ArrayList<StateVariable> zStateVarList) {

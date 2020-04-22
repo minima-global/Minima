@@ -56,6 +56,7 @@ public class ConsensusUser {
 	public static final String CONSENSUS_CLEANSCRIPT 		= CONSENSUS_PREFIX+"CLEANSCRIPT";
 	
 	public static final String CONSENSUS_KEEPCOIN 			= CONSENSUS_PREFIX+"KEEPCOIN";
+	public static final String CONSENSUS_UNKEEPCOIN 		= CONSENSUS_PREFIX+"UNKEEPCOIN";
 	
 	public static final String CONSENSUS_EXPORTKEY 			= CONSENSUS_PREFIX+"EXPORTKEY";
 	public static final String CONSENSUS_IMPORTKEY 			= CONSENSUS_PREFIX+"IMPORTKEY";
@@ -431,6 +432,19 @@ public class ConsensusUser {
 			resp.put("result", cc.isSuccess());
 			InputHandler.endResponse(zMessage, true, "");
 		
+		}else if(zMessage.isMessageType(CONSENSUS_UNKEEPCOIN)) {
+			//Once a coin has been used - say in a DEX.. you can remove it from your coinDB
+			String cid = zMessage.getString("coinid");
+			
+			//Remove the coin..
+			boolean found = getMainDB().getCoinDB().removeCoin(new MiniData(cid));
+			
+			//Now you have the proof..
+			JSONObject resp = InputHandler.getResponseJSON(zMessage);
+			resp.put("found", found);
+			resp.put("coinid", cid);
+			InputHandler.endResponse(zMessage, true, "Coin removed");
+			
 		}else if(zMessage.isMessageType(CONSENSUS_KEEPCOIN)) {
 			String cid = zMessage.getString("coinid");
 			

@@ -198,6 +198,9 @@ public class ConsensusHandler extends SystemHandler {
 				PostMessage(print);
 			}
 			
+			//Check 3 blocks from the tip.. for relevant transactions..
+			
+			
 //			//Add a chartpoint
 //			Message chart = new Message(ConsensusPrint.CONSENSUS_ADDCHARTPOINT);
 //			chart.addString("block", getMainDB().getMainTree().getChainTip().getTxPow().getBlockNumber().toString());

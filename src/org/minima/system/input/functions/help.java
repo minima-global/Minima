@@ -88,6 +88,7 @@ public class help extends CommandFunction{
 			addJSONDesc(new exportcoin());
 			addJSONDesc(new importcoin());
 			addJSONDesc(new keepcoin());
+			addJSONDesc(new unkeepcoin());
 			
 			addJSONDesc(new search());
 			addJSONDesc(new txpowsearch());

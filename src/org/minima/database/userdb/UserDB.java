@@ -66,6 +66,13 @@ public interface UserDB {
 	public boolean isAddressRelevant(MiniData zAddress);
 	
 	/**
+	 * Check if a transaction matters..
+	 * @param zTrans
+	 * @return
+	 */
+	public boolean isTransactionRelevant(Transaction zTrans);
+	
+	/**
 	 * Check if the state of this transaction has a KEY we own.. 
 	 * ALL unspent outputs are then tracked - they could be for you
 	 * @param zTrans

@@ -23,8 +23,6 @@ public class JavaCoinDB implements CoinDB{
 		mRows = new ArrayList<>();
 	}
 	
-
-
 	@Override
 	public ArrayList<CoinDBRow> getComplete() {
 		return mRows;
@@ -67,4 +65,21 @@ public class JavaCoinDB implements CoinDB{
 		mRows = newrows;
 	}
 
+	@Override
+	public boolean removeCoin(MiniData zCoinID) {
+		boolean found=false;
+		ArrayList<CoinDBRow> newrows = new ArrayList<>();
+		for(CoinDBRow row : mRows) {
+			if(!row.getCoin().getCoinID().isEqual(zCoinID)) {
+				newrows.add(row);
+			}else {
+				found=true;
+			}
+		}
+		mRows = newrows;
+		
+		return found;
+	}
+
+	
 }

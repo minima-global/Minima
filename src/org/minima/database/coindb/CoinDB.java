@@ -12,7 +12,6 @@ public interface CoinDB {
 	 * Clear the database
 	 */
 	public void clearDB();
-//	public void clearOldCoins(long zCurrentBlock);
 	
 	/**
 	 * SELECT *
@@ -37,4 +36,9 @@ public interface CoinDB {
 	public CoinDBRow addCoinRow(Coin zCoin);
 	
 	public void removeOldSpentCoins(MiniNumber zMinBlock);
+	
+	/**
+	 * Can remove a Coin Row..
+	 */
+	public boolean removeCoin(MiniData zCoinID);
 }

@@ -407,6 +407,7 @@ public class TxPOWChecker {
 		MiniData transhash = Crypto.getInstance().hashObject(trans);
 				
 		//Get outputs - add them to the MMR also..
+		TokenProof newtokdets = null;
 		ArrayList<Coin> outputs  = trans.getAllOutputs();
 		int outs = outputs.size();
 		for(int i=0;i<outs;i++) {
@@ -418,10 +419,8 @@ public class TxPOWChecker {
 			
 			//Is this a token create output..
 			MiniData tokid 			= output.getTokenID();
-			TokenProof newtoken 	= null;
 			
 			//Is this a token or are we creating a Token
-			TokenProof newtokdets = null;
 			if(tokid.isEqual(Coin.TOKENID_CREATE)) {
 				//Make it the HASH ( CoinID | Total Amount..the token details )
 				TokenProof gentoken = trans.getTokenGenerationDetails();
@@ -470,15 +469,9 @@ public class TxPOWChecker {
 				if(rel) {
 					//Keep this MMR record
 					zMMRSet.addKeeper(unspent.getEntry());	
-					
-					//Keep the token generation numbers
-					if(newtokdets != null) {
-						zDB.getUserDB().addTokenDetails(newtokdets);
-					}
-				}
+				}				
 			}
 		}
-		
 		
 		//Now check after all that -  valid amounts..
 		if(!trans.checkValidInOutPerToken()) {
@@ -487,6 +480,19 @@ public class TxPOWChecker {
 			zContractLog.add(errorlog);
 			errorlog.put("error", "Total Inputs are LESS than Total Outputs for certain Tokens");
 			return false;
+		}
+		
+		//Add All KNOWN Tokens..
+		if(zTouchMMR) {
+			if(newtokdets != null) {
+				zDB.getUserDB().addTokenDetails(newtokdets);
+			}
+			
+			//Add all the tokens..
+			ArrayList<TokenProof> tokens =  zWit.getAllTokenDetails();
+			for(TokenProof tp : tokens) {
+				zDB.getUserDB().addTokenDetails(tp);
+			}
 		}
 				
 		//All OK!

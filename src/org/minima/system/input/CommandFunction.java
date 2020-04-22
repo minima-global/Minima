@@ -39,6 +39,7 @@ import org.minima.system.input.functions.trace;
 import org.minima.system.input.functions.tutorial;
 import org.minima.system.input.functions.txpowinfo;
 import org.minima.system.input.functions.txpowsearch;
+import org.minima.system.input.functions.unkeepcoin;
 import org.minima.system.input.functions.weblink;
 import org.minima.system.input.functions.transfer.exportcoin;
 import org.minima.system.input.functions.transfer.exportkey;
@@ -73,11 +74,11 @@ public abstract class CommandFunction {
 			new newscript(), new printchain(), new printtree(), new quit(),new reconnect(), new runscript(), new cleanscript(), 
 			new send(), new status(), new test(), new trace(), new tutorial(), new history(), new tokens(),
 			new exportkey(), new importkey(), new exportcoin(), new importcoin(), new search(),
-			new chainsha(), new keepcoin(), new scripts(), new chart(), new network(),
+			new chainsha(), new keepcoin(), new unkeepcoin(), new scripts(), new chart(), new network(),
 			new txncreate(), new txndelete(), new txninput(), new txnlist(), new txnauto(),
 			new txnstate(), new txnexport(), new txnimport(), new txnscript(),
 			new txnoutput(), new txnpost(), new txnsign(), new txnvalidate(),new txnsignauto(),
-			new extrascript(), new sign(), new txpowsearch()
+			new extrascript(), new sign(), new txpowsearch(), 
 		};  
 	
 	/**
