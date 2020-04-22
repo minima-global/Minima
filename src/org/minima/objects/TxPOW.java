@@ -6,7 +6,6 @@ package org.minima.objects;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -136,11 +135,6 @@ public class TxPOW implements Streamable {
 	protected boolean _mIsBlockPOW  = false;
 	protected boolean _mIsTxnPOW    = false;
 	protected int     _mSuperBlock  = 0;
-	
-	/**
-	 * PRE-create the JSON for speed..
-	 */
-	JSONObject mJSON = null;
 	
 	/**
 	 * Main Constructor
@@ -278,13 +272,13 @@ public class TxPOW implements Streamable {
 		mMMRTotal= zTotal;
 	}
 	
-	private void createJSON() {
-		mJSON = new JSONObject();
+	public JSONObject toJSON() {
+		JSONObject txpow = new JSONObject();
 		
-		mJSON.put("block", mBlockNumber.toString());
-		mJSON.put("isblock", _mIsBlockPOW);
-		mJSON.put("txpowid", _mTxPOWID.toString());
-		mJSON.put("parent", mParent.toString());
+		txpow.put("block", mBlockNumber.toString());
+		txpow.put("isblock", _mIsBlockPOW);
+		txpow.put("txpowid", _mTxPOWID.toString());
+		txpow.put("parent", mParent.toString());
 		
 		//The Super parents are efficiently encoded in RLE
 		JSONArray supers = new JSONArray();
@@ -323,7 +317,7 @@ public class TxPOW implements Streamable {
 				}
 			}
 		}
-		mJSON.put("superparents", supers);
+		txpow.put("superparents", supers);
 		
 //		//The Super parents
 //		JSONArray supers = new JSONArray();
@@ -332,43 +326,37 @@ public class TxPOW implements Streamable {
 //		}
 //		txpow.put("superparents", supers);
 		
-		mJSON.put("blkdiff", mBlockDifficulty.to0xString());
-		mJSON.put("superblock", _mSuperBlock);
-		mJSON.put("txndiff", mTxnDifficulty.to0xString());
-		mJSON.put("txn", mTransaction.toJSON());
-		mJSON.put("txnid", getTransID().to0xString());
-		mJSON.put("witness", mWitness.toJSON());
+		txpow.put("blkdiff", mBlockDifficulty.to0xString());
+		txpow.put("superblock", _mSuperBlock);
+		txpow.put("txndiff", mTxnDifficulty.to0xString());
+		txpow.put("txn", mTransaction.toJSON());
+		txpow.put("txnid", getTransID().to0xString());
+		txpow.put("witness", mWitness.toJSON());
 		
 		//The BURN transaction.. normally empty
-		mJSON.put("burntxn", mBurnTransaction.toJSON());
-		mJSON.put("burnwitness", mBurnWitness.toJSON());
+		txpow.put("burntxn", mBurnTransaction.toJSON());
+		txpow.put("burnwitness", mBurnWitness.toJSON());
 		
 		//Need to make it into a JSON array
 		JSONArray txns = new JSONArray();
 		for(MiniData txn : mTxPowIDList) {
 			txns.add(txn.to0xString());
 		}
-		mJSON.put("txnlist", txns);
+		txpow.put("txnlist", txns);
 		
-		mJSON.put("magic", mMagic.toString());
-		mJSON.put("chainid", mChainID.toString());
-		mJSON.put("parentchainid", mParentChainID.toString());
-		mJSON.put("custom", mCustom.toString());
-		mJSON.put("nonce", mNonce.toString());
+		txpow.put("magic", mMagic.toString());
+		txpow.put("chainid", mChainID.toString());
+		txpow.put("parentchainid", mParentChainID.toString());
+		txpow.put("custom", mCustom.toString());
+		txpow.put("nonce", mNonce.toString());
 		
-		mJSON.put("mmr", mMMRRoot.toString());
-		mJSON.put("total", mMMRTotal.toString());
+		txpow.put("mmr", mMMRRoot.toString());
+		txpow.put("total", mMMRTotal.toString());
 		
-		mJSON.put("timesecs", mTimeSecs.toString());
-		mJSON.put("date", new Date(mTimeSecs.getAsLong()*1000).toString());
-	}
-	
-	public JSONObject toJSON() {
-		if(mJSON == null) {
-			createJSON();
-		}
+		txpow.put("timesecs", mTimeSecs.toString());
+		txpow.put("date", new Date(mTimeSecs.getAsLong()*1000).toString());
 		
-		return mJSON;
+		return txpow;
 	}
 	
 	@Override
@@ -533,9 +521,6 @@ public class TxPOW implements Streamable {
 		
 		//What Super Level are we..
 		_mSuperBlock = SuperBlockLevels.getSuperLevel(getBlockDifficulty(), _mTxPOWID);
-		
-		//Create the JSON
-		createJSON();
 		
 		//Is this the Genesis..
 //		if(getBlockNumber().isEqual(MiniNumber.ZERO) && _mTxPOWID.isExactlyEqual(SuperBlockLevels.GENESIS_HASH)){
