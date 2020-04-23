@@ -10,7 +10,7 @@ import java.math.RoundingMode;
 import org.minima.utils.Streamable;
 
 /**
- * Potentially Very Large whole numbers for the MMR Entry..
+ * NO limit Very Large whole numbers for the MMR Entry..
  * @author spartacusrex
  *
  */
@@ -83,10 +83,6 @@ public class MiniInteger implements Streamable {
 	public MiniInteger increment() {
 		return add(ONE);
 	}
-	
-//	public long getAsLong() {
-//		return new Long(toString()).longValue();
-//	}
 	
 	@Override
 	public String toString() {
