@@ -113,7 +113,7 @@ var Minima = {
 	
 	//UTILITY FUNCTIONS
 	util : {
-			getPrevState : function(prevstate, prevstate_number){
+			getStateVariable : function(prevstate, prevstate_number){
 				var pslen = prevstate.length;
 				for(psloop=0;psloop<pslen;psloop++){
 					if(prevstate[psloop].port == prevstate_number){

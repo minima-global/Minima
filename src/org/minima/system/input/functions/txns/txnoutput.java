@@ -11,7 +11,7 @@ public class txnoutput extends CommandFunction {
 
 	public txnoutput() {
 		super("txnoutput");
-		setHelp("[id] [amount] [address] {tokenID}", "Add an output to the specified transaction", "");
+		setHelp("[id] [amount] [address] [tokenID] (position)", "Add an output to the specified transaction. Can specify position or added at end.", "");
 	}
 
 	@Override
@@ -43,12 +43,9 @@ public class txnoutput extends CommandFunction {
 		
 		Address addr = new Address(new MiniData(address));
 
-		// is there a TokenID
-		String tokenid = "0x00";
-		if (zInput.length > 4) {
-			tokenid = zInput[4];
-		}
-
+		//TokenID
+		String tokenid = zInput[4];
+		
 		// Send to the consensus Handler
 		Message msg = getResponseMessage(ConsensusTxn.CONSENSUS_TXNOUTPUT);
 		msg.addInt("transaction", txn);
@@ -56,6 +53,11 @@ public class txnoutput extends CommandFunction {
 		msg.addObject("address", addr);
 		msg.addString("tokenid", tokenid);
 
+		if(zInput.length>5) {
+			int position = Integer.parseInt(zInput[5]); 
+			msg.addInt("position", position);
+		}
+		
 		getMainHandler().getConsensusHandler().PostMessage(msg);
 	}
 	@Override

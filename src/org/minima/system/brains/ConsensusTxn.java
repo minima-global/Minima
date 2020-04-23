@@ -58,6 +58,9 @@ public class ConsensusTxn {
 	public static final String CONSENSUS_TXNEXPORT 			= CONSENSUS_PREFIX+"TXNEXPORT";
 	public static final String CONSENSUS_TXNIMPORT 			= CONSENSUS_PREFIX+"TXNIMPORT";
 	
+	public static final String CONSENSUS_REMOUTPUT 			= CONSENSUS_PREFIX+"REMOUTPUT";
+	public static final String CONSENSUS_REMINPUT 			= CONSENSUS_PREFIX+"REMINPUT";
+	
 	MinimaDB mDB;
 	
 	ConsensusHandler mHandler;
@@ -88,10 +91,16 @@ public class ConsensusTxn {
 		mHandler.PostMessage(list);
 	}
 	
-	private void outputTransactions(Message zMessage, Transaction zTransaction, Witness zWitness) {
-		InputHandler.getResponseJSON(zMessage).put("transaction", zTransaction);
-		InputHandler.getResponseJSON(zMessage).put("witness", zWitness);
+	private void outputTransaction(Message zMessage, int zTransaction) {
+		UserDBRow row =  getMainDB().getUserDB().getUserRow(zTransaction);
+		if(row == null) {
+			InputHandler.endResponse(zMessage, false, "Transaction "+zTransaction+" not found..");
+			return;
+		}
+		
+		InputHandler.getResponseJSON(zMessage).put("transaction", row.toJSON());
 		InputHandler.endResponse(zMessage, true, "");
+		return;
 	}
 	
 	public void processMessage(Message zMessage) throws Exception {
@@ -127,6 +136,22 @@ public class ConsensusTxn {
 			listTransactions(zMessage);
 			
 		}else if(zMessage.isMessageType(CONSENSUS_TXNLIST)) {
+			if(zMessage.exists("transaction")) {
+				int trans = zMessage.getInteger("transaction");
+				
+				//Get the Transaction..
+				UserDBRow row =  getMainDB().getUserDB().getUserRow(trans);
+				if(row == null) {
+					InputHandler.endResponse(zMessage, false, "Transaction "+trans+" not found..");
+					return;
+				}
+				
+				InputHandler.getResponseJSON(zMessage).put("transaction", row.toJSON());
+				InputHandler.endResponse(zMessage, true, "");
+				return;
+			}
+			
+			//List them all..
 			JSONArray arr = new JSONArray();
 			
 			//get all the transactions..
@@ -272,7 +297,7 @@ public class ConsensusTxn {
 			getMainDB().getUserDB().getUserRow(trans).setTransaction(transaction);
 			getMainDB().getUserDB().getUserRow(trans).setWitness(wit);
 			
-			outputTransactions(zMessage,transaction,wit);
+			outputTransaction(zMessage,trans);
 			
 		}else if(zMessage.isMessageType(CONSENSUS_TXNAUTOSIGN)) {
 			//Add input to a custom transaction
@@ -312,7 +337,7 @@ public class ConsensusTxn {
 			}
 			
 			//List current..
-			outputTransactions(zMessage,trx,wit);
+			outputTransaction(zMessage,trans);
 		
 		}else if(zMessage.isMessageType(CONSENSUS_TXNINPUT)) {
 			//Add input to a custom transaction
@@ -370,7 +395,7 @@ public class ConsensusTxn {
 				wit.addScript(script, cc.getAddress().getLength()*8);
 			}
 			
-			outputTransactions(zMessage,trx,wit);
+			outputTransaction(zMessage,trans);
 			
 		}else if(zMessage.isMessageType(CONSENSUS_TXNOUTPUT)) {
 			//Which transaction
@@ -414,10 +439,33 @@ public class ConsensusTxn {
 				wit.addTokenDetails(tokendets);
 			}
 			
-			//Add the output
-			trx.addOutput(out);
+			//Add it..
+			if(zMessage.exists("position")) {
+				int pos = zMessage.getInteger("position");
+				trx.addOutput(out,pos);
+			}else {
+				trx.addOutput(out);
+			}
 			
-			outputTransactions(zMessage,trx,wit);
+			outputTransaction(zMessage,trans);
+			
+		}else if(zMessage.isMessageType(CONSENSUS_REMOUTPUT)) {
+			int trans    	= zMessage.getInteger("transaction");
+			int position    = zMessage.getInteger("position");
+		
+			Transaction trx = getMainDB().getUserDB().getUserRow(trans).getTransaction();
+			trx.getAllOutputs().remove(position);
+			
+			outputTransaction(zMessage,trans);
+			
+		}else if(zMessage.isMessageType(CONSENSUS_REMINPUT)) {
+			int trans    	= zMessage.getInteger("transaction");
+			int position    = zMessage.getInteger("position");
+		
+			Transaction trx = getMainDB().getUserDB().getUserRow(trans).getTransaction();
+			trx.getAllInputs().remove(position);
+			
+			outputTransaction(zMessage,trans);
 			
 		}else if(zMessage.isMessageType(CONSENSUS_TXNSTATEVAR)) {
 			//Which transaction
@@ -441,7 +489,7 @@ public class ConsensusTxn {
 			//Add it to the transaction
 			trx.addStateVariable(sv);
 			
-			outputTransactions(zMessage,trx,wit);
+			outputTransaction(zMessage,trans);
 			
 		}else if(zMessage.isMessageType(CONSENSUS_TXNPOST)) {
 			//Which transaction
@@ -586,7 +634,7 @@ public class ConsensusTxn {
 			//Now set the SIG.. 
 			wit.addSignature(key.getPublicKey(), signature);
 			
-			outputTransactions(zMessage,trx,wit);
+			outputTransaction(zMessage,trans);
 			
 		}else if(zMessage.isMessageType(CONSENSUS_TXNEXPORT)) {
 			//Export the entire transaction as HEX data.. 

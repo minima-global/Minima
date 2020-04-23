@@ -8,12 +8,18 @@ public class txnlist extends CommandFunction {
 
 	public txnlist() {
 		super("txnlist");
-		setHelp("", "List all current custom transactions", "");
+		setHelp("(id)", "List all custom transactions or just the selected id", "");
 	}
 	
 	@Override
 	public void doFunction(String[] zInput) throws Exception {
-		getMainHandler().getConsensusHandler().PostMessage(getResponseMessage(ConsensusTxn.CONSENSUS_TXNLIST));
+		Message list = getResponseMessage(ConsensusTxn.CONSENSUS_TXNLIST);
+		if(zInput.length>1) {
+			int txn = Integer.parseInt(zInput[1]);
+			list.addInt("transaction",txn);
+		}
+		
+		getMainHandler().getConsensusHandler().PostMessage(list);
 	}
 
 	@Override

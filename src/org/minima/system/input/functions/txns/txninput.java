@@ -9,7 +9,7 @@ public class txninput extends CommandFunction {
 
 	public txninput() {
 		super("txninput");
-		setHelp("[id] [coinid] (input_num)", "Add a specific Coin as an input to the specified transaction. Can specify position - usually to add at 0.", "");
+		setHelp("[id] [coinid] (position)", "Add a specific Coin as an input to the specified transaction. Can specify position - usually to add at 0.", "");
 	}
 
 	@Override
@@ -28,7 +28,7 @@ public class txninput extends CommandFunction {
 		
 		if(zInput.length>3) {
 			int position = Integer.parseInt(zInput[3]); 
-			msg.addObject("position", position);
+			msg.addInt("position", position);
 		}
 		
 		getMainHandler().getConsensusHandler().PostMessage(msg);
