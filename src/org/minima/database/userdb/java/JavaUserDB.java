@@ -280,18 +280,22 @@ public class JavaUserDB implements UserDB, Streamable{
 			//Get the data
 			MiniScript data = sv.getData();
 			
-			//Is it a KNOWN key..
+			//Only check HEX values..
 			if(data.toString().startsWith("0x")) {
 				//Create the MiniData
-				MiniData posskey = new MiniData(data.toString());
+				MiniData svdata = new MiniData(data.toString());
 				
 				//Check against the keys..
 				for(PubPrivKey key : mPubPrivKeys) {
 					MiniData pubkey = key.getPublicKey();
-					
-					if(pubkey.isEqual(posskey)) {
+					if(pubkey.isEqual(svdata)) {
 						return true;
 					}
+				}
+			
+				//Check against addresses..
+				if(isAddressRelevant(svdata)) {
+					return true;
 				}
 			}
 		}
