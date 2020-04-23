@@ -205,7 +205,6 @@ public class MiniData implements Streamable {
 	 */
 	public static MiniData getRandomData(int len) {
 		SecureRandom rand = new SecureRandom();
-//		Random rand = new Random();
 		byte[] data = new byte[len];
 		rand.nextBytes(data);
 		return new MiniData(data);

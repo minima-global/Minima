@@ -124,9 +124,6 @@ public class TxPOWChecker {
 		//Make a deep copy.. as we may need to edit it.. with floating values and DYN_STATE
 		Transaction trans = zTrans.deepCopy();
 		
-		//Is the STATE relevant.. does it have a KEY we own..
-		boolean relstate = zDB.getUserDB().isStateListRelevant(trans.getCompleteState());
-		
 		//The DYNState variables..
 		String[] DYNState    = new String[256];
 		boolean[] checkState = new boolean[256];
@@ -402,6 +399,9 @@ public class TxPOWChecker {
 			}
 		}
 		
+		//Is the STATE relevant.. does it have a KEY we own..
+		boolean relstate = zDB.getUserDB().isStateListRelevant(trans.getCompleteState());
+				
 		//The HASH of the Transaction.. needed for coinid
 		//The transaction may have been altered by floating inputs..
 		MiniData transhash = Crypto.getInstance().hashObject(trans);
@@ -460,13 +460,13 @@ public class TxPOWChecker {
 				MMREntry unspent = zMMRSet.addUnspentCoin(mmrdata);
 				
 				//Do we keep this output..
-				boolean rel = zDB.getUserDB().isAddressRelevant(output.getAddress());
-				if(!rel) {
-					rel = zDB.getUserDB().isStateListRelevant(trans.getCompleteState());
-				}
+				boolean reladdress = zDB.getUserDB().isAddressRelevant(output.getAddress());
+//				if(!rel) {
+//					rel = zDB.getUserDB().isStateListRelevant(trans.getCompleteState());
+//				}
 				
 				//Do we keep it..
-				if(rel) {
+				if(reladdress || relstate) {
 					//Keep this MMR record
 					zMMRSet.addKeeper(unspent.getEntry());	
 				}				
