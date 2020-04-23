@@ -72,6 +72,8 @@ public class ConsensusPrint {
 	public static final String CONSENSUS_HISTORY 		    = CONSENSUS_PREFIX+"HISTORY";
 	public static final String CONSENSUS_TOKENS 			= CONSENSUS_PREFIX+"TOKENS";
 	
+	public static final String CONSENSUS_RANDOM 			= CONSENSUS_PREFIX+"RANDOM";
+	
 	public static final String CONSENSUS_STATUS 			= CONSENSUS_PREFIX+"STATUS";
 	public static final String CONSENSUS_PRINTCHAIN 		= CONSENSUS_PREFIX+"PRINTCHAIN";
 	
@@ -178,12 +180,27 @@ public class ConsensusPrint {
 			}
 		
 		}else if(zMessage.isMessageType(CONSENSUS_TXPOWSEARCH)){
-			String address = zMessage.getString("address");
-			if(address.startsWith("Mx")) {
+			String inputaddr   = zMessage.getString("input");
+			String outputaddr  = zMessage.getString("output");
+			String tokenid     = zMessage.getString("tokenid");
+			
+			if(inputaddr.startsWith("Mx")) {
 				//It's a Minima Address!
-				address = Address.convertMinimaAddress(address).to0xString();
+				inputaddr = Address.convertMinimaAddress(inputaddr).to0xString();
 			}
-			MiniData addr  = new MiniData(address);
+			if(outputaddr.startsWith("Mx")) {
+				//It's a Minima Address!
+				outputaddr = Address.convertMinimaAddress(outputaddr).to0xString();
+			}
+			
+			MiniData inaddr   = new MiniData(inputaddr);
+			MiniData outaddr  = new MiniData(outputaddr);
+			MiniData tokendat = new MiniData(tokenid);
+			
+			//What gets checked..
+			boolean checkinput  = !inputaddr.equals("");
+			boolean checkoutput = !outputaddr.equals("");
+			boolean checktoken  = !tokenid.equals("");
 			
 			//The ones we find..
 			JSONArray txpowlist = new JSONArray();
@@ -192,48 +209,85 @@ public class ConsensusPrint {
 			UserDB udb = getMainDB().getUserDB();
 			ArrayList<TxPOWDBRow> alltxpow = getMainDB().getTxPowDB().getAllTxPOWDBRow();
 			for(TxPOWDBRow txpowrow : alltxpow) {
-				ArrayList<Coin> inputs = txpowrow.getTxPOW().getTransaction().getAllInputs();
-				for(Coin input : inputs) {
-					if(input.getAddress().isEqual(addr)) {
-						//Create a JSON Object
-						JSONObject txp = new JSONObject();
+				boolean found = false;
+				
+				//Do we check the inputs..
+				if(!found && (checkinput || checktoken)) {
+					ArrayList<Coin> inputs = txpowrow.getTxPOW().getTransaction().getAllInputs();
+					for(Coin input : inputs) {
 						
-						//Is it relevant to us..?
-						boolean relevant = udb.isTransactionRelevant(txpowrow.getTxPOW().getTransaction());
-						txp.put("relevant", relevant);
-						JSONArray values = new JSONArray();
-						if(relevant) {
-							//Add the Value Transfer Amounts..
-							Hashtable<String, MiniNumber> tokamt = getMainDB().getTransactionTokenAmounts(txpowrow.getTxPOW());
-							
-							//And add.. 
-							Enumeration<String> tokens = tokamt.keys();
-							while(tokens.hasMoreElements()) {
-								String token   = tokens.nextElement();
-								MiniNumber amt = tokamt.get(token);
-								
-								JSONObject value = new JSONObject();
-								value.put("token",token);
-								value.put("value",amt);
-								
-								values.add(value);
+						if(checkinput && input.getAddress().isEqual(inaddr)) {
+							found = true;
+							break;
+						}
+						
+						if(checktoken) {
+							if(input.getTokenID().isEqual(tokendat)) {
+								found = true;
+								break;
 							}
 						}
-						txp.put("values", values);
-						
-						//Details
-						boolean isin = txpowrow.isInBlock();
-						txp.put("isinblock", isin);
-						if(isin) {
-							txp.put("inblock", txpowrow.getInBlockNumber().toString());	
-						}else {
-							txp.put("inblock", "-1");
-						}
-						txp.put("txpow", txpowrow.getTxPOW().toJSON());
-						
-						txpowlist.add(txp);	
-						break;
 					}
+				}
+				
+				//Do we check the outputs
+				if(!found && (checkoutput || checktoken)) {
+					ArrayList<Coin> outputs = txpowrow.getTxPOW().getTransaction().getAllOutputs();
+					for(Coin output : outputs) {
+						
+						if(checkoutput && output.getAddress().isEqual(outaddr)) {
+							found = true;
+							break;
+						}
+						
+						if(checktoken) {
+							if(output.getTokenID().isEqual(tokendat)) {
+								found = true;
+								break;
+							}
+						}
+					}
+				}
+				
+				//Do we keep and check it..
+				if(found) {
+					//Create a JSON Object
+					JSONObject txp = new JSONObject();
+					
+					//Is it relevant to us..?
+					boolean relevant = udb.isTransactionRelevant(txpowrow.getTxPOW().getTransaction());
+					txp.put("relevant", relevant);
+					JSONArray values = new JSONArray();
+					if(relevant) {
+						//Add the Value Transfer Amounts..
+						Hashtable<String, MiniNumber> tokamt = getMainDB().getTransactionTokenAmounts(txpowrow.getTxPOW());
+						
+						//And add.. 
+						Enumeration<String> tokens = tokamt.keys();
+						while(tokens.hasMoreElements()) {
+							String tok     = tokens.nextElement();
+							MiniNumber amt = tokamt.get(tok);
+							
+							JSONObject value = new JSONObject();
+							value.put("token",tok);
+							value.put("value",amt);
+							
+							values.add(value);
+						}
+					}
+					txp.put("values", values);
+					
+					//Details
+					boolean isin = txpowrow.isInBlock();
+					txp.put("isinblock", isin);
+					if(isin) {
+						txp.put("inblock", txpowrow.getInBlockNumber().toString());	
+					}else {
+						txp.put("inblock", "-1");
+					}
+					txp.put("txpow", txpowrow.getTxPOW().toJSON());
+					
+					txpowlist.add(txp);
 				}
 			}
 			
@@ -293,6 +347,15 @@ public class ConsensusPrint {
 			dets.put("coins", allcoins);
 			InputHandler.endResponse(zMessage, true, "");
 		
+		}else if(zMessage.isMessageType(CONSENSUS_RANDOM)){
+			int len = zMessage.getInteger("length");
+			
+			MiniData rand = MiniData.getRandomData(len);
+			
+			JSONObject dets = InputHandler.getResponseJSON(zMessage);
+			dets.put("random", rand.to0xString());
+			InputHandler.endResponse(zMessage, true, "");
+			
 		}else if(zMessage.isMessageType(CONSENSUS_TOKENS)){
 			//Get all the tokens..
 			ArrayList<TokenProof> tokens = getMainDB().getUserDB().getAllKnownTokens();

@@ -28,6 +28,7 @@ import org.minima.system.input.functions.newscript;
 import org.minima.system.input.functions.printchain;
 import org.minima.system.input.functions.printtree;
 import org.minima.system.input.functions.quit;
+import org.minima.system.input.functions.random;
 import org.minima.system.input.functions.reconnect;
 import org.minima.system.input.functions.runscript;
 import org.minima.system.input.functions.search;
@@ -79,7 +80,7 @@ public abstract class CommandFunction {
 			new txncreate(), new txndelete(), new txninput(), new txnlist(), new txnauto(),
 			new txnstate(), new txnexport(), new txnimport(), new txnscript(),
 			new txnoutput(), new txnpost(), new txnsign(), new txnvalidate(),new txnsignauto(),
-			new extrascript(), new sign(), new txpowsearch(), new flushmempool() 
+			new extrascript(), new sign(), new txpowsearch(), new flushmempool(), new random()
 		};  
 	
 	/**
