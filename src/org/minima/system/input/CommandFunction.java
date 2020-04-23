@@ -6,6 +6,7 @@ import org.minima.system.input.functions.scripts;
 import org.minima.system.input.functions.backup;
 import org.minima.system.input.functions.balance;
 import org.minima.system.input.functions.chart;
+import org.minima.system.input.functions.check;
 import org.minima.system.input.functions.cleanscript;
 import org.minima.system.input.functions.coins;
 import org.minima.system.input.functions.coinsimple;
@@ -82,7 +83,7 @@ public abstract class CommandFunction {
 			new txncreate(), new txndelete(), new txninput(), new txnlist(), new txnauto(),
 			new txnstate(), new txnexport(), new txnimport(), new txnscript(), new txnreminput(), new txnremoutput(),
 			new txnoutput(), new txnpost(), new txnsign(), new txnvalidate(),new txnsignauto(),
-			new extrascript(), new sign(), new txpowsearch(), new flushmempool(), new random()
+			new extrascript(), new sign(), new txpowsearch(), new flushmempool(), new random(), new check()
 		};  
 	
 	/**

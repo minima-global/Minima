@@ -60,6 +60,8 @@ public class ConsensusUser {
 	public static final String CONSENSUS_KEEPCOIN 			= CONSENSUS_PREFIX+"KEEPCOIN";
 	public static final String CONSENSUS_UNKEEPCOIN 		= CONSENSUS_PREFIX+"UNKEEPCOIN";
 	
+	public static final String CONSENSUS_CHECK 		        = CONSENSUS_PREFIX+"CHECK";
+	
 	public static final String CONSENSUS_FLUSHMEMPOOL 		= CONSENSUS_PREFIX+"FLUSHMEMPOOL";
 	
 	public static final String CONSENSUS_EXPORTKEY 			= CONSENSUS_PREFIX+"EXPORTKEY";
@@ -168,6 +170,35 @@ public class ConsensusUser {
 			InputHandler.endResponse(zMessage, true, "");
 			
 		
+		}else if(zMessage.isMessageType(CONSENSUS_CHECK)) {
+			String data = zMessage.getString("data");
+			
+			//How much to who ?
+			MiniData check = null;
+			if(data.startsWith("0x")) {
+				//It's a regular HASH address
+				check  = new MiniData(data);
+			}else if(data.startsWith("Mx")) {
+				//It's a Minima Address!
+				check = Address.convertMinimaAddress(data);
+			}
+			
+			//Now check..
+			String type = "none";
+			boolean found=false;
+			if(getMainDB().getUserDB().isAddressRelevant(check)) {
+				found=true;
+				type = "address";
+			}else if(getMainDB().getUserDB().getPubPrivKey(check)!=null) {
+				found=true;
+				type = "publickey";
+			}
+					
+			JSONObject resp = InputHandler.getResponseJSON(zMessage);
+			resp.put("relevant", found);
+			resp.put("type", type);
+			InputHandler.endResponse(zMessage, true, "");
+			
 		}else if(zMessage.isMessageType(CONSENSUS_MMRTREE)) {
 			//What type SCRIPT or HASHES
 			int bitlength = zMessage.getInteger("bitlength");
@@ -515,7 +546,7 @@ public class ConsensusUser {
 			
 			//Now you have the proof..
 			JSONObject resp = InputHandler.getResponseJSON(zMessage);
-			resp.put("coin", cc.toJSON());
+			resp.put("coin", basemmr.getProof(entry.getEntry()));
 			InputHandler.endResponse(zMessage, true, "");
 			
 		}else if(zMessage.isMessageType(CONSENSUS_IMPORTCOIN)) {
