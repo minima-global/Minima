@@ -12,7 +12,7 @@ import org.minima.utils.Streamable;
 
 
 /**
- * VERY Simple Number class that only does addition for the MMRSum Tree..
+ * VERY Simple VERY Accurate Real Number class that only does addition for the MMRSum Tree..
  * 
  * Higher precision than MiniNumber
  * 
@@ -21,7 +21,7 @@ import org.minima.utils.Streamable;
  */
 public class MMRSumNumber implements Streamable {
 	
-	private static final MathContext mMathContext = new MathContext(100, RoundingMode.DOWN);
+	private static final MathContext mMathContext = new MathContext(128, RoundingMode.DOWN);
 	
 	public static final MMRSumNumber ZERO = new MMRSumNumber(BigDecimal.ZERO);
 	
