@@ -36,6 +36,7 @@ import org.minima.objects.Witness;
 import org.minima.objects.base.MMRSumNumber;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniInteger;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.proofs.TokenProof;
 import org.minima.system.backup.BackupManager;
@@ -555,7 +556,7 @@ public class MinimaDB {
 		
 		MiniNumber top = getTopBlock();
 		
-		//Now Check NONE of these are in the mempool.
+		//Check NONE of these are in the mempool.
 		ArrayList<Coin> memcoins = getMempoolCoins();
 				
 		//Do we have any inputs with this address..
@@ -594,9 +595,7 @@ public class MinimaDB {
 			if(txpow.isTransaction()) {
 				ArrayList<Coin> inputs = txpow.getTransaction().getAllInputs();	
 				for(Coin cc : inputs) {
-//					if(getUserDB().isAddressRelevant(cc.getAddress())) {
-						coins.add(cc);	
-//					}
+					coins.add(cc);	
 				}
 			}
 		}
@@ -699,10 +698,19 @@ public class MinimaDB {
 		ArrayList<Coin> ins = zTransaction.getAllInputs();
 		
 		//What's the most recent coin used..
-		MiniNumber recent = currentblock;
+		MiniNumber recent = null;
 		for(Coin cc : ins) {
-			//The CoinDB Entry
-			MiniNumber inblock = getCoinDB().getCoinRow(cc.getCoinID()).getInBlockNumber();
+			MiniNumber inblock = null;
+					
+			//Get the block..
+			CoinDBRow crow = getCoinDB().getCoinRow(cc.getCoinID());
+			if(crow != null) {
+				inblock = crow.getInBlockNumber();
+			}else {
+				//Search for the coin..
+				MMREntry entry =  basemmr.findEntry(cc.getCoinID());
+				inblock = entry.getData().getInBlock();
+			}
 			
 			if(recent == null) {
 				recent = inblock;
@@ -726,8 +734,18 @@ public class MinimaDB {
 		
 		//Now add the actual MMR Proofs..
 		for(Coin cc : ins) {
+			MiniInteger entrynum = null;
+			
+			//Get the entry
+			CoinDBRow crow = getCoinDB().getCoinRow(cc.getCoinID());
+			if(crow != null) {
+				entrynum = crow.getMMREntry();
+			}else {
+				entrynum = proofmmr.findEntry(cc.getCoinID()).getEntry();
+			}
+			
 			//Get a proof from a while back.. more than confirmed depth, less than cascade
-			MMRProof proof = proofmmr.getProof(getCoinDB().getCoinRow(cc.getCoinID()).getMMREntry());
+			MMRProof proof = proofmmr.getProof(entrynum);
 			
 			//Hmm.. this should not happen
 			if(proof == null) {

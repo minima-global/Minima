@@ -9,7 +9,9 @@ import java.util.Random;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.coindb.CoinDBRow;
+import org.minima.database.mmr.MMREntry;
 import org.minima.database.mmr.MMRProof;
+import org.minima.database.mmr.MMRSet;
 import org.minima.database.userdb.UserDBRow;
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
@@ -356,12 +358,27 @@ public class ConsensusTxn {
 			
 			//Get the Coin..
 			CoinDBRow crow = getMainDB().getCoinDB().getCoinRow(coinid);
-			if(crow == null) {
-				InputHandler.endResponse(zMessage, false, "CoinID not found : "+coinid);
-				return;
-			}
-			Coin cc = crow.getCoin();
+			Coin cc        = null;
 			
+			//If it isn't one of OUR coins..
+			if(crow==null) {
+				//Get the MMRSet
+				MMRSet basemmr = getMainDB().getMainTree().getChainTip().getMMRSet();
+				
+				//Search for the coin..
+				MMREntry entry =  basemmr.findEntry(coinid);
+				
+				//Coin found..
+				if(entry != null) {
+					cc = entry.getData().getCoin();	
+				}else {
+					InputHandler.endResponse(zMessage, false, "CoinID not found : "+coinid);
+					return;	
+				}
+			}else {
+				cc = crow.getCoin();
+			}
+						
 			//Is it a Token ? 
 			if(!cc.getTokenID().isEqual(Coin.MINIMA_TOKENID)) {
 				//Add the Token details..
@@ -510,6 +527,19 @@ public class ConsensusTxn {
 			if(newwit == null) {
 				InputHandler.endResponse(zMessage, false, "ERROR creating valid Witness. MMR Proofs wrong..");
 				return;
+			}
+			
+			//Check the INPUTS against the MEMPOOL COINS..
+			ArrayList<Coin> memcoins = getMainDB().getMempoolCoins();
+			ArrayList<Coin> inputs = trx.getAllInputs();
+			for(Coin in : inputs) {
+				for(Coin mem : memcoins) {
+					if(in.getCoinID().isEqual(mem.getCoinID())) {
+						//No GOOD!
+						InputHandler.endResponse(zMessage, false, "ERROR double spend coin in mempool.");
+						return;
+					}
+				}
 			}
 			
 			//Create the message

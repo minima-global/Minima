@@ -331,6 +331,19 @@ public class ConsensusHandler extends SystemHandler {
 				return;
 			}
 			
+			//Final check of the mempool coins..
+			ArrayList<Coin> memcoins = getMainDB().getMempoolCoins();
+			ArrayList<Coin> inputs = trans.getAllInputs();
+			for(Coin in : inputs) {
+				for(Coin mem : memcoins) {
+					if(in.getCoinID().isEqual(mem.getCoinID())) {
+						//No GOOD!
+						InputHandler.endResponse(zMessage, false, "ERROR double spend coin in mempool.");
+						return;
+					}
+				}
+			}
+			
 			//Send it to the Miner..
 			Message mine = new Message(TXMiner.TXMINER_MINETXPOW).addObject("txpow", txpow);
 			InputHandler.addResponseMesage(mine, zMessage);
