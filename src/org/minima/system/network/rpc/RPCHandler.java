@@ -156,12 +156,12 @@ public class RPCHandler implements Runnable {
 			                
 			                //IF there is an erorr.. STOP
 			                if(resp.get("status") == Boolean.FALSE) {
-			                	//ERROR
+			                	//ERROR - stop running functions..
 			                	allok = false;
 			                }
 			                
 			                //Add it to the array
-			                responses.add(response.getFinalJSON());
+			                responses.add(resp);
 						}
 					}
 					
