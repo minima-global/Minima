@@ -618,7 +618,20 @@ public class ConsensusPrint {
 			//Return all or some
 			String address = "";
 			if(zMessage.exists("address")) {
-				address = new MiniData(zMessage.getString("address")).to0xString() ;
+				address = zMessage.getString("address");
+				if(address.startsWith("0x")) {
+					//It's a regular HASH address
+					address = new MiniData(address).to0xString();
+				}else if(address.startsWith("Mx")) {
+					//It's a Minima Address!
+					address = Address.convertMinimaAddress(address).to0xString();
+				}
+			}
+			
+			//What type..
+			String type = "unspent";
+			if(zMessage.exists("type")) {
+				type = zMessage.getString("type");
 			}
 			
 			//get the MMR
@@ -630,7 +643,21 @@ public class ConsensusPrint {
 			
 			ArrayList<CoinDBRow> coins = getMainDB().getCoinDB().getComplete();
 			for(CoinDBRow coin : coins) {
-				if(!coin.isSpent()) {
+				boolean docheck = false;
+				if(type.equals("unspent") && !coin.isSpent()) {
+					docheck = true;
+				}
+				
+				if(type.equals("spent") && coin.isSpent()) {
+					docheck = true;
+				}
+				
+				if(type.equals("all")) {
+					docheck = true;
+				}
+				
+				//Do we even check it..
+				if(docheck) {
 					if(address.equals("")) {
 						totcoins.add(baseset.getProof(coin.getMMREntry()).toJSON());	
 					}else if(address.equals(coin.getCoin().getAddress().to0xString())) {
