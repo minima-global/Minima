@@ -370,7 +370,6 @@ public class DAPPHandler implements Runnable {
 		}else if(zEnding.equals("xml")) {
 			return "text/xml";
 		
-			
 		}else if(zEnding.equals("jpg")) {
 			return "image/jpeg";
 		}else if(zEnding.equals("jpeg")) {
@@ -379,9 +378,10 @@ public class DAPPHandler implements Runnable {
 			return "image/png";
 		}else if(zEnding.equals("gif")) {
 			return "image/gif";
+		}else if(zEnding.equals("svg")) {
+			return "image/svg+xml";
 		}else if(zEnding.equals("ico")) {
 			return "image/ico";
-		
 		
 		}else if(zEnding.equals("zip")) {
 			return "application/zip";
