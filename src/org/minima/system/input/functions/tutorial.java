@@ -15,11 +15,11 @@ public class tutorial extends CommandFunction{
 			"\n" + 
 			"Minima allows input scripts to have perfect knowledge of the entire transaction. How many, token type, amount and the address of all inputs and outputs are available. An input knows it's own script ( @SCRIPT ) and can ensure an output of a similar address exists in the outputs. \n" + 
 			"\n" + 
-			"A script can run for 512 instructions. An instruction is any operation or function.\n" + 
+			"A script can run for 512 instructions. An instruction is 1 operation or function.\n" + 
 			"\n" + 
 			"The addition of the state variables in the MMR Proof DB, allow for complex scripts with knowledge of their past to be created. A simple state mechanic for transactional history rather than a global state for ALL transactions.\n" + 
 			"\n" + 
-			"Minima tracks all coins that are to an address you possess and also all coins that have a Public Key you possess in the STATE or PREVSTATE.\n" + 
+			"Minima tracks all coins that are to an address you possess and all coins that have a public key or address you possess in the STATE or PREVSTATE.\n" + 
 			"\n" + 
 			"Minima transactions are scriptable Logic Gates, with analogue inputs and outputs, a simple yet powerful control language, and a previous history state mechanic.\n" + 
 			"\n" + 
