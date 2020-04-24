@@ -13,6 +13,7 @@ import org.minima.system.input.InputMessage;
 import org.minima.utils.MiniFormat;
 import org.minima.utils.ResponseStream;
 import org.minima.utils.json.JSONArray;
+import org.minima.utils.json.JSONObject;
 
 /**
  * This class handles a single request then exits
@@ -129,7 +130,8 @@ public class RPCHandler implements Runnable {
 					//Cycle through each request..	
 					StringTokenizer functions = new StringTokenizer(function,";");
 					
-					while(functions.hasMoreElements()) {
+					boolean allok = true;
+					while(allok && functions.hasMoreElements()) {
 						String func = functions.nextToken().trim();
 					
 						//Now make this request
@@ -148,6 +150,15 @@ public class RPCHandler implements Runnable {
 			                	//Wait for the function to finish
 				                response.waitToFinish();
 				            }
+			                
+			                //Get the JSON
+			                JSONObject resp = response.getFinalJSON();
+			                
+			                //IF there is an erorr.. STOP
+			                if(resp.get("status") == Boolean.FALSE) {
+			                	//ERROR
+			                	allok = false;
+			                }
 			                
 			                //Add it to the array
 			                responses.add(response.getFinalJSON());
