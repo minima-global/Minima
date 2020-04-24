@@ -51,7 +51,7 @@ public class TXMiner extends SystemHandler{
 			long currentTime  = System.currentTimeMillis();
 			
 			//should be about 10..
-			long maxTime  	  = currentTime + 2000;
+			long maxTime  	  = currentTime + 5000;
 			
 			while(mining && currentTime < maxTime) {
 				//Set the Nonce..
@@ -75,7 +75,6 @@ public class TXMiner extends SystemHandler{
 			//Did we find it.. ?
 			if(mining) {
 //				System.out.println("NOTFINISHED "+nonce);
-				
 				//Repost the same transaction.. get a new TxPOW block with latest details
 				Message sametr = new Message(ConsensusHandler.CONSENSUS_SENDTRANS)
 										.addObject("transaction", txpow.getTransaction())
@@ -86,7 +85,6 @@ public class TXMiner extends SystemHandler{
 				
 			}else {
 //				System.out.println("MINED! "+nonce);
-				
 				//Set the TxPOW
 				txpow.calculateTXPOWID();
 				
