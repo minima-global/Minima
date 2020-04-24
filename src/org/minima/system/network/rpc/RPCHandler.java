@@ -69,17 +69,26 @@ public class RPCHandler implements Runnable {
 			// we get file requested
 			fileRequested = parse.nextToken();
 			
+			//Do we make the output look pretty
+			boolean prettyjson = false;
+			
 			// we support only GET and HEAD methods, we check
 			if (method.equals("GET")){
 //				System.out.println("fileRequested : "+fileRequested);
-			
+				
 				String function=new String(fileRequested);
+				
+				//decode URL message
+				function = URLDecoder.decode(function,"UTF-8").trim();
+				
 				if(function.startsWith("/")) {
 					function = function.substring(1);
 				}
 				
-				//decode URL message
-				function = URLDecoder.decode(function,"UTF-8").trim();
+				if(function.startsWith("prettyjson/")) {
+					function   = function.substring(11);
+					prettyjson = true;
+				}
 				
 				//Is this a multi function..
 				boolean multi = false;
@@ -150,8 +159,10 @@ public class RPCHandler implements Runnable {
 				}
 				
                 //Check it's a JSON
-                if(result.startsWith("{") || result.startsWith("[")) {
-                	result = MiniFormat.PrettyJSON(result);
+                if(prettyjson) {
+					if(result.startsWith("{") || result.startsWith("[")) {
+	                	result = MiniFormat.PrettyJSON(result);
+	                }
                 }
 				
 				// send HTTP Headers
