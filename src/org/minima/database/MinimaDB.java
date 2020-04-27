@@ -45,6 +45,7 @@ import org.minima.system.backup.SyncPacket;
 import org.minima.system.bootstrap.GenesisTxPOW;
 import org.minima.system.brains.ConsensusHandler;
 import org.minima.system.brains.TxPOWChecker;
+import org.minima.system.input.InputHandler;
 import org.minima.system.tx.TXMiner;
 import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
@@ -584,6 +585,21 @@ public class MinimaDB {
 		}	
 		
 		return confirmed;
+	}
+	
+	public boolean checkTransactionForMempoolCoins(Transaction zTransaction) {
+		ArrayList<Coin> memcoins = getMempoolCoins();
+		ArrayList<Coin> inputs = zTransaction.getAllInputs();
+		for(Coin in : inputs) {
+			for(Coin mem : memcoins) {
+				if(in.getCoinID().isEqual(mem.getCoinID())) {
+					//No GOOD!
+					return true;
+				}
+			}
+		}
+		
+		return false;
 	}
 	
 	public ArrayList<Coin> getMempoolCoins(){

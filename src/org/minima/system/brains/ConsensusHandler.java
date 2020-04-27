@@ -39,6 +39,7 @@ public class ConsensusHandler extends SystemHandler {
 	 */
 	public static final String CONSENSUS_PROCESSTXPOW 		   = "CONSENSUS_PROCESSTXPOW";
 	public static final String CONSENSUS_PRE_PROCESSTXPOW 	   = "CONSENSUS_PREPROCESSTXPOW";
+	public static final String CONSENSUS_POST_TXMINER 	       = "CONSENSUS_POST_TXMINER";
 	
 	public static final String CONSENSUS_ACTIVATEMINE 		   = "CONSENSUS_ACTIVATEMINE";
 	public static final String CONSENSUS_MINEBLOCK 			   = "CONSENSUS_MINEBLOCK";
@@ -267,6 +268,21 @@ public class ConsensusHandler extends SystemHandler {
 				updateListeners(upd);
 			}
 		
+		}else if ( zMessage.isMessageType(CONSENSUS_POST_TXMINER) ) {
+			//You've just mined the transation.. 
+			TxPOW txpow = (TxPOW) zMessage.getObject("txpow");
+			
+			//Check the MemPool..
+			if(getMainDB().checkTransactionForMempoolCoins(txpow.getTransaction())) {
+				//No GOOD - double spend
+				MinimaLogger.log("POST TXMINER Mempool Double spend - allready used input..");
+				return;
+			}
+			
+			//Forward it..
+			Message msg = new Message(ConsensusHandler.CONSENSUS_PRE_PROCESSTXPOW).addObject("txpow", txpow);
+			PostMessage(msg);
+			
 		/**
 		 * Network Messages
 		 */
@@ -332,16 +348,10 @@ public class ConsensusHandler extends SystemHandler {
 			}
 			
 			//Final check of the mempool coins..
-			ArrayList<Coin> memcoins = getMainDB().getMempoolCoins();
-			ArrayList<Coin> inputs = trans.getAllInputs();
-			for(Coin in : inputs) {
-				for(Coin mem : memcoins) {
-					if(in.getCoinID().isEqual(mem.getCoinID())) {
-						//No GOOD!
-						InputHandler.endResponse(zMessage, false, "ERROR double spend coin in mempool.");
-						return;
-					}
-				}
+			if(getMainDB().checkTransactionForMempoolCoins(trans)) {
+				//No GOOD!
+				InputHandler.endResponse(zMessage, false, "ERROR double spend coin in mempool.");
+				return;
 			}
 			
 			//Send it to the Miner..

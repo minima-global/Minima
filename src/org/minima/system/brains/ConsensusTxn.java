@@ -530,16 +530,10 @@ public class ConsensusTxn {
 			}
 			
 			//Check the INPUTS against the MEMPOOL COINS..
-			ArrayList<Coin> memcoins = getMainDB().getMempoolCoins();
-			ArrayList<Coin> inputs = trx.getAllInputs();
-			for(Coin in : inputs) {
-				for(Coin mem : memcoins) {
-					if(in.getCoinID().isEqual(mem.getCoinID())) {
-						//No GOOD!
-						InputHandler.endResponse(zMessage, false, "ERROR double spend coin in mempool.");
-						return;
-					}
-				}
+			if(getMainDB().checkTransactionForMempoolCoins(trx)) {
+				//No GOOD!
+				InputHandler.endResponse(zMessage, false, "ERROR double spend coin in mempool.");
+				return;
 			}
 			
 			//Create the message

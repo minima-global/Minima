@@ -13,6 +13,7 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.backup.SyncPackage;
 import org.minima.system.backup.SyncPacket;
+import org.minima.system.input.InputHandler;
 import org.minima.system.network.NetClient;
 import org.minima.system.network.NetClientReader;
 import org.minima.utils.MinimaLogger;
@@ -230,6 +231,13 @@ public class ConsensusNet {
 			//Do we have it.. now check DB
 			if(getMainDB().getTxPOW(txpow.getTxPowID()) != null) {
 				//WE HAVE IT..
+				return;
+			}
+			
+			//Now check the MemPool
+			if(getMainDB().checkTransactionForMempoolCoins(txpow.getTransaction())) {
+				//No GOOD!
+				MinimaLogger.log("ERROR double spend coin in mempool. "+txpow);
 				return;
 			}
 			
