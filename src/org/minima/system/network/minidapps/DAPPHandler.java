@@ -18,6 +18,7 @@ import java.util.StringTokenizer;
 
 import org.minima.objects.base.MiniData;
 import org.minima.system.backup.BackupManager;
+import org.minima.system.network.minidapps.resources.hexdata.index;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
@@ -160,13 +161,16 @@ public class DAPPHandler implements Runnable {
 				
 				
 			}else {
-				file    = getResourceBytes(fileRequested);
-				
 				if(fileRequested.equals("index.html")) {
-					String page = new String(file,StandardCharsets.UTF_8);
+//					String page = new String(file,StandardCharsets.UTF_8);
+					String page    = new String(index.HEXDATA,StandardCharsets.UTF_8);
 					String newpage = page.replace("######", createMiniDAPPList());
-					
 					file = newpage.getBytes();
+					
+//				}else if(fileRequested.equals("index.html")) {
+				
+				}else {
+					file    = getResourceBytes(fileRequested);	
 				}
 				
 				filelen = file.length;
