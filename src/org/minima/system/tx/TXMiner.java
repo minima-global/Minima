@@ -11,6 +11,8 @@ import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.messages.Message;
 
+import com.sun.org.apache.bcel.internal.generic.ISHL;
+
 public class TXMiner extends SystemHandler{
 	
 	public static final MiniData BASE_TXN 	= Crypto.MEGA_HASH;
@@ -54,7 +56,9 @@ public class TXMiner extends SystemHandler{
 			//should be about 10..
 			long maxTime  	  = currentTime + 5000;
 			
-			System.out.println("START MINING "+currentTime);
+			if(mLogON) {
+				System.out.println("START TXPOW MINING "+currentTime);
+			}
 			
 			while(mining && currentTime < maxTime) {
 				//Set the Nonce..
@@ -78,7 +82,10 @@ public class TXMiner extends SystemHandler{
 			
 			//Did we find it.. ?
 			if(mining) {
-				System.out.println("NOTFINISHED "+nonce+" "+currentTime);
+				if(mLogON) {
+					System.out.println("NOTFINISHED "+nonce+" "+currentTime);
+				}
+				
 				//Repost the same transaction.. get a new TxPOW block with latest details
 				Message sametr = new Message(ConsensusHandler.CONSENSUS_SENDTRANS)
 										.addObject("transaction", txpow.getTransaction())
@@ -88,7 +95,10 @@ public class TXMiner extends SystemHandler{
 				getMainHandler().getConsensusHandler().PostMessage(sametr);
 				
 			}else {
-				System.out.println("MINED! "+nonce+" "+currentTime+" "+txpow.getTxnDifficulty().to0xString());
+				if(mLogON) {
+					System.out.println("TXPOW MINED! "+nonce+" "+currentTime);
+				}
+				
 				//Set the TxPOW
 				txpow.calculateTXPOWID();
 				
