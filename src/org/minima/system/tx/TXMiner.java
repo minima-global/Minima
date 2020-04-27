@@ -13,7 +13,8 @@ import org.minima.utils.messages.Message;
 
 public class TXMiner extends SystemHandler{
 	
-	public static final MiniData BASE_TXN 	= Crypto.MAX_HASH;
+	public static final MiniData BASE_TXN 	= Crypto.MEGA_HASH;
+//	public static final MiniData BASE_TXN 	= Crypto.MAX_HASH;
 	public static final MiniData BASE_BLOCK = Crypto.MAX_HASH;
 	
 	public static final String TXMINER_TESTHASHING = "MINE_TESTHASHING";
@@ -53,6 +54,8 @@ public class TXMiner extends SystemHandler{
 			//should be about 10..
 			long maxTime  	  = currentTime + 5000;
 			
+			System.out.println("START MINING "+currentTime);
+			
 			while(mining && currentTime < maxTime) {
 				//Set the Nonce..
 				txpow.setNonce(nonce);
@@ -63,6 +66,7 @@ public class TXMiner extends SystemHandler{
 				if(hash.isLess(txpow.getTxnDifficulty())) {
 					//For Now..
 					mining = false;
+					break;
 				}
 				
 				//Increment the nonce..
@@ -74,7 +78,7 @@ public class TXMiner extends SystemHandler{
 			
 			//Did we find it.. ?
 			if(mining) {
-//				System.out.println("NOTFINISHED "+nonce);
+				System.out.println("NOTFINISHED "+nonce+" "+currentTime);
 				//Repost the same transaction.. get a new TxPOW block with latest details
 				Message sametr = new Message(ConsensusHandler.CONSENSUS_SENDTRANS)
 										.addObject("transaction", txpow.getTransaction())
@@ -84,16 +88,14 @@ public class TXMiner extends SystemHandler{
 				getMainHandler().getConsensusHandler().PostMessage(sametr);
 				
 			}else {
-//				System.out.println("MINED! "+nonce);
+				System.out.println("MINED! "+nonce+" "+currentTime+" "+txpow.getTxnDifficulty().to0xString());
 				//Set the TxPOW
 				txpow.calculateTXPOWID();
 				
 				//We have a valid TX-POW.. tell main
-				Message msg = new Message(ConsensusHandler.CONSENSUS_PRE_PROCESSTXPOW).addObject("txpow", txpow);
+				Message msg = new Message(ConsensusHandler.CONSENSUS_POST_TXMINER).addObject("txpow", txpow);
 				getMainHandler().getConsensusHandler().PostMessage(msg);
 			}
-			
-//			System.out.println("FINISHED @ "+txdiff+" "+nonce);
 			
 		}else if(zMessage.isMessageType(TXMINER_MEGAMINER)) {
 			//Get TXPOW..

@@ -41,6 +41,13 @@ public class Crypto {
 					  "FFFF");
 	
 	/**
+	 * 1 Mega Hash - for now 250,000 - just to test..
+	 */
+	public static final BigInteger MEGA_VAL = MAX_VAL.divide(new BigInteger("250000"));	
+	public static final MiniData MEGA_HASH  = new MiniData("0x"+MEGA_VAL.toString(16));
+	
+	
+	/**
 	 * Get the default instance..
 	 */
 	private static Crypto mCrypto;
