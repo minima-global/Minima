@@ -181,6 +181,10 @@ public class ConsensusUser {
 			}else if(data.startsWith("Mx")) {
 				//It's a Minima Address!
 				check = Address.convertMinimaAddress(data);
+			
+			}else {
+				InputHandler.endResponse(zMessage, false, "INVALID KEY - "+data);	
+				return;
 			}
 			
 			//Now check..

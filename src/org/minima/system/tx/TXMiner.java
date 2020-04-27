@@ -25,6 +25,8 @@ public class TXMiner extends SystemHandler{
 	
 	boolean mAutoMining = false;
 	
+	boolean mShowTXPOWMine = false;
+	
 	public TXMiner(Main zMain) {
 		super(zMain,"TXMINER");
 	}
@@ -56,7 +58,7 @@ public class TXMiner extends SystemHandler{
 			//should be about 10..
 			long maxTime  	  = currentTime + 5000;
 			
-			if(mLogON) {
+			if(mShowTXPOWMine) {
 				System.out.println("START TXPOW MINING "+currentTime);
 			}
 			
@@ -82,7 +84,7 @@ public class TXMiner extends SystemHandler{
 			
 			//Did we find it.. ?
 			if(mining) {
-				if(mLogON) {
+				if(mShowTXPOWMine) {
 					System.out.println("NOTFINISHED "+nonce+" "+currentTime);
 				}
 				
@@ -95,7 +97,7 @@ public class TXMiner extends SystemHandler{
 				getMainHandler().getConsensusHandler().PostMessage(sametr);
 				
 			}else {
-				if(mLogON) {
+				if(mShowTXPOWMine) {
 					System.out.println("TXPOW MINED! "+nonce+" "+currentTime);
 				}
 				

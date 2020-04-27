@@ -71,15 +71,10 @@ public class ResponseStream {
 		return mJSON;
 	}
 	
-	public void endStatus(boolean zValid, String zError) {
+	public void endStatus(boolean zValid, String zMessage) {
 		mJSON.put("status", zValid);
 		mJSON.put("minifunc", mFunction);
-		
-		if(!zValid) {
-			mJSON.put("error", zError);
-		}else {
-			mJSON.put("message", zError);
-		}
+		mJSON.put("message", zMessage);
 		
 		//Add the data to the JSON
 		mJSON.put("response", mDataJSON);

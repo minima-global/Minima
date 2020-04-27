@@ -39,6 +39,7 @@ public class SAMESTATE extends MinimaFunction {
 			
 			//check the same
 			if(!olds.equals(news)) {
+				zContract.traceLog("SAMESTATE FAIL ["+i+"] PREV:"+olds+" / CURRENT:"+news);
 				return BooleanValue.FALSE;
 			}
 		}

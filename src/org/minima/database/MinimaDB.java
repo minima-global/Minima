@@ -46,6 +46,7 @@ import org.minima.system.bootstrap.GenesisTxPOW;
 import org.minima.system.brains.ConsensusHandler;
 import org.minima.system.brains.TxPOWChecker;
 import org.minima.system.input.InputHandler;
+import org.minima.system.input.functions.gimme50;
 import org.minima.system.tx.TXMiner;
 import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
@@ -611,7 +612,9 @@ public class MinimaDB {
 			if(txpow.isTransaction()) {
 				ArrayList<Coin> inputs = txpow.getTransaction().getAllInputs();	
 				for(Coin cc : inputs) {
-					coins.add(cc);	
+					if(!cc.getCoinID().isEqual(gimme50.COINID_INPUT)) {
+						coins.add(cc);	
+					}
 				}
 			}
 		}
