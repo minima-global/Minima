@@ -18,7 +18,7 @@ public class RPCServer implements Runnable{
 	
 	ServerSocket mServerSocket;
 	int mPort;
-	String mHost;
+	static String mHost;
 	
 	boolean mRunning = true;
 	
@@ -64,7 +64,7 @@ public class RPCServer implements Runnable{
 		return mPort;
 	}
 	
-	public String getHost() {
+	public static String getHost() {
 		return mHost;
 	}
 		
