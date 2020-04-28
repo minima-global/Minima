@@ -2,6 +2,7 @@ package org.minima.system.network.minidapps;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -193,7 +194,18 @@ public class DAPPHandler implements Runnable {
 						file    = installdapphtml.HEXDATA;
 					
 					}else if(fileRequested.equals("tile-grey.jpeg")) {
-						file    = tilegreyjpeg.HEXDATA;
+						//Bit Special.. as it's a bit big
+						ByteArrayOutputStream baos = new ByteArrayOutputStream();
+						
+						//Write each chunk
+						baos.write(tilegreyjpeg.HEXDATA0);
+						baos.write(tilegreyjpeg.HEXDATA1);
+						baos.write(tilegreyjpeg.HEXDATA2);
+						baos.write(tilegreyjpeg.HEXDATA3);
+						baos.write(tilegreyjpeg.HEXDATA4);
+						
+						//And now get the lot..
+						file    = baos.toByteArray();
 						
 					}else {
 						//Not found..
