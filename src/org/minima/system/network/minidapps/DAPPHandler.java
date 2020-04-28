@@ -203,9 +203,10 @@ public class DAPPHandler implements Runnable {
 						baos.write(tilegreyjpeg.HEXDATA2);
 						baos.write(tilegreyjpeg.HEXDATA3);
 						baos.write(tilegreyjpeg.HEXDATA4);
+						baos.flush();
 						
 						//And now get the lot..
-						file    = baos.toByteArray();
+						file = baos.toByteArray();
 						
 					}else {
 						//Not found..

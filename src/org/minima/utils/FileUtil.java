@@ -39,7 +39,7 @@ public class FileUtil {
     		for(int i=0;i<num;i++) {
     			//loop through it..
     			int start = i*MAX_STRING;
-    			int end   = ((i+1)*MAX_STRING)-1;
+    			int end   = ((i+1)*MAX_STRING);
     			
     			if(end > size) {
     				end = (int) size;
