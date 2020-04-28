@@ -63,6 +63,8 @@
   border-radius: 10px;
   font-size:20px;
   font-weight:bold;
+  width:150;
+  height:75;
   font-family:monospace;
   outline: none;
 }
