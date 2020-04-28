@@ -47,6 +47,11 @@ public class ConsensusHandler extends SystemHandler {
 	public static final String CONSENSUS_CREATETRANS 		   = "CONSENSUS_CREATETRANS";
 	
 	/**
+	 * Check the mempool every few minutes for irregularities..
+	 */
+	public static final String CONSENSUS_MEMPOOLCHECK 	       = "CONSENSUS_MEMPOOLCHECK";
+	
+	/**
 	 * Create Tokens
 	 */
 	public static final String CONSENSUS_CREATETOKEN 		= "CONSENSUS_CREATETOKEN";
@@ -134,6 +139,8 @@ public class ConsensusHandler extends SystemHandler {
 		mConsensusBackup = new ConsensusBackup(mMainDB, this);
 		
 		PostTimerMessage(new TimerMessage(2000, CONSENSUS_MINEBLOCK));
+		
+		PostTimerMessage(new TimerMessage(60000, CONSENSUS_MEMPOOLCHECK));
 	}
 	
 	public void setBackUpManager() {
@@ -363,6 +370,13 @@ public class ConsensusHandler extends SystemHandler {
 			
 			InputHandler.endResponse(zMessage, true, "Send Success");
 			
+		}else if ( zMessage.isMessageType(CONSENSUS_MEMPOOLCHECK) ) {
+			//Send a check mempool messsage..
+			PostMessage(new Message(ConsensusUser.CONSENSUS_FLUSHMEMPOOL));
+			
+			//And set another timer.. every 5 mins..
+			PostTimerMessage(new TimerMessage(300000, CONSENSUS_MEMPOOLCHECK));
+			
 		}else if ( zMessage.isMessageType(CONSENSUS_ACTIVATEMINE) ) {
 			boolean mining = zMessage.getBoolean("automining");
 			getMainHandler().getMiner().setAutoMining(mining);
@@ -374,7 +388,7 @@ public class ConsensusHandler extends SystemHandler {
 		}else if ( zMessage.isMessageType(CONSENSUS_MINEBLOCK) ) {
 			//Are we Mining..
 			if(!getMainHandler().getMiner().isAutoMining()) {
-				PostTimerMessage(new TimerMessage(5000, CONSENSUS_MINEBLOCK));
+				PostTimerMessage(new TimerMessage(10000, CONSENSUS_MINEBLOCK));
 				return;
 			}
 			

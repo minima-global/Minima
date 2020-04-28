@@ -16,6 +16,7 @@ import org.minima.database.mmr.MMREntry;
 import org.minima.database.mmr.MMRProof;
 import org.minima.database.mmr.MMRSet;
 import org.minima.database.txpowdb.TxPOWDBRow;
+import org.minima.database.txpowdb.TxPowDB;
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.values.BooleanValue;
 import org.minima.kissvm.values.HEXValue;
@@ -36,11 +37,16 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniScript;
 import org.minima.objects.proofs.ScriptProof;
 import org.minima.system.input.InputHandler;
+import org.minima.system.network.NetClient;
+import org.minima.system.network.NetClientReader;
+import org.minima.system.network.NetworkHandler;
 import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
+
+import com.sun.corba.se.impl.logging.POASystemException;
 
 public class ConsensusUser {
 
@@ -474,19 +480,65 @@ public class ConsensusUser {
 		}else if(zMessage.isMessageType(CONSENSUS_FLUSHMEMPOOL)) {
 			boolean hard = zMessage.getBoolean("hard");
 			
+			JSONObject resp = InputHandler.getResponseJSON(zMessage);
+			resp.put("hard", hard);
+			
+			//TxPOW DB
+			TxPowDB tdb = getMainDB().getTxPowDB();
+			
 			//Check the MEMPOOL transactions..
-			ArrayList<TxPOWDBRow> unused = getMainDB().getTxPowDB().getAllUnusedTxPOW();
+			ArrayList<TxPOWDBRow> unused = tdb.getAllUnusedTxPOW();
 			ArrayList<MiniData> remove = new ArrayList<>();
+			JSONArray requested = new JSONArray();
 			
 			//Check them all..
-			MinimaLogger.log("FLUSHING MEMPOOL! "+hard);
+//			MinimaLogger.log("FLUSHING MEMPOOL! HARD:"+hard);
 			for(TxPOWDBRow txrow : unused) {
 				TxPOW txpow    = txrow.getTxPOW();
 				
+				//Check All..
+				if(txpow.isBlock()) {
+					MiniData parent = txpow.getParentID();
+					if(tdb.findTxPOWDBRow(parent) == null) {
+						//Request it from ALL your peers..
+						Message msg  = new Message(NetClient.NETCLIENT_SENDOBJECT)
+								.addObject("type", NetClientReader.NETMESSAGE_TXPOW_REQUEST)
+								.addObject("object", parent);
+						Message netw = new Message(NetworkHandler.NETWORK_SENDALL)
+								.addObject("message", msg);
+						
+						//Post it..
+						mHandler.getMainHandler().getNetworkHandler().PostMessage(netw);
+						
+						//Add to out list
+						requested.add(parent.to0xString());
+					}
+					
+					//Get all the messages in the block..
+					ArrayList<MiniData> txns = txpow.getBlockTxns();
+					for(MiniData txn : txns) {
+						if(tdb.findTxPOWDBRow(txn) == null) {
+							//Request it from ALL your peers..
+							Message msg  = new Message(NetClient.NETCLIENT_SENDOBJECT)
+									.addObject("type", NetClientReader.NETMESSAGE_TXPOW_REQUEST)
+									.addObject("object", txn);
+							Message netw = new Message(NetworkHandler.NETWORK_SENDALL)
+									.addObject("message", msg);
+							
+							//Post it..
+							mHandler.getMainHandler().getNetworkHandler().PostMessage(netw);
+							
+							//Add to out list
+							requested.add(txn.to0xString());
+						}
+					}
+				}
+								
 				//Do we just remove them all.. ?
 				if(hard) {
+					//Remove all..
 					remove.add(txpow.getTxPowID());
-				}else {
+				}else{
 					//Check it..
 					boolean sigsok = TxPOWChecker.checkSigs(txpow);
 					boolean trxok  = TxPOWChecker.checkTransactionMMR(txpow, getMainDB());
@@ -505,9 +557,8 @@ public class ConsensusUser {
 			}
 			
 			//Now you have the proof..
-			JSONObject resp = InputHandler.getResponseJSON(zMessage);
-			resp.put("hard", hard);
 			resp.put("removed", rem);
+			resp.put("requested", requested);
 			InputHandler.endResponse(zMessage, true, "Mempool Flushed");
 			
 		}else if(zMessage.isMessageType(CONSENSUS_UNKEEPCOIN)) {

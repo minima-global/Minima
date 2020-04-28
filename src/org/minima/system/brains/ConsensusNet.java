@@ -256,10 +256,14 @@ public class ConsensusNet {
 			TxPOWDBRow row = getMainDB().addNewTxPow(txpow);
 			
 			//Now check the parent.. (Whether or not it is a block we may be out of alignment..)
+			boolean flush = false;
 			if(getMainDB().getTxPOW(txpow.getParentID())==null) {
 				//We don't have it, get it..
 				MinimaLogger.log("Request Parent TxPOW : "+txpow.getParentID()); 
 				sendNetMessage(zMessage, NetClientReader.NETMESSAGE_TXPOW_REQUEST, txpow.getParentID());
+				
+				//something funny.. FLUSH MEMPOOL
+				flush = true;
 			}
 
 			//And now check the Txn list.. basically a mempool sync
@@ -272,8 +276,13 @@ public class ConsensusNet {
 					sendNetMessage(zMessage, NetClientReader.NETMESSAGE_TXPOW_REQUEST, txn);
 					
 					//something funny.. FLUSH MEMPOOL
-					mHandler.PostTimerMessage(new TimerMessage(10000, ConsensusUser.CONSENSUS_FLUSHMEMPOOL));
+					flush = true;
 				}
+			}
+			
+			//Need a check..
+			if(flush) {
+				mHandler.PostTimerMessage(new TimerMessage(10000, ConsensusUser.CONSENSUS_FLUSHMEMPOOL));
 			}
 			
 			//Now - Process the TxPOW
