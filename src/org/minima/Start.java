@@ -31,10 +31,16 @@ public class Start {
 		return mMainServer;
 	}
 	
+	public String mConfFolder;
+	
 	/**
 	 * Simple constructor for iOS and Android
 	 */
-	public Start() {
+	public Start() {}
+	
+	public void fireStarter(String zConfFolder) {
+		mConfFolder = zConfFolder;
+		
 		//Create a separate thread
 		Runnable mainrunner = new Runnable() {
 			@Override
@@ -51,7 +57,8 @@ public class Start {
 				vars.add("-connect");
 				vars.add("34.90.172.118");
 				vars.add("9001");
-				//etc..
+				vars.add("-conf");
+				vars.add(mConfFolder);
 				
 				//And call it..
 				main( vars.toArray(new String[0]) );
