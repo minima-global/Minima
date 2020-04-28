@@ -2,6 +2,8 @@
 <head>
 
 	<link rel="stylesheet" type="text/css" href="css/minidapps.css">
+	
+	<!--  <meta name="viewport" content="width=700, initial-scale=1, maximum-scale=1"> -->
 
 </head>
 
@@ -94,31 +96,32 @@
 	<table class="mainfooter" width=100% border=0>
 		<tr>
 			<td width=22% style="text-align:left;"> 
-				<button class="installdapp" onclick="window.location.href='help.html';">&nbsp;HELP&nbsp;</button> 
+				<button class="installdapp" onclick="window.location.href='help.html';"><br>&nbsp;HELP&nbsp;<br><br></button> 
 			</td>
 			
-			<td width=56% style="text-align:center;font-size:12" nowrap>
+			<td width=56% style="text-align:center;font-size:14" nowrap>
 				&nbsp;The <span style="color:#000">E</span><span style="color:#222">v</span><span style="color:#444">o</span><span style="color:#666">l</span><span style="color:#888">u</span><span style="color:#aaa">t</span><span style="color:#666">i</span><span style="color:#ddd">o</span><span style="color:#fff">n</span> will <b>not</b> be Centralised..
 			</td>
 			
 			<td width=22% style="text-align:right;" nowrap> 
-				<button class="installdapp" onclick="installDAPP();">&nbsp;INSTALL&nbsp;</button> 	
+				<button class="installdapp" onclick="installDAPP();"><br>&nbsp;INSTALL&nbsp;<br><br></button> 	
 			</td>
 		</tr>
 	</table>
 	
-	<!-- The actual form that is used to upload minidapps -->
-	<form id="actual_minidapp" action="installdapp.html" method="post">
-        <input type=hidden name=filename value="">
-	    <input type=hidden name=filesize value="">
-		<input type=hidden id=minidapp64 name=minidata value=""> 
-	</form>
-	
-	<!-- Used to open the select File Dialog.. -->
-	<input accept=".minidapp" id="file-input" value="nofile" type="file" name="minidapp" style="display:none;" />
 </td>
 </tr>
 </table>
+
+<!-- The actual form that is used to upload minidapps -->
+<form id="actual_minidapp" action="installdapp.html" method="post" style="display:none;">
+    <input type=hidden name=filename value="">
+    <input type=hidden name=filesize value="">
+	<input type=hidden id=minidapp64 name=minidata value=""> 
+</form>
+
+<!-- Used to open the select File Dialog.. -->
+<input accept=".minidapp" id="file-input" value="nofile" type="file" name="minidapp" style="display:none;" />
 
 </body>
 
