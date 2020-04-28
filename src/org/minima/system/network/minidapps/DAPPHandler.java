@@ -174,39 +174,27 @@ public class DAPPHandler implements Runnable {
 			}else {
 				if(!mUseResources) {
 					if(fileRequested.equals("index.html")) {
-						String page    = new String(indexhtml.HEXDATA,StandardCharsets.UTF_8);
+						String page    = new String(indexhtml.returnData(),StandardCharsets.UTF_8);
 						String newpage = page.replace("######", createMiniDAPPList());
 						file = newpage.getBytes();
 						
 					}else if(fileRequested.equals("css/minidapps.css")) {
-						file    = minidappscss.HEXDATA;
+						file    = minidappscss.returnData();
 					
 					}else if(fileRequested.equals("favicon.ico")) {
-						file    = faviconico.HEXDATA;
+						file    = faviconico.returnData();
 					
 					}else if(fileRequested.equals("help.html")) {
-						file    = helphtml.HEXDATA;
+						file    = helphtml.returnData();
 					
 					}else if(fileRequested.equals("icon.png")) {
-						file    = iconpng.HEXDATA;
+						file    = iconpng.returnData();
 					
 					}else if(fileRequested.equals("installdapp.html")) {
-						file    = installdapphtml.HEXDATA;
+						file    = installdapphtml.returnData();
 					
 					}else if(fileRequested.equals("tile-grey.jpeg")) {
-						//Bit Special.. as it's a bit big
-						ByteArrayOutputStream baos = new ByteArrayOutputStream();
-						
-						//Write each chunk
-						baos.write(tilegreyjpeg.HEXDATA0);
-						baos.write(tilegreyjpeg.HEXDATA1);
-						baos.write(tilegreyjpeg.HEXDATA2);
-						baos.write(tilegreyjpeg.HEXDATA3);
-						baos.write(tilegreyjpeg.HEXDATA4);
-						baos.flush();
-						
-						//And now get the lot..
-						file = baos.toByteArray();
+						file    = tilegreyjpeg.returnData();
 						
 					}else {
 						//Not found..
