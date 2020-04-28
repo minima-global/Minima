@@ -18,7 +18,13 @@ import java.util.StringTokenizer;
 
 import org.minima.objects.base.MiniData;
 import org.minima.system.backup.BackupManager;
-import org.minima.system.network.minidapps.resources.hexdata.index;
+import org.minima.system.network.minidapps.hexdata.faviconico;
+import org.minima.system.network.minidapps.hexdata.helphtml;
+import org.minima.system.network.minidapps.hexdata.iconpng;
+import org.minima.system.network.minidapps.hexdata.indexhtml;
+import org.minima.system.network.minidapps.hexdata.installdapphtml;
+import org.minima.system.network.minidapps.hexdata.minidappscss;
+import org.minima.system.network.minidapps.hexdata.tilegreyjpeg;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
@@ -37,6 +43,11 @@ public class DAPPHandler implements Runnable {
 	Socket mSocket;
 	
 	DAPPManager mDAPPManager;
+	
+	/**
+	 * Load from resource or from the STATIC hard coded files
+	 */
+	boolean mUseResources = false;
 	
 	/**
 	 * Main Constructor
@@ -159,18 +170,45 @@ public class DAPPHandler implements Runnable {
 			}else if(fileRequested.startsWith("rpc/")) {
 				//It's an RPC request
 				
-				
 			}else {
-				if(fileRequested.equals("index.html")) {
-//					String page = new String(file,StandardCharsets.UTF_8);
-					String page    = new String(index.HEXDATA,StandardCharsets.UTF_8);
-					String newpage = page.replace("######", createMiniDAPPList());
-					file = newpage.getBytes();
+				if(!mUseResources) {
+					if(fileRequested.equals("index.html")) {
+						String page    = new String(indexhtml.HEXDATA,StandardCharsets.UTF_8);
+						String newpage = page.replace("######", createMiniDAPPList());
+						file = newpage.getBytes();
+						
+					}else if(fileRequested.equals("css/minidapps.css")) {
+						file    = minidappscss.HEXDATA;
 					
-//				}else if(fileRequested.equals("index.html")) {
-				
+					}else if(fileRequested.equals("favicon.ico")) {
+						file    = faviconico.HEXDATA;
+					
+					}else if(fileRequested.equals("help.html")) {
+						file    = helphtml.HEXDATA;
+					
+					}else if(fileRequested.equals("icon.png")) {
+						file    = iconpng.HEXDATA;
+					
+					}else if(fileRequested.equals("installdapp.html")) {
+						file    = installdapphtml.HEXDATA;
+					
+					}else if(fileRequested.equals("tile-grey.jpeg")) {
+						file    = tilegreyjpeg.HEXDATA;
+						
+					}else {
+						//Not found..
+						file    = new byte[0];	
+					}	
+					
 				}else {
-					file    = getResourceBytes(fileRequested);	
+					if(fileRequested.equals("index.html")) {
+						file           = getResourceBytes(fileRequested);
+						String page    = new String(file,StandardCharsets.UTF_8);
+						String newpage = page.replace("######", createMiniDAPPList());
+						file           = newpage.getBytes();
+					}else {
+						file = getResourceBytes(fileRequested);	
+					}	
 				}
 				
 				filelen = file.length;

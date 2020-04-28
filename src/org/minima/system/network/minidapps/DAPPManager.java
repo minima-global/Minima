@@ -9,6 +9,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -150,6 +152,23 @@ public class DAPPManager extends SystemHandler {
 				}
 			}
 		}
+		
+		//Order the List.. By Name..
+		Collections.sort(CURRENT_MINIDAPPS, new Comparator<JSONObject>() {
+			@Override
+			public int compare(JSONObject o1, JSONObject o2) {
+				try {
+					//In case the name is missing..
+					String name1 = (String) o1.get("name");
+					String name2 = (String) o2.get("name");	
+					return name1.compareTo(name2);
+					
+				}catch(Exception exc) {
+					System.out.println("Error in MiniDAPP CONF "+exc);
+				}
+				return 0;
+			}
+		});
 		
 		return CURRENT_MINIDAPPS;
 	}
