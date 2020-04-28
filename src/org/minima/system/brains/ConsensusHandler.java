@@ -534,7 +534,11 @@ public class ConsensusHandler extends SystemHandler {
 			
 		}else if(zMessage.isMessageType(CONSENSUS_GIMME50)) {
 			//construct a special transaction that pays 50 mini to an address this user controls..
-			Address addr = getMainDB().getUserDB().newSimpleAddress();
+			Address addr1 = getMainDB().getUserDB().newSimpleAddress();
+			Address addr2 = getMainDB().getUserDB().newSimpleAddress();
+			Address addr3 = getMainDB().getUserDB().newSimpleAddress();
+			Address addr4 = getMainDB().getUserDB().newSimpleAddress();
+			Address addr5 = getMainDB().getUserDB().newSimpleAddress();
 			
 			//Now create a transaction that always pays out..
 			Transaction trans = new Transaction();
@@ -549,9 +553,12 @@ public class ConsensusHandler extends SystemHandler {
 			trans.addInput(in);
 			wit.addScript(Address.TRUE_ADDRESS.getScript(), in.getAddress().getLength()*8);
 			
-			//And send to the new address
-			Coin out = new Coin(Coin.COINID_OUTPUT,addr.getAddressData(),new MiniNumber("50"), Coin.MINIMA_TOKENID);
-			trans .addOutput(out);
+			//And send to the new addresses
+			trans.addOutput(new Coin(Coin.COINID_OUTPUT,addr1.getAddressData(),new MiniNumber("10"), Coin.MINIMA_TOKENID));
+			trans.addOutput(new Coin(Coin.COINID_OUTPUT,addr2.getAddressData(),new MiniNumber("10"), Coin.MINIMA_TOKENID));
+			trans.addOutput(new Coin(Coin.COINID_OUTPUT,addr3.getAddressData(),new MiniNumber("10"), Coin.MINIMA_TOKENID));
+			trans.addOutput(new Coin(Coin.COINID_OUTPUT,addr4.getAddressData(),new MiniNumber("10"), Coin.MINIMA_TOKENID));
+			trans.addOutput(new Coin(Coin.COINID_OUTPUT,addr5.getAddressData(),new MiniNumber("10"), Coin.MINIMA_TOKENID));
 			
 			//Now send it..
 			Message mine = new Message(ConsensusHandler.CONSENSUS_SENDTRANS)
