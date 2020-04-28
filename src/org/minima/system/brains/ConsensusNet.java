@@ -261,9 +261,6 @@ public class ConsensusNet {
 				//We don't have it, get it..
 				MinimaLogger.log("Request Parent TxPOW : "+txpow.getParentID()); 
 				sendNetMessage(zMessage, NetClientReader.NETMESSAGE_TXPOW_REQUEST, txpow.getParentID());
-				
-				//something funny.. FLUSH MEMPOOL
-				flush = true;
 			}
 
 			//And now check the Txn list.. basically a mempool sync
@@ -274,15 +271,7 @@ public class ConsensusNet {
 					
 					//We don't have it, get it..
 					sendNetMessage(zMessage, NetClientReader.NETMESSAGE_TXPOW_REQUEST, txn);
-					
-					//something funny.. FLUSH MEMPOOL
-					flush = true;
 				}
-			}
-			
-			//Need a check..
-			if(flush) {
-				mHandler.PostTimerMessage(new TimerMessage(10000, ConsensusUser.CONSENSUS_FLUSHMEMPOOL));
 			}
 			
 			//Now - Process the TxPOW
