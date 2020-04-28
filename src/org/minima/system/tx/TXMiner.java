@@ -3,15 +3,12 @@ package org.minima.system.tx;
 import org.minima.objects.TxPOW;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniInteger;
-import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
 import org.minima.system.SystemHandler;
 import org.minima.system.brains.ConsensusHandler;
 import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.messages.Message;
-
-import com.sun.org.apache.bcel.internal.generic.ISHL;
 
 public class TXMiner extends SystemHandler{
 	

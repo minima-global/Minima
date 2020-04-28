@@ -46,8 +46,6 @@ import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
 
-import com.sun.corba.se.impl.logging.POASystemException;
-
 public class ConsensusUser {
 
 
