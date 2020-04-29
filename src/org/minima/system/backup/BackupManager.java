@@ -17,18 +17,15 @@ import org.minima.utils.messages.MessageProcessor;
 
 public class BackupManager extends SystemHandler {
 
-	public static final String BACKUP_INIT         = "BACKUP_INIT";
-	public static final String BACKUP_CLEAR        = "BACKUP_CLEAR";
-	
-	public static final String BACKUP_WRITE        = "BACKUP_WRITE";
-	
-	public static final String BACKUP_READ         = "BACKUP_READ";
-	public static final String BACKUP_READSYNC     = "BACKUP_READSYNC";
-	public static final String BACKUP_READUSER     = "BACKUP_READUSER";
-	public static final String BACKUP_READTXPOW    = "BACKUP_READTXPOW";
-	
-	public static final String BACKUP_POSTACTIONMSG      = "BACKUP_POSTACTIONMSG"; 
-	public static final String BACKUP_POSTACTION_HANDLER = "BACKUP_POSTACTION_HANDLER"; 
+	private static final String BACKUP_INIT               = "BACKUP_INIT";
+	private static final String BACKUP_CLEAR              = "BACKUP_CLEAR";	
+	private static final String BACKUP_WRITE              = "BACKUP_WRITE";
+	private static final String BACKUP_READ               = "BACKUP_READ";
+	private static final String BACKUP_READSYNC           = "BACKUP_READSYNC";
+	private static final String BACKUP_READUSER           = "BACKUP_READUSER";
+	private static final String BACKUP_READTXPOW          = "BACKUP_READTXPOW";
+	private static final String BACKUP_POSTACTIONMSG      = "BACKUP_POSTACTIONMSG"; 
+	private static final String BACKUP_POSTACTION_HANDLER = "BACKUP_POSTACTION_HANDLER"; 
 	
 	/**
 	 * User Configuration
@@ -55,38 +52,42 @@ public class BackupManager extends SystemHandler {
 		PostMessage(BACKUP_INIT);
 	}
 	
-	public String getRootFolder() {
-		return mRoot.getAbsolutePath();
+	public File getRootFolder() {
+		return mRoot;
 	}
 	
 	public File getTxPOWFolder() {
 		return mTxPOWDB;
 	}
 	
-	public void backupTxpow(TxPOW zTxPOW) {
-		//Create the File
-//		File back = new File(mTxPOWDB,zTxPOW.getTxPowID().toString()+".txpow");
-//		
-//		//No Overwrite
-//		Message backup = new Message(BackupManager.BACKUP_WRITE);
-//		backup.addObject("object", zTxPOW);
-//		backup.addObject("file", back);
-		
-//		PostMessage(backup);
-	}
-
-	public void deleteTxpow(TxPOW zTxPOW) {
-//		//Create the File
-//		File back = new File(mTxPOWDB,zTxPOW.getTxPowID().toString()+".txpow");
-//				
-//		//Delete?
-//		if(back.exists()) {
-//			back.delete();
-//		}
+	public File getBackUpFolder() {
+		return mBackup;
 	}
 	
 	public File getBackUpFile(String name) {
 		return new File(mBackup, name);
+	}
+	
+	public void backupTxpow(TxPOW zTxPOW) {
+		//Create the File
+		File back = new File(mTxPOWDB,zTxPOW.getTxPowID().toString()+".txpow");
+		
+		//No Overwrite
+		Message backup = new Message(BackupManager.BACKUP_WRITE);
+		backup.addObject("object", zTxPOW);
+		backup.addObject("file", back);
+		
+		PostMessage(backup);
+	}
+
+	public void deleteTxpow(TxPOW zTxPOW) {
+		//Create the File
+		File back = new File(mTxPOWDB,zTxPOW.getTxPowID().toString()+".txpow");
+				
+		//Delete?
+		if(back.exists()) {
+			back.delete();
+		}
 	}
 	
 	private File ensureFolder(File zFolder) {

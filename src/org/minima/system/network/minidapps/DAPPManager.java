@@ -109,7 +109,7 @@ public class DAPPManager extends SystemHandler {
 		CURRENT_MINIDAPPS.clear();
 		
 		//This is the folder..
-		String root = getMainHandler().getBackupManager().getRootFolder();
+		File root = getMainHandler().getBackupManager().getRootFolder();
 		
 		//Create the new Folder...
 		File alldapps = new File(root,"minidapps");
@@ -183,7 +183,7 @@ public class DAPPManager extends SystemHandler {
 			MiniData hash = Crypto.getInstance().hashObject(data, 160);
 			
 			//This is the folder..
-			String root = getMainHandler().getBackupManager().getRootFolder();
+			File root = getMainHandler().getBackupManager().getRootFolder();
 			
 			//Create the new Folder...
 			File alldapps = new File(root,"minidapps");

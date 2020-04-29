@@ -64,14 +64,16 @@ public class ConsensusNet {
 				return;
 			}
 			
-			MiniNumber casc = getMainDB().getMainTree().getCascadeNode().getTxPow().getBlockNumber();
-			SyncPackage sp = new SyncPackage();
-			sp.setCascadeNode(casc);
+			//Get the complete sync package
+			SyncPackage sp = getMainDB().getSyncPackage();
 			
-			//Cycle through it all..
-			for(BlockTreeNode node : nodes) {
-				sp.getAllNodes().add(0,new SyncPacket(node));
-			}
+//			MiniNumber casc = getMainDB().getMainTree().getCascadeNode().getTxPow().getBlockNumber();
+//			SyncPackage sp = new SyncPackage();
+//			sp.setCascadeNode(casc);
+//			//Cycle through it all..
+//			for(BlockTreeNode node : nodes) {
+//				sp.getAllNodes().add(0,new SyncPacket(node));
+//			}
 			
 			//Now send that on..
 			sendNetMessage(zMessage, NetClientReader.NETMESSAGE_INTRO, sp);

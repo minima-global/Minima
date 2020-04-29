@@ -148,7 +148,7 @@ var Minima = {
 				for(i=0;i<len;i++){
 					if(responses[i].status != true){
 						//Output to console..
-						Minimalog("ERROR in Multi-Command ["+i+"] "+JSON.stringify(responses[i],null,2));
+						console.log("ERROR in Multi-Command ["+i+"] "+JSON.stringify(responses[i],null,2));
 						return false;
 					}
 				}
@@ -163,6 +163,9 @@ var Minima = {
 						return statelist[psloop].data;
 					}
 				}
+				
+				//Not found..
+				console.log("ERROR StateVariable doesn't exist.. "+port);
 				
 				//Not found
 				return null;
@@ -181,6 +184,9 @@ var Minima = {
 						return Minima.tokens.tokens[tokloop].token;
 					}
 				}
+				
+				//Not found..
+				console.log("ERROR TokenID doesn't exist.. "+tokenid);
 				
 				return "";
 			},

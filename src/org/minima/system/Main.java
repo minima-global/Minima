@@ -256,11 +256,11 @@ public class Main extends MessageProcessor {
 			mInput.stopMessageProcessor();
 			mTXMiner.stopMessageProcessor();
 			mConsensus.stopMessageProcessor();
-			mBackup	.stopMessageProcessor();
+			mBackup.stopMessageProcessor();
 			mProcessManager.stopMessageProcessor();
 			
 			//Wait..
-			Thread.sleep(250);
+			Thread.sleep(1000);
 			
 			//And shut this down too..
 			stopMessageProcessor();

@@ -141,8 +141,7 @@ public class MinimaDB {
 		mMainTree.setTreeRoot(root);
 				
 		//Back it up..
-//		getBackup().backupTxpow(gen); 
-//		getBackup().backupFullBlock(gen, new ArrayList<>());
+		getBackup().backupTxpow(gen); 
 	}
 	
 	public TxPOW getTxPOW(MiniData zTxPOWID) {
@@ -337,7 +336,7 @@ public class MinimaDB {
 				row.setOnChainBlock(false);
 				
 				//And delete / move to different folder any file backups..
-//				getBackup().deleteTxpow(node.getTxPow());
+				getBackup().deleteTxpow(node.getTxPow());
 			}
 			
 			//Remove all TXPowRows that are less than the cascade node.. they will not be used again..
@@ -346,10 +345,10 @@ public class MinimaDB {
 			//Which txpow have been removed..
 			ArrayList<TxPOWDBRow> remrows =  mTxPOWDB.removeTxPOWInBlockLessThan(cascade);
 			
-//			//Remove the deleted txpow..
-//			for(TxPOWDBRow remrow : remrows) {
-//				getBackup().deleteTxpow(remrow.getTxPOW());
-//			}
+			//Remove the deleted txpow..
+			for(TxPOWDBRow remrow : remrows) {
+				getBackup().deleteTxpow(remrow.getTxPOW());
+			}
 			
 			//Remove all the coins no longer needed.. SPENT
 			mCoinDB.removeOldSpentCoins(cascade);
@@ -1045,22 +1044,43 @@ public class MinimaDB {
 		return getMainTree().getChainTip().getTxPow().getBlockNumber();
 	}
 	
-	/**
-	 * Get the Current IBD - total required to log in for a new user
-	 */
-	public int getIntroSyncSize() {
+	
+	
+	public SyncPackage getSyncPackage() {
 		SyncPackage sp = new SyncPackage();
+		
+		//Cascade Node
+		MiniNumber casc = getMainTree().getCascadeNode().getTxPow().getBlockNumber();
+		sp.setCascadeNode(casc);
 		
 		//Lets create a sync package
 		ArrayList<BlockTreeNode> nodes = getMainTree().getAsList();
-		MiniNumber casc = getMainTree().getCascadeNode().getTxPow().getBlockNumber();
-		sp.setCascadeNode(casc);
 		
 		//Cycle through it all..
 		for(BlockTreeNode node : nodes) {
 			MiniNumber block = node.getTxPow().getBlockNumber();
 			sp.getAllNodes().add(0,new SyncPacket(node, block.isLessEqual(casc)));
 		}
+		
+		return sp;
+	}
+		
+	/**
+	 * Get the Current IBD - total required to log in for a new user
+	 */
+	public int getIntroSyncSize() {
+		SyncPackage sp = getSyncPackage();
+		
+//		//Lets create a sync package
+//		ArrayList<BlockTreeNode> nodes = getMainTree().getAsList();
+//		MiniNumber casc = getMainTree().getCascadeNode().getTxPow().getBlockNumber();
+//		sp.setCascadeNode(casc);
+//		
+//		//Cycle through it all..
+//		for(BlockTreeNode node : nodes) {
+//			MiniNumber block = node.getTxPow().getBlockNumber();
+//			sp.getAllNodes().add(0,new SyncPacket(node, block.isLessEqual(casc)));
+//		}
 		
 		//Write it out..
 		try {

@@ -18,7 +18,7 @@ import org.minima.utils.Streamable;
 
 public class SyncPackage implements Streamable{
 
-	MiniNumber mCascadeNode;
+	MiniNumber mCascadeNode = MiniNumber.ZERO;
 	
 	ArrayList<SyncPacket> mNodes;
 	

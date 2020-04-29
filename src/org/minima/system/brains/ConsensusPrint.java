@@ -798,7 +798,7 @@ public class ConsensusPrint {
 			String uptime     = Maths.ConvertMilliToTime(timediff);	
 
 			status.put("uptime", uptime);
-			status.put("conf", main.getBackupManager().getRootFolder());
+			status.put("conf", main.getBackupManager().getRootFolder().getAbsolutePath());
 			status.put("host", main.getNetworkHandler().getRPCServer().getHost());
 			status.put("port", main.getNetworkHandler().getServer().getPort());
 			status.put("rpcport", main.getNetworkHandler().getRPCServer().getPort());

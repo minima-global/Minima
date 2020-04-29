@@ -255,23 +255,18 @@ public class ConsensusHandler extends SystemHandler {
 			
 			//Message for the clients
 			Message msg  = new Message(NetClient.NETCLIENT_SENDOBJECT).addObject("type", NetClientReader.NETMESSAGE_TXPOWID).addObject("object", txpow.getTxPowID());
-			InputHandler.addResponseMesage(msg, zMessage);
-			
 			Message netw = new Message(NetworkHandler.NETWORK_SENDALL).addObject("message", msg);
-			InputHandler.addResponseMesage(netw, zMessage);
 			
 			//Post It..
 			getMainHandler().getNetworkHandler().PostMessage(netw);
 			
 			//Process it
 			Message proc = new Message(ConsensusHandler.CONSENSUS_PROCESSTXPOW).addObject("txpow", txpow);
-			InputHandler.addResponseMesage(proc, zMessage);
 			PostMessage(proc);
 
 			//Tell the listeners.. ?
 			if(txpow.isBlock()) {
 				Message upd = new Message(CONSENSUS_NOTIFY_NEWBLOCK).addObject("txpow", txpow);
-				InputHandler.addResponseMesage(upd, zMessage);
 				updateListeners(upd);
 			}
 		
