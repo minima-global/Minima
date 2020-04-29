@@ -166,8 +166,8 @@ var Minima = {
 				}
 				
 				//Not found..
-				console.log("Minima @ "+new Date().toLocaleString()
-						+"\nERROR StateVariable doesn't exist.. "+port);
+//				console.log("Minima @ "+new Date().toLocaleString()
+//						+"\nERROR StateVariable doesn't exist.. "+port);
 				
 				//Not found
 				return null;
@@ -191,7 +191,7 @@ var Minima = {
 				console.log("Minima @ "+new Date().toLocaleString()
 						+"\nERROR TokenName doesn't exist.. "+tokenid);
 				
-				return "";
+				return null;
 			},
 			
 			getTokenScale : function(tokenid){
@@ -208,7 +208,7 @@ var Minima = {
 				console.log("Minima @ "+new Date().toLocaleString()
 						+"\nERROR TokenScale doesn't exist.. "+tokenid);
 				
-				return new Decimal(0);
+				return null;
 			}
 	}
 	
