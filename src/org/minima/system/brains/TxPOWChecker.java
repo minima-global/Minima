@@ -281,6 +281,7 @@ public class TxPOWChecker {
 				contractlog.put("parseok", cc.isParseOK());
 				contractlog.put("parse", cc.getCompleteTraceLog());
 				contractlog.put("exception", cc.isException());
+				contractlog.put("excvalue", cc.getException());
 				contractlog.put("result", cc.isSuccess());
 				
 				//Get the DynState

@@ -182,7 +182,10 @@ public class Contract {
 			
 		} catch (MinimaParseException e) {
 //			e.printStackTrace();
-			traceLog("PARSE ERROR : "+e.getMessage());
+			mException  = true;
+			mExceptionString = e.getMessage();
+			
+			traceLog("PARSE ERROR : "+mExceptionString);
 		}
 	}
 	

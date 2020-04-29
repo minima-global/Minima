@@ -472,6 +472,7 @@ public class ConsensusUser {
 			resp.put("variables",cc.getAllVariables());
 			resp.put("parse", cc.getCompleteTraceLog());
 			resp.put("exception", cc.isException());
+			resp.put("excvalue", cc.getException());
 			resp.put("result", cc.isSuccess());
 			InputHandler.endResponse(zMessage, true, "");
 		
