@@ -223,6 +223,8 @@ public class ConsensusBackup {
 						trow.setOnChainBlock(false);
 						trow.setIsInBlock(true);
 						trow.setInBlockNumber(block);
+					}else {
+						System.out.println("Restore TXPOW not found.. ");
 					}
 				}
 			}
