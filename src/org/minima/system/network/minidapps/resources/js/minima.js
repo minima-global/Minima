@@ -10,6 +10,22 @@
 * @spartacusrex
 */
 
+
+/**
+ * Are we running in MINIDAPP mode
+ * 
+ * This can be edited from JAVA when this file supplied..
+ * 
+ * Use the TAGS as reference
+ */
+var START_MINIDAPP_TAG;
+
+var MINIDAPPS_MINIMA      = true;
+var MINIDAPPS_MINIMA_HOST = "127.0.0.1:8999";
+
+var END_MINIDAPP_TAG;
+
+
 /**
  * GLOBAL VARIABLES
  */
@@ -17,14 +33,12 @@ var MAIN_DIV 		= "MINIMA_MAIN_DIV";
 var OVERLAY_DIV 	= "MINIMA_OVERLAY_DIV";
 var LOGOUT_BUTTON   = "MINIMA_LOGOUT_BUTTON";
 
-var MIFIHOST = "127.0.0.1";
+//var MIFIHOST = "127.0.0.1";
 //var MIFIHOST = "10.0.121.68";
-//var MIFIHOST = "mifi.minima.global";
+var MIFIHOST = "mifi.minima.global";
 
 var WEBSOCK = null;
 var MINIMACONNECTED = false;
-
-var MINIDAPPS_MINIMA = true;
 
 /**
  * Main MINIMA Object for all interaction
@@ -35,14 +49,16 @@ var Minima = {
 	host : "0.0.0.0",
 	status : {},
 	balance : {},
+	tokens : {},
 	uuid : Math.floor(Math.random()*1000000000),
 	logging : true,
 	
 	//Minima Startup
 	init : function(){
 		//Log a little..
-		log("Initialisation started..");
+		Minimalog("Initialisation..");
 		
+		//Are we running in MINDAPPS MODE
 		if(!MINIDAPPS_MINIMA){
 			//Create the Overlay Divs - but don't show them yet
 			createOverlayDivs();
@@ -50,7 +66,7 @@ var Minima = {
 			//Do we have an IP already 
 			var ip = window.localStorage.getItem('MinimaIP');
 			if(ip !== null && ip !== ""){
-				log("Previous host found "+ip);
+				Minimalog("Previous host found "+ip);
 				
 				//Use it..
 				Minima.host = ip;
@@ -73,7 +89,7 @@ var Minima = {
 			hide(LOGOUT_BUTTON);
 		}else{
 			//Use it..
-			Minima.host = "127.0.0.1:8999";
+			Minima.host = MINIDAPPS_MINIMA_HOST;
 			
 			//Do the first call..
 			initialStatus();
@@ -81,25 +97,15 @@ var Minima = {
 	},
 	
 	//Runs a function on the phone
-	cmd : function(minifunc, callback, logenabled){
+	cmd : function(minifunc, callback){
 		//Encode ready for transmission..
 		var enc = encodeURIComponent(minifunc);
 		
-		//Create the string..
-		var rpcplain = "http://"+Minima.host+"/"+minifunc;
+		//Encoded copy
 		var rpc = "http://"+Minima.host+"/"+enc;
 
-		//log it..
-		if(logenabled !== undefined){
-			if(logenabled){
-				log("RPC : "+rpcplain);	
-			}
-		}else{
-			log("RPC : "+rpcplain);
-		}
-		
 		//And Call it..
-		httpGetAsync(rpc, callback);
+		httpGetAsync(rpc, callback,true);
 	},
 	
 	//Wipes the Locally stored details of the phone IP
@@ -111,26 +117,91 @@ var Minima = {
 		location.reload();
 	},
 	
-	//UTILITY FUNCTIONS
+	/**
+	 * UTILITY FUNCTIONS
+	 */
 	util : {
-			getStateVariable : function(prevstate, prevstate_number){
-				var pslen = prevstate.length;
+			//Get the Balance string for a Tokenid..
+			getBalance : function(tokenid){
+				var ballen = Minima.balance.balance.length;
+				for(balloop=0;balloop<ballen;balloop++){
+					if(Minima.balance.balance[balloop].tokenid == tokenid){
+						var bal     = Minima.balance.balance[balloop].confirmed;
+						var balun   = Minima.balance.balance[balloop].unconfirmed;
+						var mempool = Minima.balance.balance[balloop].mempool;
+						
+						//Is there unconfirmed money coming..
+						if(balun !== "0" || mempool !== "0"){
+							return bal+" / "+balun+" / "+mempool;	
+						}else{
+							return ""+bal;
+						}	
+					}
+				}
+				
+				//Not found..
+				return "0";
+			},
+		
+			checkAllResponses : function(responses){
+				len = responses.length;
+				for(i=0;i<len;i++){
+					if(responses[i].status != true){
+						//Output to console..
+						Minimalog("ERROR in Multi-Command ["+i+"] "+JSON.stringify(responses[i],null,2));
+						return false;
+					}
+				}
+				
+				return true;
+			},
+			
+			getStateVariable : function(statelist, port){
+				var pslen = statelist.length;
 				for(psloop=0;psloop<pslen;psloop++){
-					if(prevstate[psloop].port == prevstate_number){
-						return prevstate[psloop].data;
+					if(statelist[psloop].port == port){
+						return statelist[psloop].data;
 					}
 				}
 				
 				//Not found
 				return null;
+			},
+			
+			
+			getTokenName : function(tokenid){
+				if(tokenid == "0x00"){
+					return "Minima";
+				}
+				
+				var toklen = Minima.tokens.tokens.length;
+				for(tokloop=0;tokloop<toklen;tokloop++){
+					//check it
+					if(Minima.tokens.tokens[tokloop].tokenid == tokenid){
+						return Minima.tokens.tokens[tokloop].token;
+					}
+				}
+				
+				return "";
+			},
+			
+			getTokenScale : function(tokenid){
+				var toklen = Minima.tokens.tokens.length;
+				for(tokloop=0;tokloop<toklen;tokloop++){
+					if(Minima.tokens.tokens[tokloop].tokenid == tokenid){
+						temptokenscale       = new Decimal(Minima.tokens.tokens[tokloop].scale); 
+						temptokenscalefactor = new Decimal(10).pow(temptokenscale); 
+						return temptokenscalefactor;
+					}
+				}
+				
+				return new Decimal(0);
 			}
 	}
 	
 };
 
 function postMinimaMessage(event, info){
-//   log("Event Dispatch "+event+" "+info);
-	
    //And finally..
    var data = { "event": event, "info" : info }
    
@@ -145,14 +216,15 @@ function postMinimaMessage(event, info){
  * @returns
  */
 function initialStatus(){
-   //Run Status once to populate the main details..
-   Minima.cmd("status;balance",function(resp){
-	    //Convert to JSON
-		var json = JSON.parse(resp);
-
-		//Status is first..
+	//Encoded rpc call
+	var rpc = "http://"+Minima.host+"/"+encodeURIComponent("status;balance;tokens");
+	
+	//Check the Status - use base function so no log..
+	httpGetAsync(rpc,function(json){
+	    //Status is first..
 		Minima.status  = json[0].response;
 		Minima.balance = json[1].response;
+		Minima.tokens  = json[2].response;
 		
 	    //Store this..
 	    Minima.txpowid = Minima.status.tip;
@@ -177,10 +249,11 @@ function initialStatus(){
 
 function advancedConnect(){
 	//Get the Value
-	var host = document.getElementById("minimaconnect").value;
+	var host = document.getElementById("minimaconnect").value.trim();
 	
+	//Default to local host
 	if(host == ''){
-		return;
+		host = "127.0.0.1:8999";
 	}
 	
 	//Now that we have the IP.. Set it.. 
@@ -188,7 +261,7 @@ function advancedConnect(){
    
     //Set it..
     Minima.host = host;
-    log("Host set "+Minima.host);
+    Minimalog("Host set "+Minima.host);
     
     //Run Status once to populate the main details..
     initialStatus();
@@ -203,13 +276,13 @@ function startWebSocket(){
 	
 	var sockhost = "ws://"+MIFIHOST+":8889";
 	
-	log("Starting WebSocket to "+sockhost+" uuid:"+Minima.uuid);
+	Minimalog("Starting WebSocket to "+sockhost+" uuid:"+Minima.uuid);
 	
 	//Open up a websocket to the main MINIMA proxy..
 	WEBSOCK = new WebSocket(sockhost);
 	
 	WEBSOCK.onopen = function() {
-	   log("WS Connection opened to the Minima Proxy..");
+		Minimalog("WS Connection opened to the Minima Proxy..");
 		
 	   // Web Socket is connected, send data using send()
 	   WEBSOCK.send(Minima.uuid);
@@ -221,7 +294,7 @@ function startWebSocket(){
 	   
 	   //Set it..
 	   Minima.host = evt.data;
-	   log("Host set "+Minima.host);
+	   Minimalog("Host set "+Minima.host);
 	   
 	   //And close
 	   WEBSOCK.close();
@@ -231,14 +304,14 @@ function startWebSocket(){
 	};
 		
 	WEBSOCK.onclose = function() { 
-		log("WS Connection is closed...");
+		Minimalog("WS Connection is closed...");
 	};
 
 	WEBSOCK.onerror = function(error) {
 		//var err = JSON.stringify(error);
 		var err = JSON.stringify(error, ["message", "arguments", "type", "name", "data"])
 		// websocket is closed.
-	    log("WS Error ... "+err); 
+	    Minimalog("WS Error ... "+err); 
 	};
 }
 
@@ -252,7 +325,7 @@ function closeWebSocket(){
 /**
  * Start polling to see if something has changed.. 
  */
-var global_balance = "";
+var minima_global_balance = "";
 function startMinimaPolling(){
 	//Check Balance every second
 	pollMinimaFunction();
@@ -261,15 +334,16 @@ function startMinimaPolling(){
 	setInterval(function(){pollMinimaFunction();},5000);
 }
 
-function pollMinimaFunction(){	
-	//Check the Status
-	Minima.cmd("status;balance",function(resp){
-		//Convert to JSON
-		var json = JSON.parse(resp);
-
+function pollMinimaFunction(){
+	//Encoded rpc call
+	var rpc = "http://"+Minima.host+"/"+encodeURIComponent("status;balance;tokens");
+	
+	//Check the Status - use base function so no log..
+	httpGetAsync(rpc,function(json){
 		//Status is first..
 		Minima.status  = json[0].response;
 		Minima.balance = json[1].response;
+		Minima.tokens  = json[2].response;
 		
 		//Check for new block
 		if(Minima.status.tip !== Minima.txpowid){
@@ -285,12 +359,12 @@ function pollMinimaFunction(){
 		var balstr = JSON.stringify(Minima.balance);
 		
 		//Simple string check for change
-		if(balstr !== global_balance){
+		if(balstr !== minima_global_balance){
 			postMinimaMessage("newbalance",Minima.balance);
 		}
 		
 		//Store it
-		global_balance = balstr;
+		minima_global_balance = balstr;
 	},false);
 }
 
@@ -309,9 +383,9 @@ function setInitPage(){
 	"	\n" + 
 	
 	"	<tr>\n" + 
-	"		<td height=50 width='50px' style='text-align:left;vertical-align:middle;'><img width=50 src='./images/icon.png'></td>\n" + 
+	"		<td height=50 width='50px' style='text-align:left;vertical-align:middle;'><img width=50 src='http://mifi.minima.global/images/icon.png'></td>\n" + 
 	"		<td height=50 width='250px' style='text-align:center;vertical-align:middle;'><br><h3>MINIMA MIFI</h3></td>\n" + 
-	"		<td height=50 width='50px' style='text-align:right;vertical-align:middle;'><img width=50 src='./images/icon.png'></td>\n" + 
+	"		<td height=50 width='50px' style='text-align:right;vertical-align:middle;'><img width=50 src='http://mifi.minima.global/images/icon.png'></td>\n" + 
 	"	</tr>\n" + 
 	
 	"	\n" + 
@@ -362,9 +436,9 @@ function setHelpPage(){
 	"	\n" + 
 	
 	"	<tr>\n" + 
-	"		<td height=50 width='50px' style='text-align:left;vertical-align:middle;'><img width=50 src='./images/icon.png'></td>\n" + 
+	"		<td height=50 width='50px' style='text-align:left;vertical-align:middle;'><img width=50 src='http://mifi.minima.global/images/icon.png'></td>\n" + 
 	"		<td height=50 width='250px' style='text-align:center;vertical-align:middle;'><br><h3>MINIMA MIFI</h3></td>\n" + 
-	"		<td height=50 width='50px' style='text-align:right;vertical-align:middle;'><img width=50 src='./images/icon.png'></td>\n" + 
+	"		<td height=50 width='50px' style='text-align:right;vertical-align:middle;'><img width=50 src='http://mifi.minima.global/images/icon.png'></td>\n" + 
 	"	</tr>\n" + 
 	
 	"	\n" + 
@@ -416,9 +490,9 @@ function setAdvancedPage(){
 	"	\n" + 
 	
 	"	<tr>\n" + 
-	"		<td height=50 width='50px' style='text-align:left;vertical-align:middle;'><img width=50 src='./images/icon.png'></td>\n" + 
+	"		<td height=50 width='50px' style='text-align:left;vertical-align:middle;'><img width=50 src='http://mifi.minima.global/images/icon.png'></td>\n" + 
 	"		<td height=50 width='250px' style='text-align:center;vertical-align:middle;'><br><h3>MINIMA MIFI</h3></td>\n" + 
-	"		<td height=50 width='50px' style='text-align:right;vertical-align:middle;'><img width=50 src='./images/icon.png'></td>\n" + 
+	"		<td height=50 width='50px' style='text-align:right;vertical-align:middle;'><img width=50 src='http://mifi.minima.global/images/icon.png'></td>\n" + 
 	"	</tr>\n" + 
 	
 	"	<tr>" + 
@@ -474,9 +548,9 @@ function setQRPage(){
 	"	\n" + 
 	
 	"	<tr>\n" + 
-	"		<td height=50 width='50px' style='text-align:left;vertical-align:middle;'><img width=50 src='./images/icon.png'></td>\n" + 
+	"		<td height=50 width='50px' style='text-align:left;vertical-align:middle;'><img width=50 src='http://mifi.minima.global/images/icon.png'></td>\n" + 
 	"		<td height=50 width='250px' style='text-align:center;vertical-align:middle;'><br><h3>MINIMA MIFI</h3></td>\n" + 
-	"		<td height=50 width='50px' style='text-align:right;vertical-align:middle;'><img width=50 src='./images/icon.png'></td>\n" + 
+	"		<td height=50 width='50px' style='text-align:right;vertical-align:middle;'><img width=50 src='http://mifi.minima.global/images/icon.png'></td>\n" + 
 	"	</tr>\n" + 
 	
 	"	\n" + 
@@ -621,9 +695,9 @@ function hide(id){
  * Utility functions used by the Minima Object
  * 
  */
-function log(info){
+function Minimalog(info){
 	if(Minima.logging){
-		console.log("Minima : "+info);
+		console.log("Minima @ "+new Date().toLocaleString()+"\n"+info);
 	}
 }
 
@@ -635,14 +709,23 @@ function log(info){
  * @param callback
  * @returns
  */
-function httpGetAsync(theUrl, callback)
+function httpGetAsync(theUrl, callback, logenabled)
 {	
     var xmlHttp = new XMLHttpRequest();
     xmlHttp.onreadystatechange = function() { 
         if (xmlHttp.readyState == 4 && xmlHttp.status == 200){
-//        	log("Response "+xmlHttp.responseText);
+        	//Always a JSON ..
+        	var rpcjson = JSON.parse(xmlHttp.responseText);
+        	
+        	//Do we log it..
+        	if(Minima.logging && logenabled){
+        		var logstring = JSON.stringify(rpcjson, null, 2).replace(/\\n/g,"\n");
+        		Minimalog(theUrl+"\n"+logstring);
+        	}
+        	
+        	//Send it to the callback function..
         	if(callback){
-        		callback(xmlHttp.responseText);
+        		callback(rpcjson);
         	}
         }
     }
