@@ -232,9 +232,6 @@ public class NetClient extends MessageProcessor {
 			//First the TXPOW
 			txpow.writeDataStream(mOutput);
 			
-			//Then all the signatures..
-//			txpow.getWitness().writeSigs(mOutput);
-			
 		}else if(zMessage.isMessageType(NETCLIENT_SENDOBJECT)) {
 			//What type of object is this..
 			MiniByte type = (MiniByte) zMessage.getObject("type");

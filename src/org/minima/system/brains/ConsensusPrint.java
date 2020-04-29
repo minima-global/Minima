@@ -310,8 +310,10 @@ public class ConsensusPrint {
 			JSONArray allcoins = new JSONArray();
 			
 			MMRSet topmmr = topblk.getMMRSet();
-//			MMRSet topmmr = topblk.getMMRSet().
-//					getParentAtTime(topblk.getTxPow().getBlockNumber().sub(GlobalParams.MINIMA_CONFIRM_DEPTH));
+			//MMRSet topmmr = topblk.getMMRSet().getParentAtTime(topblk.getTxPow().getBlockNumber().sub(GlobalParams.MINIMA_CONFIRM_DEPTH));
+			
+			//Get the MEMPOOL COINS
+			ArrayList<Coin> mempool = getMainDB().getMempoolCoins();
 			
 			MMRSet mmrset = topmmr;
 			ArrayList<String> addedcoins = new ArrayList<String>();
@@ -331,7 +333,23 @@ public class ConsensusPrint {
 							if(!addedcoins.contains(entry)) {
 								addedcoins.add(entry);
 								if(spent == wantspent) {
-									allcoins.add(topmmr.getProof(coinmmr.getEntry()));	
+									
+									//If you want them unspent - check against the mempool too..
+									if(!wantspent) {
+										boolean found = false;
+										for(Coin mem : mempool) {
+											if(coinmmr.getData().getCoin().getCoinID().isEqual(mem.getCoinID()) ) {
+												found = true;
+												break;
+											}
+										}
+										
+										if(!found) {
+											allcoins.add(topmmr.getProof(coinmmr.getEntry()));
+										}
+									}else {
+										allcoins.add(topmmr.getProof(coinmmr.getEntry()));	
+									}	
 								}
 							}
 						}

@@ -5,9 +5,13 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.util.ArrayList;
 
 import org.minima.database.userdb.java.JavaUserDB;
+import org.minima.objects.Address;
+import org.minima.objects.Coin;
 import org.minima.objects.TxPOW;
+import org.minima.objects.base.MiniData;
 import org.minima.system.Main;
 import org.minima.system.SystemHandler;
 import org.minima.utils.MinimaLogger;
