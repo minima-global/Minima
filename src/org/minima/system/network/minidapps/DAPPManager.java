@@ -80,6 +80,9 @@ public class DAPPManager extends SystemHandler {
 	        MinimaLogger.log("DAPPMANAGER : "+e);
 	    }
 	    
+	    //Here it is.. can hack it on android..
+	    String hostport = mHost+":"+zRPCPort;
+	    
 	    //Now create the Minima JS file..
 	    try {
 			//Get the bytes..
@@ -89,7 +92,7 @@ public class DAPPManager extends SystemHandler {
 	    	String minstring = new String(minima, Charset.forName("UTF-8"));
 	    
 	    	//Now replace the center string..
-		    String editstring = minstring.replace("#####", "var MINIDAPPS_MINIMA_HOST = \""+mHost+":"+zRPCPort+"\";");
+		    String editstring = minstring.replace("#####", "var MINIDAPPS_MINIMA_HOST = \""+hostport+"\";");
 	    
 		    //Now convert to bytes..
 		    mMINIMAJS = editstring.getBytes();
