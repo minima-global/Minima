@@ -25,6 +25,7 @@ import org.minima.system.network.minidapps.hexdata.iconpng;
 import org.minima.system.network.minidapps.hexdata.indexhtml;
 import org.minima.system.network.minidapps.hexdata.installdapphtml;
 import org.minima.system.network.minidapps.hexdata.minidappscss;
+import org.minima.system.network.minidapps.hexdata.minimajs;
 import org.minima.system.network.minidapps.hexdata.tilegreyjpeg;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
@@ -159,7 +160,12 @@ public class DAPPHandler implements Runnable {
 			int filelen = 0;
 			
 			if(fileRequested.endsWith("minima.js")) {
-				file    = getResourceBytes("js/minima.js");
+				if(!mUseResources) {
+					file    = minimajs.returnData();
+				}else {
+					file    = getResourceBytes("js/minima.js");
+				}
+				
 				filelen = file.length;
 				
 			}else if(fileRequested.startsWith("minidapps/")) {
@@ -280,7 +286,6 @@ public class DAPPHandler implements Runnable {
 				//Now write the file data
 				out.write(file, 0, filelen);
 				out.flush(); // flush character output stream buffer
-				
 			}
 			
 		} catch (Exception ioe) {
