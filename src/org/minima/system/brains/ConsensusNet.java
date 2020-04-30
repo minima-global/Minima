@@ -1,5 +1,6 @@
 package org.minima.system.brains;
 
+import java.io.File;
 import java.math.BigInteger;
 import java.util.ArrayList;
 
@@ -11,15 +12,14 @@ import org.minima.objects.TxPOW;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.system.backup.BackupManager;
 import org.minima.system.backup.SyncPackage;
 import org.minima.system.backup.SyncPacket;
-import org.minima.system.input.InputHandler;
 import org.minima.system.network.NetClient;
 import org.minima.system.network.NetClientReader;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 import org.minima.utils.messages.Message;
-import org.minima.utils.messages.TimerMessage;
 
 public class ConsensusNet {
 
@@ -97,7 +97,7 @@ public class ConsensusNet {
 				hardreset = true;
 				
 			}else{
-				//What weight is this chain.. 
+				//What weight is this chain.. TODO
 				//THIS WRONG.. Needs to compare both chains.. 
 				//Only uses the bits after the first crossover..
 				
@@ -128,6 +128,9 @@ public class ConsensusNet {
 				}
 			}
 			
+			//We'll be storing the received txpow messages
+			BackupManager backup = mHandler.getMainHandler().getBackupManager();
+			
 			//Complete Refresh..
 			if(hardreset) {
 				//Clear the database..
@@ -135,10 +138,18 @@ public class ConsensusNet {
 				getMainDB().getCoinDB().clearDB();
 				getMainDB().getTxPowDB().ClearDB();
 				
+				//Wipe the txpow folder..
+				File txfolder = backup.getBackUpFolder(); 
+				BackupManager.deleteFileOrFolder(txfolder);
+				
 				//Drill down 
 				ArrayList<SyncPacket> packets = sp.getAllNodes();
 				for(SyncPacket spack : packets) {
 					TxPOW txpow = spack.getTxPOW();
+					
+					//Store it..
+					backup.backupTxpow(txpow);
+					
 					MMRSet mmr  = spack.getMMRSet();
 					boolean cascade = spack.isCascade();
 					
@@ -169,19 +180,20 @@ public class ConsensusNet {
 						//Just repost it..
 						TxPOW txpow = spack.getTxPOW();
 						
-						if(getMainDB().getTxPOW(txpow.getTxPowID()) == null) {
-							//Get the NetClient...
-							NetClient client = (NetClient) zMessage.getObject("netclient");
-							
-							//Post it as a normal TxPOW..
-							Message msg = new Message(CONSENSUS_NET_TXPOW);
-							msg.addObject("txpow", txpow);
-							msg.addObject("netclient", client);
-							
-							mHandler.PostMessage(msg);
-							
-							totalreq++;
-						}
+						//Store it..
+						backup.backupTxpow(txpow);
+						
+						//Get the NetClient...
+						NetClient client = (NetClient) zMessage.getObject("netclient");
+						
+						//Post it as a normal TxPOW..
+						Message msg = new Message(CONSENSUS_NET_TXPOW);
+						msg.addObject("txpow", txpow);
+						msg.addObject("netclient", client);
+						
+						mHandler.PostMessage(msg);
+						
+						totalreq++;
 					}
 				}
 				
@@ -233,7 +245,7 @@ public class ConsensusNet {
 			//Do we have it.. now check DB
 			if(getMainDB().getTxPOW(txpow.getTxPowID()) != null) {
 				//WE HAVE IT..
-				MinimaLogger.log("ERROR NET Transaction we already have.. "+txpow);
+//				MinimaLogger.log("ERROR NET Transaction we already have.. "+txpow);
 				return;
 			}
 			

@@ -63,6 +63,11 @@ public class BackupManager extends SystemHandler {
 	public void backupTxpow(TxPOW zTxPOW) {
 		//Create the File
 		File back = new File(mTxPOWDB,zTxPOW.getTxPowID().toString()+".txpow");
+
+		//does it already exist..
+		if(back.exists()) {
+			return;
+		}
 		
 		//Do in separate thread so returns fast
 		Message backup = new Message(BackupManager.BACKUP_WRITE);

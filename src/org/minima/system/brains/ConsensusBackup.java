@@ -186,6 +186,9 @@ public class ConsensusBackup {
 				//Get the Block
 				TxPOW txpow = treenode.getTxPow();
 				
+				//Store it..
+				mHandler.getMainHandler().getBackupManager().backupTxpow(txpow);
+				
 				//get the row..will already be added..
 				TxPOWDBRow trow = getMainDB().getTxPowDB().addTxPOWDBRow(txpow);
 				
@@ -202,6 +205,9 @@ public class ConsensusBackup {
 				for(MiniData txid : txpowlist) {
 					trow = getMainDB().getTxPowDB().findTxPOWDBRow(txid);
 					if(trow!=null) {
+						//Store it..
+						mHandler.getMainHandler().getBackupManager().backupTxpow(trow.getTxPOW());
+						
 						//Set that it is in this block
 						trow.setOnChainBlock(false);
 						trow.setIsInBlock(true);
