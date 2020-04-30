@@ -43,7 +43,7 @@ public class MinimaLogger {
 	
 	public static void log(String zLog){
 		if(LOGGING_ON){
-			System.out.println(zLog);
+			System.out.println("Minima : "+zLog);
 	
 //			//Send to Native..
 //			if(mOutputListener != null) {

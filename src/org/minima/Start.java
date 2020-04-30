@@ -51,12 +51,12 @@ public class Start {
 				ArrayList<String> vars = new ArrayList<>();
 				
 				vars.add("-daemon");
-				vars.add("-clean");
-				vars.add("-port");
-				vars.add("9001");
-				vars.add("-connect");
-				vars.add("34.90.172.118");
-				vars.add("9001");
+//				vars.add("-clean");
+//				vars.add("-port");
+//				vars.add("9001");
+//				vars.add("-connect");
+//				vars.add("34.90.172.118");
+//				vars.add("9001");
 				vars.add("-conf");
 				vars.add(mConfFolder);
 				
@@ -175,9 +175,9 @@ public class Start {
 		}
 		
 		//Do we wipe
+		File conffile = new File(conffolder);
 		if(clean) {
-			//BackupManager.deleteFolder(new File(conffolder));
-			BackupManager.deleteAllButMiniDAPPS(new File(conffolder));
+			BackupManager.deleteAllButMiniDAPPS(conffile);
 		}
 		
 		//Start the main Minima server
@@ -216,7 +216,7 @@ public class Start {
 		
 		//Are we a daemon thread
 		if(daemon) {
-			System.out.println("Daemon Started..");
+			MinimaLogger.log("Daemon Started..");
 			
 			//Loop while running..
 			while (rcmainserver.isRunning()) {

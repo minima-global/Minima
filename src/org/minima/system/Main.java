@@ -123,6 +123,8 @@ public class Main extends MessageProcessor {
 		mConsensus  = new ConsensusHandler(this);
 		
 		mGenesis 	= zGenesis;
+		
+		MinimaLogger.log("Minima files : "+zConfFolder);
 	}
 	
 	public void setAutoConnect(boolean zAuto) {

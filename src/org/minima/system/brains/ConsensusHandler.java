@@ -47,9 +47,10 @@ public class ConsensusHandler extends SystemHandler {
 	public static final String CONSENSUS_CREATETRANS 		   = "CONSENSUS_CREATETRANS";
 	
 	/**
-	 * Check the mempool every few minutes for irregularities..
+	 * Auto save files incase of hard shutdown or crash..
 	 */
 	public static final String CONSENSUS_MEMPOOLCHECK 	       = "CONSENSUS_MEMPOOLCHECK";
+	public static final String CONSENSUS_AUTOBACKUP 	       = "CONSENSUS_AUTOBACKUP";
 	
 	/**
 	 * Create Tokens

@@ -76,11 +76,14 @@ public class ConsensusBackup {
 			JavaUserDB userdb = (JavaUserDB) getMainDB().getUserDB();
 			File backuser     = backup.getBackUpFile(USERDB_BACKUP);
 			BackupManager.writeObjectToFile(backuser, userdb);
+			MinimaLogger.log("User backup @ "+backuser.getAbsolutePath());
+			
 			
 			//Now the complete SyncPackage..
 			SyncPackage sp = getMainDB().getSyncPackage();
 			File backsync  = backup.getBackUpFile(SYNC_BACKUP);
 			BackupManager.writeObjectToFile(backsync, sp);
+			MinimaLogger.log("Syncpackage backup @ "+backsync.getAbsolutePath());
 			
 			//Do we shut down..
 			if(shutdown) {
@@ -97,9 +100,16 @@ public class ConsensusBackup {
 			File backsync  = backup.getBackUpFile(SYNC_BACKUP);
 			
 			//Are we ok ?
-			if(!backuser.exists() || !backsync.exists()) {
+			if(!backuser.exists()) {
 				//Not OK.. start fresh.. 
-				MinimaLogger.log("No backups found.. Start normal.");
+				MinimaLogger.log("No User backups found.. @ "+backuser.getAbsolutePath());
+				mHandler.getMainHandler().PostMessage(Main.SYSTEM_INIT);
+				return;
+			}
+			
+			if(!backsync.exists()) {
+				//Not OK.. start fresh.. 
+				MinimaLogger.log("No SyncPackage found.. @ "+backsync.getAbsolutePath());
 				mHandler.getMainHandler().PostMessage(Main.SYSTEM_INIT);
 				return;
 			}
