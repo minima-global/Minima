@@ -240,7 +240,7 @@ public class ConsensusBackup {
 			txpow.readDataStream(dis);
 			dis.close();
 			fis.close();
-		} catch (IOException e) {
+		} catch (Exception e) {
 			MinimaLogger.log("ERROR loading TxPOW "+zTxpowFile.getName());
 			return null;
 		}
