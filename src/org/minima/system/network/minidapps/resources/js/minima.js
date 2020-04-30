@@ -13,18 +13,15 @@
 
 /**
  * Are we running in MINIDAPP mode
- * 
- * This can be edited from JAVA when this file supplied..
- * 
- * Use the TAGS as reference
  */
-var START_MINIDAPP_TAG;
-
 var MINIDAPPS_MINIMA      = true;
-var MINIDAPPS_MINIMA_HOST = "127.0.0.1:8999";
 
-var END_MINIDAPP_TAG;
+//var MINIDAPPS_MINIMA_HOST = "127.0.0.1:8999";
+/**
+ * This will be converted to the IP.. automagically
+ */
 
+#####
 
 /**
  * GLOBAL VARIABLES
