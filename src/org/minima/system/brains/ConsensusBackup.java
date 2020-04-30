@@ -242,6 +242,10 @@ public class ConsensusBackup {
 			fis.close();
 		} catch (Exception e) {
 			MinimaLogger.log("ERROR loading TxPOW "+zTxpowFile.getName());
+			
+			//Delete it..
+			zTxpowFile.delete();
+			
 			return null;
 		}
 		
