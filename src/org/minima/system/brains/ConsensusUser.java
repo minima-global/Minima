@@ -477,7 +477,10 @@ public class ConsensusUser {
 			InputHandler.endResponse(zMessage, true, "");
 		
 		}else if(zMessage.isMessageType(CONSENSUS_FLUSHMEMPOOL)) {
-			boolean hard = zMessage.getBoolean("hard");
+			boolean hard = false;
+			if(zMessage.exists("hard")) {
+				hard = zMessage.getBoolean("hard");	
+			}
 			
 			JSONObject resp = InputHandler.getResponseJSON(zMessage);
 			resp.put("hard", hard);
@@ -491,7 +494,6 @@ public class ConsensusUser {
 			JSONArray requested = new JSONArray();
 			
 			//Check them all..
-//			MinimaLogger.log("FLUSHING MEMPOOL! HARD:"+hard);
 			for(TxPOWDBRow txrow : unused) {
 				TxPOW txpow    = txrow.getTxPOW();
 				

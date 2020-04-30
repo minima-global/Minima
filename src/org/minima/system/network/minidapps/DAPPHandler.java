@@ -146,7 +146,7 @@ public class DAPPHandler implements Runnable {
 //						}
 						
 						//Delete the app root..
-						BackupManager.deleteFolder(appfolder);
+						BackupManager.deleteFileOrFolder(appfolder);
 						
 						//Recalculate the MINIDAPPS
 						mDAPPManager.recalculateMiniDAPPS();

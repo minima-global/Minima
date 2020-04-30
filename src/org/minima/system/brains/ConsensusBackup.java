@@ -44,7 +44,6 @@ public class ConsensusBackup {
 	public static final String USERDB_BACKUP = "user.minima";
 	public static final String SYNC_BACKUP   = "sync.package";
 	
-	
 	MinimaDB mDB;
 	ConsensusHandler mHandler;
 	
@@ -76,12 +75,12 @@ public class ConsensusBackup {
 			//First backup the UserDB..
 			JavaUserDB userdb = (JavaUserDB) getMainDB().getUserDB();
 			File backuser     = backup.getBackUpFile(USERDB_BACKUP);
-			writeObjectToFile(backuser, userdb);
+			BackupManager.writeObjectToFile(backuser, userdb);
 			
 			//Now the complete SyncPackage..
 			SyncPackage sp = getMainDB().getSyncPackage();
 			File backsync  = backup.getBackUpFile(SYNC_BACKUP);
-			writeObjectToFile(backsync, sp);
+			BackupManager.writeObjectToFile(backsync, sp);
 			
 			//Do we shut down..
 			if(shutdown) {
@@ -109,9 +108,16 @@ public class ConsensusBackup {
 			FileInputStream fis = new FileInputStream(backuser);
 			DataInputStream dis = new DataInputStream(fis);
 			JavaUserDB jdb = new JavaUserDB();
-			jdb.readDataStream(dis);
-			dis.close();
-			fis.close();
+			try {
+				jdb.readDataStream(dis);
+				dis.close();
+				fis.close();
+			}catch (Exception exc) {
+				exc.printStackTrace();
+				//HMM.. not good.. file corrupted.. bug out
+				MinimaLogger.log("USER BACKUP FILE CORRUPTED.. not starting up.. :(");
+				return;
+			}
 			
 			//Set it..
 			getMainDB().setUserDB(jdb);
@@ -120,46 +126,36 @@ public class ConsensusBackup {
 			getMainDB().getTxPowDB().ClearDB();
 			File[] txpows = getBackup().getTxPOWFolder().listFiles();
 			for(File txf : txpows) {
-				mHandler.PostMessage(new Message(CONSENSUSBACKUP_RESTORETXPOW).addObject("file", txf));
+				TxPOW txpow = loadTxPOW(txf);
+				if(txpow!=null) {
+					//Add it.. will sort out the txpowdbrow in the next step..
+					getMainDB().addNewTxPow(txpow);	
+				}
 			}
 			
 			//Load the SyncPackage
 			fis = new FileInputStream(backsync);
 			dis = new DataInputStream(fis);
 			SyncPackage sp = new SyncPackage();
-			sp.readDataStream(dis);
-			dis.close();
-			fis.close();
+			try {
+				sp.readDataStream(dis);
+				dis.close();
+				fis.close();
+			}catch(Exception exc) {
+				exc.printStackTrace();
+				//HMM.. not good.. file corrupted.. bug out
+				MinimaLogger.log("SYNCPACKAGE MMR BACKUP FILE CORRUPTED.. not starting up.. :(");
+				return;
+			}
 			
-			//And send it on..
-			Message syncp = new Message(CONSENSUSBACKUP_RESTORETREEDB);
-			syncp.addObject("readobject", sp);
-			mHandler.PostMessage(syncp);
-			
-		}else if(zMessage.isMessageType(CONSENSUSBACKUP_RESTORETXPOW)) {
-			File ff = (File) zMessage.getObject("file");
-			
-			//Load it..
-			FileInputStream fis = new FileInputStream(ff);
-			DataInputStream dis = new DataInputStream(fis);
-			TxPOW txpow    = new TxPOW();
-			txpow.readDataStream(dis);
-			dis.close();
-			fis.close();
-			
-			//Add it.. will sort it out in the next step..
-			getMainDB().addNewTxPow(txpow);
-			
-		}else if(zMessage.isMessageType(CONSENSUSBACKUP_RESTORETREEDB)) {
 			//Get the SyncPackage
-			SyncPackage sp = (SyncPackage) zMessage.getObject("readobject");
 			MiniNumber casc = sp.getCascadeNode();
 			
 			//Drill down 
 			ArrayList<SyncPacket> packets = sp.getAllNodes();
 			for(SyncPacket spack : packets) {
-				TxPOW txpow = spack.getTxPOW();
-				MMRSet mmrset  = spack.getMMRSet();
+				TxPOW txpow     = spack.getTxPOW();
+				MMRSet mmrset   = spack.getMMRSet();
 				boolean cascade = spack.isCascade();
 				
 				//Check all MMR in the unbroken chain.. no point in cascade as may have changed..
@@ -190,7 +186,7 @@ public class ConsensusBackup {
 				//Get the Block
 				TxPOW txpow = treenode.getTxPow();
 				
-				//get the row..
+				//get the row..will already be added..
 				TxPOWDBRow trow = getMainDB().getTxPowDB().addTxPOWDBRow(txpow);
 				
 				//What Block
@@ -219,32 +215,21 @@ public class ConsensusBackup {
 		}
 	}
 	
-	/**
-	 * Store a Streamable Object to a file.
-	 * 
-	 * @param zFile
-	 * @param zObject
-	 * @throws IOException
-	 */
-	public static void writeObjectToFile(File zFile, Streamable zObject) throws IOException {
-		//Delete the old..
-		if(zFile.exists()) {
-			//Should probably just move it here - as a backup incase of error..
-			zFile.delete();
+	public static TxPOW loadTxPOW(File zTxpowFile) {
+		TxPOW txpow    = new TxPOW();
+		
+		try {
+			FileInputStream fis = new FileInputStream(zTxpowFile);
+			DataInputStream dis = new DataInputStream(fis);
+			txpow.readDataStream(dis);
+			dis.close();
+			fis.close();
+		} catch (IOException e) {
+			MinimaLogger.log("ERROR loading TxPOW "+zTxpowFile.getName());
+			return null;
 		}
 		
-		//Create the new..
-		zFile.createNewFile();
-		
-		//Write it out..
-		FileOutputStream fos = new FileOutputStream(zFile, false);
-		DataOutputStream dos = new DataOutputStream(fos);
-		
-		//And write it..
-		zObject.writeDataStream(dos);
-		
-		//flush
-		dos.flush();
-		fos.flush();
+		return txpow;
 	}
+	
 }

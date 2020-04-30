@@ -138,9 +138,11 @@ public class ConsensusHandler extends SystemHandler {
 		mConsensusPrint  = new ConsensusPrint(mMainDB, this);
 		mConsensusBackup = new ConsensusBackup(mMainDB, this);
 		
+		//Are we HARD mining.. debugging / private chain
 		PostTimerMessage(new TimerMessage(2000, CONSENSUS_MINEBLOCK));
 		
-		PostTimerMessage(new TimerMessage(60000, CONSENSUS_MEMPOOLCHECK));
+		//NOW check s after everyy block..
+		//PostTimerMessage(new TimerMessage(60000, CONSENSUS_MEMPOOLCHECK));
 	}
 	
 	public void setBackUpManager() {
@@ -206,8 +208,11 @@ public class ConsensusHandler extends SystemHandler {
 				PostMessage(print);
 			}
 			
-			//Check 3 blocks from the tip.. for relevant transactions..
-			
+			//MEMPOOL - can get one message stuck that invalidates new messages.. so check it if this is a block..
+			if(txpow.isBlock()) {
+				//Send a check mempool messsage..
+				PostMessage(new Message(ConsensusUser.CONSENSUS_FLUSHMEMPOOL));
+			}
 			
 //			//Add a chartpoint
 //			Message chart = new Message(ConsensusPrint.CONSENSUS_ADDCHARTPOINT);
