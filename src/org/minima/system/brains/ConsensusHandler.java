@@ -141,7 +141,7 @@ public class ConsensusHandler extends SystemHandler {
 		//Are we HARD mining.. debugging / private chain
 		PostTimerMessage(new TimerMessage(2000, CONSENSUS_MINEBLOCK));
 		
-		//NOW check s after everyy block..
+		//NOW checks after everyy block..
 		//PostTimerMessage(new TimerMessage(60000, CONSENSUS_MEMPOOLCHECK));
 	}
 	
