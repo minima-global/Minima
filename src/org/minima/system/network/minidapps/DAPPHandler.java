@@ -340,7 +340,10 @@ public class DAPPHandler implements Runnable {
 		}
 		
 		if(len == 0) {
-			list.append("<tr><td><br><br>&nbsp;&nbsp;<b>NO DAPPS INSTALLED YET..</b></td></tr>");
+			list.append("<tr><td style='text-align:center;'><br><br><b>NO DAPPS INSTALLED YET..</b>"
+					+ "<br><br><br>"
+					+ "Go to <a href='http://mifi.minima.global/' target='_blank'>http://mifi.minima.global/</a> to find MiniDAPPs"
+					+ "</td></tr>");
 		}
 		
 		list.append("</table>");
