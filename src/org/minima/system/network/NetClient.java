@@ -214,7 +214,7 @@ public class NetClient extends MessageProcessor {
 			
 			//Start reading
 			mInputReader = new NetClientReader(this);
-			mInputThread = new Thread(mInputReader);
+			mInputThread = new Thread(mInputReader, "NetClientReader");
 			mInputThread.start();
 			
 			//First thing to do..

@@ -96,7 +96,7 @@ public class RPCServer implements Runnable{
 				RPCHandler rpc = new RPCHandler(clientsock, mInputHandler);
 				
 				//Run in a new Thread
-				Thread rpcthread = new Thread(rpc);
+				Thread rpcthread = new Thread(rpc, "RPC Client");
 				rpcthread.start();
 			}
 			

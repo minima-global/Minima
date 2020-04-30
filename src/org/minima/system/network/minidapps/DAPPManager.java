@@ -104,7 +104,7 @@ public class DAPPManager extends SystemHandler {
 		
 		///Start the DAPP server
 		mDAPPServer = new DAPPServer(zPort,this);
-		Thread tt = new Thread(mDAPPServer);
+		Thread tt = new Thread(mDAPPServer, "DAPP Server");
 		tt.start();
 	}
 	

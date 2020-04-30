@@ -104,12 +104,12 @@ public class NetworkHandler extends SystemHandler{
 			
 			//Start the network Server
 			mServer = new MultiServer(this,port);
-			Thread multimain = new Thread(mServer);
+			Thread multimain = new Thread(mServer, "Multi Server");
 			multimain.start();
 			
 			//Start the RPC server
 			mRPCServer = new RPCServer(getMainHandler().getInputHandler(), rpcport);
-			Thread rpc = new Thread(mRPCServer);
+			Thread rpc = new Thread(mRPCServer, "RPC Server");
 			rpc.start();
 			
 			//Start the DAPP Server

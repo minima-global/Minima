@@ -62,7 +62,7 @@ public class DAPPServer implements Runnable{
 				DAPPHandler rpc = new DAPPHandler(clientsock,mDAPPMAnager);
 				
 				//Run in a new Thread
-				Thread rpcthread = new Thread(rpc);
+				Thread rpcthread = new Thread(rpc, "DAPP Handler");
 				rpcthread.start();
 			}
 			
