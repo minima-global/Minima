@@ -833,6 +833,20 @@ public class ConsensusPrint {
 			
 			status.put("txpowdb", getMainDB().getTxPowDB().getCompleteSize());
 			
+			//Size of the TXPOW DB folder..
+			File[] txpows = mHandler.getMainHandler().getBackupManager().getTxPOWFolder().listFiles();
+			long totallen = 0;
+			int totnum    = 0;
+			if(txpows!=null) {
+				for(File txf : txpows) {
+					totallen += txf.length();
+				}
+				totnum = txpows.length;
+			}
+			status.put("txpowfiles", totnum);
+			status.put("txpowfolder", formatSize(totallen));
+			
+			
 			status.put("chainlength", getMainDB().getMainTree().getAsList().size());
 			status.put("chainspeed", getMainDB().getMainTree().getChainSpeed());
 			status.put("chainweight", root.getTotalWeight().toString());
