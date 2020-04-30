@@ -9,15 +9,22 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import org.minima.objects.base.MiniData;
 import org.minima.system.Main;
 import org.minima.system.SystemHandler;
+import org.minima.system.network.minidapps.hexdata.minimajs;
 import org.minima.utils.Crypto;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.json.parser.JSONParser;
@@ -33,9 +40,65 @@ public class DAPPManager extends SystemHandler {
 	
 	DAPPServer mDAPPServer;
 	
-	public DAPPManager(Main zMain, int zPort) {
+	//The Edited minima.js file..
+	byte[] mMINIMAJS = new byte[0];
+	
+	//HOST  - this will be inserted into the minima.js file
+	String mHost;	
+	
+	public DAPPManager(Main zMain, int zPort, int zRPCPort) {
 		super(zMain, "DAPPMAnager");
 		
+		mHost = "127.0.0.1";
+		boolean found = false;
+	    try {
+		    Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+	        while (!found && interfaces.hasMoreElements()) {
+	            NetworkInterface iface = interfaces.nextElement();
+	            // filters out 127.0.0.1 and inactive interfaces
+	            if (iface.isLoopback() || !iface.isUp())
+	                continue;
+
+	            Enumeration<InetAddress> addresses = iface.getInetAddresses();
+	            while(!found && addresses.hasMoreElements()) {
+	                InetAddress addr = addresses.nextElement();
+	                String ip   = addr.getHostAddress();
+	                String name = iface.getDisplayName();
+	                
+	                //Only get the IPv4
+	                if(!ip.contains(":")) {
+	                	mHost = ip;
+	                	
+	                	if(name.startsWith("wl")) {
+	                		found = true;
+	                		break;
+	                	}
+	                }
+	            }
+	        }
+	    } catch (SocketException e) {
+	        MinimaLogger.log("DAPPMANAGER : "+e);
+	    }
+	    
+	    //Now create the Minima JS file..
+	    try {
+			//Get the bytes..
+	    	byte[] minima = minimajs.returnData();
+		
+	    	//create a string..
+	    	String minstring = new String(minima, Charset.forName("UTF-8"));
+	    
+	    	//Now replace the center string..
+		    String editstring = minstring.replace("#####", "var MINIDAPPS_MINIMA_HOST = \""+mHost+":"+zRPCPort+"\";");
+	    
+		    //Now convert to bytes..
+		    mMINIMAJS = editstring.getBytes();
+	    
+	    } catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	    
 		//Calculate the current MiniDAPPS
 		recalculateMiniDAPPS();
 		
@@ -43,6 +106,15 @@ public class DAPPManager extends SystemHandler {
 		mDAPPServer = new DAPPServer(zPort,this);
 		Thread tt = new Thread(mDAPPServer);
 		tt.start();
+	}
+	
+	//Use the RPC server for now..
+	public String getCurrentHost() {
+		return mHost;
+	}
+	
+	public byte[] getMinimaJS() {
+		return mMINIMAJS;
 	}
 	
 	public void stop() {

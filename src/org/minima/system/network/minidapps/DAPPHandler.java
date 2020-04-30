@@ -139,13 +139,7 @@ public class DAPPHandler implements Runnable {
 					if(uninstall != -1) {
 						//Create the complete folder..
 						File appfolder = new File(mDAPPManager.getMiniDAPPSFolder(),query.substring(uninstall+10));
-						
-//						//Check is the actual folder..
-//						String parent = appfolder.getParentFile().getName();
-//						if(!parent.equals("minidapps")) {
-//							appfolder = appfolder.getParentFile();
-//						}
-						
+					
 						//Delete the app root..
 						BackupManager.deleteFileOrFolder(appfolder);
 						
@@ -160,13 +154,15 @@ public class DAPPHandler implements Runnable {
 			int filelen = 0;
 			
 			if(fileRequested.endsWith("minima.js")) {
-				if(!mUseResources) {
-					file    = minimajs.returnData();
-				}else {
-					file    = getResourceBytes("js/minima.js");
-				}
-				
+				//Get the editted file..
+				file    = mDAPPManager.getMinimaJS();
 				filelen = file.length;
+				
+//				if(!mUseResources) {
+//					file    = minimajs.returnData();
+//				}else {
+//					file    = getResourceBytes("js/minima.js");
+//				}
 				
 			}else if(fileRequested.startsWith("minidapps/")) {
 				//Look in the minidapps folder
