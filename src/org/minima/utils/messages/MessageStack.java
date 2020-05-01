@@ -45,7 +45,7 @@ public class MessageStack{
         
         //Wake the Thread..
         synchronized (mLock) {
-    		mLock.notify();	
+    		mLock.notifyAll();	
 		}
     }
     

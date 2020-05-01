@@ -27,11 +27,6 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
      */
     private boolean mRunning;
     
-    /**
-	 * All Timer messages in this stack
-	 */
-	LinkedList<TimerMessage> mTimerMessages;
-	
 	/**
 	 * LOG messages ?
 	 */
@@ -51,10 +46,8 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
     	mName = zName;
     	
     	mRunning = true;
-        
-        mTimerMessages = new LinkedList<>();
-        
-        mMainThread = new Thread(this,zName);
+    
+    	mMainThread = new Thread(this,zName);
         mMainThread.start();
     }
     
@@ -70,9 +63,7 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
         mRunning = false;
     }
     
-    public synchronized void PostTimerMessage(TimerMessage zMessage) {
-//    	mTimerMessages.add(zMessage);
-    	
+    public synchronized void PostTimerMessage(TimerMessage zMessage) {    	
     	//Set this is the processor..
     	zMessage.setProcessor(this);
     	
@@ -103,51 +94,21 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
                     processMessage(msg);
                     
                 }catch(Exception exc){
-//                    MinimaLogger.log("Error processing message : "+msg);
+                    //MinimaLogger.log("Error processing message : "+msg);
                     exc.printStackTrace();
                     InputHandler.endResponse(msg, false, "SYSTEM ERROR PROCESSING : "+msg+" exception:"+exc);
                 } 
-                
-                //Timer messages..
-                //checkTimerMessages();
                 
                 //Are there more messages..
                 msg = getNextMessage();
             }
             
-            //Check timer..
-//          checkTimerMessages();
-            
-            //Small Pause..
+            //Wait..
             try {
             	synchronized (mLock) {
             		mLock.wait();	
 				}
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-//            try {Thread.sleep(20);} catch (InterruptedException ex) {}
-        }
-    }
-    
-    private synchronized void checkTimerMessages() {
-    	//Check Timer Messages
-        long timenow = System.currentTimeMillis();
-        ArrayList<TimerMessage> remove = new ArrayList<>();
-        for(TimerMessage tm : mTimerMessages) {
-        	if(timenow > tm.getTimer()) {
-        		//It's ready post it
-        		PostMessage(tm);
-        		
-        		//Remove it from the list
-        		remove.add(tm);
-        	}
-        }
-        
-        //Remove used..
-        for(TimerMessage rem : remove) {
-        	mTimerMessages.remove(rem);
+			} catch (InterruptedException e) {}
         }
     }
     
