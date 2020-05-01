@@ -43,7 +43,11 @@ public class MessageStack{
     public synchronized void PostMessage(Message zMessage){
         mMessages.add(zMessage);
         
-        //Wake the Thread..
+        notifyLock();
+    }
+    
+    protected void notifyLock(){
+    	//Wake the Thread..
         synchronized (mLock) {
     		mLock.notifyAll();	
 		}

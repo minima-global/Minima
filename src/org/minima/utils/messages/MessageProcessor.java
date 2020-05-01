@@ -61,6 +61,7 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
     
     public void stopMessageProcessor(){
         mRunning = false;
+        notifyLock();
     }
     
     public synchronized void PostTimerMessage(TimerMessage zMessage) {    	
