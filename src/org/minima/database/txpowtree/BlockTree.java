@@ -225,6 +225,17 @@ public class BlockTree {
 			return null;
 		}
 		
+		//Strange BUG on Android..
+		try {
+			BlockTreeNode finder = _findNode(getChainRoot(), zTxPOWID);
+			return finder;
+		}catch(StackOverflowError stacker) {
+			MinimaLogger.log("STACK OVERFLOW err  "+stacker);
+			MinimaLogger.log("STACK OVERFLOW id   "+zTxPOWID);
+			MinimaLogger.log("STACK OVERFLOW size "+getAsList().size());
+		}
+		
+		//Do it again..
 		return _findNode(getChainRoot(), zTxPOWID);
 	}
 	
