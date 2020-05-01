@@ -245,12 +245,9 @@ public class ConsensusHandler extends SystemHandler {
 			
 			//If it's relevant then do a backup..
 			if(relevant) {
-				Message backup = new Message(ConsensusBackup.CONSENSUSBACKUP_BACKUP);
-				InputHandler.addResponseMesage(backup, zMessage);
+				//Back up..
+				PostMessage(ConsensusBackup.CONSENSUSBACKUP_BACKUP);
 				
-				//Do a backup..
-				getMainHandler().getConsensusHandler().PostMessage(backup);
-			
 				//Notify those listening..
 				getMainHandler().getNetworkHandler().PostMessage(NetworkHandler.NETWORK_NOTIFY);
 			}

@@ -103,6 +103,8 @@ public class ConsensusUser {
 			resp.put("address", addr.toJSON());
 			InputHandler.endResponse(zMessage, true, "");
 		
+			//Do a backup..
+			mHandler.PostMessage(ConsensusBackup.CONSENSUSBACKUP_BACKUPUSER);
 			
 		}else if(zMessage.isMessageType(CONSENSUS_SIGN)) {
 			String data   = zMessage.getString("data");
@@ -146,6 +148,9 @@ public class ConsensusUser {
 			resp.put("address", addrchk.toJSON());
 			InputHandler.endResponse(zMessage, true, "");
 		
+			//Do a backup..
+			mHandler.PostMessage(ConsensusBackup.CONSENSUSBACKUP_BACKUPUSER);
+			
 		}else if(zMessage.isMessageType(CONSENSUS_NEWSCRIPT)) {
 			//Get the script
 			String script = zMessage.getString("script");
@@ -161,6 +166,9 @@ public class ConsensusUser {
 			resp.put("address", addrchk.toJSON());
 			InputHandler.endResponse(zMessage, true, "");
 		
+			//Do a backup..
+			mHandler.PostMessage(ConsensusBackup.CONSENSUSBACKUP_BACKUPUSER);
+			
 		}else if(zMessage.isMessageType(CONSENSUS_NEWKEY)) {
 			//Get the bitlength
 			int bitl = zMessage.getInteger("bitlength");
@@ -173,7 +181,9 @@ public class ConsensusUser {
 			resp.put("key", key.toJSON());
 			InputHandler.endResponse(zMessage, true, "");
 			
-		
+			//Do a backup..
+			mHandler.PostMessage(ConsensusBackup.CONSENSUSBACKUP_BACKUPUSER);
+			
 		}else if(zMessage.isMessageType(CONSENSUS_CHECK)) {
 			String data = zMessage.getString("data");
 			
@@ -605,6 +615,9 @@ public class ConsensusUser {
 			resp.put("coin", basemmr.getProof(entry.getEntry()));
 			InputHandler.endResponse(zMessage, true, "");
 			
+			//Do a backup..
+			mHandler.PostMessage(ConsensusBackup.CONSENSUSBACKUP_BACKUP);
+			
 		}else if(zMessage.isMessageType(CONSENSUS_IMPORTCOIN)) {
 			MiniData data = (MiniData)zMessage.getObject("proof");
 			
@@ -668,6 +681,9 @@ public class ConsensusUser {
 			resp.put("proof", proof.toJSON());
 			InputHandler.endResponse(zMessage, true, "");
 			
+			//Do a backup..
+			mHandler.PostMessage(ConsensusBackup.CONSENSUSBACKUP_BACKUP);
+			
 		}else if(zMessage.isMessageType(CONSENSUS_EXPORTCOIN)) {
 			MiniData coinid = (MiniData)zMessage.getObject("coinid");
 			
@@ -721,6 +737,9 @@ public class ConsensusUser {
 			}else {
 				getMainDB().getUserDB().newSimpleAddress(newkey);
 			}
+			
+			//Do a backup..
+			mHandler.PostMessage(ConsensusBackup.CONSENSUSBACKUP_BACKUPUSER);
 		}
 	}
 	

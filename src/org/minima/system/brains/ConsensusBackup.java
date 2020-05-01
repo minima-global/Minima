@@ -34,6 +34,8 @@ public class ConsensusBackup {
 
 	public static final String CONSENSUS_PREFIX  = "CONSENSUSBACKUP_";
 	
+	public static String CONSENSUSBACKUP_BACKUPUSER  = CONSENSUS_PREFIX+"BACKUPUSER"; 
+	
 	public static String CONSENSUSBACKUP_BACKUP  = CONSENSUS_PREFIX+"BACKUP"; 
 	
 	public static String CONSENSUSBACKUP_RESTORE        = CONSENSUS_PREFIX+"RESTORE"; 
@@ -62,7 +64,16 @@ public class ConsensusBackup {
 	
 	public void processMessage(Message zMessage) throws Exception {
 		
-		if(zMessage.isMessageType(CONSENSUSBACKUP_BACKUP)) {
+		if(zMessage.isMessageType(CONSENSUSBACKUP_BACKUPUSER)) {
+			//Get this as will need it a few times..
+			BackupManager backup = mHandler.getMainHandler().getBackupManager();
+			
+			//First backup the UserDB..
+			JavaUserDB userdb = (JavaUserDB) getMainDB().getUserDB();
+			File backuser     = backup.getBackUpFile(USERDB_BACKUP);
+			BackupManager.writeObjectToFile(backuser, userdb);
+			
+		}else if(zMessage.isMessageType(CONSENSUSBACKUP_BACKUP)) {
 			//Is this for shut down or just a regular backup..
 			boolean shutdown = false;
 			if(zMessage.exists("shutdown")) {
@@ -76,14 +87,14 @@ public class ConsensusBackup {
 			JavaUserDB userdb = (JavaUserDB) getMainDB().getUserDB();
 			File backuser     = backup.getBackUpFile(USERDB_BACKUP);
 			BackupManager.writeObjectToFile(backuser, userdb);
-			MinimaLogger.log("User backup @ "+backuser.getAbsolutePath());
+//			MinimaLogger.log("User backup @ "+backuser.getAbsolutePath());
 			
 			
 			//Now the complete SyncPackage..
 			SyncPackage sp = getMainDB().getSyncPackage();
 			File backsync  = backup.getBackUpFile(SYNC_BACKUP);
 			BackupManager.writeObjectToFile(backsync, sp);
-			MinimaLogger.log("Syncpackage backup @ "+backsync.getAbsolutePath());
+//			MinimaLogger.log("Syncpackage backup @ "+backsync.getAbsolutePath());
 			
 			//Do we shut down..
 			if(shutdown) {
