@@ -57,7 +57,7 @@ public class RPCServer implements Runnable{
 	        System.out.println("RPCSERVER : "+e);
 	    }
 	    
-	    System.out.println("RPC Server started on "+mHost+":"+mPort);
+	    MinimaLogger.log("RPC Server started on "+mHost+":"+mPort);
 	}
 	
 	public int getPort() {

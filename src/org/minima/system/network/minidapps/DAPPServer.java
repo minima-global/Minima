@@ -20,10 +20,10 @@ public class DAPPServer implements Runnable{
 	
 	public DAPPServer(int zPort, DAPPManager zDAPPMAnager) {
 		mPort = zPort;
-		mHost = "127.0.0.1";
+		mHost = zDAPPMAnager.getCurrentHost();
 		mDAPPMAnager = zDAPPMAnager;
 		
-		System.out.println("DAPP Server started on "+mHost+":"+mPort);
+		MinimaLogger.log("DAPP Server started on "+mHost+":"+mPort);
 	}
 	
 	public int getPort() {
