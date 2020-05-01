@@ -17,6 +17,12 @@ public class MessageStack{
 	private LinkedList<Message> mMessages;
 	
 	/**
+	 * The LOCK Object
+	 */
+	protected Object mLock = new Object();
+	
+	
+	/**
 	 * Main Constructor
 	 */
     public MessageStack(){
@@ -36,6 +42,11 @@ public class MessageStack{
      */
     public synchronized void PostMessage(Message zMessage){
         mMessages.add(zMessage);
+        
+        //Wake the Thread..
+        synchronized (mLock) {
+    		mLock.notify();	
+		}
     }
     
     /**

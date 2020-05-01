@@ -71,7 +71,14 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
     }
     
     public synchronized void PostTimerMessage(TimerMessage zMessage) {
-    	mTimerMessages.add(zMessage);
+//    	mTimerMessages.add(zMessage);
+    	
+    	//Set this is the processor..
+    	zMessage.setProcessor(this);
+    	
+    	//Create a Thread that fires//
+    	Thread timer = new Thread(zMessage);
+    	timer.start();
     }
     
     public void run() {
@@ -102,17 +109,25 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
                 } 
                 
                 //Timer messages..
-                checkTimerMessages();
+                //checkTimerMessages();
                 
                 //Are there more messages..
                 msg = getNextMessage();
             }
             
             //Check timer..
-            checkTimerMessages();
+//          checkTimerMessages();
             
             //Small Pause..
-            try {Thread.sleep(20);} catch (InterruptedException ex) {}
+            try {
+            	synchronized (mLock) {
+            		mLock.wait();	
+				}
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+//            try {Thread.sleep(20);} catch (InterruptedException ex) {}
         }
     }
     
