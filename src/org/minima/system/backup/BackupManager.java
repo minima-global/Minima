@@ -36,7 +36,7 @@ public class BackupManager extends SystemHandler {
 	File mMiniDAPPS;
 	
 	public BackupManager(Main zMain, String zConfFolder) {
-		super(zMain, "Backup Manager");
+		super(zMain, "BACKUP");
 		
 		mConfigurationFolder = zConfFolder;
 	

@@ -49,7 +49,6 @@ public class ConsensusHandler extends SystemHandler {
 	/**
 	 * Auto save files incase of hard shutdown or crash..
 	 */
-	public static final String CONSENSUS_MEMPOOLCHECK 	       = "CONSENSUS_MEMPOOLCHECK";
 	public static final String CONSENSUS_AUTOBACKUP 	       = "CONSENSUS_AUTOBACKUP";
 	
 	/**
@@ -141,9 +140,6 @@ public class ConsensusHandler extends SystemHandler {
 		
 		//Are we HARD mining.. debugging / private chain
 		PostTimerMessage(new TimerMessage(2000, CONSENSUS_MINEBLOCK));
-		
-		//NOW checks after everyy block..
-		//PostTimerMessage(new TimerMessage(60000, CONSENSUS_MEMPOOLCHECK));
 	}
 	
 	public void setBackUpManager() {
@@ -371,13 +367,6 @@ public class ConsensusHandler extends SystemHandler {
 			
 			InputHandler.endResponse(zMessage, true, "Send Success");
 			
-		}else if ( zMessage.isMessageType(CONSENSUS_MEMPOOLCHECK) ) {
-			//Send a check mempool messsage..
-			PostMessage(new Message(ConsensusUser.CONSENSUS_FLUSHMEMPOOL));
-			
-			//And set another timer.. every 5 mins..
-			PostTimerMessage(new TimerMessage(300000, CONSENSUS_MEMPOOLCHECK));
-			
 		}else if ( zMessage.isMessageType(CONSENSUS_ACTIVATEMINE) ) {
 			boolean mining = zMessage.getBoolean("automining");
 			getMainHandler().getMiner().setAutoMining(mining);
@@ -472,9 +461,6 @@ public class ConsensusHandler extends SystemHandler {
 				}else {
 					InputHandler.endResponse(zMessage, false, "Insufficient funds! You only have : "+total);
 				}
-				
-				//something funny.. FLUSH MEMPOOL
-				PostTimerMessage(new TimerMessage(10000, ConsensusUser.CONSENSUS_FLUSHMEMPOOL));
 				
 				return;
 				
