@@ -33,7 +33,7 @@ public class TimerMessage extends Message implements Runnable {
 			Thread.sleep(mDelay);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			//e.printStackTrace();
 		}
 		
 		//And Post..
