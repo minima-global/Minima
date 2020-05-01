@@ -207,8 +207,11 @@ public class ConsensusHandler extends SystemHandler {
 			
 			//MEMPOOL - can get one message stuck that invalidates new messages.. so check it if this is a block..
 			if(txpow.isBlock()) {
-				//Send a check mempool messsage..
-				PostMessage(new Message(ConsensusUser.CONSENSUS_FLUSHMEMPOOL));
+				//Every 10 blocks..
+				if(txpow.getBlockNumber().modulo(MiniNumber.TEN).isEqual(MiniNumber.ZERO)) {
+					//Send a check mempool messsage..
+					PostMessage(new Message(ConsensusUser.CONSENSUS_FLUSHMEMPOOL));	
+				}
 			}
 			
 //			//Add a chartpoint

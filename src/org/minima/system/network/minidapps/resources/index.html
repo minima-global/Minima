@@ -38,10 +38,6 @@
 		function handleFiles() {
 		  const fileList = this.files; /* now you can work with the file list */
 		  
-		  console.log("FILE : "+fileList[0].name);
-		  console.log("SIZE : "+fileList[0].size);
-		  console.log("TYPE : "+fileList[0].type);
-			
 		  //Read in the file
 		  reader.readAsDataURL(fileList[0]);
 		}
@@ -114,10 +110,8 @@
 </table>
 
 <!-- The actual form that is used to upload minidapps -->
-<form id="actual_minidapp" action="installdapp.html" method="post" style="display:none;">
-    <input type=hidden name=filename value="">
-    <input type=hidden name=filesize value="">
-	<input type=hidden id=minidapp64 name=minidata value=""> 
+<form enctype="text/plain" id="actual_minidapp" action="installdapp.html" method="post" style="display:none;">
+    <input type=hidden id=minidapp64 name=minidata value=""> 
 </form>
 
 <!-- Used to open the select File Dialog.. -->

@@ -960,6 +960,12 @@ public class MinimaDB {
 				if(newdiff.compareTo(Crypto.MAX_VAL)>0) {
 					newdiff = Crypto.MAX_VAL;
 				}
+				
+				//Make sure more than min TxPOW..
+				if(newdiff.compareTo(Crypto.MEGA_VAL)<0) {
+					newdiff = Crypto.MEGA_VAL;
+				}
+				
 				//Create the hash
 				MiniData diffhash = new MiniData("0x"+newdiff.toString(16)); 
 				
