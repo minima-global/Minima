@@ -233,9 +233,16 @@ public class ConsensusNet {
 			//Forward - the internal function
 			TxPOW txpow = (TxPOW)zMessage.getObject("txpow");
 			
+			//Do we have it.. now check DB - hmmm..
+			if(getMainDB().getTxPOW(txpow.getTxPowID()) != null) {
+				//WE HAVE IT..
+				MinimaLogger.log("NET Transaction we already have.. "+txpow.getBlockNumber()+" "+txpow.getTxPowID());
+				return;
+			}
+			
 			//Is it even a valid TxPOW.. not enough POW ? - FIRST CHECK
 			if(!txpow.isBlock() && !txpow.isTransaction()) {
-				MinimaLogger.log("ERROR NET FAKE - not transaction not block : "+txpow.getTxPowID());
+				MinimaLogger.log("ERROR NET FAKE - not transaction not block : "+txpow.getBlockNumber()+" "+txpow.getTxPowID());
 				//Fake ?
 				return;
 			}
@@ -243,22 +250,15 @@ public class ConsensusNet {
 			//Check the MemPool..
 			if(getMainDB().checkTransactionForMempoolCoins(txpow.getTransaction())) {
 				//No GOOD - double spend
-				MinimaLogger.log("ERROR NET - Mempool Double spend - allready used Coin input..");
+				MinimaLogger.log("ERROR NET - Mempool Double spend - allready used Coin input.."+txpow.getBlockNumber()+" "+txpow.getTxPowID());
 				return;
 			}
-			
-//			//Do we have it.. now check DB - hmmm.. seems to break..
-//			if(getMainDB().getTxPOW(txpow.getTxPowID()) != null) {
-//				//WE HAVE IT..
-//				MinimaLogger.log("NET Transaction we already have.. "+txpow.getTxPowID());
-//				return;
-//			}
 			
 			//Check the Sigs.. just the once..
 			boolean sigsok = TxPoWChecker.checkSigs(txpow);
 			if(!sigsok) {
 				//Reject
-				MinimaLogger.log("ERROR NET Invalid Signatures with TXPOW : "+txpow.getTxPowID()); 
+				MinimaLogger.log("ERROR NET Invalid Signatures with TXPOW : "+txpow.getBlockNumber()+" "+txpow.getTxPowID()); 
 				return;
 			}
 			
@@ -266,7 +266,7 @@ public class ConsensusNet {
 			boolean trxok = TxPoWChecker.checkTransactionMMR(txpow, getMainDB());
 			if(!trxok) {
 				//Reject
-				MinimaLogger.log("ERROR NET TXPOW FAILS CHECK MMR: "+txpow.getTxPowID()); 
+				MinimaLogger.log("ERROR NET TXPOW FAILS CHECK MMR: "+txpow.getBlockNumber()+" "+txpow.getTxPowID()); 
 				return;
 			}
 			
@@ -277,7 +277,7 @@ public class ConsensusNet {
 			//Now check the parent.. (Whether or not it is a block we may be out of alignment..)
 			if(getMainDB().getTxPOW(txpow.getParentID())==null) {
 				//We don't have it, get it..
-				MinimaLogger.log("Request Parent TxPOW : "+txpow.getParentID()); 
+				MinimaLogger.log("Request Parent TxPOW @ "+txpow.getBlockNumber()+" parent:"+txpow.getParentID()); 
 				sendNetMessage(zMessage, NetClientReader.NETMESSAGE_TXPOW_REQUEST, txpow.getParentID());
 			}
 
