@@ -239,7 +239,7 @@ public class ConsensusHandler extends SystemHandler {
 			//Only do this once..
 			boolean relevant = false;
 			if(txpow.isTransaction()) {
-				relevant = getMainDB().checkTransactionRelevant(txpow, zMessage);
+				relevant = getMainDB().getUserDB().isTransactionRelevant(txpow.getTransaction());
 			}
 			
 			//If it's relevant then do a backup..

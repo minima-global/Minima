@@ -587,34 +587,6 @@ public class MinimaDB {
 		return confirmed;
 	}
 	
-	/**
-	 * Is this a relevant transaction for us..
-	 * 
-	 * @param zTrans
-	 * @return
-	 */
-	public boolean checkTransactionRelevant(TxPOW zTxPOW,Message zOriginal) {
-		Transaction trans    = zTxPOW.getTransaction();
-		
-		ArrayList<Coin> ins  = trans.getAllInputs();
-		ArrayList<Coin> outs = trans.getAllOutputs();
-		
-		//Check them - adding the script to outputs we own
-		for(Coin in : ins) {
-			if(getUserDB().isAddressRelevant(in.getAddress())) {
-				return true;
-			}
-		}
-		
-		for(Coin out : outs) {
-			if(getUserDB().isAddressRelevant(out.getAddress())) {
-				return true;
-			}
-		}
-		
-		return false;
-	}
-	
 	public boolean checkTransactionForMempoolCoins(Transaction zTransaction) {
 		ArrayList<Coin> memcoins = getMempoolCoins();
 		ArrayList<Coin> inputs = zTransaction.getAllInputs();
