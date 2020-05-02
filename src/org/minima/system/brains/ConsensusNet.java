@@ -180,9 +180,6 @@ public class ConsensusNet {
 						//Just repost it..
 						TxPOW txpow = spack.getTxPOW();
 						
-						//Store it..
-						backup.backupTxpow(txpow);
-						
 						//Get the NetClient...
 						NetClient client = (NetClient) zMessage.getObject("netclient");
 						
@@ -237,40 +234,46 @@ public class ConsensusNet {
 			
 			//Is it even a valid TxPOW.. not enough POW ? - FIRST CHECK
 			if(!txpow.isBlock() && !txpow.isTransaction()) {
-				MinimaLogger.log("ERROR NET FAKE - not enough POW : "+txpow);
+				MinimaLogger.log("ERROR NET FAKE - not transaction not block : "+txpow.getTxPowID());
 				//Fake ?
 				return;
 			}
 			
-			//Do we have it.. now check DB
-			if(getMainDB().getTxPOW(txpow.getTxPowID()) != null) {
-				//WE HAVE IT..
-//				MinimaLogger.log("ERROR NET Transaction we already have.. "+txpow);
+			//Check the MemPool..
+			if(getMainDB().checkTransactionForMempoolCoins(txpow.getTransaction())) {
+				//No GOOD - double spend
+				MinimaLogger.log("ERROR NET - Mempool Double spend - allready used Coin input..");
 				return;
 			}
 			
+//			//Do we have it.. now check DB - hmmm.. seems to break..
+//			if(getMainDB().getTxPOW(txpow.getTxPowID()) != null) {
+//				//WE HAVE IT..
+//				MinimaLogger.log("NET Transaction we already have.. "+txpow.getTxPowID());
+//				return;
+//			}
+			
 			//Check the Sigs.. just the once..
-			boolean sigsok = TxPOWChecker.checkSigs(txpow);
+			boolean sigsok = TxPoWChecker.checkSigs(txpow);
 			if(!sigsok) {
 				//Reject
-				MinimaLogger.log("ERROR NET Invalid Signatures with TXPOW : "+txpow); 
+				MinimaLogger.log("ERROR NET Invalid Signatures with TXPOW : "+txpow.getTxPowID()); 
 				return;
 			}
 			
 			//Now check the Transaction is Valid As of now ?
-			boolean trxok = TxPOWChecker.checkTransactionMMR(txpow, getMainDB());
+			boolean trxok = TxPoWChecker.checkTransactionMMR(txpow, getMainDB());
 			if(!trxok) {
 				//Reject
-				MinimaLogger.log("ERROR NET TXPOW NOT OK : "+txpow); 
+				MinimaLogger.log("ERROR NET TXPOW FAILS CHECK MMR: "+txpow.getTxPowID()); 
 				return;
 			}
 			
 			//Add it to the database.. Do this here as there may be other messages in the queue. 
 			//Can't wait for ConsensusHandler to catch up. 
-			TxPOWDBRow row = getMainDB().addNewTxPow(txpow);
+			getMainDB().addNewTxPow(txpow);
 			
 			//Now check the parent.. (Whether or not it is a block we may be out of alignment..)
-			boolean flush = false;
 			if(getMainDB().getTxPOW(txpow.getParentID())==null) {
 				//We don't have it, get it..
 				MinimaLogger.log("Request Parent TxPOW : "+txpow.getParentID()); 
@@ -326,8 +329,6 @@ public class ConsensusNet {
 	 * Find a crossover node.. Check 2 chains and find where they FIRST intersect.
 	 */
 	public MiniNumber checkCrossover(SyncPackage zIntro){
-		//Our Chain.. FROM root onwards..
-//		ArrayList<BlockTreeNode> chain = getMainDB().getMainTree().getAsList();
 		//Our Chain.. FROM TIP backwards..
 		ArrayList<BlockTreeNode> chain = getMainDB().getMainTree().getAsList();
 				

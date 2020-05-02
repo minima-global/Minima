@@ -590,7 +590,7 @@ public class ConsensusTxn {
 			
 			//And Check the actual Transaction..
 			JSONArray contractlogs = new JSONArray();
-			boolean checkok = TxPOWChecker.checkTransactionMMR(trx, wit, getMainDB(),
+			boolean checkok = TxPoWChecker.checkTransactionMMR(trx, wit, getMainDB(),
 					getMainDB().getTopBlock(),
 					getMainDB().getMainTree().getChainTip().getMMRSet(),false,contractlogs);
 			

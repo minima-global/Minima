@@ -503,60 +503,67 @@ public class ConsensusUser {
 			ArrayList<MiniData> remove = new ArrayList<>();
 			JSONArray requested = new JSONArray();
 			
+			
 			//Check them all..
 			for(TxPOWDBRow txrow : unused) {
 				TxPOW txpow    = txrow.getTxPOW();
 				
-				//Check All..
-				if(txpow.isBlock()) {
-					MiniData parent = txpow.getParentID();
-					if(tdb.findTxPOWDBRow(parent) == null) {
-						//Request it from ALL your peers..
-						Message msg  = new Message(NetClient.NETCLIENT_SENDOBJECT)
-								.addObject("type", NetClientReader.NETMESSAGE_TXPOW_REQUEST)
-								.addObject("object", parent);
-						Message netw = new Message(NetworkHandler.NETWORK_SENDALL)
-								.addObject("message", msg);
-						
-						//Post it..
-						mHandler.getMainHandler().getNetworkHandler().PostMessage(netw);
-						
-						//Add to out list
-						requested.add(parent.to0xString());
-					}
-					
-					//Get all the messages in the block..
-					ArrayList<MiniData> txns = txpow.getBlockTxns();
-					for(MiniData txn : txns) {
-						if(tdb.findTxPOWDBRow(txn) == null) {
-							//Request it from ALL your peers..
-							Message msg  = new Message(NetClient.NETCLIENT_SENDOBJECT)
-									.addObject("type", NetClientReader.NETMESSAGE_TXPOW_REQUEST)
-									.addObject("object", txn);
-							Message netw = new Message(NetworkHandler.NETWORK_SENDALL)
-									.addObject("message", msg);
-							
-							//Post it..
-							mHandler.getMainHandler().getNetworkHandler().PostMessage(netw);
-							
-							//Add to out list
-							requested.add(txn.to0xString());
-						}
-					}
-				}
-								
 				//Do we just remove them all.. ?
 				if(hard) {
 					//Remove all..
 					remove.add(txpow.getTxPowID());
 				}else{
+					
 					//Check it..
-					boolean sigsok = TxPOWChecker.checkSigs(txpow);
-					boolean trxok  = TxPOWChecker.checkTransactionMMR(txpow, getMainDB());
+					boolean sigsok = true;
+					boolean trxok  = true;
+					if(txpow.isTransaction()) {
+						sigsok = TxPoWChecker.checkSigs(txpow);
+						trxok  = TxPoWChecker.checkTransactionMMR(txpow, getMainDB());	
+					}
 						
+					//Check the basics..
 					if(!sigsok || !trxok) {
 						remove.add(txpow.getTxPowID());
-					}	
+					}else {
+						//Check All..
+						if(txpow.isBlock()) {
+							MiniData parent = txpow.getParentID();
+							if(tdb.findTxPOWDBRow(parent) == null) {
+								//Request it from ALL your peers..
+								Message msg  = new Message(NetClient.NETCLIENT_SENDOBJECT)
+										.addObject("type", NetClientReader.NETMESSAGE_TXPOW_REQUEST)
+										.addObject("object", parent);
+								Message netw = new Message(NetworkHandler.NETWORK_SENDALL)
+										.addObject("message", msg);
+								
+								//Post it..
+								mHandler.getMainHandler().getNetworkHandler().PostMessage(netw);
+								
+								//Add to out list
+								requested.add(parent.to0xString());
+							}
+							
+							//Get all the messages in the block..
+							ArrayList<MiniData> txns = txpow.getBlockTxns();
+							for(MiniData txn : txns) {
+								if(tdb.findTxPOWDBRow(txn) == null) {
+									//Request it from ALL your peers..
+									Message msg  = new Message(NetClient.NETCLIENT_SENDOBJECT)
+											.addObject("type", NetClientReader.NETMESSAGE_TXPOW_REQUEST)
+											.addObject("object", txn);
+									Message netw = new Message(NetworkHandler.NETWORK_SENDALL)
+											.addObject("message", msg);
+									
+									//Post it..
+									mHandler.getMainHandler().getNetworkHandler().PostMessage(netw);
+									
+									//Add to out list
+									requested.add(txn.to0xString());
+								}
+							}
+						}		
+					}
 				}
 			}
 			

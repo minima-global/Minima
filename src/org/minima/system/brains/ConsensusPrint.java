@@ -831,6 +831,7 @@ public class ConsensusPrint {
 			status.put("lasttime", new Date(tip.getTxPow().getTimeSecs().getAsLong()*1000).toString());
 			status.put("difficulty", tip.getTxPow().getBlockDifficulty().to0xString());
 			
+			//TxPOWDB
 			status.put("txpowdb", getMainDB().getTxPowDB().getCompleteSize());
 			
 			//Size of the TXPOW DB folder..
@@ -846,7 +847,12 @@ public class ConsensusPrint {
 			status.put("txpowfiles", totnum);
 			status.put("txpowfolder", formatSize(totallen));
 			
+			//MemPool
+			ArrayList<TxPOWDBRow> unused = getMainDB().getTxPowDB().getAllUnusedTxPOW();
+			status.put("mempooltxn", unused.size());
+			status.put("mempoolcoins", getMainDB().getMempoolCoins().size());
 			
+			//CHain details..
 			status.put("chainlength", getMainDB().getMainTree().getAsList().size());
 			status.put("chainspeed", getMainDB().getMainTree().getChainSpeed());
 			status.put("chainweight", root.getTotalWeight().toString());

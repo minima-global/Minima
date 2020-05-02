@@ -33,7 +33,7 @@ import org.minima.utils.Crypto;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
-public class TxPOWChecker {
+public class TxPoWChecker {
 	
 	/**
 	 * Check JUST the signatures. This only ever has to be done once.

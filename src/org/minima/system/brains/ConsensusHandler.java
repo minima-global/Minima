@@ -11,22 +11,17 @@ import org.minima.objects.Coin;
 import org.minima.objects.Transaction;
 import org.minima.objects.TxPOW;
 import org.minima.objects.Witness;
-import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniScript;
 import org.minima.objects.proofs.TokenProof;
 import org.minima.system.Main;
 import org.minima.system.SystemHandler;
-import org.minima.system.external.ProcessManager;
 import org.minima.system.input.InputHandler;
 import org.minima.system.input.functions.gimme50;
 import org.minima.system.network.NetClient;
 import org.minima.system.network.NetClientReader;
 import org.minima.system.network.NetworkHandler;
-import org.minima.system.tx.TXMiner;
-import org.minima.utils.Crypto;
-import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
@@ -39,7 +34,6 @@ public class ConsensusHandler extends SystemHandler {
 	 */
 	public static final String CONSENSUS_PROCESSTXPOW 		   = "CONSENSUS_PROCESSTXPOW";
 	public static final String CONSENSUS_PRE_PROCESSTXPOW 	   = "CONSENSUS_PREPROCESSTXPOW";
-	public static final String CONSENSUS_POST_TXMINER 	       = "CONSENSUS_POST_TXMINER";
 	
 	public static final String CONSENSUS_ACTIVATEMINE 		   = "CONSENSUS_ACTIVATEMINE";
 	public static final String CONSENSUS_MINEBLOCK 			   = "CONSENSUS_MINEBLOCK";
@@ -243,16 +237,23 @@ public class ConsensusHandler extends SystemHandler {
 			//Only do this once..
 			boolean relevant = false;
 			if(txpow.isTransaction()) {
-				relevant = checkTransactionRelevant(txpow, zMessage);
+				relevant = getMainDB().checkTransactionRelevant(txpow, zMessage);
 			}
 			
 			//If it's relevant then do a backup..
 			if(relevant) {
+				//Get the Token Amounts..
+				Hashtable<String, MiniNumber> tokamt = getMainDB().getTransactionTokenAmounts(txpow);
+				
+				//Store ion the database..
+				getMainDB().getUserDB().addToHistory(txpow,tokamt);
+				
 				//Back up..
 				PostMessage(ConsensusBackup.CONSENSUSBACKUP_BACKUP);
 				
 				//Notify those listening..
-				getMainHandler().getNetworkHandler().PostMessage(NetworkHandler.NETWORK_NOTIFY);
+				Message upd = new Message(CONSENSUS_NOTIFY_BALANCE);
+				updateListeners(upd);
 			}
 			
 			//Message for the clients
@@ -271,21 +272,6 @@ public class ConsensusHandler extends SystemHandler {
 				Message upd = new Message(CONSENSUS_NOTIFY_NEWBLOCK).addObject("txpow", txpow);
 				updateListeners(upd);
 			}
-		
-		}else if ( zMessage.isMessageType(CONSENSUS_POST_TXMINER) ) {
-			//You've just mined the transation.. 
-			TxPOW txpow = (TxPOW) zMessage.getObject("txpow");
-			
-			//Check the MemPool..
-			if(getMainDB().checkTransactionForMempoolCoins(txpow.getTransaction())) {
-				//No GOOD - double spend
-				MinimaLogger.log("POST TXMINER Mempool Double spend - allready used input..");
-				return;
-			}
-			
-			//Forward it..
-			Message msg = new Message(ConsensusHandler.CONSENSUS_PRE_PROCESSTXPOW).addObject("txpow", txpow);
-			PostMessage(msg);
 			
 		/**
 		 * Network Messages
@@ -344,7 +330,7 @@ public class ConsensusHandler extends SystemHandler {
 			txpow.calculateTXPOWID();
 			
 			//Check the SIGS!
-			boolean sigsok = TxPOWChecker.checkSigs(txpow);
+			boolean sigsok = TxPoWChecker.checkSigs(txpow);
 			if(!sigsok) {
 				//Reject
 				InputHandler.endResponse(zMessage, false, "Invalid Signatures! - TXNAUTO must be done AFTER adding state variables ?");
@@ -359,7 +345,7 @@ public class ConsensusHandler extends SystemHandler {
 			}
 			
 			//Send it to the Miner..
-			Message mine = new Message(TXMiner.TXMINER_MINETXPOW).addObject("txpow", txpow);
+			Message mine = new Message(TxPoWMiner.TXMINER_MINETXPOW).addObject("txpow", txpow);
 			InputHandler.addResponseMesage(mine, zMessage);
 			getMainHandler().getMiner().PostMessage(mine);
 		
@@ -386,7 +372,7 @@ public class ConsensusHandler extends SystemHandler {
 			TxPOW txpow = getMainDB().getCurrentTxPow(new Transaction(), new Witness(), new JSONArray());
 			
 			//Send it to the Miner..
-			Message mine = new Message(TXMiner.TXMINER_MEGAMINER).addObject("txpow", txpow);
+			Message mine = new Message(TxPoWMiner.TXMINER_MEGAMINER).addObject("txpow", txpow);
 			
 			//Post to the Miner
 			getMainHandler().getMiner().PostMessage(mine);
@@ -625,98 +611,5 @@ public class ConsensusHandler extends SystemHandler {
 			}
 			
 		}
-	}
-	
-	/**
-	 * Is this a relevant transaction for us..
-	 * 
-	 * @param zTrans
-	 * @return
-	 */
-	public boolean checkTransactionRelevant(TxPOW zTxPOW,Message zOriginal) {
-		Transaction trans = zTxPOW.getTransaction();
-		
-		ArrayList<Coin> ins  = trans.getAllInputs();
-		ArrayList<Coin> outs = trans.getAllOutputs();
-		
-		//The HASH of the Transaction.. needed for coinid
-		MiniData transhash = Crypto.getInstance().hashObject(trans);
-		
-		//Check them - adding the script to outputs we own
-		boolean rel = false;
-		MiniNumber tot = MiniNumber.ZERO;
-		for(Coin in : ins) {
-			if(getMainDB().getUserDB().isAddressRelevant(in.getAddress())) {
-				rel = true;
-				
-				Message relmsg = new Message(ProcessManager.PROCESS_RELCOIN)
-									.addObject("coin", in)
-									.addObject("txpowid", zTxPOW.getTxPowID())
-									.addObject("transid", transhash)
-									.addObject("spent", true);
-				InputHandler.addResponseMesage(relmsg, zOriginal);
-				
-				//And do we need to call a local function..
-				getMainHandler().getProcessManager().PostMessage(relmsg);
-				
-				//Subtract
-				tot = tot.sub(in.getAmount());
-			}
-		}
-			
-		int len = outs.size();
-		for(int i=0;i<len;i++) {
-			//get the coin
-			Coin out = outs.get(i);
-			
-			if(getMainDB().getUserDB().isAddressRelevant(out.getAddress())) {
-				rel = true;
-				
-				//Now calculate the CoinID / TokenID
-				MiniData coinid = Crypto.getInstance().hashObjects(transhash, new MiniByte(i));
-				
-				//Create a new Coin..
-				Coin fullcoin = new Coin(coinid, out.getAddress(), out.getAmount(), out.getTokenID());
-				
-				Message relmsg = new Message(ProcessManager.PROCESS_RELCOIN)
-									.addObject("coin", fullcoin)
-									.addObject("txpowid", zTxPOW.getTxPowID())
-									.addObject("transid", transhash)
-									.addObject("spent", false);
-				InputHandler.addResponseMesage(relmsg, zOriginal);
-				
-				//And do we need to call a local function..
-				getMainHandler().getProcessManager().PostMessage(relmsg);
-				
-				//Add
-				tot = tot.add(out.getAmount());
-			}
-		}
-		
-		//Is it relevant..
-		if(rel) {
-			//Update the Native Listeners..
-			Message upd = new Message(CONSENSUS_NOTIFY_BALANCE).addString("change", tot.toString());
-			InputHandler.addResponseMesage(upd, zOriginal);
-			updateListeners(upd);
-			
-			//Get the Token Amounts..
-			Hashtable<String, MiniNumber> tokamt = getMainDB().getTransactionTokenAmounts(zTxPOW);
-			
-			//Store ion the database..
-			getMainDB().getUserDB().addToHistory(zTxPOW,tokamt);
-			
-			//And do we need to call a local function..
-			Message command = new Message(ProcessManager.PROCESS_TXNCALL)
-									.addObject("transaction", trans)
-									.addObject("transid", transhash)
-									.addObject("txpowid", zTxPOW.getTxPowID())
-									.addObject("total", tot);
-			InputHandler.addResponseMesage(command, zOriginal);
-			
-			getMainHandler().getProcessManager().PostMessage(command);
-		}
-		
-		return rel;
-	}
+	}	
 }

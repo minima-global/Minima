@@ -1,7 +1,7 @@
 package org.minima.system.input.functions;
 
+import org.minima.system.brains.TxPoWMiner;
 import org.minima.system.input.CommandFunction;
-import org.minima.system.tx.TXMiner;
 
 public class test extends CommandFunction{
 
@@ -12,7 +12,7 @@ public class test extends CommandFunction{
 	
 	@Override
 	public void doFunction(String[] zInput) throws Exception {
-		getMainHandler().getMiner().PostMessage(TXMiner.TXMINER_TESTHASHING);
+		getMainHandler().getMiner().PostMessage(TxPoWMiner.TXMINER_TESTHASHING);
 	}
 
 	@Override

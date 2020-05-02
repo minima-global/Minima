@@ -44,10 +44,10 @@ import org.minima.system.backup.SyncPackage;
 import org.minima.system.backup.SyncPacket;
 import org.minima.system.bootstrap.GenesisTxPOW;
 import org.minima.system.brains.ConsensusHandler;
-import org.minima.system.brains.TxPOWChecker;
+import org.minima.system.brains.TxPoWMiner;
+import org.minima.system.brains.TxPoWChecker;
 import org.minima.system.input.InputHandler;
 import org.minima.system.input.functions.gimme50;
-import org.minima.system.tx.TXMiner;
 import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
@@ -482,7 +482,7 @@ public class MinimaDB {
 	private boolean checkFullTxPOW(TxPOW zBlock, MMRSet zMMRSet) {
 		//First check the main transaction..
 		if(zBlock.isTransaction()) {
-			boolean inputvalid = TxPOWChecker.checkTransactionMMR(zBlock, this, zBlock.getBlockNumber(), zMMRSet,true);
+			boolean inputvalid = TxPoWChecker.checkTransactionMMR(zBlock, this, zBlock.getBlockNumber(), zMMRSet,true);
 			if(!inputvalid) {
 				return false;
 			}
@@ -495,7 +495,7 @@ public class MinimaDB {
 			TxPOW txpow = row.getTxPOW();
 			
 			//Check the Proof..
-			boolean inputvalid = TxPOWChecker.checkTransactionMMR(txpow, this, zBlock.getBlockNumber(), zMMRSet,true);
+			boolean inputvalid = TxPoWChecker.checkTransactionMMR(txpow, this, zBlock.getBlockNumber(), zMMRSet,true);
 			if(!inputvalid) {
 				return false;
 			}
@@ -585,6 +585,34 @@ public class MinimaDB {
 		}	
 		
 		return confirmed;
+	}
+	
+	/**
+	 * Is this a relevant transaction for us..
+	 * 
+	 * @param zTrans
+	 * @return
+	 */
+	public boolean checkTransactionRelevant(TxPOW zTxPOW,Message zOriginal) {
+		Transaction trans    = zTxPOW.getTransaction();
+		
+		ArrayList<Coin> ins  = trans.getAllInputs();
+		ArrayList<Coin> outs = trans.getAllOutputs();
+		
+		//Check them - adding the script to outputs we own
+		for(Coin in : ins) {
+			if(getUserDB().isAddressRelevant(in.getAddress())) {
+				return true;
+			}
+		}
+		
+		for(Coin out : outs) {
+			if(getUserDB().isAddressRelevant(out.getAddress())) {
+				return true;
+			}
+		}
+		
+		return false;
 	}
 	
 	public boolean checkTransactionForMempoolCoins(Transaction zTransaction) {
@@ -928,8 +956,8 @@ public class MinimaDB {
 		
 		//The Transaction Difficulty is set by the user after testing.. 
 		//He performs 10 seconds of work..
-		txpow.setTxDifficulty(TXMiner.BASE_TXN);
-		txpow.setBlockDifficulty(TXMiner.BASE_BLOCK);
+		txpow.setTxDifficulty(TxPoWMiner.BASE_TXN);
+		txpow.setBlockDifficulty(TxPoWMiner.BASE_BLOCK);
 		
 		//Block Details..
 		txpow.setBlockNumber(tip.getTxPow().getBlockNumber().increment());
@@ -961,10 +989,10 @@ public class MinimaDB {
 					newdiff = Crypto.MAX_VAL;
 				}
 				
-				//Make sure more than min TxPOW..
-				if(newdiff.compareTo(Crypto.MEGA_VAL)<0) {
-					newdiff = Crypto.MEGA_VAL;
-				}
+//				//Make sure more than min TxPOW..
+//				if(newdiff.compareTo(Crypto.MEGA_VAL)<0) {
+//					newdiff = Crypto.MEGA_VAL;
+//				}
 				
 				//Create the hash
 				MiniData diffhash = new MiniData("0x"+newdiff.toString(16)); 
@@ -993,7 +1021,7 @@ public class MinimaDB {
 		
 		//Check the first transaction
 		if(!zTrans.isEmpty()) {
-			boolean valid = TxPOWChecker.checkTransactionMMR(zTrans, zWitness, this, 
+			boolean valid = TxPoWChecker.checkTransactionMMR(zTrans, zWitness, this, 
 					txpow.getBlockNumber(),newset,true, zContractLogs);
 			
 			//MUST be valid.. ?
@@ -1014,7 +1042,7 @@ public class MinimaDB {
 			 * is valid.. but no way to check it has already been added
 			 */
 			if(txp.isTransaction()) {
-				boolean valid = TxPOWChecker.checkTransactionMMR(txp, this, txpow.getBlockNumber(),newset,true);
+				boolean valid = TxPoWChecker.checkTransactionMMR(txp, this, txpow.getBlockNumber(),newset,true);
 				
 				if(valid) {
 					//Add it..

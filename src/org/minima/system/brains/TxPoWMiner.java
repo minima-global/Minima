@@ -1,16 +1,15 @@
-package org.minima.system.tx;
+package org.minima.system.brains;
 
 import org.minima.objects.TxPOW;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniInteger;
 import org.minima.system.Main;
 import org.minima.system.SystemHandler;
-import org.minima.system.brains.ConsensusHandler;
 import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.messages.Message;
 
-public class TXMiner extends SystemHandler{
+public class TxPoWMiner extends SystemHandler{
 	
 	public static final MiniData BASE_TXN 	= Crypto.MEGA_HASH;
 //	public static final MiniData BASE_TXN 	= Crypto.MAX_HASH;
@@ -24,7 +23,7 @@ public class TXMiner extends SystemHandler{
 	
 	boolean mShowTXPOWMine = false;
 	
-	public TXMiner(Main zMain) {
+	public TxPoWMiner(Main zMain) {
 		super(zMain,"TXMINER");
 	}
 	
@@ -101,8 +100,8 @@ public class TXMiner extends SystemHandler{
 				//Set the TxPOW
 				txpow.calculateTXPOWID();
 				
-				//We have a valid TX-POW.. tell main
-				Message msg = new Message(ConsensusHandler.CONSENSUS_POST_TXMINER).addObject("txpow", txpow);
+				//We have a valid TX-POW.. send via usual - NET
+				Message msg = new Message(ConsensusNet.CONSENSUS_NET_TXPOW).addObject("txpow", txpow);
 				getMainHandler().getConsensusHandler().PostMessage(msg);
 			}
 			
