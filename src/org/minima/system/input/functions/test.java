@@ -1,7 +1,7 @@
 package org.minima.system.input.functions;
 
-import org.minima.system.brains.TxPoWMiner;
 import org.minima.system.input.CommandFunction;
+import org.minima.system.txpow.TxPoWMiner;
 
 public class test extends CommandFunction{
 

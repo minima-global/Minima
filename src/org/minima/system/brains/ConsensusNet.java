@@ -17,6 +17,7 @@ import org.minima.system.backup.SyncPackage;
 import org.minima.system.backup.SyncPacket;
 import org.minima.system.network.NetClient;
 import org.minima.system.network.NetClientReader;
+import org.minima.system.txpow.TxPoWChecker;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 import org.minima.utils.messages.Message;

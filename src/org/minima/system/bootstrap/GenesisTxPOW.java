@@ -12,7 +12,7 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniInteger;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
-import org.minima.system.brains.TxPoWMiner;
+import org.minima.system.txpow.TxPoWMiner;
 import org.minima.utils.Crypto;
 import org.minima.utils.SuperBlockLevels;
 

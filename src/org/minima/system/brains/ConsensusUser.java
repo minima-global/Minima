@@ -40,6 +40,7 @@ import org.minima.system.input.InputHandler;
 import org.minima.system.network.NetClient;
 import org.minima.system.network.NetClientReader;
 import org.minima.system.network.NetworkHandler;
+import org.minima.system.txpow.TxPoWChecker;
 import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;

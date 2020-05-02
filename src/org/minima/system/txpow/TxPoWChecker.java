@@ -1,4 +1,4 @@
-package org.minima.system.brains;
+package org.minima.system.txpow;
 
 import java.util.ArrayList;
 import java.util.Hashtable;

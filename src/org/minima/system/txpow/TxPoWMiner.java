@@ -1,10 +1,12 @@
-package org.minima.system.brains;
+package org.minima.system.txpow;
 
 import org.minima.objects.TxPOW;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniInteger;
 import org.minima.system.Main;
 import org.minima.system.SystemHandler;
+import org.minima.system.brains.ConsensusHandler;
+import org.minima.system.brains.ConsensusNet;
 import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.messages.Message;

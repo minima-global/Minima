@@ -25,6 +25,7 @@ import org.minima.objects.proofs.ScriptProof;
 import org.minima.objects.proofs.SignatureProof;
 import org.minima.objects.proofs.TokenProof;
 import org.minima.system.input.InputHandler;
+import org.minima.system.txpow.TxPoWChecker;
 import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
