@@ -960,12 +960,7 @@ public class MinimaDB {
 				if(newdiff.compareTo(Crypto.MAX_VAL)>0) {
 					newdiff = Crypto.MAX_VAL;
 				}
-				
-//				//Make sure more than min TxPOW..
-//				if(newdiff.compareTo(Crypto.MEGA_VAL)<0) {
-//					newdiff = Crypto.MEGA_VAL;
-//				}
-				
+								
 				//Create the hash
 				MiniData diffhash = new MiniData("0x"+newdiff.toString(16)); 
 				
@@ -998,7 +993,7 @@ public class MinimaDB {
 			
 			//MUST be valid.. ?
 			if(!valid) {
-//				MinimaLogger.log("ERROR: Your own transaction is invalid !?");
+				MinimaLogger.log("ERROR: Your own transaction is invalid !?");
 				return null;
 			}
 		}
@@ -1050,8 +1045,6 @@ public class MinimaDB {
 		return getMainTree().getChainTip().getTxPow().getBlockNumber();
 	}
 	
-	
-	
 	public SyncPackage getSyncPackage() {
 		SyncPackage sp = new SyncPackage();
 		
@@ -1076,17 +1069,6 @@ public class MinimaDB {
 	 */
 	public int getIntroSyncSize() {
 		SyncPackage sp = getSyncPackage();
-		
-//		//Lets create a sync package
-//		ArrayList<BlockTreeNode> nodes = getMainTree().getAsList();
-//		MiniNumber casc = getMainTree().getCascadeNode().getTxPow().getBlockNumber();
-//		sp.setCascadeNode(casc);
-//		
-//		//Cycle through it all..
-//		for(BlockTreeNode node : nodes) {
-//			MiniNumber block = node.getTxPow().getBlockNumber();
-//			sp.getAllNodes().add(0,new SyncPacket(node, block.isLessEqual(casc)));
-//		}
 		
 		//Write it out..
 		try {
