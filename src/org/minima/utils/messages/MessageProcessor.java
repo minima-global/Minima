@@ -104,13 +104,21 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
                 msg = getNextMessage();
             }
             
-            //Wait..
+            //Wait.. for a notify.. 
             try {
             	synchronized (mLock) {
-            		mLock.wait();	
+            		//Last check.. inside the LOCK
+            		if(!isNextMessage() && mRunning) {
+//            			MinimaLogger.log("PROCESSOR "+mName+" WAITING");
+            			mLock.wait();	
+            		}
 				}
-			} catch (InterruptedException e) {}
+			} catch (InterruptedException e) {
+				MinimaLogger.log("MESSAGE_PROCESSOR "+mName+" INTERRUPTED");
+			}
         }
+        
+//        MinimaLogger.log("MESSAGE_PROCESSOR "+mName+" STOPPED");
     }
     
     /**

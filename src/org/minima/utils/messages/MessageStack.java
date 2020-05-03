@@ -53,6 +53,15 @@ public class MessageStack{
 		}
     }
     
+    
+    /**
+     * Is there a next message!
+     * @return
+     */
+    protected synchronized boolean isNextMessage(){
+    	return !mMessages.isEmpty();
+    }
+        
     /**
      * Get the first message on the stack, if there is one
      */
