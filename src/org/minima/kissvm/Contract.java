@@ -354,11 +354,6 @@ public class Contract {
 	}
 	
 	public boolean setDYNState(int zStateNum, String zValue) throws ExecutionException {
-		//ONLY on Floating coins..
-//		if(!mFloatingCoin) {
-//			throw new ExecutionException("DYNSTATE only on Floating coins : "+zStateNum);
-//		}
-		
 		//Can only call this BEFORE any call to STATE or SAMESTATE
 		if(mCheckState[zStateNum]) {
 			throw new ExecutionException("Can only call DYNSTATE before STATE or SAMESTATE");
@@ -371,8 +366,19 @@ public class Contract {
 		
 		//Set It
 		mDYNState[zStateNum] = zValue;
-	
-		return true;
+			
+		//Is there a value anyway .. ?
+		StateVariable sv = mTransaction.getStateValue(zStateNum);
+		if(sv != null) {
+			//Check the result.. is it the same..
+			String oldsv = sv.getData().toString();
+			
+			//return whether is the same
+			return oldsv.equals(zValue);
+		}
+		
+		//NO old value.. so this is definitely NEW / DIFFERENT
+		return false;
 	}
 	
 	public String getState(int zStateNum) throws ExecutionException {
