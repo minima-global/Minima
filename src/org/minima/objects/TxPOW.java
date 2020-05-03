@@ -208,7 +208,7 @@ public class TxPOW implements Streamable {
 		mTxPowIDList.add(zTxPOW.getTxPowID());
 	}
 	
-	public ArrayList<MiniData> getBlockTxns(){
+	public ArrayList<MiniData> getBlockTransactions(){
 		return mTxPowIDList;
 	}
 	

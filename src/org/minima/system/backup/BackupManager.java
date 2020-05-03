@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 import org.minima.objects.TxPOW;
+import org.minima.objects.base.MiniData;
 import org.minima.system.Main;
 import org.minima.system.SystemHandler;
 import org.minima.utils.MinimaLogger;
@@ -60,9 +61,14 @@ public class BackupManager extends SystemHandler {
 		return new File(mBackup, name);
 	}
 	
+	
+	public File getTxpowFile(MiniData zTxPoWID) {
+		return new File(mTxPOWDB,zTxPoWID.to0xString()+".txpow");
+	}
+		
 	public void backupTxpow(TxPOW zTxPOW) {
 		//Create the File
-		File back = new File(mTxPOWDB,zTxPOW.getTxPowID().toString()+".txpow");
+		File back = new File(mTxPOWDB,zTxPOW.getTxPowID().to0xString()+".txpow");
 
 		//does it already exist..
 		if(back.exists()) {

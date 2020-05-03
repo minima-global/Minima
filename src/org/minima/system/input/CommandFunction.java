@@ -2,10 +2,10 @@ package org.minima.system.input;
 
 import org.minima.kissvm.exceptions.MinimaParseException;
 import org.minima.system.Main;
-import org.minima.system.input.functions.scripts;
+import org.minima.system.input.functions.automine;
 import org.minima.system.input.functions.backup;
 import org.minima.system.input.functions.balance;
-import org.minima.system.input.functions.chart;
+import org.minima.system.input.functions.chainsha;
 import org.minima.system.input.functions.check;
 import org.minima.system.input.functions.cleanscript;
 import org.minima.system.input.functions.coins;
@@ -21,8 +21,6 @@ import org.minima.system.input.functions.history;
 import org.minima.system.input.functions.intro;
 import org.minima.system.input.functions.keepcoin;
 import org.minima.system.input.functions.keys;
-import org.minima.system.input.functions.automine;
-import org.minima.system.input.functions.chainsha;
 import org.minima.system.input.functions.network;
 import org.minima.system.input.functions.newaddress;
 import org.minima.system.input.functions.newscript;
@@ -32,6 +30,7 @@ import org.minima.system.input.functions.quit;
 import org.minima.system.input.functions.random;
 import org.minima.system.input.functions.reconnect;
 import org.minima.system.input.functions.runscript;
+import org.minima.system.input.functions.scripts;
 import org.minima.system.input.functions.search;
 import org.minima.system.input.functions.send;
 import org.minima.system.input.functions.sign;
@@ -79,7 +78,7 @@ public abstract class CommandFunction {
 			new newscript(), new printchain(), new printtree(), new quit(),new reconnect(), new runscript(), new cleanscript(), 
 			new send(), new status(), new test(), new trace(), new tutorial(), new history(), new tokens(),
 			new exportkey(), new importkey(), new exportcoin(), new importcoin(), new search(),
-			new chainsha(), new keepcoin(), new unkeepcoin(), new scripts(), new chart(), new network(),
+			new chainsha(), new keepcoin(), new unkeepcoin(), new scripts(), new network(),
 			new txncreate(), new txndelete(), new txninput(), new txnlist(), new txnauto(),
 			new txnstate(), new txnexport(), new txnimport(), new txnscript(), new txnreminput(), new txnremoutput(),
 			new txnoutput(), new txnpost(), new txnsign(), new txnvalidate(),new txnsignauto(),

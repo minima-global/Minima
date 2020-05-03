@@ -142,7 +142,7 @@ public class SimpleBlockTreePrinter {
 					     +"txpowid:"+zNode.getTxPowID().to0xString(16)+" "
 						 +"[parent:"+clev+"]"+parent.to0xString(16)+" "
 						 +"[parent:"+(clev+1)+"]"+parent2.to0xString(16)
-						 +"[txns:"+txpow.getBlockTxns().size()+"]";
+						 +"[txns:"+txpow.getBlockTransactions().size()+"]";
 								
 		String add = parents +" ["+getStarString(slev)+"] - "+getStarString(clev);
 		

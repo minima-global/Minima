@@ -209,13 +209,7 @@ public class ConsensusHandler extends SystemHandler {
 					PostMessage(new Message(ConsensusUser.CONSENSUS_FLUSHMEMPOOL));	
 				}
 			}
-			
-//			//Add a chartpoint
-//			Message chart = new Message(ConsensusPrint.CONSENSUS_ADDCHARTPOINT);
-//			chart.addString("block", getMainDB().getMainTree().getChainTip().getTxPow().getBlockNumber().toString());
-//			chart.addString("weight", getMainDB().getMainTree().getChainRoot().getTotalWeight().toString());
-//			PostMessage(chart);
-			
+						
 			/**
 			 * One time run the first time you see a txpow..
 			 */
@@ -229,9 +223,6 @@ public class ConsensusHandler extends SystemHandler {
 				//..
 				return;
 			}
-			
-			//It's something.. Make sure has been added - could be an internal message - won't add again if already there.
-			getMainDB().addNewTxPow(txpow);
 			
 			//Back it up!
 			getMainHandler().getBackupManager().backupTxpow(txpow);

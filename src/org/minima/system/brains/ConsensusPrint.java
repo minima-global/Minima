@@ -81,10 +81,6 @@ public class ConsensusPrint {
 	
 	public static final String CONSENSUS_PRINTCHAIN_TREE 	= CONSENSUS_PREFIX+"PRINTCHAIN_TREE";
 	
-	public static final String CONSENSUS_ADDCHARTPOINT 		= CONSENSUS_PREFIX+"ADDCHARTPOINT";
-	public static final String CONSENSUS_OUTPUTCHART 		= CONSENSUS_PREFIX+"OUTPUTCHART";
-	public static final String CONSENSUS_CLEARCHART 		= CONSENSUS_PREFIX+"CLEARCHART";
-	
     MinimaDB mDB;
 	
 	ConsensusHandler mHandler;
@@ -105,6 +101,8 @@ public class ConsensusPrint {
 	public void processMessage(Message zMessage) throws Exception {
 	
 		if(zMessage.isMessageType(CONSENSUS_PRINTCHAIN)) {
+			//DEBUG FUNCTION - Not even a JSON..
+			
 			//Print the TxPowDB
 			TxPowDBPrinter.PrintDB(getMainDB().getTxPowDB());
 			
@@ -122,32 +120,6 @@ public class ConsensusPrint {
 			MinimaLogger.log("---");
 			MMRSet set = getMainDB().getMainTree().getChainTip().getMMRSet();
 			MMRPrint.Print(set);
-		
-		}else if(zMessage.isMessageType(CONSENSUS_ADDCHARTPOINT)){
-			long block  = Long.parseLong(zMessage.getString("block"));
-			long weight = Long.parseLong(zMessage.getString("weight"));
-			mChart.add(new chartpoint(block, weight));
-			
-		}else if(zMessage.isMessageType(CONSENSUS_OUTPUTCHART)){
-			String filename = "chart.csv";//zMessage.getString("filename");
-			File chart = new File(System.getProperty("user.home"),filename);
-			if(chart.exists()) {
-				chart.delete();
-			}
-			
-			PrintWriter pw = new PrintWriter(chart);
-			pw.println("Block,Weight,");
-			for(chartpoint point : mChart) {
-				pw.println(point.mBlock+","+point.mTotalWeight+",");
-			}
-			
-			pw.flush();
-			pw.close();
-			
-			InputHandler.endResponse(zMessage, true, "Chart output to "+chart.getAbsolutePath());
-			
-		}else if(zMessage.isMessageType(CONSENSUS_CLEARCHART)){
-			mChart.clear();
 		
 		}else if(zMessage.isMessageType(CONSENSUS_PRINTCHAIN_TREE)){
 			if(zMessage.exists("auto")) {

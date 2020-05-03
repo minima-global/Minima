@@ -144,9 +144,7 @@ public class TxPoWMiner extends SystemHandler{
 			txpow.calculateTXPOWID();
 			
 			if(txpow.isBlock()) {
-//				System.out.println("BLOCK FOUND : "+txpow.getBlockNumber());
-				//We have a valid TX-POW.. tell main
-				Message msg = new Message(ConsensusHandler.CONSENSUS_PRE_PROCESSTXPOW).addObject("txpow", txpow);
+				Message msg = new Message(ConsensusNet.CONSENSUS_NET_TXPOW).addObject("txpow", txpow);
 				getMainHandler().getConsensusHandler().PostMessage(msg);
 			}
 			

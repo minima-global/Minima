@@ -530,7 +530,7 @@ public class ConsensusUser {
 						//Check All..
 						if(txpow.isBlock()) {
 							MiniData parent = txpow.getParentID();
-							if(tdb.findTxPOWDBRow(parent) == null) {
+							if(tdb.findTxPOWDBRow(parent) == null  && !getMainDB().isRootParent(parent)) {
 								//Request it from ALL your peers..
 								Message msg  = new Message(NetClient.NETCLIENT_SENDOBJECT)
 										.addObject("type", NetClientReader.NETMESSAGE_TXPOW_REQUEST)
@@ -546,7 +546,7 @@ public class ConsensusUser {
 							}
 							
 							//Get all the messages in the block..
-							ArrayList<MiniData> txns = txpow.getBlockTxns();
+							ArrayList<MiniData> txns = txpow.getBlockTransactions();
 							for(MiniData txn : txns) {
 								if(tdb.findTxPOWDBRow(txn) == null) {
 									//Request it from ALL your peers..

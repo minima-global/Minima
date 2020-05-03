@@ -69,6 +69,8 @@ public class BlockTree {
 		
 		//Do we have a parent..
 		if(parent == null) {
+			MinimaLogger.log("NO PARENT FOR BLOCK : "+zNode.getTxPow().getBlockNumber());
+			
 			//No direct parent..  add to the pool and ask for parent
 			return false;
 		}
@@ -226,14 +228,14 @@ public class BlockTree {
 		}
 		
 		//Strange BUG on Android..
-		try {
-			BlockTreeNode finder = _findNode(getChainRoot(), zTxPOWID);
-			return finder;
-		}catch(StackOverflowError stacker) {
-			MinimaLogger.log("STACK OVERFLOW err  "+stacker);
-			MinimaLogger.log("STACK OVERFLOW id   "+zTxPOWID);
-			MinimaLogger.log("STACK OVERFLOW size "+getAsList().size());
-		}
+//		try {
+//			BlockTreeNode finder = _findNode(getChainRoot(), zTxPOWID);
+//			return finder;
+//		}catch(StackOverflowError stacker) {
+//			MinimaLogger.log("STACK OVERFLOW err  "+stacker);
+//			MinimaLogger.log("STACK OVERFLOW id   "+zTxPOWID);
+//			MinimaLogger.log("STACK OVERFLOW size "+getAsList().size());
+//		}
 		
 		//Do it again..
 		return _findNode(getChainRoot(), zTxPOWID);

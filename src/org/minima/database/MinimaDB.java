@@ -191,7 +191,7 @@ public class MinimaDB {
 		boolean newfullblock = false;
 		for(TxPOWDBRow unblock : unfinishedblocks) {
 			boolean allok = true;
-			ArrayList<MiniData> txns = unblock.getTxPOW().getBlockTxns();
+			ArrayList<MiniData> txns = unblock.getTxPOW().getBlockTransactions();
 			for(MiniData txnid : txns) {
 				if(getTxPOW(txnid) == null) {
 					allok = false;
@@ -275,7 +275,7 @@ public class MinimaDB {
 				}
 				
 				//Now the Txns..
-				ArrayList<MiniData> txpowlist = txpow.getBlockTxns();
+				ArrayList<MiniData> txpowlist = txpow.getBlockTransactions();
 				for(MiniData txid : txpowlist) {
 					trow = mTxPOWDB.findTxPOWDBRow(txid);
 					if(trow!=null) {
@@ -489,7 +489,7 @@ public class MinimaDB {
 		}
 		
 		//Now cycle through all the transactions in the block..
-		ArrayList<MiniData> txns = zBlock.getBlockTxns();
+		ArrayList<MiniData> txns = zBlock.getBlockTransactions();
 		for(MiniData txn : txns) {
 			TxPOWDBRow row = getTxPOWRow(txn);
 			TxPOW txpow = row.getTxPOW();
@@ -505,6 +505,15 @@ public class MinimaDB {
 	}
 	
 	/**
+	 * Is this the parent of the root of the chain.. ?
+	 * @param zTxPoWID
+	 * @return
+	 */
+	public boolean isRootParent(MiniData zTxPoWID) {
+		return zTxPoWID.isEqual(getMainTree().getChainRoot().getTxPow().getParentID());
+	}
+	
+	/**
 	 * Add it if it is not already in the list
 	 * 
 	 * @param zTxPOW
@@ -516,19 +525,19 @@ public class MinimaDB {
 	}
 	
 	
-	public boolean isChainRoot() {
-		return ( mMainTree.getChainRoot() != null );
-	}
+//	public boolean isChainRoot() {
+//		return ( mMainTree.getChainRoot() != null );
+//	}
 	
-	public BlockTreeNode hardAddTxPOWBlock(TxPOW zRoot, MMRSet zMMR, boolean zCascade) {
+	public BlockTreeNode hardAddTxPOWBlock(TxPOW zTxPoW, MMRSet zMMR, boolean zCascade) {
 		//Add to the list
-		TxPOWDBRow row = mTxPOWDB.addTxPOWDBRow(zRoot);
+		TxPOWDBRow row = mTxPOWDB.addTxPOWDBRow(zTxPoW);
 		row.setIsInBlock(true);
 		row.setOnChainBlock(true);
-		row.setInBlockNumber(zRoot.getBlockNumber());
+		row.setInBlockNumber(zTxPoW.getBlockNumber());
 		row.setBlockState(TxPOWDBRow.TXPOWDBROW_STATE_FULL);
 		
-		BlockTreeNode node = new BlockTreeNode(zRoot);
+		BlockTreeNode node = new BlockTreeNode(zTxPoW);
 		node.setCascade(zCascade);
 		node.setState(BlockTreeNode.BLOCKSTATE_VALID);
 		
