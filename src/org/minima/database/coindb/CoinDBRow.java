@@ -20,9 +20,4 @@ public interface CoinDBRow {
 	
 	public void setMMREntry(MiniInteger zEntry);
 	public MiniInteger getMMREntry();
-	
-//	public void setConfirmed(boolean zConfirmed);
-//	public boolean isConfirmed();
-//	
-//	public MiniData32 getInBlockHash();
 }

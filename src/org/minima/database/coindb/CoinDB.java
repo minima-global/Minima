@@ -35,10 +35,15 @@ public interface CoinDB {
 	 */
 	public CoinDBRow addCoinRow(Coin zCoin);
 	
-	public void removeOldSpentCoins(MiniNumber zMinBlock);
-	
 	/**
 	 * Can remove a Coin Row..
 	 */
 	public boolean removeCoin(MiniData zCoinID);
+	
+	/**
+	 * remove old spent coins that are before this block..
+	 * @param zMinBlock
+	 */
+	public void removeOldSpentCoins(MiniNumber zMinBlock);
+	
 }
