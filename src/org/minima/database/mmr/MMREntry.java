@@ -12,6 +12,7 @@ import org.minima.objects.base.MiniInteger;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
+import org.minima.utils.json.JSONObject;
 
 public class MMREntry implements Comparable<MMREntry>, Streamable{
 
@@ -88,6 +89,17 @@ public class MMREntry implements Comparable<MMREntry>, Streamable{
 			MinimaLogger.log("ERROR NULL Entry : "+this);
 		}
 		return mData.getFinalHash();
+	}
+	
+	public JSONObject toJSON() {
+		JSONObject ret = new JSONObject();
+		
+		ret.put("block", mBlockTime.toString());
+		ret.put("row", mRow);
+		ret.put("entry", mEntryNumber.toString());
+		ret.put("data", mData.toJSON());
+		
+		return ret;
 	}
 	
 	@Override

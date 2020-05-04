@@ -530,7 +530,7 @@ public class ConsensusUser {
 						//Check All..
 						if(txpow.isBlock()) {
 							MiniData parent = txpow.getParentID();
-							if(tdb.findTxPOWDBRow(parent) == null  && !getMainDB().isRootParent(parent)) {
+							if(tdb.findTxPOWDBRow(parent) == null) {
 								//Request it from ALL your peers..
 								Message msg  = new Message(NetClient.NETCLIENT_SENDOBJECT)
 										.addObject("type", NetClientReader.NETMESSAGE_TXPOW_REQUEST)
@@ -611,8 +611,16 @@ public class ConsensusUser {
 			//Get the coin
 			Coin cc = entry.getData().getCoin();
 			
+			//Is it relevant..
+			boolean rel = false;
+			if( getMainDB().getUserDB().isAddressRelevant(cc.getAddress()) ){
+				rel = true;
+			}
+			
 			//add it to the database
 			CoinDBRow crow = getMainDB().getCoinDB().addCoinRow(cc);
+			crow.setRelevant(rel);
+			crow.setKeeper(true);
 			crow.setIsSpent(entry.getData().isSpent());
 			crow.setIsInBlock(true);
 			crow.setInBlockNumber(entry.getData().getInBlock());
@@ -677,8 +685,16 @@ public class ConsensusUser {
 			//Get the coin
 			Coin cc = entry.getData().getCoin();
 			
+			//Is it relevant..
+			boolean rel = false;
+			if( getMainDB().getUserDB().isAddressRelevant(cc.getAddress()) ){
+				rel = true;
+			}
+			
 			//add it to the database
 			CoinDBRow crow = getMainDB().getCoinDB().addCoinRow(cc);
+			crow.setRelevant(rel);
+			crow.setKeeper(true);
 			crow.setIsSpent(entry.getData().isSpent());
 			crow.setIsInBlock(true);
 			crow.setInBlockNumber(entry.getData().getInBlock());
@@ -783,8 +799,16 @@ public class ConsensusUser {
 		//Get the coin
 		Coin cc = entry.getData().getCoin();
 		
+		//Is it relevant..
+		boolean rel = false;
+		if( zDB.getUserDB().isAddressRelevant(cc.getAddress()) ){
+			rel = true;
+		}
+		
 		//add it to the database
 		CoinDBRow crow = zDB.getCoinDB().addCoinRow(cc);
+		crow.setKeeper(true);
+		crow.setRelevant(rel);
 		crow.setIsSpent(entry.getData().isSpent());
 		crow.setIsInBlock(true);
 		crow.setInBlockNumber(entry.getData().getInBlock());

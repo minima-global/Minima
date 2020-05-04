@@ -4,6 +4,7 @@ import org.minima.objects.Coin;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniInteger;
 import org.minima.objects.base.MiniNumber;
+import org.minima.utils.json.JSONObject;
 
 public interface CoinDBRow {
 	
@@ -23,4 +24,9 @@ public interface CoinDBRow {
 	
 	public void setRelevant(boolean zRelevant);
 	public boolean isRelevant();
+	
+	public void setKeeper(boolean zRelevant);
+	public boolean isKeeper();
+	
+	public JSONObject toJSON();
 }

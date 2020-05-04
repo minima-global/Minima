@@ -176,7 +176,7 @@ public class ConsensusNet {
 				ArrayList<SyncPacket> intro = sp.getAllNodes();
 				int totalreq = 0;
 				for(SyncPacket spack : intro) {
-					if(spack.getTxPOW().getBlockNumber().isMoreEqual(cross)) {
+					if(spack.getTxPOW().getBlockNumber().isMore(cross)) {
 						//Just repost it..
 						TxPOW txpow = spack.getTxPOW();
 						
@@ -273,7 +273,7 @@ public class ConsensusNet {
 			
 			//Now check the parent.. (Whether or not it is a block we may be out of alignment..)
 			MiniData parentID = txpow.getParentID();
-			if(getMainDB().getTxPOW(parentID)==null && !getMainDB().isRootParent(parentID)) {
+			if(getMainDB().getTxPOW(parentID)==null) {
 				//We don't have it, get it..
 				MinimaLogger.log("Request Parent TxPoW @ "+txpow.getBlockNumber()+" parent:"+parentID); 
 				sendNetMessage(zMessage, NetClientReader.NETMESSAGE_TXPOW_REQUEST, parentID);

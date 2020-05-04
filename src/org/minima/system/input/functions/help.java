@@ -67,8 +67,8 @@ public class help extends CommandFunction{
 			addJSONDesc(new flushmempool());
 			addJSONDesc(new check());
 			
-//			addJSONDesc(new printchain());
-			addJSONDesc(new printtree());
+			addJSONDesc(new printdb());
+//			addJSONDesc(new printtree());
 			addJSONDesc(new automine());
 			addJSONDesc(new trace());
 			

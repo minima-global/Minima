@@ -2,6 +2,7 @@ package org.minima.database.txpowdb;
 
 import org.minima.objects.TxPOW;
 import org.minima.objects.base.MiniNumber;
+import org.minima.utils.json.JSONObject;
 
 public interface TxPOWDBRow {
 	
@@ -51,4 +52,6 @@ public interface TxPOWDBRow {
 	 */
 	public void deleteRow();
 	public long getDeleteTime();
+	
+	public JSONObject toJSON();
 }

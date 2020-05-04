@@ -16,6 +16,8 @@ import org.minima.objects.proofs.Proof.ProofChunk;
 import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
+import org.minima.utils.json.JSONArray;
+import org.minima.utils.json.JSONObject;
 
 public class MMRSet implements Streamable {
 	
@@ -66,7 +68,7 @@ public class MMRSet implements Streamable {
 	ArrayList<MMREntry> mFinalizedPeaks;
 	ArrayList<MMREntry> mFinalizedZeroRow;
 	
-	//HASH Function bit length..
+	//HASH Function bit length.. ALWYS 512 except when used in chainsha function
 	int MMR_HASH_BITS=512;
 	
 	/**
@@ -83,6 +85,37 @@ public class MMRSet implements Streamable {
 	public MMRSet(MMRSet zParent) {
 		this(zParent, 512);
 	}
+	
+	public JSONObject toJSON() {
+		JSONObject ret = new JSONObject();
+		
+		ret.put("block", mBlockTime);
+		ret.put("entrynumber", mEntryNumber);
+
+		JSONArray jentry = new JSONArray();
+		for(MMREntry entry : mEntries) {
+			jentry.add(entry.toJSON());
+		}
+		ret.put("entries", jentry);
+		ret.put("maxrow", mMaxRow);
+		
+		JSONArray maxentry = new JSONArray();
+		for(MMREntry entry : mMaxEntries) {
+			if(entry != null) {
+				maxentry.add(entry.getEntry().toString());	
+			}
+		}
+		ret.put("maxentries", maxentry);
+		
+		JSONArray keepers = new JSONArray();
+		for(MiniInteger keeper : mKeepers) {
+			keepers.add(keeper.toString());
+		}
+		ret.put("keepers", keepers);
+		
+		return ret;
+	}
+	
 	
 	public MMRSet(MMRSet zParent, int zBitLength) {
 		//All the Entries in this set

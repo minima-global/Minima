@@ -239,13 +239,8 @@ public class Start {
 		                //Get the response..
 		                String resp = response.getResponse();
 		                
-		                //Check it's a JSON - Hack for now..
-		                if(resp.startsWith("{") || resp.startsWith("[")) {
-		                	resp = MiniFormat.PrettyJSON(resp);
-		                }
-		                
-		                //Convert \n..
-		                resp = resp.replaceAll("\\\\n", "\n");
+		                //Makethe JSON pretty
+		                resp = MiniFormat.JSONPretty(resp);
 		                		
 		                //And then print out the result
 		                System.out.println(resp);

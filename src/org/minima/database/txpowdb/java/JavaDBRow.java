@@ -3,6 +3,7 @@ package org.minima.database.txpowdb.java;
 import org.minima.database.txpowdb.TxPOWDBRow;
 import org.minima.objects.TxPOW;
 import org.minima.objects.base.MiniNumber;
+import org.minima.utils.json.JSONObject;
 
 public class JavaDBRow implements TxPOWDBRow {
 
@@ -26,6 +27,20 @@ public class JavaDBRow implements TxPOWDBRow {
 		mDeleteTime          = 0;
 	}
 
+	@Override
+	public JSONObject toJSON() {
+		JSONObject ret = new JSONObject();
+		
+		ret.put("txpow",mTxPOW.toJSON());
+		ret.put("isonchainblock",mIsOnChainBlock);
+		ret.put("isinblock",mIsInBlock);
+		ret.put("inblock",mInBlocknumber.toString());
+		ret.put("blockstate",getStatusAsString());
+		ret.put("deleted",mDeleteTime);
+		
+		return ret;
+	}
+	
 	@Override
 	public TxPOW getTxPOW() {
 		return mTxPOW;
@@ -53,7 +68,7 @@ public class JavaDBRow implements TxPOWDBRow {
 	
 	@Override
 	public String toString() {
-		return getStatusAsString()+" ONCHAINBLK:"+isOnChainBlock()+" IS_IN_BLOCK ("+mIsInBlock+") :"+mInBlocknumber+" "+mTxPOW;
+		return toJSON().toString();
 	}
 
 	public String getStatusAsString() {
@@ -62,11 +77,6 @@ public class JavaDBRow implements TxPOWDBRow {
 			return "BASIC";
 		case TXPOWDBROW_STATE_FULL:
 			return "FULL";
-//		case TXPOWDBROW_STATE_VALID:
-//			return "VALID";
-//		case TXPOWDBROW_STATE_INVALID:
-//			return "INVALID";
-
 		default:
 			return "ERROR";
 		}

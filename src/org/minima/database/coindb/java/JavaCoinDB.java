@@ -7,6 +7,7 @@ import org.minima.database.coindb.CoinDBRow;
 import org.minima.objects.Coin;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.utils.MinimaLogger;
 
 public class JavaCoinDB implements CoinDB{
 
@@ -31,7 +32,7 @@ public class JavaCoinDB implements CoinDB{
 		ArrayList<CoinDBRow> retlist = new ArrayList<>();
 		
 		for(CoinDBRow row : mRows) {
-			if(row.isRelevant()) {
+			if(row.isRelevant() || row.isKeeper()) {
 				retlist.add(row);
 			}
 		}
@@ -67,10 +68,12 @@ public class JavaCoinDB implements CoinDB{
 	public void removeOldSpentCoins(MiniNumber zMinBlock) {
 		ArrayList<CoinDBRow> newrows = new ArrayList<>();
 		for(CoinDBRow row : mRows) {
-			if(!row.isSpent() && row.isRelevant()) {
+			if(!row.isSpent() && ( row.isRelevant() || row.isKeeper() )) {
 				newrows.add(row);
 			}else if(row.getInBlockNumber().isMoreEqual(zMinBlock)) {
 				newrows.add(row);
+			}else {
+//				MinimaLogger.log("COIN REMOVED : "+row.getCoin());
 			}
 		}
 		mRows = newrows;

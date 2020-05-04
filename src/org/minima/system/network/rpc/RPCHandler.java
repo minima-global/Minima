@@ -70,9 +70,6 @@ public class RPCHandler implements Runnable {
 			// we get file requested
 			fileRequested = parse.nextToken();
 			
-			//Do we make the output look pretty
-			boolean prettyjson = false;
-			
 			// we support only GET and HEAD methods, we check
 			if (method.equals("GET")){
 //				System.out.println("fileRequested : "+fileRequested);
@@ -84,11 +81,6 @@ public class RPCHandler implements Runnable {
 				
 				if(function.startsWith("/")) {
 					function = function.substring(1);
-				}
-				
-				if(function.startsWith("prettyjson/")) {
-					function   = function.substring(11);
-					prettyjson = true;
 				}
 				
 				//Is this a multi function..
@@ -168,13 +160,6 @@ public class RPCHandler implements Runnable {
 					//And now get all the answers in one go..
 					result = responses.toString();
 				}
-				
-                //Check it's a JSON
-                if(prettyjson) {
-					if(result.startsWith("{") || result.startsWith("[")) {
-	                	result = MiniFormat.PrettyJSON(result);
-	                }
-                }
 				
 				// send HTTP Headers
 				out.println("HTTP/1.1 200 OK");

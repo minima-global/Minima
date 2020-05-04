@@ -1,9 +1,7 @@
 package org.minima.system.brains;
 
 import java.io.File;
-import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -12,13 +10,11 @@ import java.util.Hashtable;
 
 import org.minima.GlobalParams;
 import org.minima.database.MinimaDB;
-import org.minima.database.coindb.CoinDBPrinter;
 import org.minima.database.coindb.CoinDBRow;
 import org.minima.database.mmr.MMREntry;
 import org.minima.database.mmr.MMRPrint;
 import org.minima.database.mmr.MMRSet;
 import org.minima.database.txpowdb.TxPOWDBRow;
-import org.minima.database.txpowdb.TxPowDBPrinter;
 import org.minima.database.txpowtree.BlockTree;
 import org.minima.database.txpowtree.BlockTreeNode;
 import org.minima.database.txpowtree.SimpleBlockTreePrinter;
@@ -29,7 +25,6 @@ import org.minima.objects.Coin;
 import org.minima.objects.PubPrivKey;
 import org.minima.objects.TxPOW;
 import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniInteger;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.proofs.TokenProof;
 import org.minima.system.Main;
@@ -101,26 +96,63 @@ public class ConsensusPrint {
 	public void processMessage(Message zMessage) throws Exception {
 	
 		if(zMessage.isMessageType(CONSENSUS_PRINTCHAIN)) {
-			//DEBUG FUNCTION - Not even a JSON..
+			boolean coins  = zMessage.getBoolean("coins");
+			boolean txpow  = zMessage.getBoolean("txpow");
+			boolean mmr    = zMessage.getBoolean("mmr");
+			boolean tree   = zMessage.getBoolean("tree");
 			
-			//Print the TxPowDB
-			TxPowDBPrinter.PrintDB(getMainDB().getTxPowDB());
+			JSONObject dets = InputHandler.getResponseJSON(zMessage);
 			
-			//Print the COinDB
-			CoinDBPrinter.Print(getMainDB().getCoinDB());
-			
-			if(getMainDB().getMainTree().getChainRoot() == null) {
-				MinimaLogger.log("NO BLOCKS!");
-				return;
+			if(coins) {
+				JSONArray coinjson = new JSONArray();
+				ArrayList<CoinDBRow> coindb = getMainDB().getCoinDB().getComplete();
+				for(CoinDBRow row : coindb) {
+					coinjson.add(row.toJSON());
+				}
+				
+				dets.put("coindbsize" , coindb.size()); 
+				dets.put("coindb", coinjson);
 			}
 			
-			//MMR
-			MinimaLogger.log("---");
-			MinimaLogger.log("MMR");
-			MinimaLogger.log("---");
-			MMRSet set = getMainDB().getMainTree().getChainTip().getMMRSet();
-			MMRPrint.Print(set);
+			if(txpow) {
+				JSONArray txpowjson = new JSONArray();
+				ArrayList<TxPOWDBRow> txpowdb = getMainDB().getTxPowDB().getAllTxPOWDBRow();
+				for(TxPOWDBRow row : txpowdb) {
+					txpowjson.add(row.toJSON());
+				}
+				
+				dets.put("txpowdbsize" , txpowdb.size()); 
+				dets.put("txpowdb", txpowjson);
+			}
+			
+			if(tree) {
+				SimpleBlockTreePrinter treeprint = new SimpleBlockTreePrinter(getMainDB().getMainTree());
+				String treeinfo    = treeprint.printtree();
+				BlockTree maintree = getMainDB().getMainTree();
 		
+				//Now check whether they are unspent..
+				JSONObject treejson = new JSONObject();
+				treejson.put("tree", treeinfo);
+				treejson.put("length", maintree.getAsList().size());
+				treejson.put("speed", maintree.getChainSpeed());
+				treejson.put("difficulty", maintree.getChainTip().getTxPow().getBlockDifficulty().to0xString());
+				treejson.put("weight", maintree.getChainRoot().getTotalWeight());
+				
+				dets.put("tree", treejson);
+			}
+			
+			if(mmr) {
+				JSONArray mmrarray = new JSONArray();
+				MMRSet set = getMainDB().getMainTree().getChainTip().getMMRSet();
+				while(set != null) {
+					mmrarray.add(set.toJSON());
+					set = set.getParent();	
+				}
+				dets.put("mmr", mmrarray);
+			}
+			
+			InputHandler.endResponse(zMessage, true, "");
+			
 		}else if(zMessage.isMessageType(CONSENSUS_PRINTCHAIN_TREE)){
 			if(zMessage.exists("auto")) {
 				getHandler().getMainHandler().getConsensusHandler().mPrintChain = zMessage.getBoolean("auto");
@@ -396,7 +428,7 @@ public class ConsensusPrint {
 			Hashtable<String, MiniNumber> totals_unconfirmed = new Hashtable<>();
 			
 			UserDB userdb = getMainDB().getUserDB();
-			ArrayList<CoinDBRow> coins = getMainDB().getCoinDB().getComplete();
+			ArrayList<CoinDBRow> coins = getMainDB().getCoinDB().getCompleteRelevant();
 			for(CoinDBRow coin : coins) {
 				//Is this one of ours ? Could be an import or someone elses 
 				boolean rel = userdb.isAddressRelevant(coin.getCoin().getAddress());
@@ -631,7 +663,7 @@ public class ConsensusPrint {
 			JSONObject allcoins = InputHandler.getResponseJSON(zMessage);
 			JSONArray totcoins = new JSONArray();
 			
-			ArrayList<CoinDBRow> coins = getMainDB().getCoinDB().getComplete();
+			ArrayList<CoinDBRow> coins = getMainDB().getCoinDB().getCompleteRelevant();
 			for(CoinDBRow coin : coins) {
 				boolean docheck = false;
 				if(type.equals("unspent") && !coin.isSpent()) {
@@ -799,9 +831,15 @@ public class ConsensusPrint {
 			status.put("tip", tip.getTxPowID().to0xString());
 			status.put("total", tip.getTxPow().getMMRTotal().toString());
 			
-			status.put("lastblock", tip.getTxPow().getBlockNumber());
+			status.put("lastblock", tip.getTxPow().getBlockNumber().toString());
 			status.put("lasttime", new Date(tip.getTxPow().getTimeSecs().getAsLong()*1000).toString());
+			
+			status.put("cascade", getMainDB().getMainTree().getCascadeNode().getTxPow().getBlockNumber().toString());
+			
 			status.put("difficulty", tip.getTxPow().getBlockDifficulty().to0xString());
+			
+			//COINDB
+			status.put("coindb", getMainDB().getCoinDB().getComplete().size());
 			
 			//TxPOWDB
 			status.put("txpowdb", getMainDB().getTxPowDB().getCompleteSize());

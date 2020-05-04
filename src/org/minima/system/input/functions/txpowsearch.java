@@ -10,7 +10,7 @@ public class txpowsearch extends CommandFunction{
 	public txpowsearch() {
 		super("txpowsearch");
 		
-		setHelp("(input:address) (output:address) (tokenid:tokenid)", "Search for TXPOW messages with address as an input or output or any tokenid","");
+		setHelp("(input:address) (output:address) (tokenid:tokenid)", "Search for TXPOW messages with given input, output or tokenid","");
 	}
 	
 	@Override

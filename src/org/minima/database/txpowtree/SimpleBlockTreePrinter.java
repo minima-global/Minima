@@ -131,7 +131,7 @@ public class SimpleBlockTreePrinter {
 	private String convertNodeToString(BlockTreeNode zNode) {
 		int slev 	= zNode.getSuperBlockLevel();
 		int clev 	= zNode.getCurrentLevel();
-		String weight= "{WEIGHT:"+zNode.getWeight()+"/"+zNode.getTotalWeight()+"} ";
+		String weight= "WEIGHT:"+zNode.getWeight()+"/"+zNode.getTotalWeight()+" ";
 		
 		TxPOW txpow = zNode.getTxPow();
 		MiniData parent  = txpow.getSuperParent(clev);

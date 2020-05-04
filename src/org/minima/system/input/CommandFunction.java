@@ -24,7 +24,7 @@ import org.minima.system.input.functions.keys;
 import org.minima.system.input.functions.network;
 import org.minima.system.input.functions.newaddress;
 import org.minima.system.input.functions.newscript;
-import org.minima.system.input.functions.printchain;
+import org.minima.system.input.functions.printdb;
 import org.minima.system.input.functions.printtree;
 import org.minima.system.input.functions.quit;
 import org.minima.system.input.functions.random;
@@ -75,7 +75,7 @@ public abstract class CommandFunction {
 		{
 			new backup(), new balance(), new connect(), new createtoken(), new disconnect(), new weblink(),
 			new gimme50(), new help(), new intro(), new automine(), new newaddress(), new coins(), new coinsimple(), new txpowinfo(), new keys(),
-			new newscript(), new printchain(), new printtree(), new quit(),new reconnect(), new runscript(), new cleanscript(), 
+			new newscript(), new printdb(), new printtree(), new quit(),new reconnect(), new runscript(), new cleanscript(), 
 			new send(), new status(), new test(), new trace(), new tutorial(), new history(), new tokens(),
 			new exportkey(), new importkey(), new exportcoin(), new importcoin(), new search(),
 			new chainsha(), new keepcoin(), new unkeepcoin(), new scripts(), new network(),

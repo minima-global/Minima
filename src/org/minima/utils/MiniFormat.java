@@ -6,6 +6,13 @@ public class MiniFormat {
 		//The Work String
 		String work = zJSON.trim();
 		
+		//Too long clogs it up.. 
+		int len = work.length();
+		if(len>100000) {
+			//TOO LONG...
+			return work;	
+		}
+		
 		//The Copy
 		String ret       = "";
 		int tabs         = 0;

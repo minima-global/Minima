@@ -9,7 +9,7 @@ public class extrascript extends CommandFunction{
 	public extrascript() {
 		super("extrascript");
 		
-		setHelp("[script]", "Add a new script, but do not keep all coins of that address.", "");
+		setHelp("[script]", "Add a new script to your database but do not consider all addresses relevant.", "");
 	}
 	
 	@Override

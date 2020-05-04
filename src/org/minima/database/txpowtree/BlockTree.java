@@ -69,8 +69,7 @@ public class BlockTree {
 		
 		//Do we have a parent..
 		if(parent == null) {
-			MinimaLogger.log("NO PARENT FOR BLOCK : "+zNode.getTxPow().getBlockNumber());
-			
+//			MinimaLogger.log("NO PARENT FOR BLOCK : "+zNode.getTxPow().getBlockNumber());
 			//No direct parent..  add to the pool and ask for parent
 			return false;
 		}

@@ -356,44 +356,42 @@ public class MinimaDB {
 	}
 	
 	public void scanMMRSetForCoins(MMRSet zMMRSet) {
+		//Cascade node has no parent MMR!
 		if(zMMRSet == null) {
-//			System.out.println("Scanning NULL MMRSET..! ");
 			return;
 		}
 		
-		//First check the MMR for any relevant coins..
+		//Check the MMR for any coins..
 		ArrayList<MMREntry> entries = zMMRSet.getZeroRow();
 		for(MMREntry mmrcoin : entries) {
 			if(!mmrcoin.getData().isHashOnly()) {
+				//Get the Coin..
 				Coin cc = mmrcoin.getData().getCoin();
+				
+				//Is it spent
+				boolean spent = mmrcoin.getData().isSpent();
 				
 				//Is the address one of ours..
 				boolean rel = getUserDB().isAddressRelevant(cc.getAddress());
 					
-				//Check the PREV State - could be a KEY we own..
+				//Check the PREV State - could be a KEY or ADDRESS we own..
 				if(!rel) {
 					rel = getUserDB().isStateListRelevant(mmrcoin.getData().getPrevState());
 				}
 				
 				//Keep it if it's relevant
 				if(rel) {
-					//It's to be kept..
+					//It's to be kept in the MMR past the cascade..
 					zMMRSet.addKeeper(mmrcoin.getEntry());
 				}
 				
-				//Do we have it or not..
-				CoinDBRow oldrow = getCoinDB().getCoinRow(cc.getCoinID());
-				if(oldrow == null && !rel) {
-					continue;
-				}
-				
-				//And add to our list..
+				//Add to our list - or return the already existing  version..
 				CoinDBRow inrow = getCoinDB().addCoinRow(cc);
+				inrow.setRelevant(rel);
 				
 				//Exists already - only want to update if something has changed..
-				boolean spent = mmrcoin.getData().isSpent();
+				//Same coin can be in the MMR for multiple blocks.. only do this ONCHANGE
 				if(!inrow.isInBlock() || inrow.isSpent() != spent) {
-					//Update
 					inrow.setIsSpent(spent);
 					inrow.setIsInBlock(true);
 					inrow.setInBlockNumber(zMMRSet.getBlockTime());
@@ -505,15 +503,6 @@ public class MinimaDB {
 	}
 	
 	/**
-	 * Is this the parent of the root of the chain.. ?
-	 * @param zTxPoWID
-	 * @return
-	 */
-	public boolean isRootParent(MiniData zTxPoWID) {
-		return zTxPoWID.isEqual(getMainTree().getChainRoot().getTxPow().getParentID());
-	}
-	
-	/**
 	 * Add it if it is not already in the list
 	 * 
 	 * @param zTxPOW
@@ -523,11 +512,6 @@ public class MinimaDB {
 		//That's that
 		return mTxPOWDB.addTxPOWDBRow(zTxPOW);
 	}
-	
-	
-//	public boolean isChainRoot() {
-//		return ( mMainTree.getChainRoot() != null );
-//	}
 	
 	public BlockTreeNode hardAddTxPOWBlock(TxPOW zTxPoW, MMRSet zMMR, boolean zCascade) {
 		//Add to the list
@@ -570,7 +554,7 @@ public class MinimaDB {
 		ArrayList<Coin> memcoins = getMempoolCoins();
 				
 		//Do we have any inputs with this address..
-		ArrayList<CoinDBRow> relevant = getCoinDB().getComplete();
+		ArrayList<CoinDBRow> relevant = getCoinDB().getCompleteRelevant();
 		for(CoinDBRow row : relevant) {
 			if(row.isInBlock() && !row.isSpent() && row.getCoin().getTokenID().isEqual(zTokenID)){
 				MiniNumber depth = top.sub(row.getInBlockNumber());
