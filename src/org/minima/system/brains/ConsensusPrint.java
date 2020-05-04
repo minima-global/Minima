@@ -12,7 +12,6 @@ import org.minima.GlobalParams;
 import org.minima.database.MinimaDB;
 import org.minima.database.coindb.CoinDBRow;
 import org.minima.database.mmr.MMREntry;
-import org.minima.database.mmr.MMRPrint;
 import org.minima.database.mmr.MMRSet;
 import org.minima.database.txpowdb.TxPOWDBRow;
 import org.minima.database.txpowtree.BlockTree;
@@ -637,58 +636,72 @@ public class ConsensusPrint {
 			InputHandler.endResponse(zMessage, true, "");
 		
 		}else if(zMessage.isMessageType(CONSENSUS_COINS)){
-			//Return all or some
-			String address = "";
-			if(zMessage.exists("address")) {
-				address = zMessage.getString("address");
-				if(address.startsWith("0x")) {
-					//It's a regular HASH address
-					address = new MiniData(address).to0xString();
-				}else if(address.startsWith("Mx")) {
-					//It's a Minima Address!
-					address = Address.convertMinimaAddress(address).to0xString();
-				}
+			boolean relevant   = zMessage.getBoolean("relevant");
+			
+			String address     = zMessage.getString("address");
+			String tokenid     = zMessage.getString("tokenid");
+			String amount      = zMessage.getString("amount");
+			String type        = zMessage.getString("type");
+			
+			//What gets checked..
+			boolean checkaddress  = !address.equals("");
+			boolean checktokenid  = !tokenid.equals("");
+			boolean checkamount   = !amount.equals("");
+			
+			if(address.startsWith("Mx")) {
+				//It's a Minima Address!
+				address = Address.convertMinimaAddress(address).to0xString();
 			}
 			
-			//What type..
-			String type = "unspent";
-			if(zMessage.exists("type")) {
-				type = zMessage.getString("type");
+			MiniData addr   = new MiniData(address);
+			MiniData tok    = new MiniData(tokenid);
+			MiniNumber amt  = MiniNumber.ZERO;
+			if(checkamount) {
+				amt = new MiniNumber(amount);
 			}
 			
-			//get the MMR
-			BlockTreeNode tip  		= getMainDB().getMainTree().getChainTip();
-			MMRSet baseset 			= tip.getMMRSet();
+			//Current TIP
+			BlockTreeNode tip  	 = getMainDB().getMainTree().getChainTip();
+//			MiniNumber minblock  = tip.getTxPow().getBlockNumber().sub(GlobalParams.MINIMA_CONFIRM_DEPTH);
+			MMRSet baseset 	     = tip.getMMRSet();//.getParentAtTime(minblock);
 			
-			JSONObject allcoins = InputHandler.getResponseJSON(zMessage);
-			JSONArray totcoins = new JSONArray();
+			//A list of all the found coins..
+			JSONArray totcoins  = new JSONArray();
 			
-			ArrayList<CoinDBRow> coins = getMainDB().getCoinDB().getCompleteRelevant();
+			//Cycle..
+			ArrayList<CoinDBRow> coins = getMainDB().getCoinDB().getComplete();
 			for(CoinDBRow coin : coins) {
-				boolean docheck = false;
-				if(type.equals("unspent") && !coin.isSpent()) {
-					docheck = true;
+				//RELEVANT..
+				if(relevant && !coin.isRelevant()) {continue;}
+				
+				//SPEND TYPE
+				if(type.equals("spent") && !coin.isSpent()) {continue;}
+				if(type.equals("unspent") && coin.isSpent()) {continue;}
+				
+				//ADDRESS
+				if(checkaddress && !coin.getCoin().getAddress().isEqual(addr)) {
+					continue;
 				}
 				
-				if(type.equals("spent") && coin.isSpent()) {
-					docheck = true;
+				//TOKEN
+				if(checktokenid && !coin.getCoin().getTokenID().isEqual(tok)) {
+					continue;
 				}
 				
-				if(type.equals("all")) {
-					docheck = true;
+				//AMOUNT
+				if(checkamount && !coin.getCoin().getAmount().isEqual(amt)) {
+					continue;
 				}
 				
-				//Do we even check it..
-				if(docheck) {
-					if(address.equals("")) {
-						totcoins.add(baseset.getProof(coin.getMMREntry()).toJSON());	
-					}else if(address.equals(coin.getCoin().getAddress().to0xString())) {
-						totcoins.add(baseset.getProof(coin.getMMREntry()).toJSON());
-					}
-				}
+				//DEEP ENOUGH - for now add any found
+//				if(coin.getInBlockNumber().isLessEqual(minblock)) {
+					//OK - FOUND ONE!
+					totcoins.add(baseset.getProof(coin.getMMREntry()).toJSON());	
+//				}
 			}
 			
 			//Add to the main JSON
+			JSONObject allcoins = InputHandler.getResponseJSON(zMessage);
 			allcoins.put("coins", totcoins);
 			
 			//Add it to the output
