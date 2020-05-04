@@ -8,7 +8,7 @@ public class printdb extends CommandFunction{
 
 	public printdb() {
 		super("printdb");
-		setHelp("(coins) (txpow) (mmr) (tree)", "Print out sections of the database. Blank prints ALL. Useful DEBUG function.", "");
+		setHelp("(coins) (txpow) (mmr) (tree)", "Print out sections of the database. Useful DEBUG function. TREE ONLY works on command line.. :(", "");
 	}
 	
 	@Override
