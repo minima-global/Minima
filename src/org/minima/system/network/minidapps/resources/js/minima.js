@@ -348,7 +348,7 @@ function startMinimaPolling(){
 	pollMinimaFunction();
 	
 	//Check every 5 secs
-	setInterval(function(){pollMinimaFunction();},5000);
+	setInterval(function(){pollMinimaFunction();},10000);
 }
 
 function pollMinimaFunction(){
