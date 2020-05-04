@@ -138,7 +138,6 @@ public class SimpleBlockTreePrinter {
 		MiniData parent2 = txpow.getSuperParent(clev+1);
 				
 		String parents = "[blk:"+txpow.getBlockNumber()+"] "
-//						 +"diff:"+txpow.getBlockDifficulty().toShort0xString(16)+" "
 					     +"txpowid:"+zNode.getTxPowID().to0xString(16)+" "
 						 +"[parent:"+clev+"]"+parent.to0xString(16)+" "
 						 +"[parent:"+(clev+1)+"]"+parent2.to0xString(16)
