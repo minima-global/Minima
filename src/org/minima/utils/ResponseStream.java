@@ -33,26 +33,13 @@ public class ResponseStream {
 	 * The final returned response
 	 */
 	String mFinalResponse = "";
-	
-	/**
-	 * Is this the LOCAL machine..
-	 */
-	boolean mIsLocal = false;
-	
+		
 	/**
 	 * Main Constructor
 	 */
 	public ResponseStream(){
 		//Not finished yet
 		mFinished = false;
-	}
-
-	public void setLocalMachine(){
-		mIsLocal = true;
-	}
-	
-	public boolean isLocal() {
-		return mIsLocal;
 	}
 	
 	public void setFunction(String zFunction) {
@@ -80,7 +67,7 @@ public class ResponseStream {
 		mJSON.put("response", mDataJSON);
 	
 		//Create the final response
-		mFinalResponse = mJSON.toString().replaceAll ("\\\\/", "/");
+		mFinalResponse = mJSON.toString().replaceAll("\\\\/", "/");
 		
 		//It's finished
 		mFinished = true;
@@ -92,10 +79,6 @@ public class ResponseStream {
 		
 		//It's finished
 		mFinished = true;
-	}
-	
-	public boolean isFinished() {
-		return mFinished;
 	}
 	
 	/**

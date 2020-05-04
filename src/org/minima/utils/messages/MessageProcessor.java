@@ -27,11 +27,6 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
      */
     private boolean mRunning;
     
-    /**
-	 * All Timer messages in this stack
-	 */
-	LinkedList<TimerMessage> mTimerMessages;
-	
 	/**
 	 * LOG messages ?
 	 */
@@ -51,10 +46,8 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
     	mName = zName;
     	
     	mRunning = true;
-        
-        mTimerMessages = new LinkedList<>();
-        
-        mMainThread = new Thread(this,zName);
+    
+    	mMainThread = new Thread(this,zName);
         mMainThread.start();
     }
     
@@ -68,10 +61,18 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
     
     public void stopMessageProcessor(){
         mRunning = false;
+        
+        //Wake it up if is locked..
+        notifyLock();
     }
     
-    public synchronized void PostTimerMessage(TimerMessage zMessage) {
-    	mTimerMessages.add(zMessage);
+    public void PostTimerMessage(TimerMessage zMessage) {    	
+    	//Set this is the processor..
+    	zMessage.setProcessor(this);
+    	
+    	//Create a Thread that fires//
+    	Thread timer = new Thread(zMessage);
+    	timer.start();
     }
     
     public void run() {
@@ -96,44 +97,31 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
                     processMessage(msg);
                     
                 }catch(Exception exc){
-//                    MinimaLogger.log("Error processing message : "+msg);
                     exc.printStackTrace();
                     InputHandler.endResponse(msg, false, "SYSTEM ERROR PROCESSING : "+msg+" exception:"+exc);
                 } 
-                
-                //Timer messages..
-                checkTimerMessages();
                 
                 //Are there more messages..
                 msg = getNextMessage();
             }
             
-            //Check timer..
-            checkTimerMessages();
-            
-            //Small Pause..
-            try {Thread.sleep(20);} catch (InterruptedException ex) {}
-        }
-    }
-    
-    private synchronized void checkTimerMessages() {
-    	//Check Timer Messages
-        long timenow = System.currentTimeMillis();
-        ArrayList<TimerMessage> remove = new ArrayList<>();
-        for(TimerMessage tm : mTimerMessages) {
-        	if(timenow > tm.getTimer()) {
-        		//It's ready post it
-        		PostMessage(tm);
-        		
-        		//Remove it from the list
-        		remove.add(tm);
-        	}
+            //Wait.. for a notify.. 
+            try {
+            	synchronized (mLock) {
+            		//Last check.. inside the LOCK
+            		if(!isNextMessage() && mRunning) {
+//            			MinimaLogger.log("PROCESSOR "+mName+" WAITING");
+            			
+            			//Wait for a message to be posted on the stack
+            			mLock.wait();	
+            		}
+				}
+			} catch (InterruptedException e) {
+				MinimaLogger.log("MESSAGE_PROCESSOR "+mName+" INTERRUPTED");
+			}
         }
         
-        //Remove used..
-        for(TimerMessage rem : remove) {
-        	mTimerMessages.remove(rem);
-        }
+//        MinimaLogger.log("MESSAGE_PROCESSOR "+mName+" STOPPED");
     }
     
     /**

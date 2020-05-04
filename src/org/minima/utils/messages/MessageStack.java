@@ -6,6 +6,8 @@ package org.minima.utils.messages;
 import java.util.LinkedList;
 
 /**
+ * Thread Safe Message Stack
+ * 
  * @author Spartacus Rex
  *
  */
@@ -15,6 +17,12 @@ public class MessageStack{
 	 * All messages in this stack
 	 */
 	private LinkedList<Message> mMessages;
+	
+	/**
+	 * The LOCK Object
+	 */
+	protected Object mLock = new Object();
+	
 	
 	/**
 	 * Main Constructor
@@ -34,32 +42,65 @@ public class MessageStack{
     /**
      * Synchronized function to add a Message onto the Stack
      */
-    public synchronized void PostMessage(Message zMessage){
-        mMessages.add(zMessage);
+    public void PostMessage(Message zMessage){
+    	//Multiple threads can call this..
+    	synchronized(mMessages) {
+    		mMessages.add(zMessage);	
+    	}
+    	
+    	//There is something in the stack
+        notifyLock();
     }
     
+    protected void notifyLock(){
+    	//Wake the Thread..
+        synchronized (mLock) {
+    		mLock.notifyAll();	
+		}
+    }
+    
+    
     /**
-     * Get the first message on the stack, if there is one
+     * Is there a next message!
+     * @return
      */
-    protected synchronized Message getNextMessage(){
-        if(!mMessages.isEmpty()){
-            //Get the first message
-            Message msg = mMessages.getFirst();
-            
-            //Remove it from the list
-            mMessages.remove(msg);
-            
-            //Return it.
-            return msg;
-        }
+    protected boolean isNextMessage(){
+    	boolean avail;
+    	
+    	synchronized (mMessages) {
+			avail = !mMessages.isEmpty();
+		}
+    	
+    	return avail;
+    }
         
-        return null;
+    /**
+     * Get the first message on the stack, if there is one
+     */
+    protected Message getNextMessage(){
+    	Message nxtmsg = null;
+    	
+    	synchronized (mMessages) {
+    		if(!mMessages.isEmpty()){
+                //Get the first message
+                nxtmsg = mMessages.getFirst();
+                
+                //Remove it from the list
+                mMessages.remove(nxtmsg);
+    		}	
+		}
+    	
+        return nxtmsg;
     }
     
     /**
      * Get the first message on the stack, if there is one
      */
-    protected synchronized int getSize(){
-        return mMessages.size();
+    protected int getSize(){
+        int len;
+        synchronized (mMessages) {
+			len = mMessages.size();
+		}
+    	return len;
     }
 }
