@@ -72,10 +72,6 @@ public class SyncPackage implements Streamable{
 		//Get the cascaded version..
 		BlockTree newtree = casc.getCascadeTree();
 		
-//		SimpleBlockTreePrinter print = new SimpleBlockTreePrinter(newtree);
-//		String tp = print.printtree();
-//		System.out.println(tp);
-		
 		//Whats the weight..
 		BigInteger totweight = newtree.getChainRoot().getTotalWeight();
 		
