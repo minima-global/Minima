@@ -17,15 +17,18 @@ public class JavaCoinDBRow implements CoinDBRow{
 	
 	MiniInteger mEntryNumber  = new MiniInteger(0);
 	
+	boolean mRelevant;
+	
 	public JavaCoinDBRow(Coin zCoin) {
 		mCoin 			= zCoin;
 		mIsSpent 		= false;
 		mIsInBlock		= false;
+		mRelevant       = false;
 	}
 
 	@Override
 	public String toString() {
-		return "MMR:"+getMMREntry()+" spent:"+mIsSpent+" inblock:"+mIsInBlock+" block:"+mInBlockNumber+" "+mCoin;
+		return "MMR:"+getMMREntry()+" spent:"+mIsSpent+" relevant:"+mRelevant+" isinblock:"+mIsInBlock+" inblock:"+mInBlockNumber+" "+mCoin;
 	}
 	
 	@Override
@@ -71,5 +74,15 @@ public class JavaCoinDBRow implements CoinDBRow{
 	@Override
 	public MiniInteger getMMREntry() {
 		return mEntryNumber;
+	}
+
+	@Override
+	public void setRelevant(boolean zRelevant) {
+		mRelevant = zRelevant;
+	}
+
+	@Override
+	public boolean isRelevant() {
+		return mRelevant;
 	}
 }

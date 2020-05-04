@@ -20,4 +20,7 @@ public interface CoinDBRow {
 	
 	public void setMMREntry(MiniInteger zEntry);
 	public MiniInteger getMMREntry();
+	
+	public void setRelevant(boolean zRelevant);
+	public boolean isRelevant();
 }

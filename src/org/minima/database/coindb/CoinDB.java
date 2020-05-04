@@ -20,6 +20,12 @@ public interface CoinDB {
 	ArrayList<CoinDBRow> getComplete();
 	
 	/**
+	 * SELECT *
+	 * @return
+	 */
+	ArrayList<CoinDBRow> getCompleteRelevant();
+	
+	/**
 	 * Get the coin row with this CoinID or NULL if none present
 	 * 
 	 * @param zCoin

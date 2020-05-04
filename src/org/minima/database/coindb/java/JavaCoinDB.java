@@ -10,8 +10,6 @@ import org.minima.objects.base.MiniNumber;
 
 public class JavaCoinDB implements CoinDB{
 
-	public static long COINDB_LIMIT = 1000;
-	
 	ArrayList<CoinDBRow> mRows;
 	
 	public JavaCoinDB() {
@@ -28,6 +26,19 @@ public class JavaCoinDB implements CoinDB{
 		return mRows;
 	}
 
+	@Override
+	public ArrayList<CoinDBRow> getCompleteRelevant() {
+		ArrayList<CoinDBRow> retlist = new ArrayList<>();
+		
+		for(CoinDBRow row : mRows) {
+			if(row.isRelevant()) {
+				retlist.add(row);
+			}
+		}
+		
+		return retlist;
+	}
+	
 	@Override
 	public CoinDBRow getCoinRow(MiniData zCoinID) {
 		for(CoinDBRow row : mRows) {
@@ -56,7 +67,7 @@ public class JavaCoinDB implements CoinDB{
 	public void removeOldSpentCoins(MiniNumber zMinBlock) {
 		ArrayList<CoinDBRow> newrows = new ArrayList<>();
 		for(CoinDBRow row : mRows) {
-			if(!row.isSpent()) {
+			if(!row.isSpent() && row.isRelevant()) {
 				newrows.add(row);
 			}else if(row.getInBlockNumber().isMoreEqual(zMinBlock)) {
 				newrows.add(row);
@@ -80,6 +91,5 @@ public class JavaCoinDB implements CoinDB{
 		
 		return found;
 	}
-
 	
 }
