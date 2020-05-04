@@ -61,10 +61,12 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
     
     public void stopMessageProcessor(){
         mRunning = false;
+        
+        //Wake it up if is locked..
         notifyLock();
     }
     
-    public synchronized void PostTimerMessage(TimerMessage zMessage) {    	
+    public void PostTimerMessage(TimerMessage zMessage) {    	
     	//Set this is the processor..
     	zMessage.setProcessor(this);
     	
@@ -95,7 +97,6 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
                     processMessage(msg);
                     
                 }catch(Exception exc){
-                    //MinimaLogger.log("Error processing message : "+msg);
                     exc.printStackTrace();
                     InputHandler.endResponse(msg, false, "SYSTEM ERROR PROCESSING : "+msg+" exception:"+exc);
                 } 
@@ -110,6 +111,8 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
             		//Last check.. inside the LOCK
             		if(!isNextMessage() && mRunning) {
 //            			MinimaLogger.log("PROCESSOR "+mName+" WAITING");
+            			
+            			//Wait for a message to be posted on the stack
             			mLock.wait();	
             		}
 				}

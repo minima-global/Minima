@@ -6,6 +6,8 @@ package org.minima.utils.messages;
 import java.util.LinkedList;
 
 /**
+ * Thread Safe Message Stack
+ * 
  * @author Spartacus Rex
  *
  */
@@ -40,9 +42,13 @@ public class MessageStack{
     /**
      * Synchronized function to add a Message onto the Stack
      */
-    public synchronized void PostMessage(Message zMessage){
-        mMessages.add(zMessage);
-        
+    public void PostMessage(Message zMessage){
+    	//Multiple threads can call this..
+    	synchronized(mMessages) {
+    		mMessages.add(zMessage);	
+    	}
+    	
+    	//There is something in the stack
         notifyLock();
     }
     
@@ -58,32 +64,43 @@ public class MessageStack{
      * Is there a next message!
      * @return
      */
-    protected synchronized boolean isNextMessage(){
-    	return !mMessages.isEmpty();
+    protected boolean isNextMessage(){
+    	boolean avail;
+    	
+    	synchronized (mMessages) {
+			avail = !mMessages.isEmpty();
+		}
+    	
+    	return avail;
     }
         
     /**
      * Get the first message on the stack, if there is one
      */
-    protected synchronized Message getNextMessage(){
-        if(!mMessages.isEmpty()){
-            //Get the first message
-            Message msg = mMessages.getFirst();
-            
-            //Remove it from the list
-            mMessages.remove(msg);
-            
-            //Return it.
-            return msg;
-        }
-        
-        return null;
+    protected Message getNextMessage(){
+    	Message nxtmsg = null;
+    	
+    	synchronized (mMessages) {
+    		if(!mMessages.isEmpty()){
+                //Get the first message
+                nxtmsg = mMessages.getFirst();
+                
+                //Remove it from the list
+                mMessages.remove(nxtmsg);
+    		}	
+		}
+    	
+        return nxtmsg;
     }
     
     /**
      * Get the first message on the stack, if there is one
      */
-    protected synchronized int getSize(){
-        return mMessages.size();
+    protected int getSize(){
+        int len;
+        synchronized (mMessages) {
+			len = mMessages.size();
+		}
+    	return len;
     }
 }
