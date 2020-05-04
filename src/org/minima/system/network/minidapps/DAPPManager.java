@@ -92,7 +92,7 @@ public class DAPPManager extends SystemHandler {
 	    	String minstring = new String(minima, Charset.forName("UTF-8"));
 	    
 	    	//Now replace the center string..
-		    String editstring = minstring.replace("#####", "var MINIDAPPS_MINIMA_HOST = \""+hostport+"\";");
+		    String editstring = minstring.replace("######", "var MINIMA_MINIDAPP_HOST = \""+hostport+"\";");
 	    
 		    //Now convert to bytes..
 		    mMINIMAJS = editstring.getBytes();

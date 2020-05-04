@@ -14,14 +14,22 @@
 /**
  * Are we running in MINIDAPP mode
  */
-var MINIDAPPS_MINIMA      = true;
+var MINIMA_IS_MINIDAPP    = true;
 
-//var MINIDAPPS_MINIMA_HOST = "127.0.0.1:8999";
 /**
- * This will be converted to the IP.. automagically
+ * When running as MiniDAPP Where is the Server host RPC
+ * 
+ * This replaced AUTOMATICALLY by the Minima App..
  */
 
-#####
+######
+
+//var MINIMA_MINIDAPP_HOST = "127.0.0.1:8999";
+
+/**
+ * MiFi Proxy Server for initial connect
+ */
+var MIFIHOST              = "mifi.minima.global";
 
 /**
  * GLOBAL VARIABLES
@@ -30,11 +38,8 @@ var MAIN_DIV 		= "MINIMA_MAIN_DIV";
 var OVERLAY_DIV 	= "MINIMA_OVERLAY_DIV";
 var LOGOUT_BUTTON   = "MINIMA_LOGOUT_BUTTON";
 
-//var MIFIHOST = "127.0.0.1";
-//var MIFIHOST = "10.0.121.68";
-var MIFIHOST = "mifi.minima.global";
 
-var WEBSOCK = null;
+var WEBSOCK         = null;
 var MINIMACONNECTED = false;
 
 /**
@@ -56,7 +61,7 @@ var Minima = {
 		Minimalog("Initialisation..");
 		
 		//Are we running in MINDAPPS MODE
-		if(!MINIDAPPS_MINIMA){
+		if(!MINIMA_IS_MINIDAPP){
 			//Create the Overlay Divs - but don't show them yet
 			createOverlayDivs();
 			
@@ -86,7 +91,7 @@ var Minima = {
 			hide(LOGOUT_BUTTON);
 		}else{
 			//Use it..
-			Minima.host = MINIDAPPS_MINIMA_HOST;
+			Minima.host = MINIMA_MINIDAPP_HOST;
 			
 			//Do the first call..
 			initialStatus();
@@ -241,7 +246,7 @@ function initialStatus(){
 	    Minima.block   = parseInt(Minima.status.lastblock,10);
 	   
 	    //Hide the Divs..
-	    if(!MINIDAPPS_MINIMA){
+	    if(!MINIMA_IS_MINIDAPP){
 		    hide(MAIN_DIV);
 		    hide(OVERLAY_DIV);
 		    show(LOGOUT_BUTTON);
@@ -263,6 +268,8 @@ function advancedConnect(){
 	
 	//Default to local host
 	if(host == ''){
+		alert("Connecting to 127.0.0.1:8999");
+		
 		host = "127.0.0.1:8999";
 	}
 	
@@ -659,7 +666,7 @@ function createOverlayDivs(){
 	
 	button.innerHTML 		= "<table>\n" + 
 	"	<tr>\n" + 
-	"		<td align=center><img width=50 src='./images/icon.png'></td>\n" + 
+	"		<td align=center><img width=50 src='http://mifi.minima.global/images/icon.png'></td>\n" + 
 	"	</tr>\n" + 
 	"	<tr>\n" + 
 	"		<td style='font-size:16;text-align:left;vertical-align:middle;'>MIFI LOGOUT</td>\n" + 
@@ -684,19 +691,19 @@ function createOverlayDivs(){
 }
 
 function setMainDiv(html){
-	if(!MINIDAPPS_MINIMA){
+	if(!MINIMA_IS_MINIDAPP){
 		document.getElementById(MAIN_DIV).innerHTML = html;	
 	}
 }
 
 function show(id){
-	if(!MINIDAPPS_MINIMA){
+	if(!MINIMA_IS_MINIDAPP){
 		document.getElementById(id).style.display = "block";
 	}
 }
 
 function hide(id){
-	if(!MINIDAPPS_MINIMA){
+	if(!MINIMA_IS_MINIDAPP){
 		document.getElementById(id).style.display = "none";
 	}
 }
