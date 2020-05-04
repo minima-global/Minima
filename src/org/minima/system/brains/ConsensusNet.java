@@ -123,7 +123,6 @@ public class ConsensusNet {
 					}else {
 						MinimaLogger.log("NO HARD RESET ALLOWED.. ");
 						hardreset = false;
-						
 						return;
 					}
 				}
@@ -202,9 +201,8 @@ public class ConsensusNet {
 			//Get the ID
 			MiniData txpowid = (MiniData) zMessage.getObject("txpowid");
 			
-			//Do we have it..?
-			TxPOW txpow = getMainDB().getTxPOW(txpowid);
-			if(txpow == null && !getMainDB().isRootParent(txpowid)) {
+			//Do we have it..
+			if(getMainDB().getTxPOW(txpowid) == null) {
 				//We don't have it, get it..
 				sendNetMessage(zMessage, NetClientReader.NETMESSAGE_TXPOW_REQUEST, txpowid);
 			}
@@ -277,7 +275,7 @@ public class ConsensusNet {
 			MiniData parentID = txpow.getParentID();
 			if(getMainDB().getTxPOW(parentID)==null && !getMainDB().isRootParent(parentID)) {
 				//We don't have it, get it..
-				MinimaLogger.log("Request Parent TxPOW @ "+txpow.getBlockNumber()+" parent:"+parentID); 
+				MinimaLogger.log("Request Parent TxPoW @ "+txpow.getBlockNumber()+" parent:"+parentID); 
 				sendNetMessage(zMessage, NetClientReader.NETMESSAGE_TXPOW_REQUEST, parentID);
 			}
 
@@ -285,7 +283,7 @@ public class ConsensusNet {
 			ArrayList<MiniData> txns = txpow.getBlockTransactions();
 			for(MiniData txn : txns) {
 				if(getMainDB().getTxPOW(txn) == null ) {
-					MinimaLogger.log("REQUEST MISSING TXPOW IN BLOCK ("+txpow.getBlockNumber()+") "+txn);
+					MinimaLogger.log("Request missing TxPoW in block "+txpow.getBlockNumber()+" "+txn);
 					
 					//We don't have it, get it..
 					sendNetMessage(zMessage, NetClientReader.NETMESSAGE_TXPOW_REQUEST, txn);

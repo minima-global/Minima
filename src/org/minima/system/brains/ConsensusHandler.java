@@ -224,6 +224,9 @@ public class ConsensusHandler extends SystemHandler {
 				return;
 			}
 			
+			//Double check added...
+			getMainDB().addNewTxPow(txpow);
+			
 			//Back it up!
 			getMainHandler().getBackupManager().backupTxpow(txpow);
 			
