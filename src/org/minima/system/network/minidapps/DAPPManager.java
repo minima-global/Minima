@@ -30,6 +30,7 @@ import org.minima.utils.json.JSONObject;
 import org.minima.utils.json.parser.JSONParser;
 import org.minima.utils.json.parser.ParseException;
 import org.minima.utils.messages.Message;
+import org.nanohttpd.protocols.http.NanoHTTPD;
 
 public class DAPPManager extends SystemHandler {
 
@@ -39,6 +40,7 @@ public class DAPPManager extends SystemHandler {
 	String MINIDAPPS_FOLDER     = "";
 	
 	DAPPServer mDAPPServer;
+	NanoDAPPServer mNanoDAPPServer;
 	
 	//The Edited minima.js file..
 	byte[] mMINIMAJS = new byte[0];
@@ -105,10 +107,18 @@ public class DAPPManager extends SystemHandler {
 		//Calculate the current MiniDAPPS
 		recalculateMiniDAPPS();
 		
-		///Start the DAPP server
-		mDAPPServer = new DAPPServer(zPort,this);
-		Thread tt = new Thread(mDAPPServer, "DAPP Server");
-		tt.start();
+//		///Start the DAPP server
+//		mDAPPServer = new DAPPServer(zPort,this);
+//		Thread tt = new Thread(mDAPPServer, "DAPP Server");
+//		tt.start();
+		
+		mNanoDAPPServer = new NanoDAPPServer(zPort);
+		try {
+			mNanoDAPPServer.start(NanoHTTPD.SOCKET_READ_TIMEOUT, false);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	//Use the RPC server for now..
@@ -121,7 +131,8 @@ public class DAPPManager extends SystemHandler {
 	}
 	
 	public void stop() {
-		mDAPPServer.stop();
+//		mDAPPServer.stop();
+		mNanoDAPPServer.stop();
 		
 		stopMessageProcessor();
 	}
