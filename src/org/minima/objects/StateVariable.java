@@ -4,13 +4,8 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-import org.minima.kissvm.Contract;
-import org.minima.kissvm.values.Value;
 import org.minima.objects.base.MiniByte;
-import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniScript;
-import org.minima.utils.BaseConverter;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONObject;
 

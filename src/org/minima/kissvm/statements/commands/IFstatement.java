@@ -7,11 +7,9 @@ import java.util.ArrayList;
 
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
-import org.minima.kissvm.expressions.ConstantExpression;
 import org.minima.kissvm.expressions.Expression;
 import org.minima.kissvm.statements.Statement;
 import org.minima.kissvm.statements.StatementBlock;
-import org.minima.kissvm.values.BooleanValue;
 
 /**
  * @author Spartacus Rex

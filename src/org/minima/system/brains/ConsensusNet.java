@@ -6,7 +6,6 @@ import java.util.ArrayList;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.mmr.MMRSet;
-import org.minima.database.txpowdb.TxPOWDBRow;
 import org.minima.database.txpowtree.BlockTreeNode;
 import org.minima.objects.TxPOW;
 import org.minima.objects.base.MiniByte;

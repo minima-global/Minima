@@ -3,7 +3,6 @@
  */
 package org.minima.kissvm.functions.base;
 
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 
 import org.minima.kissvm.Contract;
@@ -11,7 +10,6 @@ import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.expressions.Expression;
 import org.minima.kissvm.functions.MinimaFunction;
 import org.minima.kissvm.values.HEXValue;
-import org.minima.kissvm.values.ScriptValue;
 import org.minima.kissvm.values.Value;
 
 /**

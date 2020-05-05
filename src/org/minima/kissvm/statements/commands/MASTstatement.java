@@ -4,17 +4,13 @@ import java.util.List;
 
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
-import org.minima.kissvm.exceptions.MinimaParseException;
 import org.minima.kissvm.expressions.Expression;
 import org.minima.kissvm.statements.Statement;
 import org.minima.kissvm.statements.StatementBlock;
 import org.minima.kissvm.statements.StatementParser;
 import org.minima.kissvm.tokens.Token;
 import org.minima.kissvm.values.HEXValue;
-import org.minima.kissvm.values.ScriptValue;
-import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
-import org.minima.objects.base.MiniData;
 import org.minima.objects.proofs.ScriptProof;
 
 public class MASTstatement implements Statement {

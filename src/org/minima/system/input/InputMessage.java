@@ -2,8 +2,8 @@ package org.minima.system.input;
 
 import java.util.ArrayList;
 
-import org.minima.utils.ResponseStream;
 import org.minima.utils.MinimaLogger;
+import org.minima.utils.ResponseStream;
 import org.minima.utils.messages.Message;
 
 /**

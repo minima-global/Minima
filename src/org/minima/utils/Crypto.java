@@ -6,8 +6,6 @@ package org.minima.utils;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.math.BigInteger;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 
 import org.minima.objects.base.MiniData;
 import org.minima.utils.digest.Digest;

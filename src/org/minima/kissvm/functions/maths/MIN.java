@@ -9,7 +9,6 @@ import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.expressions.Expression;
 import org.minima.kissvm.functions.MinimaFunction;
-import org.minima.kissvm.functions.cast.HEX;
 import org.minima.kissvm.values.Value;
 
 /**

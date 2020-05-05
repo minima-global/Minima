@@ -44,7 +44,6 @@ import org.minima.system.backup.SyncPackage;
 import org.minima.system.backup.SyncPacket;
 import org.minima.system.bootstrap.GenesisTxPOW;
 import org.minima.system.brains.ConsensusHandler;
-import org.minima.system.input.InputHandler;
 import org.minima.system.input.functions.gimme50;
 import org.minima.system.txpow.TxPoWChecker;
 import org.minima.system.txpow.TxPoWMiner;

@@ -1,25 +1,16 @@
 package org.minima.system.brains;
 
 import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 
 import org.minima.database.MinimaDB;
-import org.minima.database.coindb.CoinDBRow;
-import org.minima.database.mmr.MMREntry;
 import org.minima.database.mmr.MMRSet;
 import org.minima.database.txpowdb.TxPOWDBRow;
 import org.minima.database.txpowdb.TxPowDB;
 import org.minima.database.txpowtree.BlockTreeNode;
-import org.minima.database.userdb.UserDB;
 import org.minima.database.userdb.java.JavaUserDB;
-import org.minima.objects.Address;
-import org.minima.objects.Coin;
 import org.minima.objects.TxPOW;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
@@ -28,7 +19,6 @@ import org.minima.system.backup.BackupManager;
 import org.minima.system.backup.SyncPackage;
 import org.minima.system.backup.SyncPacket;
 import org.minima.utils.MinimaLogger;
-import org.minima.utils.Streamable;
 import org.minima.utils.messages.Message;
 
 public class ConsensusBackup {

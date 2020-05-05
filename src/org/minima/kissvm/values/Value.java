@@ -3,11 +3,6 @@
  */
 package org.minima.kissvm.values;
 
-import java.math.BigInteger;
-
-import org.minima.kissvm.Contract;
-import org.minima.kissvm.exceptions.MinimaParseException;
-import org.minima.kissvm.expressions.ConstantExpression;
 import org.minima.kissvm.tokens.Token;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;

@@ -1,12 +1,10 @@
 package org.minima.objects.base;
 
 import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
 
 import org.minima.kissvm.Contract;
-import org.minima.utils.Streamable;
 
 public class MiniScript extends MiniData {
 	

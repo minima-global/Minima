@@ -10,10 +10,8 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.security.SecureRandom;
-import java.util.Random;
 
 import org.minima.utils.BaseConverter;
-import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 
 /**

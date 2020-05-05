@@ -1,7 +1,6 @@
 package org.minima.system.input.functions;
 
 import org.minima.system.brains.ConsensusPrint;
-import org.minima.system.brains.ConsensusUser;
 import org.minima.system.input.CommandFunction;
 
 public class scripts extends CommandFunction {

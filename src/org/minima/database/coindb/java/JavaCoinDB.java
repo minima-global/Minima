@@ -7,7 +7,6 @@ import org.minima.database.coindb.CoinDBRow;
 import org.minima.objects.Coin;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
-import org.minima.utils.MinimaLogger;
 
 public class JavaCoinDB implements CoinDB{
 

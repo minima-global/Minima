@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import org.minima.kissvm.exceptions.MinimaParseException;
-import org.minima.kissvm.expressions.GlobalExpression;
 import org.minima.kissvm.functions.MinimaFunction;
 
 /**

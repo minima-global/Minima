@@ -2,7 +2,6 @@ package org.minima.system.input.functions;
 
 import org.minima.system.brains.ConsensusPrint;
 import org.minima.system.input.CommandFunction;
-import org.minima.utils.messages.Message;
 
 public class status extends CommandFunction {
 

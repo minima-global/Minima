@@ -2,7 +2,6 @@ package org.minima.system.network.minidapps;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -25,7 +24,6 @@ import org.minima.system.network.minidapps.hexdata.iconpng;
 import org.minima.system.network.minidapps.hexdata.indexhtml;
 import org.minima.system.network.minidapps.hexdata.installdapphtml;
 import org.minima.system.network.minidapps.hexdata.minidappscss;
-import org.minima.system.network.minidapps.hexdata.minimajs;
 import org.minima.system.network.minidapps.hexdata.tilegreyjpeg;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;

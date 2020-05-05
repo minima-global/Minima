@@ -9,7 +9,6 @@ import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.expressions.Expression;
 import org.minima.kissvm.statements.Statement;
-import org.minima.kissvm.values.Value;
 
 /**
  * @author Spartacus Rex

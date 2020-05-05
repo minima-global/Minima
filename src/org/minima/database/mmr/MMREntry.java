@@ -3,9 +3,6 @@ package org.minima.database.mmr;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.math.RoundingMode;
 
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniInteger;

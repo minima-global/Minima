@@ -6,12 +6,10 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 
-import org.minima.GlobalParams;
 import org.minima.database.mmr.MMRSet;
 import org.minima.database.txpowtree.BlockTree;
 import org.minima.database.txpowtree.BlockTreeNode;
 import org.minima.database.txpowtree.MultiLevelCascadeTree;
-import org.minima.database.txpowtree.SimpleBlockTreePrinter;
 import org.minima.objects.TxPOW;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.Streamable;

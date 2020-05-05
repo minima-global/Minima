@@ -4,8 +4,6 @@ import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.functions.MinimaFunction;
 import org.minima.kissvm.values.HEXValue;
-import org.minima.kissvm.values.NumberValue;
-import org.minima.kissvm.values.ScriptValue;
 import org.minima.kissvm.values.Value;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.proofs.Proof;

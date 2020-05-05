@@ -2,18 +2,9 @@ package org.minima.system.input.functions;
 
 import java.util.ArrayList;
 
-import org.minima.database.mmr.MMRData;
-import org.minima.database.mmr.MMREntry;
-import org.minima.database.mmr.MMRProof;
-import org.minima.database.mmr.MMRSet;
-import org.minima.kissvm.Contract;
-import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniScript;
-import org.minima.system.brains.ConsensusBackup;
 import org.minima.system.brains.ConsensusUser;
 import org.minima.system.input.CommandFunction;
-import org.minima.utils.MiniFormat;
 import org.minima.utils.messages.Message;
 
 public class chainsha extends CommandFunction{
