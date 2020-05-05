@@ -113,7 +113,7 @@ public class NetworkHandler extends SystemHandler{
 			rpc.start();
 			
 			//Start the DAPP Server
-			mDAPPManager = new DAPPManager(getMainHandler(), 21000, rpcport);
+			mDAPPManager = new DAPPManager(getMainHandler(),mRPCServer.getHost(), 21000, rpcport);
 			
 			//Log it..
 			MinimaLogger.log("MiFi proxy set : "+mMifiProxy);
