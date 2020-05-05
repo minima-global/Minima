@@ -72,40 +72,47 @@ public class NanoDAPPServer extends NanoHTTPD{
 					//UNINSTALL the DAPP
 					//..
 					
-					return getOKResponse(indexhtml.returnData());
+					return getOKResponse(indexhtml.returnData(),"text/html");
 				}
 			
 				//Otherwise lets see..
 				if(fileRequested.endsWith("/minima.js") || fileRequested.equals("minima.js")) {
-					return getOKResponse(minimajs.returnData());
+					return getOKResponse(minimajs.returnData(),"text/javascript");
 				
 				}else if(fileRequested.startsWith("minidapps/")) {
 					//Send the MiniDAPP!
-					//..
+					String fullfile = mDAPPManager.getMiniDAPPSFolder()+"/"+fileRequested.substring(10);
+					byte[] file = getFileBytes(fullfile);
+					
+					if(file.length>0) {
+						return getOKResponse(file, getContentType(fullfile));
+					}else {
+						return getNotFoundResponse();
+					}
 					
 				}else {
 					if(fileRequested.equals("index.html")) {
 						String page    = new String(indexhtml.returnData(),StandardCharsets.UTF_8);
 						String newpage = page.replace("######", createMiniDAPPList());
-						return getOKResponse(newpage.getBytes());
+						return getOKResponse(newpage.getBytes(), "text/html");
 						
 					}else if(fileRequested.equals("css/minidapps.css")) {
-						return getOKResponse(minidappscss.returnData());
+						return getOKResponse(minidappscss.returnData(), "text/css");
 						
 					}else if(fileRequested.equals("favicon.ico")) {
-						return getOKResponse(faviconico.returnData());
+						return getOKResponse(faviconico.returnData(), "image/ico");
 						
 					}else if(fileRequested.equals("help.html")) {
-						return getOKResponse(helphtml.returnData());
+						return getOKResponse(helphtml.returnData(), "text/html");
 					
 					}else if(fileRequested.equals("icon.png")) {
-						return getOKResponse(iconpng.returnData());
+						return getOKResponse(iconpng.returnData(), "image/png");
 						
 					}else if(fileRequested.equals("installdapp.html")) {
-						return getOKResponse(installdapphtml.returnData());
+						return getOKResponse(installdapphtml.returnData(), "text/html");
 						
 					}else if(fileRequested.equals("tile-grey.jpeg")) {
-						return getOKResponse(tilegreyjpeg.returnData());
+						return getOKResponse(tilegreyjpeg.returnData(), "image/jpeg");
 						
 					}else {
 						//Not found..
@@ -150,9 +157,8 @@ public class NanoDAPPServer extends NanoHTTPD{
         }
     }
 	
-	protected Response getOKResponse(byte[] zHTML) {
-//		Response resp = Response.newFixedLengthResponse(Status.OK, NanoHTTPD.MIME_HTML, zHTML);
-		Response resp = Response.newFixedLengthResponse(Status.OK, "text/html", zHTML);
+	protected Response getOKResponse(byte[] zHTML, String zContentType) {
+		Response resp = Response.newFixedLengthResponse(Status.OK, zContentType, zHTML);
 		resp.addHeader("Server", "HTTP RPC Server from Minima v0.88");
 		resp.addHeader("Date", new Date().toString());
 //		resp.addHeader("Access-Control-Allow-Origin", "*");
@@ -247,42 +253,50 @@ public class NanoDAPPServer extends NanoHTTPD{
         return ret;
 	}
 	
-	public static String getContentType(String zEnding) {
+	public static String getContentType(String zFile) {
 		
-		if(zEnding.equals("html")) {
-			return "text/html";
-		}else if(zEnding.equals("htm")) {
-			return "text/html";
-		}else if(zEnding.equals("css")) {
-			return "text/css";
-		}else if(zEnding.equals("js")) {
-			return "text/javascript";
-		}else if(zEnding.equals("txt")) {
+		String ending;
+		int dot = zFile.lastIndexOf(".");
+		if(dot != -1) {
+			ending = zFile.substring(dot+1);
+		}else {
 			return "text/plain";
-		}else if(zEnding.equals("xml")) {
+		}
+		
+		if(ending.equals("html")) {
+			return "text/html";
+		}else if(ending.equals("htm")) {
+			return "text/html";
+		}else if(ending.equals("css")) {
+			return "text/css";
+		}else if(ending.equals("js")) {
+			return "text/javascript";
+		}else if(ending.equals("txt")) {
+			return "text/plain";
+		}else if(ending.equals("xml")) {
 			return "text/xml";
 		
-		}else if(zEnding.equals("jpg")) {
+		}else if(ending.equals("jpg")) {
 			return "image/jpeg";
-		}else if(zEnding.equals("jpeg")) {
+		}else if(ending.equals("jpeg")) {
 			return "image/jpeg";
-		}else if(zEnding.equals("png")) {
+		}else if(ending.equals("png")) {
 			return "image/png";
-		}else if(zEnding.equals("gif")) {
+		}else if(ending.equals("gif")) {
 			return "image/gif";
-		}else if(zEnding.equals("svg")) {
+		}else if(ending.equals("svg")) {
 			return "image/svg+xml";
-		}else if(zEnding.equals("ico")) {
+		}else if(ending.equals("ico")) {
 			return "image/ico";
 		
-		}else if(zEnding.equals("zip")) {
+		}else if(ending.equals("zip")) {
 			return "application/zip";
-		}else if(zEnding.equals("pdf")) {
+		}else if(ending.equals("pdf")) {
 			return "application/pdf";
 			
-		}else if(zEnding.equals("mp3")) {
+		}else if(ending.equals("mp3")) {
 			return "audio/mp3";
-		}else if(zEnding.equals("wav")) {
+		}else if(ending.equals("wav")) {
 			return "audio/wav";
 		}
 		

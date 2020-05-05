@@ -115,6 +115,7 @@ public class DAPPManager extends SystemHandler {
 		mNanoDAPPServer = new NanoDAPPServer(zPort, this);
 		try {
 			mNanoDAPPServer.start(NanoHTTPD.SOCKET_READ_TIMEOUT, false);
+			MinimaLogger.log("MiniDAPP server started on "+hostport);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
