@@ -112,7 +112,7 @@ public class DAPPManager extends SystemHandler {
 //		Thread tt = new Thread(mDAPPServer, "DAPP Server");
 //		tt.start();
 		
-		mNanoDAPPServer = new NanoDAPPServer(zPort);
+		mNanoDAPPServer = new NanoDAPPServer(zPort, this);
 		try {
 			mNanoDAPPServer.start(NanoHTTPD.SOCKET_READ_TIMEOUT, false);
 		} catch (IOException e) {

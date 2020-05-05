@@ -1,6 +1,9 @@
 package org.minima.system.network.minidapps;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Date;
@@ -16,6 +19,8 @@ import org.minima.system.network.minidapps.hexdata.installdapphtml;
 import org.minima.system.network.minidapps.hexdata.minidappscss;
 import org.minima.system.network.minidapps.hexdata.minimajs;
 import org.minima.system.network.minidapps.hexdata.tilegreyjpeg;
+import org.minima.utils.json.JSONArray;
+import org.minima.utils.json.JSONObject;
 import org.nanohttpd.protocols.http.IHTTPSession;
 import org.nanohttpd.protocols.http.NanoHTTPD;
 import org.nanohttpd.protocols.http.request.Method;
@@ -24,9 +29,12 @@ import org.nanohttpd.protocols.http.response.Status;
 
 public class NanoDAPPServer extends NanoHTTPD{
 
-	public NanoDAPPServer(int zPort) {
+	DAPPManager mDAPPManager;
+	
+	public NanoDAPPServer(int zPort, DAPPManager zDAPPManager) {
 		super(zPort);
-
+		
+		mDAPPManager = zDAPPManager;
 	}
 
 	@Override
@@ -78,8 +86,8 @@ public class NanoDAPPServer extends NanoHTTPD{
 				}else {
 					if(fileRequested.equals("index.html")) {
 						String page    = new String(indexhtml.returnData(),StandardCharsets.UTF_8);
-//						String newpage = page.replace("######", createMiniDAPPList());
-						return getOKResponse(page.getBytes());
+						String newpage = page.replace("######", createMiniDAPPList());
+						return getOKResponse(newpage.getBytes());
 						
 					}else if(fileRequested.equals("css/minidapps.css")) {
 						return getOKResponse(minidappscss.returnData());
@@ -164,5 +172,120 @@ public class NanoDAPPServer extends NanoHTTPD{
         return Response.newFixedLengthResponse(Status.NOT_FOUND, NanoHTTPD.MIME_PLAINTEXT, "Error 404, file not found.");
     }
 	
+    
+    public String createMiniDAPPList() throws Exception {
+		StringBuilder list = new StringBuilder();
+		
+		JSONArray alldapps = mDAPPManager.getMiniDAPPS();
+		
+		list.append("<table width=100%>");
+		
+		int len = alldapps.size();
+		for(int i=0;i<len;i++) {
+			JSONObject app = (JSONObject) alldapps.get(i);
+			
+			//Now do it..
+			String root  = (String) app.get("root");
+			String approot  = (String) app.get("approot");
+			String name  = (String) app.get("name");
+			String desc  = (String) app.get("description");
+			String backg = root+"/"+(String) app.get("background");
+			String icon  = root+"/"+(String) app.get("icon");
+			String webpage  = root+"/index.html";
+			
+			//Now do it..
+			list.append("<tr><td>" + 
+					"			<table style='background-size:100%;background-image: url("+backg+");' width=100% height=100 class=minidapp>" + 
+					"			 	<tr>" + 
+					"					<td style='cursor:pointer;' rowspan=2 onclick=\"window.open('"+webpage+"', '_blank');\">" + 
+					"						<img src='"+icon+"' height=100>" + 
+					"					</td>" + 
+					"					<td width=100% class='minidappdescription'>" + 
+					"                   <div style='position:relative'>" + 
+					"				        <div onclick='uninstallDAPP(\""+name+"\",\""+approot+"\");' style='color:red;cursor:pointer;position:absolute;right:10;top:10'>UNINSTALL</div>" + 
+					"						<br>" + 
+					"						<div onclick=\"window.open('"+webpage+"','_blank');\" style='cursor:pointer;font-size:18'><b>"+name.toUpperCase()+"</b></div>" + 
+					"						<br><div onclick=\"window.open('"+webpage+"','_blank');\" style='cursor:pointer;font-size:12'>"+desc+"</div>" + 
+					"					</div>"+
+					"                     </td>" + 
+					"				</tr>" + 
+					"			</table>" + 
+					"		</td></tr>");
+		}
+		
+		if(len == 0) {
+			list.append("<tr><td style='text-align:center;'><br><br><b>NO DAPPS INSTALLED YET..</b>"
+					+ "<br><br><br>"
+					+ "Go to <a href='http://mifi.minima.global/' target='_blank'>http://mifi.minima.global/</a> to find MiniDAPPs"
+					+ "</td></tr>");
+		}
+		
+		list.append("</table>");
+		
+		return list.toString();
+	}
 	
+    public byte[] getFileBytes(String zFile) throws IOException {
+    	File ff = new File(zFile);
+    	
+    	long size = ff.length();
+    	byte[] ret = new byte[(int) size];
+    	
+    	try {
+			FileInputStream fis     = new FileInputStream(zFile);
+			BufferedInputStream bis = new BufferedInputStream(fis);
+			
+			bis.read(ret);
+	        
+	        bis.close();
+	        fis.close();
+	        
+		} catch (IOException e) {
+			e.printStackTrace();
+		} 
+        
+        return ret;
+	}
+	
+	public static String getContentType(String zEnding) {
+		
+		if(zEnding.equals("html")) {
+			return "text/html";
+		}else if(zEnding.equals("htm")) {
+			return "text/html";
+		}else if(zEnding.equals("css")) {
+			return "text/css";
+		}else if(zEnding.equals("js")) {
+			return "text/javascript";
+		}else if(zEnding.equals("txt")) {
+			return "text/plain";
+		}else if(zEnding.equals("xml")) {
+			return "text/xml";
+		
+		}else if(zEnding.equals("jpg")) {
+			return "image/jpeg";
+		}else if(zEnding.equals("jpeg")) {
+			return "image/jpeg";
+		}else if(zEnding.equals("png")) {
+			return "image/png";
+		}else if(zEnding.equals("gif")) {
+			return "image/gif";
+		}else if(zEnding.equals("svg")) {
+			return "image/svg+xml";
+		}else if(zEnding.equals("ico")) {
+			return "image/ico";
+		
+		}else if(zEnding.equals("zip")) {
+			return "application/zip";
+		}else if(zEnding.equals("pdf")) {
+			return "application/pdf";
+			
+		}else if(zEnding.equals("mp3")) {
+			return "audio/mp3";
+		}else if(zEnding.equals("wav")) {
+			return "audio/wav";
+		}
+		
+		return "text/plain";
+	}
 }
