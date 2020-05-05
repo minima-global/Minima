@@ -28,7 +28,8 @@ public class BackupManager extends SystemHandler {
 	/**
 	 * The Root directory..
 	 */
-	File mRoot;
+	static File   mRoot;
+	static String mRootPath = "***";
 	
 	File mBackup;
 	
@@ -135,7 +136,8 @@ public class BackupManager extends SystemHandler {
 	
 	private void initFolders() {
 		//The Root
-		mRoot = ensureFolder(new File(mConfigurationFolder));
+		mRoot     = ensureFolder(new File(mConfigurationFolder));
+		mRootPath = mRoot.getAbsolutePath();
 		
 		//Current used TxPOW
 		mTxPOWDB = ensureFolder(new File(mRoot,"txpow"));
@@ -173,8 +175,10 @@ public class BackupManager extends SystemHandler {
 			}	
 		}
 		
-		//And finally delete the actual file.. (double check is a minima file.. ROUGH check..)
-		if(zFile.getAbsolutePath().toLowerCase().contains("minima")) {
+		//And finally delete the actual file.. (double check is a minima file.. )
+		if(mRootPath.equals("***")) {
+			zFile.delete();
+		}else if(zFile.getAbsolutePath().startsWith(mRootPath)) {
 			zFile.delete();
 		}
 	}
