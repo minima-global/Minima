@@ -46,39 +46,39 @@ public class DAPPManager extends SystemHandler {
 	//HOST  - this will be inserted into the minima.js file
 	String mHost;	
 	
-	public DAPPManager(Main zMain, int zPort, int zRPCPort) {
+	public DAPPManager(Main zMain, String zHost, int zPort, int zRPCPort) {
 		super(zMain, "DAPPMAnager");
 		
-		mHost = "127.0.0.1";
-		boolean found = false;
-	    try {
-		    Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
-	        while (!found && interfaces.hasMoreElements()) {
-	            NetworkInterface iface = interfaces.nextElement();
-	            // filters out 127.0.0.1 and inactive interfaces
-	            if (iface.isLoopback() || !iface.isUp())
-	                continue;
-
-	            Enumeration<InetAddress> addresses = iface.getInetAddresses();
-	            while(!found && addresses.hasMoreElements()) {
-	                InetAddress addr = addresses.nextElement();
-	                String ip   = addr.getHostAddress();
-	                String name = iface.getDisplayName();
-	                
-	                //Only get the IPv4
-	                if(!ip.contains(":")) {
-	                	mHost = ip;
-	                	
-	                	if(name.startsWith("wl")) {
-	                		found = true;
-	                		break;
-	                	}
-	                }
-	            }
-	        }
-	    } catch (SocketException e) {
-	        MinimaLogger.log("DAPPMANAGER : "+e);
-	    }
+		mHost = zHost;
+//		boolean found = false;
+//	    try {
+//		    Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+//	        while (!found && interfaces.hasMoreElements()) {
+//	            NetworkInterface iface = interfaces.nextElement();
+//	            // filters out 127.0.0.1 and inactive interfaces
+//	            if (iface.isLoopback() || !iface.isUp())
+//	                continue;
+//
+//	            Enumeration<InetAddress> addresses = iface.getInetAddresses();
+//	            while(!found && addresses.hasMoreElements()) {
+//	                InetAddress addr = addresses.nextElement();
+//	                String ip   = addr.getHostAddress();
+//	                String name = iface.getDisplayName();
+//	                
+//	                //Only get the IPv4
+//	                if(!ip.contains(":")) {
+//	                	mHost = ip;
+//	                	
+//	                	if(name.startsWith("wl")) {
+//	                		found = true;
+//	                		break;
+//	                	}
+//	                }
+//	            }
+//	        }
+//	    } catch (SocketException e) {
+//	        MinimaLogger.log("DAPPMANAGER : "+e);
+//	    }
 	    
 	    //Here it is.. can hack it on android..
 	    String hostport = mHost+":"+zRPCPort;
