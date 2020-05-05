@@ -128,7 +128,8 @@ public class MinimaDB {
 		gen.setMMRRoot(base.getMMRRoot().getFinalHash());
 		gen.setMMRTotal(MMRSumNumber.ZERO);
 		
-//		SuperBlockLevels.GENESIS_HASH = Crypto.getInstance().hashObject(gen);
+		//Will make this PERMANENT in future release.. so ALL roads lead back to it..
+		//SuperBlockLevels.GENESIS_HASH = Crypto.getInstance().hashObject(gen);
 		
 		//Need to recalculate the TxPOWID
 		gen.calculateTXPOWID();
