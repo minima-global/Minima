@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
-import org.minima.NativeListener;
 import org.minima.database.MinimaDB;
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
@@ -16,6 +15,7 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniScript;
 import org.minima.objects.proofs.TokenProof;
 import org.minima.system.Main;
+import org.minima.system.NativeListener;
 import org.minima.system.SystemHandler;
 import org.minima.system.input.InputHandler;
 import org.minima.system.input.functions.gimme50;

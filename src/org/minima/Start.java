@@ -10,6 +10,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 
 import org.minima.system.Main;
+import org.minima.system.NativeListener;
 import org.minima.system.backup.BackupManager;
 import org.minima.system.input.InputMessage;
 import org.minima.utils.MiniFormat;

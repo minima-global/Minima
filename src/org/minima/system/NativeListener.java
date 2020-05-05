@@ -1,4 +1,4 @@
-package org.minima;
+package org.minima.system;
 
 import org.minima.utils.messages.Message;
 
