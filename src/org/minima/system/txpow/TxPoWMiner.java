@@ -102,7 +102,7 @@ public class TxPoWMiner extends SystemHandler{
 				//Set the TxPOW
 				txpow.calculateTXPOWID();
 				
-				//We have a valid TX-POW.. send via usual - NET
+				//We have a valid TX-POW..
 				Message msg = new Message(ConsensusHandler.CONSENSUS_FINISHED_MINE).addObject("txpow", txpow);
 				getMainHandler().getConsensusHandler().PostMessage(msg);
 			}
