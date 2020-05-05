@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.minima.system.backup.BackupManager;
 import org.minima.system.network.minidapps.hexdata.faviconico;
 import org.minima.system.network.minidapps.hexdata.helphtml;
 import org.minima.system.network.minidapps.hexdata.iconpng;
@@ -68,10 +69,17 @@ public class NanoDAPPServer extends NanoHTTPD{
 	        	}
 	        	
 		        //Are we uninstalling a MiniDAPP
-				if(fileRequested.equals("index,html") && !uninst.equals("")) {
+				if(fileRequested.equals("index.html") && !uninst.equals("")) {
 					//UNINSTALL the DAPP
-					//..
+					File appfolder = new File(mDAPPManager.getMiniDAPPSFolder(),uninst);
+				
+					//Delete the app root..
+					BackupManager.deleteFileOrFolder(appfolder);
 					
+					//Recalculate the MINIDAPPS
+					mDAPPManager.recalculateMiniDAPPS();
+					
+					//Return the main index page..
 					return getOKResponse(indexhtml.returnData(),"text/html");
 				}
 			
