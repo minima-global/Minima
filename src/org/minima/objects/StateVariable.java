@@ -90,7 +90,7 @@ public class StateVariable implements Streamable {
 	public void readDataStream(DataInputStream zIn) throws IOException {
 		mPort = MiniByte.ReadFromStream(zIn);
 		
-		//Was it sent as DATA
+		//Was it sent as DATA or SCRIPT
 		MiniByte isdata = MiniByte.ReadFromStream(zIn);
 		if(isdata.isTrue()) {
 			MiniData data = MiniData.ReadFromStream(zIn);
