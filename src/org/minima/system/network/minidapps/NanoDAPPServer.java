@@ -24,11 +24,11 @@ import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
-import org.nanohttpd.protocols.http.IHTTPSession;
-import org.nanohttpd.protocols.http.NanoHTTPD;
-import org.nanohttpd.protocols.http.request.Method;
-import org.nanohttpd.protocols.http.response.Response;
-import org.nanohttpd.protocols.http.response.Status;
+import org.minima.utils.nanohttpd.protocols.http.IHTTPSession;
+import org.minima.utils.nanohttpd.protocols.http.NanoHTTPD;
+import org.minima.utils.nanohttpd.protocols.http.request.Method;
+import org.minima.utils.nanohttpd.protocols.http.response.Response;
+import org.minima.utils.nanohttpd.protocols.http.response.Status;
 
 public class NanoDAPPServer extends NanoHTTPD{
 

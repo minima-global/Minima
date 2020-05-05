@@ -30,7 +30,7 @@ import org.minima.utils.json.JSONObject;
 import org.minima.utils.json.parser.JSONParser;
 import org.minima.utils.json.parser.ParseException;
 import org.minima.utils.messages.Message;
-import org.nanohttpd.protocols.http.NanoHTTPD;
+import org.minima.utils.nanohttpd.protocols.http.NanoHTTPD;
 
 public class DAPPManager extends SystemHandler {
 
