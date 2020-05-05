@@ -37,7 +37,7 @@ public class BackupManager extends SystemHandler {
 	
 	File mMiniDAPPS;
 	
-	static File mTempFolder = new File("/tmp");
+	static File mTempFolder = new File(System.getProperty("java.io.tmpdir"));
 	
 	public BackupManager(Main zMain, String zConfFolder) {
 		super(zMain, "BACKUP");
