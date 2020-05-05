@@ -5,6 +5,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 import org.minima.objects.base.MiniByte;
+import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniScript;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONObject;
@@ -70,13 +71,33 @@ public class StateVariable implements Streamable {
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
 		mPort.writeDataStream(zOut);
-		mData.writeDataStream(zOut);
+		
+		//Optimisation.. if is DATA
+		if(mData.toString().startsWith("0x")) {
+			//It's DATA.. might as well send it as that - half the size.
+			MiniData data = new MiniData(mData.toString());
+			
+			MiniByte.TRUE.writeDataStream(zOut);
+			data.writeDataStream(zOut);
+		}else {
+			//Just send it as normal.. number or script
+			MiniByte.FALSE.writeDataStream(zOut);
+			mData.writeDataStream(zOut);	
+		}
 	}
 
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
 		mPort = MiniByte.ReadFromStream(zIn);
-		mData = MiniScript.ReadFromStream(zIn);
+		
+		//Was it sent as DATA
+		MiniByte isdata = MiniByte.ReadFromStream(zIn);
+		if(isdata.isTrue()) {
+			MiniData data = MiniData.ReadFromStream(zIn);
+			mData = new MiniScript(data.to0xString());
+		}else {
+			mData = MiniScript.ReadFromStream(zIn);	
+		}
 	}
 	
 	public static StateVariable ReadFromStream(DataInputStream zIn){
