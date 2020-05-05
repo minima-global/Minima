@@ -33,11 +33,6 @@ public class MiniScript extends MiniData {
 		return new String(getData(),Charset.forName("US-ASCII"));
 	}
 	
-	@Override 
-	public String to0xString() {
-		return null;
-	}
-	
 	public static MiniScript ReadFromStream(DataInputStream zIn){
 		MiniScript data = new MiniScript();
 		
