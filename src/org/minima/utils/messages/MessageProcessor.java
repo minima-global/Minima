@@ -110,8 +110,6 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
             	synchronized (mLock) {
             		//Last check.. inside the LOCK
             		if(!isNextMessage() && mRunning) {
-//            			MinimaLogger.log("PROCESSOR "+mName+" WAITING");
-            			
             			//Wait for a message to be posted on the stack
             			mLock.wait();	
             		}
@@ -120,8 +118,8 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
 				MinimaLogger.log("MESSAGE_PROCESSOR "+mName+" INTERRUPTED");
 			}
         }
-        
-//        MinimaLogger.log("MESSAGE_PROCESSOR "+mName+" STOPPED");
+
+        //MinimaLogger.log("MESSAGE_PROCESSOR "+mName+" STOPPED");
     }
     
     /**

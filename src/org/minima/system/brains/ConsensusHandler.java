@@ -37,15 +37,23 @@ public class ConsensusHandler extends SystemHandler {
 	public static final String CONSENSUS_PROCESSTXPOW 		   = "CONSENSUS_PROCESSTXPOW";
 	public static final String CONSENSUS_PRE_PROCESSTXPOW 	   = "CONSENSUS_PREPROCESSTXPOW";
 	
+	/**
+	 * HARD CORE MINIMG for the bootstrap period 
+	 */
 	public static final String CONSENSUS_ACTIVATEMINE 		   = "CONSENSUS_ACTIVATEMINE";
 	public static final String CONSENSUS_MINEBLOCK 			   = "CONSENSUS_MINEBLOCK";
-	public static final String CONSENSUS_SENDTRANS 			   = "CONSENSUS_SENDTRANS";
-	public static final String CONSENSUS_CREATETRANS 		   = "CONSENSUS_CREATETRANS";
 	
 	/**
-	 * Auto save files incase of hard shutdown or crash..
+	 * TestNET 
 	 */
-	public static final String CONSENSUS_AUTOBACKUP 	       = "CONSENSUS_AUTOBACKUP";
+	public static final String CONSENSUS_GIMME50 			   = "CONSENSUS_GIMME50";
+	
+	/**
+	 * Transaction functions
+	 */
+	public static final String CONSENSUS_CREATETRANS 		   = "CONSENSUS_CREATETRANS";
+	public static final String CONSENSUS_SENDTRANS 			   = "CONSENSUS_SENDTRANS";
+	public static final String CONSENSUS_FINISHED_MINE 		   = "CONSENSUS_FINISHED_MINE";
 	
 	/**
 	 * Create Tokens
@@ -53,23 +61,11 @@ public class ConsensusHandler extends SystemHandler {
 	public static final String CONSENSUS_CREATETOKEN 		= "CONSENSUS_CREATETOKEN";
 	
 	/**
-	 * Other functions
-	 */
-	public static final String CONSENSUS_PRINTCHAIN 		= "CONSENSUS_PRINTCHAIN";
-	public static final String CONSENSUS_STATUS 			= "CONSENSUS_STATUS";
-	
-	
-	/**
 	 * Notification Messages
 	 */
 	public static final String CONSENSUS_NOTIFY_QUIT 	    = "CONSENSUS_NOTIFY_QUIT";
 	public static final String CONSENSUS_NOTIFY_BALANCE 	= "CONSENSUS_NOTIFY_BALANCE";
 	public static final String CONSENSUS_NOTIFY_NEWBLOCK 	= "CONSENSUS_NOTIFY_NEWBLOCK";
-	public static final String CONSENSUS_NOTIFY_RELCOIN 	= "CONSENSUS_NOTIFY_RELCOIN";
-	
-	//DEBUG FUNCTION
-	public static final String CONSENSUS_GIMME50 			= "CONSENSUS_GIMME50";
-//	public static final String CONSENSUS_STRESS_TRANS 		= "CONSENSUS_STRESS_TRANS";
 	
 		
 	/**
@@ -118,8 +114,6 @@ public class ConsensusHandler extends SystemHandler {
 	 */
 	public ConsensusHandler(Main zMain) {
 		super(zMain, "CONSENSUS");
-		
-//		mLogON = true;
 		
 		//Create a database..
 		mMainDB = new MinimaDB();
@@ -299,9 +293,36 @@ public class ConsensusHandler extends SystemHandler {
 		}else if(zMessage.getMessageType().startsWith(ConsensusBackup.CONSENSUS_PREFIX)) {
 			mConsensusBackup.processMessage(zMessage);
 		
-			/**
-			 * Transaction management
-			 */
+		/**
+		 *  Are we HARD mining
+		 */
+		}else if ( zMessage.isMessageType(CONSENSUS_ACTIVATEMINE) ) {
+			boolean mining = zMessage.getBoolean("automining");
+			getMainHandler().getMiner().setAutoMining(mining);
+			
+			JSONObject resp = InputHandler.getResponseJSON(zMessage);
+			resp.put("automining", mining);			
+			InputHandler.endResponse(zMessage, true, "");
+		
+		}else if ( zMessage.isMessageType(CONSENSUS_MINEBLOCK) ) {
+			//Are we Mining..
+			if(!getMainHandler().getMiner().isAutoMining()) {
+				PostTimerMessage(new TimerMessage(10000, CONSENSUS_MINEBLOCK));
+				return;
+			}
+			
+			//Fresh TXPOW
+			TxPOW txpow = getMainDB().getCurrentTxPow(new Transaction(), new Witness(), new JSONArray());
+			
+			//Send it to the Miner..
+			Message mine = new Message(TxPoWMiner.TXMINER_MEGAMINER).addObject("txpow", txpow);
+			
+			//Post to the Miner
+			getMainHandler().getMiner().PostMessage(mine);
+		
+		/**
+		 * Transaction management
+		 */
 		}else if ( zMessage.isMessageType(CONSENSUS_SENDTRANS) ) {
 			//get The Transaction
 			Transaction trans = (Transaction) zMessage.getObject("transaction");
@@ -340,7 +361,10 @@ public class ConsensusHandler extends SystemHandler {
 				return;
 			}
 			
-			//Send it to the Miner..
+			//Add to the list of Mined Coins!
+			getMainDB().addMiningTransaction(txpow.getTransaction());
+			
+			//Send it to the Miner.. This is the ONLY place this happens..
 			Message mine = new Message(TxPoWMiner.TXMINER_MINETXPOW).addObject("txpow", txpow);
 			InputHandler.addResponseMesage(mine, zMessage);
 			getMainHandler().getMiner().PostMessage(mine);
@@ -348,30 +372,6 @@ public class ConsensusHandler extends SystemHandler {
 			resp.put("txpow", txpow);
 			
 			InputHandler.endResponse(zMessage, true, "Send Success");
-			
-		}else if ( zMessage.isMessageType(CONSENSUS_ACTIVATEMINE) ) {
-			boolean mining = zMessage.getBoolean("automining");
-			getMainHandler().getMiner().setAutoMining(mining);
-			
-			JSONObject resp = InputHandler.getResponseJSON(zMessage);
-			resp.put("automining", mining);			
-			InputHandler.endResponse(zMessage, true, "");
-			
-		}else if ( zMessage.isMessageType(CONSENSUS_MINEBLOCK) ) {
-			//Are we Mining..
-			if(!getMainHandler().getMiner().isAutoMining()) {
-				PostTimerMessage(new TimerMessage(10000, CONSENSUS_MINEBLOCK));
-				return;
-			}
-			
-			//Fresh TXPOW
-			TxPOW txpow = getMainDB().getCurrentTxPow(new Transaction(), new Witness(), new JSONArray());
-			
-			//Send it to the Miner..
-			Message mine = new Message(TxPoWMiner.TXMINER_MEGAMINER).addObject("txpow", txpow);
-			
-			//Post to the Miner
-			getMainHandler().getMiner().PostMessage(mine);
 			
 		}else if ( zMessage.isMessageType(CONSENSUS_CREATETRANS) ) {
 			//How much to who ?
@@ -474,32 +474,17 @@ public class ConsensusHandler extends SystemHandler {
 				//Send it..
 				PostMessage(ret);
 			}
+
+		}else if(zMessage.isMessageType(CONSENSUS_FINISHED_MINE)) {
+			//The TXPOW
+			TxPOW txpow = (TxPOW) zMessage.getObject("txpow");
 			
-		/**
-		 * Other Functions
-		 */
-//		}else if(zMessage.isMessageType(CONSENSUS_STRESS_TRANS)) {
-//			//Send a random transaction!
-//			Transaction trans = new Transaction();
-//			Witness wit = new Witness();
-//			
-//			Coin in = new Coin(gimme50.COINID_INPUT,Address.TRUE_ADDRESS.getAddressData(),new MiniNumber("1"), MiniData.ZERO32);
-//			trans.addInput(in);
-//			wit.addScript(Address.TRUE_ADDRESS.getScript());
-//			
-//			//And send to the new address
-//			Address outaddr = new Address(new MiniData(MiniData.getRandomData(32).getData()));
-//			Coin out = new Coin(Coin.COINID_OUTPUT,outaddr.getAddressData(),new MiniNumber("1"), MiniData.ZERO32);
-//			trans.addOutput(out);
-//			
-//			//Now send it..
-//			Message mine = new Message(ConsensusHandler.CONSENSUS_SENDTRANS)
-//								.addObject("transaction", trans)
-//								.addObject("witness", wit);
-//			InputHandler.addResponseMesage(mine, zMessage);
-//			
-//			PostMessage(mine);
-//		
+			//Remove from the List of Mined transactions..
+			getMainDB().remeoveMiningTransaction(txpow.getTransaction());
+			
+			//And now forward the message to the single entry point..
+			Message msg = new Message(ConsensusNet.CONSENSUS_NET_TXPOW).addObject("txpow", txpow);
+			PostMessage(msg);
 			
 		}else if(zMessage.isMessageType(CONSENSUS_GIMME50)) {
 			//construct a special transaction that pays 50 mini to an address this user controls..

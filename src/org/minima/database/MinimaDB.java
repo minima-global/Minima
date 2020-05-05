@@ -81,6 +81,11 @@ public class MinimaDB {
 	BackupManager mBackup = null;
 	
 	/**
+	 * When you mine.. You can't use these INPUTS in your transactions
+	 */
+	Hashtable<String,Transaction> mMiningTransactions = new Hashtable<>();
+	
+	/**
 	 * Main Constructor
 	 */
 	public MinimaDB() {
@@ -150,10 +155,6 @@ public class MinimaDB {
 			return null;
 		}
 		return row.getTxPOW();
-	}
-	
-	public boolean isTxPOWFound(MiniData zTxPOWID) {
-		return getTxPOW(zTxPOWID)!=null;
 	}
 	
 	public TxPOWDBRow getTxPOWRow(MiniData zTxPOWID) {
@@ -545,6 +546,48 @@ public class MinimaDB {
 		mMainTree = casc.getCascadeTree();
 	}
 	
+	/**
+	 * When you mine a transaction these must be talen into account from coin selection
+	 */
+	
+	public void addMiningTransaction(Transaction zTrans) {
+		//Hash it..
+		MiniData transhash = Crypto.getInstance().hashObject(zTrans, 160);
+		String hash        = transhash.to0xString();
+		
+		//Do we have it..
+		Transaction prev = mMiningTransactions.get(hash);
+		if(prev!=null) {
+			return;
+		}
+		
+		//Add it..
+		mMiningTransactions.put(hash, zTrans);
+	}
+	
+	public void remeoveMiningTransaction(Transaction zTrans) {
+		//Hash it..
+		MiniData transhash = Crypto.getInstance().hashObject(zTrans, 160);
+		String hash        = transhash.to0xString();
+		mMiningTransactions.remove(hash);
+	}
+	
+	public boolean checkInputForMining(MiniData zCoinID) {
+		Enumeration<Transaction> alltrans = mMiningTransactions.elements();
+		while(alltrans.hasMoreElements()) {
+			Transaction trans = alltrans.nextElement();
+			ArrayList<Coin> inputs = trans.getAllInputs();
+			for(Coin input : inputs) {
+				if(zCoinID.isEqual(input.getCoinID())) {
+					return true;
+				}
+			}
+		}
+		
+		return false;
+	}
+	
+	
 	public ArrayList<Coin> getTotalSimpleSpendableCoins(MiniData zTokenID) {
 		ArrayList<Coin> confirmed   = new ArrayList<>();
 		
@@ -561,14 +604,23 @@ public class MinimaDB {
 				if(depth.isMoreEqual(GlobalParams.MINIMA_CONFIRM_DEPTH)) {
 					//Is this a simple address..
 					if(getUserDB().isSimpleAddress(row.getCoin().getAddress())) {
-						boolean found = false;
+						boolean found   = false;
+						MiniData coinid = row.getCoin().getCoinID();
+						
+						//Check in MemPool
 						for(Coin memcoin : memcoins) {
-							if(memcoin.getCoinID().isEqual(row.getCoin().getCoinID())) {
+							if(memcoin.getCoinID().isEqual(coinid)) {
 								found = true;
 								break;
 							}
 						}
 						
+						//Check in Mining
+						if(!found) {
+							found = checkInputForMining(coinid);	
+						}
+						
+						//Is it safe to use ?
 						if(!found) {
 							confirmed.add(row.getCoin());	
 						}	
@@ -1040,6 +1092,11 @@ public class MinimaDB {
 	
 	public SyncPackage getSyncPackage() {
 		SyncPackage sp = new SyncPackage();
+		
+		//Is there anything.. ?
+		if(getMainTree().getChainRoot()==null) {
+			return sp;
+		}
 		
 		//Cascade Node
 		MiniNumber casc = getMainTree().getCascadeNode().getTxPow().getBlockNumber();

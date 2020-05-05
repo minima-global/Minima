@@ -57,10 +57,10 @@ public class TxPoWMiner extends SystemHandler{
 			long maxTime  	  = currentTime + 5000;
 			
 			if(mShowTXPOWMine) {
-				System.out.println("START TXPOW MINING "+currentTime);
+				MinimaLogger.log("START TXPOW MINING "+currentTime);
 			}
 			
-			while(mining && currentTime < maxTime) {
+			while(mining && currentTime < maxTime && isRunning()) {
 				//Set the Nonce..
 				txpow.setNonce(nonce);
 				
@@ -83,7 +83,7 @@ public class TxPoWMiner extends SystemHandler{
 			//Did we find it.. ?
 			if(mining) {
 				if(mShowTXPOWMine) {
-					System.out.println("NOTFINISHED "+nonce+" "+currentTime);
+					MinimaLogger.log("NOTFINISHED "+nonce+" "+currentTime);
 				}
 				
 				//Repost the same transaction.. get a new TxPOW block with latest details
@@ -96,14 +96,14 @@ public class TxPoWMiner extends SystemHandler{
 				
 			}else {
 				if(mShowTXPOWMine) {
-					System.out.println("TXPOW MINED! "+nonce+" "+currentTime);
+					MinimaLogger.log("TXPOW MINED! "+nonce+" "+currentTime);
 				}
 				
 				//Set the TxPOW
 				txpow.calculateTXPOWID();
 				
 				//We have a valid TX-POW.. send via usual - NET
-				Message msg = new Message(ConsensusNet.CONSENSUS_NET_TXPOW).addObject("txpow", txpow);
+				Message msg = new Message(ConsensusHandler.CONSENSUS_FINISHED_MINE).addObject("txpow", txpow);
 				getMainHandler().getConsensusHandler().PostMessage(msg);
 			}
 			
