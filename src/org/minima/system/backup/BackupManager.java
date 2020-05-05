@@ -37,6 +37,8 @@ public class BackupManager extends SystemHandler {
 	
 	File mMiniDAPPS;
 	
+	static File mTempFolder = new File("/tmp");
+	
 	public BackupManager(Main zMain, String zConfFolder) {
 		super(zMain, "BACKUP");
 		
@@ -62,9 +64,12 @@ public class BackupManager extends SystemHandler {
 		return new File(mBackup, name);
 	}
 	
-	
 	public File getTxpowFile(MiniData zTxPoWID) {
 		return new File(mTxPOWDB,zTxPoWID.to0xString()+".txpow");
+	}
+	
+	public static File getTempFolder() {
+		return mTempFolder;
 	}
 		
 	public void backupTxpow(TxPOW zTxPOW) {
@@ -136,22 +141,26 @@ public class BackupManager extends SystemHandler {
 	
 	private void initFolders() {
 		//The Root
-		mRoot     = ensureFolder(new File(mConfigurationFolder));
-		mRootPath = mRoot.getAbsolutePath();
+		mRoot      = ensureFolder(new File(mConfigurationFolder));
+		mRootPath  = mRoot.getAbsolutePath();
 		
 		//Current used TxPOW
-		mTxPOWDB = ensureFolder(new File(mRoot,"txpow"));
+		mTxPOWDB   = ensureFolder(new File(mRoot,"txpow"));
 		
 		//The Backup folder
-		mBackup  = ensureFolder(new File(mRoot,"backup"));
+		mBackup    = ensureFolder(new File(mRoot,"backup"));
 		
 		//The MiniDAPPS folder
 		mMiniDAPPS = ensureFolder(new File(mRoot,"minidapps"));
+		
+		//TEMP folder for file upload in MiniDAPPS
+		mTempFolder = ensureFolder(new File(mRoot,"temp"));
 	}
 	
 	public static void deleteAllButMiniDAPPS(File zFolder) {
 		deleteFileOrFolder(new File(zFolder,"txpow"));
 		deleteFileOrFolder(new File(zFolder,"backup"));
+		deleteFileOrFolder(new File(zFolder,"temp"));
 	}
 	
 	/**

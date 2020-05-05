@@ -38,6 +38,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 
+import org.minima.system.backup.BackupManager;
 import org.nanohttpd.protocols.http.NanoHTTPD;
 
 /**
@@ -57,7 +58,8 @@ public class DefaultTempFileManager implements ITempFileManager {
     private final List<ITempFile> tempFiles;
 
     public DefaultTempFileManager() {
-        this.tmpdir = new File(System.getProperty("java.io.tmpdir"));
+//        this.tmpdir = new File(System.getProperty("java.io.tmpdir"));
+        this.tmpdir = BackupManager.getTempFolder();
         if (!tmpdir.exists()) {
             tmpdir.mkdirs();
         }

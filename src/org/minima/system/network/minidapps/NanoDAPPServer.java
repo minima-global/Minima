@@ -5,12 +5,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.minima.objects.base.MiniData;
 import org.minima.system.backup.BackupManager;
 import org.minima.system.network.minidapps.hexdata.faviconico;
 import org.minima.system.network.minidapps.hexdata.helphtml;
@@ -20,8 +20,10 @@ import org.minima.system.network.minidapps.hexdata.installdapphtml;
 import org.minima.system.network.minidapps.hexdata.minidappscss;
 import org.minima.system.network.minidapps.hexdata.minimajs;
 import org.minima.system.network.minidapps.hexdata.tilegreyjpeg;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
+import org.minima.utils.messages.Message;
 import org.nanohttpd.protocols.http.IHTTPSession;
 import org.nanohttpd.protocols.http.NanoHTTPD;
 import org.nanohttpd.protocols.http.request.Method;
@@ -42,11 +44,11 @@ public class NanoDAPPServer extends NanoHTTPD{
     public Response serve(IHTTPSession session) {
         try {
         	//GET or POST
-        	Method method                   = session.getMethod();
+        	Method method = session.getMethod();
 			
         	//What are they looking for..
         	String fileRequested = session.getUri();
-			//System.out.println("GET "+fileRequested);
+			//MinimaLogger.log("GET "+fileRequested);
 			
         	//Quick clean
 			if(fileRequested.endsWith("/")) {
@@ -80,17 +82,19 @@ public class NanoDAPPServer extends NanoHTTPD{
 					mDAPPManager.recalculateMiniDAPPS();
 					
 					//Return the main index page..
-					return getOKResponse(indexhtml.returnData(),"text/html");
+					String page    = new String(indexhtml.returnData(),StandardCharsets.UTF_8);
+					String newpage = page.replace("######", createMiniDAPPList());
+					return getOKResponse(newpage.getBytes(), "text/html");
 				}
 			
 				//Otherwise lets see..
 				if(fileRequested.endsWith("/minima.js") || fileRequested.equals("minima.js")) {
-					return getOKResponse(minimajs.returnData(),"text/javascript");
+					return getOKResponse(mDAPPManager.getMinimaJS() , "text/javascript");
 				
 				}else if(fileRequested.startsWith("minidapps/")) {
 					//Send the MiniDAPP!
 					String fullfile = mDAPPManager.getMiniDAPPSFolder()+"/"+fileRequested.substring(10);
-					byte[] file = getFileBytes(fullfile);
+					byte[] file     = getFileBytes(fullfile);
 					
 					if(file.length>0) {
 						return getOKResponse(file, getContentType(fullfile));
@@ -127,39 +131,43 @@ public class NanoDAPPServer extends NanoHTTPD{
 						return getNotFoundResponse();	
 					}	
 				}
+			
+			}else if(Method.POST.equals(method)) {
+				//Only on the Install DAPP page..
+				if(fileRequested.equals("installdapp.html")) {
+					//get the file..
+			        Map<String, String> files = new HashMap<String, String>();
+		            session.parseBody(files);
+	            
+		            //Get the File..
+		            String minidappfile = files.get("minidapp");
+		            
+		            //Load the file..
+		            byte[] file = getFileBytes(minidappfile);
+					
+		            //Create a MiniData Object..
+		            MiniData dapp = new MiniData(file);
+					
+					//POST it..
+					Message msg = new Message(DAPPManager.DAPP_INSTALL);
+					msg.addObject("minidapp", dapp);
+					mDAPPManager.PostMessage(msg);
+		            
+	                return getOKResponse(installdapphtml.returnData(), "text/html");
+				}else if(fileRequested.startsWith("minidapps/")) {
+					String fullfile = mDAPPManager.getMiniDAPPSFolder()+"/"+fileRequested.substring(10);
+					byte[] file     = getFileBytes(fullfile);
+					
+					if(file.length>0) {
+						return getOKResponse(file, getContentType(fullfile));
+					}else {
+						return getNotFoundResponse();
+					}
+				}
 			}
         	
 			return getNotFoundResponse();
-        	
-        	
-        	//Any parameters
-//        	Map<String, List<String>> parms = session.getParameters();
-//        	
-//            System.out.println("URI : "+uri);
-//            System.out.println("METHOD : "+method.toString());
-//            System.out.println("PARAMS "+parms);
-//            
-//            if(Method.GET.equals(method)) {
-//        		return getOKResponse(getpage);
-//            }
-//            
-//            if(Method.POST.equals(method)) {
-//            	//Do some parsing!
-//              Map<String, String> files = new HashMap<String, String>();
-//              session.parseBody(files);
-//            
-//              System.out.println("FILES : "+files);
-//		      
-//              String fileloc = files.get("myfile");
-//              File ff = new File(fileloc);
-//             
-//              System.out.println("UPLOAD : "+ff.getAbsolutePath()+" "+ff.exists()+" "+ff.length());
-//		      
-//	          return getOKResponse(postpage);
-//            }
-//        	
-//            return getOKResponse("NOT GET OR POST");
-
+     
         } catch (Exception ioe) {
             return getInternalErrorResponse("INTERNAL ERROR");
         }
