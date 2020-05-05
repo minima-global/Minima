@@ -215,19 +215,21 @@ public class NanoDAPPServer extends NanoHTTPD{
 			String icon  = root+"/"+(String) app.get("icon");
 			String webpage  = root+"/index.html";
 			
+			String openpage = "_"+name;
+			
 			//Now do it..
 			list.append("<tr><td>" + 
 					"			<table style='background-size:100%;background-image: url("+backg+");' width=100% height=100 class=minidapp>" + 
 					"			 	<tr>" + 
-					"					<td style='cursor:pointer;' rowspan=2 onclick=\"window.open('"+webpage+"', '_blank');\">" + 
+					"					<td style='cursor:pointer;' rowspan=2 onclick=\"window.open('"+webpage+"', '"+openpage+"');\">" + 
 					"						<img src='"+icon+"' height=100>" + 
 					"					</td>" + 
 					"					<td width=100% class='minidappdescription'>" + 
 					"                   <div style='position:relative'>" + 
 					"				        <div onclick='uninstallDAPP(\""+name+"\",\""+approot+"\");' style='color:red;cursor:pointer;position:absolute;right:10;top:10'>UNINSTALL</div>" + 
 					"						<br>" + 
-					"						<div onclick=\"window.open('"+webpage+"','_blank');\" style='cursor:pointer;font-size:18'><b>"+name.toUpperCase()+"</b></div>" + 
-					"						<br><div onclick=\"window.open('"+webpage+"','_blank');\" style='cursor:pointer;font-size:12'>"+desc+"</div>" + 
+					"						<div onclick=\"window.open('"+webpage+"','"+openpage+"');\" style='cursor:pointer;font-size:18'><b>"+name.toUpperCase()+"</b></div>" + 
+					"						<br><div onclick=\"window.open('"+webpage+"','"+openpage+"');\" style='cursor:pointer;font-size:12'>"+desc+"</div>" + 
 					"					</div>"+
 					"                     </td>" + 
 					"				</tr>" + 
