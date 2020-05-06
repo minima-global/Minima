@@ -237,6 +237,12 @@ public class DAPPManager extends SystemHandler {
 			//Get the Data
 			MiniData data = (MiniData) zMessage.getObject("minidapp");
 			
+			//Do we overwrite..
+			boolean overwrite = true;
+			if(zMessage.exists("overwrite")){
+				overwrite = zMessage.getBoolean("overwrite");
+			}
+
 			//Hash it..
 			MiniData hash = Crypto.getInstance().hashObject(data, 160);
 			
@@ -248,6 +254,10 @@ public class DAPPManager extends SystemHandler {
 			
 			//And the actual folder...
 			File dapp  = new File(alldapps,hash.to0xString());
+			if(dapp.exists() && !overwrite){
+				return;
+			}
+			
 			dapp.mkdirs();
 			
 			//Now extract the contents to that folder..

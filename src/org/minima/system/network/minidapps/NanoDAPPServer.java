@@ -89,6 +89,7 @@ public class NanoDAPPServer extends NanoHTTPD{
 			
 				//Otherwise lets see..
 				if(fileRequested.endsWith("/minima.js") || fileRequested.equals("minima.js")) {
+					//MinimaLogger.log("MINIMA.JS REQUESTED!");
 					return getOKResponse(mDAPPManager.getMinimaJS() , "text/javascript");
 				
 				}else if(fileRequested.startsWith("minidapps/")) {
@@ -240,6 +241,10 @@ public class NanoDAPPServer extends NanoHTTPD{
 		if(len == 0) {
 			list.append("<tr><td style='text-align:center;'><br><br><b>NO DAPPS INSTALLED YET..</b>"
 					+ "<br><br><br>"
+					+ "Go to <a href='http://mifi.minima.global/' target='_blank'>http://mifi.minima.global/</a> to find MiniDAPPs"
+					+ "</td></tr>");
+		}else {
+			list.append("<tr><td style='text-align:center;'><br><br>"
 					+ "Go to <a href='http://mifi.minima.global/' target='_blank'>http://mifi.minima.global/</a> to find MiniDAPPs"
 					+ "</td></tr>");
 		}
