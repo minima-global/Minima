@@ -9,13 +9,9 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
 import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -30,6 +26,7 @@ import org.minima.utils.json.JSONObject;
 import org.minima.utils.json.parser.JSONParser;
 import org.minima.utils.json.parser.ParseException;
 import org.minima.utils.messages.Message;
+import org.minima.utils.nanohttpd.protocols.http.NanoHTTPD;
 
 public class DAPPManager extends SystemHandler {
 
@@ -39,6 +36,7 @@ public class DAPPManager extends SystemHandler {
 	String MINIDAPPS_FOLDER     = "";
 	
 	DAPPServer mDAPPServer;
+	NanoDAPPServer mNanoDAPPServer;
 	
 	//The Edited minima.js file..
 	byte[] mMINIMAJS = new byte[0];
@@ -77,10 +75,19 @@ public class DAPPManager extends SystemHandler {
 		//Calculate the current MiniDAPPS
 		recalculateMiniDAPPS();
 		
-		///Start the DAPP server
-		mDAPPServer = new DAPPServer(zPort,this);
-		Thread tt = new Thread(mDAPPServer, "DAPP Server");
-		tt.start();
+//		///Start the DAPP server
+//		mDAPPServer = new DAPPServer(zPort,this);
+//		Thread tt = new Thread(mDAPPServer, "DAPP Server");
+//		tt.start();
+		
+		mNanoDAPPServer = new NanoDAPPServer(zPort, this);
+		try {
+			mNanoDAPPServer.start(NanoHTTPD.SOCKET_READ_TIMEOUT, false);
+			MinimaLogger.log("MiniDAPP server started on "+hostport);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	//Use the RPC server for now..
@@ -93,7 +100,8 @@ public class DAPPManager extends SystemHandler {
 	}
 	
 	public void stop() {
-		mDAPPServer.stop();
+//		mDAPPServer.stop();
+		mNanoDAPPServer.stop();
 		
 		stopMessageProcessor();
 	}
@@ -226,6 +234,12 @@ public class DAPPManager extends SystemHandler {
 			//Get the Data
 			MiniData data = (MiniData) zMessage.getObject("minidapp");
 			
+			//Do we overwrite..
+			boolean overwrite = true;
+			if(zMessage.exists("overwrite")){
+				overwrite = zMessage.getBoolean("overwrite");
+			}
+
 			//Hash it..
 			MiniData hash = Crypto.getInstance().hashObject(data, 160);
 			
@@ -237,6 +251,10 @@ public class DAPPManager extends SystemHandler {
 			
 			//And the actual folder...
 			File dapp  = new File(alldapps,hash.to0xString());
+			if(dapp.exists() && !overwrite){
+				return;
+			}
+			
 			dapp.mkdirs();
 			
 			//Now extract the contents to that folder..

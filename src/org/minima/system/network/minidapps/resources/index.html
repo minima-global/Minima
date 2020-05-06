@@ -13,33 +13,11 @@
 
 	//Wait for the page to load..
 	window.addEventListener("load", function(){
-		
-		//Read the file in and convert to BASE64
-		var reader = new FileReader();
-		reader.onload = function(event) {
-		    //What's been read in..
-			var contents = event.target.result;
-		    console.log("File contents: " + contents);
-		
-		    //Set it..
-			document.getElementById("minidapp64").value = contents;
-		    
-		    //POST it
-			document.getElementById("actual_minidapp").submit();
-		};
-
-		reader.onerror = function(event) {
-		    console.error("File could not be read! Code " + event.target.error.code);
-		};
-		
 		const inputElement = document.getElementById("file-input");
 		inputElement.addEventListener("change", handleFiles, false);
 		
 		function handleFiles() {
-		  const fileList = this.files; /* now you can work with the file list */
-		  
-		  //Read in the file
-		  reader.readAsDataURL(fileList[0]);
+		  document.getElementById('installform').submit();
 		}
 	});
 	
@@ -110,12 +88,11 @@
 </table>
 
 <!-- The actual form that is used to upload minidapps -->
-<form enctype="text/plain" id="actual_minidapp" action="installdapp.html" method="post" style="display:none;">
-    <input type=hidden id=minidapp64 name=minidata value=""> 
+<form enctype="multipart/form-data" id="installform" action="installdapp.html" method="post" style="display:none;">
+    <!-- Used to open the select File Dialog.. -->
+	<input accept=".minidapp" id="file-input" value="nofile" type="file" name="minidapp" style="display:none;" /> 
 </form>
 
-<!-- Used to open the select File Dialog.. -->
-<input accept=".minidapp" id="file-input" value="nofile" type="file" name="minidapp" style="display:none;" />
 
 </body>
 
