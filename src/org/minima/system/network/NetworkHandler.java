@@ -80,6 +80,10 @@ public class NetworkHandler extends SystemHandler{
 	public RPCServer getRPCServer() {
 		return mRPCServer;
 	}
+	
+	public DAPPManager getDAPPManager() {
+		return mDAPPManager;
+	}
 
 	public void setProxy(String zProxy) {
 		mMifiProxy = zProxy; 
