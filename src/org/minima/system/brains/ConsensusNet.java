@@ -187,6 +187,10 @@ public class ConsensusNet {
 						msg.addObject("txpow", txpow);
 						msg.addObject("netclient", client);
 						
+						if(!txpow.hasBody()) {
+							MinimaLogger.log("NO BODY IN TXPOW SYNC "+txpow.getBlockNumber());
+						}
+						
 						mHandler.PostMessage(msg);
 						
 						totalreq++;
@@ -203,7 +207,7 @@ public class ConsensusNet {
 			//Do we have it..
 			if(getMainDB().getTxPOW(txpowid) == null) {
 				//We don't have it, get it..
-				sendNetMessage(zMessage, NetClientReader.NETMESSAGE_TXPOW_REQUEST, txpowid);
+				sendTxPowRequest(zMessage, txpowid);
 			}
 		
 		}else if(zMessage.isMessageType(CONSENSUS_NET_TXPOWREQUEST)) {
@@ -230,8 +234,6 @@ public class ConsensusNet {
 			/**
 			 * The SINGLE entry point into the system for NEW TXPOW messages..
 			 */
-			
-			//Forward - the internal function
 			TxPOW txpow = (TxPOW)zMessage.getObject("txpow");
 			
 			//Do we have it.. now check DB - hmmm..
@@ -249,19 +251,21 @@ public class ConsensusNet {
 			}
 			
 			//Check the Sigs.. just the once..
-			boolean sigsok = TxPoWChecker.checkSigs(txpow);
-			if(!sigsok) {
-				//Reject
-				MinimaLogger.log("ERROR NET Invalid Signatures with TXPOW : "+txpow.getBlockNumber()+" "+txpow.getTxPowID()); 
-				return;
-			}
-			
-			//Now check the Transaction is Valid As of now ?
-			boolean trxok = TxPoWChecker.checkTransactionMMR(txpow, getMainDB());
-			if(!trxok) {
-				//Reject
-				MinimaLogger.log("ERROR NET TXPOW FAILS CHECK MMR: "+txpow.getBlockNumber()+" "+txpow.getTxPowID()); 
-				return;
+			if(txpow.hasBody()) {
+				boolean sigsok = TxPoWChecker.checkSigs(txpow);
+				if(!sigsok) {
+					//Reject
+					MinimaLogger.log("ERROR NET Invalid Signatures with TXPOW : "+txpow.getBlockNumber()+" "+txpow.getTxPowID()); 
+					return;
+				}
+				
+				//Now check the Transaction is Valid As of now ?
+				boolean trxok = TxPoWChecker.checkTransactionMMR(txpow, getMainDB());
+				if(!trxok) {
+					//Reject
+					MinimaLogger.log("ERROR NET TXPOW FAILS CHECK MMR: "+txpow.getBlockNumber()+" "+txpow.getTxPowID()); 
+					return;
+				}
 			}
 			
 			/**
@@ -275,7 +279,7 @@ public class ConsensusNet {
 			if(getMainDB().getTxPOW(parentID)==null) {
 				//We don't have it, get it..
 				MinimaLogger.log("Request Parent TxPoW @ "+txpow.getBlockNumber()+" parent:"+parentID); 
-				sendNetMessage(zMessage, NetClientReader.NETMESSAGE_TXPOW_REQUEST, parentID);
+				sendTxPowRequest(zMessage, parentID);
 			}
 
 			//And now check the Txn list.. basically a mempool sync
@@ -283,9 +287,7 @@ public class ConsensusNet {
 			for(MiniData txn : txns) {
 				if(getMainDB().getTxPOW(txn) == null ) {
 					MinimaLogger.log("Request missing TxPoW in block "+txpow.getBlockNumber()+" "+txn);
-					
-					//We don't have it, get it..
-					sendNetMessage(zMessage, NetClientReader.NETMESSAGE_TXPOW_REQUEST, txn);
+					sendTxPowRequest(zMessage, txn);
 				}
 			}
 			
@@ -296,6 +298,19 @@ public class ConsensusNet {
 			mHandler.PostMessage(newtxpow);
 		}
 	}
+
+	
+	private void sendTxPowRequest(Message zFromMessage, MiniData zTxPoWID) {
+		//Get the NetClient...
+		NetClient client = (NetClient) zFromMessage.getObject("netclient");
+			
+		Message req = new Message(NetClient.NETCLIENT_SENDTXPOWREQ);
+		req.addObject("txpowid", zTxPoWID);
+		
+		//And Post it..
+		client.PostMessage(req);
+	}
+	
 	
 	/**
 	 * Send a network message to the sender of this message

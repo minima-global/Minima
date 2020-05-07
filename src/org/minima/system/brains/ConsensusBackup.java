@@ -177,7 +177,7 @@ public class ConsensusBackup {
 						getMainDB().addNewTxPow(txinblock);	
 					}
 				}
-				
+			
 				//Is this the cascade block
 				if(txpow.getBlockNumber().isEqual(sp.getCascadeNode())) {
 					getMainDB().hardSetCascadeNode(node);

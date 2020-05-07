@@ -5,6 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 
+import org.minima.GlobalParams;
 import org.minima.objects.Transaction;
 import org.minima.objects.TxPOW;
 import org.minima.objects.Witness;
@@ -22,13 +23,18 @@ public class GenesisTxPOW extends TxPOW{
 		
 		setNonce(new MiniInteger(256));
 		 
-		setTimeSecs(new MiniNumber(""+(System.currentTimeMillis()/1000)));
+		setTimeMilli(new MiniInteger(""+System.currentTimeMillis()));
 		
 		setBlockNumber(MiniNumber.ZERO);
 		
 		setBlockDifficulty(Crypto.MAX_HASH);
 		
-		setParent(new MiniData("0x00"));
+		
+		//Super Block Levels.. FIRST just copy them all..
+		MiniData ultimateparent = new MiniData("0x00");
+		for(int i=0;i<GlobalParams.MINIMA_CASCADE_LEVELS;i++) {
+			setSuperParent(i, ultimateparent);
+		}
 		
 		//Set Transaction and Witness..
 		Transaction trans = new Transaction();

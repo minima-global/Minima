@@ -845,7 +845,7 @@ public class ConsensusPrint {
 			status.put("total", tip.getTxPow().getMMRTotal().toString());
 			
 			status.put("lastblock", tip.getTxPow().getBlockNumber().toString());
-			status.put("lasttime", new Date(tip.getTxPow().getTimeSecs().getAsLong()*1000).toString());
+			status.put("lasttime", new Date(new Long(tip.getTxPow().getTimeMilli()+"")).toString());
 			
 			status.put("cascade", getMainDB().getMainTree().getCascadeNode().getTxPow().getBlockNumber().toString());
 			

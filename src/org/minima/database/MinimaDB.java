@@ -276,14 +276,16 @@ public class MinimaDB {
 				}
 				
 				//Now the Txns..
-				ArrayList<MiniData> txpowlist = txpow.getBlockTransactions();
-				for(MiniData txid : txpowlist) {
-					trow = mTxPOWDB.findTxPOWDBRow(txid);
-					if(trow!=null) {
-						//Set that it is in this block
-						trow.setOnChainBlock(false);
-						trow.setIsInBlock(true);
-						trow.setInBlockNumber(block);
+				if(txpow.hasBody()) {
+					ArrayList<MiniData> txpowlist = txpow.getBlockTransactions();
+					for(MiniData txid : txpowlist) {
+						trow = mTxPOWDB.findTxPOWDBRow(txid);
+						if(trow!=null) {
+							//Set that it is in this block
+							trow.setOnChainBlock(false);
+							trow.setIsInBlock(true);
+							trow.setInBlockNumber(block);
+						}
 					}
 				}
 			}
@@ -965,7 +967,7 @@ public class MinimaDB {
 		TxPOW txpow = new TxPOW();
 				
 		//Set the time
-		txpow.setTimeSecs(new MiniNumber(""+(System.currentTimeMillis()/1000)));
+		txpow.setTimeMilli(new MiniInteger(""+System.currentTimeMillis()));
 			
 		//Set the Transaction..
 		txpow.setTransaction(zTrans);
@@ -978,9 +980,6 @@ public class MinimaDB {
 		
 		//Block Details..
 		txpow.setBlockNumber(tip.getTxPow().getBlockNumber().increment());
-		
-		//Previous block
-		txpow.setParent(tip.getTxPowID());
 		
 		if(!GlobalParams.MINIMA_ZERO_DIFF_BLK) {
 			//Calculate New Chain Speed
@@ -1005,6 +1004,11 @@ public class MinimaDB {
 				if(newdiff.compareTo(Crypto.MAX_VAL)>0) {
 					newdiff = Crypto.MAX_VAL;
 				}
+				
+				//Check more than TX-min..
+				if(newdiff.compareTo(Crypto.MEGA_VAL)>0) {
+					newdiff = Crypto.MEGA_VAL;
+				}
 								
 				//Create the hash
 				MiniData diffhash = new MiniData("0x"+newdiff.toString(16)); 
@@ -1016,7 +1020,7 @@ public class MinimaDB {
 		
 		//Super Block Levels.. FIRST just copy them all..
 		for(int i=0;i<GlobalParams.MINIMA_CASCADE_LEVELS;i++) {
-			txpow.mSuperParents[i] = tip.getTxPow().mSuperParents[i];
+			txpow.setSuperParent(i, tip.getTxPow().getSuperParent(i));
 		}
 
 		//And now set the correct SBL given the last block
@@ -1025,7 +1029,7 @@ public class MinimaDB {
 		//All levels below this now point to the last block..
 		MiniData tiptxid = tip.getTxPowID();
 		for(int i=sbl;i>=0;i--) {
-			txpow.mSuperParents[i] = tiptxid;
+			txpow.setSuperParent(i, tiptxid);
 		}			
 		
 		//Get the current MMRSet

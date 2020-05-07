@@ -220,13 +220,6 @@ public class ConsensusHandler extends SystemHandler {
 			//The TXPOW
 			TxPOW txpow = (TxPOW) zMessage.getObject("txpow");
 			
-			//Could be 	an internal PULSE message
-			if(txpow.getTransaction().isEmpty() && !txpow.isBlock()) {
-				//It's Pulse.. send it.. 
-				//..
-				return;
-			}
-			
 			//Double check added...
 			getMainDB().addNewTxPow(txpow);
 			
@@ -256,15 +249,16 @@ public class ConsensusHandler extends SystemHandler {
 			}
 			
 			//Message for the clients
-			Message msg  = new Message(NetClient.NETCLIENT_SENDOBJECT).addObject("type", NetClientReader.NETMESSAGE_TXPOWID).addObject("object", txpow.getTxPowID());
+			Message msg  = new Message(NetClient.NETCLIENT_SENDOBJECT)
+								.addObject("type", NetClientReader.NETMESSAGE_TXPOWID)
+								.addObject("object", txpow.getTxPowID());
 			Message netw = new Message(NetworkHandler.NETWORK_SENDALL).addObject("message", msg);
 			
 			//Post It..
 			getMainHandler().getNetworkHandler().PostMessage(netw);
 			
 			//Process it
-			Message proc = new Message(ConsensusHandler.CONSENSUS_PROCESSTXPOW).addObject("txpow", txpow);
-			PostMessage(proc);
+			PostMessage(new Message(ConsensusHandler.CONSENSUS_PROCESSTXPOW).addObject("txpow", txpow));
 
 			//Tell the listeners.. ?
 			if(txpow.isBlock()) {

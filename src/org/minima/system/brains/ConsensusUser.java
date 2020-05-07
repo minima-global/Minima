@@ -504,7 +504,6 @@ public class ConsensusUser {
 			ArrayList<MiniData> remove = new ArrayList<>();
 			JSONArray requested = new JSONArray();
 			
-			
 			//Check them all..
 			for(TxPOWDBRow txrow : unused) {
 				TxPOW txpow    = txrow.getTxPOW();
@@ -531,12 +530,10 @@ public class ConsensusUser {
 						if(txpow.isBlock()) {
 							MiniData parent = txpow.getParentID();
 							if(tdb.findTxPOWDBRow(parent) == null) {
-								//Request it from ALL your peers..
-								Message msg  = new Message(NetClient.NETCLIENT_SENDOBJECT)
-										.addObject("type", NetClientReader.NETMESSAGE_TXPOW_REQUEST)
-										.addObject("object", parent);
+								Message msg  = new Message(NetClient.NETCLIENT_SENDTXPOWREQ)
+													.addObject("txpowid", parent);
 								Message netw = new Message(NetworkHandler.NETWORK_SENDALL)
-										.addObject("message", msg);
+													.addObject("message", msg);
 								
 								//Post it..
 								mHandler.getMainHandler().getNetworkHandler().PostMessage(netw);
@@ -549,10 +546,8 @@ public class ConsensusUser {
 							ArrayList<MiniData> txns = txpow.getBlockTransactions();
 							for(MiniData txn : txns) {
 								if(tdb.findTxPOWDBRow(txn) == null) {
-									//Request it from ALL your peers..
-									Message msg  = new Message(NetClient.NETCLIENT_SENDOBJECT)
-											.addObject("type", NetClientReader.NETMESSAGE_TXPOW_REQUEST)
-											.addObject("object", txn);
+									Message msg  = new Message(NetClient.NETCLIENT_SENDTXPOWREQ)
+											.addObject("txpowid", txn);
 									Message netw = new Message(NetworkHandler.NETWORK_SENDALL)
 											.addObject("message", msg);
 									
