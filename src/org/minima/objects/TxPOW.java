@@ -115,10 +115,16 @@ public class TxPOW implements Streamable {
 	}
 	
 	public Transaction getTransaction() {
+		if(!hasBody()) {
+			return new Transaction();
+		}
 		return mBody.mTransaction;
 	}
 	
 	public Transaction getBurnTransaction() {
+		if(!hasBody()) {
+			return new Transaction();
+		}
 		return mBody.mBurnTransaction;
 	}
 	
