@@ -131,7 +131,8 @@ public class TxPOW implements Streamable {
 	}
 	
 	public ArrayList<MiniData> getBlockTransactions(){
-		if(mBody == null) {
+		//if no body just return an empty list
+		if(!hasBody()) {
 			return new ArrayList<MiniData>();	
 		}
 		
