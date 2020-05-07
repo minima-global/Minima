@@ -240,8 +240,8 @@ public class ConsensusHandler extends SystemHandler {
 				//Store ion the database..
 				getMainDB().getUserDB().addToHistory(txpow,tokamt);
 				
-				//Back up.. in a 10 seconds  - after it's been processed
-				PostTimerMessage(new TimerMessage(10 * 1000, ConsensusBackup.CONSENSUSBACKUP_BACKUP));
+				//Back up..
+				PostMessage(ConsensusBackup.CONSENSUSBACKUP_BACKUP);
 				
 				//Notify those listening..
 				Message upd = new Message(CONSENSUS_NOTIFY_BALANCE);
@@ -316,9 +316,7 @@ public class ConsensusHandler extends SystemHandler {
 		
 		}else if ( zMessage.isMessageType(CONSENSUS_MINEBLOCK) ) {
 			//DEBUG MODE - only mine a block when you make a transction..
-			if(GlobalParams.MINIMA_ZERO_DIFF_BLK) {
-				return;
-			}
+			if(GlobalParams.MINIMA_ZERO_DIFF_BLK) {return;}
 				
 			//Are we Mining..
 			if(!getMainHandler().getMiner().isAutoMining()) {

@@ -262,6 +262,14 @@ public class TxPOW implements Streamable {
 			mBody = null;
 		}
 		
+		//Check.. MUST be correct or Security error
+		if(mBody != null) {
+			MiniData bodyhash = Crypto.getInstance().hashObject(mBody);
+			if(!mHeader.mTxBodyHash.isEqual(bodyhash)) {
+				throw new IOException("ERROR in TxPOW :  TxBODY fidderent in TxHEADER");
+			}
+		}
+		
 		//The TxPoWID / Super levels.. etc..
 		calculateTXPOWID();
 	}

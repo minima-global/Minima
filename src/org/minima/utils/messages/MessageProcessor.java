@@ -35,6 +35,9 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
 	 */
 	String mName;
 	
+	
+	
+	
 	/**
 	 * Constructor
 	 */
@@ -74,6 +77,8 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
     }
     
     public void run() {
+//    	MinimaLogger.log("MESSAGE_PROCESSOR "+mName+" STARTED");
+    	
     	//Format the time
     	SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss.SSS");
 
@@ -117,7 +122,7 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
 			}
         }
 
-        //MinimaLogger.log("MESSAGE_PROCESSOR "+mName+" STOPPED");
+//        MinimaLogger.log("MESSAGE_PROCESSOR "+mName+" STOPPED");
     }
     
     /**
