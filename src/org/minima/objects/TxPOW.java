@@ -66,6 +66,10 @@ public class TxPOW implements Streamable {
 		return mHeader;
 	}
 	
+	public MiniData getTxHeaderBodyHash() {
+		return mHeader.getBodyHash();
+	}
+	
 	public TxBody getTxBody() {
 		return mBody;	
 	}
@@ -281,7 +285,7 @@ public class TxPOW implements Streamable {
 	public void calculateTXPOWID() {
 		//set the Body Hash in the Header..
 		if(hasBody()) {
-			mHeader.mTxBody = Crypto.getInstance().hashObject(mBody);
+			mHeader.mTxBodyHash = Crypto.getInstance().hashObject(mBody);
 		}
 			
 		//The TXPOW ID

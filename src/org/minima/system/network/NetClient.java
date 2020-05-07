@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Random;
 
@@ -259,6 +260,24 @@ public class NetClient extends MessageProcessor {
 			
 			//Store
 			mOldTxPoWRequests.put(val, new Long(timenow));
+			
+			//Remove the old..
+			Hashtable<String, Long> newTxPoWRequests = new Hashtable<>();
+			Enumeration<String> keys = mOldTxPoWRequests.keys();
+			while(keys.hasMoreElements()) {
+				String key = keys.nextElement();
+				
+				Long timeval = mOldTxPoWRequests.get(key);
+				long time    = timeval.longValue();
+				long diff    = timenow - time;
+				//Keep for an hour..
+				if(diff < 60000 * 60) {
+					newTxPoWRequests.put(key, timeval);
+				}
+			}
+			
+			//Swap them..
+			mOldTxPoWRequests = newTxPoWRequests;
 			
 			//What Type..
 			NetClientReader.NETMESSAGE_TXPOW_REQUEST.writeDataStream(mOutput);

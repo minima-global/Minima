@@ -57,7 +57,7 @@ public class TxHeader implements Streamable {
 	/**
 	 * The HASH of the TxBody
 	 */
-	public MiniData mTxBody;
+	public MiniData mTxBodyHash;
 	
 	/**
 	 * In the long run ONLY this header is kept and the body is discarded..
@@ -70,6 +70,10 @@ public class TxHeader implements Streamable {
 		for(int i=0;i<GlobalParams.MINIMA_CASCADE_LEVELS;i++) {
 			mSuperParents[i] = new MiniData();
 		}
+	}
+	
+	public MiniData getBodyHash() {
+		return mTxBodyHash;
 	}
 
 	public JSONObject toJSON() {
@@ -169,7 +173,7 @@ public class TxHeader implements Streamable {
 		}
 		
 		//Write the Boddy Hash
-		mTxBody.writeDataStream(zOut);
+		mTxBodyHash.writeDataStream(zOut);
 	}
 
 	@Override
@@ -193,6 +197,6 @@ public class TxHeader implements Streamable {
 		}
 		
 		//The TxBody Hash
-		mTxBody          = MiniData.ReadFromStream(zIn);
+		mTxBodyHash          = MiniData.ReadFromStream(zIn);
 	}
 }
