@@ -9,7 +9,7 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Random;
 
-import org.minima.objects.TxPOW;
+import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.system.Main;
@@ -231,7 +231,7 @@ public class NetClient extends MessageProcessor {
 		
 		}else if(zMessage.isMessageType(NETCLIENT_SENDTXPOW)) {
 			//get the TxPOW
-			TxPOW txpow = (TxPOW)zMessage.getObject("txpow");
+			TxPoW txpow = (TxPoW)zMessage.getObject("txpow");
 			
 			//What Type..
 			NetClientReader.NETMESSAGE_TXPOW.writeDataStream(mOutput);

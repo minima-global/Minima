@@ -24,7 +24,7 @@ import org.minima.utils.json.JSONObject;
  * @author Spartacus Rex
  *
  */
-public class TxPOW implements Streamable {
+public class TxPoW implements Streamable {
 	
 	/**
 	 * The TxPoW Header - what is hashed
@@ -55,7 +55,7 @@ public class TxPOW implements Streamable {
 	/**
 	 * Main Constructor
 	 */
-	public TxPOW() {
+	public TxPoW() {
 		//2 parts to a TxPoW 
 		mHeader = new TxHeader();
 		mBody   = new TxBody();
@@ -137,7 +137,7 @@ public class TxPOW implements Streamable {
 		mBody.mTransaction = zTran;
 	}
 	
-	public void addBlockTxPOW(TxPOW zTxPOW) {
+	public void addBlockTxPOW(TxPoW zTxPOW) {
 		mBody.mTxPowIDList.add(zTxPOW.getTxPowID());
 	}
 	

@@ -1,6 +1,6 @@
 package org.minima.system.txpow;
 
-import org.minima.objects.TxPOW;
+import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniInteger;
 import org.minima.system.Main;
@@ -42,7 +42,7 @@ public class TxPoWMiner extends SystemHandler{
 		
 		if(zMessage.isMessageType(TXMINER_MINETXPOW)) {
 			//Get TXPOW..
-			TxPOW txpow = (TxPOW) zMessage.getObject("txpow");
+			TxPoW txpow = (TxPoW) zMessage.getObject("txpow");
 			
 			//Calculate once to set the correct Body Hash
 			txpow.calculateTXPOWID();
@@ -116,7 +116,7 @@ public class TxPoWMiner extends SystemHandler{
 			
 		}else if(zMessage.isMessageType(TXMINER_MEGAMINER)) {
 			//Get TXPOW..
-			TxPOW txpow = (TxPOW) zMessage.getObject("txpow");
+			TxPoW txpow = (TxPoW) zMessage.getObject("txpow");
 			
 			//Set the TxPOW
 			txpow.calculateTXPOWID();

@@ -28,7 +28,7 @@ import org.minima.objects.Coin;
 import org.minima.objects.PubPrivKey;
 import org.minima.objects.StateVariable;
 import org.minima.objects.Transaction;
-import org.minima.objects.TxPOW;
+import org.minima.objects.TxPoW;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MMRSumNumber;
 import org.minima.objects.base.MiniData;
@@ -505,7 +505,7 @@ public class ConsensusUser {
 			
 			//Check them all..
 			for(TxPOWDBRow txrow : unused) {
-				TxPOW txpow    = txrow.getTxPOW();
+				TxPoW txpow    = txrow.getTxPOW();
 				
 				//Do we just remove them all.. ?
 				if(hard) {

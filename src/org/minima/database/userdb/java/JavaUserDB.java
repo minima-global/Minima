@@ -14,7 +14,7 @@ import org.minima.objects.Coin;
 import org.minima.objects.PubPrivKey;
 import org.minima.objects.StateVariable;
 import org.minima.objects.Transaction;
-import org.minima.objects.TxPOW;
+import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniScript;
@@ -478,7 +478,7 @@ public class JavaUserDB implements UserDB, Streamable{
 	}
 
 	@Override
-	public void addToHistory(TxPOW zTxPOW, Hashtable<String, MiniNumber> zValues) {
+	public void addToHistory(TxPoW zTxPOW, Hashtable<String, MiniNumber> zValues) {
 		mHistory.add(new reltxpow( zTxPOW, zValues));
 	}
 

@@ -5,7 +5,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-import org.minima.objects.TxPOW;
+import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
 import org.minima.system.Main;
 import org.minima.system.SystemHandler;
@@ -72,7 +72,7 @@ public class BackupManager extends SystemHandler {
 		return mTempFolder;
 	}
 		
-	public void backupTxpow(TxPOW zTxPOW) {
+	public void backupTxpow(TxPoW zTxPOW) {
 		//Create the File
 		File back = new File(mTxPOWDB,zTxPOW.getTxPowID().to0xString()+".txpow");
 
@@ -88,7 +88,7 @@ public class BackupManager extends SystemHandler {
 		PostMessage(backup);
 	}
 
-	public void deleteTxpow(TxPOW zTxPOW) {
+	public void deleteTxpow(TxPoW zTxPOW) {
 		//Create the File
 		File delfile = new File(mTxPOWDB,zTxPOW.getTxPowID().toString()+".txpow");
 		

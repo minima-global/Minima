@@ -1,6 +1,6 @@
 package org.minima.database.txpowdb;
 
-import org.minima.objects.TxPOW;
+import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.json.JSONObject;
 
@@ -20,7 +20,7 @@ public interface TxPOWDBRow {
 	 * The TXPOW
 	 * @return
 	 */
-	public TxPOW getTxPOW();
+	public TxPoW getTxPOW();
 	
 	/**
 	 * Is this TXPOW in a block on the current longest chain

@@ -2,7 +2,7 @@ package org.minima.database.txpowdb;
 
 import java.util.ArrayList;
 
-import org.minima.objects.TxPOW;
+import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 
@@ -15,7 +15,7 @@ public interface TxPowDB {
 	 * 
 	 * @param zTxPOW
 	 */
-	public TxPOWDBRow addTxPOWDBRow(TxPOW zTxPOW);
+	public TxPOWDBRow addTxPOWDBRow(TxPoW zTxPOW);
 	
 	/**
 	 * Search for a specific TxPOW

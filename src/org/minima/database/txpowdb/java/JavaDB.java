@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 import org.minima.database.txpowdb.TxPOWDBRow;
 import org.minima.database.txpowdb.TxPowDB;
-import org.minima.objects.TxPOW;
+import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 
@@ -19,7 +19,7 @@ public class JavaDB implements TxPowDB{
 	}
 
 	@Override
-	public TxPOWDBRow addTxPOWDBRow(TxPOW zTxPOW) {
+	public TxPOWDBRow addTxPOWDBRow(TxPoW zTxPOW) {
 		//Only add it once!
 		TxPOWDBRow prev = findTxPOWDBRow(zTxPOW.getTxPowID());
 		if(prev!=null) {

@@ -10,7 +10,7 @@ import org.minima.database.mmr.MMRSet;
 import org.minima.database.txpowtree.BlockTree;
 import org.minima.database.txpowtree.BlockTreeNode;
 import org.minima.database.txpowtree.MultiLevelCascadeTree;
-import org.minima.objects.TxPOW;
+import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.Streamable;
 
@@ -43,7 +43,7 @@ public class SyncPackage implements Streamable{
 		
 		//Drill down 
 		for(SyncPacket spack : mNodes) {
-			TxPOW txpow = spack.getTxPOW();
+			TxPoW txpow = spack.getTxPOW();
 			MMRSet mmr  = spack.getMMRSet();
 			boolean cascade = spack.isCascade();
 			

@@ -22,7 +22,7 @@ import org.minima.database.userdb.java.reltxpow;
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
 import org.minima.objects.PubPrivKey;
-import org.minima.objects.TxPOW;
+import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.proofs.TokenProof;
@@ -739,7 +739,7 @@ public class ConsensusPrint {
 			for(reltxpow rpow : history) {
 				if(useaddress) {
 					boolean found = false;
-					TxPOW txpow   = rpow.getTxPOW();
+					TxPoW txpow   = rpow.getTxPOW();
 					
 					ArrayList<Coin> inputs = txpow.getTransaction().getAllInputs();
 					for(Coin in : inputs) {
@@ -778,7 +778,7 @@ public class ConsensusPrint {
 			String txpow = zMessage.getString("txpow");
 			MiniData txp = new MiniData(txpow);
 			
-			TxPOW pow = getMainDB().getTxPOW(txp);
+			TxPoW pow = getMainDB().getTxPOW(txp);
 			
 			if(pow == null) {
 				InputHandler.endResponse(zMessage, false, "No TxPOW found for "+txpow);

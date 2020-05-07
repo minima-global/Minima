@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import org.minima.database.mmr.MMRSet;
-import org.minima.objects.TxPOW;
+import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
 import org.minima.utils.Crypto;
 
@@ -27,7 +27,7 @@ public class BlockTreeNode implements Comparable<BlockTreeNode> {
 	private int mBlockState = BLOCKSTATE_BASIC;
 	
 	//The TxPOW
-	private TxPOW mTXPOW;
+	private TxPoW mTXPOW;
 	
 	//What Super Block Level is this TxPOW
 	private int mSuperBlockLevel;
@@ -66,11 +66,11 @@ public class BlockTreeNode implements Comparable<BlockTreeNode> {
 	 * 
 	 * @param zTxPowDBRow
 	 */
-	public BlockTreeNode(TxPOW zTxPow) {
+	public BlockTreeNode(TxPoW zTxPow) {
 		init(zTxPow);
 	}
 
-	private void init(TxPOW zTxPow) {
+	private void init(TxPoW zTxPow) {
 		//Store the TXPOW
 		mTXPOW 	= zTxPow;
 		
@@ -159,7 +159,7 @@ public class BlockTreeNode implements Comparable<BlockTreeNode> {
 		return mTotalWeight;
 	}
 	
-	public TxPOW getTxPow() {
+	public TxPoW getTxPow() {
 		return mTXPOW;
 	}
 		

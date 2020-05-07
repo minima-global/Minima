@@ -7,14 +7,14 @@ import java.io.DataOutputStream;
 
 import org.minima.GlobalParams;
 import org.minima.objects.Transaction;
-import org.minima.objects.TxPOW;
+import org.minima.objects.TxPoW;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniInteger;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.Crypto;
 
-public class GenesisTxPOW extends TxPOW{
+public class GenesisTxPOW extends TxPoW{
 	
 	public GenesisTxPOW() {
 		super();
@@ -100,7 +100,7 @@ public class GenesisTxPOW extends TxPOW{
 			ByteArrayInputStream bais = new ByteArrayInputStream(data);
 			DataInputStream dis = new DataInputStream(bais);
 			
-			TxPOW tp = new TxPOW();
+			TxPoW tp = new TxPoW();
 			tp.readDataStream(dis);
 			
 			System.out.println("GEN 2 : "+tp);

@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import org.minima.database.MinimaDB;
 import org.minima.database.mmr.MMRSet;
 import org.minima.database.txpowtree.BlockTreeNode;
-import org.minima.objects.TxPOW;
+import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
@@ -144,7 +144,7 @@ public class ConsensusNet {
 				//Drill down 
 				ArrayList<SyncPacket> packets = sp.getAllNodes();
 				for(SyncPacket spack : packets) {
-					TxPOW txpow = spack.getTxPOW();
+					TxPoW txpow = spack.getTxPOW();
 					
 					//Store it..
 					backup.backupTxpow(txpow);
@@ -177,7 +177,7 @@ public class ConsensusNet {
 				for(SyncPacket spack : intro) {
 					if(spack.getTxPOW().getBlockNumber().isMore(cross)) {
 						//Just repost it..
-						TxPOW txpow = spack.getTxPOW();
+						TxPoW txpow = spack.getTxPOW();
 						
 						//Get the NetClient...
 						NetClient client = (NetClient) zMessage.getObject("netclient");
@@ -215,7 +215,7 @@ public class ConsensusNet {
 			MiniData txpowid = (MiniData) zMessage.getObject("txpowid");
 			
 			//Get it..
-			TxPOW txpow = getMainDB().getTxPOW(txpowid);
+			TxPoW txpow = getMainDB().getTxPOW(txpowid);
 			if(txpow == null) {
 				//This is odd.. we should have a requested txpowid.. someone has it wrong
 				//OR look deeper.. filesystem.. could be an old one.. sync up.
@@ -234,7 +234,7 @@ public class ConsensusNet {
 			/**
 			 * The SINGLE entry point into the system for NEW TXPOW messages..
 			 */
-			TxPOW txpow = (TxPOW)zMessage.getObject("txpow");
+			TxPoW txpow = (TxPoW)zMessage.getObject("txpow");
 			
 			//Do we have it.. now check DB - hmmm..
 			if(getMainDB().getTxPOW(txpow.getTxPowID()) != null) {

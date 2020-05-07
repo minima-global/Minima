@@ -1,13 +1,13 @@
 package org.minima.database.txpowdb.java;
 
 import org.minima.database.txpowdb.TxPOWDBRow;
-import org.minima.objects.TxPOW;
+import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.json.JSONObject;
 
 public class JavaDBRow implements TxPOWDBRow {
 
-	private TxPOW mTxPOW;
+	private TxPoW mTxPOW;
 
 	private boolean mIsOnChainBlock;
 	
@@ -19,7 +19,7 @@ public class JavaDBRow implements TxPOWDBRow {
 	
 	private long mDeleteTime;
 	
-	public JavaDBRow(TxPOW zTxPOW) {
+	public JavaDBRow(TxPoW zTxPOW) {
 		mTxPOW 				= zTxPOW;
 		mIsInBlock 			= false;
 		mIsOnChainBlock     = false;
@@ -42,7 +42,7 @@ public class JavaDBRow implements TxPOWDBRow {
 	}
 	
 	@Override
-	public TxPOW getTxPOW() {
+	public TxPoW getTxPOW() {
 		return mTxPOW;
 	}
 

@@ -9,7 +9,7 @@ import org.minima.database.MinimaDB;
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
 import org.minima.objects.Transaction;
-import org.minima.objects.TxPOW;
+import org.minima.objects.TxPoW;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
@@ -193,7 +193,7 @@ public class ConsensusHandler extends SystemHandler {
 		 */
 		if ( zMessage.isMessageType(CONSENSUS_PROCESSTXPOW) ) {
 			//A TXPOW - that has been checked already and added to the DB
-			TxPOW txpow = (TxPOW) zMessage.getObject("txpow");
+			TxPoW txpow = (TxPoW) zMessage.getObject("txpow");
 			
 			//Process
 			getMainDB().processTxPOW(txpow);
@@ -218,7 +218,7 @@ public class ConsensusHandler extends SystemHandler {
 			 */
 		}else if ( zMessage.isMessageType(CONSENSUS_PRE_PROCESSTXPOW) ) {
 			//The TXPOW
-			TxPOW txpow = (TxPOW) zMessage.getObject("txpow");
+			TxPoW txpow = (TxPoW) zMessage.getObject("txpow");
 			
 			//Double check added...
 			getMainDB().addNewTxPow(txpow);
@@ -325,7 +325,7 @@ public class ConsensusHandler extends SystemHandler {
 			}
 			
 			//Fresh TXPOW
-			TxPOW txpow = getMainDB().getCurrentTxPow(new Transaction(), new Witness(), new JSONArray());
+			TxPoW txpow = getMainDB().getCurrentTxPow(new Transaction(), new Witness(), new JSONArray());
 			
 			//Send it to the Miner..
 			Message mine = new Message(TxPoWMiner.TXMINER_MEGAMINER).addObject("txpow", txpow);
@@ -347,7 +347,7 @@ public class ConsensusHandler extends SystemHandler {
 			
 			//Add it to the current TX-POW
 			JSONArray contractlogs = new JSONArray();
-			TxPOW txpow = getMainDB().getCurrentTxPow(trans, wit, contractlogs);
+			TxPoW txpow = getMainDB().getCurrentTxPow(trans, wit, contractlogs);
 			
 			//Is is valid.. ?
 			if(txpow==null) {
@@ -490,7 +490,7 @@ public class ConsensusHandler extends SystemHandler {
 
 		}else if(zMessage.isMessageType(CONSENSUS_FINISHED_MINE)) {
 			//The TXPOW
-			TxPOW txpow = (TxPOW) zMessage.getObject("txpow");
+			TxPoW txpow = (TxPoW) zMessage.getObject("txpow");
 			
 			//Remove from the List of Mined transactions..
 			getMainDB().remeoveMiningTransaction(txpow.getTransaction());

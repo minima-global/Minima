@@ -19,7 +19,7 @@ import org.minima.objects.Coin;
 import org.minima.objects.PubPrivKey;
 import org.minima.objects.StateVariable;
 import org.minima.objects.Transaction;
-import org.minima.objects.TxPOW;
+import org.minima.objects.TxPoW;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
@@ -40,7 +40,7 @@ public class TxPoWChecker {
 	 * @param zTxPOW
 	 * @return
 	 */
-	public static boolean checkSigs(TxPOW zTxPOW) {
+	public static boolean checkSigs(TxPoW zTxPOW) {
 		//Only if it has a body
 		if(!zTxPOW.hasBody()) {
 			return true;
@@ -86,13 +86,13 @@ public class TxPoWChecker {
 	 * @param zMMRSet
 	 * @return
 	 */
-	public static boolean checkTransactionMMR(TxPOW zTxPOW, MinimaDB zDB) {
+	public static boolean checkTransactionMMR(TxPoW zTxPOW, MinimaDB zDB) {
 		//And use the chaintip for all the parameters..
 		BlockTreeNode tip = zDB.getMainTree().getChainTip();
 		return checkTransactionMMR(zTxPOW, zDB, tip.getTxPow().getBlockNumber(), tip.getMMRSet(), false);
 	}
 	
-	public static boolean checkTransactionMMR(TxPOW zTxPOW, MinimaDB zDB, MiniNumber zBlockNumber, MMRSet zMMRSet, boolean zTouchMMR) {
+	public static boolean checkTransactionMMR(TxPoW zTxPOW, MinimaDB zDB, MiniNumber zBlockNumber, MMRSet zMMRSet, boolean zTouchMMR) {
 		//need a body
 		if(!zTxPOW.hasBody()) {
 			return true;

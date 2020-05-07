@@ -11,7 +11,7 @@ import org.minima.database.txpowdb.TxPOWDBRow;
 import org.minima.database.txpowdb.TxPowDB;
 import org.minima.database.txpowtree.BlockTreeNode;
 import org.minima.database.userdb.java.JavaUserDB;
-import org.minima.objects.TxPOW;
+import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
@@ -153,7 +153,7 @@ public class ConsensusBackup {
 			TxPowDB txdb = getMainDB().getTxPowDB();
 			ArrayList<SyncPacket> packets = sp.getAllNodes();
 			for(SyncPacket spack : packets) {
-				TxPOW txpow     = spack.getTxPOW();
+				TxPoW txpow     = spack.getTxPOW();
 				MMRSet mmrset   = spack.getMMRSet();
 				boolean cascade = spack.isCascade();
 				
@@ -170,7 +170,7 @@ public class ConsensusBackup {
 				//Load the TxPOW files in the block..
 				ArrayList<MiniData> txns = txpow.getBlockTransactions();
 				for(MiniData txn : txns) {
-					TxPOW txinblock = loadTxPOW(backup.getTxpowFile(txn));
+					TxPoW txinblock = loadTxPOW(backup.getTxpowFile(txn));
 					
 					//Add it..
 					if(txinblock != null) {
@@ -194,7 +194,7 @@ public class ConsensusBackup {
 			//Now sort
 			for(BlockTreeNode treenode : list) {
 				//Get the Block
-				TxPOW txpow = treenode.getTxPow();
+				TxPoW txpow = treenode.getTxPow();
 				
 				//Store it..
 				mHandler.getMainHandler().getBackupManager().backupTxpow(txpow);
@@ -223,13 +223,13 @@ public class ConsensusBackup {
 		}
 	}
 	
-	public static TxPOW loadTxPOW(File zTxpowFile) {
+	public static TxPoW loadTxPOW(File zTxpowFile) {
 		if(!zTxpowFile.exists()) {
 			MinimaLogger.log("Load TxPOW Doesn't exist! "+zTxpowFile.getName());
 			return null;
 		}
 		
-		TxPOW txpow    = new TxPOW();
+		TxPoW txpow    = new TxPoW();
 		
 		try {
 			FileInputStream fis = new FileInputStream(zTxpowFile);

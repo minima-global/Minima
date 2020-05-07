@@ -3,7 +3,7 @@ package org.minima.system.network;
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 
-import org.minima.objects.TxPOW;
+import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.system.backup.SyncPackage;
@@ -98,7 +98,7 @@ public class NetClientReader implements Runnable {
 					
 				}else if(msgtype.isEqual(NETMESSAGE_TXPOW)) {
 					//A complete TxPOW
-					TxPOW tx = new TxPOW();
+					TxPoW tx = new TxPoW();
 					tx.readDataStream(mInput);
 					
 					//Add this ID

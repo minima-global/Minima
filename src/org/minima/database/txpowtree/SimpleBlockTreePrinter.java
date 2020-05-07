@@ -3,7 +3,7 @@ package org.minima.database.txpowtree;
 import java.util.ArrayList;
 
 import org.minima.GlobalParams;
-import org.minima.objects.TxPOW;
+import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.bretty.TreeNode;
@@ -133,7 +133,7 @@ public class SimpleBlockTreePrinter {
 		int clev 	= zNode.getCurrentLevel();
 		String weight= "WEIGHT:"+zNode.getWeight()+"/"+zNode.getTotalWeight()+" ";
 		
-		TxPOW txpow = zNode.getTxPow();
+		TxPoW txpow = zNode.getTxPow();
 		MiniData parent  = txpow.getSuperParent(clev);
 		MiniData parent2 = txpow.getSuperParent(clev+1);
 			

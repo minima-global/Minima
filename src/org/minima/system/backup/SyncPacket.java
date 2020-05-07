@@ -6,7 +6,7 @@ import java.io.IOException;
 
 import org.minima.database.mmr.MMRSet;
 import org.minima.database.txpowtree.BlockTreeNode;
-import org.minima.objects.TxPOW;
+import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniByte;
 import org.minima.utils.Streamable;
 
@@ -20,7 +20,7 @@ public class SyncPacket implements Streamable {
 	/**
 	 * The original TxPOW that made this block
 	 */
-	TxPOW mTxPOW;
+	TxPoW mTxPOW;
 	
 	/**
 	 * Is this a cascade Node ? No MMR required then
@@ -53,7 +53,7 @@ public class SyncPacket implements Streamable {
 		return mMMR;
 	}
 	
-	public TxPOW getTxPOW() {
+	public TxPoW getTxPOW() {
 		return mTxPOW;
 	}
 	
@@ -93,7 +93,7 @@ public class SyncPacket implements Streamable {
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
 		//First the TXPOW
-		mTxPOW = new TxPOW();
+		mTxPOW = new TxPoW();
 		mTxPOW.readDataStream(zIn);
 		
 		//Is it a cascader..

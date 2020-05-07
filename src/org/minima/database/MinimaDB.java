@@ -31,7 +31,7 @@ import org.minima.objects.Coin;
 import org.minima.objects.PubPrivKey;
 import org.minima.objects.StateVariable;
 import org.minima.objects.Transaction;
-import org.minima.objects.TxPOW;
+import org.minima.objects.TxPoW;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MMRSumNumber;
 import org.minima.objects.base.MiniByte;
@@ -107,7 +107,7 @@ public class MinimaDB {
 	 */ 
 	//Genesis txpow
 	public void DoGenesis() {
-		TxPOW gen = new GenesisTxPOW();
+		TxPoW gen = new GenesisTxPOW();
 		
 		//Add to the list
 		TxPOWDBRow row = mTxPOWDB.addTxPOWDBRow(gen);
@@ -149,7 +149,7 @@ public class MinimaDB {
 		getBackup().backupTxpow(gen); 
 	}
 	
-	public TxPOW getTxPOW(MiniData zTxPOWID) {
+	public TxPoW getTxPOW(MiniData zTxPOWID) {
 		TxPOWDBRow row = mTxPOWDB.findTxPOWDBRow(zTxPOWID);
 		if(row == null) {
 			return null;
@@ -168,7 +168,7 @@ public class MinimaDB {
 	/**
 	 * Process a TXPOW
 	 */
-	public void processTxPOW(TxPOW zTxPow) {
+	public void processTxPOW(TxPoW zTxPow) {
 		//Is it a block.. if so add a BASIC block to the tree
 		boolean treeadded = false;
 		if(zTxPow.isBlock()) {
@@ -257,7 +257,7 @@ public class MinimaDB {
 			//Now sort
 			for(BlockTreeNode treenode : list) {
 				//Get the Block
-				TxPOW txpow = treenode.getTxPow();
+				TxPoW txpow = treenode.getTxPow();
 				
 				//get the row..
 				TxPOWDBRow trow = mTxPOWDB.addTxPOWDBRow(txpow);
@@ -485,7 +485,7 @@ public class MinimaDB {
 		}
 	}
 	
-	private boolean checkFullTxPOW(TxPOW zBlock, MMRSet zMMRSet) {
+	private boolean checkFullTxPOW(TxPoW zBlock, MMRSet zMMRSet) {
 		//First check the main transaction..
 		if(zBlock.isTransaction()) {
 			boolean inputvalid = TxPoWChecker.checkTransactionMMR(zBlock, this, zBlock.getBlockNumber(), zMMRSet,true);
@@ -498,7 +498,7 @@ public class MinimaDB {
 		ArrayList<MiniData> txns = zBlock.getBlockTransactions();
 		for(MiniData txn : txns) {
 			TxPOWDBRow row = getTxPOWRow(txn);
-			TxPOW txpow = row.getTxPOW();
+			TxPoW txpow = row.getTxPOW();
 			
 			//Check the Proof..
 			boolean inputvalid = TxPoWChecker.checkTransactionMMR(txpow, this, zBlock.getBlockNumber(), zMMRSet,true);
@@ -516,12 +516,12 @@ public class MinimaDB {
 	 * @param zTxPOW
 	 * @return
 	 */
-	public TxPOWDBRow addNewTxPow(TxPOW zTxPOW) {
+	public TxPOWDBRow addNewTxPow(TxPoW zTxPOW) {
 		//That's that
 		return mTxPOWDB.addTxPOWDBRow(zTxPOW);
 	}
 	
-	public BlockTreeNode hardAddTxPOWBlock(TxPOW zTxPoW, MMRSet zMMR, boolean zCascade) {
+	public BlockTreeNode hardAddTxPOWBlock(TxPoW zTxPoW, MMRSet zMMR, boolean zCascade) {
 		//Add to the list
 		TxPOWDBRow row = mTxPOWDB.addTxPOWDBRow(zTxPoW);
 		row.setIsInBlock(true);
@@ -659,7 +659,7 @@ public class MinimaDB {
 		
 		ArrayList<TxPOWDBRow> rows = getTxPowDB().getAllUnusedTxPOW();
 		for(TxPOWDBRow row : rows) {
-			TxPOW txpow = row.getTxPOW();
+			TxPoW txpow = row.getTxPOW();
 			if(txpow.isTransaction()) {
 				ArrayList<Coin> inputs = txpow.getTransaction().getAllInputs();	
 				for(Coin cc : inputs) {
@@ -678,7 +678,7 @@ public class MinimaDB {
 		
 		ArrayList<TxPOWDBRow> rows = getTxPowDB().getAllUnusedTxPOW();
 		for(TxPOWDBRow row : rows) {
-			TxPOW txpow = row.getTxPOW();
+			TxPoW txpow = row.getTxPOW();
 			if(txpow.isTransaction()) {
 				ArrayList<Coin> inputs = txpow.getTransaction().getAllInputs();	
 				for(Coin cc : inputs) {
@@ -711,7 +711,7 @@ public class MinimaDB {
 		return amounts;
 	}
 	
-	public Hashtable<String, MiniNumber> getTransactionTokenAmounts(TxPOW zTxPOW) {
+	public Hashtable<String, MiniNumber> getTransactionTokenAmounts(TxPoW zTxPOW) {
 		Hashtable<String, MiniNumber> amounts = new Hashtable<>();
 	
 		if(zTxPOW.isTransaction()) {
@@ -962,14 +962,14 @@ public class MinimaDB {
 	 * @param zWitness
 	 * @return
 	 */
-	public TxPOW getCurrentTxPow(Transaction zTrans, Witness zWitness, JSONArray zContractLogs) {
+	public TxPoW getCurrentTxPow(Transaction zTrans, Witness zWitness, JSONArray zContractLogs) {
 		//Get the current best block..
 		BlockTreeNode tip = mMainTree.getChainTip();
 		
 		//TODO - Add Burn Transaction and Witness!
 		
 		//Fresh TxPOW
-		TxPOW txpow = new TxPOW();
+		TxPoW txpow = new TxPoW();
 				
 		//Set the time
 		txpow.setTimeMilli(new MiniInteger(""+System.currentTimeMillis()));
@@ -1056,7 +1056,7 @@ public class MinimaDB {
 		ArrayList<TxPOWDBRow> unused = mTxPOWDB.getAllUnusedTxPOW();
 		for(TxPOWDBRow row : unused) {
 			//Check is still VALID..
-			TxPOW txp = row.getTxPOW();
+			TxPoW txp = row.getTxPOW();
 			
 			/**
 			 * MUST be a transaction as that prevents double entry. A block with no transaction 
