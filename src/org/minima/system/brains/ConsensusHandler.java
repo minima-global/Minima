@@ -39,6 +39,11 @@ public class ConsensusHandler extends SystemHandler {
 	public static final String CONSENSUS_PRE_PROCESSTXPOW 	   = "CONSENSUS_PREPROCESSTXPOW";
 	
 	/**
+	 * Auto backup every 10 minutes..
+	 */
+	public static final String CONSENSUS_AUTOBACKUP 	       = "CONSENSUS_AUTOBACKUP";
+	
+	/**
 	 * HARD CORE MINIMG for the bootstrap period 
 	 */
 	public static final String CONSENSUS_ACTIVATEMINE 		   = "CONSENSUS_ACTIVATEMINE";
@@ -131,6 +136,9 @@ public class ConsensusHandler extends SystemHandler {
 		
 		//Are we HARD mining.. debugging / private chain
 		PostTimerMessage(new TimerMessage(2000, CONSENSUS_MINEBLOCK));
+	
+		//Redo every 10 minutes..
+		PostTimerMessage(new TimerMessage(10 * 60 * 1000, CONSENSUS_AUTOBACKUP));
 	}
 	
 	public void setBackUpManager() {
@@ -263,6 +271,13 @@ public class ConsensusHandler extends SystemHandler {
 				Message upd = new Message(CONSENSUS_NOTIFY_NEWBLOCK).addObject("txpow", txpow);
 				updateListeners(upd);
 			}
+		
+		}else if ( zMessage.isMessageType(CONSENSUS_AUTOBACKUP) ) {
+			//Backup the system..
+			PostMessage(ConsensusBackup.CONSENSUSBACKUP_BACKUP);
+			
+			//Redo every 10 minutes..
+			PostTimerMessage(new TimerMessage(10 * 60 * 1000, CONSENSUS_AUTOBACKUP));
 			
 		/**
 		 * Network Messages
