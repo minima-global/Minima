@@ -444,23 +444,26 @@ public class MinimaDB {
 				//Check the Super Block Levels are Correct! and point to the correct blocks
 				//..TODO
 				
-				//Create an MMR set that will ONLY be used if the block is VALID..
-				MMRSet mmrset = new MMRSet(zNode.getParent().getMMRSet());
-				
-				//Set this MMR..
-				zNode.setMMRset(mmrset);
-				
-				//Check all the transactions in the block are correct..
-				allok = checkFullTxPOW(zNode.getTxPow(), mmrset);
-				
-				//Check the root MMR..
-				if(allok) {
-					if(row.getTxPOW().hasBody()) {
+				//need a  body for this..
+				if(row.getTxPOW().hasBody()) {
+					//Create an MMR set that will ONLY be used if the block is VALID..
+					MMRSet mmrset = new MMRSet(zNode.getParent().getMMRSet());
+					
+					//Set this MMR..
+					zNode.setMMRset(mmrset);
+					
+					//Check all the transactions in the block are correct..
+					allok = checkFullTxPOW(zNode.getTxPow(), mmrset);
+					
+					//Check the root MMR..
+					if(allok) {
 						MiniData root = mmrset.getMMRRoot().getFinalHash();
 						if(!row.getTxPOW().getMMRRoot().isEqual(root)) {
 							allok = false;	
 						}
 					}
+				}else {
+					MinimaLogger.log("WARNING : sortBlockTreeNodeStates on no body TxPoW..! "+zNode.toString());
 				}
 				
 				//if it all passes is OK.. otherwise not ok..
