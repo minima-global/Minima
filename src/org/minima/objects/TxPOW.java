@@ -280,7 +280,7 @@ public class TxPOW implements Streamable {
 	 */
 	public void calculateTXPOWID() {
 		//set the Body Hash in the Header..
-		if(mBody != null) {
+		if(hasBody()) {
 			mHeader.mTxBody = Crypto.getInstance().hashObject(mBody);
 		}
 			
@@ -292,7 +292,7 @@ public class TxPOW implements Streamable {
 		
 		//The Transaction ID
 		_mIsTxnPOW = false;
-		if(mBody != null) {
+		if(hasBody()) {
 			//Whats the Transaction ID
 			_mTransID = Crypto.getInstance().hashObject(mBody.mTransaction);
 		

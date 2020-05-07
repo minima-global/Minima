@@ -138,7 +138,7 @@ public class SimpleBlockTreePrinter {
 		MiniData parent2 = txpow.getSuperParent(clev+1);
 			
 		int transnum = -1;
-		if(txpow.getTxBody()!=null) {
+		if(txpow.hasBody()) {
 			transnum = txpow.getBlockTransactions().size();
 		}
 		
