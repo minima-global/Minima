@@ -44,6 +44,10 @@ public class TxPoWMiner extends SystemHandler{
 			//Get TXPOW..
 			TxPOW txpow = (TxPOW) zMessage.getObject("txpow");
 			
+			//Calculate once to set the correct Body Hash
+			txpow.calculateTXPOWID();
+			
+			//The Start Nonce..
 			MiniInteger nonce = new MiniInteger(0);
 			
 			//And now start hashing.. 
@@ -65,7 +69,7 @@ public class TxPoWMiner extends SystemHandler{
 				txpow.setNonce(nonce);
 				
 				//Now Hash it..
-				hash = Crypto.getInstance().hashObject(txpow);
+				hash = Crypto.getInstance().hashObject(txpow.getTxHeader());
 				
 				if(hash.isLess(txpow.getTxnDifficulty())) {
 					//For Now..
@@ -122,7 +126,7 @@ public class TxPoWMiner extends SystemHandler{
 			MiniData hash = null;
 			while(mining && currentTime<maxTime && isRunning()) {
 				//Now Hash it..
-				hash = Crypto.getInstance().hashObject(txpow);
+				hash = Crypto.getInstance().hashObject(txpow.getTxHeader());
 				
 				//Success ?
 				if(hash.isLess(txpow.getBlockDifficulty())) {

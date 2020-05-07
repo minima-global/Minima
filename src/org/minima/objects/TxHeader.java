@@ -131,18 +131,10 @@ public class TxHeader implements Streamable {
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
 		mNonce.writeDataStream(zOut);
-		mMagic.writeDataStream(zOut);
 		mChainID.writeDataStream(zOut);
 		mParentChainID.writeDataStream(zOut);
-		mCustom.writeDataStream(zOut);
 		mTimeSecs.writeDataStream(zOut);
-		mTxnDifficulty.writeDataStream(zOut);
-		mTransaction.writeDataStream(zOut);
-		mWitness.writeDataStream(zOut);
-		mBurnTransaction.writeDataStream(zOut);
-		mBurnWitness.writeDataStream(zOut);
 		mBlockNumber.writeDataStream(zOut);
-		mParent.writeDataStream(zOut);
 		mBlockDifficulty.writeDataStream(zOut);
 		
 		//The Super parents are efficiently encoded in RLE
@@ -177,37 +169,18 @@ public class TxHeader implements Streamable {
 			}
 		}
 		
-		//Write out the TXPOW List
-		int len = mTxPowIDList.size();
-		MiniNumber ramlen = new MiniNumber(""+len);
-		ramlen.writeDataStream(zOut);
-		for(MiniData txpowid : mTxPowIDList) {
-			txpowid.writeDataStream(zOut);
-		}
-		
-		//Write out the MMR DB
-		mMMRRoot.writeDataStream(zOut);
-		mMMRTotal.writeDataStream(zOut);
+		//Write the Boddy Hash
+		mTxBody.writeDataStream(zOut);
 	}
 
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
-		mNonce          = MiniInteger.ReadFromStream(zIn);
-		mMagic          = MiniData.ReadFromStream(zIn);
-		mChainID        = MiniData.ReadFromStream(zIn);
-		mParentChainID  = MiniData.ReadFromStream(zIn);
-		mCustom         = MiniData.ReadFromStream(zIn);
-		mTimeSecs       = MiniNumber.ReadFromStream(zIn);
-		mTxnDifficulty  = MiniData.ReadFromStream(zIn);
-		
-		mTransaction.readDataStream(zIn);
-		mWitness.readDataStream(zIn);
-		mBurnTransaction.readDataStream(zIn);
-		mBurnWitness.readDataStream(zIn);
-		
-		mBlockNumber    = MiniNumber.ReadFromStream(zIn);
-		mParent         = MiniData.ReadFromStream(zIn);
-		mBlockDifficulty= MiniData.ReadFromStream(zIn);
+		mNonce           = MiniInteger.ReadFromStream(zIn);
+		mChainID         = MiniData.ReadFromStream(zIn);
+		mParentChainID   = MiniData.ReadFromStream(zIn);
+		mTimeSecs        = MiniNumber.ReadFromStream(zIn);
+		mBlockNumber     = MiniNumber.ReadFromStream(zIn);
+		mBlockDifficulty = MiniData.ReadFromStream(zIn);
 		
 		//And the super parents - RLE
 		int tot   = 0;
@@ -220,19 +193,7 @@ public class TxHeader implements Streamable {
 			}
 		}
 		
-		//Read in  the TxPOW list
-		mTxPowIDList = new ArrayList<>();
-		MiniNumber ramlen = MiniNumber.ReadFromStream(zIn);
-		int len = ramlen.getAsInt();
-		for(int i=0;i<len;i++) {
-			mTxPowIDList.add(MiniData.ReadFromStream(zIn));
-		}
-		
-		//read in the MMR state..
-		mMMRRoot  = MiniData.ReadFromStream(zIn);
-		mMMRTotal = MMRSumNumber.ReadFromStream(zIn);
-		
-		//The ID
-		calculateTXPOWID();
+		//The TxBody Hash
+		mTxBody          = MiniData.ReadFromStream(zIn);
 	}
 }

@@ -82,7 +82,6 @@ public class TxBody implements Streamable {
 		
 		txpow.put("txndiff", mTxnDifficulty.to0xString());
 		txpow.put("txn", mTransaction.toJSON());
-		txpow.put("txnid", getTransID().to0xString());
 		txpow.put("witness", mWitness.toJSON());
 		
 		//The BURN transaction.. normally empty
@@ -107,52 +106,13 @@ public class TxBody implements Streamable {
 
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
-		mNonce.writeDataStream(zOut);
 		mMagic.writeDataStream(zOut);
-		mChainID.writeDataStream(zOut);
-		mParentChainID.writeDataStream(zOut);
 		mCustom.writeDataStream(zOut);
-		mTimeSecs.writeDataStream(zOut);
 		mTxnDifficulty.writeDataStream(zOut);
 		mTransaction.writeDataStream(zOut);
 		mWitness.writeDataStream(zOut);
 		mBurnTransaction.writeDataStream(zOut);
 		mBurnWitness.writeDataStream(zOut);
-		mBlockNumber.writeDataStream(zOut);
-		mParent.writeDataStream(zOut);
-		mBlockDifficulty.writeDataStream(zOut);
-		
-		//The Super parents are efficiently encoded in RLE
-		MiniData old = null;
-		int counter=0;
-		for(int i=0;i<GlobalParams.MINIMA_CASCADE_LEVELS;i++) {
-			MiniData curr = mSuperParents[i];
-			if(old == null) {
-				old = curr;
-				counter++;
-			}else {
-				if(old.isEqual(curr)) {
-					counter++;
-					//Is this the last one..
-					if(i==GlobalParams.MINIMA_CASCADE_LEVELS-1) {
-						//Write it anyway..
-						MiniByte count = new MiniByte(counter);
-						count.writeDataStream(zOut);
-						curr.writeDataStream(zOut);						
-					}
-					
-				}else {
-					//Write the old one..
-					MiniByte count = new MiniByte(counter);
-					count.writeDataStream(zOut);
-					old.writeDataStream(zOut);
-					
-					//Reset
-					old=curr;
-					counter=1;
-				}
-			}
-		}
 		
 		//Write out the TXPOW List
 		int len = mTxPowIDList.size();
@@ -169,33 +129,14 @@ public class TxBody implements Streamable {
 
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
-		mNonce          = MiniInteger.ReadFromStream(zIn);
 		mMagic          = MiniData.ReadFromStream(zIn);
-		mChainID        = MiniData.ReadFromStream(zIn);
-		mParentChainID  = MiniData.ReadFromStream(zIn);
 		mCustom         = MiniData.ReadFromStream(zIn);
-		mTimeSecs       = MiniNumber.ReadFromStream(zIn);
 		mTxnDifficulty  = MiniData.ReadFromStream(zIn);
 		
 		mTransaction.readDataStream(zIn);
 		mWitness.readDataStream(zIn);
 		mBurnTransaction.readDataStream(zIn);
 		mBurnWitness.readDataStream(zIn);
-		
-		mBlockNumber    = MiniNumber.ReadFromStream(zIn);
-		mParent         = MiniData.ReadFromStream(zIn);
-		mBlockDifficulty= MiniData.ReadFromStream(zIn);
-		
-		//And the super parents - RLE
-		int tot   = 0;
-		while(tot<GlobalParams.MINIMA_CASCADE_LEVELS) {
-			MiniByte len = MiniByte.ReadFromStream(zIn);
-			MiniData sup = MiniData.ReadFromStream(zIn);
-			int count = len.getValue();
-			for(int i=0;i<count;i++) {
-				mSuperParents[tot++] = sup;
-			}
-		}
 		
 		//Read in  the TxPOW list
 		mTxPowIDList = new ArrayList<>();
@@ -208,8 +149,5 @@ public class TxBody implements Streamable {
 		//read in the MMR state..
 		mMMRRoot  = MiniData.ReadFromStream(zIn);
 		mMMRTotal = MMRSumNumber.ReadFromStream(zIn);
-		
-		//The ID
-		calculateTXPOWID();
 	}
 }

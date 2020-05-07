@@ -35,6 +35,8 @@ public class TxPOW implements Streamable {
 	/**
 	 * The TxPoW body where the actual information is kept
 	 * 
+	 * This is discarded and set to NULL if a cascading node..
+	 * 
 	 * The transactions, signatures etc.. that is not kept in the long run..
 	 */
 	TxBody mBody;
@@ -56,6 +58,14 @@ public class TxPOW implements Streamable {
 		//2 parts to a TxPoW 
 		mHeader = new TxHeader();
 		mBody   = new TxBody();
+	}
+	
+	public TxHeader getTxHeader() {
+		return mHeader;
+	}
+	
+	public TxBody getTxBody() {
+		return mBody;	
 	}
 	
 	public void setNonce(MiniInteger zNonce) {
@@ -245,8 +255,11 @@ public class TxPOW implements Streamable {
 	 * This is only done once at creation. TXPOW structures are immutable.
 	 */
 	public void calculateTXPOWID() {
+		//set the Body Hash in the Header..
+		mHeader.mTxBody = Crypto.getInstance().hashObject(mBody);
+		
 		//The TXPOW ID
-		_mTxPOWID = Crypto.getInstance().hashObject(this);
+		_mTxPOWID = Crypto.getInstance().hashObject(mHeader);
 		
 		//The Transaction ID
 		_mTransID = Crypto.getInstance().hashObject(mBody.mTransaction);
@@ -265,12 +278,5 @@ public class TxPOW implements Streamable {
 		
 		//What Super Level are we..
 		_mSuperBlock = SuperBlockLevels.getSuperLevel(getBlockDifficulty(), _mTxPOWID);
-		
-		//Is this the Genesis..
-//		if(getBlockNumber().isEqual(MiniNumber.ZERO) && _mTxPOWID.isExactlyEqual(SuperBlockLevels.GENESIS_HASH)){
-//			_mSuperBlock = 20;
-////			System.out.println("SuperBlock set : "+_mSuperBlock+" "+_mTxPOWID);
-//		}
-		
 	}
 }
