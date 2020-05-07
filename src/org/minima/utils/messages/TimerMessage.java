@@ -1,7 +1,5 @@
 package org.minima.utils.messages;
 
-import org.minima.utils.MinimaLogger;
-
 public class TimerMessage extends Message implements Runnable {
 
 	//The timer value
