@@ -20,17 +20,17 @@ public class MiniScript extends MiniData {
 		super(initMiniScript(zString, zContractClean));
 	}
 	
+	@Override
+	public String toString() {
+		return new String(getData(),Charset.forName("US-ASCII"));
+	}
+	
 	private static byte[] initMiniScript(String zString, boolean zContractClean) {
 		if(zContractClean) {
 			return Contract.cleanScript(zString).getBytes(Charset.forName("US-ASCII"));
 		}
 		
 		return zString.getBytes(Charset.forName("US-ASCII"));
-	}
-	
-	@Override
-	public String toString() {
-		return new String(getData(),Charset.forName("US-ASCII"));
 	}
 	
 	public static MiniScript ReadFromStream(DataInputStream zIn){
