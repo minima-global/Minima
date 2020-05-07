@@ -284,6 +284,7 @@ public class ConsensusNet {
 			 */
 			getMainDB().addNewTxPow(txpow);
 			
+			
 			//Now check the parent.. (Whether or not it is a block we may be out of alignment..)
 			MiniData parentID = txpow.getParentID();
 			if(getMainDB().getTxPOW(parentID)==null) {

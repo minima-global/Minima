@@ -73,6 +73,9 @@ public class GenesisTxPOW extends TxPoW{
 		
 //		mSuperParents[0] = new MiniData(MiniData.getRandomData(32).getData());
 		
+		//Set the body hash
+		setHeaderBodyHash();
+		
 		//Set the TXPOW
 		calculateTXPOWID();
 		

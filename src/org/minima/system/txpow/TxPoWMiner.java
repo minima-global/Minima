@@ -44,8 +44,8 @@ public class TxPoWMiner extends SystemHandler{
 			//Get TXPOW..
 			TxPoW txpow = (TxPoW) zMessage.getObject("txpow");
 			
-			//Calculate once to set the correct Body Hash
-			txpow.calculateTXPOWID();
+			//Hard set the Header Body hash - now we are mining it can never change
+			txpow.setHeaderBodyHash();
 			
 			//The Start Nonce..
 			MiniInteger nonce = new MiniInteger(0);
@@ -118,8 +118,8 @@ public class TxPoWMiner extends SystemHandler{
 			//Get TXPOW..
 			TxPoW txpow = (TxPoW) zMessage.getObject("txpow");
 			
-			//Set the TxPOW
-			txpow.calculateTXPOWID();
+			//Hard set the Header Body hash - now we are mining it can never change
+			txpow.setHeaderBodyHash();
 			
 			//Do so many then recalculate.. to have the latest block data
 			long currentTime  = System.currentTimeMillis();

@@ -69,6 +69,10 @@ public class TxPoW implements Streamable {
 		return mHeader.getBodyHash();
 	}
 	
+	public void setHeaderBodyHash() {
+		mHeader.mTxBodyHash = Crypto.getInstance().hashObject(mBody);
+	}
+	
 	public TxBody getTxBody() {
 		return mBody;	
 	}
@@ -241,6 +245,7 @@ public class TxPoW implements Streamable {
 	
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
+		//There is always the Header
 		mHeader.writeDataStream(zOut);
 		
 		//Is there a body..
@@ -295,11 +300,6 @@ public class TxPoW implements Streamable {
 	 * This is only done once at creation. TXPOW structures are immutable.
 	 */
 	public void calculateTXPOWID() {
-		//set the Body Hash in the Header..
-		if(hasBody()) {
-			mHeader.mTxBodyHash = Crypto.getInstance().hashObject(mBody);
-		}
-			
 		//The TXPOW ID
 		_mTxPOWID = Crypto.getInstance().hashObject(mHeader);
 		

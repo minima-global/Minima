@@ -59,7 +59,7 @@ public class TxBody implements Streamable {
 	 * A Random Magic number so that everyone is working on a different TxPOW in the pulse 
 	 * (since there is no coinbase..)
 	 */
-	public MiniData mMagic = MiniData.getRandomData(32);
+	public MiniData mMagic = MiniData.getRandomData(64);
 	
 	/**
 	 * A Custom Hash. Can be anything the user wants..

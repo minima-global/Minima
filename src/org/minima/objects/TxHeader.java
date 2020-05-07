@@ -45,7 +45,7 @@ public class TxHeader implements Streamable {
 	 * A Chain ID. Useful when running side-chains, as only this TokenID will be valid to POS mine it. 
 	 * 0x00 is the main chain
 	 */
-	public MiniData mChainID = new MiniData("0x00");
+	public MiniData mChainID      = new MiniData("0x00");
 	
 	/**
 	 * Every Side chain has a parent chain
@@ -55,7 +55,7 @@ public class TxHeader implements Streamable {
 	/**
 	 * The HASH of the TxBody
 	 */
-	public MiniData mTxBodyHash;
+	public MiniData mTxBodyHash    = new MiniData("0x00");
 	
 	/**
 	 * In the long run ONLY this header is kept and the body is discarded..
