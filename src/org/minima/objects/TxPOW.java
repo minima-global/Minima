@@ -29,14 +29,28 @@ import org.minima.utils.json.JSONObject;
 public class TxPOW implements Streamable {
 	
 	/**
-	 * The NONCE - the user definable data you cycle through to change the final hash of this TxPow
+	 * The TxPoW Header - what is hashed
+	 * 
+	 * This includes the super parent blocks 
 	 */
-	private MiniInteger mNonce	= new MiniInteger(0);
+	TxHeader mHeader;
 	
 	/**
-	 * Time Secs  
+	 * The TxPoW body where the actual information is kept
+	 * 
+	 * The transactions, signatures etc.. that is not kept in the long run..
 	 */
-	private MiniNumber 	mTimeSecs= new MiniNumber();
+	TxBody mBody;
+	
+//	/**
+//	 * The NONCE - the user definable data you cycle through to change the final hash of this TxPow
+//	 */
+//	private MiniInteger mNonce	= new MiniInteger(0);
+//	
+//	/**
+//	 * Time Secs  
+//	 */
+//	private MiniNumber 	mTimeSecs= new MiniNumber();
 	
 	/**
 	 * The Difficulty for this TXPOW to be valid.
@@ -135,20 +149,17 @@ public class TxPOW implements Streamable {
 	 * Main Constructor
 	 */
 	public TxPOW() {
-		mTxPowIDList = new ArrayList<>();
-		
-		//Super Block Levels..
-		for(int i=0;i<GlobalParams.MINIMA_CASCADE_LEVELS;i++) {
-			mSuperParents[i] = new MiniData();
-		}
+		//2 parts to a TxPoW 
+		mHeader = new TxHeader();
+		mBody   = new TxBody();
 	}
 	
 	public void setNonce(MiniInteger zNonce) {
-		mNonce = zNonce;
+		mHeader.mNonce = zNonce;
 	}
 	
 	public MiniInteger getNonce() {
-		return mNonce;
+		return mHeader.mNonce;
 	}
 	
 	public void setChainID(MiniData zChainID) {
@@ -184,7 +195,7 @@ public class TxPOW implements Streamable {
 	}
 	
 	public void setTimeSecs(MiniNumber zSecs) {
-		mTimeSecs = zSecs;
+		mHeader.mTimeSecs = zSecs;
 	}
 	
 	public Transaction getTransaction() {
@@ -228,7 +239,7 @@ public class TxPOW implements Streamable {
 	}
 	
 	public MiniNumber getTimeSecs() {
-		return mTimeSecs;
+		return mHeader.mTimeSecs;
 	}
 	
 	public void setBlockNumber(MiniNumber zBlockNum) {
@@ -269,87 +280,9 @@ public class TxPOW implements Streamable {
 	
 	public JSONObject toJSON() {
 		JSONObject txpow = new JSONObject();
-		
-		txpow.put("block", mBlockNumber.toString());
-		txpow.put("isblock", _mIsBlockPOW);
-		txpow.put("txpowid", _mTxPOWID.toString());
-		txpow.put("parent", mParent.toString());
-		
-		//The Super parents are efficiently encoded in RLE
-		JSONArray supers = new JSONArray();
-		MiniData old = null;
-		int counter=0;
-		for(int i=0;i<GlobalParams.MINIMA_CASCADE_LEVELS;i++) {
-			MiniData curr = mSuperParents[i];
-			
-			if(old == null) {
-				old = curr;
-				counter++;
-			}else {
-				if(old.isEqual(curr)) {
-					counter++;
-					//Is this the last one..
-					if(i==GlobalParams.MINIMA_CASCADE_LEVELS-1) {
-						//Write it anyway..
-						JSONObject sp = new JSONObject();
-						sp.put("difficulty", i);
-						sp.put("count", counter);
-						sp.put("parent", curr.to0xString());
-						supers.add(sp);						
-					}
-					
-				}else {
-					//Write the old one..
-					JSONObject sp = new JSONObject();
-					sp.put("difficulty", i);
-					sp.put("count", counter);
-					sp.put("parent", old.to0xString());
-					supers.add(sp);
-					
-					//Reset
-					old=curr;
-					counter=1;
-				}
-			}
-		}
-		txpow.put("superparents", supers);
-		
-//		//The Super parents
-//		JSONArray supers = new JSONArray();
-//		for(int i=0;i<16;i++) {
-//			supers.add(mSuperParents[i].toShort0xString(16));
-//		}
-//		txpow.put("superparents", supers);
-		
-		txpow.put("blkdiff", mBlockDifficulty.to0xString());
-		txpow.put("superblock", _mSuperBlock);
-		txpow.put("txndiff", mTxnDifficulty.to0xString());
-		txpow.put("txn", mTransaction.toJSON());
-		txpow.put("txnid", getTransID().to0xString());
-		txpow.put("witness", mWitness.toJSON());
-		
-		//The BURN transaction.. normally empty
-		txpow.put("burntxn", mBurnTransaction.toJSON());
-		txpow.put("burnwitness", mBurnWitness.toJSON());
-		
-		//Need to make it into a JSON array
-		JSONArray txns = new JSONArray();
-		for(MiniData txn : mTxPowIDList) {
-			txns.add(txn.to0xString());
-		}
-		txpow.put("txnlist", txns);
-		
-		txpow.put("magic", mMagic.toString());
-		txpow.put("chainid", mChainID.toString());
-		txpow.put("parentchainid", mParentChainID.toString());
-		txpow.put("custom", mCustom.toString());
-		txpow.put("nonce", mNonce.toString());
-		
-		txpow.put("mmr", mMMRRoot.toString());
-		txpow.put("total", mMMRTotal.toString());
-		
-		txpow.put("timesecs", mTimeSecs.toString());
-		txpow.put("date", new Date(mTimeSecs.getAsLong()*1000).toString());
+	
+		txpow.put("header", mHeader.toJSON());
+		txpow.put("body", mBody.toJSON());
 		
 		return txpow;
 	}
