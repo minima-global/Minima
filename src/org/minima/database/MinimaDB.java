@@ -455,9 +455,11 @@ public class MinimaDB {
 				
 				//Check the root MMR..
 				if(allok) {
-					MiniData root = mmrset.getMMRRoot().getFinalHash();
-					if(!row.getTxPOW().getMMRRoot().isEqual(root)) {
-						allok = false;	
+					if(row.getTxPOW().hasBody()) {
+						MiniData root = mmrset.getMMRRoot().getFinalHash();
+						if(!row.getTxPOW().getMMRRoot().isEqual(root)) {
+							allok = false;	
+						}
 					}
 				}
 				
