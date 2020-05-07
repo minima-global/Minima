@@ -1,6 +1,7 @@
 package org.minima.system.brains;
 
 import java.io.File;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 
@@ -17,6 +18,7 @@ import org.minima.system.backup.SyncPacket;
 import org.minima.system.network.NetClient;
 import org.minima.system.network.NetClientReader;
 import org.minima.system.txpow.TxPoWChecker;
+import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 import org.minima.utils.messages.Message;
@@ -252,6 +254,14 @@ public class ConsensusNet {
 			
 			//Check the Sigs.. just the once..
 			if(txpow.hasBody()) {
+				//Check Header and Body Agree..
+				MiniData bodyhash = Crypto.getInstance().hashObject(txpow.getTxBody());
+				if(!txpow.getTxHeader().getBodyHash().isEqual(bodyhash)) {
+					//Reject
+					MinimaLogger.log("ERROR NET TxHeader and TxBody Mismatch! "+txpow.getBlockNumber()+" "+txpow.getTxPowID()); 
+					return;
+				}
+				
 				boolean sigsok = TxPoWChecker.checkSigs(txpow);
 				if(!sigsok) {
 					//Reject
