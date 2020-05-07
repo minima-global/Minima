@@ -979,9 +979,6 @@ public class MinimaDB {
 		//Block Details..
 		txpow.setBlockNumber(tip.getTxPow().getBlockNumber().increment());
 		
-		//Previous block
-		txpow.setParent(tip.getTxPowID());
-		
 		if(!GlobalParams.MINIMA_ZERO_DIFF_BLK) {
 			//Calculate New Chain Speed
 			int len = mMainTree.getAsList().size();
@@ -1016,7 +1013,7 @@ public class MinimaDB {
 		
 		//Super Block Levels.. FIRST just copy them all..
 		for(int i=0;i<GlobalParams.MINIMA_CASCADE_LEVELS;i++) {
-			txpow.mSuperParents[i] = tip.getTxPow().mSuperParents[i];
+			txpow.setSuperParent(i, tip.getTxPow().getSuperParent(i));
 		}
 
 		//And now set the correct SBL given the last block
@@ -1025,7 +1022,7 @@ public class MinimaDB {
 		//All levels below this now point to the last block..
 		MiniData tiptxid = tip.getTxPowID();
 		for(int i=sbl;i>=0;i--) {
-			txpow.mSuperParents[i] = tiptxid;
+			txpow.setSuperParent(i, tiptxid);
 		}			
 		
 		//Get the current MMRSet

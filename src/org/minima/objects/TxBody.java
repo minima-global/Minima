@@ -8,7 +8,10 @@ import java.util.Date;
 
 import org.minima.GlobalParams;
 import org.minima.objects.base.MMRSumNumber;
+import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniInteger;
+import org.minima.objects.base.MiniNumber;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
@@ -18,33 +21,33 @@ public class TxBody implements Streamable {
 	/**
 	 * The Difficulty for this TXPOW to be valid.
 	 */
-	private MiniData 	mTxnDifficulty = new MiniData();
+	public MiniData 	mTxnDifficulty = new MiniData();
 	
 	/**
 	 * The Transaction the user is trying to send
 	 */
-	private Transaction	mTransaction = new Transaction();
+	public Transaction	mTransaction = new Transaction();
 	
 	/**
 	 * The Witness data for the Transaction
 	 */
-	private Witness		mWitness = new Witness();
+	public Witness		mWitness = new Witness();
 	
 	/**
 	 * The BURN paying for the Transaction the user is trying to send - can be empty
 	 */
-	private Transaction	mBurnTransaction = new Transaction();
+	public Transaction	mBurnTransaction = new Transaction();
 	
 	/**
 	 * The Witness data for the FeeTransaction - can be empty
 	 */
-	private Witness	   mBurnWitness = new Witness();
+	public Witness	   mBurnWitness = new Witness();
 	
 	/**
 	 * The list of the current TX-POWs the user 
 	 * knows about that are not yet in the this chain.
 	 */
-	private ArrayList<MiniData> mTxPowIDList;
+	public ArrayList<MiniData> mTxPowIDList;
 	
 	/**
 	 * The MMR Root!
@@ -104,12 +107,109 @@ public class TxBody implements Streamable {
 
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
+		mNonce.writeDataStream(zOut);
+		mMagic.writeDataStream(zOut);
+		mChainID.writeDataStream(zOut);
+		mParentChainID.writeDataStream(zOut);
+		mCustom.writeDataStream(zOut);
+		mTimeSecs.writeDataStream(zOut);
+		mTxnDifficulty.writeDataStream(zOut);
+		mTransaction.writeDataStream(zOut);
+		mWitness.writeDataStream(zOut);
+		mBurnTransaction.writeDataStream(zOut);
+		mBurnWitness.writeDataStream(zOut);
+		mBlockNumber.writeDataStream(zOut);
+		mParent.writeDataStream(zOut);
+		mBlockDifficulty.writeDataStream(zOut);
 		
+		//The Super parents are efficiently encoded in RLE
+		MiniData old = null;
+		int counter=0;
+		for(int i=0;i<GlobalParams.MINIMA_CASCADE_LEVELS;i++) {
+			MiniData curr = mSuperParents[i];
+			if(old == null) {
+				old = curr;
+				counter++;
+			}else {
+				if(old.isEqual(curr)) {
+					counter++;
+					//Is this the last one..
+					if(i==GlobalParams.MINIMA_CASCADE_LEVELS-1) {
+						//Write it anyway..
+						MiniByte count = new MiniByte(counter);
+						count.writeDataStream(zOut);
+						curr.writeDataStream(zOut);						
+					}
+					
+				}else {
+					//Write the old one..
+					MiniByte count = new MiniByte(counter);
+					count.writeDataStream(zOut);
+					old.writeDataStream(zOut);
+					
+					//Reset
+					old=curr;
+					counter=1;
+				}
+			}
+		}
+		
+		//Write out the TXPOW List
+		int len = mTxPowIDList.size();
+		MiniNumber ramlen = new MiniNumber(""+len);
+		ramlen.writeDataStream(zOut);
+		for(MiniData txpowid : mTxPowIDList) {
+			txpowid.writeDataStream(zOut);
+		}
+		
+		//Write out the MMR DB
+		mMMRRoot.writeDataStream(zOut);
+		mMMRTotal.writeDataStream(zOut);
 	}
-
 
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
+		mNonce          = MiniInteger.ReadFromStream(zIn);
+		mMagic          = MiniData.ReadFromStream(zIn);
+		mChainID        = MiniData.ReadFromStream(zIn);
+		mParentChainID  = MiniData.ReadFromStream(zIn);
+		mCustom         = MiniData.ReadFromStream(zIn);
+		mTimeSecs       = MiniNumber.ReadFromStream(zIn);
+		mTxnDifficulty  = MiniData.ReadFromStream(zIn);
 		
+		mTransaction.readDataStream(zIn);
+		mWitness.readDataStream(zIn);
+		mBurnTransaction.readDataStream(zIn);
+		mBurnWitness.readDataStream(zIn);
+		
+		mBlockNumber    = MiniNumber.ReadFromStream(zIn);
+		mParent         = MiniData.ReadFromStream(zIn);
+		mBlockDifficulty= MiniData.ReadFromStream(zIn);
+		
+		//And the super parents - RLE
+		int tot   = 0;
+		while(tot<GlobalParams.MINIMA_CASCADE_LEVELS) {
+			MiniByte len = MiniByte.ReadFromStream(zIn);
+			MiniData sup = MiniData.ReadFromStream(zIn);
+			int count = len.getValue();
+			for(int i=0;i<count;i++) {
+				mSuperParents[tot++] = sup;
+			}
+		}
+		
+		//Read in  the TxPOW list
+		mTxPowIDList = new ArrayList<>();
+		MiniNumber ramlen = MiniNumber.ReadFromStream(zIn);
+		int len = ramlen.getAsInt();
+		for(int i=0;i<len;i++) {
+			mTxPowIDList.add(MiniData.ReadFromStream(zIn));
+		}
+		
+		//read in the MMR state..
+		mMMRRoot  = MiniData.ReadFromStream(zIn);
+		mMMRTotal = MMRSumNumber.ReadFromStream(zIn);
+		
+		//The ID
+		calculateTXPOWID();
 	}
 }
