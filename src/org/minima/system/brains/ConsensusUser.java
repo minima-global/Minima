@@ -38,7 +38,6 @@ import org.minima.objects.base.MiniScript;
 import org.minima.objects.proofs.ScriptProof;
 import org.minima.system.input.InputHandler;
 import org.minima.system.network.NetClient;
-import org.minima.system.network.NetClientReader;
 import org.minima.system.network.NetworkHandler;
 import org.minima.system.txpow.TxPoWChecker;
 import org.minima.utils.Crypto;
