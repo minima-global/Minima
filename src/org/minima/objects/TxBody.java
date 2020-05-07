@@ -61,16 +61,9 @@ public class TxBody implements Streamable {
 	 */
 	public MiniData mMagic = MiniData.getRandomData(64);
 	
-	/**
-	 * A Custom Hash. Can be anything the user wants..
-	 */
-	public MiniData mCustom = new MiniData("0x00");
-	
-	
 	public TxBody() {
 		//List of the transctions in this block
 		mTxPowIDList = new ArrayList<>();
-		
 	}
 
 	public JSONObject toJSON() {
@@ -92,7 +85,6 @@ public class TxBody implements Streamable {
 		txpow.put("txnlist", txns);
 		
 		txpow.put("magic", mMagic.toString());
-		txpow.put("custom", mCustom.toString());
 		
 		txpow.put("mmr", mMMRRoot.toString());
 		txpow.put("total", mMMRTotal.toString());
@@ -103,7 +95,6 @@ public class TxBody implements Streamable {
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
 		mMagic.writeDataStream(zOut);
-		mCustom.writeDataStream(zOut);
 		mTxnDifficulty.writeDataStream(zOut);
 		mTransaction.writeDataStream(zOut);
 		mWitness.writeDataStream(zOut);
@@ -126,9 +117,7 @@ public class TxBody implements Streamable {
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
 		mMagic          = MiniData.ReadFromStream(zIn);
-		mCustom         = MiniData.ReadFromStream(zIn);
 		mTxnDifficulty  = MiniData.ReadFromStream(zIn);
-		
 		mTransaction.readDataStream(zIn);
 		mWitness.readDataStream(zIn);
 		mBurnTransaction.readDataStream(zIn);
