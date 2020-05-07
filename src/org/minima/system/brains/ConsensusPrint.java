@@ -215,38 +215,40 @@ public class ConsensusPrint {
 				boolean found = false;
 				
 				//Do we check the inputs..
-				if(!found && (checkinput || checktoken)) {
-					ArrayList<Coin> inputs = txpowrow.getTxPOW().getTransaction().getAllInputs();
-					for(Coin input : inputs) {
-						
-						if(checkinput && input.getAddress().isEqual(inaddr)) {
-							found = true;
-							break;
-						}
-						
-						if(checktoken) {
-							if(input.getTokenID().isEqual(tokendat)) {
+				if(txpowrow.getTxPOW().hasBody()) {
+					if(!found && (checkinput || checktoken)) {
+						ArrayList<Coin> inputs = txpowrow.getTxPOW().getTransaction().getAllInputs();
+						for(Coin input : inputs) {
+							
+							if(checkinput && input.getAddress().isEqual(inaddr)) {
 								found = true;
 								break;
 							}
+							
+							if(checktoken) {
+								if(input.getTokenID().isEqual(tokendat)) {
+									found = true;
+									break;
+								}
+							}
 						}
 					}
-				}
-				
-				//Do we check the outputs
-				if(!found && (checkoutput || checktoken)) {
-					ArrayList<Coin> outputs = txpowrow.getTxPOW().getTransaction().getAllOutputs();
-					for(Coin output : outputs) {
-						
-						if(checkoutput && output.getAddress().isEqual(outaddr)) {
-							found = true;
-							break;
-						}
-						
-						if(checktoken) {
-							if(output.getTokenID().isEqual(tokendat)) {
+					
+					//Do we check the outputs
+					if(!found && (checkoutput || checktoken)) {
+						ArrayList<Coin> outputs = txpowrow.getTxPOW().getTransaction().getAllOutputs();
+						for(Coin output : outputs) {
+							
+							if(checkoutput && output.getAddress().isEqual(outaddr)) {
 								found = true;
 								break;
+							}
+							
+							if(checktoken) {
+								if(output.getTokenID().isEqual(tokendat)) {
+									found = true;
+									break;
+								}
 							}
 						}
 					}
@@ -509,7 +511,7 @@ public class ConsensusPrint {
 			
 			//All the balances..
 			JSONObject allbal = InputHandler.getResponseJSON(zMessage);
-			JSONArray totbal = new JSONArray();
+			JSONArray totbal  = new JSONArray();
 			
 			Enumeration<String> fulls = full_details.keys();
 			while(fulls.hasMoreElements())  {

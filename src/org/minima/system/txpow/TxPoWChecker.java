@@ -41,6 +41,11 @@ public class TxPoWChecker {
 	 * @return
 	 */
 	public static boolean checkSigs(TxPOW zTxPOW) {
+		//Only if it has a body
+		if(!zTxPOW.hasBody()) {
+			return true;
+		}
+		
 		//get the Transaction..
 		Transaction trans = zTxPOW.getTransaction();
 		
@@ -88,6 +93,11 @@ public class TxPoWChecker {
 	}
 	
 	public static boolean checkTransactionMMR(TxPOW zTxPOW, MinimaDB zDB, MiniNumber zBlockNumber, MMRSet zMMRSet, boolean zTouchMMR) {
+		//need a body
+		if(!zTxPOW.hasBody()) {
+			return true;
+		}
+			
 		//Burn Transaction check!.. 
 		if(!zTxPOW.getBurnTransaction().isEmpty()) {
 			//Get MAIN Transaction Hash - make sure is correct in Burn Transaction

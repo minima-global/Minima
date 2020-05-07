@@ -14,6 +14,7 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniInteger;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.Crypto;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 import org.minima.utils.SuperBlockLevels;
 import org.minima.utils.json.JSONObject;
@@ -116,15 +117,21 @@ public class TxPOW implements Streamable {
 	
 	public Transaction getTransaction() {
 		if(!hasBody()) {
+			//SHOULD NOT HAPPEN.. 
+			MinimaLogger.log("request Transaction from Empty TxPOW..");
 			return new Transaction();
 		}
+		
 		return mBody.mTransaction;
 	}
 	
 	public Transaction getBurnTransaction() {
 		if(!hasBody()) {
+			//SHOULD NOT HAPPEN.. 
+			MinimaLogger.log("request Transaction from Empty TxPOW..");
 			return new Transaction();
 		}
+		
 		return mBody.mBurnTransaction;
 	}
 	
