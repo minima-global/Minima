@@ -1014,7 +1014,7 @@ public class MinimaDB {
 			}
 		}
 		
-		//Super Block Levels..
+		//Super Block Levels.. FIRST just copy them all..
 		for(int i=0;i<GlobalParams.MINIMA_CASCADE_LEVELS;i++) {
 			txpow.mSuperParents[i] = tip.getTxPow().mSuperParents[i];
 		}
@@ -1027,7 +1027,7 @@ public class MinimaDB {
 		for(int i=sbl;i>=0;i--) {
 			txpow.mSuperParents[i] = tiptxid;
 		}			
-
+		
 		//Get the current MMRSet
 		MMRSet newset = new MMRSet(tip.getMMRSet());
 		

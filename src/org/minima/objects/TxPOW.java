@@ -40,12 +40,7 @@ public class TxPOW implements Streamable {
 	
 	/**
 	 * The Difficulty for this TXPOW to be valid.
-	 * 
-	 * This is calculated 2^n.. so level 255, the max, is 2^255
-	 * 
-	 * The amount of work (Proof-of-work) that has gone into it.
 	 */
-	
 	private MiniData 	mTxnDifficulty = new MiniData();
 	
 	/**

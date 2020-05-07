@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
+import org.minima.GlobalParams;
 import org.minima.database.MinimaDB;
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
@@ -305,6 +306,11 @@ public class ConsensusHandler extends SystemHandler {
 			InputHandler.endResponse(zMessage, true, "");
 		
 		}else if ( zMessage.isMessageType(CONSENSUS_MINEBLOCK) ) {
+			//DEBUG MODE - only mine a block when you make a transction..
+			if(GlobalParams.MINIMA_ZERO_DIFF_BLK) {
+				return;
+			}
+				
 			//Are we Mining..
 			if(!getMainHandler().getMiner().isAutoMining()) {
 				PostTimerMessage(new TimerMessage(10000, CONSENSUS_MINEBLOCK));

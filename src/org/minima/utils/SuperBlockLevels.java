@@ -42,14 +42,12 @@ public class SuperBlockLevels {
 	
 	public static void main(String[] zArgs) {
 	
-		long ll0 =  Math.round(Maths.log2BI(BigInteger.ZERO));
+		MiniData diff = new MiniData("0xFF");
+		MiniData act  = new MiniData("0x7F");
 		
-		long ll1 =  Math.round(Maths.log2BI(BigInteger.ONE));
+		int sup = getSuperLevel(diff, act);
 		
-		long ll2 =  Math.round(Maths.log2BI(TWO));
-		
-		
-		System.out.println(ll0+" "+ll1+" "+ll2);
+		System.out.println(diff+" "+act+" "+sup);
 		
 		
 		
