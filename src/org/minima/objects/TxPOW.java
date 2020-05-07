@@ -18,6 +18,8 @@ import org.minima.utils.Streamable;
 import org.minima.utils.SuperBlockLevels;
 import org.minima.utils.json.JSONObject;
 
+import com.sun.org.apache.bcel.internal.generic.NEWARRAY;
+
 /**
  * 
  * @author Spartacus Rex
@@ -68,6 +70,14 @@ public class TxPOW implements Streamable {
 		return mBody;	
 	}
 	
+	public boolean hasBody() {
+		return mBody != null;
+	}
+	
+	public void clearBody() {
+		mBody = null;
+	}
+	
 	public void setNonce(MiniInteger zNonce) {
 		mHeader.mNonce = zNonce;
 	}
@@ -100,10 +110,6 @@ public class TxPOW implements Streamable {
 		return mBody.mTxnDifficulty;
 	}
 	
-	public void setTimeSecs(MiniNumber zSecs) {
-		mHeader.mTimeSecs = zSecs;
-	}
-	
 	public Transaction getTransaction() {
 		return mBody.mTransaction;
 	}
@@ -121,6 +127,10 @@ public class TxPOW implements Streamable {
 	}
 	
 	public ArrayList<MiniData> getBlockTransactions(){
+		if(mBody == null) {
+			return new ArrayList<MiniData>();	
+		}
+		
 		return mBody.mTxPowIDList;
 	}
 	
@@ -144,8 +154,12 @@ public class TxPOW implements Streamable {
 		return mHeader.mSuperParents[zLevel];
 	}
 	
-	public MiniNumber getTimeSecs() {
-		return mHeader.mTimeSecs;
+	public void setTimeMilli(MiniInteger zSecs) {
+		mHeader.mTimeMilli = zSecs;
+	}
+	
+	public MiniInteger getTimeMilli() {
+		return mHeader.mTimeMilli;
 	}
 	
 	public void setBlockNumber(MiniNumber zBlockNum) {
@@ -188,12 +202,19 @@ public class TxPOW implements Streamable {
 		JSONObject txpow = new JSONObject();
 		
 		txpow.put("isblock", _mIsBlockPOW);
+		txpow.put("istransaction", _mIsTxnPOW);
 		txpow.put("txpowid", _mTxPOWID.toString());
 		txpow.put("superblock", _mSuperBlock);
 		
-		
 		txpow.put("header", mHeader.toJSON());
-		txpow.put("body", mBody.toJSON());
+		
+		txpow.put("hasbody", hasBody());
+		if(hasBody()) {
+			txpow.put("body", mBody.toJSON());	
+		}else {
+			txpow.put("body", "null");
+		}
+		
 		return txpow;
 	}
 	
@@ -206,7 +227,10 @@ public class TxPOW implements Streamable {
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
 		mHeader.writeDataStream(zOut);
 		
-		if(mBody!=null) {
+		//Is there a body..
+		if(mBody==null) {
+			MiniByte.FALSE.writeDataStream(zOut);
+		}else {
 			MiniByte.TRUE.writeDataStream(zOut);
 			mBody.writeDataStream(zOut);
 		}
@@ -256,25 +280,27 @@ public class TxPOW implements Streamable {
 	 */
 	public void calculateTXPOWID() {
 		//set the Body Hash in the Header..
-		mHeader.mTxBody = Crypto.getInstance().hashObject(mBody);
-		
+		if(mBody != null) {
+			mHeader.mTxBody = Crypto.getInstance().hashObject(mBody);
+		}
+			
 		//The TXPOW ID
 		_mTxPOWID = Crypto.getInstance().hashObject(mHeader);
 		
-		//The Transaction ID
-		_mTransID = Crypto.getInstance().hashObject(mBody.mTransaction);
-		
 		//Valid Block
-		_mIsBlockPOW = false;
-		if(_mTxPOWID.isLess(getBlockDifficulty())) {
-			_mIsBlockPOW = true;
-		}
+		_mIsBlockPOW = _mTxPOWID.isLess(getBlockDifficulty());
 		
-		//Valid Transaction
+		//The Transaction ID
 		_mIsTxnPOW = false;
-		if(_mTxPOWID.isLess(getTxnDifficulty()) && !getTransaction().isEmpty()) {
-			_mIsTxnPOW = true;
-		}	
+		if(mBody != null) {
+			//Whats the Transaction ID
+			_mTransID = Crypto.getInstance().hashObject(mBody.mTransaction);
+		
+			//Valid Transaction
+			if(_mTxPOWID.isLess(getTxnDifficulty()) && !getTransaction().isEmpty()) {
+				_mIsTxnPOW = true;
+			}
+		}
 		
 		//What Super Level are we..
 		_mSuperBlock = SuperBlockLevels.getSuperLevel(getBlockDifficulty(), _mTxPOWID);

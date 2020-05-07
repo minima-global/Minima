@@ -276,14 +276,16 @@ public class MinimaDB {
 				}
 				
 				//Now the Txns..
-				ArrayList<MiniData> txpowlist = txpow.getBlockTransactions();
-				for(MiniData txid : txpowlist) {
-					trow = mTxPOWDB.findTxPOWDBRow(txid);
-					if(trow!=null) {
-						//Set that it is in this block
-						trow.setOnChainBlock(false);
-						trow.setIsInBlock(true);
-						trow.setInBlockNumber(block);
+				if(txpow.hasBody()) {
+					ArrayList<MiniData> txpowlist = txpow.getBlockTransactions();
+					for(MiniData txid : txpowlist) {
+						trow = mTxPOWDB.findTxPOWDBRow(txid);
+						if(trow!=null) {
+							//Set that it is in this block
+							trow.setOnChainBlock(false);
+							trow.setIsInBlock(true);
+							trow.setInBlockNumber(block);
+						}
 					}
 				}
 			}
@@ -965,7 +967,7 @@ public class MinimaDB {
 		TxPOW txpow = new TxPOW();
 				
 		//Set the time
-		txpow.setTimeSecs(new MiniNumber(""+(System.currentTimeMillis()/1000)));
+		txpow.setTimeMilli(new MiniInteger(""+System.currentTimeMillis()));
 			
 		//Set the Transaction..
 		txpow.setTransaction(zTrans);
@@ -1001,6 +1003,11 @@ public class MinimaDB {
 				//Check if more than maximum..
 				if(newdiff.compareTo(Crypto.MAX_VAL)>0) {
 					newdiff = Crypto.MAX_VAL;
+				}
+				
+				//Check more than TX-min..
+				if(newdiff.compareTo(Crypto.MEGA_VAL)>0) {
+					newdiff = Crypto.MEGA_VAL;
 				}
 								
 				//Create the hash

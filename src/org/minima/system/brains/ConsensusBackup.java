@@ -168,13 +168,15 @@ public class ConsensusBackup {
 				BlockTreeNode node = getMainDB().hardAddTxPOWBlock(txpow, mmrset, cascade);
 			
 				//Load the TxPOW files in the block..
-				ArrayList<MiniData> txns = txpow.getBlockTransactions();
-				for(MiniData txn : txns) {
-					TxPOW txinblock = loadTxPOW(backup.getTxpowFile(txn));
-					
-					//Add it..
-					if(txinblock != null) {
-						getMainDB().addNewTxPow(txinblock);	
+				if(txpow.hasBody()) {
+					ArrayList<MiniData> txns = txpow.getBlockTransactions();
+					for(MiniData txn : txns) {
+						TxPOW txinblock = loadTxPOW(backup.getTxpowFile(txn));
+						
+						//Add it..
+						if(txinblock != null) {
+							getMainDB().addNewTxPow(txinblock);	
+						}
 					}
 				}
 				

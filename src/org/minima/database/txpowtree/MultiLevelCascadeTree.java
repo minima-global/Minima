@@ -160,6 +160,9 @@ public class MultiLevelCascadeTree {
 			//Create a new Node..
 			BlockTreeNode copy = new BlockTreeNode(node);
 			
+			//Blank out the body as these are all cascade nodes..
+			copy.getTxPow().clearBody();
+			
 			//Add..
 			mCascadeTree.hardAddNode(copy, false);
 			

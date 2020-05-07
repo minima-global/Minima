@@ -24,6 +24,10 @@ public class MiniInteger implements Streamable {
 	
 	private MiniInteger() {}
 	
+	public MiniInteger(String zNumber) {
+		this(new BigInteger(zNumber));
+	}
+	
 	public MiniInteger(BigInteger zNumber) {
 		mNumber = zNumber;
 	}

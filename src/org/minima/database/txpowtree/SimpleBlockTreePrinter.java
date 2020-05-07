@@ -136,12 +136,17 @@ public class SimpleBlockTreePrinter {
 		TxPOW txpow = zNode.getTxPow();
 		MiniData parent  = txpow.getSuperParent(clev);
 		MiniData parent2 = txpow.getSuperParent(clev+1);
-				
+			
+		int transnum = -1;
+		if(txpow.getTxBody()!=null) {
+			transnum = txpow.getBlockTransactions().size();
+		}
+		
 		String parents = "[blk:"+txpow.getBlockNumber()+"] "
 					     +"txpowid:"+zNode.getTxPowID().to0xString(16)+" "
 						 +"[parent:"+clev+"]"+parent.to0xString(16)+" "
 						 +"[parent:"+(clev+1)+"]"+parent2.to0xString(16)
-						 +"[txns:"+txpow.getBlockTransactions().size()+"]";
+						 +"[txns:"+transnum+"]";
 								
 		String add = parents +" ["+getStarString(slev)+"] - "+getStarString(clev);
 		

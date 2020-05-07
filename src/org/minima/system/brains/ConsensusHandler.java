@@ -213,10 +213,12 @@ public class ConsensusHandler extends SystemHandler {
 			TxPOW txpow = (TxPOW) zMessage.getObject("txpow");
 			
 			//Could be 	an internal PULSE message
-			if(txpow.getTransaction().isEmpty() && !txpow.isBlock()) {
-				//It's Pulse.. send it.. 
-				//..
-				return;
+			if(txpow.hasBody()) {
+				if(txpow.getTransaction().isEmpty() && !txpow.isBlock()) {
+					//It's Pulse.. send it.. 
+					//..
+					return;
+				}
 			}
 			
 			//Double check added...

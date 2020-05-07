@@ -21,15 +21,15 @@ public class TxHeader implements Streamable {
 	/**
 	 * The NONCE - the user definable data you cycle through to change the final hash of this TxPow
 	 */
-	public MiniInteger mNonce;
+	public MiniInteger mNonce = new MiniInteger(0);
 	
 	/**
 	 * Time Secs  
 	 */
-	public MiniNumber 	mTimeSecs;
+	public MiniInteger 	mTimeMilli;
 	
 	/**
-	 * The Block Number
+	 * The Block Number - needs to be a MiniNumber as is used in Scripts..
 	 */
 	public MiniNumber  mBlockNumber;
 	
@@ -76,6 +76,7 @@ public class TxHeader implements Streamable {
 		JSONObject txpow = new JSONObject();
 		
 		txpow.put("block", mBlockNumber.toString());
+		txpow.put("blkdiff", mBlockDifficulty.to0xString());
 		
 		//The Super parents are efficiently encoded in RLE
 		JSONArray supers = new JSONArray();
@@ -116,14 +117,12 @@ public class TxHeader implements Streamable {
 		}
 		txpow.put("superparents", supers);
 		
-		txpow.put("blkdiff", mBlockDifficulty.to0xString());
-		
 		txpow.put("chainid", mChainID.toString());
 		txpow.put("parentchainid", mParentChainID.toString());
-		txpow.put("nonce", mNonce.toString());
 		
-		txpow.put("timesecs", mTimeSecs.toString());
-		txpow.put("date", new Date(mTimeSecs.getAsLong()*1000).toString());
+		txpow.put("nonce", mNonce.toString());
+		txpow.put("timemilli", mTimeMilli.toString());
+		txpow.put("date", new Date(new Long(mTimeMilli+"")).toString());
 		
 		return txpow;
 	}
@@ -131,11 +130,11 @@ public class TxHeader implements Streamable {
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
 		mNonce.writeDataStream(zOut);
-		mChainID.writeDataStream(zOut);
-		mParentChainID.writeDataStream(zOut);
-		mTimeSecs.writeDataStream(zOut);
+		mTimeMilli.writeDataStream(zOut);
 		mBlockNumber.writeDataStream(zOut);
 		mBlockDifficulty.writeDataStream(zOut);
+		mChainID.writeDataStream(zOut);
+		mParentChainID.writeDataStream(zOut);
 		
 		//The Super parents are efficiently encoded in RLE
 		MiniData old = null;
@@ -176,11 +175,11 @@ public class TxHeader implements Streamable {
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
 		mNonce           = MiniInteger.ReadFromStream(zIn);
-		mChainID         = MiniData.ReadFromStream(zIn);
-		mParentChainID   = MiniData.ReadFromStream(zIn);
-		mTimeSecs        = MiniNumber.ReadFromStream(zIn);
+		mTimeMilli       = MiniInteger.ReadFromStream(zIn);
 		mBlockNumber     = MiniNumber.ReadFromStream(zIn);
 		mBlockDifficulty = MiniData.ReadFromStream(zIn);
+		mChainID         = MiniData.ReadFromStream(zIn);
+		mParentChainID   = MiniData.ReadFromStream(zIn);
 		
 		//And the super parents - RLE
 		int tot   = 0;

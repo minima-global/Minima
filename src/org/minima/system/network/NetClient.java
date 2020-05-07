@@ -5,10 +5,12 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.Hashtable;
 import java.util.Random;
 
 import org.minima.objects.TxPOW;
 import org.minima.objects.base.MiniByte;
+import org.minima.objects.base.MiniData;
 import org.minima.system.Main;
 import org.minima.system.brains.ConsensusNet;
 import org.minima.utils.MinimaLogger;
@@ -28,7 +30,9 @@ public class NetClient extends MessageProcessor {
 	public static final String NETCLIENT_SHUTDOWN 		= "NETCLIENT_SHUTDOWN";
 	
 	public static final String NETCLIENT_SENDOBJECT 	= "NETCLIENT_SENDOBJECT";
+	
 	public static final String NETCLIENT_SENDTXPOW 	    = "NETCLIENT_SENDTXPOW";
+	public static final String NETCLIENT_SENDTXPOWREQ 	= "NETCLIENT_SENDTXPOWREQ";
 		
 	//Main Network Handler
 	NetworkHandler mNetworkMain;
@@ -57,6 +61,8 @@ public class NetClient extends MessageProcessor {
 	
 	//Did we start up..
 	boolean mStartOK;
+	
+	Hashtable<String, Long> mOldTxPoWRequests = new Hashtable<>();
 	
 	/**
 	 * Constructor
@@ -231,7 +237,35 @@ public class NetClient extends MessageProcessor {
 	
 			//First the TXPOW
 			txpow.writeDataStream(mOutput);
+		
+		}else if(zMessage.isMessageType(NETCLIENT_SENDTXPOWREQ)) {
+			//get the TxPOW
+			MiniData txpowid = (MiniData)zMessage.getObject("txpowid");
 			
+			//Check not doing it too often..
+			String val       = txpowid.to0xString();
+			long timenow     = System.currentTimeMillis();
+			
+			//Check for the last send..
+			Long last = mOldTxPoWRequests.get(val);
+			if(last != null) {
+				//Once a minute MAX
+				long diff = timenow - last.longValue();
+				if(diff < 60000) {
+					//MinimaLogger.log("Calling TxPowRequest TOO Often for TxPoW "+val+" "+diff);
+					return;					
+				}	
+			}
+			
+			//Store
+			mOldTxPoWRequests.put(val, new Long(timenow));
+			
+			//What Type..
+			NetClientReader.NETMESSAGE_TXPOW_REQUEST.writeDataStream(mOutput);
+	
+			//First the TXPOW
+			txpowid.writeDataStream(mOutput);
+		
 		}else if(zMessage.isMessageType(NETCLIENT_SENDOBJECT)) {
 			//What type of object is this..
 			MiniByte type = (MiniByte) zMessage.getObject("type");
