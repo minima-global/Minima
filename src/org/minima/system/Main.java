@@ -85,7 +85,7 @@ public class Main extends MessageProcessor {
 	 * @param zGenesis
 	 */
 	public Main(int zPort, int zRPCPort, boolean zGenesis, String zConfFolder) {
-		super("MAIN     ");
+		super("MAIN");
 		
 		//What time do we start..
 		mNodeStartTime = System.currentTimeMillis();
