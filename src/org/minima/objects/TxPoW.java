@@ -45,11 +45,11 @@ public class TxPoW implements Streamable {
 	/**
 	 * These are used internally ONLY
 	 */
-	private MiniData _mTxPOWID    = new MiniData("0x00");
-	private MiniData _mTransID    = new MiniData("0x00");
-	private boolean _mIsBlockPOW  = false;
-	private boolean _mIsTxnPOW    = false;
-	private int     _mSuperBlock  = 0;
+	private MiniData _mTxPOWID      = new MiniData("0x00");
+	private MiniData _mTransID      = new MiniData("0x00");
+	protected boolean _mIsBlockPOW  = false;
+	protected boolean _mIsTxnPOW    = false;
+	protected int     _mSuperBlock  = 0;
 	
 	/**
 	 * Main Constructor
