@@ -9,7 +9,7 @@ import java.net.SocketException;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.messages.Message;
 
-public class MultiServer implements Runnable{
+public class MinimaServer implements Runnable{
 
 	NetworkHandler mNetwork;
 	
@@ -23,7 +23,7 @@ public class MultiServer implements Runnable{
 	
 	boolean mRunning = true;
 	
-	public MultiServer(NetworkHandler zNetwork, int zPort) {
+	public MinimaServer(NetworkHandler zNetwork, int zPort) {
 		mNetwork = zNetwork;
 		mPort = zPort;
 	}

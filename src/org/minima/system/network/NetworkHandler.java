@@ -38,7 +38,7 @@ public class NetworkHandler extends SystemHandler{
 	/**
 	 * The  server listening for clients..
 	 */
-	MultiServer mServer;
+	MinimaServer mServer;
 	
 	/**
 	 * The RPC server listening for remote commands
@@ -73,7 +73,7 @@ public class NetworkHandler extends SystemHandler{
 		super(zMain,"NETWORK");
 	}
 	
-	public MultiServer getServer() {
+	public MinimaServer getServer() {
 		return mServer;
 	}
 	
@@ -107,7 +107,7 @@ public class NetworkHandler extends SystemHandler{
 			int rpcport = zMessage.getInteger("rpcport");
 			
 			//Start the network Server
-			mServer = new MultiServer(this,port);
+			mServer = new MinimaServer(this,port);
 			Thread multimain = new Thread(mServer, "Multi Server");
 			multimain.start();
 			
