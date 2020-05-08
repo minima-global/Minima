@@ -42,9 +42,9 @@ import org.minima.objects.proofs.TokenProof;
 import org.minima.system.backup.BackupManager;
 import org.minima.system.backup.SyncPackage;
 import org.minima.system.backup.SyncPacket;
-import org.minima.system.bootstrap.GenesisTxPOW;
 import org.minima.system.brains.ConsensusHandler;
 import org.minima.system.input.functions.gimme50;
+import org.minima.system.txpow.GenesisTxPOW;
 import org.minima.system.txpow.TxPoWChecker;
 import org.minima.system.txpow.TxPoWMiner;
 import org.minima.utils.Crypto;
@@ -1005,12 +1005,12 @@ public class MinimaDB {
 				BigDecimal newdiffdec = avgdiffdec.multiply(speedratio.getAsBigDecimal());
 				BigInteger newdiff    = newdiffdec.toBigInteger();
 				
-				//Check if more than maximum..
-				if(newdiff.compareTo(Crypto.MAX_VAL)>0) {
-					newdiff = Crypto.MAX_VAL;
-				}
+//				//Check if more than maximum..
+//				if(newdiff.compareTo(Crypto.MAX_VAL)>0) {
+//					newdiff = Crypto.MAX_VAL;
+//				}
 				
-				//Check more than TX-min..
+				//Check more than TX-MIN..
 				if(newdiff.compareTo(Crypto.MEGA_VAL)>0) {
 					newdiff = Crypto.MEGA_VAL;
 				}

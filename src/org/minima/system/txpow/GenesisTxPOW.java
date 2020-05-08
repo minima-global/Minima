@@ -1,9 +1,4 @@
-package org.minima.system.bootstrap;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
+package org.minima.system.txpow;
 
 import org.minima.GlobalParams;
 import org.minima.objects.Transaction;
@@ -14,6 +9,12 @@ import org.minima.objects.base.MiniInteger;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.Crypto;
 
+/**
+ * The first ever TxPoW will eventually give out the initial coins..
+ * 
+ * @author spartacusrex
+ *
+ */
 public class GenesisTxPOW extends TxPoW{
 	
 	public GenesisTxPOW() {
@@ -84,33 +85,4 @@ public class GenesisTxPOW extends TxPoW{
 		_mIsTxnPOW   = false;
 	}
 	
-	
-	public static void main(String[] zArgs) {
-		GenesisTxPOW gen = new GenesisTxPOW();
-		
-		try {
-			System.out.println("GEN 1 : "+gen);
-			
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			DataOutputStream dos = new DataOutputStream(baos);
-			
-			gen.writeDataStream(dos);
-			
-			dos.flush();
-			
-			byte[] data = baos.toByteArray();
-			
-			ByteArrayInputStream bais = new ByteArrayInputStream(data);
-			DataInputStream dis = new DataInputStream(bais);
-			
-			TxPoW tp = new TxPoW();
-			tp.readDataStream(dis);
-			
-			System.out.println("GEN 2 : "+tp);
-			
-		}catch(Exception exc) {
-			exc.printStackTrace();
-		}
-	}
-
 }

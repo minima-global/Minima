@@ -226,6 +226,9 @@ public class ConsensusHandler extends SystemHandler {
 			//Back it up!
 			getMainHandler().getBackupManager().backupTxpow(txpow);
 			
+			//Process it
+			PostMessage(new Message(ConsensusHandler.CONSENSUS_PROCESSTXPOW).addObject("txpow", txpow));
+			
 			//Only do this once..
 			boolean relevant = false;
 			if(txpow.isTransaction()) {
@@ -257,9 +260,6 @@ public class ConsensusHandler extends SystemHandler {
 			//Post It..
 			getMainHandler().getNetworkHandler().PostMessage(netw);
 			
-			//Process it
-			PostMessage(new Message(ConsensusHandler.CONSENSUS_PROCESSTXPOW).addObject("txpow", txpow));
-
 			//Tell the listeners.. ?
 			if(txpow.isBlock()) {
 				Message upd = new Message(CONSENSUS_NOTIFY_NEWBLOCK).addObject("txpow", txpow);

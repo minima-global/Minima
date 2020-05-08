@@ -1,7 +1,6 @@
 package org.minima.system.brains;
 
 import java.io.File;
-import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 
@@ -67,14 +66,6 @@ public class ConsensusNet {
 			
 			//Get the complete sync package
 			SyncPackage sp = getMainDB().getSyncPackage();
-			
-//			MiniNumber casc = getMainDB().getMainTree().getCascadeNode().getTxPow().getBlockNumber();
-//			SyncPackage sp = new SyncPackage();
-//			sp.setCascadeNode(casc);
-//			//Cycle through it all..
-//			for(BlockTreeNode node : nodes) {
-//				sp.getAllNodes().add(0,new SyncPacket(node));
-//			}
 			
 			//Now send that on..
 			sendNetMessage(zMessage, NetClientReader.NETMESSAGE_INTRO, sp);
@@ -190,7 +181,7 @@ public class ConsensusNet {
 						msg.addObject("netclient", client);
 						
 						if(!txpow.hasBody()) {
-							MinimaLogger.log("NO BODY IN TXPOW SYNC "+txpow.getBlockNumber());
+							MinimaLogger.log("NO BODY IN TXPOW SYNC BLOCK AFTER CASCADE "+txpow.getBlockNumber());
 						}
 						
 						mHandler.PostMessage(msg);
@@ -219,8 +210,7 @@ public class ConsensusNet {
 			//Get it..
 			TxPoW txpow = getMainDB().getTxPOW(txpowid);
 			if(txpow == null) {
-				//This is odd.. we should have a requested txpowid.. someone has it wrong
-				//OR look deeper.. filesystem.. could be an old one.. sync up.
+				//OLD orr missing TxPoW
 				MinimaLogger.log("NET TXPOWREQUEST OF MISSING TXPOW "+txpowid);
 			
 			}else {
@@ -252,7 +242,7 @@ public class ConsensusNet {
 				return;
 			}
 			
-			//Check the Sigs.. just the once..
+			//Check the Details of the TxPow
 			if(txpow.hasBody()) {
 				//Check Header and Body Agree..
 				MiniData bodyhash = Crypto.getInstance().hashObject(txpow.getTxBody());
@@ -262,6 +252,7 @@ public class ConsensusNet {
 					return;
 				}
 				
+				//Check the Sigs.. just the once..
 				boolean sigsok = TxPoWChecker.checkSigs(txpow);
 				if(!sigsok) {
 					//Reject
@@ -283,7 +274,6 @@ public class ConsensusNet {
 			 * Can't wait for ConsensusHandler to catch up.
 			 */
 			getMainDB().addNewTxPow(txpow);
-			
 			
 			//Now check the parent.. (Whether or not it is a block we may be out of alignment..)
 			MiniData parentID = txpow.getParentID();

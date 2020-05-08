@@ -16,13 +16,23 @@ import org.minima.utils.Streamable;
 
 public class SyncPackage implements Streamable{
 
+	/**
+	 * The Current SyncPackage Version..
+	 * 
+	 * This is the INTRO nmessage to.. so peer to peer know what network language to speak
+	 */
+	public static final MiniNumber SYNC_VERSION = MiniNumber.ONE;
+	
+	MiniNumber mSyncVersion = SYNC_VERSION;
+	
 	MiniNumber mCascadeNode = MiniNumber.ZERO;
 	
-	ArrayList<SyncPacket> mNodes;
+	ArrayList<SyncPacket> mNodes = new ArrayList<>();
 	
-	public SyncPackage() {
-		mNodes = new ArrayList<>();
-		mCascadeNode = MiniNumber.ZERO;
+	public SyncPackage() {}
+	
+	public MiniNumber getSyncVersion() {
+		return mSyncVersion;
 	}
 	
 	public void setCascadeNode(MiniNumber zNumber) {
@@ -79,8 +89,12 @@ public class SyncPackage implements Streamable{
 	
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
-		int len = mNodes.size();
-		zOut.writeInt(len);
+		//What version..
+		mSyncVersion.writeDataStream(zOut);
+		
+		//Write the details..
+		MiniNumber len =  new MiniNumber(mNodes.size());
+		len.writeDataStream(zOut);
 		for(SyncPacket node : mNodes) {
 			node.writeDataStream(zOut);
 		}
@@ -89,12 +103,18 @@ public class SyncPackage implements Streamable{
 
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
-		int len = zIn.readInt();
+		//Which Version..
+		mSyncVersion = MiniNumber.ReadFromStream(zIn);
+		
+		mNodes = new ArrayList<>();
+		MiniNumber nodelen = MiniNumber.ReadFromStream(zIn);
+		int len = nodelen.getAsInt();
 		for(int i=0;i<len;i++) {
 			SyncPacket node = new SyncPacket();
 			node.readDataStream(zIn);
 			mNodes.add(node);
 		}
+		
 		mCascadeNode = MiniNumber.ReadFromStream(zIn);
 	}
 	
