@@ -32,6 +32,8 @@ public class Transaction implements Streamable {
 	/**
 	 * The Hash of a prior transaction if this is a burn transaction
 	 * MUST Be 0x00 to be a normal transaction.
+	 * 
+	 * MUST be thenHash of the Transaction if this is a Burn Transaction
 	 */
 	protected MiniData mLinkHash = new MiniData("0x00");
 	
