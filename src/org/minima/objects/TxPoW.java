@@ -27,7 +27,7 @@ import org.minima.utils.json.JSONObject;
 public class TxPoW implements Streamable {
 	
 	/**
-	 * The TxPoW Header - what is hashed
+	 * The TxPoW Header - what is hashed and kept if becomes a cascade block
 	 * 
 	 * This includes the super parent blocks 
 	 */
@@ -38,25 +38,23 @@ public class TxPoW implements Streamable {
 	 * 
 	 * This is discarded and set to NULL if a cascading node..
 	 * 
-	 * The transactions, signatures etc.. that is not kept in the long run..
+	 * The transactions, witness, signatures and txnlist.. not kept in the long run..
 	 */
 	TxBody mBody;
 		
 	/**
 	 * These are used internally ONLY
 	 */
-	private MiniData _mTxPOWID = new MiniData("0x00");
-	private MiniData _mTransID = new MiniData("0x00");
-	
-	protected boolean _mIsBlockPOW  = false;
-	protected boolean _mIsTxnPOW    = false;
-	protected int     _mSuperBlock  = 0;
+	private MiniData _mTxPOWID    = new MiniData("0x00");
+	private MiniData _mTransID    = new MiniData("0x00");
+	private boolean _mIsBlockPOW  = false;
+	private boolean _mIsTxnPOW    = false;
+	private int     _mSuperBlock  = 0;
 	
 	/**
 	 * Main Constructor
 	 */
 	public TxPoW() {
-		//2 parts to a TxPoW 
 		mHeader = new TxHeader();
 		mBody   = new TxBody();
 	}
