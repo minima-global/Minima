@@ -118,27 +118,27 @@ public class TxPoW implements Streamable {
 	}
 	
 	public Transaction getTransaction() {
-		if(!hasBody()) {
-			//SHOULD NOT HAPPEN.. 
-			MinimaLogger.log("request Transaction from Empty TxPOW..");
-			return new Transaction();
-		}
-		
 		return mBody.mTransaction;
 	}
 	
 	public Transaction getBurnTransaction() {
-		if(!hasBody()) {
-			//SHOULD NOT HAPPEN.. 
-			MinimaLogger.log("request Transaction from Empty TxPOW..");
-			return new Transaction();
-		}
-		
 		return mBody.mBurnTransaction;
 	}
 	
 	public void setTransaction(Transaction zTran) {
 		mBody.mTransaction = zTran;
+	}
+	
+	public void setWitness(Witness zWitness) {
+		mBody.mWitness = zWitness;
+	}
+	
+	public Witness getWitness() {
+		return mBody.mWitness;
+	}
+	
+	public Witness getBurnWitness() {
+		return mBody.mBurnWitness;
 	}
 	
 	public void addBlockTxPOW(TxPoW zTxPOW) {
@@ -190,32 +190,20 @@ public class TxPoW implements Streamable {
 		return mHeader.mBlockNumber;
 	}
 	
-	public void setWitness(Witness zWitness) {
-		mBody.mWitness = zWitness;
-	}
-	
-	public Witness getWitness() {
-		return mBody.mWitness;
-	}
-	
-	public Witness getBurnWitness() {
-		return mBody.mBurnWitness;
-	}
-	
 	public MiniData getMMRRoot() {
-		return mBody.mMMRRoot;
+		return mHeader.mMMRRoot;
 	}
 	
 	public void setMMRRoot(MiniData zRoot) {
-		mBody.mMMRRoot = zRoot;
+		mHeader.mMMRRoot = zRoot;
 	}
 	
 	public MMRSumNumber getMMRTotal() {
-		return mBody.mMMRTotal;
+		return mHeader.mMMRTotal;
 	}
 	
 	public void setMMRTotal(MMRSumNumber zTotal) {
-		mBody.mMMRTotal= zTotal;
+		mHeader.mMMRTotal= zTotal;
 	}
 	
 	public JSONObject toJSON() {

@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.Date;
 
 import org.minima.GlobalParams;
+import org.minima.objects.base.MMRSumNumber;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniInteger;
@@ -51,6 +52,16 @@ public class TxHeader implements Streamable {
 	 * Every Side chain has a parent chain
 	 */
 	public MiniData mParentChainID = new MiniData("0x00");
+	
+	/**
+	 * The MMR Root!
+	 */
+	public MiniData mMMRRoot = new MiniData();
+	
+	/**
+	 * The Total Sum Of All coins in the system
+	 */
+	public MMRSumNumber mMMRTotal = MMRSumNumber.ZERO;
 	
 	/**
 	 * The HASH of the TxBody
@@ -122,6 +133,9 @@ public class TxHeader implements Streamable {
 		txpow.put("chainid", mChainID.toString());
 		txpow.put("parentchainid", mParentChainID.toString());
 		
+		txpow.put("mmr", mMMRRoot.toString());
+		txpow.put("total", mMMRTotal.toString());
+		
 		txpow.put("nonce", mNonce.toString());
 		txpow.put("timemilli", mTimeMilli.toString());
 		txpow.put("date", new Date(new Long(mTimeMilli+"")).toString());
@@ -169,6 +183,10 @@ public class TxHeader implements Streamable {
 				}
 			}
 		}
+	
+		//Write out the MMR DB
+		mMMRRoot.writeDataStream(zOut);
+		mMMRTotal.writeDataStream(zOut);
 		
 		//Write the Boddy Hash
 		mTxBodyHash.writeDataStream(zOut);
@@ -193,6 +211,10 @@ public class TxHeader implements Streamable {
 				mSuperParents[tot++] = sup;
 			}
 		}
+		
+		//read in the MMR state..
+		mMMRRoot  = MiniData.ReadFromStream(zIn);
+		mMMRTotal = MMRSumNumber.ReadFromStream(zIn);
 		
 		//The TxBody Hash
 		mTxBodyHash          = MiniData.ReadFromStream(zIn);

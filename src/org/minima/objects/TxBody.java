@@ -46,16 +46,6 @@ public class TxBody implements Streamable {
 	public ArrayList<MiniData> mTxPowIDList;
 	
 	/**
-	 * The MMR Root!
-	 */
-	public MiniData mMMRRoot = new MiniData();
-	
-	/**
-	 * The Total Sum Of All coins in the system
-	 */
-	public MMRSumNumber mMMRTotal = MMRSumNumber.ZERO;
-	
-	/**
 	 * A Random Magic number so that everyone is working on a different TxPOW in the pulse 
 	 * (since there is no coinbase..)
 	 */
@@ -86,9 +76,6 @@ public class TxBody implements Streamable {
 		
 		txpow.put("magic", mMagic.toString());
 		
-		txpow.put("mmr", mMMRRoot.toString());
-		txpow.put("total", mMMRTotal.toString());
-		
 		return txpow;
 	}
 
@@ -107,11 +94,7 @@ public class TxBody implements Streamable {
 		ramlen.writeDataStream(zOut);
 		for(MiniData txpowid : mTxPowIDList) {
 			txpowid.writeDataStream(zOut);
-		}
-		
-		//Write out the MMR DB
-		mMMRRoot.writeDataStream(zOut);
-		mMMRTotal.writeDataStream(zOut);
+		}	
 	}
 
 	@Override
@@ -130,9 +113,5 @@ public class TxBody implements Streamable {
 		for(int i=0;i<len;i++) {
 			mTxPowIDList.add(MiniData.ReadFromStream(zIn));
 		}
-		
-		//read in the MMR state..
-		mMMRRoot  = MiniData.ReadFromStream(zIn);
-		mMMRTotal = MMRSumNumber.ReadFromStream(zIn);
 	}
 }
