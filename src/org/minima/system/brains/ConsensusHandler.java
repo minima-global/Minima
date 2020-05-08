@@ -247,8 +247,7 @@ public class ConsensusHandler extends SystemHandler {
 				PostMessage(ConsensusBackup.CONSENSUSBACKUP_BACKUP);
 				
 				//Notify those listening..
-				Message upd = new Message(CONSENSUS_NOTIFY_BALANCE);
-				updateListeners(upd);
+				updateListeners(new Message(CONSENSUS_NOTIFY_BALANCE));
 			}
 			
 			//Message for the clients
@@ -262,8 +261,7 @@ public class ConsensusHandler extends SystemHandler {
 			
 			//Tell the listeners.. ?
 			if(txpow.isBlock()) {
-				Message upd = new Message(CONSENSUS_NOTIFY_NEWBLOCK).addObject("txpow", txpow);
-				updateListeners(upd);
+				updateListeners(new Message(CONSENSUS_NOTIFY_NEWBLOCK).addObject("txpow", txpow));
 			}
 		
 		}else if ( zMessage.isMessageType(CONSENSUS_AUTOBACKUP) ) {
