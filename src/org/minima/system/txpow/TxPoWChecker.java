@@ -465,9 +465,6 @@ public class TxPoWChecker {
 				
 				//Do we keep this output..
 				boolean reladdress = zDB.getUserDB().isAddressRelevant(output.getAddress());
-//				if(!rel) {
-//					rel = zDB.getUserDB().isStateListRelevant(trans.getCompleteState());
-//				}
 				
 				//Do we keep it..
 				if(reladdress || relstate) {
