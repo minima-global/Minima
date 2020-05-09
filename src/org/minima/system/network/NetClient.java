@@ -222,23 +222,8 @@ public class NetClient extends MessageProcessor {
 			//get the TxPOW
 			MiniData txpowid = (MiniData)zMessage.getObject("txpowid");
 			
-			//Check not doing it too often..
-			String val       = txpowid.to0xString();
+			//Current time..
 			long timenow     = System.currentTimeMillis();
-			
-			//Check for the last send..
-			Long last = mOldTxPoWRequests.get(val);
-			if(last != null) {
-				//Once a minute MAX
-				long diff = timenow - last.longValue();
-				if(diff < 60000) {
-					//MinimaLogger.log("Calling TxPowRequest TOO Often for TxPoW "+val+" "+diff);
-					return;					
-				}	
-			}
-			
-			//Store
-			mOldTxPoWRequests.put(val, new Long(timenow));
 			
 			//Remove the old..
 			Hashtable<String, Long> newTxPoWRequests = new Hashtable<>();
@@ -246,10 +231,10 @@ public class NetClient extends MessageProcessor {
 			while(keys.hasMoreElements()) {
 				String key = keys.nextElement();
 				
+				//Remove after 10 minuutes
 				Long timeval = mOldTxPoWRequests.get(key);
 				long time    = timeval.longValue();
 				long diff    = timenow - time;
-				//Remove after 10 minuutes
 				if(diff < 60000) {
 					newTxPoWRequests.put(key, timeval);
 				}
@@ -257,6 +242,17 @@ public class NetClient extends MessageProcessor {
 			
 			//Swap them..
 			mOldTxPoWRequests = newTxPoWRequests;
+			
+			//NOW - Check not doing it too often..
+			String val = txpowid.to0xString();
+			
+			//If it's in.. it's less than 10 minutes..
+			if(mOldTxPoWRequests.get(val) != null) {
+				return;
+			}
+			
+			//Store this as the LAST time we requested it.. won't do it again for 10 minutes
+			mOldTxPoWRequests.put(val, new Long(timenow));
 			
 			//And send it..
 			sendMessage(NetClientReader.NETMESSAGE_TXPOW_REQUEST, txpowid);

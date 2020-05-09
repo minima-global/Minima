@@ -299,7 +299,6 @@ public class ConsensusNet {
 			mHandler.PostMessage(newtxpow);
 		}
 	}
-
 	
 	private void sendTxPowRequest(Message zFromMessage, MiniData zTxPoWID) {
 		//Get the NetClient...
