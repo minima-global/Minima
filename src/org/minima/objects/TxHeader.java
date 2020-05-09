@@ -23,9 +23,9 @@ public class TxHeader implements Streamable {
 	public MiniInteger mNonce = new MiniInteger(0);
 	
 	/**
-	 * Time Secs  
+	 * Time Secs - nneds to be MiniNumber as is used in Scripts.. 
 	 */
-	public MiniInteger 	mTimeMilli;
+	public MiniNumber 	mTimeSecs;
 	
 	/**
 	 * The Block Number - needs to be a MiniNumber as is used in Scripts..
@@ -137,8 +137,10 @@ public class TxHeader implements Streamable {
 		txpow.put("total", mMMRTotal.toString());
 		
 		txpow.put("nonce", mNonce.toString());
-		txpow.put("timemilli", mTimeMilli.toString());
-		txpow.put("date", new Date(new Long(mTimeMilli+"")).toString());
+		txpow.put("timesecs", mTimeSecs.toString());
+		
+		long timemilli = mTimeSecs.mult(MiniNumber.THOUSAND).getAsLong();
+		txpow.put("date", new Date(timemilli).toString());
 		
 		return txpow;
 	}
@@ -146,7 +148,7 @@ public class TxHeader implements Streamable {
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
 		mNonce.writeDataStream(zOut);
-		mTimeMilli.writeDataStream(zOut);
+		mTimeSecs.writeDataStream(zOut);
 		mBlockNumber.writeDataStream(zOut);
 		mBlockDifficulty.writeDataStream(zOut);
 		mChainID.writeDataStream(zOut);
@@ -195,7 +197,7 @@ public class TxHeader implements Streamable {
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
 		mNonce           = MiniInteger.ReadFromStream(zIn);
-		mTimeMilli       = MiniInteger.ReadFromStream(zIn);
+		mTimeSecs        = MiniNumber.ReadFromStream(zIn);
 		mBlockNumber     = MiniNumber.ReadFromStream(zIn);
 		mBlockDifficulty = MiniData.ReadFromStream(zIn);
 		mChainID         = MiniData.ReadFromStream(zIn);

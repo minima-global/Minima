@@ -91,24 +91,6 @@ public class NetClient extends MessageProcessor {
 		
 		//Start the connection
 		PostMessage(NETCLIENT_INITCONNECT);
-		
-//		//Store
-//		try {
-////			mSocket = new Socket(zHost, zPort);
-//			mSocket = new Socket();
-//			mSocket.connect(new InetSocketAddress(zHost, zPort), 10000);
-//			
-//		}catch (Exception e) {
-//			MinimaLogger.log("Error @ connection start : "+zHost+":"+zPort);
-//			
-//			// Error - let the handler know
-//			mNetworkMain.PostMessage(new Message(NetworkHandler.NETWORK_CLIENTERROR).addObject("client", this));
-//			
-//			return;
-//		}	
-//		
-//		//Start the system..
-//		PostMessage(NETCLIENT_STARTUP);
 	}
 	
 	public NetClient(Socket zSock, NetworkHandler zNetwork) {
@@ -233,12 +215,9 @@ public class NetClient extends MessageProcessor {
 			//get the TxPOW
 			TxPoW txpow = (TxPoW)zMessage.getObject("txpow");
 			
-			//What Type..
-			NetClientReader.NETMESSAGE_TXPOW.writeDataStream(mOutput);
-	
-			//First the TXPOW
-			txpow.writeDataStream(mOutput);
-		
+			//And send it..
+			sendMessage(NetClientReader.NETMESSAGE_TXPOW, txpow);
+				
 		}else if(zMessage.isMessageType(NETCLIENT_SENDTXPOWREQ)) {
 			//get the TxPOW
 			MiniData txpowid = (MiniData)zMessage.getObject("txpowid");
@@ -270,8 +249,8 @@ public class NetClient extends MessageProcessor {
 				Long timeval = mOldTxPoWRequests.get(key);
 				long time    = timeval.longValue();
 				long diff    = timenow - time;
-				//Keep for an hour..
-				if(diff < 60000 * 60) {
+				//Remove after 10 minuutes
+				if(diff < 60000) {
 					newTxPoWRequests.put(key, timeval);
 				}
 			}
@@ -279,12 +258,9 @@ public class NetClient extends MessageProcessor {
 			//Swap them..
 			mOldTxPoWRequests = newTxPoWRequests;
 			
-			//What Type..
-			NetClientReader.NETMESSAGE_TXPOW_REQUEST.writeDataStream(mOutput);
-	
-			//First the TXPOW
-			txpowid.writeDataStream(mOutput);
-		
+			//And send it..
+			sendMessage(NetClientReader.NETMESSAGE_TXPOW_REQUEST, txpowid);
+			
 		}else if(zMessage.isMessageType(NETCLIENT_SENDOBJECT)) {
 			//What type of object is this..
 			MiniByte type = (MiniByte) zMessage.getObject("type");
@@ -311,15 +287,15 @@ public class NetClient extends MessageProcessor {
 	/**
 	 * Send a message down the network
 	 */
-	protected void sendMessage(Streamable zMessageType, Streamable zMessage) {
+	protected void sendMessage(Streamable zMessageType, Streamable zObject) {
 		//Send it..
 		try {
 			//First write the Message type..
 			zMessageType.writeDataStream(mOutput);
 			
-			if(zMessage != null) {
+			if(zObject != null) {
 				//And now write the message
-				zMessage.writeDataStream(mOutput);
+				zObject.writeDataStream(mOutput);
 			}
 			
 			//Send..

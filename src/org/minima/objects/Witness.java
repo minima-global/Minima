@@ -7,6 +7,7 @@ import java.util.ArrayList;
 
 import org.minima.database.mmr.MMRProof;
 import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniNumber;
 import org.minima.objects.proofs.ScriptProof;
 import org.minima.objects.proofs.SignatureProof;
 import org.minima.objects.proofs.TokenProof;
@@ -210,30 +211,30 @@ public class Witness implements Streamable {
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
 		//Signatures 
-		int pklen = mSignatureProofs.size();
-		zOut.writeInt(pklen);
+		MiniNumber len = new MiniNumber(mSignatureProofs.size());
+		len.writeDataStream(zOut);
 		for(SignatureProof sp : mSignatureProofs) {
 			//The Pub Key
 			sp.writeDataStream(zOut);
 		}
 		
 		//MMRProofs
-		int mmrlen = mMMRProofs.size();
-		zOut.writeInt(mmrlen);
+		len = new MiniNumber(mMMRProofs.size());
+		len.writeDataStream(zOut);
 		for(MMRProof proof : mMMRProofs) {
 			proof.writeDataStream(zOut);
 		}
 		
 		//Tokens
-		int toklen = mTokenProofs.size();
-		zOut.writeInt(toklen);
+		len = new MiniNumber(mTokenProofs.size());
+		len.writeDataStream(zOut);
 		for(TokenProof td : mTokenProofs) {
 			td.writeDataStream(zOut);
 		}
 		
 		//Scripts
-		int scriptlen = mScriptProofs.size();
-		zOut.writeInt(scriptlen);
+		len = new MiniNumber(mScriptProofs.size());
+		len.writeDataStream(zOut);
 		for(ScriptProof sp : mScriptProofs) {
 			sp.writeDataStream(zOut);
 		}
@@ -242,26 +243,30 @@ public class Witness implements Streamable {
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
 		mSignatureProofs = new ArrayList<>();
-		int prlen = zIn.readInt();
-		for(int i=0;i<prlen;i++) {
+		MiniNumber mlen = MiniNumber.ReadFromStream(zIn);
+		int len = mlen.getAsInt();
+		for(int i=0;i<len;i++) {
 			mSignatureProofs.add(SignatureProof.ReadFromStream(zIn));
 		}
 		
 		mMMRProofs = new ArrayList<>();
-		prlen = zIn.readInt();
-		for(int i=0;i<prlen;i++) {
+		mlen = MiniNumber.ReadFromStream(zIn);
+		len  = mlen.getAsInt();
+		for(int i=0;i<len;i++) {
 			mMMRProofs.add(MMRProof.ReadFromStream(zIn));
 		}
 		
 		mTokenProofs = new ArrayList<>();
-		prlen = zIn.readInt();
-		for(int i=0;i<prlen;i++) {
+		mlen = MiniNumber.ReadFromStream(zIn);
+		len  = mlen.getAsInt();
+		for(int i=0;i<len;i++) {
 			mTokenProofs.add(TokenProof.ReadFromStream(zIn));
 		}
 		
 		mScriptProofs = new ArrayList<>();
-		prlen = zIn.readInt();
-		for(int i=0;i<prlen;i++) {
+		mlen = MiniNumber.ReadFromStream(zIn);
+		len  = mlen.getAsInt();
+		for(int i=0;i<len;i++) {
 			mScriptProofs.add(ScriptProof.ReadFromStream(zIn));
 		}
 	}

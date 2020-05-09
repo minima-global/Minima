@@ -172,12 +172,20 @@ public class TxPoW implements Streamable {
 		return mHeader.mSuperParents[zLevel];
 	}
 	
-	public void setTimeMilli(MiniInteger zSecs) {
-		mHeader.mTimeMilli = zSecs;
+	public void setTimeSecs(MiniNumber zSecs) {
+		mHeader.mTimeSecs = zSecs;
 	}
 	
-	public MiniInteger getTimeMilli() {
-		return mHeader.mTimeMilli;
+	public MiniNumber getTimeSecs() {
+		return mHeader.mTimeSecs;
+	}
+	
+	public void setTimeMilli(MiniNumber zMilli) {
+		mHeader.mTimeSecs = zMilli.div(MiniNumber.THOUSAND);
+	}
+	
+	public MiniNumber getTimeMilli() {
+		return mHeader.mTimeSecs.mult(MiniNumber.THOUSAND);
 	}
 	
 	public void setBlockNumber(MiniNumber zBlockNum) {

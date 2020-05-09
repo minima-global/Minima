@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import org.minima.objects.base.MMRSumNumber;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniNumber;
 import org.minima.utils.Crypto;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONArray;
@@ -216,8 +217,9 @@ public class Proof implements Streamable {
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
 		zOut.writeInt(HASH_BITS);
 		mData.writeDataStream(zOut);
-		int len = mProofChain.size();
-		zOut.writeInt(len);
+		MiniNumber mlen = new MiniNumber(mProofChain.size());
+		mlen.writeDataStream(zOut);
+		int len = mlen.getAsInt();
 		for(int i=0;i<len;i++) {
 			ProofChunk chunk = mProofChain.get(i);
 			chunk.getLeft().writeDataStream(zOut);
@@ -231,12 +233,12 @@ public class Proof implements Streamable {
 		HASH_BITS = zIn.readInt();
 		mData = MiniData.ReadFromStream(zIn);
 		mProofChain = new ArrayList<>();
-		int len = zIn.readInt();
+		MiniNumber mlen = MiniNumber.ReadFromStream(zIn);
+		int len = mlen.getAsInt();
 		for(int i=0;i<len;i++) {
 			MiniByte left    = MiniByte.ReadFromStream(zIn);
 			MiniData hash    = MiniData.ReadFromStream(zIn);
 			MMRSumNumber val = MMRSumNumber.ReadFromStream(zIn);
-			
 			mProofChain.add(new ProofChunk(left, hash, val));
 		}
 		

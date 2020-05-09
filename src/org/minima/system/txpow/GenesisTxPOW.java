@@ -24,12 +24,11 @@ public class GenesisTxPOW extends TxPoW{
 		
 		setNonce(new MiniInteger(256));
 		 
-		setTimeMilli(new MiniInteger(""+System.currentTimeMillis()));
+		setTimeMilli(new MiniNumber(""+System.currentTimeMillis()));
 		
 		setBlockNumber(MiniNumber.ZERO);
 		
 		setBlockDifficulty(Crypto.MAX_HASH);
-		
 		
 		//Super Block Levels.. FIRST just copy them all..
 		MiniData ultimateparent = new MiniData("0x00");

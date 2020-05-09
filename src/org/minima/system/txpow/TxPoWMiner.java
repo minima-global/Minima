@@ -3,6 +3,7 @@ package org.minima.system.txpow;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniInteger;
+import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
 import org.minima.system.SystemHandler;
 import org.minima.system.brains.ConsensusHandler;
@@ -69,7 +70,7 @@ public class TxPoWMiner extends SystemHandler{
 				txpow.setNonce(nonce);
 
 				//Set the Time..
-				txpow.setTimeMilli(new MiniInteger(""+currentTime));
+				txpow.setTimeMilli(new MiniNumber(""+currentTime));
 				
 				//Now Hash it..
 				hash = Crypto.getInstance().hashObject(txpow.getTxHeader());
@@ -142,7 +143,7 @@ public class TxPoWMiner extends SystemHandler{
 					txpow.setNonce(txpow.getNonce().increment());
 					
 					//Set the Time..
-					txpow.setTimeMilli(new MiniInteger(""+currentTime));
+					txpow.setTimeMilli(new MiniNumber(""+currentTime));
 				}
 				
 				//New time
