@@ -566,6 +566,7 @@ public class Contract {
 		
 		//@Globals
 		script = script.replaceAll(" @blknum "	    , " @BLKNUM ");
+		script = script.replaceAll(" @blktime "	    , " @BLKTIME ");
 		script = script.replaceAll(" @input "	    , " @INPUT ");
 		script = script.replaceAll(" @address "	    , " @ADDRESS ");
 		script = script.replaceAll(" @amount "	    , " @AMOUNT "); 

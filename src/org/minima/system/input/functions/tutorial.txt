@@ -72,6 +72,7 @@ Globals
 -------
 
 @BLKNUM      : Block number this transaction is in
+@BLKTIME     : Block time in seconds from Jan 01 1970
 @INBLKNUM    : Block number when this output was created
 @BLKDIFF     : Difference between BLKNUM and INBLKNUM
 @INPUT       : Input number in the transaction

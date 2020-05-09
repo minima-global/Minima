@@ -18,6 +18,7 @@ import org.minima.objects.Coin;
 import org.minima.objects.PubPrivKey;
 import org.minima.objects.StateVariable;
 import org.minima.objects.Transaction;
+import org.minima.objects.TxPoW;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
@@ -590,9 +591,10 @@ public class ConsensusTxn {
 			}
 			
 			//And Check the actual Transaction..
+			TxPoW toptxpow = getMainDB().getTopTxPoW();
 			JSONArray contractlogs = new JSONArray();
 			boolean checkok = TxPoWChecker.checkTransactionMMR(trx, wit, getMainDB(),
-					getMainDB().getTopBlock(),
+					toptxpow.getBlockNumber(), toptxpow.getTimeSecs(),
 					getMainDB().getMainTree().getChainTip().getMMRSet(),false,contractlogs);
 			
 			resp.put("script_check", checkok);

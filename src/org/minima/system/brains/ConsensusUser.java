@@ -428,7 +428,8 @@ public class ConsensusUser {
 			Address ccaddress = new Address(cc.getMiniScript());
 			
 			//Set the environment
-			MiniNumber blocknum  = getMainDB().getTopBlock();
+			MiniNumber blocknum  = getMainDB().getTopTxPoW().getBlockNumber();
+			MiniNumber blocktime = getMainDB().getTopTxPoW().getTimeSecs();
 			
 			//These 2 are set automatically..
 			cc.setGlobalVariable("@ADDRESS", new HEXValue(ccaddress.getAddressData()));
@@ -436,6 +437,7 @@ public class ConsensusUser {
 			
 			//These can be played with..
 			cc.setGlobalVariable("@BLKNUM", new NumberValue(blocknum));
+			cc.setGlobalVariable("@BLKTIME", new NumberValue(blocktime));
 			cc.setGlobalVariable("@INPUT", new NumberValue(0));
 			cc.setGlobalVariable("@INBLKNUM", new NumberValue(0));
 			cc.setGlobalVariable("@AMOUNT", new NumberValue(0));

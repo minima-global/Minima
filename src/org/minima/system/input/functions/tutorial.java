@@ -78,6 +78,7 @@ public class tutorial extends CommandFunction{
 			"-------\n" + 
 			"\n" + 
 			"@BLKNUM      : Block number this transaction is in\n" + 
+			"@BLKTIME     : Block time in seconds from Jan 01 1970\n" + 
 			"@INBLKNUM    : Block number when this output was created\n" + 
 			"@BLKDIFF     : Difference between BLKNUM and INBLKNUM\n" + 
 			"@INPUT       : Input number in the transaction\n" + 

@@ -89,10 +89,10 @@ public class TxPoWChecker {
 	public static boolean checkTransactionMMR(TxPoW zTxPOW, MinimaDB zDB) {
 		//And use the chaintip for all the parameters..
 		BlockTreeNode tip = zDB.getMainTree().getChainTip();
-		return checkTransactionMMR(zTxPOW, zDB, tip.getTxPow().getBlockNumber(), tip.getMMRSet(), false);
+		return checkTransactionMMR(zTxPOW, zDB, tip.getTxPow().getBlockNumber(), tip.getTxPow().getTimeSecs(), tip.getMMRSet(), false);
 	}
 	
-	public static boolean checkTransactionMMR(TxPoW zTxPOW, MinimaDB zDB, MiniNumber zBlockNumber, MMRSet zMMRSet, boolean zTouchMMR) {
+	public static boolean checkTransactionMMR(TxPoW zTxPOW, MinimaDB zDB, MiniNumber zBlockNumber, MiniNumber zBlockTime, MMRSet zMMRSet, boolean zTouchMMR) {
 		//need a body
 		if(!zTxPOW.hasBody()) {
 			return true;
@@ -110,7 +110,7 @@ public class TxPoWChecker {
 			
 			boolean burntrans = checkTransactionMMR(zTxPOW.getBurnTransaction(), 
 													zTxPOW.getBurnWitness(), 
-													zDB, zBlockNumber, zMMRSet, zTouchMMR, 
+													zDB, zBlockNumber, zBlockTime, zMMRSet, zTouchMMR, 
 													new JSONArray());
 			if(!burntrans) {
 				return false;
@@ -122,14 +122,15 @@ public class TxPoWChecker {
 			return false;
 		}
 		
-		return checkTransactionMMR(zTxPOW.getTransaction(), zTxPOW.getWitness(), zDB, zBlockNumber, zMMRSet, zTouchMMR, new JSONArray());	
+		return checkTransactionMMR(zTxPOW.getTransaction(), zTxPOW.getWitness(), zDB, zBlockNumber, zBlockTime, zMMRSet, zTouchMMR, new JSONArray());	
 	}
 	
-	public static boolean checkTransactionMMR(Transaction zTrans, Witness zWit, MinimaDB zDB, MiniNumber zBlockNumber, MMRSet zMMRSet, boolean zTouchMMR) {
-		return checkTransactionMMR(zTrans, zWit, zDB, zBlockNumber, zMMRSet, zTouchMMR, new JSONArray());	
+	public static boolean checkTransactionMMR(Transaction zTrans, Witness zWit, MinimaDB zDB, MiniNumber zBlockNumber, MiniNumber zBlockTime, MMRSet zMMRSet, boolean zTouchMMR) {
+		return checkTransactionMMR(zTrans, zWit, zDB, zBlockNumber, zBlockTime, zMMRSet, zTouchMMR, new JSONArray());	
 	}
 	
-	public static boolean checkTransactionMMR(Transaction zTrans, Witness zWit, MinimaDB zDB, MiniNumber zBlockNumber, MMRSet zMMRSet, boolean zTouchMMR, JSONArray zContractLog) {
+	public static boolean checkTransactionMMR(Transaction zTrans, Witness zWit, MinimaDB zDB, 
+			MiniNumber zBlockNumber, MiniNumber zBlockTime, MMRSet zMMRSet, boolean zTouchMMR, JSONArray zContractLog) {
 		//Make a deep copy.. as we may need to edit it.. with floating values and DYN_STATE
 		Transaction trans = zTrans.deepCopy();
 		
@@ -261,6 +262,7 @@ public class TxPoWChecker {
 				
 				//set the environment
 				cc.setGlobalVariable("@BLKNUM", new NumberValue(zBlockNumber));
+				cc.setGlobalVariable("@BLKTIME", new NumberValue(zBlockTime));
 				cc.setGlobalVariable("@INBLKNUM", new NumberValue(proof.getMMRData().getInBlock()));
 				cc.setGlobalVariable("@BLKDIFF", new NumberValue(zBlockNumber.sub(proof.getMMRData().getInBlock())));
 				cc.setGlobalVariable("@INPUT", new NumberValue(i));
@@ -311,6 +313,7 @@ public class TxPoWChecker {
 						
 						//set the environment
 						cc.setGlobalVariable("@BLKNUM", new NumberValue(zBlockNumber));
+						cc.setGlobalVariable("@BLKTIME", new NumberValue(zBlockTime));
 						cc.setGlobalVariable("@INBLKNUM", new NumberValue(proof.getMMRData().getInBlock()));
 						cc.setGlobalVariable("@BLKDIFF", new NumberValue(zBlockNumber.sub(proof.getMMRData().getInBlock())));
 						cc.setGlobalVariable("@INPUT", new NumberValue(i));
