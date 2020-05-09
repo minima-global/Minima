@@ -131,6 +131,7 @@ public class TxPoWChecker {
 	
 	public static boolean checkTransactionMMR(Transaction zTrans, Witness zWit, MinimaDB zDB, 
 			MiniNumber zBlockNumber, MiniNumber zBlockTime, MMRSet zMMRSet, boolean zTouchMMR, JSONArray zContractLog) {
+		
 		//Make a deep copy.. as we may need to edit it.. with floating values and DYN_STATE
 		Transaction trans = zTrans.deepCopy();
 		
@@ -151,7 +152,6 @@ public class TxPoWChecker {
 		//If ANY of the inputs are floating.. check for remainder outputs.
 		boolean isfloating = false;
 
-		
 		//First Inputs..
 		int ins = inputs.size();
 		for(int i=0;i<ins;i++) {
@@ -169,6 +169,7 @@ public class TxPoWChecker {
 				return false;
 			}
 			
+			//the script for this input
 			String script = sp.getScript().toString();
 			
 			contractlog.put("input", i);
@@ -258,7 +259,7 @@ public class TxPoWChecker {
 				}
 				
 				//Create the Contract to check..
-				Contract cc = new Contract(script,sigs, zWit, trans,proof.getMMRData().getPrevState());
+				Contract cc = new Contract(script, sigs, zWit, trans,proof.getMMRData().getPrevState());
 				
 				//set the environment
 				cc.setGlobalVariable("@BLKNUM", new NumberValue(zBlockNumber));
@@ -285,6 +286,7 @@ public class TxPoWChecker {
 				//Run it!
 				cc.run();
 				
+				//Contract Execution details
 				contractlog.put("script", cc.getMiniScript());
 				contractlog.put("size", cc.getMiniScript().length());
 				contractlog.put("instructions", cc.getNumberOfInstructions());
@@ -308,52 +310,41 @@ public class TxPoWChecker {
 				if(!input.getTokenID().isEqual(Coin.MINIMA_TOKENID)) {
 					//Complex Script ?
 					if(!tokscript.equals("RETURN TRUE")) {
-						//Check the Script!
-						cc = new Contract(tokscript,sigs, zWit, trans,proof.getMMRData().getPrevState());
+						//Check the Token Script!
+						Contract tokencc = new Contract(tokscript, sigs, zWit, trans, proof.getMMRData().getPrevState());
 						
-						//set the environment
-						cc.setGlobalVariable("@BLKNUM", new NumberValue(zBlockNumber));
-						cc.setGlobalVariable("@BLKTIME", new NumberValue(zBlockTime));
-						cc.setGlobalVariable("@INBLKNUM", new NumberValue(proof.getMMRData().getInBlock()));
-						cc.setGlobalVariable("@BLKDIFF", new NumberValue(zBlockNumber.sub(proof.getMMRData().getInBlock())));
-						cc.setGlobalVariable("@INPUT", new NumberValue(i));
-						cc.setGlobalVariable("@AMOUNT", new NumberValue(input.getAmount()));
-						cc.setGlobalVariable("@ADDRESS", new HEXValue(input.getAddress()));
-						cc.setGlobalVariable("@TOKENID", new HEXValue(input.getTokenID()));
-						cc.setGlobalVariable("@COINID", new HEXValue(input.getCoinID()));
-						cc.setGlobalVariable("@SCRIPT", new ScriptValue(script));
-						cc.setGlobalVariable("@TOKENSCRIPT", new ScriptValue(tokscript));
-						cc.setGlobalVariable("@FLOATING", new BooleanValue(input.isFloating()));
-						cc.setGlobalVariable("@TOTIN", new NumberValue(trans.getAllInputs().size()));
-						cc.setGlobalVariable("@TOTOUT", new NumberValue(trans.getAllOutputs().size()));
+						//set the environment - same as the first contract
+						tokencc.setAllGlobalVariables(cc.getGlobalVariables());
 						
 						//Is it a floating coin..
-						cc.setFloating(input.isFloating());
+						tokencc.setFloating(input.isFloating());
 						
 						//Set the DYNState..
-						cc.setCompleteDYNState(DYNState,checkState);
+						tokencc.setCompleteDYNState(DYNState,checkState);
 						
 						//Run it!
-						cc.run();
+						tokencc.run();
 						
 						//Get the DynState
-						DYNState   = cc.getCompleteDYNState();
-						checkState = cc.getCompleteCheckState();
-									
+						DYNState = tokencc.getCompleteDYNState();
+						
+						//Log it all
 						JSONObject toklog = new JSONObject();
 						contractlog.put("tokencontract", toklog);
 						
-						toklog.put("script", cc.getMiniScript());
-						toklog.put("size", cc.getMiniScript().length());
-						toklog.put("instructions", cc.getNumberOfInstructions());
+						//Token Contract execution details
+						toklog.put("script", tokencc.getMiniScript());
+						toklog.put("size", tokencc.getMiniScript().length());
+						toklog.put("instructions", tokencc.getNumberOfInstructions());
 						toklog.put("address", input.getAddress().to0xString());
-						toklog.put("parseok", cc.isParseOK());
-						toklog.put("parse", cc.getCompleteTraceLog());
-						toklog.put("exception", cc.isException());
-						toklog.put("result", cc.isSuccess());
+						toklog.put("parseok", tokencc.isParseOK());
+						toklog.put("parse", tokencc.getCompleteTraceLog());
+						toklog.put("exception", tokencc.isException());
+						toklog.put("excvalue", tokencc.getException());
+						toklog.put("result", tokencc.isSuccess());
 						
 						//and.. ?
-						if(!cc.isSuccess()) {
+						if(!tokencc.isSuccess()) {
 							return false;
 						}
 					}

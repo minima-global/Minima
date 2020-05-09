@@ -194,6 +194,14 @@ public class Contract {
 		traceLog("Global ["+zGlobal+"] : "+zValue);
 	}
 	
+	public Hashtable<String, Value> getGlobalVariables() {
+		return mGlobals;
+	}
+	
+	public void setAllGlobalVariables(Hashtable<String, Value> zGlobals) {
+		mGlobals = zGlobals;
+	}
+	
 	public Value getPrevState(int zPrev) throws ExecutionException {
 		//Get the state variable..
 		for(StateVariable sv : mPrevState) {
