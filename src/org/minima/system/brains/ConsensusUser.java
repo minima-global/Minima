@@ -46,7 +46,7 @@ import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
 
-public class ConsensusUser {
+public class ConsensusUser extends ConsensusProcessor {
 
 
 	public static final String CONSENSUS_PREFIX 			= "CONSENSUSUSER_";
@@ -75,17 +75,8 @@ public class ConsensusUser {
 	
 	public static final String CONSENSUS_MMRTREE 		    = CONSENSUS_PREFIX+"MMRTREE";
 	
-    MinimaDB mDB;
-	
-	ConsensusHandler mHandler;
-	
 	public ConsensusUser(MinimaDB zDB, ConsensusHandler zHandler) {
-		mDB = zDB;
-		mHandler = zHandler;
-	}
-	
-	private MinimaDB getMainDB() {
-		return mDB;
+		super(zDB, zHandler);
 	}
 	 
 	public void processMessage(Message zMessage) throws Exception {
@@ -104,7 +95,7 @@ public class ConsensusUser {
 			InputHandler.endResponse(zMessage, true, "");
 		
 			//Do a backup..
-			mHandler.PostMessage(ConsensusBackup.CONSENSUSBACKUP_BACKUPUSER);
+			getConsensusHandler().PostMessage(ConsensusBackup.CONSENSUSBACKUP_BACKUPUSER);
 			
 		}else if(zMessage.isMessageType(CONSENSUS_SIGN)) {
 			String data   = zMessage.getString("data");
@@ -149,7 +140,7 @@ public class ConsensusUser {
 			InputHandler.endResponse(zMessage, true, "");
 		
 			//Do a backup..
-			mHandler.PostMessage(ConsensusBackup.CONSENSUSBACKUP_BACKUPUSER);
+			getConsensusHandler().PostMessage(ConsensusBackup.CONSENSUSBACKUP_BACKUPUSER);
 			
 		}else if(zMessage.isMessageType(CONSENSUS_NEWSCRIPT)) {
 			//Get the script
@@ -167,7 +158,7 @@ public class ConsensusUser {
 			InputHandler.endResponse(zMessage, true, "");
 		
 			//Do a backup..
-			mHandler.PostMessage(ConsensusBackup.CONSENSUSBACKUP_BACKUPUSER);
+			getConsensusHandler().PostMessage(ConsensusBackup.CONSENSUSBACKUP_BACKUPUSER);
 			
 		}else if(zMessage.isMessageType(CONSENSUS_NEWKEY)) {
 			//Get the bitlength
@@ -182,7 +173,7 @@ public class ConsensusUser {
 			InputHandler.endResponse(zMessage, true, "");
 			
 			//Do a backup..
-			mHandler.PostMessage(ConsensusBackup.CONSENSUSBACKUP_BACKUPUSER);
+			getConsensusHandler().PostMessage(ConsensusBackup.CONSENSUSBACKUP_BACKUPUSER);
 			
 		}else if(zMessage.isMessageType(CONSENSUS_CHECK)) {
 			String data = zMessage.getString("data");
@@ -527,6 +518,7 @@ public class ConsensusUser {
 					if(!sigsok || !trxok) {
 						remove.add(txpow.getTxPowID());
 					}else {
+						NetworkHandler nethandler = getConsensusHandler().getMainHandler().getNetworkHandler();
 						//Check All..
 						if(txpow.isBlock()) {
 							MiniData parent = txpow.getParentID();
@@ -537,7 +529,7 @@ public class ConsensusUser {
 													.addObject("message", msg);
 								
 								//Post it..
-								mHandler.getMainHandler().getNetworkHandler().PostMessage(netw);
+								nethandler.PostMessage(netw);
 								
 								//Add to out list
 								requested.add(parent.to0xString());
@@ -553,7 +545,7 @@ public class ConsensusUser {
 											.addObject("message", msg);
 									
 									//Post it..
-									mHandler.getMainHandler().getNetworkHandler().PostMessage(netw);
+									nethandler.PostMessage(netw);
 									
 									//Add to out list
 									requested.add(txn.to0xString());
@@ -628,7 +620,7 @@ public class ConsensusUser {
 			InputHandler.endResponse(zMessage, true, "");
 			
 			//Do a backup..
-			mHandler.PostMessage(ConsensusBackup.CONSENSUSBACKUP_BACKUP);
+			getConsensusHandler().PostMessage(ConsensusBackup.CONSENSUSBACKUP_BACKUP);
 			
 		}else if(zMessage.isMessageType(CONSENSUS_IMPORTCOIN)) {
 			MiniData data = (MiniData)zMessage.getObject("proof");
@@ -702,7 +694,7 @@ public class ConsensusUser {
 			InputHandler.endResponse(zMessage, true, "");
 			
 			//Do a backup..
-			mHandler.PostMessage(ConsensusBackup.CONSENSUSBACKUP_BACKUP);
+			getConsensusHandler().PostMessage(ConsensusBackup.CONSENSUSBACKUP_BACKUP);
 			
 		}else if(zMessage.isMessageType(CONSENSUS_EXPORTCOIN)) {
 			MiniData coinid = (MiniData)zMessage.getObject("coinid");
@@ -759,7 +751,7 @@ public class ConsensusUser {
 			}
 			
 			//Do a backup..
-			mHandler.PostMessage(ConsensusBackup.CONSENSUSBACKUP_BACKUPUSER);
+			getConsensusHandler().PostMessage(ConsensusBackup.CONSENSUSBACKUP_BACKUPUSER);
 		}
 	}
 	

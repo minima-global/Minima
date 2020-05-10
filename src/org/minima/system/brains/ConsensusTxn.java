@@ -33,7 +33,7 @@ import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
 
-public class ConsensusTxn {
+public class ConsensusTxn extends ConsensusProcessor {
 
 	/**
 	 * Used for the custom Transactions
@@ -65,17 +65,8 @@ public class ConsensusTxn {
 	public static final String CONSENSUS_REMOUTPUT 			= CONSENSUS_PREFIX+"REMOUTPUT";
 	public static final String CONSENSUS_REMINPUT 			= CONSENSUS_PREFIX+"REMINPUT";
 	
-	MinimaDB mDB;
-	
-	ConsensusHandler mHandler;
-	
 	public ConsensusTxn(MinimaDB zDB, ConsensusHandler zHandler) {
-		mDB = zDB;
-		mHandler = zHandler;
-	}
-	
-	private MinimaDB getMainDB() {
-		return mDB;
+		super(zDB, zHandler);
 	}
 	
 	private boolean checkTransactionValid(int zTrans) {
@@ -92,7 +83,7 @@ public class ConsensusTxn {
 	private void listTransactions(Message zMessage) {
 		Message list = new Message(CONSENSUS_TXNLIST);
 		InputHandler.addResponseMesage(list, zMessage);
-		mHandler.PostMessage(list);
+		getConsensusHandler().PostMessage(list);
 	}
 	
 	private void outputTransaction(Message zMessage, int zTransaction) {
@@ -547,7 +538,7 @@ public class ConsensusTxn {
 			InputHandler.addResponseMesage(msg, zMessage);
 			
 			//Post it..
-			mHandler.PostMessage(msg);
+			getConsensusHandler().PostMessage(msg);
 			
 		}else if(zMessage.isMessageType(CONSENSUS_TXNVALIDATE)) {
 			//Which transaction

@@ -22,7 +22,7 @@ import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 import org.minima.utils.messages.Message;
 
-public class ConsensusNet {
+public class ConsensusNet extends ConsensusProcessor {
 
 	/**
 	 * Used for the custom Transactions
@@ -35,18 +35,14 @@ public class ConsensusNet {
 	public static final String CONSENSUS_NET_TXPOWREQUEST	= CONSENSUS_PREFIX+"NET_MESSAGE_"+NetClientReader.NETMESSAGE_TXPOW_REQUEST.getValue();
 	public static final String CONSENSUS_NET_TXPOW 			= CONSENSUS_PREFIX+"NET_MESSAGE_"+NetClientReader.NETMESSAGE_TXPOW.getValue();
 	
-	MinimaDB mDB;
-	ConsensusHandler mHandler;
-	
+	/**
+	 * Will we switch to a heavier chain - DEBUG mode for -private
+	 */
 	boolean mHardResetAllowed = true;
 	
-	public ConsensusNet(MinimaDB zDB, ConsensusHandler zHandler) {
-		mDB = zDB;
-		mHandler = zHandler;
-	}
 	
-	private MinimaDB getMainDB() {
-		return mDB;
+	public ConsensusNet(MinimaDB zDB, ConsensusHandler zHandler) {
+		super(zDB, zHandler);
 	}
 	 
 	public void setHardResest(boolean zHardResetAllowed) {
@@ -121,7 +117,7 @@ public class ConsensusNet {
 			}
 			
 			//We'll be storing the received txpow messages
-			BackupManager backup = mHandler.getMainHandler().getBackupManager();
+			BackupManager backup = getConsensusHandler().getMainHandler().getBackupManager();
 			
 			//Complete Refresh..
 			if(hardreset) {
@@ -184,7 +180,7 @@ public class ConsensusNet {
 							MinimaLogger.log("NO BODY IN TXPOW SYNC BLOCK AFTER CASCADE "+txpow.getBlockNumber());
 						}
 						
-						mHandler.PostMessage(msg);
+						getConsensusHandler().PostMessage(msg);
 						
 						totalreq++;
 					}
@@ -230,7 +226,6 @@ public class ConsensusNet {
 			
 			//Do we have it.. now check DB - hmmm..
 			if(getMainDB().getTxPOW(txpow.getTxPowID()) != null) {
-				//WE HAVE IT..
 				MinimaLogger.log("NET Transaction we already have.. "+txpow.getBlockNumber()+" "+txpow.getTxPowID());
 				return;
 			}
@@ -238,37 +233,37 @@ public class ConsensusNet {
 			//Is it even a valid TxPOW.. not enough POW ? - FIRST CHECK
 			if(!txpow.isBlock() && !txpow.isTransaction()) {
 				MinimaLogger.log("ERROR NET FAKE - not transaction not block : "+txpow.getBlockNumber()+" "+txpow.getTxPowID());
-				//Fake ?
+				//Fake - should disconnect this user..
 				return;
 			}
 			
-			//Check the Details of the TxPow
-			if(txpow.hasBody()) {
-				//Check Header and Body Agree..
-				MiniData bodyhash = Crypto.getInstance().hashObject(txpow.getTxBody());
-				if(!txpow.getTxHeader().getBodyHash().isEqual(bodyhash)) {
-					//Reject
-					MinimaLogger.log("ERROR NET TxHeader and TxBody Mismatch! "+txpow.getBlockNumber()+" "+txpow.getTxPowID()); 
-					return;
-				}
-				
-				//Check the Sigs.. just the once..
-				boolean sigsok = TxPoWChecker.checkSigs(txpow);
-				if(!sigsok) {
-					//Reject
-					MinimaLogger.log("ERROR NET Invalid Signatures with TXPOW : "+txpow.getBlockNumber()+" "+txpow.getTxPowID()); 
-					return;
-				}
-				
-				//Now check the Transaction is Valid As of now ?
-				boolean trxok = TxPoWChecker.checkTransactionMMR(txpow, getMainDB());
-				if(!trxok) {
-					//Reject
-					MinimaLogger.log("ERROR NET TXPOW FAILS CHECK MMR: "+txpow.getBlockNumber()+" "+txpow.getTxPowID()); 
-					return;
-				}
+			//Does it have a body.. SHOULD NOT HAPPEN as only comlete post cascade txpow messages can be requested
+			if(!txpow.hasBody()) {
+				MinimaLogger.log("ERROR NET NO TxBODY for txpow "+txpow.getBlockNumber()+" "+txpow.getTxPowID());
+				return;
 			}
 			
+			//Check Header and Body Agree..
+			MiniData bodyhash = Crypto.getInstance().hashObject(txpow.getTxBody());
+			if(!txpow.getTxHeader().getBodyHash().isEqual(bodyhash)) {
+				MinimaLogger.log("ERROR NET TxHeader and TxBody Mismatch! "+txpow.getBlockNumber()+" "+txpow.getTxPowID()); 
+				return;
+			}
+			
+			//Check the Sigs.. just the once..
+			boolean sigsok = TxPoWChecker.checkSigs(txpow);
+			if(!sigsok) {
+				MinimaLogger.log("ERROR NET Invalid Signatures with TXPOW : "+txpow.getBlockNumber()+" "+txpow.getTxPowID()); 
+				return;
+			}
+			
+			//Now check the Transaction is Valid As of now ?
+			boolean trxok = TxPoWChecker.checkTransactionMMR(txpow, getMainDB());
+			if(!trxok) {
+				MinimaLogger.log("ERROR NET TXPOW FAILS CHECK MMR: "+txpow.getBlockNumber()+" "+txpow.getTxPowID()); 
+				return;
+			}
+		
 			/**
 			 * Add it to the database.. Do this HERE as there may be other messages in the queue. 
 			 * Can't wait for ConsensusHandler to catch up.
@@ -279,7 +274,7 @@ public class ConsensusNet {
 			MiniData parentID = txpow.getParentID();
 			if(getMainDB().getTxPOW(parentID)==null) {
 				//We don't have it, get it..
-				MinimaLogger.log("Request Parent TxPoW @ "+txpow.getBlockNumber()+" parent:"+parentID); 
+				//MinimaLogger.log("Request Parent TxPoW @ "+txpow.getBlockNumber()+" parent:"+parentID); 
 				sendTxPowRequest(zMessage, parentID);
 			}
 
@@ -287,7 +282,7 @@ public class ConsensusNet {
 			ArrayList<MiniData> txns = txpow.getBlockTransactions();
 			for(MiniData txn : txns) {
 				if(getMainDB().getTxPOW(txn) == null ) {
-					MinimaLogger.log("Request missing TxPoW in block "+txpow.getBlockNumber()+" "+txn);
+					//MinimaLogger.log("Request missing TxPoW in block "+txpow.getBlockNumber()+" "+txn);
 					sendTxPowRequest(zMessage, txn);
 				}
 			}
@@ -296,7 +291,7 @@ public class ConsensusNet {
 			Message newtxpow = new Message(ConsensusHandler.CONSENSUS_PRE_PROCESSTXPOW).addObject("txpow", txpow);
 			
 			//Post it
-			mHandler.PostMessage(newtxpow);
+			getConsensusHandler().PostMessage(newtxpow);
 		}
 	}
 	
