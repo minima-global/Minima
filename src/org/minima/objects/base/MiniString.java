@@ -7,57 +7,19 @@ import java.nio.charset.Charset;
 
 import org.minima.utils.Streamable;
 
-/*public class MiniScript extends MiniData {
-	
-	private MiniScript() {
-		super();
-	}
-	
-	public MiniScript(String zString) {
-		this(zString,true);
-	}
-	
-	public MiniScript(String zString, boolean zContractClean) {
-		super(initMiniScript(zString, zContractClean));
-	}
-	
-	@Override
-	public String toString() {
-		return new String(getData(),Charset.forName("US-ASCII"));
-	}
-	
-	private static byte[] initMiniScript(String zString, boolean zContractClean) {
-		if(zContractClean) {
-			return Contract.cleanScript(zString).getBytes(Charset.forName("US-ASCII"));
-		}
-		
-		return zString.getBytes(Charset.forName("US-ASCII"));
-	}
-	
-	public static MiniScript ReadFromStream(DataInputStream zIn){
-		MiniScript data = new MiniScript();
-		
-		try {
-			data.readDataStream(zIn);
-		} catch (IOException e) {
-			e.printStackTrace();
-			return null;
-		}
-		
-		return data;
-	}
-}*/
-
 public class MiniString implements Streamable {
 
+	/**
+	 * The UTF-8 String Data
+	 */
 	String mString;
+	
+	public MiniString(MiniString zString) {
+		this(zString.toString());
+	}
 	
 	public MiniString(String zString) {
 		mString = new String(zString.getBytes(Charset.forName("UTF-8")));
-	}
-	
-	public MiniString(MiniString zString) {
-		mString = new String(zString.toString().getBytes(Charset.forName("UTF-8")));
 	}
 	
 	@Override
