@@ -299,7 +299,7 @@ public class NetClient extends MessageProcessor {
 			
 		}catch(Exception ec) {
 			//Show..
-			MinimaLogger.log("Error sending message : "+zMessageType.toString()+" "+ec);
+//			MinimaLogger.log("Error sending message : "+zMessageType.toString()+" "+ec);
 //			ec.printStackTrace();
 			
 			//Tell the network Handler
