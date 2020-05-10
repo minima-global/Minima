@@ -99,13 +99,6 @@ public class BlockTree {
 			return;
 		}
 		
-		//CHECK - this is breaking on Android ?
-		BlockTreeNode exists = findNode(zNode.getTxPowID());
-		if(exists != null) {
-			//All ready in there..
-			MinimaLogger.log("HARD ADDING NODE ALREADY THERE! "+zNode.toString());
-		}
-		
 		//Add to the end..
 		mTip.addChild(zNode);
 		
