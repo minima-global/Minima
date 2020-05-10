@@ -6,7 +6,7 @@ import java.io.IOException;
 
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniScript;
+import org.minima.objects.base.MiniString;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONObject;
 
@@ -22,7 +22,7 @@ public class StateVariable implements Streamable {
 	 * The data can represent any of the value types used in script..
 	 * HEX, Number or Script
 	 */
-	MiniScript mData; 
+	MiniString mData; 
 	
 	/**
 	 * Port and Data..
@@ -36,19 +36,19 @@ public class StateVariable implements Streamable {
 		//Cannot add Mx addresses.. only HEX addresses in SCRIPT
 		if(zData.startsWith("Mx")) {
 			//Convert to HEX
-			mData = new MiniScript(Address.convertMinimaAddress(zData).to0xString());
+			mData = new MiniString(Address.convertMinimaAddress(zData).to0xString());
 		}else {
-			mData = new MiniScript(zData);	
+			mData = new MiniString(zData);	
 		}
 	}
 	
 	private StateVariable() {}
 	
-	public void resetData(MiniScript zData) {
+	public void resetData(MiniString zData) {
 		mData = zData;
 	}
 	
-	public MiniScript getData() {
+	public MiniString getValue() {
 		return mData;
 	}
 	
@@ -94,9 +94,9 @@ public class StateVariable implements Streamable {
 		MiniByte isdata = MiniByte.ReadFromStream(zIn);
 		if(isdata.isTrue()) {
 			MiniData data = MiniData.ReadFromStream(zIn);
-			mData = new MiniScript(data.to0xString());
+			mData = new MiniString(data.to0xString());
 		}else {
-			mData = MiniScript.ReadFromStream(zIn);	
+			mData = MiniString.ReadFromStream(zIn);	
 		}
 	}
 	

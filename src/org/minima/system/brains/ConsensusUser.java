@@ -34,7 +34,7 @@ import org.minima.objects.base.MMRSumNumber;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniInteger;
 import org.minima.objects.base.MiniNumber;
-import org.minima.objects.base.MiniScript;
+import org.minima.objects.base.MiniString;
 import org.minima.objects.proofs.ScriptProof;
 import org.minima.system.input.InputHandler;
 import org.minima.system.network.NetClient;
@@ -213,14 +213,14 @@ public class ConsensusUser extends ConsensusProcessor {
 			int bitlength = zMessage.getInteger("bitlength");
 			
 			//Create an MMR TREE from the array of inputs..
-			ArrayList<MiniScript> leaves = (ArrayList<MiniScript>) zMessage.getObject("leaves");
+			ArrayList<MiniString> leaves = (ArrayList<MiniString>) zMessage.getObject("leaves");
 		
 			//First create an MMR Tree..
 			MMRSet mmr = new MMRSet(bitlength);
 			
 			//Now add each 
 			JSONArray nodearray = new JSONArray();
-			for(MiniScript leaf : leaves) {
+			for(MiniString leaf : leaves) {
 				String leafstr = leaf.toString();
 				JSONObject mmrnode = new JSONObject();
 				MiniData finaldata = null;

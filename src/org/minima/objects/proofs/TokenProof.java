@@ -7,7 +7,7 @@ import java.io.IOException;
 
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
-import org.minima.objects.base.MiniScript;
+import org.minima.objects.base.MiniString;
 import org.minima.utils.Crypto;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONObject;
@@ -32,12 +32,12 @@ public class TokenProof implements Streamable{
 	/**
 	 * The Token Name
 	 */
-	MiniScript mTokenName;
+	MiniString mTokenName;
 	
 	/**
 	 * The Token Script
 	 */
-	MiniScript mTokenScript;
+	MiniString mTokenScript;
 	
 	/**
 	 * TTokenID created after all the details are set
@@ -56,13 +56,13 @@ public class TokenProof implements Streamable{
 	 * @param zAmount
 	 * @param zName
 	 */
-	public TokenProof(MiniData zCoindID, MiniNumber zScale, MiniNumber zAmount, MiniScript zName, MiniScript zTokenScript) {
+	public TokenProof(MiniData zCoindID, MiniNumber zScale, MiniNumber zAmount, MiniString zName, MiniString zTokenScript) {
 				
 		mTokenScale 		= zScale;
 		mTokenTotalAmount 	= zAmount;
 		mTokenName 			= zName;
 		mCoinID 			= zCoindID;
-		mTokenScript        = new MiniScript(zTokenScript.toString()) ;
+		mTokenScript        = new MiniString(zTokenScript.toString()) ;
 		
 		calculateTokenID();
 	}
@@ -79,11 +79,11 @@ public class TokenProof implements Streamable{
 		return mTokenTotalAmount;
 	}
 	
-	public MiniScript getName() {
+	public MiniString getName() {
 		return mTokenName;
 	}
 	
-	public MiniScript getTokenScript() {
+	public MiniString getTokenScript() {
 		return mTokenScript;
 	}
 	
@@ -154,10 +154,10 @@ public class TokenProof implements Streamable{
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
 		mCoinID 			= MiniData.ReadFromStream(zIn);
-		mTokenScript        = MiniScript.ReadFromStream(zIn);
+		mTokenScript        = MiniString.ReadFromStream(zIn);
 		mTokenScale 		= MiniNumber.ReadFromStream(zIn);
 		mTokenTotalAmount	= MiniNumber.ReadFromStream(zIn);
-		mTokenName 			= MiniScript.ReadFromStream(zIn);
+		mTokenName 			= MiniString.ReadFromStream(zIn);
 		
 		calculateTokenID();
 	}

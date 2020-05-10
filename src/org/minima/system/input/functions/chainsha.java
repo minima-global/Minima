@@ -2,7 +2,7 @@ package org.minima.system.input.functions;
 
 import java.util.ArrayList;
 
-import org.minima.objects.base.MiniScript;
+import org.minima.objects.base.MiniString;
 import org.minima.system.brains.ConsensusUser;
 import org.minima.system.input.CommandFunction;
 import org.minima.utils.messages.Message;
@@ -21,9 +21,9 @@ public class chainsha extends CommandFunction{
 		msg.addInt("bitlength", Integer.parseInt(zInput[1])  );
 		
 		//Get all of the input params.. clean and send..
-		ArrayList<MiniScript> data = new ArrayList<>();
+		ArrayList<MiniString> data = new ArrayList<>();
 		for(int i=2;i<zInput.length;i++) {
-			data.add(new MiniScript(zInput[i]));			
+			data.add(new MiniString(zInput[i]));			
 		}
 		
 		//Send a backup message - with no request to shutdown at the end..

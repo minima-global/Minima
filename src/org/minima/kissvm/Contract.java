@@ -151,7 +151,7 @@ public class Contract {
 		//State Variables
 		ArrayList<StateVariable> svs = mTransaction.getCompleteState();
 		for(StateVariable sv : svs) {
-			traceLog("State["+sv.getPort()+"] : "+sv.getData().toString());
+			traceLog("State["+sv.getPort()+"] : "+sv.getValue().toString());
 		}
 
 		//PREVSTATE
@@ -160,7 +160,7 @@ public class Contract {
 		}else {
 			mPrevState = zPrevState;
 			for(StateVariable sv : mPrevState) {
-				traceLog("PrevState["+sv.getPort()+"] : "+sv.getData().toString());
+				traceLog("PrevState["+sv.getPort()+"] : "+sv.getValue().toString());
 			}	
 		}
 		
@@ -200,21 +200,6 @@ public class Contract {
 	
 	public void setAllGlobalVariables(Hashtable<String, Value> zGlobals) {
 		mGlobals = zGlobals;
-	}
-	
-	public Value getPrevState(int zPrev) throws ExecutionException {
-		//Get the state variable..
-		for(StateVariable sv : mPrevState) {
-			if(sv.getPort() == zPrev) {
-				//Clean it..
-				String stateval = Contract.cleanScript(sv.getData().toString());
-				
-				//Work it out
-				return Value.getValue(stateval);
-			}
-		}
-		
-		throw new ExecutionException("PREVSTATE Missing : "+zPrev);
 	}
 	
 	public boolean isParseOK() {
@@ -373,13 +358,13 @@ public class Contract {
 		}
 		
 		//Set It
-		mDYNState[zStateNum] = zValue;
+		mDYNState[zStateNum] = cleanScript(zValue);
 			
 		//Is there a value anyway .. ?
 		StateVariable sv = mTransaction.getStateValue(zStateNum);
 		if(sv != null) {
 			//Check the result.. is it the same..
-			String oldsv = sv.getData().toString();
+			String oldsv = sv.getValue().toString();
 			
 			//return whether is the same
 			return oldsv.equals(zValue);
@@ -403,7 +388,25 @@ public class Contract {
 		}
 
 		//Get it from the Transaction..
-		return mTransaction.getStateValue(zStateNum).getData().toString();
+		String stateval = mTransaction.getStateValue(zStateNum).getValue().toString();
+		
+		//Clean it..
+		return cleanScript(stateval);
+	}
+	
+	public Value getPrevState(int zPrev) throws ExecutionException {
+		//Get the state variable..
+		for(StateVariable sv : mPrevState) {
+			if(sv.getPort() == zPrev) {
+				//Clean it..
+				String stateval = cleanScript(sv.getValue().toString());
+				
+				//Work it out
+				return Value.getValue(stateval);
+			}
+		}
+		
+		throw new ExecutionException("PREVSTATE Missing : "+zPrev);
 	}
 	
 	public String[] getCompleteDYNState() {

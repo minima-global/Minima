@@ -5,7 +5,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniScript;
+import org.minima.objects.base.MiniString;
 import org.minima.utils.BaseConverter;
 import org.minima.utils.Crypto;
 import org.minima.utils.Streamable;
@@ -21,7 +21,7 @@ public class Address implements Streamable{
 	/**
 	 * The script that this address represents
 	 */
-	MiniScript mScript;
+	MiniString mScript;
 	
 	/**
 	 * The actual address hash in byte format
@@ -41,7 +41,7 @@ public class Address implements Streamable{
 	
 	public Address(String zScript, int zBitLength) {
 		//Convert script..
-		mScript = new MiniScript(zScript);
+		mScript = new MiniString(zScript);
 		
 		//Set the Address..
 		mAddressData = new MiniData(Crypto.getInstance().hashData(mScript.getData(),zBitLength));
@@ -53,7 +53,7 @@ public class Address implements Streamable{
 	public Address(MiniData zAddressData) {
 		mAddressData 	= zAddressData;
 		mMinimaAddress  = zAddressData.to0xString();
-		mScript         = new MiniScript("");
+		mScript         = new MiniString("");
 	}
 	
 	public JSONObject toJSON() {
@@ -97,7 +97,7 @@ public class Address implements Streamable{
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
 		mAddressData   = MiniData.ReadFromStream(zIn);
-		mScript        = MiniScript.ReadFromStream(zIn);
+		mScript        = MiniString.ReadFromStream(zIn);
 		
 		if(mScript.toString().equals("")) {
 			mMinimaAddress  = mAddressData.to0xString();

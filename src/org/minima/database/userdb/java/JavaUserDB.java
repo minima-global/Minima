@@ -17,7 +17,7 @@ import org.minima.objects.Transaction;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
-import org.minima.objects.base.MiniScript;
+import org.minima.objects.base.MiniString;
 import org.minima.objects.proofs.TokenProof;
 import org.minima.utils.Streamable;
 
@@ -278,7 +278,7 @@ public class JavaUserDB implements UserDB, Streamable{
 	public boolean isStateListRelevant(ArrayList<StateVariable> zStateVarList) {
 		for(StateVariable sv : zStateVarList) {
 			//Get the data
-			MiniScript data = sv.getData();
+			MiniString data = sv.getValue();
 			
 			//Only check HEX values..
 			if(data.toString().startsWith("0x")) {
