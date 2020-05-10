@@ -214,7 +214,6 @@ public class Witness implements Streamable {
 		MiniNumber len = new MiniNumber(mSignatureProofs.size());
 		len.writeDataStream(zOut);
 		for(SignatureProof sp : mSignatureProofs) {
-			//The Pub Key
 			sp.writeDataStream(zOut);
 		}
 		
