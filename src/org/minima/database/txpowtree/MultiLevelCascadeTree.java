@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import org.minima.GlobalParams;
 import org.minima.database.mmr.MMRSet;
 import org.minima.objects.base.MiniNumber;
-import org.minima.utils.MinimaLogger;
 
 public class MultiLevelCascadeTree {
 
@@ -14,6 +13,20 @@ public class MultiLevelCascadeTree {
 	BlockTree mCascadeTree;
 	
 	ArrayList<BlockTreeNode> mRemovals;
+	
+	public void recurseParentMMR(MiniNumber zCascade, MMRSet zNode) {
+		if(zNode.getBlockTime().isMore(zCascade)) {
+			//Do all the parents
+			if(zNode.getParent() == null) {
+				System.out.println("ERROR - RECURSE TREE NULL PARENT : CASC:"+zCascade+" BLKTIME:"+zNode.getBlockTime());	
+			}else {
+				recurseParentMMR(zCascade, zNode.getParent());	
+			}
+		}
+			
+		//The you do it..
+		zNode.copyParentKeepers();
+	}
 	
 	public MultiLevelCascadeTree(BlockTree zMainTree) {
 		mMainTree = zMainTree;
@@ -147,21 +160,15 @@ public class MultiLevelCascadeTree {
 			//Create a new Node..
 			BlockTreeNode copy = new BlockTreeNode(node);
 			
-//			//Blank out the body - no longer needed.. as these are all cascade nodes..
-//			copy.getTxPow().clearBody();
-//			
-//			//Blank the MMRSet 
-//			copy.setMMRset(null);
-			
 			//Add..
-			mCascadeTree.hardAddNode(copy);
+			mCascadeTree.hardAddNode(copy, false);
 			
 			//It's a cascader
 			mCascadeTree.hardSetCascadeNode(copy);
 		}
 				
 		//Add the rest
-		mCascadeTree.hardAddNode(fullkeep);
+		mCascadeTree.hardAddNode(fullkeep, true);
 		
 		//And sort the weights
 		mCascadeTree.resetWeights();

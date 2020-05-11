@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Random;
 
 import org.minima.GlobalParams;
 import org.minima.database.coindb.CoinDB;
@@ -303,18 +304,9 @@ public class MinimaDB {
 			
 			//Fix the MMR to keep all details from the newly cascaded blocks..
 			BlockTreeNode newcascade  = mMainTree.getCascadeNode();
-			if(!newcascade.getMMRSet().getBlockTime().isEqual(oldcascade)) {
-				//We copy the previous cascade block only!
-				if(!newcascade.getMMRSet().getBlockTime().isEqual(oldcascade.increment())) {
-					MinimaLogger.log("ERROR - CASCADE NOT THE NEXT BLOCK..! new:"+newcascade.getMMRSet().getBlockTime()+" old:"+oldcascade);
-				}
-				
-				//Set the Old Cascade MMRSet.. could have been changed by the cascading
-				newcascade.getMMRSet().setParent(oldmmrsetcascade);
-				
-				//Copy the Keepers from the old cascade block
-				newcascade.getMMRSet().copyParentKeepers();		
-			}
+			
+			//recurse up the tree.. copying all the parents for the MMRSet
+			casc.recurseParentMMR(oldcascade, newcascade.getMMRSet());
 			
 			//And Clear it.. no txbody required or mmrset..
 			mMainTree.clearCascadeBody();
@@ -528,7 +520,7 @@ public class MinimaDB {
 		node.setMMRset(zMMR);
 
 		//Add it..
-		mMainTree.hardAddNode(node);
+		mMainTree.hardAddNode(node, true);
 		
 		return node;
 	}
@@ -542,6 +534,9 @@ public class MinimaDB {
 		MultiLevelCascadeTree casc = new MultiLevelCascadeTree(mMainTree);
 		casc.cascadedTree();
 		mMainTree = casc.getCascadeTree();
+	
+		//And Clear it.. no txbody required or mmrset.. below cascade
+		mMainTree.clearCascadeBody();
 	}
 	
 	/**
