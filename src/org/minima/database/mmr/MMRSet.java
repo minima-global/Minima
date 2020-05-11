@@ -990,7 +990,7 @@ public class MMRSet implements Streamable {
 		if(zNode.getBlockTime().isMore(zCascade)) {
 			//Do all the parents
 			if(zNode.getParent() == null) {
-				System.out.println("ERROR - RECURSE TREE NULL PARENT : CASC:"+zCascade+" BLKTIME:"+zNode.getBlockTime());	
+				MinimaLogger.log("ERROR - RECURSE TREE NULL PARENT : CASC:"+zCascade+" BLKTIME:"+zNode.getBlockTime());	
 			}else {
 				_recurseParentMMR(zCascade, zNode.getParent());	
 			}
