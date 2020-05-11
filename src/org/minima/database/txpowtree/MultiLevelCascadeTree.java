@@ -28,22 +28,6 @@ public class MultiLevelCascadeTree {
 		return mRemovals;
 	}
 	
-	public void recurseParentMMR(MiniNumber zCascade, MMRSet zNode) {
-		if(zNode.getBlockTime().isMore(zCascade.increment())) {
-			//Do all the parents
-			if(zNode.getParent() == null) {
-				System.out.println("RECURSE TREE NULL PARENT : CASC:"+zCascade+" BLKTIME:"+zNode.getBlockTime());	
-			}else {
-				recurseParentMMR(zCascade, zNode.getParent());	
-			}
-		}
-			
-		//The you do it..
-		MinimaLogger.log("MMR COPY PARENTS "+zNode.getBlockTime());
-		
-		zNode.copyParentKeepers();
-	}
-	
 	public ArrayList<BlockTreeNode> cascadedTree() {
 		//Reset the removals
 		mRemovals = new ArrayList<>();

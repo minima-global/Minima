@@ -1113,7 +1113,7 @@ public class MinimaDB {
 		//Cycle through it all..
 		for(BlockTreeNode node : nodes) {
 			MiniNumber block = node.getTxPow().getBlockNumber();
-			sp.getAllNodes().add(0,new SyncPacket(node, block.isLessEqual(casc)));
+			sp.getAllNodes().add(0,new SyncPacket(node, block.isLess(casc)));
 		}
 		
 		return sp;
