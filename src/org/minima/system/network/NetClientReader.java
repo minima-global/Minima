@@ -135,7 +135,7 @@ public class NetClientReader implements Runnable {
 			//Network error.. reset and reconnect..
 		}catch(Exception exc) {
 			//This more serious error.. print it..
-			exc.printStackTrace();
+//			exc.printStackTrace();
 //			MinimaLogger.log("NetClientReader closed UID "+mNetClient.getUID()+" exc:"+exc);
 		}
 		
