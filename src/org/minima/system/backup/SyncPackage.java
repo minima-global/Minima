@@ -65,7 +65,7 @@ public class SyncPackage implements Streamable{
 			node.setMMRset(mmr);
 
 			//Add it..
-			blktree.hardAddNode(node, true);
+			blktree.hardAddNode(node);
 			
 			//Is this the cascade block
 			if(txpow.getBlockNumber().isEqual(getCascadeNode())) {

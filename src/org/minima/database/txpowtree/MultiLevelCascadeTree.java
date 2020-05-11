@@ -163,15 +163,18 @@ public class MultiLevelCascadeTree {
 			//Blank out the body - no longer needed.. as these are all cascade nodes..
 			copy.getTxPow().clearBody();
 			
+			//Blank the MMRSet 
+			copy.setMMRset(null);
+			
 			//Add..
-			mCascadeTree.hardAddNode(copy, false);
+			mCascadeTree.hardAddNode(copy);
 			
 			//It's a cascader
 			mCascadeTree.hardSetCascadeNode(copy);
 		}
 				
 		//Add the rest
-		mCascadeTree.hardAddNode(fullkeep, false);
+		mCascadeTree.hardAddNode(fullkeep);
 		
 		//And sort the weights
 		mCascadeTree.resetWeights();

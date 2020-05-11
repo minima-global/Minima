@@ -92,7 +92,7 @@ public class BlockTree {
 	 * @param zNode
 	 * @return
 	 */
-	public void hardAddNode(BlockTreeNode zNode, boolean zLinkAll) {
+	public void hardAddNode(BlockTreeNode zNode) {
 		if(mRoot == null) {
 			setTreeRoot(zNode);
 			zNode.setParent(null);
@@ -102,24 +102,29 @@ public class BlockTree {
 		//Add to the end..
 		mTip.addChild(zNode);
 		
-		//Link the MMR..
+		//Link the MMRSet
 		if(zNode.getMMRSet() != null) {
-			if(zLinkAll) {
-				if(mTip.getTxPowID().isEqual(zNode.getTxPow().getParentID())) {
-					//Correct Parent.. can link the MMR!
-					zNode.getMMRSet().setParent(mTip.getMMRSet());
-				}
-			}else {
-//				if(!mTip.isCascade()) {
+			//Correct Parent.. can link the MMR!
+			zNode.getMMRSet().setParent(mTip.getMMRSet());
+		}
+		
+//		//Link the MMR..
+//		if(zNode.getMMRSet() != null) {
+//			if(zLinkAll) {
+//				if(mTip.getTxPowID().isEqual(zNode.getTxPow().getParentID())) {
+//					
+//				}
+//			}else {
+////				if(!mTip.isCascade()) {
+////					zNode.getMMRSet().setParent(mTip.getMMRSet());
+////				}
+//				
+//				if(!mTip.isCascade() && mTip.getTxPowID().isEqual(zNode.getTxPow().getParentID())) {
+//					//Correct Parent.. can link the MMR!
 //					zNode.getMMRSet().setParent(mTip.getMMRSet());
 //				}
-				
-				if(!mTip.isCascade() && mTip.getTxPowID().isEqual(zNode.getTxPow().getParentID())) {
-					//Correct Parent.. can link the MMR!
-					zNode.getMMRSet().setParent(mTip.getMMRSet());
-				}
-			}
-		}
+//			}
+//		}
 				
 		//Move on..
 		mTip = zNode;

@@ -2,6 +2,8 @@ package org.minima.system.network;
 
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
+import java.io.IOException;
+import java.net.SocketException;
 
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniByte;
@@ -127,16 +129,15 @@ public class NetClientReader implements Runnable {
 				}
 			}
 		
-//		}catch(SocketException exc) {
-//			SimpleLogger.log("NetClientReader closed UID "+mNetClient.getUID());
-//		}catch(IOException exc) {
+		}catch(SocketException exc) {
+			//Network error.. reset and reconnect..
+		}catch(IOException exc) {
+			//Network error.. reset and reconnect..
 		}catch(Exception exc) {
-//			exc.printStackTrace();
+			//This more serious error.. print it..
+			exc.printStackTrace();
 //			MinimaLogger.log("NetClientReader closed UID "+mNetClient.getUID()+" exc:"+exc);
 		}
-		
-//		System.out.println("NetClientReader stopped");
-		
 		
 		//Tell the network Handler
 		mNetClient.getNetworkHandler().PostMessage(new Message(NetworkHandler.NETWORK_CLIENTERROR).addObject("client", mNetClient));

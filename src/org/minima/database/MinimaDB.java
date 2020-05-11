@@ -539,7 +539,7 @@ public class MinimaDB {
 		node.setMMRset(zMMR);
 
 		//Add it..
-		mMainTree.hardAddNode(node, true);
+		mMainTree.hardAddNode(node);
 		
 		return node;
 	}
