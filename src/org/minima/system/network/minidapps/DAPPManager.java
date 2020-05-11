@@ -35,7 +35,7 @@ public class DAPPManager extends SystemHandler {
 	JSONArray CURRENT_MINIDAPPS = new JSONArray();
 	String MINIDAPPS_FOLDER     = "";
 	
-	DAPPServer mDAPPServer;
+//	DAPPServer mDAPPServer;
 	NanoDAPPServer mNanoDAPPServer;
 	
 	//The Edited minima.js file..
@@ -83,7 +83,7 @@ public class DAPPManager extends SystemHandler {
 		mNanoDAPPServer = new NanoDAPPServer(zPort, this);
 		try {
 			mNanoDAPPServer.start(NanoHTTPD.SOCKET_READ_TIMEOUT, false);
-			MinimaLogger.log("MiniDAPP server started on "+hostport);
+			MinimaLogger.log("MiniDAPP server started on "+mHost+":"+zPort);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
