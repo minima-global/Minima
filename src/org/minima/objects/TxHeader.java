@@ -11,6 +11,7 @@ import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniInteger;
 import org.minima.objects.base.MiniNumber;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
@@ -92,6 +93,7 @@ public class TxHeader implements Streamable {
 		txpow.put("blkdiff", mBlockDifficulty.to0xString());
 		
 		//The Super parents are efficiently encoded in RLE
+		txpow.put("cascadelevels", GlobalParams.MINIMA_CASCADE_LEVELS);
 		JSONArray supers = new JSONArray();
 		MiniData old = null;
 		int counter=0;
@@ -100,32 +102,32 @@ public class TxHeader implements Streamable {
 			
 			if(old == null) {
 				old = curr;
-				counter++;
+				counter++;				
 			}else {
 				if(old.isEqual(curr)) {
 					counter++;
-					//Is this the last one..
-					if(i==GlobalParams.MINIMA_CASCADE_LEVELS-1) {
-						//Write it anyway..
-						JSONObject sp = new JSONObject();
-						sp.put("difficulty", i);
-						sp.put("count", counter);
-						sp.put("parent", curr.to0xString());
-						supers.add(sp);						
-					}
-					
-				}else {
+				}else{
 					//Write the old one..
 					JSONObject sp = new JSONObject();
-					sp.put("difficulty", i);
+					sp.put("difficulty", i-1);
 					sp.put("count", counter);
 					sp.put("parent", old.to0xString());
 					supers.add(sp);
 					
 					//Reset
-					old=curr;
-					counter=1;
+					old     = curr;
+					counter = 1;
 				}
+			}
+			
+			//Is this the last one..
+			if(i==GlobalParams.MINIMA_CASCADE_LEVELS-1) {
+				//Write it anyway..
+				JSONObject sp = new JSONObject();
+				sp.put("difficulty", i);
+				sp.put("count", counter);
+				sp.put("parent", curr.to0xString());
+				supers.add(sp);						
 			}
 		}
 		txpow.put("superparents", supers);
@@ -155,37 +157,40 @@ public class TxHeader implements Streamable {
 		mParentChainID.writeDataStream(zOut);
 		
 		//The Super parents are efficiently encoded in RLE
-		MiniData old = null;
-		int counter=0;
+		MiniByte cascnum = new MiniByte(GlobalParams.MINIMA_CASCADE_LEVELS);
+		cascnum.writeDataStream(zOut);
+		
+		MiniData sparent = null;
+		int counter  = 0;
 		for(int i=0;i<GlobalParams.MINIMA_CASCADE_LEVELS;i++) {
 			MiniData curr = mSuperParents[i];
-			if(old == null) {
-				old = curr;
+			if(sparent == null) {
+				sparent = curr;
 				counter++;
 			}else {
-				if(old.isEqual(curr)) {
+				if(sparent.isEqual(curr)) {
 					counter++;
-					//Is this the last one..
-					if(i==GlobalParams.MINIMA_CASCADE_LEVELS-1) {
-						//Write it anyway..
-						MiniByte count = new MiniByte(counter);
-						count.writeDataStream(zOut);
-						curr.writeDataStream(zOut);						
-					}
-					
 				}else {
 					//Write the old one..
 					MiniByte count = new MiniByte(counter);
 					count.writeDataStream(zOut);
-					old.writeDataStream(zOut);
+					sparent.writeDataStream(zOut);
 					
 					//Reset
-					old=curr;
-					counter=1;
+					sparent     = curr;
+					counter = 1;
 				}
 			}
+			
+			//Is this the last one..
+			if(i==GlobalParams.MINIMA_CASCADE_LEVELS-1) {
+				//Write it anyway..
+				MiniByte count = new MiniByte(counter);
+				count.writeDataStream(zOut);
+				curr.writeDataStream(zOut);						
+			}
 		}
-	
+		
 		//Write out the MMR DB
 		mMMRRoot.writeDataStream(zOut);
 		mMMRTotal.writeDataStream(zOut);
@@ -203,9 +208,10 @@ public class TxHeader implements Streamable {
 		mChainID         = MiniData.ReadFromStream(zIn);
 		mParentChainID   = MiniData.ReadFromStream(zIn);
 		
-		//And the super parents - RLE
-		int tot   = 0;
-		while(tot<GlobalParams.MINIMA_CASCADE_LEVELS) {
+		//How many cascade levels.. will probably NEVER change..
+		MiniByte cascnum = MiniByte.ReadFromStream(zIn);
+		int tot = 0;
+		while(tot<cascnum.getValue()) {
 			MiniByte len = MiniByte.ReadFromStream(zIn);
 			MiniData sup = MiniData.ReadFromStream(zIn);
 			int count = len.getValue();
