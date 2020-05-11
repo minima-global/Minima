@@ -35,7 +35,6 @@ public class DAPPManager extends SystemHandler {
 	JSONArray CURRENT_MINIDAPPS = new JSONArray();
 	String MINIDAPPS_FOLDER     = "";
 	
-//	DAPPServer mDAPPServer;
 	NanoDAPPServer mNanoDAPPServer;
 	
 	//The Edited minima.js file..
@@ -74,11 +73,6 @@ public class DAPPManager extends SystemHandler {
 	    
 		//Calculate the current MiniDAPPS
 		recalculateMiniDAPPS();
-		
-//		///Start the DAPP server
-//		mDAPPServer = new DAPPServer(zPort,this);
-//		Thread tt = new Thread(mDAPPServer, "DAPP Server");
-//		tt.start();
 		
 		mNanoDAPPServer = new NanoDAPPServer(zPort, this);
 		try {
