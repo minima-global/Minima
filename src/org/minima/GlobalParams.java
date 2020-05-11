@@ -7,7 +7,7 @@ public class GlobalParams {
 	/**
 	 * Which Version
 	 */
-	public static final String MINIMA_VERSION = "0.89.5";
+	public static final String MINIMA_VERSION = "0.90.0";
 	
 	/**
 	 * Number of seconds before sending a pulse message
@@ -34,7 +34,7 @@ public class GlobalParams {
 	/**
 	 * Depth before we cascade..
 	 */
-	public static final int MINIMA_CASCADE_START_DEPTH   = 1024;
+	public static final int MINIMA_CASCADE_START_DEPTH   = 99;
 	
 	/**
 	 * Minimum number of blocks at each cascade level 
