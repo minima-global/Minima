@@ -112,7 +112,7 @@ public class BlockTree {
 //		if(zNode.getMMRSet() != null) {
 //			if(zLinkAll) {
 //				if(mTip.getTxPowID().isEqual(zNode.getTxPow().getParentID())) {
-//					
+//					zNode.getMMRSet().setParent(mTip.getMMRSet());
 //				}
 //			}else {
 ////				if(!mTip.isCascade()) {
@@ -306,6 +306,32 @@ public class BlockTree {
 				
 		return nodes;
 	}
+	
+	/** 
+	 * Clear the TxPoW Body from all nodes past the cascade
+	 */
+	public void clearCascadeBody() {
+		if(mCascadeNode == null) {
+			return;
+		}
+		
+		//Set the MMRSet parent to NULL
+		mCascadeNode.getMMRSet().setParent(null);
+		
+		//Clear from one node up..
+		BlockTreeNode clearnode = mCascadeNode.getParent();
+		while(clearnode != null) {
+			//Clear the TxPoW
+			clearnode.getTxPow().clearBody();
+			
+			//Clear the MMRset
+			clearnode.setMMRset(null);
+			
+			//Get the Parent
+			clearnode = clearnode.getParent();
+		}
+	}
+	
 	
 	/**
 	 * Get the Chain Speed..

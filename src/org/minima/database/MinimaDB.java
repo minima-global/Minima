@@ -248,6 +248,9 @@ public class MinimaDB {
 				mCoinDB.clearDB();
 			}
 			
+			//The OLD Cascade MMRSET
+			MMRSet oldmmrsetcascade = getMainTree().getCascadeNode().getMMRSet();
+			
 			//Only add coins from the cascade onwards..
 			MiniNumber oldcascade = getMainTree().getCascadeNode().getTxPow().getBlockNumber();
 			
@@ -270,65 +273,51 @@ public class MinimaDB {
 				trow.setIsInBlock(true);
 				trow.setInBlockNumber(block);
 				
-				if(treenode.getTxPow().getBlockNumber().isMoreEqual(oldcascade)) {
+				//Take coins from the child of the cascade node onwards..
+				if(treenode.getTxPow().getBlockNumber().isMore(oldcascade)) {
 					//Check for coins in the MMR
 					scanMMRSetForCoins(treenode.getMMRSet());
 				}
 				
 				//Now the Txns..
-				if(txpow.hasBody()) {
-					ArrayList<MiniData> txpowlist = txpow.getBlockTransactions();
-					for(MiniData txid : txpowlist) {
-						trow = mTxPOWDB.findTxPOWDBRow(txid);
-						if(trow!=null) {
-							//Set that it is in this block
-							trow.setOnChainBlock(false);
-							trow.setIsInBlock(true);
-							trow.setInBlockNumber(block);
-						}
+				ArrayList<MiniData> txpowlist = txpow.getBlockTransactions();
+				for(MiniData txid : txpowlist) {
+					trow = mTxPOWDB.findTxPOWDBRow(txid);
+					if(trow!=null) {
+						//Set that it is in this block
+						trow.setOnChainBlock(false);
+						trow.setIsInBlock(true);
+						trow.setInBlockNumber(block);
 					}
 				}
-			}
-			
-			//Whats the weight of the tree now..
-			BigInteger weight = mMainTree.getChainRoot().getTotalWeight();
-			
-			if(weight.compareTo(BigInteger.ZERO) == 0) {
-				System.out.println("ZERO WEIGHT ERROR!");
 			}
 			
 			/**
 			 * Cascade the tree
 			 */
-			//Create a cascaded version
 			MultiLevelCascadeTree casc = new MultiLevelCascadeTree(mMainTree);
-			
-			//Do it..
 			ArrayList<BlockTreeNode> removals = casc.cascadedTree();
-			
-			//Was it worth it..
-			BigInteger cascweight = casc.getCascadeTree().getChainRoot().getTotalWeight();
-			
-			//See what the difference is..
-			BigDecimal ratio = new BigDecimal(cascweight).divide(new BigDecimal(weight), MathContext.DECIMAL128);
-			
-			//If the cascade levels are long enough this should NEVER happen
-			if(ratio.compareTo(new BigDecimal(GlobalParams.MINIMA_CASCADE_RATIO)) < 0) {
-				//Too much power lost.. wait..
-				MinimaLogger.log("Cascade Tree LOST more than "+GlobalParams.MINIMA_CASCADE_RATIO+" "+ratio);
-				//For NOW continue..
-//				return;
-			}
 			
 			//Set it
 			mMainTree = casc.getCascadeTree();
 			
-			//Fix the MMR
+			//Fix the MMR to keep all details from the newly cascaded blocks..
 			BlockTreeNode newcascade  = mMainTree.getCascadeNode();
-			if(newcascade != null && newcascade.getMMRSet()!=null){
-				//Sort the MMR..
-				casc.recurseParentMMR(oldcascade,newcascade.getMMRSet());
+			if(!newcascade.getMMRSet().getBlockTime().isEqual(oldcascade)) {
+				//We copy the previous cascade block only!
+				if(!newcascade.getMMRSet().getBlockTime().isEqual(oldcascade.increment())) {
+					MinimaLogger.log("ERROR - CASCADE NOT THE NEXT BLOCK..! new:"+newcascade.getMMRSet().getBlockTime()+" old:"+oldcascade);
+				}
+				
+				//Set the Old Cascade MMRSet.. could have been changed by the cascading
+				newcascade.getMMRSet().setParent(oldmmrsetcascade);
+				
+				//Copy the Keepers from the old cascade block
+				newcascade.getMMRSet().copyParentKeepers();		
 			}
+			
+			//And Clear it.. no txbody required or mmrset..
+			mMainTree.clearCascadeBody();
 			
 			//Remove the deleted blocks..
 			for(BlockTreeNode node : removals) {
@@ -1007,15 +996,15 @@ public class MinimaDB {
 				BigDecimal newdiffdec = avgdiffdec.multiply(speedratio.getAsBigDecimal());
 				BigInteger newdiff    = newdiffdec.toBigInteger();
 				
-//				//Check if more than maximum..
-//				if(newdiff.compareTo(Crypto.MAX_VAL)>0) {
-//					newdiff = Crypto.MAX_VAL;
-//				}
-				
-				//Check more than TX-MIN..
-				if(newdiff.compareTo(Crypto.MEGA_VAL)>0) {
-					newdiff = Crypto.MEGA_VAL;
+				//Check if more than maximum..
+				if(newdiff.compareTo(Crypto.MAX_VAL)>0) {
+					newdiff = Crypto.MAX_VAL;
 				}
+				
+//				//Check more than TX-MIN..
+//				if(newdiff.compareTo(Crypto.MEGA_VAL)>0) {
+//					newdiff = Crypto.MEGA_VAL;
+//				}
 								
 				//Create the hash
 				MiniData diffhash = new MiniData("0x"+newdiff.toString(16)); 

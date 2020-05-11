@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import org.minima.GlobalParams;
 import org.minima.database.mmr.MMRSet;
 import org.minima.objects.base.MiniNumber;
+import org.minima.utils.MinimaLogger;
 
 public class MultiLevelCascadeTree {
 
@@ -38,6 +39,8 @@ public class MultiLevelCascadeTree {
 		}
 			
 		//The you do it..
+		MinimaLogger.log("MMR COPY PARENTS "+zNode.getBlockTime());
+		
 		zNode.copyParentKeepers();
 	}
 	
@@ -160,11 +163,11 @@ public class MultiLevelCascadeTree {
 			//Create a new Node..
 			BlockTreeNode copy = new BlockTreeNode(node);
 			
-			//Blank out the body - no longer needed.. as these are all cascade nodes..
-			copy.getTxPow().clearBody();
-			
-			//Blank the MMRSet 
-			copy.setMMRset(null);
+//			//Blank out the body - no longer needed.. as these are all cascade nodes..
+//			copy.getTxPow().clearBody();
+//			
+//			//Blank the MMRSet 
+//			copy.setMMRset(null);
 			
 			//Add..
 			mCascadeTree.hardAddNode(copy);
