@@ -4,12 +4,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Hashtable;
-import java.util.Random;
 
 import org.minima.GlobalParams;
 import org.minima.database.coindb.CoinDB;
