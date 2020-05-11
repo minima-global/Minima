@@ -3,7 +3,6 @@ package org.minima.database.txpowtree;
 import java.util.ArrayList;
 
 import org.minima.GlobalParams;
-import org.minima.database.mmr.MMRSet;
 import org.minima.objects.base.MiniNumber;
 
 public class MultiLevelCascadeTree {
@@ -13,20 +12,6 @@ public class MultiLevelCascadeTree {
 	BlockTree mCascadeTree;
 	
 	ArrayList<BlockTreeNode> mRemovals;
-	
-	public void recurseParentMMR(MiniNumber zCascade, MMRSet zNode) {
-		if(zNode.getBlockTime().isMore(zCascade)) {
-			//Do all the parents
-			if(zNode.getParent() == null) {
-				System.out.println("ERROR - RECURSE TREE NULL PARENT : CASC:"+zCascade+" BLKTIME:"+zNode.getBlockTime());	
-			}else {
-				recurseParentMMR(zCascade, zNode.getParent());	
-			}
-		}
-			
-		//The you do it..
-		zNode.copyParentKeepers();
-	}
 	
 	public MultiLevelCascadeTree(BlockTree zMainTree) {
 		mMainTree = zMainTree;

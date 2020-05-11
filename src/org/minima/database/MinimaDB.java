@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Random;
 
 import org.minima.GlobalParams;
 import org.minima.database.coindb.CoinDB;
@@ -291,6 +292,11 @@ public class MinimaDB {
 				}
 			}
 			
+			Random rr = new Random();
+			if(rr.nextBoolean()) {
+				return;
+			}
+			
 			/**
 			 * Cascade the tree
 			 */
@@ -304,10 +310,15 @@ public class MinimaDB {
 			BlockTreeNode newcascade  = mMainTree.getCascadeNode();
 			
 			//recurse up the tree.. copying all the parents for the MMRSet
-			casc.recurseParentMMR(oldcascade, newcascade.getMMRSet());
+			if(!oldcascade.isEqual(newcascade.getMMRSet().getBlockTime())) {
+				MinimaLogger.log("Recurse : "+oldcascade+" "+newcascade.getMMRSet().getBlockTime());
+				//Cascade copying all the parent MMRSet keepers..
+				newcascade.getMMRSet().recurseParentMMR(oldcascade);
+				
+				//And Clear it.. no txbody required or mmrset..
+				mMainTree.clearCascadeBody();
+			}
 			
-			//And Clear it.. no txbody required or mmrset..
-			mMainTree.clearCascadeBody();
 			
 			//Remove the deleted blocks..
 			for(BlockTreeNode node : removals) {

@@ -8,7 +8,7 @@ public class txnpost extends CommandFunction {
 
 	public txnpost() {
 		super("txnpost");
-		setHelp("[id]", "Post the transaction the the network", "");
+		setHelp("[id]", "Post the transaction to the network", "");
 	}
 
 	@Override

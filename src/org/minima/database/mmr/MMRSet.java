@@ -975,7 +975,31 @@ public class MMRSet implements Streamable {
 		//Re-finalise..
 		finalizeSet();
 	}
+
+	/**
+	 * Recursively copy the parents..
+	 * 
+	 * @param zCascade
+	 * @param zNode
+	 */
+	public void recurseParentMMR(MiniNumber zCascade) {
+		_recurseParentMMR(zCascade, this);
+	}
 	
+	private void _recurseParentMMR(MiniNumber zCascade, MMRSet zNode) {
+		if(zNode.getBlockTime().isMore(zCascade)) {
+			//Do all the parents
+			if(zNode.getParent() == null) {
+				System.out.println("ERROR - RECURSE TREE NULL PARENT : CASC:"+zCascade+" BLKTIME:"+zNode.getBlockTime());	
+			}else {
+				_recurseParentMMR(zCascade, zNode.getParent());	
+			}
+		}
+			
+		//The you do it..
+		MinimaLogger.log("PARENT COPY "+zNode.getBlockTime());
+		zNode.copyParentKeepers();
+	}
 	/**
 	 * Drill down and get the last but one parent..
 	 * We will be pruning it.. 
