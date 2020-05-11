@@ -308,7 +308,7 @@ public class BlockTree {
 	}
 	
 	/** 
-	 * Clear the TxPoW Body from all nodes past the cascade
+	 * Clear the TxPoW Body and MMRset from all nodes past the cascade
 	 */
 	public void clearCascadeBody() {
 		if(mCascadeNode == null) {
