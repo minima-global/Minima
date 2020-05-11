@@ -94,9 +94,7 @@ public class DAPPManager extends SystemHandler {
 	}
 	
 	public void stop() {
-//		mDAPPServer.stop();
 		mNanoDAPPServer.stop();
-		
 		stopMessageProcessor();
 	}
 	
