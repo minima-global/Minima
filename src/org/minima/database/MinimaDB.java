@@ -292,10 +292,11 @@ public class MinimaDB {
 				}
 			}
 			
-			Random rr = new Random();
-			if(rr.nextBoolean()) {
-				return;
-			}
+			//DEBUG TESTER
+//			Random rr = new Random();
+//			if(rr.nextBoolean()) {
+//				return;
+//			}
 			
 			/**
 			 * Cascade the tree
@@ -311,7 +312,6 @@ public class MinimaDB {
 			
 			//recurse up the tree.. copying all the parents for the MMRSet
 			if(!oldcascade.isEqual(newcascade.getMMRSet().getBlockTime())) {
-				MinimaLogger.log("Recurse : "+oldcascade+" "+newcascade.getMMRSet().getBlockTime());
 				//Cascade copying all the parent MMRSet keepers..
 				newcascade.getMMRSet().recurseParentMMR(oldcascade);
 				

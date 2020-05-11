@@ -997,7 +997,6 @@ public class MMRSet implements Streamable {
 		}
 			
 		//The you do it..
-		MinimaLogger.log("PARENT COPY "+zNode.getBlockTime());
 		zNode.copyParentKeepers();
 	}
 	/**
