@@ -40,7 +40,19 @@ public class MultiSig implements Streamable {
 		}
 	}
 	
-	public MiniData getPubKey() {
+	public MiniData getPublicKey() {
+		return mPublicKey;
+	}
+	
+	public MiniData getSignature() {
+		return mSignature;
+	}
+	
+	public MiniData getProofChain() {
+		return mProofChain;
+	}
+	
+	public MiniData getRootKey() {
 		Proof chainproof = new Proof();
 
 		//Hash the Input..		

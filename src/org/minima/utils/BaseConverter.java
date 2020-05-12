@@ -1,5 +1,7 @@
 package org.minima.utils;
 
+import java.math.BigInteger;
+
 public class BaseConverter {
 	
 	/**

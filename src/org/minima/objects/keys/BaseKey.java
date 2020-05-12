@@ -101,6 +101,10 @@ public abstract class BaseKey implements Streamable {
 		return mUses;
 	}
 	
+	public void incrementUses() {
+		mUses = mUses.increment();
+	}
+	
 	@Override
 	public String toString() {
 		return mPublicKey.to0xString();

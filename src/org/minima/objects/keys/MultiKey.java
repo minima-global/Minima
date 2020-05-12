@@ -1,23 +1,31 @@
 package org.minima.objects.keys;
 
-import org.minima.database.mmr.MMREntry;
 import org.minima.database.mmr.MMRSet;
-import org.minima.objects.PubPrivKey;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniInteger;
 import org.minima.objects.base.MiniNumber;
+import org.minima.utils.BaseConverter;
+import org.minima.utils.Crypto;
 
 public class MultiKey extends BaseKey {
 	
 	int MULTI_KEYS = 8;
 	
+	boolean mSingle;
+	
 	BaseKey[] mBaseKeys;
 	
-	public MultiKey(int zBitLength) {
-		initKeys(MiniData.getRandomData(zBitLength/8));
-	}
+	MMRSet mMMR;
 	
-	public MultiKey(MiniData zPrivateSeed) {
+//	public MultiKey(int zBitLength) {
+//		initKeys(MiniData.getRandomData(zBitLength/8));
+//	}
+	
+	public MultiKey(MiniData zPrivateSeed, int zKeys, boolean zSingle) {
+		super();
+		MULTI_KEYS = zKeys;
+		mSingle    = zSingle;
+		
 		initKeys(zPrivateSeed);
 	}
 	
@@ -33,22 +41,29 @@ public class MultiKey extends BaseKey {
 		mBaseKeys = new SingleKey[MULTI_KEYS];
 		
 		//Now create the MMR tree
-		MMRSet mmr = new MMRSet(mBitLength.getAsInt());
+		mMMR = new MMRSet(mBitLength.getAsInt());
 				
 		//Create all the keys..
 		for(int i=0;i<MULTI_KEYS;i++) {
 			//Create the Key
-			mBaseKeys[i] = new SingleKey(mBitLength.getAsInt());
-		
+			if(mSingle) {
+				mBaseKeys[i] = new SingleKey(mBitLength.getAsInt());	
+			}else {
+				MiniData privkey  = new MiniData("0x"+Integer.toHexString(i));
+				MiniData fullpriv = mPrivateSeed.concat(privkey);
+				MiniData cascpriv = new MiniData( Crypto.getInstance().hashData(fullpriv.getData()) );
+				mBaseKeys[i]      = new MultiKey(cascpriv, MULTI_KEYS, true);
+			}
+			
 			//Add to the tree
-			MMREntry leaf = mmr.addLeaNode(mBaseKeys[i].getPublicKey());
+			mMMR.addLeafNode(mBaseKeys[i].getPublicKey());
 		}
 		
 		//Finalise the set
-		mmr.finalizeSet();
+		mMMR.finalizeSet();
 		
 		//Get the root of the tree..
-		mPublicKey = mmr.getMMRRoot().getFinalHash();
+		mPublicKey = mMMR.getMMRRoot().getFinalHash();
 	}
 	
 	/**
@@ -59,59 +74,81 @@ public class MultiKey extends BaseKey {
 
 	@Override
 	public MiniData sign(MiniData zData) {
-		// TODO Auto-generated method stub
-		return null;
+		//Which key are we on..
+		int key = getUses().getAsInt();
+		
+		System.out.println("KEY :"+key);
+		
+		//Get that Key..
+		MiniData pubkey    = mBaseKeys[key].getPublicKey();
+		MiniData signature = mBaseKeys[key].sign(zData);
+		MiniData proof     = mMMR.getFullProofToRoot(new MiniInteger(key)).getChainSHAProof();
+		
+		//Once used you cannot use it again..
+		incrementUses();
+		
+		//Create a multi sig..
+		MultiSig sig = new MultiSig(pubkey, proof, signature);
+		
+		return sig.getCompleteSig();
 	}
 
 	@Override
 	public boolean verify(MiniData zData, MiniData zSignature) {
-		// TODO Auto-generated method stub
-		return false;
+		MultiSig sig = new MultiSig(zSignature);
+		
+		//First check the Public Key is correct
+		if(!sig.getRootKey().isEqual(mPublicKey)) {
+			return false;
+		}
+		
+		//Create a Single Key
+		SingleKey skey = new SingleKey();
+		skey.setPublicKey(sig.getPublicKey());
+		
+		//Now check the Signature
+		boolean ver = skey.verify(zData, sig.getSignature());
+		
+		return ver;
 	}
 	
 	
 	public static void main(String[] zargs) {		
-		int bitlength = 160;
-		int keynum    = 4;
 		
-		//Create a tree of keys..
-		PubPrivKey[] keys = new PubPrivKey[keynum];
+//		//get some data
+//		MiniData privseed = MiniData.getRandomData(20);
+//				
+//		//Create a new key
+//		MultiKey mkey = new MultiKey(privseed,true);
+//		
+//		//get some data
+//		MiniData data = MiniData.getRandomData(32);
+//		
+//		//Sign it..
+//		MiniData sig = mkey.sign(data);
+//		
+//		System.out.println("Data    : "+data);
+//		System.out.println("SigLen  : "+sig.getLength());
+//		System.out.println("Sig     : "+sig.to0xString());
+//		
+//		//Verify it..
+//		boolean ver = mkey.verify(data, sig);
+//		
+//		System.out.println("Verify  : "+ver);
+//		
+//		//Sign it..
+//		System.out.println();
+//		sig = mkey.sign(data);
+//		
+//		System.out.println("SigLen  : "+sig.getLength());
+//		System.out.println("Sig     : "+sig.to0xString());
+//		
+//		//Verify it..
+//		ver = mkey.verify(data, sig);
+//		
+//		System.out.println("Verify  : "+ver);
+//		
 		
-		//Now create the MMR tree
-		MMRSet mmr = new MMRSet(bitlength);
-				
-		//Create all the keys..
-		for(int i=0;i<keynum;i++) {
-			//Create the Key
-			keys[i] = new PubPrivKey(bitlength);
-		
-			//Add to the tree
-			MMREntry leaf = mmr.addLeaNode(keys[i].getPublicKey());
-		}
-		
-		//Finalize the set
-		mmr.finalizeSet();
-		
-		//Get the root..
-		MiniData root = mmr.getMMRRoot().getFinalHash();
-		System.out.println("MULTI PUB KEY : "+root.to0xString());
-		
-		MiniData rand = MiniData.getRandomData(32);
-		System.out.println("DATA to SIGN : "+rand.to0xString());
-		
-		//Sign it..
-		System.out.println();
-		for(int i=0;i<1;i++) {
-			MiniData pubkey    = keys[i].getPublicKey();
-			MiniData signature = keys[i].sign(rand);
-			MiniData proof     = mmr.getFullProofToRoot(new MiniInteger(i)).getChainSHAProof();
-			
-			//Create a multi sig..
-			MultiSig sig = new MultiSig(pubkey, proof, signature);
-			
-			System.out.println("MultiSig Key "+i+" : "+sig.getCompleteSig().getLength());	
-		}
-			
 	}
 
 	
