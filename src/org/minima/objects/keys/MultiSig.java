@@ -1,5 +1,6 @@
 package org.minima.objects.keys;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -23,6 +24,22 @@ public class MultiSig implements Streamable {
 		mSignature  = zSignature;
 	}
 	
+	public MultiSig(MiniData zCompleteSig) {
+		//Write it out..
+		try {
+			ByteArrayInputStream bais = new ByteArrayInputStream(zCompleteSig.getData());
+			DataInputStream dis = new DataInputStream(bais);
+			
+			//Now read the data
+			readDataStream(dis);
+			
+			dis.close();
+			
+		}catch(Exception exc) {
+			exc.printStackTrace();
+		}
+	}
+	
 	public MiniData getPubKey() {
 		Proof chainproof = new Proof();
 
@@ -40,9 +57,7 @@ public class MultiSig implements Streamable {
 			DataOutputStream dos = new DataOutputStream(baos);
 			
 			//Now write the data
-			mPublicKey.writeDataStream(dos);
-			mProofChain.writeDataStream(dos);
-			mSignature.writeDataStream(dos);
+			writeDataStream(dos);
 			
 			dos.flush();
 			dos.close();
