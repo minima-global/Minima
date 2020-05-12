@@ -1144,6 +1144,11 @@ public class MinimaDB {
 				SyncPackage spdeep = new SyncPackage();
 				spdeep.readDataStream(dis);
 				
+				//Clean up
+				dis.close();
+				bais.close();
+				baos.close();
+				
 				return spdeep;
 				
 			}catch(Exception exc) {
