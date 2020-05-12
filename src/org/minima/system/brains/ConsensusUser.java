@@ -277,9 +277,6 @@ public class ConsensusUser extends ConsensusProcessor {
 				//Get the proof..
 				MMRProof proof = mmr.getFullProofToRoot(new MiniInteger(i));
 				
-				//Set the Bits
-				proof.setHashBitLength(bitlength);
-				
 				//Calculate the CHAINSHA proof..
 				node.put("chainsha", proof.getChainSHAProof().to0xString());
 			}

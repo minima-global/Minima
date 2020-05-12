@@ -403,6 +403,13 @@ public class MMRSet implements Streamable {
 	}
 	
 	/**
+	 * Utility function when creating an MMRtree based on simple Hash values and not coins.. 
+	 */
+	public MMREntry addLeaNode(MiniData zData){
+		return addUnspentCoin(new MMRData(zData, MMRSumNumber.ZERO));
+	}
+	
+	/**
 	 * Add data - an UNSPENT coin - Must be added to the correct mmrset
 	 */
 	public MMREntry addExternalUnspentCoin(MMRProof zProof) {
