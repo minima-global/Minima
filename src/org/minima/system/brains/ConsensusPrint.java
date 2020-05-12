@@ -138,17 +138,23 @@ public class ConsensusPrint extends ConsensusProcessor {
 			
 			//DEBUGGING
 			if(zMessage.exists("systemout")) {
-//				BlockTreePrinter2.clearScreen();
-				
-				treeinfo += "\n\nSpeed              : "+tree.getChainSpeed()+" blocks / sec";
+				treeinfo += "\n\nroot               : ( "+tree.getChainRoot().getTxPow().getBlockNumber()+" ) "+tree.getChainRoot().getTxPow().getTxPowID().to0xString();
+				treeinfo += "\ncascade            : ( "+tree.getCascadeNode().getTxPow().getBlockNumber()+" ) "+tree.getCascadeNode().getTxPow().getTxPowID().to0xString();
+				treeinfo += "\ntip                : ( "+tree.getChainTip().getTxPow().getBlockNumber()+" ) "+tree.getChainTip().getTxPow().getTxPowID().to0xString();
+				treeinfo += "\nlength             : "+tree.getAsList().size();
+				treeinfo += "\nSpeed              : "+tree.getChainSpeed()+" blocks / sec";
 				treeinfo += "\nCurrent Difficulty : "+tree.getChainTip().getTxPow().getBlockDifficulty().to0xString();
 				treeinfo += "\nTotal Weight       : "+tree.getChainRoot().getTotalWeight();
 
-				MinimaLogger.log(treeinfo);
+				MinimaLogger.log("\n"+treeinfo);
+			
 			}else {
 				//Now check whether they are unspent..
 				JSONObject dets = InputHandler.getResponseJSON(zMessage);
 				dets.put("tree", treeinfo);
+				dets.put("root", "( "+tree.getChainRoot().getTxPow().getBlockNumber()+" ) "+tree.getChainRoot().getTxPow().getTxPowID().to0xString());
+				dets.put("cascade", "( "+tree.getCascadeNode().getTxPow().getBlockNumber()+" ) "+tree.getCascadeNode().getTxPow().getTxPowID().to0xString());
+				dets.put("tip", "( "+tree.getChainTip().getTxPow().getBlockNumber()+" ) "+tree.getChainTip().getTxPow().getTxPowID().to0xString());
 				dets.put("length", tree.getAsList().size());
 				dets.put("speed", tree.getChainSpeed());
 				dets.put("difficulty", tree.getChainTip().getTxPow().getBlockDifficulty().to0xString());
