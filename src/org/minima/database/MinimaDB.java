@@ -1,6 +1,8 @@
 package org.minima.database;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -1100,6 +1102,10 @@ public class MinimaDB {
 	}
 	
 	public SyncPackage getSyncPackage() {
+		return getSyncPackage(false);
+	}
+	
+	public SyncPackage getSyncPackage(boolean zDeepCopy) {
 		SyncPackage sp = new SyncPackage();
 		
 		//Is there anything.. ?
@@ -1118,6 +1124,31 @@ public class MinimaDB {
 		for(BlockTreeNode node : nodes) {
 			MiniNumber block = node.getTxPow().getBlockNumber();
 			sp.getAllNodes().add(0,new SyncPacket(node, block.isLess(casc)));
+		}
+		
+		//If sending this over the network.. make a copy.. as TxPoW could change (body removed if cascade)
+		if(zDeepCopy) {
+			//Write it out..
+			try {
+				ByteArrayOutputStream baos = new ByteArrayOutputStream();
+				DataOutputStream dos = new DataOutputStream(baos);
+				sp.writeDataStream(dos);
+				dos.flush();
+				dos.close();
+				
+				//And read it in..
+				ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+				DataInputStream dis = new DataInputStream(bais);
+				
+				//Now read it in.. 
+				SyncPackage spdeep = new SyncPackage();
+				spdeep.readDataStream(dis);
+				
+				return spdeep;
+				
+			}catch(Exception exc) {
+				exc.printStackTrace();
+			}	
 		}
 		
 		return sp;

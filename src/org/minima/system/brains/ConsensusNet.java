@@ -60,8 +60,8 @@ public class ConsensusNet extends ConsensusProcessor {
 				return;
 			}
 			
-			//Get the complete sync package
-			SyncPackage sp = getMainDB().getSyncPackage();
+			//Get the complete sync package - deep copy.. 
+			SyncPackage sp = getMainDB().getSyncPackage(true);
 			
 			//Now send that on..
 			sendNetMessage(zMessage, NetClientReader.NETMESSAGE_INTRO, sp);
