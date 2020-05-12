@@ -146,7 +146,7 @@ public class ConsensusPrint extends ConsensusProcessor {
 				treeinfo += "\nCurrent Difficulty : "+tree.getChainTip().getTxPow().getBlockDifficulty().to0xString();
 				treeinfo += "\nTotal Weight       : "+tree.getChainRoot().getTotalWeight();
 
-				MinimaLogger.log("\n"+treeinfo);
+				MinimaLogger.log(treeinfo+"\n");
 			
 			}else {
 				//Now check whether they are unspent..

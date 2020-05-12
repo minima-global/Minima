@@ -135,7 +135,12 @@ public class SimpleBlockTreePrinter {
 		
 		TxPoW txpow = zNode.getTxPow();
 		MiniData parent  = txpow.getSuperParent(clev);
-		MiniData parent2 = txpow.getSuperParent(clev+1);
+		
+		int parent2lev = clev+1;
+		if(parent2lev>=GlobalParams.MINIMA_CASCADE_LEVELS) {
+			parent2lev = GlobalParams.MINIMA_CASCADE_LEVELS-1;
+		}
+		MiniData parent2 = txpow.getSuperParent(parent2lev);
 			
 		int transnum = -1;
 		if(txpow.hasBody()) {

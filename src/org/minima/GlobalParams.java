@@ -24,7 +24,7 @@ public class GlobalParams {
 	/**
 	 * Speed in blocks per second
 	 */
-	public static final MiniNumber MINIMA_BLOCK_SPEED  = new MiniNumber("0.05");
+	public static final MiniNumber MINIMA_BLOCK_SPEED  = new MiniNumber("2");
 	
 	/**
 	 * How deep before we think confirmed..
@@ -34,17 +34,17 @@ public class GlobalParams {
 	/**
 	 * Depth before we cascade..
 	 */
-	public static final int MINIMA_CASCADE_START_DEPTH   = 1024;
+	public static final int MINIMA_CASCADE_START_DEPTH   = 8;
 	
 	/**
 	 * Minimum number of blocks at each cascade level 
 	 */
-	public static final int MINIMA_MINUMUM_CASCADE_LEVEL_NODES  = 128;
+	public static final int MINIMA_MINUMUM_CASCADE_LEVEL_NODES  = 8;
 	
 	/**
 	 * How Many Cascade Levels are there
 	 */
-	public static final int MINIMA_CASCADE_LEVELS  = 21;
+	public static final int MINIMA_CASCADE_LEVELS  = 3;
 	
 	/**
 	 * Current default HASH_Strength Used. Can be upto 512.

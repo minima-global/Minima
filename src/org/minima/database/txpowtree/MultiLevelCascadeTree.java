@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import org.minima.GlobalParams;
 import org.minima.objects.base.MiniNumber;
+import org.minima.utils.MinimaLogger;
 
 public class MultiLevelCascadeTree {
 
@@ -93,8 +94,13 @@ public class MultiLevelCascadeTree {
 				
 				//Keep at least this many at each level..
 				if(totlevel>=GlobalParams.MINIMA_MINUMUM_CASCADE_LEVEL_NODES) {
-					casclevel++;
-					totlevel = 0;
+					if(casclevel<GlobalParams.MINIMA_CASCADE_LEVELS-1) {
+						casclevel++;
+						totlevel = 0;
+					}else {
+						//We've reached the top level.. keep them ALL!
+						//..
+					}
 				}
 				
 				//METHOD2 - slightly better
