@@ -81,6 +81,15 @@ public abstract class BaseKey implements Streamable {
 		return ret;
 	}
 	
+	/**
+	 * Only use this to VERIFY - cannot sign
+	 * @param zPublicKey
+	 */
+	public void setPublicKey(MiniData zPublicKey) {
+		mPublicKey = zPublicKey;
+		mBitLength = new MiniNumber(zPublicKey.getLength()*8); 
+	}
+	
 	public MiniData getPublicKey() {
 		return mPublicKey;
 	}

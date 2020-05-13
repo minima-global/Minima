@@ -35,15 +35,6 @@ public class SingleKey extends BaseKey {
 		mPublicKey  = new MiniData(wots.getPublicKey());
 	}
 	
-	/**
-	 * Only use this to VERIFY - cannot sign
-	 * @param zPublicKey
-	 */
-	public void setPublicKey(MiniData zPublicKey) {
-		mPublicKey = zPublicKey;
-		mBitLength = new MiniNumber(zPublicKey.getLength()*8); 
-	}
-	
 	@Override
 	public MiniData sign(MiniData zData) {
 		//Create a WOTS

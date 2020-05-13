@@ -10,6 +10,7 @@ import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.proofs.Proof;
 import org.minima.utils.Streamable;
+import org.minima.utils.json.JSONObject;
 
 public class MultiSig implements Streamable {
 
@@ -21,21 +22,21 @@ public class MultiSig implements Streamable {
 	MiniData mSignature;
 	
 	/**
-	 * The parent tree - can be null if this is the lowest level
+	 * The Child tree - can be null if this is the top level
 	 */
-	MiniData mParentSignature;
+	MiniData mChildSignature;
 	
 	public MultiSig(MiniData zPubKey, MiniData zProofChain, MiniData zSignature) {
 		this(zPubKey, zProofChain, zSignature, null);
 	}
 	
-	public MultiSig(MiniData zPubKey, MiniData zProofChain, MiniData zSignature, MiniData zParentSignature) {
+	public MultiSig(MiniData zPubKey, MiniData zProofChain, MiniData zSignature, MiniData zChildSignature) {
 		mPublicKey       = zPubKey;
 		mProofChain      = zProofChain;
 		mSignature       = zSignature;
 		
 		//The Parent Multi Sig
-		mParentSignature = zParentSignature;
+		mChildSignature = zChildSignature;
 	}
 	
 	public MultiSig(MiniData zCompleteSignature) {
@@ -66,12 +67,12 @@ public class MultiSig implements Streamable {
 		return mProofChain;
 	}
 	
-	public boolean hasParentSignature() {
-		return mParentSignature != null;
+	public boolean hasChildSignature() {
+		return mChildSignature != null;
 	}
 	
-	public MiniData getParentSignature() {
-		return mParentSignature;
+	public MiniData getChildSignature() {
+		return mChildSignature;
 	}
 	
 	public MiniData getRootKey() {
@@ -105,6 +106,25 @@ public class MultiSig implements Streamable {
 		return null;
 	}
 	
+	public JSONObject toJSON() {
+		JSONObject json = new JSONObject();
+		
+		json.put("publickey", mPublicKey.to0xString());
+		json.put("proof", mProofChain.to0xString());
+		json.put("signature", mSignature.to0xString());
+		if(mChildSignature == null) {
+			json.put("childsig", "null");
+		}else {
+			json.put("childsig", mChildSignature.to0xString());
+		}
+		
+		return json;
+	}
+	
+	@Override
+	public String toString() {
+		return toJSON().toString();
+	}
 	
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
@@ -112,11 +132,11 @@ public class MultiSig implements Streamable {
 		mProofChain.writeDataStream(zOut);
 		mSignature.writeDataStream(zOut);
 		
-		if(mParentSignature==null) {
+		if(mChildSignature==null) {
 			MiniByte.FALSE.writeDataStream(zOut);
 		}else {
 			MiniByte.TRUE.writeDataStream(zOut);
-			mParentSignature.writeDataStream(zOut);
+			mChildSignature.writeDataStream(zOut);
 		}
 	}
 
@@ -127,9 +147,9 @@ public class MultiSig implements Streamable {
 		mSignature  = MiniData.ReadFromStream(zIn);
 	
 		//Is there a parent..
-		mParentSignature = null;
+		mChildSignature = null;
 		if(MiniByte.ReadFromStream(zIn).isTrue()) {
-			mParentSignature = MiniData.ReadFromStream(zIn);
+			mChildSignature = MiniData.ReadFromStream(zIn);
 		}
 	}
 }

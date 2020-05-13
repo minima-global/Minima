@@ -9,28 +9,34 @@ import org.minima.utils.Crypto;
 
 public class MultiKey extends BaseKey {
 	
-	int MULTI_KEYS = 8;
+	//How many Leaf Node Keys are there
+	int mTotalLeafNodeKeys;
 	
 	//How many levels of Key Trees..
 	int mLevels;
 	
 	//The Leaf Node Keys..
-	SingleKey[] mBaseKeys;
+	SingleKey[] mSingleKeys;
 	
 	//The Current Leaf Node being used..
-	int mLeaf = -1;
+	int mCurrentLeaf = -1;
 	
-	//The Current MultiKey for the leafnode..
-	MultiKey mCurrentBase = null;
+	//The Current MultiKey for the leaf node..
+	MultiKey mCurrentChildTree = null;
 	
 	//The signature of the Root of the current base
+	MiniData mCurrentPublicKey = null;
 	MiniData mCurrentSignature = null;
+	MiniData mCurrentProof     = null;
 	
+	//The MMR tree of keys
 	MMRSet mMMR;
 	
+	public MultiKey() {}
+
 	public MultiKey(MiniData zPrivateSeed, int zKeys, int zLevels) {
 		super();
-		MULTI_KEYS = zKeys;
+		mTotalLeafNodeKeys = zKeys;
 		mLevels    = zLevels;
 		initKeys(zPrivateSeed);
 	}
@@ -40,22 +46,22 @@ public class MultiKey extends BaseKey {
 		
 		mPrivateSeed = zPrivateSeed;
 
-		mMaxUses  = new MiniNumber(MULTI_KEYS);
+		mMaxUses  = new MiniNumber(mTotalLeafNodeKeys);
 		mUses     = MiniNumber.ZERO;
 		
 		//Create the Key Tree
-		mBaseKeys = new SingleKey[MULTI_KEYS];
+		mSingleKeys = new SingleKey[mTotalLeafNodeKeys];
 		
 		//Now create the MMR tree
 		mMMR = new MMRSet(mBitLength.getAsInt());
 				
 		//Create all the keys..
-		for(int i=0;i<MULTI_KEYS;i++) {
+		for(int i=0;i<mTotalLeafNodeKeys;i++) {
 			//Create the Key
-			mBaseKeys[i] = new SingleKey(mBitLength.getAsInt());	
+			mSingleKeys[i] = new SingleKey(mBitLength.getAsInt());	
 			
 			//Add to the tree
-			mMMR.addLeafNode(mBaseKeys[i].getPublicKey());
+			mMMR.addLeafNode(mSingleKeys[i].getPublicKey());
 		}
 		
 		//Finalise the set
@@ -65,12 +71,7 @@ public class MultiKey extends BaseKey {
 		mPublicKey = mMMR.getMMRRoot().getFinalHash();
 	}
 	
-	/**
-	 * For reading from stream
-	 * @param empty
-	 */
-	public MultiKey() {}
-
+	
 	@Override
 	public MiniData sign(MiniData zData) {
 		//Which key are we on..
@@ -80,85 +81,109 @@ public class MultiKey extends BaseKey {
 		incrementUses();
 		
 		//How many signatures per leaf..
-		int perleaf = (int) Math.pow(MULTI_KEYS, mLevels-1);
+		int perleaf = (int) Math.pow(mTotalLeafNodeKeys, mLevels-1);
 		System.out.println("LEVEL:"+mLevels+" keys per leaf:"+perleaf);
 		
 		//Which leaf node are we using..
-		int leaf = (int)(keynum / perleaf);
-		System.out.println("LEVEL "+mLevels+" Keynum : "+keynum+" leaf:"+leaf);
+		int leafnode = (int)(keynum / perleaf);
+		System.out.println("LEVEL "+mLevels+" Keynum : "+keynum+" leaf:"+leafnode);
 		
-		if(mLevels == 1) {
-			if(keynum>=getMaxUses().getAsInt()) {
-				System.out.println("ERROR Key used too many times! MAX:"+getMaxUses());
-				//Create an INVALID multi sig..
-				MiniData zero = new MiniData("0x0000");
-				MultiSig sig  = new MultiSig(zero,zero, zero);
-				return sig.getCompleteSig();
-			}
-			
-			//Get that Key..
-			MiniData pubkey    = mBaseKeys[keynum].getPublicKey();
-			MiniData signature = mBaseKeys[keynum].sign(zData);
-			MiniData proof     = mMMR.getFullProofToRoot(new MiniInteger(keynum)).getChainSHAProof();
-			
-			//Create a multi sig..
-			MultiSig sig = new MultiSig(pubkey, proof, signature);
-			
+		if(leafnode>=getMaxUses().getAsInt()) {
+			System.out.println("ERROR Key used too many times! MAX:"+getMaxUses());
+			//Create an INVALID multi sig..
+			MiniData zero = new MiniData("0x0000");
+			MultiSig sig  = new MultiSig(zero,zero, zero);
 			return sig.getCompleteSig();
+		}
+		
+		//Are we top level
+		if(mLevels == 1) {
+			//Sign the data with this key
+			signWithLeafNode(zData, leafnode);
 			
+			//Create a multi sig.. no child signature
+			MultiSig sig = new MultiSig(mCurrentPublicKey, mCurrentProof, mCurrentSignature);
+			
+			//Return this..
+			return sig.getCompleteSig();
 		}
 		
 		//Are we on the same leaf or a new one..
-		if(leaf != mLeaf) {
+		if(leafnode != mCurrentLeaf) {
 			//Store
-			mLeaf = leaf;
+			mCurrentLeaf = leafnode;
 			
-			//Get that key..
-			SingleKey leafkey = mBaseKeys[leaf];
-		
 			//Create a private seed based of this see..
-			MiniData leafnumdata = new MiniData(BaseConverter.numberToHex(leaf));
-			System.out.println("LEVEL "+mLevels+" leaf "+leaf+" "+leafnumdata.to0xString());
+			MiniData leafnumdata = new MiniData(BaseConverter.numberToHex(leafnode));
+			System.out.println("LEVEL "+mLevels+" leaf "+leafnode+" "+leafnumdata.to0xString());
 			
 			//Now create the private seed..
-			MiniData leafpriv = new MiniData( Crypto.getInstance().hashData(mPrivateSeed.concat(leafnumdata).getData()) );
+			MiniData leafpriv = new MiniData( Crypto.getInstance().hashData(mPrivateSeed.concat(leafnumdata).getData(), 160) );
 			
 			//Create a new Multi Key at this leaf position..
-			mCurrentBase = new MultiKey(leafpriv, MULTI_KEYS, mLevels-1); 
+			mCurrentChildTree = new MultiKey(leafpriv, mTotalLeafNodeKeys, mLevels-1); 
 			
 			//Get the Base..
-			MiniData rootkey = mCurrentBase.getPublicKey();
+			MiniData rootkey = mCurrentChildTree.getPublicKey();
 			
 			//Sign that..
-			mCurrentSignature = leafkey.sign(rootkey);
+			signWithLeafNode(rootkey, mCurrentLeaf);
 		}	
 		
 		//Use the current base 
-		MiniData signature = mCurrentBase.sign(zData);
+		MiniData childsignature = mCurrentChildTree.sign(zData);
 		
 		//Create a multi sig..
-		MultiSig sig = new MultiSig(mCurrentSignature, signature);
+		MultiSig sig = new MultiSig(mCurrentPublicKey, mCurrentProof, mCurrentSignature, childsignature);
 		
+		//Return this..
 		return sig.getCompleteSig();
+	}
+	
+	private void signWithLeafNode(MiniData zData, int zLeaf) {
+		//Get that Key..
+		mCurrentPublicKey  = mSingleKeys[zLeaf].getPublicKey();
+		mCurrentSignature  = mSingleKeys[zLeaf].sign(zData);
+		mCurrentProof      = mMMR.getFullProofToRoot(new MiniInteger(zLeaf)).getChainSHAProof();
 	}
 
 	@Override
-	public boolean verify(MiniData zData, MiniData zSignature) {
-		MultiSig sig = new MultiSig(zSignature);
+	public boolean verify(MiniData zData, MiniData zMultiSignature) {
+		//Convert into a MultiSig Structure
+		MultiSig sigdata = new MultiSig(zMultiSignature);
 		
 		//First check the Public Key is correct
-		if(!sig.getRootKey().isEqual(mPublicKey)) {
+		if(!sigdata.getRootKey().isEqual(mPublicKey)) {
 			return false;
 		}
 		
 		//Create a Single Key
 		SingleKey skey = new SingleKey();
-		skey.setPublicKey(sig.getPublicKey());
+		skey.setPublicKey(sigdata.getPublicKey());
 		
-		//Now check the Signature
-		boolean ver = skey.verify(zData, sig.getSignature());
+		//And now check the children
+		if(sigdata.hasChildSignature()) {
+			//The Child Signature
+			MiniData childsig = sigdata.getChildSignature();
+			
+			//Convert to a multisig
+			MultiSig msig = new MultiSig(childsig);
+			
+			//Now check the Signature was used to sign the root of the child tree
+			if(!skey.verify(msig.getRootKey(), sigdata.getSignature())) {
+				return false;
+			}
+
+			//Create a new MultiKey for the child tree
+			MultiKey child = new MultiKey();
+			child.setPublicKey(msig.getRootKey());
+			
+			//Now check the child signed this data
+			return child.verify(zData, childsig);
+		}
 		
-		return ver;
+		//Just check the data was signed 
+		return skey.verify(zData, sigdata.getSignature());
 	}
 	
 	
@@ -168,7 +193,7 @@ public class MultiKey extends BaseKey {
 		MiniData privseed = MiniData.getRandomData(20);
 				
 		//Create a new key
-		MultiKey mkey = new MultiKey(privseed, 4, 1);
+		MultiKey mkey = new MultiKey(privseed, 2, 2);
 		
 		//get some data
 		MiniData data = MiniData.getRandomData(20);
@@ -188,13 +213,13 @@ public class MultiKey extends BaseKey {
 		System.out.println("SigHash : "+Crypto.getInstance().hashObject(sig,160).to0xString());
 		System.out.println("Verify  : "+mkey.verify(data, sig));
 		System.out.println();
-		
-		//Sign it..
-		sig = mkey.sign(data);
-		System.out.println("SigLen  : "+sig.getLength());
-		System.out.println("SigHash : "+Crypto.getInstance().hashObject(sig,160).to0xString());
-		System.out.println("Verify  : "+mkey.verify(data, sig));
-		System.out.println();
+//		
+//		//Sign it..
+//		sig = mkey.sign(data);
+//		System.out.println("SigLen  : "+sig.getLength());
+//		System.out.println("SigHash : "+Crypto.getInstance().hashObject(sig,160).to0xString());
+//		System.out.println("Verify  : "+mkey.verify(data, sig));
+//		System.out.println();
 		
 		
 	}
