@@ -1,7 +1,5 @@
 package org.minima.utils;
 
-import java.math.BigInteger;
-
 public class BaseConverter {
 	
 	/**
@@ -44,6 +42,11 @@ public class BaseConverter {
 	    
 	    return data;
 	}
+	
+	public static String numberToHex(int zNumber) {
+		return new String("0x"+Integer.toHexString(zNumber));
+	}
+	
 	
 	/**
 	 * BASE 32 Encode and Decode
