@@ -13,12 +13,14 @@ public class SingleKey extends BaseKey {
 	
 	public SingleKey(MiniData zPrivateSeed) {
 		super();
-		initKeys(zPrivateSeed);
 		
 		//You can only use it once
 		mLevel    = MiniNumber.ONE;
 		mMaxUses  = MiniNumber.ONE;
 		mUses     = MiniNumber.ZERO;
+		
+		//Initialise
+		initKeys(zPrivateSeed);
 	}
 	
 	@Override

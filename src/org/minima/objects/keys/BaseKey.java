@@ -159,7 +159,9 @@ public abstract class BaseKey implements Streamable {
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
 		mPublicKey   = MiniData.ReadFromStream(zIn);
+		
 		mPrivateSeed = MiniData.ReadFromStream(zIn);
+		mBitLength   = new MiniNumber(mPrivateSeed.getLength()*8);
 		
 		//FOR NOW MUST BE 12..in future.. maybe higher..
 		mWinternitz  = MiniNumber.ReadFromStream(zIn);
@@ -167,13 +169,12 @@ public abstract class BaseKey implements Streamable {
 			throw new IOException("INVALID Winternitz : must be 12!");
 		}
 		
+		//Important values
 		mLevel       = MiniNumber.ReadFromStream(zIn);
 		mMaxUses     = MiniNumber.ReadFromStream(zIn);
 		mUses        = MiniNumber.ReadFromStream(zIn);
 		
 		//Init the system - rewrite the variables later
 		initKeys(mPrivateSeed);
-				
-		mBitLength   = new MiniNumber(mPrivateSeed.getLength()*8);
 	}
 }
