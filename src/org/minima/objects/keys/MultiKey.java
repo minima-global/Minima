@@ -44,7 +44,8 @@ public class MultiKey extends BaseKey {
 		initKeys(zPrivateSeed);
 	}
 	
-	private void initKeys(MiniData zPrivateSeed) {
+	@Override
+	protected void initKeys(MiniData zPrivateSeed) {
 		//Can calculate from the Private Seed
 		mBitLength = new MiniNumber(zPrivateSeed.getLength()*8);
 		
@@ -60,8 +61,11 @@ public class MultiKey extends BaseKey {
 		//Create all the keys..
 		int len = mMaxUses.getAsInt();
 		for(int i=0;i<len;i++) {
+			//Create the private seed
+			MiniData spriv = getHashNumberConcat(i,mPrivateSeed, mBitLength.getAsInt());
+			
 			//Create the Key
-			mSingleKeys[i] = new SingleKey(mBitLength.getAsInt());	
+			mSingleKeys[i] = new SingleKey(spriv);	
 			
 			//Add to the tree
 			mMMR.addLeafNode(mSingleKeys[i].getPublicKey());
@@ -93,14 +97,14 @@ public class MultiKey extends BaseKey {
 		//Which leaf node are we using..
 		int leafnode = (int)(keynum / perleaf);
 		
-//		System.out.println("LEVEL:"+mLevels+" KEY:"+keynum+" LEAF:"+leafnode);
+		System.out.println("LEVEL:"+mLevel+" USE:"+keynum+" LEAF:"+leafnode+" "+getPublicKey());
 		
 		if(leafnode>=getMaxUses().getAsInt()) {
 			System.out.println("ERROR Key "+getPublicKey().to0xString()
 					+" used too many times! MAX LEAF NODES:"+getMaxUses()+" ALLOWED:"+getTotalAllowedUses());
 			//Create an INVALID multi sig..
 			MiniData zero = new MiniData("0x0000");
-			MultiSig sig  = new MultiSig(zero,zero, zero);
+			MultiSig sig  = new MultiSig(zero, zero, zero);
 			return sig.getCompleteSig();
 		}
 		
@@ -116,22 +120,27 @@ public class MultiKey extends BaseKey {
 			return sig.getCompleteSig();
 		}
 		
-		//Are we on the same leaf or a new one..
+		//Are we on the correct leaf or a new one..
 		if(leafnode != mCurrentLeaf) {
 			//Store
 			mCurrentLeaf = leafnode;
 			
-			//Create a private seed based of this see..
-			MiniData leafnumdata = new MiniData(BaseConverter.numberToHex(leafnode));
-			
-			//Now create the private seed..
-			MiniData leafpriv = new MiniData( Crypto.getInstance().hashData(mPrivateSeed.concat(leafnumdata).getData(), 160) );
+			//Create the private seed
+			MiniData treepriv = getHashNumberConcat(mCurrentLeaf,
+					mSingleKeys[mCurrentLeaf].getPrivateSeed(), mBitLength.getAsInt());
 			
 			//Create a new Multi Key at this leaf position..
-			mCurrentChildTree = new MultiKey(leafpriv, getMaxUses(), getLevel().decrement()); 
+			mCurrentChildTree = new MultiKey(treepriv, getMaxUses(), getLevel().decrement()); 
+			System.out.println("NEW LEAF PRIV:"+treepriv+" "+getMaxUses()+" "+getLevel().decrement());
+			
+			//And set the correct Use number.. could have just been loaded
+			int childuse = (keynum % perleaf);
+			System.out.println("CHILD USE : "+mCurrentLeaf+" "+childuse);
+			mCurrentChildTree.setUses(new MiniNumber(childuse));
 			
 			//Get the Base..
 			MiniData rootkey = mCurrentChildTree.getPublicKey();
+			System.out.println("CHILD TREE: "+rootkey.to0xString());
 			
 			//Sign that..
 			signWithLeafNode(rootkey, mCurrentLeaf);
@@ -152,6 +161,21 @@ public class MultiKey extends BaseKey {
 		mCurrentPublicKey  = mSingleKeys[zLeaf].getPublicKey();
 		mCurrentSignature  = mSingleKeys[zLeaf].sign(zData);
 		mCurrentProof      = mMMR.getFullProofToRoot(new MiniInteger(zLeaf)).getChainSHAProof();
+	}
+	
+	/**
+	 * Create a deterministic seed from a private seed and a number
+	 * 
+	 * @param zNumber
+	 * @param zData
+	 * @param zBitStrength
+	 * @return
+	 */
+	protected MiniData getHashNumberConcat(int zNumber, MiniData zData, int zBitStrength) {
+		MiniData numberdata = new MiniData(BaseConverter.numberToHex(zNumber));
+		MiniData newdata    = numberdata.concat(zData);
+		byte[] hashdata     = Crypto.getInstance().hashData(newdata.getData(), zBitStrength);
+		return new MiniData(hashdata);
 	}
 
 	@Override
@@ -201,23 +225,31 @@ public class MultiKey extends BaseKey {
 				
 		//Create a new key
 		System.out.println("MAKE KEY Start");
-		MultiKey mkey = new MultiKey(privseed, new MiniNumber("32"), new MiniNumber("2"));
+		MultiKey mkey = new MultiKey(privseed, new MiniNumber("2"), new MiniNumber("3"));
 		System.out.println(mkey.toJSON().toString());
+		MultiKey mkey2 = new MultiKey(privseed, new MiniNumber("2"), new MiniNumber("3"));
+		System.out.println(mkey2.toJSON().toString());
 		
 		//get some data
 		MiniData data = MiniData.getRandomData(20);
 		System.out.println("Data    : "+data);
 		System.out.println();
+			
 		
 		//Sign it..
-		for(int i=0;i<2;i++) {
+		for(int i=0;i<3;i++) {
 			MiniData sig = mkey.sign(data);
 			System.out.println(i+")\tSigLength:"
 					+sig.getLength()+"\thash:"
 					+Crypto.getInstance().hashObject(sig,160).to0xString()
 					+"\tVerify  : "+mkey.verify(data, sig));
 			System.out.println(mkey.toJSON().toString());
+			System.out.println();
 		}
+		
+//		if(true) {
+//			System.exit(0);
+//		}
 		
 		System.out.println();
 		System.out.println("Now read it in..");
@@ -246,15 +278,17 @@ public class MultiKey extends BaseKey {
 			exc.printStackTrace();
 		}
 		
+		mkey = null;
 		System.out.println(lodkey.toJSON().toString());
 		
 		for(int i=0;i<3;i++) {
-			MiniData sig = mkey.sign(data);
+			MiniData sig = lodkey.sign(data);
 			System.out.println(i+")\tSigLength:"
 					+sig.getLength()+"\thash:"
 					+Crypto.getInstance().hashObject(sig,160).to0xString()
-					+"\tVerify  : "+mkey.verify(data, sig));
-			System.out.println(mkey.toJSON().toString());
+					+"\tVerify  : "+lodkey.verify(data, sig));
+			System.out.println(lodkey.toJSON().toString());
+			System.out.println();
 		}
 		
 	}

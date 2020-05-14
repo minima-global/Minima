@@ -52,6 +52,12 @@ public abstract class BaseKey implements Streamable {
 	public BaseKey() {}
 	
 	/**
+	 * Initialise variables with the private key
+	 * @param zPrivateSeed
+	 */
+	protected abstract void initKeys(MiniData zPrivateSeed);
+		
+	/**
 	 * Sign arbitrary data
 	 * 
 	 * @param zData
@@ -115,6 +121,10 @@ public abstract class BaseKey implements Streamable {
 		return mBitLength.getAsInt();
 	}
 	
+	public int getWinternitz() {
+		return mWinternitz.getAsInt();
+	}
+	
 	public MiniNumber getMaxUses() {
 		return mMaxUses;
 	}
@@ -123,12 +133,12 @@ public abstract class BaseKey implements Streamable {
 		return new MiniNumber(mUses.getAsBigInteger());
 	}
 	
-	public int getWinternitz() {
-		return mWinternitz.getAsInt();
-	}
-	
 	public void incrementUses() {
 		mUses = mUses.increment();
+	}
+	
+	public void setUses(MiniNumber zUses) {
+		mUses = zUses;
 	}
 	
 	@Override
@@ -161,6 +171,9 @@ public abstract class BaseKey implements Streamable {
 		mMaxUses     = MiniNumber.ReadFromStream(zIn);
 		mUses        = MiniNumber.ReadFromStream(zIn);
 		
+		//Init the system - rewrite the variables later
+		initKeys(mPrivateSeed);
+				
 		mBitLength   = new MiniNumber(mPrivateSeed.getLength()*8);
 	}
 }

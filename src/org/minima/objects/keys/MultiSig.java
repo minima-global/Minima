@@ -113,7 +113,7 @@ public class MultiSig implements Streamable {
 		json.put("proof", mProofChain.to0xString());
 		json.put("signature", mSignature.to0xString());
 		if(mChildSignature == null) {
-			json.put("childsig", "null");
+			json.put("childsig", "0x00");
 		}else {
 			json.put("childsig", mChildSignature.to0xString());
 		}

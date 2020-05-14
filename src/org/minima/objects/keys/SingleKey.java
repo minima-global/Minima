@@ -11,17 +11,18 @@ public class SingleKey extends BaseKey {
 		super();
 	}
 	
-	public SingleKey(int zBitLength) {
-		super();
-		initKeys(MiniData.getRandomData(zBitLength/8));
-	}
-	
 	public SingleKey(MiniData zPrivateSeed) {
 		super();
 		initKeys(zPrivateSeed);
+		
+		//You can only use it once
+		mLevel    = MiniNumber.ONE;
+		mMaxUses  = MiniNumber.ONE;
+		mUses     = MiniNumber.ZERO;
 	}
 	
-	private void initKeys(MiniData zPrivateSeed) {
+	@Override
+	protected void initKeys(MiniData zPrivateSeed) {
 		//Number of Bits of security
 		mBitLength = new MiniNumber(zPrivateSeed.getLength()*8);
 		
@@ -33,11 +34,6 @@ public class SingleKey extends BaseKey {
 		
 		//Get the Public Key..
 		mPublicKey  = new MiniData(wots.getPublicKey());
-		
-		//You can only use it once
-		mLevel    = MiniNumber.ONE;
-		mMaxUses  = MiniNumber.ONE;
-		mUses     = MiniNumber.ZERO;
 	}
 	
 	@Override
