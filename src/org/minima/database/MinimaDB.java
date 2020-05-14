@@ -1074,7 +1074,7 @@ public class MinimaDB {
 					//And delete..
 					getBackup().deleteTxpow(txp);
 					
-					MinimaLogger.log("Removing invalid TXPOW.. "+txp);
+					MinimaLogger.log("Removing invalid TXPOW.. "+txp.getTxPowID());
 				}
 			}
 		}
