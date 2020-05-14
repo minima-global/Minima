@@ -29,16 +29,21 @@ public class SingleKey extends BaseKey {
 		mPrivateSeed = zPrivateSeed;
 
 		//Create a WOTS
-		WinternitzOTSignature wots = new WinternitzOTSignature(mPrivateSeed.getData(), getHashFunction(mBitLength), WINTERNITZ_NUMBER);
+		WinternitzOTSignature wots = new WinternitzOTSignature(mPrivateSeed.getData(), getHashFunction(mBitLength), getWinternitz());
 		
 		//Get the Public Key..
 		mPublicKey  = new MiniData(wots.getPublicKey());
+		
+		//You can only use it once
+		mLevel    = MiniNumber.ONE;
+		mMaxUses  = MiniNumber.ONE;
+		mUses     = MiniNumber.ZERO;
 	}
 	
 	@Override
 	public MiniData sign(MiniData zData) {
 		//Create a WOTS
-		WinternitzOTSignature wots = new WinternitzOTSignature(mPrivateSeed.getData(), getHashFunction(mBitLength), WINTERNITZ_NUMBER);
+		WinternitzOTSignature wots = new WinternitzOTSignature(mPrivateSeed.getData(), getHashFunction(mBitLength), getWinternitz());
 		
 		//Sign the data..
 		byte[] signature = wots.getSignature(zData.getData());
@@ -50,7 +55,7 @@ public class SingleKey extends BaseKey {
 	@Override
 	public boolean verify(MiniData zData, MiniData zSignature) {
 		//WOTS Verify
-		WinternitzOTSVerify wver = new WinternitzOTSVerify(getHashFunction(mBitLength), WINTERNITZ_NUMBER);
+		WinternitzOTSVerify wver = new WinternitzOTSVerify(getHashFunction(mBitLength), getWinternitz());
 		
 		//Do it.. get the pubkey..
 		byte[] pubkey = wver.Verify(zData.getData(), zSignature.getData());
@@ -60,5 +65,10 @@ public class SingleKey extends BaseKey {
 		
 		//Check..
 		return resp.isEqual(mPublicKey);
+	}
+
+	@Override
+	public MiniNumber getTotalAllowedUses() {
+		return MiniNumber.ONE;
 	}
 }

@@ -16,7 +16,7 @@ public abstract class BaseKey implements Streamable {
 	/**
 	 * The Winternitz number used by all the Lamport Signatures
 	 */
-	protected static final int WINTERNITZ_NUMBER = 12;
+	private MiniNumber mWinternitz = MiniNumber.TWELVE;
 	
 	/**
 	 * Security of the signature in Bits
@@ -42,6 +42,11 @@ public abstract class BaseKey implements Streamable {
 	 * Number of Times you have used this key
 	 */
 	protected MiniNumber mUses;
+	
+	/**
+	 * What Level in the tree key
+	 */
+	protected MiniNumber mLevel;
 	
 	
 	public BaseKey() {}
@@ -71,11 +76,15 @@ public abstract class BaseKey implements Streamable {
 	protected static Digest getHashFunction(MiniNumber zBitLength) {
 		return new KeccakDigest(zBitLength.getAsInt());
 	}
+
+	public abstract MiniNumber getTotalAllowedUses();
 	
 	public JSONObject toJSON() {
 		JSONObject ret = new JSONObject();
 		
 		ret.put("bits", mBitLength);
+		ret.put("uses", getUses().toString());
+		ret.put("allowed", getTotalAllowedUses().toString());
 		ret.put("publickey", mPublicKey.to0xString());
 		
 		return ret;
@@ -88,6 +97,10 @@ public abstract class BaseKey implements Streamable {
 	public void setPublicKey(MiniData zPublicKey) {
 		mPublicKey = zPublicKey;
 		mBitLength = new MiniNumber(zPublicKey.getLength()*8); 
+	}
+	
+	public MiniNumber getLevel() {
+		return mLevel;
 	}
 	
 	public MiniData getPublicKey() {
@@ -107,7 +120,11 @@ public abstract class BaseKey implements Streamable {
 	}
 	
 	public MiniNumber getUses() {
-		return mUses;
+		return new MiniNumber(mUses.getAsBigInteger());
+	}
+	
+	public int getWinternitz() {
+		return mWinternitz.getAsInt();
 	}
 	
 	public void incrementUses() {
@@ -123,6 +140,8 @@ public abstract class BaseKey implements Streamable {
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
 		mPublicKey.writeDataStream(zOut);
 		mPrivateSeed.writeDataStream(zOut);
+		mWinternitz.writeDataStream(zOut);
+		mLevel.writeDataStream(zOut);
 		mMaxUses.writeDataStream(zOut);
 		mUses.writeDataStream(zOut);
 	}
@@ -131,8 +150,17 @@ public abstract class BaseKey implements Streamable {
 	public void readDataStream(DataInputStream zIn) throws IOException {
 		mPublicKey   = MiniData.ReadFromStream(zIn);
 		mPrivateSeed = MiniData.ReadFromStream(zIn);
-		mBitLength   = new MiniNumber(mPrivateSeed.getLength()*8);
+		
+		//FOR NOW MUST BE 12..in future.. maybe higher..
+		mWinternitz  = MiniNumber.ReadFromStream(zIn);
+		if(!mWinternitz.isEqual(MiniNumber.TWELVE)) {
+			throw new IOException("INVALID Winternitz : must be 12!");
+		}
+		
+		mLevel       = MiniNumber.ReadFromStream(zIn);
 		mMaxUses     = MiniNumber.ReadFromStream(zIn);
 		mUses        = MiniNumber.ReadFromStream(zIn);
+		
+		mBitLength   = new MiniNumber(mPrivateSeed.getLength()*8);
 	}
 }
