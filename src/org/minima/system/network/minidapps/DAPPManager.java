@@ -10,6 +10,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.zip.ZipEntry;
@@ -34,6 +35,9 @@ public class DAPPManager extends SystemHandler {
 	
 	JSONArray CURRENT_MINIDAPPS = new JSONArray();
 	String MINIDAPPS_FOLDER     = "";
+	
+	
+	ArrayList<NanoDAPPServer> mDAPPServers = new ArrayList<>();
 	
 	NanoDAPPServer mNanoDAPPServer;
 	
@@ -170,6 +174,9 @@ public class DAPPManager extends SystemHandler {
 		//List it..
 		File[] apps = alldapps.listFiles();
 		
+		//Each MiniDAPP gets it's OWN port..
+		int miniport = 1;
+		
 		//Cycle through them..
 		if(apps != null) {
 			for(File app : apps) {
@@ -193,6 +200,9 @@ public class DAPPManager extends SystemHandler {
 				if(conf.exists()) {
 					//Load it..
 					JSONObject confjson = loadConfFile(conf);
+					
+					///Give it a unique Port..
+					confjson.put("port", miniport++);
 					
 					//Add it..
 					CURRENT_MINIDAPPS.add(confjson);

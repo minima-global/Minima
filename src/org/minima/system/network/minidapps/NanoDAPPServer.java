@@ -19,6 +19,7 @@ import org.minima.system.network.minidapps.hexdata.indexhtml;
 import org.minima.system.network.minidapps.hexdata.installdapphtml;
 import org.minima.system.network.minidapps.hexdata.minidappscss;
 import org.minima.system.network.minidapps.hexdata.tilegreyjpeg;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
@@ -46,8 +47,27 @@ public class NanoDAPPServer extends NanoHTTPD{
 			
         	//What are they looking for..
         	String fileRequested = session.getUri();
-			//MinimaLogger.log("GET "+fileRequested);
+        	//MinimaLogger.log(fileRequested);
 			
+        	//Which MiniDAPP
+        	String MiniDAPPID="";
+        	String ref = session.getHeaders().get("referer");
+        	if(ref != null) {
+        		int start  = ref.indexOf("/minidapps/")+11;
+        		int end    = -1;
+        		if(start!=-1) {
+        			end    = ref.indexOf("/", start);
+        		}
+        		
+        		if(end!=-1) {
+        			MiniDAPPID = ref.substring(start, end);
+        		}
+        	}
+
+        	if(MiniDAPPID.equals("")) {;
+        		MinimaLogger.log("UNKNOWN MINIDAPP! file:"+fileRequested+" headers:"+session.getHeaders());
+        	}
+        	
         	//Quick clean
 			if(fileRequested.endsWith("/")) {
 				fileRequested = fileRequested.concat("index.html");
