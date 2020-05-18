@@ -31,11 +31,11 @@ public class ScriptProof extends Proof {
 		super();
 		
 		if(zBitLength == 512) {
-			init(zScript,"0x0200");
+			init(zScript,"0x10");
 		}else if(zBitLength == 256) {
-			init(zScript,"0x0100");
+			init(zScript,"0x08");
 		}else if(zBitLength == 160) {
-			init(zScript,"0x00A0");
+			init(zScript,"0x05");
 		} 
 	}
 	

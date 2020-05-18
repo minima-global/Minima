@@ -79,28 +79,34 @@ public class Proof implements Streamable {
 		int len  = chdata.length;  
 		int read = 0;
 		
-		//The HASH_BITS is first
 		try {
-			HASH_BITS = dis.readShort();
-			read += 2;
+			//The HASH_BITS is first
+			int hb    = MiniByte.ReadFromStream(dis).getValue();
+			HASH_BITS = hb * 32;
+			read++;
+			
+//			HASH_BITS = dis.readShort();
+//			read += 2;
+			
+			while(dis.available()>0) {
+	//			while(read<len) {
+				//Is it to the left or the right 
+				MiniByte leftrigt = MiniByte.ReadFromStream(dis);
+				read++;
+				
+				//What data to hash
+				MiniData data = MiniData.ReadFromStream(dis);
+				
+				//4 bytes for the len and the data itself..
+				read += 4 + data.getLength();
+				
+				//Add to the Proof..
+				addProofChunk(leftrigt, data);
+			}
+			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
-		
-		while(read<len) {
-			//Is it to the left or the right 
-			MiniByte leftrigt = MiniByte.ReadFromStream(dis);
-			read++;
-			
-			//What data to hash
-			MiniData data = MiniData.ReadFromStream(dis);
-			
-			//4 bytes for the len and the data itself..
-			read += 4 + data.getLength();
-			
-			//Add to the Proof..
-			addProofChunk(leftrigt, data);
 		}
 		
 		finalizeHash();
@@ -148,7 +154,9 @@ public class Proof implements Streamable {
 		
 		try {
 			//First write out the HASH_BITS
-			dos.writeShort(HASH_BITS);
+			MiniByte hb = new MiniByte(HASH_BITS / 32);
+			hb.writeDataStream(dos);
+//			dos.writeShort(HASH_BITS);
 			
 			//Now write out the data..
 			int len = mProofChain.size();
@@ -215,7 +223,11 @@ public class Proof implements Streamable {
 	
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
-		zOut.writeInt(HASH_BITS);
+		
+		MiniByte hb = new MiniByte(HASH_BITS / 32);
+		hb.writeDataStream(zOut);
+//		zOut.writeInt(HASH_BITS);
+		
 		mData.writeDataStream(zOut);
 		MiniNumber mlen = new MiniNumber(mProofChain.size());
 		mlen.writeDataStream(zOut);
@@ -230,7 +242,9 @@ public class Proof implements Streamable {
 
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
-		HASH_BITS = zIn.readInt();
+		MiniByte hb = MiniByte.ReadFromStream(zIn);
+		HASH_BITS = hb.getValue() * 32;
+		
 		mData = MiniData.ReadFromStream(zIn);
 		mProofChain = new ArrayList<>();
 		MiniNumber mlen = MiniNumber.ReadFromStream(zIn);
@@ -258,11 +272,11 @@ public class Proof implements Streamable {
 	}
 	
 	public static int getChainSHABits(String zChainSHA) throws Exception {
-		if(zChainSHA.startsWith("0x0200")) {
+		if(zChainSHA.startsWith("0x10")) {
 			return 512;
-		}else if(zChainSHA.startsWith("0x0100")) {
+		}else if(zChainSHA.startsWith("0x08")) {
 			return 256;
-		}else if(zChainSHA.startsWith("0x00A0")) {
+		}else if(zChainSHA.startsWith("0x05")) {
 			return 160;
 		}
 		

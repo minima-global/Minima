@@ -106,12 +106,13 @@ public class KeccakDigest implements ExtendedDigest
     {
         switch (bitLength)
         {
-//        case 128:
+        case 128:
         case 160:
-//        case 224:
+        case 224:
         case 256:
-//        case 288:
-//        case 384:
+        case 288:
+        case 320:
+        case 384:
         case 512:
             initSponge(1600 - (bitLength << 1));
             break;
