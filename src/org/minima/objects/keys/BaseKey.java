@@ -83,7 +83,13 @@ public abstract class BaseKey implements Streamable {
 		return new KeccakDigest(zBitLength.getAsInt());
 	}
 
-	public abstract MiniNumber getTotalAllowedUses();
+	/**
+	 * The total amount of times you can use this key 
+	 * @return
+	 */
+	public MiniNumber getTotalAllowedUses() {
+		return mMaxUses.pow(mLevel.getAsInt());
+	}
 	
 	public JSONObject toJSON() {
 		JSONObject ret = new JSONObject();
@@ -159,9 +165,7 @@ public abstract class BaseKey implements Streamable {
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
 		mPublicKey   = MiniData.ReadFromStream(zIn);
-		
 		mPrivateSeed = MiniData.ReadFromStream(zIn);
-		mBitLength   = new MiniNumber(mPrivateSeed.getLength()*8);
 		
 		//FOR NOW MUST BE 12..in future.. maybe higher..
 		mWinternitz  = MiniNumber.ReadFromStream(zIn);
@@ -174,7 +178,7 @@ public abstract class BaseKey implements Streamable {
 		mMaxUses     = MiniNumber.ReadFromStream(zIn);
 		mUses        = MiniNumber.ReadFromStream(zIn);
 		
-		//Init the system - rewrite the variables later
+		//Init the variables 
 		initKeys(mPrivateSeed);
 	}
 }

@@ -83,11 +83,6 @@ public class MultiKey extends BaseKey {
 	}
 	
 	@Override
-	public MiniNumber getTotalAllowedUses() {
-		return mMaxUses.pow(mLevel.getAsInt());
-	}
-	
-	@Override
 	public MiniData sign(MiniData zData) {
 		//Which key are we on..
 		int keynum = getUses().getAsInt();

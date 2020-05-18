@@ -64,9 +64,4 @@ public class SingleKey extends BaseKey {
 		//Check..
 		return resp.isEqual(mPublicKey);
 	}
-
-	@Override
-	public MiniNumber getTotalAllowedUses() {
-		return MiniNumber.ONE;
-	}
 }
