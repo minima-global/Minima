@@ -90,7 +90,6 @@ public class ResponseStream {
 		synchronized (mLock) {
 			//It's finished
 			mFinished = true;
-			
 			mLock.notifyAll();
 		}
 	}
@@ -99,16 +98,18 @@ public class ResponseStream {
 	 * Wait a maximum amount of time..
 	 */
 	public void waitToFinish() {
-		long timestart = System.currentTimeMillis();
-		long timediff  = 0;
-		
 		//5 second max wait..
 		synchronized (mLock) {
+			if(mFinished) {
+				return;	
+			}
+			
 			try {
 				mLock.wait(MAX_WAITTIME);
 			} catch (InterruptedException e) {}
 		}
 		
+		//Are we finished..
 		if(!mFinished) {
 			endStatus(false, "Operation Timed out..");
 		}
