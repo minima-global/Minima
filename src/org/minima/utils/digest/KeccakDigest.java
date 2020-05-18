@@ -108,6 +108,7 @@ public class KeccakDigest implements ExtendedDigest
         {
         case 128:
         case 160:
+        case 192:
         case 224:
         case 256:
         case 288:
@@ -117,8 +118,7 @@ public class KeccakDigest implements ExtendedDigest
             initSponge(1600 - (bitLength << 1));
             break;
         default:
-//            throw new IllegalArgumentException("bitLength must be one of 128, 160, 224, 256, 288, 384, or 512.");
-            throw new IllegalArgumentException("bitLength must be one of 160, 256, or 512.");
+            throw new IllegalArgumentException("bitLength must be one of 128, 160, 192, 224, 256, 288, 320, 384, or 512.");
         }
     }
 

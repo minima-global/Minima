@@ -70,42 +70,27 @@ public class Proof implements Streamable {
 	public void setProof(MiniData zChainSHAProof) {
 		mFinalized  = false;
 		mProofChain = new ArrayList<>();
-		
-		byte[] chdata = zChainSHAProof.getData();
-		
-		ByteArrayInputStream bais = new ByteArrayInputStream(chdata);
+	
+		ByteArrayInputStream bais = new ByteArrayInputStream(zChainSHAProof.getData());
 		DataInputStream dis = new DataInputStream(bais);
-		
-		int len  = chdata.length;  
-		int read = 0;
 		
 		try {
 			//The HASH_BITS is first
 			int hb    = MiniByte.ReadFromStream(dis).getValue();
 			HASH_BITS = hb * 32;
-			read++;
-			
-//			HASH_BITS = dis.readShort();
-//			read += 2;
 			
 			while(dis.available()>0) {
-	//			while(read<len) {
 				//Is it to the left or the right 
 				MiniByte leftrigt = MiniByte.ReadFromStream(dis);
-				read++;
 				
 				//What data to hash
 				MiniData data = MiniData.ReadFromStream(dis);
-				
-				//4 bytes for the len and the data itself..
-				read += 4 + data.getLength();
 				
 				//Add to the Proof..
 				addProofChunk(leftrigt, data);
 			}
 			
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -156,7 +141,6 @@ public class Proof implements Streamable {
 			//First write out the HASH_BITS
 			MiniByte hb = new MiniByte(HASH_BITS / 32);
 			hb.writeDataStream(dos);
-//			dos.writeShort(HASH_BITS);
 			
 			//Now write out the data..
 			int len = mProofChain.size();
@@ -223,10 +207,8 @@ public class Proof implements Streamable {
 	
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
-		
 		MiniByte hb = new MiniByte(HASH_BITS / 32);
 		hb.writeDataStream(zOut);
-//		zOut.writeInt(HASH_BITS);
 		
 		mData.writeDataStream(zOut);
 		MiniNumber mlen = new MiniNumber(mProofChain.size());
@@ -243,7 +225,7 @@ public class Proof implements Streamable {
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
 		MiniByte hb = MiniByte.ReadFromStream(zIn);
-		HASH_BITS = hb.getValue() * 32;
+		HASH_BITS   = hb.getValue() * 32;
 		
 		mData = MiniData.ReadFromStream(zIn);
 		mProofChain = new ArrayList<>();
@@ -272,15 +254,28 @@ public class Proof implements Streamable {
 	}
 	
 	public static int getChainSHABits(String zChainSHA) throws Exception {
+		
 		if(zChainSHA.startsWith("0x10")) {
 			return 512;
+		}else if(zChainSHA.startsWith("0x0C")) {
+			return 384;
+		}else if(zChainSHA.startsWith("0x0A")) {
+			return 320;
+		}else if(zChainSHA.startsWith("0x09")) {
+			return 288;
 		}else if(zChainSHA.startsWith("0x08")) {
 			return 256;
+		}else if(zChainSHA.startsWith("0x07")) {
+			return 224;
+		}else if(zChainSHA.startsWith("0x06")) {
+			return 192;
 		}else if(zChainSHA.startsWith("0x05")) {
 			return 160;
+		}else if(zChainSHA.startsWith("0x04")) {
+			return 128;
 		}
 		
 		//ERROR
-		throw new Exception("Invalid ChainSHA.. must be 160, 256 or 512");
+		throw new Exception("Invalid ChainSHA.. must be 128, 160, 192, 224, 256, 288, 320, 384 or 512");
 	}
 }

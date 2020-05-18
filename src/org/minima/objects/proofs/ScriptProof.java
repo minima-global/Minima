@@ -17,26 +17,30 @@ public class ScriptProof extends Proof {
 		super();
 	}
 	
-	/**
-	 * Create a simple one hash Proof for a script
-	 * @param zScript
-	 * @throws Exception 
-	 */
-//	public ScriptProof(String zScript) throws Exception {
-//		super();
-//		init(zScript,"0x0200");
-//	}
-	
 	public ScriptProof(String zScript, int zBitLength) throws Exception {
 		super();
 		
 		if(zBitLength == 512) {
 			init(zScript,"0x10");
+		}else if(zBitLength == 384) {
+			init(zScript,"0x0C");
+		}else if(zBitLength == 320) {
+			init(zScript,"0x0A");
+		}else if(zBitLength == 288) {
+			init(zScript,"0x09");
 		}else if(zBitLength == 256) {
 			init(zScript,"0x08");
+		}else if(zBitLength == 224) {
+			init(zScript,"0x07");
+		}else if(zBitLength == 192) {
+			init(zScript,"0x06");
 		}else if(zBitLength == 160) {
 			init(zScript,"0x05");
-		} 
+		}else if(zBitLength == 128) {
+			init(zScript,"0x04");
+		}else {
+			throw new Exception("Invalid Bitlength fro script proof "+zBitLength);
+		}
 	}
 	
 	public ScriptProof(String zScript, String zChainSHAProof) throws Exception {
