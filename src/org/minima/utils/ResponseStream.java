@@ -35,6 +35,11 @@ public class ResponseStream {
 	String mFinalResponse = "";
 		
 	/**
+	 * The LOCK Object
+	 */
+	Object mLock = new Object();
+	
+	/**
 	 * Main Constructor
 	 */
 	public ResponseStream(){
@@ -70,7 +75,7 @@ public class ResponseStream {
 		mFinalResponse = mJSON.toString().replaceAll("\\\\/", "/");
 		
 		//It's finished
-		mFinished = true;
+		setFinished();
 	}
 	
 	public void hardEndStatus(String zResult) {
@@ -78,7 +83,16 @@ public class ResponseStream {
 		mFinalResponse = zResult;
 		
 		//It's finished
-		mFinished = true;
+		setFinished();
+	}
+	
+	private void setFinished() {
+		synchronized (mLock) {
+			//It's finished
+			mFinished = true;
+			
+			mLock.notifyAll();
+		}
 	}
 	
 	/**
@@ -89,12 +103,14 @@ public class ResponseStream {
 		long timediff  = 0;
 		
 		//5 second max wait..
-		while(!mFinished && timediff<MAX_WAITTIME) {
-			//Wait 20ms..
-			try {Thread.sleep(20);} catch (InterruptedException e) {}
-			
-			//Calculate
-			timediff = System.currentTimeMillis() - timestart;
+		synchronized (mLock) {
+			try {
+				mLock.wait(MAX_WAITTIME);
+			} catch (InterruptedException e) {}
+		}
+		
+		if(!mFinished) {
+			endStatus(false, "Operation Timed out..");
 		}
 	}
 }
