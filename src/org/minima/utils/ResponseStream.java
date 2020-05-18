@@ -88,7 +88,6 @@ public class ResponseStream {
 	
 	private void setFinished() {
 		synchronized (mLock) {
-			//It's finished
 			mFinished = true;
 			mLock.notifyAll();
 		}
@@ -98,7 +97,6 @@ public class ResponseStream {
 	 * Wait a maximum amount of time..
 	 */
 	public void waitToFinish() {
-		//5 second max wait..
 		synchronized (mLock) {
 			if(mFinished) {
 				return;	
