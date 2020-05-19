@@ -4,6 +4,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+import org.minima.GlobalParams;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniString;
 import org.minima.utils.BaseConverter;
@@ -36,7 +37,7 @@ public class Address implements Streamable{
 	public Address() {}
 	
 	public Address(String zScript) {
-		this(zScript, 256);
+		this(zScript, GlobalParams.MINIMA_DEFAULT_HASH_STRENGTH);
 	}
 	
 	public Address(String zScript, int zBitLength) {
@@ -51,9 +52,9 @@ public class Address implements Streamable{
 	}
 	
 	public Address(MiniData zAddressData) {
-		mAddressData 	= zAddressData;
-		mMinimaAddress  = zAddressData.to0xString();
 		mScript         = new MiniString("");
+		mAddressData 	= zAddressData;
+		mMinimaAddress  = makeMinimaAddress(mAddressData);
 	}
 	
 	public JSONObject toJSON() {
@@ -69,10 +70,6 @@ public class Address implements Streamable{
 		return mAddressData.toString();
 	}
 	
-	public String toFullString() {
-		return toJSON().toString();
-	}
-	
 	/**
 	 * @return the script
 	 */
@@ -82,6 +79,10 @@ public class Address implements Streamable{
 	
 	public MiniData getAddressData() {
 		return mAddressData;
+	}
+	
+	public String getMinimaAddress() {
+		return mMinimaAddress;
 	}
 	
 	public boolean isEqual(Address zAddress) {
@@ -98,12 +99,7 @@ public class Address implements Streamable{
 	public void readDataStream(DataInputStream zIn) throws IOException {
 		mAddressData   = MiniData.ReadFromStream(zIn);
 		mScript        = MiniString.ReadFromStream(zIn);
-		
-		if(mScript.toString().equals("")) {
-			mMinimaAddress  = mAddressData.to0xString();
-		}else {
-			mMinimaAddress  = makeMinimaAddress(mAddressData);
-		}		
+		mMinimaAddress = makeMinimaAddress(mAddressData);	
 	}
 	
 	/**
@@ -116,7 +112,7 @@ public class Address implements Streamable{
 		//The Original data
 		byte[] data = zAddress.getData();
 		
-		//First hash it and add 4 digits..
+		//First hash it to add some checksum digits..
 		byte[] hash = Crypto.getInstance().hashData(data, 160);
 		
 		//Calculate a new length - ONLY certain lengths allowed!
