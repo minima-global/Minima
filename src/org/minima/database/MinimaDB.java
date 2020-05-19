@@ -249,9 +249,6 @@ public class MinimaDB {
 				mCoinDB.clearDB();
 			}
 			
-			//The OLD Cascade MMRSET
-			MMRSet oldmmrsetcascade = getMainTree().getCascadeNode().getMMRSet();
-			
 			//Only add coins from the cascade onwards..
 			MiniNumber oldcascade = getMainTree().getCascadeNode().getTxPow().getBlockNumber();
 			
