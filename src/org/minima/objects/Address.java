@@ -54,7 +54,12 @@ public class Address implements Streamable{
 	public Address(MiniData zAddressData) {
 		mScript         = new MiniString("");
 		mAddressData 	= zAddressData;
-		mMinimaAddress  = makeMinimaAddress(mAddressData);
+		
+		if(mAddressData.getLength()<16) {
+			mMinimaAddress  = mAddressData.to0xString();
+		}else {
+			mMinimaAddress  = makeMinimaAddress(mAddressData);	
+		}
 	}
 	
 	public JSONObject toJSON() {
@@ -99,7 +104,12 @@ public class Address implements Streamable{
 	public void readDataStream(DataInputStream zIn) throws IOException {
 		mAddressData   = MiniData.ReadFromStream(zIn);
 		mScript        = MiniString.ReadFromStream(zIn);
-		mMinimaAddress = makeMinimaAddress(mAddressData);	
+		
+		if(mAddressData.getLength()<20) {
+			mMinimaAddress  = mAddressData.to0xString();
+		}else {
+			mMinimaAddress  = makeMinimaAddress(mAddressData);	
+		}	
 	}
 	
 	/**
