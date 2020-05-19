@@ -42,6 +42,7 @@ public class ConsensusNet extends ConsensusProcessor {
 	 */
 	boolean mHardResetAllowed = true;
 	
+	boolean mFullSyncOnInit = true;
 	
 	public ConsensusNet(MinimaDB zDB, ConsensusHandler zHandler) {
 		super(zDB, zHandler);
@@ -49,6 +50,10 @@ public class ConsensusNet extends ConsensusProcessor {
 	 
 	public void setHardResest(boolean zHardResetAllowed) {
 		mHardResetAllowed = zHardResetAllowed;
+	}
+	
+	public void setFullSyncOnInit(boolean zFull) {
+		mFullSyncOnInit = zFull;
 	}
 	
 	public void processMessage(Message zMessage) throws Exception {
@@ -163,26 +168,30 @@ public class ConsensusNet extends ConsensusProcessor {
 				//FOR NOW
 				MinimaLogger.log("Sync Complete.. Current block : "+getMainDB().getMainTree().getChainTip());
 			
-				//Now request all the TXNS in those blocks..
-				int reqtxn = 0;
-				ArrayList<BlockTreeNode> nodes = getMainDB().getMainTree().getAsList(true);
-				for(BlockTreeNode node : nodes) {
-					//Get the TxPoW
-					TxPoW txpow = node.getTxPow();
-					
-					//get the Txns..
-					if(txpow.hasBody()) {
-						ArrayList<MiniData> txns = txpow.getBlockTransactions();
-						for(MiniData txn : txns) {
-							//We don't have it, get it..
-							sendTxPowRequest(zMessage, txn);
-							reqtxn++;
+				//Do you want a copy of ALL the TxPoW in the Blocks.. ?
+				//Only really useful for txpowsearch - DEXXED
+				if(mFullSyncOnInit) {
+					//Now request all the TXNS in those blocks..
+					int reqtxn = 0;
+					ArrayList<BlockTreeNode> nodes = getMainDB().getMainTree().getAsList(true);
+					for(BlockTreeNode node : nodes) {
+						//Get the TxPoW
+						TxPoW txpow = node.getTxPow();
+						
+						//get the Txns..
+						if(txpow.hasBody()) {
+							ArrayList<MiniData> txns = txpow.getBlockTransactions();
+							for(MiniData txn : txns) {
+								//We don't have it, get it..
+								sendTxPowRequest(zMessage, txn);
+								reqtxn++;
+							}
 						}
 					}
-				}
-				
-				if(reqtxn>0) {
-					MinimaLogger.log("Requested "+reqtxn+" transaction in Initial Blocks..");	
+					
+					if(reqtxn>0) {
+						MinimaLogger.log("Requested "+reqtxn+" transaction in Initial Blocks..");	
+					}
 				}
 				
 			}else {
