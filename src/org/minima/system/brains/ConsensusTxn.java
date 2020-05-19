@@ -100,6 +100,8 @@ public class ConsensusTxn extends ConsensusProcessor {
 	
 	public void processMessage(Message zMessage) throws Exception {
 		
+//		MinimaLogger.log("CONSENSUSTXN "+zMessage);
+		
 		/**
 		 * Custom Transactions
 		 */
