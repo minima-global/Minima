@@ -6,6 +6,8 @@ import java.util.ArrayList;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.mmr.MMRSet;
+import org.minima.database.txpowdb.TxPOWDBRow;
+import org.minima.database.txpowtree.BlockTree;
 import org.minima.database.txpowtree.BlockTreeNode;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniByte;
@@ -144,6 +146,11 @@ public class ConsensusNet extends ConsensusProcessor {
 					//Add it to the DB..
 					BlockTreeNode node = getMainDB().hardAddTxPOWBlock(txpow, mmr, cascade);
 					
+					//Scan for coins..
+					if(mmr!=null) {
+						getMainDB().scanMMRSetForCoins(mmr);
+					}
+					
 					//Is this the cascade block
 					if(txpow.getBlockNumber().isEqual(sp.getCascadeNode())) {
 						getMainDB().hardSetCascadeNode(node);
@@ -155,6 +162,28 @@ public class ConsensusNet extends ConsensusProcessor {
 			
 				//FOR NOW
 				MinimaLogger.log("Sync Complete.. Current block : "+getMainDB().getMainTree().getChainTip());
+			
+				//Now request all the TXNS in those blocks..
+				int reqtxn = 0;
+				ArrayList<BlockTreeNode> nodes = getMainDB().getMainTree().getAsList(true);
+				for(BlockTreeNode node : nodes) {
+					//Get the TxPoW
+					TxPoW txpow = node.getTxPow();
+					
+					//get the Txns..
+					if(txpow.hasBody()) {
+						ArrayList<MiniData> txns = txpow.getBlockTransactions();
+						for(MiniData txn : txns) {
+							//We don't have it, get it..
+							sendTxPowRequest(zMessage, txn);
+							reqtxn++;
+						}
+					}
+				}
+				
+				if(reqtxn>0) {
+					MinimaLogger.log("Requested "+reqtxn+" transaction in Initial Blocks..");	
+				}
 				
 			}else {
 				//Some crossover was found..
@@ -258,8 +287,37 @@ public class ConsensusNet extends ConsensusProcessor {
 			}
 			
 			//Now check the Transaction is Valid As of now ?
-			boolean trxok = TxPoWChecker.checkTransactionMMR(txpow, getMainDB());
+			boolean trxok          = TxPoWChecker.checkTransactionMMR(txpow, getMainDB());
 			if(!trxok) {
+				//Is it Already in a block?
+				ArrayList<BlockTreeNode> nodes = getMainDB().getMainTree().getAsList(true);
+				for(BlockTreeNode node : nodes) {
+					//Get the TxPoW
+					TxPoW chaintxpow = node.getTxPow();
+					
+					//get the Txns..
+					if(chaintxpow.hasBody()) {
+						ArrayList<MiniData> txns = chaintxpow.getBlockTransactions();
+						for(MiniData txn : txns) {
+							if(txn.isEqual(txpow.getTxPowID())) {
+								//MinimaLogger.log("TXN WE DON'T HAVE FOUND IN BLOCK "+txpow.getTxPowID()); 	
+
+								//Add it to the database..
+								TxPOWDBRow row = getMainDB().addNewTxPow(txpow);
+								row.setOnChainBlock(false);
+								row.setIsInBlock(true);
+								row.setInBlockNumber(chaintxpow.getBlockNumber());
+								
+								//Save it..
+								getConsensusHandler().getMainHandler().getBackupManager().backupTxpow(txpow);
+								
+								//All done..
+								return;
+							}
+						}
+					}
+				}
+				
 				MinimaLogger.log("ERROR NET TXPOW FAILS CHECK MMR: "+txpow.getBlockNumber()+" "+txpow.getTxPowID()); 
 				return;
 			}
