@@ -1,5 +1,7 @@
 package org.minima.utils;
 
+import java.math.BigInteger;
+
 public class BaseConverter {
 	
 	/**
@@ -49,6 +51,10 @@ public class BaseConverter {
 			hex = "0"+hex;
 		}
 		return new String("0x"+hex.toUpperCase());
+	}
+	
+	public static int hexToNumber(String zHex) {
+		return new BigInteger(zHex.substring(2), 16).intValue();
 	}
 	
 	
@@ -158,8 +164,11 @@ public class BaseConverter {
 	
 	public static void main(String[] zArgs) {
 		
-		String tt = numberToHex(8);
+		String tt = numberToHex(8687);
 		System.out.println(tt);
+		
+		System.out.println(hexToNumber(tt));
+		
 
 //		MiniData hash = MiniData.getRandomData(64);
 //		byte[] hdata = hash.getData();

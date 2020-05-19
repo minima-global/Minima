@@ -11,6 +11,7 @@ import org.minima.objects.base.MMRSumNumber;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.utils.BaseConverter;
 import org.minima.utils.Crypto;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONArray;
@@ -255,27 +256,18 @@ public class Proof implements Streamable {
 	
 	public static int getChainSHABits(String zChainSHA) throws Exception {
 		
-		if(zChainSHA.startsWith("0x10")) {
-			return 512;
-		}else if(zChainSHA.startsWith("0x0C")) {
-			return 384;
-		}else if(zChainSHA.startsWith("0x0A")) {
-			return 320;
-		}else if(zChainSHA.startsWith("0x09")) {
-			return 288;
-		}else if(zChainSHA.startsWith("0x08")) {
-			return 256;
-		}else if(zChainSHA.startsWith("0x07")) {
-			return 224;
-		}else if(zChainSHA.startsWith("0x06")) {
-			return 192;
-		}else if(zChainSHA.startsWith("0x05")) {
-			return 160;
-		}else if(zChainSHA.startsWith("0x04")) {
-			return 128;
+		//Get the first 4 digits..
+		String bits = zChainSHA.substring(0, 4);
+		
+		//Convert to Decimal.
+		int dec = BaseConverter.hexToNumber(bits);
+		
+		if(dec<5 || dec>16) {
+			//ERROR
+			throw new Exception("Invalid ChainSHA.. must be 160, 224, 256, 288, 320, 384, 416, 448, 480 or 512");	
 		}
 		
-		//ERROR
-		throw new Exception("Invalid ChainSHA.. must be 128, 160, 192, 224, 256, 288, 320, 384 or 512");
+		//And multiply by 32..
+		return dec * 32;
 	}
 }
