@@ -62,7 +62,7 @@ public class TxPoWMiner extends SystemHandler{
 			long maxTime  	  = currentTime + 5000;
 			
 			if(mShowTXPOWMine) {
-				MinimaLogger.log("START TXPOW MINING "+currentTime);
+				MinimaLogger.log("START TXPOW MINING "+currentTime+" "+txpow.getTransaction());
 			}
 			
 			while(mining && currentTime < maxTime && isRunning()) {
