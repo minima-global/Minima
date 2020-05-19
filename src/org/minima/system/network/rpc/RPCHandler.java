@@ -69,6 +69,14 @@ public class RPCHandler implements Runnable {
 			// we get file requested
 			fileRequested = parse.nextToken();
 			
+			//Get the Headers..
+			System.out.println("Headers Start");
+			while(input != null && !input.trim().equals("")) {
+				System.out.println("Header : "+input);
+				input = in.readLine();
+			}
+			System.out.println("Headers Finished!");
+			
 			// we support only GET and HEAD methods, we check
 			if (method.equals("GET")){
 //				System.out.println("fileRequested : "+fileRequested);
@@ -104,11 +112,8 @@ public class RPCHandler implements Runnable {
 						//Post it..
 						mInputHandler.PostMessage(inmsg);
 						
-						//Is it quit..
-		                if(!input.toLowerCase().equals("quit")) {
-		                	//Wait for the function to finish
-			                response.waitToFinish();
-			            }
+						//Wait for the function to finish
+		                response.waitToFinish();
 					}
 					
 					//Get the response..
@@ -136,11 +141,8 @@ public class RPCHandler implements Runnable {
 							//Post it..
 							mInputHandler.PostMessage(inmsg);
 							
-							//Is it quit..
-			                if(!input.toLowerCase().equals("quit")) {
-			                	//Wait for the function to finish
-				                response.waitToFinish();
-				            }
+							//Wait for the function to finish
+			                response.waitToFinish();
 			                
 			                //Get the JSON
 			                JSONObject resp = response.getFinalJSON();
