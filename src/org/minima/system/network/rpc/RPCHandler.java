@@ -1,10 +1,12 @@
 package org.minima.system.network.rpc;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.URLDecoder;
+import java.sql.SQLException;
 import java.util.Date;
 import java.util.StringTokenizer;
 
@@ -70,96 +72,160 @@ public class RPCHandler implements Runnable {
 			fileRequested = parse.nextToken();
 			
 			//Get the Headers..
-			System.out.println("Headers Start");
+			String MiniDAPPID = "";
 			while(input != null && !input.trim().equals("")) {
-				System.out.println("Header : "+input);
+				int ref = input.indexOf("Referer:"); 
+				if(ref != -1) {
+					//Get the referer..
+					int start  = input.indexOf("/minidapps/0x")+11;
+	        		int end    = -1;
+	        		if(start!=-1) {
+	        			end    = input.indexOf("/", start);
+	        		}
+	        		if(end!=-1) {
+	        			MiniDAPPID = input.substring(start, end);
+	        		}
+				}
+//				System.out.println("Header : "+input);
 				input = in.readLine();
 			}
-			System.out.println("Headers Finished!");
+			if(!MiniDAPPID.equals("")) {
+				System.out.println("MiniDAPPID:"+MiniDAPPID);	
+			}
 			
-			// we support only GET and HEAD methods, we check
+			// Currently we support only GET
 			if (method.equals("GET")){
 //				System.out.println("fileRequested : "+fileRequested);
 				
-				String function=new String(fileRequested);
-				
 				//decode URL message
-				function = URLDecoder.decode(function,"UTF-8").trim();
-				
+				String function = URLDecoder.decode(fileRequested,"UTF-8").trim();
 				if(function.startsWith("/")) {
 					function = function.substring(1);
 				}
 				
-				//Is this a multi function..
-				boolean multi = false;
-				if(function.indexOf(";")!=-1) {
-					//It's a multi
-					multi = true;
-				}
-				
 				//The final result
-				String result = "";
+				String finalresult = "";
 				
-				if(!multi) {
-					//Now make this request
-					ResponseStream response = new ResponseStream();
-		            
-					//Make sure vbaliue
-					if(!function.equals("")) {
-						//Send it..
-						InputMessage inmsg = new InputMessage(function, response);
-	
-						//Post it..
-						mInputHandler.PostMessage(inmsg);
+				//Is this a SQL function
+				if(function.startsWith("sql/")) {
+					//The SQL results
+					JSONObject res = new JSONObject();
+					
+					//Where is the database..
+					File minidappdatabase = null;
+					
+					//Which Database.. could be running from a folder..
+					if(MiniDAPPID.equals("")) {
+						//Get the database folder
+						File temp = mInputHandler.getMainHandler().getBackupManager().getTempFolder();
+						minidappdatabase = new File(temp,"_tempdb"+mInputHandler.RANDOM_VAL.to0xString());
 						
-						//Wait for the function to finish
-		                response.waitToFinish();
+					}else {
+						//Get the database folder
+						File minidapps   = mInputHandler.getMainHandler().getBackupManager().getMiniDAPPFolder();
+						File dapp        = new File(minidapps,MiniDAPPID);
+						minidappdatabase = new File(dapp,"_sqldb");
 					}
 					
-					//Get the response..
-					result = response.getResponse();
+					//Get the Function..
+					String sql = function.substring(4).trim();
+					res.put("db", minidappdatabase.getAbsolutePath());
+					res.put("sql", sql);
 					
-				}else {
-					//A full JSON array of responses
-					JSONArray responses = new JSONArray();
+				    //Now lets do some SQL
+					try {
+						//Start the SQL handler
+						SQLHandler handler = new SQLHandler(minidappdatabase.getAbsolutePath());
+							
+						//Run the SQL..
+						JSONObject resp = handler.executeSQL(sql);
+						
+						//CLose it..
+						handler.close();
+						
+						//Went OK!
+						res.put("status", true);
+						res.put("message", "");
+						res.put("response", resp);
+						
+					}catch (SQLException e) {
+						res.put("status", false);
+						res.put("message", e.toString());
+						res.put("response", "");
+					}
 					
-					//Cycle through each request..	
-					StringTokenizer functions = new StringTokenizer(function,";");
+					//The response returned..
+					finalresult = res.toString();
 					
-					boolean allok = true;
-					while(allok && functions.hasMoreElements()) {
-						String func = functions.nextToken().trim();
+				}else{
+					//Is this a multi function..
+					boolean multi = false;
+					if(function.indexOf(";")!=-1) {
+						//It's a multi
+						multi = true;
+					}
 					
+					if(!multi) {
 						//Now make this request
 						ResponseStream response = new ResponseStream();
 			            
 						//Make sure vbaliue
-						if(!func.equals("")) {
+						if(!function.equals("")) {
 							//Send it..
-							InputMessage inmsg = new InputMessage(func, response);
+							InputMessage inmsg = new InputMessage(function, response);
 		
 							//Post it..
 							mInputHandler.PostMessage(inmsg);
 							
 							//Wait for the function to finish
 			                response.waitToFinish();
-			                
-			                //Get the JSON
-			                JSONObject resp = response.getFinalJSON();
-			                
-			                //IF there is an erorr.. STOP
-			                if(resp.get("status") == Boolean.FALSE) {
-			                	//ERROR - stop running functions..
-			                	allok = false;
-			                }
-			                
-			                //Add it to the array
-			                responses.add(resp);
 						}
+						
+						//Get the response..
+						finalresult = response.getResponse();
+						
+					}else {
+						//A full JSON array of responses
+						JSONArray responses = new JSONArray();
+						
+						//Cycle through each request..	
+						StringTokenizer functions = new StringTokenizer(function,";");
+						
+						boolean allok = true;
+						while(allok && functions.hasMoreElements()) {
+							String func = functions.nextToken().trim();
+						
+							//Now make this request
+							ResponseStream response = new ResponseStream();
+				            
+							//Make sure vbaliue
+							if(!func.equals("")) {
+								//Send it..
+								InputMessage inmsg = new InputMessage(func, response);
+			
+								//Post it..
+								mInputHandler.PostMessage(inmsg);
+								
+								//Wait for the function to finish
+				                response.waitToFinish();
+				                
+				                //Get the JSON
+				                JSONObject resp = response.getFinalJSON();
+				                
+				                //IF there is an erorr.. STOP
+				                if(resp.get("status") == Boolean.FALSE) {
+				                	//ERROR - stop running functions..
+				                	allok = false;
+				                }
+				                
+				                //Add it to the array
+				                responses.add(resp);
+							}
+						}
+						
+						//And now get all the answers in one go..
+						finalresult = responses.toString();
 					}
-					
-					//And now get all the answers in one go..
-					result = responses.toString();
 				}
 				
 				// send HTTP Headers
@@ -167,10 +233,10 @@ public class RPCHandler implements Runnable {
 				out.println("Server: HTTP RPC Server from Minima : 1.0");
 				out.println("Date: " + new Date());
 				out.println("Content-type: text/plain");
-				out.println("Content-length: " + result.length());
+				out.println("Content-length: " + finalresult.length());
 				out.println("Access-Control-Allow-Origin: *");
 				out.println(); // blank line between headers and content, very important !
-				out.println(result);
+				out.println(finalresult);
 				out.flush(); // flush character output stream buffer
 			}
 			

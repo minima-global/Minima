@@ -56,6 +56,10 @@ public class BackupManager extends SystemHandler {
 		return mTxPOWDB;
 	}
 	
+	public File getMiniDAPPFolder() {
+		return mMiniDAPPS;
+	}
+	
 	public File getBackUpFolder() {
 		return mBackup;
 	}
