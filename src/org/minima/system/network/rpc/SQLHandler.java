@@ -26,7 +26,7 @@ public class SQLHandler {
 		mSQLConnection.close();
 	}
 	
-	public JSONArray executeMultiSQL(String zSQL) throws SQLException {
+	public JSONArray executeMultiSQL(String zSQL) {
 		JSONArray totalres = new JSONArray();
 	
 		StringTokenizer strtok = new StringTokenizer(zSQL, ";");
