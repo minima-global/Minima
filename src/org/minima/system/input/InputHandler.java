@@ -28,7 +28,7 @@ public class InputHandler extends SystemHandler{
 	/**
 	 * A random value used by the RPC handler to assign temp vars
 	 */
-	public static final MiniData RANDOM_VAL = MiniData.getRandomData(10);
+	public static final MiniData RANDOM_VAL = MiniData.getRandomData(20);
 	
 	/**
 	 * Main Constructor

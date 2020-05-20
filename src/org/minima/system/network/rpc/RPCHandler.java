@@ -138,20 +138,22 @@ public class RPCHandler implements Runnable {
 						SQLHandler handler = new SQLHandler(minidappdatabase.getAbsolutePath());
 							
 						//Run the SQL..
-						JSONObject resp = handler.executeSQL(sql);
+						if(sql.indexOf(";")!=-1) {
+							JSONArray resp  = handler.executeMultiSQL(sql);
+							res.put("status", true);
+							res.put("response", resp);
+						}else {
+							JSONObject resp = handler.executeSQL(sql);	
+							res.put("status", true);
+							res.put("response", resp);
+						}
 						
-						//CLose it..
+						//Close it..
 						handler.close();
-						
-						//Went OK!
-						res.put("status", true);
-						res.put("message", "");
-						res.put("response", resp);
 						
 					}catch (SQLException e) {
 						res.put("status", false);
 						res.put("message", e.toString());
-						res.put("response", "");
 					}
 					
 					//The response returned..

@@ -6,7 +6,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Random;
+import java.util.StringTokenizer;
 
 import org.minima.utils.MiniFormat;
 import org.minima.utils.json.JSONArray;
@@ -26,63 +26,94 @@ public class SQLHandler {
 		mSQLConnection.close();
 	}
 	
-	public JSONObject executeSQL(String zSQL) throws SQLException {
+	public JSONArray executeMultiSQL(String zSQL) throws SQLException {
+		JSONArray totalres = new JSONArray();
+	
+		StringTokenizer strtok = new StringTokenizer(zSQL, ";");
+		while(strtok.hasMoreElements()) {
+			String sql = strtok.nextToken().trim();
+			
+			if(!sql.equals("")) {
+				//Run it..
+				JSONObject res = executeSQL(sql);
+				totalres.add(res);
+				
+				//Break on error
+				if(res.get("status") == Boolean.FALSE) {
+					break;
+				}
+			}
+		}
+		
+		return totalres;
+	}
+	
+	public JSONObject executeSQL(String zSQL) {
 		JSONObject results = new JSONObject();
 		results.put("sql", zSQL);
 		
-		//Create a statement to interact with te DB
-		Statement stmt   = mSQLConnection.createStatement();
+		try {
+			//Create a statement to interact with te DB
+			Statement stmt   = mSQLConnection.createStatement();
 
-		if( zSQL.trim().toLowerCase().startsWith("update ") ||
-			zSQL.trim().toLowerCase().startsWith("insert ") ||	
-			zSQL.trim().toLowerCase().startsWith("delete ")) {
-			int upd = stmt.executeUpdate(zSQL);
-			results.put("results", false);
-			results.put("update", upd);
-			return results;
-		}
-		
-		//Execute the SQL..
-		boolean res = stmt.execute(zSQL);
-			
-		//Get the Results..
-		if(res) {
-			//There are results..
-			results.put("results", true);
-			
-			//Get the Results..
-			ResultSet resset = stmt.getResultSet();
-		
-			//The data arrays
-			JSONArray allrows      = new JSONArray();
-			
-			//Get the Headers..
-			ResultSetMetaData rsmd = resset.getMetaData();
-			int columnnum          = rsmd.getColumnCount();
-			
-			//Get the Results..
-			int counter=0;
-			while(resset.next()) {
-				counter++;
-				JSONObject row = new JSONObject();
-				for(int i=1;i<=columnnum;i++) {
-					String column = rsmd.getColumnName(i);
-					Object obj    = resset.getObject(i);
-					row.put(column, obj.toString());					
-				}
-				allrows.add(row);
+			if( zSQL.trim().toLowerCase().startsWith("update ") ||
+				zSQL.trim().toLowerCase().startsWith("insert ") ||	
+				zSQL.trim().toLowerCase().startsWith("delete ")) {
+				int upd = stmt.executeUpdate(zSQL);
+				results.put("status", true);
+				results.put("results", false);
+				results.put("update", upd);
+				return results;
 			}
 			
-			//Add the rows..
-			results.put("count",counter);
-			results.put("rows", allrows);
+			//Execute the SQL..
+			boolean res = stmt.execute(zSQL);
+				
+			//Get the Results..
+			if(res) {
+				
+				//Get the Results..
+				ResultSet resset = stmt.getResultSet();
 			
-		}else {
-			results.put("results", false);
+				//The data arrays
+				JSONArray allrows      = new JSONArray();
+				
+				//Get the Headers..
+				ResultSetMetaData rsmd = resset.getMetaData();
+				int columnnum          = rsmd.getColumnCount();
+				
+				//Get the Results..
+				int counter=0;
+				while(resset.next()) {
+					counter++;
+					JSONObject row = new JSONObject();
+					for(int i=1;i<=columnnum;i++) {
+						String column = rsmd.getColumnName(i);
+						Object obj    = resset.getObject(i);
+						row.put(column, obj.toString());					
+					}
+					allrows.add(row);
+				}
+				
+				//There are results..
+				results.put("status", true);
+				results.put("results", true);
+				results.put("count",counter);
+				results.put("rows", allrows);
+				
+			}else {
+				//There are results..
+				results.put("status", true);
+				results.put("results", false);
+			}
+			
+			//Close the statement
+			stmt.close();
+			
+		}catch(SQLException exc) {
+			results.put("status", false);
+			results.put("message", exc.toString());
 		}
-		
-		//Close the statement
-		stmt.close();
 						
 		return results;
 	}
@@ -102,10 +133,13 @@ public class SQLHandler {
 //			System.out.println(sql);
 //			System.out.println(MiniFormat.JSONPretty(results.toString()));
 			
-			sql = "SELECT * FROM preimage WHERE HASH='hashxxx'";
-			results = handle.executeSQL(sql);
-			System.out.println(sql);
-			System.out.println(MiniFormat.JSONPretty(results.toString()));
+			sql =     "INSERT INTO preimage (image, hash) VALUES ('xxx','hashxxx');"
+					+ "SELECT * FROM preimage WHERE HASH='hashxxx';"
+					+ "sdsdSELECT * FROM preimage WHERE HASH='hashxxx';"
+					+ "SELECT * FROM preimage WHERE HASH='hashxxx';";
+			JSONArray resultsarray = handle.executeMultiSQL(sql);
+//			System.out.println(sql);
+			System.out.println(MiniFormat.JSONPretty(resultsarray.toString()));
 			
 //			//Create a Table..
 //			String sql = "CREATE TABLE IF NOT EXISTS users ( "

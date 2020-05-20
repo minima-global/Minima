@@ -158,6 +158,12 @@ public class BackupManager extends SystemHandler {
 		mMiniDAPPS = ensureFolder(new File(mRoot,"minidapps"));
 		
 		//TEMP folder for file upload in MiniDAPPS
+		File temp = new File(mRoot,"temp");
+		
+		//Clear it..
+		deleteFileOrFolder(temp);
+		
+		//Make it..
 		mTempFolder = ensureFolder(new File(mRoot,"temp"));
 	}
 	
