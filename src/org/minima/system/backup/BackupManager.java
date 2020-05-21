@@ -167,9 +167,10 @@ public class BackupManager extends SystemHandler {
 		mTempFolder = ensureFolder(new File(mRoot,"temp"));
 	}
 	
-	public static void deleteAllButMiniDAPPS(File zFolder) {
+	public static void deleteConfFolder(File zFolder) {
 		deleteFileOrFolder(new File(zFolder,"txpow"));
 		deleteFileOrFolder(new File(zFolder,"backup"));
+		deleteFileOrFolder(new File(zFolder,"minidapps"));
 		deleteFileOrFolder(new File(zFolder,"temp"));
 	}
 	
