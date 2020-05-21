@@ -1,4 +1,4 @@
-package org.minima.system.network.rpc;
+package org.minima.utils;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -8,7 +8,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.StringTokenizer;
 
-import org.minima.utils.MiniFormat;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
@@ -17,9 +16,9 @@ public class SQLHandler {
 	//Connection to the Database
 	Connection mSQLConnection;
 	
-	public SQLHandler(String zDatabaseAbsolutePath) throws SQLException {
+	public SQLHandler(String zDatabaseAbsolutePath) throws SQLException, ClassNotFoundException {
 		//Start a database Connection..
-		mSQLConnection = DriverManager.getConnection("jdbc:hsqldb:file:"+zDatabaseAbsolutePath, "SA", "");
+		mSQLConnection = DriverManager.getConnection("jdbc:h2:"+zDatabaseAbsolutePath, "SA", "");
 	}
 	
 	public void close() throws SQLException {
@@ -173,7 +172,7 @@ public class SQLHandler {
 			//Close the connection
 			handle.close();
 		
-		} catch (SQLException e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
