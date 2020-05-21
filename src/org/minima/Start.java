@@ -165,7 +165,8 @@ public class Start {
 		//Do we wipe
 		File conffile = new File(conffolder);
 		if(clean) {
-			BackupManager.deleteAllButMiniDAPPS(conffile);
+			BackupManager.deleteFileOrFolder(conffile);
+//			BackupManager.deleteAllButMiniDAPPS(conffile);
 		}
 		
 		//Start the main Minima server

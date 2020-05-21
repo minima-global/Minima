@@ -125,7 +125,11 @@ public class RPCHandler implements Runnable {
 						//Get the database folder
 						File minidapps   = mInputHandler.getMainHandler().getBackupManager().getMiniDAPPFolder();
 						File dapp        = new File(minidapps,MiniDAPPID);
-						minidappdatabase = new File(dapp,"_sqldb");
+						
+						File dbdir       = new File(dapp,"sql");
+						dbdir.mkdirs();
+						
+						minidappdatabase = new File(dbdir,"_sqldb");
 					}
 					
 					//Get the Function..
