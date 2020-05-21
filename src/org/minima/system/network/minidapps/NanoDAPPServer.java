@@ -64,9 +64,9 @@ public class NanoDAPPServer extends NanoHTTPD{
         		}
         	}
 
-        	if(MiniDAPPID.equals("")) {;
-        		MinimaLogger.log("UNKNOWN MINIDAPP! file:"+fileRequested+" headers:"+session.getHeaders());
-        	}
+//        	if(MiniDAPPID.equals("")) {;
+//        		MinimaLogger.log("UNKNOWN MINIDAPP! file:"+fileRequested+" headers:"+session.getHeaders());
+//        	}
         	
         	//Quick clean
 			if(fileRequested.endsWith("/")) {

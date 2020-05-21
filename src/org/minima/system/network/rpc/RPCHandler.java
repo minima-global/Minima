@@ -89,9 +89,9 @@ public class RPCHandler implements Runnable {
 //				System.out.println("Header : "+input);
 				input = in.readLine();
 			}
-			if(!MiniDAPPID.equals("")) {
-				System.out.println("MiniDAPPID:"+MiniDAPPID);	
-			}
+//			if(!MiniDAPPID.equals("")) {
+//				System.out.println("MiniDAPPID:"+MiniDAPPID);	
+//			}
 			
 			// Currently we support only GET
 			if (method.equals("GET")){
