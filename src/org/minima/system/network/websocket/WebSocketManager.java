@@ -33,14 +33,16 @@ public class WebSocketManager extends SystemHandler {
 	 * Main Constructor
 	 * @param zMain
 	 * @param zPort
+	 * @throws IOException 
 	 */
-	public WebSocketManager(Main zMain, int zPort) {
+	public WebSocketManager(Main zMain, int zPort) throws IOException {
 		super(zMain,"WEBSOCKETMANAGER");
 		
 		mMininaSockets = new Hashtable<>();
 		
 		//Start a Server
 		mWebSockServer = new WebSocketServer(zPort, this);
+		mWebSockServer.start(0,true);
 	}
 
 	public void stop() {

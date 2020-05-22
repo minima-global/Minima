@@ -243,6 +243,15 @@ public class ConsensusHandler extends SystemHandler {
 			//Back it up!
 			getMainHandler().getBackupManager().backupTxpow(txpow);
 			
+			//Notify the WebSocket Listeners
+			JSONObject newtrans = new JSONObject();
+			newtrans.put("event","newtransaction");
+			newtrans.put("txpow",txpow.toJSON());
+			
+			Message msg = new Message(NetworkHandler.NETWORK_WS_NOTIFY);
+			msg.addString("message", newtrans.toString());
+			getMainHandler().getNetworkHandler().PostMessage(msg);
+			
 			//Process it
 			PostMessage(new Message(ConsensusHandler.CONSENSUS_PROCESSTXPOW).addObject("txpow", txpow));
 			
@@ -260,6 +269,14 @@ public class ConsensusHandler extends SystemHandler {
 				//Store ion the database..
 				getMainDB().getUserDB().addToHistory(txpow,tokamt);
 				
+				//Notify the WebSocket Listeners
+				JSONObject newbalance = new JSONObject();
+				newbalance.put("event","newbalance");
+				
+				msg = new Message(NetworkHandler.NETWORK_WS_NOTIFY);
+				msg.addString("message", newbalance.toString());
+				getMainHandler().getNetworkHandler().PostMessage(msg);
+				
 				//Back up..
 				PostMessage(ConsensusBackup.CONSENSUSBACKUP_BACKUP);
 				
@@ -268,10 +285,10 @@ public class ConsensusHandler extends SystemHandler {
 			}
 			
 			//Message for the clients
-			Message msg  = new Message(NetClient.NETCLIENT_SENDOBJECT)
+			Message netmsg  = new Message(NetClient.NETCLIENT_SENDOBJECT)
 								.addObject("type", NetClientReader.NETMESSAGE_TXPOWID)
 								.addObject("object", txpow.getTxPowID());
-			Message netw = new Message(NetworkHandler.NETWORK_SENDALL).addObject("message", msg);
+			Message netw = new Message(NetworkHandler.NETWORK_SENDALL).addObject("message", netmsg);
 			
 			//Post It..
 			getMainHandler().getNetworkHandler().PostMessage(netw);

@@ -21,6 +21,8 @@ public class WebSocketServer extends NanoWSD {
 
 	@Override
 	protected WebSocket openWebSocket(IHTTPSession zHTTPSession) {
+		MinimaLogger.log("New WebSocket "+zHTTPSession.getHeaders());
+		
 		return new MinimaWebSocket(zHTTPSession, mWSManager);
 	}
 }

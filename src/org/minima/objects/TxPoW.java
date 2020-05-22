@@ -180,7 +180,7 @@ public class TxPoW implements Streamable {
 	}
 	
 	public void setTimeMilli(MiniNumber zMilli) {
-		mHeader.mTimeSecs = zMilli.div(MiniNumber.THOUSAND);
+		mHeader.mTimeSecs = zMilli.divRoundDown(MiniNumber.THOUSAND);
 	}
 	
 	public MiniNumber getTimeMilli() {
