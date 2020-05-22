@@ -50,7 +50,7 @@ public class MinimaWebSocket extends WebSocket {
 	@Override
 	protected void onException(IOException exception) {
 		//Tell the manager
-		Message msg = new Message(WebSocketManager.WEBSOCK_ONMESSAGE);
+		Message msg = new Message(WebSocketManager.WEBSOCK_ONEXCEPTION);
 		msg.addObject("wsclient", this);
 		msg.addString("exception", exception.toString());
 		mManager.PostMessage(msg);
