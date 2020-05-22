@@ -11,7 +11,9 @@ import org.minima.system.input.InputHandler;
 import org.minima.system.network.minidapps.DAPPManager;
 import org.minima.system.network.rpc.RPCClient;
 import org.minima.system.network.rpc.RPCServer;
+import org.minima.system.network.websocket.WebSocketManager;
 import org.minima.utils.MinimaLogger;
+import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.TimerMessage;
 
@@ -34,7 +36,7 @@ public class NetworkHandler extends SystemHandler{
 	
 	public static final String NETWORK_WEBPROXY 	= "NETWORK_WEBPROXY";
 	
-	public static final String NETWORK_NOTIFY 		= "NETWORK_NOTIFY";
+	public static final String NETWORK_WS_NOTIFY 		= "NETWORK_NOTIFY";
 	
 	/**
 	 * The  server listening for clients..
@@ -50,6 +52,11 @@ public class NetworkHandler extends SystemHandler{
 	 * DAPP Server
 	 */
 	DAPPManager mDAPPManager;
+	
+	/**
+	 * WebSocket Manager
+	 */
+	WebSocketManager mWebSocketManager;
 	
 	/**
 	 * All the network channels..
@@ -120,6 +127,9 @@ public class NetworkHandler extends SystemHandler{
 			//Start the DAPP Server
 			mDAPPManager = new DAPPManager(getMainHandler(),mRPCServer.getHost(), 21000, rpcport);
 			
+			//Start the WebSocket Manager
+			mWebSocketManager = new WebSocketManager(getMainHandler(), 20999);
+			
 			//Log it..
 			MinimaLogger.log("MiFi proxy set : "+mMifiProxy);
 			
@@ -132,6 +142,9 @@ public class NetworkHandler extends SystemHandler{
 			
 			//Stop the RPC server
 			try {mDAPPManager.stop();}catch(Exception exc) {}
+			
+			//Stop the WebSocket server
+			try {mWebSocketManager.stop();}catch(Exception exc) {}
 			
 			//Shutdown all the clients
 			Message msg = new Message(NetClient.NETCLIENT_SHUTDOWN);
@@ -151,8 +164,14 @@ public class NetworkHandler extends SystemHandler{
 //			
 //			PostMessage(connect);
 		
-		}else if(zMessage.isMessageType(NETWORK_NOTIFY)) {
+		}else if(zMessage.isMessageType(NETWORK_WS_NOTIFY)) {
+			//What is the message..
+			String json = zMessage.getString("message");
+					
 			//Notify users that something has changed,,.
+			Message msg = new Message(WebSocketManager.WEBSOCK_SENDTOALL);
+			msg.addString("message", json);
+			mWebSocketManager.PostMessage(msg);
 			
 		}else if(zMessage.isMessageType(NETWORK_WEBPROXY)) {
 			//Connect to a web proxy and listen for RPC calls..

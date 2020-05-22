@@ -490,6 +490,7 @@ public class ConsensusUser extends ConsensusProcessor {
 			
 			//Check the MEMPOOL transactions..
 			ArrayList<TxPOWDBRow> unused = tdb.getAllUnusedTxPOW();
+			int tested = unused.size();
 			ArrayList<MiniData> remove = new ArrayList<>();
 			JSONArray requested = new JSONArray();
 			
@@ -561,6 +562,7 @@ public class ConsensusUser extends ConsensusProcessor {
 			}
 			
 			//Now you have the proof..
+			resp.put("found", tested);
 			resp.put("removed", rem);
 			resp.put("requested", requested);
 			InputHandler.endResponse(zMessage, true, "Mempool Flushed");

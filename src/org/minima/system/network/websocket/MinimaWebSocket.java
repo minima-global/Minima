@@ -2,6 +2,7 @@ package org.minima.system.network.websocket;
 
 import java.io.IOException;
 
+import org.minima.objects.base.MiniData;
 import org.minima.utils.messages.Message;
 import org.minima.utils.nanohttpd.protocols.http.IHTTPSession;
 import org.minima.utils.nanohttpd.protocols.websockets.CloseCode;
@@ -12,11 +13,20 @@ public class MinimaWebSocket extends WebSocket {
 
 	WebSocketManager mManager;
 	
+	String UID;
+	
 	public MinimaWebSocket(IHTTPSession zHTTPSession, WebSocketManager zManager) {
 		super(zHTTPSession);
 		
 		//When connection closed can notify
 		mManager = zManager;
+		
+		//A Unique ID
+		UID = MiniData.getRandomData(64).to0xString();
+	}
+	
+	public String getUID() {
+		return UID;
 	}
 	
 	@Override

@@ -197,22 +197,40 @@ public class ConsensusHandler extends SystemHandler {
 			//A TXPOW - that has been checked already and added to the DB
 			TxPoW txpow = (TxPoW) zMessage.getObject("txpow");
 			
+			//What's the current chain tip..
+			MiniData oldtip = getMainDB().getMainTree().getChainTip().getTxPowID();
+			
 			//Process
 			getMainDB().processTxPOW(txpow);
 		
+			//What's the new chain tip..
+			TxPoW newtip = getMainDB().getMainTree().getChainTip().getTxPow();
+			MiniData newtipid = newtip.getTxPowID();
+			
+			//Has there been a change
+			if(!oldtip.isEqual(newtipid)) {
+				//Notify..
+				updateListeners(new Message(CONSENSUS_NOTIFY_NEWBLOCK).addObject("txpow", newtip));
+			
+				//Update the web listeners..
+				JSONObject newblock = new JSONObject();
+				newblock.put("event","newblock");
+				newblock.put("txpow",newtip.toJSON());
+				
+				Message msg = new Message(NetworkHandler.NETWORK_WS_NOTIFY);
+				msg.addString("message", newblock.toString());
+				getMainHandler().getNetworkHandler().PostMessage(msg);
+			
+				//MEMPOOL - can get one message stuck that invalidates new messages.. 
+				if(newtip.getBlockNumber().modulo(MiniNumber.TEN).isEqual(MiniNumber.ZERO)) {
+					PostMessage(new Message(ConsensusUser.CONSENSUS_FLUSHMEMPOOL));	
+				}
+			}
+			
 			//Print the tree..
 			if(mPrintChain) {
 				Message print = new Message(ConsensusPrint.CONSENSUS_PRINTCHAIN_TREE).addBoolean("systemout", true);
 				PostMessage(print);
-			}
-			
-			//MEMPOOL - can get one message stuck that invalidates new messages.. so check it if this is a block..
-			if(txpow.isBlock()) {
-				//Every 10 blocks..
-				if(txpow.getBlockNumber().modulo(MiniNumber.TEN).isEqual(MiniNumber.ZERO)) {
-					//Send a check mempool messsage..
-					PostMessage(new Message(ConsensusUser.CONSENSUS_FLUSHMEMPOOL));	
-				}
 			}
 						
 			/**
@@ -221,9 +239,6 @@ public class ConsensusHandler extends SystemHandler {
 		}else if ( zMessage.isMessageType(CONSENSUS_PRE_PROCESSTXPOW) ) {
 			//The TXPOW
 			TxPoW txpow = (TxPoW) zMessage.getObject("txpow");
-			
-			//Double check added...
-			getMainDB().addNewTxPow(txpow);
 			
 			//Back it up!
 			getMainHandler().getBackupManager().backupTxpow(txpow);
@@ -261,11 +276,6 @@ public class ConsensusHandler extends SystemHandler {
 			//Post It..
 			getMainHandler().getNetworkHandler().PostMessage(netw);
 			
-			//Tell the listeners.. ?
-			if(txpow.isBlock()) {
-				updateListeners(new Message(CONSENSUS_NOTIFY_NEWBLOCK).addObject("txpow", txpow));
-			}
-		
 		}else if ( zMessage.isMessageType(CONSENSUS_AUTOBACKUP) ) {
 			//Backup the system..
 			PostMessage(ConsensusBackup.CONSENSUSBACKUP_BACKUP);

@@ -1,10 +1,15 @@
 package org.minima.system.network.websocket;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.Hashtable;
 
 import org.minima.system.Main;
 import org.minima.system.SystemHandler;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.messages.Message;
+import org.minima.utils.nanohttpd.protocols.websockets.CloseCode;
 
 public class WebSocketManager extends SystemHandler {
 
@@ -16,11 +21,13 @@ public class WebSocketManager extends SystemHandler {
 	public static final String WEBSOCK_ONMESSAGE   = "WEBSOCK_ONMESSAGE";
 	public static final String WEBSOCK_ONEXCEPTION = "WEBSOCK_ONEXCEPTION";
 	
+	public static final String WEBSOCK_SENDTOALL   = "WEBSOCK_SENDTOALL";
+	
 	//The BASE WebSocketServer
 	WebSocketServer mWebSockServer;
 	
 	//The List of all the currently connected webpages..
-	ArrayList<MinimaWebSocket> mMininaSockets;
+	Hashtable<String, MinimaWebSocket> mMininaSockets;
 	
 	/**
 	 * Main Constructor
@@ -30,27 +37,65 @@ public class WebSocketManager extends SystemHandler {
 	public WebSocketManager(Main zMain, int zPort) {
 		super(zMain,"WEBSOCKETMANAGER");
 		
-		mMininaSockets = new ArrayList<>();
+		mMininaSockets = new Hashtable<>();
 		
 		//Start a Server
 		mWebSockServer = new WebSocketServer(zPort, this);
 	}
 
 	public void stop() {
+		//Close all the clients..
+		Enumeration<MinimaWebSocket> clients = mMininaSockets.elements();
+		while(clients.hasMoreElements()) {
+			MinimaWebSocket client = clients.nextElement();
+			try {
+				client.close(CloseCode.NormalClosure, "System Shutdown", false);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
 		//Stop the WebSocket Server
 		mWebSockServer.stop();
 		
 		//Stop the message processor..
 		stopMessageProcessor();
+		
+		MinimaLogger.log("WebSocket Server stopped..");
 	}
 	
 	@Override
 	protected void processMessage(Message zMessage) throws Exception {
 		if(zMessage.getMessageType().equals(WEBSOCK_ONOPEN)) {
 			//New WS Socket..
+			MinimaWebSocket mws = (MinimaWebSocket) zMessage.getObject("wsclient");
 			
+			//Get the UID
+			String UID = mws.getUID();
 			
+			//Add it to our list
+			mMininaSockets.put(UID, mws);
+		
+		}else if(zMessage.getMessageType().equals(WEBSOCK_ONCLOSE)) {
+			//New WS Socket..
+			MinimaWebSocket mws = (MinimaWebSocket) zMessage.getObject("wsclient");
+			
+			//Get the UID
+			String UID = mws.getUID();
+			
+			//Remove from our List
+			mMininaSockets.remove(UID);
+		
+		}else if(zMessage.getMessageType().equals(WEBSOCK_SENDTOALL)) {
+			String msg = zMessage.getString("message");
+			Enumeration<MinimaWebSocket> clients = mMininaSockets.elements();
+			while(clients.hasMoreElements()) {
+				MinimaWebSocket client = clients.nextElement();
+				client.send(msg);
+			}
 		}
+		
 	}
 	
 
