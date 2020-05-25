@@ -19,7 +19,7 @@ public class SyncPackage implements Streamable{
 	/**
 	 * The Current SyncPackage Version..
 	 * 
-	 * This is the INTRO nmessage to.. so peer to peer know what network language to speak
+	 * This is the INTRO message to.. so peer to peer know what network language to speak
 	 */
 	public static final MiniNumber SYNC_VERSION = MiniNumber.ONE;
 	
