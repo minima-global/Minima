@@ -18,6 +18,8 @@ import org.minima.utils.digest.SHA256Digest;
  */
 public class Crypto {
 
+	public static final int MINIMA_DEFAULT_MAX_HASH_LENGTH = 64;
+	
 	public static final BigInteger MAX_VAL = new BigInteger(
 					  "FFFFFFFFFFFFFFFFFFFF"+
 					  "FFFFFFFFFFFFFFFFFFFF"+
