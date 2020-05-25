@@ -187,7 +187,7 @@ public class TxHeader implements Streamable {
 				//Write it anyway..
 				MiniByte count = new MiniByte(counter);
 				count.writeDataStream(zOut);
-				curr.writeHashToStream(zOut);						
+				sparent.writeHashToStream(zOut);						
 			}
 		}
 		
