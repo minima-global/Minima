@@ -152,8 +152,9 @@ public class TxHeader implements Streamable {
 		mTimeSecs.writeDataStream(zOut);
 		mBlockNumber.writeDataStream(zOut);
 		mBlockDifficulty.writeDataStream(zOut);
-		mChainID.writeDataStream(zOut);
-		mParentChainID.writeDataStream(zOut);
+		
+		mChainID.writeHashToStream(zOut);
+		mParentChainID.writeHashToStream(zOut);
 		
 		//The Super parents are efficiently encoded in RLE
 		MiniByte cascnum = new MiniByte(GlobalParams.MINIMA_CASCADE_LEVELS);
@@ -173,10 +174,10 @@ public class TxHeader implements Streamable {
 					//Write the old one..
 					MiniByte count = new MiniByte(counter);
 					count.writeDataStream(zOut);
-					sparent.writeDataStream(zOut);
-					
+					sparent.writeHashToStream(zOut);
+									
 					//Reset
-					sparent     = curr;
+					sparent = curr;
 					counter = 1;
 				}
 			}
@@ -186,16 +187,16 @@ public class TxHeader implements Streamable {
 				//Write it anyway..
 				MiniByte count = new MiniByte(counter);
 				count.writeDataStream(zOut);
-				curr.writeDataStream(zOut);						
+				curr.writeHashToStream(zOut);						
 			}
 		}
 		
 		//Write out the MMR DB
-		mMMRRoot.writeDataStream(zOut);
+		mMMRRoot.writeHashToStream(zOut);
 		mMMRTotal.writeDataStream(zOut);
 		
 		//Write the Boddy Hash
-		mTxBodyHash.writeDataStream(zOut);
+		mTxBodyHash.writeHashToStream(zOut);
 	}
 
 	@Override
@@ -204,15 +205,16 @@ public class TxHeader implements Streamable {
 		mTimeSecs        = MiniNumber.ReadFromStream(zIn);
 		mBlockNumber     = MiniNumber.ReadFromStream(zIn);
 		mBlockDifficulty = MiniData.ReadFromStream(zIn);
-		mChainID         = MiniData.ReadFromStream(zIn);
-		mParentChainID   = MiniData.ReadFromStream(zIn);
+		
+		mChainID         = MiniData.ReadHashFromStream(zIn);
+		mParentChainID   = MiniData.ReadHashFromStream(zIn);
 		
 		//How many cascade levels.. will probably NEVER change..
 		MiniByte cascnum = MiniByte.ReadFromStream(zIn);
 		int tot = 0;
 		while(tot<cascnum.getValue()) {
 			MiniByte len = MiniByte.ReadFromStream(zIn);
-			MiniData sup = MiniData.ReadFromStream(zIn);
+			MiniData sup = MiniData.ReadHashFromStream(zIn);
 			int count = len.getValue();
 			for(int i=0;i<count;i++) {
 				mSuperParents[tot++] = sup;
@@ -220,10 +222,10 @@ public class TxHeader implements Streamable {
 		}
 		
 		//read in the MMR state..
-		mMMRRoot  = MiniData.ReadFromStream(zIn);
+		mMMRRoot  = MiniData.ReadHashFromStream(zIn);
 		mMMRTotal = MMRSumNumber.ReadFromStream(zIn);
 		
 		//The TxBody Hash
-		mTxBodyHash          = MiniData.ReadFromStream(zIn);
+		mTxBodyHash          = MiniData.ReadHashFromStream(zIn);
 	}
 }

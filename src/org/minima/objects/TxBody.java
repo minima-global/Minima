@@ -80,7 +80,7 @@ public class TxBody implements Streamable {
 
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
-		mMagic.writeDataStream(zOut);
+		mMagic.writeHashToStream(zOut);
 		mTxnDifficulty.writeDataStream(zOut);
 		mTransaction.writeDataStream(zOut);
 		mWitness.writeDataStream(zOut);
@@ -92,13 +92,13 @@ public class TxBody implements Streamable {
 		MiniNumber ramlen = new MiniNumber(""+len);
 		ramlen.writeDataStream(zOut);
 		for(MiniData txpowid : mTxPowIDList) {
-			txpowid.writeDataStream(zOut);
+			txpowid.writeHashToStream(zOut);
 		}	
 	}
 
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
-		mMagic          = MiniData.ReadFromStream(zIn);
+		mMagic          = MiniData.ReadHashFromStream(zIn);
 		mTxnDifficulty  = MiniData.ReadFromStream(zIn);
 		mTransaction.readDataStream(zIn);
 		mWitness.readDataStream(zIn);
@@ -110,7 +110,7 @@ public class TxBody implements Streamable {
 		MiniNumber ramlen = MiniNumber.ReadFromStream(zIn);
 		int len = ramlen.getAsInt();
 		for(int i=0;i<len;i++) {
-			mTxPowIDList.add(MiniData.ReadFromStream(zIn));
+			mTxPowIDList.add(MiniData.ReadHashFromStream(zIn));
 		}
 	}
 }
