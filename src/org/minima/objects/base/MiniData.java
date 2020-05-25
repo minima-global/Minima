@@ -12,6 +12,7 @@ import java.math.BigInteger;
 import java.security.SecureRandom;
 
 import org.minima.utils.BaseConverter;
+import org.minima.utils.Crypto;
 import org.minima.utils.Streamable;
 
 /**
@@ -165,7 +166,6 @@ public class MiniData implements Streamable {
 		//Set the data value
 		setDataValue();
 	}
-
 	
 	public static MiniData ReadFromStream(DataInputStream zIn){
 		MiniData data = new MiniData();
@@ -173,14 +173,51 @@ public class MiniData implements Streamable {
 		try {
 			data.readDataStream(zIn);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-//			e.printStackTrace();
+			e.printStackTrace();
 			return null;
 		}
 		
 		return data;
 	}
 
+	/**
+	 * Special Functions to input output HASH data..
+	 */
+	public void writeHashToStream(DataOutputStream zOut) throws IOException {
+		if(mData.length > Crypto.MINIMA_DEFAULT_MAX_HASH_LENGTH) {
+			throw new IOException("Write Error : HASH Length greater than 64! "+mData.length);
+		}
+		
+		zOut.writeInt(mData.length);
+		zOut.write(mData);
+	}
+
+	public void readHashFromStream(DataInputStream zIn) throws IOException {
+		int len = zIn.readInt();
+		if(len > Crypto.MINIMA_DEFAULT_MAX_HASH_LENGTH) {
+			throw new IOException("Read Error : HASH Length greater then 64! "+len);
+		}
+		
+		mData = new byte[len];
+		zIn.readFully(mData);
+		
+		//Set the data value
+		setDataValue();
+	}
+	
+	public static MiniData ReadHashFromStream(DataInputStream zIn){
+		MiniData data = new MiniData();
+		
+		try {
+			data.readHashFromStream(zIn);
+		} catch (IOException e) {
+			e.printStackTrace();
+			return null;
+		}
+		
+		return data;
+	}
+	
 	public static MiniData getMiniDataVersion(Streamable zObject) {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		DataOutputStream dos = new DataOutputStream(baos);
