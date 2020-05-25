@@ -96,13 +96,13 @@ public class Address implements Streamable{
 	
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
-		mAddressData.writeDataStream(zOut);
+		mAddressData.writeHashToStream(zOut);
 		mScript.writeDataStream(zOut);
 	}
 
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
-		mAddressData   = MiniData.ReadFromStream(zIn);
+		mAddressData   = MiniData.ReadHashFromStream(zIn);
 		mScript        = MiniString.ReadFromStream(zIn);
 		
 		if(mAddressData.getLength()<20) {
