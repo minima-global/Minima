@@ -231,11 +231,11 @@ public class NetClient extends MessageProcessor {
 			while(keys.hasMoreElements()) {
 				String key = keys.nextElement();
 				
-				//Remove after 10 minuutes
+				//Remove after 10 minutes
 				Long timeval = mOldTxPoWRequests.get(key);
 				long time    = timeval.longValue();
 				long diff    = timenow - time;
-				if(diff < 60000) {
+				if(diff < (1000 * 60 * 10)) {
 					newTxPoWRequests.put(key, timeval);
 				}
 			}
@@ -246,7 +246,7 @@ public class NetClient extends MessageProcessor {
 			//NOW - Check not doing it too often..
 			String val = txpowid.to0xString();
 			
-			//If it's in.. it's less than 10 minutes..
+			//If it's in.. it's less than 30 minutes..
 			if(mOldTxPoWRequests.get(val) != null) {
 				return;
 			}
