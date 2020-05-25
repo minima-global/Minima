@@ -41,8 +41,13 @@ public class WebSocketManager extends SystemHandler {
 		mMininaSockets = new Hashtable<>();
 		
 		//Start a Server
-		mWebSockServer = new WebSocketServer(zPort, this);
-		mWebSockServer.start(0,true);
+		try {
+			mWebSockServer = new WebSocketServer(zPort, this);
+			mWebSockServer.start(0,true);
+		}catch(IOException exc) {
+			MinimaLogger.log("WEBSOCKETMANAGER "+exc);
+			mWebSockServer = null;
+		}
 	}
 
 	public void stop() {
@@ -59,7 +64,9 @@ public class WebSocketManager extends SystemHandler {
 		}
 		
 		//Stop the WebSocket Server
-		mWebSockServer.stop();
+		if(mWebSockServer  != null) {
+			mWebSockServer.stop();	
+		}
 		
 		//Stop the message processor..
 		stopMessageProcessor();
