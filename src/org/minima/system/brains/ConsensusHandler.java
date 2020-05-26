@@ -284,11 +284,9 @@ public class ConsensusHandler extends SystemHandler {
 				updateListeners(new Message(CONSENSUS_NOTIFY_BALANCE));
 			}
 			
-			//Message for the clients
-			Message netmsg  = new Message(NetClient.NETCLIENT_SENDOBJECT)
-								.addObject("type", NetClientReader.NETMESSAGE_TXPOWID)
-								.addObject("object", txpow.getTxPowID());
-			Message netw = new Message(NetworkHandler.NETWORK_SENDALL).addObject("message", netmsg);
+			//Message for ALL the clients
+			Message netmsg  = new Message(NetClient.NETCLIENT_SENDTXPOWID).addObject("txpowid", txpow.getTxPowID());
+			Message netw    = new Message(NetworkHandler.NETWORK_SENDALL).addObject("message", netmsg);
 			
 			//Post It..
 			getMainHandler().getNetworkHandler().PostMessage(netw);

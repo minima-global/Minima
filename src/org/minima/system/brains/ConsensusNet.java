@@ -59,19 +59,15 @@ public class ConsensusNet extends ConsensusProcessor {
 	public void processMessage(Message zMessage) throws Exception {
 		
 		if(zMessage.isMessageType(CONSENSUS_NET_INITIALISE)) {
-			//Lets create a sync package
-			ArrayList<BlockTreeNode> nodes = getMainDB().getMainTree().getAsList();
-			
-			//Do we have any info.. ?
-			if(nodes.size()==0) {
-				return;
-			}
-			
 			//Get the complete sync package - deep copy.. 
 			SyncPackage sp = getMainDB().getSyncPackage(true);
 			
-			//Now send that on..
-			sendNetMessage(zMessage, NetClientReader.NETMESSAGE_INTRO, sp);
+			//Get the NetClient...
+			NetClient client = (NetClient) zMessage.getObject("netclient");
+			Message req      = new Message(NetClient.NETCLIENT_INTRO).addObject("syncpackage", sp);
+			
+			//And Post it..
+			client.PostMessage(req);
 			
 		}else if(zMessage.isMessageType(CONSENSUS_NET_INTRO)) {
 			//Get the Sync Package..
@@ -373,30 +369,6 @@ public class ConsensusNet extends ConsensusProcessor {
 		client.PostMessage(req);
 	}
 	
-	
-	/**
-	 * Send a network message to the sender of this message
-	 * 
-	 * This _should also send out a timerMessage that checks if we got it and if not to
-	 * send a TXPOW_REQUEST to everyone.. 
-	 */
-	private void sendNetMessage(Message zFromMessage, MiniByte zMessageType, Streamable zObject) {
-		//Get the NetClient...
-		NetClient client = (NetClient) zFromMessage.getObject("netclient");
-		
-		//Send the message
-		Message msg = new Message(NetClient.NETCLIENT_SENDOBJECT);
-		msg.addObject("type", zMessageType);
-		
-		//Object can be null
-		if(zObject != null) {
-			msg.addObject("object", zObject);
-		}
-		
-		//Post it..
-		client.PostMessage(msg);
-	}
-
 	/**
 	 * Find a crossover node.. Check 2 chains and find where they FIRST intersect.
 	 */
@@ -408,9 +380,13 @@ public class ConsensusNet extends ConsensusProcessor {
 		MiniNumber maintip     = getMainDB().getMainTree().getChainTip().getTxPow().getBlockNumber();
 		MiniNumber maincascade = getMainDB().getMainTree().getCascadeNode().getTxPow().getBlockNumber();
 		
-		//The incoming chain
+		//The incoming chain - could be empty
 		ArrayList<SyncPacket> introchain = zIntro.getAllNodes();
 		int len = introchain.size();
+		if(len == 0) {
+			return MiniNumber.MINUSONE;
+		}
+		
 		SyncPacket tip = introchain.get(len-1);
 		
 		//The Intro cascade node..

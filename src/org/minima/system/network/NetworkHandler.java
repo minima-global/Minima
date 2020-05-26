@@ -274,15 +274,10 @@ public class NetworkHandler extends SystemHandler{
 			//Get the message to send
 			Message msg = (Message)zMessage.getObject("message");
 			
-			//Post it to all the clients
-			sendToAll(msg);
-		}
-	}
-	
-	private void sendToAll(Message zMessage) {
-		//Send to all the clients..
-		for(NetClient client : mClients) {
-			client.PostMessage(zMessage);
+			//Send to all the clients..
+			for(NetClient client : mClients) {
+				client.PostMessage(msg);
+			}
 		}
 	}
 	

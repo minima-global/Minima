@@ -13,6 +13,7 @@ import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.system.Main;
+import org.minima.system.backup.SyncPackage;
 import org.minima.system.brains.ConsensusNet;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
@@ -30,8 +31,10 @@ public class NetClient extends MessageProcessor {
 	public static final String NETCLIENT_STARTUP 		= "NETCLIENT_STARTUP";
 	public static final String NETCLIENT_SHUTDOWN 		= "NETCLIENT_SHUTDOWN";
 	
-	public static final String NETCLIENT_SENDOBJECT 	= "NETCLIENT_SENDOBJECT";
+//	public static final String NETCLIENT_SENDOBJECT 	= "NETCLIENT_SENDOBJECT";
 	
+	public static final String NETCLIENT_INTRO 	        = "NETCLIENT_INTRO";
+	public static final String NETCLIENT_SENDTXPOWID 	= "NETCLIENT_SENDTXPOWID";
 	public static final String NETCLIENT_SENDTXPOW 	    = "NETCLIENT_SENDTXPOW";
 	public static final String NETCLIENT_SENDTXPOWREQ 	= "NETCLIENT_SENDTXPOWREQ";
 		
@@ -176,13 +179,11 @@ public class NetClient extends MessageProcessor {
 	protected void processMessage(Message zMessage) throws Exception {
 		
 		if(zMessage.isMessageType(NETCLIENT_INITCONNECT)) {
-			//Store
 			try {
-				//Crtaeter socket
 				mSocket = new Socket();
 				
 				//Connect with timeout
-				mSocket.connect(new InetSocketAddress(mHost, mPort), 10000);
+				mSocket.connect(new InetSocketAddress(mHost, mPort), 60000);
 				
 			}catch (Exception e) {
 				MinimaLogger.log("Error @ connection start : "+mHost+":"+mPort);
@@ -211,11 +212,16 @@ public class NetClient extends MessageProcessor {
 			init.addObject("netclient", this);
 			getMain().getConsensusHandler().PostMessage(init);
 		
+		}else if(zMessage.isMessageType(NETCLIENT_INTRO)) {
+			SyncPackage sp = (SyncPackage)zMessage.getObject("syncpackage");
+			sendMessage(NetClientReader.NETMESSAGE_INTRO, sp);
+		
+		}else if(zMessage.isMessageType(NETCLIENT_SENDTXPOWID)) {
+			MiniData txpowid = (MiniData)zMessage.getObject("txpowid");
+			sendMessage(NetClientReader.NETMESSAGE_TXPOWID, txpowid);
+				
 		}else if(zMessage.isMessageType(NETCLIENT_SENDTXPOW)) {
-			//get the TxPOW
 			TxPoW txpow = (TxPoW)zMessage.getObject("txpow");
-			
-			//And send it..
 			sendMessage(NetClientReader.NETMESSAGE_TXPOW, txpow);
 				
 		}else if(zMessage.isMessageType(NETCLIENT_SENDTXPOWREQ)) {
@@ -256,19 +262,6 @@ public class NetClient extends MessageProcessor {
 			
 			//And send it..
 			sendMessage(NetClientReader.NETMESSAGE_TXPOW_REQUEST, txpowid);
-			
-		}else if(zMessage.isMessageType(NETCLIENT_SENDOBJECT)) {
-			//What type of object is this..
-			MiniByte type = (MiniByte) zMessage.getObject("type");
-			
-			//get the Streamable Object
-			Streamable obj = null;
-			if(zMessage.exists("object")) {
-				obj = (Streamable) zMessage.getObject("object");
-			}
-			
-			//And send it..
-			sendMessage(type, obj);
 	
 		}else if(zMessage.isMessageType(NETCLIENT_SHUTDOWN)) {
 			
@@ -289,10 +282,8 @@ public class NetClient extends MessageProcessor {
 			//First write the Message type..
 			zMessageType.writeDataStream(mOutput);
 			
-			if(zObject != null) {
-				//And now write the message
-				zObject.writeDataStream(mOutput);
-			}
+			//And now write the message
+			zObject.writeDataStream(mOutput);
 			
 			//Send..
 			mOutput.flush();

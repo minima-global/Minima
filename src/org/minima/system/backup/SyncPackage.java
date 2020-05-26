@@ -51,6 +51,11 @@ public class SyncPackage implements Streamable{
 		//Create a Tree and add all these blocks.. then calculate the weight..
 		BlockTree blktree = new BlockTree();
 		
+		//Is it empty..
+		if(mNodes.size() == 0) {
+			return BigInteger.ZERO;
+		}
+		
 		//Drill down 
 		for(SyncPacket spack : mNodes) {
 			TxPoW txpow = spack.getTxPOW();

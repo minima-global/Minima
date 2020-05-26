@@ -32,9 +32,14 @@ public class MultiLevelCascadeTree {
 		
 		//The final cascaded tree
 		mCascadeTree = new BlockTree();
-				
-		//Get the current tip
+		
+		//Is it empty..
 		BlockTreeNode oldtip      = mMainTree.getChainTip();
+		if(oldtip == null) {
+			return mRemovals;
+		}
+		
+		//Get the current tip
 		MiniNumber casc           = mMainTree.getCascadeNode().getTxPow().getBlockNumber();
 		
 		//First get the block PRE_CASCADE_CHAIN_LENGTH back..
