@@ -272,7 +272,7 @@ public class MinimaDB {
 				trow.setInBlockNumber(block);
 				
 				//Take coins from the child of the cascade node onwards..
-				if(treenode.getTxPow().getBlockNumber().isMore(oldcascade)) {
+				if(treenode.getTxPow().getBlockNumber().isMoreEqual(oldcascade)) {
 					//Check for coins in the MMR
 					scanMMRSetForCoins(treenode.getMMRSet());
 				}
