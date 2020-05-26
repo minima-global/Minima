@@ -27,10 +27,10 @@ public class NetClientReader implements Runnable {
 	//10 MB MAX INTRO
 	public static final int MAX_INTRO = 1024 * 1000 * 10;
 	
-	//20 KB MAX MESSAGE
-	public static final int MAX_TXPOW = 1024 * 20;
+	//10 KB MAX MESSAGE
+	public static final int MAX_TXPOW = 1024 * 10;
 			
-	//The Length of a TxPoWID message 64 +4 byte int
+	//The Length of a TxPoWID message 64 + 4 byte int
 	public static final int TXPOWID_LEN = Crypto.MINIMA_DEFAULT_MAX_HASH_LENGTH + 4;
 	
 	/**
