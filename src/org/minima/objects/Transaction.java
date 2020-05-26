@@ -346,7 +346,7 @@ public class Transaction implements Streamable {
 		}
 	
 		//The Link Hash
-		mLinkHash.writeDataStream(zOut);
+		mLinkHash.writeHashToStream(zOut);
 	}
 
 	@Override
@@ -387,7 +387,7 @@ public class Transaction implements Streamable {
 			mTokenGenDetails = null;
 		}
 		
-		mLinkHash = MiniData.ReadFromStream(zIn);
+		mLinkHash = MiniData.ReadHashFromStream(zIn);
 	}
 	
 	/**
