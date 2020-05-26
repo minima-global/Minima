@@ -213,14 +213,8 @@ public class ConsensusHandler extends SystemHandler {
 				updateListeners(new Message(CONSENSUS_NOTIFY_NEWBLOCK).addObject("txpow", newtip));
 			
 				//Update the web listeners..
-				JSONObject newblock = new JSONObject();
-				newblock.put("event","newblock");
-				newblock.put("txpow",newtip.toJSON());
+				PostMessage(ConsensusPrint.CONSENSUS_STATUS);
 				
-				Message msg = new Message(NetworkHandler.NETWORK_WS_NOTIFY);
-				msg.addString("message", newblock.toString());
-				getMainHandler().getNetworkHandler().PostMessage(msg);
-			
 				//Do the balance.. Update listeners if changed..
 				PostMessage(ConsensusPrint.CONSENSUS_BALANCE);
 				
