@@ -221,6 +221,9 @@ public class ConsensusHandler extends SystemHandler {
 				msg.addString("message", newblock.toString());
 				getMainHandler().getNetworkHandler().PostMessage(msg);
 			
+				//Do the balance.. Update listeners if changed..
+				PostMessage(ConsensusPrint.CONSENSUS_BALANCE);
+				
 				//MEMPOOL - can get one message stuck that invalidates new messages.. 
 				if(newtip.getBlockNumber().modulo(MiniNumber.TEN).isEqual(MiniNumber.ZERO)) {
 					PostMessage(new Message(ConsensusUser.CONSENSUS_FLUSHMEMPOOL));	
@@ -269,19 +272,14 @@ public class ConsensusHandler extends SystemHandler {
 				//Store ion the database..
 				getMainDB().getUserDB().addToHistory(txpow,tokamt);
 				
-				//Notify the WebSocket Listeners
-				JSONObject newbalance = new JSONObject();
-				newbalance.put("event","newbalance");
-				
-				msg = new Message(NetworkHandler.NETWORK_WS_NOTIFY);
-				msg.addString("message", newbalance.toString());
-				getMainHandler().getNetworkHandler().PostMessage(msg);
-				
 				//Back up..
-				PostMessage(ConsensusBackup.CONSENSUSBACKUP_BACKUP);
+				//PostMessage(ConsensusBackup.CONSENSUSBACKUP_BACKUP);
 				
 				//Notify those listening..
 				updateListeners(new Message(CONSENSUS_NOTIFY_BALANCE));
+				
+				//Do the balance.. Update listeners if changed..
+				PostMessage(ConsensusPrint.CONSENSUS_BALANCE);
 			}
 			
 			//Message for ALL the clients

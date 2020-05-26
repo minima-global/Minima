@@ -22,7 +22,7 @@ public class MinimaWebSocket extends WebSocket {
 		mManager = zManager;
 		
 		//A Unique ID
-		UID = MiniData.getRandomData(64).to0xString();
+		UID = MiniData.getRandomData(32).to0xString();
 	}
 	
 	public String getUID() {

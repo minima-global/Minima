@@ -29,6 +29,7 @@ import org.minima.objects.proofs.TokenProof;
 import org.minima.system.Main;
 import org.minima.system.input.InputHandler;
 import org.minima.system.network.NetClient;
+import org.minima.system.network.NetworkHandler;
 import org.minima.utils.Maths;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
@@ -61,6 +62,12 @@ public class ConsensusPrint extends ConsensusProcessor {
 	public static final String CONSENSUS_NETWORK 			= CONSENSUS_PREFIX+"NETWORK";
 	
 	public static final String CONSENSUS_PRINTCHAIN_TREE 	= CONSENSUS_PREFIX+"PRINTCHAIN_TREE";
+	
+	/**
+	 * The Old Balance that was sent to the listeners..
+	 */
+	String mOldWebSocketBalance = "";
+	
 	
 	public ConsensusPrint(MinimaDB zDB, ConsensusHandler zHandler) {
 		super(zDB, zHandler);
@@ -588,6 +595,26 @@ public class ConsensusPrint extends ConsensusProcessor {
 			//All good
 			InputHandler.endResponse(zMessage, true, "");
 	
+			//Do we notify..
+			String balancestring = totbal.toString();
+			
+			//Is this a notification message for the listeners..
+			if(!balancestring.equals(mOldWebSocketBalance)) {
+				//Store for later.. 
+				mOldWebSocketBalance = balancestring;
+				
+				MinimaLogger.log("NEW BALANCE : "+mOldWebSocketBalance);
+				
+				//Send this to the WebSocket..
+				JSONObject newbalance = new JSONObject();
+				newbalance.put("event","newbalance");
+				newbalance.put("balance",totbal);
+				
+				Message msg = new Message(NetworkHandler.NETWORK_WS_NOTIFY);
+				msg.addString("message", newbalance.toString());
+				getConsensusHandler().getMainHandler().getNetworkHandler().PostMessage(msg);
+			}
+			
 		}else if(zMessage.isMessageType(CONSENSUS_COINSIMPLE)){
 			//Which token..
 			String tokenid = zMessage.getString("tokenid");
