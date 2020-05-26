@@ -194,7 +194,7 @@ public class MMRData implements Streamable{
 			MiniByte.TRUE.writeDataStream(zOut);
 			
 			//Only write the hash
-			mFinalHash.writeDataStream(zOut);
+			mFinalHash.writeHashToStream(zOut);
 		
 			//And the SUM
 			mValueSum.writeDataStream(zOut);
@@ -224,7 +224,7 @@ public class MMRData implements Streamable{
 		mHashOnly         = hashonly.isTrue();
 		
 		if(mHashOnly) {
-			mFinalHash 	 = MiniData.ReadFromStream(zIn);
+			mFinalHash 	 = MiniData.ReadHashFromStream(zIn);
 			mValueSum    = MMRSumNumber.ReadFromStream(zIn);
 			
 		}else {
