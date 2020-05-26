@@ -152,7 +152,7 @@ public class NetClientReader implements Runnable {
 					rec.addObject("txpowid", hash);
 				
 				}else {
-					throw new ProtocolException("Invalid message on network : "+rec);
+					throw new Exception("Invalid message on network : "+rec);
 				}
 				
 				//Check there is nothing left..
