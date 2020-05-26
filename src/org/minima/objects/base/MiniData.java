@@ -183,7 +183,7 @@ public class MiniData implements Streamable {
 		setDataValue();
 	}
 	
-	public static MiniData ReadFromStream(DataInputStream zIn){
+	public static MiniData ReadFromStream(DataInputStream zIn) throws IOException{
 		return ReadFromStream(zIn, -1);
 	}
 	
@@ -192,17 +192,11 @@ public class MiniData implements Streamable {
 	 * @param zIn
 	 * @param zSize
 	 * @return
+	 * @throws IOException 
 	 */
-	public static MiniData ReadFromStream(DataInputStream zIn, int zSize){
+	public static MiniData ReadFromStream(DataInputStream zIn, int zSize) throws IOException{
 		MiniData data = new MiniData();
-		
-		try {
-			data.readDataStream(zIn, zSize);
-		} catch (IOException e) {
-			e.printStackTrace();
-			return null;
-		}
-		
+		data.readDataStream(zIn, zSize);
 		return data;
 	}
 
@@ -231,16 +225,9 @@ public class MiniData implements Streamable {
 		setDataValue();
 	}
 	
-	public static MiniData ReadHashFromStream(DataInputStream zIn){
+	public static MiniData ReadHashFromStream(DataInputStream zIn) throws IOException{
 		MiniData data = new MiniData();
-		
-		try {
-			data.readHashFromStream(zIn);
-		} catch (IOException e) {
-			e.printStackTrace();
-			return null;
-		}
-		
+		data.readHashFromStream(zIn);
 		return data;
 	}
 	
