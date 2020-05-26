@@ -226,6 +226,6 @@ public class TxHeader implements Streamable {
 		mMMRTotal = MMRSumNumber.ReadFromStream(zIn);
 		
 		//The TxBody Hash
-		mTxBodyHash          = MiniData.ReadHashFromStream(zIn);
+		mTxBodyHash = MiniData.ReadHashFromStream(zIn);
 	}
 }
