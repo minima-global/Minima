@@ -1,5 +1,6 @@
 package org.minima.system.network;
 
+import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -12,6 +13,7 @@ import java.util.Random;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
 import org.minima.system.backup.SyncPackage;
 import org.minima.system.brains.ConsensusNet;
@@ -276,22 +278,60 @@ public class NetClient extends MessageProcessor {
 	/**
 	 * Send a message down the network
 	 */
-	protected void sendMessage(Streamable zMessageType, Streamable zObject) {
+	protected void sendMessage(MiniByte zMessageType, Streamable zObject) {
 		//Send it..
 		try {
+			//Create a Data Object 
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			DataOutputStream dos = new DataOutputStream(baos);
+			
+			//Now write the Data..
+			zObject.writeDataStream(dos);
+			dos.flush();
+			
+			//Get the data..
+			byte[] data = baos.toByteArray();
+			int len     = data.length; 
+			
+			//Now wrap the message as a MiniData
+			MiniData complete = new MiniData(data);
+			
+			//Check within acceptable parameters - this should be set in TxPoW header.. for now fixed
+			if(zMessageType.isEqual(NetClientReader.NETMESSAGE_TXPOWID) || zMessageType.isEqual(NetClientReader.NETMESSAGE_TXPOW_REQUEST)) {
+				if(len != NetClientReader.TXPOWID_LEN) {
+					throw new Exception("Send Invalid Message length for TXPOWID "+len);
+				}
+			}else if(zMessageType.isEqual(NetClientReader.NETMESSAGE_INTRO)) {
+				if(len > NetClientReader.MAX_INTRO) {
+					throw new Exception("Send Invalid Message length for TXPOW_INTRO "+len);
+				}
+			}else if(zMessageType.isEqual(NetClientReader.NETMESSAGE_TXPOW)) {
+				if(len > NetClientReader.MAX_TXPOW) {
+					throw new Exception("Send Invalid Message length for TXPOW "+len);
+				}
+			}
+			
 			//First write the Message type..
 			zMessageType.writeDataStream(mOutput);
 			
-			//And now write the message
-			zObject.writeDataStream(mOutput);
+			//Now write out the Size..
+			MiniNumber minlen = new MiniNumber(len);
+			minlen.writeDataStream(mOutput);
+			
+			//Now write the complete package..
+			complete.writeDataStream(mOutput);
 			
 			//Send..
 			mOutput.flush();
 			
+			//Close the streams
+			dos.close();
+			baos.close();
+			
 		}catch(Exception ec) {
 			//Show..
-//			MinimaLogger.log("Error sending message : "+zMessageType.toString()+" "+ec);
-//			ec.printStackTrace();
+			MinimaLogger.log("Error sending message : "+zMessageType.toString()+" "+ec);
+			ec.printStackTrace();
 			
 			//Tell the network Handler
 			mNetworkMain.PostMessage(new Message(NetworkHandler.NETWORK_CLIENTERROR).addObject("client", this));

@@ -159,7 +159,23 @@ public class MiniData implements Streamable {
 
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
+		readDataStream(zIn, -1);
+	}
+	
+	/**
+	 * Read in a specific amount.. when receiving messages over the network
+	 * 
+	 * @param zIn
+	 * @param zSize
+	 * @throws IOException
+	 */
+	public void readDataStream(DataInputStream zIn, int zSize) throws IOException {
 		int len = zIn.readInt();
+		if(zSize != -1) {
+			if(len != zSize) {
+				throw new IOException("Read Error : MiniData Length not correct as specified "+zSize);
+			}
+		}
 		mData = new byte[len];
 		zIn.readFully(mData);
 		
@@ -168,10 +184,20 @@ public class MiniData implements Streamable {
 	}
 	
 	public static MiniData ReadFromStream(DataInputStream zIn){
+		return ReadFromStream(zIn, -1);
+	}
+	
+	/**
+	 * Specify Size - as network input can be dangerous..
+	 * @param zIn
+	 * @param zSize
+	 * @return
+	 */
+	public static MiniData ReadFromStream(DataInputStream zIn, int zSize){
 		MiniData data = new MiniData();
 		
 		try {
-			data.readDataStream(zIn);
+			data.readDataStream(zIn, zSize);
 		} catch (IOException e) {
 			e.printStackTrace();
 			return null;

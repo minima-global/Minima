@@ -4,6 +4,7 @@ import java.io.File;
 import java.math.BigInteger;
 import java.util.ArrayList;
 
+import org.minima.GlobalParams;
 import org.minima.database.MinimaDB;
 import org.minima.database.mmr.MMRSet;
 import org.minima.database.txpowdb.TxPOWDBRow;
@@ -76,6 +77,11 @@ public class ConsensusNet extends ConsensusProcessor {
 			boolean hardreset = false;
 			MiniNumber cross = MiniNumber.MINUSONE;
 			
+			//Check Versions..
+			if(!sp.getSyncVersion().toString().equals(GlobalParams.MINIMA_VERSION)) {
+				MinimaLogger.log("DIFFERENT VERSION ON SYNC "+sp.getSyncVersion());
+			}
+			
 			//How much POW do you currently have
 			BigInteger myweight = BigInteger.ZERO;
 			if(getMainDB().getMainTree().getAsList().size()!=0) {
@@ -99,12 +105,14 @@ public class ConsensusNet extends ConsensusProcessor {
 				cross = checkCrossover(sp);
 				
 				if(cross.isEqual(MiniNumber.MINUSONE)) {
-					MinimaLogger.log("IRREGULAR POW INTRO CHAIN. NO CROSSOVER BLOCK.. !");
+					if(netweight.compareTo(BigInteger.ZERO)>0) {
+						MinimaLogger.log("IRREGULAR POW INTRO CHAIN. NO CROSSOVER BLOCK.. !");
+					}
 					
 					if(netweight.compareTo(myweight)>0) {
 						MinimaLogger.log("INTRO CHAIN HEAVIER.. ");
 					}else {
-						MinimaLogger.log("YOUR CHAIN HEAVIER.. NO CHANGE REQUIRED");
+//						MinimaLogger.log("YOUR CHAIN HEAVIER.. NO CHANGE REQUIRED");
 						return;
 					}
 					
@@ -162,7 +170,7 @@ public class ConsensusNet extends ConsensusProcessor {
 				getMainDB().hardResetChain();
 			
 				//FOR NOW
-				MinimaLogger.log("Sync Complete.. Current block : "+getMainDB().getMainTree().getChainTip());
+				MinimaLogger.log("Sync Complete.. Current block : "+getMainDB().getMainTree().getChainTip().getTxPow().getBlockNumber());
 			
 				//Do you want a copy of ALL the TxPoW in the Blocks.. ?
 				//Only really useful for txpowsearch - DEXXED
