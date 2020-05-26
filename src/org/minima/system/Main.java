@@ -84,7 +84,7 @@ public class Main extends MessageProcessor {
 	 * @param zPort
 	 * @param zGenesis
 	 */
-	public Main(int zPort, int zRPCPort, boolean zGenesis, String zConfFolder) {
+	public Main(String zHost, int zPort, int zRPCPort, boolean zGenesis, String zConfFolder) {
 		super("MAIN");
 		
 		//What time do we start..
@@ -107,7 +107,7 @@ public class Main extends MessageProcessor {
 		
 		mInput 		= new InputHandler(this);
 		
-		mNetwork 	= new NetworkHandler(this);
+		mNetwork 	= new NetworkHandler(this,zHost);
 		mTXMiner 	= new TxPoWMiner(this);
 		mBackup     = new BackupManager(this,zConfFolder);
 		

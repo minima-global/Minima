@@ -89,6 +89,7 @@ public class Start {
 		String connecthost      = "34.90.172.118";
 		int connectport         = 9001;
 		String mifiProxy 		= "http://mifi.minima.global:9000/";
+		String host             = "";
 		
 		boolean clean           = false;
 		boolean genesis 		= false;
@@ -107,6 +108,10 @@ public class Start {
 				if(arg.equals("-port")) {
 					//The port
 					port= Integer.parseInt(zArgs[counter++]);
+				
+				}else if(arg.equals("-host")) {
+					//Hard code the HOST.. 
+					host = zArgs[counter++];
 					
 				}else if(arg.equals("-rpcport")) {
 					//The rpcport
@@ -116,6 +121,7 @@ public class Start {
 					//Printout HELP!
 					MinimaLogger.log("Minima v0.4 Alpha Test Net");
 					MinimaLogger.log("        -port [port number]    : Specify port to listen on");
+					MinimaLogger.log("        -host [IP]             : Specify the host IP");
 					MinimaLogger.log("        -rpcport [port number] : Specify port to listen on for RPC connections");
 					MinimaLogger.log("        -conf [folder]         : Specify configuration folder, where data is saved");
 					MinimaLogger.log("        -private               : Run a private chain. Don't connect to MainNet. Create a genesis tx-pow. Simulate some users.");
@@ -169,7 +175,7 @@ public class Start {
 		}
 		
 		//Start the main Minima server
-		Main rcmainserver = new Main(port, rpcport, genesis, conffolder);
+		Main rcmainserver = new Main(host,port, rpcport, genesis, conffolder);
 		
 		//Link it.
 		mMainServer = rcmainserver;

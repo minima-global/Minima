@@ -74,11 +74,19 @@ public class NetworkHandler extends SystemHandler{
 	String mMifiProxy = "http://mifi.minima.global:9000/";
 	
 	/**
+	 * HARD SET THE HOST
+	 */
+	String mHost = "";
+	
+	/**
 	 * 
 	 * @param zMain
 	 */
-	public NetworkHandler(Main zMain) {
+	public NetworkHandler(Main zMain, String zHost) {
 		super(zMain,"NETWORK");
+		
+		//Hard set the Host ?
+		mHost = zHost;
 	}
 	
 	public MinimaServer getServer() {
@@ -125,7 +133,7 @@ public class NetworkHandler extends SystemHandler{
 			rpc.start();
 			
 			//Start the DAPP Server
-			mDAPPManager = new DAPPManager(getMainHandler(),mRPCServer.getHost(), 21000, rpcport);
+			mDAPPManager = new DAPPManager(getMainHandler(), mHost, 21000, rpcport);
 			
 			//Start the WebSocket Manager
 			mWebSocketManager = new WebSocketManager(getMainHandler(), 20999);
@@ -178,7 +186,7 @@ public class NetworkHandler extends SystemHandler{
 			String uuid 	= zMessage.getString("uuid");
 			
 			//Create the IP
-			String ip = uuid+"#"+getRPCServer().getHost()+":"+getRPCServer().getPort();
+ 			String ip = uuid+"#"+getDAPPManager().getHostIP()+":"+getRPCServer().getPort();
 			
 			//Call the Minima Proxy - this should be user definable..#TODO
 			String url = mMifiProxy+URLEncoder.encode(ip, "UTF-8");

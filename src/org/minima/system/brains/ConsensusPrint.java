@@ -816,7 +816,7 @@ public class ConsensusPrint extends ConsensusProcessor {
 
 			status.put("uptime", uptime);
 			status.put("conf", main.getBackupManager().getRootFolder().getAbsolutePath());
-			status.put("host", main.getNetworkHandler().getRPCServer().getHost());
+			status.put("host", main.getNetworkHandler().getDAPPManager().getHostIP());
 			status.put("port", main.getNetworkHandler().getServer().getPort());
 			status.put("rpcport", main.getNetworkHandler().getRPCServer().getPort());
 			

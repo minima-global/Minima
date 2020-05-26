@@ -18,7 +18,7 @@ public class RPCServer implements Runnable{
 	
 	ServerSocket mServerSocket;
 	int mPort;
-	String mHost;
+//	String mHost;
 	
 	boolean mRunning = true;
 	
@@ -26,46 +26,11 @@ public class RPCServer implements Runnable{
 		mInputHandler = zInput;
 		mPort = zPort;
 		
-		mHost = "127.0.0.1";
-		boolean found = false;
-	    try {
-		    Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
-	        while (!found && interfaces.hasMoreElements()) {
-	            NetworkInterface iface = interfaces.nextElement();
-	            // filters out 127.0.0.1 and inactive interfaces
-	            if (iface.isLoopback() || !iface.isUp())
-	                continue;
-
-	            Enumeration<InetAddress> addresses = iface.getInetAddresses();
-	            while(!found && addresses.hasMoreElements()) {
-	                InetAddress addr = addresses.nextElement();
-	                String ip   = addr.getHostAddress();
-	                String name = iface.getDisplayName();
-	                
-	                //Only get the IPv4
-	                if(!ip.contains(":")) {
-	                	mHost = ip;
-	                	
-	                	if(name.startsWith("wl")) {
-	                		found = true;
-	                		break;
-	                	}
-	                }
-	            }
-	        }
-	    } catch (SocketException e) {
-	        System.out.println("RPCSERVER : "+e);
-	    }
-	    
-	    MinimaLogger.log("RPC Server started on "+mHost+":"+mPort);
+	    MinimaLogger.log("RPC Server started on port : "+mPort);
 	}
 	
 	public int getPort() {
 		return mPort;
-	}
-	
-	public String getHost() {
-		return mHost;
 	}
 		
 	public void stop() {
