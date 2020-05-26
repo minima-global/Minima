@@ -3,6 +3,10 @@
  */
 package org.minima.utils;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
 /**
  * @author Spartacus Rex
  *
@@ -10,6 +14,8 @@ package org.minima.utils;
 public class MinimaLogger {
 
 //	public static final String NATIVE_SYSTEM_OUT = "NATIVE_SYSTEM_OUT";
+	
+	public static final SimpleDateFormat DATEFORMAT = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss z", Locale.US );
 	
 	public static boolean LOGGING_ON 	 = true;
 	
@@ -43,7 +49,7 @@ public class MinimaLogger {
 	
 	public static void log(String zLog){
 		if(LOGGING_ON){
-			System.out.println("Minima : "+zLog);
+			System.out.println("Minima @ "+DATEFORMAT.format(new Date())+" : "+zLog);
 	
 //			//Send to Native..
 //			if(mOutputListener != null) {
