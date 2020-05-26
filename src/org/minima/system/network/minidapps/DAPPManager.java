@@ -49,7 +49,7 @@ public class DAPPManager extends SystemHandler {
 	byte[] mMINIMAJS = new byte[0];
 	
 	//HOST  - this will be inserted into the minima.js file
-	String mHost ="";	
+	String mHost = "";	
 	boolean mHardSet = false;
 	int mRPCPort;
 	
