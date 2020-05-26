@@ -272,9 +272,6 @@ public class ConsensusHandler extends SystemHandler {
 				//Store ion the database..
 				getMainDB().getUserDB().addToHistory(txpow,tokamt);
 				
-				//Back up..
-				//PostMessage(ConsensusBackup.CONSENSUSBACKUP_BACKUP);
-				
 				//Notify those listening..
 				updateListeners(new Message(CONSENSUS_NOTIFY_BALANCE));
 				
@@ -343,7 +340,7 @@ public class ConsensusHandler extends SystemHandler {
 				
 			//Are we Mining..
 			if(!getMainHandler().getMiner().isAutoMining()) {
-				PostTimerMessage(new TimerMessage(10000, CONSENSUS_MINEBLOCK));
+				PostTimerMessage(new TimerMessage(30000, CONSENSUS_MINEBLOCK));
 				return;
 			}
 			
