@@ -40,6 +40,8 @@ public class NetClient extends MessageProcessor {
 	public static final String NETCLIENT_SENDTXPOW 	    = "NETCLIENT_SENDTXPOW";
 	public static final String NETCLIENT_SENDTXPOWREQ 	= "NETCLIENT_SENDTXPOWREQ";
 		
+	private static final MiniData ZERO_TXPOWID = new MiniData("0x00");
+	
 	//Main Network Handler
 	NetworkHandler mNetworkMain;
 	
@@ -230,6 +232,12 @@ public class NetClient extends MessageProcessor {
 			//get the TxPOW
 			MiniData txpowid = (MiniData)zMessage.getObject("txpowid");
 			
+			//Don't ask for 0x00..
+			if(txpowid.isEqual(ZERO_TXPOWID)) {
+				//it's the genesis..
+				return;
+			}
+			
 			//Current time..
 			long timenow     = System.currentTimeMillis();
 			
@@ -298,7 +306,7 @@ public class NetClient extends MessageProcessor {
 			
 			//Check within acceptable parameters - this should be set in TxPoW header.. for now fixed
 			if(zMessageType.isEqual(NetClientReader.NETMESSAGE_TXPOWID) || zMessageType.isEqual(NetClientReader.NETMESSAGE_TXPOW_REQUEST)) {
-				if(len != NetClientReader.TXPOWID_LEN) {
+				if(len > NetClientReader.TXPOWID_LEN) {
 					throw new Exception("Send Invalid Message length for TXPOWID "+len);
 				}
 			}else if(zMessageType.isEqual(NetClientReader.NETMESSAGE_INTRO)) {

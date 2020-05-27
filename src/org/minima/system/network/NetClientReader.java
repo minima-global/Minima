@@ -92,7 +92,7 @@ public class NetClientReader implements Runnable {
 				
 				//Check within acceptable parameters - this should be set in TxPoW header.. for now fixed
 				if(msgtype.isEqual(NETMESSAGE_TXPOWID) || msgtype.isEqual(NETMESSAGE_TXPOW_REQUEST)) {
-					if(len != TXPOWID_LEN) {
+					if(len > TXPOWID_LEN) {
 						throw new ProtocolException("Receive Invalid Message length for TXPOWID "+len);
 					}
 				}else if(msgtype.isEqual(NETMESSAGE_INTRO)) {
@@ -172,21 +172,15 @@ public class NetClientReader implements Runnable {
 				consensus.PostMessage(rec);
 			}
 		
-		}catch(SocketException exc) {
-			//Network error.. reset and reconnect..
-		}catch(IOException exc) {
-			//Network error.. reset and reconnect..
-		}catch(ProtocolException exc) {
-			//Full Stack
-			exc.printStackTrace();
-			
-			//This more serious error.. print it..
-			MinimaLogger.log("NetClientReader closed UID "+mNetClient.getUID()+" exc:"+exc);
-		
+//		}catch(SocketException exc) {
+//			//Network error.. reset and reconnect..
+//		}catch(IOException exc) {
+//			//Network error.. reset and reconnect..
+//		}catch(ProtocolException exc) {
+			//Protocol exception..
 		}catch(Exception exc) {
 			//General Exception	
 			MinimaLogger.log("NetClientReader closed UID "+mNetClient.getUID()+" exc:"+exc);
-		
 		}
 		
 		//Tell the network Handler

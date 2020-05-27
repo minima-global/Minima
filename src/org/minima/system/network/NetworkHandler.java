@@ -257,7 +257,6 @@ public class NetworkHandler extends SystemHandler{
 				recon.addString("host", host);
 				recon.addInt("port", port);
 				
-				MinimaLogger.log("Connection lost @ "+new Date().toString());
 				MinimaLogger.log("Attempting reconnect to "+host+":"+port+" in 30s..");
 				
 				PostTimerMessage(recon);
