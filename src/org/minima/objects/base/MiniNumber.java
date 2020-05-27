@@ -225,16 +225,9 @@ public class MiniNumber implements Streamable {
 //		mNumber = new BigDecimal(zIn.readUTF(),mMathContext);
 	}
 
-	public static MiniNumber ReadFromStream(DataInputStream zIn){
+	public static MiniNumber ReadFromStream(DataInputStream zIn) throws IOException{
 		MiniNumber data = new MiniNumber();
-		
-		try {
-			data.readDataStream(zIn);
-		} catch (IOException e) {
-//			e.printStackTrace();
-			return null;
-		}
-		
+		data.readDataStream(zIn);
 		return data;
 	}
 }

@@ -41,17 +41,9 @@ public class MiniString implements Streamable {
 		mString = zIn.readUTF();
 	}
 	
-	public static MiniString ReadFromStream(DataInputStream zIn){
+	public static MiniString ReadFromStream(DataInputStream zIn) throws IOException{
 		MiniString data = new MiniString("");
-		
-		try {
-			data.readDataStream(zIn);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return null;
-		}
-		
+		data.readDataStream(zIn);
 		return data;
 	}
 }

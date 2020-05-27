@@ -392,33 +392,27 @@ public class Transaction implements Streamable {
 	
 	/**
 	 * Get a DEEP copy of this transaction
+	 * @throws IOException 
 	 */
-	public Transaction deepCopy() {
-		try {
-			//First write transaction out to a byte array
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			DataOutputStream dos = new DataOutputStream(baos);
-			writeDataStream(dos);
-			dos.flush();
-			dos.close();
-			
-			//Now read it into a new transaction..
-			byte[] transbytes = baos.toByteArray();
-			ByteArrayInputStream bais = new ByteArrayInputStream(transbytes);
-			DataInputStream dis = new DataInputStream(bais);
-			
-			Transaction deepcopy = new Transaction();
-			deepcopy.readDataStream(dis);
-			
-			dis.close();
-			
-			return deepcopy;
-
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+	public Transaction deepCopy() throws IOException {
+		//First write transaction out to a byte array
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		DataOutputStream dos = new DataOutputStream(baos);
+		writeDataStream(dos);
+		dos.flush();
+		dos.close();
 		
-		return null;
+		//Now read it into a new transaction..
+		byte[] transbytes = baos.toByteArray();
+		ByteArrayInputStream bais = new ByteArrayInputStream(transbytes);
+		DataInputStream dis = new DataInputStream(bais);
+		
+		Transaction deepcopy = new Transaction();
+		deepcopy.readDataStream(dis);
+		
+		dis.close();
+		baos.close();
+		
+		return deepcopy;
 	}
 }

@@ -1,5 +1,6 @@
 package org.minima.system.txpow;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
@@ -29,6 +30,7 @@ import org.minima.objects.proofs.SignatureProof;
 import org.minima.objects.proofs.TokenProof;
 import org.minima.system.input.functions.gimme50;
 import org.minima.utils.Crypto;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
@@ -133,7 +135,13 @@ public class TxPoWChecker {
 			MiniNumber zBlockNumber, MiniNumber zBlockTime, MMRSet zMMRSet, boolean zTouchMMR, JSONArray zContractLog) {
 		
 		//Make a deep copy.. as we may need to edit it.. with floating values and DYN_STATE
-		Transaction trans = zTrans.deepCopy();
+		Transaction trans;
+		try {
+			trans = zTrans.deepCopy();
+		} catch (IOException e) {
+			MinimaLogger.log("Error deep copy Transaction "+zTrans.toString());
+			return false;
+		}
 		
 		//The DYNState variables..
 		String[] DYNState    = new String[256];

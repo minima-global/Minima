@@ -144,7 +144,7 @@ public class TokenProof implements Streamable{
 	
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
-		mCoinID.writeDataStream(zOut);
+		mCoinID.writeHashToStream(zOut);
 		mTokenScript.writeDataStream(zOut);
 		mTokenScale.writeDataStream(zOut);
 		mTokenTotalAmount.writeDataStream(zOut);
@@ -153,7 +153,7 @@ public class TokenProof implements Streamable{
 
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
-		mCoinID 			= MiniData.ReadFromStream(zIn);
+		mCoinID 			= MiniData.ReadHashFromStream(zIn);
 		mTokenScript        = MiniString.ReadFromStream(zIn);
 		mTokenScale 		= MiniNumber.ReadFromStream(zIn);
 		mTokenTotalAmount	= MiniNumber.ReadFromStream(zIn);
@@ -162,17 +162,9 @@ public class TokenProof implements Streamable{
 		calculateTokenID();
 	}
 	
-	public static TokenProof ReadFromStream(DataInputStream zIn){
+	public static TokenProof ReadFromStream(DataInputStream zIn) throws IOException{
 		TokenProof td = new TokenProof();
-		
-		try {
-			td.readDataStream(zIn);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return null;
-		}
-		
+		td.readDataStream(zIn);
 		return td;
 	}
 }

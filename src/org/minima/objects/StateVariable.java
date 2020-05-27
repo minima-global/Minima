@@ -100,16 +100,9 @@ public class StateVariable implements Streamable {
 		}
 	}
 	
-	public static StateVariable ReadFromStream(DataInputStream zIn){
+	public static StateVariable ReadFromStream(DataInputStream zIn) throws IOException{
 		StateVariable statevar = new StateVariable();
-		
-		try {
-			statevar.readDataStream(zIn);
-		} catch (IOException e) {
-			e.printStackTrace();
-			return null;
-		}
-		
+		statevar.readDataStream(zIn);
 		return statevar;
 	}
 }

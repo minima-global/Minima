@@ -69,16 +69,9 @@ public class ScriptProof extends Proof {
 		super.readDataStream(zIn);
 	}
 	
-	public static ScriptProof ReadFromStream(DataInputStream zIn){
+	public static ScriptProof ReadFromStream(DataInputStream zIn) throws IOException{
 		ScriptProof proof = new ScriptProof();
-		
-		try {
-			proof.readDataStream(zIn);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
+		proof.readDataStream(zIn);
 		return proof;
 	}
 }

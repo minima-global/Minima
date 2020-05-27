@@ -134,31 +134,10 @@ public class Witness implements Streamable {
 	}
 	
 	public ScriptProof getScript(MiniData zAddress) {
-		//Check the Length..
-		int len = zAddress.getLength();
-		
-		//32 is the default.. any less and it's a double hash..
 		for(ScriptProof proof : mScriptProofs) {
-			MiniData fulladdr = proof.getFinalHash();
-			
-			//A normal 64 byte address
-			if(fulladdr.isEqual(zAddress)) {
+			if(proof.getFinalHash().isEqual(zAddress)) {
 				return proof;
 			}
-			
-//			//It's the smaller version
-//			if(len != 64) {
-//				//Try the hash..
-//				int bitlength = len * 8;
-//				
-//				//Hash it..
-//				MiniData hash = new MiniData(Crypto.getInstance().hashData(fulladdr.getData(), bitlength));
-//				
-//				//Check it..
-//				if(hash.isEqual(zAddress)) {
-//					return proof;
-//				}
-//			}
 		}
 		
 		return null;

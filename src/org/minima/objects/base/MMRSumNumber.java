@@ -88,16 +88,9 @@ public class MMRSumNumber implements Streamable {
 		mNumber = new BigDecimal(unscaled,scale,mMathContext);
 	}
 
-	public static MMRSumNumber ReadFromStream(DataInputStream zIn){
+	public static MMRSumNumber ReadFromStream(DataInputStream zIn) throws IOException{
 		MMRSumNumber data = new MMRSumNumber();
-		
-		try {
-			data.readDataStream(zIn);
-		} catch (IOException e) {
-			e.printStackTrace();
-			return null;
-		}
-		
+		data.readDataStream(zIn);
 		return data;
 	}
 }

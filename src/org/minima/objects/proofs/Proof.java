@@ -242,15 +242,9 @@ public class Proof implements Streamable {
 		finalizeHash();
 	}
 	
-	public static Proof ReadFromStream(DataInputStream zIn){
+	public static Proof ReadFromStream(DataInputStream zIn) throws IOException{
 		Proof proof = new Proof();
-		
-		try {
-			proof.readDataStream(zIn);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		
+		proof.readDataStream(zIn);
 		return proof;
 	}
 	

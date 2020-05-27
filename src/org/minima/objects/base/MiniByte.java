@@ -71,16 +71,9 @@ public class MiniByte implements Streamable{
 		mVal = zIn.readByte();
 	}
 	
-	public static MiniByte ReadFromStream(DataInputStream zIn){
+	public static MiniByte ReadFromStream(DataInputStream zIn) throws IOException{
 		MiniByte data = new MiniByte();
-		
-		try {
-			data.readDataStream(zIn);
-		} catch (IOException e) {
-//			e.printStackTrace();
-			return null;
-		}
-		
+		data.readDataStream(zIn);
 		return data;
 	}
 }

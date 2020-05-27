@@ -51,16 +51,9 @@ public class SignatureProof extends Proof {
 		super.readDataStream(zIn);
 	}
 	
-	public static SignatureProof ReadFromStream(DataInputStream zIn){
+	public static SignatureProof ReadFromStream(DataInputStream zIn) throws IOException{
 		SignatureProof sigproof = new SignatureProof();
-		
-		try {
-			sigproof.readDataStream(zIn);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
+		sigproof.readDataStream(zIn);
 		return sigproof;
 	}
 }

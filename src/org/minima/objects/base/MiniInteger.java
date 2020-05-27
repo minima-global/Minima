@@ -112,15 +112,9 @@ public class MiniInteger implements Streamable {
 		mNumber = new BigInteger(data);
 	}
 	
-	public static MiniInteger ReadFromStream(DataInputStream zIn) {
-	   MiniInteger data = new MiniInteger();
-		
-		try {
-			data.readDataStream(zIn);
-		} catch (IOException e) {
-			return null;
-		}
-		
+	public static MiniInteger ReadFromStream(DataInputStream zIn) throws IOException {
+	    MiniInteger data = new MiniInteger();
+		data.readDataStream(zIn);
 		return data;
 	}
 }

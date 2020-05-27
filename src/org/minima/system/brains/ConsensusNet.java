@@ -288,7 +288,8 @@ public class ConsensusNet extends ConsensusProcessor {
 			//Check Header and Body Agree..
 			MiniData bodyhash = Crypto.getInstance().hashObject(txpow.getTxBody());
 			if(!txpow.getTxHeader().getBodyHash().isEqual(bodyhash)) {
-				MinimaLogger.log("ERROR NET TxHeader and TxBody Mismatch! "+txpow.getBlockNumber()+" "+txpow.getTxPowID()); 
+				MinimaLogger.log("ERROR NET TxHeader and TxBody Mismatch! "
+							+txpow.getBlockNumber()+" "+txpow.getTxPowID()+" "+txpow.getTxHeader().getBodyHash().to0xString()+" "+bodyhash.to0xString()); 
 				return;
 			}
 			
