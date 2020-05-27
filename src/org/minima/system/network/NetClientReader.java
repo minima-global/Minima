@@ -163,10 +163,8 @@ public class NetClientReader implements Runnable {
 				}
 				
 				//Clean up..
-				try {
-					inputstream.close();
-					bais.close();
-				}catch(Exception exc) {}
+				inputstream.close();
+				bais.close();
 				
 				//Post it..
 				consensus.PostMessage(rec);

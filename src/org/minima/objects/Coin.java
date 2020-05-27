@@ -147,7 +147,7 @@ public class Coin implements Streamable {
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
 		mCoinID.writeHashToStream(zOut);
-		mAddress.writeDataStream(zOut);
+		mAddress.writeHashToStream(zOut);
 		mAmount.writeDataStream(zOut);
 		mTokenID.writeHashToStream(zOut);
 		
@@ -167,7 +167,7 @@ public class Coin implements Streamable {
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
 		mCoinID   = MiniData.ReadHashFromStream(zIn);
-		mAddress  = MiniData.ReadFromStream(zIn);
+		mAddress  = MiniData.ReadHashFromStream(zIn);
 		mAmount   = MiniNumber.ReadFromStream(zIn);
 		mTokenID  = MiniData.ReadHashFromStream(zIn);
 		

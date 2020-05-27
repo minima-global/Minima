@@ -148,7 +148,7 @@ public class Proof implements Streamable {
 			for(int i=0;i<len;i++){
 				ProofChunk chunk = mProofChain.get(i);
 				chunk.getLeft().writeDataStream(dos);
-				chunk.getHash().writeDataStream(dos);
+				chunk.getHash().writeHashToStream(dos);
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -218,7 +218,7 @@ public class Proof implements Streamable {
 		for(int i=0;i<len;i++) {
 			ProofChunk chunk = mProofChain.get(i);
 			chunk.getLeft().writeDataStream(zOut);
-			chunk.getHash().writeDataStream(zOut);
+			chunk.getHash().writeHashToStream(zOut);
 			chunk.getValue().writeDataStream(zOut);
 		}
 	}
@@ -234,7 +234,7 @@ public class Proof implements Streamable {
 		int len = mlen.getAsInt();
 		for(int i=0;i<len;i++) {
 			MiniByte left    = MiniByte.ReadFromStream(zIn);
-			MiniData hash    = MiniData.ReadFromStream(zIn);
+			MiniData hash    = MiniData.ReadHashFromStream(zIn);
 			MMRSumNumber val = MMRSumNumber.ReadFromStream(zIn);
 			mProofChain.add(new ProofChunk(left, hash, val));
 		}
