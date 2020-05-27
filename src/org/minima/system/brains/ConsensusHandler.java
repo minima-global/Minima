@@ -371,6 +371,7 @@ public class ConsensusHandler extends SystemHandler {
 			}
 			
 			//Create the correct transID..
+			txpow.setHeaderBodyHash();
 			txpow.calculateTXPOWID();
 			
 			//Check the SIGS!

@@ -185,6 +185,8 @@ public class NetClientReader implements Runnable {
 		
 		}catch(Exception exc) {
 			//General Exception	
+			MinimaLogger.log("NetClientReader closed UID "+mNetClient.getUID()+" exc:"+exc);
+		
 		}
 		
 		//Tell the network Handler
