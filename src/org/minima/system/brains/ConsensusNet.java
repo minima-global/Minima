@@ -190,11 +190,15 @@ public class ConsensusNet extends ConsensusProcessor {
 				//Reset weights
 				getMainDB().hardResetChain();
 			
-				//FOR NOW
-				MinimaLogger.log("Sync Complete.. Current block : "+getMainDB().getMainTree().getChainTip().getTxPow().getBlockNumber());
-			
 				//Now the Initial SYNC has been done you can receive TXPOW message..
 				initialSyncComplete();
+				
+				//FOR NOW
+				TxPoW tip = getMainDB().getMainTree().getChainTip().getTxPow();
+				MinimaLogger.log("Sync Complete.. Reset Current block : "+tip.getBlockNumber());
+			
+				//Post a message to those listening
+				getConsensusHandler().updateListeners(new Message(ConsensusHandler.CONSENSUS_NOTIFY_NEWBLOCK).addObject("txpow", tip));
 				
 				//Backup the system..
 				getConsensusHandler().PostMessage(ConsensusBackup.CONSENSUSBACKUP_BACKUP);
