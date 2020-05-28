@@ -177,7 +177,7 @@ public class RPCHandler implements Runnable {
 						ResponseStream response = new ResponseStream();
 			            
 						//Make sure vbaliue
-						if(!function.equals("")) {
+						if(!function.equals("") && !function.toLowerCase().equals("quit")) {
 							//Send it..
 							InputMessage inmsg = new InputMessage(function, response);
 		
@@ -206,7 +206,7 @@ public class RPCHandler implements Runnable {
 							ResponseStream response = new ResponseStream();
 				            
 							//Make sure vbaliue
-							if(!func.equals("")) {
+							if(!func.equals("") && !function.toLowerCase().equals("quit")) {
 								//Send it..
 								InputMessage inmsg = new InputMessage(func, response);
 			
