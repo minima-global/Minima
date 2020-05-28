@@ -189,6 +189,10 @@ public class ConsensusHandler extends SystemHandler {
 		return mMainDB;
 	}
 	
+	public boolean isInitialSyncComplete() {
+		return mConsensusNet.mInitialSync;
+	}
+	
 	@Override
 	protected void processMessage(Message zMessage) throws Exception {
 		/**

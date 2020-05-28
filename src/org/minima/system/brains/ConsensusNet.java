@@ -48,7 +48,7 @@ public class ConsensusNet extends ConsensusProcessor {
 	/**
 	 * Has the initial Sync been done..
 	 */
-	boolean mInitialSync;
+	public boolean mInitialSync;
 	
 	public ConsensusNet(MinimaDB zDB, ConsensusHandler zHandler) {
 		super(zDB, zHandler);
@@ -253,6 +253,9 @@ public class ConsensusNet extends ConsensusProcessor {
 				}
 				
 				MinimaLogger.log("Sync complete. "+totalreq+" blocks added.. ");
+			
+				//Now the Initial SYNC has been done you can receive TXPOW message..
+				initialSyncComplete();
 			}
 			
 		}else if ( zMessage.isMessageType(CONSENSUS_NET_TXPOWID)) {

@@ -67,12 +67,9 @@ public class DAPPManager extends SystemHandler {
 		
 		//Calculate the HOST
 		getHostIP();
-		
-	    //Here it is.. can hack it on android..
-	    String hostport = mHost+":"+mRPCPort;
-	    
+	
 	    //Now create the Minima JS file..
-	    recalculateMinimaJS(hostport);
+	    recalculateMinimaJS(mHost,mRPCPort);
 	    
 		//Calculate the current MiniDAPPS
 		recalculateMiniDAPPS();
@@ -127,7 +124,7 @@ public class DAPPManager extends SystemHandler {
 		return host;
 	}
 	
-	public void recalculateMinimaJS(String zHostPort) {
+	public void recalculateMinimaJS(String zHost, int zPort) {
 		//Now create the Minima JS file..
 	    try {
 			//Get the bytes..
@@ -137,8 +134,11 @@ public class DAPPManager extends SystemHandler {
 	    	String minstring = new String(minima, Charset.forName("UTF-8"));
 	    
 	    	//Now replace the center string..
-		    String editstring = minstring.replace("######", "var MINIMA_MINIDAPP_HOST = \""+zHostPort+"\";");
-	    
+		    String editstring = minstring.replace("######", "var MINIMA_MINIDAPP_HOST = \""+zHost+":"+zPort+"\";");
+	 
+		    //Replace the Websocket Server IP..
+		    editstring = editstring.replace("ws://127.0.0.1:20999", "ws://"+zHost+":20999");
+			 
 		    //Now convert to bytes..
 		    mMINIMAJS = editstring.getBytes();
 	    
@@ -159,7 +159,7 @@ public class DAPPManager extends SystemHandler {
 		if(!host.equals(mHost)) {
 			MinimaLogger.log("MINIDAPP RPCHOST CHANGED from "+mHost+" to "+host);
 			mHost = host;
-			recalculateMinimaJS(mHost+":"+mRPCPort);
+			recalculateMinimaJS(mHost,mRPCPort);
 		}
 		
 		return mMINIMAJS;
