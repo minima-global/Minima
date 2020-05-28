@@ -226,6 +226,9 @@ public class ConsensusNet extends ConsensusProcessor {
 				//Some crossover was found..
 				MinimaLogger.log("CROSSOVER BLOCK FOUND.. @ "+cross);
 				
+				//Now the Initial SYNC has been done you can receive TXPOW message..
+				initialSyncComplete();
+				
 				//Otherwise.. 
 				ArrayList<SyncPacket> intro = sp.getAllNodes();
 				int totalreq = 0;
@@ -252,10 +255,7 @@ public class ConsensusNet extends ConsensusProcessor {
 					}
 				}
 				
-				MinimaLogger.log("Sync complete. "+totalreq+" blocks added.. ");
-			
-				//Now the Initial SYNC has been done you can receive TXPOW message..
-				initialSyncComplete();
+				MinimaLogger.log("Sync complete. "+totalreq+" blocks added.. ");	
 			}
 			
 		}else if ( zMessage.isMessageType(CONSENSUS_NET_TXPOWID)) {
