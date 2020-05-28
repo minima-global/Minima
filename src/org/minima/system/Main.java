@@ -1,6 +1,7 @@
 
 package org.minima.system;
 
+import org.minima.GlobalParams;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.backup.BackupManager;
 import org.minima.system.brains.ConsensusBackup;
@@ -117,6 +118,7 @@ public class Main extends MessageProcessor {
 		mGenesis 	= zGenesis;
 		
 		MinimaLogger.log("Minima files : "+zConfFolder);
+		MinimaLogger.log("Minima version "+GlobalParams.MINIMA_VERSION);
 	}
 	
 	public void setAutoConnect(boolean zAuto) {
