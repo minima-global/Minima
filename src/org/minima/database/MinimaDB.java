@@ -998,15 +998,15 @@ public class MinimaDB {
 				BigDecimal newdiffdec = avgdiffdec.multiply(speedratio.getAsBigDecimal());
 				BigInteger newdiff    = newdiffdec.toBigInteger();
 				
-				//Check if more than maximum..
-				if(newdiff.compareTo(Crypto.MAX_VAL)>0) {
-					newdiff = Crypto.MAX_VAL;
-				}
-				
-//				//Check more than TX-MIN..
-//				if(newdiff.compareTo(Crypto.MEGA_VAL)>0) {
-//					newdiff = Crypto.MEGA_VAL;
+//				//Check if more than maximum..
+//				if(newdiff.compareTo(Crypto.MAX_VAL)>0) {
+//					newdiff = Crypto.MAX_VAL;
 //				}
+				
+				//Check more than TX-MIN..
+				if(newdiff.compareTo(Crypto.MEGA_VAL)>0) {
+					newdiff = Crypto.MEGA_VAL;
+				}
 								
 				//Create the hash
 				MiniData diffhash = new MiniData("0x"+newdiff.toString(16)); 
