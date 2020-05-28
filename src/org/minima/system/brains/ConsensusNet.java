@@ -265,7 +265,9 @@ public class ConsensusNet extends ConsensusProcessor {
 				MinimaLogger.log("Sync complete. "+totalreq+" blocks added.. ");
 				
 				//Backup the system..
-				getConsensusHandler().PostMessage(ConsensusBackup.CONSENSUSBACKUP_BACKUP);
+				if(totalreq>0) {
+					getConsensusHandler().PostMessage(ConsensusBackup.CONSENSUSBACKUP_BACKUP);	
+				}
 			}
 			
 		}else if ( zMessage.isMessageType(CONSENSUS_NET_TXPOWID)) {
