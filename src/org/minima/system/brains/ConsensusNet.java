@@ -68,6 +68,13 @@ public class ConsensusNet extends ConsensusProcessor {
 		mFullSyncOnInit = zFull;
 	}
 	
+	public void initialSyncComplete() {
+		if(!mInitialSync) {
+			mInitialSync = true;
+			getConsensusHandler().updateListeners(new Message(ConsensusHandler.CONSENSUS_NOTIFY_INITIALSYNC));	
+		}
+	}
+	
 	public void processMessage(Message zMessage) throws Exception {
 		
 		if(zMessage.isMessageType(CONSENSUS_NET_INITIALISE)) {
@@ -125,7 +132,7 @@ public class ConsensusNet extends ConsensusProcessor {
 					}else {
 						//This normally means you are STUCK.. hmm..
 						MinimaLogger.log("YOUR CHAIN HEAVIER.. NO CHANGE REQUIRED");
-						mInitialSync = true;
+						initialSyncComplete();
 						return;
 					}
 					
@@ -135,7 +142,7 @@ public class ConsensusNet extends ConsensusProcessor {
 					}else {
 						MinimaLogger.log("NO HARD RESET ALLOWED.. ");
 						hardreset = false;
-						mInitialSync = true;
+						initialSyncComplete();
 						return;
 					}
 				}
@@ -187,7 +194,7 @@ public class ConsensusNet extends ConsensusProcessor {
 				MinimaLogger.log("Sync Complete.. Current block : "+getMainDB().getMainTree().getChainTip().getTxPow().getBlockNumber());
 			
 				//Now the Initial SYNC has been done you can receive TXPOW message..
-				mInitialSync = true;
+				initialSyncComplete();
 				
 				//Do you want a copy of ALL the TxPoW in the Blocks.. ?
 				//Only really useful for txpowsearch - DEXXED
