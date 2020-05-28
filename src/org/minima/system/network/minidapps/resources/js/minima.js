@@ -27,6 +27,11 @@ var MINIMA_IS_MINIDAPP    = true;
 //var MINIMA_MINIDAPP_HOST = "127.0.0.1:8999";
 
 /**
+ * The Web Socket Host
+ */
+var MINIMA_WEBSOCKET_HOST = "ws://127.0.0.1:20999";
+
+/**
  * MiFi Proxy Server for initial connect
  */
 var MIFIHOST              = "mifi.minima.global";
@@ -51,7 +56,6 @@ var Minima = {
 	host : "0.0.0.0",
 	status : {},
 	balance : {},
-	tokens : {},
 	uuid : Math.floor(Math.random()*1000000000),
 	logging : true,
 	
@@ -137,16 +141,17 @@ var Minima = {
 	util : {
 			//Get the Balance string for a Tokenid..
 			getBalance : function(tokenid){
-				var ballen = Minima.balance.balance.length;
+				var ballen = Minima.balance.length;
 				for(balloop=0;balloop<ballen;balloop++){
-					if(Minima.balance.balance[balloop].tokenid == tokenid){
-						var bal     = Minima.balance.balance[balloop].confirmed;
-						var balun   = Minima.balance.balance[balloop].unconfirmed;
-						var mempool = Minima.balance.balance[balloop].mempool;
+					if(Minima.balance[balloop].tokenid == tokenid){
+						var bal     = Minima.balance[balloop].confirmed;
+						var balsend = Minima.balance[balloop].sendable;
+						var balun   = Minima.balance[balloop].unconfirmed;
+						var mempool = Minima.balance[balloop].mempool;
 						
 						//Is there unconfirmed money coming..
-						if(balun !== "0" || mempool !== "0"){
-							return bal+" / "+balun+" / "+mempool;	
+						if(balun !== "0" || mempool !== "0" || balsend !== bal){
+							return balsend+" ("+bal+") / "+balun+" / "+mempool;	
 						}else{
 							return ""+bal;
 						}	
@@ -163,7 +168,7 @@ var Minima = {
 					if(responses[i].status != true){
 						//Output to console..
 						console.log("Minima @ "+new Date().toLocaleString()
-								+"\nERROR in Multi-Command ["+i+"] "+JSON.stringify(responses[i],null,2));
+								   +"\nERROR in Multi-Command ["+i+"] "+JSON.stringify(responses[i],null,2));
 						return false;
 					}
 				}
@@ -179,51 +184,10 @@ var Minima = {
 					}
 				}
 				
-				//Not found..
-//				console.log("Minima @ "+new Date().toLocaleString()
-//						+"\nERROR StateVariable doesn't exist.. "+port);
-				
 				//Not found
 				return null;
-			},
-			
-			
-			getTokenName : function(tokenid){
-				if(tokenid == "0x00"){
-					return "Minima";
-				}
-				
-				var toklen = Minima.tokens.tokens.length;
-				for(tokloop=0;tokloop<toklen;tokloop++){
-					//check it
-					if(Minima.tokens.tokens[tokloop].tokenid == tokenid){
-						return Minima.tokens.tokens[tokloop].token;
-					}
-				}
-				
-				//Not found..
-				console.log("Minima @ "+new Date().toLocaleString()
-						+"\nERROR TokenName doesn't exist.. "+tokenid);
-				
-				return null;
-			},
-			
-			getTokenScale : function(tokenid){
-				var toklen = Minima.tokens.tokens.length;
-				for(tokloop=0;tokloop<toklen;tokloop++){
-					if(Minima.tokens.tokens[tokloop].tokenid == tokenid){
-						temptokenscale       = new Decimal(Minima.tokens.tokens[tokloop].scale); 
-						temptokenscalefactor = new Decimal(10).pow(temptokenscale); 
-						return temptokenscalefactor;
-					}
-				}
-				
-				//Not found..
-				console.log("Minima @ "+new Date().toLocaleString()
-						+"\nERROR TokenScale doesn't exist.. "+tokenid);
-				
-				return null;
 			}
+			
 	}
 	
 };
@@ -244,14 +208,13 @@ function postMinimaMessage(event, info){
  */
 function initialStatus(){
 	//Encoded rpc call
-	var rpc = "http://"+Minima.host+"/"+encodeURIComponent("status;balance;tokens");
+	var rpc = "http://"+Minima.host+"/"+encodeURIComponent("status;balance");
 	
 	//Check the Status - use base function so no log..
 	httpGetAsync(rpc,function(json){
 	    //Status is first..
 		Minima.status  = json[0].response;
-		Minima.balance = json[1].response;
-		Minima.tokens  = json[2].response;
+		Minima.balance = json[1].response.balance;
 		
 	    //Store this..
 	    Minima.txpowid = Minima.status.tip;
@@ -264,13 +227,14 @@ function initialStatus(){
 		    show(LOGOUT_BUTTON);
 	    }
 	    
-	    //Start Polling..
-	    startMinimaPolling();
-	   
+	    //We Are Connected..
 	    MINIMACONNECTED = true;
 	   
 	    //Send a message
 	    postMinimaMessage("connected", "success");
+	    
+	    //Start Listening for messages..
+		startWebSocketListener();
    });
 }
 
@@ -351,50 +315,59 @@ function closeWebSocket(){
 	}
 }
 
-/**
- * Start polling to see if something has changed.. 
- */
-var minima_global_balance = "";
-function startMinimaPolling(){
-	//Check Balance every second
-	pollMinimaFunction();
+function startWebSocketListener(){
+	Minimalog("Starting WebSocket Listener @ "+MINIMA_WEBSOCKET_HOST);
 	
-	//Check every 5 secs
-	setInterval(function(){pollMinimaFunction();},10000);
-}
-
-function pollMinimaFunction(){
-	//Encoded rpc call
-	var rpc = "http://"+Minima.host+"/"+encodeURIComponent("status;balance;tokens");
+	//Open up a websocket to the main MINIMA proxy..
+	var minimaws = new WebSocket(MINIMA_WEBSOCKET_HOST);
 	
-	//Check the Status - use base function so no log..
-	httpGetAsync(rpc,function(json){
-		//Status is first..
-		Minima.status  = json[0].response;
-		Minima.balance = json[1].response;
-		Minima.tokens  = json[2].response;
+	minimaws.onopen = function() {
+		Minimalog("Minima WS Listener Connection opened..");
+	};
+	
+	minimaws.onmessage = function (evt) { 
+		//Convert to JSON	
+		var jmsg = JSON.parse(evt.data);
 		
-		//Check for new block
-		if(Minima.status.tip !== Minima.txpowid){
-			//Store the details
-			Minima.block   = parseInt(Minima.status.lastblock,10);
-			Minima.txpowid = Minima.status.tip;
+		if(jmsg.event == "newblock"){
+			//Set the new status
+			Minima.status  = jmsg.status;
+			Minima.txpowid = jmsg.status.tip;
+			Minima.block   = parseInt(jmsg.status.lastblock,10);
 			
-			//Tell-tale..
-			postMinimaMessage("newblock",Minima.status);
+			//Post it
+			postMinimaMessage("newblock",jmsg.txpow);
+			
+		}else if(jmsg.event == "newtransaction"){
+			//New Transaction
+			postMinimaMessage("newtransaction",jmsg.txpow);
+			
+		}else if(jmsg.event == "newbalance"){
+			//Set the New Balance
+			Minima.balance = jmsg.balance;
+			
+			//Post it..
+			postMinimaMessage("newbalance",jmsg.balance);
+		
+		}else if(jmsg.event == "newmessage"){
+			//Received a message from another MiniDAPP	
+			
 		}
+	};
 		
-		//Check balance..
-		var balstr = JSON.stringify(Minima.balance);
-		
-		//Simple string check for change
-		if(balstr !== minima_global_balance){
-			postMinimaMessage("newbalance",Minima.balance);
-		}
-		
-		//Store it
-		minima_global_balance = balstr;
-	},false);
+	minimaws.onclose = function() { 
+		Minimalog("Minima WS Listener closed... reconnect attempt in 30 seconds");
+	
+		//Start her up in a minute..
+		setTimeout(function(){ startWebSocketListener(); }, 30000);
+	};
+
+	minimaws.onerror = function(error) {
+		//var err = JSON.stringify(error);
+		var err = JSON.stringify(error, ["message", "arguments", "type", "name", "data"])
+		// websocket is closed.
+	    Minimalog("Minima WS Listener Error ... "+err); 
+	};
 }
 
 /**
