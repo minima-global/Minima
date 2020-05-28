@@ -205,10 +205,9 @@ public class ConsensusHandler extends SystemHandler {
 		
 			//What's the new chain tip..
 			TxPoW newtip = getMainDB().getMainTree().getChainTip().getTxPow();
-			MiniData newtipid = newtip.getTxPowID();
 			
 			//Has there been a change
-			if(!oldtip.isEqual(newtipid)) {
+			if(!oldtip.isEqual(newtip.getTxPowID())) {
 				//Notify..
 				updateListeners(new Message(CONSENSUS_NOTIFY_NEWBLOCK).addObject("txpow", newtip));
 			
