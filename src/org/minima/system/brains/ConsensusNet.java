@@ -45,12 +45,23 @@ public class ConsensusNet extends ConsensusProcessor {
 	
 	boolean mFullSyncOnInit = true;
 	
+	/**
+	 * Has the initial Sync been done..
+	 */
+	boolean mInitialSync;
+	
 	public ConsensusNet(MinimaDB zDB, ConsensusHandler zHandler) {
 		super(zDB, zHandler);
+		
+		mInitialSync = false;
 	}
 	 
 	public void setHardResest(boolean zHardResetAllowed) {
 		mHardResetAllowed = zHardResetAllowed;
+	
+		if(!mHardResetAllowed) {
+			mInitialSync = true;
+		}
 	}
 	
 	public void setFullSyncOnInit(boolean zFull) {
@@ -112,7 +123,9 @@ public class ConsensusNet extends ConsensusProcessor {
 					if(netweight.compareTo(myweight)>0) {
 						MinimaLogger.log("INTRO CHAIN HEAVIER.. ");
 					}else {
-//						MinimaLogger.log("YOUR CHAIN HEAVIER.. NO CHANGE REQUIRED");
+						//This normally means you are STUCK.. hmm..
+						MinimaLogger.log("YOUR CHAIN HEAVIER.. NO CHANGE REQUIRED");
+						mInitialSync = true;
 						return;
 					}
 					
@@ -122,6 +135,7 @@ public class ConsensusNet extends ConsensusProcessor {
 					}else {
 						MinimaLogger.log("NO HARD RESET ALLOWED.. ");
 						hardreset = false;
+						mInitialSync = true;
 						return;
 					}
 				}
@@ -172,6 +186,9 @@ public class ConsensusNet extends ConsensusProcessor {
 				//FOR NOW
 				MinimaLogger.log("Sync Complete.. Current block : "+getMainDB().getMainTree().getChainTip().getTxPow().getBlockNumber());
 			
+				//Now the Initial SYNC has been done you can receive TXPOW message..
+				mInitialSync = true;
+				
 				//Do you want a copy of ALL the TxPoW in the Blocks.. ?
 				//Only really useful for txpowsearch - DEXXED
 				if(mFullSyncOnInit) {
@@ -264,6 +281,14 @@ public class ConsensusNet extends ConsensusProcessor {
 			/**
 			 * The SINGLE entry point into the system for NEW TXPOW messages..
 			 */
+			
+			//Have we done the initia SYNC..
+			if(!mInitialSync) {
+				MinimaLogger.log("NET TxPoW received before Initial Sync Finished.");
+				return;
+			}
+			
+			//The TxPoW
 			TxPoW txpow = (TxPoW)zMessage.getObject("txpow");
 			
 			//Do we have it.. now check DB - hmmm..
