@@ -57,6 +57,9 @@ public class ConsensusBackup extends ConsensusProcessor {
 			backup.writeObjectToFile(backuser, userdb);
 			
 		}else if(zMessage.isMessageType(CONSENSUSBACKUP_BACKUP)) {
+			//Tell us whe you do this..
+			MinimaLogger.log("Full Backup performed..");
+
 			//Is this for shut down or just a regular backup..
 			boolean shutdown = false;
 			if(zMessage.exists("shutdown")) {
