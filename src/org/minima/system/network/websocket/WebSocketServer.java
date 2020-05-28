@@ -14,9 +14,6 @@ public class WebSocketServer extends NanoWSD {
 		
 		//Keep this..
 		mWSManager = zWSManager;
-		
-		//Log it..
-		MinimaLogger.log("WebSocket Server started on port "+zPort);
 	}
 
 	@Override
