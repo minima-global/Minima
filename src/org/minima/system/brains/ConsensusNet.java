@@ -196,6 +196,9 @@ public class ConsensusNet extends ConsensusProcessor {
 				//Now the Initial SYNC has been done you can receive TXPOW message..
 				initialSyncComplete();
 				
+				//Backup the system..
+				getConsensusHandler().PostMessage(ConsensusBackup.CONSENSUSBACKUP_BACKUP);
+				
 				//Do you want a copy of ALL the TxPoW in the Blocks.. ?
 				//Only really useful for txpowsearch - DEXXED
 				if(mFullSyncOnInit) {
@@ -255,7 +258,10 @@ public class ConsensusNet extends ConsensusProcessor {
 					}
 				}
 				
-				MinimaLogger.log("Sync complete. "+totalreq+" blocks added.. ");	
+				MinimaLogger.log("Sync complete. "+totalreq+" blocks added.. ");
+				
+				//Backup the system..
+				getConsensusHandler().PostMessage(ConsensusBackup.CONSENSUSBACKUP_BACKUP);
 			}
 			
 		}else if ( zMessage.isMessageType(CONSENSUS_NET_TXPOWID)) {
