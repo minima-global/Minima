@@ -149,10 +149,10 @@ public class BlockTreeNode implements Comparable<BlockTreeNode> {
 	
 	public void resetCurrentWeight() {
 		//Now multiply by the current level pow 2
-		BigDecimal factor = new BigDecimal(BIG_TWO.pow(getCurrentLevel()), MathContext.DECIMAL128) ;
+		BigDecimal factor = new BigDecimal(BIG_TWO.pow(getCurrentLevel()), MathContext.UNLIMITED) ;
 		
 		//Set the Weight
-		mWeight = mRealWeight.multiply(factor, MathContext.DECIMAL128).toBigInteger();
+		mWeight = mRealWeight.multiply(factor, MathContext.UNLIMITED).toBigInteger();
 		
 		//Reset the total weight..
 		mTotalWeight = mWeight;
