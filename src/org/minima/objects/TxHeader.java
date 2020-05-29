@@ -11,6 +11,7 @@ import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniInteger;
 import org.minima.objects.base.MiniNumber;
+import org.minima.utils.Crypto;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
@@ -25,17 +26,17 @@ public class TxHeader implements Streamable {
 	/**
 	 * Time Secs - nneds to be MiniNumber as is used in Scripts.. 
 	 */
-	public MiniNumber 	mTimeSecs;
+	public MiniNumber 	mTimeSecs = new MiniNumber(System.currentTimeMillis() / 1000);
 	
 	/**
 	 * The Block Number - needs to be a MiniNumber as is used in Scripts..
 	 */
-	public MiniNumber  mBlockNumber;
+	public MiniNumber  mBlockNumber = new MiniNumber(0);
 	
 	/**
 	 * The BASE Block Difficulty
 	 */
-	public MiniData mBlockDifficulty;
+	public MiniData mBlockDifficulty = Crypto.MAX_HASH;
 	
 	/**
 	 * A list of all the parent blocks at all the Super Block Levels..

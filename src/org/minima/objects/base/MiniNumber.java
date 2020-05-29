@@ -70,6 +70,10 @@ public class MiniNumber implements Streamable {
 	public MiniNumber(int zNumber){
 		mNumber = new BigDecimal(zNumber,mMathContext);
 	}
+	
+	public MiniNumber(long zNumber){
+		mNumber = new BigDecimal(zNumber,mMathContext);
+	}
 
 	public MiniNumber(BigInteger zNumber){
 		mNumber = new BigDecimal(zNumber,mMathContext);

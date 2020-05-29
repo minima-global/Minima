@@ -3,6 +3,7 @@ package org.minima.database.txpowtree;
 import java.math.BigInteger;
 import java.util.ArrayList;
 
+import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.MinimaLogger;
@@ -207,34 +208,90 @@ public class BlockTree {
 	 * @param zTxPOWID
 	 * @return
 	 */
+	
 	public BlockTreeNode findNode(MiniData zTxPOWID) {
+		//If nothing on chain return nothing
 		if(getChainRoot() == null) {
 			return null;
 		}
 		
-		//Strange BUG on Android..
-//		try {
-//			BlockTreeNode finder = _findNode(getChainRoot(), zTxPOWID);
-//			return finder;
-//		}catch(StackOverflowError stacker) {
-//			MinimaLogger.log("STACK OVERFLOW err  "+stacker);
-//			MinimaLogger.log("STACK OVERFLOW id   "+zTxPOWID);
-//			MinimaLogger.log("STACK OVERFLOW size "+getAsList().size());
-//		}
+		//Create a STACK..
+		NodeStack stack = new NodeStack();
+		
+		//Now loop..
+		BlockTreeNode curr   = getChainRoot(); 
+		curr.mTraversedChild = 0;
+		
+        // traverse the tree 
+        while (curr != null || !stack.isEmpty()) { 
+        	
+            //Cycle through from first to last child..
+            while (curr !=  null) { 
+            	//Check if this is the one..
+            	System.out.println("CHECK : \t\t"+curr.getTxPowID().to0xString(10)+" "+curr.mTraversedChild+" / "+curr.getNumberChildren());
+            	if(curr.getTxPowID().isEqual(zTxPOWID)) {
+        			return curr;
+        		}
+            	
+            	//Push on the stack..
+            	stack.push(curr); 
+            	System.out.println("PUSH : "+curr.getTxPowID().to0xString(10)+" "+curr.mTraversedChild+" / "+curr.getNumberChildren());
+            	
+            	//Does it have children
+                if(curr.getNumberChildren() > curr.mTraversedChild) {
+                	int childnum = curr.mTraversedChild;
+                	curr.mTraversedChild++;
+                	
+                	//Get the child..
+                	curr = curr.getChild(childnum); 
+                	curr.mTraversedChild = 0;
+                }else {
+                	curr = null;
+                }
+            } 
+  
+            //Current must be NULL at this point
+            curr = stack.pop();
+            System.out.println("POP : "+curr.getTxPowID().to0xString(10)+" "+curr.mTraversedChild+" / "+curr.getNumberChildren());
+        	
+            //Get the next child..
+            if(curr.getNumberChildren() > curr.mTraversedChild) {
+            	//Push it back on the stack..
+            	stack.push(curr); 
+            	
+            	int childnum = curr.mTraversedChild;
+            	curr.mTraversedChild++;
+            	
+            	//Get the child..
+            	curr = curr.getChild(childnum); 
+            	curr.mTraversedChild = 0;
+            }else {
+            	curr = null;
+            }
+        } 
 		
 		//Do it again..
-		return _findNode(getChainRoot(), zTxPOWID);
+		return null;
 	}
 	
+	
+	
+//	public BlockTreeNode findNode(MiniData zTxPOWID) {
+//		if(getChainRoot() == null) {
+//			return null;
+//		}
+//		
+//		//Do it again..
+//		return _findNode(getChainRoot(), zTxPOWID);
+//	}
+	
 	private BlockTreeNode _findNode(BlockTreeNode zRoot, MiniData zTxPOWID) {
-		//Check..
 		if(zRoot.getTxPowID().isEqual(zTxPOWID)) {
 			return zRoot;
 		}
 		
 		//Search the Children..
 		ArrayList<BlockTreeNode> children = zRoot.getChildren();
-		
 		for(BlockTreeNode child : children) {
 			BlockTreeNode found = _findNode(child, zTxPOWID);
 		
@@ -387,4 +444,62 @@ public class BlockTree {
 		mCascadeNode 	= null;
 	}
 
+	public static TxPoW createRandomTxPow() {
+		TxPoW txpow = new TxPoW();
+		txpow.setHeaderBodyHash();
+		txpow.calculateTXPOWID();
+		
+		return txpow;
+	}
+	
+	public static void main(String[] zArgs) {
+		
+		BlockTree tree = new BlockTree();
+		
+		TxPoW root = createRandomTxPow();
+		BlockTreeNode rootnode = new BlockTreeNode(root);
+		tree.setTreeRoot(rootnode);
+		System.out.println("root : "+rootnode.getTxPowID().to0xString(10));
+		
+		//2 kids..
+		TxPoW child = createRandomTxPow();
+		BlockTreeNode treenode = new BlockTreeNode(child);
+		rootnode.addChild(treenode);
+		System.out.println("rootchild1 : "+treenode.getTxPowID().to0xString(10));
+		
+		TxPoW child4 = createRandomTxPow();
+		BlockTreeNode treenode4 = new BlockTreeNode(child4);
+		treenode.addChild(treenode4);
+		System.out.println("child1child1 : "+treenode4.getTxPowID().to0xString(10));
+		
+		TxPoW child5 = createRandomTxPow();
+		BlockTreeNode treenode5 = new BlockTreeNode(child5);
+		treenode.addChild(treenode5);
+		System.out.println("child1child2 : "+treenode5.getTxPowID().to0xString(10));
+		
+		TxPoW child6 = createRandomTxPow();
+		BlockTreeNode treenode6 = new BlockTreeNode(child6);
+		treenode.addChild(treenode6);
+		System.out.println("child1child3 : "+treenode6.getTxPowID().to0xString(10));
+		
+//		TxPoW child2 = createRandomTxPow();
+//		BlockTreeNode treenode2 = new BlockTreeNode(child2);
+//		rootnode.addChild(treenode2);
+//		System.out.println("rootchild2 : "+treenode2.getTxPowID().to0xString(10));
+//		
+//		TxPoW child3 = createRandomTxPow();
+//		BlockTreeNode treenode3 = new BlockTreeNode(child3);
+//		treenode2.addChild(treenode3);
+//		System.out.println("child2child1 : "+treenode3.getTxPowID().to0xString(10));
+		
+		//Search for the child..
+//		System.out.println("\nSearch for "+child3.getTxPowID().to0xString(10)+"\n\n");
+//		BlockTreeNode find =  tree.findNode(child3.getTxPowID());
+		BlockTreeNode find =  tree.findNode(MiniData.getRandomData(5));
+		
+		System.out.println("NODE : "+find);
+		
+	}
+	
+	
 }

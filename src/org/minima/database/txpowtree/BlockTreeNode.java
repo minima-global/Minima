@@ -57,6 +57,11 @@ public class BlockTreeNode implements Comparable<BlockTreeNode> {
 	MMRSet mMMRSet = new MMRSet();
 	
 	/**
+	 * When Traversing.. remeber which child was used last
+	 */
+	public int mTraversedChild = 0;
+	
+	/**
 	 * When loading from bloc ctore just use the TxpowID
 	 */
 	public BlockTreeNode() {}
@@ -197,7 +202,7 @@ public class BlockTreeNode implements Comparable<BlockTreeNode> {
 		
 		// Order the child nodes.. This way it looks the same in 
 		// the TREE on different devices
-		Collections.sort(mChildren);		
+//		Collections.sort(mChildren);		
 	}
 	
 	public ArrayList<BlockTreeNode> getChildren() {
@@ -206,6 +211,10 @@ public class BlockTreeNode implements Comparable<BlockTreeNode> {
 	
 	public int getNumberChildren(){
 		return mChildren.size();
+	}
+	
+	public boolean hasChildren(){
+		return mChildren.size() > 0;
 	}
 	
 	public BlockTreeNode getChild(int zChild) {
