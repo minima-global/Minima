@@ -200,9 +200,8 @@ public class BlockTreeNode implements Comparable<BlockTreeNode> {
 		//Set Parent for child
 		zChild.setParent(this);
 		
-		// Order the child nodes.. This way it looks the same in 
-		// the TREE on different devices
-//		Collections.sort(mChildren);		
+		// Order the child nodes.. This way it looks the same in the TREE on different devices
+		Collections.sort(mChildren);		
 	}
 	
 	public ArrayList<BlockTreeNode> getChildren() {

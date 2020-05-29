@@ -30,6 +30,14 @@ public class NodeStack {
 		
 		return mStack.remove(mStack.size()-1);
 	}
+	
+	/**
+	 * Peek at the top node
+	 * @return
+	 */
+	public BlockTreeNode peek() {
+		return mStack.get(mStack.size()-1);
+	}
 
 	/**
 	 * Empty Stack 
