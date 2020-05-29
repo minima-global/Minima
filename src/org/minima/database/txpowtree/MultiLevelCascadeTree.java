@@ -3,7 +3,9 @@ package org.minima.database.txpowtree;
 import java.util.ArrayList;
 
 import org.minima.GlobalParams;
+import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.utils.MinimaLogger;
 
 public class MultiLevelCascadeTree {
 
@@ -38,6 +40,9 @@ public class MultiLevelCascadeTree {
 		if(oldtip == null) {
 			return mRemovals;
 		}
+		
+		//Store this..
+		MiniData oldtiptxpowid = oldtip.getTxPowID();
 		
 		//Get the current tip
 		MiniNumber casc           = mMainTree.getCascadeNode().getTxPow().getBlockNumber();
@@ -164,6 +169,10 @@ public class MultiLevelCascadeTree {
 				
 		//Add the rest
 		mCascadeTree.hardAddNode(fullkeep, true);
+		
+		//Find the new tip..
+		BlockTreeNode theoldtip = mCascadeTree.findNode(oldtiptxpowid);
+		mCascadeTree.mTip = theoldtip; 
 		
 		//And sort the weights
 		mCascadeTree.resetWeights();

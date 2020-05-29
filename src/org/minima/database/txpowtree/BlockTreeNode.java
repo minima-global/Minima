@@ -62,6 +62,11 @@ public class BlockTreeNode implements Comparable<BlockTreeNode> {
 	public int mTraversedChild = 0;
 	
 	/**
+	 * When calculating the cascade weight.. has this node been used..
+	 */
+	public boolean mCascadeWeighted = false;
+	
+	/**
 	 * When loading from bloc ctore just use the TxpowID
 	 */
 	public BlockTreeNode() {}
@@ -151,6 +156,9 @@ public class BlockTreeNode implements Comparable<BlockTreeNode> {
 		
 		//Reset the total weight..
 		mTotalWeight = mWeight;
+		
+		//Not used yet..
+		mCascadeWeighted = false;
 	}
 	
 	public BigInteger getWeight() {

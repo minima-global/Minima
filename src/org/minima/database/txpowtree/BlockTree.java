@@ -17,7 +17,7 @@ public class BlockTree {
 	/**
 	 * The Tip of the longest Chain
 	 */
-	BlockTreeNode mTip;
+	public BlockTreeNode mTip;
 	
 	/**
 	 * The Block beyond which you are cascading and parents may be of a higher level
@@ -27,7 +27,7 @@ public class BlockTree {
 	/**
 	 * When searching for the tip.. 
 	 */
-	BlockTreeNode mHeaviestNode;
+	BlockTreeNode _mOldTip;
 	
 	/**
 	 * Main Constructor
@@ -132,6 +132,9 @@ public class BlockTree {
 	 * Resets the weights in the tree
 	 */
 	public void resetWeights() {
+		//Store the Old Tip
+		_mOldTip = mTip;
+		
 		//First default them
 		_zeroWeights();
 		
@@ -159,12 +162,33 @@ public class BlockTree {
 	 * Calculate the correct weights per block on the chain
 	 */
 	private void _cascadeWeights() {
+		//First lets stream up the OLD main chain.. OPTIMISATION
+		if(_mOldTip != null) {
+			BigInteger weight        = _mOldTip.getWeight();
+			_mOldTip.mCascadeWeighted = true;
+			
+			//Add to all the parents..
+			BlockTreeNode parent = _mOldTip.getParent();
+			while(parent != null) {
+				//A new cascading weight
+				BigInteger newweight = weight.add(parent.getWeight()); 
+				
+				//Add to this parent..
+				parent.mCascadeWeighted = true;
+				parent.addToTotalWeight(weight);
+				parent = parent.getParent();
+				
+				//Set the new weight
+				weight = newweight;
+			}
+		}
+		
 		//Add all the weights up..
 		_recurseTree(new NodeAction() {
 			@Override
 			public void runAction(BlockTreeNode zNode) {
 				//Only add valid blocks
-				if(zNode.getState() == BlockTreeNode.BLOCKSTATE_VALID) {
+				if(zNode.getState() == BlockTreeNode.BLOCKSTATE_VALID && !zNode.mCascadeWeighted) {
 					//The weight of this block
 					BigInteger weight = zNode.getWeight();
 					
