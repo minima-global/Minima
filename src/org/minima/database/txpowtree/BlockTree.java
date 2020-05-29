@@ -3,6 +3,9 @@ package org.minima.database.txpowtree;
 import java.math.BigInteger;
 import java.util.ArrayList;
 
+import org.minima.database.MinimaDB;
+import org.minima.database.mmr.MMRSet;
+import org.minima.database.txpowdb.TxPOWDBRow;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
@@ -28,6 +31,11 @@ public class BlockTree {
 	 * When searching for the tip.. 
 	 */
 	BlockTreeNode _mOldTip;
+	
+	/**
+	 * When Copying..
+	 */
+	BlockTreeNode mCopyNode;
 	
 	/**
 	 * Main Constructor
@@ -267,6 +275,84 @@ public class BlockTree {
 	}
 	
 	/**
+	 * Sort the Block tree nodes.. ONLY Full blocks with valid parents get checked
+	 * @param zMainDB
+	 */
+	public void sortBlockTreeNodeStates(MinimaDB zMainDB) {
+		//Action that checks for a specific node..
+		NodeAction nodestates = new NodeAction(zMainDB) {
+			@Override
+			public void runAction(BlockTreeNode zNode) {
+				//What ID
+				MiniData txpowid = zNode.getTxPowID();
+				
+				//Get the txpow row
+				TxPOWDBRow row = getDB().getTxPOWRow(txpowid);
+				
+				//Check fpr chain root..
+				int parentstate = BlockTreeNode.BLOCKSTATE_INVALID;
+				if(getChainRoot().getTxPowID().isEqual(txpowid)) {
+					parentstate = BlockTreeNode.BLOCKSTATE_VALID;
+				}else {
+					parentstate = zNode.getParent().getState();
+				}
+				
+				//Must be a valid parent for anything to happen
+				if(parentstate == BlockTreeNode.BLOCKSTATE_INVALID) {
+					//All Children are INVALID
+					zNode.setState(BlockTreeNode.BLOCKSTATE_INVALID);
+				
+				}else if(parentstate == BlockTreeNode.BLOCKSTATE_VALID) {
+					//Do we check.. only when full
+					if(zNode.getState() == BlockTreeNode.BLOCKSTATE_BASIC && row.getBlockState() == TxPOWDBRow.TXPOWDBROW_STATE_FULL) {
+						//Need allok for the block to be accepted
+						boolean allok = true;
+						
+						//Check that Block difficulty is Correct!?
+						//..TODO
+						
+						//Check the Super Block Levels are Correct! and point to the correct blocks
+						//..TODO
+						
+						//need a  body for this..
+						if(row.getTxPOW().hasBody()) {
+							//Create an MMR set that will ONLY be used if the block is VALID..
+							MMRSet mmrset = new MMRSet(zNode.getParent().getMMRSet());
+							
+							//Set this MMR..
+							zNode.setMMRset(mmrset);
+							
+							//Check all the transactions in the block are correct..
+							allok = getDB().checkFullTxPOW(zNode.getTxPow(), mmrset);
+							
+							//Check the root MMR..
+							if(allok) {
+								MiniData root = mmrset.getMMRRoot().getFinalHash();
+								if(!row.getTxPOW().getMMRRoot().isEqual(root)) {
+									allok = false;	
+								}
+							}
+						}else {
+							MinimaLogger.log("WARNING : sortBlockTreeNodeStates on no body TxPoW..! "+zNode.toString());
+						}
+						
+						//if it all passes is OK.. otherwise not ok..
+						if(allok) {
+							//it's all valid!
+							zNode.setState(BlockTreeNode.BLOCKSTATE_VALID);
+						}else{
+							//No good..
+							zNode.setState(BlockTreeNode.BLOCKSTATE_INVALID);
+						}
+					}
+				}
+			}
+		}; 
+		
+		_recurseTree(nodestates);
+	}
+		
+	/**
 	 * Recurse the whole tree and ru an action..
 	 * 
 	 * return object if something special found..
@@ -277,12 +363,16 @@ public class BlockTree {
 	private BlockTreeNode _recurseTree(NodeAction zNodeAction) {
 		//If nothing on chain return nothing
 		if(getChainRoot() == null) {return null;}
-		
+				
+		return _recurseTree(zNodeAction, getChainRoot());
+	}
+	
+	private BlockTreeNode _recurseTree(NodeAction zNodeAction, BlockTreeNode zStartNode) {
 		//Create a STACK..
 		NodeStack stack = new NodeStack();
 		
 		//Now loop..
-		BlockTreeNode curr   = getChainRoot(); 
+		BlockTreeNode curr   = zStartNode; 
 		curr.mTraversedChild = 0;
 		
         // traverse the tree 
@@ -503,6 +593,9 @@ public class BlockTree {
 		BlockTreeNode treenode3 = new BlockTreeNode(child3);
 		treenode2.addChild(treenode3);
 		System.out.println("child2child1 : "+treenode3.getTxPowID().to0xString(10));
+		
+		//Lets copy..
+//		BlockTreeNode copy = tree.copyNodeTree(treenode);
 		
 		//Search for the child..
 		System.out.println("\nSearch for "+child3.getTxPowID().to0xString(10)+"\n\n");

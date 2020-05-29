@@ -202,13 +202,6 @@ public class ConsensusHandler extends SystemHandler {
 			//A TXPOW - that has been checked already and added to the DB
 			TxPoW txpow = (TxPoW) zMessage.getObject("txpow");
 			
-			//? WEIRD BUG ON ANDROID
-			if(!isInitialSyncComplete()) {
-				MinimaLogger.log("2) Processing before initial sync complete.. ?"+txpow.getTxPowID());
-				getMainDB().getTxPowDB().removeTxPOW(txpow.getTxPowID());
-				return;
-			}
-			
 			//What's the current chain tip..
 			MiniData oldtip = getMainDB().getMainTree().getChainTip().getTxPowID();
 			
@@ -230,7 +223,7 @@ public class ConsensusHandler extends SystemHandler {
 				PostMessage(ConsensusPrint.CONSENSUS_BALANCE);
 				
 				//MEMPOOL - can get one message stuck that invalidates new messages.. 
-				if(newtip.getBlockNumber().modulo(MiniNumber.TEN).isEqual(MiniNumber.ZERO)) {
+				if(newtip.getBlockNumber().modulo(MiniNumber.THIRTYTWO).isEqual(MiniNumber.ZERO)) {
 					PostMessage(new Message(ConsensusUser.CONSENSUS_FLUSHMEMPOOL));	
 				}
 			}
@@ -247,13 +240,6 @@ public class ConsensusHandler extends SystemHandler {
 		}else if ( zMessage.isMessageType(CONSENSUS_PRE_PROCESSTXPOW) ) {
 			//The TXPOW
 			TxPoW txpow = (TxPoW) zMessage.getObject("txpow");
-			
-			//? WEIRD BUG ON ANDROID
-			if(!isInitialSyncComplete()) {
-				MinimaLogger.log("1) Processing before initial sync complete.. ?"+txpow.getTxPowID());
-				getMainDB().getTxPowDB().removeTxPOW(txpow.getTxPowID());
-				return;
-			}
 			
 			//Back it up!
 			getMainHandler().getBackupManager().backupTxpow(txpow);
