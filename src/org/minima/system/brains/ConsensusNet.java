@@ -32,6 +32,9 @@ public class ConsensusNet extends ConsensusProcessor {
 	 */
 	public static final String CONSENSUS_PREFIX 			= "CONSENSUSNET_";
 	
+//	public static final String CONSENSUS_NET_INTRO 	        = CONSENSUS_PREFIX+"NET_INTRO";
+	
+	
 	public static final String CONSENSUS_NET_INITIALISE 	= CONSENSUS_PREFIX+"NET_INITIALISE";
 	public static final String CONSENSUS_NET_INTRO 			= CONSENSUS_PREFIX+"NET_MESSAGE_"+NetClientReader.NETMESSAGE_INTRO.getValue();
 	public static final String CONSENSUS_NET_TXPOWID 		= CONSENSUS_PREFIX+"NET_MESSAGE_"+NetClientReader.NETMESSAGE_TXPOWID.getValue();
