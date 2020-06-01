@@ -529,7 +529,7 @@ public class ConsensusHandler extends SystemHandler {
 			long timenow = System.currentTimeMillis();
 			if(timenow - mLastGimme < MIN_GIMME50_TIME_GAP) {
 				//You can only do one of these every 10 minutes..
-				InputHandler.endResponse(zMessage, false, "You may only gimme50 every 10 minutes");
+				InputHandler.endResponse(zMessage, false, "You may only gimme50 once every 10 minutes");
 				return;
 			}
 			mLastGimme = timenow;
