@@ -114,6 +114,12 @@ public class ConsensusHandler extends SystemHandler {
 	 */
 	ArrayList<NativeListener> mListeners;
 	
+	/**
+	 * The Last Gimme50..
+	 */
+	long mLastGimme = 0;
+	public static final long MIN_GIMME50_TIME_GAP = 1000 * 60 * 10;
+	
 	/**	
 	 * Main Constructor
 	 * @param zMain
@@ -519,6 +525,15 @@ public class ConsensusHandler extends SystemHandler {
 			PostMessage(msg);
 			
 		}else if(zMessage.isMessageType(CONSENSUS_GIMME50)) {
+			//Check time
+			long timenow = System.currentTimeMillis();
+			if(timenow - mLastGimme < MIN_GIMME50_TIME_GAP) {
+				//You can only do one of these every 10 minutes..
+				InputHandler.endResponse(zMessage, false, "You may only gimme50 every 10 minutes");
+				return;
+			}
+			mLastGimme = timenow;
+			
 			//construct a special transaction that pays 50 mini to an address this user controls..
 			Address addr1 = getMainDB().getUserDB().newSimpleAddress();
 			Address addr2 = getMainDB().getUserDB().newSimpleAddress();
