@@ -62,7 +62,8 @@ public class MultiLevelCascadeTree {
 		}
 		
 		//All this we keep
-		BlockTreeNode fullkeep = copyNodeTree(oldtip);
+//		BlockTreeNode fullkeep = copyNodeTree(oldtip);
+		BlockTreeNode fullkeep = BlockTree.copyTreeNode(oldtip);
 		
 		//The rest of the tree.. that we CAN cascade
 		BlockTreeNode newcascade  = oldtip.getParent();
@@ -178,23 +179,23 @@ public class MultiLevelCascadeTree {
 		return mRemovals;
 	}
 	
-	/**
-	 * Deep copy a Block treenode..
-	 * 
-	 * @param zOriginal
-	 * @return
-	 */
-	private BlockTreeNode copyNodeTree(BlockTreeNode zOriginal) {
-		BlockTreeNode copy = new BlockTreeNode(zOriginal);
-		
-		ArrayList<BlockTreeNode> children = zOriginal.getChildren();
-		for(BlockTreeNode child : children) {
-			BlockTreeNode childcopy = copyNodeTree(child);
-			copy.addChild(childcopy);
-		}
-		
-		return copy;
-	}
+//	/**
+//	 * Deep copy a Block treenode..
+//	 * 
+//	 * @param zOriginal
+//	 * @return
+//	 */
+//	private BlockTreeNode copyNodeTree(BlockTreeNode zOriginal) {
+//		BlockTreeNode copy = new BlockTreeNode(zOriginal);
+//		
+//		ArrayList<BlockTreeNode> children = zOriginal.getChildren();
+//		for(BlockTreeNode child : children) {
+//			BlockTreeNode childcopy = copyNodeTree(child);
+//			copy.addChild(childcopy);
+//		}
+//		
+//		return copy;
+//	}
 	
 	
 }
