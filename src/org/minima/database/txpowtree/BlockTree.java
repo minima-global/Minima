@@ -306,7 +306,7 @@ public class BlockTree {
 					//Do we check.. only when full
 					if(zNode.getState() == BlockTreeNode.BLOCKSTATE_BASIC && row.getBlockState() == TxPOWDBRow.TXPOWDBROW_STATE_FULL) {
 						//Need allok for the block to be accepted
-						boolean allok = true;
+						boolean allok = false;
 						
 						//Check that Block difficulty is Correct!?
 						//..TODO
