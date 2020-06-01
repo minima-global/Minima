@@ -3,8 +3,6 @@ package org.minima.system.network;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
-import java.io.IOException;
-import java.net.SocketException;
 
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniByte;

@@ -2,12 +2,9 @@ package org.minima.system.network.rpc;
 
 import java.io.IOException;
 import java.net.BindException;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
-import java.util.Enumeration;
 
 import org.minima.system.input.InputHandler;
 import org.minima.utils.MinimaLogger;

@@ -13,7 +13,6 @@ import org.minima.system.network.rpc.RPCClient;
 import org.minima.system.network.rpc.RPCServer;
 import org.minima.system.network.websocket.WebSocketManager;
 import org.minima.utils.MinimaLogger;
-import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.TimerMessage;
 
