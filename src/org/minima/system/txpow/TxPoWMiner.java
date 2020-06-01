@@ -24,7 +24,7 @@ public class TxPoWMiner extends SystemHandler{
 	
 	boolean mAutoMining = false;
 	
-	boolean mShowTXPOWMine = false;
+	boolean mShowTXPOWMine = true;
 	
 	public TxPoWMiner(Main zMain) {
 		super(zMain,"TXMINER");
@@ -62,7 +62,7 @@ public class TxPoWMiner extends SystemHandler{
 			long maxTime  	  = currentTime + 5000;
 			
 			if(mShowTXPOWMine) {
-				MinimaLogger.log("START TXPOW MINING "+currentTime+" "+txpow.getTransaction());
+				MinimaLogger.log("START TXPOW MINING "+txpow.getTransaction());
 			}
 			
 			while(mining && currentTime < maxTime && isRunning()) {
@@ -91,7 +91,7 @@ public class TxPoWMiner extends SystemHandler{
 			//Did we find it.. ?
 			if(mining) {
 				if(mShowTXPOWMine) {
-					MinimaLogger.log("NOTFINISHED "+nonce+" "+currentTime);
+					MinimaLogger.log("NOTFINISHED "+nonce);
 				}
 				
 				//Repost the same transaction.. get a new TxPOW block with latest details
@@ -104,7 +104,7 @@ public class TxPoWMiner extends SystemHandler{
 				
 			}else {
 				if(mShowTXPOWMine) {
-					MinimaLogger.log("TXPOW MINED! "+nonce+" "+currentTime);
+					MinimaLogger.log("TXPOW MINED!");
 				}
 				
 				//Set the TxPOW
