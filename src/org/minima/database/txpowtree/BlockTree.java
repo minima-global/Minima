@@ -217,15 +217,11 @@ public class BlockTree {
 	 * @return
 	 */
 	private BlockTreeNode _getHeaviestBranchTip() {
-		//If nothing on chain return nothing
-		if(getChainRoot() == null) {
-			return null;
-		}
-	
 		//Start at root
 		BlockTreeNode curr = getChainRoot();
 		
-		while(true) {
+		//If null return null
+		while(curr != null ) {
 			//Get the heaviest child branch
 			ArrayList<BlockTreeNode> children = curr.getChildren();
 			
@@ -248,9 +244,16 @@ public class BlockTree {
 				}
 			}
 			
+			//No valid children..?
+			if(heavy == null){
+				return curr;
+			}
+			
 			//reset and do it again!
 			curr = heavy;
 		}
+		
+		return curr;
 	}
 	
 	/**
