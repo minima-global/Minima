@@ -107,8 +107,8 @@ public class BlockTreeNode implements Comparable<BlockTreeNode> {
 		//Start at the block difficulty
 		mCurrentLevel	 = zNode.getCurrentLevel();
 		
-		//Get the Block Difficulty
-		mRealWeight = MAX_VALDEC.divide(getTxPow().getBlockDifficulty().getDataValueDecimal(), MathContext.DECIMAL128);
+		//Get the Block Weight
+		mRealWeight      = zNode.getRealWeight();
 				
 		//Set the correct MMR
 		setMMRset(zNode.getMMRSet());
@@ -159,6 +159,10 @@ public class BlockTreeNode implements Comparable<BlockTreeNode> {
 		
 		//Not used yet..
 		mCascadeWeighted = false;
+	}
+	
+	public BigDecimal getRealWeight() {
+		return mRealWeight;
 	}
 	
 	public BigInteger getWeight() {

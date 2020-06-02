@@ -241,7 +241,7 @@ public class MinimaDB {
 				//THIS COULD BE MUCH BETTER.. Find the crossover, many optimisations
 				
 				//Get all the blocks
-				list = mMainTree.getAsList();
+				list = mMainTree.getAsList(true);
 				
 				//Otherwise calculate which TXPOWs are being used
 				mTxPOWDB.resetAllInBlocks();
@@ -253,16 +253,19 @@ public class MinimaDB {
 			//Only add coins from the cascade onwards..
 			MiniNumber oldcascade = getMainTree().getCascadeNode().getTxPow().getBlockNumber();
 			
-			//Reverse the list
-			Collections.reverse(list);
-			
 			//Now sort
 			for(BlockTreeNode treenode : list) {
 				//Get the Block
 				TxPoW txpow = treenode.getTxPow();
-				
+		
+				//Get the database txpow..
+				TxPOWDBRow trow = mTxPOWDB.findTxPOWDBRow(txpow.getTxPowID());
+				if(trow == null) {
+					MinimaLogger.log("VERY ODD - TxPOW NOT IN DB in Tree.. "+txpow.getBlockNumber());
+					trow = mTxPOWDB.addTxPOWDBRow(txpow);
+				}
 				//get the row..
-				TxPOWDBRow trow = mTxPOWDB.addTxPOWDBRow(txpow);
+//				TxPOWDBRow trow = mTxPOWDB.addTxPOWDBRow(txpow);
 				
 				//What Block
 				MiniNumber block = txpow.getBlockNumber();
@@ -312,14 +315,18 @@ public class MinimaDB {
 				mMainTree.clearCascadeBody();
 			}
 			
-			
 			//Remove the deleted blocks..
 			for(BlockTreeNode node : removals) {
 				//We can't keep it..
 				TxPOWDBRow row = getTxPOWRow(node.getTxPowID());
 				
-				//Discard.. no longer an onchain block..
-				row.setOnChainBlock(false);
+				//VERY ODD..
+				if(row != null) {
+					//Discard.. no longer an on chain block..
+					row.setOnChainBlock(false);
+				}else {
+					MinimaLogger.log("VERY ODD - Cascade removed node not in DB.. "+node.getTxPow().getBlockNumber());					
+				}
 				
 				//And delete / move to different folder any file backups..
 				getBackup().deleteTxpow(node.getTxPow());
@@ -504,8 +511,8 @@ public class MinimaDB {
 	public BlockTreeNode hardAddTxPOWBlock(TxPoW zTxPoW, MMRSet zMMR, boolean zCascade) {
 		//Add to the list
 		TxPOWDBRow row = mTxPOWDB.addTxPOWDBRow(zTxPoW);
-		row.setIsInBlock(true);
 		row.setOnChainBlock(true);
+		row.setIsInBlock(true);
 		row.setInBlockNumber(zTxPoW.getBlockNumber());
 		row.setBlockState(TxPOWDBRow.TXPOWDBROW_STATE_FULL);
 		

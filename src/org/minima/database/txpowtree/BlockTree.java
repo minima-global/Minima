@@ -244,7 +244,7 @@ public class BlockTree {
 				}
 			}
 			
-			//No valid children.. could be missing transactions
+			//No valid children..
 			if(heavy == null){
 				return curr;
 			}
