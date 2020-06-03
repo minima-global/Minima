@@ -83,12 +83,16 @@ public class ConsensusBackup extends ConsensusProcessor {
 			BackupManager.writeObjectToFile(backsync, sp);
 			details.put("chaindb", backsync.getAbsolutePath());
 			
-			//respond..
-			InputHandler.endResponse(zMessage, true, "Full Backup Performed");
 			
 			//Do we shut down..
 			if(shutdown) {
-				getConsensusHandler().getMainHandler().PostMessage(Main.SYSTEM_FULLSHUTDOWN);
+				Message fullshut = new Message(Main.SYSTEM_FULLSHUTDOWN);
+				InputHandler.addResponseMesage(fullshut, zMessage);
+				getConsensusHandler().getMainHandler().PostMessage(fullshut);
+				
+			}else {
+				//respond..
+				InputHandler.endResponse(zMessage, true, "Full Backup Performed");	
 			}
 			
 		}else if(zMessage.isMessageType(CONSENSUSBACKUP_RESTORE)) {

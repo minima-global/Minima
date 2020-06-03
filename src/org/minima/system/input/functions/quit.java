@@ -1,5 +1,6 @@
 package org.minima.system.input.functions;
 
+import org.minima.system.Main;
 import org.minima.system.input.CommandFunction;
 
 public class quit extends CommandFunction{
@@ -11,9 +12,8 @@ public class quit extends CommandFunction{
 
 	@Override
 	public void doFunction(String[] zInput) throws Exception {
-		getMainHandler().SystemShutDown();
-		
-		getResponseStream().endStatus(true, "Minima System shutting down..");
+		//Create the shutdon message
+		getMainHandler().PostMessage(getResponseMessage(Main.SYSTEM_SHUTDOWN));
 	}
 
 	@Override

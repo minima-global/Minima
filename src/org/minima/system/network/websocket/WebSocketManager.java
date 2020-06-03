@@ -69,8 +69,6 @@ public class WebSocketManager extends SystemHandler {
 		
 		//Stop the message processor..
 		stopMessageProcessor();
-		
-		MinimaLogger.log("WebSocket Server stopped..");
 	}
 	
 	@Override

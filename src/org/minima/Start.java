@@ -232,11 +232,6 @@ public class Start {
 		            	//Tell main server
 		                rcmainserver.getInputHandler().PostMessage(inmsg);
 		            
-		                //Is it quit..
-		                if(input.toLowerCase().equals("quit")) {
-			            	break;
-			            }
-		            
 		                //Wait for the function to finish
 		                response.waitToFinish();
 		                
@@ -248,6 +243,11 @@ public class Start {
 		                		
 		                //And then print out the result
 		                System.out.println(resp);
+		                
+		                //Is it quit..
+		                if(input.toLowerCase().equals("quit")) {
+			            	break;
+			            }
 		            }
 		            
 		            

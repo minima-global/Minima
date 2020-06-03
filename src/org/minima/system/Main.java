@@ -135,10 +135,6 @@ public class Main extends MessageProcessor {
 		return mNodeStartTime;
 	}
 	
-	public void SystemShutDown() {
-		PostMessage(SYSTEM_SHUTDOWN);
-	}
-		
 	public void setTrace(boolean zTraceON) {
 		setLOG(zTraceON);
 		
@@ -235,10 +231,16 @@ public class Main extends MessageProcessor {
 			Message backshut = new Message(ConsensusBackup.CONSENSUSBACKUP_BACKUP);
 			backshut.addBoolean("shutdown", true);
 			
+			//Keep the response message
+			InputHandler.addResponseMesage(backshut, zMessage);
+			
 			//Save all the user details..
 			getConsensusHandler().PostMessage(backshut);
 			
 		}else if ( zMessage.isMessageType(SYSTEM_FULLSHUTDOWN) ) {
+			
+			//Notify Listeners..
+			mConsensus.updateListeners(new Message(ConsensusHandler.CONSENSUS_NOTIFY_QUIT));
 			
 			//Gracefull shutdown..
 			mNetwork.PostMessage(NetworkHandler.NETWORK_SHUTDOWN);
@@ -249,17 +251,14 @@ public class Main extends MessageProcessor {
 			mConsensus.stopMessageProcessor();
 			mBackup.stopMessageProcessor();
 			
-			//Wait..
+			//Wait a second..
 			Thread.sleep(1000);
 			
 			//And shut this down too..
 			stopMessageProcessor();
 			
-			//Notify Listeners..
-			mConsensus.updateListeners(new Message(ConsensusHandler.CONSENSUS_NOTIFY_QUIT));
-			
-			//All done..
-			MinimaLogger.log("Minima Stopped. Bye Bye..");
+			//It's over..
+			InputHandler.endResponse(zMessage, true, "Minima Stopped. Bye Bye..");
 					
 		}else {
 			//Unknown Message..

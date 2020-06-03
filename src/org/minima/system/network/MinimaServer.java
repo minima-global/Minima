@@ -82,10 +82,7 @@ public class MinimaServer implements Runnable{
 			MinimaLogger.log("Port "+mPort+" allready in use!.. restart required..");
 			
 		} catch (SocketException e) {
-			if(!mRunning) {
-				//Socket shut down..
-				MinimaLogger.log("Socket Shutdown..");
-			}else {
+			if(mRunning) {
 				e.printStackTrace();
 			}
 		} catch (IOException e) {
