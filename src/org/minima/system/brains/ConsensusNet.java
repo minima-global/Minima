@@ -127,7 +127,7 @@ public class ConsensusNet extends ConsensusProcessor {
 			
 			//Check Versions..
 			if(!sp.getSyncVersion().toString().equals(GlobalParams.MINIMA_VERSION)) {
-				MinimaLogger.log("DIFFERENT VERSION ON SYNC "+sp.getSyncVersion());
+				MinimaLogger.log("DIFFERENT VERSION ON SYNCPACKAGE "+sp.getSyncVersion());
 			}
 			
 			//How much POW do you currently have
@@ -258,47 +258,48 @@ public class ConsensusNet extends ConsensusProcessor {
 						MinimaLogger.log("Requested "+reqtxn+" transaction in Initial Blocks..");	
 					}
 				}
-				
-			}else {
-				//Some crossover was found..
-				MinimaLogger.log("CROSSOVER BLOCK FOUND.. @ "+cross);
-				
-				//Now the Initial SYNC has been done you can receive TXPOW message..
-				initialSyncComplete();
-				
-				//Get the NetClient...
-				NetClient client = (NetClient) zMessage.getObject("netclient");
-				
-				//Otherwise.. 
-				ArrayList<SyncPacket> intro = sp.getAllNodes();
-				int totalreq = 0;
-				for(SyncPacket spack : intro) {
-					if(spack.getTxPOW().getBlockNumber().isMore(cross)) {
-						//Just repost it..
-						TxPoW txpow = spack.getTxPOW();
-						
-						//Post it as a normal TxPOW..
-						Message msg = new Message(CONSENSUS_NET_TXPOW);
-						msg.addObject("txpow", txpow);
-						msg.addObject("netclient", client);
-						
-						if(!txpow.hasBody()) {
-							MinimaLogger.log("NO BODY IN TXPOW SYNC BLOCK AFTER CASCADE "+txpow.getBlockNumber());
-						}
-						
-						getConsensusHandler().PostMessage(msg);
-						
-						totalreq++;
-					}
-				}
-				
-				MinimaLogger.log("Sync complete. "+totalreq+" blocks added.. ");
-				
-				//Backup the system..
-				if(totalreq>0) {
-					getConsensusHandler().PostMessage(ConsensusBackup.CONSENSUSBACKUP_BACKUP);	
-				}
 			}
+			
+//			else {
+//				//Some crossover was found..
+//				MinimaLogger.log("CROSSOVER BLOCK FOUND.. @ "+cross);
+//				
+//				//Now the Initial SYNC has been done you can receive TXPOW message..
+//				initialSyncComplete();
+//				
+//				//Get the NetClient...
+//				NetClient client = (NetClient) zMessage.getObject("netclient");
+//				
+//				//Otherwise.. 
+//				ArrayList<SyncPacket> intro = sp.getAllNodes();
+//				int totalreq = 0;
+//				for(SyncPacket spack : intro) {
+//					if(spack.getTxPOW().getBlockNumber().isMore(cross)) {
+//						//Just repost it..
+//						TxPoW txpow = spack.getTxPOW();
+//						
+//						//Post it as a normal TxPOW..
+//						Message msg = new Message(CONSENSUS_NET_TXPOW);
+//						msg.addObject("txpow", txpow);
+//						msg.addObject("netclient", client);
+//						
+//						if(!txpow.hasBody()) {
+//							MinimaLogger.log("NO BODY IN TXPOW SYNC BLOCK AFTER CASCADE "+txpow.getBlockNumber());
+//						}
+//						
+//						getConsensusHandler().PostMessage(msg);
+//						
+//						totalreq++;
+//					}
+//				}
+//				
+//				MinimaLogger.log("Sync complete. "+totalreq+" blocks added.. ");
+//				
+//				//Backup the system..
+//				if(totalreq>0) {
+//					getConsensusHandler().PostMessage(ConsensusBackup.CONSENSUSBACKUP_BACKUP);	
+//				}
+//			}
 			
 		}else if(zMessage.isMessageType(CONSENSUS_NET_GREETING)) {
 			//Get the greeting
