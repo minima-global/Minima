@@ -6,7 +6,6 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.system.backup.BackupManager;
 import org.minima.system.brains.ConsensusBackup;
 import org.minima.system.brains.ConsensusHandler;
-import org.minima.system.input.CommandFunction;
 import org.minima.system.input.InputHandler;
 import org.minima.system.network.NetworkHandler;
 import org.minima.system.txpow.TxPoWMiner;
@@ -22,8 +21,6 @@ public class Main extends MessageProcessor {
 	
 	public static final String SYSTEM_SHUTDOWN 		= "SYSTEM_SHUTDOWN";
 	public static final String SYSTEM_FULLSHUTDOWN 	= "SYSTEM_FULLSHUTDOWN";
-	
-	public static final String SYSTEM_ALLSTOP 		= "SYSTEM_ALLSTOP";
 	
 	public static final String SYSTEM_EVENT 		= "SYSTEM_EVENT";
 		
@@ -263,20 +260,7 @@ public class Main extends MessageProcessor {
 			
 			//All done..
 			MinimaLogger.log("Minima Stopped. Bye Bye..");
-			
-		}else if ( zMessage.isMessageType(SYSTEM_ALLSTOP) ) {
-			
-			//Stop mining..
-			String[] input= {"minetrans","off"};
-			
-			//Get the function..
-			CommandFunction minetrans = CommandFunction.getFunction("minetrans");
-			minetrans.setMainHandler(getConsensusHandler().getMainHandler());
-			minetrans.doFunction(input);
-
-			//Send.. 
-			getNetworkHandler().PostMessage(new Message(NetworkHandler.NETWORK_ALLSTOP));
-			
+					
 		}else {
 			//Unknown Message..
 			MinimaLogger.log("Unknown Message sent to main handler "+zMessage);

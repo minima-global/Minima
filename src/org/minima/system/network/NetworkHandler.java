@@ -23,15 +23,16 @@ public class NetworkHandler extends SystemHandler{
 	
 	public static final String NETWORK_CONNECT 		= "NETWORK_CONNECT";
 	public static final String NETWORK_DISCONNECT 	= "NETWORK_DISCONNECT";
+	public static final String NETWORK_RECONNECT 	= "NETWORK_RECONNECT";
 	
 	public static final String NETWORK_NEWCLIENT 	= "NETWORK_NEWCLIENT";
 	public static final String NETWORK_CLIENTERROR 	= "NETWORK_CLIENTERROR";
 	
 	public static final String NETWORK_PING 		= "NETWORK_PING";
+	public static final String NETWORK_PONG 		= "NETWORK_PONG";
 	public static final String NETWORK_TRACE 		= "NETWORK_TRACE";
 	
 	public static final String NETWORK_SENDALL 		= "NETWORK_SENDALL";
-	public static final String NETWORK_ALLSTOP 		= "NETWORK_ALLSTOP";
 	
 	public static final String NETWORK_WEBPROXY 	= "NETWORK_WEBPROXY";
 	
@@ -84,8 +85,11 @@ public class NetworkHandler extends SystemHandler{
 	public NetworkHandler(Main zMain, String zHost) {
 		super(zMain,"NETWORK");
 		
-		//Hard set the Host ?
+		//Hard set the Host
 		mHost = zHost;
+		
+		//Send a reconnect message every 1/2 hour..
+		
 	}
 	
 	public MinimaServer getServer() {
@@ -154,23 +158,13 @@ public class NetworkHandler extends SystemHandler{
 			try {mWebSocketManager.stop();}catch(Exception exc) {}
 			
 			//Shutdown all the clients
-			Message msg = new Message(NetClient.NETCLIENT_SHUTDOWN);
 			for(NetClient client : mClients) {
 				client.stopMessageProcessor();
-//				client.PostMessage(msg);
 			}
 			
 			//And finish up..
 			stopMessageProcessor();
-		
-//		}else if(zMessage.isMessageType(NETWORK_AUTOCONNECT)) {
-//			//Send a TimedMessage..
-//			Message connect  = new Message(NetworkHandler.NETWORK_CONNECT)
-//				.addInt("port", 80)
-//				.addString("host", "ec2-35-178-239-187.eu-west-2.compute.amazonaws.com");
-//			
-//			PostMessage(connect);
-		
+
 		}else if(zMessage.isMessageType(NETWORK_WS_NOTIFY)) {
 			//What is the message..
 			String json = zMessage.getString("message");
@@ -219,6 +213,16 @@ public class NetworkHandler extends SystemHandler{
 			//Store with the rest
 			PostMessage(new Message(NETWORK_NEWCLIENT).addObject("client", client));
 		
+		}else if(zMessage.isMessageType(NETWORK_PING)) {
+			
+			
+		}else if(zMessage.isMessageType(NETWORK_RECONNECT)) {
+			//Disconnect and reconnect
+			for(NetClient client : mClients) {
+				//tell it to shut down..
+				client.PostMessage(NetClient.NETCLIENT_SHUTDOWN);
+			}
+			
 		}else if(zMessage.isMessageType(NETWORK_DISCONNECT)) {
 			String uid = zMessage.getString("uid");
 			
