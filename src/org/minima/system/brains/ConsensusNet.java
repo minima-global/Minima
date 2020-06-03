@@ -32,9 +32,6 @@ public class ConsensusNet extends ConsensusProcessor {
 	 */
 	public static final String CONSENSUS_PREFIX 			= "CONSENSUSNET_";
 	
-//	public static final String CONSENSUS_NET_INTRO 	        = CONSENSUS_PREFIX+"NET_INTRO";
-	
-	
 	public static final String CONSENSUS_NET_INITIALISE 	= CONSENSUS_PREFIX+"NET_INITIALISE";
 	public static final String CONSENSUS_NET_INTRO 			= CONSENSUS_PREFIX+"NET_MESSAGE_"+NetClientReader.NETMESSAGE_INTRO.getValue();
 	public static final String CONSENSUS_NET_TXPOWID 		= CONSENSUS_PREFIX+"NET_MESSAGE_"+NetClientReader.NETMESSAGE_TXPOWID.getValue();
@@ -108,27 +105,12 @@ public class ConsensusNet extends ConsensusProcessor {
 			//And Post it..
 			client.PostMessage(req);
 			
-//			//Get the complete sync package - deep copy.. 
-//			SyncPackage sp = getMainDB().getSyncPackage(true);
-//			
-//			//Get the NetClient...
-//			NetClient client = (NetClient) zMessage.getObject("netclient");
-//			Message req      = new Message(NetClient.NETCLIENT_INTRO).addObject("syncpackage", sp);
-//			
-//			//And Post it..
-//			client.PostMessage(req);
-			
 		}else if(zMessage.isMessageType(CONSENSUS_NET_INTRO)) {
 			//Get the Sync Package..
 			SyncPackage sp = (SyncPackage) zMessage.getObject("sync");
 			
 			boolean hardreset = false;
 			MiniNumber cross = MiniNumber.MINUSONE;
-			
-			//Check Versions..
-			if(!sp.getSyncVersion().toString().equals(GlobalParams.MINIMA_VERSION)) {
-				MinimaLogger.log("DIFFERENT VERSION ON SYNCPACKAGE "+sp.getSyncVersion());
-			}
 			
 			//How much POW do you currently have
 			BigInteger myweight = BigInteger.ZERO;
@@ -260,47 +242,6 @@ public class ConsensusNet extends ConsensusProcessor {
 				}
 			}
 			
-//			else {
-//				//Some crossover was found..
-//				MinimaLogger.log("CROSSOVER BLOCK FOUND.. @ "+cross);
-//				
-//				//Now the Initial SYNC has been done you can receive TXPOW message..
-//				initialSyncComplete();
-//				
-//				//Get the NetClient...
-//				NetClient client = (NetClient) zMessage.getObject("netclient");
-//				
-//				//Otherwise.. 
-//				ArrayList<SyncPacket> intro = sp.getAllNodes();
-//				int totalreq = 0;
-//				for(SyncPacket spack : intro) {
-//					if(spack.getTxPOW().getBlockNumber().isMore(cross)) {
-//						//Just repost it..
-//						TxPoW txpow = spack.getTxPOW();
-//						
-//						//Post it as a normal TxPOW..
-//						Message msg = new Message(CONSENSUS_NET_TXPOW);
-//						msg.addObject("txpow", txpow);
-//						msg.addObject("netclient", client);
-//						
-//						if(!txpow.hasBody()) {
-//							MinimaLogger.log("NO BODY IN TXPOW SYNC BLOCK AFTER CASCADE "+txpow.getBlockNumber());
-//						}
-//						
-//						getConsensusHandler().PostMessage(msg);
-//						
-//						totalreq++;
-//					}
-//				}
-//				
-//				MinimaLogger.log("Sync complete. "+totalreq+" blocks added.. ");
-//				
-//				//Backup the system..
-//				if(totalreq>0) {
-//					getConsensusHandler().PostMessage(ConsensusBackup.CONSENSUSBACKUP_BACKUP);	
-//				}
-//			}
-			
 		}else if(zMessage.isMessageType(CONSENSUS_NET_GREETING)) {
 			//Get the greeting
 			Greeting greet = (Greeting)zMessage.getObject("greeting");
@@ -331,9 +272,6 @@ public class ConsensusNet extends ConsensusProcessor {
 				return;
 			}
 			
-			//Now check for crossover.. if none then send complete package
-			MinimaLogger.log("Greeting has "+blocks.size()+" length");
-		
 			MiniNumber cross = checkCrossover(greet);
 			if(cross.isEqual(MiniNumber.MINUSONE)) {
 				MinimaLogger.log("NO CROSSOVER - Sending complete");
@@ -349,7 +287,7 @@ public class ConsensusNet extends ConsensusProcessor {
 			MiniData top   = blocks.get(greetlen-1).getHash();
 			MiniNumber len = blocks.get(greetlen-1).getNumber().sub(cross);
 			
-			MinimaLogger.log("CROSSOVER - Start at "+blocks.get(greetlen-1).getNumber()+" for "+len);
+			MinimaLogger.log("CROSSOVER @ "+cross+" to "+blocks.get(greetlen-1).getNumber());
 			if(len.getAsInt() == 0) {
 				initialSyncComplete();
 				return;
@@ -388,17 +326,21 @@ public class ConsensusNet extends ConsensusProcessor {
 			//Get the NetClient...
 			NetClient client = (NetClient) zMessage.getObject("netclient");
 			
-			//Cycle through and add..
+			//Cycle through and add as a normal message
 			ArrayList<TxPoW> txps = txplist.getList();
 			for(TxPoW txp : txps) {
-				//Post it as a normal TxPOW..
 				Message msg = new Message(CONSENSUS_NET_TXPOW);
 				msg.addObject("txpow", txp);
 				msg.addObject("netclient", client);
+				
+				getConsensusHandler().PostMessage(msg);
 			}
 			
 			//Now the Initial SYNC has been done you can receive TXPOW message..
 			initialSyncComplete();
+			
+			//Do a complete backup..
+			getConsensusHandler().PostMessage(ConsensusBackup.CONSENSUSBACKUP_BACKUP);
 			
 		}else if ( zMessage.isMessageType(CONSENSUS_NET_TXPOWID)) {
 			//Get the ID
@@ -433,7 +375,6 @@ public class ConsensusNet extends ConsensusProcessor {
 			/**
 			 * The SINGLE entry point into the system for NEW TXPOW messages..
 			 */
-			
 			//Have we done the initia SYNC..
 			if(!mInitialSync) {
 				MinimaLogger.log("NET TxPoW received before Initial Sync Finished.");
@@ -579,8 +520,7 @@ public class ConsensusNet extends ConsensusProcessor {
 		MiniNumber introtip     = tip.getTxPOW().getBlockNumber();
 		MiniNumber introcascade = zIntro.getCascadeNode();
 	
-		MinimaLogger.log("CROSSOVER mytip:"+maintip+" mycasc:"+maincascade);
-		MinimaLogger.log("CROSSOVER introtip:"+introtip+" introcasc:"+introcascade);
+		MinimaLogger.log("SYNCPACKAGE mytip:"+maintip+" mycascade:"+maincascade+" synctip:"+introtip+" synccascade:"+introcascade);
 		
 		//Simple check first..
 		boolean tipgood  = maintip.isLessEqual(introtip) && maintip.isMoreEqual(introcascade);
@@ -655,8 +595,7 @@ public class ConsensusNet extends ConsensusProcessor {
 		MiniNumber introtip     = tip.getNumber();
 		MiniNumber introcascade = introchain.get(0).getNumber();
 	
-		MinimaLogger.log("CROSSOVER mytip:"+maintip+" mycasc:"+maincascade);
-		MinimaLogger.log("CROSSOVER introtip:"+introtip+" introcasc:"+introcascade);
+		MinimaLogger.log("GREETING mytip:"+maintip+" mycascade:"+maincascade+" greetingtip:"+introtip+" greetingcascade:"+introcascade);
 		
 		//Simple check first..
 		boolean tipgood  = maintip.isLessEqual(introtip) && maintip.isMoreEqual(introcascade);

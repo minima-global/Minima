@@ -357,8 +357,8 @@ public class NetClient extends MessageProcessor {
 			
 		}catch(Exception ec) {
 			//Show..
-			MinimaLogger.log("Error sending message : "+zMessageType.toString()+" "+ec);
-			ec.printStackTrace();
+//			MinimaLogger.log("Error sending message : "+zMessageType.toString()+" "+ec);
+//			ec.printStackTrace();
 			
 			//Tell the network Handler
 			mNetworkMain.PostMessage(new Message(NetworkHandler.NETWORK_CLIENTERROR).addObject("client", this));

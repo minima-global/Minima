@@ -20,20 +20,12 @@ public class SyncPackage implements Streamable{
 
 	/**
 	 * The Current SyncPackage Version..
-	 * 
-	 * This is the INTRO message to.. so peer to peer know what network language to speak
 	 */
-	MiniString mVersion     = new MiniString(GlobalParams.MINIMA_VERSION);
-	
 	MiniNumber mCascadeNode = MiniNumber.ZERO;
 	
 	ArrayList<SyncPacket> mNodes = new ArrayList<>();
 	
 	public SyncPackage() {}
-	
-	public MiniString getSyncVersion() {
-		return mVersion;
-	}
 	
 	public void setCascadeNode(MiniNumber zNumber) {
 		mCascadeNode = zNumber;
@@ -94,9 +86,6 @@ public class SyncPackage implements Streamable{
 	
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
-		//What version..
-		mVersion.writeDataStream(zOut);
-		
 		//Write the details..
 		MiniNumber len =  new MiniNumber(mNodes.size());
 		len.writeDataStream(zOut);
@@ -108,9 +97,6 @@ public class SyncPackage implements Streamable{
 
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
-		//Which Version..
-		mVersion = MiniString.ReadFromStream(zIn);
-		
 		mNodes = new ArrayList<>();
 		MiniNumber nodelen = MiniNumber.ReadFromStream(zIn);
 		int len = nodelen.getAsInt();
