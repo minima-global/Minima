@@ -10,39 +10,41 @@ The project is setup as an Eclipse Java project. You should be able to clone the
 
 If you run it with no parameters it connects to the main Minima testnet.
 
-cd into the folder where the class files are compiled and run as follows :
+cd into the JAR folder and run as follows :
 
 ```
-cd ./bin
+cd ./jar
 
-java org.minima.Start
+java -jar minima.jar
 ```
 
 For a full list of parameters run :
 
 ```
-java org.minima.Start -help
+java -jar minima.jar -help
 ```
 
 To start a private test-net
 
 ```
-java org.minima.Start -private
+java -jar minima.jar -private
 ```
 
 You can then connect to it from another instance of the app by running :
 
 ```
-java org.minima.Start -connect 127.0.0.1 9001 -port 9010 -rpcport 9011 -clean
+java -jar minima.jar -connect 127.0.0.1 9001 -port 9010 -rpcport 9011 -clean
 ```
 Note that this will set the port of the 2nd instance to 9010 and the rpc port to 9011.. otherwise the app will not allow you to start, as the ports will already be in use.
 
 Using the `-clean` parameter deletes any previous data and ensures you can resysnc to the current chain.
 
-If you can't - or don't want to compile from scratch - just use the JAR file in the jar folder..
+If you compile from scratch - you can use the bin folder.. you need to link the H2 sql db.
 
 ```
-java -jar minima.jar
+cd ./bin
+
+java -cp ../lib/*:. org.minima.Start
 ```
 
 You can add -private and all the other parameters to that.
@@ -65,6 +67,18 @@ gimme50
 ```
  
 ..and away you go.
+
+Get an address
+
+```
+newaddress
+```
+
+Send to an imaginary address
+
+```
+send 1.234 0xFF
+```
 
 For a complete explanation of the Minima Scripting language use
 
