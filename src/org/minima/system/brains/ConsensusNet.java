@@ -266,6 +266,9 @@ public class ConsensusNet extends ConsensusProcessor {
 				//Now the Initial SYNC has been done you can receive TXPOW message..
 				initialSyncComplete();
 				
+				//Get the NetClient...
+				NetClient client = (NetClient) zMessage.getObject("netclient");
+				
 				//Otherwise.. 
 				ArrayList<SyncPacket> intro = sp.getAllNodes();
 				int totalreq = 0;
@@ -273,9 +276,6 @@ public class ConsensusNet extends ConsensusProcessor {
 					if(spack.getTxPOW().getBlockNumber().isMore(cross)) {
 						//Just repost it..
 						TxPoW txpow = spack.getTxPOW();
-						
-						//Get the NetClient...
-						NetClient client = (NetClient) zMessage.getObject("netclient");
 						
 						//Post it as a normal TxPOW..
 						Message msg = new Message(CONSENSUS_NET_TXPOW);
@@ -369,7 +369,7 @@ public class ConsensusNet extends ConsensusProcessor {
 			int counter = 0;
 			
 			BlockTreeNode top = getMainDB().getMainTree().findNode(hashnum.getHash());
-			while(top!=null && counter<=max) {
+			while(top!=null && counter<max) {
 				txplist.addTxPow(top.getTxPow());
 				top = top.getParent();
 				counter++;
@@ -381,7 +381,22 @@ public class ConsensusNet extends ConsensusProcessor {
 			client.PostMessage(req);
 			
 		}else if ( zMessage.isMessageType(CONSENSUS_NET_TXPOWLIST)) {
+			TxPoWList txplist = (TxPoWList)zMessage.getObject("txpowlist"); 
 			
+			//Get the NetClient...
+			NetClient client = (NetClient) zMessage.getObject("netclient");
+			
+			//Cycle through and add..
+			ArrayList<TxPoW> txps = txplist.getList();
+			for(TxPoW txp : txps) {
+				//Post it as a normal TxPOW..
+				Message msg = new Message(CONSENSUS_NET_TXPOW);
+				msg.addObject("txpow", txp);
+				msg.addObject("netclient", client);
+			}
+			
+			//Now the Initial SYNC has been done you can receive TXPOW message..
+			initialSyncComplete();
 			
 		}else if ( zMessage.isMessageType(CONSENSUS_NET_TXPOWID)) {
 			//Get the ID
