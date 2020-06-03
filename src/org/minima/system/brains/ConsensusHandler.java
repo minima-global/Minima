@@ -1,5 +1,7 @@
 package org.minima.system.brains;
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -21,9 +23,11 @@ import org.minima.system.SystemHandler;
 import org.minima.system.input.InputHandler;
 import org.minima.system.input.functions.gimme50;
 import org.minima.system.network.NetClient;
+import org.minima.system.network.NetClientReader;
 import org.minima.system.network.NetworkHandler;
 import org.minima.system.txpow.TxPoWChecker;
 import org.minima.system.txpow.TxPoWMiner;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
@@ -396,14 +400,39 @@ public class ConsensusHandler extends SystemHandler {
 				return;
 			}
 			
+			
+			//CHECK THE SIZE
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			DataOutputStream dos = new DataOutputStream(baos);
+			txpow.writeDataStream(dos);
+			dos.flush();
+			int txpowsize = baos.toByteArray().length;
+			dos.close();
+			baos.close();
+			
+			//Add the size..
+			resp.put("size", txpowsize);
+			resp.put("inputs", txpow.getTransaction().getAllInputs().size());
+			resp.put("outputs", txpow.getTransaction().getAllOutputs().size());
+			
+			if(txpowsize > NetClientReader.MAX_TXPOW) {
+				//Add the TxPoW
+				resp.put("transaction", txpow.getTransaction());
+				
+				//ITS TOO BIG!
+				InputHandler.endResponse(zMessage, false, "YOUR TXPOW TRANSACTION IS TOO BIG! MAX SIZE : "+NetClientReader.MAX_TXPOW);
+				
+				return;
+			}
+					
 			//Add to the list of Mined Coins!
 			getMainDB().addMiningTransaction(txpow.getTransaction());
 			
 			//Send it to the Miner.. This is the ONLY place this happens..
 			Message mine = new Message(TxPoWMiner.TXMINER_MINETXPOW).addObject("txpow", txpow);
-			InputHandler.addResponseMesage(mine, zMessage);
 			getMainHandler().getMiner().PostMessage(mine);
 		
+			//Add the TxPoW
 			resp.put("txpow", txpow);
 			
 			InputHandler.endResponse(zMessage, true, "Send Success");
@@ -526,13 +555,13 @@ public class ConsensusHandler extends SystemHandler {
 			
 		}else if(zMessage.isMessageType(CONSENSUS_GIMME50)) {
 			//Check time
-			long timenow = System.currentTimeMillis();
-			if(timenow - mLastGimme < MIN_GIMME50_TIME_GAP) {
-				//You can only do one of these every 10 minutes..
-				InputHandler.endResponse(zMessage, false, "You may only gimme50 once every 10 minutes");
-				return;
-			}
-			mLastGimme = timenow;
+//			long timenow = System.currentTimeMillis();
+//			if(timenow - mLastGimme < MIN_GIMME50_TIME_GAP) {
+//				//You can only do one of these every 10 minutes..
+//				InputHandler.endResponse(zMessage, false, "You may only gimme50 once every 10 minutes");
+//				return;
+//			}
+//			mLastGimme = timenow;
 			
 			//construct a special transaction that pays 50 mini to an address this user controls..
 			Address addr1 = getMainDB().getUserDB().newSimpleAddress();

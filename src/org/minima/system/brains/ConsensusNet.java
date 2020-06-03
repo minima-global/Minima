@@ -287,7 +287,7 @@ public class ConsensusNet extends ConsensusProcessor {
 			MiniData top   = blocks.get(greetlen-1).getHash();
 			MiniNumber len = blocks.get(greetlen-1).getNumber().sub(cross);
 			
-			MinimaLogger.log("CROSSOVER @ "+cross+" to "+blocks.get(greetlen-1).getNumber());
+			MinimaLogger.log("CROSSOVER FOUND Requesting from "+cross+" to "+blocks.get(greetlen-1).getNumber());
 			if(len.getAsInt() == 0) {
 				initialSyncComplete();
 				return;
@@ -326,9 +326,11 @@ public class ConsensusNet extends ConsensusProcessor {
 			//Get the NetClient...
 			NetClient client = (NetClient) zMessage.getObject("netclient");
 			
-			//Cycle through and add as a normal message
+			//Cycle through and add as a normal message - extra transactions will be requested as normal
 			ArrayList<TxPoW> txps = txplist.getList();
 			for(TxPoW txp : txps) {
+				MinimaLogger.log("GREETING TXPOW : "+txp.getBlockNumber()+" "+txp.getTxPowID()+" trans:"+txp.getBlockTransactions().size()); 
+				
 				Message msg = new Message(CONSENSUS_NET_TXPOW);
 				msg.addObject("txpow", txp);
 				msg.addObject("netclient", client);
@@ -418,10 +420,10 @@ public class ConsensusNet extends ConsensusProcessor {
 				return;
 			}
 			
-			//Now check the Transaction is Valid As of now ?
+			//Now check the Transaction  - could be in a block already..
 			boolean trxok = TxPoWChecker.checkTransactionMMR(txpow, getMainDB());
 			if(!trxok) {
-				//Is it Already in a block?
+				//Is it Already in a VALID block?
 				ArrayList<BlockTreeNode> nodes = getMainDB().getMainTree().getAsList(true);
 				for(BlockTreeNode node : nodes) {
 					//Get the TxPoW
@@ -433,7 +435,7 @@ public class ConsensusNet extends ConsensusProcessor {
 						for(MiniData txn : txns) {
 							if(txn.isEqual(txpow.getTxPowID())) {
 //								MinimaLogger.log("TXN WE DON'T HAVE FOUND IN BLOCK "+txpow.getTxPowID()); 	
-
+	
 								//Add it to the database..
 								TxPOWDBRow row = getMainDB().addNewTxPow(txpow);
 								row.setOnChainBlock(false);
@@ -448,10 +450,11 @@ public class ConsensusNet extends ConsensusProcessor {
 							}
 						}
 					}
-				}
+				}	
 				
-				MinimaLogger.log("ERROR NET TXPOW FAILS CHECK MMR: "+txpow.getBlockNumber()+" "+txpow.getTxPowID()); 
-				return;
+				//OK - leave it.. the System will reject an invalid transaction later when it FLUSHES MEMPOOL.. 
+				MinimaLogger.log("ERROR - NET TXPOW FAILS CHECK MMR : "+txpow); 
+				//return;
 			}
 		
 			/**
@@ -464,7 +467,7 @@ public class ConsensusNet extends ConsensusProcessor {
 			MiniData parentID = txpow.getParentID();
 			if(getMainDB().getTxPOW(parentID)==null) {
 				//We don't have it, get it..
-				//MinimaLogger.log("Request Parent TxPoW @ "+txpow.getBlockNumber()+" parent:"+parentID); 
+				MinimaLogger.log("Request Parent TxPoW @ "+txpow.getBlockNumber()+" parent:"+parentID); 
 				sendTxPowRequest(zMessage, parentID);
 			}
 
@@ -472,7 +475,7 @@ public class ConsensusNet extends ConsensusProcessor {
 			ArrayList<MiniData> txns = txpow.getBlockTransactions();
 			for(MiniData txn : txns) {
 				if(getMainDB().getTxPOW(txn) == null ) {
-					//MinimaLogger.log("Request missing TxPoW in block "+txpow.getBlockNumber()+" "+txn);
+					MinimaLogger.log("Request missing TxPoW in block "+txpow.getBlockNumber()+" "+txn);
 					sendTxPowRequest(zMessage, txn);
 				}
 			}

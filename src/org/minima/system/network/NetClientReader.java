@@ -32,7 +32,7 @@ public class NetClientReader implements Runnable {
 	public static final int MAX_INTRO = 1024 * 1000 * 10;
 	
 	//10 KB MAX MESSAGE
-	public static final int MAX_TXPOW = 1024 * 10;
+	public static final int MAX_TXPOW = 1024 * 20;
 			
 	//The Length of a TxPoWID message 64 + 4 byte int
 	public static final int TXPOWID_LEN = Crypto.MINIMA_DEFAULT_MAX_HASH_LENGTH + 4;
@@ -215,15 +215,16 @@ public class NetClientReader implements Runnable {
 				consensus.PostMessage(rec);
 			}
 		
-		}catch(SocketException exc) {
-			//Network error.. reset and reconnect..
-		}catch(IOException exc) {
+//		}catch(SocketException exc) {
+//			//Network error.. reset and reconnect..
+//		}catch(IOException exc) {
 			//Network error.. reset and reconnect..
 //		}catch(ProtocolException exc) {
 			//Protocol exception..
 		}catch(Exception exc) {
 			//General Exception	
 			MinimaLogger.log("NetClientReader closed UID "+mNetClient.getUID()+" exc:"+exc);
+//			exc.printStackTrace();
 		}
 		
 		//Tell the network Handler
