@@ -55,7 +55,7 @@ public class Address implements Streamable{
 		mScript         = new MiniString("");
 		mAddressData 	= zAddressData;
 		
-		if(mAddressData.getLength()<16) {
+		if(mAddressData.getLength()<20) {
 			mMinimaAddress  = mAddressData.to0xString();
 		}else {
 			mMinimaAddress  = makeMinimaAddress(mAddressData);	
