@@ -80,6 +80,19 @@ Send to an imaginary address
 send 1.234 0xFF
 ```
 
+Check the system
+
+```
+status
+```
+
+Get your balance
+
+```
+balance
+```
+
+
 For a complete explanation of the Minima Scripting language use
 
 ```
