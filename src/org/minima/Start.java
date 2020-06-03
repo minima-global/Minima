@@ -139,7 +139,6 @@ public class Start {
 				}else if(arg.equals("-private")) {
 					genesis     = true;
 					connect 	= false;
-					clean       = true;
 					
 				}else if(arg.equals("-noconnect")) {
 					connect = false;
@@ -188,15 +187,13 @@ public class Start {
 		//Set the proxy
 		rcmainserver.setMiFiProxy(mifiProxy);
 		
+		//Are we private!
+		if(genesis) {
+			rcmainserver.privatChain(clean);
+		}
+		
 		//Start the system
 		rcmainserver.PostMessage(Main.SYSTEM_STARTUP);
-		
-		rcmainserver.getConsensusHandler().addListener(new NativeListener() {
-			@Override
-			public void processMessage(Message zMessage) {
-				//THIS GETS CALLED! - IOS J2OBJC HELPER..
-			}
-		});
 		
 		//Are we a daemon thread
 		if(daemon) {

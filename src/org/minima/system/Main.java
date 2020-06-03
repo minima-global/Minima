@@ -172,6 +172,22 @@ public class Main extends MessageProcessor {
 		return mTXMiner;
 	}
 		
+	public void privatChain(boolean zClean) {
+		//Set the Database backup manager
+		getConsensusHandler().setBackUpManager();
+		
+		if(zClean){
+			//Sort the genesis Block
+			mConsensus.genesis();
+		}
+		
+		//Tell miner we are auto mining..
+		mTXMiner.setAutoMining(true);
+		
+		//No Hard Reset..
+		mConsensus.setHardResetAllowed(false);
+	}
+	
 	@Override
 	protected void processMessage(Message zMessage) throws Exception {
 		
@@ -180,24 +196,26 @@ public class Main extends MessageProcessor {
 			//Set the Database backup manager
 			getConsensusHandler().setBackUpManager();
 			
-			//Are we genesis
-			if(mGenesis) {
-				//Sort the genesis Block
-				mConsensus.genesis();
-				
-				//Tell miner we are auto mining..
-				mTXMiner.setAutoMining(true);
-				
-				//No Hard Reset..
-				mConsensus.setHardResetAllowed(false);
-				
-				//And init..
-				PostMessage(SYSTEM_INIT);
-				
-			}else{
-				//Restore..
-				getConsensusHandler().PostMessage(ConsensusBackup.CONSENSUSBACKUP_RESTORE);
-			}
+//			//Are we genesis
+//			if(mGenesis) {
+//				//Sort the genesis Block
+//				mConsensus.genesis();
+//				
+//				//Tell miner we are auto mining..
+//				mTXMiner.setAutoMining(true);
+//				
+//				//No Hard Reset..
+//				mConsensus.setHardResetAllowed(false);
+//				
+//				//And init..
+//				PostMessage(SYSTEM_INIT);
+//				
+//			}else{
+//				
+//			}
+			
+			//Restore..
+			getConsensusHandler().PostMessage(ConsensusBackup.CONSENSUSBACKUP_RESTORE);
 			
 		}else if ( zMessage.isMessageType(SYSTEM_INIT) ) {
 			//Start the network..	
