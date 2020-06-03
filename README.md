@@ -110,8 +110,6 @@ Full details  @ [http://mifi.minima.global](http://mifi.minima.global)
 
 Use the Terminal, Wallet, Script IDE etc..
 
-..
-
 For a complete explanation of the Minima Scripting language use
 
 ```
