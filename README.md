@@ -104,6 +104,14 @@ Create a token
 createtoken mycoin 1000
 ```
 
+The BEST way to play with Minima is via the MiniDAPP system that runs on port 21000 
+
+Full details  @ [http://mifi.minima.global](http://mifi.minima.global)
+
+Use the Terminal, Wallet, Script IDE etc..
+
+..
+
 For a complete explanation of the Minima Scripting language use
 
 ```
