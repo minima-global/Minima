@@ -350,6 +350,7 @@ public class ConsensusNet extends ConsensusProcessor {
 			
 			MinimaLogger.log("CROSSOVER - Start at "+blocks.get(greetlen-1).getNumber()+" for "+len);
 			if(len.getAsInt() == 0) {
+				initialSyncComplete();
 				return;
 			}
 			
