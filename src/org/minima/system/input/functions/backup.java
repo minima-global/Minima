@@ -18,8 +18,6 @@ public class backup extends CommandFunction{
 		
 		//Send a backup message - with no request to shutdown at the end..
 		getMainHandler().getConsensusHandler().PostMessage(msg);
-		
-		getResponseStream().endStatus(true, "");
 	}
 	
 	@Override

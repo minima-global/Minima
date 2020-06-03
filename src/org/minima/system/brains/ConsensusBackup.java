@@ -18,6 +18,7 @@ import org.minima.system.Main;
 import org.minima.system.backup.BackupManager;
 import org.minima.system.backup.SyncPackage;
 import org.minima.system.backup.SyncPacket;
+import org.minima.system.input.InputHandler;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.messages.Message;
 
@@ -57,9 +58,6 @@ public class ConsensusBackup extends ConsensusProcessor {
 			backup.writeObjectToFile(backuser, userdb);
 			
 		}else if(zMessage.isMessageType(CONSENSUSBACKUP_BACKUP)) {
-			//Tell us whe you do this..
-			MinimaLogger.log("Full Backup performed..");
-
 			//Is this for shut down or just a regular backup..
 			boolean shutdown = false;
 			if(zMessage.exists("shutdown")) {
@@ -78,6 +76,9 @@ public class ConsensusBackup extends ConsensusProcessor {
 			SyncPackage sp = getMainDB().getSyncPackage();
 			File backsync  = backup.getBackUpFile(SYNC_BACKUP);
 			BackupManager.writeObjectToFile(backsync, sp);
+			
+			//respond..
+			InputHandler.endResponse(zMessage, true, "Full Backup Performed");
 			
 			//Do we shut down..
 			if(shutdown) {
