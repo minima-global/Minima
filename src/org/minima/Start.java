@@ -250,7 +250,6 @@ public class Start {
 			            }
 		            }
 		            
-		            
 		        } catch (IOException ex) {
 		            MinimaLogger.log(""+ex);
 		        }
