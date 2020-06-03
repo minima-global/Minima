@@ -264,8 +264,6 @@ public class MinimaDB {
 					MinimaLogger.log("VERY ODD - TxPOW NOT IN DB in Tree.. "+txpow.getBlockNumber());
 					trow = mTxPOWDB.addTxPOWDBRow(txpow);
 				}
-				//get the row..
-//				TxPOWDBRow trow = mTxPOWDB.addTxPOWDBRow(txpow);
 				
 				//What Block
 				MiniNumber block = txpow.getBlockNumber();

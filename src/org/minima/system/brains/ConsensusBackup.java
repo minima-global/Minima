@@ -177,6 +177,9 @@ public class ConsensusBackup extends ConsensusProcessor {
 				if(txpow.getBlockNumber().isEqual(sp.getCascadeNode())) {
 					getMainDB().hardSetCascadeNode(node);
 				}
+				
+				//Store it..
+				getBackup().backupTxpow(txpow);
 			}
 			
 			//Reset weights
@@ -191,20 +194,20 @@ public class ConsensusBackup extends ConsensusProcessor {
 				//Get the Block
 				TxPoW txpow = treenode.getTxPow();
 				
-				//Store it..
-				getBackup().backupTxpow(txpow);
-				
 				//What Block
 				MiniNumber block = txpow.getBlockNumber();
+				
+				//Set the main chain details..
+				TxPOWDBRow blockrow = getMainDB().getTxPowDB().findTxPOWDBRow(txpow.getTxPowID());
+				blockrow.setInBlockNumber(block);
+				blockrow.setOnChainBlock(true);
+				blockrow.setIsInBlock(true);
 				
 				//Now the Txns..
 				ArrayList<MiniData> txpowlist = txpow.getBlockTransactions();
 				for(MiniData txid : txpowlist) {
 					TxPOWDBRow trow = getMainDB().getTxPowDB().findTxPOWDBRow(txid);
 					if(trow!=null) {
-						//Store it..
-						getBackup().backupTxpow(trow.getTxPOW());
-						
 						//Set that it is in this block
 						trow.setOnChainBlock(false);
 						trow.setIsInBlock(true);
