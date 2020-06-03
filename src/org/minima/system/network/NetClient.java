@@ -14,6 +14,9 @@ import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.objects.greet.Greeting;
+import org.minima.objects.greet.HashNumber;
+import org.minima.objects.greet.TxPoWList;
 import org.minima.system.Main;
 import org.minima.system.backup.SyncPackage;
 import org.minima.system.brains.ConsensusNet;
@@ -32,14 +35,16 @@ public class NetClient extends MessageProcessor {
 	
 	public static final String NETCLIENT_STARTUP 		= "NETCLIENT_STARTUP";
 	public static final String NETCLIENT_SHUTDOWN 		= "NETCLIENT_SHUTDOWN";
-	
-//	public static final String NETCLIENT_SENDOBJECT 	= "NETCLIENT_SENDOBJECT";
-	
+		
 	public static final String NETCLIENT_INTRO 	        = "NETCLIENT_INTRO";
 	public static final String NETCLIENT_SENDTXPOWID 	= "NETCLIENT_SENDTXPOWID";
 	public static final String NETCLIENT_SENDTXPOW 	    = "NETCLIENT_SENDTXPOW";
 	public static final String NETCLIENT_SENDTXPOWREQ 	= "NETCLIENT_SENDTXPOWREQ";
-		
+	
+	public static final String NETCLIENT_GREETING 	    = "NETCLIENT_GREETING";
+	public static final String NETCLIENT_TXPOWLIST_REQ 	= "NETCLIENT_TXPOWLIST_REQ";
+	public static final String NETCLIENT_TXPOWLIST 	    = "NETCLIENT_TXPOWLIST";
+	
 	private static final MiniData ZERO_TXPOWID = new MiniData("0x00");
 	
 	//Main Network Handler
@@ -216,6 +221,20 @@ public class NetClient extends MessageProcessor {
 			init.addObject("netclient", this);
 			getMain().getConsensusHandler().PostMessage(init);
 		
+			
+			
+		}else if(zMessage.isMessageType(NETCLIENT_GREETING)) {
+			Greeting greet = (Greeting)zMessage.getObject("greeting");
+			sendMessage(NetClientReader.NETMESSAGE_GREETING, greet);
+		
+		}else if(zMessage.isMessageType(NETCLIENT_TXPOWLIST)) {
+			TxPoWList txplist = (TxPoWList)zMessage.getObject("txpowlist");
+			sendMessage(NetClientReader.NETMESSAGE_TXPOWLIST, txplist);
+			
+		}else if(zMessage.isMessageType(NETCLIENT_TXPOWLIST_REQ)) {
+			HashNumber hn = (HashNumber)zMessage.getObject("hashnumber");
+			sendMessage(NetClientReader.NETMESSAGE_TXPOWLIST_REQUEST, hn);
+			
 		}else if(zMessage.isMessageType(NETCLIENT_INTRO)) {
 			SyncPackage sp = (SyncPackage)zMessage.getObject("syncpackage");
 			sendMessage(NetClientReader.NETMESSAGE_INTRO, sp);

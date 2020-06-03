@@ -8,6 +8,9 @@ import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.objects.greet.Greeting;
+import org.minima.objects.greet.HashNumber;
+import org.minima.objects.greet.TxPoWList;
 import org.minima.system.backup.SyncPackage;
 import org.minima.system.brains.ConsensusHandler;
 import org.minima.system.brains.ConsensusNet;
@@ -54,6 +57,22 @@ public class NetClientReader implements Runnable {
 	 */
 	public static final MiniByte NETMESSAGE_TXPOW			= new MiniByte(3);
 	
+	/**
+	 * Greeting message that tells what Net Protocol this peer speaks, and a complete block chain header list. Any Blocks 
+	 * the peer doesn't have he can request. Both peers send this to each other when they connect.
+	 */
+	public static final MiniByte NETMESSAGE_GREETING		= new MiniByte(6);
+	
+	/**
+	 * Request the full details of a list of TxPow. You only send the top TxPoW 
+	 * and a number for the parents required
+	 */
+	public static final MiniByte NETMESSAGE_TXPOWLIST_REQUEST = new MiniByte(4);
+	
+	/**
+	 * A list of TxPoW details
+	 */
+	public static final MiniByte NETMESSAGE_TXPOWLIST	      = new MiniByte(5);
 	
 	/**
 	 * Netclient owner
@@ -127,8 +146,7 @@ public class NetClientReader implements Runnable {
 					
 				}else if(msgtype.isEqual(NETMESSAGE_TXPOWID)) {
 					//Peer now has this TXPOW - if you don't you can request the full version
-					MiniData hash  = new MiniData();
-					hash.readDataStream(inputstream);
+					MiniData hash  = MiniData.ReadFromStream(inputstream);
 					
 					//Add this ID
 					rec.addObject("txpowid", hash);
@@ -143,12 +161,32 @@ public class NetClientReader implements Runnable {
 					
 				}else if(msgtype.isEqual(NETMESSAGE_TXPOW_REQUEST)) {
 					//Requesting a TxPOW
-					MiniData hash  = new MiniData();
-					hash.readDataStream(inputstream);
+					MiniData hash  = MiniData.ReadFromStream(inputstream);
 					
 					//Add this ID
 					rec.addObject("txpowid", hash);
 				
+				}else if(msgtype.isEqual(NETMESSAGE_GREETING)) {
+					//Get the Greeting
+					Greeting greet = Greeting.ReadFromStream(inputstream);
+					
+					//Add this ID
+					rec.addObject("greeting", greet);
+				
+				}else if(msgtype.isEqual(NETMESSAGE_TXPOWLIST_REQUEST)) {
+					//A list of Required TxPoW messages..
+					HashNumber hashnum = HashNumber.ReadFromStream(inputstream);
+					
+					//Add this ID
+					rec.addObject("hashnumber", hashnum);
+					
+				}else if(msgtype.isEqual(NETMESSAGE_TXPOWLIST)) {
+					TxPoWList txplist = new TxPoWList();
+					txplist.readDataStream(inputstream);
+					
+					//Add this ID
+					rec.addObject("txpowlist", txplist);
+					
 				}else {
 					throw new Exception("Invalid message on network : "+rec);
 				}

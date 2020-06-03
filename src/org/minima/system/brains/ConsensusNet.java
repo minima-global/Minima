@@ -12,6 +12,9 @@ import org.minima.database.txpowtree.BlockTreeNode;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.objects.greet.Greeting;
+import org.minima.objects.greet.HashNumber;
+import org.minima.objects.greet.TxPoWList;
 import org.minima.system.backup.BackupManager;
 import org.minima.system.backup.SyncPackage;
 import org.minima.system.backup.SyncPacket;
@@ -37,6 +40,10 @@ public class ConsensusNet extends ConsensusProcessor {
 	public static final String CONSENSUS_NET_TXPOWID 		= CONSENSUS_PREFIX+"NET_MESSAGE_"+NetClientReader.NETMESSAGE_TXPOWID.getValue();
 	public static final String CONSENSUS_NET_TXPOWREQUEST	= CONSENSUS_PREFIX+"NET_MESSAGE_"+NetClientReader.NETMESSAGE_TXPOW_REQUEST.getValue();
 	public static final String CONSENSUS_NET_TXPOW 			= CONSENSUS_PREFIX+"NET_MESSAGE_"+NetClientReader.NETMESSAGE_TXPOW.getValue();
+	
+	public static final String CONSENSUS_NET_GREETING 		    = CONSENSUS_PREFIX+"NET_MESSAGE_"+NetClientReader.NETMESSAGE_GREETING.getValue();
+	public static final String CONSENSUS_NET_TXPOWLIST_REQUEST	= CONSENSUS_PREFIX+"NET_MESSAGE_"+NetClientReader.NETMESSAGE_TXPOWLIST_REQUEST.getValue();
+	public static final String CONSENSUS_NET_TXPOWLIST 			= CONSENSUS_PREFIX+"NET_MESSAGE_"+NetClientReader.NETMESSAGE_TXPOWLIST.getValue();
 	
 	/**
 	 * Will we switch to a heavier chain - DEBUG mode for -private
@@ -78,15 +85,38 @@ public class ConsensusNet extends ConsensusProcessor {
 	public void processMessage(Message zMessage) throws Exception {
 		
 		if(zMessage.isMessageType(CONSENSUS_NET_INITIALISE)) {
+			//An initial Greeting message..
+			Greeting greet = new Greeting();
+			
 			//Get the complete sync package - deep copy.. 
-			SyncPackage sp = getMainDB().getSyncPackage(true);
+			SyncPackage total = getMainDB().getSyncPackage(true);
+			
+			//Add the chain excluding the cascade..
+			ArrayList<SyncPacket> packets = total.getAllNodes();
+			for(SyncPacket sp : packets) {
+				TxPoW txpow      = sp.getTxPOW();
+				MiniNumber block = txpow.getBlockNumber();
+				if(block.isMoreEqual(total.getCascadeNode())) {
+					greet.addBlock(txpow.getTxPowID(), txpow.getBlockNumber());	
+				}		
+			}
 			
 			//Get the NetClient...
 			NetClient client = (NetClient) zMessage.getObject("netclient");
-			Message req      = new Message(NetClient.NETCLIENT_INTRO).addObject("syncpackage", sp);
+			Message req      = new Message(NetClient.NETCLIENT_GREETING).addObject("greeting", greet);
 			
 			//And Post it..
 			client.PostMessage(req);
+			
+//			//Get the complete sync package - deep copy.. 
+//			SyncPackage sp = getMainDB().getSyncPackage(true);
+//			
+//			//Get the NetClient...
+//			NetClient client = (NetClient) zMessage.getObject("netclient");
+//			Message req      = new Message(NetClient.NETCLIENT_INTRO).addObject("syncpackage", sp);
+//			
+//			//And Post it..
+//			client.PostMessage(req);
 			
 		}else if(zMessage.isMessageType(CONSENSUS_NET_INTRO)) {
 			//Get the Sync Package..
@@ -269,6 +299,89 @@ public class ConsensusNet extends ConsensusProcessor {
 					getConsensusHandler().PostMessage(ConsensusBackup.CONSENSUSBACKUP_BACKUP);	
 				}
 			}
+			
+		}else if(zMessage.isMessageType(CONSENSUS_NET_GREETING)) {
+			//Get the greeting
+			Greeting greet = (Greeting)zMessage.getObject("greeting");
+			
+			//Check Versions..
+			if(!greet.getVersion().equals(GlobalParams.MINIMA_VERSION)) {
+				MinimaLogger.log("DIFFERENT VERSION ON GREETING "+greet.getVersion());
+			}
+			
+			//Are we a beginner..
+			if(getMainDB().getMainTree().getAsList().size()==0) {
+				//First timer.. do nothing.. you'll be sent the INTRO message
+				return;
+			}
+			
+			//Get the List..
+			ArrayList<HashNumber> blocks = greet.getList();
+			int greetlen = blocks.size();
+			
+			//Do we post a complete package..
+			if(greetlen == 0) {
+				MinimaLogger.log("FIRST TIME SYNC - Sending complete");
+				//Get the complete sync package - deep copy.. 
+				SyncPackage sp = getMainDB().getSyncPackage(true);
+				NetClient client = (NetClient) zMessage.getObject("netclient");
+				Message req      = new Message(NetClient.NETCLIENT_INTRO).addObject("syncpackage", sp);
+				client.PostMessage(req);
+				return;
+			}
+			
+			//Now check for crossover.. if none then send complete package
+			MinimaLogger.log("Greeting has "+blocks.size()+" length");
+		
+			MiniNumber cross = checkCrossover(greet);
+			if(cross.isEqual(MiniNumber.MINUSONE)) {
+				MinimaLogger.log("NO CROSSOVER - Sending complete");
+				//Get the complete sync package - deep copy.. 
+				SyncPackage sp = getMainDB().getSyncPackage(true);
+				NetClient client = (NetClient) zMessage.getObject("netclient");
+				Message req      = new Message(NetClient.NETCLIENT_INTRO).addObject("syncpackage", sp);
+				client.PostMessage(req);
+				return;
+			}
+			
+			//Get the tip..
+			MiniData top   = blocks.get(greetlen-1).getHash();
+			MiniNumber len = blocks.get(greetlen-1).getNumber().sub(cross);
+			
+			MinimaLogger.log("CROSSOVER - Start at "+blocks.get(greetlen-1).getNumber()+" for "+len);
+			if(len.getAsInt() == 0) {
+				return;
+			}
+			
+			//Ask for Just the required Blocks..
+			HashNumber hn = new HashNumber(top, len);
+			
+			NetClient client = (NetClient) zMessage.getObject("netclient");
+			Message req      = new Message(NetClient.NETCLIENT_TXPOWLIST_REQ).addObject("hashnumber", hn);
+			client.PostMessage(req);
+			
+		}else if ( zMessage.isMessageType(CONSENSUS_NET_TXPOWLIST_REQUEST)) {
+			//Get the details
+			HashNumber hashnum = (HashNumber)zMessage.getObject("hashnumber");
+			int max = hashnum.getNumber().getAsInt();
+			
+			TxPoWList txplist = new TxPoWList();
+			int counter = 0;
+			
+			BlockTreeNode top = getMainDB().getMainTree().findNode(hashnum.getHash());
+			while(top!=null && counter<=max) {
+				txplist.addTxPow(top.getTxPow());
+				top = top.getParent();
+				counter++;
+			}
+			
+			//Now send that..!
+			NetClient client = (NetClient) zMessage.getObject("netclient");
+			Message req      = new Message(NetClient.NETCLIENT_TXPOWLIST).addObject("txpowlist", txplist);
+			client.PostMessage(req);
+			
+		}else if ( zMessage.isMessageType(CONSENSUS_NET_TXPOWLIST)) {
+			
 			
 		}else if ( zMessage.isMessageType(CONSENSUS_NET_TXPOWID)) {
 			//Get the ID
@@ -482,6 +595,82 @@ public class ConsensusNet extends ConsensusProcessor {
 						if(spack.getTxPOW().getBlockNumber().isEqual(bnum)) {
 							//Check the TxPOWID..
 							if(spack.getTxPOW().getTxPowID().isEqual(txpowid)) {
+								//Crossover!
+								found     = true;
+								crossover = bnum;
+								break;
+							}
+						}
+					}
+				}
+			}
+		
+			if(found) {
+				break;
+			}
+		}
+		
+		//no Hit..
+		return crossover;
+	}
+	
+	/**
+	 * Find a crossover node.. Check 2 chains and find where they FIRST intersect.
+	 */
+	public MiniNumber checkCrossover(Greeting zGreeting){
+		//Our Chain.. FROM TIP backwards..
+		ArrayList<BlockTreeNode> chain = getMainDB().getMainTree().getAsList();
+				
+		//Our cascade node..
+		MiniNumber maintip     = getMainDB().getMainTree().getChainTip().getTxPow().getBlockNumber();
+		MiniNumber maincascade = getMainDB().getMainTree().getCascadeNode().getTxPow().getBlockNumber();
+		
+		//The incoming chain - could be empty
+		ArrayList<HashNumber> introchain = zGreeting.getList();
+		int len = introchain.size();
+		if(len == 0) {
+			return MiniNumber.MINUSONE;
+		}
+		
+		HashNumber tip = introchain.get(len-1);
+		
+		//The Intro cascade node..
+		MiniNumber introtip     = tip.getNumber();
+		MiniNumber introcascade = introchain.get(0).getNumber();
+	
+		MinimaLogger.log("CROSSOVER mytip:"+maintip+" mycasc:"+maincascade);
+		MinimaLogger.log("CROSSOVER introtip:"+introtip+" introcasc:"+introcascade);
+		
+		//Simple check first..
+		boolean tipgood  = maintip.isLessEqual(introtip) && maintip.isMoreEqual(introcascade);
+		boolean cascgood = maincascade.isLessEqual(introtip) && maincascade.isMoreEqual(introcascade);
+		
+		boolean found        = false;
+		MiniNumber crossover = MiniNumber.MINUSONE;
+		
+		//No chance of a crossover..
+		if(!tipgood && !cascgood) {
+			return crossover;	
+		}
+		
+		//Cycle..
+		for(BlockTreeNode block : chain) {
+			//BLock number and hash.. BOTH have to match
+			MiniNumber bnum  = block.getTxPow().getBlockNumber();
+			MiniData txpowid = block.getTxPowID();
+			
+			//only use nodes after our cascade..
+			if(bnum.isMore(maincascade)) {
+				
+				//Run through the intro chain..
+				for(HashNumber spack : introchain) {
+					MiniNumber snum  = spack.getNumber();
+					
+					//Only use nodes after intro cascade
+					if(snum.isMore(introcascade)) {
+						if(spack.getNumber().isEqual(bnum)) {
+							//Check the TxPOWID..
+							if(spack.getHash().isEqual(txpowid)) {
 								//Crossover!
 								found     = true;
 								crossover = bnum;
