@@ -323,20 +323,20 @@ public class NetClient extends MessageProcessor {
 			//Now wrap the message as a MiniData
 			MiniData complete = new MiniData(data);
 			
-			//Check within acceptable parameters - this should be set in TxPoW header.. for now fixed
-			if(zMessageType.isEqual(NetClientReader.NETMESSAGE_TXPOWID) || zMessageType.isEqual(NetClientReader.NETMESSAGE_TXPOW_REQUEST)) {
-				if(len > NetClientReader.TXPOWID_LEN) {
-					throw new Exception("Send Invalid Message length for TXPOWID "+len);
-				}
-			}else if(zMessageType.isEqual(NetClientReader.NETMESSAGE_INTRO)) {
-				if(len > NetClientReader.MAX_INTRO) {
-					throw new Exception("Send Invalid Message length for TXPOW_INTRO "+len);
-				}
-			}else if(zMessageType.isEqual(NetClientReader.NETMESSAGE_TXPOW)) {
-				if(len > NetClientReader.MAX_TXPOW) {
-					throw new Exception("Send Invalid Message length for TXPOW "+len);
-				}
-			}
+//			//Check within acceptable parameters - this should be set in TxPoW header.. for now fixed
+//			if(zMessageType.isEqual(NetClientReader.NETMESSAGE_TXPOWID) || zMessageType.isEqual(NetClientReader.NETMESSAGE_TXPOW_REQUEST)) {
+//				if(len > NetClientReader.TXPOWID_LEN) {
+//					throw new Exception("Send Invalid Message length for TXPOWID "+len);
+//				}
+//			}else if(zMessageType.isEqual(NetClientReader.NETMESSAGE_INTRO)) {
+//				if(len > NetClientReader.MAX_INTRO) {
+//					throw new Exception("Send Invalid Message length for TXPOW_INTRO "+len);
+//				}
+//			}else if(zMessageType.isEqual(NetClientReader.NETMESSAGE_TXPOW)) {
+//				if(len > NetClientReader.MAX_TXPOW) {
+//					throw new Exception("Send Invalid Message length for TXPOW "+len);
+//				}
+//			}
 			
 			//First write the Message type..
 			zMessageType.writeDataStream(mOutput);

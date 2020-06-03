@@ -1,5 +1,7 @@
 package org.minima.system.brains;
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -18,6 +20,7 @@ import org.minima.objects.greet.TxPoWList;
 import org.minima.system.backup.BackupManager;
 import org.minima.system.backup.SyncPackage;
 import org.minima.system.backup.SyncPacket;
+import org.minima.system.input.InputHandler;
 import org.minima.system.network.NetClient;
 import org.minima.system.network.NetClientReader;
 import org.minima.system.txpow.TxPoWChecker;
@@ -31,6 +34,8 @@ public class ConsensusNet extends ConsensusProcessor {
 	 * Used for the custom Transactions
 	 */
 	public static final String CONSENSUS_PREFIX 			= "CONSENSUSNET_";
+	
+	public static final String CONSENSUS_NET_CHECKSIZE_TXPOW 	    = CONSENSUS_PREFIX+"NET_MESSAGE_MYTXPOW";
 	
 	public static final String CONSENSUS_NET_INITIALISE 	= CONSENSUS_PREFIX+"NET_INITIALISE";
 	public static final String CONSENSUS_NET_INTRO 			= CONSENSUS_PREFIX+"NET_MESSAGE_"+NetClientReader.NETMESSAGE_INTRO.getValue();
@@ -331,7 +336,7 @@ public class ConsensusNet extends ConsensusProcessor {
 			for(TxPoW txp : txps) {
 				MinimaLogger.log("GREETING TXPOW : "+txp.getBlockNumber()+" "+txp.getTxPowID()+" trans:"+txp.getBlockTransactions().size()); 
 				
-				Message msg = new Message(CONSENSUS_NET_TXPOW);
+				Message msg = new Message(CONSENSUS_NET_CHECKSIZE_TXPOW);
 				msg.addObject("txpow", txp);
 				msg.addObject("netclient", client);
 				
@@ -372,6 +377,27 @@ public class ConsensusNet extends ConsensusProcessor {
 				Message tx = new Message(NetClient.NETCLIENT_SENDTXPOW).addObject("txpow", txpow);
 				client.PostMessage(tx);
 			}
+		
+		}else if(zMessage.isMessageType(CONSENSUS_NET_CHECKSIZE_TXPOW)) {
+			//Internal message sent from you..
+			TxPoW txpow = (TxPoW)zMessage.getObject("txpow");
+			
+			//DOUBLE CHECK THE SIZE
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			DataOutputStream dos = new DataOutputStream(baos);
+			txpow.writeDataStream(dos);
+			dos.flush();
+			int txpowsize = baos.toByteArray().length;
+			dos.close();
+			baos.close();
+			
+			if(txpowsize > NetClientReader.MAX_TXPOW) {
+				MinimaLogger.log("You've Mined A TxPoW that is too BIG! "+txpowsize+" / "+NetClientReader.MAX_TXPOW);
+				return;
+			}
+			
+			//Forward it properly
+			getConsensusHandler().PostMessage(new Message(CONSENSUS_NET_TXPOW).addObject("txpow", txpow));
 			
 		}else if(zMessage.isMessageType(CONSENSUS_NET_TXPOW)) {
 			/**

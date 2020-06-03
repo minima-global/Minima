@@ -158,7 +158,7 @@ public class TxPoWMiner extends SystemHandler{
 			txpow.calculateTXPOWID();
 			
 			if(txpow.isBlock()) {
-				Message msg = new Message(ConsensusNet.CONSENSUS_NET_TXPOW).addObject("txpow", txpow);
+				Message msg = new Message(ConsensusNet.CONSENSUS_NET_CHECKSIZE_TXPOW).addObject("txpow", txpow);
 				getMainHandler().getConsensusHandler().PostMessage(msg);
 			}
 			

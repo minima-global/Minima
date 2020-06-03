@@ -550,7 +550,7 @@ public class ConsensusHandler extends SystemHandler {
 			getMainDB().remeoveMiningTransaction(txpow.getTransaction());
 			
 			//And now forward the message to the single entry point..
-			Message msg = new Message(ConsensusNet.CONSENSUS_NET_TXPOW).addObject("txpow", txpow);
+			Message msg = new Message(ConsensusNet.CONSENSUS_NET_CHECKSIZE_TXPOW).addObject("txpow", txpow);
 			PostMessage(msg);
 			
 		}else if(zMessage.isMessageType(CONSENSUS_GIMME50)) {
