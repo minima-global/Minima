@@ -13,6 +13,7 @@ import org.minima.system.network.rpc.RPCClient;
 import org.minima.system.network.rpc.RPCServer;
 import org.minima.system.network.websocket.WebSocketManager;
 import org.minima.utils.MinimaLogger;
+import org.minima.utils.json.JSONArray;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.TimerMessage;
 
@@ -205,7 +206,7 @@ public class NetworkHandler extends SystemHandler{
 			String host = zMessage.getString("host");
 			int port 	= zMessage.getInteger("port");
 			
-			MinimaLogger.log("Attempting to connect to "+host+":"+port+" @ "+new Date().toString());
+			MinimaLogger.log("Attempting to connect to "+host+":"+port);
 			
 			//Create a NetClient
 			NetClient client = new NetClient(host, port, this);
@@ -218,10 +219,18 @@ public class NetworkHandler extends SystemHandler{
 			
 		}else if(zMessage.isMessageType(NETWORK_RECONNECT)) {
 			//Disconnect and reconnect
+			JSONArray shut = new JSONArray();
 			for(NetClient client : mClients) {
+				//get the UID
+				shut.add(client.getUID());
+				
 				//tell it to shut down..
 				client.PostMessage(NetClient.NETCLIENT_SHUTDOWN);
 			}
+			
+			InputHandler.getResponseJSON(zMessage).put("total", shut.size());
+			InputHandler.getResponseJSON(zMessage).put("clients", shut);
+			InputHandler.endResponse(zMessage, true, "All network clients reset - reconnect in 30 seconds");
 			
 		}else if(zMessage.isMessageType(NETWORK_DISCONNECT)) {
 			String uid = zMessage.getString("uid");
@@ -233,10 +242,14 @@ public class NetworkHandler extends SystemHandler{
 					
 					//tell it to shut down..
 					client.PostMessage(NetClient.NETCLIENT_SHUTDOWN);
+			
+					InputHandler.endResponse(zMessage, true, "Client "+uid+" disconnected - won't reconnect");
 					
-					break;
+					return;
 				}
 			}
+			
+			InputHandler.endResponse(zMessage, false, "Could not find client UID "+uid);
 			
 		}else if(zMessage.isMessageType(NETWORK_NEWCLIENT)) {
 			//get the client

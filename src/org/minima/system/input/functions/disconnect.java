@@ -17,8 +17,8 @@ public class disconnect extends CommandFunction{
 		String uid = zInput[1];
 		
 		//Connect to a specific host:port
-		Message connect  = new Message(NetworkHandler.NETWORK_DISCONNECT).addString("uid", uid);
-		getMainHandler().getNetworkHandler().PostMessage(connect);	
+		Message connect  = getResponseMessage(NetworkHandler.NETWORK_DISCONNECT).addString("uid", uid);
+		getMainHandler().getNetworkHandler().PostMessage(connect);
 	}
 	
 	@Override
