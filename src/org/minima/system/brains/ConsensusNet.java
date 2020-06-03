@@ -461,7 +461,6 @@ public class ConsensusNet extends ConsensusProcessor {
 						for(MiniData txn : txns) {
 							if(txn.isEqual(txpow.getTxPowID())) {
 //								MinimaLogger.log("TXN WE DON'T HAVE FOUND IN BLOCK "+txpow.getTxPowID()); 	
-	
 								//Add it to the database..
 								TxPOWDBRow row = getMainDB().addNewTxPow(txpow);
 								row.setOnChainBlock(false);
@@ -478,9 +477,8 @@ public class ConsensusNet extends ConsensusProcessor {
 					}
 				}	
 				
-				//OK - leave it.. the System will reject an invalid transaction later when it FLUSHES MEMPOOL.. 
-				MinimaLogger.log("ERROR - NET TXPOW FAILS CHECK MMR : "+txpow); 
-				//return;
+				//OK - leave it.. could be valid on branch chain.. the System will reject an invalid transaction later when it FLUSHES MEMPOOL.. 
+				MinimaLogger.log("ERROR - NET TXPOW FAILS INITIAL MMR CHECK : "+txpow);
 			}
 		
 			/**
