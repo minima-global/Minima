@@ -27,6 +27,12 @@ java -jar minima.jar -help
 To start a private test-net
 
 ```
+java -jar minima.jar -private -clean
+```
+
+And to keep your data just start without the -clean
+
+```
 java -jar minima.jar -private
 ```
 
@@ -92,6 +98,11 @@ Get your balance
 balance
 ```
 
+Create a token
+
+```
+createtoken mycoin 1000
+```
 
 For a complete explanation of the Minima Scripting language use
 
