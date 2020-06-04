@@ -216,7 +216,6 @@ public class MinimaDB {
 			
 			//Now calculate the states of each of the blocks in the tree.. 
 			mMainTree.sortBlockTreeNodeStates(this);
-//			sortBlockTreeNodeStates(mMainTree.getChainRoot(), BlockTreeNode.BLOCKSTATE_VALID);
 	
 			//Now recalculate the weights only using Valid nodes..
 			mMainTree.resetWeights();
@@ -402,71 +401,21 @@ public class MinimaDB {
 		}
 	}
 	
-	/**
-	 * Recursively Sort the blocktreenode states
-	 * @param zNode
-	 */
-//	private void sortBlockTreeNodeStates(BlockTreeNode zNode, int zParentState) {
-//		//Get the txpow row
-//		TxPOWDBRow row = getTxPOWRow(zNode.getTxPowID());
-//		
-//		//Must be a valid parent for anything to happen
-//		if(zParentState == BlockTreeNode.BLOCKSTATE_INVALID) {
-//			//All Children are INVALID
-//			zNode.setState(BlockTreeNode.BLOCKSTATE_INVALID);
-//		
-//		}else if(zParentState == BlockTreeNode.BLOCKSTATE_VALID) {
-//			//Do we check.. only when full
-//			if(zNode.getState() == BlockTreeNode.BLOCKSTATE_BASIC && row.getBlockState() == TxPOWDBRow.TXPOWDBROW_STATE_FULL) {
-//				//Need allok for the block to be accepted
-//				boolean allok = true;
-//				
-//				//Check that Block difficulty is Correct!?
-//				//..TODO
-//				
-//				//Check the Super Block Levels are Correct! and point to the correct blocks
-//				//..TODO
-//				
-//				//need a  body for this..
-//				if(row.getTxPOW().hasBody()) {
-//					//Create an MMR set that will ONLY be used if the block is VALID..
-//					MMRSet mmrset = new MMRSet(zNode.getParent().getMMRSet());
-//					
-//					//Set this MMR..
-//					zNode.setMMRset(mmrset);
-//					
-//					//Check all the transactions in the block are correct..
-//					allok = checkFullTxPOW(zNode.getTxPow(), mmrset);
-//					
-//					//Check the root MMR..
-//					if(allok) {
-//						MiniData root = mmrset.getMMRRoot().getFinalHash();
-//						if(!row.getTxPOW().getMMRRoot().isEqual(root)) {
-//							allok = false;	
-//						}
-//					}
-//				}else {
-//					MinimaLogger.log("WARNING : sortBlockTreeNodeStates on no body TxPoW..! "+zNode.toString());
-//				}
-//				
-//				//if it all passes is OK.. otherwise not ok..
-//				if(allok) {
-//					//it's all valid!
-//					zNode.setState(BlockTreeNode.BLOCKSTATE_VALID);
-//					
-//				}else{
-//					//No good..
-//					zNode.setState(BlockTreeNode.BLOCKSTATE_INVALID);
-//				}
-//			}
-//		}
-//		
-//		//Get all the child blocks..
-//		ArrayList<BlockTreeNode> children = zNode.getChildren();
-//		for(BlockTreeNode child : children) {
-//			sortBlockTreeNodeStates(child, zNode.getState());	
-//		}
-//	}
+	public TxPoW findBlockForTransaction(TxPoW zTxPoWTransaction) {
+		ArrayList<BlockTreeNode> nodes = getMainTree().getAsList(true);
+		for(BlockTreeNode node : nodes) {
+			//Get the TxPoW
+			TxPoW chaintxpow = node.getTxPow();
+			ArrayList<MiniData> txns = chaintxpow.getBlockTransactions();
+			for(MiniData txn : txns) {
+				if(txn.isEqual(zTxPoWTransaction.getTxPowID())) {
+					return chaintxpow;
+				}
+			}
+		}	
+		return null;
+	}
+	
 	
 	public boolean checkFullTxPOW(TxPoW zBlock, MMRSet zMMRSet) {
 		//First check the main transaction..
