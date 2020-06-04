@@ -259,10 +259,6 @@ public class MinimaDB {
 		
 				//Get the database txpow..
 				TxPOWDBRow trow = mTxPOWDB.findTxPOWDBRow(txpow.getTxPowID());
-				if(trow == null) {
-					MinimaLogger.log("VERY ODD - TxPOW NOT IN DB in Tree.. "+txpow.getBlockNumber());
-					trow = mTxPOWDB.addTxPOWDBRow(txpow);
-				}
 				
 				//What Block
 				MiniNumber block = txpow.getBlockNumber();
@@ -302,9 +298,10 @@ public class MinimaDB {
 			
 			//Fix the MMR to keep all details from the newly cascaded blocks..
 			BlockTreeNode newcascade  = mMainTree.getCascadeNode();
+			MMRSet newcascmmr = newcascade.getMMRSet();
 			
 			//recurse up the tree.. copying all the parents for the MMRSet
-			if(!oldcascade.isEqual(newcascade.getMMRSet().getBlockTime())) {
+			if(!oldcascade.isEqual(newcascmmr.getBlockTime())) {
 				//Cascade copying all the parent MMRSet keepers..
 				newcascade.getMMRSet().recurseParentMMR(oldcascade);
 				
@@ -317,13 +314,8 @@ public class MinimaDB {
 				//We can't keep it..
 				TxPOWDBRow row = getTxPOWRow(node.getTxPowID());
 				
-				//VERY ODD..
-				if(row != null) {
-					//Discard.. no longer an on chain block..
-					row.setOnChainBlock(false);
-				}else {
-					MinimaLogger.log("VERY ODD - Cascade removed node not in DB.. "+node.getTxPow().getBlockNumber());					
-				}
+				//Discard.. no longer an on chain block..
+				row.setOnChainBlock(false);
 				
 				//And delete / move to different folder any file backups..
 				getBackup().deleteTxpow(node.getTxPow());

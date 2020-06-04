@@ -565,7 +565,7 @@ public class BlockTree {
 		}
 		
 		//Set the MMRSet parent to NULL
-		mCascadeNode.getMMRSet().setParent(null);
+		mCascadeNode.getMMRSet().setParent(null);	
 		
 		//Clear from one node up..
 		BlockTreeNode clearnode = mCascadeNode.getParent();
