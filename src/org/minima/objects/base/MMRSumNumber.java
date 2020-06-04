@@ -80,6 +80,11 @@ public class MMRSumNumber implements Streamable {
 		
 		//Read in the byte array for unscaled BigInteger
 		int len = zIn.readInt();
+		if(len > 512) {
+			//Something wrong..
+			throw new IOException("ERROR reading MMRSumNumber - input too large "+len);
+		}
+		
 		byte[] data = new byte[len];
 		zIn.readFully(data);
 		

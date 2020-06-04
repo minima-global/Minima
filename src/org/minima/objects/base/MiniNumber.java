@@ -11,6 +11,7 @@ import java.math.BigInteger;
 import java.math.MathContext;
 import java.math.RoundingMode;
 
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 
 /**
@@ -203,7 +204,6 @@ public class MiniNumber implements Streamable {
 		//And now the unscaled value..
 		byte[] data = mNumber.unscaledValue().toByteArray();
 		int len = data.length;
-		
 		zOut.writeInt(len);
 		zOut.write(data);
 		
@@ -218,6 +218,11 @@ public class MiniNumber implements Streamable {
 		
 		//Read in the byte array for unscaled BigInteger
 		int len = zIn.readInt();
+		if(len > 256) {
+			//Something wrong..
+			throw new IOException("ERROR reading MiniNumber - input too large "+len);
+		}
+		
 		byte[] data = new byte[len];
 		zIn.readFully(data);
 		
