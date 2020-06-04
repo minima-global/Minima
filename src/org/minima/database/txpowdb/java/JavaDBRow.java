@@ -106,7 +106,6 @@ public class JavaDBRow implements TxPOWDBRow {
 	public void deleteRow() {
 		if(mDeleteTime == 0) {
 			mDeleteTime = System.currentTimeMillis();
-//			System.out.println("Row deleted "+mTxPOW.getBlockNumber()+" "+mDeleteTime);
 		}
 	}
 
