@@ -189,7 +189,7 @@ public class Start {
 		
 		//Are we private!
 		if(genesis) {
-			rcmainserver.privatChain(clean);
+			rcmainserver.privateChain(clean);
 		}
 		
 		//Start the system

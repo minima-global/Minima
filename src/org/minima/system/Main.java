@@ -165,7 +165,7 @@ public class Main extends MessageProcessor {
 		return mTXMiner;
 	}
 		
-	public void privatChain(boolean zClean) {
+	public void privateChain(boolean zClean) {
 		//Set the Database backup manager
 		getConsensusHandler().setBackUpManager();
 		
