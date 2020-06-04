@@ -146,11 +146,16 @@ public class JavaDB implements TxPowDB{
 	public void removeTxPOW(MiniData zTxPOWID) {
 		ArrayList<JavaDBRow> newRows = new ArrayList<>();
 		
+		boolean found = false;
 		for(JavaDBRow row : mRows) {
-			if( row.getTxPOW().getTxPowID().isEqual(zTxPOWID) ) {
+			if( !found && row.getTxPOW().getTxPowID().isEqual(zTxPOWID) ) {
+				//There can be only one as the TxPoWID is unique
+				found = true;
+				
 				//Add to the deleted rows..
 				row.deleteRow();
 				mDeletedRows.add(row);
+			
 			}else{
 				//Keep it..
 				newRows.add(row);
