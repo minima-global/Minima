@@ -909,6 +909,7 @@ public class MinimaDB {
 		}
 		
 		//TODO - Add Burn Transaction and Witness!
+		//..
 		
 		//Fresh TxPOW
 		TxPoW txpow = new TxPoW();
