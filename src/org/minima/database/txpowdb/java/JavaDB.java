@@ -147,12 +147,13 @@ public class JavaDB implements TxPowDB{
 		ArrayList<JavaDBRow> newRows = new ArrayList<>();
 		
 		for(JavaDBRow row : mRows) {
-			if( !row.getTxPOW().getTxPowID().isEqual(zTxPOWID)) {
-				newRows.add(row);
-				
+			if( row.getTxPOW().getTxPowID().isEqual(zTxPOWID) ) {
 				//Add to the deleted rows..
 				row.deleteRow();
 				mDeletedRows.add(row);
+			}else{
+				//Keep it..
+				newRows.add(row);
 			}
 		}
 		
