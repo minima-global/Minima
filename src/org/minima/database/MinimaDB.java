@@ -904,7 +904,7 @@ public class MinimaDB {
 		BlockTreeNode tip = mMainTree.getChainTip();
 		
 		if(tip == null) {
-			MinimaLogger.log("getCurrentTxPow - NO BLOCKS NULL TIP");
+			MinimaLogger.log("getCurrentTxPow - NO BLOCKS NULL TIP!");
 			return null;
 		}
 		
