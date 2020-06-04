@@ -903,6 +903,11 @@ public class MinimaDB {
 		//Get the current best block..
 		BlockTreeNode tip = mMainTree.getChainTip();
 		
+		if(tip == null) {
+			MinimaLogger.log("getCurrentTxPow - NO BLOCKS NULL TIP");
+			return null;
+		}
+		
 		//TODO - Add Burn Transaction and Witness!
 		
 		//Fresh TxPOW

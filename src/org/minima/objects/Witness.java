@@ -48,7 +48,7 @@ public class Witness implements Streamable {
 		mMMRProofs       = new ArrayList<>();
 		mSignatureProofs = new ArrayList<>();
 		mTokenProofs     = new ArrayList<>();
-		mScriptProofs         = new ArrayList<>();
+		mScriptProofs    = new ArrayList<>();
 	}
 	
 	/**

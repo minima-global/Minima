@@ -17,6 +17,7 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.objects.greet.Greeting;
 import org.minima.objects.greet.HashNumber;
 import org.minima.objects.greet.TxPoWList;
+import org.minima.objects.proofs.TokenProof;
 import org.minima.system.backup.BackupManager;
 import org.minima.system.backup.SyncPackage;
 import org.minima.system.backup.SyncPacket;
@@ -202,6 +203,19 @@ public class ConsensusNet extends ConsensusProcessor {
 					if(txpow.getBlockNumber().isEqual(sp.getCascadeNode())) {
 						getMainDB().hardSetCascadeNode(node);
 					}
+					
+					//Add all the tokens..
+					if(txpow.isTransaction()) {
+						TokenProof tokp = txpow.getTransaction().getTokenGenerationDetails();
+						if(tokp!=null) {
+							getMainDB().getUserDB().addTokenDetails(tokp);
+						}	
+						
+						ArrayList<TokenProof> tokens =  txpow.getWitness().getAllTokenDetails();
+						for(TokenProof tp : tokens) {
+							getMainDB().getUserDB().addTokenDetails(tp);
+						}
+					}
 				}
 				
 				//Reset weights
@@ -222,29 +236,29 @@ public class ConsensusNet extends ConsensusProcessor {
 				
 //				//Do you want a copy of ALL the TxPoW in the Blocks.. ?
 //				//Only really useful for txpowsearch - DEXXED
-//				if(mFullSyncOnInit) {
-//					//Now request all the TXNS in those blocks..
-//					int reqtxn = 0;
-//					ArrayList<BlockTreeNode> nodes = getMainDB().getMainTree().getAsList(true);
-//					for(BlockTreeNode node : nodes) {
-//						//Get the TxPoW
-//						TxPoW txpow = node.getTxPow();
-//						
-//						//get the Txns..
-//						if(txpow.hasBody()) {
-//							ArrayList<MiniData> txns = txpow.getBlockTransactions();
-//							for(MiniData txn : txns) {
-//								//We don't have it, get it..
-//								sendTxPowRequest(zMessage, txn);
-//								reqtxn++;
-//							}
-//						}
-//					}
-//					
-//					if(reqtxn>0) {
-//						MinimaLogger.log("Requested "+reqtxn+" transaction in Initial Blocks..");	
-//					}
-//				}
+				if(mFullSyncOnInit) {
+					//Now request all the TXNS in those blocks..
+					int reqtxn = 0;
+					ArrayList<BlockTreeNode> nodes = getMainDB().getMainTree().getAsList(true);
+					for(BlockTreeNode node : nodes) {
+						//Get the TxPoW
+						TxPoW txpow = node.getTxPow();
+						
+						//get the Txns..
+						if(txpow.hasBody()) {
+							ArrayList<MiniData> txns = txpow.getBlockTransactions();
+							for(MiniData txn : txns) {
+								//We don't have it, get it..
+								sendTxPowRequest(zMessage, txn);
+								reqtxn++;
+							}
+						}
+					}
+					
+					if(reqtxn>0) {
+						MinimaLogger.log("Requested "+reqtxn+" transaction in Initial Blocks..");	
+					}
+				}
 			}
 			
 		}else if(zMessage.isMessageType(CONSENSUS_NET_GREETING)) {
@@ -335,7 +349,6 @@ public class ConsensusNet extends ConsensusProcessor {
 			//Cycle through and add as a normal message - extra transactions will be requested as normal
 			ArrayList<TxPoW> txps = txplist.getList();
 			for(TxPoW txp : txps) {
-//				MinimaLogger.log("GREETING TXPOW : "+txp.getBlockNumber()+" "+txp.getTxPowID()+" trans:"+txp.getBlockTransactions().size()); 
 				Message msg = new Message(CONSENSUS_NET_CHECKSIZE_TXPOW);
 				msg.addObject("txpow", txp);
 				msg.addObject("netclient", client);
@@ -454,26 +467,37 @@ public class ConsensusNet extends ConsensusProcessor {
 				return;
 			}
 			
-//			//Now check the Transaction - if it fails, could already be in a block..
-//			//THIS ONLY from the starter sync
-//			boolean trxok = TxPoWChecker.checkTransactionMMR(txpow, getMainDB());
-//			if(!trxok) {
-//				//Is it Already in a VALID block?
-//				TxPoW validblock = getMainDB().findBlockForTransaction(txpow);
-//				if(validblock != null) {
-//					//Add it to the database..
-//					TxPOWDBRow row = getMainDB().addNewTxPow(txpow);
-//					row.setOnChainBlock(false);
-//					row.setIsInBlock(true);
-//					row.setInBlockNumber(validblock.getBlockNumber());
-//					
-//					//Save it..
-//					getConsensusHandler().getMainHandler().getBackupManager().backupTxpow(txpow);
-//					
-//					//All done..
-//					return;
-//				}
-//			}
+			//Now check the Transaction - if it fails, could already be in a block..
+			//THIS ONLY from the starter sync.. and adds tokens found..
+			boolean trxok = TxPoWChecker.checkTransactionMMR(txpow, getMainDB());
+			if(!trxok) {
+				//Is it Already in a VALID block?
+				TxPoW validblock = getMainDB().findBlockForTransaction(txpow);
+				if(validblock != null) {
+					//Add it to the database..
+					TxPOWDBRow row = getMainDB().addNewTxPow(txpow);
+					row.setOnChainBlock(false);
+					row.setIsInBlock(true);
+					row.setInBlockNumber(validblock.getBlockNumber());
+					
+					//Add all the tokens..
+					TokenProof tokp = txpow.getTransaction().getTokenGenerationDetails();
+					if(tokp!=null) {
+						getMainDB().getUserDB().addTokenDetails(tokp);
+					}
+					
+					ArrayList<TokenProof> tokens =  txpow.getWitness().getAllTokenDetails();
+					for(TokenProof tp : tokens) {
+						getMainDB().getUserDB().addTokenDetails(tp);
+					}
+					
+					//Save it..
+					getConsensusHandler().getMainHandler().getBackupManager().backupTxpow(txpow);
+					
+					//All done..
+					return;
+				}
+			}
 		
 			/**
 			 * Add it to the database.. Do this HERE as there may be other messages in the queue. 
