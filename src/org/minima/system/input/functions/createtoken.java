@@ -7,7 +7,7 @@ import org.minima.utils.messages.Message;
 
 public class createtoken extends CommandFunction {
 	
-	public static MiniNumber MAX_COINS = new MiniNumber("1000000000");
+	public static MiniNumber MAX_COINS = new MiniNumber("1000000000000");
 	
 	public createtoken() {
 		super("createtoken");
@@ -29,7 +29,7 @@ public class createtoken extends CommandFunction {
 		//1 Billion MAX for now..
 		MiniNumber coins = new MiniNumber(amount);
 		if(coins.isMore(MAX_COINS)) {
-			getResponseStream().endStatus(false, "1000000000 MAX for now..");
+			getResponseStream().endStatus(false, MAX_COINS+" MAX.. for now..");
 			return;
 		}
 		
