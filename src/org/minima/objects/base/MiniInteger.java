@@ -106,7 +106,7 @@ public class MiniInteger implements Streamable {
 	public void readDataStream(DataInputStream zIn) throws IOException {
 		//Read in the byte array for unscaled BigInteger
 		int len = zIn.readInt();
-		if(len > 256) {
+		if(len > 512) {
 			//Something wrong..
 			throw new IOException("ERROR reading MiniInteger - input too large "+len);
 		}

@@ -218,7 +218,7 @@ public class MiniNumber implements Streamable {
 		
 		//Read in the byte array for unscaled BigInteger
 		int len = zIn.readInt();
-		if(len > 256) {
+		if(len > 64) {
 			//Something wrong..
 			throw new IOException("ERROR reading MiniNumber - input too large "+len);
 		}
