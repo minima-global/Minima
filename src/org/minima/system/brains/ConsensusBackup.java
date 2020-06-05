@@ -90,6 +90,8 @@ public class ConsensusBackup extends ConsensusProcessor {
 				InputHandler.addResponseMesage(fullshut, zMessage);
 				getConsensusHandler().getMainHandler().PostMessage(fullshut);
 				
+				MinimaLogger.log("Backup on shutdown fininshed..");
+				
 			}else {
 				//respond..
 				InputHandler.endResponse(zMessage, true, "Full Backup Performed");	

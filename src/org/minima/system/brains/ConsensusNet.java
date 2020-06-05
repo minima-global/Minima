@@ -378,7 +378,7 @@ public class ConsensusNet extends ConsensusProcessor {
 			//Get it..
 			TxPoW txpow = getMainDB().getTxPOW(txpowid);
 			if(txpow == null) {
-				//OLD orr missing TxPoW
+				//OLD or missing TxPoW
 				MinimaLogger.log("NET TXPOWREQUEST OF MISSING TXPOW "+txpowid);
 			
 			}else {

@@ -20,6 +20,7 @@ public class RPCClient {
 		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 		con.setRequestMethod("GET");
 		con.setRequestProperty("User-Agent", USER_AGENT);
+		con.setRequestProperty("Connection", "close");
 		int responseCode = con.getResponseCode();
 		
 		StringBuffer response = new StringBuffer();
@@ -30,7 +31,6 @@ public class RPCClient {
 			BufferedReader in = new BufferedReader(new InputStreamReader(is));
 			String inputLine;
 			
-
 			while ((inputLine = in.readLine()) != null) {
 				response.append(inputLine);
 			}
@@ -91,7 +91,7 @@ public class RPCClient {
 		
 		String host = "127.0.0.1";
 		int port    = 8999;
-		String request = "balance";
+		String request = "quit";
 		
 		try {
 			//Construct
@@ -105,7 +105,7 @@ public class RPCClient {
 			
 			System.out.println(resp);
 			
-		} catch (IOException e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

@@ -264,6 +264,7 @@ public class Start {
 		    }
 		}
 		
+		MinimaLogger.log("Main thread finished..");
 	}
 }	
 

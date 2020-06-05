@@ -35,9 +35,6 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
 	 */
 	String mName;
 	
-	
-	
-	
 	/**
 	 * Constructor
 	 */
@@ -49,6 +46,7 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
     	mRunning = true;
     
     	mMainThread = new Thread(this,zName);
+//    	mMainThread.setDaemon(true);
         mMainThread.start();
     }
     
@@ -73,6 +71,7 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
     	
     	//Create a Thread that fires//
     	Thread timer = new Thread(zMessage);
+    	timer.setDaemon(true);
     	timer.start();
     }
     

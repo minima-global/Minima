@@ -16,7 +16,6 @@ import org.minima.utils.messages.Message;
 public class BackupManager extends SystemHandler {
 
 	private static final String BACKUP_INIT               = "BACKUP_INIT";
-	private static final String BACKUP_CLEAR              = "BACKUP_CLEAR";	
 	private static final String BACKUP_WRITE              = "BACKUP_WRITE";
 	private static final String BACKUP_DELETE             = "BACKUP_DELETE";
 	
@@ -45,7 +44,8 @@ public class BackupManager extends SystemHandler {
 		mConfigurationFolder = zConfFolder;
 	
 		//Start init
-		PostMessage(BACKUP_INIT);
+		initFolders();
+//		PostMessage(BACKUP_INIT);
 	}
 	
 	public File getRootFolder() {
@@ -116,16 +116,6 @@ public class BackupManager extends SystemHandler {
 		if(zMessage.isMessageType(BACKUP_INIT)) {
 			initFolders();
 			
-		}else if(zMessage.isMessageType(BACKUP_CLEAR)) {
-			File root = new File(mConfigurationFolder);
-			
-			if(root.exists()) {
-				MinimaLogger.log("Wiping Minima Folder : "+root.getAbsolutePath());
-				deleteFileOrFolder(root);
-			}
-			
-			initFolders();
-		
 		}else if(zMessage.isMessageType(BACKUP_WRITE)) {
 			//Get the file..
 			Streamable stream = (Streamable) zMessage.getObject("object");
