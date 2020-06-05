@@ -3,6 +3,7 @@ package org.minima.system.input;
 import org.minima.objects.base.MiniData;
 import org.minima.system.Main;
 import org.minima.system.SystemHandler;
+import org.minima.system.brains.ConsensusHandler;
 import org.minima.system.input.functions.intro;
 import org.minima.utils.ResponseStream;
 import org.minima.utils.json.JSONObject;
@@ -46,6 +47,9 @@ public class InputHandler extends SystemHandler{
 	protected void processMessage(Message zMessage) throws Exception {
 		
 		if(zMessage.isMessageType(INPUT_COMMAND)) {
+			//Notify something happening..
+			getMainHandler().getConsensusHandler().updateListeners(new Message(ConsensusHandler.CONSENSUS_NOTIFY_ACTION));
+			
 			//Process the input
 			String input = zMessage.getString(INPUT_FUNCTION);
 			
