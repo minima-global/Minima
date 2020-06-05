@@ -603,21 +603,24 @@ public class ConsensusPrint extends ConsensusProcessor {
 			//Do we notify..
 			String balancestring = totbal.toString();
 			
-			//Is this a notification message for the listeners..
-			if(!balancestring.equals(mOldWebSocketBalance)) {
-				//Store for later.. 
-				mOldWebSocketBalance = balancestring;
-				
-				MinimaLogger.log("NEW BALANCE : "+mOldWebSocketBalance);
-				
-				//Send this to the WebSocket..
-				JSONObject newbalance = new JSONObject();
-				newbalance.put("event","newbalance");
-				newbalance.put("balance",totbal);
-				
-				Message msg = new Message(NetworkHandler.NETWORK_WS_NOTIFY);
-				msg.addString("message", newbalance.toString());
-				getConsensusHandler().getMainHandler().getNetworkHandler().PostMessage(msg);
+			//Is this a notification message for the listeners.. only if is the total Balance..
+			if(onlyaddress.equals("")) {
+				//Same as the old ?
+				if(!balancestring.equals(mOldWebSocketBalance)) {
+					//Store for later.. 
+					mOldWebSocketBalance = balancestring;
+					
+					MinimaLogger.log("NEW BALANCE : "+mOldWebSocketBalance);
+					
+					//Send this to the WebSocket..
+					JSONObject newbalance = new JSONObject();
+					newbalance.put("event","newbalance");
+					newbalance.put("balance",totbal);
+					
+					Message msg = new Message(NetworkHandler.NETWORK_WS_NOTIFY);
+					msg.addString("message", newbalance.toString());
+					getConsensusHandler().getMainHandler().getNetworkHandler().PostMessage(msg);
+				}
 			}
 			
 		}else if(zMessage.isMessageType(CONSENSUS_COINSIMPLE)){

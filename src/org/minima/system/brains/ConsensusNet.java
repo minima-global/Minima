@@ -248,6 +248,8 @@ public class ConsensusNet extends ConsensusProcessor {
 						if(txpow.hasBody()) {
 							ArrayList<MiniData> txns = txpow.getBlockTransactions();
 							for(MiniData txn : txns) {
+								//MinimaLogger.log("REQ TXN from initial sync "+txn);
+								
 								//We don't have it, get it..
 								sendTxPowRequest(zMessage, txn);
 								reqtxn++;
@@ -469,8 +471,9 @@ public class ConsensusNet extends ConsensusProcessor {
 			
 			//Now check the Transaction - if it fails, could already be in a block..
 			//THIS ONLY from the starter sync.. and adds tokens found..
+			//Also - Gimme50 transactions PASS even though they are already in blocks.. need to check for them..
 			boolean trxok = TxPoWChecker.checkTransactionMMR(txpow, getMainDB());
-			if(!trxok) {
+			if(!trxok || txpow.getTransaction().isGimme50()) {
 				//Is it Already in a VALID block?
 				TxPoW validblock = getMainDB().findBlockForTransaction(txpow);
 				if(validblock != null) {

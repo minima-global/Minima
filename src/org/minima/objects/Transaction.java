@@ -15,6 +15,7 @@ import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.proofs.TokenProof;
+import org.minima.system.input.functions.gimme50;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
@@ -125,6 +126,20 @@ public class Transaction implements Streamable {
 			}
 		}
 		return tot;
+	}
+	
+	/**
+	 * Is this a Gimme50 transaction.. ?
+	 * @return
+	 */
+	public boolean isGimme50() {
+		for(Coin input : mInputs) {
+			if(input.getCoinID().isEqual(gimme50.COINID_INPUT) && input.getAmount().isLessEqual(new MiniNumber("50"))){
+				return true;
+			}
+		}	
+		
+		return false;
 	}
 	
 	/**
