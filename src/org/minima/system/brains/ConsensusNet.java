@@ -512,7 +512,7 @@ public class ConsensusNet extends ConsensusProcessor {
 			MiniData parentID = txpow.getParentID();
 			if(getMainDB().getTxPOW(parentID)==null) {
 				//We don't have it, get it..
-				MinimaLogger.log("Request Parent TxPoW @ "+txpow.getBlockNumber()+" parent:"+parentID); 
+				//MinimaLogger.log("Request Parent TxPoW @ "+txpow.getBlockNumber()+" parent:"+parentID); 
 				sendTxPowRequest(zMessage, parentID);
 			}
 
@@ -520,7 +520,7 @@ public class ConsensusNet extends ConsensusProcessor {
 			ArrayList<MiniData> txns = txpow.getBlockTransactions();
 			for(MiniData txn : txns) {
 				if(getMainDB().getTxPOW(txn) == null ) {
-					MinimaLogger.log("Request missing TxPoW in block "+txpow.getBlockNumber()+" "+txn);
+					//MinimaLogger.log("Request missing TxPoW in block "+txpow.getBlockNumber()+" "+txn);
 					sendTxPowRequest(zMessage, txn);
 				}
 			}
