@@ -483,10 +483,12 @@ public class MinimaDB {
 	}
 	
 	/**
-	 * When you mine a transaction these must be talen into account from coin selection
+	 * When you mine a transaction these must be taken 
+	 * into account from coin selection
+	 * 
+	 * Return true if is a NEW transaction..
 	 */
-	
-	public void addMiningTransaction(Transaction zTrans) {
+	public boolean addMiningTransaction(Transaction zTrans) {
 		//Hash it..
 		MiniData transhash = Crypto.getInstance().hashObject(zTrans, 160);
 		String hash        = transhash.to0xString();
@@ -494,11 +496,13 @@ public class MinimaDB {
 		//Do we have it..
 		Transaction prev = mMiningTransactions.get(hash);
 		if(prev!=null) {
-			return;
+			return false;
 		}
 		
 		//Add it..
 		mMiningTransactions.put(hash, zTrans);
+		
+		return true;
 	}
 	
 	public void remeoveMiningTransaction(Transaction zTrans) {

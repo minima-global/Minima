@@ -76,6 +76,8 @@ public class ConsensusHandler extends SystemHandler {
 	public static final String CONSENSUS_NOTIFY_BALANCE 	= "CONSENSUS_NOTIFY_BALANCE";
 	public static final String CONSENSUS_NOTIFY_NEWBLOCK 	= "CONSENSUS_NOTIFY_NEWBLOCK";
 	public static final String CONSENSUS_NOTIFY_ACTION 	    = "CONSENSUS_NOTIFY_ACTION";
+	public static final String CONSENSUS_NOTIFY_MINESTART 	= "CONSENSUS_NOTIFY_MINESTART";
+	public static final String CONSENSUS_NOTIFY_MINEEND 	= "CONSENSUS_NOTIFY_MINEEND";
 	public static final String CONSENSUS_NOTIFY_INITIALSYNC = "CONSENSUS_NOTIFY_INITIALSYNC";
 	
 		
@@ -427,7 +429,16 @@ public class ConsensusHandler extends SystemHandler {
 			}
 					
 			//Add to the list of Mined Coins!
-			getMainDB().addMiningTransaction(txpow.getTransaction());
+			boolean newtrans = getMainDB().addMiningTransaction(txpow.getTransaction());
+			if(newtrans) {
+				//Notify listeners that Mining is starting...
+				JSONObject mining = new JSONObject();
+				mining.put("event","txpowstart");
+				mining.put("transaction",txpow.getTransaction().toJSON().toString());
+				
+				Message wsmsg = new Message(NetworkHandler.NETWORK_WS_NOTIFY).addString("message", mining.toString());
+				getMainHandler().getNetworkHandler().PostMessage(wsmsg);
+			}
 			
 			//Send it to the Miner.. This is the ONLY place this happens..
 			Message mine = new Message(TxPoWMiner.TXMINER_MINETXPOW).addObject("txpow", txpow);
@@ -553,6 +564,14 @@ public class ConsensusHandler extends SystemHandler {
 			//And now forward the message to the single entry point..
 			Message msg = new Message(ConsensusNet.CONSENSUS_NET_CHECKSIZE_TXPOW).addObject("txpow", txpow);
 			PostMessage(msg);
+			
+			//Notify listeners that Mining is starting...
+			JSONObject mining = new JSONObject();
+			mining.put("event","txpowend");
+			mining.put("transaction",txpow.getTransaction().toJSON().toString());
+			
+			Message wsmsg = new Message(NetworkHandler.NETWORK_WS_NOTIFY).addString("message", mining.toString());
+			getMainHandler().getNetworkHandler().PostMessage(wsmsg);
 			
 		}else if(zMessage.isMessageType(CONSENSUS_GIMME50)) {
 			//Check time
