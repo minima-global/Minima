@@ -61,12 +61,6 @@ public class NetClientReader implements Runnable {
 	public static final MiniByte NETMESSAGE_TXPOW			= new MiniByte(3);
 	
 	/**
-	 * Greeting message that tells what Net Protocol this peer speaks, and a complete block chain header list. Any Blocks 
-	 * the peer doesn't have he can request. Both peers send this to each other when they connect.
-	 */
-	public static final MiniByte NETMESSAGE_GREETING		= new MiniByte(6);
-	
-	/**
 	 * Request the full details of a list of TxPow. You only send the top TxPoW 
 	 * and a number for the parents required
 	 */
@@ -76,6 +70,12 @@ public class NetClientReader implements Runnable {
 	 * A list of TxPoW details
 	 */
 	public static final MiniByte NETMESSAGE_TXPOWLIST	      = new MiniByte(5);
+	
+	/**
+	 * Greeting message that tells what Net Protocol this peer speaks, and a complete block chain header list. Any Blocks 
+	 * the peer doesn't have he can request. Both peers send this to each other when they connect.
+	 */
+	public static final MiniByte NETMESSAGE_GREETING		= new MiniByte(6);
 	
 	/**
 	 * Netclient owner
