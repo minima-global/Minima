@@ -228,6 +228,9 @@ public class NetClientReader implements Runnable {
 			MinimaLogger.log("MEMORY ERROR..");
 			exc.printStackTrace();
 			
+			//DRASTIC ACTION..
+			//System.exit(99);
+			
 		}catch(Exception exc) {
 			//General Exception	
 			MinimaLogger.log("NETCLIENTREADER ERROR..");
