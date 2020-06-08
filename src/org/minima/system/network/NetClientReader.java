@@ -215,10 +215,11 @@ public class NetClientReader implements Runnable {
 				consensus.PostMessage(rec);
 			}
 		
-//		}catch(SocketException exc) {
-//			//Network error.. reset and reconnect..
-//		}catch(IOException exc) {
+		}catch(SocketException exc) {
 			//Network error.. reset and reconnect..
+		}catch(IOException exc) {
+			//Network error.. reset and reconnect..
+		
 		}catch(ProtocolException exc) {
 			MinimaLogger.log("PROTOCOL ERROR..");
 			exc.printStackTrace();
@@ -229,8 +230,9 @@ public class NetClientReader implements Runnable {
 			
 		}catch(Exception exc) {
 			//General Exception	
-			MinimaLogger.log("NetClientReader closed UID "+mNetClient.getUID()+" exc:"+exc);
-//			exc.printStackTrace();
+			MinimaLogger.log("NETCLIENTREADER ERROR..");
+			exc.printStackTrace();
+		
 		}
 		
 		//Tell the network Handler
