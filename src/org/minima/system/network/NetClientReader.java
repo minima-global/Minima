@@ -219,8 +219,14 @@ public class NetClientReader implements Runnable {
 //			//Network error.. reset and reconnect..
 //		}catch(IOException exc) {
 			//Network error.. reset and reconnect..
-//		}catch(ProtocolException exc) {
-			//Protocol exception..
+		}catch(ProtocolException exc) {
+			MinimaLogger.log("PROTOCOL ERROR..");
+			exc.printStackTrace();
+			
+		}catch(OutOfMemoryError exc) {
+			MinimaLogger.log("MEMORY ERROR..");
+			exc.printStackTrace();
+			
 		}catch(Exception exc) {
 			//General Exception	
 			MinimaLogger.log("NetClientReader closed UID "+mNetClient.getUID()+" exc:"+exc);
