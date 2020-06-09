@@ -206,9 +206,6 @@ public class MiniNumber implements Streamable {
 		int len = data.length;
 		zOut.writeInt(len);
 		zOut.write(data);
-		
-		//Simples
-//		zOut.writeUTF(toString());
 	}
 
 	@Override
@@ -229,9 +226,6 @@ public class MiniNumber implements Streamable {
 		//And create..
 		BigInteger unscaled = new BigInteger(data);
 		mNumber = new BigDecimal(unscaled,scale,mMathContext);
-		
-		//Simples
-//		mNumber = new BigDecimal(zIn.readUTF(),mMathContext);
 	}
 
 	public static MiniNumber ReadFromStream(DataInputStream zIn) throws IOException{
