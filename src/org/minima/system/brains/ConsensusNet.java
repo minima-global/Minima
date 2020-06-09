@@ -10,6 +10,7 @@ import org.minima.GlobalParams;
 import org.minima.database.MinimaDB;
 import org.minima.database.mmr.MMRSet;
 import org.minima.database.txpowdb.TxPOWDBRow;
+import org.minima.database.txpowtree.BlockTree;
 import org.minima.database.txpowtree.BlockTreeNode;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
@@ -91,17 +92,23 @@ public class ConsensusNet extends ConsensusProcessor {
 			//An initial Greeting message..
 			Greeting greet = new Greeting();
 			
-			//Get the complete sync package - deep copy.. 
-			SyncPackage total = getMainDB().getSyncPackage(true);
+			//Get the Tree
+			BlockTree tree = getMainDB().getMainTree();
 			
-			//Add the chain excluding the cascade..
-			ArrayList<SyncPacket> packets = total.getAllNodes();
-			for(SyncPacket sp : packets) {
-				TxPoW txpow      = sp.getTxPOW();
-				MiniNumber block = txpow.getBlockNumber();
-				if(block.isMoreEqual(total.getCascadeNode())) {
-					greet.addBlock(txpow.getTxPowID(), txpow.getBlockNumber());	
-				}		
+			//Is there anything.. ?
+			if(tree.getChainRoot()!=null) {
+				//Cascade Node
+				MiniNumber casc = tree.getCascadeNode().getTxPow().getBlockNumber();
+				ArrayList<BlockTreeNode> nodes = tree.getAsList(true);
+				
+				//Cycle through it all..
+				for(BlockTreeNode node : nodes) {
+					TxPoW txpow = node.getTxPow();
+					MiniNumber block = txpow.getBlockNumber();
+					if(block.isMoreEqual(casc)) {
+						greet.addBlock(txpow.getTxPowID(), block);
+					}
+				}
 			}
 			
 			//Get the NetClient...
@@ -512,7 +519,7 @@ public class ConsensusNet extends ConsensusProcessor {
 			MiniData parentID = txpow.getParentID();
 			if(getMainDB().getTxPOW(parentID)==null) {
 				//We don't have it, get it..
-				//MinimaLogger.log("Request Parent TxPoW @ "+txpow.getBlockNumber()+" parent:"+parentID); 
+				MinimaLogger.log("Request Parent TxPoW @ "+txpow.getBlockNumber()+" parent:"+parentID); 
 				sendTxPowRequest(zMessage, parentID);
 			}
 
@@ -520,7 +527,7 @@ public class ConsensusNet extends ConsensusProcessor {
 			ArrayList<MiniData> txns = txpow.getBlockTransactions();
 			for(MiniData txn : txns) {
 				if(getMainDB().getTxPOW(txn) == null ) {
-					//MinimaLogger.log("Request missing TxPoW in block "+txpow.getBlockNumber()+" "+txn);
+					MinimaLogger.log("Request missing TxPoW in block "+txpow.getBlockNumber()+" "+txn);
 					sendTxPowRequest(zMessage, txn);
 				}
 			}
