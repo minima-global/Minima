@@ -169,6 +169,8 @@ public class NetworkHandler extends SystemHandler{
 			stopMessageProcessor();
 
 		}else if(zMessage.isMessageType(NETWORK_WS_NOTIFY)) {
+			//System.out.println(zMessage);
+			
 			//What is the message..
 			String json = zMessage.getString("message");
 					

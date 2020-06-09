@@ -2,6 +2,7 @@
 <head>
 
 	<link rel="stylesheet" type="text/css" href="css/minidapps.css">
+	<!--   <script type="text/javascript" src="js/minima.js"></script>-->
 	
 	<!--  <meta name="viewport" content="width=700, initial-scale=1, maximum-scale=1"> -->
 
@@ -19,6 +20,15 @@
 		function handleFiles() {
 		  document.getElementById('installform').submit();
 		}
+		
+		/*window.addEventListener('MinimaEvent', function(evt) {
+			if(evt.detail.event == "connected"){
+	 			Minima.util.setUID("MiniHUB");
+	 		}else if(evt.detail.event == "newblock"){}
+	    });
+		Minima.showmining = true;
+		Minima.init();*/
+		
 	});
 	
 
