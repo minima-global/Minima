@@ -144,12 +144,27 @@ public class WebSocketManager extends SystemHandler {
 			newmessage.put("message",message);
 			newmessage.put("functionid",funcid);
 			newmessage.put("from",from);
+			newmessage.put("error","");
 			
 			//Send a message to one of the listeners..
 			Enumeration<MinimaWebSocket> clients = mMininaSockets.elements();
 			while(clients.hasMoreElements()) {
 				MinimaWebSocket client = clients.nextElement();
 				if(client.getUID().equals(uid)) {
+					client.send(newmessage.toString());
+					return;
+				}
+			}
+			
+			//MiniDAPP not found of that UID..
+			newmessage.put("event","newreply");
+			newmessage.put("error",uid+" not found");
+			
+			//Search again but this time back to the original
+			clients = mMininaSockets.elements();
+			while(clients.hasMoreElements()) {
+				MinimaWebSocket client = clients.nextElement();
+				if(client.getUID().equals(from)) {
 					client.send(newmessage.toString());
 					return;
 				}
