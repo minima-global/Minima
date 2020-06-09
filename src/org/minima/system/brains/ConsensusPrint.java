@@ -30,6 +30,7 @@ import org.minima.system.Main;
 import org.minima.system.input.InputHandler;
 import org.minima.system.network.NetClient;
 import org.minima.system.network.NetworkHandler;
+import org.minima.system.network.minidapps.DAPPManager;
 import org.minima.utils.Maths;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
@@ -62,6 +63,8 @@ public class ConsensusPrint extends ConsensusProcessor {
 	public static final String CONSENSUS_NETWORK 			= CONSENSUS_PREFIX+"NETWORK";
 	
 	public static final String CONSENSUS_PRINTCHAIN_TREE 	= CONSENSUS_PREFIX+"PRINTCHAIN_TREE";
+	
+	public static final String CONSENSUS_MINIDAPPS 			= CONSENSUS_PREFIX+"MINIDAPPS";
 	
 	/**
 	 * The Old Balance that was sent to the listeners..
@@ -951,6 +954,38 @@ public class ConsensusPrint extends ConsensusProcessor {
 			
 			//Add it to the output
 			InputHandler.endResponse(zMessage, true, "");
+		
+		}else if(zMessage.isMessageType(CONSENSUS_MINIDAPPS)){
+			String name = ""; 
+			if(zMessage.exists("name")) {
+				name = zMessage.getString("name");
+			}
+			
+			//Search..
+			DAPPManager dapps = getConsensusHandler().getMainHandler().getNetworkHandler().getDAPPManager();
+			JSONArray minis   = dapps.getMiniDAPPS();
+			
+			//Get the response JSON
+			JSONObject mdapps = InputHandler.getResponseJSON(zMessage);
+			
+			if(!name.equals("")) {
+				for(Object mdapp : minis) {
+					JSONObject jobj = (JSONObject)mdapp;
+					if(jobj.get("name").toString().equalsIgnoreCase(name)) {
+						mdapps.put("minidapp", jobj);
+						InputHandler.endResponse(zMessage, true, "MiniDAPP "+name+" found");
+						return;
+					}
+				}
+				
+				InputHandler.endResponse(zMessage, false, "MiniDAPP "+name+" not found");
+				
+			}else {
+				mdapps.put("count", minis.size());
+				mdapps.put("minidapps", minis);
+				
+				InputHandler.endResponse(zMessage, true, "");	
+			}
 		}
 	}
 	

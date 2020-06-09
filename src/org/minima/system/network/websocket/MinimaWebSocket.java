@@ -13,7 +13,7 @@ public class MinimaWebSocket extends WebSocket {
 
 	WebSocketManager mManager;
 	
-	String UID;
+	String UID = "0x00";
 	
 	public MinimaWebSocket(IHTTPSession zHTTPSession, WebSocketManager zManager) {
 		super(zHTTPSession);
@@ -34,6 +34,7 @@ public class MinimaWebSocket extends WebSocket {
 		//Tell the manager
 		Message msg = new Message(WebSocketManager.WEBSOCK_ONOPEN);
 		msg.addObject("wsclient", this);
+		msg.addString("uid", getUID());
 		mManager.PostMessage(msg);	
 	}
 
@@ -42,6 +43,7 @@ public class MinimaWebSocket extends WebSocket {
 		//Tell the manager
 		Message msg = new Message(WebSocketManager.WEBSOCK_ONCLOSE);
 		msg.addObject("wsclient", this);
+		msg.addString("uid", getUID());
 		mManager.PostMessage(msg);
 	}
 
@@ -50,6 +52,7 @@ public class MinimaWebSocket extends WebSocket {
 		//Tell the manager
 		Message msg = new Message(WebSocketManager.WEBSOCK_ONMESSAGE);
 		msg.addObject("wsclient", this);
+		msg.addString("uid", getUID());
 		msg.addString("message", message.getTextPayload());
 		mManager.PostMessage(msg);
 	}
@@ -62,6 +65,7 @@ public class MinimaWebSocket extends WebSocket {
 		//Tell the manager
 		Message msg = new Message(WebSocketManager.WEBSOCK_ONEXCEPTION);
 		msg.addObject("wsclient", this);
+		msg.addString("uid", getUID());
 		msg.addString("exception", exception.toString());
 		mManager.PostMessage(msg);
 	}
