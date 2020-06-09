@@ -9,7 +9,7 @@ public class minidapps extends CommandFunction {
 	public minidapps() {
 		super("minidapps");
 		
-		setHelp("(name)", "Return a list of all the MiniDAPPs currently installed - or search for the named one", "");
+		setHelp("(name)", "Return a list of all the MiniDAPPs currently installed - or search for a specific one", "");
 	}
 	
 	@Override

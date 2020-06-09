@@ -13,20 +13,22 @@ public class MinimaWebSocket extends WebSocket {
 
 	WebSocketManager mManager;
 	
-	String UID = "0x00";
+	//Unset
+	String mUID = "0x00";
 	
 	public MinimaWebSocket(IHTTPSession zHTTPSession, WebSocketManager zManager) {
 		super(zHTTPSession);
 		
 		//When connection closed can notify
 		mManager = zManager;
-		
-		//A Unique ID
-		UID = MiniData.getRandomData(32).to0xString();
 	}
 	
 	public String getUID() {
-		return UID;
+		return mUID;
+	}
+	
+	public void setUID(String zUID) {
+		mUID=zUID;
 	}
 	
 	@Override
