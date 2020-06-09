@@ -358,7 +358,7 @@ public class ConsensusNet extends ConsensusProcessor {
 			//Cycle through and add as a normal message - extra transactions will be requested as normal
 			ArrayList<TxPoW> txps = txplist.getList();
 			for(TxPoW txp : txps) {
-				Message msg = new Message(CONSENSUS_NET_CHECKSIZE_TXPOW);
+				Message msg = new Message(CONSENSUS_NET_TXPOW);
 				msg.addObject("txpow", txp);
 				msg.addObject("netclient", client);
 				getConsensusHandler().PostMessage(msg);
