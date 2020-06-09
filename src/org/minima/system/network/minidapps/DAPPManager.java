@@ -134,11 +134,16 @@ public class DAPPManager extends SystemHandler {
 	    	String minstring = new String(minima, Charset.forName("UTF-8"));
 	    
 	    	//Now replace the center string..
-		    String editstring = minstring.replace("######", "var MINIMA_MINIDAPP_HOST = \""+zHost+":"+zPort+"\";");
+		    String editstring = minstring.replace("var MINIMA_MINIDAPP_HOST = \"127.0.0.1:8999\";", 
+										    	  "var MINIMA_MINIDAPP_HOST = \""+zHost+":"+zPort+"\";");
 	 
 		    //Replace the Websocket Server IP..
 		    editstring = editstring.replace("ws://127.0.0.1:20999", "ws://"+zHost+":20999");
-			 
+			
+		    //It's a MiniDAPP
+		    editstring = editstring.replace("var MINIMA_IS_MINIDAPP = false;", 
+		    		                        "var MINIMA_IS_MINIDAPP = true;");
+			
 		    //Now convert to bytes..
 		    mMINIMAJS = editstring.getBytes();
 	    

@@ -14,17 +14,14 @@
 /**
  * Are we running in MINIDAPP mode
  */
-var MINIMA_IS_MINIDAPP    = true;
+var MINIMA_IS_MINIDAPP = false;
 
 /**
  * When running as MiniDAPP Where is the Server host RPC
  * 
  * This replaced AUTOMATICALLY by the Minima App..
  */
-
-######
-
-//var MINIMA_MINIDAPP_HOST = "127.0.0.1:8999";
+var MINIMA_MINIDAPP_HOST = "127.0.0.1:8999";
 
 /**
  * The Web Socket Host
@@ -47,6 +44,9 @@ var LOGOUT_BUTTON   = "MINIMA_LOGOUT_BUTTON";
 var WEBSOCK         = null;
 var MINIMACONNECTED = false;
 
+var MINIMA_COMMS_SOCK = null;
+var MINIDAPP_FUNCSTORE_LIST = [];
+
 /**
  * Main MINIMA Object for all interaction
  */
@@ -58,6 +58,7 @@ var Minima = {
 	balance : {},
 	uuid : Math.floor(Math.random()*1000000000),
 	logging : true,
+	showmining : false,
 	
 	//Minima Startup
 	init : function(){
@@ -77,6 +78,12 @@ var Minima = {
 				//Use it..
 				Minima.host = ip;
 				
+				//Now set the websocket Host
+			    var justhost = Minima.host.indexOf(":");
+			    var justip   = Minima.host.substring(0,justhost);
+			    MINIMA_WEBSOCKET_HOST = "ws://"+justip+":20999";
+			    Minimalog("Minima Websocket set "+Minima.host);
+			    
 				//Show Logout.. in case we need to as previous connection is broken
 				show(LOGOUT_BUTTON);
 				
@@ -186,8 +193,86 @@ var Minima = {
 				
 				//Not found
 				return null;
-			}
+			},
 			
+			notify : function(message){
+				if(!Minima.showmining){
+					return;
+				}
+				
+				//Do we support notifications
+				if (!("Notification" in window)) {
+				    console.log("This browser does not support notifications");
+					return;
+				}
+				
+				var options = {
+				      body: message
+				  }
+			
+				//Do we already have permissions..
+				if (Notification.permission === "granted") {
+				    // If it's okay let's create a notification
+				    var notification = new Notification("Minima",options);
+				    
+				}else if (Notification.permission !== "denied") {
+				    Notification.requestPermission().then(function (permission) {
+				      // If the user accepts, let's create a notification
+				      if (permission === "granted") {
+				    	  var notification = new Notification("Minima",options);
+				      }
+				    });
+			    }
+			},
+			
+			send : function(minidappid, message, callback){
+				//Check connected
+				if(MINIMA_COMMS_SOCK.readyState !== WebSocket.OPEN){
+					console.log("SEND Comms WebSocket not open.. "+MINIMA_COMMS_SOCK.readyState);
+					return false;
+				}
+				
+				//Create a random number to track this function call..
+				var funcid = ""+Math.floor(Math.random()*1000000000);
+				
+				//Construct a JSON object
+				msg = { "type":"message", "to":minidappid, "funcid":funcid, "message":message };
+
+				//Add this Funcid and this callback to the list.. when you receive a reply 
+				//you can respond to the correct callback
+				funcstore = { "functionid":funcid, "callback":callback };
+				MINIDAPP_FUNCSTORE_LIST.push(funcstore);
+				
+				//And send it..
+				MINIMA_COMMS_SOCK.send(JSON.stringify(msg));
+			},
+			
+			reply : function(evt, message){
+				//Get the reply id
+				var replyid = evt.detail.info.replyid;
+				var replyto = evt.detail.info.from;
+				
+				//Check connected
+				if(MINIMA_COMMS_SOCK.readyState !== WebSocket.OPEN){
+					console.log("REPLY Comms WebSocket not open.. "+MINIMA_COMMS_SOCK.readyState);
+					return false;
+				}
+				
+				//Construct a JSON object
+				msg = { "type":"reply", "to":replyto, "replyid":replyid, "message":message };
+
+				//And send it..
+				MINIMA_COMMS_SOCK.send(JSON.stringify(msg));
+			},
+			
+			setUID : function(uid){
+				//UID JSON Message
+				uid = { "type":"uid", "location": window.location.href, "uid":uid };
+				
+				//Send your name.. normally set automagically but can be hard set when debugging
+				MINIMA_COMMS_SOCK.send(JSON.stringify(uid));
+			}
+				
 	}
 	
 };
@@ -207,6 +292,9 @@ function postMinimaMessage(event, info){
  * @returns
  */
 function initialStatus(){
+	//Start Listening for messages..
+	startWebSocketListener();
+	
 	//Encoded rpc call
 	var rpc = "http://"+Minima.host+"/"+encodeURIComponent("status;balance");
 	
@@ -232,9 +320,6 @@ function initialStatus(){
 	   
 	    //Send a message
 	    postMinimaMessage("connected", "success");
-	    
-	    //Start Listening for messages..
-		startWebSocketListener();
    });
 }
 
@@ -244,8 +329,7 @@ function advancedConnect(){
 	
 	//Default to local host
 	if(host == ''){
-		alert("Connecting to 127.0.0.1:8999");
-		
+		alert("Connecting to 127.0.0.1:8999");	
 		host = "127.0.0.1:8999";
 	}
 	
@@ -255,6 +339,14 @@ function advancedConnect(){
     //Set it..
     Minima.host = host;
     Minimalog("Host set "+Minima.host);
+    
+    //Now set the websocket Host
+    var justhost = host.indexOf(":");
+    var justip = host.substring(0,justhost);
+    console.log("JUST IP "+justip);
+    
+    MINIMA_WEBSOCKET_HOST = "ws://"+justip+":20999";
+    Minimalog("Minima Websocket set "+Minima.host);
     
     //Run Status once to populate the main details..
     initialStatus();
@@ -276,9 +368,6 @@ function startWebSocket(){
 	
 	WEBSOCK.onopen = function() {
 		Minimalog("WS Connection opened to the Minima Proxy..");
-		
-	   // Web Socket is connected, send data using send()
-	   WEBSOCK.send(Minima.uuid);
 	};
 	
 	WEBSOCK.onmessage = function (evt) { 
@@ -319,13 +408,14 @@ function startWebSocketListener(){
 	Minimalog("Starting WebSocket Listener @ "+MINIMA_WEBSOCKET_HOST);
 	
 	//Open up a websocket to the main MINIMA proxy..
-	var minimaws = new WebSocket(MINIMA_WEBSOCKET_HOST);
+	MINIMA_COMMS_SOCK = new WebSocket(MINIMA_WEBSOCKET_HOST);
 	
-	minimaws.onopen = function() {
-		Minimalog("Minima WS Listener Connection opened..");
+	MINIMA_COMMS_SOCK.onopen = function() {
+		//Connected
+		Minimalog("Minima WS Listener Connection opened..");	
 	};
 	
-	minimaws.onmessage = function (evt) { 
+	MINIMA_COMMS_SOCK.onmessage = function (evt) { 
 		//Convert to JSON	
 		var jmsg = JSON.parse(evt.data);
 		
@@ -350,21 +440,60 @@ function startWebSocketListener(){
 			postMinimaMessage("newbalance",jmsg.balance);
 		
 		}else if(jmsg.event == "newmessage"){
-			//Received a message from another MiniDAPP	
+			//Create a nice JSON message
+			var msgdata = { "message":jmsg.message, "replyid":jmsg.functionid, "from":jmsg.from}; 
 			
+			//Post it..
+			postMinimaMessage("newmessage",msgdata);
+		
+		}else if(jmsg.event == "newreply"){
+			var funclen = MINIDAPP_FUNCSTORE_LIST.length;
+			for(i=0;i<funclen;i++){
+				if(MINIDAPP_FUNCSTORE_LIST[i].functionid == jmsg.functionid){
+					//Get the callback
+					callback = MINIDAPP_FUNCSTORE_LIST[i].callback;
+					
+					//Was there an ERROR
+					if(jmsg.error !== ""){
+						//Log the error
+						console.log("Message Error : "+jmsg.error);
+					}else{
+						//call it with the reply message
+						callback(jmsg.message);
+					}
+					
+					//And remove it from the list..
+					MINIDAPP_FUNCSTORE_LIST.splice(i,1);
+					
+					//All done
+					return;
+				}
+			}
+			
+			//Not found..
+			console.log("REPLY CALLBACK NOT FOUND "+JSON.stringify(jmsg));
+			
+		}else if(jmsg.event == "txpowstart"){
+			console.log("Mining start!");
+			Minima.util.notify("Mining Transaction Started!");	
+			
+		}else if(jmsg.event == "txpowend"){
+			console.log("Mining end!");
+			Minima.util.notify("Mining Transaction Finished!");
 		}
 	};
 		
-	minimaws.onclose = function() { 
+	MINIMA_COMMS_SOCK.onclose = function() { 
 		Minimalog("Minima WS Listener closed... reconnect attempt in 30 seconds");
 	
 		//Start her up in a minute..
 		setTimeout(function(){ startWebSocketListener(); }, 30000);
 	};
 
-	minimaws.onerror = function(error) {
+	MINIMA_COMMS_SOCK.onerror = function(error) {
 		//var err = JSON.stringify(error);
 		var err = JSON.stringify(error, ["message", "arguments", "type", "name", "data"])
+		
 		// websocket is closed.
 	    Minimalog("Minima WS Listener Error ... "+err); 
 	};
