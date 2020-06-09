@@ -220,8 +220,6 @@ public class NetClient extends MessageProcessor {
 			Message init = new Message(ConsensusNet.CONSENSUS_NET_INITIALISE);
 			init.addObject("netclient", this);
 			getMain().getConsensusHandler().PostMessage(init);
-		
-			
 			
 		}else if(zMessage.isMessageType(NETCLIENT_GREETING)) {
 			Greeting greet = (Greeting)zMessage.getObject("greeting");

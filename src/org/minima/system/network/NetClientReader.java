@@ -25,21 +25,23 @@ import org.minima.utils.messages.Message;
 public class NetClientReader implements Runnable {
 	
 	/**
-	 * Temporary Maximum Message sizes..
+	 * Maximum Message sizes..
 	 */
 	
-	//10 MB MAX INTRO
-	public static final int MAX_INTRO = 1024 * 1000 * 10;
+	//20 MB MAX INTRO / Greeting / and TxPoW List
+	public static final int MAX_INTRO = 1024 * 1000 * 20;
 	
-	//10 KB MAX MESSAGE
+	//20 KB MAX MESSAGE
 	public static final int MAX_TXPOW = 1024 * 20;
 			
 	//The Length of a TxPoWID message 64 + 4 byte int
 	public static final int TXPOWID_LEN = Crypto.MINIMA_DEFAULT_MAX_HASH_LENGTH + 4;
 	
+	//The Max length of the greeting message..
+	public static final int MAX_TXPOW_LIST_REQ = 128;
+		
 	/**
-	 * Greeting message that tells what Net Protocol this peer speaks, and a complete block chain header list. Any Blocks 
-	 * the peer doesn't have he can request. Both peers send this to each other when they connect.
+	 * If the peers don;t intersect a complete Sync Package is sent in this
 	 */
 	public static final MiniByte NETMESSAGE_INTRO			= new MiniByte(0);
 	
@@ -111,18 +113,33 @@ public class NetClientReader implements Runnable {
 				int len = MiniNumber.ReadFromStream(mInput).getAsInt();
 				
 				//Check within acceptable parameters - this should be set in TxPoW header.. for now fixed
-				if(msgtype.isEqual(NETMESSAGE_TXPOWID) || msgtype.isEqual(NETMESSAGE_TXPOW_REQUEST)) {
+				if( msgtype.isEqual(NETMESSAGE_TXPOWID) || 
+					msgtype.isEqual(NETMESSAGE_TXPOW_REQUEST)) {
+					
 					if(len > TXPOWID_LEN) {
-						throw new ProtocolException("Receive Invalid Message length for TXPOWID "+len);
+						throw new ProtocolException("Receive Invalid Message length for TXPOWID type:"+msgtype+" len:"+len);
 					}
-				}else if(msgtype.isEqual(NETMESSAGE_INTRO)) {
+					
+				}else if(msgtype.isEqual(NETMESSAGE_INTRO) || 
+						 msgtype.isEqual(NETMESSAGE_GREETING) || 
+						 msgtype.isEqual(NETMESSAGE_TXPOWLIST)) {
+					
 					if(len > MAX_INTRO) {
-						throw new ProtocolException("Receive Invalid Message length for TXPOW_INTRO "+len);
+						throw new ProtocolException("Receive Invalid Message length for TXPOW_INTRO type:"+msgtype+" len:"+len);
 					}
+					
 				}else if(msgtype.isEqual(NETMESSAGE_TXPOW)) {
+					
 					if(len > MAX_TXPOW) {
-						throw new ProtocolException("Receive Invalid Message length for TXPOW "+len);
+						throw new ProtocolException("Receive Invalid Message length for TXPOW type:"+msgtype+" len:"+len);
 					}
+					
+				}else if(msgtype.isEqual(NETMESSAGE_TXPOWLIST_REQUEST)) {
+					
+					if(len > MAX_TXPOW_LIST_REQ) {
+						throw new ProtocolException("Receive Invalid Message length for MAX_TXPOW_LIST_REQ type:"+msgtype+" len:"+len);
+					}
+					
 				}
 			
 				//Now read in the full message
@@ -228,7 +245,7 @@ public class NetClientReader implements Runnable {
 			MinimaLogger.log("MEMORY ERROR..");
 			exc.printStackTrace();
 			
-			//DRASTIC ACTION..
+			//DRASTIC ACTION.. Use ONLY if bash script in place to restart on Exit
 			//System.exit(99);
 			
 		}catch(Exception exc) {
