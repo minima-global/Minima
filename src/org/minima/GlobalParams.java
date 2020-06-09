@@ -42,7 +42,7 @@ public class GlobalParams {
 	public static final int MINIMA_MINUMUM_CASCADE_LEVEL_NODES  = 128;
 	
 	/**
-	 * How Many Cascade Levels are there
+	 * How Many Cascade Levels are there 0-20
 	 */
 	public static final int MINIMA_CASCADE_LEVELS  = 21;
 	
