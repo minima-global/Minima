@@ -227,15 +227,15 @@ var Minima = {
 				if (Notification.permission === "granted") {
 				    // If it's okay let's create a notification
 				    var notification = new Notification("Minima",options);
-				    
-				}else if (Notification.permission !== "denied") {
+				}else{
+					//if (Notification.permission !== "denied")
 				    Notification.requestPermission().then(function (permission) {
 				      // If the user accepts, let's create a notification
 				      if (permission === "granted") {
 				    	  var notification = new Notification("Minima",options);
 				      }
 				    });
-			    }
+				}
 			},
 			
 			send : function(minidappid, message, callback){
