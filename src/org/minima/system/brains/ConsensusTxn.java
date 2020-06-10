@@ -586,11 +586,10 @@ public class ConsensusTxn extends ConsensusProcessor {
 			
 			//And Check the actual Transaction..
 			BlockTreeNode tip = getMainDB().getMainTree().getChainTip();
-			MiniData phash = tip.getParent().getTxPowID();
 			
 			JSONArray contractlogs = new JSONArray();
 			boolean checkok = TxPoWChecker.checkTransactionMMR(trx, wit, getMainDB(),
-					tip.getTxPow(), MiniNumber.ZERO, phash, tip.getMMRSet(),false,contractlogs);
+					tip.getTxPow(), MiniNumber.ZERO, tip.getMMRSet(),false,contractlogs);
 			
 			resp.put("script_check", checkok);
 			resp.put("contracts", contractlogs);

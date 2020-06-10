@@ -326,7 +326,7 @@ public class BlockTree {
 							zNode.setMMRset(mmrset);
 							
 							//Check all the transactions in the block are correct..
-							allok = getDB().checkFullTxPOW(zNode.getTxPow(), zNode.getParent().getTxPowID(), mmrset);
+							allok = getDB().checkFullTxPOW(zNode.getTxPow(), mmrset);
 							
 							//Check the root MMR..
 							if(allok) {
