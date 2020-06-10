@@ -237,8 +237,8 @@ public class NetClientReader implements Runnable {
 			
 		}catch(IOException exc) {
 			//Network error.. reset and reconnect..
-			MinimaLogger.log("IOEXC.. "+exc);
-			exc.printStackTrace();
+//			MinimaLogger.log("IOEXC.. "+exc);
+//			exc.printStackTrace();
 			
 		}catch(ProtocolException exc) {
 			MinimaLogger.log("PROTOCOL ERROR..");
