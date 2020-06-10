@@ -435,6 +435,15 @@ public class ConsensusUser extends ConsensusProcessor {
 			cc.setGlobalVariable("@TOTIN", new NumberValue(1));
 			cc.setGlobalVariable("@TOTOUT", new NumberValue(trans.getAllOutputs().size()));
 			
+			
+			//#TODO
+			//previous block hash.. FOR NOW.. Should be set in Script IDE 
+			MiniData prevblkhash = MiniData.getRandomData(64);
+			MiniData prng        = MiniData.getRandomData(64);
+			
+			cc.setGlobalVariable("@PREVBLKHASH", new HEXValue(prevblkhash));
+			cc.setGlobalVariable("@PRNG", new HEXValue(prng));
+			
 			//GLOBALS.. Overide if set..
 			if(!globals.equals("")) {
 				//Add all the state variables..

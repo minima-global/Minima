@@ -29,6 +29,7 @@ import org.minima.objects.proofs.ScriptProof;
 import org.minima.objects.proofs.SignatureProof;
 import org.minima.objects.proofs.TokenProof;
 import org.minima.system.input.functions.gimme50;
+import org.minima.utils.BaseConverter;
 import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
@@ -93,10 +94,14 @@ public class TxPoWChecker {
 		BlockTreeNode tip = zDB.getMainTree().getChainTip();
 		TxPoW block       = tip.getTxPow();
 		
-		return checkTransactionMMR(zTxPOW, zDB, block, tip.getMMRSet(), false);
+		//Parent block
+		BlockTreeNode parent = tip.getParent(); 
+		MiniData parenthash = parent.getTxPowID();
+		
+		return checkTransactionMMR(zTxPOW, zDB, block, parenthash, tip.getMMRSet(), false);
 	}
 	
-	public static boolean checkTransactionMMR(TxPoW zTxPOW, MinimaDB zDB, TxPoW zBlock, MMRSet zMMRSet, boolean zTouchMMR) {
+	public static boolean checkTransactionMMR(TxPoW zTxPOW, MinimaDB zDB, TxPoW zBlock, MiniData zPrevBlkHash,  MMRSet zMMRSet, boolean zTouchMMR) {
 		//need a body
 		if(!zTxPOW.hasBody()) {
 			return true;
@@ -114,7 +119,7 @@ public class TxPoWChecker {
 			
 			boolean burntrans = checkTransactionMMR(zTxPOW.getBurnTransaction(), 
 													zTxPOW.getBurnWitness(), 
-													zDB, zBlock, zMMRSet, zTouchMMR, 
+													zDB, zBlock, zPrevBlkHash, zMMRSet, zTouchMMR, 
 													new JSONArray());
 			if(!burntrans) {
 				return false;
@@ -126,11 +131,11 @@ public class TxPoWChecker {
 			return false;
 		}
 		
-		return checkTransactionMMR(zTxPOW.getTransaction(), zTxPOW.getWitness(), zDB, zBlock, zMMRSet, zTouchMMR, new JSONArray());	
+		return checkTransactionMMR(zTxPOW.getTransaction(), zTxPOW.getWitness(), zDB, zBlock, zPrevBlkHash, zMMRSet, zTouchMMR, new JSONArray());	
 	}
 	
 	public static boolean checkTransactionMMR(Transaction zTrans, Witness zWit, MinimaDB zDB, 
-			TxPoW zBlock, MMRSet zMMRSet, boolean zTouchMMR, JSONArray zContractLog) {
+			TxPoW zBlock, MiniData zPrevBlkHash, MMRSet zMMRSet, boolean zTouchMMR, JSONArray zContractLog) {
 		
 		//get some extra variables..
 		MiniNumber tBlockNumber = zBlock.getBlockNumber();
@@ -286,7 +291,14 @@ public class TxPoWChecker {
 				cc.setGlobalVariable("@FLOATING", new BooleanValue(input.isFloating()));
 				cc.setGlobalVariable("@TOTIN", new NumberValue(trans.getAllInputs().size()));
 				cc.setGlobalVariable("@TOTOUT", new NumberValue(trans.getAllOutputs().size()));
+				cc.setGlobalVariable("@PREVBLKHASH", new HEXValue(zPrevBlkHash));
 				
+				//The PRNG is based on the INPUT value and the prevblkhash
+				MiniData hexin  = new MiniData(BaseConverter.numberToHex(i));
+				MiniData totrnd = hexin.concat(zPrevBlkHash);
+				byte[] prng     = Crypto.getInstance().hashData(totrnd.getData());
+				cc.setGlobalVariable("@PRNG", new HEXValue(prng));
+									
 				//Is it a floating coin..
 				cc.setFloating(input.isFloating());
 				

@@ -578,6 +578,7 @@ public class Contract {
 		//@Globals
 		script = script.replaceAll(" @blknum "	    , " @BLKNUM ");
 		script = script.replaceAll(" @blktime "	    , " @BLKTIME ");
+		script = script.replaceAll(" @prevblkhash " , " @PREVBLKHASH ");
 		script = script.replaceAll(" @input "	    , " @INPUT ");
 		script = script.replaceAll(" @address "	    , " @ADDRESS ");
 		script = script.replaceAll(" @amount "	    , " @AMOUNT "); 
@@ -590,6 +591,7 @@ public class Contract {
 		script = script.replaceAll(" @totout " 	    , " @TOTOUT ");
 		script = script.replaceAll(" @inblknum "    , " @INBLKNUM ");
 		script = script.replaceAll(" @blkdiff "     , " @BLKDIFF ");
+		script = script.replaceAll(" @prng "        , " @PRNG ");
 		
 		//And now do all the functions
 		for(MinimaFunction func : MinimaFunction.ALL_FUNCTIONS) {
