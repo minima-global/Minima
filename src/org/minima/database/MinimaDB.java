@@ -410,9 +410,12 @@ public class MinimaDB {
 	
 	
 	public boolean checkFullTxPOW(TxPoW zBlock, MiniData zParentHash, MMRSet zMMRSet) {
+		//Txn Number.. unique for every transaction
+		MiniNumber txncounter = MiniNumber.ZERO;
+		
 		//First check the main transaction..
 		if(zBlock.isTransaction()) {
-			boolean inputvalid = TxPoWChecker.checkTransactionMMR(zBlock, this, zBlock, zParentHash, zMMRSet,true);
+			boolean inputvalid = TxPoWChecker.checkTransactionMMR(zBlock, this, zBlock, txncounter, zParentHash, zMMRSet,true);
 			if(!inputvalid) {
 				return false;
 			}
@@ -425,7 +428,8 @@ public class MinimaDB {
 			TxPoW txpow = row.getTxPOW();
 			
 			//Check the Proof..
-			boolean inputvalid = TxPoWChecker.checkTransactionMMR(txpow, this, zBlock, zParentHash, zMMRSet,true);
+			txncounter = txncounter.increment();
+			boolean inputvalid = TxPoWChecker.checkTransactionMMR(txpow, this, zBlock, txncounter, zParentHash, zMMRSet,true);
 			if(!inputvalid) {
 				return false;
 			}
@@ -981,8 +985,9 @@ public class MinimaDB {
 		MiniData phash = tip.getTxPowID();
 		
 		//Check the first transaction
+		MiniNumber txncounter = MiniNumber.ZERO;
 		if(!zTrans.isEmpty()) {
-			boolean valid = TxPoWChecker.checkTransactionMMR(zTrans, zWitness, this, txpow, phash, newset, true, zContractLogs);
+			boolean valid = TxPoWChecker.checkTransactionMMR(zTrans, zWitness, this, txpow, txncounter, phash, newset, true, zContractLogs);
 			
 			//MUST be valid.. ?
 			if(!valid) {
@@ -1002,9 +1007,13 @@ public class MinimaDB {
 			 * is valid.. but no way to check it has already been added
 			 */
 			if(txp.isTransaction()) {
-				boolean valid = TxPoWChecker.checkTransactionMMR(txp, this, txpow, phash, newset,true);
+				MiniNumber txncountertest = txncounter.increment();
+				boolean valid = TxPoWChecker.checkTransactionMMR(txp, this, txpow, txncountertest, phash, newset,true);
 				
 				if(valid) {
+					//Valid so added
+					txncounter = txncountertest;
+					
 					//Add it..
 					txpow.addBlockTxPOW(txp);	
 				

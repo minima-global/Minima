@@ -96,12 +96,13 @@ public class TxPoWChecker {
 		
 		//Parent block
 		BlockTreeNode parent = tip.getParent(); 
-		MiniData parenthash = parent.getTxPowID();
+		MiniData parenthash  = parent.getTxPowID();
 		
-		return checkTransactionMMR(zTxPOW, zDB, block, parenthash, tip.getMMRSet(), false);
+		return checkTransactionMMR(zTxPOW, zDB, block, MiniNumber.ZERO, parenthash, tip.getMMRSet(), false);
 	}
 	
-	public static boolean checkTransactionMMR(TxPoW zTxPOW, MinimaDB zDB, TxPoW zBlock, MiniData zPrevBlkHash,  MMRSet zMMRSet, boolean zTouchMMR) {
+	public static boolean checkTransactionMMR(TxPoW zTxPOW, MinimaDB zDB, 
+				TxPoW zBlock, MiniNumber zTransNumber, MiniData zPrevBlkHash,  MMRSet zMMRSet, boolean zTouchMMR) {
 		//need a body
 		if(!zTxPOW.hasBody()) {
 			return true;
@@ -119,7 +120,7 @@ public class TxPoWChecker {
 			
 			boolean burntrans = checkTransactionMMR(zTxPOW.getBurnTransaction(), 
 													zTxPOW.getBurnWitness(), 
-													zDB, zBlock, zPrevBlkHash, zMMRSet, zTouchMMR, 
+													zDB, zBlock, zTransNumber, zPrevBlkHash, zMMRSet, zTouchMMR, 
 													new JSONArray());
 			if(!burntrans) {
 				return false;
@@ -131,15 +132,20 @@ public class TxPoWChecker {
 			return false;
 		}
 		
-		return checkTransactionMMR(zTxPOW.getTransaction(), zTxPOW.getWitness(), zDB, zBlock, zPrevBlkHash, zMMRSet, zTouchMMR, new JSONArray());	
+		return checkTransactionMMR(zTxPOW.getTransaction(), zTxPOW.getWitness(), zDB, zBlock, zTransNumber, zPrevBlkHash, zMMRSet, zTouchMMR, new JSONArray());	
 	}
 	
 	public static boolean checkTransactionMMR(Transaction zTrans, Witness zWit, MinimaDB zDB, 
-			TxPoW zBlock, MiniData zPrevBlkHash, MMRSet zMMRSet, boolean zTouchMMR, JSONArray zContractLog) {
+			TxPoW zBlock, MiniNumber zTransNumber, MiniData zPrevBlkHash, MMRSet zMMRSet, boolean zTouchMMR, JSONArray zContractLog) {
 		
 		//get some extra variables..
 		MiniNumber tBlockNumber = zBlock.getBlockNumber();
 		MiniNumber tBlockTime   = zBlock.getTimeSecs();
+		
+		//The PRNG is unique per transaction - all inputs get the same one..
+		MiniData transin  = new MiniData(BaseConverter.numberToHex(zTransNumber.getAsInt()));
+		MiniData totrnd   = transin.concat(zPrevBlkHash);
+		byte[] prng       = Crypto.getInstance().hashData(totrnd.getData());
 		
 		//Make a deep copy.. as we may need to edit it.. with floating values and DYN_STATE
 		Transaction trans;
@@ -292,11 +298,6 @@ public class TxPoWChecker {
 				cc.setGlobalVariable("@TOTIN", new NumberValue(trans.getAllInputs().size()));
 				cc.setGlobalVariable("@TOTOUT", new NumberValue(trans.getAllOutputs().size()));
 				cc.setGlobalVariable("@PREVBLKHASH", new HEXValue(zPrevBlkHash));
-				
-				//The PRNG is based on the INPUT value and the prevblkhash
-				MiniData hexin  = new MiniData(BaseConverter.numberToHex(i));
-				MiniData totrnd = hexin.concat(zPrevBlkHash);
-				byte[] prng     = Crypto.getInstance().hashData(totrnd.getData());
 				cc.setGlobalVariable("@PRNG", new HEXValue(prng));
 									
 				//Is it a floating coin..
