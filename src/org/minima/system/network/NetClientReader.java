@@ -238,11 +238,11 @@ public class NetClientReader implements Runnable {
 			//Network error.. reset and reconnect..
 		
 		}catch(ProtocolException exc) {
-			MinimaLogger.log("PROTOCOL ERROR..");
+			MinimaLogger.log("PROTOCOL ERROR.. "+exc);
 			exc.printStackTrace();
 			
 		}catch(OutOfMemoryError exc) {
-			MinimaLogger.log("MEMORY ERROR..");
+			MinimaLogger.log("MEMORY ERROR.. "+exc);
 			exc.printStackTrace();
 			
 			//DRASTIC ACTION.. Use ONLY if bash script in place to restart on Exit
@@ -250,7 +250,7 @@ public class NetClientReader implements Runnable {
 			
 		}catch(Exception exc) {
 			//General Exception	
-			MinimaLogger.log("NETCLIENTREADER ERROR..");
+			MinimaLogger.log("NETCLIENTREADER ERROR.. "+exc);
 			exc.printStackTrace();
 		
 		}
