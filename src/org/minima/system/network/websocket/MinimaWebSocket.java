@@ -13,8 +13,11 @@ public class MinimaWebSocket extends WebSocket {
 
 	WebSocketManager mManager;
 	
-	//Unset
-	String mUID = "0x00";
+	//UNIQUE CLient ID
+	String mWebClientUID = MiniData.getRandomData(20).to0xString();
+	
+	//This is the MiniDAPP ID set by the MiniDAPP!
+	String mMiniDAPP_UID = "0x00";
 	
 	public MinimaWebSocket(IHTTPSession zHTTPSession, WebSocketManager zManager) {
 		super(zHTTPSession);
@@ -23,12 +26,16 @@ public class MinimaWebSocket extends WebSocket {
 		mManager = zManager;
 	}
 	
-	public String getUID() {
-		return mUID;
+	public String getClientUID() {
+		return mWebClientUID;
 	}
 	
-	public void setUID(String zUID) {
-		mUID=zUID;
+	public void setMiniDAPPUID(String zUID) {
+		mMiniDAPP_UID=zUID;
+	}
+	
+	public String getMiniDAPPUID() {
+		return mMiniDAPP_UID;
 	}
 	
 	@Override
@@ -36,7 +43,6 @@ public class MinimaWebSocket extends WebSocket {
 		//Tell the manager
 		Message msg = new Message(WebSocketManager.WEBSOCK_ONOPEN);
 		msg.addObject("wsclient", this);
-		msg.addString("uid", getUID());
 		mManager.PostMessage(msg);	
 	}
 
@@ -45,7 +51,6 @@ public class MinimaWebSocket extends WebSocket {
 		//Tell the manager
 		Message msg = new Message(WebSocketManager.WEBSOCK_ONCLOSE);
 		msg.addObject("wsclient", this);
-		msg.addString("uid", getUID());
 		mManager.PostMessage(msg);
 	}
 
@@ -54,7 +59,6 @@ public class MinimaWebSocket extends WebSocket {
 		//Tell the manager
 		Message msg = new Message(WebSocketManager.WEBSOCK_ONMESSAGE);
 		msg.addObject("wsclient", this);
-		msg.addString("uid", getUID());
 		msg.addString("message", message.getTextPayload());
 		mManager.PostMessage(msg);
 	}
@@ -67,7 +71,6 @@ public class MinimaWebSocket extends WebSocket {
 		//Tell the manager
 		Message msg = new Message(WebSocketManager.WEBSOCK_ONEXCEPTION);
 		msg.addObject("wsclient", this);
-		msg.addString("uid", getUID());
 		msg.addString("exception", exception.toString());
 		mManager.PostMessage(msg);
 	}

@@ -1,6 +1,7 @@
 package org.minima.system.network.websocket;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
@@ -28,7 +29,7 @@ public class WebSocketManager extends SystemHandler {
 	//The BASE WebSocketServer
 	WebSocketServer mWebSockServer;
 	
-	//The List of all the currently connected webpages..
+	//The List of all the currently connected MiniDAPPs..
 	Hashtable<String, MinimaWebSocket> mMininaSockets;
 	
 	/**
@@ -79,19 +80,23 @@ public class WebSocketManager extends SystemHandler {
 		if(zMessage.getMessageType().equals(WEBSOCK_ONOPEN)) {
 			//New WS Socket..
 			MinimaWebSocket mws = (MinimaWebSocket) zMessage.getObject("wsclient");
-			
-			//Get the UID
-			String UID = mws.getUID();
+			String UID = mws.getClientUID();
 			
 			//Add it to our list
 			mMininaSockets.put(UID, mws);
-		
+			
 		}else if(zMessage.getMessageType().equals(WEBSOCK_ONCLOSE)) {
 			//New WS Socket..
 			MinimaWebSocket mws = (MinimaWebSocket) zMessage.getObject("wsclient");
+			String UID = mws.getClientUID();
 			
-			//Get the UID
-			String UID = mws.getUID();
+			//Remove from our List
+			mMininaSockets.remove(UID);
+			
+		}else if(zMessage.getMessageType().equals(WEBSOCK_ONEXCEPTION)) {
+			//New WS Socket..
+			MinimaWebSocket mws = (MinimaWebSocket) zMessage.getObject("wsclient");
+			String UID = mws.getClientUID();
 			
 			//Remove from our List
 			mMininaSockets.remove(UID);
@@ -99,21 +104,24 @@ public class WebSocketManager extends SystemHandler {
 		}else if(zMessage.getMessageType().equals(WEBSOCK_ONMESSAGE)) {
 			//Get the client
 			MinimaWebSocket mws = (MinimaWebSocket) zMessage.getObject("wsclient");
+			String UID = mws.getClientUID();
 			
 			//Message is always in JSON format
 			JSONObject msgobj = (JSONObject) new JSONParser().parse(zMessage.getString("message"));
-			//System.out.println("JSON : "+msgobj.toString());
 			
 			//What kind of message is it..
 			String msgtype = (String) msgobj.get("type");
 			if(msgtype.equals("uid")) {
+				//Get the MiniDAPP UID
+				String miniuid = (String) msgobj.get("uid");
+				
 				//Set it..
-				mws.setUID((String) msgobj.get("uid"));
+				mws.setMiniDAPPUID(miniuid);
 				
 			}else if(msgtype.equals("message")) {
 				Message comms = new Message(WEBSOCK_SEND_INTRAMSG);
 				comms.addString("event", "newmessage");
-				comms.addString("from", mws.getUID());
+				comms.addString("from", mws.getMiniDAPPUID());
 				comms.addString("uid", (String) msgobj.get("to"));
 				comms.addString("message", (String) msgobj.get("message"));
 				comms.addString("funcid", (String) msgobj.get("funcid"));
@@ -123,7 +131,7 @@ public class WebSocketManager extends SystemHandler {
 			}else if(msgtype.equals("reply")) {
 				Message comms = new Message(WEBSOCK_SEND_INTRAMSG);
 				comms.addString("event", "newreply");
-				comms.addString("from", mws.getUID());
+				comms.addString("from", mws.getMiniDAPPUID());
 				comms.addString("uid", (String) msgobj.get("to"));
 				comms.addString("message", (String) msgobj.get("message"));
 				comms.addString("funcid", (String) msgobj.get("replyid"));
@@ -150,9 +158,16 @@ public class WebSocketManager extends SystemHandler {
 			Enumeration<MinimaWebSocket> clients = mMininaSockets.elements();
 			while(clients.hasMoreElements()) {
 				MinimaWebSocket client = clients.nextElement();
-				if(client.getUID().equals(uid)) {
-					client.send(newmessage.toString());
-					return;
+				if(client.getMiniDAPPUID().equals(uid)) {
+					try {
+						//Try and send the message..
+						client.send(newmessage.toString());
+						return;
+					}catch(Exception exc){
+						//Something wrong with this connection.. close..
+						mMininaSockets.remove(client.getClientUID());
+						break;
+					}
 				}
 			}
 			
@@ -164,23 +179,42 @@ public class WebSocketManager extends SystemHandler {
 			clients = mMininaSockets.elements();
 			while(clients.hasMoreElements()) {
 				MinimaWebSocket client = clients.nextElement();
-				if(client.getUID().equals(from)) {
-					client.send(newmessage.toString());
+				if(client.getMiniDAPPUID().equals(from)) {
+					try {
+						//Try and send the message..
+						client.send(newmessage.toString());
+					}catch(Exception exc){
+						//Something wrong with this connection.. close..
+						mMininaSockets.remove(client.getClientUID());
+					}
+					
 					return;
 				}
 			}
 			
 		}else if(zMessage.getMessageType().equals(WEBSOCK_SENDTOALL)) {
+			//What to send..
 			String msg = zMessage.getString("message");
+			
+			//Get the errors
+			ArrayList<String> remove = new ArrayList<>();
+			
 			Enumeration<MinimaWebSocket> clients = mMininaSockets.elements();
 			while(clients.hasMoreElements()) {
 				MinimaWebSocket client = clients.nextElement();
-				client.send(msg);
+				try {
+					//Try and send the message..
+					client.send(msg);	
+				}catch(Exception exc){
+					//Something wrong with this connection.. close..
+					remove.add(client.getClientUID());
+				}
+			}
+			
+			//Any errors..
+			for(String errorclient : remove) {
+				mMininaSockets.remove(errorclient);
 			}
 		}
-		
-	}
-	
-
-	
+	}	
 }

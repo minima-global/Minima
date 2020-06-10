@@ -57,7 +57,7 @@ var Minima = {
 	status : {},
 	balance : {},
 	uuid : Math.floor(Math.random()*1000000000),
-	logging : true,
+	logging : false,
 	showmining : false,
 	
 	//Minima Startup
@@ -106,6 +106,21 @@ var Minima = {
 			
 			//Do the first call..
 			initialStatus();
+		}
+	},
+	
+	//Clean Shutdown..
+	exit : function(){
+		if(WEBSOCK != null){
+			if(WEBSOCK.readyState == WebSocket.OPEN){
+				WEBSOCK.close();
+			}
+		}
+		
+		if(MINIMA_COMMS_SOCK != null){
+			if(MINIMA_COMMS_SOCK.readyState == WebSocket.OPEN){
+				MINIMA_COMMS_SOCK.close();
+			}
 		}
 	},
 	
@@ -173,9 +188,7 @@ var Minima = {
 				len = responses.length;
 				for(i=0;i<len;i++){
 					if(responses[i].status != true){
-						//Output to console..
-						console.log("Minima @ "+new Date().toLocaleString()
-								   +"\nERROR in Multi-Command ["+i+"] "+JSON.stringify(responses[i],null,2));
+						Minimalog("ERROR in Multi-Command ["+i+"] "+JSON.stringify(responses[i],null,2));
 						return false;
 					}
 				}
@@ -202,7 +215,7 @@ var Minima = {
 				
 				//Do we support notifications
 				if (!("Notification" in window)) {
-				    console.log("This browser does not support notifications");
+					Minimalog("This browser does not support notifications");
 					return;
 				}
 				
@@ -226,12 +239,6 @@ var Minima = {
 			},
 			
 			send : function(minidappid, message, callback){
-				//Check connected
-				if(MINIMA_COMMS_SOCK.readyState !== WebSocket.OPEN){
-					console.log("SEND Comms WebSocket not open.. "+MINIMA_COMMS_SOCK.readyState);
-					return false;
-				}
-				
 				//Create a random number to track this function call..
 				var funcid = ""+Math.floor(Math.random()*1000000000);
 				
@@ -251,12 +258,6 @@ var Minima = {
 				//Get the reply id
 				var replyid = evt.detail.info.replyid;
 				var replyto = evt.detail.info.from;
-				
-				//Check connected
-				if(MINIMA_COMMS_SOCK.readyState !== WebSocket.OPEN){
-					console.log("REPLY Comms WebSocket not open.. "+MINIMA_COMMS_SOCK.readyState);
-					return false;
-				}
 				
 				//Construct a JSON object
 				msg = { "type":"reply", "to":replyto, "replyid":replyid, "message":message };
@@ -292,9 +293,6 @@ function postMinimaMessage(event, info){
  * @returns
  */
 function initialStatus(){
-	//Start Listening for messages..
-	startWebSocketListener();
-	
 	//Encoded rpc call
 	var rpc = "http://"+Minima.host+"/"+encodeURIComponent("status;balance");
 	
@@ -315,11 +313,8 @@ function initialStatus(){
 		    show(LOGOUT_BUTTON);
 	    }
 	    
-	    //We Are Connected..
-	    MINIMACONNECTED = true;
-	   
-	    //Send a message
-	    postMinimaMessage("connected", "success");
+	    //Start Listening for messages..
+		startWebSocketListener();	    
    });
 }
 
@@ -343,7 +338,6 @@ function advancedConnect(){
     //Now set the websocket Host
     var justhost = host.indexOf(":");
     var justip = host.substring(0,justhost);
-    console.log("JUST IP "+justip);
     
     MINIMA_WEBSOCKET_HOST = "ws://"+justip+":20999";
     Minimalog("Minima Websocket set "+Minima.host);
@@ -407,12 +401,23 @@ function closeWebSocket(){
 function startWebSocketListener(){
 	Minimalog("Starting WebSocket Listener @ "+MINIMA_WEBSOCKET_HOST);
 	
+	//Check connected
+	if(MINIMA_COMMS_SOCK !== null){
+		MINIMA_COMMS_SOCK.close();
+	}
+	
 	//Open up a websocket to the main MINIMA proxy..
 	MINIMA_COMMS_SOCK = new WebSocket(MINIMA_WEBSOCKET_HOST);
 	
 	MINIMA_COMMS_SOCK.onopen = function() {
 		//Connected
 		Minimalog("Minima WS Listener Connection opened..");	
+		
+		//We Are Connected..
+	    MINIMACONNECTED = true;
+	   
+	    //Send a message
+	    postMinimaMessage("connected", "success");
 	};
 	
 	MINIMA_COMMS_SOCK.onmessage = function (evt) { 
@@ -456,7 +461,7 @@ function startWebSocketListener(){
 					//Was there an ERROR
 					if(jmsg.error !== ""){
 						//Log the error
-						console.log("Message Error : "+jmsg.error);
+						Minimalog("Message Error : "+jmsg.error);
 					}else{
 						//call it with the reply message
 						callback(jmsg.message);
@@ -471,23 +476,23 @@ function startWebSocketListener(){
 			}
 			
 			//Not found..
-			console.log("REPLY CALLBACK NOT FOUND "+JSON.stringify(jmsg));
+			Minimalog("REPLY CALLBACK NOT FOUND "+JSON.stringify(jmsg));
 			
 		}else if(jmsg.event == "txpowstart"){
-			console.log("Mining start!");
-			Minima.util.notify("Mining Transaction Started!");	
+			Minimalog("Transaction Mining Start..");
+			Minima.util.notify("Mining Transaction Started..");	
 			
 		}else if(jmsg.event == "txpowend"){
-			console.log("Mining end!");
-			Minima.util.notify("Mining Transaction Finished!");
+			Minimalog("Transaction Mining Finished");
+			Minima.util.notify("Mining Transaction Finished");
 		}
 	};
 		
 	MINIMA_COMMS_SOCK.onclose = function() { 
-		Minimalog("Minima WS Listener closed... reconnect attempt in 30 seconds");
+		Minimalog("Minima WS Listener closed... reconnect attempt in 10 seconds");
 	
 		//Start her up in a minute..
-		setTimeout(function(){ startWebSocketListener(); }, 30000);
+		setTimeout(function(){ startWebSocketListener(); }, 10000);
 	};
 
 	MINIMA_COMMS_SOCK.onerror = function(error) {
@@ -827,9 +832,7 @@ function hide(id){
  * 
  */
 function Minimalog(info){
-	if(Minima.logging){
-		console.log("Minima @ "+new Date().toLocaleString()+"\n"+info);
-	}
+	console.log("Minima @ "+new Date().toLocaleString()+"\n"+info);
 }
 
 
