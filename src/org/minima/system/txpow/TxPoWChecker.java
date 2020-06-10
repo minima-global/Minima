@@ -94,9 +94,12 @@ public class TxPoWChecker {
 		BlockTreeNode tip = zDB.getMainTree().getChainTip();
 		TxPoW block       = tip.getTxPow();
 		
-		//Parent block
+		//Parent block - the genesis Transaction has no parent..
 		BlockTreeNode parent = tip.getParent(); 
-		MiniData parenthash  = parent.getTxPowID();
+		MiniData parenthash  = new MiniData("0x00");
+		if(parent != null) {
+			parenthash  = parent.getTxPowID();
+		}
 		
 		return checkTransactionMMR(zTxPOW, zDB, block, MiniNumber.ZERO, parenthash, tip.getMMRSet(), false);
 	}
