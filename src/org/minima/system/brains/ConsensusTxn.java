@@ -12,6 +12,7 @@ import org.minima.database.coindb.CoinDBRow;
 import org.minima.database.mmr.MMREntry;
 import org.minima.database.mmr.MMRProof;
 import org.minima.database.mmr.MMRSet;
+import org.minima.database.txpowtree.BlockTreeNode;
 import org.minima.database.userdb.UserDBRow;
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
@@ -584,11 +585,10 @@ public class ConsensusTxn extends ConsensusProcessor {
 			}
 			
 			//And Check the actual Transaction..
-			TxPoW toptxpow = getMainDB().getTopTxPoW();
+			BlockTreeNode tip = getMainDB().getMainTree().getChainTip();
 			JSONArray contractlogs = new JSONArray();
 			boolean checkok = TxPoWChecker.checkTransactionMMR(trx, wit, getMainDB(),
-					toptxpow.getBlockNumber(), toptxpow.getTimeSecs(),
-					getMainDB().getMainTree().getChainTip().getMMRSet(),false,contractlogs);
+					tip.getTxPow(), tip.getMMRSet(),false,contractlogs);
 			
 			resp.put("script_check", checkok);
 			resp.put("contracts", contractlogs);

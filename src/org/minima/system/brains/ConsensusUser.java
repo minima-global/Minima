@@ -416,8 +416,9 @@ public class ConsensusUser extends ConsensusProcessor {
 			Address ccaddress = new Address(cc.getMiniScript());
 			
 			//Set the environment
-			MiniNumber blocknum  = getMainDB().getTopTxPoW().getBlockNumber();
-			MiniNumber blocktime = getMainDB().getTopTxPoW().getTimeSecs();
+			TxPoW top = getMainDB().getTopTxPoW();
+			MiniNumber blocknum  = top.getBlockNumber();
+			MiniNumber blocktime = top.getTimeSecs();
 			
 			//These 2 are set automatically..
 			cc.setGlobalVariable("@ADDRESS", new HEXValue(ccaddress.getAddressData()));
