@@ -423,7 +423,7 @@ public class ConsensusNet extends ConsensusProcessor {
 			baos.close();
 			
 			if(txpowsize > NetClientReader.MAX_TXPOW) {
-				MinimaLogger.log("You've Mined A TxPoW that is too BIG! "+txpowsize+" / "+NetClientReader.MAX_TXPOW);
+				MinimaLogger.log("ERROR - You've Mined A TxPoW that is too BIG! "+txpowsize+" / "+NetClientReader.MAX_TXPOW);
 				return;
 			}
 			
