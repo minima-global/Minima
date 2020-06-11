@@ -195,6 +195,10 @@ public class TxPoW implements Streamable {
 		return mHeader.mBlockNumber;
 	}
 	
+	public MiniData getMagic() {
+		return mBody.mMagic;
+	}
+	
 	public MiniData getMMRRoot() {
 		return mHeader.mMMRRoot;
 	}

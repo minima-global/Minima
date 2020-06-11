@@ -101,7 +101,7 @@ public class TxPoWChecker {
 				TxPoW zBlock, MiniNumber zTransNumber, MMRSet zMMRSet, boolean zTouchMMR) {
 		//need a body
 		if(!zTxPOW.hasBody()) {
-			return true;
+			return false;
 		}
 			
 		//Burn Transaction check!.. 
@@ -139,8 +139,9 @@ public class TxPoWChecker {
 		MiniNumber tBlockTime   = zBlock.getTimeSecs();
 		
 		//The PRNG is unique per transaction - all inputs get the same one..
+		MiniData magic    = zBlock.getMagic();
 		MiniData transin  = new MiniData(BaseConverter.numberToHex(zTransNumber.getAsInt()));
-		MiniData totrnd   = transin.concat(zBlock.getParentID());
+		MiniData totrnd   = magic.concat(transin.concat(zBlock.getParentID()));
 		byte[] prng       = Crypto.getInstance().hashData(totrnd.getData());
 		
 		//Make a deep copy.. as we may need to edit it.. with floating values and DYN_STATE
