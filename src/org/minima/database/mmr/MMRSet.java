@@ -782,7 +782,7 @@ public class MMRSet implements Streamable {
 		
 		if(!entry.isEmpty()) {
 			if(!totval.isEqual(entry.getData().getValueSum())) {
-				System.out.println("ERROR MMR Sum Tree different "+totval+" "+entry.getData().getValueSum());
+				MinimaLogger.log("ERROR MMR Sum Tree different "+totval+" "+entry.getData().getValueSum());
 				return false;
 			}
 		}
@@ -795,7 +795,7 @@ public class MMRSet implements Streamable {
 			MMRSumNumber value = chunk.getValue();
 			if(!sibling.isEmpty()) {
 				if(!value.isEqual(sibling.getData().getValueSum())) {
-					System.out.println("ERROR 2 MMR Sum Tree different "+value+" "+sibling.getData().getValueSum());
+					MinimaLogger.log("ERROR 2 MMR Sum Tree different "+value+" "+sibling.getData().getValueSum());
 					return false;
 				}
 			}
@@ -809,7 +809,7 @@ public class MMRSet implements Streamable {
 		
 		//Now check that value..
 		if(!totval.isEqual(peakvalue)) {
-			System.out.println("ERROR 3 MMR Sum Tree different "+totval+" "+peakvalue);
+			MinimaLogger.log("ERROR 3 MMR Sum Tree different "+totval+" "+peakvalue);
 			return false;
 		}
 		

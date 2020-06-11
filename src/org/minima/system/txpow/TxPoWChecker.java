@@ -29,6 +29,7 @@ import org.minima.objects.proofs.ScriptProof;
 import org.minima.objects.proofs.SignatureProof;
 import org.minima.objects.proofs.TokenProof;
 import org.minima.system.input.functions.gimme50;
+import org.minima.utils.BaseConverter;
 import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
@@ -91,13 +92,16 @@ public class TxPoWChecker {
 	public static boolean checkTransactionMMR(TxPoW zTxPOW, MinimaDB zDB) {
 		//And use the chaintip for all the parameters..
 		BlockTreeNode tip = zDB.getMainTree().getChainTip();
-		return checkTransactionMMR(zTxPOW, zDB, tip.getTxPow().getBlockNumber(), tip.getTxPow().getTimeSecs(), tip.getMMRSet(), false);
+		TxPoW block       = tip.getTxPow();
+		
+		return checkTransactionMMR(zTxPOW, zDB, block, MiniNumber.ZERO, tip.getMMRSet(), false);
 	}
 	
-	public static boolean checkTransactionMMR(TxPoW zTxPOW, MinimaDB zDB, MiniNumber zBlockNumber, MiniNumber zBlockTime, MMRSet zMMRSet, boolean zTouchMMR) {
+	public static boolean checkTransactionMMR(TxPoW zTxPOW, MinimaDB zDB, 
+				TxPoW zBlock, MiniNumber zTransNumber, MMRSet zMMRSet, boolean zTouchMMR) {
 		//need a body
 		if(!zTxPOW.hasBody()) {
-			return true;
+			return false;
 		}
 			
 		//Burn Transaction check!.. 
@@ -112,7 +116,7 @@ public class TxPoWChecker {
 			
 			boolean burntrans = checkTransactionMMR(zTxPOW.getBurnTransaction(), 
 													zTxPOW.getBurnWitness(), 
-													zDB, zBlockNumber, zBlockTime, zMMRSet, zTouchMMR, 
+													zDB, zBlock, zTransNumber, zMMRSet, zTouchMMR, 
 													new JSONArray());
 			if(!burntrans) {
 				return false;
@@ -124,15 +128,21 @@ public class TxPoWChecker {
 			return false;
 		}
 		
-		return checkTransactionMMR(zTxPOW.getTransaction(), zTxPOW.getWitness(), zDB, zBlockNumber, zBlockTime, zMMRSet, zTouchMMR, new JSONArray());	
-	}
-	
-	public static boolean checkTransactionMMR(Transaction zTrans, Witness zWit, MinimaDB zDB, MiniNumber zBlockNumber, MiniNumber zBlockTime, MMRSet zMMRSet, boolean zTouchMMR) {
-		return checkTransactionMMR(zTrans, zWit, zDB, zBlockNumber, zBlockTime, zMMRSet, zTouchMMR, new JSONArray());	
+		return checkTransactionMMR(zTxPOW.getTransaction(), zTxPOW.getWitness(), zDB, zBlock, zTransNumber, zMMRSet, zTouchMMR, new JSONArray());	
 	}
 	
 	public static boolean checkTransactionMMR(Transaction zTrans, Witness zWit, MinimaDB zDB, 
-			MiniNumber zBlockNumber, MiniNumber zBlockTime, MMRSet zMMRSet, boolean zTouchMMR, JSONArray zContractLog) {
+			TxPoW zBlock, MiniNumber zTransNumber, MMRSet zMMRSet, boolean zTouchMMR, JSONArray zContractLog) {
+		
+		//get some extra variables..
+		MiniNumber tBlockNumber = zBlock.getBlockNumber();
+		MiniNumber tBlockTime   = zBlock.getTimeSecs();
+		
+		//The PRNG is unique per transaction - all inputs get the same one..
+		MiniData magic    = zBlock.getMagic();
+		MiniData transin  = new MiniData(BaseConverter.numberToHex(zTransNumber.getAsInt()));
+		MiniData totrnd   = magic.concat(transin.concat(zBlock.getParentID()));
+		byte[] prng       = Crypto.getInstance().hashData(totrnd.getData());
 		
 		//Make a deep copy.. as we may need to edit it.. with floating values and DYN_STATE
 		Transaction trans;
@@ -270,10 +280,10 @@ public class TxPoWChecker {
 				Contract cc = new Contract(script, sigs, zWit, trans,proof.getMMRData().getPrevState());
 				
 				//set the environment
-				cc.setGlobalVariable("@BLKNUM", new NumberValue(zBlockNumber));
-				cc.setGlobalVariable("@BLKTIME", new NumberValue(zBlockTime));
+				cc.setGlobalVariable("@BLKNUM", new NumberValue(tBlockNumber));
+				cc.setGlobalVariable("@BLKTIME", new NumberValue(tBlockTime));
 				cc.setGlobalVariable("@INBLKNUM", new NumberValue(proof.getMMRData().getInBlock()));
-				cc.setGlobalVariable("@BLKDIFF", new NumberValue(zBlockNumber.sub(proof.getMMRData().getInBlock())));
+				cc.setGlobalVariable("@BLKDIFF", new NumberValue(tBlockNumber.sub(proof.getMMRData().getInBlock())));
 				cc.setGlobalVariable("@INPUT", new NumberValue(i));
 				cc.setGlobalVariable("@AMOUNT", new NumberValue(input.getAmount()));
 				cc.setGlobalVariable("@ADDRESS", new HEXValue(input.getAddress()));
@@ -284,7 +294,9 @@ public class TxPoWChecker {
 				cc.setGlobalVariable("@FLOATING", new BooleanValue(input.isFloating()));
 				cc.setGlobalVariable("@TOTIN", new NumberValue(trans.getAllInputs().size()));
 				cc.setGlobalVariable("@TOTOUT", new NumberValue(trans.getAllOutputs().size()));
-				
+				cc.setGlobalVariable("@PREVBLKHASH", new HEXValue(zBlock.getParentID()));
+				cc.setGlobalVariable("@PRNG", new HEXValue(prng));
+									
 				//Is it a floating coin..
 				cc.setFloating(input.isFloating());
 				
@@ -466,7 +478,7 @@ public class TxPoWChecker {
 				Coin mmrcoin = new Coin(coinid, output.getAddress(), output.getAmount(), tokid);
 				
 				//Now add as an unspent to the MMR
-				MMRData mmrdata = new MMRData(MiniByte.FALSE, mmrcoin, zBlockNumber, trans.getCompleteState());
+				MMRData mmrdata = new MMRData(MiniByte.FALSE, mmrcoin, tBlockNumber, trans.getCompleteState());
 				
 				//And Add it..
 				MMREntry unspent = zMMRSet.addUnspentCoin(mmrdata);

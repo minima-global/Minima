@@ -410,10 +410,12 @@ public class MinimaDB {
 	
 	
 	public boolean checkFullTxPOW(TxPoW zBlock, MMRSet zMMRSet) {
+		//Txn Number.. unique for every transaction
+		MiniNumber txncounter = MiniNumber.ZERO;
+		
 		//First check the main transaction..
 		if(zBlock.isTransaction()) {
-			boolean inputvalid = TxPoWChecker.checkTransactionMMR(zBlock, this, 
-					zBlock.getBlockNumber(), zBlock.getTimeSecs(), zMMRSet,true);
+			boolean inputvalid = TxPoWChecker.checkTransactionMMR(zBlock, this, zBlock, txncounter, zMMRSet,true);
 			if(!inputvalid) {
 				return false;
 			}
@@ -426,8 +428,8 @@ public class MinimaDB {
 			TxPoW txpow = row.getTxPOW();
 			
 			//Check the Proof..
-			boolean inputvalid = TxPoWChecker.checkTransactionMMR(txpow, this, 
-					zBlock.getBlockNumber(), zBlock.getTimeSecs(), zMMRSet,true);
+			txncounter = txncounter.increment();
+			boolean inputvalid = TxPoWChecker.checkTransactionMMR(txpow, this, zBlock, txncounter, zMMRSet,true);
 			if(!inputvalid) {
 				return false;
 			}
@@ -980,9 +982,9 @@ public class MinimaDB {
 		MMRSet newset = new MMRSet(tip.getMMRSet());
 		
 		//Check the first transaction
+		MiniNumber txncounter = MiniNumber.ZERO;
 		if(!zTrans.isEmpty()) {
-			boolean valid = TxPoWChecker.checkTransactionMMR(zTrans, zWitness, this, 
-					txpow.getBlockNumber(), txpow.getTimeSecs(), newset,true, zContractLogs);
+			boolean valid = TxPoWChecker.checkTransactionMMR(zTrans, zWitness, this, txpow, txncounter, newset, true, zContractLogs);
 			
 			//MUST be valid.. ?
 			if(!valid) {
@@ -1002,10 +1004,13 @@ public class MinimaDB {
 			 * is valid.. but no way to check it has already been added
 			 */
 			if(txp.isTransaction()) {
-				boolean valid = TxPoWChecker.checkTransactionMMR(txp, this, 
-						txpow.getBlockNumber(), txpow.getTimeSecs(), newset,true);
+				MiniNumber txncountertest = txncounter.increment();
+				boolean valid = TxPoWChecker.checkTransactionMMR(txp, this, txpow, txncountertest, newset,true);
 				
 				if(valid) {
+					//Valid so added
+					txncounter = txncountertest;
+					
 					//Add it..
 					txpow.addBlockTxPOW(txp);	
 				
