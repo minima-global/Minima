@@ -180,10 +180,9 @@ public class Contract {
 			traceLog("Script token parse OK.");
 			mParseOK = true;
 			
-		} catch (MinimaParseException e) {
-//			e.printStackTrace();
+		} catch (Exception e) {
 			mException  = true;
-			mExceptionString = e.getMessage();
+			mExceptionString = e.toString();
 			
 			traceLog("PARSE ERROR : "+mExceptionString);
 		}

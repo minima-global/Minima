@@ -34,7 +34,7 @@ public class StatementParser {
 	 * @param zTokens
 	 * @return the list of Statements
 	 */
-	public static StatementBlock parseTokens(List<Token> zTokens) throws MinimaParseException{
+	public static StatementBlock parseTokens(List<Token> zTokens) throws Exception{
 		List<Statement> stats = new ArrayList<>();
 		
 		//Cycle..
