@@ -145,6 +145,10 @@ public class NetClientReader implements Runnable {
 						throw new ProtocolException("Receive Invalid Message length for MAX_TXPOW_LIST_REQ type:"+msgtype+" len:"+len);
 					}
 					
+				}else if(msgtype.isEqual(NETMESSAGE_PING)) {
+					if(len > 1) {
+						throw new ProtocolException("Receive Invalid Message length for PING message type:"+msgtype+" len:"+len);
+					}
 				}
 			
 				//Now read in the full message
