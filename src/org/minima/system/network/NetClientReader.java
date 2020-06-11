@@ -120,31 +120,23 @@ public class NetClientReader implements Runnable {
 				//Check within acceptable parameters - this should be set in TxPoW header.. for now fixed
 				if( msgtype.isEqual(NETMESSAGE_TXPOWID) || 
 					msgtype.isEqual(NETMESSAGE_TXPOW_REQUEST)) {
-					
 					if(len > TXPOWID_LEN) {
 						throw new ProtocolException("Receive Invalid Message length for TXPOWID type:"+msgtype+" len:"+len);
 					}
-					
 				}else if(msgtype.isEqual(NETMESSAGE_INTRO) || 
 						 msgtype.isEqual(NETMESSAGE_GREETING) || 
 						 msgtype.isEqual(NETMESSAGE_TXPOWLIST)) {
-					
 					if(len > MAX_INTRO) {
 						throw new ProtocolException("Receive Invalid Message length for TXPOW_INTRO type:"+msgtype+" len:"+len);
 					}
-					
 				}else if(msgtype.isEqual(NETMESSAGE_TXPOW)) {
-					
 					if(len > MAX_TXPOW) {
 						throw new ProtocolException("Receive Invalid Message length for TXPOW type:"+msgtype+" len:"+len);
 					}
-					
 				}else if(msgtype.isEqual(NETMESSAGE_TXPOWLIST_REQUEST)) {
-					
 					if(len > MAX_TXPOW_LIST_REQ) {
 						throw new ProtocolException("Receive Invalid Message length for MAX_TXPOW_LIST_REQ type:"+msgtype+" len:"+len);
 					}
-					
 				}else if(msgtype.isEqual(NETMESSAGE_PING)) {
 					if(len > 1) {
 						throw new ProtocolException("Receive Invalid Message length for PING message type:"+msgtype+" len:"+len);
