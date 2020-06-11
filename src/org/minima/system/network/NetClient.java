@@ -70,8 +70,8 @@ public class NetClient extends MessageProcessor {
 	String mHost;
 	int    mPort;
 	
-	//Ping each other to know you are still up and running..
-	public static final int PING_INTERVAL = 1000 * 10;
+	//Ping each other to know you are still up and running.. every 10 mins..
+	public static final int PING_INTERVAL = 1000 * 60 * 10;
 	long mLastPing = 0;
 	
 	/**
@@ -203,7 +203,7 @@ public class NetClient extends MessageProcessor {
 				mSocket.connect(new InetSocketAddress(mHost, mPort), 60000);
 				
 			}catch (Exception e) {
-				MinimaLogger.log("Error @ connection start : "+mHost+":"+mPort);
+				MinimaLogger.log("Error @ connection start : "+mHost+":"+mPort+" "+e);
 				
 				// Error - let the handler know
 				mNetworkMain.PostMessage(new Message(NetworkHandler.NETWORK_CLIENTERROR).addObject("client", this));
@@ -233,7 +233,7 @@ public class NetClient extends MessageProcessor {
 			mLastPing = System.currentTimeMillis();
 			
 			//Send it again in a while..
-			PostTimerMessage(new TimerMessage(PING_INTERVAL, NETCLIENT_PULSE));
+			PostMessage(new Message(NETCLIENT_PULSE));
 		
 		}else if(zMessage.isMessageType(NETCLIENT_GREETING)) {
 			Greeting greet = (Greeting)zMessage.getObject("greeting");
@@ -310,13 +310,10 @@ public class NetClient extends MessageProcessor {
 			long diff    = timenow - mLastPing;
 			if(diff > PING_INTERVAL*2) {
 				//Disconnect - Reconnect
-				MinimaLogger.log("PING NOT RECEIVED IN TIME..");
-			}
+				MinimaLogger.log("PING NOT RECEIVED IN TIME @ "+mHost+":"+mPort);
 			
-			Random rand = new Random();
-			if(rand.nextDouble()<0.25) {
 				//Disconnect..
-				mNetworkMain.PostMessage(new Message(NetworkHandler.NETWORK_CLIENTERROR).addObject("client", this));
+				PostMessage(new Message(NetClient.NETCLIENT_SHUTDOWN));
 				return;
 			}
 			
@@ -327,8 +324,6 @@ public class NetClient extends MessageProcessor {
 			PostTimerMessage(new TimerMessage(PING_INTERVAL, NETCLIENT_PULSE));
 		
 		}else if(zMessage.isMessageType(NETCLIENT_PING)) {
-			MinimaLogger.log("PING RECEIVED!..");
-			
 			//Received a PING message - This connection must still be working!
 			mLastPing = System.currentTimeMillis();
 		
@@ -383,10 +378,9 @@ public class NetClient extends MessageProcessor {
 		}catch(Exception ec) {
 			//Show..
 			MinimaLogger.log("Error sending message : "+zMessageType.toString()+" "+ec);
-//			ec.printStackTrace();
 			
 			//Tell the network Handler
-			mNetworkMain.PostMessage(new Message(NetworkHandler.NETWORK_CLIENTERROR).addObject("client", this));
+			PostMessage(new Message(NetClient.NETCLIENT_SHUTDOWN));
 		}
 	}	
 }
