@@ -9,7 +9,7 @@ public class TimerMessage extends Message implements Runnable {
     
 	private MessageProcessor mProcessor;
 	
-	public TimerMessage(int zDelay, String zMessageType) {
+	public TimerMessage(long zDelay, String zMessageType) {
 		super(zMessageType);
 		
 		//Store for run

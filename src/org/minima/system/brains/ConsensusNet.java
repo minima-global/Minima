@@ -49,6 +49,8 @@ public class ConsensusNet extends ConsensusProcessor {
 	public static final String CONSENSUS_NET_TXPOWLIST_REQUEST	= CONSENSUS_PREFIX+"NET_MESSAGE_"+NetClientReader.NETMESSAGE_TXPOWLIST_REQUEST.getValue();
 	public static final String CONSENSUS_NET_TXPOWLIST 			= CONSENSUS_PREFIX+"NET_MESSAGE_"+NetClientReader.NETMESSAGE_TXPOWLIST.getValue();
 	
+	public static final String CONSENSUS_NET_PING 			= CONSENSUS_PREFIX+"NET_MESSAGE_"+NetClientReader.NETMESSAGE_PING.getValue();
+	
 	/**
 	 * Will we switch to a heavier chain - DEBUG mode for -private
 	 */
@@ -399,6 +401,11 @@ public class ConsensusNet extends ConsensusProcessor {
 				client.PostMessage(tx);
 			}
 		
+		}else if(zMessage.isMessageType(CONSENSUS_NET_PING)) {
+			//Send it on to the netwclient..
+			NetClient client = (NetClient) zMessage.getObject("netclient");
+			client.PostMessage(new Message(NetClient.NETCLIENT_PING));
+			
 		}else if(zMessage.isMessageType(CONSENSUS_NET_CHECKSIZE_TXPOW)) {
 			//Internal message sent from you..
 			TxPoW txpow = (TxPoW)zMessage.getObject("txpow");

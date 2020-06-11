@@ -80,6 +80,11 @@ public class NetClientReader implements Runnable {
 	public static final MiniByte NETMESSAGE_GREETING		= new MiniByte(6);
 	
 	/**
+	 * PING PONG
+	 */
+	public static final MiniByte NETMESSAGE_PING		    = new MiniByte(7);
+	
+	/**
 	 * Netclient owner
 	 */
 	NetClient 		mNetClient;
@@ -212,6 +217,12 @@ public class NetClientReader implements Runnable {
 					
 					//Add this ID
 					rec.addObject("txpowlist", txplist);
+					
+				}else if(msgtype.isEqual(NETMESSAGE_PING)) {
+					MiniByte mb = MiniByte.ReadFromStream(inputstream);
+					
+					//Add this ID
+					rec.addObject("sent", mb);
 					
 				}else {
 					throw new Exception("Invalid message on network : "+rec);

@@ -25,6 +25,7 @@ import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageProcessor;
+import org.minima.utils.messages.TimerMessage;
 
 public class NetClient extends MessageProcessor {
 		
@@ -44,6 +45,9 @@ public class NetClient extends MessageProcessor {
 	public static final String NETCLIENT_GREETING 	    = "NETCLIENT_GREETING";
 	public static final String NETCLIENT_TXPOWLIST_REQ 	= "NETCLIENT_TXPOWLIST_REQ";
 	public static final String NETCLIENT_TXPOWLIST 	    = "NETCLIENT_TXPOWLIST";
+	
+	public static final String NETCLIENT_PULSE 	        = "NETCLIENT_PULSE";
+	public static final String NETCLIENT_PING 	        = "NETCLIENT_PING";
 	
 	private static final MiniData ZERO_TXPOWID = new MiniData("0x00");
 	
@@ -65,6 +69,10 @@ public class NetClient extends MessageProcessor {
 	//The Host and Port
 	String mHost;
 	int    mPort;
+	
+	//Ping each other to know you are still up and running..
+	public static final int PING_INTERVAL = 1000 * 10;
+	long mLastPing = 0;
 	
 	/**
 	 * If the connection breaks do we attempt to reconnect
@@ -221,6 +229,12 @@ public class NetClient extends MessageProcessor {
 			init.addObject("netclient", this);
 			getMain().getConsensusHandler().PostMessage(init);
 			
+			//Latest communication..
+			mLastPing = System.currentTimeMillis();
+			
+			//Send it again in a while..
+			PostTimerMessage(new TimerMessage(PING_INTERVAL, NETCLIENT_PULSE));
+		
 		}else if(zMessage.isMessageType(NETCLIENT_GREETING)) {
 			Greeting greet = (Greeting)zMessage.getObject("greeting");
 			sendMessage(NetClientReader.NETMESSAGE_GREETING, greet);
@@ -290,6 +304,34 @@ public class NetClient extends MessageProcessor {
 			//And send it..
 			sendMessage(NetClientReader.NETMESSAGE_TXPOW_REQUEST, txpowid);
 	
+		}else if(zMessage.isMessageType(NETCLIENT_PULSE)) {
+			//When was the last PING message..
+			long timenow = System.currentTimeMillis();
+			long diff    = timenow - mLastPing;
+			if(diff > PING_INTERVAL*2) {
+				//Disconnect - Reconnect
+				MinimaLogger.log("PING NOT RECEIVED IN TIME..");
+			}
+			
+			Random rand = new Random();
+			if(rand.nextDouble()<0.25) {
+				//Disconnect..
+				mNetworkMain.PostMessage(new Message(NetworkHandler.NETWORK_CLIENTERROR).addObject("client", this));
+				return;
+			}
+			
+			//Send a PULSE message..
+			sendMessage(NetClientReader.NETMESSAGE_PING, MiniByte.TRUE);
+			
+			//Send it again in a while..
+			PostTimerMessage(new TimerMessage(PING_INTERVAL, NETCLIENT_PULSE));
+		
+		}else if(zMessage.isMessageType(NETCLIENT_PING)) {
+			MinimaLogger.log("PING RECEIVED!..");
+			
+			//Received a PING message - This connection must still be working!
+			mLastPing = System.currentTimeMillis();
+		
 		}else if(zMessage.isMessageType(NETCLIENT_SHUTDOWN)) {
 			
 			try {mOutput.close();}catch(Exception exc) {}
@@ -320,21 +362,6 @@ public class NetClient extends MessageProcessor {
 			
 			//Now wrap the message as a MiniData
 			MiniData complete = new MiniData(data);
-			
-//			//Check within acceptable parameters - this should be set in TxPoW header.. for now fixed
-//			if(zMessageType.isEqual(NetClientReader.NETMESSAGE_TXPOWID) || zMessageType.isEqual(NetClientReader.NETMESSAGE_TXPOW_REQUEST)) {
-//				if(len > NetClientReader.TXPOWID_LEN) {
-//					throw new Exception("Send Invalid Message length for TXPOWID "+len);
-//				}
-//			}else if(zMessageType.isEqual(NetClientReader.NETMESSAGE_INTRO)) {
-//				if(len > NetClientReader.MAX_INTRO) {
-//					throw new Exception("Send Invalid Message length for TXPOW_INTRO "+len);
-//				}
-//			}else if(zMessageType.isEqual(NetClientReader.NETMESSAGE_TXPOW)) {
-//				if(len > NetClientReader.MAX_TXPOW) {
-//					throw new Exception("Send Invalid Message length for TXPOW "+len);
-//				}
-//			}
 			
 			//First write the Message type..
 			zMessageType.writeDataStream(mOutput);
