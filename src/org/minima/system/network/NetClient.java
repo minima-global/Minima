@@ -114,27 +114,27 @@ public class NetClient extends MessageProcessor {
 	}
 	
 	public NetClient(Socket zSock, NetworkHandler zNetwork) {
-			super("NETCLIENT");
-			
-			//This is an incoming connection.. no reconnect attempt
-			mReconnect = false;
-			
-			//Store
-			mSocket 		= zSock;
-			
-			//Store
-			mHost = mSocket.getInetAddress().getHostAddress();
-			mPort = mSocket.getPort();
-			
-			//Main network Handler
-			mNetworkMain 	= zNetwork;
-					
-			//Create a UID
-			mUID = ""+Math.abs(new Random().nextInt());
-			
-			//Start the system..
-			PostMessage(NETCLIENT_STARTUP);
-		}
+		super("NETCLIENT");
+		
+		//This is an incoming connection.. no reconnect attempt
+		mReconnect = false;
+		
+		//Store
+		mSocket 		= zSock;
+		
+		//Store
+		mHost = mSocket.getInetAddress().getHostAddress();
+		mPort = mSocket.getPort();
+		
+		//Main network Handler
+		mNetworkMain 	= zNetwork;
+				
+		//Create a UID
+		mUID = ""+Math.abs(new Random().nextInt());
+		
+		//Start the system..
+		PostMessage(NETCLIENT_STARTUP);
+	}
 	
 	public Socket getSocket() {
 		return mSocket;
