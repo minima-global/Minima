@@ -58,10 +58,10 @@ public class TokenProof implements Streamable{
 	 */
 	public TokenProof(MiniData zCoindID, MiniNumber zScale, MiniNumber zAmount, MiniString zName, MiniString zTokenScript) {
 				
+		mCoinID 			= zCoindID;
 		mTokenScale 		= zScale;
 		mTokenMinimaAmount 	= zAmount;
 		mTokenName 			= zName;
-		mCoinID 			= zCoindID;
 		mTokenScript        = new MiniString(zTokenScript.toString()) ;
 		
 		calculateTokenID();

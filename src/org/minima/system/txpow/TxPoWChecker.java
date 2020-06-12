@@ -472,7 +472,7 @@ public class TxPoWChecker {
 					//The contract execution log - will be updated later, but added now
 					JSONObject errorlog = new JSONObject();
 					zContractLog.add(errorlog);
-					errorlog.put("error", "Total Details Missing for "+tokid);
+					errorlog.put("error", "Token Details Missing for "+tokid);
 					return false;
 				}
 			}
