@@ -263,6 +263,7 @@ public class TxPoWChecker {
 				
 				//Is this a Token ?
 				String tokscript = "";
+				MiniNumber tokenscale = MiniNumber.ONE;
 				if(!input.getTokenID().isEqual(Coin.MINIMA_TOKENID)) {
 					//Do we have a token Script..
 					TokenProof tokdets = zWit.getTokenDetail(input.getTokenID());
@@ -273,7 +274,8 @@ public class TxPoWChecker {
 					}
 					
 					//Is there a script.
-					tokscript = tokdets.getTokenScript().toString();
+					tokscript  = tokdets.getTokenScript().toString();
+					tokenscale = tokdets.getScaleFactor();
 				}
 				
 				//Create the Contract to check..
@@ -285,7 +287,7 @@ public class TxPoWChecker {
 				cc.setGlobalVariable("@INBLKNUM", new NumberValue(proof.getMMRData().getInBlock()));
 				cc.setGlobalVariable("@BLKDIFF", new NumberValue(tBlockNumber.sub(proof.getMMRData().getInBlock())));
 				cc.setGlobalVariable("@INPUT", new NumberValue(i));
-				cc.setGlobalVariable("@AMOUNT", new NumberValue(input.getAmount()));
+				cc.setGlobalVariable("@AMOUNT", new NumberValue(input.getAmount().mult(tokenscale)));
 				cc.setGlobalVariable("@ADDRESS", new HEXValue(input.getAddress()));
 				cc.setGlobalVariable("@TOKENID", new HEXValue(input.getTokenID()));
 				cc.setGlobalVariable("@COINID", new HEXValue(input.getCoinID()));
