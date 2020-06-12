@@ -105,16 +105,9 @@ public class MMRProof extends Proof {
 		super.readDataStream(zIn);
 	}
 	
-	public static MMRProof ReadFromStream(DataInputStream zIn){
+	public static MMRProof ReadFromStream(DataInputStream zIn) throws IOException{
 		MMRProof proof = new MMRProof();
-		
-		try {
-			proof.readDataStream(zIn);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
+		proof.readDataStream(zIn);
 		return proof;
 	}
 }

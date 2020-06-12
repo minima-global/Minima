@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import org.minima.kissvm.exceptions.ExecutionException;
-import org.minima.kissvm.exceptions.MinimaParseException;
 import org.minima.kissvm.functions.MinimaFunction;
 import org.minima.kissvm.statements.StatementBlock;
 import org.minima.kissvm.statements.StatementParser;

@@ -719,15 +719,15 @@ public class MMRSet implements Streamable {
 	 * @return
 	 */
 	public boolean checkProof(MMRProof zProof) {
-		//Hmm.. this is not good..
+		//MUST have data to be checked
 		if(zProof.getMMRData().isHashOnly()) {
-//			System.out.println("Invalid PROOF check HASHONLY! : "+zProof);
+//			MinimaLogger.log("Invalid PROOF check HASHONLY! : "+zProof);
 			return false;
 		}
 		
 		//Check is not spent.. 
 		if(zProof.getMMRData().isSpent()) {
-//			System.out.println("Invalid PROOF is SPENT! : "+zProof);
+//			MinimaLogger.log("Invalid PROOF is SPENT! : "+zProof);
 			return false;
 		}
 		
@@ -736,7 +736,7 @@ public class MMRSet implements Streamable {
 		
 		//The proof is it too old.. we can't check it. It's invalid.
 		if(proofset == null) {
-//			System.out.println("ERROR Proof too Old "+zProof);
+//			MinimaLogger.log("ERROR Proof too Old "+zProof);
 			return false;
 		}
 		
@@ -759,7 +759,7 @@ public class MMRSet implements Streamable {
 		
 		//Was it one of the peaks ?
 		if(!found) {
-			System.out.println("ERROR Proof No Peak Found "+zProof);
+//			MinimaLogger.log("ERROR Proof No Peak Found "+zProof);
 			return false;
 		}
 		
@@ -770,7 +770,7 @@ public class MMRSet implements Streamable {
 		if(!entry.isEmpty() && !entry.getData().isHashOnly()) {
 			//Get the DATA - could be the original UNSPENT or the SPENT
 			if(entry.getData().isSpent()) {
-//				System.out.println("ERROR Proof Spent! "+zProof);
+//				MinimaLogger.log("ERROR Proof Spent! "+zProof);
 				return false;
 			}
 		}

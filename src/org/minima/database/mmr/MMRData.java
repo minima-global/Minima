@@ -121,6 +121,9 @@ public class MMRData implements Streamable{
 			//And Hash IT.. ALWYS 512
 			mFinalHash = Crypto.getInstance().hashObject(data,512);
 			
+			dos.close();
+			baos.close();
+			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -255,16 +258,9 @@ public class MMRData implements Streamable{
 		}
 	}
 	
-	public static MMRData ReadFromStream(DataInputStream zIn){
+	public static MMRData ReadFromStream(DataInputStream zIn) throws IOException{
 		MMRData data = new MMRData();
-		
-		try {
-			data.readDataStream(zIn);
-		} catch (IOException e) {
-			e.printStackTrace();
-			return null;
-		}
-		
+		data.readDataStream(zIn);
 		return data;
 		
 	}

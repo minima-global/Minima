@@ -7,7 +7,6 @@ import java.io.DataOutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
@@ -1081,7 +1080,6 @@ public class MinimaDB {
 				DataOutputStream dos = new DataOutputStream(baos);
 				sp.writeDataStream(dos);
 				dos.flush();
-				dos.close();
 				
 				//And read it in..
 				ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
@@ -1092,9 +1090,11 @@ public class MinimaDB {
 				spdeep.readDataStream(dis);
 				
 				//Clean up
+				dos.close();
+				baos.close();
+				
 				dis.close();
 				bais.close();
-				baos.close();
 				
 				return spdeep;
 				
@@ -1118,9 +1118,13 @@ public class MinimaDB {
 			DataOutputStream dos = new DataOutputStream(baos);
 			sp.writeDataStream(dos);
 			dos.flush();
-			dos.close();
 			
-			return baos.toByteArray().length;
+			int len = baos.toByteArray().length;
+			
+			dos.close();
+			baos.close();
+			
+			return len;
 			
 		}catch(Exception exc) {
 			exc.printStackTrace();

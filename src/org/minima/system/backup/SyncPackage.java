@@ -6,14 +6,12 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 
-import org.minima.GlobalParams;
 import org.minima.database.mmr.MMRSet;
 import org.minima.database.txpowtree.BlockTree;
 import org.minima.database.txpowtree.BlockTreeNode;
 import org.minima.database.txpowtree.MultiLevelCascadeTree;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniNumber;
-import org.minima.objects.base.MiniString;
 import org.minima.utils.Streamable;
 
 public class SyncPackage implements Streamable{
