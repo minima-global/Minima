@@ -263,6 +263,7 @@ public class TxPoWChecker {
 				
 				//Is this a Token ?
 				String tokscript = "";
+				MiniNumber tokentotal = MiniNumber.BILLION;
 				MiniNumber tokenscale = MiniNumber.ONE;
 				if(!input.getTokenID().isEqual(Coin.MINIMA_TOKENID)) {
 					//Do we have a token Script..
@@ -276,6 +277,7 @@ public class TxPoWChecker {
 					//Is there a script.
 					tokscript  = tokdets.getTokenScript().toString();
 					tokenscale = tokdets.getScaleFactor();
+					tokentotal = tokdets.getTotalTokens();
 				}
 				
 				//Create the Contract to check..
@@ -289,10 +291,11 @@ public class TxPoWChecker {
 				cc.setGlobalVariable("@INPUT", new NumberValue(i));
 				cc.setGlobalVariable("@AMOUNT", new NumberValue(input.getAmount().mult(tokenscale)));
 				cc.setGlobalVariable("@ADDRESS", new HEXValue(input.getAddress()));
-				cc.setGlobalVariable("@TOKENID", new HEXValue(input.getTokenID()));
 				cc.setGlobalVariable("@COINID", new HEXValue(input.getCoinID()));
 				cc.setGlobalVariable("@SCRIPT", new ScriptValue(script));
+				cc.setGlobalVariable("@TOKENID", new HEXValue(input.getTokenID()));
 				cc.setGlobalVariable("@TOKENSCRIPT", new ScriptValue(tokscript));
+				cc.setGlobalVariable("@TOKENTOTAL", new NumberValue(tokentotal));
 				cc.setGlobalVariable("@FLOATING", new BooleanValue(input.isFloating()));
 				cc.setGlobalVariable("@TOTIN", new NumberValue(trans.getAllInputs().size()));
 				cc.setGlobalVariable("@TOTOUT", new NumberValue(trans.getAllOutputs().size()));

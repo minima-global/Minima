@@ -27,7 +27,7 @@ public class TokenProof implements Streamable{
 	/**
 	 * The total amount of Minima Used
 	 */
-	MiniNumber mTokenTotalAmount;
+	MiniNumber mTokenMinimaAmount;
 	
 	/**
 	 * The Token Name
@@ -59,7 +59,7 @@ public class TokenProof implements Streamable{
 	public TokenProof(MiniData zCoindID, MiniNumber zScale, MiniNumber zAmount, MiniString zName, MiniString zTokenScript) {
 				
 		mTokenScale 		= zScale;
-		mTokenTotalAmount 	= zAmount;
+		mTokenMinimaAmount 	= zAmount;
 		mTokenName 			= zName;
 		mCoinID 			= zCoindID;
 		mTokenScript        = new MiniString(zTokenScript.toString()) ;
@@ -76,7 +76,11 @@ public class TokenProof implements Streamable{
 	}
 	
 	public MiniNumber getAmount() {
-		return mTokenTotalAmount;
+		return mTokenMinimaAmount;
+	}
+	
+	public MiniNumber getTotalTokens() {
+		return mTokenMinimaAmount.mult(getScaleFactor());
 	}
 	
 	public MiniString getName() {
@@ -101,13 +105,13 @@ public class TokenProof implements Streamable{
 		obj.put("tokenid", mTokenID.to0xString());
 		obj.put("token", mTokenName.toString());
 		
-		MiniNumber total = mTokenTotalAmount.mult(getScaleFactor());
+		MiniNumber total = mTokenMinimaAmount.mult(getScaleFactor());
 		obj.put("total", total);
 		
 		obj.put("script", mTokenScript.toString());
 		
 		obj.put("coinid", mCoinID.to0xString());
-		obj.put("totalamount", mTokenTotalAmount.toString());
+		obj.put("totalamount", mTokenMinimaAmount.toString());
 		obj.put("scale", mTokenScale.toString());
 		
 		
@@ -147,7 +151,7 @@ public class TokenProof implements Streamable{
 		mCoinID.writeHashToStream(zOut);
 		mTokenScript.writeDataStream(zOut);
 		mTokenScale.writeDataStream(zOut);
-		mTokenTotalAmount.writeDataStream(zOut);
+		mTokenMinimaAmount.writeDataStream(zOut);
 		mTokenName.writeDataStream(zOut);
 	}
 
@@ -156,7 +160,7 @@ public class TokenProof implements Streamable{
 		mCoinID 			= MiniData.ReadHashFromStream(zIn);
 		mTokenScript        = MiniString.ReadFromStream(zIn);
 		mTokenScale 		= MiniNumber.ReadFromStream(zIn);
-		mTokenTotalAmount	= MiniNumber.ReadFromStream(zIn);
+		mTokenMinimaAmount	= MiniNumber.ReadFromStream(zIn);
 		mTokenName 			= MiniString.ReadFromStream(zIn);
 		
 		calculateTokenID();

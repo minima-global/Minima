@@ -430,10 +430,13 @@ public class ConsensusUser extends ConsensusProcessor {
 			cc.setGlobalVariable("@INPUT", new NumberValue(0));
 			cc.setGlobalVariable("@INBLKNUM", new NumberValue(0));
 			cc.setGlobalVariable("@AMOUNT", new NumberValue(0));
-			cc.setGlobalVariable("@TOKENID", new HEXValue("0x00"));
 			cc.setGlobalVariable("@COINID", new HEXValue("0x00"));
 			cc.setGlobalVariable("@TOTIN", new NumberValue(1));
 			cc.setGlobalVariable("@TOTOUT", new NumberValue(trans.getAllOutputs().size()));
+			
+			cc.setGlobalVariable("@TOKENID", new HEXValue("0x00"));
+			cc.setGlobalVariable("@TOKENSCRIPT", new ScriptValue(""));
+			cc.setGlobalVariable("@TOKENTOTAL", new NumberValue(MiniNumber.BILLION));
 			
 			
 			//#TODO

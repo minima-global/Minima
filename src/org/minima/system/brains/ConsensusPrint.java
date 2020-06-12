@@ -550,7 +550,7 @@ public class ConsensusPrint extends ConsensusProcessor {
 					MiniNumber tot_scconf   = tot_conf.mult(td.getScaleFactor());
 					MiniNumber tot_unconf   = (MiniNumber) jobj.get("unconfirmed");
 					MiniNumber tot_scunconf = tot_unconf.mult(td.getScaleFactor());
-					MiniNumber tot_toks 	= td.getAmount().mult(td.getScaleFactor());
+					MiniNumber tot_toks 	= td.getTotalTokens();
 					
 					//And re-add
 					jobj.put("confirmed", tot_scconf.toString());
