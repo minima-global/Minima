@@ -56,6 +56,14 @@ java -cp ../lib/*:. org.minima.Start
 You can add -private and all the other parameters to that.
 
 
+### Tests
+
+You can run the tests directly from your IDE or from command-line.
+
+```
+./gradlew test
+```
+
 ### Demo Session
 
 Once you are in..
