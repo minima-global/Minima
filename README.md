@@ -64,6 +64,14 @@ You can run the tests directly from your IDE or from command-line.
 ./gradlew test
 ```
 
+Generate code coverage test report with:
+```
+./gradlew test jacocoTestReport
+```
+
+The report can be found at  ./build/reports/jacoco/test/html/index.html
+
+
 ### Demo Session
 
 Once you are in..
