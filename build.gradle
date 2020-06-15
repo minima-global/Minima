@@ -28,6 +28,19 @@ dependencies {
     testImplementation 'junit:junit:4.13'
 }
 
+sourceSets {
+    main {
+         java {
+            srcDirs = ['src']
+         }
+    }
+
+    test {
+        java {
+            srcDirs = ['test']
+        }
+    }
+}
 application {
     // Define the main class for the application.
     mainClassName = 'org.minima.Start'
