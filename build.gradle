@@ -8,15 +8,11 @@
 
 plugins {
     // Apply the java plugin to add support for Java
-    java
+    id 'java'
 
     // Apply the application plugin to add support for building a CLI application.
-    application
+    id 'application'
 }
-
-
-version = "0.94.0"
-group = "org.minima"
 
 repositories {
     // Use jcenter for resolving dependencies.
@@ -26,19 +22,13 @@ repositories {
 
 dependencies {
     // This dependency is used by the application.
-    implementation("com.google.guava:guava:29.0-jre")
+    implementation 'com.google.guava:guava:29.0-jre'
 
     // Use JUnit test framework
-    testImplementation("junit:junit:4.13")
-}
-
-tasks.test {
-    useJUnit()
-
-    maxHeapSize = "1G"
+    testImplementation 'junit:junit:4.13'
 }
 
 application {
     // Define the main class for the application.
-    mainClassName = "org.minima.Start"
+    mainClassName = 'org.minima.Start'
 }
