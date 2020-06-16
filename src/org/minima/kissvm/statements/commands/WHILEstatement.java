@@ -34,15 +34,14 @@ public class WHILEstatement implements Statement {
 	public void execute(Contract zContract) throws ExecutionException {
 		//Check the expression - this loop wil end when the number of execution points is over 1000
 		while(mWhileCheck.getValue(zContract).isTrue()) {
-			//Trace log
-//			zContract.traceLog(toString()+" result:true");
-				
 			//Run the code..
 			mWhileBlock.run(zContract);
+			
+			//Check for EXIT
+			if(zContract.isSuccessSet()) {
+				return;
+			}
 		}
-		
-		//Trace log
-//		zContract.traceLog(toString()+" result:false");				
 	}
 	
 	@Override
