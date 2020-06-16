@@ -15,11 +15,11 @@ public class MiniString implements Streamable {
 	String mString;
 	
 	public MiniString(MiniString zString) {
-		this(zString.toString());
+		this(zString.toString().trim());
 	}
 	
 	public MiniString(String zString) {
-		mString = new String(zString.getBytes(Charset.forName("UTF-8")));
+		mString = new String(zString.trim().getBytes(Charset.forName("UTF-8")));
 	}
 	
 	@Override

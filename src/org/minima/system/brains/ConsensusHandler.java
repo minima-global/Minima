@@ -67,6 +67,7 @@ public class ConsensusHandler extends SystemHandler {
 	 * Create Tokens
 	 */
 	public static final String CONSENSUS_CREATETOKEN 		= "CONSENSUS_CREATETOKEN";
+	public static final String CONSENSUS_TOKENCREATE 		= "CONSENSUS_TOKENCREATE";
 	
 	/**
 	 * Notification Messages
@@ -680,6 +681,91 @@ public class ConsensusHandler extends SystemHandler {
 				PostMessage(ret);
 			}
 			
+		}else if(zMessage.isMessageType(CONSENSUS_TOKENCREATE)) {
+			//Get the amount
+			String amount 		= zMessage.getString("amount");
+			String name  	 	= zMessage.getString("name");
+			String description  = zMessage.getString("description");
+			String icon  	 	= zMessage.getString("icon");
+			String proof  	 	= zMessage.getString("proof");
+			String script       = zMessage.getString("script");
+			
+			MiniData tok  		= Coin.TOKENID_CREATE;
+			MiniData changetok 	= Coin.MINIMA_TOKENID;
+			
+			//Get a new address to receive the tokens..
+			Address recipient = getMainDB().getUserDB().newSimpleAddress();
+			
+			//How much Minima will it take to colour.. for now lets stay under 0.001 minima
+			//This is not protocol specific and can change later
+			BigDecimal max    = new BigDecimal("0.01");
+			BigDecimal num    = new BigDecimal(amount);
+			BigDecimal actnum = new BigDecimal(amount);
+			
+			//Cylce to the right size..
+			int scale = 0;
+			while(actnum.compareTo(max)>0) {
+				actnum = actnum.divide(BigDecimal.TEN);
+				scale++;
+			}
+			
+			//The actual amount of Minima that needs to be sent
+			MiniNumber sendamount = new MiniNumber(actnum);
+			
+			//How much do we have..
+			MiniNumber total = new MiniNumber(); 
+			ArrayList<Coin> confirmed = getMainDB().getTotalSimpleSpendableCoins(Coin.MINIMA_TOKENID);
+			
+			//Add all the available outputs to the list
+			for(Coin cc : confirmed) {
+				total = total.add(cc.getAmount());
+			}
+
+			//Do we have that much..
+			if(total.isLess(sendamount)) {
+				//Insufficient funds!
+				InputHandler.endResponse(zMessage, false, "Insufficient funds! You only have : "+total);
+				
+			}else {
+				//Blank address - check change is non-null
+				Address change = new Address(); 
+				if(!total.isEqual(sendamount)) {
+					change = getMainDB().getUserDB().newSimpleAddress();
+				}
+				
+				//CHECK NAME of TOKEN IS VALID!
+				//TODO
+				
+				//Create the JSON descriptor..
+				JSONObject tokenjson = new JSONObject();
+				tokenjson.put("name", name);
+				if(!description.equals("")) {
+					tokenjson.put("description", description);	
+				}
+				if(!icon.equals("")) {
+					tokenjson.put("icon", icon);	
+				}
+				if(!proof.equals("")) {
+					tokenjson.put("proof", proof);	
+				}
+				
+				//Create the token gen details
+				TokenProof tokengen = new TokenProof(Coin.COINID_OUTPUT, 
+													 new MiniNumber(scale+""), 
+													 sendamount, 
+													 new MiniString(tokenjson.toString()),
+													 new MiniString(script));
+				
+				//Create the Transaction
+				Message ret = getMainDB().createTransaction(sendamount, recipient, change, confirmed, tok, changetok,tokengen);
+				
+				//Continue the log output trail
+				InputHandler.addResponseMesage(ret, zMessage);
+				
+				//Send it..
+				PostMessage(ret);
+			}
 		}
+		
 	}	
 }

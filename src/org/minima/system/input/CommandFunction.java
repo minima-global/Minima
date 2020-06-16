@@ -37,7 +37,9 @@ import org.minima.system.input.functions.send;
 import org.minima.system.input.functions.sign;
 import org.minima.system.input.functions.status;
 import org.minima.system.input.functions.test;
+import org.minima.system.input.functions.tokencreate;
 import org.minima.system.input.functions.tokens;
+import org.minima.system.input.functions.tokenvalidate;
 import org.minima.system.input.functions.trace;
 import org.minima.system.input.functions.tutorial;
 import org.minima.system.input.functions.txpowinfo;
@@ -77,7 +79,8 @@ public abstract class CommandFunction {
 			new backup(), new balance(), new connect(), new createtoken(), new disconnect(), new weblink(),
 			new gimme50(), new help(), new intro(), new automine(), new newaddress(), new coins(), new coinsimple(), new txpowinfo(), new keys(),
 			new newscript(), new printdb(), new printtree(), new quit(),new reconnect(), new runscript(), new cleanscript(), 
-			new send(), new status(), new test(), new trace(), new tutorial(), new history(), new tokens(),
+			new send(), new status(), new test(), new trace(), new tutorial(), new history(), 
+			new tokens(), new tokencreate(), new tokenvalidate(),
 			new exportkey(), new importkey(), new exportcoin(), new importcoin(), new search(),
 			new chainsha(), new keepcoin(), new unkeepcoin(), new scripts(), new network(), new minidapps(),
 			new txncreate(), new txndelete(), new txninput(), new txnlist(), new txnauto(),

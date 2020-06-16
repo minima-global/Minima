@@ -1,6 +1,7 @@
 package org.minima.system.brains;
 
 import java.io.File;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -31,6 +32,7 @@ import org.minima.system.input.InputHandler;
 import org.minima.system.network.NetClient;
 import org.minima.system.network.NetworkHandler;
 import org.minima.system.network.minidapps.DAPPManager;
+import org.minima.system.network.rpc.RPCClient;
 import org.minima.utils.Maths;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
@@ -54,6 +56,7 @@ public class ConsensusPrint extends ConsensusProcessor {
 	
 	public static final String CONSENSUS_HISTORY 		    = CONSENSUS_PREFIX+"HISTORY";
 	public static final String CONSENSUS_TOKENS 			= CONSENSUS_PREFIX+"TOKENS";
+	public static final String CONSENSUS_TOKENVALIDATE 		= CONSENSUS_PREFIX+"TOKENVALIDATE";
 	
 	public static final String CONSENSUS_RANDOM 			= CONSENSUS_PREFIX+"RANDOM";
 	
@@ -373,6 +376,49 @@ public class ConsensusPrint extends ConsensusProcessor {
 			JSONObject dets = InputHandler.getResponseJSON(zMessage);
 			dets.put("random", rand.to0xString());
 			InputHandler.endResponse(zMessage, true, "");
+		
+		}else if(zMessage.isMessageType(CONSENSUS_TOKENVALIDATE)){
+			//Check that a Token is valid..
+			String tokenid = zMessage.getString("tokenid");
+			
+			TokenProof td = getMainDB().getUserDB().getTokenDetail(new MiniData(tokenid));
+			if(td == null) {
+				InputHandler.endResponse(zMessage, false, "TokenID "+tokenid+" not found");	
+				return;
+			}
+			
+			//Get the details..
+			String name = td.getName().toString();
+			if(!name.startsWith("{")) {
+				InputHandler.endResponse(zMessage, false, "No Proof URL attached to token");	
+				return;
+			}
+			
+			JSONObject tokjson = td.getNameJSON();
+			if(!tokjson.containsKey("proof")) {
+				InputHandler.endResponse(zMessage, false, "No Proof URL attached to token");	
+				return;
+			}
+			
+			//Get the proof..
+			String proof = (String) tokjson.get("proof");
+			URL proofurl = new URL(proof);
+			
+			//Now GET that URL..
+			String prooffile = RPCClient.sendGET(proof).trim();
+			
+			JSONObject dets = InputHandler.getResponseJSON(zMessage);
+			dets.put("proofurl", proof);
+			dets.put("host", proofurl.getHost());
+			dets.put("returned", prooffile);
+			dets.put("required", tokenid);
+			
+			//And check that this is equal to the Token ID..
+			if(!prooffile.equals(tokenid)) {
+				InputHandler.endResponse(zMessage, false, "Invalid - Proof mismatch");	
+			}else {
+				InputHandler.endResponse(zMessage, true, "Valid - Proof matches");
+			}
 			
 		}else if(zMessage.isMessageType(CONSENSUS_TOKENS)){
 			//Get all the tokens..

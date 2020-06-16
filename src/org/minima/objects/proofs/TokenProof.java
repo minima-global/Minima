@@ -11,6 +11,8 @@ import org.minima.objects.base.MiniString;
 import org.minima.utils.Crypto;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONObject;
+import org.minima.utils.json.parser.JSONParser;
+import org.minima.utils.json.parser.ParseException;
 
 public class TokenProof implements Streamable{
 
@@ -87,6 +89,10 @@ public class TokenProof implements Streamable{
 		return mTokenName;
 	}
 	
+	public JSONObject getNameJSON() throws ParseException {
+		return (JSONObject) new JSONParser().parse(mTokenName.toString());
+	}
+	
 	public MiniString getTokenScript() {
 		return mTokenScript;
 	}
@@ -103,7 +109,40 @@ public class TokenProof implements Streamable{
 		JSONObject obj = new JSONObject();
 		
 		obj.put("tokenid", mTokenID.to0xString());
-		obj.put("token", mTokenName.toString());
+		
+		//Check if the name is a JSON..
+		String name = mTokenName.toString().trim();
+		
+		if(name.startsWith("{")) {
+			//Break it down..
+			try {
+				//Get the JSON..
+				JSONObject tokjson = getNameJSON();
+			
+				//Get the name..
+				obj.put("token", tokjson.get("name").toString());
+				
+				//Get the rest if they exist..
+				if(tokjson.containsKey("description")) {
+					obj.put("description", tokjson.get("description").toString());	
+				}
+				
+				if(tokjson.containsKey("icon")) {
+					obj.put("icon", tokjson.get("icon").toString());	
+				}
+				
+				if(tokjson.containsKey("proof")) {
+					obj.put("proof", tokjson.get("proof").toString());	
+				}
+				
+			} catch (ParseException e) {
+				//e.printStackTrace();
+				obj.put("token", name);
+			}
+				
+		}else {
+			obj.put("token", name);	
+		}
 		
 		MiniNumber total = mTokenMinimaAmount.mult(getScaleFactor());
 		obj.put("total", total);
