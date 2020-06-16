@@ -40,7 +40,7 @@ public class TokenProof implements Streamable{
 	MiniString mTokenScript;
 	
 	/**
-	 * TTokenID created after all the details are set
+	 * TokenID created after all the details are set
 	 */
 	MiniData mTokenID;
 	

@@ -42,6 +42,7 @@ import org.minima.kissvm.functions.state.DYNSTATE;
 import org.minima.kissvm.functions.state.PREVSTATE;
 import org.minima.kissvm.functions.state.SAMESTATE;
 import org.minima.kissvm.functions.state.STATE;
+import org.minima.kissvm.functions.tokens.TOKENSCALE;
 import org.minima.kissvm.functions.tokens.TOKENSCRIPT;
 import org.minima.kissvm.functions.tokens.TOKENTOTAL;
 import org.minima.kissvm.functions.txn.output.GETOUTADDR;
@@ -64,7 +65,8 @@ public abstract class MinimaFunction {
 				new STRCAT(), new HEXCAT(), new LEN(), new RPLVAR(),new REV(),new SUBSET(), new GET(),
 				new BOOL(), new NUMBER(), new HEX(), new SCRIPT(), new ASCII(),
 				new ABS(), new CEIL(), new FLOOR(),new MAX(), new MIN(), new DEC(), new INC(), 
-				new SIGDIG(), new POW(), new TOKENSCRIPT(), new TOKENTOTAL(),
+				new SIGDIG(), new POW(), 
+				new TOKENSCRIPT(), new TOKENTOTAL(), new TOKENSCALE(),
 				new SHA3(), new SHA2(), new CHAINSHA(), new BITSET(), new BITGET(),
 				new SIGNEDBY(), new MULTISIG(), new CHECKSIG(),
 				new GETOUTADDR(), new GETOUTAMT(), new GETOUTTOK(),new VERIFYOUT(),
