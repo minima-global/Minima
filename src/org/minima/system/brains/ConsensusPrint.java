@@ -411,13 +411,12 @@ public class ConsensusPrint extends ConsensusProcessor {
 			dets.put("proofurl", proof);
 			dets.put("host", proofurl.getHost());
 			dets.put("returned", prooffile);
-			dets.put("required", tokenid);
 			
 			//And check that this is equal to the Token ID..
 			if(!prooffile.equals(tokenid)) {
-				InputHandler.endResponse(zMessage, false, "Invalid - Proof mismatch");	
+				InputHandler.endResponse(zMessage, false, "Invalid - proof mismatch");	
 			}else {
-				InputHandler.endResponse(zMessage, true, "Valid - Proof matches");
+				InputHandler.endResponse(zMessage, true, "Valid - proof matches");
 			}
 			
 		}else if(zMessage.isMessageType(CONSENSUS_TOKENS)){
