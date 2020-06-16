@@ -36,6 +36,7 @@ import org.minima.objects.base.MiniInteger;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
 import org.minima.objects.proofs.ScriptProof;
+import org.minima.objects.proofs.TokenProof;
 import org.minima.system.input.InputHandler;
 import org.minima.system.network.NetClient;
 import org.minima.system.network.NetworkHandler;
@@ -334,18 +335,28 @@ public class ConsensusUser extends ConsensusProcessor {
 						int oldindex = index;
 						index = tok.indexOf(":", index+1);
 						String amount = tok.substring(oldindex+1,index).trim();
+						MiniNumber amt = new MiniNumber(amount);
 						
 						//Tokenid
 						String tokenid = tok.substring(index+1).trim();
 						
+						//Add the details to the witness..
+						TokenProof tprf = getMainDB().getUserDB().getTokenDetail(new MiniData(tokenid));
+						if(tprf != null) {
+							wit.addTokenDetails(tprf);
+						
+							//Recalculate the amount.. given the token scale..
+							amt = amt.div(tprf.getScaleFactor());
+						}
+						
 						//Create this coin
 						Coin outcoin = new Coin(new MiniData("0x00"), 
 												new MiniData(address), 
-												new MiniNumber(amount), 
+												amt, 
 												new MiniData(tokenid));
 						
 						//Add this output to the transaction..
-						trans.addOutput(outcoin);
+						trans.addOutput(outcoin);	
 					}
 				}
 			}
@@ -459,6 +470,14 @@ public class ConsensusUser extends ConsensusProcessor {
 						int split = tok.indexOf(":");
 						String global = tok.substring(0,split).trim().toUpperCase();
 						String value = tok.substring(split+1).trim();
+						
+						if(global.equals("@TOKENID")) {
+							//Add the details to the witness..
+							TokenProof tprf = getMainDB().getUserDB().getTokenDetail(new MiniData(value));
+							if(tprf != null) {
+								wit.addTokenDetails(tprf);
+							}	
+						}
 						
 						//Set it..
 						cc.setGlobalVariable(global, Value.getValue(value));

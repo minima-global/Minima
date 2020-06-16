@@ -525,7 +525,7 @@ public class ConsensusHandler extends SystemHandler {
 				
 				return;
 				
-			}else {
+			}else{
 				//Continue constructing the transaction - outputs don't need scripts
 				Address recipient= new Address(new MiniData(address));
 				
@@ -689,6 +689,19 @@ public class ConsensusHandler extends SystemHandler {
 			String icon  	 	= zMessage.getString("icon");
 			String proof  	 	= zMessage.getString("proof");
 			String script       = zMessage.getString("script");
+			
+			/* 
+			 * ASSERT FLOOR ( @AMOUNT ) EQ @AMOUNT LET checkout = 0 
+			 * WHILE ( checkout LT @TOTOUT ) DO 
+			 *  IF GETOUTTOK ( checkout ) EQ @TOKENID THEN 
+			 *   LET outamt = GETOUTAMT ( checkout ) 
+			 *   ASSERT FLOOR ( outamt ) EQ outamt 
+			 *  ENDIF 
+			 *  LET checkout = INC ( checkout ) 
+			 * ENDWHILE 
+			 * RETURN TRUE
+			 * 
+			 */
 			
 			MiniData tok  		= Coin.TOKENID_CREATE;
 			MiniData changetok 	= Coin.MINIMA_TOKENID;
