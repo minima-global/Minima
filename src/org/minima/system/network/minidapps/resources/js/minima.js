@@ -208,34 +208,44 @@ var Minima = {
 				return null;
 			},
 			
-			notify : function(message){
-				if(!Minima.showmining){
-					return;
-				}
+			notify : function(message,bgcolor){
+				//Log it..
+				Minimalog("Notify : "+message);
 				
-				//Do we support notifications
-				if (!("Notification" in window)) {
-					Minimalog("This browser does not support notifications");
-					return;
-				}
-				
-				var options = {
-				      body: message
-				  }
-			
-				//Do we already have permissions..
-				if (Notification.permission === "granted") {
-				    // If it's okay let's create a notification
-				    var notification = new Notification("Minima",options);
+				//Show a little popup across the screen..
+				if(bgcolor){
+					createMinimaNotification(message,bgcolor);
 				}else{
-					//if (Notification.permission !== "denied")
-				    Notification.requestPermission().then(function (permission) {
-				      // If the user accepts, let's create a notification
-				      if (permission === "granted") {
-				    	  var notification = new Notification("Minima",options);
-				      }
-				    });
+					createMinimaNotification(message);	
 				}
+				
+//				if(!Minima.showmining){
+//					return;
+//				}
+//				
+//				//Do we support notifications
+//				if (!("Notification" in window)) {
+//					Minimalog("This browser does not support notifications");
+//					return;
+//				}
+//				
+//				var options = {
+//				      body: message
+//				  }
+//			
+//				//Do we already have permissions..
+//				if (Notification.permission === "granted") {
+//				    // If it's okay let's create a notification
+//				    var notification = new Notification("Minima",options);
+//				    
+//				}else if (Notification.permission !== "denied") {
+//				    Notification.requestPermission().then(function (permission) {
+//				      // If the user accepts, let's create a notification
+//				      if (permission === "granted") {
+//				    	  var notification = new Notification("Minima",options);
+//				      }
+//				    });
+//			    }
 			},
 			
 			send : function(minidappid, message, callback){
@@ -479,12 +489,10 @@ function startWebSocketListener(){
 			Minimalog("REPLY CALLBACK NOT FOUND "+JSON.stringify(jmsg));
 			
 		}else if(jmsg.event == "txpowstart"){
-			Minimalog("Transaction Mining Start..");
-			Minima.util.notify("Mining Transaction Started..");	
+			Minima.util.notify("Mining Transaction Started..","#55DD55");	
 			
 		}else if(jmsg.event == "txpowend"){
-			Minimalog("Transaction Mining Finished");
-			Minima.util.notify("Mining Transaction Finished");
+			Minima.util.notify("Mining Transaction Finished","#DD5555");
 		}
 	};
 		
@@ -834,6 +842,56 @@ function hide(id){
 function Minimalog(info){
 	console.log("Minima @ "+new Date().toLocaleString()+"\n"+info);
 }
+
+/**
+ * Notification Div
+ */
+var TOTAL_NOTIFICATIONS = 0;
+function createMinimaNotification(text, bgcolor){
+	//First add the total overlay div
+	var notifydiv = document.createElement('div');
+	
+	//Create a random ID for this DIV..
+	var notifyid = Math.floor(Math.random()*1000000000);
+	
+	//Details..
+	notifydiv.id  = notifyid;
+	notifydiv.style.position 	 = "absolute";
+	
+	notifydiv.style.top 		 = 20 + TOTAL_NOTIFICATIONS * 110;
+	TOTAL_NOTIFICATIONS++;
+	
+	notifydiv.style.right 		 = "20";
+	notifydiv.style.width 	     = "400";
+	notifydiv.style.height 	     = "90";
+	
+	//Regular or specific color
+	if(bgcolor){
+		notifydiv.style.background   = bgcolor;
+	}else{
+		notifydiv.style.background   = "#777777";	
+	}
+	
+	notifydiv.style.opacity 	 = "75%";
+	notifydiv.style.borderRadius = "10px";
+	
+	//Add it to the Page
+	document.body.appendChild(notifydiv);
+		
+	//Create an HTML window
+	var notiytext = "<table border=0 width=100% height=100%><tr>" +
+			"<td style='font-size:16px;font-family:monospace;color:black;text-align:center;vertical-align:middle;'>"+text+"</td></tr></table>";
+	
+	//Set the Text..
+	document.getElementById(notifyid).innerHTML = notiytext;
+	
+	//And create a timer to shut it down..
+	setTimeout(function() {
+		TOTAL_NOTIFICATIONS--;
+		document.getElementById(notifyid).style.display = "none";  
+	 }, 3000);
+}
+
 
 
 /**
