@@ -52,11 +52,9 @@ public class BooleanExpression implements Expression {
 	
 	@Override
 	public Value getValue(Contract zContract) throws ExecutionException {
-		//This action counts as one instruction
-		zContract.incrementInstructions();
-		
 		Value ret = null;
 		
+		//Calculate the left and the right side
 		Value lval = mLeft.getValue(zContract);
 		Value rval = mRight.getValue(zContract);
 				
@@ -111,6 +109,9 @@ public class BooleanExpression implements Expression {
 				break;	
 		}
 		
+		//This action counts as one instruction
+		zContract.incrementInstructions();
+				
 		//And trace it..
 		zContract.traceLog(toString()+" returns:"+ret.toString());
 				

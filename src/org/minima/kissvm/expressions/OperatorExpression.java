@@ -57,14 +57,11 @@ public class OperatorExpression implements Expression{
 	 */
 	@Override
 	public Value getValue(Contract zContract) throws ExecutionException {
-		//This action counts as one instruction
-		zContract.incrementInstructions();
-				
 		Value ret = null;
 		
 		Value lval = mLeft.getValue(zContract);
 		Value rval = mRight.getValue(zContract);
-		
+				
 		MiniNumber left  = lval.getNumber();
 		MiniNumber right = rval.getNumber();
 		
@@ -127,6 +124,9 @@ public class OperatorExpression implements Expression{
 			
 		}
 		
+		//This action counts as one instruction
+		zContract.incrementInstructions();
+				
 		//And trace it..
 		zContract.traceLog(toString()+" returns:"+ret.toString());
 				
