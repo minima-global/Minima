@@ -572,7 +572,7 @@ public class ConsensusPrint extends ConsensusProcessor {
 				String unspentexist = jobj.get("unspent").toString();
 				jobj.remove("unspent");
 				
-				//Do we add..
+				//Do we add.. only if there are unspent coins..
 				if(!unspentexist.equals("true")) {
 					continue;
 				}
