@@ -108,6 +108,7 @@ public class TokenProof implements Streamable{
 	public JSONObject toJSON() {
 		JSONObject obj = new JSONObject();
 		
+		//The big boy first
 		obj.put("tokenid", mTokenID.to0xString());
 		
 		//Check if the name is a JSON..
@@ -121,6 +122,11 @@ public class TokenProof implements Streamable{
 			
 				//Get the name..
 				obj.put("token", tokjson.get("name").toString());
+				
+				//Defaults
+				obj.put("description", "");
+				obj.put("icon", "");
+				obj.put("proof", "");
 				
 				//Get the rest if they exist..
 				if(tokjson.containsKey("description")) {
@@ -136,19 +142,23 @@ public class TokenProof implements Streamable{
 				}
 				
 			} catch (ParseException e) {
-				//e.printStackTrace();
+				//Incorrectly formed JSON
 				obj.put("token", name);
+				obj.put("description", "");
+				obj.put("icon", "");
+				obj.put("proof", "");
 			}
 				
 		}else {
-			obj.put("token", name);	
+			obj.put("token", name);
+			obj.put("description", "");
+			obj.put("icon", "");
+			obj.put("proof", "");	
 		}
 		
 		MiniNumber total = mTokenMinimaAmount.mult(getScaleFactor());
-		obj.put("total", total);
-		
+		obj.put("total", total.toString());
 		obj.put("script", mTokenScript.toString());
-		
 		obj.put("coinid", mCoinID.to0xString());
 		obj.put("totalamount", mTokenMinimaAmount.toString());
 		obj.put("scale", mTokenScale.toString());
