@@ -89,6 +89,21 @@ public class TokenProof implements Streamable{
 		return mTokenName;
 	}
 	
+	public String getShowName() {
+		if(mTokenName.toString().startsWith("{")) {
+			//Break it down..
+			try {
+				//Get the JSON..
+				return getNameJSON().get("name").toString();
+				
+			}catch(ParseException exc){
+				return getName().toString();
+			}
+		}else {
+			return getName().toString();
+		}
+	}
+	
 	public JSONObject getNameJSON() throws ParseException {
 		return (JSONObject) new JSONParser().parse(mTokenName.toString());
 	}
@@ -162,7 +177,6 @@ public class TokenProof implements Streamable{
 		obj.put("coinid", mCoinID.to0xString());
 		obj.put("totalamount", mTokenMinimaAmount.toString());
 		obj.put("scale", mTokenScale.toString());
-		
 		
 		return obj;
 	}
