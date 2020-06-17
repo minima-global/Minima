@@ -21,6 +21,9 @@ public class TOKENTOTAL extends MinimaFunction {
 		
 		//Get that tokens details..
 		TokenProof td = zContract.getWitness().getTokenDetail(tokenid.getMiniData());
+		if(td == null) {
+			throw new ExecutionException("No Token found for ID "+tokenid.toString());
+		}
 		
 		// Return reversed value
 		return new NumberValue(td.getTotalTokens());

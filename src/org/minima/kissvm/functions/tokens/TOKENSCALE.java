@@ -21,6 +21,9 @@ public class TOKENSCALE extends MinimaFunction {
 		
 		//Get that tokens details..
 		TokenProof td = zContract.getWitness().getTokenDetail(tokenid.getMiniData());
+		if(td == null) {
+			throw new ExecutionException("No Token found for ID "+tokenid.toString());
+		}
 		
 		return new NumberValue(td.getScaleFactor());
 	}
