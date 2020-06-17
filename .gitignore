@@ -5,3 +5,9 @@
 
 # Ignore Gradle build output directory
 build
+
+# ignore IDE config
+.settings
+.vscode
+
+
