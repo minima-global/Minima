@@ -381,6 +381,9 @@ public class ConsensusPrint extends ConsensusProcessor {
 			//Check that a Token is valid..
 			String tokenid = zMessage.getString("tokenid");
 			
+			JSONObject dets = InputHandler.getResponseJSON(zMessage);
+			dets.put("valid", false);
+			
 			TokenProof td = getMainDB().getUserDB().getTokenDetail(new MiniData(tokenid));
 			if(td == null) {
 				InputHandler.endResponse(zMessage, false, "TokenID "+tokenid+" not found");	
@@ -407,14 +410,16 @@ public class ConsensusPrint extends ConsensusProcessor {
 			//Now GET that URL..
 			String prooffile = RPCClient.sendGET(proof).trim();
 			
-			JSONObject dets = InputHandler.getResponseJSON(zMessage);
 			dets.put("proofurl", proof);
 			dets.put("host", proofurl.getHost());
 			dets.put("returned", prooffile);
 			
+			boolean valid = prooffile.equals(tokenid);
+			dets.put("valid", valid);
+			
 			//And check that this is equal to the Token ID..
-			if(!prooffile.equals(tokenid)) {
-				InputHandler.endResponse(zMessage, false, "Invalid - proof mismatch");	
+			if(!valid) {
+				InputHandler.endResponse(zMessage, true, "Invalid - proof mismatch");	
 			}else {
 				InputHandler.endResponse(zMessage, true, "Valid - proof matches");
 			}
@@ -461,6 +466,7 @@ public class ConsensusPrint extends ConsensusProcessor {
 			basejobj.put("unconfirmed", MiniNumber.ZERO);
 			basejobj.put("mempool", MiniNumber.ZERO.toString());
 			basejobj.put("sendable", MiniNumber.ZERO.toString());
+			basejobj.put("unspent", "true");
 			
 			full_details.put(Coin.MINIMA_TOKENID.to0xString(), basejobj);
 			
@@ -495,14 +501,15 @@ public class ConsensusPrint extends ConsensusProcessor {
 						jobj = full_details.get(tokid);
 					}else {
 						jobj = new JSONObject();
-						jobj.put("tokenid", tokid);
 						if(tokid.equals(Coin.MINIMA_TOKENID.to0xString())) {
+							jobj.put("tokenid", tokid);
 							jobj.put("token", "Minima");
 						}else {
-							jobj.put("token", td.getName().toString());
+							jobj = td.toJSON();
 						}
 						
 						//Default Values
+						jobj.put("unspent", "false");
 						jobj.put("confirmed", MiniNumber.ZERO);
 						jobj.put("unconfirmed", MiniNumber.ZERO);
 						
@@ -511,6 +518,9 @@ public class ConsensusPrint extends ConsensusProcessor {
 					}
 					
 					if(!coin.isSpent()) {
+						//At least one coin is unspent..
+						jobj.put("unspent", "true");
+						
 						if(depth.isMoreEqual(GlobalParams.MINIMA_CONFIRM_DEPTH)) {
 							//Get the Current total..
 							MiniNumber curr = totals_confirmed.get(tokid);
@@ -559,6 +569,13 @@ public class ConsensusPrint extends ConsensusProcessor {
 				
 				//Get the JSON object
 				JSONObject jobj = full_details.get(full);
+				String unspentexist = jobj.get("unspent").toString();
+				jobj.remove("unspent");
+				
+				//Do we add..
+				if(!unspentexist.equals("true")) {
+					continue;
+				}
 				
 				//Get the Token ID
 				String tokenid 	= (String) jobj.get("tokenid");
@@ -595,13 +612,12 @@ public class ConsensusPrint extends ConsensusProcessor {
 					MiniNumber tot_scconf   = tot_conf.mult(td.getScaleFactor());
 					MiniNumber tot_unconf   = (MiniNumber) jobj.get("unconfirmed");
 					MiniNumber tot_scunconf = tot_unconf.mult(td.getScaleFactor());
-					MiniNumber tot_toks 	= td.getTotalTokens();
 					
 					//And re-add
 					jobj.put("confirmed", tot_scconf.toString());
 					jobj.put("unconfirmed", tot_scunconf.toString());
-					jobj.put("script", td.getTokenScript().toString());
-					jobj.put("total", tot_toks.toString());
+//					jobj.put("script", td.getTokenScript().toString());
+//					jobj.put("total", td.getTotalTokens().toString());
 					
 					//MEMPOOL
 					MiniNumber memp = mempool.get(tok.to0xString());
