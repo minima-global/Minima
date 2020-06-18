@@ -22,7 +22,7 @@ public class GlobalParams {
 	public static final boolean MINIMA_ZERO_DIFF_BLK  = false;
 	
 	/**
-	 * Speed in blocks per second
+	 * Speed in blocks per second.. 0.05 = 20 second block time
 	 */
 	public static final MiniNumber MINIMA_BLOCK_SPEED  = new MiniNumber("0.05");
 	
@@ -34,10 +34,10 @@ public class GlobalParams {
 	/**
 	 * Depth before we cascade..
 	 */
-	public static final int MINIMA_CASCADE_START_DEPTH = 8192;
+	public static final int MINIMA_CASCADE_START_DEPTH = 2048;
 	
 	/**
-	 * Minimum number of blocks at each cascade level 
+	 * Number of blocks at each cascade level 
 	 */
 	public static final int MINIMA_CASCADE_LEVEL_NODES  = 256;
 	
@@ -47,8 +47,8 @@ public class GlobalParams {
 	public static final int MINIMA_CASCADE_LEVELS  = 32;
 	
 	/**
-	 * Current default HASH_Strength Used. Can be upto 512.
-	 * All the MINING, TxPOW and MMR data ALWAYS uses 512. But addresses, scripts, and public keys..
+	 * Current default HASH_Strength Used. Can be up to 512.
+	 * All the MINING, TxPoW and MMR data ALWAYS uses 512. But addresses, scripts, and public keys..
 	 * can be set to less. This way signatures and addresses are shorter.
 	 */
 	public static final int MINIMA_DEFAULT_HASH_STRENGTH = 256;

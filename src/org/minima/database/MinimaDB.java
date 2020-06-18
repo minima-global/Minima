@@ -921,15 +921,16 @@ public class MinimaDB {
 		//The Transaction Difficulty is set by the user after testing.. 
 		//He performs 10 seconds of work..
 		txpow.setTxDifficulty(TxPoWMiner.BASE_TXN);
-		txpow.setBlockDifficulty(TxPoWMiner.BASE_BLOCK);
+//		txpow.setBlockDifficulty(TxPoWMiner.BASE_BLOCK);
+		txpow.setBlockDifficulty(TxPoWMiner.BASE_TXN);
 		
 		//Block Details..
 		txpow.setBlockNumber(tip.getTxPow().getBlockNumber().increment());
 		
 		if(!GlobalParams.MINIMA_ZERO_DIFF_BLK) {
 			//Calculate New Chain Speed
-			int len = mMainTree.getAsList().size();
-			 
+//			int len = mMainTree.getAsList().size();
+			int len = mMainTree.getChainTip().getBlockNumber().getAsInt();
 			if(len > GlobalParams.MINIMA_CASCADE_START_DEPTH ) {
 				//Desired Speed.. in blocks per second
 				MiniNumber actualspeed 	= mMainTree.getChainSpeed();

@@ -224,7 +224,7 @@ public class BlockTree {
 	 * @return
 	 */
 	private BlockTreeNode _getHeaviestBranchTip() {
-		//Start at cascade node.. MUST be past that node anyway..
+		//Hmm.. Should start at cascade node.. MUST be past that node anyway..
 		BlockTreeNode curr = getChainRoot();
 		
 		//If null return null
