@@ -43,14 +43,14 @@ public class MultiLevelCascadeTree {
 		//Store this..
 		MiniData oldtiptxpowid = oldtip.getTxPowID();
 		
-		//Get the current tip
-		MiniNumber casc           = mMainTree.getCascadeNode().getTxPow().getBlockNumber();
+		//Get the current block 1 above the cascade
+		MiniNumber cascinc = mMainTree.getCascadeNode().getTxPow().getBlockNumber().increment();
 		
 		//First get the block PRE_CASCADE_CHAIN_LENGTH back..
 		int counter=0;
 		while(  (oldtip!=null) && 
 				(counter<GlobalParams.MINIMA_CASCADE_START_DEPTH) && 
-				(oldtip.getTxPow().getBlockNumber().isMore(casc)) ) {
+				(oldtip.getTxPow().getBlockNumber().isMore(cascinc)) ) {
 			counter++;
 			oldtip = oldtip.getParent();
 		}
@@ -101,7 +101,7 @@ public class MultiLevelCascadeTree {
 				totlevel++;
 				
 				//Keep at least this many at each level..
-				if(totlevel>=GlobalParams.MINIMA_MINUMUM_CASCADE_LEVEL_NODES) {
+				if(totlevel>=GlobalParams.MINIMA_CASCADE_LEVEL_NODES) {
 					if(casclevel<GlobalParams.MINIMA_CASCADE_LEVELS-1) {
 						casclevel++;
 						totlevel = 0;

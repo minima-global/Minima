@@ -50,6 +50,7 @@ public class ConsensusHandler extends SystemHandler {
 	 */
 	public static final String CONSENSUS_ACTIVATEMINE 		   = "CONSENSUS_ACTIVATEMINE";
 	public static final String CONSENSUS_MINEBLOCK 			   = "CONSENSUS_MINEBLOCK";
+	public static final String CONSENSUS_DEBUGMINE 			   = "CONSENSUS_DEBUGMINE";
 	
 	/**
 	 * TestNET 
@@ -361,6 +362,19 @@ public class ConsensusHandler extends SystemHandler {
 			//Post to the Miner
 			getMainHandler().getMiner().PostMessage(mine);
 		
+		}else if ( zMessage.isMessageType(CONSENSUS_DEBUGMINE) ) {
+			//Mine one single block.. 
+			TxPoW txpow = getMainDB().getCurrentTxPow(new Transaction(), new Witness(), new JSONArray());
+			
+			//Send it to the Miner..
+			Message mine = new Message(TxPoWMiner.TXMINER_DEBUGBLOCK).addObject("txpow", txpow);
+			
+			//Continue the log output trail
+			InputHandler.addResponseMesage(mine, zMessage);
+			
+			//Post to the Miner
+			getMainHandler().getMiner().PostMessage(mine);
+			
 		/**
 		 * Transaction management
 		 */

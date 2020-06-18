@@ -72,33 +72,35 @@ public class ConsensusBackup extends ConsensusProcessor {
 			BackupManager backup = getBackup();
 			
 			//First backup the UserDB..
-			JavaUserDB userdb = (JavaUserDB) getMainDB().getUserDB();
-			File backuser     = backup.getBackUpFile(USERDB_BACKUP);
-			BackupManager.writeObjectToFile(backuser, userdb);
-			details.put("userdb", backuser.getAbsolutePath());
-			
-			//Now the complete SyncPackage..
-			SyncPackage sp = getMainDB().getSyncPackage();
-			File backsync  = backup.getBackUpFile(SYNC_BACKUP);
-			BackupManager.writeObjectToFile(backsync, sp);
-			details.put("chaindb", backsync.getAbsolutePath());
-			
+			try {
+				JavaUserDB userdb = (JavaUserDB) getMainDB().getUserDB();
+				File backuser     = backup.getBackUpFile(USERDB_BACKUP);
+				BackupManager.writeObjectToFile(backuser, userdb);
+				details.put("userdb", backuser.getAbsolutePath());
+				
+				//Now the complete SyncPackage..
+				SyncPackage sp = getMainDB().getSyncPackage();
+				File backsync  = backup.getBackUpFile(SYNC_BACKUP);
+				BackupManager.writeObjectToFile(backsync, sp);
+				details.put("chaindb", backsync.getAbsolutePath());
+				
+			}catch(Exception exc) {
+				MinimaLogger.log("BACKUP ERROR : ");
+				exc.printStackTrace();
+			}
 			
 			//Do we shut down..
 			if(shutdown) {
 				Message fullshut = new Message(Main.SYSTEM_FULLSHUTDOWN);
 				InputHandler.addResponseMesage(fullshut, zMessage);
 				getConsensusHandler().getMainHandler().PostMessage(fullshut);
-				
 				MinimaLogger.log("Backup on shutdown fininshed..");
-				
 			}else {
 				//respond..
 				InputHandler.endResponse(zMessage, true, "Full Backup Performed");	
 			}
 			
 		}else if(zMessage.isMessageType(CONSENSUSBACKUP_RESTORE)) {
-			
 			//Get this as will need it a few times..
 			BackupManager backup = getBackup();
 			

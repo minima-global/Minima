@@ -602,7 +602,7 @@ public class BlockTree {
 		if(timediff.isEqual(MiniNumber.ZERO)) {
 			return MiniNumber.ONE;
 		}
-		MiniNumber speed    = blockdiff.div(timediff);
+		MiniNumber speed  = blockdiff.div(timediff);
 		
 		return speed;
 	}
@@ -612,32 +612,23 @@ public class BlockTree {
 	 */
 	public BigInteger getAvgChainDifficulty() {
 		//The Total..
-		BigInteger total = new BigInteger("0");
+		BigInteger totaldifficulty = new BigInteger("0");
+		int numberofblocks=0;
 		
 		//Cycle back from the tip..
-		MiniData casc 			= mCascadeNode.getTxPowID();
+		MiniNumber cascnumber   = mCascadeNode.getTxPow().getBlockNumber();
 		BlockTreeNode current 	= mTip;
-		int num=0;
-		while(current != null) {
+		while(current!=null && current.getTxPow().getBlockNumber().isMoreEqual(cascnumber)) {
 			//Add to the total
-			total = total.add(current.getTxPow().getBlockDifficulty().getDataValue());
-			num++;
+			totaldifficulty = totaldifficulty.add(current.getTxPow().getBlockDifficulty().getDataValue());
+			numberofblocks++;
 			
-			if(current.getTxPowID().isEqual(casc)) {
-				//It's the final node.. quit
-				break;
-			}
-			
-			//Get thew parent
+			//Get the parent
 			current = current.getParent();
 		}
 		
-		if(num == 0) {
-			return BigInteger.ZERO;
-		}
-		
 		//The Average
-		BigInteger avg = total.divide(new BigInteger(""+num));
+		BigInteger avg = totaldifficulty.divide(new BigInteger(""+numberofblocks));
 		
 		return avg;
 	}
