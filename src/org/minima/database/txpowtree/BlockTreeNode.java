@@ -9,6 +9,7 @@ import java.util.Collections;
 import org.minima.database.mmr.MMRSet;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniNumber;
 import org.minima.utils.Crypto;
 
 public class BlockTreeNode implements Comparable<BlockTreeNode> {
@@ -178,6 +179,10 @@ public class BlockTreeNode implements Comparable<BlockTreeNode> {
 	
 	public TxPoW getTxPow() {
 		return mTXPOW;
+	}
+	
+	public MiniNumber getBlockNumber() {
+		return mTXPOW.getBlockNumber();
 	}
 		
 	public int getSuperBlockLevel() {

@@ -12,6 +12,13 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.utils.MinimaLogger;
 
 public class BlockTree {
+	
+	/**
+	 * When checking speed and average difficulty only look at this many blocks back
+	 * At 20 second blocks.. this is about 5.7 hours
+	 */
+	public static final int NUMBER_OF_BLOCKS_SPEED_CALC = 1024;
+	
 	/**
 	 * ROOT node of the Chain
 	 */
@@ -217,8 +224,8 @@ public class BlockTree {
 	 * @return
 	 */
 	private BlockTreeNode _getHeaviestBranchTip() {
-		//Start at root
-		BlockTreeNode curr = getChainRoot();
+		//Start at cascade node.. MUST be past that node anyway..
+		BlockTreeNode curr = getCascadeNode();
 		
 		//If null return null
 		while(curr != null ) {
@@ -292,7 +299,7 @@ public class BlockTree {
 				//Get the txpow row
 				TxPOWDBRow row = getDB().getTxPOWRow(txpowid);
 				
-				//Check fpr chain root..
+				//Check for chain root..
 				int parentstate = BlockTreeNode.BLOCKSTATE_INVALID;
 				if(getChainRoot().getTxPowID().isEqual(txpowid)) {
 					parentstate = BlockTreeNode.BLOCKSTATE_VALID;
@@ -581,6 +588,29 @@ public class BlockTree {
 		}
 	}
 	
+	/**
+	 * Get a past block..
+	 * 
+	 * @param zNumberFromTip
+	 * @return the blocktreenode
+	 */
+	public BlockTreeNode getPastBlock(int zNumberFromTip) {
+		MiniNumber cascnumber = mCascadeNode.getTxPow().getBlockNumber();
+		BlockTreeNode current = mTip;
+		int tot               = 0;
+		while(current.getBlockNumber().isMore(cascnumber) && tot<zNumberFromTip) {
+			BlockTreeNode parent = current.getParent();
+			if(parent != null) {
+				current = parent;
+				tot++;
+			}else {
+				break;
+			}
+		}
+		
+		return current;
+	}
+	
 	
 	/**
 	 * Get the Chain Speed..
@@ -588,13 +618,16 @@ public class BlockTree {
 	 * Calculated as the different between the cascade node and the tip..
 	 */
 	public MiniNumber getChainSpeed() {
+		//Use a previous block.. 
+		BlockTreeNode starter = getPastBlock(NUMBER_OF_BLOCKS_SPEED_CALC);
+		
 		//Calculate to seconds..
-		MiniNumber start      = mCascadeNode.getTxPow().getTimeSecs();
+		MiniNumber start      = starter.getTxPow().getTimeSecs();
 		MiniNumber end        = mTip.getTxPow().getTimeSecs();
 		MiniNumber timediff   = end.sub(start);
 		
 		//How many blocks..
-		MiniNumber blockstart = mCascadeNode.getTxPow().getBlockNumber();
+		MiniNumber blockstart = starter.getTxPow().getBlockNumber();
 		MiniNumber blockend   = mTip.getTxPow().getBlockNumber();
 		MiniNumber blockdiff  = blockend.sub(blockstart); 
 		
@@ -616,9 +649,11 @@ public class BlockTree {
 		int numberofblocks=0;
 		
 		//Cycle back from the tip..
-		MiniNumber cascnumber   = mCascadeNode.getTxPow().getBlockNumber();
+		BlockTreeNode starter   = getPastBlock(NUMBER_OF_BLOCKS_SPEED_CALC);
+		MiniNumber minblock     = starter.getTxPow().getBlockNumber();
 		BlockTreeNode current 	= mTip;
-		while(current!=null && current.getTxPow().getBlockNumber().isMoreEqual(cascnumber)) {
+				
+		while(current!=null && current.getBlockNumber().isMoreEqual(minblock)) {
 			//Add to the total
 			totaldifficulty = totaldifficulty.add(current.getTxPow().getBlockDifficulty().getDataValue());
 			numberofblocks++;
