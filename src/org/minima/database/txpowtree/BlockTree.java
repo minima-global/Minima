@@ -15,9 +15,9 @@ public class BlockTree {
 	
 	/**
 	 * When checking speed and average difficulty only look at this many blocks back
-	 * At 20 second blocks.. this is about 5.7 hours
+	 * At 20 second blocks.. 720 is 4 hours
 	 */
-	public static final int NUMBER_OF_BLOCKS_SPEED_CALC = 1024;
+	public static final int NUMBER_OF_BLOCKS_SPEED_CALC = 720;
 	
 	/**
 	 * ROOT node of the Chain
@@ -225,7 +225,7 @@ public class BlockTree {
 	 */
 	private BlockTreeNode _getHeaviestBranchTip() {
 		//Start at cascade node.. MUST be past that node anyway..
-		BlockTreeNode curr = getCascadeNode();
+		BlockTreeNode curr = getChainRoot();
 		
 		//If null return null
 		while(curr != null ) {
