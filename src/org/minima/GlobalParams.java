@@ -34,7 +34,7 @@ public class GlobalParams {
 	/**
 	 * Depth before we cascade..
 	 */
-	public static final int MINIMA_CASCADE_START_DEPTH = 2048;
+	public static final int MINIMA_CASCADE_START_DEPTH = 4096;
 	
 	/**
 	 * Number of blocks at each cascade level 
