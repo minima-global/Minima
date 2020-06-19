@@ -3,6 +3,7 @@ package org.minima.database.txpowtree;
 import java.math.BigInteger;
 import java.util.ArrayList;
 
+import org.minima.GlobalParams;
 import org.minima.database.MinimaDB;
 import org.minima.database.mmr.MMRSet;
 import org.minima.database.txpowdb.TxPOWDBRow;
@@ -12,12 +13,6 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.utils.MinimaLogger;
 
 public class BlockTree {
-	
-	/**
-	 * When checking speed and average difficulty only look at this many blocks back
-	 * At 20 second blocks.. 720 is 4 hours
-	 */
-	public static final int NUMBER_OF_BLOCKS_SPEED_CALC = 720;
 	
 	/**
 	 * ROOT node of the Chain
@@ -82,23 +77,23 @@ public class BlockTree {
 			return false;
 		}
 		
-		//Otherwise get the parent block and add this to that
-		MiniData prevblock = zNode.getTxPow().getParentID();
-		
 		//Find the parent block.. from last uncascaded node onwards
-		BlockTreeNode parent = findNode(prevblock);
+		BlockTreeNode parent = findNode(zNode.getTxPow().getParentID());
 		
 		//Do we have a parent..
 		if(parent == null) {
-//			MinimaLogger.log("NO PARENT FOR BLOCK : "+zNode.getTxPow().getBlockNumber());
-			//No direct parent..  add to the pool and ask for parent
 			return false;
 		}
+
+		//Can't add to less than
+		MiniNumber minblock = getCascadeNode().getBlockNumber().add(GlobalParams.MINIMA_BLOCKS_SPEED_CALC);
 		
-		//Check after the cascade node..
-		if(zNode.getTxPow().getBlockNumber().isLessEqual(getCascadeNode().getTxPow().getBlockNumber())) {
-			MinimaLogger.log("BlockTree : BLOCK PAST CASCADE NODE.. "+zNode.getTxPow());
-			return false;
+		//Check after the cascade node.. - need a minimum first
+		if(mTip.getBlockNumber().isMore(GlobalParams.MINIMA_BLOCKS_SPEED_CALC)) {
+			if(zNode.getBlockNumber().isLessEqual(minblock)) {
+				MinimaLogger.log("BlockTree : BLOCK PAST LAST ALLOWED NODE.. "+zNode.getTxPow());
+				return false;
+			}
 		}
 		
 		//It's OK - add it
@@ -619,7 +614,7 @@ public class BlockTree {
 	 */
 	public MiniNumber getChainSpeed() {
 		//Use a previous block.. 
-		BlockTreeNode starter = getPastBlock(NUMBER_OF_BLOCKS_SPEED_CALC);
+		BlockTreeNode starter = getPastBlock(GlobalParams.MINIMA_BLOCKS_SPEED_CALC.getAsInt());
 		
 		//Calculate to seconds..
 		MiniNumber start      = starter.getTxPow().getTimeSecs();
@@ -649,7 +644,7 @@ public class BlockTree {
 		int numberofblocks=0;
 		
 		//Cycle back from the tip..
-		BlockTreeNode starter   = getPastBlock(NUMBER_OF_BLOCKS_SPEED_CALC);
+		BlockTreeNode starter   = getPastBlock(GlobalParams.MINIMA_BLOCKS_SPEED_CALC.getAsInt());
 		MiniNumber minblock     = starter.getTxPow().getBlockNumber();
 		BlockTreeNode current 	= mTip;
 				

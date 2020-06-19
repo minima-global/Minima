@@ -236,6 +236,7 @@ public class MinimaDB {
 				list.add(newtip);
 				
 			}else{
+				//#TODO
 				//THIS COULD BE MUCH BETTER.. Find the crossover, many optimisations
 				
 				//Get all the blocks
@@ -918,50 +919,47 @@ public class MinimaDB {
 		txpow.setTransaction(zTrans);
 		txpow.setWitness(zWitness);
 		
-		//The Transaction Difficulty is set by the user after testing.. 
-		//He performs 10 seconds of work..
+		//Block and Transaction difficulty
 		txpow.setTxDifficulty(TxPoWMiner.BASE_TXN);
-//		txpow.setBlockDifficulty(TxPoWMiner.BASE_BLOCK);
-		txpow.setBlockDifficulty(TxPoWMiner.BASE_TXN);
+		
+		//Are we debugging
+		if(GlobalParams.MINIMA_ZERO_DIFF_BLK) {
+			//Minimum Difficulty - any hash will do
+			txpow.setBlockDifficulty(TxPoWMiner.BASE_BLOCK);	
+		}else {
+			txpow.setBlockDifficulty(TxPoWMiner.BASE_TXN);		
+		}
 		
 		//Block Details..
-		txpow.setBlockNumber(tip.getTxPow().getBlockNumber().increment());
+		MiniNumber currenttip = tip.getTxPow().getBlockNumber();
+		txpow.setBlockNumber(currenttip.increment());
 		
-		if(!GlobalParams.MINIMA_ZERO_DIFF_BLK) {
-			//Calculate New Chain Speed
-			int len = mMainTree.getAsList().size();
-//			if(len > BlockTree.NUMBER_OF_BLOCKS_SPEED_CALC ) {
-			if(len > GlobalParams.MINIMA_CASCADE_START_DEPTH ) {
-				//Desired Speed.. in blocks per second
-				MiniNumber actualspeed 	= mMainTree.getChainSpeed();
-				
-				//Calculate the speed ratio
-				MiniNumber speedratio   = GlobalParams.MINIMA_BLOCK_SPEED.div(actualspeed);
-				
-				//Current avg
-				BigInteger avgdiff = mMainTree.getAvgChainDifficulty();
-				BigDecimal avgdiffdec = new BigDecimal(avgdiff);
-				
-				//Mutily by the ratio
-				BigDecimal newdiffdec = avgdiffdec.multiply(speedratio.getAsBigDecimal());
-				BigInteger newdiff    = newdiffdec.toBigInteger();
-				
-//				//Check if more than maximum..
-//				if(newdiff.compareTo(Crypto.MAX_VAL)>0) {
-//					newdiff = Crypto.MAX_VAL;
-//				}
-				
-				//Check more than TX-MIN..
-				if(newdiff.compareTo(Crypto.MEGA_VAL)>0) {
-					newdiff = Crypto.MEGA_VAL;
-				}
-								
-				//Create the hash
-				MiniData diffhash = new MiniData("0x"+newdiff.toString(16)); 
-				
-				//Now set the new difficulty
-				txpow.setBlockDifficulty(diffhash);
+		//Do we have enough blocks to get an accurate speed reading..
+		if(!GlobalParams.MINIMA_ZERO_DIFF_BLK && currenttip.isMore(GlobalParams.MINIMA_BLOCKS_SPEED_CALC) ) {
+			//Desired Speed.. in blocks per second
+			MiniNumber actualspeed 	= mMainTree.getChainSpeed();
+			
+			//Calculate the speed ratio
+			MiniNumber speedratio   = GlobalParams.MINIMA_BLOCK_SPEED.div(actualspeed);
+			
+			//Current average
+			BigInteger avgdiff = mMainTree.getAvgChainDifficulty();
+			BigDecimal avgdiffdec = new BigDecimal(avgdiff);
+			
+			//Multiply by the ratio
+			BigDecimal newdiffdec = avgdiffdec.multiply(speedratio.getAsBigDecimal());
+			BigInteger newdiff    = newdiffdec.toBigInteger();
+						
+			//Check more than TX-MIN..
+			if(newdiff.compareTo(Crypto.MEGA_VAL)>0) {
+				newdiff = Crypto.MEGA_VAL;
 			}
+							
+			//Create the hash
+			MiniData diffhash = new MiniData("0x"+newdiff.toString(16)); 
+			
+			//Now set the new difficulty
+			txpow.setBlockDifficulty(diffhash);
 		}
 		
 		//Super Block Levels.. FIRST just copy them all..
