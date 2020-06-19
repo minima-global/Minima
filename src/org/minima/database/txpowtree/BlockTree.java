@@ -291,12 +291,9 @@ public class BlockTree {
 				//Default state
 				int parentstate = BlockTreeNode.BLOCKSTATE_INVALID;
 				
-				//What ID
-				MiniData txpowid = zNode.getTxPowID();
-				
 				//Check for chain root..
 				if(zNode.getBlockNumber().isEqual(getChainRoot().getBlockNumber())){
-					if(getChainRoot().getTxPowID().isEqual(txpowid)) {
+					if(getChainRoot().getTxPowID().isEqual(zNode.getTxPowID())) {
 						parentstate = BlockTreeNode.BLOCKSTATE_VALID;
 					}
 				}else{
@@ -311,8 +308,10 @@ public class BlockTree {
 				}else if(parentstate == BlockTreeNode.BLOCKSTATE_VALID) {
 					//Only check if unchecked..
 					if(zNode.getState() == BlockTreeNode.BLOCKSTATE_BASIC) {
-						//Get the txpow row
-						TxPOWDBRow row = getDB().getTxPOWRow(txpowid);
+						//Get the txpow row - do this now as slow function
+						TxPOWDBRow row = getDB().getTxPOWRow(zNode.getTxPowID());
+						
+						//Is it full
 						if(row.getBlockState() == TxPOWDBRow.TXPOWDBROW_STATE_FULL) {
 							//Need allok for the block to be accepted
 							boolean allok = false;
