@@ -359,7 +359,7 @@ public class MinimaDB {
 				//Keep it if it's relevant
 				if(rel) {
 					//It's to be kept in the MMR past the cascade..
-					zMMRSet.addKeeper(mmrcoin.getEntry());
+					zMMRSet.addKeeper(mmrcoin.getEntryNumber());
 				}
 				
 				//Add to our list - or return the already existing  version..
@@ -372,7 +372,7 @@ public class MinimaDB {
 					inrow.setIsSpent(spent);
 					inrow.setIsInBlock(true);
 					inrow.setInBlockNumber(zMMRSet.getBlockTime());
-					inrow.setMMREntry(mmrcoin.getEntry());
+					inrow.setMMREntry(mmrcoin.getEntryNumber());
 				}
 			}
 		}
@@ -746,7 +746,7 @@ public class MinimaDB {
 			if(crow != null) {
 				entrynum = crow.getMMREntry();
 			}else {
-				entrynum = proofmmr.findEntry(cc.getCoinID()).getEntry();
+				entrynum = proofmmr.findEntry(cc.getCoinID()).getEntryNumber();
 			}
 			
 			//Get a proof from a while back.. more than confirmed depth, less than cascade

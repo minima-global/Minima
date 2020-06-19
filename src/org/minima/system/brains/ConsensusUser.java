@@ -624,7 +624,7 @@ public class ConsensusUser extends ConsensusProcessor {
 			
 			//Now ask to keep it..
 			MMRSet coinset = basemmr.getParentAtTime(entry.getBlockTime());
-			coinset.addKeeper(entry.getEntry());
+			coinset.addKeeper(entry.getEntryNumber());
 			coinset.finalizeSet();
 			
 			//Get the coin
@@ -643,11 +643,11 @@ public class ConsensusUser extends ConsensusProcessor {
 			crow.setIsSpent(entry.getData().isSpent());
 			crow.setIsInBlock(true);
 			crow.setInBlockNumber(entry.getData().getInBlock());
-			crow.setMMREntry(entry.getEntry());
+			crow.setMMREntry(entry.getEntryNumber());
 			
 			//Now you have the proof..
 			JSONObject resp = InputHandler.getResponseJSON(zMessage);
-			resp.put("coin", basemmr.getProof(entry.getEntry()));
+			resp.put("coin", basemmr.getProof(entry.getEntryNumber()));
 			InputHandler.endResponse(zMessage, true, "");
 			
 			//Do a backup..
@@ -717,7 +717,7 @@ public class ConsensusUser extends ConsensusProcessor {
 			crow.setIsSpent(entry.getData().isSpent());
 			crow.setIsInBlock(true);
 			crow.setInBlockNumber(entry.getData().getInBlock());
-			crow.setMMREntry(entry.getEntry());
+			crow.setMMREntry(entry.getEntryNumber());
 			
 			//Now you have the proof..
 			JSONObject resp = InputHandler.getResponseJSON(zMessage);
@@ -831,7 +831,7 @@ public class ConsensusUser extends ConsensusProcessor {
 		crow.setIsSpent(entry.getData().isSpent());
 		crow.setIsInBlock(true);
 		crow.setInBlockNumber(entry.getData().getInBlock());
-		crow.setMMREntry(entry.getEntry());
+		crow.setMMREntry(entry.getEntryNumber());
 		
 		return true;
 	}

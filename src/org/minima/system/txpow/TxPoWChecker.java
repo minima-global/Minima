@@ -225,7 +225,7 @@ public class TxPoWChecker {
 						MMREntry fladdr = zMMRSet.searchAddress(input.getAddress(), input.getAmount(), input.getTokenID());
 						if(fladdr != null) {
 							//There is a valid coin  we can use..!
-							proof = zMMRSet.getProof(fladdr.getEntry());	
+							proof = zMMRSet.getProof(fladdr.getEntryNumber());	
 							
 							//Now CHANGE the Transaction with this new CoinID AND AMOUNT..
 							Coin flinput = proof.getMMRData().getCoin();
@@ -257,7 +257,7 @@ public class TxPoWChecker {
 				
 					//Do we keep it..
 					if(zDB.getUserDB().isAddressRelevant(input.getAddress())) {
-						zMMRSet.addKeeper(spent.getEntry());	
+						zMMRSet.addKeeper(spent.getEntryNumber());	
 					}
 				}
 				
@@ -494,7 +494,7 @@ public class TxPoWChecker {
 				//Do we keep it..
 				if(reladdress || relstate) {
 					//Keep this MMR record
-					zMMRSet.addKeeper(unspent.getEntry());	
+					zMMRSet.addKeeper(unspent.getEntryNumber());	
 				}				
 			}
 		}

@@ -41,7 +41,7 @@ public class MMRSet implements Streamable {
 	/**
 	 * All the entries in this set 
 	 */
-	ArrayList<MMREntry> mEntries;
+	public ArrayList<MMREntry> mEntries;
 
 	/**
 	 * The maximum row used in this Set
@@ -102,7 +102,7 @@ public class MMRSet implements Streamable {
 		JSONArray maxentry = new JSONArray();
 		for(MMREntry entry : mMaxEntries) {
 			if(entry != null) {
-				maxentry.add(entry.getEntry().toString());	
+				maxentry.add(entry.getEntryNumber().toString());	
 			}
 		}
 		ret.put("maxentries", maxentry);
@@ -154,7 +154,7 @@ public class MMRSet implements Streamable {
 			ArrayList<MMREntry> peaks = mParent.getMMRPeaks(); 
 			for(MMREntry peak : peaks) {
 				//Add the peak
-				setEntry(peak.getRow(), peak.getEntry(), peak.getData());
+				setEntry(peak.getRow(), peak.getEntryNumber(), peak.getData());
 			
 				//Add to the total entries.. the peaks are the binary value
 				tot = tot.add(two.pow(peak.getRow()));
@@ -339,7 +339,7 @@ public class MMRSet implements Streamable {
 		//Is it a MAX
 		if(mMaxEntries[zRow] == null) {
 			mMaxEntries[zRow] = entry;
-		}else if(mMaxEntries[zRow].getEntry().isLess(zEntry)) {
+		}else if(mMaxEntries[zRow].getEntryNumber().isLess(zEntry)) {
 			mMaxEntries[zRow] = entry;
 		}
 		
@@ -348,22 +348,38 @@ public class MMRSet implements Streamable {
 	}
 	
 	private MMREntry getEntry(int zRow, MiniInteger zEntry) {
-		//Check if already added..
-		for(MMREntry ent : mEntries) {
-			if(ent.checkPosition(zRow, zEntry)) {
-				return ent;
+		//Cycle down through the MMR sets..
+		MMRSet current = this;
+		
+		//Now Loop..
+		while(current != null) {
+			//Check if already added..
+			for(MMREntry ent : current.mEntries) {
+				if(ent.checkPosition(zRow, zEntry)) {
+					return ent;
+				}
 			}
+			
+			//Check the parent Set
+			current = current.mParent;	
 		}
 		
-		//Check the parent Set
-		if(mParent!=null) {
-			MMREntry entry = mParent.getEntry(zRow, zEntry);
-			if(!entry.isEmpty()) {
-				return entry;
-			}
-		}
+//		//Check if already added..
+//		for(MMREntry ent : mEntries) {
+//			if(ent.checkPosition(zRow, zEntry)) {
+//				return ent;
+//			}
+//		}
+//		
+//		//Check the parent Set
+//		if(mParent!=null) {
+//			MMREntry entry = mParent.getEntry(zRow, zEntry);
+//			if(!entry.isEmpty()) {
+//				return entry;
+//			}
+//		}
 		
-		//If all else fails.. return empty entry..
+		//If you can't find it - return empty entry..
 		MMREntry entry = new MMREntry(zRow, zEntry);
 		entry.setBlockTime(getBlockTime());
 		
@@ -442,7 +458,7 @@ public class MMRSet implements Streamable {
 			MMRData pdata = new MMRData(chunk.getHash(), chunk.getValue());
 			if(sibling.isEmpty()) {
 				//Set the data
-				sibling = setEntry(sibling.getRow(), sibling.getEntry(), pdata);
+				sibling = setEntry(sibling.getRow(), sibling.getEntryNumber(), pdata);
 				
 			}else {
 				//Check the value is what we expect it to be
@@ -540,18 +556,18 @@ public class MMRSet implements Streamable {
 			//Do we need to fill it in..
 			if(sibling.isEmpty()) {
 //				System.out.println("EMPTY SIBLING");
-				sibling = setEntry(sibling.getRow(), sibling.getEntry(), new MMRData(phash, pval));
+				sibling = setEntry(sibling.getRow(), sibling.getEntryNumber(), new MMRData(phash, pval));
 			}else if(sibling.getBlockTime().isLessEqual(zProof.getBlockTime())) {
 				//Is it the original.. has all the micro details.. internal nodes are just the hash anyway
 				MiniData orighash = sibling.getData().getFinalHash();
 				if(!orighash.isEqual(phash)) {
 					System.out.println("SIBLING DIFFERENT HASH");
-					sibling = setEntry(sibling.getRow(), sibling.getEntry(), new MMRData(phash, pval));
+					sibling = setEntry(sibling.getRow(), sibling.getEntryNumber(), new MMRData(phash, pval));
 				}
 			}
 			
 			//Set the Sibling in this MMRSET!.. this way the MMR peaks still work.. (as the max in a row MUST be on the left to be a peak ))
-			setEntry(sibling.getRow(), sibling.getEntry(),sibling.getData());
+			setEntry(sibling.getRow(), sibling.getEntryNumber(),sibling.getData());
 		}
 		
 		//Now go up the tree..
@@ -571,7 +587,7 @@ public class MMRSet implements Streamable {
 			MMRData data = new MMRData(combined,sumvalue);
 			
 			//Set the Sibling in this MMRSET!.. this way the MMR peaks still work.. (as the max in a row MUST be on the left to be a peak ))
-			setEntry(sibling.getRow(), sibling.getEntry(),sibling.getData());
+			setEntry(sibling.getRow(), sibling.getEntryNumber(),sibling.getData());
 			
 			//Set the Parent
 			entry = setEntry(entry.getParentRow(), entry.getParentEntry(), data);
@@ -593,13 +609,13 @@ public class MMRSet implements Streamable {
 				pval  = chunk.getValue();
 				if(sibling.isEmpty()) {
 //					System.out.println("EMPTY SIBLING 2");
-					sibling = setEntry(sibling.getRow(), sibling.getEntry(), new MMRData(phash,pval));		
+					sibling = setEntry(sibling.getRow(), sibling.getEntryNumber(), new MMRData(phash,pval));		
 				}else if(sibling.getBlockTime().isLessEqual(zProof.getBlockTime())) {
 					//Is it the original.. has all the micro details.. internal nodes are just the hash anyway
 					MiniData orighash = sibling.getData().getFinalHash();
 					if(!orighash.isEqual(phash)) {
 						System.out.println("SIBLING DIFFERENT HASH 2");
-						sibling = setEntry(sibling.getRow(), sibling.getEntry(), new MMRData(phash,pval));	
+						sibling = setEntry(sibling.getRow(), sibling.getEntryNumber(), new MMRData(phash,pval));	
 					}
 				}
 			}
@@ -667,7 +683,7 @@ public class MMRSet implements Streamable {
 			}
 			
 			//Now get the keeper proof..
-			MMRProof proof = newmmr.getProof(keeper.getEntry());
+			MMRProof proof = newmmr.getProof(keeper.getEntryNumber());
 			
 			//Now add that to the total proof..
 			int len = proof.getProofLen();
@@ -965,7 +981,7 @@ public class MMRSet implements Streamable {
 				MMREntry sibling = getEntry(entry.getRow(), entry.getSibling());
 				while(!sibling.isEmpty()) {
 					//Add to our Set..
-					setEntry(sibling.getRow(), sibling.getEntry(), sibling.getData());
+					setEntry(sibling.getRow(), sibling.getEntryNumber(), sibling.getData());
 					
 					//Now get the Parent.. just need a reference even if is empty. To find the sibling.
 					MMREntry parent = new MMREntry( sibling.getParentRow(), sibling.getParentEntry() );
@@ -1101,7 +1117,7 @@ public class MMRSet implements Streamable {
 				
 				if(mMaxEntries[row] == null) {
 					mMaxEntries[row] = entry;
-				}else if(mMaxEntries[row].getEntry().isLess(entry.getEntry())) {
+				}else if(mMaxEntries[row].getEntryNumber().isLess(entry.getEntryNumber())) {
 					mMaxEntries[row] = entry;
 				}
 				

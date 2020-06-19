@@ -332,7 +332,7 @@ public class ConsensusPrint extends ConsensusProcessor {
 							boolean spent     = coinmmr.getData().isSpent();
 							
 							//Add this entry..
-							String entry = coinmmr.getEntry().toString();
+							String entry = coinmmr.getEntryNumber().toString();
 							if(!addedcoins.contains(entry)) {
 								addedcoins.add(entry);
 								if(spent == wantspent) {
@@ -348,10 +348,10 @@ public class ConsensusPrint extends ConsensusProcessor {
 										}
 										
 										if(!found) {
-											allcoins.add(topmmr.getProof(coinmmr.getEntry()));
+											allcoins.add(topmmr.getProof(coinmmr.getEntryNumber()));
 										}
 									}else {
-										allcoins.add(topmmr.getProof(coinmmr.getEntry()));	
+										allcoins.add(topmmr.getProof(coinmmr.getEntryNumber()));	
 									}	
 								}
 							}
