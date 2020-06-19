@@ -349,7 +349,7 @@ public class ConsensusHandler extends SystemHandler {
 				
 			//Are we Mining..
 			if(!getMainHandler().getMiner().isAutoMining()) {
-				PostTimerMessage(new TimerMessage(30000, CONSENSUS_MINEBLOCK));
+				PostTimerMessage(new TimerMessage(10000, CONSENSUS_MINEBLOCK));
 				return;
 			}
 			

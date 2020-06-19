@@ -28,6 +28,7 @@ public interface TxPowDB {
 	public ArrayList<TxPOWDBRow> getAllTxPOWDBRow();
 	
 	public void resetAllInBlocks();
+	public void resetBlocksFromOnwards(MiniNumber zFromBlock);
 	
 	
 	/**
