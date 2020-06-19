@@ -7,7 +7,7 @@
 build
 
 # ignore IDE config
-.settings
-.vscode
-
+.settings/*
+.vscode/*
+.settings/org.eclipse.buildship.core.prefs
 
