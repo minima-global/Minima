@@ -361,9 +361,10 @@ public class MMRSet implements Streamable {
 			}
 			
 			//Check the parent Set
-			current = current.mParent;	
+			current = current.getParent();	
 		}
 		
+		//OLD RECURSIVE FUNCTION
 //		//Check if already added..
 //		for(MMREntry ent : mEntries) {
 //			if(ent.checkPosition(zRow, zEntry)) {
