@@ -288,17 +288,18 @@ public class BlockTree {
 		NodeAction nodestates = new NodeAction(zMainDB) {
 			@Override
 			public void runAction(BlockTreeNode zNode) {
+				//Default state
+				int parentstate = BlockTreeNode.BLOCKSTATE_INVALID;
+				
 				//What ID
 				MiniData txpowid = zNode.getTxPowID();
 				
-				//Get the txpow row
-				TxPOWDBRow row = getDB().getTxPOWRow(txpowid);
-				
 				//Check for chain root..
-				int parentstate = BlockTreeNode.BLOCKSTATE_INVALID;
-				if(getChainRoot().getTxPowID().isEqual(txpowid)) {
-					parentstate = BlockTreeNode.BLOCKSTATE_VALID;
-				}else {
+				if(zNode.getBlockNumber().isEqual(getChainRoot().getBlockNumber())){
+					if(getChainRoot().getTxPowID().isEqual(txpowid)) {
+						parentstate = BlockTreeNode.BLOCKSTATE_VALID;
+					}
+				}else{
 					parentstate = zNode.getParent().getState();
 				}
 				
@@ -308,46 +309,50 @@ public class BlockTree {
 					zNode.setState(BlockTreeNode.BLOCKSTATE_INVALID);
 				
 				}else if(parentstate == BlockTreeNode.BLOCKSTATE_VALID) {
-					//Do we check.. only when full
-					if(zNode.getState() == BlockTreeNode.BLOCKSTATE_BASIC && row.getBlockState() == TxPOWDBRow.TXPOWDBROW_STATE_FULL) {
-						//Need allok for the block to be accepted
-						boolean allok = false;
-						
-						//Check that Block difficulty is Correct!?
-						//..TODO
-						
-						//Check the Super Block Levels are Correct! and point to the correct blocks
-						//..TODO
-						
-						//need a  body for this..
-						if(row.getTxPOW().hasBody()) {
-							//Create an MMR set that will ONLY be used if the block is VALID..
-							MMRSet mmrset = new MMRSet(zNode.getParent().getMMRSet());
+					//Only check if unchecked..
+					if(zNode.getState() == BlockTreeNode.BLOCKSTATE_BASIC) {
+						//Get the txpow row
+						TxPOWDBRow row = getDB().getTxPOWRow(txpowid);
+						if(row.getBlockState() == TxPOWDBRow.TXPOWDBROW_STATE_FULL) {
+							//Need allok for the block to be accepted
+							boolean allok = false;
 							
-							//Set this MMR..
-							zNode.setMMRset(mmrset);
+							//Check that Block difficulty is Correct!?
+							//..TODO
 							
-							//Check all the transactions in the block are correct..
-							allok = getDB().checkFullTxPOW(zNode.getTxPow(), mmrset);
+							//Check the Super Block Levels are Correct! and point to the correct blocks
+							//..TODO
 							
-							//Check the root MMR..
-							if(allok) {
-								MiniData root = mmrset.getMMRRoot().getFinalHash();
-								if(!row.getTxPOW().getMMRRoot().isEqual(root)) {
-									allok = false;	
+							//need a  body for this..
+							if(row.getTxPOW().hasBody()) {
+								//Create an MMR set that will ONLY be used if the block is VALID..
+								MMRSet mmrset = new MMRSet(zNode.getParent().getMMRSet());
+								
+								//Set this MMR..
+								zNode.setMMRset(mmrset);
+								
+								//Check all the transactions in the block are correct..
+								allok = getDB().checkFullTxPOW(zNode.getTxPow(), mmrset);
+								
+								//Check the root MMR..
+								if(allok) {
+									MiniData root = mmrset.getMMRRoot().getFinalHash();
+									if(!row.getTxPOW().getMMRRoot().isEqual(root)) {
+										allok = false;	
+									}
 								}
+							}else {
+								MinimaLogger.log("WARNING : sortBlockTreeNodeStates on no body TxPoW..! "+zNode.toString());
 							}
-						}else {
-							MinimaLogger.log("WARNING : sortBlockTreeNodeStates on no body TxPoW..! "+zNode.toString());
-						}
-						
-						//if it all passes is OK.. otherwise not ok..
-						if(allok) {
-							//it's all valid!
-							zNode.setState(BlockTreeNode.BLOCKSTATE_VALID);
-						}else{
-							//No good..
-							zNode.setState(BlockTreeNode.BLOCKSTATE_INVALID);
+							
+							//if it all passes is OK.. otherwise not ok..
+							if(allok) {
+								//it's all valid!
+								zNode.setState(BlockTreeNode.BLOCKSTATE_VALID);
+							}else{
+								//No good..
+								zNode.setState(BlockTreeNode.BLOCKSTATE_INVALID);
+							}
 						}
 					}
 				}
