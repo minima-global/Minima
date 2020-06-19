@@ -234,40 +234,31 @@ public class MinimaDB {
 			
 			//Is it just one block difference
 			if(newtip.getParent().getTxPowID().isEqual(tip.getTxPowID())) {
-				//Just one block difference.. no need to reset everything..
+				//Just one block difference.. no need to reset anything..
 				list.add(newtip);
 				
 			}else{
 				//Find how far back to cull..
 				BlockTreeNode currentblock = newtip;
 				
-//				MinimaLogger.log("");
-//				MinimaLogger.log("REORG OLDTIP "+tip.getBlockNumber()+" "+tip.getTxPowID());
-//				MinimaLogger.log("REORG NEWTIP "+currentblock.getBlockNumber()+" "+currentblock.getTxPowID());
-				
 				MiniNumber lastblock = MiniNumber.ZERO;
-				boolean found = false;
+				boolean found        = false;
 				while(currentblock!=null && !found) {
 					//Add to the list
 					list.add(0,currentblock);
 					
 					//Search for a crossover
 					for(BlockTreeNode node : oldlist) {
-//						MinimaLogger.log("CHECK "+node.getBlockNumber()+" against "+currentblock.getBlockNumber());
 						if(node.getBlockNumber().isEqual(currentblock.getBlockNumber())) {
 							//Check if the same..
 							if(node.getTxPowID().isEqual(currentblock.getTxPowID())) {
 								//Found crossover
-//								MinimaLogger.log("NEWTIP : "+newtip.getBlockNumber());
-//								MinimaLogger.log("FOUND CROSS : "+currentblock.getBlockNumber());
 								lastblock = currentblock.getBlockNumber();
-								
 								found = true;
 								break;
 							}
 						}else if(node.getBlockNumber().isLess(currentblock.getBlockNumber())) {
 							//No way back..
-//							MinimaLogger.log("TOO LOW BREAK ");
 							break;
 						}
 					}
