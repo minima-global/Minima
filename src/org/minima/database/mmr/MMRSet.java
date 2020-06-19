@@ -254,28 +254,55 @@ public class MMRSet implements Streamable {
 	 * @return
 	 */
 	public MMREntry searchAddress(MiniData zAddress, MiniNumber zAmount, MiniData zTokenID) {
-		//Get the zero row - no parents..
-		ArrayList<MMREntry> zero=getZeroRow();
+		//Loop through all
+		MMRSet current = this;
 		
-		for(MMREntry entry : zero) {
-			if(!entry.getData().isHashOnly()) {
-				Coin cc = entry.getData().getCoin();
-				
-				boolean notspent  = !entry.getData().isSpent();
-				boolean addr      = cc.getAddress().isEqual(zAddress);
-				boolean amount    = cc.getAmount().isMoreEqual(zAmount);
-				boolean tok       = cc.getTokenID().isEqual(zTokenID);
-				
-				if(addr && amount && tok && notspent){
-					return entry;
+		//Cycle through them..
+		while(current != null) {
+			//Get the zero row - no parents..
+			ArrayList<MMREntry> zero = current.getZeroRow();
+			for(MMREntry entry : zero) {
+				if(!entry.getData().isHashOnly()) {
+					Coin cc = entry.getData().getCoin();
+					
+					boolean notspent  = !entry.getData().isSpent();
+					boolean addr      = cc.getAddress().isEqual(zAddress);
+					boolean amount    = cc.getAmount().isMoreEqual(zAmount);
+					boolean tok       = cc.getTokenID().isEqual(zTokenID);
+					
+					if(addr && amount && tok && notspent){
+						return entry;
+					}
 				}
 			}
-		}
 			
-		//Cycle up the parents.. 
-		if(mParent!=null) {
-			return mParent.searchAddress(zAddress, zAmount, zTokenID);
+			//Search the parent..
+			current = current.getParent();
 		}
+		
+		//OLD RECURSIVE
+//		//Get the zero row - no parents..
+//		ArrayList<MMREntry> zero=getZeroRow();
+//		
+//		for(MMREntry entry : zero) {
+//			if(!entry.getData().isHashOnly()) {
+//				Coin cc = entry.getData().getCoin();
+//				
+//				boolean notspent  = !entry.getData().isSpent();
+//				boolean addr      = cc.getAddress().isEqual(zAddress);
+//				boolean amount    = cc.getAmount().isMoreEqual(zAmount);
+//				boolean tok       = cc.getTokenID().isEqual(zTokenID);
+//				
+//				if(addr && amount && tok && notspent){
+//					return entry;
+//				}
+//			}
+//		}
+//			
+//		//Cycle up the parents.. 
+//		if(mParent!=null) {
+//			return mParent.searchAddress(zAddress, zAmount, zTokenID);
+//		}
 		
 		return null;
 	}
@@ -286,20 +313,41 @@ public class MMRSet implements Streamable {
 	 * @return
 	 */
 	public MMREntry findEntry(MiniData zCoinID) {
-		//Get the zero row - no parents..
-		ArrayList<MMREntry> zero=getZeroRow();
+		//Loop through all
+		MMRSet current = this;
 		
-		for(MMREntry entry : zero) {
-			if(!entry.getData().isHashOnly()) {
-				if(entry.getData().getCoin().getCoinID().isEqual(zCoinID)){
-					return entry;
+		//Cycle through them..
+		while(current != null) {
+			//Get the zero row - no parents..
+			ArrayList<MMREntry> zero = current.getZeroRow();
+			
+			for(MMREntry entry : zero) {
+				if(!entry.getData().isHashOnly()) {
+					if(entry.getData().getCoin().getCoinID().isEqual(zCoinID)){
+						return entry;
+					}
 				}
 			}
-		}
 			
-		if(mParent!=null) {
-			return mParent.findEntry(zCoinID);
+			//Search the parent..
+			current = current.getParent();
 		}
+				
+		//OLD RECURSIVE		
+//		//Get the zero row - no parents..
+//		ArrayList<MMREntry> zero=getZeroRow();
+//		
+//		for(MMREntry entry : zero) {
+//			if(!entry.getData().isHashOnly()) {
+//				if(entry.getData().getCoin().getCoinID().isEqual(zCoinID)){
+//					return entry;
+//				}
+//			}
+//		}
+//			
+//		if(mParent!=null) {
+//			return mParent.findEntry(zCoinID);
+//		}
 	
 		return null;
 	}
@@ -1023,54 +1071,31 @@ public class MMRSet implements Streamable {
 		//The you do it..
 		zNode.copyParentKeepers();
 	}
-	/**
-	 * Drill down and get the last but one parent..
-	 * We will be pruning it.. 
-	 * @return
-	 */
-	public MMRSet getRootParent() {
-		if(mParent == null) {
-			return this;
-		}
-		
-		return mParent.getRootParent();
-	}
 	
 	/**
 	 * Get a Parent block at a certain time..
 	 */
 	public MMRSet getParentAtTime(MiniNumber zTime) {
-		if(mBlockTime.isEqual(zTime)) {
-			return this;
-		}
+		MMRSet current = this;
 		
-		if(mParent != null) {
-			return mParent.getParentAtTime(zTime);
-		}
-		
-		return null;
-	}
-	
-	public MMRSet getPenultimateParent() {
-		if(mParent != null) {
-			if(mParent.getParent() == null) {
-				return this;
+		while(current != null) {
+			if(current.getBlockTime().isEqual(zTime)) {
+				return current;
 			}
-			
-			return mParent.getPenultimateParent();
+			current = current.getParent();
 		}
+		
+//		if(mBlockTime.isEqual(zTime)) {
+//			return this;
+//		}
+//		
+//		if(mParent != null) {
+//			return mParent.getParentAtTime(zTime);
+//		}
 		
 		return null;
 	}
 	
-	public int getParentLength() {
-		if(mParent != null) {
-			return 1+mParent.getParentLength();	
-		}
-		
-		return 1;
-	}
-
 	/**
 	 * Write out this MMR set
 	 * 
