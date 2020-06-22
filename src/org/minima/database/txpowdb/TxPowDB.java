@@ -51,7 +51,7 @@ public interface TxPowDB {
 	
 	public ArrayList<TxPOWDBRow> getAllBlocksMissingTransactions();
 	
-	public int getCompleteSize();
+	public int getSize();
 	
 	/**
 	 * Clear the DB

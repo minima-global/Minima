@@ -936,7 +936,7 @@ public class ConsensusPrint extends ConsensusProcessor {
 			status.put("coindb", getMainDB().getCoinDB().getComplete().size());
 			
 			//TxPOWDB
-			status.put("txpowdb", getMainDB().getTxPowDB().getCompleteSize());
+			status.put("txpowdb", getMainDB().getTxPowDB().getSize());
 			
 			//Size of the TXPOW DB folder..
 			File[] txpows = getConsensusHandler().getMainHandler().getBackupManager().getTxPOWFolder().listFiles();

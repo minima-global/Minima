@@ -79,7 +79,7 @@ public class MiniData implements Streamable {
 		//Get both data sets..
 		byte[] data = zCompare.getData();
 		
-		//Chack the data..
+		//Check the data..
 		for(int i=0;i<len;i++) {
 			if(data[i] != mData[i]) {
 				return false;

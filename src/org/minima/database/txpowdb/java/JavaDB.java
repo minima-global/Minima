@@ -137,7 +137,7 @@ public class JavaDB implements TxPowDB{
 	}
 
 	@Override
-	public int getCompleteSize() {
+	public int getSize() {
 		return mRows.size()+ mDeletedRows.size();
 	}
 
