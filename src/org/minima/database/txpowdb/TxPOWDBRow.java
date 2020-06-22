@@ -54,4 +54,6 @@ public interface TxPOWDBRow {
 	public long getDeleteTime();
 	
 	public JSONObject toJSON();
+	
+	public long getAddedTime();
 }
