@@ -89,21 +89,28 @@ public class FastJavaDB implements TxPowDB {
 		MiniNumber minused = zCascade.sub(MiniNumber.SIXTYFOUR);
 		
 		//The minimum block before its too late for an UNUSED TxPoW
-		MiniNumber minunused = zCascade.add(MiniNumber.SIXTYFOUR);
+		MiniNumber minunused = zCascade.add(MiniNumber.TWOFIVESIX);
 				
 		Enumeration<JavaDBRow> allrows = mTxPoWRows.elements();
 		while(allrows.hasMoreElements()) {
-			JavaDBRow row = allrows.nextElement();
-		
-			if(row.isOnChainBlock()) {
-				newtable.put(row.getTxPOW().getTxPowID().to0xString(),row);
-				
-				//It's in the chain
-			}else if(row.isInBlock() && row.getInBlockNumber().isMoreEqual(minused)) {
-				newtable.put(row.getTxPOW().getTxPowID().to0xString(),row);
+			JavaDBRow row  = allrows.nextElement();
+			TxPoW rowtxpow = row.getTxPOW();
 			
-			}else if(!row.isInBlock() && row.getTxPOW().getBlockNumber().isMoreEqual(minunused)) {
-				newtable.put(row.getTxPOW().getTxPowID().to0xString(),row);
+				//It's a main block
+			if(row.isOnChainBlock()) {
+				newtable.put(rowtxpow.getTxPowID().to0xString(),row);
+				
+				//It's a transaction on the main chain
+			}else if(row.isInBlock() && row.getInBlockNumber().isMoreEqual(minused)) {
+				newtable.put(rowtxpow.getTxPowID().to0xString(),row);
+			
+				//It's a transaction but not that old
+			}else if(rowtxpow.isTransaction() && !row.isInBlock() && row.getTxPOW().getBlockNumber().isMoreEqual(minunused)) {
+				newtable.put(rowtxpow.getTxPowID().to0xString(),row);
+			
+				//It's a block but not past the cascade
+			}else if(rowtxpow.isBlock() && !row.isOnChainBlock() && row.getTxPOW().getBlockNumber().isMoreEqual(zCascade)) {
+				newtable.put(rowtxpow.getTxPowID().to0xString(),row);
 				
 			}else {
 				//Remove it..
