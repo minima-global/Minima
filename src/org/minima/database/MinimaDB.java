@@ -20,6 +20,7 @@ import org.minima.database.mmr.MMRProof;
 import org.minima.database.mmr.MMRSet;
 import org.minima.database.txpowdb.TxPOWDBRow;
 import org.minima.database.txpowdb.TxPowDB;
+import org.minima.database.txpowdb.java.FastJavaDB;
 import org.minima.database.txpowdb.java.JavaDB;
 import org.minima.database.txpowtree.BlockTree;
 import org.minima.database.txpowtree.BlockTreeNode;
@@ -88,7 +89,8 @@ public class MinimaDB {
 	 * Main Constructor
 	 */
 	public MinimaDB() {
-		mTxPOWDB 	= new JavaDB();
+//		mTxPOWDB 	= new JavaDB();
+		mTxPOWDB 	= new FastJavaDB();
 		mMainTree 	= new BlockTree();	
 		mCoinDB		= new JavaCoinDB();
 		mUserDB		= new JavaUserDB();
@@ -107,14 +109,8 @@ public class MinimaDB {
 	 */ 
 	//Genesis txpow
 	public void DoGenesis() {
+		//The Gensis TxPoW
 		TxPoW gen = new GenesisTxPOW();
-		
-		//Add to the list
-		TxPOWDBRow row = mTxPOWDB.addTxPOWDBRow(gen);
-		row.setOnChainBlock(true);
-		row.setInBlockNumber(MiniNumber.ZERO);
-		row.setIsInBlock(true);
-		row.setBlockState(TxPOWDBRow.TXPOWDBROW_STATE_FULL);
 		
 		//The initial MMR
 		MMRSet base = new MMRSet();
@@ -134,6 +130,13 @@ public class MinimaDB {
 		//Need to recalculate the TxPOWID
 		gen.calculateTXPOWID();
 		
+		//Add to the list now that TxPoWID is set
+		TxPOWDBRow row = mTxPOWDB.addTxPOWDBRow(gen);
+		row.setOnChainBlock(true);
+		row.setInBlockNumber(MiniNumber.ZERO);
+		row.setIsInBlock(true);
+		row.setBlockState(TxPOWDBRow.TXPOWDBROW_STATE_FULL);
+		
 		//Genesis root
 		BlockTreeNode root = new BlockTreeNode(gen);
 		root.setState(BlockTreeNode.BLOCKSTATE_VALID);
@@ -141,6 +144,8 @@ public class MinimaDB {
 		
 		//Set it..
 		root.setMMRset(base);
+		
+		MinimaLogger.log("Genesis TxPoW : "+gen.getTxPowID().to0xString());
 		
 		//Add to the Main Chain
 		mMainTree.setTreeRoot(root);
@@ -356,6 +361,7 @@ public class MinimaDB {
 				
 				//Discard.. no longer an on chain block..
 				row.setOnChainBlock(false);
+				row.setIsInBlock(false);
 				
 				//And delete / move to different folder any file backups..
 				getBackup().deleteTxpow(node.getTxPow());
