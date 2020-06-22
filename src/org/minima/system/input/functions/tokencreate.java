@@ -3,7 +3,6 @@ package org.minima.system.input.functions;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.brains.ConsensusHandler;
 import org.minima.system.input.CommandFunction;
-import org.minima.utils.MinimaLogger;
 import org.minima.utils.messages.Message;
 
 public class tokencreate extends CommandFunction {

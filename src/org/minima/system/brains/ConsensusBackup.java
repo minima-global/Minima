@@ -3,13 +3,11 @@ package org.minima.system.brains;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.util.ArrayList;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.mmr.MMRSet;
 import org.minima.database.txpowdb.TxPOWDBRow;
-import org.minima.database.txpowdb.TxPowDB;
 import org.minima.database.txpowtree.BlockTreeNode;
 import org.minima.database.userdb.java.JavaUserDB;
 import org.minima.objects.TxPoW;

@@ -8,7 +8,6 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniInteger;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.Crypto;
-import org.minima.utils.MinimaLogger;
 
 /**
  * The first ever TxPoW will eventually give out the initial coins..

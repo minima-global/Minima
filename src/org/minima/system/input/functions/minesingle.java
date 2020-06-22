@@ -1,7 +1,6 @@
 package org.minima.system.input.functions;
 
 import org.minima.system.brains.ConsensusHandler;
-import org.minima.system.brains.ConsensusUser;
 import org.minima.system.input.CommandFunction;
 import org.minima.utils.messages.Message;
 
