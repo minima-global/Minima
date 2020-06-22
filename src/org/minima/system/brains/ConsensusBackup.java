@@ -124,14 +124,14 @@ public class ConsensusBackup extends ConsensusProcessor {
 				return;
 			}
 			
-			//Load the file into memory first - FAST
-			byte[] userdb = BackupManager.readCompleteFile(backuser);
-			ByteArrayInputStream bais = new ByteArrayInputStream(userdb);
-			DataInputStream dis = new DataInputStream(bais);
-			
 			//Load the user..
 			JavaUserDB jdb = new JavaUserDB();
 			try {
+				//Load the file into memory first - FAST
+				byte[] userdb = BackupManager.readCompleteFile(backuser);
+				ByteArrayInputStream bais = new ByteArrayInputStream(userdb);
+				DataInputStream dis = new DataInputStream(bais);
+				
 				jdb.readDataStream(dis);
 				dis.close();
 				bais.close();
@@ -146,13 +146,12 @@ public class ConsensusBackup extends ConsensusProcessor {
 			getMainDB().setUserDB(jdb);
 			
 			//Load the SyncPackage
-			byte[] chaindb = BackupManager.readCompleteFile(backsync);
-			bais = new ByteArrayInputStream(chaindb);
-			dis = new DataInputStream(bais);
-			
-			//Load the chain data
 			SyncPackage sp = new SyncPackage();
 			try {
+				byte[] chaindb = BackupManager.readCompleteFile(backsync);
+				ByteArrayInputStream bais = new ByteArrayInputStream(chaindb);
+				DataInputStream dis = new DataInputStream(bais);
+				
 				sp.readDataStream(dis);
 				dis.close();
 				bais.close();
