@@ -89,7 +89,8 @@ public class MiniDataTests {
     @Test
     public void testReadFromStreamData() {
         try {
-            MiniData j = new MiniData("#FFFF");
+            String value = "0xFFFF";
+            MiniData j = new MiniData(value);
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             DataOutputStream dos = new DataOutputStream(bos);
             j.writeDataStream(dos);
@@ -103,11 +104,17 @@ public class MiniDataTests {
            
             j.readDataStream(dis);
             assertNotNull(j);
+            System.out.println("j.toString = " + j.toString());
+            assertTrue("j matches original value", j.toString().compareToIgnoreCase(value) == 0);
             System.out.println(" j is now equal to " + j);
+
+            bos.reset();
+
+            j.readDataStream(dis, 27);
+
         } catch (final IOException e) {
             System.out.println("IOException: " + e.toString() + " msg=" + e.getMessage());
-            assertTrue(" there should be an IOException with message input too large ",
-                    e.getMessage().contains(new String("input too large")));
+            assertTrue("test", true);
         }
 
     }
@@ -200,7 +207,6 @@ public class MiniDataTests {
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             DataOutputStream dos = new DataOutputStream(bos);
             k.writeHashToStream(dos);
-            System.out.println(" k is now equal to " + k);
     
             for(int l=0; l < 1000; l++) {
                 bos.write(68); // large possible value, MSB is +/- sign
@@ -213,17 +219,44 @@ public class MiniDataTests {
             // dis.reset();
 
             assertNotNull(k);
-            System.out.println(" k is now equal to " + k);
         } catch (final IOException e) {
-            System.out.println("IOException: " + e.toString() + " msg=" + e.getMessage());
             assertTrue(" there should be an IOException with message input too large ",
                     e.getMessage().contains(new String("input too large")));
         }
 
     }
 
+
     @Test
-    public void testWriteHashStreamDataLarge() {
+    public void testReadHashFromStream() {
+
+            MiniData j = new MiniData("#FFFFFFFFFFFFFFFFFFFFF"+
+            "FFFFFFFFFFFFFFFFFFFF"+
+            "FFFFFFFFFFFFFFFFFFFF"+
+            "FFFF"+
+            "FFFFFFFFFFFFFFFFFFFF"+
+            "FFFFFFFFFFFFFFFFFFFF"+
+            "FFFFFFFFFFFFFFFFFFFF"+
+            "F");
+            MiniData k;
+
+            try { 
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                DataOutputStream dos = new DataOutputStream(bos);
+                j.writeHashToStream(dos);
+
+                InputStream inputStream = new ByteArrayInputStream(bos.toByteArray());
+                DataInputStream dis = new DataInputStream(inputStream);
+
+                k = MiniData.ReadHashFromStream(dis);
+                assertNotNull(k);
+            } catch(IOException e) {
+                assertFalse("We should not reach this line", true);
+            }
+    }
+
+    @Test
+    public void testReadHashStreamDataLarge() {
         try {
            
             MiniData j = new MiniData("#FFFFFFFFFFFFFFFFFFFFF"+
@@ -236,26 +269,24 @@ public class MiniDataTests {
             "F");
             MiniData k = new MiniData("#FFFFF");
 
+
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             DataOutputStream dos = new DataOutputStream(bos);
-            j.writeHashToStream(dos);
     
-            for(int l=0; l < 100000; l++) {
-                bos.write(128); // large possible value, MSB is +/- sign
-                }
+            for(int l=0; l < 1000; l++) {
+                bos.write(127); // large possible value, MSB is +/- sign
+            }
 
             InputStream inputStream = new ByteArrayInputStream(bos.toByteArray());
             DataInputStream dis = new DataInputStream(inputStream);
-            System.out.println("k is now equal to " + k);
            
-            j.ReadHashFromStream(dis);
+            k = j.ReadHashFromStream(dis);
             assertNotNull(k);
 
-            System.out.println(" k is now equal to " + k);
+            assertFalse("We should not reach this line", true);
         } catch (final IOException e) {
-            System.out.println("IOException: " + e.toString() + " msg=" + e.getMessage());
-            assertTrue(" there should be an IOException with message input too large ",
-                    e.getMessage().contains(new String("input too large")));
+            assertTrue(" there should be an IOException with message HASH Length too large ",
+                    e.getMessage().contains(new String(" HASH Length greater then 64")));
         }
 
     }
