@@ -13,6 +13,7 @@ import java.util.Hashtable;
 import org.minima.GlobalParams;
 import org.minima.database.coindb.CoinDB;
 import org.minima.database.coindb.CoinDBRow;
+import org.minima.database.coindb.java.FastCoinDB;
 import org.minima.database.coindb.java.JavaCoinDB;
 import org.minima.database.mmr.MMRData;
 import org.minima.database.mmr.MMREntry;
@@ -89,10 +90,16 @@ public class MinimaDB {
 	 * Main Constructor
 	 */
 	public MinimaDB() {
+		//Use the new FAST TxPoWDB
 //		mTxPOWDB 	= new JavaDB();
 		mTxPOWDB 	= new FastJavaDB();
+		
 		mMainTree 	= new BlockTree();	
-		mCoinDB		= new JavaCoinDB();
+
+		//New FAST CoinDB
+//		mCoinDB		= new JavaCoinDB();
+		mCoinDB		= new FastCoinDB();
+		
 		mUserDB		= new JavaUserDB();
 	}
 	

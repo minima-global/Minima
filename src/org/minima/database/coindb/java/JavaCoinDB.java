@@ -71,8 +71,6 @@ public class JavaCoinDB implements CoinDB{
 				newrows.add(row);
 			}else if(row.getInBlockNumber().isMoreEqual(zMinBlock)) {
 				newrows.add(row);
-			}else {
-//				MinimaLogger.log("COIN REMOVED : "+row.getCoin());
 			}
 		}
 		mRows = newrows;

@@ -19,6 +19,11 @@ public class FastJavaDB implements TxPowDB {
 	}
 	
 	@Override
+	public TxPOWDBRow findTxPOWDBRow(MiniData zTxPOWID) {
+		return mTxPoWRows.get(zTxPOWID.to0xString());
+	}
+	
+	@Override
 	public TxPOWDBRow addTxPOWDBRow(TxPoW zTxPOW) {
 		String search = zTxPOW.getTxPowID().to0xString();
 		
@@ -35,11 +40,6 @@ public class FastJavaDB implements TxPowDB {
 		mTxPoWRows.put(search, row);
 		
 		return row;
-	}
-
-	@Override
-	public TxPOWDBRow findTxPOWDBRow(MiniData zTxPOWID) {
-		return mTxPoWRows.get(zTxPOWID.to0xString());
 	}
 
 	@Override
