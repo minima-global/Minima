@@ -28,6 +28,7 @@ import org.minima.system.txpow.TxPoWChecker;
 import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.messages.Message;
+import org.minima.utils.messages.TimerMessage;
 
 public class ConsensusNet extends ConsensusProcessor {
 
@@ -240,7 +241,7 @@ public class ConsensusNet extends ConsensusProcessor {
 				getConsensusHandler().updateListeners(new Message(ConsensusHandler.CONSENSUS_NOTIFY_NEWBLOCK).addObject("txpow", tip));
 				
 				//Backup the system..
-				getConsensusHandler().PostMessage(ConsensusBackup.CONSENSUSBACKUP_BACKUP);
+				getConsensusHandler().PostTimerMessage(new TimerMessage(2000,ConsensusBackup.CONSENSUSBACKUP_BACKUP));
 				
 //				//Do you want a copy of ALL the TxPoW in the Blocks.. ?
 //				//Only really useful for txpowsearch - DEXXED
@@ -369,7 +370,7 @@ public class ConsensusNet extends ConsensusProcessor {
 			initialSyncComplete();
 			
 			//Do a complete backup..
-			getConsensusHandler().PostMessage(ConsensusBackup.CONSENSUSBACKUP_BACKUP);
+			getConsensusHandler().PostTimerMessage(new TimerMessage(20000,ConsensusBackup.CONSENSUSBACKUP_BACKUP));
 			
 		}else if ( zMessage.isMessageType(CONSENSUS_NET_TXPOWID)) {
 			//Get the ID
