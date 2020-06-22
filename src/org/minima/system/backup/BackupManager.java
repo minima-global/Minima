@@ -1,7 +1,11 @@
 package org.minima.system.backup;
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
@@ -201,6 +205,18 @@ public class BackupManager extends SystemHandler {
 	 * @throws IOException
 	 */
 	public static void writeObjectToFile(File zFile, Streamable zObject) throws IOException {
+		//First write the object to a memory structure..
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		DataOutputStream dos = new DataOutputStream(baos);
+		
+		zObject.writeDataStream(dos);
+		
+		dos.flush();
+		baos.flush();
+	
+		//get all the data
+		byte[] data = baos.toByteArray();
+		
 		//Check Parent
 		File parent = zFile.getParentFile();
 		if(!parent.exists()) {
@@ -218,13 +234,30 @@ public class BackupManager extends SystemHandler {
 		
 		//Write it out..
 		FileOutputStream fos = new FileOutputStream(zFile, false);
-		DataOutputStream dos = new DataOutputStream(fos);
+		DataOutputStream fdos = new DataOutputStream(fos);
 		
 		//And write it..
-		zObject.writeDataStream(dos);
+		fdos.write(data);
+		//zObject.writeDataStream(fdos);
 		
 		//flush
-		dos.flush();
+		fdos.flush();
 		fos.flush();
+	}
+	
+	public static byte[] readCompleteFile(File zFile) throws IOException {
+		//How big is this file..
+		long len = zFile.length();
+		
+		//Create the data structure to hold it..
+		byte[] data = new byte[(int)len];
+		
+		FileInputStream fis = new FileInputStream(zFile);
+		DataInputStream dis = new DataInputStream(fis);
+		dis.readFully(data);
+		dis.close();
+		fis.close();
+		
+		return data;
 	}
 }
