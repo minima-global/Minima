@@ -19,12 +19,15 @@ public class JavaDBRow implements TxPOWDBRow {
 	
 	private long mDeleteTime;
 	
+	private long mAddedTime;
+	
 	public JavaDBRow(TxPoW zTxPOW) {
 		mTxPOW 				= zTxPOW;
 		mIsInBlock 			= false;
 		mIsOnChainBlock     = false;
 		mBlockState         = TXPOWDBROW_STATE_BASIC;
-		mDeleteTime          = 0;
+		mDeleteTime         = 0;
+		mAddedTime          = System.currentTimeMillis();
 	}
 
 	@Override
@@ -112,5 +115,11 @@ public class JavaDBRow implements TxPOWDBRow {
 	@Override
 	public long getDeleteTime() {
 		return mDeleteTime;
+	}
+
+	@Override
+	public long getAddedTime() {
+		return mAddedTime;
+		
 	}
 }
