@@ -81,12 +81,15 @@ public class FastJavaDB implements TxPowDB {
 	}
 
 	@Override
-	public ArrayList<TxPOWDBRow> removeTxPOWInBlockLessThan(MiniNumber zBlockNumber) {
+	public ArrayList<TxPOWDBRow> removeTxPOWInBlockLessThan(MiniNumber zCascade) {
 		Hashtable<String,JavaDBRow> newtable = new Hashtable<>();
 		ArrayList<TxPOWDBRow> removed = new ArrayList<>();
 		
-		//The minimum block before its too late for an unused TxPoW
-		MiniNumber minblock = zBlockNumber.add(MiniNumber.SIXTYFOUR);
+		//The minimum block before its too late for a USED TxPoW
+		MiniNumber minused = zCascade.sub(MiniNumber.SIXTYFOUR);
+		
+		//The minimum block before its too late for an UNUSED TxPoW
+		MiniNumber minunused = zCascade.add(MiniNumber.SIXTYFOUR);
 				
 		Enumeration<JavaDBRow> allrows = mTxPoWRows.elements();
 		while(allrows.hasMoreElements()) {
@@ -95,11 +98,11 @@ public class FastJavaDB implements TxPowDB {
 			if(row.isOnChainBlock()) {
 				newtable.put(row.getTxPOW().getTxPowID().to0xString(),row);
 				
-			}else if(!row.isInBlock() && row.getTxPOW().getBlockNumber().isMore(minblock)) {
-				newtable.put(row.getTxPOW().getTxPowID().to0xString(),row);
-				
 				//It's in the chain
-			}else if(row.isInBlock() && row.getInBlockNumber().isMoreEqual(zBlockNumber)) {
+			}else if(row.isInBlock() && row.getInBlockNumber().isMoreEqual(minused)) {
+				newtable.put(row.getTxPOW().getTxPowID().to0xString(),row);
+			
+			}else if(!row.isInBlock() && row.getTxPOW().getBlockNumber().isMoreEqual(minunused)) {
 				newtable.put(row.getTxPOW().getTxPowID().to0xString(),row);
 				
 			}else {
