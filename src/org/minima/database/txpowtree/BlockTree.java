@@ -292,10 +292,8 @@ public class BlockTree {
 				int parentstate = BlockTreeNode.BLOCKSTATE_INVALID;
 				
 				//Check for chain root..
-				if(zNode.getBlockNumber().isEqual(getChainRoot().getBlockNumber())){
-					if(getChainRoot().getTxPowID().isEqual(zNode.getTxPowID())) {
-						parentstate = BlockTreeNode.BLOCKSTATE_VALID;
-					}
+				if(getChainRoot().getTxPowID().isEqual(zNode.getTxPowID())) {
+					parentstate = BlockTreeNode.BLOCKSTATE_VALID;
 				}else{
 					parentstate = zNode.getParent().getState();
 				}
