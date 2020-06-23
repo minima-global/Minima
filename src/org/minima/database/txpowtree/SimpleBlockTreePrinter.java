@@ -10,7 +10,7 @@ import org.minima.utils.bretty.TreePrinter;
 
 public class SimpleBlockTreePrinter {
 
-	public static int NORMAL_NODE_COUNT = 4;
+	public static int NORMAL_NODE_COUNT = 32;
 	
 	BlockTree mTree;
 	
