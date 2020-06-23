@@ -1055,7 +1055,9 @@ public class MMRSet implements Streamable {
 	 * @param zNode
 	 */
 	public void recurseParentMMR(MiniNumber zCascade) {
-		_recurseParentMMR(zCascade, this);
+		if(!getBlockTime().isEqual(zCascade)) {
+			_recurseParentMMR(zCascade, this);	
+		}
 	}
 	
 	private void _recurseParentMMR(MiniNumber zCascade, MMRSet zNode) {
