@@ -37,9 +37,10 @@ public class SimpleBlockTreePrinter2 {
 		//Now go down 32 blocks..
 		int counter = 0;
 		BlockTreeNode fulltree = null;
-		while(counter<32 && current!=null) {
+		while(counter<4 && current!=null) {
 			//Keep it..
 			fulltree = current;
+			counter++;
 			
 			//Is there a valid parent
 			current = current.getParent();
@@ -47,7 +48,7 @@ public class SimpleBlockTreePrinter2 {
 		
 		//Add the rest of the tree
 		ArrayList<BlockTreeNode> rootlist = new ArrayList<>();
-		if(current != null) {
+		while(current != null) {
 			rootlist.add(0,current);
 			current = current.getParent();
 		}
@@ -55,36 +56,70 @@ public class SimpleBlockTreePrinter2 {
 		//The ROOT of the whole tree
 		TreeNode roottreenode    = new TreeNode("MINIMA CASCADING TREE");
 		TreeNode currenttreenode = roottreenode;
+		int[] alltots = new int[GlobalParams.MINIMA_CASCADE_LEVELS];
 		
 		//Cycle through the super blocks..
 		if(rootlist.size()>0) {
 			int clev = -1;
 			int tot  = 0;
 			for(BlockTreeNode supblk : rootlist) {
-				int lev = supblk.getCurrentLevel();
+				int lev  = supblk.getCurrentLevel();
+				int slev = supblk.getSuperBlockLevel();
 				if(lev != clev) {
 					//Start a new node..
 					if(clev != -1) {
-						TreeNode newnode = new TreeNode(tot+" @ "+clev);
+						String all = "";
+						for(int i=0;i<GlobalParams.MINIMA_CASCADE_LEVELS;i++) {
+							if(alltots[i] != 0) {
+								all +=alltots[i]+"@"+i+" ";
+							}
+							alltots[i] = 0;
+						}
+						
+						TreeNode newnode = new TreeNode(tot+" @ LEVEL:"+clev+" "+all);
 						currenttreenode.addChild(newnode);
 						currenttreenode = newnode;
 					}
+					
+					//Reset the params
 					clev = lev;
-					tot  = 0;
+					tot  = 1;
+					alltots[slev]++;
+					
+					//Add a base..
+					TreeNode newnode = new TreeNode(convertNodeToString(supblk));
+					currenttreenode.addChild(newnode);
+					currenttreenode = newnode;
 				}else {
 					tot++;
+					alltots[slev]++;
 				}
-			}	
+			}
+			
+			String all = "";
+			for(int i=0;i<GlobalParams.MINIMA_CASCADE_LEVELS;i++) {
+				if(alltots[i] != 0) {
+					all +=alltots[i]+"@"+i+" ";
+				}
+				alltots[i] = 0;
+			}
+			
+			//Last node..
+			TreeNode newnode = new TreeNode(tot+" @ LEVEL:"+clev+" "+all);
+			currenttreenode.addChild(newnode);
+			currenttreenode = newnode;
 		}
 		
 		//Now add the rest of the list in full
+		TreeNode fulltreenode = new TreeNode(convertNodeToString(fulltree));
+		currenttreenode.addChild(fulltreenode);
 		
-		
+		drillNode(fulltree, fulltreenode);
 		
 		//Now create the visual tree..
 		String output = TreePrinter.toString(roottreenode);
 		
-		return output;
+		return "\n"+output;
 		
 		/*
 		//Which node is the cascade
@@ -233,7 +268,7 @@ public class SimpleBlockTreePrinter2 {
 		return ret;
 	}
 	
-	private void drillNode(BlockTreeNode zNode, TreeNode zTreeNode, int zLevel) {
+	private void drillNode(BlockTreeNode zNode, TreeNode zTreeNode) {
 		//And all the children..
 		ArrayList<BlockTreeNode> children = zNode.getChildren();
 		
@@ -246,7 +281,7 @@ public class SimpleBlockTreePrinter2 {
 			zTreeNode.addChild(chilnode);
 
 			//And drill the child
-			drillNode(child, chilnode, child.getCurrentLevel());
+			drillNode(child, chilnode);
 		}
 	}
 	

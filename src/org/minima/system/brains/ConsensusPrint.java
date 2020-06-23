@@ -18,6 +18,7 @@ import org.minima.database.txpowdb.TxPOWDBRow;
 import org.minima.database.txpowtree.BlockTree;
 import org.minima.database.txpowtree.BlockTreeNode;
 import org.minima.database.txpowtree.SimpleBlockTreePrinter;
+import org.minima.database.txpowtree.SimpleBlockTreePrinter2;
 import org.minima.database.userdb.UserDB;
 import org.minima.database.userdb.java.reltxpow;
 import org.minima.objects.Address;
@@ -117,7 +118,8 @@ public class ConsensusPrint extends ConsensusProcessor {
 			}
 			
 			if(tree) {
-				SimpleBlockTreePrinter treeprint = new SimpleBlockTreePrinter(getMainDB().getMainTree());
+//				SimpleBlockTreePrinter treeprint = new SimpleBlockTreePrinter(getMainDB().getMainTree());
+				SimpleBlockTreePrinter2 treeprint = new SimpleBlockTreePrinter2(getMainDB().getMainTree());
 				String treeinfo    = treeprint.printtree();
 				BlockTree maintree = getMainDB().getMainTree();
 		
@@ -149,7 +151,7 @@ public class ConsensusPrint extends ConsensusProcessor {
 				getConsensusHandler().mPrintChain = zMessage.getBoolean("auto");
 			}
 
-			SimpleBlockTreePrinter treeprint = new SimpleBlockTreePrinter(getMainDB().getMainTree());
+			SimpleBlockTreePrinter2 treeprint = new SimpleBlockTreePrinter2(getMainDB().getMainTree());
 			String treeinfo = treeprint.printtree();
 	
 			BlockTree tree = getMainDB().getMainTree();
