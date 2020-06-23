@@ -5,8 +5,6 @@ import java.util.ArrayList;
 import org.minima.GlobalParams;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniNumber;
-import org.minima.utils.MinimaLogger;
 import org.minima.utils.bretty.TreeNode;
 import org.minima.utils.bretty.TreePrinter;
 
@@ -24,112 +22,103 @@ public class SimpleBlockTreePrinter {
 	
 	public String printtree() {
 		//The root node
-		BlockTreeNode root = mTree.getChainRoot();
+		BlockTreeNode root    = mTree.getChainRoot();
+		BlockTreeNode cascade = mTree.getCascadeNode();
+		BlockTreeNode tip     = mTree.getChainTip();
 		
 		if(root == null) {
 			return "No tree root..";
 		}
 		
-		//Which node is the cascade
-		mCascadeNode = mTree.getCascadeNode().getTxPow().getBlockNumber().getAsLong();
+		//First get the whole list
+		BlockTreeNode current = tip;
 		
-		//Which block is the tip..
-		mTipID               = mTree.getChainTip().getTxPowID();
-		MiniNumber tip       = mTree.getChainTip().getTxPow().getBlockNumber();
-		MiniNumber starttree = tip.sub(MiniNumber.THIRTYTWO);
-		if(starttree.isLess(MiniNumber.ZERO)) {
-			starttree = MiniNumber.ZERO;
+		//Now go down 32 blocks..
+		int counter = 0;
+		BlockTreeNode fulltree = null;
+		while(counter<32 && current!=null) {
+			//Keep it..
+			fulltree = current;
+			counter++;
+			
+			//Is there a valid parent
+			current = current.getParent();
 		}
 		
+		//Add the rest of the tree
+		ArrayList<BlockTreeNode> rootlist = new ArrayList<>();
+		while(current != null) {
+			rootlist.add(0,current);
+			current = current.getParent();
+		}
+		
+		//The ROOT of the whole tree
+		TreeNode roottreenode    = new TreeNode("MINIMA CASCADING TREE");
+		TreeNode currenttreenode = roottreenode;
 		int[] alltots = new int[GlobalParams.MINIMA_CASCADE_LEVELS];
 		
-		//Now construct a tree..
-		TreeNode rootnode = new TreeNode(convertNodeToString(root));
-		TreeNode treenode = rootnode;
-		TreeNode newnode = null;
-		
-		BlockTreeNode current = root;
-		int currentlev = current.getCurrentLevel();
-		int tot     = 1;
-		alltots[current.getSuperBlockLevel()]++;
-		
-		while(current.getTxPow().getBlockNumber().isLess(starttree)) {
-			//Get the child..
-			if(current.getChildren().size()<1) {
-				//Add the last
-				break;
-			}
-			
-			//Get the child..
-			BlockTreeNode child = current.getChild(0);
-			if(current.getNumberChildren()>1) {
-				MinimaLogger.log("MORE THAN 1 CHILD "+child.getBlockNumber());
-			}
-			
-			//Child level
-			int clev = child.getCurrentLevel();
-			
-			if(clev == currentlev) {
-				tot++;
-				alltots[child.getSuperBlockLevel()]++;
-				
-			}else {
-				//Make the string..
-				String all = "";
-				for(int i=0;i<GlobalParams.MINIMA_CASCADE_LEVELS;i++) {
-					if(alltots[i] != 0) {
-						all +=alltots[i]+"@"+i+" ";
+		//Cycle through the super blocks..
+		if(rootlist.size()>0) {
+			int clev = -1;
+			int tot  = 0;
+			for(BlockTreeNode supblk : rootlist) {
+				int lev  = supblk.getCurrentLevel();
+				int slev = supblk.getSuperBlockLevel();
+				if(lev != clev) {
+					//Start a new node..
+					if(clev != -1) {
+						String all = "";
+						for(int i=0;i<GlobalParams.MINIMA_CASCADE_LEVELS;i++) {
+							if(alltots[i] != 0) {
+								all +=alltots[i]+"@"+i+" ";
+							}
+							alltots[i] = 0;
+						}
+						
+						TreeNode newnode = new TreeNode(tot+" @ LEVEL:"+clev+" "+all);
+						currenttreenode.addChild(newnode);
+						currenttreenode = newnode;
 					}
-					alltots[i] = 0;
+					
+					//Reset the params
+					clev = lev;
+					tot  = 1;
+					alltots[slev]++;
+					
+					//Add a base..
+					TreeNode newnode = new TreeNode(convertNodeToString(supblk));
+					currenttreenode.addChild(newnode);
+					currenttreenode = newnode;
+				}else {
+					tot++;
+					alltots[slev]++;
 				}
-				
-				//Add the last
-				newnode = new TreeNode(tot+" @ "+currentlev+" Super:"+all);
-				treenode.addChild(newnode);
-				treenode = newnode;
-				
-				//And add the first of the next level..
-				newnode = new TreeNode(convertNodeToString(child));
-				treenode.addChild(newnode);
-				treenode = newnode;
-				
-				alltots[child.getSuperBlockLevel()]++;
-				tot = 1;
 			}
 			
-			currentlev = clev;
-			current    = child;
-		}
-		
-		//Make the string..
-		String all = "";
-		for(int i=0;i<GlobalParams.MINIMA_CASCADE_LEVELS;i++) {
-			if(alltots[i] != 0) {
-				all +=alltots[i]+"@"+i+" ";
+			String all = "";
+			for(int i=0;i<GlobalParams.MINIMA_CASCADE_LEVELS;i++) {
+				if(alltots[i] != 0) {
+					all +=alltots[i]+"@"+i+" ";
+				}
+				alltots[i] = 0;
 			}
-			alltots[i] = 0;
+			
+			//Last node..
+			TreeNode newnode = new TreeNode(tot+" @ LEVEL:"+clev+" "+all);
+			currenttreenode.addChild(newnode);
+			currenttreenode = newnode;
 		}
 		
-		//Add the last
-		newnode = new TreeNode(tot+" @ "+currentlev+" Super:"+all);
-		treenode.addChild(newnode);
-		treenode = newnode;
+		//Now add the rest of the list in full
+		TreeNode fulltreenode = new TreeNode(convertNodeToString(fulltree));
+		currenttreenode.addChild(fulltreenode);
 		
-		//Drill the rest..
-		drillNode(current , treenode, 1);
+		drillNode(fulltree, fulltreenode);
 		
-		String output = "\n"+TreePrinter.toString(rootnode);
+		//Now create the visual tree..
+		String output = TreePrinter.toString(roottreenode);
 		
-//		//Now construct a tree..
-//		TreeNode mRoot = new TreeNode(convertNodeToString(root));
-//				
-//		//Drill it..
-//		drillNode(root , mRoot, 1);
-//		
-//		//And finally print it..
-//		String output = "\n"+TreePrinter.toString(mRoot);
-
-		return output;
+		return "\n"+output;		
 	}
 	
 	private String convertNodeToString(BlockTreeNode zNode) {
@@ -178,7 +167,7 @@ public class SimpleBlockTreePrinter {
 		return ret;
 	}
 	
-	private void drillNode(BlockTreeNode zNode, TreeNode zTreeNode, int zLevel) {
+	private void drillNode(BlockTreeNode zNode, TreeNode zTreeNode) {
 		//And all the children..
 		ArrayList<BlockTreeNode> children = zNode.getChildren();
 		
@@ -191,7 +180,7 @@ public class SimpleBlockTreePrinter {
 			zTreeNode.addChild(chilnode);
 
 			//And drill the child
-			drillNode(child, chilnode, child.getCurrentLevel());
+			drillNode(child, chilnode);
 		}
 	}
 	
