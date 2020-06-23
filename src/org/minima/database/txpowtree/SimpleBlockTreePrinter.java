@@ -10,11 +10,9 @@ import org.minima.utils.bretty.TreePrinter;
 
 public class SimpleBlockTreePrinter {
 
+	public static int NORMAL_NODE_COUNT = 4;
+	
 	BlockTree mTree;
-	
-	long mCascadeNode=0;
-	
-	MiniData mTipID;
 	
 	public SimpleBlockTreePrinter(BlockTree zTree) {
 		mTree = zTree;
@@ -36,7 +34,7 @@ public class SimpleBlockTreePrinter {
 		//Now go down 32 blocks..
 		int counter = 0;
 		BlockTreeNode fulltree = null;
-		while(counter<32 && current!=null) {
+		while(counter<NORMAL_NODE_COUNT && current!=null) {
 			//Keep it..
 			fulltree = current;
 			counter++;
@@ -58,15 +56,23 @@ public class SimpleBlockTreePrinter {
 		int[] alltots = new int[GlobalParams.MINIMA_CASCADE_LEVELS];
 		
 		//Cycle through the super blocks..
+		boolean foundcascade = false;
 		if(rootlist.size()>0) {
 			int clev = -1;
 			int tot  = 0;
 			for(BlockTreeNode supblk : rootlist) {
 				int lev  = supblk.getCurrentLevel();
 				int slev = supblk.getSuperBlockLevel();
-				if(lev != clev) {
-					//Start a new node..
-					if(clev != -1) {
+				
+				//Have we reached the cascade node
+				if(!foundcascade && supblk.getBlockNumber().isEqual(cascade.getBlockNumber())) {
+					//OK - Just normal blocks now..
+					foundcascade = true;
+				
+					if(clev!=-1) {
+						tot++;
+						alltots[slev]++;
+						
 						String all = "";
 						for(int i=0;i<GlobalParams.MINIMA_CASCADE_LEVELS;i++) {
 							if(alltots[i] != 0) {
@@ -77,7 +83,7 @@ public class SimpleBlockTreePrinter {
 						
 						TreeNode newnode = new TreeNode(tot+" @ LEVEL:"+clev+" "+all);
 						currenttreenode.addChild(newnode);
-						currenttreenode = newnode;
+						currenttreenode = newnode;	
 					}
 					
 					//Reset the params
@@ -90,8 +96,36 @@ public class SimpleBlockTreePrinter {
 					currenttreenode.addChild(newnode);
 					currenttreenode = newnode;
 				}else {
-					tot++;
-					alltots[slev]++;
+				
+					if(lev != clev) {
+						//Start a new node..
+						if(clev != -1) {
+							String all = "";
+							for(int i=0;i<GlobalParams.MINIMA_CASCADE_LEVELS;i++) {
+								if(alltots[i] != 0) {
+									all +=alltots[i]+"@"+i+" ";
+								}
+								alltots[i] = 0;
+							}
+							
+							TreeNode newnode = new TreeNode(tot+" @ LEVEL:"+clev+" "+all);
+							currenttreenode.addChild(newnode);
+							currenttreenode = newnode;
+						}
+						
+						//Reset the params
+						clev = lev;
+						tot  = 1;
+						alltots[slev]++;
+						
+						//Add a base..
+						TreeNode newnode = new TreeNode(convertNodeToString(supblk));
+						currenttreenode.addChild(newnode);
+						currenttreenode = newnode;
+					}else {
+						tot++;
+						alltots[slev]++;
+					}
 				}
 			}
 			
