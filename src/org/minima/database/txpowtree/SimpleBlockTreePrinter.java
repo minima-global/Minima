@@ -141,7 +141,7 @@ public class SimpleBlockTreePrinter {
 		}
 		
 		String parents = "[blk:"+txpow.getBlockNumber()+"] "
-					     +"txpowid:"+zNode.getTxPowID().to0xString(16)+" "
+					     +"txpowid:"+zNode.getTxPowID().to0xString()+" "
 						 +"[parent:"+clev+"]"+parent.to0xString(16)+" "
 						 +"[parent:"+(clev+1)+"]"+parent2.to0xString(16)
 						 +"[txns:"+transnum+"]";
