@@ -6,11 +6,10 @@ import org.minima.GlobalParams;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
-import org.minima.utils.MinimaLogger;
 import org.minima.utils.bretty.TreeNode;
 import org.minima.utils.bretty.TreePrinter;
 
-public class SimpleBlockTreePrinter {
+public class SimpleBlockTreePrinter2 {
 
 	BlockTree mTree;
 	
@@ -18,18 +17,76 @@ public class SimpleBlockTreePrinter {
 	
 	MiniData mTipID;
 	
-	public SimpleBlockTreePrinter(BlockTree zTree) {
+	public SimpleBlockTreePrinter2(BlockTree zTree) {
 		mTree = zTree;
 	}
 	
 	public String printtree() {
 		//The root node
-		BlockTreeNode root = mTree.getChainRoot();
+		BlockTreeNode root    = mTree.getChainRoot();
+		BlockTreeNode cascade = mTree.getCascadeNode();
+		BlockTreeNode tip     = mTree.getChainTip();
 		
 		if(root == null) {
 			return "No tree root..";
 		}
 		
+		//First get the whole list
+		BlockTreeNode current = tip;
+		
+		//Now go down 32 blocks..
+		int counter = 0;
+		BlockTreeNode fulltree = null;
+		while(counter<32 && current!=null) {
+			//Keep it..
+			fulltree = current;
+			
+			//Is there a valid parent
+			current = current.getParent();
+		}
+		
+		//Add the rest of the tree
+		ArrayList<BlockTreeNode> rootlist = new ArrayList<>();
+		if(current != null) {
+			rootlist.add(0,current);
+			current = current.getParent();
+		}
+		
+		//The ROOT of the whole tree
+		TreeNode roottreenode    = new TreeNode("MINIMA CASCADING TREE");
+		TreeNode currenttreenode = roottreenode;
+		
+		//Cycle through the super blocks..
+		if(rootlist.size()>0) {
+			int clev = -1;
+			int tot  = 0;
+			for(BlockTreeNode supblk : rootlist) {
+				int lev = supblk.getCurrentLevel();
+				if(lev != clev) {
+					//Start a new node..
+					if(clev != -1) {
+						TreeNode newnode = new TreeNode(tot+" @ "+clev);
+						currenttreenode.addChild(newnode);
+						currenttreenode = newnode;
+					}
+					clev = lev;
+					tot  = 0;
+				}else {
+					tot++;
+				}
+			}	
+		}
+		
+		//Now add the rest of the list in full
+		
+		
+		
+		//Now create the visual tree..
+		String output = TreePrinter.toString(roottreenode);
+		
+		return output;
+		
+		/*
 		//Which node is the cascade
 		mCascadeNode = mTree.getCascadeNode().getTxPow().getBlockNumber().getAsLong();
 		
@@ -62,9 +119,6 @@ public class SimpleBlockTreePrinter {
 			
 			//Get the child..
 			BlockTreeNode child = current.getChild(0);
-			if(current.getNumberChildren()>1) {
-				MinimaLogger.log("MORE THAN 1 CHILD "+child.getBlockNumber());
-			}
 			
 			//Child level
 			int clev = child.getCurrentLevel();
@@ -129,7 +183,8 @@ public class SimpleBlockTreePrinter {
 //		//And finally print it..
 //		String output = "\n"+TreePrinter.toString(mRoot);
 
-		return output;
+		return output;*/
+		
 	}
 	
 	private String convertNodeToString(BlockTreeNode zNode) {
