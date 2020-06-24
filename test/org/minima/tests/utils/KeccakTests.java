@@ -8,6 +8,7 @@ import org.minima.utils.digest.KeccakDigest;
 // import org.bouncycastle.crypto.macs.HMac;
 import org.minima.objects.keys.BaseKey;
 import org.minima.system.input.functions.keys;
+import org.minima.objects.base.MiniData;
 
 import static org.junit.Assert.assertNotNull;
 
@@ -65,31 +66,31 @@ public class KeccakTests {
             "3e122edaf37398231cfaca4c7c216c9d66d5b899ec1d7ac617c40c7261906a45fc01617a021e5da3bd8d4182695b5cb785a28237cbb167590e34718e56d8aab8" };
 
     // test vectors from http://www.di-mgt.com.au/hmac_sha3_testvectors.html
-    // final static byte[][] macKeys =
-    // {
-    // HEX.decode("0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b"),
-    // HEX.decode("4a656665"),
-    // HEX.decode("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"),
-    // HEX.decode("0102030405060708090a0b0c0d0e0f10111213141516171819"),
-    // HEX.decode("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-    // +
-    // "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" +
-    // "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" +
-    // "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" +
-    // "aaaaaa"),
-    // HEX.decode("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-    // +
-    // "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" +
-    // "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" +
-    // "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" +
-    // "aaaaaa"),
-    // HEX.decode("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-    // +
-    // "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" +
-    // "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" +
-    // "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" +
-    // "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
-    // };
+    final static byte[][] macKeys =
+    {
+        BaseConverter.decode16("0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b"),
+        BaseConverter.decode16("4a656665"),
+        BaseConverter.decode16("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"),
+        BaseConverter.decode16("0102030405060708090a0b0c0d0e0f10111213141516171819"),
+        BaseConverter.decode16("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    +
+    "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" +
+    "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" +
+    "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" +
+    "aaaaaa"),
+    BaseConverter.decode16("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    +
+    "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" +
+    "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" +
+    "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" +
+    "aaaaaa"),
+    BaseConverter.decode16("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    +
+    "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" +
+    "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" +
+    "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" +
+    "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+    };
 
     final static String[] macData = { "4869205468657265", "7768617420646f2079612077616e7420666f72206e6f7468696e673f",
             "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd" + "dddddddddddddddddddddddddddddddddddd",
@@ -141,6 +142,14 @@ public class KeccakTests {
             "2c6b9748d35c4c8db0b4407dd2ed2381f133bdbd1dfaa69e30051eb6badfcca64299b88ae05fdbd3dd3dd7fe627e42e39e48b0fe8c7f1e85f2dbd52c2d753572",
             "6adc502f14e27812402fc81a807b28bf8a53c87bea7a1df6256bf66f5de1a4cb741407ad15ab8abc136846057f881969fbb159c321c904bfb557b77afb7778c8" };
 
+    // final static byte[] truncData = BaseConverter.decode16("546573742057697468205472756e636174696f6e");
+    // final static byte[] trunc224 = BaseConverter.decode16("f52bbcfd654264e7133085c5e69b72c3");
+    // final static byte[] trunc256 = BaseConverter.decode16("745e7e687f8335280d54202ef13cecc6");
+    // final static byte[] trunc384 = BaseConverter.decode16("fa9aea2bc1e181e47cbb8c3df243814d");
+    // final static byte[] trunc512 = BaseConverter.decode16("04c929fead434bba190dacfa554ce3f5");
+    // final static byte[] xtremeData = BaseConverter.decode16(
+    //         "61626364656667686263646566676869636465666768696a6465666768696a6b65666768696a6b6c666768696a6b6c6d6768696a6b6c6d6e68696a6b6c6d6e6f");
+
     @Test
     public void testDigest() {
         byte byt = 2;
@@ -180,38 +189,48 @@ public class KeccakTests {
 
     @Test
     public void testNewDigest() {
-        // byte byt = 2;
 
         KeccakDigest i = new KeccakDigest();
         BaseConverter b = new BaseConverter();
         byte[] hash = new byte[i.getDigestSize()];
+        // System.out.println("Keccak value now byte-length:" + i.getByteLength() + "
+        // digest: " + i.getDigestSize() + "hash:" + i.hashCode());
 
-        for (int j = 0; j != digests288.length; j++) {
-            if (digests288.length != 0) {
-                byte[] data = b.decode16(digests288[j]);
+        for (int j = 0; j != messages.length; j++) {
+            if (messages.length != 0) {
+                byte[] data = b.decode16(messages[j]);
 
                 i.update(data, 0, data.length);
             }
             i.doFinal(hash, 0);
+            // System.out.println("Keccak value now byte-length:" + i.getByteLength() + "
+            // digest: " + i.getDigestSize() + "hash:" + i.hashCode());
 
-            if (!Arrays.areEqual(b.decode16(digests288[j]), hash)) {
+            if (!Arrays.areEqual(b.decode16(messages[j]), hash)) {
                 assertNotNull(i.getAlgorithmName());
-                System.out.println("Keccak mismatch on " + i.getAlgorithmName() + " index " + i);
+                System.out.println("in first test condition");
+                System.out.println("Keccak mismatch on " + i.getAlgorithmName() + " index " + j);
+            } else if (Arrays.areEqual(b.decode16(messages[j]), hash)){
+                System.out.println("array is equal");
             }
         }
         byte[] k64 = new byte[1024 * 64];
 
         for (int k = 0; k != k64.length; k++) {
-            k64[k] = (byte) 'a';
+            k64[k] = (byte)'a';
         }
 
         i.update(k64, 0, k64.length);
 
         i.doFinal(hash, 0);
+        
+        if (!Arrays.areEqual(b.decode16(digests288[messages.length]), hash)) {
+            System.out.println("k64-1 array is not equal");
 
-        if (!Arrays.areEqual(k64, hash)) {
             assertNotNull(i.getAlgorithmName());
-            System.out.println("Keccak mismatch on " + i.getAlgorithmName() + " 64k a");
+            System.out.println("New Equals- Keccak mismatch on " + i.getAlgorithmName() + " 64k a");
+        } else if (Arrays.areEqual(b.decode16(digests288[messages.length]), hash)){
+            System.out.println("k64-1 array is equal");
         }
 
         for (int l = 0; l != k64.length; l++) {
@@ -220,9 +239,12 @@ public class KeccakTests {
 
         i.doFinal(hash, 0);
 
-        if (!Arrays.areEqual(k64, hash)) {
+        if (!Arrays.areEqual(b.decode16(digests288[messages.length]), hash)) {
+            System.out.println("k64-2 array is not equal");
             assertNotNull(i.getAlgorithmName());
             System.out.println("Keccak mismatch on " + i.getAlgorithmName() + " 64k a");
+        }else if (Arrays.areEqual(b.decode16(digests288[messages.length]), hash)){
+            System.out.println("k64-2 array is equal");
         }
 
         for (int m = 0; m != k64.length; m++) {
@@ -233,9 +255,12 @@ public class KeccakTests {
 
         i.doFinal(hash, 0);
 
-        if (!Arrays.areEqual(k64, hash)) {
+        if (!Arrays.areEqual(b.decode16(digests288[messages.length]+ 1), hash)) {
+            System.out.println("k64-3 array is not equal");
             assertNotNull(i.getAlgorithmName());
-            System.out.println("Keccak mismatch on " + i.getAlgorithmName() + " 64k a");
+            System.out.println("Keccak mismatch on " + i.getAlgorithmName() + " 64k alpha");
+        } else if (Arrays.areEqual(b.decode16(digests288[messages.length] + 1), hash)){
+            System.out.println("k64-3 array is equal");
         }
 
         for (int n = 0; n != 64; n++) {
@@ -245,36 +270,42 @@ public class KeccakTests {
 
         i.doFinal(hash, 0);
 
-        if (!Arrays.areEqual(k64, hash)) {
+        if (!Arrays.areEqual(b.decode16(digests288[messages.length]+ 1), hash)) {
+            System.out.println("k64-4 array is not equal");
             assertNotNull(i.getAlgorithmName());
-            System.out.println("Keccak mismatch on " + i.getAlgorithmName() + " 64k a");
+            System.out.println("Keccak mismatch on " + i.getAlgorithmName() + " 64k chunked alpha");
+        } else if (Arrays.areEqual(b.decode16(digests288[messages.length] + 1), hash)){
+            System.out.println("k64-4 array is equal");
         }
+
 
         i.doFinal(hash, 0);
         assertNotNull(i.getByteLength());
-        byte[] newHash = new byte[64];
 
-        long start = System.currentTimeMillis();
-        System.out.println("Starting very long");
-        for (int z = 0; z != 16384; z++) {
-            for (int j = 0; j != 1024; j++) {
-                i.update(newHash, 0, newHash.length);
-            }
-        }
+        // byte[] newHash = new byte[64];
 
-        i.doFinal(newHash, 0);
+        // long start = System.currentTimeMillis();
+        // System.out.println("Starting very long");
+        // for (int z = 0; z != 16384; z++) {
+        // for (int j = 0; j != 1024; j++) {
+        // i.update(newHash, 0, newHash.length);
+        // }
+        // }
 
-        if (!Arrays.areEqual(newHash, hash)) {
-            assertNotNull(i.getAlgorithmName());
-            System.out.println("Keccak mismatch on " + i.getAlgorithmName() + " extreme data test");
-        }
-        System.out.println("Done " + (System.currentTimeMillis() - start));
+        // i.doFinal(newHash, 0);
+
+        // if (!Arrays.areEqual(newHash, hash)) {
+        // assertNotNull(i.getAlgorithmName());
+        // System.out.println("Keccak mismatch on " + i.getAlgorithmName() + " extreme
+        // data test");
+        // }
+        // System.out.println("Done " + (System.currentTimeMillis() - start));
     }
 
     @Test
 
     public void testDigestDoFinal() {
-        KeccakDigest kd = new KeccakDigest(512);
+        KeccakDigest kd = new KeccakDigest();
 
         byte[] hash = new byte[kd.getDigestSize()];
         kd.doFinal(hash, 0);
@@ -287,232 +318,30 @@ public class KeccakTests {
             kd.doFinal(buf, i);
 
             if (!Arrays.areEqual(cmp, buf)) {
+                System.out.println("cmp + buff arrays not equal");
                 assertNotNull(kd.getAlgorithmName());
                 System.out.println("Keccak offset doFinal on " + kd.getAlgorithmName());
-                // fail("Keccak offset doFinal on " + kd.getAlgorithmName());
-            }
+            } 
         }
     }
 
-    @Test
+    // @Test
 
-    public void testMac() {
-        // Mac mac = new HMac(digest);
-
-        // for (int i = 0; i != keys.length; i++)
-        // {
-        //     macData.init(new KeyParameter(keys[i]));
-    
-        // byte[] mData = Hex.decode(data[i]);
-    
-        // mac.update(mData, 0, mData.length);
-    
-        // byte[] macV = new byte[mac.getMacSize()];
-    
-        // mac.doFinal(macV, 0);
-    
-        // if (!Arrays.areEqual(Hex.decode(expected[i]), macV))
-        // {
-        // fail("Keccak HMAC mismatch on " + digest.getAlgorithmName());
-        // }
-        // }
-    
-        // mac = new HMac(digest);
-    
-        // mac.init(truncKey);
-    
-        // mac.update(truncData, 0, truncData.length);
-    
-        // byte[] macV = new byte[mac.getMacSize()];
-    
-        // mac.doFinal(macV, 0);
-    
-        // for (int i = 0; i != truncExpected.length; i++)
-        // {
-        // if (macV[i] != truncExpected[i])
-        // {
-        // fail("mismatch on truncated HMAC for " + digest.getAlgorithmName());
-        // }
-        // }
-        
-
-    }
-
-    // private void testMac(Digest digest, byte[][] keys, String[] data, String[]
-    // expected, byte[] truncExpected)
-   
-
-    // private void testDigestDoFinal(Digest digest)
+    // public void testMac() {
+    // // Mac mac = new HMac(digest);
+    // // Mac mac = new HMac(digest);
+    // BaseKey bk;
+    // KeccakDigest kb = new KeccakDigest();
+    // BaseConverter bc = new BaseConverter();
+    // byte[] hash = new byte[kb.getDigestSize()];
+    // MiniData md = new MiniData(macData[0]);
+    // // byte[][] bytesArray = new byte[64][64];
+    // for (int i = 0; i != hash.length; i++)
     // {
-    // byte[] hash = new byte[digest.getDigestSize()];
-    // digest.doFinal(hash, 0);
+    // // byte[] data = b.decode16(digests288[j]);
+    // // mac.init(new KeyParameter(keys[i]));
 
-    // for (int i = 0; i <= digest.getDigestSize(); ++i)
-    // {
-    // byte[] cmp = new byte[2 * digest.getDigestSize()];
-    // System.arraycopy(hash, 0, cmp, i, hash.length);
-
-    // byte[] buf = new byte[2 * digest.getDigestSize()];
-    // digest.doFinal(buf, i);
-
-    // if (!Arrays.areEqual(cmp, buf))
-    // {
-    // fail("Keccak offset doFinal on " + digest.getAlgorithmName());
-    // }
-    // }
-    // }
-
-    // final static KeyParameter truncKey = new
-    // KeyParameter(HEX.decode("0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c"));
-    // final static byte[] truncData =
-    // HEX.decode("546573742057697468205472756e636174696f6e");
-
-    // final static byte[] trunc224 =
-    // HEX.decode("f52bbcfd654264e7133085c5e69b72c3");
-    // final static byte[] trunc256 =
-    // HEX.decode("745e7e687f8335280d54202ef13cecc6");
-    // final static byte[] trunc384 =
-    // HEX.decode("fa9aea2bc1e181e47cbb8c3df243814d");
-    // final static byte[] trunc512 =
-    // HEX.decode("04c929fead434bba190dacfa554ce3f5");
-
-    // final static byte[] xtremeData =
-    // HEX.decode("61626364656667686263646566676869636465666768696a6465666768696a6b65666768696a6b6c666768696a6b6c6d6768696a6b6c6d6e68696a6b6c6d6e6f");
-
-    // public String getName()
-    // {
-    // return "Keccak";
-    // }
-
-    // private void testDigest(Digest digest, String[] expected)
-    // {
-    // byte[] hash = new byte[digest.getDigestSize()];
-
-    // for (int i = 0; i != messages.length; i++)
-    // {
-    // if (messages.length != 0)
-    // {
-    // byte[] data = HEX.(messages);
-
-    // digest.update(data, 0, data.length);
-    // }
-
-    // digest.doFinal(hash, 0);
-
-    // if (!Arrays.areEqual(HEX.decode(expected[i]), hash))
-    // {
-    // fail("Keccak mismatch on " + digest.getAlgorithmName() + " index " + i);
-    // }
-    // }
-
-    // byte[] k64 = new byte[1024 * 64];
-
-    // for (int i = 0; i != k64.length; i++)
-    // {
-    // k64[i] = (byte)'a';
-    // }
-
-    // digest.update(k64, 0, k64.length);
-
-    // digest.doFinal(hash, 0);
-
-    // if (!Arrays.areEqual(HEX.decode(expected[messages.length]), hash))
-    // {
-    // fail("Keccak mismatch on " + digest.getAlgorithmName() + " 64k a");
-    // }
-
-    // for (int i = 0; i != k64.length; i++)
-    // {
-    // digest.update((byte)'a');
-    // }
-
-    // digest.doFinal(hash, 0);
-
-    // if (!Arrays.areEqual(HEX.decode(expected[messages.length]), hash))
-    // {
-    // fail("Keccak mismatch on " + digest.getAlgorithmName() + " 64k a single");
-    // }
-
-    // for (int i = 0; i != k64.length; i++)
-    // {
-    // k64[i] = (byte)('a' + (i % 26));
-    // }
-
-    // digest.update(k64, 0, k64.length);
-
-    // digest.doFinal(hash, 0);
-
-    // if (!Arrays.areEqual(Hex.decode(expected[messages.length + 1]), hash))
-    // {
-    // fail("Keccak mismatch on " + digest.getAlgorithmName() + " 64k alpha");
-    // }
-
-    // for (int i = 0; i != 64; i++)
-    // {
-    // digest.update(k64[i * 1024]);
-    // digest.update(k64, i * 1024 + 1, 1023);
-    // }
-
-    // digest.doFinal(hash, 0);
-
-    // if (!Arrays.areEqual(Hex.decode(expected[messages.length + 1]), hash))
-    // {
-    // fail("Keccak mismatch on " + digest.getAlgorithmName() + " 64k chunked
-    // alpha");
-    // }
-
-    // testDigestDoFinal(digest);
-
-    // extremely long data test
-
-    // long start = System.currentTimeMillis();
-    // System.out.println("Starting very long");
-    // for (int i = 0; i != 16384; i++)
-    // {
-    // for (int j = 0; j != 1024; j++)
-    // {
-    // digest.update(xtremeData, 0, xtremeData.length);
-    // }
-    // }
-
-    // digest.doFinal(hash, 0);
-
-    // if (!Arrays.areEqual(Hex.decode(expected[messages.length + 2]), hash))
-    // {
-    // fail("Keccak mismatch on " + digest.getAlgorithmName() + " extreme data
-    // test");
-    // }
-    // System.out.println("Done " + (System.currentTimeMillis() - start));
-    // }
-
-    // private void testDigestDoFinal(Digest digest)
-    // {
-    // byte[] hash = new byte[digest.getDigestSize()];
-    // digest.doFinal(hash, 0);
-
-    // for (int i = 0; i <= digest.getDigestSize(); ++i)
-    // {
-    // byte[] cmp = new byte[2 * digest.getDigestSize()];
-    // System.arraycopy(hash, 0, cmp, i, hash.length);
-
-    // byte[] buf = new byte[2 * digest.getDigestSize()];
-    // digest.doFinal(buf, i);
-
-    // if (!Arrays.areEqual(cmp, buf))
-    // {
-    // fail("Keccak offset doFinal on " + digest.getAlgorithmName());
-    // }
-    // }
-    // }
-
-    // private void testMac(Digest digest, byte[][] keys, String[] data, String[]
-    // expected, byte[] truncExpected)
-    // {
-    // Mac mac = new HMac(digest);
-
-    // for (int i = 0; i != keys.length; i++)
-    // {
-    // mac.init(new KeyParameter(keys[i]));
+    // bk.getPublicKey(hash[i]);
 
     // byte[] mData = Hex.decode(data[i]);
 
@@ -545,31 +374,31 @@ public class KeccakTests {
     // fail("mismatch on truncated HMAC for " + digest.getAlgorithmName());
     // }
     // }
+
     // }
 
-    // public void performTest() throws Exception
+    // private void testMac(Digest digest, byte[][] keys, String[] data, String[]
+    // expected, byte[] truncExpected)
+
+    // private void testDigestDoFinal(Digest digest)
     // {
-    // testDigest(new KeccakDigest(), digests288);
-    // testDigest(new KeccakDigest(224), digests224);
-    // testDigest(new KeccakDigest(256), digests256);
-    // testDigest(new KeccakDigest(384), digests384);
-    // testDigest(new KeccakDigest(512), digests512);
+    // byte[] hash = new byte[digest.getDigestSize()];
+    // digest.doFinal(hash, 0);
 
-    // testMac(new KeccakDigest(224), macKeys, macData, mac224, trunc224);
-    // testMac(new KeccakDigest(256), macKeys, macData, mac256, trunc256);
-    // testMac(new KeccakDigest(384), macKeys, macData, mac384, trunc384);
-    // testMac(new KeccakDigest(512), macKeys, macData, mac512, trunc512);
-    // }
-
-    // protected Digest cloneDigest(Digest digest)
+    // for (int i = 0; i <= digest.getDigestSize(); ++i)
     // {
-    // return new KeccakDigest((KeccakDigest)digest);
+    // byte[] cmp = new byte[2 * digest.getDigestSize()];
+    // System.arraycopy(hash, 0, cmp, i, hash.length);
+
+    // byte[] buf = new byte[2 * digest.getDigestSize()];
+    // digest.doFinal(buf, i);
+
+    // if (!Arrays.areEqual(cmp, buf))
+    // {
+    // fail("Keccak offset doFinal on " + digest.getAlgorithmName());
+    // }
+    // }
     // }
 
-    // public static void main(
-    // String[] args)
-    // {
-    // runTest(new KeccakDigestTest());
-    // }
 
 }
