@@ -868,8 +868,6 @@ public class ConsensusPrint extends ConsensusProcessor {
 				
 				//Add details..
 				resp.put("txpow", row.getTxPOW().toJSON());
-				resp.put("istransaction", row.getTxPOW().isTransaction());
-				resp.put("isblock", row.getTxPOW().isBlock());
 				resp.put("ischainblock", row.isOnChainBlock());
 				resp.put("isinblock", row.isInBlock());
 				resp.put("inblock", row.getInBlockNumber().toString());
