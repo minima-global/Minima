@@ -28,6 +28,7 @@ public class JavaDBRow implements TxPOWDBRow {
 		mBlockState         = TXPOWDBROW_STATE_BASIC;
 		mDeleteTime         = 0;
 		mAddedTime          = System.currentTimeMillis();
+		mInBlocknumber      = MiniNumber.ZERO;
 	}
 
 	@Override
