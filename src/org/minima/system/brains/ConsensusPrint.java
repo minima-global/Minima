@@ -449,7 +449,7 @@ public class ConsensusPrint extends ConsensusProcessor {
 			//Is this for a single address
 			String onlyaddress = "";
 			if(zMessage.exists("address")) {
-				onlyaddress = new MiniData(zMessage.getString("address")).to0xString() ;
+				onlyaddress = new MiniData(zMessage.getString("address")).to0xString();
 			}
 			
 			//Current top block
@@ -563,6 +563,7 @@ public class ConsensusPrint extends ConsensusProcessor {
 			//All the balances..
 			JSONObject allbal = InputHandler.getResponseJSON(zMessage);
 			JSONArray totbal  = new JSONArray();
+			MiniData onlyaddrdata = new MiniData(onlyaddress);
 			
 			Enumeration<String> fulls = full_details.keys();
 			while(fulls.hasMoreElements())  {
@@ -602,7 +603,13 @@ public class ConsensusPrint extends ConsensusProcessor {
 					MiniNumber tot_simple = MiniNumber.ZERO;
 					ArrayList<Coin> confirmed = getMainDB().getTotalSimpleSpendableCoins(Coin.MINIMA_TOKENID);
 					for(Coin confc : confirmed) {
-						tot_simple = tot_simple.add(confc.getAmount());
+						if(!onlyaddress.equals("")) {
+							if(confc.getAddress().isEqual(onlyaddrdata)) {
+								tot_simple = tot_simple.add(confc.getAmount());
+							}
+						}else {
+							tot_simple = tot_simple.add(confc.getAmount());	
+						}
 					}
 					jobj.put("sendable", tot_simple.toString());
 				}else {
@@ -631,7 +638,13 @@ public class ConsensusPrint extends ConsensusProcessor {
 					MiniNumber tot_simple = MiniNumber.ZERO;
 					ArrayList<Coin> confirmed = getMainDB().getTotalSimpleSpendableCoins(tok);
 					for(Coin confc : confirmed) {
-						tot_simple = tot_simple.add(confc.getAmount());
+						if(!onlyaddress.equals("")) {
+							if(confc.getAddress().isEqual(onlyaddrdata)) {
+								tot_simple = tot_simple.add(confc.getAmount());
+							}
+						}else {
+							tot_simple = tot_simple.add(confc.getAmount());	
+						}
 					}
 					jobj.put("sendable", tot_simple.mult(td.getScaleFactor()).toString());
 				}
