@@ -844,19 +844,20 @@ function createMinimaNotification(text, bgcolor){
 	if(bgcolor){
 		notifydiv.style.background   = bgcolor;
 	}else{
-		notifydiv.style.background   = "#777777";	
+		notifydiv.style.background   = "#bbbbbb";	
 	}
 	
 	notifydiv.style.opacity 	 = "0";
 	notifydiv.style.borderRadius = "10px";
+	notifydiv.style.border = "thick solid #222222";
 	
 	//Add it to the Page
 	document.body.appendChild(notifydiv);
 	
 	//Create an HTML window
-	var notifytext = "<table border=0 width=100% height=100%><tr>" +
-			"<td style='font-size:16px;font-family:monospace;color:black;text-align:center;vertical-align:middle;'>"+text+"</td></tr></table>";
-	
+	var notifytext = "<table border=0 width=400 height=90><tr>" +
+	"<td style='width:400;height:90;font-size:16px;font-family:monospace;color:black;text-align:center;vertical-align:middle;'>"+text+"</td></tr></table>";
+
 	//Now get that element
 	var elem = document.getElementById(notifyid);
 	
