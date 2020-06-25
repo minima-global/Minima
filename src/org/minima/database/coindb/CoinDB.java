@@ -56,6 +56,6 @@ public interface CoinDB {
 	 * remove coins added from this b lock onwards
 	 * @param zBlock
 	 */
-	public void removeCoinsFomOnwards(MiniNumber zBlock);
+	public void resetCoinsFomOnwards(MiniNumber zBlock);
 	
 }

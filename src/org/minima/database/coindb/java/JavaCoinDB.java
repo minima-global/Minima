@@ -93,7 +93,7 @@ public class JavaCoinDB implements CoinDB{
 	}
 
 	@Override
-	public void removeCoinsFomOnwards(MiniNumber zBlock) {
+	public void resetCoinsFomOnwards(MiniNumber zBlock) {
 		ArrayList<CoinDBRow> newrows = new ArrayList<>();
 		for(CoinDBRow row : mRows) {
 			if(row.getInBlockNumber().isLess(zBlock)) {
