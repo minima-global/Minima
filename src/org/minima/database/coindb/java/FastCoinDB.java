@@ -98,7 +98,7 @@ public class FastCoinDB implements CoinDB {
 	}
 
 	@Override
-	public void removeCoinsFomOnwards(MiniNumber zBlock) {
+	public void resetCoinsFomOnwards(MiniNumber zBlock) {
 		Hashtable<String, JavaCoinDBRow> newCoins = new Hashtable<>();
 		Enumeration<JavaCoinDBRow> allrows = mCoins.elements();
 		while(allrows.hasMoreElements()) {
