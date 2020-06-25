@@ -109,7 +109,7 @@ public class FastJavaDB implements TxPowDB {
 				newtable.put(rowtxpow.getTxPowID().to0xString(),row);
 			
 				//It's a block but not past the cascade
-			}else if(rowtxpow.isBlock() && !row.isOnChainBlock() && row.getTxPOW().getBlockNumber().isMoreEqual(zCascade)) {
+			}else if(rowtxpow.isBlock() && !row.isOnChainBlock() && row.getTxPOW().getBlockNumber().isMoreEqual(minused)) {
 				newtable.put(rowtxpow.getTxPowID().to0xString(),row);
 				
 			}else {

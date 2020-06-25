@@ -328,7 +328,6 @@ public class MinimaDB {
 				
 				//Discard.. no longer an on chain block..
 				row.setOnChainBlock(false);
-				row.setIsInBlock(false);
 				
 				//And delete / move to different folder any file backups..
 				getBackup().deleteTxpow(node.getTxPow());
