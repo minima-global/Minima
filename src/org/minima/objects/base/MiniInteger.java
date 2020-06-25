@@ -88,6 +88,10 @@ public class MiniInteger implements Streamable {
 		return add(ONE);
 	}
 	
+	public MiniInteger decrement() {
+		return sub(ONE);
+	}
+	
 	@Override
 	public String toString() {
 		return mNumber.toString();

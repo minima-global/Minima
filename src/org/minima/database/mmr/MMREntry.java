@@ -134,11 +134,11 @@ public class MMREntry implements Comparable<MMREntry>, Streamable{
 	}
 	
 	public MiniInteger getLeftSibling() {
-		return mEntryNumber.sub(MiniInteger.ONE);
+		return mEntryNumber.decrement();
 	}
 	
 	public MiniInteger getRightSibling() {
-		return mEntryNumber.add(MiniInteger.ONE);
+		return mEntryNumber.increment();
 	}
 	
 	public MiniInteger getSibling() {
