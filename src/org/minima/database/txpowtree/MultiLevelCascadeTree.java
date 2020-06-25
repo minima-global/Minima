@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import org.minima.GlobalParams;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.utils.MinimaLogger;
 
 public class MultiLevelCascadeTree {
 
@@ -170,7 +171,7 @@ public class MultiLevelCascadeTree {
 		mCascadeTree.hardAddNode(fullkeep, true);
 		
 		//Find the old tip.. makes the reset weight 1000x faster..
-		mCascadeTree.mTip = mCascadeTree.findNode(oldtiptxpowid);
+		mCascadeTree.mTip = mCascadeTree.findNode(oldtiptxpowid,true);
 		
 		//And sort the weights
 		mCascadeTree.resetWeights();

@@ -2,6 +2,7 @@ package org.minima.database.txpowtree;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Hashtable;
 
 import org.minima.GlobalParams;
 import org.minima.database.MinimaDB;
@@ -40,15 +41,28 @@ public class BlockTree {
 	BlockTreeNode mCopyNode;
 	
 	/**
+	 * The FAST link from ID to Block..
+	 */
+	Hashtable<String, BlockTreeNode> mFastLink;
+	
+	/**
 	 * Main Constructor
 	 */
-	public BlockTree() {}
+	public BlockTree() {
+		clearTree();
+	}
 	
 	public void setTreeRoot(BlockTreeNode zNode) {
 		zNode.setParent(null);
 		mRoot 			= zNode;
 		mTip 			= mRoot;
 		mCascadeNode 	= mRoot;
+		
+		//New root - new tree - reset fasttable
+		mFastLink = new Hashtable<>();
+		
+		//Add to the Fast List..
+		addFastLinkNode(zNode);
 	}
 	
 	public BlockTreeNode getChainRoot() {
@@ -99,6 +113,9 @@ public class BlockTree {
 		//It's OK - add it
 		parent.addChild(zNode);
 
+		//Add to the fast list
+		addFastLinkNode(zNode);
+		
 		//It's been added
 		return true;
 	}
@@ -111,7 +128,6 @@ public class BlockTree {
 	public void hardAddNode(BlockTreeNode zNode, boolean zTouchMMR) {
 		if(mRoot == null) {
 			setTreeRoot(zNode);
-			zNode.setParent(null);
 			return;
 		}
 		
@@ -132,6 +148,9 @@ public class BlockTree {
 				
 		//Move on..
 		mTip = zNode;
+		
+		//Add to the fast list
+		addFastLinkNode(zNode);
 	}
 	
 	public void hardSetCascadeNode(BlockTreeNode zNode) {
@@ -159,13 +178,28 @@ public class BlockTree {
 	 * Set all the weights to 0
 	 */
 	private void _zeroWeights() {
+		//Clear the current table..
+		mFastLink = new Hashtable<>();
+				
 		//Go down the whole tree..
 		_recurseTree(new NodeAction() {
 			@Override
 			public void runAction(BlockTreeNode zNode) {
+				//Reset the weight..
 				zNode.resetCurrentWeight();
+				
+				//Add to the fast list
+				addFastLinkNode(zNode);
 			}
 		});
+	}
+	
+	private void addFastLinkNode(BlockTreeNode zNode) {
+		//Add to the HashTable
+		String id = zNode.getTxPowID().to0xString();
+		
+		//Add to the Table..
+		mFastLink.put(id, zNode);
 	}
 	
 	/**
@@ -266,17 +300,36 @@ public class BlockTree {
 	 */
 	
 	public BlockTreeNode findNode(MiniData zTxPOWID) {
-		//Action that checks for a specific node..
-		NodeAction finder = new NodeAction(zTxPOWID) {
-			@Override
-			public void runAction(BlockTreeNode zNode) {
-				if(zNode.getTxPowID().isEqual(getExtraData())) {
-        			setReturnObject(zNode);
-        		}
-			}
-		}; 
+		return findNode(zTxPOWID, false);
+	}
+	
+	/**
+	 * Double Drill - after a cascade the fast link table not set up..
+	 */
+	public BlockTreeNode findNode(MiniData zTxPOWID, boolean zRecurseAlso) {
+		//Check fast link table
+		BlockTreeNode fastnodefind = mFastLink.get(zTxPOWID.to0xString());
+		if(fastnodefind!=null) {
+			return fastnodefind;
+		}
 		
-		return _recurseTree(finder);
+		//Are we recursing if we can;t find it - cascade tree needs this..
+		if(zRecurseAlso) {
+			//SLOWER recursive method.. replaced by the fast hashtable
+			NodeAction finder = new NodeAction(zTxPOWID) {
+				@Override
+				public void runAction(BlockTreeNode zNode) {
+					if(zNode.getTxPowID().isEqual(getExtraData())) {
+	        			setReturnObject(zNode);
+	        		}
+				}
+			}; 
+			
+			return _recurseTree(finder);	
+		}
+		
+		//Not found..
+		return null;
 	}
 	
 	/**
@@ -574,11 +627,14 @@ public class BlockTree {
 		//Clear from one node up..
 		BlockTreeNode clearnode = mCascadeNode.getParent();
 		while(clearnode != null) {
-			//Clear the TxPoW
-			clearnode.getTxPow().clearBody();
-			
-			//Clear the MMRset
-			clearnode.setMMRset(null);
+			//Wipe any blocks that are at a level higher than zero - they _may_ be required by a syncing user..
+			if(clearnode.getCurrentLevel()>0) {
+				//Clear the TxPoW
+				clearnode.getTxPow().clearBody();
+				
+				//Clear the MMRset
+				clearnode.setMMRset(null);
+			}
 			
 			//Get the Parent
 			clearnode = clearnode.getParent();
@@ -669,6 +725,7 @@ public class BlockTree {
 		mRoot 			= null;
 		mTip 			= null;
 		mCascadeNode 	= null;
+		mFastLink       = new Hashtable<>();
 	}
 
 	public static TxPoW createRandomTxPow() {
