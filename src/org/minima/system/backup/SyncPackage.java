@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import org.minima.database.mmr.MMRSet;
 import org.minima.database.txpowtree.BlockTree;
 import org.minima.database.txpowtree.BlockTreeNode;
-import org.minima.database.txpowtree.MultiLevelCascadeTree;
+import org.minima.database.txpowtree.CascadeTree;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.Streamable;
@@ -69,7 +69,7 @@ public class SyncPackage implements Streamable{
 		}
 		
 		//Now reset..
-		MultiLevelCascadeTree casc = new MultiLevelCascadeTree(blktree);
+		CascadeTree casc = new CascadeTree(blktree);
 		casc.cascadedTree();
 		
 		//Get the cascaded version..

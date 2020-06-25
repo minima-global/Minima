@@ -23,7 +23,7 @@ import org.minima.database.txpowdb.TxPowDB;
 import org.minima.database.txpowdb.java.FastJavaDB;
 import org.minima.database.txpowtree.BlockTree;
 import org.minima.database.txpowtree.BlockTreeNode;
-import org.minima.database.txpowtree.MultiLevelCascadeTree;
+import org.minima.database.txpowtree.CascadeTree;
 import org.minima.database.userdb.UserDB;
 import org.minima.database.userdb.java.JavaUserDB;
 import org.minima.objects.Address;
@@ -309,7 +309,7 @@ public class MinimaDB {
 			/**
 			 * Cascade the tree
 			 */
-			MultiLevelCascadeTree casc = new MultiLevelCascadeTree(mMainTree);
+			CascadeTree casc = new CascadeTree(mMainTree);
 			ArrayList<BlockTreeNode> removals = casc.cascadedTree();
 			
 			//Set it
@@ -488,7 +488,7 @@ public class MinimaDB {
 	
 	public void hardResetChain() {
 		//Cascade it.. and then reset it..
-		MultiLevelCascadeTree casc = new MultiLevelCascadeTree(mMainTree);
+		CascadeTree casc = new CascadeTree(mMainTree);
 		casc.cascadedTree();
 		mMainTree = casc.getCascadeTree();
 	

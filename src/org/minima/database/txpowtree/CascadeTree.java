@@ -7,7 +7,7 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.MinimaLogger;
 
-public class MultiLevelCascadeTree {
+public class CascadeTree {
 
 	BlockTree mMainTree;
 	
@@ -15,7 +15,7 @@ public class MultiLevelCascadeTree {
 	
 	ArrayList<BlockTreeNode> mRemovals;
 	
-	public MultiLevelCascadeTree(BlockTree zMainTree) {
+	public CascadeTree(BlockTree zMainTree) {
 		mMainTree = zMainTree;
 		mRemovals = new ArrayList<>();
 	}
