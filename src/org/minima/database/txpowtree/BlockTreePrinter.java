@@ -8,13 +8,13 @@ import org.minima.objects.base.MiniData;
 import org.minima.utils.bretty.TreeNode;
 import org.minima.utils.bretty.TreePrinter;
 
-public class SimpleBlockTreePrinter {
+public class BlockTreePrinter {
 
 	public static int NORMAL_NODE_COUNT = 32;
 	
 	BlockTree mTree;
 	
-	public SimpleBlockTreePrinter(BlockTree zTree) {
+	public BlockTreePrinter(BlockTree zTree) {
 		mTree = zTree;
 	}
 	
