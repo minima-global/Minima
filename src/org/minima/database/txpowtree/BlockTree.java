@@ -627,15 +627,12 @@ public class BlockTree {
 		//Clear from one node up..
 		BlockTreeNode clearnode = mCascadeNode.getParent();
 		while(clearnode != null) {
-			//Wipe any blocks that are at a level higher than zero - they _may_ be required by a syncing user..
-			if(clearnode.getCurrentLevel()>0) {
-				//Clear the TxPoW
-				clearnode.getTxPow().clearBody();
-				
-				//Clear the MMRset
-				clearnode.setMMRset(null);
-			}
+			//Clear the TxPoW
+			clearnode.getTxPow().clearBody();
 			
+			//Clear the MMRset
+			clearnode.setMMRset(null);
+		
 			//Get the Parent
 			clearnode = clearnode.getParent();
 		}
