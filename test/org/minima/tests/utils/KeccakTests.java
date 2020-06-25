@@ -11,6 +11,7 @@ import org.minima.system.input.functions.keys;
 import org.minima.objects.base.MiniData;
 
 import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
@@ -192,7 +193,7 @@ public class KeccakTests {
     @Test
     public void testNewDigest() {
 
-        String[] expected = digests288;
+        String[] expected = digests224;
         KeccakDigest i = new KeccakDigest();
         BaseConverter b = new BaseConverter();
         byte[] hash = new byte[i.getDigestSize()];
@@ -216,6 +217,7 @@ public class KeccakTests {
                     hash);
             } catch(ArrayComparisonFailure failure) {
                 System.out.println("Test failed: " + failure.getMessage());
+                assertFalse("test should not fail:" + failure.getMessage(), true);
             }
             // if (!Arrays.areEqual(b.decode16(messages[j]), hash)) {
             //     assertNotNull(i.getAlgorithmName());
@@ -242,6 +244,7 @@ public class KeccakTests {
                  hash);
          } catch(ArrayComparisonFailure failure) {
              System.out.println("Test failed: " + failure.getMessage());
+             assertFalse("test should not fail:" + failure.getMessage(), true);
          }
 
         // if (!Arrays.areEqual(b.decode16(digests288[messages.length]), hash)) {
