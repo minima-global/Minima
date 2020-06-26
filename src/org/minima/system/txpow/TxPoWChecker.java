@@ -221,7 +221,7 @@ public class TxPoWChecker {
 				if(!valid) {
 					//Are we a floating input.. ?
 					if(input.isFloating()) {
-						//See if there is a valid address/amount..
+						//See if there is a valid address/amount.. #TODO Switchto CoinDB!
 						MMREntry fladdr = zMMRSet.searchAddress(input.getAddress(), input.getAmount(), input.getTokenID());
 						if(fladdr != null) {
 							//There is a valid coin  we can use..!
