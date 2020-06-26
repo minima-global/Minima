@@ -261,9 +261,9 @@ public class NanoDAPPServer extends NanoHTTPD{
 					+ "Go to <a href='http://mifi.minima.global/' target='_blank'>http://mifi.minima.global/</a> to find MiniDAPPs"
 					+ "</td></tr>");
 		}else {
-			list.append("<tr><td style='text-align:center;'><br><br>"
-					+ "Go to <a href='http://mifi.minima.global/' target='_blank'>http://mifi.minima.global/</a> to find MiniDAPPs"
-					+ "</td></tr>");
+//			list.append("<tr><td style='text-align:center;'><br><br>"
+//					+ "Go to <a href='http://mifi.minima.global/' target='_blank'>http://mifi.minima.global/</a> to find MiniDAPPs"
+//					+ "</td></tr>");
 		}
 		
 		list.append("</table>");
