@@ -292,20 +292,14 @@ public abstract class DigestTest {
         }
         
         digest.doFinal(resBuf, 0);
+
         try {
-
-            assertTrue(" Million a's test " + expected + " resBuf:" + resBuf, !BaseConverter.decode16(expected).equals(resBuf));
-
-        } catch (ComparisonFailure failure) {
-            System.out.println("Expected: " + new String(BaseConverter.encode16(resBuf)));
+            assertArrayEquals(" SHA millionATest",
+                    BaseConverter.decode16(expected), resBuf);
+        } catch (ArrayComparisonFailure failure) {
             System.out.println("Test failed: " + failure.getMessage());
             assertFalse("test should not fail:" + failure.getMessage(), true);
         }
-
-        // if (!BaseConverter.decode16(expected).equals(resBuf))
-        // {
-        //     fail("Million a's failed", expected, new String(BaseConverter.encode16(resBuf)));
-        // }
     }
     
     protected void sixtyFourKTest(
