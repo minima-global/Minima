@@ -7,7 +7,7 @@ import org.minima.utils.messages.Message;
 
 public class tokencreate extends CommandFunction {
 	
-	public static MiniNumber MAX_COINS = new MiniNumber("1000000");
+	public static MiniNumber MAX_COINS = new MiniNumber("1000000000");
 	
 	public tokencreate() {
 		super("tokencreate");
