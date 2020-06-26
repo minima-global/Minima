@@ -45,12 +45,12 @@ public class SHA256Tests extends DigestTest
         // 1 million 'a'
         static private String  million_a_digest = "cdc76e5c9914fb9281a1c7e284d73e67f1809a48a497200e046d39ccc7112cd0";
     
-        public void performTest()
-        {
-            super.performTest();
+        // public void performTest()
+        // {
+        //     super.performTest();
     
-            millionATest(million_a_digest);
-        }
+        //     millionATest(million_a_digest);
+        // }
     
         protected Digest cloneDigest(Digest digest)
         {
@@ -101,7 +101,10 @@ public class SHA256Tests extends DigestTest
         millionATest(million_a_digest);
     }
 
-    @Test
+    @Test 
+    public void testPerformTest() {
+        performTest();
+    }
 
     public void testRunSHA256Variants() {
         String[] expected = messages;

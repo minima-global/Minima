@@ -129,12 +129,12 @@ public abstract class DigestTest {
 
         digest.update(input, input.length/2, input.length - input.length/2);
         digest.doFinal(resBuf, 0);
-        try {
-            assertTrue(" memo vector test should match on " + expected + " resBuf:" + resBuf,
-            results[results.length - 1].equals(new String(BaseConverter.encode16(resBuf))));
 
-        } catch (ComparisonFailure failure) {
-            System.out.println("Expected: " + new String(BaseConverter.encode16(resBuf)));
+        try {
+            assertArrayEquals("memoVector should find expected value",
+                    expected, resBuf);
+        
+        } catch (ArrayComparisonFailure failure) {
             System.out.println("Test failed: " + failure.getMessage());
             assertFalse("test should not fail:" + failure.getMessage(), true);
         }
@@ -143,31 +143,26 @@ public abstract class DigestTest {
 
         digest.update(input, input.length/2, input.length - input.length/2);
         digest.doFinal(resBuf, 0);
+
         try {
-
-            assertTrue(" should equal " + expected + " resBuf:" + resBuf, !expected.equals(resBuf));
-            assertTrue(" memo reset vector test should match on " + expected + " resBuf:" + resBuf,
-            results[results.length - 1].equals(new String(BaseConverter.encode16(resBuf))));
-
-        } catch (ComparisonFailure failure) {
-            System.out.println("Expected: " + new String(BaseConverter.encode16(resBuf)));
+            assertArrayEquals("testClone should find expected value",
+                    expected, resBuf);
+        
+        } catch (ArrayComparisonFailure failure) {
             System.out.println("Test failed: " + failure.getMessage());
             assertFalse("test should not fail:" + failure.getMessage(), true);
-        }
-       
+        }       
 
         Digest md = (Digest)copy2;
 
         md.update(input, input.length/2, input.length - input.length/2);
         md.doFinal(resBuf, 0);
+
         try {
-
-            assertTrue(" should equal " + expected + " resBuf:" + resBuf, !expected.equals(resBuf));
-            assertTrue(" memo copy vector test should match on " + expected + " resBuf:" + resBuf,
-            results[results.length - 1].equals(new String(BaseConverter.encode16(resBuf))));
-
-        } catch (ComparisonFailure failure) {
-            System.out.println("Expected: " + new String(BaseConverter.encode16(resBuf)));
+            assertArrayEquals("testClone should find expected value",
+                    expected, resBuf);
+        
+        } catch (ArrayComparisonFailure failure) {
             System.out.println("Test failed: " + failure.getMessage());
             assertFalse("test should not fail:" + failure.getMessage(), true);
         }
@@ -183,25 +178,21 @@ public abstract class DigestTest {
 
         digest.update(input, input.length/2, input.length - input.length/2);
         digest.doFinal(resBuf, 0);
-        try {
 
-            assertTrue(" should equal " + expected + " resBuf:" + resBuf, !expected.equals(resBuf));
-            assertTrue(" clone vector test should match on " + expected + " resBuf:" + resBuf,
-            results[results.length - 1].equals(new String(BaseConverter.encode16(resBuf))));
-
-        } catch (ComparisonFailure failure) {
-            System.out.println("Expected: " + new String(BaseConverter.encode16(resBuf)));
-            System.out.println("Test failed: " + failure.getMessage());
-            assertFalse("test should not fail:" + failure.getMessage(), true);
-        }
+            try {
+                assertArrayEquals("testClone should find expected value",
+                        expected, resBuf);
+            
+            } catch (ArrayComparisonFailure failure) {
+                System.out.println("Test failed: " + failure.getMessage());
+                assertFalse("test should not fail:" + failure.getMessage(), true);
+            }
 
         d.update(input, input.length/2, input.length - input.length/2);
         d.doFinal(resBuf, 0);
         try {
-
-            assertTrue(" should equal " + expected + " resBuf:" + resBuf, !expected.equals(resBuf));
-            assertTrue(" second clone vector test should match on " + expected + " resBuf:" + resBuf,
-            results[results.length - 1].equals(new String(BaseConverter.encode16(resBuf))));
+            assertArrayEquals("testClone should find expected value",
+            expected, resBuf);
 
         } catch (ComparisonFailure failure) {
             System.out.println("Expected: " + new String(BaseConverter.encode16(resBuf)));
@@ -231,15 +222,25 @@ public abstract class DigestTest {
     {
         digest.update(input, 0, input.length);
         digest.doFinal(resBuf, 0);
+
         try {
-
-            assertTrue(" Vector " + count + " should equal " + expected + " resBuf:" + resBuf, !expected.equals(resBuf));
-
-        } catch (ComparisonFailure failure) {
-            System.out.println("Expected: " + new String(BaseConverter.encode16(resBuf)));
+            assertArrayEquals(" Vector " + count + " not matching",
+                    expected, resBuf);
+        } catch (ArrayComparisonFailure failure) {
             System.out.println("Test failed: " + failure.getMessage());
             assertFalse("test should not fail:" + failure.getMessage(), true);
         }
+
+        // try {
+
+        //     assertTrue(" Vector " + count + " should equal " + expected + " resBuf:" + resBuf,
+        //      !expected.equals(resBuf));
+
+        // } catch (ComparisonFailure failure) {
+        //     System.out.println("Expected: " + new String(BaseConverter.encode16(resBuf)));
+        //     System.out.println("Test failed: " + failure.getMessage());
+        //     assertFalse("test should not fail:" + failure.getMessage(), true);
+        // }
         // if (!expected.equals(resBuf))
         // {
         //     fail("Vector " + count + " failed got " + new String(BaseConverter.encode16(resBuf)));
@@ -257,7 +258,7 @@ public abstract class DigestTest {
         digest.update(input, 0, input.length);
         digest.doFinal(resBuf, 11);
         try {
-            assertArrayEquals(" Offset " + count + " test should match hash on " + expected + " 64ka" + resBuf,
+            assertArrayEquals(" Offset " + count + " test should match hash on  64ka",
             Arrays.copyOfRange(resBuf, 11, resBuf.length), expected);
 
         } catch (ArrayComparisonFailure failure) {
@@ -265,10 +266,6 @@ public abstract class DigestTest {
             System.out.println("Test failed: " + failure.getMessage());
             assertFalse("test should not fail:" + failure.getMessage(), true);
         }
-        // if (!areEqual(Arrays.copyOfRange(resBuf, 11, resBuf.length), expected))
-        // {
-        //     fail("Offset " + count + " failed got " + new String(BaseConverter.encode16(resBuf)));
-        // }
     }
 
     protected abstract Digest cloneDigest(Digest digest);
