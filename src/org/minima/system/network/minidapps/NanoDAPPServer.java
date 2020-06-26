@@ -19,6 +19,7 @@ import org.minima.system.network.minidapps.hexdata.indexhtml;
 import org.minima.system.network.minidapps.hexdata.installdapphtml;
 import org.minima.system.network.minidapps.hexdata.minidappscss;
 import org.minima.system.network.minidapps.hexdata.tilegreyjpeg;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
@@ -31,6 +32,13 @@ import org.minima.utils.nanohttpd.protocols.http.response.Status;
 public class NanoDAPPServer extends NanoHTTPD{
 
 	DAPPManager mDAPPManager;
+
+	/**
+	 * Store the current page and MiniDAPP list..
+	 * So you don't recreate it EVERY time..
+	 */
+	String mCurrentIndex     = "**";
+	String mCurrentMiniDAPPS = "**";
 	
 	public NanoDAPPServer(int zPort, DAPPManager zDAPPManager) {
 		super(zPort);
@@ -220,10 +228,20 @@ public class NanoDAPPServer extends NanoHTTPD{
 	
     
     public String createMiniDAPPList() throws Exception {
-		StringBuilder list = new StringBuilder();
-		
+		//get the current MIniDAPPS
 		JSONArray alldapps = mDAPPManager.getMiniDAPPS();
 		
+		//Check if there is a change
+		String alldappstr = alldapps.toString();
+		if(alldappstr.equals(mCurrentMiniDAPPS)) {
+			return mCurrentIndex;
+		}
+		
+		//Store it..
+		mCurrentMiniDAPPS = alldappstr;
+		
+		//Build it..
+		StringBuilder list = new StringBuilder();
 		list.append("<table width=100%>");
 		
 		int len = alldapps.size();
@@ -274,7 +292,9 @@ public class NanoDAPPServer extends NanoHTTPD{
 		
 		list.append("</table>");
 		
-		return list.toString();
+		mCurrentIndex = list.toString();
+		
+		return mCurrentIndex;
 	}
 	
     public byte[] getFileBytes(String zFile) throws IOException {
