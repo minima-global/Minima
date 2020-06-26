@@ -19,13 +19,11 @@ public class SHA256Tests extends DigestTest
     
         // SHA256Tests(Digest digest, String[] input, String[] results) {
         //     super(digest, input, results);
-        //     // TODO Auto-generated constructor stub
+        
         // }
 
-        SHA256Tests(Digest digest, String[] input, String[] results) {
-            
-            super(digest, input, results);
-            // TODO Auto-generated constructor stub
+        public SHA256Tests() {
+            super(new SHA256Digest(), messages, digests);            
         }
 
         private static String[] messages =
@@ -46,14 +44,6 @@ public class SHA256Tests extends DigestTest
         
         // 1 million 'a'
         static private String  million_a_digest = "cdc76e5c9914fb9281a1c7e284d73e67f1809a48a497200e046d39ccc7112cd0";
-    
-  public void SHA256Test(){
-
-            SHA256Digest sha = new SHA256Digest();
-            // super(sha, messages, digests);
-            new SHA256Tests(sha, messages, digests);
-
-        }
     
         public void performTest()
         {
