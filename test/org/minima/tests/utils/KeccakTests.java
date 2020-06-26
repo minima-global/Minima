@@ -1,23 +1,14 @@
 package org.minima.tests.utils;
 
-// package org.bouncycastle.crypto.test;
-
-import org.minima.utils.digest.Digest;
-// import org.bouncycastle.crypto.Mac;
 import org.minima.utils.digest.KeccakDigest;
-// import org.bouncycastle.crypto.macs.HMac;
-import org.minima.objects.keys.BaseKey;
-import org.minima.system.input.functions.keys;
-import org.minima.objects.base.MiniData;
 
 import static org.junit.Assert.assertArrayEquals;
+
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
 import org.junit.internal.ArrayComparisonFailure;
-import org.minima.kissvm.functions.cast.HEX;
-import org.minima.utils.digest.Arrays;
 import org.minima.utils.BaseConverter;
 
 /**
@@ -68,119 +59,64 @@ public class KeccakTests {
             "dc44d4f4d36b07ab5fc04016cbe53548e5a7778671c58a43cb379fd00c06719b8073141fc22191ffc3db5f8b8983ae8341fa37f18c1c969664393aa5ceade64e",
             "3e122edaf37398231cfaca4c7c216c9d66d5b899ec1d7ac617c40c7261906a45fc01617a021e5da3bd8d4182695b5cb785a28237cbb167590e34718e56d8aab8" };
 
-    // test vectors from http://www.di-mgt.com.au/hmac_sha3_testvectors.html
-    final static byte[][] macKeys =
-    {
-        BaseConverter.decode16("0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b"),
-        BaseConverter.decode16("4a656665"),
-        BaseConverter.decode16("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"),
-        BaseConverter.decode16("0102030405060708090a0b0c0d0e0f10111213141516171819"),
-        BaseConverter.decode16("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-    +
-    "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" +
-    "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" +
-    "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" +
-    "aaaaaa"),
-    BaseConverter.decode16("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-    +
-    "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" +
-    "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" +
-    "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" +
-    "aaaaaa"),
-    BaseConverter.decode16("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-    +
-    "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" +
-    "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" +
-    "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" +
-    "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
-    };
-
-    final static String[] macData = { "4869205468657265", "7768617420646f2079612077616e7420666f72206e6f7468696e673f",
-            "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd" + "dddddddddddddddddddddddddddddddddddd",
-            "cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd" + "cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd",
-            "54657374205573696e67204c6172676572205468616e20426c6f636b2d53697a"
-                    + "65204b6579202d2048617368204b6579204669727374",
-            "5468697320697320612074657374207573696e672061206c6172676572207468"
-                    + "616e20626c6f636b2d73697a65206b657920616e642061206c61726765722074"
-                    + "68616e20626c6f636b2d73697a6520646174612e20546865206b6579206e6565"
-                    + "647320746f20626520686173686564206265666f7265206265696e6720757365"
-                    + "642062792074686520484d414320616c676f726974686d2e",
-            "5468697320697320612074657374207573696e672061206c6172676572207468"
-                    + "616e20626c6f636b2d73697a65206b657920616e642061206c61726765722074"
-                    + "68616e20626c6f636b2d73697a6520646174612e20546865206b6579206e6565"
-                    + "647320746f20626520686173686564206265666f7265206265696e6720757365\n"
-                    + "642062792074686520484d414320616c676f726974686d2e" };
-
-    final static String[] mac224 = { "b73d595a2ba9af815e9f2b4e53e78581ebd34a80b3bbaac4e702c4cc",
-            "e824fec96c074f22f99235bb942da1982664ab692ca8501053cbd414",
-            "770df38c99d6e2bacd68056dcfe07d4c89ae20b2686a6185e1faa449",
-            "305a8f2dfb94bad28861a03cbc4d590febe775c58cb4961c28428a0b",
-            "e7a52dfa45f95a217c100066b239aa8ad519be9b35d667268b1b57ff",
-            "ba13009405a929f398b348885caa5419191bb948ada32194afc84104",
-            "92649468be236c3c72c189909c063b13f994be05749dc91310db639e" };
-
-    final static String[] mac256 = { "9663d10c73ee294054dc9faf95647cb99731d12210ff7075fb3d3395abfb9821",
-            "aa9aed448c7abc8b5e326ffa6a01cdedf7b4b831881468c044ba8dd4566369a1",
-            "95f43e50f8df80a21977d51a8db3ba572dcd71db24687e6f86f47c1139b26260",
-            "6331ba9b4af5804a68725b3663eb74814494b63c6093e35fb320a85d507936fd",
-            "b4d0cdee7ec2ba81a88b86918958312300a15622377929a054a9ce3ae1fac2b6",
-            "1fdc8cb4e27d07c10d897dec39c217792a6e64fa9c63a77ce42ad106ef284e02",
-            "fdaa10a0299aecff9bb411cf2d7748a4022e4a26be3fb5b11b33d8c2b7ef5484" };
-
-    final static String[] mac384 = {
-            "892dfdf5d51e4679bf320cd16d4c9dc6f749744608e003add7fba894acff87361efa4e5799be06b6461f43b60ae97048",
-            "5af5c9a77a23a6a93d80649e562ab77f4f3552e3c5caffd93bdf8b3cfc6920e3023fc26775d9df1f3c94613146ad2c9d",
-            "4243c29f2201992ff96441e3b91ff81d8c601d706fbc83252684a4bc51101ca9b2c06ddd03677303c502ac5331752a3c",
-            "b730724d3d4090cda1be799f63acbbe389fef7792fc18676fa5453aab398664650ed029c3498bbe8056f06c658e1e693",
-            "d62482ef601d7847439b55236e9679388ffcd53c62cd126f39be6ea63de762e26cd5974cb9a8de401b786b5555040f6f",
-            "4860ea191ac34994cf88957afe5a836ef36e4cc1a66d75bf77defb7576122d75f60660e4cf731c6effac06402787e2b9",
-            "fe9357e3cfa538eb0373a2ce8f1e26ad6590afdaf266f1300522e8896d27e73f654d0631c8fa598d4bb82af6b744f4f5" };
-
-    final static String[] mac512 = {
-            "8852c63be8cfc21541a4ee5e5a9a852fc2f7a9adec2ff3a13718ab4ed81aaea0b87b7eb397323548e261a64e7fc75198f6663a11b22cd957f7c8ec858a1c7755",
-            "c2962e5bbe1238007852f79d814dbbecd4682e6f097d37a363587c03bfa2eb0859d8d9c701e04cececfd3dd7bfd438f20b8b648e01bf8c11d26824b96cebbdcb",
-            "eb0ed9580e0ec11fc66cbb646b1be904eaff6da4556d9334f65ee4b2c85739157bae9027c51505e49d1bb81cfa55e6822db55262d5a252c088a29a5e95b84a66",
-            "b46193bb59f4f696bf702597616da91e2a4558a593f4b015e69141ba81e1e50ea580834c2b87f87baa25a3a03bfc9bb389847f2dc820beae69d30c4bb75369cb",
-            "d05888a6ebf8460423ea7bc85ea4ffda847b32df32291d2ce115fd187707325c7ce4f71880d91008084ce24a38795d20e6a28328a0f0712dc38253370da3ebb5",
-            "2c6b9748d35c4c8db0b4407dd2ed2381f133bdbd1dfaa69e30051eb6badfcca64299b88ae05fdbd3dd3dd7fe627e42e39e48b0fe8c7f1e85f2dbd52c2d753572",
-            "6adc502f14e27812402fc81a807b28bf8a53c87bea7a1df6256bf66f5de1a4cb741407ad15ab8abc136846057f881969fbb159c321c904bfb557b77afb7778c8" };
-
-    // final static byte[] truncData = BaseConverter.decode16("546573742057697468205472756e636174696f6e");
-    // final static byte[] trunc224 = BaseConverter.decode16("f52bbcfd654264e7133085c5e69b72c3");
-    // final static byte[] trunc256 = BaseConverter.decode16("745e7e687f8335280d54202ef13cecc6");
-    // final static byte[] trunc384 = BaseConverter.decode16("fa9aea2bc1e181e47cbb8c3df243814d");
-    // final static byte[] trunc512 = BaseConverter.decode16("04c929fead434bba190dacfa554ce3f5");
-    // final static byte[] xtremeData = BaseConverter.decode16(
-    //         "61626364656667686263646566676869636465666768696a6465666768696a6b65666768696a6b6c666768696a6b6c6d6768696a6b6c6d6e68696a6b6c6d6e6f");
-
     @Test
-    public void testDigest() {
-        byte byt = 2;
+    public void testKeccakDigest() {
+        byte byt = 9;
+        int bitLength = 160;
         byte[] bytArray = { 1, 0, 1, 0 };
         KeccakDigest i = new KeccakDigest();
         assertNotNull(i);
         KeccakDigest j = new KeccakDigest(i);
         assertNotNull(j);
+        KeccakDigest k = new KeccakDigest(512);
+        k.getByteLength();
+        KeccakDigest l = new KeccakDigest(k);
+        byte[] hash = new byte[k.getDigestSize()];
+        System.out.println(
+                "should be equal k:" + k.getByteLength() + " " + k.getDigestSize() + " " + k.getAlgorithmName());
+        k.update(bytArray, 9, 0);
+        k.update(bytArray, 0, 0);
+        k.update(byt);
+        k.update(byt);
+        k.update(byt);
+        k.update(byt);
+        k.update(byt);
+        k.update(byt);
+        k.update(byt);
+        k.update(byt);
+        k.update(byt);
 
-        assertNotNull(j.getAlgorithmName());
-        System.out.println("String s = j.getAlgorithmName(); j:" + j + " resolves as " + j.getAlgorithmName());
-        assertNotNull(i.getDigestSize());
-        System.out.println("i.getDigestSize()); i:" + i + " resolves as " + i.getDigestSize());
+        byte[] k64 = new byte[1024 * 64];
 
+        for (int z = 0; z != 100; z++) {
+            k64[z] = (byte) 'q';
+            k.update(k64, 0, 9);
+        }
+        k.update(byt);
+        k.update(byt);
+        k.update(byt);
+        k.update(byt);
+        k.update(byt);
+        k.update(byt);
+        k.update(byt);
+        k.update(byt);
+        k.update(byt);
+        k.update(byt);
+        k.doFinal(hash, 0);
+
+        // k.doFinal(bytArray, bitLength, byt, 2);
+        System.out.println(
+                "should be equal k:" + k.getByteLength() + " " + k.getDigestSize() + " " + k.getAlgorithmName());
+
+        // assertTrue("should be equal ", k.getDigestSize() == (512));
+
+        // KeccakDigest.init(160)
         i.update(byt);
         assertNotNull(i.getDigestSize());
-        System.out.println(
-                "before j:" + j + " resolves as " + j.getByteLength() + " " + j.getDigestSize() + " " + bytArray);
-        for (int x = 0; x < bytArray.length; x++) {
-            System.out.print(bytArray[x] + " ");
-        }
-        j.update(bytArray, 1, 2);
-        System.out.println("after j.update(bytArray, 2, 2) j:" + j + " resolves as " + j.getByteLength() + " "
-                + j.getDigestSize() + " " + bytArray);
-        assertNotNull(j);
-        for (int x = 0; x < bytArray.length; x++) {
-            System.out.print(bytArray[x] + " ");
-        }
+        KeccakDigest g = new KeccakDigest();
+
+        assertNotNull(k.getDigestSize());
+        // i.update(bytArray, 8, 3);
         j.reset();
 
         i.toString();
@@ -190,15 +126,11 @@ public class KeccakTests {
 
     }
 
-    @Test
-    public void testNewDigest() {
+    public void testDigest(KeccakDigest digest, String[] input) {
 
-        String[] expected = digests224;
-        KeccakDigest i = new KeccakDigest();
-        BaseConverter b = new BaseConverter();
+        String[] expected = input;
+        KeccakDigest i = new KeccakDigest(digest);
         byte[] hash = new byte[i.getDigestSize()];
-        // System.out.println("Keccak value now byte-length:" + i.getByteLength() + "
-        // digest: " + i.getDigestSize() + "hash:" + i.hashCode());
 
         for (int j = 0; j != messages.length; j++) {
             if (messages.length != 0) {
@@ -207,54 +139,33 @@ public class KeccakTests {
                 i.update(data, 0, data.length);
             }
             i.doFinal(hash, 0);
-            // System.out.println("Keccak value now byte-length:" + i.getByteLength() + "
-            // digest: " + i.getDigestSize() + "hash:" + i.hashCode());
-            
-            try { 
-               assertArrayEquals(
-                   " keccak first round should match hash on " + i.getAlgorithmName() + " index " + j,
-                   BaseConverter.decode16(expected[j]), 
-                    hash);
-            } catch(ArrayComparisonFailure failure) {
+
+            try {
+                assertArrayEquals(" keccak first round should match hash on " + i.getAlgorithmName() + " index " + j,
+                        BaseConverter.decode16(expected[j]), hash);
+            } catch (ArrayComparisonFailure failure) {
                 System.out.println("Test failed: " + failure.getMessage());
                 assertFalse("test should not fail:" + failure.getMessage(), true);
             }
-            // if (!Arrays.areEqual(b.decode16(messages[j]), hash)) {
-            //     assertNotNull(i.getAlgorithmName());
-            //     System.out.println("in first test condition");
-            //     System.out.println("Keccak mismatch on " + i.getAlgorithmName() + " index " + j);
-            // } else if (Arrays.areEqual(b.decode16(messages[j]), hash)){
-            //     System.out.println("array is equal");
-            // }
         }
         byte[] k64 = new byte[1024 * 64];
 
         for (int k = 0; k != k64.length; k++) {
-            k64[k] = (byte)'a';
+            k64[k] = (byte) 'a';
         }
 
         i.update(k64, 0, k64.length);
 
         i.doFinal(hash, 0);
 
-        try { 
-            assertArrayEquals(
-                " keccak 64k a single should match hash on " + i.getAlgorithmName() + " 64k a",
-                BaseConverter.decode16(expected[messages.length]), 
-                 hash);
-         } catch(ArrayComparisonFailure failure) {
-             System.out.println("Test failed: " + failure.getMessage());
-             assertFalse("test should not fail:" + failure.getMessage(), true);
-         }
+        try {
+            assertArrayEquals(" keccak 64k a should match hash on " + i.getAlgorithmName() + " 64ka" + i,
+                    BaseConverter.decode16(expected[messages.length]), hash);
 
-        // if (!Arrays.areEqual(b.decode16(digests288[messages.length]), hash)) {
-        //     System.out.println("k64-1 array is not equal");
-
-        //     assertNotNull(i.getAlgorithmName());
-        //     System.out.println("New Equals- Keccak mismatch on " + i.getAlgorithmName() + " 64k a");
-        // } else if (Arrays.areEqual(b.decode16(digests288[messages.length]), hash)){
-        //     System.out.println("k64-1 array is equal");
-        // }
+        } catch (ArrayComparisonFailure failure) {
+            System.out.println("Test failed: " + failure.getMessage());
+            assertFalse("test should not fail:" + failure.getMessage(), true);
+        }
 
         for (int l = 0; l != k64.length; l++) {
             i.update((byte) 'a');
@@ -262,12 +173,13 @@ public class KeccakTests {
 
         i.doFinal(hash, 0);
 
-        if (!Arrays.areEqual(b.decode16(digests288[messages.length]), hash)) {
-            System.out.println("k64-2 array is not equal");
-            assertNotNull(i.getAlgorithmName());
-            System.out.println("Keccak mismatch on " + i.getAlgorithmName() + " 64k a");
-        }else if (Arrays.areEqual(b.decode16(digests288[messages.length]), hash)){
-            System.out.println("k64-2 array is equal");
+        try {
+            assertArrayEquals(" keccak 64k a single should match hash on " + i.getAlgorithmName() + " 64ka" + i,
+                    BaseConverter.decode16(expected[messages.length]), hash);
+
+        } catch (ArrayComparisonFailure failure) {
+            System.out.println("Test failed: " + failure.getMessage());
+            assertFalse("test should not fail:" + failure.getMessage(), true);
         }
 
         for (int m = 0; m != k64.length; m++) {
@@ -277,13 +189,13 @@ public class KeccakTests {
         i.update(k64, 0, k64.length);
 
         i.doFinal(hash, 0);
+        try {
+            assertFalse(" keccak 64k alpha should not match hash on ",
+                    BaseConverter.decode16(expected[messages.length] + 1).equals(hash));
 
-        if (!Arrays.areEqual(b.decode16(digests288[messages.length]+ 1), hash)) {
-            System.out.println("k64-3 array is not equal");
-            assertNotNull(i.getAlgorithmName());
-            System.out.println("Keccak mismatch on " + i.getAlgorithmName() + " 64k alpha");
-        } else if (Arrays.areEqual(b.decode16(digests288[messages.length] + 1), hash)){
-            System.out.println("k64-3 array is equal");
+        } catch (ArrayComparisonFailure failure) {
+            System.out.println("Test failed: " + failure.getMessage());
+            assertFalse("test should not fail:" + failure.getMessage(), true);
         }
 
         for (int n = 0; n != 64; n++) {
@@ -292,18 +204,16 @@ public class KeccakTests {
         }
 
         i.doFinal(hash, 0);
+        try {
+            assertFalse(" keccak 64k chunked alpha should not match hash on ",
+                    BaseConverter.decode16(expected[messages.length] + 1).equals(hash));
 
-        if (!Arrays.areEqual(b.decode16(digests288[messages.length]+ 1), hash)) {
-            System.out.println("k64-4 array is not equal");
-            assertNotNull(i.getAlgorithmName());
-            System.out.println("Keccak mismatch on " + i.getAlgorithmName() + " 64k chunked alpha");
-        } else if (Arrays.areEqual(b.decode16(digests288[messages.length] + 1), hash)){
-            System.out.println("k64-4 array is equal");
+        } catch (ArrayComparisonFailure failure) {
+            System.out.println("Test failed: " + failure.getMessage());
+            assertFalse("test should not fail:" + failure.getMessage(), true);
         }
 
-
         i.doFinal(hash, 0);
-        assertNotNull(i.getByteLength());
 
         // byte[] newHash = new byte[64];
 
@@ -340,88 +250,24 @@ public class KeccakTests {
             byte[] buf = new byte[2 * kd.getDigestSize()];
             kd.doFinal(buf, i);
 
-            if (!Arrays.areEqual(cmp, buf)) {
-                System.out.println("cmp + buff arrays not equal");
-                assertNotNull(kd.getAlgorithmName());
-                System.out.println("Keccak offset doFinal on " + kd.getAlgorithmName());
-            } 
+            try {
+                assertArrayEquals(" keccak 64k a single should match hash on " + kd.getAlgorithmName() + " 64ka" + i,
+                        cmp, buf);
+
+            } catch (ArrayComparisonFailure failure) {
+                System.out.println("Test failed: " + failure.getMessage());
+                assertFalse("test should not fail:" + failure.getMessage(), true);
+            }
         }
     }
 
-    // @Test
+    @Test
 
-    // public void testMac() {
-    // // Mac mac = new HMac(digest);
-    // // Mac mac = new HMac(digest);
-    // BaseKey bk;
-    // KeccakDigest kb = new KeccakDigest();
-    // BaseConverter bc = new BaseConverter();
-    // byte[] hash = new byte[kb.getDigestSize()];
-    // MiniData md = new MiniData(macData[0]);
-    // // byte[][] bytesArray = new byte[64][64];
-    // for (int i = 0; i != hash.length; i++)
-    // {
-    // // byte[] data = b.decode16(digests288[j]);
-    // // mac.init(new KeyParameter(keys[i]));
-
-    // bk.getPublicKey(hash[i]);
-
-    // byte[] mData = Hex.decode(data[i]);
-
-    // mac.update(mData, 0, mData.length);
-
-    // byte[] macV = new byte[mac.getMacSize()];
-
-    // mac.doFinal(macV, 0);
-
-    // if (!Arrays.areEqual(Hex.decode(expected[i]), macV))
-    // {
-    // fail("Keccak HMAC mismatch on " + digest.getAlgorithmName());
-    // }
-    // }
-
-    // mac = new HMac(digest);
-
-    // mac.init(truncKey);
-
-    // mac.update(truncData, 0, truncData.length);
-
-    // byte[] macV = new byte[mac.getMacSize()];
-
-    // mac.doFinal(macV, 0);
-
-    // for (int i = 0; i != truncExpected.length; i++)
-    // {
-    // if (macV[i] != truncExpected[i])
-    // {
-    // fail("mismatch on truncated HMAC for " + digest.getAlgorithmName());
-    // }
-    // }
-
-    // }
-
-    // private void testMac(Digest digest, byte[][] keys, String[] data, String[]
-    // expected, byte[] truncExpected)
-
-    // private void testDigestDoFinal(Digest digest)
-    // {
-    // byte[] hash = new byte[digest.getDigestSize()];
-    // digest.doFinal(hash, 0);
-
-    // for (int i = 0; i <= digest.getDigestSize(); ++i)
-    // {
-    // byte[] cmp = new byte[2 * digest.getDigestSize()];
-    // System.arraycopy(hash, 0, cmp, i, hash.length);
-
-    // byte[] buf = new byte[2 * digest.getDigestSize()];
-    // digest.doFinal(buf, i);
-
-    // if (!Arrays.areEqual(cmp, buf))
-    // {
-    // fail("Keccak offset doFinal on " + digest.getAlgorithmName());
-    // }
-    // }
-    // }
-
+    public void testRunKeccakVariants() {
+        testDigest(new KeccakDigest(), digests288);
+        testDigest(new KeccakDigest(224), digests224);
+        testDigest(new KeccakDigest(256), digests256);
+        testDigest(new KeccakDigest(384), digests384);
+    }
 
 }
