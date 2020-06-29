@@ -520,6 +520,8 @@ public class ConsensusUser extends ConsensusProcessor {
 			//TxPOW DB
 			TxPowDB tdb = getMainDB().getTxPowDB();
 			
+			NetworkHandler nethandler = getConsensusHandler().getMainHandler().getNetworkHandler();
+			
 			//Check the MEMPOOL transactions..
 			ArrayList<TxPOWDBRow> unused = tdb.getAllUnusedTxPOW();
 			int tested = unused.size();
@@ -535,7 +537,6 @@ public class ConsensusUser extends ConsensusProcessor {
 					//Remove all..
 					remove.add(txpow.getTxPowID());
 				}else{
-					
 					//Check it..
 					boolean sigsok = true;
 					boolean trxok  = true;
@@ -547,42 +548,41 @@ public class ConsensusUser extends ConsensusProcessor {
 					//Check the basics..
 					if(!sigsok || !trxok) {
 						remove.add(txpow.getTxPowID());
-					}else {
-						NetworkHandler nethandler = getConsensusHandler().getMainHandler().getNetworkHandler();
-						//Check All..
-						if(txpow.isBlock()) {
-							MiniData parent = txpow.getParentID();
-							if(tdb.findTxPOWDBRow(parent) == null) {
+					}
+					
+					//Check All..
+					if(txpow.isBlock()) {
+						MiniData parent = txpow.getParentID();
+						if(tdb.findTxPOWDBRow(parent) == null) {
+							Message msg  = new Message(NetClient.NETCLIENT_SENDTXPOWREQ)
+												.addObject("txpowid", parent);
+							Message netw = new Message(NetworkHandler.NETWORK_SENDALL)
+												.addObject("message", msg);
+							
+							//Post it..
+							nethandler.PostMessage(netw);
+							
+							//Add to out list
+							requested.add(parent.to0xString());
+						}
+						
+						//Get all the messages in the block..
+						ArrayList<MiniData> txns = txpow.getBlockTransactions();
+						for(MiniData txn : txns) {
+							if(tdb.findTxPOWDBRow(txn) == null) {
 								Message msg  = new Message(NetClient.NETCLIENT_SENDTXPOWREQ)
-													.addObject("txpowid", parent);
+										.addObject("txpowid", txn);
 								Message netw = new Message(NetworkHandler.NETWORK_SENDALL)
-													.addObject("message", msg);
+										.addObject("message", msg);
 								
 								//Post it..
 								nethandler.PostMessage(netw);
 								
 								//Add to out list
-								requested.add(parent.to0xString());
+								requested.add(txn.to0xString());
 							}
-							
-							//Get all the messages in the block..
-							ArrayList<MiniData> txns = txpow.getBlockTransactions();
-							for(MiniData txn : txns) {
-								if(tdb.findTxPOWDBRow(txn) == null) {
-									Message msg  = new Message(NetClient.NETCLIENT_SENDTXPOWREQ)
-											.addObject("txpowid", txn);
-									Message netw = new Message(NetworkHandler.NETWORK_SENDALL)
-											.addObject("message", msg);
-									
-									//Post it..
-									nethandler.PostMessage(netw);
-									
-									//Add to out list
-									requested.add(txn.to0xString());
-								}
-							}
-						}		
-					}
+						}
+					}		
 				}
 			}
 			
