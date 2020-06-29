@@ -78,7 +78,7 @@ public class ConsensusPrint extends ConsensusProcessor {
 	 * The Old Status that was sent to the listeners..
 	 */
 	String mOldWebSocketStatus = "";
-	
+	String mOldIBD = "";
 	
 	public ConsensusPrint(MinimaDB zDB, ConsensusHandler zHandler) {
 		super(zDB, zHandler);
@@ -986,14 +986,19 @@ public class ConsensusPrint extends ConsensusProcessor {
 			status.put("mempooltxn", unused.size());
 			status.put("mempoolcoins", getMainDB().getMempoolCoins().size());
 			
-			//CHain details..
+			//Chain details..
 			status.put("chainlength", getMainDB().getMainTree().getAsList().size());
 			status.put("chainspeed", getMainDB().getMainTree().getChainSpeed());
 			status.put("chainweight", root.getTotalWeight().toString());
 			
-			int ibd = getMainDB().getIntroSyncSize();
-//			status.put("IBD", ibd);
-			status.put("IBD", formatSize(ibd));
+			//Use the cached Version  - this is a slow operation
+			if(!mOldIBD.equals("") && !zMessage.exists("hard")) {
+				status.put("IBD", mOldIBD);
+			}else {
+				int ibd = getMainDB().getIntroSyncSize();
+				mOldIBD = formatSize(ibd);
+				status.put("IBD", mOldIBD);	
+			}
 			
 			//Add the network connections
 			ArrayList<NetClient> nets = main.getNetworkHandler().getNetClients();
@@ -1010,8 +1015,6 @@ public class ConsensusPrint extends ConsensusProcessor {
 				//Store for later.. 
 				mOldWebSocketStatus = statusstring;
 				
-//				MinimaLogger.log("NEW Status : "+mOldWebSocketBalance);
-				
 				//Send this to the WebSocket..
 				JSONObject newblock = new JSONObject();
 				newblock.put("event","newblock");
@@ -1021,9 +1024,6 @@ public class ConsensusPrint extends ConsensusProcessor {
 				Message msg = new Message(NetworkHandler.NETWORK_WS_NOTIFY);
 				msg.addString("message", newblock.toString());
 				getConsensusHandler().getMainHandler().getNetworkHandler().PostMessage(msg);
-				
-				//Notofy the native Listeners..
-//				getConsensusHandler().updateListeners(zMessage);
 			}
 			
 		}else if(zMessage.isMessageType(CONSENSUS_NETWORK)){
