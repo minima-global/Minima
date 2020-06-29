@@ -212,7 +212,7 @@ public class ConsensusHandler extends SystemHandler {
 	@Override
 	protected void processMessage(Message zMessage) throws Exception {
 		/**
-		 * Main processing function.. can be called recursively..
+		 * Main processing function.. 
 		 */
 		if ( zMessage.isMessageType(CONSENSUS_PROCESSTXPOW) ) {
 			//A TXPOW - that has been checked already and added to the DB
@@ -243,10 +243,8 @@ public class ConsensusHandler extends SystemHandler {
 			
 			//MemPool Flush Counter... 
 			if(txpow.isBlock()) {
-				mFlushCounter++;
-			
-				//Every 10 minutes or so check if you have all the parents and txns in blocks..
-				if(mFlushCounter > 32) {
+				//Every 5 minutes or so check if you have all the parents and txns in blocks..
+				if(mFlushCounter++ > 16) {
 					mFlushCounter = 0;
 					
 					//Post a flush message.. could be stuck missing a block..
@@ -300,7 +298,8 @@ public class ConsensusHandler extends SystemHandler {
 				updateListeners(new Message(CONSENSUS_NOTIFY_BALANCE));
 				
 				//Do the balance.. Update listeners if changed..
-				PostMessage(ConsensusPrint.CONSENSUS_BALANCE);
+				Message balanceupdate = new Message(ConsensusPrint.CONSENSUS_BALANCE).addBoolean("hard", true);
+				PostMessage(balanceupdate);
 			}
 			
 			//Message for ALL the clients
