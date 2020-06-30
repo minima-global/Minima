@@ -6,6 +6,7 @@ import org.minima.utils.BaseConverter;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 
 public class BaseConverterTests {
 
@@ -24,6 +25,10 @@ public class BaseConverterTests {
         String hexNum = BaseConverter.numberToHex(8);
         String hexNumTwo = BaseConverter.numberToHex(9928);
         int backToNum = BaseConverter.hexToNumber(hexNumTwo);
+        assertNotNull(bd);
+        assertNotNull(hexNum);
+        assertNotNull(hexNumTwo);
+        assertNotNull(backToNum);
 
     }
 
