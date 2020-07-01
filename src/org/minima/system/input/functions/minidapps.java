@@ -40,10 +40,10 @@ public class minidapps extends CommandFunction {
 				
 				//And Post it..
 				Message installmsg = getResponseMessage(DAPPManager.DAPP_INSTALL);
-				msg.addObject("minidapp", minidapp);
-				
-				mDAPPManager.PostMessage(msg);
-	            
+				installmsg.addObject("minidapp", minidapp);
+				getMainHandler().getNetworkHandler().getDAPPManager().PostMessage(installmsg);
+		           
+				return;
 				
 			}else if(zInput[1].startsWith("uninstall:")) {
 			

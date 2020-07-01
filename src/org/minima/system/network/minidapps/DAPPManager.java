@@ -23,6 +23,7 @@ import java.util.zip.ZipInputStream;
 import org.minima.objects.base.MiniData;
 import org.minima.system.Main;
 import org.minima.system.SystemHandler;
+import org.minima.system.input.InputHandler;
 import org.minima.system.network.minidapps.hexdata.minimajs;
 import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
@@ -311,13 +312,14 @@ public class DAPPManager extends SystemHandler {
 			MiniData data = (MiniData) zMessage.getObject("minidapp");
 			
 			//Do we overwrite..
-			boolean overwrite = true;
+			boolean overwrite = false;
 			if(zMessage.exists("overwrite")){
 				overwrite = zMessage.getBoolean("overwrite");
 			}
 
 			//Hash it..
 			MiniData hash = Crypto.getInstance().hashObject(data, 160);
+			InputHandler.getResponseJSON(zMessage).put("UID", hash.to0xString());
 			
 			//This is the folder..
 			File alldapps = getMainHandler().getBackupManager().getMiniDAPPFolder();
@@ -325,6 +327,7 @@ public class DAPPManager extends SystemHandler {
 			//And the actual folder...
 			File dapp  = new File(alldapps,hash.to0xString());
 			if(dapp.exists() && !overwrite){
+				InputHandler.endResponse(zMessage, true, "MiniDAPP ALLREADY installed..");
 				return;
 			}
 			
@@ -375,6 +378,8 @@ public class DAPPManager extends SystemHandler {
 	        //It's done!
 			recalculateMiniDAPPS();
 		
+			InputHandler.endResponse(zMessage, true, "MiniDAPP installed..");
+			
 		}else if(zMessage.getMessageType().equals(DAPP_UNINSTALL)) {
 			
 			
