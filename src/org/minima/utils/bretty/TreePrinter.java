@@ -13,9 +13,9 @@ public class TreePrinter {
     private static void process(PrintableTreeNode current, String prefix, boolean isRoot, boolean lastInPeers, StringBuilder stringBuilder) {
         stringBuilder.append(prefix);
         if (!isRoot) {
-            stringBuilder.append((lastInPeers ? "└── " : "├── "));
+            stringBuilder.append((lastInPeers ? "### " : "### "));
         } else {
-            stringBuilder.append(" ── ");
+            stringBuilder.append(" ## ");
         }
         stringBuilder.append(current.name());
         stringBuilder.append('\n');
@@ -24,20 +24,20 @@ public class TreePrinter {
 
         String indentation = isRoot ? "    " : "    ";
         for (int i = 0; i < children.size() - 1; ++i) {
-            process(children.get(i), prefix + (lastInPeers ? indentation : "│   "), false, false, stringBuilder);
+            process(children.get(i), prefix + (lastInPeers ? indentation : "#   "), false, false, stringBuilder);
         }
 
         if (children.size() > 0) {
-            process(children.get(children.size() - 1), prefix + (lastInPeers ? indentation : "│   "), false, true, stringBuilder);
+            process(children.get(children.size() - 1), prefix + (lastInPeers ? indentation : "#   "), false, true, stringBuilder);
         }
     }
 
     private static <T> void process(T current, TreeNodeConverter<T> treeNodeConverter, String prefix, boolean isRoot, boolean lastInPeers, StringBuilder stringBuilder) {
         stringBuilder.append(prefix);
         if (!isRoot) {
-            stringBuilder.append((lastInPeers ? "└── " : "├── "));
+            stringBuilder.append((lastInPeers ? "### " : "### "));
         } else {
-            stringBuilder.append(" ── ");
+            stringBuilder.append(" ## ");
         }
         stringBuilder.append(treeNodeConverter.name(current));
         stringBuilder.append('\n');
@@ -47,11 +47,11 @@ public class TreePrinter {
         String indentation = isRoot ? "    " : "    ";
 
         for (int i = 0; i < children.size() - 1; ++i) {
-            process(children.get(i), treeNodeConverter, prefix + (lastInPeers ? indentation : "│   "), false, false, stringBuilder);
+            process(children.get(i), treeNodeConverter, prefix + (lastInPeers ? indentation : "#   "), false, false, stringBuilder);
         }
 
         if (children.size() > 0) {
-            process(children.get(children.size() - 1), treeNodeConverter, prefix + (lastInPeers ? indentation : "│   "), false, true, stringBuilder);
+            process(children.get(children.size() - 1), treeNodeConverter, prefix + (lastInPeers ? indentation : "#   "), false, true, stringBuilder);
         }
     }
 

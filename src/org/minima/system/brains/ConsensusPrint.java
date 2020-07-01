@@ -34,6 +34,7 @@ import org.minima.system.network.NetworkHandler;
 import org.minima.system.network.minidapps.DAPPManager;
 import org.minima.system.network.rpc.RPCClient;
 import org.minima.utils.Maths;
+import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
@@ -117,7 +118,6 @@ public class ConsensusPrint extends ConsensusProcessor {
 			}
 			
 			if(tree) {
-//				SimpleBlockTreePrinter treeprint = new SimpleBlockTreePrinter(getMainDB().getMainTree());
 				BlockTreePrinter treeprint = new BlockTreePrinter(getMainDB().getMainTree());
 				String treeinfo    = treeprint.printtree();
 				BlockTree maintree = getMainDB().getMainTree();
@@ -154,33 +154,26 @@ public class ConsensusPrint extends ConsensusProcessor {
 			String treeinfo = treeprint.printtree();
 	
 			BlockTree tree = getMainDB().getMainTree();
+	
+			//Now check whether they are unspent..
+			JSONObject dets = InputHandler.getResponseJSON(zMessage);
+			dets.put("tree", treeinfo);
+			dets.put("root", "( "+tree.getChainRoot().getTxPow().getBlockNumber()+" ) "+tree.getChainRoot().getTxPow().getTxPowID().to0xString());
+			dets.put("cascade", "( "+tree.getCascadeNode().getTxPow().getBlockNumber()+" ) "+tree.getCascadeNode().getTxPow().getTxPowID().to0xString());
+			dets.put("tip", "( "+tree.getChainTip().getTxPow().getBlockNumber()+" ) "+tree.getChainTip().getTxPow().getTxPowID().to0xString());
+			dets.put("length", tree.getAsList().size());
+			dets.put("speed", tree.getChainSpeed());
+			dets.put("difficulty", tree.getChainTip().getTxPow().getBlockDifficulty().to0xString());
+			dets.put("weight", tree.getChainRoot().getTotalWeight());
 			
 			//DEBUGGING
 			if(zMessage.exists("systemout")) {
-				treeinfo += "\n\nroot               : ( "+tree.getChainRoot().getTxPow().getBlockNumber()+" ) "+tree.getChainRoot().getTxPow().getTxPowID().to0xString();
-				treeinfo += "\ncascade            : ( "+tree.getCascadeNode().getTxPow().getBlockNumber()+" ) "+tree.getCascadeNode().getTxPow().getTxPowID().to0xString();
-				treeinfo += "\ntip                : ( "+tree.getChainTip().getTxPow().getBlockNumber()+" ) "+tree.getChainTip().getTxPow().getTxPowID().to0xString();
-				treeinfo += "\nlength             : "+tree.getAsList().size();
-				treeinfo += "\nSpeed              : "+tree.getChainSpeed()+" blocks / sec";
-				treeinfo += "\nCurrent Difficulty : "+tree.getChainTip().getTxPow().getBlockDifficulty().to0xString();
-				treeinfo += "\nTotal Weight       : "+tree.getChainRoot().getTotalWeight();
-
-				MinimaLogger.log(treeinfo+"\n");
-			
-			}else {
-				//Now check whether they are unspent..
-				JSONObject dets = InputHandler.getResponseJSON(zMessage);
-				dets.put("tree", treeinfo);
-				dets.put("root", "( "+tree.getChainRoot().getTxPow().getBlockNumber()+" ) "+tree.getChainRoot().getTxPow().getTxPowID().to0xString());
-				dets.put("cascade", "( "+tree.getCascadeNode().getTxPow().getBlockNumber()+" ) "+tree.getCascadeNode().getTxPow().getTxPowID().to0xString());
-				dets.put("tip", "( "+tree.getChainTip().getTxPow().getBlockNumber()+" ) "+tree.getChainTip().getTxPow().getTxPowID().to0xString());
-				dets.put("length", tree.getAsList().size());
-				dets.put("speed", tree.getChainSpeed());
-				dets.put("difficulty", tree.getChainTip().getTxPow().getBlockDifficulty().to0xString());
-				dets.put("weight", tree.getChainRoot().getTotalWeight());
-				InputHandler.endResponse(zMessage, true, "");	
+				String pretty = MiniFormat.JSONPretty(dets.toString());
+				MinimaLogger.log(pretty);
 			}
-		
+			
+			InputHandler.endResponse(zMessage, true, "");	
+			
 		}else if(zMessage.isMessageType(CONSENSUS_TXPOWSEARCH)){
 			String inputaddr   = zMessage.getString("input");
 			String outputaddr  = zMessage.getString("output");
