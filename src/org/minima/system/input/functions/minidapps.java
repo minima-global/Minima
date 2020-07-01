@@ -1,7 +1,12 @@
 package org.minima.system.input.functions;
 
+import java.io.File;
+
+import org.minima.objects.base.MiniData;
 import org.minima.system.brains.ConsensusPrint;
 import org.minima.system.input.CommandFunction;
+import org.minima.system.network.minidapps.DAPPManager;
+import org.minima.utils.MiniFile;
 import org.minima.utils.messages.Message;
 
 public class minidapps extends CommandFunction {
@@ -9,7 +14,7 @@ public class minidapps extends CommandFunction {
 	public minidapps() {
 		super("minidapps");
 		
-		setHelp("(name)", "Return a list of all the MiniDAPPs currently installed - or search for a specific one", "");
+		setHelp("(install:file|uninstall:UID|search:name|list)", "Install, uninstall, search or list the MiniDAPPs on your system. Defaults to list.", "");
 	}
 	
 	@Override
@@ -19,7 +24,36 @@ public class minidapps extends CommandFunction {
 		
 		//Can specify to check ONLY a single address..
 		if(zInput.length>1) {
-			msg.addString("name", zInput[1]);
+			if(zInput[1].startsWith("install:")) {
+				String file = zInput[1].substring(8);
+				File ff = new File(file);
+				
+				if(!ff.exists()) {
+					getResponseStream().getDataJSON().put("cwd", new File("").getAbsolutePath());
+					getResponseStream().endStatus(false, "File not found : "+ff.getAbsolutePath());
+					return;
+				}
+				
+				//Load the file..
+				byte[] data = MiniFile.getFileBytes(ff.getAbsolutePath());
+				MiniData minidapp = new MiniData(data);
+				
+				//And Post it..
+				Message installmsg = getResponseMessage(DAPPManager.DAPP_INSTALL);
+				msg.addObject("minidapp", minidapp);
+				
+				mDAPPManager.PostMessage(msg);
+	            
+				
+			}else if(zInput[1].startsWith("uninstall:")) {
+			
+			}else if(zInput[1].startsWith("search:")) {
+			
+			}else if(zInput[1].equals("list")) {
+				
+			}
+		}else {
+			msg.addString("action", "list");
 		}
 			
 		//Post It..

@@ -18,6 +18,7 @@ import org.minima.system.brains.ConsensusHandler;
 import org.minima.system.brains.ConsensusNet;
 import org.minima.system.brains.ConsensusPrint;
 import org.minima.utils.Crypto;
+import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.ProtocolException;
 import org.minima.utils.messages.Message;
@@ -159,7 +160,7 @@ public class NetClientReader implements Runnable {
 				//What kind of message is it..
 				if(msgtype.isEqual(NETMESSAGE_INTRO)) {
 					//tell us how big the sync was..
-					MinimaLogger.log("Initial Sync Message : "+ConsensusPrint.formatSize(len));
+					MinimaLogger.log("Initial Sync Message : "+MiniFormat.formatSize(len));
 					
 					//Read in the SyncPackage
 					SyncPackage sp = new SyncPackage();
@@ -206,7 +207,7 @@ public class NetClientReader implements Runnable {
 					
 				}else if(msgtype.isEqual(NETMESSAGE_TXPOWLIST)) {
 					//tell us how big the sync was..
-					MinimaLogger.log("Initial Sync Message : "+ConsensusPrint.formatSize(len));
+					MinimaLogger.log("Initial Sync Message : "+MiniFormat.formatSize(len));
 					
 					TxPoWList txplist = new TxPoWList();
 					txplist.readDataStream(inputstream);

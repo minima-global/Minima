@@ -972,7 +972,7 @@ public class ConsensusPrint extends ConsensusProcessor {
 				totnum = txpows.length;
 			}
 			status.put("txpowfiles", totnum);
-			status.put("txpowfolder", formatSize(totallen));
+			status.put("txpowfolder", MiniFormat.formatSize(totallen));
 			
 			//MemPool
 			ArrayList<TxPOWDBRow> unused = getMainDB().getTxPowDB().getAllUnusedTxPOW();
@@ -989,7 +989,7 @@ public class ConsensusPrint extends ConsensusProcessor {
 				status.put("IBD", mOldIBD);
 			}else {
 				int ibd = getMainDB().getIntroSyncSize();
-				mOldIBD = formatSize(ibd);
+				mOldIBD = MiniFormat.formatSize(ibd);
 				status.put("IBD", mOldIBD);	
 			}
 			
@@ -1040,19 +1040,23 @@ public class ConsensusPrint extends ConsensusProcessor {
 			InputHandler.endResponse(zMessage, true, "");
 		
 		}else if(zMessage.isMessageType(CONSENSUS_MINIDAPPS)){
-			String name = ""; 
-			if(zMessage.exists("name")) {
-				name = zMessage.getString("name");
-			}
-			
-			//Search..
+			//Current crop
 			DAPPManager dapps = getConsensusHandler().getMainHandler().getNetworkHandler().getDAPPManager();
 			JSONArray minis   = dapps.getMiniDAPPS();
 			
 			//Get the response JSON
 			JSONObject mdapps = InputHandler.getResponseJSON(zMessage);
 			
-			if(!name.equals("")) {
+			//Which action..
+			String action = zMessage.getString("action"); 
+			if(action.equals("list")) {
+				mdapps.put("count", minis.size());
+				mdapps.put("minidapps", minis);
+				InputHandler.endResponse(zMessage, true, "");
+			
+			}else if(action.equals("search")) {
+				String name = zMessage.getString("name");
+				
 				for(Object mdapp : minis) {
 					JSONObject jobj = (JSONObject)mdapp;
 					if(jobj.get("name").toString().equalsIgnoreCase(name)) {
@@ -1064,32 +1068,13 @@ public class ConsensusPrint extends ConsensusProcessor {
 				
 				InputHandler.endResponse(zMessage, false, "MiniDAPP "+name+" not found");
 				
-			}else {
-				mdapps.put("count", minis.size());
-				mdapps.put("minidapps", minis);
+			}else if(action.equals("install")) {
+				InputHandler.endResponse(zMessage, false, "Not implementd yet..");
 				
-				InputHandler.endResponse(zMessage, true, "");	
+			}else if(action.equals("uninstall")) {
+				InputHandler.endResponse(zMessage, false, "Not implementd yet..");
+				
 			}
 		}
 	}
-	
-	public static String formatSize(long v) {
-	    if (v < 1024) return v + " bytes";
-	    int z = (63 - Long.numberOfLeadingZeros(v)) / 10;
-	    return String.format("%.1f %sB", (double)v / (1L << (z*10)), " KMGTPE".charAt(z));
-	}
-	
-//	private MiniNumber getIfExists(Hashtable<MiniData, MiniNumber> zHashTable, MiniData zToken) {
-//		Enumeration<MiniData> keys = zHashTable.keys();
-//		
-//		while(keys.hasMoreElements()) {
-//			MiniData key = keys.nextElement();
-//			if(key.isExactlyEqual(zToken)) {
-//				return zHashTable.get(key);	
-//			}
-//		}
-//		
-//		return null;
-//	}
-	
 }

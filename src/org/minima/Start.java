@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import org.minima.system.Main;
 import org.minima.system.backup.BackupManager;
 import org.minima.system.input.InputMessage;
+import org.minima.system.network.minidapps.minilib.Command;
 import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.ResponseStream;
@@ -218,25 +219,37 @@ public class Start {
 		            
 		            //Check valid..
 		            if(input!=null && !input.equals("")) {
+//		            	//trim it..
+//		            	input = input.trim();
+//		            	
+//		            	//New response packet..
+//			            ResponseStream response = new ResponseStream();
+//			            
+//		            	//Set the output stream
+//			            InputMessage inmsg = new InputMessage(input, response);
+//			            
+//		            	//Tell main server
+//		                rcmainserver.getInputHandler().PostMessage(inmsg);
+//		            
+//		                //Wait for the function to finish
+//		                response.waitToFinish();
+//		                
+//		                //Get the response..
+//		                String resp = response.getResponse();
+		            	
 		            	//trim it..
 		            	input = input.trim();
+
+		            	//Create a Command
+		            	Command cmd = new Command(input);
 		            	
-		            	//New response packet..
-			            ResponseStream response = new ResponseStream();
-			            
-		            	//Set the output stream
-			            InputMessage inmsg = new InputMessage(input, response);
-			            
-		            	//Tell main server
-		                rcmainserver.getInputHandler().PostMessage(inmsg);
-		            
-		                //Wait for the function to finish
-		                response.waitToFinish();
-		                
-		                //Get the response..
-		                String resp = response.getResponse();
-		                
-		                //Makethe JSON pretty
+		            	//Run it..
+		            	cmd.run();
+		 
+		            	//Get the Response..
+		            	String resp = cmd.getFinalResult();
+		            	
+		                //Make the JSON pretty
 		                resp = MiniFormat.JSONPretty(resp);
 		                		
 		                //And then print out the result

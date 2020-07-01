@@ -1,9 +1,6 @@
 package org.minima.system.network.minidapps;
 
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.HashMap;
@@ -19,7 +16,7 @@ import org.minima.system.network.minidapps.hexdata.indexhtml;
 import org.minima.system.network.minidapps.hexdata.installdapphtml;
 import org.minima.system.network.minidapps.hexdata.minidappscss;
 import org.minima.system.network.minidapps.hexdata.tilegreyjpeg;
-import org.minima.utils.MinimaLogger;
+import org.minima.utils.MiniFile;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
@@ -114,16 +111,15 @@ public class NanoDAPPServer extends NanoHTTPD{
 			
 				//Otherwise lets see..
 				if(fileRequested.endsWith("/minima.js") || fileRequested.equals("minima.js")) {
-					//MinimaLogger.log("MINIMA.JS REQUESTED!");
 					return getOKResponse(mDAPPManager.getMinimaJS() , "text/javascript");
 				
 				}else if(fileRequested.startsWith("minidapps/")) {
 					//Send the MiniDAPP!
 					String fullfile = mDAPPManager.getMiniDAPPSFolder()+"/"+fileRequested.substring(10);
-					byte[] file     = getFileBytes(fullfile);
+					byte[] file     = MiniFile.getFileBytes(fullfile);
 					
 					if(file.length>0) {
-						return getOKResponse(file, getContentType(fullfile));
+						return getOKResponse(file, MiniFile.getContentType(fullfile));
 					}else {
 						return getNotFoundResponse();
 					}
@@ -169,7 +165,7 @@ public class NanoDAPPServer extends NanoHTTPD{
 		            String minidappfile = files.get("minidapp");
 		            
 		            //Load the file..
-		            byte[] file = getFileBytes(minidappfile);
+		            byte[] file = MiniFile.getFileBytes(minidappfile);
 					
 		            //Create a MiniData Object..
 		            MiniData dapp = new MiniData(file);
@@ -182,10 +178,10 @@ public class NanoDAPPServer extends NanoHTTPD{
 	                return getOKResponse(installdapphtml.returnData(), "text/html");
 				}else if(fileRequested.startsWith("minidapps/")) {
 					String fullfile = mDAPPManager.getMiniDAPPSFolder()+"/"+fileRequested.substring(10);
-					byte[] file     = getFileBytes(fullfile);
+					byte[] file     = MiniFile.getFileBytes(fullfile);
 					
 					if(file.length>0) {
-						return getOKResponse(file, getContentType(fullfile));
+						return getOKResponse(file, MiniFile.getContentType(fullfile));
 					}else {
 						return getNotFoundResponse();
 					}
@@ -297,75 +293,4 @@ public class NanoDAPPServer extends NanoHTTPD{
 		return mCurrentIndex;
 	}
 	
-    public byte[] getFileBytes(String zFile) throws IOException {
-    	File ff = new File(zFile);
-    	
-    	long size = ff.length();
-    	byte[] ret = new byte[(int) size];
-    	
-    	try {
-			FileInputStream fis     = new FileInputStream(zFile);
-			BufferedInputStream bis = new BufferedInputStream(fis);
-			
-			bis.read(ret);
-	        
-	        bis.close();
-	        fis.close();
-	        
-		} catch (IOException e) {
-			e.printStackTrace();
-		} 
-        
-        return ret;
-	}
-	
-	public static String getContentType(String zFile) {
-		
-		String ending;
-		int dot = zFile.lastIndexOf(".");
-		if(dot != -1) {
-			ending = zFile.substring(dot+1);
-		}else {
-			return "text/plain";
-		}
-		
-		if(ending.equals("html")) {
-			return "text/html";
-		}else if(ending.equals("htm")) {
-			return "text/html";
-		}else if(ending.equals("css")) {
-			return "text/css";
-		}else if(ending.equals("js")) {
-			return "text/javascript";
-		}else if(ending.equals("txt")) {
-			return "text/plain";
-		}else if(ending.equals("xml")) {
-			return "text/xml";
-		
-		}else if(ending.equals("jpg")) {
-			return "image/jpeg";
-		}else if(ending.equals("jpeg")) {
-			return "image/jpeg";
-		}else if(ending.equals("png")) {
-			return "image/png";
-		}else if(ending.equals("gif")) {
-			return "image/gif";
-		}else if(ending.equals("svg")) {
-			return "image/svg+xml";
-		}else if(ending.equals("ico")) {
-			return "image/ico";
-		
-		}else if(ending.equals("zip")) {
-			return "application/zip";
-		}else if(ending.equals("pdf")) {
-			return "application/pdf";
-			
-		}else if(ending.equals("mp3")) {
-			return "audio/mp3";
-		}else if(ending.equals("wav")) {
-			return "audio/wav";
-		}
-		
-		return "text/plain";
-	}
 }
