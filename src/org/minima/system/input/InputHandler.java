@@ -12,6 +12,14 @@ import org.minima.utils.messages.Message;
 public class InputHandler extends SystemHandler{
 
 	/**
+	 * Retrieve the input handler.. used by the MiniLibs..
+	 */
+	private static InputHandler mInputHandler;
+	public static InputHandler getMainInputHandler() {
+		return mInputHandler;
+	}
+	
+	/**
 	 * Message type for input messages
 	 */
 	public static final String INPUT_COMMAND = "_**input_command**_";
@@ -41,6 +49,9 @@ public class InputHandler extends SystemHandler{
 		
 		//And run the intro..
 		new intro().doFunction(new String[0]);
+		
+		//Store for retrieval
+		mInputHandler = this;
 	}
 	
 	@Override
