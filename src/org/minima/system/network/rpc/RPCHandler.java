@@ -12,6 +12,7 @@ import java.util.StringTokenizer;
 
 import org.minima.system.input.InputHandler;
 import org.minima.system.input.InputMessage;
+import org.minima.system.network.minidapps.minilib.Command;
 import org.minima.utils.ResponseStream;
 import org.minima.utils.SQLHandler;
 import org.minima.utils.json.JSONArray;
@@ -165,76 +166,17 @@ public class RPCHandler implements Runnable {
 					finalresult = res.toString();
 					
 				}else{
-					//Is this a multi function..
-					boolean multi = false;
-					if(function.indexOf(";")!=-1) {
-						//It's a multi
-						multi = true;
-					}
-					
-					if(!multi) {
-						//Now make this request
-						ResponseStream response = new ResponseStream();
-			            
-						//Make sure valid
-//						if(!function.equals("") && !function.toLowerCase().equals("quit")) {
-						if(!function.equals("")) {
-						    //Send it..
-							InputMessage inmsg = new InputMessage(function, response);
-		
-							//Post it..
-							mInputHandler.PostMessage(inmsg);
-							
-							//Wait for the function to finish
-			                response.waitToFinish();
-						}
-						
-						//Get the response..
-						finalresult = response.getResponse();
-						
-					}else {
-						//A full JSON array of responses
-						JSONArray responses = new JSONArray();
-						
-						//Cycle through each request..	
-						StringTokenizer functions = new StringTokenizer(function,";");
-						
-						boolean allok = true;
-						while(allok && functions.hasMoreElements()) {
-							String func = functions.nextToken().trim();
-						
-							//Now make this request
-							ResponseStream response = new ResponseStream();
-				            
-							//Make sure valid
-							//if(!func.equals("") && !function.toLowerCase().equals("quit")) {
-							if(!func.equals("")) {
-								//Send it..
-								InputMessage inmsg = new InputMessage(func, response);
-			
-								//Post it..
-								mInputHandler.PostMessage(inmsg);
-								
-								//Wait for the function to finish
-				                response.waitToFinish();
-				                
-				                //Get the JSON
-				                JSONObject resp = response.getFinalJSON();
-				                
-				                //IF there is an erorr.. STOP
-				                if(resp.get("status") == Boolean.FALSE) {
-				                	//ERROR - stop running functions..
-				                	allok = false;
-				                }
-				                
-				                //Add it to the array
-				                responses.add(resp);
-							}
-						}
-						
-						//And now get all the answers in one go..
-						finalresult = responses.toString();
-					}
+					//trim it..
+					function = function.trim();
+
+	            	//Create a Command
+	            	Command cmd = new Command(function);
+	            	
+	            	//Run it..
+	            	cmd.run();
+	 
+	            	//Get the Response..
+	            	finalresult = cmd.getFinalResult();
 				}
 				
 				// send HTTP Headers
