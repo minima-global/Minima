@@ -1,8 +1,16 @@
 package org.minima.system.network.minidapps.minilib;
 
+import java.io.File;
+import java.io.IOException;
+
+import org.minima.objects.base.MiniString;
+import org.minima.system.backup.BackupManager;
+import org.minima.system.input.InputHandler;
 import org.minima.utils.MinimaLogger;
+import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.mozilla.javascript.Function;
+import org.mozilla.javascript.NativeArray;
 import org.mozilla.javascript.NativeObject;
 
 public class MinimaJS {
@@ -25,7 +33,7 @@ public class MinimaJS {
 	}
 	
 	/**
-	 * Main Command function
+	 * Main Minima Command
 	 * 
 	 * @param zCommand
 	 */
@@ -45,20 +53,67 @@ public class MinimaJS {
 	}
 	
 	/**
-	 * File Access Functions..Obj
+	 * File Access Functions
 	 */
-	public void save(Object zObject, String zFilename, Function zCallback) {
-		MinimaLogger.log("save : "+zObject+" "+zFilename);
-	
-		NativeObject nativeObject = (NativeObject)zObject;
-		
-		JSONObject json = JSUtil.toJsonObject(nativeObject);
-		
-		MinimaLogger.log("json : "+json.toString());
-		
+	public void save(Object zObject, String zFilename) {
+		save(zObject, zFilename,null); 
 	}
 	
-	public void load(String zFilename, Function zCallback) {
+	public void save(Object zObject, String zFilename, Function zCallback) {
+		String text = "";
+		if(zObject instanceof NativeObject) {
+			NativeObject nativeObject = (NativeObject)zObject;
+			JSONObject json = JSUtil.toJsonObject(nativeObject);
+			text = json.toString();
+		
+		}else if(zObject instanceof NativeArray) {
+			NativeArray nativeObject = (NativeArray)zObject;
+			JSONArray json = JSUtil.toJsonArray(nativeObject);
+			text = json.toString();
+		}
+		
+		//Now store it..
+		MiniString ms = new MiniString(text);
+		
+		//Get the Backup mnager
+		BackupManager back = InputHandler.getMainInputHandler().getMainHandler().getBackupManager();
+		
+		//get the MinDAPP Folder..
+		File mini = back.getMiniDAPPFolder();
+		File dapp = new File(mini,mMiniDAPPID);
+		File fdir = new File(dapp,"files");
+		fdir.mkdirs();
+		
+		//Now create the file..
+		File savefile = new File(fdir,zFilename);
+		
+		//And store..
+		try {
+			BackupManager.writeObjectToFile(savefile, ms);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		MinimaLogger.log("JS File Save "+text+" "+savefile.getAbsolutePath());
+	}
+	
+	/**
+	 * Load a JSON from a file and send to the callback function
+	 * @param zFilename
+	 * @param zCallback
+	 */
+	public void load(String zFilename, Function zCallback) {}
+	
+	/**
+	 * Delete a file..
+	 * @param zFilename
+	 */
+	public void delete(String zFilename) {
+		delete(zFilename,null);
+	}
+	
+	public void delete(String zFilename, Function zCallback) {
 		
 	}
 	
@@ -74,4 +129,10 @@ public class MinimaJS {
 	public void sql(String zCommand, Function zCallback) {
 		MinimaLogger.log("MinimaJS sql -"+zCommand);
 	}
+	
+	/**
+	 * Network Functions
+	 */
+	
+	
 }
