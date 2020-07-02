@@ -125,7 +125,7 @@ public class Command implements Runnable {
 		//Now send the result back vis the callback..
 		if(mCallback != null) {
 			//Create a native JSON
-			Object json = BackBoneDAPP.makeJSONObject(mFinalResult, mContext, mScope);
+			Object json = JSUtil.makeJSONObject(mFinalResult, mContext, mScope);
 			
 			//Make a function variable list
 			Object functionArgs[] = { json };

@@ -10,6 +10,7 @@ import java.sql.SQLException;
 import java.util.Date;
 import java.util.StringTokenizer;
 
+import org.minima.system.backup.BackupManager;
 import org.minima.system.input.InputHandler;
 import org.minima.system.input.InputMessage;
 import org.minima.system.network.minidapps.minilib.Command;
@@ -32,20 +33,12 @@ public class RPCHandler implements Runnable {
 	Socket mSocket;
 	
 	/**
-	 * Inputhandler to manage the requests
-	 */
-	InputHandler mInputHandler;
-	
-	/**
 	 * Main COnstructor
 	 * @param zSocket
 	 */
-	public RPCHandler(Socket zSocket, InputHandler zInput) {
+	public RPCHandler(Socket zSocket) {
 		//Store..
 		mSocket = zSocket;
-		
-		//The InputHandler
-		mInputHandler = zInput;
 	}
 
 	@Override
@@ -108,6 +101,8 @@ public class RPCHandler implements Runnable {
 				//The final result
 				String finalresult = "";
 				
+				BackupManager backup = InputHandler.getMainInputHandler().getMainHandler().getBackupManager();
+				
 				//Is this a SQL function
 				if(function.startsWith("sql/")) {
 					//The SQL results
@@ -119,12 +114,12 @@ public class RPCHandler implements Runnable {
 					//Which Database.. could be running from a folder..
 					if(MiniDAPPID.equals("")) {
 						//Get the database folder
-						File temp = mInputHandler.getMainHandler().getBackupManager().getTempFolder();
-						minidappdatabase = new File(temp,"_tempdb"+mInputHandler.RANDOM_VAL.to0xString());
+						File temp = backup.getTempFolder();
+						minidappdatabase = new File(temp,"_tempdb"+InputHandler.getMainInputHandler().RANDOM_VAL.to0xString());
 						
 					}else {
 						//Get the database folder
-						File minidapps   = mInputHandler.getMainHandler().getBackupManager().getMiniDAPPFolder();
+						File minidapps   = backup.getMiniDAPPFolder();
 						File dapp        = new File(minidapps,MiniDAPPID);
 						
 						File dbdir       = new File(dapp,"sql");

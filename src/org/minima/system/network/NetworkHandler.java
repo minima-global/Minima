@@ -132,7 +132,7 @@ public class NetworkHandler extends SystemHandler{
 			multimain.start();
 			
 			//Start the RPC server
-			mRPCServer = new RPCServer(getMainHandler().getInputHandler(), rpcport);
+			mRPCServer = new RPCServer(rpcport);
 			Thread rpc = new Thread(mRPCServer, "RPC Server");
 			rpc.setDaemon(true);
 			rpc.start();
