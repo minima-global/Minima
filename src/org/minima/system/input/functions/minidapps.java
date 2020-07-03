@@ -35,7 +35,7 @@ public class minidapps extends CommandFunction {
 				}
 				
 				//Load the file..
-				byte[] data = MiniFile.getFileBytes(ff.getAbsolutePath());
+				byte[] data = MiniFile.readCompleteFile(ff);
 				MiniData minidapp = new MiniData(data);
 				
 				//And Post it..

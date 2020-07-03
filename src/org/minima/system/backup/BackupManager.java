@@ -12,6 +12,7 @@ import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
 import org.minima.system.Main;
 import org.minima.system.SystemHandler;
+import org.minima.utils.MiniFile;
 import org.minima.utils.Streamable;
 import org.minima.utils.messages.Message;
 
@@ -30,7 +31,7 @@ public class BackupManager extends SystemHandler {
 	 * The Root directory..
 	 */
 	static File   mRoot;
-	static String mRootPath = "***";
+	static String mRootPath = "";
 	
 	File mBackup;
 	
@@ -126,12 +127,12 @@ public class BackupManager extends SystemHandler {
 			File ff = (File) zMessage.getObject("file");
 			
 			//Write..
-			writeObjectToFile(ff, stream);	
+			MiniFile.writeObjectToFile(ff, stream);	
 		
 		}else if(zMessage.isMessageType(BACKUP_DELETE)) {
 			//Get the file
 			File ff = (File) zMessage.getObject("file");
-			deleteFileOrFolder(ff);
+			MiniFile.deleteFileOrFolder(mRootPath, ff);
 		}
 	}
 	
@@ -153,110 +154,20 @@ public class BackupManager extends SystemHandler {
 		File temp = new File(mRoot,"temp");
 		
 		//Clear it..
-		deleteFileOrFolder(temp);
+		MiniFile.deleteFileOrFolder(mRootPath,temp);
 		
 		//Make it..
 		mTempFolder = ensureFolder(new File(mRoot,"temp"));
 	}
 	
+	public static void safeDelete(File zFile) {
+		MiniFile.deleteFileOrFolder(mRootPath, zFile);
+	}
+	
 	public static void deleteConfFolder(File zFolder) {
-		deleteFileOrFolder(new File(zFolder,"txpow"));
-		deleteFileOrFolder(new File(zFolder,"backup"));
-		deleteFileOrFolder(new File(zFolder,"minidapps"));
-		deleteFileOrFolder(new File(zFolder,"temp"));
-	}
-	
-	/**
-	 * Delete a file or folder and it's children
-	 * @param zFile
-	 */
-	public static void deleteFileOrFolder(File zFile) {
-		//Check for real
-		if(zFile == null || !zFile.exists()) {
-			return;
-		}
-		
-		//Scan if Directory
-		if(zFile.isDirectory()) {
-			//List the files..
-			File[] files = zFile.listFiles();
-			if(files != null) {
-				for(File ff : files) {
-					deleteFileOrFolder(ff);
-				}
-			}	
-		}
-		
-		//And finally delete the actual file.. (double check is a minima file.. )
-		if(mRootPath.equals("***")) {
-			zFile.delete();
-		}else if(zFile.getAbsolutePath().startsWith(mRootPath)) {
-			zFile.delete();
-		}
-	}
-	
-	
-	/**
-	 * Store a Streamable Object to a file.
-	 * 
-	 * @param zFile
-	 * @param zObject
-	 * @throws IOException
-	 */
-	public static void writeObjectToFile(File zFile, Streamable zObject) throws IOException {
-		//First write the object to a memory structure..
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		DataOutputStream dos = new DataOutputStream(baos);
-		
-		zObject.writeDataStream(dos);
-		
-		dos.flush();
-		baos.flush();
-	
-		//get all the data
-		byte[] data = baos.toByteArray();
-		
-		//Check Parent
-		File parent = zFile.getParentFile();
-		if(!parent.exists()) {
-			parent.mkdirs();
-		}
-		
-		//Delete the old..
-		if(zFile.exists()) {
-			//Should probably just move it here - as a backup incase of error..
-			zFile.delete();
-		}
-		
-		//Create the new..
-		zFile.createNewFile();
-		
-		//Write it out..
-		FileOutputStream fos = new FileOutputStream(zFile, false);
-		DataOutputStream fdos = new DataOutputStream(fos);
-		
-		//And write it..
-		fdos.write(data);
-		//zObject.writeDataStream(fdos);
-		
-		//flush
-		fdos.flush();
-		fos.flush();
-	}
-	
-	public static byte[] readCompleteFile(File zFile) throws IOException {
-		//How big is this file..
-		long len = zFile.length();
-		
-		//Create the data structure to hold it..
-		byte[] data = new byte[(int)len];
-		
-		FileInputStream fis = new FileInputStream(zFile);
-		DataInputStream dis = new DataInputStream(fis);
-		dis.readFully(data);
-		dis.close();
-		fis.close();
-		
-		return data;
+		MiniFile.deleteFileOrFolder(mRootPath,new File(zFolder,"txpow"));
+		MiniFile.deleteFileOrFolder(mRootPath,new File(zFolder,"backup"));
+		MiniFile.deleteFileOrFolder(mRootPath,new File(zFolder,"minidapps"));
+		MiniFile.deleteFileOrFolder(mRootPath,new File(zFolder,"temp"));
 	}
 }

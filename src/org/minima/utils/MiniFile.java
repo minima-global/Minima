@@ -1,32 +1,96 @@
 package org.minima.utils;
 
 import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 
 public class MiniFile {
 
-	public static byte[] getFileBytes(String zFile) throws IOException {
-    	File ff = new File(zFile);
-    	
-    	long size = ff.length();
+	public static void writeObjectToFile(File zFile, Streamable zObject) throws IOException {
+		//First write the object to a memory structure..
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		DataOutputStream dos = new DataOutputStream(baos);
+		
+		zObject.writeDataStream(dos);
+		
+		dos.flush();
+		baos.flush();
+	
+		//get all the data
+		byte[] data = baos.toByteArray();
+		
+		//Check Parent
+		File parent = zFile.getParentFile();
+		if(!parent.exists()) {
+			parent.mkdirs();
+		}
+		
+		//Delete the old..
+		if(zFile.exists()) {
+			//Should probably just move it here - as a backup incase of error..
+			zFile.delete();
+		}
+		
+		//Create the new..
+		zFile.createNewFile();
+		
+		//Write it out..
+		FileOutputStream fos = new FileOutputStream(zFile, false);
+		DataOutputStream fdos = new DataOutputStream(fos);
+		
+		//And write it..
+		fdos.write(data);
+		//zObject.writeDataStream(fdos);
+		
+		//flush
+		fdos.flush();
+		fos.flush();
+	}
+	
+	public static byte[] readCompleteFile(File zFile) throws IOException {
+    	long size  = zFile.length();
     	byte[] ret = new byte[(int) size];
     	
-    	try {
-			FileInputStream fis     = new FileInputStream(zFile);
-			BufferedInputStream bis = new BufferedInputStream(fis);
-			
-			bis.read(ret);
-	        
-	        bis.close();
-	        fis.close();
-	        
-		} catch (IOException e) {
-			e.printStackTrace();
-		} 
+		FileInputStream fis     = new FileInputStream(zFile);
+		BufferedInputStream bis = new BufferedInputStream(fis);
+		
+		bis.read(ret);
         
+        bis.close();
+        fis.close();
+    
         return ret;
+	}
+	
+	public static void deleteFileOrFolder(String mParentCheck, File zFile) {
+		//Check for real
+		if(zFile == null || !zFile.exists()) {
+			return;
+		}
+		
+		//Scan if Directory
+		if(zFile.isDirectory()) {
+			//List the files..
+			File[] files = zFile.listFiles();
+			if(files != null) {
+				for(File ff : files) {
+					deleteFileOrFolder(mParentCheck, ff);
+				}
+			}	
+		}
+		
+		//And finally delete the actual file.. (double check is a minima file.. )
+		if(mParentCheck.equals("")) {
+			zFile.delete();
+		}else if(zFile.getAbsolutePath().startsWith(mParentCheck)) {
+			zFile.delete();
+		}else {
+			MinimaLogger.log("Attempt to delete File NOT child of parent check "+zFile.getAbsolutePath()+" / "+mParentCheck);
+		}
 	}
 	
 	public static String getContentType(String zFile) {
