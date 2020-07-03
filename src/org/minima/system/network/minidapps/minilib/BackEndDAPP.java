@@ -30,7 +30,15 @@ public class BackEndDAPP {
 	 */
 	Function mMinimEventJS;
 	
-	public BackEndDAPP(String zScriptJS) throws ProtocolException {
+	/**
+	 * The MiniDAPP ID..
+	 */
+	String mMiniDAPPID;
+	
+	public BackEndDAPP(String zScriptJS, String zMiniDAPPID) throws ProtocolException {
+		//The MINIDAPP
+		mMiniDAPPID = zMiniDAPPID;
+		
 		//The JavaScrit
 		mScript = zScriptJS;
 		
@@ -39,10 +47,10 @@ public class BackEndDAPP {
 		mScope   = mContext.initStandardObjects();
 	
 		//Create a MinimaJS object for this scope..
-		MinimaJS minijs = new MinimaJS("0x01",this);
+		MinimaJS minimajs = new MinimaJS(this);
 		
 		//Add it to this environment
-		Object wrappedMinima = Context.javaToJS(minijs, mScope);
+		Object wrappedMinima = Context.javaToJS(minimajs, mScope);
 		ScriptableObject.putProperty(mScope, "Minima", wrappedMinima);
 	
 		//Evaluate the script
@@ -65,6 +73,10 @@ public class BackEndDAPP {
 	
 	public Scriptable getScope() {
 		return mScope;
+	}
+	
+	public String getMiniDAPPID() {
+		return mMiniDAPPID;
 	}
 	
 	public void shutdown() {
@@ -114,7 +126,7 @@ public class BackEndDAPP {
 				"";
 		
 		try {
-			BackEndDAPP bdapp = new BackEndDAPP(js);
+			BackEndDAPP bdapp = new BackEndDAPP(js,"0x0001");
 
 			JSONObject test = new JSONObject();
 			test.put("tster", "hello");

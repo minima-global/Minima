@@ -12,7 +12,6 @@ import org.minima.utils.messages.Message;
 
 public class BackupManager extends SystemHandler {
 
-	private static final String BACKUP_INIT               = "BACKUP_INIT";
 	private static final String BACKUP_WRITE              = "BACKUP_WRITE";
 	private static final String BACKUP_DELETE             = "BACKUP_DELETE";
 	
@@ -42,7 +41,6 @@ public class BackupManager extends SystemHandler {
 	
 		//Start init
 		initFolders();
-//		PostMessage(BACKUP_INIT);
 	}
 	
 	public File getRootFolder() {
@@ -110,10 +108,7 @@ public class BackupManager extends SystemHandler {
 	@Override
 	protected void processMessage(Message zMessage) throws Exception {
 		
-		if(zMessage.isMessageType(BACKUP_INIT)) {
-			initFolders();
-			
-		}else if(zMessage.isMessageType(BACKUP_WRITE)) {
+		if(zMessage.isMessageType(BACKUP_WRITE)) {
 			//Get the file..
 			Streamable stream = (Streamable) zMessage.getObject("object");
 			
