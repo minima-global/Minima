@@ -22,7 +22,7 @@ public class SuperBlocklevelsTests {
         MiniData act = new MiniData("0x7");
 
         int sup = SuperBlockLevels.getSuperLevel(diff, act);
-        assertTrue("should equal 0 ", SuperBlockLevels.getSuperLevel(diff, act) == (13));
+        assertTrue("should equal 13 ", SuperBlockLevels.getSuperLevel(diff, act) == (13));
         System.out.println(diff + " " + act + " " + sup);
 
     }
@@ -34,7 +34,7 @@ public class SuperBlocklevelsTests {
         MiniData act = new MiniData("0x7F7F");
 
         int sup = SuperBlockLevels.getSuperLevel(diff, act);
-        assertTrue("should equal 0 ", SuperBlockLevels.getSuperLevel(diff, act) == (21));
+        assertTrue("should equal 21 ", SuperBlockLevels.getSuperLevel(diff, act) == (21));
         System.out.println(diff + " " + act + " " + sup);
 
     }
