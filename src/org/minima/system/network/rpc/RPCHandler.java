@@ -13,6 +13,7 @@ import java.util.StringTokenizer;
 import org.minima.system.backup.BackupManager;
 import org.minima.system.input.InputHandler;
 import org.minima.system.network.commands.CMD;
+import org.minima.system.network.commands.FILE;
 import org.minima.system.network.commands.SQL;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.SQLHandler;
@@ -167,10 +168,18 @@ public class RPCHandler implements Runnable {
 			
 			}else if(reqtype.equals("file")) {
 				//File access..
-				//..
+				FILE file = new FILE(command, MiniDAPPID);
 				
+				//Run it..
+				file.run();
+				
+				//Get the Response..
+            	finalresult = file.getFinalResult();
 			}
-				
+			
+			MinimaLogger.log("FINAL RESULT : "+finalresult);
+			
+			
 			// send HTTP Headers
 			out.println("HTTP/1.1 200 OK");
 			out.println("Server: HTTP RPC Server from Minima : 1.0");

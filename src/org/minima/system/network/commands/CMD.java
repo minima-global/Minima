@@ -18,7 +18,7 @@ public class CMD implements Runnable {
 	String mCommand;
 	
 	//Call back with the response when finished
-	Function mCallback;
+	Function   mCallback;
 	Context    mContext;
 	Scriptable mScope;
 	

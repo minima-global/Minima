@@ -19,7 +19,7 @@ public class SQL implements Runnable {
 	String mFinalResult = "";
 	
 	//Call back with the response when finished in JS
-	Function mCallback;
+	Function   mCallback;
 	Context    mContext;
 	Scriptable mScope;
 	
