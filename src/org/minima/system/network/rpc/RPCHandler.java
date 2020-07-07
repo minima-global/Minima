@@ -47,8 +47,6 @@ public class RPCHandler implements Runnable {
 		BufferedReader in 	 		 	= null; 
 		PrintWriter out 	 			= null; 
 		
-		String fileRequested 			= null;
-		
 		try {
 			// Input Stream
 			in = new BufferedReader(new InputStreamReader(mSocket.getInputStream()));
@@ -65,13 +63,12 @@ public class RPCHandler implements Runnable {
 			String method = parse.nextToken().toUpperCase(); // we get the HTTP method of the client
 			
 			// we get file requested
-			fileRequested = parse.nextToken();
+			String fileRequested = parse.nextToken();
 			
 			//Get the Headers..
 			String MiniDAPPID = "";
 			int contentlength = 0;
 			while(input != null && !input.trim().equals("")) {
-//				System.out.println("line : "+input);
 				int ref = input.indexOf("Referer:"); 
 				if(ref != -1) {
 					//Get the referer..
@@ -146,7 +143,7 @@ public class RPCHandler implements Runnable {
 				return;
 			}
 			
-			//MinimaLogger.log("RPCHandler "+type+" "+command);
+			MinimaLogger.log("RPCHandler "+method+" "+reqtype+" "+command);
 			
 			//Is this a SQL function
 			if(reqtype.equals("sql")) {
