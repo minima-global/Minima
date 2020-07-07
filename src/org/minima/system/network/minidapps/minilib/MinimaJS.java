@@ -1,5 +1,8 @@
 package org.minima.system.network.minidapps.minilib;
 
+import org.minima.system.network.commands.CMD;
+import org.minima.system.network.commands.FILE;
+import org.minima.system.network.commands.SQL;
 import org.minima.utils.MinimaLogger;
 import org.mozilla.javascript.Function;
 
@@ -8,7 +11,7 @@ public class MinimaJS {
 	/**
 	 * File functions..
 	 */
-	public JSFile file;
+	public FILE file;
 	
 	/**
 	 * JS BACKEND link
@@ -16,7 +19,7 @@ public class MinimaJS {
 	private BackEndDAPP mBackBone;
 	
 	public MinimaJS(BackEndDAPP zBackBone) {
-		mBackBone    = zBackBone;
+		mBackBone = zBackBone;
 	}
 	
 	/**
@@ -24,7 +27,7 @@ public class MinimaJS {
 	 * @param zLog
 	 */
 	public void log(String zLog) {
-		MinimaLogger.log("MinimaJS log - "+zLog);
+		MinimaLogger.log("MinimaJS LOG ["+mBackBone.getMiniDAPPID()+"] "+zLog);
 	}
 	
 	/**
@@ -37,14 +40,14 @@ public class MinimaJS {
 	}
 	
 	public void cmd(String zCommand, Function zCallback) {
-		MinimaLogger.log("MinimaJS command - "+zCommand+" "+zCallback);
+		MinimaLogger.log("MinimaJS CMD - "+zCommand+" "+zCallback);
 		
 		//Create a Command 
-		Command cmd = null;
+		CMD cmd = null;
 		if(zCallback != null) {
-			cmd = new Command(zCommand, zCallback, mBackBone.getContext(), mBackBone.getScope());	
+			cmd = new CMD(zCommand, zCallback, mBackBone.getContext(), mBackBone.getScope());	
 		}else {
-			cmd = new Command(zCommand);
+			cmd = new CMD(zCommand);
 		}
 
 		//Run it..
@@ -63,11 +66,24 @@ public class MinimaJS {
 	}
 	
 	public void sql(String zCommand, Function zCallback) {
-		MinimaLogger.log("MinimaJS sql -"+zCommand);
+		MinimaLogger.log("MinimaJS SQL -"+zCommand);
+		
+		//Create a SQL command
+		SQL sql = null;
+		if(zCallback != null) {
+			sql = new SQL(zCommand, mBackBone.getMiniDAPPID(), zCallback, 
+					mBackBone.getContext(), mBackBone.getScope());
+		}else {
+			sql = new SQL(zCommand, mBackBone.getMiniDAPPID());
+		}
+		
+		//Run it..
+		Thread sqlthread = new Thread(sql);
+		sqlthread.run();
 	}
 	
 	/**
-	 * Backend / Frontend comms - Fires a POST MinimaEvent
+	 * Back end / Front end communication - Fires a POST MinimaEvent
 	 */
 	public void post(Object zObject) {}
 	

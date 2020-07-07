@@ -11,7 +11,7 @@ import java.util.ArrayList;
 
 import org.minima.system.Main;
 import org.minima.system.backup.BackupManager;
-import org.minima.system.network.minidapps.minilib.Command;
+import org.minima.system.network.commands.CMD;
 import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;
 
@@ -239,7 +239,7 @@ public class Start {
 		            	input = input.trim();
 
 		            	//Create a Command
-		            	Command cmd = new Command(input);
+		            	CMD cmd = new CMD(input);
 		            	
 		            	//Run it..
 		            	cmd.run();
