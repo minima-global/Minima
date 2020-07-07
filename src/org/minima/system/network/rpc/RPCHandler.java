@@ -144,7 +144,7 @@ public class RPCHandler implements Runnable {
 				return;
 			}
 			
-			MinimaLogger.log("RPCHandler "+method+" "+reqtype+" "+command);
+			//MinimaLogger.log("RPCHandler "+method+" "+reqtype+" "+command);
 			
 			//Is this a SQL function
 			if(reqtype.equals("sql")) {
@@ -177,7 +177,7 @@ public class RPCHandler implements Runnable {
             	finalresult = file.getFinalResult();
 			}
 			
-			MinimaLogger.log("FINAL RESULT : "+finalresult);
+			//MinimaLogger.log("FINAL RESULT : "+finalresult);
 			
 			
 			// send HTTP Headers
