@@ -23,6 +23,9 @@ public class FILE {
 	private String mMiniDAPPID;
 	private BackEndDAPP mBackBone;
 	
+	//The Final Result..
+	String mFinalResult = "";
+		
 	public FILE(BackEndDAPP zBackBone) {
 		this(zBackBone, zBackBone.getMiniDAPPID());
 	}
@@ -203,5 +206,39 @@ public class FILE {
 		File checker = new File(fdir,zFolder);
 		File[] files = checker.listFiles();
 		
+		//Create an Array of file objects
+		JSONArray farr = new JSONArray();
+		for(File ff : files) {
+			JSONObject file = new JSONObject();
+			file.put("name", ff.getName());
+			file.put("dir", ff.isDirectory());
+			if(!ff.isDirectory()) {
+				file.put("size", ff.length());	
+			}else {
+				file.put("size", 0);
+			}
+			farr.add(file);
+		}
+		
+		//Create the Response JSON
+		JSONObject response = new JSONObject();
+		response.put("folder", zFolder);
+		response.put("files",farr);
+		
+		//Final text
+		String ftext = response.toString(); 
+		
+		//Get the JS components
+		Context context  = mBackBone.getContext();
+		Scriptable scope = mBackBone.getScope();
+		
+		//Create a native JSON
+		Object json = JSMiniLibUtil.makeJSONObject(ftext, context, scope);
+		
+		//Make a function variable list
+		Object functionArgs[] = { json };
+	    
+		//Call the function..
+		zCallback.call(context, scope, scope, functionArgs);
 	}
 }
