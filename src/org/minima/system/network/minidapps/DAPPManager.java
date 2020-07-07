@@ -24,7 +24,7 @@ import org.minima.objects.base.MiniData;
 import org.minima.system.Main;
 import org.minima.system.SystemHandler;
 import org.minima.system.input.InputHandler;
-import org.minima.system.network.minidapps.hexdata.minimajs;
+import org.minima.system.network.minidapps.minihub.hexdata.minimajs;
 import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
