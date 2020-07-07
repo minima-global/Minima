@@ -58,6 +58,7 @@ public class RPCHandler implements Runnable {
 			
 			// get first line of the request from the client
 			String input = in.readLine();
+			String firstline = new String(input);
 			
 			// we parse the request with a string tokenizer
 			StringTokenizer parse = new StringTokenizer(input);
@@ -140,12 +141,11 @@ public class RPCHandler implements Runnable {
 				}
 			
 			}else {
-				MinimaLogger.log("Unsupported Method in RPCHandler : "+method);
+				MinimaLogger.log("Unsupported Method in RPCHandler : "+firstline);
 				return;
 			}
 			
-			MinimaLogger.log("RPCHandler "+type+" "+command);
-			
+			//MinimaLogger.log("RPCHandler "+type+" "+command);
 			
 			//Is this a SQL function
 			if(type.equals("sql")) {
