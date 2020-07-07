@@ -123,7 +123,9 @@ public class FILE implements Runnable {
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
-			}	
+			}else {
+				mFinalResult = "{}";
+			}
 			
 		}else if(filefunc.equals("list")) {
 			response.put("exists", thefile.exists());
