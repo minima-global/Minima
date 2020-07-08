@@ -24,10 +24,7 @@ public class AddressTests {
     @Test
     public void testAddress() {
         MiniData c = new MiniData();
-        MiniData i = new MiniData("#1388");
         MiniData j = new MiniData("#FFFF");
-        MiniData k = new MiniData("5475746f7269616c73706f69674");
-        MiniData m = new MiniData("#FFFFFFFFFFFFFFFFFFFFFF");
         MiniData n = new MiniData("#FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
         Address ad = new Address();
         Address a = new Address("#f0f0");
@@ -42,7 +39,7 @@ public class AddressTests {
         System.out.println("address value " + adrTwo);
         Address adrThree = new Address(c);
         System.out.println("address value " + adrThree);
-        System.out.println("json  value " + adrThree.toJSON());
+        System.out.println("json  value " + adrTwo.toJSON());
         System.out.println("script  value " + adrTwo.getScript());
         System.out.println("minima addess  value " + adrTwo.getMinimaAddress());
         assertFalse("should not be equal ", a.isEqual(adrThree));
@@ -93,7 +90,7 @@ public class AddressTests {
 
         MiniData q = new MiniData(
                 "#fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
-        byte[] data1 = q.getData();
+        // byte[] data1 = q.getData();
 
         // //First hash it to add some checksum digits..
         // byte[] hash1 = Crypto.getInstance().hashData(data1, 160);
