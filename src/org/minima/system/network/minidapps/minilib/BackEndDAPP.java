@@ -1,5 +1,7 @@
 package org.minima.system.network.minidapps.minilib;
 
+import java.lang.reflect.InvocationTargetException;
+
 import org.minima.utils.ProtocolException;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
@@ -35,7 +37,7 @@ public class BackEndDAPP {
 	 */
 	String mMiniDAPPID;
 	
-	public BackEndDAPP(String zScriptJS, String zMiniDAPPID) throws ProtocolException {
+	public BackEndDAPP(String zScriptJS, String zMiniDAPPID) throws ProtocolException, IllegalAccessException, InstantiationException, InvocationTargetException {
 		//The MINIDAPP
 		mMiniDAPPID = zMiniDAPPID;
 		
@@ -53,6 +55,12 @@ public class BackEndDAPP {
 		Object wrappedMinima = Context.javaToJS(minimajs, mScope);
 		ScriptableObject.putProperty(mScope, "Minima", wrappedMinima);
 	
+		//Define a special Class..
+		ScriptableObject.defineClass(mScope, Counter.class);
+		
+//		ScriptableObject.defineClass(mScope, WebSocket.class);
+
+		
 		//Evaluate the script
 		mContext.evaluateString(mScope, zScriptJS, "<cmd>", 1, null);
 	
@@ -114,18 +122,37 @@ public class BackEndDAPP {
 	public static void main(String[] zArgs) {
 	
 		String js = 
+				"\n" + 
 				"function MinimaEvent(evt){\n" + 
 				"\n" + 
 				"	var jsonstr = JSON.stringify(evt,null,2);\n" + 
 				"	Minima.log(\"MinimaEvent : \"+jsonstr);\n" + 
 				"	//tot++;\n" + 
 				"	\n" + 
-				"	Minima.save(evt,\"something.txt\",function(){});\n" + 
+				"	//Open up a websocket to the main MINIMA proxy..\n" + 
+				"	var WEBSOCK = new org.minima.system.network.minidapps.minilib.WebSocket(\"127.0.0.1:80\");\n" + 
 				"	\n" + 
+				"	WEBSOCK.run = function(){\n" + 
+				"		Minima.log(\"onopen\");\n" + 
+				"	};\n" + 
+				"	\n" + 
+				"\n" + 
+				"	//obj = { run: function() { print(\"hi\"); } }\n" + 
+				"	\n" + 
+				"	//Minima.log(WEBSOCK.present());\n" + 
+				"	\n" + 
+				"	//WEBSOCK.onopen = function() {\n" + 
+				"	//	Minima.log(\"onopen\");\n" + 
+				"	//};\n" + 
+				"	\n" + 
+				"	\n" + 
+				"	\n" + 
+				"	//var cc = new Counter();\n" + 
+				"	//Minima.log(cc.count);\n" + 
 				"}\n" + 
 				"";
-		
 		try {
+		
 			BackEndDAPP bdapp = new BackEndDAPP(js,"0x0001");
 
 			JSONObject test = new JSONObject();
@@ -151,7 +178,7 @@ public class BackEndDAPP {
 		
 			bdapp.shutdown();
 		
-		} catch (ProtocolException e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
