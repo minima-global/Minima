@@ -78,10 +78,17 @@ public class FILE implements Runnable {
 		//get the file
 		File thefile = new File(minidappfolder,file);
 		
+		//Calculate the correct path
+		String filepath  = thefile.getAbsolutePath();
+		String basepath  = minidappfolder.getAbsolutePath();
+		String finalpath = filepath.substring(basepath.length());
+		
 		//The response
 		JSONObject response = new JSONObject();
 		response.put("function", filefunc);
-		response.put("file", thefile.getName());
+		response.put("file", finalpath);
+		response.put("name", thefile.getName());
+		response.put("exists", thefile.exists());
 		
 		//Which command is it..
 		if(filefunc.equals("save")) {
@@ -121,6 +128,7 @@ public class FILE implements Runnable {
 					dis.close();
 					fis.close();
 				} catch (IOException e) {
+					mFinalResult = "{}";
 					e.printStackTrace();
 				}
 			}else {
@@ -128,32 +136,35 @@ public class FILE implements Runnable {
 			}
 			
 		}else if(filefunc.equals("list")) {
-			response.put("exists", thefile.exists());
 			//Create an Array of file objects
 			JSONArray farr = new JSONArray();
 			
 			if(thefile.exists()) {
-				if(thefile.isFile()) {
-					response.put("size", thefile.length());
-					response.put("directory", false);
-				}else if(thefile.isDirectory()) {
-					response.put("directory", true);
-				}	
-			
 				//Now add the zFolder..
 				File[] files = thefile.listFiles();
-				
-				for(File ff : files) {
-					JSONObject filedesc = new JSONObject();
-					filedesc.put("name", ff.getName());
-					filedesc.put("dir", ff.isDirectory());
-					if(!ff.isDirectory()) {
-						filedesc.put("size", ff.length());	
-					}else {
-						filedesc.put("size", 0);
-					}
-					farr.add(filedesc);
+				if(files == null) {
+					files = new File[0];
 				}
+				
+				if(thefile.isFile()) {
+					response.put("directory", false);
+					response.put("size", thefile.length());
+				}else if(thefile.isDirectory()) {
+					response.put("directory", true);
+					response.put("size", files.length);
+					
+					for(File ff : files) {
+						JSONObject filedesc = new JSONObject();
+						filedesc.put("name", ff.getName());
+						filedesc.put("dir", ff.isDirectory());
+						if(!ff.isDirectory()) {
+							filedesc.put("size", ff.length());	
+						}else {
+							filedesc.put("size", 0);
+						}
+						farr.add(filedesc);
+					}
+				}		
 			}
 			
 			//Create the Response JSON
@@ -163,8 +174,6 @@ public class FILE implements Runnable {
 			mFinalResult = response.toString();
 			
 		}else if(filefunc.equals("delete")) {
-			response.put("existed", thefile.exists());
-			
 			if(thefile.exists()) {
 				//Delete
 				BackupManager.safeDelete(thefile);
