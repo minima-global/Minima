@@ -23,7 +23,7 @@ import org.minima.utils.MinimaLogger;
 import org.minima.utils.ProtocolException;
 import org.minima.utils.messages.Message;
 
-public class CommsReader implements Runnable {
+public class CommsClientReader implements Runnable {
 	
 	/**
 	 * Netclient owner
@@ -35,37 +35,48 @@ public class CommsReader implements Runnable {
 	 * 
 	 * @param zCommsClient
 	 */
-	public CommsReader(CommsClient zCommsClient) {
+	public CommsClientReader(CommsClient zCommsClient) {
 		mCommsClient = zCommsClient;
 	}
 
 	@Override
 	public void run() {
+		DataInputStream input = null;
+		
 		try {
 			//Create an input stream
-			DataInputStream mInput = new DataInputStream(new BufferedInputStream(mCommsClient.getSocket().getInputStream()));
-			
-			//The Consensus
-//			ConsensusHandler consensus = mNetClient.getNetworkHandler().getMainHandler().getConsensusHandler();
+			input = new DataInputStream(new BufferedInputStream(mCommsClient.getSocket().getInputStream()));
 			
 			while(true) {
 				//Read in the MiniString
-				MiniString message = MiniString.ReadFromStream(mInput);
+				MiniString message = MiniString.ReadFromStream(input);
 				
 				//And Post it..
-				Message commsmessage = new Message(CommsClient.COMMSCLIENT_MESSAGE);
-				commsmessage.addObject("msg", message);
+				Message commsmessage = new Message(CommsClient.COMMSCLIENT_RECMESSAGE);
+				commsmessage.addObject("message", message);
 				mCommsClient.PostMessage(commsmessage);
 			}
 			
 		}catch(Exception exc) {
 			//General Exception	
 			MinimaLogger.log("COMMSCLIENTREADER ERROR.. "+exc);
-			exc.printStackTrace();
+			//exc.printStackTrace();
+		
+		}finally {
+			if(input != null) {
+				try {
+					input.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
 		}
 		
-		//Tell the network Handler
-//		mNetClient.getNetworkHandler().PostMessage(new Message(NetworkHandler.NETWORK_CLIENTERROR).addObject("client", mNetClient));
+		//Shut down the client..
+		mCommsClient.shutdown();
+		
+		MinimaLogger.log("COMMSCLIENT CLOSED");
 	}
 }
 

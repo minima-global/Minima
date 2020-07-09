@@ -161,7 +161,7 @@ public class NetworkHandler extends SystemHandler{
 			
 			//Shutdown all the clients
 			for(MinimaClient client : mClients) {
-				client.stopMessageProcessor();
+				client.shutdown();
 			}
 			
 			//And finish up..

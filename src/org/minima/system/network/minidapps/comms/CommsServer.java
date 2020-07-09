@@ -21,7 +21,8 @@ public class CommsServer implements Runnable{
 		mPort = zPort;
 		mCommsManager = zCommsManager;
 		
-	    MinimaLogger.log("CommsServer started on port : "+mPort);
+	    Thread tt = new Thread(this);
+	    tt.start();
 	}
 	
 	public int getPort() {
@@ -48,13 +49,15 @@ public class CommsServer implements Runnable{
 			//Start a server Socket..
 			mServerSocket = new ServerSocket(mPort);
 			
+			MinimaLogger.log("CommsServer started on port : "+mPort);
+		    
 			//Keep listening..
 			while(mRunning) {
 				//Listen in for connections
 				Socket clientsock = mServerSocket.accept();
 				
 				//create a new RPC Handler ..
-				CommsClient client = new CommsClient(clientsock,mCommsManager);
+				CommsClient client = new CommsClient(clientsock, mPort, mCommsManager);
 				
 				//Run in a new Thread
 				Thread rpcthread = new Thread(client, "Comms Client");
@@ -63,17 +66,25 @@ public class CommsServer implements Runnable{
 			
 		} catch (BindException e) {
 			//Socket shut down..
-			MinimaLogger.log("CommsServer : Port "+mPort+" already in use!.. restart required..");
+			MinimaLogger.log("CommsServer : Port "+mPort+" already in use!.. ");
+			return;
 			
 		} catch (SocketException e) {
 			if(mRunning) {
 				//Socket shut down..
 				MinimaLogger.log("CommsServer : Socket Shutdown.. "+e);
+				return;
 			}
+			
 		} catch (IOException e) {
 			MinimaLogger.log("CommsServer : "+e);
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			
+			return;
 		}
+		
+		//Socket shut down..
+		MinimaLogger.log("CommsServer stopped on port "+mPort);
 	}
 }

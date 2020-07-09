@@ -15,6 +15,7 @@ import org.minima.system.backup.BackupManager;
 import org.minima.system.input.InputHandler;
 import org.minima.system.network.commands.CMD;
 import org.minima.system.network.commands.FILE;
+import org.minima.system.network.commands.NET;
 import org.minima.system.network.commands.SQL;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.SQLHandler;
@@ -175,6 +176,16 @@ public class RPCHandler implements Runnable {
 				
 				//Get the Response..
             	finalresult = file.getFinalResult();
+			
+			}else if(reqtype.equals("net")) {
+				//Network Comms
+				NET netcomm = new NET(command, MiniDAPPID);
+				
+				//Run it..
+				netcomm.run();
+				
+				//Get the Response..
+            	finalresult = netcomm.getFinalResult();
 			}
 			
 			// send HTTP Headers

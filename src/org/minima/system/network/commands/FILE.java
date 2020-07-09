@@ -13,7 +13,6 @@ import org.minima.system.network.minidapps.minilib.JSMiniLibUtil;
 import org.minima.utils.MiniFile;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
-import org.minima.utils.json.parser.JSONParser;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Function;
 import org.mozilla.javascript.Scriptable;

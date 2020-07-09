@@ -24,6 +24,7 @@ import org.minima.objects.base.MiniData;
 import org.minima.system.Main;
 import org.minima.system.SystemHandler;
 import org.minima.system.input.InputHandler;
+import org.minima.system.network.minidapps.comms.CommsManager;
 import org.minima.system.network.minidapps.minihub.hexdata.minimajs;
 import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
@@ -43,7 +44,11 @@ public class DAPPManager extends SystemHandler {
 	JSONArray CURRENT_MINIDAPPS = new JSONArray();
 	String MINIDAPPS_FOLDER     = "";
 	
+	//The MiniDAPP app server
 	DAPPServer mDAPPServer;
+	
+	//The CommsManager for all the MIniDAPPS
+	CommsManager mCommsManager; 
 	
 	//The Edited minima.js file..
 	byte[] mMINIMAJS = new byte[0];
@@ -55,6 +60,8 @@ public class DAPPManager extends SystemHandler {
 	
 	public DAPPManager(Main zMain, String zHost, int zPort, int zRPCPort) {
 		super(zMain, "DAPPMAnager");
+		
+		mCommsManager = new CommsManager();
 		
 		//Correct HOST from RPC server
 		mRPCPort = zRPCPort;
@@ -82,6 +89,10 @@ public class DAPPManager extends SystemHandler {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+	
+	public CommsManager getCommsManager() {
+		return mCommsManager;
 	}
 	
 	public String getHostIP() {
@@ -172,6 +183,8 @@ public class DAPPManager extends SystemHandler {
 	
 	public void stop() {
 		mDAPPServer.stop();
+		mCommsManager.shutdown();
+		
 		stopMessageProcessor();
 	}
 	
