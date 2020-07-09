@@ -29,7 +29,7 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.objects.proofs.TokenProof;
 import org.minima.system.Main;
 import org.minima.system.input.InputHandler;
-import org.minima.system.network.NetClient;
+import org.minima.system.network.MinimaClient;
 import org.minima.system.network.NetworkHandler;
 import org.minima.system.network.minidapps.DAPPManager;
 import org.minima.system.network.rpc.RPCClient;
@@ -994,7 +994,7 @@ public class ConsensusPrint extends ConsensusProcessor {
 			}
 			
 			//Add the network connections
-			ArrayList<NetClient> nets = main.getNetworkHandler().getNetClients();
+			ArrayList<MinimaClient> nets = main.getNetworkHandler().getNetClients();
 			status.put("connections", nets.size());
 			
 			//Add it to the output
@@ -1024,12 +1024,12 @@ public class ConsensusPrint extends ConsensusProcessor {
 			JSONObject network = InputHandler.getResponseJSON(zMessage);
 			
 			//Add the network connections
-			ArrayList<NetClient> nets = getConsensusHandler().getMainHandler().getNetworkHandler().getNetClients();
+			ArrayList<MinimaClient> nets = getConsensusHandler().getMainHandler().getNetworkHandler().getNetClients();
 			network.put("connections", nets.size());
 			
 			JSONArray netarr = new JSONArray();
 			if(nets.size()>0) {
-				for(NetClient net : nets) {
+				for(MinimaClient net : nets) {
 					netarr.add(net.toJSON());
 				}
 				

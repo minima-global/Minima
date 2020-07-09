@@ -22,8 +22,8 @@ import org.minima.system.NativeListener;
 import org.minima.system.SystemHandler;
 import org.minima.system.input.InputHandler;
 import org.minima.system.input.functions.gimme50;
-import org.minima.system.network.NetClient;
-import org.minima.system.network.NetClientReader;
+import org.minima.system.network.MinimaClient;
+import org.minima.system.network.MinimaReader;
 import org.minima.system.network.NetworkHandler;
 import org.minima.system.txpow.TxPoWChecker;
 import org.minima.system.txpow.TxPoWMiner;
@@ -303,7 +303,7 @@ public class ConsensusHandler extends SystemHandler {
 			}
 			
 			//Message for ALL the clients
-			Message netmsg  = new Message(NetClient.NETCLIENT_SENDTXPOWID).addObject("txpowid", txpow.getTxPowID());
+			Message netmsg  = new Message(MinimaClient.NETCLIENT_SENDTXPOWID).addObject("txpowid", txpow.getTxPowID());
 			Message netw    = new Message(NetworkHandler.NETWORK_SENDALL).addObject("message", netmsg);
 			
 			//Post It..
@@ -446,12 +446,12 @@ public class ConsensusHandler extends SystemHandler {
 			resp.put("inputs", txpow.getTransaction().getAllInputs().size());
 			resp.put("outputs", txpow.getTransaction().getAllOutputs().size());
 			
-			if(txpowsize > NetClientReader.MAX_TXPOW) {
+			if(txpowsize > MinimaReader.MAX_TXPOW) {
 				//Add the TxPoW
 				resp.put("transaction", txpow.getTransaction());
 				
 				//ITS TOO BIG!
-				InputHandler.endResponse(zMessage, false, "YOUR TXPOW TRANSACTION IS TOO BIG! MAX SIZE : "+NetClientReader.MAX_TXPOW);
+				InputHandler.endResponse(zMessage, false, "YOUR TXPOW TRANSACTION IS TOO BIG! MAX SIZE : "+MinimaReader.MAX_TXPOW);
 				
 				return;
 			}

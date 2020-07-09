@@ -21,8 +21,8 @@ import org.minima.objects.proofs.TokenProof;
 import org.minima.system.backup.BackupManager;
 import org.minima.system.backup.SyncPackage;
 import org.minima.system.backup.SyncPacket;
-import org.minima.system.network.NetClient;
-import org.minima.system.network.NetClientReader;
+import org.minima.system.network.MinimaClient;
+import org.minima.system.network.MinimaReader;
 import org.minima.system.txpow.TxPoWChecker;
 import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
@@ -39,16 +39,16 @@ public class ConsensusNet extends ConsensusProcessor {
 	public static final String CONSENSUS_NET_CHECKSIZE_TXPOW 	    = CONSENSUS_PREFIX+"NET_MESSAGE_MYTXPOW";
 	
 	public static final String CONSENSUS_NET_INITIALISE 	= CONSENSUS_PREFIX+"NET_INITIALISE";
-	public static final String CONSENSUS_NET_INTRO 			= CONSENSUS_PREFIX+"NET_MESSAGE_"+NetClientReader.NETMESSAGE_INTRO.getValue();
-	public static final String CONSENSUS_NET_TXPOWID 		= CONSENSUS_PREFIX+"NET_MESSAGE_"+NetClientReader.NETMESSAGE_TXPOWID.getValue();
-	public static final String CONSENSUS_NET_TXPOWREQUEST	= CONSENSUS_PREFIX+"NET_MESSAGE_"+NetClientReader.NETMESSAGE_TXPOW_REQUEST.getValue();
-	public static final String CONSENSUS_NET_TXPOW 			= CONSENSUS_PREFIX+"NET_MESSAGE_"+NetClientReader.NETMESSAGE_TXPOW.getValue();
+	public static final String CONSENSUS_NET_INTRO 			= CONSENSUS_PREFIX+"NET_MESSAGE_"+MinimaReader.NETMESSAGE_INTRO.getValue();
+	public static final String CONSENSUS_NET_TXPOWID 		= CONSENSUS_PREFIX+"NET_MESSAGE_"+MinimaReader.NETMESSAGE_TXPOWID.getValue();
+	public static final String CONSENSUS_NET_TXPOWREQUEST	= CONSENSUS_PREFIX+"NET_MESSAGE_"+MinimaReader.NETMESSAGE_TXPOW_REQUEST.getValue();
+	public static final String CONSENSUS_NET_TXPOW 			= CONSENSUS_PREFIX+"NET_MESSAGE_"+MinimaReader.NETMESSAGE_TXPOW.getValue();
 	
-	public static final String CONSENSUS_NET_GREETING 		    = CONSENSUS_PREFIX+"NET_MESSAGE_"+NetClientReader.NETMESSAGE_GREETING.getValue();
-	public static final String CONSENSUS_NET_TXPOWLIST_REQUEST	= CONSENSUS_PREFIX+"NET_MESSAGE_"+NetClientReader.NETMESSAGE_TXPOWLIST_REQUEST.getValue();
-	public static final String CONSENSUS_NET_TXPOWLIST 			= CONSENSUS_PREFIX+"NET_MESSAGE_"+NetClientReader.NETMESSAGE_TXPOWLIST.getValue();
+	public static final String CONSENSUS_NET_GREETING 		    = CONSENSUS_PREFIX+"NET_MESSAGE_"+MinimaReader.NETMESSAGE_GREETING.getValue();
+	public static final String CONSENSUS_NET_TXPOWLIST_REQUEST	= CONSENSUS_PREFIX+"NET_MESSAGE_"+MinimaReader.NETMESSAGE_TXPOWLIST_REQUEST.getValue();
+	public static final String CONSENSUS_NET_TXPOWLIST 			= CONSENSUS_PREFIX+"NET_MESSAGE_"+MinimaReader.NETMESSAGE_TXPOWLIST.getValue();
 	
-	public static final String CONSENSUS_NET_PING 			= CONSENSUS_PREFIX+"NET_MESSAGE_"+NetClientReader.NETMESSAGE_PING.getValue();
+	public static final String CONSENSUS_NET_PING 			= CONSENSUS_PREFIX+"NET_MESSAGE_"+MinimaReader.NETMESSAGE_PING.getValue();
 	
 	/**
 	 * Will we switch to a heavier chain - DEBUG mode for -private
@@ -113,8 +113,8 @@ public class ConsensusNet extends ConsensusProcessor {
 			}
 			
 			//Get the NetClient...
-			NetClient client = (NetClient) zMessage.getObject("netclient");
-			Message req      = new Message(NetClient.NETCLIENT_GREETING).addObject("greeting", greet);
+			MinimaClient client = (MinimaClient) zMessage.getObject("netclient");
+			Message req      = new Message(MinimaClient.NETCLIENT_GREETING).addObject("greeting", greet);
 			
 			//And Post it..
 			client.PostMessage(req);
@@ -294,8 +294,8 @@ public class ConsensusNet extends ConsensusProcessor {
 				MinimaLogger.log("FIRST TIME SYNC - Sending complete");
 				//Get the complete sync package - deep copy.. 
 				SyncPackage sp = getMainDB().getSyncPackage(true);
-				NetClient client = (NetClient) zMessage.getObject("netclient");
-				Message req      = new Message(NetClient.NETCLIENT_INTRO).addObject("syncpackage", sp);
+				MinimaClient client = (MinimaClient) zMessage.getObject("netclient");
+				Message req      = new Message(MinimaClient.NETCLIENT_INTRO).addObject("syncpackage", sp);
 				client.PostMessage(req);
 				return;
 			}
@@ -305,8 +305,8 @@ public class ConsensusNet extends ConsensusProcessor {
 				MinimaLogger.log("NO CROSSOVER - Sending complete");
 				//Get the complete sync package - deep copy.. 
 				SyncPackage sp = getMainDB().getSyncPackage(true);
-				NetClient client = (NetClient) zMessage.getObject("netclient");
-				Message req      = new Message(NetClient.NETCLIENT_INTRO).addObject("syncpackage", sp);
+				MinimaClient client = (MinimaClient) zMessage.getObject("netclient");
+				Message req      = new Message(MinimaClient.NETCLIENT_INTRO).addObject("syncpackage", sp);
 				client.PostMessage(req);
 				return;
 			}
@@ -325,8 +325,8 @@ public class ConsensusNet extends ConsensusProcessor {
 			//Ask for Just the required Blocks..
 			HashNumber hn = new HashNumber(top, len);
 			
-			NetClient client = (NetClient) zMessage.getObject("netclient");
-			Message req      = new Message(NetClient.NETCLIENT_TXPOWLIST_REQ).addObject("hashnumber", hn);
+			MinimaClient client = (MinimaClient) zMessage.getObject("netclient");
+			Message req      = new Message(MinimaClient.NETCLIENT_TXPOWLIST_REQ).addObject("hashnumber", hn);
 			client.PostMessage(req);
 			
 		}else if ( zMessage.isMessageType(CONSENSUS_NET_TXPOWLIST_REQUEST)) {
@@ -345,15 +345,15 @@ public class ConsensusNet extends ConsensusProcessor {
 			}
 			
 			//Now send that..!
-			NetClient client = (NetClient) zMessage.getObject("netclient");
-			Message req      = new Message(NetClient.NETCLIENT_TXPOWLIST).addObject("txpowlist", txplist);
+			MinimaClient client = (MinimaClient) zMessage.getObject("netclient");
+			Message req      = new Message(MinimaClient.NETCLIENT_TXPOWLIST).addObject("txpowlist", txplist);
 			client.PostMessage(req);
 			
 		}else if ( zMessage.isMessageType(CONSENSUS_NET_TXPOWLIST)) {
 			TxPoWList txplist = (TxPoWList)zMessage.getObject("txpowlist"); 
 			
 			//Get the NetClient...
-			NetClient client = (NetClient) zMessage.getObject("netclient");
+			MinimaClient client = (MinimaClient) zMessage.getObject("netclient");
 			
 			//Cycle through and add as a normal message - extra transactions will be requested as normal
 			ArrayList<TxPoW> txps = txplist.getList();
@@ -392,17 +392,17 @@ public class ConsensusNet extends ConsensusProcessor {
 			
 			}else {
 				//Bit Special..Get the NetClient...
-				NetClient client = (NetClient) zMessage.getObject("netclient");
+				MinimaClient client = (MinimaClient) zMessage.getObject("netclient");
 				
 				//Send it to him..
-				Message tx = new Message(NetClient.NETCLIENT_SENDTXPOW).addObject("txpow", txpow);
+				Message tx = new Message(MinimaClient.NETCLIENT_SENDTXPOW).addObject("txpow", txpow);
 				client.PostMessage(tx);
 			}
 		
 		}else if(zMessage.isMessageType(CONSENSUS_NET_PING)) {
 			//Send it on to the netwclient..
-			NetClient client = (NetClient) zMessage.getObject("netclient");
-			client.PostMessage(new Message(NetClient.NETCLIENT_PING));
+			MinimaClient client = (MinimaClient) zMessage.getObject("netclient");
+			client.PostMessage(new Message(MinimaClient.NETCLIENT_PING));
 			
 		}else if(zMessage.isMessageType(CONSENSUS_NET_CHECKSIZE_TXPOW)) {
 			//Internal message sent from you..
@@ -414,7 +414,7 @@ public class ConsensusNet extends ConsensusProcessor {
 			//Is this from the net
 			if(zMessage.exists("netclient")) {
 				//Get the NetClient...
-				NetClient client = (NetClient) zMessage.getObject("netclient");
+				MinimaClient client = (MinimaClient) zMessage.getObject("netclient");
 				txpownet.addObject("netclient", client);
 			}
 			
@@ -427,8 +427,8 @@ public class ConsensusNet extends ConsensusProcessor {
 			dos.close();
 			baos.close();
 			
-			if(txpowsize > NetClientReader.MAX_TXPOW) {
-				MinimaLogger.log("ERROR - You've Mined A TxPoW that is too BIG! "+txpowsize+" / "+NetClientReader.MAX_TXPOW);
+			if(txpowsize > MinimaReader.MAX_TXPOW) {
+				MinimaLogger.log("ERROR - You've Mined A TxPoW that is too BIG! "+txpowsize+" / "+MinimaReader.MAX_TXPOW);
 				return;
 			}
 			
@@ -547,9 +547,9 @@ public class ConsensusNet extends ConsensusProcessor {
 	
 	private void sendTxPowRequest(Message zFromMessage, MiniData zTxPoWID) {
 		//Get the NetClient...
-		NetClient client = (NetClient) zFromMessage.getObject("netclient");
+		MinimaClient client = (MinimaClient) zFromMessage.getObject("netclient");
 			
-		Message req = new Message(NetClient.NETCLIENT_SENDTXPOWREQ);
+		Message req = new Message(MinimaClient.NETCLIENT_SENDTXPOWREQ);
 		req.addObject("txpowid", zTxPoWID);
 		
 		//And Post it..

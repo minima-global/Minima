@@ -11,7 +11,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 
-import org.minima.system.network.NetClientReader;
+import org.minima.system.network.MinimaReader;
 import org.minima.utils.BaseConverter;
 import org.minima.utils.Crypto;
 import org.minima.utils.Streamable;
@@ -174,7 +174,7 @@ public class MiniData implements Streamable {
 		int len = zIn.readInt();
 		
 		//Check against maximum allowed
-		if(len > NetClientReader.MAX_INTRO) {
+		if(len > MinimaReader.MAX_INTRO) {
 			throw new IOException("Read Error : MiniData Length larger than maximum allowed "+len);
 		}
 		

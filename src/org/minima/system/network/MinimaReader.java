@@ -22,7 +22,7 @@ import org.minima.utils.MinimaLogger;
 import org.minima.utils.ProtocolException;
 import org.minima.utils.messages.Message;
 
-public class NetClientReader implements Runnable {
+public class MinimaReader implements Runnable {
 	
 	/**
 	 * Maximum Message sizes..
@@ -87,14 +87,14 @@ public class NetClientReader implements Runnable {
 	/**
 	 * Netclient owner
 	 */
-	NetClient 		mNetClient;
+	MinimaClient 		mNetClient;
 	
 	/**
 	 * Constructor
 	 * 
 	 * @param zNetClient
 	 */
-	public NetClientReader(NetClient zNetClient) {
+	public MinimaReader(MinimaClient zNetClient) {
 		mNetClient 		= zNetClient;
 	}
 

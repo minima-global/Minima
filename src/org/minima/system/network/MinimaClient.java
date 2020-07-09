@@ -27,7 +27,7 @@ import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageProcessor;
 import org.minima.utils.messages.TimerMessage;
 
-public class NetClient extends MessageProcessor {
+public class MinimaClient extends MessageProcessor {
 		
 	/**
 	 * NetClient Messages
@@ -61,7 +61,7 @@ public class NetClient extends MessageProcessor {
 	DataOutputStream mOutput;
 	
 	Thread 				mInputThread;
-	NetClientReader		mInputReader;
+	MinimaReader		mInputReader;
 	
 	//The UID
 	String mUID;
@@ -93,7 +93,7 @@ public class NetClient extends MessageProcessor {
 	 * @throws IOException 
 	 * @throws UnknownHostException 
 	 */
-	public NetClient(String zHost, int zPort, NetworkHandler zNetwork) {
+	public MinimaClient(String zHost, int zPort, NetworkHandler zNetwork) {
 		super("NETCLIENT");
 		
 		//Store
@@ -113,7 +113,7 @@ public class NetClient extends MessageProcessor {
 		PostMessage(NETCLIENT_INITCONNECT);
 	}
 	
-	public NetClient(Socket zSock, NetworkHandler zNetwork) {
+	public MinimaClient(Socket zSock, NetworkHandler zNetwork) {
 		super("NETCLIENT");
 		
 		//This is an incoming connection.. no reconnect attempt
@@ -220,7 +220,7 @@ public class NetClient extends MessageProcessor {
 			mOutput 	= new DataOutputStream(mSocket.getOutputStream());
 			
 			//Start reading
-			mInputReader = new NetClientReader(this);
+			mInputReader = new MinimaReader(this);
 			mInputThread = new Thread(mInputReader, "NetClientReader");
 			mInputThread.start();
 			
@@ -237,27 +237,27 @@ public class NetClient extends MessageProcessor {
 		
 		}else if(zMessage.isMessageType(NETCLIENT_GREETING)) {
 			Greeting greet = (Greeting)zMessage.getObject("greeting");
-			sendMessage(NetClientReader.NETMESSAGE_GREETING, greet);
+			sendMessage(MinimaReader.NETMESSAGE_GREETING, greet);
 		
 		}else if(zMessage.isMessageType(NETCLIENT_TXPOWLIST)) {
 			TxPoWList txplist = (TxPoWList)zMessage.getObject("txpowlist");
-			sendMessage(NetClientReader.NETMESSAGE_TXPOWLIST, txplist);
+			sendMessage(MinimaReader.NETMESSAGE_TXPOWLIST, txplist);
 			
 		}else if(zMessage.isMessageType(NETCLIENT_TXPOWLIST_REQ)) {
 			HashNumber hn = (HashNumber)zMessage.getObject("hashnumber");
-			sendMessage(NetClientReader.NETMESSAGE_TXPOWLIST_REQUEST, hn);
+			sendMessage(MinimaReader.NETMESSAGE_TXPOWLIST_REQUEST, hn);
 			
 		}else if(zMessage.isMessageType(NETCLIENT_INTRO)) {
 			SyncPackage sp = (SyncPackage)zMessage.getObject("syncpackage");
-			sendMessage(NetClientReader.NETMESSAGE_INTRO, sp);
+			sendMessage(MinimaReader.NETMESSAGE_INTRO, sp);
 		
 		}else if(zMessage.isMessageType(NETCLIENT_SENDTXPOWID)) {
 			MiniData txpowid = (MiniData)zMessage.getObject("txpowid");
-			sendMessage(NetClientReader.NETMESSAGE_TXPOWID, txpowid);
+			sendMessage(MinimaReader.NETMESSAGE_TXPOWID, txpowid);
 				
 		}else if(zMessage.isMessageType(NETCLIENT_SENDTXPOW)) {
 			TxPoW txpow = (TxPoW)zMessage.getObject("txpow");
-			sendMessage(NetClientReader.NETMESSAGE_TXPOW, txpow);
+			sendMessage(MinimaReader.NETMESSAGE_TXPOW, txpow);
 				
 		}else if(zMessage.isMessageType(NETCLIENT_SENDTXPOWREQ)) {
 			//get the TxPOW
@@ -302,7 +302,7 @@ public class NetClient extends MessageProcessor {
 			mOldTxPoWRequests.put(val, new Long(timenow));
 			
 			//And send it..
-			sendMessage(NetClientReader.NETMESSAGE_TXPOW_REQUEST, txpowid);
+			sendMessage(MinimaReader.NETMESSAGE_TXPOW_REQUEST, txpowid);
 	
 		}else if(zMessage.isMessageType(NETCLIENT_PULSE)) {
 			//When was the last PING message..
@@ -313,12 +313,12 @@ public class NetClient extends MessageProcessor {
 				MinimaLogger.log("PING NOT RECEIVED IN TIME @ "+mHost+":"+mPort);
 			
 				//Disconnect..
-				PostMessage(new Message(NetClient.NETCLIENT_SHUTDOWN));
+				PostMessage(new Message(MinimaClient.NETCLIENT_SHUTDOWN));
 				return;
 			}
 			
 			//Send a PULSE message..
-			sendMessage(NetClientReader.NETMESSAGE_PING, MiniByte.TRUE);
+			sendMessage(MinimaReader.NETMESSAGE_PING, MiniByte.TRUE);
 			
 			//Send it again in a while..
 			PostTimerMessage(new TimerMessage(PING_INTERVAL, NETCLIENT_PULSE));
@@ -380,7 +380,7 @@ public class NetClient extends MessageProcessor {
 			MinimaLogger.log("Error sending message : "+zMessageType.toString()+" "+ec);
 			
 			//Tell the network Handler
-			PostMessage(new Message(NetClient.NETCLIENT_SHUTDOWN));
+			PostMessage(new Message(MinimaClient.NETCLIENT_SHUTDOWN));
 		}
 	}	
 }

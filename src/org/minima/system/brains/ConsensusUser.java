@@ -38,7 +38,7 @@ import org.minima.objects.base.MiniString;
 import org.minima.objects.proofs.ScriptProof;
 import org.minima.objects.proofs.TokenProof;
 import org.minima.system.input.InputHandler;
-import org.minima.system.network.NetClient;
+import org.minima.system.network.MinimaClient;
 import org.minima.system.network.NetworkHandler;
 import org.minima.system.txpow.TxPoWChecker;
 import org.minima.utils.Crypto;
@@ -556,7 +556,7 @@ public class ConsensusUser extends ConsensusProcessor {
 					if(txpow.isBlock()) {
 						MiniData parent = txpow.getParentID();
 						if(tdb.findTxPOWDBRow(parent) == null) {
-							Message msg  = new Message(NetClient.NETCLIENT_SENDTXPOWREQ)
+							Message msg  = new Message(MinimaClient.NETCLIENT_SENDTXPOWREQ)
 												.addObject("txpowid", parent);
 							Message netw = new Message(NetworkHandler.NETWORK_SENDALL)
 												.addObject("message", msg);
@@ -572,7 +572,7 @@ public class ConsensusUser extends ConsensusProcessor {
 						ArrayList<MiniData> txns = txpow.getBlockTransactions();
 						for(MiniData txn : txns) {
 							if(tdb.findTxPOWDBRow(txn) == null) {
-								Message msg  = new Message(NetClient.NETCLIENT_SENDTXPOWREQ)
+								Message msg  = new Message(MinimaClient.NETCLIENT_SENDTXPOWREQ)
 										.addObject("txpowid", txn);
 								Message netw = new Message(NetworkHandler.NETWORK_SENDALL)
 										.addObject("message", msg);
