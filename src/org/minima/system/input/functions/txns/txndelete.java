@@ -19,7 +19,7 @@ public class txndelete extends CommandFunction{
 		//Send to the consensus Handler
 		//Message msg = new Message(ConsensusTxn.CONSENSUS_TXNDELETE);
 		Message msg = getResponseMessage(ConsensusTxn.CONSENSUS_TXNDELETE);
-		msg.addInt("transaction", txn);
+		msg.addInteger("transaction", txn);
 	
 		getMainHandler().getConsensusHandler().PostMessage(msg);
 	}

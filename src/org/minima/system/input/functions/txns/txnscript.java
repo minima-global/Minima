@@ -15,7 +15,7 @@ public class txnscript extends CommandFunction {
 	public void doFunction(String[] zInput) throws Exception {
 		//Send to the consensus Handler
 		Message msg = getResponseMessage(ConsensusTxn.CONSENSUS_TXNSCRIPT);
-		msg.addInt("transaction", Integer.parseInt(zInput[1]));
+		msg.addInteger("transaction", Integer.parseInt(zInput[1]));
 		msg.addString("script", zInput[2]);
 		msg.addString("proof", zInput[3]);
 				

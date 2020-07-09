@@ -274,7 +274,7 @@ public class NetworkHandler extends SystemHandler{
 				//And post a message..
 				TimerMessage  recon = new TimerMessage(30000,NETWORK_CONNECT);
 				recon.addString("host", host);
-				recon.addInt("port", port);
+				recon.addInteger("port", port);
 				
 				MinimaLogger.log("Attempting reconnect to "+host+":"+port+" in 30s..");
 				

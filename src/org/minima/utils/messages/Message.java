@@ -92,7 +92,7 @@ public class Message {
 		return this;
 	}
 	
-	public Message addInt(String zName, int zValue) {
+	public Message addInteger(String zName, int zValue) {
 		return addObject(zName, new Integer(zValue));
 	}
 	
