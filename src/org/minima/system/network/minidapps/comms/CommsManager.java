@@ -2,11 +2,14 @@ package org.minima.system.network.minidapps.comms;
 
 import java.util.ArrayList;
 
+import org.minima.system.Main;
+import org.minima.system.SystemHandler;
+import org.minima.system.network.NetworkHandler;
 import org.minima.utils.MinimaLogger;
+import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
-import org.minima.utils.messages.MessageProcessor;
 
-public class CommsManager extends MessageProcessor {
+public class CommsManager extends SystemHandler {
 
 	public static final String COMMS_INIT = "COMMS_INIT";
 	
@@ -25,8 +28,8 @@ public class CommsManager extends MessageProcessor {
 	ArrayList<CommsServer> mServers;
 	ArrayList<CommsClient> mClients;
 	
-	public CommsManager() {
-		super("COMMSMANAGER");
+	public CommsManager(Main zMain) {
+		super(zMain, "COMMSMANAGER");
 	
 		mServers = new ArrayList<>();
 		mClients = new ArrayList<>();
@@ -93,10 +96,12 @@ public class CommsManager extends MessageProcessor {
 		
 			//Stop that server
 			CommsServer server = getServer(port);
-			server.stop();
-		
-			//Remove from the list..
-			mServers.remove(server);
+			if(server != null) {
+				server.stop();	
+			
+				//Remove from the list..
+				mServers.remove(server);
+			}
 			
 		}else if(zMessage.getMessageType().equals(COMMS_CONNECT)) {
 			String hostport = zMessage.getString("hostport");
@@ -122,6 +127,25 @@ public class CommsManager extends MessageProcessor {
 			
 			//Add to our List..
 			mClients.add(client);	
+			
+			//Send a message
+			NetworkHandler net = getMainHandler().getNetworkHandler();
+			
+			//Do we notify..
+			if(client.isBroadCast()) {
+				JSONObject netaction = new JSONObject();
+				netaction.put("type", "newconnection");
+				netaction.put("port", client.getPort());
+				
+				//someone has connected to a port you opened..
+				JSONObject newclient = new JSONObject();
+				newclient.put("event","network");
+				newclient.put("details",netaction);
+				
+				Message msg = new Message(NetworkHandler.NETWORK_WS_NOTIFY);
+				msg.addString("message", newclient.toString());
+				net.PostMessage(msg);
+			}
 			
 		}else if(zMessage.getMessageType().equals(COMMS_BROADCAST)) {
 			String message = zMessage.getString("message");

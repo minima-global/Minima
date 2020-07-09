@@ -61,7 +61,7 @@ public class DAPPManager extends SystemHandler {
 	public DAPPManager(Main zMain, String zHost, int zPort, int zRPCPort) {
 		super(zMain, "DAPPMAnager");
 		
-		mCommsManager = new CommsManager();
+		mCommsManager = new CommsManager(zMain);
 		
 		//Correct HOST from RPC server
 		mRPCPort = zRPCPort;
