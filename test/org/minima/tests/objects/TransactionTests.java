@@ -4,7 +4,12 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 import org.junit.Test;
 
@@ -80,7 +85,6 @@ public class TransactionTests {
         String HelloWorld = "HelloWorld";
         t.addStateVariable(new StateVariable(1, HelloWorld));
         assertTrue("Transaction should have state port 1 defined", t.stateExists(1));
-        System.out.println("var port 1: " + t.getStateValue(1).getValue().toString());
         assertTrue("Variable set should match original String", t.getStateValue(1).getValue().toString().compareTo(HelloWorld)==0);
         
         try {
@@ -88,7 +92,32 @@ public class TransactionTests {
         } catch(IOException e) {
             assertFalse("Exception should not throw during transaction deep copy", true);
         }
+
+        try {
+            
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            DataOutputStream dos = new DataOutputStream(bos);
+            t.writeDataStream(dos);
+
+            InputStream inputStream = new ByteArrayInputStream(bos.toByteArray());
+            DataInputStream dis = new DataInputStream(inputStream);
+
+            Transaction tread = new Transaction();
+            tread.readDataStream(dis);
+
+            assertTrue("The transaction should have two outputs", tread.getAllOutputs().size()==2);
+            assertTrue("The transaction output sum should be 5", tread.sumOutputs().isEqual(new MiniNumber(5)));
+            assertTrue("The transaction is valid", tread.checkValidInOutPerToken());
+            assertTrue("The transaction has a remainder", tread.getRemainderCoin(Coin.MINIMA_TOKENID) != null);
+            assertFalse("Not a gimme50 tx", tread.isGimme50());
+    
+        } catch (final IOException e) {
+            System.out.println("IOException: " + e.toString() + " msg=" + e.getMessage());
+            assertTrue(" there should not be an IOException", false);
+        }
+
     }
+
 
 }
 
