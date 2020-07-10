@@ -168,14 +168,29 @@ public class CommsManager extends SystemHandler {
 			CommsClient client = new CommsClient(host, port, this);
 		
 		}else if(zMessage.getMessageType().equals(COMMS_DISCONNECT)) {
-			String hostport = zMessage.getString("hostport");
-			int index = hostport.indexOf(":");
-			String host = hostport.substring(0, index);
-			int port = Integer.parseInt(hostport.substring(index+1).trim());
+			String uid = zMessage.getString("uid");
+			
+			JSONObject netaction = new JSONObject();
 			
 			//Get the Client..
-			
+			boolean found=false;
+			for(CommsClient client : mClients) {
+				if(client.getUID().equals(uid)) {
+					client.PostMessage(CommsClient.COMMSCLIENT_SHUTDOWN);
+					netaction.put("type", "client");
+					netaction.put("action", "disconnect");
+					netaction.put("uid", uid);
+					netaction.put("host", client.getHost());
+					netaction.put("port", client.getPort());
+					found=true;
+				}
+			}
 		
+			if(!found) {
+				netaction.put("error", "client not found");
+			}
+			postCommsMssage(netaction);
+			
 		}else if(zMessage.getMessageType().equals(COMMS_CLIENTERROR)) {
 			//There's a new client connected to a comms server
 			CommsClient client = (CommsClient) zMessage.getObject("client");
