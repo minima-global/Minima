@@ -53,7 +53,7 @@ public class CommsClientReader implements Runnable {
 				
 				//And Post it..
 				Message commsmessage = new Message(CommsClient.COMMSCLIENT_RECMESSAGE);
-				commsmessage.addObject("message", message);
+				commsmessage.addString("message", message.toString());
 				mCommsClient.PostMessage(commsmessage);
 			}
 			
@@ -74,7 +74,7 @@ public class CommsClientReader implements Runnable {
 		}
 		
 		//Shut down the client..
-		mCommsClient.shutdown();
+		mCommsClient.PostMessage(CommsClient.COMMSCLIENT_SHUTDOWN);
 		
 		MinimaLogger.log("COMMSCLIENT CLOSED");
 	}

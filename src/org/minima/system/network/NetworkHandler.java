@@ -103,6 +103,10 @@ public class NetworkHandler extends SystemHandler{
 	public DAPPManager getDAPPManager() {
 		return mDAPPManager;
 	}
+	
+	public WebSocketManager getWebSocketManager() {
+		return mWebSocketManager;
+	}
 
 	public void setProxy(String zProxy) {
 		mMifiProxy = zProxy; 

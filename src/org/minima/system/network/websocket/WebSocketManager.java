@@ -23,8 +23,10 @@ public class WebSocketManager extends SystemHandler {
 	public static final String WEBSOCK_ONMESSAGE   = "WEBSOCK_ONMESSAGE";
 	public static final String WEBSOCK_ONEXCEPTION = "WEBSOCK_ONEXCEPTION";
 	
+	public static final String WEBSOCK_SEND_INTRAMSG = "WEBSOCK_SEND_INTRAMSG";
+	
+	public static final String WEBSOCK_SEND        = "WEBSOCK_SEND";
 	public static final String WEBSOCK_SENDTOALL   = "WEBSOCK_SENDTOALL";
-	public static final String WEBSOCK_SEND_INTRAMSG        = "WEBSOCK_SEND";
 	
 	//The BASE WebSocketServer
 	WebSocketServer mWebSockServer;
@@ -192,6 +194,30 @@ public class WebSocketManager extends SystemHandler {
 				}
 			}
 			
+		}else if(zMessage.getMessageType().equals(WEBSOCK_SEND)) {
+			//Who to send the message to..
+			String miniid = zMessage.getString("minidappid");
+			
+			//What to send..
+			String msg = zMessage.getString("message");
+			
+			//Send a message to one of the listeners..
+			Enumeration<MinimaWebSocket> clients = mMininaSockets.elements();
+			while(clients.hasMoreElements()) {
+				MinimaWebSocket client = clients.nextElement();
+				if(client.getMiniDAPPUID().equals(miniid)) {
+					try {
+						//Try and send the message..
+						client.send(msg);
+						return;
+					}catch(Exception exc){
+						//Something wrong with this connection.. close..
+						mMininaSockets.remove(client.getClientUID());
+						break;
+					}
+				}
+			}
+		
 		}else if(zMessage.getMessageType().equals(WEBSOCK_SENDTOALL)) {
 			//What to send..
 			String msg = zMessage.getString("message");
