@@ -19,7 +19,7 @@ import org.junit.Test;
 public class ScriptProofTests {
 
     @Test
-    public void testAddress() {
+    public void testScriptProof() {
         String str = "test-string";
         // MiniData proofValue = new MiniData("#ffffffffffffffffffffffffff");
         MiniData j = new MiniData("#ED300A3D6C12BCFC24BB919C1F15E07F26A3A0C0");
