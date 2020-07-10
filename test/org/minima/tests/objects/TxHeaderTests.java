@@ -33,7 +33,6 @@ public class TxHeaderTests {
         assertTrue("tx header should have a body hash", mHeader.getBodyHash() != null);
         assertTrue("body hash should not be empty", mHeader.getBodyHash().isMore(new MiniData("0x0")));
         JSONObject json = mHeader.toJSON();
-        System.out.println("json: " + json.toJSONString());
         assertTrue("json object should not be null", json != null);
         try {            
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
