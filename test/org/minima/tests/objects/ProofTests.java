@@ -22,7 +22,7 @@ import org.minima.objects.proofs.Proof.ProofChunk;
 public class ProofTests {
 
     @Test
-    public void testAddress() throws Exception {
+    public void testProof() throws Exception {
         MiniData proofValue = new MiniData("#ffffffff");
         Proof p = new Proof();
         System.out.println("Proof created values - " + p.getData());
