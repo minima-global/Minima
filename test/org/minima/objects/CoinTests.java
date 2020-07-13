@@ -21,7 +21,7 @@ import org.junit.Test;
 public class CoinTests {
 
     @Test
-    public void testAddress() {
+    public void testCoin() {
         MiniData md = Coin.COINID_OUTPUT;
         MiniData md3 = Coin.TOKENID_CREATE;
         MiniData md2 = Coin.MINIMA_TOKENID;
