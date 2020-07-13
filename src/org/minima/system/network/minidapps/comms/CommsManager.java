@@ -13,20 +13,19 @@ public class CommsManager extends SystemHandler {
 
 	public static final String COMMS_INIT = "COMMS_INIT";
 	
-	public static final String COMMS_START       = "COMMS_STARTSERVER";
-	public static final String COMMS_NEWSERVER   = "COMMS_NEWSERVER";
-	public static final String COMMS_SERVERERROR = "COMMS_SERVERERROR";
-	public static final String COMMS_STOP        = "COMMS_STOPSERVER";
+	public static final String COMMS_START        = "COMMS_STARTSERVER";
+	public static final String COMMS_NEWSERVER    = "COMMS_NEWSERVER";
+	public static final String COMMS_SERVERERROR  = "COMMS_SERVERERROR";
+	public static final String COMMS_STOP         = "COMMS_STOPSERVER";
 	
-	public static final String COMMS_BROADCAST  = "COMMS_BROADCAST";
+	public static final String COMMS_BROADCAST    = "COMMS_BROADCAST";
 	
-	public static final String COMMS_CONNECT    = "COMMS_CONNECT";
-	public static final String COMMS_DISCONNECT = "COMMS_DISCONNECT";
+	public static final String COMMS_CONNECT      = "COMMS_CONNECT";
+	public static final String COMMS_DISCONNECT   = "COMMS_DISCONNECT";
+	public static final String COMMS_SEND         = "COMMS_SEND";
 	
 	public static final String COMMS_NEWCLIENT    = "COMMS_NEWCLIENT";
-	public static final String COMMS_CLIENTERROR  = "COMMS_CLIENTERROR";
-	
-	public static final String COMMS_SHUTDOWN   = "COMMS_SHUTDOWN";
+	public static final String COMMS_CLIENTSHUT  = "COMMS_CLIENTERROR";
 	
 	ArrayList<CommsServer> mServers;
 	ArrayList<CommsClient> mClients;
@@ -40,6 +39,14 @@ public class CommsManager extends SystemHandler {
 		PostMessage(COMMS_INIT);
 	}
 	
+	public ArrayList<CommsServer> getServers(){
+		return mServers;
+	}
+	
+	public ArrayList<CommsClient> getClients(){
+		return mClients;
+	}
+	
 	public CommsServer getServer(int zPort) {
 		for(CommsServer server : mServers) {
 			if(server.getPort() == zPort) {
@@ -50,9 +57,9 @@ public class CommsManager extends SystemHandler {
 		return null;
 	}
 	
-	public CommsClient getClient(String zHost, int zPort) {
+	public CommsClient getClient(String zUID) {
 		for(CommsClient client : mClients) {
-			if(client.getPort() == zPort && client.getHost().equals(zHost)) {
+			if(client.getUID().equals(zUID)) {
 				return client;		
 			}
 		}
@@ -91,8 +98,6 @@ public class CommsManager extends SystemHandler {
 			//Now create one..
 			CommsServer server = new CommsServer(port, this);
 			
-			MinimaLogger.log("Total Servers : "+mServers.size());
-		
 		}else if(zMessage.getMessageType().equals(COMMS_NEWSERVER)) {
 			//Get the Server
 			CommsServer server = (CommsServer) zMessage.getObject("server");
@@ -102,8 +107,7 @@ public class CommsManager extends SystemHandler {
 			
 			//Broadcast..
 			JSONObject netaction = new JSONObject();
-			netaction.put("type", "server");
-			netaction.put("action", "new");
+			netaction.put("action", "newserver");
 			netaction.put("port", server.getPort());
 			postCommsMssage(netaction);
 			
@@ -116,8 +120,7 @@ public class CommsManager extends SystemHandler {
 			
 			//Broadcast..
 			JSONObject netaction = new JSONObject();
-			netaction.put("type", "server");
-			netaction.put("action", "error");
+			netaction.put("action", "server_error");
 			netaction.put("port", server.getPort());
 			netaction.put("error", zMessage.getString("error"));
 			postCommsMssage(netaction);
@@ -135,8 +138,7 @@ public class CommsManager extends SystemHandler {
 			
 				//Broadcast..
 				JSONObject netaction = new JSONObject();
-				netaction.put("type", "server");
-				netaction.put("action", "stop");
+				netaction.put("action", "server_stop");
 				netaction.put("port", server.getPort());
 				postCommsMssage(netaction);
 			}
@@ -152,13 +154,6 @@ public class CommsManager extends SystemHandler {
 				if(client.isOutBound()) {
 					if(client.getHost().equals(host) && client.getPort() == port) {
 						//Already connected..
-						JSONObject netaction = new JSONObject();
-						netaction.put("type", "client");
-						netaction.put("action", "connection");
-						netaction.put("host", client.getHost());
-						netaction.put("port", client.getPort());
-						netaction.put("error", "Allready conncted!");
-						postCommsMssage(netaction);
 						return;
 					}
 				}
@@ -170,42 +165,21 @@ public class CommsManager extends SystemHandler {
 		}else if(zMessage.getMessageType().equals(COMMS_DISCONNECT)) {
 			String uid = zMessage.getString("uid");
 			
-			JSONObject netaction = new JSONObject();
-			
 			//Get the Client..
-			boolean found=false;
 			for(CommsClient client : mClients) {
 				if(client.getUID().equals(uid)) {
 					client.PostMessage(CommsClient.COMMSCLIENT_SHUTDOWN);
-					netaction.put("type", "client");
-					netaction.put("action", "disconnect");
-					netaction.put("uid", uid);
-					netaction.put("host", client.getHost());
-					netaction.put("port", client.getPort());
-					found=true;
 				}
 			}
 		
-			if(!found) {
-				netaction.put("error", "client not found");
-			}
-			postCommsMssage(netaction);
-			
-		}else if(zMessage.getMessageType().equals(COMMS_CLIENTERROR)) {
+		}else if(zMessage.getMessageType().equals(COMMS_CLIENTSHUT)) {
 			//There's a new client connected to a comms server
 			CommsClient client = (CommsClient) zMessage.getObject("client");
 			
 			//Add to our List..
 			mClients.remove(client);	
 			
-			JSONObject netaction = new JSONObject();
-			netaction.put("type", "client");
-			netaction.put("action", "error");
-			netaction.put("host", client.getHost());
-			netaction.put("port", client.getPort());
-			netaction.put("error", zMessage.getString("error"));
-			postCommsMssage(netaction);
-			
+			postClientMessage("client_shut",client);
 			
 		}else if(zMessage.getMessageType().equals(COMMS_NEWCLIENT)) {
 			//There's a new client connected to a comms server
@@ -214,18 +188,16 @@ public class CommsManager extends SystemHandler {
 			//Add to our List..
 			mClients.add(client);	
 			
-			//Do we notify..
-			JSONObject netaction = new JSONObject();
-			if(client.isOutBound()) {
-				netaction.put("type", "client");	
-			}else {
-				netaction.put("type", "server");	
+			postClientMessage("client_new",client);
+			
+		}else if(zMessage.getMessageType().equals(COMMS_SEND)) {
+			String uid     = zMessage.getString("uid");
+			String message = zMessage.getString("message");
+			
+			CommsClient client = getClient(uid);
+			if(client!= null) {
+				client.postSend(message);	
 			}
-			netaction.put("action", "connection");
-			netaction.put("host", client.getHost());
-			netaction.put("port", client.getPort());
-			netaction.put("uid", client.getUID());
-			postCommsMssage(netaction);
 			
 		}else if(zMessage.getMessageType().equals(COMMS_BROADCAST)) {
 			String message = zMessage.getString("message");
@@ -237,6 +209,19 @@ public class CommsManager extends SystemHandler {
 				}
 			}
 		}
+	}
+	
+	public void postClientMessage(String zAction, CommsClient zClient) {
+		//Already connected..
+		JSONObject netaction = new JSONObject();
+		netaction.put("action", zAction);
+		
+		netaction.put("host", zClient.getHost());
+		netaction.put("port", zClient.getPort());
+		netaction.put("uid", zClient.getUID());
+		netaction.put("outbound", zClient.isOutBound());
+		
+		postCommsMssage(netaction);
 	}
 	
 	public void postCommsMssage(JSONObject zMessage) {

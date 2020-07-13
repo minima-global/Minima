@@ -1,11 +1,15 @@
 package org.minima.system.network.commands;
 
+import java.util.ArrayList;
 import java.util.StringTokenizer;
 
 import org.minima.system.input.InputHandler;
 import org.minima.system.network.minidapps.DAPPManager;
+import org.minima.system.network.minidapps.comms.CommsClient;
 import org.minima.system.network.minidapps.comms.CommsManager;
+import org.minima.system.network.minidapps.comms.CommsServer;
 import org.minima.system.network.minidapps.minilib.JSMiniLibUtil;
+import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.json.parser.JSONParser;
 import org.minima.utils.json.parser.ParseException;
@@ -116,6 +120,37 @@ public class NET implements Runnable {
 			
 			//Post it..
 			comms.PostMessage(stopper);
+		
+		}else if(mCommand.startsWith("send ")) {
+			String uid = strtok.nextToken();
+			
+			int index    = mCommand.indexOf(" ",6);
+			String json  = mCommand.substring(index).trim();
+			
+			//Broadcast a message to everyone on this server
+			Message sender = new Message(CommsManager.COMMS_SEND);
+			sender.addString("uid", uid);
+			sender.addString("minidappid", mMiniDAPPID);
+			sender.addString("message", json);
+			
+			//Post it..
+			comms.PostMessage(sender);	
+		
+		}else if(mCommand.startsWith("info")) {
+			
+			JSONArray sarr = new JSONArray();
+			ArrayList<CommsServer> servers = comms.getServers();
+			for(CommsServer server : servers) {
+				sarr.add(new Integer(server.getPort()));
+			}
+			resp.put("servers", sarr);
+			
+			JSONArray carr = new JSONArray();
+			ArrayList<CommsClient> clients = comms.getClients();
+			for(CommsClient client : clients) {
+				carr.add(client.toJSON());
+			}
+			resp.put("clients", carr);	
 		}
 		
 		//Stroe for pickup
