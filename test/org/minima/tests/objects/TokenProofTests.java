@@ -1,4 +1,4 @@
-package org.minima.objects;
+package org.minima.tests.objects;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;

@@ -1,4 +1,4 @@
-package org.minima.objects;
+package org.minima.tests.objects;
 
 import org.minima.objects.Address;
 import org.minima.objects.base.MiniData;
@@ -30,18 +30,18 @@ public class AddressTests {
         Address a = new Address("#f0f0");
         Address abc = new Address("#f0f0");
         assertNotNull("should not be null", a);
-        System.out.println("address value " + a);
+        // System.out.println("address value " + a);
         a.getAddressData();
-        System.out.println("address value " + a.getAddressData());
+        // System.out.println("address value " + a.getAddressData());
         Address adr = new Address(j);
-        System.out.println("address value " + adr);
+        // System.out.println("address value " + adr);
         Address adrTwo = new Address(n);
-        System.out.println("address value " + adrTwo);
+        // System.out.println("address value " + adrTwo);
         Address adrThree = new Address(c);
-        System.out.println("address value " + adrThree);
-        System.out.println("json  value " + adrTwo.toJSON());
-        System.out.println("script  value " + adrTwo.getScript());
-        System.out.println("minima addess  value " + adrTwo.getMinimaAddress());
+        // System.out.println("address value " + adrThree);
+        // System.out.println("json  value " + adrTwo.toJSON());
+        // System.out.println("script  value " + adrTwo.getScript());
+        // System.out.println("minima addess  value " + adrTwo.getMinimaAddress());
         assertFalse("should not be equal ", a.isEqual(adrThree));
         assertTrue("should not be equal ", a.isEqual(abc));
 
@@ -61,7 +61,7 @@ public class AddressTests {
             DataInputStream dis = new DataInputStream(inputStream);
 
             a.readDataStream(dis);
-            System.out.println("minima  value " + a.toString());
+            // System.out.println("minima  value " + a.toString());
 
             assertNotNull(i);
             assertEquals("0xFFF0F0", a.toString());
@@ -103,7 +103,7 @@ public class AddressTests {
         MiniData p = Address.convertMinimaAddress(mxAddress1);
         try {
             assertEquals("should be equal", q, p);
-            System.out.println("should be equal to - " + q);
+            // System.out.println("should be equal to - " + q);
         } catch (ArrayComparisonFailure failure) {
             System.out.println("Test failed: " + failure.getMessage());
             assertFalse("test should not fail:" + failure.getMessage(), true);
@@ -126,7 +126,7 @@ public class AddressTests {
             assertEquals("should be equal", v, m2);
             assertEquals("should be equal", o, m3);
 
-            System.out.println("should be equal to - " + l);
+            // System.out.println("should be equal to - " + l);
         } catch (ArrayComparisonFailure failure) {
             System.out.println("Test failed: " + failure.getMessage());
             assertFalse("test should not fail:" + failure.getMessage(), true);
