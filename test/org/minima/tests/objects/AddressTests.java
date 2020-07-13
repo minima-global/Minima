@@ -1,4 +1,4 @@
-package org.minima.objects;
+package org.minima.tests.objects;
 
 import org.minima.objects.Address;
 import org.minima.objects.base.MiniData;
