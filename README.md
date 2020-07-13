@@ -69,7 +69,9 @@ Generate code coverage test report with:
 ./gradlew test jacocoTestReport
 ```
 
-The report can be found at  ./build/reports/jacoco/test/html/index.html
+The reports can be found at  
+./build/reports/tests/test/index.html 
+./build/reports/jacoco/test/html/index.html
 
 
 ### Demo Session
