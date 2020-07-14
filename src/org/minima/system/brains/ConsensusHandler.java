@@ -243,8 +243,8 @@ public class ConsensusHandler extends SystemHandler {
 			
 			//MemPool Flush Counter... 
 			if(txpow.isBlock()) {
-				//Every 5 minutes or so check if you have all the parents and txns in blocks..
-				if(mFlushCounter++ > 16) {
+				//Every 10 minutes or so check if you have all the parents and txns in blocks..
+				if(mFlushCounter++ > 32) {
 					mFlushCounter = 0;
 					
 					//Post a flush message.. could be stuck missing a block..

@@ -30,6 +30,11 @@ import org.minima.utils.messages.TimerMessage;
 public class MinimaClient extends MessageProcessor {
 		
 	/**
+	 * 5 muinutes before you can request the same TXPOW again..
+	 */
+	public static final long TXPOWRESQUEST_TIMEOUT = 1000 * 60 * 5;
+	
+	/**
 	 * NetClient Messages
 	 */
 	public static final String NETCLIENT_INITCONNECT 	= "NETCLIENT_INITCONNECT";
@@ -281,7 +286,7 @@ public class MinimaClient extends MessageProcessor {
 				Long timeval = mOldTxPoWRequests.get(key);
 				long time    = timeval.longValue();
 				long diff    = timenow - time;
-				if(diff < (1000 * 60 * 10)) {
+				if(diff < TXPOWRESQUEST_TIMEOUT) {
 					newTxPoWRequests.put(key, timeval);
 				}
 			}
@@ -292,8 +297,9 @@ public class MinimaClient extends MessageProcessor {
 			//NOW - Check not doing it too often..
 			String val = txpowid.to0xString();
 			
-			//If it's in.. it's less than 30 minutes..
+			//If it's in.. it's less than 5 minutes..
 			if(mOldTxPoWRequests.get(val) != null) {
+				MinimaLogger.log("Requested TXPOWID cancelled as already done less than 5 minutes ago.. "+val);
 				return;
 			}
 			
