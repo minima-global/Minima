@@ -13,6 +13,7 @@ import org.minima.system.network.minidapps.comms.CommsServer;
 import org.minima.system.network.minidapps.minilib.JSMiniLibUtil;
 import org.minima.system.network.rpc.RPCClient;
 import org.minima.utils.MinimaLogger;
+import org.minima.utils.ResponseStream;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.json.parser.JSONParser;
@@ -64,7 +65,7 @@ public class NET implements Runnable {
 		
 		StringTokenizer strtok = new StringTokenizer(mCommand," ");
 		String command = strtok.nextToken();
-		
+        
 		//Which Command is it..
 		if(mCommand.startsWith("listen ")) {
 			int port = Integer.parseInt(strtok.nextToken());

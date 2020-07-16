@@ -15,11 +15,6 @@ public class MinimaServer implements Runnable{
 	
 	ServerSocket mServerSocket;
 	int mPort;
-	String mHost ="127.0.0.1";
-	
-	//Have we specified our host..
-	boolean mHardHostSet = false; 
-	String mHardHost = "127.0.0.1";
 	
 	boolean mRunning = true;
 	
@@ -32,19 +27,6 @@ public class MinimaServer implements Runnable{
 		return mPort;
 	}
 	
-	public String getHost() {
-		if(mHardHostSet) {
-			return mHardHost;
-		}
-		
-		return mHost;
-	}
-	
-	public void hardSetHost(String zHost) {
-		mHardHostSet = true;
-		mHardHost    = zHost;
-	}
-		
 	public void stop() {
 		mRunning = false;
 		
@@ -63,7 +45,8 @@ public class MinimaServer implements Runnable{
 		try {
 			//Start a server Socket..
 			mServerSocket = new ServerSocket(mPort);
-			mHost = mServerSocket.getInetAddress().getHostAddress();
+			
+			MinimaLogger.log("Minima server started on "+mPort);
 			
 			//Keep listening..
 			while(mRunning) {

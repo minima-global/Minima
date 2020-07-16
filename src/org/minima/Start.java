@@ -22,7 +22,7 @@ import org.minima.utils.MinimaLogger;
 public class Start {
 	
 	/**
-	 * A static link to the main server
+	 * A static link to the main server - for Android
 	 */
 	public static Main mMainServer;
 	public static Main getServer() {
@@ -80,12 +80,12 @@ public class Start {
 		//Check command line inputs
 		int arglen 				= zArgs.length;
 		int port 				= 9001;
-		int rpcport 			= 8999;
+//		int rpcport 			= 8999;
 		
 		boolean connect         = true;
 		String connecthost      = "34.90.172.118";
 		int connectport         = 9001;
-		String mifiProxy 		= "http://mifi.minima.global:9000/";
+//		String mifiProxy 		= "http://mifi.minima.global:9000/";
 		String host             = "";
 		
 		boolean clean           = false;
@@ -110,26 +110,26 @@ public class Start {
 					//Hard code the HOST.. 
 					host = zArgs[counter++];
 					
-				}else if(arg.equals("-rpcport")) {
-					//The rpcport
-					rpcport= Integer.parseInt(zArgs[counter++]);
-				
+//				}else if(arg.equals("-rpcport")) {
+//					//The rpcport
+//					rpcport= Integer.parseInt(zArgs[counter++]);
+//				
 				}else if(arg.equals("-help")) {
 					//Printout HELP!
-					MinimaLogger.log("Minima v0.4 Alpha Test Net");
-					MinimaLogger.log("        -port [port number]    : Specify port to listen on");
-					MinimaLogger.log("        -host [IP]             : Specify the host IP");
-					MinimaLogger.log("        -rpcport [port number] : Specify port to listen on for RPC connections");
-					MinimaLogger.log("        -conf [folder]         : Specify configuration folder, where data is saved");
+					MinimaLogger.log("Minima "+GlobalParams.MINIMA_VERSION+" Alpha Test Net");
+					MinimaLogger.log("        -port [port number]    : Specify port to listen on. RPC port will be 1 more. WebSocket Port will be 1 more..");
+					MinimaLogger.log("        -host [IP]             : Specify the host IP - useful if behind firewall or on an internal network with an external IP.");
+//					MinimaLogger.log("        -rpcport [port number] : Specify port to listen on for RPC connections");
+					MinimaLogger.log("        -conf [folder]         : Specify configuration folder, where data is saved.");
 					MinimaLogger.log("        -private               : Run a private chain. Don't connect to MainNet. Create a genesis tx-pow. Simulate some users.");
+					MinimaLogger.log("        -clean                 : Wipe user files and chain backup. Start afresh. Use with -private for clean private test-net.");
 					MinimaLogger.log("        -noconnect             : Don't connect to MainNet. Can then connect to private chains.");
-					MinimaLogger.log("        -connect [host] [port] : Don't connect to MainNet. Connect to this node.");
-					MinimaLogger.log("        -mifiproxy [host:port] : Use this address for MiFi proxy requests and not the default.");
-					MinimaLogger.log("        -clean                 : Wipe user files and chain backup. Start afresh.");
+					MinimaLogger.log("        -connect [host] [port] : Don't connect to MainNet but connect to this node instead.");
+//					MinimaLogger.log("        -mifiproxy [host:port] : Use this address for MiFi proxy requests and not the default.");
 					MinimaLogger.log("        -daemon                : Accepts no input from STDIN. Can run in background process.");
 					MinimaLogger.log("        -help                  : Show this help");
 					MinimaLogger.log("");
-					MinimaLogger.log("With zero params Minima will start and connect to the Main Net.");
+					MinimaLogger.log("With zero parameters Minima will start and connect to a set of default nodes.");
 					
 					return;
 				
@@ -148,9 +148,9 @@ public class Start {
 					connecthost = zArgs[counter++];
 					connectport = Integer.parseInt(zArgs[counter++]);
 				
-				}else if(arg.equals("-mifiproxy")) {
-					mifiProxy = zArgs[counter++];
-					
+//				}else if(arg.equals("-mifiproxy")) {
+//					mifiProxy = zArgs[counter++];
+//					
 				}else if(arg.equals("-clean")) {
 					clean = true;
 					
@@ -171,7 +171,7 @@ public class Start {
 		}
 		
 		//Start the main Minima server
-		Main rcmainserver = new Main(host,port, rpcport, genesis, conffolder);
+		Main rcmainserver = new Main(host, port, genesis, conffolder);
 		
 		//Link it.
 		mMainServer = rcmainserver;
@@ -180,9 +180,6 @@ public class Start {
 		rcmainserver.setAutoConnect(connect);
 		rcmainserver.mAutoHost = connecthost;
 		rcmainserver.mAutoPort = connectport;
-		
-		//Set the proxy
-		rcmainserver.setMiFiProxy(mifiProxy);
 		
 		//Are we private!
 		if(genesis) {

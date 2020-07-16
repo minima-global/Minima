@@ -938,8 +938,8 @@ public class ConsensusPrint extends ConsensusProcessor {
 
 			status.put("uptime", uptime);
 			status.put("conf", main.getBackupManager().getRootFolder().getAbsolutePath());
-			status.put("host", main.getNetworkHandler().getDAPPManager().getHostIP());
-			status.put("port", main.getNetworkHandler().getServer().getPort());
+			status.put("host", main.getNetworkHandler().getBaseHost());
+			status.put("port", main.getNetworkHandler().getMinimaServer().getPort());
 			status.put("rpcport", main.getNetworkHandler().getRPCServer().getPort());
 			
 			status.put("automine", main.getMiner().isAutoMining());

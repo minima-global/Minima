@@ -153,11 +153,6 @@ public class CommsClient extends MessageProcessor {
 			}catch (Exception e) {
 				MinimaLogger.log("COMMS: Error @ connection start : "+mHost+":"+mPort+" "+e);
 				
-				Message newclient = new Message(CommsManager.COMMS_CLIENTSHUT);
-				newclient.addObject("client", this);
-				newclient.addString("error", mHost+":"+mPort+" "+e);
-				mCommsManager.PostMessage(newclient);
-				
 				//Shut down the client..
 				PostMessage(CommsClient.COMMSCLIENT_SHUTDOWN);
 				

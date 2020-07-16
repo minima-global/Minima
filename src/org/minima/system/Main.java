@@ -48,29 +48,18 @@ public class Main extends MessageProcessor {
 	 * The Backup Manager - runs in a separate thread
 	 */
 	private BackupManager mBackup;
-		
-	/**
-	 * User Simulator.. for testing..
-	 */
-//	UserSimulator mSim;
 	
 	/**
 	 * Are we creating a network from scratch
 	 */
 	boolean mGenesis = false;
 
-	public int mPort;
-	public int mRPCPort;
-	
+	/**
+	 * Default nodes to connect to
+	 */
 	public boolean mAutoConnect = false;
 	public String mAutoHost 	= "";
 	public int mAutoPort    	= 0;
-	
-	/**
-	 * These values are filled by the Consensus for convenience..
-	 * 
-	 */
-	MiniNumber mCurrentTopBlock;
 	
 	/**
 	 * When did this node start up..
@@ -82,7 +71,7 @@ public class Main extends MessageProcessor {
 	 * @param zPort
 	 * @param zGenesis
 	 */
-	public Main(String zHost, int zPort, int zRPCPort, boolean zGenesis, String zConfFolder) {
+	public Main(String zHost, int zPort, boolean zGenesis, String zConfFolder) {
 		super("MAIN");
 		
 		//What time do we start..
@@ -99,31 +88,23 @@ public class Main extends MessageProcessor {
 		MinimaLogger.log("*                                            *");
 		MinimaLogger.log("**********************************************");
 		
-		//Do it..
-		mPort 		= zPort;
-		mRPCPort	= zRPCPort;
-		
+		//The guts..
 		mInput 		= new InputHandler(this);
-		
-		mNetwork 	= new NetworkHandler(this,zHost);
+		mNetwork 	= new NetworkHandler(this, zHost, zPort);
 		mTXMiner 	= new TxPoWMiner(this);
 		mBackup     = new BackupManager(this,zConfFolder);
-		
-		//Create the Consensus handler..
 		mConsensus  = new ConsensusHandler(this);
 		
+		//Are we the genesis
 		mGenesis 	= zGenesis;
 		
+		//Some info..
 		MinimaLogger.log("Minima files : "+zConfFolder);
 		MinimaLogger.log("Minima version "+GlobalParams.MINIMA_VERSION);
 	}
 	
 	public void setAutoConnect(boolean zAuto) {
 		mAutoConnect = zAuto;
-	}
-	
-	public void setMiFiProxy(String zProxy){
-		mNetwork.setProxy(zProxy);
 	}
 	
 	public void setAutoConnectHostPort(String zHost, int zPort) {
@@ -184,38 +165,18 @@ public class Main extends MessageProcessor {
 	@Override
 	protected void processMessage(Message zMessage) throws Exception {
 		
-		if ( zMessage.isMessageType(SYSTEM_STARTUP) ) {
+		if (zMessage.isMessageType(SYSTEM_STARTUP) ) {
 			
 			//Set the Database backup manager
 			getConsensusHandler().setBackUpManager();
-			
-//			//Are we genesis
-//			if(mGenesis) {
-//				//Sort the genesis Block
-//				mConsensus.genesis();
-//				
-//				//Tell miner we are auto mining..
-//				mTXMiner.setAutoMining(true);
-//				
-//				//No Hard Reset..
-//				mConsensus.setHardResetAllowed(false);
-//				
-//				//And init..
-//				PostMessage(SYSTEM_INIT);
-//				
-//			}else{
-//				
-//			}
 			
 			//Restore..
 			getConsensusHandler().PostMessage(ConsensusBackup.CONSENSUSBACKUP_RESTORE);
 			
 		}else if ( zMessage.isMessageType(SYSTEM_INIT) ) {
+			
 			//Start the network..	
-			Message netstart = new Message(NetworkHandler.NETWORK_STARTUP)
-									.addInteger("port", mPort)
-									.addInteger("rpcport", mRPCPort);
-			mNetwork.PostMessage(netstart);
+			mNetwork.PostMessage(NetworkHandler.NETWORK_STARTUP);
 
 			//And do we do an automatic logon..
 			if(mAutoConnect) {
@@ -227,6 +188,7 @@ public class Main extends MessageProcessor {
 			}
 			
 		}else if ( zMessage.isMessageType(SYSTEM_SHUTDOWN) ) {
+			
 			//make a backup and shutdown message
 			Message backshut = new Message(ConsensusBackup.CONSENSUSBACKUP_BACKUP);
 			backshut.addBoolean("shutdown", true);
