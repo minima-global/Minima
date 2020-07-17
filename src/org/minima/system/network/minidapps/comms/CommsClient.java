@@ -154,7 +154,9 @@ public class CommsClient extends MessageProcessor {
 				MinimaLogger.log("COMMS: Error @ connection start : "+mHost+":"+mPort+" "+e);
 				
 				//Shut down the client..
-				PostMessage(CommsClient.COMMSCLIENT_SHUTDOWN);
+				Message shutdown = new Message(CommsClient.COMMSCLIENT_SHUTDOWN);
+				shutdown.addString("error", e.toString());
+				PostMessage(shutdown);
 				
 				return;
 			}	
@@ -207,6 +209,10 @@ public class CommsClient extends MessageProcessor {
 			Message clientshut = new Message(CommsManager.COMMS_CLIENTSHUT);
 			clientshut.addObject("client", this);
 			
+			if(zMessage.exists("error")) {
+				clientshut.addString("error", zMessage.getString("error"));
+			}
+			
 			mCommsManager.PostMessage(clientshut);
 		}
 	}
@@ -229,8 +235,10 @@ public class CommsClient extends MessageProcessor {
 			//Show..
 			MinimaLogger.log("COMMS Error sending message : "+zMessage.toString()+" "+ec);
 			
-			//Tell the network Handler
-			PostMessage(CommsClient.COMMSCLIENT_SHUTDOWN);
+			//Shut down the client..
+			Message shutdown = new Message(CommsClient.COMMSCLIENT_SHUTDOWN);
+			shutdown.addString("error", ec.toString());
+			PostMessage(shutdown);
 		}
 	}	
 }

@@ -256,7 +256,7 @@ public class CommsManager extends SystemHandler {
 		newclient.put("event","network");
 		newclient.put("details",zMessage);
 		
-		Message msg = new Message(NetworkHandler.NETWORK_WS_NOTIFY);
+		Message msg = new Message(NetworkHandler.NETWORK_WS_NOTIFYALL);
 		msg.addString("message", newclient.toString());
 		
 		//Post to the Network..

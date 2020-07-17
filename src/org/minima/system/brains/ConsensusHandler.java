@@ -273,7 +273,7 @@ public class ConsensusHandler extends SystemHandler {
 			newtrans.put("event","newtransaction");
 			newtrans.put("txpow",txpow.toJSON());
 			
-			Message msg = new Message(NetworkHandler.NETWORK_WS_NOTIFY);
+			Message msg = new Message(NetworkHandler.NETWORK_WS_NOTIFYALL);
 			msg.addString("message", newtrans.toString());
 			getMainHandler().getNetworkHandler().PostMessage(msg);
 			
@@ -464,7 +464,7 @@ public class ConsensusHandler extends SystemHandler {
 				mining.put("event","txpowstart");
 				mining.put("transaction",txpow.getTransaction().toJSON().toString());
 				
-				Message wsmsg = new Message(NetworkHandler.NETWORK_WS_NOTIFY).addString("message", mining.toString());
+				Message wsmsg = new Message(NetworkHandler.NETWORK_WS_NOTIFYALL).addString("message", mining.toString());
 				getMainHandler().getNetworkHandler().PostMessage(wsmsg);
 			}
 			
@@ -598,7 +598,7 @@ public class ConsensusHandler extends SystemHandler {
 			mining.put("event","txpowend");
 			mining.put("transaction",txpow.getTransaction().toJSON().toString());
 			
-			Message wsmsg = new Message(NetworkHandler.NETWORK_WS_NOTIFY).addString("message", mining.toString());
+			Message wsmsg = new Message(NetworkHandler.NETWORK_WS_NOTIFYALL).addString("message", mining.toString());
 			getMainHandler().getNetworkHandler().PostMessage(wsmsg);
 			
 		}else if(zMessage.isMessageType(CONSENSUS_GIMME50)) {
