@@ -12,14 +12,16 @@ import org.minima.utils.messages.Message;
 public class CommsServer implements Runnable{
 
 	CommsManager mCommsManager;
+	String mMiniDAPPID;
 	
 	ServerSocket mServerSocket;
 	int mPort = -1;
 	
 	boolean mRunning = false;
 	
-	public CommsServer(int zPort,CommsManager zCommsManager) {
+	public CommsServer(int zPort, String zMiniDAPPID, CommsManager zCommsManager) {
 		mPort = zPort;
+		mMiniDAPPID = zMiniDAPPID;
 		mCommsManager = zCommsManager;
 		
 	    Thread tt = new Thread(this);
@@ -55,6 +57,7 @@ public class CommsServer implements Runnable{
 			//Tell the Manager..
 			Message newserver = new Message(CommsManager.COMMS_NEWSERVER);
 			newserver.addObject("server", this);
+			newserver.addString("minidappid", mMiniDAPPID);
 			mCommsManager.PostMessage(newserver);
 			
 			//Keep listening..
@@ -63,7 +66,7 @@ public class CommsServer implements Runnable{
 				Socket clientsock = mServerSocket.accept();
 				
 				//create a new RPC Handler ..
-				CommsClient client = new CommsClient(clientsock, mPort, mCommsManager);
+				CommsClient client = new CommsClient(clientsock, mPort, mMiniDAPPID, mCommsManager);
 				
 				//Run in a new Thread
 				Thread rpcthread = new Thread(client, "Comms Client");
@@ -78,6 +81,7 @@ public class CommsServer implements Runnable{
 				//Tell the Manager..
 				Message newserver = new Message(CommsManager.COMMS_SERVERERROR);
 				newserver.addObject("server", this);
+				newserver.addString("minidappid", mMiniDAPPID);
 				newserver.addObject("error", e.toString());
 				mCommsManager.PostMessage(newserver);
 			}
