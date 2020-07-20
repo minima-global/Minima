@@ -16,7 +16,9 @@ import org.minima.system.network.minidapps.minihub.hexdata.indexhtml;
 import org.minima.system.network.minidapps.minihub.hexdata.installdapphtml;
 import org.minima.system.network.minidapps.minihub.hexdata.minidappscss;
 import org.minima.system.network.minidapps.minihub.hexdata.tilegreyjpeg;
+import org.minima.system.network.minidapps.minihub.hexdata.uninstalldapphtml;
 import org.minima.utils.MiniFile;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
@@ -93,20 +95,31 @@ public class DAPPServer extends NanoHTTPD{
 	        	}
 	        	
 		        //Are we uninstalling a MiniDAPP
-				if(fileRequested.equals("index.html") && !uninst.equals("")) {
-					//UNINSTALL the DAPP
-					File appfolder = new File(mDAPPManager.getMiniDAPPSFolder(),uninst);
-				
-					//Delete the app root..
-					BackupManager.safeDelete(appfolder);
-					
-					//Recalculate the MINIDAPPS
-					mDAPPManager.recalculateMiniDAPPS();
-					
-					//Return the main index page..
-					String page    = new String(indexhtml.returnData(),StandardCharsets.UTF_8);
-					String newpage = page.replace("######", createMiniDAPPList());
-					return getOKResponse(newpage.getBytes(), "text/html");
+				if(fileRequested.equals("uninstalldapp.html")) {
+					if(!uninst.equals("")) {
+						//POST it..
+						Message msg = new Message(DAPPManager.DAPP_UNINSTALL);
+						msg.addObject("minidapp", uninst);
+						mDAPPManager.PostMessage(msg);
+			            
+		                return getOKResponse(uninstalldapphtml.returnData(), "text/html");
+		                
+//						//UNINSTALL the DAPP
+//						File appfolder = new File(mDAPPManager.getMiniDAPPSFolder(),uninst);
+//					
+//						//Delete the app root..
+//						BackupManager.safeDelete(appfolder);
+//						
+//						//Recalculate the MINIDAPPS
+//						mDAPPManager.recalculateMiniDAPPS();
+//						
+//						//Return the main index page..
+//						String page    = new String(indexhtml.returnData(),StandardCharsets.UTF_8);
+//						String newpage = page.replace("######", createMiniDAPPList());
+//						return getOKResponse(newpage.getBytes(), "text/html");
+					}else {
+						fileRequested = "index.html";
+					}
 				}
 			
 				//Otherwise lets see..
@@ -247,7 +260,7 @@ public class DAPPServer extends NanoHTTPD{
 			
 			//Now do it..
 			String root  = (String) app.get("root");
-			String approot  = (String) app.get("approot");
+			String uid  = (String) app.get("uid");
 			String name  = (String) app.get("name");
 			String desc  = (String) app.get("description");
 			String backg = root+"/"+(String) app.get("background");
@@ -255,6 +268,9 @@ public class DAPPServer extends NanoHTTPD{
 			String webpage  = root+"/index.html";
 			
 			String openpage = "_"+name;
+	
+			String date = MinimaLogger.DATEFORMAT.format(new Date((Long)app.get("installed"))); 
+			String version = uid+" @ "+date;
 			
 			//Now do it..
 			list.append("<tr><td>" + 
@@ -265,10 +281,10 @@ public class DAPPServer extends NanoHTTPD{
 					"					</td>" + 
 					"					<td width=100% class='minidappdescription'>" + 
 					"                   <div style='position:relative'>" + 
-					"				        <div onclick='uninstallDAPP(\""+name+"\",\""+approot+"\");' style='color:red;cursor:pointer;position:absolute;right:10;top:10'>UNINSTALL</div>" + 
-					"						<br>" + 
-					"						<div onclick=\"window.open('"+webpage+"','"+openpage+"');\" style='cursor:pointer;font-size:18'><b>"+name.toUpperCase()+"</b></div>" + 
-					"						<br><div onclick=\"window.open('"+webpage+"','"+openpage+"');\" style='cursor:pointer;font-size:12'>"+desc+"</div>" + 
+					"				        <div onclick='uninstallDAPP(\""+name+"\",\""+uid+"\");' style='color:red;cursor:pointer;position:absolute;right:10;top:10'>UNINSTALL</div>" + 
+					"						<br><div onclick=\"window.open('"+webpage+"','"+openpage+"');\" style='cursor:pointer;font-size:18'><b>"+name.toUpperCase()+"</b></div>" + 
+					"						<br><div onclick=\"window.open('"+webpage+"','"+openpage+"');\" style='cursor:pointer;font-size:12;min-height:20;'>"+desc+"</div>" + 
+					"						<div onclick=\"window.open('"+webpage+"','"+openpage+"');\" style='cursor:pointer;color:blue;font-size:10;text-align:right;width:98%;'><br>"+version+"</div>"+
 					"					</div>"+
 					"                     </td>" + 
 					"				</tr>" + 
@@ -289,6 +305,7 @@ public class DAPPServer extends NanoHTTPD{
 		
 		list.append("</table>");
 		
+		//Store A copy..
 		mCurrentIndex = list.toString();
 		
 		return mCurrentIndex;

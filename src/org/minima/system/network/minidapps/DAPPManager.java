@@ -4,8 +4,11 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -21,8 +24,10 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
 import org.minima.system.SystemHandler;
+import org.minima.system.backup.BackupManager;
 import org.minima.system.input.InputHandler;
 import org.minima.system.network.NetworkHandler;
 import org.minima.system.network.minidapps.comms.CommsManager;
@@ -40,7 +45,7 @@ public class DAPPManager extends SystemHandler {
 
 	public static String DAPP_INSTALL   = "DAPP_INSTALL";
 	public static String DAPP_UNINSTALL = "DAPP_UNINSTALL";
-	public static String DAPP_UPDATE    = "DAPP_UPDATE";
+	public static String DAPP_POST    = "DAPP_UPDATE";
 	
 	JSONArray CURRENT_MINIDAPPS = new JSONArray();
 	String MINIDAPPS_FOLDER     = "";
@@ -127,13 +132,13 @@ public class DAPPManager extends SystemHandler {
 	}
 	
 	public byte[] getMinimaJS() {
-//		//Check if the Host has changed..
-//		String host = getHostIP();
-//		if(!host.equals(mHost)) {
-//			MinimaLogger.log("MINIDAPP RPCHOST CHANGED from "+mHost+" to "+host);
-//			mHost = host;
-//			recalculateMinimaJS(mHost,mRPCPort);
-//		}
+		//Check if the Host has changed..
+		String host = mNetwork.calculateHostIP();
+		if(!host.equals(mOldHost)) {
+			MinimaLogger.log("MINIDAPP RPCHOST CHANGED from "+mOldHost+" to "+host);
+			mOldHost = host;
+			recalculateMinimaJS();
+		}
 		
 		return mMINIMAJS;
 	}
@@ -183,8 +188,8 @@ public class DAPPManager extends SystemHandler {
 	        	approot = approot.substring(0,firstfolder);
 	        }
 	        
+	        ret.put("uid", approot);
 	        ret.put("root", webroot);
-	        ret.put("approot", approot);
 	        ret.put("web", "http://"+mNetwork.getBaseHost()+":"+mNetwork.getMiniDAPPServerPort()+webroot);
 	        
 	        bis.close();
@@ -218,6 +223,21 @@ public class DAPPManager extends SystemHandler {
 		//Cycle through them..
 		if(apps != null) {
 			for(File app : apps) {
+				//Get the time stamp - when was it installed..
+				long timestamp = System.currentTimeMillis();
+				File tsfile = new File(app,"minimatimestamp");
+				if(tsfile.exists()) {
+					try {
+						FileInputStream  tsfis = new FileInputStream(tsfile);
+						DataInputStream dais = new DataInputStream(tsfis);
+						timestamp = dais.readLong();
+						dais.close();
+						tsfis.close();
+					} catch (IOException e) {
+						MinimaLogger.log("Error loading timestamp file.. "+e);
+					}
+				}
+				
 				//Open it up..
 				File conf = new File(app,"minidapp.conf");
 				
@@ -245,8 +265,11 @@ public class DAPPManager extends SystemHandler {
 					//Load it..
 					JSONObject confjson = loadConfFile(conf);
 					
+					//Add the timestamp..
+					confjson.put("installed", timestamp);
+					
 					///Give it a unique Port..
-					confjson.put("port", miniport++);
+					//confjson.put("port", miniport++);
 					
 					//Add it..
 					CURRENT_MINIDAPPS.add(confjson);
@@ -300,7 +323,19 @@ public class DAPPManager extends SystemHandler {
 				return;
 			}
 			
+			//Make the DAPP folder
 			dapp.mkdirs();
+			
+			//Make a time stamp of the time of install..
+			File ts = new File(dapp,"minimatimestamp");
+			if(ts.exists()) {
+				ts.delete();
+			}
+			FileOutputStream tsfos = new FileOutputStream(ts);
+			DataOutputStream daos  = new DataOutputStream(tsfos);
+			daos.writeLong(System.currentTimeMillis());
+			daos.close();
+			tsfos.close();
 			
 			//Now extract the contents to that folder..
 			byte[] buffer = new byte[2048];
@@ -350,9 +385,26 @@ public class DAPPManager extends SystemHandler {
 			InputHandler.endResponse(zMessage, true, "MiniDAPP installed..");
 			
 		}else if(zMessage.getMessageType().equals(DAPP_UNINSTALL)) {
+			String minidapp = zMessage.getString("minidapp");
+			InputHandler.getResponseJSON(zMessage).put("minidapp", minidapp);
 			
+			//UNINSTALL the DAPP
+			File appfolder = new File(getMiniDAPPSFolder(),minidapp);
+		
+			if(!appfolder.exists()) {
+				InputHandler.endResponse(zMessage, false, "MiniDAPP not found..");	
+				return;
+			}
 			
-		}else if(zMessage.getMessageType().equals(DAPP_UPDATE)) {
+			//Delete the app root..
+			BackupManager.safeDelete(appfolder);
+			
+			//Recalculate the MINIDAPPS
+			recalculateMiniDAPPS();
+			
+			InputHandler.endResponse(zMessage, true, "MiniDAPP uninstalled..");
+			
+		}else if(zMessage.getMessageType().equals(DAPP_POST)) {
 			//Send a MinimaEvent Message to all the current Backend DAPPS
 			
 			
