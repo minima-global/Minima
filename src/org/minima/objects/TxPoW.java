@@ -3,6 +3,7 @@
  */
 package org.minima.objects;
 
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -49,6 +50,7 @@ public class TxPoW implements Streamable {
 	protected boolean _mIsBlockPOW  = false;
 	protected boolean _mIsTxnPOW    = false;
 	protected int     _mSuperBlock  = 0;
+	protected long     _mTxPoWSize  = 0;
 	
 	/**
 	 * Main Constructor
@@ -293,6 +295,10 @@ public class TxPoW implements Streamable {
 		return _mIsTxnPOW;
 	}
 	
+	public long getSizeinBytes() {
+		return _mTxPoWSize;
+	}
+	
 	/**
 	 * This is only done once at creation. TXPOW structures are immutable.
 	 */
@@ -317,5 +323,23 @@ public class TxPoW implements Streamable {
 		
 		//What Super Level are we..
 		_mSuperBlock = SuperBlockLevels.getSuperLevel(getBlockDifficulty(), _mTxPOWID);
+	
+		//What size are we..
+		try {
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			DataOutputStream dos       = new DataOutputStream(baos);
+			writeDataStream(dos);
+			dos.flush();
+			
+			//Get the Size
+			_mTxPoWSize = baos.toByteArray().length;
+			
+			dos.close();
+			baos.close();
+			
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
 	}
 }
