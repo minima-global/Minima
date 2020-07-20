@@ -15,7 +15,7 @@ public class MinimaLogger {
 
 //	public static final String NATIVE_SYSTEM_OUT = "NATIVE_SYSTEM_OUT";
 	
-	public static final SimpleDateFormat DATEFORMAT = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss z", Locale.US );
+	public static final SimpleDateFormat DATEFORMAT = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.ENGLISH );
 	
 	public static boolean LOGGING_ON 	 = true;
 	
