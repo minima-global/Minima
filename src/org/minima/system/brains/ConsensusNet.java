@@ -418,17 +418,8 @@ public class ConsensusNet extends ConsensusProcessor {
 				txpownet.addObject("netclient", client);
 			}
 			
-			//DOUBLE CHECK THE SIZE
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			DataOutputStream dos = new DataOutputStream(baos);
-			txpow.writeDataStream(dos);
-			dos.flush();
-			int txpowsize = baos.toByteArray().length;
-			dos.close();
-			baos.close();
-			
-			if(txpowsize > MinimaReader.MAX_TXPOW) {
-				MinimaLogger.log("ERROR - You've Mined A TxPoW that is too BIG! "+txpowsize+" / "+MinimaReader.MAX_TXPOW);
+			if(txpow.getSizeinBytes() > MinimaReader.MAX_TXPOW) {
+				MinimaLogger.log("ERROR - You've Mined A TxPoW that is too BIG! "+txpow.getSizeinBytes()+" / "+MinimaReader.MAX_TXPOW);
 				return;
 			}
 			
