@@ -939,8 +939,10 @@ public class ConsensusPrint extends ConsensusProcessor {
 			status.put("uptime", uptime);
 			status.put("conf", main.getBackupManager().getRootFolder().getAbsolutePath());
 			status.put("host", main.getNetworkHandler().getBaseHost());
-			status.put("port", main.getNetworkHandler().getMinimaServer().getPort());
-			status.put("rpcport", main.getNetworkHandler().getRPCServer().getPort());
+			status.put("minimaport", main.getNetworkHandler().getMinimaServer().getPort());
+			status.put("rpcport", main.getNetworkHandler().getRPCPort());
+			status.put("websocketport", main.getNetworkHandler().getWSPort());
+			status.put("minidappserver", main.getNetworkHandler().getMiniDAPPServerPort());
 			
 			status.put("automine", main.getMiner().isAutoMining());
 			
@@ -1050,6 +1052,7 @@ public class ConsensusPrint extends ConsensusProcessor {
 			//Which action..
 			String action = zMessage.getString("action"); 
 			if(action.equals("list")) {
+				mdapps.put("cwd", new File("").getAbsolutePath());
 				mdapps.put("count", minis.size());
 				mdapps.put("minidapps", minis);
 				InputHandler.endResponse(zMessage, true, "");
@@ -1067,13 +1070,6 @@ public class ConsensusPrint extends ConsensusProcessor {
 				}
 				
 				InputHandler.endResponse(zMessage, false, "MiniDAPP "+name+" not found");
-				
-			}else if(action.equals("install")) {
-				InputHandler.endResponse(zMessage, false, "Not implementd yet..");
-				
-			}else if(action.equals("uninstall")) {
-				InputHandler.endResponse(zMessage, false, "Not implementd yet..");
-				
 			}
 		}
 	}
