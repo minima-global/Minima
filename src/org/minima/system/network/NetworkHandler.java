@@ -95,7 +95,7 @@ public class NetworkHandler extends SystemHandler{
 
 		if(zHost.equals("")) {
 			mHardSet = false;
-			setHostIP();
+			calculateHostIP();
 		}else {
 			mHardSet = true;
 			mHost    = zHost;
@@ -129,7 +129,7 @@ public class NetworkHandler extends SystemHandler{
 		return mBasePort+3;
 	}
 	
-	public String setHostIP() {
+	public String calculateHostIP() {
 		if(mHardSet) {
 			return mHost;
 		}
