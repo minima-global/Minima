@@ -224,6 +224,7 @@ public class TxPoW implements Streamable {
 		txpow.put("istransaction", _mIsTxnPOW);
 		txpow.put("txpowid", _mTxPOWID.toString());
 		txpow.put("superblock", _mSuperBlock);
+		txpow.put("size", _mTxPoWSize);
 		
 		txpow.put("header", mHeader.toJSON());
 		
