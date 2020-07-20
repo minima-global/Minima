@@ -331,6 +331,7 @@ public class TxPoW implements Streamable {
 			DataOutputStream dos       = new DataOutputStream(baos);
 			writeDataStream(dos);
 			dos.flush();
+			baos.flush();
 			
 			//Get the Size
 			_mTxPoWSize = baos.toByteArray().length;
@@ -341,6 +342,5 @@ public class TxPoW implements Streamable {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
 	}
 }
