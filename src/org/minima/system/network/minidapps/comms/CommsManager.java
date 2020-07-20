@@ -36,8 +36,6 @@ public class CommsManager extends SystemHandler {
 	
 		mServers = new ArrayList<>();
 		mClients = new ArrayList<>();
-		
-		PostMessage(COMMS_INIT);
 	}
 	
 	public ArrayList<CommsServer> getServers(){
@@ -85,13 +83,9 @@ public class CommsManager extends SystemHandler {
 	@Override
 	protected void processMessage(Message zMessage) throws Exception {
 		
-		MinimaLogger.log("CommsManager : "+zMessage);
+		//MinimaLogger.log("CommsManager : "+zMessage);
 		
-		
-		if(zMessage.getMessageType().equals(COMMS_INIT)) {
-		
-			
-		}else if(zMessage.getMessageType().equals(COMMS_START)) {
+		if(zMessage.getMessageType().equals(COMMS_START)) {
 			//the details
 			String minidapp = zMessage.getString("minidappid");
 			int port = zMessage.getInteger("port");
