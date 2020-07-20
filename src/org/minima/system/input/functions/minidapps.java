@@ -14,7 +14,7 @@ public class minidapps extends CommandFunction {
 	public minidapps() {
 		super("minidapps");
 		
-		setHelp("(install:file|uninstall:UID|search:name|list)", "Install, uninstall, search or list the MiniDAPPs on your system. Defaults to list.", "");
+		setHelp("(install:file|uninstall:UID|search:name|list)", "Install, uninstall, search or list the MiniDAPPs on your system.", "");
 	}
 	
 	@Override
@@ -46,11 +46,29 @@ public class minidapps extends CommandFunction {
 				return;
 				
 			}else if(zInput[1].startsWith("uninstall:")) {
-			
-			}else if(zInput[1].startsWith("search:")) {
-			
-			}else if(zInput[1].equals("list")) {
+				String minidapp = zInput[1].substring(10);
 				
+				//And Post it..
+				Message uninstall = getResponseMessage(DAPPManager.DAPP_UNINSTALL);
+				uninstall.addString("minidapp", minidapp);
+				getMainHandler().getNetworkHandler().getDAPPManager().PostMessage(uninstall);
+		           
+				return;
+				
+				
+			}else if(zInput[1].startsWith("search:")) {
+				String name = zInput[1].substring(7);
+				
+				msg.addString("action", "search");
+				msg.addString("name", name);
+				
+				/**
+				 * Post A JSON message to the MiniDAPP!
+				 */
+			}else if(zInput[1].startsWith("post:")) {
+				
+			}else if(zInput[1].equals("list")) {
+				msg.addString("action", "list");	
 			}
 		}else {
 			msg.addString("action", "list");
