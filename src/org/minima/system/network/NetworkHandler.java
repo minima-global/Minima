@@ -41,7 +41,7 @@ public class NetworkHandler extends SystemHandler{
 	
 	public static final String NETWORK_WEBPROXY 	= "NETWORK_WEBPROXY";
 	
-	public static final String NETWORK_WS_NOTIFY 	= "NETWORK_NOTIFY";
+//	public static final String NETWORK_WS_NOTIFY 	= "NETWORK_NOTIFY";
 	
 	/**
 	 * The Main Minima Server
@@ -234,25 +234,25 @@ public class NetworkHandler extends SystemHandler{
 			//And finish up..
 			stopMessageProcessor();
 
-		}else if(zMessage.isMessageType(NETWORK_WS_NOTIFY)) {
-			//What is the message..
-			JSONObject json = (JSONObject) zMessage.getObject("message");
-			
-			String minidappid = "";
-			if(zMessage.exists("minidappid")) {
-				minidappid = zMessage.getString("minidappid");
-			}
-			
-			if(minidappid.equals("")) {
-				Message msg = new Message(WebSocketManager.WEBSOCK_SENDTOALL);
-				msg.addString("message", json.toString());
-				mWebSocketManager.PostMessage(msg);				
-			}else {
-				Message msg = new Message(WebSocketManager.WEBSOCK_SEND);
-				msg.addString("message", json.toString());
-				msg.addString("minidappid", minidappid);
-				mWebSocketManager.PostMessage(msg);
-			}
+//		}else if(zMessage.isMessageType(NETWORK_WS_NOTIFY)) {
+//			//What is the message..
+//			JSONObject json = (JSONObject) zMessage.getObject("message");
+//			
+//			String minidappid = "";
+//			if(zMessage.exists("minidappid")) {
+//				minidappid = zMessage.getString("minidappid");
+//			}
+//			
+//			if(minidappid.equals("")) {
+//				Message msg = new Message(WebSocketManager.WEBSOCK_SENDTOALL);
+//				msg.addString("message", json.toString());
+//				mWebSocketManager.PostMessage(msg);				
+//			}else {
+//				Message msg = new Message(WebSocketManager.WEBSOCK_SEND);
+//				msg.addString("message", json.toString());
+//				msg.addString("minidappid", minidappid);
+//				mWebSocketManager.PostMessage(msg);
+//			}
 			
 		}else if(zMessage.isMessageType(NETWORK_WEBPROXY)) {
 //			//Connect to a web proxy and listen for RPC calls..

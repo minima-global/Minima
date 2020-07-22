@@ -32,6 +32,7 @@ import org.minima.system.input.InputHandler;
 import org.minima.system.network.NetworkHandler;
 import org.minima.system.network.minidapps.comms.CommsManager;
 import org.minima.system.network.minidapps.minihub.hexdata.minimajs;
+import org.minima.system.network.websocket.WebSocketManager;
 import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
@@ -46,6 +47,8 @@ public class DAPPManager extends SystemHandler {
 	public static String DAPP_INSTALL   = "DAPP_INSTALL";
 	public static String DAPP_UNINSTALL = "DAPP_UNINSTALL";
 	public static String DAPP_POST      = "DAPP_POST";
+	
+	public static String DAPP_MINIDAPP_POST      = "DAPP_MINIDAPP_POST";
 	
 	JSONArray CURRENT_MINIDAPPS = new JSONArray();
 	String MINIDAPPS_FOLDER     = "";
@@ -418,15 +421,35 @@ public class DAPPManager extends SystemHandler {
 			wsmsg.put("event","network");
 			wsmsg.put("details",json);
 			
-			Message msg = new Message(NetworkHandler.NETWORK_WS_NOTIFY);
+			Message msg = new Message(DAPP_MINIDAPP_POST);
 			msg.addString("minidappid", minidapp);
 			msg.addObject("message", wsmsg);
-				
-			mNetwork.PostMessage(msg);
+			PostMessage(msg);
 		
 			InputHandler.getResponseJSON(zMessage).put("minidapp", minidapp);
 			InputHandler.getResponseJSON(zMessage).put("message", wsmsg.toString());
 			InputHandler.endResponse(zMessage, true, "Message posted");
+		
+		}else if(zMessage.isMessageType(DAPP_MINIDAPP_POST)) {
+			//What is the message..
+			JSONObject json = (JSONObject) zMessage.getObject("message");
+			
+			String minidappid = "";
+			if(zMessage.exists("minidappid")) {
+				minidappid = zMessage.getString("minidappid");
+			}
+			
+			if(minidappid.equals("")) {
+				Message msg = new Message(WebSocketManager.WEBSOCK_SENDTOALL);
+				msg.addString("message", json.toString());
+				mNetwork.getWebSocketManager().PostMessage(msg);				
+			}else {
+				Message msg = new Message(WebSocketManager.WEBSOCK_SEND);
+				msg.addString("message", json.toString());
+				msg.addString("minidappid", minidappid);
+				mNetwork.getWebSocketManager().PostMessage(msg);
+			}
+		
 		}
 		
 	}

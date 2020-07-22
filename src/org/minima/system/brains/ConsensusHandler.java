@@ -25,6 +25,7 @@ import org.minima.system.input.functions.gimme50;
 import org.minima.system.network.MinimaClient;
 import org.minima.system.network.MinimaReader;
 import org.minima.system.network.NetworkHandler;
+import org.minima.system.network.minidapps.DAPPManager;
 import org.minima.system.txpow.TxPoWChecker;
 import org.minima.system.txpow.TxPoWMiner;
 import org.minima.utils.json.JSONArray;
@@ -272,9 +273,7 @@ public class ConsensusHandler extends SystemHandler {
 			JSONObject newtrans = new JSONObject();
 			newtrans.put("event","newtransaction");
 			newtrans.put("txpow",txpow.toJSON());
-			
-			Message msg = new Message(NetworkHandler.NETWORK_WS_NOTIFY).addObject("message", newtrans);
-			getMainHandler().getNetworkHandler().PostMessage(msg);
+			PostDAPPJSONMessage(newtrans);
 			
 			//Process it
 			PostMessage(new Message(ConsensusHandler.CONSENSUS_PROCESSTXPOW).addObject("txpow", txpow));
@@ -452,9 +451,7 @@ public class ConsensusHandler extends SystemHandler {
 				JSONObject mining = new JSONObject();
 				mining.put("event","txpowstart");
 				mining.put("transaction",txpow.getTransaction().toJSON().toString());
-				
-				Message wsmsg = new Message(NetworkHandler.NETWORK_WS_NOTIFY).addObject("message", mining);
-				getMainHandler().getNetworkHandler().PostMessage(wsmsg);
+				PostDAPPJSONMessage(mining);
 			}
 			
 			//Send it to the Miner.. This is the ONLY place this happens..
@@ -586,9 +583,7 @@ public class ConsensusHandler extends SystemHandler {
 			JSONObject mining = new JSONObject();
 			mining.put("event","txpowend");
 			mining.put("transaction",txpow.getTransaction().toJSON().toString());
-			
-			Message wsmsg = new Message(NetworkHandler.NETWORK_WS_NOTIFY).addObject("message", mining);
-			getMainHandler().getNetworkHandler().PostMessage(wsmsg);
+			PostDAPPJSONMessage(mining);
 			
 		}else if(zMessage.isMessageType(CONSENSUS_GIMME50)) {
 			//Check time
@@ -796,6 +791,14 @@ public class ConsensusHandler extends SystemHandler {
 				PostMessage(ret);
 			}
 		}
-		
 	}	
+	
+	/**
+	 * Post a message to all the MiniDAPPs
+	 * @param zJSON
+	 */
+	public void PostDAPPJSONMessage(JSONObject zJSON) {
+		Message wsmsg = new Message(DAPPManager.DAPP_MINIDAPP_POST).addObject("message", zJSON);
+		getMainHandler().getNetworkHandler().getDAPPManager().PostMessage(wsmsg);
+	}
 }

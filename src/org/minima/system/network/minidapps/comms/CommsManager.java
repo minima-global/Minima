@@ -6,6 +6,7 @@ import org.minima.system.Main;
 import org.minima.system.SystemHandler;
 import org.minima.system.input.InputHandler;
 import org.minima.system.network.NetworkHandler;
+import org.minima.system.network.minidapps.DAPPManager;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
@@ -248,11 +249,11 @@ public class CommsManager extends SystemHandler {
 		websocketmsg.put("event","network");
 		websocketmsg.put("details",zMessage);
 		
-		Message msg = new Message(NetworkHandler.NETWORK_WS_NOTIFY);
+		Message msg = new Message(DAPPManager.DAPP_MINIDAPP_POST);
 		msg.addObject("message", websocketmsg);
 		
 		//Post to the Network..
-		getMainHandler().getNetworkHandler().PostMessage(msg);
+		getMainHandler().getNetworkHandler().getDAPPManager().PostMessage(msg);
 	}
 
 }
