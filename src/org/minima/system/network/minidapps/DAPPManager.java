@@ -544,6 +544,9 @@ public class DAPPManager extends SystemHandler {
 			
 		}else if(event.equals("newbalance")) {
 			data.put("info", zJSON.get("balance"));	
+		
+		}else if(event.equals("network")) {
+			data.put("info", zJSON.get("details"));	
 			
 		}
 		
