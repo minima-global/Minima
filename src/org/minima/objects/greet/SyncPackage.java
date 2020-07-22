@@ -1,4 +1,4 @@
-package org.minima.system.backup;
+package org.minima.objects.greet;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
