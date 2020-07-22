@@ -4,7 +4,7 @@ import java.io.File;
 
 import org.minima.system.brains.BackupManager;
 import org.minima.system.input.InputHandler;
-import org.minima.system.network.minidapps.minilib.JSMiniLibUtil;
+import org.minima.system.network.minidapps.minilib.MiniLibUtility;
 import org.minima.utils.SQLHandler;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
@@ -97,7 +97,7 @@ public class SQL implements Runnable {
 		//Now send the result back vis the callback..
 		if(mCallback != null) {
 			//Create a native JSON
-			Object json = JSMiniLibUtil.makeJSONObject(mFinalResult, mContext, mScope);
+			Object json = MiniLibUtility.makeJSONObject(mFinalResult, mContext, mScope);
 			
 			//Make a function variable list
 			Object functionArgs[] = { json };

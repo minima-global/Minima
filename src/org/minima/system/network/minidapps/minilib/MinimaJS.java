@@ -13,6 +13,8 @@ public class MinimaJS {
 	 */
 	public FILE file;
 	
+	
+	
 	/**
 	 * JS BACKEND link
 	 */
@@ -80,19 +82,5 @@ public class MinimaJS {
 		//Run it..
 		Thread sqlthread = new Thread(sql);
 		sqlthread.run();
-	}
-	
-	/**
-	 * Back end / Front end communication - Fires a POST MinimaEvent
-	 */
-	public void post(Object zObject) {}
-	
-	/**
-	 * Intra-MiniDAPP comms.
-	 * 
-	 * @param zMinDAPPID
-	 * @param zObject
-	 */
-	public void send(String zMinDAPPID, Object zMessage) {}
-	public void reply(Object zOriginalMessage, Object zReply) {}	
+	}	
 }

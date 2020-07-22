@@ -10,7 +10,7 @@ import org.minima.system.network.minidapps.DAPPManager;
 import org.minima.system.network.minidapps.comms.CommsClient;
 import org.minima.system.network.minidapps.comms.CommsManager;
 import org.minima.system.network.minidapps.comms.CommsServer;
-import org.minima.system.network.minidapps.minilib.JSMiniLibUtil;
+import org.minima.system.network.minidapps.minilib.MiniLibUtility;
 import org.minima.system.network.rpc.RPCClient;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.ResponseStream;
@@ -179,7 +179,7 @@ public class NET implements Runnable {
 		//Now send the result back vis the callback..
 		if(mCallback != null) {
 			//Create a native JSON
-			Object json = JSMiniLibUtil.makeJSONObject(mFinalResult, mContext, mScope);
+			Object json = MiniLibUtility.makeJSONObject(mFinalResult, mContext, mScope);
 			
 			//Make a function variable list
 			Object functionArgs[] = { json };
