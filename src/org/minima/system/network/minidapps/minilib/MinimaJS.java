@@ -11,9 +11,17 @@ public class MinimaJS {
 	/**
 	 * File functions..
 	 */
-	public FILE file;
+	public JSFile file;
 	
+	/**
+	 * NET Functions
+	 */
+	public JSNet net;
 	
+	/**
+	 * UTIL Functions
+	 */
+	public JSUtil util;
 	
 	/**
 	 * JS BACKEND link
