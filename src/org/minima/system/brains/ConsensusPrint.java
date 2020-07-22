@@ -688,8 +688,7 @@ public class ConsensusPrint extends ConsensusProcessor {
 					newbalance.put("event","newbalance");
 					newbalance.put("balance",totbal);
 					
-					Message msg = new Message(NetworkHandler.NETWORK_WS_NOTIFYALL);
-					msg.addString("message", newbalance.toString());
+					Message msg = new Message(NetworkHandler.NETWORK_WS_NOTIFY).addObject("message", newbalance);
 					getConsensusHandler().getMainHandler().getNetworkHandler().PostMessage(msg);
 				}
 			}
@@ -1016,8 +1015,7 @@ public class ConsensusPrint extends ConsensusProcessor {
 				newblock.put("status",status);
 				newblock.put("txpow",tip.getTxPow());
 				
-				Message msg = new Message(NetworkHandler.NETWORK_WS_NOTIFYALL);
-				msg.addString("message", newblock.toString());
+				Message msg = new Message(NetworkHandler.NETWORK_WS_NOTIFY).addObject("message", newblock);
 				getConsensusHandler().getMainHandler().getNetworkHandler().PostMessage(msg);
 			}
 			

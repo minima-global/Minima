@@ -45,7 +45,7 @@ public class DAPPManager extends SystemHandler {
 
 	public static String DAPP_INSTALL   = "DAPP_INSTALL";
 	public static String DAPP_UNINSTALL = "DAPP_UNINSTALL";
-	public static String DAPP_POST    = "DAPP_UPDATE";
+	public static String DAPP_POST      = "DAPP_POST";
 	
 	JSONArray CURRENT_MINIDAPPS = new JSONArray();
 	String MINIDAPPS_FOLDER     = "";
@@ -406,9 +406,27 @@ public class DAPPManager extends SystemHandler {
 			
 		}else if(zMessage.getMessageType().equals(DAPP_POST)) {
 			//Send a MinimaEvent Message to all the current Backend DAPPS
+			String minidapp = zMessage.getString("minidapp");
+			String message  = zMessage.getString("message");
 			
+			//Make a JSON
+			JSONObject json = new JSONObject();
+			json.put("action", "post");
+			json.put("message", message);
 			
+			JSONObject wsmsg = new JSONObject();
+			wsmsg.put("event","network");
+			wsmsg.put("details",json);
+			
+			Message msg = new Message(NetworkHandler.NETWORK_WS_NOTIFY);
+			msg.addString("minidappid", minidapp);
+			msg.addObject("message", wsmsg);
+				
+			mNetwork.PostMessage(msg);
 		
+			InputHandler.getResponseJSON(zMessage).put("minidapp", minidapp);
+			InputHandler.getResponseJSON(zMessage).put("message", wsmsg.toString());
+			InputHandler.endResponse(zMessage, true, "Message posted");
 		}
 		
 	}

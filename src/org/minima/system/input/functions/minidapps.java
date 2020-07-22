@@ -7,6 +7,8 @@ import org.minima.system.brains.ConsensusPrint;
 import org.minima.system.input.CommandFunction;
 import org.minima.system.network.minidapps.DAPPManager;
 import org.minima.utils.MiniFile;
+import org.minima.utils.json.JSONObject;
+import org.minima.utils.json.parser.JSONParser;
 import org.minima.utils.messages.Message;
 
 public class minidapps extends CommandFunction {
@@ -14,7 +16,7 @@ public class minidapps extends CommandFunction {
 	public minidapps() {
 		super("minidapps");
 		
-		setHelp("(install:file|uninstall:UID|search:name|list)", "Install, uninstall, search or list the MiniDAPPs on your system.", "");
+		setHelp("(install:file|uninstall:UID|search:name|post:UID message|list)", "Install, uninstall, search, post a message directly or list the MiniDAPPs on your system.", "");
 	}
 	
 	@Override
@@ -66,6 +68,16 @@ public class minidapps extends CommandFunction {
 				 * Post A JSON message to the MiniDAPP!
 				 */
 			}else if(zInput[1].startsWith("post:")) {
+				String minidapp = zInput[1].substring(5);
+				String message  = zInput[2];
+				
+				//Now post it..
+				Message post = getResponseMessage(DAPPManager.DAPP_POST);
+				post.addString("minidapp", minidapp);
+				post.addString("message", message);
+				getMainHandler().getNetworkHandler().getDAPPManager().PostMessage(post);
+		        
+				return;
 				
 			}else if(zInput[1].equals("list")) {
 				msg.addString("action", "list");	
