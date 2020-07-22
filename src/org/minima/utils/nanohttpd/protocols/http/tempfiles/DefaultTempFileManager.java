@@ -38,7 +38,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 
-import org.minima.system.backup.BackupManager;
+import org.minima.system.brains.BackupManager;
 import org.minima.utils.nanohttpd.protocols.http.NanoHTTPD;
 
 /**

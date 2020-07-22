@@ -2,7 +2,7 @@ package org.minima.system.network.commands;
 
 import java.io.File;
 
-import org.minima.system.backup.BackupManager;
+import org.minima.system.brains.BackupManager;
 import org.minima.system.input.InputHandler;
 import org.minima.system.network.minidapps.minilib.JSMiniLibUtil;
 import org.minima.utils.SQLHandler;

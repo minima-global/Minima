@@ -41,7 +41,7 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.objects.greet.SyncPackage;
 import org.minima.objects.greet.SyncPacket;
 import org.minima.objects.proofs.TokenProof;
-import org.minima.system.backup.BackupManager;
+import org.minima.system.brains.BackupManager;
 import org.minima.system.brains.ConsensusHandler;
 import org.minima.system.input.functions.gimme50;
 import org.minima.system.txpow.GenesisTxPOW;

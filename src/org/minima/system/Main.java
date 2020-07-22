@@ -3,7 +3,7 @@ package org.minima.system;
 
 import org.minima.GlobalParams;
 import org.minima.objects.base.MiniNumber;
-import org.minima.system.backup.BackupManager;
+import org.minima.system.brains.BackupManager;
 import org.minima.system.brains.ConsensusBackup;
 import org.minima.system.brains.ConsensusHandler;
 import org.minima.system.input.InputHandler;

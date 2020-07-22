@@ -20,7 +20,6 @@ import org.minima.objects.greet.SyncPackage;
 import org.minima.objects.greet.SyncPacket;
 import org.minima.objects.greet.TxPoWList;
 import org.minima.objects.proofs.TokenProof;
-import org.minima.system.backup.BackupManager;
 import org.minima.system.network.MinimaClient;
 import org.minima.system.network.MinimaReader;
 import org.minima.system.txpow.TxPoWChecker;
