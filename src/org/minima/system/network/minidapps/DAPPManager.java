@@ -434,9 +434,6 @@ public class DAPPManager extends SystemHandler {
 	        //It's done!
 			recalculateMiniDAPPS();
 			
-			//Now get the CONF file..
-			
-		
 			InputHandler.endResponse(zMessage, true, "MiniDAPP installed..");
 			
 		}else if(zMessage.getMessageType().equals(DAPP_UNINSTALL)) {
