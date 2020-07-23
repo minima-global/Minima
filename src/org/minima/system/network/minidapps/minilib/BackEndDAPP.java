@@ -63,6 +63,11 @@ public class BackEndDAPP {
 		
 		//Context and scope of the JS backend
 		mContext = Context.enter();
+		
+		//No optimisation.. (Android needs this.. will change in future..)
+		mContext.setOptimizationLevel(-1);
+	
+		//Create the scope
 		mScope   = mContext.initStandardObjects();
 	
 		//Create a MinimaJS object for this scope..
@@ -82,9 +87,8 @@ public class BackEndDAPP {
 		//Evaluate the script
 		mContext.evaluateString(mScope, zScriptJS, "<cmd>", 1, null);
 	
-		//Get the function
+		//Get the main MinimaEvent function
 		Object fObj = mScope.get("MinimaEvent", mScope);
-		
 		if (!(fObj instanceof Function)) {
 		    throw new ProtocolException("BackEnd JS MinimaEvent is undefined or not a function.");
 		} 
