@@ -150,7 +150,7 @@ public class CommsClient extends MessageProcessor {
 	@Override
 	protected void processMessage(Message zMessage) throws Exception {
 		
-		MinimaLogger.log("CommsClient "+mUID+" "+zMessage);
+		//MinimaLogger.log("CommsClient "+mUID+" "+zMessage);
 		
 		if(zMessage.isMessageType(COMMSCLIENT_INIT)) {
 			try {

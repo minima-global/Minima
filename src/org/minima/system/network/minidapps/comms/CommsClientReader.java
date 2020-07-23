@@ -75,8 +75,7 @@ public class CommsClientReader implements Runnable {
 		
 		//Shut down the client..
 		mCommsClient.PostMessage(CommsClient.COMMSCLIENT_SHUTDOWN);
-		
-		MinimaLogger.log("COMMSCLIENT CLOSED");
+		//MinimaLogger.log("COMMSCLIENT CLOSED");
 	}
 }
 
