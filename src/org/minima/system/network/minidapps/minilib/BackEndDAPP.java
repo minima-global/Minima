@@ -90,7 +90,7 @@ public class BackEndDAPP {
 		//Get the main MinimaEvent function
 		Object fObj = mScope.get("MinimaEvent", mScope);
 		if (!(fObj instanceof Function)) {
-		    throw new ProtocolException("BackEnd JS MinimaEvent is undefined or not a function.");
+		    throw new ProtocolException("BackEnd JS MinimaEvent is undefined or not a function in "+zMiniDAPPID);
 		} 
 		
 		//Store for later
