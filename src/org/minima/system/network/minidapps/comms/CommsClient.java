@@ -222,6 +222,7 @@ public class CommsClient extends MessageProcessor {
 			clientshut.addString("minidappid", mMiniDAPPID);
 			clientshut.addObject("client", this);
 			
+			//Is there an error..
 			if(zMessage.exists("error")) {
 				clientshut.addString("error", zMessage.getString("error"));
 			}
@@ -246,7 +247,7 @@ public class CommsClient extends MessageProcessor {
 			
 		}catch(Exception ec) {
 			//Show..
-			MinimaLogger.log("COMMS Error sending message : "+zMessage.toString()+" "+ec);
+			//MinimaLogger.log("COMMS Error sending message : "+zMessage.toString()+" "+ec);
 			
 			//Shut down the client..
 			Message shutdown = new Message(CommsClient.COMMSCLIENT_SHUTDOWN);

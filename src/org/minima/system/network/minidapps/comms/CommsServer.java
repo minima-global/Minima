@@ -52,7 +52,7 @@ public class CommsServer implements Runnable{
 			//Start a server Socket..
 			mServerSocket = new ServerSocket(mPort);
 			
-			MinimaLogger.log("CommsServer started on port : "+mPort);
+			MinimaLogger.log("CommsServer started on port "+mPort);
 		    
 			//Tell the Manager..
 			Message newserver = new Message(CommsManager.COMMS_NEWSERVER);
