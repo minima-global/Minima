@@ -294,7 +294,7 @@ public class DAPPManager extends SystemHandler {
 							//Add to the List..
 							mBackends.put(minidappid, bedapp);
 						
-							MinimaLogger.log("BackEND create for "+minidappid);
+							MinimaLogger.log("BackEndJS create for "+minidappid);
 							
 						} catch (Exception e) {
 							MinimaLogger.log("Error loading backend.js for "+backend.getAbsolutePath());
@@ -306,6 +306,12 @@ public class DAPPManager extends SystemHandler {
 				}
 			}
 		}
+		
+		//Post a CONNECTED message to all the BackEnds.. 
+		JSONObject wsmsg = new JSONObject();
+		wsmsg.put("event","connected");
+		wsmsg.put("details","success");
+		sendToBackEND("", wsmsg);
 		
 		//Order the List.. By Name..
 		Collections.sort(CURRENT_MINIDAPPS, new Comparator<JSONObject>() {
@@ -536,7 +542,10 @@ public class DAPPManager extends SystemHandler {
 		JSONObject data = new JSONObject();
 		data.put("event", event);
 		
-		if(event.equals("newblock")) {
+		if(event.equals("connected")) {
+			data.put("info", "success");	
+		
+		}else if(event.equals("newblock")) {
 			data.put("info", zJSON.get("txpow"));	
 		
 		}else if(event.equals("newtransaction")) {
