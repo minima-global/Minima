@@ -1,17 +1,21 @@
 package org.minima.system.network.minidapps.minilib;
 
 import org.minima.system.network.commands.FILE;
+import org.minima.utils.json.JSONObject;
 import org.mozilla.javascript.Function;
+import org.mozilla.javascript.NativeObject;
 
 public class JSFile {
 
-	private FILE mFileAccess;
+	/**
+	 * JS BACKEND link
+	 */
+	private BackEndDAPP mBackBone;
 	
-	public JSFile() {
-		// TODO Auto-generated constructor stub
+	public JSFile(BackEndDAPP zBackBone) {
+		mBackBone = zBackBone;
 	}
 	
-
 	/**
 	 * File Access Functions
 	 */
@@ -20,7 +24,17 @@ public class JSFile {
 	}
 	
 	public void save(Object zObject, String zFilename, Function zCallback) {
-
+		//Create a JSON
+		JSONObject jobj = MiniLibUtility.toJsonObject((NativeObject)zObject);
+		
+		//Now create the command..
+		String command = "save "+zFilename+" "+jobj.toString();
+		
+		//Convert to String command..
+		FILE ffunc = new FILE(command, mBackBone.getMiniDAPPID(), zCallback, mBackBone.getContext(), mBackBone.getScope());
+		
+		//Run it..
+		ffunc.run();
 	}
 	
 	/**
@@ -29,7 +43,14 @@ public class JSFile {
 	 * @param zCallback
 	 */
 	public void load(String zFilename, Function zCallback) {
-	
+		//Now create the command..
+		String command = "load "+zFilename;
+		
+		//Convert to String command..
+		FILE ffunc = new FILE(command, mBackBone.getMiniDAPPID(), zCallback, mBackBone.getContext(), mBackBone.getScope());
+		
+		//Run it..
+		ffunc.run();
 	}
 	
 	/**
@@ -41,7 +62,14 @@ public class JSFile {
 	}
 	
 	public void delete(String zFilename, Function zCallback) {
+		//Now create the command..
+		String command = "delete "+zFilename;
 		
+		//Convert to String command..
+		FILE ffunc = new FILE(command, mBackBone.getMiniDAPPID(), zCallback, mBackBone.getContext(), mBackBone.getScope());
+		
+		//Run it..
+		ffunc.run();
 	}
 	
 	/**
@@ -50,8 +78,15 @@ public class JSFile {
 	 * @param zFolder
 	 * @param zCallback
 	 */
-	public void list(String zFolder, Function zCallback) {
+	public void list(String zFilename, Function zCallback) {
+		//Now create the command..
+		String command = "list "+zFilename;
 		
+		//Convert to String command..
+		FILE ffunc = new FILE(command, mBackBone.getMiniDAPPID(), zCallback, mBackBone.getContext(), mBackBone.getScope());
+		
+		//Run it..
+		ffunc.run();
 	}
 	
 }

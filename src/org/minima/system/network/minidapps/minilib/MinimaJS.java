@@ -30,6 +30,10 @@ public class MinimaJS {
 	
 	public MinimaJS(BackEndDAPP zBackBone) {
 		mBackBone = zBackBone;
+		
+		file = new JSFile(mBackBone);
+		net  = new JSNet();
+		util = new JSUtil();
 	}
 	
 	/**
@@ -37,7 +41,7 @@ public class MinimaJS {
 	 * @param zLog
 	 */
 	public void log(String zLog) {
-		MinimaLogger.log("MinimaJS LOG ["+mBackBone.getMiniDAPPID()+"] "+zLog);
+		MinimaLogger.log("["+mBackBone.getMiniDAPPID()+"] "+zLog);
 	}
 	
 	/**
@@ -60,9 +64,10 @@ public class MinimaJS {
 			cmd = new CMD(zCommand);
 		}
 
-		//Run it..
-		Thread cmdthread = new Thread(cmd);
-		cmdthread.start();
+		//Run it.. synchronous..
+		cmd.run();
+//		Thread cmdthread = new Thread(cmd);
+//		cmdthread.start();
 	}
 	
 	
@@ -87,8 +92,9 @@ public class MinimaJS {
 			sql = new SQL(zCommand, mBackBone.getMiniDAPPID());
 		}
 		
-		//Run it..
-		Thread sqlthread = new Thread(sql);
-		sqlthread.run();
+		//Run it.. synchronous
+		sql.run();
+//		Thread sqlthread = new Thread(sql);
+//		sqlthread.run();
 	}	
 }
