@@ -27,7 +27,7 @@ public class CommsManager extends SystemHandler {
 	public static final String COMMS_SEND         = "COMMS_SEND";
 	
 	public static final String COMMS_NEWCLIENT    = "COMMS_NEWCLIENT";
-	public static final String COMMS_CLIENTSHUT  = "COMMS_CLIENTERROR";
+	public static final String COMMS_CLIENTSHUT   = "COMMS_CLIENTSHUT";
 	
 	ArrayList<CommsServer> mServers;
 	ArrayList<CommsClient> mClients;
@@ -84,7 +84,7 @@ public class CommsManager extends SystemHandler {
 	@Override
 	protected void processMessage(Message zMessage) throws Exception {
 		
-		//MinimaLogger.log("CommsManager : "+zMessage);
+		MinimaLogger.log("CommsManager : "+zMessage);
 		
 		if(zMessage.getMessageType().equals(COMMS_START)) {
 			//the details
@@ -197,7 +197,11 @@ public class CommsManager extends SystemHandler {
 			//Add to our List..
 			mClients.remove(client);	
 			
-			postClientMessage("client_shut",client);
+			if(zMessage.exists("error")) {
+				postClientMessage("client_shut",client, zMessage.getString("error"));
+			}else {
+				postClientMessage("client_shut",client);	
+			}
 			
 		}else if(zMessage.getMessageType().equals(COMMS_NEWCLIENT)) {
 			//There's a new client connected to a comms server
@@ -230,6 +234,10 @@ public class CommsManager extends SystemHandler {
 	}
 	
 	public void postClientMessage(String zAction, CommsClient zClient) {
+		postClientMessage(zAction, zClient, "");
+	}
+	
+	public void postClientMessage(String zAction, CommsClient zClient, String zErorr) {
 		//Already connected..
 		JSONObject netaction = new JSONObject();
 		netaction.put("action", zAction);
@@ -239,6 +247,10 @@ public class CommsManager extends SystemHandler {
 		netaction.put("uid", zClient.getUID());
 		netaction.put("minidappid", zClient.getMiniDAPPID());
 		netaction.put("outbound", zClient.isOutBound());
+		
+		if(!zErorr.equals("")) {
+			netaction.put("error", zErorr);	
+		}
 		
 		postCommsMssage(netaction, zClient.getMiniDAPPID());
 	}
