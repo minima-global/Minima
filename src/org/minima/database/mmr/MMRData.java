@@ -30,7 +30,7 @@ public class MMRData implements Streamable{
 	Coin mCoin;
 	
 	/**
-	 * The Blocknumber that this output was created in - OP_CSV 
+	 * The Block number that this output was created in - OP_CSV 
 	 */
 	MiniNumber mBlockNumber;
 	

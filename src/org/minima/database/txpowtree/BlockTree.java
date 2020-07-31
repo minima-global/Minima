@@ -508,7 +508,7 @@ public class BlockTree {
 			}
 		}; 
 		
-		_recurseTree(printer);
+		_recurseTree2(printer);
 	}
 	
 	/**
@@ -579,6 +579,83 @@ public class BlockTree {
         }
         
         return null;
+	}
+	
+	
+	private BlockTreeNode _recurseTree2(NodeAction zNodeAction) {
+		//If nothing on chain return nothing
+		if(getChainRoot() == null) {return null;}
+				
+		return _recurseTree2(zNodeAction, getChainRoot());
+	}
+	
+	
+	private BlockTreeNode _recurseTree2(NodeAction zNodeAction, BlockTreeNode zStartNode) {
+		//Create a STACK..
+		NodeStack stack = new NodeStack();
+		
+		//Push on the stack
+		stack.push(zStartNode);
+		
+		//Now cycle..
+		while(!stack.isEmpty()) {
+			//Get the top stack item
+			BlockTreeNode node = stack.pop();
+			
+			//Do the action..
+			zNodeAction.runAction(node);
+    		
+    		//Have we found what we were looking for..
+    		if(zNodeAction.returnObject()) {
+    			return zNodeAction.getObject();
+    		}
+    		
+    		//Get any children..
+    		ArrayList<BlockTreeNode> children = node.getChildren();
+			for(BlockTreeNode child : children) {
+				//Push on the stack
+				stack.push(child);	
+			}
+		}
+		
+        
+        return null;
+	}
+	
+	public static BlockTreeNode copyTreeNode2(BlockTreeNode zStartNode) {
+		//Create a STACK..
+		NodeStack stack     = new NodeStack();
+		NodeStack copystack = new NodeStack();
+		
+		//The copy of the root node..
+		BlockTreeNode rootCopy = new BlockTreeNode(zStartNode);
+				
+		//Push on the stack
+		stack.push(zStartNode);
+		copystack.push(rootCopy);
+		
+		//Now cycle..
+		while(!stack.isEmpty()) {
+			//Get the top stack item
+			BlockTreeNode node     = stack.pop();
+			BlockTreeNode copynode = copystack.pop();
+			
+    		//Get any children..
+    		ArrayList<BlockTreeNode> children = node.getChildren();
+			for(BlockTreeNode child : children) {
+				//Create a copy..
+				BlockTreeNode copychild = new BlockTreeNode(child);
+				
+				//Add to the copy..
+				copynode.addChild(copychild);
+			
+				//Push on the stack
+				stack.push(child);	
+				copystack.push(copychild);
+			}
+		}
+		
+        return rootCopy;
 	}
 	
 	/**
@@ -777,7 +854,7 @@ public class BlockTree {
 		System.out.println();
 		
 		//Lets copy..
-		BlockTreeNode copy = BlockTree.copyTreeNode(rootnode);
+		BlockTreeNode copy = BlockTree.copyTreeNode2(rootnode);
 		BlockTree copytree = new BlockTree();
 		copytree.setTreeRoot(copy);
 	

@@ -201,11 +201,17 @@ public class NetworkHandler extends SystemHandler{
 			multimain.setDaemon(true);
 			multimain.start();
 			
+			//Small pause..
+			Thread.sleep(200);
+			
 			//Start the RPC server
 			mRPCServer = new RPCServer(getRPCPort());
 			Thread rpc = new Thread(mRPCServer, "RPC Server");
 			rpc.setDaemon(true);
 			rpc.start();
+			
+			//Small pause..
+			Thread.sleep(200);
 			
 			//Start the DAPP Server
 			mDAPPManager = new DAPPManager(getMainHandler());

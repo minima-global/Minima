@@ -17,6 +17,7 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.objects.proofs.Proof.ProofChunk;
 import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
+import org.minima.utils.ObjectStack;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
@@ -1036,6 +1037,30 @@ public class MMRSet implements Streamable {
 			
 		//The you do it..
 		zNode.copyParentKeepers();
+	}
+	
+	public void copyAllParentKeepers(MiniNumber zCascade) {
+		//Start at this point..
+		MMRSet curr = this;
+		
+		//Store all the pparents..
+		ObjectStack stack = new ObjectStack();
+		while(curr.getBlockTime().isMore(zCascade)) {
+			//Add to the stack..
+			stack.push(curr);
+			
+			//Get the parent..
+			curr = curr.getParent();
+		}
+		
+		//Now run through the stack..
+		while(!stack.isEmpty()) {
+			//Get the parent MMR..
+			MMRSet mmr = (MMRSet) stack.pop();
+			
+			//Copy the parents MMR keepers..
+			mmr.copyParentKeepers();
+		}
 	}
 	
 	/**

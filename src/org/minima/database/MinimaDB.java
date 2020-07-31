@@ -9,6 +9,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Stack;
 
 import org.minima.GlobalParams;
 import org.minima.database.coindb.CoinDB;
@@ -49,6 +50,7 @@ import org.minima.system.txpow.TxPoWChecker;
 import org.minima.system.txpow.TxPoWMiner;
 import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
+import org.minima.utils.ObjectStack;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.messages.Message;
 
@@ -403,6 +405,42 @@ public class MinimaDB {
 			//And add any other children..
 			addTreeChildren(txp.getTxPOW().getTxPowID());
 		}
+		
+//		/**
+//		 * NEW NON-RECURSIVE METHOD..
+//		 */
+//		//Create a new stack of block ids to check..
+//		ObjectStack stack = new ObjectStack();
+//		
+//		//Add the initial ID
+//		stack.push(zParentID);
+//		
+//		//Keep going until everything is checked
+//		while(!stack.isEmpty()) {
+//			//Get the ID
+//			MiniData parentid = (MiniData) stack.pop();
+//				
+//			//Get the children
+//			ArrayList<TxPOWDBRow> children = mTxPOWDB.getChildBlocksTxPOW(parentid);
+//				
+//			//Add the children
+//			for(TxPOWDBRow txp : children) {
+//				//We can now add this one..
+//				boolean added = mMainTree.addNode(new BlockTreeNode(txp.getTxPOW()));
+//				
+				//Only if it works!
+//		        if (added) {}
+		        
+//				//Get the children of the children..
+//				ArrayList<TxPOWDBRow> grandchildren = mTxPOWDB.getChildBlocksTxPOW(txp.getTxPOW().getTxPowID());
+//			
+//				//Add these to the stack..
+//				for(TxPOWDBRow gtxp : grandchildren) {
+//					stack.push(gtxp.getTxPOW().getTxPowID());	
+//				}
+//			}
+//		}
+		
 	}
 	
 	public TxPoW findBlockForTransaction(TxPoW zTxPoWTransaction) {
