@@ -496,6 +496,8 @@ public class ConsensusNet extends ConsensusProcessor {
 					
 					//Save it..
 					getConsensusHandler().getMainHandler().getBackupManager().backupTxpow(txpow);
+				}else {
+					MinimaLogger.log("ERROR NET Initial request TXPOW  not found ? : "+txpow.getBlockNumber()+" "+txpow.getTxPowID()); 
 				}
 				
 				//And remove the link..
