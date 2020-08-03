@@ -90,7 +90,6 @@ public class CascadeTree {
 		
 		//Now copy all the MMR data to the old cascade..
 		newcascade.getMMRSet().copyAllParentKeepers(cascadenode.getBlockNumber());
-//		newcascadenode.getMMRSet().recurseParentMMR(cascadenode.getBlockNumber());
 		
 		//Now add all that
 		ArrayList<BlockTreeNode> cascnodes = new ArrayList<>();

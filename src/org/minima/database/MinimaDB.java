@@ -773,6 +773,11 @@ public class MinimaDB {
 		if(howdeep.isMore(MiniNumber.SIXTYFOUR)) {
 			howdeep = MiniNumber.SIXTYFOUR;
 		}
+		
+		//DEBUG..
+//		if(howdeep.isMore(MiniNumber.TWO)) {
+//			howdeep = MiniNumber.TWO;
+//		}
 	
 		//The Actual MMR block we will use..
 		MMRSet proofmmr = basemmr.getParentAtTime(currentblock.sub(howdeep));
