@@ -58,11 +58,6 @@ public class BlockTreeNode implements Comparable<BlockTreeNode> {
 	MMRSet mMMRSet = new MMRSet();
 	
 	/**
-	 * When Traversing.. remember which child was used last
-	 */
-	public int mTraversedChild = 0;
-	
-	/**
 	 * When calculating the cascade weight.. has this node been used.. 1000x speed boost..
 	 */
 	public boolean mCascadeWeighted = false;
