@@ -428,16 +428,10 @@ public class MinimaDB {
 //				//We can now add this one..
 //				boolean added = mMainTree.addNode(new BlockTreeNode(txp.getTxPOW()));
 //				
-				//Only if it works!
-//		        if (added) {}
-		        
-//				//Get the children of the children..
-//				ArrayList<TxPOWDBRow> grandchildren = mTxPOWDB.getChildBlocksTxPOW(txp.getTxPOW().getTxPowID());
-//			
-//				//Add these to the stack..
-//				for(TxPOWDBRow gtxp : grandchildren) {
-//					stack.push(gtxp.getTxPOW().getTxPowID());	
-//				}
+//				//Only if it works!
+//		        if (added) {
+//		        	stack.push(txp.getTxPOW().getTxPowID());	
+//		        }
 //			}
 //		}
 		
