@@ -367,7 +367,7 @@ public class BlockTree {
 							//Need allok for the block to be accepted
 							boolean allok = false;
 							
-							//Check that Block difficulty is Correct!?
+							//Check that Block difficulty is Correct
 							//..TODO
 							
 							//Check the Super Block Levels are Correct! and point to the correct blocks
