@@ -306,6 +306,9 @@ public class MinimaClient extends MessageProcessor {
 			//Store this as the LAST time we requested it.. won't do it again for 10 minutes
 			mOldTxPoWRequests.put(val, new Long(timenow));
 			
+			//Add to our list of requested TxPoW - so is let in EVEN if invalid - as may be in a side branch
+			mNetworkMain.addRequestedTxPow(txpowid.to0xString());
+			
 			//And send it..
 			sendMessage(MinimaReader.NETMESSAGE_TXPOW_REQUEST, txpowid);
 	

@@ -8,6 +8,7 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Enumeration;
 
+import org.minima.objects.base.MiniData;
 import org.minima.system.Main;
 import org.minima.system.SystemHandler;
 import org.minima.system.input.InputHandler;
@@ -41,8 +42,6 @@ public class NetworkHandler extends SystemHandler{
 	
 	public static final String NETWORK_WEBPROXY 	= "NETWORK_WEBPROXY";
 	
-//	public static final String NETWORK_WS_NOTIFY 	= "NETWORK_NOTIFY";
-	
 	/**
 	 * The Main Minima Server
 	 */
@@ -67,6 +66,12 @@ public class NetworkHandler extends SystemHandler{
 	 * All the network channels..
 	 */
 	ArrayList<MinimaClient> mClients 	= new ArrayList<>();
+	
+	/**
+	 * A list of all the requested TxPoW messages.. 
+	 * they could be invalid on arrival as in a different  ranch
+	 */
+	ArrayList<String> mRequestedTxPoW = new ArrayList<>();
 	
 	/**
 	 * Is reconnect enabled or not ?
@@ -389,6 +394,46 @@ public class NetworkHandler extends SystemHandler{
 		}
 	}
 	
+	/**
+	 * When you request a TxPOW it may be invalid as from a different branch..
+	 */
+	public void addRequestedInitialSyncTxPow(String zTxPoWID) {
+		if(!isRequestedInitialTxPow(zTxPoWID)){
+			mRequestedTxPoW.add("INITIAL_"+zTxPoWID);	
+			
+			MinimaLogger.log("INitka ask : "+zTxPoWID);
+		}
+	}
+	
+	public boolean isRequestedInitialTxPow(String zTxPoWID) {
+		return mRequestedTxPoW.contains("INITIAL_"+zTxPoWID);
+	}
+	
+	public void addRequestedTxPow(String zTxPoWID) {
+		if(!isRequestedTxPow(zTxPoWID)) {
+			mRequestedTxPoW.add(zTxPoWID);	
+		}
+	}
+	
+	public boolean isRequestedTxPow(String zTxPoWID) {
+		return mRequestedTxPoW.contains(zTxPoWID);
+	}
+	
+	public void removeRequestedTxPow(String zTxPoWID) {
+		//Remove link..
+		mRequestedTxPoW.remove(zTxPoWID);
+		//Just in case was an initial..
+		mRequestedTxPoW.remove("INITIAL_"+zTxPoWID);
+	}
+	
+	public void clearAllrequestedTxPow() {
+		mRequestedTxPoW.clear();
+	}
+	
+	/**
+	 * Get all the current net clients..
+	 * @return
+	 */
 	public ArrayList<MinimaClient> getNetClients() {
 		return mClients;
 	}

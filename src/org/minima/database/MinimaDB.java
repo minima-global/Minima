@@ -1041,6 +1041,11 @@ public class MinimaDB {
 		//Set the current Transaction List!
 		ArrayList<TxPOWDBRow> unused = mTxPOWDB.getAllUnusedTxPOW();
 		for(TxPOWDBRow row : unused) {
+			//Current MAX transactions.. #TODO.. this needs to be dynamic..
+			if(txncounter.isMore(MiniNumber.THIRTYTWO)) {
+				break;
+			}
+			
 			//Check is still VALID..
 			TxPoW txp = row.getTxPOW();
 			
@@ -1060,13 +1065,13 @@ public class MinimaDB {
 					txpow.addBlockTxPOW(txp);	
 				
 				}else {
-					//Remove this!.. It WAS valid but now not.. :(.. dump it..
-					mTxPOWDB.removeTxPOW(txp.getTxPowID());
-					
-					//And delete..
-					getBackup().deleteTxpow(txp);
-					
-					MinimaLogger.log("Removing invalid TXPOW.. "+txp.getTxPowID());
+					//Could be a transaction that is only valid in a different  branch.					
+//					//Remove this!.. It WAS valid but now not.. :(.. dump it..
+//					mTxPOWDB.removeTxPOW(txp.getTxPowID());
+//					
+//					//And delete..
+//					getBackup().deleteTxpow(txp);
+					MinimaLogger.log("Invalid TXPOW found. (leaving..) "+txp.getTxPowID());
 				}
 			}
 		}

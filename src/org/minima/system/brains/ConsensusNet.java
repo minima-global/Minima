@@ -1,7 +1,5 @@
 package org.minima.system.brains;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
 import java.math.BigInteger;
 import java.util.ArrayList;
 
@@ -240,8 +238,7 @@ public class ConsensusNet extends ConsensusProcessor {
 				//Backup the system..
 				getConsensusHandler().PostTimerMessage(new TimerMessage(2000,ConsensusBackup.CONSENSUSBACKUP_BACKUP));
 				
-//				//Do you want a copy of ALL the TxPoW in the Blocks.. ?
-//				//Only really useful for txpowsearch - DEXXED
+				//Do you want a copy of ALL the TxPoW in the Blocks.. ? Only really useful for txpowsearch - DEXXED
 				if(mFullSyncOnInit) {
 					//Now request all the TXNS in those blocks..
 					int reqtxn = 0;
@@ -254,11 +251,12 @@ public class ConsensusNet extends ConsensusProcessor {
 						if(txpow.hasBody()) {
 							ArrayList<MiniData> txns = txpow.getBlockTransactions();
 							for(MiniData txn : txns) {
-								//MinimaLogger.log("REQ TXN from initial sync "+txn);
-								
 								//We don't have it, get it..
 								sendTxPowRequest(zMessage, txn);
 								reqtxn++;
+								
+								//Add it to the list
+								getNetworkHandler().addRequestedInitialSyncTxPow(txn.to0xString());
 							}
 						}
 					}
@@ -470,13 +468,13 @@ public class ConsensusNet extends ConsensusProcessor {
 				MinimaLogger.log("ERROR NET Invalid Signatures with TXPOW : "+txpow.getBlockNumber()+" "+txpow.getTxPowID()); 
 				return;
 			}
+
+			//Get the TxPowID..
+			String txpowid = txpow.getTxPowID().to0xString();
 			
-			//Now check the Transaction - if it fails, could already be in a block..
-			//THIS ONLY from the starter sync.. and adds tokens found..
-			//Also - Gimme50 transactions PASS even though they are already in blocks.. need to check for them..
-			boolean trxok = TxPoWChecker.checkTransactionMMR(txpow, getMainDB());
-			if(!trxok || txpow.getTransaction().isGimme50()) {
-				//Is it Already in a VALID block?
+			//Is this transaction from the IBD starter..
+			if(getNetworkHandler().isRequestedInitialTxPow(txpowid)) {
+				//Check the block it is in..
 				TxPoW validblock = getMainDB().findBlockForTransaction(txpow);
 				if(validblock != null) {
 					//Add it to the database..
@@ -498,17 +496,41 @@ public class ConsensusNet extends ConsensusProcessor {
 					
 					//Save it..
 					getConsensusHandler().getMainHandler().getBackupManager().backupTxpow(txpow);
-					
-					//All done..
-					return;
+				}
+				
+				//And remove the link..
+				getNetworkHandler().removeRequestedTxPow(txpowid);
+				
+				return;
+			}
+			
+			//Was it a requested..
+			if(getNetworkHandler().isRequestedTxPow(txpowid)) {
+				//Requested by you.. gets a pass..
+				getNetworkHandler().removeRequestedTxPow(txpowid);
+			
+			}else {
+				//Check the Validity..
+				boolean txnok = TxPoWChecker.checkTransactionMMR(txpow, getMainDB());
+				
+				if(!txnok) {
+					//Not requested invalid transaction..
+					MinimaLogger.log("ERROR NET Invalid TXPOW (unrequested..) : "+txpow.getBlockNumber()+" "+txpow.getTxPowID()); 
+					return;	
 				}
 			}
-		
+
 			/**
 			 * Add it to the database.. Do this HERE as there may be other messages in the queue. 
 			 * Can't wait for ConsensusHandler to catch up.
 			 */
 			getMainDB().addNewTxPow(txpow);
+			
+			//Now - Process the TxPOW
+			Message newtxpow = new Message(ConsensusHandler.CONSENSUS_PRE_PROCESSTXPOW).addObject("txpow", txpow);
+			
+			//Post it
+			getConsensusHandler().PostMessage(newtxpow);
 			
 			//Now check the parent.. (Whether or not it is a block we may be out of alignment..)
 			MiniData parentID = txpow.getParentID();
@@ -526,12 +548,6 @@ public class ConsensusNet extends ConsensusProcessor {
 					sendTxPowRequest(zMessage, txn);
 				}
 			}
-			
-			//Now - Process the TxPOW
-			Message newtxpow = new Message(ConsensusHandler.CONSENSUS_PRE_PROCESSTXPOW).addObject("txpow", txpow);
-			
-			//Post it
-			getConsensusHandler().PostMessage(newtxpow);
 		}
 	}
 	
