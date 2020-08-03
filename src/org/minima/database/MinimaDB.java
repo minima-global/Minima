@@ -396,43 +396,43 @@ public class MinimaDB {
 	 * @param zParentID
 	 */
 	private void addTreeChildren(MiniData zParentID) {
-		ArrayList<TxPOWDBRow> unused_children = mTxPOWDB.getChildBlocksTxPOW(zParentID);
-		for(TxPOWDBRow txp : unused_children) {
-			//We can now add this one..
-			mMainTree.addNode(new BlockTreeNode(txp.getTxPOW()));
-			
-			//And add any other children..
-			addTreeChildren(txp.getTxPOW().getTxPowID());
-		}
-		
-//		/**
-//		 * NEW NON-RECURSIVE METHOD..
-//		 */
-//		//Create a new stack of block ids to check..
-//		ObjectStack stack = new ObjectStack();
-//		
-//		//Add the initial ID
-//		stack.push(zParentID);
-//		
-//		//Keep going until everything is checked
-//		while(!stack.isEmpty()) {
-//			//Get the ID
-//			MiniData parentid = (MiniData) stack.pop();
-//				
-//			//Get the children
-//			ArrayList<TxPOWDBRow> children = mTxPOWDB.getChildBlocksTxPOW(parentid);
-//				
-//			//Add the children
-//			for(TxPOWDBRow txp : children) {
-//				//We can now add this one..
-//				boolean added = mMainTree.addNode(new BlockTreeNode(txp.getTxPOW()));
-//				
-//				//Only if it works!
-//		        if (added) {
-//		        	stack.push(txp.getTxPOW().getTxPowID());	
-//		        }
-//			}
+//		ArrayList<TxPOWDBRow> unused_children = mTxPOWDB.getChildBlocksTxPOW(zParentID);
+//		for(TxPOWDBRow txp : unused_children) {
+//			//We can now add this one..
+//			mMainTree.addNode(new BlockTreeNode(txp.getTxPOW()));
+//			
+//			//And add any other children..
+//			addTreeChildren(txp.getTxPOW().getTxPowID());
 //		}
+		
+		/**
+		 * NEW NON-RECURSIVE METHOD..
+		 */
+		//Create a new stack of block ids to check..
+		ObjectStack stack = new ObjectStack();
+		
+		//Add the initial ID
+		stack.push(zParentID);
+		
+		//Keep going until everything is checked
+		while(!stack.isEmpty()) {
+			//Get the ID
+			MiniData parentid = (MiniData) stack.pop();
+				
+			//Get the children
+			ArrayList<TxPOWDBRow> children = mTxPOWDB.getChildBlocksTxPOW(parentid);
+				
+			//Add the children
+			for(TxPOWDBRow txp : children) {
+				//We can now add this one..
+				boolean added = mMainTree.addNode(new BlockTreeNode(txp.getTxPOW()));
+				
+				//Only if it works!
+		        if (added) {
+		        	stack.push(txp.getTxPOW().getTxPowID());	
+		        }
+			}
+		}
 		
 	}
 	
