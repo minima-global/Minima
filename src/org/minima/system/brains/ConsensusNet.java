@@ -462,7 +462,7 @@ public class ConsensusNet extends ConsensusProcessor {
 				return;
 			}
 			
-			//Check the Sigs.. just the once..
+			//Check the Signatures.. just the once..
 			boolean sigsok = TxPoWChecker.checkSigs(txpow);
 			if(!sigsok) {
 				MinimaLogger.log("ERROR NET Invalid Signatures with TXPOW : "+txpow.getBlockNumber()+" "+txpow.getTxPowID()); 
@@ -504,10 +504,9 @@ public class ConsensusNet extends ConsensusProcessor {
 				getNetworkHandler().removeRequestedTxPow(txpowid);
 				
 				return;
-			}
 			
-			//Was it a requested.. if so gets a PASS.. 
-			if(getNetworkHandler().isRequestedTxPow(txpowid)) {
+				//Is it a regular requested
+			}else if(getNetworkHandler().isRequestedTxPow(txpowid)) {
 				//Requested by you.. gets a pass..
 				getNetworkHandler().removeRequestedTxPow(txpowid);
 			
@@ -523,6 +522,8 @@ public class ConsensusNet extends ConsensusProcessor {
 			}
 
 			/**
+			 * IT PASSES!
+			 * 
 			 * Add it to the database.. Do this HERE as there may be other messages in the queue. 
 			 * Can't wait for ConsensusHandler to catch up.
 			 */
