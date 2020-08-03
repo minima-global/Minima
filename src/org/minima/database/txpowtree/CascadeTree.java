@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import org.minima.GlobalParams;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.utils.MinimaLogger;
 
 public class CascadeTree {
 
@@ -27,46 +28,70 @@ public class CascadeTree {
 		return mRemovals;
 	}
 	
-	public ArrayList<BlockTreeNode> cascadedTree() {
+	public void cascadedTree() {
 		//Reset the removals
 		mRemovals = new ArrayList<>();
 		
-		//The final cascaded tree
-		mCascadeTree = new BlockTree();
+		//At worst
+		mCascadeTree = mMainTree;
 		
-		//Is it empty..
-		BlockTreeNode oldtip      = mMainTree.getChainTip();
+		//Get the Old Tip
+		BlockTreeNode oldtip = mMainTree.getChainTip();
 		if(oldtip == null) {
-			return mRemovals;
+			return;
+		}
+		
+		//Are we long enough..
+		BlockTreeNode cascadenode = mMainTree.getCascadeNode();
+		MiniNumber totlength = oldtip.getBlockNumber().sub(cascadenode.getBlockNumber());
+		if(totlength.isLess(GlobalParams.MINIMA_CASCADE_START_DEPTH)) {
+			return;
 		}
 		
 		//Store this..
 		MiniData oldtiptxpowid = oldtip.getTxPowID();
 		
-		//Get the current block 1 above the cascade
-		MiniNumber cascinc = mMainTree.getCascadeNode().getTxPow().getBlockNumber().increment();
+//		//Get the current block 1 above the cascade
+//		MiniNumber cascinc = mMainTree.getCascadeNode().getTxPow().getBlockNumber().increment();
+//		
+//		//First get the block PRE_CASCADE_CHAIN_LENGTH back..
+//		int counter=0;
+//		while(  (oldtip!=null) && 
+//				(counter<GlobalParams.MINIMA_CASCADE_START_DEPTH) && 
+//				(oldtip.getTxPow().getBlockNumber().isMore(cascinc)) ) {
+//			counter++;
+//			oldtip = oldtip.getParent();
+//		}
+//		
+//		//Tree is not long enough to cascade
+//		if(oldtip == null) {
+//			return;
+//		}
 		
-		//First get the block PRE_CASCADE_CHAIN_LENGTH back..
-		int counter=0;
-		while(  (oldtip!=null) && 
-				(counter<GlobalParams.MINIMA_CASCADE_START_DEPTH) && 
-				(oldtip.getTxPow().getBlockNumber().isMore(cascinc)) ) {
+		//Get the new cascade node..
+		BlockTreeNode newfulltree = oldtip;
+		int counter = 1;
+		int max = GlobalParams.MINIMA_CASCADE_START_DEPTH.getAsInt();
+		while(counter < max) {
+			newfulltree = newfulltree.getParent();
 			counter++;
-			oldtip = oldtip.getParent();
 		}
 		
-		//Tree is not long enough to cascade
-		if(oldtip == null) {
-			mCascadeTree = mMainTree;
-			return mRemovals;
-		}
-		
+		//The final cascaded tree - going to be new
+		mCascadeTree = new BlockTree();
+				
 		//All this we keep
-		BlockTreeNode fullkeep = BlockTree.copyTreeNode(oldtip);
+		BlockTreeNode fullkeep = BlockTree.copyTreeNode(newfulltree);
 		
 		//The rest of the tree.. that we CAN cascade
-		BlockTreeNode newcascade  = oldtip.getParent();
-				
+		BlockTreeNode newcascade  = newfulltree.getParent();
+		
+		MinimaLogger.log("New Cascade:"+newcascade.getBlockNumber()+" OLD:"+cascadenode.getBlockNumber());
+		
+		//Now copy all the MMR data to the old cascade..
+		newcascade.getMMRSet().copyAllParentKeepers(cascadenode.getBlockNumber());
+//		newcascadenode.getMMRSet().recurseParentMMR(cascadenode.getBlockNumber());
+		
 		//Now add all that
 		ArrayList<BlockTreeNode> cascnodes = new ArrayList<>();
 		while(newcascade != null) {
@@ -175,6 +200,9 @@ public class CascadeTree {
 		//And sort the weights
 		mCascadeTree.resetWeights();
 		
-		return mRemovals;
+		//And clear it out..
+		mCascadeTree.clearCascadeBody();
+		
+		MinimaLogger.log("NEWTREE:"+mCascadeTree.getCascadeNode().getBlockNumber());
 	}
 }

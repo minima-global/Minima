@@ -1019,25 +1019,25 @@ public class MMRSet implements Streamable {
 	 * @param zCascade
 	 * @param zNode
 	 */
-	public void recurseParentMMR(MiniNumber zCascade) {
-		if(!getBlockTime().isEqual(zCascade)) {
-			_recurseParentMMR(zCascade, this);	
-		}
-	}
-	
-	private void _recurseParentMMR(MiniNumber zCascade, MMRSet zNode) {
-		if(zNode.getBlockTime().isMore(zCascade)) {
-			//Do all the parents
-			if(zNode.getParent() == null) {
-				MinimaLogger.log("ERROR - RECURSE TREE NULL PARENT : CASC:"+zCascade+" BLKTIME:"+zNode.getBlockTime());	
-			}else {
-				_recurseParentMMR(zCascade, zNode.getParent());	
-			}
-		}
-			
-		//The you do it..
-		zNode.copyParentKeepers();
-	}
+//	public void recurseParentMMR(MiniNumber zCascade) {
+//		if(!getBlockTime().isEqual(zCascade)) {
+//			_recurseParentMMR(zCascade, this);	
+//		}
+//	}
+//	
+//	private void _recurseParentMMR(MiniNumber zCascade, MMRSet zNode) {
+//		if(zNode.getBlockTime().isMore(zCascade)) {
+//			//Do all the parents
+//			if(zNode.getParent() == null) {
+//				MinimaLogger.log("ERROR - RECURSE TREE NULL PARENT : CASC:"+zCascade+" BLKTIME:"+zNode.getBlockTime());	
+//			}else {
+//				_recurseParentMMR(zCascade, zNode.getParent());	
+//			}
+//		}
+//			
+//		//The you do it..
+//		zNode.copyParentKeepers();
+//	}
 	
 	public void copyAllParentKeepers(MiniNumber zCascade) {
 		//Start at this point..
