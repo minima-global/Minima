@@ -544,17 +544,15 @@ public class ConsensusUser extends ConsensusProcessor {
 					remove.add(txpow.getTxPowID());
 				}else{
 					//Check it..
-					boolean sigsok = true;
-					boolean trxok  = true;
-					if(txpow.isTransaction()) {
-						sigsok = TxPoWChecker.checkSigs(txpow);
-						trxok  = TxPoWChecker.checkTransactionMMR(txpow, getMainDB());	
-					}
-						
-					//Check the basics..
-					if(!sigsok || !trxok) {
-						remove.add(txpow.getTxPowID());
-					}
+//					boolean trxok  = true;
+//					if(txpow.isTransaction()) {
+//						trxok  = TxPoWChecker.checkTransactionMMR(txpow, getMainDB());	
+//					}
+//						
+//					//Check the basics..
+//					if(!trxok) {
+//						remove.add(txpow.getTxPowID());
+//					}
 					
 					//Check All..
 					if(txpow.isBlock()) {
