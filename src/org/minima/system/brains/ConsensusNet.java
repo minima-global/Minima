@@ -503,24 +503,35 @@ public class ConsensusNet extends ConsensusProcessor {
 				//And remove the link..
 				getNetworkHandler().removeRequestedTxPow(txpowid);
 				
+				//Just return as this is already in a valid block - no more processing to do
 				return;
+			}
 			
-				//Is it a regular requested
-			}else if(getNetworkHandler().isRequestedTxPow(txpowid)) {
-				//Requested by you.. gets a pass..
-				getNetworkHandler().removeRequestedTxPow(txpowid);
+			//Was it requested anyway.. ?
+			boolean requested = false;
+			if(getNetworkHandler().isRequestedTxPow(txpowid)) {
+				requested = true;
+			}
 			
-			}else {
-				//Check the Validity..
-				boolean txnok = TxPoWChecker.checkTransactionMMR(txpow, getMainDB());
-				
-				if(!txnok) {
+			//Check the Validity..
+			boolean txnok = TxPoWChecker.checkTransactionMMR(txpow, getMainDB());
+			if(!txnok) {
+				//Was it requested.. ?
+				if(requested) {
+					//Ok - could be from a different branch block.. 
+					MinimaLogger.log("WARNING NET Invalid TXPOW (Requested..) : "+txpow.getBlockNumber()+" "+txpow.getTxPowID()); 
+				}else {
 					//Not requested invalid transaction..
-					MinimaLogger.log("ERROR NET Invalid TXPOW (unrequested..) : "+txpow.getBlockNumber()+" "+txpow.getTxPowID()); 
+					MinimaLogger.log("ERROR NET Invalid TXPOW (UN-Requested..) : "+txpow.getBlockNumber()+" "+txpow.getTxPowID()); 
 					return;	
 				}
 			}
-
+			
+			//Remove it from the list
+			if(requested) {
+				getNetworkHandler().removeRequestedTxPow(txpowid);
+			}
+		
 			/**
 			 * IT PASSES!
 			 * 
