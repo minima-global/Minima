@@ -444,7 +444,7 @@ public class ConsensusNet extends ConsensusProcessor {
 			
 			//Is it even a valid TxPOW.. not enough POW ? - FIRST CHECK
 			if(!txpow.isBlock() && !txpow.isTransaction()) {
-				MinimaLogger.log("ERROR NET FAKE - not transaction not block : "+txpow.getBlockNumber()+" "+txpow.getTxPowID());
+				MinimaLogger.log("ERROR NET FAKE - not transaction not block : "+txpow.getBlockNumber()+" "+txpow);
 				return;
 			}
 			
@@ -497,7 +497,7 @@ public class ConsensusNet extends ConsensusProcessor {
 					//Save it..
 					getConsensusHandler().getMainHandler().getBackupManager().backupTxpow(txpow);
 				}else {
-					MinimaLogger.log("ERROR NET Initial request TXPOW  not found ? : "+txpow.getBlockNumber()+" "+txpow.getTxPowID()); 
+					MinimaLogger.log("WARNING NET IBD TXPOW request block not found : "+txpow.getBlockNumber()+" "+txpow.getTxPowID()); 
 				}
 				
 				//And remove the link..
