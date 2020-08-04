@@ -4,8 +4,6 @@ import java.util.ArrayList;
 
 import org.minima.system.Main;
 import org.minima.system.SystemHandler;
-import org.minima.system.input.InputHandler;
-import org.minima.system.network.NetworkHandler;
 import org.minima.system.network.minidapps.DAPPManager;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;

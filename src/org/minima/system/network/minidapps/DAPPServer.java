@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.minima.objects.base.MiniData;
-import org.minima.system.brains.BackupManager;
 import org.minima.system.network.minidapps.minihub.hexdata.faviconico;
 import org.minima.system.network.minidapps.minihub.hexdata.helphtml;
 import org.minima.system.network.minidapps.minihub.hexdata.iconpng;
@@ -39,10 +38,16 @@ public class DAPPServer extends NanoHTTPD{
 	String mCurrentIndex     = "**";
 	String mCurrentMiniDAPPS = "**";
 	
+	String mTestWeb;
+	
+	
 	public DAPPServer(int zPort, DAPPManager zDAPPManager) {
 		super(zPort);
 		
 		mDAPPManager = zDAPPManager;
+		
+		//The test web folder..
+		mTestWeb = zDAPPManager.getMainHandler().getBackupManager().getTestWebFolder().getAbsolutePath();
 	}
 
 	@Override
@@ -126,6 +131,17 @@ public class DAPPServer extends NanoHTTPD{
 				if(fileRequested.endsWith("/minima.js") || fileRequested.equals("minima.js")) {
 					return getOKResponse(mDAPPManager.getMinimaJS() , "text/javascript");
 				
+				}else if(fileRequested.startsWith("testweb/")) {
+					//get from the testweb folder..
+					String fullfile = mTestWeb+"/"+fileRequested.substring(8);
+					byte[] file     = MiniFile.readCompleteFile(new File(fullfile));
+					
+					if(file.length>0) {
+						return getOKResponse(file, MiniFile.getContentType(fullfile));
+					}else {
+						return getNotFoundResponse();
+					}
+					
 				}else if(fileRequested.startsWith("minidapps/")) {
 					//Send the MiniDAPP!
 					String fullfile = mDAPPManager.getMiniDAPPSFolder()+"/"+fileRequested.substring(10);

@@ -32,6 +32,8 @@ public class BackupManager extends SystemHandler {
 	
 	File mMiniDAPPS;
 	
+	File mTestWeb;
+	
 	static File mTempFolder = new File(System.getProperty("java.io.tmpdir"));
 	
 	public BackupManager(Main zMain, String zConfFolder) {
@@ -53,6 +55,10 @@ public class BackupManager extends SystemHandler {
 	
 	public File getMiniDAPPFolder() {
 		return mMiniDAPPS;
+	}
+	
+	public File getTestWebFolder() {
+		return mTestWeb;
 	}
 	
 	public File getBackUpFolder() {
@@ -139,6 +145,9 @@ public class BackupManager extends SystemHandler {
 		//The MiniDAPPS folder
 		mMiniDAPPS = ensureFolder(new File(mRoot,"minidapps"));
 		
+		//The Test Web folder
+		mTestWeb = ensureFolder(new File(mRoot,"testweb"));
+				
 		//TEMP folder for file upload in MiniDAPPS
 		File temp = new File(mRoot,"temp");
 		
@@ -158,5 +167,8 @@ public class BackupManager extends SystemHandler {
 		MiniFile.deleteFileOrFolder(mRootPath,new File(zFolder,"backup"));
 		MiniFile.deleteFileOrFolder(mRootPath,new File(zFolder,"minidapps"));
 		MiniFile.deleteFileOrFolder(mRootPath,new File(zFolder,"temp"));
+		
+		//Don't delete the Test Web Folder..
+		//?
 	}
 }

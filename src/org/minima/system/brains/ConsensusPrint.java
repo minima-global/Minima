@@ -30,7 +30,6 @@ import org.minima.objects.proofs.TokenProof;
 import org.minima.system.Main;
 import org.minima.system.input.InputHandler;
 import org.minima.system.network.MinimaClient;
-import org.minima.system.network.NetworkHandler;
 import org.minima.system.network.minidapps.DAPPManager;
 import org.minima.system.network.rpc.RPCClient;
 import org.minima.utils.Maths;

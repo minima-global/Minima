@@ -1,24 +1,19 @@
 package org.minima.system.network;
 
-import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Enumeration;
 
-import org.minima.objects.base.MiniData;
 import org.minima.system.Main;
 import org.minima.system.SystemHandler;
 import org.minima.system.input.InputHandler;
 import org.minima.system.network.minidapps.DAPPManager;
-import org.minima.system.network.rpc.RPCClient;
 import org.minima.system.network.rpc.RPCServer;
 import org.minima.system.network.websocket.WebSocketManager;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
-import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.TimerMessage;
 

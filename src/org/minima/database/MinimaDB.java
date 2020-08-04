@@ -9,7 +9,6 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
-import java.util.Stack;
 
 import org.minima.GlobalParams;
 import org.minima.database.coindb.CoinDB;

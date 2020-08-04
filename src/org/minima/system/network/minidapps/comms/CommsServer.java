@@ -1,10 +1,7 @@
 package org.minima.system.network.minidapps.comms;
 
-import java.io.IOException;
-import java.net.BindException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketException;
 
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.messages.Message;

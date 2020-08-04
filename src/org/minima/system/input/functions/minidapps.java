@@ -7,8 +7,6 @@ import org.minima.system.brains.ConsensusPrint;
 import org.minima.system.input.CommandFunction;
 import org.minima.system.network.minidapps.DAPPManager;
 import org.minima.utils.MiniFile;
-import org.minima.utils.json.JSONObject;
-import org.minima.utils.json.parser.JSONParser;
 import org.minima.utils.messages.Message;
 
 public class minidapps extends CommandFunction {

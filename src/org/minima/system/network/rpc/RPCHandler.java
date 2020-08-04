@@ -1,26 +1,18 @@
 package org.minima.system.network.rpc;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.URLDecoder;
-import java.sql.SQLException;
 import java.util.Date;
 import java.util.StringTokenizer;
 
-import org.minima.system.brains.BackupManager;
-import org.minima.system.input.InputHandler;
 import org.minima.system.network.commands.CMD;
 import org.minima.system.network.commands.FILE;
 import org.minima.system.network.commands.NET;
 import org.minima.system.network.commands.SQL;
-import org.minima.utils.MinimaLogger;
-import org.minima.utils.SQLHandler;
-import org.minima.utils.json.JSONArray;
-import org.minima.utils.json.JSONObject;
 
 /**
  * This class handles a single request then exits
