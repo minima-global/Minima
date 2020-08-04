@@ -1,6 +1,7 @@
 package org.minima.system.network.minidapps.minilib;
 
 import org.minima.system.network.commands.NET;
+import org.minima.system.network.minidapps.minibackend.BackEndDAPP;
 import org.minima.utils.json.JSONObject;
 import org.mozilla.javascript.Function;
 import org.mozilla.javascript.NativeObject;

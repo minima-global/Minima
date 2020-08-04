@@ -2,6 +2,7 @@ package org.minima.system.network.minidapps.minilib;
 
 import org.minima.system.network.commands.CMD;
 import org.minima.system.network.commands.SQL;
+import org.minima.system.network.minidapps.minibackend.BackEndDAPP;
 import org.minima.utils.MinimaLogger;
 import org.mozilla.javascript.Function;
 

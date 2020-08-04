@@ -1,4 +1,4 @@
-package org.minima.system.network.minidapps.minilib;
+package org.minima.system.network.minidapps.minibackend;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -13,6 +13,10 @@ import org.minima.system.network.commands.CMD;
 import org.minima.system.network.commands.FILE;
 import org.minima.system.network.commands.NET;
 import org.minima.system.network.commands.SQL;
+import org.minima.system.network.minidapps.minilib.MiniLibUtility;
+import org.minima.utils.MinimaLogger;
+import org.minima.utils.json.JSONObject;
+import org.mozilla.javascript.Function;
 
 /**
  * This class handles a single request then exits
@@ -20,25 +24,43 @@ import org.minima.system.network.commands.SQL;
  * @author spartacusrex
  *
  */
-public class MinimaJSHandler implements Runnable {
+public class MinimaJSHandler {
 
 	/**
-	 * The Net Socket
+	 * JS BACKEND link
 	 */
-	Socket mSocket;
+	private BackEndDAPP mBackBone;
+	
 	
 	/**
-	 * Main COnstructor
+	 * Main Constructor
 	 * @param zSocket
 	 */
-	public MinimaJSHandler(Socket zSocket) {
-		//Store..
-		mSocket = zSocket;
+	public MinimaJSHandler(BackEndDAPP zBackBone) {
+		mBackBone = zBackBone;
 	}
 
-	@Override
-	public void run() {
-		// we manage our particular client connection
+	public void post(String zType, String zData, Function zCallback) {
+		
+		MinimaLogger.log("BackEnd Handle : "+zType+" "+zData);
+		
+		JSONObject res = new JSONObject();
+		res.put("type", "answer");
+		res.put("value", 43);
+		
+		//The response returned..
+		String finalResult = res.toString();
+		
+		//Create a native JSON
+		Object json = MiniLibUtility.makeJSONObject(finalResult, mBackBone.getContext(), mBackBone.getScope());
+		
+		//Make a function variable list
+		Object functionArgs[] = { json };
+	    
+		//Call the function..
+		zCallback.call(mBackBone.getContext(), mBackBone.getScope(), mBackBone.getScope(), functionArgs);
+	
+		/*// we manage our particular client connection
 		BufferedReader in 	 		 	= null; 
 		PrintWriter out 	 			= null; 
 		
@@ -202,6 +224,8 @@ public class MinimaJSHandler implements Runnable {
 			} catch (Exception e) {
 				System.err.println("Error closing stream : " + e.getMessage());
 			} 	
-		}	
+		}
+		
+		*/
 	}
 }
