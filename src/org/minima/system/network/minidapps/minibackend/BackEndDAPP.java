@@ -127,7 +127,7 @@ public class BackEndDAPP {
 	 */
 	public void MinimaEvent(String zJSONEvent) {
 		//Create a JS JSONObject
-		Object json = MiniLibUtility.makeJSONObject(zJSONEvent, mContext, mScope);
+		Object json = MiniJSONUtility.makeJSONObject(zJSONEvent, mContext, mScope);
 		
 		//Make a function variable list
 		Object functionArgs[] = { json };

@@ -13,7 +13,7 @@ import org.mozilla.javascript.NativeJSON;
 import org.mozilla.javascript.NativeObject;
 import org.mozilla.javascript.Scriptable;
 
-public class MiniLibUtility {
+public class MiniJSONUtility {
 
 	public static Object makeJSONObject(String zJSON, Context rhino, Scriptable scope) {
 	    Object param = NativeJSON.parse(rhino, scope, zJSON, new Callable() {

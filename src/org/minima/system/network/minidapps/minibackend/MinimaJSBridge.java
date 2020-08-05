@@ -77,7 +77,7 @@ public class MinimaJSBridge {
 		}
 	    
 	    //Create a native JSON
-		Object json = MiniLibUtility.makeJSONObject(finalresult, mBackBone.getContext(), mBackBone.getScope());
+		Object json = MiniJSONUtility.makeJSONObject(finalresult, mBackBone.getContext(), mBackBone.getScope());
 		
 		//Make a function variable list
 		Object functionArgs[] = { json };

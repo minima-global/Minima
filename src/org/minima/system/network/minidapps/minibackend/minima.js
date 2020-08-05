@@ -273,6 +273,6 @@ function MinimaBackEndListener(jmsg){
 	}else{
 		//Unknown Message Type	
 		var jsonstr = JSON.stringify(jmsg,null,2); 
-		Minima.log("Unknown Message Type : "+jsonstr);
+		Minima.log("Backend Unknown Message Type : "+jsonstr);
 	}
 }
