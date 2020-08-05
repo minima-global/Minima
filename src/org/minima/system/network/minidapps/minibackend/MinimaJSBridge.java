@@ -76,13 +76,17 @@ public class MinimaJSBridge {
         	finalresult = netcomm.getFinalResult();
 		}
 	    
-	    //Create a native JSON
-		Object json = MiniJSONUtility.makeJSONObject(finalresult, mBackBone.getContext(), mBackBone.getScope());
-		
-		//Make a function variable list
-		Object functionArgs[] = { json };
+		//Use the Callback ?
+		if(zCallback != null) {
+			//Create a native JSON
+			Object json = MiniJSONUtility.makeJSONObject(finalresult, mBackBone.getContext(), mBackBone.getScope());
+			
+			//Make a function variable list
+			Object functionArgs[] = { json };
+		    
+			//Call the function..
+			zCallback.call(mBackBone.getContext(), mBackBone.getScope(), mBackBone.getScope(), functionArgs);	
+		}
 	    
-		//Call the function..
-		zCallback.call(mBackBone.getContext(), mBackBone.getScope(), mBackBone.getScope(), functionArgs);
 	}
 }

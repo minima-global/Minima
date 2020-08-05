@@ -1,20 +1,8 @@
 /**
-* Minima JS lib for MiniDAPPs..
-* 
-* Includes the Decimal.js lib for precise Maths.
+* Minima JS BackEND lib for MiniDAPPs..
 * 
 * @spartacusrex
 */
-
-/**
- * The Web Socket Host for PUSH messages
- */
-//var MINIMA_WEBSOCKET = null;
-
-/**
- * Intra MiniDAPP communication
- */
-//var MINIDAPP_FUNCSTORE_LIST = [];
 
 /**
  * Main MINIMA Object for all interaction
@@ -38,25 +26,6 @@ var Minima = {
 	
 	//Show RPC commands
 	logging : false,
-	
-	init : function(){
-		//Log a little..
-		Minima.log("Initialisation..");
-		
-		//Do the first call..
-		Minima.cmd("status;balance", function(json){
-			//Status is first..
-			Minima.status  = json[0].response;
-			Minima.balance = json[1].response.balance;
-			
-		    //Store this..
-		    Minima.txpowid = Minima.status.tip;
-		    Minima.block   = parseInt(Minima.status.lastblock,10);
-		    
-		    //Start Listening for messages..
-			MinimaWebSocketListener();
-		});
-	},
 	
 	log : function(output){
 		java.lang.System.out.println("Minima @ "+new Date().toLocaleString()+" : "+output);
@@ -174,58 +143,16 @@ var Minima = {
 				
 				//Not found
 				return null;
-			},
-			
-			notify : function(message,bgcolor){
-				//Log it..
-				Minima.log("Notify : "+message);
-			},
-			
-			send : function(minidappid, message, callback){
-				//Create a random number to track this function call..
-				var funcid = ""+Math.floor(Math.random()*1000000000);
-				
-				//Construct a JSON object
-				msg = { "type":"message", "to":minidappid, "funcid":funcid, "message":message };
-
-				//Add this Funcid and this callback to the list.. when you receive a reply 
-				//you can respond to the correct callback
-				funcstore = { "functionid":funcid, "callback":callback };
-				MINIDAPP_FUNCSTORE_LIST.push(funcstore);
-				
-				//And send it..
-				//MINIMA_WEBSOCKET.send(JSON.stringify(msg));
-			},
-			
-			reply : function(evt, message){
-				//Get the reply id
-				var replyid = evt.detail.info.replyid;
-				var replyto = evt.detail.info.from;
-				
-				//Construct a JSON object
-				msg = { "type":"reply", "to":replyto, "replyid":replyid, "message":message };
-
-				//And send it..
-				//MINIMA_WEBSOCKET.send(JSON.stringify(msg));
-			},
-			
-			setUID : function(uid){
-				//UID JSON Message
-				uid = { "type":"uid", "location": window.location.href, "uid":uid };
-				
-				//Send your name.. normally set automagically but can be hard set when debugging
-				//MINIMA_WEBSOCKET.send(JSON.stringify(uid));
-			}
-				
+			}			
 	}
 	
 };
 
-
+/**
+ * Post a message to the internal JAVA runtime to process
+ */
 function MinimaRPC(type, data, callback){
-	Minima.log("Backend RPC : "+type+" "+data);
-	
-    //Call the Java Function to deal with this..
+	//Call the Java Function to deal with this..
 	MinimaJSBridge.post(type, data, callback);
 }
 
@@ -243,8 +170,22 @@ function MinimaPostMessage(event, info){
 function MinimaBackEndListener(jmsg){
 			
 	if(jmsg.event == "connected"){
-		//Post it
-		MinimaPostMessage("connected","success");
+		//Log a little..
+		Minima.log("Initialisation..");
+		
+		//Do the first call..
+		Minima.cmd("status;balance", function(json){
+			//Status is first..
+			Minima.status  = json[0].response;
+			Minima.balance = json[1].response.balance;
+			
+		    //Store this..
+		    Minima.txpowid = Minima.status.tip;
+		    Minima.block   = parseInt(Minima.status.lastblock,10);
+
+			//Post it
+			MinimaPostMessage("connected","success");
+		});
 		
 	}else if(jmsg.event == "newblock"){
 		//Set the new status
