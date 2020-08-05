@@ -9,12 +9,12 @@
 /**
  * The Web Socket Host for PUSH messages
  */
-var MINIMA_WEBSOCKET = null;
+//var MINIMA_WEBSOCKET = null;
 
 /**
  * Intra MiniDAPP communication
  */
-var MINIDAPP_FUNCSTORE_LIST = [];
+//var MINIDAPP_FUNCSTORE_LIST = [];
 
 /**
  * Main MINIMA Object for all interaction
@@ -32,22 +32,13 @@ var Minima = {
 	//Web Socket Host for Minima
 	wshost : "ws://127.0.0.1:9003",
 	
-	/**
-	 * Current Status of the Minima Network
-	 */ 
 	status : {},
-	
-	/**
-	 * Current Balance of this User
-	 */
+
 	balance : {},
 	
 	//Show RPC commands
 	logging : false,
 	
-	/**
-	 * Minima Startup
-	 */
 	init : function(){
 		//Log a little..
 		Minima.log("Initialisation..");
@@ -67,30 +58,18 @@ var Minima = {
 		});
 	},
 	
-	/**
-	 * Log some data with a timestamp in a consistent manner to the console
-	 */
 	log : function(output){
-		console.log("Minima @ "+new Date().toLocaleString()+" : "+output);
+		java.lang.System.out.println("Minima @ "+new Date().toLocaleString()+" : "+output);
 	},
 	
-	/**
-	 * Runs a function on the Minima Command Line
-	 */
 	cmd : function(minifunc, callback){
 		MinimaRPC("cmd",minifunc,callback);
 	},
 	
-	/**
-	 * Run SQL in the Database created for this MiniDAPP
-	 */
 	sql : function(query, callback){
 		MinimaRPC("sql",query,callback);
 	},
 	
-	/**
-	 * NETWORK Functions
-	 */
 	net : {
 		
 		listen : function(port){
@@ -128,9 +107,6 @@ var Minima = {
 	},
 	
 	
-	/**
-	 * FILE Functions
-	 */ 
 	file : {
 		
 		save : function(jsonobject, file,  callback) {
@@ -151,9 +127,6 @@ var Minima = {
 			
 	},
 	
-	/**
-	 * UTILITY FUNCTIONS
-	 */
 	util : {
 			//Get the Balance string for a Tokenid..
 			getBalance : function(tokenid){
@@ -206,12 +179,6 @@ var Minima = {
 			notify : function(message,bgcolor){
 				//Log it..
 				Minima.log("Notify : "+message);
-				/*//Show a little popup across the screen..
-				if(bgcolor){
-					MinimaCreateNotification(message,bgcolor);
-				}else{
-					MinimaCreateNotification(message);	
-				}*/
 			},
 			
 			send : function(minidappid, message, callback){
@@ -227,7 +194,7 @@ var Minima = {
 				MINIDAPP_FUNCSTORE_LIST.push(funcstore);
 				
 				//And send it..
-				MINIMA_WEBSOCKET.send(JSON.stringify(msg));
+				//MINIMA_WEBSOCKET.send(JSON.stringify(msg));
 			},
 			
 			reply : function(evt, message){
@@ -239,7 +206,7 @@ var Minima = {
 				msg = { "type":"reply", "to":replyto, "replyid":replyid, "message":message };
 
 				//And send it..
-				MINIMA_WEBSOCKET.send(JSON.stringify(msg));
+				//MINIMA_WEBSOCKET.send(JSON.stringify(msg));
 			},
 			
 			setUID : function(uid){
@@ -247,23 +214,19 @@ var Minima = {
 				uid = { "type":"uid", "location": window.location.href, "uid":uid };
 				
 				//Send your name.. normally set automagically but can be hard set when debugging
-				MINIMA_WEBSOCKET.send(JSON.stringify(uid));
+				//MINIMA_WEBSOCKET.send(JSON.stringify(uid));
 			}
 				
 	}
 	
 };
 
-/**
- * POST the RPC call - can be cmd/sql/file/net
- */
+
 function MinimaRPC(type, data, callback){
-	//And now fire off a call saving it 
-	//httpPostAsync(Minima.rpchost+"/"+type+"/", encodeURIComponent(data), callback);
-
+	Minima.log("Backend RPC : "+type+" "+data);
+	
     //Call the Java Function to deal with this..
-	Minima
-
+	MinimaJSBridge.post(type, data, callback);
 }
 
 /**
@@ -274,14 +237,16 @@ function MinimaPostMessage(event, info){
    var data = { "event": event, "info" : info };
 
    //And dispatch - to the backend function..
-   MinimaEvent(data);
+   MinimaEvent({detail:data});
 }
 
-function MinimaBackEndListener(evt){
-	//Convert to JSON	
-	var jmsg = JSON.parse(evt.data);
-	
-	if(jmsg.event == "newblock"){
+function MinimaBackEndListener(jmsg){
+			
+	if(jmsg.event == "connected"){
+		//Post it
+		MinimaPostMessage("connected","success");
+		
+	}else if(jmsg.event == "newblock"){
 		//Set the new status
 		Minima.status  = jmsg.status;
 		Minima.txpowid = jmsg.status.tip;
@@ -305,44 +270,9 @@ function MinimaBackEndListener(evt){
 		//Forward it..
 		MinimaPostMessage("network",jmsg.details);
 		
-	}else if(jmsg.event == "newmessage"){
-		//Create a nice JSON message
-		var msgdata = { "message":jmsg.message, "replyid":jmsg.functionid, "from":jmsg.from}; 
-		
-		//Post it..
-		MinimaPostMessage("newmessage",msgdata);
-	
-	}else if(jmsg.event == "newreply"){
-		var funclen = MINIDAPP_FUNCSTORE_LIST.length;
-		for(i=0;i<funclen;i++){
-			if(MINIDAPP_FUNCSTORE_LIST[i].functionid == jmsg.functionid){
-				//Get the callback
-				callback = MINIDAPP_FUNCSTORE_LIST[i].callback;
-				
-				//Was there an ERROR
-				if(jmsg.error !== ""){
-					//Log the error
-					Minima.log("Message Error : "+jmsg.error);
-				}else{
-					//call it with the reply message
-					callback(jmsg.message);
-				}
-				
-				//And remove it from the list..
-				MINIDAPP_FUNCSTORE_LIST.splice(i,1);
-				
-				//All done
-				return;
-			}
-		}
-		
-		//Not found..
-		Minima.log("REPLY CALLBACK NOT FOUND "+JSON.stringify(jmsg));
-		
-	}else if(jmsg.event == "txpowstart"){
-		Minima.util.notify("Mining Transaction Started..","#55DD55");	
-		
-	}else if(jmsg.event == "txpowend"){
-		Minima.util.notify("Mining Transaction Finished","#DD5555");
+	}else{
+		//Unknown Message Type	
+		var jsonstr = JSON.stringify(jmsg,null,2); 
+		Minima.log("Unknown Message Type : "+jsonstr);
 	}
 }

@@ -919,7 +919,6 @@ public class ConsensusPrint extends ConsensusProcessor {
 			//What block are we on
 			BlockTreeNode tip  		= getMainDB().getMainTree().getChainTip();
 			BlockTreeNode root 		= getMainDB().getMainTree().getChainRoot();
-			MiniNumber lastblock 	= tip.getTxPow().getBlockNumber();
 			
 			//Get the response JSON
 			JSONObject status = InputHandler.getResponseJSON(zMessage);
@@ -998,8 +997,8 @@ public class ConsensusPrint extends ConsensusProcessor {
 			//Add it to the output
 			InputHandler.endResponse(zMessage, true, "");
 		
-			//Do we notify..
-			String statusstring = status.toString();
+			//Do we notify.. Has the tip changed..
+			String statusstring = tip.getTxPowID().to0xString();
 			
 			//Is this a notification message for the listeners..
 			if(!statusstring.equals(mOldWebSocketStatus)) {

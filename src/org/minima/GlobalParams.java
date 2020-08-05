@@ -19,7 +19,7 @@ public class GlobalParams {
 	 * and just want a block every single transaction to debug.
 	 * Automatically disables the auto mining
 	 */
-	public static final boolean MINIMA_ZERO_DIFF_BLK  = false;
+	public static final boolean MINIMA_ZERO_DIFF_BLK  = true;
 	
 	/**
 	 * Speed in blocks per second.. 0.05 = 20 second block time

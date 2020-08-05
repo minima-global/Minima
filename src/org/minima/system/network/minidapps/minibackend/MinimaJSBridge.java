@@ -24,7 +24,7 @@ import org.mozilla.javascript.Function;
  * @author spartacusrex
  *
  */
-public class MinimaJSHandler {
+public class MinimaJSBridge {
 
 	/**
 	 * JS BACKEND link
@@ -36,13 +36,13 @@ public class MinimaJSHandler {
 	 * Main Constructor
 	 * @param zSocket
 	 */
-	public MinimaJSHandler(BackEndDAPP zBackBone) {
+	public MinimaJSBridge(BackEndDAPP zBackBone) {
 		mBackBone = zBackBone;
 	}
 
 	public void post(String zType, String zData, Function zCallback) {
 		
-		MinimaLogger.log("BackEnd Handle : "+zType+" "+zData);
+		MinimaLogger.log("MinimaJSBridge : "+zType+" "+zData);
 		
 		JSONObject res = new JSONObject();
 		res.put("type", "answer");
@@ -60,6 +60,53 @@ public class MinimaJSHandler {
 		//Call the function..
 		zCallback.call(mBackBone.getContext(), mBackBone.getScope(), mBackBone.getScope(), functionArgs);
 	
+		/*
+		String finalresult = "";
+		
+		//Is this a SQL function
+		if(zType.equals("sql")) {
+			//Create a SQL object
+			SQL sql = new SQL(zData, zMiniDAPPID);
+			
+			//Run it..
+			sql.run();
+			
+			//Get the Response..
+        	finalresult = sql.getFinalResult();
+			
+		}else if(zType.equals("cmd")) {
+			CMD cmd = new CMD(zData);
+        	
+        	//Run it..
+            cmd.run();
+ 
+            //Get the Response..
+        	finalresult = cmd.getFinalResult();
+		
+		}else if(zType.equals("file")) {
+			//File access..
+			FILE file = new FILE(zData, zMiniDAPPID);
+			
+			//Run it..
+			file.run();
+			
+			//Get the Response..
+        	finalresult = file.getFinalResult();
+		
+		}else if(zType.equals("net")) {
+			//Network Comms
+			NET netcomm = new NET(zData, zMiniDAPPID);
+			
+			//Run it..
+			netcomm.run();
+			
+			//Get the Response..
+        	finalresult = netcomm.getFinalResult();
+		}
+	    
+	    */		
+	
+		
 		/*// we manage our particular client connection
 		BufferedReader in 	 		 	= null; 
 		PrintWriter out 	 			= null; 

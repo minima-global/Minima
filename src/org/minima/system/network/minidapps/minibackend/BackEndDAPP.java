@@ -46,7 +46,7 @@ public class BackEndDAPP {
 	/**
 	 * The Minima JS class that is loaded into every JS Backend class
 	 */
-	private String MINIMAJS="";
+	private String MINIMAJS="var Minima={block:0,txpowid:\"0x00\",rpchost:\"http://127.0.0.1:9002\",wshost:\"ws://127.0.0.1:9003\",status:{},balance:{},logging:!1,init:function(){Minima.log(\"Initialisation..\"),Minima.cmd(\"status;balance\",function(n){Minima.status=n[0].response,Minima.balance=n[1].response.balance,Minima.txpowid=Minima.status.tip,Minima.block=parseInt(Minima.status.lastblock,10),MinimaWebSocketListener()})},log:function(n){java.lang.System.out.println(\"Minima @ \"+(new Date).toLocaleString()+\" : \"+n)},cmd:function(n,i){MinimaRPC(\"cmd\",n,i)},sql:function(n,i){MinimaRPC(\"sql\",n,i)},net:{listen:function(n){MinimaRPC(\"net\",\"listen \"+n,null)},stop:function(n){MinimaRPC(\"net\",\"stop \"+n,null)},broadcast:function(n,i){MinimaRPC(\"net\",\"broadcast \"+n+\" \"+JSON.stringify(i),null)},connect:function(n){MinimaRPC(\"net\",\"connect \"+n,null)},disconnect:function(n){MinimaRPC(\"net\",\"disconnect \"+n,null)},send:function(n,i){MinimaRPC(\"net\",\"send \"+n+\" \"+JSON.stringify(i),null)},info:function(n){MinimaRPC(\"net\",\"info\",n)},get:function(n,i){MinimaRPC(\"net\",\"get \"+n,i)}},file:{save:function(n,i,e){MinimaRPC(\"file\",\"save \"+i+\" \"+JSON.stringify(n),e)},load:function(n,i){MinimaRPC(\"file\",\"load \"+n,i)},list:function(n,i){MinimaRPC(\"file\",\"list \"+n,i)},delete:function(n,i){MinimaRPC(\"file\",\"delete \"+n,i)}},util:{getBalance:function(n){var i=Minima.balance.length;for(balloop=0;balloop<i;balloop++)if(Minima.balance[balloop].tokenid==n){var e=Minima.balance[balloop].confirmed,t=Minima.balance[balloop].sendable,a=Minima.balance[balloop].unconfirmed,o=Minima.balance[balloop].mempool;return\"0\"!==a||\"0\"!==o||t!==e?t+\" (\"+e+\") / \"+a+\" / \"+o:\"\"+e}return\"0\"},checkAllResponses:function(n){for(len=n.length,i=0;i<len;i++)if(1!=n[i].status)return alert(n[i].message+\"\\n\\nERROR @ \"+n[i].minifunc),Minima.log(\"ERROR in Multi-Command [\"+i+\"] \"+JSON.stringify(n[i],null,2)),!1;return!0},getStateVariable:function(n,i){var e=n.length;for(psloop=0;psloop<e;psloop++)if(n[psloop].port==i)return n[psloop].data;return null},notify:function(n,i){Minima.log(\"Notify : \"+n)},send:function(n,i,e){var t=\"\"+Math.floor(1e9*Math.random());msg={type:\"message\",to:n,funcid:t,message:i},funcstore={functionid:t,callback:e},MINIDAPP_FUNCSTORE_LIST.push(funcstore)},reply:function(n,i){var e=n.detail.info.replyid,t=n.detail.info.from;msg={type:\"reply\",to:t,replyid:e,message:i}},setUID:function(n){n={type:\"uid\",location:window.location.href,uid:n}}}};function MinimaRPC(n,i,e){Minima.log(\"Backend RPC : \"+n+\" \"+i),MinimaJSBridge.post(n,i,e)}function MinimaPostMessage(n,i){MinimaEvent({detail:{event:n,info:i}})}function MinimaBackEndListener(n){if(\"connected\"==n.event)MinimaPostMessage(\"connected\",\"success\");else if(\"newblock\"==n.event)Minima.status=n.status,Minima.txpowid=n.status.tip,Minima.block=parseInt(n.status.lastblock,10),MinimaPostMessage(\"newblock\",n.txpow);else if(\"newtransaction\"==n.event)MinimaPostMessage(\"newtransaction\",n.txpow);else if(\"newbalance\"==n.event)Minima.balance=n.balance,MinimaPostMessage(\"newbalance\",n.balance);else if(\"network\"==n.event)MinimaPostMessage(\"network\",n.details);else{var i=JSON.stringify(n,null,2);Minima.log(\"Unknown Message Type : \"+i)}}";
 	
 	
 	/**
@@ -78,17 +78,20 @@ public class BackEndDAPP {
 		mScope   = mContext.initStandardObjects();
 	
 		//Create a MinimaJS object for this scope..
-		MinimaJSHandler minimajs = new MinimaJSHandler(this);
+		MinimaJSBridge minimajs = new MinimaJSBridge(this);
 		
 		//Add it to this environment
 		Object wrappedMinima = Context.javaToJS(minimajs, mScope);
-		ScriptableObject.putProperty(mScope, "MinimaRPCHAndler", wrappedMinima);
+		ScriptableObject.putProperty(mScope, "MinimaJSBridge", wrappedMinima);
 
 		//Load a Decimal Class..
-		mContext.evaluateString(mScope, DECIMALJS, "<cmd>", 1, null);
+		mContext.evaluateString(mScope, DECIMALJS, "<decjs>", 1, null);
 		
+		//Load Minima.js
+		mContext.evaluateString(mScope, MINIMAJS, "<minjs>", 1, null);
+				
 		//Evaluate the script
-		mContext.evaluateString(mScope, zScriptJS, "<cmd>", 1, null);
+		mContext.evaluateString(mScope, zScriptJS, "<script>", 1, null);
 	
 		//Get the main MinimaEvent function
 		Object fObj = mScope.get("MinimaBackEndListener", mScope);
@@ -150,30 +153,9 @@ public class BackEndDAPP {
 				"\n" + 
 				"function MinimaEvent(evt){\n" + 
 				"\n" + 
-				"	var jsonstr = JSON.stringify(evt,null,2);\n" + 
-				"	Minima.log(\"MinimaEvent : \"+jsonstr);\n" + 
-				"	//tot++;\n" + 
-				"	\n" + 
-				"	//Open up a websocket to the main MINIMA proxy..\n" + 
-				"	var WEBSOCK = new org.minima.system.network.minidapps.minilib.WebSocket(\"127.0.0.1:80\");\n" + 
-				"	\n" + 
-				"	WEBSOCK.run = function(){\n" + 
-				"		Minima.log(\"onopen\");\n" + 
-				"	};\n" + 
-				"	\n" + 
-				"\n" + 
-				"	//obj = { run: function() { print(\"hi\"); } }\n" + 
-				"	\n" + 
-				"	//Minima.log(WEBSOCK.present());\n" + 
-				"	\n" + 
-				"	//WEBSOCK.onopen = function() {\n" + 
-				"	//	Minima.log(\"onopen\");\n" + 
-				"	//};\n" + 
-				"	\n" + 
-				"	\n" + 
-				"	\n" + 
-				"	//var cc = new Counter();\n" + 
-				"	//Minima.log(cc.count);\n" + 
+				"	//var jsonstr = JSON.stringify(evt,null,2);\n" + 
+				"	java.lang.System.out.println(\"HELLO\");"
+				+ "//Minima.log(\"MinimaEvent : \"+jsonstr);\n" + 
 				"}\n" + 
 				"";
 		try {
@@ -190,7 +172,7 @@ public class BackEndDAPP {
 			newblock.put("time", 1020344);
 			newblock.put("jsom", test);
 			newblock.put("bool", true);
-			newblock.put("dounble", 23.345);
+			newblock.put("double", 23.345);
 			
 			JSONArray arr = new JSONArray();
 			arr.add("help");

@@ -506,8 +506,8 @@ public class DAPPManager extends SystemHandler {
 	
 	private void sendToBackEND(String zMiniDAPPID, JSONObject zJSON) {
 		//Create the same EVent as on the Web
-	    JSONObject jobj  = CreatePostEvent(zJSON);
-	    String JSONEvent = jobj.toString();
+	    //JSONObject jobj  = CreatePostEvent(zJSON);
+	    String JSONEvent = zJSON.toString();
 	    
 		if(zMiniDAPPID.equals("")){
 			Enumeration<BackEndDAPP> bends = mBackends.elements();
@@ -523,38 +523,38 @@ public class DAPPManager extends SystemHandler {
 		}	
 	}
 	
-	/**
-	 * Make the event the same as when on the web page..
-	 * 
-	 * @param zEventType
-	 * @param zJSON
-	 */
-	private JSONObject CreatePostEvent(JSONObject zJSON) {
-		String event = (String) zJSON.get("event");
-		
-		JSONObject data = new JSONObject();
-		data.put("event", event);
-		
-		if(event.equals("connected")) {
-			data.put("info", "success");	
-		
-		}else if(event.equals("newblock")) {
-			data.put("info", zJSON.get("txpow"));	
-		
-		}else if(event.equals("newtransaction")) {
-			data.put("info", zJSON.get("txpow"));	
-			
-		}else if(event.equals("newbalance")) {
-			data.put("info", zJSON.get("balance"));	
-		
-		}else if(event.equals("network")) {
-			data.put("info", zJSON.get("details"));	
-			
-		}
-		
-		JSONObject evt = new JSONObject();
-		evt.put("detail", data);
-		
-		return evt;
-	}
+//	/**
+//	 * Make the event the same as when on the web page..
+//	 * 
+//	 * @param zEventType
+//	 * @param zJSON
+//	 */
+//	private JSONObject CreatePostEvent(JSONObject zJSON) {
+//		String event = (String) zJSON.get("event");
+//		
+//		JSONObject data = new JSONObject();
+//		data.put("event", event);
+//		
+//		if(event.equals("connected")) {
+//			data.put("info", "success");	
+//		
+//		}else if(event.equals("newblock")) {
+//			data.put("info", zJSON.get("txpow"));	
+//		
+//		}else if(event.equals("newtransaction")) {
+//			data.put("info", zJSON.get("txpow"));	
+//			
+//		}else if(event.equals("newbalance")) {
+//			data.put("info", zJSON.get("balance"));	
+//		
+//		}else if(event.equals("network")) {
+//			data.put("info", zJSON.get("details"));	
+//			
+//		}
+//		
+//		JSONObject evt = new JSONObject();
+//		evt.put("detail", data);
+//		
+//		return evt;
+//	}
 }

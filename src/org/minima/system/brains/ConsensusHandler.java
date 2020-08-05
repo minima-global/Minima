@@ -268,10 +268,9 @@ public class ConsensusHandler extends SystemHandler {
 			getMainHandler().getBackupManager().backupTxpow(txpow);
 			
 			//Notify the WebSocket Listeners
-			JSONObject newtrans = new JSONObject();
-			newtrans.put("event","newtransaction");
-			newtrans.put("txpow",txpow.toJSON());
-			PostDAPPJSONMessage(newtrans);
+			if(txpow.isTransaction()) {
+				
+			}
 			
 			//Process it
 			PostMessage(new Message(ConsensusHandler.CONSENSUS_PROCESSTXPOW).addObject("txpow", txpow));
@@ -279,6 +278,13 @@ public class ConsensusHandler extends SystemHandler {
 			//Only do this once..
 			boolean relevant = false;
 			if(txpow.isTransaction()) {
+				//Notify everyone..
+				JSONObject newtrans = new JSONObject();
+				newtrans.put("event","newtransaction");
+				newtrans.put("txpow",txpow.toJSON());
+				PostDAPPJSONMessage(newtrans);
+				
+				//Is it relevant to us..
 				relevant = getMainDB().getUserDB().isTransactionRelevant(txpow.getTransaction());
 			}
 			

@@ -220,11 +220,11 @@ public class TxPoW implements Streamable {
 	public JSONObject toJSON() {
 		JSONObject txpow = new JSONObject();
 		
+		txpow.put("txpowid", _mTxPOWID.toString());
 		txpow.put("isblock", _mIsBlockPOW);
 		txpow.put("istransaction", _mIsTxnPOW);
-		txpow.put("txpowid", _mTxPOWID.toString());
 		txpow.put("superblock", _mSuperBlock);
-		txpow.put("size", _mTxPoWSize);
+		txpow.put("size", getSizeinBytes());
 		
 		txpow.put("header", mHeader.toJSON());
 		
