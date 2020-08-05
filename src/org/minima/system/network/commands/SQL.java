@@ -4,7 +4,7 @@ import java.io.File;
 
 import org.minima.system.brains.BackupManager;
 import org.minima.system.input.InputHandler;
-import org.minima.system.network.minidapps.minilib.MiniLibUtility;
+import org.minima.system.network.minidapps.minibackend.MiniLibUtility;
 import org.minima.utils.SQLHandler;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;

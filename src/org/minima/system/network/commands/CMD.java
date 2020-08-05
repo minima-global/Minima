@@ -4,7 +4,7 @@ import java.util.StringTokenizer;
 
 import org.minima.system.input.InputHandler;
 import org.minima.system.input.InputMessage;
-import org.minima.system.network.minidapps.minilib.MiniLibUtility;
+import org.minima.system.network.minidapps.minibackend.MiniLibUtility;
 import org.minima.utils.ResponseStream;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;

@@ -9,7 +9,7 @@ import java.util.StringTokenizer;
 import org.minima.objects.base.MiniString;
 import org.minima.system.brains.BackupManager;
 import org.minima.system.input.InputHandler;
-import org.minima.system.network.minidapps.minilib.MiniLibUtility;
+import org.minima.system.network.minidapps.minibackend.MiniLibUtility;
 import org.minima.utils.MiniFile;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;

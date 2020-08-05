@@ -2,7 +2,6 @@ package org.minima.system.network.minidapps.minibackend;
 
 import java.lang.reflect.InvocationTargetException;
 
-import org.minima.system.network.minidapps.minilib.MiniLibUtility;
 import org.minima.utils.ProtocolException;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;

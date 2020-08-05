@@ -10,7 +10,7 @@ import org.minima.system.network.minidapps.DAPPManager;
 import org.minima.system.network.minidapps.comms.CommsClient;
 import org.minima.system.network.minidapps.comms.CommsManager;
 import org.minima.system.network.minidapps.comms.CommsServer;
-import org.minima.system.network.minidapps.minilib.MiniLibUtility;
+import org.minima.system.network.minidapps.minibackend.MiniLibUtility;
 import org.minima.system.network.rpc.RPCClient;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;

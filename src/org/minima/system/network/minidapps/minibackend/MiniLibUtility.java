@@ -1,4 +1,4 @@
-package org.minima.system.network.minidapps.minilib;
+package org.minima.system.network.minidapps.minibackend;
 
 import java.util.Map.Entry;
 import java.util.Set;
