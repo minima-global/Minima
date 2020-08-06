@@ -14,12 +14,6 @@ var Minima = {
 	//TxPoWID of the current top block
 	txpowid : "0x00",
 	
-	//RPC Host for Minima
-	rpchost : "http://127.0.0.1:9002",
-	
-	//Web Socket Host for Minima
-	wshost : "ws://127.0.0.1:9003",
-	
 	status : {},
 
 	balance : {},
@@ -157,7 +151,7 @@ function MinimaRPC(type, data, callback){
 }
 
 /**
- * Post a message to the Minima Event Listeners
+ * Post a message to the Minima Event Listener in backend.js
  */
 function MinimaPostMessage(event, info){
    //Create Data Object
@@ -167,6 +161,9 @@ function MinimaPostMessage(event, info){
    MinimaEvent({detail:data});
 }
 
+/**
+ * Called by the Java when a message is sent rather than using a WebSocket
+ */
 function MinimaBackEndListener(jmsg){
 			
 	if(jmsg.event == "connected"){
@@ -210,10 +207,6 @@ function MinimaBackEndListener(jmsg){
 	}else if(jmsg.event == "network"){
 		//Forward it..
 		MinimaPostMessage("network",jmsg.details);
-		
-	}else{
-		//Unknown Message Type	
-		var jsonstr = JSON.stringify(jmsg,null,2); 
-		Minima.log("Backend Unknown Message Type : "+jsonstr);
 	}
+	
 }

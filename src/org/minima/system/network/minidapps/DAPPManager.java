@@ -456,7 +456,7 @@ public class DAPPManager extends SystemHandler {
 			InputHandler.endResponse(zMessage, true, "MiniDAPP uninstalled..");
 			
 		}else if(zMessage.getMessageType().equals(DAPP_POST)) {
-			//Send a MinimaEvent Message to all the current Backend DAPPS
+			//Send a MinimaEvent Message to a specific minidapp
 			String minidapp = zMessage.getString("minidapp");
 			String message  = zMessage.getString("message");
 			
@@ -522,39 +522,4 @@ public class DAPPManager extends SystemHandler {
 			}
 		}	
 	}
-	
-//	/**
-//	 * Make the event the same as when on the web page..
-//	 * 
-//	 * @param zEventType
-//	 * @param zJSON
-//	 */
-//	private JSONObject CreatePostEvent(JSONObject zJSON) {
-//		String event = (String) zJSON.get("event");
-//		
-//		JSONObject data = new JSONObject();
-//		data.put("event", event);
-//		
-//		if(event.equals("connected")) {
-//			data.put("info", "success");	
-//		
-//		}else if(event.equals("newblock")) {
-//			data.put("info", zJSON.get("txpow"));	
-//		
-//		}else if(event.equals("newtransaction")) {
-//			data.put("info", zJSON.get("txpow"));	
-//			
-//		}else if(event.equals("newbalance")) {
-//			data.put("info", zJSON.get("balance"));	
-//		
-//		}else if(event.equals("network")) {
-//			data.put("info", zJSON.get("details"));	
-//			
-//		}
-//		
-//		JSONObject evt = new JSONObject();
-//		evt.put("detail", data);
-//		
-//		return evt;
-//	}
 }
