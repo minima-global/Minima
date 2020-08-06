@@ -128,10 +128,7 @@ public class DAPPServer extends NanoHTTPD{
 				}
 			
 				//Otherwise lets see..
-				if(fileRequested.endsWith("/minima.js") || fileRequested.equals("minima.js")) {
-					return getOKResponse(mDAPPManager.getMinimaJS() , "text/javascript");
-				
-				}else if(fileRequested.startsWith("testweb/")) {
+				if(fileRequested.startsWith("testweb/")) {
 					//get from the testweb folder..
 					String fullfile = mTestWeb+"/"+fileRequested.substring(8);
 					byte[] file     = MiniFile.readCompleteFile(new File(fullfile));
@@ -142,6 +139,9 @@ public class DAPPServer extends NanoHTTPD{
 						return getNotFoundResponse();
 					}
 					
+				}else if(fileRequested.endsWith("/minima.js") || fileRequested.equals("minima.js")) {
+					return getOKResponse(mDAPPManager.getMinimaJS() , "text/javascript");
+				
 				}else if(fileRequested.startsWith("minidapps/")) {
 					//Send the MiniDAPP!
 					String fullfile = mDAPPManager.getMiniDAPPSFolder()+"/"+fileRequested.substring(10);
