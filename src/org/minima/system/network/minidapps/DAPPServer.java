@@ -58,16 +58,15 @@ public class DAPPServer extends NanoHTTPD{
 			
         	//What are they looking for..
         	String fileRequested = session.getUri();
-        	//MinimaLogger.log(fileRequested);
-			
+        	
         	//Which MiniDAPP
         	String MiniDAPPID="";
         	String ref = session.getHeaders().get("referer");
         	if(ref != null) {
-        		int start  = ref.indexOf("/minidapps/")+11;
+        		int start  = ref.indexOf("/minidapps/");
         		int end    = -1;
         		if(start!=-1) {
-        			end    = ref.indexOf("/", start);
+        			end    = ref.indexOf("/", start+11);
         		}
         		
         		if(end!=-1) {
@@ -215,13 +214,27 @@ public class DAPPServer extends NanoHTTPD{
 					}else {
 						return getNotFoundResponse();
 					}
+				}else if(fileRequested.startsWith("testweb/")) {
+					//get from the testweb folder..
+					String fullfile = mTestWeb+"/"+fileRequested.substring(8);
+					byte[] file     = MiniFile.readCompleteFile(new File(fullfile));
+					
+					if(file.length>0) {
+						return getOKResponse(file, MiniFile.getContentType(fullfile));
+					}else {
+						return getNotFoundResponse();
+					}
+					
 				}
+				
 			}
         	
 			return getNotFoundResponse();
      
         } catch (Exception ioe) {
-            return getInternalErrorResponse("INTERNAL ERROR");
+        	MinimaLogger.log("DAPPSERVER Error : "+ioe);
+        	
+        	return getInternalErrorResponse("INTERNAL ERROR");
         }
     }
 	
