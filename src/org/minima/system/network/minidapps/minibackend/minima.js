@@ -69,6 +69,31 @@ var Minima = {
 		
 	},
 	
+	/**
+	 * Intra MiniDAPP communication
+	 */
+	comms : {
+		
+		//List the currently installed minidapps
+		list : function(callback){
+			Minima.cmd("minidapp list",callback);
+		},
+		
+		//Send a message to a specific minidapp
+		send : function(minidappid,message, callback){
+			Minima.cmd("minidapp post:"+minidappid+" \""+message+"\"",callback);
+		},
+		
+		//The replyid is in the original message
+		reply : function(replyid,message){
+			//Reply to a POST message.. iuse the mesage
+			replymsg = { "type":"reply", "message": message, "replyid" : replyid };
+			
+			//Special one off function..
+			MinimaJSBridge.wspostreply(replyid, message);
+		}
+		
+	},
 	
 	file : {
 		
@@ -205,8 +230,8 @@ function MinimaBackEndListener(jmsg){
 		MinimaPostMessage("newbalance",jmsg.balance);
 	
 	}else if(jmsg.event == "network"){
-		//Forward it..
 		MinimaPostMessage("network",jmsg.details);
+	
 	}
 	
 }

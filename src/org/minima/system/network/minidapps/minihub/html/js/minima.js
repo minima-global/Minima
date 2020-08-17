@@ -186,7 +186,7 @@ var Minima = {
 			//Reply to a POST message.. iuse the mesage
 			replymsg = { "type":"reply", "message": message, "replyid" : replyid };
 			
-			//Send your name.. normally set automagically but can be hard set when debugging
+			//Send your reply
 			MINIMA_WEBSOCKET.send(JSON.stringify(replymsg));
 		},
 		

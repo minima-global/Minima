@@ -1,10 +1,13 @@
 package org.minima.system.network.minidapps.minibackend;
 
+import org.minima.system.input.InputHandler;
 import org.minima.system.network.commands.CMD;
 import org.minima.system.network.commands.FILE;
 import org.minima.system.network.commands.NET;
 import org.minima.system.network.commands.SQL;
+import org.minima.system.network.minidapps.DAPPManager;
 import org.minima.utils.MinimaLogger;
+import org.minima.utils.messages.Message;
 import org.mozilla.javascript.Function;
 
 /**
@@ -29,6 +32,17 @@ public class MinimaJSBridge {
 		mBackBone = zBackBone;
 	}
 
+	//When posting a reply to a intra minidapp message
+	public void wspostreply(String zReplyID, String zMessage) {
+		//Post a message..
+		Message replymsg = new Message(DAPPManager.DAPP_DIRECTREPLY);
+		replymsg.addString("replyid", zReplyID);
+		replymsg.addString("message", zMessage);
+		
+		//Send it to the DAPP MANAGER
+		InputHandler.getMainInputHandler().getMainHandler().getNetworkHandler().getDAPPManager().PostMessage(replymsg);
+	}
+	
 	public void post(String zType, String zData, Function zCallback) {
 		
 		MinimaLogger.log("MinimaJSBridge : "+zType+" "+zData);
