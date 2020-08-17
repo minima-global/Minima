@@ -802,7 +802,7 @@ public class ConsensusHandler extends SystemHandler {
 	 * @param zJSON
 	 */
 	public void PostDAPPJSONMessage(JSONObject zJSON) {
-		Message wsmsg = new Message(DAPPManager.DAPP_MINIDAPP_POST).addObject("message", zJSON);
+		Message wsmsg = new Message(DAPPManager.DAPP_MINIDAPP_POSTALL).addObject("message", zJSON);
 		getMainHandler().getNetworkHandler().getDAPPManager().PostMessage(wsmsg);
 	}
 }

@@ -17,7 +17,7 @@ public class MinimaWebSocket extends WebSocket {
 	String mWebClientUID = MiniData.getRandomData(20).to0xString();
 	
 	//This is the MiniDAPP ID set by the MiniDAPP!
-	String mMiniDAPP_UID = "0x00";
+	String mMiniDAPP_UID = "0xFF";
 	
 	public MinimaWebSocket(IHTTPSession zHTTPSession, WebSocketManager zManager) {
 		super(zHTTPSession);

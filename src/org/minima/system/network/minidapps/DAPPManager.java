@@ -44,8 +44,11 @@ public class DAPPManager extends SystemHandler {
 	public static String DAPP_INIT           = "DAPP_INIT";
 	public static String DAPP_INSTALL        = "DAPP_INSTALL";
 	public static String DAPP_UNINSTALL      = "DAPP_UNINSTALL";
-	public static String DAPP_POST           = "DAPP_POST";
-	public static String DAPP_MINIDAPP_POST  = "DAPP_MINIDAPP_POST";
+	
+	public static String DAPP_DIRECTPOST     = "DAPP_DIRECTPOST";
+	
+	public static String DAPP_MINIDAPP_POST     = "DAPP_MINIDAPP_POST";
+	public static String DAPP_MINIDAPP_POSTALL  = "DAPP_MINIDAPP_POSTALL";
 	
 	JSONArray CURRENT_MINIDAPPS = new JSONArray();
 	String MINIDAPPS_FOLDER     = "";
@@ -453,7 +456,7 @@ public class DAPPManager extends SystemHandler {
 			
 			InputHandler.endResponse(zMessage, true, "MiniDAPP uninstalled..");
 			
-		}else if(zMessage.getMessageType().equals(DAPP_POST)) {
+		}else if(zMessage.getMessageType().equals(DAPP_DIRECTPOST)) {
 			//Send a MinimaEvent Message to a specific minidapp
 			String minidapp = zMessage.getString("minidapp");
 			String message  = zMessage.getString("message");
@@ -467,10 +470,14 @@ public class DAPPManager extends SystemHandler {
 			wsmsg.put("event","network");
 			wsmsg.put("details",json);
 			
-			Message msg = new Message(DAPP_MINIDAPP_POST);
+			//Send to the backend
+			sendToBackEND(minidapp,wsmsg);
+			
+			//And to the front end..
+			Message msg = new Message(WebSocketManager.WEBSOCK_SEND);
+			msg.addString("message", wsmsg.toString());
 			msg.addString("minidappid", minidapp);
-			msg.addObject("message", wsmsg);
-			PostMessage(msg);
+			mNetwork.getWebSocketManager().PostMessage(msg);
 		
 			InputHandler.getResponseJSON(zMessage).put("minidapp", minidapp);
 			InputHandler.getResponseJSON(zMessage).put("message", wsmsg.toString());
@@ -478,28 +485,29 @@ public class DAPPManager extends SystemHandler {
 		
 		}else if(zMessage.isMessageType(DAPP_MINIDAPP_POST)) {
 			//What is the message..
+			String minidapp = zMessage.getString("minidapp");
 			JSONObject json = (JSONObject) zMessage.getObject("message");
 			
-			String minidappid = "";
-			if(zMessage.exists("minidappid")) {
-				minidappid = zMessage.getString("minidappid");
-			}
+			//First the Back End..
+			sendToBackEND(minidapp,json);
+			
+			Message msg = new Message(WebSocketManager.WEBSOCK_SEND);
+			msg.addString("minidappid", minidapp);
+			msg.addString("message", json.toString());
+			mNetwork.getWebSocketManager().PostMessage(msg);
+			
+		}else if(zMessage.isMessageType(DAPP_MINIDAPP_POSTALL)) {
+			//What is the message..
+			JSONObject json = (JSONObject) zMessage.getObject("message");
 			
 			//First the Back End..
-			sendToBackEND(minidappid,json);
+			sendToBackEND("",json);
 			
-			//Now the Front End..
-			if(minidappid.equals("")) {
-				Message msg = new Message(WebSocketManager.WEBSOCK_SENDTOALL);
-				msg.addString("message", json.toString());
-				mNetwork.getWebSocketManager().PostMessage(msg);				
-			}else {
-				Message msg = new Message(WebSocketManager.WEBSOCK_SEND);
-				msg.addString("message", json.toString());
-				msg.addString("minidappid", minidappid);
-				mNetwork.getWebSocketManager().PostMessage(msg);
-			}
+			Message msg = new Message(WebSocketManager.WEBSOCK_SENDTOALL);
+			msg.addString("message", json.toString());
+			mNetwork.getWebSocketManager().PostMessage(msg);
 		}
+		
 	}
 	
 	private void sendToBackEND(String zMiniDAPPID, JSONObject zJSON) {

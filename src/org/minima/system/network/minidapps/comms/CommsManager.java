@@ -254,12 +254,12 @@ public class CommsManager extends SystemHandler {
 	}
 	
 	public void postCommsMssage(JSONObject zMessage, String zMiniDAPPID) {
-		//someone has connected to a port you opened..
 		JSONObject websocketmsg = new JSONObject();
 		websocketmsg.put("event","network");
 		websocketmsg.put("details",zMessage);
 		
 		Message msg = new Message(DAPPManager.DAPP_MINIDAPP_POST);
+		msg.addObject("minidapp", zMiniDAPPID);
 		msg.addObject("message", websocketmsg);
 		
 		//Post to the Network..
