@@ -45,7 +45,8 @@ public class DAPPManager extends SystemHandler {
 	public static String DAPP_INSTALL        = "DAPP_INSTALL";
 	public static String DAPP_UNINSTALL      = "DAPP_UNINSTALL";
 	
-	public static String DAPP_DIRECTPOST     = "DAPP_DIRECTPOST";
+	public static String DAPP_DIRECTPOST      = "DAPP_DIRECTPOST";
+	public static String DAPP_DIRECTREPLY     = "DAPP_DIRECTREPLY";
 	
 	public static String DAPP_MINIDAPP_POST     = "DAPP_MINIDAPP_POST";
 	public static String DAPP_MINIDAPP_POSTALL  = "DAPP_MINIDAPP_POSTALL";
@@ -73,6 +74,9 @@ public class DAPPManager extends SystemHandler {
 	 */
 	Hashtable<String, BackEndDAPP> mBackends;
 	
+	//The List of Post messages for Replies..
+	Hashtable<String, Message> mReplyMessage;
+		
 	public DAPPManager(Main zMain) {
 		super(zMain, "DAPPMAnager");
 		
@@ -81,6 +85,8 @@ public class DAPPManager extends SystemHandler {
 		
 		//All the backends are stored here..
 		mBackends = new Hashtable<>();
+		
+		mReplyMessage = new Hashtable<>();
 		
 		//What is the current Host
 		mOldHost  = mNetwork.getBaseHost();
@@ -461,10 +467,17 @@ public class DAPPManager extends SystemHandler {
 			String minidapp = zMessage.getString("minidapp");
 			String message  = zMessage.getString("message");
 			
+			//Create a unique REPLY ID
+			String replyid = MiniData.getRandomData(20).to0xString();
+			
+			//Put a link to this..
+			mReplyMessage.put(replyid, zMessage);
+			
 			//Make a JSON
 			JSONObject json = new JSONObject();
 			json.put("action", "post");
 			json.put("message", message);
+			json.put("replyid", replyid);
 			
 			JSONObject wsmsg = new JSONObject();
 			wsmsg.put("event","network");
@@ -479,10 +492,23 @@ public class DAPPManager extends SystemHandler {
 			msg.addString("minidappid", minidapp);
 			mNetwork.getWebSocketManager().PostMessage(msg);
 		
-			InputHandler.getResponseJSON(zMessage).put("minidapp", minidapp);
-			InputHandler.getResponseJSON(zMessage).put("message", wsmsg.toString());
-			InputHandler.endResponse(zMessage, true, "Message posted");
-		
+		}else if(zMessage.getMessageType().equals(DAPP_DIRECTREPLY)) {
+			//Get the REPLY ID
+			String replyid = zMessage.getString("replyid");
+			
+			//Get the message
+			String message = zMessage.getString("message");
+			
+			//Get the Message..
+			Message msg = mReplyMessage.remove(replyid);
+			
+			//Do we have it..
+			if(msg != null) {
+				//Woo Hoo!
+				InputHandler.getResponseJSON(msg).put("reply", message.toString());
+				InputHandler.endResponse(msg, true, "Message posted");
+			}
+			
 		}else if(zMessage.isMessageType(DAPP_MINIDAPP_POST)) {
 			//What is the message..
 			String minidapp = zMessage.getString("minidapp");

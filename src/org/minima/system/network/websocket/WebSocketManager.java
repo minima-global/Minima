@@ -7,6 +7,7 @@ import java.util.Hashtable;
 
 import org.minima.system.Main;
 import org.minima.system.SystemHandler;
+import org.minima.system.network.minidapps.DAPPManager;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.json.parser.JSONParser;
@@ -111,14 +112,11 @@ public class WebSocketManager extends SystemHandler {
 			//Message is always in JSON format
 			JSONObject msgobj = (JSONObject) new JSONParser().parse(zMessage.getString("message"));
 			
-			MinimaLogger.log("WSMESSAGE : "+msgobj);
-			
 			//What kind of message is it..
 			String msgtype = (String) msgobj.get("type");
 			if(msgtype.equals("uid")) {
 				//Get the location..
-				String loc = (String) msgobj.get("location");
-				MinimaLogger.log("WSMESSAGE UID loc:"+loc);
+				String loc = (String) msgobj.get("uid");
 				
 				//Default ID
 				String mid = "0x00";
@@ -130,90 +128,24 @@ public class WebSocketManager extends SystemHandler {
 					if(end != -1) {
 						//Get it..!
 						mid =  loc.substring(start,end);
+					}else {
+						mid =  loc.substring(start);
 					}
 				}
 				
 				//Set it..
-				MinimaLogger.log("WSMESSAGE ID set :"+mid);
 				mws.setMiniDAPPUID(mid);
 				
-			}else if(msgtype.equals("message")) {
-				Message comms = new Message(WEBSOCK_SEND_INTRAMSG);
-				comms.addString("event", "newmessage");
-				comms.addString("from", mws.getMiniDAPPUID());
-				comms.addString("uid", (String) msgobj.get("to"));
-				comms.addString("message", (String) msgobj.get("message"));
-				comms.addString("funcid", (String) msgobj.get("funcid"));
-				
-				PostMessage(comms);
-			
 			}else if(msgtype.equals("reply")) {
-				Message comms = new Message(WEBSOCK_SEND_INTRAMSG);
-				comms.addString("event", "newreply");
-				comms.addString("from", mws.getMiniDAPPUID());
-				comms.addString("uid", (String) msgobj.get("to"));
-				comms.addString("message", (String) msgobj.get("message"));
-				comms.addString("funcid", (String) msgobj.get("replyid"));
+				Message replymsg = new Message(DAPPManager.DAPP_DIRECTREPLY);
+				replymsg.addString("replyid", (String)msgobj.get("replyid"));
+				replymsg.addString("message", (String)msgobj.get("message"));
 				
-				PostMessage(comms);
-			}
-			
-		}else if(zMessage.getMessageType().equals(WEBSOCK_SEND_INTRAMSG)) {
-			//Who to..
-			String event   = zMessage.getString("event");
-			String uid     = zMessage.getString("uid");
-			String from    = zMessage.getString("from");
-			String message = zMessage.getString("message");
-			String funcid  = zMessage.getString("funcid");
-			
-			JSONObject newmessage = new JSONObject();
-			newmessage.put("event",event);
-			newmessage.put("message",message);
-			newmessage.put("functionid",funcid);
-			newmessage.put("from",from);
-			newmessage.put("error","");
-			
-			//Send a message to one of the listeners..
-			Enumeration<MinimaWebSocket> clients = mMininaSockets.elements();
-			while(clients.hasMoreElements()) {
-				MinimaWebSocket client = clients.nextElement();
-				if(client.getMiniDAPPUID().equals(uid)) {
-					try {
-						//Try and send the message..
-						client.send(newmessage.toString());
-						return;
-					}catch(Exception exc){
-						//Something wrong with this connection.. close..
-						mMininaSockets.remove(client.getClientUID());
-						break;
-					}
-				}
-			}
-			
-			//MiniDAPP not found of that UID..
-			newmessage.put("event","newreply");
-			newmessage.put("error",uid+" not found");
-			
-			//Search again but this time back to the original
-			clients = mMininaSockets.elements();
-			while(clients.hasMoreElements()) {
-				MinimaWebSocket client = clients.nextElement();
-				if(client.getMiniDAPPUID().equals(from)) {
-					try {
-						//Try and send the message..
-						client.send(newmessage.toString());
-					}catch(Exception exc){
-						//Something wrong with this connection.. close..
-						mMininaSockets.remove(client.getClientUID());
-					}
-					
-					return;
-				}
+				//Send it to the DAPP MANAGER
+				getMainHandler().getNetworkHandler().getDAPPManager().PostMessage(replymsg);
 			}
 			
 		}else if(zMessage.getMessageType().equals(WEBSOCK_SEND)) {
-			MinimaLogger.log("WS_SEND FRONTEND Send "+zMessage);
-			
 			//Who to send the message to..
 			String miniid = zMessage.getString("minidappid");
 			
@@ -237,11 +169,9 @@ public class WebSocketManager extends SystemHandler {
 				}
 			}
 			
-			MinimaLogger.log("WS_SEND FRONTEND NOT FOUND!");
+			MinimaLogger.log("WS_SEND FRONTEND MINIDAPP NOT FOUND! "+zMessage);
 			
 		}else if(zMessage.getMessageType().equals(WEBSOCK_SENDTOALL)) {
-			MinimaLogger.log("WS_SENDALL FRONTEND Send "+zMessage);
-			
 			//What to send..
 			String msg = zMessage.getString("message");
 			
