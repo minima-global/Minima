@@ -12,11 +12,6 @@
 var MINIMA_WEBSOCKET = null;
 
 /**
- * Intra MiniDAPP communication
- */
-var MINIDAPP_FUNCSTORE_LIST = [];
-
-/**
  * Main MINIMA Object for all interaction
  */
 var Minima = {
@@ -169,16 +164,43 @@ var Minima = {
 			    return result;
 		}
 		
-		/*,
-		allpost : function(callback){
-			
+	},
+	
+	/**
+	 * Intra MiniDAPP communication
+	 */
+	comms : {
+		
+		//List the currently installed minidapps
+		list : function(callback){
+			Minima.cmd("minidapp list",callback);
 		},
 		
-		post : function(parametername, callback){
+		//Send a message to a specific minidapp
+		send : function(minidappid,message, callback){
+			Minima.cmd("minidapp post:"+minidappid+" \""+message+"\"",callback);
+		},
+		
+		//The replyid is in the original message
+		reply : function(replyid,message){
+			//Reply to a POST message.. iuse the mesage
+			replymsg = { "type":"reply", "message": message, "replyid" : replyid };
 			
-		}*/
+			//Send your name.. normally set automagically but can be hard set when debugging
+			MINIMA_WEBSOCKET.send(JSON.stringify(replymsg));
+		},
+		
+		//For debug purposes you can can hard set the MiniDAPP ID
+		setUID : function(uid){
+			//UID JSON Message
+			miniuid = { "type":"uid", "uid": uid };
+			
+			//Send your name.. normally set automagically but can be hard set when debugging
+			MINIMA_WEBSOCKET.send(JSON.stringify(miniuid));
+		}
 		
 	},
+	
 	
 	/**
 	 * UTILITY FUNCTIONS
@@ -242,42 +264,6 @@ var Minima = {
 				}else{
 					MinimaCreateNotification(message);	
 				}
-			},
-			
-			send : function(minidappid, message, callback){
-				//Create a random number to track this function call..
-				var funcid = ""+Math.floor(Math.random()*1000000000);
-				
-				//Construct a JSON object
-				msg = { "type":"message", "to":minidappid, "funcid":funcid, "message":message };
-
-				//Add this Funcid and this callback to the list.. when you receive a reply 
-				//you can respond to the correct callback
-				funcstore = { "functionid":funcid, "callback":callback };
-				MINIDAPP_FUNCSTORE_LIST.push(funcstore);
-				
-				//And send it..
-				MINIMA_WEBSOCKET.send(JSON.stringify(msg));
-			},
-			
-			reply : function(evt, message){
-				//Get the reply id
-				var replyid = evt.detail.info.replyid;
-				var replyto = evt.detail.info.from;
-				
-				//Construct a JSON object
-				msg = { "type":"reply", "to":replyto, "replyid":replyid, "message":message };
-
-				//And send it..
-				MINIMA_WEBSOCKET.send(JSON.stringify(msg));
-			},
-			
-			setUID : function(uid){
-				//UID JSON Message
-				uid = { "type":"uid", "location": window.location.href, "uid":uid };
-				
-				//Send your name.. normally set automagically but can be hard set when debugging
-				MINIMA_WEBSOCKET.send(JSON.stringify(uid));
 			}
 				
 	}
@@ -322,11 +308,10 @@ function MinimaWebSocketListener(){
 		Minima.log("Minima WS Listener Connection opened..");	
 		
 		//Now set the MiniDAPPID
-		uid = { "type":"uid", "location": window.location.href };
+		uid = { "type":"uid", "uid": window.location.href };
 		
-		//Send your name.. normally set automagically but can be hard set when debugging
+		//Send your name.. set automagically but can be hard set when debugging
 		MINIMA_WEBSOCKET.send(JSON.stringify(uid));
-		//console.log("Send UID WS Message .. href:"+window.location.href);
 		
 	    //Send a message
 	    MinimaPostMessage("connected", "success");
@@ -357,42 +342,7 @@ function MinimaWebSocketListener(){
 			MinimaPostMessage("newbalance",jmsg.balance);
 		
 		}else if(jmsg.event == "network"){
-			//Forward it..
 			MinimaPostMessage("network",jmsg.details);
-			
-		}else if(jmsg.event == "newmessage"){
-			//Create a nice JSON message
-			var msgdata = { "message":jmsg.message, "replyid":jmsg.functionid, "from":jmsg.from}; 
-			
-			//Post it..
-			MinimaPostMessage("newmessage",msgdata);
-		
-		}else if(jmsg.event == "newreply"){
-			var funclen = MINIDAPP_FUNCSTORE_LIST.length;
-			for(i=0;i<funclen;i++){
-				if(MINIDAPP_FUNCSTORE_LIST[i].functionid == jmsg.functionid){
-					//Get the callback
-					callback = MINIDAPP_FUNCSTORE_LIST[i].callback;
-					
-					//Was there an ERROR
-					if(jmsg.error !== ""){
-						//Log the error
-						Minima.log("Message Error : "+jmsg.error);
-					}else{
-						//call it with the reply message
-						callback(jmsg.message);
-					}
-					
-					//And remove it from the list..
-					MINIDAPP_FUNCSTORE_LIST.splice(i,1);
-					
-					//All done
-					return;
-				}
-			}
-			
-			//Not found..
-			Minima.log("REPLY CALLBACK NOT FOUND "+JSON.stringify(jmsg));
 			
 		}else if(jmsg.event == "txpowstart"){
 			Minima.util.notify("Mining Transaction Started..","#55DD55");	
