@@ -264,8 +264,6 @@ public class DAPPManager extends SystemHandler {
 					}
 				}
 				
-				//minidapps install:/home/spartacusrex/git/MiFi/www/minidapps/experimental/chatter.minidapp
-				
 				//Check it exists..
 				if(conf.exists()) {
 					//Load it..
