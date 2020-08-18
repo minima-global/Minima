@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.StringTokenizer;
 
 import org.minima.objects.base.MiniString;
+import org.minima.system.Main;
 import org.minima.system.brains.BackupManager;
 import org.minima.system.input.InputHandler;
 import org.minima.system.network.minidapps.minibackend.MiniJSONUtility;
@@ -56,13 +57,13 @@ public class FILE implements Runnable {
 		
 		//Where is the database..
 		File minidappfolder  = null;
-		BackupManager backup = InputHandler.getMainInputHandler().getMainHandler().getBackupManager();
+		BackupManager backup = Main.getMainHandler().getBackupManager();
 		
 		//Which Database.. could be running from a folder..
-		if(mMiniDAPPID.equals("")) {
+		if(mMiniDAPPID.length()<16) {
 			//Get the database folder
 			File temp = BackupManager.getTempFolder();
-			minidappfolder = new File(temp,"_files"+InputHandler.getMainInputHandler().RANDOM_VAL.to0xString());
+			minidappfolder = new File(temp,"_files"+mMiniDAPPID);
 			
 		}else {
 			//Get the database folder

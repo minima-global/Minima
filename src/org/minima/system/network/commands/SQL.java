@@ -2,6 +2,7 @@ package org.minima.system.network.commands;
 
 import java.io.File;
 
+import org.minima.system.Main;
 import org.minima.system.brains.BackupManager;
 import org.minima.system.input.InputHandler;
 import org.minima.system.network.minidapps.minibackend.MiniJSONUtility;
@@ -46,13 +47,13 @@ public class SQL implements Runnable {
 		
 		//Where is the database..
 		File minidappdatabase = null;
-		BackupManager backup = InputHandler.getMainInputHandler().getMainHandler().getBackupManager();
+		BackupManager backup = Main.getMainHandler().getBackupManager();
 		
 		//Which Database.. could be running from a folder..
-		if(mMiniDAPPID.equals("")) {
+		if(mMiniDAPPID.length()<16) {
 			//Get the database folder
 			File temp = BackupManager.getTempFolder();
-			minidappdatabase = new File(temp,"_tempdb"+InputHandler.getMainInputHandler().RANDOM_VAL.to0xString());
+			minidappdatabase = new File(temp,"_tempdb"+mMiniDAPPID);
 			
 		}else {
 			//Get the database folder

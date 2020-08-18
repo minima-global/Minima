@@ -1,5 +1,6 @@
 package org.minima.system.network.minidapps.minibackend;
 
+import org.minima.system.Main;
 import org.minima.system.input.InputHandler;
 import org.minima.system.network.commands.CMD;
 import org.minima.system.network.commands.FILE;
@@ -40,7 +41,7 @@ public class MinimaJSBridge {
 		replymsg.addString("message", zMessage);
 		
 		//Send it to the DAPP MANAGER
-		InputHandler.getMainInputHandler().getMainHandler().getNetworkHandler().getDAPPManager().PostMessage(replymsg);
+		Main.getMainHandler().getNetworkHandler().getDAPPManager().PostMessage(replymsg);
 	}
 	
 	public void post(String zType, String zData, Function zCallback) {

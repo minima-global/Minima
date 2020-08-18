@@ -59,25 +59,6 @@ public class DAPPServer extends NanoHTTPD{
         	//What are they looking for..
         	String fileRequested = session.getUri();
         	
-        	//Which MiniDAPP
-        	String MiniDAPPID="";
-        	String ref = session.getHeaders().get("referer");
-        	if(ref != null) {
-        		int start  = ref.indexOf("/minidapps/");
-        		int end    = -1;
-        		if(start!=-1) {
-        			end    = ref.indexOf("/", start+11);
-        		}
-        		
-        		if(end!=-1) {
-        			MiniDAPPID = ref.substring(start, end);
-        		}
-        	}
-
-//        	if(MiniDAPPID.equals("")) {;
-//        		MinimaLogger.log("UNKNOWN MINIDAPP! file:"+fileRequested+" headers:"+session.getHeaders());
-//        	}
-        	
         	//Quick clean
 			if(fileRequested.endsWith("/")) {
 				fileRequested = fileRequested.concat("index.html");
@@ -107,20 +88,6 @@ public class DAPPServer extends NanoHTTPD{
 						mDAPPManager.PostMessage(msg);
 			            
 		                return getOKResponse(uninstalldapphtml.returnData(), "text/html");
-		                
-//						//UNINSTALL the DAPP
-//						File appfolder = new File(mDAPPManager.getMiniDAPPSFolder(),uninst);
-//					
-//						//Delete the app root..
-//						BackupManager.safeDelete(appfolder);
-//						
-//						//Recalculate the MINIDAPPS
-//						mDAPPManager.recalculateMiniDAPPS();
-//						
-//						//Return the main index page..
-//						String page    = new String(indexhtml.returnData(),StandardCharsets.UTF_8);
-//						String newpage = page.replace("######", createMiniDAPPList());
-//						return getOKResponse(newpage.getBytes(), "text/html");
 					}else {
 						fileRequested = "index.html";
 					}

@@ -5,6 +5,7 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
+import org.minima.system.Main;
 import org.minima.system.input.InputHandler;
 import org.minima.system.network.minidapps.DAPPManager;
 import org.minima.system.network.minidapps.comms.CommsClient;
@@ -53,7 +54,7 @@ public class NET implements Runnable {
 	@Override
 	public void run() {
 		//Get a handle on something
-		InputHandler input = InputHandler.getMainInputHandler();
+		InputHandler input = Main.getMainHandler().getInputHandler();
 		DAPPManager dappm  = input.getMainHandler().getNetworkHandler().getDAPPManager();
 		CommsManager comms = dappm.getCommsManager();
 		

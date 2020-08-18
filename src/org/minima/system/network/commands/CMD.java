@@ -2,6 +2,7 @@ package org.minima.system.network.commands;
 
 import java.util.StringTokenizer;
 
+import org.minima.system.Main;
 import org.minima.system.input.InputHandler;
 import org.minima.system.input.InputMessage;
 import org.minima.system.network.minidapps.minibackend.MiniJSONUtility;
@@ -43,7 +44,7 @@ public class CMD implements Runnable {
 	@Override
 	public void run() {
 		//Get the InputHandler
-		InputHandler inhandle = InputHandler.getMainInputHandler();
+		InputHandler inhandle = Main.getMainHandler().getInputHandler();
 		
 		//Is this a multi function..
 		boolean multi = false;

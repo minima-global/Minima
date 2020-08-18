@@ -13,6 +13,7 @@ import org.minima.system.network.commands.CMD;
 import org.minima.system.network.commands.FILE;
 import org.minima.system.network.commands.NET;
 import org.minima.system.network.commands.SQL;
+import org.minima.utils.MinimaLogger;
 
 /**
  * This class handles a single request then exits
@@ -67,10 +68,10 @@ public class RPCHandler implements Runnable {
 				int ref = input.indexOf("Referer:"); 
 				if(ref != -1) {
 					//Get the referer..
-					int start  = input.indexOf("/minidapps/0x");
+					int start  = input.indexOf("0x");
 	        		int end    = -1;
 	        		if(start!=-1) {
-	        			end    = input.indexOf("/", start+11);
+	        			end    = input.indexOf("/", start);
 	        		}
 	        		if(end!=-1) {
 	        			MiniDAPPID = input.substring(start, end);
@@ -92,7 +93,7 @@ public class RPCHandler implements Runnable {
 			String reqtype     = "";
 			String command     = "";
 			
-			// Currently we support only GET
+			//POST can handle longer messages
 			if (method.equals("POST")){
 				//Create a char buffer
 				char[] cbuf = new char[contentlength];
@@ -112,6 +113,7 @@ public class RPCHandler implements Runnable {
 					reqtype = reqtype.substring(0,reqtype.length()-1);
 				}
 				
+				//Currently POST is the default..
 			}else if (method.equals("GET")){
 				//decode URL message
 				String function = URLDecoder.decode(fileRequested,"UTF-8").trim();
@@ -122,6 +124,10 @@ public class RPCHandler implements Runnable {
 				if(function.startsWith("sql/")) {
 					//Get the SQL function
 					reqtype="sql";
+					command = function.substring(4).trim();
+					
+				}else if(function.startsWith("net/")) {
+					reqtype="net";
 					command = function.substring(4).trim();
 					
 				}else if(function.startsWith("file/")) {
@@ -192,6 +198,7 @@ public class RPCHandler implements Runnable {
 			out.flush(); // flush character output stream buffer
 			
 		} catch (Exception ioe) {
+			MinimaLogger.log("RPCHANDLER : "+ioe);
 			ioe.printStackTrace();
 			
 		} finally {

@@ -14,6 +14,14 @@ import org.minima.utils.messages.MessageProcessor;
 
 public class Main extends MessageProcessor {
 
+	/**
+	 * Retrieve the input handler.. used by the MiniLibs..
+	 */
+	private static Main mMainHandler;
+	public static Main getMainHandler() {
+		return mMainHandler;
+	}
+	
 	public static final String SYSTEM_STARTUP 		= "SYSTEM_STARTUP";
 	
 	public static final String SYSTEM_INIT 		    = "SYSTEM_INIT";
@@ -72,6 +80,8 @@ public class Main extends MessageProcessor {
 	 */
 	public Main(String zHost, int zPort, boolean zGenesis, String zConfFolder) {
 		super("MAIN");
+		
+		mMainHandler = this;
 		
 		//What time do we start..
 		mNodeStartTime = System.currentTimeMillis();
