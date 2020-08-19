@@ -3,6 +3,8 @@
  */
 package org.minima.objects.base;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -11,6 +13,7 @@ import java.math.BigInteger;
 import java.math.MathContext;
 import java.math.RoundingMode;
 
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 
 /**
@@ -217,7 +220,7 @@ public class MiniNumber implements Streamable {
 		
 		//Read in the byte array for unscaled BigInteger
 		int len = zIn.readInt();
-		if(len > 64 || len<1) {
+		if(len > 12 || len<1) {
 			//Something wrong..
 			throw new IOException("ERROR reading MiniNumber - input too large or negative "+len);
 		}
@@ -235,4 +238,31 @@ public class MiniNumber implements Streamable {
 		data.readDataStream(zIn);
 		return data;
 	}
+	
+	public static void main(String[] zargs) {
+		MiniNumber num = new MiniNumber("100300000.040060012");
+		
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		DataOutputStream dos = new DataOutputStream(baos);
+		
+		try {
+			num.writeDataStream(dos);
+		
+			dos.flush();
+			baos.flush();
+		
+			ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+			DataInputStream dis = new DataInputStream(bais);
+			
+			MiniNumber test = MiniNumber.ReadFromStream(dis);
+			
+			System.out.println("Number : "+test);
+			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	
 }
