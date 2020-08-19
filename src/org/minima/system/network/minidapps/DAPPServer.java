@@ -150,13 +150,16 @@ public class DAPPServer extends NanoHTTPD{
 				}
 			
 			}else if(Method.POST.equals(method)) {
+				//get the files.. if any
+		        Map<String, String> files = new HashMap<String, String>();
+	            session.parseBody(files);
+            
+	            //Any parameters
+	        	Map<String, List<String>> params = session.getParameters();
+	        	
 				//Only on the Install DAPP page..
 				if(fileRequested.equals("installdapp.html")) {
-					//get the file..
-			        Map<String, String> files = new HashMap<String, String>();
-		            session.parseBody(files);
-	            
-		            //Get the File..
+					//Get the File..
 		            String minidappfile = files.get("minidapp");
 		            
 		            //Load the file..

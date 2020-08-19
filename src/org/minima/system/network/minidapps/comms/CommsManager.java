@@ -82,7 +82,7 @@ public class CommsManager extends SystemHandler {
 	@Override
 	protected void processMessage(Message zMessage) throws Exception {
 		
-		MinimaLogger.log("CommsManager : "+zMessage);
+//		MinimaLogger.log("CommsManager : "+zMessage);
 		
 		if(zMessage.getMessageType().equals(COMMS_START)) {
 			//the details
