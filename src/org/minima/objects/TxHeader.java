@@ -24,7 +24,7 @@ public class TxHeader implements Streamable {
 	public MiniInteger mNonce = new MiniInteger(0);
 	
 	/**
-	 * Time Secs - nneds to be MiniNumber as is used in Scripts.. 
+	 * Time Secs - needs to be MiniNumber as is used in Scripts.. 
 	 */
 	public MiniNumber 	mTimeSecs = new MiniNumber(System.currentTimeMillis() / 1000);
 	

@@ -72,7 +72,7 @@ public class MMRSet implements Streamable {
 	ArrayList<MMREntry> mFinalizedPeaks;
 	ArrayList<MMREntry> mFinalizedZeroRow;
 	
-	//HASH Function bit length.. ALWYS 512 except when used in chainsha function
+	//HASH Function bit length.. ALWAYS 512 except when used in chainsha function
 	int MMR_HASH_BITS=512;
 	
 	/**

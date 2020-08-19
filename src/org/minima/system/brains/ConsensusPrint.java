@@ -947,7 +947,6 @@ public class ConsensusPrint extends ConsensusProcessor {
 			
 			status.put("lastblock", tip.getTxPow().getBlockNumber().toString());
 			status.put("lasttime", new Date(new Long(tip.getTxPow().getTimeMilli()+"")).toString());
-			
 			status.put("cascade", getMainDB().getMainTree().getCascadeNode().getTxPow().getBlockNumber().toString());
 			
 			status.put("difficulty", tip.getTxPow().getBlockDifficulty().to0xString());
@@ -976,9 +975,9 @@ public class ConsensusPrint extends ConsensusProcessor {
 			status.put("mempooltxn", unused.size());
 			status.put("mempoolcoins", getMainDB().getMempoolCoins().size());
 			
-			//Chain details..
-			status.put("chainlength", getMainDB().getMainTree().getAsList().size());
+			//The block used for speed calculation..
 			status.put("chainspeed", getMainDB().getMainTree().getChainSpeed());
+			status.put("chainlength", getMainDB().getMainTree().getAsList().size());
 			status.put("chainweight", root.getTotalWeight().toString());
 			
 			//Use the cached Version  - this is a slow operation

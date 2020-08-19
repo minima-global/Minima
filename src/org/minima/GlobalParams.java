@@ -10,7 +10,7 @@ public class GlobalParams {
 	public static final String MINIMA_VERSION = "0.95.17"; 
 	
 	/**
-	 * Number of seconds before sending a pulse message
+	 * Number of seconds before sending a pulse message - every 10 minutes
 	 */
 	public static final int USER_PULSE_FREQ      = 10 * 60;
 	
@@ -19,12 +19,12 @@ public class GlobalParams {
 	 * and just want a block every single transaction to debug.
 	 * Automatically disables the auto mining
 	 */
-	public static final boolean MINIMA_ZERO_DIFF_BLK  = true;
+	public static final boolean MINIMA_ZERO_DIFF_BLK  = false;
 	
 	/**
-	 * Speed in blocks per second.. 0.05 = 20 second block time
+	 * Speed in blocks per second.. 0.04 = 25 second block time
 	 */
-	public static final MiniNumber MINIMA_BLOCK_SPEED  = new MiniNumber("0.05");
+	public static final MiniNumber MINIMA_BLOCK_SPEED  = new MiniNumber("0.04");
 	
 	/**
 	 * When checking speed and average difficulty only look at this many blocks back
@@ -40,7 +40,7 @@ public class GlobalParams {
 	/**
 	 * Depth before we cascade..
 	 */
-	public static final MiniNumber MINIMA_CASCADE_START_DEPTH = new MiniNumber(8192);
+	public static final MiniNumber MINIMA_CASCADE_START_DEPTH = new MiniNumber(32768);
 	
 	/**
 	 * Number of blocks at each cascade level 

@@ -2,6 +2,9 @@ package org.minima.database.txpowtree;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Hashtable;
 
 import org.minima.GlobalParams;
@@ -333,6 +336,43 @@ public class BlockTree {
 	}
 	
 	/**
+	 * Find the media time of the last N blocks..
+	 */
+	private MiniNumber getMedianTime(BlockTreeNode zNode, int zLastBlocks) {
+		//get the current..
+		BlockTreeNode current = zNode;
+		
+		//First make an array of all the numbers..
+		ArrayList<MiniNumber> timelist = new ArrayList<>();
+		
+		int check =0;
+		while(check++ < zLastBlocks) {
+			timelist.add(current.getTxPow().getTimeSecs());
+			
+			current = current.getParent();
+			if(current == null) {
+				break;
+			}
+		}
+		
+		//Now sort them..
+		Collections.sort(timelist, new Comparator<MiniNumber>() {
+			@Override
+			public int compare(MiniNumber o1, MiniNumber o2) {
+				if(o1.isLess(o2)) {
+					return 1;
+				}else if(o2.isLess(o1)) {
+					return -1;
+				}
+				return 0;
+			}
+		});
+		
+		return timelist.get(check / 2);
+	}
+	
+	
+	/**
 	 * Sort the Block tree nodes.. ONLY Full blocks with valid parents get checked
 	 * @param zMainDB
 	 */
@@ -367,6 +407,17 @@ public class BlockTree {
 							//Need allok for the block to be accepted
 							boolean allok = false;
 							
+							//Check that the TIME is within acceptable parameters - 30 minutes each way
+							MiniNumber mediantime = getMedianTime(zNode, 72);
+							MiniNumber nodetime   = zNode.getTxPow().getTimeMilli();
+							MiniNumber timefuture = new MiniNumber(System.currentTimeMillis()).add(new MiniNumber(30 * 60 * 1000));   
+							if(nodetime.isLess(mediantime) || nodetime.isMore(timefuture)) {
+								//Time is incorrect!.. must be greater than the median of the last 100 blocks..
+								MinimaLogger.log("INVALID BLOCK TIME "+zNode.getBlockNumber()+") med:"+mediantime+" / node:"+nodetime+ " / fut:"+timefuture);
+								zNode.setState(BlockTreeNode.BLOCKSTATE_INVALID);
+								return;
+							}
+							
 							//Check that Block difficulty is Correct
 							//..TODO
 							
@@ -386,13 +437,20 @@ public class BlockTree {
 								
 								//Check the root MMR..
 								if(allok) {
-									MiniData root = mmrset.getMMRRoot().getFinalHash();
-									if(!row.getTxPOW().getMMRRoot().isEqual(root)) {
+									if(!row.getTxPOW().getMMRRoot().isEqual(mmrset.getMMRRoot().getFinalHash())) {
+										MinimaLogger.log("INVALID BLOCK MMRROOT "+zNode.getBlockNumber());
 										allok = false;	
 									}
+									
+									if(!row.getTxPOW().getMMRTotal().isEqual(mmrset.getMMRRoot().getValueSum())) {
+										MinimaLogger.log("INVALID BLOCK MMRSUM "+zNode.getBlockNumber());
+										allok = false;
+									}
+								}else {
+									MinimaLogger.log("INVALID BLOCK TRANSACTIONS "+zNode.getBlockNumber());
 								}
 							}else {
-								MinimaLogger.log("WARNING : sortBlockTreeNodeStates on no body TxPoW..! "+zNode.toString());
+								MinimaLogger.log("INVALID BLOCK no body TxPoW..! "+zNode.toString());
 							}
 							
 							//if it all passes is OK.. otherwise not ok..
