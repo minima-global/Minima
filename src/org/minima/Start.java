@@ -91,6 +91,7 @@ public class Start {
 		boolean clean           = false;
 		boolean genesis 		= false;
 		boolean daemon          = false;
+		boolean noreset 		= false;
 		
 		//Configuration folder
 		File conf = new File(System.getProperty("user.home"),".minima");
@@ -117,15 +118,14 @@ public class Start {
 				}else if(arg.equals("-help")) {
 					//Printout HELP!
 					MinimaLogger.log("Minima "+GlobalParams.MINIMA_VERSION+" Alpha Test Net");
-					MinimaLogger.log("        -port [port number]    : Specify port to listen on. RPC port will be 1 more. WebSocket Port will be 1 more..");
+					MinimaLogger.log("        -port [port number]    : Specify base Minima port to listen on. RPC port will be 1 more. WebSocket Port will be 1 more..");
 					MinimaLogger.log("        -host [IP]             : Specify the host IP - useful if behind firewall or on an internal network with an external IP.");
-//					MinimaLogger.log("        -rpcport [port number] : Specify port to listen on for RPC connections");
 					MinimaLogger.log("        -conf [folder]         : Specify configuration folder, where data is saved.");
 					MinimaLogger.log("        -private               : Run a private chain. Don't connect to MainNet. Create a genesis tx-pow. Simulate some users.");
 					MinimaLogger.log("        -clean                 : Wipe user files and chain backup. Start afresh. Use with -private for clean private test-net.");
+					MinimaLogger.log("        -noreset               : Won't reset the chain if another heavier chain comes along..");
 					MinimaLogger.log("        -noconnect             : Don't connect to MainNet. Can then connect to private chains.");
 					MinimaLogger.log("        -connect [host] [port] : Don't connect to MainNet but connect to this node instead.");
-//					MinimaLogger.log("        -mifiproxy [host:port] : Use this address for MiFi proxy requests and not the default.");
 					MinimaLogger.log("        -daemon                : Accepts no input from STDIN. Can run in background process.");
 					MinimaLogger.log("        -help                  : Show this help");
 					MinimaLogger.log("");
@@ -136,6 +136,7 @@ public class Start {
 				}else if(arg.equals("-private")) {
 					genesis     = true;
 					connect 	= false;
+					noreset     = true;
 					
 				}else if(arg.equals("-noconnect")) {
 					connect = false;
@@ -143,14 +144,14 @@ public class Start {
 				}else if(arg.equals("-daemon")) {
 					daemon = true;
 				
+				}else if(arg.equals("-noreset")) {
+					noreset = true;
+				
 				}else if(arg.equals("-connect")) {
 					connect = true;
 					connecthost = zArgs[counter++];
 					connectport = Integer.parseInt(zArgs[counter++]);
-				
-//				}else if(arg.equals("-mifiproxy")) {
-//					mifiProxy = zArgs[counter++];
-//					
+
 				}else if(arg.equals("-clean")) {
 					clean = true;
 					
@@ -184,6 +185,10 @@ public class Start {
 		//Are we private!
 		if(genesis) {
 			rcmainserver.privateChain(clean);
+		}
+		
+		if(noreset) {
+			rcmainserver.noChainReset();
 		}
 		
 		//Start the system
