@@ -62,14 +62,14 @@ public class FILE implements Runnable {
 		//Which Database.. could be running from a folder..
 		if(mMiniDAPPID.length()<16) {
 			//Get the database folder
-			File temp = BackupManager.getTempFolder();
+			File temp      = BackupManager.getTempFolder();
 			minidappfolder = new File(temp,"_files"+mMiniDAPPID);
 			
 		}else {
 			//Get the database folder
 			File minidapps   = backup.getMiniDAPPFolder();
 			File dapp        = new File(minidapps,mMiniDAPPID);
-			minidappfolder       = new File(dapp,"files");
+			minidappfolder   = new File(dapp,"files");
 		}
 		
 		//Make sure exists

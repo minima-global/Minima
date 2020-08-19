@@ -25,6 +25,14 @@ var Minima = {
 		java.lang.System.out.println("Minima @ "+new Date().toLocaleString()+" : "+output);
 	},
 	
+	/**
+	 * Notify the user with a Pop up message
+	 */
+	notify : function(message,bgcolor){
+		//Log it.. no notification for now..
+		Minima.log("Notify : "+message);
+	},
+	
 	cmd : function(minifunc, callback){
 		MinimaRPC("cmd",minifunc,callback);
 	},
