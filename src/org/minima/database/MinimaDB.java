@@ -983,13 +983,13 @@ public class MinimaDB {
 		//Do we have enough blocks to get an accurate speed reading..
 		if(!GlobalParams.MINIMA_ZERO_DIFF_BLK && currenttip.isMore(GlobalParams.MINIMA_BLOCKS_SPEED_CALC) ) {
 			//Desired Speed.. in blocks per second
-			MiniNumber actualspeed 	= mMainTree.getChainSpeed();
+			MiniNumber actualspeed 	= mMainTree.getChainSpeed(tip);
 			
 			//Calculate the speed ratio
 			MiniNumber speedratio   = GlobalParams.MINIMA_BLOCK_SPEED.div(actualspeed);
 			
 			//Current average
-			BigInteger avgdiff = mMainTree.getAvgChainDifficulty();
+			BigInteger avgdiff = mMainTree.getAvgChainDifficulty(tip);
 			BigDecimal avgdiffdec = new BigDecimal(avgdiff);
 			
 			//Multiply by the ratio
@@ -1064,12 +1064,11 @@ public class MinimaDB {
 					txpow.addBlockTxPOW(txp);	
 				
 				}else {
-					//Could be a transaction that is only valid in a different  branch.					
 //					//Remove this!.. It WAS valid but now not.. :(.. dump it..
 //					mTxPOWDB.removeTxPOW(txp.getTxPowID());
-//					
-//					//And delete..
 //					getBackup().deleteTxpow(txp);
+
+					//Could be a transaction that is only valid in a different  branch.					
 					MinimaLogger.log("Invalid TXPOW found. (leaving..) "+txp.getTxPowID());
 				}
 			}
