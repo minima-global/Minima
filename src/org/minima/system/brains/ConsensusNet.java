@@ -21,6 +21,7 @@ import org.minima.objects.proofs.TokenProof;
 import org.minima.system.network.MinimaClient;
 import org.minima.system.network.MinimaReader;
 import org.minima.system.txpow.TxPoWChecker;
+import org.minima.system.txpow.TxPoWMiner;
 import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.messages.Message;
@@ -446,6 +447,14 @@ public class ConsensusNet extends ConsensusProcessor {
 			if(!txpow.isBlock() && !txpow.isTransaction()) {
 				MinimaLogger.log("ERROR NET FAKE - not transaction not block : "+txpow.getBlockNumber()+" "+txpow);
 				return;
+			}
+			
+			//Is the Transaction PoWerful enough..
+			if(txpow.isTransaction()) {
+				if(txpow.getTxnDifficulty().isMore(TxPoWMiner.BASE_TXN)) {
+					MinimaLogger.log("ERROR NET - Transaction not enough TxPOW: "+txpow.getTxnDifficulty()+" "+txpow);
+					return;
+				}
 			}
 			
 			//Does it have a body.. SHOULD NOT HAPPEN as only complete post cascade txpow messages can be requested
