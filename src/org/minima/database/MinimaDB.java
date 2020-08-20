@@ -1041,7 +1041,7 @@ public class MinimaDB {
 		ArrayList<TxPOWDBRow> unused = mTxPOWDB.getAllUnusedTxPOW();
 		for(TxPOWDBRow row : unused) {
 			//Current MAX transactions.. #TODO.. this needs to be dynamic..
-			if(txncounter.isMore(MiniNumber.THIRTYTWO)) {
+			if(txncounter.isMore(MiniNumber.SIXTYFOUR)) {
 				break;
 			}
 			
