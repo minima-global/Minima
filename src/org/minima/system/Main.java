@@ -175,6 +175,11 @@ public class Main extends MessageProcessor {
 		//No Hard Reset..
 		mConsensus.setHardResetAllowed(false);
 	}
+	
+	public void setAutoMine() {
+		//Tell miner we are auto mining..
+		mTXMiner.setAutoMining(true);		
+	}
 		
 	@Override
 	protected void processMessage(Message zMessage) throws Exception {
