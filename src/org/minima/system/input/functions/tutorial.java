@@ -79,9 +79,10 @@ public class tutorial extends CommandFunction{
 			"\n" + 
 			"@BLKNUM      : Block number this transaction is in\n" + 
 			"@BLKTIME     : Block time in seconds from Jan 01 1970\n" + 
+			"@PREVBLKHASH : Hash of the previous Block\n" + 
+			"@INPUT       : Input number in the transaction\n" + 
 			"@INBLKNUM    : Block number when this output was created\n" + 
 			"@BLKDIFF     : Difference between BLKNUM and INBLKNUM\n" + 
-			"@INPUT       : Input number in the transaction\n" + 
 			"@AMOUNT      : Amount of this input\n" + 
 			"@ADDRESS     : Address of this input\n" + 
 			"@TOKENID     : TokenID of this input\n" + 
@@ -90,6 +91,8 @@ public class tutorial extends CommandFunction{
 			"@TOKENSCRIPT : Script for this input\n" + 
 			"@TOTIN       : Total number of inputs for this transaction\n" + 
 			"@TOTOUT      : Total number of outputs for this transaction\n" + 
+			"@FLOATING    : Is this a floating input\n" + 
+			"@PRNG        : Pseudo random number - Globally Unique\n" + 
 			"\n" + 
 			"Functions\n" + 
 			"---------\n" + 
