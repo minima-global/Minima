@@ -597,10 +597,11 @@ public class Contract {
 		script = script.replaceAll(" @input "	    , " @INPUT ");
 		script = script.replaceAll(" @address "	    , " @ADDRESS ");
 		script = script.replaceAll(" @amount "	    , " @AMOUNT "); 
-		script = script.replaceAll(" @tokenid "	    , " @TOKENID "); 
 		script = script.replaceAll(" @coinid "	    , " @COINID "); 
 		script = script.replaceAll(" @script "	    , " @SCRIPT "); 
+		script = script.replaceAll(" @tokenid "	    , " @TOKENID "); 
 		script = script.replaceAll(" @tokenscript "	, " @TOKENSCRIPT "); 
+		script = script.replaceAll(" @tokentotal"	, " @TOKENTOTAL"); 
 		script = script.replaceAll(" @floating "	, " @FLOATING"); 
 		script = script.replaceAll(" @totin "	    , " @TOTIN "); 
 		script = script.replaceAll(" @totout " 	    , " @TOTOUT ");
