@@ -21,6 +21,8 @@ public class JavaDBRow implements TxPOWDBRow {
 	
 	private long mAddedTime;
 	
+	private boolean mMonotonic;
+	
 	public JavaDBRow(TxPoW zTxPOW) {
 		mTxPOW 				= zTxPOW;
 		mIsInBlock 			= false;
@@ -29,6 +31,7 @@ public class JavaDBRow implements TxPOWDBRow {
 		mDeleteTime         = 0;
 		mAddedTime          = System.currentTimeMillis();
 		mInBlocknumber      = MiniNumber.ZERO;
+		mMonotonic          = false;
 	}
 
 	@Override
@@ -40,6 +43,7 @@ public class JavaDBRow implements TxPOWDBRow {
 		ret.put("isinblock",mIsInBlock);
 		ret.put("inblock",mInBlocknumber.toString());
 		ret.put("blockstate",getStatusAsString());
+		ret.put("monotonic",mMonotonic);
 		ret.put("deleted",mDeleteTime);
 		
 		return ret;
@@ -122,5 +126,15 @@ public class JavaDBRow implements TxPOWDBRow {
 	public long getAddedTime() {
 		return mAddedTime;
 		
+	}
+
+	@Override
+	public boolean isMonoTonic() {
+		return mMonotonic;
+	}
+
+	@Override
+	public void setMonotonic(boolean zMonotonic) {
+		mMonotonic = zMonotonic;
 	}
 }

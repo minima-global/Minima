@@ -54,6 +54,9 @@ public class Contract {
 	boolean mFloatingCoin = false;
 	String[] mDYNState;
 	
+	//Is this MonoTonic
+	boolean mMonotonic = true;
+	
 	//Has this state been checked..
 	boolean[] mCheckState;
 		
@@ -130,6 +133,8 @@ public class Contract {
 		mExceptionString = "";
 		
 		mNumInstructions = 0;
+		
+		mMonotonic = true;
 		
 		//Begin..
 		traceLog("Contract   : "+mRamScript);
@@ -287,6 +292,10 @@ public class Contract {
 		return mSuccessSet;
 	}
 	
+	public boolean isMonotonic() {
+		return mMonotonic;
+	}
+		
 	public String getMiniScript() {
 		return mRamScript;
 	}
@@ -341,10 +350,16 @@ public class Contract {
 	 * DYN State
 	 */
 	public void setFloating(boolean zFloating) {
+		if(zFloating) {
+			mMonotonic = false;
+		}
+		
 		mFloatingCoin = zFloating;
 	}
 	
 	public boolean setDYNState(int zStateNum, String zValue) throws ExecutionException {
+		mMonotonic = false;
+		
 		//Can only call this BEFORE any call to STATE or SAMESTATE
 		if(mCheckState[zStateNum]) {
 			throw new ExecutionException("Can only call DYNSTATE before STATE or SAMESTATE");
@@ -468,6 +483,8 @@ public class Contract {
 	 * @throws ExecutionException
 	 */
 	public Value getGlobal(String zGlobal) throws ExecutionException {
+		mMonotonic = false;
+		
 		Value ret = mGlobals.get(zGlobal);
 		if(ret==null) {
 			throw new ExecutionException("Global not found - "+zGlobal);
