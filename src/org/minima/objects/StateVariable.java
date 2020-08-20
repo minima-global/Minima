@@ -57,8 +57,9 @@ public class StateVariable implements Streamable {
 	
 	private StateVariable() {}
 	
-	public void resetData(MiniString zData) {
-		mData = zData;
+	public void resetData(MiniString zData, MiniByte zKeeper) {
+		mData    = zData;
+		mKeepMMR = zKeeper;
 	}
 	
 	public MiniString getValue() {
