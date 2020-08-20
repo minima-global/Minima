@@ -62,7 +62,7 @@ FUNCTION    ::= FUNC ( EXPRESSION_1 EXPRESSION_2 .. EXPRESSION_n )
 FUNC        ::= HEXCAT | STRCAT | LEN | REV | SUBSET | RPLVAR | GET |
                 ASCII | BOOL | HEX | NUMBER | SCRIPT |
                 ABS | CEIL | FLOOR | MIN | MAX | INC | DEC | SIGDIG | POW |
-                BITSET | BITGET | PROOF | SHA3 | SHA2 |
+                BITSET | BITGET | BITCOUNT | CHAINSHA | SHA3 | SHA2 |
                 SIGNEDBY | MULTISIG | CHECKSIG |
                 GETOUTADDR | GETOUTAMT | GETOUTTOK | VERIFYOUT |
                 GETINADDR | GETINAMT | GETINTOK | GETINID | VERIFYIN |
@@ -157,6 +157,9 @@ Set the value of the BIT at that Position to 0 or 1
 
 BITGET ( HEX NUMBER ) 
 Get the BINARY value of the bit at the position.
+
+BITCOUNT ( HEX ) 
+Count the number of bits set in a HEX value
 
 CHAINSHA ( HEX HEX ) 
 Recursively SHA3 hash the first HEX value with the merkle proof provided in the second. Returns the final result that can be checked in script. Use the 'chainsha' function in Minima to construct Hash Trees proofs for MAST and Signature Public Keys.   

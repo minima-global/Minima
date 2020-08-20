@@ -22,6 +22,7 @@ import org.minima.kissvm.functions.cast.HEX;
 import org.minima.kissvm.functions.cast.NUMBER;
 import org.minima.kissvm.functions.cast.SCRIPT;
 import org.minima.kissvm.functions.maths.ABS;
+import org.minima.kissvm.functions.maths.BITCOUNT;
 import org.minima.kissvm.functions.maths.BITGET;
 import org.minima.kissvm.functions.maths.BITSET;
 import org.minima.kissvm.functions.maths.CEIL;
@@ -67,7 +68,7 @@ public abstract class MinimaFunction {
 				new ABS(), new CEIL(), new FLOOR(),new MAX(), new MIN(), new DEC(), new INC(), 
 				new SIGDIG(), new POW(), 
 				new TOKENSCRIPT(), new TOKENTOTAL(), new TOKENSCALE(),
-				new SHA3(), new SHA2(), new CHAINSHA(), new BITSET(), new BITGET(),
+				new SHA3(), new SHA2(), new CHAINSHA(), new BITSET(), new BITGET(), new BITCOUNT(),
 				new SIGNEDBY(), new MULTISIG(), new CHECKSIG(),
 				new GETOUTADDR(), new GETOUTAMT(), new GETOUTTOK(),new VERIFYOUT(),
 				new STATE(), new PREVSTATE(), new SAMESTATE(), new DYNSTATE()
