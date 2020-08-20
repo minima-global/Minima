@@ -1070,7 +1070,6 @@ public class MinimaDB {
 			}else {
 				//A block with no transaction.. make sure within range..
 				if(txp.getBlockNumber().sub(txpow.getBlockNumber()).abs().isLessEqual(MiniNumber.THIRTYTWO)) {
-					//MinimaLogger.log("Adding Block TxPOW "+txp.getBlockNumber()+" / "+txpow.getBlockNumber());
 					//Valid so added
 					txncounter = txncounter.increment();
 						
