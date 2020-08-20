@@ -14,6 +14,7 @@ import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniInteger;
 import org.minima.objects.base.MiniNumber;
+import org.minima.system.txpow.TxPoWMiner;
 import org.minima.utils.Crypto;
 import org.minima.utils.Streamable;
 import org.minima.utils.SuperBlockLevels;
@@ -319,6 +320,11 @@ public class TxPoW implements Streamable {
 			//Valid Transaction
 			if(_mTxPOWID.isLess(getTxnDifficulty()) && !getTransaction().isEmpty()) {
 				_mIsTxnPOW = true;
+			}
+			
+			//Must be at least the minimum..
+			if(getTxnDifficulty().isMore(TxPoWMiner.BASE_TXN)) {
+				_mIsTxnPOW = false;
 			}
 		}
 		

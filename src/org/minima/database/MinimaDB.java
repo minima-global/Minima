@@ -1064,12 +1064,18 @@ public class MinimaDB {
 					txpow.addBlockTxPOW(txp);	
 				
 				}else {
-//					//Remove this!.. It WAS valid but now not.. :(.. dump it..
-//					mTxPOWDB.removeTxPOW(txp.getTxPowID());
-//					getBackup().deleteTxpow(txp);
-
 					//Could be a transaction that is only valid in a different  branch.					
-					MinimaLogger.log("Invalid TXPOW found. (leaving..) "+txp.getTxPowID());
+					MinimaLogger.log("Invalid TXPOW found. (leaving.. could be in other branch) "+txp.getTxPowID());
+				}
+			}else {
+				//A block with no transaction.. make sure within range..
+				if(txp.getBlockNumber().sub(txpow.getBlockNumber()).abs().isLessEqual(MiniNumber.THIRTYTWO)) {
+					//MinimaLogger.log("Adding Block TxPOW "+txp.getBlockNumber()+" / "+txpow.getBlockNumber());
+					//Valid so added
+					txncounter = txncounter.increment();
+						
+					//Add it..
+					txpow.addBlockTxPOW(txp);		
 				}
 			}
 		}

@@ -134,6 +134,11 @@ public class TxPoWChecker {
 	public static boolean checkTransactionMMR(Transaction zTrans, Witness zWit, MinimaDB zDB, 
 			TxPoW zBlock, MiniNumber zTransNumber, MMRSet zMMRSet, boolean zTouchMMR, JSONArray zContractLog) {
 		
+		//Empty Transaction passes..
+		if(zTrans.isEmpty()) {
+			return true;
+		}
+		
 		//get some extra variables..
 		MiniNumber tBlockNumber = zBlock.getBlockNumber();
 		MiniNumber tBlockTime   = zBlock.getTimeSecs();
