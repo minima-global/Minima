@@ -178,7 +178,8 @@ public class Main extends MessageProcessor {
 	
 	public void setAutoMine() {
 		//Tell miner we are auto mining..
-		mTXMiner.setAutoMining(true);		
+		mTXMiner.setAutoMining(true);
+		mConsensus.setHardResetAllowed(false);
 	}
 		
 	@Override

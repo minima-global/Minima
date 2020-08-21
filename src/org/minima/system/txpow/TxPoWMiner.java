@@ -131,7 +131,7 @@ public class TxPoWMiner extends SystemHandler{
 			long currentTime  = System.currentTimeMillis();
 			
 			//should be about 10..
-			long maxTime  	  = currentTime + 2000;
+			long maxTime  	  = currentTime + 5000;
 			
 			//Keep cycling until it is ready 
 			boolean mining = true;
