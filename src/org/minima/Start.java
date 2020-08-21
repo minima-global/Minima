@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Random;
 
 import org.minima.system.Main;
 import org.minima.system.brains.BackupManager;
@@ -20,6 +21,11 @@ import org.minima.utils.MinimaLogger;
  *
  */
 public class Start {
+	
+	/**
+	 * A list of default valid nodes to connect to at startup..
+	 */
+	public static final String[] VALID_BOOTSTRAP_NODES = {"35.204.181.120","35.204.119.15"};
 	
 	/**
 	 * A static link to the main server - for Android
@@ -80,12 +86,16 @@ public class Start {
 		//Check command line inputs
 		int arglen 				= zArgs.length;
 		int port 				= 9001;
-//		int rpcport 			= 8999;
 		
 		boolean connect         = true;
-		String connecthost      = "34.90.172.118";
+		
+		//Pick a random host
+		Random rand = new Random();
+		int hostnum = rand.nextInt(VALID_BOOTSTRAP_NODES.length);
+		hostnum = 1;
+		
+		String connecthost      = VALID_BOOTSTRAP_NODES[hostnum];
 		int connectport         = 9001;
-//		String mifiProxy 		= "http://mifi.minima.global:9000/";
 		String host             = "";
 		
 		boolean clean           = false;
@@ -111,11 +121,7 @@ public class Start {
 				}else if(arg.equals("-host")) {
 					//Hard code the HOST.. 
 					host = zArgs[counter++];
-					
-//				}else if(arg.equals("-rpcport")) {
-//					//The rpcport
-//					rpcport= Integer.parseInt(zArgs[counter++]);
-//				
+				
 				}else if(arg.equals("-help")) {
 					//Printout HELP!
 					MinimaLogger.log("Minima "+GlobalParams.MINIMA_VERSION+" Alpha Test Net");
