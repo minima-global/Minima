@@ -25,7 +25,7 @@ public class Start {
 	/**
 	 * A list of default valid nodes to connect to at startup..
 	 */
-	public static final String[] VALID_BOOTSTRAP_NODES = {"35.204.181.120","35.204.119.15"};
+	public static final String[] VALID_BOOTSTRAP_NODES = {"35.204.181.120","35.204.119.15","34.91.220.49","35.204.62.177"};
 	
 	/**
 	 * A static link to the main server - for Android
@@ -92,7 +92,7 @@ public class Start {
 		//Pick a random host
 		Random rand = new Random();
 		int hostnum = rand.nextInt(VALID_BOOTSTRAP_NODES.length);
-		hostnum = 1;
+		//hostnum = 3;
 		
 		String connecthost      = VALID_BOOTSTRAP_NODES[hostnum];
 		int connectport         = 9001;
