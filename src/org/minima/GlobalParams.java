@@ -22,7 +22,7 @@ public class GlobalParams {
 	public static final boolean MINIMA_ZERO_DIFF_BLK  = false;
 	
 	/**
-	 * Speed in blocks per second.. 0.033 = 30 second block time
+	 * Speed in blocks per second.. 0.0333 = 30 second block time
 	 */
 	public static final MiniNumber MINIMA_BLOCK_SPEED  = new MiniNumber("0.0333");
 	
