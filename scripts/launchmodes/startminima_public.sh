@@ -8,7 +8,7 @@ new_fileName="minilogs_"$current_time.txt
 echo "Minima Logs File : " "$new_fileName"
 
 #Make sure folder exists
-mkdir -p ~/minilogs
+mkdir -p ~/minilogsX
 
 #Run it in the background
-nohup java -Xmx6G -jar ~/Minima/jar/minima.jar -daemon -connect 10.164.0.3 9001 > ~/minilogs/$new_fileName &
+nohup java -Xmx6G -jar ~/Minima/jar/minima.jar -daemon -connect 10.164.0.3 9001 -clean > ~/minilogs/$new_fileName &

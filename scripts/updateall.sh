@@ -1,10 +1,10 @@
 #!/bin/sh
 
 #First update the main server
-./update.sh minima-private-1-vm private
+#./update.sh minima-private-1-vm private
 
 #Update the miner..
-./update.sh minima-miner-1-vm miner
+#./update.sh minima-miner-1-vm miner
 
 #Run through the public servers..
 ./update.sh minima-public-1-vm public
