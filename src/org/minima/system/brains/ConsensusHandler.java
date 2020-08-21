@@ -362,9 +362,12 @@ public class ConsensusHandler extends SystemHandler {
 		}else if ( zMessage.isMessageType(CONSENSUS_MINEBLOCK) ) {
 			//DEBUG MODE - only mine a block when you make a transction..
 			if(GlobalParams.MINIMA_ZERO_DIFF_BLK) {return;}
-				
+			
+			//Are we ready..
+			boolean syncdone = mConsensusNet.isInitialSyncComplete();
+			
 			//Are we Mining..
-			if(!getMainHandler().getMiner().isAutoMining()) {
+			if(!syncdone || !getMainHandler().getMiner().isAutoMining()) {
 				PostTimerMessage(new TimerMessage(10000, CONSENSUS_MINEBLOCK));
 				return;
 			}
