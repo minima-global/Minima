@@ -434,6 +434,15 @@ public class BlockTree {
 							MiniNumber actualspeed 	= getDB().getMainTree().getChainSpeed(pnode);
 							MiniNumber speedratio   = GlobalParams.MINIMA_BLOCK_SPEED.div(actualspeed);
 							
+							//Check within acceptable parameters..
+							MiniNumber high = MiniNumber.ONE.add(GlobalParams.MINIMA_MAX_SPEED_RATIO);
+							MiniNumber low  = MiniNumber.ONE.sub(GlobalParams.MINIMA_MAX_SPEED_RATIO);
+							if(speedratio.isMore(high)){
+								speedratio = high;
+							}else if(speedratio.isLess(low)){
+								speedratio = low;
+							}
+							
 							//Current average
 							BigInteger avgdiff    = getDB().getMainTree().getAvgChainDifficulty(pnode);
 							BigDecimal avgdiffdec = new BigDecimal(avgdiff);

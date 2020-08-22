@@ -61,6 +61,10 @@ public class MiniNumber implements Streamable {
 	
 	public static final MiniNumber MINUSONE 	= new MiniNumber("-1");
 	
+	public static final MiniNumber POINTONE 	= new MiniNumber("0.1");
+	public static final MiniNumber ONEPOINTONE 	= new MiniNumber("1.1");
+	public static final MiniNumber POINTNINE 	= new MiniNumber("0.9");
+	
 	/**
 	 * The number representation
 	 */
