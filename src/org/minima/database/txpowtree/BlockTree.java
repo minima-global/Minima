@@ -109,8 +109,8 @@ public class BlockTree {
 		
 		//Check after the cascade node.. - need a minimum first
 		if(mTip.getBlockNumber().isMore(GlobalParams.MINIMA_BLOCKS_SPEED_CALC)) {
-			if(zNode.getBlockNumber().isLessEqual(minblock)) {
-				MinimaLogger.log("BlockTree : BLOCK PAST LAST ALLOWED NODE.. "+zNode.getTxPow());
+			if(zNode.getBlockNumber().isLess(minblock)) {
+				MinimaLogger.log("BlockTree : BLOCK PAST MIN ALLOWED NODE ["+minblock+"].. "+zNode.getTxPow());
 				return false;
 			}
 		}

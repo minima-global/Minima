@@ -27,6 +27,8 @@ public class TxPoWMiner extends SystemHandler{
 	//Mine a single Block
 	public static final String TXMINER_DEBUGBLOCK   = "MINE_DEBUGBLOCK";
 	
+	private static final long MINE_CONSECUTIVE_MAX = 4000;
+	
 	boolean mAutoMining = false;
 	
 	boolean mShowTXPOWMine = true;
@@ -64,7 +66,7 @@ public class TxPoWMiner extends SystemHandler{
 			long currentTime  = System.currentTimeMillis();
 			
 			//should be about 10..
-			long maxTime  	  = currentTime + 5000;
+			long maxTime  	  = currentTime + MINE_CONSECUTIVE_MAX;
 			
 			if(mShowTXPOWMine) {
 				MinimaLogger.log("START TXPOW MINING "+txpow.getTransaction());
@@ -131,7 +133,7 @@ public class TxPoWMiner extends SystemHandler{
 			long currentTime  = System.currentTimeMillis();
 			
 			//should be about 10..
-			long maxTime  	  = currentTime + 5000;
+			long maxTime  	  = currentTime + MINE_CONSECUTIVE_MAX;
 			
 			//Keep cycling until it is ready 
 			boolean mining = true;

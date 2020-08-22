@@ -180,6 +180,10 @@ public class Main extends MessageProcessor {
 		//Tell miner we are auto mining..
 		mTXMiner.setAutoMining(true);
 	}
+	
+	public void setRequireNoInitialSync() {
+		mConsensus.setInitialSyncComplete();
+	}
 		
 	@Override
 	protected void processMessage(Message zMessage) throws Exception {
