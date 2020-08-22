@@ -7,7 +7,7 @@ public class GlobalParams {
 	/**
 	 * Which Version
 	 */
-	public static final String MINIMA_VERSION = "0.96.2"; 
+	public static final String MINIMA_VERSION = "0.96.3"; 
 	
 	/**
 	 * Number of seconds before sending a pulse message - every 10 minutes
@@ -22,9 +22,9 @@ public class GlobalParams {
 	public static final boolean MINIMA_ZERO_DIFF_BLK  = false;
 	
 	/**
-	 * Speed in blocks per second.. 0.04 = 20 second block time
+	 * Speed in blocks per second.. 0.033 = 30 second block time
 	 */
-	public static final MiniNumber MINIMA_BLOCK_SPEED  = new MiniNumber("0.04");
+	public static final MiniNumber MINIMA_BLOCK_SPEED  = new MiniNumber("0.033");
 	
 	/**
 	 * When checking speed and average difficulty only look at this many blocks back
@@ -40,7 +40,7 @@ public class GlobalParams {
 	/**
 	 * Depth before we cascade..
 	 */
-	public static final MiniNumber MINIMA_CASCADE_START_DEPTH = new MiniNumber(32768);
+	public static final MiniNumber MINIMA_CASCADE_START_DEPTH = new MiniNumber(20000);
 	
 	/**
 	 * Number of blocks at each cascade level 
