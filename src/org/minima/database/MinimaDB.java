@@ -394,7 +394,7 @@ public class MinimaDB {
 	 * Recursively adds any unaccounted for children
 	 * @param zParentID
 	 */
-	private void addTreeChildren(MiniData zParentID) {
+	public void addTreeChildren(MiniData zParentID) {
 		/**
 		 * Recursive.. BAD
 		 */
