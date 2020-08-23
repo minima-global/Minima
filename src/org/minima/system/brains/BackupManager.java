@@ -32,7 +32,7 @@ public class BackupManager extends SystemHandler {
 	
 	File mMiniDAPPS;
 	
-	File mTestWeb;
+	File mWebRoot;
 	
 	static File mTempFolder = new File(System.getProperty("java.io.tmpdir"));
 	
@@ -57,8 +57,8 @@ public class BackupManager extends SystemHandler {
 		return mMiniDAPPS;
 	}
 	
-	public File getTestWebFolder() {
-		return mTestWeb;
+	public File getWebRoot() {
+		return mWebRoot;
 	}
 	
 	public File getBackUpFolder() {
@@ -142,17 +142,14 @@ public class BackupManager extends SystemHandler {
 		//The Backup folder
 		mBackup    = ensureFolder(new File(mRoot,"backup"));
 		
-		//The MiniDAPPS folder
-		mMiniDAPPS = ensureFolder(new File(mRoot,"minidapps"));
-		
 		//The Test Web folder
-		mTestWeb = ensureFolder(new File(mRoot,"testweb"));
+		mWebRoot = ensureFolder(new File(mRoot,"webroot"));
 				
-		//TEMP folder for file upload in MiniDAPPS
-		File temp = new File(mRoot,"temp");
-		
-		//Clear it..
-		MiniFile.deleteFileOrFolder(mRootPath,temp);
+		//The MiniDAPPS folder
+		mMiniDAPPS = ensureFolder(new File(mWebRoot,"minidapps"));
+				
+		//Clear temp folder..
+		MiniFile.deleteFileOrFolder(mRootPath,new File(mRoot,"temp"));
 		
 		//Make it..
 		mTempFolder = ensureFolder(new File(mRoot,"temp"));
@@ -165,7 +162,7 @@ public class BackupManager extends SystemHandler {
 	public static void deleteConfFolder(File zFolder) {
 		MiniFile.deleteFileOrFolder(mRootPath,new File(zFolder,"txpow"));
 		MiniFile.deleteFileOrFolder(mRootPath,new File(zFolder,"backup"));
-		MiniFile.deleteFileOrFolder(mRootPath,new File(zFolder,"minidapps"));
+		MiniFile.deleteFileOrFolder(mRootPath,new File(zFolder,"webroot"));
 		MiniFile.deleteFileOrFolder(mRootPath,new File(zFolder,"temp"));
 		
 		//Don't delete the Test Web Folder..

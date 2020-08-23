@@ -249,6 +249,20 @@ public class DAPPManager extends SystemHandler {
 				//What MiniDAPP is this..
 				String minidappid = app.getName();
 				
+				//Find the .minidapp file..
+				String download = "";
+				File[] files = app.listFiles();
+				if(files!=null) {
+					for(File ff : files) {
+						if(ff.getName().endsWith(".minidapp")) {
+							//Found it..
+							download = "http://"+mNetwork.getBaseHost()+":"+mNetwork.getMiniDAPPServerPort()+"/minidapps/"+minidappid+"/"+ff.getName(); 
+							break;
+						}
+					}
+				}
+				
+				
 				//Open it up..
 				File conf    = new File(app,"minidapp.conf");
 				File backend = new File(app,"backend.js");
@@ -281,6 +295,7 @@ public class DAPPManager extends SystemHandler {
 					
 					//Add the timestamp..
 					confjson.put("installed", timestamp);
+					confjson.put("download", download);
 					
 					//Is there a Back end
 					if(backend.exists()) {
@@ -360,9 +375,10 @@ public class DAPPManager extends SystemHandler {
 		}else if(zMessage.getMessageType().equals(DAPP_INSTALL)) {
 			//Get the Data
 			MiniData data = (MiniData) zMessage.getObject("minidapp");
+			String filename = zMessage.getString("filename");
 			
 			//Do we overwrite..
-			boolean overwrite = false;
+			boolean overwrite = true;
 			if(zMessage.exists("overwrite")){
 				overwrite = zMessage.getBoolean("overwrite");
 			}
@@ -437,6 +453,10 @@ public class DAPPManager extends SystemHandler {
 	                bos.flush();
 	            }
 	        }
+	        
+	        //And finally write the data..
+	        File download = new File(dapp,filename);
+	        MiniFile.writeDataToFile(download, data.getData());
 	        
 	        //It's done!
 			recalculateMiniDAPPS();
