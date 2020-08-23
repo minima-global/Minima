@@ -490,14 +490,14 @@ public class MinimaDB {
 			if(txpow.isBlock() && !txpow.isTransaction()) {
 				//Check with limits..
 				MiniNumber diff = txpow.getBlockNumber().sub(nodetxp.getBlockNumber()).abs();
-				if(diff.isMore(MiniNumber.SIXTEEN)) {
+				if(diff.isMore(MiniNumber.EIGHT)) {
 					MinimaLogger.log("Block too far to be included in block.. \nNODE :"+zNode+"\nTXPOW:"+txpow);
 					return false;
 				}
 				
 				//Check the parents
 				BlockTreeNode parent = zNode.getParent();
-				for(int i=0;i<=16;i++) {
+				for(int i=0;i<=8;i++) {
 					//Check..
 					if(parent.checkForTxpow(txpow.getTxPowID())) {
 						MinimaLogger.log("Block in Parent BLock Allready ["+i+"] .. \nNODE :"+parent+"\nTXPOW:"+txpow);
@@ -1117,7 +1117,7 @@ public class MinimaDB {
 				}
 			}else {
 				//A block with no transaction.. make sure within range..
-				if(!txp.getBlockNumber().sub(txpow.getBlockNumber()).abs().isMore(MiniNumber.SIXTEEN)) {
+				if(!txp.getBlockNumber().sub(txpow.getBlockNumber()).abs().isMore(MiniNumber.EIGHT)) {
 					//Valid so added
 					txncounter = txncounter.increment();
 						
