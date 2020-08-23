@@ -509,6 +509,14 @@ public class ConsensusNet extends ConsensusProcessor {
 					
 					//Save it..
 					getConsensusHandler().getMainHandler().getBackupManager().backupTxpow(txpow);
+					
+					//Is it a block ?
+					if(txpow.isBlock()) {
+						//Add all the children
+						if(getMainDB().getMainTree().addNode(new BlockTreeNode(txpow))) {
+							getMainDB().addTreeChildren(txpow.getTxPowID());
+						}
+					}
 				}else {
 					MinimaLogger.log("WARNING NET IBD TXPOW request block not found : "+txpow.getBlockNumber()+" "+txpow.getTxPowID()); 
 				}
