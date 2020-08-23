@@ -11,4 +11,4 @@ echo "Minima Logs File : " "$new_fileName"
 mkdir -p ~/minilogsX
 
 #Run it in the background
-nohup java -Xmx6G -jar ~/Minima/jar/minima.jar -daemon -connect 10.164.0.3 9001 -clean > ~/minilogs/$new_fileName &
+nohup java -Xmx6G -jar ~/Minima/jar/minima.jar -daemon -connect 10.164.0.3 9001 -automine > ~/minilogs/$new_fileName &
