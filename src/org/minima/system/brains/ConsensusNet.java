@@ -514,7 +514,6 @@ public class ConsensusNet extends ConsensusProcessor {
 					if(txpow.isBlock()) {
 						//Add all the children
 						if(getMainDB().getMainTree().addNode(new BlockTreeNode(txpow))) {
-							MinimaLogger.log("Block added as side chain "+txpow);
 							getMainDB().addTreeChildren(txpow.getTxPowID());
 						}
 						

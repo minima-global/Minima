@@ -455,12 +455,6 @@ public class MinimaDB {
 	public boolean checkAllTxPOW(BlockTreeNode zNode, MMRSet zMMRSet) {
 		//The TxPoW to check..
 		TxPoW nodetxp = zNode.getTxPow();
-		
-		TxPOWDBRow mainrow = getTxPOWRow(nodetxp.getTxPowID());
-		if(mainrow.isInBlock()) {
-			//Hmm..
-			MinimaLogger.log("mainrow in BLock Allready.. NODE:"+zNode+" / MAINROW"+mainrow);
-		}
 
 		//Txn Number.. unique for every transaction
 		MiniNumber txncounter = MiniNumber.ZERO;
@@ -490,17 +484,17 @@ public class MinimaDB {
 			if(txpow.isBlock() && !txpow.isTransaction()) {
 				//Check with limits..
 				MiniNumber diff = txpow.getBlockNumber().sub(nodetxp.getBlockNumber()).abs();
-				if(diff.isMore(MiniNumber.EIGHT)) {
-					MinimaLogger.log("Block too far to be included in block.. \nNODE :"+zNode+"\nTXPOW:"+txpow);
+				if(diff.isMoreEqual(MiniNumber.EIGHT)) {
+					MinimaLogger.log("Block too far to be included in block "+diff+" / 8 max.. \nNODE :"+zNode+"\nTXPOW:"+txpow);
 					return false;
 				}
 				
 				//Check the parents
 				BlockTreeNode parent = zNode.getParent();
-				for(int i=0;i<=8;i++) {
+				for(int i=0;i<8;i++) {
 					//Check..
 					if(parent.checkForTxpow(txpow.getTxPowID())) {
-						MinimaLogger.log("Block in Parent BLock Allready ["+i+"] .. \nNODE :"+parent+"\nTXPOW:"+txpow);
+						MinimaLogger.log("Block in Parent Block Allready ["+i+"] .. \nNODE :"+parent+"\nTXPOW:"+txpow);
 						return false;
 					}
 					
@@ -1117,7 +1111,7 @@ public class MinimaDB {
 				}
 			}else {
 				//A block with no transaction.. make sure within range..
-				if(!txp.getBlockNumber().sub(txpow.getBlockNumber()).abs().isMore(MiniNumber.EIGHT)) {
+				if(!txp.getBlockNumber().sub(txpow.getBlockNumber()).abs().isMoreEqual(MiniNumber.EIGHT)) {
 					//Valid so added
 					txncounter = txncounter.increment();
 						
