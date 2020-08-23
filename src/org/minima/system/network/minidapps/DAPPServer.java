@@ -376,7 +376,8 @@ public class DAPPServer extends NanoHTTPD{
 					"					</td>" + 
 					"					<td width=100% class='minidappdescription'>" + 
 					"                   <div style='position:relative'>" + 
-					"				        <div onclick='window.open(\""+app.get("download")+"\")' style='color:red;cursor:pointer;position:absolute;right:100;top:10'>DOWNLOAD</div>" + 
+//					"				        <div onclick='window.open(\""+app.get("download")+"\")' style='color:red;cursor:pointer;position:absolute;right:100;top:10'>DOWNLOAD</div>" + 
+					"				        <div style='color:red;cursor:pointer;position:absolute;right:100;top:10'><a style='text-decoration:none;color:red;' href='"+app.get("download")+"' download>DOWNLOAD</a></div>" + 
 					"				        <div onclick='uninstallDAPP(\""+name+"\",\""+uid+"\");' style='color:red;cursor:pointer;position:absolute;right:10;top:10'>UNINSTALL</div>" + 
 					"						<br><div onclick=\"window.open('"+webpage+"','"+openpage+"');\" style='cursor:pointer;font-size:18'><b>"+name.toUpperCase()+"</b></div>" + 
 					"						<br><div onclick=\"window.open('"+webpage+"','"+openpage+"');\" style='cursor:pointer;font-size:12;min-height:20;'>"+desc+"</div>" + 
