@@ -516,6 +516,15 @@ public class ConsensusNet extends ConsensusProcessor {
 						if(getMainDB().getMainTree().addNode(new BlockTreeNode(txpow))) {
 							getMainDB().addTreeChildren(txpow.getTxPowID());
 						}
+						
+						//And now check the Txn list..
+						ArrayList<MiniData> txns = txpow.getBlockTransactions();
+						for(MiniData txn : txns) {
+							if(getMainDB().getTxPOW(txn) == null ) {
+								MinimaLogger.log("Request missing TxPoW in IBD block "+txpow.getBlockNumber()+" "+txn);
+								sendTxPowRequest(zMessage, txn);
+							}
+						}
 					}
 				}else {
 					MinimaLogger.log("WARNING NET IBD TXPOW request block not found : "+txpow.getBlockNumber()+" "+txpow.getTxPowID()); 

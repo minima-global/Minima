@@ -230,6 +230,15 @@ public class ConsensusBackup extends ConsensusProcessor {
 						trow.setOnChainBlock(false);
 						trow.setIsInBlock(true);
 						trow.setInBlockNumber(block);
+						
+						//Is it a block ?
+						TxPoW tpow = trow.getTxPOW();
+						if(tpow.isBlock()) {
+							//Add all the children
+							if(getMainDB().getMainTree().addNode(new BlockTreeNode(tpow))) {
+								getMainDB().addTreeChildren(tpow.getTxPowID());
+							}
+						}
 					}
 				}
 			}
