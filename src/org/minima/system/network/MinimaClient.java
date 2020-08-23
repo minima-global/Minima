@@ -300,8 +300,8 @@ public class MinimaClient extends MessageProcessor {
 			//TODO FOR NOW JUST REQUEST ASAP
 			//If it's in.. it's less than 5 minutes..
 			if(mOldTxPoWRequests.get(val) != null) {
-				MinimaLogger.log("Requested TXPOWID *WOULD BE*.. cancelled as already done less than 5 minutes ago.. "+val);
-				//return;
+				MinimaLogger.log("Requested TXPOWID .. cancelled as already done less than 5 minutes ago.. "+val);
+				return;
 			}
 			
 			//Store this as the LAST time we requested it.. won't do it again for 10 minutes
