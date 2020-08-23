@@ -218,7 +218,7 @@ public class ConsensusBackup extends ConsensusProcessor {
 				//Set the main chain details..
 				TxPOWDBRow blockrow = getMainDB().getTxPowDB().findTxPOWDBRow(txpow.getTxPowID());
 				blockrow.setInBlockNumber(block);
-				blockrow.setOnChainBlock(true);
+				blockrow.setMainChainBlock(true);
 				blockrow.setIsInBlock(true);
 				
 				//Now the Txns..
@@ -227,7 +227,7 @@ public class ConsensusBackup extends ConsensusProcessor {
 					TxPOWDBRow trow = getMainDB().getTxPowDB().findTxPOWDBRow(txid);
 					if(trow!=null) {
 						//Set that it is in this block
-						trow.setOnChainBlock(false);
+						trow.setMainChainBlock(false);
 						trow.setIsInBlock(true);
 						trow.setInBlockNumber(block);
 						

@@ -65,7 +65,7 @@ public class JavaDB implements TxPowDB{
 		
 		for(JavaDBRow row : mRows) {
 			
-			if(row.isOnChainBlock()) {
+			if(row.isMainChainBlock()) {
 				newRows.add(row);
 				
 				//Other wise the proofs are too old..
@@ -190,7 +190,7 @@ public class JavaDB implements TxPowDB{
 	public void resetAllInBlocks() {
 		for(TxPOWDBRow row : mRows) {
 			row.setIsInBlock(false);
-			row.setOnChainBlock(false);
+			row.setMainChainBlock(false);
 		}
 	}
 
@@ -200,7 +200,7 @@ public class JavaDB implements TxPowDB{
 			if(row.isInBlock()) {
 				if(row.getInBlockNumber().isMoreEqual(zFromBlock)) {
 					row.setIsInBlock(false);
-					row.setOnChainBlock(false);
+					row.setMainChainBlock(false);
 				}
 			}
 		}

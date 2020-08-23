@@ -242,5 +242,21 @@ public class BlockTreeNode implements Comparable<BlockTreeNode> {
 		return "["+getCurrentLevel()+"/"+getSuperBlockLevel()+"] casc:"+isCascade()+" state:"+getState()+" "+mTXPOW.toString();
 	}
 	
+	public boolean checkForTxpow(MiniData zTxPoWID) {
+		if(getTxPow().getTxPowID().isEqual(zTxPoWID)) {
+			return true;
+		}
+		
+		//Check the Block Txns..
+		ArrayList<MiniData> txns = getTxPow().getBlockTransactions();
+		for(MiniData txn : txns) {
+			if(txn.isEqual(zTxPoWID)) {
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
 }
 

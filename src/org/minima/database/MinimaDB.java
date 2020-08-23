@@ -53,6 +53,8 @@ import org.minima.utils.ObjectStack;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.messages.Message;
 
+import com.sun.org.apache.bcel.internal.generic.ISUB;
+
 public class MinimaDB {
 
 	/**
@@ -138,7 +140,7 @@ public class MinimaDB {
 		
 		//Add to the list now that TxPoWID is set
 		TxPOWDBRow row = mTxPOWDB.addTxPOWDBRow(gen);
-		row.setOnChainBlock(true);
+		row.setMainChainBlock(true);
 		row.setInBlockNumber(MiniNumber.ZERO);
 		row.setIsInBlock(true);
 		row.setBlockState(TxPOWDBRow.TXPOWDBROW_STATE_FULL);
@@ -272,9 +274,6 @@ public class MinimaDB {
 			//Reset coins from that block onwards
 			mCoinDB.resetCoinsFomOnwards(lastblock);
 			
-			//Only add coins from the cascade onwards..
-			MiniNumber oldcascade = getMainTree().getCascadeNode().getBlockNumber();
-			
 			//Now sort
 			for(BlockTreeNode treenode : list) {
 				//Get the Block
@@ -287,7 +286,7 @@ public class MinimaDB {
 				MiniNumber block = txpow.getBlockNumber();
 				
 				//Set the details
-				trow.setOnChainBlock(true);
+				trow.setMainChainBlock(true);
 				trow.setIsInBlock(true);
 				trow.setInBlockNumber(block);
 				
@@ -300,7 +299,7 @@ public class MinimaDB {
 					trow = mTxPOWDB.findTxPOWDBRow(txid);
 					if(trow!=null) {
 						//Set that it is in this block
-						trow.setOnChainBlock(false);
+						trow.setMainChainBlock(false);
 						trow.setIsInBlock(true);
 						trow.setInBlockNumber(block);
 					}
@@ -327,7 +326,7 @@ public class MinimaDB {
 				TxPOWDBRow row = getTxPOWRow(node.getTxPowID());
 				
 				//Discard.. no longer an on chain block..
-				row.setOnChainBlock(false);
+				row.setMainChainBlock(false);
 				
 				//And delete / move to different folder any file backups..
 				getBackup().deleteTxpow(node.getTxPow());
@@ -453,29 +452,64 @@ public class MinimaDB {
 	}
 	
 	
-	public boolean checkFullTxPOW(TxPoW zBlock, MMRSet zMMRSet) {
+	public boolean checkAllTxPOW(BlockTreeNode zNode, MMRSet zMMRSet) {
+		//The TxPoW to check..
+		TxPoW nodetxp = zNode.getTxPow();
+		
+		TxPOWDBRow mainrow = getTxPOWRow(nodetxp.getTxPowID());
+		if(mainrow.isInBlock()) {
+			//Hmm..
+			MinimaLogger.log("mainrow in BLock Allready.. NODE:"+zNode+" / MAINROW"+mainrow);
+		}
+
 		//Txn Number.. unique for every transaction
 		MiniNumber txncounter = MiniNumber.ZERO;
 		
 		//First check the main transaction..
-		if(zBlock.isTransaction()) {
-			boolean inputvalid = TxPoWChecker.checkTransactionMMR(zBlock, this, zBlock, txncounter, zMMRSet,true);
+		if(nodetxp.isTransaction()) {
+			boolean inputvalid = TxPoWChecker.checkTransactionMMR(nodetxp, this, nodetxp, txncounter, zMMRSet,true);
 			if(!inputvalid) {
 				return false;
 			}
 		}
 		
 		//Now cycle through all the transactions in the block..
-		ArrayList<MiniData> txns = zBlock.getBlockTransactions();
+		ArrayList<MiniData> txns = nodetxp.getBlockTransactions();
 		for(MiniData txn : txns) {
 			TxPOWDBRow row = getTxPOWRow(txn);
-			TxPoW txpow = row.getTxPOW();
+			TxPoW txpow    = row.getTxPOW();
 			
 			//Check the Proof..
 			txncounter = txncounter.increment();
-			boolean inputvalid = TxPoWChecker.checkTransactionMMR(txpow, this, zBlock, txncounter, zMMRSet,true);
+			boolean inputvalid = TxPoWChecker.checkTransactionMMR(txpow, this, nodetxp, txncounter, zMMRSet,true);
 			if(!inputvalid) {
 				return false;
+			}
+			
+			//Is it a block with no transaction..
+			if(txpow.isBlock() && !txpow.isTransaction()) {
+				//Check with limits..
+				MiniNumber diff = txpow.getBlockNumber().sub(nodetxp.getBlockNumber()).abs();
+				if(diff.isMore(MiniNumber.SIXTEEN)) {
+					MinimaLogger.log("Block too far to be included in block.. \nNODE :"+zNode+"\nTXPOW:"+txpow);
+					return false;
+				}
+				
+				//Check the parents
+				BlockTreeNode parent = zNode.getParent();
+				for(int i=0;i<=16;i++) {
+					//Check..
+					if(parent.checkForTxpow(txpow.getTxPowID())) {
+						MinimaLogger.log("Block in Parent BLock Allready ["+i+"] .. \nNODE :"+parent+"\nTXPOW:"+txpow);
+						return false;
+					}
+					
+					//Get the next..
+					parent = parent.getParent();
+					if(parent == null) {
+						break;
+					}
+				}
 			}
 		}
 		
@@ -496,7 +530,7 @@ public class MinimaDB {
 	public BlockTreeNode hardAddTxPOWBlock(TxPoW zTxPoW, MMRSet zMMR, boolean zCascade) {
 		//Add to the list
 		TxPOWDBRow row = mTxPOWDB.addTxPOWDBRow(zTxPoW);
-		row.setOnChainBlock(true);
+		row.setMainChainBlock(true);
 		row.setIsInBlock(true);
 		row.setInBlockNumber(zTxPoW.getBlockNumber());
 		row.setBlockState(TxPOWDBRow.TXPOWDBROW_STATE_FULL);
@@ -1083,7 +1117,7 @@ public class MinimaDB {
 				}
 			}else {
 				//A block with no transaction.. make sure within range..
-				if(txp.getBlockNumber().sub(txpow.getBlockNumber()).abs().isLessEqual(MiniNumber.THIRTYTWO)) {
+				if(!txp.getBlockNumber().sub(txpow.getBlockNumber()).abs().isMore(MiniNumber.SIXTEEN)) {
 					//Valid so added
 					txncounter = txncounter.increment();
 						

@@ -870,7 +870,7 @@ public class ConsensusPrint extends ConsensusProcessor {
 				
 				//Add details..
 				resp.put("txpow", row.getTxPOW().toJSON());
-				resp.put("ischainblock", row.isOnChainBlock());
+				resp.put("ischainblock", row.isMainChainBlock());
 				resp.put("isinblock", row.isInBlock());
 				resp.put("inblock", row.getInBlockNumber().toString());
 				

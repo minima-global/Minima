@@ -59,7 +59,7 @@ public class FastJavaDB implements TxPowDB {
 		while(allrows.hasMoreElements()) {
 			JavaDBRow row = allrows.nextElement();
 			row.setIsInBlock(false);
-			row.setOnChainBlock(false);
+			row.setMainChainBlock(false);
 		}
 	}
 
@@ -70,7 +70,7 @@ public class FastJavaDB implements TxPowDB {
 			JavaDBRow row = allrows.nextElement();
 			if(row.isInBlock() && row.getInBlockNumber().isMoreEqual(zFromBlock)) {
 				row.setIsInBlock(false);
-				row.setOnChainBlock(false);
+				row.setMainChainBlock(false);
 			}
 		}
 	}
@@ -97,7 +97,7 @@ public class FastJavaDB implements TxPowDB {
 			TxPoW rowtxpow = row.getTxPOW();
 			
 				//It's a main block
-			if(row.isOnChainBlock()) {
+			if(row.isMainChainBlock()) {
 				newtable.put(rowtxpow.getTxPowID().to0xString(),row);
 				
 				//It's a transaction on the main chain
@@ -109,7 +109,7 @@ public class FastJavaDB implements TxPowDB {
 				newtable.put(rowtxpow.getTxPowID().to0xString(),row);
 			
 				//It's a block but not past the cascade
-			}else if(rowtxpow.isBlock() && !row.isOnChainBlock() && row.getTxPOW().getBlockNumber().isMoreEqual(minused)) {
+			}else if(rowtxpow.isBlock() && !row.isMainChainBlock() && row.getTxPOW().getBlockNumber().isMoreEqual(minused)) {
 				newtable.put(rowtxpow.getTxPowID().to0xString(),row);
 				
 			}else {

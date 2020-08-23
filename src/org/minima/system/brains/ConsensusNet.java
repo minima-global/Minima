@@ -492,7 +492,7 @@ public class ConsensusNet extends ConsensusProcessor {
 				if(validblock != null) {
 					//Add it to the database..
 					TxPOWDBRow row = getMainDB().addNewTxPow(txpow);
-					row.setOnChainBlock(false);
+					row.setMainChainBlock(false);
 					row.setIsInBlock(true);
 					row.setInBlockNumber(validblock.getBlockNumber());
 					
@@ -514,6 +514,7 @@ public class ConsensusNet extends ConsensusProcessor {
 					if(txpow.isBlock()) {
 						//Add all the children
 						if(getMainDB().getMainTree().addNode(new BlockTreeNode(txpow))) {
+							MinimaLogger.log("Block added as side chain "+txpow);
 							getMainDB().addTreeChildren(txpow.getTxPowID());
 						}
 						
