@@ -183,6 +183,7 @@ var Minima = {
 	form : {
 		
 		//BOTH POST and GET parameters.. and any files are uploaded to /upload folder
+		//must set POST form to multipart/form-data .. 
 		params : function(paramname){
 			return MINIMA_PARAMS[paramname];
 		},

@@ -189,7 +189,6 @@ public class CommsManager extends SystemHandler {
 			}
 		
 		}else if(zMessage.getMessageType().equals(COMMS_CLIENTSHUT)) {
-			//There's a new client connected to a comms server
 			CommsClient client = (CommsClient) zMessage.getObject("client");
 			
 			//Add to our List..

@@ -190,8 +190,8 @@ public class DAPPServer extends NanoHTTPD{
 				
 				
 				}else if(fileRequested.equals("params")) {
-					MinimaLogger.log("ALL PARAMS : "+mParams);
-					MinimaLogger.log("PARAM REQ : "+MiniDAPPID);
+					//MinimaLogger.log("ALL PARAMS : "+mParams);
+					//MinimaLogger.log("PARAM REQ : "+MiniDAPPID);
 					
 					JSONObject pp = mParams.get(MiniDAPPID);
 					if(pp == null) {
@@ -210,9 +210,6 @@ public class DAPPServer extends NanoHTTPD{
 			
 			//Are we uploading a file..
 			if(!files.isEmpty()) {
-				//Move the files.. 
-//				MinimaLogger.log("FILE : "+files);
-				
 				//Make the uploads folder
 				File filefolder = mBackup.getMiniDAPPFilesFolder(MiniDAPPID);
 				File uploads    = new File(filefolder,"uploads"); 
@@ -234,7 +231,6 @@ public class DAPPServer extends NanoHTTPD{
 					}
 					
 					//And Move..
-//					MinimaLogger.log("MOVE : "+uploadedfile.getAbsolutePath()+" to"+newfile.getAbsolutePath());
 					uploadedfile.renameTo(newfile);
 				}
 			}
@@ -286,7 +282,7 @@ public class DAPPServer extends NanoHTTPD{
 	
     
     public String createMiniDAPPList() throws Exception {
-		//get the current MIniDAPPS
+		//get the current MiniDAPPS
 		JSONArray alldapps = mDAPPManager.getMiniDAPPS();
 		
 		//Check if there is a change
