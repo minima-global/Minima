@@ -67,7 +67,7 @@ public class DAPPServer extends NanoHTTPD{
 			
         	//What are they looking for..
         	String fileRequested = session.getUri();
-        	MinimaLogger.log("RPC REQUEST "+fileRequested);
+        	//MinimaLogger.log("RPC REQUEST "+fileRequested);
         	
         	//Which MiniDAPP
         	String MiniDAPPID="";
@@ -127,7 +127,7 @@ public class DAPPServer extends NanoHTTPD{
 					minparams.put(key, value);
 				}
 				
-				MinimaLogger.log("MiniDAPP:"+MiniDAPPID+" PARAMS:"+minparams);
+				//MinimaLogger.log("MiniDAPP:"+MiniDAPPID+" PARAMS:"+minparams);
 				
 				//Store it..
 				mParams.put(MiniDAPPID, minparams);
