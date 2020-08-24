@@ -1048,6 +1048,14 @@ public class ConsensusPrint extends ConsensusProcessor {
 				mdapps.put("minidapps", minis);
 				InputHandler.endResponse(zMessage, true, "");
 			
+			}else if(action.equals("reload")) {
+				//Reload the MiniDAPPs..
+				Message reload = new Message(DAPPManager.DAPP_RELOAD);
+				InputHandler.addResponseMesage(reload, zMessage);
+				
+				//Post it..
+				dapps.PostMessage(reload);
+				
 			}else if(action.equals("search")) {
 				String name = zMessage.getString("name");
 				

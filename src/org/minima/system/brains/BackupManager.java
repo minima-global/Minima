@@ -57,6 +57,22 @@ public class BackupManager extends SystemHandler {
 		return mMiniDAPPS;
 	}
 	
+	public File getMiniDAPPFolder(String zMiniDAPPID) {
+		return new File(getMiniDAPPFolder(),zMiniDAPPID);
+	}
+	
+	public File getMiniDAPPFilesFolder(String zMiniDAPPID) {
+		File ff = new File(getMiniDAPPFolder(zMiniDAPPID),"files");
+		ff.mkdirs();
+		return ff; 
+	}
+	
+	public File getMiniDAPPSQLFolder(String zMiniDAPPID) {
+		File ff = new File(getMiniDAPPFolder(zMiniDAPPID),"sql");
+		ff.mkdirs();
+		return ff; 
+	}
+	
 	public File getWebRoot() {
 		return mWebRoot;
 	}

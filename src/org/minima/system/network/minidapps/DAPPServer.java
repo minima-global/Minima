@@ -4,10 +4,13 @@ import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.minima.objects.base.MiniData;
+import org.minima.system.brains.BackupManager;
 import org.minima.system.network.minidapps.minihub.hexdata.faviconico;
 import org.minima.system.network.minidapps.minihub.hexdata.helphtml;
 import org.minima.system.network.minidapps.minihub.hexdata.iconpng;
@@ -30,6 +33,8 @@ import org.minima.utils.nanohttpd.protocols.http.response.Status;
 public class DAPPServer extends NanoHTTPD{
 
 	DAPPManager mDAPPManager;
+	
+	BackupManager mBackup;
 
 	/**
 	 * Store the current page and MiniDAPP list..
@@ -40,13 +45,18 @@ public class DAPPServer extends NanoHTTPD{
 	
 	File mWebRoot;
 	
+	Hashtable<String, JSONObject> mParams;
+	
+	
 	public DAPPServer(int zPort, DAPPManager zDAPPManager) {
 		super(zPort);
 		
 		mDAPPManager = zDAPPManager;
+		mBackup      = zDAPPManager.getMainHandler().getBackupManager();
+		mWebRoot     = mBackup.getWebRoot();
 		
-		//The test web folder..
-		mWebRoot = zDAPPManager.getMainHandler().getBackupManager().getWebRoot();
+		//Store of all the params and files for a MiniDAPP..
+		mParams = new Hashtable<>();
 	}
 
 	@Override
@@ -57,8 +67,26 @@ public class DAPPServer extends NanoHTTPD{
 			
         	//What are they looking for..
         	String fileRequested = session.getUri();
-        	MinimaLogger.log("File requested : "+fileRequested);
+        	MinimaLogger.log("RPC REQUEST "+fileRequested);
         	
+        	//Which MiniDAPP
+        	String MiniDAPPID="";
+        	String ref = session.getHeaders().get("referer");
+        	if(ref == null) {
+        		ref = fileRequested;
+        	}
+        	//MinimaLogger.log("HEADERS "+session.getHeaders());
+        	if(ref != null) {
+        		int start  = ref.indexOf("0x");
+        		int end    = -1;
+        		if(start!=-1) {
+        			end    = ref.indexOf("/", start);
+        		}
+        		if(end!=-1) {
+        			MiniDAPPID = ref.substring(start, end);
+        		}
+        	}
+
         	//Quick clean
 			if(fileRequested.endsWith("/")) {
 				fileRequested = fileRequested.concat("index.html");
@@ -77,176 +105,6 @@ public class DAPPServer extends NanoHTTPD{
 			if(Method.GET.equals(method)) {
 				//Any parameters
 	        	params = session.getParameters();
-			}else if(Method.POST.equals(method)) {
-				//get the files.. if any MUST DO THIS FIRST - for NANOHTTPD
-		        session.parseBody(files);
-            
-	            //NOW - get any parameters
-	        	params = session.getParameters();
-			}
-	        
-			//Uninstalling..
-			if(fileRequested.equals("index.html")) {
-				String page    = new String(indexhtml.returnData(),StandardCharsets.UTF_8);
-				String newpage = page.replace("######", createMiniDAPPList());
-				return getOKResponse(newpage.getBytes(), "text/html");
-				
-			}else if(fileRequested.equals("css/minidapps.css")) {
-				return getOKResponse(minidappscss.returnData(), "text/css");
-				
-			}else if(fileRequested.equals("favicon.ico")) {
-				return getOKResponse(faviconico.returnData(), "image/ico");
-				
-			}else if(fileRequested.equals("help.html")) {
-				return getOKResponse(helphtml.returnData(), "text/html");
-			
-			}else if(fileRequested.equals("icon.png")) {
-				return getOKResponse(iconpng.returnData(), "image/png");
-				
-			}else if(fileRequested.equals("installdapp.html")) {
-				MinimaLogger.log("params "+params.toString());
-				MinimaLogger.log("files "+files.toString());
-				
-				//Get the File..
-	            String minidappfile = files.get("minidapp");
-	            
-	            //Load the file..
-	            byte[] file = MiniFile.readCompleteFile(new File(minidappfile));
-				
-	            //Create a MiniData Object..
-	            MiniData dapp = new MiniData(file);
-				
-				//POST it..
-				Message msg = new Message(DAPPManager.DAPP_INSTALL);
-				msg.addObject("filename", params.get("minidapp").get(0));
-				msg.addObject("minidapp", dapp);
-				mDAPPManager.PostMessage(msg);
-	            
-                return getOKResponse(installdapphtml.returnData(), "text/html");
-				
-			}else if(fileRequested.equals("uninstalldapp.html")) {
-				//POST it..
-				Message msg = new Message(DAPPManager.DAPP_UNINSTALL);
-				msg.addObject("minidapp", params.get("uninstall").get(0));
-				mDAPPManager.PostMessage(msg);
-		            
-	            return getOKResponse(uninstalldapphtml.returnData(), "text/html");
-			
-			}else if(fileRequested.equals("tile-grey.jpeg")) {
-				return getOKResponse(tilegreyjpeg.returnData(), "image/jpeg");	
-			
-			
-				//Everyone gets the pre made minima.js
-			}else if(fileRequested.endsWith("/minima.js") || fileRequested.equals("minima.js")) {
-				return getOKResponse(mDAPPManager.getMinimaJS() , "text/javascript");
-				
-			}
-			
-			//Get the default file..
-			File fullfile = new File(mWebRoot,fileRequested); 
-			byte[] file   = MiniFile.readCompleteFile(fullfile);
-			
-			if(file.length>0) {
-				return getOKResponse(file, MiniFile.getContentType(fullfile.getAbsolutePath()));
-			}
-			
-			return getNotFoundResponse();
-			
-			/*//GET or POST
-			if(Method.GET.equals(method)) {
-				//Any parameters
-	        	params = session.getParameters();
-	        	
-	        	//Is there an uninstall..
-	        	String uninst = "";
-	        	List<String> uninstall = params.get("uninstall");
-	        	if(uninstall != null) {
-	        		uninst = uninstall.get(0);
-	        	}
-	        	
-		        //Are we uninstalling a MiniDAPP
-				if(fileRequested.equals("uninstalldapp.html")) {
-					if(!uninst.equals("")) {
-						//POST it..
-						Message msg = new Message(DAPPManager.DAPP_UNINSTALL);
-						msg.addObject("minidapp", uninst);
-						mDAPPManager.PostMessage(msg);
-			            
-		                return getOKResponse(uninstalldapphtml.returnData(), "text/html");
-					}else {
-						fileRequested = "index.html";
-					}
-				}
-			
-				//Otherwise lets see..
-				if(fileRequested.startsWith("testweb/")) {
-					//get from the testweb folder..
-					String fullfile = mTestWeb+"/"+fileRequested.substring(8);
-					byte[] file     = MiniFile.readCompleteFile(new File(fullfile));
-					
-					if(file.length>0) {
-						return getOKResponse(file, MiniFile.getContentType(fullfile));
-					}else {
-						return getNotFoundResponse();
-					}
-					
-				}else if(fileRequested.endsWith("/minima.js") || fileRequested.equals("minima.js")) {
-					return getOKResponse(mDAPPManager.getMinimaJS() , "text/javascript");
-				
-				}else if(fileRequested.startsWith("minidapps/")) {
-					//Send the MiniDAPP!
-					String fullfile = mDAPPManager.getMiniDAPPSFolder()+"/"+fileRequested.substring(10);
-					byte[] file     = MiniFile.readCompleteFile(new File(fullfile));
-					
-					if(file.length>0) {
-						return getOKResponse(file, MiniFile.getContentType(fullfile));
-					}else {
-						return getNotFoundResponse();
-					}
-					
-				}else {
-					if(fileRequested.equals("index.html")) {
-						String page    = new String(indexhtml.returnData(),StandardCharsets.UTF_8);
-						String newpage = page.replace("######", createMiniDAPPList());
-						return getOKResponse(newpage.getBytes(), "text/html");
-						
-					}else if(fileRequested.equals("css/minidapps.css")) {
-						return getOKResponse(minidappscss.returnData(), "text/css");
-						
-					}else if(fileRequested.equals("favicon.ico")) {
-						return getOKResponse(faviconico.returnData(), "image/ico");
-						
-					}else if(fileRequested.equals("help.html")) {
-						return getOKResponse(helphtml.returnData(), "text/html");
-					
-					}else if(fileRequested.equals("icon.png")) {
-						return getOKResponse(iconpng.returnData(), "image/png");
-						
-					}else if(fileRequested.equals("installdapp.html")) {
-						//Get the File..
-			            String minidappfile = files.get("minidapp");
-			            
-			            //Load the file..
-			            byte[] file = MiniFile.readCompleteFile(new File(minidappfile));
-						
-			            //Create a MiniData Object..
-			            MiniData dapp = new MiniData(file);
-						
-						//POST it..
-						Message msg = new Message(DAPPManager.DAPP_INSTALL);
-						msg.addObject("minidapp", dapp);
-						mDAPPManager.PostMessage(msg);
-			            
-		                return getOKResponse(installdapphtml.returnData(), "text/html");
-						
-					}else if(fileRequested.equals("tile-grey.jpeg")) {
-						return getOKResponse(tilegreyjpeg.returnData(), "image/jpeg");
-						
-					}else {
-						//Not found..
-						return getNotFoundResponse();	
-					}	
-				}
 			
 			}else if(Method.POST.equals(method)) {
 				//get the files.. if any MUST DO THIS FIRST - for NANOHTTPD
@@ -254,9 +112,54 @@ public class DAPPServer extends NanoHTTPD{
             
 	            //NOW - get any parameters
 	        	params = session.getParameters();
-	        	
-				//Only on the Install DAPP page..
-				if(fileRequested.equals("installdapp.html")) {
+			}
+			
+			//If there are any files uploaded.. move them to the Files folder..
+			JSONObject minparams = new JSONObject();
+			if(!params.isEmpty()) {
+				//Get all the parameters..
+				Set<String> keys =  params.keySet();
+				for(String key : keys) {
+					//Get the value..
+					String value = params.get(key).get(0);
+					
+					//Add it..
+					minparams.put(key, value);
+				}
+				
+				MinimaLogger.log("MiniDAPP:"+MiniDAPPID+" PARAMS:"+minparams);
+				
+				//Store it..
+				mParams.put(MiniDAPPID, minparams);
+			}
+			
+			//MINIHUB..
+			int slash = fileRequested.indexOf("/");
+			boolean isroot = (slash == -1);
+			
+				//Are we using the MiniHUB..!
+			if(isroot) {
+				if(fileRequested.equals("index.html")) {
+					String page    = new String(indexhtml.returnData(),StandardCharsets.UTF_8);
+					String newpage = page.replace("######", createMiniDAPPList());
+					return getOKResponse(newpage.getBytes(), "text/html");
+					
+				}else if(fileRequested.equals("minidapps.css")) {
+					return getOKResponse(minidappscss.returnData(), "text/css");
+					
+				}else if(fileRequested.equals("favicon.ico")) {
+					return getOKResponse(faviconico.returnData(), "image/ico");
+					
+				}else if(fileRequested.equals("help.html")) {
+					return getOKResponse(helphtml.returnData(), "text/html");
+				
+				}else if(fileRequested.equals("icon.png")) {
+					return getOKResponse(iconpng.returnData(), "image/png");
+					
+				}else if(fileRequested.equals("installdapp.html")) {
+					MinimaLogger.log("params "+params.toString());
+					MinimaLogger.log("files "+files.toString());
+					
 					//Get the File..
 		            String minidappfile = files.get("minidapp");
 		            
@@ -268,35 +171,85 @@ public class DAPPServer extends NanoHTTPD{
 					
 					//POST it..
 					Message msg = new Message(DAPPManager.DAPP_INSTALL);
+					msg.addObject("filename", params.get("minidapp").get(0));
 					msg.addObject("minidapp", dapp);
 					mDAPPManager.PostMessage(msg);
 		            
 	                return getOKResponse(installdapphtml.returnData(), "text/html");
-	                
-				}else if(fileRequested.startsWith("minidapps/")) {
-					String fullfile = mDAPPManager.getMiniDAPPSFolder()+"/"+fileRequested.substring(10);
-					byte[] file     = MiniFile.readCompleteFile(new File(fullfile));
 					
-					if(file.length>0) {
-						return getOKResponse(file, MiniFile.getContentType(fullfile));
-					}else {
-						return getNotFoundResponse();
-					}
-				}else if(fileRequested.startsWith("testweb/")) {
-					//get from the testweb folder..
-					String fullfile = mTestWeb+"/"+fileRequested.substring(8);
-					byte[] file     = MiniFile.readCompleteFile(new File(fullfile));
-					
-					if(file.length>0) {
-						return getOKResponse(file, MiniFile.getContentType(fullfile));
-					}else {
-						return getNotFoundResponse();
-					}
-					
-				}
+				}else if(fileRequested.equals("uninstalldapp.html")) {
+					//POST it..
+					Message msg = new Message(DAPPManager.DAPP_UNINSTALL);
+					msg.addObject("minidapp", params.get("uninstall").get(0));
+					mDAPPManager.PostMessage(msg);
+			            
+		            return getOKResponse(uninstalldapphtml.returnData(), "text/html");
 				
-			}*/
-    
+				}else if(fileRequested.equals("tile-grey.jpeg")) {
+					return getOKResponse(tilegreyjpeg.returnData(), "image/jpeg");	
+				
+				
+				}else if(fileRequested.equals("params")) {
+					MinimaLogger.log("ALL PARAMS : "+mParams);
+					MinimaLogger.log("PARAM REQ : "+MiniDAPPID);
+					
+					JSONObject pp = mParams.get(MiniDAPPID);
+					if(pp == null) {
+						pp = new JSONObject();
+					}
+					
+					//Return the parameters..
+					return getOKResponse(pp.toString().getBytes(), "text/plain"); 
+				}
+			
+				//Are we asking for minima.js..
+			}else if(fileRequested.endsWith("/minima.js") || fileRequested.equals("minima.js")) {
+				return getOKResponse(mDAPPManager.getMinimaJS() , "text/javascript");
+				
+			}
+			
+			//Are we uploading a file..
+			if(!files.isEmpty()) {
+				//Move the files.. 
+//				MinimaLogger.log("FILE : "+files);
+				
+				//Make the uploads folder
+				File filefolder = mBackup.getMiniDAPPFilesFolder(MiniDAPPID);
+				File uploads    = new File(filefolder,"uploads"); 
+				uploads.mkdirs();
+				
+				Set<String> keys = files.keySet();
+				for(String key : keys) {
+					//get the file..
+					String thefile    = files.get(key);
+					File uploadedfile = new File(thefile);
+					
+					//Get the filename.. 
+					String filename = params.get(key).get(0);
+					
+					//Now move that file..
+					File newfile = new File(uploads,filename);
+					if(newfile.exists()) {
+						newfile.delete();
+					}
+					
+					//And Move..
+//					MinimaLogger.log("MOVE : "+uploadedfile.getAbsolutePath()+" to"+newfile.getAbsolutePath());
+					uploadedfile.renameTo(newfile);
+				}
+			}
+			
+			//Get the default file..
+			File fullfile = new File(mWebRoot,fileRequested); 
+			byte[] file   = MiniFile.readCompleteFile(fullfile);
+			
+			//Need to check if allowed.. hmm.. TODO
+			if(file.length>0) {
+				return getOKResponse(file, MiniFile.getContentType(fullfile.getAbsolutePath()));
+			}
+			
+			return getNotFoundResponse();
+			
         } catch (Exception ioe) {
         	MinimaLogger.log("DAPPSERVER Error : "+ioe);
         	
@@ -364,29 +317,42 @@ public class DAPPServer extends NanoHTTPD{
 			
 			String openpage = "_"+name;
 	
+			boolean debug = false;
+			if(uid.length()<16) {
+				debug = true;
+			}
+			
 			String date = MinimaLogger.DATEFORMAT.format(new Date((Long)app.get("installed"))); 
 			String version = uid+" @ "+date;
 			
 			//Now do it..
-			list.append("<tr><td>" + 
+			String minis = "<tr><td>" + 
 					"			<table style='background-size:100%;background-image: url("+backg+");' width=100% height=100 class=minidapp>" + 
 					"			 	<tr>" + 
 					"					<td style='cursor:pointer;' rowspan=2 onclick=\"window.open('"+webpage+"', '"+openpage+"');\">" + 
 					"						<img src='"+icon+"' height=100>" + 
 					"					</td>" + 
 					"					<td width=100% class='minidappdescription'>" + 
-					"                   <div style='position:relative'>" + 
-//					"				        <div onclick='window.open(\""+app.get("download")+"\")' style='color:red;cursor:pointer;position:absolute;right:100;top:10'>DOWNLOAD</div>" + 
-					"				        <div style='color:red;cursor:pointer;position:absolute;right:100;top:10'><a style='text-decoration:none;color:red;' href='"+app.get("download")+"' download>DOWNLOAD</a></div>" + 
-					"				        <div onclick='uninstallDAPP(\""+name+"\",\""+uid+"\");' style='color:red;cursor:pointer;position:absolute;right:10;top:10'>UNINSTALL</div>" + 
-					"						<br><div onclick=\"window.open('"+webpage+"','"+openpage+"');\" style='cursor:pointer;font-size:18'><b>"+name.toUpperCase()+"</b></div>" + 
+					"                   <div style='position:relative'>"; 
+			
+			if(!debug) {
+				minis+=	"				        <div style='color:red;cursor:pointer;position:absolute;right:100;top:10'><a style='text-decoration:none;color:red;' href='"+app.get("download")+"' download>DOWNLOAD</a></div>" + 
+					    "				        <div onclick='uninstallDAPP(\""+name+"\",\""+uid+"\");' style='color:red;cursor:pointer;position:absolute;right:10;top:10'>UNINSTALL</div>"; 
+			}else {
+				minis+=	"				        <div style='color:red;position:absolute;right:10;top:10'>DEVELOPMENT</div>";
+			}
+					
+			minis+=	"						<br><div onclick=\"window.open('"+webpage+"','"+openpage+"');\" style='cursor:pointer;font-size:18'><b>"+name.toUpperCase()+"</b></div>" + 
 					"						<br><div onclick=\"window.open('"+webpage+"','"+openpage+"');\" style='cursor:pointer;font-size:12;min-height:20;'>"+desc+"</div>" + 
 					"						<div onclick=\"window.open('"+webpage+"','"+openpage+"');\" style='cursor:pointer;color:blue;font-size:10;text-align:right;width:98%;'><br>"+version+"</div>"+
 					"					</div>"+
 					"                     </td>" + 
 					"				</tr>" + 
 					"			</table>" + 
-					"		</td></tr>");
+					"		</td></tr>";
+			
+			//Add to the list
+			list.append(minis);
 		}
 		
 		if(len == 0) {

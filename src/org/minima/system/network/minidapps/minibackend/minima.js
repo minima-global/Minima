@@ -113,6 +113,10 @@ var Minima = {
 			MinimaRPC("file","load "+file,callback);
 		},
 		
+		move : function(file, newfile, callback) {
+			MinimaRPC("file","move "+file+" "+newfile,callback);
+		},
+		
 		list : function(file, callback) {
 			MinimaRPC("file","list "+file,callback);
 		},

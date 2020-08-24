@@ -44,6 +44,7 @@ public class DAPPManager extends SystemHandler {
 	public static String DAPP_INIT           = "DAPP_INIT";
 	public static String DAPP_INSTALL        = "DAPP_INSTALL";
 	public static String DAPP_UNINSTALL      = "DAPP_UNINSTALL";
+	public static String DAPP_RELOAD         = "DAPP_RELOAD";
 	
 	public static String DAPP_DIRECTPOST      = "DAPP_DIRECTPOST";
 	public static String DAPP_DIRECTREPLY     = "DAPP_DIRECTREPLY";
@@ -370,6 +371,18 @@ public class DAPPManager extends SystemHandler {
 			} catch (IOException e) {
 				MinimaLogger.log("MiniDAPP server error "+ e.toString());
 			}
+		
+		}else if(zMessage.getMessageType().equals(DAPP_RELOAD)) {
+			//Recalculate the MINIDAPPS
+			recalculateMiniDAPPS();
+			
+			//Get the response JSON
+			JSONObject mdapps = InputHandler.getResponseJSON(zMessage);
+			
+			mdapps.put("cwd", new File("").getAbsolutePath());
+			mdapps.put("count", CURRENT_MINIDAPPS.size());
+			mdapps.put("minidapps", CURRENT_MINIDAPPS);
+			InputHandler.endResponse(zMessage, true, "MiniDAPPs reloaded");
 			
 		}else if(zMessage.getMessageType().equals(DAPP_INSTALL)) {
 			//Get the Data

@@ -56,24 +56,8 @@ public class FILE implements Runnable {
 		String file     = strtok.nextToken().trim();
 		
 		//Where is the database..
-		File minidappfolder  = null;
 		BackupManager backup = Main.getMainHandler().getBackupManager();
-		
-		//Which Database.. could be running from a folder..
-		if(mMiniDAPPID.length()<16) {
-			//Get the database folder
-			File temp      = BackupManager.getTempFolder();
-			minidappfolder = new File(temp,"_files"+mMiniDAPPID);
-			
-		}else {
-			//Get the database folder
-			File minidapps   = backup.getMiniDAPPFolder();
-			File dapp        = new File(minidapps,mMiniDAPPID);
-			minidappfolder   = new File(dapp,"files");
-		}
-		
-		//Make sure exists
-		minidappfolder.mkdirs();
+		File minidappfolder  = backup.getMiniDAPPFilesFolder(mMiniDAPPID);
 		
 		//get the file
 		File thefile = new File(minidappfolder,file);
@@ -113,7 +97,24 @@ public class FILE implements Runnable {
 			
 			//Convert to Text
 			mFinalResult = response.toString();
+		
+		}else if(filefunc.equals("move")) {
+			String newfile = strtok.nextToken().trim();
+			File moveto = new File(minidappfolder, newfile);
 			
+			//Check parents exis
+			File parent = moveto.getParentFile();
+			parent.mkdirs();
+					
+			//Do the move..
+			boolean success = thefile.renameTo(moveto);
+			
+			response.put("renamed", newfile);
+			response.put("move", success);
+			
+			//Convert to Text
+			mFinalResult = response.toString();
+		
 		}else if(filefunc.equals("load")) {
 			if(thefile.exists()) {
 				//Load the data..

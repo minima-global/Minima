@@ -46,23 +46,8 @@ public class SQL implements Runnable {
 		JSONObject res = new JSONObject();
 		
 		//Where is the database..
-		File minidappdatabase = null;
-		BackupManager backup = Main.getMainHandler().getBackupManager();
-		
-		//Which Database.. could be running from a folder..
-		if(mMiniDAPPID.length()<16) {
-			//Get the database folder
-			File temp = BackupManager.getTempFolder();
-			minidappdatabase = new File(temp,"_tempdb"+mMiniDAPPID);
-			
-		}else {
-			//Get the database folder
-			File minidapps   = backup.getMiniDAPPFolder();
-			File dapp        = new File(minidapps,mMiniDAPPID);
-			File dbdir       = new File(dapp,"sql");
-			dbdir.mkdirs();
-			minidappdatabase = new File(dbdir,"_sqldb");
-		}
+		BackupManager backup  = Main.getMainHandler().getBackupManager();
+		File minidappdatabase = new File(backup.getMiniDAPPSQLFolder(mMiniDAPPID),"_sqldb");
 		
 		//Get the Function..
 		res.put("db", minidappdatabase.getAbsolutePath());
