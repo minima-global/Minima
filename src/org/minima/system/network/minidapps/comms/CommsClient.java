@@ -193,9 +193,6 @@ public class CommsClient extends MessageProcessor {
 			//Message received..
 			String msg = zMessage.getString("message");
 			
-			//Convert to a JSON - to clean up..
-			JSONObject json = (JSONObject) new JSONParser().parse(msg);
-			
 			//Pass it on..
 			JSONObject netaction = new JSONObject();
 			netaction.put("action", "message");
@@ -207,7 +204,7 @@ public class CommsClient extends MessageProcessor {
 			netaction.put("outbound", isOutBound());
 			netaction.put("minidappid", mMiniDAPPID);
 			
-			netaction.put("message", json);
+			netaction.put("message", msg);
 			
 			//Send it on..
 			mCommsManager.postCommsMssage(netaction,mMiniDAPPID);

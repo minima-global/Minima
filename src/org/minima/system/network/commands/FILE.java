@@ -4,6 +4,7 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.StringTokenizer;
 
 import org.minima.objects.base.MiniString;
@@ -80,24 +81,16 @@ public class FILE implements Runnable {
 			thefile.getParentFile().mkdirs();
 			
 			//Get the file index
-			int index    = mCommand.indexOf(file);
-			String json  = mCommand.substring(index + file.length()).trim();
+			int index        = mCommand.indexOf(file);
+			String filedata  = mCommand.substring(index + file.length()).trim();
 			
 			try {		
-				//Convert to a proper JSON Object..
-				MiniString msdata = new MiniString(json);
-
-				//Store to  file..	
-				MiniFile.writeObjectToFile(thefile, msdata);
-				
+				MiniFile.writeDataToFile(thefile, filedata.getBytes(Charset.forName("UTF-8")));			
 			} catch (Exception e) {
 				response.put("exception", e.toString());
 				e.printStackTrace();
 			}
 			
-			//Convert to Text
-			mFinalResult = response.toString();
-		
 		}else if(filefunc.equals("move")) {
 			String newfile = strtok.nextToken().trim();
 			File moveto = new File(minidappfolder, newfile);
@@ -112,28 +105,18 @@ public class FILE implements Runnable {
 			response.put("renamed", newfile);
 			response.put("move", success);
 			
-			//Convert to Text
-			mFinalResult = response.toString();
-		
 		}else if(filefunc.equals("load")) {
 			if(thefile.exists()) {
-				//Load the data..
 				try {
-					FileInputStream fis = new FileInputStream(thefile);
-					DataInputStream dis = new DataInputStream(fis);
+					byte[] data = MiniFile.readCompleteFile(thefile);
+					response.put("data", new String(data,Charset.forName("UTF-8")));
 					
-					MiniString json = MiniString.ReadFromStream(dis);
-				
-					mFinalResult = json.toString();
-					
-					dis.close();
-					fis.close();
 				} catch (IOException e) {
-					mFinalResult = "{}";
+					response.put("exception", e.toString());
 					e.printStackTrace();
 				}
 			}else {
-				mFinalResult = "{}";
+				response.put("exception", "..does not exist!");
 			}
 			
 		}else if(filefunc.equals("list")) {
@@ -171,18 +154,16 @@ public class FILE implements Runnable {
 			//Create the Response JSON
 			response.put("files",farr);
 			
-			//Convert to Text
-			mFinalResult = response.toString();
-			
 		}else if(filefunc.equals("delete")) {
 			if(thefile.exists()) {
 				//Delete
 				BackupManager.safeDelete(thefile);
 			}
-			
-			//Convert to Text
-			mFinalResult = response.toString();
 		}
+		
+		//Convert to Text
+		mFinalResult = response.toString();
+		
 		
 		//Call the JS function
 		if(mCallback != null) {		

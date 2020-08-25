@@ -7,6 +7,10 @@
 */
 
 /**
+ * The MAIN Minima Callback function 
+ */
+var MINIMA_MAIN_CALLBACK = null;
+/**
  * The Web Socket Host for PUSH messages
  */
 var MINIMA_WEBSOCKET = null;
@@ -52,11 +56,14 @@ var Minima = {
 	logging : false,
 	
 	/**
-	 * Minima Startup
+	 * Minima Startup - with the callback function used for all Minima messages
 	 */
-	init : function(){
+	init : function(callback){
 		//Log a little..
 		Minima.log("Initialisation.. v2");
+		
+		//Store the callback
+		MINIMA_MAIN_CALLBACK = callback;
 		
 		//Any Parameters..
 		var paramstring = window.location.protocol+"//"+window.location.hostname+":"+window.location.port+"/params";
@@ -123,9 +130,7 @@ var Minima = {
 		
 		//SERVER FUNCTIONS
 		onInbound : function(port, onReceiveCallback){
-			//Keep track of the function.. 
-			funcstore = { "port":port, "callback":onReceiveCallback };
-			MINIMA_SERVER_LISTEN.push(funcstore);
+			MINIMA_SERVER_LISTEN.push({ "port":port, "callback":onReceiveCallback });
 		},
 		
 		start : function(port){
@@ -136,16 +141,17 @@ var Minima = {
 			MinimaRPC("net","stop "+port,null);
 		},
 		
-		broadcast : function(port,jsonobject){
-			MinimaRPC("net","broadcast "+port+" "+JSON.stringify(jsonobject),null);
+		broadcast : function(port,text){
+			MinimaRPC("net","broadcast "+port+" "+text,null);
+		},
+		
+		broadcastJSON : function(port,jsonobject){
+			Minima.net.broadcast(port, JSON.stringify(jsonobject));
 		},
 		
 		//USER FUNCTIONS 
 		onOutbound : function(hostport, onReceiveCallback){
-			//Keep track of the function.. 
-			funcstore = { "port":hostport, "callback":onReceiveCallback };
-			Minima.log(JSON.stringify(funcstore));
-			MINIMA_USER_LISTEN.push(funcstore);
+			MINIMA_USER_LISTEN.push({ "port":hostport, "callback":onReceiveCallback });
 		},
 		
 		connect : function(hostport){
@@ -156,8 +162,12 @@ var Minima = {
 			MinimaRPC("net","disconnect "+UID,null);
 		},
 		
-		send : function(UID, jsonobject){
-			MinimaRPC("net","send "+UID+" "+JSON.stringify(jsonobject),null);
+		send : function(UID, text){
+			MinimaRPC("net","send "+UID+" "+text,null);
+		},
+		
+		sendJSON : function(UID, jsonobject){
+			Minima.net.send(UID, JSON.stringify(jsonobject));
 		},
 		
 		//UTIL
@@ -178,12 +188,26 @@ var Minima = {
 	 */ 
 	file : {
 		
-		save : function(jsonobject, file,  callback) {
-			MinimaRPC("file","save "+file+" "+JSON.stringify(jsonobject),callback);
+		save : function(text, file,  callback) {
+			MinimaRPC("file","save "+file+" "+text,callback);
 		},
 		
 		load : function(file, callback) {
 			MinimaRPC("file","load "+file,callback);
+		},
+		
+		saveJSON : function(jsonobject, file,  callback) {
+			Minima.file.save(JSON.stringify(jsonobject), file, callback);
+		},
+		
+		loadJSON : function(file, callback) {
+			Minima.file.load(file, function(resp){
+				//Make it an actiual JSON
+				resp.data = JSON.parse(resp.data);
+				
+				//And call the original function
+				callback(resp);
+			});
 		},
 		
 		move : function(file, newfile, callback) {
@@ -331,7 +355,8 @@ function MinimaPostMessage(event, info){
    var data = { "event": event, "info" : info };
 
    //And dispatch
-   window.dispatchEvent(new CustomEvent("MinimaEvent", {detail:data} ));
+   MINIMA_MAIN_CALLBACK(data);   
+   //window.dispatchEvent(new CustomEvent("MinimaEvent", {detail:data} ));
 }
 
 /**
