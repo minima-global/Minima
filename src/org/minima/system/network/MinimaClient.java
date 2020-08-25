@@ -345,6 +345,12 @@ public class MinimaClient extends MessageProcessor {
 	 * Send a message down the network
 	 */
 	protected void sendMessage(MiniByte zMessageType, Streamable zObject) {
+		//Are we connected ...
+		if(mOutput == null) {
+			//No connection yet..
+			return;
+		}
+		
 		//Send it..
 		try {
 			//Create a Data Object 
@@ -380,6 +386,8 @@ public class MinimaClient extends MessageProcessor {
 			baos.close();
 			
 		}catch(Exception ec) {
+			ec.printStackTrace();
+			
 			//Show..
 			MinimaLogger.log("Error sending message : "+zMessageType.toString()+" "+ec);
 			
