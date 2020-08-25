@@ -10,6 +10,12 @@
  * The MAIN Minima Callback function 
  */
 var MINIMA_MAIN_CALLBACK = null;
+
+/**
+ * The MiniDAPP interfce Callback function 
+ */
+var MINIMA_MINIDAPP_CALLBACK = null;
+
 /**
  * The Web Socket Host for PUSH messages
  */
@@ -252,16 +258,21 @@ var Minima = {
 	/**
 	 * Intra MiniDAPP communication
 	 */
-	comms : {
+	minidapps : {
 		
 		//List the currently installed minidapps
 		list : function(callback){
 			Minima.cmd("minidapp list",callback);
 		},
 		
+		//Function to call when an Intra-MiniDAPP message is received
+		onReceive : function(onReceiveCallback){
+			MINIMA_MINIDAPP_CALLBACK = onReceiveCallback;
+		},
+		
 		//Send a message to a specific minidapp
 		send : function(minidappid,message, callback){
-			Minima.cmd("minidapp post:"+minidappid+" \""+message+"\"",callback);
+			Minima.cmd("minidapps post:"+minidappid+" \""+message+"\"",callback);
 		},
 		
 		//The replyid is in the original message
@@ -269,17 +280,8 @@ var Minima = {
 			//Reply to a POST message..
 			replymsg = { "type":"reply", "message": message, "replyid" : replyid };
 			MINIMA_WEBSOCKET.send(JSON.stringify(replymsg));
-		},
-		
-		//For debug purposes you can can hard set the MiniDAPP ID
-		setUID : function(uid){
-			//UID JSON Message
-			miniuid = { "type":"uid", "uid": uid };
-			
-			//Send your name.. normally set automagically but can be hard set when debugging
-			MINIMA_WEBSOCKET.send(JSON.stringify(miniuid));
 		}
-		
+
 	},
 	
 	
@@ -428,6 +430,14 @@ function MinimaWebSocketListener(){
 				}else{
 					sendCallback(MINIMA_USER_LISTEN, jmsg.details.hostport, jmsg.details);
 				}
+			}else if( jmsg.details.action == "post"){ 
+				//Call the MiniDAPP function..
+				if(MINIMA_MINIDAPP_CALLBACK){
+					MINIMA_MINIDAPP_CALLBACK(jmsg.details);	
+				}else{
+					Minima.minidapps.reply(jmsg.details.replyid, "ERROR - no minidapp interface found");
+				}
+				
 			}else{
 				Minima.log("UNKNOWN NETWORK EVENT : "+evt.data);
 			}
