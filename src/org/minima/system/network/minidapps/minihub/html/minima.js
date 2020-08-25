@@ -160,10 +160,12 @@ var Minima = {
 			MinimaRPC("net","send "+UID+" "+JSON.stringify(jsonobject),null);
 		},
 		
+		//UTIL
 		info : function(callback){
 			MinimaRPC("net","info",callback);
 		},
 		
+		//GET an URL resource
 		get : function(url, callback){
 			MinimaRPC("net","get "+url,callback);
 		}
@@ -204,7 +206,7 @@ var Minima = {
 	form : {
 		
 		//BOTH POST and GET parameters.. and any files are uploaded to /upload folder
-		//must set POST form to multipart/form-data .. 
+		//must set POST form to multipart/form-data to work.. 
 		params : function(paramname){
 			return MINIMA_PARAMS[paramname];
 		},
@@ -385,23 +387,24 @@ function MinimaWebSocketListener(){
 			MinimaPostMessage("newbalance",jmsg.balance);
 		
 		}else if(jmsg.event == "network"){
-			//HARD log..
-			Minima.log("NETWORK : "+evt.data);
-				
 			//What type of message is it..
-			if(jmsg.details.action == "server_start" || jmsg.details.action == "server_stop" || jmsg.details.action == "server_error"){
-				//Send a message..
+			if( jmsg.details.action == "server_start" || 
+				jmsg.details.action == "server_stop"  || 
+				jmsg.details.action == "server_error"){
+					
 				sendCallback(MINIMA_SERVER_LISTEN, jmsg.details.port, jmsg.details);
 				
-			}else if(jmsg.details.action == "client_new" || jmsg.details.action == "client_shut" || jmsg.details.action == "message"){
-				//Incoming..
+			}else if( jmsg.details.action == "client_new"  || 
+					  jmsg.details.action == "client_shut" || 
+					  jmsg.details.action == "message"){
+						
 				if(!jmsg.details.outbound){
-					//It's incoming..'
 					sendCallback(MINIMA_SERVER_LISTEN, jmsg.details.port, jmsg.details);
 				}else{
-					//It's an outgoing connection..
 					sendCallback(MINIMA_USER_LISTEN, jmsg.details.hostport, jmsg.details);
 				}
+			}else{
+				Minima.log("UNKNOWN NETWORK EVENT : "+evt.data);
 			}
 							
 		}else if(jmsg.event == "txpowstart"){
