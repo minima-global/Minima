@@ -1,6 +1,9 @@
 
 package org.minima.system;
 
+import java.util.ArrayList;
+import java.util.StringTokenizer;
+
 import org.minima.GlobalParams;
 import org.minima.system.brains.BackupManager;
 import org.minima.system.brains.ConsensusBackup;
@@ -64,9 +67,11 @@ public class Main extends MessageProcessor {
 	/**
 	 * Default nodes to connect to
 	 */
-	public boolean mAutoConnect = false;
-	public String mAutoHost 	= "";
-	public int mAutoPort    	= 0;
+	public boolean mAutoConnect        = false;
+	ArrayList<String> mAutoConnectList = new ArrayList<>();
+	
+//	public String mAutoHost 	= "";
+//	public int mAutoPort    	= 0;
 	
 	/**
 	 * When did this node start up..
@@ -121,9 +126,12 @@ public class Main extends MessageProcessor {
 		mAutoConnect = zAuto;
 	}
 	
-	public void setAutoConnectHostPort(String zHost, int zPort) {
-		mAutoHost = zHost;
-		mAutoPort = zPort;
+	public void clearAutoConnectHostPort(String zHostPort) {
+		mAutoConnectList.clear();
+	}
+	
+	public void addAutoConnectHostPort(String zHostPort) {
+		mAutoConnectList.add(zHostPort);
 	}
 	
 	public long getNodeStartTime() {
@@ -208,11 +216,18 @@ public class Main extends MessageProcessor {
 
 			//And do we do an automatic logon..
 			if(mAutoConnect) {
-				//Send a TimedMessage..
-				Message connect  = new Message(NetworkHandler.NETWORK_CONNECT)
-						.addInteger("port", mAutoPort).addString("host", mAutoHost);
+				//Connect to the the list of auto connect
+				for(String hostport : mAutoConnectList) {
+					int div     = hostport.indexOf(":");
+					String host = hostport.substring(0,div);
+					int port    = Integer.parseInt(hostport.substring(div+1));
+					
+					//Send a TimedMessage..
+					Message connect  = new Message(NetworkHandler.NETWORK_CONNECT)
+							.addInteger("port", port).addString("host", host);
+					getNetworkHandler().PostMessage(connect);
+				}
 				
-				getNetworkHandler().PostMessage(connect);
 			}
 			
 		}else if ( zMessage.isMessageType(SYSTEM_SHUTDOWN) ) {

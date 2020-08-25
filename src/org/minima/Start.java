@@ -94,6 +94,7 @@ public class Start {
 		int hostnum = rand.nextInt(VALID_BOOTSTRAP_NODES.length);
 		//hostnum = 3;
 		
+		ArrayList<String> connectlist = new ArrayList<>();
 		String connecthost      = VALID_BOOTSTRAP_NODES[hostnum];
 		int connectport         = 9001;
 		String host             = "";
@@ -160,9 +161,8 @@ public class Start {
 					automine = true;
 				
 				}else if(arg.equals("-connect")) {
-					connect = true;
-					connecthost = zArgs[counter++];
-					connectport = Integer.parseInt(zArgs[counter++]);
+					String newconn = zArgs[counter++]+":"+zArgs[counter++];
+					connectlist.add(newconn);
 
 				}else if(arg.equals("-clean")) {
 					clean = true;
@@ -189,10 +189,17 @@ public class Start {
 		//Link it.
 		mMainServer = rcmainserver;
 		
+		//Have we added any connect hosts..
+		if(connectlist.size() == 0 && connect) {
+			rcmainserver.addAutoConnectHostPort(connecthost+":"+connectport);
+		}else {
+			for(String hostport : connectlist) {
+				rcmainserver.addAutoConnectHostPort(hostport);
+			}
+		}
+		
 		//Set the connect properties
 		rcmainserver.setAutoConnect(connect);
-		rcmainserver.mAutoHost = connecthost;
-		rcmainserver.mAutoPort = connectport;
 		
 		//Are we private!
 		if(genesis) {
