@@ -239,53 +239,6 @@ public class NetworkHandler extends SystemHandler{
 			
 			//And finish up..
 			stopMessageProcessor();
-
-//		}else if(zMessage.isMessageType(NETWORK_WS_NOTIFY)) {
-//			//What is the message..
-//			JSONObject json = (JSONObject) zMessage.getObject("message");
-//			
-//			String minidappid = "";
-//			if(zMessage.exists("minidappid")) {
-//				minidappid = zMessage.getString("minidappid");
-//			}
-//			
-//			if(minidappid.equals("")) {
-//				Message msg = new Message(WebSocketManager.WEBSOCK_SENDTOALL);
-//				msg.addString("message", json.toString());
-//				mWebSocketManager.PostMessage(msg);				
-//			}else {
-//				Message msg = new Message(WebSocketManager.WEBSOCK_SEND);
-//				msg.addString("message", json.toString());
-//				msg.addString("minidappid", minidappid);
-//				mWebSocketManager.PostMessage(msg);
-//			}
-			
-		}else if(zMessage.isMessageType(NETWORK_WEBPROXY)) {
-//			//Connect to a web proxy and listen for RPC calls..
-//			String uuid 	= zMessage.getString("uuid");
-//			
-//			//Create the IP
-// 			String ip = uuid+"#"+getDAPPManager().getHostIP()+":"+getRPCServer().getPort();
-//			
-//			//Call the Minima Proxy - this should be user definable..#TODO
-//			String url = mMifiProxy+URLEncoder.encode(ip, "UTF-8");
-//		
-//			//Call it..
-//			String resp ="";
-//			try {
-//				resp = RPCClient.sendGET(url);
-//			}catch(IOException exc) {
-//				//Tell the user
-//				InputHandler.getResponseJSON(zMessage).put("url", url);
-//				InputHandler.getResponseJSON(zMessage).put("resp", exc);
-//				InputHandler.endResponse(zMessage, true,"");
-//				return;
-//			}
-//			
-//			//Tell the user
-//			InputHandler.getResponseJSON(zMessage).put("url", url);
-//			InputHandler.getResponseJSON(zMessage).put("resp", resp);
-//			InputHandler.endResponse(zMessage, true,"");
 			
 		}else if(zMessage.isMessageType(NETWORK_CONNECT)) {
 			String host = zMessage.getString("host");
