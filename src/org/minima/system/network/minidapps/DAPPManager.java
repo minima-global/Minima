@@ -265,7 +265,7 @@ public class DAPPManager extends SystemHandler {
 				
 				//Open it up..
 				File conf    = new File(app,"minidapp.conf");
-				File backend = new File(app,"backend.js");
+				File backend = new File(app,"service.js");
 				
 				//Does it exist..
 				if(!conf.exists()) {
@@ -278,7 +278,7 @@ public class DAPPManager extends SystemHandler {
 							//Ignore the SQL folder that we generate..
 							if(subapp.isDirectory()) {
 								conf    = new File(subapp,"minidapp.conf");
-								backend = new File(subapp,"backend.js");
+								backend = new File(subapp,"service.js");
 								
 								if(conf.exists()) {
 									break;	
@@ -313,7 +313,7 @@ public class DAPPManager extends SystemHandler {
 							MinimaLogger.log("BackEndJS create for "+minidappid);
 							
 						} catch (Exception e) {
-							MinimaLogger.log("Error loading backend.js for "+backend.getAbsolutePath());
+							MinimaLogger.log("Error loading service.js for "+backend.getAbsolutePath());
 						} 
 					}
 					
@@ -580,7 +580,6 @@ public class DAPPManager extends SystemHandler {
 	
 	private void sendToBackEND(String zMiniDAPPID, JSONObject zJSON) {
 		//Create the same EVent as on the Web
-	    //JSONObject jobj  = CreatePostEvent(zJSON);
 	    String JSONEvent = zJSON.toString();
 	    
 		if(zMiniDAPPID.equals("")){

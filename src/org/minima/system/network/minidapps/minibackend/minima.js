@@ -5,6 +5,22 @@
 */
 
 /**
+ * The MAIN Minima Callback function 
+ */
+var MINIMA_MAIN_CALLBACK = null;
+
+/**
+ * The MiniDAPP interfce Callback function 
+ */
+var MINIMA_MINIDAPP_CALLBACK = null;
+
+/**
+ * NET socket port and functions
+ */
+var MINIMA_SERVER_LISTEN = [];
+var MINIMA_USER_LISTEN   = [];
+
+/**
  * Main MINIMA Object for all interaction
  */
 var Minima = {
@@ -20,9 +36,34 @@ var Minima = {
 	
 	//Show RPC commands
 	logging : false,
+
+	/**
+	 * Minima Startup - with the callback function used for all Minima messages
+	 */
+	init : function(callback){
+		//Log a little..
+		Minima.log("Initialisation.. v2");
+		
+		//Store the callback
+		MINIMA_MAIN_CALLBACK = callback;
+		
+		//Do the first call..
+		Minima.cmd("status;balance", function(json){
+			//Status is first..
+			Minima.status  = json[0].response;
+			Minima.balance = json[1].response.balance;
+			
+		    //Store this..
+		    Minima.txpowid = Minima.status.tip;
+		    Minima.block   = parseInt(Minima.status.lastblock,10);
+		    
+		    //Send a message
+		    MinimaPostMessage("connected", "success");
+		});
+	},
 	
 	log : function(output){
-		java.lang.System.out.println("Minima @ "+new Date().toLocaleString()+" : "+output);
+		java.lang.System.out.println("Service @ "+new Date().toLocaleString()+" : "+output);
 	},
 	
 	/**
@@ -33,17 +74,31 @@ var Minima = {
 		Minima.log("Notify : "+message);
 	},
 	
+	/**
+	 * Runs a function on the Minima Command Line
+	 */
 	cmd : function(minifunc, callback){
 		MinimaRPC("cmd",minifunc,callback);
 	},
 	
+	/**
+	 * Run SQL in the Database created for this MiniDAPP
+	 */
 	sql : function(query, callback){
 		MinimaRPC("sql",query,callback);
 	},
 	
+	/**
+	 * NETWORK Functions
+	 */
 	net : {
 		
-		listen : function(port){
+		//SERVER FUNCTIONS
+		onInbound : function(port, onReceiveCallback){
+			MINIMA_SERVER_LISTEN.push({ "port":port, "callback":onReceiveCallback });
+		},
+		
+		start : function(port){
 			MinimaRPC("net","listen "+port,null);
 		},
 		
@@ -51,8 +106,17 @@ var Minima = {
 			MinimaRPC("net","stop "+port,null);
 		},
 		
-		broadcast : function(port,jsonobject){
-			MinimaRPC("net","broadcast "+port+" "+JSON.stringify(jsonobject),null);
+		broadcast : function(port,text){
+			MinimaRPC("net","broadcast "+port+" "+text,null);
+		},
+		
+		broadcastJSON : function(port,jsonobject){
+			Minima.net.broadcast(port, JSON.stringify(jsonobject));
+		},
+		
+		//USER FUNCTIONS 
+		onOutbound : function(hostport, onReceiveCallback){
+			MINIMA_USER_LISTEN.push({ "port":hostport, "callback":onReceiveCallback });
 		},
 		
 		connect : function(hostport){
@@ -63,14 +127,20 @@ var Minima = {
 			MinimaRPC("net","disconnect "+UID,null);
 		},
 		
-		send : function(UID, jsonobject){
-			MinimaRPC("net","send "+UID+" "+JSON.stringify(jsonobject),null);
+		send : function(UID, text){
+			MinimaRPC("net","send "+UID+" "+text,null);
 		},
 		
+		sendJSON : function(UID, jsonobject){
+			Minima.net.send(UID, JSON.stringify(jsonobject));
+		},
+		
+		//UTIL
 		info : function(callback){
 			MinimaRPC("net","info",callback);
 		},
 		
+		//GET an URL resource
 		get : function(url, callback){
 			MinimaRPC("net","get "+url,callback);
 		}
@@ -78,39 +148,30 @@ var Minima = {
 	},
 	
 	/**
-	 * Intra MiniDAPP communication
-	 */
-	comms : {
-		
-		//List the currently installed minidapps
-		list : function(callback){
-			Minima.cmd("minidapp list",callback);
-		},
-		
-		//Send a message to a specific minidapp
-		send : function(minidappid,message, callback){
-			Minima.cmd("minidapp post:"+minidappid+" \""+message+"\"",callback);
-		},
-		
-		//The replyid is in the original message
-		reply : function(replyid,message){
-			//Reply to a POST message.. iuse the mesage
-			replymsg = { "type":"reply", "message": message, "replyid" : replyid };
-			
-			//Special one off function..
-			MinimaJSBridge.wspostreply(replyid, message);
-		}
-		
-	},
-	
+	 * FILE Functions - no spaces allowed in filenames
+	 */ 
 	file : {
 		
-		save : function(jsonobject, file,  callback) {
-			MinimaRPC("file","save "+file+" "+JSON.stringify(jsonobject),callback);
+		save : function(text, file,  callback) {
+			MinimaRPC("file","save "+file+" "+text,callback);
 		},
 		
 		load : function(file, callback) {
 			MinimaRPC("file","load "+file,callback);
+		},
+		
+		saveJSON : function(jsonobject, file,  callback) {
+			Minima.file.save(JSON.stringify(jsonobject), file, callback);
+		},
+		
+		loadJSON : function(file, callback) {
+			Minima.file.load(file, function(resp){
+				//Make it an actiual JSON
+				resp.data = JSON.parse(resp.data);
+				
+				//And call the original function
+				callback(resp);
+			});
 		},
 		
 		move : function(file, newfile, callback) {
@@ -126,7 +187,41 @@ var Minima = {
 		}
 			
 	},
+
+	/**
+	 * Intra MiniDAPP communication
+	 */
+	minidapps : {
+		
+		//List the currently installed minidapps
+		list : function(callback){
+			Minima.cmd("minidapps list",callback);
+		},
+		
+		//Function to call when an Intra-MiniDAPP message is received
+		onReceive : function(onReceiveCallback){
+			MINIMA_MINIDAPP_CALLBACK = onReceiveCallback;
+		},
+		
+		//Send a message to a specific minidapp
+		send : function(minidappid,message, callback){
+			Minima.cmd("minidapps post:"+minidappid+" \""+message+"\"",callback);
+		},
+		
+		//The replyid is in the original message
+		reply : function(replyid,message){
+			//Reply to a POST message.. iuse the mesage
+			replymsg = { "type":"reply", "message": message, "replyid" : replyid };
+			
+			//Special one off function..
+			MinimaJSBridge.wspostreply(replyid, message);
+		}
+
+	},
 	
+	/**
+	 * UTILITY FUNCTIONS
+	 */	
 	util : {
 			//Get the Balance string for a Tokenid..
 			getBalance : function(tokenid){
@@ -188,14 +283,14 @@ function MinimaRPC(type, data, callback){
 }
 
 /**
- * Post a message to the Minima Event Listener in backend.js
+ * Post a message to the Minima Event Listeners
  */
 function MinimaPostMessage(event, info){
    //Create Data Object
    var data = { "event": event, "info" : info };
 
-   //And dispatch - to the backend function..
-   MinimaEvent({detail:data});
+   //And dispatch
+   MINIMA_MAIN_CALLBACK(data);   
 }
 
 /**
@@ -203,25 +298,7 @@ function MinimaPostMessage(event, info){
  */
 function MinimaBackEndListener(jmsg){
 			
-	if(jmsg.event == "connected"){
-		//Log a little..
-		Minima.log("Initialisation..");
-		
-		//Do the first call..
-		Minima.cmd("status;balance", function(json){
-			//Status is first..
-			Minima.status  = json[0].response;
-			Minima.balance = json[1].response.balance;
-			
-		    //Store this..
-		    Minima.txpowid = Minima.status.tip;
-		    Minima.block   = parseInt(Minima.status.lastblock,10);
-
-			//Post it
-			MinimaPostMessage("connected","success");
-		});
-		
-	}else if(jmsg.event == "newblock"){
+	if(jmsg.event == "newblock"){
 		//Set the new status
 		Minima.status  = jmsg.status;
 		Minima.txpowid = jmsg.status.tip;
@@ -242,8 +319,42 @@ function MinimaBackEndListener(jmsg){
 		MinimaPostMessage("newbalance",jmsg.balance);
 	
 	}else if(jmsg.event == "network"){
-		MinimaPostMessage("network",jmsg.details);
-	
+		//What type of message is it..
+		if( jmsg.details.action == "server_start" || 
+			jmsg.details.action == "server_stop"  || 
+			jmsg.details.action == "server_error"){
+				
+			sendCallback(MINIMA_SERVER_LISTEN, jmsg.details.port, jmsg.details);
+			
+		}else if( jmsg.details.action == "client_new"  || 
+				  jmsg.details.action == "client_shut" || 
+				  jmsg.details.action == "message"){
+					
+			if(!jmsg.details.outbound){
+				sendCallback(MINIMA_SERVER_LISTEN, jmsg.details.port, jmsg.details);
+			}else{
+				sendCallback(MINIMA_USER_LISTEN, jmsg.details.hostport, jmsg.details);
+			}
+		}else if( jmsg.details.action == "post"){ 
+			//Call the MiniDAPP function..
+			if(MINIMA_MINIDAPP_CALLBACK){
+				MINIMA_MINIDAPP_CALLBACK(jmsg.details);	
+			}else{
+				Minima.minidapps.reply(jmsg.details.replyid, "ERROR - no minidapp interface found");
+			}
+			
+		}else{
+			Minima.log("UNKNOWN NETWORK EVENT : "+evt.data);
+		}
+	}	
+}
+
+function sendCallback(list, port, msg){
+	var funclen = list.length;
+	for(i=0;i<funclen;i++){
+		if(list[i].port == port){
+			list[i].callback(msg);
+			return;
+		}
 	}
-	
 }
