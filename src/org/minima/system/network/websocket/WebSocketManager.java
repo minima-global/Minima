@@ -8,6 +8,7 @@ import java.util.Hashtable;
 import org.minima.system.Main;
 import org.minima.system.SystemHandler;
 import org.minima.system.network.minidapps.DAPPManager;
+import org.minima.system.network.minidapps.comms.CommsManager;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.json.parser.JSONParser;
@@ -134,7 +135,12 @@ public class WebSocketManager extends SystemHandler {
 				}
 				
 				//Set it..
+				MinimaLogger.log("WS UID set : "+mid);
 				mws.setMiniDAPPUID(mid);
+				
+				//Update it..!..
+				Message reset = new Message(CommsManager.COMMS_RESET_INFO).addString("minidappid", mid);
+				getMainHandler().getNetworkHandler().getDAPPManager().getCommsManager().PostMessage(reset);
 				
 			}else if(msgtype.equals("reply")) {
 				Message replymsg = new Message(DAPPManager.DAPP_DIRECTREPLY);
@@ -160,6 +166,8 @@ public class WebSocketManager extends SystemHandler {
 					try {
 						//Try and send the message..
 						client.send(msg);
+						MinimaLogger.log("WS_SEND FRONTEND MINIDAPP FOUND! "+zMessage);
+						
 						return;
 					}catch(Exception exc){
 						//Something wrong with this connection.. close..

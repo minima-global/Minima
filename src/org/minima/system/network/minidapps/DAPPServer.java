@@ -203,8 +203,8 @@ public class DAPPServer extends NanoHTTPD{
 				}
 			
 				//Are we asking for minima.js..
-			}else if(fileRequested.endsWith("/minima.js") || fileRequested.equals("minima.js")) {
-				return getOKResponse(mDAPPManager.getMinimaJS() , "text/javascript");
+//			}else if(fileRequested.endsWith("/minima.js") || fileRequested.equals("minima.js")) {
+//				return getOKResponse(mDAPPManager.getMinimaJS() , "text/javascript");
 				
 			}
 			

@@ -28,6 +28,10 @@ public class CommsServer implements Runnable{
 	public int getPort() {
 		return mPort;
 	}
+	
+	public String getMiniDAPPID() {
+		return mMiniDAPPID;
+	}
 		
 	public void stop() {
 		mRunning = false;

@@ -201,9 +201,12 @@ public class CommsClient extends MessageProcessor {
 			netaction.put("action", "message");
 			
 			netaction.put("port", getPort());
+			netaction.put("host", getHost());
+			netaction.put("hostport", getHost()+":"+getPort());
 			netaction.put("uid", getUID());
-			netaction.put("outboud", isOutBound());
+			netaction.put("outbound", isOutBound());
 			netaction.put("minidappid", mMiniDAPPID);
+			
 			netaction.put("message", json);
 			
 			//Send it on..

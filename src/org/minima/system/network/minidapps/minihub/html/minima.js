@@ -17,6 +17,12 @@ var MINIMA_WEBSOCKET = null;
 var MINIMA_PARAMS = {};
 
 /**
+ * NET socket port and functions
+ */
+var MINIMA_SERVER_LISTEN = [];
+var MINIMA_USER_LISTEN   = [];
+
+/**
  * Main MINIMA Object for all interaction
  */
 var Minima = {
@@ -50,7 +56,7 @@ var Minima = {
 	 */
 	init : function(){
 		//Log a little..
-		Minima.log("Initialisation..");
+		Minima.log("Initialisation.. v2");
 		
 		//Any Parameters..
 		var paramstring = window.location.protocol+"//"+window.location.hostname+":"+window.location.port+"/params";
@@ -115,7 +121,14 @@ var Minima = {
 	 */
 	net : {
 		
-		listen : function(port){
+		//SERVER FUNCTIONS
+		onInbound : function(port, onReceiveCallback){
+			//Keep track of the function.. 
+			funcstore = { "port":port, "callback":onReceiveCallback };
+			MINIMA_SERVER_LISTEN.push(funcstore);
+		},
+		
+		start : function(port){
 			MinimaRPC("net","listen "+port,null);
 		},
 		
@@ -125,6 +138,14 @@ var Minima = {
 		
 		broadcast : function(port,jsonobject){
 			MinimaRPC("net","broadcast "+port+" "+JSON.stringify(jsonobject),null);
+		},
+		
+		//USER FUNCTIONS 
+		onOutbound : function(hostport, onReceiveCallback){
+			//Keep track of the function.. 
+			funcstore = { "port":hostport, "callback":onReceiveCallback };
+			Minima.log(JSON.stringify(funcstore));
+			MINIMA_USER_LISTEN.push(funcstore);
 		},
 		
 		connect : function(hostport){
@@ -364,8 +385,25 @@ function MinimaWebSocketListener(){
 			MinimaPostMessage("newbalance",jmsg.balance);
 		
 		}else if(jmsg.event == "network"){
-			MinimaPostMessage("network",jmsg.details);
-			
+			//HARD log..
+			Minima.log("NETWORK : "+evt.data);
+				
+			//What type of message is it..
+			if(jmsg.details.action == "server_start" || jmsg.details.action == "server_stop" || jmsg.details.action == "server_error"){
+				//Send a message..
+				sendCallback(MINIMA_SERVER_LISTEN, jmsg.details.port, jmsg.details);
+				
+			}else if(jmsg.details.action == "client_new" || jmsg.details.action == "client_shut" || jmsg.details.action == "message"){
+				//Incoming..
+				if(!jmsg.details.outbound){
+					//It's incoming..'
+					sendCallback(MINIMA_SERVER_LISTEN, jmsg.details.port, jmsg.details);
+				}else{
+					//It's an outgoing connection..
+					sendCallback(MINIMA_USER_LISTEN, jmsg.details.hostport, jmsg.details);
+				}
+			}
+							
 		}else if(jmsg.event == "txpowstart"){
 			Minima.notify("Mining Transaction Started..","#55DD55");	
 			
@@ -388,6 +426,16 @@ function MinimaWebSocketListener(){
 		// websocket is closed.
 	    Minima.log("Minima WS Listener Error ... "+err); 
 	};
+}
+
+function sendCallback(list, port, msg){
+	var funclen = list.length;
+	for(i=0;i<funclen;i++){
+		if(list[i].port == port){
+			list[i].callback(msg);
+			return;
+		}
+	}
 }
 
 /**
