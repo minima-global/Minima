@@ -28,7 +28,7 @@ import org.minima.system.network.NetworkHandler;
 import org.minima.system.network.minidapps.comms.CommsManager;
 import org.minima.system.network.minidapps.minibackend.BackEndDAPP;
 import org.minima.system.network.minidapps.minihub.hexdata.minimajs;
-import org.minima.system.network.websocket.WebSocketManager;
+import org.minima.system.network.minidapps.websocket.WebSocketManager;
 import org.minima.utils.Crypto;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MinimaLogger;

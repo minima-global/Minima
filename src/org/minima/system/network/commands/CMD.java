@@ -5,13 +5,9 @@ import java.util.StringTokenizer;
 import org.minima.system.Main;
 import org.minima.system.input.InputHandler;
 import org.minima.system.input.InputMessage;
-import org.minima.system.network.minidapps.minibackend.MiniJSONUtility;
 import org.minima.utils.ResponseStream;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
-import org.mozilla.javascript.Context;
-import org.mozilla.javascript.Function;
-import org.mozilla.javascript.Scriptable;
 
 public class CMD implements Runnable {
 

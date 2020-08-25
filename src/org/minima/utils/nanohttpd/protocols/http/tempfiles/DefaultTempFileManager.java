@@ -36,10 +36,6 @@ package org.minima.utils.nanohttpd.protocols.http.tempfiles;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-
-import org.minima.system.brains.BackupManager;
-import org.minima.utils.nanohttpd.protocols.http.NanoHTTPD;
 
 /**
  * Default strategy for creating and cleaning up temporary files.

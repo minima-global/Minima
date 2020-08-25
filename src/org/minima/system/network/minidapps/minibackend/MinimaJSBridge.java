@@ -1,7 +1,6 @@
 package org.minima.system.network.minidapps.minibackend;
 
 import org.minima.system.Main;
-import org.minima.system.input.InputHandler;
 import org.minima.system.network.commands.CMD;
 import org.minima.system.network.commands.FILE;
 import org.minima.system.network.commands.NET;

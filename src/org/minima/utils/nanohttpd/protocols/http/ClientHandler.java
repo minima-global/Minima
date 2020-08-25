@@ -40,7 +40,6 @@ import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.util.logging.Level;
 
-import org.minima.utils.MinimaLogger;
 import org.minima.utils.nanohttpd.protocols.http.tempfiles.ITempFileManager;
 
 /**

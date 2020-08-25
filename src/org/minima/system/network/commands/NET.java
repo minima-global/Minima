@@ -11,15 +11,11 @@ import org.minima.system.network.minidapps.DAPPManager;
 import org.minima.system.network.minidapps.comms.CommsClient;
 import org.minima.system.network.minidapps.comms.CommsManager;
 import org.minima.system.network.minidapps.comms.CommsServer;
-import org.minima.system.network.minidapps.minibackend.MiniJSONUtility;
 import org.minima.system.network.rpc.RPCClient;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
-import org.mozilla.javascript.Context;
-import org.mozilla.javascript.Function;
-import org.mozilla.javascript.Scriptable;
 
 public class NET implements Runnable {
 

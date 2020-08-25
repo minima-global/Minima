@@ -1,4 +1,4 @@
-package org.minima.system.network.websocket;
+package org.minima.system.network.minidapps.websocket;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -135,7 +135,6 @@ public class WebSocketManager extends SystemHandler {
 				}
 				
 				//Set it..
-				MinimaLogger.log("WS UID set : "+mid);
 				mws.setMiniDAPPUID(mid);
 				
 				//Update it..!..

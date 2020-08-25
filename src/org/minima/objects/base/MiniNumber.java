@@ -13,7 +13,6 @@ import java.math.BigInteger;
 import java.math.MathContext;
 import java.math.RoundingMode;
 
-import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 
 /**

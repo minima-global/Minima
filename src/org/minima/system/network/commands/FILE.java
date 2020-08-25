@@ -1,23 +1,15 @@
 package org.minima.system.network.commands;
 
-import java.io.DataInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.StringTokenizer;
 
-import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
 import org.minima.system.brains.BackupManager;
-import org.minima.system.input.InputHandler;
-import org.minima.system.network.minidapps.minibackend.MiniJSONUtility;
 import org.minima.utils.MiniFile;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
-import org.mozilla.javascript.Context;
-import org.mozilla.javascript.Function;
-import org.mozilla.javascript.Scriptable;
 
 public class FILE implements Runnable {
 

@@ -1,4 +1,4 @@
-package org.minima.system.network.websocket;
+package org.minima.system.network.minidapps.websocket;
 
 import java.io.IOException;
 

@@ -1,26 +1,13 @@
 package org.minima.utils.nanohttpd.samples.webserver;
 
 import java.io.File;
-import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.minima.objects.base.MiniData;
-import org.minima.system.network.minidapps.minihub.hexdata.faviconico;
-import org.minima.system.network.minidapps.minihub.hexdata.helphtml;
-import org.minima.system.network.minidapps.minihub.hexdata.iconpng;
-import org.minima.system.network.minidapps.minihub.hexdata.indexhtml;
-import org.minima.system.network.minidapps.minihub.hexdata.installdapphtml;
-import org.minima.system.network.minidapps.minihub.hexdata.minidappscss;
-import org.minima.system.network.minidapps.minihub.hexdata.tilegreyjpeg;
-import org.minima.system.network.minidapps.minihub.hexdata.uninstalldapphtml;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MinimaLogger;
-import org.minima.utils.json.JSONArray;
-import org.minima.utils.json.JSONObject;
-import org.minima.utils.messages.Message;
 import org.minima.utils.nanohttpd.protocols.http.IHTTPSession;
 import org.minima.utils.nanohttpd.protocols.http.NanoHTTPD;
 import org.minima.utils.nanohttpd.protocols.http.request.Method;

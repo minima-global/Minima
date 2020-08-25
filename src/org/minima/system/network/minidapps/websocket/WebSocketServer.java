@@ -1,4 +1,4 @@
-package org.minima.system.network.websocket;
+package org.minima.system.network.minidapps.websocket;
 
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.nanohttpd.protocols.http.IHTTPSession;
