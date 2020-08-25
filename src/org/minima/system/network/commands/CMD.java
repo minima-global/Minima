@@ -18,25 +18,13 @@ public class CMD implements Runnable {
 	//The Command to run
 	String mCommand;
 	
-	//Call back with the response when finished
-	Function   mCallback;
-	Context    mContext;
-	Scriptable mScope;
-	
 	//The Final Result..
 	String mFinalResult = "";
 	
 	public CMD(String zCommand) {
-		this(zCommand,null,null,null);
+		mCommand  = zCommand;
 	}
 	
-	public CMD(String zCommand, Function zCallback, Context zContext, Scriptable zScope) {
-		mCommand  = zCommand;
-		mCallback = zCallback;
-		mContext  = zContext;
-		mScope    = zScope;
-	}
-
 	public String getFinalResult() {
 		return mFinalResult;
 	}
@@ -113,18 +101,6 @@ public class CMD implements Runnable {
 			
 			//And now get all the answers in one go..
 			mFinalResult = responses.toString();
-		}
-		
-		//Now send the result back vis the callback..
-		if(mCallback != null) {
-			//Create a native JSON
-			Object json = MiniJSONUtility.makeJSONObject(mFinalResult, mContext, mScope);
-			
-			//Make a function variable list
-			Object functionArgs[] = { json };
-		    
-			//Call the function..
-			mCallback.call(mContext, mScope, mScope, functionArgs);
 		}
 	}
 }

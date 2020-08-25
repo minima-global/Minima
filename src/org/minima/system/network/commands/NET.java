@@ -27,24 +27,12 @@ public class NET implements Runnable {
 	String mCommand;
 	String mMiniDAPPID;
 	
-	//Call back with the response when finished
-	Function   mCallback;
-	Context    mContext;
-	Scriptable mScope;
-	
 	//The Final Result..
 	String mFinalResult = "";
 	
 	public NET(String zCommand, String zMiniDAPPID) {
-		this(zCommand, zMiniDAPPID,null,null,null);
-	}
-	
-	public NET(String zCommand, String zMiniDAPPID, Function zCallback, Context zContext, Scriptable zScope) {
 		mCommand    = zCommand.trim();
 		mMiniDAPPID = zMiniDAPPID;
-		mCallback   = zCallback;
-		mContext    = zContext;
-		mScope      = zScope;
 	}
 
 	public String getFinalResult() {
@@ -175,16 +163,16 @@ public class NET implements Runnable {
 		mFinalResult = resp.toString();
 		
 		//Now send the result back vis the callback..
-		if(mCallback != null) {
-			//Create a native JSON
-			Object json = MiniJSONUtility.makeJSONObject(mFinalResult, mContext, mScope);
-			
-			//Make a function variable list
-			Object functionArgs[] = { json };
-		    
-			//Call the function..
-			mCallback.call(mContext, mScope, mScope, functionArgs);
-		}
+//		if(mCallback != null) {
+//			//Create a native JSON
+//			Object json = MiniJSONUtility.makeJSONObject(mFinalResult, mContext, mScope);
+//			
+//			//Make a function variable list
+//			Object functionArgs[] = { json };
+//		    
+//			//Call the function..
+//			mCallback.call(mContext, mScope, mScope, functionArgs);
+//		}
 	}
 
 	
