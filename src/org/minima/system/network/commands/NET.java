@@ -123,7 +123,7 @@ public class NET implements Runnable {
 			//Post it..
 			comms.PostMessage(sender);	
 		
-		}else if(mCommand.startsWith("info")) {
+		}else if(mCommand.startsWith("stats")) {
 			
 			JSONArray sarr = new JSONArray();
 			ArrayList<CommsServer> servers = comms.getServers();
@@ -138,6 +138,15 @@ public class NET implements Runnable {
 				carr.add(client.toJSON());
 			}
 			resp.put("clients", carr);	
+		
+		}else if(mCommand.startsWith("info")) {
+			
+			//Broadcast a message to everyone on this server
+			Message sender = new Message(CommsManager.COMMS_RESET_INFO);
+			sender.addString("minidappid", mMiniDAPPID);
+			
+			//Post it..
+			comms.PostMessage(sender);	
 		
 		}else if(mCommand.startsWith("get ")) {
 			String url = strtok.nextToken();

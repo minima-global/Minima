@@ -77,7 +77,7 @@ public class DAPPManager extends SystemHandler {
 	
 	//The List of Post messages for Replies..
 	Hashtable<String, Message> mReplyMessage;
-	long mLastReplySent = 0; 
+	long mLastReplyUsed = 0; 
 		
 	public DAPPManager(Main zMain) {
 		super(zMain, "DAPPMAnager");
@@ -185,12 +185,7 @@ public class DAPPManager extends SystemHandler {
 	        String root = zConf.getParent();
 	        int start = root.indexOf("/minidapps/");
 	        String webroot = root.substring(start);
-	        
 	        String approot = root.substring(start+11);
-	        int firstfolder = approot.indexOf("/");
-	        if(firstfolder != -1) {
-	        	approot = approot.substring(0,firstfolder);
-	        }
 	        
 	        ret.put("uid", approot);
 	        ret.put("root", webroot);
@@ -266,27 +261,6 @@ public class DAPPManager extends SystemHandler {
 				//Open it up..
 				File conf    = new File(app,"minidapp.conf");
 				File backend = new File(app,"service.js");
-				
-				//Does it exist..
-				if(!conf.exists()) {
-					//Could be 1 folder down..
-					File[] subapps = app.listFiles();
-		
-					//Has to be the first file
-					if(subapps != null) {
-						for(File subapp : subapps) {
-							//Ignore the SQL folder that we generate..
-							if(subapp.isDirectory()) {
-								conf    = new File(subapp,"minidapp.conf");
-								backend = new File(subapp,"service.js");
-								
-								if(conf.exists()) {
-									break;	
-								}
-							}
-						}
-					}
-				}
 				
 				//Check it exists..
 				if(conf.exists()) {
@@ -433,9 +407,26 @@ public class DAPPManager extends SystemHandler {
 	        ZipEntry entry          = null;
 	        
 	        //Cycle through all the files..
+	        boolean first = true;
+	        String folder = "";
 	        while ((entry = stream.getNextEntry()) != null) {
+	        	//The file name..
+	        	String name = entry.getName();
+	        	
+	        	//The Name..
+	        	if(first) {
+	        		first = false;
+	        		if(entry.isDirectory()) {
+						//OK - strip this from all future files..
+		        		folder = name;
+		            }	
+	        	}
+	        	
+	        	//Strip folder from name..
+	        	name = name.substring(folder.length());
+	        	
 	        	//Where does this file go
-	            File filePath = new File(dapp,entry.getName());
+	            File filePath = new File(dapp,name);
 	
 	            //Check the Parent
 	            File parent = filePath.getParentFile();
@@ -505,11 +496,11 @@ public class DAPPManager extends SystemHandler {
 			
 			//Check time..
 			long timenow = System.currentTimeMillis();
-			if(timenow - mLastReplySent > 10000) {
+			if(timenow - mLastReplyUsed > 20000) {
 				//Clear the whole thing..
 				mReplyMessage.clear();
 			}
-			mLastReplySent = timenow;
+			mLastReplyUsed = timenow;
 			
 			//Put a link to this..
 			mReplyMessage.put(replyid, zMessage);
@@ -542,7 +533,7 @@ public class DAPPManager extends SystemHandler {
 			
 			//Get the Message..
 			Message msg = mReplyMessage.remove(replyid);
-			mLastReplySent = System.currentTimeMillis();
+			mLastReplyUsed = System.currentTimeMillis();
 			
 			//Do we have it..
 			if(msg != null) {

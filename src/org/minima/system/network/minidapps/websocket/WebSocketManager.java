@@ -13,6 +13,7 @@ import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.json.parser.JSONParser;
 import org.minima.utils.messages.Message;
+import org.minima.utils.messages.TimerMessage;
 import org.minima.utils.nanohttpd.protocols.websockets.CloseCode;
 
 public class WebSocketManager extends SystemHandler {
@@ -136,10 +137,6 @@ public class WebSocketManager extends SystemHandler {
 				
 				//Set it..
 				mws.setMiniDAPPUID(mid);
-				
-				//Update it..!..
-				Message reset = new Message(CommsManager.COMMS_RESET_INFO).addString("minidappid", mid);
-				getMainHandler().getNetworkHandler().getDAPPManager().getCommsManager().PostMessage(reset);
 				
 			}else if(msgtype.equals("reply")) {
 				Message replymsg = new Message(DAPPManager.DAPP_DIRECTREPLY);

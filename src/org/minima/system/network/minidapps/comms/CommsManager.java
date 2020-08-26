@@ -20,7 +20,7 @@ public class CommsManager extends SystemHandler {
 	
 	public static final String COMMS_BROADCAST    = "COMMS_BROADCAST";
 	
-	public static final String COMMS_RESET_INFO         = "COMMS_INFO";
+	public static final String COMMS_RESET_INFO   = "COMMS_RESET_INFO";
 	
 	public static final String COMMS_CONNECT      = "COMMS_CONNECT";
 	public static final String COMMS_DISCONNECT   = "COMMS_DISCONNECT";
@@ -84,7 +84,7 @@ public class CommsManager extends SystemHandler {
 	@Override
 	protected void processMessage(Message zMessage) throws Exception {
 		
-		MinimaLogger.log("CommsManager : "+zMessage);
+		//MinimaLogger.log("CommsManager : "+zMessage);
 		
 		if(zMessage.getMessageType().equals(COMMS_START)) {
 			//the details
@@ -285,8 +285,6 @@ public class CommsManager extends SystemHandler {
 		Message msg = new Message(DAPPManager.DAPP_MINIDAPP_POST);
 		msg.addObject("minidapp", zMiniDAPPID);
 		msg.addObject("message", websocketmsg);
-		
-		MinimaLogger.log("POST MESSAGE : "+msg);
 		
 		//Post to the Network..
 		getMainHandler().getNetworkHandler().getDAPPManager().PostMessage(msg);

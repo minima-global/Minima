@@ -19,7 +19,6 @@ public class MiniFile {
 		
 		//Delete the old..
 		if(zFile.exists()) {
-			//Should probably just move it here - as a backup incase of error..
 			zFile.delete();
 		}
 		
@@ -50,38 +49,15 @@ public class MiniFile {
 		
 		dos.flush();
 		baos.flush();
-	
+		
 		//get all the data
 		byte[] data = baos.toByteArray();
+	
+		dos.close();
+		baos.close();
 		
 		//Check Parent
-		File parent = zFile.getParentFile();
-		if(!parent.exists()) {
-			parent.mkdirs();
-		}
-		
-		//Delete the old..
-		if(zFile.exists()) {
-			//Should probably just move it here - as a backup incase of error..
-			zFile.delete();
-		}
-		
-		//Create the new..
-		zFile.createNewFile();
-		
-		//Write it out..
-		FileOutputStream fos = new FileOutputStream(zFile, false);
-		DataOutputStream fdos = new DataOutputStream(fos);
-		
-		//And write it..
-		fdos.write(data);
-		
-		//flush
-		fdos.flush();
-		fos.flush();
-		
-		fdos.close();
-		fos.close();
+		writeDataToFile(zFile, data);
 	}
 	
 	public static byte[] readCompleteFile(File zFile) throws IOException {
@@ -97,6 +73,14 @@ public class MiniFile {
         fis.close();
     
         return ret;
+	}
+	
+	public static void copyFile(File zOrig, File zCopy) throws IOException {
+		//read in the original..
+		byte[] orig = readCompleteFile(zOrig);
+		
+		//And now write..
+		writeDataToFile(zCopy, orig);
 	}
 	
 	public static void deleteFileOrFolder(String mParentCheck, File zFile) {

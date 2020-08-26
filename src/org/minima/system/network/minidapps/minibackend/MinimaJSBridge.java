@@ -45,7 +45,7 @@ public class MinimaJSBridge {
 	
 	public void post(String zType, String zData, Function zCallback) {
 		
-		MinimaLogger.log("MinimaJSBridge : "+zType+" "+zData);
+		//MinimaLogger.log("MinimaJSBridge : "+zType+" "+zData);
 		
 		String finalresult = "{}";
 		
