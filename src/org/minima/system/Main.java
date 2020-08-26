@@ -225,8 +225,10 @@ public class Main extends MessageProcessor {
 					Message connect  = new Message(NetworkHandler.NETWORK_CONNECT)
 							.addInteger("port", port).addString("host", host);
 					getNetworkHandler().PostMessage(connect);
-				}
 				
+					//Small Pause.. 10 seconds..
+					Thread.sleep(10000);
+				}
 			}
 			
 		}else if ( zMessage.isMessageType(SYSTEM_SHUTDOWN) ) {
