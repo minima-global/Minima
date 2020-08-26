@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.StringTokenizer;
 
+import org.minima.objects.base.MiniData;
 import org.minima.system.Main;
 import org.minima.system.brains.BackupManager;
 import org.minima.utils.MiniFile;
@@ -67,11 +68,40 @@ public class FILE implements Runnable {
 			String filedata  = mCommand.substring(index + file.length()).trim();
 			
 			try {		
-				MiniFile.writeDataToFile(thefile, filedata.getBytes(Charset.forName("UTF-8")));			
+				MiniFile.writeDataToFile(thefile, filedata.getBytes(Charset.forName("UTF-8")));
+				response.put("success", true);
+				
 			} catch (Exception e) {
+				response.put("success", false);
 				response.put("exception", e.toString());
 				e.printStackTrace();
 			}
+			
+		}else if(filefunc.equals("savehex")) {
+			//Make sure the parent folder exists..
+			thefile.getParentFile().mkdirs();
+			
+			//Get the file index
+			int index        = mCommand.indexOf(file);
+			String filedata  = mCommand.substring(index + file.length()).trim();
+			
+			if(filedata.startsWith("0x")) {
+				//ERROR
+				response.put("success", false);
+				response.put("exception", "Not HEX - must start with 0x..");
+			}else {
+				try {
+					MiniData hex = new MiniData(filedata);
+					MiniFile.writeDataToFile(thefile, hex.getData());
+					response.put("success", true);
+					
+				} catch (Exception e) {
+					response.put("success", false);
+					response.put("exception", e.toString());
+					e.printStackTrace();
+				}	
+			}
+			
 			
 		}else if(filefunc.equals("load")) {
 			if(thefile.exists()) {
@@ -89,7 +119,26 @@ public class FILE implements Runnable {
 				response.put("success", false);
 				response.put("exception", "..does not exist!");
 			}
-			
+		
+		}else if(filefunc.equals("loadhex")) {
+			if(thefile.exists()) {
+				try {
+					byte[] data = MiniFile.readCompleteFile(thefile);
+					MiniData hex = new MiniData(data);
+					
+					response.put("data", hex.to0xString());
+					response.put("success", true);
+					
+				} catch (IOException e) {
+					response.put("success", false);
+					response.put("exception", e.toString());
+					e.printStackTrace();
+				}
+			}else {
+				response.put("success", false);
+				response.put("exception", "..does not exist!");
+			}
+		
 		}else if(filefunc.equals("copy")) {
 			String newfile = strtok.nextToken().trim();
 			File copyto = new File(minidappfolder, newfile);
@@ -116,9 +165,9 @@ public class FILE implements Runnable {
 			//Do the move..
 			boolean success = thefile.renameTo(moveto);
 			
+			response.put("success", success);
 			response.put("renamed", newfile);
-			response.put("move", success);
-		
+			
 		}else if(filefunc.equals("movetotemp")) {
 			String tempfile = strtok.nextToken().trim();
 			File moveto = new File(tempfolder, tempfile);
@@ -133,9 +182,9 @@ public class FILE implements Runnable {
 			String tempbasepath  = tempfolder.getAbsolutePath();
 			String tempfinalpath = tempfile.substring(tempbasepath.length());
 			
+			response.put("success", success);
 			response.put("renamed", tempbasepath);
-			response.put("move", success);
-		
+			
 		}else if(filefunc.equals("movefromtemp")) {
 			String tempfile = strtok.nextToken().trim();
 			File movefrom = new File(tempfolder, tempfile);
@@ -145,14 +194,14 @@ public class FILE implements Runnable {
 			parent.mkdirs();
 			
 			if(!movefrom.exists()) {
-				response.put("move", false);
+				response.put("success", false);
 				response.put("exception", "file does not exist");
 			}else {
 				//Do the move..
 				boolean success = movefrom.renameTo(thefile);
 				
+				response.put("success", success);
 				response.put("renamed", finalpath);
-				response.put("move", success);
 			}
 			
 		}else if(filefunc.equals("list")) {
