@@ -378,6 +378,8 @@ public class ConsensusNet extends ConsensusProcessor {
 			
 			//Do we have it..
 			if(getMainDB().getTxPOW(txpowid) == null) {
+				MinimaLogger.log("Request TXPOWID we don't have.. "+txpowid+" "+zMessage.getObject("netclient"));
+				
 				//We don't have it, get it..
 				sendTxPowRequest(zMessage, txpowid);
 			}
