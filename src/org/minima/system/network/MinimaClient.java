@@ -266,7 +266,10 @@ public class MinimaClient extends MessageProcessor {
 			//sendMessage(MinimaReader.NETMESSAGE_TXPOWID, txpowid);
 		
 			//Post it with a random delay..
-			PostTimerMessage(new TimerMessage(mRand.nextInt(2000), NETCLIENT_POSTTXPOWID));
+			TimerMessage txpowid = new TimerMessage(mRand.nextInt(2000), NETCLIENT_POSTTXPOWID);
+			txpowid.addObject("txpowid", zMessage.getObject("txpowid"));
+			
+			PostTimerMessage(txpowid);
 			
 		}else if(zMessage.isMessageType(NETCLIENT_POSTTXPOWID)) {
 			MiniData txpowid = (MiniData)zMessage.getObject("txpowid");
