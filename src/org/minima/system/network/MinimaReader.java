@@ -28,8 +28,8 @@ public class MinimaReader implements Runnable {
 	 * Maximum Message sizes..
 	 */
 	
-	//20 MB MAX INTRO / Greeting / and TxPoW List
-	public static final int MAX_INTRO = 1024 * 1000 * 20;
+	//50 MB MAX INTRO / Greeting / and TxPoW List
+	public static final int MAX_INTRO = 1024 * 1000 * 50;
 	
 	//20 KB MAX MESSAGE
 	public static final int MAX_TXPOW = 1024 * 20;
