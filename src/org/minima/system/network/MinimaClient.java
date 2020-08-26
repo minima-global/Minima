@@ -43,7 +43,11 @@ public class MinimaClient extends MessageProcessor {
 	public static final String NETCLIENT_SHUTDOWN 		= "NETCLIENT_SHUTDOWN";
 		
 	public static final String NETCLIENT_INTRO 	        = "NETCLIENT_INTRO";
+	
 	public static final String NETCLIENT_SENDTXPOWID 	= "NETCLIENT_SENDTXPOWID";
+	//Small random delay in propagating..
+	public static final String NETCLIENT_POSTTXPOWID 	= "NETCLIENT_POSTTXPOWID";
+	
 	public static final String NETCLIENT_SENDTXPOW 	    = "NETCLIENT_SENDTXPOW";
 	public static final String NETCLIENT_SENDTXPOWREQ 	= "NETCLIENT_SENDTXPOWREQ";
 	
@@ -89,6 +93,8 @@ public class MinimaClient extends MessageProcessor {
 	boolean mStartOK;
 	
 	Hashtable<String, Long> mOldTxPoWRequests = new Hashtable<>();
+	
+	Random mRand = new Random();
 	
 	/**
 	 * Constructor
@@ -256,6 +262,13 @@ public class MinimaClient extends MessageProcessor {
 			sendMessage(MinimaReader.NETMESSAGE_INTRO, sp);
 		
 		}else if(zMessage.isMessageType(NETCLIENT_SENDTXPOWID)) {
+			//MiniData txpowid = (MiniData)zMessage.getObject("txpowid");
+			//sendMessage(MinimaReader.NETMESSAGE_TXPOWID, txpowid);
+		
+			//Post it with a random delay..
+			PostTimerMessage(new TimerMessage(mRand.nextInt(2000), NETCLIENT_POSTTXPOWID));
+			
+		}else if(zMessage.isMessageType(NETCLIENT_POSTTXPOWID)) {
 			MiniData txpowid = (MiniData)zMessage.getObject("txpowid");
 			sendMessage(MinimaReader.NETMESSAGE_TXPOWID, txpowid);
 				
