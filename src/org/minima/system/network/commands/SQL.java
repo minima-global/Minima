@@ -30,7 +30,7 @@ public class SQL implements Runnable {
 		
 		//Where is the database..
 		BackupManager backup  = Main.getMainHandler().getBackupManager();
-		File minidappdatabase = new File(backup.getMiniDAPPSQLFolder(mMiniDAPPID),"_sqldb");
+		File minidappdatabase = new File(backup.getMiniDAPPFolder(mMiniDAPPID),"_sqldb");
 		
 		//Get the Function..
 		res.put("db", minidappdatabase.getAbsolutePath());

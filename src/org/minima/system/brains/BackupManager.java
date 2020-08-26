@@ -61,12 +61,6 @@ public class BackupManager extends SystemHandler {
 		return new File(getMiniDAPPFolder(),zMiniDAPPID);
 	}
 	
-	public File getMiniDAPPSQLFolder(String zMiniDAPPID) {
-		File ff = new File(getMiniDAPPFolder(zMiniDAPPID),"sql");
-		ff.mkdirs();
-		return ff; 
-	}
-	
 	public File getWebRoot() {
 		return mWebRoot;
 	}
