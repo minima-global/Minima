@@ -164,10 +164,6 @@ var Minima = {
 			MinimaRPC("net","broadcast "+port+" "+text,null);
 		},
 		
-		broadcastJSON : function(port,jsonobject){
-			Minima.net.broadcast(port, JSON.stringify(jsonobject));
-		},
-		
 		//USER FUNCTIONS 
 		onOutbound : function(hostport, onReceiveCallback){
 			MINIMA_USER_LISTEN.push({ "port":hostport, "callback":onReceiveCallback });
@@ -183,10 +179,6 @@ var Minima = {
 		
 		send : function(UID, text){
 			MinimaRPC("net","send "+UID+" "+text,null);
-		},
-		
-		sendJSON : function(UID, jsonobject){
-			Minima.net.send(UID, JSON.stringify(jsonobject));
 		},
 		
 		//Resend all the connection information
@@ -219,25 +211,6 @@ var Minima = {
 		
 		load : function(file, callback) {
 			MinimaRPC("file","load "+file,callback);
-		},
-		
-		//Save & Load a JSON to a file
-		saveJSON : function(jsonobject, file,  callback) {
-			Minima.file.save(JSON.stringify(jsonobject), file, callback);
-		},
-		
-		loadJSON : function(file, callback) {
-			Minima.file.load(file, function(resp){
-				if(resp.success){
-					//Make it an actiual JSON
-					resp.data = JSON.parse(resp.data);
-					
-					//And call the original function
-					callback(resp);	
-				}else{
-					callback(resp);
-				}
-			});
 		},
 		
 		//Save and Load as HEX.. Strings with 0x..
@@ -316,7 +289,7 @@ var Minima = {
 		},
 		
 		//Function to call when an Intra-MiniDAPP message is received
-		onReceive : function(onReceiveCallback){
+		listen : function(onReceiveCallback){
 			MINIMA_MINIDAPP_CALLBACK = onReceiveCallback;
 		},
 		
