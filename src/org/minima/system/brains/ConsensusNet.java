@@ -54,7 +54,7 @@ public class ConsensusNet extends ConsensusProcessor {
 	 */
 	boolean mHardResetAllowed = true;
 	
-	boolean mFullSyncOnInit = true;
+	boolean mFullSyncOnInit = false;
 	
 	/**
 	 * Check when you sent out a request for a TxPOW
