@@ -165,7 +165,20 @@ public class ConsensusBackup extends ConsensusProcessor {
 			
 			//Drill down
 			ArrayList<SyncPacket> packets = sp.getAllNodes();
+			float syncsize = packets.size();
+			float tot = 0;
+			int lastprint=-1;
+			//MinimaLogger.log("Starting restore..");
+			
 			for(SyncPacket spack : packets) {
+				float perc = tot++ / syncsize;
+				int curr   = (int)(perc *10);
+				//MinimaLogger.log("Restore DB.."+perc+"%");
+				if(curr != lastprint) {
+					lastprint = curr;
+					MinimaLogger.log("Restore DB.."+(lastprint*10)+"%");
+				}
+				
 				TxPoW txpow     = spack.getTxPOW();
 				MMRSet mmrset   = spack.getMMRSet();
 				boolean cascade = spack.isCascade();
@@ -199,6 +212,7 @@ public class ConsensusBackup extends ConsensusProcessor {
 				//Store it..
 				getBackup().backupTxpow(txpow);
 			}
+			MinimaLogger.log("Restore DB.. 100%");
 			
 			//Reset weights
 			getMainDB().hardResetChain();
