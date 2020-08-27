@@ -283,57 +283,16 @@ public class MinimaClient extends MessageProcessor {
 			String data = txpowid.to0xString();
 			
 			//Check if we have asked for it already
-			boolean sender = mDataTimer.checkForData(data,TXPOWRESQUEST_TIMEOUT);
-			
-			if(sender) {
+			boolean found = mDataTimer.checkForData(data,TXPOWRESQUEST_TIMEOUT);
+			if(!found) {
 				//Add to our list of requested TxPoW - so is let in EVEN if invalid - as may be in a side branch
-				mNetworkMain.addRequestedTxPow(txpowid.to0xString());
+				mNetworkMain.addRequestedTxPow(data);
 				
 				//And send it..
 				sendMessage(MinimaReader.NETMESSAGE_TXPOW_REQUEST, txpowid);
 			}else {
 				MinimaLogger.log("Requested TXPOWID .. cancelled as already done less than 5 minutes ago.. "+data);
 			}
-			
-//			//Current time..
-//			long timenow     = System.currentTimeMillis();
-//			
-//			//Remove the old..
-//			Hashtable<String, Long> newTxPoWRequests = new Hashtable<>();
-//			Enumeration<String> keys = mOldTxPoWRequests.keys();
-//			while(keys.hasMoreElements()) {
-//				String key = keys.nextElement();
-//				
-//				//Remove after 10 minutes
-//				Long timeval = mOldTxPoWRequests.get(key);
-//				long time    = timeval.longValue();
-//				long diff    = timenow - time;
-//				if(diff < TXPOWRESQUEST_TIMEOUT) {
-//					newTxPoWRequests.put(key, timeval);
-//				}
-//			}
-//			
-//			//Swap them..
-//			mOldTxPoWRequests = newTxPoWRequests;
-//			
-//			//NOW - Check not doing it too often..
-//			String val = txpowid.to0xString();
-//			
-//			//TODO FOR NOW JUST REQUEST ASAP
-//			//If it's in.. it's less than 5 minutes..
-//			if(mOldTxPoWRequests.get(val) != null) {
-//				MinimaLogger.log("Requested TXPOWID .. cancelled as already done less than 5 minutes ago.. "+val);
-//				return;
-//			}
-//			
-//			//Store this as the LAST time we requested it.. won't do it again for 10 minutes
-//			mOldTxPoWRequests.put(val, new Long(timenow));
-			
-//			//Add to our list of requested TxPoW - so is let in EVEN if invalid - as may be in a side branch
-//			mNetworkMain.addRequestedTxPow(txpowid.to0xString());
-//			
-//			//And send it..
-//			sendMessage(MinimaReader.NETMESSAGE_TXPOW_REQUEST, txpowid);
 	
 		}else if(zMessage.isMessageType(NETCLIENT_PULSE)) {
 			//When was the last PING message..

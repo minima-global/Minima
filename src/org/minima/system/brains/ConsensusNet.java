@@ -23,6 +23,7 @@ import org.minima.system.network.MinimaReader;
 import org.minima.system.txpow.TxPoWChecker;
 import org.minima.system.txpow.TxPoWMiner;
 import org.minima.utils.Crypto;
+import org.minima.utils.DataTimer;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.TimerMessage;
@@ -54,6 +55,11 @@ public class ConsensusNet extends ConsensusProcessor {
 	boolean mHardResetAllowed = true;
 	
 	boolean mFullSyncOnInit = true;
+	
+	/**
+	 * Check when you sent out a request for a TxPOW
+	 */
+	DataTimer mDataTimer = new DataTimer();
 	
 	/**
 	 * Has the initial Sync been done..
@@ -378,8 +384,6 @@ public class ConsensusNet extends ConsensusProcessor {
 			
 			//Do we have it..
 			if(getMainDB().getTxPOW(txpowid) == null) {
-				MinimaLogger.log("Request TXPOWID we don't have.. "+txpowid+" "+zMessage.getObject("netclient"));
-				
 				//We don't have it, get it..
 				sendTxPowRequest(zMessage, txpowid);
 			}
@@ -605,9 +609,31 @@ public class ConsensusNet extends ConsensusProcessor {
 	 * @param zTxPoWID
 	 */
 	private void sendTxPowRequest(Message zFromMessage, MiniData zTxPoWID) {
+		//Check if we have sent off for it recently..
+		String data  = zTxPoWID.to0xString();
+		
 		//Get the NetClient...
 		MinimaClient client = (MinimaClient) zFromMessage.getObject("netclient");
+				
+		//Check for it.. in last 5 seconds..
+		boolean found = mDataTimer.checkForData(data, 5000);
+		
+		//If found.. repost the request on a 5 second timer..
+		if(found) {
+			MinimaLogger.log("Delay SendTxPOWRequest for 5 secs.."+data+" from "+client);
 			
+			TimerMessage newtxpowid = new TimerMessage(5000, CONSENSUS_NET_TXPOWID);
+			//Add the TxPOWID
+			newtxpowid.addObject("txpowid", zTxPoWID);
+			//And the Net Client..
+			newtxpowid.addObject("netclient", client);
+			
+			//Post it for later..
+			getConsensusHandler().PostTimerMessage(newtxpowid);
+			return;
+		}
+		
+		//Give it to the client to send on..	
 		Message req = new Message(MinimaClient.NETCLIENT_SENDTXPOWREQ);
 		req.addObject("txpowid", zTxPoWID);
 		
