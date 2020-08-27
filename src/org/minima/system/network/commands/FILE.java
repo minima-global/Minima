@@ -85,7 +85,7 @@ public class FILE implements Runnable {
 			int index        = mCommand.indexOf(file);
 			String filedata  = mCommand.substring(index + file.length()).trim();
 			
-			if(filedata.startsWith("0x")) {
+			if(!filedata.startsWith("0x")) {
 				//ERROR
 				response.put("success", false);
 				response.put("exception", "Not HEX - must start with 0x..");

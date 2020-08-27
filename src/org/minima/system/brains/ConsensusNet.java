@@ -597,6 +597,13 @@ public class ConsensusNet extends ConsensusProcessor {
 		}
 	}
 	
+	/**
+	 * Send a Request for a Missing TxPOW
+	 * Check if has been done recently and reposts with a 5 second delay if it has
+	 * 
+	 * @param zFromMessage
+	 * @param zTxPoWID
+	 */
 	private void sendTxPowRequest(Message zFromMessage, MiniData zTxPoWID) {
 		//Get the NetClient...
 		MinimaClient client = (MinimaClient) zFromMessage.getObject("netclient");
