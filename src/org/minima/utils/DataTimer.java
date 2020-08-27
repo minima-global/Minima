@@ -23,10 +23,7 @@ public class DataTimer {
 			long time    = timeval.longValue();
 			long diff    = timenow - time;
 			if(diff < zMaxTime) {
-				System.out.println("Data kept "+key+" "+diff);
 				newData.put(key, timeval);
-			}else {
-				System.out.println("Data REMOVED "+key+" "+diff);
 			}
 		}
 		
@@ -36,10 +33,7 @@ public class DataTimer {
 		//Do we send this.. ?
 		boolean found = mTimedData.containsKey(zData);
 		if(!found) {
-			System.out.println("Data addded "+zData+" "+timenow);
 			mTimedData.put(zData, new Long(timenow));	
-		}else {
-			System.out.println("Data found! "+zData+" "+timenow);
 		}
 		
 		return found;
