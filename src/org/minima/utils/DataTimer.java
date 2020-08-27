@@ -32,7 +32,7 @@ public class DataTimer {
 		mTimedData = newData;
 		
 		//Do we send this.. ?
-		boolean found = (mTimedData.get(zData) == null);
+		boolean found = mTimedData.contains(zData);
 		if(!found) {
 			mTimedData.put(zData, new Long(timenow));	
 		}
