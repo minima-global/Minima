@@ -273,7 +273,7 @@ public class ConsensusBackup extends ConsensusProcessor {
 	
 	public static TxPoW loadTxPOW(File zTxpowFile) {
 		if(!zTxpowFile.exists()) {
-			MinimaLogger.log("Load TxPOW Doesn't exist! "+zTxpowFile.getName());
+			//MinimaLogger.log("Load TxPOW Doesn't exist! "+zTxpowFile.getName());
 			return null;
 		}
 		
