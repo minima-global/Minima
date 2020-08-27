@@ -128,6 +128,8 @@ public class ConsensusNet extends ConsensusProcessor {
 			client.PostMessage(req);
 			
 		}else if(zMessage.isMessageType(CONSENSUS_NET_INTRO)) {
+			MinimaLogger.log("INTRO SYNC message received..");
+			
 			//Get the Sync Package..
 			SyncPackage sp = (SyncPackage) zMessage.getObject("sync");
 			
@@ -384,7 +386,7 @@ public class ConsensusNet extends ConsensusProcessor {
 			
 			//Do we have it..
 			if(getMainDB().getTxPOW(txpowid) == null) {
-				MinimaLogger.log("NEW TXPOWID "+txpowid.to0xString()+" from "+zMessage.getObject("netclient"));
+				//MinimaLogger.log("NEW TXPOWID "+txpowid.to0xString()+" from "+zMessage.getObject("netclient"));
 				
 				//We don't have it, get it..
 				sendTxPowRequest(zMessage, txpowid);
@@ -495,6 +497,8 @@ public class ConsensusNet extends ConsensusProcessor {
 			
 			//Is this transaction from the IBD starter..
 			if(getNetworkHandler().isRequestedInitialTxPow(txpowid)) {
+				MinimaLogger.log("IDB Requested TxPoW "+txpowid);
+				
 				//Check the block it is in..
 				TxPoW validblock = getMainDB().findBlockForTransaction(txpow);
 				if(validblock != null) {
@@ -551,6 +555,9 @@ public class ConsensusNet extends ConsensusProcessor {
 				requested = true;
 			}
 			
+			//Remove it from the list - just in case..
+			getNetworkHandler().removeRequestedTxPow(txpowid);
+			
 			//Check the Validity..
 			boolean txnok = TxPoWChecker.checkTransactionMMR(txpow, getMainDB());
 			if(!txnok) {
@@ -565,11 +572,6 @@ public class ConsensusNet extends ConsensusProcessor {
 				}
 			}
 			
-			//Remove it from the list
-			if(requested) {
-				getNetworkHandler().removeRequestedTxPow(txpowid);
-			}
-		
 			/**
 			 * IT PASSES!
 			 * 
@@ -622,8 +624,7 @@ public class ConsensusNet extends ConsensusProcessor {
 		
 		//If found.. repost the request on a 5 second timer..
 		if(found) {
-			MinimaLogger.log("Delay SendTxPOWRequest for 5 secs.."+data+" from "+client);
-			
+			//MinimaLogger.log("Delay SendTxPOWRequest for 5 secs.."+data+" from "+client);
 			TimerMessage newtxpowid = new TimerMessage(5000, CONSENSUS_NET_TXPOWID);
 			//Add the TxPOWID
 			newtxpowid.addObject("txpowid", zTxPoWID);
@@ -633,8 +634,6 @@ public class ConsensusNet extends ConsensusProcessor {
 			//Post it for later..
 			getConsensusHandler().PostTimerMessage(newtxpowid);
 			return;
-		}else {
-			MinimaLogger.log("SendTxPOWRequest as not been asked for yet.."+data+" from "+client);
 		}
 		
 		//Give it to the client to send on..	
