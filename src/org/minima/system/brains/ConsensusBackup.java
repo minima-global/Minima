@@ -144,6 +144,7 @@ public class ConsensusBackup extends ConsensusProcessor {
 			getMainDB().setUserDB(jdb);
 			
 			//Load the SyncPackage
+			MinimaLogger.log("Loading DB.. please wait..");
 			SyncPackage sp = new SyncPackage();
 			try {
 				byte[] chaindb = MiniFile.readCompleteFile(backsync);
@@ -168,15 +169,12 @@ public class ConsensusBackup extends ConsensusProcessor {
 			float syncsize = packets.size();
 			float tot = 0;
 			int lastprint=-1;
-			//MinimaLogger.log("Starting restore..");
-			
 			for(SyncPacket spack : packets) {
-				float perc = tot++ / syncsize;
-				int curr   = (int)(perc *10);
-				//MinimaLogger.log("Restore DB.."+perc+"%");
+				//Print some stuff..
+				int curr   = (int)( (tot++/syncsize) *10);
 				if(curr != lastprint) {
 					lastprint = curr;
-					MinimaLogger.log("Restore DB.."+(lastprint*10)+"%");
+					MinimaLogger.log("Checking DB.."+(lastprint*10)+"%");
 				}
 				
 				TxPoW txpow     = spack.getTxPOW();
@@ -212,7 +210,7 @@ public class ConsensusBackup extends ConsensusProcessor {
 				//Store it..
 				getBackup().backupTxpow(txpow);
 			}
-			MinimaLogger.log("Restore DB.. 100%");
+			MinimaLogger.log("Checking DB.. 100%");
 			
 			//Reset weights
 			getMainDB().hardResetChain();
@@ -222,7 +220,17 @@ public class ConsensusBackup extends ConsensusProcessor {
 			getMainDB().getTxPowDB().resetAllInBlocks();
 			
 			//Now sort
+			syncsize = list.size();
+			tot = 0;
+			lastprint=-1;
 			for(BlockTreeNode treenode : list) {
+				//Print some stuff..
+				int curr   = (int)( (tot++/syncsize) *10);
+				if(curr != lastprint) {
+					lastprint = curr;
+					MinimaLogger.log("Restoring DB.."+(lastprint*10)+"%");
+				}
+				
 				//Get the Block
 				TxPoW txpow = treenode.getTxPow();
 				
@@ -256,6 +264,7 @@ public class ConsensusBackup extends ConsensusProcessor {
 					}
 				}
 			}
+			MinimaLogger.log("DB.. 100%");
 			
 			//Get on with it..
 			getConsensusHandler().getMainHandler().PostMessage(Main.SYSTEM_INIT);
