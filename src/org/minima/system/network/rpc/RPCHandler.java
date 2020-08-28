@@ -42,6 +42,7 @@ public class RPCHandler implements Runnable {
 		// we manage our particular client connection
 		BufferedReader in 	 		 	= null; 
 		PrintWriter out 	 			= null; 
+		String firstline = "no first line..";
 		
 		try {
 			// Input Stream
@@ -52,7 +53,7 @@ public class RPCHandler implements Runnable {
 			
 			// get first line of the request from the client
 			String input = in.readLine();
-			String firstline = new String(input);
+			firstline = new String(input);
 			
 			// we parse the request with a string tokenizer
 			StringTokenizer parse = new StringTokenizer(input);
@@ -198,7 +199,7 @@ public class RPCHandler implements Runnable {
 			out.flush(); // flush character output stream buffer
 			
 		} catch (Exception ioe) {
-			MinimaLogger.log("RPCHANDLER : "+ioe);
+			MinimaLogger.log("RPCHANDLER : "+ioe+" "+firstline);
 			ioe.printStackTrace();
 			
 		} finally {
