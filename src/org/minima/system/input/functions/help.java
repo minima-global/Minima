@@ -27,7 +27,7 @@ public class help extends CommandFunction{
 	public help() {
 		super("help");
 		
-		setHelp("{function}",
+		setHelp("(function)",
 				"Show the help for all or a specified function", 
 				"If you are unsure how to use a function you can type help function, "
 				+ "and a longer description with a complete org.minima.datadog.example will be shown.\n\nhelp send");
@@ -135,7 +135,7 @@ public class help extends CommandFunction{
 			addJSONDesc(new quit());
 			
 			//It's worked
-			getResponseStream().endStatus(true, "");
+			getResponseStream().endStatus(true, "Separate multiple functions with ;");
 		}
 	}
 

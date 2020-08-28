@@ -4,6 +4,7 @@ import org.minima.system.Main;
 import org.minima.system.SystemHandler;
 import org.minima.system.brains.ConsensusHandler;
 import org.minima.system.input.functions.intro;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.ResponseStream;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
@@ -41,11 +42,13 @@ public class InputHandler extends SystemHandler{
 	protected void processMessage(Message zMessage) throws Exception {
 		
 		if(zMessage.isMessageType(INPUT_COMMAND)) {
-			//Notify something happening..
-			getMainHandler().getConsensusHandler().updateListeners(new Message(ConsensusHandler.CONSENSUS_NOTIFY_ACTION));
-			
 			//Process the input
 			String input = zMessage.getString(INPUT_FUNCTION);
+			
+			//Notify something happening..
+			Message action = new Message(ConsensusHandler.CONSENSUS_NOTIFY_ACTION);
+			action.addString("action", input);
+			getMainHandler().getConsensusHandler().updateListeners(action);
 			
 			//Get the response Stream
 			ResponseStream output = (ResponseStream) zMessage.getObject(INPUT_RESPONSE);
@@ -132,6 +135,16 @@ public class InputHandler extends SystemHandler{
 			
 			//Set the details
 			out.endStatus(zValid, zStatusMessage);
+		}
+	}
+	
+	public static void setFullResponse(Message zMessage, JSONObject zJSON) {
+		if(zMessage.exists(InputHandler.INPUT_RESPONSE)) {
+			//Get the output response
+			ResponseStream out = (ResponseStream)zMessage.getObject(InputHandler.INPUT_RESPONSE);
+			
+			//Set the details
+			out.hardSetJSON(zJSON);
 		}
 	}
 }

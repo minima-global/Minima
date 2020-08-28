@@ -72,12 +72,13 @@ public class ConsensusPrint extends ConsensusProcessor {
 	/**
 	 * The Old Balance that was sent to the listeners..
 	 */
-	String mOldWebSocketBalance = "";
+	String mOldBalance = "";
+	JSONObject mOldBalanceJSON = null;
 	
 	/**
 	 * The Old Status that was sent to the listeners..
 	 */
-	String mOldWebSocketStatus = "";
+	String mOldStatus = "";
 	String mOldIBD = "";
 	
 	public ConsensusPrint(MinimaDB zDB, ConsensusHandler zHandler) {
@@ -438,6 +439,13 @@ public class ConsensusPrint extends ConsensusProcessor {
 			InputHandler.endResponse(zMessage, true, "");
 			
 		}else if(zMessage.isMessageType(CONSENSUS_BALANCE)){
+			//Is this a HARD reset..
+			if(!zMessage.exists("hard") && mOldBalanceJSON != null) {
+				InputHandler.setFullResponse(zMessage, mOldBalanceJSON);
+				InputHandler.endResponse(zMessage, true, "");
+				return;
+			}
+			
 			//Is this for a single address
 			String onlyaddress = "";
 			if(zMessage.exists("address")) {
@@ -667,6 +675,9 @@ public class ConsensusPrint extends ConsensusProcessor {
 			//Add it to all ball
 			allbal.put("balance",totbal);
 			
+			//Store for later
+			mOldBalanceJSON = allbal;
+					
 			//All good
 			InputHandler.endResponse(zMessage, true, "");
 	
@@ -676,11 +687,11 @@ public class ConsensusPrint extends ConsensusProcessor {
 			//Is this a notification message for the listeners.. only if is the total Balance..
 			if(onlyaddress.equals("")) {
 				//Same as the old ?
-				if(!balancestring.equals(mOldWebSocketBalance)) {
+				if(!balancestring.equals(mOldBalance)) {
 					//Store for later.. 
-					mOldWebSocketBalance = balancestring;
+					mOldBalance = balancestring;
 					
-					MinimaLogger.log("NEW BALANCE : "+mOldWebSocketBalance);
+					MinimaLogger.log("NEW BALANCE : "+mOldBalance);
 					
 					//Send this to the WebSocket..
 					JSONObject newbalance = new JSONObject();
@@ -907,6 +918,9 @@ public class ConsensusPrint extends ConsensusProcessor {
 			InputHandler.endResponse(zMessage, true, "");
 			
 		}else if(zMessage.isMessageType(CONSENSUS_STATUS)){
+			//Do a FULL status ( with IBD and folder sizes..)
+			boolean fullstatus = zMessage.getBoolean("full");
+			
 			//Main Handler
 			Main main = getConsensusHandler().getMainHandler();
 			
@@ -958,17 +972,19 @@ public class ConsensusPrint extends ConsensusProcessor {
 			status.put("txpowdb", getMainDB().getTxPowDB().getSize());
 			
 			//Size of the TXPOW DB folder..
-			File[] txpows = getConsensusHandler().getMainHandler().getBackupManager().getTxPOWFolder().listFiles();
-			long totallen = 0;
-			int totnum    = 0;
-			if(txpows!=null) {
-				for(File txf : txpows) {
-					totallen += txf.length();
+			if(fullstatus) {
+				File[] txpows = getConsensusHandler().getMainHandler().getBackupManager().getTxPOWFolder().listFiles();
+				long totallen = 0;
+				int totnum    = 0;
+				if(txpows!=null) {
+					for(File txf : txpows) {
+						totallen += txf.length();
+					}
+					totnum = txpows.length;
 				}
-				totnum = txpows.length;
+				status.put("txpowfiles", totnum);
+				status.put("txpowfolder", MiniFormat.formatSize(totallen));
 			}
-			status.put("txpowfiles", totnum);
-			status.put("txpowfolder", MiniFormat.formatSize(totallen));
 			
 			//MemPool
 			ArrayList<TxPOWDBRow> unused = getMainDB().getTxPowDB().getAllUnusedTxPOW();
@@ -981,9 +997,7 @@ public class ConsensusPrint extends ConsensusProcessor {
 			status.put("chainweight", root.getTotalWeight().toString());
 			
 			//Use the cached Version  - this is a slow operation
-			if(!mOldIBD.equals("") && !zMessage.exists("hard")) {
-				status.put("IBD", mOldIBD);
-			}else {
+			if(fullstatus) {
 				int ibd = getMainDB().getIntroSyncSize();
 				mOldIBD = MiniFormat.formatSize(ibd);
 				status.put("IBD", mOldIBD);	
@@ -1000,9 +1014,9 @@ public class ConsensusPrint extends ConsensusProcessor {
 			String statusstring = tip.getTxPowID().to0xString();
 			
 			//Is this a notification message for the listeners..
-			if(!statusstring.equals(mOldWebSocketStatus)) {
+			if(!statusstring.equals(mOldStatus)) {
 				//Store for later.. 
-				mOldWebSocketStatus = statusstring;
+				mOldStatus = statusstring;
 				
 				//Send this to the WebSocket..
 				JSONObject newblock = new JSONObject();
