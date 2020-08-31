@@ -26,6 +26,7 @@ import org.minima.system.network.NetworkHandler;
 import org.minima.system.network.minidapps.DAPPManager;
 import org.minima.system.txpow.TxPoWChecker;
 import org.minima.system.txpow.TxPoWMiner;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
@@ -369,7 +370,7 @@ public class ConsensusHandler extends SystemHandler {
 			
 			//Are we Mining..
 			if(!syncdone || !getMainHandler().getMiner().isAutoMining()) {
-				PostTimerMessage(new TimerMessage(10000, CONSENSUS_MINEBLOCK));
+				PostTimerMessage(new TimerMessage(20000, CONSENSUS_MINEBLOCK));
 				return;
 			}
 			
