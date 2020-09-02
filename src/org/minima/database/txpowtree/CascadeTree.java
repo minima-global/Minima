@@ -63,7 +63,8 @@ public class CascadeTree {
 		mCascadeTree = new BlockTree();
 				
 		//All this we keep
-		BlockTreeNode fullkeep = BlockTree.copyTreeNode(newfulltree);
+//		BlockTreeNode fullkeep = BlockTree.copyTreeNode(newfulltree);
+		BlockTreeNode fullkeep = newfulltree;
 		
 		//The rest of the tree.. that we CAN cascade
 		BlockTreeNode newcascade  = newfulltree.getParent();
@@ -75,15 +76,23 @@ public class CascadeTree {
 		ArrayList<BlockTreeNode> cascnodes = new ArrayList<>();
 		while(newcascade != null) {
 			//Create a new cascade node..
-			BlockTreeNode node = new BlockTreeNode(newcascade);
-			node.setCascade(true);
-			node.setState(BlockTreeNode.BLOCKSTATE_VALID);
+//			BlockTreeNode node = new BlockTreeNode(newcascade);
+//			node.setCascade(true);
+//			node.setState(BlockTreeNode.BLOCKSTATE_VALID);
 			
-			//Add a node
-			cascnodes.add(node);
+			//Get the parent..
+			BlockTreeNode pnode = newcascade.getParent();
+			
+			//reset the node..
+			newcascade.clearParentChildren();
+			newcascade.setCascade(true);
+			newcascade.setState(BlockTreeNode.BLOCKSTATE_VALID);
+			
+			//Add to our list
+			cascnodes.add(newcascade);
 			
 			//Go up the tree..
-			newcascade = newcascade.getParent();
+			newcascade = pnode;
 		}
 		
 		//Now have 2 parts of the tree.. a full part and a cascade part
@@ -100,7 +109,11 @@ public class CascadeTree {
 				
 				//METHOD1 - super simple
 				node.setCurrentLevel(casclevel);
+				
+				//Add to the final list.. This node made it..
 				finalnodes.add(0,node);
+				
+				//Increase node count at this level
 				totlevel++;
 				
 				//Keep at least this many at each level..
@@ -123,23 +136,26 @@ public class CascadeTree {
 		//Now add all this to the final tree
 		for(BlockTreeNode node : finalnodes) {
 			//Create a new Node..
-			BlockTreeNode copy = new BlockTreeNode(node);
+			//BlockTreeNode copy = new BlockTreeNode(node);
 			
 			//Add..
-			mCascadeTree.hardAddNode(copy, false);
+			mCascadeTree.hardAddNode(node, false);
 			
 			//It's a cascader
-			mCascadeTree.hardSetCascadeNode(copy);
+			mCascadeTree.hardSetCascadeNode(node);
 		}
 				
 		//Add the rest
 		mCascadeTree.hardAddNode(fullkeep, true);
 		
+		//Reset the weights and fastlink table
+		mCascadeTree.zeroWeights();
+		
 		//Find the old tip.. makes the reset weight 1000x faster..
 		mCascadeTree.mTip = mCascadeTree.findNode(oldtiptxpowid,true);
 		
 		//And sort the weights
-		mCascadeTree.resetWeights();
+		mCascadeTree.resetWeights(false);
 		
 		//And clear it out..
 		mCascadeTree.clearCascadeBody();

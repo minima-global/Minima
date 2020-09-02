@@ -227,6 +227,11 @@ public class BlockTreeNode implements Comparable<BlockTreeNode> {
 	public boolean hasChildren(){
 		return mChildren.size() > 0;
 	}
+
+	public void clearParentChildren(){
+		mChildren.clear();
+		mParent = null;
+	}
 	
 	public BlockTreeNode getChild(int zChild) {
 		return mChildren.get(zChild);

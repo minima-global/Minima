@@ -162,26 +162,9 @@ public class BlockTree {
 	}
 	
 	/**
-	 * Resets the weights in the tree
+	 * Set all the weights to 0 - and remake the fastlink table
 	 */
-	public void resetWeights() {
-		//Store the Old Tip
-		_mOldTip = mTip;
-		
-		//First default them
-		_zeroWeights();
-		
-		//Start at root..
-		_cascadeWeights();
-		
-		//And get the tip..
-		mTip = _getHeaviestBranchTip();		
-	}
-	
-	/**
-	 * Set all the weights to 0
-	 */
-	private void _zeroWeights() {
+	public void zeroWeights() {
 		//Clear the current table..
 		mFastLink = new Hashtable<>();
 				
@@ -197,6 +180,31 @@ public class BlockTree {
 			}
 		});
 	}
+	
+	/**
+	 * Resets the weights in the tree
+	 */
+	public void resetWeights() {
+		resetWeights(true);
+	}
+	
+	public void resetWeights(boolean zZeroWeights) {
+		//Store the Old Tip
+		_mOldTip = mTip;
+		
+		if(zZeroWeights) {
+			//First default them
+			zeroWeights();
+		}
+		
+		//Start at root..
+		_cascadeWeights();
+		
+		//And get the tip..
+		mTip = _getHeaviestBranchTip();		
+	}
+	
+	
 	
 	private void addFastLinkNode(BlockTreeNode zNode) {
 		//Add to the HashTable
@@ -319,6 +327,8 @@ public class BlockTree {
 		
 		//Are we recursing if we can;t find it - cascade tree needs this..
 		if(zRecurseAlso) {
+			MinimaLogger.log("TIP NOT FOUND : Recurse required..");
+			
 			//SLOWER recursive method.. replaced by the fast hashtable
 			NodeAction finder = new NodeAction(zTxPOWID) {
 				@Override
