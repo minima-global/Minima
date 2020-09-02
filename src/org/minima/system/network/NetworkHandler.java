@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 
 import org.minima.system.Main;
-import org.minima.system.SystemHandler;
 import org.minima.system.input.InputHandler;
 import org.minima.system.network.minidapps.DAPPManager;
 import org.minima.system.network.minidapps.websocket.WebSocketManager;
@@ -15,9 +14,10 @@ import org.minima.system.network.rpc.RPCServer;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.messages.Message;
+import org.minima.utils.messages.MessageProcessor;
 import org.minima.utils.messages.TimerMessage;
 
-public class NetworkHandler extends SystemHandler{
+public class NetworkHandler extends MessageProcessor {
 
 	public static final String NETWORK_STARTUP 		= "NETWORK_START";
 	public static final String NETWORK_SHUTDOWN 	= "NETWORK_SHUTDOWN";
@@ -91,7 +91,7 @@ public class NetworkHandler extends SystemHandler{
 	 * @param zMain
 	 */
 	public NetworkHandler(Main zMain, String zHost, int zMainPort) {
-		super(zMain,"NETWORK");
+		super("NETWORK");
 
 		if(zHost.equals("")) {
 			mHardSet = false;
@@ -214,10 +214,10 @@ public class NetworkHandler extends SystemHandler{
 			Thread.sleep(200);
 			
 			//Start the DAPP Server
-			mDAPPManager = new DAPPManager(getMainHandler());
+			mDAPPManager = new DAPPManager(Main.getMainHandler());
 			
 			//Start the WebSocket Manager
-			mWebSocketManager = new WebSocketManager(getMainHandler(), getWSPort());
+			mWebSocketManager = new WebSocketManager(Main.getMainHandler(), getWSPort());
 			
 		}else if(zMessage.isMessageType(NETWORK_SHUTDOWN)) {
 			//Stop the server

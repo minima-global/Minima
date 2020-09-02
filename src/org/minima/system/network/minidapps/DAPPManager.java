@@ -21,7 +21,6 @@ import java.util.zip.ZipInputStream;
 
 import org.minima.objects.base.MiniData;
 import org.minima.system.Main;
-import org.minima.system.SystemHandler;
 import org.minima.system.brains.BackupManager;
 import org.minima.system.input.InputHandler;
 import org.minima.system.network.NetworkHandler;
@@ -37,9 +36,10 @@ import org.minima.utils.json.JSONObject;
 import org.minima.utils.json.parser.JSONParser;
 import org.minima.utils.json.parser.ParseException;
 import org.minima.utils.messages.Message;
+import org.minima.utils.messages.MessageProcessor;
 import org.minima.utils.nanohttpd.protocols.http.NanoHTTPD;
 
-public class DAPPManager extends SystemHandler {
+public class DAPPManager extends MessageProcessor {
 
 	public static String DAPP_INIT           = "DAPP_INIT";
 	public static String DAPP_INSTALL        = "DAPP_INSTALL";
@@ -80,10 +80,10 @@ public class DAPPManager extends SystemHandler {
 	long mLastReplyUsed = 0; 
 		
 	public DAPPManager(Main zMain) {
-		super(zMain, "DAPPMAnager");
+		super("DAPPMAnager");
 		
 		//Need access to this
-		mNetwork = getMainHandler().getNetworkHandler();
+		mNetwork = Main.getMainHandler().getNetworkHandler();
 		
 		//All the backends are stored here..
 		mBackends = new Hashtable<>();
@@ -216,7 +216,7 @@ public class DAPPManager extends SystemHandler {
 		mBackends.clear();
 		
 		//This is the folder..
-		File alldapps = getMainHandler().getBackupManager().getMiniDAPPFolder();
+		File alldapps = Main.getMainHandler().getBackupManager().getMiniDAPPFolder();
 		
 		//Store for later
 		MINIDAPPS_FOLDER = alldapps.getAbsolutePath();
@@ -328,7 +328,7 @@ public class DAPPManager extends SystemHandler {
 		
 		if(zMessage.getMessageType().equals(DAPP_INIT)) {
 			//Create the Comms Manager
-			mCommsManager = new CommsManager(getMainHandler());
+			mCommsManager = new CommsManager(Main.getMainHandler());
 			
 			//Now create the Minima JS file..
 		    recalculateMinimaJS();
@@ -375,7 +375,7 @@ public class DAPPManager extends SystemHandler {
 			InputHandler.getResponseJSON(zMessage).put("uid", minidappid);
 			
 			//This is the folder..
-			File alldapps = getMainHandler().getBackupManager().getMiniDAPPFolder();
+			File alldapps = Main.getMainHandler().getBackupManager().getMiniDAPPFolder();
 			
 			//And the actual folder...
 			File dapp  = new File(alldapps,hash.to0xString());

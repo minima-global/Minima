@@ -4,8 +4,6 @@ import java.io.File;
 
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
-import org.minima.system.Main;
-import org.minima.system.SystemHandler;
 import org.minima.utils.MiniFile;
 import org.minima.utils.Streamable;
 import org.minima.utils.messages.Message;

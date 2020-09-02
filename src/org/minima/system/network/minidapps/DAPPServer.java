@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.minima.objects.base.MiniData;
+import org.minima.system.Main;
 import org.minima.system.brains.BackupManager;
 import org.minima.system.network.minidapps.minihub.hexdata.faviconico;
 import org.minima.system.network.minidapps.minihub.hexdata.helphtml;
@@ -52,7 +53,7 @@ public class DAPPServer extends NanoHTTPD{
 		super(zPort);
 		
 		mDAPPManager = zDAPPManager;
-		mBackup      = zDAPPManager.getMainHandler().getBackupManager();
+		mBackup      = Main.getMainHandler().getBackupManager();
 		mWebRoot     = mBackup.getWebRoot();
 		
 		//Store of all the params and files for a MiniDAPP..

@@ -3,13 +3,12 @@ package org.minima.system.network.minidapps.comms;
 import java.util.ArrayList;
 
 import org.minima.system.Main;
-import org.minima.system.SystemHandler;
 import org.minima.system.network.minidapps.DAPPManager;
-import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
+import org.minima.utils.messages.MessageProcessor;
 
-public class CommsManager extends SystemHandler {
+public class CommsManager extends MessageProcessor  {
 
 	public static final String COMMS_INIT = "COMMS_INIT";
 	
@@ -33,7 +32,7 @@ public class CommsManager extends SystemHandler {
 	ArrayList<CommsClient> mClients;
 	
 	public CommsManager(Main zMain) {
-		super(zMain, "COMMSMANAGER");
+		super("COMMSMANAGER");
 	
 		mServers = new ArrayList<>();
 		mClients = new ArrayList<>();
@@ -287,7 +286,7 @@ public class CommsManager extends SystemHandler {
 		msg.addObject("message", websocketmsg);
 		
 		//Post to the Network..
-		getMainHandler().getNetworkHandler().getDAPPManager().PostMessage(msg);
+		Main.getMainHandler().getNetworkHandler().getDAPPManager().PostMessage(msg);
 	}
 
 }
