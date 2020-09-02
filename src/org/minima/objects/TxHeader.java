@@ -70,6 +70,13 @@ public class TxHeader implements Streamable {
 	public MiniData mTxBodyHash    = new MiniData("0x00");
 	
 	/**
+	 * The MAGIC numbers.. to be set by avg chain vote..
+	 */
+//	public MiniNumber mTxPoWSize;
+//	public MiniNumber mTxPoWSpeed;
+//	public MiniNumber mKISSVMInstructions;
+	
+	/**
 	 * In the long run ONLY this header is kept and the body is discarded..
 	 */
 	public TxHeader() {
