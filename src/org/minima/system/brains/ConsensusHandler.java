@@ -16,7 +16,6 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
 import org.minima.objects.proofs.TokenProof;
 import org.minima.system.Main;
-import org.minima.system.NativeListener;
 import org.minima.system.input.InputHandler;
 import org.minima.system.input.functions.gimme50;
 import org.minima.system.network.MinimaClient;
@@ -28,6 +27,7 @@ import org.minima.system.txpow.TxPoWMiner;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
+import org.minima.utils.messages.MessageListener;
 import org.minima.utils.messages.MessageProcessor;
 import org.minima.utils.messages.TimerMessage;
 
@@ -119,7 +119,7 @@ public class ConsensusHandler extends MessageProcessor {
 	/**
 	 * A list of Listeners.. for important messages..
 	 */
-	ArrayList<NativeListener> mListeners;
+	ArrayList<MessageListener> mListeners;
 	
 	/**
 	 * FLUSH counter 
@@ -170,16 +170,16 @@ public class ConsensusHandler extends MessageProcessor {
 		mListeners.clear();
 	}
 	
-	public void addListener(NativeListener zListen) {
+	public void addListener(MessageListener zListen) {
 		mListeners.add(zListen);
 	}
 	
-	public void removeListener(NativeListener zListen) {
+	public void removeListener(MessageListener zListen) {
 		mListeners.remove(zListen);
 	}
 	
 	public void updateListeners(Message zMessage) {
-		for(NativeListener listen : mListeners) {
+		for(MessageListener listen : mListeners) {
 			listen.processMessage(zMessage);
 		}
 	}
