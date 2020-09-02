@@ -922,7 +922,7 @@ public class ConsensusPrint extends ConsensusProcessor {
 			boolean fullstatus = zMessage.getBoolean("full");
 			
 			//Main Handler
-			Main main = getConsensusHandler().getMainHandler();
+			Main main = Main.getMainHandler();
 			
 			if(getMainDB().getMainTree().getChainRoot() == null) {
 				//Add it to the output
@@ -942,7 +942,7 @@ public class ConsensusPrint extends ConsensusProcessor {
 			status.put("time", new Date().toString());
 			
 			//Up time..
-			long timediff     = System.currentTimeMillis() - getConsensusHandler().getMainHandler().getNodeStartTime();
+			long timediff     = System.currentTimeMillis() - Main.getMainHandler().getNodeStartTime();
 			String uptime     = Maths.ConvertMilliToTime(timediff);	
 
 			status.put("uptime", uptime);
@@ -973,7 +973,7 @@ public class ConsensusPrint extends ConsensusProcessor {
 			
 			//Size of the TXPOW DB folder..
 			if(fullstatus) {
-				File[] txpows = getConsensusHandler().getMainHandler().getBackupManager().getTxPOWFolder().listFiles();
+				File[] txpows = Main.getMainHandler().getBackupManager().getTxPOWFolder().listFiles();
 				long totallen = 0;
 				int totnum    = 0;
 				if(txpows!=null) {
@@ -1031,7 +1031,7 @@ public class ConsensusPrint extends ConsensusProcessor {
 			JSONObject network = InputHandler.getResponseJSON(zMessage);
 			
 			//Add the network connections
-			ArrayList<MinimaClient> nets = getConsensusHandler().getMainHandler().getNetworkHandler().getNetClients();
+			ArrayList<MinimaClient> nets = Main.getMainHandler().getNetworkHandler().getNetClients();
 			network.put("connections", nets.size());
 			
 			JSONArray netarr = new JSONArray();
@@ -1048,7 +1048,7 @@ public class ConsensusPrint extends ConsensusProcessor {
 		
 		}else if(zMessage.isMessageType(CONSENSUS_MINIDAPPS)){
 			//Current crop
-			DAPPManager dapps = getConsensusHandler().getMainHandler().getNetworkHandler().getDAPPManager();
+			DAPPManager dapps = Main.getMainHandler().getNetworkHandler().getDAPPManager();
 			JSONArray minis   = dapps.getMiniDAPPS();
 			
 			//Get the response JSON

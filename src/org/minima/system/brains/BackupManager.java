@@ -9,8 +9,9 @@ import org.minima.system.SystemHandler;
 import org.minima.utils.MiniFile;
 import org.minima.utils.Streamable;
 import org.minima.utils.messages.Message;
+import org.minima.utils.messages.MessageProcessor;
 
-public class BackupManager extends SystemHandler {
+public class BackupManager extends MessageProcessor {
 
 	private static final String BACKUP_WRITE              = "BACKUP_WRITE";
 	private static final String BACKUP_DELETE             = "BACKUP_DELETE";
@@ -36,8 +37,8 @@ public class BackupManager extends SystemHandler {
 	
 	static File mTempFolder = new File(System.getProperty("java.io.tmpdir"));
 	
-	public BackupManager(Main zMain, String zConfFolder) {
-		super(zMain, "BACKUP");
+	public BackupManager(String zConfFolder) {
+		super("BACKUP");
 		
 		mConfigurationFolder = zConfFolder;
 	

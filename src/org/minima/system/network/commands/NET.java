@@ -39,7 +39,7 @@ public class NET implements Runnable {
 	public void run() {
 		//Get a handle on something
 		InputHandler input = Main.getMainHandler().getInputHandler();
-		DAPPManager dappm  = input.getMainHandler().getNetworkHandler().getDAPPManager();
+		DAPPManager dappm  = Main.getMainHandler().getNetworkHandler().getDAPPManager();
 		CommsManager comms = dappm.getCommsManager();
 		
 		JSONObject resp = new JSONObject();

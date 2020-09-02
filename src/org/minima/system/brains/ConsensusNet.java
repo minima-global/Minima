@@ -18,6 +18,7 @@ import org.minima.objects.greet.SyncPackage;
 import org.minima.objects.greet.SyncPacket;
 import org.minima.objects.greet.TxPoWList;
 import org.minima.objects.proofs.TokenProof;
+import org.minima.system.Main;
 import org.minima.system.network.MinimaClient;
 import org.minima.system.network.MinimaReader;
 import org.minima.system.txpow.TxPoWChecker;
@@ -185,7 +186,7 @@ public class ConsensusNet extends ConsensusProcessor {
 			}
 			
 			//We'll be storing the received txpow messages
-			BackupManager backup = getConsensusHandler().getMainHandler().getBackupManager();
+			BackupManager backup = Main.getMainHandler().getBackupManager();
 			
 			//Complete Refresh..
 			if(hardreset) {
@@ -520,7 +521,7 @@ public class ConsensusNet extends ConsensusProcessor {
 					}
 					
 					//Save it..
-					getConsensusHandler().getMainHandler().getBackupManager().backupTxpow(txpow);
+					Main.getMainHandler().getBackupManager().backupTxpow(txpow);
 					
 					//Is it a block ?
 					if(txpow.isBlock()) {

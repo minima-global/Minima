@@ -102,7 +102,7 @@ public class Main extends MessageProcessor {
 		MinimaLogger.log("**********************************************");
 		
 		//Backup manager
-		mBackup     = new BackupManager(this,zConfFolder);
+		mBackup     = new BackupManager(zConfFolder);
 
 		//Set the TeMP folder
 		System.setProperty("java.io.tmpdir",BackupManager.getTempFolder().getAbsolutePath());
@@ -110,7 +110,7 @@ public class Main extends MessageProcessor {
 		//The guts..
 		mInput 		= new InputHandler(this);
 		mNetwork 	= new NetworkHandler(this, zHost, zPort);
-		mTXMiner 	= new TxPoWMiner(this);
+		mTXMiner 	= new TxPoWMiner();
 		mConsensus  = new ConsensusHandler(this);
 		
 		//Are we the genesis
