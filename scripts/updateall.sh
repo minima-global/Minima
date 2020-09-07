@@ -1,9 +1,9 @@
 #!/bin/sh
 
 #First update the main server
-./update.sh minima-private-1-vm --zone=europe-west4-a private
+./update.sh minima-private-1-vm --zone=europe-west4-a private1
 #sleep 300
-#./update.sh minima-private-2-vm --zone=europe-west4-a private
+./update.sh minima-private-2-vm --zone=europe-west4-a private2
 #sleep 300
 
 #Update the miner..
