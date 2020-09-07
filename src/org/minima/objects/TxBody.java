@@ -45,10 +45,9 @@ public class TxBody implements Streamable {
 	public ArrayList<MiniData> mTxPowIDList;
 	
 	/**
-	 * A Random Magic number so that everyone is working on a different TxPOW in the pulse 
-	 * (since there is no coinbase..)
+	 * MAGIC numbers that set the chain parameters
 	 */
-	public MiniData mMagic = MiniData.getRandomData(64);
+	public Magic mMagic = new Magic();
 	
 	public TxBody() {
 		//List of the transctions in this block
@@ -73,14 +72,13 @@ public class TxBody implements Streamable {
 		}
 		txpow.put("txnlist", txns);
 		
-		txpow.put("magic", mMagic.toString());
+		txpow.put("magic", mMagic.toJSON());
 		
 		return txpow;
 	}
 
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
-		mMagic.writeHashToStream(zOut);
 		mTxnDifficulty.writeDataStream(zOut);
 		mTransaction.writeDataStream(zOut);
 		mWitness.writeDataStream(zOut);
@@ -93,12 +91,13 @@ public class TxBody implements Streamable {
 		ramlen.writeDataStream(zOut);
 		for(MiniData txpowid : mTxPowIDList) {
 			txpowid.writeHashToStream(zOut);
-		}	
+		}
+		
+		mMagic.writeDataStream(zOut);
 	}
 
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
-		mMagic          = MiniData.ReadHashFromStream(zIn);
 		mTxnDifficulty  = MiniData.ReadFromStream(zIn);
 		mTransaction.readDataStream(zIn);
 		mWitness.readDataStream(zIn);
@@ -112,5 +111,7 @@ public class TxBody implements Streamable {
 		for(int i=0;i<len;i++) {
 			mTxPowIDList.add(MiniData.ReadHashFromStream(zIn));
 		}
+		
+		mMagic.readDataStream(zIn);
 	}
 }

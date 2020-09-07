@@ -199,7 +199,7 @@ public class TxPoW implements Streamable {
 	}
 	
 	public MiniData getMagic() {
-		return mBody.mMagic;
+		return mBody.mMagic.mPRNG;
 	}
 	
 	public MiniData getMMRRoot() {
