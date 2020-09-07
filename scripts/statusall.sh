@@ -9,7 +9,7 @@ gcloud compute ssh minima-private-2-vm  -- "~/Minima/scripts/status.sh"
 echo "MINER 1"
 gcloud compute ssh minima-miner-1-vm  -- "~/Minima/scripts/status.sh"
 echo "MINER 2"
-gcloud compute ssh minima-miner-2-vm  -- "~/Minima/scripts/status.sh"
+gcloud compute ssh minima-miner-2-vm --zone=europe-west2-a  -- "~/Minima/scripts/status.sh"
 
 echo "PUBLIC 1"
 gcloud compute ssh minima-public-1-vm  -- "~/Minima/scripts/status.sh"

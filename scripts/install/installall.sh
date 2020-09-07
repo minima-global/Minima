@@ -1,9 +1,9 @@
 #!/bin/sh
 
 #First update the main server
-./update.sh minima-private-1-vm private
+#./update.sh minima-private-1-vm private
 #sleep 300
-./update.sh minima-private-2-vm private
+#./update.sh minima-private-2-vm private
 #sleep 300
 
 #Update the miner..
