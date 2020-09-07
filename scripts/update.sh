@@ -2,10 +2,10 @@
 
 set timeout -1
 
-set launchtype ~/Minima/scripts/launchmodes/startminima_[lindex $argv 1].sh 
+set launchtype ~/Minima/scripts/launchmodes/startminima_[lindex $argv 2].sh 
 
 #Log into the machine..
-spawn gcloud compute ssh [lindex $argv 0]
+spawn gcloud compute ssh [lindex $argv 0] [lindex $argv 1] 
 expect "$ "
 
 #Stop the current version of Minima
