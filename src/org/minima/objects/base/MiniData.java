@@ -227,6 +227,8 @@ public class MiniData implements Streamable {
 		int len = zIn.readInt();
 		if(len > Crypto.MINIMA_DEFAULT_MAX_HASH_LENGTH) {
 			throw new IOException("Read Error : HASH Length greater then 64! "+len);
+		}else if(len<0) {
+			throw new IOException("Read Error : HASH Length less than 0! "+len);
 		}
 		
 		mData = new byte[len];
