@@ -25,7 +25,13 @@ public class Start {
 	/**
 	 * A list of default valid nodes to connect to at startup..
 	 */
-	public static final String[] VALID_BOOTSTRAP_NODES = {"35.204.181.120","35.204.119.15","34.91.220.49","35.204.62.177"};
+	public static final String[] VALID_BOOTSTRAP_NODES = 
+		{"35.204.181.120",
+		 "35.204.119.15",
+		 "34.91.220.49",
+		 "35.204.62.177",
+		 "35.204.139.141",
+		 "35.204.194.45"};
 	
 	/**
 	 * A static link to the main server - for Android
