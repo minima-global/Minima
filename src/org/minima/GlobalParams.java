@@ -7,7 +7,7 @@ public class GlobalParams {
 	/**
 	 * Which Version
 	 */
-	public static final String MINIMA_VERSION = "0.96.7"; 
+	public static final String MINIMA_VERSION = "0.96.8"; 
 	
 	/**
 	 * Are we debugging the chain in short chain mode..
