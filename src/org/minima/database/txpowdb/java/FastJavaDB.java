@@ -125,7 +125,11 @@ public class FastJavaDB implements TxPowDB {
 						//Remove it..
 						removed.add(row);
 					}
-				}else {
+				}else{
+					if(row.getTxPOW().isTransaction() && !row.isInBlock()) {
+						MinimaLogger.log("Transaction NOT in block removed.. "+row);
+					}
+					
 					//Remove it..
 					removed.add(row);	
 				}

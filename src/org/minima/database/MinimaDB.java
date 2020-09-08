@@ -793,7 +793,7 @@ public class MinimaDB {
 			}
 		}
 		
-		//Which MMRSet to use.. use the same one for the wholetransaction
+		//Which MMRSet to use.. use the same one for the whole transaction
 		MiniNumber howdeep = currentblock.sub(recent);
 		
 		//MAX 256 blocks in the past 'should' be fine.. so re-orgs won't invalidate it..
