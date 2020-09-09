@@ -630,8 +630,7 @@ public class ConsensusNet extends ConsensusProcessor {
 		
 		//If found.. repost the request on a 5 second timer..
 		if(found) {
-			MinimaLogger.log("Delay SendTxPOWRequest for 10 secs.."+data+" from "+client);
-			
+			//MinimaLogger.log("Delay SendTxPOWRequest for 10 secs.."+data+" from "+client);
 			TimerMessage newtxpowid = new TimerMessage(10000, CONSENSUS_NET_TXPOWID);
 			//Add the TxPOWID
 			newtxpowid.addObject("txpowid", zTxPoWID);

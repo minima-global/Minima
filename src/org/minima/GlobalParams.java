@@ -7,7 +7,7 @@ public class GlobalParams {
 	/**
 	 * Which Version
 	 */
-	public static final String MINIMA_VERSION = "0.96.13"; 
+	public static final String MINIMA_VERSION = "0.96.14"; 
 	
 	/**
 	 * Number of seconds before sending a pulse message - every 10 minutes
