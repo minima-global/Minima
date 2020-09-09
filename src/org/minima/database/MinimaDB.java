@@ -797,8 +797,8 @@ public class MinimaDB {
 		MiniNumber howdeep = currentblock.sub(recent);
 		
 		//MAX 256 blocks in the past 'should' be fine.. so re-orgs won't invalidate it..
-		if(howdeep.isMore(MiniNumber.TWOFIVESIX)) {
-			howdeep = MiniNumber.TWOFIVESIX;
+		if(howdeep.isMore(GlobalParams.MINIMA_MMR_PROOF_HISTORY)) {
+			howdeep = GlobalParams.MINIMA_MMR_PROOF_HISTORY;
 		}
 		
 		//DEBUG..

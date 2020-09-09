@@ -27,10 +27,12 @@ public class TxPoWMiner extends MessageProcessor {
 	//Mine a single Block
 	public static final String TXMINER_DEBUGBLOCK   = "MINE_DEBUGBLOCK";
 	
+	/**
+	 * Mine continuously for 2000 milliseconds before recreating your txpow.. 
+	 */
 	private static final long MINE_CONSECUTIVE_MAX = 2000;
 	
-	boolean mAutoMining = false;
-	
+	boolean mAutoMining    = false;
 	boolean mShowTXPOWMine = true;
 	
 	public TxPoWMiner() {
