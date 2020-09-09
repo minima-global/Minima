@@ -238,25 +238,14 @@ public class ConsensusHandler extends MessageProcessor {
 				//Do the balance.. Update listeners if changed..
 				Message balanceupdate = new Message(ConsensusPrint.CONSENSUS_BALANCE).addBoolean("hard", true);
 				PostMessage(balanceupdate);
-			}
 			
-			//MemPool Flush Counter... 
-			if(txpow.isBlock()) {
-				//Every 10 minutes or so check if you have all the parents and txns in blocks..
-				if(mFlushCounter++ > 32) {
-					mFlushCounter = 0;
-					
-					//Post a flush message.. could be stuck missing a block..
-					PostMessage(new Message(ConsensusUser.CONSENSUS_FLUSHMEMPOOL));
+				//Print the tree..
+				if(mPrintChain) {
+					Message print = new Message(ConsensusPrint.CONSENSUS_PRINTCHAIN_TREE).addBoolean("systemout", true);
+					PostMessage(print);
 				}
 			}
-			
-			//Print the tree..
-			if(mPrintChain) {
-				Message print = new Message(ConsensusPrint.CONSENSUS_PRINTCHAIN_TREE).addBoolean("systemout", true);
-				PostMessage(print);
-			}
-						
+									
 			/**
 			 * One time run the first time you see a txpow..
 			 */
@@ -317,6 +306,9 @@ public class ConsensusHandler extends MessageProcessor {
 			
 			//Redo every 10 minutes..
 			PostTimerMessage(new TimerMessage(10 * 60 * 1000, CONSENSUS_AUTOBACKUP));
+			
+			//And flush the mempool
+			PostMessage(new Message(ConsensusUser.CONSENSUS_FLUSHMEMPOOL));
 			
 		/**
 		 * Network Messages

@@ -285,7 +285,7 @@ public class MinimaClient extends MessageProcessor {
 				//And send it..
 				sendMessage(MinimaReader.NETMESSAGE_TXPOW_REQUEST, txpowid);
 			}else {
-				MinimaLogger.log("Requested TXPOWID .. cancelled as already done less than 5 minutes ago.. "+data);
+				//MinimaLogger.log("Requested TXPOWID .. cancelled as already done less than 5 minutes ago.. "+data);
 			}
 	
 		}else if(zMessage.isMessageType(NETCLIENT_PULSE)) {

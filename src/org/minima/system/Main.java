@@ -110,6 +110,8 @@ public class Main extends MessageProcessor {
 		mTXMiner 	= new TxPoWMiner();
 		mConsensus  = new ConsensusHandler(this);
 		
+		//mConsensus.setLOG(true);
+		
 		//Are we the genesis
 		mGenesis 	= zGenesis;
 		

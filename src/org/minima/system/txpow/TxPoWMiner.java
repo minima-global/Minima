@@ -27,7 +27,7 @@ public class TxPoWMiner extends MessageProcessor {
 	//Mine a single Block
 	public static final String TXMINER_DEBUGBLOCK   = "MINE_DEBUGBLOCK";
 	
-	private static final long MINE_CONSECUTIVE_MAX = 4000;
+	private static final long MINE_CONSECUTIVE_MAX = 2000;
 	
 	boolean mAutoMining = false;
 	
@@ -170,7 +170,7 @@ public class TxPoWMiner extends MessageProcessor {
 			}
 			
 			//Pause for breath
-			Thread.sleep(200);
+			Thread.sleep(500);
 			
 			//And start the whole Mining thing again..
 			Main.getMainHandler().getConsensusHandler().PostMessage(ConsensusHandler.CONSENSUS_MINEBLOCK);

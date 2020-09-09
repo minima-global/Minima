@@ -452,6 +452,8 @@ public class ConsensusNet extends ConsensusProcessor {
 			//The TxPoW
 			TxPoW txpow = (TxPoW)zMessage.getObject("txpow");
 			
+			MinimaLogger.log("TXPOW RECEIVED "+txpow.getBlockNumber()+" "+txpow.getTxPowID());
+			
 			//Do we have it.. now check DB - hmmm..
 			if(getMainDB().getTxPOW(txpow.getTxPowID()) != null) {
 				MinimaLogger.log("NET Transaction we already have.. "+txpow.getBlockNumber()+" "+txpow.getTxPowID());
@@ -587,12 +589,34 @@ public class ConsensusNet extends ConsensusProcessor {
 			//Post it
 			getConsensusHandler().PostMessage(newtxpow);
 			
-			//Now check the parent.. (Whether or not it is a block we may be out of alignment..)
+			//Now check we have the parent.. (Whether or not it is a block we may be out of alignment..)
 			MiniData parentID = txpow.getParentID();
-			if(getMainDB().getTxPOW(parentID)==null) {
+			if(getMainDB().getTxPOW(parentID) == null) {
 				//We don't have it, get it..
 				MinimaLogger.log("Request Parent TxPoW @ "+txpow.getBlockNumber()+" parent:"+parentID); 
 				sendTxPowRequest(zMessage, parentID);
+			}else {
+				//We do have it..
+				BlockTreeNode pnode = getMainDB().getMainTree().findNode(parentID);
+				
+				if(pnode == null) {
+					//Double search
+					pnode = getMainDB().getMainTree().findNode(parentID, true);
+					
+					if(pnode == null) {
+						MinimaLogger.log("Parent BLOCK is NOT a BLOCKTREE NODE "+parentID.to0xString());
+					}else {
+						MinimaLogger.log("Parent BLOCK DOUBLE SEARCH FOUND BLOCKTREE NODE "+parentID.to0xString());
+					}
+				}else {
+					//Is it a valid block..
+					if(pnode.getState() == BlockTreeNode.BLOCKSTATE_VALID) {
+						//ITS A VALID BLOCK.. ALL DONE..
+						MinimaLogger.log("Parent BLOCK is VALID! "+parentID.to0xString());
+					}else {
+						MinimaLogger.log("Parent BLOCK is NOT VALID! "+parentID.to0xString());
+					}
+				}
 			}
 
 			//And now check the Txn list.. basically a mempool sync
@@ -625,8 +649,9 @@ public class ConsensusNet extends ConsensusProcessor {
 		
 		//If found.. repost the request on a 5 second timer..
 		if(found) {
-			//MinimaLogger.log("Delay SendTxPOWRequest for 5 secs.."+data+" from "+client);
-			TimerMessage newtxpowid = new TimerMessage(5000, CONSENSUS_NET_TXPOWID);
+			MinimaLogger.log("Delay SendTxPOWRequest for 10 secs.."+data+" from "+client);
+			
+			TimerMessage newtxpowid = new TimerMessage(10000, CONSENSUS_NET_TXPOWID);
 			//Add the TxPOWID
 			newtxpowid.addObject("txpowid", zTxPoWID);
 			//And the Net Client..
