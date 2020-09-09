@@ -29,11 +29,11 @@ public class Magic implements Streamable {
 	public JSONObject toJSON() {
 		JSONObject magic = new JSONObject();
 		
-		magic.put("prng", mPRNG);
+		magic.put("prng", mPRNG.to0xString());
 		
-		magic.put("maxtxpow", mDesiredMaxTxPoWSize);
-		magic.put("maxtxn", mDesiredMaxTxnPerBlock);
-		magic.put("maxkissvm", mDesiredMaxKISSVMInstructions);
+		magic.put("maxtxpow", mDesiredMaxTxPoWSize.getAsInt());
+		magic.put("maxtxn", mDesiredMaxTxnPerBlock.getAsInt());
+		magic.put("maxkissvm", mDesiredMaxKISSVMInstructions.getAsInt());
 		
 		return magic;
 	}
