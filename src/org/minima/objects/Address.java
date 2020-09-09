@@ -133,10 +133,14 @@ public class Address implements Streamable{
 		int len    = data.length;
 		int newlen = 0;
 		
-		//160 bit
+		//160 bit - no checksum for 160 bit address.. not expecting people to use it though.. 
 		if(len == 20) {
-			newlen = 25;
+			newlen = 20;
 
+		//192 bit
+		}else if(len == 24) {
+			newlen = 25;
+					
 		//224 bit
 		}else if(len == 28) {
 			newlen = 30;
@@ -215,8 +219,10 @@ public class Address implements Streamable{
 		int bitlen = 0; 
 		
 		//Convert back..
-		if(len == 25) {
+		if(len == 20) {
 			bitlen = 20;
+		}else if(len == 25) {
+			bitlen = 24;
 		}else if(len == 30) {
 			bitlen = 28;
 		}else if(len == 35) {
@@ -258,6 +264,21 @@ public class Address implements Streamable{
 		}
 		
 		return new MiniData(newdata);
+	}
+	
+	
+	
+	public static void main(String[] zArgs) {
+		MiniData tt = MiniData.getRandomData(24);
+		
+		String madd = Address.makeMinimaAddress(tt);
+		
+		MiniData conv = Address.convertMinimaAddress(madd);
+		
+		System.out.println("Address   : "+tt.to0xString());
+		System.out.println("Conv      : "+conv.to0xString());
+		System.out.println("MxAddress : "+madd);
+		
 	}
 	
 }

@@ -451,8 +451,9 @@ public class ConsensusNet extends ConsensusProcessor {
 			
 			//The TxPoW
 			TxPoW txpow = (TxPoW)zMessage.getObject("txpow");
-			
-			MinimaLogger.log("TXPOW RECEIVED "+txpow.getBlockNumber()+" "+txpow.getTxPowID());
+		
+			//DEBUG logs..
+			//MinimaLogger.log("TXPOW RECEIVED "+txpow.getBlockNumber()+" "+txpow.getTxPowID());
 			
 			//Do we have it.. now check DB - hmmm..
 			if(getMainDB().getTxPOW(txpow.getTxPowID()) != null) {
@@ -595,36 +596,16 @@ public class ConsensusNet extends ConsensusProcessor {
 				//We don't have it, get it..
 				MinimaLogger.log("Request Parent TxPoW @ "+txpow.getBlockNumber()+" parent:"+parentID); 
 				sendTxPowRequest(zMessage, parentID);
-			}else {
-				//We do have it..
-				BlockTreeNode pnode = getMainDB().getMainTree().findNode(parentID);
-				
-				if(pnode == null) {
-					//Double search
-					pnode = getMainDB().getMainTree().findNode(parentID, true);
-					
-					if(pnode == null) {
-						MinimaLogger.log("Parent BLOCK is NOT a BLOCKTREE NODE "+parentID.to0xString());
-					}else {
-						MinimaLogger.log("Parent BLOCK DOUBLE SEARCH FOUND BLOCKTREE NODE "+parentID.to0xString());
-					}
-				}else {
-					//Is it a valid block..
-					if(pnode.getState() == BlockTreeNode.BLOCKSTATE_VALID) {
-						//ITS A VALID BLOCK.. ALL DONE..
-						MinimaLogger.log("Parent BLOCK is VALID! "+parentID.to0xString());
-					}else {
-						MinimaLogger.log("Parent BLOCK is NOT VALID! "+parentID.to0xString());
-					}
-				}
 			}
-
+			
 			//And now check the Txn list.. basically a mempool sync
-			ArrayList<MiniData> txns = txpow.getBlockTransactions();
-			for(MiniData txn : txns) {
-				if(getMainDB().getTxPOW(txn) == null ) {
-					MinimaLogger.log("Request missing TxPoW in block "+txpow.getBlockNumber()+" "+txn);
-					sendTxPowRequest(zMessage, txn);
+			if(txpow.isBlock()) {
+				ArrayList<MiniData> txns = txpow.getBlockTransactions();
+				for(MiniData txn : txns) {
+					if(getMainDB().getTxPOW(txn) == null ) {
+						MinimaLogger.log("Request missing TxPoW in block "+txpow.getBlockNumber()+" "+txn);
+						sendTxPowRequest(zMessage, txn);
+					}
 				}
 			}
 		}
