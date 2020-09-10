@@ -160,6 +160,20 @@ public class NET implements Runnable {
 				resp.put("error", e.toString());
 			}
 		
+		}else if(mCommand.startsWith("post ")) {
+			String url    = strtok.nextToken();
+			String params = strtok.nextToken();
+			
+			try {
+				String result = RPCClient.sendPOST(url, params);
+				//resp.put("result", URLEncoder.encode(result,"UTF-8"));
+				resp.put("result", result);
+				
+			} catch (IOException e) {
+				MinimaLogger.log("Error NET POST : "+url+" "+e);
+				resp.put("error", e.toString());
+			}
+		
 		}else {
 			resp.put("error", "UNKNOWN COMMAND");
 		}

@@ -42,8 +42,8 @@ var Minima = {
 	//TxPoWID of the current top block
 	txpowid : "0x00",
 	
-	//The HOST 
-	host : "",
+	//Web Host for Minima
+	webhost : "http://127.0.0.1:9004",
 	
 	//RPC Host for Minima
 	rpchost : "http://127.0.0.1:9002",
@@ -69,7 +69,7 @@ var Minima = {
 	 */
 	init : function(callback){
 		//Log a little..
-		Minima.log("Initialisation..");
+		Minima.log("Initialising..");
 		
 		//Store the callback
 		if(callback){
@@ -83,17 +83,17 @@ var Minima = {
 			Minima.host = window.location.hostname;
 			
 			//The Port determives the WebSocket and RPC port..
+			Minima.webhost = "http://"+Minima.host+":"+(window.location.port);
 			Minima.rpchost = "http://"+Minima.host+":"+(window.location.port-2);
 			Minima.wshost = "ws://"+Minima.host+":"+(window.location.port-1);	
-		}else{
-			Minima.log("Running from file system.. default RPC and WS hosts..");
 		}
 		
+		Minima.log("WEBHOST : "+Minima.webhost);
 		Minima.log("RPCHOST : "+Minima.rpchost);
 		Minima.log("WCHOST  : "+Minima.wshost);
 		
 		//Any Parameters..
-		var paramstring = Minima.rpchost+"/params";
+		var paramstring = Minima.webhost+"/params";
 		httpGetAsync(paramstring, function(jsonresp){
 			//Set it..
 			MINIMA_PARAMS = jsonresp;	
@@ -199,9 +199,14 @@ var Minima = {
 			MinimaRPC("net","stats",callback);
 		},
 				
-		//GET an URL resource
-		get : function(url, callback){
+		//GET an URL
+		GET : function(url, callback){
 			MinimaRPC("net","get "+url,callback);
+		},
+		
+		//POST params to an URL 
+		POST : function(url, params, callback){
+			MinimaRPC("net","post "+url+" "+params,callback);
 		}
 		
 	},
@@ -377,9 +382,9 @@ function MinimaPostMessage(event, info){
    var data = { "event": event, "info" : info };
 
    //And dispatch
-	if(MINIMA_MAIN_CALLBACK){
+   if(MINIMA_MAIN_CALLBACK){
 		MINIMA_MAIN_CALLBACK(data);	
-	}   
+   }      
 }
 
 /**

@@ -55,7 +55,7 @@ public class ConsensusNet extends ConsensusProcessor {
 	 */
 	boolean mHardResetAllowed = true;
 	
-	boolean mFullSyncOnInit = false;
+	boolean mFullSyncOnInit = true;
 	
 	/**
 	 * Check when you sent out a request for a TxPOW
@@ -129,7 +129,7 @@ public class ConsensusNet extends ConsensusProcessor {
 			client.PostMessage(req);
 			
 		}else if(zMessage.isMessageType(CONSENSUS_NET_INTRO)) {
-			MinimaLogger.log("INTRO SYNC message received..");
+			//MinimaLogger.log("INTRO SYNC message received..");
 			
 			//Get the Sync Package..
 			SyncPackage sp = (SyncPackage) zMessage.getObject("sync");
@@ -501,7 +501,7 @@ public class ConsensusNet extends ConsensusProcessor {
 			
 			//Is this transaction from the IBD starter..
 			if(getNetworkHandler().isRequestedInitialTxPow(txpowid)) {
-				MinimaLogger.log("IDB Requested TxPoW "+txpowid);
+				//MinimaLogger.log("IDB Requested TxPoW "+txpowid);
 				
 				//Check the block it is in..
 				TxPoW validblock = getMainDB().findBlockForTransaction(txpow);
