@@ -24,6 +24,7 @@ import org.minima.system.network.NetworkHandler;
 import org.minima.system.network.minidapps.DAPPManager;
 import org.minima.system.txpow.TxPoWChecker;
 import org.minima.system.txpow.TxPoWMiner;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
@@ -37,7 +38,7 @@ public class ConsensusHandler extends MessageProcessor {
 	 * Main processing loop for a txpow message
 	 */
 	public static final String CONSENSUS_PROCESSTXPOW 		   = "CONSENSUS_PROCESSTXPOW";
-	public static final String CONSENSUS_PRE_PROCESSTXPOW 	   = "CONSENSUS_PREPROCESSTXPOW";
+//	public static final String CONSENSUS_PRE_PROCESSTXPOW 	   = "CONSENSUS_PREPROCESSTXPOW";
 	
 	/**
 	 * Auto backup every 10 minutes..
@@ -217,6 +218,9 @@ public class ConsensusHandler extends MessageProcessor {
 			//A TXPOW - that has been checked already and added to the DB
 			TxPoW txpow = (TxPoW) zMessage.getObject("txpow");
 			
+			//Back it up!
+			Main.getMainHandler().getBackupManager().backupTxpow(txpow);
+			
 			//What's the current chain tip..
 			MiniData oldtip = getMainDB().getMainTree().getChainTip().getTxPowID();
 			
@@ -225,44 +229,6 @@ public class ConsensusHandler extends MessageProcessor {
 		
 			//What's the new chain tip..
 			TxPoW newtip = getMainDB().getMainTree().getChainTip().getTxPow();
-			
-			//Has there been a change
-			if(!oldtip.isEqual(newtip.getTxPowID())) {
-				//Notify..
-				updateListeners(new Message(CONSENSUS_NOTIFY_NEWBLOCK).addObject("txpow", newtip));
-			
-				//Update the web listeners..
-				Message statusupdate = new Message(ConsensusPrint.CONSENSUS_STATUS).addBoolean("hard", true);
-				PostMessage(statusupdate);
-				
-				//Do the balance.. Update listeners if changed..
-				Message balanceupdate = new Message(ConsensusPrint.CONSENSUS_BALANCE).addBoolean("hard", true);
-				PostMessage(balanceupdate);
-			
-				//Print the tree..
-				if(mPrintChain) {
-					Message print = new Message(ConsensusPrint.CONSENSUS_PRINTCHAIN_TREE).addBoolean("systemout", true);
-					PostMessage(print);
-				}
-			}
-									
-			/**
-			 * One time run the first time you see a txpow..
-			 */
-		}else if ( zMessage.isMessageType(CONSENSUS_PRE_PROCESSTXPOW) ) {
-			//The TXPOW
-			TxPoW txpow = (TxPoW) zMessage.getObject("txpow");
-			
-			//Back it up!
-			Main.getMainHandler().getBackupManager().backupTxpow(txpow);
-			
-			//Notify the WebSocket Listeners
-			if(txpow.isTransaction()) {
-				
-			}
-			
-			//Process it
-			PostMessage(new Message(ConsensusHandler.CONSENSUS_PROCESSTXPOW).addObject("txpow", txpow));
 			
 			//Only do this once..
 			boolean relevant = false;
@@ -277,7 +243,31 @@ public class ConsensusHandler extends MessageProcessor {
 				relevant = getMainDB().getUserDB().isTransactionRelevant(txpow.getTransaction());
 			}
 			
-			//If it's relevant then do a backup..
+			//Has there been a change
+			boolean newbalance = false;
+			if(!oldtip.isEqual(newtip.getTxPowID())) {
+				//Notify..
+				updateListeners(new Message(CONSENSUS_NOTIFY_NEWBLOCK).addObject("txpow", newtip));
+			
+				//Update the web listeners..
+				//Send this to the WebSocket..
+				JSONObject newblock = new JSONObject();
+				newblock.put("event","newblock");
+				newblock.put("txpow",newtip.toJSON());
+				PostDAPPJSONMessage(newblock);
+				
+				//Do the balance.. Update listeners if changed..
+				newbalance = true;
+				updateListeners(new Message(CONSENSUS_NOTIFY_BALANCE));
+				PostMessage(new Message(ConsensusPrint.CONSENSUS_BALANCE).addBoolean("hard", true));
+				
+				//Print the tree..
+				if(mPrintChain) {
+					PostMessage(new Message(ConsensusPrint.CONSENSUS_PRINTCHAIN_TREE).addBoolean("systemout", true));
+				}
+			}
+			
+			//If it's relevant to the user..
 			if(relevant) {
 				//Get the Token Amounts..
 				Hashtable<String, MiniNumber> tokamt = getMainDB().getTransactionTokenAmounts(txpow);
@@ -288,27 +278,31 @@ public class ConsensusHandler extends MessageProcessor {
 				//Notify those listening..
 				updateListeners(new Message(CONSENSUS_NOTIFY_BALANCE));
 				
-				//Do the balance.. Update listeners if changed..
-				Message balanceupdate = new Message(ConsensusPrint.CONSENSUS_BALANCE).addBoolean("hard", true);
-				PostMessage(balanceupdate);
+				//Do we need to update the balance.. or did we do it already..
+				if(!newbalance) {
+					//Do the balance.. Update listeners if changed..
+					PostMessage(new Message(ConsensusPrint.CONSENSUS_BALANCE).addBoolean("hard", true));
+				}				
 			}
-			
-			//Message for ALL the clients
+					
+			//BROADCAST Message for ALL the clients
 			Message netmsg  = new Message(MinimaClient.NETCLIENT_SENDTXPOWID).addObject("txpowid", txpow.getTxPowID());
 			Message netw    = new Message(NetworkHandler.NETWORK_SENDALL).addObject("message", netmsg);
-			
-			//Post It..
 			Main.getMainHandler().getNetworkHandler().PostMessage(netw);
+		
 			
+		/**
+		 * Called every 10 Minutes to do a few tasks
+		 */
 		}else if ( zMessage.isMessageType(CONSENSUS_AUTOBACKUP) ) {
 			//Backup the system..
 			PostMessage(ConsensusBackup.CONSENSUSBACKUP_BACKUP);
 			
+			//Flush / Check the mem-pool
+			PostMessage(new Message(ConsensusUser.CONSENSUS_FLUSHMEMPOOL));
+			
 			//Redo every 10 minutes..
 			PostTimerMessage(new TimerMessage(10 * 60 * 1000, CONSENSUS_AUTOBACKUP));
-			
-			//And flush the mempool
-			PostMessage(new Message(ConsensusUser.CONSENSUS_FLUSHMEMPOOL));
 			
 		/**
 		 * Network Messages
@@ -450,7 +444,7 @@ public class ConsensusHandler extends MessageProcessor {
 				//Notify listeners that Mining is starting...
 				JSONObject mining = new JSONObject();
 				mining.put("event","txpowstart");
-				mining.put("transaction",txpow.getTransaction().toJSON().toString());
+				mining.put("transaction",txpow.getTransaction().toJSON());
 				PostDAPPJSONMessage(mining);
 			}
 			
@@ -582,7 +576,7 @@ public class ConsensusHandler extends MessageProcessor {
 			//Notify listeners that Mining is starting...
 			JSONObject mining = new JSONObject();
 			mining.put("event","txpowend");
-			mining.put("transaction",txpow.getTransaction().toJSON().toString());
+			mining.put("transaction",txpow.getTransaction().toJSON());
 			PostDAPPJSONMessage(mining);
 			
 		}else if(zMessage.isMessageType(CONSENSUS_GIMME50)) {

@@ -75,12 +75,6 @@ public class ConsensusPrint extends ConsensusProcessor {
 	String mOldBalance = "";
 	JSONObject mOldBalanceJSON = null;
 	
-	/**
-	 * The Old Status that was sent to the listeners..
-	 */
-	String mOldStatus = "";
-	String mOldIBD = "";
-	
 	public ConsensusPrint(MinimaDB zDB, ConsensusHandler zHandler) {
 		super(zDB, zHandler);
 	}
@@ -984,6 +978,10 @@ public class ConsensusPrint extends ConsensusProcessor {
 				}
 				status.put("txpowfiles", totnum);
 				status.put("txpowfolder", MiniFormat.formatSize(totallen));
+			
+				int ibd = getMainDB().getIntroSyncSize();
+				String ibds = MiniFormat.formatSize(ibd);
+				status.put("IBD", ibds);
 			}
 			
 			//MemPool
@@ -996,35 +994,12 @@ public class ConsensusPrint extends ConsensusProcessor {
 			status.put("chainlength", getMainDB().getMainTree().getAsList().size());
 			status.put("chainweight", root.getTotalWeight().toString());
 			
-			//Use the cached Version  - this is a slow operation
-			if(fullstatus) {
-				int ibd = getMainDB().getIntroSyncSize();
-				mOldIBD = MiniFormat.formatSize(ibd);
-				status.put("IBD", mOldIBD);	
-			}
-			
 			//Add the network connections
 			ArrayList<MinimaClient> nets = main.getNetworkHandler().getNetClients();
 			status.put("connections", nets.size());
 			
 			//Add it to the output
 			InputHandler.endResponse(zMessage, true, "");
-		
-			//Do we notify.. Has the tip changed..
-			String statusstring = tip.getTxPowID().to0xString();
-			
-			//Is this a notification message for the listeners..
-			if(!statusstring.equals(mOldStatus)) {
-				//Store for later.. 
-				mOldStatus = statusstring;
-				
-				//Send this to the WebSocket..
-				JSONObject newblock = new JSONObject();
-				newblock.put("event","newblock");
-				newblock.put("status",status);
-				newblock.put("txpow",tip.getTxPow().toJSON());
-				getConsensusHandler().PostDAPPJSONMessage(newblock);
-			}
 			
 		}else if(zMessage.isMessageType(CONSENSUS_NETWORK)){
 			//Get the response JSON
