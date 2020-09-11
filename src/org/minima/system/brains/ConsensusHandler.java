@@ -246,6 +246,8 @@ public class ConsensusHandler extends MessageProcessor {
 			//Has there been a change
 			boolean newbalance = false;
 			if(!oldtip.isEqual(newtip.getTxPowID())) {
+				newbalance = true;
+				
 				//Notify..
 				updateListeners(new Message(CONSENSUS_NOTIFY_NEWBLOCK).addObject("txpow", newtip));
 			
@@ -257,7 +259,6 @@ public class ConsensusHandler extends MessageProcessor {
 				PostDAPPJSONMessage(newblock);
 				
 				//Do the balance.. Update listeners if changed..
-				newbalance = true;
 				updateListeners(new Message(CONSENSUS_NOTIFY_BALANCE));
 				PostMessage(new Message(ConsensusPrint.CONSENSUS_BALANCE).addBoolean("hard", true));
 				
@@ -275,12 +276,9 @@ public class ConsensusHandler extends MessageProcessor {
 				//Store ion the database..
 				getMainDB().getUserDB().addToHistory(txpow,tokamt);
 				
-				//Notify those listening..
-				updateListeners(new Message(CONSENSUS_NOTIFY_BALANCE));
-				
 				//Do we need to update the balance.. or did we do it already..
 				if(!newbalance) {
-					//Do the balance.. Update listeners if changed..
+					updateListeners(new Message(CONSENSUS_NOTIFY_BALANCE));
 					PostMessage(new Message(ConsensusPrint.CONSENSUS_BALANCE).addBoolean("hard", true));
 				}				
 			}
