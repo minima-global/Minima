@@ -221,6 +221,7 @@ public class BlockTree {
 		//If no Old Tip - have to be the slow way..
 		if(_mOldTip == null) {
 			MinimaLogger.log("CASCADE WITH NULL OLD TIP.. sloowww..");
+			
 			//Add all the weights up..
 			_recurseTree(new NodeAction() {
 				@Override
