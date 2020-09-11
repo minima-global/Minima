@@ -218,13 +218,82 @@ public class BlockTree {
 	 * Calculate the correct weights per block on the chain
 	 */
 	private void _cascadeWeights() {
-		//First lets stream up the OLD main chain.. OPTIMISATION
-		if(_mOldTip != null) {
-			BigInteger weight        = _mOldTip.getWeight();
+		//If no Old Tip - have to be the slow way..
+		if(_mOldTip == null) {
+			MinimaLogger.log("CASCADE WITH NULL OLD TIP.. sloowww..");
+			//Add all the weights up..
+			_recurseTree(new NodeAction() {
+				@Override
+				public void runAction(BlockTreeNode zNode) {
+					//Only add valid blocks
+					if(zNode.getState() == BlockTreeNode.BLOCKSTATE_VALID && !zNode.mCascadeWeighted) {
+						//The weight of this block
+						BigInteger weight = zNode.getWeight();
+						
+						//Add to all the parents..
+						BlockTreeNode parent = zNode.getParent();
+						while(parent != null) {
+							parent.addToTotalWeight(weight);
+							parent = parent.getParent();
+						}
+					}
+				}
+			});
+			
+		}else {
+			//FAST OPTIMISATION.. FIRST calculate the MAIN branch..
+			BlockTreeNode parent = _mOldTip.getParent();
+			while(parent != null) {
+				parent.mMainBranch = true;
+				parent = parent.getParent();
+			}
+			
+			//Now calculate the extra weight eacgh branch add to the main branch..
+			_recurseTree(new NodeAction() {
+				@Override
+				public void runAction(BlockTreeNode zNode) {
+					//Only add blocks not on the Main Branch
+					if(zNode.getState() == BlockTreeNode.BLOCKSTATE_VALID 
+						&& !zNode.mMainBranch && !zNode.mCascadeWeighted ) {
+						
+						//The weight of this block
+						BigInteger weight      = zNode.getWeight();
+						zNode.mCascadeWeighted = true;
+						
+						//Add to all the parents.. UP TO THE MAIN BRANCH
+						BlockTreeNode parent = zNode.getParent();
+						while(parent != null) {
+							if(parent.mMainBranch) {
+								//Add the weight to it..
+								parent.addToTotalWeight(weight);
+								parent = null;
+							}else {
+								if(!parent.mCascadeWeighted) {
+									//A new cascading weight
+									BigInteger newweight = weight.add(parent.getWeight()); 
+									
+									//Add this weight to the current weight..
+									parent.mCascadeWeighted = true;
+									parent.addToTotalWeight(weight);
+									
+									//Set the new weight
+									weight = newweight;
+								}
+								
+								//And get the parent..
+								parent = parent.getParent();
+							}
+						}
+					}
+				}
+			});
+			
+			//And finally - go down the main branch again.. adding it all up..
+			BigInteger weight         = _mOldTip.getWeight();
 			_mOldTip.mCascadeWeighted = true;
 			
 			//Add to all the parents..
-			BlockTreeNode parent = _mOldTip.getParent();
+			parent = _mOldTip.getParent();
 			while(parent != null) {
 				//A new cascading weight
 				BigInteger newweight = weight.add(parent.getWeight()); 
@@ -239,24 +308,46 @@ public class BlockTree {
 			}
 		}
 		
-		//Add all the weights up..
-		_recurseTree(new NodeAction() {
-			@Override
-			public void runAction(BlockTreeNode zNode) {
-				//Only add valid blocks
-				if(zNode.getState() == BlockTreeNode.BLOCKSTATE_VALID && !zNode.mCascadeWeighted) {
-					//The weight of this block
-					BigInteger weight = zNode.getWeight();
-					
-					//Add to all the parents..
-					BlockTreeNode parent = zNode.getParent();
-					while(parent != null) {
-						parent.addToTotalWeight(weight);
-						parent = parent.getParent();
-					}
-				}
-			}
-		});
+		//OLD METHOD..
+//		//First lets stream up the OLD main chain.. OPTIMISATION
+//		if(_mOldTip != null) {
+//			BigInteger weight         = _mOldTip.getWeight();
+//			_mOldTip.mCascadeWeighted = true;
+//			
+//			//Add to all the parents..
+//			BlockTreeNode parent = _mOldTip.getParent();
+//			while(parent != null) {
+//				//A new cascading weight
+//				BigInteger newweight = weight.add(parent.getWeight()); 
+//				
+//				//Add to this parent..
+//				parent.mCascadeWeighted = true;
+//				parent.addToTotalWeight(weight);
+//				parent = parent.getParent();
+//				
+//				//Set the new weight
+//				weight = newweight;
+//			}
+//		}
+//		
+//		//Add all the weights up..
+//		_recurseTree(new NodeAction() {
+//			@Override
+//			public void runAction(BlockTreeNode zNode) {
+//				//Only add valid blocks
+//				if(zNode.getState() == BlockTreeNode.BLOCKSTATE_VALID && !zNode.mCascadeWeighted) {
+//					//The weight of this block
+//					BigInteger weight = zNode.getWeight();
+//					
+//					//Add to all the parents..
+//					BlockTreeNode parent = zNode.getParent();
+//					while(parent != null) {
+//						parent.addToTotalWeight(weight);
+//						parent = parent.getParent();
+//					}
+//				}
+//			}
+//		});
 	}
 	
 	/**

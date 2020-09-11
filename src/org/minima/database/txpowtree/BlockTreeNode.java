@@ -61,6 +61,7 @@ public class BlockTreeNode implements Comparable<BlockTreeNode> {
 	 * When calculating the cascade weight.. has this node been used.. 1000x speed boost..
 	 */
 	public boolean mCascadeWeighted = false;
+	public boolean mMainBranch      = false;
 	
 	/**
 	 * When loading from bloc ctore just use the TxpowID
@@ -155,6 +156,7 @@ public class BlockTreeNode implements Comparable<BlockTreeNode> {
 		
 		//Not used yet..
 		mCascadeWeighted = false;
+		mMainBranch      = false;
 	}
 	
 	public BigDecimal getRealWeight() {
