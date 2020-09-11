@@ -249,7 +249,7 @@ public class BlockTree {
 				parent = parent.getParent();
 			}
 			
-			//Now calculate the extra weight eacgh branch add to the main branch..
+			//Now calculate the extra weight each side branch adds to the main branch block..
 			_recurseTree(new NodeAction() {
 				@Override
 				public void runAction(BlockTreeNode zNode) {
