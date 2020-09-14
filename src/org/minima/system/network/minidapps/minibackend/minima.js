@@ -30,8 +30,6 @@ var Minima = {
 	//TxPoWID of the current top block
 	txpowid : "0x00",
 	
-	status : {},
-
 	balance : {},
 	
 	//Show RPC commands
@@ -53,14 +51,13 @@ var Minima = {
 		
 		//Do the first call..
 		Minima.cmd("status;balance", function(json){
+			//Store this..
+		    Minima.block   = parseInt(json[0].response.lastblock,10);
+		    Minima.txpowid = json[0].response.tip;
+		    
 			//Status is first..
-			Minima.status  = json[0].response;
 			Minima.balance = json[1].response.balance;
 			
-		    //Store this..
-		    Minima.txpowid = Minima.status.tip;
-		    Minima.block   = parseInt(Minima.status.lastblock,10);
-		    
 		    //Send a message
 		    MinimaPostMessage("connected", "success");
 		});
@@ -312,9 +309,8 @@ function MinimaBackEndListener(jmsg){
 			
 	if(jmsg.event == "newblock"){
 		//Set the new status
-		Minima.status  = jmsg.status;
-		Minima.txpowid = jmsg.status.tip;
-		Minima.block   = parseInt(jmsg.status.lastblock,10);
+		Minima.block   = parseInt(jmsg.txpow.header.block,10);
+		Minima.txpowid = jmsg.txpow.txpowid;
 		
 		//Post it
 		MinimaPostMessage("newblock",jmsg.txpow);

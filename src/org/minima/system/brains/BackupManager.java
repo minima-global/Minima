@@ -165,10 +165,10 @@ public class BackupManager extends MessageProcessor {
 	public static void deleteConfFolder(File zFolder) {
 		MiniFile.deleteFileOrFolder(mRootPath,new File(zFolder,"txpow"));
 		MiniFile.deleteFileOrFolder(mRootPath,new File(zFolder,"backup"));
-		MiniFile.deleteFileOrFolder(mRootPath,new File(zFolder,"webroot"));
 		MiniFile.deleteFileOrFolder(mRootPath,new File(zFolder,"temp"));
 		
-		//Don't delete the Test Web Folder..
-		//?
+		//Leave webroot for now..
+		//MiniFile.deleteFileOrFolder(mRootPath,new File(zFolder,"webroot"));
+		
 	}
 }

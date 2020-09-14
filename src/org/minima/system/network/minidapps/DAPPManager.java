@@ -573,6 +573,8 @@ public class DAPPManager extends MessageProcessor {
 		//Create the same EVent as on the Web
 	    String JSONEvent = zJSON.toString();
 	    
+	    //MinimaLogger.log("SEND TO BACKEND : "+JSONEvent);
+	    
 		if(zMiniDAPPID.equals("")){
 			Enumeration<BackEndDAPP> bends = mBackends.elements();
 			while(bends.hasMoreElements()) {
