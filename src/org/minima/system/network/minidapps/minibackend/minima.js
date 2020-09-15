@@ -30,11 +30,6 @@ var Minima = {
 	block : 0,
 	
 	/** 
-	 * The TxPoWID of the current top block
-	 */
-	txpowid : "0x00",
-
-	/** 
 	 * The Full TxPoW Top Block
 	 */
 	txpow : {},
@@ -46,9 +41,6 @@ var Minima = {
 	 * Minima Startup - with the callback function used for all Minima messages
 	 */
 	init : function(callback){
-		//Log a little..
-		Minima.log("Initialisation..");
-		
 		//Store the callback
 		if(callback){
 			MINIMA_MAIN_CALLBACK = callback;	
