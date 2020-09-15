@@ -36,11 +36,25 @@ var MINIMA_USER_LISTEN   = [];
  * Main MINIMA Object for all interaction
  */
 var Minima = {
-	//Current Minima Block
+	/**
+	 * Current Minima Block Height
+	 */
 	block : 0,
 	
-	//TxPoWID of the current top block
+	/** 
+	 * The TxPoWID of the current top block
+	 */
 	txpowid : "0x00",
+
+	/** 
+	 * The Full TxPoW Top Block
+	 */
+	txpow : {},
+
+	/**
+	 * Current Balance of this User
+	 */
+	balance : {},
 	
 	//Web Host for Minima
 	webhost : "http://127.0.0.1:9004",
@@ -51,18 +65,11 @@ var Minima = {
 	//Web Socket Host for Minima
 	wshost : "ws://127.0.0.1:9003",
 	
-	/**
-	 * Current Status of the Minima Network
-	 */ 
-	status : {},
-	
-	/**
-	 * Current Balance of this User
-	 */
-	balance : {},
-	
 	//Show RPC commands
 	logging : false,
+	
+	//Are we in DEBUG mode - if so don't touch the host settings..
+	debug : false,
 	
 	/**
 	 * Minima Startup - with the callback function used for all Minima messages
@@ -79,15 +86,16 @@ var Minima = {
 		}
 		
 		//Are we running via a server - otherwise leave as is
-		if(window.location.protocol.startsWith("http")){
-			Minima.host = window.location.hostname;
-			
-			//The Port determives the WebSocket and RPC port..
-			Minima.webhost = "http://"+Minima.host+":"+(window.location.port);
-			Minima.rpchost = "http://"+Minima.host+":"+(window.location.port-2);
-			Minima.wshost = "ws://"+Minima.host+":"+(window.location.port-1);	
+		if(!Minima.debug){
+			if(window.location.protocol.startsWith("http")){
+				//The Port determives the WebSocket and RPC port..
+				Minima.webhost = "http://"+window.location.hostname+":"+(window.location.port);
+				Minima.rpchost = "http://"+window.location.hostname+":"+(window.location.port-2);
+				Minima.wshost = "ws://"+window.location.hostname+":"+(window.location.port-1);	
+			}	
 		}
 		
+		//Info.. 
 		Minima.log("WEBHOST : "+Minima.webhost);
 		Minima.log("RPCHOST : "+Minima.rpchost);
 		Minima.log("WCHOST  : "+Minima.wshost);
@@ -100,15 +108,14 @@ var Minima = {
 		});
 		
 		//Do the first call..
-		Minima.cmd("status;balance", function(json){
+		Minima.cmd("topblock;balance", function(json){
+			//Store this..
+		    Minima.block  = parseInt(json[0].response.txpow.header.block,10);
+		    Minima.txpow  = json[0].response.txpow;
+		    
 			//Status is first..
-			Minima.status  = json[0].response;
 			Minima.balance = json[1].response.balance;
 			
-		    //Store this..
-		    Minima.txpowid = Minima.status.tip;
-		    Minima.block   = parseInt(Minima.status.lastblock,10);
-		    
 		    //Start Listening for messages..
 			MinimaWebSocketListener();
 		});
@@ -421,23 +428,38 @@ function MinimaWebSocketListener(){
 		
 		if(jmsg.event == "newblock"){
 			//Set the new status
-			Minima.status  = jmsg.status;
-			Minima.txpowid = jmsg.status.tip;
-			Minima.block   = parseInt(jmsg.status.lastblock,10);
+			Minima.block   = parseInt(jmsg.txpow.header.block,10);
+			Minima.txpow   = jmsg.txpow;
+			
+			//What is the info message
+			var info = { "txpow" : jmsg.txpow };
 			
 			//Post it
-			MinimaPostMessage("newblock",jmsg.txpow);
+			MinimaPostMessage("newblock", info);
 			
 		}else if(jmsg.event == "newtransaction"){
+			//What is the info message
+			var info = { "txpow" : jmsg.txpow, "relevant" : jmsg.relevant };
+			
 			//New Transaction
-			MinimaPostMessage("newtransaction",jmsg.txpow);
+			MinimaPostMessage("newtransaction", info);
+		
+		}else if(jmsg.event == "newtxpow"){
+			//What is the info message
+			var info = { "txpow" : jmsg.txpow };
+			
+			//New TxPoW
+			MinimaPostMessage("newtxpow", info);
 			
 		}else if(jmsg.event == "newbalance"){
 			//Set the New Balance
 			Minima.balance = jmsg.balance;
 			
+			//What is the info message
+			var info = { "balance" : jmsg.balance };
+			
 			//Post it..
-			MinimaPostMessage("newbalance",jmsg.balance);
+			MinimaPostMessage("newbalance", info);
 		
 		}else if(jmsg.event == "network"){
 			//What type of message is it..

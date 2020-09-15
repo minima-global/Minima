@@ -62,6 +62,7 @@ public class help extends CommandFunction{
 			addJSONDesc(new tutorial());
 			
 			addJSONDesc(new status());
+			addJSONDesc(new topblock());
 			addJSONDesc(new history());
 			addJSONDesc(new backup());
 			addJSONDesc(new flushmempool());
