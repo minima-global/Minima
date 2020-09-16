@@ -166,9 +166,9 @@ public class BackupManager extends MessageProcessor {
 		MiniFile.deleteFileOrFolder(mRootPath,new File(zFolder,"txpow"));
 		MiniFile.deleteFileOrFolder(mRootPath,new File(zFolder,"backup"));
 		MiniFile.deleteFileOrFolder(mRootPath,new File(zFolder,"temp"));
-		
-		//Leave webroot for now..
-		//MiniFile.deleteFileOrFolder(mRootPath,new File(zFolder,"webroot"));
-		
+	}
+	
+	public static void deleteWebRoot(File zFolder) {
+		MiniFile.deleteFileOrFolder(mRootPath,new File(zFolder,"webroot"));
 	}
 }

@@ -37,6 +37,7 @@ import org.minima.utils.json.parser.JSONParser;
 import org.minima.utils.json.parser.ParseException;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageProcessor;
+import org.minima.utils.messages.TimerMessage;
 import org.minima.utils.nanohttpd.protocols.http.NanoHTTPD;
 
 public class DAPPManager extends MessageProcessor {
@@ -100,51 +101,6 @@ public class DAPPManager extends MessageProcessor {
 	
 	public CommsManager getCommsManager() {
 		return mCommsManager;
-	}
-
-	
-	public void recalculateMinimaJS() {
-		//Now create the Minima JS file..
-	    try {
-			//Get the bytes..
-	    	byte[] minima = minimajs.returnData();
-		
-	    	//create a string..
-	    	String minstring = new String(minima, Charset.forName("UTF-8"));
-	    	
-	    	//What is the RPC address
-	    	String rpcaddress = mOldHost+":"+mNetwork.getRPCPort();
-	    	
-	    	//Now replace the RPC connect address..
-		    String editstring = minstring.replace("127.0.0.1:9002",rpcaddress);
-	 
-		    //What is the WebSocket address
-	    	String wsaddress = mOldHost+":"+mNetwork.getWSPort();
-	    	
-		    //Replace the Web Socket Server IP..
-		    editstring = editstring.replace("127.0.0.1:9003",wsaddress);
-			
-		    //Now convert to bytes..
-		    mMINIMAJS = editstring.getBytes();
-	    
-		    //MinimaLogger.log(editstring);
-		    
-	    } catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-	
-	public byte[] getMinimaJS() {
-		//Check if the Host has changed..
-		String host = mNetwork.calculateHostIP();
-		if(!host.equals(mOldHost)) {
-			MinimaLogger.log("MINIDAPP RPCHOST CHANGED from "+mOldHost+" to "+host);
-			mOldHost = host;
-			recalculateMinimaJS();
-		}
-		
-		return mMINIMAJS;
 	}
 	
 	public void stop() {
@@ -327,12 +283,16 @@ public class DAPPManager extends MessageProcessor {
 	protected void processMessage(Message zMessage) throws Exception {
 		
 		if(zMessage.getMessageType().equals(DAPP_INIT)) {
+			//Are we ready..
+			if(!Main.getMainHandler().getConsensusHandler().isInitialSyncComplete()) {
+				//Init the System - when this is done..
+				PostTimerMessage(new TimerMessage(1000, DAPP_INIT));	
+				return;
+			}
+			
 			//Create the Comms Manager
 			mCommsManager = new CommsManager(Main.getMainHandler());
 			
-			//Now create the Minima JS file..
-		    recalculateMinimaJS();
-		    
 			//Calculate the current MiniDAPPS
 			recalculateMiniDAPPS();
 			

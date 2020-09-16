@@ -38,7 +38,6 @@ public class ConsensusHandler extends MessageProcessor {
 	 * Main processing loop for a txpow message
 	 */
 	public static final String CONSENSUS_PROCESSTXPOW 		   = "CONSENSUS_PROCESSTXPOW";
-//	public static final String CONSENSUS_PRE_PROCESSTXPOW 	   = "CONSENSUS_PREPROCESSTXPOW";
 	
 	/**
 	 * Auto backup every 10 minutes..
@@ -154,7 +153,7 @@ public class ConsensusHandler extends MessageProcessor {
 		mConsensusBackup = new ConsensusBackup(mMainDB, this);
 		
 		//Are we HARD mining.. debugging / private chain
-		PostTimerMessage(new TimerMessage(2000, CONSENSUS_MINEBLOCK));
+		PostTimerMessage(new TimerMessage(1000, CONSENSUS_MINEBLOCK));
 	
 		//Redo every 10 minutes..
 		PostTimerMessage(new TimerMessage(10 * 60 * 1000, CONSENSUS_AUTOBACKUP));
@@ -206,7 +205,11 @@ public class ConsensusHandler extends MessageProcessor {
 	}
 	
 	public void setInitialSyncComplete() {
-		mConsensusNet.initialSyncComplete();
+		mConsensusNet.setInitialSyncComplete();
+	}
+	
+	public boolean isInitialSyncComplete() {
+		return mConsensusNet.isInitialSyncComplete();
 	}
 	
 	@Override
@@ -354,11 +357,8 @@ public class ConsensusHandler extends MessageProcessor {
 			//DEBUG MODE - only mine a block when you make a transction..
 			if(GlobalParams.MINIMA_ZERO_DIFF_BLK) {return;}
 			
-			//Are we ready..
-			boolean syncdone = mConsensusNet.isInitialSyncComplete();
-			
 			//Are we Mining..
-			if(!syncdone || !Main.getMainHandler().getMiner().isAutoMining()) {
+			if(!isInitialSyncComplete() || !Main.getMainHandler().getMiner().isAutoMining()) {
 				PostTimerMessage(new TimerMessage(20000, CONSENSUS_MINEBLOCK));
 				return;
 			}

@@ -106,6 +106,7 @@ public class Start {
 		String host             = "";
 		
 		boolean clean           = false;
+		boolean cleanhard       = false;
 		boolean genesis 		= false;
 		boolean daemon          = false;
 		boolean noreset 		= false;
@@ -137,6 +138,7 @@ public class Start {
 					MinimaLogger.log("        -conf [folder]         : Specify configuration folder, where data is saved.");
 					MinimaLogger.log("        -private               : Run a private chain. Don't connect to MainNet. Create a genesis tx-pow. Simulate some users.");
 					MinimaLogger.log("        -clean                 : Wipe user files and chain backup. Start afresh. Use with -private for clean private test-net.");
+					MinimaLogger.log("        -cleanhard             : Same as -clean but remove all the MiniDAPPS.. and webroot folder");
 					MinimaLogger.log("        -noreset               : Won't reset the chain if another heavier chain comes along..");
 					MinimaLogger.log("        -automine              : Simulate users mining the chain");
 					MinimaLogger.log("        -noconnect             : Don't connect to MainNet. Can then connect to private chains.");
@@ -172,6 +174,10 @@ public class Start {
 
 				}else if(arg.equals("-clean")) {
 					clean = true;
+				
+				}else if(arg.equals("-cleanhard")) {
+					clean     = true;
+					cleanhard = true;
 					
 				}else if(arg.equals("-conf")) {
 					conffolder = zArgs[counter++];
@@ -187,6 +193,11 @@ public class Start {
 		File conffile = new File(conffolder);
 		if(clean) {
 			BackupManager.deleteConfFolder(conffile);
+		}
+		
+		if(cleanhard) {
+			//Wipe webroot too..
+			BackupManager.deleteWebRoot(conffile);
 		}
 		
 		//Start the main Minima server

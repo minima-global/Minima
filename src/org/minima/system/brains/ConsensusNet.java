@@ -89,7 +89,7 @@ public class ConsensusNet extends ConsensusProcessor {
 		return mInitialSync;
 	}
 	
-	public void initialSyncComplete() {
+	public void setInitialSyncComplete() {
 		if(!mInitialSync) {
 			mInitialSync = true;
 			getConsensusHandler().updateListeners(new Message(ConsensusHandler.CONSENSUS_NOTIFY_INITIALSYNC));	
@@ -169,7 +169,7 @@ public class ConsensusNet extends ConsensusProcessor {
 					}else {
 						//This normally means you are STUCK.. hmm..
 						MinimaLogger.log("YOUR CHAIN HEAVIER.. NO CHANGE REQUIRED");
-						initialSyncComplete();
+						setInitialSyncComplete();
 						return;
 					}
 					
@@ -179,7 +179,7 @@ public class ConsensusNet extends ConsensusProcessor {
 					}else {
 						MinimaLogger.log("NO HARD RESET ALLOWED.. ");
 						hardreset = false;
-						initialSyncComplete();
+						setInitialSyncComplete();
 						return;
 					}
 				}
@@ -240,7 +240,7 @@ public class ConsensusNet extends ConsensusProcessor {
 				getMainDB().hardResetChain();
 			
 				//Now the Initial SYNC has been done you can receive TXPOW message..
-				initialSyncComplete();
+				setInitialSyncComplete();
 				
 				//FOR NOW
 				TxPoW tip = getMainDB().getMainTree().getChainTip().getTxPow();
@@ -327,7 +327,7 @@ public class ConsensusNet extends ConsensusProcessor {
 			MiniNumber len = blocks.get(greetlen-1).getNumber().sub(cross);
 			
 			if(len.getAsInt() == 0) {
-				initialSyncComplete();
+				setInitialSyncComplete();
 				return;
 			}else {
 				MinimaLogger.log("CROSSOVER FOUND Requesting from "+cross+" to "+blocks.get(greetlen-1).getNumber());	
@@ -376,7 +376,7 @@ public class ConsensusNet extends ConsensusProcessor {
 			}
 			
 			//Now the Initial SYNC has been done you can receive TXPOW message..
-			initialSyncComplete();
+			setInitialSyncComplete();
 			
 			//Do a complete backup..
 			getConsensusHandler().PostTimerMessage(new TimerMessage(20000,ConsensusBackup.CONSENSUSBACKUP_BACKUP));
