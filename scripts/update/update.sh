@@ -6,10 +6,6 @@ set timeout -1
 spawn gcloud compute ssh [lindex $argv 0] [lindex $argv 1] 
 expect "$ "
 
-#Stop the current version of Minima
-send "~/Minima/scripts/stop/stopminima.sh\r"
-expect "$ "
-
 #GIT pull the latest version
 send "cd ~/Minima\r"
 expect "$ "
