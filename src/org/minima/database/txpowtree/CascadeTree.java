@@ -47,9 +47,6 @@ public class CascadeTree {
 			return;
 		}
 		
-		//Store this..
-		MiniData oldtiptxpowid = oldtip.getTxPowID();
-		
 		//Get the new cascade node..
 		BlockTreeNode newfulltree = oldtip;
 		int counter = 1;
@@ -148,14 +145,8 @@ public class CascadeTree {
 		//Add the rest
 		mCascadeTree.hardAddNode(fullkeep, true);
 		
-		//Reset the weights and fast link table
-		mCascadeTree.zeroWeights();
-		
-		//Find the old tip.. makes the reset weight 1000x faster..
-		mCascadeTree.mTip = mCascadeTree.findNode(oldtiptxpowid,true);
-		
 		//And sort the weights
-		mCascadeTree.resetWeights(false);
+		mCascadeTree.resetWeights();
 		
 		//And clear it out..
 		mCascadeTree.clearCascadeBody();
