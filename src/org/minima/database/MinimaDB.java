@@ -1022,16 +1022,16 @@ public class MinimaDB {
 			//Calculate the speed ratio
 			MiniNumber speedratio   = GlobalParams.MINIMA_BLOCK_SPEED.div(actualspeed);
 			
-			//Check within acceptable parameters..
-			MiniNumber high = MiniNumber.ONE.add(GlobalParams.MINIMA_MAX_SPEED_RATIO);
-			MiniNumber low  = MiniNumber.ONE.sub(GlobalParams.MINIMA_MAX_SPEED_RATIO);
-			if(speedratio.isMore(high)){
-				//MinimaLogger.log("SPEED RATIO TOO HIGH : "+speedratio);
-				speedratio = high;
-			}else if(speedratio.isLess(low)){
-				//MinimaLogger.log("SPEED RATIO TOO LOW : "+speedratio);
-				speedratio = low;
-			}
+//			//Check within acceptable parameters..
+//			MiniNumber high = MiniNumber.ONE.add(GlobalParams.MINIMA_MAX_SPEED_RATIO);
+//			MiniNumber low  = MiniNumber.ONE.sub(GlobalParams.MINIMA_MAX_SPEED_RATIO);
+//			if(speedratio.isMore(high)){
+//				//MinimaLogger.log("SPEED RATIO TOO HIGH : "+speedratio);
+//				speedratio = high;
+//			}else if(speedratio.isLess(low)){
+//				//MinimaLogger.log("SPEED RATIO TOO LOW : "+speedratio);
+//				speedratio = low;
+//			}
 			
 			//Current average
 			BigInteger avgdiff = mMainTree.getAvgChainDifficulty(tip);
