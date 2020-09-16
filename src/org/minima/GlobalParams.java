@@ -7,7 +7,7 @@ public class GlobalParams {
 	/**
 	 * Which Version
 	 */
-	public static final String MINIMA_VERSION = "0.96.21"; 
+	public static final String MINIMA_VERSION = "0.96.22"; 
 	
 	/**
 	 * Number of seconds before sending a pulse message - every 10 minutes
@@ -20,12 +20,12 @@ public class GlobalParams {
 	 * -  0.04  = 25 second block time
 	 * -  0.033 = 30 second block time
 	 */
-	public static final MiniNumber MINIMA_BLOCK_SPEED  = new MiniNumber("0.04");
+	public static final MiniNumber MINIMA_BLOCK_SPEED  = new MiniNumber("0.05");
 	
 	/**
 	 * MAX Difficulty change per block
 	 */
-	public static final MiniNumber MINIMA_MAX_SPEED_RATIO  = new MiniNumber("0.25");
+	public static final MiniNumber MINIMA_MAX_SPEED_RATIO  = new MiniNumber("0.5");
 	
 	/**
 	 * When checking speed and average difficulty only look at this many blocks back
@@ -57,7 +57,7 @@ public class GlobalParams {
 	 * All the MINING, TxPoW and MMR data ALWAYS uses 512. But addresses, scripts, and public keys..
 	 * can be set to less. This way signatures and addresses are shorter.
 	 */
-	public static final int MINIMA_DEFAULT_HASH_STRENGTH = 256;
+	public static final int MINIMA_DEFAULT_HASH_STRENGTH = 160;
 	
 	/**
 	 * Max Proof History - how far back to use a proof of coin..
