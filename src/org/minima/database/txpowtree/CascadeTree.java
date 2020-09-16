@@ -148,7 +148,7 @@ public class CascadeTree {
 		//Add the rest
 		mCascadeTree.hardAddNode(fullkeep, true);
 		
-		//Reset the weights and fastlink table
+		//Reset the weights and fast link table
 		mCascadeTree.zeroWeights();
 		
 		//Find the old tip.. makes the reset weight 1000x faster..

@@ -23,7 +23,7 @@ import org.minima.utils.Streamable;
  * @author Spartacus Rex
  *
  */
-public class MiniNumber implements Streamable {
+public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 	
 	/**
 	 * The Math Context used for ALL real numbers
@@ -174,6 +174,7 @@ public class MiniNumber implements Streamable {
 		return new MiniNumber( mNumber.subtract(BigDecimal.ONE,mMathContext) );
 	}
 
+	@Override
 	public int compareTo(MiniNumber zCompare) {
 		return mNumber.compareTo(zCompare.getAsBigDecimal());
 	}
