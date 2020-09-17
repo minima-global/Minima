@@ -232,7 +232,7 @@ public class BlockTree {
 			ArrayList<BlockTreeNode> children = node.getChildren();
 			for(BlockTreeNode child : children) {
 				if(child.getState() == BlockTreeNode.BLOCKSTATE_VALID) {
-					node.addToTotalWeight(child.getWeight());
+					node.addToTotalWeight(child.getTotalWeight());
 				}
 			}
 		}
@@ -446,10 +446,12 @@ public class BlockTree {
 							MiniData diffhash = new MiniData("0x"+newdiff.toString(16)); 
 							
 							//Check they are the same!..
-							if(!zNode.getTxPow().getBlockDifficulty().isEqual(diffhash)) {
-								MinimaLogger.log("INVALID BLOCK DIFFICULTY "+zNode.getBlockNumber());
-								zNode.setState(BlockTreeNode.BLOCKSTATE_INVALID);
-								return;
+							if(!GlobalParams.MINIMA_ZERO_DIFF_BLK) {
+								if(!zNode.getTxPow().getBlockDifficulty().isEqual(diffhash)) {
+									MinimaLogger.log("INVALID BLOCK DIFFICULTY "+zNode.getBlockNumber());
+									zNode.setState(BlockTreeNode.BLOCKSTATE_INVALID);
+									return;
+								}
 							}
 							
 							//Check the Super Block Levels are Correct! and point to the correct blocks
