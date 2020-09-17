@@ -7,7 +7,7 @@ public class GlobalParams {
 	/**
 	 * Which Version
 	 */
-	public static final String MINIMA_VERSION = "0.96.24"; 
+	public static final String MINIMA_VERSION = "0.96.25"; 
 	
 	/**
 	 * Number of seconds before sending a pulse message - every 10 minutes
@@ -73,6 +73,6 @@ public class GlobalParams {
 	 * and just want a block every single transaction to debug.
 	 * Automatically disables the auto mining
 	 */
-	public static final boolean MINIMA_ZERO_DIFF_BLK  = true;
+	public static final boolean MINIMA_ZERO_DIFF_BLK  = false;
 	
 }
