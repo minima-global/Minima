@@ -4,12 +4,12 @@ import org.minima.system.brains.ConsensusHandler;
 import org.minima.system.input.CommandFunction;
 import org.minima.utils.messages.Message;
 
-public class minesingle extends CommandFunction{
+public class mineblock extends CommandFunction{
 
-	public minesingle() {
-		super("minesingle");
+	public mineblock() {
+		super("mineblock");
 		
-		setHelp("", "Mine 1 single block - useful for debugging", "");
+		setHelp("", "Mine 1 block - useful for debugging", "");
 	}
 	
 	@Override
@@ -24,6 +24,6 @@ public class minesingle extends CommandFunction{
 	@Override
 	public CommandFunction getNewFunction() {
 		// TODO Auto-generated method stub
-		return new minesingle();
+		return new mineblock();
 	}
 }

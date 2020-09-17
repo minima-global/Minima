@@ -7,7 +7,7 @@ public class GlobalParams {
 	/**
 	 * Which Version
 	 */
-	public static final String MINIMA_VERSION = "0.96.23"; 
+	public static final String MINIMA_VERSION = "0.96.24"; 
 	
 	/**
 	 * Number of seconds before sending a pulse message - every 10 minutes
@@ -17,8 +17,6 @@ public class GlobalParams {
 	/**
 	 * Speed in blocks per second.. 
 	 * -  0.05  = 20 second block time
-	 * -  0.04  = 25 second block time
-	 * -  0.033 = 30 second block time
 	 */
 	public static final MiniNumber MINIMA_BLOCK_SPEED  = new MiniNumber("0.05");
 	
