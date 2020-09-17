@@ -69,7 +69,7 @@ public class help extends CommandFunction{
 			addJSONDesc(new check());
 			
 			addJSONDesc(new printdb());
-//			addJSONDesc(new printtree());
+			addJSONDesc(new printtree());
 			addJSONDesc(new automine());
 			addJSONDesc(new trace());
 			

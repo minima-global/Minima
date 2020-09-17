@@ -7,8 +7,8 @@ import org.minima.utils.messages.Message;
 public class printtree extends CommandFunction{
 
 	public printtree() {
-		super("printtree");
-		setHelp("", "Print a tree version of the current chain", "");
+		super("printtree (on|off)");
+		setHelp("", "Print a tree version of the current chain. If running On command line can auto print every new block.", "");
 	}
 	
 	@Override
