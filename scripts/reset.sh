@@ -1,11 +1,9 @@
 #!/bin/sh
 
-
 #Stop everything first..
-cd stop
-./stopall.sh
-
-cd ..
+#cd stop
+#./stopall.sh
+#cd ..
 
 #PRIVATE COMPUTERS
 ./logon.sh PRIVATE1 minima-private-1-vm --zone=europe-west4-a "cd ~ && sudo apt -y install tmux openjdk-8-jre git htop && rm -rf ~/Minima && rm -rf ~/.minima && git clone -b development https://github.com/spartacusrex99/Minima.git" 
