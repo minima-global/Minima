@@ -374,6 +374,15 @@ function MinimaBackEndListener(jmsg){
 		}else{
 			Minima.log("UNKNOWN NETWORK EVENT : "+evt.data);
 		}
+	
+	}else if(jmsg.event == "txpowstart"){
+			var info = { "transaction" : jmsg.transaction };
+			MinimaPostMessage("miningstart", info);
+				
+	}else if(jmsg.event == "txpowend"){
+		var info = { "transaction" : jmsg.transaction };
+		MinimaPostMessage("miningstop", info);
+	
 	}	
 }
 
