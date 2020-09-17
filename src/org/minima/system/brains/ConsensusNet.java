@@ -246,6 +246,9 @@ public class ConsensusNet extends ConsensusProcessor {
 				TxPoW tip = getMainDB().getMainTree().getChainTip().getTxPow();
 				MinimaLogger.log("Sync Complete.. Reset Current block : "+tip.getBlockNumber());
 			
+				//Do the balance.. Update listeners if changed..
+				getConsensusHandler().PostMessage(new Message(ConsensusPrint.CONSENSUS_BALANCE).addBoolean("hard", true));
+				
 				//Post a message to those listening
 				getConsensusHandler().updateListeners(new Message(ConsensusHandler.CONSENSUS_NOTIFY_NEWBLOCK).addObject("txpow", tip));
 				

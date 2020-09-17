@@ -545,6 +545,9 @@ public class MinimaDB {
 	}
 	
 	public void hardResetChain() {
+		//Recalculate the weights
+		mMainTree.resetWeights();
+		
 		//Cascade it.. and then reset it..
 		CascadeTree casc = new CascadeTree(mMainTree);
 		casc.cascadedTree();
