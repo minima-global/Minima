@@ -5,7 +5,9 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.Random;
 
+import org.minima.Start;
 import org.minima.system.Main;
 import org.minima.system.input.InputHandler;
 import org.minima.system.network.minidapps.DAPPManager;
@@ -305,6 +307,20 @@ public class NetworkHandler extends MessageProcessor {
 			if(reconnect && mGlobalReconnect) {
 				String host = client.getHost();
 				int port    = client.getPort();
+				
+				//Is this one of the Initial Host/Port BootStrap Server ?
+				boolean bootstrapnode = false;
+				for(int i=0;i<Start.VALID_BOOTSTRAP_NODES.length;i++) {
+					if(host.equals(Start.VALID_BOOTSTRAP_NODES[i]) && port==9001) {
+						bootstrapnode = true;
+						break;
+					}
+				}
+				if(bootstrapnode) {
+					String oldhost = new String(host);
+					host = Start.VALID_BOOTSTRAP_NODES[new Random().nextInt(Start.VALID_BOOTSTRAP_NODES.length)];
+					MinimaLogger.log("BOOTSTRAP NODE Connection lost.. resetting from "+oldhost+" to "+oldhost);
+				}
 				
 				//And post a message..
 				TimerMessage  recon = new TimerMessage(30000,NETWORK_CONNECT);
