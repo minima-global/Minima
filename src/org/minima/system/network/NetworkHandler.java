@@ -392,6 +392,10 @@ public class NetworkHandler extends MessageProcessor {
 		mRequestedTxPoW.clear();
 	}
 	
+	public int sizeRequestedTxPow() {
+		return mRequestedTxPoW.size();
+	}
+	
 	/**
 	 * Get all the current net clients..
 	 * @return the list
