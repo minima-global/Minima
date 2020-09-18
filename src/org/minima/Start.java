@@ -293,8 +293,13 @@ public class Start {
 		            	//Get the Response..
 		            	String resp = cmd.getFinalResult();
 		            	
-		                //Make the JSON pretty
-		                resp = MiniFormat.JSONPretty(resp);
+		                try {
+		                	//Make the JSON pretty
+			                String newresp = MiniFormat.JSONPretty(resp);
+			                resp = newresp;
+		                }catch(Exception exc) {
+		                	//Something not right..
+		                }
 		                		
 		                //And then print out the result
 		                System.out.println(resp);

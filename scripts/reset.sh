@@ -6,8 +6,8 @@
 #cd ..
 
 #PRIVATE COMPUTERS
-./logon.sh PRIVATE1 minima-private-1-vm --zone=europe-west4-a "cd ~ && sudo apt -y install tmux openjdk-8-jre git htop && rm -rf ~/Minima && rm -rf ~/.minima && git clone -b development https://github.com/spartacusrex99/Minima.git" 
-./logon.sh PRIVATE2 minima-private-2-vm --zone=europe-west4-a "cd ~ && sudo apt -y install tmux openjdk-8-jre git htop && rm -rf ~/Minima && rm -rf ~/.minima && git clone -b development https://github.com/spartacusrex99/Minima.git" 
+#./logon.sh PRIVATE1 minima-private-1-vm --zone=europe-west4-a "cd ~ && sudo apt -y install tmux openjdk-8-jre git htop && rm -rf ~/Minima && rm -rf ~/.minima && git clone -b development https://github.com/spartacusrex99/Minima.git" 
+#./logon.sh PRIVATE2 minima-private-2-vm --zone=europe-west4-a "cd ~ && sudo apt -y install tmux openjdk-8-jre git htop && rm -rf ~/Minima && rm -rf ~/.minima && git clone -b development https://github.com/spartacusrex99/Minima.git" 
 
 #PUBLIC COMPUTERS
 ./logon.sh PUBLIC1 minima-public-1-vm --zone=europe-west4-a "cd ~ && sudo apt -y install tmux openjdk-8-jre git htop && rm -rf ~/Minima && rm -rf ~/.minima && git clone -b development https://github.com/spartacusrex99/Minima.git" 
