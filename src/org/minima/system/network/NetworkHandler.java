@@ -216,10 +216,10 @@ public class NetworkHandler extends MessageProcessor {
 			Thread.sleep(200);
 			
 			//Start the DAPP Server
-			mDAPPManager = new DAPPManager(Main.getMainHandler());
+			mDAPPManager = new DAPPManager();
 			
 			//Start the WebSocket Manager
-			mWebSocketManager = new WebSocketManager(Main.getMainHandler(), getWSPort());
+			mWebSocketManager = new WebSocketManager(getWSPort());
 			
 		}else if(zMessage.isMessageType(NETWORK_SHUTDOWN)) {
 			//Stop the server

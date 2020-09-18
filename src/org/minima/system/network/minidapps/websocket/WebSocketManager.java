@@ -41,7 +41,7 @@ public class WebSocketManager extends MessageProcessor {
 	 * @param zPort
 	 * @throws IOException 
 	 */
-	public WebSocketManager(Main zMain, int zPort) throws IOException {
+	public WebSocketManager(int zPort) throws IOException {
 		super("WEBSOCKETMANAGER");
 		
 		mMinimaSockets = new Hashtable<>();

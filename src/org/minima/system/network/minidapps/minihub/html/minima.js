@@ -107,12 +107,16 @@ var Minima = {
 		
 		//Do the first call..
 		Minima.cmd("topblock;balance", function(json){
-			//Store this..
-		    Minima.block  = parseInt(json[0].response.txpow.header.block,10);
-		    Minima.txpow  = json[0].response.txpow;
+			if(json[0].status){
+				//Store this..
+			    Minima.block  = parseInt(json[0].response.txpow.header.block,10);
+			    Minima.txpow  = json[0].response.txpow;
 		    
-			//Status is first..
-			Minima.balance = json[1].response.balance;
+				if(json[1].status){
+					//Status is first..
+					Minima.balance = json[1].response.balance;
+				}	
+			}
 			
 		    //Start Listening for messages..
 			MinimaWebSocketListener();
