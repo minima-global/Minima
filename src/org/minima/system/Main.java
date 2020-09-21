@@ -87,17 +87,6 @@ public class Main extends MessageProcessor {
 		//What time do we start..
 		mNodeStartTime = System.currentTimeMillis();
 		
-		/**
-		 * Introduction..
-		 */
-		MinimaLogger.log("**********************************************");
-		MinimaLogger.log("*  __  __  ____  _  _  ____  __  __    __    *");
-		MinimaLogger.log("* (  \\/  )(_  _)( \\( )(_  _)(  \\/  )  /__\\   *");
-		MinimaLogger.log("*  )    (  _)(_  )  (  _)(_  )    (  /(__)\\  *");
-		MinimaLogger.log("* (_/\\/\\_)(____)(_)\\_)(____)(_/\\/\\_)(__)(__) *");
-		MinimaLogger.log("*                                            *");
-		MinimaLogger.log("**********************************************");
-		
 		//Backup manager
 		mBackup     = new BackupManager(zConfFolder);
 
@@ -115,7 +104,19 @@ public class Main extends MessageProcessor {
 		//Are we the genesis
 		mGenesis 	= zGenesis;
 		
-		//Some info..
+		/**
+		 * Introduction..
+		 */
+		MinimaLogger.setMainHandler(mConsensus);
+		
+		MinimaLogger.log("**********************************************");
+		MinimaLogger.log("*  __  __  ____  _  _  ____  __  __    __    *");
+		MinimaLogger.log("* (  \\/  )(_  _)( \\( )(_  _)(  \\/  )  /__\\   *");
+		MinimaLogger.log("*  )    (  _)(_  )  (  _)(_  )    (  /(__)\\  *");
+		MinimaLogger.log("* (_/\\/\\_)(____)(_)\\_)(____)(_/\\/\\_)(__)(__) *");
+		MinimaLogger.log("*                                            *");
+		MinimaLogger.log("**********************************************");
+		MinimaLogger.log("Welcome to Minima. For assistance type help. Then press enter.");
 		MinimaLogger.log("Minima files : "+zConfFolder);
 		MinimaLogger.log("Minima version "+GlobalParams.MINIMA_VERSION);
 	}

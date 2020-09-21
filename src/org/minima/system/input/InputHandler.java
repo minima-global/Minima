@@ -32,9 +32,6 @@ public class InputHandler extends MessageProcessor {
 	 */
 	public InputHandler(Main zMain) {
 		super("INPUT");
-		
-		//And run the intro..
-		new intro().doFunction(new String[0]);
 	}
 	
 	@Override

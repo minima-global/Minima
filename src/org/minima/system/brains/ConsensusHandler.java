@@ -79,7 +79,7 @@ public class ConsensusHandler extends MessageProcessor {
 	public static final String CONSENSUS_NOTIFY_MINESTART 	= "CONSENSUS_NOTIFY_MINESTART";
 	public static final String CONSENSUS_NOTIFY_MINEEND 	= "CONSENSUS_NOTIFY_MINEEND";
 	public static final String CONSENSUS_NOTIFY_INITIALSYNC = "CONSENSUS_NOTIFY_INITIALSYNC";
-	
+	public static final String CONSENSUS_NOTIFY_LOG         = "CONSENSUS_NOTIFY_LOG";
 		
 	/**
 	 * Print the chain whenever you get a new block ?
