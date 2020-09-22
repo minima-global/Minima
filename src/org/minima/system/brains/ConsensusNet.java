@@ -55,7 +55,7 @@ public class ConsensusNet extends ConsensusProcessor {
 	 */
 	boolean mHardResetAllowed = true;
 	
-	boolean mFullSyncOnInit = true;
+	boolean mFullSyncOnInit = false;
 	
 	/**
 	 * Check when you sent out a request for a TxPOW
@@ -206,6 +206,8 @@ public class ConsensusNet extends ConsensusProcessor {
 				
 				//Drill down 
 				ArrayList<SyncPacket> packets = sp.getAllNodes();
+				float totpacks = packets.size();
+				float counter  = 0;
 				for(SyncPacket spack : packets) {
 					TxPoW txpow = spack.getTxPOW();
 					
@@ -240,6 +242,11 @@ public class ConsensusNet extends ConsensusProcessor {
 							getMainDB().getUserDB().addTokenDetails(tp);
 						}
 					}
+					
+					//Notify..
+					counter++;
+					float totperc = (counter / totpacks) * 100;
+					getConsensusHandler().updateListeners(new Message(ConsensusHandler.CONSENSUS_NOTIFY_INITIALPERC).addFloat("percent", totperc));
 				}
 				
 				//Reset weights

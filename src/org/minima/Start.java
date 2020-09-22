@@ -36,7 +36,7 @@ public class Start {
 	/**
 	 * A static link to the main server - for Android
 	 */
-	public static Main mMainServer;
+	public static Main mMainServer = null;
 	public static Main getServer() {
 		return mMainServer;
 	}

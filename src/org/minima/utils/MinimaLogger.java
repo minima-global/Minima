@@ -26,7 +26,7 @@ public class MinimaLogger {
 	/**
 	 * Previous Output..
 	 */
-	public static int MAX_PREV_LEN = 10000;
+	public static int MAX_FULL_LEN = 100000;
 	private static StringBuffer mFullOutput = new StringBuffer();
 	public static String getFullOutput() {
 		return mFullOutput.toString();
@@ -43,17 +43,18 @@ public class MinimaLogger {
 	
 	public static void log(String zLog){
 		if(LOGGING_ON){
+			//Ensure max size.. for now just wipe once and start again..
+			int len = mFullOutput.length();
+			if(len>MAX_FULL_LEN) {
+//				mFullOutput = new StringBuffer(mFullOutput.substring(len-MAX_PREV_LEN, len));
+				mFullOutput = new StringBuffer();
+			}
+			
 			String full_log = "Minima @ "+DATEFORMAT.format(new Date())+" : "+zLog;
 			System.out.println(full_log);
 	
 			//Store..
 			mFullOutput.append(full_log+"\n");
-			
-			//Ensure max size..
-			int len = mFullOutput.length();
-			if(len>MAX_PREV_LEN) {
-				mFullOutput = new StringBuffer(mFullOutput.substring(len-MAX_PREV_LEN, len));
-			}
 			
 			//Forward to listeners..
 			if(mLogHandler != null) {
