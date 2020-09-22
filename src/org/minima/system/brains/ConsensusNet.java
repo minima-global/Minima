@@ -245,8 +245,8 @@ public class ConsensusNet extends ConsensusProcessor {
 					
 					//Notify..
 					counter++;
-					float totperc = (counter / totpacks) * 100;
-					getConsensusHandler().updateListeners(new Message(ConsensusHandler.CONSENSUS_NOTIFY_INITIALPERC).addFloat("percent", totperc));
+					int totperc = (int)((counter / totpacks) * 100.0f);
+					getConsensusHandler().updateListeners(new Message(ConsensusHandler.CONSENSUS_NOTIFY_INITIALPERC).addString("info", "Loading "+totperc+"%"));
 				}
 				
 				//Reset weights

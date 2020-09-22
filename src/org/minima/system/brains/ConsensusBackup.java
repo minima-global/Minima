@@ -123,6 +123,8 @@ public class ConsensusBackup extends ConsensusProcessor {
 			}
 			
 			//Load the user..
+			getConsensusHandler().updateListeners(new Message(ConsensusHandler.CONSENSUS_NOTIFY_INITIALPERC).addString("info", "Loading User DB"));
+			
 			JavaUserDB jdb = new JavaUserDB();
 			try {
 				//Load the file into memory first - FAST
@@ -144,6 +146,8 @@ public class ConsensusBackup extends ConsensusProcessor {
 			getMainDB().setUserDB(jdb);
 			
 			//Load the SyncPackage
+			getConsensusHandler().updateListeners(new Message(ConsensusHandler.CONSENSUS_NOTIFY_INITIALPERC).addString("info", "Loading MMR DB"));
+			
 			MinimaLogger.log("Loading DB.. please wait..");
 			SyncPackage sp = new SyncPackage();
 			try {
@@ -174,7 +178,7 @@ public class ConsensusBackup extends ConsensusProcessor {
 				int curr   = (int)( (tot++/syncsize) *10);
 				if(curr != lastprint) {
 					lastprint = curr;
-					MinimaLogger.log("Checking DB.."+(lastprint*10)+"%");
+					getConsensusHandler().updateListeners(new Message(ConsensusHandler.CONSENSUS_NOTIFY_INITIALPERC).addString("info", "Checking DB.."+(lastprint*10)+"%"));
 				}
 				
 				TxPoW txpow     = spack.getTxPOW();
@@ -210,6 +214,7 @@ public class ConsensusBackup extends ConsensusProcessor {
 				//Store it..
 				getBackup().backupTxpow(txpow);
 			}
+			getConsensusHandler().updateListeners(new Message(ConsensusHandler.CONSENSUS_NOTIFY_INITIALPERC).addString("info", "Checking DB..100%"));
 			MinimaLogger.log("Checking DB.. 100%");
 			
 			//Reset weights
@@ -228,7 +233,7 @@ public class ConsensusBackup extends ConsensusProcessor {
 				int curr   = (int)( (tot++/syncsize) *10);
 				if(curr != lastprint) {
 					lastprint = curr;
-					MinimaLogger.log("Restoring DB.."+(lastprint*10)+"%");
+					getConsensusHandler().updateListeners(new Message(ConsensusHandler.CONSENSUS_NOTIFY_INITIALPERC).addString("info", "Restoring DB.."+(lastprint*10)+"%"));
 				}
 				
 				//Get the Block
@@ -264,7 +269,8 @@ public class ConsensusBackup extends ConsensusProcessor {
 					}
 				}
 			}
-			MinimaLogger.log("DB.. 100%");
+			//MinimaLogger.log("DB.. 100%");
+			getConsensusHandler().updateListeners(new Message(ConsensusHandler.CONSENSUS_NOTIFY_INITIALPERC).addString("info", "Restoring DB..100%"));
 			
 			//Get on with it..
 			Main.getMainHandler().PostMessage(Main.SYSTEM_INIT);
