@@ -319,7 +319,7 @@ public class NetworkHandler extends MessageProcessor {
 				if(bootstrapnode) {
 					String oldhost = new String(host);
 					host = Start.VALID_BOOTSTRAP_NODES[new Random().nextInt(Start.VALID_BOOTSTRAP_NODES.length)];
-					MinimaLogger.log("BOOTSTRAP NODE Connection lost.. resetting from "+oldhost+" to "+oldhost);
+					MinimaLogger.log("BOOTSTRAP NODE Connection lost.. resetting from "+oldhost+" to "+host);
 				}
 				
 				//And post a message..
