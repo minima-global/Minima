@@ -108,15 +108,22 @@ public class BlockTree {
 			return false;
 		}
 
-		//Can't add to less than
-		MiniNumber minblock = getCascadeNode().getBlockNumber().add(GlobalParams.MINIMA_BLOCKS_SPEED_CALC);
+//		//Can't add to less than
+//		MiniNumber minblock = getCascadeNode().getBlockNumber().add(GlobalParams.MINIMA_BLOCKS_SPEED_CALC);
+//		
+//		//Check after the cascade node.. - need a minimum first
+//		if(mTip.getBlockNumber().isMore(GlobalParams.MINIMA_BLOCKS_SPEED_CALC)) {
+//			if(zNode.getBlockNumber().isLess(minblock)) {
+//				MinimaLogger.log("BlockTree : BLOCK PAST MIN ALLOWED NODE ["+minblock+"].. "+zNode.getTxPow().getBlockNumber()+" "+zNode.getTxPow().getTxPowID());
+//				return false;
+//			}
+//		}
 		
-		//Check after the cascade node.. - need a minimum first
-		if(mTip.getBlockNumber().isMore(GlobalParams.MINIMA_BLOCKS_SPEED_CALC)) {
-			if(zNode.getBlockNumber().isLess(minblock)) {
-				MinimaLogger.log("BlockTree : BLOCK PAST MIN ALLOWED NODE ["+minblock+"].. "+zNode.getTxPow().getBlockNumber()+" "+zNode.getTxPow().getTxPowID());
-				return false;
-			}
+		//Can't add past the cascade - proofs will be invalid for the transactions anyway..
+		MiniNumber minblock = getCascadeNode().getBlockNumber();
+		if(zNode.getBlockNumber().isLess(minblock)) {
+			MinimaLogger.log("BlockTree : BLOCK PAST CASCADE NODE ["+minblock+"].. "+zNode.getTxPow().getBlockNumber()+" "+zNode.getTxPow().getTxPowID());
+			return false;
 		}
 		
 		//It's OK - add it
@@ -418,35 +425,37 @@ public class BlockTree {
 								return;
 							}
 							
-							//Check that Block difficulty is Correct
-							MiniNumber actualspeed 	= getDB().getMainTree().getChainSpeed(pnode);
-							MiniNumber speedratio   = GlobalParams.MINIMA_BLOCK_SPEED.div(actualspeed);
-							
-//							//Check within acceptable parameters..
-//							MiniNumber high = MiniNumber.ONE.add(GlobalParams.MINIMA_MAX_SPEED_RATIO);
-//							MiniNumber low  = MiniNumber.ONE.sub(GlobalParams.MINIMA_MAX_SPEED_RATIO);
-//							if(speedratio.isMore(high)){
-//								speedratio = high;
-//							}else if(speedratio.isLess(low)){
-//								speedratio = low;
-//							}
-							
-							//Current average
-							BigInteger avgdiff    = getDB().getMainTree().getAvgChainDifficulty(pnode);
-							BigDecimal avgdiffdec = new BigDecimal(avgdiff);
-							
-							//Multiply by the ratio
-							BigDecimal newdiffdec = avgdiffdec.multiply(speedratio.getAsBigDecimal());
-							BigInteger newdiff    = newdiffdec.toBigInteger();
-										
-							//Check more than TX-MIN..
-							if(newdiff.compareTo(Crypto.MEGA_VAL)>0) {
-								newdiff = Crypto.MEGA_VAL;
-							}
-							MiniData diffhash = new MiniData("0x"+newdiff.toString(16)); 
-							
-							//Check they are the same!..
-							if(!GlobalParams.MINIMA_ZERO_DIFF_BLK) {
+							//Whats the minimum block for speed calculation..
+							MiniNumber speedblock = getDB().getMainTree().getCascadeNode().getBlockNumber().add(GlobalParams.MINIMA_BLOCKS_SPEED_CALC);
+							if(!GlobalParams.MINIMA_ZERO_DIFF_BLK && zNode.getBlockNumber().isMore(speedblock)) {
+								
+								//Check that Block difficulty is Correct
+								MiniNumber actualspeed 	= getDB().getMainTree().getChainSpeed(pnode);
+								MiniNumber speedratio   = GlobalParams.MINIMA_BLOCK_SPEED.div(actualspeed);
+								
+	//							//Check within acceptable parameters..
+	//							MiniNumber high = MiniNumber.ONE.add(GlobalParams.MINIMA_MAX_SPEED_RATIO);
+	//							MiniNumber low  = MiniNumber.ONE.sub(GlobalParams.MINIMA_MAX_SPEED_RATIO);
+	//							if(speedratio.isMore(high)){
+	//								speedratio = high;
+	//							}else if(speedratio.isLess(low)){
+	//								speedratio = low;
+	//							}
+								
+								//Current average
+								BigInteger avgdiff    = getDB().getMainTree().getAvgChainDifficulty(pnode);
+								BigDecimal avgdiffdec = new BigDecimal(avgdiff);
+								
+								//Multiply by the ratio
+								BigDecimal newdiffdec = avgdiffdec.multiply(speedratio.getAsBigDecimal());
+								BigInteger newdiff    = newdiffdec.toBigInteger();
+											
+								//Check more than TX-MIN..
+								if(newdiff.compareTo(Crypto.MEGA_VAL)>0) {
+									newdiff = Crypto.MEGA_VAL;
+								}
+								MiniData diffhash = new MiniData("0x"+newdiff.toString(16)); 
+									
 								if(!zNode.getTxPow().getBlockDifficulty().isEqual(diffhash)) {
 									MinimaLogger.log("INVALID BLOCK DIFFICULTY "+zNode.getBlockNumber());
 									zNode.setState(BlockTreeNode.BLOCKSTATE_INVALID);
