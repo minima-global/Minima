@@ -15,6 +15,7 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.objects.greet.Greeting;
 import org.minima.objects.greet.HashNumber;
 import org.minima.objects.greet.SyncPackage;
+import org.minima.objects.greet.TxPoWIDList;
 import org.minima.objects.greet.TxPoWList;
 import org.minima.system.Main;
 import org.minima.system.brains.ConsensusNet;
@@ -53,6 +54,7 @@ public class MinimaClient extends MessageProcessor {
 	public static final String NETCLIENT_GREETING 	    = "NETCLIENT_GREETING";
 	public static final String NETCLIENT_TXPOWLIST_REQ 	= "NETCLIENT_TXPOWLIST_REQ";
 	public static final String NETCLIENT_TXPOWLIST 	    = "NETCLIENT_TXPOWLIST";
+	public static final String NETCLIENT_TXPOWIDLIST 	= "NETCLIENT_TXPOWIDLIST";
 	
 	public static final String NETCLIENT_PULSE 	        = "NETCLIENT_PULSE";
 	public static final String NETCLIENT_PING 	        = "NETCLIENT_PING";
@@ -243,6 +245,10 @@ public class MinimaClient extends MessageProcessor {
 			TxPoWList txplist = (TxPoWList)zMessage.getObject("txpowlist");
 			sendMessage(MinimaReader.NETMESSAGE_TXPOWLIST, txplist);
 			
+		}else if(zMessage.isMessageType(NETCLIENT_TXPOWIDLIST)) {
+			TxPoWIDList txpidlist = (TxPoWIDList)zMessage.getObject("txpowidlist");
+			sendMessage(MinimaReader.NETMESSAGE_TXPOWIDLIST, txpidlist);
+		
 		}else if(zMessage.isMessageType(NETCLIENT_TXPOWLIST_REQ)) {
 			HashNumber hn = (HashNumber)zMessage.getObject("hashnumber");
 			sendMessage(MinimaReader.NETMESSAGE_TXPOWLIST_REQUEST, hn);

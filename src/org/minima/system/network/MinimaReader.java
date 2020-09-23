@@ -13,6 +13,7 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.objects.greet.Greeting;
 import org.minima.objects.greet.HashNumber;
 import org.minima.objects.greet.SyncPackage;
+import org.minima.objects.greet.TxPoWIDList;
 import org.minima.objects.greet.TxPoWList;
 import org.minima.system.Main;
 import org.minima.system.brains.ConsensusHandler;
@@ -86,6 +87,12 @@ public class MinimaReader implements Runnable {
 	public static final MiniByte NETMESSAGE_PING		    = new MiniByte(7);
 	
 	/**
+	 * A list of TxPoWID
+	 */
+	public static final MiniByte NETMESSAGE_TXPOWIDLIST	    = new MiniByte(8);
+	
+	
+	/**
 	 * Netclient owner
 	 */
 	MinimaClient 		mNetClient;
@@ -137,6 +144,10 @@ public class MinimaReader implements Runnable {
 				}else if(msgtype.isEqual(NETMESSAGE_TXPOWLIST_REQUEST)) {
 					if(len > MAX_TXPOW_LIST_REQ) {
 						throw new ProtocolException("Receive Invalid Message length for MAX_TXPOW_LIST_REQ type:"+msgtype+" len:"+len);
+					}
+				}else if(msgtype.isEqual(NETMESSAGE_TXPOWIDLIST)) {
+					if(len > MAX_TXPOW) {
+						throw new ProtocolException("Receive Invalid Message length for TXPOWIDLIST type:"+msgtype+" len:"+len);
 					}
 				}else if(msgtype.isEqual(NETMESSAGE_PING)) {
 					if(len > 1) {
@@ -207,13 +218,20 @@ public class MinimaReader implements Runnable {
 					
 				}else if(msgtype.isEqual(NETMESSAGE_TXPOWLIST)) {
 					//tell us how big the sync was..
-					MinimaLogger.log("Initial Sync Message : "+MiniFormat.formatSize(len));
+					MinimaLogger.log("TxPoW List Message : "+MiniFormat.formatSize(len));
 					
 					TxPoWList txplist = new TxPoWList();
 					txplist.readDataStream(inputstream);
 					
 					//Add this ID
 					rec.addObject("txpowlist", txplist);
+					
+				}else if(msgtype.isEqual(NETMESSAGE_TXPOWIDLIST)) {
+					TxPoWIDList txpidlist = new TxPoWIDList();
+					txpidlist.readDataStream(inputstream);
+					
+					//Add this ID
+					rec.addObject("txpowidlist", txpidlist);
 					
 				}else if(msgtype.isEqual(NETMESSAGE_PING)) {
 					MiniByte mb = MiniByte.ReadFromStream(inputstream);

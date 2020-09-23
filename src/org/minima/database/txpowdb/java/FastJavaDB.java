@@ -16,8 +16,12 @@ public class FastJavaDB implements TxPowDB {
 
 	private Hashtable<String,JavaDBRow> mTxPoWRows;
 	
+	//The Children of a Parent..
+	private Hashtable<String,ArrayList<TxPOWDBRow>> mChildrenOfParents;
+	
 	public FastJavaDB() {
-		mTxPoWRows = new Hashtable<>();
+		mTxPoWRows         = new Hashtable<>();
+		mChildrenOfParents = new Hashtable<>();
 	}
 	
 	@Override
@@ -40,6 +44,26 @@ public class FastJavaDB implements TxPowDB {
 				
 		//Add it..
 		mTxPoWRows.put(search, row);
+		
+		//Add it to the Children List..
+		if(zTxPOW.isBlock()) {
+			//Get the Parent...
+			String parentid = zTxPOW.getParentID().to0xString();
+			
+			//Get the ArrayList..
+			ArrayList<TxPOWDBRow> children = mChildrenOfParents.get(parentid);
+			
+			//Has it begun.. ?
+			if(children == null) {
+				children = new ArrayList<>();
+				
+				//Add it to the HashTable..
+				mChildrenOfParents.put(parentid, children);
+			}
+			
+			//And Add this Row to it..
+			children.add(row);
+		}
 		
 		return row;
 	}
@@ -79,7 +103,13 @@ public class FastJavaDB implements TxPowDB {
 
 	@Override
 	public void removeTxPOW(MiniData zTxPOWID) {
-		mTxPoWRows.remove(zTxPOWID.to0xString());
+		String txpid = zTxPOWID.to0xString();
+		
+		//Remove from the main List
+		mTxPoWRows.remove(txpid);
+		
+		//And the children..
+		mChildrenOfParents.remove(txpid);
 	}
 
 	@Override
@@ -98,21 +128,23 @@ public class FastJavaDB implements TxPowDB {
 			JavaDBRow row  = allrows.nextElement();
 			TxPoW rowtxpow = row.getTxPOW();
 			
+			String txpid = rowtxpow.getTxPowID().to0xString();
+			
 				//It's a main block
 			if(row.isMainChainBlock()) {
-				newtable.put(rowtxpow.getTxPowID().to0xString(),row);
+				newtable.put(txpid,row);
 				
 				//It's a transaction on the main chain
 			}else if(row.isInBlock() && row.getInBlockNumber().isMoreEqual(minused)) {
-				newtable.put(rowtxpow.getTxPowID().to0xString(),row);
+				newtable.put(txpid,row);
 			
 				//It's a transaction but not that old
 			}else if(rowtxpow.isTransaction() && !row.isInBlock() && row.getTxPOW().getBlockNumber().isMoreEqual(minunused)) {
-				newtable.put(rowtxpow.getTxPowID().to0xString(),row);
+				newtable.put(txpid,row);
 			
 				//It's a block but not past the cascade
 			}else if(rowtxpow.isBlock() && !row.isMainChainBlock() && row.getTxPOW().getBlockNumber().isMoreEqual(minused)) {
-				newtable.put(rowtxpow.getTxPowID().to0xString(),row);
+				newtable.put(txpid,row);
 				
 			}else {
 				if(GlobalParams.SHORT_CHAIN_DEBUG_MODE) {
@@ -120,10 +152,11 @@ public class FastJavaDB implements TxPowDB {
 						MinimaLogger.log("Transaction NOT in block NOT removed.. "+row);
 						
 						//Add it anyway..
-						newtable.put(rowtxpow.getTxPowID().to0xString(),row);
+						newtable.put(txpid,row);
 					}else {
 						//Remove it..
 						removed.add(row);
+						mChildrenOfParents.remove(txpid);
 					}
 				}else{
 					if(row.getTxPOW().isTransaction() && !row.isInBlock()) {
@@ -131,7 +164,8 @@ public class FastJavaDB implements TxPowDB {
 					}
 					
 					//Remove it..
-					removed.add(row);	
+					removed.add(row);
+					mChildrenOfParents.remove(txpid);
 				}
 			}		
 		}
@@ -157,16 +191,27 @@ public class FastJavaDB implements TxPowDB {
 
 	@Override
 	public ArrayList<TxPOWDBRow> getChildBlocksTxPOW(MiniData zParent) {
-		ArrayList<TxPOWDBRow> ret = new ArrayList<>();
-		Enumeration<JavaDBRow> allrows = mTxPoWRows.elements();
-		while(allrows.hasMoreElements()) {
-			JavaDBRow row = allrows.nextElement();
-			if(row.getTxPOW().isBlock() && row.getTxPOW().getParentID().isEqual(zParent)) {
-				ret.add(row);
-			}
+		//FAST
+		String parentid = zParent.to0xString();
+		
+		ArrayList<TxPOWDBRow> ret = mChildrenOfParents.get(parentid);
+		if(ret == null) {
+			ret = new ArrayList<>();
 		}
 		
 		return ret;
+		
+		//SLOW
+//		ArrayList<TxPOWDBRow> ret = new ArrayList<>();
+//		Enumeration<JavaDBRow> allrows = mTxPoWRows.elements();
+//		while(allrows.hasMoreElements()) {
+//			JavaDBRow row = allrows.nextElement();
+//			if(row.getTxPOW().isBlock() && row.getTxPOW().getParentID().isEqual(zParent)) {
+//				ret.add(row);
+//			}
+//		}
+//		
+//		return ret;
 	}
 
 	@Override

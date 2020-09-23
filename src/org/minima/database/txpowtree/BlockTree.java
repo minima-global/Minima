@@ -24,32 +24,32 @@ public class BlockTree {
 	/**
 	 * ROOT node of the Chain
 	 */
-	BlockTreeNode mRoot;
+	private BlockTreeNode mRoot;
 	
 	/**
 	 * The Tip of the longest Chain
 	 */
-	public BlockTreeNode mTip;
+	private BlockTreeNode mTip;
 	
 	/**
 	 * The Block beyond which you are cascading and parents may be of a higher level
 	 */
-	BlockTreeNode mCascadeNode;
+	private BlockTreeNode mCascadeNode;
 	
 	/**
 	 * When Copying..
 	 */
-	BlockTreeNode mCopyNode;
+	private BlockTreeNode mCopyNode;
 	
 	/**
 	 * The FAST link from ID to Block..
 	 */
-	Hashtable<String, BlockTreeNode> mFastLink;
+	private Hashtable<String, BlockTreeNode> mFastLink;
 	
 	/**
 	 * This is a list of all the VALID blocks - used to cascade the chain
 	 */
-	ArrayList<BlockTreeNode> mValidBlockList;
+	private ArrayList<BlockTreeNode> mValidBlockList;
 	
 	/**
 	 * Main Constructor

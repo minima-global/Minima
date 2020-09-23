@@ -6,35 +6,36 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import org.minima.objects.TxPoW;
+import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.Streamable;
 
-public class TxPoWList implements Streamable {
+public class TxPoWIDList implements Streamable {
 
-	ArrayList<TxPoW> mTxPowList = new ArrayList<>();
+	ArrayList<MiniData> mTxPowIDList = new ArrayList<>();
 	
-	public TxPoWList() {}
+	public TxPoWIDList() {}
 	
-	public void addTxPow(TxPoW zTxPoW) {
-		mTxPowList.add(0,zTxPoW);
+	public void addTxPowID(MiniData zTxPoWID) {
+		mTxPowIDList.add(zTxPoWID);
 	}
 
-	public ArrayList<TxPoW> getList(){
-		return mTxPowList;
+	public ArrayList<MiniData> getList(){
+		return mTxPowIDList;
 	}
 	
-	public int size() {
-		return mTxPowList.size();
+	public int size(){
+		return mTxPowIDList.size();
 	}
 	
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
-		int len = mTxPowList.size();
+		int len = mTxPowIDList.size();
 		MiniNumber minlen = new MiniNumber(len);
 		minlen.writeDataStream(zOut);
 		
-		for(TxPoW txpow : mTxPowList) {
-			txpow.writeDataStream(zOut);
+		for(MiniData txpowid : mTxPowIDList) {
+			txpowid.writeHashToStream(zOut);
 		}
 	}
 
@@ -43,11 +44,9 @@ public class TxPoWList implements Streamable {
 		MiniNumber minlen = MiniNumber.ReadFromStream(zIn);
 		int len = minlen.getAsInt();
 		
-		mTxPowList = new ArrayList<>();
+		mTxPowIDList = new ArrayList<>();
 		for(int i=0;i<len;i++) {
-			TxPoW txp = new TxPoW();
-			txp.readDataStream(zIn);
-			mTxPowList.add(txp);
+			mTxPowIDList.add(MiniData.ReadHashFromStream(zIn));
 		}
 	}
 }
