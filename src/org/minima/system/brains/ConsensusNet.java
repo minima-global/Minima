@@ -307,8 +307,6 @@ public class ConsensusNet extends ConsensusProcessor {
 							
 								//Have we reached the limit..
 								if(txpidlist.size() > 200) {
-									//MinimaLogger.log("1) Sending TxPOWID list.. "+txpidlist.size());
-									
 									//Send it..
 									Message req = new Message(MinimaClient.NETCLIENT_TXPOWIDLIST).addObject("txpowidlist", txpidlist);
 									client.PostMessage(req);
@@ -316,8 +314,8 @@ public class ConsensusNet extends ConsensusProcessor {
 									//Reset..
 									txpidlist = new TxPoWIDList();
 								}
-								
-//								sendTxPowRequest(zMessage, txn);
+
+								//Total requests made
 								reqtxn++;
 								
 								//Add it to the list
@@ -408,30 +406,28 @@ public class ConsensusNet extends ConsensusProcessor {
 			HashNumber hashnum = (HashNumber)zMessage.getObject("hashnumber");
 			int max = hashnum.getNumber().getAsInt();
 			
-			TxPoWList txplist = new TxPoWList();
+			TxPoWList txpowlist = new TxPoWList();
+			txpowlist.setCrossOver(true);
 			int counter = 0;
 			
 			BlockTreeNode top = getMainDB().getMainTree().findNode(hashnum.getHash());
 			while(top!=null && counter<max) {
-				txplist.addTxPow(top.getTxPow());
+				txpowlist.addTxPow(top.getTxPow());
 				top = top.getParent();
 				counter++;
 			}
 			
 			//Now send that..!
 			MinimaClient client = (MinimaClient) zMessage.getObject("netclient");
-			Message req      = new Message(MinimaClient.NETCLIENT_TXPOWLIST).addObject("txpowlist", txplist);
-			client.PostMessage(req);
-		
+			client.PostMessage(new Message(MinimaClient.NETCLIENT_TXPOWLIST).addObject("txpowlist", txpowlist));
+			
 		}else if ( zMessage.isMessageType(CONSENSUS_NET_TXPOWIDLIST)) {
 			TxPoWIDList txpidlist = (TxPoWIDList)zMessage.getObject("txpowidlist");
-			//MinimaLogger.log("CONSENSUS_NET_TXPOWIDLIST received "+txpidlist);
-			
-			//Get the NetClient...
-			MinimaClient client = (MinimaClient) zMessage.getObject("netclient");
 			
 			//Now get all the txp
 			TxPoWList txpowlist = new TxPoWList();
+			txpowlist.setCrossOver(false);
+			
 			ArrayList<MiniData> list = txpidlist.getList();
 			for(MiniData txpid : list) {
 				//Get the TxPOW
@@ -443,56 +439,64 @@ public class ConsensusNet extends ConsensusProcessor {
 				}
 			}
 			
-			Message req      = new Message(MinimaClient.NETCLIENT_TXPOWLIST).addObject("txpowlist", txpowlist);
-			client.PostMessage(req);
+			//Now send that..!
+			MinimaClient client = (MinimaClient) zMessage.getObject("netclient");
+			client.PostMessage(new Message(MinimaClient.NETCLIENT_TXPOWLIST).addObject("txpowlist", txpowlist));
 			
 		}else if ( zMessage.isMessageType(CONSENSUS_NET_TXPOWLIST)) {
-			TxPoWList txplist = (TxPoWList)zMessage.getObject("txpowlist"); 
-//			MinimaLogger.log("CONSENSUS_NET_TXPOWLIST received "+txplist.size());
+			TxPoWList txplist     = (TxPoWList)zMessage.getObject("txpowlist"); 
+			ArrayList<TxPoW> txps = txplist.getList();
 			
 			boolean firsttime = isInitialSyncComplete();
 			
 			//Now the Initial SYNC has been done you can receive TXPOW message..
 			setInitialSyncComplete(false);
 			
-			//Cycle through and add as a normal message - extra transactions will be requested as normal
-			ArrayList<TxPoW> txps = txplist.getList();
-			for(TxPoW txp : txps) {
+			if(txplist.isCrossover()) {
+				//Get the NetClient...
+				MinimaClient client = (MinimaClient) zMessage.getObject("netclient");
 				
-				processIBDTxPoW(zMessage, txp);
+				//Treat as normal TxPOW messages.. checking everything..
+				for(TxPoW txp : txps) {
+					Message msg = new Message(CONSENSUS_NET_TXPOW);
+					msg.addObject("txpow", txp);
+					msg.addObject("netclient", client);
+					getConsensusHandler().PostMessage(msg);
+				}
 				
-//				Message msg = new Message(CONSENSUS_NET_TXPOW);
-//				msg.addObject("txpow", txp);
-//				msg.addObject("netclient", client);
-//				getConsensusHandler().PostMessage(msg);
-			}
+			}else {
+				//Cycle through and process as if IBD data..
+				for(TxPoW txp : txps) {
+					processIBDTxPoW(zMessage, txp);
+				}
+				
+				//And NOW sort the Tree..
+				ArrayList<BlockTreeNode> list = getMainDB().getMainTree().getAsList(true);
+				for(BlockTreeNode treenode : list) {
+					//Get the Block
+					TxPoW txpow = treenode.getTxPow();
 			
-			//And NOW sort the Tree..
-			ArrayList<BlockTreeNode> list = getMainDB().getMainTree().getAsList(true);
-			for(BlockTreeNode treenode : list) {
-				//Get the Block
-				TxPoW txpow = treenode.getTxPow();
-		
-				//Get the database txpow..
-				TxPOWDBRow trow = getMainDB().getTxPOWRow(txpow.getTxPowID());
-				if(trow != null) {
-					//What Block
-					MiniNumber block = txpow.getBlockNumber();
-					
-					//Set the details
-					trow.setMainChainBlock(true);
-					trow.setIsInBlock(true);
-					trow.setInBlockNumber(block);
-					
-					//Now the Txns..
-					ArrayList<MiniData> txpowlist = txpow.getBlockTransactions();
-					for(MiniData txid : txpowlist) {
-						trow = getMainDB().getTxPOWRow(txid);
-						if(trow!=null) {
-							//Set that it is in this block
-							trow.setMainChainBlock(false);
-							trow.setIsInBlock(true);
-							trow.setInBlockNumber(block);
+					//Get the database txpow..
+					TxPOWDBRow trow = getMainDB().getTxPOWRow(txpow.getTxPowID());
+					if(trow != null) {
+						//What Block
+						MiniNumber block = txpow.getBlockNumber();
+						
+						//Set the details
+						trow.setMainChainBlock(true);
+						trow.setIsInBlock(true);
+						trow.setInBlockNumber(block);
+						
+						//Now the Txns..
+						ArrayList<MiniData> txpowlist = txpow.getBlockTransactions();
+						for(MiniData txid : txpowlist) {
+							trow = getMainDB().getTxPOWRow(txid);
+							if(trow!=null) {
+								//Set that it is in this block
+								trow.setMainChainBlock(false);
+								trow.setIsInBlock(true);
+								trow.setInBlockNumber(block);
+							}
 						}
 					}
 				}
@@ -510,7 +514,6 @@ public class ConsensusNet extends ConsensusProcessor {
 			//Do we have it..
 			if(getMainDB().getTxPOW(txpowid) == null) {
 				//MinimaLogger.log("NEW TXPOWID "+txpowid.to0xString()+" from "+zMessage.getObject("netclient"));
-				
 				//We don't have it, get it..
 				sendTxPowRequest(zMessage, txpowid);
 			}

@@ -54,7 +54,7 @@ public class MinimaClient extends MessageProcessor {
 	public static final String NETCLIENT_GREETING 	    = "NETCLIENT_GREETING";
 	public static final String NETCLIENT_TXPOWLIST_REQ 	= "NETCLIENT_TXPOWLIST_REQ";
 	public static final String NETCLIENT_TXPOWLIST 	    = "NETCLIENT_TXPOWLIST";
-	public static final String NETCLIENT_TXPOWIDLIST 	= "NETCLIENT_TXPOWIDLIST";
+	public static final String NETCLIENT_TXPOWIDLIST    = "NETCLIENT_TXPOWIDLIST";
 	
 	public static final String NETCLIENT_PULSE 	        = "NETCLIENT_PULSE";
 	public static final String NETCLIENT_PING 	        = "NETCLIENT_PING";
