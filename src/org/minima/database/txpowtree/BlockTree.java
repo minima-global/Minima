@@ -108,22 +108,13 @@ public class BlockTree {
 			return false;
 		}
 
-//		//Can't add to less than
-//		MiniNumber minblock = getCascadeNode().getBlockNumber().add(GlobalParams.MINIMA_BLOCKS_SPEED_CALC);
-//		
-//		//Check after the cascade node.. - need a minimum first
-//		if(mTip.getBlockNumber().isMore(GlobalParams.MINIMA_BLOCKS_SPEED_CALC)) {
-//			if(zNode.getBlockNumber().isLess(minblock)) {
-//				MinimaLogger.log("BlockTree : BLOCK PAST MIN ALLOWED NODE ["+minblock+"].. "+zNode.getTxPow().getBlockNumber()+" "+zNode.getTxPow().getTxPowID());
-//				return false;
-//			}
-//		}
-		
-		//Can't add past the cascade - proofs will be invalid for the transactions anyway..
-		MiniNumber minblock = getCascadeNode().getBlockNumber();
-		if(zNode.getBlockNumber().isLess(minblock)) {
-			MinimaLogger.log("BlockTree : BLOCK PAST CASCADE NODE ["+minblock+"].. "+zNode.getTxPow().getBlockNumber()+" "+zNode.getTxPow().getTxPowID());
-			return false;
+		//Can't add to less than
+		if(mTip.getBlockNumber().isMore(GlobalParams.MINIMA_BLOCKS_SPEED_CALC)) {
+			MiniNumber minblock = getCascadeNode().getBlockNumber().add(GlobalParams.MINIMA_BLOCKS_SPEED_CALC);
+			if(zNode.getBlockNumber().isLessEqual(minblock)) {
+				//MinimaLogger.log("BlockTree : BLOCK PAST MIN ALLOWED NODE ["+minblock+"].. "+zNode.getTxPow().getBlockNumber()+" "+zNode.getTxPow().getTxPowID());
+				return false;
+			}
 		}
 		
 		//It's OK - add it
@@ -407,6 +398,13 @@ public class BlockTree {
 							//The Parent block..
 							BlockTreeNode pnode = zNode.getParent();
 							
+							//Does it have a valid MMR.. or is it too late for this block.. the parent is a cascade node.
+							if(pnode.getMMRSet() == null) {
+								//MinimaLogger.log("NULL PARENT MMR "+zNode.getBlockNumber()+" "+getCascadeNode().getBlockNumber());
+								zNode.setState(BlockTreeNode.BLOCKSTATE_INVALID);
+								return;
+							}
+							
 							//Check block number..
 							if(!zNode.getBlockNumber().isEqual(pnode.getBlockNumber().increment())){
 								MinimaLogger.log("INVALID BLOCK NUMBER for Parent "+zNode.getBlockNumber());
@@ -476,7 +474,7 @@ public class BlockTree {
 								
 								//Check all the transactions in the block are correct..
 								allok = getDB().checkAllTxPOW(zNode, mmrset);
-								
+									
 								//Check the root MMR..
 								if(allok) {
 									if(!row.getTxPOW().getMMRRoot().isEqual(mmrset.getMMRRoot().getFinalHash())) {
@@ -650,7 +648,10 @@ public class BlockTree {
 		
 		//Set the MMRSet parent to NULL
 		mCascadeNode.getMMRSet().setParent(null);	
-		
+		if(mCascadeNode.getMMRSet().getMMRPeaks().size() == 0) {
+			MinimaLogger.log("0 PEAKS! at cascade "+mCascadeNode.getBlockNumber());
+		}
+	
 		//Clear from one node up..
 		BlockTreeNode clearnode = mCascadeNode.getParent();
 		while(clearnode != null) {

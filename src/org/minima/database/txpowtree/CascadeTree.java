@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import org.minima.GlobalParams;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.utils.MinimaLogger;
 
 public class CascadeTree {
 
@@ -132,13 +133,8 @@ public class CascadeTree {
 			
 		//Now add all this to the final tree
 		for(BlockTreeNode node : finalnodes) {
-			//Create a new Node..
-			//BlockTreeNode copy = new BlockTreeNode(node);
-			
 			//Add..
 			mCascadeTree.hardAddNode(node, false);
-			
-			//It's a cascader
 			mCascadeTree.hardSetCascadeNode(node);
 		}
 				

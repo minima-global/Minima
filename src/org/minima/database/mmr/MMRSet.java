@@ -158,7 +158,7 @@ public class MMRSet implements Streamable {
 			BigInteger tot = BigInteger.ZERO;
 			BigInteger two = new BigInteger("2");
 			
-			ArrayList<MMREntry> peaks = mParent.getMMRPeaks(); 
+			ArrayList<MMREntry> peaks = mParent.getMMRPeaks();
 			for(MMREntry peak : peaks) {
 				//Add the peak
 				setEntry(peak.getRow(), peak.getEntryNumber(), peak.getData());

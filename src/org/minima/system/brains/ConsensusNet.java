@@ -326,8 +326,6 @@ public class ConsensusNet extends ConsensusProcessor {
 					
 					//And finally.. any left..
 					if(txpidlist.size() > 0) {
-					//	MinimaLogger.log("2) Sending TxPOWID list.. "+txpidlist.size());
-						
 						//Send it..
 						Message req = new Message(MinimaClient.NETCLIENT_TXPOWIDLIST).addObject("txpowidlist", txpidlist);
 						client.PostMessage(req);
