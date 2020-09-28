@@ -39,13 +39,13 @@ java -jar minima.jar -private
 You can then connect to it from another instance of the app by running :
 
 ```
-java -jar minima.jar -connect 127.0.0.1 9001 -port 9010 -rpcport 9011 -clean
+java -jar minima.jar -connect 127.0.0.1 9001 -port 9010 -clean
 ```
-Note that this will set the port of the 2nd instance to 9010 and the rpc port to 9011.. otherwise the app will not allow you to start, as the ports will already be in use.
+Note that this will set the base port of the 2nd instance to 9010.. otherwise the app will not allow you to start, as the ports will already be in use.
 
-Using the `-clean` parameter deletes any previous data and ensures you can resysnc to the current chain.
+Using the `-clean` parameter deletes any previous data and ensures you can resysnc to the current chain. Use `-cleanhard` to wipe all the MiniDAPPs too.
 
-If you compile from scratch - you can use the bin folder.. you need to link the H2 sql db.
+If you compile from scratch - you can use the bin folder.. you need to link the H2 sql db and the rhino javascript library.
 
 ```
 cd ./bin
@@ -98,13 +98,7 @@ Get your balance
 balance
 ```
 
-Create a token
-
-```
-createtoken mycoin 1000
-```
-
-The BEST way to play with Minima is via the MiniDAPP system that runs on port 21000 
+The BEST way to play with Minima is via the MiniDAPP system that by default runs on port 9004 
 
 Full details  @ [http://mifi.minima.global](http://mifi.minima.global)
 
