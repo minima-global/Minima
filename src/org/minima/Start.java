@@ -190,7 +190,7 @@ public class Start {
 		}
 		
 		//Add a version number to the CONF folder
-//		conffolder = conffolder.concat("0.96);
+//		conffolder = conffolder.concat("0.96");
 		
 		//Do we wipe
 		File conffile = new File(conffolder);
