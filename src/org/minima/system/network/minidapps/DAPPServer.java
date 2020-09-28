@@ -317,30 +317,30 @@ public class DAPPServer extends NanoHTTPD{
 			String version = uid+" @ "+date;
 			
 			//Now do it..
-			String minis = "<tr><td>" + 
-					"			<table style='background-size:100%;background-image: url("+backg+");' width=100% height=100 class=minidapp>" + 
-					"			 	<tr>" + 
-					"					<td style='cursor:pointer;' rowspan=2 onclick=\"window.open('"+webpage+"', '"+openpage+"');\">" + 
-					"						<img src='"+icon+"' height=100>" + 
-					"					</td>" + 
-					"					<td width=100% class='minidappdescription'>" + 
-					"                   <div style='position:relative'>"; 
+			String minis = "<tr><td>\n" + 
+					"			<table style='background-size:100%;background-image: url("+backg+");' width=100% height=100 class=minidapp>\n" + 
+					"			 	<tr>\n" + 
+					"					<td style='cursor:pointer;' rowspan=2 onclick=\"window.open('"+webpage+"', '"+openpage+"');\">\n" + 
+					"						<img src='"+icon+"' height=100>\n" + 
+					"					</td>\n" + 
+					"					<td width=100% class='minidappdescription'>\n" + 
+					"                   <div style='position:relative'>\n"; 
 			
 			if(!debug) {
-				minis+=	"				        <div style='color:red;cursor:pointer;position:absolute;right:100;top:10'><a style='text-decoration:none;color:red;' href='"+app.get("download")+"' download>DOWNLOAD</a></div>" + 
-					    "				        <div onclick='uninstallDAPP(\""+name+"\",\""+uid+"\");' style='color:red;cursor:pointer;position:absolute;right:10;top:10'>UNINSTALL</div>"; 
+				minis+=	"				        <div style='color:red;cursor:pointer;position:absolute;right:100;top:10'><a style='text-decoration:none;color:red;' href='"+app.get("download")+"' download>DOWNLOAD</a></div>\n" + 
+					    "				        <div onclick='uninstallDAPP(\""+name+"\",\""+uid+"\");' style='color:red;cursor:pointer;position:absolute;right:10;top:10'>UNINSTALL</div>\n"; 
 			}else {
-				minis+=	"				        <div style='color:red;position:absolute;right:10;top:10'>DEVELOPMENT</div>";
+				minis+=	"				        <div style='color:red;position:absolute;right:10;top:10'>DEVELOPMENT</div>\n";
 			}
 					
-			minis+=	"						<br><div onclick=\"window.open('"+webpage+"','"+openpage+"');\" style='cursor:pointer;font-size:18'><b>"+name.toUpperCase()+"</b></div>" + 
-					"						<br><div onclick=\"window.open('"+webpage+"','"+openpage+"');\" style='cursor:pointer;font-size:12;min-height:20;'>"+desc+"</div>" + 
-					"						<div onclick=\"window.open('"+webpage+"','"+openpage+"');\" style='cursor:pointer;color:blue;font-size:10;text-align:right;width:98%;'><br>"+version+"</div>"+
-					"					</div>"+
-					"                     </td>" + 
-					"				</tr>" + 
-					"			</table>" + 
-					"		</td></tr>";
+			minis+=	"						<br><div onclick=\"window.open('"+webpage+"','"+openpage+"');\" style='cursor:pointer;font-size:18'><b>"+name.toUpperCase()+"</b></div>\n" + 
+					"						<br><div onclick=\"window.open('"+webpage+"','"+openpage+"');\" style='cursor:pointer;font-size:12;min-height:20;'>"+desc+"</div>\n" + 
+					"						<div onclick=\"window.open('"+webpage+"','"+openpage+"');\" style='cursor:pointer;color:blue;font-size:10;text-align:right;width:98%;'><br>"+version+"</div>\n"+
+					"					</div>\n"+
+					"                     </td>\n" + 
+					"				</tr>\n" + 
+					"			</table>\n" + 
+					"		</td></tr>\n";
 			
 			//Add to the list
 			list.append(minis);
