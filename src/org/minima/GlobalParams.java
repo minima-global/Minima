@@ -7,23 +7,18 @@ public class GlobalParams {
 	/**
 	 * Which Version
 	 */
-	public static final String MINIMA_VERSION = "0.96.36"; 
+	public static final String MINIMA_VERSION = "0.96.37"; 
 	
 	/**
 	 * Number of seconds before sending a pulse message - every 10 minutes
 	 */
-	public static final int USER_PULSE_FREQ      = 10 * 60;
+	public static final int USER_PULSE_FREQ   = 10 * 60;
 	
 	/**
 	 * Speed in blocks per second.. 
 	 * -  0.05  = 20 second block time
 	 */
 	public static final MiniNumber MINIMA_BLOCK_SPEED  = new MiniNumber("0.05");
-	
-//	/**
-//	 * MAX Difficulty change per block
-//	 */
-//	public static final MiniNumber MINIMA_MAX_SPEED_RATIO  = new MiniNumber("0.5");
 	
 	/**
 	 * When checking speed and average difficulty only look at this many blocks back
@@ -46,7 +41,7 @@ public class GlobalParams {
 	public static final int MINIMA_CASCADE_LEVEL_NODES  = 256;
 	
 	/**
-	 * How Many Cascade Levels - 21! .. is just over 1 year
+	 * How Many Cascade Levels
 	 */
 	public static final int MINIMA_CASCADE_LEVELS  = 21;
 	
@@ -74,5 +69,12 @@ public class GlobalParams {
 	 * Automatically disables the auto mining
 	 */
 	public static final boolean MINIMA_ZERO_DIFF_BLK  = false;
+
+//	/** 
+//	 * ( Not sure if I'll use this..)
+//	 * MAX Difficulty change per block
+//	 */
+//	public static final MiniNumber MINIMA_MAX_SPEED_RATIO  = new MiniNumber("0.5");
 	
+
 }
