@@ -43,7 +43,9 @@ java -jar minima.jar -connect 127.0.0.1 9001 -port 9010 -clean
 ```
 Note that this will set the base port of the 2nd instance to 9010.. otherwise the app will not allow you to start, as the ports will already be in use.
 
-Using the `-clean` parameter deletes any previous data and ensures you can resysnc to the current chain. Use `-cleanhard` to wipe all the MiniDAPPs too.
+Using the `-clean` parameter deletes any previous data and ensures you can resysnc to the current chain. 
+
+Use `-cleanhard` to wipe all the MiniDAPPs as well.
 
 If you compile from scratch - you can use the bin folder.. you need to link the H2 sql db and the rhino javascript library both of which are in the lib folder.
 
