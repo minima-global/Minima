@@ -241,7 +241,12 @@ public class DAPPManager extends MessageProcessor {
 							//Add to the List..
 							mBackends.put(minidappid, bedapp);
 						
-							MinimaLogger.log("BackEndJS create for "+minidappid);
+							String dappname = "no name in conf.."; 
+							if(confjson.containsKey("name")) {
+								dappname = (String)confjson.get("name");
+							}
+							
+							MinimaLogger.log("BackEndJS create for "+dappname+" @ "+minidappid);
 							
 						} catch (Exception e) {
 							MinimaLogger.log("Error loading service.js for "+backend.getAbsolutePath()+" "+e);
