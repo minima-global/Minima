@@ -258,13 +258,7 @@ public class DAPPManager extends MessageProcessor {
 				}
 			}
 		}
-		
-		//Post a CONNECTED message to all the BackEnds.. 
-		JSONObject wsmsg = new JSONObject();
-		wsmsg.put("event","connected");
-		wsmsg.put("details","success");
-		sendToBackEND("", wsmsg);
-		
+				
 		//Order the List.. By Name..
 		Collections.sort(CURRENT_MINIDAPPS, new Comparator<JSONObject>() {
 			@Override
