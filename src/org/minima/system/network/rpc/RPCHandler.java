@@ -66,8 +66,10 @@ public class RPCHandler implements Runnable {
 			String MiniDAPPID = "0x00";
 			int contentlength = 0;
 			while(input != null && !input.trim().equals("")) {
+				MinimaLogger.log("RPC : "+input);
 				int ref = input.indexOf("Referer:"); 
 				if(ref != -1) {
+					
 					//Get the referer..
 					int start  = input.indexOf("0x");
 	        		int end    = -1;
@@ -144,7 +146,7 @@ public class RPCHandler implements Runnable {
 				throw new IOException("Unsupported Method in RPCHandler : "+firstline);
 			}
 			
-			//MinimaLogger.log("RPCHandler "+method+" "+reqtype+" "+command);
+			MinimaLogger.log("RPCHandler "+method+" "+reqtype+" "+command+" "+MiniDAPPID);
 			
 			//Is this a SQL function
 			if(reqtype.equals("sql")) {
