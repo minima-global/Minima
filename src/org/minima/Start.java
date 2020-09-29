@@ -46,7 +46,9 @@ public class Start {
 	/**
 	 * Simple constructor for iOS and Android
 	 */
-	public Start() {}
+	public Start() {
+		mMainServer = null;
+	}
 	
 	public void fireStarter(String zConfFolder) {
 		mConfFolder = zConfFolder;
