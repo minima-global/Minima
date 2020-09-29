@@ -39,13 +39,15 @@ java -jar minima.jar -private
 You can then connect to it from another instance of the app by running :
 
 ```
-java -jar minima.jar -connect 127.0.0.1 9001 -port 9010 -rpcport 9011 -clean
+java -jar minima.jar -connect 127.0.0.1 9001 -port 9010 -clean
 ```
-Note that this will set the port of the 2nd instance to 9010 and the rpc port to 9011.. otherwise the app will not allow you to start, as the ports will already be in use.
+Note that this will set the base port of the 2nd instance to 9010.. otherwise the app will not allow you to start, as the ports will already be in use.
 
-Using the `-clean` parameter deletes any previous data and ensures you can resysnc to the current chain.
+Using the `-clean` parameter deletes any previous data and ensures you can resysnc to the current chain. 
 
-If you compile from scratch - you can use the bin folder.. you need to link the H2 sql db.
+Use `-cleanhard` to wipe all the MiniDAPPs as well.
+
+If you compile from scratch - you can use the bin folder.. you need to link the H2 sql db and the rhino javascript library both of which are in the lib folder.
 
 ```
 cd ./bin
@@ -98,13 +100,7 @@ Get your balance
 balance
 ```
 
-Create a token
-
-```
-createtoken mycoin 1000
-```
-
-The BEST way to play with Minima is via the MiniDAPP system that runs on port 21000 
+The BEST way to play with Minima is via the MiniDAPP system that by default runs on port 9004 
 
 Full details  @ [http://mifi.minima.global](http://mifi.minima.global)
 
@@ -116,17 +112,19 @@ For a complete explanation of the Minima Scripting language use
 tutorial
 ```
 
-To show how simple the language actually is.. here it is :
+To show how simple the language actually is.. here it is ( in full ) :
 
 ```
 
 ADDRESS     ::= SHA3 ( BLOCK )
 BLOCK       ::= STATEMENT_1 STATEMENT_2 ... STATEMENT_n
-STATEMENT   ::= LET VARIABLE = EXPRESSION | 
-                IF EXPRESSION THEN BLOCK 
-                [ELSEIF EXPRESSION THEN BLOCK]* 
-                [ELSE BLOCK] ENDIF | 
-                MAST BLOCK [ORMAST BLOCK]* ENDMAST |
+STATEMENT   ::= LET VARIABLE = EXPRESSION |
+                LET ( EXPRESSION_1 EXPRESSION_2 ... EXPRESSION_n ) = EXPRESSION |
+                IF EXPRESSION THEN BLOCK [ELSEIF EXPRESSION THEN BLOCK]* [ELSE BLOCK] ENDIF | 
+                WHILE EXPRESSION DO BLOCK ENDWHILE |
+                EXEC EXPRESSION |
+                MAST EXPRESSION |
+                ASSERT EXPRESSION |
                 RETURN EXPRESSION
 EXPRESSION  ::= RELATION AND RELATION  | RELATION OR RELATION  |  
                 RELATION XOR RELATION  | RELATION NAND RELATION | 
@@ -141,44 +139,48 @@ OPERATION   ::= OPERATION + MULDIV | OPERATION - MULDIV |
                 OPERATION << MULDIV | OPERATION >> MULDIV | MULDIV
 MULDIV      ::= MULDIV * PRIME | MULDIV / PRIME | PRIME
 PRIME       ::= NOT PRIME |  NEG PRIME | BASEUNIT
-BASEUNIT    ::= VAR | VALUE | GLOBAL | FUNCTION | ( EXPRESSION )
-VAR         ::= ^[a-z]{1,10}$
-VALUE       ::= NUMBER | DATA | BINARY
-DATA        ::= HEX | SCRIPT
-BINARY      ::= TRUE | FALSE
-GLOBAL      ::= @BLKNUM | @INPUTNUM |
-      	        @AMOUNT | @ADDRESS | @TOKENID | @COINID |
-                @SCRIPT | @TOTIN | @TOTOUT
-NUMBER      ::= "^-?\\d*(\\.\\d+)?$"
+BASEUNIT    ::= VARIABLE | VALUE | GLOBAL | FUNCTION | ( EXPRESSION )
+VARIABLE    ::= ^[a-z]{1,16}$
+VALUE       ::= NUMBER | BYTE | HEX | SCRIPT | BINARY
+NUMBER      ::= ^-?\\d*(\\.\\d+)?$
 BYTE        ::= [0-255]
 HEX         ::= 0x[0-9A-F]{2}*
 SCRIPT      ::= [ ASCII ]
+BINARY      ::= TRUE | FALSE
 FALSE       ::= 0
 TRUE        ::= NOT FALSE
-MASTBLK     ::= $HEX
-FUNCTION    ::= FUNC ( EXPRESSION1 EXPRESSION2 .. EXPRESSIONn ) 
-FUNC        ::= CONCAT | LEN | REV | SUBSET | RPLVAR |
+GLOBAL      ::= @BLKNUM | @INPUT | @INBLKNUM | @BLKDIFF
+      	        @AMOUNT | @ADDRESS | @TOKENID | @COINID |
+                @SCRIPT | @TOTIN | @TOTOUT
+FUNCTION    ::= FUNC ( EXPRESSION_1 EXPRESSION_2 .. EXPRESSION_n ) 
+FUNC        ::= HEXCAT | STRCAT | LEN | REV | SUBSET | RPLVAR | GET |
                 ASCII | BOOL | HEX | NUMBER | SCRIPT |
-                ABS | CEIL | FLOOR | MIN | MAX | INC | DEC |
-                BITSET | BITGET | PROOF | SHA3 | SHA2 |
-                SIGNEDBY | MULTISIGNEDBY | CHECKSIG |
+                ABS | CEIL | FLOOR | MIN | MAX | INC | DEC | SIGDIG | POW |
+                BITSET | BITGET | BITCOUNT | CHAINSHA | SHA3 | SHA2 |
+                SIGNEDBY | MULTISIG | CHECKSIG |
                 GETOUTADDR | GETOUTAMT | GETOUTTOK | VERIFYOUT |
                 GETINADDR | GETINAMT | GETINTOK | GETINID | VERIFYIN |
-                SUMINTOK | SUMOUTTOK | STATE | PREVSTATE | *DYNSTATE
+                STATE | PREVSTATE | SAMESTATE | DYNSTATE
 
 Globals
 -------
 
-@BLKNUM    : Block number this transaction is in
-@INPUT     : Input number in the transaction
-@AMOUNT    : Amount of this input
-@ADDRESS   : Address of this input
-@TOKENID   : TokenID of this input
-@COINID    : CoinID of this input
-@SCRIPT    : Script for this input
-@TOTIN     : Total number of inputs for this transaction
-@TOTOUT    : Total number of outputs for this transaction
-@INBLKNUM  : Block number this output was created - useful for OP_CSV
+@BLKNUM      : Block number this transaction is in
+@BLKTIME     : Block time in seconds from Jan 01 1970
+@PREVBLKHASH : Hash of the previous Block
+@INPUT       : Input number in the transaction
+@INBLKNUM    : Block number when this output was created
+@BLKDIFF     : Difference between BLKNUM and INBLKNUM
+@AMOUNT      : Amount of this input
+@ADDRESS     : Address of this input
+@TOKENID     : TokenID of this input
+@COINID      : CoinID of this input
+@SCRIPT      : Script for this input
+@TOKENSCRIPT : Script for this input
+@TOTIN       : Total number of inputs for this transaction
+@TOTOUT      : Total number of outputs for this transaction
+@FLOATING    : Is this a floating input
+@PRNG        : Pseudo random number - Globally Unique
 
 ```
 
@@ -186,6 +188,6 @@ A complete breakdown of the functions is also shown in the app.
 
 #### WARNING
 
-This is experimental code. Nothing is yet set in stone. Things will break. There are bugs. It's the wild west out there.
+This is still experimental code. Nothing is yet set in stone. Things will break. There are bugs. It's the wild west out there.
 
-Now.. ENJOY!! 
+..enjoy :) 
