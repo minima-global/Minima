@@ -253,13 +253,14 @@ public class DAPPServer extends NanoHTTPD{
 		resp.addHeader("Server", "HTTP RPC Server from Minima v0.95.14");
 		resp.addHeader("Date", new Date().toString());
 		
+		//CORS
+		resp.addHeader("Access-Control-Allow-Origin", "*");
+		
 		//Cache images..
 		if(zContentType.startsWith("image/")) {
 			resp.addHeader("Cache-Control", "max-age=86400");
 		}
-		
-//		resp.addHeader("Access-Control-Allow-Origin", "*");
-		
+				
         return resp;
     }
 	
