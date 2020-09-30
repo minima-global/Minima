@@ -139,7 +139,8 @@ public class RPCHandler implements Runnable {
 				reqtype    = reqtype.substring(0,slash);
 			}
 			
-			//MinimaLogger.log("RPCHandler "+method+" "+reqtype+" "+command+" "+MiniDAPPID);
+//			MinimaLogger.log("File requested : "+fileRequested);
+//			MinimaLogger.log("RPCHandler "+method+" "+reqtype+" "+command+" "+MiniDAPPID);
 			
 			//Is this a SQL function
 			if(reqtype.equals("sql")) {
