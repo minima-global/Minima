@@ -99,8 +99,11 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
                     processMessage(msg);
                     
                 }catch(Exception exc){
-                    exc.printStackTrace();
-                    InputHandler.endResponse(msg, false, "SYSTEM ERROR PROCESSING : "+msg+" exception:"+exc);
+                    MinimaLogger.log("MESSAGE PROCESSING ERROR : "+msg+" exception:"+exc);
+                	InputHandler.endResponse(msg, false, "SYSTEM ERROR PROCESSING : "+msg+" exception:"+exc);
+                	
+                	//And a stack trace..
+                	exc.printStackTrace();
                 } 
                 
                 //Are there more messages..
