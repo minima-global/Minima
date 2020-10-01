@@ -9,9 +9,7 @@ public class status extends CommandFunction {
 	public status() {
 		super("status");
 		
-//		setHelp("(full)","Show the status of the Minima network. Full also calculates the IBD and TxPOW folder size.. ", 
-//				"A complete view of the current state of the Minima network");
-		setHelp("","Show the current status of the Minima network.", 
+		setHelp("(full)","Show the status of the Minima network. Full also calculates the IBD and TxPOW folder size.. ", 
 				"A complete view of the current state of the Minima network");
 	}
 	

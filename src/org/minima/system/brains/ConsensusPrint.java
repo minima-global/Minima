@@ -933,7 +933,7 @@ public class ConsensusPrint extends ConsensusProcessor {
 			
 		}else if(zMessage.isMessageType(CONSENSUS_STATUS)){
 			//Do a FULL status ( with IBD and folder sizes..)
-			boolean fullstatus = true;//zMessage.getBoolean("full");
+			boolean fullstatus = zMessage.getBoolean("full");
 			
 			//Main Handler
 			Main main = Main.getMainHandler();
