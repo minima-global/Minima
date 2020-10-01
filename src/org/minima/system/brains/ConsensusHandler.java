@@ -188,6 +188,10 @@ public class ConsensusHandler extends MessageProcessor {
 		}
 	}
 	
+	public void notifyInitialListeners(String zMessage) {
+		updateListeners(new Message(ConsensusHandler.CONSENSUS_NOTIFY_INITIALPERC).addString("info", zMessage));
+	}
+	
 	/**
 	 * Are we initialising the Genesis block
 	 */
