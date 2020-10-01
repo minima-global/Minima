@@ -259,25 +259,22 @@ public class DAPPManager extends MessageProcessor {
 			}
 		}
 		
-//		//Post a CONNECTED message to all the BackEnds.. 
-//		JSONObject wsmsg = new JSONObject();
-//		wsmsg.put("event","connected");
-//		wsmsg.put("details","success");
-//		sendToBackEND("", wsmsg);
-		
 		//Order the List.. By Name..
 		Collections.sort(CURRENT_MINIDAPPS, new Comparator<JSONObject>() {
 			@Override
 			public int compare(JSONObject o1, JSONObject o2) {
 				try {
-					//In case the name is missing..
-					String name1 = (String) o1.get("name");
-					String name2 = (String) o2.get("name");	
-					return name1.compareTo(name2);
+					if(o1.containsKey("name") && o2.containsKey("name")){
+						//In case the name is missing..
+						String name1 = (String) o1.get("name");
+						String name2 = (String) o2.get("name");	
+						return name1.compareTo(name2);
+					}
 					
 				}catch(Exception exc) {
 					System.out.println("Error in MiniDAPP CONF "+exc);
 				}
+				
 				return 0;
 			}
 		});
@@ -430,6 +427,10 @@ public class DAPPManager extends MessageProcessor {
 	                
 	                //Flush the system..
 	                bos.flush();
+	                
+	                //And close..
+	                bos.close();
+	                fos.close();
 	            }
 	        }
 	        
