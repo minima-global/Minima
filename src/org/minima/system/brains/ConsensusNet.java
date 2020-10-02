@@ -417,23 +417,24 @@ public class ConsensusNet extends ConsensusProcessor {
 				//Add this TxPoW and the Txns in it..
 				txpowlist.addTxPow(block);
 				
-				ArrayList<MiniData> txns = block.getBlockTransactions();
-				for(MiniData txn : txns) {
-					TxPoW txpow = getMainDB().getTxPOW(txn);
-					if(txpow!=null) {
-						txpowlist.addTxPow(txpow);
-					}
-				}
-				
-				//Now check if we are at the limit..
-				if(txpowlist.size() > 200) {
-					//Send this on and start a new list..
-					client.PostMessage(new Message(MinimaClient.NETCLIENT_TXPOWLIST).addObject("txpowlist", txpowlist));
-					
-					//Create a new list
-					txpowlist = new TxPoWList();
-					txpowlist.setCrossOver(true);
-				}
+//				//Add all the TXNS as well..
+//				ArrayList<MiniData> txns = block.getBlockTransactions();
+//				for(MiniData txn : txns) {
+//					TxPoW txpow = getMainDB().getTxPOW(txn);
+//					if(txpow!=null) {
+//						txpowlist.addTxPow(txpow);
+//					}
+//				}
+//				
+//				//Now check if we are at the limit..
+//				if(txpowlist.size() > 200) {
+//					//Send this on and start a new list..
+//					client.PostMessage(new Message(MinimaClient.NETCLIENT_TXPOWLIST).addObject("txpowlist", txpowlist));
+//					
+//					//Create a new list
+//					txpowlist = new TxPoWList();
+//					txpowlist.setCrossOver(true);
+//				}
 				
 				//Get the next block..
 				top = top.getParent();
@@ -482,7 +483,7 @@ public class ConsensusNet extends ConsensusProcessor {
 				
 				//Treat as normal TxPOW messages.. checking everything..
 				for(TxPoW txp : txps) {
-					MinimaLogger.log("TxPOWLIST rec block:"+txp.isBlock()+" "+txp.getBlockNumber()+" txn:"+txp.isTransaction());
+					MinimaLogger.log("TxPOWLIST rec block:"+txp.isBlock()+" "+txp.getBlockNumber()+" txn:"+txp.isTransaction()+" numtxns:"+txp.getBlockTransactions().size());
 					
 					Message msg = new Message(CONSENSUS_NET_TXPOW);
 					msg.addObject("txpow", txp);
