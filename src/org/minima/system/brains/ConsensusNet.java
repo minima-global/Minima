@@ -335,7 +335,7 @@ public class ConsensusNet extends ConsensusProcessor {
 					}
 					
 					if(reqtxn>0) {
-						MinimaLogger.log("Requested "+reqtxn+" transaction in Initial Blocks..");	
+						MinimaLogger.log("Requested "+reqtxn+" transactions in Initial Blocks..");	
 					}
 				}
 			}
@@ -403,6 +403,7 @@ public class ConsensusNet extends ConsensusProcessor {
 			//Get the details
 			HashNumber hashnum = (HashNumber)zMessage.getObject("hashnumber");
 			int max = hashnum.getNumber().getAsInt();
+			MinimaClient client = (MinimaClient) zMessage.getObject("netclient");
 			
 			TxPoWList txpowlist = new TxPoWList();
 			txpowlist.setCrossOver(true);
@@ -410,14 +411,39 @@ public class ConsensusNet extends ConsensusProcessor {
 			
 			BlockTreeNode top = getMainDB().getMainTree().findNode(hashnum.getHash());
 			while(top!=null && counter<max) {
-				txpowlist.addTxPow(top.getTxPow());
+				//Get the Block TxPoW
+				TxPoW block = top.getTxPow();
+				
+				//Add this TxPoW and the Txns in it..
+				txpowlist.addTxPow(block);
+				
+				ArrayList<MiniData> txns = block.getBlockTransactions();
+				for(MiniData txn : txns) {
+					TxPoW txpow = getMainDB().getTxPOW(txn);
+					if(txpow!=null) {
+						txpowlist.addTxPow(txpow);
+					}
+				}
+				
+				//Now check if we are at the limit..
+				if(txpowlist.size() > 200) {
+					//Send this on and start a new list..
+					client.PostMessage(new Message(MinimaClient.NETCLIENT_TXPOWLIST).addObject("txpowlist", txpowlist));
+					
+					//Create a new list
+					txpowlist = new TxPoWList();
+					txpowlist.setCrossOver(true);
+				}
+				
+				//Get the next block..
 				top = top.getParent();
 				counter++;
 			}
 			
-			//Now send that..!
-			MinimaClient client = (MinimaClient) zMessage.getObject("netclient");
-			client.PostMessage(new Message(MinimaClient.NETCLIENT_TXPOWLIST).addObject("txpowlist", txpowlist));
+			if(txpowlist.size() > 0) {
+				//Now send that..!
+				client.PostMessage(new Message(MinimaClient.NETCLIENT_TXPOWLIST).addObject("txpowlist", txpowlist));	
+			}
 			
 		}else if ( zMessage.isMessageType(CONSENSUS_NET_TXPOWIDLIST)) {
 			TxPoWIDList txpidlist = (TxPoWIDList)zMessage.getObject("txpowidlist");
@@ -456,6 +482,8 @@ public class ConsensusNet extends ConsensusProcessor {
 				
 				//Treat as normal TxPOW messages.. checking everything..
 				for(TxPoW txp : txps) {
+					MinimaLogger.log("TxPOWLIST rec block:"+txp.isBlock()+" "+txp.getBlockNumber()+" txn:"+txp.isTransaction());
+					
 					Message msg = new Message(CONSENSUS_NET_TXPOW);
 					msg.addObject("txpow", txp);
 					msg.addObject("netclient", client);
