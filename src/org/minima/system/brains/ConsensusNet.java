@@ -480,9 +480,6 @@ public class ConsensusNet extends ConsensusProcessor {
 			setInitialSyncComplete(false);
 			
 			if(txplist.isCrossover()) {
-				//Get the NetClient...
-				MinimaClient client = (MinimaClient) zMessage.getObject("netclient");
-				
 				//Treat as normal TxPOW messages.. checking everything..
 				for(TxPoW txp : txps) {
 					//MinimaLogger.log("TxPOWLIST rec block:"+txp.isBlock()+" "+txp.getBlockNumber()+" txn:"+txp.isTransaction()+" numtxns:"+txp.getBlockTransactions().size());
