@@ -451,12 +451,6 @@ public class ConsensusNet extends ConsensusProcessor {
 			//Get the List of requested TxPoW
 			TxPoWIDList txpidlist = (TxPoWIDList)zMessage.getObject("txpowidlist");
 			
-			//Check within exceptable params..
-			if(txpidlist.size() > MAX_TXPOW_LIST_SIZE) {
-				MinimaLogger.log("ERROR : TxPoWIDList too big (max:"+MAX_TXPOW_LIST_SIZE+") size:"+txpidlist.size());
-//				return;
-			}
-			
 			//Now get all the txp
 			TxPoWList txpowlist = new TxPoWList();
 			txpowlist.setCrossOver(false);
@@ -491,7 +485,7 @@ public class ConsensusNet extends ConsensusProcessor {
 				
 				//Treat as normal TxPOW messages.. checking everything..
 				for(TxPoW txp : txps) {
-					MinimaLogger.log("TxPOWLIST rec block:"+txp.isBlock()+" "+txp.getBlockNumber()+" txn:"+txp.isTransaction()+" numtxns:"+txp.getBlockTransactions().size());
+					//MinimaLogger.log("TxPOWLIST rec block:"+txp.isBlock()+" "+txp.getBlockNumber()+" txn:"+txp.isTransaction()+" numtxns:"+txp.getBlockTransactions().size());
 					
 					//Process this entire block of transactions before doing treesort and various other one off
 					if(getMainDB().getTxPOW(txp.getTxPowID()) == null) {
