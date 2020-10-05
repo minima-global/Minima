@@ -46,11 +46,13 @@ public class ConsensusNet extends ConsensusProcessor {
 	public static final String CONSENSUS_NET_TXPOW 			= CONSENSUS_PREFIX+"NET_MESSAGE_"+MinimaReader.NETMESSAGE_TXPOW.getValue();
 	
 	public static final String CONSENSUS_NET_GREETING 		    = CONSENSUS_PREFIX+"NET_MESSAGE_"+MinimaReader.NETMESSAGE_GREETING.getValue();
-	public static final String CONSENSUS_NET_TXPOWLIST_REQUEST	= CONSENSUS_PREFIX+"NET_MESSAGE_"+MinimaReader.NETMESSAGE_TXPOWLIST_REQUEST.getValue();
+	public static final String CONSENSUS_NET_GREETING_REQUEST	= CONSENSUS_PREFIX+"NET_MESSAGE_"+MinimaReader.NETMESSAGE_GREETING_REQUEST.getValue();
 	public static final String CONSENSUS_NET_TXPOWLIST 			= CONSENSUS_PREFIX+"NET_MESSAGE_"+MinimaReader.NETMESSAGE_TXPOWLIST.getValue();
 	public static final String CONSENSUS_NET_TXPOWIDLIST 	    = CONSENSUS_PREFIX+"NET_MESSAGE_"+MinimaReader.NETMESSAGE_TXPOWIDLIST.getValue();
 	
 	public static final String CONSENSUS_NET_PING 			= CONSENSUS_PREFIX+"NET_MESSAGE_"+MinimaReader.NETMESSAGE_PING.getValue();
+	
+	private static int MAX_TXPOW_LIST_SIZE = 200;
 	
 	/**
 	 * Will we switch to a heavier chain - DEBUG mode for -private
@@ -299,6 +301,9 @@ public class ConsensusNet extends ConsensusProcessor {
 									continue;
 								}
 								
+								//Add it to the list
+								getNetworkHandler().addRequestedInitialSyncTxPow(txn.to0xString());
+								
 								//Add it..
 								checklist.add(checker);
 								
@@ -306,7 +311,7 @@ public class ConsensusNet extends ConsensusProcessor {
 								txpidlist.addTxPowID(txn);
 							
 								//Have we reached the limit..
-								if(txpidlist.size() > 200) {
+								if(txpidlist.size() > MAX_TXPOW_LIST_SIZE) {
 									//Send it..
 									Message req = new Message(MinimaClient.NETCLIENT_TXPOWIDLIST).addObject("txpowidlist", txpidlist);
 									client.PostMessage(req);
@@ -317,9 +322,6 @@ public class ConsensusNet extends ConsensusProcessor {
 
 								//Total requests made
 								reqtxn++;
-								
-								//Add it to the list
-								getNetworkHandler().addRequestedInitialSyncTxPow(txn.to0xString());
 							}
 						}
 					}
@@ -329,9 +331,6 @@ public class ConsensusNet extends ConsensusProcessor {
 						//Send it..
 						Message req = new Message(MinimaClient.NETCLIENT_TXPOWIDLIST).addObject("txpowidlist", txpidlist);
 						client.PostMessage(req);
-								
-						//Reset..
-						txpidlist = new TxPoWIDList();
 					}
 					
 					if(reqtxn>0) {
@@ -396,10 +395,10 @@ public class ConsensusNet extends ConsensusProcessor {
 			HashNumber hn = new HashNumber(top, len);
 			
 			MinimaClient client = (MinimaClient) zMessage.getObject("netclient");
-			Message req      = new Message(MinimaClient.NETCLIENT_TXPOWLIST_REQ).addObject("hashnumber", hn);
+			Message req      = new Message(MinimaClient.NETCLIENT_GREETING_REQ).addObject("hashnumber", hn);
 			client.PostMessage(req);
 			
-		}else if ( zMessage.isMessageType(CONSENSUS_NET_TXPOWLIST_REQUEST)) {
+		}else if ( zMessage.isMessageType(CONSENSUS_NET_GREETING_REQUEST)) {
 			//Get the details
 			HashNumber hashnum = (HashNumber)zMessage.getObject("hashnumber");
 			int max = hashnum.getNumber().getAsInt();
@@ -417,24 +416,24 @@ public class ConsensusNet extends ConsensusProcessor {
 				//Add this TxPoW and the Txns in it..
 				txpowlist.addTxPow(block);
 				
-//				//Add all the TXNS as well..
-//				ArrayList<MiniData> txns = block.getBlockTransactions();
-//				for(MiniData txn : txns) {
-//					TxPoW txpow = getMainDB().getTxPOW(txn);
-//					if(txpow!=null) {
-//						txpowlist.addTxPow(txpow);
-//					}
-//				}
-//				
-//				//Now check if we are at the limit..
-//				if(txpowlist.size() > 200) {
-//					//Send this on and start a new list..
-//					client.PostMessage(new Message(MinimaClient.NETCLIENT_TXPOWLIST).addObject("txpowlist", txpowlist));
-//					
-//					//Create a new list
-//					txpowlist = new TxPoWList();
-//					txpowlist.setCrossOver(true);
-//				}
+				//Add all the TXNS as well..
+				ArrayList<MiniData> txns = block.getBlockTransactions();
+				for(MiniData txn : txns) {
+					TxPoW txpow = getMainDB().getTxPOW(txn);
+					if(txpow!=null) {
+						txpowlist.addTxPow(txpow);
+					}
+				}
+				
+				//Now check if we are at the limit..
+				if(txpowlist.size() > MAX_TXPOW_LIST_SIZE) {
+					//Send this on and start a new list..
+					client.PostMessage(new Message(MinimaClient.NETCLIENT_TXPOWLIST).addObject("txpowlist", txpowlist));
+					
+					//Create a new list
+					txpowlist = new TxPoWList();
+					txpowlist.setCrossOver(true);
+				}
 				
 				//Get the next block..
 				top = top.getParent();
@@ -447,7 +446,14 @@ public class ConsensusNet extends ConsensusProcessor {
 			}
 			
 		}else if ( zMessage.isMessageType(CONSENSUS_NET_TXPOWIDLIST)) {
+			//Get the List of requested TxPoW
 			TxPoWIDList txpidlist = (TxPoWIDList)zMessage.getObject("txpowidlist");
+			
+			//Check within exceptable params..
+			if(txpidlist.size() > MAX_TXPOW_LIST_SIZE) {
+				MinimaLogger.log("ERROR : TxPoWIDList too big (max:"+MAX_TXPOW_LIST_SIZE+") size:"+txpidlist.size());
+				return;
+			}
 			
 			//Now get all the txp
 			TxPoWList txpowlist = new TxPoWList();

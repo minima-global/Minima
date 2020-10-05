@@ -38,10 +38,10 @@ public class MinimaReader implements Runnable {
 	public static final int MAX_TXPOW = 1024 * 20;
 			
 	//The Length of a TxPoWID message 64 + 4 byte int
-	public static final int TXPOWID_LEN = Crypto.MINIMA_DEFAULT_MAX_HASH_LENGTH + 4;
+	public static final int TXPOWID_LEN = Crypto.MINIMA_MAX_HASH_LENGTH + 4;
 	
 	//The Max length of the greeting message..
-	public static final int MAX_TXPOW_LIST_REQ = 128;
+	public static final int MAX_GREETING_LIST_REQ = 128;
 		
 	/**
 	 * If the peers don;t intersect a complete Sync Package is sent in this
@@ -66,10 +66,21 @@ public class MinimaReader implements Runnable {
 	public static final MiniByte NETMESSAGE_TXPOW			= new MiniByte(3);
 	
 	/**
+	 * Greeting message that tells what Net Protocol this peer speaks, and a complete block chain header list. Any Blocks 
+	 * the peer doesn't have he can request. Both peers send this to each other when they connect.
+	 */
+	public static final MiniByte NETMESSAGE_GREETING		= new MiniByte(6);
+	
+	/**
 	 * Request the full details of a list of TxPow. You only send the top TxPoW 
 	 * and a number for the parents required
 	 */
-	public static final MiniByte NETMESSAGE_TXPOWLIST_REQUEST = new MiniByte(4);
+	public static final MiniByte NETMESSAGE_GREETING_REQUEST = new MiniByte(4);
+	
+	/**
+	 * A list of TxPoWID as MiniData
+	 */
+	public static final MiniByte NETMESSAGE_TXPOWIDLIST	    = new MiniByte(8);
 	
 	/**
 	 * A list of TxPoW details
@@ -77,20 +88,10 @@ public class MinimaReader implements Runnable {
 	public static final MiniByte NETMESSAGE_TXPOWLIST	      = new MiniByte(5);
 	
 	/**
-	 * Greeting message that tells what Net Protocol this peer speaks, and a complete block chain header list. Any Blocks 
-	 * the peer doesn't have he can request. Both peers send this to each other when they connect.
-	 */
-	public static final MiniByte NETMESSAGE_GREETING		= new MiniByte(6);
-	
-	/**
 	 * PING PONG
 	 */
 	public static final MiniByte NETMESSAGE_PING		    = new MiniByte(7);
 	
-	/**
-	 * A list of TxPoWID
-	 */
-	public static final MiniByte NETMESSAGE_TXPOWIDLIST	    = new MiniByte(8);
 	
 	
 	/**
@@ -146,8 +147,8 @@ public class MinimaReader implements Runnable {
 					if(len > MAX_TXPOW) {
 						throw new ProtocolException("Receive Invalid Message length for TXPOW type:"+msgtype+" len:"+len);
 					}
-				}else if(msgtype.isEqual(NETMESSAGE_TXPOWLIST_REQUEST)) {
-					if(len > MAX_TXPOW_LIST_REQ) {
+				}else if(msgtype.isEqual(NETMESSAGE_GREETING_REQUEST)) {
+					if(len > MAX_GREETING_LIST_REQ) {
 						throw new ProtocolException("Receive Invalid Message length for MAX_TXPOW_LIST_REQ type:"+msgtype+" len:"+len);
 					}
 				}else if(msgtype.isEqual(NETMESSAGE_TXPOWIDLIST)) {
@@ -250,7 +251,7 @@ public class MinimaReader implements Runnable {
 					//Add this ID
 					rec.addObject("greeting", greet);
 				
-				}else if(msgtype.isEqual(NETMESSAGE_TXPOWLIST_REQUEST)) {
+				}else if(msgtype.isEqual(NETMESSAGE_GREETING_REQUEST)) {
 					//A list of Required TxPoW messages..
 					HashNumber hashnum = HashNumber.ReadFromStream(inputstream);
 					
@@ -309,7 +310,7 @@ public class MinimaReader implements Runnable {
 			
 		}catch(ProtocolException exc) {
 			MinimaLogger.log("PROTOCOL ERROR.. "+exc);
-			exc.printStackTrace();
+			MinimaLogger.log(exc);
 			
 		}catch(OutOfMemoryError exc) {
 			MinimaLogger.log("MEMORY ERROR.. "+exc);
@@ -320,9 +321,8 @@ public class MinimaReader implements Runnable {
 			
 		}catch(Exception exc) {
 			//General Exception	
-			MinimaLogger.log("NETCLIENTREADER ERROR.. "+exc);
-			exc.printStackTrace();
-		
+			MinimaLogger.log("NETCLIENTREADER ERROR.. ");
+			MinimaLogger.log(exc);
 		}
 		
 		//Tell the network Handler
