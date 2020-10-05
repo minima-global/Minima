@@ -491,38 +491,6 @@ public class ConsensusNet extends ConsensusProcessor {
 					if(getMainDB().getTxPOW(txp.getTxPowID()) == null) {
 						//Some initial tests and add to DB
 						processIBDTxPoW(txp, false);
-					
-						//Create a JSON..
-						JSONObject txpjson = txp.toJSON();
-						
-						//Send a message to all about a new TxPoW (may or may not be a transaction or a block..)
-						JSONObject newtxpow = new JSONObject();
-						newtxpow.put("event","newtxpow");
-						newtxpow.put("txpow",txpjson);
-						getConsensusHandler().PostDAPPJSONMessage(txp.toJSON());
-						
-						//Only do this once..
-						boolean relevant = false;
-						if(txp.isTransaction()) {
-							//Is it relevant to us..
-							relevant = getMainDB().getUserDB().isTransactionRelevant(txp.getTransaction());
-						
-							//Notify everyone..
-							JSONObject newtrans = new JSONObject();
-							newtrans.put("event","newtransaction");
-							newtrans.put("txpow",txpjson);
-							newtrans.put("relevant",relevant);
-							getConsensusHandler().PostDAPPJSONMessage(newtrans);
-						
-							//Store it.. ?
-							if(relevant) {
-								//Get the Token Amounts..
-								Hashtable<String, MiniNumber> tokamt = getMainDB().getTransactionTokenAmounts(txp);
-								
-								//Store ion the database..
-								getMainDB().getUserDB().addToHistory(txp,tokamt);
-							}
-						}
 					}
 				}
 				
@@ -783,6 +751,38 @@ public class ConsensusNet extends ConsensusProcessor {
 			if(!sigsok) {
 				MinimaLogger.log("IBD : ERROR NET Invalid Signatures with TXPOW : "+zTxPoW.getBlockNumber()+" "+zTxPoW.getTxPowID()); 
 				return;
+			}
+			
+			//Create a JSON..
+			JSONObject txpjson = zTxPoW.toJSON();
+			
+			//Send a message to all about a new TxPoW (may or may not be a transaction or a block..)
+			JSONObject newtxpow = new JSONObject();
+			newtxpow.put("event","newtxpow");
+			newtxpow.put("txpow",txpjson);
+			getConsensusHandler().PostDAPPJSONMessage(newtxpow);
+			
+			//Only do this once..
+			boolean relevant = false;
+			if(zTxPoW.isTransaction()) {
+				//Is it relevant to us..
+				relevant = getMainDB().getUserDB().isTransactionRelevant(zTxPoW.getTransaction());
+			
+				//Notify everyone..
+				JSONObject newtrans = new JSONObject();
+				newtrans.put("event","newtransaction");
+				newtrans.put("txpow",txpjson);
+				newtrans.put("relevant",relevant);
+				getConsensusHandler().PostDAPPJSONMessage(newtrans);
+			
+				//Store it.. ?
+				if(relevant) {
+					//Get the Token Amounts..
+					Hashtable<String, MiniNumber> tokamt = getMainDB().getTransactionTokenAmounts(zTxPoW);
+					
+					//Store ion the database..
+					getMainDB().getUserDB().addToHistory(zTxPoW,tokamt);
+				}
 			}
 		}
 		
