@@ -759,13 +759,13 @@ public class BlockTree {
 		mTip 			= null;
 		mCascadeNode 	= null;
 		mFastLink       = new Hashtable<>();
+		mValidBlockList = new ArrayList<>();
 	}
 
 	public static TxPoW createRandomTxPow() {
 		TxPoW txpow = new TxPoW();
 		txpow.setHeaderBodyHash();
 		txpow.calculateTXPOWID();
-		
 		return txpow;
 	}
 	
