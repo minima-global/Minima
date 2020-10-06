@@ -116,6 +116,14 @@ public class DAPPManager extends MessageProcessor {
 	}
 	
 	public JSONArray getMiniDAPPS() {
+		//Has the HOST changed..
+		String host    = getNetworkHandler().getBaseHost();
+		String newhost = getNetworkHandler().calculateHostIP();
+		if(!host.equals(newhost)) {
+			//Recalculate
+			recalculateMiniDAPPS();	
+		}
+		
 		return CURRENT_MINIDAPPS;
 	}
 	
@@ -164,7 +172,9 @@ public class DAPPManager extends MessageProcessor {
 		return ret;
 	}
 	
-	private JSONArray recalculateMiniDAPPS() {
+	public JSONArray recalculateMiniDAPPS() {
+		MinimaLogger.log("RECAlculate MiniDAPPS");
+		
 		//Clear the OLD
 		CURRENT_MINIDAPPS.clear();
 		
