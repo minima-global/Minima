@@ -229,10 +229,17 @@ public class ConsensusHandler extends MessageProcessor {
 			//A TXPOW - that has been checked already and added to the DB
 			TxPoW txpow = (TxPoW) zMessage.getObject("txpow");
 			
+			boolean relevant = false;
+			if(txpow.isTransaction()) {
+				//Is it relevant to us..
+				relevant = getMainDB().getUserDB().isTransactionRelevant(txpow.getTransaction());
+			}
+			
 			//Send a message to all about a new TxPoW (may or may not be a transaction or a block..)
 			JSONObject newtxpow = new JSONObject();
 			newtxpow.put("event","newtxpow");
 			newtxpow.put("txpow",txpow.toJSON());
+			newtxpow.put("relevant",relevant);
 			PostDAPPJSONMessage(newtxpow);
 			
 			//Back it up!
@@ -246,20 +253,6 @@ public class ConsensusHandler extends MessageProcessor {
 		
 			//What's the new chain tip..
 			TxPoW newtip = getMainDB().getMainTree().getChainTip().getTxPow();
-			
-			//Only do this once..
-			boolean relevant = false;
-			if(txpow.isTransaction()) {
-				//Is it relevant to us..
-				relevant = getMainDB().getUserDB().isTransactionRelevant(txpow.getTransaction());
-				
-				//Notify everyone..
-				JSONObject newtrans = new JSONObject();
-				newtrans.put("event","newtransaction");
-				newtrans.put("txpow",txpow.toJSON());
-				newtrans.put("relevant",relevant);
-				PostDAPPJSONMessage(newtrans);
-			}
 			
 			//Has there been a change
 			boolean newbalance = false;

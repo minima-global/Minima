@@ -482,13 +482,8 @@ public class ConsensusNet extends ConsensusProcessor {
 			if(txplist.isCrossover()) {
 				//Treat as normal TxPOW messages.. checking everything..
 				for(TxPoW txp : txps) {
-					//MinimaLogger.log("TxPOWLIST rec block:"+txp.isBlock()+" "+txp.getBlockNumber()+" txn:"+txp.isTransaction()+" numtxns:"+txp.getBlockTransactions().size());
-					
-					//Process this entire block of transactions before doing treesort and various other one off
-					if(getMainDB().getTxPOW(txp.getTxPowID()) == null) {
-						//Some initial tests and add to DB
-						processIBDTxPoW(txp, false);
-					}
+					//Not immediately valid - as not from the initial IBD list
+					processIBDTxPoW(txp, false);
 				}
 				
 			}else {
@@ -595,7 +590,7 @@ public class ConsensusNet extends ConsensusProcessor {
 			/**
 			 * The SINGLE entry point into the system for NEW TXPOW messages..
 			 */
-			//Have we done the initia SYNC..
+			//Have we done the initial SYNC..
 			if(!mInitialSync) {
 				MinimaLogger.log("NET TxPoW received before Initial Sync Finished.");
 				return;
@@ -715,6 +710,12 @@ public class ConsensusNet extends ConsensusProcessor {
 	private void processIBDTxPoW(TxPoW zTxPoW, boolean isAllreadyValid) {
 		//Check some basics..
 		if(!isAllreadyValid) {
+			//Check if we have it.
+			if(getMainDB().getTxPOW(zTxPoW.getTxPowID()) != null) {
+				MinimaLogger.log("IBD : NET Transaction we already have.. "+zTxPoW.getBlockNumber()+" "+zTxPoW.getTxPowID());
+				return;
+			}
+			
 			//Is it even a valid TxPOW.. not enough POW ? - FIRST CHECK
 			if(!zTxPoW.isBlock() && !zTxPoW.isTransaction()) {
 				MinimaLogger.log("IBD : ERROR NET FAKE - not transaction not block : "+zTxPoW.getBlockNumber()+" "+zTxPoW);
@@ -750,27 +751,11 @@ public class ConsensusNet extends ConsensusProcessor {
 				return;
 			}
 			
-			//Create a JSON..
-			JSONObject txpjson = zTxPoW.toJSON();
-			
-			//Send a message to all about a new TxPoW (may or may not be a transaction or a block..)
-			JSONObject newtxpow = new JSONObject();
-			newtxpow.put("event","newtxpow");
-			newtxpow.put("txpow",txpjson);
-			getConsensusHandler().PostDAPPJSONMessage(newtxpow);
-			
 			//Only do this once..
 			boolean relevant = false;
 			if(zTxPoW.isTransaction()) {
 				//Is it relevant to us..
 				relevant = getMainDB().getUserDB().isTransactionRelevant(zTxPoW.getTransaction());
-			
-				//Notify everyone..
-				JSONObject newtrans = new JSONObject();
-				newtrans.put("event","newtransaction");
-				newtrans.put("txpow",txpjson);
-				newtrans.put("relevant",relevant);
-				getConsensusHandler().PostDAPPJSONMessage(newtrans);
 			
 				//Store it.. ?
 				if(relevant) {
@@ -781,6 +766,13 @@ public class ConsensusNet extends ConsensusProcessor {
 					getMainDB().getUserDB().addToHistory(zTxPoW,tokamt);
 				}
 			}
+			
+			//Send a message to all about a new TxPoW (may or may not be a transaction or a block..)
+			JSONObject newtxpow = new JSONObject();
+			newtxpow.put("event","newtxpow");
+			newtxpow.put("txpow",zTxPoW.toJSON());
+			newtxpow.put("relevant",relevant);
+			getConsensusHandler().PostDAPPJSONMessage(newtxpow);
 		}
 		
 		//OK - it passes a general test.. add it to the database..
