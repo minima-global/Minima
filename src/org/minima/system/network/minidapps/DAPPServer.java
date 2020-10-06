@@ -141,6 +141,10 @@ public class DAPPServer extends NanoHTTPD{
 				//Are we using the MiniHUB..!
 			if(isroot) {
 				if(fileRequested.equals("index.html")) {
+					//Recalculate the IP
+					mDAPPManager.getNetworkHandler().calculateHostIP();
+					
+					//And create the Page...
 					String page    = new String(indexhtml.returnData(),StandardCharsets.UTF_8);
 					String newpage = page.replace("######", createMiniDAPPList());
 					return getOKResponse(newpage.getBytes(), "text/html");

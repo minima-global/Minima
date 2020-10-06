@@ -99,7 +99,7 @@ public class ConsensusNet extends ConsensusProcessor {
 		setInitialSyncComplete(true);
 	}
 	
-	private void setInitialSyncComplete(boolean zPostNotify) {
+	public void setInitialSyncComplete(boolean zPostNotify) {
 		if(!mInitialSync) {
 			mInitialSync = true;
 			if(zPostNotify) {

@@ -104,6 +104,10 @@ public class DAPPManager extends MessageProcessor {
 		return mCommsManager;
 	}
 	
+	public NetworkHandler getNetworkHandler() {
+		return mNetwork;
+	}
+	
 	public void stop() {
 		mDAPPServer.stop();
 		mCommsManager.shutdown();
