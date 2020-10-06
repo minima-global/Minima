@@ -378,7 +378,7 @@ public class NetworkHandler extends MessageProcessor {
 	}
 	
 	public boolean isRequestedTxPow(String zTxPoWID) {
-		return mRequestedTxPoW.contains(zTxPoWID);
+		return (mRequestedTxPoW.contains(zTxPoWID) || mRequestedTxPoW.contains("INIT_"+zTxPoWID));
 	}
 	
 	public void removeRequestedTxPow(String zTxPoWID) {

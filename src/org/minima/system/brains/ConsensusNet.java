@@ -479,19 +479,23 @@ public class ConsensusNet extends ConsensusProcessor {
 			//Now the Initial SYNC has been done you can receive TXPOW message..
 			setInitialSyncComplete(false);
 			
-			if(txplist.isCrossover()) {
-				//Treat as normal TxPOW messages.. checking everything..
-				for(TxPoW txp : txps) {
-					//Not immediately valid - as not from the initial IBD list
-					processIBDTxPoW(txp, false);
+			//Is this an Initial request
+			boolean initial = false;
+			
+			//Cycle through..
+			for(TxPoW txp : txps) {
+				boolean isvalid = false;
+				if(getNetworkHandler().isRequestedInitialTxPow(txp.getTxPowID().to0xString())) {
+					isvalid = true;
+					initial = true;
 				}
 				
-			}else {
-				//Cycle through and process as if IBD data..
-				for(TxPoW txp : txps) {
-					processIBDTxPoW(txp, true);
-				}
-				
+				//Not immediately valid - as not from the initial IBD list
+				processIBDTxPoW(txp, isvalid);
+			}
+			
+			//Do this ONLY if initial messages - since they are considered valid
+			if(initial) {
 				//And NOW sort the Tree..
 				ArrayList<BlockTreeNode> list = getMainDB().getMainTree().getAsList(true);
 				for(BlockTreeNode treenode : list) {
@@ -523,6 +527,51 @@ public class ConsensusNet extends ConsensusProcessor {
 					}
 				}
 			}
+			
+//			if(txplist.isCrossover()) {
+//				//Treat as normal TxPOW messages.. checking everything..
+//				for(TxPoW txp : txps) {
+//					//Not immediately valid - as not from the initial IBD list
+//					processIBDTxPoW(txp, false);
+//				}
+//				
+//			}else {
+//				//Cycle through and process as if IBD data..
+//				for(TxPoW txp : txps) {
+//					processIBDTxPoW(txp, true);
+//				}
+//				
+//				//And NOW sort the Tree..
+//				ArrayList<BlockTreeNode> list = getMainDB().getMainTree().getAsList(true);
+//				for(BlockTreeNode treenode : list) {
+//					//Get the Block
+//					TxPoW txpow = treenode.getTxPow();
+//			
+//					//Get the database txpow..
+//					TxPOWDBRow trow = getMainDB().getTxPOWRow(txpow.getTxPowID());
+//					if(trow != null) {
+//						//What Block
+//						MiniNumber block = txpow.getBlockNumber();
+//						
+//						//Set the details
+//						trow.setMainChainBlock(true);
+//						trow.setIsInBlock(true);
+//						trow.setInBlockNumber(block);
+//						
+//						//Now the Txns..
+//						ArrayList<MiniData> txpowlist = txpow.getBlockTransactions();
+//						for(MiniData txid : txpowlist) {
+//							trow = getMainDB().getTxPOWRow(txid);
+//							if(trow!=null) {
+//								//Set that it is in this block
+//								trow.setMainChainBlock(false);
+//								trow.setIsInBlock(true);
+//								trow.setInBlockNumber(block);
+//							}
+//						}
+//					}
+//				}
+//			}
 			
 			//Do a complete backup..
 			if(firsttime) {
