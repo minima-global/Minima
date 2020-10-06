@@ -124,7 +124,8 @@ public class RPCHandler implements Runnable {
 					
 				}else {
 					reqtype="cmd";
-					command = function.substring(4).trim();
+//					command = function.substring(4).trim();
+					command = new String(function);
 				}
 			
 			}else {
