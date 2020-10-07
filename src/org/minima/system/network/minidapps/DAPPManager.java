@@ -66,10 +66,6 @@ public class DAPPManager extends MessageProcessor {
 	//The Edited minima.js file..
 	byte[] mMINIMAJS = new byte[0];
 	
-	//The old HOST..
-	String mOldHost = "";
-	int mBasePort   = 0;
-	
 	NetworkHandler mNetwork;
 	
 	/**
@@ -90,11 +86,8 @@ public class DAPPManager extends MessageProcessor {
 		//All the backends are stored here..
 		mBackends = new Hashtable<>();
 		
+		//ReplyID to a MiniDAPP request
 		mReplyMessage = new Hashtable<>();
-		
-		//What is the current Host
-		mOldHost  = mNetwork.getBaseHost();
-		mBasePort = mNetwork.getBasePort();
 		
 		//Init the System
 		PostMessage(DAPP_INIT);
@@ -172,8 +165,8 @@ public class DAPPManager extends MessageProcessor {
 		return ret;
 	}
 	
-	public JSONArray recalculateMiniDAPPS() {
-		MinimaLogger.log("RECAlculate MiniDAPPS");
+	private JSONArray recalculateMiniDAPPS() {
+		MinimaLogger.log("Recalculate MiniDAPPS @ "+mNetwork.getBaseHost());
 		
 		//Clear the OLD
 		CURRENT_MINIDAPPS.clear();
