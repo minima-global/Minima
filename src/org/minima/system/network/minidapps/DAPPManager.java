@@ -584,8 +584,15 @@ public class DAPPManager extends MessageProcessor {
 	
 	private void sendToMiniDAPP(BackEndDAPP zDAPP, String zJSON) {
 		try {
+			//Check the crash counter..
+			if(zDAPP.getCrashCounter()>=3) {
+				//Too Many Crashes.. 
+				return;
+			}
+			
 			//Send the message to service.js..
-			zDAPP.MinimaEvent(zJSON);	
+			zDAPP.MinimaEvent(zJSON);
+			
 		}catch(Exception exc) {
 			//record the crash..
 			zDAPP.incrementCrashCounter();
