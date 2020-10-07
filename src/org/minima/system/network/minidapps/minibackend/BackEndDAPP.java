@@ -148,12 +148,6 @@ public class BackEndDAPP {
 	 * - newbalance
 	 */
 	public void MinimaEvent(String zJSONEvent) throws Exception {
-		//Check the crash counter..
-		if(getCrashCounter()>=3) {
-			//Too Many Crashes.. 
-			return;
-		}
-		
 		//Create a JS JSONObject
 		Object json = MiniJSONUtility.makeJSONObject(zJSONEvent, mContext, mScope);
 		
