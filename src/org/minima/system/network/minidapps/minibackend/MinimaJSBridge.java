@@ -50,9 +50,9 @@ public class MinimaJSBridge {
 	 * @param zCallback
 	 */
 	public void post(String zType, String zData, Function zCallback) {
-		
 		//MinimaLogger.log("MinimaJSBridge : "+zType+" "+zData);
 		
+		//The final result returned to the JS
 		String finalresult = "{}";
 		
 		//Is this a SQL function
