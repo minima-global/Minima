@@ -6,23 +6,49 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Hashtable;
 import java.util.StringTokenizer;
+
+import org.h2.jdbcx.JdbcConnectionPool;
 
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
 public class SQLHandler {
 
+	/**
+	 * Hashtable of SQL connections currently 
+	 */
+	private static Hashtable<String, Connection> SQL_POOLS = new Hashtable<>();
+	private static synchronized Connection getConnection(String zDataBaseURL) throws SQLException {
+		//Check if we have a pool already..
+		if(!SQL_POOLS.containsKey(zDataBaseURL)) {
+			//Create a new Pool..
+			 Connection newconn = DriverManager.getConnection("jdbc:h2:"+zDataBaseURL+";AUTO_RECONNECT=TRUE", "SA", "");
+			 
+			 //Add it to the hashtable..
+			 SQL_POOLS.put(zDataBaseURL, newconn);
+		}
+		
+		//Return the Connection..
+		return SQL_POOLS.get(zDataBaseURL);
+	}
+	
+	public static void CloseSQL() {
+		
+	}
+	
 	//Connection to the Database
 	Connection mSQLConnection;
 	
 	public SQLHandler(String zDatabaseAbsolutePath) throws SQLException, ClassNotFoundException {
 		//Start a database Connection..
-		mSQLConnection = DriverManager.getConnection("jdbc:h2:"+zDatabaseAbsolutePath, "SA", "");
+//		mSQLConnection = DriverManager.getConnection("jdbc:h2:"+zDatabaseAbsolutePath, "SA", "");
+		mSQLConnection = getConnection(zDatabaseAbsolutePath);
 	}
 	
 	public void close() throws SQLException {
-		mSQLConnection.close();
+//		mSQLConnection.close();
 	}
 	
 	public JSONArray executeMultiSQL(String zSQL) {
