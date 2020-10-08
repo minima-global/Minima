@@ -80,7 +80,13 @@ public class SQLHandler {
 	
 	public void close() throws SQLException {
 		//Leave OPEN!
-		//mSQLConnection.close();
+		close(false);
+	}
+	
+	public void close(boolean zHard) throws SQLException {
+		if(zHard) {
+			mSQLConnection.close();
+		}
 	}
 	
 	public JSONArray executeMultiSQL(String zSQL) {
@@ -105,7 +111,7 @@ public class SQLHandler {
 		return totalres;
 	}
 	
-	public JSONObject executeSQL(String zSQL) {
+	public synchronized JSONObject executeSQL(String zSQL) {
 		JSONObject results = new JSONObject();
 		results.put("sql", zSQL);
 		
@@ -231,7 +237,7 @@ public class SQLHandler {
 //			System.out.println(MiniFormat.JSONPretty(selectresults.toString()));
 		
 			//Close the connection
-			handle.close();
+			handle.close(true);
 		
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
