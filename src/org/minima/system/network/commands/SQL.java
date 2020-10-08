@@ -33,8 +33,6 @@ public class SQL implements Runnable {
 		BackupManager backup  = Main.getMainHandler().getBackupManager();
 		File minidappdatabase = new File(backup.getMiniDAPPFolder(mMiniDAPPID),"_sqldb");
 		
-		//MinimaLogger.log("SQL Folder : "+minidappdatabase.getAbsolutePath());
-		
 		//Get the Function..
 		res.put("db", minidappdatabase.getAbsolutePath());
 		res.put("sql", mSQL);
@@ -65,9 +63,6 @@ public class SQL implements Runnable {
 		
 		//The response returned..
 		mFinalResult = res.toString();
-		
-		//MinimaLogger.log("SQL : "+mFinalResult);
-
 	}
 
 }

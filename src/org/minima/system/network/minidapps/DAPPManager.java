@@ -32,6 +32,7 @@ import org.minima.system.network.minidapps.websocket.WebSocketManager;
 import org.minima.utils.Crypto;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MinimaLogger;
+import org.minima.utils.SQLHandler;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.json.parser.JSONParser;
@@ -170,6 +171,9 @@ public class DAPPManager extends MessageProcessor {
 		
 		//Clear the OLD
 		CURRENT_MINIDAPPS.clear();
+		
+		//Close the SQL DBs..
+		SQLHandler.CloseSQL();
 		
 		//And the backends..
 		Enumeration<BackEndDAPP> bends = mBackends.elements();

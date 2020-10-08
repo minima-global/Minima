@@ -6,10 +6,9 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.StringTokenizer;
-
-import org.h2.jdbcx.JdbcConnectionPool;
 
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
@@ -23,32 +22,65 @@ public class SQLHandler {
 	private static synchronized Connection getConnection(String zDataBaseURL) throws SQLException {
 		//Check if we have a pool already..
 		if(!SQL_POOLS.containsKey(zDataBaseURL)) {
-			//Create a new Pool..
+			 //Create new connection..
 			 Connection newconn = DriverManager.getConnection("jdbc:h2:"+zDataBaseURL+";AUTO_RECONNECT=TRUE", "SA", "");
 			 
 			 //Add it to the hashtable..
 			 SQL_POOLS.put(zDataBaseURL, newconn);
+			
+			 //Created a connection
+			 MinimaLogger.log("Create SQL Connection to "+zDataBaseURL);
+		}
+		
+		//Get the Connection..
+		Connection conn = SQL_POOLS.get(zDataBaseURL);
+		if(conn.isClosed()) {
+			//restart this..
+			conn = DriverManager.getConnection("jdbc:h2:"+zDataBaseURL+";AUTO_RECONNECT=TRUE", "SA", "");
+			 
+			//Add it to the hashtable..
+			SQL_POOLS.put(zDataBaseURL, conn);
+			
+			//Created a connection
+			MinimaLogger.log("Closed connection restarted to "+zDataBaseURL);
 		}
 		
 		//Return the Connection..
-		return SQL_POOLS.get(zDataBaseURL);
+		return conn;
 	}
 	
-	public static void CloseSQL() {
+	public static synchronized void CloseSQL() {
+		Enumeration<Connection> allconns = SQL_POOLS.elements();
+		while(allconns.hasMoreElements()) {
+			Connection conn = allconns.nextElement();
+			try {
+				conn.close();
+			} catch (SQLException e) {
+				MinimaLogger.log(e);
+			}
+		}	
 		
+		//Clear it now..
+		SQL_POOLS.clear();
+		MinimaLogger.log("All database connections closed");	
 	}
 	
 	//Connection to the Database
 	Connection mSQLConnection;
 	
+	//The Database..
+	String mDataBase;
+	
 	public SQLHandler(String zDatabaseAbsolutePath) throws SQLException, ClassNotFoundException {
 		//Start a database Connection..
 //		mSQLConnection = DriverManager.getConnection("jdbc:h2:"+zDatabaseAbsolutePath, "SA", "");
 		mSQLConnection = getConnection(zDatabaseAbsolutePath);
+		mDataBase      = zDatabaseAbsolutePath;
 	}
 	
 	public void close() throws SQLException {
-//		mSQLConnection.close();
+		//Leave OPEN!
+		//mSQLConnection.close();
 	}
 	
 	public JSONArray executeMultiSQL(String zSQL) {
@@ -136,6 +168,9 @@ public class SQLHandler {
 			stmt.close();
 			
 		}catch(SQLException exc) {
+			MinimaLogger.log("SQL ERROR @ "+mDataBase+" : "+zSQL);
+			MinimaLogger.log(exc);
+			
 			results.put("status", false);
 			results.put("message", exc.toString());
 		}
