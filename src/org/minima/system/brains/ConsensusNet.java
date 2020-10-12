@@ -528,6 +528,9 @@ public class ConsensusNet extends ConsensusProcessor {
 				}
 			}
 			
+			//Now Perform 1 update..
+			getMainDB().processTxPOW(null);
+			
 //			if(txplist.isCrossover()) {
 //				//Treat as normal TxPOW messages.. checking everything..
 //				for(TxPoW txp : txps) {
