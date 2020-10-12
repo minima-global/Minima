@@ -11,7 +11,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
@@ -27,7 +26,6 @@ import org.minima.system.input.InputHandler;
 import org.minima.system.network.NetworkHandler;
 import org.minima.system.network.minidapps.comms.CommsManager;
 import org.minima.system.network.minidapps.minibackend.BackEndDAPP;
-import org.minima.system.network.minidapps.minihub.hexdata.minimajs;
 import org.minima.system.network.minidapps.websocket.WebSocketManager;
 import org.minima.utils.Crypto;
 import org.minima.utils.MiniFile;
@@ -113,7 +111,7 @@ public class DAPPManager extends MessageProcessor {
 		//Has the HOST changed..
 		String host    = getNetworkHandler().getBaseHost();
 		String newhost = getNetworkHandler().calculateHostIP();
-		if(!host.equals(newhost)) {
+		if(true || !host.equals(newhost)) {
 			//Recalculate
 			recalculateMiniDAPPS();	
 		}
@@ -575,39 +573,14 @@ public class DAPPManager extends MessageProcessor {
 				BackEndDAPP bend = bends.nextElement();
 				
 				//Send it..
-				sendToMiniDAPP(bend, JSONEvent);
+				bend.MinimaEvent(JSONEvent);
 			}
 		}else {
 			BackEndDAPP bend = mBackends.get(zMiniDAPPID);
 			if(bend != null) {
 				//Send it..
-				sendToMiniDAPP(bend, JSONEvent);
+				bend.MinimaEvent(JSONEvent);
 			}
 		}	
-	}
-	
-	private void sendToMiniDAPP(BackEndDAPP zDAPP, String zJSON) {
-		try {
-			//Check the crash counter..
-			if(zDAPP.getCrashCounter()>=3) {
-				//Too Many Crashes.. 
-				return;
-			}
-			
-			//Send the message to service.js..
-			zDAPP.MinimaEvent(zJSON);
-			
-		}catch(Exception exc) {
-			//record the crash..
-			zDAPP.incrementCrashCounter();
-			
-			//But if it crashes..
-			MinimaLogger.log("ERROR : MiniDAPP service.js crashing ["+zDAPP.getCrashCounter()+" / 3 ] "+zDAPP.getName()+" "+zDAPP.getMiniDAPPID());
-			MinimaLogger.log(exc);
-			
-			if(zDAPP.getCrashCounter()>=3) {
-				MinimaLogger.log("DISABLING MINIDAPP BACKEND : "+zDAPP.getName()+" "+zDAPP.getMiniDAPPID());
-			}
-		}
 	}
 }

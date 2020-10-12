@@ -2,20 +2,25 @@ package org.minima.system.network.minidapps.minibackend;
 
 import java.lang.reflect.InvocationTargetException;
 
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.ProtocolException;
-import org.minima.utils.json.JSONArray;
-import org.minima.utils.json.JSONObject;
+import org.minima.utils.messages.Message;
+import org.minima.utils.messages.MessageProcessor;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Function;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 
-public class BackEndDAPP {
+public class BackEndDAPP extends MessageProcessor {
 
+	public static String BACKENDJS_INIT      = "BACKENDJS_INIT";
+	public static String BACKENDJS_SHUTDOWN  = "BACKENDJS_SHUTDOWN";
+	public static String BACKENDJS_EVENT     = "BACKENDJS_EVENT";
+	
 	/**
 	 * JavaScript
 	 */
-	String mScript;
+	String mScriptJS;
 	
 	/**
 	 * The Context it is running in
@@ -70,46 +75,17 @@ public class BackEndDAPP {
 	 * @throws InvocationTargetException
 	 */
 	public BackEndDAPP(String zName, String zScriptJS, String zMiniDAPPID) throws ProtocolException, IllegalAccessException, InstantiationException, InvocationTargetException {
+		super("RHINOJS_"+zName);
+		
 		//The MINIDAPP
 		mName       = zName;
 		mMiniDAPPID = zMiniDAPPID;
 		
 		//The JavaScrit
-		mScript = zScriptJS;
+		mScriptJS = zScriptJS;
 		
-		//Context and scope of the JS backend
-		mContext = Context.enter();
-		
-		//No optimisation.. (Android needs this.. will change in future..)
-		mContext.setOptimizationLevel(-1);
-	
-		//Create the scope
-		mScope   = mContext.initStandardObjects();
-	
-		//Create a MinimaJS object for this scope..
-		MinimaJSBridge minimajs = new MinimaJSBridge(this);
-		
-		//Add it to this environment
-		Object wrappedMinima = Context.javaToJS(minimajs, mScope);
-		ScriptableObject.putProperty(mScope, "MinimaJSBridge", wrappedMinima);
-
-		//Load a Decimal Class..
-		mContext.evaluateString(mScope, DECIMALJS, "<decjs>", 1, null);
-		
-		//Load Minima.js
-		mContext.evaluateString(mScope, MINIMAJS, "<minjs>", 1, null);
-				
-		//Evaluate the script
-		mContext.evaluateString(mScope, zScriptJS, "<script>", 1, null);
-	
-		//Get the main MinimaEvent function
-		Object fObj = mScope.get("MinimaBackEndListener", mScope);
-		if (!(fObj instanceof Function)) {
-		    throw new ProtocolException("BackEnd JS MinimaEvent is undefined or not a function in "+zMiniDAPPID);
-		} 
-		
-		//Store for later
-		mMinimEventJS = (Function)fObj;
+		//And post the Init Message
+		PostMessage(BACKENDJS_INIT);
 	}
 	
 	public Context getContext() {
@@ -137,7 +113,7 @@ public class BackEndDAPP {
 	}
 	
 	public void shutdown() {
-		mContext.exit();
+		PostMessage(BACKENDJS_SHUTDOWN);
 	}
 	
 	/**
@@ -147,70 +123,91 @@ public class BackEndDAPP {
 	 * - newtransction
 	 * - newbalance
 	 */
-	public void MinimaEvent(String zJSONEvent) throws Exception {
-		//Create a JS JSONObject
-		Object json = MiniJSONUtility.makeJSONObject(zJSONEvent, mContext, mScope);
-		
-		//Make a function variable list
-		Object functionArgs[] = { json };
-	    
-		//Call the Function..
-		mMinimEventJS.call(mContext, mScope, mScope, functionArgs);
+	public void MinimaEvent(String zJSONEvent) {
+		PostMessage(new Message(BACKENDJS_EVENT).addString("jsonevent", zJSONEvent));	
 	}
-	
-	/**
-	 * Weird little function to convert a Java JSONObject to a JS one..
-	 * @param zJSON
-	 * @param rhino
-	 * @param scope
-	 * 
-	 * @return The JS JSONObect
-	 */
-		
-	//tester
-	public static void main(String[] zArgs) {
-	
-		String js = 
-				"\n" + 
-				"function MinimaEvent(evt){\n" + 
-				"\n" + 
-				"	//var jsonstr = JSON.stringify(evt,null,2);\n" + 
-				"	java.lang.System.out.println(\"HELLO\");"
-				+ "//Minima.log(\"MinimaEvent : \"+jsonstr);\n" + 
-				"}\n" + 
-				"";
-		try {
-		
-			BackEndDAPP bdapp = new BackEndDAPP("tester",js,"0x0001");
 
-			JSONObject test = new JSONObject();
-			test.put("tster", "hello");
-			
-			//And send a JSON msg..
-			JSONObject newblock = new JSONObject();
-			newblock.put("event", "newblock");
-			newblock.put("status", "the status");
-			newblock.put("time", 1020344);
-			newblock.put("jsom", test);
-			newblock.put("bool", true);
-			newblock.put("double", 23.345);
-			
-			JSONArray arr = new JSONArray();
-			arr.add("help");
-			arr.add(new Integer(45));
-			arr.add(new Long(45));
-			
-			newblock.put("array", arr);
-			
-			bdapp.MinimaEvent(newblock.toString());
+	@Override
+	protected void processMessage(Message zMessage) throws Exception {
 		
-			bdapp.shutdown();
+		//MinimaLogger.log(mName+" "+zMessage);
 		
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		if(zMessage.getMessageType().equals(BACKENDJS_INIT)) {
+			//Context and scope of the JS backend
+			mContext = Context.enter();
+			
+			//No optimisation.. (Android needs this.. will change in future..)
+			mContext.setOptimizationLevel(-1);
+		
+			//Create the scope
+			mScope   = mContext.initStandardObjects();
+		
+			//Create a MinimaJS object for this scope..
+			MinimaJSBridge minimajs = new MinimaJSBridge(this);
+			
+			//Add it to this environment
+			Object wrappedMinima = Context.javaToJS(minimajs, mScope);
+			ScriptableObject.putProperty(mScope, "MinimaJSBridge", wrappedMinima);
+
+			//Load a Decimal Class..
+			mContext.evaluateString(mScope, DECIMALJS, "<decjs>", 1, null);
+			
+			//Load Minima.js
+			mContext.evaluateString(mScope, MINIMAJS, "<minjs>", 1, null);
+					
+			//Evaluate the script
+			mContext.evaluateString(mScope, mScriptJS, "<script>", 1, null);
+		
+			//Get the main MinimaEvent function
+			Object fObj = mScope.get("MinimaBackEndListener", mScope);
+			if (!(fObj instanceof Function)) {
+			    throw new ProtocolException("BackEnd JS MinimaEvent is undefined or not a function in "+mName+" "+mMiniDAPPID);
+			} 
+			
+			//Store for later
+			mMinimEventJS = (Function)fObj;
+			
+		}else if(zMessage.getMessageType().equals(BACKENDJS_SHUTDOWN)) {
+			MinimaLogger.log("ShutDown : "+zMessage);
+			
+			//Exit the context
+			mContext.exit();
+			
+			//Shut this badboy down..
+			stopMessageProcessor();
+		
+		}else if(zMessage.getMessageType().equals(BACKENDJS_EVENT)) {
+			//Only 3 crashes are allowed..
+			if(getCrashCounter()>=3) {
+				return;
+			}
+			
+			//Get the JSON event
+			String jsonev = zMessage.getString("jsonevent");	
+			
+			try {
+				//Create a JS JSONObject
+				Object json = MiniJSONUtility.makeJSONObject(jsonev, mContext, mScope);
+				
+				//Make a function variable list
+				Object functionArgs[] = { json };
+			    
+				//Call the Function..
+				mMinimEventJS.call(mContext, mScope, mScope, functionArgs);
+				
+			}catch(Exception exc) {
+				MinimaLogger.log("MiniDAPP JS Crash : "+mName);
+				MinimaLogger.log(exc);	
+			
+				incrementCrashCounter();
+				
+				if(getCrashCounter()>=3) {
+					MinimaLogger.log("DISABLING MINIDAPP BACKEND : "+getName()+" "+getMiniDAPPID());
+				}
+			}
+			
+		}else {
+			throw new Exception("Unknown BackendJS Message..");
 		}
 	}
-	
-	
 }
