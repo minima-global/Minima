@@ -244,6 +244,7 @@ public class DAPPServer extends NanoHTTPD{
 			
         } catch (Exception ioe) {
         	MinimaLogger.log("DAPPSERVER Error : "+ioe);
+        	MinimaLogger.log(ioe);
         	
         	return getInternalErrorResponse("INTERNAL ERROR");
         }
