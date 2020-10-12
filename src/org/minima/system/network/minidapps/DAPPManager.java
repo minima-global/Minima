@@ -316,7 +316,7 @@ public class DAPPManager extends MessageProcessor {
 			mDAPPServer = new DAPPServer(mNetwork.getMiniDAPPServerPort(), this);
 			try {
 				mDAPPServer.start(NanoHTTPD.SOCKET_READ_TIMEOUT, false);
-				MinimaLogger.log("MiniDAPP server started on por "+mNetwork.getMiniDAPPServerPort());
+				MinimaLogger.log("MiniDAPP server started on port "+mNetwork.getMiniDAPPServerPort());
 				
 			} catch (IOException e) {
 				MinimaLogger.log("MiniDAPP server error "+ e.toString());
