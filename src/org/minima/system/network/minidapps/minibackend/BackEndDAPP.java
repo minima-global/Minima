@@ -169,8 +169,6 @@ public class BackEndDAPP extends MessageProcessor {
 			mMinimEventJS = (Function)fObj;
 			
 		}else if(zMessage.getMessageType().equals(BACKENDJS_SHUTDOWN)) {
-			MinimaLogger.log("ShutDown : "+zMessage);
-			
 			//Exit the context
 			mContext.exit();
 			

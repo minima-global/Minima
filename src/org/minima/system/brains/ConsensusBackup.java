@@ -138,6 +138,8 @@ public class ConsensusBackup extends ConsensusProcessor {
 			}catch (Exception exc) {
 				exc.printStackTrace();
 				//HMM.. not good.. file corrupted.. bug out
+				getConsensusHandler().updateListeners(
+						new Message(ConsensusHandler.CONSENSUS_NOTIFY_INITIALPERC).addString("info", "USER BACKUP FILE CORRUPTED.. not starting up.. :("));
 				MinimaLogger.log("USER BACKUP FILE CORRUPTED.. not starting up.. :(");
 				return;
 			}
@@ -161,6 +163,8 @@ public class ConsensusBackup extends ConsensusProcessor {
 			}catch(Exception exc) {
 				exc.printStackTrace();
 				//HMM.. not good.. file corrupted.. bug out
+				getConsensusHandler().updateListeners(
+						new Message(ConsensusHandler.CONSENSUS_NOTIFY_INITIALPERC).addString("info", "SYNCPACKAGE MMR BACKUP FILE CORRUPTED.. not starting up.. :("));
 				MinimaLogger.log("SYNCPACKAGE MMR BACKUP FILE CORRUPTED.. not starting up.. :(");
 				return;
 			}
