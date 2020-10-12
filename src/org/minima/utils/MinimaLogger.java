@@ -47,9 +47,7 @@ public class MinimaLogger {
 			//Ensure max size.. for now just wipe once and start again..
 			int len = mFullOutput.length();
 			if(len>MAX_FULL_LEN) {
-				System.out.println("LOGS CLIPPED OLD:"+mFullOutput);
 				mFullOutput = new StringBuffer(mFullOutput.substring(len-CLIP_LEN, len));
-				System.out.println("LOGS CLIPPED NEW:"+mFullOutput);
 			}
 			
 			String full_log = "Minima @ "+DATEFORMAT.format(new Date())+" : "+zLog;
