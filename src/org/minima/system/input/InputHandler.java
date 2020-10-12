@@ -2,7 +2,6 @@ package org.minima.system.input;
 
 import org.minima.system.Main;
 import org.minima.system.brains.ConsensusHandler;
-import org.minima.system.input.functions.intro;
 import org.minima.utils.ResponseStream;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
