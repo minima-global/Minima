@@ -74,7 +74,7 @@ public class BackEndDAPP extends MessageProcessor {
 	 * @throws InstantiationException
 	 * @throws InvocationTargetException
 	 */
-	public BackEndDAPP(String zName, String zScriptJS, String zMiniDAPPID) throws ProtocolException, IllegalAccessException, InstantiationException, InvocationTargetException {
+	public BackEndDAPP(String zName, String zScriptJS, String zMiniDAPPID) {
 		super("RHINOJS_"+zName);
 		
 		//The MINIDAPP
@@ -130,8 +130,6 @@ public class BackEndDAPP extends MessageProcessor {
 	@Override
 	protected void processMessage(Message zMessage) throws Exception {
 		
-		//MinimaLogger.log(mName+" "+zMessage);
-		
 		if(zMessage.getMessageType().equals(BACKENDJS_INIT)) {
 			//Context and scope of the JS backend
 			mContext = Context.enter();
@@ -161,7 +159,10 @@ public class BackEndDAPP extends MessageProcessor {
 			//Get the main MinimaEvent function
 			Object fObj = mScope.get("MinimaBackEndListener", mScope);
 			if (!(fObj instanceof Function)) {
-			    throw new ProtocolException("BackEnd JS MinimaEvent is undefined or not a function in "+mName+" "+mMiniDAPPID);
+			    //Irrecoverable..
+				mCrashCounter = 3;
+			    
+				throw new ProtocolException("BackEnd JS MinimaEvent is undefined or not a function in "+mName+" "+mMiniDAPPID);
 			} 
 			
 			//Store for later

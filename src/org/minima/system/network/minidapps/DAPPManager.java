@@ -111,7 +111,7 @@ public class DAPPManager extends MessageProcessor {
 		//Has the HOST changed..
 		String host    = getNetworkHandler().getBaseHost();
 		String newhost = getNetworkHandler().calculateHostIP();
-		if(true || !host.equals(newhost)) {
+		if(!host.equals(newhost)) {
 			//Recalculate
 			recalculateMiniDAPPS();	
 		}
