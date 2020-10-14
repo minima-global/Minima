@@ -111,7 +111,7 @@ public class SQLHandler {
 		return totalres;
 	}
 	
-	public synchronized JSONObject executeSQL(String zSQL) {
+	public JSONObject executeSQL(String zSQL) {
 		JSONObject results = new JSONObject();
 		results.put("sql", zSQL);
 		
