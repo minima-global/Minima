@@ -5,6 +5,8 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.Hashtable;
 
 import org.minima.objects.Coin;
 import org.minima.objects.base.MMRSumNumber;
@@ -15,6 +17,7 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.objects.proofs.Proof.ProofChunk;
 import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
+import org.minima.utils.ObjectStack;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
@@ -41,8 +44,9 @@ public class MMRSet implements Streamable {
 	/**
 	 * All the entries in this set 
 	 */
-	ArrayList<MMREntry> mEntries;
-
+	public Hashtable<String, MMREntry> mSetEntries;
+	public Hashtable<String, MMREntry> mSetEntriesCoinID;
+	
 	/**
 	 * The maximum row used in this Set
 	 */
@@ -68,7 +72,7 @@ public class MMRSet implements Streamable {
 	ArrayList<MMREntry> mFinalizedPeaks;
 	ArrayList<MMREntry> mFinalizedZeroRow;
 	
-	//HASH Function bit length.. ALWYS 512 except when used in chainsha function
+	//HASH Function bit length.. ALWAYS 512 except when used in chainsha function
 	int MMR_HASH_BITS=512;
 	
 	/**
@@ -93,7 +97,9 @@ public class MMRSet implements Streamable {
 		ret.put("entrynumber", mEntryNumber);
 
 		JSONArray jentry = new JSONArray();
-		for(MMREntry entry : mEntries) {
+		Enumeration<MMREntry> entries = mSetEntries.elements();
+		while(entries.hasMoreElements()) {
+			MMREntry entry = entries.nextElement();
 			jentry.add(entry.toJSON());
 		}
 		ret.put("entries", jentry);
@@ -102,7 +108,7 @@ public class MMRSet implements Streamable {
 		JSONArray maxentry = new JSONArray();
 		for(MMREntry entry : mMaxEntries) {
 			if(entry != null) {
-				maxentry.add(entry.getEntry().toString());	
+				maxentry.add(entry.getEntryNumber().toString());	
 			}
 		}
 		ret.put("maxentries", maxentry);
@@ -119,7 +125,8 @@ public class MMRSet implements Streamable {
 	
 	public MMRSet(MMRSet zParent, int zBitLength) {
 		//All the Entries in this set
-		mEntries    = new ArrayList<>();
+		mSetEntries       = new Hashtable<>();
+		mSetEntriesCoinID = new Hashtable<>();
 		
 		//The Maximum Rows and entries
 		mMaxEntries = new MMREntry[256];
@@ -151,10 +158,10 @@ public class MMRSet implements Streamable {
 			BigInteger tot = BigInteger.ZERO;
 			BigInteger two = new BigInteger("2");
 			
-			ArrayList<MMREntry> peaks = mParent.getMMRPeaks(); 
+			ArrayList<MMREntry> peaks = mParent.getMMRPeaks();
 			for(MMREntry peak : peaks) {
 				//Add the peak
-				setEntry(peak.getRow(), peak.getEntry(), peak.getData());
+				setEntry(peak.getRow(), peak.getEntryNumber(), peak.getData());
 			
 				//Add to the total entries.. the peaks are the binary value
 				tot = tot.add(two.pow(peak.getRow()));
@@ -228,10 +235,31 @@ public class MMRSet implements Streamable {
 		return max;
 	}
 	
+	private String getHashTableEntry(int zRow, MiniInteger zEntry) {
+		return zRow+":"+zEntry.toString();
+	}
+	
+	//This is NEVER an empty MMREntry
+	private void addHashTableEntry(MMREntry zEntry) {
+		//Add the entry to the total list HashTable
+		String name = getHashTableEntry(zEntry.getRow(), zEntry.getEntryNumber());
+		mSetEntries.put(name, zEntry);
+		
+		//Do we add to the CoinID Table..
+		if(zEntry.getRow()==0) {
+			if(!zEntry.getData().isHashOnly()) {
+				String coinid = zEntry.getData().getCoin().getCoinID().to0xString();
+				mSetEntriesCoinID.put(coinid, zEntry);
+			}
+		}
+	}
+	
 	public ArrayList<MMREntry> getRow(int zRow){
 		ArrayList<MMREntry> row = new ArrayList<>();
 		
-		for(MMREntry entry : mEntries) {
+		Enumeration<MMREntry> entries = mSetEntries.elements();
+		while(entries.hasMoreElements()) {
+			MMREntry entry = entries.nextElement();
 			if(entry.getRow() == zRow) {
 				row.add(entry);
 			}
@@ -254,27 +282,30 @@ public class MMRSet implements Streamable {
 	 * @return
 	 */
 	public MMREntry searchAddress(MiniData zAddress, MiniNumber zAmount, MiniData zTokenID) {
-		//Get the zero row - no parents..
-		ArrayList<MMREntry> zero=getZeroRow();
+		//Loop through all
+		MMRSet current = this;
 		
-		for(MMREntry entry : zero) {
-			if(!entry.getData().isHashOnly()) {
-				Coin cc = entry.getData().getCoin();
-				
-				boolean notspent  = !entry.getData().isSpent();
-				boolean addr      = cc.getAddress().isEqual(zAddress);
-				boolean amount    = cc.getAmount().isMoreEqual(zAmount);
-				boolean tok       = cc.getTokenID().isEqual(zTokenID);
-				
-				if(addr && amount && tok && notspent){
-					return entry;
+		//Cycle through them..
+		while(current != null) {
+			//Get the zero row - no parents..
+			ArrayList<MMREntry> zero = current.getZeroRow();
+			for(MMREntry entry : zero) {
+				if(!entry.getData().isHashOnly()) {
+					Coin cc = entry.getData().getCoin();
+					
+					boolean notspent  = !entry.getData().isSpent();
+					boolean addr      = cc.getAddress().isEqual(zAddress);
+					boolean amount    = cc.getAmount().isMoreEqual(zAmount);
+					boolean tok       = cc.getTokenID().isEqual(zTokenID);
+					
+					if(addr && amount && tok && notspent){
+						return entry;
+					}
 				}
 			}
-		}
 			
-		//Cycle up the parents.. 
-		if(mParent!=null) {
-			return mParent.searchAddress(zAddress, zAmount, zTokenID);
+			//Search the parent..
+			current = current.getParent();
 		}
 		
 		return null;
@@ -286,21 +317,21 @@ public class MMRSet implements Streamable {
 	 * @return
 	 */
 	public MMREntry findEntry(MiniData zCoinID) {
-		//Get the zero row - no parents..
-		ArrayList<MMREntry> zero=getZeroRow();
+		//Loop through all
+		MMRSet current = this;
 		
-		for(MMREntry entry : zero) {
-			if(!entry.getData().isHashOnly()) {
-				if(entry.getData().getCoin().getCoinID().isEqual(zCoinID)){
-					return entry;
-				}
+		//Cycle through them..
+		String coinid = zCoinID.to0xString();
+		while(current != null) {
+			MMREntry entry = mSetEntriesCoinID.get(coinid);
+			if(entry != null) {
+				return entry;
 			}
-		}
 			
-		if(mParent!=null) {
-			return mParent.findEntry(zCoinID);
+			//Search the parent..
+			current = current.getParent();
 		}
-	
+		
 		return null;
 	}
 	
@@ -318,28 +349,26 @@ public class MMRSet implements Streamable {
 		}
 		
 		//Check if already added..
-		MMREntry entry = null;
-		for(MMREntry ent : mEntries) {
-			if(ent.checkPosition(zRow, zEntry)) {
-				entry = ent;
-				break;
-			}
-		}
+		String entryname = getHashTableEntry(zRow, zEntry);
+		MMREntry entry   = mSetEntries.get(entryname);
 		
 		//Create and add if not found
 		if(entry == null) {
 			entry = new MMREntry(zRow, zEntry);
 			entry.setBlockTime(getBlockTime());
-			mEntries.add(entry);
+			entry.setData(zData);
+			
+			//Add it to the hastables
+			addHashTableEntry(entry);
+		}else {
+			//Set the correct data
+			entry.setData(zData);
 		}
-		
-		//Set the correct data
-		entry.setData(zData);
 		
 		//Is it a MAX
 		if(mMaxEntries[zRow] == null) {
 			mMaxEntries[zRow] = entry;
-		}else if(mMaxEntries[zRow].getEntry().isLess(zEntry)) {
+		}else if(mMaxEntries[zRow].getEntryNumber().isLess(zEntry)) {
 			mMaxEntries[zRow] = entry;
 		}
 		
@@ -348,22 +377,23 @@ public class MMRSet implements Streamable {
 	}
 	
 	private MMREntry getEntry(int zRow, MiniInteger zEntry) {
-		//Check if already added..
-		for(MMREntry ent : mEntries) {
-			if(ent.checkPosition(zRow, zEntry)) {
-				return ent;
-			}
-		}
+		//Cycle down through the MMR sets..
+		MMRSet current = this;
 		
-		//Check the parent Set
-		if(mParent!=null) {
-			MMREntry entry = mParent.getEntry(zRow, zEntry);
-			if(!entry.isEmpty()) {
+		//Now Loop..
+		String entryname = getHashTableEntry(zRow, zEntry);
+		while(current != null) {
+			//Check if already added..
+			MMREntry entry   = current.mSetEntries.get(entryname);
+			if(entry!=null) {
 				return entry;
 			}
+			
+			//Check the parent Set
+			current = current.getParent();	
 		}
 		
-		//If all else fails.. return empty entry..
+		//If you can't find it - return empty entry..
 		MMREntry entry = new MMREntry(zRow, zEntry);
 		entry.setBlockTime(getBlockTime());
 		
@@ -442,13 +472,13 @@ public class MMRSet implements Streamable {
 			MMRData pdata = new MMRData(chunk.getHash(), chunk.getValue());
 			if(sibling.isEmpty()) {
 				//Set the data
-				sibling = setEntry(sibling.getRow(), sibling.getEntry(), pdata);
+				sibling = setEntry(sibling.getRow(), sibling.getEntryNumber(), pdata);
 				
 			}else {
 				//Check the value is what we expect it to be
 				if(!sibling.getData().getFinalHash().isEqual(pdata.getFinalHash())) {
 					//Hmm..
-					System.out.println("Sibling Inconsistency!! in MMR @ "+entrynum+" when hard adding proof");
+					MinimaLogger.log("Sibling Inconsistency!! in MMR @ "+entrynum+" when hard adding proof");
 					
 					return null;
 				}else {
@@ -476,7 +506,7 @@ public class MMRSet implements Streamable {
 			if(!parent.isEmpty()) {
 				if(!parent.getData().getFinalHash().isEqual(combined)) {
 					//Hmm..
-					System.out.println("Parent Inconsistency!! in MMR @ "+entrynum+" when hard adding proof");
+					MinimaLogger.log("Parent Inconsistency!! in MMR @ "+entrynum+" when hard adding proof");
 					
 					return null;
 				}else {
@@ -539,19 +569,19 @@ public class MMRSet implements Streamable {
 			
 			//Do we need to fill it in..
 			if(sibling.isEmpty()) {
-//				System.out.println("EMPTY SIBLING");
-				sibling = setEntry(sibling.getRow(), sibling.getEntry(), new MMRData(phash, pval));
+//				MinimaLogger.log("EMPTY SIBLING");
+				sibling = setEntry(sibling.getRow(), sibling.getEntryNumber(), new MMRData(phash, pval));
 			}else if(sibling.getBlockTime().isLessEqual(zProof.getBlockTime())) {
 				//Is it the original.. has all the micro details.. internal nodes are just the hash anyway
 				MiniData orighash = sibling.getData().getFinalHash();
 				if(!orighash.isEqual(phash)) {
-					System.out.println("SIBLING DIFFERENT HASH");
-					sibling = setEntry(sibling.getRow(), sibling.getEntry(), new MMRData(phash, pval));
+					MinimaLogger.log("SIBLING DIFFERENT HASH");
+					sibling = setEntry(sibling.getRow(), sibling.getEntryNumber(), new MMRData(phash, pval));
 				}
 			}
 			
 			//Set the Sibling in this MMRSET!.. this way the MMR peaks still work.. (as the max in a row MUST be on the left to be a peak ))
-			setEntry(sibling.getRow(), sibling.getEntry(),sibling.getData());
+			setEntry(sibling.getRow(), sibling.getEntryNumber(),sibling.getData());
 		}
 		
 		//Now go up the tree..
@@ -571,7 +601,7 @@ public class MMRSet implements Streamable {
 			MMRData data = new MMRData(combined,sumvalue);
 			
 			//Set the Sibling in this MMRSET!.. this way the MMR peaks still work.. (as the max in a row MUST be on the left to be a peak ))
-			setEntry(sibling.getRow(), sibling.getEntry(),sibling.getData());
+			setEntry(sibling.getRow(), sibling.getEntryNumber(),sibling.getData());
 			
 			//Set the Parent
 			entry = setEntry(entry.getParentRow(), entry.getParentEntry(), data);
@@ -592,14 +622,14 @@ public class MMRSet implements Streamable {
 				phash = chunk.getHash();
 				pval  = chunk.getValue();
 				if(sibling.isEmpty()) {
-//					System.out.println("EMPTY SIBLING 2");
-					sibling = setEntry(sibling.getRow(), sibling.getEntry(), new MMRData(phash,pval));		
+//					MinimaLogger.log("EMPTY SIBLING 2");
+					sibling = setEntry(sibling.getRow(), sibling.getEntryNumber(), new MMRData(phash,pval));		
 				}else if(sibling.getBlockTime().isLessEqual(zProof.getBlockTime())) {
 					//Is it the original.. has all the micro details.. internal nodes are just the hash anyway
 					MiniData orighash = sibling.getData().getFinalHash();
 					if(!orighash.isEqual(phash)) {
-						System.out.println("SIBLING DIFFERENT HASH 2");
-						sibling = setEntry(sibling.getRow(), sibling.getEntry(), new MMRData(phash,pval));	
+						MinimaLogger.log("SIBLING DIFFERENT HASH 2");
+						sibling = setEntry(sibling.getRow(), sibling.getEntryNumber(), new MMRData(phash,pval));	
 					}
 				}
 			}
@@ -667,7 +697,7 @@ public class MMRSet implements Streamable {
 			}
 			
 			//Now get the keeper proof..
-			MMRProof proof = newmmr.getProof(keeper.getEntry());
+			MMRProof proof = newmmr.getProof(keeper.getEntryNumber());
 			
 			//Now add that to the total proof..
 			int len = proof.getProofLen();
@@ -719,15 +749,15 @@ public class MMRSet implements Streamable {
 	 * @return
 	 */
 	public boolean checkProof(MMRProof zProof) {
-		//Hmm.. this is not good..
+		//MUST have data to be checked
 		if(zProof.getMMRData().isHashOnly()) {
-//			System.out.println("Invalid PROOF check HASHONLY! : "+zProof);
+//			MinimaLogger.log("Invalid PROOF check HASHONLY! : "+zProof);
 			return false;
 		}
 		
 		//Check is not spent.. 
 		if(zProof.getMMRData().isSpent()) {
-//			System.out.println("Invalid PROOF is SPENT! : "+zProof);
+//			MinimaLogger.log("Invalid PROOF is SPENT! : "+zProof);
 			return false;
 		}
 		
@@ -736,7 +766,7 @@ public class MMRSet implements Streamable {
 		
 		//The proof is it too old.. we can't check it. It's invalid.
 		if(proofset == null) {
-//			System.out.println("ERROR Proof too Old "+zProof);
+//			MinimaLogger.log("ERROR Proof too Old "+zProof);
 			return false;
 		}
 		
@@ -759,7 +789,7 @@ public class MMRSet implements Streamable {
 		
 		//Was it one of the peaks ?
 		if(!found) {
-			System.out.println("ERROR Proof No Peak Found "+zProof);
+//			MinimaLogger.log("ERROR Proof No Peak Found "+zProof);
 			return false;
 		}
 		
@@ -770,7 +800,7 @@ public class MMRSet implements Streamable {
 		if(!entry.isEmpty() && !entry.getData().isHashOnly()) {
 			//Get the DATA - could be the original UNSPENT or the SPENT
 			if(entry.getData().isSpent()) {
-//				System.out.println("ERROR Proof Spent! "+zProof);
+//				MinimaLogger.log("ERROR Proof Spent! "+zProof);
 				return false;
 			}
 		}
@@ -944,7 +974,7 @@ public class MMRSet implements Streamable {
 			
 			//Check valid.. SHOULD NOT HAPPEN
 			if(entry.isEmpty() || entry.getData().isHashOnly()) {
-				System.out.println("copyKeepers on NULL Keeper Entry! "+keep);
+				MinimaLogger.log("copyKeepers on NULL Keeper Entry! "+keep);
 				continue;
 			}
 			
@@ -965,7 +995,7 @@ public class MMRSet implements Streamable {
 				MMREntry sibling = getEntry(entry.getRow(), entry.getSibling());
 				while(!sibling.isEmpty()) {
 					//Add to our Set..
-					setEntry(sibling.getRow(), sibling.getEntry(), sibling.getData());
+					setEntry(sibling.getRow(), sibling.getEntryNumber(), sibling.getData());
 					
 					//Now get the Parent.. just need a reference even if is empty. To find the sibling.
 					MMREntry parent = new MMREntry( sibling.getParentRow(), sibling.getParentEntry() );
@@ -985,75 +1015,53 @@ public class MMRSet implements Streamable {
 
 	/**
 	 * Recursively copy the parents..
-	 * 
-	 * @param zCascade
-	 * @param zNode
 	 */
-	public void recurseParentMMR(MiniNumber zCascade) {
-		_recurseParentMMR(zCascade, this);
-	}
-	
-	private void _recurseParentMMR(MiniNumber zCascade, MMRSet zNode) {
-		if(zNode.getBlockTime().isMore(zCascade)) {
-			//Do all the parents
-			if(zNode.getParent() == null) {
-				MinimaLogger.log("ERROR - RECURSE TREE NULL PARENT : CASC:"+zCascade+" BLKTIME:"+zNode.getBlockTime());	
-			}else {
-				_recurseParentMMR(zCascade, zNode.getParent());	
-			}
-		}
+	public void copyAllParentKeepers(MiniNumber zCascade) {
+		//Start at this point..
+		MMRSet curr = this;
+		
+		//Store all the pparents..
+		ObjectStack stack = new ObjectStack();
+		while(curr.getBlockTime().isMore(zCascade)) {
+			//Add to the stack..
+			stack.push(curr);
 			
-		//The you do it..
-		zNode.copyParentKeepers();
-	}
-	/**
-	 * Drill down and get the last but one parent..
-	 * We will be pruning it.. 
-	 * @return
-	 */
-	public MMRSet getRootParent() {
-		if(mParent == null) {
-			return this;
+			//Get the parent..
+			curr = curr.getParent();
 		}
 		
-		return mParent.getRootParent();
+		//Now run through the stack..
+		while(!stack.isEmpty()) {
+			//Get the parent MMR..
+			MMRSet mmr = (MMRSet) stack.pop();
+			
+			//Copy the parents MMR keepers..
+			mmr.copyParentKeepers();
+		}
 	}
 	
 	/**
 	 * Get a Parent block at a certain time..
 	 */
 	public MMRSet getParentAtTime(MiniNumber zTime) {
-		if(mBlockTime.isEqual(zTime)) {
-			return this;
-		}
+		MMRSet current = this;
 		
-		if(mParent != null) {
-			return mParent.getParentAtTime(zTime);
-		}
-		
-		return null;
-	}
-	
-	public MMRSet getPenultimateParent() {
-		if(mParent != null) {
-			if(mParent.getParent() == null) {
-				return this;
+		while(current != null) {
+			if(current.getBlockTime().isEqual(zTime)) {
+				return current;
 			}
 			
-			return mParent.getPenultimateParent();
+			//Too far.. only goes back in time further..
+			if(current.getBlockTime().isLess(zTime)) {
+				return null;
+			}
+			
+			current = current.getParent();
 		}
-		
+
 		return null;
 	}
 	
-	public int getParentLength() {
-		if(mParent != null) {
-			return 1+mParent.getParentLength();	
-		}
-		
-		return 1;
-	}
-
 	/**
 	 * Write out this MMR set
 	 * 
@@ -1068,11 +1076,13 @@ public class MMRSet implements Streamable {
 		mEntryNumber.writeDataStream(zOut);
 		
 		//How many..
-		int len = mEntries.size();
+		int len = mSetEntries.size();
 		zOut.writeInt(len);
 		
 		//Now write out each row..
-		for(MMREntry entry : mEntries) {
+		Enumeration<MMREntry> entries = mSetEntries.elements();
+		while(entries.hasMoreElements()) {
+			MMREntry entry = entries.nextElement();
 			entry.writeDataStream(zOut);
 		}
 	}
@@ -1083,9 +1093,11 @@ public class MMRSet implements Streamable {
 		mEntryNumber = MiniInteger.ReadFromStream(zIn);
 		
 		//Now the Entries..
-		mEntries = new ArrayList<>();
-		mMaxEntries = new MMREntry[256];
+		mSetEntries       = new Hashtable<>();
+		mSetEntriesCoinID = new Hashtable<>();
+		mMaxEntries       = new MMREntry[256];
 		mMaxRow = 0;
+		
 		int len = zIn.readInt();
 		for(int i=0;i<len;i++) {
 			MMREntry entry = new MMREntry(0, null);
@@ -1101,12 +1113,12 @@ public class MMRSet implements Streamable {
 				
 				if(mMaxEntries[row] == null) {
 					mMaxEntries[row] = entry;
-				}else if(mMaxEntries[row].getEntry().isLess(entry.getEntry())) {
+				}else if(mMaxEntries[row].getEntryNumber().isLess(entry.getEntryNumber())) {
 					mMaxEntries[row] = entry;
 				}
 				
 				//And add..
-				mEntries.add(entry);
+				addHashTableEntry(entry);
 			}
 		}
 		

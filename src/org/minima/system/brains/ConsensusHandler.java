@@ -1,7 +1,5 @@
 package org.minima.system.brains;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -18,28 +16,28 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
 import org.minima.objects.proofs.TokenProof;
 import org.minima.system.Main;
-import org.minima.system.NativeListener;
-import org.minima.system.SystemHandler;
 import org.minima.system.input.InputHandler;
 import org.minima.system.input.functions.gimme50;
-import org.minima.system.network.NetClient;
-import org.minima.system.network.NetClientReader;
+import org.minima.system.network.MinimaClient;
+import org.minima.system.network.MinimaReader;
 import org.minima.system.network.NetworkHandler;
+import org.minima.system.network.minidapps.DAPPManager;
 import org.minima.system.txpow.TxPoWChecker;
 import org.minima.system.txpow.TxPoWMiner;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
+import org.minima.utils.messages.MessageListener;
+import org.minima.utils.messages.MessageProcessor;
 import org.minima.utils.messages.TimerMessage;
 
-public class ConsensusHandler extends SystemHandler {
+public class ConsensusHandler extends MessageProcessor {
 
 	/**
 	 * Main processing loop for a txpow message
 	 */
 	public static final String CONSENSUS_PROCESSTXPOW 		   = "CONSENSUS_PROCESSTXPOW";
-	public static final String CONSENSUS_PRE_PROCESSTXPOW 	   = "CONSENSUS_PREPROCESSTXPOW";
 	
 	/**
 	 * Auto backup every 10 minutes..
@@ -51,6 +49,7 @@ public class ConsensusHandler extends SystemHandler {
 	 */
 	public static final String CONSENSUS_ACTIVATEMINE 		   = "CONSENSUS_ACTIVATEMINE";
 	public static final String CONSENSUS_MINEBLOCK 			   = "CONSENSUS_MINEBLOCK";
+	public static final String CONSENSUS_DEBUGMINE 			   = "CONSENSUS_DEBUGMINE";
 	
 	/**
 	 * TestNET 
@@ -68,6 +67,7 @@ public class ConsensusHandler extends SystemHandler {
 	 * Create Tokens
 	 */
 	public static final String CONSENSUS_CREATETOKEN 		= "CONSENSUS_CREATETOKEN";
+	public static final String CONSENSUS_TOKENCREATE 		= "CONSENSUS_TOKENCREATE";
 	
 	/**
 	 * Notification Messages
@@ -79,7 +79,11 @@ public class ConsensusHandler extends SystemHandler {
 	public static final String CONSENSUS_NOTIFY_MINESTART 	= "CONSENSUS_NOTIFY_MINESTART";
 	public static final String CONSENSUS_NOTIFY_MINEEND 	= "CONSENSUS_NOTIFY_MINEEND";
 	public static final String CONSENSUS_NOTIFY_INITIALSYNC = "CONSENSUS_NOTIFY_INITIALSYNC";
+	public static final String CONSENSUS_NOTIFY_INITIALPERC = "CONSENSUS_NOTIFY_INITIALPERC";
+	public static final String CONSENSUS_NOTIFY_LOG         = "CONSENSUS_NOTIFY_LOG";
 	
+	public static final String CONSENSUS_NOTIFY_DAPP_RELOAD    = "CONSENSUS_NOTIFY_DAPP_RELOAD";
+	public static final String CONSENSUS_NOTIFY_DAPP_INSTALLED = "CONSENSUS_NOTIFY_DAPP_INSTALLED";
 		
 	/**
 	 * Print the chain whenever you get a new block ?
@@ -119,7 +123,12 @@ public class ConsensusHandler extends SystemHandler {
 	/**
 	 * A list of Listeners.. for important messages..
 	 */
-	ArrayList<NativeListener> mListeners;
+	ArrayList<MessageListener> mListeners;
+	
+	/**
+	 * FLUSH counter 
+	 */
+	int mFlushCounter = 0;
 	
 	/**
 	 * The Last Gimme50..
@@ -132,7 +141,7 @@ public class ConsensusHandler extends SystemHandler {
 	 * @param zMain
 	 */
 	public ConsensusHandler(Main zMain) {
-		super(zMain, "CONSENSUS");
+		super("CONSENSUS");
 		
 		//Create a database..
 		mMainDB = new MinimaDB();
@@ -148,14 +157,14 @@ public class ConsensusHandler extends SystemHandler {
 		mConsensusBackup = new ConsensusBackup(mMainDB, this);
 		
 		//Are we HARD mining.. debugging / private chain
-		PostTimerMessage(new TimerMessage(2000, CONSENSUS_MINEBLOCK));
+		PostTimerMessage(new TimerMessage(1000, CONSENSUS_MINEBLOCK));
 	
 		//Redo every 10 minutes..
 		PostTimerMessage(new TimerMessage(10 * 60 * 1000, CONSENSUS_AUTOBACKUP));
 	}
 	
 	public void setBackUpManager() {
-		getMainDB().setBackupManager(getMainHandler().getBackupManager());
+		getMainDB().setBackupManager(Main.getMainHandler().getBackupManager());
 	}
 	
 	/**
@@ -165,16 +174,16 @@ public class ConsensusHandler extends SystemHandler {
 		mListeners.clear();
 	}
 	
-	public void addListener(NativeListener zListen) {
+	public void addListener(MessageListener zListen) {
 		mListeners.add(zListen);
 	}
 	
-	public void removeListener(NativeListener zListen) {
+	public void removeListener(MessageListener zListen) {
 		mListeners.remove(zListen);
 	}
 	
 	public void updateListeners(Message zMessage) {
-		for(NativeListener listen : mListeners) {
+		for(MessageListener listen : mListeners) {
 			listen.processMessage(zMessage);
 		}
 	}
@@ -192,25 +201,38 @@ public class ConsensusHandler extends SystemHandler {
 	 * @param zHardResetAllowed
 	 */
 	public void setHardResetAllowed(boolean zHardResetAllowed){
-		mConsensusNet.setHardResest(zHardResetAllowed);
+		mConsensusNet.setAllowHardResest(zHardResetAllowed);
 	}
 	
 	private MinimaDB getMainDB() {
 		return mMainDB;
 	}
 	
+	public void setInitialSyncComplete() {
+		mConsensusNet.setInitialSyncComplete();
+	}
+	
 	public boolean isInitialSyncComplete() {
-		return mConsensusNet.mInitialSync;
+		return mConsensusNet.isInitialSyncComplete();
 	}
 	
 	@Override
 	protected void processMessage(Message zMessage) throws Exception {
 		/**
-		 * Main processing function.. can be called recursively..
+		 * Main processing function.. 
 		 */
 		if ( zMessage.isMessageType(CONSENSUS_PROCESSTXPOW) ) {
 			//A TXPOW - that has been checked already and added to the DB
 			TxPoW txpow = (TxPoW) zMessage.getObject("txpow");
+			
+			//Send a message to all about a new TxPoW (may or may not be a transaction or a block..)
+			JSONObject newtxpow = new JSONObject();
+			newtxpow.put("event","newtxpow");
+			newtxpow.put("txpow",txpow.toJSON());
+			PostDAPPJSONMessage(newtxpow);
+			
+			//Back it up!
+			Main.getMainHandler().getBackupManager().backupTxpow(txpow);
 			
 			//What's the current chain tip..
 			MiniData oldtip = getMainDB().getMainTree().getChainTip().getTxPowID();
@@ -221,58 +243,45 @@ public class ConsensusHandler extends SystemHandler {
 			//What's the new chain tip..
 			TxPoW newtip = getMainDB().getMainTree().getChainTip().getTxPow();
 			
+			//Only do this once..
+			boolean relevant = false;
+			if(txpow.isTransaction()) {
+				//Is it relevant to us..
+				relevant = getMainDB().getUserDB().isTransactionRelevant(txpow.getTransaction());
+				
+				//Notify everyone..
+				JSONObject newtrans = new JSONObject();
+				newtrans.put("event","newtransaction");
+				newtrans.put("txpow",txpow.toJSON());
+				newtrans.put("relevant",relevant);
+				PostDAPPJSONMessage(newtrans);
+			}
+			
 			//Has there been a change
+			boolean newbalance = false;
 			if(!oldtip.isEqual(newtip.getTxPowID())) {
+				newbalance = true;
+				
 				//Notify..
 				updateListeners(new Message(CONSENSUS_NOTIFY_NEWBLOCK).addObject("txpow", newtip));
 			
 				//Update the web listeners..
-				PostMessage(ConsensusPrint.CONSENSUS_STATUS);
+				//Send this to the WebSocket..
+				JSONObject newblock = new JSONObject();
+				newblock.put("event","newblock");
+				newblock.put("txpow",newtip.toJSON());
+				PostDAPPJSONMessage(newblock);
 				
 				//Do the balance.. Update listeners if changed..
-				PostMessage(ConsensusPrint.CONSENSUS_BALANCE);
+				PostMessage(new Message(ConsensusPrint.CONSENSUS_BALANCE).addBoolean("hard", true));
 				
-				//MEMPOOL - can get one message stuck that invalidates new messages.. 
-				if(newtip.getBlockNumber().modulo(MiniNumber.THIRTYTWO).isEqual(MiniNumber.ZERO)) {
-					PostMessage(new Message(ConsensusUser.CONSENSUS_FLUSHMEMPOOL));	
+				//Print the tree..
+				if(mPrintChain) {
+					PostMessage(new Message(ConsensusPrint.CONSENSUS_PRINTCHAIN_TREE).addBoolean("systemout", true));
 				}
 			}
 			
-			//Print the tree..
-			if(mPrintChain) {
-				Message print = new Message(ConsensusPrint.CONSENSUS_PRINTCHAIN_TREE).addBoolean("systemout", true);
-				PostMessage(print);
-			}
-						
-			/**
-			 * One time run the first time you see a txpow..
-			 */
-		}else if ( zMessage.isMessageType(CONSENSUS_PRE_PROCESSTXPOW) ) {
-			//The TXPOW
-			TxPoW txpow = (TxPoW) zMessage.getObject("txpow");
-			
-			//Back it up!
-			getMainHandler().getBackupManager().backupTxpow(txpow);
-			
-			//Notify the WebSocket Listeners
-			JSONObject newtrans = new JSONObject();
-			newtrans.put("event","newtransaction");
-			newtrans.put("txpow",txpow.toJSON());
-			
-			Message msg = new Message(NetworkHandler.NETWORK_WS_NOTIFY);
-			msg.addString("message", newtrans.toString());
-			getMainHandler().getNetworkHandler().PostMessage(msg);
-			
-			//Process it
-			PostMessage(new Message(ConsensusHandler.CONSENSUS_PROCESSTXPOW).addObject("txpow", txpow));
-			
-			//Only do this once..
-			boolean relevant = false;
-			if(txpow.isTransaction()) {
-				relevant = getMainDB().getUserDB().isTransactionRelevant(txpow.getTransaction());
-			}
-			
-			//If it's relevant then do a backup..
+			//If it's relevant to the user..
 			if(relevant) {
 				//Get the Token Amounts..
 				Hashtable<String, MiniNumber> tokamt = getMainDB().getTransactionTokenAmounts(txpow);
@@ -280,23 +289,28 @@ public class ConsensusHandler extends SystemHandler {
 				//Store ion the database..
 				getMainDB().getUserDB().addToHistory(txpow,tokamt);
 				
-				//Notify those listening..
+				//Do we need to update the balance.. or did we do it already..
 				updateListeners(new Message(CONSENSUS_NOTIFY_BALANCE));
-				
-				//Do the balance.. Update listeners if changed..
-				PostMessage(ConsensusPrint.CONSENSUS_BALANCE);
+				if(!newbalance) {
+					PostMessage(new Message(ConsensusPrint.CONSENSUS_BALANCE).addBoolean("hard", true));
+				}				
 			}
-			
-			//Message for ALL the clients
-			Message netmsg  = new Message(NetClient.NETCLIENT_SENDTXPOWID).addObject("txpowid", txpow.getTxPowID());
+					
+			//BROADCAST Message for ALL the clients
+			Message netmsg  = new Message(MinimaClient.NETCLIENT_SENDTXPOWID).addObject("txpowid", txpow.getTxPowID());
 			Message netw    = new Message(NetworkHandler.NETWORK_SENDALL).addObject("message", netmsg);
+			Main.getMainHandler().getNetworkHandler().PostMessage(netw);
+		
 			
-			//Post It..
-			getMainHandler().getNetworkHandler().PostMessage(netw);
-			
+		/**
+		 * Called every 10 Minutes to do a few tasks
+		 */
 		}else if ( zMessage.isMessageType(CONSENSUS_AUTOBACKUP) ) {
 			//Backup the system..
 			PostMessage(ConsensusBackup.CONSENSUSBACKUP_BACKUP);
+			
+			//Flush / Check the mem-pool
+			PostMessage(new Message(ConsensusUser.CONSENSUS_FLUSHMEMPOOL));
 			
 			//Redo every 10 minutes..
 			PostTimerMessage(new TimerMessage(10 * 60 * 1000, CONSENSUS_AUTOBACKUP));
@@ -336,19 +350,20 @@ public class ConsensusHandler extends SystemHandler {
 		 */
 		}else if ( zMessage.isMessageType(CONSENSUS_ACTIVATEMINE) ) {
 			boolean mining = zMessage.getBoolean("automining");
-			getMainHandler().getMiner().setAutoMining(mining);
+			Main.getMainHandler().getMiner().setAutoMining(mining);
 			
 			JSONObject resp = InputHandler.getResponseJSON(zMessage);
 			resp.put("automining", mining);			
 			InputHandler.endResponse(zMessage, true, "");
 		
+			//Boot-Strap Mining  
 		}else if ( zMessage.isMessageType(CONSENSUS_MINEBLOCK) ) {
 			//DEBUG MODE - only mine a block when you make a transction..
 			if(GlobalParams.MINIMA_ZERO_DIFF_BLK) {return;}
-				
+			
 			//Are we Mining..
-			if(!getMainHandler().getMiner().isAutoMining()) {
-				PostTimerMessage(new TimerMessage(30000, CONSENSUS_MINEBLOCK));
+			if(!isInitialSyncComplete() || !Main.getMainHandler().getMiner().isAutoMining()) {
+				PostTimerMessage(new TimerMessage(20000, CONSENSUS_MINEBLOCK));
 				return;
 			}
 			
@@ -359,8 +374,21 @@ public class ConsensusHandler extends SystemHandler {
 			Message mine = new Message(TxPoWMiner.TXMINER_MEGAMINER).addObject("txpow", txpow);
 			
 			//Post to the Miner
-			getMainHandler().getMiner().PostMessage(mine);
+			Main.getMainHandler().getMiner().PostMessage(mine);
 		
+		}else if ( zMessage.isMessageType(CONSENSUS_DEBUGMINE) ) {
+			//Mine one single block.. 
+			TxPoW txpow = getMainDB().getCurrentTxPow(new Transaction(), new Witness(), new JSONArray());
+			
+			//Send it to the Miner..
+			Message mine = new Message(TxPoWMiner.TXMINER_DEBUGBLOCK).addObject("txpow", txpow);
+			
+			//Continue the log output trail
+			InputHandler.addResponseMesage(mine, zMessage);
+			
+			//Post to the Miner
+			Main.getMainHandler().getMiner().PostMessage(mine);
+			
 		/**
 		 * Transaction management
 		 */
@@ -403,27 +431,17 @@ public class ConsensusHandler extends SystemHandler {
 				return;
 			}
 			
-			
-			//CHECK THE SIZE
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			DataOutputStream dos = new DataOutputStream(baos);
-			txpow.writeDataStream(dos);
-			dos.flush();
-			int txpowsize = baos.toByteArray().length;
-			dos.close();
-			baos.close();
-			
 			//Add the size..
-			resp.put("size", txpowsize);
+			resp.put("size", txpow.getSizeinBytes());
 			resp.put("inputs", txpow.getTransaction().getAllInputs().size());
 			resp.put("outputs", txpow.getTransaction().getAllOutputs().size());
 			
-			if(txpowsize > NetClientReader.MAX_TXPOW) {
+			if(txpow.getSizeinBytes() > MinimaReader.MAX_TXPOW) {
 				//Add the TxPoW
 				resp.put("transaction", txpow.getTransaction());
 				
 				//ITS TOO BIG!
-				InputHandler.endResponse(zMessage, false, "YOUR TXPOW TRANSACTION IS TOO BIG! MAX SIZE : "+NetClientReader.MAX_TXPOW);
+				InputHandler.endResponse(zMessage, false, "YOUR TXPOW TRANSACTION IS TOO BIG! MAX SIZE : "+MinimaReader.MAX_TXPOW);
 				
 				return;
 			}
@@ -434,15 +452,13 @@ public class ConsensusHandler extends SystemHandler {
 				//Notify listeners that Mining is starting...
 				JSONObject mining = new JSONObject();
 				mining.put("event","txpowstart");
-				mining.put("transaction",txpow.getTransaction().toJSON().toString());
-				
-				Message wsmsg = new Message(NetworkHandler.NETWORK_WS_NOTIFY).addString("message", mining.toString());
-				getMainHandler().getNetworkHandler().PostMessage(wsmsg);
+				mining.put("transaction",txpow.getTransaction().toJSON());
+				PostDAPPJSONMessage(mining);
 			}
 			
 			//Send it to the Miner.. This is the ONLY place this happens..
 			Message mine = new Message(TxPoWMiner.TXMINER_MINETXPOW).addObject("txpow", txpow);
-			getMainHandler().getMiner().PostMessage(mine);
+			Main.getMainHandler().getMiner().PostMessage(mine);
 		
 			//Add the TxPoW
 			resp.put("txpow", txpow);
@@ -525,7 +541,7 @@ public class ConsensusHandler extends SystemHandler {
 				
 				return;
 				
-			}else {
+			}else{
 				//Continue constructing the transaction - outputs don't need scripts
 				Address recipient= new Address(new MiniData(address));
 				
@@ -568,10 +584,8 @@ public class ConsensusHandler extends SystemHandler {
 			//Notify listeners that Mining is starting...
 			JSONObject mining = new JSONObject();
 			mining.put("event","txpowend");
-			mining.put("transaction",txpow.getTransaction().toJSON().toString());
-			
-			Message wsmsg = new Message(NetworkHandler.NETWORK_WS_NOTIFY).addString("message", mining.toString());
-			getMainHandler().getNetworkHandler().PostMessage(wsmsg);
+			mining.put("transaction",txpow.getTransaction().toJSON());
+			PostDAPPJSONMessage(mining);
 			
 		}else if(zMessage.isMessageType(CONSENSUS_GIMME50)) {
 			//Check time
@@ -681,6 +695,112 @@ public class ConsensusHandler extends SystemHandler {
 				PostMessage(ret);
 			}
 			
+		}else if(zMessage.isMessageType(CONSENSUS_TOKENCREATE)) {
+			//Get the amount
+			String amount 		= zMessage.getString("amount");
+			String name  	 	= zMessage.getString("name");
+			String description  = zMessage.getString("description");
+			String icon  	 	= zMessage.getString("icon");
+			String proof  	 	= zMessage.getString("proof");
+			String script       = zMessage.getString("script");
+			
+			/* 
+			 * ASSERT FLOOR ( @AMOUNT ) EQ @AMOUNT LET checkout = 0 
+			 * WHILE ( checkout LT @TOTOUT ) DO 
+			 *  IF GETOUTTOK ( checkout ) EQ @TOKENID THEN 
+			 *   LET outamt = GETOUTAMT ( checkout ) 
+			 *   ASSERT FLOOR ( outamt ) EQ outamt 
+			 *  ENDIF 
+			 *  LET checkout = INC ( checkout ) 
+			 * ENDWHILE 
+			 * RETURN TRUE
+			 * 
+			 */
+			
+			MiniData tok  		= Coin.TOKENID_CREATE;
+			MiniData changetok 	= Coin.MINIMA_TOKENID;
+			
+			//Get a new address to receive the tokens..
+			Address recipient = getMainDB().getUserDB().newSimpleAddress();
+			
+			//How much Minima will it take to colour.. for now lets stay under 0.001 minima
+			//This is not protocol specific and can change later
+			BigDecimal max    = new BigDecimal("0.01");
+			BigDecimal num    = new BigDecimal(amount);
+			BigDecimal actnum = new BigDecimal(amount);
+			
+			//Cylce to the right size..
+			int scale = 0;
+			while(actnum.compareTo(max)>0) {
+				actnum = actnum.divide(BigDecimal.TEN);
+				scale++;
+			}
+			
+			//The actual amount of Minima that needs to be sent
+			MiniNumber sendamount = new MiniNumber(actnum);
+			
+			//How much do we have..
+			MiniNumber total = new MiniNumber(); 
+			ArrayList<Coin> confirmed = getMainDB().getTotalSimpleSpendableCoins(Coin.MINIMA_TOKENID);
+			
+			//Add all the available outputs to the list
+			for(Coin cc : confirmed) {
+				total = total.add(cc.getAmount());
+			}
+
+			//Do we have that much..
+			if(total.isLess(sendamount)) {
+				//Insufficient funds!
+				InputHandler.endResponse(zMessage, false, "Insufficient funds! You only have : "+total);
+				
+			}else {
+				//Blank address - check change is non-null
+				Address change = new Address(); 
+				if(!total.isEqual(sendamount)) {
+					change = getMainDB().getUserDB().newSimpleAddress();
+				}
+				
+				//CHECK NAME of TOKEN IS VALID!
+				//TODO
+				
+				//Create the JSON descriptor..
+				JSONObject tokenjson = new JSONObject();
+				tokenjson.put("name", name);
+				if(!description.equals("")) {
+					tokenjson.put("description", description);	
+				}
+				if(!icon.equals("")) {
+					tokenjson.put("icon", icon);	
+				}
+				if(!proof.equals("")) {
+					tokenjson.put("proof", proof);	
+				}
+				
+				//Create the token gen details
+				TokenProof tokengen = new TokenProof(Coin.COINID_OUTPUT, 
+													 new MiniNumber(scale+""), 
+													 sendamount, 
+													 new MiniString(tokenjson.toString()),
+													 new MiniString(script));
+				
+				//Create the Transaction
+				Message ret = getMainDB().createTransaction(sendamount, recipient, change, confirmed, tok, changetok,tokengen);
+				
+				//Continue the log output trail
+				InputHandler.addResponseMesage(ret, zMessage);
+				
+				//Send it..
+				PostMessage(ret);
+			}
 		}
 	}	
+	
+	/**
+	 * Post a message to all the MiniDAPPs
+	 * @param zJSON
+	 */
+	public void PostDAPPJSONMessage(JSONObject zJSON) {
+		Message wsmsg = new Message(DAPPManager.DAPP_MINIDAPP_POSTALL).addObject("message", zJSON);
+		Main.getMainHandler().getNetworkHandler().getDAPPManager().PostMessage(wsmsg);
+	}
 }

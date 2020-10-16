@@ -28,6 +28,7 @@ public interface TxPowDB {
 	public ArrayList<TxPOWDBRow> getAllTxPOWDBRow();
 	
 	public void resetAllInBlocks();
+	public void resetBlocksFromOnwards(MiniNumber zFromBlock);
 	
 	
 	/**
@@ -50,7 +51,7 @@ public interface TxPowDB {
 	
 	public ArrayList<TxPOWDBRow> getAllBlocksMissingTransactions();
 	
-	public int getCompleteSize();
+	public int getSize();
 	
 	/**
 	 * Clear the DB

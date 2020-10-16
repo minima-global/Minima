@@ -36,10 +36,6 @@ package org.minima.utils.nanohttpd.protocols.http.tempfiles;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-
-import org.minima.system.backup.BackupManager;
-import org.minima.utils.nanohttpd.protocols.http.NanoHTTPD;
 
 /**
  * Default strategy for creating and cleaning up temporary files.
@@ -58,8 +54,8 @@ public class DefaultTempFileManager implements ITempFileManager {
     private final List<ITempFile> tempFiles;
 
     public DefaultTempFileManager() {
-//        this.tmpdir = new File(System.getProperty("java.io.tmpdir"));
-        this.tmpdir = BackupManager.getTempFolder();
+        this.tmpdir = new File(System.getProperty("java.io.tmpdir"));
+//        this.tmpdir = BackupManager.getTempFolder();
         if (!tmpdir.exists()) {
             tmpdir.mkdirs();
         }
@@ -72,7 +68,7 @@ public class DefaultTempFileManager implements ITempFileManager {
             try {
                 file.delete();
             } catch (Exception ignored) {
-                NanoHTTPD.LOG.log(Level.WARNING, "could not delete file ", ignored);
+                //NanoHTTPD.LOG.log(Level.WARNING, "could not delete file ", ignored);
             }
         }
         this.tempFiles.clear();

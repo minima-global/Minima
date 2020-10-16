@@ -75,7 +75,9 @@ public class ClientHandler implements Runnable {
                 session.execute();
             }
         } catch (Exception e) {
-            // When the socket is closed by the client,
+            //MinimaLogger.log("NANOHTTP ERROR : "+e);
+        	
+        	// When the socket is closed by the client,
             // we throw our own SocketException
             // to break the "keep alive" loop above. If
             // the exception was anything other

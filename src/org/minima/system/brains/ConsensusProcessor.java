@@ -1,6 +1,8 @@
 package org.minima.system.brains;
 
 import org.minima.database.MinimaDB;
+import org.minima.system.Main;
+import org.minima.system.network.NetworkHandler;
 
 public class ConsensusProcessor {
 
@@ -26,5 +28,9 @@ public class ConsensusProcessor {
 	
 	protected ConsensusHandler getConsensusHandler() {
 		return mHandler;
+	}
+	
+	protected NetworkHandler getNetworkHandler() {
+		return Main.getMainHandler().getNetworkHandler();
 	}
 }

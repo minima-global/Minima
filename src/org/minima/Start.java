@@ -8,15 +8,13 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Random;
 
 import org.minima.system.Main;
-import org.minima.system.NativeListener;
-import org.minima.system.backup.BackupManager;
-import org.minima.system.input.InputMessage;
+import org.minima.system.brains.BackupManager;
+import org.minima.system.network.commands.CMD;
 import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;
-import org.minima.utils.ResponseStream;
-import org.minima.utils.messages.Message;
 
 /**
  * @author Paddy Cerri
@@ -25,9 +23,20 @@ import org.minima.utils.messages.Message;
 public class Start {
 	
 	/**
-	 * A static link to the main server
+	 * A list of default valid nodes to connect to at startup..
 	 */
-	public static Main mMainServer;
+	public static final String[] VALID_BOOTSTRAP_NODES = 
+		{"35.204.181.120",
+		 "35.204.119.15",
+		 "34.91.220.49",
+		 "35.204.62.177",
+		 "35.204.139.141",
+		 "35.204.194.45"};
+	
+	/**
+	 * A static link to the main server - for Android
+	 */
+	public static Main mMainServer = null;
 	public static Main getServer() {
 		return mMainServer;
 	}
@@ -83,17 +92,25 @@ public class Start {
 		//Check command line inputs
 		int arglen 				= zArgs.length;
 		int port 				= 9001;
-		int rpcport 			= 8999;
 		
 		boolean connect         = true;
-		String connecthost      = "34.90.172.118";
+		
+		//Pick a random host
+		Random rand = new Random();
+		int hostnum = rand.nextInt(VALID_BOOTSTRAP_NODES.length);
+		//hostnum = 3;
+		
+		ArrayList<String> connectlist = new ArrayList<>();
+		String connecthost      = VALID_BOOTSTRAP_NODES[hostnum];
 		int connectport         = 9001;
-		String mifiProxy 		= "http://mifi.minima.global:9000/";
 		String host             = "";
 		
 		boolean clean           = false;
+		boolean cleanhard       = false;
 		boolean genesis 		= false;
 		boolean daemon          = false;
+		boolean noreset 		= false;
+		boolean automine 		= false;
 		
 		//Configuration folder
 		File conf = new File(System.getProperty("user.home"),".minima");
@@ -112,33 +129,32 @@ public class Start {
 				}else if(arg.equals("-host")) {
 					//Hard code the HOST.. 
 					host = zArgs[counter++];
-					
-				}else if(arg.equals("-rpcport")) {
-					//The rpcport
-					rpcport= Integer.parseInt(zArgs[counter++]);
 				
 				}else if(arg.equals("-help")) {
 					//Printout HELP!
-					MinimaLogger.log("Minima v0.4 Alpha Test Net");
-					MinimaLogger.log("        -port [port number]    : Specify port to listen on");
-					MinimaLogger.log("        -host [IP]             : Specify the host IP");
-					MinimaLogger.log("        -rpcport [port number] : Specify port to listen on for RPC connections");
-					MinimaLogger.log("        -conf [folder]         : Specify configuration folder, where data is saved");
+					MinimaLogger.log("Minima "+GlobalParams.MINIMA_VERSION+" Alpha Test Net");
+					MinimaLogger.log("        -port [port number]    : Specify base Minima port to listen on. RPC port will be 1 more. WebSocket Port will be 1 more..");
+					MinimaLogger.log("        -host [IP]             : Specify the host IP - useful if behind firewall or on an internal network with an external IP.");
+					MinimaLogger.log("        -conf [folder]         : Specify configuration folder, where data is saved.");
 					MinimaLogger.log("        -private               : Run a private chain. Don't connect to MainNet. Create a genesis tx-pow. Simulate some users.");
+					MinimaLogger.log("        -clean                 : Wipe user files and chain backup. Start afresh. Use with -private for clean private test-net.");
+					MinimaLogger.log("        -cleanhard             : Same as -clean but remove all the MiniDAPPS.. and webroot folder");
+					MinimaLogger.log("        -noreset               : Won't reset the chain if another heavier chain comes along..");
+					MinimaLogger.log("        -automine              : Simulate users mining the chain");
 					MinimaLogger.log("        -noconnect             : Don't connect to MainNet. Can then connect to private chains.");
-					MinimaLogger.log("        -connect [host] [port] : Don't connect to MainNet. Connect to this node.");
-					MinimaLogger.log("        -mifiproxy [host:port] : Use this address for MiFi proxy requests and not the default.");
-					MinimaLogger.log("        -clean                 : Wipe user files and chain backup. Start afresh.");
+					MinimaLogger.log("        -connect [host] [port] : Don't connect to MainNet but connect to this node instead.");
 					MinimaLogger.log("        -daemon                : Accepts no input from STDIN. Can run in background process.");
 					MinimaLogger.log("        -help                  : Show this help");
 					MinimaLogger.log("");
-					MinimaLogger.log("With zero params Minima will start and connect to the Main Net.");
+					MinimaLogger.log("With zero parameters Minima will start and connect to a set of default nodes.");
 					
 					return;
 				
 				}else if(arg.equals("-private")) {
 					genesis     = true;
 					connect 	= false;
+					noreset     = true;
+					automine    = true;
 					
 				}else if(arg.equals("-noconnect")) {
 					connect = false;
@@ -146,16 +162,22 @@ public class Start {
 				}else if(arg.equals("-daemon")) {
 					daemon = true;
 				
-				}else if(arg.equals("-connect")) {
-					connect = true;
-					connecthost = zArgs[counter++];
-					connectport = Integer.parseInt(zArgs[counter++]);
+				}else if(arg.equals("-noreset")) {
+					noreset = true;
 				
-				}else if(arg.equals("-mifiproxy")) {
-					mifiProxy = zArgs[counter++];
-					
+				}else if(arg.equals("-automine")) {
+					automine = true;
+				
+				}else if(arg.equals("-connect")) {
+					String newconn = zArgs[counter++]+":"+zArgs[counter++];
+					connectlist.add(newconn);
+
 				}else if(arg.equals("-clean")) {
 					clean = true;
+				
+				}else if(arg.equals("-cleanhard")) {
+					clean     = true;
+					cleanhard = true;
 					
 				}else if(arg.equals("-conf")) {
 					conffolder = zArgs[counter++];
@@ -173,23 +195,44 @@ public class Start {
 			BackupManager.deleteConfFolder(conffile);
 		}
 		
+		if(cleanhard) {
+			//Wipe webroot too..
+			BackupManager.deleteWebRoot(conffile);
+		}
+		
 		//Start the main Minima server
-		Main rcmainserver = new Main(host,port, rpcport, genesis, conffolder);
+		Main rcmainserver = new Main(host, port, genesis, conffolder);
 		
 		//Link it.
 		mMainServer = rcmainserver;
 		
+		//Have we added any connect hosts..
+		if(connectlist.size() == 0 && connect) {
+			rcmainserver.addAutoConnectHostPort(connecthost+":"+connectport);
+		}else {
+			for(String hostport : connectlist) {
+				rcmainserver.addAutoConnectHostPort(hostport);
+			}
+		}
+		
 		//Set the connect properties
 		rcmainserver.setAutoConnect(connect);
-		rcmainserver.mAutoHost = connecthost;
-		rcmainserver.mAutoPort = connectport;
-		
-		//Set the proxy
-		rcmainserver.setMiFiProxy(mifiProxy);
 		
 		//Are we private!
 		if(genesis) {
 			rcmainserver.privateChain(clean);
+		}
+		
+		if(noreset) {
+			rcmainserver.noChainReset();
+		}
+		
+		if(automine) {
+			rcmainserver.setAutoMine();
+		}
+		
+		if(!connect) {
+			rcmainserver.setRequireNoInitialSync();
 		}
 		
 		//Start the system
@@ -220,26 +263,43 @@ public class Start {
 		            
 		            //Check valid..
 		            if(input!=null && !input.equals("")) {
+//		            	//trim it..
+//		            	input = input.trim();
+//		            	
+//		            	//New response packet..
+//			            ResponseStream response = new ResponseStream();
+//			            
+//		            	//Set the output stream
+//			            InputMessage inmsg = new InputMessage(input, response);
+//			            
+//		            	//Tell main server
+//		                rcmainserver.getInputHandler().PostMessage(inmsg);
+//		            
+//		                //Wait for the function to finish
+//		                response.waitToFinish();
+//		                
+//		                //Get the response..
+//		                String resp = response.getResponse();
+		            	
 		            	//trim it..
 		            	input = input.trim();
+
+		            	//Create a Command
+		            	CMD cmd = new CMD(input);
 		            	
-		            	//New response packet..
-			            ResponseStream response = new ResponseStream();
-			            
-		            	//Set the output stream
-			            InputMessage inmsg = new InputMessage(input, response);
-			            
-		            	//Tell main server
-		                rcmainserver.getInputHandler().PostMessage(inmsg);
-		            
-		                //Wait for the function to finish
-		                response.waitToFinish();
-		                
-		                //Get the response..
-		                String resp = response.getResponse();
-		                
-		                //Makethe JSON pretty
-		                resp = MiniFormat.JSONPretty(resp);
+		            	//Run it..
+		            	cmd.run();
+		 
+		            	//Get the Response..
+		            	String resp = cmd.getFinalResult();
+		            	
+		                try {
+		                	//Make the JSON pretty
+			                String newresp = MiniFormat.JSONPretty(resp);
+			                resp = newresp;
+		                }catch(Exception exc) {
+		                	//Something not right..
+		                }
 		                		
 		                //And then print out the result
 		                System.out.println(resp);

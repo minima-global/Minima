@@ -8,7 +8,7 @@ public class printtree extends CommandFunction{
 
 	public printtree() {
 		super("printtree");
-		setHelp("", "Print a tree version of the current chain", "");
+		setHelp("(on|off)", "Print a tree version of the current chain. If running On command line can auto print every new block.", "");
 	}
 	
 	@Override
@@ -21,8 +21,6 @@ public class printtree extends CommandFunction{
 			}else{
 				msg.addBoolean("auto", false);
 			}
-		}else {
-			msg.addBoolean("auto", false);
 		}
 		
 		//Print the Tree..

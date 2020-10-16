@@ -20,7 +20,7 @@ public class txnimport extends CommandFunction{
 		
 		//Send to the consensus Handler
 		Message msg = getResponseMessage(ConsensusTxn.CONSENSUS_TXNIMPORT);
-		msg.addInt("transaction", id);
+		msg.addInteger("transaction", id);
 		msg.addString("data", data);
 	
 		getMainHandler().getConsensusHandler().PostMessage(msg);

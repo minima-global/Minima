@@ -65,7 +65,7 @@ public class JavaDB implements TxPowDB{
 		
 		for(JavaDBRow row : mRows) {
 			
-			if(row.isOnChainBlock()) {
+			if(row.isMainChainBlock()) {
 				newRows.add(row);
 				
 				//Other wise the proofs are too old..
@@ -137,7 +137,7 @@ public class JavaDB implements TxPowDB{
 	}
 
 	@Override
-	public int getCompleteSize() {
+	public int getSize() {
 		return mRows.size()+ mDeletedRows.size();
 	}
 
@@ -190,10 +190,22 @@ public class JavaDB implements TxPowDB{
 	public void resetAllInBlocks() {
 		for(TxPOWDBRow row : mRows) {
 			row.setIsInBlock(false);
-			row.setOnChainBlock(false);
+			row.setMainChainBlock(false);
 		}
 	}
 
+	@Override
+	public void resetBlocksFromOnwards(MiniNumber zFromBlock) {
+		for(TxPOWDBRow row : mRows) {
+			if(row.isInBlock()) {
+				if(row.getInBlockNumber().isMoreEqual(zFromBlock)) {
+					row.setIsInBlock(false);
+					row.setMainChainBlock(false);
+				}
+			}
+		}
+	}
+	
 	@Override
 	public ArrayList<TxPOWDBRow> getAllBlocksMissingTransactions() {
 		ArrayList<TxPOWDBRow> ret = new ArrayList<>();
@@ -212,5 +224,7 @@ public class JavaDB implements TxPowDB{
 		mRows = new ArrayList<>();
 		mDeletedRows = new ArrayList<>();
 	}
+
+	
 	
 }

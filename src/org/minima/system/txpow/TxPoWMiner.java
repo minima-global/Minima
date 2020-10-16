@@ -5,14 +5,16 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniInteger;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
-import org.minima.system.SystemHandler;
 import org.minima.system.brains.ConsensusHandler;
 import org.minima.system.brains.ConsensusNet;
+import org.minima.system.input.InputHandler;
 import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
+import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
+import org.minima.utils.messages.MessageProcessor;
 
-public class TxPoWMiner extends SystemHandler{
+public class TxPoWMiner extends MessageProcessor {
 	
 	public static final MiniData BASE_TXN 	= Crypto.MEGA_HASH;
 //	public static final MiniData BASE_TXN 	= Crypto.MAX_HASH;
@@ -22,12 +24,19 @@ public class TxPoWMiner extends SystemHandler{
 	public static final String TXMINER_MINETXPOW   = "MINE_MINETXPOW";
 	public static final String TXMINER_MEGAMINER   = "MINE_MEGAMINER";
 	
-	boolean mAutoMining = false;
+	//Mine a single Block
+	public static final String TXMINER_DEBUGBLOCK   = "MINE_DEBUGBLOCK";
 	
+	/**
+	 * Mine continuously for 2000 milliseconds before recreating your txpow.. 
+	 */
+	private static final long MINE_CONSECUTIVE_MAX = 2000;
+	
+	boolean mAutoMining    = false;
 	boolean mShowTXPOWMine = true;
 	
-	public TxPoWMiner(Main zMain) {
-		super(zMain,"TXMINER");
+	public TxPoWMiner() {
+		super("TXMINER");
 	}
 	
 	public void setAutoMining(boolean zMining) {
@@ -59,7 +68,7 @@ public class TxPoWMiner extends SystemHandler{
 			long currentTime  = System.currentTimeMillis();
 			
 			//should be about 10..
-			long maxTime  	  = currentTime + 5000;
+			long maxTime  	  = currentTime + MINE_CONSECUTIVE_MAX;
 			
 			if(mShowTXPOWMine) {
 				MinimaLogger.log("START TXPOW MINING "+txpow.getTransaction());
@@ -100,7 +109,7 @@ public class TxPoWMiner extends SystemHandler{
 										.addObject("witness", txpow.getWitness());
 
 				//Send it..
-				getMainHandler().getConsensusHandler().PostMessage(sametr);
+				Main.getMainHandler().getConsensusHandler().PostMessage(sametr);
 				
 			}else {
 				if(mShowTXPOWMine) {
@@ -112,7 +121,7 @@ public class TxPoWMiner extends SystemHandler{
 				
 				//We have a valid TX-POW..
 				Message msg = new Message(ConsensusHandler.CONSENSUS_FINISHED_MINE).addObject("txpow", txpow);
-				getMainHandler().getConsensusHandler().PostMessage(msg);
+				Main.getMainHandler().getConsensusHandler().PostMessage(msg);
 			}
 			
 		}else if(zMessage.isMessageType(TXMINER_MEGAMINER)) {
@@ -126,7 +135,7 @@ public class TxPoWMiner extends SystemHandler{
 			long currentTime  = System.currentTimeMillis();
 			
 			//should be about 10..
-			long maxTime  	  = currentTime + 2000;
+			long maxTime  	  = currentTime + MINE_CONSECUTIVE_MAX;
 			
 			//Keep cycling until it is ready 
 			boolean mining = true;
@@ -159,14 +168,66 @@ public class TxPoWMiner extends SystemHandler{
 			
 			if(txpow.isBlock()) {
 				Message msg = new Message(ConsensusNet.CONSENSUS_NET_CHECKSIZE_TXPOW).addObject("txpow", txpow);
-				getMainHandler().getConsensusHandler().PostMessage(msg);
+				Main.getMainHandler().getConsensusHandler().PostMessage(msg);
 			}
 			
 			//Pause for breath
-			Thread.sleep(200);
+			Thread.sleep(500);
 			
 			//And start the whole Mining thing again..
-			getMainHandler().getConsensusHandler().PostMessage(ConsensusHandler.CONSENSUS_MINEBLOCK);
+			Main.getMainHandler().getConsensusHandler().PostMessage(ConsensusHandler.CONSENSUS_MINEBLOCK);
+			
+		}else if(zMessage.isMessageType(TXMINER_DEBUGBLOCK)) {
+			//Get TXPOW..
+			TxPoW txpow = (TxPoW) zMessage.getObject("txpow");
+			
+			//Hard set the Header Body hash - now we are mining it can never change
+			txpow.setHeaderBodyHash();
+			
+			//Do so many then recalculate.. to have the latest block data
+			long currentTime  = System.currentTimeMillis();
+			
+			//Keep cycling until it is ready 
+			boolean mining = true;
+			MiniData hash = null;
+			while(mining && isRunning()) {
+				//Now Hash it..
+				hash = Crypto.getInstance().hashObject(txpow.getTxHeader());
+				
+				//Success ?
+				if(hash.isLess(txpow.getBlockDifficulty())) {
+					mining = false;
+				}else {
+					//Set the Nonce..
+					txpow.setNonce(txpow.getNonce().increment());
+					
+					//Set the Time..
+					txpow.setTimeMilli(new MiniNumber(currentTime));
+				}
+				
+				//New time
+				currentTime  = System.currentTimeMillis();
+			}
+			
+			if(!isRunning()) {
+				return;
+			}
+
+			//Set all the correct internal variables..
+			txpow.calculateTXPOWID();
+			
+			JSONObject resp = InputHandler.getResponseJSON(zMessage);
+			resp.put("txpow", txpow);			
+			
+			//This MUST be the case..
+			if(txpow.isBlock()) {
+				InputHandler.endResponse(zMessage, true, "Block Mined");
+				
+				Message msg = new Message(ConsensusNet.CONSENSUS_NET_CHECKSIZE_TXPOW).addObject("txpow", txpow);
+				Main.getMainHandler().getConsensusHandler().PostMessage(msg);
+			}else {
+				InputHandler.endResponse(zMessage, false, "ERROR - debug miner failed to find a block..");
+			}
 			
 		}else if(zMessage.isMessageType(TXMINER_TESTHASHING)) {
 			//See how many hashes this machine can do..

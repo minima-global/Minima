@@ -25,12 +25,22 @@ public class StateVariable implements Streamable {
 	MiniString mData; 
 	
 	/**
-	 * Port and Data..
+	 * Is this State variable a KEEPER - in the MMR
+	 * A large signature would not be a keeper..
+	 */
+	MiniByte mKeepMMR;
+	
+	/**
+	 * Port and Data and do you store long term..
 	 * 
 	 * @param zPort
 	 * @param zData
 	 */
 	public StateVariable(int zPort, String zData) {
+		this(zPort, zData, MiniByte.TRUE);
+	}
+	
+	public StateVariable(int zPort, String zData, MiniByte zKeepMMR) {
 		mPort	  = new MiniByte(zPort);
 		
 		//Cannot add Mx addresses.. only HEX addresses in SCRIPT
@@ -40,12 +50,16 @@ public class StateVariable implements Streamable {
 		}else {
 			mData = new MiniString(zData);	
 		}
+		
+		//deafults to true
+		mKeepMMR = zKeepMMR;
 	}
 	
 	private StateVariable() {}
 	
-	public void resetData(MiniString zData) {
-		mData = zData;
+	public void resetData(MiniString zData, MiniByte zKeeper) {
+		mData    = zData;
+		mKeepMMR = zKeeper;
 	}
 	
 	public MiniString getValue() {
@@ -56,10 +70,15 @@ public class StateVariable implements Streamable {
 		return mPort.getValue();
 	}
 	
+	public boolean isKeepMMR() {
+		return mKeepMMR.isTrue();
+	}
+	
 	public JSONObject toJSON() {
 		JSONObject ret = new JSONObject();
 		ret.put("port", mPort.toString());
 		ret.put("data", mData.toString());
+		ret.put("keeper", mKeepMMR.isTrue());
 		return ret;
 	}
 	
@@ -84,6 +103,8 @@ public class StateVariable implements Streamable {
 			MiniByte.FALSE.writeDataStream(zOut);
 			mData.writeDataStream(zOut);	
 		}
+		
+		mKeepMMR.writeDataStream(zOut);
 	}
 
 	@Override
@@ -98,6 +119,8 @@ public class StateVariable implements Streamable {
 		}else {
 			mData = MiniString.ReadFromStream(zIn);	
 		}
+		
+		mKeepMMR = MiniByte.ReadFromStream(zIn);
 	}
 	
 	public static StateVariable ReadFromStream(DataInputStream zIn) throws IOException{

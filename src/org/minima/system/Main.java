@@ -1,9 +1,10 @@
 
 package org.minima.system;
 
+import java.util.ArrayList;
+
 import org.minima.GlobalParams;
-import org.minima.objects.base.MiniNumber;
-import org.minima.system.backup.BackupManager;
+import org.minima.system.brains.BackupManager;
 import org.minima.system.brains.ConsensusBackup;
 import org.minima.system.brains.ConsensusHandler;
 import org.minima.system.input.InputHandler;
@@ -15,6 +16,14 @@ import org.minima.utils.messages.MessageProcessor;
 
 public class Main extends MessageProcessor {
 
+	/**
+	 * Retrieve the Main handler.. from where you can retrieve everything else..
+	 */
+	private static Main mMainHandler;
+	public static Main getMainHandler() {
+		return mMainHandler;
+	}
+	
 	public static final String SYSTEM_STARTUP 		= "SYSTEM_STARTUP";
 	
 	public static final String SYSTEM_INIT 		    = "SYSTEM_INIT";
@@ -48,29 +57,17 @@ public class Main extends MessageProcessor {
 	 * The Backup Manager - runs in a separate thread
 	 */
 	private BackupManager mBackup;
-		
-	/**
-	 * User Simulator.. for testing..
-	 */
-//	UserSimulator mSim;
 	
 	/**
 	 * Are we creating a network from scratch
 	 */
 	boolean mGenesis = false;
 
-	public int mPort;
-	public int mRPCPort;
-	
-	public boolean mAutoConnect = false;
-	public String mAutoHost 	= "";
-	public int mAutoPort    	= 0;
-	
 	/**
-	 * These values are filled by the Consensus for convenience..
-	 * 
+	 * Default nodes to connect to
 	 */
-	MiniNumber mCurrentTopBlock;
+	public boolean mAutoConnect        = false;
+	ArrayList<String> mAutoConnectList = new ArrayList<>();
 	
 	/**
 	 * When did this node start up..
@@ -78,19 +75,40 @@ public class Main extends MessageProcessor {
 	long mNodeStartTime;
 	
 	/**
-	 * Main COnstructor
+	 * Main Constructor
 	 * @param zPort
 	 * @param zGenesis
 	 */
-	public Main(String zHost, int zPort, int zRPCPort, boolean zGenesis, String zConfFolder) {
+	public Main(String zHost, int zPort, boolean zGenesis, String zConfFolder) {
 		super("MAIN");
+		
+		mMainHandler = this;
 		
 		//What time do we start..
 		mNodeStartTime = System.currentTimeMillis();
 		
+		//Backup manager
+		mBackup     = new BackupManager(zConfFolder);
+
+		//Set the TeMP folder
+		System.setProperty("java.io.tmpdir",BackupManager.getTempFolder().getAbsolutePath());
+		
+		//The guts..
+		mInput 		= new InputHandler(this);
+		mNetwork 	= new NetworkHandler(this, zHost, zPort);
+		mTXMiner 	= new TxPoWMiner();
+		mConsensus  = new ConsensusHandler(this);
+		
+		//mConsensus.setLOG(true);
+		
+		//Are we the genesis
+		mGenesis 	= zGenesis;
+		
 		/**
 		 * Introduction..
 		 */
+		MinimaLogger.setMainHandler(mConsensus);
+		
 		MinimaLogger.log("**********************************************");
 		MinimaLogger.log("*  __  __  ____  _  _  ____  __  __    __    *");
 		MinimaLogger.log("* (  \\/  )(_  _)( \\( )(_  _)(  \\/  )  /__\\   *");
@@ -98,22 +116,7 @@ public class Main extends MessageProcessor {
 		MinimaLogger.log("* (_/\\/\\_)(____)(_)\\_)(____)(_/\\/\\_)(__)(__) *");
 		MinimaLogger.log("*                                            *");
 		MinimaLogger.log("**********************************************");
-		
-		//Do it..
-		mPort 		= zPort;
-		mRPCPort	= zRPCPort;
-		
-		mInput 		= new InputHandler(this);
-		
-		mNetwork 	= new NetworkHandler(this,zHost);
-		mTXMiner 	= new TxPoWMiner(this);
-		mBackup     = new BackupManager(this,zConfFolder);
-		
-		//Create the Consensus handler..
-		mConsensus  = new ConsensusHandler(this);
-		
-		mGenesis 	= zGenesis;
-		
+		MinimaLogger.log("Welcome to Minima. For assistance type help. Then press enter.");
 		MinimaLogger.log("Minima files : "+zConfFolder);
 		MinimaLogger.log("Minima version "+GlobalParams.MINIMA_VERSION);
 	}
@@ -122,13 +125,12 @@ public class Main extends MessageProcessor {
 		mAutoConnect = zAuto;
 	}
 	
-	public void setMiFiProxy(String zProxy){
-		mNetwork.setProxy(zProxy);
+	public void clearAutoConnectHostPort(String zHostPort) {
+		mAutoConnectList.clear();
 	}
 	
-	public void setAutoConnectHostPort(String zHost, int zPort) {
-		mAutoHost = zHost;
-		mAutoPort = zPort;
+	public void addAutoConnectHostPort(String zHostPort) {
+		mAutoConnectList.add(zHostPort);
 	}
 	
 	public long getNodeStartTime() {
@@ -181,52 +183,56 @@ public class Main extends MessageProcessor {
 		mConsensus.setHardResetAllowed(false);
 	}
 	
+	public void noChainReset() {
+		//No Hard Reset..
+		mConsensus.setHardResetAllowed(false);
+	}
+	
+	public void setAutoMine() {
+		//Tell miner we are auto mining..
+		mTXMiner.setAutoMining(true);
+	}
+	
+	public void setRequireNoInitialSync() {
+		mConsensus.setInitialSyncComplete();
+	}
+		
 	@Override
 	protected void processMessage(Message zMessage) throws Exception {
 		
-		if ( zMessage.isMessageType(SYSTEM_STARTUP) ) {
+		if (zMessage.isMessageType(SYSTEM_STARTUP) ) {
 			
 			//Set the Database backup manager
 			getConsensusHandler().setBackUpManager();
-			
-//			//Are we genesis
-//			if(mGenesis) {
-//				//Sort the genesis Block
-//				mConsensus.genesis();
-//				
-//				//Tell miner we are auto mining..
-//				mTXMiner.setAutoMining(true);
-//				
-//				//No Hard Reset..
-//				mConsensus.setHardResetAllowed(false);
-//				
-//				//And init..
-//				PostMessage(SYSTEM_INIT);
-//				
-//			}else{
-//				
-//			}
 			
 			//Restore..
 			getConsensusHandler().PostMessage(ConsensusBackup.CONSENSUSBACKUP_RESTORE);
 			
 		}else if ( zMessage.isMessageType(SYSTEM_INIT) ) {
+			
 			//Start the network..	
-			Message netstart = new Message(NetworkHandler.NETWORK_STARTUP)
-									.addInt("port", mPort)
-									.addInt("rpcport", mRPCPort);
-			mNetwork.PostMessage(netstart);
+			mNetwork.PostMessage(NetworkHandler.NETWORK_STARTUP);
 
 			//And do we do an automatic logon..
 			if(mAutoConnect) {
-				//Send a TimedMessage..
-				Message connect  = new Message(NetworkHandler.NETWORK_CONNECT)
-						.addInt("port", mAutoPort).addString("host", mAutoHost);
+				//Connect to the the list of auto connect
+				for(String hostport : mAutoConnectList) {
+					int div     = hostport.indexOf(":");
+					String host = hostport.substring(0,div);
+					int port    = Integer.parseInt(hostport.substring(div+1));
+					
+					//Send a TimedMessage..
+					Message connect  = new Message(NetworkHandler.NETWORK_CONNECT)
+							.addInteger("port", port).addString("host", host);
+					getNetworkHandler().PostMessage(connect);
 				
-				getNetworkHandler().PostMessage(connect);
+					//Small Pause.. 10 seconds..
+					Thread.sleep(10000);
+				}
 			}
 			
 		}else if ( zMessage.isMessageType(SYSTEM_SHUTDOWN) ) {
+			
 			//make a backup and shutdown message
 			Message backshut = new Message(ConsensusBackup.CONSENSUSBACKUP_BACKUP);
 			backshut.addBoolean("shutdown", true);

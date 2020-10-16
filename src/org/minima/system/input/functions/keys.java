@@ -23,9 +23,9 @@ public class keys extends CommandFunction {
 				//Get the bitlength
 				int bitl = Integer.parseInt(zInput[2]);
 				
-				newkey.addInt("bitlength", bitl);
+				newkey.addInteger("bitlength", bitl);
 			}else {
-				newkey.addInt("bitlength", 256);
+				newkey.addInteger("bitlength", 256);
 			}
 			
 			getMainHandler().getConsensusHandler().PostMessage(newkey);

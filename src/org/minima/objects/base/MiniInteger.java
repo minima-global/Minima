@@ -88,6 +88,10 @@ public class MiniInteger implements Streamable {
 		return add(ONE);
 	}
 	
+	public MiniInteger decrement() {
+		return sub(ONE);
+	}
+	
 	@Override
 	public String toString() {
 		return mNumber.toString();
@@ -106,7 +110,7 @@ public class MiniInteger implements Streamable {
 	public void readDataStream(DataInputStream zIn) throws IOException {
 		//Read in the byte array for unscaled BigInteger
 		int len = zIn.readInt();
-		if(len > 512) {
+		if(len > 128) {
 			//Something wrong..
 			throw new IOException("ERROR reading MiniInteger - input too large "+len);
 		}

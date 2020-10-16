@@ -1,16 +1,15 @@
 package org.minima.system.input;
 
-import org.minima.objects.base.MiniData;
 import org.minima.system.Main;
-import org.minima.system.SystemHandler;
 import org.minima.system.brains.ConsensusHandler;
 import org.minima.system.input.functions.intro;
 import org.minima.utils.ResponseStream;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
+import org.minima.utils.messages.MessageProcessor;
 
-public class InputHandler extends SystemHandler{
-
+public class InputHandler extends MessageProcessor {
+	
 	/**
 	 * Message type for input messages
 	 */
@@ -27,31 +26,25 @@ public class InputHandler extends SystemHandler{
 	public static final String INPUT_RESPONSE = "_**outstream**_";
 	
 	/**
-	 * A random value used by the RPC handler to assign temp vars
-	 */
-	public static final MiniData RANDOM_VAL = MiniData.getRandomData(20);
-	
-	/**
 	 * Main Constructor
 	 * 
 	 * @param zMain
 	 */
 	public InputHandler(Main zMain) {
-		super(zMain,"INPUT");
-		
-		//And run the intro..
-		new intro().doFunction(new String[0]);
+		super("INPUT");
 	}
 	
 	@Override
 	protected void processMessage(Message zMessage) throws Exception {
 		
 		if(zMessage.isMessageType(INPUT_COMMAND)) {
-			//Notify something happening..
-			getMainHandler().getConsensusHandler().updateListeners(new Message(ConsensusHandler.CONSENSUS_NOTIFY_ACTION));
-			
 			//Process the input
 			String input = zMessage.getString(INPUT_FUNCTION);
+			
+			//Notify something happening..
+			Message action = new Message(ConsensusHandler.CONSENSUS_NOTIFY_ACTION);
+			action.addString("action", input);
+			Main.getMainHandler().getConsensusHandler().updateListeners(action);
 			
 			//Get the response Stream
 			ResponseStream output = (ResponseStream) zMessage.getObject(INPUT_RESPONSE);
@@ -77,7 +70,7 @@ public class InputHandler extends SystemHandler{
 					found.setResponseStream(output);
 					
 					//Set the Main handler..
-					found.setMainHandler(getMainHandler());
+					found.setMainHandler(Main.getMainHandler());
 					
 					//Do it..
 					found.doFunction(inputs);	
@@ -138,6 +131,16 @@ public class InputHandler extends SystemHandler{
 			
 			//Set the details
 			out.endStatus(zValid, zStatusMessage);
+		}
+	}
+	
+	public static void setFullResponse(Message zMessage, JSONObject zJSON) {
+		if(zMessage.exists(InputHandler.INPUT_RESPONSE)) {
+			//Get the output response
+			ResponseStream out = (ResponseStream)zMessage.getObject(InputHandler.INPUT_RESPONSE);
+			
+			//Set the details
+			out.hardSetJSON(zJSON);
 		}
 	}
 }

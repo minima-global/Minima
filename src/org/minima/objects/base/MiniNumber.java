@@ -3,6 +3,8 @@
  */
 package org.minima.objects.base;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -11,7 +13,6 @@ import java.math.BigInteger;
 import java.math.MathContext;
 import java.math.RoundingMode;
 
-import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 
 /**
@@ -22,7 +23,7 @@ import org.minima.utils.Streamable;
  * @author Spartacus Rex
  *
  */
-public class MiniNumber implements Streamable {
+public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 	
 	/**
 	 * The Math Context used for ALL real numbers
@@ -49,12 +50,21 @@ public class MiniNumber implements Streamable {
 	public static final MiniNumber SIXTEEN      = new MiniNumber("16");
 	public static final MiniNumber THIRTYTWO    = new MiniNumber("32");
 	public static final MiniNumber SIXTYFOUR    = new MiniNumber("64");
+	public static final MiniNumber TWOFIVESIX   = new MiniNumber("256");
+	public static final MiniNumber FIVEONE12    = new MiniNumber("512");
+	public static final MiniNumber THOUSAND24   = new MiniNumber("1024");
 	
 	public static final MiniNumber TEN          = new MiniNumber("10");
 	public static final MiniNumber HUNDRED      = new MiniNumber("100");
 	public static final MiniNumber THOUSAND     = new MiniNumber("1000");
+	public static final MiniNumber MILLION      = new MiniNumber("1000000");
+	public static final MiniNumber BILLION      = new MiniNumber("1000000000");
 	
 	public static final MiniNumber MINUSONE 	= new MiniNumber("-1");
+	
+	public static final MiniNumber POINTONE 	= new MiniNumber("0.1");
+	public static final MiniNumber ONEPOINTONE 	= new MiniNumber("1.1");
+	public static final MiniNumber POINTNINE 	= new MiniNumber("0.9");
 	
 	/**
 	 * The number representation
@@ -164,6 +174,7 @@ public class MiniNumber implements Streamable {
 		return new MiniNumber( mNumber.subtract(BigDecimal.ONE,mMathContext) );
 	}
 
+	@Override
 	public int compareTo(MiniNumber zCompare) {
 		return mNumber.compareTo(zCompare.getAsBigDecimal());
 	}
@@ -215,9 +226,9 @@ public class MiniNumber implements Streamable {
 		
 		//Read in the byte array for unscaled BigInteger
 		int len = zIn.readInt();
-		if(len > 64) {
+		if(len > 20 || len<1) {
 			//Something wrong..
-			throw new IOException("ERROR reading MiniNumber - input too large "+len);
+			throw new IOException("ERROR reading MiniNumber - input too large or negative "+len);
 		}
 		
 		byte[] data = new byte[len];
@@ -233,4 +244,31 @@ public class MiniNumber implements Streamable {
 		data.readDataStream(zIn);
 		return data;
 	}
+	
+	public static void main(String[] zargs) {
+		MiniNumber num = new MiniNumber("100300000.040060012");
+		
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		DataOutputStream dos = new DataOutputStream(baos);
+		
+		try {
+			num.writeDataStream(dos);
+		
+			dos.flush();
+			baos.flush();
+		
+			ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+			DataInputStream dis = new DataInputStream(bais);
+			
+			MiniNumber test = MiniNumber.ReadFromStream(dis);
+			
+			System.out.println("Number : "+test);
+			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	
 }
