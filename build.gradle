@@ -29,6 +29,8 @@ dependencies {
 
     // Use JUnit test framework
     testImplementation 'junit:junit:4.13'
+
+    implementation 'org.mozilla:rhino:1.7R4'
 }
 
 sourceSets {
