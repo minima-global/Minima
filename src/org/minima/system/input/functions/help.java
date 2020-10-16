@@ -27,7 +27,7 @@ public class help extends CommandFunction{
 	public help() {
 		super("help");
 		
-		setHelp("{function}",
+		setHelp("(function)",
 				"Show the help for all or a specified function", 
 				"If you are unsure how to use a function you can type help function, "
 				+ "and a longer description with a complete org.minima.datadog.example will be shown.\n\nhelp send");
@@ -62,13 +62,14 @@ public class help extends CommandFunction{
 			addJSONDesc(new tutorial());
 			
 			addJSONDesc(new status());
+			addJSONDesc(new topblock());
 			addJSONDesc(new history());
 			addJSONDesc(new backup());
 			addJSONDesc(new flushmempool());
 			addJSONDesc(new check());
 			
 			addJSONDesc(new printdb());
-//			addJSONDesc(new printtree());
+			addJSONDesc(new printtree());
 			addJSONDesc(new automine());
 			addJSONDesc(new trace());
 			
@@ -104,8 +105,10 @@ public class help extends CommandFunction{
 			addJSONDesc(new cleanscript());
 			addJSONDesc(new runscript());
 			
-			addJSONDesc(new createtoken());
+//			addJSONDesc(new createtoken());
 			addJSONDesc(new tokens());
+			addJSONDesc(new tokencreate());
+			addJSONDesc(new tokenvalidate());
 			
 			addJSONDesc(new sign());
 			addJSONDesc(new chainsha());
@@ -133,7 +136,7 @@ public class help extends CommandFunction{
 			addJSONDesc(new quit());
 			
 			//It's worked
-			getResponseStream().endStatus(true, "");
+			getResponseStream().endStatus(true, "Separate multiple functions with ;");
 		}
 	}
 

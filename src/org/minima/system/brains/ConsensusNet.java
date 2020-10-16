@@ -1,8 +1,5 @@
 package org.minima.system.brains;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.io.File;
 import java.math.BigInteger;
 import java.util.ArrayList;
 
@@ -17,18 +14,21 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.greet.Greeting;
 import org.minima.objects.greet.HashNumber;
+import org.minima.objects.greet.SyncPackage;
+import org.minima.objects.greet.SyncPacket;
+import org.minima.objects.greet.TxPoWIDList;
 import org.minima.objects.greet.TxPoWList;
 import org.minima.objects.proofs.TokenProof;
-import org.minima.system.backup.BackupManager;
-import org.minima.system.backup.SyncPackage;
-import org.minima.system.backup.SyncPacket;
-import org.minima.system.input.InputHandler;
-import org.minima.system.network.NetClient;
-import org.minima.system.network.NetClientReader;
+import org.minima.system.Main;
+import org.minima.system.network.MinimaClient;
+import org.minima.system.network.MinimaReader;
 import org.minima.system.txpow.TxPoWChecker;
+import org.minima.system.txpow.TxPoWMiner;
 import org.minima.utils.Crypto;
+import org.minima.utils.DataTimer;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.messages.Message;
+import org.minima.utils.messages.TimerMessage;
 
 public class ConsensusNet extends ConsensusProcessor {
 
@@ -40,16 +40,17 @@ public class ConsensusNet extends ConsensusProcessor {
 	public static final String CONSENSUS_NET_CHECKSIZE_TXPOW 	    = CONSENSUS_PREFIX+"NET_MESSAGE_MYTXPOW";
 	
 	public static final String CONSENSUS_NET_INITIALISE 	= CONSENSUS_PREFIX+"NET_INITIALISE";
-	public static final String CONSENSUS_NET_INTRO 			= CONSENSUS_PREFIX+"NET_MESSAGE_"+NetClientReader.NETMESSAGE_INTRO.getValue();
-	public static final String CONSENSUS_NET_TXPOWID 		= CONSENSUS_PREFIX+"NET_MESSAGE_"+NetClientReader.NETMESSAGE_TXPOWID.getValue();
-	public static final String CONSENSUS_NET_TXPOWREQUEST	= CONSENSUS_PREFIX+"NET_MESSAGE_"+NetClientReader.NETMESSAGE_TXPOW_REQUEST.getValue();
-	public static final String CONSENSUS_NET_TXPOW 			= CONSENSUS_PREFIX+"NET_MESSAGE_"+NetClientReader.NETMESSAGE_TXPOW.getValue();
+	public static final String CONSENSUS_NET_INTRO 			= CONSENSUS_PREFIX+"NET_MESSAGE_"+MinimaReader.NETMESSAGE_INTRO.getValue();
+	public static final String CONSENSUS_NET_TXPOWID 		= CONSENSUS_PREFIX+"NET_MESSAGE_"+MinimaReader.NETMESSAGE_TXPOWID.getValue();
+	public static final String CONSENSUS_NET_TXPOWREQUEST	= CONSENSUS_PREFIX+"NET_MESSAGE_"+MinimaReader.NETMESSAGE_TXPOW_REQUEST.getValue();
+	public static final String CONSENSUS_NET_TXPOW 			= CONSENSUS_PREFIX+"NET_MESSAGE_"+MinimaReader.NETMESSAGE_TXPOW.getValue();
 	
-	public static final String CONSENSUS_NET_GREETING 		    = CONSENSUS_PREFIX+"NET_MESSAGE_"+NetClientReader.NETMESSAGE_GREETING.getValue();
-	public static final String CONSENSUS_NET_TXPOWLIST_REQUEST	= CONSENSUS_PREFIX+"NET_MESSAGE_"+NetClientReader.NETMESSAGE_TXPOWLIST_REQUEST.getValue();
-	public static final String CONSENSUS_NET_TXPOWLIST 			= CONSENSUS_PREFIX+"NET_MESSAGE_"+NetClientReader.NETMESSAGE_TXPOWLIST.getValue();
+	public static final String CONSENSUS_NET_GREETING 		    = CONSENSUS_PREFIX+"NET_MESSAGE_"+MinimaReader.NETMESSAGE_GREETING.getValue();
+	public static final String CONSENSUS_NET_TXPOWLIST_REQUEST	= CONSENSUS_PREFIX+"NET_MESSAGE_"+MinimaReader.NETMESSAGE_TXPOWLIST_REQUEST.getValue();
+	public static final String CONSENSUS_NET_TXPOWLIST 			= CONSENSUS_PREFIX+"NET_MESSAGE_"+MinimaReader.NETMESSAGE_TXPOWLIST.getValue();
+	public static final String CONSENSUS_NET_TXPOWIDLIST 	    = CONSENSUS_PREFIX+"NET_MESSAGE_"+MinimaReader.NETMESSAGE_TXPOWIDLIST.getValue();
 	
-	public static final String CONSENSUS_NET_PING 			= CONSENSUS_PREFIX+"NET_MESSAGE_"+NetClientReader.NETMESSAGE_PING.getValue();
+	public static final String CONSENSUS_NET_PING 			= CONSENSUS_PREFIX+"NET_MESSAGE_"+MinimaReader.NETMESSAGE_PING.getValue();
 	
 	/**
 	 * Will we switch to a heavier chain - DEBUG mode for -private
@@ -57,6 +58,11 @@ public class ConsensusNet extends ConsensusProcessor {
 	boolean mHardResetAllowed = true;
 	
 	boolean mFullSyncOnInit = true;
+	
+	/**
+	 * Check when you sent out a request for a TxPOW
+	 */
+	DataTimer mDataTimer = new DataTimer();
 	
 	/**
 	 * Has the initial Sync been done..
@@ -69,7 +75,7 @@ public class ConsensusNet extends ConsensusProcessor {
 		mInitialSync = false;
 	}
 	 
-	public void setHardResest(boolean zHardResetAllowed) {
+	public void setAllowHardResest(boolean zHardResetAllowed) {
 		mHardResetAllowed = zHardResetAllowed;
 	
 		if(!mHardResetAllowed) {
@@ -81,10 +87,20 @@ public class ConsensusNet extends ConsensusProcessor {
 		mFullSyncOnInit = zFull;
 	}
 	
-	public void initialSyncComplete() {
+	public boolean isInitialSyncComplete() {
+		return mInitialSync;
+	}
+	
+	public void setInitialSyncComplete() {
+		setInitialSyncComplete(true);
+	}
+	
+	private void setInitialSyncComplete(boolean zPostNotify) {
 		if(!mInitialSync) {
 			mInitialSync = true;
-			getConsensusHandler().updateListeners(new Message(ConsensusHandler.CONSENSUS_NOTIFY_INITIALSYNC));	
+			if(zPostNotify) {
+				getConsensusHandler().updateListeners(new Message(ConsensusHandler.CONSENSUS_NOTIFY_INITIALSYNC));	
+			}
 		}
 	}
 	
@@ -114,13 +130,15 @@ public class ConsensusNet extends ConsensusProcessor {
 			}
 			
 			//Get the NetClient...
-			NetClient client = (NetClient) zMessage.getObject("netclient");
-			Message req      = new Message(NetClient.NETCLIENT_GREETING).addObject("greeting", greet);
+			MinimaClient client = (MinimaClient) zMessage.getObject("netclient");
+			Message req      = new Message(MinimaClient.NETCLIENT_GREETING).addObject("greeting", greet);
 			
 			//And Post it..
 			client.PostMessage(req);
 			
 		}else if(zMessage.isMessageType(CONSENSUS_NET_INTRO)) {
+			//MinimaLogger.log("INTRO SYNC message received..");
+			
 			//Get the Sync Package..
 			SyncPackage sp = (SyncPackage) zMessage.getObject("sync");
 			
@@ -159,7 +177,7 @@ public class ConsensusNet extends ConsensusProcessor {
 					}else {
 						//This normally means you are STUCK.. hmm..
 						MinimaLogger.log("YOUR CHAIN HEAVIER.. NO CHANGE REQUIRED");
-						initialSyncComplete();
+						setInitialSyncComplete();
 						return;
 					}
 					
@@ -169,14 +187,14 @@ public class ConsensusNet extends ConsensusProcessor {
 					}else {
 						MinimaLogger.log("NO HARD RESET ALLOWED.. ");
 						hardreset = false;
-						initialSyncComplete();
+						setInitialSyncComplete();
 						return;
 					}
 				}
 			}
 			
 			//We'll be storing the received txpow messages
-			BackupManager backup = getConsensusHandler().getMainHandler().getBackupManager();
+			BackupManager backup = Main.getMainHandler().getBackupManager();
 			
 			//Complete Refresh..
 			if(hardreset) {
@@ -186,11 +204,12 @@ public class ConsensusNet extends ConsensusProcessor {
 				getMainDB().getTxPowDB().ClearDB();
 				
 				//Wipe the txpow folder..
-				File txfolder = backup.getBackUpFolder(); 
-				BackupManager.deleteFileOrFolder(txfolder);
+				BackupManager.safeDelete(backup.getBackUpFolder());
 				
 				//Drill down 
 				ArrayList<SyncPacket> packets = sp.getAllNodes();
+				float totpacks = packets.size();
+				float counter  = 0;
 				for(SyncPacket spack : packets) {
 					TxPoW txpow = spack.getTxPOW();
 					
@@ -225,27 +244,43 @@ public class ConsensusNet extends ConsensusProcessor {
 							getMainDB().getUserDB().addTokenDetails(tp);
 						}
 					}
+					
+					//Notify..
+					counter++;
+					int totperc = (int)((counter / totpacks) * 100.0f);
+					getConsensusHandler().updateListeners(new Message(ConsensusHandler.CONSENSUS_NOTIFY_INITIALPERC).addString("info", "Loading "+totperc+"%"));
 				}
 				
 				//Reset weights
 				getMainDB().hardResetChain();
-			
-				//Now the Initial SYNC has been done you can receive TXPOW message..
-				initialSyncComplete();
 				
 				//FOR NOW
 				TxPoW tip = getMainDB().getMainTree().getChainTip().getTxPow();
 				MinimaLogger.log("Sync Complete.. Reset Current block : "+tip.getBlockNumber());
 			
+				//Do the balance.. Update listeners if changed..
+				getConsensusHandler().PostMessage(new Message(ConsensusPrint.CONSENSUS_BALANCE).addBoolean("hard", true));
+				
 				//Post a message to those listening
 				getConsensusHandler().updateListeners(new Message(ConsensusHandler.CONSENSUS_NOTIFY_NEWBLOCK).addObject("txpow", tip));
 				
 				//Backup the system..
-				getConsensusHandler().PostMessage(ConsensusBackup.CONSENSUSBACKUP_BACKUP);
+				getConsensusHandler().PostTimerMessage(new TimerMessage(2000,ConsensusBackup.CONSENSUSBACKUP_BACKUP));
 				
-//				//Do you want a copy of ALL the TxPoW in the Blocks.. ?
-//				//Only really useful for txpowsearch - DEXXED
+				//Now the Initial SYNC has been done you can receive TXPOW message..
+				setInitialSyncComplete(false);
+				
+				//Do you want a copy of ALL the TxPoW in the Blocks.. ? Only really useful for txpowsearch - DEXXED
 				if(mFullSyncOnInit) {
+					//The total list..
+					ArrayList<String> checklist = new ArrayList<>();
+					
+					//Create a TxPOWIDlist of the requested TxPOW..
+					TxPoWIDList txpidlist = new TxPoWIDList();
+					
+					//Get the Client..
+					MinimaClient client = (MinimaClient) zMessage.getObject("netclient");
+					
 					//Now request all the TXNS in those blocks..
 					int reqtxn = 0;
 					ArrayList<BlockTreeNode> nodes = getMainDB().getMainTree().getAsList(true);
@@ -257,13 +292,46 @@ public class ConsensusNet extends ConsensusProcessor {
 						if(txpow.hasBody()) {
 							ArrayList<MiniData> txns = txpow.getBlockTransactions();
 							for(MiniData txn : txns) {
-								//MinimaLogger.log("REQ TXN from initial sync "+txn);
+								//Check for it..
+								String checker = txn.to0xString();
+								if(checklist.contains(checker)) {
+									//We have already sent for it..
+									continue;
+								}
+								
+								//Add it..
+								checklist.add(checker);
 								
 								//We don't have it, get it..
-								sendTxPowRequest(zMessage, txn);
+								txpidlist.addTxPowID(txn);
+							
+								//Have we reached the limit..
+								if(txpidlist.size() > 200) {
+									//Send it..
+									Message req = new Message(MinimaClient.NETCLIENT_TXPOWIDLIST).addObject("txpowidlist", txpidlist);
+									client.PostMessage(req);
+											
+									//Reset..
+									txpidlist = new TxPoWIDList();
+								}
+
+								//Total requests made
 								reqtxn++;
+								
+								//Add it to the list
+								getNetworkHandler().addRequestedInitialSyncTxPow(txn.to0xString());
 							}
 						}
+					}
+					
+					//And finally.. any left..
+					if(txpidlist.size() > 0) {
+						//Send it..
+						Message req = new Message(MinimaClient.NETCLIENT_TXPOWIDLIST).addObject("txpowidlist", txpidlist);
+						client.PostMessage(req);
+								
+						//Reset..
+						txpidlist = new TxPoWIDList();
 					}
 					
 					if(reqtxn>0) {
@@ -296,8 +364,8 @@ public class ConsensusNet extends ConsensusProcessor {
 				MinimaLogger.log("FIRST TIME SYNC - Sending complete");
 				//Get the complete sync package - deep copy.. 
 				SyncPackage sp = getMainDB().getSyncPackage(true);
-				NetClient client = (NetClient) zMessage.getObject("netclient");
-				Message req      = new Message(NetClient.NETCLIENT_INTRO).addObject("syncpackage", sp);
+				MinimaClient client = (MinimaClient) zMessage.getObject("netclient");
+				Message req      = new Message(MinimaClient.NETCLIENT_INTRO).addObject("syncpackage", sp);
 				client.PostMessage(req);
 				return;
 			}
@@ -307,8 +375,8 @@ public class ConsensusNet extends ConsensusProcessor {
 				MinimaLogger.log("NO CROSSOVER - Sending complete");
 				//Get the complete sync package - deep copy.. 
 				SyncPackage sp = getMainDB().getSyncPackage(true);
-				NetClient client = (NetClient) zMessage.getObject("netclient");
-				Message req      = new Message(NetClient.NETCLIENT_INTRO).addObject("syncpackage", sp);
+				MinimaClient client = (MinimaClient) zMessage.getObject("netclient");
+				Message req      = new Message(MinimaClient.NETCLIENT_INTRO).addObject("syncpackage", sp);
 				client.PostMessage(req);
 				return;
 			}
@@ -318,7 +386,7 @@ public class ConsensusNet extends ConsensusProcessor {
 			MiniNumber len = blocks.get(greetlen-1).getNumber().sub(cross);
 			
 			if(len.getAsInt() == 0) {
-				initialSyncComplete();
+				setInitialSyncComplete();
 				return;
 			}else {
 				MinimaLogger.log("CROSSOVER FOUND Requesting from "+cross+" to "+blocks.get(greetlen-1).getNumber());	
@@ -327,8 +395,8 @@ public class ConsensusNet extends ConsensusProcessor {
 			//Ask for Just the required Blocks..
 			HashNumber hn = new HashNumber(top, len);
 			
-			NetClient client = (NetClient) zMessage.getObject("netclient");
-			Message req      = new Message(NetClient.NETCLIENT_TXPOWLIST_REQ).addObject("hashnumber", hn);
+			MinimaClient client = (MinimaClient) zMessage.getObject("netclient");
+			Message req      = new Message(MinimaClient.NETCLIENT_TXPOWLIST_REQ).addObject("hashnumber", hn);
 			client.PostMessage(req);
 			
 		}else if ( zMessage.isMessageType(CONSENSUS_NET_TXPOWLIST_REQUEST)) {
@@ -336,41 +404,106 @@ public class ConsensusNet extends ConsensusProcessor {
 			HashNumber hashnum = (HashNumber)zMessage.getObject("hashnumber");
 			int max = hashnum.getNumber().getAsInt();
 			
-			TxPoWList txplist = new TxPoWList();
+			TxPoWList txpowlist = new TxPoWList();
+			txpowlist.setCrossOver(true);
 			int counter = 0;
 			
 			BlockTreeNode top = getMainDB().getMainTree().findNode(hashnum.getHash());
 			while(top!=null && counter<max) {
-				txplist.addTxPow(top.getTxPow());
+				txpowlist.addTxPow(top.getTxPow());
 				top = top.getParent();
 				counter++;
 			}
 			
 			//Now send that..!
-			NetClient client = (NetClient) zMessage.getObject("netclient");
-			Message req      = new Message(NetClient.NETCLIENT_TXPOWLIST).addObject("txpowlist", txplist);
-			client.PostMessage(req);
+			MinimaClient client = (MinimaClient) zMessage.getObject("netclient");
+			client.PostMessage(new Message(MinimaClient.NETCLIENT_TXPOWLIST).addObject("txpowlist", txpowlist));
 			
-		}else if ( zMessage.isMessageType(CONSENSUS_NET_TXPOWLIST)) {
-			TxPoWList txplist = (TxPoWList)zMessage.getObject("txpowlist"); 
+		}else if ( zMessage.isMessageType(CONSENSUS_NET_TXPOWIDLIST)) {
+			TxPoWIDList txpidlist = (TxPoWIDList)zMessage.getObject("txpowidlist");
 			
-			//Get the NetClient...
-			NetClient client = (NetClient) zMessage.getObject("netclient");
+			//Now get all the txp
+			TxPoWList txpowlist = new TxPoWList();
+			txpowlist.setCrossOver(false);
 			
-			//Cycle through and add as a normal message - extra transactions will be requested as normal
-			ArrayList<TxPoW> txps = txplist.getList();
-			for(TxPoW txp : txps) {
-				Message msg = new Message(CONSENSUS_NET_TXPOW);
-				msg.addObject("txpow", txp);
-				msg.addObject("netclient", client);
-				getConsensusHandler().PostMessage(msg);
+			ArrayList<MiniData> list = txpidlist.getList();
+			for(MiniData txpid : list) {
+				//Get the TxPOW
+				TxPoW txp = getMainDB().getTxPOW(txpid);
+				
+				//Do we have it..
+				if(txp != null) {
+					txpowlist.addTxPow(txp);
+				}
 			}
 			
+			//Now send that..!
+			MinimaClient client = (MinimaClient) zMessage.getObject("netclient");
+			client.PostMessage(new Message(MinimaClient.NETCLIENT_TXPOWLIST).addObject("txpowlist", txpowlist));
+			
+		}else if ( zMessage.isMessageType(CONSENSUS_NET_TXPOWLIST)) {
+			TxPoWList txplist     = (TxPoWList)zMessage.getObject("txpowlist"); 
+			ArrayList<TxPoW> txps = txplist.getList();
+			
+			boolean firsttime = isInitialSyncComplete();
+			
 			//Now the Initial SYNC has been done you can receive TXPOW message..
-			initialSyncComplete();
+			setInitialSyncComplete(false);
+			
+			if(txplist.isCrossover()) {
+				//Get the NetClient...
+				MinimaClient client = (MinimaClient) zMessage.getObject("netclient");
+				
+				//Treat as normal TxPOW messages.. checking everything..
+				for(TxPoW txp : txps) {
+					Message msg = new Message(CONSENSUS_NET_TXPOW);
+					msg.addObject("txpow", txp);
+					msg.addObject("netclient", client);
+					getConsensusHandler().PostMessage(msg);
+				}
+				
+			}else {
+				//Cycle through and process as if IBD data..
+				for(TxPoW txp : txps) {
+					processIBDTxPoW(zMessage, txp);
+				}
+				
+				//And NOW sort the Tree..
+				ArrayList<BlockTreeNode> list = getMainDB().getMainTree().getAsList(true);
+				for(BlockTreeNode treenode : list) {
+					//Get the Block
+					TxPoW txpow = treenode.getTxPow();
+			
+					//Get the database txpow..
+					TxPOWDBRow trow = getMainDB().getTxPOWRow(txpow.getTxPowID());
+					if(trow != null) {
+						//What Block
+						MiniNumber block = txpow.getBlockNumber();
+						
+						//Set the details
+						trow.setMainChainBlock(true);
+						trow.setIsInBlock(true);
+						trow.setInBlockNumber(block);
+						
+						//Now the Txns..
+						ArrayList<MiniData> txpowlist = txpow.getBlockTransactions();
+						for(MiniData txid : txpowlist) {
+							trow = getMainDB().getTxPOWRow(txid);
+							if(trow!=null) {
+								//Set that it is in this block
+								trow.setMainChainBlock(false);
+								trow.setIsInBlock(true);
+								trow.setInBlockNumber(block);
+							}
+						}
+					}
+				}
+			}
 			
 			//Do a complete backup..
-			getConsensusHandler().PostMessage(ConsensusBackup.CONSENSUSBACKUP_BACKUP);
+			if(firsttime) {
+				getConsensusHandler().PostTimerMessage(new TimerMessage(20000,ConsensusBackup.CONSENSUSBACKUP_BACKUP));
+			}
 			
 		}else if ( zMessage.isMessageType(CONSENSUS_NET_TXPOWID)) {
 			//Get the ID
@@ -378,6 +511,7 @@ public class ConsensusNet extends ConsensusProcessor {
 			
 			//Do we have it..
 			if(getMainDB().getTxPOW(txpowid) == null) {
+				//MinimaLogger.log("NEW TXPOWID "+txpowid.to0xString()+" from "+zMessage.getObject("netclient"));
 				//We don't have it, get it..
 				sendTxPowRequest(zMessage, txpowid);
 			}
@@ -394,17 +528,17 @@ public class ConsensusNet extends ConsensusProcessor {
 			
 			}else {
 				//Bit Special..Get the NetClient...
-				NetClient client = (NetClient) zMessage.getObject("netclient");
+				MinimaClient client = (MinimaClient) zMessage.getObject("netclient");
 				
 				//Send it to him..
-				Message tx = new Message(NetClient.NETCLIENT_SENDTXPOW).addObject("txpow", txpow);
+				Message tx = new Message(MinimaClient.NETCLIENT_SENDTXPOW).addObject("txpow", txpow);
 				client.PostMessage(tx);
 			}
 		
 		}else if(zMessage.isMessageType(CONSENSUS_NET_PING)) {
 			//Send it on to the netwclient..
-			NetClient client = (NetClient) zMessage.getObject("netclient");
-			client.PostMessage(new Message(NetClient.NETCLIENT_PING));
+			MinimaClient client = (MinimaClient) zMessage.getObject("netclient");
+			client.PostMessage(new Message(MinimaClient.NETCLIENT_PING));
 			
 		}else if(zMessage.isMessageType(CONSENSUS_NET_CHECKSIZE_TXPOW)) {
 			//Internal message sent from you..
@@ -416,21 +550,12 @@ public class ConsensusNet extends ConsensusProcessor {
 			//Is this from the net
 			if(zMessage.exists("netclient")) {
 				//Get the NetClient...
-				NetClient client = (NetClient) zMessage.getObject("netclient");
+				MinimaClient client = (MinimaClient) zMessage.getObject("netclient");
 				txpownet.addObject("netclient", client);
 			}
 			
-			//DOUBLE CHECK THE SIZE
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			DataOutputStream dos = new DataOutputStream(baos);
-			txpow.writeDataStream(dos);
-			dos.flush();
-			int txpowsize = baos.toByteArray().length;
-			dos.close();
-			baos.close();
-			
-			if(txpowsize > NetClientReader.MAX_TXPOW) {
-				MinimaLogger.log("ERROR - You've Mined A TxPoW that is too BIG! "+txpowsize+" / "+NetClientReader.MAX_TXPOW);
+			if(txpow.getSizeinBytes() > MinimaReader.MAX_TXPOW) {
+				MinimaLogger.log("ERROR - You've Mined A TxPoW that is too BIG! "+txpow.getSizeinBytes()+" / "+MinimaReader.MAX_TXPOW);
 				return;
 			}
 			
@@ -449,6 +574,9 @@ public class ConsensusNet extends ConsensusProcessor {
 			
 			//The TxPoW
 			TxPoW txpow = (TxPoW)zMessage.getObject("txpow");
+		
+			//DEBUG logs..
+			//MinimaLogger.log("TXPOW RECEIVED "+txpow.getBlockNumber()+" "+txpow.getTxPowID());
 			
 			//Do we have it.. now check DB - hmmm..
 			if(getMainDB().getTxPOW(txpow.getTxPowID()) != null) {
@@ -458,8 +586,16 @@ public class ConsensusNet extends ConsensusProcessor {
 			
 			//Is it even a valid TxPOW.. not enough POW ? - FIRST CHECK
 			if(!txpow.isBlock() && !txpow.isTransaction()) {
-				MinimaLogger.log("ERROR NET FAKE - not transaction not block : "+txpow.getBlockNumber()+" "+txpow.getTxPowID());
+				MinimaLogger.log("ERROR NET FAKE - not transaction not block : "+txpow.getBlockNumber()+" "+txpow);
 				return;
+			}
+			
+			//Is the Transaction PoWerful enough..
+			if(txpow.isTransaction()) {
+				if(txpow.getTxnDifficulty().isMore(TxPoWMiner.BASE_TXN)) {
+					MinimaLogger.log("ERROR NET - Transaction not enough TxPOW: "+txpow.getTxnDifficulty()+" "+txpow);
+					return;
+				}
 			}
 			
 			//Does it have a body.. SHOULD NOT HAPPEN as only complete post cascade txpow messages can be requested
@@ -476,82 +612,254 @@ public class ConsensusNet extends ConsensusProcessor {
 				return;
 			}
 			
-			//Check the Sigs.. just the once..
+			//Check the Signatures.. just the once..
 			boolean sigsok = TxPoWChecker.checkSigs(txpow);
 			if(!sigsok) {
 				MinimaLogger.log("ERROR NET Invalid Signatures with TXPOW : "+txpow.getBlockNumber()+" "+txpow.getTxPowID()); 
 				return;
 			}
+
+			//Get the TxPowID..
+			String txpowid = txpow.getTxPowID().to0xString();
 			
-			//Now check the Transaction - if it fails, could already be in a block..
-			//THIS ONLY from the starter sync.. and adds tokens found..
-			//Also - Gimme50 transactions PASS even though they are already in blocks.. need to check for them..
-			boolean trxok = TxPoWChecker.checkTransactionMMR(txpow, getMainDB());
-			if(!trxok || txpow.getTransaction().isGimme50()) {
-				//Is it Already in a VALID block?
-				TxPoW validblock = getMainDB().findBlockForTransaction(txpow);
-				if(validblock != null) {
-					//Add it to the database..
-					TxPOWDBRow row = getMainDB().addNewTxPow(txpow);
-					row.setOnChainBlock(false);
-					row.setIsInBlock(true);
-					row.setInBlockNumber(validblock.getBlockNumber());
-					
-					//Add all the tokens..
-					TokenProof tokp = txpow.getTransaction().getTokenGenerationDetails();
-					if(tokp!=null) {
-						getMainDB().getUserDB().addTokenDetails(tokp);
-					}
-					
-					ArrayList<TokenProof> tokens =  txpow.getWitness().getAllTokenDetails();
-					for(TokenProof tp : tokens) {
-						getMainDB().getUserDB().addTokenDetails(tp);
-					}
-					
-					//Save it..
-					getConsensusHandler().getMainHandler().getBackupManager().backupTxpow(txpow);
-					
-					//All done..
-					return;
+//			//Is this transaction from the IBD starter..
+//			if(getNetworkHandler().isRequestedInitialTxPow(txpowid)) {
+//				MinimaLogger.log("IDB Requested TxPoW "+txpowid+" "+getNetworkHandler().sizeRequestedTxPow());
+//				
+//				//Check the block it is in..
+//				TxPoW validblock = getMainDB().findBlockForTransaction(txpow);
+//				if(validblock != null) {
+//					//Add it to the database..
+//					TxPOWDBRow row = getMainDB().addNewTxPow(txpow);
+//					row.setMainChainBlock(false);
+//					row.setIsInBlock(true);
+//					row.setInBlockNumber(validblock.getBlockNumber());
+//					
+//					//Add all the tokens..
+//					TokenProof tokp = txpow.getTransaction().getTokenGenerationDetails();
+//					if(tokp!=null) {
+//						getMainDB().getUserDB().addTokenDetails(tokp);
+//					}
+//					
+//					ArrayList<TokenProof> tokens =  txpow.getWitness().getAllTokenDetails();
+//					for(TokenProof tp : tokens) {
+//						getMainDB().getUserDB().addTokenDetails(tp);
+//					}
+//					
+//					//Save it..
+//					Main.getMainHandler().getBackupManager().backupTxpow(txpow);
+//					
+//					//Is it a block ?
+//					if(txpow.isBlock()) {
+//						//Add all the children
+//						if(getMainDB().getMainTree().addNode(new BlockTreeNode(txpow))) {
+//							getMainDB().addTreeChildren(txpow.getTxPowID());
+//						}
+//						
+//						//And now check the Txn list..
+//						ArrayList<MiniData> txns = txpow.getBlockTransactions();
+//						for(MiniData txn : txns) {
+//							if(getMainDB().getTxPOW(txn) == null ) {
+//								MinimaLogger.log("Request missing TxPoW in IBD block "+txpow.getBlockNumber()+" "+txn);
+//								sendTxPowRequest(zMessage, txn);
+//							}
+//						}
+//					}
+//				}else {
+//					MinimaLogger.log("WARNING NET IBD TXPOW request block not found : "+txpow.getBlockNumber()+" "+txpow.getTxPowID()); 
+//				}
+//				
+//				//And remove the link..
+//				getNetworkHandler().removeRequestedTxPow(txpowid);
+//				
+//				//Just return as this is already in a valid block - no more processing to do
+//				return;
+//			}
+			
+			//Was it requested anyway.. ?
+			boolean requested = false;
+			if(getNetworkHandler().isRequestedTxPow(txpowid)) {
+				requested = true;
+			}
+			
+			//Remove it from the list - just in case..
+			getNetworkHandler().removeRequestedTxPow(txpowid);
+			
+			//Check the Validity..
+			boolean txnok = TxPoWChecker.checkTransactionMMR(txpow, getMainDB());
+			if(!txnok) {
+				//Was it requested.. ?
+				if(requested) {
+					//Ok - could be from a different branch block.. 
+					MinimaLogger.log("WARNING NET Invalid TXPOW (Requested..) : "+txpow.getBlockNumber()+" "+txpow.getTxPowID()); 
+				}else {
+					//Not requested invalid transaction..
+					MinimaLogger.log("ERROR NET Invalid TXPOW (UN-Requested..) : "+txpow.getBlockNumber()+" "+txpow.getTxPowID()); 
+					return;	
 				}
 			}
-		
+			
 			/**
+			 * IT PASSES!
+			 * 
 			 * Add it to the database.. Do this HERE as there may be other messages in the queue. 
 			 * Can't wait for ConsensusHandler to catch up.
 			 */
 			getMainDB().addNewTxPow(txpow);
 			
-			//Now check the parent.. (Whether or not it is a block we may be out of alignment..)
+			//Now - Process the TxPOW
+			Message newtxpow = new Message(ConsensusHandler.CONSENSUS_PROCESSTXPOW).addObject("txpow", txpow);
+			getConsensusHandler().PostMessage(newtxpow);
+			
+			//Now check we have the parent.. (Whether or not it is a block we may be out of alignment..)
 			MiniData parentID = txpow.getParentID();
-			if(getMainDB().getTxPOW(parentID)==null) {
+			if(getMainDB().getTxPOW(parentID) == null) {
 				//We don't have it, get it..
 				MinimaLogger.log("Request Parent TxPoW @ "+txpow.getBlockNumber()+" parent:"+parentID); 
 				sendTxPowRequest(zMessage, parentID);
 			}
-
-			//And now check the Txn list.. basically a mempool sync
-			ArrayList<MiniData> txns = txpow.getBlockTransactions();
-			for(MiniData txn : txns) {
-				if(getMainDB().getTxPOW(txn) == null ) {
-					MinimaLogger.log("Request missing TxPoW in block "+txpow.getBlockNumber()+" "+txn);
-					sendTxPowRequest(zMessage, txn);
+			
+			//And now check the Txn list..
+			if(txpow.isBlock()) {
+				ArrayList<MiniData> txns = txpow.getBlockTransactions();
+				for(MiniData txn : txns) {
+					if(getMainDB().getTxPOW(txn) == null ) {
+						MinimaLogger.log("Request missing TxPoW in block "+txpow.getBlockNumber()+" "+txn);
+						sendTxPowRequest(zMessage, txn);
+					}
 				}
 			}
-			
-			//Now - Process the TxPOW
-			Message newtxpow = new Message(ConsensusHandler.CONSENSUS_PRE_PROCESSTXPOW).addObject("txpow", txpow);
-			
-			//Post it
-			getConsensusHandler().PostMessage(newtxpow);
 		}
 	}
 	
-	private void sendTxPowRequest(Message zFromMessage, MiniData zTxPoWID) {
-		//Get the NetClient...
-		NetClient client = (NetClient) zFromMessage.getObject("netclient");
+	/**
+	 * Process a TxPoW requested at startup..
+	 * 
+	 * @param zTxPow
+	 */
+	private void processIBDTxPoW(Message zMessage, TxPoW txpow) {
+		String txpowid = txpow.getTxPowID().to0xString();
+//		MinimaLogger.log("PROCESS IDB Requested TxPoW "+txpow.getBlockNumber()+" "+txpowid+" "+getNetworkHandler().sizeRequestedTxPow());
+		
+		//Add it to the database..
+		TxPOWDBRow row = getMainDB().addNewTxPow(txpow);
+		
+		//Add all the tokens..
+		TokenProof tokp = txpow.getTransaction().getTokenGenerationDetails();
+		if(tokp!=null) {
+			getMainDB().getUserDB().addTokenDetails(tokp);
+		}
+		
+		ArrayList<TokenProof> tokens =  txpow.getWitness().getAllTokenDetails();
+		for(TokenProof tp : tokens) {
+			getMainDB().getUserDB().addTokenDetails(tp);
+		}
+		
+		//Save it..
+		Main.getMainHandler().getBackupManager().backupTxpow(txpow);
+		
+		//Is it a block ?
+		if(txpow.isBlock()) {
+			//Add all the children
+			if(getMainDB().getMainTree().addNode(new BlockTreeNode(txpow))) {
+				getMainDB().addTreeChildren(txpow.getTxPowID());
+			}
 			
-		Message req = new Message(NetClient.NETCLIENT_SENDTXPOWREQ);
+//			//And now check the Txn list..
+//			ArrayList<MiniData> txns = txpow.getBlockTransactions();
+//			for(MiniData txn : txns) {
+//				if(getMainDB().getTxPOW(txn) == null ) {
+////				MinimaLogger.log("Request missing TxPoW in IBD block "+txpow.getBlockNumber()+" "+txn);
+//					sendTxPowRequest(zMessage, txn);
+//				}
+//			}
+		}
+
+		//And remove the link..
+		getNetworkHandler().removeRequestedTxPow(txpowid);
+				
+		//OLD SLOW METHOD>>
+//		//Check the block it is in..
+//		TxPoW validblock = getMainDB().findBlockForTransaction(txpow);
+//		if(validblock != null) {
+//			//Add it to the database..
+//			TxPOWDBRow row = getMainDB().addNewTxPow(txpow);
+//			row.setMainChainBlock(false);
+//			row.setIsInBlock(true);
+//			row.setInBlockNumber(validblock.getBlockNumber());
+//			
+//			//Add all the tokens..
+//			TokenProof tokp = txpow.getTransaction().getTokenGenerationDetails();
+//			if(tokp!=null) {
+//				getMainDB().getUserDB().addTokenDetails(tokp);
+//			}
+//			
+//			ArrayList<TokenProof> tokens =  txpow.getWitness().getAllTokenDetails();
+//			for(TokenProof tp : tokens) {
+//				getMainDB().getUserDB().addTokenDetails(tp);
+//			}
+//			
+//			//Save it..
+//			Main.getMainHandler().getBackupManager().backupTxpow(txpow);
+//			
+//			//Is it a block ?
+//			if(txpow.isBlock()) {
+//				//Add all the children
+//				if(getMainDB().getMainTree().addNode(new BlockTreeNode(txpow))) {
+//					getMainDB().addTreeChildren(txpow.getTxPowID());
+//				}
+//				
+//				//And now check the Txn list..
+//				ArrayList<MiniData> txns = txpow.getBlockTransactions();
+//				for(MiniData txn : txns) {
+//					if(getMainDB().getTxPOW(txn) == null ) {
+//						MinimaLogger.log("Request missing TxPoW in IBD block "+txpow.getBlockNumber()+" "+txn);
+//						sendTxPowRequest(zMessage, txn);
+//					}
+//				}
+//			}
+//		}else {
+//			MinimaLogger.log("WARNING NET IBD TXPOW request block not found : "+txpow.getBlockNumber()+" "+txpow.getTxPowID()); 
+//		}
+//		
+//		//And remove the link..
+//		getNetworkHandler().removeRequestedTxPow(txpowid);
+	}
+	
+	
+	/**
+	 * Send a Request for a Missing TxPOW
+	 * Check if has been done recently and reposts with a 5 second delay if it has
+	 * 
+	 * @param zFromMessage
+	 * @param zTxPoWID
+	 */
+	private void sendTxPowRequest(Message zFromMessage, MiniData zTxPoWID) {
+		//Check if we have sent off for it recently..
+		String data  = zTxPoWID.to0xString();
+		
+		//Get the NetClient...
+		MinimaClient client = (MinimaClient) zFromMessage.getObject("netclient");
+				
+		//Check for it.. in last 5 seconds..
+		boolean found = mDataTimer.checkForData(data, 5000);
+		
+		//If found.. repost the request on a 5 second timer..
+		if(found) {
+			//MinimaLogger.log("Delay SendTxPOWRequest for 10 secs.."+data+" from "+client);
+			TimerMessage newtxpowid = new TimerMessage(10000, CONSENSUS_NET_TXPOWID);
+			//Add the TxPOWID
+			newtxpowid.addObject("txpowid", zTxPoWID);
+			//And the Net Client..
+			newtxpowid.addObject("netclient", client);
+			
+			//Post it for later..
+			getConsensusHandler().PostTimerMessage(newtxpowid);
+			return;
+		}
+		
+		//Give it to the client to send on..	
+		Message req = new Message(MinimaClient.NETCLIENT_SENDTXPOWREQ);
 		req.addObject("txpowid", zTxPoWID);
 		
 		//And Post it..

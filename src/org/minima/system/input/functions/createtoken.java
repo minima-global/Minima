@@ -11,7 +11,7 @@ public class createtoken extends CommandFunction {
 	
 	public createtoken() {
 		super("createtoken");
-		setHelp("[name] [total] (token script hash)", 
+		setHelp("[name] [total] (token script)", 
 				"Create a token.", "");
 	}
 	

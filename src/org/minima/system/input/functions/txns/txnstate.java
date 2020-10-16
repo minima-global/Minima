@@ -20,8 +20,8 @@ public class txnstate extends CommandFunction {
 		
 		//Send to the consensus Handler
 		Message msg = getResponseMessage(ConsensusTxn.CONSENSUS_TXNSTATEVAR);
-		msg.addInt("transaction", txn);
-		msg.addInt("stateport", txnport);
+		msg.addInteger("transaction", txn);
+		msg.addInteger("stateport", txnport);
 		msg.addString("statevariable", variable);
 		
 		getMainHandler().getConsensusHandler().PostMessage(msg);

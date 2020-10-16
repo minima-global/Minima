@@ -13,6 +13,7 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.BaseConverter;
 import org.minima.utils.Crypto;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
@@ -90,10 +91,15 @@ public class Proof implements Streamable {
 				//Add to the Proof..
 				addProofChunk(leftrigt, data);
 			}
+		
+			dis.close();
+			bais.close();
 			
 		} catch (IOException e) {
+			MinimaLogger.log("setProof Error "+e);
 			e.printStackTrace();
 		}
+		
 		
 		finalizeHash();
 	}
@@ -150,7 +156,12 @@ public class Proof implements Streamable {
 				chunk.getLeft().writeDataStream(dos);
 				chunk.getHash().writeHashToStream(dos);
 			}
+			
+			dos.close();
+			baos.close();
+			
 		} catch (IOException e) {
+			MinimaLogger.log("getChainSHAProof Error "+e);
 			e.printStackTrace();
 		}
 		
@@ -258,7 +269,7 @@ public class Proof implements Streamable {
 		
 		if(dec<5 || dec>16) {
 			//ERROR
-			throw new Exception("Invalid ChainSHA.. must be 160, 224, 256, 288, 320, 384, 416, 448, 480 or 512");	
+			throw new Exception("Invalid ChainSHA.. must be 160, 192, 224, 256, 288, 320, 384, 416, 448, 480 or 512");	
 		}
 		
 		//And multiply by 32..

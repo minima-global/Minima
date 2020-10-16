@@ -58,6 +58,10 @@ public class ResponseStream {
 	public JSONObject getDataJSON() {
 		return mDataJSON;
 	}
+
+	public void hardSetJSON(JSONObject zObject) {
+		mDataJSON = zObject;
+	}
 	
 	public JSONObject getFinalJSON() {
 		return mJSON;

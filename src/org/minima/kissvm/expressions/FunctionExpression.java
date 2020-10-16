@@ -26,12 +26,12 @@ public class FunctionExpression implements Expression {
 	
 	@Override
 	public Value getValue(Contract zContract) throws ExecutionException {
-		//This action counts as one instruction
-		zContract.incrementInstructions();
-				
 		//Get the Value
 		Value val = mFunction.runFunction(zContract);
 		
+		//This action counts as one instruction
+		zContract.incrementInstructions();
+				
 		//And trace it..
 		zContract.traceLog(toString()+" returns:"+val.toString());
 		

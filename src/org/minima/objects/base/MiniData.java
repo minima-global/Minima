@@ -11,7 +11,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 
-import org.minima.system.network.NetClientReader;
+import org.minima.system.network.MinimaReader;
 import org.minima.utils.BaseConverter;
 import org.minima.utils.Crypto;
 import org.minima.utils.Streamable;
@@ -65,6 +65,10 @@ public class MiniData implements Streamable {
 		return new BigDecimal(mDataVal);
 	}
 	
+	public MiniNumber getDataValueMiniNumber() {
+		return new MiniNumber(mDataVal);
+	}
+	
 	@Override
 	public boolean equals(Object o) {
 		return isEqual((MiniData)o);
@@ -79,7 +83,7 @@ public class MiniData implements Streamable {
 		//Get both data sets..
 		byte[] data = zCompare.getData();
 		
-		//Chack the data..
+		//Check the data..
 		for(int i=0;i<len;i++) {
 			if(data[i] != mData[i]) {
 				return false;
@@ -174,7 +178,7 @@ public class MiniData implements Streamable {
 		int len = zIn.readInt();
 		
 		//Check against maximum allowed
-		if(len > NetClientReader.MAX_INTRO) {
+		if(len > MinimaReader.MAX_INTRO) {
 			throw new IOException("Read Error : MiniData Length larger than maximum allowed "+len);
 		}
 		
@@ -223,6 +227,8 @@ public class MiniData implements Streamable {
 		int len = zIn.readInt();
 		if(len > Crypto.MINIMA_DEFAULT_MAX_HASH_LENGTH) {
 			throw new IOException("Read Error : HASH Length greater then 64! "+len);
+		}else if(len<0) {
+			throw new IOException("Read Error : HASH Length less than 0! "+len);
 		}
 		
 		mData = new byte[len];

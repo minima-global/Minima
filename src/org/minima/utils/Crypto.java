@@ -149,7 +149,12 @@ public class Crypto {
 			//Hash That
 			byte[] hashdata = hashData(objdata,zBitLength);
 			
-			return new MiniData(hashdata);
+			MiniData ret = new MiniData(hashdata);
+			
+			dos.close();
+			baos.close();
+			
+			return ret;
 		
 		}catch (Exception e) {
 			//Error Hashing!?
@@ -184,8 +189,12 @@ public class Crypto {
 			//Hash That
 			byte[] hashdata = hashData(objdata,zBitLength);
 		
-			//Final Answer
-			return new MiniData(hashdata);
+			MiniData ret = new MiniData(hashdata);
+			
+			dos.close();
+			baos.close();
+			
+			return ret;
 		
 		}catch (Exception e) {
 			e.printStackTrace();
@@ -216,9 +225,13 @@ public class Crypto {
 			//Hash That
 			byte[] hashdata = hashData(objdata);
 		
-			//Final Answer
-			return new MiniData(hashdata);
-		
+			MiniData ret = new MiniData(hashdata);
+			
+			dos.close();
+			baos.close();
+			
+			return ret;
+					
 		}catch (Exception e) {
 			e.printStackTrace();
 			//Error Hashing!?

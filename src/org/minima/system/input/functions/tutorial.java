@@ -68,7 +68,7 @@ public class tutorial extends CommandFunction{
 			"FUNC        ::= HEXCAT | STRCAT | LEN | REV | SUBSET | RPLVAR | GET |\n" + 
 			"                ASCII | BOOL | HEX | NUMBER | SCRIPT |\n" + 
 			"                ABS | CEIL | FLOOR | MIN | MAX | INC | DEC | SIGDIG | POW |\n" + 
-			"                BITSET | BITGET | PROOF | SHA3 | SHA2 |\n" + 
+			"                BITSET | BITGET | BITCOUNT | CHAINSHA | SHA3 | SHA2 |\n" + 
 			"                SIGNEDBY | MULTISIG | CHECKSIG |\n" + 
 			"                GETOUTADDR | GETOUTAMT | GETOUTTOK | VERIFYOUT |\n" + 
 			"                GETINADDR | GETINAMT | GETINTOK | GETINID | VERIFYIN |\n" + 
@@ -79,9 +79,10 @@ public class tutorial extends CommandFunction{
 			"\n" + 
 			"@BLKNUM      : Block number this transaction is in\n" + 
 			"@BLKTIME     : Block time in seconds from Jan 01 1970\n" + 
+			"@PREVBLKHASH : Hash of the previous Block\n" + 
+			"@INPUT       : Input number in the transaction\n" + 
 			"@INBLKNUM    : Block number when this output was created\n" + 
 			"@BLKDIFF     : Difference between BLKNUM and INBLKNUM\n" + 
-			"@INPUT       : Input number in the transaction\n" + 
 			"@AMOUNT      : Amount of this input\n" + 
 			"@ADDRESS     : Address of this input\n" + 
 			"@TOKENID     : TokenID of this input\n" + 
@@ -90,6 +91,8 @@ public class tutorial extends CommandFunction{
 			"@TOKENSCRIPT : Script for this input\n" + 
 			"@TOTIN       : Total number of inputs for this transaction\n" + 
 			"@TOTOUT      : Total number of outputs for this transaction\n" + 
+			"@FLOATING    : Is this a floating input\n" + 
+			"@PRNG        : Pseudo random number - Globally Unique\n" + 
 			"\n" + 
 			"Functions\n" + 
 			"---------\n" + 
@@ -163,6 +166,9 @@ public class tutorial extends CommandFunction{
 			"\n" + 
 			"BITGET ( HEX NUMBER ) \n" + 
 			"Get the BINARY value of the bit at the position.\n" + 
+			"\n" + 
+			"BITCOUNT ( HEX ) \n" + 
+			"Count the number of bits set in a HEX value\n" + 
 			"\n" + 
 			"CHAINSHA ( HEX HEX ) \n" + 
 			"Recursively SHA3 hash the first HEX value with the merkle proof provided in the second. Returns the final result that can be checked in script. Use the 'chainsha' function in Minima to construct Hash Trees proofs for MAST and Signature Public Keys.   \n" + 

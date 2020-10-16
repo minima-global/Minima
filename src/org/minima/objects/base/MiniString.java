@@ -22,6 +22,10 @@ public class MiniString implements Streamable {
 		mString = new String(zString.getBytes(Charset.forName("UTF-8")));
 	}
 	
+	public MiniString(byte[] zBytesData) {
+		mString = new String(zBytesData);
+	}
+	
 	@Override
 	public String toString() {
 		return mString;

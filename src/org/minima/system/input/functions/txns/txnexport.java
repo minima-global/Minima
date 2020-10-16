@@ -18,7 +18,7 @@ public class txnexport extends CommandFunction{
 		
 		//Send to the consensus Handler
 		Message msg = getResponseMessage(ConsensusTxn.CONSENSUS_TXNEXPORT);
-		msg.addInt("transaction", txn);
+		msg.addInteger("transaction", txn);
 	
 		getMainHandler().getConsensusHandler().PostMessage(msg);
 	}

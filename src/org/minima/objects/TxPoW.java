@@ -3,6 +3,7 @@
  */
 package org.minima.objects;
 
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -13,6 +14,7 @@ import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniInteger;
 import org.minima.objects.base.MiniNumber;
+import org.minima.system.txpow.TxPoWMiner;
 import org.minima.utils.Crypto;
 import org.minima.utils.Streamable;
 import org.minima.utils.SuperBlockLevels;
@@ -49,6 +51,7 @@ public class TxPoW implements Streamable {
 	protected boolean _mIsBlockPOW  = false;
 	protected boolean _mIsTxnPOW    = false;
 	protected int     _mSuperBlock  = 0;
+	protected long     _mTxPoWSize  = 0;
 	
 	/**
 	 * Main Constructor
@@ -196,7 +199,7 @@ public class TxPoW implements Streamable {
 	}
 	
 	public MiniData getMagic() {
-		return mBody.mMagic;
+		return mBody.mMagic.mPRNG;
 	}
 	
 	public MiniData getMMRRoot() {
@@ -218,10 +221,11 @@ public class TxPoW implements Streamable {
 	public JSONObject toJSON() {
 		JSONObject txpow = new JSONObject();
 		
+		txpow.put("txpowid", _mTxPOWID.toString());
 		txpow.put("isblock", _mIsBlockPOW);
 		txpow.put("istransaction", _mIsTxnPOW);
-		txpow.put("txpowid", _mTxPOWID.toString());
 		txpow.put("superblock", _mSuperBlock);
+		txpow.put("size", getSizeinBytes());
 		
 		txpow.put("header", mHeader.toJSON());
 		
@@ -293,6 +297,10 @@ public class TxPoW implements Streamable {
 		return _mIsTxnPOW;
 	}
 	
+	public long getSizeinBytes() {
+		return _mTxPoWSize;
+	}
+	
 	/**
 	 * This is only done once at creation. TXPOW structures are immutable.
 	 */
@@ -313,9 +321,32 @@ public class TxPoW implements Streamable {
 			if(_mTxPOWID.isLess(getTxnDifficulty()) && !getTransaction().isEmpty()) {
 				_mIsTxnPOW = true;
 			}
+			
+			//Must be at least the minimum..
+			if(getTxnDifficulty().isMore(TxPoWMiner.BASE_TXN)) {
+				_mIsTxnPOW = false;
+			}
 		}
 		
 		//What Super Level are we..
 		_mSuperBlock = SuperBlockLevels.getSuperLevel(getBlockDifficulty(), _mTxPOWID);
+	
+		//What size are we..
+		try {
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			DataOutputStream dos       = new DataOutputStream(baos);
+			writeDataStream(dos);
+			dos.flush();
+			baos.flush();
+			
+			//Get the Size
+			_mTxPoWSize = baos.toByteArray().length;
+			
+			dos.close();
+			baos.close();
+			
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 }

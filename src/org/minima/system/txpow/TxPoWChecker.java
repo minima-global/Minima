@@ -134,6 +134,11 @@ public class TxPoWChecker {
 	public static boolean checkTransactionMMR(Transaction zTrans, Witness zWit, MinimaDB zDB, 
 			TxPoW zBlock, MiniNumber zTransNumber, MMRSet zMMRSet, boolean zTouchMMR, JSONArray zContractLog) {
 		
+		//Empty Transaction passes..
+		if(zTrans.isEmpty()) {
+			return true;
+		}
+		
 		//get some extra variables..
 		MiniNumber tBlockNumber = zBlock.getBlockNumber();
 		MiniNumber tBlockTime   = zBlock.getTimeSecs();
@@ -221,11 +226,11 @@ public class TxPoWChecker {
 				if(!valid) {
 					//Are we a floating input.. ?
 					if(input.isFloating()) {
-						//See if there is a valid address/amount..
+						//See if there is a valid address/amount.. #TODO Switchto CoinDB!
 						MMREntry fladdr = zMMRSet.searchAddress(input.getAddress(), input.getAmount(), input.getTokenID());
 						if(fladdr != null) {
 							//There is a valid coin  we can use..!
-							proof = zMMRSet.getProof(fladdr.getEntry());	
+							proof = zMMRSet.getProof(fladdr.getEntryNumber());	
 							
 							//Now CHANGE the Transaction with this new CoinID AND AMOUNT..
 							Coin flinput = proof.getMMRData().getCoin();
@@ -257,12 +262,14 @@ public class TxPoWChecker {
 				
 					//Do we keep it..
 					if(zDB.getUserDB().isAddressRelevant(input.getAddress())) {
-						zMMRSet.addKeeper(spent.getEntry());	
+						zMMRSet.addKeeper(spent.getEntryNumber());	
 					}
 				}
 				
 				//Is this a Token ?
 				String tokscript = "";
+				MiniNumber tokentotal = MiniNumber.BILLION;
+				MiniNumber tokenscale = MiniNumber.ONE;
 				if(!input.getTokenID().isEqual(Coin.MINIMA_TOKENID)) {
 					//Do we have a token Script..
 					TokenProof tokdets = zWit.getTokenDetail(input.getTokenID());
@@ -273,7 +280,9 @@ public class TxPoWChecker {
 					}
 					
 					//Is there a script.
-					tokscript = tokdets.getTokenScript().toString();
+					tokscript  = tokdets.getTokenScript().toString();
+					tokenscale = tokdets.getScaleFactor();
+					tokentotal = tokdets.getTotalTokens();
 				}
 				
 				//Create the Contract to check..
@@ -282,20 +291,22 @@ public class TxPoWChecker {
 				//set the environment
 				cc.setGlobalVariable("@BLKNUM", new NumberValue(tBlockNumber));
 				cc.setGlobalVariable("@BLKTIME", new NumberValue(tBlockTime));
-				cc.setGlobalVariable("@INBLKNUM", new NumberValue(proof.getMMRData().getInBlock()));
 				cc.setGlobalVariable("@BLKDIFF", new NumberValue(tBlockNumber.sub(proof.getMMRData().getInBlock())));
+				cc.setGlobalVariable("@PREVBLKHASH", new HEXValue(zBlock.getParentID()));
+				cc.setGlobalVariable("@PRNG", new HEXValue(prng));
+				
+				cc.setGlobalVariable("@INBLKNUM", new NumberValue(proof.getMMRData().getInBlock()));
 				cc.setGlobalVariable("@INPUT", new NumberValue(i));
-				cc.setGlobalVariable("@AMOUNT", new NumberValue(input.getAmount()));
+				cc.setGlobalVariable("@AMOUNT", new NumberValue(input.getAmount().mult(tokenscale)));
 				cc.setGlobalVariable("@ADDRESS", new HEXValue(input.getAddress()));
-				cc.setGlobalVariable("@TOKENID", new HEXValue(input.getTokenID()));
 				cc.setGlobalVariable("@COINID", new HEXValue(input.getCoinID()));
 				cc.setGlobalVariable("@SCRIPT", new ScriptValue(script));
+				cc.setGlobalVariable("@TOKENID", new HEXValue(input.getTokenID()));
 				cc.setGlobalVariable("@TOKENSCRIPT", new ScriptValue(tokscript));
+				cc.setGlobalVariable("@TOKENTOTAL", new NumberValue(tokentotal));
 				cc.setGlobalVariable("@FLOATING", new BooleanValue(input.isFloating()));
 				cc.setGlobalVariable("@TOTIN", new NumberValue(trans.getAllInputs().size()));
 				cc.setGlobalVariable("@TOTOUT", new NumberValue(trans.getAllOutputs().size()));
-				cc.setGlobalVariable("@PREVBLKHASH", new HEXValue(zBlock.getParentID()));
-				cc.setGlobalVariable("@PRNG", new HEXValue(prng));
 									
 				//Is it a floating coin..
 				cc.setFloating(input.isFloating());
@@ -467,7 +478,7 @@ public class TxPoWChecker {
 					//The contract execution log - will be updated later, but added now
 					JSONObject errorlog = new JSONObject();
 					zContractLog.add(errorlog);
-					errorlog.put("error", "Total Details Missing for "+tokid);
+					errorlog.put("error", "Token Details Missing for "+tokid);
 					return false;
 				}
 			}
@@ -489,7 +500,7 @@ public class TxPoWChecker {
 				//Do we keep it..
 				if(reladdress || relstate) {
 					//Keep this MMR record
-					zMMRSet.addKeeper(unspent.getEntry());	
+					zMMRSet.addKeeper(unspent.getEntryNumber());	
 				}				
 			}
 		}

@@ -39,8 +39,6 @@ public class StatementBlock {
 		for(Statement stat : mStatements) {
 			//Check for EXIT
 			if(zContract.isSuccessSet()) {
-				//Trace it
-				zContract.traceLog("SUCCESS SET : "+zContract.isSuccess());
 				return;
 			}
 			

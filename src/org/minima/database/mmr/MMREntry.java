@@ -56,7 +56,7 @@ public class MMREntry implements Comparable<MMREntry>, Streamable{
 	}
 	
 	public boolean checkPosition(MMREntry zEntry) {
-		return (zEntry.getRow() == mRow) && zEntry.getEntry().isEqual(mEntryNumber);
+		return (zEntry.getRow() == mRow) && zEntry.getEntryNumber().isEqual(mEntryNumber);
 	}
 	
 	public void setData(MMRData zData) {
@@ -109,7 +109,7 @@ public class MMREntry implements Comparable<MMREntry>, Streamable{
 	 * UTILITY FUNCTIONS FOR NAVIGATING THE MMR
 	 * 
 	 */
-	public MiniInteger getEntry() {
+	public MiniInteger getEntryNumber() {
 		return mEntryNumber;
 	}
 	
@@ -134,11 +134,11 @@ public class MMREntry implements Comparable<MMREntry>, Streamable{
 	}
 	
 	public MiniInteger getLeftSibling() {
-		return mEntryNumber.sub(MiniInteger.ONE);
+		return mEntryNumber.decrement();
 	}
 	
 	public MiniInteger getRightSibling() {
-		return mEntryNumber.add(MiniInteger.ONE);
+		return mEntryNumber.increment();
 	}
 	
 	public MiniInteger getSibling() {
@@ -163,7 +163,7 @@ public class MMREntry implements Comparable<MMREntry>, Streamable{
 
 	@Override
 	public int compareTo(MMREntry zEntry) {
-		return zEntry.getEntry().getNumber().compareTo(mEntryNumber.getNumber());
+		return zEntry.getEntryNumber().getNumber().compareTo(mEntryNumber.getNumber());
 	}
 
 	@Override

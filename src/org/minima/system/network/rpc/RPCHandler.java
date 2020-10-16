@@ -1,21 +1,19 @@
 package org.minima.system.network.rpc;
 
 import java.io.BufferedReader;
-import java.io.File;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.URLDecoder;
-import java.sql.SQLException;
 import java.util.Date;
 import java.util.StringTokenizer;
 
-import org.minima.system.input.InputHandler;
-import org.minima.system.input.InputMessage;
-import org.minima.utils.ResponseStream;
-import org.minima.utils.SQLHandler;
-import org.minima.utils.json.JSONArray;
-import org.minima.utils.json.JSONObject;
+import org.minima.system.network.commands.CMD;
+import org.minima.system.network.commands.FILE;
+import org.minima.system.network.commands.NET;
+import org.minima.system.network.commands.SQL;
+import org.minima.utils.MinimaLogger;
 
 /**
  * This class handles a single request then exits
@@ -31,20 +29,12 @@ public class RPCHandler implements Runnable {
 	Socket mSocket;
 	
 	/**
-	 * Inputhandler to manage the requests
-	 */
-	InputHandler mInputHandler;
-	
-	/**
 	 * Main COnstructor
 	 * @param zSocket
 	 */
-	public RPCHandler(Socket zSocket, InputHandler zInput) {
+	public RPCHandler(Socket zSocket) {
 		//Store..
 		mSocket = zSocket;
-		
-		//The InputHandler
-		mInputHandler = zInput;
 	}
 
 	@Override
@@ -52,8 +42,7 @@ public class RPCHandler implements Runnable {
 		// we manage our particular client connection
 		BufferedReader in 	 		 	= null; 
 		PrintWriter out 	 			= null; 
-		
-		String fileRequested 			= null;
+		String firstline = "no first line..";
 		
 		try {
 			// Input Stream
@@ -64,21 +53,23 @@ public class RPCHandler implements Runnable {
 			
 			// get first line of the request from the client
 			String input = in.readLine();
+			firstline = new String(input);
 			
 			// we parse the request with a string tokenizer
 			StringTokenizer parse = new StringTokenizer(input);
 			String method = parse.nextToken().toUpperCase(); // we get the HTTP method of the client
 			
 			// we get file requested
-			fileRequested = parse.nextToken();
+			String fileRequested = parse.nextToken();
 			
 			//Get the Headers..
-			String MiniDAPPID = "";
+			String MiniDAPPID = "0x00";
+			int contentlength = 0;
 			while(input != null && !input.trim().equals("")) {
 				int ref = input.indexOf("Referer:"); 
 				if(ref != -1) {
 					//Get the referer..
-					int start  = input.indexOf("/minidapps/0x")+11;
+					int start  = input.indexOf("0x");
 	        		int end    = -1;
 	        		if(start!=-1) {
 	        			end    = input.indexOf("/", start);
@@ -86,171 +77,130 @@ public class RPCHandler implements Runnable {
 	        		if(end!=-1) {
 	        			MiniDAPPID = input.substring(start, end);
 	        		}
+				}else {
+					ref = input.indexOf("Content-Length:"); 
+					if(ref != -1) {
+						//Get it..
+						int start     = input.indexOf(":");
+						contentlength = Integer.parseInt(input.substring(start+1).trim());
+					}
 				}
-//				System.out.println("Header : "+input);
+					
 				input = in.readLine();
 			}
-//			if(!MiniDAPPID.equals("")) {
-//				System.out.println("MiniDAPPID:"+MiniDAPPID);	
-//			}
 			
-			// Currently we support only GET
-			if (method.equals("GET")){
-//				System.out.println("fileRequested : "+fileRequested);
+			//The final result
+			String finalresult = "";
+			String reqtype     = "";
+			String command     = "";
+			
+			//POST can handle longer messages
+			if (method.equals("POST")){
+				//Create a char buffer
+				char[] cbuf = new char[contentlength];
 				
+				//Lets see..
+				in.read(cbuf);
+				
+				//What is being asked..
+				command = URLDecoder.decode(new String(cbuf),"UTF-8").trim();
+				
+				//Remove slashes..
+				reqtype = new String(fileRequested);
+				if(reqtype.startsWith("/")) {
+					reqtype = reqtype.substring(1);
+				}
+				if(reqtype.endsWith("/")) {
+					reqtype = reqtype.substring(0,reqtype.length()-1);
+				}
+				
+				//Currently POST is the default..
+			}else if (method.equals("GET")){
 				//decode URL message
 				String function = URLDecoder.decode(fileRequested,"UTF-8").trim();
 				if(function.startsWith("/")) {
 					function = function.substring(1);
 				}
-				
-				//The final result
-				String finalresult = "";
-				
-				//Is this a SQL function
-				if(function.startsWith("sql/")) {
-					//The SQL results
-					JSONObject res = new JSONObject();
-					
-					//Where is the database..
-					File minidappdatabase = null;
-					
-					//Which Database.. could be running from a folder..
-					if(MiniDAPPID.equals("")) {
-						//Get the database folder
-						File temp = mInputHandler.getMainHandler().getBackupManager().getTempFolder();
-						minidappdatabase = new File(temp,"_tempdb"+mInputHandler.RANDOM_VAL.to0xString());
-						
-					}else {
-						//Get the database folder
-						File minidapps   = mInputHandler.getMainHandler().getBackupManager().getMiniDAPPFolder();
-						File dapp        = new File(minidapps,MiniDAPPID);
-						
-						File dbdir       = new File(dapp,"sql");
-						dbdir.mkdirs();
-						
-						minidappdatabase = new File(dbdir,"_sqldb");
-					}
-					
-					//Get the Function..
-					String sql = function.substring(4).trim();
-					res.put("db", minidappdatabase.getAbsolutePath());
-					res.put("sql", sql);
-					
-				    //Now lets do some SQL
-					try {
-						//Start the SQL handler
-						SQLHandler handler = new SQLHandler(minidappdatabase.getAbsolutePath());
-							
-						//Run the SQL..
-						if(sql.indexOf(";")!=-1) {
-							JSONArray resp  = handler.executeMultiSQL(sql);
-							res.put("status", true);
-							res.put("response", resp);
-						}else {
-							JSONObject resp = handler.executeSQL(sql);	
-							res.put("status", true);
-							res.put("response", resp);
-						}
-						
-						//Close it..
-						handler.close();
-						
-					}catch (SQLException e) {
-						res.put("status", false);
-						res.put("message", e.toString());
-					}
-					
-					//The response returned..
-					finalresult = res.toString();
-					
-				}else{
-					//Is this a multi function..
-					boolean multi = false;
-					if(function.indexOf(";")!=-1) {
-						//It's a multi
-						multi = true;
-					}
-					
-					if(!multi) {
-						//Now make this request
-						ResponseStream response = new ResponseStream();
-			            
-						//Make sure valid
-//						if(!function.equals("") && !function.toLowerCase().equals("quit")) {
-						if(!function.equals("")) {
-						    //Send it..
-							InputMessage inmsg = new InputMessage(function, response);
-		
-							//Post it..
-							mInputHandler.PostMessage(inmsg);
-							
-							//Wait for the function to finish
-			                response.waitToFinish();
-						}
-						
-						//Get the response..
-						finalresult = response.getResponse();
-						
-					}else {
-						//A full JSON array of responses
-						JSONArray responses = new JSONArray();
-						
-						//Cycle through each request..	
-						StringTokenizer functions = new StringTokenizer(function,";");
-						
-						boolean allok = true;
-						while(allok && functions.hasMoreElements()) {
-							String func = functions.nextToken().trim();
-						
-							//Now make this request
-							ResponseStream response = new ResponseStream();
-				            
-							//Make sure valid
-							//if(!func.equals("") && !function.toLowerCase().equals("quit")) {
-							if(!func.equals("")) {
-								//Send it..
-								InputMessage inmsg = new InputMessage(func, response);
 			
-								//Post it..
-								mInputHandler.PostMessage(inmsg);
-								
-								//Wait for the function to finish
-				                response.waitToFinish();
-				                
-				                //Get the JSON
-				                JSONObject resp = response.getFinalJSON();
-				                
-				                //IF there is an erorr.. STOP
-				                if(resp.get("status") == Boolean.FALSE) {
-				                	//ERROR - stop running functions..
-				                	allok = false;
-				                }
-				                
-				                //Add it to the array
-				                responses.add(resp);
-							}
-						}
-						
-						//And now get all the answers in one go..
-						finalresult = responses.toString();
-					}
+				if(function.startsWith("sql/")) {
+					//Get the SQL function
+					reqtype="sql";
+					command = function.substring(4).trim();
+					
+				}else if(function.startsWith("net/")) {
+					reqtype="net";
+					command = function.substring(4).trim();
+					
+				}else if(function.startsWith("file/")) {
+					reqtype="file";
+					command = function.substring(5).trim();
+					
+				}else {
+					reqtype="cmd";
+					command = function.trim();
 				}
-				
-				// send HTTP Headers
-				out.println("HTTP/1.1 200 OK");
-				out.println("Server: HTTP RPC Server from Minima : 1.0");
-				out.println("Date: " + new Date());
-				out.println("Content-type: text/plain");
-				out.println("Content-length: " + finalresult.length());
-				out.println("Access-Control-Allow-Origin: *");
-				out.println(); // blank line between headers and content, very important !
-				out.println(finalresult);
-				out.flush(); // flush character output stream buffer
+			
+			}else {
+				throw new IOException("Unsupported Method in RPCHandler : "+firstline);
 			}
 			
+			//MinimaLogger.log("RPCHandler "+method+" "+reqtype+" "+command);
+			
+			//Is this a SQL function
+			if(reqtype.equals("sql")) {
+				//Create a SQL object
+				SQL sql = new SQL(command, MiniDAPPID);
+				
+				//Run it..
+				sql.run();
+				
+				//Get the Response..
+            	finalresult = sql.getFinalResult();
+				
+			}else if(reqtype.equals("cmd")) {
+				CMD cmd = new CMD(command);
+            	
+            	//Run it..
+            	cmd.run();
+ 
+            	//Get the Response..
+            	finalresult = cmd.getFinalResult();
+			
+			}else if(reqtype.equals("file")) {
+				//File access..
+				FILE file = new FILE(command, MiniDAPPID);
+				
+				//Run it..
+				file.run();
+				
+				//Get the Response..
+            	finalresult = file.getFinalResult();
+			
+			}else if(reqtype.equals("net")) {
+				//Network Comms
+				NET netcomm = new NET(command, MiniDAPPID);
+				
+				//Run it..
+				netcomm.run();
+				
+				//Get the Response..
+            	finalresult = netcomm.getFinalResult();
+			}
+			
+			// send HTTP Headers
+			out.println("HTTP/1.1 200 OK");
+			out.println("Server: HTTP RPC Server from Minima : 1.0");
+			out.println("Date: " + new Date());
+			out.println("Content-type: text/plain");
+			out.println("Content-length: " + finalresult.length());
+			out.println("Access-Control-Allow-Origin: *");
+			out.println(); // blank line between headers and content, very important !
+			out.println(finalresult);
+			out.flush(); // flush character output stream buffer
+			
 		} catch (Exception ioe) {
-			System.err.println("Server error : " + ioe);
+			MinimaLogger.log("RPCHANDLER : "+ioe+" "+firstline);
+			ioe.printStackTrace();
 			
 		} finally {
 			try {

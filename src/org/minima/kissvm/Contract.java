@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import org.minima.kissvm.exceptions.ExecutionException;
-import org.minima.kissvm.exceptions.MinimaParseException;
 import org.minima.kissvm.functions.MinimaFunction;
 import org.minima.kissvm.statements.StatementBlock;
 import org.minima.kissvm.statements.StatementParser;
@@ -54,6 +53,9 @@ public class Contract {
 	//A list of all the user-defined variables
 	boolean mFloatingCoin = false;
 	String[] mDYNState;
+	
+	//Is this MonoTonic
+	boolean mMonotonic = true;
 	
 	//Has this state been checked..
 	boolean[] mCheckState;
@@ -132,6 +134,8 @@ public class Contract {
 		
 		mNumInstructions = 0;
 		
+		mMonotonic = true;
+		
 		//Begin..
 		traceLog("Contract   : "+mRamScript);
 		traceLog("Size       : "+mRamScript.length());
@@ -180,10 +184,9 @@ public class Contract {
 			traceLog("Script token parse OK.");
 			mParseOK = true;
 			
-		} catch (MinimaParseException e) {
-//			e.printStackTrace();
+		} catch (Exception e) {
 			mException  = true;
-			mExceptionString = e.getMessage();
+			mExceptionString = e.toString();
 			
 			traceLog("PARSE ERROR : "+mExceptionString);
 		}
@@ -289,6 +292,10 @@ public class Contract {
 		return mSuccessSet;
 	}
 	
+	public boolean isMonotonic() {
+		return mMonotonic;
+	}
+		
 	public String getMiniScript() {
 		return mRamScript;
 	}
@@ -343,10 +350,16 @@ public class Contract {
 	 * DYN State
 	 */
 	public void setFloating(boolean zFloating) {
+		if(zFloating) {
+			mMonotonic = false;
+		}
+		
 		mFloatingCoin = zFloating;
 	}
 	
 	public boolean setDYNState(int zStateNum, String zValue) throws ExecutionException {
+		mMonotonic = false;
+		
 		//Can only call this BEFORE any call to STATE or SAMESTATE
 		if(mCheckState[zStateNum]) {
 			throw new ExecutionException("Can only call DYNSTATE before STATE or SAMESTATE");
@@ -470,6 +483,8 @@ public class Contract {
 	 * @throws ExecutionException
 	 */
 	public Value getGlobal(String zGlobal) throws ExecutionException {
+		mMonotonic = false;
+		
 		Value ret = mGlobals.get(zGlobal);
 		if(ret==null) {
 			throw new ExecutionException("Global not found - "+zGlobal);
@@ -582,10 +597,11 @@ public class Contract {
 		script = script.replaceAll(" @input "	    , " @INPUT ");
 		script = script.replaceAll(" @address "	    , " @ADDRESS ");
 		script = script.replaceAll(" @amount "	    , " @AMOUNT "); 
-		script = script.replaceAll(" @tokenid "	    , " @TOKENID "); 
 		script = script.replaceAll(" @coinid "	    , " @COINID "); 
 		script = script.replaceAll(" @script "	    , " @SCRIPT "); 
+		script = script.replaceAll(" @tokenid "	    , " @TOKENID "); 
 		script = script.replaceAll(" @tokenscript "	, " @TOKENSCRIPT "); 
+		script = script.replaceAll(" @tokentotal"	, " @TOKENTOTAL"); 
 		script = script.replaceAll(" @floating "	, " @FLOATING"); 
 		script = script.replaceAll(" @totin "	    , " @TOTIN "); 
 		script = script.replaceAll(" @totout " 	    , " @TOTOUT ");

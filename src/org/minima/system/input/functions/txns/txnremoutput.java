@@ -19,8 +19,8 @@ public class txnremoutput extends CommandFunction {
 		
 		//Send to the consensus Handler
 		Message msg = getResponseMessage(ConsensusTxn.CONSENSUS_REMOUTPUT);
-		msg.addInt("transaction", txn);
-		msg.addInt("position", pos);
+		msg.addInteger("transaction", txn);
+		msg.addInteger("position", pos);
 		
 		getMainHandler().getConsensusHandler().PostMessage(msg);
 	}

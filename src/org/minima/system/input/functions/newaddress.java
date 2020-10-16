@@ -18,7 +18,7 @@ public class newaddress extends CommandFunction{
 				
 		if(zInput.length>1) {
 			int bits = Integer.parseInt(zInput[1]);
-			msg.addInt("bitlength", bits);
+			msg.addInteger("bitlength", bits);
 		}
 		
 		//Post a new Message

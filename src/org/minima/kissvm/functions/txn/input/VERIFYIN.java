@@ -64,6 +64,9 @@ public class VERIFYIN extends MinimaFunction{
 		if(!cc.getTokenID().isEqual(Coin.MINIMA_TOKENID)) {
 			//Get the Multiple..
 			TokenProof td = zContract.getWitness().getTokenDetail(cc.getTokenID());
+			if(td == null) {
+				throw new ExecutionException("No Token found for ID "+cc.getTokenID());
+			}
 			inamt = cc.getAmount().mult(td.getScaleFactor());
 		}
 		

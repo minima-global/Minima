@@ -36,10 +36,10 @@ import org.minima.objects.base.MiniInteger;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
 import org.minima.objects.proofs.ScriptProof;
+import org.minima.objects.proofs.TokenProof;
 import org.minima.system.input.InputHandler;
-import org.minima.system.network.NetClient;
+import org.minima.system.network.MinimaClient;
 import org.minima.system.network.NetworkHandler;
-import org.minima.system.txpow.TxPoWChecker;
 import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
@@ -334,18 +334,28 @@ public class ConsensusUser extends ConsensusProcessor {
 						int oldindex = index;
 						index = tok.indexOf(":", index+1);
 						String amount = tok.substring(oldindex+1,index).trim();
+						MiniNumber amt = new MiniNumber(amount);
 						
 						//Tokenid
 						String tokenid = tok.substring(index+1).trim();
 						
+						//Add the details to the witness..
+						TokenProof tprf = getMainDB().getUserDB().getTokenDetail(new MiniData(tokenid));
+						if(tprf != null) {
+							wit.addTokenDetails(tprf);
+						
+							//Recalculate the amount.. given the token scale..
+							amt = amt.div(tprf.getScaleFactor());
+						}
+						
 						//Create this coin
 						Coin outcoin = new Coin(new MiniData("0x00"), 
 												new MiniData(address), 
-												new MiniNumber(amount), 
+												amt, 
 												new MiniData(tokenid));
 						
 						//Add this output to the transaction..
-						trans.addOutput(outcoin);
+						trans.addOutput(outcoin);	
 					}
 				}
 			}
@@ -430,10 +440,13 @@ public class ConsensusUser extends ConsensusProcessor {
 			cc.setGlobalVariable("@INPUT", new NumberValue(0));
 			cc.setGlobalVariable("@INBLKNUM", new NumberValue(0));
 			cc.setGlobalVariable("@AMOUNT", new NumberValue(0));
-			cc.setGlobalVariable("@TOKENID", new HEXValue("0x00"));
 			cc.setGlobalVariable("@COINID", new HEXValue("0x00"));
 			cc.setGlobalVariable("@TOTIN", new NumberValue(1));
 			cc.setGlobalVariable("@TOTOUT", new NumberValue(trans.getAllOutputs().size()));
+			
+			cc.setGlobalVariable("@TOKENID", new HEXValue("0x00"));
+			cc.setGlobalVariable("@TOKENSCRIPT", new ScriptValue(""));
+			cc.setGlobalVariable("@TOKENTOTAL", new NumberValue(MiniNumber.BILLION));
 			
 			
 			//#TODO
@@ -456,6 +469,14 @@ public class ConsensusUser extends ConsensusProcessor {
 						int split = tok.indexOf(":");
 						String global = tok.substring(0,split).trim().toUpperCase();
 						String value = tok.substring(split+1).trim();
+						
+						if(global.equals("@TOKENID")) {
+							//Add the details to the witness..
+							TokenProof tprf = getMainDB().getUserDB().getTokenDetail(new MiniData(value));
+							if(tprf != null) {
+								wit.addTokenDetails(tprf);
+							}	
+						}
 						
 						//Set it..
 						cc.setGlobalVariable(global, Value.getValue(value));
@@ -492,6 +513,12 @@ public class ConsensusUser extends ConsensusProcessor {
 				hard = zMessage.getBoolean("hard");	
 			}
 			
+			NetworkHandler nethandler = getNetworkHandler();
+			
+			//Clear the current Requested Transactions.. this should ask for them all anyway..
+			nethandler.clearAllrequestedTxPow();
+			
+			//JSON response..
 			JSONObject resp = InputHandler.getResponseJSON(zMessage);
 			resp.put("hard", hard);
 			
@@ -502,65 +529,63 @@ public class ConsensusUser extends ConsensusProcessor {
 			ArrayList<TxPOWDBRow> unused = tdb.getAllUnusedTxPOW();
 			int tested = unused.size();
 			ArrayList<MiniData> remove = new ArrayList<>();
+			JSONArray found     = new JSONArray();
 			JSONArray requested = new JSONArray();
 			
 			//Check them all..
 			for(TxPOWDBRow txrow : unused) {
 				TxPoW txpow    = txrow.getTxPOW();
+				found.add(txpow.getTxPowID().to0xString());
 				
 				//Do we just remove them all.. ?
 				if(hard) {
 					//Remove all..
 					remove.add(txpow.getTxPowID());
 				}else{
-					
 					//Check it..
-					boolean sigsok = true;
-					boolean trxok  = true;
-					if(txpow.isTransaction()) {
-						sigsok = TxPoWChecker.checkSigs(txpow);
-						trxok  = TxPoWChecker.checkTransactionMMR(txpow, getMainDB());	
-					}
+//					boolean trxok  = true;
+//					if(txpow.isTransaction()) {
+//						trxok  = TxPoWChecker.checkTransactionMMR(txpow, getMainDB());	
+//					}
+//						
+//					//Check the basics..
+//					if(!trxok) {
+//						remove.add(txpow.getTxPowID());
+//					}
+					
+					//Check All..
+					if(txpow.isBlock()) {
+						MiniData parent = txpow.getParentID();
+						if(tdb.findTxPOWDBRow(parent) == null) {
+							Message msg  = new Message(MinimaClient.NETCLIENT_SENDTXPOWREQ)
+												.addObject("txpowid", parent);
+							Message netw = new Message(NetworkHandler.NETWORK_SENDALL)
+												.addObject("message", msg);
+							
+							//Post it..
+							nethandler.PostMessage(netw);
+							
+							//Add to out list
+							requested.add(parent.to0xString());
+						}
 						
-					//Check the basics..
-					if(!sigsok || !trxok) {
-						remove.add(txpow.getTxPowID());
-					}else {
-						NetworkHandler nethandler = getConsensusHandler().getMainHandler().getNetworkHandler();
-						//Check All..
-						if(txpow.isBlock()) {
-							MiniData parent = txpow.getParentID();
-							if(tdb.findTxPOWDBRow(parent) == null) {
-								Message msg  = new Message(NetClient.NETCLIENT_SENDTXPOWREQ)
-													.addObject("txpowid", parent);
+						//Get all the messages in the block..
+						ArrayList<MiniData> txns = txpow.getBlockTransactions();
+						for(MiniData txn : txns) {
+							if(tdb.findTxPOWDBRow(txn) == null) {
+								Message msg  = new Message(MinimaClient.NETCLIENT_SENDTXPOWREQ)
+										.addObject("txpowid", txn);
 								Message netw = new Message(NetworkHandler.NETWORK_SENDALL)
-													.addObject("message", msg);
+										.addObject("message", msg);
 								
 								//Post it..
 								nethandler.PostMessage(netw);
 								
 								//Add to out list
-								requested.add(parent.to0xString());
+								requested.add(txn.to0xString());
 							}
-							
-							//Get all the messages in the block..
-							ArrayList<MiniData> txns = txpow.getBlockTransactions();
-							for(MiniData txn : txns) {
-								if(tdb.findTxPOWDBRow(txn) == null) {
-									Message msg  = new Message(NetClient.NETCLIENT_SENDTXPOWREQ)
-											.addObject("txpowid", txn);
-									Message netw = new Message(NetworkHandler.NETWORK_SENDALL)
-											.addObject("message", msg);
-									
-									//Post it..
-									nethandler.PostMessage(netw);
-									
-									//Add to out list
-									requested.add(txn.to0xString());
-								}
-							}
-						}		
-					}
+						}
+					}		
 				}
 			}
 			
@@ -572,7 +597,8 @@ public class ConsensusUser extends ConsensusProcessor {
 			}
 			
 			//Now you have the proof..
-			resp.put("found", tested);
+			resp.put("number", tested);
+			resp.put("found", found);
 			resp.put("removed", rem);
 			resp.put("requested", requested);
 			InputHandler.endResponse(zMessage, true, "Mempool Flushed");
@@ -602,7 +628,7 @@ public class ConsensusUser extends ConsensusProcessor {
 			
 			//Now ask to keep it..
 			MMRSet coinset = basemmr.getParentAtTime(entry.getBlockTime());
-			coinset.addKeeper(entry.getEntry());
+			coinset.addKeeper(entry.getEntryNumber());
 			coinset.finalizeSet();
 			
 			//Get the coin
@@ -621,11 +647,11 @@ public class ConsensusUser extends ConsensusProcessor {
 			crow.setIsSpent(entry.getData().isSpent());
 			crow.setIsInBlock(true);
 			crow.setInBlockNumber(entry.getData().getInBlock());
-			crow.setMMREntry(entry.getEntry());
+			crow.setMMREntry(entry.getEntryNumber());
 			
 			//Now you have the proof..
 			JSONObject resp = InputHandler.getResponseJSON(zMessage);
-			resp.put("coin", basemmr.getProof(entry.getEntry()));
+			resp.put("coin", basemmr.getProof(entry.getEntryNumber()));
 			InputHandler.endResponse(zMessage, true, "");
 			
 			//Do a backup..
@@ -695,7 +721,7 @@ public class ConsensusUser extends ConsensusProcessor {
 			crow.setIsSpent(entry.getData().isSpent());
 			crow.setIsInBlock(true);
 			crow.setInBlockNumber(entry.getData().getInBlock());
-			crow.setMMREntry(entry.getEntry());
+			crow.setMMREntry(entry.getEntryNumber());
 			
 			//Now you have the proof..
 			JSONObject resp = InputHandler.getResponseJSON(zMessage);
@@ -809,7 +835,7 @@ public class ConsensusUser extends ConsensusProcessor {
 		crow.setIsSpent(entry.getData().isSpent());
 		crow.setIsInBlock(true);
 		crow.setInBlockNumber(entry.getData().getInBlock());
-		crow.setMMREntry(entry.getEntry());
+		crow.setMMREntry(entry.getEntryNumber());
 		
 		return true;
 	}

@@ -27,7 +27,7 @@ public class txnauto extends CommandFunction {
 		
 		//Send to the consensus Handler
 		Message sender = getResponseMessage(ConsensusTxn.CONSENSUS_TXNAUTO);
-		sender.addInt("transaction", txn);
+		sender.addInteger("transaction", txn);
 		
 		sender.addString("amount", amount);
 		sender.addString("address", address);

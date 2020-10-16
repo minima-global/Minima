@@ -212,7 +212,7 @@ public class Transaction implements Streamable {
 		//If it exists overwrite it..
 		StateVariable sv = getStateValue(zValue.getPort());
 		if(sv != null) {
-			sv.resetData(zValue.getValue());
+			sv.resetData(zValue.getValue(), new MiniByte(zValue.isKeepMMR()));
 		}else {
 			mState.add(zValue);
 		}

@@ -17,7 +17,7 @@ public class txncreate extends CommandFunction {
 		
 		if(zInput.length>1) {
 			//Specified the id
-			msg.addInt("id", Integer.parseInt(zInput[1]));
+			msg.addInteger("id", Integer.parseInt(zInput[1]));
 		}
 		
 		getMainHandler().getConsensusHandler().PostMessage(msg);

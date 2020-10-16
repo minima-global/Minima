@@ -18,7 +18,7 @@ public class chainsha extends CommandFunction{
 	public void doFunction(String[] zInput) throws Exception {
 		//Get a response message
 		Message msg = getResponseMessage(ConsensusUser.CONSENSUS_MMRTREE);
-		msg.addInt("bitlength", Integer.parseInt(zInput[1])  );
+		msg.addInteger("bitlength", Integer.parseInt(zInput[1])  );
 		
 		//Get all of the input params.. clean and send..
 		ArrayList<MiniString> data = new ArrayList<>();

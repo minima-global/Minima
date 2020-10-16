@@ -71,8 +71,6 @@ public class JavaCoinDB implements CoinDB{
 				newrows.add(row);
 			}else if(row.getInBlockNumber().isMoreEqual(zMinBlock)) {
 				newrows.add(row);
-			}else {
-//				MinimaLogger.log("COIN REMOVED : "+row.getCoin());
 			}
 		}
 		mRows = newrows;
@@ -92,6 +90,17 @@ public class JavaCoinDB implements CoinDB{
 		mRows = newrows;
 		
 		return found;
+	}
+
+	@Override
+	public void resetCoinsFomOnwards(MiniNumber zBlock) {
+		ArrayList<CoinDBRow> newrows = new ArrayList<>();
+		for(CoinDBRow row : mRows) {
+			if(row.getInBlockNumber().isLess(zBlock)) {
+				newrows.add(row);
+			}
+		}
+		mRows = newrows;
 	}
 	
 }

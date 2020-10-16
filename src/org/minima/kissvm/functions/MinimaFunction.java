@@ -22,6 +22,7 @@ import org.minima.kissvm.functions.cast.HEX;
 import org.minima.kissvm.functions.cast.NUMBER;
 import org.minima.kissvm.functions.cast.SCRIPT;
 import org.minima.kissvm.functions.maths.ABS;
+import org.minima.kissvm.functions.maths.BITCOUNT;
 import org.minima.kissvm.functions.maths.BITGET;
 import org.minima.kissvm.functions.maths.BITSET;
 import org.minima.kissvm.functions.maths.CEIL;
@@ -42,6 +43,9 @@ import org.minima.kissvm.functions.state.DYNSTATE;
 import org.minima.kissvm.functions.state.PREVSTATE;
 import org.minima.kissvm.functions.state.SAMESTATE;
 import org.minima.kissvm.functions.state.STATE;
+import org.minima.kissvm.functions.tokens.TOKENSCALE;
+import org.minima.kissvm.functions.tokens.TOKENSCRIPT;
+import org.minima.kissvm.functions.tokens.TOKENTOTAL;
 import org.minima.kissvm.functions.txn.output.GETOUTADDR;
 import org.minima.kissvm.functions.txn.output.GETOUTAMT;
 import org.minima.kissvm.functions.txn.output.GETOUTTOK;
@@ -62,8 +66,9 @@ public abstract class MinimaFunction {
 				new STRCAT(), new HEXCAT(), new LEN(), new RPLVAR(),new REV(),new SUBSET(), new GET(),
 				new BOOL(), new NUMBER(), new HEX(), new SCRIPT(), new ASCII(),
 				new ABS(), new CEIL(), new FLOOR(),new MAX(), new MIN(), new DEC(), new INC(), 
-				new SIGDIG(), new POW(),
-				new SHA3(), new SHA2(), new CHAINSHA(), new BITSET(), new BITGET(),
+				new SIGDIG(), new POW(), 
+				new TOKENSCRIPT(), new TOKENTOTAL(), new TOKENSCALE(),
+				new SHA3(), new SHA2(), new CHAINSHA(), new BITSET(), new BITGET(), new BITCOUNT(),
 				new SIGNEDBY(), new MULTISIG(), new CHECKSIG(),
 				new GETOUTADDR(), new GETOUTAMT(), new GETOUTTOK(),new VERIFYOUT(),
 				new STATE(), new PREVSTATE(), new SAMESTATE(), new DYNSTATE()

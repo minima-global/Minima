@@ -9,6 +9,7 @@ import java.util.Collections;
 import org.minima.database.mmr.MMRSet;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniNumber;
 import org.minima.utils.Crypto;
 
 public class BlockTreeNode implements Comparable<BlockTreeNode> {
@@ -55,16 +56,6 @@ public class BlockTreeNode implements Comparable<BlockTreeNode> {
 	 * The Finalized MMRset for this block
 	 */
 	MMRSet mMMRSet = new MMRSet();
-	
-	/**
-	 * When Traversing.. remeber which child was used last
-	 */
-	public int mTraversedChild = 0;
-	
-	/**
-	 * When calculating the cascade weight.. has this node been used.. 1000x speed boost..
-	 */
-	public boolean mCascadeWeighted = false;
 	
 	/**
 	 * When loading from bloc ctore just use the TxpowID
@@ -156,9 +147,6 @@ public class BlockTreeNode implements Comparable<BlockTreeNode> {
 		
 		//Reset the total weight..
 		mTotalWeight = mWeight;
-		
-		//Not used yet..
-		mCascadeWeighted = false;
 	}
 	
 	public BigDecimal getRealWeight() {
@@ -178,6 +166,10 @@ public class BlockTreeNode implements Comparable<BlockTreeNode> {
 	
 	public TxPoW getTxPow() {
 		return mTXPOW;
+	}
+	
+	public MiniNumber getBlockNumber() {
+		return mTXPOW.getBlockNumber();
 	}
 		
 	public int getSuperBlockLevel() {
@@ -227,6 +219,11 @@ public class BlockTreeNode implements Comparable<BlockTreeNode> {
 	public boolean hasChildren(){
 		return mChildren.size() > 0;
 	}
+
+	public void clearParentChildren(){
+		mChildren.clear();
+		mParent = null;
+	}
 	
 	public BlockTreeNode getChild(int zChild) {
 		return mChildren.get(zChild);
@@ -240,6 +237,22 @@ public class BlockTreeNode implements Comparable<BlockTreeNode> {
 	@Override
 	public String toString() {
 		return "["+getCurrentLevel()+"/"+getSuperBlockLevel()+"] casc:"+isCascade()+" state:"+getState()+" "+mTXPOW.toString();
+	}
+	
+	public boolean checkForTxpow(MiniData zTxPoWID) {
+		if(getTxPow().getTxPowID().isEqual(zTxPoWID)) {
+			return true;
+		}
+		
+		//Check the Block Txns..
+		ArrayList<MiniData> txns = getTxPow().getBlockTransactions();
+		for(MiniData txn : txns) {
+			if(txn.isEqual(zTxPoWID)) {
+				return true;
+			}
+		}
+		
+		return false;
 	}
 	
 }
