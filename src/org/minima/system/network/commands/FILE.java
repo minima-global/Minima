@@ -53,7 +53,8 @@ public class FILE implements Runnable {
 		//The response
 		JSONObject response = new JSONObject();
 		response.put("function", filefunc);
-		response.put("file", finalpath);
+		response.put("file", file);
+		response.put("filepath", thefile.getAbsolutePath());
 		response.put("name", thefile.getName());
 		response.put("exists", thefile.exists());
 		
