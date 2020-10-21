@@ -78,4 +78,19 @@ public class MinimaLogger {
 		}
 	}
 	
+	public static void log(String zTitle, Exception zException){
+		if(LOGGING_ON){
+			//A Title..
+			MinimaLogger.log(zTitle);
+			
+			//First the Full Exception
+			MinimaLogger.log(zException.toString());
+			
+			//Now the Stack Trace
+			for(StackTraceElement stack : zException.getStackTrace()) {
+				//Print it..
+				MinimaLogger.log("     "+stack.toString());
+			}
+		}
+	}
 }
