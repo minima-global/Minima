@@ -144,21 +144,18 @@ public class DAPPManager extends MessageProcessor {
 	        
 	        //And add the root folder..
 	        String root = zConf.getParent();
-	        int start = root.indexOf("/minidapps/");
-	        String webroot = root.substring(start);
-	        String approot = root.substring(start+11);
+	        int start = root.indexOf("minidapps");
+	        String uid = root.substring(start+10);
 	        
-	        ret.put("uid", approot);
-	        ret.put("root", webroot);
-	        ret.put("web", "http://"+mNetwork.getBaseHost()+":"+mNetwork.getMiniDAPPServerPort()+webroot);
+	        ret.put("uid", uid);
+	        ret.put("root", "/minidapps/"+uid);
+	        ret.put("web", "http://"+mNetwork.getBaseHost()+":"+mNetwork.getMiniDAPPServerPort()+"/minidapps/"+uid);
 	        
 	        bis.close();
 	        fis.close();
 	        
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (ParseException e) {
-			e.printStackTrace();
+		} catch (Exception e) {
+			MinimaLogger.log("Error Loading MiniDAPP conf "+zConf.getAbsolutePath(),e);
 		}
 		
 		return ret;
