@@ -1,5 +1,7 @@
 package org.minima.tests.database.userdb.java;
 
+import org.minima.database.MinimaDB;
+
 import org.minima.database.userdb.UserDBRow;
 
 import org.minima.database.userdb.java.JavaUserDB;
@@ -17,6 +19,8 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
 
 import org.minima.objects.proofs.TokenProof;
+
+import org.minima.utils.json.JSONObject;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -316,10 +320,10 @@ public class JavaUserDBTests {
 
         TokenProof[] tokens = {
             new TokenProof(new MiniData("0x00"), MiniNumber.ONE, MiniNumber.TEN, new MiniString("TEST1"), new MiniString("RETURN")),
-            new TokenProof(new MiniData("0x01"), MiniNumber.EIGHT, MiniNumber.HUNDRED, new MiniString("TEST1"), new MiniString("RETURN")),
-            new TokenProof(new MiniData("0x02"), MiniNumber.SIXTEEN, MiniNumber.THOUSAND, new MiniString("TEST1"), new MiniString("RETURN")),
-            new TokenProof(new MiniData("0x03"), MiniNumber.THIRTYTWO, MiniNumber.MILLION, new MiniString("TEST1"), new MiniString("RETURN")),
-            new TokenProof(new MiniData("0x04"), MiniNumber.SIXTYFOUR, MiniNumber.BILLION, new MiniString("TEST1"), new MiniString("RETURN"))
+            new TokenProof(new MiniData("0xFF"), MiniNumber.EIGHT, MiniNumber.HUNDRED, new MiniString("TEST2"), new MiniString("RETURN")),
+            new TokenProof(new MiniData("0x01"), MiniNumber.SIXTEEN, MiniNumber.THOUSAND, new MiniString("TEST3"), new MiniString("RETURN")),
+            new TokenProof(new MiniData("0x02"), MiniNumber.THIRTYTWO, MiniNumber.MILLION, new MiniString("TEST4"), new MiniString("RETURN")),
+            new TokenProof(new MiniData("0x03"), MiniNumber.SIXTYFOUR, MiniNumber.BILLION, new MiniString("TEST5"), new MiniString("RETURN"))
         };
         for (int i = 0; i < tokens.length; i++) {
             db.addTokenDetails(tokens[i]);
@@ -329,13 +333,11 @@ public class JavaUserDBTests {
         db.addTokenDetails(db.getTokenDetail(tokens[0].getTokenID())); // try to add duplicate
         assertEquals("should contain 5 tokens ", 5, db.getAllKnownTokens().size());
 
-        TokenProof untracked_token = new TokenProof(new MiniData("0x05"), new MiniNumber(8), MiniNumber.BILLION, new MiniString("TEST1"), new MiniString("RETURN"));
+        TokenProof untracked_token = new TokenProof(new MiniData("0x05"), new MiniNumber(8), MiniNumber.BILLION, new MiniString("TEST6"), new MiniString("RETURN"));
         assertEquals("should contain 5 tokens ", 5, db.getAllKnownTokens().size());
 
         for (int i = 0; i < tokens.length; i++) {
             TokenProof token = db.getTokenDetail(tokens[i].getTokenID());
-            System.out.println(token);
-            System.out.println(tokens[i]);
             assertEquals("should be equal ", tokens[i].getCoinID(), token.getCoinID());
             assertEquals("should be equal ", tokens[i].getScale(), token.getScale());
             assertEquals("should be equal ", tokens[i].getAmount(), token.getAmount());
@@ -348,17 +350,61 @@ public class JavaUserDBTests {
 
     @Test
     public void testreltxpowHandling() {
+        MinimaDB mdb = new MinimaDB();
         JavaUserDB db = new JavaUserDB();
 
         assertEquals("should contain 0 rows ", 0, db.getHistory().size());
 
-        db.addToHistory(new TxPoW(), new Hashtable<String, MiniNumber>());
-        db.addToHistory(new TxPoW(), new Hashtable<String, MiniNumber>());
-        db.addToHistory(new TxPoW(), new Hashtable<String, MiniNumber>());
-        db.addToHistory(new TxPoW(), new Hashtable<String, MiniNumber>());
-        db.addToHistory(new TxPoW(), new Hashtable<String, MiniNumber>());
+        TxPoW[] txps = {
+            new TxPoW(),
+            new TxPoW(),
+            new TxPoW(),
+            new TxPoW(),
+            new TxPoW()
+        };
+
+        ArrayList<Hashtable<String, MiniNumber>> hts = new ArrayList<Hashtable<String, MiniNumber>>();
+        hts.add(new Hashtable<String, MiniNumber>());
+        hts.add(new Hashtable<String, MiniNumber>());
+        hts.add(new Hashtable<String, MiniNumber>());
+        hts.add(new Hashtable<String, MiniNumber>());
+        hts.add(new Hashtable<String, MiniNumber>());
+
+        hts.get(0).put("0x00", MiniNumber.ONE);
+        hts.get(1).put("0xFF", MiniNumber.ONE);
+        hts.get(2).put("0xECC8B0926BD813CA2274A09FB2A324204C3521BB0EBD47C0F307C131FD1EEA9029586B58F4CD7B6C6572EA172D137FD8EC3FFD53BC103554EC8DA5070FA37B6C", MiniNumber.ONE); // calculated tokenid
+        hts.get(3).put("0xBEE068475E6F6A4B187CD44E013E7EC245D3CDD281170A3F13C39A533631128AFA063CFC38D6A428F982E4886EDF3882120A907073B98CF94F32B62AAB6E8BE4", MiniNumber.ONE); // calculated tokenid
+        hts.get(4).put("0x05", MiniNumber.ONE);
+
+        for (int i = 0; i < txps.length; i++) {
+            db.addToHistory(txps[i], hts.get(i));
+        }
 
         assertEquals("should contain 5 reltxpows ", 5, db.getHistory().size());
+
+        TokenProof[] tokens = {
+            new TokenProof(new MiniData("0x00"), MiniNumber.ONE, MiniNumber.TEN, new MiniString("0x00"), new MiniString("RETURN")),
+            new TokenProof(new MiniData("0xFF"), MiniNumber.EIGHT, MiniNumber.HUNDRED, new MiniString("0xFF"), new MiniString("RETURN")),
+            new TokenProof(new MiniData("0x01"), MiniNumber.SIXTEEN, MiniNumber.THOUSAND, new MiniString("0x01"), new MiniString("RETURN")),
+            new TokenProof(new MiniData("0x02"), MiniNumber.THIRTYTWO, MiniNumber.MILLION, new MiniString("TEST4"), new MiniString("RETURN")),
+            new TokenProof(new MiniData("0x03"), MiniNumber.SIXTYFOUR, MiniNumber.BILLION, new MiniString("TEST5"), new MiniString("RETURN"))
+        };
+        for (int i = 0; i < tokens.length; i++) {
+            mdb.getUserDB().addTokenDetails(tokens[i]);
+            System.out.println(tokens[i].getTokenID().toString());
+        }
+
+        reltxpow[] reltxpows = new reltxpow[5];
+        db.getHistory().toArray(reltxpows);
+
+        for (int i = 0; i < reltxpows.length; i++) {
+            assertEquals("should be equal ", txps[i], reltxpows[i].getTxPOW());
+
+            JSONObject json1 = reltxpows[i].toJSON(mdb);
+
+            JSONObject json2 = reltxpows[i].toJSON(mdb);
+
+        }
 
         assertTrue("should contain non zero reltxpows ", db.getHistory().size() > 0);
         db.clearHistory();
@@ -457,20 +503,39 @@ public class JavaUserDBTests {
 
         TokenProof[] tokens = {
             new TokenProof(new MiniData("0x00"), MiniNumber.ONE, MiniNumber.TEN, new MiniString("TEST1"), new MiniString("RETURN")),
-            new TokenProof(new MiniData("0x01"), MiniNumber.EIGHT, MiniNumber.HUNDRED, new MiniString("TEST1"), new MiniString("RETURN")),
-            new TokenProof(new MiniData("0x02"), MiniNumber.SIXTEEN, MiniNumber.THOUSAND, new MiniString("TEST1"), new MiniString("RETURN")),
-            new TokenProof(new MiniData("0x03"), MiniNumber.THIRTYTWO, MiniNumber.MILLION, new MiniString("TEST1"), new MiniString("RETURN")),
-            new TokenProof(new MiniData("0x04"), MiniNumber.SIXTYFOUR, MiniNumber.BILLION, new MiniString("TEST1"), new MiniString("RETURN"))
+            new TokenProof(new MiniData("0xFF"), MiniNumber.EIGHT, MiniNumber.HUNDRED, new MiniString("TEST2"), new MiniString("RETURN")),
+            new TokenProof(new MiniData("0x01"), MiniNumber.SIXTEEN, MiniNumber.THOUSAND, new MiniString("TEST3"), new MiniString("RETURN")),
+            new TokenProof(new MiniData("0x02"), MiniNumber.THIRTYTWO, MiniNumber.MILLION, new MiniString("TEST4"), new MiniString("RETURN")),
+            new TokenProof(new MiniData("0x03"), MiniNumber.SIXTYFOUR, MiniNumber.BILLION, new MiniString("TEST5"), new MiniString("RETURN"))
         };
         for (int i = 0; i < tokens.length; i++) {
             db.addTokenDetails(tokens[i]);
         }
 
-        db.addToHistory(new TxPoW(), new Hashtable<String, MiniNumber>());
-        db.addToHistory(new TxPoW(), new Hashtable<String, MiniNumber>());
-        db.addToHistory(new TxPoW(), new Hashtable<String, MiniNumber>());
-        db.addToHistory(new TxPoW(), new Hashtable<String, MiniNumber>());
-        db.addToHistory(new TxPoW(), new Hashtable<String, MiniNumber>());
+        TxPoW[] txps = {
+            new TxPoW(),
+            new TxPoW(),
+            new TxPoW(),
+            new TxPoW(),
+            new TxPoW()
+        };
+
+        ArrayList<Hashtable<String, MiniNumber>> hts = new ArrayList<Hashtable<String, MiniNumber>>();
+        hts.add(new Hashtable<String, MiniNumber>());
+        hts.add(new Hashtable<String, MiniNumber>());
+        hts.add(new Hashtable<String, MiniNumber>());
+        hts.add(new Hashtable<String, MiniNumber>());
+        hts.add(new Hashtable<String, MiniNumber>());
+
+        hts.get(0).put("0x00", MiniNumber.ONE);
+        hts.get(1).put("0xFF", MiniNumber.ONE);
+        hts.get(2).put("0xECC8B0926BD813CA2274A09FB2A324204C3521BB0EBD47C0F307C131FD1EEA9029586B58F4CD7B6C6572EA172D137FD8EC3FFD53BC103554EC8DA5070FA37B6C", MiniNumber.ONE); // calculated tokenid
+        hts.get(3).put("0xBEE068475E6F6A4B187CD44E013E7EC245D3CDD281170A3F13C39A533631128AFA063CFC38D6A428F982E4886EDF3882120A907073B98CF94F32B62AAB6E8BE4", MiniNumber.ONE); // calculated tokenid
+        hts.get(4).put("0x05", MiniNumber.ONE);
+
+        for (int i = 0; i < txps.length; i++) {
+            db.addToHistory(txps[i], hts.get(i));
+        }
 
         return db;
     }
