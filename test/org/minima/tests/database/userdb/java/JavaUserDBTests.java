@@ -3,13 +3,23 @@ package org.minima.tests.database.userdb.java;
 import org.minima.database.userdb.UserDBRow;
 
 import org.minima.database.userdb.java.JavaUserDB;
+import org.minima.database.userdb.java.reltxpow;
 
 import org.minima.objects.Address;
+import org.minima.objects.Coin;
 import org.minima.objects.PubPrivKey;
+import org.minima.objects.StateVariable;
+import org.minima.objects.Transaction;
+import org.minima.objects.TxPoW;
 
 import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniNumber;
+import org.minima.objects.base.MiniString;
+
+import org.minima.objects.proofs.TokenProof;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -22,6 +32,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import java.util.ArrayList;
+import java.util.Hashtable;
 
 import org.junit.Test;
 import org.junit.internal.ArrayComparisonFailure;
@@ -30,54 +41,54 @@ public class JavaUserDBTests {
 
     @Test
     public void testConstructors() {
-        JavaUserDB db1 = new JavaUserDB();
+        JavaUserDB db = new JavaUserDB();
 
-        assertNotNull("should not be null ", db1.getKeys());
-        assertEquals("should be empty ", 0, db1.getKeys().size());
+        assertNotNull("should not be null ", db.getKeys());
+        assertEquals("should be empty ", 0, db.getKeys().size());
 
-        assertNotNull("should not be null ", db1.getSimpleAddresses());
-        assertEquals("should be empty ", 0, db1.getSimpleAddresses().size());
+        assertNotNull("should not be null ", db.getSimpleAddresses());
+        assertEquals("should be empty ", 0, db.getSimpleAddresses().size());
 
-        assertNotNull("should not be null ", db1.getAllKnownTokens());
-        assertEquals("should be empty ", 0, db1.getAllKnownTokens().size());
+        assertNotNull("should not be null ", db.getAllKnownTokens());
+        assertEquals("should be empty ", 0, db.getAllKnownTokens().size());
 
-        assertNotNull("should not be null ", db1.getAllRows());
-        assertEquals("should be empty ", 0, db1.getAllRows().size());
+        assertNotNull("should not be null ", db.getAllRows());
+        assertEquals("should be empty ", 0, db.getAllRows().size());
 
-        assertNotNull("should not be null ", db1.getHistory());
-        assertEquals("should be empty ", 0, db1.getHistory().size());
+        assertNotNull("should not be null ", db.getHistory());
+        assertEquals("should be empty ", 0, db.getHistory().size());
     }
 
     @Test
     public void testKeyHandling() {
-        JavaUserDB db1 = new JavaUserDB();
+        JavaUserDB db = new JavaUserDB();
 
-        assertNotNull("should not be null ", db1.getKeys());
-        assertEquals("should be empty ", 0, db1.getKeys().size());
+        assertNotNull("should not be null ", db.getKeys());
+        assertEquals("should be empty ", 0, db.getKeys().size());
 
-        PubPrivKey ppk1 = db1.newPublicKey(512);
-        assertEquals("should contain 1 key ", 1, db1.getKeys().size());
+        PubPrivKey ppk1 = db.newPublicKey(512);
+        assertEquals("should contain 1 key ", 1, db.getKeys().size());
 
-        PubPrivKey ppk2 = db1.newPublicKey(512);
-        assertEquals("should contain 2 keys ", 2, db1.getKeys().size());
+        PubPrivKey ppk2 = db.newPublicKey(512);
+        assertEquals("should contain 2 keys ", 2, db.getKeys().size());
 
-        PubPrivKey ppk3 = db1.newPublicKey(512);
-        assertEquals("should contain 3 keys ", 3, db1.getKeys().size());
+        PubPrivKey ppk3 = db.newPublicKey(512);
+        assertEquals("should contain 3 keys ", 3, db.getKeys().size());
 
         MiniData md_ppk1 = ppk1.getPublicKey();
-        PubPrivKey ppk11 = db1.getPubPrivKey(md_ppk1);
+        PubPrivKey ppk11 = db.getPubPrivKey(md_ppk1);
         assertEquals("should be equal ", ppk1, ppk11);
 
         MiniData md_ppk2 = ppk2.getPublicKey();
-        PubPrivKey ppk21 = db1.getPubPrivKey(md_ppk2);
+        PubPrivKey ppk21 = db.getPubPrivKey(md_ppk2);
         assertEquals("should be equal ", ppk2, ppk21);
 
         MiniData md_ppk3 = ppk3.getPublicKey();
-        PubPrivKey ppk31 = db1.getPubPrivKey(md_ppk3);
+        PubPrivKey ppk31 = db.getPubPrivKey(md_ppk3);
         assertEquals("should be equal ", ppk3, ppk31);
 
         MiniData md_dummy = new MiniData();
-        PubPrivKey ppk_dummy = db1.getPubPrivKey(md_dummy);
+        PubPrivKey ppk_dummy = db.getPubPrivKey(md_dummy);
         assertNull("should be null", ppk_dummy);
     }
 
@@ -96,6 +107,9 @@ public class JavaUserDBTests {
             db.newPublicKey(512),
             db.newPublicKey(512)
         };
+        assertEquals("should contain 5 keys ", 5, db.getKeys().size());
+
+        PubPrivKey untracked_pk = new PubPrivKey(512);
         assertEquals("should contain 5 keys ", 5, db.getKeys().size());
 
         Address[] sa = {
@@ -128,39 +142,127 @@ public class JavaUserDBTests {
         assertEquals("should contain 15 simple addresses ", 15, db.getSimpleAddresses().size());
         assertEquals("should contain 15 addresses in total ", 15, db.getAllAddresses().size());
 
+        String untracked_script = "RETURN SIGNEDBY ( " + untracked_pk.getPublicKey() + " )";
+        Address untracked_addr = new Address(untracked_script, untracked_pk.getBitLength());
+        assertFalse("should not be relevant ", db.isAddressRelevant(untracked_addr.getAddressData()));
+        assertEquals("should contain 15 simple addresses ", 15, db.getSimpleAddresses().size());
+        assertEquals("should contain 15 addresses in total ", 15, db.getAllAddresses().size());
+
         for (int i = 0; i < 5; i++) {
             assertTrue("should be simple address ", db.isSimpleAddress(sa[i].getAddressData()));
             assertTrue("should be simple address ", db.isSimpleAddress(sa_with_bitlength[i].getAddressData()));
             assertTrue("should be simple address ", db.isSimpleAddress(sa_from_pk[i].getAddressData()));
+
+            assertTrue("should be relevant ", db.isAddressRelevant(sa[i].getAddressData()));
+            assertTrue("should be relevant ", db.isAddressRelevant(sa_with_bitlength[i].getAddressData()));
+            assertTrue("should be relevant ", db.isAddressRelevant(sa_from_pk[i].getAddressData()));
+
             assertEquals("should be equal ", pk[i].getPublicKey(), db.getPublicKeyForSimpleAddress(sa_from_pk[i].getAddressData()));
         }
 
-        String script = "RETURN TRUE"; // same script returns same address!!!
-        Address[] script_a = {
-            db.newScriptAddress(script),
-            db.newScriptAddress(script),
-            db.newScriptAddress(script),
-            db.newScriptAddress(script),
-            db.newScriptAddress(script)
-        };
-        assertEquals("should contain 15 simple addresses ", 15, db.getSimpleAddresses().size());
-        assertEquals("should contain 16 addresses in total ", 16, db.getAllAddresses().size());
+        assertNull("should be null ", db.getPublicKeyForSimpleAddress(untracked_addr.getAddressData()));
 
-        String script_extra = "RETURN TRUE RETURN TRUE"; // same script returns same address!!!
-        Address[] extra_a = {
-            db.newExtraAddress(script_extra),
-            db.newExtraAddress(script_extra),
-            db.newExtraAddress(script_extra),
-            db.newExtraAddress(script_extra),
-            db.newExtraAddress(script_extra)
+        String script_1 = "RETURN TRUE"; // same script returns same address!!!
+        String script_2 = "RETURN TRUE RETURN TRUE"; // same script returns same address!!!
+        Address[] script_a = {
+            db.newScriptAddress(script_1),
+            db.newScriptAddress(script_1),
+            db.newScriptAddress(script_1),
+            db.newScriptAddress(script_2),
+            db.newScriptAddress(script_2)
         };
         assertEquals("should contain 15 simple addresses ", 15, db.getSimpleAddresses().size());
-        assertEquals("should contain 17 total addresses ", 17, db.getAllAddresses().size());
+        assertEquals("should contain 17 addresses in total ", 17, db.getAllAddresses().size());
+        assertFalse("should not be simple address ", db.isSimpleAddress(script_a[0].getAddressData()));
+        assertFalse("should not be simple address ", db.isSimpleAddress(script_a[3].getAddressData()));
+        assertTrue("should be relevant ", db.isAddressRelevant(script_a[0].getAddressData()));
+        assertTrue("should be relevant ", db.isAddressRelevant(script_a[3].getAddressData()));
+
+        String script_extra_1 = "RETURN TRUE RETURN TRUE RETURN TRUE"; // same script returns same address!!!
+        String script_extra_2 = "RETURN TRUE RETURN TRUE RETURN TRUE RETURN TRUE"; // same script returns same address!!!
+        Address[] extra_a = {
+            db.newExtraAddress(script_extra_1),
+            db.newExtraAddress(script_extra_1),
+            db.newExtraAddress(script_extra_2),
+            db.newExtraAddress(script_extra_2),
+            db.newExtraAddress(script_extra_2)
+        };
+        assertEquals("should contain 15 simple addresses ", 15, db.getSimpleAddresses().size());
+        assertEquals("should contain 19 total addresses ", 19, db.getAllAddresses().size());
+        assertFalse("should not be simple address ", db.isSimpleAddress(extra_a[2].getAddressData()));
+        assertFalse("should not be relevant ", db.isAddressRelevant(extra_a[0].getAddressData()));
+        assertFalse("should not be relevant ", db.isAddressRelevant(extra_a[2].getAddressData()));
 
         for (int i = 0; i < 5; i++) {
-            assertEquals("should be equal ", script, db.getScript(script_a[i].getAddressData()));
-            assertEquals("should be equal ", script_extra, db.getScript(extra_a[i].getAddressData()));
+            if (i <= 2) {
+                assertEquals("should be equal ", script_1, db.getScript(script_a[i].getAddressData()));
+            } else {
+                assertEquals("should be equal ", script_2, db.getScript(script_a[i].getAddressData()));
+            }
+            if (i <= 1) {
+                assertEquals("should be equal ", script_extra_1, db.getScript(extra_a[i].getAddressData()));
+            } else {
+                assertEquals("should be equal ", script_extra_2, db.getScript(extra_a[i].getAddressData()));
+            }
         }
+        assertEquals("should be empty ", "", db.getScript(untracked_addr.getAddressData()));
+
+        Address tracked_input_addr = db.newSimpleAddress();
+        PubPrivKey untracked_input_pk = new PubPrivKey(512);
+        String untracked_input_script = "RETURN SIGNEDBY ( " + untracked_input_pk.getPublicKey() + " )";
+        Address untracked_input_addr = new Address(untracked_input_script, untracked_input_pk.getBitLength());
+
+        Address tracked_output_addr = db.newSimpleAddress();
+        PubPrivKey untracked_output_pk = new PubPrivKey(512);
+        String untracked_output_script = "RETURN SIGNEDBY ( " + untracked_output_pk.getPublicKey() + " )";
+        Address untracked_output_addr = new Address(untracked_output_script, untracked_output_pk.getBitLength());
+
+        Coin[] inputs = {
+            new Coin(new MiniData("0x00"), tracked_input_addr.getAddressData(), MiniNumber.TEN, new MiniData("0x00")),
+            new Coin(new MiniData("0x00"), untracked_input_addr.getAddressData(), MiniNumber.TEN, new MiniData("0x00"))
+        };
+
+        Coin[] outputs = {
+            new Coin(new MiniData("0x00"), tracked_output_addr.getAddressData(), MiniNumber.TEN, new MiniData("0x00")),
+            new Coin(new MiniData("0x00"), untracked_output_addr.getAddressData(), MiniNumber.TEN, new MiniData("0x00"))
+        };
+
+        Transaction t1 = new Transaction();
+        t1.addInput(inputs[1]);
+        t1.addOutput(outputs[1]);
+        assertFalse("should be irrelevant ", db.isTransactionRelevant(t1));
+
+        Transaction t2 = new Transaction();
+        t2.addInput(inputs[1]);
+        t2.addOutput(outputs[0]);
+        assertTrue("should be relevant ", db.isTransactionRelevant(t2));
+
+        Transaction t3 = new Transaction();
+        t3.addInput(inputs[0]);
+        t3.addOutput(outputs[1]);
+        assertTrue("should be relevant ", db.isTransactionRelevant(t3));
+
+        ArrayList<StateVariable> StateVarList = new ArrayList<StateVariable>();
+
+        StateVarList.clear();
+        StateVarList.add(new StateVariable(0, "dummy"));
+        assertFalse("should be irrelevant ", db.isStateListRelevant(StateVarList));
+
+        StateVarList.clear();
+        StateVarList.add(new StateVariable(0, untracked_input_addr.toString()));
+        assertFalse("should be irrelevant ", db.isStateListRelevant(StateVarList));
+
+        StateVarList.clear();
+        StateVarList.add(new StateVariable(0, sa[0].toString()));
+        assertTrue("should be relevant ", db.isStateListRelevant(StateVarList));
+
+        StateVarList.clear();
+        StateVarList.add(new StateVariable(0, untracked_pk.toString()));
+        assertFalse("should be irrelevant ", db.isStateListRelevant(StateVarList));
+
+        StateVarList.clear();
+        StateVarList.add(new StateVariable(0, pk[0].toString()));
+        assertTrue("should be relevant ", db.isStateListRelevant(StateVarList));
     }
 
     @Test
@@ -204,6 +306,63 @@ public class JavaUserDBTests {
         assertEquals("should contain 1 rows ", 1, db.getAllRows().size());
         db.deleteUserRow(1);
         assertEquals("should contain 0 rows ", 0, db.getAllRows().size());
+    }
+
+    @Test
+    public void testTokenHandling() {
+        JavaUserDB db = new JavaUserDB();
+
+        assertEquals("should contain 0 tokens ", 0, db.getAllKnownTokens().size());
+
+        TokenProof[] tokens = {
+            new TokenProof(new MiniData("0x00"), MiniNumber.ONE, MiniNumber.TEN, new MiniString("TEST1"), new MiniString("RETURN")),
+            new TokenProof(new MiniData("0x01"), MiniNumber.EIGHT, MiniNumber.HUNDRED, new MiniString("TEST1"), new MiniString("RETURN")),
+            new TokenProof(new MiniData("0x02"), MiniNumber.SIXTEEN, MiniNumber.THOUSAND, new MiniString("TEST1"), new MiniString("RETURN")),
+            new TokenProof(new MiniData("0x03"), MiniNumber.THIRTYTWO, MiniNumber.MILLION, new MiniString("TEST1"), new MiniString("RETURN")),
+            new TokenProof(new MiniData("0x04"), MiniNumber.SIXTYFOUR, MiniNumber.BILLION, new MiniString("TEST1"), new MiniString("RETURN"))
+        };
+        for (int i = 0; i < tokens.length; i++) {
+            db.addTokenDetails(tokens[i]);
+        }
+        assertEquals("should contain 5 tokens ", 5, db.getAllKnownTokens().size());
+
+        db.addTokenDetails(db.getTokenDetail(tokens[0].getTokenID())); // try to add duplicate
+        assertEquals("should contain 5 tokens ", 5, db.getAllKnownTokens().size());
+
+        TokenProof untracked_token = new TokenProof(new MiniData("0x05"), new MiniNumber(8), MiniNumber.BILLION, new MiniString("TEST1"), new MiniString("RETURN"));
+        assertEquals("should contain 5 tokens ", 5, db.getAllKnownTokens().size());
+
+        for (int i = 0; i < tokens.length; i++) {
+            TokenProof token = db.getTokenDetail(tokens[i].getTokenID());
+            System.out.println(token);
+            System.out.println(tokens[i]);
+            assertEquals("should be equal ", tokens[i].getCoinID(), token.getCoinID());
+            assertEquals("should be equal ", tokens[i].getScale(), token.getScale());
+            assertEquals("should be equal ", tokens[i].getAmount(), token.getAmount());
+            assertEquals("should be equal ", tokens[i].getName(), token.getName());
+            assertEquals("should be equal ", tokens[i].getTokenScript(), token.getTokenScript());
+        }
+
+        assertNull("should be null ", db.getTokenDetail(untracked_token.getCoinID()));
+    }
+
+    @Test
+    public void testreltxpowHandling() {
+        JavaUserDB db = new JavaUserDB();
+
+        assertEquals("should contain 0 rows ", 0, db.getHistory().size());
+
+        db.addToHistory(new TxPoW(), new Hashtable<String, MiniNumber>());
+        db.addToHistory(new TxPoW(), new Hashtable<String, MiniNumber>());
+        db.addToHistory(new TxPoW(), new Hashtable<String, MiniNumber>());
+        db.addToHistory(new TxPoW(), new Hashtable<String, MiniNumber>());
+        db.addToHistory(new TxPoW(), new Hashtable<String, MiniNumber>());
+
+        assertEquals("should contain 5 reltxpows ", 5, db.getHistory().size());
+
+        assertTrue("should contain non zero reltxpows ", db.getHistory().size() > 0);
+        db.clearHistory();
+        assertEquals("should contain 0 reltxpows ", 0, db.getHistory().size());
     }
 
     @Test
@@ -279,7 +438,7 @@ public class JavaUserDBTests {
             db.newScriptAddress(script)
         };
 
-        String script_extra = "RETURN TRUE";
+        String script_extra = "RETURN TRUE RETURN TRUE";
         Address[] extra_a = {
             db.newExtraAddress(script_extra),
             db.newExtraAddress(script_extra),
@@ -295,6 +454,23 @@ public class JavaUserDBTests {
             db.addUserRow(3),
             db.addUserRow(4)
         };
+
+        TokenProof[] tokens = {
+            new TokenProof(new MiniData("0x00"), MiniNumber.ONE, MiniNumber.TEN, new MiniString("TEST1"), new MiniString("RETURN")),
+            new TokenProof(new MiniData("0x01"), MiniNumber.EIGHT, MiniNumber.HUNDRED, new MiniString("TEST1"), new MiniString("RETURN")),
+            new TokenProof(new MiniData("0x02"), MiniNumber.SIXTEEN, MiniNumber.THOUSAND, new MiniString("TEST1"), new MiniString("RETURN")),
+            new TokenProof(new MiniData("0x03"), MiniNumber.THIRTYTWO, MiniNumber.MILLION, new MiniString("TEST1"), new MiniString("RETURN")),
+            new TokenProof(new MiniData("0x04"), MiniNumber.SIXTYFOUR, MiniNumber.BILLION, new MiniString("TEST1"), new MiniString("RETURN"))
+        };
+        for (int i = 0; i < tokens.length; i++) {
+            db.addTokenDetails(tokens[i]);
+        }
+
+        db.addToHistory(new TxPoW(), new Hashtable<String, MiniNumber>());
+        db.addToHistory(new TxPoW(), new Hashtable<String, MiniNumber>());
+        db.addToHistory(new TxPoW(), new Hashtable<String, MiniNumber>());
+        db.addToHistory(new TxPoW(), new Hashtable<String, MiniNumber>());
+        db.addToHistory(new TxPoW(), new Hashtable<String, MiniNumber>());
 
         return db;
     }

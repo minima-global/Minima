@@ -71,7 +71,6 @@ public class JavaUserDBRowTests {
             //assertEquals("should be equal ", r1.getTransaction(), r2.getTransaction());
             //assertEquals("should be equal ", r1.getWitness(), r2.getWitness());
 
-
         } catch (final IOException e) {
             System.out.println("IOException: " + e.toString() + " msg=" + e.getMessage());
             assertTrue(" there should not be an IOException", false);
@@ -82,10 +81,16 @@ public class JavaUserDBRowTests {
     public void testJSONConversion() {
         JavaUserDBRow r1 = new JavaUserDBRow(123);
         JSONObject json = r1.toJSON();
-        System.out.println("JSON: " + json.toJSONString());
         assertTrue("JSON object should contain id key", json.containsKey("id"));
         assertTrue("JSON object should contain transaction key", json.containsKey("transaction"));
         assertTrue("JSON object should contain witness key", json.containsKey("witness"));
     }
 
+    @Test
+    public void testToString() {
+        JavaUserDBRow r1 = new JavaUserDBRow(123);
+        String exp_s = "ID:123 Witness:" + r1.getWitness() + " Txn:" + r1.getTransaction();
+        String obj_s = r1.toString();
+        assertEquals("should be equal ", exp_s, obj_s);
+    }
 }
