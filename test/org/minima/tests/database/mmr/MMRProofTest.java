@@ -91,6 +91,16 @@ public class MMRProofTest {
         //        assertEquals("should be equal ", mmrp1.getBlockTime().getAsBigDecimal(), mmrp2.getBlockTime().getAsBigDecimal());
         //        assertEquals("should be equal ", mmrp1.getEntryNumber().getNumber(), mmrp2.getEntryNumber().getNumber());
         //        assertEquals("should be equal ", mmrp1.getMMRData().getFinalHash(), mmrp2.getMMRData().getFinalHash());
+        //
+        //        InputStream inputStream2 = new ByteArrayInputStream(bos.toByteArray());
+        //        DataInputStream dis2 = new DataInputStream(inputStream2);
+        //
+        //        MMRProof mmrp3 = MMRProof.ReadFromStream(dis2);
+        //
+        //        assertEquals("should be equal ", mmrp1.getBlockTime().getAsBigDecimal(), mmrp3.getBlockTime().getAsBigDecimal());
+        //        assertEquals("should be equal ", mmrp1.getEntryNumber().getNumber(), mmrp3.getEntryNumber().getNumber());
+        //        assertEquals("should be equal ", mmrp1.getMMRData().getFinalHash(), mmrp3.getMMRData().getFinalHash());
+        //
         //    } catch (final IOException e) {
         //        System.out.println("IOException: " + e.toString() + " msg=" + e.getMessage());
         //        assertTrue(" there should not be an IOException", false);
