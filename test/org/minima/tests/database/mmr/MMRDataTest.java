@@ -60,13 +60,13 @@ public class MMRDataTest {
 
                 MMRData mmrd3 = MMRData.ReadFromStream(dis2);
 
-                assertEquals("should be equal ", mmrd1.getFinalHash(), mmrd2.getFinalHash());
-                assertEquals("should be equal ", mmrd1.getValueSum().getNumber(), mmrd2.getValueSum().getNumber());
-                //assertEquals("should be equal ", mmrd1.isSpent(), mmrd2.isSpent());
-                //assertEquals("should be equal ", mmrd1.getCoin(), mmrd2.getCoin());
-                //assertEquals("should be equal ", mmrd1.getPrevState(), mmrd2.getPrevState());
-                //assertEquals("should be equal ", mmrd1.getInBlock().getAsBigDecimal(), mmrd2.getInBlock().getAsBigDecimal());
-                assertEquals("should be equal ", mmrd1.isHashOnly(), mmrd2.isHashOnly());
+                assertEquals("should be equal ", mmrd1.getFinalHash(), mmrd3.getFinalHash());
+                assertEquals("should be equal ", mmrd1.getValueSum().getNumber(), mmrd3.getValueSum().getNumber());
+                //assertEquals("should be equal ", mmrd1.isSpent(), mmrd3.isSpent());
+                //assertEquals("should be equal ", mmrd1.getCoin(), mmrd3.getCoin());
+                //assertEquals("should be equal ", mmrd1.getPrevState(), mmrd3.getPrevState());
+                //assertEquals("should be equal ", mmrd1.getInBlock().getAsBigDecimal(), mmrd3.getInBlock().getAsBigDecimal());
+                assertEquals("should be equal ", mmrd1.isHashOnly(), mmrd3.isHashOnly());
             }
 
             {
@@ -103,13 +103,13 @@ public class MMRDataTest {
 
                 MMRData mmrd3 = MMRData.ReadFromStream(dis2);
 
-                assertEquals("should be equal ", mmrd1.getFinalHash(), mmrd2.getFinalHash());
-                assertEquals("should be equal ", mmrd1.getValueSum().getNumber(), mmrd2.getValueSum().getNumber());
-                assertEquals("should be equal ", mmrd1.isSpent(), mmrd2.isSpent());
-                //assertEquals("should be equal ", mmrd1.getCoin(), mmrd2.getCoin());
-                //assertEquals("should be equal ", mmrd1.getPrevState(), mmrd2.getPrevState());
-                assertEquals("should be equal ", mmrd1.getInBlock().getAsBigDecimal(), mmrd2.getInBlock().getAsBigDecimal());
-                assertEquals("should be equal ", mmrd1.isHashOnly(), mmrd2.isHashOnly());
+                assertEquals("should be equal ", mmrd1.getFinalHash(), mmrd3.getFinalHash());
+                assertEquals("should be equal ", mmrd1.getValueSum().getNumber(), mmrd3.getValueSum().getNumber());
+                assertEquals("should be equal ", mmrd1.isSpent(), mmrd3.isSpent());
+                //assertEquals("should be equal ", mmrd1.getCoin(), mmrd3.getCoin());
+                //assertEquals("should be equal ", mmrd1.getPrevState(), mmrd3.getPrevState());
+                assertEquals("should be equal ", mmrd1.getInBlock().getAsBigDecimal(), mmrd3.getInBlock().getAsBigDecimal());
+                assertEquals("should be equal ", mmrd1.isHashOnly(), mmrd3.isHashOnly());
             }
 
             {
@@ -146,13 +146,13 @@ public class MMRDataTest {
 
                 MMRData mmrd3 = MMRData.ReadFromStream(dis2);
 
-                assertEquals("should be equal ", mmrd1.getFinalHash(), mmrd2.getFinalHash());
-                assertEquals("should be equal ", mmrd1.getValueSum().getNumber(), mmrd2.getValueSum().getNumber());
-                assertEquals("should be equal ", mmrd1.isSpent(), mmrd2.isSpent());
-                //assertEquals("should be equal ", mmrd1.getCoin(), mmrd2.getCoin());
-                //assertEquals("should be equal ", mmrd1.getPrevState(), mmrd2.getPrevState());
-                assertEquals("should be equal ", mmrd1.getInBlock().getAsBigDecimal(), mmrd2.getInBlock().getAsBigDecimal());
-                assertEquals("should be equal ", mmrd1.isHashOnly(), mmrd2.isHashOnly());
+                assertEquals("should be equal ", mmrd1.getFinalHash(), mmrd3.getFinalHash());
+                assertEquals("should be equal ", mmrd1.getValueSum().getNumber(), mmrd3.getValueSum().getNumber());
+                assertEquals("should be equal ", mmrd1.isSpent(), mmrd3.isSpent());
+                //assertEquals("should be equal ", mmrd1.getCoin(), mmrd3.getCoin());
+                //assertEquals("should be equal ", mmrd1.getPrevState(), mmrd3.getPrevState());
+                assertEquals("should be equal ", mmrd1.getInBlock().getAsBigDecimal(), mmrd3.getInBlock().getAsBigDecimal());
+                assertEquals("should be equal ", mmrd1.isHashOnly(), mmrd3.isHashOnly());
             }
 
         } catch (final IOException e) {
