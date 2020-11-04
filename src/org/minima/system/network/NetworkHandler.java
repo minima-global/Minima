@@ -10,6 +10,8 @@ import java.util.Random;
 import org.minima.Start;
 import org.minima.system.Main;
 import org.minima.system.input.InputHandler;
+import org.minima.system.network.base.MinimaClient;
+import org.minima.system.network.base.MinimaServer;
 import org.minima.system.network.minidapps.DAPPManager;
 import org.minima.system.network.minidapps.websocket.WebSocketManager;
 import org.minima.system.network.rpc.RPCServer;

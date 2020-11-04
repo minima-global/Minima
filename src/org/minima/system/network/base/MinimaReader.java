@@ -1,4 +1,4 @@
-package org.minima.system.network;
+package org.minima.system.network.base;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
@@ -19,6 +19,7 @@ import org.minima.objects.greet.TxPoWList;
 import org.minima.system.Main;
 import org.minima.system.brains.ConsensusHandler;
 import org.minima.system.brains.ConsensusNet;
+import org.minima.system.network.NetworkHandler;
 import org.minima.utils.Crypto;
 import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;

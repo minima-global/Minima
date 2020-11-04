@@ -34,7 +34,6 @@ import org.minima.utils.SQLHandler;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.json.parser.JSONParser;
-import org.minima.utils.json.parser.ParseException;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageProcessor;
 import org.minima.utils.messages.TimerMessage;

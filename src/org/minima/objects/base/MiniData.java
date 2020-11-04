@@ -11,7 +11,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 
-import org.minima.system.network.MinimaReader;
+import org.minima.system.network.base.MinimaReader;
 import org.minima.utils.BaseConverter;
 import org.minima.utils.Crypto;
 import org.minima.utils.Streamable;
