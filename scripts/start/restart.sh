@@ -1,6 +1,6 @@
 #!/bin/sh
 
-#Stop Minima..
+#Stop Minima...
 ~/Minima/scripts/stop/stopminima.sh
 
 #Start Minima
