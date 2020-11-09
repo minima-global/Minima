@@ -192,10 +192,11 @@ public class Start {
 		}
 		
 		//Add a version number to the CONF folder
-//		conffolder = conffolder.concat("0.96");
+		int dotindex = GlobalParams.MINIMA_VERSION.indexOf(".",2);
+		String versionfolder = GlobalParams.MINIMA_VERSION.substring(0, dotindex);
+		File conffile = new File(conffolder,versionfolder);
 		
-		//Do we wipe
-		File conffile = new File(conffolder);
+		//Clean up..
 		if(clean) {
 			BackupManager.deleteConfFolder(conffile);
 		}
@@ -206,7 +207,7 @@ public class Start {
 		}
 		
 		//Start the main Minima server
-		Main rcmainserver = new Main(host, port, genesis, conffolder);
+		Main rcmainserver = new Main(host, port, genesis, conffile.getAbsolutePath());
 		
 		//Link it.
 		mMainServer = rcmainserver;

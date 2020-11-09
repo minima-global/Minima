@@ -311,6 +311,9 @@ public class ConsensusHandler extends MessageProcessor {
 			//Redo every 10 minutes..
 			PostTimerMessage(new TimerMessage(10 * 60 * 1000, CONSENSUS_AUTOBACKUP));
 			
+			//Clean the Memory..
+			System.gc();
+			
 		/**
 		 * Network Messages
 		 */
