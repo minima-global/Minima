@@ -220,12 +220,15 @@ public class DAPPManager extends MessageProcessor {
 					}
 				}
 				
+				//Find the CONF file..
+//				File conf = findFile(app, "minidapp.conf");
+				
 				//Open it up..
-				File conf    = new File(app,"minidapp.conf");
+				File conf = new File(app,"minidapp.conf");
 				File backend = new File(app,"service.js");
 				
 				//Check it exists..
-				if(conf.exists()) {
+				if(conf!=null && conf.exists()) {
 					//Load it..
 					JSONObject confjson = loadConfFile(conf);
 					
@@ -402,7 +405,11 @@ public class DAPPManager extends MessageProcessor {
 	        	}
 	        	
 	        	//Strip folder from name..
-	        	name = name.substring(folder.length());
+	        	if(name.startsWith(folder)) {
+	        		name = name.substring(folder.length());
+	        	}else {
+	        		MinimaLogger.log("WARNING : File outside of Main folder ["+folder+"] in MiniDAPP ["+filename+"] "+name);
+	        	}
 	        	
 	        	//Where does this file go
 	            File filePath = new File(dapp,name);
@@ -578,5 +585,27 @@ public class DAPPManager extends MessageProcessor {
 				bend.MinimaEvent(JSONEvent);
 			}
 		}	
+	}
+	
+	public File findFile(File zRootDirectory, String zFilename) {
+		File[] subs = zRootDirectory.listFiles();
+		if(subs != null) {
+			for(File app : subs) {
+				if(app.isDirectory()) {
+					File found = findFile(app, zFilename);
+					if(found!=null) {
+						return found;
+					}	
+				}
+				
+				if(app.isFile()) {
+					if(app.getName().equals(zFilename)) {
+						return app;
+					}
+				}
+			}
+		}
+		
+		return null;
 	}
 }
