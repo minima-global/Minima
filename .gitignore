@@ -1,1 +1,14 @@
 /bin/
+
+# Ignore Gradle project-specific cache directory
+.gradle
+
+# Ignore Gradle build output directory
+build
+
+# ignore IDE config
+.settings/*
+.vscode/*
+.settings/org.eclipse.buildship.core.prefs
+
+/.nb-gradle/
