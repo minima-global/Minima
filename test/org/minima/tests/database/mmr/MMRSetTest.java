@@ -221,16 +221,22 @@ public class MMRSetTest {
         MiniData hash_a = data_a.getFinalHash();
         MiniData hash_b = data_b.getFinalHash();
         MiniData hash_0a = Crypto.getInstance().hashObjects(gendataHash, hash_a, 512); // MMRSet.MMR_HASH_BITS);
-
+        MMRSumNumber sumNum = new MMRSumNumber(new MiniNumber("25")); // 0+25
         base.addUnspentCoin(data_a);
         assertTrue("MMR set has two entries after adding one node.", base.mEntryNumber.isEqual(new MiniInteger(2)));
         assertTrue("MMR peaks count verification.", base.getMMRPeaks() != null && base.getMMRPeaks().size() == 1);
         assertTrue("MMR peak hash is not equal to previous peak hash.", base.getMMRPeaks() != null && !base.getMMRPeaks().get(0).getHashValue().isEqual(gendataHash));
         assertTrue("MMR peak hash is not equal to new node hash.", base.getMMRPeaks() != null && !base.getMMRPeaks().get(0).getHashValue().isEqual(hash_a));
         assertTrue("MMR peak hash is equal to constructed hash.", base.getMMRPeaks() != null && base.getMMRPeaks().get(0).getHashValue().isEqual(hash_0a));
+        assertTrue("MMR peak hash is not equal to zero.", base.getMMRPeaks() != null && !base.getMMRPeaks().get(0).getData().getValueSum().isEqual(new MMRSumNumber(new MiniNumber("0"))));
+        assertTrue("MMR peak hash is equal to sum of child node values.", base.getMMRPeaks() != null && base.getMMRPeaks().get(0).getData().getValueSum().isEqual(sumNum));
         //                  2
-        // Print MMR tree: 0 1
+        // Print MMR tree: 0 1   (MMR canonical entries numbering)
 
+        base.addUnspentCoin(data_b);
+        assertTrue("MMR set has three entries after adding second node.", base.mEntryNumber.isEqual(new MiniInteger(3)));  // entryNumber only counts leaf nodes, unlike canonical MMR
+        assertTrue("MMR has two peaks.", base.getMMRPeaks() != null && base.getMMRPeaks().size() == 2);
+        
         
     }
 }
