@@ -8,10 +8,13 @@ RUN ./gradlew --no-daemon -v
 COPY lib lib
 COPY src src
 COPY test test
-RUN ./gradlew --no-daemon jar
+# minimal jar (750 kb) without dapp server -> build/libs/minima.jar
+#RUN ./gradlew --no-daemon jar
+# fatjar with all deps -> build/libs/minima-all.jar
+RUN ./gradlew --no-daemon shadowJar
 
 FROM adoptopenjdk/openjdk11:x86_64-alpine-jdk-11.0.9_11-slim as production-stage
-COPY build/libs/minima.jar /opt/minima/
+COPY build/libs/minima-all.jar /opt/minima/minima.jar
 WORKDIR /opt/minima
 CMD ["java", "-jar", "minima.jar"]
 

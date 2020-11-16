@@ -15,6 +15,11 @@ plugins {
 
     // test coverage
     id 'jacoco'
+
+
+    // shadowJar plugin to build fat jar
+    id 'com.github.johnrengelman.shadow' version '6.1.0'
+
 }
 
 repositories {
