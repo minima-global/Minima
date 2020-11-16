@@ -27,9 +27,9 @@ public class TxBodyTests {
         assertTrue("txbody not null", body != null);
         JSONObject json = body.toJSON();
         assertTrue("JSON not null", json != null);
- 
+
         try {
-            
+
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             DataOutputStream dos = new DataOutputStream(bos);
             body.writeDataStream(dos);

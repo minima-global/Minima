@@ -34,9 +34,7 @@ public class ScriptProofTests {
             System.out.println("ScriptProof value json - " + sp.getScript());
             // System.out.println("ScriptProof value json - " + sp2.toJSON());
 
-            
-        
-        }catch (Exception e) {
+        } catch (Exception e) {
             System.out.println("Exception: " + e.toString() + " msg=" + e.getMessage());
             assertTrue(" there should not be an Exception", false);
         }
@@ -52,13 +50,11 @@ public class ScriptProofTests {
             ScriptProof sp;
             // ScriptProof sp2;
 
-           
-                sp = new ScriptProof(str, 160);
-                // sp2 = new ScriptProof(str, proofValue);
-                System.out.println("ScriptProof value json - " + sp.toJSON());
-                System.out.println("ScriptProof value json - " + sp.getScript());
-                // System.out.println("ScriptProof value json - " + sp2.toJSON());
-    
+            sp = new ScriptProof(str, 160);
+            // sp2 = new ScriptProof(str, proofValue);
+            System.out.println("ScriptProof value json - " + sp.toJSON());
+            System.out.println("ScriptProof value json - " + sp.getScript());
+            // System.out.println("ScriptProof value json - " + sp2.toJSON());
 
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             DataOutputStream dos = new DataOutputStream(bos);
@@ -68,8 +64,7 @@ public class ScriptProofTests {
             DataInputStream dis = new DataInputStream(inputStream);
             sp.ReadFromStream(dis);
             System.out.println("Proof json values in read and write stream - " + sp.toJSON());
-           
-           
+
             assertNotNull(sp);
         } catch (Exception e) {
             System.out.println("IOException: " + e.toString() + " msg=" + e.getMessage());

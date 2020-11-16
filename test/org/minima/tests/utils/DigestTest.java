@@ -18,33 +18,28 @@ import org.minima.utils.digest.SHA256Digest;
 import junit.framework.ComparisonFailure;
 
 public abstract class DigestTest {
-    
 
     private Digest digest;
     private String[] input;
     private String[] results;
 
     DigestTest(
-        Digest digest,
-        String[] input,
-        String[] results)
-    {
+            Digest digest,
+            String[] input,
+            String[] results) {
         this.digest = digest;
         this.input = input;
         this.results = results;
     }
-    
-    public String getName()
-    {
+
+    public String getName() {
         return digest.getAlgorithmName();
     }
-    
-    public void performTest()
-    {
+
+    public void performTest() {
         byte[] resBuf = new byte[digest.getDigestSize()];
-    
-        for (int i = 0; i < input.length - 1; i++)
-        {
+
+        for (int i = 0; i < input.length - 1; i++) {
             byte[] m = toByteArray(input[i]);
 
             vectorTest(digest, i, resBuf, m, BaseConverter.decode16(results[i]));
@@ -54,25 +49,23 @@ public abstract class DigestTest {
 
         byte[] lastV = toByteArray(input[input.length - 1]);
         byte[] lastDigest = BaseConverter.decode16(results[input.length - 1]);
-        
+
         vectorTest(digest, input.length - 1, resBuf, lastV, BaseConverter.decode16(results[input.length - 1]));
 
         testClone(resBuf, lastV, lastDigest);
         testMemo(resBuf, lastV, lastDigest);
-        if (digest instanceof EncodableDigest)
-        {
+        if (digest instanceof EncodableDigest) {
             testEncodedState(resBuf, lastV, lastDigest);
         }
     }
 
-    private void testEncodedState(byte[] resBuf, byte[] input, byte[] expected)
-    {
+    private void testEncodedState(byte[] resBuf, byte[] input, byte[] expected) {
         // test state encoding;
         digest.update(input, 0, input.length / 2);
 
         // copy the Digest
-        Digest copy1 = cloneDigest(((EncodableDigest)digest).getEncodedState());
-        Digest copy2 = cloneDigest(((EncodableDigest)copy1).getEncodedState());
+        Digest copy1 = cloneDigest(((EncodableDigest) digest).getEncodedState());
+        Digest copy2 = cloneDigest(((EncodableDigest) copy1).getEncodedState());
 
         digest.update(input, input.length / 2, input.length - input.length / 2);
 
@@ -80,7 +73,7 @@ public abstract class DigestTest {
 
         try {
             assertArrayEquals(" vector test should match hash on " + expected + " 64ka" + resBuf,
-            expected, resBuf);
+                    expected, resBuf);
 
         } catch (ArrayComparisonFailure failure) {
             System.out.println("Expected: " + new String(BaseConverter.encode16(resBuf)));
@@ -93,20 +86,19 @@ public abstract class DigestTest {
 
         try {
             assertArrayEquals(" state copy1 vector test should match on " + expected + " resBuf:" + resBuf,
-            expected, resBuf);
+                    expected, resBuf);
 
         } catch (ArrayComparisonFailure failure) {
             System.out.println("Expected: " + new String(BaseConverter.encode16(resBuf)));
             System.out.println("Test failed: " + failure.getMessage());
             assertFalse("test should not fail:" + failure.getMessage(), true);
         }
-       
 
         copy2.update(input, input.length / 2, input.length - input.length / 2);
         copy2.doFinal(resBuf, 0);
         try {
             assertArrayEquals(" state copy2 vector test should match on " + expected + " resBuf:" + resBuf,
-            expected, resBuf);
+                    expected, resBuf);
 
         } catch (ArrayComparisonFailure failure) {
             System.out.println("Expected: " + new String(BaseConverter.encode16(resBuf)));
@@ -114,26 +106,24 @@ public abstract class DigestTest {
             assertFalse("test should not fail:" + failure.getMessage(), true);
         }
 
-        
     }
 
-    private void testMemo(byte[] resBuf, byte[] input, byte[] expected)
-    {
-        Memoable m = (Memoable)digest;
+    private void testMemo(byte[] resBuf, byte[] input, byte[] expected) {
+        Memoable m = (Memoable) digest;
 
-        digest.update(input, 0, input.length/2);
+        digest.update(input, 0, input.length / 2);
 
         // copy the Digest
         Memoable copy1 = m.copy();
         Memoable copy2 = copy1.copy();
 
-        digest.update(input, input.length/2, input.length - input.length/2);
+        digest.update(input, input.length / 2, input.length - input.length / 2);
         digest.doFinal(resBuf, 0);
 
         try {
             assertArrayEquals("memoVector should find expected value",
                     expected, resBuf);
-        
+
         } catch (ArrayComparisonFailure failure) {
             System.out.println("Test failed: " + failure.getMessage());
             assertFalse("test should not fail:" + failure.getMessage(), true);
@@ -141,58 +131,57 @@ public abstract class DigestTest {
 
         m.reset(copy1);
 
-        digest.update(input, input.length/2, input.length - input.length/2);
+        digest.update(input, input.length / 2, input.length - input.length / 2);
         digest.doFinal(resBuf, 0);
 
         try {
             assertArrayEquals("testClone should find expected value",
                     expected, resBuf);
-        
+
         } catch (ArrayComparisonFailure failure) {
             System.out.println("Test failed: " + failure.getMessage());
             assertFalse("test should not fail:" + failure.getMessage(), true);
-        }       
+        }
 
-        Digest md = (Digest)copy2;
+        Digest md = (Digest) copy2;
 
-        md.update(input, input.length/2, input.length - input.length/2);
+        md.update(input, input.length / 2, input.length - input.length / 2);
         md.doFinal(resBuf, 0);
 
         try {
             assertArrayEquals("testClone should find expected value",
                     expected, resBuf);
-        
+
         } catch (ArrayComparisonFailure failure) {
             System.out.println("Test failed: " + failure.getMessage());
             assertFalse("test should not fail:" + failure.getMessage(), true);
         }
-        
+
     }
 
-    private void testClone(byte[] resBuf, byte[] input, byte[] expected)
-    {
+    private void testClone(byte[] resBuf, byte[] input, byte[] expected) {
         digest.update(input, 0, input.length / 2);
 
         // clone the Digest
         Digest d = cloneDigest(digest);
 
-        digest.update(input, input.length/2, input.length - input.length/2);
+        digest.update(input, input.length / 2, input.length - input.length / 2);
         digest.doFinal(resBuf, 0);
 
-            try {
-                assertArrayEquals("testClone should find expected value",
-                        expected, resBuf);
-            
-            } catch (ArrayComparisonFailure failure) {
-                System.out.println("Test failed: " + failure.getMessage());
-                assertFalse("test should not fail:" + failure.getMessage(), true);
-            }
+        try {
+            assertArrayEquals("testClone should find expected value",
+                    expected, resBuf);
 
-        d.update(input, input.length/2, input.length - input.length/2);
+        } catch (ArrayComparisonFailure failure) {
+            System.out.println("Test failed: " + failure.getMessage());
+            assertFalse("test should not fail:" + failure.getMessage(), true);
+        }
+
+        d.update(input, input.length / 2, input.length - input.length / 2);
         d.doFinal(resBuf, 0);
         try {
             assertArrayEquals("testClone should find expected value",
-            expected, resBuf);
+                    expected, resBuf);
 
         } catch (ComparisonFailure failure) {
             System.out.println("Expected: " + new String(BaseConverter.encode16(resBuf)));
@@ -201,25 +190,22 @@ public abstract class DigestTest {
         }
     }
 
-    protected byte[] toByteArray(String input)
-    {
+    protected byte[] toByteArray(String input) {
         byte[] bytes = new byte[input.length()];
-        
-        for (int i = 0; i != bytes.length; i++)
-        {
-            bytes[i] = (byte)input.charAt(i);
+
+        for (int i = 0; i != bytes.length; i++) {
+            bytes[i] = (byte) input.charAt(i);
         }
-        
+
         return bytes;
     }
-    
+
     private void vectorTest(
-        Digest digest,
-        int count,
-        byte[] resBuf,
-        byte[] input,
-        byte[] expected)
-    {
+            Digest digest,
+            int count,
+            byte[] resBuf,
+            byte[] input,
+            byte[] expected) {
         digest.update(input, 0, input.length);
         digest.doFinal(resBuf, 0);
 
@@ -232,10 +218,8 @@ public abstract class DigestTest {
         }
 
         // try {
-
         //     assertTrue(" Vector " + count + " should equal " + expected + " resBuf:" + resBuf,
         //      !expected.equals(resBuf));
-
         // } catch (ComparisonFailure failure) {
         //     System.out.println("Expected: " + new String(BaseConverter.encode16(resBuf)));
         //     System.out.println("Test failed: " + failure.getMessage());
@@ -248,18 +232,17 @@ public abstract class DigestTest {
     }
 
     private void offsetTest(
-        Digest digest,
-        int count,
-        byte[] input,
-        byte[] expected)
-    {
+            Digest digest,
+            int count,
+            byte[] input,
+            byte[] expected) {
         byte[] resBuf = new byte[expected.length + 11];
 
         digest.update(input, 0, input.length);
         digest.doFinal(resBuf, 11);
         try {
             assertArrayEquals(" Offset " + count + " test should match hash on  64ka",
-            Arrays.copyOfRange(resBuf, 11, resBuf.length), expected);
+                    Arrays.copyOfRange(resBuf, 11, resBuf.length), expected);
 
         } catch (ArrayComparisonFailure failure) {
             System.out.println("Expected: " + new String(BaseConverter.encode16(resBuf)));
@@ -270,8 +253,7 @@ public abstract class DigestTest {
 
     protected abstract Digest cloneDigest(Digest digest);
 
-    protected Digest cloneDigest(byte[] encodedState)
-    {
+    protected Digest cloneDigest(byte[] encodedState) {
         throw new IllegalStateException("Unsupported");
     }
 
@@ -279,15 +261,13 @@ public abstract class DigestTest {
     // optional tests
     //
     protected void millionATest(
-        String expected)
-    {
+            String expected) {
         byte[] resBuf = new byte[digest.getDigestSize()];
-        
-        for (int i = 0; i < 1000000; i++)
-        {
-            digest.update((byte)'a');
+
+        for (int i = 0; i < 1000000; i++) {
+            digest.update((byte) 'a');
         }
-        
+
         digest.doFinal(resBuf, 0);
 
         try {
@@ -298,17 +278,15 @@ public abstract class DigestTest {
             assertFalse("test should not fail:" + failure.getMessage(), true);
         }
     }
-    
+
     protected void sixtyFourKTest(
-        String expected)
-    {
+            String expected) {
         byte[] resBuf = new byte[digest.getDigestSize()];
-        
-        for (int i = 0; i < 65536; i++)
-        {
-            digest.update((byte)(i & 0xff));
+
+        for (int i = 0; i < 65536; i++) {
+            digest.update((byte) (i & 0xff));
         }
-        
+
         digest.doFinal(resBuf, 0);
         try {
 

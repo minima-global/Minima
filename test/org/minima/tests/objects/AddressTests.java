@@ -79,7 +79,6 @@ public class AddressTests {
 
         String mxAddress = Address.makeMinimaAddress(i);
         MiniData j = Address.convertMinimaAddress(mxAddress);
-    
         try {
             assertEquals("should be equal", i, j);
             System.out.println("should be equal to - " + i);
@@ -94,11 +93,9 @@ public class AddressTests {
 
         // //First hash it to add some checksum digits..
         // byte[] hash1 = Crypto.getInstance().hashData(data1, 160);
-
         // //Calculate a new length - ONLY certain lengths allowed!
         // int len1 = data1.length;
         // System.out.println("New 32bit len1 " + len1);
-
         String mxAddress1 = Address.makeMinimaAddress(q);
         MiniData p = Address.convertMinimaAddress(mxAddress1);
         try {
@@ -120,7 +117,7 @@ public class AddressTests {
         MiniData m = Address.convertMinimaAddress(mxAddress3);
         MiniData m2 = Address.convertMinimaAddress(mxAddress4);
         MiniData m3 = Address.convertMinimaAddress(mxAddress5);
-       
+
         try {
             assertEquals("should be equal", l, m);
             assertEquals("should be equal", v, m2);

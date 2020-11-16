@@ -63,27 +63,14 @@ public class RPCHandler implements Runnable {
 			String fileRequested = parse.nextToken();
 			
 			//Get the Headers..
-			String MiniDAPPID = "0x00";
 			int contentlength = 0;
 			while(input != null && !input.trim().equals("")) {
-				int ref = input.indexOf("Referer:"); 
+				//MinimaLogger.log("RPC : "+input);
+				int ref = input.indexOf("Content-Length:"); 
 				if(ref != -1) {
-					//Get the referer..
-					int start  = input.indexOf("0x");
-	        		int end    = -1;
-	        		if(start!=-1) {
-	        			end    = input.indexOf("/", start);
-	        		}
-	        		if(end!=-1) {
-	        			MiniDAPPID = input.substring(start, end);
-	        		}
-				}else {
-					ref = input.indexOf("Content-Length:"); 
-					if(ref != -1) {
-						//Get it..
-						int start     = input.indexOf(":");
-						contentlength = Integer.parseInt(input.substring(start+1).trim());
-					}
+					//Get it..
+					int start     = input.indexOf(":");
+					contentlength = Integer.parseInt(input.substring(start+1).trim());
 				}
 					
 				input = in.readLine();
@@ -137,14 +124,24 @@ public class RPCHandler implements Runnable {
 					
 				}else {
 					reqtype="cmd";
-					command = function.trim();
+//					command = function.substring(4).trim();
+					command = new String(function);
 				}
 			
 			}else {
 				throw new IOException("Unsupported Method in RPCHandler : "+firstline);
 			}
 			
-			//MinimaLogger.log("RPCHandler "+method+" "+reqtype+" "+command);
+			//Get the MinDAPP ID
+			String MiniDAPPID = "0x00";
+			int slash = reqtype.indexOf("/");
+			if(slash!=-1) {
+				MiniDAPPID = reqtype.substring(slash+1);
+				reqtype    = reqtype.substring(0,slash);
+			}
+			
+//			MinimaLogger.log("File requested : "+fileRequested);
+//			MinimaLogger.log("RPCHandler "+method+" "+reqtype+" "+command+" "+MiniDAPPID);
 			
 			//Is this a SQL function
 			if(reqtype.equals("sql")) {
@@ -185,6 +182,9 @@ public class RPCHandler implements Runnable {
 				
 				//Get the Response..
             	finalresult = netcomm.getFinalResult();
+			
+			}else {
+				finalresult = "{\"status\":false, \"message\":\"Incorrect request TYPE.. GET or POST only\"}";
 			}
 			
 			// send HTTP Headers

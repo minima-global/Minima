@@ -178,18 +178,24 @@ public class MinimaDB {
 	public void processTxPOW(TxPoW zTxPow) {
 		//Is it a block.. if so add a BASIC block to the tree
 		boolean treeadded = false;
-		if(zTxPow.isBlock()) {
-			//Try and add to the Block Tree..
-			BlockTreeNode node = new BlockTreeNode(zTxPow);
-			
-			//Add it..
-			treeadded = mMainTree.addNode(node);
-			
-			//Add all the children
-			if(treeadded) {
-				//Add any children..
-				addTreeChildren(zTxPow.getTxPowID());
+		
+		//A NULL txpow means do an update whatever..
+		if(zTxPow != null) {
+			if(zTxPow.isBlock()) {
+				//Try and add to the Block Tree..
+				BlockTreeNode node = new BlockTreeNode(zTxPow);
+				
+				//Add it..
+				treeadded = mMainTree.addNode(node);
+				
+				//Add all the children
+				if(treeadded) {
+					//Add any children..
+					addTreeChildren(zTxPow.getTxPowID());
+				}
 			}
+		}else{
+			treeadded = true;	
 		}
 		
 		//Check blocks to see if any are now filled..

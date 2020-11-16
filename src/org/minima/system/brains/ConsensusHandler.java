@@ -24,7 +24,6 @@ import org.minima.system.network.NetworkHandler;
 import org.minima.system.network.minidapps.DAPPManager;
 import org.minima.system.txpow.TxPoWChecker;
 import org.minima.system.txpow.TxPoWMiner;
-import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
@@ -188,6 +187,10 @@ public class ConsensusHandler extends MessageProcessor {
 		}
 	}
 	
+	public void notifyInitialListeners(String zMessage) {
+		updateListeners(new Message(ConsensusHandler.CONSENSUS_NOTIFY_INITIALPERC).addString("info", zMessage));
+	}
+	
 	/**
 	 * Are we initialising the Genesis block
 	 */
@@ -225,10 +228,17 @@ public class ConsensusHandler extends MessageProcessor {
 			//A TXPOW - that has been checked already and added to the DB
 			TxPoW txpow = (TxPoW) zMessage.getObject("txpow");
 			
+			boolean relevant = false;
+			if(txpow.isTransaction()) {
+				//Is it relevant to us..
+				relevant = getMainDB().getUserDB().isTransactionRelevant(txpow.getTransaction());
+			}
+			
 			//Send a message to all about a new TxPoW (may or may not be a transaction or a block..)
 			JSONObject newtxpow = new JSONObject();
 			newtxpow.put("event","newtxpow");
 			newtxpow.put("txpow",txpow.toJSON());
+			newtxpow.put("relevant",relevant);
 			PostDAPPJSONMessage(newtxpow);
 			
 			//Back it up!
@@ -242,20 +252,6 @@ public class ConsensusHandler extends MessageProcessor {
 		
 			//What's the new chain tip..
 			TxPoW newtip = getMainDB().getMainTree().getChainTip().getTxPow();
-			
-			//Only do this once..
-			boolean relevant = false;
-			if(txpow.isTransaction()) {
-				//Is it relevant to us..
-				relevant = getMainDB().getUserDB().isTransactionRelevant(txpow.getTransaction());
-				
-				//Notify everyone..
-				JSONObject newtrans = new JSONObject();
-				newtrans.put("event","newtransaction");
-				newtrans.put("txpow",txpow.toJSON());
-				newtrans.put("relevant",relevant);
-				PostDAPPJSONMessage(newtrans);
-			}
 			
 			//Has there been a change
 			boolean newbalance = false;

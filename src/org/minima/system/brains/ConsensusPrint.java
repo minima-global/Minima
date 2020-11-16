@@ -715,8 +715,17 @@ public class ConsensusPrint extends ConsensusProcessor {
 				//Get the Public Key..
 				MiniData pubk = getMainDB().getUserDB().getPublicKeyForSimpleAddress(coin.getAddress());
 				
+				//Get the TRUE value given the Token..
+				MiniNumber tokenamount = coin.getAmount();
+				if(!coin.getTokenID().isEqual(coin.MINIMA_TOKENID)) {
+					TokenProof td = getMainDB().getUserDB().getTokenDetail(coin.getTokenID());
+					tokenamount = coin.getAmount().mult(td.getScaleFactor());	
+				}
+				
+				//Create the JSON
 				JSONObject simplecoin = new JSONObject();
 				simplecoin.put("coin",coin.toJSON());
+				simplecoin.put("tokenamount",tokenamount.toString());
 				simplecoin.put("key",pubk.to0xString());
 				
 				totcoins.add(simplecoin);
@@ -753,13 +762,21 @@ public class ConsensusPrint extends ConsensusProcessor {
 				amt = new MiniNumber(amount);
 			}
 			
-			//Current TIP
-			BlockTreeNode tip  	 = getMainDB().getMainTree().getChainTip();
-//			MiniNumber minblock  = tip.getTxPow().getBlockNumber().sub(GlobalParams.MINIMA_CONFIRM_DEPTH);
-			MMRSet baseset 	     = tip.getMMRSet();//.getParentAtTime(minblock);
-			
 			//A list of all the found coins..
 			JSONArray totcoins  = new JSONArray();
+			JSONObject allcoins = InputHandler.getResponseJSON(zMessage);
+			allcoins.put("coins", totcoins);
+			
+			//Current TIP
+			BlockTreeNode tip  	 = getMainDB().getMainTree().getChainTip();
+			if(tip == null) {
+				//Starting up..
+				InputHandler.endResponse(zMessage, true, "No tip found..");
+				return;
+			}
+			
+//			MiniNumber minblock  = tip.getTxPow().getBlockNumber().sub(GlobalParams.MINIMA_CONFIRM_DEPTH);
+			MMRSet baseset 	     = tip.getMMRSet();//.getParentAtTime(minblock);
 			
 			//Cycle..
 			ArrayList<CoinDBRow> coins = getMainDB().getCoinDB().getComplete();
@@ -792,10 +809,6 @@ public class ConsensusPrint extends ConsensusProcessor {
 					totcoins.add(baseset.getProof(coin.getMMREntry()).toJSON());	
 //				}
 			}
-			
-			//Add to the main JSON
-			JSONObject allcoins = InputHandler.getResponseJSON(zMessage);
-			allcoins.put("coins", totcoins);
 			
 			//Add it to the output
 			InputHandler.endResponse(zMessage, true, "");

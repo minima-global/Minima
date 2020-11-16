@@ -11,7 +11,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
@@ -27,11 +26,11 @@ import org.minima.system.input.InputHandler;
 import org.minima.system.network.NetworkHandler;
 import org.minima.system.network.minidapps.comms.CommsManager;
 import org.minima.system.network.minidapps.minibackend.BackEndDAPP;
-import org.minima.system.network.minidapps.minihub.hexdata.minimajs;
 import org.minima.system.network.minidapps.websocket.WebSocketManager;
 import org.minima.utils.Crypto;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MinimaLogger;
+import org.minima.utils.SQLHandler;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.json.parser.JSONParser;
@@ -66,10 +65,6 @@ public class DAPPManager extends MessageProcessor {
 	//The Edited minima.js file..
 	byte[] mMINIMAJS = new byte[0];
 	
-	//The old HOST..
-	String mOldHost = "";
-	int mBasePort   = 0;
-	
 	NetworkHandler mNetwork;
 	
 	/**
@@ -90,11 +85,8 @@ public class DAPPManager extends MessageProcessor {
 		//All the backends are stored here..
 		mBackends = new Hashtable<>();
 		
+		//ReplyID to a MiniDAPP request
 		mReplyMessage = new Hashtable<>();
-		
-		//What is the current Host
-		mOldHost  = mNetwork.getBaseHost();
-		mBasePort = mNetwork.getBasePort();
 		
 		//Init the System
 		PostMessage(DAPP_INIT);
@@ -102,6 +94,10 @@ public class DAPPManager extends MessageProcessor {
 	
 	public CommsManager getCommsManager() {
 		return mCommsManager;
+	}
+	
+	public NetworkHandler getNetworkHandler() {
+		return mNetwork;
 	}
 	
 	public void stop() {
@@ -112,6 +108,14 @@ public class DAPPManager extends MessageProcessor {
 	}
 	
 	public JSONArray getMiniDAPPS() {
+		//Has the HOST changed..
+		String host    = getNetworkHandler().getBaseHost();
+		String newhost = getNetworkHandler().calculateHostIP();
+		if(!host.equals(newhost)) {
+			//Recalculate
+			recalculateMiniDAPPS();	
+		}
+		
 		return CURRENT_MINIDAPPS;
 	}
 	
@@ -140,29 +144,31 @@ public class DAPPManager extends MessageProcessor {
 	        
 	        //And add the root folder..
 	        String root = zConf.getParent();
-	        int start = root.indexOf("/minidapps/");
-	        String webroot = root.substring(start);
-	        String approot = root.substring(start+11);
+	        int start = root.indexOf("minidapps");
+	        String uid = root.substring(start+10);
 	        
-	        ret.put("uid", approot);
-	        ret.put("root", webroot);
-	        ret.put("web", "http://"+mNetwork.getBaseHost()+":"+mNetwork.getMiniDAPPServerPort()+webroot);
+	        ret.put("uid", uid);
+	        ret.put("root", "/minidapps/"+uid);
+	        ret.put("web", "http://"+mNetwork.getBaseHost()+":"+mNetwork.getMiniDAPPServerPort()+"/minidapps/"+uid);
 	        
 	        bis.close();
 	        fis.close();
 	        
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (ParseException e) {
-			e.printStackTrace();
+		} catch (Exception e) {
+			MinimaLogger.log("Error Loading MiniDAPP conf "+zConf.getAbsolutePath(),e);
 		}
 		
 		return ret;
 	}
 	
 	private JSONArray recalculateMiniDAPPS() {
+		MinimaLogger.log("Recalculate MiniDAPPS @ "+mNetwork.getBaseHost());
+		
 		//Clear the OLD
 		CURRENT_MINIDAPPS.clear();
+		
+		//Close the SQL DBs..
+		SQLHandler.CloseSQL();
 		
 		//And the backends..
 		Enumeration<BackEndDAPP> bends = mBackends.elements();
@@ -235,13 +241,19 @@ public class DAPPManager extends MessageProcessor {
 							//Load the JS file..
 							String backjs = new String(MiniFile.readCompleteFile(backend),"UTF-8");
 						
+							String dappname = "no_name_in_conf"; 
+							if(confjson.containsKey("name")) {
+								dappname = (String)confjson.get("name");
+							}
+							
 							//Create a BackEnd APP..
-							BackEndDAPP bedapp = new BackEndDAPP(backjs, minidappid);
+							BackEndDAPP bedapp = new BackEndDAPP(dappname, backjs, minidappid);
 							
 							//Add to the List..
 							mBackends.put(minidappid, bedapp);
-						
-							MinimaLogger.log("BackEndJS create for "+minidappid);
+							
+							
+							MinimaLogger.log("BackEndJS create for "+dappname+" @ "+minidappid);
 							
 						} catch (Exception e) {
 							MinimaLogger.log("Error loading service.js for "+backend.getAbsolutePath()+" "+e);
@@ -254,25 +266,22 @@ public class DAPPManager extends MessageProcessor {
 			}
 		}
 		
-		//Post a CONNECTED message to all the BackEnds.. 
-		JSONObject wsmsg = new JSONObject();
-		wsmsg.put("event","connected");
-		wsmsg.put("details","success");
-		sendToBackEND("", wsmsg);
-		
 		//Order the List.. By Name..
 		Collections.sort(CURRENT_MINIDAPPS, new Comparator<JSONObject>() {
 			@Override
 			public int compare(JSONObject o1, JSONObject o2) {
 				try {
-					//In case the name is missing..
-					String name1 = (String) o1.get("name");
-					String name2 = (String) o2.get("name");	
-					return name1.compareTo(name2);
+					if(o1.containsKey("name") && o2.containsKey("name")){
+						//In case the name is missing..
+						String name1 = (String) o1.get("name");
+						String name2 = (String) o2.get("name");	
+						return name1.compareTo(name2);
+					}
 					
 				}catch(Exception exc) {
 					System.out.println("Error in MiniDAPP CONF "+exc);
 				}
+				
 				return 0;
 			}
 		});
@@ -304,7 +313,7 @@ public class DAPPManager extends MessageProcessor {
 			mDAPPServer = new DAPPServer(mNetwork.getMiniDAPPServerPort(), this);
 			try {
 				mDAPPServer.start(NanoHTTPD.SOCKET_READ_TIMEOUT, false);
-				MinimaLogger.log("MiniDAPP server started on por "+mNetwork.getMiniDAPPServerPort());
+				MinimaLogger.log("MiniDAPP server started on port "+mNetwork.getMiniDAPPServerPort());
 				
 			} catch (IOException e) {
 				MinimaLogger.log("MiniDAPP server error "+ e.toString());
@@ -425,6 +434,10 @@ public class DAPPManager extends MessageProcessor {
 	                
 	                //Flush the system..
 	                bos.flush();
+	                
+	                //And close..
+	                bos.close();
+	                fos.close();
 	            }
 	        }
 	        
@@ -550,17 +563,19 @@ public class DAPPManager extends MessageProcessor {
 		//Create the same EVent as on the Web
 	    String JSONEvent = zJSON.toString();
 	    
-	    //MinimaLogger.log("SEND TO BACKEND : "+JSONEvent);
-	    
 		if(zMiniDAPPID.equals("")){
 			Enumeration<BackEndDAPP> bends = mBackends.elements();
 			while(bends.hasMoreElements()) {
+				//Get the next backend..
 				BackEndDAPP bend = bends.nextElement();
+				
+				//Send it..
 				bend.MinimaEvent(JSONEvent);
 			}
 		}else {
 			BackEndDAPP bend = mBackends.get(zMiniDAPPID);
 			if(bend != null) {
+				//Send it..
 				bend.MinimaEvent(JSONEvent);
 			}
 		}	

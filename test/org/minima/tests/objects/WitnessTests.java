@@ -18,10 +18,10 @@ public class WitnessTests {
     public void testWitness() {
         Witness witness = new Witness();
         witness.addTokenDetails(new TokenProof(new MiniData("0x00ff"),
-                                                new MiniNumber(4),
-                                                new MiniNumber(1000),
-                                                new MiniString("TestToken"),
-                                                new MiniString("")));
+                new MiniNumber(4),
+                new MiniNumber(1000),
+                new MiniString("TestToken"),
+                new MiniString("")));
         assertTrue("There should be 1 token detail", witness.getAllTokenDetails().size() == 1);
         witness.getTokenDetail(new MiniData("0x00ff"));
         try {
@@ -29,7 +29,7 @@ public class WitnessTests {
             JSONObject json = witness.toJSON();
             System.out.println("json: " + json.toJSONString());
             assertTrue("JSON object not empty", json != null);
-        } catch(Exception e) {
+        } catch (Exception e) {
             assertTrue("Exception should not happen", false);
         }
     }

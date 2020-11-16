@@ -20,7 +20,6 @@ import org.minima.utils.json.JSONObject;
 
 public class TxHeaderTests {
 
-    @Test 
 
     public void TxHeaderTests() {
         // in real use case Txheader is configured / built by TxPoW
@@ -34,7 +33,7 @@ public class TxHeaderTests {
         assertTrue("body hash should not be empty", mHeader.getBodyHash().isMore(new MiniData("0x0")));
         JSONObject json = mHeader.toJSON();
         assertTrue("json object should not be null", json != null);
-        try {            
+        try {
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             DataOutputStream dos = new DataOutputStream(bos);
             mHeader.writeDataStream(dos);
@@ -46,7 +45,7 @@ public class TxHeaderTests {
             mHeaderRead.readDataStream(dis);
 
             assertTrue("mHeaderRead should not be null", mHeaderRead != null);
-    
+
         } catch (final IOException e) {
             System.out.println("IOException: " + e.toString() + " msg=" + e.getMessage());
             assertTrue(" there should not be an IOException", false);

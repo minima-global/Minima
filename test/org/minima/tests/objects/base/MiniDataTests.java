@@ -12,7 +12,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import org.minima.utils.Streamable;
 
-import java.util.Arrays; 
+import java.util.Arrays;
 import org.junit.Test;
 import org.minima.objects.base.MiniData;
 
@@ -22,8 +22,8 @@ public class MiniDataTests {
         MiniData i = new MiniData("#1388");
         MiniData j = new MiniData("#FFFF");
         MiniData k = new MiniData("5475746f7269616c73706f69674");
-        MiniData[] mData = { j, k };
-        MiniData[] mDataCompare = { i, j, k };
+        MiniData[] mData = {j, k};
+        MiniData[] mDataCompare = {i, j, k};
         System.out.println("i value is " + i);
         System.out.println("j value is " + j);
         System.out.println("k value is " + k);
@@ -54,7 +54,7 @@ public class MiniDataTests {
         assertNotNull("should not be null", i.shiftl(64));
         System.out.println("i.shiftl(64) i:" + i + " resolves as " + i.shiftl(64));
         assertNotNull("should not be null", i.concat(j));
-        System.out.println("i.concat(j) i:" +  i + " j:" + j + " resolves as " + i.concat(j));
+        System.out.println("i.concat(j) i:" + i + " j:" + j + " resolves as " + i.concat(j));
         assertNotNull("should not be null", i.to0xString(1));
         System.out.println("i.to0xString(1)" + i + " resolves as " + i.to0xString(1));
         assertNotNull("should not be null", i.to0xString(10000));
@@ -94,14 +94,14 @@ public class MiniDataTests {
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             DataOutputStream dos = new DataOutputStream(bos);
             j.writeDataStream(dos);
-           
-            for(int l=0; l < 10000; l++) {
+
+            for (int l = 0; l < 10000; l++) {
                 bos.write(32); // large possible value, MSB is +/- sign
-                }
-    
+            }
+
             InputStream inputStream = new ByteArrayInputStream(bos.toByteArray());
             DataInputStream dis = new DataInputStream(inputStream);
-           
+
             j.readDataStream(dis);
             assertNotNull(j);
             System.out.println("j.toString = " + j.toString());
@@ -122,22 +122,22 @@ public class MiniDataTests {
     @Test
     public void testReadFromStreamDataTooBig() {
         try {
-            MiniData j = new MiniData("#FFFFFFFFFFFFFFFFFFFFFF"+
-            "FFFFFFFFFFFFFFFFFFFF"+
-            "FFFFFFFFFFFFFFFFFFFF"+
-            "FFFF"+
-            "FFFFFFFFFFFFFFFFFFFF"+
-            "FFFFFFFFFFFFFFFFFFFF"+
-            "FFFFFFFFFFFFFFFFFFFF"+
-            "FFFFFFFFFFFFFFFFFFFF");
+            MiniData j = new MiniData("#FFFFFFFFFFFFFFFFFFFFFF"
+                    + "FFFFFFFFFFFFFFFFFFFF"
+                    + "FFFFFFFFFFFFFFFFFFFF"
+                    + "FFFF"
+                    + "FFFFFFFFFFFFFFFFFFFF"
+                    + "FFFFFFFFFFFFFFFFFFFF"
+                    + "FFFFFFFFFFFFFFFFFFFF"
+                    + "FFFFFFFFFFFFFFFFFFFF");
 
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             DataOutputStream dos = new DataOutputStream(bos);
             j.writeDataStream(dos);
             System.out.println(" j is now equal to " + j);
-            for(int l=0; l < 10000000; l++) {
+            for (int l = 0; l < 10000000; l++) {
                 bos.write(128); // large possible value, MSB is +/- sign
-                }
+            }
 
             InputStream inputStream = new ByteArrayInputStream(bos.toByteArray());
             DataInputStream dis = new DataInputStream(inputStream);
@@ -155,22 +155,18 @@ public class MiniDataTests {
 
     }
 
-
     // @Test
     // public void testWriteHashToStreamDataTooBig() {
     //     try {
     //         MiniData i = new MiniData("#11");
     //         MiniData j = new MiniData("#FFFF");
     //         MiniData k = new MiniData("FFFFFFFFFFFFFFF");
-
     //         ByteArrayOutputStream bos = new ByteArrayOutputStream();
     //         DataOutputStream dos = new DataOutputStream(bos);
     //         j.writeHashToStream(dos);
-        
     //         for(int l=0; l < 10000000; l++) {
     //             bos.write(999999999); // large possible value, MSB is +/- sign
     //             }
-
     //         InputStream inputStream = new ByteArrayInputStream(bos.toByteArray());
     //         DataInputStream dis = new DataInputStream(inputStream);
     //         // k.readHashFromStream(dis);
@@ -179,8 +175,6 @@ public class MiniDataTests {
     //         j.readHashFromStream(dis);
     //         // j.readDataStream(dis, -1);
     //         dis.reset();
-
-            
     //         // dis.reset();
     //         // j.readDataStream(dis, 11);
     //         assertNotNull(j);
@@ -190,27 +184,21 @@ public class MiniDataTests {
     //         assertTrue(" there should be an IOException with message input too large ",
     //                 e.getMessage().contains(new String("input too large")));
     //     }
-
     // }
-
-
     @Test
     public void testWriteHashStreamData() {
         try {
-           
-         
+
             MiniData k = new MiniData("#FFFFF");
 
             // MiniData k = new MiniData("#FFFF");
-
-
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             DataOutputStream dos = new DataOutputStream(bos);
             k.writeHashToStream(dos);
-    
-            for(int l=0; l < 1000; l++) {
+
+            for (int l = 0; l < 1000; l++) {
                 bos.write(68); // large possible value, MSB is +/- sign
-                }
+            }
             bos.flush();
             //     bos.flush();
             // InputStream inputStream = new ByteArrayInputStream(bos.toByteArray());
@@ -226,60 +214,57 @@ public class MiniDataTests {
 
     }
 
-
     @Test
     public void testReadHashFromStream() {
 
-            MiniData j = new MiniData("#FFFFFFFFFFFFFFFFFFFFF"+
-            "FFFFFFFFFFFFFFFFFFFF"+
-            "FFFFFFFFFFFFFFFFFFFF"+
-            "FFFF"+
-            "FFFFFFFFFFFFFFFFFFFF"+
-            "FFFFFFFFFFFFFFFFFFFF"+
-            "FFFFFFFFFFFFFFFFFFFF"+
-            "F");
-            MiniData k;
+        MiniData j = new MiniData("#FFFFFFFFFFFFFFFFFFFFF"
+                + "FFFFFFFFFFFFFFFFFFFF"
+                + "FFFFFFFFFFFFFFFFFFFF"
+                + "FFFF"
+                + "FFFFFFFFFFFFFFFFFFFF"
+                + "FFFFFFFFFFFFFFFFFFFF"
+                + "FFFFFFFFFFFFFFFFFFFF"
+                + "F");
+        MiniData k;
 
-            try { 
-                ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                DataOutputStream dos = new DataOutputStream(bos);
-                j.writeHashToStream(dos);
+        try {
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            DataOutputStream dos = new DataOutputStream(bos);
+            j.writeHashToStream(dos);
 
-                InputStream inputStream = new ByteArrayInputStream(bos.toByteArray());
-                DataInputStream dis = new DataInputStream(inputStream);
+            InputStream inputStream = new ByteArrayInputStream(bos.toByteArray());
+            DataInputStream dis = new DataInputStream(inputStream);
 
-                k = MiniData.ReadHashFromStream(dis);
-                assertNotNull(k);
-            } catch(IOException e) {
-                assertFalse("We should not reach this line", true);
-            }
+            k = MiniData.ReadHashFromStream(dis);
+            assertNotNull(k);
+        } catch (IOException e) {
+            assertFalse("We should not reach this line", true);
+        }
     }
 
     @Test
     public void testReadHashStreamDataLarge() {
         try {
-           
-            MiniData j = new MiniData("#FFFFFFFFFFFFFFFFFFFFF"+
-            "FFFFFFFFFFFFFFFFFFFF"+
-            "FFFFFFFFFFFFFFFFFFFF"+
-            "FFFF"+
-            "FFFFFFFFFFFFFFFFFFFF"+
-            "FFFFFFFFFFFFFFFFFFFF"+
-            "FFFFFFFFFFFFFFFFFFFF"+
-            "F");
-            MiniData k = new MiniData("#FFFFF");
 
+            MiniData j = new MiniData("#FFFFFFFFFFFFFFFFFFFFF"
+                    + "FFFFFFFFFFFFFFFFFFFF"
+                    + "FFFFFFFFFFFFFFFFFFFF"
+                    + "FFFF"
+                    + "FFFFFFFFFFFFFFFFFFFF"
+                    + "FFFFFFFFFFFFFFFFFFFF"
+                    + "FFFFFFFFFFFFFFFFFFFF"
+                    + "F");
+            MiniData k = new MiniData("#FFFFF");
 
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             DataOutputStream dos = new DataOutputStream(bos);
-    
-            for(int l=0; l < 1000; l++) {
+
+            for (int l = 0; l < 1000; l++) {
                 bos.write(127); // large possible value, MSB is +/- sign
             }
 
             InputStream inputStream = new ByteArrayInputStream(bos.toByteArray());
             DataInputStream dis = new DataInputStream(inputStream);
-           
             k = j.ReadHashFromStream(dis);
             assertNotNull(k);
 
@@ -291,6 +276,4 @@ public class MiniDataTests {
 
     }
 
-    
-    
 }

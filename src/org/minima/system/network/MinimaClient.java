@@ -52,7 +52,8 @@ public class MinimaClient extends MessageProcessor {
 	public static final String NETCLIENT_SENDTXPOWREQ 	= "NETCLIENT_SENDTXPOWREQ";
 	
 	public static final String NETCLIENT_GREETING 	    = "NETCLIENT_GREETING";
-	public static final String NETCLIENT_TXPOWLIST_REQ 	= "NETCLIENT_TXPOWLIST_REQ";
+	public static final String NETCLIENT_GREETING_REQ 	= "NETCLIENT_TXPOWLIST_REQ";
+	
 	public static final String NETCLIENT_TXPOWLIST 	    = "NETCLIENT_TXPOWLIST";
 	public static final String NETCLIENT_TXPOWIDLIST    = "NETCLIENT_TXPOWIDLIST";
 	
@@ -249,9 +250,9 @@ public class MinimaClient extends MessageProcessor {
 			TxPoWIDList txpidlist = (TxPoWIDList)zMessage.getObject("txpowidlist");
 			sendMessage(MinimaReader.NETMESSAGE_TXPOWIDLIST, txpidlist);
 		
-		}else if(zMessage.isMessageType(NETCLIENT_TXPOWLIST_REQ)) {
+		}else if(zMessage.isMessageType(NETCLIENT_GREETING_REQ)) {
 			HashNumber hn = (HashNumber)zMessage.getObject("hashnumber");
-			sendMessage(MinimaReader.NETMESSAGE_TXPOWLIST_REQUEST, hn);
+			sendMessage(MinimaReader.NETMESSAGE_GREETING_REQUEST, hn);
 			
 		}else if(zMessage.isMessageType(NETCLIENT_INTRO)) {
 			SyncPackage sp = (SyncPackage)zMessage.getObject("syncpackage");

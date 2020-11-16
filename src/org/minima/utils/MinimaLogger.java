@@ -27,6 +27,7 @@ public class MinimaLogger {
 	 * Previous Output..
 	 */
 	public static int MAX_FULL_LEN = 100000;
+	public static int CLIP_LEN     = 10000;
 	private static StringBuffer mFullOutput = new StringBuffer();
 	public static String getFullOutput() {
 		return mFullOutput.toString();
@@ -46,8 +47,7 @@ public class MinimaLogger {
 			//Ensure max size.. for now just wipe once and start again..
 			int len = mFullOutput.length();
 			if(len>MAX_FULL_LEN) {
-//				mFullOutput = new StringBuffer(mFullOutput.substring(len-MAX_PREV_LEN, len));
-				mFullOutput = new StringBuffer();
+				mFullOutput = new StringBuffer(mFullOutput.substring(len-CLIP_LEN, len));
 			}
 			
 			String full_log = "Minima @ "+DATEFORMAT.format(new Date())+" : "+zLog;
@@ -64,4 +64,33 @@ public class MinimaLogger {
 			}
 		}
 	}	
+	
+	public static void log(Exception zException){
+		if(LOGGING_ON){
+			//First the Full Exception
+			MinimaLogger.log(zException.toString());
+			
+			//Now the Stack Trace
+			for(StackTraceElement stack : zException.getStackTrace()) {
+				//Print it..
+				MinimaLogger.log("     "+stack.toString());
+			}
+		}
+	}
+	
+	public static void log(String zTitle, Exception zException){
+		if(LOGGING_ON){
+			//A Title..
+			MinimaLogger.log(zTitle);
+			
+			//First the Full Exception
+			MinimaLogger.log(zException.toString());
+			
+			//Now the Stack Trace
+			for(StackTraceElement stack : zException.getStackTrace()) {
+				//Print it..
+				MinimaLogger.log("     "+stack.toString());
+			}
+		}
+	}
 }

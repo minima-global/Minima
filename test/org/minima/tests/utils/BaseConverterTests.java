@@ -10,14 +10,14 @@ import static org.junit.Assert.assertNotNull;
 
 public class BaseConverterTests {
 
-    final static String[] inputs = { "", "f", "fo", "foo", "foob", "fooba", "foobar", "too", "0x446a1837e14bfec34a9q0141a55ec020f73e15" };
+    final static String[] inputs = {"", "f", "fo", "foo", "foob", "fooba", "foobar", "too", "0x446a1837e14bfec34a9q0141a55ec020f73e15"};
 
-    final static String[] ouputs = { "0x", "0x66", "0x666F", "0x666F6F", "0x666F6F62", "0x666F6F6261",
-            "0x666F6F626172" };
+    final static String[] ouputs = {"0x", "0x66", "0x666F", "0x666F6F", "0x666F6F62", "0x666F6F6261",
+        "0x666F6F626172"};
 
-    final static String[] ouputs32Hex = { "", "CO======", "CPNG====", "CPNMU===", "CPNMUOG=", "CPNMUOJ1",
-            "CPNMUOJ1E8======" };
-    final static String[] ouputs32 = { "", "MZXW6===", "MZXW6YQ=", "MZXW6YTB", "MZXW6YTBOI======", "GB4DERRTGJCUGNRRGVBEMQSDGAZTGMSDGFCDIOJUHBBTQQSBGJBUMQRZGU2TGRCBGJDEKNJWGI4TQNJVGAZTAMSDGZCEMOKFHAYUIMZRIU======" };
+    final static String[] ouputs32Hex = {"", "CO======", "CPNG====", "CPNMU===", "CPNMUOG=", "CPNMUOJ1",
+        "CPNMUOJ1E8======"};
+    final static String[] ouputs32 = {"", "MZXW6===", "MZXW6YQ=", "MZXW6YTB", "MZXW6YTBOI======", "GB4DERRTGJCUGNRRGVBEMQSDGAZTGMSDGFCDIOJUHBBTQQSBGJBUMQRZGU2TGRCBGJDEKNJWGI4TQNJVGAZTAMSDGZCEMOKFHAYUIMZRIU======"};
 
     @Test
     public void testGeneralBaseCovertor() {
@@ -30,7 +30,7 @@ public class BaseConverterTests {
         String hexNumTwo = BaseConverter.numberToHex(9928);
         assertNotNull(hexNumTwo);
         System.out.println("convert odd number into hex");
-        int backToNum = BaseConverter.hexToNumber(hexNumTwo);    
+        int backToNum = BaseConverter.hexToNumber(hexNumTwo);
         assertNotNull(backToNum);
         System.out.println("convert hex to int and assign");
 
@@ -226,11 +226,9 @@ public class BaseConverterTests {
 
         // byte[] bytTestThree = inputs[8].getBytes();
         // String dataThree = BaseConverter.encode32(bytTestThree);
-
         // System.out.println("should be equal to  - " + dataThree);
         // System.out.println("should be equal to  - " + bytTestThree);
         // System.out.println("should be equal to  - " + ouputs32[8]);
-
         // try {
         //     assertEquals("should be equal - ", dataThree, ouputs32[5]);
         //     System.out.println("should be equal - " + dataThree);
@@ -271,11 +269,9 @@ public class BaseConverterTests {
 
         // byte[] dataThree = BaseConverter.decode32(ouputs32[5]);
         // String decodedThree = new String(dataThree);
-
         // System.out.println("should be equal to  - " + dataThree);
         // System.out.println("should be equal to  - needed value " + decodedThree);
         // // System.out.println("should be equal to  - " + ouputs32[3]);
-
         // try {
         //     assertEquals("should be equal to empty string", decodedThree, inputs[8]);
         //     System.out.println("should be equal to 0x - " + data);
@@ -283,7 +279,6 @@ public class BaseConverterTests {
         //     System.out.println("Test failed: " + failure.getMessage());
         //     assertFalse("test should not fail:" + failure.getMessage(), true);
         // }
-
     }
 
 }

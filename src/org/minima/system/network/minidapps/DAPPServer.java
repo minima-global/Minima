@@ -141,6 +141,7 @@ public class DAPPServer extends NanoHTTPD{
 				//Are we using the MiniHUB..!
 			if(isroot) {
 				if(fileRequested.equals("index.html")) {
+					//And create the Page...
 					String page    = new String(indexhtml.returnData(),StandardCharsets.UTF_8);
 					String newpage = page.replace("######", createMiniDAPPList());
 					return getOKResponse(newpage.getBytes(), "text/html");
@@ -243,6 +244,7 @@ public class DAPPServer extends NanoHTTPD{
 			
         } catch (Exception ioe) {
         	MinimaLogger.log("DAPPSERVER Error : "+ioe);
+        	MinimaLogger.log(ioe);
         	
         	return getInternalErrorResponse("INTERNAL ERROR");
         }
@@ -253,13 +255,14 @@ public class DAPPServer extends NanoHTTPD{
 		resp.addHeader("Server", "HTTP RPC Server from Minima v0.95.14");
 		resp.addHeader("Date", new Date().toString());
 		
+		//CORS
+		resp.addHeader("Access-Control-Allow-Origin", "*");
+		
 		//Cache images..
 		if(zContentType.startsWith("image/")) {
 			resp.addHeader("Cache-Control", "max-age=86400");
 		}
-		
-//		resp.addHeader("Access-Control-Allow-Origin", "*");
-		
+				
         return resp;
     }
 	

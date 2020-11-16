@@ -133,9 +133,7 @@ public class MathsTests {
         // BigInteger testValueFive = new BigInteger("10002022048");
         // double testResultFive = Maths.log2BI(testValueFive);
         // double exxpectedResultFive = 33.21957263924622;
-
         // System.out.println("should be equal to - 10.0 " + testResultFive);
-
         // try {
         //     assertEquals(testResultFive, exxpectedResultFive, 0);
         //     System.out.println("should be equal to 10.0 - " + testResultFive);

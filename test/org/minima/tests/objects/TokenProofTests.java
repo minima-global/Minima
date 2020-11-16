@@ -18,6 +18,7 @@ import org.minima.objects.base.MiniString;
 import org.minima.objects.proofs.TokenProof;
 
 public class TokenProofTests {
+
     @Test
     public void testTokenProof() {
         MiniString name = new MiniString("token-name");

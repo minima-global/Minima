@@ -46,7 +46,9 @@ public class Start {
 	/**
 	 * Simple constructor for iOS and Android
 	 */
-	public Start() {}
+	public Start() {
+		mMainServer = null;
+	}
 	
 	public void fireStarter(String zConfFolder) {
 		mConfFolder = zConfFolder;
@@ -188,6 +190,9 @@ public class Start {
 				}
 			}
 		}
+		
+		//Add a version number to the CONF folder
+//		conffolder = conffolder.concat("0.96");
 		
 		//Do we wipe
 		File conffile = new File(conffolder);

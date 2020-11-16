@@ -11,6 +11,7 @@ import org.minima.system.input.InputHandler;
 import org.minima.system.network.NetworkHandler;
 import org.minima.system.txpow.TxPoWMiner;
 import org.minima.utils.MinimaLogger;
+import org.minima.utils.SQLHandler;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageProcessor;
 
@@ -256,6 +257,9 @@ public class Main extends MessageProcessor {
 			mTXMiner.stopMessageProcessor();
 			mConsensus.stopMessageProcessor();
 			mBackup.stopMessageProcessor();
+			
+			//Shut the database.
+			SQLHandler.CloseSQL();
 			
 			//Wait a second..
 			Thread.sleep(1000);

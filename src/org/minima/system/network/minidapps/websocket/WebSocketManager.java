@@ -114,27 +114,12 @@ public class WebSocketManager extends MessageProcessor {
 			
 			//What kind of message is it..
 			String msgtype = (String) msgobj.get("type");
-			if(msgtype.equals("uid")) {
-				//Get the location..
-				String loc = (String) msgobj.get("uid");
-				
-				//Default ID
-				String mid = "0x00";
-				
-				//Get the MiniDAPPID
-				int start = loc.indexOf("0x");
-				if(start != -1) {
-					int end = loc.indexOf("/",start);
-					if(end != -1) {
-						//Get it..!
-						mid =  loc.substring(start,end);
-					}else {
-						mid =  loc.substring(start);
-					}
-				}
+			if(msgtype.equals("minidappid")) {
+				//Get it..
+				String id = (String) msgobj.get("minidappid");
 				
 				//Set it..
-				mws.setMiniDAPPUID(mid);
+				mws.setMiniDAPPUID(id);
 				
 			}else if(msgtype.equals("reply")) {
 				Message replymsg = new Message(DAPPManager.DAPP_DIRECTREPLY);

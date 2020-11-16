@@ -16,8 +16,8 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniInteger;
 import org.minima.utils.json.JSONObject;
 
-
 public class TxPoWTests {
+
     @Test
     public void testTxPoWTests() {
         TxPoW txpow = new TxPoW();
@@ -39,12 +39,12 @@ public class TxPoWTests {
         assertTrue("New TxPow should have a burn witness", txpow.getBurnWitness() != null);
         txpow.calculateTXPOWID();
         assertTrue("New TxPow computedtxpowid should not be zero", txpow.getTxPowID() != new MiniData("0x00"));
-        
+
         JSONObject json = txpow.toJSON();
         assertTrue("JSON object is not null", json != null);
-        
+
         try {
-            
+
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             DataOutputStream dos = new DataOutputStream(bos);
             txpow.writeDataStream(dos);
@@ -62,5 +62,4 @@ public class TxPoWTests {
         }
 
     }
-     
 }

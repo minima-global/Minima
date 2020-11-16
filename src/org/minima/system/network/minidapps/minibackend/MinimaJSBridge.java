@@ -43,10 +43,16 @@ public class MinimaJSBridge {
 		Main.getMainHandler().getNetworkHandler().getDAPPManager().PostMessage(replymsg);
 	}
 	
+	/**
+	 * Called from the RHINO JS engine.. 
+	 * @param zType
+	 * @param zData
+	 * @param zCallback
+	 */
 	public void post(String zType, String zData, Function zCallback) {
-		
 		//MinimaLogger.log("MinimaJSBridge : "+zType+" "+zData);
 		
+		//The final result returned to the JS
 		String finalresult = "{}";
 		
 		//Is this a SQL function
@@ -90,19 +96,50 @@ public class MinimaJSBridge {
         	finalresult = netcomm.getFinalResult();
 		}
 	    
-		//MinimaLogger.log("MinimaJSBridge RESULT "+finalresult);
+		//Run it in a safe environment.. check for crashes..
+		try {
+			//Use the Callback ?
+			if(zCallback != null) {
+				//Check the crash counter..
+				if(mBackBone.getCrashCounter()>=3) {
+					//Too Many Crashes.. 
+					return;
+				}
+				
+				//Create a native JSON
+				Object json = MiniJSONUtility.makeJSONObject(finalresult, mBackBone.getContext(), mBackBone.getScope());
+				
+				//Make a function variable list
+				Object functionArgs[] = { json };
+			    
+				//Call the function..
+				zCallback.call(mBackBone.getContext(), mBackBone.getScope(), mBackBone.getScope(), functionArgs);	
+			}
 		
-		//Use the Callback ?
-		if(zCallback != null) {
-			//Create a native JSON
-			Object json = MiniJSONUtility.makeJSONObject(finalresult, mBackBone.getContext(), mBackBone.getScope());
+		}catch(Exception exc) {
+			//record the crash..
+			mBackBone.incrementCrashCounter();
 			
-			//Make a function variable list
-			Object functionArgs[] = { json };
-		    
-			//Call the function..
-			zCallback.call(mBackBone.getContext(), mBackBone.getScope(), mBackBone.getScope(), functionArgs);	
+			//But if it crashes..
+			MinimaLogger.log("ERROR : MiniDAPP MinimaJSBridge call crashing ["+mBackBone.getCrashCounter()+" / 3 ] "+mBackBone.getName()+" "+mBackBone.getMiniDAPPID());
+			MinimaLogger.log("MinimaJSBridge CALL : "+zType+" "+zData+" "+zCallback);
+			MinimaLogger.log(exc);
+			
+			if(mBackBone.getCrashCounter()>=3) {
+				MinimaLogger.log("DISABLING MINIDAPP BACKEND : "+mBackBone.getName()+" "+mBackBone.getMiniDAPPID());
+			}
 		}
-	    
+		
+//		//Use the Callback ?
+//		if(zCallback != null) {
+//			//Create a native JSON
+//			Object json = MiniJSONUtility.makeJSONObject(finalresult, mBackBone.getContext(), mBackBone.getScope());
+//			
+//			//Make a function variable list
+//			Object functionArgs[] = { json };
+//		    
+//			//Call the function..
+//			zCallback.call(mBackBone.getContext(), mBackBone.getScope(), mBackBone.getScope(), functionArgs);	
+//		}
 	}
 }

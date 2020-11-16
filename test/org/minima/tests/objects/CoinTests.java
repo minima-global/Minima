@@ -82,7 +82,6 @@ public class CoinTests {
             c.readDataStream(dis);
 
             // System.out.println("coin  value after read" + c.toString());
-
             assertNotNull(c);
         } catch (final IOException e) {
             // System.out.println("IOException: " + e.toString() + " msg=" + e.getMessage());

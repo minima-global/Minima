@@ -71,7 +71,6 @@ public class MMRSetTest {
         //    System.out.println("IOException: " + e.toString() + " msg=" + e.getMessage());
         //    assertTrue(" there should not be an IOException", false);
         //}
-
         //try {
         //    MMRSet mmrs1 = new MMRSet(512);
         //
@@ -91,7 +90,6 @@ public class MMRSetTest {
         //    System.out.println("IOException: " + e.toString() + " msg=" + e.getMessage());
         //    assertTrue(" there should not be an IOException", false);
         //}
-
         try {
             MMRSet mmrs1 = new MMRSet();
 
@@ -121,7 +119,6 @@ public class MMRSetTest {
             System.out.println("IOException: " + e.toString() + " msg=" + e.getMessage());
             assertTrue(" there should not be an IOException", false);
         }
-
 
         try {
             MMRSet mmrs1 = new MMRSet();
