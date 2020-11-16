@@ -13,6 +13,7 @@ import org.minima.objects.StateVariable;
 import org.minima.objects.base.*;
 
 import org.minima.utils.json.JSONObject;
+import org.minima.utils.Crypto;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -191,22 +192,25 @@ public class MMRSetTest {
 
     @Test
     public void testMMRSetInsertions() {
+        // Empty MMR
         MMRSet base = new MMRSet();		
         assertTrue("Empty MMR has no entries.", base.mEntryNumber.isEqual(new MiniInteger(0)));
         assertTrue("Empty MMR", base.getMMRPeaks() != null && base.getMMRPeaks().size() == 0);
-		//Add a single zero entry to create the first peak..
+
+		//Add a single zero entry to create the first peak.
 		Coin gencoin    = new Coin(new MiniData("0x00"), Address.TRUE_ADDRESS.getAddressData(), MiniNumber.ZERO, Coin.MINIMA_TOKENID);
         MMRData gendata = new MMRData(MiniByte.FALSE, gencoin, MiniNumber.ZERO, new ArrayList<StateVariable>());
         MiniData gendataHash = gendata.getFinalHash();
 		base.addUnspentCoin(gendata);
         assertTrue("Genesis MMR set has one entry.", base.mEntryNumber.isEqual(new MiniInteger(1)));
-        assertTrue("Genesis MMR entry hash verification.", base.getMMRPeaks() != null && base.getMMRPeaks().size() == 1 && base.getMMRPeaks().get(0).getHashValue().isEqual(gendataHash));
+        assertTrue("Genesis MMR only entry is also its only peak.", base.getMMRPeaks() != null && base.getMMRPeaks().size() == 1 && base.getMMRPeaks().get(0).getHashValue().isEqual(gendataHash));
         MMREntry e0 = base.getMMRPeaks().get(0);
         assertTrue("Genesis MMR unique element has entry number 0", e0.getEntryNumber().isEqual(new MiniInteger(0)));
         assertTrue("Genesis MMR unique element is at row 0", e0.getRow() == 0);
+        
+        // Print MMR tree: 0 
 
-        // MMR tree: 0 
-        // create two more nodes
+        // create one node
         // tx input
         //Coin in = new Coin(gimme50.COINID_INPUT,Address.TRUE_ADDRESS.getAddressData(),new MiniNumber("50"), Coin.MINIMA_TOKENID);
         // tx outputs (we send twice to true address instead of new addresses, should fail as same data)
@@ -216,11 +220,17 @@ public class MMRSetTest {
         MMRData data_b = new MMRData(MiniByte.FALSE, gimme50_b, MiniNumber.ZERO, new ArrayList<StateVariable>());
         MiniData hash_a = data_a.getFinalHash();
         MiniData hash_b = data_b.getFinalHash();
+        MiniData hash_0a = Crypto.getInstance().hashObjects(gendataHash, hash_a, 512); // MMRSet.MMR_HASH_BITS);
+
         base.addUnspentCoin(data_a);
         assertTrue("MMR set has two entries after adding one node.", base.mEntryNumber.isEqual(new MiniInteger(2)));
         assertTrue("MMR peaks count verification.", base.getMMRPeaks() != null && base.getMMRPeaks().size() == 1);
         assertTrue("MMR peak hash is not equal to previous peak hash.", base.getMMRPeaks() != null && !base.getMMRPeaks().get(0).getHashValue().isEqual(gendataHash));
         assertTrue("MMR peak hash is not equal to new node hash.", base.getMMRPeaks() != null && !base.getMMRPeaks().get(0).getHashValue().isEqual(hash_a));
+        assertTrue("MMR peak hash is equal to constructed hash.", base.getMMRPeaks() != null && base.getMMRPeaks().get(0).getHashValue().isEqual(hash_0a));
+        //                  2
+        // Print MMR tree: 0 1
+
         
     }
 }
