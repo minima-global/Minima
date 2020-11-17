@@ -14,11 +14,13 @@ COPY test test
 RUN ./gradlew --no-daemon jar shadowJar
 RUN md5sum build/libs/*
 RUN ls -l build/libs/*
+RUN stat build/libs/minima-all.jar
 
 FROM adoptopenjdk/openjdk11:x86_64-alpine-jdk-11.0.9_11-slim as production-stage
 COPY --from=build-stage /usr/src/minima/build/libs/minima-all.jar /opt/minima/minima.jar
 WORKDIR /opt/minima
 RUN md5sum *
 RUN ls -l *
+RUN stat minima.jar
 CMD ["java", "-jar", "minima.jar"]
 
