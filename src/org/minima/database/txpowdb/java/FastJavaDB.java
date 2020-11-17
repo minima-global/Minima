@@ -236,5 +236,6 @@ public class FastJavaDB implements TxPowDB {
 	@Override
 	public void ClearDB() {
 		mTxPoWRows.clear();
+		mChildrenOfParents.clear();
 	}
 }
