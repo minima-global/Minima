@@ -179,6 +179,9 @@ public class MinimaDB {
 		//Is it a block.. if so add a BASIC block to the tree
 		boolean treeadded = false;
 		
+		//Clean up..
+		System.gc();
+		
 		//A NULL txpow means do an update whatever..
 		if(zTxPow != null) {
 			if(zTxPow.isBlock()) {
