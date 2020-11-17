@@ -7,8 +7,6 @@
 build
 
 # ignore IDE config
-.settings/*
+#.settings/*
 .vscode/*
-.settings/org.eclipse.buildship.core.prefs
-
 /.nb-gradle/

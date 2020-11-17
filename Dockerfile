@@ -14,7 +14,7 @@ COPY test test
 RUN ./gradlew --no-daemon shadowJar
 
 FROM adoptopenjdk/openjdk11:x86_64-alpine-jdk-11.0.9_11-slim as production-stage
-COPY build/libs/minima-all.jar /opt/minima/minima.jar
+COPY --from=build-stage /usr/src/minima/build/libs/minima-all.jar /opt/minima/minima.jar
 WORKDIR /opt/minima
 CMD ["java", "-jar", "minima.jar"]
 
