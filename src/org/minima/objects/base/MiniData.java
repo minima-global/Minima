@@ -14,6 +14,7 @@ import java.security.SecureRandom;
 import org.minima.system.network.base.MinimaReader;
 import org.minima.utils.BaseConverter;
 import org.minima.utils.Crypto;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 
 /**
@@ -27,11 +28,6 @@ public class MiniData implements Streamable {
 	 */
 	protected byte[] mData;
 	
-	/**
-	 * The numeric value of the data
-	 */
-	protected BigInteger mDataVal;
-	
 	public MiniData() {
 		this(new byte[0]);
 	}
@@ -42,11 +38,6 @@ public class MiniData implements Streamable {
 	
 	public MiniData(byte[] zData) {
 		mData = zData;
-		setDataValue();
-	}
-	
-	private void setDataValue() {
-		mDataVal = new BigInteger(1,mData);
 	}
 	
 	public int getLength() {
@@ -58,15 +49,15 @@ public class MiniData implements Streamable {
 	}
 	
 	public BigInteger getDataValue() {
-		return mDataVal;
+		return new BigInteger(1,mData);
 	}
 	
 	public BigDecimal getDataValueDecimal() {
-		return new BigDecimal(mDataVal);
+		return new BigDecimal(getDataValue());
 	}
 	
 	public MiniNumber getDataValueMiniNumber() {
-		return new MiniNumber(mDataVal);
+		return new MiniNumber(getDataValue());
 	}
 	
 	@Override
@@ -91,35 +82,34 @@ public class MiniData implements Streamable {
 		}
 	
 		return true;
-//		return mDataVal.compareTo(zCompare.getDataValue()) == 0;
 	}
 	
 	public boolean isLess(MiniData zCompare) {
-		return mDataVal.compareTo(zCompare.getDataValue()) < 0;
+		return getDataValue().compareTo(zCompare.getDataValue()) < 0;
 	}
 	
 	public boolean isLessEqual(MiniData zCompare) {
-		return mDataVal.compareTo(zCompare.getDataValue()) <= 0;
+		return getDataValue().compareTo(zCompare.getDataValue()) <= 0;
 	}
 	
 	public boolean isMore(MiniData zCompare) {
-		return mDataVal.compareTo(zCompare.getDataValue()) > 0;
+		return getDataValue().compareTo(zCompare.getDataValue()) > 0;
 	}
 	
 	public boolean isMoreEqual(MiniData zCompare) {
-		return mDataVal.compareTo(zCompare.getDataValue()) >= 0;
+		return getDataValue().compareTo(zCompare.getDataValue()) >= 0;
 	}
 	
 	public MiniData shiftr(int zNumber) {
-		return new MiniData(mDataVal.shiftRight(zNumber).toString(16).toUpperCase());
+		return new MiniData(getDataValue().shiftRight(zNumber).toString(16).toUpperCase());
 	}
 	
 	public MiniData shiftl(int zNumber) {
-		return new MiniData(mDataVal.shiftLeft(zNumber).toString(16).toUpperCase());
+		return new MiniData(getDataValue().shiftLeft(zNumber).toString(16).toUpperCase());
 	}
 	
 	public int compare(MiniData zCompare) {
-		return mDataVal.compareTo(zCompare.getDataValue());
+		return getDataValue().compareTo(zCompare.getDataValue());
 	}
 	
 	public MiniData concat(MiniData zConcat) {
@@ -189,9 +179,6 @@ public class MiniData implements Streamable {
 		}
 		mData = new byte[len];
 		zIn.readFully(mData);
-		
-		//Set the data value
-		setDataValue();
 	}
 	
 	public static MiniData ReadFromStream(DataInputStream zIn) throws IOException{
@@ -233,9 +220,6 @@ public class MiniData implements Streamable {
 		
 		mData = new byte[len];
 		zIn.readFully(mData);
-		
-		//Set the data value
-		setDataValue();
 	}
 	
 	public static MiniData ReadHashFromStream(DataInputStream zIn) throws IOException{
@@ -251,11 +235,16 @@ public class MiniData implements Streamable {
 		try {
 			zObject.writeDataStream(dos);
 			dos.flush();
+			dos.close();
+			baos.close();
+		
+			return new MiniData(baos.toByteArray());
+			
 		} catch (IOException e) {
-			return null;
+			MinimaLogger.log(e);	
 		}
 		
-		return new MiniData(baos.toByteArray());
+		return null;
 	}
 	
 	/**
