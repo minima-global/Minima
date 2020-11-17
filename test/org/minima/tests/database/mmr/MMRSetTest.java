@@ -207,8 +207,8 @@ public class MMRSetTest {
         MMREntry e0 = base.getMMRPeaks().get(0);
         assertTrue("Genesis MMR unique element has entry number 0", e0.getEntryNumber().isEqual(new MiniInteger(0)));
         assertTrue("Genesis MMR unique element is at row 0", e0.getRow() == 0);
-        
-        // Print MMR tree: 0 
+        assertTrue("MGenesis MR root coin total is 0", base.getMMRRoot().getValueSum().isEqual(new MMRSumNumber(new MiniNumber(0))));
+        // Print MMR tree: 0=root 
 
         // create one node
         // tx input
@@ -230,13 +230,21 @@ public class MMRSetTest {
         assertTrue("MMR peak hash is equal to constructed hash.", base.getMMRPeaks() != null && base.getMMRPeaks().get(0).getHashValue().isEqual(hash_0a));
         assertTrue("MMR peak hash is not equal to zero.", base.getMMRPeaks() != null && !base.getMMRPeaks().get(0).getData().getValueSum().isEqual(new MMRSumNumber(new MiniNumber("0"))));
         assertTrue("MMR peak hash is equal to sum of child node values.", base.getMMRPeaks() != null && base.getMMRPeaks().get(0).getData().getValueSum().isEqual(sumNum));
-        //                  2
+        assertTrue("MMR root coin total is 25", base.getMMRRoot().getValueSum().isEqual(sumNum));
+        //                  2=root
         // Print MMR tree: 0 1   (MMR canonical entries numbering)
 
         base.addUnspentCoin(data_b);
         assertTrue("MMR set has three entries after adding second node.", base.mEntryNumber.isEqual(new MiniInteger(3)));  // entryNumber only counts leaf nodes, unlike canonical MMR
         assertTrue("MMR has two peaks.", base.getMMRPeaks() != null && base.getMMRPeaks().size() == 2);
-        
+        assertTrue("MMR first peak hash is equal to constructed hash 0a.", base.getMMRPeaks() != null && base.getMMRPeaks().get(0).getHashValue().isEqual(hash_0a));
+        assertTrue("MMR second peak hash is equal to hash b.", base.getMMRPeaks() != null && base.getMMRPeaks().get(1).getHashValue().isEqual(hash_b));
+        assertTrue("MMR second peak row is lower than first peak row", base.getMMRPeaks().get(1).getRow() < base.getMMRPeaks().get(0).getRow());
+        assertTrue("MMR root coin total is 50", base.getMMRRoot().getValueSum().isEqual(new MMRSumNumber(new MiniNumber(50))));
+        //                    4=root
+        //
+        //                  2
+        // Print MMR tree: 0 1  3 (MMR canonical entries numbering: minima leaf nodes numbering would be: 0 1 2)
         
     }
 }
