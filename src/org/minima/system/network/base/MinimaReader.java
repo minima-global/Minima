@@ -175,21 +175,46 @@ public class MinimaReader implements Runnable {
 					//This is a MiniData Structure..
 					int datalen = mInput.readInt();
 					
+					//Buffer for reading
+					byte[] datarr = new byte[8096];
+					
 					ByteArrayOutputStream baos = new ByteArrayOutputStream(datalen);
 					long tot        = 0;
 					long lastnotify = -1;
 					while( tot < datalen ) {
-						baos.write(mInput.read());
-						tot++;
+						//Read in the data..
+						int read = mInput.read(datarr);
+						baos.write(datarr,0,read);
+						tot+=read;
+						
+//						baos.write(mInput.read());
+//						tot++;
+						
 						//What Percent Done..
 						long newnotify = (tot*100)/datalen;
 						if(newnotify != lastnotify) {
 							lastnotify = newnotify;
 							notifyListeners("IBD download : "+lastnotify+"% of "+ibdsize);
-//							MinimaLogger.log("IBD download : "+lastnotify+"% of "+ibdsize+" tot*100:"+(tot*100)+" datalen:"+datalen);
+//							MinimaLogger.log("IBD download : "+lastnotify+"% of "+ibdsize);
 						}
 					}
 					baos.flush();
+					
+//					ByteArrayOutputStream baos = new ByteArrayOutputStream(datalen);
+//					long tot        = 0;
+//					long lastnotify = -1;
+//					while( tot < datalen ) {
+//						baos.write(mInput.read());
+//						tot++;
+//						//What Percent Done..
+//						long newnotify = (tot*100)/datalen;
+//						if(newnotify != lastnotify) {
+//							lastnotify = newnotify;
+//							notifyListeners("IBD download : "+lastnotify+"% of "+ibdsize);
+////							MinimaLogger.log("IBD download : "+lastnotify+"% of "+ibdsize+" tot*100:"+(tot*100)+" datalen:"+datalen);
+//						}
+//					}
+//					baos.flush();
 					
 					//Create the MiniData..
 					fullmsg = new MiniData(baos.toByteArray());
