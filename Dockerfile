@@ -12,6 +12,7 @@ COPY test test
 #RUN ./gradlew --no-daemon jar
 # fatjar with all deps -> build/libs/minima-all.jar
 RUN ./gradlew --no-daemon shadowJar
+RUN md5sum build/libs/*
 
 FROM adoptopenjdk/openjdk11:x86_64-alpine-jdk-11.0.9_11-slim as production-stage
 COPY --from=build-stage /usr/src/minima/build/libs/minima-all.jar /opt/minima/minima.jar

@@ -7,6 +7,6 @@
 build
 
 # ignore IDE config
-#.settings/*
+.settings/*
 .vscode/*
 /.nb-gradle/
