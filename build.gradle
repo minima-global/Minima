@@ -51,10 +51,18 @@ sourceSets {
         }
     }
 }
+
+// reproducible builds
+tasks.withType(AbstractArchiveTask) {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}
+
 application {
     // Define the main class for the application.
     mainClassName = 'org.minima.Start'
 }
+
 jar {
     manifest {
         attributes 'Main-Class': 'org.minima.Start'
