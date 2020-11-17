@@ -182,8 +182,13 @@ public class MinimaReader implements Runnable {
 					long tot        = 0;
 					long lastnotify = -1;
 					while( tot < datalen ) {
+						long remain = datalen - tot;
+						if(remain>8096) {
+							remain = 8096;
+						}
+						
 						//Read in the data..
-						int read = mInput.read(datarr);
+						int read = mInput.read(datarr,0,(int)remain);
 						baos.write(datarr,0,read);
 						tot+=read;
 						
