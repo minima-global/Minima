@@ -15,15 +15,16 @@ RUN ./gradlew --no-daemon jar shadowJar
 RUN md5sum build/libs/*
 RUN ls -l build/libs/*
 RUN stat build/libs/minima-all.jar
-RUN tar -cf minimajar.tar build/libs/minima-all.jar
+#RUN tar -cf minimajar.tar build/libs/minima-all.jar
 
 FROM adoptopenjdk/openjdk11:x86_64-alpine-jdk-11.0.9_11-slim as production-stage
-#COPY --from=build-stage /usr/src/minima/build/libs/minima-all.jar /opt/minima/minima.jar
-COPY --from=build-stage /usr/src/minima/minimajar.tar /opt/minima/minimajar.tar
+COPY --from=build-stage /usr/src/minima/build/libs/minima-all.jar /opt/minima/minima.jar
+#COPY --from=build-stage /usr/src/minima/minimajar.tar /opt/minima/minimajar.tar
 WORKDIR /opt/minima
-RUN tar -xf minimajar.tar
-RUN mv build/libs/minima-all.jar minima.jar
-RUN rm minimajar.tar
+#RUN tar -xf minimajar.tar
+#RUN mv build/libs/minima-all.jar minima.jar
+RUN touch -a -m -t 202011010000.00 minima.jar
+#RUN rm minimajar.tar
 RUN md5sum *.jar
 RUN ls -l *.jar
 RUN stat minima.jar
