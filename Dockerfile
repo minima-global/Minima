@@ -1,10 +1,15 @@
 #FROM openjdk:11
 FROM adoptopenjdk/openjdk11:x86_64-alpine-jdk-11.0.9_11-slim as build-stage
+RUN apk add wget
 WORKDIR /usr/src/minima/
 COPY gradle gradle
 COPY gradlew settings.gradle build.gradle .classpath ./
+COPY gradle/wrapper/gradle-wrapper-docker.properties gradle/wrapper/gradle-wrapper.properties
+WORKDIR /usr/src/minima/gradle/wrapper/
+RUN wget https://services.gradle.org/distributions/gradle-6.7.1-bin.zip
+WORKDIR /usr/src/minima/
 # Call gradlew before copying the source code to only download the gradle distribution once (layer will be cached)
-RUN ./gradlew --no-daemon -v
+#RUN ./gradlew --no-daemon -v
 COPY lib lib
 COPY src src
 COPY test test
