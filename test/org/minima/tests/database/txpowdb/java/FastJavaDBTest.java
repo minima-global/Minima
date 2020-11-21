@@ -28,6 +28,7 @@ public class FastJavaDBTest {
         TxPoW txp0 = new TxPoW();
         txp0.setNonce(new MiniInteger(10));
         txp0.setBlockNumber(new MiniNumber(100));
+        txp0.calculateTXPOWID();
         TxPoW txp1 = new TxPoW();
         txp1.setNonce(new MiniInteger(11));
         txp1.setBlockNumber(new MiniNumber(101));
@@ -86,38 +87,38 @@ public class FastJavaDBTest {
         assertNull("should be null ", txp0a);
 
         TxPOWDBRow txp1r = jdb.findTxPOWDBRow(txp1.getTxPowID());
+        assertNull("should be null ", txp1r);
         //assertEquals("should be equal ", txp1.getTxPowID(), txp1r.getTxPOW().getTxPowID());
 
         TxPOWDBRow txp2r = jdb.findTxPOWDBRow(txp2.getTxPowID());
-        //assertEquals("should be equal ", txp2.getTxPowID(), txp2r.getTxPOW().getTxPowID());
+        assertEquals("should be equal ", txp2.getTxPowID(), txp2r.getTxPOW().getTxPowID());
 
         //jdb.findTxPOWDBRow(txp1.getTxPowID()).setIsInBlock(true);
-        //jdb.findTxPOWDBRow(txp2.getTxPowID()).setIsInBlock(true);
-        //jdb.findTxPOWDBRow(txp3.getTxPowID()).setIsInBlock(true);
-        //jdb.findTxPOWDBRow(txp4.getTxPowID()).setIsInBlock(true);
-        //ArrayList<TxPOWDBRow> altxp = jdb.getAllUnusedTxPOW();
-        //assertEquals("should be equal ", 4, altxp.size());
+        jdb.findTxPOWDBRow(txp2.getTxPowID()).setIsInBlock(true);
+        jdb.findTxPOWDBRow(txp3.getTxPowID()).setIsInBlock(true);
+        jdb.findTxPOWDBRow(txp4.getTxPowID()).setIsInBlock(true);
+        ArrayList<TxPOWDBRow> altxp = jdb.getAllUnusedTxPOW();
+        assertEquals("should be equal ", 4, altxp.size());
 
         jdb.findTxPOWDBRow(txp5.getTxPowID()).setBlockState(TxPOWDBRow.TXPOWDBROW_STATE_FULL);
         ArrayList<TxPOWDBRow> altxpu = jdb.getAllBlocksMissingTransactions();
         assertEquals("should be equal ", 6, altxpu.size());
 
-        //ArrayList<TxPOWDBRow> altxpcb = jdb.getChildBlocksTxPOW(new MiniData());
-        //assertEquals("should be equal ", 7, altxpcb.size());
+        ArrayList<TxPOWDBRow> altxpcb = jdb.getChildBlocksTxPOW(new MiniData());
+        assertEquals("should be equal ", 8, altxpcb.size());
 
         jdb.resetBlocksFromOnwards(new MiniNumber(102));
 
         jdb.resetAllInBlocks();
 
-        //ArrayList<TxPOWDBRow> deleted = jdb.removeTxPOWInBlockLessThan(new MiniNumber(94));
-        //assertEquals("should be equal ", 3, deleted.size());
+        ArrayList<TxPOWDBRow> deleted = jdb.removeTxPOWInBlockLessThan(new MiniNumber(94));
+        assertEquals("should be equal ", 0, deleted.size());
 
-        //jdb.findTxPOWDBRow(txp5.getTxPowID()).setMainChainBlock(true);
-        //jdb.findTxPOWDBRow(txp6.getTxPowID()).setIsInBlock(true);
-        //ArrayList<TxPOWDBRow> deleted1 = jdb.removeTxPOWInBlockLessThan(new MiniNumber(97));
-        //assertEquals("should be equal ", 2, deleted1.size());
+        jdb.findTxPOWDBRow(txp5.getTxPowID()).setMainChainBlock(true);
+        jdb.findTxPOWDBRow(txp6.getTxPowID()).setIsInBlock(true);
+        ArrayList<TxPOWDBRow> deleted1 = jdb.removeTxPOWInBlockLessThan(new MiniNumber(97));
+        assertEquals("should be equal ", 0, deleted1.size());
 
-        //jdb.InBlockLessThan(102);
         assertNotEquals("should not be equal ", 0, jdb.getSize());
         jdb.ClearDB();
         assertEquals("should be equal ", 0, jdb.getSize());

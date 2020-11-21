@@ -117,7 +117,6 @@ public class JavaDBTest {
         ArrayList<TxPOWDBRow> deleted1 = jdb.removeTxPOWInBlockLessThan(new MiniNumber(97));
         assertEquals("should be equal ", 2, deleted1.size());
 
-        //jdb.InBlockLessThan(102);
         assertNotEquals("should not be equal ", 0, jdb.getSize());
         jdb.ClearDB();
         assertEquals("should be equal ", 0, jdb.getSize());
