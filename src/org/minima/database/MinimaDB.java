@@ -325,6 +325,16 @@ public class MinimaDB {
 			//Get the removals
 			ArrayList<BlockTreeNode> removals = casc.getRemoved();
 			
+			//Get all the saved blocks and store them!
+			ArrayList<BlockTreeNode> saved = casc.getSaveNodes();
+			for(BlockTreeNode snode : saved) {
+				SyncPacket pack = new SyncPacket(snode, false);
+				pack.getTxPOW().clearBody();
+				
+				//And save it to disk..
+				getBackup().backupBlock(pack);
+			}
+			
 			//Get the Tree
 			mMainTree = casc.getCascadeTree();
 			
