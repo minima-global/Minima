@@ -948,9 +948,6 @@ public class ConsensusPrint extends ConsensusProcessor {
 			//Do a FULL status ( with IBD and folder sizes..)
 			boolean fullstatus = zMessage.getBoolean("full");
 			
-			//Clean up..
-			System.gc();
-			
 			//Main Handler
 			Main main = Main.getMainHandler();
 			
