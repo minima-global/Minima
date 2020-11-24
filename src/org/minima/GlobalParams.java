@@ -33,12 +33,12 @@ public class GlobalParams {
 	/**
 	 * Depth before we cascade..
 	 */
-	public static final MiniNumber MINIMA_CASCADE_START_DEPTH = new MiniNumber(16384);
+	public static final MiniNumber MINIMA_CASCADE_START_DEPTH = new MiniNumber(16);
 	
 	/**
 	 * Number of blocks at each cascade level 
 	 */
-	public static final int MINIMA_CASCADE_LEVEL_NODES  = 256;
+	public static final int MINIMA_CASCADE_LEVEL_NODES  = 2;
 	
 	/**
 	 * How Many Cascade Levels
@@ -61,7 +61,7 @@ public class GlobalParams {
 	/**
 	 * Are we debugging the chain in short chain mode..
 	 */
-	public static final boolean SHORT_CHAIN_DEBUG_MODE = false;
+	public static final boolean SHORT_CHAIN_DEBUG_MODE = true;
 	
 	/**
 	 * Just create a block every transaction. Useful when not mining 
