@@ -3,6 +3,7 @@
  */
 package org.minima.objects;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -270,6 +271,32 @@ public class TxPoW implements Streamable {
 		
 		//The TxPoWID / Super levels.. etc..
 		calculateTXPOWID();
+	}
+	
+	/**
+	 * Get a DEEP copy of this transaction
+	 * @throws IOException 
+	 */
+	public TxPoW deepCopy() throws IOException {
+		//First write transaction out to a byte array
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		DataOutputStream dos = new DataOutputStream(baos);
+		writeDataStream(dos);
+		dos.flush();
+		dos.close();
+		
+		//Now read it into a new transaction..
+		byte[] transbytes = baos.toByteArray();
+		ByteArrayInputStream bais = new ByteArrayInputStream(transbytes);
+		DataInputStream dis = new DataInputStream(bais);
+		
+		TxPoW deepcopy = new TxPoW();
+		deepcopy.readDataStream(dis);
+		
+		dis.close();
+		baos.close();
+		
+		return deepcopy;
 	}
 	
 	/**
