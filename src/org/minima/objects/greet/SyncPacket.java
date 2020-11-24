@@ -111,4 +111,10 @@ public class SyncPacket implements Streamable {
 		}
 	}
 	
+	public static SyncPacket ReadFromStream(DataInputStream zIn) throws IOException {
+		SyncPacket sync = new SyncPacket();
+		sync.readDataStream(zIn);
+		return sync;
+	}
+	
 }
