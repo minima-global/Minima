@@ -1066,8 +1066,6 @@ public class MMRSet implements Streamable {
 	 * Recursively copy the parents..
 	 */
 	public void copyAllParentKeepers(MiniNumber zCascade) {
-		MinimaLogger.log("Current Cascade : "+zCascade);
-		
 		//Start at this point..
 		MMRSet curr = this;
 		
@@ -1088,8 +1086,6 @@ public class MMRSet implements Streamable {
 			
 			//Copy the parents MMR keepers..
 			mmr.copyParentKeepers();
-		
-			MinimaLogger.log("Save this block: "+mmr.getBlockTime());
 		}
 	}
 	
