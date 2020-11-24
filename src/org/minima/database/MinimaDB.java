@@ -16,6 +16,7 @@ import org.minima.database.coindb.CoinDBRow;
 import org.minima.database.coindb.java.FastCoinDB;
 import org.minima.database.mmr.MMRData;
 import org.minima.database.mmr.MMREntry;
+import org.minima.database.mmr.MMREntryDB;
 import org.minima.database.mmr.MMRProof;
 import org.minima.database.mmr.MMRSet;
 import org.minima.database.txpowdb.TxPOWDBRow;
@@ -341,6 +342,9 @@ public class MinimaDB {
 			
 			//Remove all TXPowRows that are less than the cascade node.. they will not be used again..
 			MiniNumber cascade 	= mMainTree.getCascadeNode().getBlockNumber();
+			
+			//Update the MMREntryDB to remove unneeded MMR data..
+			MMREntryDB.getDB().cleanUpDB(cascade);
 			
 			//Which txpow have been removed..
 			ArrayList<TxPOWDBRow> remrows =  mTxPOWDB.removeTxPOWInBlockLessThan(cascade);
