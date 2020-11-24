@@ -191,10 +191,11 @@ public class Start {
 			}
 		}
 		
-		//Add a version number to the CONF folder
-		int dotindex = GlobalParams.MINIMA_VERSION.indexOf(".",2);
-		String versionfolder = GlobalParams.MINIMA_VERSION.substring(0, dotindex);
-		File conffile = new File(conffolder,versionfolder);
+//		//Add a version number to the CONF folder
+//		int dotindex = GlobalParams.MINIMA_VERSION.indexOf(".",2);
+//		String versionfolder = GlobalParams.MINIMA_VERSION.substring(0, dotindex);
+//		File conffile = new File(conffolder,versionfolder);
+		File conffile = new File(conffolder);
 		
 		//Clean up..
 		if(clean) {
