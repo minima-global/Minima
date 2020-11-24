@@ -1,18 +1,31 @@
 package org.minima.system.brains;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 
+import org.minima.database.txpowtree.BlockTreeNode;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniNumber;
+import org.minima.objects.greet.SyncPacket;
 import org.minima.utils.MiniFile;
+import org.minima.utils.MiniFormat;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageProcessor;
+import org.minima.utils.messages.TimerMessage;
 
 public class BackupManager extends MessageProcessor {
 
 	private static final String BACKUP_WRITE              = "BACKUP_WRITE";
 	private static final String BACKUP_DELETE             = "BACKUP_DELETE";
+	private static final String BACKUP_CLEAN_BLOCKS       = "BACKUP_CLEAN_BLOCKS";
+	
+	private long CLEAN_UP_TIMER 						  = 10000;
 	
 	/**
 	 * User Configuration
@@ -29,6 +42,8 @@ public class BackupManager extends MessageProcessor {
 	
 	File mTxPOWDB;
 	
+	File mBlocksDB;
+	
 	File mMiniDAPPS;
 	
 	File mWebRoot;
@@ -42,6 +57,9 @@ public class BackupManager extends MessageProcessor {
 	
 		//Start init
 		initFolders();
+		
+		//A timerMessage that leans out the blocks folder..
+		PostTimerMessage(new TimerMessage(CLEAN_UP_TIMER, BACKUP_CLEAN_BLOCKS));
 	}
 	
 	public File getRootFolder() {
@@ -90,6 +108,22 @@ public class BackupManager extends MessageProcessor {
 		backup.addObject("file", back);
 		PostMessage(backup);
 	}
+	
+	public void backupBlock(SyncPacket zBlock) {
+		//Get the number..
+		String filename = MiniFormat.zeroPad(12, zBlock.getTxPOW().getBlockNumber());
+		
+		//Create the File
+		File back = new File(mBlocksDB,filename+".block");
+		
+		MinimaLogger.log("save block : "+back);
+		
+		//Do in separate thread so returns fast
+		Message backup = new Message(BackupManager.BACKUP_WRITE);
+		backup.addObject("object", zBlock);
+		backup.addObject("file", back);
+		PostMessage(backup);
+	}
 
 	public void deleteTxpow(TxPoW zTxPOW) {
 		//Create the File
@@ -129,6 +163,39 @@ public class BackupManager extends MessageProcessor {
 			//Get the file
 			File ff = (File) zMessage.getObject("file");
 			MiniFile.deleteFileOrFolder(mRootPath, ff);
+		
+		}else if(zMessage.isMessageType(BACKUP_CLEAN_BLOCKS)) {
+			//Check the blocks folder and remove OLD blocks..
+			File[] files = mBlocksDB.listFiles();
+			
+			int total = 0;
+			if(files != null) {
+				total = files.length;
+			}
+			
+			MinimaLogger.log("Clean up "+total);
+			
+			if(total > 10) {
+				//Sort alphabetically..
+				Arrays.sort(files, new Comparator<File>() {
+					@Override
+					public int compare(File arg0, File arg1) {
+						return arg0.getName().compareTo(arg1.getName());
+					}
+				});
+				
+				//Now delete the old ones..
+				int delete = total - 10;
+				for(int i=0;i<delete;i++) {
+					//Delete these files..
+					MinimaLogger.log("Delete "+files[i]);
+					MiniFile.deleteFileOrFolder(mRootPath, files[i]);
+				}
+			}
+			
+			
+			//Check again
+			PostTimerMessage(new TimerMessage(CLEAN_UP_TIMER, BACKUP_CLEAN_BLOCKS));
 		}
 	}
 	
@@ -140,6 +207,9 @@ public class BackupManager extends MessageProcessor {
 		//Current used TxPOW
 		mTxPOWDB   = ensureFolder(new File(mRoot,"txpow"));
 		
+		//Current Blocks
+		mBlocksDB   = ensureFolder(new File(mRoot,"blocks"));
+				
 		//The Backup folder
 		mBackup    = ensureFolder(new File(mRoot,"backup"));
 		
@@ -162,6 +232,7 @@ public class BackupManager extends MessageProcessor {
 	
 	public static void deleteConfFolder(File zFolder) {
 		MiniFile.deleteFileOrFolder(mRootPath,new File(zFolder,"txpow"));
+		MiniFile.deleteFileOrFolder(mRootPath,new File(zFolder,"blocks"));
 		MiniFile.deleteFileOrFolder(mRootPath,new File(zFolder,"backup"));
 		MiniFile.deleteFileOrFolder(mRootPath,new File(zFolder,"temp"));
 	}
