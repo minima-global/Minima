@@ -17,6 +17,7 @@ import org.minima.objects.base.MiniInteger;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.txpow.TxPoWMiner;
 import org.minima.utils.Crypto;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 import org.minima.utils.SuperBlockLevels;
 import org.minima.utils.json.JSONObject;
@@ -277,26 +278,33 @@ public class TxPoW implements Streamable {
 	 * Get a DEEP copy of this transaction
 	 * @throws IOException 
 	 */
-	public TxPoW deepCopy() throws IOException {
-		//First write transaction out to a byte array
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		DataOutputStream dos = new DataOutputStream(baos);
-		writeDataStream(dos);
-		dos.flush();
-		dos.close();
+	public TxPoW deepCopy(){
+		try {
+			//First write transaction out to a byte array
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			DataOutputStream dos = new DataOutputStream(baos);
+			writeDataStream(dos);
+			dos.flush();
+			dos.close();
+			
+			//Now read it into a new transaction..
+			byte[] txpowbytes = baos.toByteArray();
+			ByteArrayInputStream bais = new ByteArrayInputStream(txpowbytes);
+			DataInputStream dis = new DataInputStream(bais);
+			
+			TxPoW deepcopy = new TxPoW();
+			deepcopy.readDataStream(dis);
+			
+			dis.close();
+			baos.close();
+			
+			return deepcopy;
+			
+		}catch(IOException ioexc) {
+			MinimaLogger.log(ioexc);
+		}	
 		
-		//Now read it into a new transaction..
-		byte[] transbytes = baos.toByteArray();
-		ByteArrayInputStream bais = new ByteArrayInputStream(transbytes);
-		DataInputStream dis = new DataInputStream(bais);
-		
-		TxPoW deepcopy = new TxPoW();
-		deepcopy.readDataStream(dis);
-		
-		dis.close();
-		baos.close();
-		
-		return deepcopy;
+		return null;
 	}
 	
 	/**
