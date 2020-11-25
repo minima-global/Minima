@@ -10,6 +10,7 @@ import org.minima.database.txpowtree.BlockTreeNode;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.objects.greet.SyncPackage;
 import org.minima.objects.greet.SyncPacket;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MiniFormat;
@@ -43,6 +44,7 @@ public class BackupManager extends MessageProcessor {
 	File mTxPOWDB;
 	
 	File mBlocksDB;
+	File mBlockListDB;
 	
 	File mMiniDAPPS;
 	
@@ -165,37 +167,98 @@ public class BackupManager extends MessageProcessor {
 			MiniFile.deleteFileOrFolder(mRootPath, ff);
 		
 		}else if(zMessage.isMessageType(BACKUP_CLEAN_BLOCKS)) {
-			//Check the blocks folder and remove OLD blocks..
-			File[] files = mBlocksDB.listFiles();
 			
-			int total = 0;
-			if(files != null) {
-				total = files.length;
-			}
+			int MAX_JOIN = 10;
 			
-			MinimaLogger.log("Clean up "+total);
-			
-			if(total > 10) {
-				//Sort alphabetically..
-				Arrays.sort(files, new Comparator<File>() {
-					@Override
-					public int compare(File arg0, File arg1) {
-						return arg0.getName().compareTo(arg1.getName());
-					}
-				});
+			while(true) {
+				//Check the blocks folder and make x1000 block lists
+				File[] files = mBlocksDB.listFiles();
 				
-				//Now delete the old ones..
-				int delete = total - 10;
-				for(int i=0;i<delete;i++) {
-					//Delete these files..
-					MinimaLogger.log("Delete "+files[i]);
-					MiniFile.deleteFileOrFolder(mRootPath, files[i]);
+				int total = 0;
+				if(files != null) {
+					total = files.length;
+				}
+				
+				if(total >= MAX_JOIN) {
+					//Sort alphabetically..
+					Arrays.sort(files, new Comparator<File>() {
+						@Override
+						public int compare(File arg0, File arg1) {
+							return arg0.getName().compareTo(arg1.getName());
+						}
+					});
+					
+					//The name is the FIRST block.. reove the extension
+					String name = files[0].getName();
+					int index   = name.indexOf(".");
+					name = name.substring(0,index);
+					
+					//Create a SyncPackage
+					SyncPackage blocklist = new SyncPackage();
+					
+					//Now delete the old ones..
+					for(int i=0;i<MAX_JOIN;i++) {
+						//Load the Block.. and add to the collection..
+						SyncPacket sync = SyncPacket.loadBlock(files[i]);
+						
+						//Add to the List..
+						blocklist.getAllNodes().add(sync);
+					}
+					
+					//Create the output file
+					File blocklistfile = new File(mBlockListDB,name+".blocklist");
+					MinimaLogger.log("Save List "+blocklistfile.getAbsolutePath());
+					
+					//Now save this file..
+					MiniFile.writeObjectToFile(blocklistfile, blocklist);
+					
+					//Now delete the old ones..
+					for(int i=0;i<MAX_JOIN;i++) {
+						//Delete these files..
+						MinimaLogger.log("Delete "+files[i]);
+						MiniFile.deleteFileOrFolder(mRootPath, files[i]);
+					}
+					
+				}else {
+					break;
 				}
 			}
 			
-			
 			//Check again
 			PostTimerMessage(new TimerMessage(CLEAN_UP_TIMER, BACKUP_CLEAN_BLOCKS));
+		
+//		}else if(zMessage.isMessageType(BACKUP_CLEAN_BLOCKS)) {
+//			//Check the blocks folder and remove OLD blocks..
+//			File[] files = mBlocksDB.listFiles();
+//			
+//			int total = 0;
+//			if(files != null) {
+//				total = files.length;
+//			}
+//			
+//			MinimaLogger.log("Clean up "+total);
+//			
+//			if(total > 10) {
+//				//Sort alphabetically..
+//				Arrays.sort(files, new Comparator<File>() {
+//					@Override
+//					public int compare(File arg0, File arg1) {
+//						return arg0.getName().compareTo(arg1.getName());
+//					}
+//				});
+//				
+//				//Now delete the old ones..
+//				int delete = total - 10;
+//				for(int i=0;i<delete;i++) {
+//					//Delete these files..
+//					MinimaLogger.log("Delete "+files[i]);
+//					MiniFile.deleteFileOrFolder(mRootPath, files[i]);
+//				}
+//			}
+//			
+//			
+//			//Check again
+//			PostTimerMessage(new TimerMessage(CLEAN_UP_TIMER, BACKUP_CLEAN_BLOCKS));
 		}
 	}
 	
@@ -208,7 +271,8 @@ public class BackupManager extends MessageProcessor {
 		mTxPOWDB   = ensureFolder(new File(mRoot,"txpow"));
 		
 		//Current Blocks
-		mBlocksDB   = ensureFolder(new File(mRoot,"blocks"));
+		mBlocksDB    = ensureFolder(new File(mRoot,"blocks"));
+		mBlockListDB = ensureFolder(new File(mRoot,"blockslist"));
 				
 		//The Backup folder
 		mBackup    = ensureFolder(new File(mRoot,"backup"));
@@ -232,7 +296,10 @@ public class BackupManager extends MessageProcessor {
 	
 	public static void deleteConfFolder(File zFolder) {
 		MiniFile.deleteFileOrFolder(mRootPath,new File(zFolder,"txpow"));
+		
 		MiniFile.deleteFileOrFolder(mRootPath,new File(zFolder,"blocks"));
+		MiniFile.deleteFileOrFolder(mRootPath,new File(zFolder,"blockslist"));
+		
 		MiniFile.deleteFileOrFolder(mRootPath,new File(zFolder,"backup"));
 		MiniFile.deleteFileOrFolder(mRootPath,new File(zFolder,"temp"));
 	}

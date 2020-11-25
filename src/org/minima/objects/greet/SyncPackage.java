@@ -36,7 +36,7 @@ public class SyncPackage implements Streamable{
 	public ArrayList<SyncPacket> getAllNodes(){
 		return mNodes;
 	}
-
+	
 	public BigInteger calculateWeight() {
 		//Create a Tree and add all these blocks.. then calculate the weight..
 		BlockTree blktree = new BlockTree();
