@@ -24,7 +24,7 @@ public class BackupManager extends MessageProcessor {
 	private static final String BACKUP_CLEAN_BLOCKS       = "BACKUP_CLEAN_BLOCKS";
 	private static final String BACKUP_WRITE_BLOCK        = "BACKUP_WRITE_BLOCK";
 	
-	private long CLEAN_UP_TIMER 						  = 20000;
+	private long CLEAN_UP_TIMER 						  = 10000;
 	
 	/**
 	 * User Configuration
@@ -51,7 +51,6 @@ public class BackupManager extends MessageProcessor {
 	
 	MiniNumber mLastBlock  = MiniNumber.ZERO;
 	MiniNumber mFirstBlock = MiniNumber.MINUSONE;
-	boolean mFirstCleanUP  = true;
 	
 	public BackupManager(String zConfFolder) {
 		super("BACKUP");
@@ -178,48 +177,62 @@ public class BackupManager extends MessageProcessor {
 			PostTimerMessage(new TimerMessage(CLEAN_UP_TIMER, BACKUP_CLEAN_BLOCKS));
 			
 			//Is this the first time this has been called..
-			if(mFirstCleanUP) {
-				MinimaLogger.log("SCANNING BLOCKS FOLDER FOR MINIMUM BLOCK..");
-				boolean found = false;
-				//Find the lowest block we have..
-				for(int f2=0;f2<1000;f2++) {
+			boolean found = false;
+			
+			//First scan the main blocks folder and start parsing..
+			File[] level1 = mBlocksDB.listFiles();
+			if(level1 == null) {
+				level1 = new File[0];
+			}
+			
+			//Find the lowest block we have..
+			for(File lv1 : level1) {
+				//If found jump out
+				if(found) {break;}
+				
+				//Scan lower levels
+				File[] level2 = lv1.listFiles();
+				if(level2 == null) {
+					level2 = new File[0];
+				}
+				
+				if(level2.length == 0) {
+					MinimaLogger.log("DELETE EMPTY FOLDER "+lv1);
+					MiniFile.deleteFileOrFolder(mRootPath, lv1);
+				}
+				
+				for(File lv2 : level2) {
 					//If found jump out
 					if(found) {break;}
+						
+					//Check it..
+					File[] files = lv2.listFiles();
+					if(files == null) {
+						files = new File[0];	
+					}
 					
-					//Check the folders that exist
-					File base1 = new File(mBlocksDB,f2+"");
-					if(base1.exists()) {
-						for(int f1=0;f1<1000;f1++) {
-							//If found jump out
-							if(found) {break;}
-							
-							//Check the folders to find one with files in it..
-							File base2 = new File(base1,f1+"");
-							if(base2.exists()) {
-								//Check it..
-								File[] files = base2.listFiles();
-								if(files != null && files.length>0) {
-									//Sort alphabetically..
-									Arrays.sort(files, new Comparator<File>() {
-										@Override
-										public int compare(File arg0, File arg1) {
-											return arg0.getName().compareTo(arg1.getName());
-										}
-									});
-									
-									//Get the top
-									File first  = files[0];
-									String name = first.getName();
-									int index = name.indexOf(".");
-									name = name.substring(0,index);
-									
-									mFirstBlock = new MiniNumber(name);
-									MinimaLogger.log("FIRST SAVED BLOCK FOUND : "+mFirstBlock);
-									mFirstCleanUP = false;
-									found = true;
-								}
+					//Any Files..
+					if(files.length>0) {
+						//Sort alphabetically..
+						Arrays.sort(files, new Comparator<File>() {
+							@Override
+							public int compare(File arg0, File arg1) {
+								return arg0.getName().compareTo(arg1.getName());
 							}
-						}
+						});
+						
+						//Get the top
+						File first  = files[0];
+						String name = first.getName();
+						int index = name.indexOf(".");
+						name = name.substring(0,index);
+						
+						mFirstBlock = new MiniNumber(name);
+						MinimaLogger.log("FIRST SAVED BLOCK FOUND : "+mFirstBlock);
+						found = true;
+					}else {
+						MinimaLogger.log("DELETE EMPTY FOLDER "+lv2);
+						MiniFile.deleteFileOrFolder(mRootPath, lv2);
 					}
 				}
 			}
@@ -269,11 +282,13 @@ public class BackupManager extends MessageProcessor {
 		MiniNumber fold2     = remainder.div(MiniNumber.TWO).floor();
 		
 		//Get the number..
+		String f1 = MiniFormat.zeroPad(6, fold1);
+		String f2 = MiniFormat.zeroPad(6, fold2);
 		String filename = MiniFormat.zeroPad(12, zBlockNumber);
 		
 		//Create the File
-		File back1 = new File(mBlocksDB,fold1.toString());
-		File back2 = new File(back1,fold2.toString());
+		File back1 = new File(mBlocksDB,f1);
+		File back2 = new File(back1,f2);
 		ensureFolder(back2);
 		
 		File savefile = new File(back2,filename+".block");
