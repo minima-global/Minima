@@ -61,8 +61,5 @@ public class NodeActionTests {
         assertTrue("should be true ", na1.returnObject());
         assertNotNull("should be not null ", na1.getObject());
 
-
-
-
     }
 }
