@@ -110,6 +110,9 @@ public class ConsensusNet extends ConsensusProcessor {
 	
 	public void processMessage(Message zMessage) throws Exception {
 		
+		/**
+		 * You start a network dialogue with this message
+		 */
 		if(zMessage.isMessageType(CONSENSUS_NET_INITIALISE)) {
 			//An initial Greeting message..
 			Greeting greet = new Greeting();
@@ -140,6 +143,73 @@ public class ConsensusNet extends ConsensusProcessor {
 			//And Post it..
 			client.PostMessage(req);
 			
+		/**
+		 * You have received the initial Greeting Message	
+		 */
+		}else if(zMessage.isMessageType(CONSENSUS_NET_GREETING)) {
+			//Get the greeting
+			Greeting greet = (Greeting)zMessage.getObject("greeting");
+			
+			//Check Versions..
+			if(!greet.getVersion().equals(GlobalParams.MINIMA_VERSION)) {
+				MinimaLogger.log("DIFFERENT VERSION ON GREETING "+greet.getVersion());
+			}
+			
+			//Are we a new User.. with no Chain..
+			if(getMainDB().getMainTree().getAsList().size()==0) {
+				//First timer.. do nothing.. you'll be sent the INTRO message
+				return;
+			}
+			
+			//Get the List..
+			ArrayList<HashNumber> blocks = greet.getList();
+			int greetlen = blocks.size();
+			
+			//This User has NO CHAIN - send him our complete version
+			if(greetlen == 0) {
+				MinimaLogger.log("FIRST TIME SYNC - Sending complete");
+				//Get the complete sync package - deep copy.. 
+				SyncPackage sp = getMainDB().getSyncPackage(true);
+				MinimaClient client = (MinimaClient) zMessage.getObject("netclient");
+				Message req      = new Message(MinimaClient.NETCLIENT_INTRO).addObject("syncpackage", sp);
+				client.PostMessage(req);
+				return;
+			}
+			
+			//Fiund the crossover - if there is one..
+			MiniNumber cross = checkCrossover(greet);
+			
+			
+			
+			
+			if(cross.isEqual(MiniNumber.MINUSONE)) {
+				MinimaLogger.log("NO CROSSOVER - Sending complete");
+				//Get the complete sync package - deep copy.. 
+				SyncPackage sp = getMainDB().getSyncPackage(true);
+				MinimaClient client = (MinimaClient) zMessage.getObject("netclient");
+				Message req      = new Message(MinimaClient.NETCLIENT_INTRO).addObject("syncpackage", sp);
+				client.PostMessage(req);
+				return;
+			}
+			
+			//Get the tip..
+			MiniData top   = blocks.get(greetlen-1).getHash();
+			MiniNumber len = blocks.get(greetlen-1).getNumber().sub(cross);
+			
+			if(len.getAsInt() == 0) {
+				setInitialSyncComplete();
+				return;
+			}else {
+				MinimaLogger.log("CROSSOVER FOUND Requesting from "+cross+" to "+blocks.get(greetlen-1).getNumber());	
+			}
+			
+			//Ask for Just the required Blocks..
+			HashNumber hn = new HashNumber(top, len);
+			
+			MinimaClient client = (MinimaClient) zMessage.getObject("netclient");
+			Message req      = new Message(MinimaClient.NETCLIENT_GREETING_REQ).addObject("hashnumber", hn);
+			client.PostMessage(req);
+		
 		}else if(zMessage.isMessageType(CONSENSUS_NET_INTRO)) {
 			//MinimaLogger.log("INTRO SYNC message received..");
 			
@@ -341,65 +411,65 @@ public class ConsensusNet extends ConsensusProcessor {
 				}
 			}
 			
-		}else if(zMessage.isMessageType(CONSENSUS_NET_GREETING)) {
-			//Get the greeting
-			Greeting greet = (Greeting)zMessage.getObject("greeting");
-			
-			//Check Versions..
-			if(!greet.getVersion().equals(GlobalParams.MINIMA_VERSION)) {
-				MinimaLogger.log("DIFFERENT VERSION ON GREETING "+greet.getVersion());
-			}
-			
-			//Are we a beginner..
-			if(getMainDB().getMainTree().getAsList().size()==0) {
-				//First timer.. do nothing.. you'll be sent the INTRO message
-				return;
-			}
-			
-			//Get the List..
-			ArrayList<HashNumber> blocks = greet.getList();
-			int greetlen = blocks.size();
-			
-			//Do we post a complete package..
-			if(greetlen == 0) {
-				MinimaLogger.log("FIRST TIME SYNC - Sending complete");
-				//Get the complete sync package - deep copy.. 
-				SyncPackage sp = getMainDB().getSyncPackage(true);
-				MinimaClient client = (MinimaClient) zMessage.getObject("netclient");
-				Message req      = new Message(MinimaClient.NETCLIENT_INTRO).addObject("syncpackage", sp);
-				client.PostMessage(req);
-				return;
-			}
-			
-			MiniNumber cross = checkCrossover(greet);
-			if(cross.isEqual(MiniNumber.MINUSONE)) {
-				MinimaLogger.log("NO CROSSOVER - Sending complete");
-				//Get the complete sync package - deep copy.. 
-				SyncPackage sp = getMainDB().getSyncPackage(true);
-				MinimaClient client = (MinimaClient) zMessage.getObject("netclient");
-				Message req      = new Message(MinimaClient.NETCLIENT_INTRO).addObject("syncpackage", sp);
-				client.PostMessage(req);
-				return;
-			}
-			
-			//Get the tip..
-			MiniData top   = blocks.get(greetlen-1).getHash();
-			MiniNumber len = blocks.get(greetlen-1).getNumber().sub(cross);
-			
-			if(len.getAsInt() == 0) {
-				setInitialSyncComplete();
-				return;
-			}else {
-				MinimaLogger.log("CROSSOVER FOUND Requesting from "+cross+" to "+blocks.get(greetlen-1).getNumber());	
-			}
-			
-			//Ask for Just the required Blocks..
-			HashNumber hn = new HashNumber(top, len);
-			
-			MinimaClient client = (MinimaClient) zMessage.getObject("netclient");
-			Message req      = new Message(MinimaClient.NETCLIENT_GREETING_REQ).addObject("hashnumber", hn);
-			client.PostMessage(req);
-			
+//		}else if(zMessage.isMessageType(CONSENSUS_NET_GREETING)) {
+//			//Get the greeting
+//			Greeting greet = (Greeting)zMessage.getObject("greeting");
+//			
+//			//Check Versions..
+//			if(!greet.getVersion().equals(GlobalParams.MINIMA_VERSION)) {
+//				MinimaLogger.log("DIFFERENT VERSION ON GREETING "+greet.getVersion());
+//			}
+//			
+//			//Are we a beginner..
+//			if(getMainDB().getMainTree().getAsList().size()==0) {
+//				//First timer.. do nothing.. you'll be sent the INTRO message
+//				return;
+//			}
+//			
+//			//Get the List..
+//			ArrayList<HashNumber> blocks = greet.getList();
+//			int greetlen = blocks.size();
+//			
+//			//Do we post a complete package..
+//			if(greetlen == 0) {
+//				MinimaLogger.log("FIRST TIME SYNC - Sending complete");
+//				//Get the complete sync package - deep copy.. 
+//				SyncPackage sp = getMainDB().getSyncPackage(true);
+//				MinimaClient client = (MinimaClient) zMessage.getObject("netclient");
+//				Message req      = new Message(MinimaClient.NETCLIENT_INTRO).addObject("syncpackage", sp);
+//				client.PostMessage(req);
+//				return;
+//			}
+//			
+//			MiniNumber cross = checkCrossover(greet);
+//			if(cross.isEqual(MiniNumber.MINUSONE)) {
+//				MinimaLogger.log("NO CROSSOVER - Sending complete");
+//				//Get the complete sync package - deep copy.. 
+//				SyncPackage sp = getMainDB().getSyncPackage(true);
+//				MinimaClient client = (MinimaClient) zMessage.getObject("netclient");
+//				Message req      = new Message(MinimaClient.NETCLIENT_INTRO).addObject("syncpackage", sp);
+//				client.PostMessage(req);
+//				return;
+//			}
+//			
+//			//Get the tip..
+//			MiniData top   = blocks.get(greetlen-1).getHash();
+//			MiniNumber len = blocks.get(greetlen-1).getNumber().sub(cross);
+//			
+//			if(len.getAsInt() == 0) {
+//				setInitialSyncComplete();
+//				return;
+//			}else {
+//				MinimaLogger.log("CROSSOVER FOUND Requesting from "+cross+" to "+blocks.get(greetlen-1).getNumber());	
+//			}
+//			
+//			//Ask for Just the required Blocks..
+//			HashNumber hn = new HashNumber(top, len);
+//			
+//			MinimaClient client = (MinimaClient) zMessage.getObject("netclient");
+//			Message req      = new Message(MinimaClient.NETCLIENT_GREETING_REQ).addObject("hashnumber", hn);
+//			client.PostMessage(req);
+//			
 		}else if ( zMessage.isMessageType(CONSENSUS_NET_GREETING_REQUEST)) {
 			//Get the details
 			HashNumber hashnum = (HashNumber)zMessage.getObject("hashnumber");
