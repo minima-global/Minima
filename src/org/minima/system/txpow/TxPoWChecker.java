@@ -81,6 +81,47 @@ public class TxPoWChecker {
 	}
 	
 	/**
+	 * Perform Basic checks on a complete TxPoW message
+	 * @param txpow
+	 * @return if this is valid
+	 */
+	public static boolean basicTxPowChecks(TxPoW txpow) {
+		//Must be at least a block or a transaction..
+		if(!txpow.isBlock() && !txpow.isTransaction()) {
+			MinimaLogger.log("ERROR NET FAKE - not transaction not block : "+txpow.getBlockNumber()+" "+txpow);
+			return false;
+		}
+		
+		//Is the Transaction PoWerful enough..
+		if(txpow.isTransaction() && txpow.getTxnDifficulty().isMore(TxPoWMiner.BASE_TXN)) {
+			MinimaLogger.log("ERROR NET - Transaction not enough TxPOW: "+txpow.getTxnDifficulty()+" "+txpow);
+			return false;
+		}
+		
+		//Does it have a body.. SHOULD NOT HAPPEN as only complete post cascade txpow messages can be requested
+		if(!txpow.hasBody()) {
+			MinimaLogger.log("ERROR NET NO TxBODY for txpow "+txpow.getBlockNumber()+" "+txpow.getTxPowID());
+			return false;
+		}
+		
+		//Check Header and Body Agree..
+		MiniData bodyhash = Crypto.getInstance().hashObject(txpow.getTxBody());
+		if(!txpow.getTxHeader().getBodyHash().isEqual(bodyhash)) {
+			MinimaLogger.log("ERROR NET TxHeader and TxBody Mismatch! "+txpow.getBlockNumber()+" "+txpow.getTxPowID()+" "+txpow.getTxHeader().getBodyHash().to0xString()+" "+bodyhash.to0xString()); 
+			return false;
+		}
+		
+		//Check the Signatures.. just the once..
+		boolean sigsok = TxPoWChecker.checkSigs(txpow);
+		if(!sigsok) {
+			MinimaLogger.log("ERROR NET Invalid Signatures with TXPOW : "+txpow.getBlockNumber()+" "+txpow.getTxPowID()); 
+			return false;
+		}
+		
+		return true;
+	}
+	
+	/**
 	 * Check a transaction, and update the MMR. If the block is invalid - the MMR will never be used anyway.
 	 * @param zTrans
 	 * @param zWit
