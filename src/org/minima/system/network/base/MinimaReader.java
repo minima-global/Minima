@@ -20,6 +20,8 @@ import org.minima.system.Main;
 import org.minima.system.brains.ConsensusHandler;
 import org.minima.system.brains.ConsensusNet;
 import org.minima.system.network.NetworkHandler;
+import org.minima.system.txpow.TxPoWChecker;
+import org.minima.system.txpow.TxPoWMiner;
 import org.minima.utils.Crypto;
 import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;
@@ -260,11 +262,45 @@ public class MinimaReader implements Runnable {
 					
 				}else if(msgtype.isEqual(NETMESSAGE_TXPOW)) {
 					//A complete TxPOW
-					TxPoW tx = new TxPoW();
-					tx.readDataStream(inputstream);
+					TxPoW txpow = new TxPoW();
+					txpow.readDataStream(inputstream);
+					
+					//Is it even a valid TxPOW.. not enough POW ? - FIRST CHECK
+					if(!txpow.isBlock() && !txpow.isTransaction()) {
+						MinimaLogger.log("ERROR NET FAKE - not transaction not block : "+txpow.getBlockNumber()+" "+txpow);
+						return;
+					}
+					
+					//Is the Transaction PoWerful enough..
+					if(txpow.isTransaction()) {
+						if(txpow.getTxnDifficulty().isMore(TxPoWMiner.BASE_TXN)) {
+							MinimaLogger.log("ERROR NET - Transaction not enough TxPOW: "+txpow.getTxnDifficulty()+" "+txpow);
+							return;
+						}
+					}
+					
+					//Does it have a body.. SHOULD NOT HAPPEN as only complete post cascade txpow messages can be requested
+					if(!txpow.hasBody()) {
+						MinimaLogger.log("ERROR NET NO TxBODY for txpow "+txpow.getBlockNumber()+" "+txpow.getTxPowID());
+						return;
+					}
+					
+					//Check Header and Body Agree..
+					MiniData bodyhash = Crypto.getInstance().hashObject(txpow.getTxBody());
+					if(!txpow.getTxHeader().getBodyHash().isEqual(bodyhash)) {
+						MinimaLogger.log("ERROR NET TxHeader and TxBody Mismatch! "+txpow.getBlockNumber()+" "+txpow.getTxPowID()+" "+txpow.getTxHeader().getBodyHash().to0xString()+" "+bodyhash.to0xString()); 
+						return;
+					}
+					
+					//Check the Signatures.. just the once..
+					boolean sigsok = TxPoWChecker.checkSigs(txpow);
+					if(!sigsok) {
+						MinimaLogger.log("ERROR NET Invalid Signatures with TXPOW : "+txpow.getBlockNumber()+" "+txpow.getTxPowID()); 
+						return;
+					}
 					
 					//Add this ID
-					rec.addObject("txpow", tx);
+					rec.addObject("txpow", txpow);
 					
 				}else if(msgtype.isEqual(NETMESSAGE_TXPOW_REQUEST)) {
 					//Requesting a TxPOW
