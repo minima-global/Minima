@@ -196,56 +196,61 @@ public class BackupManager extends MessageProcessor {
 					level2 = new File[0];
 				}
 				
-				if(level2.length == 0) {
-					MinimaLogger.log("DELETE EMPTY FOLDER "+lv1);
-					MiniFile.deleteFileOrFolder(mRootPath, lv1);
-				}
-				
-				for(File lv2 : level2) {
-					//If found jump out
-					if(found) {break;}
+				if(level2.length > 0) {
+					for(File lv2 : level2) {
+						//If found jump out
+						if(found) {break;}
+							
+						//Check it..
+						File[] files = lv2.listFiles();
+						if(files == null) {
+							files = new File[0];	
+						}
 						
-					//Check it..
-					File[] files = lv2.listFiles();
-					if(files == null) {
-						files = new File[0];	
+						//Any Files..
+						if(files.length>0) {
+							//Sort alphabetically..
+							Arrays.sort(files, new Comparator<File>() {
+								@Override
+								public int compare(File arg0, File arg1) {
+									return arg0.getName().compareTo(arg1.getName());
+								}
+							});
+							
+							//Get the top
+							File first  = files[0];
+							String name = first.getName();
+							int index = name.indexOf(".");
+							name = name.substring(0,index);
+							
+							mFirstBlock = new MiniNumber(name);
+							MinimaLogger.log("FIRST SAVED BLOCK FOUND : "+mFirstBlock);
+							found = true;
+						}else {
+							MinimaLogger.log("DELETE EMPTY FOLDER "+lv2);
+							MiniFile.deleteFileOrFolder(mRootPath, lv2);
+						}
 					}
 					
-					//Any Files..
-					if(files.length>0) {
-						//Sort alphabetically..
-						Arrays.sort(files, new Comparator<File>() {
-							@Override
-							public int compare(File arg0, File arg1) {
-								return arg0.getName().compareTo(arg1.getName());
-							}
-						});
-						
-						//Get the top
-						File first  = files[0];
-						String name = first.getName();
-						int index = name.indexOf(".");
-						name = name.substring(0,index);
-						
-						mFirstBlock = new MiniNumber(name);
-						MinimaLogger.log("FIRST SAVED BLOCK FOUND : "+mFirstBlock);
-						found = true;
-					}else {
-						MinimaLogger.log("DELETE EMPTY FOLDER "+lv2);
-						MiniFile.deleteFileOrFolder(mRootPath, lv2);
+					//Final Check it..
+					level2 = lv1.listFiles();
+					if(level2 == null) {
+						level2 = new File[0];
 					}
+					if(level2.length==0) {
+						MinimaLogger.log("2 DELETE EMPTY FOLDER "+lv1);
+						MiniFile.deleteFileOrFolder(mRootPath, lv1);
+					}
+					
+				}else {
+					MinimaLogger.log("DELETE EMPTY FOLDER "+lv1);
+					MiniFile.deleteFileOrFolder(mRootPath, lv1);
 				}
 			}
 			
 			//Check the scan worked
-			if(!mFirstBlock.isMoreEqual(MiniNumber.ZERO)) {
-				//Something funny..
-				return;
-			}
-			
-			//Now check the Last Block..
-			if(!mLastBlock.isMore(MiniNumber.ZERO)) {
-				//No Block Yet..
+			if(!mFirstBlock.isMoreEqual(MiniNumber.ZERO) || !mLastBlock.isMore(MiniNumber.ZERO)) {
+				MinimaLogger.log("MISSING START AND END BLOCKS in BLOCKSDB");
 				return;
 			}
 			
