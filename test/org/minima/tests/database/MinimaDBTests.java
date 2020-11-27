@@ -26,6 +26,7 @@ import org.minima.system.brains.BackupManager;
 import org.minima.system.brains.ConsensusHandler;
 import org.minima.system.input.InputHandler;
 import org.minima.system.input.functions.gimme50;
+import org.minima.system.network.MinimaReader;
 import org.minima.system.txpow.TxPoWChecker;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.messages.Message;
@@ -84,7 +85,7 @@ public class MinimaDBTests {
 
         mdb.DoGenesis();
 
-        // Gimme 50
+        // CONSENSUS_GIMME50 begin
         Address addr1 = mdb.getUserDB().newSimpleAddress();
         Address addr2 = mdb.getUserDB().newSimpleAddress();
 
@@ -105,8 +106,9 @@ public class MinimaDBTests {
 
         trx.addOutput(out1);
         trx.addOutput(out2);
+        // CONSENSUS_GIMME50 end
 
-        // =====
+        // CONSENSUS_SENDTRANS begin
         TxPoW txp1 = mdb.getCurrentTxPow(trx, w, new JSONArray());
         txp1.setHeaderBodyHash();
         txp1.calculateTXPOWID();
@@ -114,28 +116,54 @@ public class MinimaDBTests {
         assertTrue(TxPoWChecker.checkSigs(txp1));
         assertTrue(TxPoWChecker.checkTransactionMMR(txp1, mdb));
 
+        mdb.addMiningTransaction(txp1.getTransaction());
+        // CONSENSUS_SENDTRANS end
+
+        // TXMINER_MINETXPOW begin
+        txp1.setHeaderBodyHash();
+        txp1.setNonce(new MiniInteger(33));
+        txp1.setTimeMilli(new MiniNumber(System.currentTimeMillis()));
+        txp1.calculateTXPOWID();
+        // TXMINER_MINETXPOW end
+
+        // CONSENSUS_FINISHED_MINE begin
+        mdb.remeoveMiningTransaction(txp1.getTransaction());
+        // CONSENSUS_FINISHED_MINE end
+
+        // CONSENSUS_NET_CHECKSIZE_TXPOW begin
+        assertTrue(txp1.getSizeinBytes() <= MinimaReader.MAX_TXPOW);
+        // CONSENSUS_NET_CHECKSIZE_TXPOW end
+
+        // CONSENSUS_NET_TXPOW begin
+        assertTrue(TxPoWChecker.checkSigs(txp1));
+        assertTrue(TxPoWChecker.checkTransactionMMR(txp1, mdb));
         mdb.addNewTxPow(txp1);
+        // CONSENSUS_NET_TXPOW end
 
-        // =====
-        //TxPoW prev_tip = mdb.getMainTree().getChainTip().getTxPow();
+        // CONSENSUS_PROCESSTXPOW begin
+        TxPoW prev_tip = mdb.getMainTree().getChainTip().getTxPow();
         mdb.processTxPOW(txp1);
-        //TxPoW new_tip = mdb.getMainTree().getChainTip().getTxPow();
-        ////assertNotEquals(prev_tip.getTxPowID(), new_tip.getTxPowID());
+        TxPoW next_tip = mdb.getMainTree().getChainTip().getTxPow();
 
-        Hashtable<String, MiniNumber> tta = mdb.getTransactionTokenAmounts(txp1);
-        mdb.getUserDB().addToHistory(txp1, tta);
+        //boolean relevant = mdb.getUserDB().isTransactionRelevant(txp1.getTransaction());
+        //if (relevant) {
+            Hashtable<String, MiniNumber> tta = mdb.getTransactionTokenAmounts(txp1);
+            mdb.getUserDB().addToHistory(txp1, tta);
+        //}
+        // CONSENSUS_PROCESSTXPOW end
 
-        assertEquals(0, mdb.getCoinDB().getComplete().size());
-        assertEquals(0, mdb.getCoinDB().getCompleteRelevant().size());
+        // Checks
+        assertEquals(0, mdb.getCoinDB().getComplete().size()); // expecting 2
+        assertEquals(0, mdb.getCoinDB().getCompleteRelevant().size()); // expecting 2
         assertEquals(1, mdb.getMainTree().getAsList().size()); // single peak
         assertEquals(0, mdb.getMempoolCoins().size());
         assertNotNull(mdb.getMainTree().getChainTip());
         assertEquals(0, mdb.getTopBlock().getAsInt());
-        assertEquals(0, mdb.getTotalSimpleSpendableCoins(new MiniData("0x00")).size()); // single peak
-        assertEquals(0, mdb.getTotalUnusedAmount().size());
-        assertEquals(0, mdb.getTransactionTokenAmounts(mdb.getTopTxPoW()).size());
-        assertEquals(2, mdb.getTxPowDB().getSize()); // single transaction
-        assertEquals(0, mdb.getUserDB().getAllRows().size());
+        assertEquals(0, mdb.getTotalSimpleSpendableCoins(new MiniData("0x00")).size()); // expecting 2 or 50
+        assertEquals(0, mdb.getTotalUnusedAmount().size()); // expecting 50
+        assertEquals(0, mdb.getTransactionTokenAmounts(mdb.getTopTxPoW()).size()); // expecting 50
+        assertEquals(2, mdb.getTxPowDB().getSize());
+        assertEquals(0, mdb.getUserDB().getAllRows().size()); // expecting 2, for two addresses created
 
     }
 }
