@@ -61,7 +61,7 @@ public class ConsensusNet extends ConsensusProcessor {
 	 */
 	boolean mHardResetAllowed = true;
 	
-	boolean mFullSyncOnInit = true;
+	boolean mFullSyncOnInit = false;
 	
 	/**
 	 * Check when you sent out a request for a TxPOW
@@ -106,6 +106,34 @@ public class ConsensusNet extends ConsensusProcessor {
 				getConsensusHandler().updateListeners(new Message(ConsensusHandler.CONSENSUS_NOTIFY_INITIALSYNC));	
 			}
 		}
+	}
+	
+	
+	public TxPoWList getCompleteBlock(TxPoW zBlock) {
+		TxPoWList block = new TxPoWList();
+		
+		//Add all the TXNS as well..
+		ArrayList<MiniData> txns = zBlock.getBlockTransactions();
+		for(MiniData txn : txns) {
+			TxPoW txpow = getMainDB().getTxPOW(txn);
+			if(txpow!=null) {
+				block.addTxPow(txpow);
+			}
+		}
+		
+		//Add this TxPoW and the Txns in it..
+		block.addTxPow(zBlock);
+				
+		return block;
+	}
+	
+	protected void PostMessage(Message zOrigMessage, Message zMessage) {
+		if(zOrigMessage.exists("netclient")) {
+			MinimaClient client = (MinimaClient) zMessage.getObject("netclient");
+			zMessage.addObject("netclient", zOrigMessage.getObject("netclient"));
+		}
+			
+		getConsensusHandler().PostMessage(zMessage);
 	}
 	
 	public void processMessage(Message zMessage) throws Exception {
@@ -176,40 +204,91 @@ public class ConsensusNet extends ConsensusProcessor {
 				return;
 			}
 			
-			//Fiund the crossover - if there is one..
+			//Find the crossover - if there is one..
 			MiniNumber cross = checkCrossover(greet);
-			
-			
-			
-			
+
+			//If there is one send complete data from then on
 			if(cross.isEqual(MiniNumber.MINUSONE)) {
-				MinimaLogger.log("NO CROSSOVER - Sending complete");
-				//Get the complete sync package - deep copy.. 
-				SyncPackage sp = getMainDB().getSyncPackage(true);
-				MinimaClient client = (MinimaClient) zMessage.getObject("netclient");
-				Message req      = new Message(MinimaClient.NETCLIENT_INTRO).addObject("syncpackage", sp);
-				client.PostMessage(req);
+				//NO CROSSOVER..!
+				//FOE NOW DO NOTHING!..
+				MinimaLogger.log("NO CROSSOVER!.. DO NOTHING..");
 				return;
 			}
 			
-			//Get the tip..
-			MiniData top   = blocks.get(greetlen-1).getHash();
-			MiniNumber len = blocks.get(greetlen-1).getNumber().sub(cross);
+			//Send the complete stack of TxPoW from cross onwards..
+			BlockTreeNode top = getMainDB().getMainTree().getChainTip();
 			
-			if(len.getAsInt() == 0) {
-				setInitialSyncComplete();
+			//How Many blocks do we need to send..
+			int blocklen = top.getBlockNumber().sub(cross).getAsInt(); 
+			if(blocklen == 0) {
+				MinimaLogger.log("ALLREADY IN SYNC.. NOTHING TO SEND!");
 				return;
-			}else {
-				MinimaLogger.log("CROSSOVER FOUND Requesting from "+cross+" to "+blocks.get(greetlen-1).getNumber());	
 			}
 			
-			//Ask for Just the required Blocks..
-			HashNumber hn = new HashNumber(top, len);
+			MinimaLogger.log("CROSSOVER FOUND!.. SENDING "+blocklen+" FULL BLOCKS");
+			int counter=0;
+			ArrayList<TxPoW> full_list = new ArrayList<>();
+			while(counter<blocklen) {
+				full_list.add(0,top.getTxPow());
+				
+				//Keep going..
+				counter++;
+				top = top.getParent();
+			}
 			
+			//Now cycle through from the bottom to the top..
 			MinimaClient client = (MinimaClient) zMessage.getObject("netclient");
-			Message req      = new Message(MinimaClient.NETCLIENT_GREETING_REQ).addObject("hashnumber", hn);
-			client.PostMessage(req);
+			for(TxPoW blk : full_list) {
+				//Get the top block..
+				TxPoWList block = getCompleteBlock(blk);
+				
+				MinimaLogger.log("Sending block "+blk.getBlockNumber()+" "+blk.getTxPowID());
+				
+				//And send it to the client
+				client.PostMessage(new Message(MinimaClient.NETCLIENT_TXPOWLIST).addObject("txpowlist", block));
+			}
+			
+//			if(cross.isEqual(MiniNumber.MINUSONE)) {
+//				MinimaLogger.log("NO CROSSOVER - Sending complete");
+//				//Get the complete sync package - deep copy.. 
+//				SyncPackage sp = getMainDB().getSyncPackage(true);
+//				MinimaClient client = (MinimaClient) zMessage.getObject("netclient");
+//				Message req      = new Message(MinimaClient.NETCLIENT_INTRO).addObject("syncpackage", sp);
+//				client.PostMessage(req);
+//				return;
+//			}
+//			
+//			//Get the tip..
+//			MiniData top   = blocks.get(greetlen-1).getHash();
+//			MiniNumber len = blocks.get(greetlen-1).getNumber().sub(cross);
+//			
+//			if(len.getAsInt() == 0) {
+//				setInitialSyncComplete();
+//				return;
+//			}else {
+//				MinimaLogger.log("CROSSOVER FOUND Requesting from "+cross+" to "+blocks.get(greetlen-1).getNumber());	
+//			}
+//			
+//			//Ask for Just the required Blocks..
+//			HashNumber hn = new HashNumber(top, len);
+//			
+//			MinimaClient client = (MinimaClient) zMessage.getObject("netclient");
+//			Message req      = new Message(MinimaClient.NETCLIENT_GREETING_REQ).addObject("hashnumber", hn);
+//			client.PostMessage(req);
 		
+			
+		}else if ( zMessage.isMessageType(CONSENSUS_NET_TXPOWLIST)) {
+			MinimaLogger.log(zMessage.toString());
+			
+			TxPoWList block = (TxPoWList)zMessage.getObject("txpowlist"); 
+			ArrayList<TxPoW> txps = block.getList();
+			
+			//Cycle through..
+			for(TxPoW txp : txps) {
+				//POST IT..
+				PostMessage(zMessage, new Message(CONSENSUS_NET_TXPOW).addObject("txpow", txp));
+			}
+			
 		}else if(zMessage.isMessageType(CONSENSUS_NET_INTRO)) {
 			//MinimaLogger.log("INTRO SYNC message received..");
 			
@@ -540,67 +619,67 @@ public class ConsensusNet extends ConsensusProcessor {
 			MinimaClient client = (MinimaClient) zMessage.getObject("netclient");
 			client.PostMessage(new Message(MinimaClient.NETCLIENT_TXPOWLIST).addObject("txpowlist", txpowlist));
 			
-		}else if ( zMessage.isMessageType(CONSENSUS_NET_TXPOWLIST)) {
-			TxPoWList txplist     = (TxPoWList)zMessage.getObject("txpowlist"); 
-			ArrayList<TxPoW> txps = txplist.getList();
-			
-			boolean firsttime = isInitialSyncComplete();
-			
-			//Now the Initial SYNC has been done you can receive TXPOW message..
-			setInitialSyncComplete(false);
-			
-			//Is this an Initial request
-			boolean initial = false;
-			
-			//Cycle through..
-			for(TxPoW txp : txps) {
-				boolean isvalid = false;
-				if(getNetworkHandler().isRequestedInitialTxPow(txp.getTxPowID().to0xString())) {
-					isvalid = true;
-					initial = true;
-				}
-				
-				//Not immediately valid - as not from the initial IBD list
-				processIBDTxPoW(txp, isvalid);
-			}
-			
-			//Do this ONLY if initial messages - since they are considered valid
-			if(initial) {
-				//And NOW sort the Tree..
-				ArrayList<BlockTreeNode> list = getMainDB().getMainTree().getAsList(true);
-				for(BlockTreeNode treenode : list) {
-					//Get the Block
-					TxPoW txpow = treenode.getTxPow();
-			
-					//Get the database txpow..
-					TxPOWDBRow trow = getMainDB().getTxPOWRow(txpow.getTxPowID());
-					if(trow != null) {
-						//What Block
-						MiniNumber block = txpow.getBlockNumber();
-						
-						//Set the details
-						trow.setMainChainBlock(true);
-						trow.setIsInBlock(true);
-						trow.setInBlockNumber(block);
-						
-						//Now the Txns..
-						ArrayList<MiniData> txpowlist = txpow.getBlockTransactions();
-						for(MiniData txid : txpowlist) {
-							trow = getMainDB().getTxPOWRow(txid);
-							if(trow!=null) {
-								//Set that it is in this block
-								trow.setMainChainBlock(false);
-								trow.setIsInBlock(true);
-								trow.setInBlockNumber(block);
-							}
-						}
-					}
-				}
-			}
-			
-			//Now Perform 1 update..
-			getMainDB().processTxPOW(null);
-			
+//		}else if ( zMessage.isMessageType(CONSENSUS_NET_TXPOWLIST)) {
+//			TxPoWList txplist     = (TxPoWList)zMessage.getObject("txpowlist"); 
+//			ArrayList<TxPoW> txps = txplist.getList();
+//			
+//			boolean firsttime = isInitialSyncComplete();
+//			
+//			//Now the Initial SYNC has been done you can receive TXPOW message..
+//			setInitialSyncComplete(false);
+//			
+//			//Is this an Initial request
+//			boolean initial = false;
+//			
+//			//Cycle through..
+//			for(TxPoW txp : txps) {
+//				boolean isvalid = false;
+//				if(getNetworkHandler().isRequestedInitialTxPow(txp.getTxPowID().to0xString())) {
+//					isvalid = true;
+//					initial = true;
+//				}
+//				
+//				//Not immediately valid - as not from the initial IBD list
+//				processIBDTxPoW(txp, isvalid);
+//			}
+//			
+//			//Do this ONLY if initial messages - since they are considered valid
+//			if(initial) {
+//				//And NOW sort the Tree..
+//				ArrayList<BlockTreeNode> list = getMainDB().getMainTree().getAsList(true);
+//				for(BlockTreeNode treenode : list) {
+//					//Get the Block
+//					TxPoW txpow = treenode.getTxPow();
+//			
+//					//Get the database txpow..
+//					TxPOWDBRow trow = getMainDB().getTxPOWRow(txpow.getTxPowID());
+//					if(trow != null) {
+//						//What Block
+//						MiniNumber block = txpow.getBlockNumber();
+//						
+//						//Set the details
+//						trow.setMainChainBlock(true);
+//						trow.setIsInBlock(true);
+//						trow.setInBlockNumber(block);
+//						
+//						//Now the Txns..
+//						ArrayList<MiniData> txpowlist = txpow.getBlockTransactions();
+//						for(MiniData txid : txpowlist) {
+//							trow = getMainDB().getTxPOWRow(txid);
+//							if(trow!=null) {
+//								//Set that it is in this block
+//								trow.setMainChainBlock(false);
+//								trow.setIsInBlock(true);
+//								trow.setInBlockNumber(block);
+//							}
+//						}
+//					}
+//				}
+//			}
+//			
+//			//Now Perform 1 update..
+//			getMainDB().processTxPOW(null);
+//			
 //			if(txplist.isCrossover()) {
 //				//Treat as normal TxPOW messages.. checking everything..
 //				for(TxPoW txp : txps) {
@@ -646,11 +725,11 @@ public class ConsensusNet extends ConsensusProcessor {
 //				}
 //			}
 			
-			//Do a complete backup..
-			if(firsttime) {
-				getConsensusHandler().PostTimerMessage(new TimerMessage(20000,ConsensusBackup.CONSENSUSBACKUP_BACKUP));
-			}
-			
+//			//Do a complete backup..
+//			if(firsttime) {
+//				getConsensusHandler().PostTimerMessage(new TimerMessage(20000,ConsensusBackup.CONSENSUSBACKUP_BACKUP));
+//			}
+//			
 		}else if ( zMessage.isMessageType(CONSENSUS_NET_TXPOWID)) {
 			//Get the ID
 			MiniData txpowid = (MiniData) zMessage.getObject("txpowid");
@@ -722,7 +801,7 @@ public class ConsensusNet extends ConsensusProcessor {
 			TxPoW txpow = (TxPoW)zMessage.getObject("txpow");
 		
 			//DEBUG logs..
-			//MinimaLogger.log("TXPOW RECEIVED "+txpow.getBlockNumber()+" "+txpow.getTxPowID());
+			MinimaLogger.log("TXPOW RECEIVED "+txpow.getBlockNumber()+" "+txpow.getTxPowID());
 			
 			//Do we have it.. now check DB - hmmm..
 			if(getMainDB().getTxPOW(txpow.getTxPowID()) != null) {
@@ -730,31 +809,31 @@ public class ConsensusNet extends ConsensusProcessor {
 				return;
 			}
 			
-			//Get the TxPowID..
-			String txpowid = txpow.getTxPowID().to0xString();
-			
-			//Was it requested anyway.. ?
-			boolean requested = false;
-			if(getNetworkHandler().isRequestedTxPow(txpowid)) {
-				requested = true;
-			}
-			
-			//Remove it from the list - just in case..
-			getNetworkHandler().removeRequestedTxPow(txpowid);
-			
-			//Check the Validity..
-			boolean txnok = TxPoWChecker.checkTransactionMMR(txpow, getMainDB());
-			if(!txnok) {
-				//Was it requested.. ?
-				if(requested) {
-					//Ok - could be from a different branch block.. 
-					MinimaLogger.log("WARNING NET Invalid TXPOW (Requested..) : "+txpow.getBlockNumber()+" "+txpow.getTxPowID()); 
-				}else {
-					//Not requested invalid transaction..
-					MinimaLogger.log("ERROR NET Invalid TXPOW (UN-Requested..) : "+txpow.getBlockNumber()+" "+txpow.getTxPowID()); 
-					return;	
-				}
-			}
+//			//Get the TxPowID..
+//			String txpowid = txpow.getTxPowID().to0xString();
+//			
+//			//Was it requested anyway.. ?
+//			boolean requested = false;
+//			if(getNetworkHandler().isRequestedTxPow(txpowid)) {
+//				requested = true;
+//			}
+//			
+//			//Remove it from the list - just in case..
+//			getNetworkHandler().removeRequestedTxPow(txpowid);
+//			
+//			//Check the Validity..
+//			boolean txnok = TxPoWChecker.checkTransactionMMR(txpow, getMainDB());
+//			if(!txnok) {
+//				//Was it requested.. ?
+//				if(requested) {
+//					//Ok - could be from a different branch block.. 
+//					MinimaLogger.log("WARNING NET Invalid TXPOW (Requested..) : "+txpow.getBlockNumber()+" "+txpow.getTxPowID()); 
+//				}else {
+//					//Not requested invalid transaction..
+//					MinimaLogger.log("ERROR NET Invalid TXPOW (UN-Requested..) : "+txpow.getBlockNumber()+" "+txpow.getTxPowID()); 
+//					return;	
+//				}
+//			}
 			
 			/**
 			 * IT PASSES!

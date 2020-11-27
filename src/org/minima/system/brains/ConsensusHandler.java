@@ -24,6 +24,7 @@ import org.minima.system.network.base.MinimaReader;
 import org.minima.system.network.minidapps.DAPPManager;
 import org.minima.system.txpow.TxPoWChecker;
 import org.minima.system.txpow.TxPoWMiner;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
@@ -296,7 +297,7 @@ public class ConsensusHandler extends MessageProcessor {
 			Message netmsg  = new Message(MinimaClient.NETCLIENT_SENDTXPOWID).addObject("txpowid", txpow.getTxPowID());
 			Message netw    = new Message(NetworkHandler.NETWORK_SENDALL).addObject("message", netmsg);
 			Main.getMainHandler().getNetworkHandler().PostMessage(netw);
-		
+			
 			
 		/**
 		 * Called every 10 Minutes to do a few tasks

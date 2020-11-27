@@ -68,7 +68,7 @@ public class GlobalParams {
 	 * and just want a block every single transaction to debug.
 	 * Automatically disables the auto mining
 	 */
-	public static final boolean MINIMA_ZERO_DIFF_BLK  = false;
+	public static final boolean MINIMA_ZERO_DIFF_BLK  = true;
 
 //	/** 
 //	 * ( Not sure if I'll use this..)

@@ -256,6 +256,8 @@ public class NetworkHandler extends MessageProcessor {
 			//Store with the rest
 			PostMessage(new Message(NETWORK_NEWCLIENT).addObject("client", client));
 		
+			InputHandler.endResponse(zMessage, true, "Attempting to connect to "+host+":"+port);
+			
 		}else if(zMessage.isMessageType(NETWORK_PING)) {
 			
 			

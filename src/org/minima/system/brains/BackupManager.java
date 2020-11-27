@@ -250,7 +250,7 @@ public class BackupManager extends MessageProcessor {
 			
 			//Check the scan worked
 			if(!mFirstBlock.isMoreEqual(MiniNumber.ZERO) || !mLastBlock.isMore(MiniNumber.ZERO)) {
-				MinimaLogger.log("MISSING START AND END BLOCKS in BLOCKSDB");
+//				MinimaLogger.log("MISSING START AND END BLOCKS in BLOCKSDB");
 				return;
 			}
 			
