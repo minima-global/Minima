@@ -1,6 +1,7 @@
 package org.minima.tests.database;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -28,6 +29,8 @@ import org.minima.system.input.InputHandler;
 import org.minima.system.input.functions.gimme50;
 import org.minima.system.network.MinimaReader;
 import org.minima.system.txpow.TxPoWChecker;
+import org.minima.utils.Crypto;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.messages.Message;
 
@@ -121,8 +124,16 @@ public class MinimaDBTests {
 
         // TXMINER_MINETXPOW begin
         txp1.setHeaderBodyHash();
-        txp1.setNonce(new MiniInteger(33));
-        txp1.setTimeMilli(new MiniNumber(System.currentTimeMillis()));
+        MiniInteger nonce = new MiniInteger(0);
+        while (true) {
+            txp1.setNonce(nonce);
+            txp1.setTimeMilli(new MiniNumber(System.currentTimeMillis()));
+            MiniData hash = Crypto.getInstance().hashObject(txp1.getTxHeader());
+            if (hash.isLess(txp1.getTxnDifficulty())) {
+                break;
+            }
+            nonce = nonce.increment();
+        }
         txp1.calculateTXPOWID();
         // TXMINER_MINETXPOW end
 
@@ -147,23 +158,67 @@ public class MinimaDBTests {
 
         //boolean relevant = mdb.getUserDB().isTransactionRelevant(txp1.getTransaction());
         //if (relevant) {
-            Hashtable<String, MiniNumber> tta = mdb.getTransactionTokenAmounts(txp1);
-            mdb.getUserDB().addToHistory(txp1, tta);
+        Hashtable<String, MiniNumber> tta = mdb.getTransactionTokenAmounts(txp1);
+        mdb.getUserDB().addToHistory(txp1, tta);
         //}
         // CONSENSUS_PROCESSTXPOW end
 
         // Checks
-        assertEquals(0, mdb.getCoinDB().getComplete().size()); // expecting 2
-        assertEquals(0, mdb.getCoinDB().getCompleteRelevant().size()); // expecting 2
-        assertEquals(1, mdb.getMainTree().getAsList().size()); // single peak
+        assertEquals(3, mdb.getCoinDB().getComplete().size());
+        assertEquals(2, mdb.getCoinDB().getCompleteRelevant().size());
+        assertEquals(2, mdb.getMainTree().getAsList().size());
         assertEquals(0, mdb.getMempoolCoins().size());
         assertNotNull(mdb.getMainTree().getChainTip());
-        assertEquals(0, mdb.getTopBlock().getAsInt());
-        assertEquals(0, mdb.getTotalSimpleSpendableCoins(new MiniData("0x00")).size()); // expecting 2 or 50
-        assertEquals(0, mdb.getTotalUnusedAmount().size()); // expecting 50
-        assertEquals(0, mdb.getTransactionTokenAmounts(mdb.getTopTxPoW()).size()); // expecting 50
+        assertEquals(1, mdb.getTopBlock().getAsInt());
+        assertEquals(0, mdb.getTotalSimpleSpendableCoins(Coin.MINIMA_TOKENID).size());
+        assertEquals(0, mdb.getTotalUnusedAmount().size());
+        Hashtable<String, MiniNumber> amounts = mdb.getTransactionTokenAmounts(mdb.getTopTxPoW());
+        assertEquals(1, amounts.size());
+        assertEquals(50, amounts.get(Coin.MINIMA_TOKENID.to0xString()).getAsInt());
         assertEquals(2, mdb.getTxPowDB().getSize());
-        assertEquals(0, mdb.getUserDB().getAllRows().size()); // expecting 2, for two addresses created
+        assertEquals(0, mdb.getUserDB().getAllRows().size());
 
+        TxPoW blocktx = mineblock(mdb);
+        mdb.addNewTxPow(blocktx);
+        mdb.processTxPOW(blocktx);
+        blocktx = mineblock(mdb);
+        mdb.addNewTxPow(blocktx);
+        mdb.processTxPOW(blocktx);
+        blocktx = mineblock(mdb);
+        mdb.addNewTxPow(blocktx);
+        mdb.processTxPOW(blocktx);
+
+        assertEquals(3, mdb.getCoinDB().getComplete().size());
+        assertEquals(2, mdb.getCoinDB().getCompleteRelevant().size());
+        assertEquals(5, mdb.getMainTree().getAsList().size());
+        assertEquals(0, mdb.getMempoolCoins().size());
+        assertNotNull(mdb.getMainTree().getChainTip());
+        assertEquals(4, mdb.getTopBlock().getAsInt());
+        ArrayList<Coin> coins = mdb.getTotalSimpleSpendableCoins(Coin.MINIMA_TOKENID);
+        assertEquals(2, coins.size());
+        assertEquals(25, coins.get(0).getAmount().getAsInt());
+        assertEquals(Coin.MINIMA_TOKENID, coins.get(0).getTokenID());
+        assertEquals(25, coins.get(1).getAmount().getAsInt());
+        assertEquals(Coin.MINIMA_TOKENID, coins.get(1).getTokenID());
+        assertEquals(0, mdb.getTotalUnusedAmount().size());
+        assertEquals(5, mdb.getTxPowDB().getSize());
+        assertEquals(0, mdb.getUserDB().getAllRows().size());
+    }
+
+    private TxPoW mineblock(MinimaDB mdb) {
+        TxPoW txpow = mdb.getCurrentTxPow(new Transaction(), new Witness(), new JSONArray());
+        txpow.setHeaderBodyHash();
+        MiniInteger nonce = new MiniInteger(0);
+        while (true) {
+            txpow.setNonce(nonce);
+            txpow.setTimeMilli(new MiniNumber(System.currentTimeMillis()));
+            MiniData hash = Crypto.getInstance().hashObject(txpow.getTxHeader());
+            if (hash.isLess(txpow.getTxnDifficulty())) {
+                break;
+            }
+            nonce = nonce.increment();
+        }
+        txpow.calculateTXPOWID();
+        return txpow;
     }
 }
