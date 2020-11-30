@@ -20,7 +20,7 @@ public class TxPoWList implements Streamable {
 	public TxPoWList() {}
 	
 	public void addTxPow(TxPoW zTxPoW) {
-		mTxPowList.add(0,zTxPoW);
+		mTxPowList.add(zTxPoW);
 	}
 
 	public ArrayList<TxPoW> getList(){

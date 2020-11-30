@@ -1,6 +1,7 @@
 package org.minima.system.brains;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Comparator;
 
@@ -51,6 +52,8 @@ public class BackupManager extends MessageProcessor {
 	
 	MiniNumber mLastBlock  = MiniNumber.ZERO;
 	MiniNumber mFirstBlock = MiniNumber.MINUSONE;
+	
+	MiniNumber MAX_BLOCKS  = MiniNumber.THIRTYTWO;
 	
 	public BackupManager(String zConfFolder) {
 		super("BACKUP");
@@ -224,7 +227,7 @@ public class BackupManager extends MessageProcessor {
 							name = name.substring(0,index);
 							
 							mFirstBlock = new MiniNumber(name);
-							MinimaLogger.log("FIRST SAVED BLOCK FOUND : "+mFirstBlock);
+//							MinimaLogger.log("FIRST SAVED BLOCK FOUND : "+mFirstBlock);
 							found = true;
 						}else {
 							MinimaLogger.log("DELETE EMPTY FOLDER "+lv2);
@@ -250,21 +253,20 @@ public class BackupManager extends MessageProcessor {
 			
 			//Check the scan worked
 			if(!mFirstBlock.isMoreEqual(MiniNumber.ZERO) || !mLastBlock.isMore(MiniNumber.ZERO)) {
-//				MinimaLogger.log("MISSING START AND END BLOCKS in BLOCKSDB");
 				return;
 			}
 			
 			//Now keep deleting until 
-			MinimaLogger.log("Blocks "+mFirstBlock+" to "+mLastBlock);
+//			MinimaLogger.log("Blocks "+mFirstBlock+" to "+mLastBlock);
 			
 			//Only keep 10 blocks MAX
 			MiniNumber total = mLastBlock.sub(mFirstBlock);
-			if(total.isLessEqual(MiniNumber.TEN)) {
+			if(total.isLessEqual(MAX_BLOCKS)) {
 				return;
 			}
 			
 			//How many to delete
-			int delete = total.sub(MiniNumber.TEN).getAsInt(); 
+			int delete = total.sub(MAX_BLOCKS).getAsInt(); 
 			for(int i=0;i<delete;i++) {
 				//Get the file..
 				File ff = getBlockFile(mFirstBlock);

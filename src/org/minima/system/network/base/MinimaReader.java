@@ -6,6 +6,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.SocketException;
+import java.util.ArrayList;
 
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniByte;
@@ -194,9 +195,6 @@ public class MinimaReader implements Runnable {
 						baos.write(datarr,0,read);
 						tot+=read;
 						
-//						baos.write(mInput.read());
-//						tot++;
-						
 						//What Percent Done..
 						long newnotify = (tot*100)/datalen;
 						if(newnotify != lastnotify) {
@@ -206,22 +204,6 @@ public class MinimaReader implements Runnable {
 						}
 					}
 					baos.flush();
-					
-//					ByteArrayOutputStream baos = new ByteArrayOutputStream(datalen);
-//					long tot        = 0;
-//					long lastnotify = -1;
-//					while( tot < datalen ) {
-//						baos.write(mInput.read());
-//						tot++;
-//						//What Percent Done..
-//						long newnotify = (tot*100)/datalen;
-//						if(newnotify != lastnotify) {
-//							lastnotify = newnotify;
-//							notifyListeners("IBD download : "+lastnotify+"% of "+ibdsize);
-////							MinimaLogger.log("IBD download : "+lastnotify+"% of "+ibdsize+" tot*100:"+(tot*100)+" datalen:"+datalen);
-//						}
-//					}
-//					baos.flush();
 					
 					//Create the MiniData..
 					fullmsg = new MiniData(baos.toByteArray());
@@ -243,9 +225,6 @@ public class MinimaReader implements Runnable {
 				
 				//What kind of message is it..
 				if(msgtype.isEqual(NETMESSAGE_INTRO)) {
-					//tell us how big the sync was..
-//					MinimaLogger.log("Initial Sync Message : "+MiniFormat.formatSize(len));
-					
 					//Read in the SyncPackage
 					SyncPackage sp = new SyncPackage();
 					sp.readDataStream(inputstream);
@@ -301,8 +280,18 @@ public class MinimaReader implements Runnable {
 					//tell us how big the sync was..
 					MinimaLogger.log("TxPoW List Message : "+MiniFormat.formatSize(len));
 					
+					//Get the List
 					TxPoWList txplist = new TxPoWList();
 					txplist.readDataStream(inputstream);
+					
+					//Check them all..
+					ArrayList<TxPoW> txps = txplist.getList();
+					for(TxPoW txp : txps) {
+						if(!TxPoWChecker.basicTxPowChecks(txp)) {
+							//Hmm. something wrong..
+							throw new ProtocolException("INVALID TxPoW received in TxPoW List : closing connection..");
+						}
+					}
 					
 					//Add this ID
 					rec.addObject("txpowlist", txplist);
