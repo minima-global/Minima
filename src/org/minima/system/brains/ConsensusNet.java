@@ -363,7 +363,6 @@ public class ConsensusNet extends ConsensusProcessor {
 				PostNetClientMessage(zMessage, new Message(CONSENSUS_NET_TXPOW).addObject("txpow", txp));
 			}
 			
-		
 		/**
 		 * You have A CHAIN and this is your resync message from way back
 		 */
@@ -389,6 +388,12 @@ public class ConsensusNet extends ConsensusProcessor {
 					continue;
 				}
 				
+				if(mmr==null) {
+					MinimaLogger.log("NULL MMR ON RESYNC BLOCK"+txpow.getBlockNumber());
+					continue;
+				}
+
+				
 //				//Store it.. IF IT HAS A BODY.. and add to the TXPOWDB
 //				if(txpow.hasBody()) {
 //					backup.backupTxpow(txpow);
@@ -397,23 +402,27 @@ public class ConsensusNet extends ConsensusProcessor {
 //					//..
 //				}
 				
-				
 				//Get the Parent node..
 				BlockTreeNode parent = getMainDB().getMainTree().findNode(txpow.getParentID(), true);
 				
 				//DO we have it..
 				if(parent == null) {
-					MinimaLogger.log("NULL PARENT.. "+txpow.getBlockNumber());
-					continue;
+					MinimaLogger.log("ERROR : NULL PARENT IN RESYNC.. .. "+txpow.getBlockNumber());
+					return;
 				}else {
 					MinimaLogger.log("PARENT FOUND.. "+txpow.getBlockNumber());
 				}
 				
 				//Now create a new Node.. 
 				BlockTreeNode node = new BlockTreeNode(txpow);
-				node.setCascade(true);
+				node.setCascade(false);
 				node.setState(BlockTreeNode.BLOCKSTATE_VALID);
+				
+				//Set the MMR
 				node.setMMRset(mmr);
+				
+				//Set the MMR parent..
+				mmr.setParent(parent.getMMRSet());
 				
 				//Add to the Parent..
 				parent.addChild(node);
