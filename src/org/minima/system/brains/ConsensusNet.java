@@ -374,7 +374,7 @@ public class ConsensusNet extends ConsensusProcessor {
 			MiniNumber casc = getMainDB().getMainTree().getCascadeNode().getBlockNumber();
 			MiniNumber tip  = getMainDB().getMainTree().getChainTip().getBlockNumber();
 			
-			MinimaLogger.log("RESYNC MESSAGE RECEIVED! casc:"+casc+" tip:"+tip);
+			MinimaLogger.log("RESYNC MESSAGE RECEIVED! mycasc:"+casc+" mytip:"+tip);
 			
 			//Drill down 
 			ArrayList<SyncPacket> packets = sp.getAllNodes();
@@ -394,13 +394,14 @@ public class ConsensusNet extends ConsensusProcessor {
 				}
 
 				
-//				//Store it.. IF IT HAS A BODY.. and add to the TXPOWDB
-//				if(txpow.hasBody()) {
-//					backup.backupTxpow(txpow);
-//				
-//					//Add it to the DB..
-//					//..
-//				}
+				//Store it.. IF IT HAS A BODY.. and add to the TXPOWDB
+				if(txpow.hasBody()) {
+					//Store it..
+					backup.backupTxpow(txpow);
+				
+					//Add it to the DB..
+					getMainDB().getTxPowDB().addTxPOWDBRow(txpow);
+				}
 				
 				//Get the Parent node..
 				BlockTreeNode parent = getMainDB().getMainTree().findNode(txpow.getParentID(), true);
@@ -409,8 +410,6 @@ public class ConsensusNet extends ConsensusProcessor {
 				if(parent == null) {
 					MinimaLogger.log("ERROR : NULL PARENT IN RESYNC.. .. "+txpow.getBlockNumber());
 					return;
-				}else {
-					MinimaLogger.log("PARENT FOUND.. "+txpow.getBlockNumber());
 				}
 				
 				//Now create a new Node.. 
