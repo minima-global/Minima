@@ -1,13 +1,10 @@
 package org.minima.system.brains;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Hashtable;
 
 import org.minima.GlobalParams;
 import org.minima.database.MinimaDB;
 import org.minima.database.mmr.MMRSet;
-import org.minima.database.txpowdb.TxPOWDBRow;
 import org.minima.database.txpowtree.BlockTree;
 import org.minima.database.txpowtree.BlockTreeNode;
 import org.minima.objects.TxPoW;
@@ -17,18 +14,13 @@ import org.minima.objects.greet.Greeting;
 import org.minima.objects.greet.HashNumber;
 import org.minima.objects.greet.SyncPackage;
 import org.minima.objects.greet.SyncPacket;
-import org.minima.objects.greet.TxPoWIDList;
 import org.minima.objects.greet.TxPoWList;
 import org.minima.objects.proofs.TokenProof;
 import org.minima.system.Main;
 import org.minima.system.network.base.MinimaClient;
 import org.minima.system.network.base.MinimaReader;
-import org.minima.system.txpow.TxPoWChecker;
-import org.minima.system.txpow.TxPoWMiner;
-import org.minima.utils.Crypto;
 import org.minima.utils.DataTimer;
 import org.minima.utils.MinimaLogger;
-import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.TimerMessage;
 
@@ -42,7 +34,10 @@ public class ConsensusNet extends ConsensusProcessor {
 	public static final String CONSENSUS_NET_CHECKSIZE_TXPOW 	= CONSENSUS_PREFIX+"NET_MESSAGE_MYTXPOW";
 	
 	public static final String CONSENSUS_NET_INITIALISE 		= CONSENSUS_PREFIX+"NET_INITIALISE";
+	
 	public static final String CONSENSUS_NET_INTRO 				= CONSENSUS_PREFIX+"NET_MESSAGE_"+MinimaReader.NETMESSAGE_INTRO.getValue();
+	public static final String CONSENSUS_NET_RESYNC 			= CONSENSUS_PREFIX+"RESYNC";
+	
 	public static final String CONSENSUS_NET_TXPOWID 			= CONSENSUS_PREFIX+"NET_MESSAGE_"+MinimaReader.NETMESSAGE_TXPOWID.getValue();
 	public static final String CONSENSUS_NET_TXPOWREQUEST		= CONSENSUS_PREFIX+"NET_MESSAGE_"+MinimaReader.NETMESSAGE_TXPOW_REQUEST.getValue();
 	public static final String CONSENSUS_NET_TXPOW 				= CONSENSUS_PREFIX+"NET_MESSAGE_"+MinimaReader.NETMESSAGE_TXPOW.getValue();
@@ -292,38 +287,69 @@ public class ConsensusNet extends ConsensusProcessor {
 			 * User connected late - send him the min Backups tat allow sync but not full check
 			 */
 		}else if(zMessage.isMessageType(CONSENSUS_NET_GREET_BACKSYNC)) {
+			//Get the greeting list
 			ArrayList<HashNumber> blocks = (ArrayList<HashNumber>) zMessage.getObject("greetlist");
 			
-			//NO CROSSOVER..!
-			MinimaLogger.log("TOO FAR !!");
-			if(true) {
+			//Check if we are below..
+			MiniNumber mytop = getMainDB().getMainTree().getChainTip().getBlockNumber();
+			if(blocks.get(0).getNumber().isMore(mytop)) {
+				MinimaLogger.log("WE ARE BEHIND THEM - NO SYNC.. ");
 				return;
 			}
+			
+			//Check if the cascade is an old block of ours..
+			int len  			  = blocks.size();
+			HashNumber startblock = blocks.get(0);
+			if(len>6) {
+				startblock = blocks.get(len-5);
+			}
+			MiniNumber lowestnum  = startblock.getNumber();
 			
 			//Get the Backup manager where OLD blocks are stored..
 			BackupManager backup = Main.getMainHandler().getBackupManager();
 			
-			//Check if the cascade is an old block of ours..
-			HashNumber startblock = blocks.get(0);
-			MiniNumber lowestnum  = startblock.getNumber();
-			MiniData   lowesthash = startblock.getHash();
-			
-			MinimaLogger.log("Checking for block "+lowestnum);
-			
-			SyncPacket casc = SyncPacket.loadBlock(backup.getBlockFile(lowestnum));
-			if(casc == null) {
-				MinimaLogger.log("HISTORY TOO FAR! - NOTHING TO DO.. "+lowestnum);
+			//Are they within range
+			if(backup.getOldestBackupBlock().isMore(lowestnum)) {
+				MinimaLogger.log("TOO FAR BACK TO SYNC THEM.. "+backup.getOldestBackupBlock()+" / "+lowestnum);
 				return;
 			}
 			
-			if(!casc.getTxPOW().getTxPowID().isEqual(startblock.getHash())) {
-				MinimaLogger.log("DIFFERENT HISTORY! - NOTHING TO DO..");
-				return;
+			//Get the Client..
+			MinimaClient client = (MinimaClient) zMessage.getObject("netclient");
+			
+			//Otherwise lets load blocks and send them..
+			MiniNumber mycasc = getMainDB().getMainTree().getCascadeNode().getBlockNumber();
+			int blockstoload = mycasc.sub(lowestnum).getAsInt();
+			MinimaLogger.log("SENDING RESYNC BLOCKS "+blockstoload);
+			
+			//Create a non-intro syncpackage
+			SyncPackage sp = new SyncPackage();
+			sp.setCascadeNode(MiniNumber.MINUSONE);
+			
+			MiniNumber currentblock = lowestnum;
+			for(int i=0;i<blockstoload;i++) {
+				MinimaLogger.log("SENDING OLD BACKUP BLOCK "+currentblock);
+				
+				//Load it.. 
+				SyncPacket spack = SyncPacket.loadBlock(backup.getBlockFile(currentblock));
+				
+				//Add it..
+				sp.getAllNodes().add(spack);
+				
+				//increment
+				currentblock = currentblock.increment();
 			}
 			
-			//NO CROSSOVER..!
-			MinimaLogger.log("CROSSOVER BLOCK FOUND!.. SEND OLD BLOCKS");
+			//And send it..
+			client.PostMessage(new Message(MinimaClient.NETCLIENT_INTRO).addObject("syncpackage", sp));
 			
+			//And now send the regular TxPowLists..
+			MinimaLogger.log("AND NOW SEND THE RAMSYNCUP BLOCKS ONLY");
+			
+			//And the rest.. ignoring the cascade nodes..
+			sp   = getMainDB().getSyncPackage(true);
+			sp.setCascadeNode(MiniNumber.MINUSONE);
+			client.PostMessage(new Message(MinimaClient.NETCLIENT_INTRO).addObject("syncpackage", sp));
 			
 		/**
 		 * You have received multiple TxPoW messages 	
@@ -337,18 +363,81 @@ public class ConsensusNet extends ConsensusProcessor {
 				PostNetClientMessage(zMessage, new Message(CONSENSUS_NET_TXPOW).addObject("txpow", txp));
 			}
 			
+		
+		/**
+		 * You have A CHAIN and this is your resync message from way back
+		 */
+		}else if(zMessage.isMessageType(CONSENSUS_NET_RESYNC)) {
+			//Get the Sync Package..
+			SyncPackage sp = (SyncPackage) zMessage.getObject("sync");
+			BackupManager backup = Main.getMainHandler().getBackupManager();
+			MinimaLogger.log("RESYNC MESSAGE RECEIVED! ");
+			
+			//Drill down 
+			ArrayList<SyncPacket> packets = sp.getAllNodes();
+//			float totpacks = packets.size();
+//			float counter  = 0;
+//			BlockTreeNode parent = null;
+			for(SyncPacket spack : packets) {
+				TxPoW txpow = spack.getTxPOW();
+				
+				//Store it.. IF IT HAS A BODY..
+				if(txpow.hasBody()) {
+					backup.backupTxpow(txpow);
+				
+					//Add it to the DB..
+					//..
+				}
+				
+				//Get the MMR.. ALWAYS here for a resync message
+				MMRSet mmr = spack.getMMRSet();
+				
+				//Add it to the DB..
+//				if(parent == null) {
+				BlockTreeNode parent = getMainDB().getMainTree().findNode(txpow.getParentID());
+//				}
+				
+				if(parent == null) {
+					MinimaLogger.log("NULL PARENT.. "+txpow.getBlockNumber());
+					continue;
+				}else {
+					MinimaLogger.log("PARENT FOUND.. "+txpow.getBlockNumber());
+				}
+				
+				//Now create a new Node.. 
+				BlockTreeNode node = new BlockTreeNode(txpow);
+				node.setCascade(true);
+				node.setState(BlockTreeNode.BLOCKSTATE_VALID);
+				node.setMMRset(mmr);
+				
+				//Add to the Parent..
+				parent.addChild(node);
+				
+				//Scan for coins..
+				getMainDB().scanMMRSetForCoins(mmr);
+			}
+			
+			//And finally..
+			getMainDB().hardResetChain();
+			
 		/**
 		 * You have NO CHAIN and this is your initial setup message
 		 */
 		}else if(zMessage.isMessageType(CONSENSUS_NET_INTRO)) {
+			//Get the Sync Package..
+			SyncPackage sp = (SyncPackage) zMessage.getObject("sync");
+			
+			//Is this a resync message..
+			if(sp.getCascadeNode().isEqual(MiniNumber.MINUSONE)) {
+				PostNetClientMessage(zMessage, new Message(CONSENSUS_NET_RESYNC).addObject("sync", sp));
+				return;
+			}
+			
 			//Only do this if you have no chain..
 			if(getMainDB().getMainTree().getAsList().size()!=0) {
 				MinimaLogger.log("ERROR : INTRO SYNC message received.. even though I HAVE a chain..");
 				return;
 			}
-				
-			//Get the Sync Package..
-			SyncPackage sp = (SyncPackage) zMessage.getObject("sync");
 			
 			//We'll be storing the received txpow messages
 			BackupManager backup = Main.getMainHandler().getBackupManager();

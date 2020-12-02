@@ -53,7 +53,7 @@ public class BackupManager extends MessageProcessor {
 	MiniNumber mLastBlock  = MiniNumber.ZERO;
 	MiniNumber mFirstBlock = MiniNumber.MINUSONE;
 	
-	MiniNumber MAX_BLOCKS  = MiniNumber.THIRTYTWO;
+	MiniNumber MAX_BLOCKS  = MiniNumber.TEN;
 	
 	public BackupManager(String zConfFolder) {
 		super("BACKUP");
@@ -121,8 +121,8 @@ public class BackupManager extends MessageProcessor {
 		PostMessage(backup);
 	}
 
-	public MiniNumber getLastBackupBlack() {
-		return mLastBlock;
+	public MiniNumber getOldestBackupBlock() {
+		return mFirstBlock;
 	}
 	
 	public void deleteTxpow(TxPoW zTxPOW) {
@@ -188,9 +188,7 @@ public class BackupManager extends MessageProcessor {
 			
 			//First scan the main blocks folder and start parsing..
 			File[] level1 = mBlocksDB.listFiles();
-			if(level1 == null) {
-				level1 = new File[0];
-			}
+			if(level1 == null) {level1 = new File[0];}
 			
 			//Find the lowest block we have..
 			for(File lv1 : level1) {
@@ -199,9 +197,7 @@ public class BackupManager extends MessageProcessor {
 				
 				//Scan lower levels
 				File[] level2 = lv1.listFiles();
-				if(level2 == null) {
-					level2 = new File[0];
-				}
+				if(level2 == null) {level2 = new File[0];}
 				
 				if(level2.length > 0) {
 					for(File lv2 : level2) {
@@ -210,9 +206,7 @@ public class BackupManager extends MessageProcessor {
 							
 						//Check it..
 						File[] files = lv2.listFiles();
-						if(files == null) {
-							files = new File[0];	
-						}
+						if(files == null) {files = new File[0];}
 						
 						//Any Files..
 						if(files.length>0) {
@@ -227,26 +221,15 @@ public class BackupManager extends MessageProcessor {
 							//Get the top
 							File first  = files[0];
 							String name = first.getName();
-							int index = name.indexOf(".");
-							name = name.substring(0,index);
+							int index   = name.indexOf(".");
+							name        = name.substring(0,index);
 							
 							mFirstBlock = new MiniNumber(name);
-//							MinimaLogger.log("FIRST SAVED BLOCK FOUND : "+mFirstBlock);
 							found = true;
 						}else {
 							MinimaLogger.log("DELETE EMPTY FOLDER "+lv2);
 							MiniFile.deleteFileOrFolder(mRootPath, lv2);
 						}
-					}
-					
-					//Final Check it..
-					level2 = lv1.listFiles();
-					if(level2 == null) {
-						level2 = new File[0];
-					}
-					if(level2.length==0) {
-						MinimaLogger.log("2 DELETE EMPTY FOLDER "+lv1);
-						MiniFile.deleteFileOrFolder(mRootPath, lv1);
 					}
 					
 				}else {
@@ -260,10 +243,7 @@ public class BackupManager extends MessageProcessor {
 				return;
 			}
 			
-			//Now keep deleting until 
-//			MinimaLogger.log("Blocks "+mFirstBlock+" to "+mLastBlock);
-			
-			//Only keep 10 blocks MAX
+			//Only keep MAX blocks
 			MiniNumber total = mLastBlock.sub(mFirstBlock);
 			if(total.isLessEqual(MAX_BLOCKS)) {
 				return;
