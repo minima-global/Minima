@@ -371,32 +371,37 @@ public class ConsensusNet extends ConsensusProcessor {
 			//Get the Sync Package..
 			SyncPackage sp = (SyncPackage) zMessage.getObject("sync");
 			BackupManager backup = Main.getMainHandler().getBackupManager();
-			MinimaLogger.log("RESYNC MESSAGE RECEIVED! ");
+			
+			MiniNumber casc = getMainDB().getMainTree().getCascadeNode().getBlockNumber();
+			MiniNumber tip  = getMainDB().getMainTree().getChainTip().getBlockNumber();
+			
+			MinimaLogger.log("RESYNC MESSAGE RECEIVED! casc:"+casc+" tip:"+tip);
 			
 			//Drill down 
 			ArrayList<SyncPacket> packets = sp.getAllNodes();
-//			float totpacks = packets.size();
-//			float counter  = 0;
-//			BlockTreeNode parent = null;
 			for(SyncPacket spack : packets) {
 				TxPoW txpow = spack.getTxPOW();
+				MMRSet mmr  = spack.getMMRSet();
 				
-				//Store it.. IF IT HAS A BODY..
-				if(txpow.hasBody()) {
-					backup.backupTxpow(txpow);
-				
-					//Add it to the DB..
-					//..
+				//Check is above MY Cascade..
+				if(!txpow.getBlockNumber().isMore(casc)) {
+					MinimaLogger.log("SKIP UNEEDED BLOCK PAST CASCADE "+txpow.getBlockNumber());
+					continue;
 				}
 				
-				//Get the MMR.. ALWAYS here for a resync message
-				MMRSet mmr = spack.getMMRSet();
-				
-				//Add it to the DB..
-//				if(parent == null) {
-				BlockTreeNode parent = getMainDB().getMainTree().findNode(txpow.getParentID());
+//				//Store it.. IF IT HAS A BODY.. and add to the TXPOWDB
+//				if(txpow.hasBody()) {
+//					backup.backupTxpow(txpow);
+//				
+//					//Add it to the DB..
+//					//..
 //				}
 				
+				
+				//Get the Parent node..
+				BlockTreeNode parent = getMainDB().getMainTree().findNode(txpow.getParentID(), true);
+				
+				//DO we have it..
 				if(parent == null) {
 					MinimaLogger.log("NULL PARENT.. "+txpow.getBlockNumber());
 					continue;
