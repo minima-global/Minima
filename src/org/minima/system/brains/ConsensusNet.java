@@ -37,22 +37,27 @@ public class ConsensusNet extends ConsensusProcessor {
 	/**
 	 * Used for the custom Transactions
 	 */
-	public static final String CONSENSUS_PREFIX 			= "CONSENSUSNET_";
+	public static final String CONSENSUS_PREFIX 				= "CONSENSUSNET_";
 	
-	public static final String CONSENSUS_NET_CHECKSIZE_TXPOW 	    = CONSENSUS_PREFIX+"NET_MESSAGE_MYTXPOW";
+	public static final String CONSENSUS_NET_CHECKSIZE_TXPOW 	= CONSENSUS_PREFIX+"NET_MESSAGE_MYTXPOW";
 	
-	public static final String CONSENSUS_NET_INITIALISE 	= CONSENSUS_PREFIX+"NET_INITIALISE";
-	public static final String CONSENSUS_NET_INTRO 			= CONSENSUS_PREFIX+"NET_MESSAGE_"+MinimaReader.NETMESSAGE_INTRO.getValue();
-	public static final String CONSENSUS_NET_TXPOWID 		= CONSENSUS_PREFIX+"NET_MESSAGE_"+MinimaReader.NETMESSAGE_TXPOWID.getValue();
-	public static final String CONSENSUS_NET_TXPOWREQUEST	= CONSENSUS_PREFIX+"NET_MESSAGE_"+MinimaReader.NETMESSAGE_TXPOW_REQUEST.getValue();
-	public static final String CONSENSUS_NET_TXPOW 			= CONSENSUS_PREFIX+"NET_MESSAGE_"+MinimaReader.NETMESSAGE_TXPOW.getValue();
+	public static final String CONSENSUS_NET_INITIALISE 		= CONSENSUS_PREFIX+"NET_INITIALISE";
+	public static final String CONSENSUS_NET_INTRO 				= CONSENSUS_PREFIX+"NET_MESSAGE_"+MinimaReader.NETMESSAGE_INTRO.getValue();
+	public static final String CONSENSUS_NET_TXPOWID 			= CONSENSUS_PREFIX+"NET_MESSAGE_"+MinimaReader.NETMESSAGE_TXPOWID.getValue();
+	public static final String CONSENSUS_NET_TXPOWREQUEST		= CONSENSUS_PREFIX+"NET_MESSAGE_"+MinimaReader.NETMESSAGE_TXPOW_REQUEST.getValue();
+	public static final String CONSENSUS_NET_TXPOW 				= CONSENSUS_PREFIX+"NET_MESSAGE_"+MinimaReader.NETMESSAGE_TXPOW.getValue();
 	
 	public static final String CONSENSUS_NET_GREETING 		    = CONSENSUS_PREFIX+"NET_MESSAGE_"+MinimaReader.NETMESSAGE_GREETING.getValue();
+	
+	public static final String CONSENSUS_NET_GREET_FULLINTRO	= CONSENSUS_PREFIX+"GREET_FULLINTRO";
+	public static final String CONSENSUS_NET_GREET_RAMSYNCUP	= CONSENSUS_PREFIX+"GREET_RAMSYNCUP";
+	public static final String CONSENSUS_NET_GREET_BACKSYNC		= CONSENSUS_PREFIX+"GREET_BACKSYNC";
+	
 	public static final String CONSENSUS_NET_GREETING_REQUEST	= CONSENSUS_PREFIX+"NET_MESSAGE_"+MinimaReader.NETMESSAGE_GREETING_REQUEST.getValue();
 	public static final String CONSENSUS_NET_TXPOWLIST 			= CONSENSUS_PREFIX+"NET_MESSAGE_"+MinimaReader.NETMESSAGE_TXPOWLIST.getValue();
 	public static final String CONSENSUS_NET_TXPOWIDLIST 	    = CONSENSUS_PREFIX+"NET_MESSAGE_"+MinimaReader.NETMESSAGE_TXPOWIDLIST.getValue();
 	
-	public static final String CONSENSUS_NET_PING 			= CONSENSUS_PREFIX+"NET_MESSAGE_"+MinimaReader.NETMESSAGE_PING.getValue();
+	public static final String CONSENSUS_NET_PING 				= CONSENSUS_PREFIX+"NET_MESSAGE_"+MinimaReader.NETMESSAGE_PING.getValue();
 	
 	private static int MAX_TXPOW_LIST_SIZE = 200;
 	
@@ -160,7 +165,17 @@ public class ConsensusNet extends ConsensusProcessor {
 			//Get the greeting
 			Greeting greet = (Greeting)zMessage.getObject("greeting");
 			
+			//Get the Client..
+			MinimaClient client = (MinimaClient) zMessage.getObject("netclient");
+			
 			//Check Versions..
+//			if(!greet.getVersion().startsWith("0.97") {
+//				MinimaLogger.log("ERROR! INCOMPATIBLE VERSION ON GREETING "+greet.getVersion());
+//				
+//				//Shut it down..
+//				//..
+//			}
+			
 			if(!greet.getVersion().equals(GlobalParams.MINIMA_VERSION)) {
 				MinimaLogger.log("DIFFERENT VERSION ON GREETING "+greet.getVersion());
 			}
@@ -177,40 +192,16 @@ public class ConsensusNet extends ConsensusProcessor {
 			
 			//This User has NO CHAIN - send him our complete version
 			if(greetlen == 0) {
-				MinimaLogger.log("FIRST TIME SYNC - Sending complete");
-				//Get the complete sync package - deep copy.. 
-				SyncPackage sp = getMainDB().getSyncPackage(true);
-				MinimaClient client = (MinimaClient) zMessage.getObject("netclient");
-				Message req      = new Message(MinimaClient.NETCLIENT_INTRO).addObject("syncpackage", sp);
-				client.PostMessage(req);
+				PostNetClientMessage(zMessage, new Message(CONSENSUS_NET_GREET_FULLINTRO));
 				return;
 			}
 			
 			//Find the crossover - if there is one..
 			MiniNumber cross = checkCrossover(greet);
 
-			//If there is one send complete data from then on
+			//If there no immediate crossover check backup files..
 			if(cross.isEqual(MiniNumber.MINUSONE)) {
-				BackupManager backup = Main.getMainHandler().getBackupManager();
-				
-				//Check if the cascade is an old block of ours..
-				HashNumber startblock = blocks.get(0);
-				MiniNumber lowest = blocks.get(0).getNumber();
-				MinimaLogger.log("Checking for block "+lowest);
-				
-				SyncPacket casc = SyncPacket.loadBlock(backup.getBlockFile(lowest));
-				
-				if(casc == null) {
-					return;
-				}
-				
-				if(!casc.getTxPOW().getTxPowID().isEqual(startblock.getHash())) {
-					MinimaLogger.log("DIFFERENT HISTORY! - NOTHING TO DO..");
-					return;
-				}
-				
-				//NO CROSSOVER..!
-				MinimaLogger.log("CROSSOVER BLOCK FOUND!.. SEND OLD BLOCKS");
+				PostNetClientMessage(zMessage, new Message(CONSENSUS_NET_GREET_BACKSYNC).addObject("greetlist", blocks));
 				return;
 			}
 			
@@ -224,7 +215,37 @@ public class ConsensusNet extends ConsensusProcessor {
 				return;
 			}
 			
+			//Send this many blocks in full..
+			PostNetClientMessage(zMessage, new Message(CONSENSUS_NET_GREET_RAMSYNCUP).addInteger("blocklen", blocklen));
+			
+			/**
+			 * Send the ENTIRE backup intro message
+			 */
+		}else if(zMessage.isMessageType(CONSENSUS_NET_GREET_FULLINTRO)) {
+			MinimaLogger.log("FIRST TIME SYNC - Sending complete");
+			
+			//Get the Client..
+			MinimaClient client = (MinimaClient) zMessage.getObject("netclient");
+			
+			//Create the SyncPackage Nessage
+			SyncPackage sp   = getMainDB().getSyncPackage(true);
+			Message req      = new Message(MinimaClient.NETCLIENT_INTRO).addObject("syncpackage", sp);
+			client.PostMessage(req);
+			
+			/**
+			 * Send every TxPoW Onwards to the User - sync him up in FULL
+			 */
+		}else if(zMessage.isMessageType(CONSENSUS_NET_GREET_RAMSYNCUP)) {
+			int blocklen = zMessage.getInteger("blocklen");
+			
 			MinimaLogger.log("CROSSOVER FOUND!.. SENDING "+blocklen+" FULL BLOCKS");
+			
+			//Get the Client..
+			MinimaClient client = (MinimaClient) zMessage.getObject("netclient");
+			
+			//Send the complete stack of TxPoW from cross onwards..
+			BlockTreeNode top = getMainDB().getMainTree().getChainTip();
+			
 			int counter=0;
 			ArrayList<TxPoW> full_list = new ArrayList<>();
 			while(counter<blocklen) {
@@ -236,7 +257,6 @@ public class ConsensusNet extends ConsensusProcessor {
 			}
 			
 			//Now cycle through from the bottom to the top..
-			MinimaClient client = (MinimaClient) zMessage.getObject("netclient");
 			TxPoWList currentblocks = new TxPoWList();
 			
 			for(TxPoW blk : full_list) {
@@ -268,19 +288,52 @@ public class ConsensusNet extends ConsensusProcessor {
 				//And send it to the client
 				client.PostMessage(new Message(MinimaClient.NETCLIENT_TXPOWLIST).addObject("txpowlist", currentblocks));
 			}
+			/**
+			 * User connected late - send him the min Backups tat allow sync but not full check
+			 */
+		}else if(zMessage.isMessageType(CONSENSUS_NET_GREET_BACKSYNC)) {
+			ArrayList<HashNumber> blocks = (ArrayList<HashNumber>) zMessage.getObject("greetlist");
+			
+			//NO CROSSOVER..!
+			MinimaLogger.log("TOO FAR !!");
+			if(true) {
+				return;
+			}
+			
+			//Get the Backup manager where OLD blocks are stored..
+			BackupManager backup = Main.getMainHandler().getBackupManager();
+			
+			//Check if the cascade is an old block of ours..
+			HashNumber startblock = blocks.get(0);
+			MiniNumber lowestnum  = startblock.getNumber();
+			MiniData   lowesthash = startblock.getHash();
+			
+			MinimaLogger.log("Checking for block "+lowestnum);
+			
+			SyncPacket casc = SyncPacket.loadBlock(backup.getBlockFile(lowestnum));
+			if(casc == null) {
+				MinimaLogger.log("HISTORY TOO FAR! - NOTHING TO DO.. "+lowestnum);
+				return;
+			}
+			
+			if(!casc.getTxPOW().getTxPowID().isEqual(startblock.getHash())) {
+				MinimaLogger.log("DIFFERENT HISTORY! - NOTHING TO DO..");
+				return;
+			}
+			
+			//NO CROSSOVER..!
+			MinimaLogger.log("CROSSOVER BLOCK FOUND!.. SEND OLD BLOCKS");
+			
 			
 		/**
 		 * You have received multiple TxPoW messages 	
 		 */
 		}else if ( zMessage.isMessageType(CONSENSUS_NET_TXPOWLIST)) {
-			MinimaLogger.log(zMessage.toString());
-			
 			TxPoWList block = (TxPoWList)zMessage.getObject("txpowlist"); 
-			ArrayList<TxPoW> txps = block.getList();
 			
-			//Cycle through..
+			//Cycle through.. and Post as normal..
+			ArrayList<TxPoW> txps = block.getList();
 			for(TxPoW txp : txps) {
-				//POST IT..
 				PostNetClientMessage(zMessage, new Message(CONSENSUS_NET_TXPOW).addObject("txpow", txp));
 			}
 			

@@ -121,6 +121,10 @@ public class BackupManager extends MessageProcessor {
 		PostMessage(backup);
 	}
 
+	public MiniNumber getLastBackupBlack() {
+		return mLastBlock;
+	}
+	
 	public void deleteTxpow(TxPoW zTxPOW) {
 		//Create the File
 		File delfile = new File(mTxPOWDB,zTxPOW.getTxPowID().toString()+".txpow");
