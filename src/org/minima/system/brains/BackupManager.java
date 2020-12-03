@@ -53,7 +53,7 @@ public class BackupManager extends MessageProcessor {
 	MiniNumber mLastBlock  = MiniNumber.ZERO;
 	MiniNumber mFirstBlock = MiniNumber.MINUSONE;
 	
-	MiniNumber MAX_BLOCKS  = MiniNumber.SIXTEEN;
+	MiniNumber MAX_BLOCKS  = MiniNumber.THIRTYTWO;
 	
 	public BackupManager(String zConfFolder) {
 		super("BACKUP");
