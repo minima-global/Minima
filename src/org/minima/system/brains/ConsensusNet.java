@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import org.minima.GlobalParams;
 import org.minima.database.MinimaDB;
 import org.minima.database.mmr.MMRSet;
+import org.minima.database.txpowdb.TxPOWDBRow;
 import org.minima.database.txpowtree.BlockTree;
 import org.minima.database.txpowtree.BlockTreeNode;
 import org.minima.objects.TxPoW;
@@ -222,8 +223,16 @@ public class ConsensusNet extends ConsensusProcessor {
 			//Get the Client..
 			MinimaClient client = (MinimaClient) zMessage.getObject("netclient");
 			
-			//Create the SyncPackage Nessage
-			SyncPackage sp   = getMainDB().getSyncPackage(true);
+			//Create the SyncPackage message
+			SyncPackage sp = getMainDB().getSyncPackage(true);
+			
+			//Now remove all the bodies..
+			ArrayList<SyncPacket> packs = sp.getAllNodes();
+			for(SyncPacket pack : packs) {
+				pack.getTxPOW().clearBody();
+			}
+			
+			//Now send it..
 			Message req      = new Message(MinimaClient.NETCLIENT_INTRO).addObject("syncpackage", sp);
 			client.PostMessage(req);
 			
@@ -255,6 +264,12 @@ public class ConsensusNet extends ConsensusProcessor {
 			TxPoWList currentblocks = new TxPoWList();
 			
 			for(TxPoW blk : full_list) {
+				
+				//ONLY do this if you have the FULL BLOCKS
+				if(!blk.hasBody()) {
+					MinimaLogger.log("CANCEL RESYNC : Attempting to sync user with Assume Valid Blocks..");
+					return;
+				}
 				
 				//Add all the TXNS..
 				ArrayList<MiniData> txns = blk.getBlockTransactions();
@@ -394,14 +409,15 @@ public class ConsensusNet extends ConsensusProcessor {
 				}
 
 				
-				//Store it.. IF IT HAS A BODY.. and add to the TXPOWDB
-				if(txpow.hasBody()) {
-					//Store it..
-					backup.backupTxpow(txpow);
+				//Store it..
+				backup.backupTxpow(txpow);
 				
-					//Add it to the DB..
-					getMainDB().getTxPowDB().addTxPOWDBRow(txpow);
-				}
+				//Add to the list
+				TxPOWDBRow row = getMainDB().getTxPowDB().addTxPOWDBRow(txpow);
+				row.setMainChainBlock(true);
+				row.setIsInBlock(true);
+				row.setInBlockNumber(txpow.getBlockNumber());
+				row.setBlockState(TxPOWDBRow.TXPOWDBROW_STATE_FULL);
 				
 				//Get the Parent node..
 				BlockTreeNode parent = getMainDB().getMainTree().findNode(txpow.getParentID(), true);
@@ -469,6 +485,10 @@ public class ConsensusNet extends ConsensusProcessor {
 			float counter  = 0;
 			for(SyncPacket spack : packets) {
 				TxPoW txpow = spack.getTxPOW();
+				
+				if(!txpow.hasBody()) {
+					MinimaLogger.log("NO Body in TXn.."+txpow.getBlockNumber());
+				}
 				
 				//Store it..
 				backup.backupTxpow(txpow);
