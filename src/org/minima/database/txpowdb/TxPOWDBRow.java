@@ -62,4 +62,11 @@ public interface TxPOWDBRow {
 	 */
 	public boolean isMonoTonic();
 	public void setMonotonic(boolean zMonotonic);
+	
+	/**
+	 * Assume Valid
+	 */
+	public boolean isAssumeValid();
+	public void setAssumeValid(boolean zValid);
+	
 }
