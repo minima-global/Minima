@@ -449,6 +449,21 @@ public class ConsensusNet extends ConsensusProcessor {
 			//And finally..
 			getMainDB().hardResetChain();
 			
+			//FOR NOW
+			TxPoW chaintip = getMainDB().getMainTree().getChainTip().getTxPow();
+			MinimaLogger.log("Re-Sync Complete.. Reset Current block : "+chaintip.getBlockNumber());
+		
+			//Do the balance.. Update listeners if changed..
+			getConsensusHandler().PostMessage(new Message(ConsensusPrint.CONSENSUS_BALANCE).addBoolean("hard", true));
+			
+			//Post a message to those listening
+			getConsensusHandler().updateListeners(new Message(ConsensusHandler.CONSENSUS_NOTIFY_NEWBLOCK).addObject("txpow", chaintip));
+			
+			//Backup the system..
+			getConsensusHandler().PostTimerMessage(new TimerMessage(2000,ConsensusBackup.CONSENSUSBACKUP_BACKUP));
+		
+			
+			
 		/**
 		 * You have NO CHAIN and this is your initial setup message
 		 */
