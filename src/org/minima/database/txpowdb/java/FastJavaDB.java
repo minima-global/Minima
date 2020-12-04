@@ -188,6 +188,49 @@ public class FastJavaDB implements TxPowDB {
 		}
 		return ret;
 	}
+	
+	@Override
+	public void removeAllUnused() {
+		//Get the OLD list
+		Hashtable<String,JavaDBRow> newrows 				= new Hashtable<>();
+		Hashtable<String,ArrayList<TxPOWDBRow>> newchildren	= new Hashtable<>();
+		
+		//Now cycle through and keep only theose that are being used..
+		Enumeration<JavaDBRow> allrows = mTxPoWRows.elements();
+		while(allrows.hasMoreElements()) {
+			JavaDBRow row = allrows.nextElement();	
+			TxPoW txpow   = row.getTxPOW();
+			if(row.isInBlock()) {
+				//Add this row..
+				newrows.put(txpow.getTxPowID().to0xString(), row);
+				
+				//And add to the Children list..
+				//Add it to the Children List..
+				if(txpow.isBlock()) {
+					//Get the Parent...
+					String parentid = txpow.getParentID().to0xString();
+					
+					//Get the ArrayList..
+					ArrayList<TxPOWDBRow> children = newchildren.get(parentid);
+					
+					//Has it begun.. ?
+					if(children == null) {
+						children = new ArrayList<>();
+						
+						//Add it to the HashTable..
+						newchildren.put(parentid, children);
+					}
+					
+					//And Add this Row to it..
+					children.add(row);
+				}
+			}
+		}
+		
+		//And now switch..
+		mTxPoWRows = newrows;
+		mChildrenOfParents = newchildren;
+	}
 
 	@Override
 	public ArrayList<TxPOWDBRow> getChildBlocksTxPOW(MiniData zParent) {

@@ -14,10 +14,6 @@ import org.minima.utils.MiniFile;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 
-/**
- * When Syncing up this is all the info you need..
- * @author spartacusrex
- */
 
 public class SyncPacket implements Streamable {
 

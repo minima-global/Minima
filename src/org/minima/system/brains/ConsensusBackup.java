@@ -6,6 +6,7 @@ import java.io.File;
 import java.util.ArrayList;
 
 import org.minima.database.MinimaDB;
+import org.minima.database.mmr.MMREntryDB;
 import org.minima.database.mmr.MMRSet;
 import org.minima.database.txpowdb.TxPOWDBRow;
 import org.minima.database.txpowtree.BlockTreeNode;
@@ -174,6 +175,8 @@ public class ConsensusBackup extends ConsensusProcessor {
 			
 			//Drill down
 			ArrayList<SyncPacket> packets = sp.getAllNodes();
+			MinimaLogger.log("SYNCPACKAGE LOADED -  "+packets.size());
+			
 			float syncsize = packets.size();
 			float tot = 0;
 			for(SyncPacket spack : packets) {
@@ -224,6 +227,8 @@ public class ConsensusBackup extends ConsensusProcessor {
 			ArrayList<BlockTreeNode> list = getMainDB().getMainTree().getAsList();
 			getMainDB().getTxPowDB().resetAllInBlocks();
 			
+			MinimaLogger.log("SYNCCHAIN RESET -  "+list.size());
+			
 			//Now sort
 			syncsize = list.size();
 			tot = 0;
@@ -265,6 +270,20 @@ public class ConsensusBackup extends ConsensusProcessor {
 					}
 				}
 			}
+			
+			MinimaLogger.log("TXPOWDB size -  "+getMainDB().getTxPowDB().getSize());
+			MinimaLogger.log("MMREntryDB size -  "+MMREntryDB.getDB().getSize());
+			
+			//And now clean up the DB
+			getMainDB().getTxPowDB().removeAllUnused();
+			
+			//Clear the MMRDB tree..
+			MiniNumber cascade = getMainDB().getMainTree().getCascadeNode().getBlockNumber();
+			MMREntryDB.getDB().cleanUpDB(cascade);
+			
+			MinimaLogger.log("TXPOWDB trimmed size -  "+getMainDB().getTxPowDB().getSize());
+			MinimaLogger.log("MMREntryDB trimmed size -  "+MMREntryDB.getDB().getSize());
+			
 			//MinimaLogger.log("DB.. 100%");
 			getConsensusHandler().updateListeners(new Message(ConsensusHandler.CONSENSUS_NOTIFY_INITIALPERC).addString("info", "Restoring DB..100%"));
 			

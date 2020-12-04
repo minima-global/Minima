@@ -14,6 +14,11 @@ import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.Streamable;
 
+/**
+ * When Syncing up this is all the info you need..
+ * @author spartacusrex
+ */
+
 public class SyncPackage implements Streamable{
 
 	/**

@@ -494,11 +494,13 @@ public class MinimaDB {
 			TxPOWDBRow row = getTxPOWRow(txn);
 			TxPoW txpow    = row.getTxPOW();
 			
-			//Check the Proof..
-			txncounter = txncounter.increment();
-			boolean inputvalid = TxPoWChecker.checkTransactionMMR(txpow, this, nodetxp, txncounter, zMMRSet,true);
-			if(!inputvalid) {
-				return false;
+			//Check the Proof.. - after a sync some txpow are assume valid..
+			if(!row.isAssumeValid()) {
+				txncounter = txncounter.increment();
+				boolean inputvalid = TxPoWChecker.checkTransactionMMR(txpow, this, nodetxp, txncounter, zMMRSet,true);
+				if(!inputvalid) {
+					return false;
+				}
 			}
 			
 			//Is it a block with no transaction..
@@ -1173,10 +1175,6 @@ public class MinimaDB {
 	}
 	
 	public SyncPackage getSyncPackage() {
-		return getSyncPackage(false);
-	}
-	
-	public SyncPackage getSyncPackage(boolean zDeepCopy) {
 		SyncPackage sp = new SyncPackage();
 		
 		//Is there anything.. ?
@@ -1197,38 +1195,43 @@ public class MinimaDB {
 			sp.getAllNodes().add(0,new SyncPacket(node, block.isLess(casc)));
 		}
 		
-		//If sending this over the network.. make a copy.. as TxPoW could change (body removed if cascade)
-		if(zDeepCopy) {
-			//Write it out..
-			try {
-				ByteArrayOutputStream baos = new ByteArrayOutputStream();
-				DataOutputStream dos = new DataOutputStream(baos);
-				sp.writeDataStream(dos);
-				dos.flush();
-				
-				//And read it in..
-				ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-				DataInputStream dis = new DataInputStream(bais);
-				
-				//Now read it in.. 
-				SyncPackage spdeep = new SyncPackage();
-				spdeep.readDataStream(dis);
-				
-				//Clean up
-				dos.close();
-				baos.close();
-				
-				dis.close();
-				bais.close();
-				
-				return spdeep;
-				
-			}catch(Exception exc) {
-				exc.printStackTrace();
-			}	
-		}
+		//Now create a DEEP copy
+		SyncPackage spdeep = new SyncPackage();
+		try {
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			DataOutputStream dos = new DataOutputStream(baos);
+			sp.writeDataStream(dos);
+			dos.flush();
+			
+			//And read it in..
+			ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+			DataInputStream dis = new DataInputStream(bais);
+			
+			//Now read it in.. 
+			spdeep.readDataStream(dis);
+			
+			//Clean up
+			dos.close();
+			baos.close();
+			
+			dis.close();
+			bais.close();
+			
+		}catch(Exception exc) {
+			exc.printStackTrace();
+		}	
 		
-		return sp;
+		//Now remove all the bodies..
+		ArrayList<SyncPacket> packs = spdeep.getAllNodes();
+		for(SyncPacket pack : packs) {
+			pack.getTxPOW().clearBody();
+		}
+	
+		//Clean up after this large-ish event..
+		System.gc();
+		
+		//Return the lite sync package
+		return spdeep;
 	}
 		
 	/**

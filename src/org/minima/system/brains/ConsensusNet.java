@@ -15,6 +15,7 @@ import org.minima.objects.greet.Greeting;
 import org.minima.objects.greet.HashNumber;
 import org.minima.objects.greet.SyncPackage;
 import org.minima.objects.greet.SyncPacket;
+import org.minima.objects.greet.TxPoWIDList;
 import org.minima.objects.greet.TxPoWList;
 import org.minima.objects.proofs.TokenProof;
 import org.minima.system.Main;
@@ -223,18 +224,8 @@ public class ConsensusNet extends ConsensusProcessor {
 			//Get the Client..
 			MinimaClient client = (MinimaClient) zMessage.getObject("netclient");
 			
-			//Create the SyncPackage message
-			SyncPackage sp = getMainDB().getSyncPackage(true);
-			
-			//Now remove all the bodies..
-			ArrayList<SyncPacket> packs = sp.getAllNodes();
-			for(SyncPacket pack : packs) {
-				pack.getTxPOW().clearBody();
-			}
-			
-			//Now send it..
-			Message req      = new Message(MinimaClient.NETCLIENT_INTRO).addObject("syncpackage", sp);
-			client.PostMessage(req);
+			//Give them the SYNC 
+			client.PostMessage(new Message(MinimaClient.NETCLIENT_INTRO).addObject("syncpackage", getMainDB().getSyncPackage()));
 			
 			/**
 			 * Send every TxPoW Onwards to the User - sync him up in FULL
@@ -313,11 +304,7 @@ public class ConsensusNet extends ConsensusProcessor {
 			}
 			
 			//Check if the cascade is an old block of ours..
-			int len  			  = blocks.size();
 			HashNumber startblock = blocks.get(0);
-			if(len>6) {
-				startblock = blocks.get(len-5);
-			}
 			MiniNumber lowestnum  = startblock.getNumber();
 			
 			//Get the Backup manager where OLD blocks are stored..
@@ -362,7 +349,7 @@ public class ConsensusNet extends ConsensusProcessor {
 			MinimaLogger.log("AND NOW SEND THE RAMSYNCUP BLOCKS ONLY");
 			
 			//And the rest.. ignoring the cascade nodes..
-			sp   = getMainDB().getSyncPackage(true);
+			sp   = getMainDB().getSyncPackage();
 			sp.setCascadeNode(MiniNumber.MINUSONE);
 			client.PostMessage(new Message(MinimaClient.NETCLIENT_INTRO).addObject("syncpackage", sp));
 			
@@ -576,6 +563,29 @@ public class ConsensusNet extends ConsensusProcessor {
 		/**
 		 * Client requests a TxPoW from you..	
 		 */
+		}else if ( zMessage.isMessageType(CONSENSUS_NET_TXPOWIDLIST)) {
+			//Get the List of requested TxPoW
+			TxPoWIDList txpidlist = (TxPoWIDList)zMessage.getObject("txpowidlist");
+			
+			//Now get all the txp
+			TxPoWList txpowlist = new TxPoWList();
+			txpowlist.setCrossOver(false);
+			
+			ArrayList<MiniData> list = txpidlist.getList();
+			for(MiniData txpid : list) {
+				//Get the TxPOW
+				TxPoW txp = getMainDB().getTxPOW(txpid);
+				
+				//Do we have it..
+				if(txp != null) {
+					txpowlist.addTxPow(txp);
+				}
+			}
+			
+			//Now send that..!
+			MinimaClient client = (MinimaClient) zMessage.getObject("netclient");
+			client.PostMessage(new Message(MinimaClient.NETCLIENT_TXPOWLIST).addObject("txpowlist", txpowlist));
+			
 		}else if(zMessage.isMessageType(CONSENSUS_NET_TXPOWREQUEST)) {
 			//Request for a previously sent txpowid
 			MiniData txpowid = (MiniData) zMessage.getObject("txpowid");
