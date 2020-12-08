@@ -10,7 +10,12 @@ import java.io.IOException;
 
 public class MiniFile {
 
+	
 	public static void writeDataToFile(File zFile, byte[] zData) throws IOException {
+		writeDataToFile(zFile, zData, false);
+	}
+	
+	public static void writeDataToFile(File zFile, byte[] zData, boolean zAppend) throws IOException {
 		//Check Parent
 		File parent = zFile.getParentFile();
 		if(!parent.exists()) {
@@ -19,14 +24,16 @@ public class MiniFile {
 		
 		//Delete the old..
 		if(zFile.exists()) {
-			zFile.delete();
+			if(!zAppend) {
+				zFile.delete();
+				zFile.createNewFile();
+			}
+		}else {
+			zFile.createNewFile();
 		}
 		
-		//Create the new..
-		zFile.createNewFile();
-		
 		//Write it out..
-		FileOutputStream fos = new FileOutputStream(zFile, false);
+		FileOutputStream fos = new FileOutputStream(zFile, zAppend);
 		DataOutputStream fdos = new DataOutputStream(fos);
 		
 		//And write it..
@@ -41,6 +48,10 @@ public class MiniFile {
 	}
 	
 	public static void writeObjectToFile(File zFile, Streamable zObject) throws IOException {
+		writeObjectToFile(zFile, zObject, false);
+	}
+	
+	public static void writeObjectToFile(File zFile, Streamable zObject, boolean zAppend) throws IOException {
 		//First write the object to a memory structure..
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		DataOutputStream dos = new DataOutputStream(baos);
@@ -57,7 +68,7 @@ public class MiniFile {
 		baos.close();
 		
 		//Check Parent
-		writeDataToFile(zFile, data);
+		writeDataToFile(zFile, data, zAppend);
 	}
 	
 	public static byte[] readCompleteFile(File zFile) throws IOException {

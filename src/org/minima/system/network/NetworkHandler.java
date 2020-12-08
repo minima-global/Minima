@@ -231,7 +231,9 @@ public class NetworkHandler extends MessageProcessor {
 			try {mRPCServer.stop();}catch(Exception exc) {}
 			
 			//Stop the RPC server
-			try {mDAPPManager.stop();}catch(Exception exc) {}
+			try {mDAPPManager.stop();}catch(Exception exc) {
+				MinimaLogger.log(exc);
+			}
 			
 			//Stop the WebSocket server
 			try {mWebSocketManager.stop();}catch(Exception exc) {}

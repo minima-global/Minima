@@ -150,10 +150,9 @@ public class ConsensusNet extends ConsensusProcessor {
 			
 			//Get the NetClient...
 			MinimaClient client = (MinimaClient) zMessage.getObject("netclient");
-			Message req      = new Message(MinimaClient.NETCLIENT_GREETING).addObject("greeting", greet);
 			
 			//And Post it..
-			client.PostMessage(req);
+			client.PostMessage(new Message(MinimaClient.NETCLIENT_GREETING).addObject("greeting", greet));
 			
 		/**
 		 * You have received the initial Greeting Message	
@@ -165,21 +164,16 @@ public class ConsensusNet extends ConsensusProcessor {
 			//Get the Client..
 			MinimaClient client = (MinimaClient) zMessage.getObject("netclient");
 			
-			//Check Versions..
-//			if(!greet.getVersion().startsWith("0.97") {
-//				MinimaLogger.log("ERROR! INCOMPATIBLE VERSION ON GREETING "+greet.getVersion());
-//				
-//				//Shut it down..
-//				//..
-//			}
-			
+			//Are we on the same version
 			if(!greet.getVersion().equals(GlobalParams.MINIMA_VERSION)) {
 				MinimaLogger.log("DIFFERENT VERSION ON GREETING "+greet.getVersion());
 			}
 			
-			//Are we a new User.. with no Chain..
+			//Hmm..
+			setInitialSyncComplete();
+			
+			//Are we a new User.. with no Chain.. if so you can do nothing
 			if(getMainDB().getMainTree().getAsList().size()==0) {
-				//First timer.. do nothing.. you'll be sent the INTRO message
 				return;
 			}
 			
@@ -202,18 +196,8 @@ public class ConsensusNet extends ConsensusProcessor {
 				return;
 			}
 			
-			//Send the complete stack of TxPoW from cross onwards..
-			BlockTreeNode top = getMainDB().getMainTree().getChainTip();
-			
-			//How Many blocks do we need to send..
-			int blocklen = top.getBlockNumber().sub(cross).getAsInt(); 
-			if(blocklen == 0) {
-				MinimaLogger.log("ALLREADY IN SYNC.. NOTHING TO SEND!");
-				return;
-			}
-			
 			//Send this many blocks in full..
-			PostNetClientMessage(zMessage, new Message(CONSENSUS_NET_GREET_RAMSYNCUP).addInteger("blocklen", blocklen));
+			PostNetClientMessage(zMessage, new Message(CONSENSUS_NET_GREET_RAMSYNCUP).addObject("cross", cross));
 			
 			/**
 			 * Send the ENTIRE backup intro message
@@ -231,31 +215,36 @@ public class ConsensusNet extends ConsensusProcessor {
 			 * Send every TxPoW Onwards to the User - sync him up in FULL
 			 */
 		}else if(zMessage.isMessageType(CONSENSUS_NET_GREET_RAMSYNCUP)) {
-			int blocklen = zMessage.getInteger("blocklen");
+			//Get the crossover block
+			MiniNumber cross = (MiniNumber) zMessage.getObject("cross");
 			
+			//Send the complete stack of TxPoW from cross onwards..
+			BlockTreeNode top = getMainDB().getMainTree().getChainTip();
+			
+			//How Many blocks do we need to send..
+			int blocklen = top.getBlockNumber().sub(cross).getAsInt(); 
+			if(blocklen == 0) {
+				MinimaLogger.log("ALLREADY IN SYNC.. NOTHING TO SEND!");
+				return;
+			}
+
 			MinimaLogger.log("CROSSOVER FOUND!.. SENDING "+blocklen+" FULL BLOCKS");
 			
 			//Get the Client..
 			MinimaClient client = (MinimaClient) zMessage.getObject("netclient");
 			
-			//Send the complete stack of TxPoW from cross onwards..
-			BlockTreeNode top = getMainDB().getMainTree().getChainTip();
-			
-			int counter=0;
 			ArrayList<TxPoW> full_list = new ArrayList<>();
-			while(counter<blocklen) {
+			while(!top.getBlockNumber().isEqual(cross)) {
+				//Add this to the list
 				full_list.add(0,top.getTxPow());
 				
 				//Keep going..
-				counter++;
 				top = top.getParent();
 			}
 			
 			//Now cycle through from the bottom to the top..
 			TxPoWList currentblocks = new TxPoWList();
-			
 			for(TxPoW blk : full_list) {
-				
 				//ONLY do this if you have the FULL BLOCKS
 				if(!blk.hasBody()) {
 					MinimaLogger.log("CANCEL RESYNC : Attempting to sync user with Assume Valid Blocks..");
@@ -289,6 +278,7 @@ public class ConsensusNet extends ConsensusProcessor {
 				//And send it to the client
 				client.PostMessage(new Message(MinimaClient.NETCLIENT_TXPOWLIST).addObject("txpowlist", currentblocks));
 			}
+			
 			/**
 			 * User connected late - send him the min Backups tat allow sync but not full check
 			 */
@@ -354,18 +344,6 @@ public class ConsensusNet extends ConsensusProcessor {
 			client.PostMessage(new Message(MinimaClient.NETCLIENT_INTRO).addObject("syncpackage", sp));
 			
 		/**
-		 * You have received multiple TxPoW messages 	
-		 */
-		}else if ( zMessage.isMessageType(CONSENSUS_NET_TXPOWLIST)) {
-			TxPoWList block = (TxPoWList)zMessage.getObject("txpowlist"); 
-			
-			//Cycle through.. and Post as normal..
-			ArrayList<TxPoW> txps = block.getList();
-			for(TxPoW txp : txps) {
-				PostNetClientMessage(zMessage, new Message(CONSENSUS_NET_TXPOW).addObject("txpow", txp));
-			}
-			
-		/**
 		 * You have A CHAIN and this is your resync message from way back
 		 */
 		}else if(zMessage.isMessageType(CONSENSUS_NET_RESYNC)) {
@@ -390,11 +368,11 @@ public class ConsensusNet extends ConsensusProcessor {
 					continue;
 				}
 				
+				//Could be an older cascade block
 				if(mmr==null) {
 					MinimaLogger.log("NULL MMR ON RESYNC BLOCK"+txpow.getBlockNumber());
 					continue;
 				}
-
 				
 				//Store it..
 				backup.backupTxpow(txpow);
@@ -448,12 +426,7 @@ public class ConsensusNet extends ConsensusProcessor {
 			
 			//Backup the system..
 			getConsensusHandler().PostTimerMessage(new TimerMessage(2000,ConsensusBackup.CONSENSUSBACKUP_BACKUP));
-		
 			
-			
-		/**
-		 * You have NO CHAIN and this is your initial setup message
-		 */
 		}else if(zMessage.isMessageType(CONSENSUS_NET_INTRO)) {
 			//Get the Sync Package..
 			SyncPackage sp = (SyncPackage) zMessage.getObject("sync");
@@ -546,6 +519,19 @@ public class ConsensusNet extends ConsensusProcessor {
 			//Backup the system..
 			getConsensusHandler().PostTimerMessage(new TimerMessage(2000,ConsensusBackup.CONSENSUSBACKUP_BACKUP));
 				
+			
+		/**
+		 * You have received multiple TxPoW messages 	
+		 */
+		}else if ( zMessage.isMessageType(CONSENSUS_NET_TXPOWLIST)) {
+			TxPoWList block = (TxPoWList)zMessage.getObject("txpowlist"); 
+			
+			//Cycle through.. and Post as normal..
+			ArrayList<TxPoW> txps = block.getList();
+			for(TxPoW txp : txps) {
+				PostNetClientMessage(zMessage, new Message(CONSENSUS_NET_TXPOW).addObject("txpow", txp));
+			}
+			
 		/**
 		 * A TxPoWID message from a client.. do you need it ?	
 		 */

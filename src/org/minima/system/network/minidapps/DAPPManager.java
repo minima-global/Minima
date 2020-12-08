@@ -100,8 +100,13 @@ public class DAPPManager extends MessageProcessor {
 	}
 	
 	public void stop() {
-		mDAPPServer.stop();
-		mCommsManager.shutdown();
+		if(mDAPPServer != null) {
+			mDAPPServer.stop();
+		}
+		
+		if(mCommsManager != null) {
+			mCommsManager.shutdown();
+		}
 		
 		stopMessageProcessor();
 	}
