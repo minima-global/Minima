@@ -60,13 +60,6 @@ public class ConsensusNet extends ConsensusProcessor {
 	private static int MAX_TXPOW_LIST_SIZE = 200;
 	
 	/**
-	 * Will we switch to a heavier chain - DEBUG mode for -private
-	 */
-	boolean mHardResetAllowed = true;
-	
-	boolean mFullSyncOnInit = false;
-	
-	/**
 	 * Check when you sent out a request for a TxPOW
 	 */
 	DataTimer mDataTimer = new DataTimer();
@@ -80,18 +73,6 @@ public class ConsensusNet extends ConsensusProcessor {
 		super(zDB, zHandler);
 		
 		mInitialSync = false;
-	}
-	 
-	public void setAllowHardResest(boolean zHardResetAllowed) {
-		mHardResetAllowed = zHardResetAllowed;
-	
-		if(!mHardResetAllowed) {
-			mInitialSync = true;
-		}
-	}
-	
-	public void setFullSyncOnInit(boolean zFull) {
-		mFullSyncOnInit = zFull;
 	}
 	
 	public boolean isInitialSyncComplete() {
@@ -593,10 +574,10 @@ public class ConsensusNet extends ConsensusProcessor {
 			 * The SINGLE entry point into the system for NEW TXPOW messages..
 			 */
 			//Have we done the initial SYNC..
-//			if(!mInitialSync) {
-//				MinimaLogger.log("NET TxPoW received before Initial Sync Finished.");
-//				return;
-//			}
+			if(!mInitialSync) {
+				MinimaLogger.log("NET TxPoW received before Initial Sync Finished.");
+				return;
+			}
 			
 			//The TxPoW
 			TxPoW txpow = (TxPoW)zMessage.getObject("txpow");
@@ -786,7 +767,7 @@ public class ConsensusNet extends ConsensusProcessor {
 	/**
 	 * When you finish a Sync Up.. 
 	 */
-	public void finishUpSync() {
+	private void finishUpSync() {
 		//Reset weights
 		getMainDB().hardResetChain();
 		

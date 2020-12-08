@@ -111,7 +111,6 @@ public class Start {
 		boolean cleanhard       = false;
 		boolean genesis 		= false;
 		boolean daemon          = false;
-		boolean noreset 		= false;
 		boolean automine 		= false;
 		
 		//Configuration folder
@@ -141,7 +140,6 @@ public class Start {
 					MinimaLogger.log("        -private               : Run a private chain. Don't connect to MainNet. Create a genesis tx-pow. Simulate some users.");
 					MinimaLogger.log("        -clean                 : Wipe user files and chain backup. Start afresh. Use with -private for clean private test-net.");
 					MinimaLogger.log("        -cleanhard             : Same as -clean but remove all the MiniDAPPS.. and webroot folder");
-					MinimaLogger.log("        -noreset               : Won't reset the chain if another heavier chain comes along..");
 					MinimaLogger.log("        -automine              : Simulate users mining the chain");
 					MinimaLogger.log("        -noconnect             : Don't connect to MainNet. Can then connect to private chains.");
 					MinimaLogger.log("        -connect [host] [port] : Don't connect to MainNet but connect to this node instead.");
@@ -155,7 +153,6 @@ public class Start {
 				}else if(arg.equals("-private")) {
 					genesis     = true;
 					connect 	= false;
-					noreset     = true;
 					automine    = true;
 					
 				}else if(arg.equals("-noconnect")) {
@@ -163,9 +160,6 @@ public class Start {
 				
 				}else if(arg.equals("-daemon")) {
 					daemon = true;
-				
-				}else if(arg.equals("-noreset")) {
-					noreset = true;
 				
 				}else if(arg.equals("-automine")) {
 					automine = true;
@@ -228,10 +222,6 @@ public class Start {
 		//Are we private!
 		if(genesis) {
 			rcmainserver.privateChain(clean);
-		}
-		
-		if(noreset) {
-			rcmainserver.noChainReset();
 		}
 		
 		if(automine) {

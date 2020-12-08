@@ -199,15 +199,6 @@ public class ConsensusHandler extends MessageProcessor {
 		getMainDB().DoGenesis();
 	}
 	
-	/**
-	 * Hard code whether we can reset the chain on intro messages
-	 * 
-	 * @param zHardResetAllowed
-	 */
-	public void setHardResetAllowed(boolean zHardResetAllowed){
-		mConsensusNet.setAllowHardResest(zHardResetAllowed);
-	}
-	
 	private MinimaDB getMainDB() {
 		return mMainDB;
 	}
