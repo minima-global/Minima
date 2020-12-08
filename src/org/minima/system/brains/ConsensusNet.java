@@ -412,31 +412,7 @@ public class ConsensusNet extends ConsensusProcessor {
 				getMainDB().scanMMRSetForCoins(mmr);
 			}
 			
-			//And finally..
-			getMainDB().hardResetChain();
-			
-			//Now correect the TxPoWDB
-			getMainDB().resetAllTxPowOnMainChain();
-			
-			//And finally remove any unwanted TxPoW.. ( they will ALL be on the main chain)
-			getMainDB().getTxPowDB().removeAllUnused();
-			
-			//Clear the MMRDB tree..
-			MiniNumber cascade = getMainDB().getMainTree().getCascadeNode().getBlockNumber();
-			MMREntryDB.getDB().cleanUpDB(cascade);
-			
-			//FOR NOW
-			TxPoW chaintip = getMainDB().getMainTree().getChainTip().getTxPow();
-			MinimaLogger.log("Re-Sync Complete.. Reset Current block : "+chaintip.getBlockNumber());
-		
-			//Do the balance.. Update listeners if changed..
-			getConsensusHandler().PostMessage(new Message(ConsensusPrint.CONSENSUS_BALANCE).addBoolean("hard", true));
-			
-			//Post a message to those listening
-			getConsensusHandler().updateListeners(new Message(ConsensusHandler.CONSENSUS_NOTIFY_NEWBLOCK).addObject("txpow", chaintip));
-			
-			//Backup the system..
-			getConsensusHandler().PostTimerMessage(new TimerMessage(2000,ConsensusBackup.CONSENSUSBACKUP_BACKUP));
+			finishUpSync();
 			
 		}else if(zMessage.isMessageType(CONSENSUS_NET_INTRO)) {
 			//Get the Sync Package..
@@ -514,32 +490,8 @@ public class ConsensusNet extends ConsensusProcessor {
 				getConsensusHandler().updateListeners(new Message(ConsensusHandler.CONSENSUS_NOTIFY_INITIALPERC).addString("info", "Loading "+totperc+"%"));
 			}
 				
-			//Reset weights
-			getMainDB().hardResetChain();
 			
-			//Now correect the TxPoWDB
-			getMainDB().resetAllTxPowOnMainChain();
-			
-			//And finally remove any unwanted TxPoW.. ( they will ALL be on the main chain)
-			getMainDB().getTxPowDB().removeAllUnused();
-			
-			//Clear the MMRDB tree..
-			MiniNumber cascade = getMainDB().getMainTree().getCascadeNode().getBlockNumber();
-			MMREntryDB.getDB().cleanUpDB(cascade);
-			
-			//FOR NOW
-			TxPoW tip = getMainDB().getMainTree().getChainTip().getTxPow();
-			MinimaLogger.log("Initial Sync Complete.. Reset Current block : "+tip.getBlockNumber());
-		
-			//Do the balance.. Update listeners if changed..
-			getConsensusHandler().PostMessage(new Message(ConsensusPrint.CONSENSUS_BALANCE).addBoolean("hard", true));
-			
-			//Post a message to those listening
-			getConsensusHandler().updateListeners(new Message(ConsensusHandler.CONSENSUS_NOTIFY_NEWBLOCK).addObject("txpow", tip));
-			
-			//Backup the system..
-			getConsensusHandler().PostTimerMessage(new TimerMessage(2000,ConsensusBackup.CONSENSUSBACKUP_BACKUP));
-				
+			finishUpSync();
 			
 		/**
 		 * You have received multiple TxPoW messages 	
@@ -829,6 +781,37 @@ public class ConsensusNet extends ConsensusProcessor {
 		
 		//no Hit..
 		return crossover;
+	}
+	
+	/**
+	 * When you finish a Sync Up.. 
+	 */
+	public void finishUpSync() {
+		//Reset weights
+		getMainDB().hardResetChain();
+		
+		//Now correect the TxPoWDB
+		getMainDB().resetAllTxPowOnMainChain();
+		
+		//And finally remove any unwanted TxPoW.. ( they will ALL be on the main chain)
+		getMainDB().getTxPowDB().removeAllUnused();
+		
+		//Clear the MMRDB tree..
+		MiniNumber cascade = getMainDB().getMainTree().getCascadeNode().getBlockNumber();
+		MMREntryDB.getDB().cleanUpDB(cascade);
+		
+		//FOR NOW
+		TxPoW tip = getMainDB().getMainTree().getChainTip().getTxPow();
+		MinimaLogger.log("Initial Sync Complete.. Reset Current block : "+tip.getBlockNumber());
+	
+		//Do the balance.. Update listeners if changed..
+		getConsensusHandler().PostMessage(new Message(ConsensusPrint.CONSENSUS_BALANCE).addBoolean("hard", true));
+		
+		//Post a message to those listening
+		getConsensusHandler().updateListeners(new Message(ConsensusHandler.CONSENSUS_NOTIFY_NEWBLOCK).addObject("txpow", tip));
+		
+		//Backup the system..
+		getConsensusHandler().PostTimerMessage(new TimerMessage(2000,ConsensusBackup.CONSENSUSBACKUP_BACKUP));
 	}
 	
 	
