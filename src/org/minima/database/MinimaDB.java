@@ -579,6 +579,45 @@ public class MinimaDB {
 		mMainTree = casc.getCascadeTree();
 	}
 	
+	
+	/**
+	 * Clear the TxPoWDB so that only valid TxPOW in the main chain are kept
+	 * 
+	 * Use after a re-sync
+	 */
+	public void resetAllTxPowOnMainChain(){
+		//And Now sort the TXPOWDB
+		ArrayList<BlockTreeNode> list = getMainTree().getAsList();
+		getTxPowDB().resetAllInBlocks();
+		
+		//Now sort
+		for(BlockTreeNode treenode : list) {
+			//Get the Block
+			TxPoW txpow = treenode.getTxPow();
+			
+			//What Block
+			MiniNumber block = txpow.getBlockNumber();
+			
+			//Set the main chain details..
+			TxPOWDBRow blockrow = getTxPowDB().findTxPOWDBRow(txpow.getTxPowID());
+			blockrow.setInBlockNumber(block);
+			blockrow.setMainChainBlock(true);
+			blockrow.setIsInBlock(true);
+			
+			//Now the Txns..
+			ArrayList<MiniData> txpowlist = txpow.getBlockTransactions();
+			for(MiniData txid : txpowlist) {
+				TxPOWDBRow trow = getTxPowDB().findTxPOWDBRow(txid);
+				if(trow!=null) {
+					//Set that it is in this block
+					trow.setMainChainBlock(false);
+					trow.setIsInBlock(true);
+					trow.setInBlockNumber(block);
+				}
+			}
+		}
+	}
+	
 	/**
 	 * When you mine a transaction these must be taken 
 	 * into account from coin selection

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import org.minima.GlobalParams;
 import org.minima.database.MinimaDB;
+import org.minima.database.mmr.MMREntryDB;
 import org.minima.database.mmr.MMRSet;
 import org.minima.database.txpowdb.TxPOWDBRow;
 import org.minima.database.txpowtree.BlockTree;
@@ -414,6 +415,16 @@ public class ConsensusNet extends ConsensusProcessor {
 			//And finally..
 			getMainDB().hardResetChain();
 			
+			//Now correect the TxPoWDB
+			getMainDB().resetAllTxPowOnMainChain();
+			
+			//And finally remove any unwanted TxPoW.. ( they will ALL be on the main chain)
+			getMainDB().getTxPowDB().removeAllUnused();
+			
+			//Clear the MMRDB tree..
+			MiniNumber cascade = getMainDB().getMainTree().getCascadeNode().getBlockNumber();
+			MMREntryDB.getDB().cleanUpDB(cascade);
+			
 			//FOR NOW
 			TxPoW chaintip = getMainDB().getMainTree().getChainTip().getTxPow();
 			MinimaLogger.log("Re-Sync Complete.. Reset Current block : "+chaintip.getBlockNumber());
@@ -505,6 +516,16 @@ public class ConsensusNet extends ConsensusProcessor {
 				
 			//Reset weights
 			getMainDB().hardResetChain();
+			
+			//Now correect the TxPoWDB
+			getMainDB().resetAllTxPowOnMainChain();
+			
+			//And finally remove any unwanted TxPoW.. ( they will ALL be on the main chain)
+			getMainDB().getTxPowDB().removeAllUnused();
+			
+			//Clear the MMRDB tree..
+			MiniNumber cascade = getMainDB().getMainTree().getCascadeNode().getBlockNumber();
+			MMREntryDB.getDB().cleanUpDB(cascade);
 			
 			//FOR NOW
 			TxPoW tip = getMainDB().getMainTree().getChainTip().getTxPow();
@@ -809,4 +830,6 @@ public class ConsensusNet extends ConsensusProcessor {
 		//no Hit..
 		return crossover;
 	}
+	
+	
 }

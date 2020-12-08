@@ -209,7 +209,7 @@ public class ConsensusBackup extends ConsensusProcessor {
 			}
 			
 			//And now load it..
-			resetFromSyncPackage(sp);
+			loadSyncPackage(sp);
 			
 			//Get on with it..
 			Main.getMainHandler().PostMessage(Main.SYSTEM_INIT);
@@ -261,11 +261,11 @@ public class ConsensusBackup extends ConsensusProcessor {
 			bais.close();
 			
 			//And now load it..
-			resetFromSyncPackage(sp);
+			loadSyncPackage(sp);
 		}
 	}
 	
-	public void resetFromSyncPackage(SyncPackage zPackage) {
+	public void loadSyncPackage(SyncPackage zPackage) {
 		//Get the SyncPackage
 		MiniNumber casc = zPackage.getCascadeNode();
 		
@@ -364,10 +364,7 @@ public class ConsensusBackup extends ConsensusProcessor {
 				}
 			}
 		}
-		
-		//And now clean up the DB
-		getMainDB().getTxPowDB().removeAllUnused();
-		
+				
 		//Clear the MMRDB tree..
 		MiniNumber cascade = getMainDB().getMainTree().getCascadeNode().getBlockNumber();
 		MMREntryDB.getDB().cleanUpDB(cascade);
