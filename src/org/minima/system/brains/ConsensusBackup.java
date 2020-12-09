@@ -233,7 +233,7 @@ public class ConsensusBackup extends ConsensusProcessor {
 			//Add to the returned details
 			details.put("file", fullrestore.getAbsolutePath());
 
-			if(!fullrestore.exists()) {
+			if(!fullrestore.exists() || fullrestore.isDirectory()) {
 				InputHandler.endResponse(zMessage, false, "Restore file does not exist");
 				return;
 			}
