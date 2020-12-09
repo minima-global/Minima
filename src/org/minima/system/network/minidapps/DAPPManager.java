@@ -357,7 +357,10 @@ public class DAPPManager extends MessageProcessor {
 			}
 
 			//Hash it..
-			MiniData hash     = Crypto.getInstance().hashObject(data, 160);
+			//MiniData hash     = Crypto.getInstance().hashObject(data, 160);
+			byte[] hashdata = Crypto.getInstance().hashData(data.getData(), 160);
+			MiniData hash   = new MiniData(hashdata);
+			
 			String minidappid = hash.to0xString();
 			InputHandler.getResponseJSON(zMessage).put("uid", minidappid);
 			
