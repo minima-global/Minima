@@ -22,6 +22,7 @@ import org.minima.objects.proofs.TokenProof;
 import org.minima.system.Main;
 import org.minima.system.network.base.MinimaClient;
 import org.minima.system.network.base.MinimaReader;
+import org.minima.system.txpow.TxPoWChecker;
 import org.minima.utils.DataTimer;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.messages.Message;
@@ -148,7 +149,14 @@ public class ConsensusNet extends ConsensusProcessor {
 			//Only allow 0.97 for this..
 			if(!greet.getVersion().startsWith("0.97")) {
 				MinimaLogger.log("INCOMPATIBLE VERSION ON GREETING "+greet.getVersion()+" MUST BE 0.97");
+				MinimaLogger.log("SHUTTING DOWN CONNECTION..");
+				
+				//Don't want to reconnect if we choose to disconnect
+				client.noReconnect();
+				
+				//Shut down..
 				client.PostMessage(new Message(MinimaClient.NETCLIENT_SHUTDOWN));
+				
 				return;
 			}
 			
@@ -496,7 +504,6 @@ public class ConsensusNet extends ConsensusProcessor {
 			
 			//Do we have it..
 			if(getMainDB().getTxPOW(txpowid) == null) {
-				//MinimaLogger.log("NEW TXPOWID "+txpowid.to0xString()+" from "+zMessage.getObject("netclient"));
 				//We don't have it, get it..
 				sendTxPowRequest(zMessage, txpowid);
 			}
@@ -584,7 +591,7 @@ public class ConsensusNet extends ConsensusProcessor {
 			TxPoW txpow = (TxPoW)zMessage.getObject("txpow");
 		
 			//DEBUG logs..
-			MinimaLogger.log("TXPOW RECEIVED "+txpow.getBlockNumber()+" "+txpow.getTxPowID());
+			//MinimaLogger.log("TXPOW RECEIVED "+txpow.getBlockNumber()+" "+txpow.getTxPowID());
 			
 			//ONLY FULL TXPOW ALLOWED HERE
 			if(!txpow.hasBody()) {
