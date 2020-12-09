@@ -57,7 +57,7 @@ public class ConsensusNet extends ConsensusProcessor {
 	
 	public static final String CONSENSUS_NET_PING 				= CONSENSUS_PREFIX+"NET_MESSAGE_"+MinimaReader.NETMESSAGE_PING.getValue();
 	
-	private static int MAX_TXPOW_LIST_SIZE = 200;
+	private static int MAX_TXPOW_LIST_SIZE = 100;
 	
 	/**
 	 * Check when you sent out a request for a TxPOW
@@ -245,7 +245,7 @@ public class ConsensusNet extends ConsensusProcessor {
 				currentblocks.addTxPow(blk);
 				
 				//Check the size..
-				if(currentblocks.size() > 100) {
+				if(currentblocks.size() > MAX_TXPOW_LIST_SIZE) {
 					//And send it to the client
 					client.PostMessage(new Message(MinimaClient.NETCLIENT_TXPOWLIST).addObject("txpowlist", currentblocks));
 				
@@ -293,7 +293,7 @@ public class ConsensusNet extends ConsensusProcessor {
 			//Otherwise lets load blocks and send them..
 			MiniNumber mycasc = getMainDB().getMainTree().getCascadeNode().getBlockNumber();
 			int blockstoload = mycasc.sub(lowestnum).getAsInt();
-			MinimaLogger.log("SENDING RESYNC BLOCKS "+blockstoload);
+			MinimaLogger.log("SENDING RESYNC HEADER ONLY BLOCKS "+blockstoload);
 			
 			//Create a non-intro syncpackage
 			SyncPackage sp = new SyncPackage();
@@ -301,8 +301,6 @@ public class ConsensusNet extends ConsensusProcessor {
 			
 			MiniNumber currentblock = lowestnum;
 			for(int i=0;i<blockstoload;i++) {
-				MinimaLogger.log("SENDING OLD BACKUP BLOCK "+currentblock);
-				
 				//Load it.. 
 				SyncPacket spack = SyncPacket.loadBlock(backup.getBlockFile(currentblock));
 				
@@ -315,9 +313,6 @@ public class ConsensusNet extends ConsensusProcessor {
 			
 			//And send it..
 			client.PostMessage(new Message(MinimaClient.NETCLIENT_INTRO).addObject("syncpackage", sp));
-			
-			//And now send the regular TxPowLists..
-			MinimaLogger.log("AND NOW SEND THE RAMSYNCUP BLOCKS ONLY");
 			
 			//And the rest.. ignoring the cascade nodes..
 			sp   = getMainDB().getSyncPackage();
@@ -583,6 +578,12 @@ public class ConsensusNet extends ConsensusProcessor {
 		
 			//DEBUG logs..
 			MinimaLogger.log("TXPOW RECEIVED "+txpow.getBlockNumber()+" "+txpow.getTxPowID());
+			
+			//ONLY FULL TXPOW ALLOWED HERE
+			if(!txpow.hasBody()) {
+				MinimaLogger.log("NET Transaction with NO BODY.. "+txpow.getBlockNumber()+" "+txpow.getTxPowID());
+				return;
+			}
 			
 			//Do we have it.. now check DB - hmmm..
 			if(getMainDB().getTxPOW(txpow.getTxPowID()) != null) {

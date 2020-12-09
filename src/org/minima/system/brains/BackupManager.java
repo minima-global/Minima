@@ -174,7 +174,7 @@ public class BackupManager extends MessageProcessor {
 			//Get the File..v
 			File savefile = getBlockFile(mLastBlock);
 			
-			MinimaLogger.log("save block : "+savefile);
+			//MinimaLogger.log("save block : "+savefile);
 			
 			//Write..
 			MiniFile.writeObjectToFile(savefile, block);	
@@ -227,13 +227,13 @@ public class BackupManager extends MessageProcessor {
 							mFirstBlock = new MiniNumber(name);
 							found = true;
 						}else {
-							MinimaLogger.log("DELETE EMPTY FOLDER "+lv2);
+							//MinimaLogger.log("DELETE EMPTY FOLDER "+lv2);
 							MiniFile.deleteFileOrFolder(mRootPath, lv2);
 						}
 					}
 					
 				}else {
-					MinimaLogger.log("DELETE EMPTY FOLDER "+lv1);
+					//MinimaLogger.log("DELETE EMPTY FOLDER "+lv1);
 					MiniFile.deleteFileOrFolder(mRootPath, lv1);
 				}
 			}
@@ -256,7 +256,7 @@ public class BackupManager extends MessageProcessor {
 				File ff = getBlockFile(mFirstBlock);
 				
 				//Delete this file..
-				MinimaLogger.log("Delete : "+ff.getAbsolutePath());
+				//MinimaLogger.log("Delete : "+ff.getAbsolutePath());
 				MiniFile.deleteFileOrFolder(mRootPath, ff);
 				
 				//Increment the delblock
@@ -265,12 +265,22 @@ public class BackupManager extends MessageProcessor {
 		}
 	}
 	
+	/**
+	 * The folder to store the block.. 
+	 * There are 100 blocks per folder and 1000 folders per top level folder
+	 * The actual block names are zero padded.. 
+	 * So that they order correctly alpha-numerically
+	 * 
+	 * @param zBlockNumber
+	 * @return the File
+	 */
 	public File getBlockFile(MiniNumber zBlockNumber) {
-		MiniNumber fold1 = zBlockNumber.div(MiniNumber.TEN).floor();
+		//Top level Folder
+		MiniNumber fold1 = zBlockNumber.div(MiniNumber.MILLION).floor();
 		
-		//Inside Folder 1..
-		MiniNumber remainder = zBlockNumber.sub(MiniNumber.TEN.mult(fold1));
-		MiniNumber fold2     = remainder.div(MiniNumber.TWO).floor();
+		//Inside Top Level
+		MiniNumber remainder = zBlockNumber.sub(MiniNumber.MILLION.mult(fold1));
+		MiniNumber fold2     = remainder.div(MiniNumber.THOUSAND).floor();
 		
 		//Get the number..
 		String f1 = MiniFormat.zeroPad(6, fold1);

@@ -18,7 +18,9 @@ import org.minima.objects.greet.SyncPackage;
 import org.minima.objects.greet.SyncPacket;
 import org.minima.system.Main;
 import org.minima.system.input.InputHandler;
+import org.minima.system.network.NetworkHandler;
 import org.minima.utils.MiniFile;
+import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
@@ -92,6 +94,10 @@ public class ConsensusBackup extends ConsensusProcessor {
 				InputHandler.endResponse(zMessage, false, "Backup Error");
 				return;
 			}
+			
+			//Reset..
+			fullbackup = new File(file);
+			details.put("size", MiniFormat.formatSize(fullbackup.length()));
 			
 			//Where
 			InputHandler.endResponse(zMessage, true, "Full Backup Performed");
@@ -262,6 +268,12 @@ public class ConsensusBackup extends ConsensusProcessor {
 			
 			//And now load it..
 			loadSyncPackage(sp);
+			
+			//Disconnect and Reconnect to the network..
+			getNetworkHandler().PostMessage(NetworkHandler.NETWORK_RECONNECT);
+		
+			//Message
+			InputHandler.endResponse(zMessage, true, "Restore complete - reconnecting to network");
 		}
 	}
 	
