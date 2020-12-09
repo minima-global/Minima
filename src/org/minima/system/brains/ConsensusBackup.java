@@ -217,6 +217,11 @@ public class ConsensusBackup extends ConsensusProcessor {
 			//And now load it..
 			loadSyncPackage(sp);
 			
+			//We now have ALL the TxPoW units loaded..
+			//Would be nice to clear the folder and save them ALL..
+			//TODO..
+			//..
+			
 			//Get on with it..
 			Main.getMainHandler().PostMessage(Main.SYSTEM_INIT);
 		

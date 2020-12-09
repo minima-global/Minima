@@ -437,18 +437,13 @@ public class ConsensusNet extends ConsensusProcessor {
 			for(SyncPacket spack : packets) {
 				TxPoW txpow = spack.getTxPOW();
 				
-				if(!txpow.hasBody()) {
-					//MinimaLogger.log("NO Body in TXn.."+txpow.getBlockNumber());
-				}
-				
 				//Store it..
 				backup.backupTxpow(txpow);
 				
 				MMRSet mmr  = spack.getMMRSet();
-				boolean cascade = spack.isCascade();
 				
 				//Add it to the DB..
-				BlockTreeNode node = getMainDB().hardAddTxPOWBlock(txpow, mmr, cascade);
+				BlockTreeNode node = getMainDB().hardAddTxPOWBlock(txpow, mmr, spack.isCascade());
 				
 				//Scan for coins..
 				if(mmr!=null) {

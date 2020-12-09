@@ -53,7 +53,8 @@ public class BackupManager extends MessageProcessor {
 	MiniNumber mLastBlock  = MiniNumber.ZERO;
 	MiniNumber mFirstBlock = MiniNumber.MINUSONE;
 	
-	MiniNumber MAX_BLOCKS  = MiniNumber.THIRTYTWO;
+	//500,000 blocks @ 4320 blocks a day.. ~3 months
+	private static MiniNumber MAX_BLOCKS  = MiniNumber.MILLION.div(MiniNumber.TWO);
 	
 	public BackupManager(String zConfFolder) {
 		super("BACKUP");
@@ -267,7 +268,7 @@ public class BackupManager extends MessageProcessor {
 	
 	/**
 	 * The folder to store the block.. 
-	 * There are 100 blocks per folder and 1000 folders per top level folder
+	 * There are 1000 blocks per folder and 1000 folders per top level folder
 	 * The actual block names are zero padded.. 
 	 * So that they order correctly alpha-numerically
 	 * 
