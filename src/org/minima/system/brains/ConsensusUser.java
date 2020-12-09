@@ -513,10 +513,8 @@ public class ConsensusUser extends ConsensusProcessor {
 				hard = zMessage.getBoolean("hard");	
 			}
 			
-			NetworkHandler nethandler = getNetworkHandler();
-			
 			//Clear the current Requested Transactions.. this should ask for them all anyway..
-			nethandler.clearAllrequestedTxPow();
+			getNetworkHandler().clearAllrequestedTxPow();
 			
 			//JSON response..
 			JSONObject resp = InputHandler.getResponseJSON(zMessage);
@@ -542,29 +540,13 @@ public class ConsensusUser extends ConsensusProcessor {
 					//Remove all..
 					remove.add(txpow.getTxPowID());
 				}else{
-					//Check it..
-//					boolean trxok  = true;
-//					if(txpow.isTransaction()) {
-//						trxok  = TxPoWChecker.checkTransactionMMR(txpow, getMainDB());	
-//					}
-//						
-//					//Check the basics..
-//					if(!trxok) {
-//						remove.add(txpow.getTxPowID());
-//					}
-					
 					//Check All..
 					if(txpow.isBlock()) {
 						MiniData parent = txpow.getParentID();
 						if(tdb.findTxPOWDBRow(parent) == null) {
-							Message msg  = new Message(MinimaClient.NETCLIENT_SENDTXPOWREQ)
-												.addObject("txpowid", parent);
-							Message netw = new Message(NetworkHandler.NETWORK_SENDALL)
-												.addObject("message", msg);
-							
-							//Post it..
-							nethandler.PostMessage(netw);
-							
+							//Send a broadcast request
+							getConsensusHandler().getConsensusNet().sendTxPowRequest(parent);
+
 							//Add to out list
 							requested.add(parent.to0xString());
 						}
@@ -573,13 +555,8 @@ public class ConsensusUser extends ConsensusProcessor {
 						ArrayList<MiniData> txns = txpow.getBlockTransactions();
 						for(MiniData txn : txns) {
 							if(tdb.findTxPOWDBRow(txn) == null) {
-								Message msg  = new Message(MinimaClient.NETCLIENT_SENDTXPOWREQ)
-										.addObject("txpowid", txn);
-								Message netw = new Message(NetworkHandler.NETWORK_SENDALL)
-										.addObject("message", msg);
-								
-								//Post it..
-								nethandler.PostMessage(netw);
+								//Send a broadcast request
+								getConsensusHandler().getConsensusNet().sendTxPowRequest(txn);
 								
 								//Add to out list
 								requested.add(txn.to0xString());

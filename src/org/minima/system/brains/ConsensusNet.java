@@ -22,7 +22,6 @@ import org.minima.objects.proofs.TokenProof;
 import org.minima.system.Main;
 import org.minima.system.network.base.MinimaClient;
 import org.minima.system.network.base.MinimaReader;
-import org.minima.system.txpow.TxPoWChecker;
 import org.minima.utils.DataTimer;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.messages.Message;
@@ -593,43 +592,11 @@ public class ConsensusNet extends ConsensusProcessor {
 			//DEBUG logs..
 			//MinimaLogger.log("TXPOW RECEIVED "+txpow.getBlockNumber()+" "+txpow.getTxPowID());
 			
-			//ONLY FULL TXPOW ALLOWED HERE
-			if(!txpow.hasBody()) {
-				MinimaLogger.log("NET Transaction with NO BODY.. "+txpow.getBlockNumber()+" "+txpow.getTxPowID());
-				return;
-			}
-			
 			//Do we have it.. now check DB - hmmm..
 			if(getMainDB().getTxPOW(txpow.getTxPowID()) != null) {
 				MinimaLogger.log("NET Transaction we already have.. "+txpow.getBlockNumber()+" "+txpow.getTxPowID());
 				return;
 			}
-			
-//			//Get the TxPowID..
-//			String txpowid = txpow.getTxPowID().to0xString();
-//			
-//			//Was it requested anyway.. ?
-//			boolean requested = false;
-//			if(getNetworkHandler().isRequestedTxPow(txpowid)) {
-//				requested = true;
-//			}
-//			
-//			//Remove it from the list - just in case..
-//			getNetworkHandler().removeRequestedTxPow(txpowid);
-//			
-//			//Check the Validity..
-//			boolean txnok = TxPoWChecker.checkTransactionMMR(txpow, getMainDB());
-//			if(!txnok) {
-//				//Was it requested.. ?
-//				if(requested) {
-//					//Ok - could be from a different branch block.. 
-//					MinimaLogger.log("WARNING NET Invalid TXPOW (Requested..) : "+txpow.getBlockNumber()+" "+txpow.getTxPowID()); 
-//				}else {
-//					//Not requested invalid transaction..
-//					MinimaLogger.log("ERROR NET Invalid TXPOW (UN-Requested..) : "+txpow.getBlockNumber()+" "+txpow.getTxPowID()); 
-//					return;	
-//				}
-//			}
 			
 			/**
 			 * IT PASSES!
@@ -639,20 +606,20 @@ public class ConsensusNet extends ConsensusProcessor {
 			 */
 			getMainDB().addNewTxPow(txpow);
 			
-			//Now - Process the TxPOW
+			//Process the TxPOW
 			Message newtxpow = new Message(ConsensusHandler.CONSENSUS_PROCESSTXPOW).addObject("txpow", txpow);
 			getConsensusHandler().PostMessage(newtxpow);
 			
-			//Now check we have the parent.. (Whether or not it is a block we may be out of alignment..)
-			MiniData parentID = txpow.getParentID();
-			if(getMainDB().getTxPOW(parentID) == null) {
-				//We don't have it, get it..
-				MinimaLogger.log("Request Parent TxPoW @ "+txpow.getBlockNumber()+" parent:"+parentID); 
-				sendTxPowRequest(zMessage, parentID);
-			}
-			
-			//And now check the Txn list..
+			//Now check we have the parent.. and txns..
 			if(txpow.isBlock()) {
+				MiniData parentID = txpow.getParentID();
+				if(getMainDB().getTxPOW(parentID) == null) {
+					//We don't have it, get it..
+					MinimaLogger.log("Request Parent TxPoW @ "+txpow.getBlockNumber()+" parent:"+parentID); 
+					sendTxPowRequest(zMessage, parentID);
+				}
+			
+				//And now check the Txn list..
 				ArrayList<MiniData> txns = txpow.getBlockTransactions();
 				for(MiniData txn : txns) {
 					if(getMainDB().getTxPOW(txn) == null ) {
@@ -667,40 +634,56 @@ public class ConsensusNet extends ConsensusProcessor {
 	/**
 	 * Send a Request for a Missing TxPOW
 	 * Check if has been done recently and reposts with a 5 second delay if it has
-	 * 
-	 * @param zFromMessage
-	 * @param zTxPoWID
 	 */
-	private void sendTxPowRequest(Message zFromMessage, MiniData zTxPoWID) {
+	public void sendTxPowRequest(MiniData zTxPoWID) {
+		//Asks ALL the clients..
+		ArrayList<MinimaClient> allclients = getNetworkHandler().getNetClients();
+		for(MinimaClient client : allclients) {
+			sendTxPowRequest(client,zTxPoWID);
+		}
+	}
+	
+	public void sendTxPowRequest(Message zFromMessage, MiniData zTxPoWID) {
+		//Get the NetClient...
+		MinimaClient client = (MinimaClient) zFromMessage.getObject("netclient");
+		sendTxPowRequest(client, zTxPoWID);
+	}
+	
+	public void sendTxPowRequest(MinimaClient zClient, MiniData zTxPoWID) {
+		//Don't ask for 0x00..
+		if(zTxPoWID.isEqual(MiniData.ZERO_TXPOWID)) {
+			//it's the genesis..
+			return;
+		}
+		
 		//Check if we have sent off for it recently..
 		String data  = zTxPoWID.to0xString();
 		
-		//Get the NetClient...
-		MinimaClient client = (MinimaClient) zFromMessage.getObject("netclient");
-				
 		//Check for it.. in last 5 seconds..
 		boolean found = mDataTimer.checkForData(data, 5000);
 		
 		//If found.. repost the request on a 5 second timer..
 		if(found) {
-			//MinimaLogger.log("Delay SendTxPOWRequest for 10 secs.."+data+" from "+client);
+			//Wait 10 seconds before trying again..
 			TimerMessage newtxpowid = new TimerMessage(10000, CONSENSUS_NET_TXPOWID);
 			//Add the TxPOWID
 			newtxpowid.addObject("txpowid", zTxPoWID);
 			//And the Net Client..
-			newtxpowid.addObject("netclient", client);
-			
+			newtxpowid.addObject("netclient", zClient);
 			//Post it for later..
 			getConsensusHandler().PostTimerMessage(newtxpowid);
 			return;
 		}
 		
+		//Add it to the list of requested..
+		getNetworkHandler().addRequestedTxPow(zTxPoWID.to0xString());
+				
 		//Give it to the client to send on..	
 		Message req = new Message(MinimaClient.NETCLIENT_SENDTXPOWREQ);
 		req.addObject("txpowid", zTxPoWID);
 		
 		//And Post it..
-		client.PostMessage(req);
+		zClient.PostMessage(req);
 	}
 	
 	/**

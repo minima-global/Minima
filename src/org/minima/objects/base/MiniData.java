@@ -23,6 +23,8 @@ import org.minima.utils.Streamable;
  */
 public class MiniData implements Streamable {
 	
+	public static final MiniData ZERO_TXPOWID = new MiniData("0x00");
+	
 	/**
 	 * The byte data
 	 */

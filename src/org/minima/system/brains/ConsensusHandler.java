@@ -168,6 +168,13 @@ public class ConsensusHandler extends MessageProcessor {
 	}
 	
 	/**
+	 * Get the ConsensusNet Handler
+	 */
+	public ConsensusNet getConsensusNet() {
+		return mConsensusNet;
+	}
+	
+	/**
 	 * Listener Functions
 	 */
 	public void clearListeners() {
@@ -220,6 +227,35 @@ public class ConsensusHandler extends MessageProcessor {
 			//A TXPOW - that has been checked already and added to the DB
 			TxPoW txpow = (TxPoW) zMessage.getObject("txpow");
 			
+			//Check the validity..
+			String txpowid = txpow.getTxPowID().to0xString();
+			
+			//Was it requested (could be from a branch) ?
+			NetworkHandler network =  Main.getMainHandler().getNetworkHandler();
+			boolean requested = false;
+			if(network.isRequestedTxPow(txpowid)) {
+				requested = true;
+				network.removeRequestedTxPow(txpowid);
+			}
+			
+			//Check the Validity..
+			boolean txnok = TxPoWChecker.checkTransactionMMR(txpow, getMainDB());
+			if(!txnok) {
+				//Was it requested.. ?
+				if(requested) {
+					//Ok - could be from a different branch block.. 
+					MinimaLogger.log("WARNING Invalid TXPOW (Requested..) : "+txpow.getBlockNumber()+" "+txpow.getTxPowID()); 
+				}else {
+					//Not requested invalid transaction..
+					MinimaLogger.log("ERROR Invalid TXPOW (UN-Requested..) : "+txpow.getBlockNumber()+" "+txpow.getTxPowID()); 
+					
+					//Remove it from the DB..
+					getMainDB().getTxPowDB().removeTxPOW(txpow.getTxPowID());
+					return;	
+				}
+			}
+			
+			//s it relevant to you the User
 			boolean relevant = false;
 			if(txpow.isTransaction()) {
 				//Is it relevant to us..
