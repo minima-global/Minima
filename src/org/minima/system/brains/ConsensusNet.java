@@ -145,6 +145,13 @@ public class ConsensusNet extends ConsensusProcessor {
 			//Get the Client..
 			MinimaClient client = (MinimaClient) zMessage.getObject("netclient");
 			
+			//Only allow 0.97 for this..
+			if(!greet.getVersion().startsWith("0.97")) {
+				MinimaLogger.log("INCOMPATIBLE VERSION ON GREETING "+greet.getVersion()+" MUST BE 0.97");
+				client.PostMessage(new Message(MinimaClient.NETCLIENT_SHUTDOWN));
+				return;
+			}
+			
 			//Are we on the same version
 			if(!greet.getVersion().equals(GlobalParams.MINIMA_VERSION)) {
 				MinimaLogger.log("DIFFERENT VERSION ON GREETING "+greet.getVersion());
