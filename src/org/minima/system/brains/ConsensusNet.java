@@ -92,8 +92,7 @@ public class ConsensusNet extends ConsensusProcessor {
 		}
 	}
 	
-	
-	protected void PostNetClientMessage(Message zOrigMessage, Message zMessage) {
+	private void PostNetClientMessage(Message zOrigMessage, Message zMessage) {
 		if(zOrigMessage.exists("netclient")) {
 			MinimaClient client = (MinimaClient) zMessage.getObject("netclient");
 			zMessage.addObject("netclient", zOrigMessage.getObject("netclient"));
@@ -346,13 +345,13 @@ public class ConsensusNet extends ConsensusProcessor {
 				
 				//Check is above MY Cascade..
 				if(!txpow.getBlockNumber().isMore(casc)) {
-					MinimaLogger.log("SKIP UNEEDED BLOCK PAST CASCADE "+txpow.getBlockNumber());
+					//MinimaLogger.log("SKIP UNEEDED BLOCK PAST CASCADE "+txpow.getBlockNumber());
 					continue;
 				}
 				
 				//Could be an older cascade block
 				if(mmr==null) {
-					MinimaLogger.log("NULL MMR ON RESYNC BLOCK"+txpow.getBlockNumber());
+					//MinimaLogger.log("NULL MMR ON RESYNC BLOCK"+txpow.getBlockNumber());
 					continue;
 				}
 				
@@ -430,7 +429,7 @@ public class ConsensusNet extends ConsensusProcessor {
 				TxPoW txpow = spack.getTxPOW();
 				
 				if(!txpow.hasBody()) {
-					MinimaLogger.log("NO Body in TXn.."+txpow.getBlockNumber());
+					//MinimaLogger.log("NO Body in TXn.."+txpow.getBlockNumber());
 				}
 				
 				//Store it..
