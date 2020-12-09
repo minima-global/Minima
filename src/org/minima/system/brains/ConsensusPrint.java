@@ -1025,7 +1025,7 @@ public class ConsensusPrint extends ConsensusProcessor {
 			}
 			
 			long mem = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-			status.put("memory", MiniFormat.formatSize(mem));
+			status.put("ram", MiniFormat.formatSize(mem));
 			
 			//MemPool
 			ArrayList<TxPOWDBRow> unused = getMainDB().getTxPowDB().getAllUnusedTxPOW();
