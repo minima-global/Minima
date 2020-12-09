@@ -482,7 +482,7 @@ public class MinimaDB {
 		
 		//First check the main transaction..
 		if(nodetxp.isTransaction()) {
-			boolean inputvalid = TxPoWChecker.checkTransactionMMR(nodetxp, this, nodetxp, txncounter, zMMRSet,true);
+			boolean inputvalid = TxPoWChecker.checkTransactionMMR(nodetxp, this, nodetxp, zMMRSet,true);
 			if(!inputvalid) {
 				return false;
 			}
@@ -497,7 +497,7 @@ public class MinimaDB {
 			//Check the Proof.. - after a sync some txpow are assume valid..
 			if(!row.isAssumeValid()) {
 				txncounter = txncounter.increment();
-				boolean inputvalid = TxPoWChecker.checkTransactionMMR(txpow, this, nodetxp, txncounter, zMMRSet,true);
+				boolean inputvalid = TxPoWChecker.checkTransactionMMR(txpow, this, nodetxp, zMMRSet,true);
 				if(!inputvalid) {
 					return false;
 				}
@@ -1140,7 +1140,7 @@ public class MinimaDB {
 		//Check the first transaction
 		MiniNumber txncounter = MiniNumber.ZERO;
 		if(!zTrans.isEmpty()) {
-			boolean valid = TxPoWChecker.checkTransactionMMR(zTrans, zWitness, this, txpow, txncounter, newset, true, zContractLogs);
+			boolean valid = TxPoWChecker.checkTransactionMMR(zTrans, zWitness, this, txpow, newset, true, zContractLogs);
 			
 			//MUST be valid.. ?
 			if(!valid) {
@@ -1166,7 +1166,7 @@ public class MinimaDB {
 			 */
 			if(txp.isTransaction()) {
 				MiniNumber txncountertest = txncounter.increment();
-				boolean valid = TxPoWChecker.checkTransactionMMR(txp, this, txpow, txncountertest, newset,true);
+				boolean valid = TxPoWChecker.checkTransactionMMR(txp, this, txpow, newset,true);
 				
 				if(valid) {
 					//Valid so added

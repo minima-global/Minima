@@ -135,11 +135,11 @@ public class TxPoWChecker {
 		BlockTreeNode tip = zDB.getMainTree().getChainTip();
 		TxPoW block       = tip.getTxPow();
 		
-		return checkTransactionMMR(zTxPOW, zDB, block, MiniNumber.ZERO, tip.getMMRSet(), false);
+		return checkTransactionMMR(zTxPOW, zDB, block, tip.getMMRSet(), false);
 	}
 	
 	public static boolean checkTransactionMMR(TxPoW zTxPOW, MinimaDB zDB, 
-				TxPoW zBlock, MiniNumber zTransNumber, MMRSet zMMRSet, boolean zTouchMMR) {
+				TxPoW zBlock, MMRSet zMMRSet, boolean zTouchMMR) {
 		//need a body
 		if(!zTxPOW.hasBody()) {
 			return false;
@@ -150,11 +150,11 @@ public class TxPoWChecker {
 			return false;
 		}
 		
-		return checkTransactionMMR(zTxPOW.getTransaction(), zTxPOW.getWitness(), zDB, zBlock, zTransNumber, zMMRSet, zTouchMMR, new JSONArray());	
+		return checkTransactionMMR(zTxPOW.getTransaction(), zTxPOW.getWitness(), zDB, zBlock, zMMRSet, zTouchMMR, new JSONArray());	
 	}
 	
 	public static boolean checkTransactionMMR(Transaction zTrans, Witness zWit, MinimaDB zDB, 
-			TxPoW zBlock, MiniNumber zTransNumber, MMRSet zMMRSet, boolean zTouchMMR, JSONArray zContractLog) {
+			TxPoW zBlock, MMRSet zMMRSet, boolean zTouchMMR, JSONArray zContractLog) {
 		
 		//Empty Transaction passes..
 		if(zTrans.isEmpty()) {
@@ -166,10 +166,10 @@ public class TxPoWChecker {
 		MiniNumber tBlockTime   = zBlock.getTimeSecs();
 		
 		//The PRNG is unique per transaction - all inputs get the same one..
-		MiniData magic    = zBlock.getMagic();
-		MiniData transin  = new MiniData(BaseConverter.numberToHex(zTransNumber.getAsInt()));
-		MiniData totrnd   = magic.concat(transin.concat(zBlock.getParentID()));
-		byte[] prng       = Crypto.getInstance().hashData(totrnd.getData());
+//		MiniData magic    = zBlock.getMagic();
+//		MiniData transin  = new MiniData(BaseConverter.numberToHex(zTransNumber.getAsInt()));
+//		MiniData totrnd   = magic.concat(transin.concat(zBlock.getParentID()));
+//		byte[] prng       = Crypto.getInstance().hashData(totrnd.getData());
 		
 		//Make a deep copy.. as we may need to edit it.. with floating values and DYN_STATE
 		Transaction trans;
@@ -315,7 +315,7 @@ public class TxPoWChecker {
 				cc.setGlobalVariable("@BLKTIME", new NumberValue(tBlockTime));
 				cc.setGlobalVariable("@BLKDIFF", new NumberValue(tBlockNumber.sub(proof.getMMRData().getInBlock())));
 				cc.setGlobalVariable("@PREVBLKHASH", new HEXValue(zBlock.getParentID()));
-				cc.setGlobalVariable("@PRNG", new HEXValue(prng));
+//				cc.setGlobalVariable("@PRNG", new HEXValue(prng));
 				
 				cc.setGlobalVariable("@INBLKNUM", new NumberValue(proof.getMMRData().getInBlock()));
 				cc.setGlobalVariable("@INPUT", new NumberValue(i));
@@ -426,7 +426,7 @@ public class TxPoWChecker {
 			for(String token : tokens) {
 				MiniData tok = new MiniData(token);
 				
-				//Summthe outputs for this token type
+				//Sum the outputs for this token type
 				MiniNumber outamt = trans.sumOutputs(tok);
 				
 				//Do we need to reset the remainder amount - if one exists ?
