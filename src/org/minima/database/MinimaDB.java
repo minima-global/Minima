@@ -381,7 +381,7 @@ public class MinimaDB {
 				boolean spent = mmrcoin.getData().isSpent();
 				
 				//Is the address one of ours..
-				boolean rel = getUserDB().isAddressRelevant(cc.getAddress());
+				boolean rel = getUserDB().isCoinRelevant(cc);
 					
 				//Check the PREV State - could be a KEY or ADDRESS we own..
 				if(!rel) {

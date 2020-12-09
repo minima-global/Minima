@@ -584,7 +584,10 @@ public class ConsensusUser extends ConsensusProcessor {
 			//Once a coin has been used - say in a DEX.. you can remove it from your coinDB
 			String cid = zMessage.getString("coinid");
 			
-			//Remove the coin..
+			//Remove from the UserDB
+			getMainDB().getUserDB().removeRelevantCoinID(new MiniData(cid));
+			
+			//Remove from the coindb..
 			boolean found = getMainDB().getCoinDB().removeCoin(new MiniData(cid));
 			
 			//Now you have the proof..
@@ -596,6 +599,9 @@ public class ConsensusUser extends ConsensusProcessor {
 		}else if(zMessage.isMessageType(CONSENSUS_KEEPCOIN)) {
 			String cid = zMessage.getString("coinid");
 			
+			JSONObject resp = InputHandler.getResponseJSON(zMessage);
+			resp.put("coinid", cid);
+			
 			//Get the MMRSet
 			MMRSet basemmr = getMainDB().getMainTree().getChainTip().getMMRSet();
 			
@@ -603,23 +609,25 @@ public class ConsensusUser extends ConsensusProcessor {
 			MiniData coinid = new MiniData(cid);
 			MMREntry entry =  basemmr.findEntry(coinid);
 			
+			//If NULL not found..
+			if(entry == null) {
+				InputHandler.endResponse(zMessage, false, "CoinID not found");
+				return;
+			}
+			
+			//Add it to the Database
+			getMainDB().getUserDB().addRelevantCoinID(coinid);
+			
 			//Now ask to keep it..
 			MMRSet coinset = basemmr.getParentAtTime(entry.getBlockTime());
 			coinset.addKeeper(entry.getEntryNumber());
-			coinset.finalizeSet();
 			
 			//Get the coin
 			Coin cc = entry.getData().getCoin();
 			
-			//Is it relevant..
-			boolean rel = false;
-			if( getMainDB().getUserDB().isAddressRelevant(cc.getAddress()) ){
-				rel = true;
-			}
-			
 			//add it to the database
 			CoinDBRow crow = getMainDB().getCoinDB().addCoinRow(cc);
-			crow.setRelevant(rel);
+			crow.setRelevant(true);
 			crow.setKeeper(true);
 			crow.setIsSpent(entry.getData().isSpent());
 			crow.setIsInBlock(true);
@@ -627,7 +635,6 @@ public class ConsensusUser extends ConsensusProcessor {
 			crow.setMMREntry(entry.getEntryNumber());
 			
 			//Now you have the proof..
-			JSONObject resp = InputHandler.getResponseJSON(zMessage);
 			resp.put("coin", basemmr.getProof(entry.getEntryNumber()));
 			InputHandler.endResponse(zMessage, true, "");
 			

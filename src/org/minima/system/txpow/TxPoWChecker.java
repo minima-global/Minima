@@ -517,7 +517,7 @@ public class TxPoWChecker {
 				MMREntry unspent = zMMRSet.addUnspentCoin(mmrdata);
 				
 				//Do we keep this output..
-				boolean reladdress = zDB.getUserDB().isAddressRelevant(output.getAddress());
+				boolean reladdress = zDB.getUserDB().isCoinRelevant(output);
 				
 				//Do we keep it..
 				if(reladdress || relstate) {
