@@ -949,9 +949,6 @@ public class ConsensusPrint extends ConsensusProcessor {
 			//Do a FULL status ( with IBD and folder sizes..)
 			boolean fullstatus = zMessage.getBoolean("full");
 			
-			//Clean up..
-			System.gc();
-			
 			//Main Handler
 			Main main = Main.getMainHandler();
 			
@@ -1022,7 +1019,13 @@ public class ConsensusPrint extends ConsensusProcessor {
 				int ibd = getMainDB().getIntroSyncSize();
 				String ibds = MiniFormat.formatSize(ibd);
 				status.put("IBD", ibds);
+				
+				//Now make it null
+				txpows = null;
 			}
+			
+			//Clean up..
+			System.gc();
 			
 			long mem = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
 			status.put("ram", MiniFormat.formatSize(mem));
