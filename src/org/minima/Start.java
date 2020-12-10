@@ -323,5 +323,18 @@ public class Start {
 		
 		MinimaLogger.log("Main thread finished..");
 	}
+	
+	public String runMinimaCMD(String zInput){
+		//Create a Command
+		CMD cmd = new CMD(zInput);
+
+		//Run it.. wait for it to finish
+		cmd.run();
+
+		//Get the Response..
+		String resp = cmd.getFinalResult();
+
+		return resp;
+	}
 }	
 
