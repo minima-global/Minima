@@ -36,11 +36,6 @@ public class BlockTree {
 	private BlockTreeNode mCascadeNode;
 	
 	/**
-	 * When Copying..
-	 */
-	private BlockTreeNode mCopyNode;
-	
-	/**
 	 * The FAST link from ID to Block..
 	 */
 	private Hashtable<String, BlockTreeNode> mFastLink;
