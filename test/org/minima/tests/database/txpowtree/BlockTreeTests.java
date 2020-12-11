@@ -2,10 +2,12 @@ package org.minima.tests.database.txpowtree;
 
 import java.math.BigInteger;
 
+import org.minima.GlobalParams;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniInteger;
 import org.minima.objects.base.MiniNumber;
+import org.minima.database.MinimaDB;
 import org.minima.database.txpowtree.BlockTree;
 import org.minima.database.txpowtree.BlockTreeNode;
 
@@ -141,6 +143,36 @@ public class BlockTreeTests {
         assertEquals("should be equal ", 1, bt.getChainSpeed(btn_child_2_1).getAsInt());
         assertEquals("should be equal ", 1, bt.getChainSpeed(btn_child_2_2).getAsInt());
         //assertEquals("should be equal ", 1, bt.getChainSpeed(btn_child_untracked).getAsInt());
+
+        BlockTreeNode btn_root_copy = BlockTree.copyTreeNode(btn_root);
+        BlockTree bt_copy = new BlockTree();
+        bt_copy.setTreeRoot(btn_root_copy);
+
+        assertEquals("should be equal ", 1, bt_copy.getAsList().size());
+        assertEquals("should be equal ", 1, bt_copy.getAsList(true).size());
+
+        assertEquals("should be equal ", 10, bt_copy.getAvgChainDifficulty().intValue());
+        assertEquals("should be equal ", 10, bt_copy.getAvgChainDifficulty(btn_root).intValue());
+        assertEquals("should be equal ", 10, bt_copy.getAvgChainDifficulty(btn_child_1).intValue());
+        assertEquals("should be equal ", 10, bt_copy.getAvgChainDifficulty(btn_child_1_1).intValue());
+        assertEquals("should be equal ", 10, bt_copy.getAvgChainDifficulty(btn_child_1_2).intValue());
+        assertEquals("should be equal ", 10, bt_copy.getAvgChainDifficulty(btn_child_2).intValue());
+        assertEquals("should be equal ", 10, bt_copy.getAvgChainDifficulty(btn_child_2_1).intValue());
+        assertEquals("should be equal ", 10, bt_copy.getAvgChainDifficulty(btn_child_2_2).intValue());
+        assertEquals("should be equal ", -1, bt_copy.getAvgChainDifficulty(btn_child_untracked).intValue());
+
+        assertEquals("should be equal ", 1, bt_copy.getChainSpeed().getAsInt());
+        assertEquals("should be equal ", 1, bt_copy.getChainSpeed(btn_root).getAsInt());
+        assertEquals("should be equal ", 1, bt_copy.getChainSpeed(btn_child_1).getAsInt());
+        assertEquals("should be equal ", 1, bt_copy.getChainSpeed(btn_child_1_1).getAsInt());
+        assertEquals("should be equal ", 1, bt_copy.getChainSpeed(btn_child_1_2).getAsInt());
+        assertEquals("should be equal ", 1, bt_copy.getChainSpeed(btn_child_2).getAsInt());
+        assertEquals("should be equal ", 1, bt_copy.getChainSpeed(btn_child_2_1).getAsInt());
+        assertEquals("should be equal ", 1, bt_copy.getChainSpeed(btn_child_2_2).getAsInt());
+        //assertEquals("should be equal ", 1, bt_copy.getChainSpeed(btn_child_untracked).getAsInt());
+
+        bt.resetWeights();
+        //bt.sortBlockTreeNodeStates(new MinimaDB());
 
         //assertEquals("should be equal ", btn_root, bt.getChainRoot());
         //assertEquals("should be equal ", btn_root, bt.getChainTip());
