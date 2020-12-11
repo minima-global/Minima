@@ -312,6 +312,14 @@ public class MinimaDB {
 			}
 			
 			/**
+			 * Only cascade the tree every 100 blocks.. no need to do it EVERY block..
+			 */
+			MiniNumber checkcasc = newtip.getBlockNumber().modulo(new MiniNumber(100));
+			if(!checkcasc.isEqual(MiniNumber.ZERO)) {
+				return;
+			}
+			
+			/**
 			 * Cascade the tree
 			 */
 			CascadeTree casc = new CascadeTree(mMainTree);
@@ -871,15 +879,21 @@ public class MinimaDB {
 			howdeep = GlobalParams.MINIMA_MMR_PROOF_HISTORY;
 		}
 		
-		//DEBUG..
-		if(GlobalParams.SHORT_CHAIN_DEBUG_MODE) {
-			if(howdeep.isMore(MiniNumber.EIGHT)) {
-				howdeep = MiniNumber.EIGHT;
-			}
-		}
+//		//DEBUG..
+//		if(GlobalParams.SHORT_CHAIN_DEBUG_MODE) {
+//			if(howdeep.isMore(MiniNumber.FOUR)) {
+//				howdeep = MiniNumber.FOUR;
+//			}
+//		}
 	
+		//Check not past the cascade..
+		MiniNumber proofblock = currentblock.sub(howdeep);
+		if(proofblock.isLess(getMainTree().getCascadeNode().getBlockNumber())) {
+			proofblock = getMainTree().getCascadeNode().getBlockNumber();
+		}
+		
 		//The Actual MMR block we will use..
-		MMRSet proofmmr = basemmr.getParentAtTime(currentblock.sub(howdeep));
+		MMRSet proofmmr = basemmr.getParentAtTime(proofblock);
 		
 		//Now add the actual MMR Proofs..
 		for(Coin cc : ins) {
