@@ -219,7 +219,6 @@ public class ConsensusNet extends ConsensusProcessor {
 			//How Many blocks do we need to send..
 			int blocklen = top.getBlockNumber().sub(cross).getAsInt(); 
 			if(blocklen == 0) {
-				MinimaLogger.log("ALLREADY IN SYNC.. NOTHING TO SEND!");
 				return;
 			}
 
