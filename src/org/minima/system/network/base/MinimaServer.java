@@ -36,8 +36,7 @@ public class MinimaServer implements Runnable{
 				mServerSocket.close();
 			}
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			MinimaLogger.log(e);
 		}
 	}
 	
