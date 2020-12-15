@@ -46,6 +46,7 @@ public interface TxPowDB {
 	public ArrayList<TxPOWDBRow> removeTxPOWInBlockLessThan(MiniNumber zBlockNumber);
 	
 	public ArrayList<TxPOWDBRow> getAllUnusedTxPOW();
+	public void removeAllUnused();
 	
 	public ArrayList<TxPOWDBRow> getChildBlocksTxPOW(MiniData zParent);
 	

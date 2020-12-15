@@ -1,18 +1,31 @@
 package org.minima.system.brains;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Comparator;
 
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniNumber;
+import org.minima.objects.greet.SyncPacket;
 import org.minima.utils.MiniFile;
+import org.minima.utils.MiniFormat;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageProcessor;
+import org.minima.utils.messages.TimerMessage;
 
 public class BackupManager extends MessageProcessor {
 
 	private static final String BACKUP_WRITE              = "BACKUP_WRITE";
 	private static final String BACKUP_DELETE             = "BACKUP_DELETE";
+	
+	private static final String BACKUP_CLEAN_BLOCKS       = "BACKUP_CLEAN_BLOCKS";
+	private static final String BACKUP_WRITE_BLOCK        = "BACKUP_WRITE_BLOCK";
+	
+	private long CLEAN_UP_TIMER 						  = 10000;
 	
 	/**
 	 * User Configuration
@@ -29,11 +42,19 @@ public class BackupManager extends MessageProcessor {
 	
 	File mTxPOWDB;
 	
+	File mBlocksDB;
+	
 	File mMiniDAPPS;
 	
 	File mWebRoot;
 	
 	static File mTempFolder = new File(System.getProperty("java.io.tmpdir"));
+	
+	MiniNumber mLastBlock  = MiniNumber.ZERO;
+	MiniNumber mFirstBlock = MiniNumber.MINUSONE;
+	
+	//500,000 blocks @ 4320 blocks a day.. ~3 months
+	private static MiniNumber MAX_BLOCKS  = MiniNumber.MILLION.div(MiniNumber.TWO);
 	
 	public BackupManager(String zConfFolder) {
 		super("BACKUP");
@@ -42,6 +63,9 @@ public class BackupManager extends MessageProcessor {
 	
 		//Start init
 		initFolders();
+		
+		//A timerMessage that leans out the blocks folder..
+		PostTimerMessage(new TimerMessage(CLEAN_UP_TIMER, BACKUP_CLEAN_BLOCKS));
 	}
 	
 	public File getRootFolder() {
@@ -90,7 +114,18 @@ public class BackupManager extends MessageProcessor {
 		backup.addObject("file", back);
 		PostMessage(backup);
 	}
+	
+	public void backupBlock(SyncPacket zBlock) {
+		//Do in separate thread so returns fast
+		Message backup = new Message(BackupManager.BACKUP_WRITE_BLOCK);
+		backup.addObject("block", zBlock);
+		PostMessage(backup);
+	}
 
+	public MiniNumber getOldestBackupBlock() {
+		return mFirstBlock;
+	}
+	
 	public void deleteTxpow(TxPoW zTxPOW) {
 		//Create the File
 		File delfile = new File(mTxPOWDB,zTxPOW.getTxPowID().toString()+".txpow");
@@ -129,7 +164,138 @@ public class BackupManager extends MessageProcessor {
 			//Get the file
 			File ff = (File) zMessage.getObject("file");
 			MiniFile.deleteFileOrFolder(mRootPath, ff);
+		
+		}else if(zMessage.isMessageType(BACKUP_WRITE_BLOCK)) {
+			//Get the Block..
+			SyncPacket block = (SyncPacket) zMessage.getObject("block");
+			
+			//Which Block is this..
+			mLastBlock = block.getTxPOW().getBlockNumber();
+					
+			//Get the File..v
+			File savefile = getBlockFile(mLastBlock);
+			
+			//MinimaLogger.log("save block : "+savefile);
+			
+			//Write..
+			MiniFile.writeObjectToFile(savefile, block);	
+			
+		}else if(zMessage.isMessageType(BACKUP_CLEAN_BLOCKS)) {
+			//Check again
+			PostTimerMessage(new TimerMessage(CLEAN_UP_TIMER, BACKUP_CLEAN_BLOCKS));
+			
+			//Is this the first time this has been called..
+			boolean found = false;
+			
+			//First scan the main blocks folder and start parsing..
+			File[] level1 = mBlocksDB.listFiles();
+			if(level1 == null) {level1 = new File[0];}
+			
+			//Find the lowest block we have..
+			for(File lv1 : level1) {
+				//If found jump out
+				if(found) {break;}
+				
+				//Scan lower levels
+				File[] level2 = lv1.listFiles();
+				if(level2 == null) {level2 = new File[0];}
+				
+				if(level2.length > 0) {
+					for(File lv2 : level2) {
+						//If found jump out
+						if(found) {break;}
+							
+						//Check it..
+						File[] files = lv2.listFiles();
+						if(files == null) {files = new File[0];}
+						
+						//Any Files..
+						if(files.length>0) {
+							//Sort alphabetically..
+							Arrays.sort(files, new Comparator<File>() {
+								@Override
+								public int compare(File arg0, File arg1) {
+									return arg0.getName().compareTo(arg1.getName());
+								}
+							});
+							
+							//Get the top
+							File first  = files[0];
+							String name = first.getName();
+							int index   = name.indexOf(".");
+							name        = name.substring(0,index);
+							
+							mFirstBlock = new MiniNumber(name);
+							found = true;
+						}else {
+							//MinimaLogger.log("DELETE EMPTY FOLDER "+lv2);
+							MiniFile.deleteFileOrFolder(mRootPath, lv2);
+						}
+					}
+					
+				}else {
+					//MinimaLogger.log("DELETE EMPTY FOLDER "+lv1);
+					MiniFile.deleteFileOrFolder(mRootPath, lv1);
+				}
+			}
+			
+			//Check the scan worked
+			if(!mFirstBlock.isMoreEqual(MiniNumber.ZERO) || !mLastBlock.isMore(MiniNumber.ZERO)) {
+				return;
+			}
+			
+			//Only keep MAX blocks
+			MiniNumber total = mLastBlock.sub(mFirstBlock);
+			if(total.isLessEqual(MAX_BLOCKS)) {
+				return;
+			}
+			
+			//How many to delete
+			int delete = total.sub(MAX_BLOCKS).getAsInt(); 
+			for(int i=0;i<delete;i++) {
+				//Get the file..
+				File ff = getBlockFile(mFirstBlock);
+				
+				//Delete this file..
+				//MinimaLogger.log("Delete : "+ff.getAbsolutePath());
+				MiniFile.deleteFileOrFolder(mRootPath, ff);
+				
+				//Increment the delblock
+				mFirstBlock = mFirstBlock.increment();
+			}
 		}
+	}
+	
+	/**
+	 * The folder to store the block.. 
+	 * There are 1000 blocks per folder and 1000 folders per top level folder
+	 * The actual block names are zero padded.. 
+	 * So that they order correctly alpha-numerically
+	 * 
+	 * @param zBlockNumber
+	 * @return the File
+	 */
+	public File getBlockFile(MiniNumber zBlockNumber) {
+		//Top level Folder
+		MiniNumber fold1 = zBlockNumber.div(MiniNumber.MILLION).floor();
+		
+		//Inside Top Level
+		MiniNumber remainder = zBlockNumber.sub(MiniNumber.MILLION.mult(fold1));
+		MiniNumber fold2     = remainder.div(MiniNumber.THOUSAND).floor();
+		
+		//Get the number..
+		String f1 = MiniFormat.zeroPad(6, fold1);
+		String f2 = MiniFormat.zeroPad(6, fold2);
+		String filename = MiniFormat.zeroPad(12, zBlockNumber);
+		
+		//Create the File
+		File back1 = new File(mBlocksDB,f1);
+		File back2 = new File(back1,f2);
+		ensureFolder(back2);
+		
+		File savefile = new File(back2,filename+".block");
+		
+		return savefile;
 	}
 	
 	private void initFolders() {
@@ -140,6 +306,9 @@ public class BackupManager extends MessageProcessor {
 		//Current used TxPOW
 		mTxPOWDB   = ensureFolder(new File(mRoot,"txpow"));
 		
+		//Current Blocks
+		mBlocksDB    = ensureFolder(new File(mRoot,"blocks"));
+				
 		//The Backup folder
 		mBackup    = ensureFolder(new File(mRoot,"backup"));
 		
@@ -162,6 +331,7 @@ public class BackupManager extends MessageProcessor {
 	
 	public static void deleteConfFolder(File zFolder) {
 		MiniFile.deleteFileOrFolder(mRootPath,new File(zFolder,"txpow"));
+		MiniFile.deleteFileOrFolder(mRootPath,new File(zFolder,"blocks"));
 		MiniFile.deleteFileOrFolder(mRootPath,new File(zFolder,"backup"));
 		MiniFile.deleteFileOrFolder(mRootPath,new File(zFolder,"temp"));
 	}

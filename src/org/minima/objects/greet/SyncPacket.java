@@ -1,19 +1,19 @@
 package org.minima.objects.greet;
 
+import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.IOException;
 
 import org.minima.database.mmr.MMRSet;
 import org.minima.database.txpowtree.BlockTreeNode;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniByte;
+import org.minima.utils.MiniFile;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 
-/**
- * When Syncing up this is all the info you need..
- * @author spartacusrex
- */
 
 public class SyncPacket implements Streamable {
 
@@ -109,6 +109,34 @@ public class SyncPacket implements Streamable {
 			mMMR = new MMRSet();
 			mMMR.readDataStream(zIn);
 		}
+	}
+	
+	public static SyncPacket ReadFromStream(DataInputStream zIn) throws IOException {
+		SyncPacket sync = new SyncPacket();
+		sync.readDataStream(zIn);
+		return sync;
+	}
+	
+	public static SyncPacket loadBlock(File zFile) {
+		//The TxPOW File..
+		SyncPacket sync = null;
+		
+		try {
+			//Load the complete file first..
+			byte[] txfile = MiniFile.readCompleteFile(zFile);
+			
+			//Now load from memory..
+			ByteArrayInputStream bais = new ByteArrayInputStream(txfile);
+			DataInputStream dis = new DataInputStream(bais);
+			sync = ReadFromStream(dis);
+			dis.close();
+			bais.close();
+			
+		} catch (Exception e) {
+			MinimaLogger.log("ERROR loading Block "+zFile.getName());
+		}
+		
+		return sync;
 	}
 	
 }

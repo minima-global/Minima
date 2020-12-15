@@ -23,6 +23,8 @@ public class JavaDBRow implements TxPOWDBRow {
 	
 	private boolean mMonotonic;
 	
+	private boolean mAssumeValid;
+	
 	public JavaDBRow(TxPoW zTxPOW) {
 		mTxPOW 				= zTxPOW;
 		mIsInBlock 			= false;
@@ -32,6 +34,12 @@ public class JavaDBRow implements TxPOWDBRow {
 		mAddedTime          = System.currentTimeMillis();
 		mInBlocknumber      = MiniNumber.ZERO;
 		mMonotonic          = false;
+	
+		if(zTxPOW.hasBody()) {
+			mAssumeValid = false;
+		}else {
+			mAssumeValid = true;
+		}
 	}
 
 	@Override
@@ -136,5 +144,15 @@ public class JavaDBRow implements TxPOWDBRow {
 	@Override
 	public void setMonotonic(boolean zMonotonic) {
 		mMonotonic = zMonotonic;
+	}
+
+	@Override
+	public boolean isAssumeValid() {
+		return mAssumeValid;
+	}
+
+	@Override
+	public void setAssumeValid(boolean zValid) {
+		mAssumeValid = zValid;
 	}
 }

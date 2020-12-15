@@ -36,11 +36,6 @@ public class BlockTree {
 	private BlockTreeNode mCascadeNode;
 	
 	/**
-	 * When Copying..
-	 */
-	private BlockTreeNode mCopyNode;
-	
-	/**
 	 * The FAST link from ID to Block..
 	 */
 	private Hashtable<String, BlockTreeNode> mFastLink;
@@ -303,7 +298,7 @@ public class BlockTree {
 		
 		//Are we recursing if we can;t find it - cascade tree needs this..
 		if(zRecurseAlso) {
-			MinimaLogger.log("BLOCKTREE TIP NOT FOUND : Recurse required.. "+zTxPOWID);
+			//MinimaLogger.log("BLOCKTREE TIP NOT FOUND : Recurse required.. "+zTxPOWID);
 			
 			//SLOWER recursive method.. replaced by the fast hashtable
 			NodeAction finder = new NodeAction(zTxPOWID) {

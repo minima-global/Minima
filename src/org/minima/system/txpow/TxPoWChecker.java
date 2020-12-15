@@ -81,6 +81,47 @@ public class TxPoWChecker {
 	}
 	
 	/**
+	 * Perform Basic checks on a complete TxPoW message
+	 * @param txpow
+	 * @return if this is valid
+	 */
+	public static boolean basicTxPowChecks(TxPoW txpow) {
+		//Must be at least a block or a transaction..
+		if(!txpow.isBlock() && !txpow.isTransaction()) {
+			MinimaLogger.log("ERROR NET FAKE - not transaction not block : "+txpow.getBlockNumber()+" "+txpow);
+			return false;
+		}
+		
+		//Is the Transaction PoWerful enough..
+		if(txpow.isTransaction() && txpow.getTxnDifficulty().isMore(TxPoWMiner.BASE_TXN)) {
+			MinimaLogger.log("ERROR NET - Transaction not enough TxPOW: "+txpow.getTxnDifficulty()+" "+txpow);
+			return false;
+		}
+		
+		//Does it have a body.. SHOULD NOT HAPPEN as only complete post cascade txpow messages can be requested
+		if(!txpow.hasBody()) {
+			MinimaLogger.log("ERROR NET NO TxBODY for txpow "+txpow.getBlockNumber()+" "+txpow.getTxPowID());
+			return false;
+		}
+		
+		//Check Header and Body Agree..
+		MiniData bodyhash = Crypto.getInstance().hashObject(txpow.getTxBody());
+		if(!txpow.getTxHeader().getBodyHash().isEqual(bodyhash)) {
+			MinimaLogger.log("ERROR NET TxHeader and TxBody Mismatch! "+txpow.getBlockNumber()+" "+txpow.getTxPowID()+" "+txpow.getTxHeader().getBodyHash().to0xString()+" "+bodyhash.to0xString()); 
+			return false;
+		}
+		
+		//Check the Signatures.. just the once..
+		boolean sigsok = TxPoWChecker.checkSigs(txpow);
+		if(!sigsok) {
+			MinimaLogger.log("ERROR NET Invalid Signatures with TXPOW : "+txpow.getBlockNumber()+" "+txpow.getTxPowID()); 
+			return false;
+		}
+		
+		return true;
+	}
+	
+	/**
 	 * Check a transaction, and update the MMR. If the block is invalid - the MMR will never be used anyway.
 	 * @param zTrans
 	 * @param zWit
@@ -94,33 +135,14 @@ public class TxPoWChecker {
 		BlockTreeNode tip = zDB.getMainTree().getChainTip();
 		TxPoW block       = tip.getTxPow();
 		
-		return checkTransactionMMR(zTxPOW, zDB, block, MiniNumber.ZERO, tip.getMMRSet(), false);
+		return checkTransactionMMR(zTxPOW, zDB, block, tip.getMMRSet(), false);
 	}
 	
 	public static boolean checkTransactionMMR(TxPoW zTxPOW, MinimaDB zDB, 
-				TxPoW zBlock, MiniNumber zTransNumber, MMRSet zMMRSet, boolean zTouchMMR) {
+				TxPoW zBlock, MMRSet zMMRSet, boolean zTouchMMR) {
 		//need a body
 		if(!zTxPOW.hasBody()) {
 			return false;
-		}
-			
-		//Burn Transaction check!.. 
-		if(!zTxPOW.getBurnTransaction().isEmpty()) {
-			//Get MAIN Transaction Hash - make sure is correct in Burn Transaction
-			MiniData transid = zTxPOW.getTransID();
-			
-			//Check is correct on Burn Transaction..
-			if(!zTxPOW.getBurnTransaction().getLinkHash().isEqual(transid)) {
-				return false;
-			}
-			
-			boolean burntrans = checkTransactionMMR(zTxPOW.getBurnTransaction(), 
-													zTxPOW.getBurnWitness(), 
-													zDB, zBlock, zTransNumber, zMMRSet, zTouchMMR, 
-													new JSONArray());
-			if(!burntrans) {
-				return false;
-			}
 		}
 		
 		//Now Check the Transaction Link Hash..
@@ -128,11 +150,11 @@ public class TxPoWChecker {
 			return false;
 		}
 		
-		return checkTransactionMMR(zTxPOW.getTransaction(), zTxPOW.getWitness(), zDB, zBlock, zTransNumber, zMMRSet, zTouchMMR, new JSONArray());	
+		return checkTransactionMMR(zTxPOW.getTransaction(), zTxPOW.getWitness(), zDB, zBlock, zMMRSet, zTouchMMR, new JSONArray());	
 	}
 	
 	public static boolean checkTransactionMMR(Transaction zTrans, Witness zWit, MinimaDB zDB, 
-			TxPoW zBlock, MiniNumber zTransNumber, MMRSet zMMRSet, boolean zTouchMMR, JSONArray zContractLog) {
+			TxPoW zBlock, MMRSet zMMRSet, boolean zTouchMMR, JSONArray zContractLog) {
 		
 		//Empty Transaction passes..
 		if(zTrans.isEmpty()) {
@@ -144,10 +166,10 @@ public class TxPoWChecker {
 		MiniNumber tBlockTime   = zBlock.getTimeSecs();
 		
 		//The PRNG is unique per transaction - all inputs get the same one..
-		MiniData magic    = zBlock.getMagic();
-		MiniData transin  = new MiniData(BaseConverter.numberToHex(zTransNumber.getAsInt()));
-		MiniData totrnd   = magic.concat(transin.concat(zBlock.getParentID()));
-		byte[] prng       = Crypto.getInstance().hashData(totrnd.getData());
+//		MiniData magic    = zBlock.getMagic();
+//		MiniData transin  = new MiniData(BaseConverter.numberToHex(zTransNumber.getAsInt()));
+//		MiniData totrnd   = magic.concat(transin.concat(zBlock.getParentID()));
+//		byte[] prng       = Crypto.getInstance().hashData(totrnd.getData());
 		
 		//Make a deep copy.. as we may need to edit it.. with floating values and DYN_STATE
 		Transaction trans;
@@ -293,7 +315,7 @@ public class TxPoWChecker {
 				cc.setGlobalVariable("@BLKTIME", new NumberValue(tBlockTime));
 				cc.setGlobalVariable("@BLKDIFF", new NumberValue(tBlockNumber.sub(proof.getMMRData().getInBlock())));
 				cc.setGlobalVariable("@PREVBLKHASH", new HEXValue(zBlock.getParentID()));
-				cc.setGlobalVariable("@PRNG", new HEXValue(prng));
+//				cc.setGlobalVariable("@PRNG", new HEXValue(prng));
 				
 				cc.setGlobalVariable("@INBLKNUM", new NumberValue(proof.getMMRData().getInBlock()));
 				cc.setGlobalVariable("@INPUT", new NumberValue(i));
@@ -404,7 +426,7 @@ public class TxPoWChecker {
 			for(String token : tokens) {
 				MiniData tok = new MiniData(token);
 				
-				//Summthe outputs for this token type
+				//Sum the outputs for this token type
 				MiniNumber outamt = trans.sumOutputs(tok);
 				
 				//Do we need to reset the remainder amount - if one exists ?
@@ -495,7 +517,7 @@ public class TxPoWChecker {
 				MMREntry unspent = zMMRSet.addUnspentCoin(mmrdata);
 				
 				//Do we keep this output..
-				boolean reladdress = zDB.getUserDB().isAddressRelevant(output.getAddress());
+				boolean reladdress = zDB.getUserDB().isCoinRelevant(output);
 				
 				//Do we keep it..
 				if(reladdress || relstate) {

@@ -6,6 +6,7 @@ import java.io.File;
 import java.util.ArrayList;
 
 import org.minima.database.MinimaDB;
+import org.minima.database.mmr.MMREntryDB;
 import org.minima.database.mmr.MMRSet;
 import org.minima.database.txpowdb.TxPOWDBRow;
 import org.minima.database.txpowtree.BlockTreeNode;
@@ -17,7 +18,9 @@ import org.minima.objects.greet.SyncPackage;
 import org.minima.objects.greet.SyncPacket;
 import org.minima.system.Main;
 import org.minima.system.input.InputHandler;
+import org.minima.system.network.NetworkHandler;
 import org.minima.utils.MiniFile;
+import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
@@ -27,6 +30,9 @@ public class ConsensusBackup extends ConsensusProcessor {
 	public static final String CONSENSUS_PREFIX  = "CONSENSUSBACKUP_";
 	
 	public static String CONSENSUSBACKUP_BACKUPUSER  = CONSENSUS_PREFIX+"BACKUPUSER"; 
+	
+	public static String CONSENSUSBACKUP_SYNCBACKUP   = CONSENSUS_PREFIX+"SYNCBACKUP"; 
+	public static String CONSENSUSBACKUP_SYNCRESTORE  = CONSENSUS_PREFIX+"SYNCRESTORE"; 
 	
 	public static String CONSENSUSBACKUP_BACKUP  = CONSENSUS_PREFIX+"BACKUP"; 
 	
@@ -56,6 +62,45 @@ public class ConsensusBackup extends ConsensusProcessor {
 			JavaUserDB userdb = (JavaUserDB) getMainDB().getUserDB();
 			File backuser     = backup.getBackUpFile(USERDB_BACKUP);
 			MiniFile.writeObjectToFile(backuser, userdb);
+	
+		}else if(zMessage.isMessageType(CONSENSUSBACKUP_SYNCBACKUP)) {
+			//Return details..
+			JSONObject details = InputHandler.getResponseJSON(zMessage);
+			
+			//Get the file..
+			String file = zMessage.getString("file");
+			
+			//Create the output file - and delete if exists
+			File fullbackup = new File(file);
+			if(fullbackup.exists()) {
+				fullbackup.delete();
+			}
+			
+			//Add to the returned details
+			details.put("file", fullbackup.getAbsolutePath());
+			
+			//First backup the UserDB..
+			try {
+				JavaUserDB userdb = (JavaUserDB) getMainDB().getUserDB();
+				MiniFile.writeObjectToFile(fullbackup, userdb);
+				
+				//Now the complete SyncPackage..
+				SyncPackage sp = getMainDB().getSyncPackage();
+				MiniFile.writeObjectToFile(fullbackup, sp, true);
+				
+			}catch(Exception exc) {
+				MinimaLogger.log(exc);
+				details.put("error", exc.toString());
+				InputHandler.endResponse(zMessage, false, "Backup Error");
+				return;
+			}
+			
+			//Reset..
+			fullbackup = new File(file);
+			details.put("size", MiniFormat.formatSize(fullbackup.length()));
+			
+			//Where
+			InputHandler.endResponse(zMessage, true, "Full Backup Performed");
 			
 		}else if(zMessage.isMessageType(CONSENSUSBACKUP_BACKUP)) {
 			//Return details..
@@ -169,108 +214,180 @@ public class ConsensusBackup extends ConsensusProcessor {
 				return;
 			}
 			
-			//Get the SyncPackage
-			MiniNumber casc = sp.getCascadeNode();
+			//And now load it..
+			loadSyncPackage(sp);
 			
-			//Drill down
-			ArrayList<SyncPacket> packets = sp.getAllNodes();
-			float syncsize = packets.size();
-			float tot = 0;
-			for(SyncPacket spack : packets) {
-				//Print some stuff..
-				int curr  = (int)( (tot++ / syncsize) *100);
-				getConsensusHandler().updateListeners(new Message(ConsensusHandler.CONSENSUS_NOTIFY_INITIALPERC).addString("info", "Checking DB.."+curr+"%"));
-				
-				TxPoW txpow     = spack.getTxPOW();
-				MMRSet mmrset   = spack.getMMRSet();
-				boolean cascade = spack.isCascade();
-				
-				//Check all MMR in the unbroken chain.. no point in cascade as may have changed..
-				if(mmrset!=null) {
-					if(mmrset.getBlockTime().isMoreEqual(casc)) {
-						getMainDB().scanMMRSetForCoins(mmrset);
-					}
-				}
-				
-				//Add it to the DB..
-				BlockTreeNode node = getMainDB().hardAddTxPOWBlock(txpow, mmrset, cascade);
+			//We now have ALL the TxPoW units loaded..
+			//Would be nice to clear the folder and save them ALL..
+			//TODO..
+			//..
 			
-				//Load the TxPOW files in the block..
-				ArrayList<MiniData> txns = txpow.getBlockTransactions();
-				for(MiniData txn : txns) {
-					TxPoW txinblock = loadTxPOW(backup.getTxpowFile(txn));
-					
-					//Add it..
-					if(txinblock != null) {
-						getMainDB().addNewTxPow(txinblock);	
-					}
-				}
+			//Get on with it..
+			Main.getMainHandler().PostMessage(Main.SYSTEM_INIT);
+		
+		}else if(zMessage.isMessageType(CONSENSUSBACKUP_SYNCRESTORE)) {
+			//Get the file..
+			String file = zMessage.getString("file");
 			
-				//Is this the cascade block
-				if(txpow.getBlockNumber().isEqual(sp.getCascadeNode())) {
-					getMainDB().hardSetCascadeNode(node);
-				}
-				
-				//Store it..
-				getBackup().backupTxpow(txpow);
+			//Return details..
+			JSONObject details = InputHandler.getResponseJSON(zMessage);
+			
+			//Create the output file - and delete if exists
+			File fullrestore = new File(file);
+			
+			//Add to the returned details
+			details.put("file", fullrestore.getAbsolutePath());
+
+			if(!fullrestore.exists() || fullrestore.isDirectory()) {
+				InputHandler.endResponse(zMessage, false, "Restore file does not exist");
+				return;
 			}
-			getConsensusHandler().updateListeners(new Message(ConsensusHandler.CONSENSUS_NOTIFY_INITIALPERC).addString("info", "Checking DB..100%"));
-			MinimaLogger.log("Checking DB.. 100%");
 			
-			//Reset weights
-			getMainDB().hardResetChain();
+			//Clear the database..
+			getMainDB().getMainTree().clearTree();
+			getMainDB().getCoinDB().clearDB();
+			getMainDB().getTxPowDB().ClearDB();
 			
-			//And Now sort the TXPOWDB
-			ArrayList<BlockTreeNode> list = getMainDB().getMainTree().getAsList();
-			getMainDB().getTxPowDB().resetAllInBlocks();
+			//Wipe everything
+			BackupManager.safeDelete(getBackup().getRootFolder());
 			
-			//Now sort
-			syncsize = list.size();
-			tot = 0;
-			for(BlockTreeNode treenode : list) {
-				//Print some stuff..
-				int curr   = (int)( (tot++/syncsize) *100);
-				getConsensusHandler().updateListeners(new Message(ConsensusHandler.CONSENSUS_NOTIFY_INITIALPERC).addString("info", "Restoring DB.."+curr+"%"));
+			//Load the whole file
+			byte[] restore 				= MiniFile.readCompleteFile(fullrestore);
+			ByteArrayInputStream bais 	= new ByteArrayInputStream(restore);
+			DataInputStream dis 		= new DataInputStream(bais);
+			
+			//First the UserDB
+			JavaUserDB jdb = new JavaUserDB();
+			jdb.readDataStream(dis);
 				
-				//Get the Block
-				TxPoW txpow = treenode.getTxPow();
+			//Set it..
+			getMainDB().setUserDB(jdb);
+			
+			//And now..
+			SyncPackage sp = new SyncPackage();
+			sp.readDataStream(dis);
+			
+			//All done..
+			dis.close();
+			bais.close();
+			
+			//And now load it..
+			loadSyncPackage(sp);
+			
+			//Disconnect and Reconnect to the network..
+			getNetworkHandler().PostMessage(NetworkHandler.NETWORK_RECONNECT);
+		
+			//Message
+			InputHandler.endResponse(zMessage, true, "Restore complete - reconnecting to network");
+		}
+	}
+	
+	public void loadSyncPackage(SyncPackage zPackage) {
+		//Get the SyncPackage
+		MiniNumber casc = zPackage.getCascadeNode();
+		
+		//Drill down
+		ArrayList<SyncPacket> packets = zPackage.getAllNodes();
+		
+		float syncsize = packets.size();
+		float tot = 0;
+		for(SyncPacket spack : packets) {
+			//Print some stuff..
+			int curr  = (int)( (tot++ / syncsize) *100);
+			getConsensusHandler().updateListeners(new Message(ConsensusHandler.CONSENSUS_NOTIFY_INITIALPERC).addString("info", "Checking DB.."+curr+"%"));
+			
+			TxPoW txpow     = spack.getTxPOW();
+			MMRSet mmrset   = spack.getMMRSet();
+			boolean cascade = spack.isCascade();
+			
+			//Check all MMR in the unbroken chain.. no point in cascade as may have changed..
+			if(mmrset!=null) {
+				if(mmrset.getBlockTime().isMoreEqual(casc)) {
+					getMainDB().scanMMRSetForCoins(mmrset);
+				}
+			}
+			
+			//Add it to the DB..
+			BlockTreeNode node = getMainDB().hardAddTxPOWBlock(txpow, mmrset, cascade);
+		
+			//Load the TxPOW files in the block..
+			BackupManager backup = getBackup();
+			ArrayList<MiniData> txns = txpow.getBlockTransactions();
+			for(MiniData txn : txns) {
+				TxPoW txinblock = loadTxPOW(backup.getTxpowFile(txn));
 				
-				//What Block
-				MiniNumber block = txpow.getBlockNumber();
-				
-				//Set the main chain details..
-				TxPOWDBRow blockrow = getMainDB().getTxPowDB().findTxPOWDBRow(txpow.getTxPowID());
-				blockrow.setInBlockNumber(block);
-				blockrow.setMainChainBlock(true);
-				blockrow.setIsInBlock(true);
-				
-				//Now the Txns..
-				ArrayList<MiniData> txpowlist = txpow.getBlockTransactions();
-				for(MiniData txid : txpowlist) {
-					TxPOWDBRow trow = getMainDB().getTxPowDB().findTxPOWDBRow(txid);
-					if(trow!=null) {
-						//Set that it is in this block
-						trow.setMainChainBlock(false);
-						trow.setIsInBlock(true);
-						trow.setInBlockNumber(block);
-						
-						//Is it a block ?
-						TxPoW tpow = trow.getTxPOW();
-						if(tpow.isBlock()) {
-							//Add all the children
-							if(getMainDB().getMainTree().addNode(new BlockTreeNode(tpow))) {
-								getMainDB().addTreeChildren(tpow.getTxPowID());
-							}
+				//Add it..
+				if(txinblock != null) {
+					getMainDB().addNewTxPow(txinblock);	
+				}
+			}
+		
+			//Is this the cascade block
+			if(txpow.getBlockNumber().isEqual(zPackage.getCascadeNode())) {
+				getMainDB().hardSetCascadeNode(node);
+			}
+			
+			//Store it..
+			getBackup().backupTxpow(txpow);
+		}
+		getConsensusHandler().updateListeners(new Message(ConsensusHandler.CONSENSUS_NOTIFY_INITIALPERC).addString("info", "Checking DB..100%"));
+		MinimaLogger.log("Checking DB.. 100%");
+		
+		//Reset weights
+		getMainDB().hardResetChain();
+		
+		//And Now sort the TXPOWDB
+		ArrayList<BlockTreeNode> list = getMainDB().getMainTree().getAsList();
+		getMainDB().getTxPowDB().resetAllInBlocks();
+		
+		//Now sort
+		syncsize = list.size();
+		tot = 0;
+		for(BlockTreeNode treenode : list) {
+			//Print some stuff..
+			int curr   = (int)( (tot++/syncsize) *100);
+			getConsensusHandler().updateListeners(new Message(ConsensusHandler.CONSENSUS_NOTIFY_INITIALPERC).addString("info", "Restoring DB.."+curr+"%"));
+			
+			//Get the Block
+			TxPoW txpow = treenode.getTxPow();
+			
+			//What Block
+			MiniNumber block = txpow.getBlockNumber();
+			
+			//Set the main chain details..
+			TxPOWDBRow blockrow = getMainDB().getTxPowDB().findTxPOWDBRow(txpow.getTxPowID());
+			blockrow.setInBlockNumber(block);
+			blockrow.setMainChainBlock(true);
+			blockrow.setIsInBlock(true);
+			
+			//Now the Txns..
+			ArrayList<MiniData> txpowlist = txpow.getBlockTransactions();
+			for(MiniData txid : txpowlist) {
+				TxPOWDBRow trow = getMainDB().getTxPowDB().findTxPOWDBRow(txid);
+				if(trow!=null) {
+					//Set that it is in this block
+					trow.setMainChainBlock(false);
+					trow.setIsInBlock(true);
+					trow.setInBlockNumber(block);
+					
+					//Is it a block ?
+					TxPoW tpow = trow.getTxPOW();
+					if(tpow.isBlock()) {
+						//Add all the children
+						if(getMainDB().getMainTree().addNode(new BlockTreeNode(tpow))) {
+							getMainDB().addTreeChildren(tpow.getTxPowID());
 						}
 					}
 				}
 			}
-			//MinimaLogger.log("DB.. 100%");
-			getConsensusHandler().updateListeners(new Message(ConsensusHandler.CONSENSUS_NOTIFY_INITIALPERC).addString("info", "Restoring DB..100%"));
-			
-			//Get on with it..
-			Main.getMainHandler().PostMessage(Main.SYSTEM_INIT);
 		}
+				
+		//Clear the MMRDB tree..
+		MiniNumber cascade = getMainDB().getMainTree().getCascadeNode().getBlockNumber();
+		MMREntryDB.getDB().cleanUpDB(cascade);
+		
+		//MinimaLogger.log("DB.. 100%");
+		getConsensusHandler().updateListeners(new Message(ConsensusHandler.CONSENSUS_NOTIFY_INITIALPERC).addString("info", "Restoring DB..100%"));
 	}
 	
 	public static TxPoW loadTxPOW(File zTxpowFile) {
