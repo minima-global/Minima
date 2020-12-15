@@ -43,6 +43,11 @@ public class JavaUserDB implements UserDB, Streamable{
 	ArrayList<Address>    mExtraAddresses;
 	
 	/**
+	 * CoinID of relevant Coins..
+	 */
+	ArrayList<String> mRelevantCoinID;
+	
+	/**
 	 * Custom Transactions
 	 */
 	ArrayList<UserDBRow> mRows;
@@ -62,10 +67,11 @@ public class JavaUserDB implements UserDB, Streamable{
 	 */
 	public JavaUserDB() {
 		mPubPrivKeys 	 = new ArrayList<>();
-		mSimpleAddresses 		 = new ArrayList<>();
+		mSimpleAddresses = new ArrayList<>();
 		mScriptAddresses = new ArrayList<>();
 		mTotalAddresses  = new ArrayList<>();
 		mExtraAddresses  = new ArrayList<>();
+		mRelevantCoinID  = new ArrayList<>();
 		
 		mAllTokens		 = new ArrayList<>();
 		
@@ -303,6 +309,32 @@ public class JavaUserDB implements UserDB, Streamable{
 		return false;
 	}
 
+
+	@Override
+	public boolean isCoinRelevant(Coin zCoin) {
+		//Check the Address..
+		if(isAddressRelevant(zCoin.getAddress())) {
+			return true;
+		}
+	
+		//Is it in our relevant Coins..
+		if(mRelevantCoinID.contains(zCoin.getCoinID().to0xString())) {
+			return true;
+		}
+		
+		return false;
+	}
+
+	@Override
+	public void addRelevantCoinID(MiniData zCoinID) {
+		mRelevantCoinID.add(zCoinID.to0xString());
+	}
+
+	@Override
+	public void removeRelevantCoinID(MiniData zCoinID) {
+		mRelevantCoinID.remove(zCoinID.to0xString());
+	}
+	
 	@Override
 	public MiniData getPublicKeyForSimpleAddress(MiniData zAddress) {
 		for(Address addr : mSimpleAddresses) {
@@ -350,6 +382,13 @@ public class JavaUserDB implements UserDB, Streamable{
 		zOut.writeInt(len);
 		for(Address addr : mExtraAddresses) {
 			addr.writeDataStream(zOut);
+		}
+		
+		//Relevant CoinID
+		len = mRelevantCoinID.size();
+		zOut.writeInt(len);
+		for(String coinid : mRelevantCoinID) {
+			zOut.writeUTF(coinid);
 		}
 		
 		//Token Details
@@ -418,6 +457,13 @@ public class JavaUserDB implements UserDB, Streamable{
 			Address addr = new Address();
 			addr.readDataStream(zIn);
 			mExtraAddresses.add(addr);
+		}
+		
+		//Relevant Coins
+		len = zIn.readInt();
+		for(int i=0;i<len;i++) {
+			String coinid = zIn.readUTF();
+			mRelevantCoinID.add(coinid);
 		}
 		
 		//Token Details
@@ -499,5 +545,5 @@ public class JavaUserDB implements UserDB, Streamable{
 	public void clearHistory() {
 		mHistory.clear();
 	}
-
+	
 }

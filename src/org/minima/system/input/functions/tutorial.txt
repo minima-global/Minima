@@ -86,7 +86,6 @@ Globals
 @TOTIN       : Total number of inputs for this transaction
 @TOTOUT      : Total number of outputs for this transaction
 @FLOATING    : Is this a floating input
-@PRNG        : Pseudo random number - Globally Unique
 
 Functions
 ---------

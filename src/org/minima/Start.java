@@ -111,7 +111,6 @@ public class Start {
 		boolean cleanhard       = false;
 		boolean genesis 		= false;
 		boolean daemon          = false;
-		boolean noreset 		= false;
 		boolean automine 		= false;
 		
 		//Configuration folder
@@ -141,7 +140,6 @@ public class Start {
 					MinimaLogger.log("        -private               : Run a private chain. Don't connect to MainNet. Create a genesis tx-pow. Simulate some users.");
 					MinimaLogger.log("        -clean                 : Wipe user files and chain backup. Start afresh. Use with -private for clean private test-net.");
 					MinimaLogger.log("        -cleanhard             : Same as -clean but remove all the MiniDAPPS.. and webroot folder");
-					MinimaLogger.log("        -noreset               : Won't reset the chain if another heavier chain comes along..");
 					MinimaLogger.log("        -automine              : Simulate users mining the chain");
 					MinimaLogger.log("        -noconnect             : Don't connect to MainNet. Can then connect to private chains.");
 					MinimaLogger.log("        -connect [host] [port] : Don't connect to MainNet but connect to this node instead.");
@@ -155,7 +153,6 @@ public class Start {
 				}else if(arg.equals("-private")) {
 					genesis     = true;
 					connect 	= false;
-					noreset     = true;
 					automine    = true;
 					
 				}else if(arg.equals("-noconnect")) {
@@ -163,9 +160,6 @@ public class Start {
 				
 				}else if(arg.equals("-daemon")) {
 					daemon = true;
-				
-				}else if(arg.equals("-noreset")) {
-					noreset = true;
 				
 				}else if(arg.equals("-automine")) {
 					automine = true;
@@ -191,11 +185,13 @@ public class Start {
 			}
 		}
 		
-		//Add a version number to the CONF folder
-//		conffolder = conffolder.concat("0.96");
-		
-		//Do we wipe
+//		//Add a version number to the CONF folder
+//		int dotindex = GlobalParams.MINIMA_VERSION.indexOf(".",2);
+//		String versionfolder = GlobalParams.MINIMA_VERSION.substring(0, dotindex);
+//		File conffile = new File(conffolder,versionfolder);
 		File conffile = new File(conffolder);
+		
+		//Clean up..
 		if(clean) {
 			BackupManager.deleteConfFolder(conffile);
 		}
@@ -206,7 +202,7 @@ public class Start {
 		}
 		
 		//Start the main Minima server
-		Main rcmainserver = new Main(host, port, genesis, conffolder);
+		Main rcmainserver = new Main(host, port, genesis, conffile.getAbsolutePath());
 		
 		//Link it.
 		mMainServer = rcmainserver;
@@ -226,10 +222,6 @@ public class Start {
 		//Are we private!
 		if(genesis) {
 			rcmainserver.privateChain(clean);
-		}
-		
-		if(noreset) {
-			rcmainserver.noChainReset();
 		}
 		
 		if(automine) {
@@ -330,6 +322,19 @@ public class Start {
 		}
 		
 		MinimaLogger.log("Main thread finished..");
+	}
+	
+	public String runMinimaCMD(String zInput){
+		//Create a Command
+		CMD cmd = new CMD(zInput);
+
+		//Run it.. wait for it to finish
+		cmd.run();
+
+		//Get the Response..
+		String resp = cmd.getFinalResult();
+
+		return resp;
 	}
 }	
 

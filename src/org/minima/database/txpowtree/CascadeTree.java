@@ -13,9 +13,12 @@ public class CascadeTree {
 	
 	ArrayList<BlockTreeNode> mRemovals;
 	
+	ArrayList<BlockTreeNode> mSaveBlocks;
+	
 	public CascadeTree(BlockTree zMainTree) {
 		mMainTree = zMainTree;
-		mRemovals = new ArrayList<>();
+		mRemovals   = new ArrayList<>();
+		mSaveBlocks = new ArrayList<>();
 	}
 	
 	public BlockTree getCascadeTree() {
@@ -24,6 +27,10 @@ public class CascadeTree {
 	
 	public ArrayList<BlockTreeNode> getRemoved(){
 		return mRemovals;
+	}
+	
+	public ArrayList<BlockTreeNode> getSaveNodes(){
+		return mSaveBlocks;
 	}
 	
 	public void cascadedTree() {
@@ -41,6 +48,7 @@ public class CascadeTree {
 		
 		//Are we long enough..
 		BlockTreeNode cascadenode = mMainTree.getCascadeNode();
+		MiniNumber cascnumber = cascadenode.getBlockNumber();
 		MiniNumber totlength = oldtip.getBlockNumber().sub(cascadenode.getBlockNumber());
 		if(totlength.isLess(GlobalParams.MINIMA_CASCADE_START_DEPTH)) {
 			return;
@@ -59,11 +67,26 @@ public class CascadeTree {
 		mCascadeTree = new BlockTree();
 				
 		//All this we keep
-//		BlockTreeNode fullkeep = BlockTree.copyTreeNode(newfulltree);
 		BlockTreeNode fullkeep = newfulltree;
 		
 		//The rest of the tree.. that we CAN cascade
 		BlockTreeNode newcascade  = newfulltree.getParent();
+		
+		//Get all the blocks we have to save as .txblocks..
+		BlockTreeNode savenode = newcascade.getParent();
+		while(savenode!=null && savenode.getBlockNumber().isMoreEqual(cascnumber)) {
+			//Create a deep copy.. so that clear the cascade node makes no difference..
+			BlockTreeNode copynode = new BlockTreeNode(savenode.getTxPow());
+			copynode.setMMRset(savenode.getMMRSet());
+			copynode.setCascade(false);
+			
+			//Saver..
+			mSaveBlocks.add(copynode);
+		
+			//Get the Parent
+			savenode = savenode.getParent();
+		}
+		
 		
 		//Now copy all the MMR data to the old cascade..
 		newcascade.getMMRSet().copyAllParentKeepers(cascadenode.getBlockNumber());
@@ -71,11 +94,6 @@ public class CascadeTree {
 		//Now add all that
 		ArrayList<BlockTreeNode> cascnodes = new ArrayList<>();
 		while(newcascade != null) {
-			//Create a new cascade node..
-//			BlockTreeNode node = new BlockTreeNode(newcascade);
-//			node.setCascade(true);
-//			node.setState(BlockTreeNode.BLOCKSTATE_VALID);
-			
 			//Get the parent..
 			BlockTreeNode pnode = newcascade.getParent();
 			

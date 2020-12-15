@@ -27,7 +27,7 @@ public class TxPoWTests {
         assertTrue("New TxPow should have a tx body", txpow.hasBody());
         assertTrue("New TxPow should not have a bodyhash", txpow.getTxHeaderBodyHash().isEqual(new MiniData("0x0")));
         assertTrue("New TxPow should not be a transaction", txpow.isTransaction() == false);
-        assertTrue("New TxPow should return empty block txs", txpow.getBlockTransactions().size() == 0);
+        assertTrue("New TxPow should return empty block txs", txpow.getBlockTransactions().isEmpty());
         assertTrue("New TxPow should have empty super parent", txpow.getNonce().isEqual(new MiniInteger(0)));
         assertTrue("New TxPow should not be a block", txpow.isBlock() == false);
         assertTrue("New TxPow should have super level zero", txpow.getSuperLevel() == 0);
@@ -36,7 +36,6 @@ public class TxPoWTests {
         assertTrue("New TxPow should have txpowid zero", txpow.getTxPowID().isEqual(new MiniData("0x00")));
         assertTrue("New TxPow should have transid zero", txpow.getTransID().isEqual(new MiniData("0x00")));
         assertTrue("New TxPow should have a witness", txpow.getWitness() != null);
-        assertTrue("New TxPow should have a burn witness", txpow.getBurnWitness() != null);
         txpow.calculateTXPOWID();
         assertTrue("New TxPow computedtxpowid should not be zero", txpow.getTxPowID() != new MiniData("0x00"));
 

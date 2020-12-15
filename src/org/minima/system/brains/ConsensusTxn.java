@@ -588,7 +588,7 @@ public class ConsensusTxn extends ConsensusProcessor {
 			
 			JSONArray contractlogs = new JSONArray();
 			boolean checkok = TxPoWChecker.checkTransactionMMR(trx, wit, getMainDB(),
-					tip.getTxPow(), MiniNumber.ZERO, tip.getMMRSet(),false,contractlogs);
+					tip.getTxPow(), tip.getMMRSet(),false,contractlogs);
 			
 			resp.put("script_check", checkok);
 			resp.put("contracts", contractlogs);

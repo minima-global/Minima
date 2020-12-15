@@ -29,12 +29,19 @@ var Minima = {
 	 */
 	block : 0,
 	
+	/**
+	 * Current Balance of this User
+	 */
+	balance : {},
+	
 	/** 
 	 * The Full TxPoW Top Block
 	 */
 	txpow : {},
 
-	//Show RPC commands
+	/**
+	 * Show RPC commands
+	 */
 	logging : false,
 
 	/**
@@ -209,7 +216,7 @@ var Minima = {
 		},
 		
 		//Function to call when an Intra-MiniDAPP message is received
-		onReceive : function(onReceiveCallback){
+		listen : function(onReceiveCallback){
 			MINIMA_MINIDAPP_CALLBACK = onReceiveCallback;
 		},
 		

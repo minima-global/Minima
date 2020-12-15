@@ -18,12 +18,13 @@ import org.minima.objects.proofs.TokenProof;
 import org.minima.system.Main;
 import org.minima.system.input.InputHandler;
 import org.minima.system.input.functions.gimme50;
-import org.minima.system.network.MinimaClient;
-import org.minima.system.network.MinimaReader;
 import org.minima.system.network.NetworkHandler;
+import org.minima.system.network.base.MinimaClient;
+import org.minima.system.network.base.MinimaReader;
 import org.minima.system.network.minidapps.DAPPManager;
 import org.minima.system.txpow.TxPoWChecker;
 import org.minima.system.txpow.TxPoWMiner;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
@@ -167,6 +168,13 @@ public class ConsensusHandler extends MessageProcessor {
 	}
 	
 	/**
+	 * Get the ConsensusNet Handler
+	 */
+	public ConsensusNet getConsensusNet() {
+		return mConsensusNet;
+	}
+	
+	/**
 	 * Listener Functions
 	 */
 	public void clearListeners() {
@@ -198,15 +206,6 @@ public class ConsensusHandler extends MessageProcessor {
 		getMainDB().DoGenesis();
 	}
 	
-	/**
-	 * Hard code whether we can reset the chain on intro messages
-	 * 
-	 * @param zHardResetAllowed
-	 */
-	public void setHardResetAllowed(boolean zHardResetAllowed){
-		mConsensusNet.setAllowHardResest(zHardResetAllowed);
-	}
-	
 	private MinimaDB getMainDB() {
 		return mMainDB;
 	}
@@ -228,6 +227,35 @@ public class ConsensusHandler extends MessageProcessor {
 			//A TXPOW - that has been checked already and added to the DB
 			TxPoW txpow = (TxPoW) zMessage.getObject("txpow");
 			
+			//Check the validity..
+			String txpowid = txpow.getTxPowID().to0xString();
+			
+			//Was it requested (could be from a branch) ?
+			NetworkHandler network =  Main.getMainHandler().getNetworkHandler();
+			boolean requested = false;
+			if(network.isRequestedTxPow(txpowid)) {
+				requested = true;
+				network.removeRequestedTxPow(txpowid);
+			}
+			
+			//Check the Validity..
+			boolean txnok = TxPoWChecker.checkTransactionMMR(txpow, getMainDB());
+			if(!txnok) {
+				//Was it requested.. ?
+				if(requested) {
+					//Ok - could be from a different branch block.. 
+					MinimaLogger.log("WARNING Invalid TXPOW (Requested..) : "+txpow.getBlockNumber()+" "+txpow.getTxPowID()); 
+				}else {
+					//Not requested invalid transaction..
+					MinimaLogger.log("ERROR Invalid TXPOW (UN-Requested..) : "+txpow.getBlockNumber()+" "+txpow.getTxPowID()); 
+					
+					//Remove it from the DB..
+					getMainDB().getTxPowDB().removeTxPOW(txpow.getTxPowID());
+					return;	
+				}
+			}
+			
+			//s it relevant to you the User
 			boolean relevant = false;
 			if(txpow.isTransaction()) {
 				//Is it relevant to us..
@@ -296,7 +324,7 @@ public class ConsensusHandler extends MessageProcessor {
 			Message netmsg  = new Message(MinimaClient.NETCLIENT_SENDTXPOWID).addObject("txpowid", txpow.getTxPowID());
 			Message netw    = new Message(NetworkHandler.NETWORK_SENDALL).addObject("message", netmsg);
 			Main.getMainHandler().getNetworkHandler().PostMessage(netw);
-		
+			
 			
 		/**
 		 * Called every 10 Minutes to do a few tasks
@@ -310,6 +338,9 @@ public class ConsensusHandler extends MessageProcessor {
 			
 			//Redo every 10 minutes..
 			PostTimerMessage(new TimerMessage(10 * 60 * 1000, CONSENSUS_AUTOBACKUP));
+			
+			//Clean the Memory..
+			System.gc();
 			
 		/**
 		 * Network Messages

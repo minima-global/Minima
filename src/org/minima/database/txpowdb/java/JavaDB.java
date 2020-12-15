@@ -225,6 +225,12 @@ public class JavaDB implements TxPowDB{
 		mDeletedRows = new ArrayList<>();
 	}
 
+	@Override
+	public void removeAllUnused() {
+		// TODO Auto-generated method stub
+		
+	}
+
 	
 	
 }

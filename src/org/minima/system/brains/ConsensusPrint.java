@@ -13,6 +13,7 @@ import org.minima.GlobalParams;
 import org.minima.database.MinimaDB;
 import org.minima.database.coindb.CoinDBRow;
 import org.minima.database.mmr.MMREntry;
+import org.minima.database.mmr.MMREntryDB;
 import org.minima.database.mmr.MMRSet;
 import org.minima.database.txpowdb.TxPOWDBRow;
 import org.minima.database.txpowtree.BlockTree;
@@ -29,7 +30,7 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.objects.proofs.TokenProof;
 import org.minima.system.Main;
 import org.minima.system.input.InputHandler;
-import org.minima.system.network.MinimaClient;
+import org.minima.system.network.base.MinimaClient;
 import org.minima.system.network.minidapps.DAPPManager;
 import org.minima.system.network.rpc.RPCClient;
 import org.minima.utils.Maths;
@@ -992,6 +993,9 @@ public class ConsensusPrint extends ConsensusProcessor {
 			
 			status.put("difficulty", tip.getTxPow().getBlockDifficulty().to0xString());
 			
+			//MMR DB
+			status.put("mmrentrydb", MMREntryDB.getDB().getSize());
+			
 			//COINDB
 			status.put("coindb", getMainDB().getCoinDB().getComplete().size());
 			
@@ -1015,7 +1019,16 @@ public class ConsensusPrint extends ConsensusProcessor {
 				int ibd = getMainDB().getIntroSyncSize();
 				String ibds = MiniFormat.formatSize(ibd);
 				status.put("IBD", ibds);
+				
+				//Now make it null
+				txpows = null;
 			}
+			
+			//Clean up..
+			System.gc();
+			
+			long mem = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+			status.put("ram", MiniFormat.formatSize(mem));
 			
 			//MemPool
 			ArrayList<TxPOWDBRow> unused = getMainDB().getTxPowDB().getAllUnusedTxPOW();

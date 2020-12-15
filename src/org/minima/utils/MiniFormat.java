@@ -1,5 +1,7 @@
 package org.minima.utils;
 
+import org.minima.objects.base.MiniNumber;
+
 public class MiniFormat {
 
 	public static String JSONPretty(String zJSON) {
@@ -161,6 +163,18 @@ public class MiniFormat {
 	    if (v < 1024) return v + " bytes";
 	    int z = (63 - Long.numberOfLeadingZeros(v)) / 10;
 	    return String.format("%.1f %sB", (double)v / (1L << (z*10)), " KMGTPE".charAt(z));
+	}
+	
+	public static String zeroPad(int zTotLength, MiniNumber zNumber) {
+		//Get the number..
+		String num       = zNumber.toString();
+		int len          = num.length();
+		int add 		 = zTotLength-len;
+		for(int i=0;i<add;i++) {
+			num = "0"+num;
+		}
+		
+		return num;
 	}
 	
 	public static void main(String[] zArgs) {

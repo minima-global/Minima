@@ -5,6 +5,7 @@ import java.util.Hashtable;
 
 import org.minima.database.userdb.java.reltxpow;
 import org.minima.objects.Address;
+import org.minima.objects.Coin;
 import org.minima.objects.PubPrivKey;
 import org.minima.objects.StateVariable;
 import org.minima.objects.Transaction;
@@ -78,6 +79,15 @@ public interface UserDB {
 	 * @return
 	 */
 	public boolean isStateListRelevant(ArrayList<StateVariable> zStateVarList);
+	
+	/**
+	 * Check if this Coin is relevant to the user and if we should keep the MMR entry proof
+	 * @param zCoin
+	 * @return
+	 */
+	public boolean isCoinRelevant(Coin zCoin);
+	public void    addRelevantCoinID(MiniData zCoinID);
+	public void    removeRelevantCoinID(MiniData zCoinID);
 	
 	/**
 	 * Custom Transactions

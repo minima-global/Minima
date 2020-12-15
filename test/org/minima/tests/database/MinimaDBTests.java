@@ -1,6 +1,5 @@
 package org.minima.tests.database;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.logging.Level;
@@ -11,7 +10,6 @@ import org.minima.objects.base.MiniData;
 import org.minima.database.MinimaDB;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -24,15 +22,11 @@ import org.minima.objects.Witness;
 import org.minima.objects.base.MiniInteger;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.brains.BackupManager;
-import org.minima.system.brains.ConsensusHandler;
-import org.minima.system.input.InputHandler;
 import org.minima.system.input.functions.gimme50;
-import org.minima.system.network.MinimaReader;
+import org.minima.system.network.base.MinimaReader;
 import org.minima.system.txpow.TxPoWChecker;
 import org.minima.utils.Crypto;
-import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
-import org.minima.utils.messages.Message;
 
 public class MinimaDBTests {
 

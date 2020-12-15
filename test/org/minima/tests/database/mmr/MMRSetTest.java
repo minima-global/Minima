@@ -172,7 +172,6 @@ public class MMRSetTest {
             assertTrue("JSON object should contain block key", json.containsKey("block"));
             assertTrue("JSON object should contain entrynumber key", json.containsKey("entrynumber"));
             assertTrue("JSON object should contain entries key", json.containsKey("entries"));
-            assertTrue("JSON object should contain maxrow key", json.containsKey("maxrow"));
             assertTrue("JSON object should contain maxentries key", json.containsKey("maxentries"));
             assertTrue("JSON object should contain keepers key", json.containsKey("keepers"));
         }
@@ -183,7 +182,6 @@ public class MMRSetTest {
             assertTrue("JSON object should contain block key", json.containsKey("block"));
             assertTrue("JSON object should contain entrynumber key", json.containsKey("entrynumber"));
             assertTrue("JSON object should contain entries key", json.containsKey("entries"));
-            assertTrue("JSON object should contain maxrow key", json.containsKey("maxrow"));
             assertTrue("JSON object should contain maxentries key", json.containsKey("maxentries"));
             assertTrue("JSON object should contain keepers key", json.containsKey("keepers"));
         }
@@ -193,7 +191,7 @@ public class MMRSetTest {
     @Test
     public void testMMRSetInsertions() {
         // Empty MMR
-        MMRSet base = new MMRSet();		
+        MMRSet base = new MMRSet();
         assertTrue("Empty MMR has no entries.", base.mEntryNumber.isEqual(new MiniInteger(0)));
         assertTrue("Empty MMR", base.getMMRPeaks() != null && base.getMMRPeaks().size() == 0);
 
@@ -208,7 +206,7 @@ public class MMRSetTest {
         assertTrue("Genesis MMR unique element has entry number 0", e0.getEntryNumber().isEqual(new MiniInteger(0)));
         assertTrue("Genesis MMR unique element is at row 0", e0.getRow() == 0);
         assertTrue("MGenesis MR root coin total is 0", base.getMMRRoot().getValueSum().isEqual(new MMRSumNumber(new MiniNumber(0))));
-        // Print MMR tree: 0=root 
+        // Print MMR tree: 0=root
 
         // create one node
         // tx input
@@ -245,6 +243,6 @@ public class MMRSetTest {
         //
         //                  2
         // Print MMR tree: 0 1  3 (MMR canonical entries numbering: minima leaf nodes numbering would be: 0 1 2)
-        
+
     }
 }

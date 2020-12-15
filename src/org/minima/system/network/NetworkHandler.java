@@ -10,6 +10,8 @@ import java.util.Random;
 import org.minima.Start;
 import org.minima.system.Main;
 import org.minima.system.input.InputHandler;
+import org.minima.system.network.base.MinimaClient;
+import org.minima.system.network.base.MinimaServer;
 import org.minima.system.network.minidapps.DAPPManager;
 import org.minima.system.network.minidapps.websocket.WebSocketManager;
 import org.minima.system.network.rpc.RPCServer;
@@ -223,16 +225,24 @@ public class NetworkHandler extends MessageProcessor {
 			
 		}else if(zMessage.isMessageType(NETWORK_SHUTDOWN)) {
 			//Stop the server
-			try {mServer.stop();}catch(Exception exc) {}
+			try {mServer.stop();}catch(Exception exc) {
+				MinimaLogger.log(exc);
+			}
 			
 			//Stop the RPC server
-			try {mRPCServer.stop();}catch(Exception exc) {}
+			try {mRPCServer.stop();}catch(Exception exc) {
+				MinimaLogger.log(exc);
+			}
 			
 			//Stop the RPC server
-			try {mDAPPManager.stop();}catch(Exception exc) {}
+			try {mDAPPManager.stop();}catch(Exception exc) {
+				MinimaLogger.log(exc);
+			}
 			
 			//Stop the WebSocket server
-			try {mWebSocketManager.stop();}catch(Exception exc) {}
+			try {mWebSocketManager.stop();}catch(Exception exc) {
+				MinimaLogger.log(exc);
+			}
 			
 			//Shutdown all the clients
 			for(MinimaClient client : mClients) {
@@ -254,6 +264,8 @@ public class NetworkHandler extends MessageProcessor {
 			//Store with the rest
 			PostMessage(new Message(NETWORK_NEWCLIENT).addObject("client", client));
 		
+			InputHandler.endResponse(zMessage, true, "Attempting to connect to "+host+":"+port);
+			
 		}else if(zMessage.isMessageType(NETWORK_PING)) {
 			
 			
@@ -361,16 +373,6 @@ public class NetworkHandler extends MessageProcessor {
 	/**
 	 * When you request a TxPOW it may be invalid as from a different branch..
 	 */
-	public void addRequestedInitialSyncTxPow(String zTxPoWID) {
-		if(!isRequestedInitialTxPow(zTxPoWID)){
-			mRequestedTxPoW.add("INIT_"+zTxPoWID);
-		}
-	}
-	
-	public boolean isRequestedInitialTxPow(String zTxPoWID) {
-		return mRequestedTxPoW.contains("INIT_"+zTxPoWID);
-	}
-	
 	public void addRequestedTxPow(String zTxPoWID) {
 		if(!isRequestedTxPow(zTxPoWID)) {
 			mRequestedTxPoW.add(zTxPoWID);	
@@ -378,14 +380,11 @@ public class NetworkHandler extends MessageProcessor {
 	}
 	
 	public boolean isRequestedTxPow(String zTxPoWID) {
-		return (mRequestedTxPoW.contains(zTxPoWID) || mRequestedTxPoW.contains("INIT_"+zTxPoWID));
+		return mRequestedTxPoW.contains(zTxPoWID);
 	}
 	
 	public void removeRequestedTxPow(String zTxPoWID) {
-		//Remove link..
 		mRequestedTxPoW.remove(zTxPoWID);
-		//Just in case was an initial..
-		mRequestedTxPoW.remove("INIT_"+zTxPoWID);
 	}
 	
 	public void clearAllrequestedTxPow() {
