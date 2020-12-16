@@ -52,6 +52,10 @@ public class MMRSumNumber implements Streamable {
 		return zNumber.getNumber().compareTo(mNumber) == 0;
 	}
 	
+	public boolean isMore(MMRSumNumber zNumber) {
+		return zNumber.getNumber().compareTo(mNumber)<0;
+	}
+	
 	@Override
 	public String toString() {
 		return mNumber.stripTrailingZeros().toPlainString();

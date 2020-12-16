@@ -33,12 +33,12 @@ public class GlobalParams {
 	/**
 	 * Depth before we cascade..
 	 */
-	public static MiniNumber MINIMA_CASCADE_START_DEPTH = new MiniNumber(4320);
+	public static MiniNumber MINIMA_CASCADE_START_DEPTH = new MiniNumber(16);
 	
 	/**
 	 * Number of blocks at each cascade level 
 	 */
-	public static int MINIMA_CASCADE_LEVEL_NODES  = 128;
+	public static int MINIMA_CASCADE_LEVEL_NODES  = 2;
 	
 	/**
 	 * How Many Cascade Levels
@@ -68,7 +68,7 @@ public class GlobalParams {
 	 * and just want a block every single transaction to debug.
 	 * Automatically disables the auto mining
 	 */
-	public static boolean MINIMA_ZERO_DIFF_BLK  = false;
+	public static boolean MINIMA_ZERO_DIFF_BLK  = true;
 
 //	/** 
 //	 * ( Not sure if I'll use this..)
