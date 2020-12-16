@@ -7,7 +7,7 @@ public class GlobalParams {
 	/**
 	 * Which Version
 	 */
-	public static String MINIMA_VERSION = "0.97.0"; 
+	public static String MINIMA_VERSION = "0.97.1"; 
 	
 	/**
 	 * Number of seconds before sending a pulse message - every 10 minutes
@@ -33,12 +33,12 @@ public class GlobalParams {
 	/**
 	 * Depth before we cascade..
 	 */
-	public static MiniNumber MINIMA_CASCADE_START_DEPTH = new MiniNumber(16);
+	public static MiniNumber MINIMA_CASCADE_START_DEPTH = new MiniNumber(4320);
 	
 	/**
 	 * Number of blocks at each cascade level 
 	 */
-	public static int MINIMA_CASCADE_LEVEL_NODES  = 2;
+	public static int MINIMA_CASCADE_LEVEL_NODES  = 128;
 	
 	/**
 	 * How Many Cascade Levels
@@ -68,7 +68,7 @@ public class GlobalParams {
 	 * and just want a block every single transaction to debug.
 	 * Automatically disables the auto mining
 	 */
-	public static boolean MINIMA_ZERO_DIFF_BLK  = true;
+	public static boolean MINIMA_ZERO_DIFF_BLK  = false;
 
 //	/** 
 //	 * ( Not sure if I'll use this..)
