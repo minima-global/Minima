@@ -39,7 +39,6 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 
 import org.junit.Test;
-import org.junit.internal.ArrayComparisonFailure;
 
 public class JavaUserDBTests {
 
