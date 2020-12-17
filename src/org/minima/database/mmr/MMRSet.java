@@ -54,6 +54,11 @@ public class MMRSet implements Streamable {
 	public Hashtable<String, MMREntry> mSetEntriesCoinID;
 	
 	/**
+	 * The maximum row used in this Set
+	 */
+	int mMaxRow = 0;
+	
+	/**
 	 * The Max entries per row..
 	 */
 	MMREntry mMaxEntries[];
@@ -104,11 +109,12 @@ public class MMRSet implements Streamable {
 			jentry.add(entry.toJSON());
 		}
 		ret.put("entries", jentry);
+		ret.put("maxrow", mMaxRow);
 		
 		JSONArray maxentry = new JSONArray();
 		for(MMREntry entry : mMaxEntries) {
 			if(entry != null) {
-				maxentry.add(entry.getRow()+":"+entry.getEntryNumber().toString());	
+				maxentry.add(entry.getRow()+":"+entry.getEntryNumber().toString());
 			}
 		}
 		ret.put("maxentries", maxentry);
@@ -130,6 +136,7 @@ public class MMRSet implements Streamable {
 		
 		//The Maximum Rows and entries
 		mMaxEntries = new MMREntry[MAXROWS];
+		mMaxRow     = 0;
 		
 		//Parent MMRSet
 		mParent = zParent;
@@ -278,22 +285,9 @@ public class MMRSet implements Streamable {
 	
 	//This is NEVER an empty MMREntry
 	private void addHashTableEntry(MMREntry zEntry) {
-		//Never add an empty row
-		if(zEntry.isEmpty()) {
-			return;
-		}
-		
 		//Add the entry to the total list HashTable
 		String name = getHashTableEntry(zEntry.getRow(), zEntry.getEntryNumber());
 		mSetEntries.put(name, zEntry);
-		
-		//Check for the maximum
-		int row = zEntry.getRow();
-		if(mMaxEntries[row] == null) {
-			mMaxEntries[row] = zEntry;
-		}else if(mMaxEntries[row].getEntryNumber().isLess(zEntry.getEntryNumber())) {
-			mMaxEntries[row] = zEntry;
-		}
 		
 		//Do we add to the CoinID Table..
 		if(zEntry.getRow()==0) {
@@ -393,36 +387,37 @@ public class MMRSet implements Streamable {
 	 * @return
 	 */
 	private MMREntry setEntry(int zRow, MiniInteger zEntry, MMRData zData) {
-		//Create a new Entry and add it to this MMRSet - will just overwrite the old if exsts
-		MMREntry entry = new MMREntry(zRow, zEntry);
-		entry.setBlockTime(getBlockTime());
-		entry.setData(zData);
+		//Store the Maximum
+		if(zRow>mMaxRow) {
+			mMaxRow = zRow;
+		}
 		
-		//Add it to the hash tables
-		addHashTableEntry(entry);
+		//Check if already added..
+		String entryname = getHashTableEntry(zRow, zEntry);
+		MMREntry entry   = mSetEntries.get(entryname);
 		
+		//Create and add if not found
+		if(entry == null) {
+			entry = new MMREntry(zRow, zEntry);
+			entry.setBlockTime(getBlockTime());
+			entry.setData(zData);
+			
+			//Add it to the hastables
+			addHashTableEntry(entry);
+		}else {
+			//Set the correct data
+			entry.setData(zData);
+		}
+		
+		//Is it a MAX
+		if(mMaxEntries[zRow] == null) {
+			mMaxEntries[zRow] = entry;
+		}else if(mMaxEntries[zRow].getEntryNumber().isLess(zEntry)) {
+			mMaxEntries[zRow] = entry;
+		}
+		
+		//Return
 		return entry;
-		
-//		//Check if already added..
-//		String entryname = getHashTableEntry(zRow, zEntry);
-//		MMREntry entry   = mSetEntries.get(entryname);
-//		
-//		//Create and add if not found
-//		if(entry == null) {
-//			entry = new MMREntry(zRow, zEntry);
-//			entry.setBlockTime(getBlockTime());
-//			entry.setData(zData);
-//			
-//			//Add it to the hastables
-//			addHashTableEntry(entry);
-//		}else {
-//			MinimaLogger.log("Change MMREntry.. from "+entry.getData()+" to:"+zData);
-//			//Set the correct data
-//			entry.setData(zData);
-//		}
-//		
-//		//Return
-//		return entry;
 	}
 	
 	private MMREntry getEntry(int zRow, MiniInteger zEntry) {
@@ -463,7 +458,8 @@ public class MMRSet implements Streamable {
 		//Now go up the tree..
 		while(entry.isRight()) {
 			//Get the Sibling.. will be the left
-			MMREntry sibling = getEntry(entry.getRow(), entry.getLeftSibling());
+//			MMREntry sibling = getEntry(entry.getRow(), entry.getLeftSibling());
+			MMREntry sibling = getEntry(entry.getRow(), entry.getSibling());
 			
 			//Create the new row - hash LEFT + RIGHT
 			MiniData combined = Crypto.getInstance().hashObjects(sibling.getHashValue(), entry.getHashValue(), MMR_HASH_BITS);
@@ -908,7 +904,7 @@ public class MMRSet implements Streamable {
 		
 		//Create from scratch
 		ArrayList<MMREntry> peaks = new ArrayList<>();
-		for(int i=MAXROWS-1;i>=0;i--) {
+		for(int i=mMaxRow;i>=0;i--) {
 			//Get the MAX entry for the row..
 			MMREntry max = mMaxEntries[i];
 				
@@ -1145,16 +1141,30 @@ public class MMRSet implements Streamable {
 		mSetEntries       = new Hashtable<>();
 		mSetEntriesCoinID = new Hashtable<>();
 		mMaxEntries       = new MMREntry[MAXROWS];
+		mMaxRow = 0;
 		
 		int len = zIn.readInt();
 		for(int i=0;i<len;i++) {
-			//Load the MMREntry
 			MMREntry entry = new MMREntry(0, null);
 			entry.readDataStream(zIn);
 			entry.setBlockTime(mBlockTime);
 			
-			//And add..
-			addHashTableEntry(entry);
+			if(!entry.isEmpty()) {
+				//Now do the max..
+				int row = entry.getRow();
+				if(row > mMaxRow) {
+					mMaxRow = row;	
+				}
+				
+				if(mMaxEntries[row] == null) {
+					mMaxEntries[row] = entry;
+				}else if(mMaxEntries[row].getEntryNumber().isLess(entry.getEntryNumber())) {
+					mMaxEntries[row] = entry;
+				}
+				
+				//And add..
+				addHashTableEntry(entry);
+			}
 		}
 		
 		//Finalize..

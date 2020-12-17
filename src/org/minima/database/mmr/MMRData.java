@@ -106,6 +106,12 @@ public class MMRData implements Streamable{
 	}
 	
 	private void calculateDataHash() {
+		//Do not recalculate for mFinalHash if hashonly - already calculated
+		if(mHashOnly) {
+			return;
+		}
+		
+		//Calculate the Hash from the Coin Data
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		DataOutputStream dos = new DataOutputStream(baos);
 		

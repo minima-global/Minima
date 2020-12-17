@@ -291,16 +291,23 @@ public class MMRSetTest {
         // Print MMR tree: 0 1  3 4 7 (MMR canonical entries numbering: minima leaf nodes numbering would be: 0 1 2)
         // leaf nodes:     0 a  b c d
 
+        // Now we spend the first coin (a, 25 coins, block zero)
         MMRData data_a_spent = new MMRData(MiniByte.TRUE, gimme50_a, MiniNumber.ZERO, new ArrayList<StateVariable>());
         MMRProof mmrProofa = new MMRProof(new MiniInteger(1), data_a, MiniNumber.ONE);
+        // updateSpentCoin will replace a by a_spent -> new hash
+        MiniData hash_a_spent = data_a_spent.getFinalHash();
+        MiniData hash_0a_spent = Crypto.getInstance().hashObjects(gendataHash, hash_a_spent, 512);
+        MiniData hash_0a_spent_bc = Crypto.getInstance().hashObjects(hash_0a_spent, hash_bc, 512); // MMRSet.MMR_HASH_BITS);
+        MiniData hash_0a_spent_bcd =  Crypto.getInstance().hashObjects(hash_0a_spent_bc, hash_d, 512); // MMRSet.MMR_HASH_BITS);
         base.updateSpentCoin(mmrProofa);
+        
         assertTrue("MMR set has five entries after adding fourth node.", base.mEntryNumber.isEqual(new MiniInteger(5)));  // entryNumber only counts leaf nodes
         assertTrue("MMR has two peaks.", base.getMMRPeaks() != null && base.getMMRPeaks().size() == 2);
         assertTrue("MMR highest peak is at level 2", base.getMMRPeaks().get(0).getRow() == 2);
-        assertTrue("MMR first peak hash is equal to constructed hash 0abc.", base.getMMRPeaks() != null && base.getMMRPeaks().get(0).getHashValue().isEqual(hash_0abc));
+        assertTrue("MMR first peak hash is equal to recomputed hash 0a_spent_bc.", base.getMMRPeaks() != null && base.getMMRPeaks().get(0).getHashValue().isEqual(hash_0a_spent_bc));
         assertTrue("MMR second peak hash is equal to hash d.", base.getMMRPeaks() != null && base.getMMRPeaks().get(1).getHashValue().isEqual(hash_d));
         assertTrue("MMR second peak row is lower than first peak row", base.getMMRPeaks().get(1).getRow() < base.getMMRPeaks().get(0).getRow());
-        assertTrue("MMR root hash is equal to hash of two peaks", base.getMMRRoot().getFinalHash().isEqual(hash_0abcd));
+        assertTrue("MMR root hash is equal to hash of two peaks (recomputed)", base.getMMRRoot().getFinalHash().isEqual(hash_0a_spent_bcd));
         assertTrue("MMR root coin total is 75", base.getMMRRoot().getValueSum().isEqual(new MMRSumNumber(new MiniNumber(75))));
     }
 }
