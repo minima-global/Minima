@@ -133,19 +133,19 @@ public class MMREntry implements Streamable {
 		return !isLeft();
 	}
 	
-	public MiniInteger getLeftSibling() {
-		return mEntryNumber.decrement();
-	}
-	
-	public MiniInteger getRightSibling() {
-		return mEntryNumber.increment();
-	}
+//	public MiniInteger getLeftSibling() {
+//		return mEntryNumber.decrement();
+//	}
+//	
+//	public MiniInteger getRightSibling() {
+//		return mEntryNumber.increment();
+//	}
 	
 	public MiniInteger getSibling() {
 		if(isLeft()) {
-			return getRightSibling();
+			return mEntryNumber.increment();
 		}else {
-			return getLeftSibling();
+			return mEntryNumber.decrement();
 		}
 	}
 	

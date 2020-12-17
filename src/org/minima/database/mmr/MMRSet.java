@@ -458,7 +458,8 @@ public class MMRSet implements Streamable {
 		//Now go up the tree..
 		while(entry.isRight()) {
 			//Get the Sibling.. will be the left
-			MMREntry sibling = getEntry(entry.getRow(), entry.getLeftSibling());
+//			MMREntry sibling = getEntry(entry.getRow(), entry.getLeftSibling());
+			MMREntry sibling = getEntry(entry.getRow(), entry.getSibling());
 			
 			//Create the new row - hash LEFT + RIGHT
 			MiniData combined = Crypto.getInstance().hashObjects(sibling.getHashValue(), entry.getHashValue(), MMR_HASH_BITS);
