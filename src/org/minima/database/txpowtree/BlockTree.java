@@ -103,13 +103,21 @@ public class BlockTree {
 		}
 
 		//Can't add to less than
-		if(mTip.getBlockNumber().isMore(GlobalParams.MINIMA_BLOCKS_SPEED_CALC)) {
-			MiniNumber minblock = getCascadeNode().getBlockNumber().add(GlobalParams.MINIMA_BLOCKS_SPEED_CALC);
+//		if(mTip.getBlockNumber().isMore(GlobalParams.MINIMA_BLOCKS_SPEED_CALC)) {
+//			MiniNumber minblock = getCascadeNode().getBlockNumber().add(GlobalParams.MINIMA_BLOCKS_SPEED_CALC);
+//			if(zNode.getBlockNumber().isLessEqual(minblock)) {
+//				//MinimaLogger.log("BlockTree : BLOCK PAST MIN ALLOWED NODE ["+minblock+"].. "+zNode.getTxPow().getBlockNumber()+" "+zNode.getTxPow().getTxPowID());
+//				return false;
+//			}
+//		}
+
+//		if(mTip.getBlockNumber().isMore(GlobalParams.MINIMA_BLOCKS_SPEED_CALC)) {
+			MiniNumber minblock = getCascadeNode().getBlockNumber();
 			if(zNode.getBlockNumber().isLessEqual(minblock)) {
-				//MinimaLogger.log("BlockTree : BLOCK PAST MIN ALLOWED NODE ["+minblock+"].. "+zNode.getTxPow().getBlockNumber()+" "+zNode.getTxPow().getTxPowID());
+				MinimaLogger.log("BlockTree : BLOCK PAST CASCADE NODE ["+minblock+"].. "+zNode.getTxPow().getBlockNumber()+" "+zNode.getTxPow().getTxPowID());
 				return false;
 			}
-		}
+//		}
 		
 		//It's OK - add it
 		parent.addChild(zNode);
