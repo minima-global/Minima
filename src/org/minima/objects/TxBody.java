@@ -29,6 +29,16 @@ public class TxBody implements Streamable {
 	public Witness		mWitness = new Witness();
 	
 	/**
+	 * The BURN paying for the Transaction the user is trying to send - can be empty
+	 */
+	public Transaction	mBurnTransaction = new Transaction();
+	
+	/**
+	 * The Witness data for the FeeTransaction - can be empty
+	 */
+	public Witness	   mBurnWitness = new Witness();
+	
+	/**
 	 * The list of the current TX-POWs the user 
 	 * knows about that are not yet in the this chain.
 	 */
@@ -51,6 +61,10 @@ public class TxBody implements Streamable {
 		txpow.put("txn", mTransaction.toJSON());
 		txpow.put("witness", mWitness.toJSON());
 		
+		//The BURN transaction.. normally empty
+		txpow.put("burntxn", mBurnTransaction.toJSON());
+		txpow.put("burnwitness", mBurnWitness.toJSON());
+		
 		//Need to make it into a JSON array
 		JSONArray txns = new JSONArray();
 		for(MiniData txn : mTxPowIDList) {
@@ -68,6 +82,8 @@ public class TxBody implements Streamable {
 		mTxnDifficulty.writeDataStream(zOut);
 		mTransaction.writeDataStream(zOut);
 		mWitness.writeDataStream(zOut);
+		mBurnTransaction.writeDataStream(zOut);
+		mBurnWitness.writeDataStream(zOut);
 		
 		//Write out the TXPOW List
 		int len = mTxPowIDList.size();
@@ -85,6 +101,8 @@ public class TxBody implements Streamable {
 		mTxnDifficulty  = MiniData.ReadFromStream(zIn);
 		mTransaction.readDataStream(zIn);
 		mWitness.readDataStream(zIn);
+		mBurnTransaction.readDataStream(zIn);
+		mBurnWitness.readDataStream(zIn);
 		
 		//Read in  the TxPOW list
 		mTxPowIDList = new ArrayList<>();
