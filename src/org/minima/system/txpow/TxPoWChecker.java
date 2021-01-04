@@ -246,37 +246,54 @@ public class TxPoWChecker {
 				//Is the proof chain valid
 				boolean valid = zMMRSet.checkProof(proof);
 				if(!valid) {
-					//Are we a floating input.. ?
-					if(input.isFloating()) {
-						//See if there is a valid address/amount.. #TODO Switchto CoinDB!
-						MMREntry fladdr = zMMRSet.searchAddress(input.getAddress(), input.getAmount(), input.getTokenID());
-						if(fladdr != null) {
-							//There is a valid coin  we can use..!
-							proof = zMMRSet.getProof(fladdr.getEntryNumber());	
-							
-							//Now CHANGE the Transaction with this new CoinID AND AMOUNT..
-							Coin flinput = proof.getMMRData().getCoin();
-							input.resetCoinID(flinput.getCoinID());
-							input.resetAmount(flinput.getAmount());
-							
-							//And you may have to change the remainder output..
-							isfloating = true;
-								
-						}else {
-							contractlog.put("error", "Invalid MMR Proof and NO VALID FLOATING COIN Found..");
-							return false;
-						}
-					}else {
-						contractlog.put("error", "Invalid MMR Proof");
-						return false;	
-					}
-				}else {
-					//Is this input for the correct details..
-					if(!proof.checkCoin(input)) {
-						contractlog.put("error", "Coin details proof miss-match");
-						return false;
-					}	
+					contractlog.put("error", "Invalid MMR Proof");
+					return false;
 				}
+				
+				//Is it floating input.. set the COinID..
+				if(input.isFloating()) {
+					Coin flinput = proof.getMMRData().getCoin();
+					input.resetCoinID(flinput.getCoinID());
+				}
+				
+				//Check the Coin is Correct..
+				if(!proof.checkCoin(input)) {
+					contractlog.put("error", "Coin details proof miss-match");
+					return false;
+				}
+				
+//				if(!valid) {
+//					//Are we a floating input.. ?
+//					if(input.isFloating()) {
+//						//See if there is a valid address/amount.. #TODO Switchto CoinDB!
+//						MMREntry fladdr = zMMRSet.searchAddress(input.getAddress(), input.getAmount(), input.getTokenID());
+//						if(fladdr != null) {
+//							//There is a valid coin  we can use..!
+//							proof = zMMRSet.getProof(fladdr.getEntryNumber());	
+//							
+//							//Now CHANGE the Transaction with this new CoinID AND AMOUNT..
+//							Coin flinput = proof.getMMRData().getCoin();
+//							input.resetCoinID(flinput.getCoinID());
+//							input.resetAmount(flinput.getAmount());
+//							
+//							//And you may have to change the remainder output..
+//							isfloating = true;
+//								
+//						}else {
+//							contractlog.put("error", "Invalid MMR Proof and NO VALID FLOATING COIN Found..");
+//							return false;
+//						}
+//					}else {
+//						contractlog.put("error", "Invalid MMR Proof");
+//						return false;	
+//					}
+//				}else {
+//					//Is this input for the correct details..
+//					if(!proof.checkCoin(input)) {
+//						contractlog.put("error", "Coin details proof miss-match");
+//						return false;
+//					}	
+//				}
 				
 				if(zTouchMMR) {
 					//Update the MMR with this spent coin..
@@ -405,56 +422,56 @@ public class TxPoWChecker {
 			}
 		}
 		
-		//Do we need to check the Remainders - Reset the amount if a 
-		//floating coin has changed the input amounts.. This will only ever be MORE..
-		if(isfloating) {
-			ArrayList<String> tokens = new ArrayList<>();
-			for(Coin cc : trans.getAllInputs()) {
-				String tok = cc.getTokenID().to0xString();
-				if(!tokens.contains(tok)) {
-					tokens.add(tok);	
-				}
-			}
-			
-			//Now get all the Input Amounts...
-			Hashtable<String, MiniNumber> inamounts = new Hashtable<>();
-			for(String token : tokens) {
-				inamounts.put(token, trans.sumInputs(new MiniData(token)));
-			}
-			
-			//Now get the output amounts..
-			for(String token : tokens) {
-				MiniData tok = new MiniData(token);
-				
-				//Sum the outputs for this token type
-				MiniNumber outamt = trans.sumOutputs(tok);
-				
-				//Do we need to reset the remainder amount - if one exists ?
-				MiniNumber inamt = inamounts.get(token);
-				
-				//Calculate the remainder
-				MiniNumber remainder = inamt.sub(outamt);
-				
-				//OK - some resetting to do..
-				if(!remainder.isEqual(MiniNumber.ZERO)) {
-					//Find the Remainder output for this token type..
-					Coin remainderoutput = trans.getRemainderCoin(tok);
-					
-					if(remainderoutput != null) {
-						//Reset the output amount..
-						remainderoutput.resetAmount(remainderoutput.getAmount().add(remainder));	
-					}
-				}
-			}
-			
-			//Reset any changed DYNSTATE
-			for(int i=0;i<256;i++) {
-				if(DYNState[i] != null) {
-					//Set it..
-					trans.addStateVariable(new StateVariable(i, DYNState[i]));
-				}
-			}
-		}
+//		//Do we need to check the Remainders - Reset the amount if a 
+//		//floating coin has changed the input amounts.. This will only ever be MORE..
+//		if(isfloating) {
+//			ArrayList<String> tokens = new ArrayList<>();
+//			for(Coin cc : trans.getAllInputs()) {
+//				String tok = cc.getTokenID().to0xString();
+//				if(!tokens.contains(tok)) {
+//					tokens.add(tok);	
+//				}
+//			}
+//			
+//			//Now get all the Input Amounts...
+//			Hashtable<String, MiniNumber> inamounts = new Hashtable<>();
+//			for(String token : tokens) {
+//				inamounts.put(token, trans.sumInputs(new MiniData(token)));
+//			}
+//			
+//			//Now get the output amounts..
+//			for(String token : tokens) {
+//				MiniData tok = new MiniData(token);
+//				
+//				//Sum the outputs for this token type
+//				MiniNumber outamt = trans.sumOutputs(tok);
+//				
+//				//Do we need to reset the remainder amount - if one exists ?
+//				MiniNumber inamt = inamounts.get(token);
+//				
+//				//Calculate the remainder
+//				MiniNumber remainder = inamt.sub(outamt);
+//				
+//				//OK - some resetting to do..
+//				if(!remainder.isEqual(MiniNumber.ZERO)) {
+//					//Find the Remainder output for this token type..
+//					Coin remainderoutput = trans.getRemainderCoin(tok);
+//					
+//					if(remainderoutput != null) {
+//						//Reset the output amount..
+//						remainderoutput.resetAmount(remainderoutput.getAmount().add(remainder));	
+//					}
+//				}
+//			}
+//			
+//			//Reset any changed DYNSTATE
+//			for(int i=0;i<256;i++) {
+//				if(DYNState[i] != null) {
+//					//Set it..
+//					trans.addStateVariable(new StateVariable(i, DYNState[i]));
+//				}
+//			}
+//		}
 		
 		//Is the STATE relevant.. does it have a KEY we own..
 		boolean relstate = zDB.getUserDB().isStateListRelevant(trans.getCompleteState());

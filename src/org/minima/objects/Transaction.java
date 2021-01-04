@@ -142,17 +142,17 @@ public class Transaction implements Streamable {
 		return false;
 	}
 	
-	/**
-	 * Get the Remainder Output Coin for a specific token..
-	 */
-	public Coin getRemainderCoin(MiniData zTokenID) {
-		for(Coin cc : mOutputs) {
-			if(cc.isRemainder() && cc.getTokenID().isEqual(zTokenID)) {
-				return cc;
-			}
-		}
-		return null;
-	}
+//	/**
+//	 * Get the Remainder Output Coin for a specific token..
+//	 */
+//	public Coin getRemainderCoin(MiniData zTokenID) {
+//		for(Coin cc : mOutputs) {
+//			if(cc.isRemainder() && cc.getTokenID().isEqual(zTokenID)) {
+//				return cc;
+//			}
+//		}
+//		return null;
+//	}
 	
 	/**
 	 * You only need to check that there are enough Inputs for the Outputs.
