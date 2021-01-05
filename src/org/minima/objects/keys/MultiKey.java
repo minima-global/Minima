@@ -11,9 +11,14 @@ import org.minima.objects.base.MiniInteger;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.BaseConverter;
 import org.minima.utils.Crypto;
+import org.minima.utils.Maths;
+import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;
 
 public class MultiKey extends BaseKey {
+	
+	public static final MiniNumber DEFAULT_KEYS_PER_LEVEL = new MiniNumber(32);
+	public static final MiniNumber DEFAULT_LEVELS 		  = new MiniNumber(3);
 	
 	//The Leaf Node Keys..
 	SingleKey[] mSingleKeys;
@@ -36,6 +41,14 @@ public class MultiKey extends BaseKey {
 	 * For verification only can start like this..
 	 */
 	public MultiKey() {}
+
+	/**
+	 * Use Default settings to create a Multi-Key
+	 * @param zBitLength
+	 */
+	public MultiKey(int zBitLength) {
+		this(MiniData.getRandomData(zBitLength/8), DEFAULT_KEYS_PER_LEVEL, DEFAULT_LEVELS);
+	}
 
 	public MultiKey(MiniData zPrivateSeed, MiniNumber zKeysPerLevel, MiniNumber zLevel) {
 		super();
@@ -191,16 +204,17 @@ public class MultiKey extends BaseKey {
 			MiniData childsig = sigdata.getChildSignature();
 			
 			//Convert to a multisig
-			MultiSig msig = new MultiSig(childsig);
+			MultiSig msig    = new MultiSig(childsig);
+			MiniData rootkey = msig.getRootKey();
 			
 			//Now check the Signature was used to sign the root of the child tree
-			if(!skey.verify(msig.getRootKey(), sigdata.getSignature())) {
+			if(!skey.verify(rootkey, sigdata.getSignature())) {
 				return false;
 			}
 
 			//Create a new MultiKey for the child tree
 			MultiKey child = new MultiKey();
-			child.setPublicKey(msig.getRootKey());
+			child.setPublicKey(rootkey);
 			
 			//Now check the child signed this data
 			return child.verify(zData, childsig);
@@ -215,19 +229,48 @@ public class MultiKey extends BaseKey {
 		
 		//get some data
 		MiniData privseed = MiniData.getRandomData(20);
-				
-		//Create a new key
+		long timenow      = System.currentTimeMillis();
+		long timediff     = 0;
+		
 		System.out.println("MAKE KEY Start");
-		MultiKey mkey = new MultiKey(privseed, new MiniNumber("32"), new MiniNumber("2"));
+		MultiKey mkey = new MultiKey(privseed, new MiniNumber("64"), new MiniNumber("2"));
 		System.out.println(mkey.toJSON().toString());
+		
+		//Timer..
+		timediff = System.currentTimeMillis()-timenow;
+		System.out.println("Creation : "+Maths.ConvertMilliToTime(timediff));
 		
 		//get some data
 		MiniData data = MiniData.getRandomData(20);
 		System.out.println("Data    : "+data);
 		System.out.println();
 			
+		//SINGLE SIG EXAMPLE
+		timenow  = System.currentTimeMillis();
+		MiniData singlesig = mkey.sign(data);
+		System.out.println("SigLength:"+singlesig.getLength());
+		System.out.println(mkey.toJSON().toString());
+		System.out.println();
 		
-		//Sign it..
+		//Timer..
+		timediff = System.currentTimeMillis()-timenow;
+		System.out.println("Sign Speed : "+Maths.ConvertMilliToTime(timediff));
+			
+		//Now Verify..
+		MultiKey verifykey = new MultiKey();
+		verifykey.setPublicKey(mkey.getPublicKey());
+		timenow  = System.currentTimeMillis();
+		boolean ok = verifykey.verify(data, singlesig);
+		timediff = System.currentTimeMillis()-timenow;
+		System.out.println("Verify Speed : "+Maths.ConvertMilliToTime(timediff)+" "+ok);
+		
+		
+		//Stop Here..
+		if(true) {
+			System.exit(0);
+		}
+		
+		//MULTI SIGN EXAMPLE
 		for(int i=0;i<4;i++) {
 			MiniData sig = mkey.sign(data);
 			System.out.println(i+")\tSigLength:"
@@ -237,10 +280,6 @@ public class MultiKey extends BaseKey {
 			System.out.println(mkey.toJSON().toString());
 			System.out.println();
 		}
-		
-//		if(true) {
-//			System.exit(0);
-//		}
 		
 		System.out.println();
 		System.out.println("Now read it in..");

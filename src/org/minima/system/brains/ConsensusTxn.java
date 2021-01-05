@@ -22,6 +22,7 @@ import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.objects.keys.MultiKey;
 import org.minima.objects.proofs.ScriptProof;
 import org.minima.objects.proofs.SignatureProof;
 import org.minima.objects.proofs.TokenProof;
@@ -323,7 +324,7 @@ public class ConsensusTxn extends ConsensusProcessor {
 				MiniData pubkey = getMainDB().getUserDB().getPublicKeyForSimpleAddress(input.getAddress());
 				if(pubkey != null) {
 					//Get the Pub Priv..
-					PubPrivKey signer = getMainDB().getUserDB().getPubPrivKey(pubkey);
+					MultiKey signer = getMainDB().getUserDB().getPubPrivKey(pubkey);
 					
 					//Sign the data
 					MiniData signature = signer.sign(transhash);
@@ -608,8 +609,13 @@ public class ConsensusTxn extends ConsensusProcessor {
 				MiniData leafkey   = sig.getData();
 				MiniData signature = sig.getSignature();
 			
+				//Create a MultiKey to check the signature
+				MultiKey checker = new MultiKey();
+				checker.setPublicKey(leafkey);
+				
 				//Check it..
-				boolean ok = PubPrivKey.verify(leafkey, transhash, signature);
+//				boolean ok = PubPrivKey.verify(leafkey, transhash, signature);
+				boolean ok = checker.verify(transhash, signature);
 				if(!ok) {
 					sigsok = false;
 				}
@@ -634,7 +640,7 @@ public class ConsensusTxn extends ConsensusProcessor {
 			}
 			
 			//Get the public key
-			PubPrivKey key = getMainDB().getUserDB().getPubPrivKey(pubk);
+			MultiKey key = getMainDB().getUserDB().getPubPrivKey(pubk);
 			if(key == null) {
 				MinimaLogger.log("ERROR : invalidate key to sign with. Not present in DB. "+pubkey);
 				return;
