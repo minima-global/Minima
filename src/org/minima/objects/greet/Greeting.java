@@ -67,8 +67,7 @@ public class Greeting implements Streamable {
 		}
 		
 		//Write out the details..
-		String json     = mDetails.toJSONString();
-		MiniString str  = new MiniString(json);
+		MiniString str  = new MiniString(mDetails.toString());
 		str.writeDataStream(zOut);
 	}
 
