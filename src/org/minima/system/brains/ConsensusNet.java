@@ -57,6 +57,8 @@ public class ConsensusNet extends ConsensusProcessor {
 	
 	public static final String CONSENSUS_NET_PING 				= CONSENSUS_PREFIX+"NET_MESSAGE_"+MinimaReader.NETMESSAGE_PING.getValue();
 	
+	public static final String CONSENSUS_NET_GENERIC 			= CONSENSUS_PREFIX+"NET_MESSAGE_"+MinimaReader.NETMESSAGE_GENERIC.getValue();
+	
 	private static int MAX_TXPOW_LIST_SIZE = 100;
 	
 	/**
@@ -548,6 +550,9 @@ public class ConsensusNet extends ConsensusProcessor {
 			MinimaClient client = (MinimaClient) zMessage.getObject("netclient");
 			client.PostMessage(new Message(MinimaClient.NETCLIENT_PING));
 			
+		}else if(zMessage.isMessageType(CONSENSUS_NET_GENERIC)) {
+			MinimaLogger.log("GENERIC NET MESSAGE : "+zMessage);
+		
 		}else if(zMessage.isMessageType(CONSENSUS_NET_CHECKSIZE_TXPOW)) {
 			//Internal message sent from you..
 			TxPoW txpow = (TxPoW)zMessage.getObject("txpow");
