@@ -14,14 +14,13 @@ public class txnstate extends CommandFunction {
 	@Override
 	public void doFunction(String[] zInput) throws Exception {
 		int txn 			= Integer.parseInt(zInput[1]);
-		
-		int txnport 	    = Integer.parseInt(zInput[2]);
+		String txnport 	    = zInput[2];
 		String variable   	= zInput[3];
 		
 		//Send to the consensus Handler
 		Message msg = getResponseMessage(ConsensusTxn.CONSENSUS_TXNSTATEVAR);
 		msg.addInteger("transaction", txn);
-		msg.addInteger("stateport", txnport);
+		msg.addString("stateport", txnport);
 		msg.addString("statevariable", variable);
 		
 		getMainHandler().getConsensusHandler().PostMessage(msg);

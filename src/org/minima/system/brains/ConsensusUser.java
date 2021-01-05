@@ -371,10 +371,11 @@ public class ConsensusUser extends ConsensusProcessor {
 					if(!tok.equals("")) {
 						int split = tok.indexOf(":");
 						String statenum = tok.substring(0,split).trim();
-						String value = tok.substring(split+1).trim();
+						String value    = tok.substring(split+1).trim();
 						
 						//Set it..
-						trans.addStateVariable(new StateVariable(Integer.parseInt(statenum), value));
+						trans.addStateVariable(new StateVariable(new MiniNumber(statenum), value));
+//						trans.addStateVariable(new StateVariable(Integer.parseInt(statenum), value));
 					}
 				}
 			}
@@ -394,7 +395,7 @@ public class ConsensusUser extends ConsensusProcessor {
 						String value = tok.substring(split+1).trim();
 						
 						//Set it..
-						pstate.add(new StateVariable(Integer.parseInt(statenum), value));
+						pstate.add(new StateVariable(new MiniNumber(statenum), value));
 					}
 				}
 			}

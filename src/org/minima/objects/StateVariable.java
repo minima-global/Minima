@@ -6,6 +6,7 @@ import java.io.IOException;
 
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONObject;
@@ -16,7 +17,7 @@ public class StateVariable implements Streamable {
 	 * Byte for the port.. 0-255
 	 * @param zData
 	 */
-	MiniByte mPort;
+	MiniNumber mPort;
 	
 	/**
 	 * The data can represent any of the value types used in script..
@@ -36,12 +37,12 @@ public class StateVariable implements Streamable {
 	 * @param zPort
 	 * @param zData
 	 */
-	public StateVariable(int zPort, String zData) {
+	public StateVariable(MiniNumber zPort, String zData) {
 		this(zPort, zData, MiniByte.TRUE);
 	}
 	
-	public StateVariable(int zPort, String zData, MiniByte zKeepMMR) {
-		mPort	  = new MiniByte(zPort);
+	public StateVariable(MiniNumber zPort, String zData, MiniByte zKeepMMR) {
+		mPort = zPort;
 		
 		//Cannot add Mx addresses.. only HEX addresses in SCRIPT
 		if(zData.startsWith("Mx")) {
@@ -66,8 +67,8 @@ public class StateVariable implements Streamable {
 		return mData;
 	}
 	
-	public int getPort() {
-		return mPort.getValue();
+	public MiniNumber getPort() {
+		return mPort;
 	}
 	
 	public boolean isKeepMMR() {
@@ -109,7 +110,7 @@ public class StateVariable implements Streamable {
 
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
-		mPort = MiniByte.ReadFromStream(zIn);
+		mPort = MiniNumber.ReadFromStream(zIn);
 		
 		//Was it sent as DATA or SCRIPT
 		MiniByte isdata = MiniByte.ReadFromStream(zIn);

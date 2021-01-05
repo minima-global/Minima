@@ -221,9 +221,10 @@ public class Transaction implements Streamable {
 		Collections.sort(mState,new Comparator<StateVariable>() {
 			@Override
 			public int compare(StateVariable o1, StateVariable o2) {
-				int s1 = o1.getPort();
-				int s2 = o2.getPort();
-				return Integer.compare(s1, s2);
+				return o1.getPort().compareTo(o2.getPort());
+//				int s1 = o1.getPort();
+//				int s2 = o2.getPort();
+//				return Integer.compare(s1, s2);
 			}
 		});
 	}
@@ -232,9 +233,9 @@ public class Transaction implements Streamable {
 	 * @param zStateNum
 	 * @return
 	 */
-	public StateVariable getStateValue(int zStateNum) {
+	public StateVariable getStateValue(MiniNumber zStateNum) {
 		for(StateVariable sv : mState) {
-			if(sv.getPort() == zStateNum){
+			if(sv.getPort().isEqual(zStateNum)){
 				return sv;
 			}
 		}
@@ -247,14 +248,8 @@ public class Transaction implements Streamable {
 	 * @param zStateNum
 	 * @return
 	 */
-	public boolean stateExists(int zStateNum) {
-		for(StateVariable sv : mState) {
-			if(sv.getPort() == zStateNum){
-				return true;
-			}
-		}
-		
-		return false;
+	public boolean stateExists(MiniNumber zStateNum) {
+		return getStateValue(zStateNum) != null;
 	}
 	
 	/**
@@ -332,6 +327,7 @@ public class Transaction implements Streamable {
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
 		//Max 255 inputs or outputs
+		TODO - make it all MiniNumber
 		MiniByte ins = new MiniByte(mInputs.size());
 		ins.writeDataStream(zOut);
 		for(Coin coin : mInputs) {
@@ -346,7 +342,7 @@ public class Transaction implements Streamable {
 		}
 		
 		//How many state variables..
-		MiniByte bytelen = new MiniByte(mState.size());
+		MiniNumber bytelen = new MiniNumber(mState.size());
 		bytelen.writeDataStream(zOut);
 		for(StateVariable sv : mState) {
 			sv.writeDataStream(zOut);
@@ -387,8 +383,8 @@ public class Transaction implements Streamable {
 		}
 		
 		//State Variables
-		MiniByte states = MiniByte.ReadFromStream(zIn);
-		len = states.getValue();
+		MiniNumber states = MiniNumber.ReadFromStream(zIn);
+		len = states.getAsInt();
 		for(int i=0;i<len;i++){
 			StateVariable sv = StateVariable.ReadFromStream(zIn);
 			mState.add(sv);
