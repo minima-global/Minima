@@ -422,9 +422,9 @@ public class TxPoWChecker {
 			}
 		}
 		
-//		//Do we need to check the Remainders - Reset the amount if a 
-//		//floating coin has changed the input amounts.. This will only ever be MORE..
-//		if(isfloating) {
+		//Do we need to check the Remainders - Reset the amount if a 
+		//floating coin has changed the input amounts.. This will only ever be MORE..
+		if(isfloating) {
 //			ArrayList<String> tokens = new ArrayList<>();
 //			for(Coin cc : trans.getAllInputs()) {
 //				String tok = cc.getTokenID().to0xString();
@@ -463,15 +463,15 @@ public class TxPoWChecker {
 //					}
 //				}
 //			}
-//			
-//			//Reset any changed DYNSTATE
-//			for(int i=0;i<256;i++) {
-//				if(DYNState[i] != null) {
-//					//Set it..
-//					trans.addStateVariable(new StateVariable(i, DYNState[i]));
-//				}
-//			}
-//		}
+			
+			//Reset any changed DYNSTATE
+			for(int i=0;i<256;i++) {
+				if(DYNState[i] != null) {
+					//Set it..
+					trans.addStateVariable(new StateVariable(i, DYNState[i]));
+				}
+			}
+		}
 		
 		//Is the STATE relevant.. does it have a KEY we own..
 		boolean relstate = zDB.getUserDB().isStateListRelevant(trans.getCompleteState());
