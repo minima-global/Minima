@@ -8,6 +8,7 @@ import org.minima.kissvm.values.HEXValue;
 import org.minima.kissvm.values.Value;
 import org.minima.objects.PubPrivKey;
 import org.minima.objects.base.MiniData;
+import org.minima.objects.keys.MultiKey;
 
 /**
  * for now only retur  true..
@@ -35,7 +36,16 @@ public class CHECKSIG extends MinimaFunction {
 		
 		//Check it..
 		MiniData pubk = new MiniData(pubkey.getMiniData().getData());
-		boolean ok = PubPrivKey.verify(pubk, new MiniData(data.getRawData()), sig.getMiniData());
+		
+		//Create a MultiKey to check the signature
+		MultiKey checker = new MultiKey();
+		checker.setPublicKey(pubk);
+		
+		//Check it..
+//		boolean ok = PubPrivKey.verify(leafkey, transhash, signature);
+		boolean ok = checker.verify(new MiniData(data.getRawData()), sig.getMiniData());
+		
+//		boolean ok = PubPrivKey.verify(pubk, new MiniData(data.getRawData()), sig.getMiniData());
 		
 		// TODO Auto-generated method stub
 		return new BooleanValue(ok);

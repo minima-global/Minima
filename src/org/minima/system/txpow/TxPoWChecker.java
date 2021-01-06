@@ -25,6 +25,7 @@ import org.minima.objects.Witness;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.objects.keys.MultiKey;
 import org.minima.objects.proofs.ScriptProof;
 import org.minima.objects.proofs.SignatureProof;
 import org.minima.objects.proofs.TokenProof;
@@ -70,8 +71,16 @@ public class TxPoWChecker {
 			MiniData leafkey   = sig.getData();
 			MiniData signature = sig.getSignature();
 		
+			//Create a MultiKey to check the signature
+			MultiKey checker = new MultiKey();
+			checker.setPublicKey(leafkey);
+			
 			//Check it..
-			boolean ok = PubPrivKey.verify(leafkey, transhash, signature);
+//			boolean ok = PubPrivKey.verify(leafkey, transhash, signature);
+			boolean ok = checker.verify(transhash, signature);
+			
+			//Check it..
+//			boolean ok = PubPrivKey.verify(leafkey, transhash, signature);
 			if(!ok) {
 				return false;
 			}

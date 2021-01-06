@@ -11,13 +11,13 @@ import org.minima.database.userdb.UserDB;
 import org.minima.database.userdb.UserDBRow;
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
-import org.minima.objects.PubPrivKey;
 import org.minima.objects.StateVariable;
 import org.minima.objects.Transaction;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
+import org.minima.objects.keys.MultiKey;
 import org.minima.objects.proofs.TokenProof;
 import org.minima.utils.Streamable;
 
@@ -26,7 +26,8 @@ public class JavaUserDB implements UserDB, Streamable{
 	/**
 	 * Minima stores any output that has a key you own in the STATE
 	 */
-	ArrayList<PubPrivKey> mPubPrivKeys;
+//	ArrayList<PubPrivKey> mPubPrivKeys;
+	ArrayList<MultiKey> mPubPrivKeys;
 	
 	/**
 	 * Both of these for the user.. if any output found they will be stored
@@ -96,13 +97,13 @@ public class JavaUserDB implements UserDB, Streamable{
 	}
 
 	@Override
-	public ArrayList<PubPrivKey> getKeys() {
+	public ArrayList<MultiKey> getKeys() {
 		return mPubPrivKeys;
 	}
 
 	@Override
-	public PubPrivKey newPublicKey(int zBitLength) {
-		PubPrivKey pubkey = new PubPrivKey(zBitLength);
+	public MultiKey newPublicKey(int zBitLength) {
+		MultiKey pubkey = new MultiKey(zBitLength);
 		mPubPrivKeys.add(pubkey);
 		return pubkey;
 	}
@@ -147,11 +148,11 @@ public class JavaUserDB implements UserDB, Streamable{
 	
 	@Override
 	public Address newSimpleAddress(int zBitLength) {
-		return newSimpleAddress(new PubPrivKey(zBitLength));
+		return newSimpleAddress(new MultiKey(zBitLength));
 	}
 	
 	@Override
-	public Address newSimpleAddress(PubPrivKey zPubPriv) {
+	public Address newSimpleAddress(MultiKey zPubPriv) {
 		//Store it..
 		mPubPrivKeys.add(zPubPriv);
 		
@@ -181,8 +182,8 @@ public class JavaUserDB implements UserDB, Streamable{
 	}
 	
 	@Override
-	public PubPrivKey getPubPrivKey(MiniData zPubKey) {
-		for(PubPrivKey key : mPubPrivKeys) {
+	public MultiKey getPubPrivKey(MiniData zPubKey) {
+		for(MultiKey key : mPubPrivKeys) {
 			if(key.getPublicKey().isEqual(zPubKey)) {
 				return key;
 			}
@@ -292,7 +293,7 @@ public class JavaUserDB implements UserDB, Streamable{
 				MiniData svdata = new MiniData(data.toString());
 				
 				//Check against the keys..
-				for(PubPrivKey key : mPubPrivKeys) {
+				for(MultiKey key : mPubPrivKeys) {
 					MiniData pubkey = key.getPublicKey();
 					if(pubkey.isEqual(svdata)) {
 						return true;
@@ -359,7 +360,7 @@ public class JavaUserDB implements UserDB, Streamable{
 		//Pub priv keys
 		len = mPubPrivKeys.size();
 		zOut.writeInt(len);
-		for(PubPrivKey key : mPubPrivKeys) {
+		for(MultiKey key : mPubPrivKeys) {
 			key.writeDataStream(zOut);
 		}
 		
@@ -428,7 +429,7 @@ public class JavaUserDB implements UserDB, Streamable{
 		//Pub Priv Keys
 		int len = zIn.readInt();
 		for(int i=0;i<len;i++) {
-			PubPrivKey pp = new PubPrivKey();
+			MultiKey pp = new MultiKey();
 			pp.readDataStream(zIn);
 			mPubPrivKeys.add(pp);
 		}
