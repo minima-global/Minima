@@ -221,10 +221,9 @@ public class Transaction implements Streamable {
 		Collections.sort(mState,new Comparator<StateVariable>() {
 			@Override
 			public int compare(StateVariable o1, StateVariable o2) {
-				return o1.getPort().compareTo(o2.getPort());
-//				int s1 = o1.getPort();
-//				int s2 = o2.getPort();
-//				return Integer.compare(s1, s2);
+				int s1 = o1.getPort();
+				int s2 = o2.getPort();
+				return Integer.compare(s1, s2);
 			}
 		});
 	}
@@ -233,9 +232,9 @@ public class Transaction implements Streamable {
 	 * @param zStateNum
 	 * @return
 	 */
-	public StateVariable getStateValue(MiniNumber zStateNum) {
+	public StateVariable getStateValue(int zStateNum) {
 		for(StateVariable sv : mState) {
-			if(sv.getPort().isEqual(zStateNum)){
+			if(sv.getPort() == zStateNum){
 				return sv;
 			}
 		}
@@ -248,7 +247,7 @@ public class Transaction implements Streamable {
 	 * @param zStateNum
 	 * @return
 	 */
-	public boolean stateExists(MiniNumber zStateNum) {
+	public boolean stateExists(int zStateNum) {
 		return getStateValue(zStateNum) != null;
 	}
 	
@@ -327,23 +326,22 @@ public class Transaction implements Streamable {
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
 		//Max 255 inputs or outputs
-		TODO - make it all MiniNumber
-		MiniByte ins = new MiniByte(mInputs.size());
+		MiniNumber ins = new MiniNumber(mInputs.size());
 		ins.writeDataStream(zOut);
 		for(Coin coin : mInputs) {
 			coin.writeDataStream(zOut);
 		}
 		
 		//Max 255 inputs or outputs
-		MiniByte outs = new MiniByte(mOutputs.size());
+		MiniNumber outs = new MiniNumber(mOutputs.size());
 		outs.writeDataStream(zOut);
 		for(Coin coin : mOutputs) {
 			coin.writeDataStream(zOut);
 		}
 		
 		//How many state variables..
-		MiniNumber bytelen = new MiniNumber(mState.size());
-		bytelen.writeDataStream(zOut);
+		MiniNumber statelen = new MiniNumber(mState.size());
+		statelen.writeDataStream(zOut);
 		for(StateVariable sv : mState) {
 			sv.writeDataStream(zOut);
 		}
@@ -367,16 +365,16 @@ public class Transaction implements Streamable {
 		mState 	 = new  ArrayList<>();
 		
 		//Inputs
-		MiniByte ins = MiniByte.ReadFromStream(zIn);
-		int len = ins.getValue();
+		MiniNumber ins = MiniNumber.ReadFromStream(zIn);
+		int len = ins.getAsInt();
 		for(int i=0;i<len;i++) {
 			Coin coin = Coin.ReadFromStream(zIn);
 			mInputs.add(coin);
 		}
 		
 		//Outputs
-		MiniByte outs = MiniByte.ReadFromStream(zIn);
-		len = outs.getValue();
+		MiniNumber outs = MiniNumber.ReadFromStream(zIn);
+		len = outs.getAsInt();
 		for(int i=0;i<len;i++) {
 			Coin coin = Coin.ReadFromStream(zIn);
 			mOutputs.add(coin);
