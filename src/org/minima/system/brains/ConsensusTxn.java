@@ -482,7 +482,7 @@ public class ConsensusTxn extends ConsensusProcessor {
 		}else if(zMessage.isMessageType(CONSENSUS_TXNSTATEVAR)) {
 			//Which transaction
 			int trans    		= zMessage.getInteger("transaction");
-			String port     	= zMessage.getString("stateport");
+			int port     		= zMessage.getInteger("stateport");
 			String variable		= zMessage.getString("statevariable");
 			
 			//Check valid..
@@ -496,7 +496,7 @@ public class ConsensusTxn extends ConsensusProcessor {
 			Witness wit     = getMainDB().getUserDB().getUserRow(trans).getWitness();
 			
 			//Create a new State Variable
-			StateVariable sv = new StateVariable(new MiniNumber(port), variable);
+			StateVariable sv = new StateVariable(port, variable);
 			
 			//Add it to the transaction
 			trx.addStateVariable(sv);

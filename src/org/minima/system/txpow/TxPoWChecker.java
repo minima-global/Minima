@@ -180,13 +180,13 @@ public class TxPoWChecker {
 			return false;
 		}
 		
-		//The DYNState variables..
-		String[] DYNState    = new String[256];
-		boolean[] checkState = new boolean[256];
-		for(int i=0;i<256;i++) {
-			DYNState[i]   = null;
-			checkState[i] = false;
-		}
+//		//The DYNState variables..
+//		String[] DYNState    = new String[256];
+//		boolean[] checkState = new boolean[256];
+//		for(int i=0;i<256;i++) {
+//			DYNState[i]   = null;
+//			checkState[i] = false;
+//		}
 		
 		//Check the input scripts
 		ArrayList<Coin> inputs  = trans.getAllInputs();
@@ -332,8 +332,6 @@ public class TxPoWChecker {
 				cc.setGlobalVariable("@BLKTIME", new NumberValue(tBlockTime));
 				cc.setGlobalVariable("@BLKDIFF", new NumberValue(tBlockNumber.sub(proof.getMMRData().getInBlock())));
 				cc.setGlobalVariable("@PREVBLKHASH", new HEXValue(zBlock.getParentID()));
-//				cc.setGlobalVariable("@PRNG", new HEXValue(prng));
-				
 				cc.setGlobalVariable("@INBLKNUM", new NumberValue(proof.getMMRData().getInBlock()));
 				cc.setGlobalVariable("@INPUT", new NumberValue(i));
 				cc.setGlobalVariable("@AMOUNT", new NumberValue(input.getAmount().mult(tokenscale)));
@@ -349,10 +347,7 @@ public class TxPoWChecker {
 									
 				//Is it a floating coin..
 				cc.setFloating(input.isFloating());
-				
-				//Set the DYNState..
-				cc.setCompleteDYNState(DYNState,checkState);
-				
+						
 				//Run it!
 				cc.run();
 				
@@ -366,10 +361,6 @@ public class TxPoWChecker {
 				contractlog.put("exception", cc.isException());
 				contractlog.put("excvalue", cc.getException());
 				contractlog.put("result", cc.isSuccess());
-				
-				//Get the DynState
-				DYNState   = cc.getCompleteDYNState();
-				checkState = cc.getCompleteCheckState();
 				
 				//and.. ?
 				if(!cc.isSuccess()) {
@@ -389,14 +380,8 @@ public class TxPoWChecker {
 						//Is it a floating coin..
 						tokencc.setFloating(input.isFloating());
 						
-						//Set the DYNState..
-						tokencc.setCompleteDYNState(DYNState,checkState);
-						
 						//Run it!
 						tokencc.run();
-						
-						//Get the DynState
-						DYNState = tokencc.getCompleteDYNState();
 						
 						//Log it all
 						JSONObject toklog = new JSONObject();
@@ -424,7 +409,7 @@ public class TxPoWChecker {
 		
 		//Do we need to check the Remainders - Reset the amount if a 
 		//floating coin has changed the input amounts.. This will only ever be MORE..
-		if(isfloating) {
+//		if(isfloating) {
 //			ArrayList<String> tokens = new ArrayList<>();
 //			for(Coin cc : trans.getAllInputs()) {
 //				String tok = cc.getTokenID().to0xString();
@@ -463,15 +448,15 @@ public class TxPoWChecker {
 //					}
 //				}
 //			}
-			
-			//Reset any changed DYNSTATE
-			for(int i=0;i<256;i++) {
-				if(DYNState[i] != null) {
-					//Set it..
-					trans.addStateVariable(new StateVariable(i, DYNState[i]));
-				}
-			}
-		}
+//			
+//			//Reset any changed DYNSTATE
+//			for(int i=0;i<256;i++) {
+//				if(DYNState[i] != null) {
+//					//Set it..
+//					trans.addStateVariable(new StateVariable(i, DYNState[i]));
+//				}
+//			}
+//		}
 		
 		//Is the STATE relevant.. does it have a KEY we own..
 		boolean relstate = zDB.getUserDB().isStateListRelevant(trans.getCompleteState());

@@ -52,13 +52,13 @@ public class Contract {
 	
 	//A list of all the user-defined variables
 	boolean mFloatingCoin = false;
-	String[] mDYNState;
+//	String[] mDYNState;
 	
 	//Is this MonoTonic
 	boolean mMonotonic = true;
 	
 	//Has this state been checked..
-	boolean[] mCheckState;
+//	boolean[] mCheckState;
 		
 	//Has the Script returned TRUE or FALSE
 	private boolean mSuccess;
@@ -115,15 +115,15 @@ public class Contract {
 		mGlobals    = new Hashtable<>();
 
 		mFloatingCoin = false;
-		mDYNState     = new String[256];
-		for(int i=0;i<256;i++) {
-			mDYNState[i] = null;
-		}
-		
-		mCheckState     = new boolean[256];
-		for(int i=0;i<256;i++) {
-			mCheckState[i] = false;
-		}
+//		mDYNState     = new String[256];
+//		for(int i=0;i<256;i++) {
+//			mDYNState[i] = null;
+//		}
+//		
+//		mCheckState     = new boolean[256];
+//		for(int i=0;i<256;i++) {
+//			mCheckState[i] = false;
+//		}
 		
 		mBlock      = null;
 		mSuccess    = false;
@@ -357,44 +357,44 @@ public class Contract {
 		mFloatingCoin = zFloating;
 	}
 	
-	public boolean setDYNState(int zStateNum, String zValue) throws ExecutionException {
-		mMonotonic = false;
-		
-		//Can only call this BEFORE any call to STATE or SAMESTATE
-		if(mCheckState[zStateNum]) {
-			throw new ExecutionException("Can only call DYNSTATE before STATE or SAMESTATE");
-		}
-			
-		//Have we already used this one..
-		if(mDYNState[zStateNum] != null) {
-			throw new ExecutionException("Can only call DYNSTATE once per state per transaction!");
-		}
-		
-		//Set It
-		mDYNState[zStateNum] = cleanScript(zValue);
-			
-		//Is there a value anyway .. ?
-		StateVariable sv = mTransaction.getStateValue(zStateNum);
-		if(sv != null) {
-			//Check the result.. is it the same..
-			String oldsv = sv.getValue().toString();
-			
-			//return whether is the same
-			return oldsv.equals(zValue);
-		}
-		
-		//NO old value.. so this is definitely NEW / DIFFERENT
-		return false;
-	}
+//	public boolean setDYNState(int zStateNum, String zValue) throws ExecutionException {
+//		mMonotonic = false;
+//		
+//		//Can only call this BEFORE any call to STATE or SAMESTATE
+//		if(mCheckState[zStateNum]) {
+//			throw new ExecutionException("Can only call DYNSTATE before STATE or SAMESTATE");
+//		}
+//			
+//		//Have we already used this one..
+//		if(mDYNState[zStateNum] != null) {
+//			throw new ExecutionException("Can only call DYNSTATE once per state per transaction!");
+//		}
+//		
+//		//Set It
+//		mDYNState[zStateNum] = cleanScript(zValue);
+//			
+//		//Is there a value anyway .. ?
+//		StateVariable sv = mTransaction.getStateValue(zStateNum);
+//		if(sv != null) {
+//			//Check the result.. is it the same..
+//			String oldsv = sv.getValue().toString();
+//			
+//			//return whether is the same
+//			return oldsv.equals(zValue);
+//		}
+//		
+//		//NO old value.. so this is definitely NEW / DIFFERENT
+//		return false;
+//	}
 	
 	public String getState(int zStateNum) throws ExecutionException {
-		//We are checking the state
-		mCheckState[zStateNum] = true;
-		
-		//Has it been set in DYNSTATE
-		if(mDYNState[zStateNum] != null) {
-			return mDYNState[zStateNum];
-		}
+//		//We are checking the state
+//		mCheckState[zStateNum] = true;
+//		
+//		//Has it been set in DYNSTATE
+//		if(mDYNState[zStateNum] != null) {
+//			return mDYNState[zStateNum];
+//		}
 
 		if(!mTransaction.stateExists(zStateNum)) {
 			throw new ExecutionException("State Variable does not exist "+zStateNum);
@@ -422,18 +422,18 @@ public class Contract {
 		throw new ExecutionException("PREVSTATE Missing : "+zPrev);
 	}
 	
-	public String[] getCompleteDYNState() {
-		return mDYNState;
-	}
-	
-	public boolean[] getCompleteCheckState() {
-		return mCheckState;
-	}
-	
-	public void setCompleteDYNState(String[] zDYNState, boolean[] zCheckState) {
-		mDYNState   = zDYNState;
-		mCheckState = zCheckState;
-	}
+//	public String[] getCompleteDYNState() {
+//		return mDYNState;
+//	}
+//	
+//	public boolean[] getCompleteCheckState() {
+//		return mCheckState;
+//	}
+//	
+//	public void setCompleteDYNState(String[] zDYNState, boolean[] zCheckState) {
+//		mDYNState   = zDYNState;
+//		mCheckState = zCheckState;
+//	}
 	
 	/**
 	 * Could use the JSON but this looks better as no quotes.. ;p
@@ -607,7 +607,7 @@ public class Contract {
 		script = script.replaceAll(" @totout " 	    , " @TOTOUT ");
 		script = script.replaceAll(" @inblknum "    , " @INBLKNUM ");
 		script = script.replaceAll(" @blkdiff "     , " @BLKDIFF ");
-		script = script.replaceAll(" @prng "        , " @PRNG ");
+//		script = script.replaceAll(" @prng "        , " @PRNG ");
 		
 		//And now do all the functions
 		for(MinimaFunction func : MinimaFunction.ALL_FUNCTIONS) {
