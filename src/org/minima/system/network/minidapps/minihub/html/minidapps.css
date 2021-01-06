@@ -7,6 +7,19 @@
   vertical-align:middle
 }
 
+.mainicon {
+  width:100px;
+}
+
+.evolution {
+  text-align:center;
+  font-size:24;
+}
+
+.buttonbox {
+	width:150;
+}
+
 .minidapplist {
   background-color: #ccc;
   border-radius: 10px;
