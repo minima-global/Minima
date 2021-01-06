@@ -16,7 +16,6 @@ import org.minima.database.txpowtree.BlockTreeNode;
 import org.minima.database.userdb.UserDBRow;
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
-import org.minima.objects.PubPrivKey;
 import org.minima.objects.StateVariable;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;

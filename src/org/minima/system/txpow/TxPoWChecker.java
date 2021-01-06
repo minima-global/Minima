@@ -2,7 +2,6 @@ package org.minima.system.txpow;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Hashtable;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.mmr.MMRData;
@@ -17,8 +16,6 @@ import org.minima.kissvm.values.NumberValue;
 import org.minima.kissvm.values.ScriptValue;
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
-import org.minima.objects.PubPrivKey;
-import org.minima.objects.StateVariable;
 import org.minima.objects.Transaction;
 import org.minima.objects.TxPoW;
 import org.minima.objects.Witness;
@@ -30,7 +27,6 @@ import org.minima.objects.proofs.ScriptProof;
 import org.minima.objects.proofs.SignatureProof;
 import org.minima.objects.proofs.TokenProof;
 import org.minima.system.input.functions.gimme50;
-import org.minima.utils.BaseConverter;
 import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;

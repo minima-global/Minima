@@ -6,7 +6,6 @@ import org.minima.kissvm.functions.MinimaFunction;
 import org.minima.kissvm.values.BooleanValue;
 import org.minima.kissvm.values.HEXValue;
 import org.minima.kissvm.values.Value;
-import org.minima.objects.PubPrivKey;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.keys.MultiKey;
 

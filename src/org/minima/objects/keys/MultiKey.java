@@ -12,7 +12,6 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.utils.BaseConverter;
 import org.minima.utils.Crypto;
 import org.minima.utils.Maths;
-import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;
 
 public class MultiKey extends BaseKey {
