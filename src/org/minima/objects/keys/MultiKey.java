@@ -16,8 +16,8 @@ import org.minima.utils.MinimaLogger;
 
 public class MultiKey extends BaseKey {
 	
-	public static final MiniNumber DEFAULT_KEYS_PER_LEVEL = new MiniNumber(32);
-	public static final MiniNumber DEFAULT_LEVELS 		  = new MiniNumber(3);
+	public static final MiniNumber DEFAULT_KEYS_PER_LEVEL = new MiniNumber(16);
+	public static final MiniNumber DEFAULT_LEVELS 		  = new MiniNumber(2);
 	
 	//The Leaf Node Keys..
 	SingleKey[] mSingleKeys;
@@ -232,7 +232,7 @@ public class MultiKey extends BaseKey {
 		long timediff     = 0;
 		
 		System.out.println("MAKE KEY Start");
-		MultiKey mkey = new MultiKey(privseed, new MiniNumber("64"), new MiniNumber("2"));
+		MultiKey mkey = new MultiKey(privseed, new MiniNumber("16"), new MiniNumber("2"));
 		System.out.println(mkey.toJSON().toString());
 		
 		//Timer..
@@ -244,33 +244,30 @@ public class MultiKey extends BaseKey {
 		System.out.println("Data    : "+data);
 		System.out.println();
 			
-		//SINGLE SIG EXAMPLE
-		timenow  = System.currentTimeMillis();
-		MiniData singlesig = mkey.sign(data);
-		System.out.println("SigLength:"+singlesig.getLength());
-		System.out.println(mkey.toJSON().toString());
-		System.out.println();
-		
-		//Timer..
-		timediff = System.currentTimeMillis()-timenow;
-		System.out.println("Sign Speed : "+Maths.ConvertMilliToTime(timediff));
-			
-		//Now Verify..
-		MultiKey verifykey = new MultiKey();
-		verifykey.setPublicKey(mkey.getPublicKey());
-		timenow  = System.currentTimeMillis();
-		boolean ok = verifykey.verify(data, singlesig);
-		timediff = System.currentTimeMillis()-timenow;
-		System.out.println("Verify Speed : "+Maths.ConvertMilliToTime(timediff)+" "+ok);
-		
-		
-		//Stop Here..
-		if(true) {
-			System.exit(0);
-		}
+//		//SINGLE SIG EXAMPLE
+//		timenow  = System.currentTimeMillis();
+//		MiniData singlesig = mkey.sign(data);
+//		System.out.println("SigLength:"+singlesig.getLength());
+//		System.out.println(mkey.toJSON().toString());
+//		System.out.println();
+//		
+//		//Timer..
+//		timediff = System.currentTimeMillis()-timenow;
+//		System.out.println("Sign Speed : "+Maths.ConvertMilliToTime(timediff));
+//			
+//		//Now Verify..
+//		MultiKey verifykey = new MultiKey();
+//		verifykey.setPublicKey(mkey.getPublicKey());
+//		timenow  = System.currentTimeMillis();
+//		boolean ok = verifykey.verify(data, singlesig);
+//		timediff = System.currentTimeMillis()-timenow;
+//		System.out.println("Verify Speed : "+Maths.ConvertMilliToTime(timediff)+" "+ok);
+//		
+//		//Stop Here..
+//		if(true) {System.exit(0);}
 		
 		//MULTI SIGN EXAMPLE
-		for(int i=0;i<4;i++) {
+		for(int i=0;i<8;i++) {
 			MiniData sig = mkey.sign(data);
 			System.out.println(i+")\tSigLength:"
 					+sig.getLength()+"\thash:"
