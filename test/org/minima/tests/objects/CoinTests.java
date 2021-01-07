@@ -43,7 +43,7 @@ public class CoinTests {
         // System.out.println("Coin id value - " + c.mCoinID);
         c.resetCoinID(coinId2);
         assertTrue("Token id should equal", c.getTokenID().equals(tokenId));
-        assertTrue("Amount should equal", c.getAmount().equals(twelve));
+        assertTrue("Amount should equal", c.getAmount().equals(two));
         assertEquals("Address should equal", c.getAddress(), coinAddress);
         // System.out.println("Verify this value*** - " + c.getCoinID());
         // System.out.println("Coin to string value - " + c.toString());
