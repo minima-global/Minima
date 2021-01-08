@@ -7,8 +7,10 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 
 import org.minima.utils.MinimaLogger;
+import org.minima.utils.json.JSONObject;
 
 public class RPCClient {
 
@@ -95,7 +97,7 @@ public class RPCClient {
 //		String request = zArgs[2];
 		
 		String host = "127.0.0.1";
-		int port    = 9002;
+		int port    = 9005;
 		String request = "status";
 		
 		try {
@@ -109,8 +111,18 @@ public class RPCClient {
 //			
 //			System.out.println(resp);
 			
+			JSONObject msg = new JSONObject();
+			msg.put("from", "Paddy");
+			msg.put("to", "Dommo");
+			msg.put("msg", "Hello You!!");
+			msg.put("signature", "0x73465873658347568345");
+			
+			//Encode..
+			String enc = URLEncoder.encode(new String(msg.toString()),"UTF-8").trim();
+			
 			//Now try a POST
-			String res = sendPOST("http://127.0.0.1:9002/cmd", "status");
+//			String res = sendPOST("http://127.0.0.1:9005/", "status");
+			String res = sendPOST("http://127.0.0.1:9005/", enc);
 			
 			System.out.println("POST : " + res);
 			

@@ -12,6 +12,7 @@ import org.minima.system.Main;
 import org.minima.system.input.InputHandler;
 import org.minima.system.network.base.MinimaClient;
 import org.minima.system.network.base.MinimaServer;
+import org.minima.system.network.maxima.Maxima;
 import org.minima.system.network.minidapps.DAPPManager;
 import org.minima.system.network.minidapps.websocket.WebSocketManager;
 import org.minima.system.network.rpc.RPCServer;
@@ -60,6 +61,11 @@ public class NetworkHandler extends MessageProcessor {
 	 * WebSocket Manager
 	 */
 	WebSocketManager mWebSocketManager;
+	
+	/**
+	 * MAXIMA..
+	 */
+	Maxima mMaxima;
 	
 	/**
 	 * All the network channels..
@@ -133,6 +139,10 @@ public class NetworkHandler extends MessageProcessor {
 		return mBasePort+3;
 	}
 	
+	public int getMaximaPort() {
+		return mBasePort+4;
+	}
+	
 	public String calculateHostIP() {
 		if(mHardSet) {
 			return mHost;
@@ -187,7 +197,7 @@ public class NetworkHandler extends MessageProcessor {
 	
 	public WebSocketManager getWebSocketManager() {
 		return mWebSocketManager;
-	}	
+	}
 	
 	public void setGlobalReconnect(boolean zGlobalReconnect) {
 		mGlobalReconnect = zGlobalReconnect;
@@ -223,6 +233,9 @@ public class NetworkHandler extends MessageProcessor {
 			//Start the WebSocket Manager
 			mWebSocketManager = new WebSocketManager(getWSPort());
 			
+			//Start Maxima
+			mMaxima = new Maxima();
+			
 		}else if(zMessage.isMessageType(NETWORK_SHUTDOWN)) {
 			//Stop the server
 			try {mServer.stop();}catch(Exception exc) {
@@ -241,6 +254,11 @@ public class NetworkHandler extends MessageProcessor {
 			
 			//Stop the WebSocket server
 			try {mWebSocketManager.stop();}catch(Exception exc) {
+				MinimaLogger.log(exc);
+			}
+			
+			//Stop Maxima
+			try {mMaxima.stop();}catch(Exception exc) {
 				MinimaLogger.log(exc);
 			}
 			
