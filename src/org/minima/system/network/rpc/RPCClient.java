@@ -112,8 +112,8 @@ public class RPCClient {
 //			System.out.println(resp);
 			
 			JSONObject msg = new JSONObject();
-			msg.put("from", "Paddy");
-			msg.put("to", "Dommo");
+			msg.put("from", "Paddy@127.0.0.1:9005");
+			msg.put("to", "SPartacus@127.0.0.1:7005");
 			msg.put("msg", "Hello You!!");
 			msg.put("signature", "0x73465873658347568345");
 			
