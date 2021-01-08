@@ -2,9 +2,9 @@
 
 This is the main repository for the Minima application.
 
-Minima is a new cryptocurrency with an emphasis on every user being able to run a full and complete node. The system uses a UTXO model like Bitcoin, but data is stored in an MMR Proof DB, where every user only keeps track of their own coins, rather than all users keeping track of all coins. The scripting is simple yet advanced, taking all the wonderful ideas that people would like to see on Bitcoin, like covenants, a simple state machine, MAST (merkelized abstract syntax trees), quantum secure signatures, and merkle proof checks.. use `tutorial` in the app to see the scripting.   
+Minima is a new cryptocurrency with an emphasis on every user being able to run a full and complete node. The system uses a UTXO model like Bitcoin, but data is stored in an MMR Proof DB, where every user only keeps track of their own coins, rather than all users keeping track of all coins. The scripting is simple yet advanced, taking all the wonderful ideas that people would like to see on Bitcoin, like covenants, a simple state machine, MAST (merkelized abstract syntax trees), quantum secure signatures, and merkle proof checks.. use `tutorial` in the app to see the scripting.
 
-The White Paper is included in this repo. Nothing makes me happier than people who can be bothered to read it. 
+The White Paper is included in this repo. Nothing makes me happier than people who can be bothered to read it.
 
 The project is setup as an Eclipse Java project. You should be able to clone the repo, add to eclipse, compile and run.
 
@@ -39,13 +39,15 @@ java -jar minima.jar -private
 You can then connect to it from another instance of the app by running :
 
 ```
-java -jar minima.jar -connect 127.0.0.1 9001 -port 9010 -clean
+java -jar minima.jar -connect 127.0.0.1 9001 -port 9010 -clean -conf minimaconf2
 ```
 Note that this will set the base port of the 2nd instance to 9010.. otherwise the app will not allow you to start, as the ports will already be in use.
 
-Using the `-clean` parameter deletes any previous data and ensures you can resysnc to the current chain. 
+Using the `-clean` parameter deletes any previous data and ensures you can resysnc to the current chain.
 
 Use `-cleanhard` to wipe all the MiniDAPPs as well.
+
+And finally `-conf` specifies a different folder to store the data files for this second running instance.
 
 If you compile from scratch - you can use the bin folder.. you need to link the H2 sql db and the rhino javascript library both of which are in the lib folder.
 
@@ -57,6 +59,49 @@ java -cp ../lib/*:. org.minima.Start
 
 You can add -private and all the other parameters to that.
 
+
+### Tests
+
+You can run the tests directly from your IDE or from command-line.
+
+```
+./gradlew test
+```
+
+Generate code coverage test report with:
+```
+./gradlew test jacocoTestReport
+```
+
+The reports can be found at
+```
+./build/reports/tests/test/index.html
+./build/reports/jacoco/test/html/index.html
+```
+
+### Docker
+
+For those using Docker, you can try the Minima docker image without compiling the source code:
+```
+docker pull minimaglobal/minima:tests
+docker run minima:tests
+```
+
+The tests tag maps to the tests github branch.
+
+You can also build your own Docker minima image with the following command:
+```
+docker build -t minima:latest .
+```
+
+Start the image with default settings:
+```
+docker run minima:latest
+```
+=======
+The reports can be found at
+./build/reports/tests/test/index.html
+./build/reports/jacoco/test/html/index.html
 
 ### Demo Session
 
@@ -73,7 +118,7 @@ You can give yourself 50 testnet Mini with
 ```
 gimme50
 ```
- 
+
 ..and away you go.
 
 Get an address
@@ -100,7 +145,7 @@ Get your balance
 balance
 ```
 
-The BEST way to play with Minima is via the MiniDAPP system that by default runs on port 9004 
+The BEST way to play with Minima is via the MiniDAPP system that by default runs on port 9004
 
 Full details  @ [http://mifi.minima.global](http://mifi.minima.global)
 
@@ -120,22 +165,22 @@ ADDRESS     ::= SHA3 ( BLOCK )
 BLOCK       ::= STATEMENT_1 STATEMENT_2 ... STATEMENT_n
 STATEMENT   ::= LET VARIABLE = EXPRESSION |
                 LET ( EXPRESSION_1 EXPRESSION_2 ... EXPRESSION_n ) = EXPRESSION |
-                IF EXPRESSION THEN BLOCK [ELSEIF EXPRESSION THEN BLOCK]* [ELSE BLOCK] ENDIF | 
+                IF EXPRESSION THEN BLOCK [ELSEIF EXPRESSION THEN BLOCK]* [ELSE BLOCK] ENDIF |
                 WHILE EXPRESSION DO BLOCK ENDWHILE |
                 EXEC EXPRESSION |
                 MAST EXPRESSION |
                 ASSERT EXPRESSION |
                 RETURN EXPRESSION
-EXPRESSION  ::= RELATION AND RELATION  | RELATION OR RELATION  |  
-                RELATION XOR RELATION  | RELATION NAND RELATION | 
+EXPRESSION  ::= RELATION AND RELATION  | RELATION OR RELATION  |
+                RELATION XOR RELATION  | RELATION NAND RELATION |
                 RELATION NOR RELATION  |  RELATION NXOR RELATION | RELATION
-RELATION    ::= LOGIC EQ LOGIC  | LOGIC NEQ LOGIC  | 
-                LOGIC GT LOGIC  | LOGIC GTE LOGIC  | 
+RELATION    ::= LOGIC EQ LOGIC  | LOGIC NEQ LOGIC  |
+                LOGIC GT LOGIC  | LOGIC GTE LOGIC  |
                 LOGIC LT LOGIC  | LOGIC LTE LOGIC  | LOGIC
-LOGIC       ::= LOGIC & OPERATION | LOGIC | OPERATION | 
+LOGIC       ::= LOGIC & OPERATION | LOGIC | OPERATION |
                 LOGIC ^ OPERATION | OPERATION
-OPERATION   ::= OPERATION + MULDIV | OPERATION - MULDIV | 
-                OPERATION % MULDIV | 
+OPERATION   ::= OPERATION + MULDIV | OPERATION - MULDIV |
+                OPERATION % MULDIV |
                 OPERATION << MULDIV | OPERATION >> MULDIV | MULDIV
 MULDIV      ::= MULDIV * PRIME | MULDIV / PRIME | PRIME
 PRIME       ::= NOT PRIME |  NEG PRIME | BASEUNIT
@@ -152,7 +197,7 @@ TRUE        ::= NOT FALSE
 GLOBAL      ::= @BLKNUM | @INPUT | @INBLKNUM | @BLKDIFF
       	        @AMOUNT | @ADDRESS | @TOKENID | @COINID |
                 @SCRIPT | @TOTIN | @TOTOUT
-FUNCTION    ::= FUNC ( EXPRESSION_1 EXPRESSION_2 .. EXPRESSION_n ) 
+FUNCTION    ::= FUNC ( EXPRESSION_1 EXPRESSION_2 .. EXPRESSION_n )
 FUNC        ::= HEXCAT | STRCAT | LEN | REV | SUBSET | RPLVAR | GET |
                 ASCII | BOOL | HEX | NUMBER | SCRIPT |
                 ABS | CEIL | FLOOR | MIN | MAX | INC | DEC | SIGDIG | POW |
@@ -190,4 +235,4 @@ A complete breakdown of the functions is also shown in the app.
 
 This is still experimental code. Nothing is yet set in stone. Things will break. There are bugs. It's the wild west out there.
 
-..enjoy :) 
+..enjoy :)
