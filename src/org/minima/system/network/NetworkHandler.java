@@ -199,6 +199,10 @@ public class NetworkHandler extends MessageProcessor {
 		return mWebSocketManager;
 	}
 	
+	public Maxima getMaxima() {
+		return mMaxima;
+	}
+	
 	public void setGlobalReconnect(boolean zGlobalReconnect) {
 		mGlobalReconnect = zGlobalReconnect;
 	}

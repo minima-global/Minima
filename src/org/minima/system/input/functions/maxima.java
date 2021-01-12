@@ -2,6 +2,7 @@ package org.minima.system.input.functions;
 
 import org.minima.system.brains.ConsensusUser;
 import org.minima.system.input.CommandFunction;
+import org.minima.system.network.maxima.Maxima;
 import org.minima.utils.messages.Message;
 
 public class maxima extends CommandFunction{
@@ -9,20 +10,26 @@ public class maxima extends CommandFunction{
 	public maxima() {
 		super("maxima");
 		
-		setHelp("[to:] [message:]", "Post a Maxima message.", "");
+		setHelp("[info|new|send] ([to] [message])", "Post a Maxima message.", "");
 	}
 	
 	@Override
 	public void doFunction(String[] zInput) throws Exception {
-//		//The details
-//		String coinid = zInput[1];
-//		
-//		//Create a message
-//		Message sender = getResponseMessage(ConsensusUser.CONSENSUS_KEEPCOIN);
-//		sender.addString("coinid", coinid);
-//		
-//		//Send it to the miner..
-//		getMainHandler().getConsensusHandler().PostMessage(sender);
+		//Create a message
+		Message max = getResponseMessage(Maxima.MAXIMA_FUNCTION);
+				
+		//The details
+		String func = zInput[1];
+		max.addString("function", func);
+		
+		//Is this more than info or new
+		if(func.equals("send")) {
+			max.addString("to", zInput[2]);
+			max.addString("message", zInput[3]);
+		}
+		
+		//Send it to the miner..
+		getMainHandler().getNetworkHandler().getMaxima().PostMessage(max);
 	}
 	
 	@Override
