@@ -42,6 +42,14 @@ public class MultiKey extends BaseKey {
 	public MultiKey() {}
 
 	/**
+	 * Create a MultiKey for verification with this public key
+	 * @param zPublicKey
+	 */
+	public MultiKey(MiniData zPublicKey) {
+		setPublicKey(zPublicKey);
+	}
+
+	/**
 	 * Use Default settings to create a Multi-Key
 	 * @param zBitLength
 	 */
