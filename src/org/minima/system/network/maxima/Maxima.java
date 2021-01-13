@@ -55,6 +55,17 @@ public class Maxima extends MessageProcessor {
 		return ident;
 	}
 	
+	public String getMaximaHost() {
+		String host = Main.getMainHandler().getNetworkHandler().getBaseHost();
+		int port    = Main.getMainHandler().getNetworkHandler().getMaximaPort();
+		return host+":"+port;
+	}
+	
+	public String getIdentOnly(String zFullIdentity) {
+		int index = zFullIdentity.indexOf("@");
+		return zFullIdentity.substring(0, index);
+	}
+	
 	@Override
 	protected void processMessage(Message zMessage) throws Exception {
 		if(zMessage.getMessageType().equals(MAXIMA_INIT)) {
@@ -125,26 +136,42 @@ public class Maxima extends MessageProcessor {
 			//Convert Message to JSON
 			JSONObject msg = (JSONObject) new JSONParser().parse(json);
 
-			//Received a message.. check the signature..
-			MinimaLogger.log("MAXIMA REC : "+msg.toString());
+			//Who sent it..
+			String sender = getIdentOnly((String) msg.get("from"));
+			MiniData pubkey = new MiniData(sender);
 			
-			InputHandler.endResponse(zMessage, true, "Valid Message");
-		
+			//Check the Signature
+			String sentmsg = (String) msg.get("data");
+			MiniData msgdata    = new MiniData( sentmsg.getBytes("UTF-8") );
+			
+			String sig      = (String) msg.get("signature");
+			MiniData sigdat = new MiniData(sig);
+			
+			MultiKey ver = new MultiKey(pubkey);
+			boolean valid = ver.verify(msgdata, sigdat);
+			if(!valid) {
+				MinimaLogger.log("INVALID MAXIMA : "+msg);
+				InputHandler.endResponse(zMessage, false, "Invalid Message");
+			}else {
+				MinimaLogger.log("MAXIMA "+msg.get("from")+" > "+msg.get("data"));
+				InputHandler.endResponse(zMessage, true, "Valid Message");
+			}
+			
 		}else if(zMessage.getMessageType().equals(MAXIMA_SENDMSG)) {
 			//Get the details..
 			String to 		= zMessage.getString("to");
-			if(!to.startsWith("http")) {
-				to = "http://"+to;
+			String fullto   = zMessage.getString("to");
+			if(!fullto.startsWith("http")) {
+				fullto = "http://"+to;
 			}
 			
 			String message	= zMessage.getString("message");
 			
 			//Sign the Hash using your Maxima Key
-			byte[] msgdata   = message.getBytes("UTF-8");
-			MiniData hash    = new MiniData( Crypto.getInstance().hashData(msgdata,160) );
+			MiniData senddata = new MiniData(message.getBytes("UTF-8"));
 			
 			//For now  random.. 
-			MiniData sig     = mIdentity.sign(hash);
+			MiniData sig     = mIdentity.sign(senddata);
 			
 			//Construct a JSON Object..
 			JSONObject msg = new JSONObject();
@@ -152,8 +179,6 @@ public class Maxima extends MessageProcessor {
 			msg.put("from", getMaximaIdentity());
 			msg.put("to", to);
 			msg.put("data", message);
-			
-			msg.put("hash", hash.to0xString());
 			msg.put("signature", sig.to0xString());
 			
 			//Encode it..
@@ -163,7 +188,7 @@ public class Maxima extends MessageProcessor {
 			InputHandler.getResponseJSON(zMessage).put("message", msg);
 			
 			//Create a Separate Thread to send the message
-			MaximaSender sender = new MaximaSender(zMessage, to, enc);
+			MaximaSender sender = new MaximaSender(zMessage, fullto, enc);
 			Thread runner = new Thread(sender);
 			runner.setDaemon(true);
 			runner.start();
