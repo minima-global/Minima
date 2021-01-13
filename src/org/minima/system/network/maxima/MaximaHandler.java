@@ -6,14 +6,19 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.URLDecoder;
+import java.nio.charset.Charset;
 import java.util.Date;
 import java.util.StringTokenizer;
 
+import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniString;
 import org.minima.system.network.commands.CMD;
 import org.minima.system.network.commands.FILE;
 import org.minima.system.network.commands.NET;
 import org.minima.system.network.commands.SQL;
 import org.minima.utils.MinimaLogger;
+import org.minima.utils.json.JSONObject;
+import org.minima.utils.json.parser.JSONParser;
 
 /**
  * This class handles a single request then exits
@@ -92,15 +97,6 @@ public class MaximaHandler implements Runnable {
 				//What is being asked..
 				command = URLDecoder.decode(new String(cbuf),"UTF-8").trim();
 				
-//				//Remove slashes..
-//				reqtype = new String(fileRequested);
-//				if(reqtype.startsWith("/")) {
-//					reqtype = reqtype.substring(1);
-//				}
-//				if(reqtype.endsWith("/")) {
-//					reqtype = reqtype.substring(0,reqtype.length()-1);
-//				}
-				
 //				//Currently POST is the default..
 //			}else if (method.equals("GET")){
 //				//decode URL message
@@ -131,15 +127,25 @@ public class MaximaHandler implements Runnable {
 			}else {
 				throw new IOException("Unsupported Method in RPCHandler : "+firstline);
 			}
-			MinimaLogger.log("Maxima REC "+method+" "+command);
+			//MinimaLogger.log("Maxima RPC "+method+" "+command);
+
+			//COnvert to bytes
+			MiniData datastr = new MiniData(command.getBytes(Charset.forName("UTF-8")));
 			
-//			CMD cmd = new CMD(command);
-//        	
-//        	//Run it..
-//        	cmd.run();
-//
-//        	//Get the Response..
-//        	finalresult = cmd.getFinalResult();
+			//Now run a MAXIMA_REC command..
+			String recmax = "maxima receive "+datastr.to0xString();
+			//MinimaLogger.log("cmd "+recmax);
+
+			CMD cmd = new CMD(recmax);
+        	
+        	//Run it..
+        	cmd.run();
+
+        	//Get the Response..
+        	String result      = cmd.getFinalResult();
+        	JSONObject jsonres = (JSONObject) new JSONParser().parse(result);
+
+        	finalresult = (String) jsonres.get("message");
 
 			// send HTTP Headers
 			out.println("HTTP/1.1 200 OK");
@@ -149,7 +155,7 @@ public class MaximaHandler implements Runnable {
 			out.println("Content-length: " + finalresult.length());
 			out.println("Access-Control-Allow-Origin: *");
 			out.println(); // blank line between headers and content, very important !
-			out.println("REC");
+			out.println(finalresult);
 			out.flush(); // flush character output stream buffer
 			
 		} catch (Exception ioe) {
