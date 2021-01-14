@@ -23,8 +23,11 @@ public class Maxima extends MessageProcessor {
 	public static final String MAXIMA_FUNCTION  = "MAXIMA_FUNCTION";
 	
 	public static final String MAXIMA_INFO 		= "MAXIMA_INFO";
-	
 	public static final String MAXIMA_NEW 		= "MAXIMA_NEW";
+	
+	public static final String MAXIMA_LISTCONTACTS  = "MAXIMA_LISTCONTACTS";
+	public static final String MAXIMA_ADDCONTACT    = "MAXIMA_ADDCONTACT";
+	public static final String MAXIMA_REMOVECONTACT = "MAXIMA_REMOVECONTACT";
 	
 	public static final String MAXIMA_RECMSG    = "MAXIMA_RECMSG";
 	public static final String MAXIMA_SENDMSG   = "MAXIMA_SENDMSG";
@@ -32,6 +35,8 @@ public class Maxima extends MessageProcessor {
 	MaximaServer mServer;
 	
 	MultiKey mIdentity;
+	
+	MaximaDB mMaximaDB;
 	
 	public Maxima() {
 		super("MAXIMA_PROCESSOR");
@@ -47,7 +52,7 @@ public class Maxima extends MessageProcessor {
 		stopMessageProcessor();
 	}
 	
-	public String getMaximaIdentity() {
+	public String getMaximaFullIdentity() {
 		String host = Main.getMainHandler().getNetworkHandler().getBaseHost();
 		int port    = Main.getMainHandler().getNetworkHandler().getMaximaPort();
 		String ident = mIdentity.getPublicKey().to0xString()+"@"+host+":"+port;
@@ -66,10 +71,18 @@ public class Maxima extends MessageProcessor {
 		return zFullIdentity.substring(0, index);
 	}
 	
+	public String getHostOnly(String zFullIdentity) {
+		int index = zFullIdentity.indexOf("@");
+		return zFullIdentity.substring(index+1);
+	}
+	
 	@Override
 	protected void processMessage(Message zMessage) throws Exception {
 		if(zMessage.getMessageType().equals(MAXIMA_INIT)) {
 			int port = Main.getMainHandler().getNetworkHandler().getMaximaPort();
+			
+			//For now..
+			mMaximaDB = new MaximaDB();
 			
 			//Create a NEW key.. for now always new..
 			mIdentity = new MultiKey(160);
@@ -117,7 +130,7 @@ public class Maxima extends MessageProcessor {
 		
 		}else if(zMessage.getMessageType().equals(MAXIMA_INFO)) {
 			InputHandler.getResponseJSON(zMessage).put("key", mIdentity.toJSON());
-			InputHandler.getResponseJSON(zMessage).put("identity", getMaximaIdentity());
+			InputHandler.getResponseJSON(zMessage).put("identity", getMaximaFullIdentity());
 			InputHandler.endResponse(zMessage, true, "Maxima Info");
 					
 		}else if(zMessage.getMessageType().equals(MAXIMA_NEW)) {
@@ -128,6 +141,32 @@ public class Maxima extends MessageProcessor {
 			InputHandler.addResponseMesage(info, zMessage);
 			PostMessage(info);
 			
+		}else if(zMessage.getMessageType().equals(MAXIMA_ADDCONTACT)) {
+			String user = zMessage.getString("maximauser");
+			
+			String ident   = getIdentOnly(user);
+			String host    = getHostOnly(user);
+			long timestamp = System.currentTimeMillis();
+			
+			//Does that user allready exist
+			MaximaUser maxuser = mMaximaDB.getUser(ident);
+			if(maxuser == null) {
+				//Add a new User
+				maxuser = new MaximaUser(ident, host, timestamp);
+				mMaximaDB.addUser(maxuser);
+			}else {
+				//Update Host and timestamp
+				maxuser.setHost(host);
+//				maxuser.
+				
+			}
+			
+		}else if(zMessage.getMessageType().equals(MAXIMA_REMOVECONTACT)) {
+		
+		}else if(zMessage.getMessageType().equals(MAXIMA_LISTCONTACTS)) {
+			
+		
+		
 		}else if(zMessage.getMessageType().equals(MAXIMA_RECMSG)) {
 			String datastr	= zMessage.getString("message");
 			MiniData data   = new MiniData(datastr);
@@ -159,7 +198,9 @@ public class Maxima extends MessageProcessor {
 			
 		}else if(zMessage.getMessageType().equals(MAXIMA_SENDMSG)) {
 			//Get the details..
-			String to 		= zMessage.getString("to");
+			String to = zMessage.getString("to");
+			
+			//Get the host for this User
 			String fullto   = zMessage.getString("to");
 			if(!fullto.startsWith("http")) {
 				fullto = "http://"+to;
@@ -175,10 +216,24 @@ public class Maxima extends MessageProcessor {
 			
 			//Construct a JSON Object..
 			JSONObject msg = new JSONObject();
-			
-			msg.put("from", getMaximaIdentity());
+			msg.put("version", 1);
+			msg.put("from", mIdentity.getPublicKey().to0xString());
+			msg.put("host", getMaximaHost());
 			msg.put("to", to);
-			msg.put("data", message);
+			
+				//The content
+				JSONObject data = new JSONObject();
+				data.put("to", to);
+				data.put("port", "minima");
+				data.put("data", to);
+			
+			//Add the data
+			msg.put("payload", data);
+				
+			//Sign the Payload
+			
+			
+			//The Signature of the Data
 			msg.put("signature", sig.to0xString());
 			
 			//Encode it..

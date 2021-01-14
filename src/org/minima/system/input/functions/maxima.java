@@ -9,7 +9,7 @@ public class maxima extends CommandFunction{
 	public maxima() {
 		super("maxima");
 		
-		setHelp("[info|new|send] ([to] [message])", "Post a Maxima message.", "");
+		setHelp("[info|new|add [maximauser]|list|send [to] [message]]", "Maxima functions..", "");
 	}
 	
 	@Override
@@ -28,6 +28,9 @@ public class maxima extends CommandFunction{
 		
 		}else if(func.equals("receive")) {
 			max.addString("message", zInput[2]);
+		
+		}else if(func.equals("add")) {
+			max.addString("maximauser", zInput[2]);
 			
 		}
 		

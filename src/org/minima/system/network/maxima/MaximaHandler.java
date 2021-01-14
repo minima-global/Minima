@@ -144,12 +144,11 @@ public class MaximaHandler implements Runnable {
         	//Get the Response..
         	String result      = cmd.getFinalResult();
         	JSONObject jsonres = (JSONObject) new JSONParser().parse(result);
-
-        	finalresult = (String) jsonres.get("message");
+        	finalresult 	   = (String) jsonres.get("message");
 
 			// send HTTP Headers
 			out.println("HTTP/1.1 200 OK");
-			out.println("Server: HTTP RPC Server from Minima : 1.0");
+			out.println("Server: HTTP Maxima Server from Minima : 1.0");
 			out.println("Date: " + new Date());
 			out.println("Content-type: text/plain");
 			out.println("Content-length: " + finalresult.length());
