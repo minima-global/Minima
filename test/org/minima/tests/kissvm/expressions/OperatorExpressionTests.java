@@ -92,7 +92,7 @@ public class OperatorExpressionTests {
 
         OperatorExpression oeX = new OperatorExpression(ce1, ce3, Integer.MIN_VALUE);
         //assertThrows(ExecutionException.class, () -> {  // should throw ExecutionException on invalid operation
-        //    oeX.getValue(ctr);
+        //    oeX.getValue(ctr); // shifting by zero
         //});
         assertThrows(NullPointerException.class, () -> {  // but throws NullPointerException
             oeX.getValue(ctr);
