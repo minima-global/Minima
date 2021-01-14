@@ -20,11 +20,15 @@ public class BaseConverter {
 	    return "0x"+new String(hexChars);
 	}
 	
-	public static byte[] decode16(String zHex) {
+	public static byte[] decode16(String zHex) throws NumberFormatException {
 		String hex = zHex;
 		if(hex.startsWith("0x")) {
 			hex = zHex.substring(2);
 		}		
+		
+		//Check that every char is a valid base 16 value..
+		//Throws NumberFormatException if not valid HEX
+		Long.parseLong(hex,16);
 		
 		//Go Upper case - make sure always the same
 		hex = hex.toUpperCase();
@@ -164,10 +168,14 @@ public class BaseConverter {
 	
 	public static void main(String[] zArgs) {
 		
-		String tt = numberToHex(8687);
-		System.out.println(tt);
+		byte[] data = decode16("0xvvFFFF");
 		
-		System.out.println(hexToNumber(tt));
+		System.out.print(data.length);
+		
+//		String tt = numberToHex(8687);
+//		System.out.println(tt);
+//		
+//		System.out.println(hexToNumber(tt));
 		
 
 //		MiniData hash = MiniData.getRandomData(64);
