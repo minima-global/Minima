@@ -269,7 +269,10 @@ public class DAPPManager extends MessageProcessor {
 					
 					//Add it..
 					CURRENT_MINIDAPPS.add(confjson);
+				}else {
+					MinimaLogger.log("ERROR : minidapp.conf not found for "+minidappid);
 				}
+				
 			}
 		}
 		

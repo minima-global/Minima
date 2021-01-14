@@ -9,7 +9,7 @@ import org.minima.database.userdb.java.reltxpow;
 
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
-import org.minima.objects.PubPrivKey;
+import org.minima.objects.keys.MultiKey;
 import org.minima.objects.StateVariable;
 import org.minima.objects.Transaction;
 import org.minima.objects.TxPoW;
@@ -70,29 +70,29 @@ public class JavaUserDBTests {
         assertNotNull("should not be null ", db.getKeys());
         assertEquals("should be empty ", 0, db.getKeys().size());
 
-        PubPrivKey ppk1 = db.newPublicKey(512);
+        MultiKey ppk1 = db.newPublicKey(512);
         assertEquals("should contain 1 key ", 1, db.getKeys().size());
 
-        PubPrivKey ppk2 = db.newPublicKey(512);
+        MultiKey ppk2 = db.newPublicKey(512);
         assertEquals("should contain 2 keys ", 2, db.getKeys().size());
 
-        PubPrivKey ppk3 = db.newPublicKey(512);
+        MultiKey ppk3 = db.newPublicKey(512);
         assertEquals("should contain 3 keys ", 3, db.getKeys().size());
 
         MiniData md_ppk1 = ppk1.getPublicKey();
-        PubPrivKey ppk11 = db.getPubPrivKey(md_ppk1);
+        MultiKey ppk11 = db.getPubPrivKey(md_ppk1);
         assertEquals("should be equal ", ppk1, ppk11);
 
         MiniData md_ppk2 = ppk2.getPublicKey();
-        PubPrivKey ppk21 = db.getPubPrivKey(md_ppk2);
+        MultiKey ppk21 = db.getPubPrivKey(md_ppk2);
         assertEquals("should be equal ", ppk2, ppk21);
 
         MiniData md_ppk3 = ppk3.getPublicKey();
-        PubPrivKey ppk31 = db.getPubPrivKey(md_ppk3);
+        MultiKey ppk31 = db.getPubPrivKey(md_ppk3);
         assertEquals("should be equal ", ppk3, ppk31);
 
         MiniData md_dummy = new MiniData();
-        PubPrivKey ppk_dummy = db.getPubPrivKey(md_dummy);
+        MultiKey ppk_dummy = db.getPubPrivKey(md_dummy);
         assertNull("should be null", ppk_dummy);
     }
 
@@ -104,7 +104,7 @@ public class JavaUserDBTests {
         assertEquals("should contain 0 simple addresses ", 0, db.getSimpleAddresses().size());
         assertEquals("should contain 0 addresses in total ", 0, db.getAllAddresses().size());
 
-        PubPrivKey[] pk = {
+        MultiKey[] pk = {
             db.newPublicKey(512),
             db.newPublicKey(512),
             db.newPublicKey(512),
@@ -113,7 +113,7 @@ public class JavaUserDBTests {
         };
         assertEquals("should contain 5 keys ", 5, db.getKeys().size());
 
-        PubPrivKey untracked_pk = new PubPrivKey(512);
+        MultiKey untracked_pk = new MultiKey(512);
         assertEquals("should contain 5 keys ", 5, db.getKeys().size());
 
         Address[] sa = {
@@ -212,12 +212,12 @@ public class JavaUserDBTests {
         assertEquals("should be empty ", "", db.getScript(untracked_addr.getAddressData()));
 
         Address tracked_input_addr = db.newSimpleAddress();
-        PubPrivKey untracked_input_pk = new PubPrivKey(512);
+        MultiKey untracked_input_pk = new MultiKey(512);
         String untracked_input_script = "RETURN SIGNEDBY ( " + untracked_input_pk.getPublicKey() + " )";
         Address untracked_input_addr = new Address(untracked_input_script, untracked_input_pk.getBitLength());
 
         Address tracked_output_addr = db.newSimpleAddress();
-        PubPrivKey untracked_output_pk = new PubPrivKey(512);
+        MultiKey untracked_output_pk = new MultiKey(512);
         String untracked_output_script = "RETURN SIGNEDBY ( " + untracked_output_pk.getPublicKey() + " )";
         Address untracked_output_addr = new Address(untracked_output_script, untracked_output_pk.getBitLength());
 
@@ -443,7 +443,7 @@ public class JavaUserDBTests {
     public JavaUserDB createAndPopulateDB() {
         JavaUserDB db = new JavaUserDB();
 
-        PubPrivKey[] pk = {
+        MultiKey[] pk = {
             db.newPublicKey(512),
             db.newPublicKey(512),
             db.newPublicKey(512),

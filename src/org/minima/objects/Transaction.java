@@ -142,17 +142,17 @@ public class Transaction implements Streamable {
 		return false;
 	}
 	
-	/**
-	 * Get the Remainder Output Coin for a specific token..
-	 */
-	public Coin getRemainderCoin(MiniData zTokenID) {
-		for(Coin cc : mOutputs) {
-			if(cc.isRemainder() && cc.getTokenID().isEqual(zTokenID)) {
-				return cc;
-			}
-		}
-		return null;
-	}
+//	/**
+//	 * Get the Remainder Output Coin for a specific token..
+//	 */
+//	public Coin getRemainderCoin(MiniData zTokenID) {
+//		for(Coin cc : mOutputs) {
+//			if(cc.isRemainder() && cc.getTokenID().isEqual(zTokenID)) {
+//				return cc;
+//			}
+//		}
+//		return null;
+//	}
 	
 	/**
 	 * You only need to check that there are enough Inputs for the Outputs.
@@ -248,13 +248,7 @@ public class Transaction implements Streamable {
 	 * @return
 	 */
 	public boolean stateExists(int zStateNum) {
-		for(StateVariable sv : mState) {
-			if(sv.getPort() == zStateNum){
-				return true;
-			}
-		}
-		
-		return false;
+		return getStateValue(zStateNum) != null;
 	}
 	
 	/**
@@ -332,22 +326,22 @@ public class Transaction implements Streamable {
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
 		//Max 255 inputs or outputs
-		MiniByte ins = new MiniByte(mInputs.size());
+		MiniNumber ins = new MiniNumber(mInputs.size());
 		ins.writeDataStream(zOut);
 		for(Coin coin : mInputs) {
 			coin.writeDataStream(zOut);
 		}
 		
 		//Max 255 inputs or outputs
-		MiniByte outs = new MiniByte(mOutputs.size());
+		MiniNumber outs = new MiniNumber(mOutputs.size());
 		outs.writeDataStream(zOut);
 		for(Coin coin : mOutputs) {
 			coin.writeDataStream(zOut);
 		}
 		
 		//How many state variables..
-		MiniByte bytelen = new MiniByte(mState.size());
-		bytelen.writeDataStream(zOut);
+		MiniNumber statelen = new MiniNumber(mState.size());
+		statelen.writeDataStream(zOut);
 		for(StateVariable sv : mState) {
 			sv.writeDataStream(zOut);
 		}
@@ -371,24 +365,24 @@ public class Transaction implements Streamable {
 		mState 	 = new  ArrayList<>();
 		
 		//Inputs
-		MiniByte ins = MiniByte.ReadFromStream(zIn);
-		int len = ins.getValue();
+		MiniNumber ins = MiniNumber.ReadFromStream(zIn);
+		int len = ins.getAsInt();
 		for(int i=0;i<len;i++) {
 			Coin coin = Coin.ReadFromStream(zIn);
 			mInputs.add(coin);
 		}
 		
 		//Outputs
-		MiniByte outs = MiniByte.ReadFromStream(zIn);
-		len = outs.getValue();
+		MiniNumber outs = MiniNumber.ReadFromStream(zIn);
+		len = outs.getAsInt();
 		for(int i=0;i<len;i++) {
 			Coin coin = Coin.ReadFromStream(zIn);
 			mOutputs.add(coin);
 		}
 		
 		//State Variables
-		MiniByte states = MiniByte.ReadFromStream(zIn);
-		len = states.getValue();
+		MiniNumber states = MiniNumber.ReadFromStream(zIn);
+		len = states.getAsInt();
 		for(int i=0;i<len;i++){
 			StateVariable sv = StateVariable.ReadFromStream(zIn);
 			mState.add(sv);

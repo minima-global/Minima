@@ -6,6 +6,14 @@ import org.minima.kissvm.functions.MinimaFunction;
 import org.minima.kissvm.values.BooleanValue;
 import org.minima.kissvm.values.Value;
 
+/**
+ * Check the states (inclusive) are the same from previous and current
+ * 
+ * States MUST exist in PREV to be checked
+ * 
+ * @author spartacusrex
+ *
+ */
 public class SAMESTATE extends MinimaFunction {
 
 	public SAMESTATE() {
@@ -25,7 +33,6 @@ public class SAMESTATE extends MinimaFunction {
 		
 		//Now check the old state and the current state are the same
 		for(int i=start;i<=end;i++) {
-			//Get the state variable..
 			//Get the old state..
 			String olds = zContract.getPrevState(i).toString();
 			String news = zContract.getState(i).toString();

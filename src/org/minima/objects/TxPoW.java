@@ -123,6 +123,10 @@ public class TxPoW implements Streamable {
 		return mBody.mTransaction;
 	}
 	
+	public Transaction getBurnTransaction() {
+		return mBody.mBurnTransaction;
+	}
+	
 	public void setTransaction(Transaction zTran) {
 		mBody.mTransaction = zTran;
 	}
@@ -133,6 +137,10 @@ public class TxPoW implements Streamable {
 	
 	public Witness getWitness() {
 		return mBody.mWitness;
+	}
+	
+	public Witness getBurnWitness() {
+		return mBody.mBurnWitness;
 	}
 	
 	public void addBlockTxPOW(TxPoW zTxPOW) {

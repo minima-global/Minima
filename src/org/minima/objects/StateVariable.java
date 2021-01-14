@@ -6,6 +6,7 @@ import java.io.IOException;
 
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONObject;
@@ -13,10 +14,10 @@ import org.minima.utils.json.JSONObject;
 public class StateVariable implements Streamable {
 
 	/**
-	 * Byte for the port.. 0-255
+	 * Positive Integer Number
 	 * @param zData
 	 */
-	MiniByte mPort;
+	int mPort;
 	
 	/**
 	 * The data can represent any of the value types used in script..
@@ -41,7 +42,8 @@ public class StateVariable implements Streamable {
 	}
 	
 	public StateVariable(int zPort, String zData, MiniByte zKeepMMR) {
-		mPort	  = new MiniByte(zPort);
+		//Store as MiniNumber
+		mPort = Math.abs(zPort);
 		
 		//Cannot add Mx addresses.. only HEX addresses in SCRIPT
 		if(zData.startsWith("Mx")) {
@@ -67,7 +69,7 @@ public class StateVariable implements Streamable {
 	}
 	
 	public int getPort() {
-		return mPort.getValue();
+		return mPort;
 	}
 	
 	public boolean isKeepMMR() {
@@ -76,7 +78,7 @@ public class StateVariable implements Streamable {
 	
 	public JSONObject toJSON() {
 		JSONObject ret = new JSONObject();
-		ret.put("port", mPort.toString());
+		ret.put("port", mPort);
 		ret.put("data", mData.toString());
 		ret.put("keeper", mKeepMMR.isTrue());
 		return ret;
@@ -89,7 +91,8 @@ public class StateVariable implements Streamable {
 
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
-		mPort.writeDataStream(zOut);
+		MiniNumber port = new MiniNumber(mPort);
+		port.writeDataStream(zOut);
 		
 		//Optimisation.. if is DATA
 		if(mData.toString().startsWith("0x")) {
@@ -109,7 +112,7 @@ public class StateVariable implements Streamable {
 
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
-		mPort = MiniByte.ReadFromStream(zIn);
+		mPort = MiniNumber.ReadFromStream(zIn).getAsInt();
 		
 		//Was it sent as DATA or SCRIPT
 		MiniByte isdata = MiniByte.ReadFromStream(zIn);

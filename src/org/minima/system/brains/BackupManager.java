@@ -1,7 +1,6 @@
 package org.minima.system.brains;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Comparator;
 
@@ -11,7 +10,6 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.objects.greet.SyncPacket;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MiniFormat;
-import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageProcessor;

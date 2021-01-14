@@ -66,7 +66,7 @@ FUNC        ::= HEXCAT | STRCAT | LEN | REV | SUBSET | RPLVAR | GET |
                 SIGNEDBY | MULTISIG | CHECKSIG |
                 GETOUTADDR | GETOUTAMT | GETOUTTOK | VERIFYOUT |
                 GETINADDR | GETINAMT | GETINTOK | GETINID | VERIFYIN |
-                STATE | PREVSTATE | SAMESTATE | DYNSTATE
+                STATE | PREVSTATE | SAMESTATE
 
 Globals
 -------
@@ -175,47 +175,44 @@ Returns the SHA2 value of the HEX value. 256 bits.
 SIGNEDBY ( HEX )
 Returns true if the transaction is signed by this public key
 
-MULTISIG ( BYTE HEX1 HEX2 .. HEXn )
+MULTISIG ( NUMBER HEX1 HEX2 .. HEXn )
 Returns true if the transaction is signed by N of the public keys
 
 CHECKSIG ( HEX HEX HEX)
 Check public key, data and signature 
 
-GETOUTADDR ( BYTE ) 
+GETOUTADDR ( NUMBER ) 
 Return the HEX address of the specified output
 
-GETOUTAMT ( BYTE ) 
+GETOUTAMT ( NUMBER ) 
 Return the amount of the specified output 
 
-GETOUTTOK ( BYTE ) 
+GETOUTTOK ( NUMBER ) 
 Return the token id of the specified output
 
-VERIFYOUT ( BYTE HEX NUMBER HEX [NUMBER])
+VERIFYOUT ( NUMBER HEX NUMBER HEX [NUMBER])
 Verify the specified output has the specified address, amount and tokenid. Optional 4th parameter relates to AMOUNT. -1 LTE, 0 EQ, 1 GTE. Default EQ.
 
-GETINADDR ( BYTE ) 
+GETINADDR ( NUMBER ) 
 Return the HEX address of the specified input
 
-GETINAMT ( BYTE ) 
+GETINAMT ( NUMBER ) 
 Return the amount of the specified input
 
-GETINTOK ( BYTE ) 
+GETINTOK ( NUMBER ) 
 Return the token id of the specified input
 
-VERIFYIN ( BYTE HEX NUMBER HEX [NUMBER])
+VERIFYIN ( NUMBER HEX NUMBER HEX [NUMBER])
 Verify the specified input has the specified address, amount and tokenid. Optional 4th parameter relates to AMOUNT. -1 LTE, 0 EQ, 1 GTE. Default EQ.
 
-STATE ( BYTE )
+STATE ( NUMBER )
 Return the state value for the given number
 
-PREVSTATE ( BYTE )
+PREVSTATE ( NUMBER )
 Return the state value stored in the MMR data in the initial transaction this input was created. Allows for a state to be maintained from 1 spend to the next
 
-SAMESTATE ( BYTE [BYTE] )
+SAMESTATE ( NUMBER [NUMBER] )
 Return TRUE if the previous state and current state are the same. If 2 parameters are set then checks all the values inbetween the 2 values inclusively
-
-DYNSTATE ( BYTE EXPRESSION )
-Dynamically set the state value. You can only use this ONCE per state per transaction. MUST be used before STATE or SAMESTATE.
 
 Examples
 --------
