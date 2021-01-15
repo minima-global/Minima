@@ -9,10 +9,20 @@ public class HEXValue extends Value {
 
 	public static final int VALUE_HEX = 1;
 	
+	/**
+	 * Convert a MiniData byte array into a HEXValue
+	 * 
+	 * @param zData
+	 */
 	public HEXValue(MiniData zData) {
 		this(zData.getData()); 
 	}
 	
+	/**
+	 * Convert a byte array into a HEXValue
+	 * 
+	 * @param zData
+	 */
 	public HEXValue(byte[] zData) {
 		//It's a HEX value..
 		mData   = new MiniData(zData);
@@ -21,16 +31,32 @@ public class HEXValue extends Value {
 		mNumber = new MiniNumber(mData.getDataValue());
 	}
 	
-	public HEXValue(MiniNumber zNumber) {
-		this(new BigInteger(zNumber.toString()).toString(16).toUpperCase());
-	}
-	
+	/**
+	 * Convert a HEX String into a byte array
+	 * 
+	 * @param zHex
+	 */
 	public HEXValue(String zHex) {
 		//HEX
 		mData 	= new MiniData(zHex);
 		
 		//THE NUMBER is only to 128 BIT (not complete). The full BigInteger value is stored in the RamData
 		mNumber = new MiniNumber(mData.getDataValue());
+	}
+	
+	/**
+	 * Convert a positive whole number into a HEXValue..
+	 * 
+	 * Number is converted to a whole positive
+	 * 
+	 * @param zNumber
+	 */
+	public HEXValue(MiniNumber zNumber) {
+		//Converted number
+		mNumber = zNumber.abs().floor();
+		
+		//HEX
+		mData 	= new MiniData(mNumber.getAsBigInteger().toByteArray());
 	}
 	
 	@Override
@@ -86,5 +112,11 @@ public class HEXValue extends Value {
 	@Override
 	public String toString() {
 		return mData.toString();
+	}
+	
+	public static void main(String[] zArgs) {
+		HEXValue vv = new HEXValue("0xqqFF");
+		
+		System.out.println(vv.toString());
 	}
 }

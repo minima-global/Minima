@@ -28,7 +28,7 @@ public class NumberValue extends Value {
 		mNumber = new MiniNumber(zNumber);
 	
 		//The raw data is just the bytes of the string version.. at least unique for the input
-		mData = MiniData.getMiniDataVersion(mNumber);
+		mData = new MiniData(mNumber.getAsBigInteger().toByteArray());
 	}
 	
 	@Override
