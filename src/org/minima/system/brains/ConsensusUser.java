@@ -25,7 +25,6 @@ import org.minima.kissvm.values.ScriptValue;
 import org.minima.kissvm.values.Value;
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
-import org.minima.objects.PubPrivKey;
 import org.minima.objects.StateVariable;
 import org.minima.objects.Transaction;
 import org.minima.objects.TxPoW;
@@ -35,11 +34,10 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniInteger;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
+import org.minima.objects.keys.MultiKey;
 import org.minima.objects.proofs.ScriptProof;
 import org.minima.objects.proofs.TokenProof;
 import org.minima.system.input.InputHandler;
-import org.minima.system.network.NetworkHandler;
-import org.minima.system.network.base.MinimaClient;
 import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
@@ -106,7 +104,7 @@ public class ConsensusUser extends ConsensusProcessor {
 			MiniData hexpubk = new MiniData(pubkey);
 			
 			//Get the public key..
-			PubPrivKey key = getMainDB().getUserDB().getPubPrivKey(hexpubk);
+			MultiKey key = getMainDB().getUserDB().getPubPrivKey(hexpubk);
 			
 			if(key == null) {
 				InputHandler.endResponse(zMessage, false, "Public key not found");
@@ -165,7 +163,7 @@ public class ConsensusUser extends ConsensusProcessor {
 			int bitl = zMessage.getInteger("bitlength");
 			
 			//Create a new key pair..
-			PubPrivKey key = getMainDB().getUserDB().newPublicKey(bitl);
+			MultiKey key = getMainDB().getUserDB().newPublicKey(bitl);
 			
 			//return to sender!
 			JSONObject resp = InputHandler.getResponseJSON(zMessage);
@@ -371,7 +369,7 @@ public class ConsensusUser extends ConsensusProcessor {
 					if(!tok.equals("")) {
 						int split = tok.indexOf(":");
 						String statenum = tok.substring(0,split).trim();
-						String value = tok.substring(split+1).trim();
+						String value    = tok.substring(split+1).trim();
 						
 						//Set it..
 						trans.addStateVariable(new StateVariable(Integer.parseInt(statenum), value));
@@ -761,7 +759,8 @@ public class ConsensusUser extends ConsensusProcessor {
 		}else if(zMessage.isMessageType(CONSENSUS_IMPORTKEY)) {
 			MiniData priv = (MiniData)zMessage.getObject("privatekey");
 
-			PubPrivKey newkey = new PubPrivKey(priv);
+			MultiKey newkey = new MultiKey(priv, MultiKey.DEFAULT_KEYS_PER_LEVEL, MultiKey.DEFAULT_LEVELS);
+//			PubPrivKey newkey = new PubPrivKey(priv);
 			
 			if(getMainDB().getUserDB().getPubPrivKey(newkey.getPublicKey())!=null) {
 				MinimaLogger.log("Key allready in DB!");

@@ -23,10 +23,10 @@ import org.minima.database.userdb.UserDB;
 import org.minima.database.userdb.java.reltxpow;
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
-import org.minima.objects.PubPrivKey;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.objects.keys.MultiKey;
 import org.minima.objects.proofs.TokenProof;
 import org.minima.system.Main;
 import org.minima.system.input.InputHandler;
@@ -936,9 +936,9 @@ public class ConsensusPrint extends ConsensusProcessor {
 			
 		}else if(zMessage.isMessageType(CONSENSUS_KEYS)){
 			//Public Keys
-			ArrayList<PubPrivKey> keys = getMainDB().getUserDB().getKeys();
+			ArrayList<MultiKey> keys = getMainDB().getUserDB().getKeys();
 			JSONArray arrpub = new JSONArray();
-			for(PubPrivKey key : keys) {
+			for(MultiKey key : keys) {
 				arrpub.add(key.toJSON());
 			}
 			InputHandler.getResponseJSON(zMessage).put("publickeys", arrpub);

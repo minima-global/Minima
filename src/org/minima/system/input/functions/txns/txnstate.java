@@ -14,8 +14,7 @@ public class txnstate extends CommandFunction {
 	@Override
 	public void doFunction(String[] zInput) throws Exception {
 		int txn 			= Integer.parseInt(zInput[1]);
-		
-		int txnport 	    = Integer.parseInt(zInput[2]);
+		int txnport 	    = Math.abs(Integer.parseInt(zInput[2]));
 		String variable   	= zInput[3];
 		
 		//Send to the consensus Handler

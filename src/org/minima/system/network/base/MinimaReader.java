@@ -12,6 +12,7 @@ import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.objects.base.MiniString;
 import org.minima.objects.greet.Greeting;
 import org.minima.objects.greet.HashNumber;
 import org.minima.objects.greet.SyncPackage;
@@ -22,7 +23,6 @@ import org.minima.system.brains.ConsensusHandler;
 import org.minima.system.brains.ConsensusNet;
 import org.minima.system.network.NetworkHandler;
 import org.minima.system.txpow.TxPoWChecker;
-import org.minima.system.txpow.TxPoWMiner;
 import org.minima.utils.Crypto;
 import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;
@@ -96,6 +96,10 @@ public class MinimaReader implements Runnable {
 	 */
 	public static final MiniByte NETMESSAGE_PING		    = new MiniByte(7);
 	
+	/**
+	 * GENERIC NETWORK MESSAGE
+	 */
+	public static final MiniByte NETMESSAGE_GENERIC		    = new MiniByte(9);
 	
 	
 	/**
@@ -150,6 +154,10 @@ public class MinimaReader implements Runnable {
 				}else if(msgtype.isEqual(NETMESSAGE_TXPOW)) {
 					if(len > MAX_TXPOW) {
 						throw new ProtocolException("Receive Invalid Message length for TXPOW type:"+msgtype+" len:"+len);
+					}
+				}else if(msgtype.isEqual(NETMESSAGE_GENERIC)) {
+					if(len > MAX_TXPOW) {
+						throw new ProtocolException("Receive Invalid GENERIC Message length :"+len);
 					}
 				}else if(msgtype.isEqual(NETMESSAGE_GREETING_REQUEST)) {
 					if(len > MAX_GREETING_LIST_REQ) {
@@ -308,7 +316,13 @@ public class MinimaReader implements Runnable {
 					
 					//Add this ID
 					rec.addObject("sent", mb);
+				
+				}else if(msgtype.isEqual(NETMESSAGE_GENERIC)) {
+					MiniString msg = MiniString.ReadFromStream(inputstream);
 					
+					//Add this ID
+					rec.addObject("generic", msg);
+				
 				}else {
 					throw new Exception("Invalid message on network : "+rec);
 				}

@@ -40,17 +40,10 @@ public class CoinTests {
         assertFalse("Floating should be false", c.isFloating());
         c.setFloating(true);
         assertTrue("Floating should be true", c.isFloating());
-        assertFalse("Remainder should be false", c.isRemainder());
-        c.setRemainder(true);
-        assertTrue("Remainder should be true", c.isRemainder());
         // System.out.println("Coin id value - " + c.mCoinID);
         c.resetCoinID(coinId2);
-        // System.out.println("Coin id value after reset - " + c.mCoinID);
-        // System.out.println("Amount value before reset - " + c.mAmount);
-        c.resetAmount(twelve);
-        // System.out.println("Amount value before reset - " + c.mAmount);
         assertTrue("Token id should equal", c.getTokenID().equals(tokenId));
-        assertTrue("Amount should equal", c.getAmount().equals(twelve));
+        assertTrue("Amount should equal", c.getAmount().equals(two));
         assertEquals("Address should equal", c.getAddress(), coinAddress);
         // System.out.println("Verify this value*** - " + c.getCoinID());
         // System.out.println("Coin to string value - " + c.toString());
@@ -68,7 +61,6 @@ public class CoinTests {
             MiniData tokenId = new MiniData("123");
 
             Coin c = new Coin(coinId, coinAddress, twelve, tokenId);
-            c.setRemainder(true);
             c.setFloating(true);
             // System.out.println("coin  value before write " + c.toString());
 

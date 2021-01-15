@@ -29,6 +29,10 @@ public class MULTISIG extends MinimaFunction {
 			if(zContract.checkSignature(sig)) {
 				found++;
 			}
+			
+			if(found >= num) {
+				return BooleanValue.TRUE;
+			}
 		}
 		
 		if(found >= num) {

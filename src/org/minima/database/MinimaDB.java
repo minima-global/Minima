@@ -29,7 +29,6 @@ import org.minima.database.userdb.UserDB;
 import org.minima.database.userdb.java.JavaUserDB;
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
-import org.minima.objects.PubPrivKey;
 import org.minima.objects.StateVariable;
 import org.minima.objects.Transaction;
 import org.minima.objects.TxPoW;
@@ -41,6 +40,7 @@ import org.minima.objects.base.MiniInteger;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.greet.SyncPackage;
 import org.minima.objects.greet.SyncPacket;
+import org.minima.objects.keys.MultiKey;
 import org.minima.objects.proofs.TokenProof;
 import org.minima.system.brains.BackupManager;
 import org.minima.system.brains.ConsensusHandler;
@@ -1031,7 +1031,7 @@ public class MinimaDB {
 		MiniData transhash = Crypto.getInstance().hashObject(trx);
 		for(MiniData pubk : sigpubk) {
 			//Get the Pub Priv..
-			PubPrivKey signer = getUserDB().getPubPrivKey(pubk);
+			MultiKey signer = getUserDB().getPubPrivKey(pubk);
 			
 			//Sign the data
 			MiniData signature = signer.sign(transhash);
