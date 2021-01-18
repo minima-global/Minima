@@ -9,6 +9,7 @@ import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.expressions.Expression;
 import org.minima.kissvm.functions.MinimaFunction;
+import org.minima.kissvm.values.HEXValue;
 import org.minima.kissvm.values.ScriptValue;
 import org.minima.kissvm.values.Value;
 
@@ -37,10 +38,19 @@ public class STRCAT extends MinimaFunction{
 		//Sum them
 		String fullstring = "";
 		for(Expression exp : params) {
-			fullstring += exp.getValue(zContract).toString()+" ";
+			Value vv = exp.getValue(zContract);
+			if(vv.getValueType() != Value.VALUE_SCRIPT) {
+				throw new ExecutionException("All parameters to STRCAT MUST be ScriptValue");
+			}
+			
+			//This is a HEXValue
+			ScriptValue scr = (ScriptValue)vv;
+			
+			//Add it..
+			fullstring += scr.getScriptOnly()+" ";
 		}
 		
-		return new ScriptValue(fullstring.trim());
+		return new ScriptValue("[ "+fullstring.trim()+" ]");
 	}
 	
 	@Override

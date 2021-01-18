@@ -13,6 +13,8 @@ import org.minima.kissvm.values.HEXValue;
 import org.minima.kissvm.values.Value;
 
 /**
+ * Concatenate HEX values
+ * 
  * @author Spartacus Rex
  *
  */
@@ -22,9 +24,6 @@ public class HEXCAT extends MinimaFunction{
 		super("HEXCAT");
 	}
 
-	/* (non-Javadoc)
-	 * @see org.ramcash.ramscript.functions.Function#runFunction(org.ramcash.ramscript.Contract)
-	 */
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
 		//Run through the function parameters and concatenate..
@@ -40,8 +39,16 @@ public class HEXCAT extends MinimaFunction{
 		int totlen  = 0;
 		int counter = 0;
 		for(Expression exp : params) {
+			Value vv = exp.getValue(zContract);
+			if(vv.getValueType() != Value.VALUE_HEX) {
+				throw new ExecutionException("All parameters to HEXCAT MUST be HEXValue");
+			}
+			
+			//This is a HEXValue
+			HEXValue hex = (HEXValue)vv;
+			
 			//Get the bytes
-			parambytes[counter] = exp.getValue(zContract).getRawData();
+			parambytes[counter] = hex.getRawData();
 			totlen += parambytes[counter].length;
 			counter++;
 		}
