@@ -6,6 +6,8 @@ package org.minima.kissvm.expressions;
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.values.BooleanValue;
+import org.minima.kissvm.values.HEXValue;
+import org.minima.kissvm.values.NumberValue;
 import org.minima.kissvm.values.Value;
 
 /**
@@ -57,7 +59,11 @@ public class BooleanExpression implements Expression {
 		//Calculate the left and the right side
 		Value lval = mLeft.getValue(zContract);
 		Value rval = mRight.getValue(zContract);
+
+		//Make sure both Values are of the same type
+		Value.checkSameType(lval, rval);
 				
+		//TRUE or FALSE - all types have this
 		boolean left   	= lval.isTrue(); 
 		boolean right  	= rval.isTrue();
 		
@@ -84,29 +90,80 @@ public class BooleanExpression implements Expression {
 				break;
 				
 			case BOOLEAN_EQ :
-				ret = lval.isEqual(rval) ? BooleanValue.TRUE : BooleanValue.FALSE;
+				if(lval.getValueType() == Value.VALUE_BOOLEAN || lval.getValueType() == Value.VALUE_NUMBER) {
+					NumberValue lnv = (NumberValue)lval;
+					NumberValue rnv = (NumberValue)rval;
+					ret = lnv.isEqual(rnv) ? BooleanValue.TRUE : BooleanValue.FALSE;
+				}else {
+					HEXValue lhv = (HEXValue)lval;
+					HEXValue rhv = (HEXValue)rval;
+					ret = lhv.isEqual(rhv) ? BooleanValue.TRUE : BooleanValue.FALSE;
+				}
 				break;
 			case BOOLEAN_NEQ :
-				ret = lval.isEqual(rval) ? BooleanValue.FALSE : BooleanValue.TRUE;
+				if(lval.getValueType() == Value.VALUE_BOOLEAN || lval.getValueType() == Value.VALUE_NUMBER) {
+					NumberValue lnv = (NumberValue)lval;
+					NumberValue rnv = (NumberValue)rval;
+					ret = lnv.isEqual(rnv) ? BooleanValue.FALSE : BooleanValue.TRUE;
+				}else {
+					HEXValue lhv = (HEXValue)lval;
+					HEXValue rhv = (HEXValue)rval;
+					ret = lhv.isEqual(rhv) ? BooleanValue.FALSE : BooleanValue.TRUE;
+				}
 				break;
 			
 			case BOOLEAN_LT :
-				ret = lval.isLess(rval) ? BooleanValue.TRUE : BooleanValue.FALSE;
+				if(lval.getValueType() == Value.VALUE_BOOLEAN || lval.getValueType() == Value.VALUE_NUMBER) {
+					NumberValue lnv = (NumberValue)lval;
+					NumberValue rnv = (NumberValue)rval;
+					ret = lnv.isLess(rnv) ? BooleanValue.TRUE : BooleanValue.FALSE;
+				}else {
+					HEXValue lhv = (HEXValue)lval;
+					HEXValue rhv = (HEXValue)rval;
+					ret = lhv.isLess(rhv) ? BooleanValue.TRUE : BooleanValue.FALSE;
+				}
 				break;
 			case BOOLEAN_LTE :
-				ret = lval.isLessEqual(rval) ? BooleanValue.TRUE : BooleanValue.FALSE;
+				if(lval.getValueType() == Value.VALUE_BOOLEAN || lval.getValueType() == Value.VALUE_NUMBER) {
+					NumberValue lnv = (NumberValue)lval;
+					NumberValue rnv = (NumberValue)rval;
+					ret = lnv.isLessEqual(rnv) ? BooleanValue.TRUE : BooleanValue.FALSE;
+				}else {
+					HEXValue lhv = (HEXValue)lval;
+					HEXValue rhv = (HEXValue)rval;
+					ret = lhv.isLessEqual(rhv) ? BooleanValue.TRUE : BooleanValue.FALSE;
+				}
 				break;
 			
 			case BOOLEAN_GT :
-				ret = lval.isMore(rval) ? BooleanValue.TRUE : BooleanValue.FALSE;
+				if(lval.getValueType() == Value.VALUE_BOOLEAN || lval.getValueType() == Value.VALUE_NUMBER) {
+					NumberValue lnv = (NumberValue)lval;
+					NumberValue rnv = (NumberValue)rval;
+					ret = lnv.isMore(rnv) ? BooleanValue.TRUE : BooleanValue.FALSE;
+				}else {
+					HEXValue lhv = (HEXValue)lval;
+					HEXValue rhv = (HEXValue)rval;
+					ret = lhv.isMore(rhv) ? BooleanValue.TRUE : BooleanValue.FALSE;
+				}
 				break;
 			case BOOLEAN_GTE :
-				ret = lval.isMoreEqual(rval) ? BooleanValue.TRUE : BooleanValue.FALSE;
+				if(lval.getValueType() == Value.VALUE_BOOLEAN || lval.getValueType() == Value.VALUE_NUMBER) {
+					NumberValue lnv = (NumberValue)lval;
+					NumberValue rnv = (NumberValue)rval;
+					ret = lnv.isMoreEqual(rnv) ? BooleanValue.TRUE : BooleanValue.FALSE;
+				}else {
+					HEXValue lhv = (HEXValue)lval;
+					HEXValue rhv = (HEXValue)rval;
+					ret = lhv.isMoreEqual(rhv) ? BooleanValue.TRUE : BooleanValue.FALSE;
+				}
 				break;
 			
 			case BOOLEAN_NOT :
-				ret = lval.isTrue() ? BooleanValue.FALSE : BooleanValue.TRUE;
-				break;	
+				ret = left ? BooleanValue.FALSE : BooleanValue.TRUE;
+				break;
+				
+			default :
+				throw new ExecutionException("UNKNOWN boolean operator");	
 		}
 		
 		//This action counts as one instruction
