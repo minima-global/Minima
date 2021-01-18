@@ -4,7 +4,6 @@
 package org.minima.kissvm.values;
 
 import org.minima.kissvm.tokens.Token;
-import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 
 /**
@@ -14,69 +13,37 @@ import org.minima.objects.base.MiniNumber;
 public abstract class Value {
 	
 	/**
-	 * The Numeric Value
+	 * The Only Value Types
 	 */
-	protected MiniNumber mNumber;
+	public static final int VALUE_HEX     = 0;
+	public static final int VALUE_NUMBER  = 1;
+	public static final int VALUE_SCRIPT  = 2;
+	public static final int VALUE_BOOLEAN = 3;
 	
 	/**
-	 * The RAW bytes
-	 */
-	protected MiniData mData;
-	
-	/**
-	 * What typ of Value is this..
+	 * What type of Value is this..
 	 * @return
 	 */
 	public abstract int getValueType();
 	
 	/**
-	 * The Number Version
-	 * @return
+	 * TRUE or FALSE
 	 */
-	public MiniNumber getNumber() {
-		return mNumber;
-	}
-	
-	/**
-	 * The Data version
-	 * @return
-	 */
-	public MiniData getMiniData() {
-		return mData;
-	}
-	
-	/**
-	 * Get the RAW byte data
-	 * @return
-	 */
-	public byte[] getRawData() {
-		return getMiniData().getData();
-	}
-	
-	/**
-	 * Boolean Operators
-	 */
-	public abstract boolean isEqual(Value zValue);	
-	public abstract boolean isLess(Value zValue);
-	public abstract boolean isLessEqual(Value zValue);
-	public abstract boolean isMore(Value zValue);
-	public abstract boolean isMoreEqual(Value zValue);
-	
 	public boolean isTrue() {
 		return !isFalse();
 	}
 	
-	public boolean isFalse() {
-		return mNumber.isEqual(MiniNumber.ZERO);
-	}
+	public abstract boolean isFalse();
 	
 	/**
-	 * Operators
+	 * Strict Check this type and throw an exception if not
 	 */
-	public abstract Value add(Value zValue);	
-	public abstract Value sub(Value zValue);	
-	public abstract Value mult(Value zValue);	
-	public abstract Value div(Value zValue);	
+	public void verifyType(int zType) throws IllegalArgumentException{
+		if (getValueType() != zType) {
+			throw new IllegalArgumentException("Incorrect value type, expected "+zType+" found "+getValueType());
+		}
+	}
+	
 	
 	/**
 	 * GLOBAL STATIC FUNCTION for creating a Value from any string
@@ -106,7 +73,7 @@ public abstract class Value {
 	/**
 	 * GLOBAL STATIC FUNCTION for telling the value type
 	 */
-	public static int getValueType(String zValue){
+	public static int getValueType(String zValue) throws IllegalArgumentException {
 		if(zValue.startsWith("[")) {
 			//Then initialise the value 
 			return ScriptValue.VALUE_SCRIPT;
@@ -124,8 +91,28 @@ public abstract class Value {
 			return NumberValue.VALUE_NUMBER;
 	
 		}else {
-			//ERROR
-			return -99;
+			throw new IllegalArgumentException("Invalid value type : "+zValue);
+		}
+	}
+	
+	/**
+	 * Check that both values are of the same type and throw an exception if not
+	 * @param zV1
+	 * @param zV2
+	 */
+	public static void checkSameType(Value zV1,Value zV2) throws IllegalArgumentException {
+		if(zV1.getValueType() != zV2.getValueType()) {
+			throw new IllegalArgumentException("Operation requires that both value types MUST be the same");
+		}
+	}
+	
+	public static void checkSameType(Value zV1,Value zV2, int zType) throws IllegalArgumentException {
+		if(zV1.getValueType() != zV2.getValueType()) {
+			throw new IllegalArgumentException("Operation requires that both value types MUST be the same");
+		}
+		
+		if(zV1.getValueType() != zType) {
+			throw new IllegalArgumentException("Operation requires that both value types are of type "+zType);
 		}
 	}
 	

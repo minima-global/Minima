@@ -1,8 +1,6 @@
 package org.minima.kissvm.values;
 
 public class BooleanValue extends NumberValue {
-
-	public static final int VALUE_BOOLEAN = 4;
 	
 	/**
 	 * Global True False..

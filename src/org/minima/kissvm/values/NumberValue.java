@@ -1,11 +1,13 @@
 package org.minima.kissvm.values;
 
-import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 
 public class NumberValue extends Value {
-
-	public static final int VALUE_NUMBER = 2;
+	
+	/**
+	 * The MiniNumber Numeric Value
+	 */
+	protected MiniNumber mNumber;
 	
 	public NumberValue(int zValue) {
 		this(Integer.toString(zValue));
@@ -26,9 +28,14 @@ public class NumberValue extends Value {
 	public NumberValue(String zNumber) {
 		//NUMERIC
 		mNumber = new MiniNumber(zNumber);
+	}
 	
-		//The raw data is just the bytes of the string version.. at least unique for the input
-		mData = new MiniData(mNumber.getAsBigInteger().toByteArray());
+	/**
+	 * The Number Version
+	 * @return
+	 */
+	public MiniNumber getNumber() {
+		return mNumber;
 	}
 	
 	@Override
@@ -36,48 +43,43 @@ public class NumberValue extends Value {
 		return VALUE_NUMBER;
 	}
 	
-	@Override
-	public boolean isEqual(Value zValue) {
+	public boolean isFalse() {
+		return mNumber.isEqual(MiniNumber.ZERO);
+	}
+	
+	public boolean isEqual(NumberValue zValue) {
 		return mNumber.isEqual(zValue.getNumber());
 	}
 	
-	@Override
-	public boolean isLess(Value zValue) {
+	public boolean isLess(NumberValue zValue) {
 		return mNumber.isLess(zValue.getNumber());
 	}
 	
-	@Override
-	public boolean isLessEqual(Value zValue) {
+	public boolean isLessEqual(NumberValue zValue) {
 		return mNumber.isLessEqual(zValue.getNumber());
 	}
 	
-	@Override
-	public boolean isMore(Value zValue) {
+	public boolean isMore(NumberValue zValue) {
 		return mNumber.isMore(zValue.getNumber());
 	}
 	
-	@Override
-	public boolean isMoreEqual(Value zValue) {
+	public boolean isMoreEqual(NumberValue zValue) {
 		return mNumber.isMoreEqual(zValue.getNumber());
 	}
 	
-	@Override
-	public Value add(Value zValue) {
+	public NumberValue add(NumberValue zValue) {
 		return new NumberValue( mNumber.add(zValue.getNumber()) );
 	}
 	
-	@Override
-	public Value sub(Value zValue) {
+	public NumberValue sub(NumberValue zValue) {
 		return new NumberValue( mNumber.sub(zValue.getNumber()) );
 	}
 	
-	@Override
-	public Value mult(Value zValue) {
+	public NumberValue mult(NumberValue zValue) {
 		return new NumberValue( mNumber.mult(zValue.getNumber()) );
 	}
 	
-	@Override
-	public Value div(Value zValue) {
+	public NumberValue div(NumberValue zValue) {
 		return new NumberValue( mNumber.div(zValue.getNumber()) );
 	}
 	

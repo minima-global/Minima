@@ -6,8 +6,6 @@ import org.minima.kissvm.Contract;
 
 public class ScriptValue extends HEXValue {
 	
-	public static final int VALUE_SCRIPT = 3;
-	
 	/**
 	 * The Script
 	 */
@@ -38,9 +36,8 @@ public class ScriptValue extends HEXValue {
 		return VALUE_SCRIPT;
 	}
 	
-	@Override
-	public Value add(Value zValue) {
-		String sum  = mScript + " " + new String( zValue.getRawData(), Charset.forName("US-ASCII") );
+	public Value add(ScriptValue zValue) {
+		String sum  = mScript + " " + zValue.toString();
 		return new ScriptValue( sum );
 	}
 }
