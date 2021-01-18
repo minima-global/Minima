@@ -22,7 +22,11 @@ public class HexValueTests {
 
         HEXValue hv1 = new HEXValue(new MiniData());
         HEXValue hv2 = new HEXValue(new MiniData("1234"));
-        HEXValue hv3 = new HEXValue(new MiniData("QWER")); // should we allow initializations like this?
+        
+        assertThrows(NumberFormatException.class, () -> {
+        	HEXValue hv3 = new HEXValue(new MiniData("QWER")); //invalid HEX input
+        });
+        
         HEXValue hv4 = new HEXValue(new MiniData(new byte[]{}));
         HEXValue hv5 = new HEXValue(new MiniData(new byte[]{(byte) 0x12, (byte) 0x34, (byte) 0x56}));
         HEXValue hv6 = new HEXValue(new MiniNumber(Integer.valueOf(255)));
@@ -31,7 +35,7 @@ public class HexValueTests {
 
         assertEquals(0, hv1.getNumber().getAsInt());
         assertEquals(0x1234, hv2.getNumber().getAsInt());
-        assertEquals(61407, hv3.getNumber().getAsInt()); // is this correct?
+//        assertEquals(61407, hv3.getNumber().getAsInt()); // is this correct?
         assertEquals(0, hv4.getNumber().getAsInt());
         assertEquals(0x123456, hv5.getNumber().getAsInt());
         assertEquals(0xFF, hv6.getNumber().getAsInt());
@@ -40,7 +44,7 @@ public class HexValueTests {
 
         assertEquals("should be equal ", HEXValue.VALUE_HEX, hv1.getValueType());
         assertEquals("should be equal ", HEXValue.VALUE_HEX, hv2.getValueType());
-        assertEquals("should be equal ", HEXValue.VALUE_HEX, hv3.getValueType());
+//        assertEquals("should be equal ", HEXValue.VALUE_HEX, hv3.getValueType());
         assertEquals("should be equal ", HEXValue.VALUE_HEX, hv4.getValueType());
         assertEquals("should be equal ", HEXValue.VALUE_HEX, hv5.getValueType());
         assertEquals("should be equal ", HEXValue.VALUE_HEX, hv6.getValueType());
@@ -66,8 +70,8 @@ public class HexValueTests {
         assertTrue("should be true ", hv2.add(hv1).isEqual(res));
 
         hv1 = new HEXValue(new MiniNumber(Integer.MAX_VALUE));
-        hv2 = new HEXValue(new MiniNumber(Integer.MIN_VALUE));
-        res = new HEXValue(new MiniNumber(-1));
+//        hv2 = new HEXValue(new MiniNumber(Integer.MIN_VALUE));
+//        res = new HEXValue(new MiniNumber(-1));
         //assertTrue("should be true ", nv1.add(nv2).isEqual(res)); // Invalid result
         //assertTrue("should be true ", nv2.add(nv1).isEqual(res)); // Invalid result
 
@@ -79,7 +83,10 @@ public class HexValueTests {
 
         hv1 = new HEXValue(new MiniNumber(Long.MAX_VALUE));
         hv2 = new HEXValue(new MiniNumber(Long.MIN_VALUE));
-        res = new HEXValue(new MiniNumber(-1));
+        assertThrows(NumberFormatException.class, () -> {
+        	new HEXValue(new MiniNumber(-1)); //Positive numbers only
+        });
+//        res = new HEXValue(new MiniNumber(-1));
         //assertTrue("should be true ", nv1.add(nv2).isEqual(res)); // Invalid result
         //assertTrue("should be true ", nv2.add(nv1).isEqual(res)); // Invalid result
 
