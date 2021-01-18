@@ -49,12 +49,8 @@ public abstract class Value {
 	 * GLOBAL STATIC FUNCTION for creating a Value from any string
 	 */
 	public static Value getValue(String zValue){
-		if(zValue.startsWith("[")) {
-			//First remove the brackets
-			String sc = zValue.substring(1,zValue.length()-1);
-			
-			//Then initialise the value 
-			return new ScriptValue(sc);
+		if(zValue.startsWith("[") && zValue.endsWith("]")) {
+			return new ScriptValue(zValue);
 			
 		}else if(zValue.startsWith("0x")) {
 			return new HEXValue(zValue);

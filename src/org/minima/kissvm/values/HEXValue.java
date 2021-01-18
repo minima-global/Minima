@@ -13,6 +13,11 @@ public class HEXValue extends Value {
 	protected MiniData mData;
 	
 	/**
+	 * Needed by ScriptValue to init
+	 */
+	protected HEXValue() {}
+	
+	/**
 	 * Convert a MiniData byte array into a HEXValue
 	 * 
 	 * @param zData
