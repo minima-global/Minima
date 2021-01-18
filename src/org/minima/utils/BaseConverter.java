@@ -26,14 +26,16 @@ public class BaseConverter {
 			hex = zHex.substring(2);
 		}		
 		
-		//Check that every char is a valid base 16 value..
-		//Throws NumberFormatException if not valid HEX
-		Long.parseLong(hex,16);
-		
 		//Go Upper case - make sure always the same
 		hex = hex.toUpperCase();
 		int len = hex.length();
 	
+		//Check that every char is a valid base 16 value..
+		boolean isHex = hex.matches("[0-9A-F]+");
+		if(!isHex) {
+			throw new NumberFormatException("Invalid HEX string in decode16");
+		}
+		
 		//Must be 2 digits per byte
 		if(len % 2 != 0) {
 			//Need a leading zero
