@@ -29,11 +29,8 @@ public class SHA2 extends MinimaFunction {
 		//Perform the SHA2 Operation
 		byte[] ans = Crypto.getInstance().hashSHA2(data);
 		
-		//Ensure a 32 byte hash
-		MiniData hash = new MiniData(ans);
-		
 		//return the New HEXValue
-		return new HEXValue(hash.getData());
+		return new HEXValue(ans);
 	}
 	
 	@Override
