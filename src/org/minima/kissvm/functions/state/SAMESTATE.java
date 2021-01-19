@@ -25,12 +25,10 @@ public class SAMESTATE extends MinimaFunction {
 		
 		//Is this a one off or a sequence..
 		int start = zContract.getNumberParam(0, this).getNumber().getAsInt();
-		//int start = getParameter(0).getValue(zContract).getNumber().getAsInt();
 		int end   = start;
 		
 		if(getParameterNum() == 2) {
 			end = zContract.getNumberParam(1, this).getNumber().getAsInt();
-//			end = getParameter(1).getValue(zContract).getNumber().getAsInt();
 		}
 		
 		//Now check the old state and the current state are the same
