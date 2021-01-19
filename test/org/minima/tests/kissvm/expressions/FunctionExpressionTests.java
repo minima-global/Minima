@@ -15,6 +15,7 @@ import org.minima.kissvm.functions.maths.ABS;
 import org.minima.kissvm.functions.maths.INC;
 import org.minima.kissvm.values.NumberValue;
 import org.minima.kissvm.values.ScriptValue;
+import org.minima.kissvm.values.Value;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
 
@@ -25,8 +26,8 @@ public class FunctionExpressionTests {
 
         NumberValue nv1 = new NumberValue(10);
         NumberValue nv2 = new NumberValue(-10);
-        ScriptValue sv1 = new ScriptValue("[HELLO]");
-        ScriptValue sv2 = new ScriptValue("[WORLD]");
+        ScriptValue sv1 = new ScriptValue("HELLO");
+        ScriptValue sv2 = new ScriptValue("WORLD");
 
         CONCAT fCONCAT = new CONCAT();
         fCONCAT.addParameter(new ConstantExpression(sv1));
@@ -47,7 +48,8 @@ public class FunctionExpressionTests {
         FunctionExpression fe4 = new FunctionExpression(fINC);
 
         Contract ctr = new Contract("", "", new Witness(), new Transaction(), new ArrayList<>());
-        assertEquals("should be equal ", "[ hello world ]", fe1.getValue(ctr).toString());
+        assertEquals("should be equal ", "hello world", fe1.getValue(ctr).toString());
+        assertEquals("should be equal ", "hello world", Value.getValue("[ HELLO   WORLD]").toString());
         assertEquals("should be equal ", 5, ((NumberValue)fe2.getValue(ctr)).getNumber().getAsInt());
         assertEquals("should be equal ", 10, ((NumberValue)fe3.getValue(ctr)).getNumber().getAsInt());
         assertEquals("should be equal ", 11, ((NumberValue)fe4.getValue(ctr)).getNumber().getAsInt());

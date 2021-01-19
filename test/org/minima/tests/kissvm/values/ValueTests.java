@@ -14,7 +14,7 @@ public class ValueTests {
 
     @Test
     public void testGettersAndSetters() {
-        assertEquals("should be equal ", new ScriptValue("[return true]").toString(), Value.getValue("[ RETURN TRUE ]").toString());
+        assertEquals("should be equal ", new ScriptValue("return true").toString(), Value.getValue("[ RETURN TRUE ]").toString());
         assertEquals("should be equal ", new HEXValue("0xFFFF").toString(), Value.getValue("0xFFFF").toString());
         assertEquals("should be equal ", BooleanValue.TRUE, Value.getValue("TRUE"));
         assertEquals("should be equal ", BooleanValue.FALSE, Value.getValue("FALSE"));
