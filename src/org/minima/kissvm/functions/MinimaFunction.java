@@ -9,12 +9,11 @@ import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.exceptions.MinimaParseException;
 import org.minima.kissvm.expressions.Expression;
+import org.minima.kissvm.functions.base.CONCAT;
 import org.minima.kissvm.functions.base.GET;
-import org.minima.kissvm.functions.base.HEXCAT;
 import org.minima.kissvm.functions.base.LEN;
 import org.minima.kissvm.functions.base.REV;
 import org.minima.kissvm.functions.base.RPLVAR;
-import org.minima.kissvm.functions.base.STRCAT;
 import org.minima.kissvm.functions.base.SUBSET;
 import org.minima.kissvm.functions.cast.ASCII;
 import org.minima.kissvm.functions.cast.BOOL;
@@ -62,7 +61,7 @@ public abstract class MinimaFunction {
 	 */
 	public static MinimaFunction[] ALL_FUNCTIONS = 
 			{ 
-				new STRCAT(), new HEXCAT(), new LEN(), new RPLVAR(),new REV(),new SUBSET(), new GET(),
+				new CONCAT(), new LEN(), new RPLVAR(),new REV(),new SUBSET(), new GET(),
 				new BOOL(), new NUMBER(), new HEX(), new SCRIPT(), new ASCII(),
 				new ABS(), new CEIL(), new FLOOR(),new MAX(), new MIN(), new DEC(), new INC(), 
 				new SIGDIG(), new POW(), 
