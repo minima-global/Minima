@@ -26,13 +26,10 @@ public class SUBSET extends MinimaFunction {
 		//Get a a subset of a hex value..
 		int start = zContract.getNumberParam(0, this).getNumber().getAsInt();
 		int end   = zContract.getNumberParam(1, this).getNumber().getAsInt();
-//		int start = getParameter(0).getValue(zContract).getNumber().getAsInt();
-//		int end   = getParameter(1).getValue(zContract).getNumber().getAsInt();
 		int len   = end - start;
 		
 		//Now pick it out of the 3rd value..
 		byte[] orig = zContract.getHEXParam(2, this).getRawData();
-//		byte[] orig = getParameter(2).getValue(zContract).getRawData();
 		
 		//Now get the subset
 		byte[] subs = new byte[len];
