@@ -4,6 +4,7 @@ import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.functions.MinimaFunction;
 import org.minima.kissvm.values.BooleanValue;
+import org.minima.kissvm.values.HEXValue;
 import org.minima.kissvm.values.Value;
 
 public class MULTISIG extends MinimaFunction {
@@ -16,7 +17,7 @@ public class MULTISIG extends MinimaFunction {
 	public Value runFunction(Contract zContract) throws ExecutionException {
 		
 		//How many required.. 
-		int num = getParameter(0).getValue(zContract).getNumber().getAsInt();
+		int num = zContract.getNumberParam(0, this).getNumber().getAsInt();
 		
 		//How many to check from
 		int tot= getParameterNum()-1;
@@ -24,7 +25,7 @@ public class MULTISIG extends MinimaFunction {
 		//Cycle..
 		int found =0;
 		for(int i=0;i<tot;i++) {
-			Value sig = getParameter(1+i).getValue(zContract);
+			HEXValue sig = zContract.getHEXParam(1+i, this);
 		
 			if(zContract.checkSignature(sig)) {
 				found++;

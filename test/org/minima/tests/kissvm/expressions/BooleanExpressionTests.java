@@ -139,7 +139,7 @@ public class BooleanExpressionTests {
         //assertThrows(ExecutionException.class, () -> {  // should throw ExecutionException on invalid operation
         //    be1.getValue(ctr);
         //});
-        assertThrows(NullPointerException.class, () -> {  // but throws NullPointerException
+        assertThrows(ExecutionException.class, () -> {  // but throws NullPointerException
             be1.getValue(ctr);
         });
     }

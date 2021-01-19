@@ -483,8 +483,8 @@ public class ConsensusUser extends ConsensusProcessor {
 			}
 			
 			//Set the BLKDIFF
-			MiniNumber blk   = cc.getGlobal("@BLKNUM").getNumber();
-			MiniNumber blkin = cc.getGlobal("@INBLKNUM").getNumber();
+			MiniNumber blk   = ((NumberValue)cc.getGlobal("@BLKNUM")).getNumber();
+			MiniNumber blkin = ((NumberValue)cc.getGlobal("@INBLKNUM")).getNumber();
 			cc.setGlobalVariable("@BLKDIFF", new NumberValue(blk.sub(blkin)));
 			
 			//Run it!

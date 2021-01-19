@@ -48,11 +48,10 @@ public class FunctionExpressionTests {
         FunctionExpression fe4 = new FunctionExpression(fINC);
 
         Contract ctr = new Contract("", "", new Witness(), new Transaction(), new ArrayList<>());
-
-        assertEquals("should be equal ", "[ hello ] [ world ]", fe1.getValue(ctr).toString());
-        assertEquals("should be equal ", 9, fe2.getValue(ctr).getNumber().getAsInt());
-        assertEquals("should be equal ", 10, fe3.getValue(ctr).getNumber().getAsInt());
-        assertEquals("should be equal ", 11, fe4.getValue(ctr).getNumber().getAsInt());
+        assertEquals("should be equal ", "[ hello world ]", fe1.getValue(ctr).toString());
+        assertEquals("should be equal ", 5, ((NumberValue)fe2.getValue(ctr)).getNumber().getAsInt());
+        assertEquals("should be equal ", 10, ((NumberValue)fe3.getValue(ctr)).getNumber().getAsInt());
+        assertEquals("should be equal ", 11, ((NumberValue)fe4.getValue(ctr)).getNumber().getAsInt());
     }
 
     @Test

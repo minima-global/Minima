@@ -9,6 +9,7 @@ import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.expressions.Expression;
 import org.minima.kissvm.functions.MinimaFunction;
+import org.minima.kissvm.values.NumberValue;
 import org.minima.kissvm.values.Value;
 
 /**
@@ -29,12 +30,12 @@ public class MIN extends MinimaFunction {
 		//Run through the function parameters and pick the maximum numeric value..
 		ArrayList<Expression> params = getAllParameters();
 		
-		boolean first 	= true;
-		Value min 		= null;
+		boolean first 		= true;
+		NumberValue min 	= null;
 		
 		for(Expression exp : params) {
 			//Get the Value
-			Value chk = exp.getValue(zContract);
+			NumberValue chk = (NumberValue)exp.getValue(zContract);
 			
 			if(first) {
 				first 	= false;

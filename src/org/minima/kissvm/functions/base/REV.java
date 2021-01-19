@@ -14,8 +14,15 @@ public class REV extends MinimaFunction {
 	
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
+		//The Data
+		Value vv = getParameter(0).getValue(zContract);
+		if(vv.getValueType() != Value.VALUE_HEX) {
+			throw new ExecutionException("REV requires HEXValue");
+		}
+		HEXValue hex = (HEXValue)vv;
+		
 		//get the bytes..
-		byte[] array  = getParameter(0).getValue(zContract).getRawData();
+		byte[] array  = hex.getRawData();
 		
 		//Lengths
 		int datalen   = array.length;

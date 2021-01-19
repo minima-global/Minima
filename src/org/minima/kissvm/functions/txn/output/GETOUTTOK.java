@@ -19,7 +19,8 @@ public class GETOUTTOK extends MinimaFunction {
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
 		//Which Output
-		int output = getParameter(0).getValue(zContract).getNumber().getAsInt();
+//		int output = getParameter(0).getValue(zContract).getNumber().getAsInt();
+		int output = zContract.getNumberParam(0, this).getNumber().getAsInt();
 		
 		//Get the Transaction
 		Transaction trans = zContract.getTransaction();

@@ -62,39 +62,40 @@ public class OperatorExpressionTests {
 
         Contract ctr = new Contract("", "", new Witness(), new Transaction(), new ArrayList<>());
 
-        assertEquals("should be equal ", 10, oe1.getValue(ctr).getNumber().getAsInt());
-        assertEquals("should be equal ", 0, oe2.getValue(ctr).getNumber().getAsInt());
-        assertEquals("should be equal ", 25, oe3.getValue(ctr).getNumber().getAsInt());
-        assertEquals("should be equal ", 1, oe4.getValue(ctr).getNumber().getAsInt());
+        assertEquals("should be equal ", 10, ((NumberValue)oe1.getValue(ctr)).getNumber().getAsInt());
+        assertEquals("should be equal ", 0, ((NumberValue)oe2.getValue(ctr)).getNumber().getAsInt());
+        assertEquals("should be equal ", 25, ((NumberValue)oe3.getValue(ctr)).getNumber().getAsInt());
+        assertEquals("should be equal ", 1, ((NumberValue)oe4.getValue(ctr)).getNumber().getAsInt());
         assertThrows(ExecutionException.class, () -> {
             oe4a.getValue(ctr);
         });
 
-        assertEquals("should be equal ", -5, oe5.getValue(ctr).getNumber().getAsInt());
+        assertEquals("should be equal ", -5, ((NumberValue)oe5.getValue(ctr)).getNumber().getAsInt());
 
         //assertEquals("should be equal ", 10, oe6.getValue(ctr).getNumber().getAsInt()); // Invalid result
         //assertEquals("should be equal ", 5, oe6a.getValue(ctr).getNumber().getAsInt()); // Invalid result
         //assertEquals("should be equal ", 2, oe7.getValue(ctr).getNumber().getAsInt()); // Invalid result
         //assertEquals("should be equal ", 5, oe7a.getValue(ctr).getNumber().getAsInt()); // Invalid result
-        assertEquals("should be equal ", 0, oe8.getValue(ctr).getNumber().getAsInt());
+        assertEquals("should be equal ", 0, ((NumberValue)oe8.getValue(ctr)).getNumber().getAsInt());
         //assertThrows(ExecutionException.class, () -> { // throws ArithmeticException instead of ExecutionException
         //    oe8a.getValue(ctr);
         //});
         assertThrows(ArithmeticException.class, () -> {
             oe8a.getValue(ctr);
         });
-        assertEquals("should be equal ", 0, oe8b.getValue(ctr).getNumber().getAsInt());
-        assertEquals("should be equal ", 1, oe8c.getValue(ctr).getNumber().getAsInt());
+        assertEquals("should be equal ", 0, ((NumberValue)oe8b.getValue(ctr)).getNumber().getAsInt());
+        assertEquals("should be equal ", 1, ((NumberValue)oe8c.getValue(ctr)).getNumber().getAsInt());
 
-        assertEquals("should be equal ", 5, oe9.getValue(ctr).getNumber().getAsInt());
+        //PADDY - Operator params need to be HEX
+        //assertEquals("should be equal ", 5, ((NumberValue)oe9.getValue(ctr)).getNumber().getAsInt()); //INVALID
         //assertEquals("should be equal ", 5, oeA.getValue(ctr).getNumber().getAsInt()); // Invalid result
-        assertEquals("should be equal ", 5, oeB.getValue(ctr).getNumber().getAsInt());
+        //assertEquals("should be equal ", 5, ((NumberValue)oeB.getValue(ctr)).getNumber().getAsInt());
 
         OperatorExpression oeX = new OperatorExpression(ce1, ce3, Integer.MIN_VALUE);
         //assertThrows(ExecutionException.class, () -> {  // should throw ExecutionException on invalid operation
         //    oeX.getValue(ctr); // shifting by zero
         //});
-        assertThrows(NullPointerException.class, () -> {  // but throws NullPointerException
+        assertThrows(ExecutionException.class, () -> {  // but throws NullPointerException
             oeX.getValue(ctr);
         });
     }

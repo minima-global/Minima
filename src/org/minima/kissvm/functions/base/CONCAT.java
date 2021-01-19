@@ -1,9 +1,5 @@
-/**
- * 
- */
 package org.minima.kissvm.functions.base;
 
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 
 import org.minima.kissvm.Contract;
@@ -14,79 +10,83 @@ import org.minima.kissvm.values.HEXValue;
 import org.minima.kissvm.values.ScriptValue;
 import org.minima.kissvm.values.Value;
 
-/**
- * @author Spartacus Rex
- *
- */
 public class CONCAT extends MinimaFunction{
 
 	public CONCAT() {
 		super("CONCAT");
 	}
 
-	/* (non-Javadoc)
-	 * @see org.ramcash.ramscript.functions.Function#runFunction(org.ramcash.ramscript.Contract)
-	 */
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
-		
 		//Run through the function parameters and concatenate..
 		ArrayList<Expression> params = getAllParameters();
+		
+		//Data structures required
 		int paramnum = params.size();
-		byte[][] parambytes = new byte[paramnum][];
-		
-		if(paramnum < 1) {
-			throw new ExecutionException("Invalid number of Parameters for CONCAT "+paramnum);
+		if(paramnum < 2) {
+			throw new ExecutionException("CONCAT requires at least 2 parameters");
 		}
 		
-		//The first parameter determines if this is a SCRIPT or HEXVALUE
-		int type = params.get(0).getValue(zContract).getValueType();
-		
-		//Check a valid type
-		if(type != HEXValue.VALUE_HEX && type != ScriptValue.VALUE_SCRIPT) {
-			throw new ExecutionException("Invaid Value Type in CONCAT "+type+") MUST be HEX or SCRIPT "+params.get(0).toString());
+		//Check first param..
+		Value valcheck  = params.get(0).getValue(zContract);
+		boolean isHex = false;
+		if(valcheck.getValueType() == Value.VALUE_HEX) {
+			isHex = true;
+		}else if(valcheck.getValueType() == Value.VALUE_SCRIPT) {
+			isHex = false;
+		}else {
+			throw new ExecutionException("CONCAT parameters must be HEX or SCRIPT");
 		}
-			
-		//Sum them
-		int totlen  = 0;
-		int counter = 0;
-		for(Expression exp : params) {
-			//check the same
-			int intype = exp.getValue(zContract).getValueType();
-			if(intype != type) {
-				throw new ExecutionException("Invaid Value Type in CONCAT "+intype+") MUST all be the same");
+		
+		if(isHex) {
+			//Sum them
+			byte[][] parambytes = new byte[paramnum][];
+			int totlen  = 0;
+			int counter = 0;
+			for(Expression exp : params) {
+				Value vv = exp.getValue(zContract);
+				if(vv.getValueType() != Value.VALUE_HEX) {
+					throw new ExecutionException("All parameters to CONCAT MUST be of same type");
+				}
+				
+				//This is a HEXValue
+				HEXValue hex = (HEXValue)vv;
+				
+				//Get the bytes
+				parambytes[counter] = hex.getRawData();
+				totlen += parambytes[counter].length;
+				counter++;
 			}
 			
-			//Get the bytes
-			parambytes[counter] = exp.getValue(zContract).getRawData();
-			totlen += parambytes[counter].length;
-			counter++;
-		}
-		
-		//The result is placed in here
-		byte[] result     = new byte[totlen];
-		String fullstring = "";
-		//And sum
-		int pos=0;
-		for(int i=0;i<counter;i++) {
-			if(type == HEXValue.VALUE_HEX) {	
+			//The result is placed in here
+			byte[] result     = new byte[totlen];
+			//And sum
+			int pos=0;
+			for(int i=0;i<counter;i++) {
 				//Is it RAW data
 				System.arraycopy(parambytes[i], 0, result, pos, parambytes[i].length);
 				pos += parambytes[i].length;
-			}else {
-				//Must be a script
-				fullstring += new String(parambytes[i], Charset.forName("US-ASCII") )+" ";
 			}
-		}
-		
-		if(type == HEXValue.VALUE_HEX) {
-			return new HEXValue(result);	
-		
-		}else if(type == ScriptValue.VALUE_SCRIPT) {
-			return new ScriptValue(fullstring);	
+			
+			return new HEXValue(result);
 		
 		}else {
-			throw new ExecutionException("Invaid Value Type in CONCAT "+type+") "+params.get(0).toString());
+			//Sum them
+			String fullstring = "";
+			for(Expression exp : params) {
+				Value vv = exp.getValue(zContract);
+				if(vv.getValueType() != Value.VALUE_SCRIPT) {
+					throw new ExecutionException("All parameters to CONCAT MUST be of same type");
+				}
+				
+				//This is a ScriptValue
+				ScriptValue scr = (ScriptValue)vv;
+				
+				//Add it..
+				fullstring += scr.getScriptOnly()+" ";
+			}
+			
+			return new ScriptValue("[ "+fullstring.trim()+" ]");
 		}
 	}
 	
@@ -94,5 +94,4 @@ public class CONCAT extends MinimaFunction{
 	public MinimaFunction getNewFunction() {
 		return new CONCAT();
 	}
-
 }

@@ -3,8 +3,6 @@
  */
 package org.minima.objects.base;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -247,28 +245,8 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 	}
 	
 	public static void main(String[] zargs) {
-		MiniNumber num = new MiniNumber("100300000.040060012");
+		MiniNumber num = new MiniNumber("HELLO!");
 		
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		DataOutputStream dos = new DataOutputStream(baos);
-		
-		try {
-			num.writeDataStream(dos);
-		
-			dos.flush();
-			baos.flush();
-		
-			ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-			DataInputStream dis = new DataInputStream(bais);
-			
-			MiniNumber test = MiniNumber.ReadFromStream(dis);
-			
-			System.out.println("Number : "+test);
-			
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	}
 	
 	
