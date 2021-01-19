@@ -21,11 +21,12 @@ public class BITSET extends MinimaFunction {
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
 		//get the Input Data
-		byte[] data = getParameter(0).getValue(zContract).getRawData();
+		byte[] data = zContract.getHEXParam(0, this).getRawData();
 		int datalen   = data.length;
 		
 		//Get the desired Bit
-		int bit = getParameter(1).getValue(zContract).getNumber().getAsInt();
+//		int bit = getParameter(1).getValue(zContract).getNumber().getAsInt();
+		int bit = zContract.getNumberParam(1, this).getNumber().getAsInt();
 		
 		//Set to ON or OFF
 		boolean set = getParameter(2).getValue(zContract).isTrue();

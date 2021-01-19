@@ -20,7 +20,8 @@ public class GETOUTADDR extends MinimaFunction {
 	public Value runFunction(Contract zContract) throws ExecutionException {
 		
 		//Which Output - must be from 0-255
-		int output = getParameter(0).getValue(zContract).getNumber().getAsInt();
+//		int output = getParameter(0).getValue(zContract).getNumber().getAsInt();
+		int output = zContract.getNumberParam(0, this).getNumber().getAsInt();
 		
 		//Get the Transaction
 		Transaction trans = zContract.getTransaction();

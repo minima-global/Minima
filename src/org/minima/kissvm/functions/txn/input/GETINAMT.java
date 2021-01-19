@@ -21,7 +21,8 @@ public class GETINAMT extends MinimaFunction {
 	public Value runFunction(Contract zContract) throws ExecutionException {
 		
 		//Which Output - must be from 0-255
-		int input = getParameter(0).getValue(zContract).getNumber().getAsInt();
+//		int input = getParameter(0).getValue(zContract).getNumber().getAsInt();
+		int input = zContract.getNumberParam(0, this).getNumber().getAsInt();
 		
 		//Get the Transaction
 		Transaction trans = zContract.getTransaction();

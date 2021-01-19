@@ -17,8 +17,7 @@ public class CHAINSHA extends MinimaFunction {
 	
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
-		//Get the Input.. Could be HEX, SCRIPT, NUMBER
-		Value val     = getParameter(0).getValue(zContract);
+		HEXValue val  = zContract.getHEXParam(0, this);
 		MiniData data = val.getMiniData();
 
 		//Get the 32 byte hash data chain + 1 byte for left right 

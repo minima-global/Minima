@@ -11,7 +11,6 @@ import org.minima.kissvm.functions.MinimaFunction;
 import org.minima.kissvm.statements.StatementBlock;
 import org.minima.kissvm.statements.StatementParser;
 import org.minima.kissvm.tokens.Token;
-import org.minima.kissvm.values.BooleanValue;
 import org.minima.kissvm.values.HEXValue;
 import org.minima.kissvm.values.NumberValue;
 import org.minima.kissvm.values.ScriptValue;
@@ -39,7 +38,7 @@ public class Contract {
 	StatementBlock mBlock;
 	
 	//A list of valid signatures
-	ArrayList<Value> mSignatures;
+	ArrayList<HEXValue> mSignatures;
 	
 	//A list of all the user-defined variables
 	Hashtable<String, Value> mVariables;
@@ -132,7 +131,7 @@ public class Contract {
 		while(strtok.hasMoreTokens()) {
 			String sig = strtok.nextToken().trim();
 			traceLog("Signature : "+sig);
-			mSignatures.add( Value.getValue(sig) );
+			mSignatures.add( (HEXValue)Value.getValue(sig) );
 		}
 		
 		//Transaction..
@@ -313,11 +312,12 @@ public class Contract {
 				key = "( "+key.trim()+" )";
 			}
 			
-			if(val.getValueType() == ScriptValue.VALUE_SCRIPT) {
-				variables.put(key, "[ "+val.toString()+" ]");
-			}else{
-				variables.put(key, val.toString());
-			}
+			variables.put(key, val.toString());
+//			if(val.getValueType() == ScriptValue.VALUE_SCRIPT) {
+//				variables.put(key, "[ "+val.toString()+" ]");
+//			}else{
+//				variables.put(key, val.toString());
+//			}
 		}
 		
 		return variables;
@@ -331,6 +331,26 @@ public class Contract {
 	public void setVariable(String zName, Value zValue) {
 		mVariables.put(zName, zValue);
 		traceVariables();
+	}
+	
+	/**
+	 * Get the Parameter Value as a MiniNumber or throw exception if not a NUmber 
+	 * @throws ExecutionException 
+	 */
+	public NumberValue getNumberParam(int zParamNumber, MinimaFunction zFunction) throws ExecutionException {
+		Value vv = zFunction.getParameter(zParamNumber).getValue(this);
+		if(vv.getValueType() != Value.VALUE_NUMBER) {
+			throw new ExecutionException("Incorrect Parameter type - should be NumberValue @ "+zParamNumber+" "+zFunction.getName());
+		}
+		return (NumberValue)vv;
+	}
+	
+	public HEXValue getHEXParam(int zParamNumber, MinimaFunction zFunction) throws ExecutionException {
+		Value vv = zFunction.getParameter(zParamNumber).getValue(this);
+		if(vv.getValueType() != Value.VALUE_HEX) {
+			throw new ExecutionException("Incorrect Parameter type - should be HEXValue @ "+zParamNumber+" "+zFunction.getName());
+		}
+		return (HEXValue)vv;
 	}
 	
 	/**
@@ -395,17 +415,18 @@ public class Contract {
 			
 			//Log it.. 
 			int type = val.getValueType();
-			switch (type)  {
-				case BooleanValue.VALUE_BOOLEAN :
-					varlist += key+" = "+Boolean.toString(val.isTrue()).toUpperCase()+", ";
-				break;
-				case ScriptValue.VALUE_SCRIPT :
-					varlist += key+" = [ "+val+" ], ";
-				break;
-				default:
-					varlist += key+" = "+val+", ";
-				break;
-			}		
+			varlist += key+" = "+val+", ";
+//			switch (type)  {
+//				case BooleanValue.VALUE_BOOLEAN :
+//					varlist += key+" = "+Boolean.toString(val.isTrue()).toUpperCase()+", ";
+//				break;
+//				case ScriptValue.VALUE_SCRIPT : xx
+//					varlist += key+" = [ "+val+" ], ";
+//				break;
+//				default:
+//					varlist += key+" = "+val+", ";
+//				break;
+//			}		
 		}
 		
 		traceLog(varlist+"}");
@@ -434,10 +455,10 @@ public class Contract {
 	 * @param zSignature
 	 * @return
 	 */
-	public boolean checkSignature(Value zSignature) {
+	public boolean checkSignature(HEXValue zSignature) {
 		MiniData checksig = zSignature.getMiniData();
 		
-		for(Value sig : mSignatures) {
+		for(HEXValue sig : mSignatures) {
 			if(sig.getMiniData().isEqual(checksig)) {
 				return true;
 			}
