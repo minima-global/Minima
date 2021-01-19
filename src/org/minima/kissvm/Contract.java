@@ -415,7 +415,6 @@ public class Contract {
 			
 			//Log it.. 
 			int type = val.getValueType();
-			varlist += key+" = "+val+", ";
 			switch (type)  {
 				case BooleanValue.VALUE_BOOLEAN :
 					varlist += key+" = "+Boolean.toString(val.isTrue()).toUpperCase()+", ";
@@ -621,7 +620,7 @@ public class Contract {
 
 //		String RamScript = "let g = [ goodbye ] let t = DYNSTATE ( 0 [hello] ) let tt = DYNSTATE ( 0 0xFFE ) let y  = state(0)";
 
-		String RamScript = "return true";
+		String RamScript = "let x = [return true] let y=sha3(160 x) exec x";
 		
 		//String RamScript = "let t = @SCRIPT let f = @AMOUNT +1 let g = State(1001) + [ sha3(123)]";
 

@@ -35,7 +35,8 @@ public class SHA3 extends MinimaFunction {
 		int bitlength = zContract.getNumberParam(0, this).getNumber().getAsInt();
 		
 		//get the Input Data
-		byte[] data = zContract.getHEXParam(1, this).getRawData();
+		HEXValue hex = (HEXValue)getParameter(1).getValue(zContract);
+		byte[] data = hex.getRawData();
 		//byte[] data = getParameter(1).getValue(zContract).getRawData();
 		
 		//Check valid..
