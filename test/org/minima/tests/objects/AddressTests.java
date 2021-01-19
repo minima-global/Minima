@@ -1,9 +1,5 @@
 package org.minima.tests.objects;
 
-import org.minima.objects.Address;
-import org.minima.objects.base.MiniData;
-import org.minima.utils.Crypto;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -18,6 +14,8 @@ import java.io.InputStream;
 
 import org.junit.Test;
 import org.junit.internal.ArrayComparisonFailure;
+import org.minima.objects.Address;
+import org.minima.objects.base.MiniData;
 
 public class AddressTests {
 

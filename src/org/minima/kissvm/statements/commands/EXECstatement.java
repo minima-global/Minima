@@ -32,7 +32,7 @@ public class EXECstatement implements Statement{
 		
 		try {
 			//Convert the script to KISSVM!
-			List<Token> tokens = Token.tokenize(script.getScriptOnly());	
+			List<Token> tokens = Token.tokenize(script.toString());	
 		
 			//And now convert to a statement block..
 			StatementBlock mBlock = StatementParser.parseTokens(tokens);
