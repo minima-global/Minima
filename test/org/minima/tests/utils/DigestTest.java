@@ -4,16 +4,14 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import org.junit.Test;
-import org.junit.internal.ArrayComparisonFailure;
-import org.minima.utils.BaseConverter;
 import java.util.Arrays;
 
+import org.junit.internal.ArrayComparisonFailure;
+import org.minima.utils.BaseConverter;
 // import org.bouncycastle.util.Arrays;
 import org.minima.utils.digest.Digest;
-import org.minima.utils.digest.Memoable;
 import org.minima.utils.digest.EncodableDigest;
-import org.minima.utils.digest.SHA256Digest;
+import org.minima.utils.digest.Memoable;
 
 import junit.framework.ComparisonFailure;
 

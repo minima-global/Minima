@@ -1,10 +1,14 @@
 package org.minima.tests.kissvm.expressions;
 
-import org.minima.kissvm.expressions.FunctionExpression;
+import static org.junit.Assert.assertEquals;
 
+import java.util.ArrayList;
+
+import org.junit.Test;
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.expressions.ConstantExpression;
+import org.minima.kissvm.expressions.FunctionExpression;
 import org.minima.kissvm.functions.base.CONCAT;
 import org.minima.kissvm.functions.base.LEN;
 import org.minima.kissvm.functions.maths.ABS;
@@ -13,11 +17,6 @@ import org.minima.kissvm.values.NumberValue;
 import org.minima.kissvm.values.ScriptValue;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
-
-import java.util.ArrayList;
-
-import static org.junit.Assert.assertEquals;
-import org.junit.Test;
 
 public class FunctionExpressionTests {
 

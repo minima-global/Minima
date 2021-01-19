@@ -1,13 +1,10 @@
 package org.minima.tests.kissvm.values;
 
-import org.minima.kissvm.values.ScriptValue;
-import org.minima.kissvm.values.Value;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
+import org.minima.kissvm.values.ScriptValue;
 
 public class ScriptValueTests {
 

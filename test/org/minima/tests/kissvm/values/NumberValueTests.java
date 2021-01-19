@@ -1,15 +1,15 @@
 package org.minima.tests.kissvm.values;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+
 import java.math.BigDecimal;
 
-import org.minima.kissvm.values.NumberValue;
-
-import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniNumber;
-
 import org.junit.Test;
-
-import static org.junit.Assert.*;
+import org.minima.kissvm.values.NumberValue;
+import org.minima.objects.base.MiniNumber;
 
 public class NumberValueTests {
 

@@ -17,7 +17,6 @@ import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.proofs.Proof;
-import org.minima.objects.proofs.Proof.ProofChunk;
 
 public class ProofTests {
 

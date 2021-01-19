@@ -1,15 +1,15 @@
 package org.minima.tests.utils;
 
-import org.junit.Test;
-import org.junit.internal.ArrayComparisonFailure;
-import org.minima.utils.Maths;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+
+import org.junit.Test;
+import org.junit.internal.ArrayComparisonFailure;
+import org.minima.utils.Maths;
 
 public class MathsTests {
 

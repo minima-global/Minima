@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.junit.Test;
-
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniInteger;
