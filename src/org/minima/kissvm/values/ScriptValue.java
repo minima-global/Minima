@@ -41,7 +41,7 @@ public class ScriptValue extends HEXValue {
 		String cscr = Contract.cleanScript(scr);
 		
 		//Do not store the Brackets..
-		String finalscr = cscr.substring(2, cscr.length()-2);
+		String finalscr = cscr.substring(1, cscr.length()-1).trim();
 		
 		//Now set the data
 		byte[] data = finalscr.getBytes(MiniString.MINIMA_CHARSET);
@@ -55,6 +55,9 @@ public class ScriptValue extends HEXValue {
 	
 	@Override
 	public String toString() {
+		if(mScript.equals("")) {
+			return "[ ]";
+		}
 		return "[ "+mScript+" ]";
 	}
 	
@@ -80,5 +83,11 @@ public class ScriptValue extends HEXValue {
 	 */
 	public ScriptValue add(ScriptValue zSCValue) {
 		return new ScriptValue("[ "+mScript+" "+zSCValue.getScriptOnly()+" ]");
+	}
+	
+	public static void main(String[] zArgs) {
+		ScriptValue sv1 = new ScriptValue("[]");
+		System.out.println(sv1);
+		
 	}
 }

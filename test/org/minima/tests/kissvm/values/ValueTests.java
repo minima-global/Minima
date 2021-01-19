@@ -8,6 +8,7 @@ import org.minima.kissvm.values.NumberValue;
 import org.minima.kissvm.values.ScriptValue;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 
 import org.junit.Test;
 
@@ -15,7 +16,7 @@ public class ValueTests {
 
     @Test
     public void testGettersAndSetters() {
-        assertEquals("should be equal ", new ScriptValue("RETURN TRUE").toString(), Value.getValue("[RETURN TRUE]").toString());
+        assertEquals("should be equal ", new ScriptValue("[return true]").toString(), Value.getValue("[ RETURN TRUE ]").toString());
         assertEquals("should be equal ", new HEXValue("0xFFFF").toString(), Value.getValue("0xFFFF").toString());
         assertEquals("should be equal ", BooleanValue.TRUE, Value.getValue("TRUE"));
         assertEquals("should be equal ", BooleanValue.FALSE, Value.getValue("FALSE"));
@@ -32,8 +33,15 @@ public class ValueTests {
         //assertEquals("should be equal ", BooleanValue.VALUE_BOOLEAN, Value.getValueType("true")); // case sensitive
         //assertEquals("should be equal ", BooleanValue.VALUE_BOOLEAN, Value.getValueType("false")); // case sensitive
         assertEquals("should be equal ", NumberValue.VALUE_NUMBER, Value.getValueType("5"));
-        assertEquals("should be equal ", -99, Value.getValueType("!")); // handles invalid input
-        assertEquals("should be equal ", -99, Value.getValueType("z")); // handles invalid input
+        assertThrows(IllegalArgumentException.class, () -> {
+        	Value.getValueType("!");
+        });
+        assertThrows(IllegalArgumentException.class, () -> {
+        	Value.getValueType("z");
+        });
+        
+//        assertEquals("should be equal ", -99, Value.getValueType("!")); // handles invalid input
+//        assertEquals("should be equal ", -99, Value.getValueType("z")); // handles invalid input
 
     }
 }

@@ -46,7 +46,7 @@ public class GlobalExpressionTests {
         BooleanValue bv = new BooleanValue(true);
         HEXValue hv = new HEXValue(new MiniData());
         NumberValue nv = new NumberValue(0);
-        ScriptValue sv = new ScriptValue("");
+        ScriptValue sv = new ScriptValue("[]");
 
         ctr.setGlobalVariable("BooleanValue", bv);
         ctr.setGlobalVariable("HEXValue", hv);

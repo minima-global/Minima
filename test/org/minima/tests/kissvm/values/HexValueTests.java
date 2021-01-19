@@ -33,14 +33,15 @@ public class HexValueTests {
         HEXValue hv7 = new HEXValue(new MiniNumber(Long.valueOf(65535)));
         HEXValue hv8 = new HEXValue(new MiniNumber(BigDecimal.valueOf(16777215)));
 
-        assertEquals(0, hv1.getNumber().getAsInt());
-        assertEquals(0x1234, hv2.getNumber().getAsInt());
-//        assertEquals(61407, hv3.getNumber().getAsInt()); // is this correct?
-        assertEquals(0, hv4.getNumber().getAsInt());
-        assertEquals(0x123456, hv5.getNumber().getAsInt());
-        assertEquals(0xFF, hv6.getNumber().getAsInt());
-        assertEquals(0xFFFF, hv7.getNumber().getAsInt());
-        assertEquals(0xFFFFFF, hv8.getNumber().getAsInt());
+        //PADDY - This is now NOT what HEXValue does
+//        assertEquals(0, hv1.getNumber().getAsInt());
+//        assertEquals(0x1234, hv2.getNumber().getAsInt());
+////        assertEquals(61407, hv3.getNumber().getAsInt()); // is this correct?
+//        assertEquals(0, hv4.getNumber().getAsInt());
+//        assertEquals(0x123456, hv5.getNumber().getAsInt());
+//        assertEquals(0xFF, hv6.getNumber().getAsInt());
+//        assertEquals(0xFFFF, hv7.getNumber().getAsInt());
+//        assertEquals(0xFFFFFF, hv8.getNumber().getAsInt());
 
         assertEquals("should be equal ", HEXValue.VALUE_HEX, hv1.getValueType());
         assertEquals("should be equal ", HEXValue.VALUE_HEX, hv2.getValueType());
@@ -54,184 +55,185 @@ public class HexValueTests {
 
     @Test
     public void testArithmentic() {
-
-        // Addition
-        HEXValue hv1 = new HEXValue(new MiniNumber(Integer.valueOf(0)));
-        HEXValue hv2 = new HEXValue(new MiniNumber(Integer.valueOf(0)));
-        HEXValue res = new HEXValue(new MiniNumber(Integer.valueOf(0)));
-        HEXValue res2 = new HEXValue(new MiniNumber(Integer.valueOf(0)));
-        assertTrue("should be true ", hv1.add(hv2).isEqual(res));
-        assertTrue("should be true ", hv2.add(hv1).isEqual(res));
-
-        hv1 = new HEXValue(new MiniNumber(Integer.valueOf(123456789)));
-        hv2 = new HEXValue(new MiniNumber(Integer.valueOf(76543211)));
-        res = new HEXValue(new MiniNumber(Integer.valueOf(200000000)));
-        assertTrue("should be true ", hv1.add(hv2).isEqual(res));
-        assertTrue("should be true ", hv2.add(hv1).isEqual(res));
-
-        hv1 = new HEXValue(new MiniNumber(Integer.MAX_VALUE));
+    	//PADDY - this is not now possible..
+    	
+//        // Addition
+//        HEXValue hv1 = new HEXValue(new MiniNumber(Integer.valueOf(0)));
+//        HEXValue hv2 = new HEXValue(new MiniNumber(Integer.valueOf(0)));
+//        HEXValue res = new HEXValue(new MiniNumber(Integer.valueOf(0)));
+//        HEXValue res2 = new HEXValue(new MiniNumber(Integer.valueOf(0)));
+//        assertTrue("should be true ", hv1.add(hv2).isEqual(res));
+//        assertTrue("should be true ", hv2.add(hv1).isEqual(res));
+//
+//        hv1 = new HEXValue(new MiniNumber(Integer.valueOf(123456789)));
+//        hv2 = new HEXValue(new MiniNumber(Integer.valueOf(76543211)));
+//        res = new HEXValue(new MiniNumber(Integer.valueOf(200000000)));
+//        assertTrue("should be true ", hv1.add(hv2).isEqual(res));
+//        assertTrue("should be true ", hv2.add(hv1).isEqual(res));
+//
+//        hv1 = new HEXValue(new MiniNumber(Integer.MAX_VALUE));
+////        hv2 = new HEXValue(new MiniNumber(Integer.MIN_VALUE));
+////        res = new HEXValue(new MiniNumber(-1));
+//        //assertTrue("should be true ", nv1.add(nv2).isEqual(res)); // Invalid result
+//        //assertTrue("should be true ", nv2.add(nv1).isEqual(res)); // Invalid result
+//
+//        hv1 = new HEXValue(new MiniNumber(Integer.MAX_VALUE));
+//        hv2 = new HEXValue(new MiniNumber(1));
+//        res = new HEXValue(new MiniNumber(1L + Integer.MAX_VALUE));
+//        assertTrue("should be true ", hv1.add(hv2).isEqual(res));
+//        assertTrue("should be true ", hv2.add(hv1).isEqual(res));
+//
+//        hv1 = new HEXValue(new MiniNumber(Long.MAX_VALUE));
+//        hv2 = new HEXValue(new MiniNumber(Long.MIN_VALUE));
+//        assertThrows(NumberFormatException.class, () -> {
+//        	new HEXValue(new MiniNumber(-1)); //Positive numbers only
+//        });
+////        res = new HEXValue(new MiniNumber(-1));
+//        //assertTrue("should be true ", nv1.add(nv2).isEqual(res)); // Invalid result
+//        //assertTrue("should be true ", nv2.add(nv1).isEqual(res)); // Invalid result
+//
+//        hv1 = new HEXValue(new MiniNumber(Long.MAX_VALUE));
+//        hv2 = new HEXValue(new MiniNumber(1L));
+//        res = new HEXValue(new MiniNumber(1L).add(new MiniNumber(Long.MAX_VALUE)));
+//        //assertFalse("should be false ", res.getNumber().isEqual(new MiniNumber(Long.MAX_VALUE))); // Invalid arithmetic
+//        assertTrue("should be true ", hv1.add(hv2).isEqual(res));
+//        assertTrue("should be true ", hv2.add(hv1).isEqual(res));
+//
+//        // Subtraction
+//        hv1 = new HEXValue(new MiniNumber(Integer.valueOf(0)));
+//        hv2 = new HEXValue(new MiniNumber(Integer.valueOf(0)));
+//        res = new HEXValue(new MiniNumber(Integer.valueOf(0)));
+//        assertTrue("should be true ", hv1.sub(hv2).isEqual(res));
+//
+//        hv1 = new HEXValue(new MiniNumber(Integer.valueOf(123456789)));
+//        hv2 = new HEXValue(new MiniNumber(Integer.valueOf(23456789)));
+//        res = new HEXValue(new MiniNumber(Integer.valueOf(100000000)));
+//        assertTrue("should be true ", hv1.sub(hv2).isEqual(res));
+//        assertFalse("should be false ", hv2.sub(hv1).isEqual(res));
+//
+//        hv1 = new HEXValue(new MiniNumber(Integer.MIN_VALUE));
+//        hv2 = new HEXValue(new MiniNumber(1));
+//        res = new HEXValue(new MiniNumber(Integer.MIN_VALUE - 1L));
+//        //assertTrue("should be true ", hv1.sub(hv2).isEqual(res)); // Invalid result
+//        assertFalse("should be false ", hv2.sub(hv1).isEqual(res));
+//
+//        hv1 = new HEXValue(new MiniNumber(Integer.MIN_VALUE));
+//        hv2 = new HEXValue(new MiniNumber(Integer.MAX_VALUE));
+//        res = new HEXValue(new MiniNumber(Long.valueOf(Integer.MIN_VALUE) - Long.valueOf(Integer.MAX_VALUE)));
+//        //assertTrue("should be true ", hv1.sub(hv2).isEqual(res)); // Invalid result
+//        assertFalse("should be false ", hv2.sub(hv1).isEqual(res));
+//
+//        hv1 = new HEXValue(new MiniNumber(Integer.MAX_VALUE));
 //        hv2 = new HEXValue(new MiniNumber(Integer.MIN_VALUE));
-//        res = new HEXValue(new MiniNumber(-1));
-        //assertTrue("should be true ", nv1.add(nv2).isEqual(res)); // Invalid result
-        //assertTrue("should be true ", nv2.add(nv1).isEqual(res)); // Invalid result
-
-        hv1 = new HEXValue(new MiniNumber(Integer.MAX_VALUE));
-        hv2 = new HEXValue(new MiniNumber(1));
-        res = new HEXValue(new MiniNumber(1L + Integer.MAX_VALUE));
-        assertTrue("should be true ", hv1.add(hv2).isEqual(res));
-        assertTrue("should be true ", hv2.add(hv1).isEqual(res));
-
-        hv1 = new HEXValue(new MiniNumber(Long.MAX_VALUE));
-        hv2 = new HEXValue(new MiniNumber(Long.MIN_VALUE));
-        assertThrows(NumberFormatException.class, () -> {
-        	new HEXValue(new MiniNumber(-1)); //Positive numbers only
-        });
-//        res = new HEXValue(new MiniNumber(-1));
-        //assertTrue("should be true ", nv1.add(nv2).isEqual(res)); // Invalid result
-        //assertTrue("should be true ", nv2.add(nv1).isEqual(res)); // Invalid result
-
-        hv1 = new HEXValue(new MiniNumber(Long.MAX_VALUE));
-        hv2 = new HEXValue(new MiniNumber(1L));
-        res = new HEXValue(new MiniNumber(1L).add(new MiniNumber(Long.MAX_VALUE)));
-        //assertFalse("should be false ", res.getNumber().isEqual(new MiniNumber(Long.MAX_VALUE))); // Invalid arithmetic
-        assertTrue("should be true ", hv1.add(hv2).isEqual(res));
-        assertTrue("should be true ", hv2.add(hv1).isEqual(res));
-
-        // Subtraction
-        hv1 = new HEXValue(new MiniNumber(Integer.valueOf(0)));
-        hv2 = new HEXValue(new MiniNumber(Integer.valueOf(0)));
-        res = new HEXValue(new MiniNumber(Integer.valueOf(0)));
-        assertTrue("should be true ", hv1.sub(hv2).isEqual(res));
-
-        hv1 = new HEXValue(new MiniNumber(Integer.valueOf(123456789)));
-        hv2 = new HEXValue(new MiniNumber(Integer.valueOf(23456789)));
-        res = new HEXValue(new MiniNumber(Integer.valueOf(100000000)));
-        assertTrue("should be true ", hv1.sub(hv2).isEqual(res));
-        assertFalse("should be false ", hv2.sub(hv1).isEqual(res));
-
-        hv1 = new HEXValue(new MiniNumber(Integer.MIN_VALUE));
-        hv2 = new HEXValue(new MiniNumber(1));
-        res = new HEXValue(new MiniNumber(Integer.MIN_VALUE - 1L));
-        //assertTrue("should be true ", hv1.sub(hv2).isEqual(res)); // Invalid result
-        assertFalse("should be false ", hv2.sub(hv1).isEqual(res));
-
-        hv1 = new HEXValue(new MiniNumber(Integer.MIN_VALUE));
-        hv2 = new HEXValue(new MiniNumber(Integer.MAX_VALUE));
-        res = new HEXValue(new MiniNumber(Long.valueOf(Integer.MIN_VALUE) - Long.valueOf(Integer.MAX_VALUE)));
-        //assertTrue("should be true ", hv1.sub(hv2).isEqual(res)); // Invalid result
-        assertFalse("should be false ", hv2.sub(hv1).isEqual(res));
-
-        hv1 = new HEXValue(new MiniNumber(Integer.MAX_VALUE));
-        hv2 = new HEXValue(new MiniNumber(Integer.MIN_VALUE));
-        res = new HEXValue(new MiniNumber(Long.valueOf(Integer.MAX_VALUE) - Long.valueOf(Integer.MIN_VALUE)));
-        //assertTrue("should be true ", hv1.sub(hv2).isEqual(res)); // Invalid result
-        assertFalse("should be false ", hv2.sub(hv1).isEqual(res));
-
-        // Multiplication
-        hv1 = new HEXValue(new MiniNumber(0));
-        hv2 = new HEXValue(new MiniNumber(0));
-        res = new HEXValue(new MiniNumber(0));
-        assertTrue("should be true ", hv1.mult(hv2).isEqual(res));
-
-        hv1 = new HEXValue(new MiniNumber(12345));
-        hv2 = new HEXValue(new MiniNumber(67890));
-        res = new HEXValue(new MiniNumber(838102050));
-        assertTrue("should be true ", hv1.mult(hv2).isEqual(res));
-        assertTrue("should be true ", hv2.mult(hv1).isEqual(res));
-
-        hv1 = new HEXValue(new MiniNumber(1000000));
-        hv2 = new HEXValue(new MiniNumber(1000000));
-        res = new HEXValue(new MiniNumber(Long.valueOf(1000000) * Long.valueOf(1000000)));
-        assertTrue("should be true ", hv1.mult(hv2).isEqual(res));
-        assertTrue("should be true ", hv2.mult(hv1).isEqual(res));
-
-        hv1 = new HEXValue(new MiniNumber(Integer.MIN_VALUE));
-        hv2 = new HEXValue(new MiniNumber(1));
-        res = new HEXValue(new MiniNumber(Integer.MIN_VALUE));
-        assertTrue("should be true ", hv1.mult(hv2).isEqual(res));
-        assertTrue("should be true ", hv2.mult(hv1).isEqual(res));
-
-        hv1 = new HEXValue(new MiniNumber(Integer.MAX_VALUE));
-        hv2 = new HEXValue(new MiniNumber(1));
-        res = new HEXValue(new MiniNumber(Integer.MAX_VALUE));
-        assertTrue("should be true ", hv1.mult(hv2).isEqual(res));
-        assertTrue("should be true ", hv2.mult(hv1).isEqual(res));
-
-        hv1 = new HEXValue(new MiniNumber(Long.MIN_VALUE));
-        hv2 = new HEXValue(new MiniNumber(1));
-        res = new HEXValue(new MiniNumber(Long.MIN_VALUE));
-        //assertTrue("should be true ", hv1.mult(hv2).isEqual(res)); // Invalid result
-        //assertTrue("should be true ", hv2.mult(hv1).isEqual(res)); // Invalid result
-
-        hv1 = new HEXValue(new MiniNumber(Long.MAX_VALUE));
-        hv2 = new HEXValue(new MiniNumber(1));
-        res = new HEXValue(new MiniNumber(Long.MAX_VALUE));
-        assertTrue("should be true ", hv1.mult(hv2).isEqual(res));
-        assertTrue("should be true ", hv2.mult(hv1).isEqual(res));
-
-        // Division
-        assertThrows(ArithmeticException.class, () -> {
-            HEXValue hv1l = new HEXValue(new MiniNumber(0));
-            HEXValue hv2l = new HEXValue(new MiniNumber(0));
-            HEXValue resl = new HEXValue(new MiniNumber(0));
-            hv1l.div(hv2l);
-        });
-        assertThrows(ArithmeticException.class, () -> {
-            HEXValue hv1l = new HEXValue(new MiniNumber(0));
-            HEXValue hv2l = new HEXValue(new MiniNumber(0));
-            HEXValue resl = new HEXValue(new MiniNumber(0));
-            hv2l.div(hv1l);
-        });
-
-        hv1 = new HEXValue(new MiniNumber(0));
-        hv2 = new HEXValue(new MiniNumber(1));
-        res = new HEXValue(new MiniNumber(0));
-        assertTrue("should be true ", hv1.div(hv2).isEqual(res));
-
-        hv1 = new HEXValue(new MiniNumber(20000));
-        hv2 = new HEXValue(new MiniNumber(10000));
-        res = new HEXValue(new MiniNumber(20000 / 10000));
-        //res2 = new HEXValue(new MiniNumber(10000 / 20000));
-        assertTrue("should be true ", hv1.div(hv2).isEqual(res));
-        //assertTrue("should be true ", hv2.div(hv1).isEqual(res2));
-
-        hv1 = new HEXValue(new MiniNumber(1000000));
-        hv2 = new HEXValue(new MiniNumber(1000000));
-        res = new HEXValue(new MiniNumber(1));
-        assertTrue("should be true ", hv1.div(hv2).isEqual(res));
-        assertTrue("should be true ", hv2.div(hv1).isEqual(res));
-
-        hv1 = new HEXValue(new MiniNumber(Integer.MIN_VALUE));
-        hv2 = new HEXValue(new MiniNumber(1));
-        res = new HEXValue(new MiniNumber(Integer.MIN_VALUE));
-        //res2 = new HEXValue(new MiniNumber(1 / Integer.MIN_VALUE)); // Not supported
-        assertTrue("should be true ", hv1.div(hv2).isEqual(res));
-        //res = new HEXValue(hv2.getNumber().div(hv1.getNumber())); // Not supported
-        //assertTrue("should be true ", res.isEqual(res2)); // Not supported
-
-        hv1 = new HEXValue(new MiniNumber(Integer.MAX_VALUE));
-        hv2 = new HEXValue(new MiniNumber(1));
-        res = new HEXValue(new MiniNumber(Integer.MAX_VALUE));
-        //res2 = new HEXValue(new MiniNumber(1 / Integer.MAX_VALUE)); // Not supported
-        assertTrue("should be true ", hv1.div(hv2).isEqual(res));
-        //res = new HEXValue(hv2.getNumber().div(hv1.getNumber())); // Not supported
-        //assertTrue("should be true ", res.isEqual(res2)); // Not supported
-
-        hv1 = new HEXValue(new MiniNumber(Long.MIN_VALUE));
-        hv2 = new HEXValue(new MiniNumber(1));
-        res = new HEXValue(new MiniNumber(Long.MIN_VALUE));
-        //res2 = new HEXValue(new MiniNumber(1 / Long.MIN_VALUE)); // Not supported
-        //assertTrue("should be true ", hv1.div(hv2).isEqual(res)); // Invalid result
-        //res = new HEXValue(hv2.getNumber().div(hv1.getNumber())); // Not supported
-        //assertTrue("should be true ", res.isEqual(res2)); // Not supported // Not supported
-
-        hv1 = new HEXValue(new MiniNumber(Long.MAX_VALUE));
-        hv2 = new HEXValue(new MiniNumber(1));
-        res = new HEXValue(new MiniNumber(Long.MAX_VALUE));
-        //res2 = new HEXValue(new MiniNumber(1 / Long.MAX_VALUE)); // Not supported
-        assertTrue("should be true ", hv1.div(hv2).isEqual(res));
-        //res = new HEXValue(hv2.getNumber().div(hv1.getNumber())); // Not supported
-        //assertTrue("should be true ", res.isEqual(res2)); // Not supported // Not supported
+//        res = new HEXValue(new MiniNumber(Long.valueOf(Integer.MAX_VALUE) - Long.valueOf(Integer.MIN_VALUE)));
+//        //assertTrue("should be true ", hv1.sub(hv2).isEqual(res)); // Invalid result
+//        assertFalse("should be false ", hv2.sub(hv1).isEqual(res));
+//
+//        // Multiplication
+//        hv1 = new HEXValue(new MiniNumber(0));
+//        hv2 = new HEXValue(new MiniNumber(0));
+//        res = new HEXValue(new MiniNumber(0));
+//        assertTrue("should be true ", hv1.mult(hv2).isEqual(res));
+//
+//        hv1 = new HEXValue(new MiniNumber(12345));
+//        hv2 = new HEXValue(new MiniNumber(67890));
+//        res = new HEXValue(new MiniNumber(838102050));
+//        assertTrue("should be true ", hv1.mult(hv2).isEqual(res));
+//        assertTrue("should be true ", hv2.mult(hv1).isEqual(res));
+//
+//        hv1 = new HEXValue(new MiniNumber(1000000));
+//        hv2 = new HEXValue(new MiniNumber(1000000));
+//        res = new HEXValue(new MiniNumber(Long.valueOf(1000000) * Long.valueOf(1000000)));
+//        assertTrue("should be true ", hv1.mult(hv2).isEqual(res));
+//        assertTrue("should be true ", hv2.mult(hv1).isEqual(res));
+//
+//        hv1 = new HEXValue(new MiniNumber(Integer.MIN_VALUE));
+//        hv2 = new HEXValue(new MiniNumber(1));
+//        res = new HEXValue(new MiniNumber(Integer.MIN_VALUE));
+//        assertTrue("should be true ", hv1.mult(hv2).isEqual(res));
+//        assertTrue("should be true ", hv2.mult(hv1).isEqual(res));
+//
+//        hv1 = new HEXValue(new MiniNumber(Integer.MAX_VALUE));
+//        hv2 = new HEXValue(new MiniNumber(1));
+//        res = new HEXValue(new MiniNumber(Integer.MAX_VALUE));
+//        assertTrue("should be true ", hv1.mult(hv2).isEqual(res));
+//        assertTrue("should be true ", hv2.mult(hv1).isEqual(res));
+//
+//        hv1 = new HEXValue(new MiniNumber(Long.MIN_VALUE));
+//        hv2 = new HEXValue(new MiniNumber(1));
+//        res = new HEXValue(new MiniNumber(Long.MIN_VALUE));
+//        //assertTrue("should be true ", hv1.mult(hv2).isEqual(res)); // Invalid result
+//        //assertTrue("should be true ", hv2.mult(hv1).isEqual(res)); // Invalid result
+//
+//        hv1 = new HEXValue(new MiniNumber(Long.MAX_VALUE));
+//        hv2 = new HEXValue(new MiniNumber(1));
+//        res = new HEXValue(new MiniNumber(Long.MAX_VALUE));
+//        assertTrue("should be true ", hv1.mult(hv2).isEqual(res));
+//        assertTrue("should be true ", hv2.mult(hv1).isEqual(res));
+//
+//        // Division
+//        assertThrows(ArithmeticException.class, () -> {
+//            HEXValue hv1l = new HEXValue(new MiniNumber(0));
+//            HEXValue hv2l = new HEXValue(new MiniNumber(0));
+//            HEXValue resl = new HEXValue(new MiniNumber(0));
+//            hv1l.div(hv2l);
+//        });
+//        assertThrows(ArithmeticException.class, () -> {
+//            HEXValue hv1l = new HEXValue(new MiniNumber(0));
+//            HEXValue hv2l = new HEXValue(new MiniNumber(0));
+//            HEXValue resl = new HEXValue(new MiniNumber(0));
+//            hv2l.div(hv1l);
+//        });
+//
+//        hv1 = new HEXValue(new MiniNumber(0));
+//        hv2 = new HEXValue(new MiniNumber(1));
+//        res = new HEXValue(new MiniNumber(0));
+//        assertTrue("should be true ", hv1.div(hv2).isEqual(res));
+//
+//        hv1 = new HEXValue(new MiniNumber(20000));
+//        hv2 = new HEXValue(new MiniNumber(10000));
+//        res = new HEXValue(new MiniNumber(20000 / 10000));
+//        //res2 = new HEXValue(new MiniNumber(10000 / 20000));
+//        assertTrue("should be true ", hv1.div(hv2).isEqual(res));
+//        //assertTrue("should be true ", hv2.div(hv1).isEqual(res2));
+//
+//        hv1 = new HEXValue(new MiniNumber(1000000));
+//        hv2 = new HEXValue(new MiniNumber(1000000));
+//        res = new HEXValue(new MiniNumber(1));
+//        assertTrue("should be true ", hv1.div(hv2).isEqual(res));
+//        assertTrue("should be true ", hv2.div(hv1).isEqual(res));
+//
+//        hv1 = new HEXValue(new MiniNumber(Integer.MIN_VALUE));
+//        hv2 = new HEXValue(new MiniNumber(1));
+//        res = new HEXValue(new MiniNumber(Integer.MIN_VALUE));
+//        //res2 = new HEXValue(new MiniNumber(1 / Integer.MIN_VALUE)); // Not supported
+//        assertTrue("should be true ", hv1.div(hv2).isEqual(res));
+//        //res = new HEXValue(hv2.getNumber().div(hv1.getNumber())); // Not supported
+//        //assertTrue("should be true ", res.isEqual(res2)); // Not supported
+//
+//        hv1 = new HEXValue(new MiniNumber(Integer.MAX_VALUE));
+//        hv2 = new HEXValue(new MiniNumber(1));
+//        res = new HEXValue(new MiniNumber(Integer.MAX_VALUE));
+//        //res2 = new HEXValue(new MiniNumber(1 / Integer.MAX_VALUE)); // Not supported
+//        assertTrue("should be true ", hv1.div(hv2).isEqual(res));
+//        //res = new HEXValue(hv2.getNumber().div(hv1.getNumber())); // Not supported
+//        //assertTrue("should be true ", res.isEqual(res2)); // Not supported
+//
+//        hv1 = new HEXValue(new MiniNumber(Long.MIN_VALUE));
+//        hv2 = new HEXValue(new MiniNumber(1));
+//        res = new HEXValue(new MiniNumber(Long.MIN_VALUE));
+//        //res2 = new HEXValue(new MiniNumber(1 / Long.MIN_VALUE)); // Not supported
+//        //assertTrue("should be true ", hv1.div(hv2).isEqual(res)); // Invalid result
+//        //res = new HEXValue(hv2.getNumber().div(hv1.getNumber())); // Not supported
+//        //assertTrue("should be true ", res.isEqual(res2)); // Not supported // Not supported
+//
+//        hv1 = new HEXValue(new MiniNumber(Long.MAX_VALUE));
+//        hv2 = new HEXValue(new MiniNumber(1));
+//        res = new HEXValue(new MiniNumber(Long.MAX_VALUE));
+//        //res2 = new HEXValue(new MiniNumber(1 / Long.MAX_VALUE)); // Not supported
+//        assertTrue("should be true ", hv1.div(hv2).isEqual(res));
+//        //res = new HEXValue(hv2.getNumber().div(hv1.getNumber())); // Not supported
+//        //assertTrue("should be true ", res.isEqual(res2)); // Not supported // Not supported
     }
 
     @Test

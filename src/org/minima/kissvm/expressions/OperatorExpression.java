@@ -10,6 +10,7 @@ import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.values.BooleanValue;
 import org.minima.kissvm.values.HEXValue;
 import org.minima.kissvm.values.NumberValue;
+import org.minima.kissvm.values.ScriptValue;
 import org.minima.kissvm.values.Value;
 import org.minima.objects.base.MiniNumber;
 
@@ -65,10 +66,19 @@ public class OperatorExpression implements Expression{
 		switch (mOperatorType) {
 		case OPERATOR_ADD :
 			{
-				Value.checkSameType(lval, rval,Value.VALUE_NUMBER);
-				NumberValue lnv = (NumberValue)lval;
-				NumberValue rnv = (NumberValue)rval;
-				ret = lnv.add(rnv);
+				if(lval.getValueType() == Value.VALUE_NUMBER) {
+					Value.checkSameType(lval, rval,Value.VALUE_NUMBER);
+					NumberValue lnv = (NumberValue)lval;
+					NumberValue rnv = (NumberValue)rval;
+					ret = lnv.add(rnv);
+				}else if(lval.getValueType() == Value.VALUE_SCRIPT) {
+					Value.checkSameType(lval, rval,Value.VALUE_SCRIPT);
+					ScriptValue lnv = (ScriptValue)lval;
+					ScriptValue rnv = (ScriptValue)rval;
+					ret = lnv.add(rnv);
+				}else {
+					throw new ExecutionException("Invalid parameters for +");
+				}
 			}
 			break;
 			

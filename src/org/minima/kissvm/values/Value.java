@@ -61,8 +61,11 @@ public abstract class Value {
 		}else if(zValue.equals("FALSE")) {
 			return BooleanValue.FALSE;
 
-		}else {
+		}else if(Token.isNumeric(zValue)){
 			return new NumberValue(zValue);
+		
+		}else {
+			throw new IllegalArgumentException("Invalid value : "+zValue);
 		}
 	}
 	
@@ -70,7 +73,7 @@ public abstract class Value {
 	 * GLOBAL STATIC FUNCTION for telling the value type
 	 */
 	public static int getValueType(String zValue) throws IllegalArgumentException {
-		if(zValue.startsWith("[")) {
+		if(zValue.startsWith("[") && zValue.endsWith("]")) {
 			//Then initialise the value 
 			return ScriptValue.VALUE_SCRIPT;
 			

@@ -46,7 +46,7 @@ public class VariableExpressionTests {
         BooleanValue bv = new BooleanValue(true);
         HEXValue hv = new HEXValue(new MiniData());
         NumberValue nv = new NumberValue(0);
-        ScriptValue sv = new ScriptValue("");
+        ScriptValue sv = new ScriptValue("[]");
 
         ctr.setVariable("BooleanValue", bv);
         ctr.setVariable("HEXValue", hv);

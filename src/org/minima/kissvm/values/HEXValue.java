@@ -109,7 +109,7 @@ public class HEXValue extends Value {
 	}
 	
 	public boolean isMoreEqual(HEXValue zValue) {
-		return mData.isMore(zValue.getMiniData());
+		return mData.isMoreEqual(zValue.getMiniData());
 	}
 	
 	@Override
