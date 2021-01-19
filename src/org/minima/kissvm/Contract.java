@@ -364,7 +364,19 @@ public class Contract {
 		mFloatingCoin = zFloating;
 	}
 	
-	public String getState(int zStateNum) throws ExecutionException {
+//	public String getState(int zStateNum) throws ExecutionException {
+//		if(!mTransaction.stateExists(zStateNum)) {
+//			throw new ExecutionException("State Variable does not exist "+zStateNum);
+//		}
+//
+//		//Get it from the Transaction..
+//		String stateval = mTransaction.getStateValue(zStateNum).getValue().toString();
+//		
+//		//Clean it..
+//		return cleanScript(stateval);
+//	}
+	
+	public Value getState(int zStateNum) throws ExecutionException {
 		if(!mTransaction.stateExists(zStateNum)) {
 			throw new ExecutionException("State Variable does not exist "+zStateNum);
 		}
@@ -372,8 +384,11 @@ public class Contract {
 		//Get it from the Transaction..
 		String stateval = mTransaction.getStateValue(zStateNum).getValue().toString();
 		
+		//Clean it
+		String clean = cleanScript(stateval);
+		
 		//Clean it..
-		return cleanScript(stateval);
+		return Value.getValue(clean);
 	}
 	
 	public Value getPrevState(int zPrev) throws ExecutionException {
