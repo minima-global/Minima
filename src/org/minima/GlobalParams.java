@@ -7,7 +7,7 @@ public class GlobalParams {
 	/**
 	 * Which Version
 	 */
-	public static String MINIMA_VERSION = "0.97.4"; 
+	public static String MINIMA_VERSION = "0.97.5"; 
 	
 	/**
 	 * Number of seconds before sending a pulse message - every 10 minutes
@@ -29,6 +29,11 @@ public class GlobalParams {
 	 * How deep before we think confirmed..
 	 */
 	public static MiniNumber MINIMA_CONFIRM_DEPTH  = new MiniNumber("3");
+	
+	/**
+	 * How often do we cascade the chain
+	 */
+	public static MiniNumber MINIMA_CASCADE_FREQUENCY = new MiniNumber(100);
 	
 	/**
 	 * Depth before we cascade..
