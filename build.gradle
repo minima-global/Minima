@@ -15,6 +15,11 @@ plugins {
 
     // test coverage
     id 'jacoco'
+
+
+    // shadowJar plugin to build fat jar
+    id 'com.github.johnrengelman.shadow' version '6.1.0'
+
 }
 
 repositories {
@@ -49,4 +54,9 @@ sourceSets {
 application {
     // Define the main class for the application.
     mainClassName = 'org.minima.Start'
+}
+jar {
+    manifest {
+        attributes 'Main-Class': 'org.minima.Start'
+    }
 }
