@@ -15,7 +15,6 @@ import org.junit.Test;
 
 import org.minima.objects.Transaction;
 import org.minima.objects.Coin;
-import org.minima.objects.PubPrivKey;
 import org.minima.objects.StateVariable;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
@@ -65,17 +64,14 @@ public class TransactionTests {
         assertTrue("The transaction should have one output", t.getAllOutputs().size() == 1);
         assertTrue("The transaction output sum should be 2", t.sumOutputs().isEqual(new MiniNumber(2)));
         assertTrue("The transaction is valid (more inputs than outputs)", t.checkValidInOutPerToken());
-        assertTrue("The transaction has no remainder set", t.getRemainderCoin(Coin.MINIMA_TOKENID) == null);
         Coin c2 = new Coin(Coin.COINID_OUTPUT,
                 new MiniData("0x2B1B3FD8AD198A5C9B0A8B376C73766B73ACE408E0A2537B827EC8DCFF4133BC"),
                 new MiniNumber(3),
                 Coin.MINIMA_TOKENID);
-        c2.setRemainder(true);
         t.addOutput(c2);
         assertTrue("The transaction should have two outputs", t.getAllOutputs().size() == 2);
         assertTrue("The transaction output sum should be 5", t.sumOutputs().isEqual(new MiniNumber(5)));
         assertTrue("The transaction is valid", t.checkValidInOutPerToken());
-        assertTrue("The transaction has a remainder", t.getRemainderCoin(Coin.MINIMA_TOKENID) != null);
         assertFalse("Not a gimme50 tx", t.isGimme50());
         for (int i = 0; i < 256; i++) {
             // maybe stateExists should limit input values to 0-255
@@ -93,7 +89,6 @@ public class TransactionTests {
         }
 
         try {
-
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             DataOutputStream dos = new DataOutputStream(bos);
             t.writeDataStream(dos);
@@ -107,14 +102,11 @@ public class TransactionTests {
             assertTrue("The transaction should have two outputs", tread.getAllOutputs().size() == 2);
             assertTrue("The transaction output sum should be 5", tread.sumOutputs().isEqual(new MiniNumber(5)));
             assertTrue("The transaction is valid", tread.checkValidInOutPerToken());
-            assertTrue("The transaction has a remainder", tread.getRemainderCoin(Coin.MINIMA_TOKENID) != null);
             assertFalse("Not a gimme50 tx", tread.isGimme50());
-
         } catch (final IOException e) {
             System.out.println("IOException: " + e.toString() + " msg=" + e.getMessage());
             assertTrue(" there should not be an IOException", false);
         }
 
     }
-
 }

@@ -15,7 +15,6 @@ import org.junit.Test;
 import org.minima.objects.base.MiniByte;
 
 public class MiniByteTests {
-
     @Test
     public void testValueBytes() {
         byte byt = 0;

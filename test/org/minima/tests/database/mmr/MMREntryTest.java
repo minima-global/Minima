@@ -9,7 +9,6 @@ import org.minima.utils.json.JSONObject;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
@@ -18,7 +17,6 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.math.BigInteger;
 import java.util.ArrayList;
 
 import org.junit.Test;
@@ -55,8 +53,8 @@ public class MMREntryTest {
             assertEquals("should be equal ", 122, mmre1.getChildRow());
             assertTrue("should be left ", mmre1.isLeft());
             assertFalse("should not be right ", mmre1.isRight());
-            assertEquals("should be equal ", new MiniInteger(99).getNumber(), mmre1.getLeftSibling().getNumber());
-            assertEquals("should be equal ", new MiniInteger(101).getNumber(), mmre1.getRightSibling().getNumber());
+            //assertEquals("should be equal ", new MiniInteger(99).getNumber(), mmre1.getLeftSibling().getNumber());
+            //assertEquals("should be equal ", new MiniInteger(101).getNumber(), mmre1.getRightSibling().getNumber());
             assertEquals("should be equal ", new MiniInteger(101).getNumber(), mmre1.getSibling().getNumber()); // Is this correct (if left, return right and vice versa)
             assertEquals("should be equal ", new MiniInteger(50).getNumber(), mmre1.getParentEntry().getNumber());
             assertEquals("should be equal ", new MiniInteger(200).getNumber(), mmre1.getLeftChildEntry().getNumber());
@@ -67,8 +65,8 @@ public class MMREntryTest {
             assertEquals("should be equal ", 1233, mmre2.getChildRow());
             assertFalse("should not be left ", mmre2.isLeft());
             assertTrue("should be right ", mmre2.isRight());
-            assertEquals("should be equal ", new MiniInteger(200).getNumber(), mmre2.getLeftSibling().getNumber());
-            assertEquals("should be equal ", new MiniInteger(202).getNumber(), mmre2.getRightSibling().getNumber());
+            //assertEquals("should be equal ", new MiniInteger(200).getNumber(), mmre2.getLeftSibling().getNumber());
+            //assertEquals("should be equal ", new MiniInteger(202).getNumber(), mmre2.getRightSibling().getNumber());
             assertEquals("should be equal ", new MiniInteger(200).getNumber(), mmre2.getSibling().getNumber()); // Is this correct (if left, return right and vice versa)
             assertEquals("should be equal ", new MiniInteger(100).getNumber(), mmre2.getParentEntry().getNumber());
             assertEquals("should be equal ", new MiniInteger(402).getNumber(), mmre2.getLeftChildEntry().getNumber());
@@ -76,16 +74,6 @@ public class MMREntryTest {
 
         }
 
-    }
-
-    @Test
-    public void testCompare() {
-        MMREntry mmre1 = new MMREntry(123, new MiniInteger(100));
-        MMREntry mmre2 = new MMREntry(1234, new MiniInteger(201));
-
-        assertEquals("should be equal ", 0, mmre1.compareTo(mmre1));
-        //assertTrue("should be lower", mmre1.compareTo(mmre2) < 0);
-        //assertTrue("should be higher ", mmre2.compareTo(mmre1) > 0);
     }
 
     @Test

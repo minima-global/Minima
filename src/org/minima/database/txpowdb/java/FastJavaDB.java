@@ -147,9 +147,10 @@ public class FastJavaDB implements TxPowDB {
 				newtable.put(txpid,row);
 				
 			}else {
-				if(GlobalParams.SHORT_CHAIN_DEBUG_MODE) {
+				if(GlobalParams.MINIMA_CASCADE_START_DEPTH.isLess(MiniNumber.TWOFIVESIX)) {
+				//if(GlobalParams.SHORT_CHAIN_DEBUG_MODE) {
 					if(row.getTxPOW().isTransaction() && !row.isInBlock()) {
-						MinimaLogger.log("Transaction NOT in block NOT removed.. "+row);
+						MinimaLogger.log("SHORT CHAIN DEBUG : Transaction NOT in block NOT removed.. "+row);
 						
 						//Add it anyway..
 						newtable.put(txpid,row);
@@ -187,6 +188,49 @@ public class FastJavaDB implements TxPowDB {
 			}
 		}
 		return ret;
+	}
+	
+	@Override
+	public void removeAllUnused() {
+		//Get the OLD list
+		Hashtable<String,JavaDBRow> newrows 				= new Hashtable<>();
+		Hashtable<String,ArrayList<TxPOWDBRow>> newchildren	= new Hashtable<>();
+		
+		//Now cycle through and keep only theose that are being used..
+		Enumeration<JavaDBRow> allrows = mTxPoWRows.elements();
+		while(allrows.hasMoreElements()) {
+			JavaDBRow row = allrows.nextElement();	
+			TxPoW txpow   = row.getTxPOW();
+			if(row.isInBlock()) {
+				//Add this row..
+				newrows.put(txpow.getTxPowID().to0xString(), row);
+				
+				//And add to the Children list..
+				//Add it to the Children List..
+				if(txpow.isBlock()) {
+					//Get the Parent...
+					String parentid = txpow.getParentID().to0xString();
+					
+					//Get the ArrayList..
+					ArrayList<TxPOWDBRow> children = newchildren.get(parentid);
+					
+					//Has it begun.. ?
+					if(children == null) {
+						children = new ArrayList<>();
+						
+						//Add it to the HashTable..
+						newchildren.put(parentid, children);
+					}
+					
+					//And Add this Row to it..
+					children.add(row);
+				}
+			}
+		}
+		
+		//And now switch..
+		mTxPoWRows = newrows;
+		mChildrenOfParents = newchildren;
 	}
 
 	@Override
@@ -236,5 +280,6 @@ public class FastJavaDB implements TxPowDB {
 	@Override
 	public void ClearDB() {
 		mTxPoWRows.clear();
+		mChildrenOfParents.clear();
 	}
 }

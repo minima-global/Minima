@@ -39,7 +39,6 @@ import org.minima.kissvm.functions.sha.SHA3;
 import org.minima.kissvm.functions.sigs.CHECKSIG;
 import org.minima.kissvm.functions.sigs.MULTISIG;
 import org.minima.kissvm.functions.sigs.SIGNEDBY;
-import org.minima.kissvm.functions.state.DYNSTATE;
 import org.minima.kissvm.functions.state.PREVSTATE;
 import org.minima.kissvm.functions.state.SAMESTATE;
 import org.minima.kissvm.functions.state.STATE;
@@ -71,7 +70,7 @@ public abstract class MinimaFunction {
 				new SHA3(), new SHA2(), new CHAINSHA(), new BITSET(), new BITGET(), new BITCOUNT(),
 				new SIGNEDBY(), new MULTISIG(), new CHECKSIG(),
 				new GETOUTADDR(), new GETOUTAMT(), new GETOUTTOK(),new VERIFYOUT(),
-				new STATE(), new PREVSTATE(), new SAMESTATE(), new DYNSTATE()
+				new STATE(), new PREVSTATE(), new SAMESTATE()
 			};
 	
 	/**

@@ -34,7 +34,6 @@ import org.minima.utils.SQLHandler;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.json.parser.JSONParser;
-import org.minima.utils.json.parser.ParseException;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageProcessor;
 import org.minima.utils.messages.TimerMessage;
@@ -101,8 +100,13 @@ public class DAPPManager extends MessageProcessor {
 	}
 	
 	public void stop() {
-		mDAPPServer.stop();
-		mCommsManager.shutdown();
+		if(mDAPPServer != null) {
+			mDAPPServer.stop();
+		}
+		
+		if(mCommsManager != null) {
+			mCommsManager.shutdown();
+		}
 		
 		stopMessageProcessor();
 	}
@@ -221,12 +225,15 @@ public class DAPPManager extends MessageProcessor {
 					}
 				}
 				
+				//Find the CONF file..
+//				File conf = findFile(app, "minidapp.conf");
+				
 				//Open it up..
-				File conf    = new File(app,"minidapp.conf");
+				File conf = new File(app,"minidapp.conf");
 				File backend = new File(app,"service.js");
 				
 				//Check it exists..
-				if(conf.exists()) {
+				if(conf!=null && conf.exists()) {
 					//Load it..
 					JSONObject confjson = loadConfFile(conf);
 					
@@ -262,7 +269,10 @@ public class DAPPManager extends MessageProcessor {
 					
 					//Add it..
 					CURRENT_MINIDAPPS.add(confjson);
+				}else {
+					MinimaLogger.log("ERROR : minidapp.conf not found for "+minidappid);
 				}
+				
 			}
 		}
 		
@@ -350,7 +360,10 @@ public class DAPPManager extends MessageProcessor {
 			}
 
 			//Hash it..
-			MiniData hash     = Crypto.getInstance().hashObject(data, 160);
+			//MiniData hash     = Crypto.getInstance().hashObject(data, 160);
+			byte[] hashdata = Crypto.getInstance().hashData(data.getData(), 160);
+			MiniData hash   = new MiniData(hashdata);
+			
 			String minidappid = hash.to0xString();
 			InputHandler.getResponseJSON(zMessage).put("uid", minidappid);
 			
@@ -403,7 +416,11 @@ public class DAPPManager extends MessageProcessor {
 	        	}
 	        	
 	        	//Strip folder from name..
-	        	name = name.substring(folder.length());
+	        	if(name.startsWith(folder)) {
+	        		name = name.substring(folder.length());
+	        	}else {
+	        		MinimaLogger.log("WARNING : File outside of Main folder ["+folder+"] in MiniDAPP ["+filename+"] "+name);
+	        	}
 	        	
 	        	//Where does this file go
 	            File filePath = new File(dapp,name);
@@ -579,5 +596,27 @@ public class DAPPManager extends MessageProcessor {
 				bend.MinimaEvent(JSONEvent);
 			}
 		}	
+	}
+	
+	public File findFile(File zRootDirectory, String zFilename) {
+		File[] subs = zRootDirectory.listFiles();
+		if(subs != null) {
+			for(File app : subs) {
+				if(app.isDirectory()) {
+					File found = findFile(app, zFilename);
+					if(found!=null) {
+						return found;
+					}	
+				}
+				
+				if(app.isFile()) {
+					if(app.getName().equals(zFilename)) {
+						return app;
+					}
+				}
+			}
+		}
+		
+		return null;
 	}
 }

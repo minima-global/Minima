@@ -25,6 +25,12 @@ import org.minima.utils.json.JSONObject;
 public class MMRSet implements Streamable {
 	
 	/**
+	 * Maximum number of rows in this set.. 2^128 trx max.. 
+	 * Can be set higher - but takes more memory
+	 */
+	public static int MAXROWS = 128;
+	
+	/**
 	 * What Block time does this MMR represent. Each represents 1 block.
 	 */
 	MiniNumber mBlockTime = new MiniNumber(0);
@@ -108,7 +114,7 @@ public class MMRSet implements Streamable {
 		JSONArray maxentry = new JSONArray();
 		for(MMREntry entry : mMaxEntries) {
 			if(entry != null) {
-				maxentry.add(entry.getEntryNumber().toString());	
+				maxentry.add(entry.getRow()+":"+entry.getEntryNumber().toString());
 			}
 		}
 		ret.put("maxentries", maxentry);
@@ -129,7 +135,7 @@ public class MMRSet implements Streamable {
 		mSetEntriesCoinID = new Hashtable<>();
 		
 		//The Maximum Rows and entries
-		mMaxEntries = new MMREntry[256];
+		mMaxEntries = new MMREntry[MAXROWS];
 		mMaxRow     = 0;
 		
 		//Parent MMRSet
@@ -181,7 +187,62 @@ public class MMRSet implements Streamable {
 		mParent = zParent;
 	}
 	
+	//Switch to the shared MMREntry DB
+	private void fixEntryDuplicates() {
+		MMREntryDB db = MMREntryDB.getDB();
+		
+		//Create Copies..
+		Hashtable<String, MMREntry> setEntries       = new Hashtable<>();
+		Hashtable<String, MMREntry> setEntriesCoinID = new Hashtable<>();
+		MMREntry maxEntries[] 						 = new MMREntry[MAXROWS];
+		
+		//Now cycle through and use the shared MMRENtry
+		Enumeration<MMREntry> entries = mSetEntries.elements();
+		while(entries.hasMoreElements()) {
+			//The Original
+			MMREntry entry = entries.nextElement();
+		
+			//Get Shared Version..
+			MMREntry sharedentry = db.getEntry(entry, mBlockTime);
+			
+			//Add it..
+			String name = getHashTableEntry(entry.getRow(), entry.getEntryNumber());
+			setEntries.put(name, sharedentry);
+		}
+		
+		Enumeration<MMREntry> entriescoinid = mSetEntriesCoinID.elements();
+		while(entriescoinid.hasMoreElements()) {
+			//The Original
+			MMREntry entry = entriescoinid.nextElement();
+		
+			//Get Shared Version..
+			MMREntry sharedentry = db.getEntry(entry, mBlockTime);
+			
+			//Add it..
+			String name = entry.getData().getCoin().getCoinID().to0xString();
+			setEntriesCoinID.put(name, sharedentry);
+		}
+		
+		for(int i=0;i<MAXROWS;i++) {
+			if(mMaxEntries[i] != null) {
+				//Get Shared Version..
+				MMREntry sharedentry = db.getEntry(mMaxEntries[i], mBlockTime);
+				
+				//Add it..
+				maxEntries[i] = sharedentry;
+			}
+		}
+		
+		//And now set these as the actual values
+		mSetEntries 		= setEntries;
+		mSetEntriesCoinID 	= setEntriesCoinID;
+		mMaxEntries	 		= maxEntries;
+	}
+	
 	public void finalizeSet() {
+		//Fix Duplicates..
+		fixEntryDuplicates();
+		
 		//Reset
 		mFinalized = false;
 				
@@ -216,23 +277,6 @@ public class MMRSet implements Streamable {
 	
 	private void incrementEntryNumber() {
 		mEntryNumber = mEntryNumber.increment();
-	}
-	
-	public int getMaxRow() {
-		return getMaxRow(false);
-	}
-	
-	public int getMaxRow(boolean zCheckParent) {
-		int max = mMaxRow;
-		
-		if(zCheckParent && mParent!=null) {
-			int pmax = mParent.getMaxRow(zCheckParent);
-			if(pmax>max) {
-				max = pmax;
-			}
-		}
-		
-		return max;
 	}
 	
 	private String getHashTableEntry(int zRow, MiniInteger zEntry) {
@@ -414,7 +458,8 @@ public class MMRSet implements Streamable {
 		//Now go up the tree..
 		while(entry.isRight()) {
 			//Get the Sibling.. will be the left
-			MMREntry sibling = getEntry(entry.getRow(), entry.getLeftSibling());
+//			MMREntry sibling = getEntry(entry.getRow(), entry.getLeftSibling());
+			MMREntry sibling = getEntry(entry.getRow(), entry.getSibling());
 			
 			//Create the new row - hash LEFT + RIGHT
 			MiniData combined = Crypto.getInstance().hashObjects(sibling.getHashValue(), entry.getHashValue(), MMR_HASH_BITS);
@@ -1095,7 +1140,7 @@ public class MMRSet implements Streamable {
 		//Now the Entries..
 		mSetEntries       = new Hashtable<>();
 		mSetEntriesCoinID = new Hashtable<>();
-		mMaxEntries       = new MMREntry[256];
+		mMaxEntries       = new MMREntry[MAXROWS];
 		mMaxRow = 0;
 		
 		int len = zIn.readInt();

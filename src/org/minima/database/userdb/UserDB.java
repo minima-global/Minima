@@ -5,12 +5,13 @@ import java.util.Hashtable;
 
 import org.minima.database.userdb.java.reltxpow;
 import org.minima.objects.Address;
-import org.minima.objects.PubPrivKey;
+import org.minima.objects.Coin;
 import org.minima.objects.StateVariable;
 import org.minima.objects.Transaction;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.objects.keys.MultiKey;
 import org.minima.objects.proofs.TokenProof;
 
 public interface UserDB {
@@ -18,9 +19,9 @@ public interface UserDB {
 	/**
 	 * Get all the public private Keys 
 	 */
-	public ArrayList<PubPrivKey> getKeys();
-	public PubPrivKey newPublicKey(int zBitLength);
-	public PubPrivKey getPubPrivKey(MiniData zPubKey);
+	public ArrayList<MultiKey> getKeys();
+	public MultiKey newPublicKey(int zBitLength);
+	public MultiKey getPubPrivKey(MiniData zPubKey);
 	
 	/**
 	 * Get all the addresses
@@ -32,7 +33,7 @@ public interface UserDB {
 	 */
 	public Address newSimpleAddress();
 	public Address newSimpleAddress(int zBitLength);
-	public Address newSimpleAddress(PubPrivKey zPubPriv);
+	public Address newSimpleAddress(MultiKey zPubPriv);
 	
 	public boolean isSimpleAddress(MiniData zAddress);
 	public MiniData getPublicKeyForSimpleAddress(MiniData zAddress);
@@ -78,6 +79,15 @@ public interface UserDB {
 	 * @return
 	 */
 	public boolean isStateListRelevant(ArrayList<StateVariable> zStateVarList);
+	
+	/**
+	 * Check if this Coin is relevant to the user and if we should keep the MMR entry proof
+	 * @param zCoin
+	 * @return
+	 */
+	public boolean isCoinRelevant(Coin zCoin);
+	public void    addRelevantCoinID(MiniData zCoinID);
+	public void    removeRelevantCoinID(MiniData zCoinID);
 	
 	/**
 	 * Custom Transactions

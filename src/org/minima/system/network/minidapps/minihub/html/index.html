@@ -13,6 +13,36 @@
 
 <body style="background-image: url(tile-grey.jpeg);">
 
+<style type="text/css">
+	
+/* responsive, form small screens, use 13px font size */
+@media (max-width: 1000px) {
+    .maintitle {
+	  font-size:32px;
+	}
+	
+	.mainicon {
+	  width:75px;
+	}
+	
+	.evolution {
+	  text-align:center;
+	  font-size:16px;
+	}
+
+	.buttonbox {
+		width:100;
+	}
+	.installdapp{
+	  font-size:14px;
+	  width:100;
+	  height:50;
+	}
+	
+}
+</style>
+
+
 <script type="text/javascript">
 
 	//Wait for the page to load..
@@ -27,8 +57,7 @@
 		/*window.addEventListener('MinimaEvent', function(evt) {
 			if(evt.detail.event == "connected"){
 	 			Minima.util.setUID("MiniHUB");
-	 		
-			}else if(evt.detail.event == "newblock"){}
+	 		}else if(evt.detail.event == "newblock"){}
 	    });
 		Minima.init();*/
 	});
@@ -55,15 +84,15 @@
 	<!-- MAIN TITLE -->
 	<table class="maintitle" width=100%>
 		<tr>
-			<td><img src="icon.png" width=100></td> 
-			<td width=100%><b>MINIDAPPS</b><br>
+			<td><img src="icon.png" class="mainicon"></td> 
+			<td width=100% nowrap><b>MINIDAPPS</b><br>
 			<div style="font-size:12;">
 			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 			&nbsp;&nbsp;&nbsp;
 			Powered by Minima</div>
 			</td> 
-			<td><img src="icon.png" width=100></td>	
+			<td><img src="icon.png"  class="mainicon"></td>	
 		</tr>
 	</table>
 	
@@ -81,15 +110,15 @@
 
 	<table class="mainfooter" width=100% border=0>
 		<tr>
-			<td width=150 style="text-align:left;"> 
+			<td class="buttonbox" style="text-align:left;" nowrap> 
 				<button class="installdapp" onclick="window.location.href='help.html';">HELP</button> 
 			</td>
 			
-			<td style="text-align:center;font-size:24" nowrap>
+			<td class="evolution" nowrap>
 					The <span style="color:#000">E</span><span style="color:#222">v</span><span style="color:#444">o</span><span style="color:#666">l</span><span style="color:#888">u</span><span style="color:#aaa">t</span><span style="color:#666">i</span><span style="color:#ddd">o</span><span style="color:#fff">n</span> <!-- will <b>not</b> be Centralised.. -->
 			</td>
 			
-			<td width=150 style="text-align:right;" nowrap> 
+			<td class="buttonbox" style="text-align:right;" nowrap> 
 				<button class="installdapp" onclick="installDAPP();">INSTALL</button> 	
 			</td>
 		</tr>

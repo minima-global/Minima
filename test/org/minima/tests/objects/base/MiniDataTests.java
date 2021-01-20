@@ -17,7 +17,6 @@ import org.junit.Test;
 import org.minima.objects.base.MiniData;
 
 public class MiniDataTests {
-
     @Test
     public void testValueBytes() {
         MiniData i = new MiniData("#1388");
@@ -266,7 +265,6 @@ public class MiniDataTests {
 
             InputStream inputStream = new ByteArrayInputStream(bos.toByteArray());
             DataInputStream dis = new DataInputStream(inputStream);
-
             k = j.ReadHashFromStream(dis);
             assertNotNull(k);
 

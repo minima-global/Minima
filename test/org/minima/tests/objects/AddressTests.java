@@ -79,7 +79,6 @@ public class AddressTests {
 
         String mxAddress = Address.makeMinimaAddress(i);
         MiniData j = Address.convertMinimaAddress(mxAddress);
-
         try {
             assertEquals("should be equal", i, j);
             System.out.println("should be equal to - " + i);

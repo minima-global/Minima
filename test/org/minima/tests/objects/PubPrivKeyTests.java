@@ -40,8 +40,8 @@ public class PubPrivKeyTests {
         k = new PubPrivKey(theSeed);
         MiniData nonEmptySeed2 = k.getPrivateSeed();
         assertTrue("seed should exist", nonEmptySeed2 != null);
-        assertTrue("seed should have correct length", nonEmptySeed2.getData().length == w * 3);
-
+        assertTrue("seed should have correct length", nonEmptySeed2.getData().length == w*3);
+        
     }
 
     private void testSigningAndVerifying(String msg) {
@@ -58,17 +58,14 @@ public class PubPrivKeyTests {
         testSigningAndVerifying("Hello World");
     }
 
-    @Test
     public void testSignAndVerifyLoremIpsum() {
         testSigningAndVerifying("Lorem ipsum");
     }
 
-    @Test
     public void testSignAndVerifyGenesis() {
         testSigningAndVerifying("The Times 03/Jan/2009 Chancellor on brink of second bailout for banks");
     }
 
-    @Test
     public void testSignAndVerifyEvolution() {
         testSigningAndVerifying("The Evolution will not be Centralised");
     }

@@ -74,9 +74,34 @@ Generate code coverage test report with:
 ```
 
 The reports can be found at
+```
 ./build/reports/tests/test/index.html
 ./build/reports/jacoco/test/html/index.html
+```
 
+### Docker
+
+For those using Docker, you can try the Minima docker image without compiling the source code:
+```
+docker pull minimaglobal/minima:tests
+docker run minima:tests
+```
+
+The tests tag maps to the tests github branch.
+
+You can also build your own Docker minima image with the following command:
+```
+docker build -t minima:latest .
+```
+
+Start the image with default settings:
+```
+docker run minima:latest
+```
+=======
+The reports can be found at
+./build/reports/tests/test/index.html
+./build/reports/jacoco/test/html/index.html
 
 ### Demo Session
 

@@ -11,7 +11,7 @@ import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONObject;
 
-public class MMREntry implements Comparable<MMREntry>, Streamable{
+public class MMREntry implements Streamable {
 
 	/**
 	 * Global MMR position
@@ -133,19 +133,19 @@ public class MMREntry implements Comparable<MMREntry>, Streamable{
 		return !isLeft();
 	}
 	
-	public MiniInteger getLeftSibling() {
-		return mEntryNumber.decrement();
-	}
-	
-	public MiniInteger getRightSibling() {
-		return mEntryNumber.increment();
-	}
+//	public MiniInteger getLeftSibling() {
+//		return mEntryNumber.decrement();
+//	}
+//	
+//	public MiniInteger getRightSibling() {
+//		return mEntryNumber.increment();
+//	}
 	
 	public MiniInteger getSibling() {
 		if(isLeft()) {
-			return getRightSibling();
+			return mEntryNumber.increment();
 		}else {
-			return getLeftSibling();
+			return mEntryNumber.decrement();
 		}
 	}
 	
@@ -159,11 +159,6 @@ public class MMREntry implements Comparable<MMREntry>, Streamable{
 	
 	public MiniInteger getRightChildEntry() {
 		return getLeftChildEntry().add(MiniInteger.ONE);
-	}
-
-	@Override
-	public int compareTo(MMREntry zEntry) {
-		return zEntry.getEntryNumber().getNumber().compareTo(mEntryNumber.getNumber());
 	}
 
 	@Override

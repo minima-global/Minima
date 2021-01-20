@@ -51,9 +51,23 @@ sourceSets {
         }
     }
 }
+
+// reproducible builds
+tasks.withType(AbstractArchiveTask) {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}
+
 application {
     // Define the main class for the application.
     mainClassName = 'org.minima.Start'
+    //mainClass.set("org.minima.Start") // new syntax for gradle 6.7+, plugins not compatible yet
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'org.minima.Start'
+    }
 }
 jar {
     manifest {

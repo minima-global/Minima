@@ -30,7 +30,6 @@ public class Magic implements Streamable {
 		JSONObject magic = new JSONObject();
 		
 		magic.put("prng", mPRNG.to0xString());
-		
 		magic.put("maxtxpow", mDesiredMaxTxPoWSize.getAsInt());
 		magic.put("maxtxn", mDesiredMaxTxnPerBlock.getAsInt());
 		magic.put("maxkissvm", mDesiredMaxKISSVMInstructions.getAsInt());
@@ -46,7 +45,6 @@ public class Magic implements Streamable {
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
 		mPRNG.writeHashToStream(zOut);
-		
 		mDesiredMaxTxPoWSize.writeDataStream(zOut);
 		mDesiredMaxTxnPerBlock.writeDataStream(zOut);
 		mDesiredMaxKISSVMInstructions.writeDataStream(zOut);
@@ -55,7 +53,6 @@ public class Magic implements Streamable {
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
 		mPRNG = MiniData.ReadHashFromStream(zIn);
-		
 		mDesiredMaxTxPoWSize = MiniNumber.ReadFromStream(zIn);
 		mDesiredMaxTxnPerBlock = MiniNumber.ReadFromStream(zIn);
 		mDesiredMaxKISSVMInstructions = MiniNumber.ReadFromStream(zIn);

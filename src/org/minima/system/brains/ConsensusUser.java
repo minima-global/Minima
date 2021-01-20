@@ -25,7 +25,6 @@ import org.minima.kissvm.values.ScriptValue;
 import org.minima.kissvm.values.Value;
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
-import org.minima.objects.PubPrivKey;
 import org.minima.objects.StateVariable;
 import org.minima.objects.Transaction;
 import org.minima.objects.TxPoW;
@@ -35,11 +34,10 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniInteger;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
+import org.minima.objects.keys.MultiKey;
 import org.minima.objects.proofs.ScriptProof;
 import org.minima.objects.proofs.TokenProof;
 import org.minima.system.input.InputHandler;
-import org.minima.system.network.MinimaClient;
-import org.minima.system.network.NetworkHandler;
 import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
@@ -106,7 +104,7 @@ public class ConsensusUser extends ConsensusProcessor {
 			MiniData hexpubk = new MiniData(pubkey);
 			
 			//Get the public key..
-			PubPrivKey key = getMainDB().getUserDB().getPubPrivKey(hexpubk);
+			MultiKey key = getMainDB().getUserDB().getPubPrivKey(hexpubk);
 			
 			if(key == null) {
 				InputHandler.endResponse(zMessage, false, "Public key not found");
@@ -165,7 +163,7 @@ public class ConsensusUser extends ConsensusProcessor {
 			int bitl = zMessage.getInteger("bitlength");
 			
 			//Create a new key pair..
-			PubPrivKey key = getMainDB().getUserDB().newPublicKey(bitl);
+			MultiKey key = getMainDB().getUserDB().newPublicKey(bitl);
 			
 			//return to sender!
 			JSONObject resp = InputHandler.getResponseJSON(zMessage);
@@ -371,7 +369,7 @@ public class ConsensusUser extends ConsensusProcessor {
 					if(!tok.equals("")) {
 						int split = tok.indexOf(":");
 						String statenum = tok.substring(0,split).trim();
-						String value = tok.substring(split+1).trim();
+						String value    = tok.substring(split+1).trim();
 						
 						//Set it..
 						trans.addStateVariable(new StateVariable(Integer.parseInt(statenum), value));
@@ -513,10 +511,8 @@ public class ConsensusUser extends ConsensusProcessor {
 				hard = zMessage.getBoolean("hard");	
 			}
 			
-			NetworkHandler nethandler = getNetworkHandler();
-			
 			//Clear the current Requested Transactions.. this should ask for them all anyway..
-			nethandler.clearAllrequestedTxPow();
+			getNetworkHandler().clearAllrequestedTxPow();
 			
 			//JSON response..
 			JSONObject resp = InputHandler.getResponseJSON(zMessage);
@@ -542,29 +538,13 @@ public class ConsensusUser extends ConsensusProcessor {
 					//Remove all..
 					remove.add(txpow.getTxPowID());
 				}else{
-					//Check it..
-//					boolean trxok  = true;
-//					if(txpow.isTransaction()) {
-//						trxok  = TxPoWChecker.checkTransactionMMR(txpow, getMainDB());	
-//					}
-//						
-//					//Check the basics..
-//					if(!trxok) {
-//						remove.add(txpow.getTxPowID());
-//					}
-					
 					//Check All..
 					if(txpow.isBlock()) {
 						MiniData parent = txpow.getParentID();
 						if(tdb.findTxPOWDBRow(parent) == null) {
-							Message msg  = new Message(MinimaClient.NETCLIENT_SENDTXPOWREQ)
-												.addObject("txpowid", parent);
-							Message netw = new Message(NetworkHandler.NETWORK_SENDALL)
-												.addObject("message", msg);
-							
-							//Post it..
-							nethandler.PostMessage(netw);
-							
+							//Send a broadcast request
+							getConsensusHandler().getConsensusNet().sendTxPowRequest(parent);
+
 							//Add to out list
 							requested.add(parent.to0xString());
 						}
@@ -573,13 +553,8 @@ public class ConsensusUser extends ConsensusProcessor {
 						ArrayList<MiniData> txns = txpow.getBlockTransactions();
 						for(MiniData txn : txns) {
 							if(tdb.findTxPOWDBRow(txn) == null) {
-								Message msg  = new Message(MinimaClient.NETCLIENT_SENDTXPOWREQ)
-										.addObject("txpowid", txn);
-								Message netw = new Message(NetworkHandler.NETWORK_SENDALL)
-										.addObject("message", msg);
-								
-								//Post it..
-								nethandler.PostMessage(netw);
+								//Send a broadcast request
+								getConsensusHandler().getConsensusNet().sendTxPowRequest(txn);
 								
 								//Add to out list
 								requested.add(txn.to0xString());
@@ -607,7 +582,10 @@ public class ConsensusUser extends ConsensusProcessor {
 			//Once a coin has been used - say in a DEX.. you can remove it from your coinDB
 			String cid = zMessage.getString("coinid");
 			
-			//Remove the coin..
+			//Remove from the UserDB
+			getMainDB().getUserDB().removeRelevantCoinID(new MiniData(cid));
+			
+			//Remove from the coindb..
 			boolean found = getMainDB().getCoinDB().removeCoin(new MiniData(cid));
 			
 			//Now you have the proof..
@@ -619,6 +597,9 @@ public class ConsensusUser extends ConsensusProcessor {
 		}else if(zMessage.isMessageType(CONSENSUS_KEEPCOIN)) {
 			String cid = zMessage.getString("coinid");
 			
+			JSONObject resp = InputHandler.getResponseJSON(zMessage);
+			resp.put("coinid", cid);
+			
 			//Get the MMRSet
 			MMRSet basemmr = getMainDB().getMainTree().getChainTip().getMMRSet();
 			
@@ -626,23 +607,25 @@ public class ConsensusUser extends ConsensusProcessor {
 			MiniData coinid = new MiniData(cid);
 			MMREntry entry =  basemmr.findEntry(coinid);
 			
+			//If NULL not found..
+			if(entry == null) {
+				InputHandler.endResponse(zMessage, false, "CoinID not found");
+				return;
+			}
+			
+			//Add it to the Database
+			getMainDB().getUserDB().addRelevantCoinID(coinid);
+			
 			//Now ask to keep it..
 			MMRSet coinset = basemmr.getParentAtTime(entry.getBlockTime());
 			coinset.addKeeper(entry.getEntryNumber());
-			coinset.finalizeSet();
 			
 			//Get the coin
 			Coin cc = entry.getData().getCoin();
 			
-			//Is it relevant..
-			boolean rel = false;
-			if( getMainDB().getUserDB().isAddressRelevant(cc.getAddress()) ){
-				rel = true;
-			}
-			
 			//add it to the database
 			CoinDBRow crow = getMainDB().getCoinDB().addCoinRow(cc);
-			crow.setRelevant(rel);
+			crow.setRelevant(true);
 			crow.setKeeper(true);
 			crow.setIsSpent(entry.getData().isSpent());
 			crow.setIsInBlock(true);
@@ -650,7 +633,6 @@ public class ConsensusUser extends ConsensusProcessor {
 			crow.setMMREntry(entry.getEntryNumber());
 			
 			//Now you have the proof..
-			JSONObject resp = InputHandler.getResponseJSON(zMessage);
 			resp.put("coin", basemmr.getProof(entry.getEntryNumber()));
 			InputHandler.endResponse(zMessage, true, "");
 			
@@ -777,7 +759,8 @@ public class ConsensusUser extends ConsensusProcessor {
 		}else if(zMessage.isMessageType(CONSENSUS_IMPORTKEY)) {
 			MiniData priv = (MiniData)zMessage.getObject("privatekey");
 
-			PubPrivKey newkey = new PubPrivKey(priv);
+			MultiKey newkey = new MultiKey(priv, MultiKey.DEFAULT_KEYS_PER_LEVEL, MultiKey.DEFAULT_LEVELS);
+//			PubPrivKey newkey = new PubPrivKey(priv);
 			
 			if(getMainDB().getUserDB().getPubPrivKey(newkey.getPublicKey())!=null) {
 				MinimaLogger.log("Key allready in DB!");

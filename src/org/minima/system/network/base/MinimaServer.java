@@ -1,4 +1,4 @@
-package org.minima.system.network;
+package org.minima.system.network.base;
 
 import java.io.IOException;
 import java.net.BindException;
@@ -6,6 +6,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 
+import org.minima.system.network.NetworkHandler;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.messages.Message;
 
@@ -35,8 +36,7 @@ public class MinimaServer implements Runnable{
 				mServerSocket.close();
 			}
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			MinimaLogger.log(e);
 		}
 	}
 	

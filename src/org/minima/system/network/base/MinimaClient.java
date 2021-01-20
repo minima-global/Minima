@@ -1,4 +1,4 @@
-package org.minima.system.network;
+package org.minima.system.network.base;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -19,7 +19,7 @@ import org.minima.objects.greet.TxPoWIDList;
 import org.minima.objects.greet.TxPoWList;
 import org.minima.system.Main;
 import org.minima.system.brains.ConsensusNet;
-import org.minima.utils.DataTimer;
+import org.minima.system.network.NetworkHandler;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONObject;
@@ -45,6 +45,7 @@ public class MinimaClient extends MessageProcessor {
 	public static final String NETCLIENT_INTRO 	        = "NETCLIENT_INTRO";
 	
 	public static final String NETCLIENT_SENDTXPOWID 	= "NETCLIENT_SENDTXPOWID";
+	
 	//Small random delay in propagating..
 	public static final String NETCLIENT_POSTTXPOWID 	= "NETCLIENT_POSTTXPOWID";
 	
@@ -59,8 +60,6 @@ public class MinimaClient extends MessageProcessor {
 	
 	public static final String NETCLIENT_PULSE 	        = "NETCLIENT_PULSE";
 	public static final String NETCLIENT_PING 	        = "NETCLIENT_PING";
-	
-	private static final MiniData ZERO_TXPOWID = new MiniData("0x00");
 	
 	//Main Network Handler
 	NetworkHandler mNetworkMain;
@@ -90,8 +89,6 @@ public class MinimaClient extends MessageProcessor {
 	 */
 	boolean mReconnect     = false;
 	int mReconnectAttempts = 0;
-	
-	DataTimer mDataTimer = new DataTimer();
 	
 	/**
 	 * Constructor
@@ -275,25 +272,13 @@ public class MinimaClient extends MessageProcessor {
 			MiniData txpowid = (MiniData)zMessage.getObject("txpowid");
 			
 			//Don't ask for 0x00..
-			if(txpowid.isEqual(ZERO_TXPOWID)) {
-				//it's the genesis..
+			if(txpowid.isEqual(MiniData.ZERO_TXPOWID)) {
+				//it's the genesis parent..
 				return;
 			}
 			
-			//What are we checking for
-			String data = txpowid.to0xString();
-			
-			//Check if we have asked for it already
-			boolean found = mDataTimer.checkForData(data,TXPOWRESQUEST_TIMEOUT);
-			if(!found) {
-				//Add to our list of requested TxPoW - so is let in EVEN if invalid - as may be in a side branch
-				mNetworkMain.addRequestedTxPow(data);
-				
-				//And send it..
-				sendMessage(MinimaReader.NETMESSAGE_TXPOW_REQUEST, txpowid);
-			}else {
-				//MinimaLogger.log("Requested TXPOWID .. cancelled as already done less than 5 minutes ago.. "+data);
-			}
+			//Send it..
+			sendMessage(MinimaReader.NETMESSAGE_TXPOW_REQUEST, txpowid);
 	
 		}else if(zMessage.isMessageType(NETCLIENT_PULSE)) {
 			//When was the last PING message..

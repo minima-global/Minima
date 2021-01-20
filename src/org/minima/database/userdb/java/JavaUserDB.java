@@ -11,13 +11,13 @@ import org.minima.database.userdb.UserDB;
 import org.minima.database.userdb.UserDBRow;
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
-import org.minima.objects.PubPrivKey;
 import org.minima.objects.StateVariable;
 import org.minima.objects.Transaction;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
+import org.minima.objects.keys.MultiKey;
 import org.minima.objects.proofs.TokenProof;
 import org.minima.utils.Streamable;
 
@@ -26,7 +26,8 @@ public class JavaUserDB implements UserDB, Streamable{
 	/**
 	 * Minima stores any output that has a key you own in the STATE
 	 */
-	ArrayList<PubPrivKey> mPubPrivKeys;
+//	ArrayList<PubPrivKey> mPubPrivKeys;
+	ArrayList<MultiKey> mPubPrivKeys;
 	
 	/**
 	 * Both of these for the user.. if any output found they will be stored
@@ -41,6 +42,11 @@ public class JavaUserDB implements UserDB, Streamable{
 	 * These addresses are extra - are known and used when you have the KEY in the STATE
 	 */
 	ArrayList<Address>    mExtraAddresses;
+	
+	/**
+	 * CoinID of relevant Coins..
+	 */
+	ArrayList<String> mRelevantCoinID;
 	
 	/**
 	 * Custom Transactions
@@ -62,10 +68,11 @@ public class JavaUserDB implements UserDB, Streamable{
 	 */
 	public JavaUserDB() {
 		mPubPrivKeys 	 = new ArrayList<>();
-		mSimpleAddresses 		 = new ArrayList<>();
+		mSimpleAddresses = new ArrayList<>();
 		mScriptAddresses = new ArrayList<>();
 		mTotalAddresses  = new ArrayList<>();
 		mExtraAddresses  = new ArrayList<>();
+		mRelevantCoinID  = new ArrayList<>();
 		
 		mAllTokens		 = new ArrayList<>();
 		
@@ -90,13 +97,13 @@ public class JavaUserDB implements UserDB, Streamable{
 	}
 
 	@Override
-	public ArrayList<PubPrivKey> getKeys() {
+	public ArrayList<MultiKey> getKeys() {
 		return mPubPrivKeys;
 	}
 
 	@Override
-	public PubPrivKey newPublicKey(int zBitLength) {
-		PubPrivKey pubkey = new PubPrivKey(zBitLength);
+	public MultiKey newPublicKey(int zBitLength) {
+		MultiKey pubkey = new MultiKey(zBitLength);
 		mPubPrivKeys.add(pubkey);
 		return pubkey;
 	}
@@ -141,11 +148,11 @@ public class JavaUserDB implements UserDB, Streamable{
 	
 	@Override
 	public Address newSimpleAddress(int zBitLength) {
-		return newSimpleAddress(new PubPrivKey(zBitLength));
+		return newSimpleAddress(new MultiKey(zBitLength));
 	}
 	
 	@Override
-	public Address newSimpleAddress(PubPrivKey zPubPriv) {
+	public Address newSimpleAddress(MultiKey zPubPriv) {
 		//Store it..
 		mPubPrivKeys.add(zPubPriv);
 		
@@ -175,8 +182,8 @@ public class JavaUserDB implements UserDB, Streamable{
 	}
 	
 	@Override
-	public PubPrivKey getPubPrivKey(MiniData zPubKey) {
-		for(PubPrivKey key : mPubPrivKeys) {
+	public MultiKey getPubPrivKey(MiniData zPubKey) {
+		for(MultiKey key : mPubPrivKeys) {
 			if(key.getPublicKey().isEqual(zPubKey)) {
 				return key;
 			}
@@ -286,7 +293,7 @@ public class JavaUserDB implements UserDB, Streamable{
 				MiniData svdata = new MiniData(data.toString());
 				
 				//Check against the keys..
-				for(PubPrivKey key : mPubPrivKeys) {
+				for(MultiKey key : mPubPrivKeys) {
 					MiniData pubkey = key.getPublicKey();
 					if(pubkey.isEqual(svdata)) {
 						return true;
@@ -303,6 +310,32 @@ public class JavaUserDB implements UserDB, Streamable{
 		return false;
 	}
 
+
+	@Override
+	public boolean isCoinRelevant(Coin zCoin) {
+		//Check the Address..
+		if(isAddressRelevant(zCoin.getAddress())) {
+			return true;
+		}
+	
+		//Is it in our relevant Coins..
+		if(mRelevantCoinID.contains(zCoin.getCoinID().to0xString())) {
+			return true;
+		}
+		
+		return false;
+	}
+
+	@Override
+	public void addRelevantCoinID(MiniData zCoinID) {
+		mRelevantCoinID.add(zCoinID.to0xString());
+	}
+
+	@Override
+	public void removeRelevantCoinID(MiniData zCoinID) {
+		mRelevantCoinID.remove(zCoinID.to0xString());
+	}
+	
 	@Override
 	public MiniData getPublicKeyForSimpleAddress(MiniData zAddress) {
 		for(Address addr : mSimpleAddresses) {
@@ -327,7 +360,7 @@ public class JavaUserDB implements UserDB, Streamable{
 		//Pub priv keys
 		len = mPubPrivKeys.size();
 		zOut.writeInt(len);
-		for(PubPrivKey key : mPubPrivKeys) {
+		for(MultiKey key : mPubPrivKeys) {
 			key.writeDataStream(zOut);
 		}
 		
@@ -350,6 +383,13 @@ public class JavaUserDB implements UserDB, Streamable{
 		zOut.writeInt(len);
 		for(Address addr : mExtraAddresses) {
 			addr.writeDataStream(zOut);
+		}
+		
+		//Relevant CoinID
+		len = mRelevantCoinID.size();
+		zOut.writeInt(len);
+		for(String coinid : mRelevantCoinID) {
+			zOut.writeUTF(coinid);
 		}
 		
 		//Token Details
@@ -389,7 +429,7 @@ public class JavaUserDB implements UserDB, Streamable{
 		//Pub Priv Keys
 		int len = zIn.readInt();
 		for(int i=0;i<len;i++) {
-			PubPrivKey pp = new PubPrivKey();
+			MultiKey pp = new MultiKey();
 			pp.readDataStream(zIn);
 			mPubPrivKeys.add(pp);
 		}
@@ -418,6 +458,13 @@ public class JavaUserDB implements UserDB, Streamable{
 			Address addr = new Address();
 			addr.readDataStream(zIn);
 			mExtraAddresses.add(addr);
+		}
+		
+		//Relevant Coins
+		len = zIn.readInt();
+		for(int i=0;i<len;i++) {
+			String coinid = zIn.readUTF();
+			mRelevantCoinID.add(coinid);
 		}
 		
 		//Token Details
@@ -499,5 +546,5 @@ public class JavaUserDB implements UserDB, Streamable{
 	public void clearHistory() {
 		mHistory.clear();
 	}
-
+	
 }

@@ -36,11 +36,6 @@ public class BlockTree {
 	private BlockTreeNode mCascadeNode;
 	
 	/**
-	 * When Copying..
-	 */
-	private BlockTreeNode mCopyNode;
-	
-	/**
 	 * The FAST link from ID to Block..
 	 */
 	private Hashtable<String, BlockTreeNode> mFastLink;
@@ -92,6 +87,10 @@ public class BlockTree {
 	 * @return
 	 */
 	public boolean addNode(BlockTreeNode zNode) {
+		return addNode(zNode, false);
+	}
+	
+	public boolean addNode(BlockTreeNode zNode, boolean zFromBackup) {
 		//Do we have it allready.. 
 		BlockTreeNode exists = findNode(zNode.getTxPowID());
 		if(exists != null) {
@@ -106,13 +105,17 @@ public class BlockTree {
 		if(parent == null) {
 			return false;
 		}
-
-		//Can't add to less than
+		
+		/**
+		 * You need this so that the average speed and difficulty can be worked out..
+		 */
 		if(mTip.getBlockNumber().isMore(GlobalParams.MINIMA_BLOCKS_SPEED_CALC)) {
 			MiniNumber minblock = getCascadeNode().getBlockNumber().add(GlobalParams.MINIMA_BLOCKS_SPEED_CALC);
 			if(zNode.getBlockNumber().isLessEqual(minblock)) {
-				//MinimaLogger.log("BlockTree : BLOCK PAST MIN ALLOWED NODE ["+minblock+"].. "+zNode.getTxPow().getBlockNumber()+" "+zNode.getTxPow().getTxPowID());
-				return false;
+				if(!zFromBackup) {
+					MinimaLogger.log("BlockTree : BLOCK PAST MIN ALLOWED NODE ["+minblock+"].. "+zNode.getTxPow().getBlockNumber()+" "+zNode.getTxPow().getTxPowID());
+					return false;
+				}
 			}
 		}
 		
@@ -303,7 +306,7 @@ public class BlockTree {
 		
 		//Are we recursing if we can;t find it - cascade tree needs this..
 		if(zRecurseAlso) {
-			MinimaLogger.log("BLOCKTREE TIP NOT FOUND : Recurse required.. "+zTxPOWID);
+			//MinimaLogger.log("BLOCKTREE TIP NOT FOUND : Recurse required.. "+zTxPOWID);
 			
 			//SLOWER recursive method.. replaced by the fast hashtable
 			NodeAction finder = new NodeAction(zTxPOWID) {

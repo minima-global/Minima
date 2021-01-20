@@ -10,5 +10,5 @@ rm -rf ~/Minima
 rm -rf ~/.minima
 
 #Clone the Minima git dir..
-git clone -b development https://github.com/spartacusrex99/Minima.git
+git clone https://github.com/minima-global/Minima.git
 
