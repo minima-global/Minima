@@ -374,7 +374,7 @@ public class ConsensusBackup extends ConsensusProcessor {
 					TxPoW tpow = trow.getTxPOW();
 					if(tpow.isBlock()) {
 						//Add all the children
-						if(getMainDB().getMainTree().addNode(new BlockTreeNode(tpow))) {
+						if(getMainDB().getMainTree().addNode(new BlockTreeNode(tpow),true)) {
 							getMainDB().addTreeChildren(tpow.getTxPowID());
 						}
 					}

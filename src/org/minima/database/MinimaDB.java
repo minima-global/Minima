@@ -314,7 +314,7 @@ public class MinimaDB {
 			/**
 			 * Only cascade the tree every 100 blocks.. no need to do it EVERY block..
 			 */
-			MiniNumber checkcasc = newtip.getBlockNumber().modulo(new MiniNumber(100));
+			MiniNumber checkcasc = newtip.getBlockNumber().modulo(GlobalParams.MINIMA_CASCADE_FREQUENCY);
 			if(!checkcasc.isEqual(MiniNumber.ZERO)) {
 				return;
 			}
