@@ -85,7 +85,7 @@ public class CONCAT extends MinimaFunction{
 				//Add it..
 				fullstring += scr.toString()+" ";
 			}
-			
+				
 			return new ScriptValue(fullstring.trim());
 		}
 	}

@@ -15,7 +15,7 @@ public class STATE extends MinimaFunction {
 	public Value runFunction(Contract zContract) throws ExecutionException {
 		//Which Output
 		int statenum = zContract.getNumberParam(0, this).getNumber().getAsInt();
-		
+
 		//Work it out
 		return zContract.getState(statenum);
 	}

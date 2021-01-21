@@ -41,7 +41,7 @@ public class SUBSET extends MinimaFunction {
 		
 		}else if(type == ScriptValue.VALUE_SCRIPT) {
 			return new ScriptValue(new String( subs, MiniString.MINIMA_CHARSET ));	
-		
+			
 		}else {
 			throw new ExecutionException("Invaid Value Type in SUBSET "+type+") "+getParameter(2).toString());
 		}

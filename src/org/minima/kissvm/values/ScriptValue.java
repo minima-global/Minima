@@ -13,8 +13,7 @@ public class ScriptValue extends HEXValue {
 	public ScriptValue(String zScript) {
 		//Remove the bracket and space at the beginning and end
 		super(Contract.cleanScript(zScript).getBytes(MiniString.MINIMA_CHARSET));
-		
-		//And store for later
+
 		mScript = new String( getRawData(), MiniString.MINIMA_CHARSET );
 	}
 	

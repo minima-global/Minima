@@ -1,7 +1,7 @@
 package org.minima.tests.kissvm.values;
 
+
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
 
 import org.junit.Test;
 import org.minima.kissvm.values.ScriptValue;

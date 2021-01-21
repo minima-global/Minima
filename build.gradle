@@ -69,3 +69,8 @@ jar {
         attributes 'Main-Class': 'org.minima.Start'
     }
 }
+jar {
+    manifest {
+        attributes 'Main-Class': 'org.minima.Start'
+    }
+}

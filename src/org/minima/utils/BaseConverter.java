@@ -30,6 +30,11 @@ public class BaseConverter {
 		hex = hex.toUpperCase();
 		int len = hex.length();
 	
+		//return empty array for 0 length hex string
+		if(len == 0) {
+			return new byte[0];
+		}
+		
 		//Check that every char is a valid base 16 value..
 		boolean isHex = hex.matches("[0-9A-F]+");
 		if(!isHex) {

@@ -147,9 +147,10 @@ public class FastJavaDB implements TxPowDB {
 				newtable.put(txpid,row);
 				
 			}else {
-				if(GlobalParams.SHORT_CHAIN_DEBUG_MODE) {
+				if(GlobalParams.MINIMA_CASCADE_START_DEPTH.isLess(MiniNumber.TWOFIVESIX)) {
+				//if(GlobalParams.SHORT_CHAIN_DEBUG_MODE) {
 					if(row.getTxPOW().isTransaction() && !row.isInBlock()) {
-						MinimaLogger.log("Transaction NOT in block NOT removed.. "+row);
+						MinimaLogger.log("SHORT CHAIN DEBUG : Transaction NOT in block NOT removed.. "+row);
 						
 						//Add it anyway..
 						newtable.put(txpid,row);

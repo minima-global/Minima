@@ -48,6 +48,7 @@ public class FunctionExpressionTests {
         FunctionExpression fe4 = new FunctionExpression(fINC);
 
         Contract ctr = new Contract("", "", new Witness(), new Transaction(), new ArrayList<>());
+
         assertEquals("should be equal ", "hello world", fe1.getValue(ctr).toString());
         assertEquals("should be equal ", "hello world", Value.getValue("[ HELLO   WORLD]").toString());
         assertEquals("should be equal ", 5, ((NumberValue)fe2.getValue(ctr)).getNumber().getAsInt());

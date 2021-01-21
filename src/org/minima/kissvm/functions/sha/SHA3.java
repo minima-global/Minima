@@ -36,7 +36,7 @@ public class SHA3 extends MinimaFunction {
 		//get the Input Data - Can be HEX or SCRIPT
 		HEXValue hex = (HEXValue)getParameter(1).getValue(zContract);
 		byte[] data = hex.getRawData();
-		
+
 		//Check valid..
 		if ( bitlength>512 || bitlength<160 || (bitlength%32!=0) ) {
 			throw new ExecutionException("Bitlength incompatible with SHA3 "+bitlength);

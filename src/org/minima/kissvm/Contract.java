@@ -11,7 +11,6 @@ import org.minima.kissvm.functions.MinimaFunction;
 import org.minima.kissvm.statements.StatementBlock;
 import org.minima.kissvm.statements.StatementParser;
 import org.minima.kissvm.tokens.Token;
-import org.minima.kissvm.values.BooleanValue;
 import org.minima.kissvm.values.HEXValue;
 import org.minima.kissvm.values.NumberValue;
 import org.minima.kissvm.values.ScriptValue;
@@ -313,11 +312,12 @@ public class Contract {
 				key = "( "+key.trim()+" )";
 			}
 			
-			if(val.getValueType() == ScriptValue.VALUE_SCRIPT) {
-				variables.put(key, "[ "+val.toString()+" ]");
-			}else{
-				variables.put(key, val.toString());
-			}
+			variables.put(key, val.toString());
+//			if(val.getValueType() == ScriptValue.VALUE_SCRIPT) {
+//				variables.put(key, "[ "+val.toString()+" ]");
+//			}else{
+//				variables.put(key, val.toString());
+//			}
 		}
 		
 		return variables;
@@ -418,17 +418,18 @@ public class Contract {
 			
 			//Log it.. 
 			int type = val.getValueType();
-			switch (type)  {
-				case BooleanValue.VALUE_BOOLEAN :
-					varlist += key+" = "+Boolean.toString(val.isTrue()).toUpperCase()+", ";
-				break;
-				case ScriptValue.VALUE_SCRIPT :
-					varlist += key+" = [ "+val+" ], ";
-				break;
-				default:
-					varlist += key+" = "+val+", ";
-				break;
-			}		
+			varlist += key+" = "+val+", ";
+//			switch (type)  {
+//				case BooleanValue.VALUE_BOOLEAN :
+//					varlist += key+" = "+Boolean.toString(val.isTrue()).toUpperCase()+", ";
+//				break;
+//				case ScriptValue.VALUE_SCRIPT : xx
+//					varlist += key+" = [ "+val+" ], ";
+//				break;
+//				default:
+//					varlist += key+" = "+val+", ";
+//				break;
+//			}		
 		}
 		
 		traceLog(varlist+"}");
