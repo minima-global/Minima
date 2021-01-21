@@ -1,11 +1,5 @@
 package org.minima.tests.database.userdb.java;
 
-import org.minima.database.userdb.java.JavaUserDBRow;
-
-import org.minima.objects.Transaction;
-import org.minima.objects.Witness;
-import org.minima.utils.json.JSONObject;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -18,7 +12,10 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.junit.Test;
-import org.junit.internal.ArrayComparisonFailure;
+import org.minima.database.userdb.java.JavaUserDBRow;
+import org.minima.objects.Transaction;
+import org.minima.objects.Witness;
+import org.minima.utils.json.JSONObject;
 
 public class JavaUserDBRowTests {
 

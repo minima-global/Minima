@@ -1,31 +1,18 @@
 package org.minima.tests.kissvm.expressions;
 
-import org.minima.kissvm.expressions.OperatorExpression;
-
-import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniNumber;
-import org.minima.kissvm.Contract;
-import org.minima.kissvm.exceptions.ExecutionException;
-import org.minima.kissvm.expressions.ConstantExpression;
-import org.minima.kissvm.values.Value;
-import org.minima.kissvm.functions.MinimaFunction;
-import org.minima.kissvm.functions.base.CONCAT;
-import org.minima.kissvm.functions.base.LEN;
-import org.minima.kissvm.functions.maths.ABS;
-import org.minima.kissvm.functions.maths.INC;
-import org.minima.kissvm.values.BooleanValue;
-import org.minima.kissvm.values.HEXValue;
-import org.minima.kissvm.values.NumberValue;
-import org.minima.kissvm.values.ScriptValue;
-import org.minima.objects.StateVariable;
-import org.minima.objects.Transaction;
-import org.minima.objects.Witness;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 
 import java.util.ArrayList;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
 import org.junit.Test;
+import org.minima.kissvm.Contract;
+import org.minima.kissvm.exceptions.ExecutionException;
+import org.minima.kissvm.expressions.ConstantExpression;
+import org.minima.kissvm.expressions.OperatorExpression;
+import org.minima.kissvm.values.NumberValue;
+import org.minima.objects.Transaction;
+import org.minima.objects.Witness;
 
 public class OperatorExpressionTests {
 

@@ -364,7 +364,7 @@ public class Contract {
 		mFloatingCoin = zFloating;
 	}
 	
-	public String getState(int zStateNum) throws ExecutionException {
+	public Value getState(int zStateNum) throws ExecutionException {
 		if(!mTransaction.stateExists(zStateNum)) {
 			throw new ExecutionException("State Variable does not exist "+zStateNum);
 		}
@@ -372,8 +372,11 @@ public class Contract {
 		//Get it from the Transaction..
 		String stateval = mTransaction.getStateValue(zStateNum).getValue().toString();
 		
+		//Clean it
+		String clean = cleanScript(stateval);
+		
 		//Clean it..
-		return cleanScript(stateval);
+		return Value.getValue(clean);
 	}
 	
 	public Value getPrevState(int zPrev) throws ExecutionException {
@@ -621,7 +624,7 @@ public class Contract {
 
 //		String RamScript = "let g = [ goodbye ] let t = DYNSTATE ( 0 [hello] ) let tt = DYNSTATE ( 0 0xFFE ) let y  = state(0)";
 
-		String RamScript = "return true";
+		String RamScript = "let x = [return true] let y=sha3(160 x) exec x";
 		
 		//String RamScript = "let t = @SCRIPT let f = @AMOUNT +1 let g = State(1001) + [ sha3(123)]";
 

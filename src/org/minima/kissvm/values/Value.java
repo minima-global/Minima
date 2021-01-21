@@ -50,7 +50,9 @@ public abstract class Value {
 	 */
 	public static Value getValue(String zValue){
 		if(zValue.startsWith("[") && zValue.endsWith("]")) {
-			return new ScriptValue(zValue);
+			//remove the square brackets..
+			String sc = zValue.substring(1,zValue.length()-1);
+			return new ScriptValue(sc);
 			
 		}else if(zValue.startsWith("0x")) {
 			return new HEXValue(zValue);

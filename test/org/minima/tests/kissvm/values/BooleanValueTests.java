@@ -1,15 +1,12 @@
 package org.minima.tests.kissvm.values;
 
-import org.minima.kissvm.values.BooleanValue;
-
-import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniNumber;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
+import org.minima.kissvm.values.BooleanValue;
+import org.minima.objects.base.MiniNumber;
 
 public class BooleanValueTests {
 

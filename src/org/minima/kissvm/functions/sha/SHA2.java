@@ -22,17 +22,15 @@ public class SHA2 extends MinimaFunction {
 	 */
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
-		//get the Input Data
-		byte[] data = zContract.getHEXParam(0, this).getRawData();
-		
+		//get the Input Data - HEX or String
+		HEXValue hex = (HEXValue)getParameter(0).getValue(zContract);
+		byte[] data = hex.getRawData();
+
 		//Perform the SHA2 Operation
 		byte[] ans = Crypto.getInstance().hashSHA2(data);
 		
-		//Ensure a 32 byte hash
-		MiniData hash = new MiniData(ans);
-		
 		//return the New HEXValue
-		return new HEXValue(hash.getData());
+		return new HEXValue(ans);
 	}
 	
 	@Override

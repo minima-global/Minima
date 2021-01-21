@@ -1,12 +1,11 @@
 package org.minima.tests.database.coin.java;
 
-import java.util.ArrayList;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import org.junit.Test;
 
+import java.util.ArrayList;
+
+import org.junit.Test;
 import org.minima.database.coindb.CoinDBRow;
 import org.minima.database.coindb.java.FastCoinDB;
 import org.minima.objects.Address;

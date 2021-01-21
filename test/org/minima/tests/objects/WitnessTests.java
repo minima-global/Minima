@@ -3,7 +3,6 @@ package org.minima.tests.objects;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
-import org.minima.objects.Coin;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;

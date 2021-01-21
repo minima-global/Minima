@@ -6,6 +6,7 @@ import org.minima.kissvm.functions.MinimaFunction;
 import org.minima.kissvm.values.HEXValue;
 import org.minima.kissvm.values.ScriptValue;
 import org.minima.kissvm.values.Value;
+import org.minima.objects.base.MiniString;
 
 /**
  * Works on Scripts and HEX
@@ -39,8 +40,8 @@ public class SUBSET extends MinimaFunction {
 			return new HEXValue(subs);	
 		
 		}else if(type == ScriptValue.VALUE_SCRIPT) {
-			return new ScriptValue(subs);	
-		
+			return new ScriptValue(new String( subs, MiniString.MINIMA_CHARSET ));	
+			
 		}else {
 			throw new ExecutionException("Invaid Value Type in SUBSET "+type+") "+getParameter(2).toString());
 		}

@@ -1,9 +1,5 @@
 package org.minima.tests.objects;
 
-import org.minima.objects.Address;
-import org.minima.objects.base.MiniData;
-import org.minima.utils.Crypto;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -18,17 +14,19 @@ import java.io.InputStream;
 
 import org.junit.Test;
 import org.junit.internal.ArrayComparisonFailure;
+import org.minima.objects.Address;
+import org.minima.objects.base.MiniData;
 
 public class AddressTests {
 
     @Test
     public void testAddress() {
         MiniData c = new MiniData();
-        MiniData j = new MiniData("#FFFF");
-        MiniData n = new MiniData("#FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
+        MiniData j = new MiniData("0xFFFF");
+        MiniData n = new MiniData("0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
         Address ad = new Address();
-        Address a = new Address("#f0f0");
-        Address abc = new Address("#f0f0");
+        Address a = new Address("0xf0f0");
+        Address abc = new Address("0xf0f0");
         assertNotNull("should not be null", a);
         // System.out.println("address value " + a);
         a.getAddressData();
@@ -50,7 +48,7 @@ public class AddressTests {
     @Test
     public void testWriteAndReadDataStream() {
         try {
-            MiniData i = new MiniData("#f0f0");
+            MiniData i = new MiniData("0xfff0f0");
             Address a = new Address(i);
 
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -75,7 +73,7 @@ public class AddressTests {
     @Test
     public void testMakeMinimaAddress() {
 
-        MiniData i = new MiniData("#ffffffffffffffffffffffffffffffffffffff");
+        MiniData i = new MiniData("0xffffffffffffffffffffffffffffffffffffffff");
 
         String mxAddress = Address.makeMinimaAddress(i);
         MiniData j = Address.convertMinimaAddress(mxAddress);
@@ -88,7 +86,7 @@ public class AddressTests {
         }
 
         MiniData q = new MiniData(
-                "#fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+                "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         // byte[] data1 = q.getData();
 
         // //First hash it to add some checksum digits..
@@ -106,10 +104,9 @@ public class AddressTests {
             assertFalse("test should not fail:" + failure.getMessage(), true);
         }
 
-        MiniData l = new MiniData("#fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
-        MiniData o = new MiniData("#ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
-        MiniData v = new MiniData(
-                "#ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+        MiniData l = new MiniData("0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+        MiniData o = new MiniData("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+        MiniData v = new MiniData("0xffffffffffffffffffffffffffffffffffffffff");
 
         String mxAddress3 = Address.makeMinimaAddress(l);
         String mxAddress4 = Address.makeMinimaAddress(v);

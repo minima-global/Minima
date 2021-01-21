@@ -1,18 +1,13 @@
 package org.minima.tests.utils;
 
-import org.minima.utils.digest.WinternitzOTSVerify;
-import org.minima.utils.digest.WinternitzOTSignature;
-import org.minima.utils.digest.KeccakDigest;
-
 import static org.junit.Assert.assertArrayEquals;
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 import org.junit.internal.ArrayComparisonFailure;
-import org.minima.utils.BaseConverter;
+import org.minima.utils.digest.KeccakDigest;
+import org.minima.utils.digest.WinternitzOTSVerify;
+import org.minima.utils.digest.WinternitzOTSignature;
 
 /**
  * Winternitz Test

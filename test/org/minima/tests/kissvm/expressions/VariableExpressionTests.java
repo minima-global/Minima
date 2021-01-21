@@ -1,9 +1,14 @@
 package org.minima.tests.kissvm.expressions;
 
-import org.minima.kissvm.expressions.VariableExpression;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 
+import java.util.ArrayList;
+
+import org.junit.Test;
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
+import org.minima.kissvm.expressions.VariableExpression;
 import org.minima.kissvm.values.BooleanValue;
 import org.minima.kissvm.values.HEXValue;
 import org.minima.kissvm.values.NumberValue;
@@ -12,12 +17,6 @@ import org.minima.objects.StateVariable;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
-
-import java.util.ArrayList;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
-import org.junit.Test;
 
 public class VariableExpressionTests {
 

@@ -13,7 +13,7 @@ public class PREVSTATE extends MinimaFunction {
 	
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
-		//Which Output - must be from 0-255
+		//Which Output
 		int statenum = zContract.getNumberParam(0, this).getNumber().getAsInt();
 				
 		//Work it out

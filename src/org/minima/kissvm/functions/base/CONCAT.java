@@ -83,10 +83,10 @@ public class CONCAT extends MinimaFunction{
 				ScriptValue scr = (ScriptValue)vv;
 				
 				//Add it..
-				fullstring += scr.getScriptOnly()+" ";
+				fullstring += scr.toString()+" ";
 			}
-			
-			return new ScriptValue("[ "+fullstring.trim()+" ]");
+				
+			return new ScriptValue(fullstring.trim());
 		}
 	}
 	

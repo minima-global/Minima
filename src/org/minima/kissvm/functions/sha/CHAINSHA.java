@@ -20,7 +20,7 @@ public class CHAINSHA extends MinimaFunction {
 		HEXValue val  = zContract.getHEXParam(0, this);
 		MiniData data = val.getMiniData();
 
-		//Get the 32 byte hash data chain + 1 byte for left right 
+		//Get the hash data chain + 1 byte for left right 
 		HEXValue chain = (HEXValue) getParameter(1).getValue(zContract);
 		
 		//Bit Strength

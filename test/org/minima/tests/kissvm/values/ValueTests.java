@@ -1,22 +1,20 @@
 package org.minima.tests.kissvm.values;
 
-import org.minima.kissvm.values.Value;
-
-import org.minima.kissvm.values.BooleanValue;
-import org.minima.kissvm.values.HEXValue;
-import org.minima.kissvm.values.NumberValue;
-import org.minima.kissvm.values.ScriptValue;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 
 import org.junit.Test;
+import org.minima.kissvm.values.BooleanValue;
+import org.minima.kissvm.values.HEXValue;
+import org.minima.kissvm.values.NumberValue;
+import org.minima.kissvm.values.ScriptValue;
+import org.minima.kissvm.values.Value;
 
 public class ValueTests {
 
     @Test
     public void testGettersAndSetters() {
-        assertEquals("should be equal ", new ScriptValue("[return true]").toString(), Value.getValue("[ RETURN TRUE ]").toString());
+        assertEquals("should be equal ", new ScriptValue("return true").toString(), Value.getValue("[ RETURN TRUE ]").toString());
         assertEquals("should be equal ", new HEXValue("0xFFFF").toString(), Value.getValue("0xFFFF").toString());
         assertEquals("should be equal ", BooleanValue.TRUE, Value.getValue("TRUE"));
         assertEquals("should be equal ", BooleanValue.FALSE, Value.getValue("FALSE"));

@@ -1,22 +1,14 @@
 package org.minima.tests.database.txpowtree;
 
-import java.math.BigInteger;
-
-import org.minima.GlobalParams;
-import org.minima.objects.TxPoW;
-import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniInteger;
-import org.minima.objects.base.MiniNumber;
-import org.minima.database.MinimaDB;
-import org.minima.database.txpowtree.BlockTree;
-import org.minima.database.txpowtree.BlockTreeNode;
-
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
+import org.minima.database.txpowtree.BlockTree;
+import org.minima.database.txpowtree.BlockTreeNode;
+import org.minima.objects.TxPoW;
+import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniNumber;
 
 public class BlockTreeTests {
 

@@ -1,26 +1,12 @@
 package org.minima.tests.kissvm.expressions;
 
-import org.minima.kissvm.expressions.ExpressionParser;
-
-import org.minima.objects.base.MiniNumber;
-import org.minima.kissvm.Contract;
-import org.minima.kissvm.exceptions.ExecutionException;
-import org.minima.kissvm.statements.StatementBlock;
-import org.minima.kissvm.statements.StatementParser;
-import org.minima.kissvm.values.BooleanValue;
-import org.minima.kissvm.values.HEXValue;
-import org.minima.kissvm.values.NumberValue;
-import org.minima.kissvm.values.ScriptValue;
-import org.minima.objects.StateVariable;
-import org.minima.objects.Transaction;
-import org.minima.objects.Witness;
-
-import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
 import org.junit.Test;
+import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.MinimaParseException;
+import org.minima.kissvm.statements.StatementBlock;
+import org.minima.kissvm.statements.StatementParser;
 import org.minima.kissvm.tokens.Token;
 
 public class ExpressionParserTests {

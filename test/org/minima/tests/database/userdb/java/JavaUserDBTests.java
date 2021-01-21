@@ -1,27 +1,5 @@
 package org.minima.tests.database.userdb.java;
 
-import org.minima.database.MinimaDB;
-
-import org.minima.database.userdb.UserDBRow;
-
-import org.minima.database.userdb.java.JavaUserDB;
-import org.minima.database.userdb.java.reltxpow;
-
-import org.minima.objects.Address;
-import org.minima.objects.Coin;
-import org.minima.objects.keys.MultiKey;
-import org.minima.objects.StateVariable;
-import org.minima.objects.Transaction;
-import org.minima.objects.TxPoW;
-
-import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniNumber;
-import org.minima.objects.base.MiniString;
-
-import org.minima.objects.proofs.TokenProof;
-
-import org.minima.utils.json.JSONObject;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -34,12 +12,25 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-
 import java.util.ArrayList;
 import java.util.Hashtable;
 
 import org.junit.Test;
-import org.junit.internal.ArrayComparisonFailure;
+import org.minima.database.MinimaDB;
+import org.minima.database.userdb.UserDBRow;
+import org.minima.database.userdb.java.JavaUserDB;
+import org.minima.database.userdb.java.reltxpow;
+import org.minima.objects.Address;
+import org.minima.objects.Coin;
+import org.minima.objects.StateVariable;
+import org.minima.objects.Transaction;
+import org.minima.objects.TxPoW;
+import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniNumber;
+import org.minima.objects.base.MiniString;
+import org.minima.objects.keys.MultiKey;
+import org.minima.objects.proofs.TokenProof;
+import org.minima.utils.json.JSONObject;
 
 public class JavaUserDBTests {
 
