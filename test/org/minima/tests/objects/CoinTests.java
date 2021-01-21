@@ -24,9 +24,9 @@ public class CoinTests {
         MiniData md = Coin.COINID_OUTPUT;
         MiniData md3 = Coin.TOKENID_CREATE;
         MiniData md2 = Coin.MINIMA_TOKENID;
-        MiniData coinId = new MiniData("#fff");
-        MiniData coinId2 = new MiniData("#f0f0");
-        MiniData coinAddress = new MiniData("#ffffffff");
+        MiniData coinId = new MiniData("0xfff");
+        MiniData coinId2 = new MiniData("0xf0f0");
+        MiniData coinAddress = new MiniData("0xffffffff");
         MiniNumber two = MiniNumber.TWO;
         MiniNumber twelve = MiniNumber.TWELVE;
         MiniData tokenId = new MiniData("123");
@@ -54,8 +54,8 @@ public class CoinTests {
     @Test
     public void testReadAndWriteDataStream() {
         try {
-            MiniData coinId = new MiniData("#fff");
-            MiniData coinAddress = new MiniData("#ffffffff");
+            MiniData coinId = new MiniData("0xfff");
+            MiniData coinAddress = new MiniData("0xffffffff");
             MiniNumber twelve = MiniNumber.TWELVE;
             MiniData tokenId = new MiniData("123");
 
@@ -83,8 +83,8 @@ public class CoinTests {
     @Test
     public void testStaticReadAndWriteDataStream() {
         try {
-            MiniData coinId = new MiniData("#fff");
-            MiniData coinAddress = new MiniData("#ffffffff");
+            MiniData coinId = new MiniData("0xfff");
+            MiniData coinAddress = new MiniData("0xffffffff");
             MiniNumber twelve = MiniNumber.TWELVE;
             MiniData tokenId = new MiniData("123");
 

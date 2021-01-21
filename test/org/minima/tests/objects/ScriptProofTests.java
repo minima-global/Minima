@@ -18,9 +18,9 @@ public class ScriptProofTests {
     @Test
     public void testScriptProof() {
         String str = "test-string";
-        // MiniData proofValue = new MiniData("#ffffffffffffffffffffffffff");
-        MiniData j = new MiniData("#ED300A3D6C12BCFC24BB919C1F15E07F26A3A0C0");
-        MiniData n = new MiniData("#FFFF");
+        // MiniData proofValue = new MiniData("0xffffffffffffffffffffffffff");
+        MiniData j = new MiniData("0xED300A3D6C12BCFC24BB919C1F15E07F26A3A0C0");
+        MiniData n = new MiniData("0xFFFF");
         String proofString = j.toString();
         ScriptProof sp;
         ScriptProof sp2;

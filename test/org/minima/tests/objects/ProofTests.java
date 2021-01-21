@@ -22,7 +22,7 @@ public class ProofTests {
 
     @Test
     public void testProof() throws Exception {
-        MiniData proofValue = new MiniData("#ffffffff");
+        MiniData proofValue = new MiniData("0xffffffff");
         Proof p = new Proof();
         System.out.println("Proof created values - " + p.getData());
         p.setData(proofValue);
@@ -48,7 +48,7 @@ public class ProofTests {
         p.setHashBitLength(6);
         p.getChainSHAProof();
         System.out.println("Sha Chain Proof length values - " + p.getChainSHAProof());
-        MiniData proofValue2 = new MiniData("#ffffffffffffffffffffffffff");
+        MiniData proofValue2 = new MiniData("0xffffffffffffffffffffffffff");
         p.setData(proofValue2);
         MiniData chainsha2 = p.getChainSHAProof();
         p.setProof(chainsha2);
@@ -65,7 +65,7 @@ public class ProofTests {
     public void testStaticReadAndWriteDataStream() {
         try {
 
-            MiniData proofValue = new MiniData("#ffffffff");
+            MiniData proofValue = new MiniData("0xffffffff");
             MiniByte j = new MiniByte(8);
 
             Proof p = new Proof();
