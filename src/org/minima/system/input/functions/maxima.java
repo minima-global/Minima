@@ -9,7 +9,7 @@ public class maxima extends CommandFunction{
 	public maxima() {
 		super("maxima");
 		
-		setHelp("[info|new|add [maximauser]|list|send [to] [message]]", "Maxima functions..", "");
+		setHelp("[info|new|add [pubkey@host]|list|send [pubkey] [message]]", "Maxima functions..", "");
 	}
 	
 	@Override

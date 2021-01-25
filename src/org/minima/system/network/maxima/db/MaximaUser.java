@@ -49,6 +49,10 @@ public class MaximaUser implements Streamable {
 		mHost = new MiniString(zHost);
 	}
 	
+	public String getCompleteAddress() {
+		return getPublicKey()+"@"+getHost();
+	}
+	
 	public long getTimeStamp() {
 		return mTimeStamp.getAsLong();
 	}
