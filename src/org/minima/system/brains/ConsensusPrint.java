@@ -621,24 +621,28 @@ public class ConsensusPrint extends ConsensusProcessor {
 				}else {
 					TokenProof td = getMainDB().getUserDB().getTokenDetail(tok);
 					
+					//CHECK NOT NULL!
+					MiniNumber scfactor = MiniNumber.ONE;
+					if(td != null) {
+						scfactor = td.getScaleFactor();
+					}
+					
 					//Now work out the actual amounts..
 					MiniNumber tot_conf     = (MiniNumber) jobj.get("confirmed");
-					MiniNumber tot_scconf   = tot_conf.mult(td.getScaleFactor());
+					MiniNumber tot_scconf   = tot_conf.mult(scfactor);
 					MiniNumber tot_unconf   = (MiniNumber) jobj.get("unconfirmed");
-					MiniNumber tot_scunconf = tot_unconf.mult(td.getScaleFactor());
+					MiniNumber tot_scunconf = tot_unconf.mult(scfactor);
 					
 					//And re-add
 					jobj.put("confirmed", tot_scconf.toString());
 					jobj.put("unconfirmed", tot_scunconf.toString());
-//					jobj.put("script", td.getTokenScript().toString());
-//					jobj.put("total", td.getTotalTokens().toString());
 					
 					//MEMPOOL
 					MiniNumber memp = mempool.get(tok.to0xString());
 					if(memp == null) {
 						memp = MiniNumber.ZERO;
 					}
-					jobj.put("mempool", memp.mult(td.getScaleFactor()).toString());
+					jobj.put("mempool", memp.mult(scfactor).toString());
 					
 					//SIMPLE SENDS
 					MiniNumber tot_simple = MiniNumber.ZERO;
@@ -652,7 +656,7 @@ public class ConsensusPrint extends ConsensusProcessor {
 							tot_simple = tot_simple.add(confc.getAmount());	
 						}
 					}
-					jobj.put("sendable", tot_simple.mult(td.getScaleFactor()).toString());
+					jobj.put("sendable", tot_simple.mult(scfactor).toString());
 				}
 				
 				//add it to the mix
