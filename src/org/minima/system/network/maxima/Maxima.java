@@ -8,6 +8,8 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.keys.MultiKey;
 import org.minima.system.Main;
 import org.minima.system.input.InputHandler;
+import org.minima.system.network.maxima.db.MaximaDB;
+import org.minima.system.network.maxima.db.MaximaUser;
 import org.minima.system.network.rpc.RPCClient;
 import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;

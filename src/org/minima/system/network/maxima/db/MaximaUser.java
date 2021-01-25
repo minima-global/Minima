@@ -1,4 +1,4 @@
-package org.minima.system.network.maxima;
+package org.minima.system.network.maxima.db;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
