@@ -597,8 +597,7 @@ public class ConsensusNet extends ConsensusProcessor {
 			//First check that this is WITHIN acceptable linits .. so not too far ahead of the current chain..
 			MiniNumber timetip   = getMainDB().getMainTree().getChainTip().getTxPow().getBlockNumber();
 			MiniNumber timeblock = txpow.getBlockNumber();
-			MiniNumber diff = timeblock.sub(timetip); 
-			if(diff.isMore(GlobalParams.MINIMA_CASCADE_START_DEPTH)) {
+			if(timeblock.sub(timetip).isMore(GlobalParams.MINIMA_CASCADE_START_DEPTH)) {
 				//TOO FAR!!
 				MinimaLogger.log("NET Transaction TOO FAR IN THE FUTURE.. new:"+timeblock+" / current:"+timetip);
 				return;
