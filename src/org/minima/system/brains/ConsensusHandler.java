@@ -827,6 +827,13 @@ public class ConsensusHandler extends MessageProcessor {
 	 * @param zJSON
 	 */
 	public void PostDAPPJSONMessage(JSONObject zJSON) {
+		if(Main.getMainHandler().getNetworkHandler().getDAPPManager() == null) {
+			//ERROR - calling too soon..
+			MinimaLogger.log("ERROR - NULL DAPPManager to send message to.. "+zJSON);
+			return;
+		}
+		
+		//Notify DAPPS of this message
 		Message wsmsg = new Message(DAPPManager.DAPP_MINIDAPP_POSTALL).addObject("message", zJSON);
 		Main.getMainHandler().getNetworkHandler().getDAPPManager().PostMessage(wsmsg);
 	}
