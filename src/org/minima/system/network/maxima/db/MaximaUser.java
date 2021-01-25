@@ -4,54 +4,59 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+import org.minima.objects.base.MiniNumber;
+import org.minima.objects.base.MiniString;
 import org.minima.utils.Streamable;
 
 public class MaximaUser implements Streamable {
 
-	public String mPublicKey = new String();
+	public MiniString mPublicKey;
 	
-	public String mHost = new String();
+	public MiniString mHost;
 	
-	public long mTimeStamp = 0;
+	public MiniNumber mTimeStamp = MiniNumber.ZERO;
 	
 	public MaximaUser(String zPubkey, String zHost, long zTimeStamp) {
 		setPublicKey(zPubkey);
 		setHost(zHost);
-		mTimeStamp = zTimeStamp;
+		setTimeStamp(zTimeStamp);
 	}
 	
 	public String getPublicKey() {
-		return mPublicKey;
+		return mPublicKey.toString();
 	}
 	
 	public void setPublicKey(String zPubKey) {
-		mPublicKey = zPubKey;
+		mPublicKey = new MiniString(zPubKey);
 	}
 	
 	public String getHost() {
-		return mHost;
+		return mHost.toString();
 	}
 	
 	public void setHost(String zHost) {
-		mHost = zHost;
+		mHost = new MiniString(zHost);
 	}
 	
 	public long getTimeStamp() {
-		return mTimeStamp;
+		return mTimeStamp.getAsLong();
 	}
 	
 	public void setTimeStamp(long zTimeStamp) {
-		mTimeStamp = zTimeStamp;
+		mTimeStamp = new MiniNumber(zTimeStamp);
 	}
 
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
-		
+		mPublicKey.writeDataStream(zOut);
+		mHost.writeDataStream(zOut);
+		mTimeStamp.writeDataStream(zOut);
 	}
 
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
-		// TODO Auto-generated method stub
-		
+		mPublicKey = MiniString.ReadFromStream(zIn);
+		mHost = MiniString.ReadFromStream(zIn);
+		mTimeStamp = MiniNumber.ReadFromStream(zIn);
 	}
 }

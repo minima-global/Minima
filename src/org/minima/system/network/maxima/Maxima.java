@@ -166,8 +166,10 @@ public class Maxima extends MessageProcessor {
 		}else if(zMessage.getMessageType().equals(MAXIMA_REMOVECONTACT)) {
 		
 		}else if(zMessage.getMessageType().equals(MAXIMA_LISTCONTACTS)) {
-			
+			JSONObject resp = InputHandler.getResponseJSON(zMessage);
 		
+			
+			
 		
 		}else if(zMessage.getMessageType().equals(MAXIMA_RECMSG)) {
 			String datastr	= zMessage.getString("message");

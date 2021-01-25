@@ -20,9 +20,33 @@ public class MaximaDB {
 		return null;
 	}
 	
+	public MaximaUser findUser(String zPublicKey) {
+		for(MaximaUser mx : mUsers) {
+			if(mx.getPublicKey().equalsIgnoreCase(zPublicKey)) {
+				return mx;
+			}
+		}
+		
+		return null;
+	}
+	
 	public void addUser(MaximaUser zUser) {
 		mUsers.add(zUser);
 	}
 	
+	public ArrayList<MaximaUser> getAllUsers(){
+		return mUsers;
+	}
 	
+	public void saveDB() {
+		int len = mUsers.size();
+		for(MaximaUser mx : mUsers) {
+			
+		}
+	}
+	
+	public void loadDB() {
+		
+		
+	}
 }
