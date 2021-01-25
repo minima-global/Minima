@@ -505,7 +505,14 @@ public class ConsensusPrint extends ConsensusProcessor {
 							jobj.put("tokenid", tokid);
 							jobj.put("token", "Minima");
 						}else {
-							jobj = td.toJSON();
+							//Check is a valid Token..
+							if(td == null) {
+								//VARY BAD - you have coins for a token you don't know..
+								jobj.put("tokenid", tokid);
+								jobj.put("token", "ERROR_UNKNOWN_TOKEN");
+							}else {
+								jobj = td.toJSON();
+							}
 						}
 						
 						//Default Values
