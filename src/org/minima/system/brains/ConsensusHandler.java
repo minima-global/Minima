@@ -246,12 +246,11 @@ public class ConsensusHandler extends MessageProcessor {
 					//Ok - could be from a different branch block.. 
 					MinimaLogger.log("WARNING Invalid TXPOW (Requested..) : "+txpow.getBlockNumber()+" "+txpow.getTxPowID()); 
 				}else {
-					//Not requested invalid transaction..
-					MinimaLogger.log("ERROR Invalid TXPOW (UN-Requested..) : "+txpow.getBlockNumber()+" "+txpow.getTxPowID()); 
-					
-					//Remove it from the DB..
-					getMainDB().getTxPowDB().removeTxPOW(txpow.getTxPowID());
-					return;	
+					//Not requested invalid transaction.. could be from a branch chain though..
+					MinimaLogger.log("WARNING Invalid TXPOW (UN-Requested..) : "+txpow.getBlockNumber()+" "+txpow.getTxPowID()); 
+					//Remove it from the DB.. FOR NOW KEEP
+					//getMainDB().getTxPowDB().removeTxPOW(txpow.getTxPowID());
+					//return;	
 				}
 			}
 			
