@@ -7,6 +7,7 @@ import java.io.IOException;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
 import org.minima.utils.Streamable;
+import org.minima.utils.json.JSONObject;
 
 public class MaximaUser implements Streamable {
 
@@ -20,6 +21,16 @@ public class MaximaUser implements Streamable {
 		setPublicKey(zPubkey);
 		setHost(zHost);
 		setTimeStamp(zTimeStamp);
+	}
+	
+	public JSONObject toJSON() {
+		JSONObject json = new JSONObject();
+		
+		json.put("publickey", mPublicKey.toString());
+		json.put("host",mHost.toString());
+		json.put("timestamp", mTimeStamp.getAsLong());
+		
+		return json;
 	}
 	
 	public String getPublicKey() {

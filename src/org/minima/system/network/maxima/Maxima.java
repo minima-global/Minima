@@ -3,6 +3,7 @@ package org.minima.system.network.maxima;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 
 import org.minima.objects.base.MiniData;
 import org.minima.objects.keys.MultiKey;
@@ -13,6 +14,7 @@ import org.minima.system.network.maxima.db.MaximaUser;
 import org.minima.system.network.rpc.RPCClient;
 import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
+import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.json.parser.JSONParser;
 import org.minima.utils.messages.Message;
@@ -115,8 +117,21 @@ public class Maxima extends MessageProcessor {
 				PostMessage(sender);
 				return;
 			
+			}else if(func.equals("add")) {
+				Message sender = new Message(MAXIMA_ADDCONTACT);
+				sender.addString("maximauser", zMessage.getString("maximauser"));
+				InputHandler.addResponseMesage(sender, zMessage);
+				PostMessage(sender);
+				return;
+			
 			}else if(func.equals("info")) {
 				Message info = new Message(MAXIMA_INFO);
+				InputHandler.addResponseMesage(info, zMessage);
+				PostMessage(info);
+				return;
+			
+			}else if(func.equals("list")) {
+				Message info = new Message(MAXIMA_LISTCONTACTS);
 				InputHandler.addResponseMesage(info, zMessage);
 				PostMessage(info);
 				return;
@@ -159,17 +174,25 @@ public class Maxima extends MessageProcessor {
 			}else {
 				//Update Host and timestamp
 				maxuser.setHost(host);
-//				maxuser.
-				
 			}
+			
+			InputHandler.getResponseJSON(zMessage).put("user", maxuser.toJSON());
+			InputHandler.endResponse(zMessage, true, "User added");
 			
 		}else if(zMessage.getMessageType().equals(MAXIMA_REMOVECONTACT)) {
 		
 		}else if(zMessage.getMessageType().equals(MAXIMA_LISTCONTACTS)) {
 			JSONObject resp = InputHandler.getResponseJSON(zMessage);
 		
+			JSONArray allusers = new JSONArray();
+			ArrayList<MaximaUser> users = mMaximaDB.getAllUsers();
+			for(MaximaUser mx : users) {
+				allusers.add(mx.toJSON());
+			}
 			
-			
+			resp.put("total", allusers.size());
+			resp.put("contacts", allusers);
+			InputHandler.endResponse(zMessage, true, "");
 		
 		}else if(zMessage.getMessageType().equals(MAXIMA_RECMSG)) {
 			String datastr	= zMessage.getString("message");
@@ -216,7 +239,7 @@ public class Maxima extends MessageProcessor {
 			MiniData senddata = new MiniData(message.getBytes("UTF-8"));
 			
 			//For now  random.. 
-			MiniData sig     = mIdentity.sign(senddata);
+			//MiniData sig     = mIdentity.sign(senddata);
 			
 			//Construct a JSON Object..
 			JSONObject msg = new JSONObject();
@@ -229,7 +252,7 @@ public class Maxima extends MessageProcessor {
 				JSONObject data = new JSONObject();
 				data.put("to", to);
 				data.put("port", "minima");
-				data.put("data", to);
+				data.put("data", message);
 			
 			//Add the data
 			msg.put("payload", data);
@@ -238,7 +261,7 @@ public class Maxima extends MessageProcessor {
 			
 			
 			//The Signature of the Data
-			msg.put("signature", sig.to0xString());
+			//msg.put("signature", sig.to0xString());
 			
 			//Encode it..
 			String enc = URLEncoder.encode(new String(msg.toString()),"UTF-8").trim();
