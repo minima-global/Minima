@@ -29,5 +29,6 @@ RUN touch -a -m -t 202011010000.00 minima.jar
 RUN md5sum *.jar
 RUN ls -l *.jar
 RUN stat minima.jar
-CMD ["java", "-jar", "minima.jar"]
+ENTRYPOINT ["java", "-jar", "minima.jar"]
+CMD [""]
 

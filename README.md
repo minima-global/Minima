@@ -99,7 +99,7 @@ docker build -t minima:latest .
 
 Note: if running on ARM (Linux or Apple Silicon) please us the following command instead:
 ```
-docker build -t minima:latest -f Dockerfile.armv8 .
+docker build -t minima:latest -f Dockerfile.arm64v8 .
 ```
 
 Start the image with default settings:
