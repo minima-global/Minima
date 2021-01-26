@@ -17,10 +17,10 @@ public class MaximaUser implements Streamable {
 	
 	public MiniNumber mTimeStamp = MiniNumber.ZERO;
 	
-	public MaximaUser(String zPubkey, String zHost, long zTimeStamp) {
+	public MaximaUser(String zPubkey, String zHost) {
 		setPublicKey(zPubkey);
 		setHost(zHost);
-		setTimeStamp(zTimeStamp);
+		setTimeStamp(System.currentTimeMillis());
 	}
 	
 	public JSONObject toJSON() {
@@ -47,6 +47,7 @@ public class MaximaUser implements Streamable {
 	
 	public void setHost(String zHost) {
 		mHost = new MiniString(zHost);
+		setTimeStamp(System.currentTimeMillis());
 	}
 	
 	public String getCompleteAddress() {

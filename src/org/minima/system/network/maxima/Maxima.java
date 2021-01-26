@@ -6,6 +6,7 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 
 import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniString;
 import org.minima.objects.keys.MultiKey;
 import org.minima.system.Main;
 import org.minima.system.input.InputHandler;
@@ -78,6 +79,25 @@ public class Maxima extends MessageProcessor {
 	public String getHostOnly(String zFullIdentity) {
 		int index = zFullIdentity.indexOf("@");
 		return zFullIdentity.substring(index+1);
+	}
+	
+	private MaximaUser addUpdateUser(String zFrom) {
+		String ident   = getIdentOnly(zFrom);
+		String host    = getHostOnly(zFrom);
+		long timestamp = System.currentTimeMillis();
+		
+		//Does that user allready exist
+		MaximaUser maxuser = mMaximaDB.getUser(ident);
+		if(maxuser == null) {
+			//Add a new User
+			maxuser = new MaximaUser(ident, host);
+			mMaximaDB.addUser(maxuser);
+		}else {
+			//Update Host and timestamp
+			maxuser.setHost(host);
+		}
+		
+		return maxuser;
 	}
 	
 	@Override
@@ -161,20 +181,8 @@ public class Maxima extends MessageProcessor {
 		}else if(zMessage.getMessageType().equals(MAXIMA_ADDCONTACT)) {
 			String user = zMessage.getString("maximauser");
 			
-			String ident   = getIdentOnly(user);
-			String host    = getHostOnly(user);
-			long timestamp = System.currentTimeMillis();
-			
 			//Does that user allready exist
-			MaximaUser maxuser = mMaximaDB.getUser(ident);
-			if(maxuser == null) {
-				//Add a new User
-				maxuser = new MaximaUser(ident, host, timestamp);
-				mMaximaDB.addUser(maxuser);
-			}else {
-				//Update Host and timestamp
-				maxuser.setHost(host);
-			}
+			MaximaUser maxuser = addUpdateUser(user);
 			
 			InputHandler.getResponseJSON(zMessage).put("user", maxuser.toJSON());
 			InputHandler.endResponse(zMessage, true, "User added");
@@ -201,44 +209,48 @@ public class Maxima extends MessageProcessor {
 			
 			//Convert Message to JSON
 			JSONObject msg = (JSONObject) new JSONParser().parse(json);
-			MinimaLogger.log("MAXIMA REC : "+msg);
 			
 			//Get the payload..
+			String version  = (String) msg.get("version");
+			String from     = (String) msg.get("from");
+			String to       = (String) msg.get("to");
+			
 			JSONObject payload = (JSONObject) msg.get("payload");
-			MinimaLogger.log("PAYLOAD : "+payload.toString());
+			MiniData paydata   = new MiniData(payload.toString().getBytes("UTF-8"));
 			
+			String sig       = (String) msg.get("signature");
+			MiniData sigdata = new MiniData(sig);
+
+			//Who is it from..
+			String pubkey       = getIdentOnly(from);
+			MiniData pubkeydata = new MiniData(pubkey);
 			
-			
-			InputHandler.endResponse(zMessage, true, "Valid Message");
-			
-//			//Who sent it..
-//			String sender = (String) msg.get("from");
-//			MiniData pubkey = new MiniData(sender);
-//			
-//			//Check the Signature
-//			String sentmsg = (String) msg.get("data");
-//			MiniData msgdata    = new MiniData( sentmsg.getBytes("UTF-8") );
-//			
-//			String sig      = (String) msg.get("signature");
-//			MiniData sigdat = new MiniData(sig);
-//			
-//			MultiKey ver = new MultiKey(pubkey);
-//			boolean valid = ver.verify(msgdata, sigdat);
-//			if(!valid) {
-//				MinimaLogger.log("INVALID MAXIMA : "+msg);
-//				InputHandler.endResponse(zMessage, false, "Invalid Message");
-//			}else {
-//				MinimaLogger.log("MAXIMA "+msg.get("from")+" > "+msg.get("data"));
-//				InputHandler.endResponse(zMessage, true, "Valid Message");
-//			}
+			MultiKey ver = new MultiKey(pubkeydata);
+			boolean valid = ver.verify(paydata, sigdata);
+
+			if(!valid) {
+				MinimaLogger.log("INVALID MAXIMA : "+msg);
+				InputHandler.endResponse(zMessage, false, "Invalid Message");
+			}else {
+				MinimaLogger.log("MAXIMA "+msg.get("from")+" @ "+payload.get("port")+" > "+payload.get("data"));
+				InputHandler.endResponse(zMessage, true, "Valid Message");
+			}
 			
 		}else if(zMessage.getMessageType().equals(MAXIMA_SENDMSG)) {
 			//Get the details..
-			String to = zMessage.getString("to");
+			String to_port = zMessage.getString("to");
+			String to      = new String(to_port);
+			
+			//Is there a Port..
+			String port = "minima";
+			int portind = to.indexOf(":");
+			if(portind != -1) {
+				to = to_port.substring(0,portind); 
+				port = to_port.substring(portind+1);
+			}
 			
 			//Get the maximauser
 			MaximaUser user = mMaximaDB.getUser(to);
-			
 			if(user==null) {
 				InputHandler.endResponse(zMessage, false, "User not found");
 				return;
@@ -252,26 +264,25 @@ public class Maxima extends MessageProcessor {
 			
 			//Construct a JSON Object..
 			JSONObject msg = new JSONObject();
-			msg.put("version", 1);
-			msg.put("from", mIdentity.getPublicKey().to0xString());
-			msg.put("host", getMaximaHost());
+			msg.put("version", "1.0");
+			msg.put("from", getMaximaFullIdentity());
 			msg.put("to", user.getCompleteAddress());
 			
 				//The content
 				JSONObject data = new JSONObject();
 				data.put("to", to);
-				data.put("port", "minima");
+				data.put("port", port);
 				data.put("data", message);
 			
 			//Add the data
 			msg.put("payload", data);
 				
 			//The Signature of the Data
-//			MiniData senddata = new MiniData(message.getBytes("UTF-8"));
-//			
-//			//Sign the message
-//			MiniData sig     = mIdentity.sign(senddata);
-			//msg.put("signature", sig.to0xString());
+			MiniData senddata = new MiniData(data.toString().getBytes("UTF-8"));
+
+			//Sign the message
+			MiniData sig     = mIdentity.sign(senddata);
+			msg.put("signature", sig.to0xString());
 			
 			//Encode it..
 			String enc = URLEncoder.encode(new String(msg.toString()),"UTF-8").trim();
