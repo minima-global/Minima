@@ -19,6 +19,7 @@ RUN stat build/libs/minima-all.jar
 #RUN tar -cf minimajar.tar build/libs/minima-all.jar
 
 FROM adoptopenjdk/openjdk11:x86_64-alpine-jdk-11.0.9_11-slim as production-stage
+RUN apk --no-cache add curl
 COPY --from=build-stage /usr/src/minima/build/libs/minima-all.jar /opt/minima/minima.jar
 #COPY --from=build-stage /usr/src/minima/minimajar.tar /opt/minima/minimajar.tar
 WORKDIR /opt/minima

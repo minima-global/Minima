@@ -113,8 +113,15 @@ Requirements:
 - Docker
 - jq
 
+Build local Docker image:
+```
+docker build -t minima:latest . 
+```
+
 Start a 3 nodes private Minima network using Docker:
+```
 ./scripts/start_docker_network_private_net.sh
+```
 
 By default the network is isolated. You can run curl commands using dockere. See script source code for details.
 

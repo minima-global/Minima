@@ -9,9 +9,8 @@
 DOCKER_IMAGE="minima:latest"
 # you can change docker minima network name here
 DOCKER_NET="minima-e2e-testnet"
-# you can set JDK HOME here
-# you can change common minima command line params here
-# you can give node specific command line args here
+# you can change default delay between nodes start here (default 5 s)
+DOCKER_WAIT_START=5
 # defaults: all nodes connect in star topology to node 1 (we do not use docker dns as minima does not yet support it)
 # docker assign new ip to node 1, so we start node 1 early and look up using jq its IP address
 DOCKER_MINIMA_START_NODE_01="-private -clean"
@@ -44,17 +43,17 @@ docker create --name minima-node-03 --network $DOCKER_NET $DOCKER_IMAGE $DOCKER_
 # start all instances
 #echo "Starting node 01..."
 #docker start minima-node-01
-sleep 5
+sleep $DOCKER_WAIT_START
 echo "Starting node 02..."
 docker start minima-node-02
-sleep 5
+sleep $DOCKER_WAIT_START
 echo "Starting node 03..."
 docker start minima-node-03
-sleep 5
+sleep $DOCKER_WAIT_START
 
 # node01 should see two connections
 NODE01_CONNECTIONS=`docker exec minima-node-01 curl -s $DOCKER_NODE01_IP:9002/status | jq '.response.connections'`
-if [ $NODE01_CONNECTIONS -eq 0 ] ; then
+if [[ "$NODE01_CONNECTIONS" -eq 0 ]] ; then
     echo " *** ERROR *** node01 has 0 connections.";
     exit;
 fi
