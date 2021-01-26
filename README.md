@@ -106,10 +106,17 @@ Start the image with default settings:
 ```
 docker run minima:latest
 ```
-=======
-The reports can be found at
-./build/reports/tests/test/index.html
-./build/reports/jacoco/test/html/index.html
+
+### End to end testing
+
+Requirements: 
+- Docker
+- jq
+
+Start a 3 nodes private Minima network using Docker:
+./scripts/start_docker_network_private_net.sh
+
+By default the network is isolated. You can run curl commands using dockere. See script source code for details.
 
 ### Demo Session
 
