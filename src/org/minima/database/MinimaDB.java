@@ -1194,14 +1194,16 @@ public class MinimaDB {
 					MinimaLogger.log("Invalid TXPOW found. (leaving.. could be in other branch) "+txp.getTxPowID());
 				}
 			}else {
-				//A block with no transaction.. make sure within range..
-				if(!txp.getBlockNumber().sub(txpow.getBlockNumber()).abs().isMoreEqual(MiniNumber.EIGHT)) {
-					//Valid so added
-					txncounter = txncounter.increment();
-						
-					//Add it..
-					txpow.addBlockTxPOW(txp);		
-				}
+				//ONLY ADD VALID TRANSACTIONS - the mmr is the checker for previous inclusion
+				//and a non-transaction has no mmr data to chcek
+//				//A block with no transaction.. make sure within range..
+//				if(!txp.getBlockNumber().sub(txpow.getBlockNumber()).abs().isMoreEqual(MiniNumber.EIGHT)) {
+//					//Valid so added
+//					txncounter = txncounter.increment();
+//						
+//					//Add it..
+//					txpow.addBlockTxPOW(txp);		
+//				}
 			}
 		}
 		
