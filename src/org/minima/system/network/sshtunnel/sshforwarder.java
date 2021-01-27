@@ -37,6 +37,14 @@ public class sshforwarder implements Runnable {
 		return mRunning;
 	}
 	
+	public boolean isConnected() {
+		if(!mRunning || mSession == null) {
+			return false;
+		}
+		
+		return mSession.isConnected();
+	}
+	
 	public void stop() {
 		if(!mRunning) {
 			return;
@@ -126,6 +134,8 @@ public class sshforwarder implements Runnable {
 		    	
 	    	}catch(Exception ex) {
 		       MinimaLogger.log(ex);
+		       
+		       try {Thread.sleep(10000);} catch (InterruptedException e) {}
 		    }
 		}
 		

@@ -21,6 +21,29 @@ public class sshtunnel extends CommandFunction{
 		//The details
 		String func = zInput[1];
 		
+		int len = zInput.length;
+		
+		//The extra data
+		String username     = "";
+		String password     = "";
+		String host         = "";
+		int remotep         = -1;
+		
+		//Cycle through..
+		for(int i=1;i<len;i++) {
+			String param = zInput[i];
+			
+			if(param.startsWith("username:")) {
+				username = param.substring(9).trim();
+			}else if(param.startsWith("password:")) {
+				password = param.substring(9).trim();
+			}else if(param.startsWith("host:")) {
+				host = param.substring(5).trim();
+			}else if(param.startsWith("remoteport:")) {
+				remotep =  Integer.parseInt(param.substring(11).trim());
+			}
+		}
+		
 		//Is this more than info or new
 		if(func.equals("start")) {
 			ssh = getResponseMessage(SSHTunnel.SSHTUNNEL_START);
@@ -32,7 +55,17 @@ public class sshtunnel extends CommandFunction{
 			ssh = getResponseMessage(SSHTunnel.SSHTUNNEL_INFO);
 			
 		}else if(func.equals("params")) {
+			//Check that all values were specified
+			if(username.equals("") || password.equals("") || host.equals("") || remotep == -1) {
+				getResponseStream().endStatus(false, "Incorrect parameters. MUST specify all.");
+				return;
+			}
 			
+			ssh = getResponseMessage(SSHTunnel.SSHTUNNEL_PARAMS);
+			ssh.addString("username", username);
+			ssh.addString("password", password);
+			ssh.addString("host", host);
+			ssh.addInteger("remoteport", remotep);
 		}
 		
 		//Send it to the miner..
@@ -41,7 +74,6 @@ public class sshtunnel extends CommandFunction{
 	
 	@Override
 	public CommandFunction getNewFunction() {
-		// TODO Auto-generated method stub
 		return new sshtunnel();
 	}
 }
