@@ -59,7 +59,7 @@ public class SSHTunnel extends MessageProcessor {
 			});
 			
 			//Load the setting from the database
-			
+			//..
 			
 		}else if(zMessage.getMessageType().equals(SSHTUNNEL_INFO)){
 			//Print the details
@@ -100,6 +100,8 @@ public class SSHTunnel extends MessageProcessor {
 			
 			Thread tt = new Thread(mSSH);
 			tt.start();
+			
+			InputHandler.endResponse(zMessage, true, "SSH tunnel started");
 			
 		}else if(zMessage.getMessageType().equals(SSHTUNNEL_STOP)){
 			//Stop if Running..
