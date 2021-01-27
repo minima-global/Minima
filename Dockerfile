@@ -30,6 +30,8 @@ RUN touch -a -m -t 202011010000.00 minima.jar
 RUN md5sum *.jar
 RUN ls -l *.jar
 RUN stat minima.jar
+# 9001 minima protocol 9002 REST 9003 WebSocket 9004 MiniDapp Server 
+EXPOSE 9001 9002 9003 9004 
 ENTRYPOINT ["java", "-jar", "minima.jar"]
 CMD [""]
 
