@@ -38,6 +38,7 @@ import org.minima.system.input.functions.scripts;
 import org.minima.system.input.functions.search;
 import org.minima.system.input.functions.send;
 import org.minima.system.input.functions.sign;
+import org.minima.system.input.functions.sshtunnel;
 import org.minima.system.input.functions.status;
 import org.minima.system.input.functions.test;
 import org.minima.system.input.functions.tokencreate;
@@ -85,7 +86,7 @@ public abstract class CommandFunction {
 			new newscript(), new printdb(), new printtree(), new quit(),new reconnect(), new runscript(), new cleanscript(), 
 			new send(), new status(), new test(), new trace(), new tutorial(), new history(), new topblock(),
 			new tokens(), new tokencreate(), new tokenvalidate(), new mineblock(),
-			new maxima(),
+			new maxima(), new sshtunnel(),
 			new exportkey(), new importkey(), new exportcoin(), new importcoin(), new search(),
 			new chainsha(), new keepcoin(), new unkeepcoin(), new scripts(), new network(), new minidapps(),
 			new txncreate(), new txndelete(), new txninput(), new txnlist(), new txnauto(),

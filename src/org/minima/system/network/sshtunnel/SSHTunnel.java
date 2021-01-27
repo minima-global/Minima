@@ -1,23 +1,38 @@
 package org.minima.system.network.sshtunnel;
 
+import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageProcessor;
 
-public class tunnel extends MessageProcessor {
+public class SSHTunnel extends MessageProcessor {
 
 	public static String SSHTUNNEL_INIT   = "SSHTUNNEL_INIT";
 	public static String SSHTUNNEL_INFO   = "SSHTUNNEL_INFO";
 	public static String SSHTUNNEL_PARAMS = "SSHTUNNEL_PARAMS";
 	public static String SSHTUNNEL_START  = "SSHTUNNEL_START";
 	public static String SSHTUNNEL_STOP   = "SSHTUNNEL_STOP";
+
+	//The SSH Tunnel manager
+	sshforwarder mSSH;
 	
-	public tunnel() {
+	JSONObject mParams;
+	
+	public SSHTunnel() {
 		super("SSH_TUNNEL");
 	
 		//Initialise..
 		PostMessage(SSHTUNNEL_INIT);
 	}
 
+	public void stop() {
+		//Stop if Running..
+		if(mSSH != null) {
+			mSSH.stop();
+		}
+		
+		stopMessageProcessor();
+	}
+	
 	@Override
 	protected void processMessage(Message zMessage) throws Exception {
 		
@@ -30,12 +45,17 @@ public class tunnel extends MessageProcessor {
 		}else if(zMessage.getMessageType().equals(SSHTUNNEL_PARAMS)){
 			//Set the SSH Tunnel parameters
 			
+			
 		}else if(zMessage.getMessageType().equals(SSHTUNNEL_START)){
 			//Start up
+//			Thread tt = new Thread(mSSH);
+//			tt.start();
 			
 		}else if(zMessage.getMessageType().equals(SSHTUNNEL_STOP)){
-			//Stop it..
-			
+			//Stop if Running..
+			if(mSSH != null) {
+				mSSH.stop();
+			}
 		}
 		
 	}

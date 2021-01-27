@@ -16,6 +16,7 @@ import org.minima.system.network.maxima.Maxima;
 import org.minima.system.network.minidapps.DAPPManager;
 import org.minima.system.network.minidapps.websocket.WebSocketManager;
 import org.minima.system.network.rpc.RPCServer;
+import org.minima.system.network.sshtunnel.SSHTunnel;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.messages.Message;
@@ -66,6 +67,11 @@ public class NetworkHandler extends MessageProcessor {
 	 * MAXIMA..
 	 */
 	Maxima mMaxima;
+	
+	/**
+	 * SSH Tunnel
+	 */
+	SSHTunnel mTunnel;
 	
 	/**
 	 * All the network channels..
@@ -203,6 +209,10 @@ public class NetworkHandler extends MessageProcessor {
 		return mMaxima;
 	}
 	
+	public SSHTunnel getSSHTunnel() {
+		return mTunnel;
+	}
+	
 	public void setGlobalReconnect(boolean zGlobalReconnect) {
 		mGlobalReconnect = zGlobalReconnect;
 	}
@@ -240,6 +250,9 @@ public class NetworkHandler extends MessageProcessor {
 			//Start Maxima
 			mMaxima = new Maxima();
 			
+			//Start the SSH Tunnel Manager
+			mTunnel = new SSHTunnel();
+			
 		}else if(zMessage.isMessageType(NETWORK_SHUTDOWN)) {
 			//Stop the server
 			try {mServer.stop();}catch(Exception exc) {
@@ -263,6 +276,11 @@ public class NetworkHandler extends MessageProcessor {
 			
 			//Stop Maxima
 			try {mMaxima.stop();}catch(Exception exc) {
+				MinimaLogger.log(exc);
+			}
+			
+			//Stop SSH Tunnel
+			try {mTunnel.stop();}catch(Exception exc) {
 				MinimaLogger.log(exc);
 			}
 			
