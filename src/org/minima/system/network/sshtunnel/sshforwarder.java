@@ -70,19 +70,6 @@ public class sshforwarder implements Runnable {
 	public void run() {
 		mRunning = true;
 		
-		//Some logging..
-		JSch.setLogger(new Logger() {
-			@Override
-			public void log(int zLevel, String zLog) {
-				MinimaLogger.log("SSH TUNNEL : "+zLevel+") "+zLog);
-			}
-			
-			@Override
-			public boolean isEnabled(int zLevel) {
-				return true;
-			}
-		});
-		
 		//Base Object
 		mSSH = new JSch();
 		

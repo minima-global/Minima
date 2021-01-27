@@ -1,9 +1,13 @@
 package org.minima.system.network.sshtunnel;
 
 import org.minima.system.input.InputHandler;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageProcessor;
+
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.Logger;
 
 public class SSHTunnel extends MessageProcessor {
 
@@ -17,6 +21,8 @@ public class SSHTunnel extends MessageProcessor {
 	sshforwarder mSSH = null;
 	
 	JSONObject mParams = new JSONObject();
+	
+	boolean mLogging = true;
 	
 	public SSHTunnel() {
 		super("SSH_TUNNEL");
@@ -39,7 +45,21 @@ public class SSHTunnel extends MessageProcessor {
 	protected void processMessage(Message zMessage) throws Exception {
 		
 		if(zMessage.getMessageType().equals(SSHTUNNEL_INIT)) {
+			//Some logging..
+			JSch.setLogger(new Logger() {
+				@Override
+				public void log(int zLevel, String zLog) {
+					MinimaLogger.log("SSH TUNNEL : "+zLevel+") "+zLog);
+				}
+				
+				@Override
+				public boolean isEnabled(int zLevel) {
+					return mLogging;
+				}
+			});
+			
 			//Load the setting from the database
+			
 			
 		}else if(zMessage.getMessageType().equals(SSHTUNNEL_INFO)){
 			//Print the details
