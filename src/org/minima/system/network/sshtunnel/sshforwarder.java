@@ -1,5 +1,6 @@
 package org.minima.system.network.sshtunnel;
 
+import org.minima.system.Main;
 import org.minima.utils.MinimaLogger;
 
 import com.jcraft.jsch.JSch;
@@ -60,6 +61,13 @@ public class sshforwarder implements Runnable {
 			} catch (JSchException e) {
 				MinimaLogger.log(e);
 			}
+			
+			try {
+				//Stop port forwarding
+				mSession.delPortForwardingR(mRemotePort+1);
+			} catch (JSchException e) {
+				MinimaLogger.log(e);
+			}
     		
 			//Shutdown..
 			mSession.disconnect();
@@ -99,23 +107,35 @@ public class sshforwarder implements Runnable {
 			return;
 		}
 		
+		//Get the 2 ports..
+		int minimaport = Main.getMainHandler().getNetworkHandler().getMinimaPort();
+		int maximaport = Main.getMainHandler().getNetworkHandler().getMaximaPort();
+		
+		//Now set the correct IP
+		Main.getMainHandler().getNetworkHandler().sshHardSetIP(true, mHost, mRemotePort);
+		
 		//Now stay connected..
 		while(isRunning()) {
 		    try {
 		    	//Connect!..with tmeout
 		    	mSession.connect(30000);
 		       
-		    	//Port forward
-		    	mSession.setPortForwardingR(mRemotePort, "127.0.0.1", 9001);
+		    	//Port forward - Minima
+		    	mSession.setPortForwardingR(mRemotePort, "127.0.0.1", minimaport);
 		    	
-		    	MinimaLogger.log("SSH Tunnel started..");
+		    	//Port forward - Maxima
+		    	mSession.setPortForwardingR(mRemotePort+1, "127.0.0.1", maximaport);
+		    	
+		    	//Log it..
+		    	MinimaLogger.log("SSH Tunnel STARTED Minima @ "+mHost+":"+mRemotePort);
+		    	MinimaLogger.log("SSH Tunnel STARTED Maxima @ "+mHost+":"+(mRemotePort+1));
 		    	
 		    	while(mSession.isConnected()) {
 		    		Thread.sleep(1000);
 		    	}
 		    	
 		    	if(isRunning()) {
-			    	MinimaLogger.log("SSH Tunnel stopped.. reconnecting in 10s");
+			    	MinimaLogger.log("SSH Tunnel connection lost.. reconnecting in 10s");
 			    	Thread.sleep(10000);
 		    	}
 		    	
@@ -126,7 +146,12 @@ public class sshforwarder implements Runnable {
 		    }
 		}
 		
-		MinimaLogger.log("SSH Tunnel FINISHED");
+		//Now set the correct IP
+		Main.getMainHandler().getNetworkHandler().sshHardSetIP(false, "", minimaport);
+				
+		mSession = null;
+		
+		MinimaLogger.log("SSH Tunnel STOPPED");
 	}
 
 }

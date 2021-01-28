@@ -232,7 +232,10 @@ public class Maxima extends MessageProcessor {
 				MinimaLogger.log("INVALID MAXIMA : "+msg);
 				InputHandler.endResponse(zMessage, false, "Invalid Message");
 			}else {
-				MinimaLogger.log("MAXIMA "+msg.get("from")+" @ "+payload.get("port")+" > "+payload.get("data"));
+				//Add the USER..
+				MaximaUser maxuser = addUpdateUser(from);
+				
+				MinimaLogger.log("MAXIMA "+from+" @ "+payload.get("port")+" > "+payload.get("data"));
 				InputHandler.endResponse(zMessage, true, "Valid Message");
 			}
 			

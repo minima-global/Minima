@@ -10,7 +10,7 @@ public class sshtunnel extends CommandFunction{
 	public sshtunnel() {
 		super("sshtunnel");
 		
-		setHelp("[start|stop|info|params]", "Create an ssh tunnel to an ssh server for an external Maxima IP", "");
+		setHelp("[start|stop|info|logging [on|off]|params]", "Create an ssh tunnel to an ssh server for an external Maxima IP", "");
 	}
 	
 	@Override
@@ -21,29 +21,6 @@ public class sshtunnel extends CommandFunction{
 		//The details
 		String func = zInput[1];
 		
-		int len = zInput.length;
-		
-		//The extra data
-		String username     = "";
-		String password     = "";
-		String host         = "";
-		int remotep         = -1;
-		
-		//Cycle through..
-		for(int i=1;i<len;i++) {
-			String param = zInput[i];
-			
-			if(param.startsWith("username:")) {
-				username = param.substring(9).trim();
-			}else if(param.startsWith("password:")) {
-				password = param.substring(9).trim();
-			}else if(param.startsWith("host:")) {
-				host = param.substring(5).trim();
-			}else if(param.startsWith("remoteport:")) {
-				remotep =  Integer.parseInt(param.substring(11).trim());
-			}
-		}
-		
 		//Is this more than info or new
 		if(func.equals("start")) {
 			ssh = getResponseMessage(SSHTunnel.SSHTUNNEL_START);
@@ -53,8 +30,40 @@ public class sshtunnel extends CommandFunction{
 			
 		}else if(func.equals("info")) {
 			ssh = getResponseMessage(SSHTunnel.SSHTUNNEL_INFO);
+		
+		}else if(func.equals("logging")) {
+			ssh = getResponseMessage(SSHTunnel.SSHTUNNEL_LOGGING);
+		
+			if(zInput[2].equals("on")) {
+				ssh.addBoolean("logging", true);
+			}else {
+				ssh.addBoolean("logging", false);
+			}
 			
 		}else if(func.equals("params")) {
+			int len = zInput.length;
+			
+			//The extra data
+			String username     = "";
+			String password     = "";
+			String host         = "";
+			int remotep         = -1;
+			
+			//Cycle through..
+			for(int i=1;i<len;i++) {
+				String param = zInput[i];
+				
+				if(param.startsWith("username:")) {
+					username = param.substring(9).trim();
+				}else if(param.startsWith("password:")) {
+					password = param.substring(9).trim();
+				}else if(param.startsWith("host:")) {
+					host = param.substring(5).trim();
+				}else if(param.startsWith("remoteport:")) {
+					remotep =  Integer.parseInt(param.substring(11).trim());
+				}
+			}
+			
 			//Check that all values were specified
 			if(username.equals("") || password.equals("") || host.equals("") || remotep == -1) {
 				getResponseStream().endStatus(false, "Incorrect parameters. MUST specify all.");

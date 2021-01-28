@@ -158,7 +158,7 @@ public class MaximaHandler implements Runnable {
 			out.flush(); // flush character output stream buffer
 			
 		} catch (Exception ioe) {
-			MinimaLogger.log("RPCHANDLER : "+ioe+" "+firstline);
+			MinimaLogger.log("MAXIMAHANDLER : "+ioe+" "+firstline);
 			ioe.printStackTrace();
 			
 		} finally {

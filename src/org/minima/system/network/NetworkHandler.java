@@ -92,8 +92,10 @@ public class NetworkHandler extends MessageProcessor {
 	/**
 	 * HARD SET THE HOST
 	 */
-	boolean mHardSet = false;
-	String mHost     = "";
+	boolean mHardSet   = false;
+	String mHost       = "";
+	int mRemoteMinima  = -10;
+	int mRemoteMaxima  = -11;
 	
 	/**
 	 * The Main Minima port - all other ports are added to this one..
@@ -119,6 +121,22 @@ public class NetworkHandler extends MessageProcessor {
 		
 		//The base port all the other ports are derived from
 		mBasePort = zMainPort;
+		mRemoteMinima = mBasePort;
+		mRemoteMaxima = mBasePort+4;
+	}
+	
+	public void sshHardSetIP(boolean zHARD, String zIP, int zRemoteBase) {
+		if(zHARD) {
+			mHardSet = true;
+			mHost    = zIP;
+			mRemoteMinima = zRemoteBase;
+			mRemoteMaxima = zRemoteBase+1;
+		}else {
+			mHardSet = false;
+			mRemoteMinima = mBasePort;
+			mRemoteMaxima = mBasePort+4;
+			calculateHostIP();
+		}
 	}
 	
 	public String getBaseHost() {
@@ -130,6 +148,9 @@ public class NetworkHandler extends MessageProcessor {
 	}
 	
 	public int getMinimaPort() {
+		if(mHardSet) {
+			return mRemoteMinima;
+		}
 		return mBasePort;
 	}
 	
@@ -146,6 +167,9 @@ public class NetworkHandler extends MessageProcessor {
 	}
 	
 	public int getMaximaPort() {
+		if(mHardSet) {
+			return mRemoteMaxima;
+		}
 		return mBasePort+4;
 	}
 	

@@ -11,18 +11,19 @@ import com.jcraft.jsch.Logger;
 
 public class SSHTunnel extends MessageProcessor {
 
-	public static String SSHTUNNEL_INIT   = "SSHTUNNEL_INIT";
-	public static String SSHTUNNEL_INFO   = "SSHTUNNEL_INFO";
-	public static String SSHTUNNEL_PARAMS = "SSHTUNNEL_PARAMS";
-	public static String SSHTUNNEL_START  = "SSHTUNNEL_START";
-	public static String SSHTUNNEL_STOP   = "SSHTUNNEL_STOP";
+	public static String SSHTUNNEL_INIT    = "SSHTUNNEL_INIT";
+	public static String SSHTUNNEL_INFO    = "SSHTUNNEL_INFO";
+	public static String SSHTUNNEL_LOGGING = "SSHTUNNEL_LOGGING";
+	public static String SSHTUNNEL_PARAMS  = "SSHTUNNEL_PARAMS";
+	public static String SSHTUNNEL_START   = "SSHTUNNEL_START";
+	public static String SSHTUNNEL_STOP    = "SSHTUNNEL_STOP";
 
 	//The SSH Tunnel manager
 	sshforwarder mSSH = null;
 	
 	JSONObject mParams = new JSONObject();
 	
-	boolean mLogging = true;
+	boolean mLogging = false;
 	
 	public SSHTunnel() {
 		super("SSH_TUNNEL");
@@ -60,10 +61,20 @@ public class SSHTunnel extends MessageProcessor {
 			
 			//Load the setting from the database
 			//..
+		
+		}else if(zMessage.getMessageType().equals(SSHTUNNEL_LOGGING)){
+			mLogging = zMessage.getBoolean("logging");
+			
+			if(mLogging) {
+				InputHandler.endResponse(zMessage, true, "SSH Logging ENABLED");
+			}else {
+				InputHandler.endResponse(zMessage, true, "SSH Logging DISABLED");
+			}
 			
 		}else if(zMessage.getMessageType().equals(SSHTUNNEL_INFO)){
 			//Print the details
 			InputHandler.getResponseJSON(zMessage).put("params",mParams);
+			InputHandler.getResponseJSON(zMessage).put("logging",mLogging);
 			
 			if(mSSH!= null) {
 				InputHandler.getResponseJSON(zMessage).put("connected", mSSH.isConnected());
@@ -84,7 +95,7 @@ public class SSHTunnel extends MessageProcessor {
 			mParams.put("username", username);
 			mParams.put("password", password);
 			mParams.put("host", host);
-			mParams.put("remoteport", ""+remote);
+			mParams.put("remoteport", remote);
 			
 			InputHandler.getResponseJSON(zMessage).put("params",mParams);
 			InputHandler.endResponse(zMessage, true, "SSH Tunnel Parameters set");
@@ -93,11 +104,10 @@ public class SSHTunnel extends MessageProcessor {
 			String host = (String) mParams.get("host");
 			String user = (String) mParams.get("username");
 			String pass = (String) mParams.get("password");
-			int remotep = Integer.parseInt((String) mParams.get("remoteport"));
+			int remotep = (int) mParams.get("remoteport");
 			
 			//Start up
 			mSSH = new sshforwarder(host, 22, user,pass,false, remotep);
-			
 			Thread tt = new Thread(mSSH);
 			tt.start();
 			
@@ -115,4 +125,19 @@ public class SSHTunnel extends MessageProcessor {
 		
 	}
 
+	public static void main(String[] zArgs) {
+		JSONObject json = new JSONObject();
+		
+		json.put("hello", 1);
+		json.put("bool", true);
+		
+		System.out.println(json);
+		
+		int t = (int) json.get("hello");
+		boolean bb = (boolean) json.get("bool");
+		
+		System.out.println(t+" "+bb);
+		
+	}
+	
 }
