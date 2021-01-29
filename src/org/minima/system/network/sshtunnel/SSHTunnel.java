@@ -1,5 +1,9 @@
 package org.minima.system.network.sshtunnel;
 
+import java.io.File;
+
+import org.minima.system.Main;
+import org.minima.system.brains.BackupManager;
 import org.minima.system.input.InputHandler;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
@@ -11,17 +15,21 @@ import com.jcraft.jsch.Logger;
 
 public class SSHTunnel extends MessageProcessor {
 
-	public static String SSHTUNNEL_INIT    = "SSHTUNNEL_INIT";
+	public static String SSHTUNNEL_INIT     = "SSHTUNNEL_INIT";
+	public static String SSHTUNNEL_SHUTDOWN = "SSHTUNNEL_SHUTDOWN";
+	
 	public static String SSHTUNNEL_INFO    = "SSHTUNNEL_INFO";
 	public static String SSHTUNNEL_LOGGING = "SSHTUNNEL_LOGGING";
 	public static String SSHTUNNEL_PARAMS  = "SSHTUNNEL_PARAMS";
+	public static String SSHTUNNEL_CLEAR   = "SSHTUNNEL_CLEAR";
+	
 	public static String SSHTUNNEL_START   = "SSHTUNNEL_START";
 	public static String SSHTUNNEL_STOP    = "SSHTUNNEL_STOP";
 
 	//The SSH Tunnel manager
 	sshforwarder mSSH = null;
 	
-	JSONObject mParams = new JSONObject();
+	TunnelDB mTunnelDB;
 	
 	boolean mLogging = false;
 	
@@ -33,13 +41,7 @@ public class SSHTunnel extends MessageProcessor {
 	}
 
 	public void stop() {
-		//Stop if Running..
-		if(mSSH != null) {
-			mSSH.stop();
-			mSSH = null;
-		}
-		
-		stopMessageProcessor();
+		PostMessage(SSHTUNNEL_SHUTDOWN);
 	}
 	
 	@Override
@@ -59,9 +61,35 @@ public class SSHTunnel extends MessageProcessor {
 				}
 			});
 			
+			//New DB
+			mTunnelDB = new TunnelDB();
+			
 			//Load the setting from the database
-			//..
+			BackupManager bk = Main.getMainHandler().getBackupManager();
+			File tunnel = new File(bk.getSSHTunnelFolder(),"tunnel.db");
+			if(tunnel.exists()) {
+				mTunnelDB.loadDB(tunnel);
+			}
 		
+		}else if(zMessage.getMessageType().equals(SSHTUNNEL_SHUTDOWN)){
+			//Stop if Running..
+			if(mSSH != null) {
+				mSSH.stop();
+				mSSH = null;
+			}
+			
+			//Save the DB
+			BackupManager bk = Main.getMainHandler().getBackupManager();
+			File tunnel = new File(bk.getSSHTunnelFolder(),"tunnel.db");
+			mTunnelDB.saveDB(tunnel);
+			
+			//Stop this..
+			stopMessageProcessor();
+		
+		}else if(zMessage.getMessageType().equals(SSHTUNNEL_CLEAR)){
+			mTunnelDB.clean();
+			InputHandler.endResponse(zMessage, true, "SSH params cleared");
+
 		}else if(zMessage.getMessageType().equals(SSHTUNNEL_LOGGING)){
 			mLogging = zMessage.getBoolean("logging");
 			
@@ -73,7 +101,7 @@ public class SSHTunnel extends MessageProcessor {
 			
 		}else if(zMessage.getMessageType().equals(SSHTUNNEL_INFO)){
 			//Print the details
-			InputHandler.getResponseJSON(zMessage).put("params",mParams);
+			InputHandler.getResponseJSON(zMessage).put("params",mTunnelDB.getParams());
 			InputHandler.getResponseJSON(zMessage).put("logging",mLogging);
 			
 			if(mSSH!= null) {
@@ -88,26 +116,32 @@ public class SSHTunnel extends MessageProcessor {
 			//Set the SSH Tunnel parameters
 			String username = zMessage.getString("username");
 			String password = zMessage.getString("password");
-			String host     =  zMessage.getString("host");
+			String host     = zMessage.getString("host");
 			int remote      = zMessage.getInteger("remoteport");
-					
-			//do it..
-			mParams.put("username", username);
-			mParams.put("password", password);
-			mParams.put("host", host);
-			mParams.put("remoteport", remote);
+		
+			//Get the parameters
+			JSONObject params = mTunnelDB.getParams();
 			
-			InputHandler.getResponseJSON(zMessage).put("params",mParams);
+			//do it..
+			params.put("username", username);
+			params.put("password", password);
+			params.put("host", host);
+			params.put("remoteport", remote);
+			
+			InputHandler.getResponseJSON(zMessage).put("params",params);
 			InputHandler.endResponse(zMessage, true, "SSH Tunnel Parameters set");
 			
 		}else if(zMessage.getMessageType().equals(SSHTUNNEL_START)){
-			String host = (String) mParams.get("host");
-			String user = (String) mParams.get("username");
-			String pass = (String) mParams.get("password");
-			int remotep = (int) mParams.get("remoteport");
+			//Get the parameters
+			JSONObject params = mTunnelDB.getParams();
+			
+			String host = (String) params.get("host");
+			String user = (String) params.get("username");
+			String pass = (String) params.get("password");
+			long remotep = (long) params.get("remoteport");
 			
 			//Start up
-			mSSH = new sshforwarder(host, 22, user,pass,false, remotep);
+			mSSH = new sshforwarder(host, 22, user,pass,false, (int)remotep);
 			Thread tt = new Thread(mSSH);
 			tt.start();
 			

@@ -1,7 +1,6 @@
 package org.minima.system.input.functions;
 
 import org.minima.system.input.CommandFunction;
-import org.minima.system.network.maxima.Maxima;
 import org.minima.system.network.sshtunnel.SSHTunnel;
 import org.minima.utils.messages.Message;
 
@@ -10,7 +9,7 @@ public class sshtunnel extends CommandFunction{
 	public sshtunnel() {
 		super("sshtunnel");
 		
-		setHelp("[start|stop|info|logging [on|off]|params]", "Create an ssh tunnel to an ssh server for an external Maxima IP", "");
+		setHelp("[start|stop|clear|info|logging [on|off]|params]", "Create an ssh tunnel to an ssh server for an external Maxima IP", "");
 	}
 	
 	@Override
@@ -30,6 +29,9 @@ public class sshtunnel extends CommandFunction{
 			
 		}else if(func.equals("info")) {
 			ssh = getResponseMessage(SSHTunnel.SSHTUNNEL_INFO);
+		
+		}else if(func.equals("clear")) {
+			ssh = getResponseMessage(SSHTunnel.SSHTUNNEL_CLEAR);
 		
 		}else if(func.equals("logging")) {
 			ssh = getResponseMessage(SSHTunnel.SSHTUNNEL_LOGGING);

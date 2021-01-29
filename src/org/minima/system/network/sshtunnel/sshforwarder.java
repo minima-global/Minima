@@ -5,7 +5,6 @@ import org.minima.utils.MinimaLogger;
 
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.Logger;
 import com.jcraft.jsch.Session;
 
 public class sshforwarder implements Runnable {

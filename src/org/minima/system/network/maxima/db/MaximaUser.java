@@ -3,6 +3,7 @@ package org.minima.system.network.maxima.db;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.Date;
 
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
@@ -17,9 +18,6 @@ public class MaximaUser implements Streamable {
 	
 	public MiniNumber mTimeStamp = MiniNumber.ZERO;
 	
-	/**
-	 * For reading from a Stream
-	 */
 	public MaximaUser() {}
 
 	public MaximaUser(String zPubkey, String zHost) {
@@ -33,7 +31,7 @@ public class MaximaUser implements Streamable {
 		
 		json.put("publickey", mPublicKey.toString());
 		json.put("host",mHost.toString());
-		json.put("timestamp", mTimeStamp.getAsLong());
+		json.put("timestamp", new Date(mTimeStamp.getAsLong()));
 		
 		return json;
 	}
