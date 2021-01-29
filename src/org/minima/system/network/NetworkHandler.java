@@ -125,8 +125,11 @@ public class NetworkHandler extends MessageProcessor {
 			mLocalHost    	  = zHost;
 		}
 		
+		//Starts local
+		mIsRemoteOn = false;
+		
 		//The base port all the other ports are derived from
-		mBasePort = zMainPort;
+		mBasePort   = zMainPort;
 		mRemoteMinima = mBasePort;
 		mRemoteMaxima = mBasePort+4;
 	}

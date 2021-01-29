@@ -1,5 +1,6 @@
 package org.minima.system.network.maxima;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
@@ -9,6 +10,7 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniString;
 import org.minima.objects.keys.MultiKey;
 import org.minima.system.Main;
+import org.minima.system.brains.BackupManager;
 import org.minima.system.input.InputHandler;
 import org.minima.system.network.maxima.db.MaximaDB;
 import org.minima.system.network.maxima.db.MaximaUser;
@@ -24,6 +26,7 @@ import org.minima.utils.messages.MessageProcessor;
 public class Maxima extends MessageProcessor {
 
 	public static final String MAXIMA_INIT      = "MAXIMA_INIT";
+	public static final String MAXIMA_SHUTDOWN  = "MAXIMA_SHUTDOWN";
 	
 	public static final String MAXIMA_FUNCTION  = "MAXIMA_FUNCTION";
 	
@@ -39,8 +42,6 @@ public class Maxima extends MessageProcessor {
 	
 	MaximaServer mServer;
 	
-	MultiKey mIdentity;
-	
 	MaximaDB mMaximaDB;
 	
 	public Maxima() {
@@ -50,17 +51,13 @@ public class Maxima extends MessageProcessor {
 	}
 	
 	public void stop() {
-		if(mServer != null) {
-			mServer.stop();
-		}
-		
-		stopMessageProcessor();
+		PostMessage(MAXIMA_SHUTDOWN);
 	}
 	
 	public String getMaximaFullIdentity() {
-		String host = Main.getMainHandler().getNetworkHandler().getMiniMaxiHost();
-		int port    = Main.getMainHandler().getNetworkHandler().getMaximaPort();
-		String ident = mIdentity.getPublicKey().to0xString()+"@"+host+":"+port;
+		String host  = Main.getMainHandler().getNetworkHandler().getMiniMaxiHost();
+		int port     = Main.getMainHandler().getNetworkHandler().getMaximaPort();
+		String ident = mMaximaDB.getAccount().getPublicKey().to0xString()+"@"+host+":"+port;
 		
 		return ident;
 	}
@@ -108,8 +105,15 @@ public class Maxima extends MessageProcessor {
 			//For now..
 			mMaximaDB = new MaximaDB();
 			
-			//Create a NEW key.. for now always new..
-			mIdentity = new MultiKey(160);
+			//Get the MaximaDB
+			BackupManager bk = Main.getMainHandler().getBackupManager();
+			File maxim = new File(bk.getMaximaFolder(),"maxima.db");
+			if(maxim.exists()) {
+				mMaximaDB.loadDB(maxim);
+			}else {
+				//New Data..
+				mMaximaDB.newAccount();
+			}
 			
 			//Start the server
 			mServer = new MaximaServer(port);
@@ -117,6 +121,19 @@ public class Maxima extends MessageProcessor {
 			max.setDaemon(true);
 			max.start();
 		
+		}else if(zMessage.getMessageType().equals(MAXIMA_SHUTDOWN)) {
+			if(mServer != null) {
+				mServer.stop();
+			}
+			
+			//Save the DB..
+			BackupManager bk = Main.getMainHandler().getBackupManager();
+			File maxim = new File(bk.getMaximaFolder(),"maxima.db");
+			mMaximaDB.saveDB(maxim);
+			
+			//Stop this 
+			stopMessageProcessor();
+			
 		}else if(zMessage.getMessageType().equals(MAXIMA_FUNCTION)) {
 			String func = zMessage.getString("function");
 			
@@ -166,14 +183,15 @@ public class Maxima extends MessageProcessor {
 			InputHandler.endResponse(zMessage, false, "Invalid maxima function : "+func);
 		
 		}else if(zMessage.getMessageType().equals(MAXIMA_INFO)) {
-			InputHandler.getResponseJSON(zMessage).put("key", mIdentity.toJSON());
+			InputHandler.getResponseJSON(zMessage).put("key", mMaximaDB.getAccount().toJSON());
 			InputHandler.getResponseJSON(zMessage).put("identity", getMaximaFullIdentity());
 			InputHandler.endResponse(zMessage, true, "Maxima Info");
 					
 		}else if(zMessage.getMessageType().equals(MAXIMA_NEW)) {
 			//Create a NEW key.. for now always new..
-			mIdentity = new MultiKey(160);
+			mMaximaDB.newAccount();
 			
+			//Print out some info
 			Message info = new Message(MAXIMA_INFO);
 			InputHandler.addResponseMesage(info, zMessage);
 			PostMessage(info);
@@ -284,7 +302,7 @@ public class Maxima extends MessageProcessor {
 			MiniData senddata = new MiniData(data.toString().getBytes("UTF-8"));
 
 			//Sign the message
-			MiniData sig     = mIdentity.sign(senddata);
+			MiniData sig     = mMaximaDB.getAccount().sign(senddata);
 			msg.put("signature", sig.to0xString());
 			
 			//Encode it..

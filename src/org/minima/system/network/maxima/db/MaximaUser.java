@@ -17,6 +17,11 @@ public class MaximaUser implements Streamable {
 	
 	public MiniNumber mTimeStamp = MiniNumber.ZERO;
 	
+	/**
+	 * For reading from a Stream
+	 */
+	public MaximaUser() {}
+
 	public MaximaUser(String zPubkey, String zHost) {
 		setPublicKey(zPubkey);
 		setHost(zHost);
@@ -75,4 +80,6 @@ public class MaximaUser implements Streamable {
 		mHost = MiniString.ReadFromStream(zIn);
 		mTimeStamp = MiniNumber.ReadFromStream(zIn);
 	}
+	
+	
 }
