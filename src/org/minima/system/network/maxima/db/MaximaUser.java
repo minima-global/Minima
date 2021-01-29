@@ -31,7 +31,7 @@ public class MaximaUser implements Streamable {
 		
 		json.put("publickey", mPublicKey.toString());
 		json.put("host",mHost.toString());
-		json.put("timestamp", new Date(mTimeStamp.getAsLong()));
+		json.put("timestamp", new Date(mTimeStamp.getAsLong()).toString());
 		
 		return json;
 	}
