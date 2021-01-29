@@ -49,7 +49,7 @@ public class sshtunnel extends CommandFunction{
 			String username     = "";
 			String password     = "";
 			String host         = "";
-			int remotep         = -1;
+			String remotep      = "";
 			
 			//Cycle through..
 			for(int i=1;i<len;i++) {
@@ -62,12 +62,12 @@ public class sshtunnel extends CommandFunction{
 				}else if(param.startsWith("host:")) {
 					host = param.substring(5).trim();
 				}else if(param.startsWith("remoteport:")) {
-					remotep =  Integer.parseInt(param.substring(11).trim());
+					remotep = param.substring(11).trim();
 				}
 			}
 			
 			//Check that all values were specified
-			if(username.equals("") || password.equals("") || host.equals("") || remotep == -1) {
+			if(username.equals("") || password.equals("") || host.equals("") || remotep.equals("")) {
 				getResponseStream().endStatus(false, "Incorrect parameters. MUST specify all.");
 				return;
 			}
@@ -76,7 +76,7 @@ public class sshtunnel extends CommandFunction{
 			ssh.addString("username", username);
 			ssh.addString("password", password);
 			ssh.addString("host", host);
-			ssh.addInteger("remoteport", remotep);
+			ssh.addString("remoteport", remotep);
 		}
 		
 		//Send it to the miner..

@@ -117,7 +117,7 @@ public class SSHTunnel extends MessageProcessor {
 			String username = zMessage.getString("username");
 			String password = zMessage.getString("password");
 			String host     = zMessage.getString("host");
-			int remote      = zMessage.getInteger("remoteport");
+			String remote   = zMessage.getString("remoteport");
 		
 			//Get the parameters
 			JSONObject params = mTunnelDB.getParams();
@@ -138,7 +138,7 @@ public class SSHTunnel extends MessageProcessor {
 			String host = (String) params.get("host");
 			String user = (String) params.get("username");
 			String pass = (String) params.get("password");
-			long remotep = (long) params.get("remoteport");
+			int remotep = Integer.parseInt((String) params.get("remoteport"));
 			
 			//Start up
 			mSSH = new sshforwarder(host, 22, user,pass,false, (int)remotep);
