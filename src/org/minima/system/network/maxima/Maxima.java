@@ -58,7 +58,7 @@ public class Maxima extends MessageProcessor {
 	}
 	
 	public String getMaximaFullIdentity() {
-		String host = Main.getMainHandler().getNetworkHandler().getBaseHost();
+		String host = Main.getMainHandler().getNetworkHandler().getMiniMaxiHost();
 		int port    = Main.getMainHandler().getNetworkHandler().getMaximaPort();
 		String ident = mIdentity.getPublicKey().to0xString()+"@"+host+":"+port;
 		
@@ -66,7 +66,7 @@ public class Maxima extends MessageProcessor {
 	}
 	
 	public String getMaximaHost() {
-		String host = Main.getMainHandler().getNetworkHandler().getBaseHost();
+		String host = Main.getMainHandler().getNetworkHandler().getMiniMaxiHost();
 		int port    = Main.getMainHandler().getNetworkHandler().getMaximaPort();
 		return host+":"+port;
 	}
