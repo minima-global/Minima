@@ -56,6 +56,10 @@ public class MultiKey extends BaseKey {
 	public MultiKey(int zBitLength) {
 		this(MiniData.getRandomData(zBitLength/8), DEFAULT_KEYS_PER_LEVEL, DEFAULT_LEVELS);
 	}
+	
+	public MultiKey(int zBitLength, MiniNumber zKeysPerLevel, MiniNumber zLevel) {
+		this(MiniData.getRandomData(zBitLength/8), zKeysPerLevel, zLevel);
+	}
 
 	public MultiKey(MiniData zPrivateSeed, MiniNumber zKeysPerLevel, MiniNumber zLevel) {
 		super();
