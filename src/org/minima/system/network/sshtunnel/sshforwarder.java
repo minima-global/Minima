@@ -120,10 +120,10 @@ public class sshforwarder implements Runnable {
 		    	mSession.connect(30000);
 		       
 		    	//Port forward - Minima
-		    	mSession.setPortForwardingR(mRemotePort, "127.0.0.1", minimaport);
+		    	mSession.setPortForwardingR("*",mRemotePort, "127.0.0.1", minimaport);
 		    	
 		    	//Port forward - Maxima
-		    	mSession.setPortForwardingR(mRemotePort+1, "127.0.0.1", maximaport);
+		    	mSession.setPortForwardingR("*",mRemotePort+1, "127.0.0.1", maximaport);
 		    	
 		    	//Log it..
 		    	MinimaLogger.log("SSH Tunnel STARTED Minima @ "+mHost+":"+mRemotePort);
