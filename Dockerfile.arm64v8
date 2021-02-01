@@ -1,5 +1,6 @@
 #FROM openjdk:11
-FROM adoptopenjdk/openjdk11:x86_64-alpine-jdk-11.0.9_11-slim as build-stage
+#FROM adoptopenjdk/openjdk11:x86_64-alpine-jdk-11.0.9_11-slim as build-stage
+FROM arm64v8/adoptopenjdk:11-jdk-hotspot-focal as build-stage
 WORKDIR /usr/src/minima/
 COPY gradle gradle
 COPY gradlew settings.gradle build.gradle .classpath ./
@@ -18,8 +19,8 @@ RUN ls -l build/libs/*
 RUN stat build/libs/minima-all.jar
 #RUN tar -cf minimajar.tar build/libs/minima-all.jar
 
-FROM adoptopenjdk/openjdk11:x86_64-alpine-jdk-11.0.9_11-slim as production-stage
-RUN apk --no-cache add curl
+#FROM adoptopenjdk/openjdk11:x86_64-alpine-jdk-11.0.9_11-slim as production-stage
+FROM arm64v8/adoptopenjdk:11-jdk-hotspot-focal as production-stage
 COPY --from=build-stage /usr/src/minima/build/libs/minima-all.jar /opt/minima/minima.jar
 #COPY --from=build-stage /usr/src/minima/minimajar.tar /opt/minima/minimajar.tar
 WORKDIR /opt/minima
@@ -30,6 +31,6 @@ RUN touch -a -m -t 202011010000.00 minima.jar
 RUN md5sum *.jar
 RUN ls -l *.jar
 RUN stat minima.jar
-# 9001 minima protocol 9002 REST 9003 WebSocket 9004 MiniDapp Server 
+# 9001 minima protocol 9002 REST 9003 WebSocket 9004 MiniDapp Server
 EXPOSE 9001 9002 9003 9004 
 ENTRYPOINT ["java", "-jar", "minima.jar"]
