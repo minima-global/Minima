@@ -177,6 +177,13 @@ public class Start {
 					
 				}else if(arg.equals("-conf")) {
 					conffolder = zArgs[counter++];
+				
+				}else if(arg.equals("-test")) {
+					//Use the Test PARAMS!
+					TestParams.setTestParams();
+					
+				}else if(arg.equals("")) {
+					//Do nothing..
 					
 				}else {
 					MinimaLogger.log("UNKNOWN arg.. : "+arg);
