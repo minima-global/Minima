@@ -10,6 +10,7 @@ import java.util.ArrayList;
 
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.keys.MultiKey;
+import org.minima.utils.MiniFile;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 
@@ -60,19 +61,10 @@ public class MaximaDB implements Streamable {
 	}
 	
 	public void saveDB(File zFile) {
-		//Save the MaximaDB
 		try {
-			FileOutputStream fos = new FileOutputStream(zFile);
-			DataOutputStream dos = new DataOutputStream(fos);
-			
-			writeDataStream(dos);
-			dos.flush();
-			
-			dos.close();
-			fos.close();
-			
-		}catch(Exception exc) {
-			MinimaLogger.log(exc);
+			MiniFile.writeObjectToFile(zFile, this);
+		} catch (IOException e) {
+			MinimaLogger.log(e);
 		}
 	}
 	

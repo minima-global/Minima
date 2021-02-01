@@ -8,6 +8,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 import org.minima.objects.base.MiniString;
+import org.minima.utils.MiniFile;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONObject;
@@ -35,19 +36,10 @@ public class TunnelDB implements Streamable{
 	}
 	
 	public void saveDB(File zFile) {
-		//Save the MaximaDB
 		try {
-			FileOutputStream fos = new FileOutputStream(zFile);
-			DataOutputStream dos = new DataOutputStream(fos);
-			
-			writeDataStream(dos);
-			dos.flush();
-			
-			dos.close();
-			fos.close();
-			
-		}catch(Exception exc) {
-			MinimaLogger.log(exc);
+			MiniFile.writeObjectToFile(zFile, this);
+		} catch (IOException e) {
+			MinimaLogger.log(e);
 		}
 	}
 	
