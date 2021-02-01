@@ -70,6 +70,12 @@ public class SSHTunnel extends MessageProcessor {
 			if(tunnel.exists()) {
 				mTunnelDB.loadDB(tunnel);
 			}
+			
+			//Does it exist..
+			if(mTunnelDB.getParams().get("host") != null) {
+				//Boot her up!
+				PostMessage(SSHTUNNEL_START);
+			}
 		
 		}else if(zMessage.getMessageType().equals(SSHTUNNEL_SHUTDOWN)){
 			//Stop if Running..
