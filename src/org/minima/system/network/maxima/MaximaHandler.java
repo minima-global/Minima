@@ -130,7 +130,7 @@ public class MaximaHandler implements Runnable {
 			
 			//Now run a MAXIMA_REC command..
 			String recmax = "maxima receive "+datastr.to0xString();
-			//MinimaLogger.log("cmd "+recmax);
+//			MinimaLogger.log("cmd "+recmax);
 
 			CMD cmd = new CMD(recmax);
         	

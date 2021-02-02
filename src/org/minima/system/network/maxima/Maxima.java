@@ -13,6 +13,7 @@ import org.minima.system.input.InputHandler;
 import org.minima.system.network.maxima.db.MaximaDB;
 import org.minima.system.network.maxima.db.MaximaUser;
 import org.minima.utils.MinimaLogger;
+import org.minima.utils.encryption.EncryptDecrypt;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.json.parser.JSONParser;
@@ -181,6 +182,7 @@ public class Maxima extends MessageProcessor {
 		}else if(zMessage.getMessageType().equals(MAXIMA_INFO)) {
 			InputHandler.getResponseJSON(zMessage).put("key", mMaximaDB.getAccount().toJSON());
 			InputHandler.getResponseJSON(zMessage).put("identity", getMaximaFullIdentity());
+			InputHandler.getResponseJSON(zMessage).put("rsa", mMaximaDB.getPublicRSA().to0xString());
 			InputHandler.endResponse(zMessage, true, "Maxima Info");
 					
 		}else if(zMessage.getMessageType().equals(MAXIMA_NEW)) {
@@ -225,29 +227,42 @@ public class Maxima extends MessageProcessor {
 			JSONObject msg = (JSONObject) new JSONParser().parse(json);
 			
 			//Get the payload..
-			String version  = (String) msg.get("version");
-			String from     = (String) msg.get("from");
-			String to       = (String) msg.get("to");
+			String version   = (String) msg.get("version");
+			String to        = (String) msg.get("to");
+			String encrypted = (String) msg.get("encrypted");
 			
-			JSONObject payload = (JSONObject) msg.get("payload");
-			MiniData paydata   = new MiniData(payload.toString().getBytes("UTF-8"));
-			
+			//Signature
 			String sig       = (String) msg.get("signature");
 			MiniData sigdata = new MiniData(sig);
 
+			//Get the payload..
+			MiniData pd = new MiniData((String)msg.get("payload"));
+			
+			//Convert to a string..
+			String pds = new String(pd.getData(),Charset.forName("UTF-8"));
+			
+			//And finally convert to a JSON
+			JSONObject payload = (JSONObject) new JSONParser().parse(pds);
+			
 			//Who is it from..
+			String from 		= (String) payload.get("from");
 			String pubkey       = getIdentOnly(from);
 			MiniData pubkeydata = new MiniData(pubkey);
 			
+			//Lets verify the signature
 			MultiKey ver = new MultiKey(pubkeydata);
-			boolean valid = ver.verify(paydata, sigdata);
+			boolean valid = ver.verify(pd, sigdata);
 
+			//Is it valid..
 			if(!valid) {
 				MinimaLogger.log("INVALID MAXIMA : "+msg);
 				InputHandler.endResponse(zMessage, false, "Invalid Message");
 			}else {
 				//Add the USER..
 				MaximaUser maxuser = addUpdateUser(from);
+				
+				//Set the RSA..
+				maxuser.setRSAPubKeyHex((String)payload.get("rsa"));
 				
 				MinimaLogger.log("MAXIMA "+from+" @ "+payload.get("port")+" > "+payload.get("data"));
 				InputHandler.endResponse(zMessage, true, "Valid Message");
@@ -273,6 +288,9 @@ public class Maxima extends MessageProcessor {
 				return;
 			}
 			
+			//Are we encrypting
+			String encrypt = user.getRSAPubKeyHex();
+			
 			//Get the host for this User
 			String fullto = "http://"+user.getHost();
 			
@@ -282,30 +300,51 @@ public class Maxima extends MessageProcessor {
 			//Construct a JSON Object..
 			JSONObject msg = new JSONObject();
 			msg.put("version", "1.0");
-			msg.put("from", getMaximaFullIdentity());
-			msg.put("to", user.getCompleteAddress());
+			msg.put("to", user.getPublicKey());
+			msg.put("encrypted", encrypt);
 			
 				//The content
 				JSONObject data = new JSONObject();
+				data.put("from", getMaximaFullIdentity());
+				data.put("rsa", mMaximaDB.getPublicRSA().to0xString());
 				data.put("to", to);
 				data.put("port", port);
 				data.put("data", message);
 			
-			//Add the data
-			msg.put("payload", data);
+			//Copy this content..
+			String content = new String(data.toString());
+			JSONObject contjson = (JSONObject) new JSONParser().parse(content);
 				
-			//The Signature of the Data
+			//The actual data we send..
 			MiniData senddata = new MiniData(data.toString().getBytes("UTF-8"));
+	
+			//Are we encrypting this..
+			if(!encrypt.equals("0x00")) {
+				//We encrypt..
+				MiniData paydata = new MiniData(data.toString().getBytes("UTF-8"));
 
+				//Public Key
+				MiniData pk = new MiniData(encrypt);
+				
+				//Encrypt.. with THEIR public key
+				byte[] encryptedData = EncryptDecrypt.encryptASM(pk.getData(),paydata.getData());
+				
+				//The MiniData
+				senddata = new MiniData(encryptedData);
+			}
+				
+			//Add the data
+			msg.put("payload", senddata.to0xString());
+			
 			//Sign the message
-			MiniData sig     = mMaximaDB.getAccount().sign(senddata);
+			MiniData sig = mMaximaDB.getAccount().sign(senddata);
 			msg.put("signature", sig.to0xString());
 			
 			//Encode it..
 			String enc = URLEncoder.encode(new String(msg.toString()),"UTF-8").trim();
 			
 			//Store the message
-			InputHandler.getResponseJSON(zMessage).put("message", msg);
+			InputHandler.getResponseJSON(zMessage).put("message", contjson);
 			
 			//Create a Separate Thread to send the message
 			MaximaSender sender = new MaximaSender(zMessage, fullto, enc);
