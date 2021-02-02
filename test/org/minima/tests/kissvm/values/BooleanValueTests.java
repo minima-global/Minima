@@ -55,7 +55,6 @@ public class BooleanValueTests {
         //PADDY This is not what get MiniDataVersion does..
 //        assertEquals("should be equal ", MiniData.getMiniDataVersion(new MiniNumber("1")), bvt1.getMiniData());
 //        assertEquals("should be equal ", MiniData.getMiniDataVersion(new MiniNumber("0")), bvf1.getMiniData());
-
     }
 
 }
