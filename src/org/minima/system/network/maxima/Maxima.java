@@ -183,7 +183,7 @@ public class Maxima extends MessageProcessor {
 		}else if(zMessage.getMessageType().equals(MAXIMA_INFO)) {
 			InputHandler.getResponseJSON(zMessage).put("key", mMaximaDB.getAccount().toJSON());
 			InputHandler.getResponseJSON(zMessage).put("identity", getMaximaFullIdentity());
-			InputHandler.getResponseJSON(zMessage).put("rsa", mMaximaDB.getPublicRSA().to0xString());
+//			InputHandler.getResponseJSON(zMessage).put("rsa", mMaximaDB.getPublicRSA().to0xString());
 			InputHandler.endResponse(zMessage, true, "Maxima Info");
 					
 		}else if(zMessage.getMessageType().equals(MAXIMA_NEW)) {
@@ -241,7 +241,7 @@ public class Maxima extends MessageProcessor {
 			
 			//Is it encrypted..
 			JSONObject payload = null;
-			if(encrypted.equals("0x00")) {
+			if(encrypted.equals("NONE")) {
 				//Convert to a string..
 				String pds = new String(pd.getData(),Charset.forName("UTF-8"));
 				
@@ -261,7 +261,6 @@ public class Maxima extends MessageProcessor {
 				//And finally convert to a JSON
 				payload = (JSONObject) new JSONParser().parse(pds);
 			}
-			
 			
 			//Who is it from..
 			String from 		= (String) payload.get("from");
@@ -308,7 +307,10 @@ public class Maxima extends MessageProcessor {
 			}
 			
 			//Are we encrypting
-			String encrypt = user.getRSAPubKeyHex();
+			String encrypt = "NONE";
+			if(!user.getRSAPubKeyHex().equals("0x00")) {
+				encrypt = "RSA/AES";
+			}
 			
 			//Get the host for this User
 			String fullto = "http://"+user.getHost();
@@ -338,18 +340,15 @@ public class Maxima extends MessageProcessor {
 			MiniData senddata = new MiniData(data.toString().getBytes("UTF-8"));
 	
 			//Are we encrypting this..
-			if(!encrypt.equals("0x00")) {
+			if(encrypt.equals("RSA/AES")) {
 				//We encrypt..
 				MiniData paydata = new MiniData(data.toString().getBytes("UTF-8"));
 
-				//Public Key
-				MiniData pk = new MiniData(encrypt);
-				
 				//Create a crypt package
 				CryptoPackage cp = new CryptoPackage();
 
 				//Encrypt..
-				cp.encrypt(paydata.getData(), pk.getData());
+				cp.encrypt(paydata.getData(), new MiniData(user.getRSAPubKeyHex()).getData());
 				
 				//Encrypt.. with THEIR public key
 				senddata =  cp.getCompleteEncryptedData();
@@ -366,6 +365,8 @@ public class Maxima extends MessageProcessor {
 			String enc = URLEncoder.encode(new String(msg.toString()),"UTF-8").trim();
 			
 			//Store the message
+			InputHandler.getResponseJSON(zMessage).put("to", user.getCompleteAddress());
+			InputHandler.getResponseJSON(zMessage).put("encryption", encrypt);
 			InputHandler.getResponseJSON(zMessage).put("message", contjson);
 			
 			//Create a Separate Thread to send the message
