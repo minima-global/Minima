@@ -1,11 +1,9 @@
 package org.minima.utils.encryption;
 
-import java.security.InvalidKeyException;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
@@ -14,11 +12,8 @@ import java.security.spec.X509EncodedKeySpec;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
-import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
-
-import org.minima.objects.base.MiniData;
 
 public class EncryptDecrypt {
 
@@ -38,7 +33,7 @@ public class EncryptDecrypt {
         return encryptedBytes;
     }
 
-    public static byte[] decryptASM(byte[] privateKey, byte[] inputData) throws Exception {
+    public static byte[] decryptASM(byte[] privateKey, byte[] encryptedData) throws Exception {
 
         PrivateKey key = KeyFactory.getInstance(ASYMETRIC_ALGORITHM)
         		.generatePrivate(new PKCS8EncodedKeySpec(privateKey));
@@ -46,7 +41,7 @@ public class EncryptDecrypt {
         Cipher cipher = Cipher.getInstance(ASYMETRIC_ALGORITHM);
         cipher.init(Cipher.DECRYPT_MODE, key);
 
-        byte[] decryptedBytes = cipher.doFinal(inputData);
+        byte[] decryptedBytes = cipher.doFinal(encryptedData);
 
         return decryptedBytes;
     }
@@ -80,34 +75,54 @@ public class EncryptDecrypt {
     	return byteCipherText;
     }
     
-    
-    
-    
-    
-    
+    public static byte[] decryptSYM(byte[] secretKey, byte[] encryptedData) throws Exception {
+    	SecretKey sk = new SecretKeySpec(secretKey, SYMETRIC_ALGORITHM);
+    	Cipher aesCipher = Cipher.getInstance(SYMETRIC_ALGORITHM);
+		aesCipher.init(Cipher.DECRYPT_MODE, sk);
+		byte[] byteCipherText = aesCipher.doFinal(encryptedData);
+    	return byteCipherText;
+    }
     
     public static void main(String[] args) throws Exception {
 
-        KeyPair generateKeyPair = generateKeyPair();
+    	//ASYMMETRIC example..
+//        KeyPair generateKeyPair = generateKeyPair();
+//        byte[] publicKey = generateKeyPair.getPublic().getEncoded();
+//        byte[] privateKey = generateKeyPair.getPrivate().getEncoded();
+//        MiniData pubk = new MiniData(publicKey);
+//        System.out.println("PUB : "+pubk.getLength()+" "+pubk.to0xString());
+//        MiniData privk = new MiniData(privateKey);
+//        System.out.println("PRV : "+privk.to0xString());
+//        byte[] encryptedData = encryptASM(publicKey,"HELLO - this is my message!!".getBytes());
+//        MiniData enc = new MiniData(encryptedData);
+//        System.out.println("ENC : "+enc.to0xString());
+//        byte[] decryptedData = decryptASM(privateKey, encryptedData);
+//        System.out.println(new String(decryptedData));
 
-        byte[] publicKey = generateKeyPair.getPublic().getEncoded();
-        byte[] privateKey = generateKeyPair.getPrivate().getEncoded();
-
-        MiniData pubk = new MiniData(publicKey);
-        System.out.println("PUB : "+pubk.getLength()+" "+pubk.to0xString());
-        
-        MiniData privk = new MiniData(privateKey);
-        System.out.println("PRV : "+privk.to0xString());
-        
-        byte[] encryptedData = encryptASM(publicKey,
-                "hi this is Visruth here and this is my message!!".getBytes());
-
-        MiniData enc = new MiniData(encryptedData);
-        System.out.println("ENC : "+enc.to0xString());
-        
-        byte[] decryptedData = decryptASM(privateKey, encryptedData);
-
-        System.out.println(new String(decryptedData));
-
+//    	for (Provider provider: Security.getProviders()) {
+//		  System.out.println(provider.getName());
+//		  for (String key: provider.stringPropertyNames())
+//		    System.out.println("\t" + key + "\t" + provider.getProperty(key));
+//		}
+	
+//    	Security.addProvider(new BouncyCastleProvider());
+//    	KeyGenerator generator = KeyGenerator.getInstance("AES","BC");
+    	
+    	
+//    	//SYMMETRIC example
+//    	byte[] secret = secretKey();
+//    	MiniData sec = new MiniData(secret);
+//    	System.out.println("SEC : "+sec.getLength()+" "+sec.to0xString());
+//    	
+//    	byte[] encrypted = encryptSYM(secret, "HEELO! - this is the message!! and there is no limit to the length you can encrypt..".getBytes());
+//    	MiniData enc = new MiniData(encrypted);
+//    	System.out.println("ENC : "+enc.to0xString());
+//    	byte[] decrypt = decryptSYM(secret, encrypted);
+//    	System.out.println("DEC : "+new String(decrypt));
+    	
+    	//Now decrypt..
+    	
+    	
+    	
     }
 }
