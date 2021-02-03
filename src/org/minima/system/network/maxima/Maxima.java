@@ -13,6 +13,7 @@ import org.minima.system.input.InputHandler;
 import org.minima.system.network.maxima.db.MaximaDB;
 import org.minima.system.network.maxima.db.MaximaUser;
 import org.minima.utils.MinimaLogger;
+import org.minima.utils.encryption.CryptoPackage;
 import org.minima.utils.encryption.EncryptDecrypt;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
@@ -238,11 +239,29 @@ public class Maxima extends MessageProcessor {
 			//Get the payload..
 			MiniData pd = new MiniData((String)msg.get("payload"));
 			
-			//Convert to a string..
-			String pds = new String(pd.getData(),Charset.forName("UTF-8"));
+			//Is it encrypted..
+			JSONObject payload = null;
+			if(encrypted.equals("0x00")) {
+				//Convert to a string..
+				String pds = new String(pd.getData(),Charset.forName("UTF-8"));
+				
+				//And finally convert to a JSON
+				payload = (JSONObject) new JSONParser().parse(pds);
+			}else {
+				//Decrypt..
+				CryptoPackage cp = new CryptoPackage();
+				cp.ConvertCompleteData(pd);
+				
+				//Now decrypt..
+				byte[] decdata = cp.decrypt(mMaximaDB.getPrivateRSA().getData());
+				
+				//Convert to a string..
+				String pds = new String(decdata,Charset.forName("UTF-8"));
+				
+				//And finally convert to a JSON
+				payload = (JSONObject) new JSONParser().parse(pds);
+			}
 			
-			//And finally convert to a JSON
-			JSONObject payload = (JSONObject) new JSONParser().parse(pds);
 			
 			//Who is it from..
 			String from 		= (String) payload.get("from");
@@ -326,11 +345,14 @@ public class Maxima extends MessageProcessor {
 				//Public Key
 				MiniData pk = new MiniData(encrypt);
 				
-				//Encrypt.. with THEIR public key
-				byte[] encryptedData = EncryptDecrypt.encryptASM(pk.getData(),paydata.getData());
+				//Create a crypt package
+				CryptoPackage cp = new CryptoPackage();
+
+				//Encrypt..
+				cp.encrypt(paydata.getData(), pk.getData());
 				
-				//The MiniData
-				senddata = new MiniData(encryptedData);
+				//Encrypt.. with THEIR public key
+				senddata =  cp.getCompleteEncryptedData();
 			}
 				
 			//Add the data

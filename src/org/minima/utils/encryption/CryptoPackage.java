@@ -1,8 +1,10 @@
 package org.minima.utils.encryption;
 
+import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.security.KeyPair;
 
 import org.minima.objects.base.MiniData;
 import org.minima.utils.Streamable;
@@ -34,14 +36,26 @@ public class CryptoPackage implements Streamable {
     	mSecret = new MiniData(encryptedsecret);
 	}
 	
-	public byte[] decrypt(byte[] zPrivateKey) throws Exception {
+	public byte[] decrypt(byte[] zRSAPrivateKey) throws Exception {
 		//First decrypt the secret
-		byte[] secret = EncryptDecrypt.decryptASM(zPrivateKey, mSecret.getData());
+		byte[] secret = EncryptDecrypt.decryptASM(zRSAPrivateKey, mSecret.getData());
 		
 		//Now decrypt the data
 		byte[] dec = EncryptDecrypt.decryptSYM(secret, mData.getData());
 		
 		return dec;
+	}
+	
+	public MiniData getCompleteEncryptedData() {
+		return MiniData.getMiniDataVersion(this);
+	}
+	
+	public void ConvertCompleteData(MiniData zComplete) throws IOException {
+		ByteArrayInputStream bais = new ByteArrayInputStream(zComplete.getData());
+		DataInputStream dis = new DataInputStream(bais);
+		readDataStream(dis);
+		dis.close();
+		bais.close();
 	}
 	
 	@Override
@@ -56,7 +70,22 @@ public class CryptoPackage implements Streamable {
 		mData = MiniData.ReadFromStream(zIn);
 	}
 	
-	public static void main() {
+	public static void main(String[] zArgs) throws Exception {
+		KeyPair generateKeyPair = EncryptDecrypt.generateKeyPair();
+		byte[] publicKey = generateKeyPair.getPublic().getEncoded();
+		byte[] privateKey = generateKeyPair.getPrivate().getEncoded();
+
+		String data = new String("HEELO YOU!! this is a long message");
+		CryptoPackage cp = new CryptoPackage();
+		cp.encrypt(data.getBytes(), publicKey);
+		
+//		System.out.println(cp.getEncryptedData().to0xString());
+		
+		byte[] dec = cp.decrypt(privateKey);
+		
+		System.out.println(new String(dec));
+		
+		
 		
 	}
 	
