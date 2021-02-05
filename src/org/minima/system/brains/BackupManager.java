@@ -10,6 +10,7 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.objects.greet.SyncPacket;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MiniFormat;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageProcessor;
@@ -146,7 +147,7 @@ public class BackupManager extends MessageProcessor {
 		PostMessage(delete);
 	}
 	
-	private File ensureFolder(File zFolder) {
+	private static File ensureFolder(File zFolder) {
 		if(!zFolder.exists()) {
 			zFolder.mkdirs();
 		}
@@ -185,7 +186,7 @@ public class BackupManager extends MessageProcessor {
 			//Get the File..v
 			File savefile = getBlockFile(mLastBlock);
 			
-			//MinimaLogger.log("save block : "+savefile);
+			MinimaLogger.log("************ save block : "+savefile);
 			
 			//Write..
 			MiniFile.writeObjectToFile(savefile, block);	
@@ -300,6 +301,29 @@ public class BackupManager extends MessageProcessor {
 		
 		//Create the File
 		File back1 = new File(mBlocksDB,f1);
+		File back2 = new File(back1,f2);
+		ensureFolder(back2);
+		
+		File savefile = new File(back2,filename+".block");
+		
+		return savefile;
+	}
+	
+	public static File getBlockFile(File zBLocksFolder, MiniNumber zBlockNumber) {
+		//Top level Folder
+		MiniNumber fold1 = zBlockNumber.div(MiniNumber.MILLION).floor();
+		
+		//Inside Top Level
+		MiniNumber remainder = zBlockNumber.sub(MiniNumber.MILLION.mult(fold1));
+		MiniNumber fold2     = remainder.div(MiniNumber.THOUSAND).floor();
+		
+		//Get the number..
+		String f1 = MiniFormat.zeroPad(6, fold1);
+		String f2 = MiniFormat.zeroPad(6, fold2);
+		String filename = MiniFormat.zeroPad(12, zBlockNumber);
+		
+		//Create the File
+		File back1 = new File(zBLocksFolder,f1);
 		File back2 = new File(back1,f2);
 		ensureFolder(back2);
 		
