@@ -153,14 +153,14 @@ public class RPLVARTests {
         // Invalid param count
         {
             MinimaFunction mf = fn.getNewFunction();
-            assertThrows(ExecutionException.class, () -> { // Should fail, as invalid number of parameters is provided
+            assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
             });
         }
         {
             MinimaFunction mf = fn.getNewFunction();
             mf.addParameter(new ConstantExpression(new ScriptValue("LET A = 5")));
-            assertThrows(ExecutionException.class, () -> { // Should fail, as invalid number of parameters is provided
+            assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
             });
         }
@@ -168,7 +168,7 @@ public class RPLVARTests {
             MinimaFunction mf = fn.getNewFunction();
             mf.addParameter(new ConstantExpression(new ScriptValue("LET A = 5")));
             mf.addParameter(new ConstantExpression(new ScriptValue("A")));
-            assertThrows(ExecutionException.class, () -> { // Should fail, as invalid number of parameters is provided
+            assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
             });
         }
@@ -200,6 +200,19 @@ public class RPLVARTests {
                 Value res = mf.runFunction(ctr);
                 assertEquals(Value.VALUE_SCRIPT, res.getValueType());
                 assertEquals("abcdefghijklmnopqrstuvwxyz", ((ScriptValue) res).toString());
+            } catch (ExecutionException ex) {
+                fail();
+            }
+        }
+        {
+            MinimaFunction mf = fn.getNewFunction();
+            mf.addParameter(new ConstantExpression(new ScriptValue("ABCDEFGHIJKLMNOPQRSTUVWXYZ 99")));
+            mf.addParameter(new ConstantExpression(new ScriptValue("99")));
+            mf.addParameter(new ConstantExpression(new ScriptValue("45")));
+            try {
+                Value res = mf.runFunction(ctr);
+                assertEquals(Value.VALUE_SCRIPT, res.getValueType());
+                assertEquals("abcdefghijklmnopqrstuvwxyz 99", ((ScriptValue) res).toString());
             } catch (ExecutionException ex) {
                 fail();
             }

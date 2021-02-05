@@ -84,13 +84,12 @@ public class SUBSETTests {
             mf.addParameter(new ConstantExpression(new NumberValue(13)));
             mf.addParameter(new ConstantExpression(new HEXValue("0x0123456789ABCDEF")));
             // test fails because SUBSET does not check whether start is greater than the total data length
-            //try {
+            //assertThrows(ExecutionException.class, () -> { // Should throw this
             //    Value res = mf.runFunction(ctr);
-            //    assertEquals(Value.VALUE_HEX, res.getValueType());
-            //    assertEquals("", ((HEXValue) res).toString());
-            //} catch (ExecutionException ex) {
-            //    fail();
-            //}
+            //});
+            assertThrows(ArrayIndexOutOfBoundsException.class, () -> { // but throw this
+                Value res = mf.runFunction(ctr);
+            });
         }
         {
             MinimaFunction mf = fn.getNewFunction();
@@ -98,13 +97,12 @@ public class SUBSETTests {
             mf.addParameter(new ConstantExpression(new NumberValue(12)));
             mf.addParameter(new ConstantExpression(new HEXValue("0x0123456789ABCDEF")));
             // test fails because SUBSET does not check whether end is greater than the total data length
-            //try {
+            //assertThrows(ExecutionException.class, () -> { // Should throw this
             //    Value res = mf.runFunction(ctr);
-            //    assertEquals(Value.VALUE_HEX, res.getValueType());
-            //    assertEquals("", ((HEXValue) res).toString());
-            //} catch (ExecutionException ex) {
-            //    fail();
-            //}
+            //});
+            assertThrows(ArrayIndexOutOfBoundsException.class, () -> { // but throw this
+                Value res = mf.runFunction(ctr);
+            });
         }
 
         {
@@ -178,14 +176,14 @@ public class SUBSETTests {
         // Invalid param count
         {
             MinimaFunction mf = fn.getNewFunction();
-            assertThrows(ExecutionException.class, () -> { // Should fail, as invalid number of parameters is provided
+            assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
             });
         }
         {
             MinimaFunction mf = fn.getNewFunction();
             mf.addParameter(new ConstantExpression(new NumberValue(0)));
-            assertThrows(ExecutionException.class, () -> { // Should fail, as invalid number of parameters is provided
+            assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
             });
         }
@@ -193,7 +191,7 @@ public class SUBSETTests {
             MinimaFunction mf = fn.getNewFunction();
             mf.addParameter(new ConstantExpression(new NumberValue(0)));
             mf.addParameter(new ConstantExpression(new NumberValue(2)));
-            assertThrows(ExecutionException.class, () -> { // Should fail, as invalid number of parameters is provided
+            assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
             });
         }

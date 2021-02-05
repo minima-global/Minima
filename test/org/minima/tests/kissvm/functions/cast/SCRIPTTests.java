@@ -168,7 +168,7 @@ public class SCRIPTTests {
         // Invalid param count
         {
             MinimaFunction mf = fn.getNewFunction();
-            assertThrows(ExecutionException.class, () -> { // Should fail, as no parameters are provided
+            assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
             });
         }
