@@ -133,7 +133,7 @@ public class SyncPacket implements Streamable {
 			bais.close();
 			
 		} catch (Exception e) {
-			MinimaLogger.log("ERROR loading Block "+zFile.getName());
+			MinimaLogger.log("ERROR loading Block "+zFile.exists()+" "+zFile.getAbsolutePath()+" "+e);
 		}
 		
 		return sync;
