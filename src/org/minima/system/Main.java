@@ -251,7 +251,8 @@ public class Main extends MessageProcessor {
 			
 			//Wait for the backup machine to finish..
 			while(mBackup.getSize()>0) {
-				Thread.sleep(2000);
+				MinimaLogger.log("Backup Manager NOT Finished.. waiting.. ");
+				Thread.sleep(1000);
 			}
 			mBackup.stopMessageProcessor();
 			
