@@ -24,7 +24,8 @@ public class BackupManager extends MessageProcessor {
 	private static final String BACKUP_CLEAN_BLOCKS       = "BACKUP_CLEAN_BLOCKS";
 	private static final String BACKUP_WRITE_BLOCK        = "BACKUP_WRITE_BLOCK";
 	
-	private long CLEAN_UP_TIMER 						  = 10000;
+	//Clean up blocks every 10 minutes..
+	private long CLEAN_UP_TIMER 						  = 1000 * 60 *10;
 	
 	/**
 	 * User Configuration
