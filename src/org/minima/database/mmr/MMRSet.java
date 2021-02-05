@@ -1081,10 +1081,15 @@ public class MMRSet implements Streamable {
 
 	/**
 	 * Recursively copy the parents..
+	 * 
+	 * Returns the minimum block copied..
 	 */
-	public void copyAllParentKeepers(MiniNumber zCascade) {
+	public MiniNumber copyAllParentKeepers(MiniNumber zCascade) {
 		//Start at this point..
 		MMRSet curr = this;
+		
+		//Minimum block copied
+		MiniNumber minblock = zCascade;
 		
 		//Store all the pparents..
 		ObjectStack stack = new ObjectStack();
@@ -1101,9 +1106,22 @@ public class MMRSet implements Streamable {
 			//Get the parent MMR..
 			MMRSet mmr = (MMRSet) stack.pop();
 			
+			//Store it..
+			if(mmr.getParent() != null) {
+				MiniNumber pblock = mmr.getParent().getBlockTime();
+				if(minblock == null) {
+					minblock = pblock;
+				}else if(pblock.isLess(minblock)) {
+					minblock = pblock;
+				}
+			}
+			
 			//Copy the parents MMR keepers..
 			mmr.copyParentKeepers();
 		}
+		
+		//Return minimum block..
+		return minblock;
 	}
 	
 	/**
