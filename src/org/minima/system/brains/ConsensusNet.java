@@ -318,6 +318,17 @@ public class ConsensusNet extends ConsensusProcessor {
 			for(int i=0;i<blockstoload;i++) {
 				//Load it.. 
 				SyncPacket spack = SyncPacket.loadBlock(backup.getBlockFile(currentblock));
+				if(spack == null) {
+					//Hmm..
+					MinimaLogger.log("SERIOUS ERROR : Blocks not loading from file.. ");
+					
+					//Add it..
+					sp.getAllNodes().add(spack);
+					
+					//Can't sync him..
+					//.. will disconnect when trying to send him a null object.. ugly..
+					break;
+				}
 				
 				//Add it..
 				sp.getAllNodes().add(spack);
