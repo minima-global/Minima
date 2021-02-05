@@ -96,7 +96,7 @@ public class MessageStack{
     /**
      * Get the first message on the stack, if there is one
      */
-    protected int getSize(){
+    public int getSize(){
         int len;
         synchronized (mMessages) {
 			len = mMessages.size();
