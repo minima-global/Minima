@@ -185,8 +185,7 @@ public class BackupManager extends MessageProcessor {
 					
 			//Get the File..v
 			File savefile = getBlockFile(mLastBlock);
-			
-			MinimaLogger.log("************ save block : "+savefile);
+			//MinimaLogger.log("************ save block : "+savefile);
 			
 			//Write..
 			MiniFile.writeObjectToFile(savefile, block);	
