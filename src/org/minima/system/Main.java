@@ -248,6 +248,11 @@ public class Main extends MessageProcessor {
 			mInput.stopMessageProcessor();
 			mTXMiner.stopMessageProcessor();
 			mConsensus.stopMessageProcessor();
+			
+			//Wait for the backup machine to finish..
+			while(mBackup.getSize()>0) {
+				Thread.sleep(2000);
+			}
 			mBackup.stopMessageProcessor();
 			
 			//Shut the database.
