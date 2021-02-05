@@ -282,6 +282,9 @@ public class Maxima extends MessageProcessor {
 				//Set the RSA..
 				maxuser.setRSAPubKeyHex((String)payload.get("rsa"));
 				
+				//Sign the message Yourself
+				//..
+				
 				MinimaLogger.log("MAXIMA "+from+" @ "+payload.get("port")+" > "+payload.get("data"));
 				InputHandler.endResponse(zMessage, true, "Valid Message");
 			}
