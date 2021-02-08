@@ -142,7 +142,15 @@ public class SSHTunnel extends MessageProcessor {
 			//Get the parameters
 			JSONObject params = mTunnelDB.getAllData();
 			
+			//Is there a port..
 			String host = (String) params.get("host");
+			int sshport = 22;
+			int index = host.indexOf(":");
+			if(index != -1) {
+				sshport = Integer.parseInt(host.substring(index+1));
+			}
+			MinimaLogger.log("sshport "+sshport);
+			
 			String user = (String) params.get("username");
 			String pass = (String) params.get("password");
 			int remotep = Integer.parseInt((String) params.get("remoteport"));
