@@ -186,7 +186,8 @@ public class ConsensusNet extends ConsensusProcessor {
 			
 			//Find the crossover - if there is one..
 			MiniNumber cross = checkCrossover(greet);
-
+			MinimaLogger.log("Greeting Crossover block found : "+cross);
+			
 			//If there no immediate crossover check backup files..
 			if(cross.isEqual(MiniNumber.MINUSONE)) {
 				PostNetClientMessage(zMessage, new Message(CONSENSUS_NET_GREET_BACKSYNC).addObject("greetlist", blocks));
@@ -276,7 +277,7 @@ public class ConsensusNet extends ConsensusProcessor {
 			}
 			
 			/**
-			 * User connected late - send him the min Backups tat allow sync but not full check
+			 * User connected late - send him the min Backups that allow sync but not full check
 			 */
 		}else if(zMessage.isMessageType(CONSENSUS_NET_GREET_BACKSYNC)) {
 			//Get the greeting list
@@ -737,17 +738,17 @@ public class ConsensusNet extends ConsensusProcessor {
 	
 		MinimaLogger.log("GREETING mytip:"+maintip+" mycascade:"+maincascade+" greetingtip:"+introtip+" greetingcascade:"+introcascade);
 		
-		//Simple check first..
-		boolean tipgood  = maintip.isLessEqual(introtip) && maintip.isMoreEqual(introcascade);
-		boolean cascgood = maincascade.isLessEqual(introtip) && maincascade.isMoreEqual(introcascade);
+//		//Simple check first..
+//		boolean tipgood  = maintip.isLessEqual(introtip) && maintip.isMoreEqual(introcascade);
+//		boolean cascgood = maincascade.isLessEqual(introtip) && maincascade.isMoreEqual(introcascade);
 		
 		boolean found        = false;
 		MiniNumber crossover = MiniNumber.MINUSONE;
 		
-		//No chance of a crossover..
-		if(!tipgood && !cascgood) {
-			return crossover;	
-		}
+//		//No chance of a crossover..
+//		if(!tipgood && !cascgood) {
+//			return crossover;	
+//		}
 		
 		//Cycle..
 		for(BlockTreeNode block : chain) {
