@@ -10,6 +10,8 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Random;
 
+import org.minima.objects.base.MiniNumber;
+import org.minima.objects.greet.SyncPacket;
 import org.minima.system.Main;
 import org.minima.system.brains.BackupManager;
 import org.minima.system.network.commands.CMD;
@@ -177,6 +179,33 @@ public class Start {
 					
 				}else if(arg.equals("-conf")) {
 					conffolder = zArgs[counter++];
+				
+				}else if(arg.equals("-test")) {
+					//Use the Test PARAMS!
+					TestParams.setTestParams();
+				
+					
+					//MY HACK WAY OF TESTING SOMETHING
+				}else if(arg.equals("-specialfunction")) {
+					//Which Block
+					String block = zArgs[counter++];
+					MinimaLogger.log("Block : "+block);
+					
+					//BLocks folder..
+					File blocksdb = new File(conf,"blocks");
+					MinimaLogger.log("Blocks Folder : "+blocksdb.getAbsolutePath());
+					
+					//Full file
+					File blkfile = BackupManager.getBlockFile(blocksdb, new MiniNumber(block));
+					MinimaLogger.log("Final File : "+blkfile.getAbsolutePath()+" "+blkfile.exists());
+					
+					//Do Something special
+					SyncPacket spack = SyncPacket.loadBlock(blkfile);
+					
+					System.exit(0);
+					
+				}else if(arg.equals("")) {
+					//Do nothing..
 					
 				}else {
 					MinimaLogger.log("UNKNOWN arg.. : "+arg);

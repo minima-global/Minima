@@ -51,7 +51,7 @@ public class help extends CommandFunction{
 				if(desc.equals("")) {
 					getResponseStream().getDataJSON().put("description", found.getParams()+" - "+found.getSimple());
 				}else {
-					getResponseStream().getDataJSON().put("description", found.getParams()+" - "+desc);	
+					getResponseStream().getDataJSON().put("description", found.getParams()+" - "+found.getSimple()+"\n"+desc);	
 				}
 				
 				getResponseStream().endStatus(true, "");

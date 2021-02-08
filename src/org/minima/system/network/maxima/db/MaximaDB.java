@@ -6,17 +6,29 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.security.KeyPair;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.util.ArrayList;
 
+import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.keys.MultiKey;
+import org.minima.utils.MiniFile;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
+import org.minima.utils.encryption.EncryptDecrypt;
 
 public class MaximaDB implements Streamable {
 
+	//Sign with our own MultiKey Lamport
 	MultiKey mAccount;
 	
+	//RSA public and private keys
+	MiniData mRSAPublicKey;
+	MiniData mRSAPrivateKey;
+	
+	//All the known users
 	ArrayList<MaximaUser> mUsers;
 	
 	public MaximaDB() {
@@ -24,11 +36,37 @@ public class MaximaDB implements Streamable {
 	}
 	
 	public void newAccount() {
+		//Create a new Signing Key
 		mAccount = new MultiKey(160, new MiniNumber(32), new MiniNumber(3));
+		
+		//Create new RSA encrypt / decrypt keys..
+		try {
+			KeyPair keys = EncryptDecrypt.generateKeyPair();
+		
+			byte[] publicKey = keys.getPublic().getEncoded();
+	        byte[] privateKey = keys.getPrivate().getEncoded();
+
+	        mRSAPublicKey  = new MiniData(publicKey);
+	        mRSAPrivateKey = new MiniData(privateKey);
+			
+		} catch (Exception e) {
+			MinimaLogger.log(e);
+			
+			mRSAPublicKey   = new MiniData();
+			mRSAPrivateKey  = new MiniData();
+		}
 	}
 	
 	public MultiKey getAccount() {
 		return mAccount;
+	}
+	
+	public MiniData getPublicRSA() {
+		return mRSAPublicKey;
+	}
+	
+	public MiniData getPrivateRSA() {
+		return mRSAPrivateKey;
 	}
 	
 	public MaximaUser getUser(String zPublicKey) {
@@ -60,19 +98,10 @@ public class MaximaDB implements Streamable {
 	}
 	
 	public void saveDB(File zFile) {
-		//Save the MaximaDB
 		try {
-			FileOutputStream fos = new FileOutputStream(zFile);
-			DataOutputStream dos = new DataOutputStream(fos);
-			
-			writeDataStream(dos);
-			dos.flush();
-			
-			dos.close();
-			fos.close();
-			
-		}catch(Exception exc) {
-			MinimaLogger.log(exc);
+			MiniFile.writeObjectToFile(zFile, this);
+		} catch (IOException e) {
+			MinimaLogger.log(e);
 		}
 	}
 	
@@ -98,6 +127,10 @@ public class MaximaDB implements Streamable {
 		//Write out the Pub Key
 		mAccount.writeDataStream(zOut);
 		
+		//Write out the RSA data
+		mRSAPublicKey.writeDataStream(zOut);
+		mRSAPrivateKey.writeDataStream(zOut);
+		
 		//Write out the users
 		MiniNumber len = new MiniNumber(mUsers.size());
 		len.writeDataStream(zOut);
@@ -112,6 +145,10 @@ public class MaximaDB implements Streamable {
 		//Read in the key
 		mAccount = new MultiKey();
 		mAccount.readDataStream(zIn);
+		
+		//RSA data
+		mRSAPublicKey  = MiniData.ReadFromStream(zIn);
+		mRSAPrivateKey = MiniData.ReadFromStream(zIn);
 		
 		//Read in the User DB
 		mUsers = new ArrayList();

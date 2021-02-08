@@ -433,6 +433,10 @@ public class NetworkHandler extends MessageProcessor {
 			for(MinimaClient client : mClients) {
 				client.setLOG(traceon);
 			}
+			
+			//Set trace for Maxima
+			mMaxima.setLOG(traceon);
+			mTunnel.setLOG(traceon);
 		
 		}else if(zMessage.isMessageType(NETWORK_SENDALL)) {
 			//Get the message to send

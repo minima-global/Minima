@@ -17,7 +17,7 @@ public class MiniFile {
 	
 	public static void writeDataToFile(File zFile, byte[] zData, boolean zAppend) throws IOException {
 		//Check Parent
-		File parent = zFile.getParentFile();
+		File parent = zFile.getAbsoluteFile().getParentFile();
 		if(!parent.exists()) {
 			parent.mkdirs();
 		}

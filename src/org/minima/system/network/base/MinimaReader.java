@@ -271,6 +271,9 @@ public class MinimaReader implements Runnable {
 				}else if(msgtype.isEqual(NETMESSAGE_GREETING)) {
 					notifyListeners("Greeting Received..");
 					
+					String greetsize = MiniFormat.formatSize(len);
+					MinimaLogger.log("Greeting Message : "+greetsize);
+					
 					//Get the Greeting
 					Greeting greet = Greeting.ReadFromStream(inputstream);
 					

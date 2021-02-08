@@ -19,9 +19,9 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.buildship.core.gradleclasspathcontainer"/>
-    <classpathentry kind="lib" path="lib/h2-1.4.200.jar"/>
-    <classpathentry kind="lib" path="lib/rhino-1.7.12.jar"/>
-    <classpathentry kind="lib" path="lib/junit-4.13.jar"/>
+	<classpathentry kind="lib" path="lib/h2-1.4.200.jar"/>
+	<classpathentry kind="lib" path="lib/rhino-1.7.12.jar"/>
+	<classpathentry kind="lib" path="lib/junit-4.13.jar"/>
 	<classpathentry kind="lib" path="lib/jsch-0.1.55.jar"/>
 	<classpathentry kind="output" path="bin/default"/>
 </classpath>
