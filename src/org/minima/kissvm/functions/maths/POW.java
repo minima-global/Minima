@@ -5,6 +5,7 @@ import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.functions.MinimaFunction;
 import org.minima.kissvm.values.NumberValue;
 import org.minima.kissvm.values.Value;
+import org.minima.objects.base.MiniNumber;
 
 public class POW extends MinimaFunction {
 
@@ -14,8 +15,15 @@ public class POW extends MinimaFunction {
 	
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
-		NumberValue exp = (NumberValue) getParameter(0).getValue(zContract);
-		NumberValue number = (NumberValue) getParameter(1).getValue(zContract);
+		checkExactParamNumber(2);
+		
+		NumberValue exp 	= zContract.getNumberParam(0, this);
+		NumberValue number 	= zContract.getNumberParam(1, this);
+		
+		MiniNumber actnum = exp.getNumber();
+		if(!actnum.floor().isEqual(actnum)) {
+			throw new ExecutionException("POW must be to a whole Number");
+		}
 		
 		//Only works for WHOLE numbers..
 		return new NumberValue(number.getNumber().pow(exp.getNumber().getAsInt()));

@@ -20,13 +20,13 @@ public class BITGET extends MinimaFunction {
 	 */
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
+		checkExactParamNumber(2);
+		
 		//get the Input Data
-//		byte[] data = getParameter(0).getValue(zContract).getRawData();
 		byte[] data = zContract.getHEXParam(0, this).getRawData();
 		int datalen   = data.length;
 		
 		//Get the desired Bit
-//		int bit = getParameter(1).getValue(zContract).getNumber().getAsInt();
 		int bit = zContract.getNumberParam(1, this).getNumber().getAsInt();
 		
 		//find the byte you need..bit

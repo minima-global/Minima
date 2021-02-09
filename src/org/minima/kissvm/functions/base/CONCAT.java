@@ -18,36 +18,35 @@ public class CONCAT extends MinimaFunction{
 
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
+		//Check parameters..
+		checkMinParamNumber(2);
+		
 		//Run through the function parameters and concatenate..
 		ArrayList<Expression> params = getAllParameters();
-		
-		//Data structures required
-		int paramnum = params.size();
-		if(paramnum < 2) {
-			throw new ExecutionException("CONCAT requires at least 2 parameters");
-		}
 		
 		//Check first param..
 		Value valcheck  = params.get(0).getValue(zContract);
 		boolean isHex = false;
-		if(valcheck.getValueType() == Value.VALUE_HEX) {
+		int ptype = valcheck.getValueType();
+		if(ptype == Value.VALUE_HEX) {
 			isHex = true;
-		}else if(valcheck.getValueType() == Value.VALUE_SCRIPT) {
+		}else if(ptype == Value.VALUE_SCRIPT) {
 			isHex = false;
 		}else {
 			throw new ExecutionException("CONCAT parameters must be HEX or SCRIPT");
 		}
 		
+		//Check all the same type
+		checkAllParamsType(ptype, zContract);
+		
+		//Is it HEX or SCRIPT
 		if(isHex) {
 			//Sum them
-			byte[][] parambytes = new byte[paramnum][];
+			byte[][] parambytes = new byte[getAllParameters().size()][];
 			int totlen  = 0;
 			int counter = 0;
 			for(Expression exp : params) {
 				Value vv = exp.getValue(zContract);
-				if(vv.getValueType() != Value.VALUE_HEX) {
-					throw new ExecutionException("All parameters to CONCAT MUST be of same type");
-				}
 				
 				//This is a HEXValue
 				HEXValue hex = (HEXValue)vv;
@@ -75,9 +74,6 @@ public class CONCAT extends MinimaFunction{
 			String fullstring = "";
 			for(Expression exp : params) {
 				Value vv = exp.getValue(zContract);
-				if(vv.getValueType() != Value.VALUE_SCRIPT) {
-					throw new ExecutionException("All parameters to CONCAT MUST be of same type");
-				}
 				
 				//This is a ScriptValue
 				ScriptValue scr = (ScriptValue)vv;

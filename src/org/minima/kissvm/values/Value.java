@@ -15,10 +15,10 @@ public abstract class Value {
 	/**
 	 * The Only Value Types
 	 */
-	public static final int VALUE_HEX     = 0;
-	public static final int VALUE_NUMBER  = 1;
-	public static final int VALUE_SCRIPT  = 2;
-	public static final int VALUE_BOOLEAN = 3;
+	public static final int VALUE_HEX     = 1;
+	public static final int VALUE_NUMBER  = 2;
+	public static final int VALUE_SCRIPT  = 4;
+	public static final int VALUE_BOOLEAN = 8;
 	
 	/**
 	 * What type of Value is this..
@@ -77,23 +77,43 @@ public abstract class Value {
 	public static int getValueType(String zValue) throws IllegalArgumentException {
 		if(zValue.startsWith("[") && zValue.endsWith("]")) {
 			//Then initialise the value 
-			return ScriptValue.VALUE_SCRIPT;
+			return VALUE_SCRIPT;
 			
 		}else if(zValue.startsWith("0x")) {
-			return HEXValue.VALUE_HEX;
+			return VALUE_HEX;
 
 		}else if(zValue.equals("TRUE")) {
-			return BooleanValue.VALUE_BOOLEAN;
+			return VALUE_BOOLEAN;
 
 		}else if(zValue.equals("FALSE")) {
-			return BooleanValue.VALUE_BOOLEAN;
+			return VALUE_BOOLEAN;
 
 		}else if(Token.isNumeric(zValue)){
-			return NumberValue.VALUE_NUMBER;
+			return VALUE_NUMBER;
 	
 		}else {
 			throw new IllegalArgumentException("Invalid value type : "+zValue);
 		}
+	}
+	
+	/**
+	 * Get the type as a string
+	 * 
+	 * @param zType
+	 * @return
+	 */
+	public static String getValueTypeString(int zType) {
+		if(zType == VALUE_BOOLEAN) {
+			return "BOOLEAN";
+		}else if(zType == VALUE_HEX) {
+			return "HEX";
+		}else if(zType == VALUE_NUMBER) {
+			return "NUMBER";
+		}else if(zType == VALUE_SCRIPT) {
+			return "SCRIPT";
+		}
+		
+		return "ERROR_UNKNOWN_TYPE";
 	}
 	
 	/**

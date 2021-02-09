@@ -15,15 +15,12 @@ public class LEN extends MinimaFunction{
 	
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
-		//The Data
-		Value vv = getParameter(0).getValue(zContract);
-		if(vv.getValueType() != Value.VALUE_HEX && vv.getValueType() != Value.VALUE_SCRIPT) {
-			throw new ExecutionException("LEN requires HEXValue or ScriptValue");
-		}
-		HEXValue hex = (HEXValue)vv;
+		//Check Params
+		checkExactParamNumber(1);
 		
-		//The Length
-		int len = hex.getRawData().length;
+		//The Data
+		HEXValue hex = zContract.getHEXParam(0, this);
+		int len      = hex.getRawData().length;
 		
 		return new NumberValue(len);
 	}
