@@ -26,7 +26,7 @@ import static org.junit.Assert.fail;
 import org.junit.Test;
 
 //HEXValue BITSET (HEXValue var, NumberValue pos, BooleanVlaue val)
-public class BITSETTests {
+public class CEILTests {
 
     @Test
     public void testConstructors() {
