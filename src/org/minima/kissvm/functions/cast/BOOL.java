@@ -14,10 +14,11 @@ public class BOOL extends MinimaFunction {
 	
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
+		checkExactParamNumber(1);
+		
 		//Get the Value..
 		Value val = getParameter(0).getValue(zContract);
 		
-		// TODO Auto-generated method stub
 		return new BooleanValue(val.isTrue());
 	}
 

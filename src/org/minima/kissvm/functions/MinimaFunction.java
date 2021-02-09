@@ -15,7 +15,6 @@ import org.minima.kissvm.functions.base.LEN;
 import org.minima.kissvm.functions.base.REV;
 import org.minima.kissvm.functions.base.RPLVAR;
 import org.minima.kissvm.functions.base.SUBSET;
-import org.minima.kissvm.functions.cast.ASCII;
 import org.minima.kissvm.functions.cast.BOOL;
 import org.minima.kissvm.functions.cast.HEX;
 import org.minima.kissvm.functions.cast.NUMBER;
@@ -62,7 +61,7 @@ public abstract class MinimaFunction {
 	public static MinimaFunction[] ALL_FUNCTIONS = 
 			{ 
 				new CONCAT(), new LEN(), new RPLVAR(),new REV(),new SUBSET(), new GET(),
-				new BOOL(), new NUMBER(), new HEX(), new SCRIPT(), new ASCII(),
+				new BOOL(), new NUMBER(), new HEX(), new SCRIPT(),
 				new ABS(), new CEIL(), new FLOOR(),new MAX(), new MIN(), new DEC(), new INC(), 
 				new SIGDIG(), new POW(), 
 				new TOKENSCRIPT(), new TOKENTOTAL(), new TOKENSCALE(),
@@ -117,6 +116,45 @@ public abstract class MinimaFunction {
 	}
 	
 	/**
+	 * Check all parameters are of the Type required
+	 * 
+	 * @param zType
+	 * @param zContract
+	 * @param zParams
+	 * @throws ExecutionException 
+	 */
+	protected void checkAllParamsType(int zType,Contract zContract) throws ExecutionException {
+		int count=0;
+		for(Expression exp : getAllParameters()) {
+			Value vv = exp.getValue(zContract);
+			if(vv.getValueType() != zType) {
+				throw new ExecutionException("Incorrect type in parameters @ "+count
+						+". Found "+Value.getValueTypeString(vv.getValueType())
+						+" expected "+Value.getValueTypeString(zType));
+			}
+			count++;
+		}
+	}
+	
+	protected void checkIsOfType(Value zValue, int zType) throws ExecutionException {
+		if((zValue.getValueType() & zType) == 0) {
+			throw new ExecutionException("Parameter is incorrect type in "+getName()+". Found "+Value.getValueTypeString(zValue.getValueType()));
+		}
+	}
+	
+	protected void checkExactParamNumber(int zNumberOfParams) throws ExecutionException {
+		if(getAllParameters().size() != zNumberOfParams) {
+			throw new ExecutionException("Function requires "+zNumberOfParams+" parameters");
+		}
+	}
+	
+	protected void checkMinParamNumber(int zMinNumberOfParams) throws ExecutionException {
+		if(getAllParameters().size() < zMinNumberOfParams) {
+			throw new ExecutionException("Function requires minimum of "+zMinNumberOfParams+" parameters");
+		}
+	}
+	
+	/**
 	 * Run it. And return a Value. 
 	 * @return
 	 */
@@ -127,7 +165,7 @@ public abstract class MinimaFunction {
 	 * @return
 	 */
 	public abstract MinimaFunction getNewFunction();
-
+	
 	/**
 	 * Get a specific function given it's name
 	 * 

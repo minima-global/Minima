@@ -16,6 +16,8 @@ public class HEX extends MinimaFunction{
 	
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
+		checkExactParamNumber(1);
+		
 		//Get the Value..
 		Value val = getParameter(0).getValue(zContract);
 		
@@ -28,7 +30,13 @@ public class HEX extends MinimaFunction{
 		
 		}else if(val.getValueType() == Value.VALUE_NUMBER) {
 			NumberValue nv = (NumberValue)val;
-			return new HEXValue(nv.getNumber());
+			
+			try {
+				HEXValue hex = new HEXValue(nv.getNumber());
+				return hex;
+			}catch(NumberFormatException nexc) {
+				throw new ExecutionException(nexc.toString());
+			}
 	
 		}else if(val.getValueType() == Value.VALUE_SCRIPT) {
 			ScriptValue nv = (ScriptValue)val;

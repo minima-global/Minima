@@ -15,6 +15,7 @@ public class MULTISIG extends MinimaFunction {
 
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
+		checkMinParamNumber(2);
 		
 		//How many required.. 
 		int num = zContract.getNumberParam(0, this).getNumber().getAsInt();
