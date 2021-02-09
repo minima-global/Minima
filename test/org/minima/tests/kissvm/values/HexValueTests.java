@@ -19,41 +19,38 @@ public class HexValueTests {
 
         HEXValue hv1 = new HEXValue(new MiniData());
         HEXValue hv2 = new HEXValue(new MiniData("1234"));
-        
+
         assertThrows(NumberFormatException.class, () -> {
-        	HEXValue hv3 = new HEXValue(new MiniData("QWER")); //invalid HEX input
+            new HEXValue(new MiniData("QWER")); //invalid HEX input
         });
-        
+        assertThrows(NumberFormatException.class, () -> {
+            new HEXValue(new MiniNumber(-1)); // Invalid HEX input
+        });
+        assertThrows(NumberFormatException.class, () -> {
+            new HEXValue(new MiniNumber("1.1")); // Invalid HEX input
+        });
+
         HEXValue hv4 = new HEXValue(new MiniData(new byte[]{}));
         HEXValue hv5 = new HEXValue(new MiniData(new byte[]{(byte) 0x12, (byte) 0x34, (byte) 0x56}));
         HEXValue hv6 = new HEXValue(new MiniNumber(Integer.valueOf(255)));
         HEXValue hv7 = new HEXValue(new MiniNumber(Long.valueOf(65535)));
         HEXValue hv8 = new HEXValue(new MiniNumber(BigDecimal.valueOf(16777215)));
-
-        //PADDY - This is now NOT what HEXValue does
-//        assertEquals(0, hv1.getNumber().getAsInt());
-//        assertEquals(0x1234, hv2.getNumber().getAsInt());
-////        assertEquals(61407, hv3.getNumber().getAsInt()); // is this correct?
-//        assertEquals(0, hv4.getNumber().getAsInt());
-//        assertEquals(0x123456, hv5.getNumber().getAsInt());
-//        assertEquals(0xFF, hv6.getNumber().getAsInt());
-//        assertEquals(0xFFFF, hv7.getNumber().getAsInt());
-//        assertEquals(0xFFFFFF, hv8.getNumber().getAsInt());
+        HEXValue hv9 = new HEXValue(new MiniNumber("1.0"));
 
         assertEquals("should be equal ", HEXValue.VALUE_HEX, hv1.getValueType());
         assertEquals("should be equal ", HEXValue.VALUE_HEX, hv2.getValueType());
-//        assertEquals("should be equal ", HEXValue.VALUE_HEX, hv3.getValueType());
         assertEquals("should be equal ", HEXValue.VALUE_HEX, hv4.getValueType());
         assertEquals("should be equal ", HEXValue.VALUE_HEX, hv5.getValueType());
         assertEquals("should be equal ", HEXValue.VALUE_HEX, hv6.getValueType());
         assertEquals("should be equal ", HEXValue.VALUE_HEX, hv7.getValueType());
         assertEquals("should be equal ", HEXValue.VALUE_HEX, hv8.getValueType());
+        assertEquals("should be equal ", HEXValue.VALUE_HEX, hv9.getValueType());
     }
 
     @Test
     public void testArithmentic() {
-    	//PADDY - this is not now possible..
-    	
+        //PADDY - this is not now possible..
+
 //        // Addition
 //        HEXValue hv1 = new HEXValue(new MiniNumber(Integer.valueOf(0)));
 //        HEXValue hv2 = new HEXValue(new MiniNumber(Integer.valueOf(0)));
@@ -274,6 +271,8 @@ public class HexValueTests {
                 break;
             }
 
+            assertTrue("should be true ", hv1.isEqual(hv2));
+            assertTrue("should be true ", hv2.isEqual(hv1));
             assertFalse("should be false ", hv1.isLess(hv2));
             assertFalse("should be false ", hv2.isLess(hv1));
             assertTrue("should be true ", hv1.isLessEqual(hv2));
@@ -319,6 +318,8 @@ public class HexValueTests {
                 break;
             }
 
+            assertFalse("should be false ", hv1.isEqual(hv2));
+            assertFalse("should be false ", hv1.isEqual(hv2));
             assertTrue("should be true ", hv1.isLess(hv2));
             assertFalse("should be false ", hv2.isLess(hv1));
             assertTrue("should be true ", hv1.isLessEqual(hv2));

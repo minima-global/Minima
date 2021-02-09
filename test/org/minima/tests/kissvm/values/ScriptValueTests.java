@@ -1,6 +1,5 @@
 package org.minima.tests.kissvm.values;
 
-
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
@@ -12,7 +11,7 @@ public class ScriptValueTests {
     @Test
     public void testConstructors() {
 
-    	ScriptValue sv1 = new ScriptValue(""); // receives empty string!!!
+        ScriptValue sv1 = new ScriptValue(""); // receives empty string!!!
         ScriptValue sv2 = new ScriptValue("[]"); // receives empty script!!!
         ScriptValue sv3 = new ScriptValue("RETURN TRUE"); // receives valid script
         ScriptValue sv4 = new ScriptValue("hello world"); // receives invalid script!!!

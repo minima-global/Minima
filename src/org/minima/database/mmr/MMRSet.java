@@ -69,6 +69,11 @@ public class MMRSet implements Streamable {
 	ArrayList<MiniInteger> mKeepers;
 	
 	/**
+	 * Does this MMR use the MMREntryDB for duplicates
+	 */
+	boolean mUseMMREntryDB = true;
+	
+	/**
 	 * Has the set been Finalized (Peaks / Root )
 	 * No more changes after this.
 	 */
@@ -92,44 +97,19 @@ public class MMRSet implements Streamable {
 		this(null, zBitLength);
 	}
 	
+	public MMRSet(int zBitLength, boolean zUseMMREntryDB) {
+		this(null, zBitLength,zUseMMREntryDB);
+	}
+	
 	public MMRSet(MMRSet zParent) {
 		this(zParent, 512);
 	}
 	
-	public JSONObject toJSON() {
-		JSONObject ret = new JSONObject();
-		
-		ret.put("block", mBlockTime);
-		ret.put("entrynumber", mEntryNumber);
-
-		JSONArray jentry = new JSONArray();
-		Enumeration<MMREntry> entries = mSetEntries.elements();
-		while(entries.hasMoreElements()) {
-			MMREntry entry = entries.nextElement();
-			jentry.add(entry.toJSON());
-		}
-		ret.put("entries", jentry);
-		ret.put("maxrow", mMaxRow);
-		
-		JSONArray maxentry = new JSONArray();
-		for(MMREntry entry : mMaxEntries) {
-			if(entry != null) {
-				maxentry.add(entry.getRow()+":"+entry.getEntryNumber().toString());
-			}
-		}
-		ret.put("maxentries", maxentry);
-		
-		JSONArray keepers = new JSONArray();
-		for(MiniInteger keeper : mKeepers) {
-			keepers.add(keeper.toString());
-		}
-		ret.put("keepers", keepers);
-		
-		return ret;
+	public MMRSet(MMRSet zParent, int zBitLength) {
+		this(zParent,zBitLength,true);
 	}
 	
-	
-	public MMRSet(MMRSet zParent, int zBitLength) {
+	public MMRSet(MMRSet zParent, int zBitLength, boolean zUseMMREntryDB) {
 		//All the Entries in this set
 		mSetEntries       = new Hashtable<>();
 		mSetEntriesCoinID = new Hashtable<>();
@@ -146,6 +126,9 @@ public class MMRSet implements Streamable {
 		
 		//Not Finalized..
 		mFinalized = false;
+		
+		//Do we Use the MMREntryDB
+		mUseMMREntryDB = zUseMMREntryDB;
 		
 		//What HASH strength - ALL MMR database is 512
 		MMR_HASH_BITS = zBitLength;
@@ -183,12 +166,50 @@ public class MMRSet implements Streamable {
 		}
 	}
 	
+	public JSONObject toJSON() {
+		JSONObject ret = new JSONObject();
+		
+		ret.put("block", mBlockTime);
+		ret.put("entrynumber", mEntryNumber);
+
+		JSONArray jentry = new JSONArray();
+		Enumeration<MMREntry> entries = mSetEntries.elements();
+		while(entries.hasMoreElements()) {
+			MMREntry entry = entries.nextElement();
+			jentry.add(entry.toJSON());
+		}
+		ret.put("entries", jentry);
+		ret.put("maxrow", mMaxRow);
+		
+		JSONArray maxentry = new JSONArray();
+		for(MMREntry entry : mMaxEntries) {
+			if(entry != null) {
+				maxentry.add(entry.getRow()+":"+entry.getEntryNumber().toString());
+			}
+		}
+		ret.put("maxentries", maxentry);
+		
+		JSONArray keepers = new JSONArray();
+		for(MiniInteger keeper : mKeepers) {
+			keepers.add(keeper.toString());
+		}
+		ret.put("keepers", keepers);
+		
+		return ret;
+	}
+	
 	public void setParent(MMRSet zParent) {
 		mParent = zParent;
 	}
 	
 	//Switch to the shared MMREntry DB
 	private void fixEntryDuplicates() {
+		//Do we use the duplicate DB
+		if(!mUseMMREntryDB) {
+			return;
+		}
+		
+		//Get the Duplicate Copy DB
 		MMREntryDB db = MMREntryDB.getDB();
 		
 		//Create Copies..

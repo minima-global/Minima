@@ -42,11 +42,23 @@ public class MultiKey extends BaseKey {
 	public MultiKey() {}
 
 	/**
+	 * Create a MultiKey for verification with this public key
+	 * @param zPublicKey
+	 */
+	public MultiKey(MiniData zPublicKey) {
+		setPublicKey(zPublicKey);
+	}
+
+	/**
 	 * Use Default settings to create a Multi-Key
 	 * @param zBitLength
 	 */
 	public MultiKey(int zBitLength) {
 		this(MiniData.getRandomData(zBitLength/8), DEFAULT_KEYS_PER_LEVEL, DEFAULT_LEVELS);
+	}
+	
+	public MultiKey(int zBitLength, MiniNumber zKeysPerLevel, MiniNumber zLevel) {
+		this(MiniData.getRandomData(zBitLength/8), zKeysPerLevel, zLevel);
 	}
 
 	public MultiKey(MiniData zPrivateSeed, MiniNumber zKeysPerLevel, MiniNumber zLevel) {
@@ -72,7 +84,7 @@ public class MultiKey extends BaseKey {
 		mSingleKeys = new SingleKey[mMaxUses.getAsInt()];
 		
 		//Now create the MMR tree
-		mMMR = new MMRSet(mBitLength.getAsInt());
+		mMMR = new MMRSet(mBitLength.getAsInt(),false);
 				
 		//Create all the keys..
 		int len = mMaxUses.getAsInt();

@@ -60,6 +60,9 @@ java -cp ../lib/*:. org.minima.Start
 You can add -private and all the other parameters to that.
 
 
+Apple Silicon: please use OpenJDK Java 11 (LTS) macOS ARM 64 bit (Zuul version 11.45.27 or later)
+https://www.azul.com/downloads/zulu-community/?version=java-11-lts&os=macos&architecture=arm-64-bit&package=jdk
+
 ### Tests
 
 You can run the tests directly from your IDE or from command-line.
@@ -94,14 +97,33 @@ You can also build your own Docker minima image with the following command:
 docker build -t minima:latest .
 ```
 
+Note: if running on ARM (Linux or Apple Silicon) please us the following command instead:
+```
+docker build -t minima:latest -f Dockerfile.arm64v8 .
+```
+
 Start the image with default settings:
 ```
 docker run minima:latest
 ```
-=======
-The reports can be found at
-./build/reports/tests/test/index.html
-./build/reports/jacoco/test/html/index.html
+
+### End to end testing
+
+Requirements: 
+- Docker
+- jq
+
+Build local Docker image:
+```
+docker build -t minima:latest . 
+```
+
+Start a 3 nodes private Minima network using Docker:
+```
+./scripts/start_docker_network_private_net.sh
+```
+
+By default the network is isolated. You can run curl commands using dockere. See script source code for details.
 
 ### Demo Session
 

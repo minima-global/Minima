@@ -46,6 +46,10 @@ public class BackupManager extends MessageProcessor {
 	
 	File mWebRoot;
 	
+	File mMaximaRoot;
+	
+	File mTunnelRoot;
+	
 	static File mTempFolder = new File(System.getProperty("java.io.tmpdir"));
 	
 	MiniNumber mLastBlock  = MiniNumber.ZERO;
@@ -76,6 +80,14 @@ public class BackupManager extends MessageProcessor {
 	
 	public File getMiniDAPPFolder() {
 		return mMiniDAPPS;
+	}
+	
+	public File getMaximaFolder() {
+		return mMaximaRoot;
+	}
+
+	public File getSSHTunnelFolder() {
+		return mTunnelRoot;
 	}
 	
 	public File getMiniDAPPFolder(String zMiniDAPPID) {
@@ -310,12 +322,18 @@ public class BackupManager extends MessageProcessor {
 		//The Backup folder
 		mBackup    = ensureFolder(new File(mRoot,"backup"));
 		
+		//Maxima folder
+		mMaximaRoot = ensureFolder(new File(mRoot,"maxima"));
+		
+		//SSHTunnel folder
+		mTunnelRoot = ensureFolder(new File(mRoot,"tunnel"));
+		
 		//The Test Web folder
 		mWebRoot = ensureFolder(new File(mRoot,"webroot"));
 				
 		//The MiniDAPPS folder
 		mMiniDAPPS = ensureFolder(new File(mWebRoot,"minidapps"));
-				
+		
 		//Clear temp folder..
 		MiniFile.deleteFileOrFolder(mRootPath,new File(mRoot,"temp"));
 		
@@ -331,6 +349,8 @@ public class BackupManager extends MessageProcessor {
 		MiniFile.deleteFileOrFolder(mRootPath,new File(zFolder,"txpow"));
 		MiniFile.deleteFileOrFolder(mRootPath,new File(zFolder,"blocks"));
 		MiniFile.deleteFileOrFolder(mRootPath,new File(zFolder,"backup"));
+		MiniFile.deleteFileOrFolder(mRootPath,new File(zFolder,"maxima"));
+		MiniFile.deleteFileOrFolder(mRootPath,new File(zFolder,"tunnel"));
 		MiniFile.deleteFileOrFolder(mRootPath,new File(zFolder,"temp"));
 	}
 	

@@ -539,6 +539,12 @@ public class ConsensusNet extends ConsensusProcessor {
 				//OLD or missing TxPoW
 				MinimaLogger.log("NET TXPOWREQUEST OF MISSING TXPOW "+txpowid);
 			}else {
+				//Do we have a body.. or is it a very old txn..
+				if(!txpow.hasBody()) {
+					MinimaLogger.log("NET TXPOWREQUEST OF TXPOW WITH NO BODY ( TOO OLD )"+txpowid);
+					return;
+				}
+				
 				//Send it to him..
 				MinimaClient client = (MinimaClient) zMessage.getObject("netclient");
 				Message tx = new Message(MinimaClient.NETCLIENT_SENDTXPOW).addObject("txpow", txpow);
@@ -588,6 +594,15 @@ public class ConsensusNet extends ConsensusProcessor {
 			//The TxPoW
 			TxPoW txpow = (TxPoW)zMessage.getObject("txpow");
 		
+			//First check that this is WITHIN acceptable linits .. so not too far ahead of the current chain..
+			MiniNumber timetip   = getMainDB().getMainTree().getChainTip().getTxPow().getBlockNumber();
+			MiniNumber timeblock = txpow.getBlockNumber();
+			if(timeblock.sub(timetip).isMore(GlobalParams.MINIMA_CASCADE_START_DEPTH)) {
+				//TOO FAR!!
+				MinimaLogger.log("NET Transaction TOO FAR IN THE FUTURE.. new:"+timeblock+" / current:"+timetip);
+				return;
+			}
+			
 			//DEBUG logs..
 			//MinimaLogger.log("TXPOW RECEIVED "+txpow.getBlockNumber()+" "+txpow.getTxPowID());
 			
