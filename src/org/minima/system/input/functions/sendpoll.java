@@ -9,7 +9,7 @@ public class sendpoll extends CommandFunction{
 	public sendpoll() {
 		super("sendpoll");
 		
-		setHelp("(list|clear (refid)) [amount] [address] {tokenid}", "Polling version of send", "");
+		setHelp("(list|clear (refid)|[amount] [address] {tokenid})", "Polling version of send", "");
 	}
 	
 	@Override
