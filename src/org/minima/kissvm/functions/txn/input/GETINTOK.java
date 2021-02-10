@@ -18,11 +18,11 @@ public class GETINTOK extends MinimaFunction {
 	
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
+		checkExactParamNumber(1);
 		
-		//Which Output - must be from 0-255
-//		int input = getParameter(0).getValue(zContract).getNumber().getAsInt();
+		//Which Output
 		int input = zContract.getNumberParam(0, this).getNumber().getAsInt();
-		
+				
 		//Get the Transaction
 		Transaction trans = zContract.getTransaction();
 		

@@ -26,9 +26,11 @@ public class VERIFYIN extends MinimaFunction{
 	
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
+		if(getAllParameters().size()>5) {
+			throw new ExecutionException("Too many parameters for VERIFYIN");
+		}
 		
 		//Which Output
-//		int input     = getParameter(0).getValue(zContract).getNumber().getAsInt();
 		int input = zContract.getNumberParam(0, this).getNumber().getAsInt();
 		
 		//Get the details

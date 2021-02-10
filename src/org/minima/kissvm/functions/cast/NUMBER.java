@@ -23,6 +23,8 @@ public class NUMBER extends MinimaFunction{
 	
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
+		checkExactParamNumber(1);
+		
 		//Get the Value..
 		Value val = getParameter(0).getValue(zContract);
 		
@@ -42,9 +44,7 @@ public class NUMBER extends MinimaFunction{
 			ScriptValue nv = (ScriptValue)val;
 			return new HEXValue(nv.getMiniData().to0xString());
 		}
-		
 	
-		// TODO Auto-generated method stub
 		return val;
 	}
 

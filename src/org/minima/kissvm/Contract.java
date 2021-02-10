@@ -11,6 +11,7 @@ import org.minima.kissvm.functions.MinimaFunction;
 import org.minima.kissvm.statements.StatementBlock;
 import org.minima.kissvm.statements.StatementParser;
 import org.minima.kissvm.tokens.Token;
+import org.minima.kissvm.values.BooleanValue;
 import org.minima.kissvm.values.HEXValue;
 import org.minima.kissvm.values.NumberValue;
 import org.minima.kissvm.values.ScriptValue;
@@ -351,6 +352,22 @@ public class Contract {
 			throw new ExecutionException("Incorrect Parameter type - should be HEXValue @ "+zParamNumber+" "+zFunction.getName());
 		}
 		return (HEXValue)vv;
+	}
+	
+	public ScriptValue getScriptParam(int zParamNumber, MinimaFunction zFunction) throws ExecutionException {
+		Value vv = zFunction.getParameter(zParamNumber).getValue(this);
+		if(vv.getValueType() != Value.VALUE_SCRIPT) {
+			throw new ExecutionException("Incorrect Parameter type - should be ScriptValue @ "+zParamNumber+" "+zFunction.getName());
+		}
+		return (ScriptValue)vv;
+	}
+	
+	public BooleanValue getBoolParam(int zParamNumber, MinimaFunction zFunction) throws ExecutionException {
+		Value vv = zFunction.getParameter(zParamNumber).getValue(this);
+		if(vv.getValueType() != Value.VALUE_BOOLEAN) {
+			throw new ExecutionException("Incorrect Parameter type - should be BooleanValue @ "+zParamNumber+" "+zFunction.getName());
+		}
+		return (BooleanValue)vv;
 	}
 	
 	/**

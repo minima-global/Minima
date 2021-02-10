@@ -18,9 +18,9 @@ public class GETOUTADDR extends MinimaFunction {
 	
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
+		checkExactParamNumber(1);
 		
 		//Which Output - must be from 0-255
-//		int output = getParameter(0).getValue(zContract).getNumber().getAsInt();
 		int output = zContract.getNumberParam(0, this).getNumber().getAsInt();
 		
 		//Get the Transaction

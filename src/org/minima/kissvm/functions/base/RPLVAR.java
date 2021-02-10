@@ -20,15 +20,17 @@ public class RPLVAR extends MinimaFunction {
 	
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
+		checkExactParamNumber(3);
+		
 		//Get the script..
-		ScriptValue script = (ScriptValue) getParameter(0).getValue(zContract);
+		ScriptValue script = zContract.getScriptParam(0, this);
 		String ss = script.toString();
 		
 		//Get the variable name
-		ScriptValue var    = (ScriptValue) getParameter(1).getValue(zContract);
+		ScriptValue var    = zContract.getScriptParam(1, this);;
 		
 		//Get the expression
-		ScriptValue exp    = (ScriptValue) getParameter(2).getValue(zContract);
+		ScriptValue exp    = zContract.getScriptParam(2, this);;
 				
 		//Now replace.. 
 		String search = "LET "+var+" = ";

@@ -14,9 +14,10 @@ public class FLOOR extends MinimaFunction {
 	
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
+		checkExactParamNumber(1);
 		
-		NumberValue number = (NumberValue) getParameter(0).getValue(zContract);
-		
+		NumberValue number = zContract.getNumberParam(0, this);
+
 		return new NumberValue(number.getNumber().floor());
 	}
 	
