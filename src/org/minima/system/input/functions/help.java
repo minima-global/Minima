@@ -81,6 +81,7 @@ public class help extends CommandFunction{
 			
 			addJSONDesc(new gimme50());
 			addJSONDesc(new send());
+			addJSONDesc(new sendpoll());
 			addJSONDesc(new newaddress());
 			addJSONDesc(new balance());
 			

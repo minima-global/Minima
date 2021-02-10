@@ -2,10 +2,14 @@ package org.minima.system.brains;
 
 import java.util.ArrayList;
 
+import org.h2.command.Command;
 import org.minima.objects.Address;
 import org.minima.objects.base.MiniData;
 import org.minima.system.input.InputHandler;
+import org.minima.system.network.commands.CMD;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
+import org.minima.utils.json.parser.JSONParser;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageProcessor;
 import org.minima.utils.messages.TimerMessage;
@@ -36,6 +40,9 @@ public class SendManager extends MessageProcessor {
 		if(zMessage.getMessageType().equals(SENDMANAGER_INIT)) {
 			
 		}else if(zMessage.getMessageType().equals(SENDMANAGER_SHUTDOWN)) {
+			//Clean up..
+			
+			stopMessageProcessor();
 			
 		}else if(zMessage.getMessageType().equals(SENDMANAGER_ADD)) {
 			//How much to who ?
@@ -60,6 +67,7 @@ public class SendManager extends MessageProcessor {
 			sendcommand.put("tokenid", tokenid);
 			sendcommand.put("amount", amount);
 			sendcommand.put("reference", ref);
+			sendcommand.put("attempts", (int)0);
 			
 			//Add it to the poll list..
 			mSendCommands.add(sendcommand);
@@ -80,9 +88,44 @@ public class SendManager extends MessageProcessor {
 			
 		
 		}else if(zMessage.getMessageType().equals(SENDMANAGER_CHECKPOLL)) {
+			//Keep those that fail..
+			ArrayList<JSONObject> remainingCommands= new ArrayList<>();
+			
 			//Check for new messages and try to send them..
+			for(JSONObject command : mSendCommands) {
+				String address = (String) command.get("address");
+				String amount  = (String) command.get("amount");
+				String token   = (String) command.get("tokenid");
+				
+				//Now run this command..
+				CMD cmd = new CMD("send "+amount+" "+address+" "+token);
+				
+				//Run it.. wait for it to finish
+				cmd.run();
+
+				//Get the Response..
+				String resp = cmd.getFinalResult();
+				MinimaLogger.log(resp);
+				
+				//Convert to JSON
+				JSONObject jsonresp = (JSONObject)(new JSONParser().parse(resp));
+				
+				//Get the status
+				if((boolean) jsonresp.get("status")) {
+					//Success ..it's done
+				}else {
+					//Fail..
+					int attempt = (int) command.get("attempts");
+					attempt++;
+					command.put("attempts", attempt);
+					
+					//Add to the remaining..
+					remainingCommands.add(command);
+				}
+			}
 			
-			
+			//Switch..
+			mSendCommands = remainingCommands;
 			
 			//Check again
 			PostTimerMessage(new TimerMessage(mPollDelay, SENDMANAGER_CHECKPOLL));

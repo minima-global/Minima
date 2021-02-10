@@ -253,11 +253,13 @@ public class Main extends MessageProcessor {
 			//Gracefull shutdown..
 			mNetwork.PostMessage(NetworkHandler.NETWORK_SHUTDOWN);
 			
+			//Shut the Send Manager
+			mSendManager.PostMessage(SendManager.SENDMANAGER_SHUTDOWN);
+			
 			//Shut down the individual systems..
 			mInput.stopMessageProcessor();
 			mTXMiner.stopMessageProcessor();
 			mConsensus.stopMessageProcessor();
-			mSendManager.stopMessageProcessor();
 			
 			//Wait for the backup machine to finish..
 			while(mBackup.getSize()>0) {
