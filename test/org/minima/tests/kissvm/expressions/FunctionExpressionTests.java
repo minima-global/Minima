@@ -51,9 +51,9 @@ public class FunctionExpressionTests {
 
         assertEquals("should be equal ", "hello world", fe1.getValue(ctr).toString());
         assertEquals("should be equal ", "hello world", Value.getValue("[ HELLO   WORLD]").toString());
-        assertEquals("should be equal ", 5, ((NumberValue)fe2.getValue(ctr)).getNumber().getAsInt());
-        assertEquals("should be equal ", 10, ((NumberValue)fe3.getValue(ctr)).getNumber().getAsInt());
-        assertEquals("should be equal ", 11, ((NumberValue)fe4.getValue(ctr)).getNumber().getAsInt());
+        assertEquals("should be equal ", 5, ((NumberValue) fe2.getValue(ctr)).getNumber().getAsInt());
+        assertEquals("should be equal ", 10, ((NumberValue) fe3.getValue(ctr)).getNumber().getAsInt());
+        assertEquals("should be equal ", 11, ((NumberValue) fe4.getValue(ctr)).getNumber().getAsInt());
     }
 
     @Test
