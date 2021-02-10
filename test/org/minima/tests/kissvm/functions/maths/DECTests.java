@@ -1,6 +1,6 @@
 package org.minima.tests.kissvm.functions.maths;
 
-import org.minima.kissvm.functions.maths.CEIL;
+import org.minima.kissvm.functions.maths.DEC;
 
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
@@ -25,20 +25,20 @@ import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
-//NumberValue CEIL (NumberValue var)
-public class CEILTests {
+//NumberValue DEC (NumberValue var)
+public class DECTests {
 
     @Test
     public void testConstructors() {
-        CEIL fn = new CEIL();
+        DEC fn = new DEC();
         MinimaFunction mf = fn.getNewFunction();
 
-        assertEquals("CEIL", mf.getName());
+        assertEquals("DEC", mf.getName());
         assertEquals(0, mf.getParameterNum());
 
         try {
-            mf = MinimaFunction.getFunction("CEIL");
-            assertEquals("CEIL", mf.getName());
+            mf = MinimaFunction.getFunction("DEC");
+            assertEquals("DEC", mf.getName());
             assertEquals(0, mf.getParameterNum());
         } catch (MinimaParseException ex) {
             fail();
@@ -49,16 +49,16 @@ public class CEILTests {
     public void testValidParams() {
         Contract ctr = new Contract("", "", new Witness(), new Transaction(), new ArrayList<>());
 
-        CEIL fn = new CEIL();
+        DEC fn = new DEC();
 
-        { // More tests to be added, once the arithmetic is fixed, and we now the precision
+        { // More tests to be added, once the arithmetic is fixed, and we now the upper limits
             {
                 MinimaFunction mf = fn.getNewFunction();
                 mf.addParameter(new ConstantExpression(new NumberValue(-1)));
                 try {
                     Value res = mf.runFunction(ctr);
                     assertEquals(Value.VALUE_NUMBER, res.getValueType());
-                    assertEquals("-1", ((NumberValue) res).toString());
+                    assertEquals("-2", ((NumberValue) res).toString());
                 } catch (ExecutionException ex) {
                     fail();
                 }
@@ -69,8 +69,8 @@ public class CEILTests {
                 try {
                     Value res = mf.runFunction(ctr);
                     assertEquals(Value.VALUE_NUMBER, res.getValueType());
-                    //assertEquals("0", ((NumberValue) res).toString()); // Should be 0
-                    assertEquals("-1", ((NumberValue) res).toString());
+                    //assertEquals("-1.99999999999999999", ((NumberValue) res).toString()); // should be -1.99999999999999999
+                    assertEquals("-2", ((NumberValue) res).toString()); // Should be 0
                 } catch (ExecutionException ex) {
                     fail();
                 }
@@ -81,7 +81,7 @@ public class CEILTests {
                 try {
                     Value res = mf.runFunction(ctr);
                     assertEquals(Value.VALUE_NUMBER, res.getValueType());
-                    assertEquals("0", ((NumberValue) res).toString());
+                    assertEquals("-1.99999", ((NumberValue) res).toString());
                 } catch (ExecutionException ex) {
                     fail();
                 }
@@ -92,7 +92,8 @@ public class CEILTests {
                 try {
                     Value res = mf.runFunction(ctr);
                     assertEquals(Value.VALUE_NUMBER, res.getValueType());
-                    assertEquals("0", ((NumberValue) res).toString());
+                    //assertEquals("-1.49999999999999999", ((NumberValue) res).toString()); // should be -1.49999999999999999
+                    assertEquals("-1.5", ((NumberValue) res).toString());
                 } catch (ExecutionException ex) {
                     fail();
                 }
@@ -103,7 +104,7 @@ public class CEILTests {
                 try {
                     Value res = mf.runFunction(ctr);
                     assertEquals(Value.VALUE_NUMBER, res.getValueType());
-                    assertEquals("0", ((NumberValue) res).toString());
+                    assertEquals("-1.49999", ((NumberValue) res).toString());
                 } catch (ExecutionException ex) {
                     fail();
                 }
@@ -114,7 +115,7 @@ public class CEILTests {
                 try {
                     Value res = mf.runFunction(ctr);
                     assertEquals(Value.VALUE_NUMBER, res.getValueType());
-                    assertEquals("0", ((NumberValue) res).toString());
+                    assertEquals("-1", ((NumberValue) res).toString());
                 } catch (ExecutionException ex) {
                     fail();
                 }
@@ -125,7 +126,7 @@ public class CEILTests {
                 try {
                     Value res = mf.runFunction(ctr);
                     assertEquals(Value.VALUE_NUMBER, res.getValueType());
-                    assertEquals("1", ((NumberValue) res).toString());
+                    assertEquals("-0.50001", ((NumberValue) res).toString());
                 } catch (ExecutionException ex) {
                     fail();
                 }
@@ -136,7 +137,8 @@ public class CEILTests {
                 try {
                     Value res = mf.runFunction(ctr);
                     assertEquals(Value.VALUE_NUMBER, res.getValueType());
-                    assertEquals("1", ((NumberValue) res).toString());
+                    //assertEquals("-5.0000000000000001", ((NumberValue) res).toString()); // should be -5.0000000000000001
+                    assertEquals("-0.5", ((NumberValue) res).toString());
                 } catch (ExecutionException ex) {
                     fail();
                 }
@@ -147,7 +149,7 @@ public class CEILTests {
                 try {
                     Value res = mf.runFunction(ctr);
                     assertEquals(Value.VALUE_NUMBER, res.getValueType());
-                    assertEquals("1", ((NumberValue) res).toString());
+                    assertEquals("-0.00001", ((NumberValue) res).toString());
                 } catch (ExecutionException ex) {
                     fail();
                 }
@@ -158,7 +160,8 @@ public class CEILTests {
                 try {
                     Value res = mf.runFunction(ctr);
                     assertEquals(Value.VALUE_NUMBER, res.getValueType());
-                    assertEquals("1", ((NumberValue) res).toString());
+                    //assertEquals("-0.00000000000000001", ((NumberValue) res).toString()); // should be -0.00000000000000001
+                    assertEquals("0", ((NumberValue) res).toString());
                 } catch (ExecutionException ex) {
                     fail();
                 }
@@ -169,7 +172,7 @@ public class CEILTests {
                 try {
                     Value res = mf.runFunction(ctr);
                     assertEquals(Value.VALUE_NUMBER, res.getValueType());
-                    assertEquals("1", ((NumberValue) res).toString());
+                    assertEquals("0", ((NumberValue) res).toString());
                 } catch (ExecutionException ex) {
                     fail();
                 }
@@ -182,7 +185,7 @@ public class CEILTests {
     public void testInvalidParams() {
         Contract ctr = new Contract("", "", new Witness(), new Transaction(), new ArrayList<>());
 
-        CEIL fn = new CEIL();
+        DEC fn = new DEC();
 
         // Invalid param count
         {
