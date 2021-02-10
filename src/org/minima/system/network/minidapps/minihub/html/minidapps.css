@@ -1,39 +1,36 @@
+@font-face {
+  font-family: 'manrope';
+  src: URL('Manrope.ttf') format('truetype');
+}
+
 .maintitle {
-  background-color: #ccc;
-  border-radius: 10px;
-  font-size:48px;
-  font-family:monospace;
-  text-align:center;
+  background-color: #001c32;
+  font-size:14px;
   vertical-align:middle
 }
 
-.mainicon {
-  width:100px;
-}
-
-.evolution {
-  text-align:center;
-  font-size:24;
-}
-
-.buttonbox {
-	width:150;
-}
-
 .minidapplist {
-  background-color: #ccc;
-  border-radius: 10px;
-  font-size:48px;
-  font-family:monospace;
+  background-color: #fafaff;
   text-align:center;
-  vertical-align:top
+  vertical-align:top;
+  padding: 15px;
+  border-spacing: 20px;
+}
+
+.minidapp {
+  background-color: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0px 3px 6px #C8C8D41A; 
+  border: 1px solid #F0F0FA;	
+  font-size:12px;
+  width:100%;
+  height:50px;
 }
 
 .minidapptitle {
   background-color: #fff;
   border-radius: 5px;
   font-size:28px;
-  font-family:monospace;
   text-align:left;
   vertical-align:top
 }
@@ -43,43 +40,46 @@
   opacity: 0.9;
   border-radius: 10px;
   font-size:14px;
-  font-family:monospace;
   text-align:left;
   vertical-align:top;
   padding-left:10;
 }
 
 .mainbody {
-  background-color: #ccc;
+  background-color: #fafaff;
   border-radius: 10px;
   font-size:32px;
   font-weight:bold;
-  font-family:monospace;
 }
 
 .mainfooter {
-  background-color: #ccc;
-  border-radius: 10px;
+  background-color: #001c32;
+  color : #ffffff;
   font-size:20px;
-  font-family:monospace;
+  height : 80px;
+  font-family:manrope;
 }
 
-.minidapp {
-  background-color: #ddf;
-  border-radius: 10px;
-  font-size:32px;
-  font-family:monospace;
+.buttonbox {
+	width:150;
 }
 
 .installdapp{
-  background-color: #ddf;
-  border-radius: 10px;
-  font-size:20px;
-  font-weight:bold;
+  border: 1px solid white;
+  background-color : #001c32;
+  border-radius: 20px;
+  border-color:#ffffff;
+  font-size:16px;
+  color : #ffffff;
   width:150;
-  height:75;
-  font-family:monospace;
+  height:40;
+  font-family:manrope;
   outline: none;
+  cursor:pointer;
+}
+
+.installdapp:active {
+    border-color: #FF512F;   
 }
 
 .categoryselect{
@@ -87,17 +87,16 @@
 }
 
 .helptext {
-  background-color: #ccc;
-  border-radius: 10px;
-  font-size:14px;
-  font-family:monospace;
+  background-color: #fafaff;
+  font-size:12px;
+  font-family:manrope;
   text-align:left;
   vertical-align:top;
   font-weight:plain;
 }
 
 .loader {
-  border: 16px solid #f3f3f3; /* Light grey */
+  border: 16px solid #b3b3b3; /* Light grey */
   border-top: 16px solid #3498db; /* Blue */
   border-radius: 50%;
   width: 120px;

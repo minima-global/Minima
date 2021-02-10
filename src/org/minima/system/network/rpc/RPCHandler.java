@@ -53,6 +53,11 @@ public class RPCHandler implements Runnable {
 			
 			// get first line of the request from the client
 			String input = in.readLine();
+			if (input == null){
+				input = "";
+			}
+			
+			//Get the first line..
 			firstline = new String(input);
 			
 			// we parse the request with a string tokenizer

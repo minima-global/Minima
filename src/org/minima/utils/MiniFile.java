@@ -157,6 +157,9 @@ public class MiniFile {
 		}else if(ending.equals("ico")) {
 			return "image/ico";
 		
+		}else if(ending.equals("ttf")) {
+			return "font/ttf";
+		
 		}else if(ending.equals("zip")) {
 			return "application/zip";
 		}else if(ending.equals("pdf")) {
