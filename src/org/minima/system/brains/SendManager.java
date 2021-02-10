@@ -2,12 +2,12 @@ package org.minima.system.brains;
 
 import java.util.ArrayList;
 
-import org.h2.command.Command;
 import org.minima.objects.Address;
 import org.minima.objects.base.MiniData;
 import org.minima.system.input.InputHandler;
 import org.minima.system.network.commands.CMD;
 import org.minima.utils.MinimaLogger;
+import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.json.parser.JSONParser;
 import org.minima.utils.messages.Message;
@@ -38,10 +38,13 @@ public class SendManager extends MessageProcessor {
 	@Override
 	protected void processMessage(Message zMessage) throws Exception {
 		if(zMessage.getMessageType().equals(SENDMANAGER_INIT)) {
+			//Load DB ?
 			
 		}else if(zMessage.getMessageType().equals(SENDMANAGER_SHUTDOWN)) {
 			//Clean up..
+			//..
 			
+			//Stop this processor..
 			stopMessageProcessor();
 			
 		}else if(zMessage.getMessageType().equals(SENDMANAGER_ADD)) {
@@ -83,10 +86,23 @@ public class SendManager extends MessageProcessor {
 			InputHandler.endResponse(zMessage, true, "Send added to list");
 			
 		}else if(zMessage.getMessageType().equals(SENDMANAGER_LIST)) {
+			JSONObject resp = InputHandler.getResponseJSON(zMessage);
+			
+			JSONArray allcommands = new JSONArray();
+			for(JSONObject command : mSendCommands) {
+				allcommands.add(command);
+			}
+			resp.put("total", (int)allcommands.size());
+			resp.put("commands", allcommands);
+			
+			InputHandler.endResponse(zMessage, true, "All waiting commands");
 			
 		}else if(zMessage.getMessageType().equals(SENDMANAGER_CLEAR)) {
+			//Clear all the commands
+			mSendCommands.clear();
 			
-		
+			InputHandler.endResponse(zMessage, true, "All commands cleared");
+			
 		}else if(zMessage.getMessageType().equals(SENDMANAGER_CHECKPOLL)) {
 			//Keep those that fail..
 			ArrayList<JSONObject> remainingCommands= new ArrayList<>();
