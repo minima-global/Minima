@@ -7,6 +7,7 @@ import org.minima.GlobalParams;
 import org.minima.system.brains.BackupManager;
 import org.minima.system.brains.ConsensusBackup;
 import org.minima.system.brains.ConsensusHandler;
+import org.minima.system.brains.SendManager;
 import org.minima.system.input.InputHandler;
 import org.minima.system.network.NetworkHandler;
 import org.minima.system.txpow.TxPoWMiner;
@@ -55,6 +56,11 @@ public class Main extends MessageProcessor {
 	private ConsensusHandler mConsensus;
 	
 	/**
+	 * The Enterprise Send Poller
+	 */
+	private SendManager mSendManager;
+	
+	/**
 	 * The Backup Manager - runs in a separate thread
 	 */
 	private BackupManager mBackup;
@@ -99,8 +105,7 @@ public class Main extends MessageProcessor {
 		mNetwork 	= new NetworkHandler(this, zHost, zPort);
 		mTXMiner 	= new TxPoWMiner();
 		mConsensus  = new ConsensusHandler(this);
-		
-		//mConsensus.setLOG(true);
+		mSendManager = new SendManager();
 		
 		//Are we the genesis
 		mGenesis 	= zGenesis;
@@ -158,6 +163,10 @@ public class Main extends MessageProcessor {
 	
 	public ConsensusHandler getConsensusHandler() {
 		return mConsensus;
+	}
+	
+	public SendManager getSendManaManager() {
+		return mSendManager;
 	}
 	
 	public BackupManager getBackupManager() {
@@ -248,6 +257,7 @@ public class Main extends MessageProcessor {
 			mInput.stopMessageProcessor();
 			mTXMiner.stopMessageProcessor();
 			mConsensus.stopMessageProcessor();
+			mSendManager.stopMessageProcessor();
 			
 			//Wait for the backup machine to finish..
 			while(mBackup.getSize()>0) {
