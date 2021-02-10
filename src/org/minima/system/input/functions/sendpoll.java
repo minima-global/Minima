@@ -9,7 +9,7 @@ public class sendpoll extends CommandFunction{
 	public sendpoll() {
 		super("sendpoll");
 		
-		setHelp("(list|clear) [amount] [address] {tokenid}", "Send an amount of Minima to a certain address by adding top a poll", "");
+		setHelp("(list|clear) [amount] [address] {tokenid}", "Polling version of send", "");
 	}
 	
 	@Override
