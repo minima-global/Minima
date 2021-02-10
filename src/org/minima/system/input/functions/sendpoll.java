@@ -9,7 +9,7 @@ public class sendpoll extends CommandFunction{
 	public sendpoll() {
 		super("sendpoll");
 		
-		setHelp("(list|clear) [amount] [address] {tokenid}", "Polling version of send", "");
+		setHelp("(list|clear (refid)) [amount] [address] {tokenid}", "Polling version of send", "");
 	}
 	
 	@Override
@@ -22,7 +22,15 @@ public class sendpoll extends CommandFunction{
 			getMainHandler().getSendManaManager().PostMessage(getResponseMessage(SendManager.SENDMANAGER_LIST));
 			return;
 		}else if(amount.equals("clear")) {
-			getMainHandler().getSendManaManager().PostMessage(getResponseMessage(SendManager.SENDMANAGER_CLEAR));
+			String ref = "all";
+			if(zInput.length>2) {
+				ref = zInput[2];
+			}
+		
+			Message clearer = getResponseMessage(SendManager.SENDMANAGER_CLEAR);
+			clearer.addString("reference", ref);
+			
+			getMainHandler().getSendManaManager().PostMessage(clearer);
 			return;
 		}
 

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import org.minima.objects.Address;
 import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniNumber;
 import org.minima.system.input.InputHandler;
 import org.minima.system.network.commands.CMD;
 import org.minima.utils.MinimaLogger;
@@ -61,6 +62,9 @@ public class SendManager extends MessageProcessor {
 			String tokenid 	   	= new MiniData(zMessage.getString("tokenid")).to0xString();
 			String amount  		= zMessage.getString("amount");
 	
+			//Check..
+			MiniNumber amt = new MiniNumber(amount);
+			
 			//Create a Random Reference..
 			String ref = MiniData.getRandomData(20).to0xString();
 			
@@ -88,20 +92,55 @@ public class SendManager extends MessageProcessor {
 		}else if(zMessage.getMessageType().equals(SENDMANAGER_LIST)) {
 			JSONObject resp = InputHandler.getResponseJSON(zMessage);
 			
+			MiniNumber totalsend = MiniNumber.ZERO;
+			
 			JSONArray allcommands = new JSONArray();
 			for(JSONObject command : mSendCommands) {
 				allcommands.add(command);
+				
+				//Add to the total..
+				MiniNumber amount = new MiniNumber((String)command.get("amount"));
+				totalsend = totalsend.add(amount);
 			}
-			resp.put("total", (int)allcommands.size());
 			resp.put("commands", allcommands);
+			resp.put("totalcommands", (int)allcommands.size());
+			resp.put("totalsend", totalsend.toString());
 			
 			InputHandler.endResponse(zMessage, true, "All waiting commands");
 			
 		}else if(zMessage.getMessageType().equals(SENDMANAGER_CLEAR)) {
-			//Clear all the commands
-			mSendCommands.clear();
+			//What Reference..
+			String ref = zMessage.getString("reference");
+					
+			if(ref.equals("all")) {
+				//Clear all the commands
+				mSendCommands.clear();
+				
+				InputHandler.endResponse(zMessage, true, "All commands cleared");
+				
+			}else {
+				boolean found = false;
+				
+				//Only clear the one referenced command..
+				ArrayList<JSONObject> remainingCommands= new ArrayList<>();
+				for(JSONObject command : mSendCommands) {
+					String cmdref = (String) command.get("reference");
+					if(found || !cmdref.equals(ref)) {
+						remainingCommands.add(command);
+					}else {
+						found = true;
+					}
+				}
+				
+				mSendCommands = remainingCommands;
+				
+				if(found) {
+					InputHandler.endResponse(zMessage, true, "Command cleared");
+				}else {
+					InputHandler.endResponse(zMessage, false, "Reference not found");
+				}
+			}
 			
-			InputHandler.endResponse(zMessage, true, "All commands cleared");
 			
 		}else if(zMessage.getMessageType().equals(SENDMANAGER_CHECKPOLL)) {
 			//Keep those that fail..
@@ -138,6 +177,9 @@ public class SendManager extends MessageProcessor {
 					//Add to the remaining..
 					remainingCommands.add(command);
 				}
+				
+				//Wait a second..
+				Thread.sleep(1000);
 			}
 			
 			//Switch..
