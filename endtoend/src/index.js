@@ -13,9 +13,9 @@ require('chai')
 require('chai').assert;
 
 // config
-const image = 'minima:latest';  // docker image name to run
+const image = 'minima:latest';  // docker image name to run -> can be customised
 const docker_net = "minima-e2e-testnet"; // docker private network name -> MUST BE CREATED MANUALLY
-const node1_args = ["-private", "-clean"];
+const node1_args = ["-private", "-clean"]; // only node 1 should be started with -private
 const options1 = {
     name: "minima-node-01",
     HostConfig: {
