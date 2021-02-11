@@ -130,9 +130,13 @@ public class DAPPManager extends MessageProcessor {
 	private JSONObject loadConfFile(File zConf) {
 		JSONObject ret = new JSONObject();
 		
+		//Some details..
+		String root = zConf.getParent();
+        int start = root.indexOf("minidapps");
+        String uid = root.substring(start+10);
+        
+		StringBuilder tot = new StringBuilder();
 		try {
-			StringBuilder tot = new StringBuilder();
-			
 			FileInputStream fis     = new FileInputStream(zConf);
 			InputStreamReader is    = new InputStreamReader(fis);
 			BufferedReader bis      = new BufferedReader(is);
@@ -146,11 +150,7 @@ public class DAPPManager extends MessageProcessor {
 	        JSONParser parser = new JSONParser();
 	        ret = (JSONObject) parser.parse(tot.toString());
 	        
-	        //And add the root folder..
-	        String root = zConf.getParent();
-	        int start = root.indexOf("minidapps");
-	        String uid = root.substring(start+10);
-	        
+	        //Add defaults..
 	        ret.put("uid", uid);
 	        ret.put("root", "/minidapps/"+uid);
 	        ret.put("web", "http://"+mNetwork.getBaseHost()+":"+mNetwork.getMiniDAPPServerPort()+"/minidapps/"+uid);
@@ -160,6 +160,19 @@ public class DAPPManager extends MessageProcessor {
 	        
 		} catch (Exception e) {
 			MinimaLogger.log("Error Loading MiniDAPP conf "+zConf.getAbsolutePath(),e);
+			//Extra Info..
+			String totstr = tot.toString();
+			if(!totstr.equals("")) {
+				MinimaLogger.log(tot.toString());
+			}
+			
+			//Clear it.. but add details required to remove it..
+			ret = new JSONObject();
+			ret.put("name", "*ERROR*");
+			ret.put("description", "This minidapp did not load correctly..");
+			ret.put("uid", uid);
+	        ret.put("root", "/minidapps/"+uid);
+	        ret.put("web", "http://"+mNetwork.getBaseHost()+":"+mNetwork.getMiniDAPPServerPort()+"/minidapps/"+uid);
 		}
 		
 		return ret;
@@ -225,9 +238,6 @@ public class DAPPManager extends MessageProcessor {
 					}
 				}
 				
-				//Find the CONF file..
-//				File conf = findFile(app, "minidapp.conf");
-				
 				//Open it up..
 				File conf = new File(app,"minidapp.conf");
 				File backend = new File(app,"service.js");
@@ -237,12 +247,20 @@ public class DAPPManager extends MessageProcessor {
 					//Load it..
 					JSONObject confjson = loadConfFile(conf);
 					
+					//Did it work..
+					boolean error = false;
+					String mininame = (String) confjson.get("name");
+					if(mininame.equals("*ERROR*")) {
+						//Something went wrong..
+						error = true;
+					}
+						
 					//Add the timestamp..
 					confjson.put("installed", timestamp);
 					confjson.put("download", download);
 					
 					//Is there a Back end
-					if(backend.exists()) {
+					if(!error && backend.exists()) {
 						//Load it..
 						try {
 							//Load the JS file..
@@ -269,6 +287,7 @@ public class DAPPManager extends MessageProcessor {
 					
 					//Add it..
 					CURRENT_MINIDAPPS.add(confjson);
+					
 				}else {
 					MinimaLogger.log("ERROR : minidapp.conf not found for "+minidappid);
 				}
