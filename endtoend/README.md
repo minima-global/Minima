@@ -14,10 +14,12 @@ build nodejs tests docker image:
    cd end2end
    docker build -t minima-e2e .
 
-stop all running docker images:
+stop all running docker images (useful to stop instances manually, otherwise script stops automatically old instances at restart):
    docker stop $(docker ps -a -q)
 
 run docker instance to create network and perform network connectivity check (requires at least one connection):
    docker run -v /var/run/docker.sock:/var/run/docker.sock --network minima-e2e-testnet minima-e2e
- 
+
+All in one:
+   docker build -t minima-e2e . && docker run -v /var/run/docker.sock:/var/run/docker.sock --network minima-e2e-testnet minima-e2e
  
