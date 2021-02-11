@@ -49,41 +49,33 @@ var container02;
 var ip1,ip2,ip3;
 
 
-const start_docker_node_01 = async function () {
+const start_docker_node_01 = async function (nbNodes, tests_collection) {
     console.log("Creating container 01");
-  // Create the container.
-  container01 = await docker.createContainer({
-    AttachStderr: false,
-    AttachStdin: false,
-    AttachStdout: false,
-    Cmd: node1_args,
-    Image: image,
-    OpenStdin: false,
-    StdinOnce: false,
-    Tty: false,
-    name: "minima-node-01",
-    HostConfig: options1.HostConfig
-  });
+    // Create the container.
+    container01 = await docker.createContainer({
+        AttachStderr: false,
+        AttachStdin: false,
+        AttachStdout: false,
+        Cmd: node1_args,
+        Image: image,
+        OpenStdin: false,
+        StdinOnce: false,
+        Tty: false,
+        name: "minima-node-01",
+        HostConfig: options1.HostConfig
+    });
 
-  console.log("Starting container 01");
-  // Start the container.
-  await container01.start(); 
-  console.log("***** Started node-01 from dockerode *****");
-  console.log("What is my config?");
-  container01.inspect(function (err, data) {
-        console.log("data.NetworkSettings: " + JSON.stringify(data.NetworkSettings));
-  });
-  console.log("***** What is my IP?");
-  container01.inspect(function (err, data) {
-// //        console.log("data: " + JSON.stringify(data));
-    console.log("IP:  " + JSON.stringify(data.NetworkSettings.Networks["minima-e2e-testnet"].IPAddress));
-    IPnode01 = data.NetworkSettings.Networks["minima-e2e-testnet"].IPAddress;
-    console.log("IPnode01" + IPnode01);
-    start_other_nodes(IPnode01);
-  });
+    console.log("Starting container 01");
+    // Start the container.
+    await container01.start();
+    container01.inspect(function (err, data) {
+        const IPnode01 = data.NetworkSettings.Networks["minima-e2e-testnet"].IPAddress;
+        console.log("IPnode01: " + IPnode01);
+        start_other_nodes(IPnode01, nbNodes, tests_collection);
+    });
 }
 
-start_other_nodes = async function(IPnode01) {
+start_other_nodes = async function(IPnode01, nbNodes, tests_collection) {
     console.log("Creating container 02");
     // Create the container.
     nodes_args = ["-connect", IPnode01, "9001"];
@@ -106,9 +98,10 @@ start_other_nodes = async function(IPnode01) {
     container02.inspect(function (err, data) {
             console.log("IP:  " + JSON.stringify(data.NetworkSettings.Networks["minima-e2e-testnet"].IPAddress));
             const IPnode02 = data.NetworkSettings.Networks["minima-e2e-testnet"].IPAddress;
+            console.log("IPnode01: " + IPnode01);
             console.log("IPnode02: " + IPnode02);
             // need to sleep
-            setTimeout(function (IPnode01) { health_check(IPnode01)}, 3000);
+            setTimeout(function () { tests_collection(IPnode01)}, 3000);
           });        
 }
 
@@ -157,31 +150,8 @@ run_some_tests_post = async function(host, endpoint, tests_to_run) {
     });
 }
 
-// refactor into another file
-health_check = async function() {
-    // run RPC call - needs port mapping
-    // curl -s 127.0.0.1:9002/status | jq '.response.connections'
-
-    run_some_tests_get(IPnode01, '/status', function(response) {
-        response.connections.should.be.above(0); 
-        response.chainlength.should.be.above(1);
-    });
-
-    // send funds with no money
-
-    run_some_tests_get(IPnode01, '/gimme50', function(response) {
-//        response.connections.should.be.above(0); 
-//        response.chainlength.should.be.above(1);
-          console.log("gimme50 response: " + JSON.stringify(response));
-    });
-
-    // send funds with money
-    
-}
-
-
-start_docker_net = async function() {
-    await start_docker_node_01();
+start_docker_net = async function(nbNodes, tests_collection) {
+    await start_docker_node_01(nbNodes, tests_collection);
 }
 
 stop_docker_nodes = async function() {
@@ -207,8 +177,28 @@ stop_docker_nodes = async function() {
 start_static_network_tests = async function (nbNodes, tests_collection) {
     stop_docker_nodes();
     // give 5 seconds to stop all docker nodes
-    setTimeout(start_docker_net, 5000);    
+    setTimeout(function() { start_docker_net(nbNodes, tests_collection); }, 5000);    
 }
 
-start_static_network_tests(2, function()  { console.log("tests collection"); });
+start_static_network_tests(2,
+    function (IPnode01) {
+        console.log("tests collection");
+        // run RPC call - needs port mapping
+        // curl -s 127.0.0.1:9002/status | jq '.response.connections'
+
+        run_some_tests_get(IPnode01, '/status', function (response) {
+            response.connections.should.be.above(0);
+            response.chainlength.should.be.above(1);
+        });
+
+        // send funds with no money
+
+        run_some_tests_get(IPnode01, '/gimme50', function (response) {
+            //        response.connections.should.be.above(0); 
+            //        response.chainlength.should.be.above(1);
+            console.log("gimme50 response: " + JSON.stringify(response));
+        });
+        // send funds with money
+    }
+);
 
