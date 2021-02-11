@@ -5,7 +5,7 @@ Warning - currently only works on Linux and Mac
 
 Setup
 create manually a docker network minima-e2e-testnet:
-   docker network create $DOCKER_NET
+   docker network create minima-e2e-testnet
 
 build minima docker image (or pull it) - default image used is minima:latest
    docker build -t minima:latest .

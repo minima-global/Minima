@@ -12,7 +12,7 @@ require('chai')
 
 require('chai').assert;
 
-// config
+// *** config ***
 const image = 'minima:latest';  // docker image name to run -> can be customised
 const docker_net = "minima-e2e-testnet"; // docker private network name -> MUST BE CREATED MANUALLY
 const node1_args = ["-private", "-clean"]; // only node 1 should be started with -private
@@ -43,27 +43,11 @@ const host_port = 9002;
 
 var nodes_args; // all other nodes get same args
 
-// start node 1 with docker run
-
-// docker.run(image, node1_args, process.stdout, options1, function (err, data, container) {
-//     console.log("***** Finished node-01 from dockerode *****");
-//     console.log(data);
-// }).on('container', function (container) {
-//     console.log("***** Started node-01 from dockerode *****");
-//     console.log("***** What is my IP?");
-//     container.inspect(function (err, data) {
-// //        console.log("data: " + JSON.stringify(data));
-//         console.log("IP:  " + JSON.stringify(data.NetworkSettings.Networks["minima-e2e-testnet"].IPAddress));
-// //        data[0].NetworkSettings.Networks["minima-e2e-testnet"].IPAddress
-//       });
-      
-// //    container.defaultOptions.start.Binds = ["/tmp:/tmp:rw"];
-//   });
-
-// start node 1 with docker createContainer and start
-
 var container01;
 var container02;
+
+var ip1,ip2,ip3;
+
 
 const start_docker_node_01 = async function () {
     console.log("Creating container 01");
@@ -130,25 +114,23 @@ start_other_nodes = async function(IPnode01) {
           });        
 }
 
-health_check = async function() {
-    // run RPC call - needs port mapping
-    // curl -s 127.0.0.1:9002/status | jq '.response.connections'
-    const url = "http://" + IPnode01 + ":" + host_port + "/status";
-    console.log("Attempting GET " + url);
-
+run_some_tests = async function(method, host, endpoint, tests_to_run) {
+    const url =  "http://" + host + ":" + host_port + endpoint;
     axios.get(url, {timeout: 5000}, {maxContentLength: 3000},  {responseType: 'plain'})
     .then(function (response) {
       // handle success
       if(response && response.status == 200) {
           console.log(response.data);
-          
-          if(response.data.response.connections == 0) {
-              console.log(" Not ready - no peer connected to master node.");
-          } else {
-              console.log(" Ready - " + response.data.response.connections + " nodes connnected.");
+          if(response.data.status == true) {
+              if(response.data.response.connections == 0) {
+                  console.log(" Not ready - no peer connected to master node.");
+              } else {
+                  console.log(" Ready - " + response.data.response.connections + " nodes connnected.");
+            }
+            console.log("If connections=1 then success");
+            //          response.data.response.connections.should.be.above(0);  // chai test
+            tests_to_run(response.data.response);
           }
-          console.log("If connections=1 then success");
-          response.data.response.connections.should.be.above(0);  // chai test
       }
      })
     .catch(function (error) {
@@ -158,6 +140,29 @@ health_check = async function() {
     .then(function () {
       // always executed
     });
+}
+
+// refactor into another file
+health_check = async function() {
+    // run RPC call - needs port mapping
+    // curl -s 127.0.0.1:9002/status | jq '.response.connections'
+
+    run_some_tests('get', IPnode01, '/status', function(response) {
+        response.connections.should.be.above(0); 
+        response.chainlength.should.be.above(1);
+    });
+
+
+    // send funds with no money
+
+    run_some_tests('get', IPnode01, '/gimme50', function(response) {
+//        response.connections.should.be.above(0); 
+//        response.chainlength.should.be.above(1);
+          console.log("gimme50 response: " + JSON.stringify(response));
+    });
+
+    // send funds with money
+    
 }
 
 run_tests = async function() {
