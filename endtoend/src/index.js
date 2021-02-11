@@ -16,6 +16,8 @@ require('chai').assert;
 const image = 'minima:latest';  // docker image name to run -> can be customised
 const docker_net = "minima-e2e-testnet"; // docker private network name -> MUST BE CREATED MANUALLY
 const node1_args = ["-private", "-clean"]; // only node 1 should be started with -private
+const node_prefix = "minima-node-";
+
 const options1 = {
     Name: "minima-node-01",
     HostConfig: {
@@ -46,26 +48,21 @@ var nodes_args; // all other nodes get same args
 var container01;
 var container02;
 
-var ip1,ip2,ip3;
-
+createMinimaContainer = async function(cmd, name, hostConfig) {
+    return await docker.createContainer({
+        AttachStderr: false, AttachStdin: false, AttachStdout: false,
+        Cmd: cmd,
+        Image: image,
+        OpenStdin: false, StdinOnce: false, Tty: false,
+        name: name,
+        HostConfig: hostConfig
+    });
+}
 
 const start_docker_node_01 = async function (nbNodes, tests_collection) {
     console.log("Creating container 01");
     // Create the container.
-    container01 = await docker.createContainer({
-        AttachStderr: false,
-        AttachStdin: false,
-        AttachStdout: false,
-        Cmd: node1_args,
-        Image: image,
-        OpenStdin: false,
-        StdinOnce: false,
-        Tty: false,
-        name: "minima-node-01",
-        HostConfig: options1.HostConfig
-    });
-
-    console.log("Starting container 01");
+    container01 = await createMinimaContainer(node1_args, node_prefix + "01", options1.HostConfig);
     // Start the container.
     await container01.start();
     container01.inspect(function (err, data) {
@@ -79,20 +76,7 @@ start_other_nodes = async function(IPnode01, nbNodes, tests_collection) {
     console.log("Creating container 02");
     // Create the container.
     nodes_args = ["-connect", IPnode01, "9001"];
-    container02 = await docker.createContainer({
-      AttachStderr: false,
-      AttachStdin: false,
-      AttachStdout: false,
-      Cmd: nodes_args,
-      Image: image,
-      OpenStdin: false,
-      StdinOnce: false,
-      Tty: false,
-      name: options2.name,
-      HostConfig: options2.HostConfig
-    });
-  
-    console.log("Starting container 02");
+    container02 = await createMinimaContainer(nodes_args, node_prefix + "02", options2.HostConfig);
     // Start the container.
     await container02.start(); 
     container02.inspect(function (err, data) {
@@ -156,14 +140,14 @@ start_docker_net = async function(nbNodes, tests_collection) {
 
 stop_docker_nodes = async function() {
     console.log("stop_docker_nodes");
-    // iterate over all running containers and stop them if their name starts with minima-node-
+    // iterate over all running containers and stop them if their name starts with node_prefix
     docker.listContainers({ all:false },
       function (err, containers) {
             if(containers) { 
                 containers.forEach(function (containerInfo) {
                     //console.log("Found running container " + containerInfo.Id);
                     //console.log( "   names: " + JSON.stringify(containerInfo.Names));
-                    if(containerInfo.Names[0].startsWith("/minima-node-")) {
+                    if(containerInfo.Names[0].startsWith("/" + node_prefix)) {
                         console.log ("Found a dangling minima node(" + containerInfo.Names[0] + "), its time to say goodbye.");
                         docker.getContainer(containerInfo.Id).stop();
                     }
@@ -174,6 +158,7 @@ stop_docker_nodes = async function() {
       });
 }
 
+// setup a network of nbNodes minima nodes in star topology and runs tests_collection on it with argument IPnode01.
 start_static_network_tests = async function (nbNodes, tests_collection) {
     stop_docker_nodes();
     // give 5 seconds to stop all docker nodes
