@@ -106,7 +106,6 @@ public class help extends CommandFunction{
 			addJSONDesc(new cleanscript());
 			addJSONDesc(new runscript());
 			
-//			addJSONDesc(new createtoken());
 			addJSONDesc(new tokens());
 			addJSONDesc(new tokencreate());
 			addJSONDesc(new tokenvalidate());

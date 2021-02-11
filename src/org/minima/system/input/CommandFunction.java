@@ -11,7 +11,6 @@ import org.minima.system.input.functions.cleanscript;
 import org.minima.system.input.functions.coins;
 import org.minima.system.input.functions.coinsimple;
 import org.minima.system.input.functions.connect;
-import org.minima.system.input.functions.createtoken;
 import org.minima.system.input.functions.disconnect;
 import org.minima.system.input.functions.extrascript;
 import org.minima.system.input.functions.flushmempool;
@@ -82,7 +81,7 @@ public abstract class CommandFunction {
 	 */
 	public static CommandFunction[] ALL_FUNCTIONS = 
 		{
-			new backup(), new restore(), new balance(), new connect(), new createtoken(), new disconnect(), new weblink(),
+			new backup(), new restore(), new balance(), new connect(), new disconnect(), new weblink(),
 			new gimme50(), new help(), new intro(), new automine(), new newaddress(), new coins(), new coinsimple(), new txpowinfo(), new keys(),
 			new newscript(), new printdb(), new printtree(), new quit(),new reconnect(), new runscript(), new cleanscript(), 
 			new send(), new sendpoll(), new status(), new test(), new trace(), new tutorial(), new history(), new topblock(),
