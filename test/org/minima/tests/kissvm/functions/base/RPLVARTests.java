@@ -178,16 +178,9 @@ public class RPLVARTests {
             mf.addParameter(new ConstantExpression(new ScriptValue("A")));
             mf.addParameter(new ConstantExpression(new ScriptValue("B")));
             mf.addParameter(new ConstantExpression(new ScriptValue("C")));
-            //assertThrows(ExecutionException.class, () -> { // Should fail, as invalid number of parameters is provided
-            //    Value res = mf.runFunction(ctr);
-            //});
-            try {
+            assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
-                assertEquals(Value.VALUE_SCRIPT, res.getValueType());
-                assertEquals("LET a = b", ((ScriptValue) res).toString());
-            } catch (ExecutionException ex) {
-                fail();
-            }
+            });
         }
 
         // Invalid param domain
@@ -224,10 +217,7 @@ public class RPLVARTests {
             mf.addParameter(new ConstantExpression(new BooleanValue(true)));
             mf.addParameter(new ConstantExpression(new ScriptValue("A")));
             mf.addParameter(new ConstantExpression(new ScriptValue("B")));
-            //assertThrows(ExecutionException.class, () -> { // Should throw this
-            //    Value res = mf.runFunction(ctr);
-            //});
-            assertThrows(ClassCastException.class, () -> { // but throws this
+            assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
             });
         }
@@ -236,10 +226,7 @@ public class RPLVARTests {
             mf.addParameter(new ConstantExpression(new HEXValue("0x1234")));
             mf.addParameter(new ConstantExpression(new ScriptValue("A")));
             mf.addParameter(new ConstantExpression(new ScriptValue("B")));
-            //assertThrows(ExecutionException.class, () -> { // Should throw this
-            //    Value res = mf.runFunction(ctr);
-            //});
-            assertThrows(ClassCastException.class, () -> { // but throws this
+            assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
             });
         }
@@ -248,10 +235,7 @@ public class RPLVARTests {
             mf.addParameter(new ConstantExpression(new NumberValue(100)));
             mf.addParameter(new ConstantExpression(new ScriptValue("A")));
             mf.addParameter(new ConstantExpression(new ScriptValue("B")));
-            //assertThrows(ExecutionException.class, () -> { // Should throw this
-            //    Value res = mf.runFunction(ctr);
-            //});
-            assertThrows(ClassCastException.class, () -> { // but throws this
+            assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
             });
         }
@@ -260,10 +244,7 @@ public class RPLVARTests {
             mf.addParameter(new ConstantExpression(new ScriptValue("LET A = 5")));
             mf.addParameter(new ConstantExpression(new BooleanValue(true)));
             mf.addParameter(new ConstantExpression(new ScriptValue("B")));
-            //assertThrows(ExecutionException.class, () -> { // Should throw this
-            //    Value res = mf.runFunction(ctr);
-            //});
-            assertThrows(ClassCastException.class, () -> { // but throws this
+            assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
             });
         }
@@ -272,10 +253,7 @@ public class RPLVARTests {
             mf.addParameter(new ConstantExpression(new ScriptValue("LET A = 5")));
             mf.addParameter(new ConstantExpression(new HEXValue("0x1234")));
             mf.addParameter(new ConstantExpression(new ScriptValue("B")));
-            //assertThrows(ExecutionException.class, () -> { // Should throw this
-            //    Value res = mf.runFunction(ctr);
-            //});
-            assertThrows(ClassCastException.class, () -> { // but throws this
+            assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
             });
         }
@@ -284,10 +262,7 @@ public class RPLVARTests {
             mf.addParameter(new ConstantExpression(new ScriptValue("LET A = 5")));
             mf.addParameter(new ConstantExpression(new NumberValue(100)));
             mf.addParameter(new ConstantExpression(new ScriptValue("B")));
-            //assertThrows(ExecutionException.class, () -> { // Should throw this
-            //    Value res = mf.runFunction(ctr);
-            //});
-            assertThrows(ClassCastException.class, () -> { // but throws this
+            assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
             });
         }
@@ -296,10 +271,7 @@ public class RPLVARTests {
             mf.addParameter(new ConstantExpression(new ScriptValue("LET A = 5")));
             mf.addParameter(new ConstantExpression(new ScriptValue("A")));
             mf.addParameter(new ConstantExpression(new BooleanValue(true)));
-            //assertThrows(ExecutionException.class, () -> { // Should throw this
-            //    Value res = mf.runFunction(ctr);
-            //});
-            assertThrows(ClassCastException.class, () -> { // but throws this
+            assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
             });
         }
@@ -308,10 +280,7 @@ public class RPLVARTests {
             mf.addParameter(new ConstantExpression(new ScriptValue("LET A = 5")));
             mf.addParameter(new ConstantExpression(new ScriptValue("A")));
             mf.addParameter(new ConstantExpression(new NumberValue(100)));
-            //assertThrows(ExecutionException.class, () -> { // Should throw this
-            //    Value res = mf.runFunction(ctr);
-            //});
-            assertThrows(ClassCastException.class, () -> { // but throws this
+            assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
             });
         }
@@ -320,10 +289,7 @@ public class RPLVARTests {
             mf.addParameter(new ConstantExpression(new ScriptValue("LET A = 5")));
             mf.addParameter(new ConstantExpression(new ScriptValue("A")));
             mf.addParameter(new ConstantExpression(new NumberValue(100)));
-            //assertThrows(ExecutionException.class, () -> { // Should throw this
-            //    Value res = mf.runFunction(ctr);
-            //});
-            assertThrows(ClassCastException.class, () -> { // but throws this
+            assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
             });
         }

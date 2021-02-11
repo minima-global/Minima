@@ -208,21 +208,6 @@ public class GETTests {
                 fail();
             }
         }
-        {
-            MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new BooleanValue(true)));
-            mf.addParameter(new ConstantExpression(new HEXValue("0x1234")));
-            mf.addParameter(new ConstantExpression(new NumberValue(-99)));
-            mf.addParameter(new ConstantExpression(new ScriptValue("HELLO WORLD")));
-            mf.addParameter(new ConstantExpression(new ScriptValue("LET A = 5")));
-            try {
-                Value res = mf.runFunction(ctr);
-                assertEquals(Value.VALUE_NUMBER, res.getValueType());
-                assertEquals(12, ((NumberValue) res).getNumber().getAsInt());
-            } catch (ExecutionException ex) {
-                fail();
-            }
-        }
     }
 
     @Test
@@ -239,16 +224,42 @@ public class GETTests {
         ctr.setVariable("0,0,0,41,0,", new NumberValue(9));
         ctr.setVariable("0,0,32,0,0,", new NumberValue(10));
         ctr.setVariable("5,5,5,5,5,", new NumberValue(11));
-        ctr.setVariable("TRUE,0x1234,-99,hello world,LET a = 5,", new NumberValue(12));
 
         GET fn = new GET();
 
         // Invalid param count
         {
             MinimaFunction mf = fn.getNewFunction();
-            //assertThrows(ExecutionException.class, () -> {
-            //    Value res = mf.runFunction(ctr);
-            //});
+            assertThrows(ExecutionException.class, () -> {
+                Value res = mf.runFunction(ctr);
+            });
+        }
+
+        // Invalid param domain
+        {
+        }
+
+        // Invalid param types
+        {
+            MinimaFunction mf = fn.getNewFunction();
+            mf.addParameter(new ConstantExpression(new BooleanValue(true)));
+            assertThrows(ExecutionException.class, () -> {
+                Value res = mf.runFunction(ctr);
+            });
+        }
+        {
+            MinimaFunction mf = fn.getNewFunction();
+            mf.addParameter(new ConstantExpression(new HEXValue("0x1234")));
+            assertThrows(ExecutionException.class, () -> {
+                Value res = mf.runFunction(ctr);
+            });
+        }
+        {
+            MinimaFunction mf = fn.getNewFunction();
+            mf.addParameter(new ConstantExpression(new ScriptValue("HELLO WORLD")));
+            assertThrows(ExecutionException.class, () -> {
+                Value res = mf.runFunction(ctr);
+            });
         }
 
         // Non existing variable
@@ -256,14 +267,10 @@ public class GETTests {
         // is not advisable to return a value for non existing variable
         {
             MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new HEXValue("0x1234")));
-            try {
+            mf.addParameter(new ConstantExpression(new NumberValue(1234567890)));
+            assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
-                assertEquals(Value.VALUE_NUMBER, res.getValueType());
-                assertEquals(0, ((NumberValue) res).getNumber().getAsInt());
-            } catch (ExecutionException ex) {
-                fail();
-            }
+            });
         }
     }
 }

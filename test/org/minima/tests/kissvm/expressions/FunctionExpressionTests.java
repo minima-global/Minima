@@ -13,6 +13,7 @@ import org.minima.kissvm.functions.base.CONCAT;
 import org.minima.kissvm.functions.base.LEN;
 import org.minima.kissvm.functions.maths.ABS;
 import org.minima.kissvm.functions.maths.INC;
+import org.minima.kissvm.values.HEXValue;
 import org.minima.kissvm.values.NumberValue;
 import org.minima.kissvm.values.ScriptValue;
 import org.minima.kissvm.values.Value;
@@ -24,6 +25,7 @@ public class FunctionExpressionTests {
     @Test
     public void testConstructors() throws ExecutionException {
 
+        HEXValue hv1 = new HEXValue("0x1234567");
         NumberValue nv1 = new NumberValue(10);
         NumberValue nv2 = new NumberValue(-10);
         ScriptValue sv1 = new ScriptValue("HELLO");
@@ -34,7 +36,7 @@ public class FunctionExpressionTests {
         fCONCAT.addParameter(new ConstantExpression(sv2));
 
         LEN fLEN = new LEN();
-        fLEN.addParameter(new ConstantExpression(sv1));
+        fLEN.addParameter(new ConstantExpression(hv1));
 
         ABS fABS = new ABS();
         fABS.addParameter(new ConstantExpression(nv2));
@@ -51,7 +53,7 @@ public class FunctionExpressionTests {
 
         assertEquals("should be equal ", "hello world", fe1.getValue(ctr).toString());
         assertEquals("should be equal ", "hello world", Value.getValue("[ HELLO   WORLD]").toString());
-        assertEquals("should be equal ", 5, ((NumberValue) fe2.getValue(ctr)).getNumber().getAsInt());
+        assertEquals("should be equal ", 4, ((NumberValue) fe2.getValue(ctr)).getNumber().getAsInt());
         assertEquals("should be equal ", 10, ((NumberValue) fe3.getValue(ctr)).getNumber().getAsInt());
         assertEquals("should be equal ", 11, ((NumberValue) fe4.getValue(ctr)).getNumber().getAsInt());
     }
