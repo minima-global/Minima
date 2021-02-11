@@ -19,7 +19,7 @@ test_star_static = function () {
             response.chainlength.should.be.above(3);
         });
 
-        //todo: send funds with no money and assert failure
+        //1. send funds with no money and assert failure
         //staticTests.run_some_tests_get(ip_addrs["1"], '/send', {"amount": 1, "address": "0xFF", "tokenid": "0x00"}, 
         staticTests.run_some_tests_get(ip_addrs["1"], '/send', params="+1+0xFF", 
             tests=function (response) {
