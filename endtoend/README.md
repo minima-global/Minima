@@ -3,6 +3,13 @@ Minima end to end testing
 
 Warning - currently only works on Linux and Mac
 
+Quick Start
+   cd minima_root_dir
+   docker network create minima-e2e-testnet
+   docker build -t minima:latest .
+   cd end2end
+   docker build -t minima-e2e . && docker run -v /var/run/docker.sock:/var/run/docker.sock --network minima-e2e-testnet minima-e2e
+
 Setup
 create manually a docker network minima-e2e-testnet:
    docker network create minima-e2e-testnet
