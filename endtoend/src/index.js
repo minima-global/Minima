@@ -18,28 +18,10 @@ const docker_net = "minima-e2e-testnet"; // docker private network name -> MUST 
 const node1_args = ["-private", "-clean"]; // only node 1 should be started with -private
 const node_prefix = "minima-node-";
 
-const options1 = {
-    Name: "minima-node-01",
-    HostConfig: {
-        AutoRemove: true,
-        NetworkMode: docker_net
-    }
-};
+const hostCfg =  {  AutoRemove: true, NetworkMode: docker_net };
 
-const options2 = {
-    name: "minima-node-02",
-    HostConfig: {
-        AutoRemove: true,
-        NetworkMode: docker_net,
-        PortBindings: {
-            "9002/tcp": [
-                {
-                "HostPort": "9002"
-                }
-            ]
-        }
-    }
-};
+// unused - can be applied on a node to expose its RPC port on localhost - not needed for our tests
+const hostCfgExpose = { AutoRemove: true, NetworkMode: docker_net, PortBindings: {"9002/tcp": [ { "HostPort": "9002"} ] } };
 
 const host_port = 9002;
 
@@ -62,7 +44,7 @@ createMinimaContainer = async function(cmd, name, hostConfig) {
 const start_docker_node_01 = async function (nbNodes, tests_collection) {
     console.log("Creating container 01");
     // Create the container.
-    container01 = await createMinimaContainer(node1_args, node_prefix + "01", options1.HostConfig);
+    container01 = await createMinimaContainer(node1_args, node_prefix + "01", hostCfg);
     // Start the container.
     await container01.start();
     container01.inspect(function (err, data) {
@@ -76,7 +58,7 @@ start_other_nodes = async function(IPnode01, nbNodes, tests_collection) {
     console.log("Creating container 02");
     // Create the container.
     nodes_args = ["-connect", IPnode01, "9001"];
-    container02 = await createMinimaContainer(nodes_args, node_prefix + "02", options2.HostConfig);
+    container02 = await createMinimaContainer(nodes_args, node_prefix + "02", hostCfg);
     // Start the container.
     await container02.start(); 
     container02.inspect(function (err, data) {
