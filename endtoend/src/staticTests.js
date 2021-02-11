@@ -75,15 +75,16 @@ start_other_nodes = async function (nbNodes, tests_collection) {
 }
 
 // this function calls HTTP GET on host:endpoint, expects a minima answer, and runs tests_to_run if server success.
-run_some_tests_get = async function(host, endpoint, tests_to_run) {
-    const url =  "http://" + host + ":" + cfg.host_port + endpoint;
+run_some_tests_get = async function(host, endpoint, params="", tests) {
+    const url =  "http://" + host + ":" + cfg.host_port + endpoint + params;
+    
     axios.get(url, {timeout: cfg.HTTP_TIMEOUT}, {maxContentLength: 3000},  {responseType: 'plain'})
     .then(function (response) {
       // handle success
       if(response && response.status == 200) {
           console.log(response.data);
           if(response.data.status == true) {
-            tests_to_run(response.data.response);
+            tests(response.data.response);
           }
       }
      })

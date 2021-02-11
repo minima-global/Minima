@@ -1,3 +1,3 @@
-var test_line_static = require('./test_line_static.js');
+var test_star_static = require('./test_star_static.js');
 
-test_line_static();
+test_star_static();
