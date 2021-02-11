@@ -17,7 +17,7 @@ const image = 'minima:latest';  // docker image name to run -> can be customised
 const docker_net = "minima-e2e-testnet"; // docker private network name -> MUST BE CREATED MANUALLY
 const node1_args = ["-private", "-clean"]; // only node 1 should be started with -private
 const options1 = {
-    name: "minima-node-01",
+    Name: "minima-node-01",
     HostConfig: {
         AutoRemove: true,
         NetworkMode: docker_net
@@ -61,7 +61,7 @@ const start_docker_node_01 = async function () {
     OpenStdin: false,
     StdinOnce: false,
     Tty: false,
-    Name: options1.name,
+    name: "minima-node-01",
     HostConfig: options1.HostConfig
   });
 
@@ -96,7 +96,7 @@ start_other_nodes = async function(IPnode01) {
       OpenStdin: false,
       StdinOnce: false,
       Tty: false,
-      Name: options2.name,
+      name: options2.name,
       HostConfig: options2.HostConfig
     });
   
@@ -104,17 +104,16 @@ start_other_nodes = async function(IPnode01) {
     // Start the container.
     await container02.start(); 
     container02.inspect(function (err, data) {
-        // //        console.log("data: " + JSON.stringify(data));
             console.log("IP:  " + JSON.stringify(data.NetworkSettings.Networks["minima-e2e-testnet"].IPAddress));
             const IPnode02 = data.NetworkSettings.Networks["minima-e2e-testnet"].IPAddress;
             console.log("IPnode02: " + IPnode02);
-            //start_other_nodes(IPnode01);
             // need to sleep
             setTimeout(function (IPnode01) { health_check(IPnode01)}, 3000);
           });        
 }
 
-run_some_tests = async function(method, host, endpoint, tests_to_run) {
+// this function calls HTTP GET on host:endpoint, expects a minima answer, and runs tests_to_run if server success.
+run_some_tests_get = async function(host, endpoint, tests_to_run) {
     const url =  "http://" + host + ":" + host_port + endpoint;
     axios.get(url, {timeout: 5000}, {maxContentLength: 3000},  {responseType: 'plain'})
     .then(function (response) {
@@ -122,13 +121,29 @@ run_some_tests = async function(method, host, endpoint, tests_to_run) {
       if(response && response.status == 200) {
           console.log(response.data);
           if(response.data.status == true) {
-              if(response.data.response.connections == 0) {
-                  console.log(" Not ready - no peer connected to master node.");
-              } else {
-                  console.log(" Ready - " + response.data.response.connections + " nodes connnected.");
-            }
-            console.log("If connections=1 then success");
-            //          response.data.response.connections.should.be.above(0);  // chai test
+            tests_to_run(response.data.response);
+          }
+      }
+     })
+    .catch(function (error) {
+      // handle error
+      console.log(error);
+    })
+    .then(function () {
+      // always executed
+    });
+}
+
+// TODO / DO NOT USE
+// this function calls HTTP POST on host:endpoint, expects a minima answer, and runs tests_to_run if server success.
+run_some_tests_post = async function(host, endpoint, tests_to_run) {
+    const url =  "http://" + host + ":" + host_port + endpoint;
+    axios.post(url, {timeout: 5000}, {maxContentLength: 3000},  {responseType: 'plain'})
+    .then(function (response) {
+      // handle success
+      if(response && response.status == 200) {
+          console.log(response.data);
+          if(response.data.status == true) {
             tests_to_run(response.data.response);
           }
       }
@@ -147,15 +162,14 @@ health_check = async function() {
     // run RPC call - needs port mapping
     // curl -s 127.0.0.1:9002/status | jq '.response.connections'
 
-    run_some_tests('get', IPnode01, '/status', function(response) {
+    run_some_tests_get(IPnode01, '/status', function(response) {
         response.connections.should.be.above(0); 
         response.chainlength.should.be.above(1);
     });
 
-
     // send funds with no money
 
-    run_some_tests('get', IPnode01, '/gimme50', function(response) {
+    run_some_tests_get(IPnode01, '/gimme50', function(response) {
 //        response.connections.should.be.above(0); 
 //        response.chainlength.should.be.above(1);
           console.log("gimme50 response: " + JSON.stringify(response));
@@ -165,22 +179,36 @@ health_check = async function() {
     
 }
 
-run_tests = async function() {
-
-}
 
 start_docker_net = async function() {
     await start_docker_node_01();
-    await run_tests();
 }
 
 stop_docker_nodes = async function() {
-    // list all active containers minima-node-xx
-    // stop them
-    // remove all stopped containers minima-node-xx
+    console.log("stop_docker_nodes");
+    // iterate over all running containers and stop them if their name starts with minima-node-
+    docker.listContainers({ all:false },
+      function (err, containers) {
+            if(containers) { 
+                containers.forEach(function (containerInfo) {
+                    //console.log("Found running container " + containerInfo.Id);
+                    //console.log( "   names: " + JSON.stringify(containerInfo.Names));
+                    if(containerInfo.Names[0].startsWith("/minima-node-")) {
+                        console.log ("Found a dangling minima node(" + containerInfo.Names[0] + "), its time to say goodbye.");
+                        docker.getContainer(containerInfo.Id).stop();
+                    }
+                });
+            } else {
+                console.log("Found no running docker instances\n");
+            }
+      });
 }
 
-stop_docker_nodes();
-start_docker_net();
+start_static_network_tests = async function (nbNodes, tests_collection) {
+    stop_docker_nodes();
+    // give 5 seconds to stop all docker nodes
+    setTimeout(start_docker_net, 5000);    
+}
 
+start_static_network_tests(2, function()  { console.log("tests collection"); });
 
