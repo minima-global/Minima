@@ -61,7 +61,8 @@ public class SendManager extends MessageProcessor {
 			
 			String tokenid 	   	= new MiniData(zMessage.getString("tokenid")).to0xString();
 			String amount  		= zMessage.getString("amount");
-	
+			String state  		= zMessage.getString("state");
+			
 			//Check..
 			MiniNumber amt = new MiniNumber(amount);
 			
@@ -73,6 +74,7 @@ public class SendManager extends MessageProcessor {
 			sendcommand.put("address", address);
 			sendcommand.put("tokenid", tokenid);
 			sendcommand.put("amount", amount);
+			sendcommand.put("state", state);
 			sendcommand.put("reference", ref);
 			sendcommand.put("attempts", (int)0);
 			
@@ -151,9 +153,11 @@ public class SendManager extends MessageProcessor {
 				String address = (String) command.get("address");
 				String amount  = (String) command.get("amount");
 				String token   = (String) command.get("tokenid");
+				String state   = (String) command.get("state");
+				
 				
 				//Now run this command..
-				CMD cmd = new CMD("send "+amount+" "+address+" "+token);
+				CMD cmd = new CMD("send "+amount+" "+address+" "+token+" \""+state+"\"");
 				
 				//Run it.. wait for it to finish
 				cmd.run();

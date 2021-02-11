@@ -278,7 +278,7 @@ public class ConsensusTxn extends ConsensusProcessor {
 			
 			//Create the Transaction
 			Message ret = getMainDB().createTransaction(sendamount, 
-					recipient, change, confirmed, tok, changetok,null,trx);
+					recipient, change, confirmed, tok, changetok,null,trx,"",true);
 			
 			//Get the witness and add relevant info..
 			Witness wit             = (Witness) ret.getObject("witness");

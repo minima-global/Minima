@@ -9,7 +9,7 @@ public class sendpoll extends CommandFunction{
 	public sendpoll() {
 		super("sendpoll");
 		
-		setHelp("(list|clear (refid)|[amount] [address] {tokenid})", "Polling version of send", "");
+		setHelp("(list|clear (refid)|[amount] [address] (tokenid|tokenid statevars)", "Polling version of send", "");
 	}
 	
 	@Override
@@ -37,9 +37,15 @@ public class sendpoll extends CommandFunction{
 		//It's a normal send..
 		String address = zInput[2];
 		String tokenid = "0x00";
+		String state   = "";
 		
 		if(zInput.length>3) { 
 			tokenid = zInput[3];
+		}
+		
+		//Are the state vars specified
+		if(zInput.length>4) { 
+			state = zInput[4];
 		}
 		
 		//Create a message
@@ -47,6 +53,7 @@ public class sendpoll extends CommandFunction{
 		sender.addString("address", address);
 		sender.addString("amount", amount);
 		sender.addString("tokenid", tokenid);
+		sender.addString("state", state);
 		
 		//Send it to the miner..
 		getMainHandler().getSendManaManager().PostMessage(sender);
