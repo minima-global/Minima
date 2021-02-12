@@ -22,7 +22,9 @@ const cfg = {
     hostCfg: {  AutoRemove: true, NetworkMode: "minima-e2e-testnet" },
     // unused - can be applied on a node to expose its RPC port on localhost - not needed for our tests
     hostCfgExpose: { AutoRemove: true, NetworkMode: "minima-e2e-testnet", PortBindings: {"9002/tcp": [ { "HostPort": "9002"} ] } },
-    host_port: 9002
+    host_port: 9002,
+    TOPO_STAR: "star",
+    TOPO_LINE: "line"
 }
 
 var nodes_args; // all other nodes get same args
@@ -41,7 +43,7 @@ createMinimaContainer = async function(cmd, name, hostConfig) {
     });
 }
 
-const start_docker_node_1 = async function (nbNodes, tests_collection) {
+const start_docker_node_1 = async function (topology, nbNodes, tests_collection) {
     console.log("Creating container 1");
     // Create the container.
     containers["1"] = await createMinimaContainer(cfg.node1_args, cfg.node_prefix + "1", cfg.hostCfg);
@@ -49,28 +51,68 @@ const start_docker_node_1 = async function (nbNodes, tests_collection) {
     await containers["1"].start();
     containers["1"].inspect(function (err, data) {
         ip_addrs["1"] = data.NetworkSettings.Networks[cfg.docker_net].IPAddress;
-        start_other_nodes(nbNodes, tests_collection);
+        start_other_nodes(topology, nbNodes, tests_collection);
     });
 }
 
-start_other_nodes = async function (nbNodes, tests_collection) {
-    console.log("Creating other containers");
-    // Create the container.
-    nodes_args = ["-connect", ip_addrs["1"], "9001"];
-    console.log("node args:" + nodes_args);
-    for (let i = 2; i < nbNodes+1; i++) {
-        console.log("Creating node " + i);
-        containers[i] = await createMinimaContainer(nodes_args, cfg.node_prefix + i, cfg.hostCfg);
+get_node_args = function(topology, pos) {
+    var parent = 0;
+    if(topology === cfg.TOPO_STAR) {
+        parent = ip_addrs["1"];
+    } else if (topology === cfg.TOPO_LINE) {
+        parent = ip_addrs['' + (pos - 1)];
+    }
+    const node_args = ["-connect", parent, "9001"];
+    return node_args;
+}
+
+start_other_nodes_star = async function(nbNodes, tests_collection) {
+    for (let pos = 2; pos < nbNodes+1; pos++) {
+        var node_args = get_node_args(cfg.TOPO_star, pos);
+        console.log("topo star node " + pos + " args: " + node_args);
+        containers[pos] = await createMinimaContainer(nodes_args, cfg.node_prefix + pos, cfg.hostCfg);
         // Start the container.
-        await containers[i].start();
-        containers[i].inspect(function (err, data) {
-            console.log("Node " + i + " IP:  " + JSON.stringify(data.NetworkSettings.Networks[cfg.docker_net].IPAddress));
-            ip_addrs[i] = data.NetworkSettings.Networks[cfg.docker_net].IPAddress;
-            if(i == nbNodes) { // run tests after we created last node
+        await containers[pos].start();
+        containers[pos].inspect(function (err, data) {
+            console.log("Started node " + pos + " IP:  " + JSON.stringify(data.NetworkSettings.Networks[cfg.docker_net].IPAddress));
+            ip_addrs[pos] = data.NetworkSettings.Networks[cfg.docker_net].IPAddress;
+            if(pos == nbNodes) { // run tests after we created last node
                 // need to sleep to let node sync with others
                 setTimeout(function () { tests_collection(ip_addrs) }, 2000);
             }
         });
+      }
+}
+
+start_other_nodes_line = async function (nbNodes, pos, tests_collection) {
+    if (pos < 2 || pos > nbNodes) {
+        return;
+    }
+    var node_args = get_node_args(cfg.TOPO_line, pos);
+    console.log("topo line node " + pos + " args: " + node_args);
+    containers[pos] = await createMinimaContainer(nodes_args, cfg.node_prefix + pos, cfg.hostCfg);
+    // Start the container.
+    await containers[pos].start();
+    containers[pos].inspect(function (err, data) {
+        console.log("Started node " + pos + " IP:  " + JSON.stringify(data.NetworkSettings.Networks[cfg.docker_net].IPAddress));
+        ip_addrs[pos] = data.NetworkSettings.Networks[cfg.docker_net].IPAddress;
+        if (pos == nbNodes) { // run tests after we created last node
+            // need to sleep to let node sync with others
+            setTimeout(function () { tests_collection(ip_addrs) }, 2000);
+        } else {
+            start_other_nodes_line(nbNodes, pos+1, tests_collection);
+        }
+    });
+}
+
+start_other_nodes = async function (topology, nbNodes, tests_collection) {
+    if(topology === cfg.TOPO_STAR) {
+        start_other_nodes_star(nbNodes, tests_collection);
+    } else if(topology === cfg.TOPO_LINE) {
+        start_other_nodes_line(nbNodes, 2, tests_collection);
+    } else {
+        console.log("Unsupported topology! This error should be caught earlier.");
+        console.log("    topology="+topology);
     }
 }
 
@@ -139,10 +181,25 @@ stop_docker_nodes = async function() {
 }
 
 // setup a network of nbNodes minima nodes in star topology and runs tests_collection on it with argument ip_addrs[node_prefix+ "01"] .
-start_static_network_tests = async function (nbNodes, tests_collection) {
+start_static_network_tests = async function (topology, nbNodes, tests_collection) {
+    if(!(topology === cfg.TOPO_STAR || topology === cfg.TOPO_LINE)) {
+        console.log("Error! Unsupported topology: " + topology);
+        return;
+    }
+    if(tests_collection == null) {
+        console.log("Error! Missing tests callback.");
+        return;
+    }
+    if(nbNodes < 1) {
+        console.log("Error! Unsupported number of nodes:" + nbNodes);
+        return;
+    }
+    if(nbNodes > 10) {
+        console.log("Warning! High number of nodes, tests may fail due to unresponsive nodes.\n Proceeding anyway.\n\n");
+    }
     await stop_docker_nodes();
     // give 5 seconds to stop all docker nodes (should depend on nbNodes but also system performance)
-    setTimeout(function() { start_docker_node_1(nbNodes, tests_collection); }, 5000);    
+    setTimeout(function() { start_docker_node_1(topology, nbNodes, tests_collection); }, 5000);    
 }
 
 exports.cfg = cfg;

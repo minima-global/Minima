@@ -8,7 +8,7 @@ const nbNodes = 3;
 
 test_star_static = function () {
     // number of nodes, list of tests
-    staticTests.start_static_network_tests(nbNodes, function (ip_addrs) {
+    staticTests.start_static_network_tests("star", nbNodes, function (ip_addrs) {
         console.log("tests collection");
 
         // test 0: healthcheck - are we connected?
