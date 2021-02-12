@@ -32,7 +32,7 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 	 * 
 	 * But all Minima values are actually in significant digit format anyway.. so infinite precision..
 	 */
-	public static final MathContext mMathContext = new MathContext(18, RoundingMode.DOWN);
+	public static final MathContext mMathContext = new MathContext(4, RoundingMode.DOWN);
 	
 	/**
 	 * The decimal precision of the significant digits.
@@ -97,6 +97,27 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 	
 	public MiniNumber(String zNumber){
 		mNumber = new BigDecimal(zNumber,mMathContext);
+	}
+	
+	/**
+	 * Make it a VALID Minima number.. within the allowed range
+	 * @return
+	 */
+	public MiniNumber getAsMinimaValue() {
+		
+		if(isMore(BILLION)) {
+			return BILLION;
+		}
+		
+		if(isLess(ZERO)) {
+			return ZERO;
+		}
+		
+		//Check decimal places..
+		//..
+		
+		//All OK..
+		return this;
 	}
 	
 	public BigDecimal getAsBigDecimal() {
@@ -247,28 +268,15 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 	}
 	
 	public static void main(String[] zargs) {
-		MiniNumber num = new MiniNumber("100300000.040060012");
+		MiniNumber num1 = new MiniNumber(4).pow(1000);
+		System.out.println(num1);
 		
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		DataOutputStream dos = new DataOutputStream(baos);
+		MiniNumber num2 = new MiniNumber("0.0001");
+		System.out.println(num2);
+	
+		MiniNumber num3 = num1.add(num2);
+		System.out.println(num3);
 		
-		try {
-			num.writeDataStream(dos);
-		
-			dos.flush();
-			baos.flush();
-		
-			ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-			DataInputStream dis = new DataInputStream(bais);
-			
-			MiniNumber test = MiniNumber.ReadFromStream(dis);
-			
-			System.out.println("Number : "+test);
-			
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	}
 	
 	
