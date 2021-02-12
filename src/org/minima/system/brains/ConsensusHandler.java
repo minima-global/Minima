@@ -3,13 +3,11 @@ package org.minima.system.brains;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Hashtable;
-import java.util.StringTokenizer;
 
 import org.minima.GlobalParams;
 import org.minima.database.MinimaDB;
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
-import org.minima.objects.StateVariable;
 import org.minima.objects.Transaction;
 import org.minima.objects.TxPoW;
 import org.minima.objects.Witness;
@@ -83,6 +81,7 @@ public class ConsensusHandler extends MessageProcessor {
 	public static final String CONSENSUS_NOTIFY_INITIALSYNC = "CONSENSUS_NOTIFY_INITIALSYNC";
 	public static final String CONSENSUS_NOTIFY_INITIALPERC = "CONSENSUS_NOTIFY_INITIALPERC";
 	public static final String CONSENSUS_NOTIFY_LOG         = "CONSENSUS_NOTIFY_LOG";
+	public static final String CONSENSUS_NOTIFY_RECONNECT   = "CONSENSUS_NOTIFY_RECONNECT";
 	
 	public static final String CONSENSUS_NOTIFY_DAPP_RELOAD    = "CONSENSUS_NOTIFY_DAPP_RELOAD";
 	public static final String CONSENSUS_NOTIFY_DAPP_INSTALLED = "CONSENSUS_NOTIFY_DAPP_INSTALLED";
@@ -142,7 +141,7 @@ public class ConsensusHandler extends MessageProcessor {
 	 * Main Constructor
 	 * @param zMain
 	 */
-	public ConsensusHandler(Main zMain) {
+	public ConsensusHandler() {
 		super("CONSENSUS");
 		
 		//Create a database..

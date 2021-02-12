@@ -86,12 +86,12 @@ public class ConsensusNet extends ConsensusProcessor {
 	}
 	
 	public void setInitialSyncComplete(boolean zPostNotify) {
-		if(!mInitialSync) {
+		//if(!mInitialSync) {
 			mInitialSync = true;
 			if(zPostNotify) {
 				getConsensusHandler().updateListeners(new Message(ConsensusHandler.CONSENSUS_NOTIFY_INITIALSYNC));	
 			}
-		}
+		//}
 	}
 	
 	private void PostNetClientMessage(Message zOrigMessage, Message zMessage) {
