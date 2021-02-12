@@ -1,6 +1,6 @@
-package org.minima.tests.kissvm.functions.maths;
+package org.minima.tests.kissvm.functions.sha;
 
-import org.minima.kissvm.functions.maths.POW;
+import org.minima.kissvm.functions.sha.SHA3;
 
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
@@ -25,21 +25,24 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import org.junit.Test;
+import org.minima.objects.base.MiniData;
+import org.minima.utils.Crypto;
 
-//NumberValue POW (NumberValue exp NumberValue val)
-public class POWTests {
+//HEXValue SHA3 (NumberValue bitlength HEXValue data)
+//HEXValue SHA3 (NumberValue bitlength ScriptValue data)
+public class SHA3Tests {
 
     @Test
     public void testConstructors() {
-        POW fn = new POW();
+        SHA3 fn = new SHA3();
         MinimaFunction mf = fn.getNewFunction();
 
-        assertEquals("POW", mf.getName());
+        assertEquals("SHA3", mf.getName());
         assertEquals(0, mf.getParameterNum());
 
         try {
-            mf = MinimaFunction.getFunction("POW");
-            assertEquals("POW", mf.getName());
+            mf = MinimaFunction.getFunction("SHA3");
+            assertEquals("SHA3", mf.getName());
             assertEquals(0, mf.getParameterNum());
         } catch (MinimaParseException ex) {
             fail();
@@ -50,18 +53,44 @@ public class POWTests {
     public void testValidParams() {
         Contract ctr = new Contract("", "", new Witness(), new Transaction(), new ArrayList<>());
 
-        POW fn = new POW();
+        SHA3 fn = new SHA3();
 
         {
-            MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new NumberValue(0)));
-            mf.addParameter(new ConstantExpression(new NumberValue(0)));
-            try {
-                Value res = mf.runFunction(ctr);
-                assertEquals(Value.VALUE_NUMBER, res.getValueType());
-                assertEquals("1", ((NumberValue) res).toString());
-            } catch (ExecutionException ex) {
-                fail();
+            for (int i = 0; i < 100; i++) {
+                for (int j = 160; i <= 512; i = i + 32) {
+                    HEXValue Param = new HEXValue(MiniData.getRandomData(64).to0xString());
+                    HEXValue Result = new HEXValue(Crypto.getInstance().hashData(Param.getRawData(), j));
+
+                    MinimaFunction mf = fn.getNewFunction();
+                    mf.addParameter(new ConstantExpression(new NumberValue(j)));
+                    mf.addParameter(new ConstantExpression(Param));
+                    try {
+                        Value res = mf.runFunction(ctr);
+                        assertEquals(Value.VALUE_HEX, res.getValueType());
+                        assertEquals(Result.toString(), ((HEXValue) res).toString());
+                    } catch (ExecutionException ex) {
+                        fail();
+                    }
+                }
+            }
+        }
+        {
+            for (int i = 0; i < 100; i++) {
+                for (int j = 160; i <= 512; i = i + 32) {
+                    ScriptValue Param = new ScriptValue(MiniData.getRandomData(64).to0xString());
+                    HEXValue Result = new HEXValue(Crypto.getInstance().hashData(Param.getRawData(), j));
+
+                    MinimaFunction mf = fn.getNewFunction();
+                    mf.addParameter(new ConstantExpression(new NumberValue(j)));
+                    mf.addParameter(new ConstantExpression(Param));
+                    try {
+                        Value res = mf.runFunction(ctr);
+                        assertEquals(Value.VALUE_HEX, res.getValueType());
+                        assertEquals(Result.toString(), ((HEXValue) res).toString());
+                    } catch (ExecutionException ex) {
+                        fail();
+                    }
+                }
             }
         }
 
@@ -71,7 +100,7 @@ public class POWTests {
     public void testInvalidParams() {
         Contract ctr = new Contract("", "", new Witness(), new Transaction(), new ArrayList<>());
 
-        POW fn = new POW();
+        SHA3 fn = new SHA3();
 
         // Invalid param count
         {
@@ -82,16 +111,16 @@ public class POWTests {
         }
         {
             MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new NumberValue(0)));
+            mf.addParameter(new ConstantExpression(new NumberValue(160)));
             assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
             });
         }
         {
             MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new NumberValue(0)));
-            mf.addParameter(new ConstantExpression(new NumberValue(0)));
-            mf.addParameter(new ConstantExpression(new NumberValue(0)));
+            mf.addParameter(new ConstantExpression(new NumberValue(160)));
+            mf.addParameter(new ConstantExpression(new HEXValue("0x01234567")));
+            mf.addParameter(new ConstantExpression(new HEXValue("0x01234567")));
             assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
             });
@@ -100,8 +129,48 @@ public class POWTests {
         // Invalid param domain
         {
             MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new NumberValue(0.5)));
-            mf.addParameter(new ConstantExpression(new NumberValue(16)));
+            mf.addParameter(new ConstantExpression(new NumberValue(159)));
+            mf.addParameter(new ConstantExpression(new HEXValue("0x01234567")));
+            assertThrows(ExecutionException.class, () -> {
+                Value res = mf.runFunction(ctr);
+            });
+        }
+        {
+            MinimaFunction mf = fn.getNewFunction();
+            mf.addParameter(new ConstantExpression(new NumberValue(513)));
+            mf.addParameter(new ConstantExpression(new HEXValue("0x01234567")));
+            assertThrows(ExecutionException.class, () -> {
+                Value res = mf.runFunction(ctr);
+            });
+        }
+        {
+            MinimaFunction mf = fn.getNewFunction();
+            mf.addParameter(new ConstantExpression(new NumberValue(159)));
+            mf.addParameter(new ConstantExpression(new ScriptValue("Hello World")));
+            assertThrows(ExecutionException.class, () -> {
+                Value res = mf.runFunction(ctr);
+            });
+        }
+        {
+            MinimaFunction mf = fn.getNewFunction();
+            mf.addParameter(new ConstantExpression(new NumberValue(513)));
+            mf.addParameter(new ConstantExpression(new ScriptValue("Hello World")));
+            assertThrows(ExecutionException.class, () -> {
+                Value res = mf.runFunction(ctr);
+            });
+        }
+        {
+            MinimaFunction mf = fn.getNewFunction();
+            mf.addParameter(new ConstantExpression(new NumberValue(193)));
+            mf.addParameter(new ConstantExpression(new ScriptValue("Hello World")));
+            assertThrows(ExecutionException.class, () -> {
+                Value res = mf.runFunction(ctr);
+            });
+        }
+        {
+            MinimaFunction mf = fn.getNewFunction();
+            mf.addParameter(new ConstantExpression(new NumberValue(353)));
+            mf.addParameter(new ConstantExpression(new ScriptValue("Hello World")));
             assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
             });
@@ -127,7 +196,7 @@ public class POWTests {
         {
             MinimaFunction mf = fn.getNewFunction();
             mf.addParameter(new ConstantExpression(new BooleanValue(true)));
-            mf.addParameter(new ConstantExpression(new NumberValue(0)));
+            mf.addParameter(new ConstantExpression(new NumberValue(1)));
             assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
             });
@@ -160,7 +229,7 @@ public class POWTests {
         {
             MinimaFunction mf = fn.getNewFunction();
             mf.addParameter(new ConstantExpression(new HEXValue("0x01234567")));
-            mf.addParameter(new ConstantExpression(new NumberValue(0)));
+            mf.addParameter(new ConstantExpression(new NumberValue(1)));
             assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
             });
@@ -176,7 +245,7 @@ public class POWTests {
 
         {
             MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new NumberValue(0)));
+            mf.addParameter(new ConstantExpression(new NumberValue(1)));
             mf.addParameter(new ConstantExpression(new BooleanValue(true)));
             assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
@@ -184,16 +253,8 @@ public class POWTests {
         }
         {
             MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new NumberValue(0)));
-            mf.addParameter(new ConstantExpression(new HEXValue("0x01234567")));
-            assertThrows(ExecutionException.class, () -> {
-                Value res = mf.runFunction(ctr);
-            });
-        }
-        {
-            MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new NumberValue(0)));
-            mf.addParameter(new ConstantExpression(new ScriptValue("Hello World")));
+            mf.addParameter(new ConstantExpression(new NumberValue(1)));
+            mf.addParameter(new ConstantExpression(new NumberValue(1)));
             assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
             });
@@ -218,7 +279,7 @@ public class POWTests {
         {
             MinimaFunction mf = fn.getNewFunction();
             mf.addParameter(new ConstantExpression(new ScriptValue("Hello World")));
-            mf.addParameter(new ConstantExpression(new NumberValue(0)));
+            mf.addParameter(new ConstantExpression(new NumberValue(1)));
             assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
             });
@@ -231,5 +292,6 @@ public class POWTests {
                 Value res = mf.runFunction(ctr);
             });
         }
+
     }
 }

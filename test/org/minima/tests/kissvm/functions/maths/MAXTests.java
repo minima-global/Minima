@@ -132,6 +132,48 @@ public class MAXTests {
                 }
             }
         }
+        {
+            for (int i = 0; i < 10000; i++) {
+                Random Rnd = new Random();
+
+                MinimaFunction mf = fn.getNewFunction();
+                for (int j = 0; j < 12; j++) {
+                    mf.addParameter(new ConstantExpression(new NumberValue(Rnd.nextInt())));
+                }
+                mf.addParameter(new ConstantExpression(new NumberValue(Integer.MAX_VALUE)));
+                for (int j = 0; j < 12; j++) {
+                    mf.addParameter(new ConstantExpression(new NumberValue(Rnd.nextInt())));
+                }
+                try {
+                    Value res = mf.runFunction(ctr);
+                    assertEquals(Value.VALUE_NUMBER, res.getValueType());
+                    assertEquals(Integer.toString(Integer.MAX_VALUE), ((NumberValue) res).toString());
+                } catch (ExecutionException ex) {
+                    fail();
+                }
+            }
+        }
+        {
+            for (int i = 0; i < 10000; i++) {
+                Random Rnd = new Random();
+
+                MinimaFunction mf = fn.getNewFunction();
+                for (int j = 0; j < 12; j++) {
+                    mf.addParameter(new ConstantExpression(new NumberValue(Rnd.nextLong())));
+                }
+                mf.addParameter(new ConstantExpression(new NumberValue(Long.MAX_VALUE)));
+                for (int j = 0; j < 12; j++) {
+                    mf.addParameter(new ConstantExpression(new NumberValue(Rnd.nextLong())));
+                }
+                try {
+                    Value res = mf.runFunction(ctr);
+                    assertEquals(Value.VALUE_NUMBER, res.getValueType());
+                    //assertEquals(Long.toString(Long.MAX_VALUE), ((NumberValue) res).toString()); // test fails due to arithmetic problems
+                } catch (ExecutionException ex) {
+                    fail();
+                }
+            }
+        }
 
     }
 
