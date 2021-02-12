@@ -9,6 +9,7 @@ import java.io.IOException;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.proofs.Proof;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONObject;
 
@@ -51,7 +52,7 @@ public class MultiSig implements Streamable {
 			dis.close();
 			
 		}catch(Exception exc) {
-			exc.printStackTrace();
+			MinimaLogger.log(exc);
 		}
 	}
 	
@@ -100,7 +101,7 @@ public class MultiSig implements Streamable {
 			return new MiniData(baos.toByteArray());
 			
 		}catch(Exception exc) {
-			exc.printStackTrace();
+			MinimaLogger.log(exc);
 		}
 		
 		return null;

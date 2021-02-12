@@ -138,10 +138,24 @@ public class ConsensusUser extends ConsensusProcessor {
 		}else if(zMessage.isMessageType(CONSENSUS_VERIFY)) {
 			String data   = zMessage.getString("data");
 			String pubkey = zMessage.getString("publickey");
+			String sig    = zMessage.getString("signature");
 			
 			//Convert
 			MiniData hexdata = new MiniData(data);
 			MiniData hexpubk = new MiniData(pubkey);
+			MiniData hexsig  = new MiniData(sig);
+			
+			//Create a MultiKey..
+			MultiKey key = new MultiKey(hexpubk);
+			
+			//Now verify..
+			boolean verify = key.verify(hexdata, hexsig);
+			
+			if(verify) {
+				InputHandler.endResponse(zMessage, true, "Valid Signature");
+			}else {
+				InputHandler.endResponse(zMessage, false, "Invalid Signature");
+			}
 			
 		}else if(zMessage.isMessageType(CONSENSUS_EXTRASCRIPT)) {
 			//Get the script
