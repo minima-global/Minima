@@ -10,6 +10,11 @@ import org.minima.utils.Streamable;
 public class MiniString implements Streamable {
 
 	/**
+	 * Default Minima Charset
+	 */
+	public static final Charset DEFAULT_MINIMA_CHARSET = Charset.forName("UTF-8");
+	
+	/**
 	 * The UTF-8 String Data
 	 */
 	String mString;
@@ -19,7 +24,7 @@ public class MiniString implements Streamable {
 	}
 	
 	public MiniString(String zString) {
-		mString = new String(zString.getBytes(Charset.forName("UTF-8")));
+		mString = new String(zString.getBytes(DEFAULT_MINIMA_CHARSET));
 	}
 	
 	public MiniString(byte[] zBytesData) {

@@ -9,7 +9,7 @@ public class sign extends CommandFunction{
 	public sign() {
 		super("sign");
 		
-		setHelp("[data] [public key]", "Sign arbitrary data with one of your keys", "");
+		setHelp("[hex|string] [public key]", "Sign arbitrary data with one of your keys", "");
 	}
 	
 	@Override
