@@ -14,7 +14,6 @@ import org.minima.system.network.maxima.db.MaximaDB;
 import org.minima.system.network.maxima.db.MaximaUser;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.encryption.CryptoPackage;
-import org.minima.utils.encryption.EncryptDecrypt;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.json.parser.JSONParser;

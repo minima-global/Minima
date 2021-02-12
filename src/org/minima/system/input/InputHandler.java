@@ -29,7 +29,7 @@ public class InputHandler extends MessageProcessor {
 	 * 
 	 * @param zMain
 	 */
-	public InputHandler(Main zMain) {
+	public InputHandler() {
 		super("INPUT");
 	}
 	

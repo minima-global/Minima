@@ -9,6 +9,7 @@ import java.util.Random;
 
 import org.minima.Start;
 import org.minima.system.Main;
+import org.minima.system.brains.ConsensusHandler;
 import org.minima.system.input.InputHandler;
 import org.minima.system.network.base.MinimaClient;
 import org.minima.system.network.base.MinimaServer;
@@ -114,7 +115,7 @@ public class NetworkHandler extends MessageProcessor {
 	 * 
 	 * @param zMain
 	 */
-	public NetworkHandler(Main zMain, String zHost, int zMainPort) {
+	public NetworkHandler(String zHost, int zMainPort) {
 		super("NETWORK");
 
 		if(zHost.equals("")) {
@@ -358,6 +359,9 @@ public class NetworkHandler extends MessageProcessor {
 			InputHandler.getResponseJSON(zMessage).put("total", shut.size());
 			InputHandler.getResponseJSON(zMessage).put("clients", shut);
 			InputHandler.endResponse(zMessage, true, "All network clients reset - reconnect in 30 seconds");
+	
+			//Notify..
+			Main.getMainHandler().getConsensusHandler().updateListeners(new Message(ConsensusHandler.CONSENSUS_NOTIFY_RECONNECT));
 			
 		}else if(zMessage.isMessageType(NETWORK_DISCONNECT)) {
 			String uid = zMessage.getString("uid");
