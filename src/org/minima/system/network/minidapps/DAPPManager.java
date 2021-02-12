@@ -171,7 +171,8 @@ public class DAPPManager extends MessageProcessor {
 			ret.put("name", "*ERROR*");
 			ret.put("description", "This minidapp did not load correctly..");
 			ret.put("uid", uid);
-	        ret.put("root", "/minidapps/"+uid);
+			ret.put("installed", (long)0);
+	        ret.put("root", "");
 	        ret.put("web", "http://"+mNetwork.getBaseHost()+":"+mNetwork.getMiniDAPPServerPort()+"/minidapps/"+uid);
 		}
 		
@@ -290,6 +291,22 @@ public class DAPPManager extends MessageProcessor {
 					
 				}else {
 					MinimaLogger.log("ERROR : minidapp.conf not found for "+minidappid);
+				
+					//Some details..
+					String root = conf.getParent();
+			        int start = root.indexOf("minidapps");
+			        String uid = root.substring(start+10);
+			        
+					JSONObject confjson = new JSONObject();
+					confjson.put("name", "*ERROR*");
+					confjson.put("description", "minidapp.conf file missing..");
+					confjson.put("uid", uid);
+					confjson.put("installed", (long)0);
+					confjson.put("root", "");
+					confjson.put("web", "http://"+mNetwork.getBaseHost()+":"+mNetwork.getMiniDAPPServerPort()+"/minidapps/"+uid);
+					
+			        //Add it..
+					CURRENT_MINIDAPPS.add(confjson);
 				}
 				
 			}
