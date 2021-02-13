@@ -3,8 +3,6 @@
  */
 package org.minima.objects.base;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -86,34 +84,38 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 	 * Many different COnstructors for all number types
 	 */
 	public MiniNumber(){
-		this(new BigDecimal(0,MATH_CONTEXT));
+		mNumber = new BigDecimal(0,MATH_CONTEXT);
 	}
 	
 	public MiniNumber(int zNumber){
-		this(new BigDecimal(zNumber,MATH_CONTEXT));
+		mNumber = new BigDecimal(zNumber,MATH_CONTEXT);
+		checkLimits();
 	}
 	
 	public MiniNumber(long zNumber){
-		this(new BigDecimal(zNumber,MATH_CONTEXT));
+		mNumber = new BigDecimal(zNumber,MATH_CONTEXT);
+		checkLimits();
 	}
 
 	public MiniNumber(BigInteger zNumber){
-		this(new BigDecimal(zNumber,MATH_CONTEXT));
+		mNumber = new BigDecimal(zNumber,MATH_CONTEXT);
+		checkLimits();
 	}
 	
 	public MiniNumber(String zNumber){
-		this(new BigDecimal(zNumber,MATH_CONTEXT));
+		mNumber = new BigDecimal(zNumber,MATH_CONTEXT);
+		checkLimits();
+	}
+	
+	public MiniNumber(BigDecimal zBigD){
+		mNumber = zBigD.round(MATH_CONTEXT);
+		checkLimits();
 	}
 	
 	/**
-	 * Main MiniNumber Constructor..
-	 * @param zBigD
+	 * Check MiniNumber is within the acceptable range
 	 */
-	public MiniNumber(BigDecimal zBigD){
-		//Ensure the correct number of significant digits..
-		mNumber = zBigD.round(MATH_CONTEXT);
-		
-		//Check limits..
+	private void checkLimits() {
 		if(mNumber.compareTo(MAX_MININUMBER)>0) {
 			throw new NumberFormatException("MiniNumber too large - outside allowed range 10^512");
 		}
@@ -136,11 +138,16 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 			return ZERO;
 		}
 		
-		//Check decimal places..
-		mNumber.setScale(MAX_SIGNIFICANT_DIGITS);
-		
-		//All OK..
-		return this;
+		//Create a new Number - with correct significant digits
+		return new MiniNumber(this.getAsBigDecimal());
+	}
+	
+	/**
+	 * Is this a valid number for an input or an output in Minima
+	 * @return true false..
+	 */
+	public boolean isValidMinimaValue() {
+		return getAsMinimaValue().isEqual(this);
 	}
 	
 	public BigDecimal getAsBigDecimal() {
@@ -291,8 +298,8 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 	}
 	
 	public static void main(String[] zargs) {
-		MiniNumber num1 = new MiniNumber("4000000000").getAsMinimaValue();
-		System.out.println(num1);
+		MiniNumber num1 = new MiniNumber("4000000000");
+		System.out.println(num1 + " valid:"+num1.isValidMinimaValue());
 		
 		MiniNumber num2 = new MiniNumber("0.0001");
 		System.out.println(num2);
