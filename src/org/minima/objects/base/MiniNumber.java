@@ -150,6 +150,9 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 		return getAsMinimaValue().isEqual(this);
 	}
 	
+	/**
+	 * Convert to various normal number types
+	 */
 	public BigDecimal getAsBigDecimal() {
 		return mNumber;
 	}
@@ -170,6 +173,9 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 		return mNumber.intValue();
 	}
 	
+	/**
+	 * Basic arithmetic functions 
+	 */
 	public MiniNumber add(MiniNumber zNumber) {
 		return new MiniNumber( mNumber.add(zNumber.getAsBigDecimal(),MATH_CONTEXT) );
 	}
