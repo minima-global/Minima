@@ -29,11 +29,12 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 	public static final int MAX_SIGNIFICANT_DIGITS = 18;
 	
 	/**
-	 * The Math Context used for ALL real numbers
-	 * 
-	 * Can represent 1 billion with 8 zeros ( 10 + 8 ) digits with no loss of precision.. 
-	 * 
-	 * But all Minima values are actually in significant digit format anyway.. so infinite precision..
+	 * The Maximum Minima scale - decimal places
+	 */
+	public static final int MAX_MINIMA_SCALE = MAX_SIGNIFICANT_DIGITS - 10;
+	
+	/** 
+	 * The base Math Context used for all operations
 	 */
 	public static final MathContext MATH_CONTEXT = new MathContext(MAX_SIGNIFICANT_DIGITS, RoundingMode.DOWN);
 	
@@ -138,8 +139,7 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 			return ZERO;
 		}
 		
-		//Create a new Number - with correct significant digits
-		return new MiniNumber(this.getAsBigDecimal());
+		return new MiniNumber(mNumber.setScale(MAX_MINIMA_SCALE, RoundingMode.DOWN));
 	}
 	
 	/**
@@ -207,10 +207,14 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 	}
 	
 	public MiniNumber setSignificantDigits(int zSignificantDigits) {
+		//1-max digits..
 		int sigdig = zSignificantDigits;
-		if(sigdig>18) {
-			sigdig = 18;	
+		if(sigdig>MAX_SIGNIFICANT_DIGITS) {
+			sigdig = MAX_SIGNIFICANT_DIGITS;	
+		}else if(sigdig<1) {
+			sigdig = 1;
 		}
+		
 		return new MiniNumber( mNumber.round(new MathContext(sigdig, RoundingMode.DOWN))) ;
 	}
 	
@@ -298,14 +302,14 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 	}
 	
 	public static void main(String[] zargs) {
-		MiniNumber num1 = new MiniNumber("4000000000");
+		MiniNumber num1 = new MiniNumber("100000000");
 		System.out.println(num1 + " valid:"+num1.isValidMinimaValue());
 		
-		MiniNumber num2 = new MiniNumber("0.0001");
+		MiniNumber num2 = new MiniNumber("0.0000000001");
 		System.out.println(num2);
 	
-		MiniNumber num3 = num1.add(num2);
-		System.out.println(num3);
+		MiniNumber num3 = new MiniNumber("0.00000000000001");
+		System.out.println(num3 + " "+num3.getAsMinimaValue()+" valid:"+num3.isValidMinimaValue());
 		
 	}
 	
