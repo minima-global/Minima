@@ -619,7 +619,7 @@ public class DAPPManager extends MessageProcessor {
 				//Get the URL
 				String url = mNetwork.getExternalURL();
 				if(!url.equals("")) {
-					RPCClient.sendPOST("", json.toString());
+					RPCClient.sendPOST(url, json.toString());
 				}
 			}catch(Exception exc) {
 				MinimaLogger.log(exc);
