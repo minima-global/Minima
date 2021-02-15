@@ -255,7 +255,7 @@ public class ConsensusHandler extends MessageProcessor {
 				}
 			}
 			
-			//s it relevant to you the User
+			//Is it relevant to you the User
 			boolean relevant = false;
 			if(txpow.isTransaction()) {
 				//Is it relevant to us..
@@ -290,7 +290,6 @@ public class ConsensusHandler extends MessageProcessor {
 				updateListeners(new Message(CONSENSUS_NOTIFY_NEWBLOCK).addObject("txpow", newtip));
 			
 				//Update the web listeners..
-				//Send this to the WebSocket..
 				JSONObject newblock = new JSONObject();
 				newblock.put("event","newblock");
 				newblock.put("txpow",newtip.toJSON());
@@ -320,11 +319,12 @@ public class ConsensusHandler extends MessageProcessor {
 				}				
 			}
 					
-			//BROADCAST Message for ALL the clients
-			Message netmsg  = new Message(MinimaClient.NETCLIENT_SENDTXPOWID).addObject("txpowid", txpow.getTxPowID());
-			Message netw    = new Message(NetworkHandler.NETWORK_SENDALL).addObject("message", netmsg);
-			Main.getMainHandler().getNetworkHandler().PostMessage(netw);
-			
+			//BROADCAST Message for ALL the clients - only if valid / or block.. ( they can request it if need be..)
+			if(txnok || txpow.isBlock()) {
+				Message netmsg  = new Message(MinimaClient.NETCLIENT_SENDTXPOWID).addObject("txpowid", txpow.getTxPowID());
+				Message netw    = new Message(NetworkHandler.NETWORK_SENDALL).addObject("message", netmsg);
+				Main.getMainHandler().getNetworkHandler().PostMessage(netw);
+			}
 			
 		/**
 		 * Called every 10 Minutes to do a few tasks
