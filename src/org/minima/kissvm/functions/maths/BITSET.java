@@ -1,5 +1,7 @@
 package org.minima.kissvm.functions.maths;
 
+import java.util.BitSet;
+
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.functions.MinimaFunction;
@@ -24,43 +26,28 @@ public class BITSET extends MinimaFunction {
 		
 		//get the Input Data
 		byte[] data = zContract.getHEXParam(0, this).getRawData();
-		int datalen   = data.length;
+		int totbits = (data.length * 8) - 1;
 		
 		//Get the desired Bit
 		int bit = zContract.getNumberParam(1, this).getNumber().getAsInt();
+		if(bit>totbits) {
+			throw new ExecutionException("BitSet too large "+bit+" / "+totbits);
+		}
 		
 		//Set to ON or OFF
-		boolean set = zContract.getNumberParam(2, this).isTrue();
+		boolean set = zContract.getBoolParam(2, this).isTrue();
+
+		//Create a BitSet object..
+		BitSet bits = BitSet.valueOf(data);
 		
-		//find the byte you need..bit
-		int reqbyte = (int)Math.floor(bit / 8);
+		//Change the bit
+		bits.set(bit, set);
 		
-		//Check for Overflow
-		if(reqbyte >= datalen) {
-			throw new ExecutionException("Overflow Bit set. Total Bytes "+datalen+". Requested "+reqbyte);
-		}
-		 
-		//Which bit in the byte
-		int bitbyte = bit - (reqbyte * 8);  
+		//Now get the new byte array
+		byte[] newarray = bits.toByteArray();
 		
-		//Copy the array
-		byte[] copy = new byte[datalen];
-		for(int i=0;i<datalen;i++) {
-			copy[i] = data[i];
-			
-			if(i == reqbyte) {
-				if(set) {
-					//Set the Bit
-					copy[i] |=  (1 << bitbyte);	
-				}else{
-					//Clear the bit
-					copy[i] &= ~(1 << bitbyte);	
-				}	
-			}
-		}
-		
-		//return the New HEXValue
-		return new HEXValue(copy);
+		//Return the new HEXValue
+		return new HEXValue(newarray);		
 	}
 	
 	@Override
