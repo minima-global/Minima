@@ -118,7 +118,7 @@ public class RPCClient {
 //		}
 		
 		//String url = "https://incentivedb.minima.global/items/directus_users?filter={ \"email\": { \"_eq\": \"'+this.username.value+'\" }}'";
-		String url = "https://www.google.com";
+		String url = "https://127.0.0.1:2305/hello";
 		
 		String ret = sendGET(url);
 		
