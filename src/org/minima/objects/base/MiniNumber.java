@@ -11,6 +11,7 @@ import java.math.BigInteger;
 import java.math.MathContext;
 import java.math.RoundingMode;
 
+import org.minima.utils.Crypto;
 import org.minima.utils.Streamable;
 
 /**
@@ -26,14 +27,14 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 	/**
 	 * The MAX Number of Significant digits for any MiniNUmber
 	 */
-	public static final int MAX_DIGITS = 64;
+	public static final int MAX_DIGITS = 34;
 	
 	/**
 	 * The Maximum number of decimal places for a Minima Value
 	 * 
-	 * 10 is 1 billion..
+	 * 10 digits represents 1 billion ( Max Value )..
 	 */
-	public static final int MAX_SCALE = MAX_DIGITS - 10;
+	public static final int MAX_MINIMA_DECIMAL_PLACES = MAX_DIGITS - 10;
 	
 	/** 
 	 * The base Math Context used for all operations
@@ -126,10 +127,6 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 		if(mNumber.compareTo(MIN_MININUMBER)<0) {
 			throw new NumberFormatException("MiniNumber too small - outside allowed range -(10^512)");
 		}
-		
-		if(mNumber.scale() > MAX_SCALE) {
-			throw new NumberFormatException("MiniNumber too many decimal places - outside allowed range "+MAX_SCALE);
-		}
 	}
 	
 	/**
@@ -145,7 +142,7 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 			return ZERO;
 		}
 		
-		return this;
+		return new MiniNumber(mNumber.setScale(MAX_MINIMA_DECIMAL_PLACES, RoundingMode.DOWN));
 	}
 	
 	/**
@@ -329,6 +326,11 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 		
 		MiniNumber num4 = new MiniNumber("1.23E+04");
 		System.out.println(num4);
+		
+		//MiniNumber num5 = new MiniNumber(new MiniData("0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF").getDataValue());
+		MiniNumber num5 = new MiniNumber(Crypto.MAX_HASH.getDataValue());
+		System.out.println(num5);
+		
 		
 	}
 	
