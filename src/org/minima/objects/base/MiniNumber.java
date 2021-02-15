@@ -24,14 +24,21 @@ import org.minima.utils.Streamable;
 public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 	
 	/**
-	 * The Number of Significant digits
+	 * The MAX Number of Significant digits for any MiniNUmber
 	 */
-	public static final int MAX_SIGNIFICANT_DIGITS = 18;
+	public static final int MAX_SIGNIFICANT_DIGITS = 64;
 	
 	/**
-	 * The Maximum Minima scale - decimal places
+	 * The Maximum number of decimal places for a Minima Value
+	 * 
+	 * 10 is 1 billion..
 	 */
 	public static final int MAX_MINIMA_SCALE = MAX_SIGNIFICANT_DIGITS - 10;
+	
+	/**
+	 * The Maximum number of decimal places.. for ANY MiniNumber Value
+	 */
+	public static int MAX_SCALE = 128;
 	
 	/** 
 	 * The base Math Context used for all operations
@@ -39,14 +46,20 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 	public static final MathContext MATH_CONTEXT = new MathContext(MAX_SIGNIFICANT_DIGITS, RoundingMode.DOWN);
 	
 	/**
-	 * The MAXIMUM value any MiniNUmber can be..
+	 * The MAXIMUM value any MiniNumber can be..
 	 */
 	public static final BigDecimal MAX_MININUMBER = new BigDecimal(10,MATH_CONTEXT).pow(512,MATH_CONTEXT);
 	
 	/**
-	 * The Minimum value any MiniNUmber can be..
+	 * The Minimum value any MiniNumber can be..
 	 */
 	public static final BigDecimal MIN_MININUMBER = MAX_MININUMBER.negate();
+	
+	/**
+	 * The decimal precision of the significant digits.
+	 */
+//	public static final DecimalFormat MINIMA_SIGNIFICANT_FORMAT = new DecimalFormat("0.#################E0");
+	
 	
 	/**
 	 * Useful numbers
@@ -124,10 +137,14 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 		if(mNumber.compareTo(MIN_MININUMBER)<0) {
 			throw new NumberFormatException("MiniNumber too small - outside allowed range -(10^512)");
 		}
+		
+		if(mNumber.scale() > MAX_SCALE) {
+			throw new NumberFormatException("MiniNumber too many decimal places - outside allowed range "+MAX_SCALE);
+		}
 	}
 	
 	/**
-	 * Make it a VALID Minima number.. within the allowed range
+	 * Make a VALID Minima number.. within the allowed range and decimals
 	 * @return
 	 */
 	public MiniNumber getAsMinimaValue() {
@@ -147,7 +164,7 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 	 * @return true false..
 	 */
 	public boolean isValidMinimaValue() {
-		return getAsMinimaValue().isEqual(this);
+		return isEqual(getAsMinimaValue());
 	}
 	
 	/**
@@ -236,6 +253,10 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 		return new MiniNumber( mNumber.subtract(BigDecimal.ONE,MATH_CONTEXT) );
 	}
 
+	public int decimalPlaces() {
+		return mNumber.scale();
+	}
+	
 	@Override
 	public int compareTo(MiniNumber zCompare) {
 		return mNumber.compareTo(zCompare.getAsBigDecimal());
@@ -288,7 +309,7 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 		
 		//Read in the byte array for unscaled BigInteger
 		int len = zIn.readInt();
-		if(len > 32 || len<1) {
+		if(len > 128 || len<1) {
 			//Something wrong..
 			throw new IOException("ERROR reading MiniNumber - input too large or negative "+len);
 		}
@@ -312,10 +333,13 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 		System.out.println(num1 + " valid:"+num1.isValidMinimaValue());
 		
 		MiniNumber num2 = new MiniNumber("0.0000000001");
-		System.out.println(num2);
+		System.out.println(num2+" "+num2.decimalPlaces());
 	
 		MiniNumber num3 = new MiniNumber("0.00000000000001");
 		System.out.println(num3 + " "+num3.getAsMinimaValue()+" valid:"+num3.isValidMinimaValue());
+		
+		MiniNumber num4 = new MiniNumber("1.23E+04");
+		System.out.println(num4);
 		
 	}
 	
