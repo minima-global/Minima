@@ -108,6 +108,8 @@ public class Start {
 		String connecthost      = VALID_BOOTSTRAP_NODES[hostnum];
 		int connectport         = 9001;
 		String host             = "";
+
+		String external 		= "";
 		
 		boolean clean           = false;
 		boolean cleanhard       = false;
@@ -146,6 +148,7 @@ public class Start {
 					MinimaLogger.log("        -noconnect             : Don't connect to MainNet. Can then connect to private chains.");
 					MinimaLogger.log("        -connect [host] [port] : Don't connect to MainNet but connect to this node instead.");
 					MinimaLogger.log("        -daemon                : Accepts no input from STDIN. Can run in background process.");
+					MinimaLogger.log("        -externalurl           : Send a POST request to this URL with Minima JSON information.");
 					MinimaLogger.log("        -help                  : Show this help");
 					MinimaLogger.log("");
 					MinimaLogger.log("With zero parameters Minima will start and connect to a set of default nodes.");
@@ -179,6 +182,9 @@ public class Start {
 					
 				}else if(arg.equals("-conf")) {
 					conffolder = zArgs[counter++];
+				
+				}else if(arg.equals("-externalurl")) {
+					external = zArgs[counter++];
 				
 				}else if(arg.equals("-test")) {
 					//Use the Test PARAMS!
@@ -259,6 +265,11 @@ public class Start {
 		
 		if(!connect) {
 			rcmainserver.setRequireNoInitialSync();
+		}
+		
+		//Set the External URL..
+		if(!external.equals("")) {
+			rcmainserver.getNetworkHandler().setExternalURL(external);
 		}
 		
 		//Start the system

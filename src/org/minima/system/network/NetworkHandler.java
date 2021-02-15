@@ -194,6 +194,11 @@ public class NetworkHandler extends MessageProcessor {
 		return mExternalURL;
 	}
 	
+	public void setExternalURL(String zURL) {
+		MinimaLogger.log("External URL : "+zURL);
+		mExternalURL = zURL;
+	}
+	
 	public String calculateHostIP() {
 		if(mHardSetLocal) {
 			return mLocalHost;
