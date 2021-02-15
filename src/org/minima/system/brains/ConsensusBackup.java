@@ -243,16 +243,24 @@ public class ConsensusBackup extends ConsensusProcessor {
 				return;
 			}
 			
+			//Load the whole file
+			byte[] restore 				= MiniFile.readCompleteFile(fullrestore);
+			if(restore.length == 0) {
+				InputHandler.endResponse(zMessage, false, "Error loading restore file..");
+				return;
+			}
+			
+			//OK - LETS DO IT..
+			
 			//Clear the database..
 			getMainDB().getMainTree().clearTree();
 			getMainDB().getCoinDB().clearDB();
 			getMainDB().getTxPowDB().ClearDB();
 			
-			//Wipe everything
-			BackupManager.safeDelete(getBackup().getRootFolder());
+			//Wipe everything BUT the minidapp folder
+			BackupManager.deleteConfFolder(getBackup().getRootFolder());
 			
 			//Load the whole file
-			byte[] restore 				= MiniFile.readCompleteFile(fullrestore);
 			ByteArrayInputStream bais 	= new ByteArrayInputStream(restore);
 			DataInputStream dis 		= new DataInputStream(bais);
 			

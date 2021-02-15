@@ -36,6 +36,8 @@ dependencies {
     testImplementation 'junit:junit:4.13'
 
     implementation 'org.mozilla:rhino:1.7R4'
+
+    implementation 'com.jcraft:jsch:0.1.55'
 }
 
 sourceSets {

@@ -12,14 +12,18 @@ import java.util.Set;
 import org.minima.objects.base.MiniData;
 import org.minima.system.Main;
 import org.minima.system.brains.BackupManager;
+import org.minima.system.network.minidapps.minihub.hexdata.downloadpng;
 import org.minima.system.network.minidapps.minihub.hexdata.faviconico;
 import org.minima.system.network.minidapps.minihub.hexdata.helphtml;
 import org.minima.system.network.minidapps.minihub.hexdata.iconpng;
 import org.minima.system.network.minidapps.minihub.hexdata.indexhtml;
 import org.minima.system.network.minidapps.minihub.hexdata.installdapphtml;
+import org.minima.system.network.minidapps.minihub.hexdata.manropettf;
+import org.minima.system.network.minidapps.minihub.hexdata.minidapphubpng;
 import org.minima.system.network.minidapps.minihub.hexdata.minidappscss;
 import org.minima.system.network.minidapps.minihub.hexdata.tilegreyjpeg;
 import org.minima.system.network.minidapps.minihub.hexdata.uninstalldapphtml;
+import org.minima.system.network.minidapps.minihub.hexdata.uninstallpng;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
@@ -187,6 +191,17 @@ public class DAPPServer extends NanoHTTPD{
 				}else if(fileRequested.equals("tile-grey.jpeg")) {
 					return getOKResponse(tilegreyjpeg.returnData(), "image/jpeg");	
 				
+				}else if(fileRequested.equals("download.png")) {
+					return getOKResponse(downloadpng.returnData(), "image/jpeg");	
+				
+				}else if(fileRequested.equals("uninstall.png")) {
+					return getOKResponse(uninstallpng.returnData(), "image/jpeg");	
+				
+				}else if(fileRequested.equals("minidapphub.png")) {
+					return getOKResponse(minidapphubpng.returnData(), "image/jpeg");	
+				
+				}else if(fileRequested.equals("Manrope.ttf")) {
+					return getOKResponse(manropettf.returnData(), "font/ttf");	
 				
 				}else if(fileRequested.equals("params")) {
 					JSONObject pp = mParams.get(MiniDAPPID);
@@ -196,12 +211,11 @@ public class DAPPServer extends NanoHTTPD{
 					
 					//Return the parameters..
 					return getOKResponse(pp.toString().getBytes(), "text/plain"); 
+				}else{
+					MinimaLogger.log("ROOT Minihub File not found : "+fileRequested);
+					
+					return getNotFoundResponse();
 				}
-			
-				//Are we asking for minima.js..
-//			}else if(fileRequested.endsWith("/minima.js") || fileRequested.equals("minima.js")) {
-//				return getOKResponse(mDAPPManager.getMinimaJS() , "text/javascript");
-				
 			}
 			
 			//Are we uploading a file..
@@ -233,6 +247,14 @@ public class DAPPServer extends NanoHTTPD{
 			
 			//Get the default file..
 			File fullfile = new File(mWebRoot,fileRequested); 
+			
+			//Does it exist..
+			if(!fullfile.exists()) {
+				MinimaLogger.log("MiniDAPP file not found : "+fullfile.getAbsolutePath());
+				return getNotFoundResponse();
+			}
+			
+			//Load it..
 			byte[] file   = MiniFile.readCompleteFile(fullfile);
 			
 			//Need to check if allowed.. hmm.. TODO
@@ -294,7 +316,7 @@ public class DAPPServer extends NanoHTTPD{
 		
 		//Build it..
 		StringBuilder list = new StringBuilder();
-		list.append("<table width=100%>");
+		//list.append("<table width=100%>");
 		
 		int len = alldapps.size();
 		for(int i=0;i<len;i++) {
@@ -305,9 +327,10 @@ public class DAPPServer extends NanoHTTPD{
 			String uid  = (String) app.get("uid");
 			String name  = (String) app.get("name");
 			String desc  = (String) app.get("description");
-			String backg = root+"/"+(String) app.get("background");
+//			String backg = root+"/"+(String) app.get("background");
 			String icon  = root+"/"+(String) app.get("icon");
 			String webpage  = root+"/index.html";
+			String download =  (String) app.get("download");
 			
 			String openpage = "_"+name;
 	
@@ -319,48 +342,39 @@ public class DAPPServer extends NanoHTTPD{
 			String date = MinimaLogger.DATEFORMAT.format(new Date((Long)app.get("installed"))); 
 			String version = uid+" @ "+date;
 			
-			//Now do it..
-			String minis = "<tr><td>\n" + 
-					"			<table style='background-size:100%;background-image: url("+backg+");' width=100% height=100 class=minidapp>\n" + 
-					"			 	<tr>\n" + 
-					"					<td style='cursor:pointer;' rowspan=2 onclick=\"window.open('"+webpage+"', '"+openpage+"');\">\n" + 
-					"						<img src='"+icon+"' height=100>\n" + 
-					"					</td>\n" + 
-					"					<td width=100% class='minidappdescription'>\n" + 
-					"                   <div style='position:relative'>\n"; 
+			String openwebpage = "window.open(\""+webpage+"\",\""+openpage+"\");";
 			
-			if(!debug) {
-				minis+=	"				        <div style='color:red;cursor:pointer;position:absolute;right:100;top:10'><a style='text-decoration:none;color:red;' href='"+app.get("download")+"' download>DOWNLOAD</a></div>\n" + 
-					    "				        <div onclick='uninstallDAPP(\""+name+"\",\""+uid+"\");' style='color:red;cursor:pointer;position:absolute;right:10;top:10'>UNINSTALL</div>\n"; 
-			}else {
-				minis+=	"				        <div style='color:red;position:absolute;right:10;top:10'>DEVELOPMENT</div>\n";
-			}
-					
-			minis+=	"						<br><div onclick=\"window.open('"+webpage+"','"+openpage+"');\" style='cursor:pointer;font-size:18'><b>"+name.toUpperCase()+"</b></div>\n" + 
-					"						<br><div onclick=\"window.open('"+webpage+"','"+openpage+"');\" style='cursor:pointer;font-size:12;min-height:20;'>"+desc+"</div>\n" + 
-					"						<div onclick=\"window.open('"+webpage+"','"+openpage+"');\" style='cursor:pointer;color:blue;font-size:10;text-align:right;width:98%;'><br>"+version+"</div>\n"+
-					"					</div>\n"+
-					"                     </td>\n" + 
-					"				</tr>\n" + 
-					"			</table>\n" + 
-					"		</td></tr>\n";
+			String minis = "<table class='minidapp' width=100% border=0>\n"
+					+ "			<tr>\n"
+					+ "				<td onclick='"+openwebpage+"' rowspan=2>\n"
+					+ "					<img height=50 src='"+icon+"' style='vertical-align:middle;cursor:pointer;border-radius:10px;'>&nbsp;&nbsp; 	\n"
+					+ "				</td>\n"
+					+ "				<td onclick='"+openwebpage+"' style='cursor:pointer;font-size:16px;'><B>"+name+"</B></td>\n"
+					+ "				<td rowspan=2 nowrap>\n"
+					+ "					&nbsp;<a href='"+download+"' download><img height=30 src='download.png'></a>&nbsp;&nbsp;&nbsp;\n"
+					+ "					<img style='cursor:pointer;' onclick=\"uninstallDAPP('"+name+"','"+uid+"');\" height=30 src='uninstall.png'>&nbsp;\n"
+					+ "				</td>\n"
+					+ "			</tr>\n"
+					+ "			<tr>\n"
+					+ "				<td onclick='"+openwebpage+"' style='cursor:pointer;font-size:10px;vertical-align:top;' width=100% height=100%>\n"
+					+ "				 "+desc
+					+ "				</td>\n"
+					+ "			</tr>\n"
+					+ "		</table>\n"
+					+ "		\n"
+					+ "		<div style='height:15px; width:100%; clear:both;'></div>\n"
+					+ "		";
 			
 			//Add to the list
 			list.append(minis);
 		}
 		
 		if(len == 0) {
-			list.append("<tr><td style='text-align:center;'><br><br><b>NO DAPPS INSTALLED YET..</b>"
-					+ "<br><br><br>"
-					+ "Go to <a href='http://mifi.minima.global/' target='_blank'>http://mifi.minima.global/</a> to find MiniDAPPs"
-					+ "</td></tr>");
-		}else {
-//			list.append("<tr><td style='text-align:center;'><br><br>"
+			list.append("<table width=100%><tr><td style='text-align:center;font-size:'><br><br><b>No MiniDAPPs installed yet..</b>"
+					+ "<br><br>"
 //					+ "Go to <a href='http://mifi.minima.global/' target='_blank'>http://mifi.minima.global/</a> to find MiniDAPPs"
-//					+ "</td></tr>");
+					+ "</td></tr></table>");
 		}
-		
-		list.append("</table>");
 		
 		//Store A copy..
 		mCurrentIndex = list.toString();

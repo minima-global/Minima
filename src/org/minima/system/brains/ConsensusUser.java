@@ -214,7 +214,7 @@ public class ConsensusUser extends ConsensusProcessor {
 			ArrayList<MiniString> leaves = (ArrayList<MiniString>) zMessage.getObject("leaves");
 		
 			//First create an MMR Tree..
-			MMRSet mmr = new MMRSet(bitlength);
+			MMRSet mmr = new MMRSet(bitlength, false);
 			
 			//Now add each 
 			JSONArray nodearray = new JSONArray();

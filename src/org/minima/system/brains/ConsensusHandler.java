@@ -3,11 +3,13 @@ package org.minima.system.brains;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.StringTokenizer;
 
 import org.minima.GlobalParams;
 import org.minima.database.MinimaDB;
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
+import org.minima.objects.StateVariable;
 import org.minima.objects.Transaction;
 import org.minima.objects.TxPoW;
 import org.minima.objects.Witness;
@@ -507,6 +509,7 @@ public class ConsensusHandler extends MessageProcessor {
 			
 			String tokenid 	   	= new MiniData(zMessage.getString("tokenid")).to0xString();
 			String amount  		= zMessage.getString("amount");
+			String state  		= zMessage.getString("state");
 			
 			//The Token Hash
 			MiniData tok       		= new MiniData(tokenid);
@@ -566,36 +569,36 @@ public class ConsensusHandler extends MessageProcessor {
 				}
 				
 				return;
-				
-			}else{
-				//Continue constructing the transaction - outputs don't need scripts
-				Address recipient= new Address(new MiniData(address));
-				
-				//Blank address - check change is non-null
-				Address change = new Address(); 
-				if(!total.isEqual(sendamount)) {
-					change = getMainDB().getUserDB().newSimpleAddress();
-				}
-				
-				//Create the Transaction
-				Message ret = getMainDB().createTransaction(sendamount, recipient, change, confirmed, tok, changetok,null);
-				
-				//Is this a token transaction
-				if(tokendets != null) {
-					//Get the witness and add relevant info..
-					Witness wit = (Witness) ret.getObject("witness");
-					
-					//Get the token details..
-					wit.addTokenDetails(tokendets);
-				}
-				
-				//Get the message ready
-				InputHandler.addResponseMesage(ret, zMessage);
-				
-				//Send it..
-				PostMessage(ret);
 			}
-
+			
+			//Continue constructing the transaction - outputs don't need scripts
+			Address recipient= new Address(new MiniData(address));
+			
+			//Blank address - check change is non-null
+			Address change = new Address(); 
+			if(!total.isEqual(sendamount)) {
+				change = getMainDB().getUserDB().newSimpleAddress();
+			}
+			
+			//Create the Transaction
+			Message ret = getMainDB().createTransaction(sendamount, recipient, change, 
+					confirmed, tok, changetok, null, new Transaction(), state, true);
+			
+			//Is this a token transaction
+			if(tokendets != null) {
+				//Get the witness and add relevant info..
+				Witness wit = (Witness) ret.getObject("witness");
+				
+				//Get the token details..
+				wit.addTokenDetails(tokendets);
+			}
+			
+			//Get the message ready
+			InputHandler.addResponseMesage(ret, zMessage);
+			
+			//Send it..
+			PostMessage(ret);
+		
 		}else if(zMessage.isMessageType(CONSENSUS_FINISHED_MINE)) {
 			//The TXPOW
 			TxPoW txpow = (TxPoW) zMessage.getObject("txpow");
@@ -651,75 +654,6 @@ public class ConsensusHandler extends MessageProcessor {
 			InputHandler.addResponseMesage(mine, zMessage);
 			
 			PostMessage(mine);
-		
-		}else if(zMessage.isMessageType(CONSENSUS_CREATETOKEN)) {
-			//Get the amount
-			String amount 		= zMessage.getString("amount");
-			String name  	 	= zMessage.getString("name");
-			String script       = zMessage.getString("script");
-			
-			MiniData tok  		= Coin.TOKENID_CREATE;
-			MiniData changetok 	= Coin.MINIMA_TOKENID;
-			
-			//Get a new address to receive the tokens..
-			Address recipient = getMainDB().getUserDB().newSimpleAddress();
-			
-			//How much Minima will it take to colour.. for now lets stay under 0.001 minima
-			//This is not protocol specific and can change later
-			BigDecimal max    = new BigDecimal("0.01");
-			BigDecimal num    = new BigDecimal(amount);
-			BigDecimal actnum = new BigDecimal(amount);
-			
-			//Cylce to the right size..
-			int scale = 0;
-			while(actnum.compareTo(max)>0) {
-				actnum = actnum.divide(BigDecimal.TEN);
-				scale++;
-			}
-			
-			//The actual amount of Minima that needs to be sent
-			MiniNumber sendamount = new MiniNumber(actnum);
-			
-			//How much do we have..
-			MiniNumber total = new MiniNumber(); 
-			ArrayList<Coin> confirmed = getMainDB().getTotalSimpleSpendableCoins(Coin.MINIMA_TOKENID);
-			
-			//Add all the available outputs to the list
-			for(Coin cc : confirmed) {
-				total = total.add(cc.getAmount());
-			}
-
-			//Do we have that much..
-			if(total.isLess(sendamount)) {
-				//Insufficient funds!
-				InputHandler.endResponse(zMessage, false, "Insufficient funds! You only have : "+total);
-				
-			}else {
-				//Blank address - check change is non-null
-				Address change = new Address(); 
-				if(!total.isEqual(sendamount)) {
-					change = getMainDB().getUserDB().newSimpleAddress();
-				}
-				
-				//CHECK NAME of TOKEN IS VALID!
-				//TODO
-				
-				//Create the token gen details
-				TokenProof tokengen = new TokenProof(Coin.COINID_OUTPUT, 
-													 new MiniNumber(scale+""), 
-													 sendamount, 
-													 new MiniString(name),
-													 new MiniString(script));
-				
-				//Create the Transaction
-				Message ret = getMainDB().createTransaction(sendamount, recipient, change, confirmed, tok, changetok,tokengen);
-				
-				//Continue the log output trail
-				InputHandler.addResponseMesage(ret, zMessage);
-				
-				//Send it..
-				PostMessage(ret);
-			}
 			
 		}else if(zMessage.isMessageType(CONSENSUS_TOKENCREATE)) {
 			//Get the amount

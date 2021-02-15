@@ -17,7 +17,7 @@ public class MiniFile {
 	
 	public static void writeDataToFile(File zFile, byte[] zData, boolean zAppend) throws IOException {
 		//Check Parent
-		File parent = zFile.getParentFile();
+		File parent = zFile.getAbsoluteFile().getParentFile();
 		if(!parent.exists()) {
 			parent.mkdirs();
 		}
@@ -156,6 +156,9 @@ public class MiniFile {
 			return "image/svg+xml";
 		}else if(ending.equals("ico")) {
 			return "image/ico";
+		
+		}else if(ending.equals("ttf")) {
+			return "font/ttf";
 		
 		}else if(ending.equals("zip")) {
 			return "application/zip";

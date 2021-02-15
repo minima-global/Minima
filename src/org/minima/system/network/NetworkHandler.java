@@ -12,9 +12,11 @@ import org.minima.system.Main;
 import org.minima.system.input.InputHandler;
 import org.minima.system.network.base.MinimaClient;
 import org.minima.system.network.base.MinimaServer;
+import org.minima.system.network.maxima.Maxima;
 import org.minima.system.network.minidapps.DAPPManager;
 import org.minima.system.network.minidapps.websocket.WebSocketManager;
 import org.minima.system.network.rpc.RPCServer;
+import org.minima.system.network.sshtunnel.SSHTunnel;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.messages.Message;
@@ -62,6 +64,16 @@ public class NetworkHandler extends MessageProcessor {
 	WebSocketManager mWebSocketManager;
 	
 	/**
+	 * MAXIMA..
+	 */
+	Maxima mMaxima;
+	
+	/**
+	 * SSH Tunnel
+	 */
+	SSHTunnel mTunnel;
+	
+	/**
 	 * All the network channels..
 	 */
 	ArrayList<MinimaClient> mClients 	= new ArrayList<>();
@@ -80,8 +92,16 @@ public class NetworkHandler extends MessageProcessor {
 	/**
 	 * HARD SET THE HOST
 	 */
-	boolean mHardSet = false;
-	String mHost     = "";
+	boolean mHardSetLocal   = false;
+	String mLocalHost  		= "";
+	
+	boolean mIsRemoteOn = false;
+	String mRemoteHost = "";
+	
+	String mMinimaHost = "";
+	String mMaximaHost = "";
+	int mRemoteMinima  = -10;
+	int mRemoteMaxima  = -11;
 	
 	/**
 	 * The Main Minima port - all other ports are added to this one..
@@ -98,19 +118,39 @@ public class NetworkHandler extends MessageProcessor {
 		super("NETWORK");
 
 		if(zHost.equals("")) {
-			mHardSet = false;
+			mHardSetLocal = false;
 			calculateHostIP();
 		}else {
-			mHardSet = true;
-			mHost    = zHost;
+			mHardSetLocal 	  = true;
+			mLocalHost    	  = zHost;
 		}
 		
+		//Starts local
+		mIsRemoteOn = false;
+		
 		//The base port all the other ports are derived from
-		mBasePort = zMainPort;
+		mBasePort   = zMainPort;
+		mRemoteMinima = mBasePort;
+		mRemoteMaxima = mBasePort+4;
+	}
+	
+	public void sshHardSetIP(boolean zRemoteOn, String zIP, int zRemoteBase) {
+		mIsRemoteOn = zRemoteOn;
+		mRemoteHost = zIP;
+		mRemoteMinima = zRemoteBase;
+		mRemoteMaxima = zRemoteBase+1;
 	}
 	
 	public String getBaseHost() {
-		return mHost;
+		return mLocalHost;
+	}
+	
+	public String getMiniMaxiHost() {
+		if(mIsRemoteOn) {
+			return mRemoteHost;
+		}
+		
+		return getBaseHost();
 	}
 	
 	public int getBasePort() {
@@ -118,6 +158,10 @@ public class NetworkHandler extends MessageProcessor {
 	}
 	
 	public int getMinimaPort() {
+		if(mIsRemoteOn) {
+			return mRemoteMinima;
+		}
+		
 		return mBasePort;
 	}
 	
@@ -133,12 +177,19 @@ public class NetworkHandler extends MessageProcessor {
 		return mBasePort+3;
 	}
 	
+	public int getMaximaPort() {
+		if(mIsRemoteOn) {
+			return mRemoteMaxima;
+		}
+		return mBasePort+4;
+	}
+	
 	public String calculateHostIP() {
-		if(mHardSet) {
-			return mHost;
+		if(mHardSetLocal) {
+			return mLocalHost;
 		}
 		
-		mHost = "127.0.0.1";
+		mLocalHost = "127.0.0.1";
 		try {
 			boolean found = false;
 		    Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
@@ -156,7 +207,7 @@ public class NetworkHandler extends MessageProcessor {
 	                
 	                //Only get the IPv4
 	                if(!ip.contains(":")) {
-	                	mHost = ip;
+	                	mLocalHost = ip;
 	                	
 	                	//If you're on WiFi..
 	                	if(name.startsWith("wl")) {
@@ -167,10 +218,10 @@ public class NetworkHandler extends MessageProcessor {
 	            }
 	        }
 	    } catch (SocketException e) {
-	        MinimaLogger.log("getHostIP : "+e);
+	        MinimaLogger.log("calculateHostIP : "+e);
 	    }
 		
-		return mHost;
+		return mLocalHost;
 	}
 	
 	public MinimaServer getMinimaServer() {
@@ -187,7 +238,15 @@ public class NetworkHandler extends MessageProcessor {
 	
 	public WebSocketManager getWebSocketManager() {
 		return mWebSocketManager;
-	}	
+	}
+	
+	public Maxima getMaxima() {
+		return mMaxima;
+	}
+	
+	public SSHTunnel getSSHTunnel() {
+		return mTunnel;
+	}
 	
 	public void setGlobalReconnect(boolean zGlobalReconnect) {
 		mGlobalReconnect = zGlobalReconnect;
@@ -223,6 +282,12 @@ public class NetworkHandler extends MessageProcessor {
 			//Start the WebSocket Manager
 			mWebSocketManager = new WebSocketManager(getWSPort());
 			
+			//Start Maxima
+			mMaxima = new Maxima();
+			
+			//Start the SSH Tunnel Manager
+			mTunnel = new SSHTunnel();
+			
 		}else if(zMessage.isMessageType(NETWORK_SHUTDOWN)) {
 			//Stop the server
 			try {mServer.stop();}catch(Exception exc) {
@@ -241,6 +306,16 @@ public class NetworkHandler extends MessageProcessor {
 			
 			//Stop the WebSocket server
 			try {mWebSocketManager.stop();}catch(Exception exc) {
+				MinimaLogger.log(exc);
+			}
+			
+			//Stop Maxima
+			try {mMaxima.stop();}catch(Exception exc) {
+				MinimaLogger.log(exc);
+			}
+			
+			//Stop SSH Tunnel
+			try {mTunnel.stop();}catch(Exception exc) {
 				MinimaLogger.log(exc);
 			}
 			
@@ -358,6 +433,10 @@ public class NetworkHandler extends MessageProcessor {
 			for(MinimaClient client : mClients) {
 				client.setLOG(traceon);
 			}
+			
+			//Set trace for Maxima
+			mMaxima.setLOG(traceon);
+			mTunnel.setLOG(traceon);
 		
 		}else if(zMessage.isMessageType(NETWORK_SENDALL)) {
 			//Get the message to send

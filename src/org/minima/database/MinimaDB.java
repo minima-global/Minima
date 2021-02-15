@@ -9,6 +9,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.StringTokenizer;
 
 import org.minima.GlobalParams;
 import org.minima.database.coindb.CoinDB;
@@ -329,16 +330,6 @@ public class MinimaDB {
 			
 			//Get the removals
 			ArrayList<BlockTreeNode> removals = casc.getRemoved();
-			
-			//Get all the saved blocks and store them!
-			ArrayList<BlockTreeNode> saved = casc.getSaveNodes();
-			for(BlockTreeNode snode : saved) {
-				SyncPacket pack = new SyncPacket(snode, false);
-				pack.getTxPOW().clearBody();
-				
-				//And save it to disk..
-				getBackup().backupBlock(pack);
-			}
 			
 			//Get the Tree
 			mMainTree = casc.getCascadeTree();
@@ -939,7 +930,7 @@ public class MinimaDB {
 									 TokenProof zTokenGen) {
 		
 		return createTransaction(zAmount, zToAddress, zChangeAddress, 
-				zConfirmed, zTokenID, zChangeTokenID, zTokenGen, new Transaction());
+				zConfirmed, zTokenID, zChangeTokenID, zTokenGen, new Transaction(),"",true);
 	}
 		
 	public Message createTransaction(MiniNumber zAmount, Address zToAddress, 
@@ -947,7 +938,10 @@ public class MinimaDB {
 				 ArrayList<Coin> zConfirmed,
 				 MiniData zTokenID,
 				 MiniData zChangeTokenID,
-				 TokenProof zTokenGen, Transaction zUseThisTransaction) {
+				 TokenProof zTokenGen, 
+				 Transaction zUseThisTransaction,
+				 String zStateVars,
+				 boolean zSignTransaction) {
 		
 		//The Transaction - couls already have some state variables set.. TXN_AUTO etc..
 		Transaction trx = zUseThisTransaction;
@@ -1027,17 +1021,38 @@ public class MinimaDB {
 			return null;
 		}
 		
+		//State Variables..
+		if(!zStateVars.equals("")) {
+			StringTokenizer strtok = new StringTokenizer(zStateVars,"#");
+			while(strtok.hasMoreElements()){
+				String sttok = strtok.nextToken().trim();
+				
+				//Now split this token..
+				if(!sttok.equals("")) {
+					int split = sttok.indexOf(":");
+					String statenum = sttok.substring(0,split).trim();
+					String value    = sttok.substring(split+1).trim();
+					
+					//Set it..
+					trx.addStateVariable(new StateVariable(Integer.parseInt(statenum), value));
+				}
+			}
+		}
+		
+		
 		//Now we have a full transaction we can sign it!
-		MiniData transhash = Crypto.getInstance().hashObject(trx);
-		for(MiniData pubk : sigpubk) {
-			//Get the Pub Priv..
-			MultiKey signer = getUserDB().getPubPrivKey(pubk);
-			
-			//Sign the data
-			MiniData signature = signer.sign(transhash);
-			
-			//Add to the witness..
-			wit.addSignature(pubk, signature);	
+		if(zSignTransaction) {
+			MiniData transhash = Crypto.getInstance().hashObject(trx);
+			for(MiniData pubk : sigpubk) {
+				//Get the Pub Priv..
+				MultiKey signer = getUserDB().getPubPrivKey(pubk);
+				
+				//Sign the data
+				MiniData signature = signer.sign(transhash);
+				
+				//Add to the witness..
+				wit.addSignature(pubk, signature);	
+			}
 		}
 				
 		//The return package
@@ -1194,14 +1209,16 @@ public class MinimaDB {
 					MinimaLogger.log("Invalid TXPOW found. (leaving.. could be in other branch) "+txp.getTxPowID());
 				}
 			}else {
-				//A block with no transaction.. make sure within range..
-				if(!txp.getBlockNumber().sub(txpow.getBlockNumber()).abs().isMoreEqual(MiniNumber.EIGHT)) {
-					//Valid so added
-					txncounter = txncounter.increment();
-						
-					//Add it..
-					txpow.addBlockTxPOW(txp);		
-				}
+				//ONLY ADD VALID TRANSACTIONS - the mmr is the checker for previous inclusion
+				//and a non-transaction has no mmr data to chcek
+//				//A block with no transaction.. make sure within range..
+//				if(!txp.getBlockNumber().sub(txpow.getBlockNumber()).abs().isMoreEqual(MiniNumber.EIGHT)) {
+//					//Valid so added
+//					txncounter = txncounter.increment();
+//						
+//					//Add it..
+//					txpow.addBlockTxPOW(txp);		
+//				}
 			}
 		}
 		
