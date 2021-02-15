@@ -25,8 +25,8 @@ public class RPCClient {
 		con.setRequestMethod("GET");
 		con.setRequestProperty("User-Agent", USER_AGENT);
 		con.setRequestProperty("Connection", "close");
-		int responseCode = con.getResponseCode();
 		
+		int responseCode = con.getResponseCode();
 		StringBuffer response = new StringBuffer();
 		
 		if (responseCode == HttpURLConnection.HTTP_OK) { // success
@@ -89,49 +89,39 @@ public class RPCClient {
 	}
 
 	
-	public static void main(String[] zArgs) {		
+	public static void main(String[] zArgs) throws IOException {		
 
 	    
-		//Get the Parameters
-//		String host    = zArgs[0];
-//		int port       = Integer.parseInt(zArgs[1]);
-//		String request = zArgs[2];
-		
-		String host = "127.0.0.1";
-		int port    = 9005;
-		String request = "status";
-		
-		try {
-			//Construct
-//			String url = "http://"+host+":"+port+"/"+URLEncoder.encode(request, "UTF-8");
+//		String host = "127.0.0.1";
+//		int port    = 9005;
+//		String request = "status";
 //		
-//			System.out.println("GET "+url);
+//		try {			
+//			JSONObject msg = new JSONObject();
+//			msg.put("from", "Paddy@127.0.0.1:9005");
+//			msg.put("to", "SPartacus@127.0.0.1:7005");
+//			msg.put("msg", "Hello You!!");
+//			msg.put("signature", "0x73465873658347568345");
 //			
-//			//Do it..
-//			String resp = sendGET(url);
+//			//Encode..
+//			String enc = URLEncoder.encode(new String(msg.toString()),"UTF-8").trim();
 //			
-//			System.out.println(resp);
-			
-			JSONObject msg = new JSONObject();
-			msg.put("from", "Paddy@127.0.0.1:9005");
-			msg.put("to", "SPartacus@127.0.0.1:7005");
-			msg.put("msg", "Hello You!!");
-			msg.put("signature", "0x73465873658347568345");
-			
-			//Encode..
-			String enc = URLEncoder.encode(new String(msg.toString()),"UTF-8").trim();
-			
-			//Now try a POST
-//			String res = sendPOST("http://127.0.0.1:9005/", "status");
-			String res = sendPOST("http://127.0.0.1:9005/", enc);
-			
-			System.out.println("POST : " + res);
-			
-			
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	
+//			//Now try a POST
+//			String res = sendPOST("http://127.0.0.1:9005/", enc);
+//			
+//			System.out.println("POST : " + res);
+//			
+//			
+//		} catch (Exception e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+		
+		//String url = "https://incentivedb.minima.global/items/directus_users?filter={ \"email\": { \"_eq\": \"'+this.username.value+'\" }}'";
+		String url = "https://www.google.com";
+		
+		String ret = sendGET(url);
+		
+		System.out.println(ret);
 	}
 }
