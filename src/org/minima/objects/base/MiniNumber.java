@@ -26,24 +26,19 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 	/**
 	 * The MAX Number of Significant digits for any MiniNUmber
 	 */
-	public static final int MAX_SIGNIFICANT_DIGITS = 64;
+	public static final int MAX_DIGITS = 64;
 	
 	/**
 	 * The Maximum number of decimal places for a Minima Value
 	 * 
 	 * 10 is 1 billion..
 	 */
-	public static final int MAX_MINIMA_SCALE = MAX_SIGNIFICANT_DIGITS - 10;
-	
-	/**
-	 * The Maximum number of decimal places.. for ANY MiniNumber Value
-	 */
-	public static int MAX_SCALE = 128;
+	public static final int MAX_SCALE = MAX_DIGITS - 10;
 	
 	/** 
 	 * The base Math Context used for all operations
 	 */
-	public static final MathContext MATH_CONTEXT = new MathContext(MAX_SIGNIFICANT_DIGITS, RoundingMode.DOWN);
+	public static final MathContext MATH_CONTEXT = new MathContext(MAX_DIGITS, RoundingMode.DOWN);
 	
 	/**
 	 * The MAXIMUM value any MiniNumber can be..
@@ -54,12 +49,6 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 	 * The Minimum value any MiniNumber can be..
 	 */
 	public static final BigDecimal MIN_MININUMBER = MAX_MININUMBER.negate();
-	
-	/**
-	 * The decimal precision of the significant digits.
-	 */
-//	public static final DecimalFormat MINIMA_SIGNIFICANT_FORMAT = new DecimalFormat("0.#################E0");
-	
 	
 	/**
 	 * Useful numbers
@@ -156,7 +145,7 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 			return ZERO;
 		}
 		
-		return new MiniNumber(mNumber.setScale(MAX_MINIMA_SCALE, RoundingMode.DOWN));
+		return this;
 	}
 	
 	/**
@@ -232,8 +221,8 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 	public MiniNumber setSignificantDigits(int zSignificantDigits) {
 		//1-max digits..
 		int sigdig = zSignificantDigits;
-		if(sigdig>MAX_SIGNIFICANT_DIGITS) {
-			sigdig = MAX_SIGNIFICANT_DIGITS;	
+		if(sigdig>MAX_DIGITS) {
+			sigdig = MAX_DIGITS;	
 		}else if(sigdig<1) {
 			sigdig = 1;
 		}
