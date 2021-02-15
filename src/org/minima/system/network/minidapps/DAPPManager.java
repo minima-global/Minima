@@ -27,6 +27,7 @@ import org.minima.system.network.NetworkHandler;
 import org.minima.system.network.minidapps.comms.CommsManager;
 import org.minima.system.network.minidapps.minibackend.BackEndDAPP;
 import org.minima.system.network.minidapps.websocket.WebSocketManager;
+import org.minima.system.network.rpc.RPCClient;
 import org.minima.utils.Crypto;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MinimaLogger;
@@ -612,6 +613,17 @@ public class DAPPManager extends MessageProcessor {
 			Message msg = new Message(WebSocketManager.WEBSOCK_SENDTOALL);
 			msg.addString("message", json.toString());
 			mNetwork.getWebSocketManager().PostMessage(msg);
+			
+			//Post it to an URL..
+			try {
+				//Get the URL
+				String url = mNetwork.getExternalURL();
+				if(!url.equals("")) {
+					RPCClient.sendPOST("", json.toString());
+				}
+			}catch(Exception exc) {
+				MinimaLogger.log(exc);
+			}
 		}
 		
 	}

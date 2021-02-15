@@ -22,6 +22,7 @@ import org.minima.system.network.NetworkHandler;
 import org.minima.system.network.base.MinimaClient;
 import org.minima.system.network.base.MinimaReader;
 import org.minima.system.network.minidapps.DAPPManager;
+import org.minima.system.network.rpc.RPCClient;
 import org.minima.system.txpow.TxPoWChecker;
 import org.minima.system.txpow.TxPoWMiner;
 import org.minima.utils.MinimaLogger;

@@ -73,6 +73,11 @@ public class NetworkHandler extends MessageProcessor {
 	 * SSH Tunnel
 	 */
 	SSHTunnel mTunnel;
+
+	/**
+	 * URL to call with MiniDAPP JSON details
+	 */
+	String mExternalURL = "";
 	
 	/**
 	 * All the network channels..
@@ -183,6 +188,10 @@ public class NetworkHandler extends MessageProcessor {
 			return mRemoteMaxima;
 		}
 		return mBasePort+4;
+	}
+	
+	public String getExternalURL() {
+		return mExternalURL;
 	}
 	
 	public String calculateHostIP() {
