@@ -7,10 +7,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLEncoder;
 
 import org.minima.utils.MinimaLogger;
-import org.minima.utils.json.JSONObject;
 
 public class RPCClient {
 
@@ -50,12 +48,21 @@ public class RPCClient {
 	}
 
 	public static String sendPOST(String zHost, String zParams) throws IOException {
+		return sendPOST(zHost, zParams, null);
+	}
+	
+	public static String sendPOST(String zHost, String zParams, String zType) throws IOException {
 		URL obj = new URL(zHost);
 		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 		//con.setConnectTimeout(20000);
 		con.setRequestMethod("POST");
 		con.setRequestProperty("User-Agent", USER_AGENT);
 		con.setRequestProperty("Connection", "close");
+		
+		//Type specified..
+		if(zType != null) {
+			con.setRequestProperty("Content-Type", zType);
+		}
 		
 		// For POST only - START
 		con.setDoOutput(true);
@@ -66,8 +73,7 @@ public class RPCClient {
 		// For POST only - END
 
 		int responseCode = con.getResponseCode();
-		//System.out.println("POST Response Code :: " + responseCode);
-
+		
 		if (responseCode == HttpURLConnection.HTTP_OK) { //success
 			BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
 			String inputLine;
