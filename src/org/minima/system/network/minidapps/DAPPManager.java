@@ -389,6 +389,8 @@ public class DAPPManager extends MessageProcessor {
 			MiniData data = (MiniData) zMessage.getObject("minidapp");
 			String filename = zMessage.getString("filename");
 			
+			MinimaLogger.log("INSTALLING : "+filename+" "+data.getLength());
+			
 			//Do we overwrite..
 			boolean overwrite = true;
 			if(zMessage.exists("overwrite")){
@@ -518,6 +520,8 @@ public class DAPPManager extends MessageProcessor {
 			String minidapp = zMessage.getString("minidapp");
 			InputHandler.getResponseJSON(zMessage).put("minidapp", minidapp);
 			
+			MinimaLogger.log("UNINSTALLING : "+minidapp);
+			
 			//UNINSTALL the DAPP
 			File appfolder = new File(getMiniDAPPSFolder(),minidapp);
 		
@@ -619,10 +623,11 @@ public class DAPPManager extends MessageProcessor {
 				//Get the URL
 				String url = mNetwork.getExternalURL();
 				if(!url.equals("")) {
+//					MinimaLogger.log("Attempt URL Call "+url);
 					RPCClient.sendPOST(url, json.toString(), "application/json");
 				}
 			}catch(Exception exc) {
-				MinimaLogger.log(exc);
+				MinimaLogger.log("ExternalURL error : "+exc.toString());
 			}
 		}
 		

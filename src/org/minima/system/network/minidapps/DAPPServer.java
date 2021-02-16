@@ -173,7 +173,9 @@ public class DAPPServer extends NanoHTTPD{
 		            MiniData dapp = new MiniData(file);
 					
 					//POST it..
-					Message msg = new Message(DAPPManager.DAPP_INSTALL);
+		            MinimaLogger.log("Attempt install : "+params.get("minidapp").get(0));
+					
+		            Message msg = new Message(DAPPManager.DAPP_INSTALL);
 					msg.addObject("filename", params.get("minidapp").get(0));
 					msg.addObject("minidapp", dapp);
 					mDAPPManager.PostMessage(msg);
@@ -181,6 +183,8 @@ public class DAPPServer extends NanoHTTPD{
 	                return getOKResponse(installdapphtml.returnData(), "text/html");
 					
 				}else if(fileRequested.equals("uninstalldapp.html")) {
+					MinimaLogger.log("Attempt uninstall : "+params.get("uninstall").get(0));
+					
 					//POST it..
 					Message msg = new Message(DAPPManager.DAPP_UNINSTALL);
 					msg.addObject("minidapp", params.get("uninstall").get(0));
