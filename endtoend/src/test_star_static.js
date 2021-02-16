@@ -16,7 +16,6 @@ test_star_static = function () {
         staticTests.run_some_tests_get(ip_addrs["1"], '/status', "", function (response) {
             response.connections.should.be.above(0);
             response.connections.should.be.equal(nbNodes-1);
-            response.chainlength.should.be.above(1);
         });
 
         //1. send funds with no money and assert failure
