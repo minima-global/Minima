@@ -169,7 +169,7 @@ stop_docker_nodes = async function() {
             if(containers) { 
                 containers.forEach(function (containerInfo) {
                     if(containerInfo.Names[0].startsWith("/" + cfg.node_prefix)) {
-                        console.log ("Found a dangling minima node(" + containerInfo.Names[0] + "), stopping.");
+                        console.log ("Found a minima node(" + containerInfo.Names[0] + "), stopping.");
                         docker.getContainer(containerInfo.Id).stop();
                     }
                 });
