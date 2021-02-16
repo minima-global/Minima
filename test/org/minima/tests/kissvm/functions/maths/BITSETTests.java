@@ -149,7 +149,6 @@ public class BITSETTests {
             });
         }
 
-
         {
             MinimaFunction mf = fn.getNewFunction();
             mf.addParameter(new ConstantExpression(new HEXValue("0x00")));
@@ -178,8 +177,6 @@ public class BITSETTests {
             });
         }
 
-
-
         {
             MinimaFunction mf = fn.getNewFunction();
             mf.addParameter(new ConstantExpression(new HEXValue("0x00")));
@@ -207,8 +204,6 @@ public class BITSETTests {
             //    Value res = mf.runFunction(ctr);
             //});
         }
-
-
 
     }
 }

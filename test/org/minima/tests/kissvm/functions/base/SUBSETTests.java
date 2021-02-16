@@ -214,10 +214,7 @@ public class SUBSETTests {
             mf.addParameter(new ConstantExpression(new NumberValue(2)));
             mf.addParameter(new ConstantExpression(new NumberValue(0)));
             mf.addParameter(new ConstantExpression(new HEXValue("0x01234567")));
-            //assertThrows(ExecutionException.class, () -> { // Should throw this
-            //    Value res = mf.runFunction(ctr);
-            //});
-            assertThrows(NegativeArraySizeException.class, () -> { // but throws this
+            assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
             });
         }

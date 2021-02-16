@@ -63,19 +63,6 @@ public class LENTests {
                 fail();
             }
         }
-
-        {
-            MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new ScriptValue("0x01234567")));
-            try {
-                Value res = mf.runFunction(ctr);
-                assertEquals(Value.VALUE_NUMBER, res.getValueType());
-                assertEquals(10, ((NumberValue) res).getNumber().getAsInt());
-            } catch (ExecutionException ex) {
-                fail();
-            }
-        }
-
     }
 
     @Test
@@ -94,14 +81,10 @@ public class LENTests {
         {
             MinimaFunction mf = fn.getNewFunction();
             mf.addParameter(new ConstantExpression(new HEXValue("0x01234567")));
-            mf.addParameter(new ConstantExpression(new HEXValue("0x01234567"))); // Should fail, as more than one parameter provided
-            try {
+            mf.addParameter(new ConstantExpression(new HEXValue("0x01234567")));
+            assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
-                assertEquals(Value.VALUE_NUMBER, res.getValueType());
-                assertEquals(4, ((NumberValue) res).getNumber().getAsInt());
-            } catch (ExecutionException ex) {
-                fail();
-            }
+            });
         }
 
         // Invalid param types
@@ -115,6 +98,13 @@ public class LENTests {
         {
             MinimaFunction mf = fn.getNewFunction();
             mf.addParameter(new ConstantExpression(new NumberValue(100)));
+            assertThrows(ExecutionException.class, () -> {
+                Value res = mf.runFunction(ctr);
+            });
+        }
+        {
+            MinimaFunction mf = fn.getNewFunction();
+            mf.addParameter(new ConstantExpression(new ScriptValue("Hello World")));
             assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
             });
