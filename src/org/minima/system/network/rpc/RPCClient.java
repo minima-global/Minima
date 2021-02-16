@@ -7,10 +7,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLEncoder;
 
 import org.minima.utils.MinimaLogger;
-import org.minima.utils.json.JSONObject;
 
 public class RPCClient {
 
