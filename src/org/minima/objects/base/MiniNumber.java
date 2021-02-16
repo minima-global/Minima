@@ -36,6 +36,11 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 	 */
 	public static final int MAX_MINIMA_DECIMAL_PLACES = MAX_DIGITS - 10;
 	
+	/**
+	 * Max Decimal Places for any MiniNumber
+	 */
+	public static final int MAX_DECIMAL_PLACES = 128;
+	
 	/** 
 	 * The base Math Context used for all operations
 	 */
@@ -126,6 +131,10 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 		
 		if(mNumber.compareTo(MIN_MININUMBER)<0) {
 			throw new NumberFormatException("MiniNumber too small - outside allowed range -(10^512)");
+		}
+		
+		if(mNumber.scale() > MAX_DECIMAL_PLACES) {
+			throw new NumberFormatException("MiniNumber too many decimal places");
 		}
 	}
 	
