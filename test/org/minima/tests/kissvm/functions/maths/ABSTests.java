@@ -112,8 +112,7 @@ public class ABSTests {
             try {
                 Value res = mf.runFunction(ctr);
                 assertEquals(Value.VALUE_NUMBER, res.getValueType());
-                //assertEquals("9223372036854775808", ((NumberValue) res).toString()); // Test fails due to arithmetic problems
-                assertEquals("9223372036854775800", ((NumberValue) res).toString());
+                assertEquals("9223372036854775808", ((NumberValue) res).toString());
             } catch (ExecutionException ex) {
                 fail();
             }
@@ -124,8 +123,7 @@ public class ABSTests {
             try {
                 Value res = mf.runFunction(ctr);
                 assertEquals(Value.VALUE_NUMBER, res.getValueType());
-                //assertEquals("9223372036854775807", ((NumberValue) res).toString()); // Test fails due to arithmetic problems
-                assertEquals("9223372036854775800", ((NumberValue) res).toString());
+                assertEquals("9223372036854775807", ((NumberValue) res).toString());
             } catch (ExecutionException ex) {
                 fail();
             }
@@ -141,6 +139,14 @@ public class ABSTests {
         // Invalid param count
         {
             MinimaFunction mf = fn.getNewFunction();
+            assertThrows(ExecutionException.class, () -> {
+                Value res = mf.runFunction(ctr);
+            });
+        }
+        {
+            MinimaFunction mf = fn.getNewFunction();
+            mf.addParameter(new ConstantExpression(new NumberValue(0)));
+            mf.addParameter(new ConstantExpression(new NumberValue(0)));
             assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
             });

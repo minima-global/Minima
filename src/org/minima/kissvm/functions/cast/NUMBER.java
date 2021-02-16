@@ -7,6 +7,7 @@ import org.minima.kissvm.values.HEXValue;
 import org.minima.kissvm.values.NumberValue;
 import org.minima.kissvm.values.ScriptValue;
 import org.minima.kissvm.values.Value;
+import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 
 /**
@@ -37,7 +38,8 @@ public class NUMBER extends MinimaFunction{
 		
 		}else if(val.getValueType() == Value.VALUE_HEX) {
 			HEXValue nv = (HEXValue)val;
-			MiniNumber num = new MiniNumber(nv.getMiniData().getDataValue());
+			MiniData md1 = nv.getMiniData();
+			MiniNumber num = new MiniNumber(md1.getDataValue());
 			return new NumberValue(num);
 	
 		}else if(val.getValueType() == Value.VALUE_SCRIPT) {

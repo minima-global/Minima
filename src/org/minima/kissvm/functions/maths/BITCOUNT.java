@@ -52,43 +52,4 @@ public class BITCOUNT extends MinimaFunction {
 		}
 		return total;
 	}
-	
-	public static void main(String[] zArgs) {
-		
-		byte[] values = new byte[256];
-		
-		System.out.print("{");
-				
-		for(int i=0;i<256;i++) {
-			values[i] = (byte)i;
-		
-			int tot = 0;
-			//Count bits..
-			for(int loop=0;loop<8;loop++) {
-				int testval = (int) Math.pow(2, loop);
-				if( (values[i] & testval) == testval) {
-					tot+=1;
-				}	
-			}
-			
-			if(i<255) {
-				System.out.print(tot+",");	
-			}else {
-				System.out.print(tot+"}");
-			}
-		}
-		
-		System.out.println();
-		
-		//Calculate..
-		MiniData tester = new MiniData("0x0000000001");
-		System.out.println(tester.to0xString()+" "+BITCOUNT.totalBits(tester.getData()));
-		
-		tester = new MiniData("0xFFFF");
-		System.out.println(tester.to0xString()+" "+BITCOUNT.totalBits(tester.getData()));
-		
-		tester = new MiniData("0x0301");
-		System.out.println(tester.to0xString()+" "+BITCOUNT.totalBits(tester.getData()));
-		
-	}
 }
