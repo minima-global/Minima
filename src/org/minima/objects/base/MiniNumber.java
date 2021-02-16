@@ -3,6 +3,8 @@
  */
 package org.minima.objects.base;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -11,7 +13,6 @@ import java.math.BigInteger;
 import java.math.MathContext;
 import java.math.RoundingMode;
 
-import org.minima.utils.Crypto;
 import org.minima.utils.Streamable;
 
 /**
@@ -25,36 +26,18 @@ import org.minima.utils.Streamable;
 public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 	
 	/**
-	 * The MAX Number of Significant digits for any MiniNUmber
-	 */
-	public static final int MAX_DIGITS = 34;
-	
-	/**
-	 * The Maximum number of decimal places for a Minima Value
+	 * The Math Context used for ALL real numbers
 	 * 
-	 * 10 digits represents 1 billion ( Max Value )..
+	 * Can represent 1 billion with 8 zeros ( 10 + 8 ) digits with no loss of precision.. 
+	 * 
+	 * But all Minima values are actually in significant digit format anyway.. so infinite precision..
 	 */
-	public static final int MAX_MINIMA_DECIMAL_PLACES = MAX_DIGITS - 10;
+	public static final MathContext mMathContext = new MathContext(18, RoundingMode.DOWN);
 	
 	/**
-	 * Max Decimal Places for any MiniNumber
+	 * The decimal precision of the significant digits.
 	 */
-	public static final int MAX_DECIMAL_PLACES = 128;
-	
-	/** 
-	 * The base Math Context used for all operations
-	 */
-	public static final MathContext MATH_CONTEXT = new MathContext(MAX_DIGITS, RoundingMode.DOWN);
-	
-	/**
-	 * The MAXIMUM value any MiniNumber can be..
-	 */
-	public static final BigDecimal MAX_MININUMBER = new BigDecimal(10,MATH_CONTEXT).pow(512,MATH_CONTEXT);
-	
-	/**
-	 * The Minimum value any MiniNumber can be..
-	 */
-	public static final BigDecimal MIN_MININUMBER = MAX_MININUMBER.negate();
+//	public static final DecimalFormat MINIMA_SIGNIFICANT_FORMAT = new DecimalFormat("0.#################E0");
 	
 	/**
 	 * Useful numbers
@@ -90,81 +73,32 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 	private BigDecimal mNumber;
 	
 	/**
-	 * Many different COnstructors for all number types
+	 * 
 	 */
 	public MiniNumber(){
-		mNumber = new BigDecimal(0,MATH_CONTEXT);
+		mNumber = BigDecimal.ZERO;
 	}
 	
 	public MiniNumber(int zNumber){
-		mNumber = new BigDecimal(zNumber,MATH_CONTEXT);
-		checkLimits();
+		mNumber = new BigDecimal(zNumber,mMathContext);
 	}
 	
 	public MiniNumber(long zNumber){
-		mNumber = new BigDecimal(zNumber,MATH_CONTEXT);
-		checkLimits();
+		mNumber = new BigDecimal(zNumber,mMathContext);
 	}
 
 	public MiniNumber(BigInteger zNumber){
-		mNumber = new BigDecimal(zNumber,MATH_CONTEXT);
-		checkLimits();
-	}
-	
-	public MiniNumber(String zNumber){
-		mNumber = new BigDecimal(zNumber,MATH_CONTEXT);
-		checkLimits();
+		mNumber = new BigDecimal(zNumber,mMathContext);
 	}
 	
 	public MiniNumber(BigDecimal zBigD){
-		mNumber = zBigD.round(MATH_CONTEXT);
-		checkLimits();
+		mNumber = zBigD;
 	}
 	
-	/**
-	 * Check MiniNumber is within the acceptable range
-	 */
-	private void checkLimits() {
-		if(mNumber.compareTo(MAX_MININUMBER)>0) {
-			throw new NumberFormatException("MiniNumber too large - outside allowed range 10^512");
-		}
-		
-		if(mNumber.compareTo(MIN_MININUMBER)<0) {
-			throw new NumberFormatException("MiniNumber too small - outside allowed range -(10^512)");
-		}
-		
-		if(mNumber.scale() > MAX_DECIMAL_PLACES) {
-			throw new NumberFormatException("MiniNumber too many decimal places");
-		}
+	public MiniNumber(String zNumber){
+		mNumber = new BigDecimal(zNumber,mMathContext);
 	}
 	
-	/**
-	 * Make a VALID Minima number.. within the allowed range and decimals
-	 * @return
-	 */
-	public MiniNumber getAsMinimaValue() {
-		if(isMore(BILLION)) {
-			return BILLION;
-		}
-		
-		if(isLess(ZERO)) {
-			return ZERO;
-		}
-		
-		return new MiniNumber(mNumber.setScale(MAX_MINIMA_DECIMAL_PLACES, RoundingMode.DOWN));
-	}
-	
-	/**
-	 * Is this a valid number for an input or an output in Minima
-	 * @return true false..
-	 */
-	public boolean isValidMinimaValue() {
-		return isEqual(getAsMinimaValue());
-	}
-	
-	/**
-	 * Convert to various normal number types
-	 */
 	public BigDecimal getAsBigDecimal() {
 		return mNumber;
 	}
@@ -185,19 +119,16 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 		return mNumber.intValue();
 	}
 	
-	/**
-	 * Basic arithmetic functions 
-	 */
 	public MiniNumber add(MiniNumber zNumber) {
-		return new MiniNumber( mNumber.add(zNumber.getAsBigDecimal(),MATH_CONTEXT) );
+		return new MiniNumber( mNumber.add(zNumber.getAsBigDecimal(),mMathContext) );
 	}
 	
 	public MiniNumber sub(MiniNumber zNumber) {
-		return new MiniNumber( mNumber.subtract(zNumber.getAsBigDecimal(),MATH_CONTEXT) );
+		return new MiniNumber( mNumber.subtract(zNumber.getAsBigDecimal(),mMathContext) );
 	}
 	
 	public MiniNumber div(MiniNumber zNumber) {
-		return new MiniNumber( mNumber.divide(zNumber.getAsBigDecimal(), MATH_CONTEXT) );
+		return new MiniNumber( mNumber.divide(zNumber.getAsBigDecimal(), mMathContext) );
 	}
 	
 	public MiniNumber divRoundDown(MiniNumber zNumber) {
@@ -205,15 +136,15 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 	}
 	
 	public MiniNumber mult(MiniNumber zNumber) {
-		return new MiniNumber( mNumber.multiply(zNumber.getAsBigDecimal(),MATH_CONTEXT) );
+		return new MiniNumber( mNumber.multiply(zNumber.getAsBigDecimal(),mMathContext) );
 	}
 	
 	public MiniNumber pow(int zNumber) {
-		return new MiniNumber( mNumber.pow(zNumber,MATH_CONTEXT) );
+		return new MiniNumber( mNumber.pow(zNumber,mMathContext) );
 	}
 	
 	public MiniNumber modulo(MiniNumber zNumber) {
-		return new MiniNumber( mNumber.remainder(zNumber.getAsBigDecimal(),MATH_CONTEXT) );
+		return new MiniNumber( mNumber.remainder(zNumber.getAsBigDecimal(),mMathContext) );
 	}
 	
 	public MiniNumber floor() {
@@ -225,14 +156,10 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 	}
 	
 	public MiniNumber setSignificantDigits(int zSignificantDigits) {
-		//1-max digits..
 		int sigdig = zSignificantDigits;
-		if(sigdig>MAX_DIGITS) {
-			sigdig = MAX_DIGITS;	
-		}else if(sigdig<1) {
-			sigdig = 1;
+		if(sigdig>18) {
+			sigdig = 18;	
 		}
-		
 		return new MiniNumber( mNumber.round(new MathContext(sigdig, RoundingMode.DOWN))) ;
 	}
 	
@@ -241,17 +168,13 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 	}
 		
 	public MiniNumber increment() {
-		return new MiniNumber( mNumber.add(BigDecimal.ONE,MATH_CONTEXT) );
+		return new MiniNumber( mNumber.add(BigDecimal.ONE,mMathContext) );
 	}
 	
 	public MiniNumber decrement() {
-		return new MiniNumber( mNumber.subtract(BigDecimal.ONE,MATH_CONTEXT) );
+		return new MiniNumber( mNumber.subtract(BigDecimal.ONE,mMathContext) );
 	}
 
-	public int decimalPlaces() {
-		return mNumber.scale();
-	}
-	
 	@Override
 	public int compareTo(MiniNumber zCompare) {
 		return mNumber.compareTo(zCompare.getAsBigDecimal());
@@ -304,7 +227,7 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 		
 		//Read in the byte array for unscaled BigInteger
 		int len = zIn.readInt();
-		if(len > 128 || len<1) {
+		if(len > 20 || len<1) {
 			//Something wrong..
 			throw new IOException("ERROR reading MiniNumber - input too large or negative "+len);
 		}
@@ -314,7 +237,7 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 		
 		//And create..
 		BigInteger unscaled = new BigInteger(data);
-		mNumber = new BigDecimal(unscaled,scale,MATH_CONTEXT);
+		mNumber = new BigDecimal(unscaled,scale,mMathContext);
 	}
 
 	public static MiniNumber ReadFromStream(DataInputStream zIn) throws IOException{
@@ -324,23 +247,28 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 	}
 	
 	public static void main(String[] zargs) {
-		MiniNumber num1 = new MiniNumber("100000000");
-		System.out.println(num1 + " valid:"+num1.isValidMinimaValue());
+		MiniNumber num = new MiniNumber("100300000.040060012");
 		
-		MiniNumber num2 = new MiniNumber("0.0000000001");
-		System.out.println(num2+" "+num2.decimalPlaces());
-	
-		MiniNumber num3 = new MiniNumber("0.00000000000001");
-		System.out.println(num3 + " "+num3.getAsMinimaValue()+" valid:"+num3.isValidMinimaValue());
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		DataOutputStream dos = new DataOutputStream(baos);
 		
-		MiniNumber num4 = new MiniNumber("1.23E+04");
-		System.out.println(num4);
+		try {
+			num.writeDataStream(dos);
 		
-		//MiniNumber num5 = new MiniNumber(new MiniData("0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF").getDataValue());
-		MiniNumber num5 = new MiniNumber(Crypto.MAX_HASH.getDataValue());
-		System.out.println(num5);
+			dos.flush();
+			baos.flush();
 		
-		
+			ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+			DataInputStream dis = new DataInputStream(bais);
+			
+			MiniNumber test = MiniNumber.ReadFromStream(dis);
+			
+			System.out.println("Number : "+test);
+			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	
