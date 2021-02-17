@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.IOException;
 
 import org.minima.database.mmr.MMRSet;
 import org.minima.objects.base.MiniData;
@@ -198,7 +199,13 @@ public class MultiKey extends BaseKey {
 	@Override
 	public boolean verify(MiniData zData, MiniData zMultiSignature) {
 		//Convert into a MultiSig Structure
-		MultiSig sigdata = new MultiSig(zMultiSignature);
+		MultiSig sigdata;
+		try {
+			sigdata = new MultiSig(zMultiSignature);
+		} catch (IOException e) {
+			MinimaLogger.log(e);
+			return false;
+		}
 		
 		//First check the Public Key is correct
 		if(!sigdata.getRootKey().isEqual(mPublicKey)) {
@@ -215,7 +222,14 @@ public class MultiKey extends BaseKey {
 			MiniData childsig = sigdata.getChildSignature();
 			
 			//Convert to a multisig
-			MultiSig msig    = new MultiSig(childsig);
+			MultiSig msig;
+			try {
+				msig = new MultiSig(childsig);
+			} catch (IOException e) {
+				MinimaLogger.log(e);
+				return false;
+			}
+			
 			MiniData rootkey = msig.getRootKey();
 			
 			//Now check the Signature was used to sign the root of the child tree

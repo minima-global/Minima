@@ -40,20 +40,14 @@ public class MultiSig implements Streamable {
 		mChildSignature = zChildSignature;
 	}
 	
-	public MultiSig(MiniData zCompleteSignature) {
-		//Write it out..
-		try {
-			ByteArrayInputStream bais = new ByteArrayInputStream(zCompleteSignature.getData());
-			DataInputStream dis = new DataInputStream(bais);
-			
-			//Now read the data
-			readDataStream(dis);
-			
-			dis.close();
-			
-		}catch(Exception exc) {
-			MinimaLogger.log(exc);
-		}
+	public MultiSig(MiniData zCompleteSignature) throws IOException {
+		ByteArrayInputStream bais = new ByteArrayInputStream(zCompleteSignature.getData());
+		DataInputStream dis = new DataInputStream(bais);
+		
+		//Now read the data
+		readDataStream(dis);
+		
+		dis.close();
 	}
 	
 	public MiniData getPublicKey() {
