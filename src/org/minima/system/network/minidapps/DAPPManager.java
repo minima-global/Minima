@@ -173,6 +173,7 @@ public class DAPPManager extends MessageProcessor {
 			ret.put("description", "This minidapp did not load correctly..");
 			ret.put("uid", uid);
 			ret.put("installed", (long)0);
+			ret.put("version", "1.0");
 	        ret.put("root", "");
 	        ret.put("web", "http://"+mNetwork.getBaseHost()+":"+mNetwork.getMiniDAPPServerPort()+"/minidapps/"+uid);
 		}
@@ -307,6 +308,7 @@ public class DAPPManager extends MessageProcessor {
 							confjson.put("uid", uid);
 							confjson.put("installed", (long)0);
 							confjson.put("root", "");
+							confjson.put("version", "1.0");
 							confjson.put("web", "http://"+mNetwork.getBaseHost()+":"+mNetwork.getMiniDAPPServerPort()+"/minidapps/"+uid);
 							
 					        //Add it..

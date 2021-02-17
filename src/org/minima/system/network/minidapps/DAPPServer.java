@@ -336,6 +336,10 @@ public class DAPPServer extends NanoHTTPD{
 			String webpage  = root+"/index.html";
 			String download =  (String) app.get("download");
 			
+			String version  = "1.0";
+			if(app.containsKey("version")) {
+				version = (String) app.get("version");
+			}
 			String openpage = "_"+name;
 	
 			boolean debug = false;
@@ -343,25 +347,30 @@ public class DAPPServer extends NanoHTTPD{
 				debug = true;
 			}
 			
-			String date = MinimaLogger.DATEFORMAT.format(new Date((Long)app.get("installed"))); 
-			String version = uid+" @ "+date;
+//			String date = MinimaLogger.DATEFORMAT.format(new Date((Long)app.get("installed"))); 
+//			String version = uid+" @ "+date;
 			
 			String openwebpage = "window.open(\""+webpage+"\",\""+openpage+"\");";
 			
 			String minis = "<table class='minidapp' width=100% border=0>\n"
 					+ "			<tr>\n"
-					+ "				<td onclick='"+openwebpage+"' rowspan=2>\n"
+					+ "				<td onclick='"+openwebpage+"' rowspan=3>\n"
 					+ "					<img height=50 src='"+icon+"' style='vertical-align:middle;cursor:pointer;border-radius:10px;'>&nbsp;&nbsp; 	\n"
 					+ "				</td>\n"
 					+ "				<td onclick='"+openwebpage+"' style='cursor:pointer;font-size:16px;'><B>"+name+"</B></td>\n"
-					+ "				<td rowspan=2 nowrap>\n"
+					+ "				<td rowspan=3 nowrap>\n"
 					+ "					&nbsp;<a href='"+download+"' download><img height=30 src='download.png'></a>&nbsp;&nbsp;&nbsp;\n"
 					+ "					<img style='cursor:pointer;' onclick=\"uninstallDAPP('"+name+"','"+uid+"');\" height=30 src='uninstall.png'>&nbsp;\n"
 					+ "				</td>\n"
 					+ "			</tr>\n"
 					+ "			<tr>\n"
-					+ "				<td onclick='"+openwebpage+"' style='cursor:pointer;font-size:10px;vertical-align:top;' width=100% height=100%>\n"
+					+ "				<td onclick='"+openwebpage+"' style='max-width: 0;cursor:pointer;font-size:10px;vertical-align:top;white-space: nowrap;overflow: hidden;text-overflow: ellipsis;text-overflow: ellipsis;' width=100% height=100%>\n"
 					+ "				 "+desc
+					+ "				</td>\n"
+					+ "			</tr>\n"
+					+ "			<tr>\n"
+					+ "				<td onclick='"+openwebpage+"' style='cursor:pointer;font-size:8px;vertical-align:top;' width=100% height=100%>\n"
+					+ "				 "+version
 					+ "				</td>\n"
 					+ "			</tr>\n"
 					+ "		</table>\n"
