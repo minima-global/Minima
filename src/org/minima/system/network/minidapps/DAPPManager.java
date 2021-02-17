@@ -623,7 +623,9 @@ public class DAPPManager extends MessageProcessor {
 				//Get the URL
 				String url = mNetwork.getExternalURL();
 				if(!url.equals("")) {
-					RPCClient.sendPOST(url, json.toString(), "application/json");
+//					MinimaLogger.log("Attempt to call external URL "+url); 
+					String reply = RPCClient.sendPOST(url, json.toString(), "application/json");
+//					MinimaLogger.log("Reply : "+reply); 
 				}
 			}catch(Exception exc) {
 				MinimaLogger.log("ExternalURL error : "+exc.toString()+" "+json.toString());

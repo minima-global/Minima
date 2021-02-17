@@ -41,7 +41,7 @@ public class RPCClient {
 			is.close();
 			
 		} else {
-			MinimaLogger.log("GET request FAIL "+zHost);
+			MinimaLogger.log("GET request not HTTP_OK resp:"+responseCode+" @ "+zHost);
 		}
 			
 		return response.toString(); 
@@ -88,7 +88,7 @@ public class RPCClient {
 			return response.toString();
 		
 		} else {
-			MinimaLogger.log("POST request not worked "+zHost+" "+zParams);
+			MinimaLogger.log("POST request not HTTP_OK resp:"+responseCode+" @ "+zHost+" params "+zParams);
 		}
 		
 		return "ERROR";
