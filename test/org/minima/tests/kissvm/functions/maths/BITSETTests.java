@@ -16,6 +16,7 @@ import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
 
 import java.util.ArrayList;
+import java.util.BitSet;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -51,36 +52,44 @@ public class BITSETTests {
 
         BITSET fn = new BITSET();
 
-        { // Incorrect function behavior, as it uses invalid byte indexing in data array
+        {
             for (int i = 0; i < 63; i++) {
-                Long TestValue = 1L << i;
                 {
+                    BitSet bitSet = new BitSet(64);
+                    bitSet.set(0, 64, false);
+                    bitSet.set(i, true);
+                    byte[] TestValue = bitSet.toByteArray();
+
                     MinimaFunction mf = fn.getNewFunction();
-                    mf.addParameter(new ConstantExpression(new HEXValue(Long.toHexString(TestValue))));
+                    mf.addParameter(new ConstantExpression(new HEXValue(TestValue)));
                     mf.addParameter(new ConstantExpression(new NumberValue(i)));
                     mf.addParameter(new ConstantExpression(new BooleanValue(false)));
-                    //try {
-                    //    Value res = mf.runFunction(ctr);
-                    //    assertEquals(Value.VALUE_HEX, res.getValueType());
-                    //    assertEquals("0x00", ((HEXValue) res).toString());
-                    //} catch (ExecutionException ex) {
-                    //    fail();
-                    //}
+                    try {
+                        Value res = mf.runFunction(ctr);
+                        assertEquals(Value.VALUE_HEX, res.getValueType());
+                        assertEquals("0x", ((HEXValue) res).toString());
+                    } catch (ExecutionException ex) {
+                        fail();
+                    }
                 }
 
-                TestValue = ~TestValue;
                 {
+                    BitSet bitSet = new BitSet(64);
+                    bitSet.set(0, 64, true);
+                    bitSet.set(i, false);
+                    byte[] TestValue = bitSet.toByteArray();
+
                     MinimaFunction mf = fn.getNewFunction();
-                    mf.addParameter(new ConstantExpression(new HEXValue(Long.toHexString(TestValue))));
+                    mf.addParameter(new ConstantExpression(new HEXValue(TestValue)));
                     mf.addParameter(new ConstantExpression(new NumberValue(i)));
                     mf.addParameter(new ConstantExpression(new BooleanValue(true)));
-                    //try {
-                    //    Value res = mf.runFunction(ctr);
-                    //    assertEquals(Value.VALUE_HEX, res.getValueType());
-                    //    assertEquals("0xFFFFFFFFFFFFFFFF", ((HEXValue) res).toString());
-                    //} catch (ExecutionException ex) {
-                    //    fail();
-                    //}
+                    try {
+                        Value res = mf.runFunction(ctr);
+                        assertEquals(Value.VALUE_HEX, res.getValueType());
+                        assertEquals("0xFFFFFFFFFFFFFFFF", ((HEXValue) res).toString());
+                    } catch (ExecutionException ex) {
+                        fail();
+                    }
                 }
 
             }
@@ -115,9 +124,37 @@ public class BITSETTests {
                 Value res = mf.runFunction(ctr);
             });
         }
+        {
+            MinimaFunction mf = fn.getNewFunction();
+            mf.addParameter(new ConstantExpression(new HEXValue("0x00")));
+            mf.addParameter(new ConstantExpression(new NumberValue(0)));
+            mf.addParameter(new ConstantExpression(new BooleanValue(false)));
+            mf.addParameter(new ConstantExpression(new BooleanValue(false)));
+            assertThrows(ExecutionException.class, () -> {
+                Value res = mf.runFunction(ctr);
+            });
+        }
 
         // Invalid param domain
         {
+            {
+                MinimaFunction mf = fn.getNewFunction();
+                mf.addParameter(new ConstantExpression(new HEXValue("")));
+                mf.addParameter(new ConstantExpression(new NumberValue(0)));
+                mf.addParameter(new ConstantExpression(new BooleanValue(true)));
+                assertThrows(ExecutionException.class, () -> {
+                    Value res = mf.runFunction(ctr);
+                });
+            }
+            {
+                MinimaFunction mf = fn.getNewFunction();
+                mf.addParameter(new ConstantExpression(new HEXValue("0x00")));
+                mf.addParameter(new ConstantExpression(new NumberValue(256)));
+                mf.addParameter(new ConstantExpression(new BooleanValue(true)));
+                assertThrows(ExecutionException.class, () -> {
+                    Value res = mf.runFunction(ctr);
+                });
+            }
         }
 
         // Invalid param types
