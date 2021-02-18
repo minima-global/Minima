@@ -93,8 +93,7 @@ public class NUMBERTests {
             try {
                 Value res = mf.runFunction(ctr);
                 assertEquals(Value.VALUE_NUMBER, res.getValueType());
-                //assertEquals("18446744073709551607", ((NumberValue) res).toString()); // Test fails due to arithmetic problems
-                assertEquals("18446744073709551600", ((NumberValue) res).toString());
+                assertEquals("18446744073709551615", ((NumberValue) res).toString());
             } catch (ExecutionException ex) {
                 fail();
             }

@@ -1,5 +1,6 @@
 package org.minima.tests.kissvm.functions.maths;
 
+import java.math.BigInteger;
 import org.minima.kissvm.functions.maths.BITGET;
 
 import org.minima.kissvm.Contract;
@@ -16,6 +17,7 @@ import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
 
 import java.util.ArrayList;
+import java.util.BitSet;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -51,36 +53,43 @@ public class BITGETTests {
 
         BITGET fn = new BITGET();
 
-        { // Incorrect function behavior, as it uses invalid byte indexing in data array
+        {
             for (int i = 0; i < 63; i++) {
-                Long TestValue = 1L << i;
                 {
+                    BitSet bitSet = new BitSet(64);
+                    bitSet.set(0, 64, false);
+                    bitSet.set(i, true);
+                    byte[] TestValue = bitSet.toByteArray();
+
                     MinimaFunction mf = fn.getNewFunction();
-                    mf.addParameter(new ConstantExpression(new HEXValue(Long.toHexString(TestValue))));
+                    mf.addParameter(new ConstantExpression(new HEXValue(TestValue)));
                     mf.addParameter(new ConstantExpression(new NumberValue(i)));
-                    //try {
-                    //    Value res = mf.runFunction(ctr);
-                    //    assertEquals(Value.VALUE_BOOLEAN, res.getValueType());
-                    //    assertEquals("TRUE", ((BooleanValue) res).toString());
-                    //} catch (ExecutionException ex) {
-                    //    fail();
-                    //}
+                    try {
+                        Value res = mf.runFunction(ctr);
+                        assertEquals(Value.VALUE_BOOLEAN, res.getValueType());
+                        assertEquals("TRUE", ((BooleanValue) res).toString());
+                    } catch (ExecutionException ex) {
+                        fail();
+                    }
                 }
 
-                TestValue = ~TestValue;
                 {
-                    MinimaFunction mf = fn.getNewFunction();
-                    mf.addParameter(new ConstantExpression(new HEXValue(Long.toHexString(TestValue))));
-                    mf.addParameter(new ConstantExpression(new NumberValue(i)));
-                    //try {
-                    //    Value res = mf.runFunction(ctr);
-                    //    assertEquals(Value.VALUE_BOOLEAN, res.getValueType());
-                    //    assertEquals("FALSE", ((BooleanValue) res).toString());
-                    //} catch (ExecutionException ex) {
-                    //    fail();
-                    //}
-                }
+                    BitSet bitSet = new BitSet(64);
+                    bitSet.set(0, 64, true);
+                    bitSet.set(i, false);
+                    byte[] TestValue = bitSet.toByteArray();
 
+                    MinimaFunction mf = fn.getNewFunction();
+                    mf.addParameter(new ConstantExpression(new HEXValue(TestValue)));
+                    mf.addParameter(new ConstantExpression(new NumberValue(i)));
+                    try {
+                        Value res = mf.runFunction(ctr);
+                        assertEquals(Value.VALUE_BOOLEAN, res.getValueType());
+                        assertEquals("FALSE", ((BooleanValue) res).toString());
+                    } catch (ExecutionException ex) {
+                        fail();
+                    }
+                }
             }
         }
     }
@@ -114,7 +123,7 @@ public class BITGETTests {
             //assertThrows(ExecutionException.class, () -> { // Should throw this
             //    Value res = mf.runFunction(ctr);
             //});
-            assertThrows(ArrayIndexOutOfBoundsException.class, () -> { // but throws this
+            assertThrows(IndexOutOfBoundsException.class, () -> { // but throws this
                 Value res = mf.runFunction(ctr);
             });
         }
@@ -125,7 +134,7 @@ public class BITGETTests {
             //assertThrows(ExecutionException.class, () -> { // Should throw this
             //    Value res = mf.runFunction(ctr);
             //});
-            assertThrows(ArrayIndexOutOfBoundsException.class, () -> { // but throws this
+            assertThrows(IndexOutOfBoundsException.class, () -> { // but throws this
                 Value res = mf.runFunction(ctr);
             });
         }
@@ -136,7 +145,7 @@ public class BITGETTests {
             //assertThrows(ExecutionException.class, () -> { // Should throw this
             //    Value res = mf.runFunction(ctr);
             //});
-            assertThrows(ArrayIndexOutOfBoundsException.class, () -> { // but throws this
+            assertThrows(IndexOutOfBoundsException.class, () -> { // but throws this
                 Value res = mf.runFunction(ctr);
             });
         }
