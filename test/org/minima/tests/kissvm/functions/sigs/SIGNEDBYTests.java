@@ -1,6 +1,6 @@
-package org.minima.tests.kissvm.functions.sha;
+package org.minima.tests.kissvm.functions.sigs;
 
-import org.minima.kissvm.functions.sha.SHA2;
+import org.minima.kissvm.functions.sigs.SIGNEDBY;
 
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
@@ -15,7 +15,8 @@ import org.minima.kissvm.values.Value;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
-import org.minima.utils.Crypto;
+import org.minima.objects.base.MiniNumber;
+import org.minima.objects.keys.MultiKey;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -28,21 +29,20 @@ import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
-//HEXValue SHA2 (HEXValue data)
-//HEXValue SHA2 (ScriptValue data)
-public class SHA2Tests {
+//BooleanValue SIGNEDBY  (HEXValue pubkey)
+public class SIGNEDBYTests {
 
     @Test
     public void testConstructors() {
-        SHA2 fn = new SHA2();
+        SIGNEDBY fn = new SIGNEDBY();
         MinimaFunction mf = fn.getNewFunction();
 
-        assertEquals("SHA2", mf.getName());
+        assertEquals("SIGNEDBY", mf.getName());
         assertEquals(0, mf.getParameterNum());
 
         try {
-            mf = MinimaFunction.getFunction("SHA2");
-            assertEquals("SHA2", mf.getName());
+            mf = MinimaFunction.getFunction("SIGNEDBY");
+            assertEquals("SIGNEDBY", mf.getName());
             assertEquals(0, mf.getParameterNum());
         } catch (MinimaParseException ex) {
             fail();
@@ -51,34 +51,44 @@ public class SHA2Tests {
 
     @Test
     public void testValidParams() {
-        Contract ctr = new Contract("", "", new Witness(), new Transaction(), new ArrayList<>());
+        // SIGNEDBY is actually string search in a list of signatures
+        // So we can simplify test without actual keys
+        MiniData SingleSig1 = MiniData.getRandomData(20);
+        MiniData SingleSig2 = MiniData.getRandomData(20);
 
-        SHA2 fn = new SHA2();
+        SIGNEDBY fn = new SIGNEDBY();
 
         {
-            for (int i = 0; i < 100; i++) {
-                HEXValue Param = new HEXValue(MiniData.getRandomData(64).to0xString());
-                HEXValue Result = new HEXValue(Crypto.getInstance().hashSHA2(Param.getRawData()));
-
-                MinimaFunction mf = fn.getNewFunction();
-                mf.addParameter(new ConstantExpression(Param));
-                try {
-                    Value res = mf.runFunction(ctr);
-                    assertEquals(Value.VALUE_HEX, res.getValueType());
-                    assertEquals(Result.toString(), ((HEXValue) res).toString());
-                } catch (ExecutionException ex) {
-                    fail();
-                }
+            Contract ctr = new Contract("", SingleSig1.toString(), new Witness(), new Transaction(), new ArrayList<>());
+            MinimaFunction mf = fn.getNewFunction();
+            mf.addParameter(new ConstantExpression(new HEXValue(SingleSig1)));
+            try {
+                Value res = mf.runFunction(ctr);
+                assertEquals(Value.VALUE_BOOLEAN, res.getValueType());
+                assertEquals("TRUE", ((BooleanValue) res).toString());
+            } catch (ExecutionException ex) {
+                fail();
             }
         }
-
+        {
+            Contract ctr = new Contract("", SingleSig1.toString(), new Witness(), new Transaction(), new ArrayList<>());
+            MinimaFunction mf = fn.getNewFunction();
+            mf.addParameter(new ConstantExpression(new HEXValue(SingleSig2)));
+            try {
+                Value res = mf.runFunction(ctr);
+                assertEquals(Value.VALUE_BOOLEAN, res.getValueType());
+                assertEquals("FALSE", ((BooleanValue) res).toString());
+            } catch (ExecutionException ex) {
+                fail();
+            }
+        }
     }
 
     @Test
     public void testInvalidParams() {
         Contract ctr = new Contract("", "", new Witness(), new Transaction(), new ArrayList<>());
 
-        SHA2 fn = new SHA2();
+        SIGNEDBY fn = new SIGNEDBY();
 
         // Invalid param count
         {
@@ -98,20 +108,6 @@ public class SHA2Tests {
 
         // Invalid param domain
         {
-            MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new HEXValue("")));
-            //assertThrows(ExecutionException.class, () -> { // Should throw this
-            //    Value res = mf.runFunction(ctr);
-            //});
-            // But does not throw
-        }
-        {
-            MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new ScriptValue("")));
-            //assertThrows(ExecutionException.class, () -> { // Should throw this
-            //    Value res = mf.runFunction(ctr);
-            //});
-            // But does not throw
         }
 
         // Invalid param types
@@ -124,11 +120,17 @@ public class SHA2Tests {
         }
         {
             MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new NumberValue(0)));
+            mf.addParameter(new ConstantExpression(new NumberValue(1)));
             assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
             });
         }
-
+        {
+            MinimaFunction mf = fn.getNewFunction();
+            mf.addParameter(new ConstantExpression(new ScriptValue("Hello World")));
+            assertThrows(ExecutionException.class, () -> {
+                Value res = mf.runFunction(ctr);
+            });
+        }
     }
 }
