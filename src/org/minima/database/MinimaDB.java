@@ -1291,11 +1291,11 @@ public class MinimaDB {
 			exc.printStackTrace();
 		}	
 		
-		//Now remove all the bodies..
-		ArrayList<SyncPacket> packs = spdeep.getAllNodes();
-		for(SyncPacket pack : packs) {
-			pack.getTxPOW().clearBody();
-		}
+//		//Now remove all the bodies..
+//		ArrayList<SyncPacket> packs = spdeep.getAllNodes();
+//		for(SyncPacket pack : packs) {
+//			pack.getTxPOW().clearBody();
+//		}
 	
 		//Clean up after this large-ish event..
 		System.gc();

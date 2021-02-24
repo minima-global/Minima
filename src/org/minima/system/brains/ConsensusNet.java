@@ -237,7 +237,7 @@ public class ConsensusNet extends ConsensusProcessor {
 				
 				//Check is a full block..
 				if(!txp.hasBody()) {
-					MinimaLogger.log("CANCEL RESYNC : Attempting to sync user with Assume Valid Blocks.. "+txp.getBlockNumber());
+					MinimaLogger.log("CANCEL RESYNC : Attempting to sync user with NoBody Blocks.. "+txp.getBlockNumber());
 					return;
 				}
 				

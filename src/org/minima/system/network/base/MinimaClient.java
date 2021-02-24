@@ -353,10 +353,7 @@ public class MinimaClient extends MessageProcessor {
 			baos.close();
 			
 		}catch(Exception ec) {
-			ec.printStackTrace();
-			
-			//Show..
-			MinimaLogger.log("Error sending message : "+zMessageType.toString()+" "+ec);
+			MinimaLogger.log("Error sending message : "+zMessageType.toString(),ec);
 			
 			//Tell the network Handler
 			PostMessage(new Message(MinimaClient.NETCLIENT_SHUTDOWN));
