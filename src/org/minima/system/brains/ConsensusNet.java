@@ -314,14 +314,18 @@ public class ConsensusNet extends ConsensusProcessor {
 			//Get the Backup manager where OLD blocks are stored..
 			BackupManager backup = Main.getMainHandler().getBackupManager();
 			
+			//Get the Client..
+			MinimaClient client = (MinimaClient) zMessage.getObject("netclient");
+			
 			//Are they within range
 			if(backup.getOldestBackupBlock().isMore(lowestnum)) {
 				MinimaLogger.log("TOO FAR BACK TO SYNC THEM.. "+backup.getOldestBackupBlock()+" / "+lowestnum);
+				
+				//Disconnect him..
+				client.PostMessage(new Message(MinimaClient.NETCLIENT_SHUTDOWN));
+				
 				return;
 			}
-			
-			//Get the Client..
-			MinimaClient client = (MinimaClient) zMessage.getObject("netclient");
 			
 			//Otherwise lets load blocks and send them..
 			MiniNumber mycasc = getMainDB().getMainTree().getCascadeNode().getBlockNumber();
@@ -343,9 +347,10 @@ public class ConsensusNet extends ConsensusProcessor {
 					//Add it..
 					sp.getAllNodes().add(spack);
 					
-					//Can't sync him..
-					//.. will disconnect when trying to send him a null object.. ugly..
-					break;
+					//Can't sync him.. Disconnect him..
+					client.PostMessage(new Message(MinimaClient.NETCLIENT_SHUTDOWN));
+					
+					return;
 				}
 				
 				//Add it..
