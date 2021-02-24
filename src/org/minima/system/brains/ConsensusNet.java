@@ -238,6 +238,10 @@ public class ConsensusNet extends ConsensusProcessor {
 				//Check is a full block..
 				if(!txp.hasBody()) {
 					MinimaLogger.log("CANCEL RESYNC : Attempting to sync user with NoBody Blocks.. "+txp.getBlockNumber());
+					
+					//Disconnect him..
+					client.PostMessage(new Message(MinimaClient.NETCLIENT_SHUTDOWN));
+					
 					return;
 				}
 				
@@ -259,6 +263,10 @@ public class ConsensusNet extends ConsensusProcessor {
 					//Check is a full block..
 					if(txpow==null) {
 						MinimaLogger.log("CANCEL RESYNC : Missing TxPoW in "+blk.getBlockNumber());
+						
+						//Disconnect him..
+						client.PostMessage(new Message(MinimaClient.NETCLIENT_SHUTDOWN));
+						
 						return;
 					}
 					
