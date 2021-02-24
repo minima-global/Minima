@@ -152,10 +152,8 @@ public class ConsensusNet extends ConsensusProcessor {
 				MinimaLogger.log("INCOMPATIBLE VERSION ON GREETING "+greet.getVersion()+" MUST BE 0.97");
 				MinimaLogger.log("SHUTTING DOWN CONNECTION..");
 				
-				//Don't want to reconnect if we choose to disconnect
-				client.noReconnect();
-				
 				//Shut down..
+				client.noReconnect();
 				client.PostMessage(new Message(MinimaClient.NETCLIENT_SHUTDOWN));
 				
 				return;
@@ -240,6 +238,7 @@ public class ConsensusNet extends ConsensusProcessor {
 					MinimaLogger.log("CANCEL RESYNC : Attempting to sync user with NoBody Blocks.. "+txp.getBlockNumber());
 					
 					//Disconnect him..
+					client.noReconnect();
 					client.PostMessage(new Message(MinimaClient.NETCLIENT_SHUTDOWN));
 					
 					return;
@@ -265,6 +264,7 @@ public class ConsensusNet extends ConsensusProcessor {
 						MinimaLogger.log("CANCEL RESYNC : Missing TxPoW in "+blk.getBlockNumber());
 						
 						//Disconnect him..
+						client.noReconnect();
 						client.PostMessage(new Message(MinimaClient.NETCLIENT_SHUTDOWN));
 						
 						return;
@@ -322,6 +322,7 @@ public class ConsensusNet extends ConsensusProcessor {
 				MinimaLogger.log("TOO FAR BACK TO SYNC THEM.. "+backup.getOldestBackupBlock()+" / "+lowestnum);
 				
 				//Disconnect him..
+				client.noReconnect();
 				client.PostMessage(new Message(MinimaClient.NETCLIENT_SHUTDOWN));
 				
 				return;
@@ -348,6 +349,7 @@ public class ConsensusNet extends ConsensusProcessor {
 					sp.getAllNodes().add(spack);
 					
 					//Can't sync him.. Disconnect him..
+					client.noReconnect();
 					client.PostMessage(new Message(MinimaClient.NETCLIENT_SHUTDOWN));
 					
 					return;
