@@ -201,9 +201,27 @@ public class TxPoWChecker {
 		
 		//If ANY of the inputs are floating.. check for remainder outputs.
 		boolean isfloating = false;
-
-		//First Inputs..
 		int ins = inputs.size();
+		
+		//Check all the inputs are unique coins..
+		if(ins>1) {
+			for(int i=0;i<ins;i++) {
+				for(int j=i+1;j<ins;j++) {
+					//Get the Input
+					Coin input1 = inputs.get(i);
+				
+					//Get the Input
+					Coin input2 = inputs.get(j);
+				
+					if(input1.getCoinID().isEqual(input2.getCoinID())) {
+						MinimaLogger.log("Error same CoinID in transaction inputs "+zTrans.toString());
+						return false;
+					}
+				}
+			}
+		}
+		
+		//First Inputs..
 		for(int i=0;i<ins;i++) {
 			//Get the Input
 			Coin input = inputs.get(i);
@@ -300,15 +318,15 @@ public class TxPoWChecker {
 //					}	
 //				}
 				
-				if(zTouchMMR) {
-					//Update the MMR with this spent coin..
-					MMREntry spent = zMMRSet.updateSpentCoin(proof);
-				
-					//Do we keep it..
-					if(zDB.getUserDB().isAddressRelevant(input.getAddress())) {
-						zMMRSet.addKeeper(spent.getEntryNumber());	
-					}
-				}
+//				if(zTouchMMR) {
+//					//Update the MMR with this spent coin..
+//					MMREntry spent = zMMRSet.updateSpentCoin(proof);
+//				
+//					//Do we keep it..
+//					if(zDB.getUserDB().isAddressRelevant(input.getAddress())) {
+//						zMMRSet.addKeeper(spent.getEntryNumber());	
+//					}
+//				}
 				
 				//Is this a Token ?
 				String tokscript = "";
@@ -513,7 +531,66 @@ public class TxPoWChecker {
 			}
 	
 			//Are we writing to the MMR
-			if(zTouchMMR) {
+//			if(zTouchMMR) {
+//				//Create a new Coin..
+//				Coin mmrcoin = new Coin(coinid, output.getAddress(), output.getAmount(), tokid);
+//				
+//				//Now add as an unspent to the MMR
+//				MMRData mmrdata = new MMRData(MiniByte.FALSE, mmrcoin, tBlockNumber, trans.getCompleteState());
+//				
+//				//And Add it..
+//				MMREntry unspent = zMMRSet.addUnspentCoin(mmrdata);
+//				
+//				//Do we keep this output..
+//				boolean reladdress = zDB.getUserDB().isCoinRelevant(output);
+//				
+//				//Do we keep it..
+//				if(reladdress || relstate) {
+//					//Keep this MMR record
+//					zMMRSet.addKeeper(unspent.getEntryNumber());	
+//				}				
+//			}
+		}
+		
+		//Now check after all that -  valid amounts..
+		if(!trans.checkValidInOutPerToken()) {
+			//The contract execution log - will be updated later, but added now
+			JSONObject errorlog = new JSONObject();
+			zContractLog.add(errorlog);
+			errorlog.put("error", "Total Inputs are LESS than Total Outputs for certain Tokens");
+			return false;
+		}
+		
+		//ONLY NOW - Touch MMR and Add All KNOWN Tokens..
+		if(zTouchMMR) {
+			//First Update all the inputs..
+			for(int i=0;i<ins;i++) {
+				//Get the Input
+				Coin input = inputs.get(i);
+				
+				//Get the Proof
+				MMRProof proof = zWit.getAllMMRProofs().get(i);
+				
+				//Update the MMR with this spent coin..
+				MMREntry spent = zMMRSet.updateSpentCoin(proof);
+			
+				//Do we keep it..
+				if(zDB.getUserDB().isAddressRelevant(input.getAddress())) {
+					zMMRSet.addKeeper(spent.getEntryNumber());	
+				}
+			}
+			
+			//Now update all the outputs..
+			for(int i=0;i<outs;i++) {
+				//Get the coin..
+				Coin output = outputs.get(i);
+			
+				//Now calculate the CoinID / TokenID
+				MiniData coinid = Crypto.getInstance().hashObjects(transhash, new MiniByte(i));
+				
+				//Is this a token create output..
+				MiniData tokid 			= output.getTokenID();
+			
 				//Create a new Coin..
 				Coin mmrcoin = new Coin(coinid, output.getAddress(), output.getAmount(), tokid);
 				
@@ -530,21 +607,10 @@ public class TxPoWChecker {
 				if(reladdress || relstate) {
 					//Keep this MMR record
 					zMMRSet.addKeeper(unspent.getEntryNumber());	
-				}				
+				}	
 			}
-		}
-		
-		//Now check after all that -  valid amounts..
-		if(!trans.checkValidInOutPerToken()) {
-			//The contract execution log - will be updated later, but added now
-			JSONObject errorlog = new JSONObject();
-			zContractLog.add(errorlog);
-			errorlog.put("error", "Total Inputs are LESS than Total Outputs for certain Tokens");
-			return false;
-		}
-		
-		//Add All KNOWN Tokens..
-		if(zTouchMMR) {
+			
+			
 			if(newtokdets != null) {
 				zDB.getUserDB().addTokenDetails(newtokdets);
 			}

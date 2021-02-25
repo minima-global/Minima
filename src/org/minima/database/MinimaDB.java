@@ -1195,7 +1195,12 @@ public class MinimaDB {
 			 */
 			if(txp.isTransaction()) {
 				MiniNumber txncountertest = txncounter.increment();
+				
+				//First check it without touching the MMR
+				
 				boolean valid = TxPoWChecker.checkTransactionMMR(txp, this, txpow, newset,true);
+				
+				
 				
 				if(valid) {
 					//Valid so added
