@@ -221,6 +221,15 @@ public class TxPoWChecker {
 			}
 		}
 		
+		//Check valid amounts..
+		if(!trans.checkValidInOutPerToken()) {
+			//The contract execution log - will be updated later, but added now
+			JSONObject errorlog = new JSONObject();
+			zContractLog.add(errorlog);
+			errorlog.put("error", "Total Inputs are LESS than Total Outputs for certain Tokens");
+			return false;
+		}
+		
 		//First Inputs..
 		for(int i=0;i<ins;i++) {
 			//Get the Input
@@ -497,31 +506,30 @@ public class TxPoWChecker {
 			Coin output = outputs.get(i);
 			
 			//Now calculate the CoinID / TokenID
-			MiniData coinid = Crypto.getInstance().hashObjects(transhash, new MiniByte(i));
+//			MiniData coinid = Crypto.getInstance().hashObjects(transhash, new MiniByte(i));
 			
 			//Is this a token create output..
 			MiniData tokid 			= output.getTokenID();
 			
 			//Is this a token or are we creating a Token
 			if(tokid.isEqual(Coin.TOKENID_CREATE)) {
+//				
 				//Make it the HASH ( CoinID | Total Amount..the token details )
-				TokenProof gentoken = trans.getTokenGenerationDetails();
-				newtokdets = new TokenProof(coinid, 
-											gentoken.getScale(), 
-											gentoken.getAmount(), 
-											gentoken.getName(), 
-											gentoken.getTokenScript());
+//				TokenProof gentoken = trans.getTokenGenerationDetails();
+//				newtokdets = new TokenProof(coinid, 
+//											gentoken.getScale(), 
+//											gentoken.getAmount(), 
+//											gentoken.getName(), 
+//											gentoken.getTokenScript());
+//				
+//				//Set the Globally Unique TokenID!
+//				tokid = newtokdets.getTokenID();
+//			
 				
-				//Set the Globally Unique TokenID!
-				tokid = newtokdets.getTokenID();
-			
-				//Its a regular token transaction
-			}else if(!tokid.isEqual(Coin.MINIMA_TOKENID)) {
-				//Get the token..
-				newtokdets = zWit.getTokenDetail(tokid);
-				
+//				//Its a regular token transaction
+			}else 	if(!tokid.isEqual(Coin.MINIMA_TOKENID)) {
 				//Check it..
-				if(newtokdets == null) {
+				if(zWit.getTokenDetail(tokid) == null) {
 					//The contract execution log - will be updated later, but added now
 					JSONObject errorlog = new JSONObject();
 					zContractLog.add(errorlog);
@@ -552,14 +560,14 @@ public class TxPoWChecker {
 //			}
 		}
 		
-		//Now check after all that -  valid amounts..
-		if(!trans.checkValidInOutPerToken()) {
-			//The contract execution log - will be updated later, but added now
-			JSONObject errorlog = new JSONObject();
-			zContractLog.add(errorlog);
-			errorlog.put("error", "Total Inputs are LESS than Total Outputs for certain Tokens");
-			return false;
-		}
+//		//Now check after all that -  valid amounts..
+//		if(!trans.checkValidInOutPerToken()) {
+//			//The contract execution log - will be updated later, but added now
+//			JSONObject errorlog = new JSONObject();
+//			zContractLog.add(errorlog);
+//			errorlog.put("error", "Total Inputs are LESS than Total Outputs for certain Tokens");
+//			return false;
+//		}
 		
 		//ONLY NOW - Touch MMR and Add All KNOWN Tokens..
 		if(zTouchMMR) {
@@ -568,15 +576,18 @@ public class TxPoWChecker {
 				//Get the Input
 				Coin input = inputs.get(i);
 				
-				//Get the Proof
-				MMRProof proof = zWit.getAllMMRProofs().get(i);
+				//Not for Gimme50
+				if(!input.getCoinID().isEqual(gimme50.COINID_INPUT)){
+					//Get the Proof
+					MMRProof proof = zWit.getAllMMRProofs().get(i);
+					
+					//Update the MMR with this spent coin..
+					MMREntry spent = zMMRSet.updateSpentCoin(proof);
 				
-				//Update the MMR with this spent coin..
-				MMREntry spent = zMMRSet.updateSpentCoin(proof);
-			
-				//Do we keep it..
-				if(zDB.getUserDB().isAddressRelevant(input.getAddress())) {
-					zMMRSet.addKeeper(spent.getEntryNumber());	
+					//Do we keep it..
+					if(zDB.getUserDB().isAddressRelevant(input.getAddress())) {
+						zMMRSet.addKeeper(spent.getEntryNumber());	
+					}
 				}
 			}
 			
@@ -591,6 +602,25 @@ public class TxPoWChecker {
 				//Is this a token create output..
 				MiniData tokid 			= output.getTokenID();
 			
+				//Is this a token or are we creating a Token
+				if(tokid.isEqual(Coin.TOKENID_CREATE)) {
+					//Make it the HASH ( CoinID | Total Amount..the token details )
+					TokenProof gentoken = trans.getTokenGenerationDetails();
+					newtokdets = new TokenProof(coinid, 
+												gentoken.getScale(), 
+												gentoken.getAmount(), 
+												gentoken.getName(), 
+												gentoken.getTokenScript());
+					
+					//Set the Globally Unique TokenID!
+					tokid = newtokdets.getTokenID();
+				
+					//Its a regular token transaction
+				}else if(!tokid.isEqual(Coin.MINIMA_TOKENID)) {
+					//Get the token..
+					newtokdets = zWit.getTokenDetail(tokid);
+				}
+				
 				//Create a new Coin..
 				Coin mmrcoin = new Coin(coinid, output.getAddress(), output.getAmount(), tokid);
 				

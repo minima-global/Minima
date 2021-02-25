@@ -13,6 +13,7 @@ import org.minima.database.MinimaDB;
 import org.minima.database.mmr.MMRSet;
 import org.minima.database.txpowdb.TxPOWDBRow;
 import org.minima.objects.TxPoW;
+import org.minima.objects.base.MMRSumNumber;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.Crypto;
@@ -474,9 +475,13 @@ public class BlockTree {
 								//Set this MMR..
 								zNode.setMMRset(mmrset);
 								
+								if(zNode.getBlockNumber().isEqual(new MiniNumber(158456))) {
+									int y=0;
+								}
+								
 								//Check all the transactions in the block are correct..
 								allok = getDB().checkAllTxPOW(zNode, mmrset);
-									
+								
 								//Check the root MMR..
 								if(allok) {
 									if(!row.getTxPOW().getMMRRoot().isEqual(mmrset.getMMRRoot().getFinalHash())) {
