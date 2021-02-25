@@ -30,7 +30,7 @@ public class TxPoWMiner extends MessageProcessor {
 	/**
 	 * Mine continuously for 2000 milliseconds before recreating your txpow.. 
 	 */
-	private static final long MINE_CONSECUTIVE_MAX = 2000;
+	private static final long MINE_CONSECUTIVE_MAX = 5000;
 	
 	boolean mAutoMining    = false;
 	boolean mShowTXPOWMine = true;
@@ -172,7 +172,7 @@ public class TxPoWMiner extends MessageProcessor {
 			}
 			
 			//Pause for breath
-			Thread.sleep(500);
+			Thread.sleep(100);
 			
 			//And start the whole Mining thing again..
 			Main.getMainHandler().getConsensusHandler().PostMessage(ConsensusHandler.CONSENSUS_MINEBLOCK);
