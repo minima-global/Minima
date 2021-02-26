@@ -358,7 +358,7 @@ public class TxPoWChecker {
 			}
 		}
 				
-		//Get outputs - add them to the MMR also..
+		//Check output token details exist
 		ArrayList<Coin> outputs  = trans.getAllOutputs();
 		int outs = outputs.size();
 		for(int i=0;i<outs;i++) {
