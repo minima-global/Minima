@@ -16,6 +16,7 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.proofs.TokenProof;
 import org.minima.system.input.functions.gimme50;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
@@ -195,6 +196,21 @@ public class Transaction implements Streamable {
 			//Do the check..
 			if(inamt.isLess(outamt)) {
 				return false;	
+			}
+		}
+		
+		//Check all the inputs have a unique CoinID..
+		int ins = mInputs.size();
+		if(ins>1){
+			for(int i=0;i<ins;i++) {
+				for(int j=i+1;j<ins;j++) {
+					//Get the Input
+					Coin input1 = mInputs.get(i);
+					Coin input2 = mInputs.get(j);
+					if(input1.getCoinID().isEqual(input2.getCoinID())) {
+						return false;
+					}
+				}
 			}
 		}
 		

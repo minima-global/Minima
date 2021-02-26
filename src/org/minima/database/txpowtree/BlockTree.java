@@ -475,10 +475,6 @@ public class BlockTree {
 								//Set this MMR..
 								zNode.setMMRset(mmrset);
 								
-								if(zNode.getBlockNumber().isEqual(new MiniNumber(158456))) {
-									int y=0;
-								}
-								
 								//Check all the transactions in the block are correct..
 								allok = getDB().checkAllTxPOW(zNode, mmrset);
 								
