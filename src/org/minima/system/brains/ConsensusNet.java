@@ -22,6 +22,7 @@ import org.minima.objects.proofs.TokenProof;
 import org.minima.system.Main;
 import org.minima.system.network.base.MinimaClient;
 import org.minima.system.network.base.MinimaReader;
+import org.minima.system.txpow.TxPoWChecker;
 import org.minima.utils.DataTimer;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.messages.Message;
@@ -598,6 +599,12 @@ public class ConsensusNet extends ConsensusProcessor {
 		}else if(zMessage.isMessageType(CONSENSUS_NET_CHECKSIZE_TXPOW)) {
 			//Internal message sent from you..
 			TxPoW txpow = (TxPoW)zMessage.getObject("txpow");
+			
+			//DO a basic check..
+			if(!TxPoWChecker.basicTxPowChecks(txpow)) {
+				MinimaLogger.log("ERROR - You've Mined A TxPoW that fails basic checks!");
+				return;
+			}
 			
 			//Create the follow up message
 			Message txpownet = new Message(CONSENSUS_NET_TXPOW).addObject("txpow", txpow);
