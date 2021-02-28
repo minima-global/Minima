@@ -33,7 +33,7 @@ public class MULTISIG extends MinimaFunction {
 			}
 			
 			if(found >= num) {
-				return BooleanValue.TRUE;
+				break;
 			}
 		}
 		
