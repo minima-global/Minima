@@ -1,65 +1,26 @@
 <html>
 <head>
 
-	<link rel="stylesheet" type="text/css" href="minidapps.css">
-    <!--  <script type="text/javascript" src="minima.js"></script> -->
-	<!--  <meta name="viewport" content="width=700, initial-scale=1, maximum-scale=1"> -->
-
-	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+	<link rel='stylesheet' type='text/css' href='minidapps.css'>
+    
+	<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
 
 	<title>MINIDAPPS</title>
 
 </head>
 
-<body style="background-image: url(tile-grey.jpeg);">
+<body style='background-color: #f0f0fa;font-family:manrope;'>
 
-<style type="text/css">
-	
-/* responsive, form small screens, use 13px font size */
-@media (max-width: 1000px) {
-    .maintitle {
-	  font-size:32px;
-	}
-	
-	.mainicon {
-	  width:75px;
-	}
-	
-	.evolution {
-	  text-align:center;
-	  font-size:16px;
-	}
-
-	.buttonbox {
-		width:100;
-	}
-	.installdapp{
-	  font-size:14px;
-	  width:100;
-	  height:50;
-	}
-	
-}
-</style>
-
-
-<script type="text/javascript">
+<script type='text/javascript'>
 
 	//Wait for the page to load..
-	window.addEventListener("load", function(){
-		const inputElement = document.getElementById("file-input");
-		inputElement.addEventListener("change", handleFiles, false);
+	window.addEventListener('load', function(){
+		const inputElement = document.getElementById('file-input');
+		inputElement.addEventListener('change', handleFiles, false);
 		
 		function handleFiles() {
 		  document.getElementById('installform').submit();
 		}
-		
-		/*window.addEventListener('MinimaEvent', function(evt) {
-			if(evt.detail.event == "connected"){
-	 			Minima.util.setUID("MiniHUB");
-	 		}else if(evt.detail.event == "newblock"){}
-	    });
-		Minima.init();*/
 	});
 	
 
@@ -69,30 +30,23 @@
 	}
 	
 	function uninstallDAPP(name, root){
-		if(confirm("Are you sure you wish to uninstall "+name+" ?")){
+		if(confirm('Are you sure you wish to uninstall '+name+' ?')){
 			//Uninstall this root app..
-			window.location.href="uninstalldapp.html?uninstall="+root;
+			window.location.href='uninstalldapp.html?uninstall='+root;
 		}
 	}
 
 </script>
 
-<table align="center" style="width:100%;height:100%;max-width:700;">
+<table align='center' style='width:100%;height:100%;max-width:700;'>
 <tr>
 <td>
 	
 	<!-- MAIN TITLE -->
-	<table class="maintitle" width=100%>
+	<table class='maintitle' width=100%>
 		<tr>
-			<td><img src="icon.png" class="mainicon"></td> 
-			<td width=100% nowrap><b>MINIDAPPS</b><br>
-			<div style="font-size:12;">
-			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-			&nbsp;&nbsp;&nbsp;
-			Powered by Minima</div>
-			</td> 
-			<td><img src="icon.png"  class="mainicon"></td>	
+			<td style='text-align:left;' nowrap>&nbsp;&nbsp;<img height=30 src='minidapphub.png'> </td>
+			<td style='text-align:right;color:#f0f0fa' nowrap>&nbsp;&nbsp;&nbsp;&nbsp;Powered by Minima &nbsp;&nbsp;</td>	
 		</tr>
 	</table>
 	
@@ -100,26 +54,45 @@
 </tr>
 
 <tr>
-	<td width=100% height=100% class="minidapplist">
+	<td width=100% height=100% class='minidapplist'>
 		######
+		
+		<!--
+		<table class='minidapp' width=100% border=0>
+			<tr>
+				<td onclick='window.open("blah.html");' rowspan=2>
+					<img height=50 src='icon.png' style='cursor:pointer;border-radius:10px;'>&nbsp;&nbsp; 	
+				</td>
+				<td onclick='window.open("blah.html");' style='cursor:pointer;font-size:16px;'><B>Minima Wallet</B></td>
+				<td rowspan=2 nowrap>
+					&nbsp;<a href='' download><img height=30 src='download.png'></a>&nbsp;&nbsp;&nbsp;
+					<img  onclick='uninstallDAPP();' height=30 src='uninstall.png'>&nbsp;
+				</td>
+			</tr>
+			<tr>
+				<td onclick='window.open("blah.html");' style='cursor:pointer;font-size:10px;vertical-align:top;' width=100% height=100%>
+				 Simple On-Chain DEX ( Decentralised Exchange ).. NO KYC.. 0% Fees 100% Secure.. Beat That.
+				</td>
+			</tr>
+		</table>
+		
+		<div style='height:15px; width:100%; clear:both;'></div>
+		-->
+		
 	</td>
 </tr>
 
 <tr>
 	<td>
 
-	<table class="mainfooter" width=100% border=0>
+	<table class='mainfooter' width=100% border=0>
 		<tr>
-			<td class="buttonbox" style="text-align:left;" nowrap> 
-				<button class="installdapp" onclick="window.location.href='help.html';">HELP</button> 
+			<td class='buttonbox' style='text-align:right;' nowrap> 
+				<button class='installdapp' onclick="window.location.href='help.html';">Help</button>&nbsp; 
 			</td>
 			
-			<td class="evolution" nowrap>
-					The <span style="color:#000">E</span><span style="color:#222">v</span><span style="color:#444">o</span><span style="color:#666">l</span><span style="color:#888">u</span><span style="color:#aaa">t</span><span style="color:#666">i</span><span style="color:#ddd">o</span><span style="color:#fff">n</span> <!-- will <b>not</b> be Centralised.. -->
-			</td>
-			
-			<td class="buttonbox" style="text-align:right;" nowrap> 
-				<button class="installdapp" onclick="installDAPP();">INSTALL</button> 	
+			<td class='buttonbox' style='text-align:left;' nowrap> 
+				&nbsp;<button class='installdapp' onclick='installDAPP();'>Install</button> 	
 			</td>
 		</tr>
 	</table>
@@ -129,9 +102,9 @@
 </table>
 
 <!-- The actual form that is used to upload minidapps -->
-<form enctype="multipart/form-data" id="installform" action="installdapp.html" method="post" style="display:none;">
+<form enctype='multipart/form-data' id='installform' action='installdapp.html' method='post' style='display:none;'>
     <!-- Used to open the select File Dialog.. -->
-	<input accept=".minidapp" id="file-input" value="nofile" type="file" name="minidapp" style="display:none;" /> 
+	<input accept='.minidapp' id='file-input' value='nofile' type='file' name='minidapp' style='display:none;' /> 
 </form>
 
 

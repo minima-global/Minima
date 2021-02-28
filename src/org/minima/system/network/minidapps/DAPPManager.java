@@ -27,6 +27,7 @@ import org.minima.system.network.NetworkHandler;
 import org.minima.system.network.minidapps.comms.CommsManager;
 import org.minima.system.network.minidapps.minibackend.BackEndDAPP;
 import org.minima.system.network.minidapps.websocket.WebSocketManager;
+import org.minima.system.network.rpc.RPCClient;
 import org.minima.utils.Crypto;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MinimaLogger;
@@ -130,9 +131,13 @@ public class DAPPManager extends MessageProcessor {
 	private JSONObject loadConfFile(File zConf) {
 		JSONObject ret = new JSONObject();
 		
+		//Some details..
+		String root = zConf.getParent();
+        int start = root.indexOf("minidapps");
+        String uid = root.substring(start+10);
+        
+		StringBuilder tot = new StringBuilder();
 		try {
-			StringBuilder tot = new StringBuilder();
-			
 			FileInputStream fis     = new FileInputStream(zConf);
 			InputStreamReader is    = new InputStreamReader(fis);
 			BufferedReader bis      = new BufferedReader(is);
@@ -146,11 +151,7 @@ public class DAPPManager extends MessageProcessor {
 	        JSONParser parser = new JSONParser();
 	        ret = (JSONObject) parser.parse(tot.toString());
 	        
-	        //And add the root folder..
-	        String root = zConf.getParent();
-	        int start = root.indexOf("minidapps");
-	        String uid = root.substring(start+10);
-	        
+	        //Add defaults..
 	        ret.put("uid", uid);
 	        ret.put("root", "/minidapps/"+uid);
 	        ret.put("web", "http://"+mNetwork.getBaseHost()+":"+mNetwork.getMiniDAPPServerPort()+"/minidapps/"+uid);
@@ -160,6 +161,21 @@ public class DAPPManager extends MessageProcessor {
 	        
 		} catch (Exception e) {
 			MinimaLogger.log("Error Loading MiniDAPP conf "+zConf.getAbsolutePath(),e);
+			//Extra Info..
+			String totstr = tot.toString();
+			if(!totstr.equals("")) {
+				MinimaLogger.log(tot.toString());
+			}
+			
+			//Clear it.. but add details required to remove it..
+			ret = new JSONObject();
+			ret.put("name", "*ERROR*");
+			ret.put("description", "This minidapp did not load correctly..");
+			ret.put("uid", uid);
+			ret.put("installed", (long)0);
+			ret.put("version", "1.0");
+	        ret.put("root", "");
+	        ret.put("web", "http://"+mNetwork.getBaseHost()+":"+mNetwork.getMiniDAPPServerPort()+"/minidapps/"+uid);
 		}
 		
 		return ret;
@@ -225,9 +241,6 @@ public class DAPPManager extends MessageProcessor {
 					}
 				}
 				
-				//Find the CONF file..
-//				File conf = findFile(app, "minidapp.conf");
-				
 				//Open it up..
 				File conf = new File(app,"minidapp.conf");
 				File backend = new File(app,"service.js");
@@ -237,12 +250,20 @@ public class DAPPManager extends MessageProcessor {
 					//Load it..
 					JSONObject confjson = loadConfFile(conf);
 					
+					//Did it work..
+					boolean error = false;
+					String mininame = (String) confjson.get("name");
+					if(mininame.equals("*ERROR*")) {
+						//Something went wrong..
+						error = true;
+					}
+						
 					//Add the timestamp..
 					confjson.put("installed", timestamp);
 					confjson.put("download", download);
 					
 					//Is there a Back end
-					if(backend.exists()) {
+					if(!error && backend.exists()) {
 						//Load it..
 						try {
 							//Load the JS file..
@@ -269,10 +290,32 @@ public class DAPPManager extends MessageProcessor {
 					
 					//Add it..
 					CURRENT_MINIDAPPS.add(confjson);
+					
 				}else {
 					MinimaLogger.log("ERROR : minidapp.conf not found for "+minidappid);
-				}
 				
+					//Some details..
+					if(conf != null) {
+						String root = conf.getParent();
+				        int start = root.indexOf("minidapps");
+				        
+				        if(start != -1) {
+					        String uid = root.substring(start+10);
+				        
+							JSONObject confjson = new JSONObject();
+							confjson.put("name", "*ERROR*");
+							confjson.put("description", "minidapp.conf file missing..");
+							confjson.put("uid", uid);
+							confjson.put("installed", (long)0);
+							confjson.put("root", "");
+							confjson.put("version", "1.0");
+							confjson.put("web", "http://"+mNetwork.getBaseHost()+":"+mNetwork.getMiniDAPPServerPort()+"/minidapps/"+uid);
+							
+					        //Add it..
+							CURRENT_MINIDAPPS.add(confjson);
+				        }
+					}
+				}
 			}
 		}
 		
@@ -347,6 +390,8 @@ public class DAPPManager extends MessageProcessor {
 			//Get the Data
 			MiniData data = (MiniData) zMessage.getObject("minidapp");
 			String filename = zMessage.getString("filename");
+			
+			MinimaLogger.log("INSTALLING : "+filename+" "+data.getLength());
 			
 			//Do we overwrite..
 			boolean overwrite = true;
@@ -477,6 +522,8 @@ public class DAPPManager extends MessageProcessor {
 			String minidapp = zMessage.getString("minidapp");
 			InputHandler.getResponseJSON(zMessage).put("minidapp", minidapp);
 			
+			MinimaLogger.log("UNINSTALLING : "+minidapp);
+			
 			//UNINSTALL the DAPP
 			File appfolder = new File(getMiniDAPPSFolder(),minidapp);
 		
@@ -572,6 +619,19 @@ public class DAPPManager extends MessageProcessor {
 			Message msg = new Message(WebSocketManager.WEBSOCK_SENDTOALL);
 			msg.addString("message", json.toString());
 			mNetwork.getWebSocketManager().PostMessage(msg);
+			
+			//Post it to an URL..
+			try {
+				//Get the URL
+				String url = mNetwork.getExternalURL();
+				if(!url.equals("")) {
+//					MinimaLogger.log("Attempt to call external URL "+url); 
+					String reply = RPCClient.sendPOST(url, json.toString(), "application/json");
+//					MinimaLogger.log("Reply : "+reply); 
+				}
+			}catch(Exception exc) {
+				MinimaLogger.log("ExternalURL error : "+exc.toString()+" "+json.toString());
+			}
 		}
 		
 	}

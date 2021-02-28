@@ -1,5 +1,6 @@
 package org.minima.system.input.functions;
 
+import org.minima.GlobalParams;
 import org.minima.system.brains.ConsensusPrint;
 import org.minima.system.brains.ConsensusUser;
 import org.minima.system.input.CommandFunction;
@@ -10,7 +11,7 @@ public class keys extends CommandFunction {
 	public keys() {
 		super("keys");
 		
-		setHelp("(new) (bitlength)", "List all your public keys or create a new one. Default is 256 bits can specify.", "");
+		setHelp("(new) (bitlength)", "List all your public keys or create a new one.", "");
 	}
 	
 	@Override
@@ -25,7 +26,7 @@ public class keys extends CommandFunction {
 				
 				newkey.addInteger("bitlength", bitl);
 			}else {
-				newkey.addInteger("bitlength", 256);
+				newkey.addInteger("bitlength", GlobalParams.MINIMA_DEFAULT_HASH_STRENGTH);
 			}
 			
 			getMainHandler().getConsensusHandler().PostMessage(newkey);

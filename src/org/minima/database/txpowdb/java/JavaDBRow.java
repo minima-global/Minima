@@ -28,7 +28,7 @@ public class JavaDBRow implements TxPOWDBRow {
 	public JavaDBRow(TxPoW zTxPOW) {
 		mTxPOW 				= zTxPOW;
 		mIsInBlock 			= false;
-		mIsMainChainBlock     = false;
+		mIsMainChainBlock   = false;
 		mBlockState         = TXPOWDBROW_STATE_BASIC;
 		mDeleteTime         = 0;
 		mAddedTime          = System.currentTimeMillis();

@@ -92,7 +92,7 @@ public class Crypto {
 			keccak.doFinal(output, 0);
 			return output;
 		}catch(Exception exc) {
-			exc.printStackTrace();
+			MinimaLogger.log(exc);
 		}
 		return null;
 	}
@@ -122,7 +122,7 @@ public class Crypto {
 			//Do it..
 //			return getDigest().digest(zData);
 		}catch(Exception exc) {
-			exc.printStackTrace();
+			MinimaLogger.log(exc);
 		}
 		return null;
 	}
@@ -157,8 +157,7 @@ public class Crypto {
 			return ret;
 		
 		}catch (Exception e) {
-			//Error Hashing!?
-			e.printStackTrace();
+			MinimaLogger.log(e);
 		}
 		
 		return null;
@@ -197,9 +196,7 @@ public class Crypto {
 			return ret;
 		
 		}catch (Exception e) {
-			e.printStackTrace();
-			//Error Hashing!?
-			//TODO
+			MinimaLogger.log(e);
 		}
 		
 		return null;
@@ -233,9 +230,7 @@ public class Crypto {
 			return ret;
 					
 		}catch (Exception e) {
-			e.printStackTrace();
-			//Error Hashing!?
-			//TODO
+			MinimaLogger.log(e);
 		}
 		
 		return null;

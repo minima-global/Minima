@@ -52,6 +52,7 @@ public class ConsensusUser extends ConsensusProcessor {
 	public static final String CONSENSUS_NEWKEY 			= CONSENSUS_PREFIX+"NEWKEY";
 	
 	public static final String CONSENSUS_SIGN 			    = CONSENSUS_PREFIX+"SIGN";
+	public static final String CONSENSUS_VERIFY 			= CONSENSUS_PREFIX+"VERIFY";
 	
 	public static final String CONSENSUS_NEWSIMPLE 			= CONSENSUS_PREFIX+"NEWSIMPLE";
 	public static final String CONSENSUS_NEWSCRIPT 			= CONSENSUS_PREFIX+"NEWSCRIPT";
@@ -99,8 +100,18 @@ public class ConsensusUser extends ConsensusProcessor {
 			String data   = zMessage.getString("data");
 			String pubkey = zMessage.getString("publickey");
 			
+			//Is it HEX or String..
+			String type="";
+			MiniData hexdat = null;
+			if(data.startsWith("0x")) {
+				type = "HEX";
+				hexdat  = new MiniData(data);
+			}else {
+				type = "STRING";
+				hexdat  = new MiniData(data.getBytes(MiniString.DEFAULT_MINIMA_CHARSET));
+			}
+			
 			//Convert
-			MiniData hexdat  = new MiniData(data);
 			MiniData hexpubk = new MiniData(pubkey);
 			
 			//Get the public key..
@@ -116,11 +127,35 @@ public class ConsensusUser extends ConsensusProcessor {
 		
 			//Output
 			JSONObject resp = InputHandler.getResponseJSON(zMessage);
+			resp.put("original", data);
+			resp.put("type", type);
 			resp.put("data", hexdat.to0xString());
-			resp.put("publickey", hexpubk.getLength());
+			resp.put("publickey", hexpubk.to0xString());
 			resp.put("signature", result.to0xString());
 			resp.put("length", result.getLength());
 			InputHandler.endResponse(zMessage, true, "");
+		
+		}else if(zMessage.isMessageType(CONSENSUS_VERIFY)) {
+			String data   = zMessage.getString("data");
+			String pubkey = zMessage.getString("publickey");
+			String sig    = zMessage.getString("signature");
+			
+			//Convert
+			MiniData hexdata = new MiniData(data);
+			MiniData hexpubk = new MiniData(pubkey);
+			MiniData hexsig  = new MiniData(sig);
+			
+			//Create a MultiKey..
+			MultiKey key = new MultiKey(hexpubk);
+			
+			//Now verify..
+			boolean verify = key.verify(hexdata, hexsig);
+			
+			if(verify) {
+				InputHandler.endResponse(zMessage, true, "Valid Signature");
+			}else {
+				InputHandler.endResponse(zMessage, false, "Invalid Signature");
+			}
 			
 		}else if(zMessage.isMessageType(CONSENSUS_EXTRASCRIPT)) {
 			//Get the script
@@ -214,7 +249,7 @@ public class ConsensusUser extends ConsensusProcessor {
 			ArrayList<MiniString> leaves = (ArrayList<MiniString>) zMessage.getObject("leaves");
 		
 			//First create an MMR Tree..
-			MMRSet mmr = new MMRSet(bitlength);
+			MMRSet mmr = new MMRSet(bitlength, false);
 			
 			//Now add each 
 			JSONArray nodearray = new JSONArray();

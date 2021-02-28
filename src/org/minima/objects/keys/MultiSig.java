@@ -9,6 +9,7 @@ import java.io.IOException;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.proofs.Proof;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONObject;
 
@@ -39,20 +40,14 @@ public class MultiSig implements Streamable {
 		mChildSignature = zChildSignature;
 	}
 	
-	public MultiSig(MiniData zCompleteSignature) {
-		//Write it out..
-		try {
-			ByteArrayInputStream bais = new ByteArrayInputStream(zCompleteSignature.getData());
-			DataInputStream dis = new DataInputStream(bais);
-			
-			//Now read the data
-			readDataStream(dis);
-			
-			dis.close();
-			
-		}catch(Exception exc) {
-			exc.printStackTrace();
-		}
+	public MultiSig(MiniData zCompleteSignature) throws IOException {
+		ByteArrayInputStream bais = new ByteArrayInputStream(zCompleteSignature.getData());
+		DataInputStream dis = new DataInputStream(bais);
+		
+		//Now read the data
+		readDataStream(dis);
+		
+		dis.close();
 	}
 	
 	public MiniData getPublicKey() {
@@ -100,7 +95,7 @@ public class MultiSig implements Streamable {
 			return new MiniData(baos.toByteArray());
 			
 		}catch(Exception exc) {
-			exc.printStackTrace();
+			MinimaLogger.log(exc);
 		}
 		
 		return null;

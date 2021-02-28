@@ -9,7 +9,12 @@ public class sshtunnel extends CommandFunction{
 	public sshtunnel() {
 		super("sshtunnel");
 		
-		setHelp("[start|stop|clear|info|logging [on|off]|params]", "Create an ssh tunnel to an ssh server for an external Maxima IP", "");
+		setHelp("[start|stop|clear|info|logging [on|off]|params]", 
+				"Create an ssh tunnel to an ssh server for an external Maxima IP", 
+				"sshtunnel links Minima to an external server running ssh so you get an external IP\n"
+				+ "The Parameters you need to set are : \n"
+				+ "sshtunnel params username:.. password:.. host:.. remoteport:..\n"
+				+ "remoteport and remoteport+1 MUST be open on the server.. they serve as the Minima and Maxima ports.");
 	}
 	
 	@Override

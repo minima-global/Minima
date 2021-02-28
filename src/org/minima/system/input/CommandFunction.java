@@ -11,7 +11,6 @@ import org.minima.system.input.functions.cleanscript;
 import org.minima.system.input.functions.coins;
 import org.minima.system.input.functions.coinsimple;
 import org.minima.system.input.functions.connect;
-import org.minima.system.input.functions.createtoken;
 import org.minima.system.input.functions.disconnect;
 import org.minima.system.input.functions.extrascript;
 import org.minima.system.input.functions.flushmempool;
@@ -37,6 +36,7 @@ import org.minima.system.input.functions.runscript;
 import org.minima.system.input.functions.scripts;
 import org.minima.system.input.functions.search;
 import org.minima.system.input.functions.send;
+import org.minima.system.input.functions.sendpoll;
 import org.minima.system.input.functions.sign;
 import org.minima.system.input.functions.sshtunnel;
 import org.minima.system.input.functions.status;
@@ -50,6 +50,7 @@ import org.minima.system.input.functions.tutorial;
 import org.minima.system.input.functions.txpowinfo;
 import org.minima.system.input.functions.txpowsearch;
 import org.minima.system.input.functions.unkeepcoin;
+import org.minima.system.input.functions.verify;
 import org.minima.system.input.functions.weblink;
 import org.minima.system.input.functions.transfer.exportcoin;
 import org.minima.system.input.functions.transfer.exportkey;
@@ -81,10 +82,10 @@ public abstract class CommandFunction {
 	 */
 	public static CommandFunction[] ALL_FUNCTIONS = 
 		{
-			new backup(), new restore(), new balance(), new connect(), new createtoken(), new disconnect(), new weblink(),
+			new backup(), new restore(), new balance(), new connect(), new disconnect(), new weblink(),
 			new gimme50(), new help(), new intro(), new automine(), new newaddress(), new coins(), new coinsimple(), new txpowinfo(), new keys(),
 			new newscript(), new printdb(), new printtree(), new quit(),new reconnect(), new runscript(), new cleanscript(), 
-			new send(), new status(), new test(), new trace(), new tutorial(), new history(), new topblock(),
+			new send(), new sendpoll(), new status(), new test(), new trace(), new tutorial(), new history(), new topblock(),
 			new tokens(), new tokencreate(), new tokenvalidate(), new mineblock(),
 			new maxima(), new sshtunnel(),
 			new exportkey(), new importkey(), new exportcoin(), new importcoin(), new search(),
@@ -92,7 +93,7 @@ public abstract class CommandFunction {
 			new txncreate(), new txndelete(), new txninput(), new txnlist(), new txnauto(),
 			new txnstate(), new txnexport(), new txnimport(), new txnscript(), new txnreminput(), new txnremoutput(),
 			new txnoutput(), new txnpost(), new txnsign(), new txnvalidate(),new txnsignauto(),
-			new extrascript(), new sign(), new txpowsearch(), new flushmempool(), new random(), new check()
+			new extrascript(), new sign(), new verify(), new txpowsearch(), new flushmempool(), new random(), new check()
 		};  
 	
 	/**

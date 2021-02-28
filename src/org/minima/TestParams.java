@@ -2,12 +2,12 @@ package org.minima;
 
 import org.minima.objects.base.MiniNumber;
 
-public class GlobalParams {
+public class TestParams {
 
 	/**
 	 * Which Version
 	 */
-	public static String MINIMA_VERSION = "0.97.15"; 
+	public static String MINIMA_VERSION = GlobalParams.MINIMA_VERSION+"-TEST"; 
 	
 	/**
 	 * Number of seconds before sending a pulse message - every 10 minutes
@@ -17,13 +17,14 @@ public class GlobalParams {
 	/**
 	 * Speed in blocks per second.. 
 	 * -  0.05  = 20 second block time
+	 * - 0.2 = 5 second blocktime
 	 */
-	public static MiniNumber MINIMA_BLOCK_SPEED  = new MiniNumber("0.05");
+	public static MiniNumber MINIMA_BLOCK_SPEED  = new MiniNumber("1");
 	
 	/**
 	 * When checking speed and average difficulty only look at this many blocks back
 	 */
-	public static MiniNumber MINIMA_BLOCKS_SPEED_CALC = new MiniNumber(1024);
+	public static MiniNumber MINIMA_BLOCKS_SPEED_CALC = new MiniNumber(8);
 	
 	/**
 	 * How deep before we think confirmed..
@@ -33,17 +34,17 @@ public class GlobalParams {
 	/**
 	 * How often do we cascade the chain
 	 */
-	public static MiniNumber MINIMA_CASCADE_FREQUENCY = new MiniNumber(100);
+	public static MiniNumber MINIMA_CASCADE_FREQUENCY = new MiniNumber(5);
 	
 	/**
 	 * Depth before we cascade..
 	 */
-	public static MiniNumber MINIMA_CASCADE_START_DEPTH = new MiniNumber(4320);
+	public static MiniNumber MINIMA_CASCADE_START_DEPTH = new MiniNumber(16);
 	
 	/**
 	 * Number of blocks at each cascade level 
 	 */
-	public static int MINIMA_CASCADE_LEVEL_NODES  = 128;
+	public static int MINIMA_CASCADE_LEVEL_NODES  = 2;
 	
 	/**
 	 * How Many Cascade Levels
@@ -61,7 +62,7 @@ public class GlobalParams {
 	 * Max Proof History - how far back to use a proof of coin..
 	 * If there is a re-org of more than this the proof will be invalid 
 	 */
-	public static MiniNumber MINIMA_MMR_PROOF_HISTORY = new MiniNumber(256);
+	public static MiniNumber MINIMA_MMR_PROOF_HISTORY = new MiniNumber(8);
 	
 //	/**
 //	 * Are we debugging the chain in short chain mode..
@@ -81,5 +82,21 @@ public class GlobalParams {
 //	 */
 //	public static final MiniNumber MINIMA_MAX_SPEED_RATIO  = new MiniNumber("0.5");
 	
-
+	/**
+	 * Set these as the GlobalParams..
+	 */
+	public static void setTestParams() {
+		GlobalParams.MINIMA_BLOCK_SPEED 			= TestParams.MINIMA_BLOCK_SPEED;
+		GlobalParams.MINIMA_BLOCKS_SPEED_CALC 		= TestParams.MINIMA_BLOCKS_SPEED_CALC;
+		GlobalParams.MINIMA_CASCADE_FREQUENCY 		= TestParams.MINIMA_CASCADE_FREQUENCY;
+		GlobalParams.MINIMA_CASCADE_LEVEL_NODES		= TestParams.MINIMA_CASCADE_LEVEL_NODES;
+		GlobalParams.MINIMA_CASCADE_LEVELS			= TestParams.MINIMA_CASCADE_LEVELS;
+		GlobalParams.MINIMA_CASCADE_START_DEPTH		= TestParams.MINIMA_CASCADE_START_DEPTH;
+		GlobalParams.MINIMA_CONFIRM_DEPTH			= TestParams.MINIMA_CONFIRM_DEPTH;
+		GlobalParams.MINIMA_DEFAULT_HASH_STRENGTH   = TestParams.MINIMA_DEFAULT_HASH_STRENGTH;
+		GlobalParams.MINIMA_MMR_PROOF_HISTORY		= TestParams.MINIMA_MMR_PROOF_HISTORY;
+		GlobalParams.MINIMA_VERSION					= TestParams.MINIMA_VERSION;
+		GlobalParams.MINIMA_ZERO_DIFF_BLK			= TestParams.MINIMA_ZERO_DIFF_BLK;
+	}
+	
 }

@@ -9,6 +9,7 @@ import java.util.Random;
 
 import org.minima.Start;
 import org.minima.system.Main;
+import org.minima.system.brains.ConsensusHandler;
 import org.minima.system.input.InputHandler;
 import org.minima.system.network.base.MinimaClient;
 import org.minima.system.network.base.MinimaServer;
@@ -72,6 +73,11 @@ public class NetworkHandler extends MessageProcessor {
 	 * SSH Tunnel
 	 */
 	SSHTunnel mTunnel;
+
+	/**
+	 * URL to call with MiniDAPP JSON details
+	 */
+	String mExternalURL = "";
 	
 	/**
 	 * All the network channels..
@@ -114,7 +120,7 @@ public class NetworkHandler extends MessageProcessor {
 	 * 
 	 * @param zMain
 	 */
-	public NetworkHandler(Main zMain, String zHost, int zMainPort) {
+	public NetworkHandler(String zHost, int zMainPort) {
 		super("NETWORK");
 
 		if(zHost.equals("")) {
@@ -182,6 +188,15 @@ public class NetworkHandler extends MessageProcessor {
 			return mRemoteMaxima;
 		}
 		return mBasePort+4;
+	}
+	
+	public String getExternalURL() {
+		return mExternalURL;
+	}
+	
+	public void setExternalURL(String zURL) {
+		MinimaLogger.log("External URL : "+zURL);
+		mExternalURL = zURL;
 	}
 	
 	public String calculateHostIP() {
@@ -358,6 +373,9 @@ public class NetworkHandler extends MessageProcessor {
 			InputHandler.getResponseJSON(zMessage).put("total", shut.size());
 			InputHandler.getResponseJSON(zMessage).put("clients", shut);
 			InputHandler.endResponse(zMessage, true, "All network clients reset - reconnect in 30 seconds");
+	
+			//Notify..
+			Main.getMainHandler().getConsensusHandler().updateListeners(new Message(ConsensusHandler.CONSENSUS_NOTIFY_RECONNECT));
 			
 		}else if(zMessage.isMessageType(NETWORK_DISCONNECT)) {
 			String uid = zMessage.getString("uid");
@@ -433,6 +451,10 @@ public class NetworkHandler extends MessageProcessor {
 			for(MinimaClient client : mClients) {
 				client.setLOG(traceon);
 			}
+			
+			//Set trace for Maxima
+			mMaxima.setLOG(traceon);
+			mTunnel.setLOG(traceon);
 		
 		}else if(zMessage.isMessageType(NETWORK_SENDALL)) {
 			//Get the message to send

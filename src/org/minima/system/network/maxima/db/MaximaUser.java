@@ -5,52 +5,53 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Date;
 
-import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONObject;
+import org.minima.utils.json.parser.JSONParser;
+import org.minima.utils.json.parser.ParseException;
 
 public class MaximaUser implements Streamable {
 
-	public MiniString mPublicKey;
-	
-	public MiniString mHost;
-	
-	public MiniNumber mTimeStamp = MiniNumber.ZERO;
-	
+	public JSONObject mData;
+		
 	public MaximaUser() {}
 
 	public MaximaUser(String zPubkey, String zHost) {
+		mData = new JSONObject();
+		
 		setPublicKey(zPubkey);
 		setHost(zHost);
 		setTimeStamp(System.currentTimeMillis());
+		setRSAPubKeyHex("0x00");
 	}
 	
 	public JSONObject toJSON() {
 		JSONObject json = new JSONObject();
 		
-		json.put("publickey", mPublicKey.toString());
-		json.put("host",mHost.toString());
-		json.put("timestamp", new Date(mTimeStamp.getAsLong()).toString());
+		json.put("publickey", getPublicKey());
+		json.put("host",getHost());
+		json.put("RSA",getRSAPubKeyHex());
+		json.put("timestamp", new Date(getTimeStamp()).toString());
 		
 		return json;
 	}
 	
 	public String getPublicKey() {
-		return mPublicKey.toString();
+		return (String) mData.get("publickey");
 	}
 	
 	public void setPublicKey(String zPubKey) {
-		mPublicKey = new MiniString(zPubKey);
+		mData.put("publickey", zPubKey);
 	}
 	
 	public String getHost() {
-		return mHost.toString();
+		return (String) mData.get("host");
 	}
 	
 	public void setHost(String zHost) {
-		mHost = new MiniString(zHost);
-		setTimeStamp(System.currentTimeMillis());
+		mData.put("host", zHost);
 	}
 	
 	public String getCompleteAddress() {
@@ -58,25 +59,37 @@ public class MaximaUser implements Streamable {
 	}
 	
 	public long getTimeStamp() {
-		return mTimeStamp.getAsLong();
+		String ts = (String) mData.get("timestamp");
+		return Long.parseLong(ts);
 	}
 	
 	public void setTimeStamp(long zTimeStamp) {
-		mTimeStamp = new MiniNumber(zTimeStamp);
+		mData.put("timestamp", ""+zTimeStamp);
 	}
 
+	public void setRSAPubKeyHex(String zPubKey) {
+		mData.put("RSA",zPubKey);
+	}
+	
+	public String getRSAPubKeyHex() {
+		return (String) mData.get("RSA");
+	}
+	
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
-		mPublicKey.writeDataStream(zOut);
-		mHost.writeDataStream(zOut);
-		mTimeStamp.writeDataStream(zOut);
+		MiniString str = new MiniString(mData.toString());
+		str.writeDataStream(zOut);
 	}
 
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
-		mPublicKey = MiniString.ReadFromStream(zIn);
-		mHost = MiniString.ReadFromStream(zIn);
-		mTimeStamp = MiniNumber.ReadFromStream(zIn);
+		MiniString ds = MiniString.ReadFromStream(zIn);
+		try {
+			mData = (JSONObject)(new JSONParser().parse(ds.toString()));
+		} catch (ParseException e) {
+			MinimaLogger.log(e);
+			mData = new JSONObject();
+		}
 	}
 	
 	

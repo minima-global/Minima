@@ -3,7 +3,11 @@ package org.minima.database.txpowtree;
 import java.util.ArrayList;
 
 import org.minima.GlobalParams;
+import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniNumber;
+import org.minima.objects.greet.SyncPacket;
+import org.minima.system.Main;
+import org.minima.system.brains.BackupManager;
 
 public class CascadeTree {
 
@@ -13,12 +17,9 @@ public class CascadeTree {
 	
 	ArrayList<BlockTreeNode> mRemovals;
 	
-	ArrayList<BlockTreeNode> mSaveBlocks;
-	
 	public CascadeTree(BlockTree zMainTree) {
 		mMainTree = zMainTree;
 		mRemovals   = new ArrayList<>();
-		mSaveBlocks = new ArrayList<>();
 	}
 	
 	public BlockTree getCascadeTree() {
@@ -27,10 +28,6 @@ public class CascadeTree {
 	
 	public ArrayList<BlockTreeNode> getRemoved(){
 		return mRemovals;
-	}
-	
-	public ArrayList<BlockTreeNode> getSaveNodes(){
-		return mSaveBlocks;
 	}
 	
 	public void cascadedTree() {
@@ -72,24 +69,33 @@ public class CascadeTree {
 		//The rest of the tree.. that we CAN cascade
 		BlockTreeNode newcascade  = newfulltree.getParent();
 		
-		//Get all the blocks we have to save as .txblocks..
+		//Now copy all the MMR data to the old cascade..
+		MiniNumber minblock = newcascade.getMMRSet().copyAllParentKeepers(cascadenode.getBlockNumber());
+		
+		//Get the Backup Manager..
+		BackupManager backup = Main.getMainHandler().getBackupManager();
+		
+		//Get all the blocks we have to save as .block..
 		BlockTreeNode savenode = newcascade.getParent();
-		while(savenode!=null && savenode.getBlockNumber().isMoreEqual(cascnumber)) {
+		while(savenode!=null && savenode.getBlockNumber().isMoreEqual(minblock)) {
 			//Create a deep copy.. so that clear the cascade node makes no difference..
-			BlockTreeNode copynode = new BlockTreeNode(savenode.getTxPow());
+			TxPoW copytx = savenode.getTxPow().deepCopy();
+			copytx.clearBody();
+			
+			//Now make a tree node..
+			BlockTreeNode copynode = new BlockTreeNode(copytx);
 			copynode.setMMRset(savenode.getMMRSet());
 			copynode.setCascade(false);
 			
+			//Now make a syncpacket
+			SyncPacket pack = new SyncPacket(copynode, false);
+			
 			//Saver..
-			mSaveBlocks.add(copynode);
+			backup.backupBlock(pack);
 		
 			//Get the Parent
 			savenode = savenode.getParent();
 		}
-		
-		
-		//Now copy all the MMR data to the old cascade..
-		newcascade.getMMRSet().copyAllParentKeepers(cascadenode.getBlockNumber());
 		
 		//Now add all that
 		ArrayList<BlockTreeNode> cascnodes = new ArrayList<>();

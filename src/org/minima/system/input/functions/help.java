@@ -51,7 +51,7 @@ public class help extends CommandFunction{
 				if(desc.equals("")) {
 					getResponseStream().getDataJSON().put("description", found.getParams()+" - "+found.getSimple());
 				}else {
-					getResponseStream().getDataJSON().put("description", found.getParams()+" - "+desc);	
+					getResponseStream().getDataJSON().put("description", found.getParams()+" - "+found.getSimple()+"\n"+desc);	
 				}
 				
 				getResponseStream().endStatus(true, "");
@@ -81,6 +81,7 @@ public class help extends CommandFunction{
 			
 			addJSONDesc(new gimme50());
 			addJSONDesc(new send());
+			addJSONDesc(new sendpoll());
 			addJSONDesc(new newaddress());
 			addJSONDesc(new balance());
 			
@@ -105,12 +106,12 @@ public class help extends CommandFunction{
 			addJSONDesc(new cleanscript());
 			addJSONDesc(new runscript());
 			
-//			addJSONDesc(new createtoken());
 			addJSONDesc(new tokens());
 			addJSONDesc(new tokencreate());
 			addJSONDesc(new tokenvalidate());
 			
 			addJSONDesc(new sign());
+			addJSONDesc(new verify());
 			addJSONDesc(new chainsha());
 			addJSONDesc(new random());
 			

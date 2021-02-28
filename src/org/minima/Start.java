@@ -10,6 +10,8 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Random;
 
+import org.minima.objects.base.MiniNumber;
+import org.minima.objects.greet.SyncPacket;
 import org.minima.system.Main;
 import org.minima.system.brains.BackupManager;
 import org.minima.system.network.commands.CMD;
@@ -106,6 +108,8 @@ public class Start {
 		String connecthost      = VALID_BOOTSTRAP_NODES[hostnum];
 		int connectport         = 9001;
 		String host             = "";
+
+		String external 		= "";
 		
 		boolean clean           = false;
 		boolean cleanhard       = false;
@@ -144,6 +148,7 @@ public class Start {
 					MinimaLogger.log("        -noconnect             : Don't connect to MainNet. Can then connect to private chains.");
 					MinimaLogger.log("        -connect [host] [port] : Don't connect to MainNet but connect to this node instead.");
 					MinimaLogger.log("        -daemon                : Accepts no input from STDIN. Can run in background process.");
+					MinimaLogger.log("        -externalurl           : Send a POST request to this URL with Minima JSON information.");
 					MinimaLogger.log("        -help                  : Show this help");
 					MinimaLogger.log("");
 					MinimaLogger.log("With zero parameters Minima will start and connect to a set of default nodes.");
@@ -177,6 +182,36 @@ public class Start {
 					
 				}else if(arg.equals("-conf")) {
 					conffolder = zArgs[counter++];
+				
+				}else if(arg.equals("-externalurl")) {
+					external = zArgs[counter++];
+				
+				}else if(arg.equals("-test")) {
+					//Use the Test PARAMS!
+					TestParams.setTestParams();
+				
+					
+					//MY HACK WAY OF TESTING SOMETHING
+				}else if(arg.equals("-specialfunction")) {
+					//Which Block
+					String block = zArgs[counter++];
+					MinimaLogger.log("Block : "+block);
+					
+					//BLocks folder..
+					File blocksdb = new File(conf,"blocks");
+					MinimaLogger.log("Blocks Folder : "+blocksdb.getAbsolutePath());
+					
+					//Full file
+					File blkfile = BackupManager.getBlockFile(blocksdb, new MiniNumber(block));
+					MinimaLogger.log("Final File : "+blkfile.getAbsolutePath()+" "+blkfile.exists());
+					
+					//Do Something special
+					SyncPacket spack = SyncPacket.loadBlock(blkfile);
+					
+					System.exit(0);
+					
+				}else if(arg.equals("")) {
+					//Do nothing..
 					
 				}else {
 					MinimaLogger.log("UNKNOWN arg.. : "+arg);
@@ -230,6 +265,11 @@ public class Start {
 		
 		if(!connect) {
 			rcmainserver.setRequireNoInitialSync();
+		}
+		
+		//Set the External URL..
+		if(!external.equals("")) {
+			rcmainserver.getNetworkHandler().setExternalURL(external);
 		}
 		
 		//Start the system

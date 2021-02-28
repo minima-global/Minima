@@ -86,12 +86,12 @@ public class ConsensusNet extends ConsensusProcessor {
 	}
 	
 	public void setInitialSyncComplete(boolean zPostNotify) {
-		if(!mInitialSync) {
+		//if(!mInitialSync) {
 			mInitialSync = true;
 			if(zPostNotify) {
 				getConsensusHandler().updateListeners(new Message(ConsensusHandler.CONSENSUS_NOTIFY_INITIALSYNC));	
 			}
-		}
+		//}
 	}
 	
 	private void PostNetClientMessage(Message zOrigMessage, Message zMessage) {
@@ -186,7 +186,8 @@ public class ConsensusNet extends ConsensusProcessor {
 			
 			//Find the crossover - if there is one..
 			MiniNumber cross = checkCrossover(greet);
-
+			MinimaLogger.log("Greeting Crossover block found : "+cross);
+			
 			//If there no immediate crossover check backup files..
 			if(cross.isEqual(MiniNumber.MINUSONE)) {
 				PostNetClientMessage(zMessage, new Message(CONSENSUS_NET_GREET_BACKSYNC).addObject("greetlist", blocks));
@@ -231,6 +232,19 @@ public class ConsensusNet extends ConsensusProcessor {
 			
 			ArrayList<TxPoW> full_list = new ArrayList<>();
 			while(!top.getBlockNumber().isEqual(cross)) {
+				//Get the TxPow..
+				TxPoW txp = top.getTxPow();
+				
+				//Check is a full block..
+				if(!txp.hasBody()) {
+					MinimaLogger.log("CANCEL RESYNC : Attempting to sync user with NoBody Blocks.. "+txp.getBlockNumber());
+					
+					//Disconnect him..
+					client.PostMessage(new Message(MinimaClient.NETCLIENT_SHUTDOWN));
+					
+					return;
+				}
+				
 				//Add this to the list
 				full_list.add(0,top.getTxPow());
 				
@@ -241,19 +255,23 @@ public class ConsensusNet extends ConsensusProcessor {
 			//Now cycle through from the bottom to the top..
 			TxPoWList currentblocks = new TxPoWList();
 			for(TxPoW blk : full_list) {
-				//ONLY do this if you have the FULL BLOCKS
-				if(!blk.hasBody()) {
-					MinimaLogger.log("CANCEL RESYNC : Attempting to sync user with Assume Valid Blocks..");
-					return;
-				}
-				
 				//Add all the TXNS..
 				ArrayList<MiniData> txns = blk.getBlockTransactions();
 				for(MiniData txn : txns) {
 					TxPoW txpow = getMainDB().getTxPOW(txn);
-					if(txpow!=null) {
-						currentblocks.addTxPow(txpow);
+					
+					//Check is a full block..
+					if(txpow==null) {
+						MinimaLogger.log("CANCEL RESYNC : Missing TxPoW in "+blk.getBlockNumber());
+						
+						//Disconnect him..
+						client.PostMessage(new Message(MinimaClient.NETCLIENT_SHUTDOWN));
+						
+						return;
 					}
+					
+					//Add to the list
+					currentblocks.addTxPow(txpow);
 				}
 				
 				//Add this TxPoW and the Txns in it..
@@ -276,7 +294,7 @@ public class ConsensusNet extends ConsensusProcessor {
 			}
 			
 			/**
-			 * User connected late - send him the min Backups tat allow sync but not full check
+			 * User connected late - send him the min Backups that allow sync but not full check
 			 */
 		}else if(zMessage.isMessageType(CONSENSUS_NET_GREET_BACKSYNC)) {
 			//Get the greeting list
@@ -318,6 +336,17 @@ public class ConsensusNet extends ConsensusProcessor {
 			for(int i=0;i<blockstoload;i++) {
 				//Load it.. 
 				SyncPacket spack = SyncPacket.loadBlock(backup.getBlockFile(currentblock));
+				if(spack == null) {
+					//Hmm..
+					MinimaLogger.log("SERIOUS ERROR : Blocks not loading from file.. ");
+					
+					//Add it..
+					sp.getAllNodes().add(spack);
+					
+					//Can't sync him..
+					//.. will disconnect when trying to send him a null object.. ugly..
+					break;
+				}
 				
 				//Add it..
 				sp.getAllNodes().add(spack);
@@ -726,17 +755,17 @@ public class ConsensusNet extends ConsensusProcessor {
 	
 		MinimaLogger.log("GREETING mytip:"+maintip+" mycascade:"+maincascade+" greetingtip:"+introtip+" greetingcascade:"+introcascade);
 		
-		//Simple check first..
-		boolean tipgood  = maintip.isLessEqual(introtip) && maintip.isMoreEqual(introcascade);
-		boolean cascgood = maincascade.isLessEqual(introtip) && maincascade.isMoreEqual(introcascade);
+//		//Simple check first..
+//		boolean tipgood  = maintip.isLessEqual(introtip) && maintip.isMoreEqual(introcascade);
+//		boolean cascgood = maincascade.isLessEqual(introtip) && maincascade.isMoreEqual(introcascade);
 		
 		boolean found        = false;
 		MiniNumber crossover = MiniNumber.MINUSONE;
 		
-		//No chance of a crossover..
-		if(!tipgood && !cascgood) {
-			return crossover;	
-		}
+//		//No chance of a crossover..
+//		if(!tipgood && !cascgood) {
+//			return crossover;	
+//		}
 		
 		//Cycle..
 		for(BlockTreeNode block : chain) {

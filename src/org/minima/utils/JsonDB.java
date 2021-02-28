@@ -1,58 +1,56 @@
-package org.minima.system.network.sshtunnel;
+package org.minima.utils;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 
 import org.minima.objects.base.MiniString;
-import org.minima.utils.MinimaLogger;
-import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.json.parser.JSONParser;
 import org.minima.utils.json.parser.ParseException;
 
-public class TunnelDB implements Streamable{
+public class JsonDB implements Streamable{
 
 	/**
 	 * Simple parameter JSON
 	 */
-	JSONObject mParams;
+	private JSONObject mParams;
 	
-	
-	public TunnelDB() {
+	public JsonDB() {
 		mParams = new JSONObject();
 	}
 
-	public JSONObject getParams() {
+	public JSONObject getAllData() {
 		return mParams;
 	}
 
+	public boolean exists(String zName) {
+		return mParams.get(zName) != null;
+	}
+	
+	public String getString(String zName) {
+		return (String)mParams.get(zName);
+	}
+	
+	public void setString(String zName, String zData) {
+		mParams.put(zName, zData);
+	}
+	
 	public void clean() {
 		mParams = new JSONObject();
 	}
 	
 	public void saveDB(File zFile) {
-		//Save the MaximaDB
 		try {
-			FileOutputStream fos = new FileOutputStream(zFile);
-			DataOutputStream dos = new DataOutputStream(fos);
-			
-			writeDataStream(dos);
-			dos.flush();
-			
-			dos.close();
-			fos.close();
-			
-		}catch(Exception exc) {
-			MinimaLogger.log(exc);
+			MiniFile.writeObjectToFile(zFile, this);
+		} catch (IOException e) {
+			MinimaLogger.log(e);
 		}
 	}
 	
 	public void loadDB(File zFile) {
-		//Get the MaximaDB
 		try {
 			FileInputStream fis = new FileInputStream(zFile);
 			DataInputStream dis = new DataInputStream(fis);
@@ -61,7 +59,6 @@ public class TunnelDB implements Streamable{
 			
 			dis.close();
 			fis.close();
-			
 		}catch(Exception exc) {
 			MinimaLogger.log(exc);
 		}
@@ -84,5 +81,5 @@ public class TunnelDB implements Streamable{
 			mParams = new JSONObject();
 		}
 	}
-	
+
 }
