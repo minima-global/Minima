@@ -23,15 +23,16 @@ public class CHECKSIG extends MinimaFunction {
 	
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
+		checkExactParamNumber(3);
 		
 		//Get the Pbkey
-		HEXValue pubkey = (HEXValue) getParameter(0).getValue(zContract);
+		HEXValue pubkey = zContract.getHEXParam(0, this);
 		
 		//get the data
-		HEXValue data   = (HEXValue) getParameter(1).getValue(zContract);
+		HEXValue data   = zContract.getHEXParam(1, this);
 		
 		//Get the signature
-		HEXValue sig    = (HEXValue) getParameter(2).getValue(zContract);
+		HEXValue sig    = zContract.getHEXParam(2, this);
 		
 		//Check it..
 		MiniData pubk = new MiniData(pubkey.getMiniData().getData());
@@ -41,12 +42,8 @@ public class CHECKSIG extends MinimaFunction {
 		checker.setPublicKey(pubk);
 		
 		//Check it..
-//		boolean ok = PubPrivKey.verify(leafkey, transhash, signature);
 		boolean ok = checker.verify(new MiniData(data.getRawData()), sig.getMiniData());
 		
-//		boolean ok = PubPrivKey.verify(pubk, new MiniData(data.getRawData()), sig.getMiniData());
-		
-		// TODO Auto-generated method stub
 		return new BooleanValue(ok);
 	}
 	

@@ -1,10 +1,13 @@
 package org.minima.kissvm.functions.maths;
 
+import java.util.BitSet;
+
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.functions.MinimaFunction;
 import org.minima.kissvm.values.BooleanValue;
 import org.minima.kissvm.values.Value;
+import org.minima.objects.base.MiniData;
 
 public class BITGET extends MinimaFunction {
 
@@ -20,26 +23,25 @@ public class BITGET extends MinimaFunction {
 	 */
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
+		checkExactParamNumber(2);
+		
 		//get the Input Data
-		byte[] data = getParameter(0).getValue(zContract).getRawData();
-		int datalen   = data.length;
+		byte[] data = zContract.getHEXParam(0, this).getRawData();
+		int totbits = (data.length * 8) - 1;
 		
 		//Get the desired Bit
-		int bit = getParameter(1).getValue(zContract).getNumber().getAsInt();
-		
-		//find the byte you need..bit
-		int reqbyte = (int)Math.floor(bit / 8);
-		if(reqbyte >= datalen) {
-			throw new ExecutionException("Overflow Bit set. Total Bytes "+datalen+". Requested "+reqbyte);
+		int bit = zContract.getNumberParam(1, this).getNumber().getAsInt();
+		if(bit>totbits) {
+			throw new ExecutionException("BitGet too large "+bit+" / "+totbits);
 		}
 		
-		//Which bit in the byte
-		int bitbyte = bit - (reqbyte * 8);  
+		//Create a BitSet object..
+		BitSet bits = BitSet.valueOf(data);
 		
-		//Is the bit set or not..
-		boolean isSet = (data[reqbyte] & (1 << bitbyte)) != 0;
+		//Now check the value..
+		boolean isSet = bits.get(bit);
 		
-		//return the New HEXValue
+		//return..
 		return new BooleanValue(isSet);
 	}
 	

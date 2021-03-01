@@ -1,22 +1,5 @@
 package org.minima.tests.database.mmr;
 
-import org.minima.database.mmr.MMRSet;
-
-import org.minima.database.mmr.MMRData;
-import org.minima.database.mmr.MMREntry;
-import org.minima.database.mmr.MMRProof;
-
-import org.minima.objects.Address;
-import org.minima.objects.Coin;
-import org.minima.objects.PubPrivKey;
-import org.minima.objects.StateVariable;
-import org.minima.objects.base.*;
-
-import org.minima.utils.json.JSONObject;
-import org.minima.utils.Crypto;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
@@ -28,6 +11,21 @@ import java.io.InputStream;
 import java.util.ArrayList;
 
 import org.junit.Test;
+import org.minima.database.mmr.MMRData;
+import org.minima.database.mmr.MMREntry;
+import org.minima.database.mmr.MMRProof;
+import org.minima.database.mmr.MMRSet;
+import org.minima.objects.Address;
+import org.minima.objects.Coin;
+import org.minima.objects.PubPrivKey;
+import org.minima.objects.StateVariable;
+import org.minima.objects.base.MMRSumNumber;
+import org.minima.objects.base.MiniByte;
+import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniInteger;
+import org.minima.objects.base.MiniNumber;
+import org.minima.utils.Crypto;
+import org.minima.utils.json.JSONObject;
 
 public class MMRSetTest {
 

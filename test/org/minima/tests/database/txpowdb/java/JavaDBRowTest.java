@@ -4,8 +4,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
-import org.junit.Test;
 
+import org.junit.Test;
 import org.minima.database.txpowdb.TxPOWDBRow;
 import org.minima.database.txpowdb.java.JavaDBRow;
 import org.minima.objects.TxPoW;

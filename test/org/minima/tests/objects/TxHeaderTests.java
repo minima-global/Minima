@@ -9,8 +9,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.junit.Test;
-import org.minima.objects.Transaction;
 import org.minima.objects.TxHeader;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniInteger;

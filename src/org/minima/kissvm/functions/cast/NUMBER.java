@@ -3,8 +3,12 @@ package org.minima.kissvm.functions.cast;
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.functions.MinimaFunction;
+import org.minima.kissvm.values.HEXValue;
 import org.minima.kissvm.values.NumberValue;
+import org.minima.kissvm.values.ScriptValue;
 import org.minima.kissvm.values.Value;
+import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniNumber;
 
 /**
  * Convert a HEXValue to a NUMBERVALUE
@@ -20,14 +24,30 @@ public class NUMBER extends MinimaFunction{
 	
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
+		checkExactParamNumber(1);
+		
 		//Get the Value..
-		Value hex = getParameter(0).getValue(zContract);
+		Value val = getParameter(0).getValue(zContract);
 		
-		//Create a Number Value
-		NumberValue num = new NumberValue(hex.getNumber());
+		if(val.getValueType() == Value.VALUE_BOOLEAN) {
+			if(val.isTrue()) {
+				return new NumberValue(1);
+			}else{
+				return new NumberValue(0);
+			}
 		
-		// TODO Auto-generated method stub
-		return num;
+		}else if(val.getValueType() == Value.VALUE_HEX) {
+			HEXValue nv = (HEXValue)val;
+			MiniData md1 = nv.getMiniData();
+			MiniNumber num = new MiniNumber(md1.getDataValue());
+			return new NumberValue(num);
+	
+		}else if(val.getValueType() == Value.VALUE_SCRIPT) {
+			ScriptValue nv = (ScriptValue)val;
+			return new HEXValue(nv.getMiniData().to0xString());
+		}
+	
+		return val;
 	}
 
 	@Override

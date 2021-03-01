@@ -1,18 +1,16 @@
 package org.minima.tests.database.txpowtree;
 
-import org.minima.objects.TxPoW;
-import org.minima.objects.base.MiniData;
-
-import org.minima.database.MinimaDB;
-import org.minima.database.txpowtree.BlockTreeNode;
-import org.minima.database.txpowtree.NodeAction;
-
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
+import org.minima.database.MinimaDB;
+import org.minima.database.txpowtree.BlockTreeNode;
+import org.minima.database.txpowtree.NodeAction;
+import org.minima.objects.TxPoW;
+import org.minima.objects.base.MiniData;
 
 public class NodeActionTests {
 

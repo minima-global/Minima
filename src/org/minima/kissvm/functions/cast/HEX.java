@@ -4,6 +4,8 @@ import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.functions.MinimaFunction;
 import org.minima.kissvm.values.HEXValue;
+import org.minima.kissvm.values.NumberValue;
+import org.minima.kissvm.values.ScriptValue;
 import org.minima.kissvm.values.Value;
 
 public class HEX extends MinimaFunction{
@@ -14,14 +16,34 @@ public class HEX extends MinimaFunction{
 	
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
+		checkExactParamNumber(1);
+		
 		//Get the Value..
 		Value val = getParameter(0).getValue(zContract);
 		
-		//Create a Number Value
-		HEXValue hex = new HEXValue(val.getMiniData());
+		if(val.getValueType() == Value.VALUE_BOOLEAN) {
+			if(val.isTrue()) {
+				return new HEXValue("0x01");
+			}else{
+				return new HEXValue("0x00");
+			}
 		
-		// TODO Auto-generated method stub
-		return hex;
+		}else if(val.getValueType() == Value.VALUE_NUMBER) {
+			NumberValue nv = (NumberValue)val;
+			
+			try {
+				HEXValue hex = new HEXValue(nv.getNumber());
+				return hex;
+			}catch(NumberFormatException nexc) {
+				throw new ExecutionException(nexc.toString());
+			}
+	
+		}else if(val.getValueType() == Value.VALUE_SCRIPT) {
+			ScriptValue nv = (ScriptValue)val;
+			return new HEXValue(nv.getMiniData().to0xString());
+		}
+		
+		return val;
 	}
 
 	@Override

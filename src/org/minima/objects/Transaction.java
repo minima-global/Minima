@@ -198,6 +198,19 @@ public class Transaction implements Streamable {
 			}
 		}
 		
+		//Check that all the inputs and outputs are valid Minima Values
+		for(Coin cc : mInputs) {
+			if(!cc.getAmount().isValidMinimaValue()) {
+				return false;
+			}
+		}
+		
+		for(Coin cc : mOutputs) {
+			if(!cc.getAmount().isValidMinimaValue()) {
+				return false;
+			}
+		}
+			
 		return true;
 	}
 	
