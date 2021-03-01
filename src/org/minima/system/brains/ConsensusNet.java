@@ -86,12 +86,12 @@ public class ConsensusNet extends ConsensusProcessor {
 	}
 	
 	public void setInitialSyncComplete(boolean zPostNotify) {
-		if(!mInitialSync) {
+		//if(!mInitialSync) {
 			mInitialSync = true;
 			if(zPostNotify) {
 				getConsensusHandler().updateListeners(new Message(ConsensusHandler.CONSENSUS_NOTIFY_INITIALSYNC));	
 			}
-		}
+		//}
 	}
 	
 	private void PostNetClientMessage(Message zOrigMessage, Message zMessage) {
@@ -232,6 +232,19 @@ public class ConsensusNet extends ConsensusProcessor {
 			
 			ArrayList<TxPoW> full_list = new ArrayList<>();
 			while(!top.getBlockNumber().isEqual(cross)) {
+				//Get the TxPow..
+				TxPoW txp = top.getTxPow();
+				
+				//Check is a full block..
+				if(!txp.hasBody()) {
+					MinimaLogger.log("CANCEL RESYNC : Attempting to sync user with NoBody Blocks.. "+txp.getBlockNumber());
+					
+					//Disconnect him..
+					client.PostMessage(new Message(MinimaClient.NETCLIENT_SHUTDOWN));
+					
+					return;
+				}
+				
 				//Add this to the list
 				full_list.add(0,top.getTxPow());
 				
@@ -242,19 +255,23 @@ public class ConsensusNet extends ConsensusProcessor {
 			//Now cycle through from the bottom to the top..
 			TxPoWList currentblocks = new TxPoWList();
 			for(TxPoW blk : full_list) {
-				//ONLY do this if you have the FULL BLOCKS
-				if(!blk.hasBody()) {
-					MinimaLogger.log("CANCEL RESYNC : Attempting to sync user with Assume Valid Blocks..");
-					return;
-				}
-				
 				//Add all the TXNS..
 				ArrayList<MiniData> txns = blk.getBlockTransactions();
 				for(MiniData txn : txns) {
 					TxPoW txpow = getMainDB().getTxPOW(txn);
-					if(txpow!=null) {
-						currentblocks.addTxPow(txpow);
+					
+					//Check is a full block..
+					if(txpow==null) {
+						MinimaLogger.log("CANCEL RESYNC : Missing TxPoW in "+blk.getBlockNumber());
+						
+						//Disconnect him..
+						client.PostMessage(new Message(MinimaClient.NETCLIENT_SHUTDOWN));
+						
+						return;
 					}
+					
+					//Add to the list
+					currentblocks.addTxPow(txpow);
 				}
 				
 				//Add this TxPoW and the Txns in it..

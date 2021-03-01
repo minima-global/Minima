@@ -356,7 +356,6 @@ public class TxPoW implements Streamable {
 			if(_mTxPOWID.isLess(getTxnDifficulty()) && !getTransaction().isEmpty()) {
 				_mIsTxnPOW = true;
 			}
-			
 			//Must be at least the minimum..
 			if(getTxnDifficulty().isMore(TxPoWMiner.BASE_TXN)) {
 				_mIsTxnPOW = false;

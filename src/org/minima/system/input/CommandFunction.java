@@ -50,6 +50,7 @@ import org.minima.system.input.functions.tutorial;
 import org.minima.system.input.functions.txpowinfo;
 import org.minima.system.input.functions.txpowsearch;
 import org.minima.system.input.functions.unkeepcoin;
+import org.minima.system.input.functions.verify;
 import org.minima.system.input.functions.weblink;
 import org.minima.system.input.functions.transfer.exportcoin;
 import org.minima.system.input.functions.transfer.exportkey;
@@ -92,7 +93,7 @@ public abstract class CommandFunction {
 			new txncreate(), new txndelete(), new txninput(), new txnlist(), new txnauto(),
 			new txnstate(), new txnexport(), new txnimport(), new txnscript(), new txnreminput(), new txnremoutput(),
 			new txnoutput(), new txnpost(), new txnsign(), new txnvalidate(),new txnsignauto(),
-			new extrascript(), new sign(), new txpowsearch(), new flushmempool(), new random(), new check()
+			new extrascript(), new sign(), new verify(), new txpowsearch(), new flushmempool(), new random(), new check()
 		};  
 	
 	/**

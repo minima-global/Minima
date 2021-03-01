@@ -101,10 +101,10 @@ public class Main extends MessageProcessor {
 		System.setProperty("java.io.tmpdir",BackupManager.getTempFolder().getAbsolutePath());
 		
 		//The guts..
-		mInput 		= new InputHandler(this);
-		mNetwork 	= new NetworkHandler(this, zHost, zPort);
+		mInput 		= new InputHandler();
+		mNetwork 	= new NetworkHandler(zHost, zPort);
 		mTXMiner 	= new TxPoWMiner();
-		mConsensus  = new ConsensusHandler(this);
+		mConsensus  = new ConsensusHandler();
 		mSendManager = new SendManager();
 		
 		//Are we the genesis
