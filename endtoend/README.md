@@ -6,7 +6,7 @@ Warning - currently only works on Linux and Mac
 Quick Start
    cd minima_root_dir
    docker network create minima-e2e-testnet
-   docker build -t minima:latest .
+   docker build -t minima:latest .   # OR on ARM: docker build -t minima:latest  -f Dockerfile.arm64v8 .
    cd end2end
    docker build -t minima-e2e . && docker run -v /var/run/docker.sock:/var/run/docker.sock --network minima-e2e-testnet minima-e2e
 
@@ -16,8 +16,9 @@ create manually a docker network minima-e2e-testnet:
 
 build minima docker image (or pull it) - default image used is minima:latest
    docker build -t minima:latest .
+#ARM: docker build -t minima:latest  -f Dockerfile.arm64v8 .
 
-build nodejs tests docker image:
+build nodejs tests docker image (same for ARM and x64):
    cd end2end
    docker build -t minima-e2e .
 
