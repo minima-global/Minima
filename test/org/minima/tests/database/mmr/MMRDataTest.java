@@ -1,20 +1,6 @@
 package org.minima.tests.database.mmr;
 
-import org.minima.database.mmr.MMRData;
-
-import org.minima.objects.Address;
-import org.minima.objects.Coin;
-import org.minima.objects.PubPrivKey;
-import org.minima.objects.StateVariable;
-import org.minima.objects.base.MiniByte;
-import org.minima.objects.base.MiniNumber;
-import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MMRSumNumber;
-import org.minima.utils.json.JSONObject;
-
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
@@ -23,10 +9,18 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-
 import java.util.ArrayList;
 
 import org.junit.Test;
+import org.minima.database.mmr.MMRData;
+import org.minima.objects.Address;
+import org.minima.objects.Coin;
+import org.minima.objects.PubPrivKey;
+import org.minima.objects.StateVariable;
+import org.minima.objects.base.MiniByte;
+import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniNumber;
+import org.minima.utils.json.JSONObject;
 
 public class MMRDataTest {
 
@@ -34,7 +28,7 @@ public class MMRDataTest {
     public void testWriteAndReadDataStream() {
         try {
             {
-                MMRData mmrd1 = new MMRData(new MiniData(), new MMRSumNumber(new MiniNumber(1234567890)));
+                MMRData mmrd1 = new MMRData(new MiniData(), new MiniNumber(new MiniNumber(1234567890)));
 
                 ByteArrayOutputStream bos = new ByteArrayOutputStream();
                 DataOutputStream dos = new DataOutputStream(bos);
@@ -44,7 +38,7 @@ public class MMRDataTest {
                 InputStream inputStream1 = new ByteArrayInputStream(bos.toByteArray());
                 DataInputStream dis1 = new DataInputStream(inputStream1);
 
-                MMRData mmrd2 = new MMRData(new MiniData(), new MMRSumNumber(new MiniNumber(1234567890)));
+                MMRData mmrd2 = new MMRData(new MiniData(), new MiniNumber(new MiniNumber(1234567890)));
                 mmrd2.readDataStream(dis1);
 
                 assertEquals("should be equal ", mmrd1.getFinalHash(), mmrd2.getFinalHash());
@@ -87,7 +81,7 @@ public class MMRDataTest {
                 InputStream inputStream1 = new ByteArrayInputStream(bos.toByteArray());
                 DataInputStream dis1 = new DataInputStream(inputStream1);
 
-                MMRData mmrd2 = new MMRData(new MiniData(), new MMRSumNumber(new MiniNumber(1234567890)));
+                MMRData mmrd2 = new MMRData(new MiniData(), new MiniNumber(new MiniNumber(1234567890)));
                 mmrd2.readDataStream(dis1);
 
                 assertEquals("should be equal ", mmrd1.getFinalHash(), mmrd2.getFinalHash());
@@ -130,7 +124,7 @@ public class MMRDataTest {
                 InputStream inputStream1 = new ByteArrayInputStream(bos.toByteArray());
                 DataInputStream dis1 = new DataInputStream(inputStream1);
 
-                MMRData mmrd2 = new MMRData(new MiniData(), new MMRSumNumber(new MiniNumber(1234567890)));
+                MMRData mmrd2 = new MMRData(new MiniData(), new MiniNumber(new MiniNumber(1234567890)));
                 mmrd2.readDataStream(dis1);
 
                 assertEquals("should be equal ", mmrd1.getFinalHash(), mmrd2.getFinalHash());
@@ -164,7 +158,7 @@ public class MMRDataTest {
     @Test
     public void testJSONConversion() {
         {
-            MMRData mmrd = new MMRData(new MiniData(), new MMRSumNumber(new MiniNumber(1234567890)));
+            MMRData mmrd = new MMRData(new MiniData(), new MiniNumber(new MiniNumber(1234567890)));
             JSONObject json = mmrd.toJSON();
             assertTrue("JSON object should contain hashonly key", json.containsKey("hashonly"));
             assertTrue("JSON object should contain value key", json.containsKey("value"));
@@ -217,7 +211,7 @@ public class MMRDataTest {
 
     @Test
     public void testToString() {
-        MMRData mmrd = new MMRData(new MiniData(), new MMRSumNumber(new MiniNumber(1234567890)));
+        MMRData mmrd = new MMRData(new MiniData(), new MiniNumber(new MiniNumber(1234567890)));
         String exp_s = mmrd.toJSON().toString();
         String obj_s = mmrd.toString();
         assertEquals("should be equal ", exp_s, obj_s);

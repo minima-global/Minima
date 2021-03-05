@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.util.Date;
 
 import org.minima.GlobalParams;
-import org.minima.objects.base.MMRSumNumber;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniInteger;
@@ -62,7 +61,7 @@ public class TxHeader implements Streamable {
 	/**
 	 * The Total Sum Of All coins in the system
 	 */
-	public MMRSumNumber mMMRTotal = MMRSumNumber.ZERO;
+	public MiniNumber mMMRTotal = MiniNumber.ZERO;
 	
 	/**
 	 * The HASH of the TxBody
@@ -224,7 +223,7 @@ public class TxHeader implements Streamable {
 		
 		//read in the MMR state..
 		mMMRRoot  = MiniData.ReadHashFromStream(zIn);
-		mMMRTotal = MMRSumNumber.ReadFromStream(zIn);
+		mMMRTotal = MiniNumber.ReadFromStream(zIn);
 		
 		//The TxBody Hash
 		mTxBodyHash = MiniData.ReadHashFromStream(zIn);

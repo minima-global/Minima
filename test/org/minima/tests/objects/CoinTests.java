@@ -1,9 +1,5 @@
 package org.minima.tests.objects;
 
-import org.minima.objects.Coin;
-import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniNumber;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -17,6 +13,9 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.junit.Test;
+import org.minima.objects.Coin;
+import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniNumber;
 
 public class CoinTests {
 

@@ -10,7 +10,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import org.minima.objects.base.MMRSumNumber;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniInteger;
@@ -212,11 +211,11 @@ public class TxPoW implements Streamable {
 		mHeader.mMMRRoot = zRoot;
 	}
 	
-	public MMRSumNumber getMMRTotal() {
+	public MiniNumber getMMRTotal() {
 		return mHeader.mMMRTotal;
 	}
 	
-	public void setMMRTotal(MMRSumNumber zTotal) {
+	public void setMMRTotal(MiniNumber zTotal) {
 		mHeader.mMMRTotal= zTotal;
 	}
 	

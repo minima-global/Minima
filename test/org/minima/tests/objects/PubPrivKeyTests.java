@@ -3,8 +3,8 @@ package org.minima.tests.objects;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import org.junit.Test;
 
+import org.junit.Test;
 import org.minima.objects.PubPrivKey;
 import org.minima.objects.base.MiniData;
 import org.minima.utils.json.JSONObject;

@@ -34,6 +34,8 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 	 */
 	public static final MathContext mMathContext = new MathContext(18, RoundingMode.DOWN);
 	
+	public static final int MAX_DECIMALS = 8;
+	
 	/**
 	 * The decimal precision of the significant digits.
 	 */
@@ -81,22 +83,40 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 	
 	public MiniNumber(int zNumber){
 		mNumber = new BigDecimal(zNumber,mMathContext);
+		checkDecimals();
 	}
 	
 	public MiniNumber(long zNumber){
 		mNumber = new BigDecimal(zNumber,mMathContext);
+		checkDecimals();
 	}
 
 	public MiniNumber(BigInteger zNumber){
 		mNumber = new BigDecimal(zNumber,mMathContext);
+		checkDecimals();
 	}
 	
 	public MiniNumber(BigDecimal zBigD){
 		mNumber = zBigD;
+		checkDecimals();
+	}
+	
+	public MiniNumber(MiniNumber zMiniNumber){
+		mNumber = zMiniNumber.getAsBigDecimal();
+		checkDecimals();
 	}
 	
 	public MiniNumber(String zNumber){
 		mNumber = new BigDecimal(zNumber,mMathContext);
+		checkDecimals();
+	}
+	
+	private void checkDecimals() {
+		mNumber.setScale(MAX_DECIMALS);
+	}
+	
+	public BigDecimal getNumber() {
+		return getAsBigDecimal();
 	}
 	
 	public BigDecimal getAsBigDecimal() {

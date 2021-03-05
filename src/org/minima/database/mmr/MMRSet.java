@@ -9,7 +9,6 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 
 import org.minima.objects.Coin;
-import org.minima.objects.base.MMRSumNumber;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniInteger;
@@ -486,7 +485,7 @@ public class MMRSet implements Streamable {
 			MiniData combined = Crypto.getInstance().hashObjects(sibling.getHashValue(), entry.getHashValue(), MMR_HASH_BITS);
 			
 			//Combine the Values..
-			MMRSumNumber sumvalue = entry.getData().getValueSum().add(sibling.getData().getValueSum());
+			MiniNumber sumvalue = entry.getData().getValueSum().add(sibling.getData().getValueSum());
 			
 			//The New MMRData
 			MMRData data = new MMRData(combined,sumvalue);
@@ -502,7 +501,7 @@ public class MMRSet implements Streamable {
 	 * Utility function when creating an MMRtree based on simple Hash values and not coins.. 
 	 */
 	public MMREntry addLeafNode(MiniData zData){
-		return addUnspentCoin(new MMRData(zData, MMRSumNumber.ZERO));
+		return addUnspentCoin(new MMRData(zData, MiniNumber.ZERO));
 	}
 	
 	/**
@@ -562,7 +561,7 @@ public class MMRSet implements Streamable {
 			}
 			
 			//Combine the Values..
-			MMRSumNumber sumvalue = entry.getData().getValueSum().add(sibling.getData().getValueSum());
+			MiniNumber sumvalue = entry.getData().getValueSum().add(sibling.getData().getValueSum());
 			
 			//CCreate a new data proof
 			MMRData data = new MMRData(combined,sumvalue);
@@ -626,7 +625,7 @@ public class MMRSet implements Streamable {
 		//Are there any proof chunks
 		ProofChunk chunk  = null;
 		MiniData phash    = null;
-		MMRSumNumber pval = null;
+		MiniNumber pval = null;
 		int pcount   = 0;
 		if(prooflen>0) {
 			chunk = zProof.getProofChunk(pcount++);
@@ -661,7 +660,7 @@ public class MMRSet implements Streamable {
 			}
 			
 			//Combine the Values..
-			MMRSumNumber sumvalue = entry.getData().getValueSum().add(sibling.getData().getValueSum());
+			MiniNumber sumvalue = entry.getData().getValueSum().add(sibling.getData().getValueSum());
 			
 			//Create the new MMR Data
 			MMRData data = new MMRData(combined,sumvalue);
@@ -844,7 +843,7 @@ public class MMRSet implements Streamable {
 		
 		//Is this is a Peak ? - if so, go no further..
 		boolean found = false;
-		MMRSumNumber peakvalue = null;
+		MiniNumber peakvalue = null;
 		for(MMREntry peak : peaks) {
 			if(proofpeak.isEqual(peak.getHashValue())) {
 				found     = true;
@@ -874,7 +873,7 @@ public class MMRSet implements Streamable {
 		//Check the SUMTREE - we've checked the HASH tree already..
 		int proofnum        = 0;
 		int prooflen        = zProof.getProofLen();
-		MMRSumNumber totval = zProof.getMMRData().getValueSum();
+		MiniNumber totval = zProof.getMMRData().getValueSum();
 		
 		if(!entry.isEmpty()) {
 			if(!totval.isEqual(entry.getData().getValueSum())) {
@@ -888,7 +887,7 @@ public class MMRSet implements Streamable {
 			
 			//Do we add our own..
 			ProofChunk chunk   = zProof.getProofChunk(proofnum++);
-			MMRSumNumber value = chunk.getValue();
+			MiniNumber value = chunk.getValue();
 			if(!sibling.isEmpty()) {
 				if(!value.isEqual(sibling.getData().getValueSum())) {
 					MinimaLogger.log("ERROR 2 MMR Sum Tree different "+value+" "+sibling.getData().getValueSum());

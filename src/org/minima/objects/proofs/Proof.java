@@ -7,7 +7,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import org.minima.objects.base.MMRSumNumber;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
@@ -22,10 +21,10 @@ public class Proof implements Streamable {
 
 	public class ProofChunk {
 		MiniData mHash;
-		MMRSumNumber mValue;
+		MiniNumber mValue;
 		MiniByte mLeftRight;
 		
-		public ProofChunk(MiniByte zLeft, MiniData zHash, MMRSumNumber zValue) {
+		public ProofChunk(MiniByte zLeft, MiniData zHash, MiniNumber zValue) {
 			mLeftRight = zLeft;
 			mHash = zHash;
 			mValue = zValue;
@@ -39,7 +38,7 @@ public class Proof implements Streamable {
 			return mHash;
 		}
 		
-		public MMRSumNumber getValue() {
+		public MiniNumber getValue() {
 			return mValue;
 		}
 	}
@@ -109,10 +108,10 @@ public class Proof implements Streamable {
 	}
 	
 	public void addProofChunk(MiniByte zLeft, MiniData zHash) {
-		addProofChunk(zLeft, zHash, MMRSumNumber.ZERO);
+		addProofChunk(zLeft, zHash, MiniNumber.ZERO);
 	}
 	
-	public void addProofChunk(MiniByte zLeft, MiniData zHash, MMRSumNumber zValue) {
+	public void addProofChunk(MiniByte zLeft, MiniData zHash, MiniNumber zValue) {
 		mProofChain.add(new ProofChunk(zLeft, zHash, zValue));
 	}
 	
@@ -246,7 +245,7 @@ public class Proof implements Streamable {
 		for(int i=0;i<len;i++) {
 			MiniByte left    = MiniByte.ReadFromStream(zIn);
 			MiniData hash    = MiniData.ReadHashFromStream(zIn);
-			MMRSumNumber val = MMRSumNumber.ReadFromStream(zIn);
+			MiniNumber val   = MiniNumber.ReadFromStream(zIn);
 			mProofChain.add(new ProofChunk(left, hash, val));
 		}
 		

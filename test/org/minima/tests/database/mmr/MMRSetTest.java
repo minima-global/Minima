@@ -1,22 +1,5 @@
 package org.minima.tests.database.mmr;
 
-import org.minima.database.mmr.MMRSet;
-
-import org.minima.database.mmr.MMRData;
-import org.minima.database.mmr.MMREntry;
-import org.minima.database.mmr.MMRProof;
-
-import org.minima.objects.Address;
-import org.minima.objects.Coin;
-import org.minima.objects.PubPrivKey;
-import org.minima.objects.StateVariable;
-import org.minima.objects.base.*;
-
-import org.minima.utils.json.JSONObject;
-import org.minima.utils.Crypto;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
@@ -28,6 +11,20 @@ import java.io.InputStream;
 import java.util.ArrayList;
 
 import org.junit.Test;
+import org.minima.database.mmr.MMRData;
+import org.minima.database.mmr.MMREntry;
+import org.minima.database.mmr.MMRProof;
+import org.minima.database.mmr.MMRSet;
+import org.minima.objects.Address;
+import org.minima.objects.Coin;
+import org.minima.objects.PubPrivKey;
+import org.minima.objects.StateVariable;
+import org.minima.objects.base.MiniByte;
+import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniInteger;
+import org.minima.objects.base.MiniNumber;
+import org.minima.utils.Crypto;
+import org.minima.utils.json.JSONObject;
 
 public class MMRSetTest {
 
@@ -94,11 +91,11 @@ public class MMRSetTest {
         try {
             MMRSet mmrs1 = new MMRSet();
 
-            MMRProof mmrp1 = new MMRProof(new MiniInteger(1234567890), new MMRData(new MiniData("0x01"), new MMRSumNumber(new MiniNumber(1234567890))), new MiniNumber(987654321));
+            MMRProof mmrp1 = new MMRProof(new MiniInteger(1234567890), new MMRData(new MiniData("0x01"), new MiniNumber(new MiniNumber(1234567890))), new MiniNumber(987654321));
             mmrs1.addExternalUnspentCoin(mmrp1);
-            MMRProof mmrp2 = new MMRProof(new MiniInteger(123456789), new MMRData(new MiniData("0x03"), new MMRSumNumber(new MiniNumber(123456789))), new MiniNumber(98765432));
+            MMRProof mmrp2 = new MMRProof(new MiniInteger(123456789), new MMRData(new MiniData("0x03"), new MiniNumber(new MiniNumber(123456789))), new MiniNumber(98765432));
             mmrs1.addExternalUnspentCoin(mmrp2);
-            //MMRProof mmrp3 = new MMRProof(new MiniInteger(1234567891), new MMRData(new MiniData("0x02"), new MMRSumNumber(new MiniNumber(1234567891))), new MiniNumber(987654322));
+            //MMRProof mmrp3 = new MMRProof(new MiniInteger(1234567891), new MMRData(new MiniData("0x02"), new MiniNumber(new MiniNumber(1234567891))), new MiniNumber(987654322));
             //mmrs1.addExternalUnspentCoin(mmrp3);
 
             MMRSet mmrs2 = new MMRSet(mmrs1);
@@ -124,7 +121,7 @@ public class MMRSetTest {
         try {
             MMRSet mmrs1 = new MMRSet();
 
-            MMRData mmrd1 = new MMRData(new MiniData(), new MMRSumNumber(new MiniNumber(1234567890)));
+            MMRData mmrd1 = new MMRData(new MiniData(), new MiniNumber(new MiniNumber(1234567890)));
 
             PubPrivKey pk = new PubPrivKey(512);
             String script = "RETURN SIGNEDBY ( " + pk.getPublicKey() + " )";
@@ -138,9 +135,9 @@ public class MMRSetTest {
             mmrs1.addUnspentCoin(mmrd1);
             mmrs1.addUnspentCoin(mmrd2);
 
-            MMRProof mmrp1 = new MMRProof(new MiniInteger(1234567890), new MMRData(new MiniData("0x01"), new MMRSumNumber(new MiniNumber(1234567890))), new MiniNumber(987654321));
+            MMRProof mmrp1 = new MMRProof(new MiniInteger(1234567890), new MMRData(new MiniData("0x01"), new MiniNumber(new MiniNumber(1234567890))), new MiniNumber(987654321));
             mmrs1.addExternalUnspentCoin(mmrp1);
-            MMRProof mmrp2 = new MMRProof(new MiniInteger(123456789), new MMRData(new MiniData("0x03"), new MMRSumNumber(new MiniNumber(123456789))), new MiniNumber(98765432));
+            MMRProof mmrp2 = new MMRProof(new MiniInteger(123456789), new MMRData(new MiniData("0x03"), new MiniNumber(new MiniNumber(123456789))), new MiniNumber(98765432));
             mmrs1.addExternalUnspentCoin(mmrp2);
 
             MMRSet mmrs2 = new MMRSet(mmrs1);
@@ -207,7 +204,7 @@ public class MMRSetTest {
         assertTrue("Genesis MMR unique element is at row 0", e0.getRow() == 0);
         assertTrue("MMR highest peak is at level 0", base.getMMRPeaks().get(0).getRow() == 0);
         //assertTrue("MMR max row is at level 0", base.getMaxRow() == 0);
-        assertTrue("MGenesis MR root coin total is 0", base.getMMRRoot().getValueSum().isEqual(new MMRSumNumber(new MiniNumber(0))));
+        assertTrue("MGenesis MR root coin total is 0", base.getMMRRoot().getValueSum().isEqual(new MiniNumber(new MiniNumber(0))));
         // Print MMR tree: 0=root
 
         // create one node
@@ -223,14 +220,14 @@ public class MMRSetTest {
         MiniData hash_0a = Crypto.getInstance().hashObjects(gendataHash, hash_a, 512); // MMRSet.MMR_HASH_BITS);
         MiniData hash_0ab = Crypto.getInstance().hashObjects(hash_0a, hash_b, 512); // MMRSet.MMR_HASH_BITS);
         
-        MMRSumNumber sumNum = new MMRSumNumber(new MiniNumber("25")); // 0+25
+        MiniNumber sumNum = new MiniNumber(new MiniNumber("25")); // 0+25
         base.addUnspentCoin(data_a);
         assertTrue("MMR set has two entries after adding one node.", base.mEntryNumber.isEqual(new MiniInteger(2)));
         assertTrue("MMR peaks count verification.", base.getMMRPeaks() != null && base.getMMRPeaks().size() == 1);
         assertTrue("MMR peak hash is not equal to previous peak hash.", base.getMMRPeaks() != null && !base.getMMRPeaks().get(0).getHashValue().isEqual(gendataHash));
         assertTrue("MMR peak hash is not equal to new node hash.", base.getMMRPeaks() != null && !base.getMMRPeaks().get(0).getHashValue().isEqual(hash_a));
         assertTrue("MMR peak hash is equal to constructed hash.", base.getMMRPeaks() != null && base.getMMRPeaks().get(0).getHashValue().isEqual(hash_0a));
-        assertTrue("MMR peak hash is not equal to zero.", base.getMMRPeaks() != null && !base.getMMRPeaks().get(0).getData().getValueSum().isEqual(new MMRSumNumber(new MiniNumber("0"))));
+        assertTrue("MMR peak hash is not equal to zero.", base.getMMRPeaks() != null && !base.getMMRPeaks().get(0).getData().getValueSum().isEqual(new MiniNumber(new MiniNumber("0"))));
         assertTrue("MMR peak hash is equal to sum of child node values.", base.getMMRPeaks() != null && base.getMMRPeaks().get(0).getData().getValueSum().isEqual(sumNum));
         assertTrue("MMR highest peak is at level 1", base.getMMRPeaks().get(0).getRow() == 1);
         assertTrue("MMR highest peak is at level 1", base.getMMRPeaks().get(0).getRow() == 1); assertTrue("MMR root coin total is 25", base.getMMRRoot().getValueSum().isEqual(sumNum));
@@ -248,7 +245,7 @@ public class MMRSetTest {
         assertTrue("MMR highest peak is at level 1", base.getMMRPeaks().get(0).getRow() == 1);
         //assertTrue("MMR max row is at level 1", base.getMaxRow() == 1);
         assertTrue("MMR root hash is equal to hash of two peaks", base.getMMRRoot().getFinalHash().isEqual(hash_0ab));
-        assertTrue("MMR root coin total is 50", base.getMMRRoot().getValueSum().isEqual(new MMRSumNumber(new MiniNumber(50))));
+        assertTrue("MMR root coin total is 50", base.getMMRRoot().getValueSum().isEqual(new MiniNumber(new MiniNumber(50))));
         //                    (4=root)
         //                  2
         // Print MMR tree: 0 1  3 (MMR canonical entries numbering: minima leaf nodes numbering would be: 0 1 2)
@@ -266,7 +263,7 @@ public class MMRSetTest {
         assertTrue("MMR highest peak is at level 2", base.getMMRPeaks().get(0).getRow() == 2);
         assertTrue("MMR peak hash is equal to constructed hash 0abc.", base.getMMRPeaks() != null && base.getMMRPeaks().get(0).getHashValue().isEqual(hash_0abc));
         assertTrue("MMR root hash is equal to unique peak hash", base.getMMRRoot().getFinalHash().isEqual(hash_0abc));
-        assertTrue("MMR root coin total is 75", base.getMMRRoot().getValueSum().isEqual(new MMRSumNumber(new MiniNumber(75))));
+        assertTrue("MMR root coin total is 75", base.getMMRRoot().getValueSum().isEqual(new MiniNumber(new MiniNumber(75))));
         //                    (6=root)
         //                  2    5 
         // Print MMR tree: 0 1  3 4 (MMR canonical entries numbering: minima leaf nodes numbering would be: 0 1 2)
@@ -285,7 +282,7 @@ public class MMRSetTest {
         assertTrue("MMR second peak hash is equal to hash d.", base.getMMRPeaks() != null && base.getMMRPeaks().get(1).getHashValue().isEqual(hash_d));
         assertTrue("MMR second peak row is lower than first peak row", base.getMMRPeaks().get(1).getRow() < base.getMMRPeaks().get(0).getRow());
         assertTrue("MMR root hash is equal to hash of two peaks", base.getMMRRoot().getFinalHash().isEqual(hash_0abcd));
-        assertTrue("MMR root coin total is 100", base.getMMRRoot().getValueSum().isEqual(new MMRSumNumber(new MiniNumber(100))));
+        assertTrue("MMR root coin total is 100", base.getMMRRoot().getValueSum().isEqual(new MiniNumber(new MiniNumber(100))));
         //                    (6=root)
         //                  2    5 
         // Print MMR tree: 0 1  3 4 7 (MMR canonical entries numbering: minima leaf nodes numbering would be: 0 1 2)
@@ -308,6 +305,6 @@ public class MMRSetTest {
         assertTrue("MMR second peak hash is equal to hash d.", base.getMMRPeaks() != null && base.getMMRPeaks().get(1).getHashValue().isEqual(hash_d));
         assertTrue("MMR second peak row is lower than first peak row", base.getMMRPeaks().get(1).getRow() < base.getMMRPeaks().get(0).getRow());
         assertTrue("MMR root hash is equal to hash of two peaks (recomputed)", base.getMMRRoot().getFinalHash().isEqual(hash_0a_spent_bcd));
-        assertTrue("MMR root coin total is 75", base.getMMRRoot().getValueSum().isEqual(new MMRSumNumber(new MiniNumber(75))));
+        assertTrue("MMR root coin total is 75", base.getMMRRoot().getValueSum().isEqual(new MiniNumber(new MiniNumber(75))));
     }
 }
