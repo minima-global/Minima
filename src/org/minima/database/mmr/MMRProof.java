@@ -35,7 +35,7 @@ public class MMRProof extends Proof {
 		mData        = zInitialData;
 		mBlockTime   = zBlockTime;
 		
-		setData(mData.getFinalHash());
+		setData(mData.getFinalHash(), mData.getValueSum());
 	}
 	
 	public MiniNumber getBlockTime() {

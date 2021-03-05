@@ -44,7 +44,8 @@ public class Proof implements Streamable {
 	}
 	
 	//The data you are trying to prove..
-	protected MiniData mData;
+	protected MiniData 	mData;
+	MiniNumber 			mValue = MiniNumber.ZERO;
 	
 	//The Merkle Branch that when applied to the data gives the final proof;
 	protected ArrayList<ProofChunk> mProofChain;
@@ -62,6 +63,11 @@ public class Proof implements Streamable {
 
 	public void setData(MiniData zData) {
 		mData = zData;
+	}
+	
+	public void setData(MiniData zData, MiniNumber zValue) {
+		mData  = zData;
+		mValue = zValue;
 	}
 	
 	public MiniData getData() {
@@ -178,20 +184,23 @@ public class Proof implements Streamable {
 		}
 		
 		//Get the Final Hash of the Data
-		MiniData current = mData;
+		MiniData   currentdata  = mData;
+		MiniNumber currentvalue = mValue;
 		
 		int len = getProofLen();
 		for(int i=0;i<len;i++) {
 			ProofChunk chunk = mProofChain.get(i);
 			
 			if(chunk.getLeft().isTrue()) {
-				current = Crypto.getInstance().hashObjects(chunk.getHash(), current, HASH_BITS);
+				currentdata = Crypto.getInstance().hashAllObjects(HASH_BITS, chunk.getHash(), currentdata);
 			}else {
-				current = Crypto.getInstance().hashObjects(current, chunk.getHash(), HASH_BITS);
+				currentdata = Crypto.getInstance().hashAllObjects(HASH_BITS, currentdata, chunk.getHash());
 			}
+			
+			currentvalue = currentvalue.add(chunk.getValue());
 		}
 		
-		return current;
+		return currentdata;
 	}
 
 	public JSONObject toJSON() {

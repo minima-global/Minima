@@ -814,7 +814,7 @@ public class MMRSet implements Streamable {
 			
 			//What to follow..
 //			proof.setData(keeper.getHashValue(), keeper.getData().getValueSum());
-			proof.setData(keeper.getHashValue());
+			proof.setData(keeper.getHashValue(), keeper.getData().getValueSum());
 			currentpeak = proof.getFinalHash();
 			keeper      = null;
 		}
