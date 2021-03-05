@@ -112,7 +112,11 @@ public class Proof implements Streamable {
 	}
 	
 	public void addProofChunk(MiniByte zLeft, MiniData zHash, MiniNumber zValue) {
-		mProofChain.add(new ProofChunk(zLeft, zHash, zValue));
+		addProofChunk(new ProofChunk(zLeft, zHash, zValue));
+	}
+	
+	public void addProofChunk(ProofChunk zChunk) {
+		mProofChain.add(zChunk);
 	}
 	
 	public int getProofLen() {
