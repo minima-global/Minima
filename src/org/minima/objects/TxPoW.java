@@ -184,7 +184,7 @@ public class TxPoW implements Streamable {
 	}
 	
 	public void setTimeMilli(MiniNumber zMilli) {
-		mHeader.mTimeSecs = zMilli.divRoundDown(MiniNumber.THOUSAND);
+		mHeader.mTimeSecs = zMilli.div(MiniNumber.THOUSAND).floor();
 	}
 	
 	public MiniNumber getTimeMilli() {

@@ -112,7 +112,7 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 	}
 	
 	private void checkDecimals() {
-		mNumber.setScale(MAX_DECIMALS);
+		mNumber.setScale(MAX_DECIMALS, RoundingMode.DOWN);
 	}
 	
 	public BigDecimal getNumber() {
@@ -151,9 +151,10 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 		return new MiniNumber( mNumber.divide(zNumber.getAsBigDecimal(), mMathContext) );
 	}
 	
-	public MiniNumber divRoundDown(MiniNumber zNumber) {
-		return new MiniNumber( mNumber.divide(zNumber.getAsBigDecimal(), RoundingMode.DOWN) );
-	}
+//	public MiniNumber divRoundDown(MiniNumber zNumber) {
+//		return div(zNumber).floor(); 
+////		return new MiniNumber( mNumber.divide(zNumber.getAsBigDecimal(), RoundingMode.DOWN) );
+//	}
 	
 	public MiniNumber mult(MiniNumber zNumber) {
 		return new MiniNumber( mNumber.multiply(zNumber.getAsBigDecimal(),mMathContext) );
