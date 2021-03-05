@@ -869,13 +869,13 @@ public class MMRSet implements Streamable {
 	public boolean checkProof(MMRProof zProof) {
 		//MUST have data to be checked
 		if(zProof.getMMRData().isHashOnly()) {
-//			MinimaLogger.log("Invalid PROOF check HASHONLY! : "+zProof);
+			MinimaLogger.log("Invalid PROOF check HASHONLY! : "+zProof);
 			return false;
 		}
 		
 		//Check is not spent.. 
 		if(zProof.getMMRData().isSpent()) {
-//			MinimaLogger.log("Invalid PROOF is SPENT! : "+zProof);
+			MinimaLogger.log("Invalid PROOF is SPENT! : "+zProof);
 			return false;
 		}
 		
@@ -884,7 +884,7 @@ public class MMRSet implements Streamable {
 		
 		//The proof is it too old.. we can't check it. It's invalid.
 		if(proofset == null) {
-//			MinimaLogger.log("ERROR Proof too Old "+zProof);
+			MinimaLogger.log("ERROR Proof too Old "+zProof);
 			return false;
 		}
 		
@@ -907,7 +907,7 @@ public class MMRSet implements Streamable {
 		
 		//Was it one of the peaks ?
 		if(!found) {
-//			MinimaLogger.log("ERROR Proof No Peak Found "+zProof);
+			MinimaLogger.log("ERROR Proof No Peak Found "+zProof);
 			return false;
 		}
 		
@@ -915,10 +915,18 @@ public class MMRSet implements Streamable {
 		MMREntry entry = getEntry(0, zProof.getEntryNumber(), zProof.getBlockTime().increment());
 		
 		//Is it there ?
-		if(!entry.isEmpty() && !entry.getData().isHashOnly()) {
+		if(!entry.isEmpty()) {
+			
+			//WE MUST KNOW.. this should never happen..
+			if(entry.getData().isHashOnly()) {
+				//CANNOT BE SURE!.. say NO..
+				MinimaLogger.log("ERROR Proof MisMatch.. History is Hash ONLY!..  "+zProof);
+				return false;
+			}
+			
 			//Get the DATA - could be the original UNSPENT or the SPENT
 			if(entry.getData().isSpent()) {
-//				MinimaLogger.log("ERROR Proof Spent! "+zProof);
+				MinimaLogger.log("ERROR Proof Spent! "+zProof);
 				return false;
 			}
 		}
