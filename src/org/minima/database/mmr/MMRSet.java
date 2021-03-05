@@ -1203,7 +1203,7 @@ public class MMRSet implements Streamable {
 //		MiniData combined = Crypto.getInstance().hashAllObjects( MMR_HASH_BITS,
 //				zLeftChild.getHashValue(),zRightChild.getHashValue(),sumvalue);
 		MiniData combined = Crypto.getInstance().hashAllObjects( MMR_HASH_BITS,
-				zLeftChild.getHashValue(),zRightChild.getHashValue());
+				zLeftChild.getHashValue(),zRightChild.getHashValue(),sumvalue);
 		
 		//Create a new data proof
 		return new MMRData(combined,sumvalue);
@@ -1309,7 +1309,7 @@ public static void main(String[] zARgs) {
 			
 			//Get the root of the tree
 			MiniData root = testset.getMMRRoot().getFinalHash();
-			System.out.println("ROOT @ Testsize:"+testsize+" peaks:"+testset.getMMRPeaks().size()+" "+root);
+			System.out.println("ROOT @ Testsize:"+testsize+" peaks:"+testset.getMMRPeaks().size()+" "+testset.getMMRRoot().getValueSum()+" "+root);
 			
 			//Now check all the proofs point to that
 			for(int nodes=0;nodes<testsize;nodes++) {
