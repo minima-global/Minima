@@ -10,7 +10,6 @@ import java.math.BigInteger;
 import org.junit.Test;
 import org.minima.database.txpowtree.BlockTreeNode;
 import org.minima.objects.TxPoW;
-import org.minima.objects.base.MiniInteger;
 import org.minima.objects.base.MiniNumber;
 
 public class BlockTreeNodeTests {
@@ -114,19 +113,19 @@ public class BlockTreeNodeTests {
             new TxPoW()
         };
         for (int i = 0; i < txps.length; i++) {
-            txps[i].setNonce(new MiniInteger(10 + i));
+            txps[i].setNonce(new MiniNumber(10 + i));
             txps[i].calculateTXPOWID();
         }
 
         TxPoW utxp = new TxPoW();
-        utxp.setNonce(new MiniInteger(123));
+        utxp.setNonce(new MiniNumber(123));
         utxp.calculateTXPOWID();
 
         TxPoW txp = new TxPoW();
         for (int i = 0; i < txps.length; i++) {
             txp.addBlockTxPOW(txps[i]);
         }
-        txp.setNonce(new MiniInteger(12345));
+        txp.setNonce(new MiniNumber(12345));
         txp.calculateTXPOWID();
         BlockTreeNode btn = new BlockTreeNode(txp);
 

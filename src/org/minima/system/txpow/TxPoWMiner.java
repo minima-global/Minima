@@ -2,7 +2,6 @@ package org.minima.system.txpow;
 
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniInteger;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
 import org.minima.system.brains.ConsensusHandler;
@@ -58,7 +57,7 @@ public class TxPoWMiner extends MessageProcessor {
 			txpow.setHeaderBodyHash();
 			
 			//The Start Nonce..
-			MiniInteger nonce = new MiniInteger(0);
+			MiniNumber nonce = new MiniNumber(0);
 			
 			//And now start hashing.. 
 			MiniData hash = null;

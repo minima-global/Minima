@@ -12,7 +12,6 @@ import java.util.ArrayList;
 
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniInteger;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.txpow.TxPoWMiner;
 import org.minima.utils.Crypto;
@@ -86,11 +85,11 @@ public class TxPoW implements Streamable {
 		mBody = null;
 	}
 	
-	public void setNonce(MiniInteger zNonce) {
+	public void setNonce(MiniNumber zNonce) {
 		mHeader.mNonce = zNonce;
 	}
 	
-	public MiniInteger getNonce() {
+	public MiniNumber getNonce() {
 		return mHeader.mNonce;
 	}
 	

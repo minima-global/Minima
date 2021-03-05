@@ -8,7 +8,6 @@ import java.util.Date;
 import org.minima.GlobalParams;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniInteger;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.Crypto;
 import org.minima.utils.Streamable;
@@ -20,7 +19,7 @@ public class TxHeader implements Streamable {
 	/**
 	 * The NONCE - the user definable data you cycle through to change the final hash of this TxPow
 	 */
-	public MiniInteger mNonce = new MiniInteger(0);
+	public MiniNumber mNonce = new MiniNumber(0);
 	
 	/**
 	 * Time Secs - needs to be a MiniNumber as is used in Scripts.. 
@@ -201,7 +200,7 @@ public class TxHeader implements Streamable {
 
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
-		mNonce           = MiniInteger.ReadFromStream(zIn);
+		mNonce           = MiniNumber.ReadFromStream(zIn);
 		mTimeSecs        = MiniNumber.ReadFromStream(zIn);
 		mBlockNumber     = MiniNumber.ReadFromStream(zIn);
 		mBlockDifficulty = MiniData.ReadFromStream(zIn);

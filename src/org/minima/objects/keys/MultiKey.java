@@ -4,7 +4,6 @@ import java.io.IOException;
 
 import org.minima.database.mmr.MMRSet;
 import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniInteger;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.BaseConverter;
 import org.minima.utils.Crypto;
@@ -133,7 +132,7 @@ public class MultiKey extends BaseKey {
 			//Sign the data with this key
 			mCurrentPublicKey  = mSingleKeys[leafnode].getPublicKey();
 			mCurrentSignature  = mSingleKeys[leafnode].sign(zData);
-			mCurrentProof      = mMMR.getFullProofToRoot(new MiniInteger(leafnode)).getChainSHAProof();
+			mCurrentProof      = mMMR.getFullProofToRoot(new MiniNumber(leafnode)).getChainSHAProof();
 			
 			//Create a multi sig.. no child signature
 			MultiSig sig = new MultiSig(mCurrentPublicKey, mCurrentProof, mCurrentSignature);
@@ -164,7 +163,7 @@ public class MultiKey extends BaseKey {
 			//Sign that..
 			mCurrentPublicKey  = mSingleKeys[mCurrentLeaf].getPublicKey();
 			mCurrentSignature  = mSingleKeys[mCurrentLeaf].sign(rootkey);
-			mCurrentProof      = mMMR.getFullProofToRoot(new MiniInteger(mCurrentLeaf)).getChainSHAProof();
+			mCurrentProof      = mMMR.getFullProofToRoot(new MiniNumber(mCurrentLeaf)).getChainSHAProof();
 		}	
 		
 		//Use the current base 

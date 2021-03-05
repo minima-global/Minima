@@ -5,7 +5,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 import org.minima.objects.Coin;
-import org.minima.objects.base.MiniInteger;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.proofs.Proof;
 import org.minima.utils.json.JSONObject;
@@ -20,7 +19,7 @@ public class MMRProof extends Proof {
 	/**
 	 * The Entry number in the MMR
 	 */
-	MiniInteger mEntryNumber = new MiniInteger(0);
+	MiniNumber mEntryNumber = new MiniNumber(0);
 	
 	/**
 	 * The Provable data
@@ -31,7 +30,7 @@ public class MMRProof extends Proof {
 		super();
 	}
 		
-	public MMRProof(MiniInteger zEntryNumber, MMRData zInitialData, MiniNumber zBlockTime) {
+	public MMRProof(MiniNumber zEntryNumber, MMRData zInitialData, MiniNumber zBlockTime) {
 		mEntryNumber = zEntryNumber;
 		mData        = zInitialData;
 		mBlockTime   = zBlockTime;
@@ -43,7 +42,7 @@ public class MMRProof extends Proof {
 		return mBlockTime;
 	}
 	
-	public MiniInteger getEntryNumber() {
+	public MiniNumber getEntryNumber() {
 		return mEntryNumber;
 	}
 	
@@ -99,7 +98,7 @@ public class MMRProof extends Proof {
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
 		mBlockTime   = MiniNumber.ReadFromStream(zIn);
-		mEntryNumber = MiniInteger.ReadFromStream(zIn);
+		mEntryNumber = MiniNumber.ReadFromStream(zIn);
 		mData        = MMRData.ReadFromStream(zIn);
 		
 		super.readDataStream(zIn);

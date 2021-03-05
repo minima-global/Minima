@@ -18,7 +18,6 @@ import org.minima.objects.Transaction;
 import org.minima.objects.TxPoW;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniInteger;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.brains.BackupManager;
 import org.minima.system.input.functions.gimme50;
@@ -65,7 +64,7 @@ public class MinimaDBTests {
         assertEquals(0, mdb.getUserDB().getAllRows().size());
 
         TxPoW txp = new TxPoW();
-        txp.setNonce(MiniInteger.TWO);
+        txp.setNonce(MiniNumber.TWO);
         txp.calculateTXPOWID();
         assertNull(mdb.getTxPOW(txp.getTxPowID()));
         assertNotNull(mdb.getTxPOW(mdb.getTopTxPoW().getTxPowID()));
@@ -117,7 +116,7 @@ public class MinimaDBTests {
 
         // TXMINER_MINETXPOW begin
         txp1.setHeaderBodyHash();
-        MiniInteger nonce = new MiniInteger(0);
+        MiniNumber nonce = new MiniNumber(0);
         while (true) {
             txp1.setNonce(nonce);
             txp1.setTimeMilli(new MiniNumber(System.currentTimeMillis()));
@@ -201,7 +200,7 @@ public class MinimaDBTests {
     private TxPoW mineblock(MinimaDB mdb) {
         TxPoW txpow = mdb.getCurrentTxPow(new Transaction(), new Witness(), new JSONArray());
         txpow.setHeaderBodyHash();
-        MiniInteger nonce = new MiniInteger(0);
+        MiniNumber nonce = new MiniNumber(0);
         while (true) {
             txpow.setNonce(nonce);
             txpow.setTimeMilli(new MiniNumber(System.currentTimeMillis()));

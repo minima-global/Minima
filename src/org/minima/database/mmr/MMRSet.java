@@ -11,7 +11,6 @@ import java.util.Hashtable;
 import org.minima.objects.Coin;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniInteger;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.proofs.Proof.ProofChunk;
 import org.minima.utils.Crypto;
@@ -44,7 +43,7 @@ public class MMRSet implements Streamable {
 	/**
 	 * What is the current entry number..
 	 */
-	public MiniInteger mEntryNumber = new MiniInteger(0);
+	public MiniNumber mEntryNumber = new MiniNumber(0);
 	
 	/**
 	 * All the entries in this set 
@@ -65,7 +64,7 @@ public class MMRSet implements Streamable {
 	/**
 	 * Which Entries do we keep
 	 */
-	ArrayList<MiniInteger> mKeepers;
+	ArrayList<MiniNumber> mKeepers;
 	
 	/**
 	 * Does this MMR use the MMREntryDB for duplicates
@@ -156,7 +155,7 @@ public class MMRSet implements Streamable {
 			}
 			
 			//Set the Entry Number
-			mEntryNumber = new MiniInteger(tot);
+			mEntryNumber = new MiniNumber(tot);
 			
 			//Check!
 			if(!mEntryNumber.isEqual(mParent.mEntryNumber)) {
@@ -189,7 +188,7 @@ public class MMRSet implements Streamable {
 		ret.put("maxentries", maxentry);
 		
 		JSONArray keepers = new JSONArray();
-		for(MiniInteger keeper : mKeepers) {
+		for(MiniNumber keeper : mKeepers) {
 			keepers.add(keeper.toString());
 		}
 		ret.put("keepers", keepers);
@@ -299,7 +298,7 @@ public class MMRSet implements Streamable {
 		mEntryNumber = mEntryNumber.increment();
 	}
 	
-	private String getHashTableEntry(int zRow, MiniInteger zEntry) {
+	private String getHashTableEntry(int zRow, MiniNumber zEntry) {
 		return zRow+":"+zEntry.toString();
 	}
 	
@@ -406,7 +405,7 @@ public class MMRSet implements Streamable {
 	 * @param zData
 	 * @return
 	 */
-	private MMREntry setEntry(int zRow, MiniInteger zEntry, MMRData zData) {
+	private MMREntry setEntry(int zRow, MiniNumber zEntry, MMRData zData) {
 		//Store the Maximum
 		if(zRow>mMaxRow) {
 			mMaxRow = zRow;
@@ -440,7 +439,7 @@ public class MMRSet implements Streamable {
 		return entry;
 	}
 	
-	private MMREntry getEntry(int zRow, MiniInteger zEntry) {
+	private MMREntry getEntry(int zRow, MiniNumber zEntry) {
 		//Cycle down through the MMR sets..
 		MMRSet current = this;
 		
@@ -509,7 +508,7 @@ public class MMRSet implements Streamable {
 	 */
 	public MMREntry addExternalUnspentCoin(MMRProof zProof) {
 		//The Details
-		MiniInteger entrynum = zProof.getEntryNumber();
+		MiniNumber entrynum = zProof.getEntryNumber();
 		MMRData proofdata    = zProof.getMMRData();
 		
 		//Do we already have this Entry..
@@ -706,7 +705,7 @@ public class MMRSet implements Streamable {
 	/**
 	 * Get An MMR Proof
 	 */
-	public MMRProof getProof(MiniInteger zEntryNumber) {
+	public MMRProof getProof(MiniNumber zEntryNumber) {
 		//First get the initial Entry.. check parents aswell..
 		MMREntry entry = getEntry(0, zEntryNumber);
 		
@@ -784,7 +783,7 @@ public class MMRSet implements Streamable {
 	 * @param zEntry
 	 * @return
 	 */
-	public MMRProof getFullProofToRoot(MiniInteger zEntry) {
+	public MMRProof getFullProofToRoot(MiniNumber zEntry) {
 		//Get the Basic Proof..
 		MMRProof proof = getProof(zEntry);
 		
@@ -976,7 +975,7 @@ public class MMRSet implements Streamable {
 	 * Add a Keeper - once only..
 	 * @param zEntry
 	 */
-	public boolean addKeeper(MiniInteger zEntry) {
+	public boolean addKeeper(MiniNumber zEntry) {
 		if(!isKeptAllready(zEntry)) {
 			mKeepers.add(zEntry);
 			return true;
@@ -988,7 +987,7 @@ public class MMRSet implements Streamable {
 	/**
 	 * Get the Keeper
 	 */
-	public ArrayList<MiniInteger> getKeepers() {
+	public ArrayList<MiniNumber> getKeepers() {
 		return mKeepers;
 	}
 	
@@ -998,8 +997,8 @@ public class MMRSet implements Streamable {
 	 * @param zNumber
 	 * @return
 	 */
-	public boolean isKeptAllready(MiniInteger zNumber) {
-		for(MiniInteger keep : mKeepers) {
+	public boolean isKeptAllready(MiniNumber zNumber) {
+		for(MiniNumber keep : mKeepers) {
 			if(keep.isEqual(zNumber)) {
 				return true;
 			}
@@ -1014,14 +1013,14 @@ public class MMRSet implements Streamable {
 	 */
 	public void copyParentKeepers() {
 		//First get the Keepers..
-		ArrayList<MiniInteger> parentkeepers = new ArrayList<>();
+		ArrayList<MiniNumber> parentkeepers = new ArrayList<>();
 		if(mParent!=null) {
 			parentkeepers = mParent.getKeepers();
 		}
 		
 		//Cycle through the current crop..
-		ArrayList<MiniInteger> newkeepers = new ArrayList<>();
-		for(MiniInteger keep : mKeepers) {
+		ArrayList<MiniNumber> newkeepers = new ArrayList<>();
+		for(MiniNumber keep : mKeepers) {
 			//Get that LATEST entry and all the entries it uses on the way up..
 			MMREntry entry = getEntry(0, keep);
 			if(!entry.getData().isSpent()) {
@@ -1033,7 +1032,7 @@ public class MMRSet implements Streamable {
 		mKeepers = newkeepers;
 		
 		//Cycle through the Keepers..
-		for(MiniInteger keep : parentkeepers) {
+		for(MiniNumber keep : parentkeepers) {
 			//Get that LATEST entry and all the entries it uses on the way up..
 			MMREntry entry = getEntry(0, keep);
 			
@@ -1173,7 +1172,7 @@ public class MMRSet implements Streamable {
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
 		mBlockTime   = MiniNumber.ReadFromStream(zIn);
-		mEntryNumber = MiniInteger.ReadFromStream(zIn);
+		mEntryNumber = MiniNumber.ReadFromStream(zIn);
 		
 		//Now the Entries..
 		mSetEntries       = new Hashtable<>();

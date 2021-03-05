@@ -75,9 +75,8 @@ public class MiniNumberTests {
         System.out.println("i.add(MiniNumber.ONE).getAsLong() value is " + i.add(MiniNumber.ONE).getAsLong());
         assertNotNull("should not be null", i.add(MiniNumber.ONE).getAsDouble());
         System.out.println("i.add(MiniNumber.ONE).getAsDouble() value is " + i.add(MiniNumber.ONE).getAsDouble());
-        assertNotNull("should not be null", l.divRoundDown(MiniNumber.THOUSAND));
-        System.out
-                .println("l.divRoundDown(MiniNumber.THOUSAND) l:" + l + " value is " + l.divRoundDown(MiniNumber.THOUSAND));
+//        assertNotNull("should not be null", l.divRoundDown(MiniNumber.THOUSAND));
+//        System.out.println("l.divRoundDown(MiniNumber.THOUSAND) l:" + l + " value is " + l.divRoundDown(MiniNumber.THOUSAND));
         assertNotNull("should not be null", i.increment().setSignificantDigits(19));
         System.out.println("i.increment().setSignificantDigits(19) value is " + i.increment().setSignificantDigits(19));
         assertTrue("should be equal resolves true", i.sub(MiniNumber.ONE).isEqual(MiniNumber.MINUSONE));

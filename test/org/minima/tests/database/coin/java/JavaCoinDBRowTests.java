@@ -10,7 +10,6 @@ import org.minima.objects.Address;
 import org.minima.objects.Coin;
 import org.minima.objects.PubPrivKey;
 import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniInteger;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.json.JSONObject;
 
@@ -56,10 +55,10 @@ public class JavaCoinDBRowTests {
         r1.setIsInBlock(false);
         assertFalse("should be false ", r1.isInBlock());
 
-        r1.setMMREntry(MiniInteger.ZERO);
-        assertEquals("should be equal ", MiniInteger.ZERO, r1.getMMREntry());
-        r1.setMMREntry(MiniInteger.TWO);
-        assertEquals("should be equal ", MiniInteger.TWO, r1.getMMREntry());
+        r1.setMMREntry(MiniNumber.ZERO);
+        assertEquals("should be equal ", MiniNumber.ZERO, r1.getMMREntry());
+        r1.setMMREntry(MiniNumber.TWO);
+        assertEquals("should be equal ", MiniNumber.TWO, r1.getMMREntry());
 
         r1.setRelevant(true);
         assertTrue("should be true ", r1.isRelevant());

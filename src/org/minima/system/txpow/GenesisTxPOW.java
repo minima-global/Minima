@@ -5,7 +5,6 @@ import org.minima.objects.Transaction;
 import org.minima.objects.TxPoW;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniInteger;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.Crypto;
 
@@ -22,7 +21,7 @@ public class GenesisTxPOW extends TxPoW{
 		
 		setTxDifficulty(Crypto.MAX_HASH);
 		
-		setNonce(new MiniInteger(256));
+		setNonce(new MiniNumber(256));
 		 
 		setTimeMilli(new MiniNumber(""+System.currentTimeMillis()));
 		
