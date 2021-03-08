@@ -235,6 +235,8 @@ public class Proof implements Streamable {
 		hb.writeDataStream(zOut);
 		
 		mData.writeDataStream(zOut);
+		mValue.writeDataStream(zOut);
+		
 		MiniNumber mlen = new MiniNumber(mProofChain.size());
 		mlen.writeDataStream(zOut);
 		int len = mlen.getAsInt();
@@ -251,7 +253,9 @@ public class Proof implements Streamable {
 		MiniByte hb = MiniByte.ReadFromStream(zIn);
 		HASH_BITS   = hb.getValue() * 32;
 		
-		mData = MiniData.ReadFromStream(zIn);
+		mData  = MiniData.ReadFromStream(zIn);
+		mValue = MiniNumber.ReadFromStream(zIn);
+		
 		mProofChain = new ArrayList<>();
 		MiniNumber mlen = MiniNumber.ReadFromStream(zIn);
 		int len = mlen.getAsInt();
