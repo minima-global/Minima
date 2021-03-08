@@ -710,9 +710,6 @@ public class MMRSet implements Streamable {
 		MMREntry entry = setEntry(0, zProof.getEntryNumber(), spentmmr);
 		MMREntry ret   = entry;
 		
-		//The min block to check in the history
-		MiniNumber minblock = zProof.getBlockTime().increment();
-		
 		//Start checking..
 		int pcount = 0;
 		while(true) {
@@ -724,22 +721,35 @@ public class MMRSet implements Streamable {
 			}
 			
 			//Get the sibling.. Not yet at a peak..
-			MMREntry sibling = getEntry(entry.getRow(), entry.getSibling(), minblock);
+			MMREntry sibling = getEntry(entry.getRow(), entry.getSibling());
 			
 			//Is it empty - or do we use the proof value
 			if(sibling.isEmpty()) {
-				//Use the proof..
+				//The current proof..
 				ProofChunk chunk = zProof.getProofChunk(pcount);
 				MiniData phash   = chunk.getHash();
 				MiniNumber pval  = chunk.getValue();
-			
-				//Set the Sibling in this MMRSET!.. this way the MMR peaks still work.. (as the max in a row MUST be on the left to be a peak ))
-				sibling = setEntry(sibling.getRow(), sibling.getEntryNumber(), new MMRData(phash,pval));
 				
-			}else {
-				//Set the Sibling in this MMRSET!.. Could be a FULL non hash only.. this way the MMR peaks still work.. (as the max in a row MUST be on the left to be a peak ))
-				sibling = setEntry(sibling.getRow(), sibling.getEntryNumber(), sibling.getData());
+				//Set the Sibling data to the current proof
+				sibling.setData(new MMRData(phash,pval));
+			}else{
+				//Is it older than the proof.. if newer leave it..
+				if(sibling.getBlockTime().isLess(zProof.getBlockTime())) {
+					//The current proof..
+					ProofChunk chunk = zProof.getProofChunk(pcount);
+					MiniData phash   = chunk.getHash();
+					MiniNumber pval  = chunk.getValue();
+					
+					if( !sibling.getHashValue().isEqual(phash) || 
+						!sibling.getData().getValueSum().isEqual(pval)) {
+						//The proof is newer and different - set it..
+						sibling.setData(new MMRData(phash,pval));
+					}
+				}
 			}
+			
+			//Set the Sibling in this MMRSET!.. Could be a FULL non hash only.. this way the MMR peaks still work.. (as the max in a row MUST be on the left to be a peak ))
+			sibling = setEntry(sibling.getRow(), sibling.getEntryNumber(), sibling.getData());
 			
 			//increase the count..
 			pcount++;
