@@ -727,23 +727,19 @@ public class MMRSet implements Streamable {
 			MMREntry sibling = getEntry(entry.getRow(), entry.getSibling(), minblock);
 			
 			//Is it empty - or do we use the proof value
-			MMRData siblingdata = null;
 			if(sibling.isEmpty()) {
+				//Use the proof..
 				ProofChunk chunk = zProof.getProofChunk(pcount);
 				MiniData phash   = chunk.getHash();
 				MiniNumber pval  = chunk.getValue();
-				
-				//Use these values as the MMRData
-				siblingdata = new MMRData(phash,pval);
-				
-				//Set it in the empty sibling..
-				sibling.setData(siblingdata);
-			}else {
-				siblingdata = sibling.getData();
-			}
 			
-			//Set the Sibling in this MMRSET!.. this way the MMR peaks still work.. (as the max in a row MUST be on the left to be a peak ))
-			sibling = setEntry(sibling.getRow(), sibling.getEntryNumber(), siblingdata);
+				//Set the Sibling in this MMRSET!.. this way the MMR peaks still work.. (as the max in a row MUST be on the left to be a peak ))
+				sibling = setEntry(sibling.getRow(), sibling.getEntryNumber(), new MMRData(phash,pval));
+				
+			}else {
+				//Set the Sibling in this MMRSET!.. Could be a FULL non hash only.. this way the MMR peaks still work.. (as the max in a row MUST be on the left to be a peak ))
+				sibling = setEntry(sibling.getRow(), sibling.getEntryNumber(), sibling.getData());
+			}
 			
 			//increase the count..
 			pcount++;
@@ -984,16 +980,15 @@ public class MMRSet implements Streamable {
 		
 		//Is it there ?
 		if(!entry.isEmpty()) {
-			
 			//WE MUST KNOW.. this should never happen..
-			if(entry.getData().isHashOnly()) {
+			if(entry.getData().getValueSum().isEqual(MiniNumber.ZERO)) {
 				//CANNOT BE SURE!.. say NO..
-				MinimaLogger.log("ERROR Proof MisMatch.. History is Hash ONLY!..  "+zProof);
+				MinimaLogger.log("ERROR Proof Coin value ZERO since proof created "+zProof);
 				return false;
 			}
 			
 			//Get the DATA - could be the original UNSPENT or the SPENT
-			if(entry.getData().isSpent()) {
+			if(!entry.getData().isHashOnly() && entry.getData().isSpent()) {
 				MinimaLogger.log("ERROR Proof Spent! "+zProof);
 				return false;
 			}
