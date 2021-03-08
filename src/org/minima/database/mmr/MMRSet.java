@@ -989,19 +989,18 @@ public class MMRSet implements Streamable {
 		MMREntry entry = getEntry(0, zProof.getEntryNumber(), zProof.getBlockTime().increment());
 		
 		//Is it there ?
+		CHECK PLS.
 		if(!entry.isEmpty()) {
-			//WE MUST KNOW.. this should never happen..
-			if(entry.getData().getValueSum().isEqual(MiniNumber.ZERO)) {
-				//CANNOT BE SURE!.. say NO..
-				MinimaLogger.log("ERROR Proof Coin value ZERO since proof created "+zProof);
+			if(!entry.getData().getValueSum().isEqual(zProof.getMMRData().getValueSum())) {
+				MinimaLogger.log("ERROR Proof Coin value changed since proof created "+zProof);
 				return false;
 			}
-			
-			//Get the DATA - could be the original UNSPENT or the SPENT
-			if(!entry.getData().isHashOnly() && entry.getData().isSpent()) {
-				MinimaLogger.log("ERROR Proof Spent! "+zProof);
-				return false;
-			}
+//			
+//			//Get the DATA - could be the original UNSPENT or the SPENT
+//			if(!entry.getData().isHashOnly() && entry.getData().isSpent()) {
+//				MinimaLogger.log("ERROR Proof Spent! "+zProof);
+//				return false;
+//			}
 		}
 	
 //		//Check the SUMTREE - we've checked the HASH tree already..
