@@ -3,11 +3,10 @@ package org.minima.kissvm.functions.cast;
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.functions.MinimaFunction;
-import org.minima.kissvm.values.BooleanValue;
 import org.minima.kissvm.values.HEXValue;
-import org.minima.kissvm.values.NumberValue;
 import org.minima.kissvm.values.ScriptValue;
 import org.minima.kissvm.values.Value;
+import org.minima.objects.base.MiniString;
 
 public class SCRIPT extends MinimaFunction {
 
@@ -17,20 +16,17 @@ public class SCRIPT extends MinimaFunction {
 	
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
-		Value val = getParameter(0).getValue(zContract);
-		int type  = val.getValueType();
+		checkExactParamNumber(1);
 		
-		if(type == NumberValue.VALUE_NUMBER) {
-			return new ScriptValue(val.getNumber().toString());
-		}else if(type == HEXValue.VALUE_HEX) {
-			return new ScriptValue(val.getMiniData().to0xString());
-		}else if(type == BooleanValue.VALUE_BOOLEAN) {
-			return new ScriptValue(val.toString());
-		}else if(type == ScriptValue.VALUE_SCRIPT) {
-			return val;
+		Value val = getParameter(0).getValue(zContract);
+		
+		//HEX value gets converted..
+		if(val.getValueType() == Value.VALUE_HEX) {
+			HEXValue hex = (HEXValue)val;
+			return new ScriptValue(new String( hex.getRawData(), MiniString.MINIMA_CHARSET ));
 		}
 		
-		throw new ExecutionException("Incorrect Vaue Type! "+type);
+		return new ScriptValue(val.toString());
 	}
 
 	@Override

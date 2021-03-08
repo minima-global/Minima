@@ -267,7 +267,7 @@ public class Proof implements Streamable {
 		//Convert to Decimal.
 		int dec = BaseConverter.hexToNumber(bits);
 		
-		if(dec<5 || dec>16) {
+		if(dec<5 || dec>16 || dec==11) {
 			//ERROR
 			throw new Exception("Invalid ChainSHA.. must be 160, 192, 224, 256, 288, 320, 384, 416, 448, 480 or 512");	
 		}

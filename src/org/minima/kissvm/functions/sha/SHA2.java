@@ -5,7 +5,6 @@ import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.functions.MinimaFunction;
 import org.minima.kissvm.values.HEXValue;
 import org.minima.kissvm.values.Value;
-import org.minima.objects.base.MiniData;
 import org.minima.utils.Crypto;
 
 public class SHA2 extends MinimaFunction {
@@ -22,17 +21,20 @@ public class SHA2 extends MinimaFunction {
 	 */
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
-		//get the Input Data
-		byte[] data = getParameter(0).getValue(zContract).getRawData();
+		checkExactParamNumber(1);
 		
+		Value vv = getParameter(0).getValue(zContract);
+		checkIsOfType(vv, Value.VALUE_HEX | Value.VALUE_SCRIPT);
+		
+		//get the Input Data - HEX or SCRIPT
+		HEXValue hex = (HEXValue)vv;
+		byte[] data = hex.getRawData();
+
 		//Perform the SHA2 Operation
 		byte[] ans = Crypto.getInstance().hashSHA2(data);
 		
-		//Ensure a 32 byte hash
-		MiniData hash = new MiniData(ans);
-		
 		//return the New HEXValue
-		return new HEXValue(hash.getData());
+		return new HEXValue(ans);
 	}
 	
 	@Override

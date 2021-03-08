@@ -1,20 +1,6 @@
 package org.minima.tests.database.mmr;
 
-import org.minima.database.mmr.MMRData;
-
-import org.minima.objects.Address;
-import org.minima.objects.Coin;
-import org.minima.objects.PubPrivKey;
-import org.minima.objects.StateVariable;
-import org.minima.objects.base.MiniByte;
-import org.minima.objects.base.MiniNumber;
-import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MMRSumNumber;
-import org.minima.utils.json.JSONObject;
-
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
@@ -23,10 +9,19 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-
 import java.util.ArrayList;
 
 import org.junit.Test;
+import org.minima.database.mmr.MMRData;
+import org.minima.objects.Address;
+import org.minima.objects.Coin;
+import org.minima.objects.PubPrivKey;
+import org.minima.objects.StateVariable;
+import org.minima.objects.base.MMRSumNumber;
+import org.minima.objects.base.MiniByte;
+import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniNumber;
+import org.minima.utils.json.JSONObject;
 
 public class MMRDataTest {
 

@@ -23,7 +23,7 @@ public class TokenProofTests {
     public void testTokenProof() {
         MiniString name = new MiniString("token-name");
         MiniString script = new MiniString("FFFF");
-        MiniData coinId = new MiniData("#ffff");
+        MiniData coinId = new MiniData("0xffff");
         MiniNumber twelve = MiniNumber.TWELVE;
         TokenProof t = new TokenProof(coinId, twelve, twelve, name, script);
         assertNotNull(t);
@@ -49,7 +49,7 @@ public class TokenProofTests {
         try {
             MiniString name = new MiniString("token-name");
             MiniString script = new MiniString("FFFF");
-            MiniData coinId = new MiniData("#ffff");
+            MiniData coinId = new MiniData("0xffff");
             MiniNumber twelve = MiniNumber.TWELVE;
             TokenProof t = new TokenProof(coinId, twelve, twelve, name, script);
 

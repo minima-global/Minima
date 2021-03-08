@@ -1,14 +1,14 @@
 package org.minima.tests.database.txpowdb.java;
 
-import java.util.ArrayList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
-import org.junit.Test;
 
+import java.util.ArrayList;
+
+import org.junit.Test;
 import org.minima.database.txpowdb.TxPOWDBRow;
 import org.minima.database.txpowdb.java.JavaDB;
-
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniInteger;

@@ -1,16 +1,14 @@
 package org.minima.tests.database.txpowtree;
 
-import org.minima.database.txpowtree.BlockTreeNode;
-import org.minima.database.txpowtree.NodeStack;
-
-import org.minima.objects.TxPoW;
-
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
+import org.minima.database.txpowtree.BlockTreeNode;
+import org.minima.database.txpowtree.NodeStack;
+import org.minima.objects.TxPoW;
 
 public class NodeStackTests {
 

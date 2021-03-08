@@ -22,13 +22,14 @@ public class SAMESTATE extends MinimaFunction {
 	
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
+		checkExactParamNumber(2);
 		
 		//Is this a one off or a sequence..
-		int start = getParameter(0).getValue(zContract).getNumber().getAsInt();
+		int start = zContract.getNumberParam(0, this).getNumber().getAsInt();
 		int end   = start;
 		
 		if(getParameterNum() == 2) {
-			end = getParameter(1).getValue(zContract).getNumber().getAsInt();
+			end = zContract.getNumberParam(1, this).getNumber().getAsInt();
 		}
 		
 		//Now check the old state and the current state are the same
