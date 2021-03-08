@@ -403,7 +403,10 @@ public class TxPoWChecker {
 					MMRProof proof = zWit.getAllMMRProofs().get(i);
 					
 					//Update the MMR with this spent coin..
-					MMREntry spent = zMMRSet.updateSpentCoin(proof);
+					MMREntry spent  = zMMRSet.updateSpentCoin(proof);
+				
+					//Update the MMR with this spent coin..
+//					MMREntry spent2 = zMMRSet.NEWupdateSpentCoin(proof);
 				
 					//Do we keep it..
 					if(zDB.getUserDB().isAddressRelevant(input.getAddress())) {

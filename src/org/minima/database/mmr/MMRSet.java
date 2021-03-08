@@ -693,6 +693,74 @@ public class MMRSet implements Streamable {
 		return ret;
 	}
 	
+//	public MMREntry updateSpentCoin(MMRProof zProof) {
+//		//The original MMRData..
+//		MMRData original = zProof.getMMRData();
+//		
+//		//The NEW spent MMRData..
+//		MMRData spentmmr = new MMRData(MiniByte.TRUE, 
+//										original.getCoin(),
+//										original.getInBlock(),
+//										original.getPrevState());
+//		
+//		//Get the current peaks..
+//		ArrayList<MMREntry> peaks=getMMRPeaks();
+//		
+//		//Create a new entry
+//		MMREntry entry = setEntry(0, zProof.getEntryNumber(), spentmmr);
+//		MMREntry ret   = entry;
+//		
+//		//The min block to check in the history
+//		MiniNumber minblock = zProof.getBlockTime().increment();
+//		
+//		//Start checking..
+//		int pcount = 0;
+//		while(true) {
+//			//Check..
+//			for(MMREntry peak : peaks) {
+//				if(entry.checkPosition(peak)) {
+//					return ret;
+//				}
+//			}
+//			
+//			//Get the sibling.. Not yet at a peak..
+//			MMREntry sibling = getEntry(entry.getRow(), entry.getSibling(), minblock);
+//			
+//			//Is it empty - or do we use the proof value
+//			MMRData siblingdata = null;
+//			if(sibling.isEmpty()) {
+//				ProofChunk chunk = zProof.getProofChunk(pcount);
+//				MiniData phash   = chunk.getHash();
+//				MiniNumber pval  = chunk.getValue();
+//				
+//				//Use these values as the MMRData
+//				siblingdata = new MMRData(phash,pval);
+//				
+//				//Set it in the empty sibling..
+//				sibling.setData(siblingdata);
+//			}else {
+//				siblingdata = sibling.getData();
+//			}
+//			
+//			//Set the Sibling in this MMRSET!.. this way the MMR peaks still work.. (as the max in a row MUST be on the left to be a peak ))
+//			sibling = setEntry(sibling.getRow(), sibling.getEntryNumber(),siblingdata);
+//			
+//			//increase the count..
+//			pcount++;
+//			
+//			//Now calculate the parent
+//			MMRData parentdata = null;
+//			if(entry.isLeft()) {
+//				parentdata = getParentMMRData(entry, sibling);
+//			}else {
+//				parentdata = getParentMMRData(sibling, entry);
+//			}
+//			
+//			//Set the Parent
+//			entry = setEntry(entry.getParentRow(), entry.getParentEntry(), parentdata);
+//		}
+//	}
+	
 	/**
 	 * Get An MMR Proof
 	 */
