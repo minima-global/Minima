@@ -743,8 +743,7 @@ public class MMRSet implements Streamable {
 					MiniData phash   = chunk.getHash();
 					MiniNumber pval  = chunk.getValue();
 					
-					if( !sibling.getHashValue().isEqual(phash) || 
-						!sibling.getData().getValueSum().isEqual(pval)) {
+					if(!sibling.getHashValue().isEqual(phash)) {
 						//The proof is newer and different - set it..
 						sibling.setData(new MMRData(phash,pval));
 					}
