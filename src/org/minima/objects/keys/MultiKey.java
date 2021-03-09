@@ -132,7 +132,7 @@ public class MultiKey extends BaseKey {
 			//Sign the data with this key
 			mCurrentPublicKey  = mSingleKeys[leafnode].getPublicKey();
 			mCurrentSignature  = mSingleKeys[leafnode].sign(zData);
-			mCurrentProof      = mMMR.getFullProofToRoot(new MiniNumber(leafnode)).getChainSHAProof();
+			mCurrentProof      = mMMR.getProof(new MiniNumber(leafnode)).getChainSHAProof();
 			
 			//Create a multi sig.. no child signature
 			MultiSig sig = new MultiSig(mCurrentPublicKey, mCurrentProof, mCurrentSignature);
@@ -163,7 +163,7 @@ public class MultiKey extends BaseKey {
 			//Sign that..
 			mCurrentPublicKey  = mSingleKeys[mCurrentLeaf].getPublicKey();
 			mCurrentSignature  = mSingleKeys[mCurrentLeaf].sign(rootkey);
-			mCurrentProof      = mMMR.getFullProofToRoot(new MiniNumber(mCurrentLeaf)).getChainSHAProof();
+			mCurrentProof      = mMMR.getProof(new MiniNumber(mCurrentLeaf)).getChainSHAProof();
 		}	
 		
 		//Use the current base 

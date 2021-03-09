@@ -306,7 +306,7 @@ public class ConsensusUser extends ConsensusProcessor {
 				JSONObject node = (JSONObject) nodearray.get(i);
 				
 				//Get the proof..
-				MMRProof proof = mmr.getFullProofToRoot(new MiniNumber(i));
+				MMRProof proof = mmr.getProof(new MiniNumber(i));
 				
 				//Calculate the CHAINSHA proof..
 				node.put("chainsha", proof.getChainSHAProof().to0xString());
