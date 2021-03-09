@@ -970,11 +970,9 @@ public class MMRSet implements Streamable {
 		
 		//Is this is a Peak ? - if so, go no further..
 		boolean found = false;
-		MiniNumber peakvalue = null;
 		for(MMREntry peak : peaks) {
 			if(proofpeak.isEqual(peak.getHashValue())) {
 				found     = true;
-				peakvalue = peak.getData().getValueSum();
 				break;
 			}
 		}
