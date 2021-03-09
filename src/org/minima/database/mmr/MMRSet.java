@@ -999,7 +999,7 @@ public class MMRSet implements Streamable {
 		
 		//Is it there ?
 		if(!entry.isEmpty()) {
-			if(!entry.getData().getValueSum().isEqual(zProof.getMMRData().getValueSum())) {
+			if(!entry.getHashValue().isEqual(zProof.getMMRData().getFinalHash())) {
 				MinimaLogger.log("ERROR Proof Coin value changed since proof created "+zProof);
 				return false;
 			}
