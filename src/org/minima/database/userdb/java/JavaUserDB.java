@@ -109,6 +109,15 @@ public class JavaUserDB implements UserDB, Streamable{
 	}
 	
 	@Override
+	public MultiKey newPublicKey(int zBitLength, int zKeys, int zLevels) {
+		MultiKey pubkey = new MultiKey(zBitLength, 
+				new MiniNumber(zKeys) , new MiniNumber(zLevels));
+		mPubPrivKeys.add(pubkey);
+		return pubkey;
+	}
+	
+	
+	@Override
 	public ArrayList<UserDBRow> getAllRows() {
 		return mRows;
 	}

@@ -8,7 +8,7 @@ public class newaddress extends CommandFunction{
 
 	public newaddress() {
 		super("newaddress");
-		setHelp("(hashbits)", "Create a new address to receive funds", "");
+		setHelp("(bitlength keys levels)", "Create a new address to receive funds", "");
 	}
 	
 	@Override
@@ -19,6 +19,12 @@ public class newaddress extends CommandFunction{
 		if(zInput.length>1) {
 			int bits = Integer.parseInt(zInput[1]);
 			msg.addInteger("bitlength", bits);
+			
+			int keys = Integer.parseInt(zInput[2]);
+			msg.addInteger("keys", keys);
+			
+			int levels = Integer.parseInt(zInput[3]);
+			msg.addInteger("levels", levels);
 		}
 		
 		//Post a new Message

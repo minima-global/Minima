@@ -80,12 +80,19 @@ public class ConsensusUser extends ConsensusProcessor {
 		
 		if(zMessage.isMessageType(CONSENSUS_NEWSIMPLE)) {
 			int bitlength = GlobalParams.MINIMA_DEFAULT_HASH_STRENGTH;
+			int keys   = 16;
+			int levels = 2;
 			if(zMessage.exists("bitlength")) {
 				bitlength = zMessage.getInteger("bitlength");
+				keys = zMessage.getInteger("keys");
+				levels = zMessage.getInteger("levels");
 			}
 			
+			//Create a new key..
+			MultiKey mkey = new MultiKey(bitlength, new MiniNumber(keys), new MiniNumber(levels));
+			
 			//Create a new simple address
-			Address addr = getMainDB().getUserDB().newSimpleAddress(bitlength);
+			Address addr = getMainDB().getUserDB().newSimpleAddress(mkey);
 			
 			JSONObject resp = InputHandler.getResponseJSON(zMessage);
 			resp.put("address", addr.toJSON());
@@ -193,10 +200,12 @@ public class ConsensusUser extends ConsensusProcessor {
 			
 		}else if(zMessage.isMessageType(CONSENSUS_NEWKEY)) {
 			//Get the bitlength
-			int bitl = zMessage.getInteger("bitlength");
+			int bitl   = zMessage.getInteger("bitlength");
+			int keys   = zMessage.getInteger("keys");
+			int levels = zMessage.getInteger("levels");
 			
 			//Create a new key pair..
-			MultiKey key = getMainDB().getUserDB().newPublicKey(bitl);
+			MultiKey key = getMainDB().getUserDB().newPublicKey(bitl,keys,levels);
 			
 			//return to sender!
 			JSONObject resp = InputHandler.getResponseJSON(zMessage);

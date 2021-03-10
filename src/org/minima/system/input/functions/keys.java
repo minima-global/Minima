@@ -11,7 +11,7 @@ public class keys extends CommandFunction {
 	public keys() {
 		super("keys");
 		
-		setHelp("(new) (bitlength)", "List all your public keys or create a new one.", "");
+		setHelp("(new) (bitlength keys levels)", "List all your public keys or create a new one.", "");
 	}
 	
 	@Override
@@ -20,11 +20,26 @@ public class keys extends CommandFunction {
 			//Create a new Key..
 			Message newkey  = getResponseMessage(ConsensusUser.CONSENSUS_NEWKEY);
 			
-			if(zInput.length>2) {
-				//Get the bitlength
+			//Default 
+			newkey.addInteger("keys", 16);
+			newkey.addInteger("levels", 2);
+			
+			if(zInput.length>4) {
+				//Get the bit length
 				int bitl = Integer.parseInt(zInput[2]);
-				
 				newkey.addInteger("bitlength", bitl);
+				
+				int keys = Integer.parseInt(zInput[3]);
+				newkey.addInteger("keys", keys);
+				
+				int levels = Integer.parseInt(zInput[4]);
+				newkey.addInteger("levels", levels);
+				
+			}else if(zInput.length>2) {
+				//Get the bit length
+				int bitl = Integer.parseInt(zInput[2]);
+				newkey.addInteger("bitlength", bitl);
+				
 			}else {
 				newkey.addInteger("bitlength", GlobalParams.MINIMA_DEFAULT_HASH_STRENGTH);
 			}
