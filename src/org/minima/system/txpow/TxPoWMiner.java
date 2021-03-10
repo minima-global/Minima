@@ -78,7 +78,7 @@ public class TxPoWMiner extends MessageProcessor {
 				txpow.setNonce(nonce);
 
 				//Set the Time..
-				txpow.setTimeMilli(new MiniNumber(""+currentTime));
+				txpow.setTimeMilli(new MiniNumber(currentTime));
 				
 				//Now Hash it..
 				hash = Crypto.getInstance().hashObject(txpow.getTxHeader());
@@ -151,7 +151,7 @@ public class TxPoWMiner extends MessageProcessor {
 					txpow.setNonce(txpow.getNonce().increment());
 					
 					//Set the Time..
-					txpow.setTimeMilli(new MiniNumber(""+currentTime));
+					txpow.setTimeMilli(new MiniNumber(currentTime));
 				}
 				
 				//New time

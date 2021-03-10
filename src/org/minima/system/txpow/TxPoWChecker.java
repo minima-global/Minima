@@ -576,7 +576,7 @@ public class TxPoWChecker {
 		
 		//get some extra variables..
 		MiniNumber tBlockNumber = zBlock.getBlockNumber();
-		MiniNumber tBlockTime   = zBlock.getTimeSecs();
+		MiniNumber tBlockTime   = zBlock.getTimeMilli();
 		
 		//Make a deep copy.. as we may need to edit it.. with floating values
 		Transaction trans;

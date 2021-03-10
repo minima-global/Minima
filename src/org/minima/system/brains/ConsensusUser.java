@@ -459,7 +459,7 @@ public class ConsensusUser extends ConsensusProcessor {
 			//Set the environment
 			TxPoW top = getMainDB().getTopTxPoW();
 			MiniNumber blocknum  = top.getBlockNumber();
-			MiniNumber blocktime = top.getTimeSecs();
+			MiniNumber blocktime = top.getTimeMilli();
 			
 			//These 2 are set automatically..
 			cc.setGlobalVariable("@ADDRESS", new HEXValue(ccaddress.getAddressData()));
