@@ -63,7 +63,7 @@ public class Proof implements Streamable {
 			mLeftRight 	= MiniByte.ReadFromStream(zIn);
 			mHash 		= MiniData.ReadFromStream(zIn);
 			
-			//If 0 then false sent
+			//If value is 0 then false sent
 			MiniByte isvalue = MiniByte.ReadFromStream(zIn);
 			if(isvalue.isTrue()) {
 				mValue 		= MiniNumber.ReadFromStream(zIn);
