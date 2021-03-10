@@ -158,7 +158,7 @@ public class ConsensusHandler extends MessageProcessor {
 		mConsensusBackup = new ConsensusBackup(mMainDB, this);
 		
 		//Are we HARD mining.. debugging / private chain
-		PostTimerMessage(new TimerMessage(1000, CONSENSUS_MINEBLOCK));
+		PostTimerMessage(new TimerMessage(30000, CONSENSUS_MINEBLOCK));
 	
 		//Redo every 10 minutes..
 		PostTimerMessage(new TimerMessage(10 * 60 * 1000, CONSENSUS_AUTOBACKUP));
@@ -396,6 +396,13 @@ public class ConsensusHandler extends MessageProcessor {
 			
 			//Fresh TXPOW
 			TxPoW txpow = getMainDB().getCurrentTxPow(new Transaction(), new Witness(), new JSONArray());
+			
+			//Do we have any blocks..
+			if(txpow == null) {
+				//Try again in a minute
+				PostTimerMessage(new TimerMessage(20000, CONSENSUS_MINEBLOCK));
+				return;
+			}
 			
 			//Send it to the Miner..
 			Message mine = new Message(TxPoWMiner.TXMINER_MEGAMINER).addObject("txpow", txpow);
