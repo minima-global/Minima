@@ -116,15 +116,25 @@ public class MultiKey extends BaseKey {
 		//Which leaf node are we using..
 		int leafnode = (int)(keynum / perleaf);
 		
-//		System.out.println("LEVEL:"+mLevel+" USE:"+keynum+" LEAF:"+leafnode+" "+getPublicKey());
-		
 		if(leafnode>=getMaxUses().getAsInt()) {
-			MinimaLogger.log("ERROR Key "+getPublicKey().to0xString()
+			MinimaLogger.log("SERIOUS ERROR Key "+getPublicKey().to0xString()
 					+" used too many times! MAX LEAF NODES:"+getMaxUses()+" ALLOWED:"+keynum+"<"+getTotalAllowedUses());
-			//Create an INVALID multi sig..
-			MiniData zero = new MiniData("0x0000");
-			MultiSig sig  = new MultiSig(zero, zero, zero);
-			return sig.getCompleteSig();
+			
+			//RESET THE KEY LIMIT.. no point saying NO as coins can get stuck..
+			setUses(MiniNumber.ZERO);
+			
+			//Which key are we on..
+			keynum = getUses().getAsInt();
+			
+			//Once used you cannot use it again..
+			incrementUses();
+			
+			//Which leaf node are we using..
+			leafnode = (int)(keynum / perleaf);
+			
+//			MiniData zero = new MiniData("0x0000");
+//			MultiSig sig  = new MultiSig(zero, zero, zero);
+//			return sig.getCompleteSig();
 		}
 		
 		//Are we top level
@@ -253,7 +263,7 @@ public class MultiKey extends BaseKey {
 		long timediff     = 0;
 		
 		System.out.println("MAKE KEY Start");
-		MultiKey mkey = new MultiKey(privseed, new MiniNumber("13"), new MiniNumber("1"));
+		MultiKey mkey = new MultiKey(privseed, new MiniNumber("2"), new MiniNumber("1"));
 		System.out.println(mkey.toJSON().toString());
 		
 		//Timer..
