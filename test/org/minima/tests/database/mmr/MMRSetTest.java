@@ -216,8 +216,8 @@ public class MMRSetTest {
         MMRData data_b = new MMRData(MiniByte.FALSE, gimme50_b, MiniNumber.ZERO, new ArrayList<StateVariable>());
         MiniData hash_a = data_a.getFinalHash();
         MiniData hash_b = data_b.getFinalHash();
-        MiniData hash_0a = Crypto.getInstance().hashObjects(gendataHash, hash_a, 512); // MMRSet.MMR_HASH_BITS);
-        MiniData hash_0ab = Crypto.getInstance().hashObjects(hash_0a, hash_b, 512); // MMRSet.MMR_HASH_BITS);
+        MiniData hash_0a = Crypto.getInstance().hashAllObjects(512,gendataHash, hash_a, new MiniNumber(25)); // MMRSet.MMR_HASH_BITS);
+        MiniData hash_0ab = Crypto.getInstance().hashAllObjects(512,hash_0a, hash_b, new MiniNumber(50)); // MMRSet.MMR_HASH_BITS);
         
         MiniNumber sumNum = new MiniNumber(new MiniNumber("25")); // 0+25
         base.addUnspentCoin(data_a);
@@ -253,8 +253,8 @@ public class MMRSetTest {
         Coin coins_c = new Coin(Coin.COINID_OUTPUT, Address.TRUE_ADDRESS.getAddressData(), new MiniNumber("25"), Coin.MINIMA_TOKENID);
         MMRData data_c = new MMRData(MiniByte.FALSE, coins_c, MiniNumber.ZERO, new ArrayList<StateVariable>());
         MiniData hash_c = data_c.getFinalHash();
-        MiniData hash_bc   = Crypto.getInstance().hashObjects(hash_b, hash_c, 512); // MMRSet.MMR_HASH_BITS);
-        MiniData hash_0abc = Crypto.getInstance().hashObjects(hash_0a, hash_bc, 512); // MMRSet.MMR_HASH_BITS);
+        MiniData hash_bc   = Crypto.getInstance().hashAllObjects(512, hash_b, hash_c, new MiniNumber(50)); // MMRSet.MMR_HASH_BITS);
+        MiniData hash_0abc = Crypto.getInstance().hashAllObjects(512,hash_0a, hash_bc, new MiniNumber(75)); // MMRSet.MMR_HASH_BITS);
         
         base.addUnspentCoin(data_c);
         assertTrue("MMR set has four entries after adding third node.", base.mEntryNumber.isEqual(new MiniNumber(4)));  // entryNumber only counts leaf nodes
@@ -271,7 +271,7 @@ public class MMRSetTest {
         Coin coins_d = new Coin(Coin.COINID_OUTPUT, Address.TRUE_ADDRESS.getAddressData(), new MiniNumber("25"), Coin.MINIMA_TOKENID);
         MMRData data_d = new MMRData(MiniByte.FALSE, coins_d, MiniNumber.ZERO, new ArrayList<StateVariable>());
         MiniData hash_d = data_d.getFinalHash();
-        MiniData hash_0abcd = Crypto.getInstance().hashObjects(hash_0abc, hash_d, 512); // MMRSet.MMR_HASH_BITS);
+        MiniData hash_0abcd = Crypto.getInstance().hashAllObjects(512, hash_0abc, hash_d, new MiniNumber(100)); // MMRSet.MMR_HASH_BITS);
 
         base.addUnspentCoin(data_d);
         assertTrue("MMR set has five entries after adding fourth node.", base.mEntryNumber.isEqual(new MiniNumber(5)));  // entryNumber only counts leaf nodes
@@ -292,9 +292,9 @@ public class MMRSetTest {
         MMRProof mmrProofa = new MMRProof(new MiniNumber(1), data_a, MiniNumber.ONE);
         // updateSpentCoin will replace a by a_spent -> new hash
         MiniData hash_a_spent = data_a_spent.getFinalHash();
-        MiniData hash_0a_spent = Crypto.getInstance().hashObjects(gendataHash, hash_a_spent, 512);
-        MiniData hash_0a_spent_bc = Crypto.getInstance().hashObjects(hash_0a_spent, hash_bc, 512); // MMRSet.MMR_HASH_BITS);
-        MiniData hash_0a_spent_bcd =  Crypto.getInstance().hashObjects(hash_0a_spent_bc, hash_d, 512); // MMRSet.MMR_HASH_BITS);
+        MiniData hash_0a_spent = Crypto.getInstance().hashAllObjects(512, gendataHash, hash_a_spent, new MiniNumber(0));
+        MiniData hash_0a_spent_bc = Crypto.getInstance().hashAllObjects(512, hash_0a_spent, hash_bc,  new MiniNumber(50)); // MMRSet.MMR_HASH_BITS);
+        MiniData hash_0a_spent_bcd =  Crypto.getInstance().hashAllObjects(512, hash_0a_spent_bc, hash_d,  new MiniNumber(75)); // MMRSet.MMR_HASH_BITS);
         base.updateSpentCoin(mmrProofa);
         
         assertTrue("MMR set has five entries after adding fourth node.", base.mEntryNumber.isEqual(new MiniNumber(5)));  // entryNumber only counts leaf nodes
