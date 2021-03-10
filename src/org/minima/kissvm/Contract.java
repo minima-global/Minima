@@ -39,7 +39,7 @@ public class Contract {
 	StatementBlock mBlock;
 	
 	//A list of valid signatures
-	ArrayList<Value> mSignatures;
+	ArrayList<HEXValue> mSignatures;
 	
 	//A list of all the user-defined variables
 	Hashtable<String, Value> mVariables;
@@ -132,7 +132,7 @@ public class Contract {
 		while(strtok.hasMoreTokens()) {
 			String sig = strtok.nextToken().trim();
 			traceLog("Signature : "+sig);
-			mSignatures.add( Value.getValue(sig) );
+			mSignatures.add( (HEXValue)Value.getValue(sig) );
 		}
 		
 		//Transaction..
@@ -313,11 +313,12 @@ public class Contract {
 				key = "( "+key.trim()+" )";
 			}
 			
-			if(val.getValueType() == ScriptValue.VALUE_SCRIPT) {
-				variables.put(key, "[ "+val.toString()+" ]");
-			}else{
-				variables.put(key, val.toString());
-			}
+			variables.put(key, val.toString());
+//			if(val.getValueType() == ScriptValue.VALUE_SCRIPT) {
+//				variables.put(key, "[ "+val.toString()+" ]");
+//			}else{
+//				variables.put(key, val.toString());
+//			}
 		}
 		
 		return variables;
@@ -334,6 +335,42 @@ public class Contract {
 	}
 	
 	/**
+	 * Get the Parameter Value as a MiniNumber or throw exception if not a NUmber 
+	 * @throws ExecutionException 
+	 */
+	public NumberValue getNumberParam(int zParamNumber, MinimaFunction zFunction) throws ExecutionException {
+		Value vv = zFunction.getParameter(zParamNumber).getValue(this);
+		if(vv.getValueType() != Value.VALUE_NUMBER) {
+			throw new ExecutionException("Incorrect Parameter type - should be NumberValue @ "+zParamNumber+" "+zFunction.getName());
+		}
+		return (NumberValue)vv;
+	}
+	
+	public HEXValue getHEXParam(int zParamNumber, MinimaFunction zFunction) throws ExecutionException {
+		Value vv = zFunction.getParameter(zParamNumber).getValue(this);
+		if(vv.getValueType() != Value.VALUE_HEX) {
+			throw new ExecutionException("Incorrect Parameter type - should be HEXValue @ "+zParamNumber+" "+zFunction.getName());
+		}
+		return (HEXValue)vv;
+	}
+	
+	public ScriptValue getScriptParam(int zParamNumber, MinimaFunction zFunction) throws ExecutionException {
+		Value vv = zFunction.getParameter(zParamNumber).getValue(this);
+		if(vv.getValueType() != Value.VALUE_SCRIPT) {
+			throw new ExecutionException("Incorrect Parameter type - should be ScriptValue @ "+zParamNumber+" "+zFunction.getName());
+		}
+		return (ScriptValue)vv;
+	}
+	
+	public BooleanValue getBoolParam(int zParamNumber, MinimaFunction zFunction) throws ExecutionException {
+		Value vv = zFunction.getParameter(zParamNumber).getValue(this);
+		if(vv.getValueType() != Value.VALUE_BOOLEAN) {
+			throw new ExecutionException("Incorrect Parameter type - should be BooleanValue @ "+zParamNumber+" "+zFunction.getName());
+		}
+		return (BooleanValue)vv;
+	}
+	
+	/**
 	 * DYN State
 	 */
 	public void setFloating(boolean zFloating) {
@@ -344,7 +381,7 @@ public class Contract {
 		mFloatingCoin = zFloating;
 	}
 	
-	public String getState(int zStateNum) throws ExecutionException {
+	public Value getState(int zStateNum) throws ExecutionException {
 		if(!mTransaction.stateExists(zStateNum)) {
 			throw new ExecutionException("State Variable does not exist "+zStateNum);
 		}
@@ -352,8 +389,11 @@ public class Contract {
 		//Get it from the Transaction..
 		String stateval = mTransaction.getStateValue(zStateNum).getValue().toString();
 		
+		//Clean it
+		String clean = cleanScript(stateval);
+		
 		//Clean it..
-		return cleanScript(stateval);
+		return Value.getValue(clean);
 	}
 	
 	public Value getPrevState(int zPrev) throws ExecutionException {
@@ -395,17 +435,18 @@ public class Contract {
 			
 			//Log it.. 
 			int type = val.getValueType();
-			switch (type)  {
-				case BooleanValue.VALUE_BOOLEAN :
-					varlist += key+" = "+Boolean.toString(val.isTrue()).toUpperCase()+", ";
-				break;
-				case ScriptValue.VALUE_SCRIPT :
-					varlist += key+" = [ "+val+" ], ";
-				break;
-				default:
-					varlist += key+" = "+val+", ";
-				break;
-			}		
+			varlist += key+" = "+val+", ";
+//			switch (type)  {
+//				case BooleanValue.VALUE_BOOLEAN :
+//					varlist += key+" = "+Boolean.toString(val.isTrue()).toUpperCase()+", ";
+//				break;
+//				case ScriptValue.VALUE_SCRIPT : xx
+//					varlist += key+" = [ "+val+" ], ";
+//				break;
+//				default:
+//					varlist += key+" = "+val+", ";
+//				break;
+//			}		
 		}
 		
 		traceLog(varlist+"}");
@@ -434,10 +475,10 @@ public class Contract {
 	 * @param zSignature
 	 * @return
 	 */
-	public boolean checkSignature(Value zSignature) {
+	public boolean checkSignature(HEXValue zSignature) {
 		MiniData checksig = zSignature.getMiniData();
 		
-		for(Value sig : mSignatures) {
+		for(HEXValue sig : mSignatures) {
 			if(sig.getMiniData().isEqual(checksig)) {
 				return true;
 			}
@@ -600,7 +641,7 @@ public class Contract {
 
 //		String RamScript = "let g = [ goodbye ] let t = DYNSTATE ( 0 [hello] ) let tt = DYNSTATE ( 0 0xFFE ) let y  = state(0)";
 
-		String RamScript = "return true";
+		String RamScript = "let x = [return true] let y=sha3(160 x) exec x";
 		
 		//String RamScript = "let t = @SCRIPT let f = @AMOUNT +1 let g = State(1001) + [ sha3(123)]";
 

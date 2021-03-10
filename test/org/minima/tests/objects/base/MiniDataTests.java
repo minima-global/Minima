@@ -18,8 +18,8 @@ import org.minima.objects.base.MiniData;
 public class MiniDataTests {
     @Test
     public void testValueBytes() {
-        MiniData i = new MiniData("#1388");
-        MiniData j = new MiniData("#FFFF");
+        MiniData i = new MiniData("0x1388");
+        MiniData j = new MiniData("0xFFFF");
         MiniData k = new MiniData("5475746f7269616c73706f69674");
         MiniData[] mData = {j, k};
         MiniData[] mDataCompare = {i, j, k};
@@ -121,7 +121,7 @@ public class MiniDataTests {
     @Test
     public void testReadFromStreamDataTooBig() {
         try {
-            MiniData j = new MiniData("#FFFFFFFFFFFFFFFFFFFFFF"
+            MiniData j = new MiniData("0xFFFFFFFFFFFFFFFFFFFFFF"
                     + "FFFFFFFFFFFFFFFFFFFF"
                     + "FFFFFFFFFFFFFFFFFFFF"
                     + "FFFF"
@@ -157,8 +157,8 @@ public class MiniDataTests {
     // @Test
     // public void testWriteHashToStreamDataTooBig() {
     //     try {
-    //         MiniData i = new MiniData("#11");
-    //         MiniData j = new MiniData("#FFFF");
+    //         MiniData i = new MiniData("0x11");
+    //         MiniData j = new MiniData("0xFFFF");
     //         MiniData k = new MiniData("FFFFFFFFFFFFFFF");
     //         ByteArrayOutputStream bos = new ByteArrayOutputStream();
     //         DataOutputStream dos = new DataOutputStream(bos);
@@ -188,9 +188,9 @@ public class MiniDataTests {
     public void testWriteHashStreamData() {
         try {
 
-            MiniData k = new MiniData("#FFFFF");
+            MiniData k = new MiniData("0xFFFFF");
 
-            // MiniData k = new MiniData("#FFFF");
+            // MiniData k = new MiniData("0xFFFF");
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             DataOutputStream dos = new DataOutputStream(bos);
             k.writeHashToStream(dos);
@@ -216,7 +216,7 @@ public class MiniDataTests {
     @Test
     public void testReadHashFromStream() {
 
-        MiniData j = new MiniData("#FFFFFFFFFFFFFFFFFFFFF"
+        MiniData j = new MiniData("0xFFFFFFFFFFFFFFFFFFFFF"
                 + "FFFFFFFFFFFFFFFFFFFF"
                 + "FFFFFFFFFFFFFFFFFFFF"
                 + "FFFF"
@@ -245,7 +245,7 @@ public class MiniDataTests {
     public void testReadHashStreamDataLarge() {
         try {
 
-            MiniData j = new MiniData("#FFFFFFFFFFFFFFFFFFFFF"
+            MiniData j = new MiniData("0xFFFFFFFFFFFFFFFFFFFFF"
                     + "FFFFFFFFFFFFFFFFFFFF"
                     + "FFFFFFFFFFFFFFFFFFFF"
                     + "FFFF"
@@ -253,7 +253,7 @@ public class MiniDataTests {
                     + "FFFFFFFFFFFFFFFFFFFF"
                     + "FFFFFFFFFFFFFFFFFFFF"
                     + "F");
-            MiniData k = new MiniData("#FFFFF");
+            MiniData k = new MiniData("0xFFFFF");
 
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             DataOutputStream dos = new DataOutputStream(bos);

@@ -19,8 +19,8 @@ public class SignatureProofTests {
     @Test
     public void testSignatureProof() {
         // MiniData c = new MiniData();
-        MiniData j = new MiniData("#FFFF");
-        MiniData n = new MiniData("#FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
+        MiniData j = new MiniData("0xFFFF");
+        MiniData n = new MiniData("0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
         SignatureProof sp = new SignatureProof(n, j);
         assertTrue("should not be equal ", sp.getSignature().isEqual(j));
         System.out.println("json  value " + sp.toJSON());
@@ -30,8 +30,8 @@ public class SignatureProofTests {
     @Test
     public void testStaticReadAndWriteDataStream() {
         try {
-            MiniData j = new MiniData("#FFFF");
-            MiniData n = new MiniData("#FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
+            MiniData j = new MiniData("0xFFFF");
+            MiniData n = new MiniData("0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
             SignatureProof sp = new SignatureProof(n, j);
 
             ByteArrayOutputStream bos = new ByteArrayOutputStream();

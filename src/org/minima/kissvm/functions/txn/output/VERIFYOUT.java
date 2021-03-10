@@ -26,18 +26,22 @@ public class VERIFYOUT extends MinimaFunction{
 	
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
+		if(getAllParameters().size()>5) {
+			throw new ExecutionException("Too many parameters for VERIFYOUT");
+		}
+		
 		//Which Output
-		int output    = getParameter(0).getValue(zContract).getNumber().getAsInt();
+		int output = zContract.getNumberParam(0, this).getNumber().getAsInt();
 		
 		//Get the details
-		MiniData address  = new MiniData(getParameter(1).getValue(zContract).getRawData());
-		MiniNumber amount = getParameter(2).getValue(zContract).getNumber();
-		MiniData tokenid  = new MiniData(getParameter(3).getValue(zContract).getRawData());
+		MiniData address  = new MiniData(zContract.getHEXParam(1, this).getRawData());
+		MiniNumber amount = zContract.getNumberParam(2, this).getNumber();
+		MiniData tokenid  = new MiniData(zContract.getHEXParam(3, this).getRawData());
 		
 		//Is there a 4th Parameter ?
 		int amountchecktype = 0 ;
 		if(getParameterNum()>4) {
-			amountchecktype = getParameter(4).getValue(zContract).getNumber().getAsInt();
+			amountchecktype = zContract.getNumberParam(4, this).getNumber().getAsInt();
 		}
 			
 		//Check an output exists..

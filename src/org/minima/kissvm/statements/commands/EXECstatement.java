@@ -36,9 +36,6 @@ public class EXECstatement implements Statement{
 		
 			//And now convert to a statement block..
 			StatementBlock mBlock = StatementParser.parseTokens(tokens);
-
-			//Trace log
-			//zContract.traceLog("EXEC [ "+script.toString()+" ]");
 			
 			//Now run it..
 			mBlock.run(zContract);

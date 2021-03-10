@@ -17,12 +17,13 @@ public class CHAINSHA extends MinimaFunction {
 	
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
-		//Get the Input.. Could be HEX, SCRIPT, NUMBER
-		Value val     = getParameter(0).getValue(zContract);
+		checkExactParamNumber(2);
+		
+		HEXValue val  = zContract.getHEXParam(0, this);
 		MiniData data = val.getMiniData();
 
-		//Get the 32 byte hash data chain + 1 byte for left right 
-		HEXValue chain = (HEXValue) getParameter(1).getValue(zContract);
+		//Get the hash data chain + 1 byte for left right 
+		HEXValue chain = zContract.getHEXParam(1, this);
 		
 		//Bit Strength
 		int bits;
