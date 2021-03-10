@@ -19,10 +19,12 @@ import org.minima.utils.json.JSONObject;
 
 public class Proof implements Streamable {
 
-	public class ProofChunk {
+	public class ProofChunk implements Streamable {
 		MiniData mHash;
 		MiniNumber mValue;
 		MiniByte mLeftRight;
+		
+		public ProofChunk() {}
 		
 		public ProofChunk(MiniByte zLeft, MiniData zHash, MiniNumber zValue) {
 			mLeftRight = zLeft;
@@ -41,11 +43,39 @@ public class Proof implements Streamable {
 		public MiniNumber getValue() {
 			return mValue;
 		}
+
+		@Override
+		public void writeDataStream(DataOutputStream zOut) throws IOException {
+			mLeftRight.writeDataStream(zOut);
+			mHash.writeDataStream(zOut);
+			
+			//Encode 0 value as 0x00.. for scripts and signatures
+			if(mValue.isEqual(MiniNumber.ZERO)) {
+				MiniByte.FALSE.writeDataStream(zOut);
+			}else {
+				MiniByte.TRUE.writeDataStream(zOut);
+				mValue.writeDataStream(zOut);
+			}
+		}
+
+		@Override
+		public void readDataStream(DataInputStream zIn) throws IOException {
+			mLeftRight 	= MiniByte.ReadFromStream(zIn);
+			mHash 		= MiniData.ReadFromStream(zIn);
+			
+			//If 0 then false sent
+			MiniByte isvalue = MiniByte.ReadFromStream(zIn);
+			if(isvalue.isTrue()) {
+				mValue 		= MiniNumber.ReadFromStream(zIn);
+			}else {
+				mValue 		= MiniNumber.ZERO;
+			}
+		}
 	}
 	
 	//The data you are trying to prove..
 	protected MiniData 	mData;
-	MiniNumber 			mValue = MiniNumber.ZERO;
+	MiniNumber 			mValue;
 	
 	//The Merkle Branch that when applied to the data gives the final proof;
 	protected ArrayList<ProofChunk> mProofChain;
@@ -62,7 +92,7 @@ public class Proof implements Streamable {
 	}
 
 	public void setData(MiniData zData) {
-		mData = zData;
+		setData(zData, MiniNumber.ZERO);
 	}
 	
 	public void setData(MiniData zData, MiniNumber zValue) {
@@ -87,14 +117,11 @@ public class Proof implements Streamable {
 			HASH_BITS = hb * 32;
 			
 			while(dis.available()>0) {
-				//Is it to the left or the right 
-				MiniByte leftrigt = MiniByte.ReadFromStream(dis);
-				
-				//What data to hash
-				MiniData data = MiniData.ReadFromStream(dis);
+				ProofChunk pc = new ProofChunk();
+				pc.readDataStream(dis);
 				
 				//Add to the Proof..
-				addProofChunk(leftrigt, data);
+				addProofChunk(pc);
 			}
 		
 			dis.close();
@@ -107,6 +134,37 @@ public class Proof implements Streamable {
 		
 		
 		finalizeHash();
+	}
+	
+	public MiniData getChainSHAProof() {
+		if(mFinalized) {
+			return mChainSHA;
+		}
+		
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		DataOutputStream dos = new DataOutputStream(baos);
+		
+		try {
+			//First write out the HASH_BITS
+			MiniByte hb = new MiniByte(HASH_BITS / 32);
+			hb.writeDataStream(dos);
+			
+			//Now write out the data..
+			int len = mProofChain.size();
+			for(int i=0;i<len;i++){
+				mProofChain.get(i).writeDataStream(dos);
+			}
+			
+			dos.close();
+			baos.close();
+			
+		} catch (IOException e) {
+			MinimaLogger.log("getChainSHAProof Error "+e);
+			e.printStackTrace();
+		}
+		
+		//Convert to MiniData..
+		return new MiniData(baos.toByteArray());
 	}
 	
 	public void setHashBitLength(int zBitLength) {
@@ -143,39 +201,6 @@ public class Proof implements Streamable {
 		
 		//Ok - it's done now..
 		mFinalized = true;
-	}
-	
-	public MiniData getChainSHAProof() {
-		if(mFinalized) {
-			return mChainSHA;
-		}
-		
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		DataOutputStream dos = new DataOutputStream(baos);
-		
-		try {
-			//First write out the HASH_BITS
-			MiniByte hb = new MiniByte(HASH_BITS / 32);
-			hb.writeDataStream(dos);
-			
-			//Now write out the data..
-			int len = mProofChain.size();
-			for(int i=0;i<len;i++){
-				ProofChunk chunk = mProofChain.get(i);
-				chunk.getLeft().writeDataStream(dos);
-				chunk.getHash().writeHashToStream(dos);
-			}
-			
-			dos.close();
-			baos.close();
-			
-		} catch (IOException e) {
-			MinimaLogger.log("getChainSHAProof Error "+e);
-			e.printStackTrace();
-		}
-		
-		//Convert to MiniData..
-		return new MiniData(baos.toByteArray());
 	}
 	
 	public MiniData getFinalHash() {
