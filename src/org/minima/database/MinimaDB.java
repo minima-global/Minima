@@ -841,22 +841,16 @@ public class MinimaDB {
 		for(Coin cc : ins) {
 			MiniNumber inblock = null;
 					
-			//Get the block..
-			CoinDBRow crow = getCoinDB().getCoinRow(cc.getCoinID());
-			if(crow != null) {
-				inblock = crow.getInBlockNumber();
-			}else {
-				//Search for the coin..
-				MMREntry entry =  basemmr.findEntry(cc.getCoinID());
-				inblock = entry.getData().getInBlock();
-			}
+			//Search for the coin..
+			MMREntry entry =  basemmr.findEntry(cc.getCoinID());
+			
+			//Which block is it in..
+			inblock = entry.getData().getInBlock();
 			
 			if(recent == null) {
 				recent = inblock;
-			}else {
-				if(inblock.isMore(recent)) {
-					recent = inblock; 
-				}
+			}else if(inblock.isMore(recent)) {
+				recent = inblock; 
 			}
 		}
 		
@@ -868,18 +862,11 @@ public class MinimaDB {
 			howdeep = GlobalParams.MINIMA_MMR_PROOF_HISTORY;
 		}
 		
-//		//DEBUG..
-//		if(GlobalParams.SHORT_CHAIN_DEBUG_MODE) {
-//			if(howdeep.isMore(MiniNumber.FOUR)) {
-//				howdeep = MiniNumber.FOUR;
-//			}
-//		}
-	
 		//Check not past the cascade..
 		MiniNumber proofblock = currentblock.sub(howdeep);
-		if(proofblock.isLess(getMainTree().getCascadeNode().getBlockNumber())) {
-			proofblock = getMainTree().getCascadeNode().getBlockNumber();
-		}
+//		if(proofblock.isLess(getMainTree().getCascadeNode().getBlockNumber())) {
+//			proofblock = getMainTree().getCascadeNode().getBlockNumber();
+//		}
 		
 		//The Actual MMR block we will use..
 		MMRSet proofmmr = basemmr.getParentAtTime(proofblock);
@@ -889,20 +876,23 @@ public class MinimaDB {
 			MiniNumber entrynum = null;
 			
 			//Get the entry
-			CoinDBRow crow = getCoinDB().getCoinRow(cc.getCoinID());
-			if(crow != null) {
-				entrynum = crow.getMMREntry();
-			}else {
-				entrynum = proofmmr.findEntry(cc.getCoinID()).getEntryNumber();
-			}
+			entrynum = proofmmr.findEntry(cc.getCoinID()).getEntryNumber();
+			
+//			CoinDBRow crow = getCoinDB().getCoinRow(cc.getCoinID());
+//			if(crow != null) {
+//				entrynum = crow.getMMREntry();
+//			}else {
+//				entrynum = proofmmr.findEntry(cc.getCoinID()).getEntryNumber();
+//			}
 			
 			//Get a proof from a while back.. more than confirmed depth, less than cascade
 			MMRProof proof = proofmmr.getProof(entrynum);
 			
-			//Hmm.. this should not happen
-			if(proof == null) {
-				return null;
-			}
+//			//Hmm.. this should not happen
+//			if(proof == null) {
+//				MinimaLogger.log("ERROR valid MMR cannot find proof");
+//				return null;
+//			}
 			
 			//Add the proof for this coin..
 			zWitness.addMMRProof(proof);

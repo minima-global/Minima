@@ -765,11 +765,12 @@ public class ConsensusUser extends ConsensusProcessor {
 			MMRSet proofmmr = basemmr.getParentAtTime(getMainDB().getTopBlock().sub(GlobalParams.MINIMA_CONFIRM_DEPTH));
 			
 			//Find this coin..
-			CoinDBRow row  = getMainDB().getCoinDB().getCoinRow(coinid);
+			MMREntry coin  = proofmmr.findEntry(coinid);
+//			CoinDBRow row  = getMainDB().getCoinDB().getCoinRow(coinid);
 			
 			//Get a proof from a while back.. more than confirmed depth, less than cascade
 //			MMRProof proof = getMainTree().getChainTip().getMMRSet().getProof(row.getMMREntry());
-			MMRProof proof = proofmmr.getProof(row.getMMREntry());
+			MMRProof proof = proofmmr.getProof(coin.getEntryNumber());
 			
 			//Now write this out to  MiniData Block
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -865,25 +866,25 @@ public class ConsensusUser extends ConsensusProcessor {
 		return true;
 	}
 	
-	public static MiniData exportCoin(MinimaDB zDB, MiniData zCoinID) throws IOException {
-		//The Base current MMRSet
-		MMRSet basemmr  = zDB.getMainTree().getChainTip().getMMRSet();
-		
-		//Get proofs from a while back so reorgs don't invalidate them..
-		MMRSet proofmmr = basemmr.getParentAtTime(zDB.getTopBlock().sub(GlobalParams.MINIMA_CONFIRM_DEPTH));
-		
-		//Find this coin..
-		CoinDBRow row  = zDB.getCoinDB().getCoinRow(zCoinID);
-		
-		//Get a proof from a while back.. more than confirmed depth, less than cascade
-		MMRProof proof = proofmmr.getProof(row.getMMREntry());
-		
-		//Now write this out to  MiniData Block
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		DataOutputStream dos = new DataOutputStream(baos);
-		proof.writeDataStream(dos);
-		dos.flush();
-		
-		return new MiniData(baos.toByteArray());
-	}
+//	public static MiniData exportCoin(MinimaDB zDB, MiniData zCoinID) throws IOException {
+//		//The Base current MMRSet
+//		MMRSet basemmr  = zDB.getMainTree().getChainTip().getMMRSet();
+//		
+//		//Get proofs from a while back so reorgs don't invalidate them..
+//		MMRSet proofmmr = basemmr.getParentAtTime(zDB.getTopBlock().sub(GlobalParams.MINIMA_CONFIRM_DEPTH));
+//		
+//		//Find this coin..
+//		CoinDBRow row  = zDB.getCoinDB().getCoinRow(zCoinID);
+//		
+//		//Get a proof from a while back.. more than confirmed depth, less than cascade
+//		MMRProof proof = proofmmr.getProof(row.getMMREntry());
+//		
+//		//Now write this out to  MiniData Block
+//		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+//		DataOutputStream dos = new DataOutputStream(baos);
+//		proof.writeDataStream(dos);
+//		dos.flush();
+//		
+//		return new MiniData(baos.toByteArray());
+//	}
 }

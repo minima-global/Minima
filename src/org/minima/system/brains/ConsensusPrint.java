@@ -91,16 +91,16 @@ public class ConsensusPrint extends ConsensusProcessor {
 			
 			JSONObject dets = InputHandler.getResponseJSON(zMessage);
 			
-			if(coins) {
-				JSONArray coinjson = new JSONArray();
-				ArrayList<CoinDBRow> coindb = getMainDB().getCoinDB().getComplete();
-				for(CoinDBRow row : coindb) {
-					coinjson.add(row.toJSON());
-				}
-				
-				dets.put("coindbsize" , coindb.size()); 
-				dets.put("coindb", coinjson);
-			}
+//			if(coins) {
+//				JSONArray coinjson = new JSONArray();
+//				ArrayList<CoinDBRow> coindb = getMainDB().getCoinDB().getComplete();
+//				for(CoinDBRow row : coindb) {
+//					coinjson.add(row.toJSON());
+//				}
+//				
+//				dets.put("coindbsize" , coindb.size()); 
+//				dets.put("coindb", coinjson);
+//			}
 			
 			if(txpow) {
 				JSONArray txpowjson = new JSONArray();
@@ -755,7 +755,6 @@ public class ConsensusPrint extends ConsensusProcessor {
 			String address     = zMessage.getString("address");
 			String tokenid     = zMessage.getString("tokenid");
 			String amount      = zMessage.getString("amount");
-			String type        = zMessage.getString("type");
 			
 			//What gets checked..
 			boolean checkaddress  = !address.equals("");
@@ -781,46 +780,51 @@ public class ConsensusPrint extends ConsensusProcessor {
 			
 			//Current TIP
 			BlockTreeNode tip  	 = getMainDB().getMainTree().getChainTip();
-			if(tip == null) {
-				//Starting up..
-				InputHandler.endResponse(zMessage, true, "No tip found..");
-				return;
+			MiniNumber minblock  = tip.getTxPow().getBlockNumber().sub(GlobalParams.MINIMA_CONFIRM_DEPTH);
+			MMRSet baseset 	     = tip.getMMRSet().getParentAtTime(minblock);
+			
+			//Search for coins..
+			ArrayList<MMREntry> res = baseset.searchCoins(	relevant, 
+															checkaddress, addr, 
+															checkamount,  amt, 
+															checktokenid, tok);
+			
+			//And add to the response..
+			for(MMREntry entry : res) {
+				totcoins.add(baseset.getProof(entry.getEntryNumber()).toJSON());
 			}
 			
-//			MiniNumber minblock  = tip.getTxPow().getBlockNumber().sub(GlobalParams.MINIMA_CONFIRM_DEPTH);
-			MMRSet baseset 	     = tip.getMMRSet();//.getParentAtTime(minblock);
-			
-			//Cycle..
-			ArrayList<CoinDBRow> coins = getMainDB().getCoinDB().getComplete();
-			for(CoinDBRow coin : coins) {
-				//RELEVANT..
-				if(relevant && !coin.isRelevant()) {continue;}
-				
-				//SPEND TYPE
-				if(type.equals("spent") && !coin.isSpent()) {continue;}
-				if(type.equals("unspent") && coin.isSpent()) {continue;}
-				
-				//ADDRESS
-				if(checkaddress && !coin.getCoin().getAddress().isEqual(addr)) {
-					continue;
-				}
-				
-				//TOKEN
-				if(checktokenid && !coin.getCoin().getTokenID().isEqual(tok)) {
-					continue;
-				}
-				
-				//AMOUNT
-				if(checkamount && !coin.getCoin().getAmount().isEqual(amt)) {
-					continue;
-				}
-				
-				//DEEP ENOUGH - for now add any found
-//				if(coin.getInBlockNumber().isLessEqual(minblock)) {
-					//OK - FOUND ONE!
-					totcoins.add(baseset.getProof(coin.getMMREntry()).toJSON());	
+//			//Cycle..
+//			ArrayList<CoinDBRow> coins = getMainDB().getCoinDB().getComplete();
+//			for(CoinDBRow coin : coins) {
+//				//RELEVANT..
+//				if(relevant && !coin.isRelevant()) {continue;}
+//				
+//				//SPEND TYPE
+//				if(type.equals("spent") && !coin.isSpent()) {continue;}
+//				if(type.equals("unspent") && coin.isSpent()) {continue;}
+//				
+//				//ADDRESS
+//				if(checkaddress && !coin.getCoin().getAddress().isEqual(addr)) {
+//					continue;
 //				}
-			}
+//				
+//				//TOKEN
+//				if(checktokenid && !coin.getCoin().getTokenID().isEqual(tok)) {
+//					continue;
+//				}
+//				
+//				//AMOUNT
+//				if(checkamount && !coin.getCoin().getAmount().isEqual(amt)) {
+//					continue;
+//				}
+//				
+//				//DEEP ENOUGH - for now add any found
+////				if(coin.getInBlockNumber().isLessEqual(minblock)) {
+//					//OK - FOUND ONE!
+//					totcoins.add(baseset.getProof(coin.getMMREntry()).toJSON());	
+////				}
+//			}
 			
 			//Add it to the output
 			InputHandler.endResponse(zMessage, true, "");
@@ -1004,11 +1008,14 @@ public class ConsensusPrint extends ConsensusProcessor {
 			
 			status.put("difficulty", tip.getTxPow().getBlockDifficulty().to0xString());
 			
+			//Number of transactions in total..
+			status.put("transactions",  tip.getMMRSet().getEntryNumber());
+			
 			//MMR DB
 			status.put("mmrentrydb", MMREntryDB.getDB().getSize());
 			
-			//COINDB
-			status.put("coindb", getMainDB().getCoinDB().getComplete().size());
+//			//COINDB
+//			status.put("coindb", getMainDB().getCoinDB().getComplete().size());
 			
 			//TxPOWDB
 			status.put("txpowdb", getMainDB().getTxPowDB().getSize());

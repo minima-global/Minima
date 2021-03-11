@@ -345,39 +345,133 @@ public class MMRSet implements Streamable {
 	}
 	
 	/**
-	 * Search for the first valid unspent Address and Tokenid with AT LEAST Amount coin
-	 * @param zCoinID
+	 * Search for unspent coins
 	 * @return
 	 */
-	public MMREntry searchAddress(MiniData zAddress, MiniNumber zAmount, MiniData zTokenID) {
+	public ArrayList<MMREntry> searchAllRelevantCoins() {
+		return searchCoins(true, 
+				false, new MiniData(), 
+				false, new MiniNumber(),
+				false, new MiniData());
+	}
+	
+	public ArrayList<MMREntry> searchCoins(
+			boolean zKeeper, 
+			boolean zSearchAddress, MiniData zAddress, 
+			boolean zSearchAmount, MiniNumber zAmount, 
+			boolean zSearchTokenid,MiniData zTokenID) {
+		
+		//Return structure
+		ArrayList<MMREntry> ret = new ArrayList<>();
+		
+		//If you find a spent coin don't add it later as unspent..
+		ArrayList<String> spentcoins = new ArrayList<>();
+		ArrayList<String> addedcoins = new ArrayList<>();
+		
 		//Loop through all
 		MMRSet current = this;
 		
 		//Cycle through them..
 		while(current != null) {
-			//Get the zero row - no parents..
-			ArrayList<MMREntry> zero = current.getZeroRow();
-			for(MMREntry entry : zero) {
+			//The list of entries to search in the Set
+			ArrayList<MMREntry> entries = new ArrayList<>();
+			
+			//Only search relevant coins.. ?
+			if(zKeeper) {
+				for(MiniNumber keep : current.getKeepers()) {
+					entries.add( current.getEntry(0, keep) );	
+				}
+			}else {
+				entries = current.getZeroRow();
+			}
+				
+			//Now cycle through these entries
+			for(MMREntry entry : entries) {
 				if(!entry.getData().isHashOnly()) {
 					Coin cc = entry.getData().getCoin();
 					
-					boolean notspent  = !entry.getData().isSpent();
-					boolean addr      = cc.getAddress().isEqual(zAddress);
-					boolean amount    = cc.getAmount().isMoreEqual(zAmount);
-					boolean tok       = cc.getTokenID().isEqual(zTokenID);
+					//Is it spent
+					boolean spent  		= entry.getData().isSpent();
 					
-					if(addr && amount && tok && notspent){
-						return entry;
+					//Does it match what we are looking for
+					boolean addr      	= true;
+					boolean amount    	= true;
+					boolean tok       	= true;
+					
+					if(zSearchAddress) {
+						addr      		= cc.getAddress().isEqual(zAddress);
+					}
+					
+					if(zSearchAmount) {
+						amount    		= cc.getAmount().isEqual(zAmount);
+					}
+					
+					if(zSearchTokenid) {
+						tok       		= cc.getTokenID().isEqual(zTokenID);
+					}
+					
+					//It matches..
+					if(addr && amount && tok){
+						String coinid = cc.getCoinID().to0xString();
+						
+						if(spent) {
+							if(!spentcoins.contains(coinid)) {
+								spentcoins.add(coinid);
+							}
+						}else {
+							//Check we have not allready found the spent copy..
+							if(!spentcoins.contains(coinid)) {
+								if(!addedcoins.contains(coinid)) {
+									addedcoins.add(coinid);
+									ret.add(entry);
+								}
+							}
+						}
 					}
 				}
 			}
-			
+				
 			//Search the parent..
 			current = current.getParent();
 		}
 		
-		return null;
+		return ret;
 	}
+	
+//	/**
+//	 * Search for the first valid unspent Address and Tokenid with AT LEAST Amount coin
+//	 * @param zCoinID
+//	 * @return
+//	 */
+//	public MMREntry searchAddress(MiniData zAddress, MiniNumber zAmount, MiniData zTokenID) {
+//		//Loop through all
+//		MMRSet current = this;
+//		
+//		//Cycle through them..
+//		while(current != null) {
+//			//Get the zero row - no parents..
+//			ArrayList<MMREntry> zero = current.getZeroRow();
+//			for(MMREntry entry : zero) {
+//				if(!entry.getData().isHashOnly()) {
+//					Coin cc = entry.getData().getCoin();
+//					
+//					boolean notspent  = !entry.getData().isSpent();
+//					boolean addr      = cc.getAddress().isEqual(zAddress);
+//					boolean amount    = cc.getAmount().isMoreEqual(zAmount);
+//					boolean tok       = cc.getTokenID().isEqual(zTokenID);
+//					
+//					if(addr && amount && tok && notspent){
+//						return entry;
+//					}
+//				}
+//			}
+//			
+//			//Search the parent..
+//			current = current.getParent();
+//		}
+//		
+//		return null;
+//	}
 	
 	/**
 	 * Find an entry
@@ -391,7 +485,7 @@ public class MMRSet implements Streamable {
 		//Cycle through them..
 		String coinid = zCoinID.to0xString();
 		while(current != null) {
-			MMREntry entry = mSetEntriesCoinID.get(coinid);
+			MMREntry entry = current.mSetEntriesCoinID.get(coinid);
 			if(entry != null) {
 				return entry;
 			}

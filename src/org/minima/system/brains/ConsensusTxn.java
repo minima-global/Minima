@@ -352,11 +352,11 @@ public class ConsensusTxn extends ConsensusProcessor {
 			Witness wit     =  getMainDB().getUserDB().getUserRow(trans).getWitness();
 			
 			//Get the Coin..
-			CoinDBRow crow = getMainDB().getCoinDB().getCoinRow(coinid);
+//			CoinDBRow crow = getMainDB().getCoinDB().getCoinRow(coinid);
 			Coin cc        = null;
 			
 			//If it isn't one of OUR coins..
-			if(crow==null) {
+//			if(crow==null) {
 				//Get the MMRSet
 				MMRSet basemmr = getMainDB().getMainTree().getChainTip().getMMRSet();
 				
@@ -370,9 +370,9 @@ public class ConsensusTxn extends ConsensusProcessor {
 					InputHandler.endResponse(zMessage, false, "CoinID not found : "+coinid);
 					return;	
 				}
-			}else {
-				cc = crow.getCoin();
-			}
+//			}else {
+//				cc = crow.getCoin();
+//			}
 						
 			//Is it a Token ? 
 			if(!cc.getTokenID().isEqual(Coin.MINIMA_TOKENID)) {
