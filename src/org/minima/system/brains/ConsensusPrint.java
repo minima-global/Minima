@@ -475,14 +475,26 @@ public class ConsensusPrint extends ConsensusProcessor {
 			Hashtable<String, MiniNumber> totals_unconfirmed = new Hashtable<>();
 			
 			UserDB userdb = getMainDB().getUserDB();
-			ArrayList<CoinDBRow> coins = getMainDB().getCoinDB().getCompleteRelevant();
-			for(CoinDBRow coin : coins) {
+			
+			//Current TIP
+			BlockTreeNode tip  	 = getMainDB().getMainTree().getChainTip();
+			MMRSet baseset 	     = tip.getMMRSet();
+			ArrayList<MMREntry> allcoins = baseset.searchAllRelevantCoins();
+			
+			//Cycle through your coins..
+			for(MMREntry coinentry : allcoins) {
+//			ArrayList<CoinDBRow> coins = getMainDB().getCoinDB().getCompleteRelevant();
+//			for(CoinDBRow coin : coins) {
+				
+				//Get this coin..
+				Coin coin = coinentry.getData().getCoin();
+				
 				//Is this one of ours ? Could be an import or someone elses 
-				boolean rel = userdb.isAddressRelevant(coin.getCoin().getAddress());
+				boolean rel = userdb.isAddressRelevant(coin.getAddress());
 				
 				//Are we only checking one address
 				if(!onlyaddress.equals("")) {
-					rel = rel && ( coin.getCoin().getAddress().to0xString().equals(onlyaddress) );
+					rel = rel && ( coin.getAddress().to0xString().equals(onlyaddress) );
 				}
 				
 				if(coin.isInBlock() && rel) {
