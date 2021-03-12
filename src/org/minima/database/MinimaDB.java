@@ -673,15 +673,18 @@ public class MinimaDB {
 		ArrayList<Coin> memcoins = getMempoolCoins();
 				
 		//Do we have any inputs with this address..
-		ArrayList<CoinDBRow> relevant = getCoinDB().getCompleteRelevant();
-		for(CoinDBRow row : relevant) {
-			if(row.isInBlock() && !row.isSpent() && row.getCoin().getTokenID().isEqual(zTokenID)){
-				MiniNumber depth = top.sub(row.getInBlockNumber());
+		ArrayList<MMREntry> relevant = getMMRTip().searchAllRelevantCoins();
+		for(MMREntry relcoin : relevant) {
+			MMRData coindata = relcoin.getData();
+			Coin coin = coindata.getCoin();
+			
+			if(coin.getTokenID().isEqual(zTokenID)){
+				MiniNumber depth = top.sub(coindata.getInBlock());
 				if(depth.isMoreEqual(GlobalParams.MINIMA_CONFIRM_DEPTH)) {
 					//Is this a simple address..
-					if(getUserDB().isSimpleAddress(row.getCoin().getAddress())) {
+					if(getUserDB().isSimpleAddress(coin.getAddress())) {
 						boolean found   = false;
-						MiniData coinid = row.getCoin().getCoinID();
+						MiniData coinid = coin.getCoinID();
 						
 						//Check in MemPool
 						for(Coin memcoin : memcoins) {
@@ -698,7 +701,7 @@ public class MinimaDB {
 						
 						//Is it safe to use ?
 						if(!found) {
-							confirmed.add(row.getCoin());	
+							confirmed.add(coin);	
 						}	
 					}
 				}
@@ -1337,6 +1340,10 @@ public class MinimaDB {
 	
 	public CoinDB getCoinDB() {
 		return mCoinDB;
+	}
+	
+	public MMRSet getMMRTip() {
+		return getMainTree().getChainTip().getMMRSet();
 	}
 	
 	public UserDB getUserDB() {

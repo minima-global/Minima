@@ -365,7 +365,6 @@ public class MMRSet implements Streamable {
 		ArrayList<MMREntry> ret = new ArrayList<>();
 		
 		//If you find a spent coin don't add it later as unspent..
-		ArrayList<String> spentcoins = new ArrayList<>();
 		ArrayList<String> addedcoins = new ArrayList<>();
 		
 		//Loop through all
@@ -414,17 +413,11 @@ public class MMRSet implements Streamable {
 					if(addr && amount && tok){
 						String coinid = cc.getCoinID().to0xString();
 						
-						if(spent) {
-							if(!spentcoins.contains(coinid)) {
-								spentcoins.add(coinid);
-							}
-						}else {
-							//Check we have not allready found the spent copy..
-							if(!spentcoins.contains(coinid)) {
-								if(!addedcoins.contains(coinid)) {
-									addedcoins.add(coinid);
-									ret.add(entry);
-								}
+						//Have we already added it..
+						if(!addedcoins.contains(coinid)) {
+							addedcoins.add(coinid);
+							if(!spent) {
+								ret.add(entry);
 							}
 						}
 					}

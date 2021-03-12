@@ -64,11 +64,6 @@ public class TestParams {
 	 */
 	public static MiniNumber MINIMA_MMR_PROOF_HISTORY = new MiniNumber(8);
 	
-//	/**
-//	 * Are we debugging the chain in short chain mode..
-//	 */
-//	public static boolean SHORT_CHAIN_DEBUG_MODE = false;
-//	
 	/**
 	 * Just create a block every transaction. Useful when not mining 
 	 * and just want a block every single transaction to debug.

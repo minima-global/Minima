@@ -474,34 +474,26 @@ public class ConsensusPrint extends ConsensusProcessor {
 			Hashtable<String, MiniNumber> totals_confirmed   = new Hashtable<>();
 			Hashtable<String, MiniNumber> totals_unconfirmed = new Hashtable<>();
 			
-			UserDB userdb = getMainDB().getUserDB();
-			
 			//Current TIP
-			BlockTreeNode tip  	 = getMainDB().getMainTree().getChainTip();
-			MMRSet baseset 	     = tip.getMMRSet();
+			MMRSet baseset = getMainDB().getMMRTip();
 			ArrayList<MMREntry> allcoins = baseset.searchAllRelevantCoins();
 			
 			//Cycle through your coins..
 			for(MMREntry coinentry : allcoins) {
-//			ArrayList<CoinDBRow> coins = getMainDB().getCoinDB().getCompleteRelevant();
-//			for(CoinDBRow coin : coins) {
-				
 				//Get this coin..
 				Coin coin = coinentry.getData().getCoin();
 				
-				//Is this one of ours ? Could be an import or someone elses 
-				boolean rel = userdb.isAddressRelevant(coin.getAddress());
-				
 				//Are we only checking one address
+				boolean rel = true;
 				if(!onlyaddress.equals("")) {
-					rel = rel && ( coin.getAddress().to0xString().equals(onlyaddress) );
+					rel = coin.getAddress().to0xString().equals(onlyaddress);
 				}
 				
-				if(coin.isInBlock() && rel) {
+				if(rel) {
 					//What Token..
-					String     tokid 	= coin.getCoin().getTokenID().to0xString();
+					String     tokid 	= coin.getTokenID().to0xString();
 					MiniData   tokhash 	= new MiniData(tokid);
-					MiniNumber blknum   = coin.getInBlockNumber();
+					MiniNumber blknum   = coinentry.getData().getInBlock();
 					MiniNumber depth 	= top.sub(blknum);
 					
 					//Get the Token Details.
@@ -536,42 +528,41 @@ public class ConsensusPrint extends ConsensusProcessor {
 						full_details.put(tokid, jobj);
 					}
 					
-					if(!coin.isSpent()) {
-						//At least one coin is unspent..
-						jobj.put("unspent", "true");
+					//At least one coin is unspent..
+					jobj.put("unspent", "true");
+					
+					if(depth.isMoreEqual(GlobalParams.MINIMA_CONFIRM_DEPTH)) {
+						//Get the Current total..
+						MiniNumber curr = totals_confirmed.get(tokid);
 						
-						if(depth.isMoreEqual(GlobalParams.MINIMA_CONFIRM_DEPTH)) {
-							//Get the Current total..
-							MiniNumber curr = totals_confirmed.get(tokid);
-							
-							if(curr == null) {
-								curr = MiniNumber.ZERO;
-							}
-							
-							//Add it..
-							curr = curr.add(coin.getCoin().getAmount());
-							
-							//Re-add..
-							totals_confirmed.put(tokid, curr);
-							
-							//Add to the JSON object
-							jobj.put("confirmed", curr);
-							
-						}else {
-							//Get the Current total..
-							MiniNumber curr = totals_unconfirmed.get(tokid);
-							if(curr == null) {curr = MiniNumber.ZERO;}
-							
-							//Add it..
-							curr = curr.add(coin.getCoin().getAmount());
-							
-							//Re-add..
-							totals_unconfirmed.put(tokid, curr);
-							
-							//Add to the JSON object
-							jobj.put("unconfirmed", curr);
+						if(curr == null) {
+							curr = MiniNumber.ZERO;
 						}
+						
+						//Add it..
+						curr = curr.add(coin.getAmount());
+						
+						//Re-add..
+						totals_confirmed.put(tokid, curr);
+						
+						//Add to the JSON object
+						jobj.put("confirmed", curr);
+						
+					}else {
+						//Get the Current total..
+						MiniNumber curr = totals_unconfirmed.get(tokid);
+						if(curr == null) {curr = MiniNumber.ZERO;}
+						
+						//Add it..
+						curr = curr.add(coin.getAmount());
+						
+						//Re-add..
+						totals_unconfirmed.put(tokid, curr);
+						
+						//Add to the JSON object
+						jobj.put("unconfirmed", curr);
 					}
+					
 				}
 			}
 			
