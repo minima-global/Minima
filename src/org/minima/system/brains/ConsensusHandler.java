@@ -320,11 +320,11 @@ public class ConsensusHandler extends MessageProcessor {
 			}
 					
 			//BROADCAST Message for ALL the clients - only if valid / or block.. ( they can request it if need be..)
-			if(txnok || txpow.isBlock()) {
+//			if(txnok || txpow.isBlock()) {
 				Message netmsg  = new Message(MinimaClient.NETCLIENT_SENDTXPOWID).addObject("txpowid", txpow.getTxPowID());
 				Message netw    = new Message(NetworkHandler.NETWORK_SENDALL).addObject("message", netmsg);
 				Main.getMainHandler().getNetworkHandler().PostMessage(netw);
-			}
+//			}
 			
 		/**
 		 * Called every 10 Minutes to do a few tasks
