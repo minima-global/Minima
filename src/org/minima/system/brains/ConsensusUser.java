@@ -311,7 +311,7 @@ public class ConsensusUser extends ConsensusProcessor {
 				JSONObject node = (JSONObject) nodearray.get(i);
 				
 				//Get the proof..
-				MMRProof proof = mmr.getProof(new MiniNumber(i));
+				MMRProof proof = mmr.getFullProofToRoot(new MiniNumber(i));
 				
 				//Calculate the CHAINSHA proof..
 				node.put("chainsha", proof.getChainSHAProof().to0xString());
@@ -617,28 +617,28 @@ public class ConsensusUser extends ConsensusProcessor {
 			InputHandler.endResponse(zMessage, true, "Mempool Flushed");
 			
 		}else if(zMessage.isMessageType(CONSENSUS_UNKEEPCOIN)) {
-			//Once a coin has been used - say in a DEX.. you can remove it from your coinDB
-			String cid = zMessage.getString("coinid");
-			
-			//Remove from the UserDB
-			getMainDB().getUserDB().removeRelevantCoinID(new MiniData(cid));
-			
-			//Get the MMRSet
-			MMRSet basemmr = getMainDB().getMMRTip();
-			
-			//Search for the coin..
-			MiniData coinid = new MiniData(cid);
-			MMREntry entry =  basemmr.findEntry(coinid);
-			
-			//Now ask to keep it..
-			MMRSet coinset = basemmr.getParentAtTime(entry.getBlockTime());
-			boolean found = coinset.removeKeeper(entry.getEntryNumber());
-			
-			//Now you have the proof..
-			JSONObject resp = InputHandler.getResponseJSON(zMessage);
-			resp.put("found", found);
-			resp.put("coinid", cid);
-			InputHandler.endResponse(zMessage, true, "Coin removed");
+//			//Once a coin has been used - say in a DEX.. you can remove it from your coinDB
+//			String cid = zMessage.getString("coinid");
+//			
+//			//Remove from the UserDB
+//			getMainDB().getUserDB().removeRelevantCoinID(new MiniData(cid));
+//			
+//			//Get the MMRSet
+//			MMRSet basemmr = getMainDB().getMMRTip();
+//			
+//			//Search for the coin..
+//			MiniData coinid = new MiniData(cid);
+//			MMREntry entry =  basemmr.findEntry(coinid);
+//			
+//			//Now ask to keep it..
+//			MMRSet coinset = basemmr.getParentAtTime(entry.getBlockTime());
+//			boolean found = coinset.removeKeeper(entry.getEntryNumber());
+//			
+//			//Now you have the proof..
+//			JSONObject resp = InputHandler.getResponseJSON(zMessage);
+//			resp.put("found", found);
+//			resp.put("coinid", cid);
+//			InputHandler.endResponse(zMessage, true, "Coin removed");
 			
 		}else if(zMessage.isMessageType(CONSENSUS_KEEPCOIN)) {
 			String cid = zMessage.getString("coinid");
