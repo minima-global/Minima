@@ -32,8 +32,9 @@ public class MinimaDBTests {
     public void testConstructors() {
         MinimaDB mdb = new MinimaDB();
 
-        assertEquals(0, mdb.getCoinDB().getComplete().size());
-        assertEquals(0, mdb.getCoinDB().getCompleteRelevant().size());
+//        assertEquals(0, mdb.getCoinDB().getComplete().size());
+//        assertEquals(0, mdb.getCoinDB().getCompleteRelevant().size());
+        
         assertEquals(0, mdb.getMainTree().getAsList().size());
         assertEquals(0, mdb.getMempoolCoins().size());
         assertNull(mdb.getMainTree().getChainTip());
@@ -51,8 +52,8 @@ public class MinimaDBTests {
 
         mdb.DoGenesis();
 
-        assertEquals(0, mdb.getCoinDB().getComplete().size());
-        assertEquals(0, mdb.getCoinDB().getCompleteRelevant().size());
+//        assertEquals(0, mdb.getCoinDB().getComplete().size());
+//        assertEquals(0, mdb.getCoinDB().getCompleteRelevant().size());
         assertEquals(1, mdb.getMainTree().getAsList().size()); // single peak
         assertEquals(0, mdb.getMempoolCoins().size());
         assertNotNull(mdb.getMainTree().getChainTip());
@@ -156,8 +157,11 @@ public class MinimaDBTests {
         // CONSENSUS_PROCESSTXPOW end
 
         // Checks
-        assertEquals(3, mdb.getCoinDB().getComplete().size());
-        assertEquals(2, mdb.getCoinDB().getCompleteRelevant().size());
+//        assertEquals(3, mdb.getCoinDB().getComplete().size());
+//        assertEquals(2, mdb.getCoinDB().getCompleteRelevant().size());
+        assertEquals(3, mdb.getMMRTip().searchAllCoins().size());
+        assertEquals(2, mdb.getMMRTip().searchAllRelevantCoins().size());
+        
         assertEquals(2, mdb.getMainTree().getAsList().size());
         assertEquals(0, mdb.getMempoolCoins().size());
         assertNotNull(mdb.getMainTree().getChainTip());
@@ -180,8 +184,10 @@ public class MinimaDBTests {
         mdb.addNewTxPow(blocktx);
         mdb.processTxPOW(blocktx);
 
-        assertEquals(3, mdb.getCoinDB().getComplete().size());
-        assertEquals(2, mdb.getCoinDB().getCompleteRelevant().size());
+        assertEquals(3, mdb.getMMRTip().searchAllCoins().size());
+        assertEquals(2, mdb.getMMRTip().searchAllRelevantCoins().size());
+//        assertEquals(3, mdb.getCoinDB().getComplete().size());
+//        assertEquals(2, mdb.getCoinDB().getCompleteRelevant().size());
         assertEquals(5, mdb.getMainTree().getAsList().size());
         assertEquals(0, mdb.getMempoolCoins().size());
         assertNotNull(mdb.getMainTree().getChainTip());

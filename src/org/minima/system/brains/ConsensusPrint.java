@@ -1012,7 +1012,7 @@ public class ConsensusPrint extends ConsensusProcessor {
 			status.put("difficulty", tip.getTxPow().getBlockDifficulty().to0xString());
 			
 			//Number of transactions in total..
-			status.put("transactions",  tip.getMMRSet().getEntryNumber());
+			status.put("coins",  tip.getMMRSet().getEntryNumber());
 			
 			//MMR DB
 			status.put("mmrentrydb", MMREntryDB.getDB().getSize());

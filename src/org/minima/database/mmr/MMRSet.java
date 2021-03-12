@@ -355,6 +355,13 @@ public class MMRSet implements Streamable {
 				false, new MiniData());
 	}
 	
+	public ArrayList<MMREntry> searchAllCoins() {
+		return searchCoins(false, 
+				false, new MiniData(), 
+				false, new MiniNumber(),
+				false, new MiniData());
+	}
+	
 	public ArrayList<MMREntry> searchCoins(
 			boolean zKeeper, 
 			boolean zSearchAddress, MiniData zAddress, 

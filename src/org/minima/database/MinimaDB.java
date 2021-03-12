@@ -66,11 +66,6 @@ public class MinimaDB {
 	private BlockTree mMainTree;
 	
 	/**
-	 * The Short Term CoinDB database
-	 */
-	private CoinDB mCoinDB;
-	
-	/**
 	 * The user database with keys, addresses
 	 */
 	private UserDB mUserDB;
@@ -89,16 +84,8 @@ public class MinimaDB {
 	 * Main Constructor
 	 */
 	public MinimaDB() {
-		//Use the new FAST TxPoWDB
-//		mTxPOWDB 	= new JavaDB();
 		mTxPOWDB 	= new FastJavaDB();
-		
 		mMainTree 	= new BlockTree();	
-
-		//New FAST CoinDB
-//		mCoinDB		= new JavaCoinDB();
-		mCoinDB		= new FastCoinDB();
-		
 		mUserDB		= new JavaUserDB();
 	}
 	
@@ -276,7 +263,7 @@ public class MinimaDB {
 			mTxPOWDB.resetBlocksFromOnwards(lastblock);
 			
 			//Reset coins from that block onwards
-			mCoinDB.resetCoinsFomOnwards(lastblock);
+//			mCoinDB.resetCoinsFomOnwards(lastblock);
 			
 			//Now sort
 			for(BlockTreeNode treenode : list) {
@@ -359,7 +346,7 @@ public class MinimaDB {
 			}
 			
 			//Remove all the coins no longer needed.. SPENT
-			mCoinDB.removeOldSpentCoins(cascade);
+//			mCoinDB.removeOldSpentCoins(cascade);
 			
 			//Clean up..
 			System.gc();
@@ -1327,9 +1314,9 @@ public class MinimaDB {
 		return mTxPOWDB;
 	}
 	
-	public CoinDB getCoinDB() {
-		return mCoinDB;
-	}
+//	public CoinDB getCoinDB() {
+//		return mCoinDB;
+//	}
 	
 	public MMRSet getMMRTip() {
 		return getMainTree().getChainTip().getMMRSet();

@@ -462,7 +462,7 @@ public class ConsensusNet extends ConsensusProcessor {
 			
 			//Clear the database..
 			getMainDB().getMainTree().clearTree();
-			getMainDB().getCoinDB().clearDB();
+//			getMainDB().getCoinDB().clearDB();
 			getMainDB().getTxPowDB().ClearDB();
 			
 			//Wipe the txpow folder..
