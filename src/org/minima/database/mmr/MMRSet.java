@@ -1001,6 +1001,15 @@ public class MMRSet implements Streamable {
 		return false;
 	}
 	
+	public boolean removeKeeper(MiniNumber zEntry) {
+		if(!isKeptAllready(zEntry)) {
+			mKeepers.remove(zEntry);
+			return true;
+		}
+		
+		return false;
+	}
+	
 	/**
 	 * Get the Keeper
 	 */

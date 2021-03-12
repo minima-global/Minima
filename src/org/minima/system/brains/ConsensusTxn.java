@@ -702,40 +702,45 @@ public class ConsensusTxn extends ConsensusProcessor {
 			dos.close();
 		
 		}else if(zMessage.isMessageType(CONSENSUS_TXNIMPORT)) {
+			//FOR NOW
+			InputHandler.endResponse(zMessage, false, "THIS FUNCTION CURRENTLY UNAVAILABLE!");
+			
 			//Import to this transaction 
-			int trans = zMessage.getInteger("transaction");
-			String data = zMessage.getString("data");
-			MiniData md = new MiniData(data);
 			
-			//Delete if Exists
-			getMainDB().getUserDB().deleteUserRow(trans);
-			UserDBRow row =  getMainDB().getUserDB().addUserRow(trans);
 			
-			//Convert to a data stream
-			ByteArrayInputStream bais = new ByteArrayInputStream(md.getData());
-			DataInputStream dis = new DataInputStream(bais);
-			
-			//Now get the TRansaction
-			row.getTransaction().readDataStream(dis);
-			
-			//And the Witness..
-			row.getWitness().readDataStream(dis);
-			
-			//Import all the proofs..
-			JSONObject resp = InputHandler.getResponseJSON(zMessage);
-			for(MMRProof proof : row.getWitness().getAllMMRProofs()) {
-				boolean valid = ConsensusUser.importCoin(getMainDB(), proof);
-			
-				if(!valid) {
-					resp.put("error", "INVALID PROOF!");
-					resp.put("proof", proof.toJSON());	
-					InputHandler.endResponse(zMessage, true, "");
-					
-					return;
-				}
-			}
-			
-			listTransactions(zMessage);
+//			int trans = zMessage.getInteger("transaction");
+//			String data = zMessage.getString("data");
+//			MiniData md = new MiniData(data);
+//			
+//			//Delete if Exists
+//			getMainDB().getUserDB().deleteUserRow(trans);
+//			UserDBRow row =  getMainDB().getUserDB().addUserRow(trans);
+//			
+//			//Convert to a data stream
+//			ByteArrayInputStream bais = new ByteArrayInputStream(md.getData());
+//			DataInputStream dis = new DataInputStream(bais);
+//			
+//			//Now get the TRansaction
+//			row.getTransaction().readDataStream(dis);
+//			
+//			//And the Witness..
+//			row.getWitness().readDataStream(dis);
+//			
+//			//Import all the proofs..
+//			JSONObject resp = InputHandler.getResponseJSON(zMessage);
+//			for(MMRProof proof : row.getWitness().getAllMMRProofs()) {
+//				boolean valid = ConsensusUser.importCoin(getMainDB(), proof);
+//			
+//				if(!valid) {
+//					resp.put("error", "INVALID PROOF!");
+//					resp.put("proof", proof.toJSON());	
+//					InputHandler.endResponse(zMessage, true, "");
+//					
+//					return;
+//				}
+//			}
+//			
+//			listTransactions(zMessage);
 		}
 		
 		

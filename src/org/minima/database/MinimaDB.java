@@ -366,6 +366,11 @@ public class MinimaDB {
 		}
 	}
 	
+	/**
+	 * Scan an MMRset to see if any of the coins are relevant to this user
+	 * 
+	 * @param zMMRSet
+	 */
 	public void scanMMRSetForCoins(MMRSet zMMRSet) {
 		//Check the MMR for any coins..
 		ArrayList<MMREntry> entries = zMMRSet.getZeroRow();
@@ -373,9 +378,6 @@ public class MinimaDB {
 			if(!mmrcoin.getData().isHashOnly()) {
 				//Get the Coin..
 				Coin cc = mmrcoin.getData().getCoin();
-				
-				//Is it spent
-				boolean spent = mmrcoin.getData().isSpent();
 				
 				//Is the address one of ours..
 				boolean rel = getUserDB().isCoinRelevant(cc);
@@ -389,19 +391,6 @@ public class MinimaDB {
 				if(rel) {
 					//It's to be kept in the MMR past the cascade..
 					zMMRSet.addKeeper(mmrcoin.getEntryNumber());
-				}
-				
-				//Add to our list - or return the already existing  version..
-				CoinDBRow inrow = getCoinDB().addCoinRow(cc);
-				inrow.setRelevant(rel);
-				
-				//Exists already - only want to update if something has changed..
-				//Same coin can be in the MMR for multiple blocks.. only do this ONCHANGE
-				if(!inrow.isInBlock() || inrow.isSpent() != spent) {
-					inrow.setIsSpent(spent);
-					inrow.setIsInBlock(true);
-					inrow.setInBlockNumber(zMMRSet.getBlockTime());
-					inrow.setMMREntry(mmrcoin.getEntryNumber());
 				}
 			}
 		}

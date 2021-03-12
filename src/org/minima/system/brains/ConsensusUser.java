@@ -627,8 +627,16 @@ public class ConsensusUser extends ConsensusProcessor {
 			//Remove from the UserDB
 			getMainDB().getUserDB().removeRelevantCoinID(new MiniData(cid));
 			
-			//Remove from the coindb..
-			boolean found = getMainDB().getCoinDB().removeCoin(new MiniData(cid));
+			//Get the MMRSet
+			MMRSet basemmr = getMainDB().getMMRTip();
+			
+			//Search for the coin..
+			MiniData coinid = new MiniData(cid);
+			MMREntry entry =  basemmr.findEntry(coinid);
+			
+			//Now ask to keep it..
+			MMRSet coinset = basemmr.getParentAtTime(entry.getBlockTime());
+			boolean found = coinset.removeKeeper(entry.getEntryNumber());
 			
 			//Now you have the proof..
 			JSONObject resp = InputHandler.getResponseJSON(zMessage);
@@ -643,7 +651,7 @@ public class ConsensusUser extends ConsensusProcessor {
 			resp.put("coinid", cid);
 			
 			//Get the MMRSet
-			MMRSet basemmr = getMainDB().getMainTree().getChainTip().getMMRSet();
+			MMRSet basemmr = getMainDB().getMMRTip();
 			
 			//Search for the coin..
 			MiniData coinid = new MiniData(cid);
@@ -662,17 +670,17 @@ public class ConsensusUser extends ConsensusProcessor {
 			MMRSet coinset = basemmr.getParentAtTime(entry.getBlockTime());
 			coinset.addKeeper(entry.getEntryNumber());
 			
-			//Get the coin
-			Coin cc = entry.getData().getCoin();
-			
-			//add it to the database
-			CoinDBRow crow = getMainDB().getCoinDB().addCoinRow(cc);
-			crow.setRelevant(true);
-			crow.setKeeper(true);
-			crow.setIsSpent(entry.getData().isSpent());
-			crow.setIsInBlock(true);
-			crow.setInBlockNumber(entry.getData().getInBlock());
-			crow.setMMREntry(entry.getEntryNumber());
+//			//Get the coin
+//			Coin cc = entry.getData().getCoin();
+//			
+//			//add it to the database
+//			CoinDBRow crow = getMainDB().getCoinDB().addCoinRow(cc);
+//			crow.setRelevant(true);
+//			crow.setKeeper(true);
+//			crow.setIsSpent(entry.getData().isSpent());
+//			crow.setIsInBlock(true);
+//			crow.setInBlockNumber(entry.getData().getInBlock());
+//			crow.setMMREntry(entry.getEntryNumber());
 			
 			//Now you have the proof..
 			resp.put("coin", basemmr.getProof(entry.getEntryNumber()));
@@ -682,78 +690,78 @@ public class ConsensusUser extends ConsensusProcessor {
 			getConsensusHandler().PostMessage(ConsensusBackup.CONSENSUSBACKUP_BACKUP);
 			
 		}else if(zMessage.isMessageType(CONSENSUS_IMPORTCOIN)) {
-			MiniData data = (MiniData)zMessage.getObject("proof");
-			
-			ByteArrayInputStream bais = new ByteArrayInputStream(data.getData());
-			DataInputStream dis = new DataInputStream(bais);
-			
-			//Now make the proof..
-			MMRProof proof = MMRProof.ReadFromStream(dis);
-			
-			if(proof.getMMRData().isSpent()) {
-				//ONLY UNSPENT COINS..
-				InputHandler.endResponse(zMessage, false, "Coin already SPENT!");
-				return;
-			}
-			
-			//Get the MMRSet
-			MMRSet basemmr = getMainDB().getMainTree().getChainTip().getMMRSet();
-			
-			//Check it..
-			boolean valid  = basemmr.checkProof(proof);
-			
-			//Stop if invalid.. 
-			if(!valid) {
-				//Now you have the proof..
-				InputHandler.endResponse(zMessage, false, "INVALID PROOF");
-				return;
-			}
-			
-			//Get the MMRSet where this proof was made..
-			MMRSet proofmmr = basemmr.getParentAtTime(proof.getBlockTime());
-			if(proofmmr == null) {
-				//Now you have the proof..
-				InputHandler.endResponse(zMessage, false, "Proof too old - no MMRSet found @ "+proof.getBlockTime());
-				return;
-			}
-			
-			//Now add this proof to the set.. if not already added
-			MMREntry entry =  proofmmr.addExternalUnspentCoin(proof);
-			
-			//Error.
-			if(entry == null) {
-				InputHandler.endResponse(zMessage, false, "Consensus error addding proof !");
-				return;
-			}
-			
-			//And now refinalize..
-			proofmmr.finalizeSet();
-			
-			//Get the coin
-			Coin cc = entry.getData().getCoin();
-			
-			//Is it relevant..
-			boolean rel = false;
-			if( getMainDB().getUserDB().isAddressRelevant(cc.getAddress()) ){
-				rel = true;
-			}
-			
-			//add it to the database
-			CoinDBRow crow = getMainDB().getCoinDB().addCoinRow(cc);
-			crow.setRelevant(rel);
-			crow.setKeeper(true);
-			crow.setIsSpent(entry.getData().isSpent());
-			crow.setIsInBlock(true);
-			crow.setInBlockNumber(entry.getData().getInBlock());
-			crow.setMMREntry(entry.getEntryNumber());
-			
-			//Now you have the proof..
-			JSONObject resp = InputHandler.getResponseJSON(zMessage);
-			resp.put("proof", proof.toJSON());
-			InputHandler.endResponse(zMessage, true, "");
-			
-			//Do a backup..
-			getConsensusHandler().PostMessage(ConsensusBackup.CONSENSUSBACKUP_BACKUP);
+//			MiniData data = (MiniData)zMessage.getObject("proof");
+//			
+//			ByteArrayInputStream bais = new ByteArrayInputStream(data.getData());
+//			DataInputStream dis = new DataInputStream(bais);
+//			
+//			//Now make the proof..
+//			MMRProof proof = MMRProof.ReadFromStream(dis);
+//			
+//			if(proof.getMMRData().isSpent()) {
+//				//ONLY UNSPENT COINS..
+//				InputHandler.endResponse(zMessage, false, "Coin already SPENT!");
+//				return;
+//			}
+//			
+//			//Get the MMRSet
+//			MMRSet basemmr = getMainDB().getMainTree().getChainTip().getMMRSet();
+//			
+//			//Check it..
+//			boolean valid  = basemmr.checkProof(proof);
+//			
+//			//Stop if invalid.. 
+//			if(!valid) {
+//				//Now you have the proof..
+//				InputHandler.endResponse(zMessage, false, "INVALID PROOF");
+//				return;
+//			}
+//			
+//			//Get the MMRSet where this proof was made..
+//			MMRSet proofmmr = basemmr.getParentAtTime(proof.getBlockTime());
+//			if(proofmmr == null) {
+//				//Now you have the proof..
+//				InputHandler.endResponse(zMessage, false, "Proof too old - no MMRSet found @ "+proof.getBlockTime());
+//				return;
+//			}
+//			
+//			//Now add this proof to the set.. if not already added
+//			MMREntry entry =  proofmmr.addExternalUnspentCoin(proof);
+//			
+//			//Error.
+//			if(entry == null) {
+//				InputHandler.endResponse(zMessage, false, "Consensus error addding proof !");
+//				return;
+//			}
+//			
+//			//And now refinalize..
+//			proofmmr.finalizeSet();
+//			
+//			//Get the coin
+//			Coin cc = entry.getData().getCoin();
+//			
+//			//Is it relevant..
+//			boolean rel = false;
+//			if( getMainDB().getUserDB().isAddressRelevant(cc.getAddress()) ){
+//				rel = true;
+//			}
+//			
+//			//add it to the database
+//			CoinDBRow crow = getMainDB().getCoinDB().addCoinRow(cc);
+//			crow.setRelevant(rel);
+//			crow.setKeeper(true);
+//			crow.setIsSpent(entry.getData().isSpent());
+//			crow.setIsInBlock(true);
+//			crow.setInBlockNumber(entry.getData().getInBlock());
+//			crow.setMMREntry(entry.getEntryNumber());
+//			
+//			//Now you have the proof..
+//			JSONObject resp = InputHandler.getResponseJSON(zMessage);
+//			resp.put("proof", proof.toJSON());
+//			InputHandler.endResponse(zMessage, true, "");
+//			
+//			//Do a backup..
+//			getConsensusHandler().PostMessage(ConsensusBackup.CONSENSUSBACKUP_BACKUP);
 			
 		}else if(zMessage.isMessageType(CONSENSUS_EXPORTCOIN)) {
 			MiniData coinid = (MiniData)zMessage.getObject("coinid");
@@ -816,55 +824,55 @@ public class ConsensusUser extends ConsensusProcessor {
 		}
 	}
 	
-	public static boolean importCoin(MinimaDB zDB, MMRProof zProof) throws IOException{
-		//Get the MMRSet
-		MMRSet basemmr = zDB.getMainTree().getChainTip().getMMRSet();
-		
-		//Check it..
-		boolean valid  = basemmr.checkProof(zProof);
-		
-		//Stop if invalid.. 
-		if(!valid) {
-			return false;
-		}
-		
-		//Get the MMRSet where this proof was made..
-		MMRSet proofmmr = basemmr.getParentAtTime(zProof.getBlockTime());
-		if(proofmmr == null) {
-			return false;
-		}
-		
-		//Now add this proof to the set.. if not already added
-		MMREntry entry =  proofmmr.addExternalUnspentCoin(zProof);
-		
-		//Error..
-		if(entry == null) {
-			return false;
-		}
-		
-		//And now refinalize..
-		proofmmr.finalizeSet();
-		
-		//Get the coin
-		Coin cc = entry.getData().getCoin();
-		
-		//Is it relevant..
-		boolean rel = false;
-		if( zDB.getUserDB().isAddressRelevant(cc.getAddress()) ){
-			rel = true;
-		}
-		
-		//add it to the database
-		CoinDBRow crow = zDB.getCoinDB().addCoinRow(cc);
-		crow.setKeeper(true);
-		crow.setRelevant(rel);
-		crow.setIsSpent(entry.getData().isSpent());
-		crow.setIsInBlock(true);
-		crow.setInBlockNumber(entry.getData().getInBlock());
-		crow.setMMREntry(entry.getEntryNumber());
-		
-		return true;
-	}
+//	public static boolean importCoin(MinimaDB zDB, MMRProof zProof) throws IOException{
+//		//Get the MMRSet
+//		MMRSet basemmr = zDB.getMainTree().getChainTip().getMMRSet();
+//		
+//		//Check it..
+//		boolean valid  = basemmr.checkProof(zProof);
+//		
+//		//Stop if invalid.. 
+//		if(!valid) {
+//			return false;
+//		}
+//		
+//		//Get the MMRSet where this proof was made..
+//		MMRSet proofmmr = basemmr.getParentAtTime(zProof.getBlockTime());
+//		if(proofmmr == null) {
+//			return false;
+//		}
+//		
+//		//Now add this proof to the set.. if not already added
+//		MMREntry entry =  proofmmr.addExternalUnspentCoin(zProof);
+//		
+//		//Error..
+//		if(entry == null) {
+//			return false;
+//		}
+//		
+//		//And now refinalize..
+//		proofmmr.finalizeSet();
+//		
+//		//Get the coin
+//		Coin cc = entry.getData().getCoin();
+//		
+//		//Is it relevant..
+//		boolean rel = false;
+//		if( zDB.getUserDB().isAddressRelevant(cc.getAddress()) ){
+//			rel = true;
+//		}
+//		
+//		//add it to the database
+//		CoinDBRow crow = zDB.getCoinDB().addCoinRow(cc);
+//		crow.setKeeper(true);
+//		crow.setRelevant(rel);
+//		crow.setIsSpent(entry.getData().isSpent());
+//		crow.setIsInBlock(true);
+//		crow.setInBlockNumber(entry.getData().getInBlock());
+//		crow.setMMREntry(entry.getEntryNumber());
+//		
+//		return true;
+//	}
 	
 //	public static MiniData exportCoin(MinimaDB zDB, MiniData zCoinID) throws IOException {
 //		//The Base current MMRSet
