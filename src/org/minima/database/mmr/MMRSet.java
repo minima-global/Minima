@@ -505,13 +505,22 @@ public class MMRSet implements Streamable {
 		return entry;
 	}
 	
-	private MMREntry getEntry(int zRow, MiniNumber zEntry) {
+	protected MMREntry getEntry(int zRow, MiniNumber zEntry) {
+		return getEntry(zRow, zEntry, MiniNumber.ZERO);
+	}
+	
+	protected MMREntry getEntry(int zRow, MiniNumber zEntry, MiniNumber zMaxBack) {
 		//Cycle down through the MMR sets..
 		MMRSet current = this;
 		
 		//Now Loop..
 		String entryname = getHashTableEntry(zRow, zEntry);
 		while(current != null) {
+			//Check within the designated range
+			if(current.getBlockTime().isLess(zMaxBack)) {
+				break;
+			}
+			
 			//Check if already added..
 			MMREntry entry   = current.mSetEntries.get(entryname);
 			if(entry!=null) {
@@ -528,6 +537,30 @@ public class MMRSet implements Streamable {
 		
 		return entry;
 	}
+	
+//	private MMREntry getEntry(int zRow, MiniNumber zEntry) {
+//		//Cycle down through the MMR sets..
+//		MMRSet current = this;
+//		
+//		//Now Loop..
+//		String entryname = getHashTableEntry(zRow, zEntry);
+//		while(current != null) {
+//			//Check if already added..
+//			MMREntry entry   = current.mSetEntries.get(entryname);
+//			if(entry!=null) {
+//				return entry;
+//			}
+//			
+//			//Check the parent Set
+//			current = current.getParent();	
+//		}
+//		
+//		//If you can't find it - return empty entry..
+//		MMREntry entry = new MMREntry(zRow, zEntry);
+//		entry.setBlockTime(getBlockTime());
+//		
+//		return entry;
+//	}
 	
 	/**
 	 * Add data - an UNSPENT coin
@@ -665,8 +698,12 @@ public class MMRSet implements Streamable {
 		MMREntry entry = setEntry(0, zProof.getEntryNumber(), spentmmr);
 		MMREntry ret   = entry;
 		
+		//The Min Blocktime
+		MiniNumber minblock = zProof.getBlockTime().increment();
+				
+		
 		//Now update the tree - Get the Sibling.. 
-		MMREntry sibling = getEntry(0, entry.getSibling());
+		MMREntry sibling = getEntry(0, entry.getSibling(),minblock);
 		
 		//Is this a peak..
 		int prooflen = zProof.getProofLen();
@@ -726,7 +763,7 @@ public class MMRSet implements Streamable {
 			}
 			
 			//Get the Sibling..
-			sibling = getEntry(entry.getRow(), entry.getSibling());
+			sibling = getEntry(entry.getRow(), entry.getSibling(),minblock);
 			
 			//Check for a valid sibling
 			if(pcount < prooflen) {
@@ -961,8 +998,11 @@ public class MMRSet implements Streamable {
 			return false;
 		}
 		
+		//The Min Blocktime
+		MiniNumber minblock = zProof.getBlockTime().increment();
+		
 		//So the proof was valid at that time.. if it has been SPENT, it will have been AFTER this block - and in our MMR
-		MMREntry entry = getEntry(0, zProof.getEntryNumber());
+		MMREntry entry = getEntry(0, zProof.getEntryNumber(),minblock);
 		
 		//Is it there ?
 		if(!entry.isEmpty()) {
