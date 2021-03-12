@@ -838,7 +838,7 @@ public class MMRSet implements Streamable {
 		MMREntry keeper 		= null;
 		while(peaks.size() > 1) {
 			//Create a new MMR
-			MMRSet2 newmmr = new MMRSet2(MMR_HASH_BITS,false);
+			MMRSet newmmr = new MMRSet(MMR_HASH_BITS,false);
 			
 			//Add all the peaks to it..
 			for(MMREntry peak : peaks) {
@@ -861,7 +861,7 @@ public class MMRSet implements Streamable {
 			}
 			
 			//Now get the keeper proof..
-			MMRProof proof = newmmr.getProofToPeak(keeper.getEntryNumber());
+			MMRProof proof = newmmr.getProof(keeper.getEntryNumber());
 			
 			//Now add that to the total proof..
 			int len = proof.getProofLen();
