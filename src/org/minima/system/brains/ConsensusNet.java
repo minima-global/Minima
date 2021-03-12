@@ -60,6 +60,8 @@ public class ConsensusNet extends ConsensusProcessor {
 	
 	public static final String CONSENSUS_NET_GENERIC 			= CONSENSUS_PREFIX+"NET_MESSAGE_"+MinimaReader.NETMESSAGE_GENERIC.getValue();
 	
+	public static final String CONSENSUS_NET_SYNCOMPLETE 		= CONSENSUS_PREFIX+"NET_MESSAGE_SYNCCOMPLETE";
+	
 	private static int MAX_TXPOW_LIST_SIZE = 100;
 	
 	/**
@@ -149,8 +151,8 @@ public class ConsensusNet extends ConsensusProcessor {
 			MinimaClient client = (MinimaClient) zMessage.getObject("netclient");
 			
 			//Only allow 0.97 for this..
-			if(!greet.getVersion().startsWith("0.97")) {
-				MinimaLogger.log("INCOMPATIBLE VERSION ON GREETING "+greet.getVersion()+" MUST BE 0.97");
+			if(!greet.getVersion().startsWith("0.98")) {
+				MinimaLogger.log("INCOMPATIBLE VERSION ON GREETING "+greet.getVersion()+" MUST BE 0.98");
 				MinimaLogger.log("SHUTTING DOWN CONNECTION..");
 				
 				//Shut down..
@@ -190,6 +192,17 @@ public class ConsensusNet extends ConsensusProcessor {
 			//If there no immediate crossover check backup files..
 			if(cross.isEqual(MiniNumber.MINUSONE)) {
 				PostNetClientMessage(zMessage, new Message(CONSENSUS_NET_GREET_BACKSYNC).addObject("greetlist", blocks));
+				return;
+			}
+			
+			//Send the complete stack of TxPoW from cross onwards..
+			BlockTreeNode top = getMainDB().getMainTree().getChainTip();
+			
+			//How Many blocks do we need to send..
+			int blocklen = top.getBlockNumber().sub(cross).getAsInt(); 
+			MinimaLogger.log("BLOCK TO SEND "+blocklen);
+			if(blocklen == 0) {
+				//Nothing to send..
 				return;
 			}
 			
@@ -521,6 +534,9 @@ public class ConsensusNet extends ConsensusProcessor {
 		}else if ( zMessage.isMessageType(CONSENSUS_NET_TXPOWLIST)) {
 			TxPoWList block = (TxPoWList)zMessage.getObject("txpowlist"); 
 			
+			//Hmm..
+			setInitialSyncComplete();
+			
 			//Cycle through.. and Post as normal..
 			ArrayList<TxPoW> txps = block.getList();
 			for(TxPoW txp : txps) {
@@ -847,6 +863,9 @@ public class ConsensusNet extends ConsensusProcessor {
 		
 		//Backup the system..
 		getConsensusHandler().PostTimerMessage(new TimerMessage(2000,ConsensusBackup.CONSENSUSBACKUP_BACKUP));
+	
+		//Sync complete
+//		setInitialSyncComplete();
 	}
 	
 	

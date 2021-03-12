@@ -219,9 +219,11 @@ public class Proof implements Streamable {
 			currentvalue = currentvalue.add(chunk.getValue());
 			
 			if(chunk.getLeft().isTrue()) {
-				currentdata = Crypto.getInstance().hashAllObjects(HASH_BITS, chunk.getHash(), currentdata,currentvalue);
+//				currentdata = Crypto.getInstance().hashAllObjects(HASH_BITS, chunk.getHash(), currentdata,currentvalue);
+				currentdata = Crypto.getInstance().hashAllObjects(HASH_BITS, chunk.getHash(), currentdata);
 			}else {
-				currentdata = Crypto.getInstance().hashAllObjects(HASH_BITS, currentdata, chunk.getHash(),currentvalue);
+//				currentdata = Crypto.getInstance().hashAllObjects(HASH_BITS, currentdata, chunk.getHash(),currentvalue);
+				currentdata = Crypto.getInstance().hashAllObjects(HASH_BITS, currentdata, chunk.getHash());
 			}
 		}
 		

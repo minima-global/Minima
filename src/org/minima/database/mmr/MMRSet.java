@@ -808,6 +808,8 @@ public class MMRSet implements Streamable {
 		MiniData currentpeak    = zPeak;
 		MMREntry keeper 		= null;
 		while(peaks.size() > 1) {
+			MinimaLogger.log("PEAK TO ROOT peaks "+peaks.size());
+			
 			//Create a new MMR
 			MMRSet newmmr = new MMRSet(MMR_HASH_BITS,false);
 			
@@ -1188,10 +1190,10 @@ public class MMRSet implements Streamable {
 		MiniNumber sumvalue   = zLeftChild.getData().getValueSum().add(zRightChild.getData().getValueSum());
 		
 		//Make the unique MMRData Hash
+		MiniData combined = Crypto.getInstance().hashAllObjects( MMR_HASH_BITS,
+				zLeftChild.getHashValue(),zRightChild.getHashValue());
 //		MiniData combined = Crypto.getInstance().hashAllObjects( MMR_HASH_BITS,
 //				zLeftChild.getHashValue(),zRightChild.getHashValue(),sumvalue);
-		MiniData combined = Crypto.getInstance().hashAllObjects( MMR_HASH_BITS,
-				zLeftChild.getHashValue(),zRightChild.getHashValue(),sumvalue);
 		
 		//Create a new data proof
 		return new MMRData(combined,sumvalue);
