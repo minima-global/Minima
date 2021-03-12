@@ -1,16 +1,12 @@
 package org.minima.system.brains;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.util.ArrayList;
 import java.util.Random;
 
 import org.minima.database.MinimaDB;
-import org.minima.database.coindb.CoinDBRow;
 import org.minima.database.mmr.MMREntry;
-import org.minima.database.mmr.MMRProof;
 import org.minima.database.mmr.MMRSet;
 import org.minima.database.txpowtree.BlockTreeNode;
 import org.minima.database.userdb.UserDBRow;

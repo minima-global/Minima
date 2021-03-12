@@ -1,16 +1,12 @@
 package org.minima.system.brains;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
 import org.minima.GlobalParams;
 import org.minima.database.MinimaDB;
-import org.minima.database.coindb.CoinDBRow;
 import org.minima.database.mmr.MMRData;
 import org.minima.database.mmr.MMREntry;
 import org.minima.database.mmr.MMRProof;

@@ -11,7 +11,6 @@ import java.util.Hashtable;
 
 import org.minima.GlobalParams;
 import org.minima.database.MinimaDB;
-import org.minima.database.coindb.CoinDBRow;
 import org.minima.database.mmr.MMREntry;
 import org.minima.database.mmr.MMREntryDB;
 import org.minima.database.mmr.MMRSet;

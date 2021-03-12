@@ -12,9 +12,6 @@ import java.util.Hashtable;
 import java.util.StringTokenizer;
 
 import org.minima.GlobalParams;
-import org.minima.database.coindb.CoinDB;
-import org.minima.database.coindb.CoinDBRow;
-import org.minima.database.coindb.java.FastCoinDB;
 import org.minima.database.mmr.MMRData;
 import org.minima.database.mmr.MMREntry;
 import org.minima.database.mmr.MMREntryDB;
