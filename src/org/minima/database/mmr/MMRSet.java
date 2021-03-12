@@ -965,51 +965,58 @@ public class MMRSet implements Streamable {
 		MMREntry entry = getEntry(0, zProof.getEntryNumber());
 		
 		//Is it there ?
-		if(!entry.isEmpty() && !entry.getData().isHashOnly()) {
-			//Get the DATA - could be the original UNSPENT or the SPENT
-			if(entry.getData().isSpent()) {
-//				MinimaLogger.log("ERROR Proof Spent! "+zProof);
-				return false;
-			}
-		}
-	
-		//Check the SUMTREE - we've checked the HASH tree already..
-		int proofnum        = 0;
-		int prooflen        = zProof.getProofLen();
-		MiniNumber totval = zProof.getMMRData().getValueSum();
-		
 		if(!entry.isEmpty()) {
-			if(!totval.isEqual(entry.getData().getValueSum())) {
-				MinimaLogger.log("ERROR MMR Sum Tree different "+totval+" "+entry.getData().getValueSum());
+			if(!entry.getHashValue().isEqual(zProof.getMMRData().getFinalHash())) {
+				MinimaLogger.log("ERROR Proof Coin value changed since proof created "+zProof);
 				return false;
 			}
 		}
 		
-		while(proofnum < prooflen) {
-			MMREntry sibling = proofset.getEntry(entry.getRow(), entry.getSibling());
-			
-			//Do we add our own..
-			ProofChunk chunk   = zProof.getProofChunk(proofnum++);
-			MiniNumber value = chunk.getValue();
-			if(!sibling.isEmpty()) {
-				if(!value.isEqual(sibling.getData().getValueSum())) {
-					MinimaLogger.log("ERROR 2 MMR Sum Tree different "+value+" "+sibling.getData().getValueSum());
-					return false;
-				}
-			}
-			
-			//Create the new combined value..
-			totval = totval.add(value);
-			
-			//Get the Parent - can be empty..
-			entry = proofset.getEntry(entry.getParentRow(),entry.getParentEntry());
-		}
-		
-		//Now check that value..
-		if(!totval.isEqual(peakvalue)) {
-			MinimaLogger.log("ERROR 3 MMR Sum Tree different "+totval+" "+peakvalue);
-			return false;
-		}
+//		if(!entry.isEmpty() && !entry.getData().isHashOnly()) {
+//			//Get the DATA - could be the original UNSPENT or the SPENT
+//			if(entry.getData().isSpent()) {
+////				MinimaLogger.log("ERROR Proof Spent! "+zProof);
+//				return false;
+//			}
+//		}
+	
+//		//Check the SUMTREE - we've checked the HASH tree already..
+//		int proofnum        = 0;
+//		int prooflen        = zProof.getProofLen();
+//		MiniNumber totval = zProof.getMMRData().getValueSum();
+//		
+//		if(!entry.isEmpty()) {
+//			if(!totval.isEqual(entry.getData().getValueSum())) {
+//				MinimaLogger.log("ERROR MMR Sum Tree different "+totval+" "+entry.getData().getValueSum());
+//				return false;
+//			}
+//		}
+//		
+//		while(proofnum < prooflen) {
+//			MMREntry sibling = proofset.getEntry(entry.getRow(), entry.getSibling());
+//			
+//			//Do we add our own..
+//			ProofChunk chunk   = zProof.getProofChunk(proofnum++);
+//			MiniNumber value = chunk.getValue();
+//			if(!sibling.isEmpty()) {
+//				if(!value.isEqual(sibling.getData().getValueSum())) {
+//					MinimaLogger.log("ERROR 2 MMR Sum Tree different "+value+" "+sibling.getData().getValueSum());
+//					return false;
+//				}
+//			}
+//			
+//			//Create the new combined value..
+//			totval = totval.add(value);
+//			
+//			//Get the Parent - can be empty..
+//			entry = proofset.getEntry(entry.getParentRow(),entry.getParentEntry());
+//		}
+//		
+//		//Now check that value..
+//		if(!totval.isEqual(peakvalue)) {
+//			MinimaLogger.log("ERROR 3 MMR Sum Tree different "+totval+" "+peakvalue);
+//			return false;
+//		}
 		
 		//It was valid at the parent.. there is NO SPEND since.. so it's Valid!
 		return true;
