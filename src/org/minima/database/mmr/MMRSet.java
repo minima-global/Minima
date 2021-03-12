@@ -912,13 +912,13 @@ public class MMRSet implements Streamable {
 	public boolean checkProof(MMRProof zProof) {
 		//MUST have data to be checked
 		if(zProof.getMMRData().isHashOnly()) {
-//			MinimaLogger.log("Invalid PROOF check HASHONLY! : "+zProof);
+			MinimaLogger.log("checkProof PROOF check HASHONLY! : "+zProof);
 			return false;
 		}
 		
 		//Check is not spent.. 
 		if(zProof.getMMRData().isSpent()) {
-//			MinimaLogger.log("Invalid PROOF is SPENT! : "+zProof);
+			MinimaLogger.log("checkProof PROOF is SPENT! : "+zProof);
 			return false;
 		}
 		
@@ -927,7 +927,7 @@ public class MMRSet implements Streamable {
 		
 		//The proof is it too old.. we can't check it. It's invalid.
 		if(proofset == null) {
-//			MinimaLogger.log("ERROR Proof too Old "+zProof);
+			MinimaLogger.log("checkProof Proof too Old "+zProof);
 			return false;
 		}
 		
@@ -950,7 +950,7 @@ public class MMRSet implements Streamable {
 		
 		//Was it one of the peaks ?
 		if(!found) {
-//			MinimaLogger.log("ERROR Proof No Peak Found "+zProof);
+			MinimaLogger.log("checkProof Proof No Peak Found "+zProof);
 			return false;
 		}
 		
@@ -1252,10 +1252,10 @@ public class MMRSet implements Streamable {
 		MiniNumber sumvalue   = zLeftChild.getData().getValueSum().add(zRightChild.getData().getValueSum());
 		
 		//Make the unique MMRData Hash
-		MiniData combined = Crypto.getInstance().hashAllObjects( MMR_HASH_BITS,
-				zLeftChild.getHashValue(),zRightChild.getHashValue());
 //		MiniData combined = Crypto.getInstance().hashAllObjects( MMR_HASH_BITS,
-//				zLeftChild.getHashValue(),zRightChild.getHashValue(),sumvalue);
+//				zLeftChild.getHashValue(),zRightChild.getHashValue());
+		MiniData combined = Crypto.getInstance().hashAllObjects( MMR_HASH_BITS,
+				zLeftChild.getHashValue(),zRightChild.getHashValue(),sumvalue);
 		
 		//Create a new data proof
 		return new MMRData(combined,sumvalue);
