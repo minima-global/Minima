@@ -260,7 +260,7 @@ public class MMRSet implements Streamable {
 	
 	public void finalizeSet() {
 		//Fix Duplicates..
-		fixEntryDuplicates();
+//		fixEntryDuplicates();
 		
 		//Reset
 		mFinalized = false;
@@ -1412,11 +1412,18 @@ public class MMRSet implements Streamable {
 //	}
 
 	public static Coin makeCoin(int zValue) {
-		return new Coin(new MiniData("0x00"), new MiniData("0x01"), new MiniNumber(zValue), MiniData.ZERO_TXPOWID);
+		return new Coin(MiniData.getRandomData(20), new MiniData("0x01"), new MiniNumber(zValue), MiniData.ZERO_TXPOWID);
 	}
 	
 	public static MMRData makeMMRData(int zValue) {
 		return new MMRData(MiniByte.FALSE, makeCoin(zValue), MiniNumber.ZERO, new ArrayList<>());
+	}
+	
+	public static void getAllProofs(MMRSet zSet){
+		int num = zSet.mEntryNumber.getAsInt();
+		for(int i=0;i<num;i++) {
+			MMRProof pp = zSet.getFullProofToRoot(new MiniNumber(i));
+		}
 	}
 	
 	public static void printMMR(MMRSet zSet) {
@@ -1425,7 +1432,7 @@ public class MMRSet implements Streamable {
 		System.out.println("MMR : "+zSet.getBlockTime());
 		ArrayList<MMREntry> zero = zSet.getZeroRow();
 		for(MMREntry entry : zero) {
-			System.out.println(entry.getRow()+"/"+entry.getEntryNumber()+":"+entry.getData().getValueSum());
+			System.out.println(entry.getRow()+"/"+entry.getEntryNumber()+":"+entry.getData().getValueSum()+" "+entry.getData().isHashOnly());
 		}
 		
 		ArrayList<MMREntry> peaks = zSet.getMMRPeaks(); 
@@ -1436,6 +1443,25 @@ public class MMRSet implements Streamable {
 		
 		System.out.println("ROOT:"+zSet.getMMRRoot());
 		System.out.println();
+		
+		getAllProofs(zSet);
+	}
+	
+	public static void spend(MMRSet zSet, int zEntry){
+		MMRSet parent = zSet.getParent().getParent();
+		
+		MMRProof pp = parent.getProof(new MiniNumber(zEntry));
+		
+		//Check the proof
+		boolean valid = zSet.checkProof(pp);
+		if(!valid) {
+			System.out.println("ERROR PROOF");
+		}
+	
+		MiniNumber value = pp.getMMRData().getValueSum();
+		zSet.updateSpentCoin(parent.getProof(new MiniNumber(zEntry)));
+		zSet.addUnspentCoin(makeMMRData(value.getAsInt()));
+		
 	}
 	
 	public static void main(String[] zArgs) {
@@ -1451,11 +1477,34 @@ public class MMRSet implements Streamable {
 		printMMR(one);
 		
 		MMRSet two = new MMRSet(one);
-		MMRProof p1 = one.getProof(gimme0.getEntryNumber());
-		System.out.println("p1 proof : "+two.checkProof(p1)+" "+p1.toJSON());
-		two.updateSpentCoin(p1);
-		
+		two.updateSpentCoin(one.getProof(gimme0.getEntryNumber()));
+		MMREntry gimme4 = two.addUnspentCoin(makeMMRData(5));;
 		printMMR(two);
+		
+		MMRSet three = new MMRSet(two);
+		spend(three, 2);
+		printMMR(three);
+		
+		MMRSet four = new MMRSet(three);
+		spend(four, 3);
+		spend(four, 5);
+//		spend(four, 6);
+		
+//		four.updateSpentCoin(two.getProof(gimme1.getEntryNumber()));
+//		four.addUnspentCoin(makeMMRData(10));
+//		four.addUnspentCoin(makeMMRData(10));
+//		four.addUnspentCoin(makeMMRData(10));
+//		four.addUnspentCoin(makeMMRData(10));
+//		four.addUnspentCoin(makeMMRData(10));
+//		four.addUnspentCoin(makeMMRData(10));
+		printMMR(four);
+		
+		MMRSet five = new MMRSet(four);
+		five.updateSpentCoin(three.getProof(gimme2.getEntryNumber()));
+		five.updateSpentCoin(three.getProof(gimme3.getEntryNumber()));
+		five.addUnspentCoin(makeMMRData(35));
+		printMMR(five);
+		
 		
 	}
 	
