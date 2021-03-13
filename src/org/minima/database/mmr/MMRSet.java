@@ -1379,4 +1379,84 @@ public class MMRSet implements Streamable {
 		finalizeSet();
 	}
 	
+	
+	/**
+	 * Serious tester Code
+	 */
+//	public static Coin makeCoin(int zValue) {
+//		return new Coin(new MiniData("0x00"), new MiniData("0x01"), new MiniNumber(zValue), MiniData.ZERO_TXPOWID);
+//	}
+//	
+//	public static MMRData makeMMRData(int zValue) {
+//		return new MMRData(MiniByte.FALSE, makeCoin(zValue), MiniNumber.ZERO, new ArrayList<>());
+//	}
+//	
+//	public static void main(String[] zArgs) {
+//		MMRSet genesis = new MMRSet();
+//		MMREntry gen0 = genesis.addUnspentCoin(makeMMRData(0));
+//		
+//		MMRSet one = new MMRSet(genesis);
+//		MMREntry gimme0 = one.addUnspentCoin(makeMMRData(5));
+//		MMREntry gimme1 = one.addUnspentCoin(makeMMRData(10));
+//		MMREntry gimme2 = one.addUnspentCoin(makeMMRData(30));
+//		MMREntry gimme3 = one.addUnspentCoin(makeMMRData(5));
+//		one.finalizeSet();
+//		System.out.println(one.getMMRRoot());
+//		
+//		MMRSet two = new MMRSet(one);
+//		MMRProof p1 = one.getProof(gimme0.getEntryNumber());
+//		System.out.println("p1 proof : "+two.checkProof(p1)+" "+p1.toJSON());
+//		two.updateSpentCoin(p1);
+//		two.finalizeSet();
+//		System.out.println(two.getMMRRoot());
+//	}
+
+	public static Coin makeCoin(int zValue) {
+		return new Coin(new MiniData("0x00"), new MiniData("0x01"), new MiniNumber(zValue), MiniData.ZERO_TXPOWID);
+	}
+	
+	public static MMRData makeMMRData(int zValue) {
+		return new MMRData(MiniByte.FALSE, makeCoin(zValue), MiniNumber.ZERO, new ArrayList<>());
+	}
+	
+	public static void printMMR(MMRSet zSet) {
+		zSet.finalizeSet();
+		
+		System.out.println("MMR : "+zSet.getBlockTime());
+		ArrayList<MMREntry> zero = zSet.getZeroRow();
+		for(MMREntry entry : zero) {
+			System.out.println(entry.getRow()+"/"+entry.getEntryNumber()+":"+entry.getData().getValueSum());
+		}
+		
+		ArrayList<MMREntry> peaks = zSet.getMMRPeaks(); 
+		System.out.println("PEAKS:"+peaks.size());
+		for(MMREntry entry : peaks) {
+			System.out.println(entry.getRow()+" "+entry.getEntryNumber()+" "+entry.getData().getValueSum());
+		}
+		
+		System.out.println("ROOT:"+zSet.getMMRRoot());
+		System.out.println();
+	}
+	
+	public static void main(String[] zArgs) {
+		MMRSet genesis = new MMRSet();
+		MMREntry gen0 = genesis.addUnspentCoin(makeMMRData(0));
+		printMMR(genesis);
+		
+		MMRSet one = new MMRSet(genesis);
+		MMREntry gimme0 = one.addUnspentCoin(makeMMRData(5));
+		MMREntry gimme1 = one.addUnspentCoin(makeMMRData(10));
+		MMREntry gimme2 = one.addUnspentCoin(makeMMRData(30));
+		MMREntry gimme3 = one.addUnspentCoin(makeMMRData(5));
+		printMMR(one);
+		
+		MMRSet two = new MMRSet(one);
+		MMRProof p1 = one.getProof(gimme0.getEntryNumber());
+		System.out.println("p1 proof : "+two.checkProof(p1)+" "+p1.toJSON());
+		two.updateSpentCoin(p1);
+		
+		printMMR(two);
+		
+	}
+	
 }
