@@ -912,10 +912,15 @@ public class MMRSet implements Streamable {
 		
 		//Is it there ?
 		if(!entry.isEmpty()) {
-			if(!entry.getHashValue().isEqual(zProof.getMMRData().getFinalHash())) {
+			if(!entry.getData().getValueSum().isEqual(zProof.getMMRData().getValueSum())) {
 				MinimaLogger.log("ERROR Proof Coin value changed since proof created "+zProof);
+				MinimaLogger.log("Proof : "+zProof.getMMRData().getValueSum()+" / MMR : "+entry.getData().getValueSum());
 				return false;
 			}
+//			if(!entry.getHashValue().isEqual(zProof.getMMRData().getFinalHash())) {
+//				MinimaLogger.log("ERROR Proof Coin value changed since proof created "+zProof);
+//				return false;
+//			}
 		}
 		
 		//It was valid at the parent.. there is NO SPEND since.. so it's Valid!
