@@ -703,7 +703,7 @@ public class MMRSet implements Streamable {
 				
 		
 		//Now update the tree - Get the Sibling.. 
-		MMREntry sibling = getEntry(0, entry.getSibling(),minblock);
+		MMREntry sibling = getEntry(0, entry.getSibling());
 		
 		//Is this a peak..
 		int prooflen = zProof.getProofLen();
@@ -763,7 +763,7 @@ public class MMRSet implements Streamable {
 			}
 			
 			//Get the Sibling..
-			sibling = getEntry(entry.getRow(), entry.getSibling(),minblock);
+			sibling = getEntry(entry.getRow(), entry.getSibling());
 			
 			//Check for a valid sibling
 			if(pcount < prooflen) {
