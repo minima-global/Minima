@@ -122,7 +122,12 @@ public class FastJavaDB implements TxPowDB {
 		
 		//The minimum block before its too late for an UNUSED TxPoW
 		MiniNumber minunused = zCascade.add(MiniNumber.TWOFIVESIX);
-				
+		
+		//Debug mode params
+		if(GlobalParams.MINIMA_CASCADE_START_DEPTH.isLess(MiniNumber.TWOFIVESIX)) {
+			minunused = zCascade.add(MiniNumber.FOUR);
+		}
+		
 		Enumeration<JavaDBRow> allrows = mTxPoWRows.elements();
 		while(allrows.hasMoreElements()) {
 			JavaDBRow row  = allrows.nextElement();

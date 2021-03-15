@@ -862,7 +862,7 @@ public class MinimaDB {
 //			}
 			
 			//Get a proof from a while back.. more than confirmed depth, less than cascade
-			MMRProof proof = proofmmr.getProof(entrynum);
+			MMRProof proof = proofmmr.getCoinProof(entrynum);
 			
 //			//Hmm.. this should not happen
 //			if(proof == null) {

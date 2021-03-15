@@ -121,6 +121,9 @@ public class MMREntryDB {
 		//The NEW Table..
 		Hashtable<String, MMREntryDBRow> allEntries = new Hashtable<>();
 		
+		//The actual removal block..
+		MiniNumber minblock = zMinNumber.sub(MiniNumber.ONE);
+		
 		//Run through and keep the good ones..
 		Enumeration<MMREntryDBRow> entries = mAllEntries.elements();
 		while(entries.hasMoreElements()) {

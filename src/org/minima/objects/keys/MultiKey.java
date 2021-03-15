@@ -102,6 +102,8 @@ public class MultiKey extends BaseKey {
 		mPublicKey = mMMR.getMMRRoot().getFinalHash();
 	}
 	
+	public static int totalsigns = 0;
+	
 	@Override
 	public MiniData sign(MiniData zData) {
 		//Which key are we on..
@@ -109,6 +111,9 @@ public class MultiKey extends BaseKey {
 		
 		//Once used you cannot use it again..
 		incrementUses();
+		
+//		totalsigns++;
+//		MinimaLogger.log("Sign with Key! "+totalsigns);
 		
 		//How many signatures per leaf..
 		int perleaf = mMaxUses.pow(mLevel.decrement().getAsInt()).getAsInt();
