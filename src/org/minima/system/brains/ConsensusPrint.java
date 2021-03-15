@@ -747,6 +747,7 @@ public class ConsensusPrint extends ConsensusProcessor {
 			
 			//Add to the main JSON
 			allcoins.put("coins", totcoins);
+			allcoins.put("total", coins.size());
 			
 			//Add it to the output
 			InputHandler.endResponse(zMessage, true, "");
@@ -795,6 +796,8 @@ public class ConsensusPrint extends ConsensusProcessor {
 			for(MMREntry entry : res) {
 				totcoins.add(baseset.getProof(entry.getEntryNumber()).toJSON());
 			}
+			
+			allcoins.put("total", res.size());
 			
 //			//Cycle..
 //			ArrayList<CoinDBRow> coins = getMainDB().getCoinDB().getComplete();
