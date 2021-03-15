@@ -1490,12 +1490,9 @@ public class MMRSet implements Streamable {
 //		System.out.println(two.getMMRRoot());
 //	}
 
-	public static Coin makeCoin(int zValue) {
-		return new Coin(MiniData.getRandomData(20), new MiniData("0x01"), new MiniNumber(zValue), MiniData.ZERO_TXPOWID);
-	}
-	
 	public static MMRData makeMMRData(int zValue) {
-		return new MMRData(MiniByte.FALSE, makeCoin(zValue), MiniNumber.ZERO, new ArrayList<>());
+		Coin cc = new Coin(MiniData.getRandomData(20), new MiniData("0x01"), new MiniNumber(zValue), MiniData.ZERO_TXPOWID);
+		return new MMRData(MiniByte.FALSE, cc, MiniNumber.ZERO, new ArrayList<>());
 	}
 	
 	public static void getAllProofs(MMRSet zSet){
@@ -1587,6 +1584,14 @@ public class MMRSet implements Streamable {
 		nextMMR();
 		spend(6);
 		spend(2);
+		printMMR();
+		
+		nextMMR();
+		nextMMR();
+		nextMMR();
+		spend(10);
+		spend(8);
+		spend(9);
 		printMMR();
 		
 		
