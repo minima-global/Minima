@@ -648,7 +648,8 @@ public class MMRSet implements Streamable {
 		MMREntry ret   = entry;
 		
 		//Start checking..
-		int pcount = 0;
+		int prooflen = zProof.getProofLen();
+		int pcount   = 0;
 		while(true) {
 			//Check..
 			for(MMREntry peak : peaks) {
@@ -671,7 +672,7 @@ public class MMRSet implements Streamable {
 				sibling.setData(new MMRData(phash,pval));
 			}else{
 				//Is it older than the proof.. if newer leave it.. or if proof finished..
-				if(sibling.getBlockTime().isLess(zProof.getBlockTime())) {
+				if(sibling.getBlockTime().isLess(zProof.getBlockTime()) && pcount<prooflen) {
 					//The current proof..
 					ProofChunk chunk = zProof.getProofChunk(pcount);
 					MiniData phash   = chunk.getHash();
