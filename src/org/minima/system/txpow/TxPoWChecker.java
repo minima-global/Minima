@@ -574,6 +574,10 @@ public class TxPoWChecker {
 			return true;
 		}
 		
+		if(zTouchMMR) {
+			int y=0;
+		}
+		
 		//get some extra variables..
 		MiniNumber tBlockNumber = zBlock.getBlockNumber();
 		MiniNumber tBlockTime   = zBlock.getTimeMilli();

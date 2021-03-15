@@ -482,6 +482,11 @@ public class MMRSet implements Streamable {
 			mMaxEntries[zRow] = entry;
 		}
 		
+//		if(mUseMMREntryDB) {
+//			MinimaLogger.log("SETENTRY @ "+mBlockTime+" "+zRow+":"+zEntry+" "+zData);
+//		}
+		
+		
 		//Return
 		return entry;
 	}
@@ -636,6 +641,8 @@ public class MMRSet implements Streamable {
 	 * Set entry to SPENT
 	 */
 	public MMREntry updateSpentCoin(MMRProof zProof) {
+//		MinimaLogger.log("SPEND COIN @ "+mBlockTime+" "+zProof);
+		
 		//The original MMRData..
 		MMRData original = zProof.getMMRData();
 		
@@ -914,7 +921,7 @@ public class MMRSet implements Streamable {
 		if(!entry.isEmpty()) {
 			if(!entry.getData().getValueSum().isEqual(zProof.getMMRData().getValueSum())) {
 				MinimaLogger.log("ERROR Proof Coin value changed since proof created "+zProof);
-				MinimaLogger.log("Proof : "+zProof.getMMRData().getValueSum()+" / MMR : "+entry.getData().getValueSum());
+				MinimaLogger.log("Proof : "+zProof.getMMRData().getValueSum()+" / MMR : "+entry.getData().getValueSum()+" @ "+entry.getBlockTime());
 				return false;
 			}
 //			if(!entry.getHashValue().isEqual(zProof.getMMRData().getFinalHash())) {

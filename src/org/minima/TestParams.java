@@ -62,7 +62,7 @@ public class TestParams {
 	 * Max Proof History - how far back to use a proof of coin..
 	 * If there is a re-org of more than this the proof will be invalid 
 	 */
-	public static MiniNumber MINIMA_MMR_PROOF_HISTORY = new MiniNumber(8);
+	public static MiniNumber MINIMA_MMR_PROOF_HISTORY = new MiniNumber(16);
 	
 	/**
 	 * Just create a block every transaction. Useful when not mining 
