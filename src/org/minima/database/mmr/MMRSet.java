@@ -647,16 +647,12 @@ public class MMRSet implements Streamable {
 		MMREntry entry = setEntry(0, zProof.getEntryNumber(), spentmmr);
 		MMREntry ret   = entry;
 		
-		//How big is the proof
-		int prooflen = zProof.getProofLen();
-		
 		//Start checking..
 		int pcount = 0;
 		while(true) {
 			//Check..
 			for(MMREntry peak : peaks) {
 				if(entry.checkPosition(peak)) {
-//					MinimaLogger.log("PEAK FOUND");
 					return ret;
 				}
 			}
