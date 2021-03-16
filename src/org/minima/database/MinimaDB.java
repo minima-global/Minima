@@ -75,15 +75,17 @@ public class MinimaDB {
 	/**
 	 * When you mine.. You can't use these INPUTS in your transactions
 	 */
-	Hashtable<String,Transaction> mMiningTransactions = new Hashtable<>();
+//	Hashtable<String,Transaction> mMiningTransactions = new Hashtable<>();
+	ArrayList<String> mMiningCoins;
 	
 	/**
 	 * Main Constructor
 	 */
 	public MinimaDB() {
-		mTxPOWDB 	= new FastJavaDB();
-		mMainTree 	= new BlockTree();	
-		mUserDB		= new JavaUserDB();
+		mTxPOWDB 	 = new FastJavaDB();
+		mMainTree 	 = new BlockTree();	
+		mUserDB		 = new JavaUserDB();
+		mMiningCoins = new ArrayList<>();
 	}
 	
 	public void setBackupManager(BackupManager zBackup) {
@@ -594,43 +596,72 @@ public class MinimaDB {
 	 * 
 	 * Return true if is a NEW transaction..
 	 */
-	public boolean addMiningTransaction(Transaction zTrans) {
-		//Hash it..
-		MiniData transhash = Crypto.getInstance().hashObject(zTrans, 160);
-		String hash        = transhash.to0xString();
-		
-		//Do we have it..
-		Transaction prev = mMiningTransactions.get(hash);
-		if(prev!=null) {
-			return false;
-		}
-		
-		//Add it..
-		mMiningTransactions.put(hash, zTrans);
-		
-		return true;
-	}
-	
-	public void remeoveMiningTransaction(Transaction zTrans) {
-		//Hash it..
-		MiniData transhash = Crypto.getInstance().hashObject(zTrans, 160);
-		String hash        = transhash.to0xString();
-		mMiningTransactions.remove(hash);
-	}
-	
-	public boolean checkInputForMining(MiniData zCoinID) {
-		Enumeration<Transaction> alltrans = mMiningTransactions.elements();
-		while(alltrans.hasMoreElements()) {
-			Transaction trans = alltrans.nextElement();
-			ArrayList<Coin> inputs = trans.getAllInputs();
-			for(Coin input : inputs) {
-				if(zCoinID.isEqual(input.getCoinID())) {
-					return true;
-				}
+	public void addMiningTransaction(Transaction zTrans) {
+		//Cycle through and add the input coins
+		ArrayList<Coin> inputs = zTrans.getAllInputs();
+		for(Coin input : inputs) {
+			String coinid = input.getCoinID().to0xString();
+			if(!mMiningCoins.contains(coinid)) {
+				mMiningCoins.add(coinid);
 			}
 		}
 		
+//		//Hash it..
+//		MiniData transhash = Crypto.getInstance().hashObject(zTrans, 160);
+//		String hash        = transhash.to0xString();
+//		
+//		//Do we have it..
+//		Transaction prev = mMiningTransactions.get(hash);
+//		if(prev!=null) {
+//			return false;
+//		}
+//		
+//		//Add it..
+//		mMiningTransactions.put(hash, zTrans);
+//		
+//		return true;
+	}
+	
+	public void remeoveMiningTransaction(Transaction zTrans) {
+		ArrayList<Coin> inputs = zTrans.getAllInputs();
+		for(Coin input : inputs) {
+			String coinid = input.getCoinID().to0xString();
+			mMiningCoins.remove(coinid);
+		}
+		
+//		//Hash it..
+//		MiniData transhash = Crypto.getInstance().hashObject(zTrans, 160);
+//		String hash        = transhash.to0xString();
+//		mMiningTransactions.remove(hash);
+	}
+	
+	public boolean checkTransactionForMining(Transaction zTrans) {
+		ArrayList<Coin> inputs = zTrans.getAllInputs();
+		for(Coin input : inputs) {
+			String coinid = input.getCoinID().to0xString();
+			if(mMiningCoins.contains(coinid)) {
+				return true;
+			}
+		}
 		return false;
+	}
+	
+	public boolean checkInputForMining(MiniData zCoinID) {
+//		Enumeration<Transaction> alltrans = mMiningTransactions.elements();
+//		while(alltrans.hasMoreElements()) {
+//			Transaction trans = alltrans.nextElement();
+//			ArrayList<Coin> inputs = trans.getAllInputs();
+//			for(Coin input : inputs) {
+//				if(zCoinID.isEqual(input.getCoinID())) {
+//					return true;
+//				}
+//			}
+//		}
+		
+		String coinid = zCoinID.to0xString();
+		return mMiningCoins.contains(coinid);
+		
+//		return false;
 	}
 	
 	
@@ -1145,13 +1176,18 @@ public class MinimaDB {
 		//Set the current Transaction List!
 		ArrayList<TxPOWDBRow> unused = mTxPOWDB.getAllUnusedTxPOW();
 		for(TxPOWDBRow row : unused) {
+			//Check is still VALID..
+			TxPoW txp = row.getTxPOW();
+			
+			//Are we already mining this transaction
+			if(checkTransactionForMining(txp.getTransaction())) {
+				continue;
+			}
+			
 			//Current MAX transactions.. #TODO.. this needs to be dynamic..
 			if(txncounter.isMore(MiniNumber.SIXTYFOUR)) {
 				break;
 			}
-			
-			//Check is still VALID..
-			TxPoW txp = row.getTxPOW();
 			
 			/**
 			 * MUST be a transaction as that prevents double entry. A block with no transaction 

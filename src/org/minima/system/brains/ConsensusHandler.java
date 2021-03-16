@@ -326,6 +326,9 @@ public class ConsensusHandler extends MessageProcessor {
 				Main.getMainHandler().getNetworkHandler().PostMessage(netw);
 //			}
 			
+			//Remove from the List of Mined transactions..
+			getMainDB().remeoveMiningTransaction(txpow.getTransaction());
+				
 		/**
 		 * Called every 10 Minutes to do a few tasks
 		 */
@@ -441,6 +444,9 @@ public class ConsensusHandler extends MessageProcessor {
 			
 			//Is is valid.. ?
 			if(txpow==null) {
+				//Remove from the List of Mined transactions..
+				getMainDB().remeoveMiningTransaction(trans);
+				
 				resp.put("contractlogs", contractlogs);
 				InputHandler.endResponse(zMessage, false, "Invalid Transaction");
 				return;
@@ -453,6 +459,9 @@ public class ConsensusHandler extends MessageProcessor {
 			//Check the SIGS!
 			boolean sigsok = TxPoWChecker.checkSigs(txpow);
 			if(!sigsok) {
+				//Remove from the List of Mined transactions..
+				getMainDB().remeoveMiningTransaction(txpow.getTransaction());
+				
 				//Reject
 				InputHandler.endResponse(zMessage, false, "Invalid Signatures! - TXNAUTO must be done AFTER adding state variables ?");
 				return;
@@ -460,6 +469,9 @@ public class ConsensusHandler extends MessageProcessor {
 			
 			//Final check of the mempool coins..
 			if(getMainDB().checkTransactionForMempoolCoins(trans)) {
+				//Remove from the List of Mined transactions..
+				getMainDB().remeoveMiningTransaction(txpow.getTransaction());
+				
 				//No GOOD!
 				InputHandler.endResponse(zMessage, false, "ERROR double spend coin in mempool.");
 				return;
@@ -471,6 +483,9 @@ public class ConsensusHandler extends MessageProcessor {
 			resp.put("outputs", txpow.getTransaction().getAllOutputs().size());
 			
 			if(txpow.getSizeinBytes() > MinimaReader.MAX_TXPOW) {
+				//Remove from the List of Mined transactions..
+				getMainDB().remeoveMiningTransaction(txpow.getTransaction());
+				
 				//Add the TxPoW
 				resp.put("transaction", txpow.getTransaction());
 				
@@ -481,14 +496,14 @@ public class ConsensusHandler extends MessageProcessor {
 			}
 					
 			//Add to the list of Mined Coins!
-			boolean newtrans = getMainDB().addMiningTransaction(txpow.getTransaction());
-			if(newtrans) {
-				//Notify listeners that Mining is starting...
-				JSONObject mining = new JSONObject();
-				mining.put("event","txpowstart");
-				mining.put("transaction",txpow.getTransaction().toJSON());
-				PostDAPPJSONMessage(mining);
-			}
+//			boolean newtrans = getMainDB().addMiningTransaction(txpow.getTransaction());
+//			if(newtrans) {
+//				//Notify listeners that Mining is starting...
+//				JSONObject mining = new JSONObject();
+//				mining.put("event","txpowstart");
+//				mining.put("transaction",txpow.getTransaction().toJSON());
+//				PostDAPPJSONMessage(mining);
+//			}
 			
 			//Send it to the Miner.. This is the ONLY place this happens..
 			Message mine = new Message(TxPoWMiner.TXMINER_MINETXPOW).addObject("txpow", txpow);
@@ -599,6 +614,18 @@ public class ConsensusHandler extends MessageProcessor {
 				wit.addTokenDetails(tokendets);
 			}
 			
+			//get the Transaction
+			Transaction trans = (Transaction) ret.getObject("transaction");
+			
+			//Add all the inputs to the mining..
+			getMainDB().addMiningTransaction(trans);
+			
+			//Notify listeners that Mining is starting...
+			JSONObject mining = new JSONObject();
+			mining.put("event","txpowstart");
+			mining.put("transaction",trans.toJSON());
+			PostDAPPJSONMessage(mining);
+			
 			//Get the message ready
 			InputHandler.addResponseMesage(ret, zMessage);
 			
@@ -609,9 +636,9 @@ public class ConsensusHandler extends MessageProcessor {
 			//The TXPOW
 			TxPoW txpow = (TxPoW) zMessage.getObject("txpow");
 			
-			//Remove from the List of Mined transactions..
-			getMainDB().remeoveMiningTransaction(txpow.getTransaction());
-			
+//			//Remove from the List of Mined transactions..
+//			getMainDB().remeoveMiningTransaction(txpow.getTransaction());
+//			
 			//And now forward the message to the single entry point..
 			Message msg = new Message(ConsensusNet.CONSENSUS_NET_CHECKSIZE_TXPOW).addObject("txpow", txpow);
 			PostMessage(msg);
