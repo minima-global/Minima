@@ -49,6 +49,7 @@ import org.minima.utils.MinimaLogger;
 import org.minima.utils.ObjectStack;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.messages.Message;
+import org.mozilla.javascript.Token;
 
 public class MinimaDB {
 
@@ -589,6 +590,78 @@ public class MinimaDB {
 			}
 		}
 	}
+	
+	/**
+	 * Token Manager
+	 * 
+	 * Only keep the token details for tokens you own..
+	 * 
+	 * Or are in the chain..
+	 * 
+	 */
+	public void checkTokens() {
+		//The new list of Tokenas..
+		ArrayList<TokenProof> newTokens = new ArrayList<>();
+		
+		//Get the current tree list..
+		ArrayList<BlockTreeNode> list = getMainTree().getAsList();
+		
+		//Now sort
+		for(BlockTreeNode treenode : list) {
+			//Get the Block
+			TxPoW txpow = treenode.getTxPow();
+			
+			//Check this..
+			scanForTokens(txpow, newTokens);
+			
+			//Now the Txns..
+			ArrayList<MiniData> txpowlist = txpow.getBlockTransactions();
+			for(MiniData txid : txpowlist) {
+				TxPOWDBRow trow = getTxPowDB().findTxPOWDBRow(txid);
+				if(trow!=null) {
+					scanForTokens(trow.getTxPOW(), newTokens);
+				}
+			}
+		}
+		
+		//And Keep all the tokens you have..
+		ArrayList<MMREntry> mycoins = getMMRTip().searchAllRelevantCoins();
+		for(MMREntry mmrcoin : mycoins) {
+			//get the Coin
+			Coin cc = mmrcoin.getData().getCoin();
+			
+			//Is it a Token
+			if(!cc.getTokenID().isEqual(Coin.MINIMA_TOKENID)) {
+				//Get it..
+				TokenProof tok = getUserDB().getTokenDetail(cc.getTokenID());
+			
+				//Add it to our list
+				if(tok != null) {
+					newTokens.add(tok);
+				}else {
+					MinimaLogger.log("ERROR : Missing token proof for "+cc.getTokenID());;
+				}
+			}
+		}
+	}
+	
+	private void scanForTokens(TxPoW zTxPoW, ArrayList<TokenProof> zTokens) {
+		//Is it a transaction..
+		if(zTxPoW.isTransaction()) {
+			//Check for token generator..
+			TokenProof tgd 		= zTxPoW.getTransaction().getTokenGenerationDetails();
+			if(tgd != null) {
+				zTokens.add(tgd);
+			}
+			
+			//Check the Witness..
+			ArrayList<TokenProof> tokens =  zTxPoW.getWitness().getAllTokenDetails();
+			for(TokenProof tp : tokens) {
+				zTokens.add(tp);
+			}
+		}
+	}
+	
 	
 	/**
 	 * When you mine a transaction these must be taken 
