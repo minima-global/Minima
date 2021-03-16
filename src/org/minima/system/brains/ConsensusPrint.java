@@ -414,6 +414,9 @@ public class ConsensusPrint extends ConsensusProcessor {
 			}
 			
 		}else if(zMessage.isMessageType(CONSENSUS_TOKENS)){
+			//Check Them..
+//			getMainDB().checkTokens();
+			
 			//Get all the tokens..
 			ArrayList<TokenProof> tokens = getMainDB().getUserDB().getAllKnownTokens();
 			

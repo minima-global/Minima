@@ -604,22 +604,23 @@ public class MinimaDB {
 		ArrayList<TokenProof> newTokens = new ArrayList<>();
 		
 		//Get the current tree list..
-		ArrayList<BlockTreeNode> list = getMainTree().getAsList();
+		ArrayList<TxPOWDBRow> allrows = getTxPowDB().getAllTxPOWDBRow();
 		
 		//Now sort
-		for(BlockTreeNode treenode : list) {
-			//Get the Block
-			TxPoW txpow = treenode.getTxPow();
+		for(TxPOWDBRow row : allrows) {
+			TxPoW txpow = row.getTxPOW();
 			
 			//Check this..
 			scanForTokens(txpow, newTokens);
 			
 			//Now the Txns..
-			ArrayList<MiniData> txpowlist = txpow.getBlockTransactions();
-			for(MiniData txid : txpowlist) {
-				TxPOWDBRow trow = getTxPowDB().findTxPOWDBRow(txid);
-				if(trow!=null) {
-					scanForTokens(trow.getTxPOW(), newTokens);
+			if(txpow.isBlock()) {
+				ArrayList<MiniData> txpowlist = txpow.getBlockTransactions();
+				for(MiniData txid : txpowlist) {
+					TxPOWDBRow trow = getTxPowDB().findTxPOWDBRow(txid);
+					if(trow!=null) {
+						scanForTokens(trow.getTxPOW(), newTokens);
+					}
 				}
 			}
 		}
@@ -627,21 +628,33 @@ public class MinimaDB {
 		//And Keep all the tokens you have..
 		ArrayList<MMREntry> mycoins = getMMRTip().searchAllRelevantCoins();
 		for(MMREntry mmrcoin : mycoins) {
-			//get the Coin
-			Coin cc = mmrcoin.getData().getCoin();
-			
-			//Is it a Token
-			if(!cc.getTokenID().isEqual(Coin.MINIMA_TOKENID)) {
-				//Get it..
-				TokenProof tok = getUserDB().getTokenDetail(cc.getTokenID());
-			
-				//Add it to our list
-				if(tok != null) {
-					newTokens.add(tok);
-				}else {
-					MinimaLogger.log("ERROR : Missing token proof for "+cc.getTokenID());;
+			if(!mmrcoin.getData().isHashOnly()) {
+				//get the Coin
+				Coin cc = mmrcoin.getData().getCoin();
+				
+				//Is it a Token
+				if(!cc.getTokenID().isEqual(Coin.MINIMA_TOKENID)) {
+					//Get it..
+					TokenProof tok = getUserDB().getTokenDetail(cc.getTokenID());
+				
+					//Add it to our list
+					if(tok != null) {
+						newTokens.add(tok);
+					}else {
+						MinimaLogger.log("ERROR : Missing token proof for "+cc.getTokenID());;
+					}
 				}
+			}else {
+				MinimaLogger.log("ERROR : HashOnly relevant MMRCoin ");
 			}
+		}
+		
+		//And now reset all the tokens..
+		getUserDB().clearTokens();
+		
+		//And Now add all the tokens..
+		for(TokenProof tok : newTokens) {
+			getUserDB().addTokenDetails(tok);
 		}
 	}
 	

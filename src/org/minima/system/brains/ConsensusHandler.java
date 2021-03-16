@@ -339,6 +339,9 @@ public class ConsensusHandler extends MessageProcessor {
 			//Flush / Check the mem-pool
 			PostMessage(new Message(ConsensusUser.CONSENSUS_FLUSHMEMPOOL));
 			
+			//Clean the Tokens..
+			getMainDB().checkTokens();
+			
 			//Redo every 10 minutes..
 			PostTimerMessage(new TimerMessage(10 * 60 * 1000, CONSENSUS_AUTOBACKUP));
 			

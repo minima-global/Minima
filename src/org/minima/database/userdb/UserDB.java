@@ -102,7 +102,7 @@ public interface UserDB {
 	 * Token Details
 	 */
 	public ArrayList<TokenProof> getAllKnownTokens();
-	
+	public void clearTokens();
 	public TokenProof getTokenDetail(MiniData zTokenID);
 	
 	public void addTokenDetails(TokenProof zToken);

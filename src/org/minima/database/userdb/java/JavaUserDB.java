@@ -528,6 +528,12 @@ public class JavaUserDB implements UserDB, Streamable{
 		}
 	}
 
+	@Override
+	public void clearTokens() {
+		mAllTokens.clear();
+	}
+	
+	
 	/**
 	 * Transasction History 
 	 */
