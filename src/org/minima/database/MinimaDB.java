@@ -1179,11 +1179,6 @@ public class MinimaDB {
 			//Check is still VALID..
 			TxPoW txp = row.getTxPOW();
 			
-			//Are we already mining this transaction
-			if(checkTransactionForMining(txp.getTransaction())) {
-				continue;
-			}
-			
 			//Current MAX transactions.. #TODO.. this needs to be dynamic..
 			if(txncounter.isMore(MiniNumber.SIXTYFOUR)) {
 				break;
@@ -1194,13 +1189,16 @@ public class MinimaDB {
 			 * is valid.. but no way to check it has already been added
 			 */
 			if(txp.isTransaction()) {
+				//Are we already mining this transaction
+				if(checkTransactionForMining(txp.getTransaction())) {
+					continue;
+				}
+				
+				//test counter if valid
 				MiniNumber txncountertest = txncounter.increment();
 				
-				//First check it without touching the MMR
-				
+				//Check it
 				boolean valid = TxPoWChecker.checkTransactionMMR(txp, this, txpow, newset,true);
-				
-				
 				
 				if(valid) {
 					//Valid so added

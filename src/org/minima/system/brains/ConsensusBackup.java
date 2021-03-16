@@ -148,6 +148,8 @@ public class ConsensusBackup extends ConsensusProcessor {
 			}
 			
 		}else if(zMessage.isMessageType(CONSENSUSBACKUP_RESTORE)) {
+			MinimaLogger.log("Begin Restore..");
+			
 			//Get this as will need it a few times..
 			BackupManager backup = getBackup();
 			
@@ -366,7 +368,7 @@ public class ConsensusBackup extends ConsensusProcessor {
 		MinimaLogger.log("Checking DB.. 100%");
 		
 		//Reset weights
-		getMainDB().hardResetChain();
+		getMainDB().getMainTree().resetWeights();
 		
 		//And Now sort the TXPOWDB
 		ArrayList<BlockTreeNode> list = getMainDB().getMainTree().getAsList();
@@ -410,6 +412,8 @@ public class ConsensusBackup extends ConsensusProcessor {
 							getMainDB().addTreeChildren(tpow.getTxPowID());
 						}
 					}
+				}else {
+					MinimaLogger.log("MISSING "+txid.to0xString());
 				}
 			}
 		}
@@ -417,6 +421,14 @@ public class ConsensusBackup extends ConsensusProcessor {
 		//Clear the MMRDB tree..
 		MiniNumber cascade = getMainDB().getMainTree().getCascadeNode().getBlockNumber();
 		MMREntryDB.getDB().cleanUpDB(cascade);
+		
+		ArrayList<TxPOWDBRow> test = getMainDB().getTxPowDB().getAllUnusedTxPOW();
+		if(test.size()>0) {
+			MinimaLogger.log("UNUSED TXPOW FOUND "+test.size());
+			for(TxPOWDBRow row : test) {
+				MinimaLogger.log(row.getTxPOW().getTxPowID().to0xString());
+			}
+		}
 		
 		//MinimaLogger.log("DB.. 100%");
 		getConsensusHandler().updateListeners(new Message(ConsensusHandler.CONSENSUS_NOTIFY_INITIALPERC).addString("info", "Restoring DB..100%"));

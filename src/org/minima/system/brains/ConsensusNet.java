@@ -839,7 +839,8 @@ public class ConsensusNet extends ConsensusProcessor {
 	 */
 	private void finishUpSync() {
 		//Reset weights
-		getMainDB().hardResetChain();
+		getMainDB().getMainTree().resetWeights();
+//		getMainDB().hardResetChain();
 		
 		//Now correect the TxPoWDB
 		getMainDB().resetAllTxPowOnMainChain();

@@ -158,7 +158,7 @@ public class ConsensusHandler extends MessageProcessor {
 		mConsensusBackup = new ConsensusBackup(mMainDB, this);
 		
 		//Are we HARD mining.. debugging / private chain
-		PostTimerMessage(new TimerMessage(1000, CONSENSUS_MINEBLOCK));
+		PostTimerMessage(new TimerMessage(5000, CONSENSUS_MINEBLOCK));
 	
 		//Redo every 10 minutes..
 		PostTimerMessage(new TimerMessage(10 * 60 * 1000, CONSENSUS_AUTOBACKUP));
