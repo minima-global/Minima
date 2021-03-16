@@ -645,7 +645,7 @@ public class MinimaDB {
 					}
 				}
 			}else {
-				MinimaLogger.log("ERROR : HashOnly relevant MMRCoin ");
+				MinimaLogger.log("ERROR : HashOnly relevant MMRCoin "+mmrcoin);
 			}
 		}
 		
