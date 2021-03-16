@@ -658,7 +658,14 @@ public class MMRSet implements Streamable {
 		//Create a new entry
 		MMREntry entry = setEntry(0, zProof.getEntryNumber(), spentmmr);
 		MMREntry ret   = entry;
-				
+		
+		//Is this is a Peak ? - if so, go no further..
+		for(MMREntry peak : peaks) {
+			if(entry.checkPosition(peak)) {
+				return ret;
+			}
+		}
+		
 		//Now update the tree - Get the Sibling.. 
 		MMREntry sibling = getEntry(0, entry.getSibling());
 		
@@ -1295,7 +1302,7 @@ public class MMRSet implements Streamable {
 	public static void spend(int zEntry){
 		MMRSet parent = getCurrentMMR().getParent().getParent();
 		
-		MMRProof pp = parent.getProof(new MiniNumber(zEntry));
+		MMRProof pp = parent.getCoinProof(new MiniNumber(zEntry));
 		
 		//Check the proof
 		boolean valid = getCurrentMMR().checkProof(pp);
@@ -1326,38 +1333,52 @@ public class MMRSet implements Streamable {
 		printMMR();
 		
 		nextMMR();
-		getCurrentMMR().addUnspentCoin(makeMMRData(5));
+		getCurrentMMR().addUnspentCoin(makeMMRData(10));
 		getCurrentMMR().addUnspentCoin(makeMMRData(10));
 		getCurrentMMR().addUnspentCoin(makeMMRData(30));
-		getCurrentMMR().addUnspentCoin(makeMMRData(5));
+//		getCurrentMMR().addUnspentCoin(makeMMRData(5));
 		printMMR();
 		
 		nextMMR();
 		nextMMR();
 		spend(1);
-		printMMR();
-		
-		nextMMR();
+		spend(2);
 		spend(3);
 		printMMR();
 		
 		nextMMR();
-		spend(4);
-		spend(5);
-		printMMR();
-		
 		nextMMR();
+		nextMMR();
+		nextMMR();
+		
 		spend(6);
-		spend(2);
 		printMMR();
 		
-		nextMMR();
-		nextMMR();
-		nextMMR();
-		spend(10);
-		spend(8);
-		spend(9);
-		printMMR();
+//		nextMMR();
+//		nextMMR();
+//		nextMMR();
+//		
+//		spend(3);
+//		printMMR();
+		
+		
+//		nextMMR();
+//		spend(4);
+//		spend(5);
+//		printMMR();
+//		
+//		nextMMR();
+//		spend(6);
+//		spend(2);
+//		printMMR();
+//		
+//		nextMMR();
+//		nextMMR();
+//		nextMMR();
+//		spend(10);
+//		spend(8);
+//		spend(9);
+//		printMMR();
 		
 		
 	}
