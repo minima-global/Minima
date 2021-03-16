@@ -19,9 +19,12 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
 import org.minima.objects.keys.MultiKey;
 import org.minima.objects.proofs.TokenProof;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 
 public class JavaUserDB implements UserDB, Streamable{
+	
+	public static int MAX_HISTORY = 100;
 	
 	/**
 	 * Minima stores any output that has a key you own in the STATE
@@ -536,20 +539,12 @@ public class JavaUserDB implements UserDB, Streamable{
 	@Override
 	public void addToHistory(TxPoW zTxPOW, Hashtable<String, MiniNumber> zValues) {
 		mHistory.add(new reltxpow( zTxPOW, zValues));
+	
+		int size = mHistory.size();
+		if(size>MAX_HISTORY) {
+			mHistory = new ArrayList<reltxpow>(mHistory.subList(size-MAX_HISTORY, MAX_HISTORY));
+		}
 	}
-
-//	@Override
-//	public void removeHistory(MiniData zTxPowID) {
-//		ArrayList<TxPOW> newhist = new ArrayList<TxPOW>();
-//		
-//		for(TxPOW txpow : mHistory) {
-//			if(!txpow.getTxPowID().isExactlyEqual(zTxPowID)) {
-//				newhist.add(txpow);
-//			}
-//		}
-//		
-//		mHistory = newhist;
-//	}
 
 	@Override
 	public void clearHistory() {
