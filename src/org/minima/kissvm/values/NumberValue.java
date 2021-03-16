@@ -22,7 +22,7 @@ public class NumberValue extends Value {
 	}
 	
 	public NumberValue(MiniNumber zValue) {
-		this(zValue.toString());
+		mNumber = zValue;
 	}
 	
 	public NumberValue(String zNumber) {

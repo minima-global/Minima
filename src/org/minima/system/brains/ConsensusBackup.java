@@ -38,8 +38,11 @@ public class ConsensusBackup extends ConsensusProcessor {
 	
 	public static String CONSENSUSBACKUP_RESTORE        = CONSENSUS_PREFIX+"RESTORE"; 
 	public static String CONSENSUSBACKUP_RESTOREUSERDB  = CONSENSUS_PREFIX+"RESTOREUSERDB"; 
-	public static String CONSENSUSBACKUP_RESTORETXPOW   = CONSENSUS_PREFIX+"RESTORETXPOW"; 
-	public static String CONSENSUSBACKUP_RESTORETREEDB  = CONSENSUS_PREFIX+"RESTORETREEDB"; 
+//	public static String CONSENSUSBACKUP_RESTORETXPOW   = CONSENSUS_PREFIX+"RESTORETXPOW"; 
+//	public static String CONSENSUSBACKUP_RESTORETREEDB  = CONSENSUS_PREFIX+"RESTORETREEDB"; 
+	
+	public static String CONSENSUSBACKUP_RESET        	= CONSENSUS_PREFIX+"RESET"; 
+	
 	
 	public static final String USERDB_BACKUP = "user.minima";
 	public static final String SYNC_BACKUP   = "sync.package";
@@ -287,7 +290,28 @@ public class ConsensusBackup extends ConsensusProcessor {
 		
 			//Message
 			InputHandler.endResponse(zMessage, true, "Restore complete - reconnecting to network");
+		
+		}else if(zMessage.isMessageType(CONSENSUSBACKUP_RESET)) {
+			//Return details..
+			JSONObject details = InputHandler.getResponseJSON(zMessage);
+			
+			MinimaLogger.log("RESETTING MINIMA..");
+			
+			//Clear the database..
+			getMainDB().getMainTree().clearTree();
+			getMainDB().getCoinDB().clearDB();
+			getMainDB().getTxPowDB().ClearDB();
+			
+			//Wipe everything BUT the minidapp folder
+			BackupManager.deleteConfFolder(getBackup().getRootFolder());
+			
+			//Disconnect and Reconnect to the network..
+			getNetworkHandler().PostMessage(NetworkHandler.NETWORK_RECONNECT);
+		
+			//Message
+			InputHandler.endResponse(zMessage, true, "FULL RESET complete - reconnecting to network");
 		}
+		
 	}
 	
 	public void loadSyncPackage(SyncPackage zPackage) {

@@ -2,15 +2,14 @@ package org.minima.tests.kissvm.values;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.fail;
 
 import org.junit.Test;
-import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.values.BooleanValue;
 import org.minima.kissvm.values.HEXValue;
 import org.minima.kissvm.values.NumberValue;
 import org.minima.kissvm.values.ScriptValue;
 import org.minima.kissvm.values.Value;
-import static org.junit.Assert.fail;
 
 public class ValueTests {
 

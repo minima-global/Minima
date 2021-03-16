@@ -12,7 +12,7 @@ import java.io.InputStream;
 import org.junit.Test;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniInteger;
+import org.minima.objects.base.MiniNumber;
 import org.minima.utils.json.JSONObject;
 
 public class TxPoWTests {
@@ -27,7 +27,7 @@ public class TxPoWTests {
         assertTrue("New TxPow should not have a bodyhash", txpow.getTxHeaderBodyHash().isEqual(new MiniData("0x0")));
         assertTrue("New TxPow should not be a transaction", txpow.isTransaction() == false);
         assertTrue("New TxPow should return empty block txs", txpow.getBlockTransactions().isEmpty());
-        assertTrue("New TxPow should have empty super parent", txpow.getNonce().isEqual(new MiniInteger(0)));
+        assertTrue("New TxPow should have empty super parent", txpow.getNonce().isEqual(new MiniNumber(0)));
         assertTrue("New TxPow should not be a block", txpow.isBlock() == false);
         assertTrue("New TxPow should have super level zero", txpow.getSuperLevel() == 0);
         assertTrue("New TxPow should be on main chain", txpow.getChainID().isEqual(new MiniData("0x00")));

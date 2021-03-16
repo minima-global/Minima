@@ -1,12 +1,18 @@
 package org.minima.tests.kissvm.functions.sigs;
 
-import org.minima.kissvm.functions.sigs.CHECKSIG;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.fail;
 
+import java.util.ArrayList;
+
+import org.junit.Test;
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.exceptions.MinimaParseException;
 import org.minima.kissvm.expressions.ConstantExpression;
 import org.minima.kissvm.functions.MinimaFunction;
+import org.minima.kissvm.functions.sigs.CHECKSIG;
 import org.minima.kissvm.values.BooleanValue;
 import org.minima.kissvm.values.HEXValue;
 import org.minima.kissvm.values.NumberValue;
@@ -17,16 +23,6 @@ import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.keys.MultiKey;
-
-import java.util.ArrayList;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import org.junit.Test;
 
 //BooleanValue CHECKSIG (HEXValue pubkey HEXValue data HEXValue sig)
 public class CHECKSIGTests {

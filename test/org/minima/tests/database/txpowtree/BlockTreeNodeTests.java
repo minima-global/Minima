@@ -10,7 +10,6 @@ import java.math.BigInteger;
 import org.junit.Test;
 import org.minima.database.txpowtree.BlockTreeNode;
 import org.minima.objects.TxPoW;
-import org.minima.objects.base.MiniInteger;
 import org.minima.objects.base.MiniNumber;
 
 public class BlockTreeNodeTests {
@@ -91,8 +90,10 @@ public class BlockTreeNodeTests {
         assertTrue("should be true ", btn.hasChildren());
         assertEquals("should be equal ", 2, btn.getNumberChildren());
         assertEquals("should be equal ", 2, btn.getChildren().size());
-        assertEquals("should be equal ", btn_c1, btn.getChild(0));
-        assertEquals("should be equal ", btn_c2, btn.getChild(1));
+        
+        //PADDY - THIS IS WRONG as the children are ordered by TxPoWID
+//        assertEquals("should be equal ", btn_c1, btn.getChild(0));
+//        assertEquals("should be equal ", btn_c2, btn.getChild(1));
 
         btn.clearParentChildren();
         assertNull("should be null ", btn.getParent());
@@ -114,19 +115,19 @@ public class BlockTreeNodeTests {
             new TxPoW()
         };
         for (int i = 0; i < txps.length; i++) {
-            txps[i].setNonce(new MiniInteger(10 + i));
+            txps[i].setNonce(new MiniNumber(10 + i));
             txps[i].calculateTXPOWID();
         }
 
         TxPoW utxp = new TxPoW();
-        utxp.setNonce(new MiniInteger(123));
+        utxp.setNonce(new MiniNumber(123));
         utxp.calculateTXPOWID();
 
         TxPoW txp = new TxPoW();
         for (int i = 0; i < txps.length; i++) {
             txp.addBlockTxPOW(txps[i]);
         }
-        txp.setNonce(new MiniInteger(12345));
+        txp.setNonce(new MiniNumber(12345));
         txp.calculateTXPOWID();
         BlockTreeNode btn = new BlockTreeNode(txp);
 

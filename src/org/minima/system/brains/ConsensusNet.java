@@ -22,6 +22,7 @@ import org.minima.objects.proofs.TokenProof;
 import org.minima.system.Main;
 import org.minima.system.network.base.MinimaClient;
 import org.minima.system.network.base.MinimaReader;
+import org.minima.system.txpow.TxPoWChecker;
 import org.minima.utils.DataTimer;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.messages.Message;
@@ -152,10 +153,8 @@ public class ConsensusNet extends ConsensusProcessor {
 				MinimaLogger.log("INCOMPATIBLE VERSION ON GREETING "+greet.getVersion()+" MUST BE 0.97");
 				MinimaLogger.log("SHUTTING DOWN CONNECTION..");
 				
-				//Don't want to reconnect if we choose to disconnect
-				client.noReconnect();
-				
 				//Shut down..
+				client.noReconnect();
 				client.PostMessage(new Message(MinimaClient.NETCLIENT_SHUTDOWN));
 				
 				return;
@@ -240,6 +239,7 @@ public class ConsensusNet extends ConsensusProcessor {
 					MinimaLogger.log("CANCEL RESYNC : Attempting to sync user with NoBody Blocks.. "+txp.getBlockNumber());
 					
 					//Disconnect him..
+					client.noReconnect();
 					client.PostMessage(new Message(MinimaClient.NETCLIENT_SHUTDOWN));
 					
 					return;
@@ -265,6 +265,7 @@ public class ConsensusNet extends ConsensusProcessor {
 						MinimaLogger.log("CANCEL RESYNC : Missing TxPoW in "+blk.getBlockNumber());
 						
 						//Disconnect him..
+						client.noReconnect();
 						client.PostMessage(new Message(MinimaClient.NETCLIENT_SHUTDOWN));
 						
 						return;
@@ -314,14 +315,19 @@ public class ConsensusNet extends ConsensusProcessor {
 			//Get the Backup manager where OLD blocks are stored..
 			BackupManager backup = Main.getMainHandler().getBackupManager();
 			
+			//Get the Client..
+			MinimaClient client = (MinimaClient) zMessage.getObject("netclient");
+			
 			//Are they within range
 			if(backup.getOldestBackupBlock().isMore(lowestnum)) {
 				MinimaLogger.log("TOO FAR BACK TO SYNC THEM.. "+backup.getOldestBackupBlock()+" / "+lowestnum);
+				
+				//Disconnect him..
+				client.noReconnect();
+				client.PostMessage(new Message(MinimaClient.NETCLIENT_SHUTDOWN));
+				
 				return;
 			}
-			
-			//Get the Client..
-			MinimaClient client = (MinimaClient) zMessage.getObject("netclient");
 			
 			//Otherwise lets load blocks and send them..
 			MiniNumber mycasc = getMainDB().getMainTree().getCascadeNode().getBlockNumber();
@@ -343,9 +349,11 @@ public class ConsensusNet extends ConsensusProcessor {
 					//Add it..
 					sp.getAllNodes().add(spack);
 					
-					//Can't sync him..
-					//.. will disconnect when trying to send him a null object.. ugly..
-					break;
+					//Can't sync him.. Disconnect him..
+					client.noReconnect();
+					client.PostMessage(new Message(MinimaClient.NETCLIENT_SHUTDOWN));
+					
+					return;
 				}
 				
 				//Add it..
@@ -591,6 +599,12 @@ public class ConsensusNet extends ConsensusProcessor {
 		}else if(zMessage.isMessageType(CONSENSUS_NET_CHECKSIZE_TXPOW)) {
 			//Internal message sent from you..
 			TxPoW txpow = (TxPoW)zMessage.getObject("txpow");
+			
+			//DO a basic check..
+			if(!TxPoWChecker.basicTxPowChecks(txpow)) {
+				MinimaLogger.log("ERROR - You've Mined A TxPoW that fails basic checks!");
+				return;
+			}
 			
 			//Create the follow up message
 			Message txpownet = new Message(CONSENSUS_NET_TXPOW).addObject("txpow", txpow);

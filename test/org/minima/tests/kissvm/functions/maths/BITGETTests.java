@@ -1,13 +1,19 @@
 package org.minima.tests.kissvm.functions.maths;
 
-import java.math.BigInteger;
-import org.minima.kissvm.functions.maths.BITGET;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.fail;
 
+import java.util.ArrayList;
+import java.util.BitSet;
+
+import org.junit.Test;
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.exceptions.MinimaParseException;
 import org.minima.kissvm.expressions.ConstantExpression;
 import org.minima.kissvm.functions.MinimaFunction;
+import org.minima.kissvm.functions.maths.BITGET;
 import org.minima.kissvm.values.BooleanValue;
 import org.minima.kissvm.values.HEXValue;
 import org.minima.kissvm.values.NumberValue;
@@ -15,17 +21,6 @@ import org.minima.kissvm.values.ScriptValue;
 import org.minima.kissvm.values.Value;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
-
-import java.util.ArrayList;
-import java.util.BitSet;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import org.junit.Test;
 
 //BooleanValue BITGET (HEXValue var, NumberValue pos)
 public class BITGETTests {

@@ -337,7 +337,7 @@ public class BlockTree {
 		
 		int check =0;
 		while(check++ < zLastBlocks) {
-			timelist.add(current.getTxPow().getTimeSecs());
+			timelist.add(current.getTxPow().getTimeMilli());
 			
 			current = current.getParent();
 			if(current == null) {
@@ -476,7 +476,7 @@ public class BlockTree {
 								
 								//Check all the transactions in the block are correct..
 								allok = getDB().checkAllTxPOW(zNode, mmrset);
-									
+								
 								//Check the root MMR..
 								if(allok) {
 									if(!row.getTxPOW().getMMRRoot().isEqual(mmrset.getMMRRoot().getFinalHash())) {
@@ -705,9 +705,9 @@ public class BlockTree {
 		//Use a previous block.. 
 		BlockTreeNode starter = getPastBlock(zStartPoint, GlobalParams.MINIMA_BLOCKS_SPEED_CALC.getAsInt());
 		
-		//Calculate to seconds..
-		MiniNumber start      = starter.getTxPow().getTimeSecs();
-		MiniNumber end        = zStartPoint.getTxPow().getTimeSecs();
+		//Calculate to milli..
+		MiniNumber start      = starter.getTxPow().getTimeMilli();
+		MiniNumber end        = zStartPoint.getTxPow().getTimeMilli();
 		MiniNumber timediff   = end.sub(start);
 		
 		//How many blocks..
@@ -719,7 +719,7 @@ public class BlockTree {
 		if(timediff.isEqual(MiniNumber.ZERO)) {
 			return MiniNumber.ONE;
 		}
-		MiniNumber speed  = blockdiff.div(timediff);
+		MiniNumber speed  = blockdiff.div(timediff.div(MiniNumber.THOUSAND));
 		
 		return speed;
 	}

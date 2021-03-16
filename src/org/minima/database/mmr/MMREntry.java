@@ -5,7 +5,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniInteger;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
@@ -17,7 +16,7 @@ public class MMREntry implements Streamable {
 	 * Global MMR position
 	 */
 	
-	MiniInteger mEntryNumber;
+	MiniNumber mEntryNumber;
 	int mRow;
 	
 	/**
@@ -41,7 +40,7 @@ public class MMREntry implements Streamable {
 	 * @param zRow
 	 * @param zEntry
 	 */
-	public MMREntry(int zRow, MiniInteger zEntry) {
+	public MMREntry(int zRow, MiniNumber zEntry) {
 		mRow = zRow;
 		mEntryNumber = zEntry;
 		mIsEmpty = true;
@@ -51,7 +50,7 @@ public class MMREntry implements Streamable {
 		return mIsEmpty;
 	}
 	
-	public boolean checkPosition(int zRow, MiniInteger zEntry) {
+	public boolean checkPosition(int zRow, MiniNumber zEntry) {
 		return (zRow == mRow) && zEntry.isEqual(mEntryNumber);
 	}
 	
@@ -109,7 +108,7 @@ public class MMREntry implements Streamable {
 	 * UTILITY FUNCTIONS FOR NAVIGATING THE MMR
 	 * 
 	 */
-	public MiniInteger getEntryNumber() {
+	public MiniNumber getEntryNumber() {
 		return mEntryNumber;
 	}
 	
@@ -126,7 +125,7 @@ public class MMREntry implements Streamable {
 	}
 	
 	public boolean isLeft() {
-		return mEntryNumber.modulo(MiniInteger.TWO).isEqual(MiniInteger.ZERO);
+		return mEntryNumber.modulo(MiniNumber.TWO).isEqual(MiniNumber.ZERO);
 	}
 	
 	public boolean isRight() {
@@ -141,7 +140,7 @@ public class MMREntry implements Streamable {
 //		return mEntryNumber.increment();
 //	}
 	
-	public MiniInteger getSibling() {
+	public MiniNumber getSibling() {
 		if(isLeft()) {
 			return mEntryNumber.increment();
 		}else {
@@ -149,16 +148,16 @@ public class MMREntry implements Streamable {
 		}
 	}
 	
-	public MiniInteger getParentEntry() {
-		return mEntryNumber.divRoundDown(MiniInteger.TWO);
+	public MiniNumber getParentEntry() {
+		return mEntryNumber.div(MiniNumber.TWO).floor();
 	}
 	
-	public MiniInteger getLeftChildEntry() {
-		return mEntryNumber.mult(MiniInteger.TWO);
+	public MiniNumber getLeftChildEntry() {
+		return mEntryNumber.mult(MiniNumber.TWO);
 	}
 	
-	public MiniInteger getRightChildEntry() {
-		return getLeftChildEntry().add(MiniInteger.ONE);
+	public MiniNumber getRightChildEntry() {
+		return getLeftChildEntry().add(MiniNumber.ONE);
 	}
 
 	@Override
@@ -175,7 +174,7 @@ public class MMREntry implements Streamable {
 
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
-		mEntryNumber = MiniInteger.ReadFromStream(zIn);
+		mEntryNumber = MiniNumber.ReadFromStream(zIn);
 		mRow         = zIn.readInt();
 		mData        = MMRData.ReadFromStream(zIn);
 		mIsEmpty     = false;

@@ -63,11 +63,12 @@ public class MMREntryDB {
 	 * @return the String Location
 	 */
 	private String getTableEntry(MMREntry zEntry) {
-		boolean dataonly  = zEntry.getData().isHashOnly();
-		String 		 hash = zEntry.getHashValue().to0xString();
+		boolean dataonly     = zEntry.getData().isHashOnly();
+		String 		 hash    = zEntry.getHashValue().to0xString();
+		MiniNumber  valuesum = zEntry.getData().getValueSum();
 		
 		//Convert this MMREntry into a unique string..
-		return hash+":"+dataonly;
+		return hash+":"+dataonly+":"+valuesum;
 	}
 	
 	/**

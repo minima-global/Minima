@@ -8,9 +8,7 @@ import static org.junit.Assert.assertTrue;
 import java.math.BigDecimal;
 
 import org.junit.Test;
-import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.values.NumberValue;
-import org.minima.kissvm.values.Value;
 import org.minima.objects.base.MiniNumber;
 
 public class NumberValueTests {
@@ -340,12 +338,12 @@ public class NumberValueTests {
                     nv2 = new NumberValue(Double.MAX_VALUE);
                     break;
                 case 4:
-                    assertThrows(NumberFormatException.class, () -> {
-                        new NumberValue(-Double.MIN_VALUE);
-                    });
-                    assertThrows(NumberFormatException.class, () -> {
-                        new NumberValue(Double.MIN_VALUE);
-                    });
+//                    assertThrows(NumberFormatException.class, () -> {
+//                        new NumberValue(-Double.MIN_VALUE);
+//                    });
+//                    assertThrows(NumberFormatException.class, () -> {
+//                        new NumberValue(Double.MIN_VALUE);
+//                    });
                     continue;
                 case 5:
                     nv1 = new NumberValue(new MiniNumber(Integer.MIN_VALUE));

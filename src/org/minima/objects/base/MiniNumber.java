@@ -30,16 +30,9 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 	public static final int MAX_DIGITS = 34;
 	
 	/**
-	 * The Maximum number of decimal places for a Minima Value
-	 * 
-	 * 10 digits represents 1 billion ( Max Value )..
-	 */
-	public static final int MAX_MINIMA_DECIMAL_PLACES = MAX_DIGITS - 10;
-	
-	/**
 	 * Max Decimal Places for any MiniNumber
 	 */
-	public static final int MAX_DECIMAL_PLACES = 128;
+	public static final int MAX_DECIMAL_PLACES = 24;
 	
 	/** 
 	 * The base Math Context used for all operations
@@ -111,14 +104,23 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 		checkLimits();
 	}
 	
+	public MiniNumber(BigDecimal zNumber){
+		mNumber = new BigDecimal(zNumber.toPlainString(),MATH_CONTEXT);
+		checkLimits();
+	}
+	
+	public MiniNumber(MiniNumber zMiniNumber){
+		mNumber = zMiniNumber.getAsBigDecimal();
+		checkLimits();
+	}
+	
 	public MiniNumber(String zNumber){
 		mNumber = new BigDecimal(zNumber,MATH_CONTEXT);
 		checkLimits();
 	}
 	
-	public MiniNumber(BigDecimal zBigD){
-		mNumber = zBigD.round(MATH_CONTEXT);
-		checkLimits();
+	public BigDecimal getNumber() {
+		return getAsBigDecimal();
 	}
 	
 	/**
@@ -134,7 +136,7 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 		}
 		
 		if(mNumber.scale() > MAX_DECIMAL_PLACES) {
-			throw new NumberFormatException("MiniNumber too many decimal places");
+			mNumber.setScale(MAX_DECIMAL_PLACES, RoundingMode.DOWN);
 		}
 	}
 	
@@ -151,7 +153,7 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 			return ZERO;
 		}
 		
-		return new MiniNumber(mNumber.setScale(MAX_MINIMA_DECIMAL_PLACES, RoundingMode.DOWN));
+		return this;
 	}
 	
 	/**
@@ -200,9 +202,10 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 		return new MiniNumber( mNumber.divide(zNumber.getAsBigDecimal(), MATH_CONTEXT) );
 	}
 	
-	public MiniNumber divRoundDown(MiniNumber zNumber) {
-		return new MiniNumber( mNumber.divide(zNumber.getAsBigDecimal(), RoundingMode.DOWN) );
-	}
+//	public MiniNumber divRoundDown(MiniNumber zNumber) {
+//		return div(zNumber).floor(); 
+////		return new MiniNumber( mNumber.divide(zNumber.getAsBigDecimal(), RoundingMode.DOWN) );
+//	}
 	
 	public MiniNumber mult(MiniNumber zNumber) {
 		return new MiniNumber( mNumber.multiply(zNumber.getAsBigDecimal(),MATH_CONTEXT) );

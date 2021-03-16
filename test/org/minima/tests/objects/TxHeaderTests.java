@@ -11,7 +11,6 @@ import java.io.InputStream;
 
 import org.minima.objects.TxHeader;
 import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniInteger;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.Crypto;
 import org.minima.utils.json.JSONObject;
@@ -24,9 +23,9 @@ public class TxHeaderTests {
         TxHeader mHeader = new TxHeader();
         mHeader.mTxBodyHash = Crypto.getInstance().hashObject(new MiniData("Hello World"));
         mHeader.mBlockDifficulty = new MiniData("0xffff");
-        mHeader.mTimeSecs = new MiniNumber(99999999).divRoundDown(MiniNumber.THOUSAND);
+        mHeader.mTimeMilli = new MiniNumber(99999999);
         mHeader.mBlockNumber = new MiniNumber(123450);
-        mHeader.mNonce = new MiniInteger(900000);
+        mHeader.mNonce = new MiniNumber(900000);
         assertTrue("tx header should have a body hash", mHeader.getBodyHash() != null);
         assertTrue("body hash should not be empty", mHeader.getBodyHash().isMore(new MiniData("0x0")));
         JSONObject json = mHeader.toJSON();

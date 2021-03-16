@@ -12,7 +12,6 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.junit.Test;
-import org.minima.objects.base.MMRSumNumber;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
@@ -35,7 +34,7 @@ public class ProofTests {
         System.out.println("Proof json values - " + p.toJSON());
         System.out.println("Proof length values - " + p.getProofLen());
         MiniNumber k = new MiniNumber(1);
-        MMRSumNumber l = new MMRSumNumber(k);
+        MiniNumber l = new MiniNumber(k);
         MiniByte j = new MiniByte(1);
         MiniByte m = new MiniByte(8);
         Proof.ProofChunk pc = p.new ProofChunk(j, proofValue, l);

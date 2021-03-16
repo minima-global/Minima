@@ -245,10 +245,10 @@ public class ConsensusHandler extends MessageProcessor {
 				//Was it requested.. ?
 				if(requested) {
 					//Ok - could be from a different branch block.. 
-					MinimaLogger.log("WARNING Invalid TXPOW (Requested..) : "+txpow.getBlockNumber()+" "+txpow.getTxPowID()); 
+					MinimaLogger.log("WARNING Invalid TXPOW (Requested..) trans:"+txpow.isTransaction()+" blk:"+txpow.isBlock()+" " +txpow.getBlockNumber()+" "+txpow.getTxPowID()+" tip:"+getMainDB().getTopBlock()); 
 				}else {
 					//Not requested invalid transaction.. could be from a branch chain though..
-					MinimaLogger.log("WARNING Invalid TXPOW (UN-Requested..) : "+txpow.getBlockNumber()+" "+txpow.getTxPowID()); 
+					MinimaLogger.log("WARNING Invalid TXPOW (UN-Requested..) trans:"+txpow.isTransaction()+" blk:"+txpow.isBlock()+" " +txpow.getBlockNumber()+" "+txpow.getTxPowID()+" tip:"+getMainDB().getTopBlock()); 
 					//Remove it from the DB.. FOR NOW KEEP
 					//getMainDB().getTxPowDB().removeTxPOW(txpow.getTxPowID());
 					//return;	
@@ -396,6 +396,13 @@ public class ConsensusHandler extends MessageProcessor {
 			
 			//Fresh TXPOW
 			TxPoW txpow = getMainDB().getCurrentTxPow(new Transaction(), new Witness(), new JSONArray());
+			
+			//Do we have any blocks.. could be syncing
+			if(txpow == null) {
+				//Try again in a minute
+				PostTimerMessage(new TimerMessage(20000, CONSENSUS_MINEBLOCK));
+				return;
+			}
 			
 			//Send it to the Miner..
 			Message mine = new Message(TxPoWMiner.TXMINER_MEGAMINER).addObject("txpow", txpow);

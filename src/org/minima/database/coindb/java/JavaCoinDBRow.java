@@ -2,7 +2,6 @@ package org.minima.database.coindb.java;
 
 import org.minima.database.coindb.CoinDBRow;
 import org.minima.objects.Coin;
-import org.minima.objects.base.MiniInteger;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.json.JSONObject;
 
@@ -15,7 +14,7 @@ public class JavaCoinDBRow implements CoinDBRow{
 	boolean mIsInBlock;
 	MiniNumber mInBlockNumber = new MiniNumber(0);
 	
-	MiniInteger mEntryNumber  = new MiniInteger(0);
+	MiniNumber mEntryNumber  = new MiniNumber(0);
 	
 	boolean mRelevant;
 	
@@ -85,12 +84,12 @@ public class JavaCoinDBRow implements CoinDBRow{
 	}
 
 	@Override
-	public void setMMREntry(MiniInteger zEntry) {
+	public void setMMREntry(MiniNumber zEntry) {
 		mEntryNumber = zEntry;
 	}
 
 	@Override
-	public MiniInteger getMMREntry() {
+	public MiniNumber getMMREntry() {
 		return mEntryNumber;
 	}
 

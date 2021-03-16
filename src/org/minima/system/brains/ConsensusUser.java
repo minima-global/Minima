@@ -29,9 +29,7 @@ import org.minima.objects.StateVariable;
 import org.minima.objects.Transaction;
 import org.minima.objects.TxPoW;
 import org.minima.objects.Witness;
-import org.minima.objects.base.MMRSumNumber;
 import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniInteger;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
 import org.minima.objects.keys.MultiKey;
@@ -82,12 +80,19 @@ public class ConsensusUser extends ConsensusProcessor {
 		
 		if(zMessage.isMessageType(CONSENSUS_NEWSIMPLE)) {
 			int bitlength = GlobalParams.MINIMA_DEFAULT_HASH_STRENGTH;
+			int keys   = 16;
+			int levels = 2;
 			if(zMessage.exists("bitlength")) {
 				bitlength = zMessage.getInteger("bitlength");
+				keys = zMessage.getInteger("keys");
+				levels = zMessage.getInteger("levels");
 			}
 			
+			//Create a new key..
+			MultiKey mkey = new MultiKey(bitlength, new MiniNumber(keys), new MiniNumber(levels));
+			
 			//Create a new simple address
-			Address addr = getMainDB().getUserDB().newSimpleAddress(bitlength);
+			Address addr = getMainDB().getUserDB().newSimpleAddress(mkey);
 			
 			JSONObject resp = InputHandler.getResponseJSON(zMessage);
 			resp.put("address", addr.toJSON());
@@ -195,10 +200,12 @@ public class ConsensusUser extends ConsensusProcessor {
 			
 		}else if(zMessage.isMessageType(CONSENSUS_NEWKEY)) {
 			//Get the bitlength
-			int bitl = zMessage.getInteger("bitlength");
+			int bitl   = zMessage.getInteger("bitlength");
+			int keys   = zMessage.getInteger("keys");
+			int levels = zMessage.getInteger("levels");
 			
 			//Create a new key pair..
-			MultiKey key = getMainDB().getUserDB().newPublicKey(bitl);
+			MultiKey key = getMainDB().getUserDB().newPublicKey(bitl,keys,levels);
 			
 			//return to sender!
 			JSONObject resp = InputHandler.getResponseJSON(zMessage);
@@ -296,7 +303,7 @@ public class ConsensusUser extends ConsensusProcessor {
 				nodearray.add(mmrnode);
 				
 				//Add to the MMR
-				mmr.addUnspentCoin(new MMRData(finalhash,MMRSumNumber.ZERO));
+				mmr.addUnspentCoin(new MMRData(finalhash,MiniNumber.ZERO));
 			}
 
 			//Now finalize..
@@ -308,7 +315,7 @@ public class ConsensusUser extends ConsensusProcessor {
 				JSONObject node = (JSONObject) nodearray.get(i);
 				
 				//Get the proof..
-				MMRProof proof = mmr.getFullProofToRoot(new MiniInteger(i));
+				MMRProof proof = mmr.getProof(new MiniNumber(i));
 				
 				//Calculate the CHAINSHA proof..
 				node.put("chainsha", proof.getChainSHAProof().to0xString());
@@ -461,7 +468,7 @@ public class ConsensusUser extends ConsensusProcessor {
 			//Set the environment
 			TxPoW top = getMainDB().getTopTxPoW();
 			MiniNumber blocknum  = top.getBlockNumber();
-			MiniNumber blocktime = top.getTimeSecs();
+			MiniNumber blocktime = top.getTimeMilli();
 			
 			//These 2 are set automatically..
 			cc.setGlobalVariable("@ADDRESS", new HEXValue(ccaddress.getAddressData()));

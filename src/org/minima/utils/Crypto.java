@@ -202,7 +202,7 @@ public class Crypto {
 		return null;
 	}
 	
-	public MiniData hashAllObjects(Streamable... zObjects) {
+	public MiniData hashAllObjects(int zBitLength, Streamable... zObjects) {
 		try {
 			//Get the Data..
 			ByteArrayOutputStream baos 	= new ByteArrayOutputStream();
@@ -220,7 +220,7 @@ public class Crypto {
 			byte[] objdata = baos.toByteArray();
 			
 			//Hash That
-			byte[] hashdata = hashData(objdata);
+			byte[] hashdata = hashData(objdata,zBitLength);
 		
 			MiniData ret = new MiniData(hashdata);
 			

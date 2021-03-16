@@ -1,14 +1,9 @@
 package org.minima.objects.keys;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 
 import org.minima.database.mmr.MMRSet;
 import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniInteger;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.BaseConverter;
 import org.minima.utils.Crypto;
@@ -121,15 +116,25 @@ public class MultiKey extends BaseKey {
 		//Which leaf node are we using..
 		int leafnode = (int)(keynum / perleaf);
 		
-//		System.out.println("LEVEL:"+mLevel+" USE:"+keynum+" LEAF:"+leafnode+" "+getPublicKey());
-		
 		if(leafnode>=getMaxUses().getAsInt()) {
-			MinimaLogger.log("ERROR Key "+getPublicKey().to0xString()
+			MinimaLogger.log("SERIOUS ERROR Key "+getPublicKey().to0xString()
 					+" used too many times! MAX LEAF NODES:"+getMaxUses()+" ALLOWED:"+keynum+"<"+getTotalAllowedUses());
-			//Create an INVALID multi sig..
-			MiniData zero = new MiniData("0x0000");
-			MultiSig sig  = new MultiSig(zero, zero, zero);
-			return sig.getCompleteSig();
+			
+			//RESET THE KEY LIMIT.. no point saying NO as coins can get stuck..
+			setUses(MiniNumber.ZERO);
+			
+			//Which key are we on..
+			keynum = getUses().getAsInt();
+			
+			//Once used you cannot use it again..
+			incrementUses();
+			
+			//Which leaf node are we using..
+			leafnode = (int)(keynum / perleaf);
+			
+//			MiniData zero = new MiniData("0x0000");
+//			MultiSig sig  = new MultiSig(zero, zero, zero);
+//			return sig.getCompleteSig();
 		}
 		
 		//Are we top level
@@ -137,7 +142,7 @@ public class MultiKey extends BaseKey {
 			//Sign the data with this key
 			mCurrentPublicKey  = mSingleKeys[leafnode].getPublicKey();
 			mCurrentSignature  = mSingleKeys[leafnode].sign(zData);
-			mCurrentProof      = mMMR.getFullProofToRoot(new MiniInteger(leafnode)).getChainSHAProof();
+			mCurrentProof      = mMMR.getProof(new MiniNumber(leafnode)).getChainSHAProof();
 			
 			//Create a multi sig.. no child signature
 			MultiSig sig = new MultiSig(mCurrentPublicKey, mCurrentProof, mCurrentSignature);
@@ -168,7 +173,7 @@ public class MultiKey extends BaseKey {
 			//Sign that..
 			mCurrentPublicKey  = mSingleKeys[mCurrentLeaf].getPublicKey();
 			mCurrentSignature  = mSingleKeys[mCurrentLeaf].sign(rootkey);
-			mCurrentProof      = mMMR.getFullProofToRoot(new MiniInteger(mCurrentLeaf)).getChainSHAProof();
+			mCurrentProof      = mMMR.getProof(new MiniNumber(mCurrentLeaf)).getChainSHAProof();
 		}	
 		
 		//Use the current base 
@@ -258,7 +263,7 @@ public class MultiKey extends BaseKey {
 		long timediff     = 0;
 		
 		System.out.println("MAKE KEY Start");
-		MultiKey mkey = new MultiKey(privseed, new MiniNumber("16"), new MiniNumber("2"));
+		MultiKey mkey = new MultiKey(privseed, new MiniNumber("2"), new MiniNumber("1"));
 		System.out.println(mkey.toJSON().toString());
 		
 		//Timer..
@@ -293,7 +298,7 @@ public class MultiKey extends BaseKey {
 //		if(true) {System.exit(0);}
 		
 		//MULTI SIGN EXAMPLE
-		for(int i=0;i<8;i++) {
+		for(int i=0;i<13;i++) {
 			MiniData sig = mkey.sign(data);
 			System.out.println(i+")\tSigLength:"
 					+sig.getLength()+"\thash:"
@@ -303,45 +308,45 @@ public class MultiKey extends BaseKey {
 			System.out.println();
 		}
 		
-		System.out.println();
-		System.out.println("Now read it in..");
-		
-		//Now write the key our..
-		MultiKey lodkey = new MultiKey(); 
-		try {
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			DataOutputStream dos = new DataOutputStream(baos);
-			
-			mkey.writeDataStream(dos);
-			
-			byte[] mdata = baos.toByteArray();
-			
-			dos.close();
-			
-			//Now read it back in..
-			ByteArrayInputStream bais = new ByteArrayInputStream(mdata);
-			DataInputStream dis = new DataInputStream(bais);
-			
-			lodkey.readDataStream(dis);
-			
-			dis.close();
-			
-		}catch(Exception exc) {
-			exc.printStackTrace();
-		}
-		
-		mkey = null;
-		System.out.println(lodkey.toJSON().toString());
-		
-		for(int i=0;i<5;i++) {
-			MiniData sig = lodkey.sign(data);
-			System.out.println(i+")\tSigLength:"
-					+sig.getLength()+"\thash:"
-					+Crypto.getInstance().hashObject(sig,160).to0xString()
-					+"\tVerify  : "+lodkey.verify(data, sig));
-			System.out.println(lodkey.toJSON().toString());
-			System.out.println();
-		}
+//		System.out.println();
+//		System.out.println("Now read it in..");
+//		
+//		//Now write the key our..
+//		MultiKey lodkey = new MultiKey(); 
+//		try {
+//			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+//			DataOutputStream dos = new DataOutputStream(baos);
+//			
+//			mkey.writeDataStream(dos);
+//			
+//			byte[] mdata = baos.toByteArray();
+//			
+//			dos.close();
+//			
+//			//Now read it back in..
+//			ByteArrayInputStream bais = new ByteArrayInputStream(mdata);
+//			DataInputStream dis = new DataInputStream(bais);
+//			
+//			lodkey.readDataStream(dis);
+//			
+//			dis.close();
+//			
+//		}catch(Exception exc) {
+//			exc.printStackTrace();
+//		}
+//		
+//		mkey = null;
+//		System.out.println(lodkey.toJSON().toString());
+//		
+//		for(int i=0;i<5;i++) {
+//			MiniData sig = lodkey.sign(data);
+//			System.out.println(i+")\tSigLength:"
+//					+sig.getLength()+"\thash:"
+//					+Crypto.getInstance().hashObject(sig,160).to0xString()
+//					+"\tVerify  : "+lodkey.verify(data, sig));
+//			System.out.println(lodkey.toJSON().toString());
+//			System.out.println();
+//		}
 		
 	}
 

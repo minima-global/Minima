@@ -1,42 +1,31 @@
 package org.minima.tests.kissvm.functions.txn.input;
 
-import org.minima.kissvm.functions.txn.input.VERIFYIN;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.fail;
 
+import java.util.ArrayList;
+
+import org.junit.Test;
 import org.minima.database.MinimaDB;
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.exceptions.MinimaParseException;
 import org.minima.kissvm.expressions.ConstantExpression;
 import org.minima.kissvm.functions.MinimaFunction;
+import org.minima.kissvm.functions.txn.input.VERIFYIN;
 import org.minima.kissvm.values.BooleanValue;
 import org.minima.kissvm.values.HEXValue;
 import org.minima.kissvm.values.NumberValue;
-import org.minima.kissvm.values.ScriptValue;
 import org.minima.kissvm.values.Value;
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
-import org.minima.objects.TxPoW;
-import org.minima.objects.StateVariable;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
-import org.minima.objects.keys.MultiKey;
 import org.minima.objects.proofs.TokenProof;
-
-import java.util.ArrayList;
-import java.util.Random;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import org.junit.Test;
 
 //BooleanValue VERIFYIN (NumberValue input HEXValue address NumberValue amount HEXValue tokenind [NumberValue amountchecktype])
 public class VERIFYINTests {

@@ -19,7 +19,7 @@ public class TestParams {
 	 * -  0.05  = 20 second block time
 	 * - 0.2 = 5 second blocktime
 	 */
-	public static MiniNumber MINIMA_BLOCK_SPEED  = new MiniNumber("1");
+	public static MiniNumber MINIMA_BLOCK_SPEED  = new MiniNumber("0.5");
 	
 	/**
 	 * When checking speed and average difficulty only look at this many blocks back
@@ -39,7 +39,7 @@ public class TestParams {
 	/**
 	 * Depth before we cascade..
 	 */
-	public static MiniNumber MINIMA_CASCADE_START_DEPTH = new MiniNumber(16);
+	public static MiniNumber MINIMA_CASCADE_START_DEPTH = new MiniNumber(32);
 	
 	/**
 	 * Number of blocks at each cascade level 

@@ -21,6 +21,7 @@ public interface UserDB {
 	 */
 	public ArrayList<MultiKey> getKeys();
 	public MultiKey newPublicKey(int zBitLength);
+	public MultiKey newPublicKey(int zBitLength, int zKeys, int zLevels);
 	public MultiKey getPubPrivKey(MiniData zPubKey);
 	
 	/**
