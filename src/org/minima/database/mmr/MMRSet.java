@@ -776,7 +776,9 @@ public class MMRSet implements Streamable {
 	
 	public MMRProof getCoinProof(MiniNumber zEntryNumber) {
 		//Get the Basic Proof..
-		return getProofToPeak(zEntryNumber);
+//		return getProofToPeak(zEntryNumber);
+		
+		return getProof(zEntryNumber);
 	}
 	
 	public MMRProof getProofToPeak(MiniNumber zEntryNumber) {
@@ -895,31 +897,31 @@ public class MMRSet implements Streamable {
 		//Calculate the proof..
 		MiniData proofpeak = zProof.getFinalHash();
 		
-		//Is this is a Peak ? - if so, go no further..
-		boolean found = false;
-		MiniNumber peakvalue = null;
-		for(MMREntry peak : peaks) {
-			if(proofpeak.isEqual(peak.getHashValue())) {
-				found     = true;
-				peakvalue = peak.getData().getValueSum();
-				break;
-			}
-		}
-		
-		//Was it one of the peaks ?
-		if(!found) {
-			MinimaLogger.log("checkProof Proof No Peak Found "+zProof);
-			return false;
-		}
-		
-//		//Get the root..
-//		MMRData root = proofset.getMMRRoot();
+//		//Is this is a Peak ? - if so, go no further..
+//		boolean found = false;
+//		MiniNumber peakvalue = null;
+//		for(MMREntry peak : peaks) {
+//			if(proofpeak.isEqual(peak.getHashValue())) {
+//				found     = true;
+//				peakvalue = peak.getData().getValueSum();
+//				break;
+//			}
+//		}
 //		
-//		//Check..
-//		if(!zProof.getFinalHash().isEqual(root.getFinalHash())) {
-//			MinimaLogger.log("checkProof Proof not equal to ROOT! "+zProof);
+//		//Was it one of the peaks ?
+//		if(!found) {
+//			MinimaLogger.log("checkProof Proof No Peak Found "+zProof);
 //			return false;
 //		}
+		
+		//Get the root..
+		MMRData root = proofset.getMMRRoot();
+		
+		//Check..
+		if(!zProof.getFinalHash().isEqual(root.getFinalHash())) {
+			MinimaLogger.log("checkProof Proof not equal to ROOT! "+zProof);
+			return false;
+		}
 		
 		//So the proof was valid at that time.. if it has been SPENT, it will have been AFTER this block - and in our MMR
 		MMREntry entry = getEntry(0, zProof.getEntryNumber(), zProof.getBlockTime().increment());
