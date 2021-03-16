@@ -895,6 +895,7 @@ public class ConsensusPrint extends ConsensusProcessor {
 			
 			//And add to the final response
 			allbal.put("history",totbal);
+			allbal.put("total",totbal.size());
 			
 			//All good
 			InputHandler.endResponse(zMessage, true, "");
