@@ -80,7 +80,7 @@ public class MultiKey extends BaseKey {
 		mSingleKeys = new SingleKey[mMaxUses.getAsInt()];
 		
 		//Now create the MMR tree
-		mMMR = new MMRSet(mBitLength.getAsInt(),false);
+		mMMR = new MMRSet(mBitLength.getAsInt());
 				
 		//Create all the keys..
 		int len = mMaxUses.getAsInt();

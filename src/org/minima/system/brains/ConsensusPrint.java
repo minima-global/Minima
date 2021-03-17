@@ -12,7 +12,6 @@ import java.util.Hashtable;
 import org.minima.GlobalParams;
 import org.minima.database.MinimaDB;
 import org.minima.database.mmr.MMREntry;
-import org.minima.database.mmr.MMREntryDB;
 import org.minima.database.mmr.MMRSet;
 import org.minima.database.txpowdb.TxPOWDBRow;
 import org.minima.database.txpowtree.BlockTree;
@@ -1016,15 +1015,6 @@ public class ConsensusPrint extends ConsensusProcessor {
 			status.put("cascade", getMainDB().getMainTree().getCascadeNode().getTxPow().getBlockNumber().toString());
 			
 			status.put("difficulty", tip.getTxPow().getBlockDifficulty().to0xString());
-			
-			//Number of transactions in total..
-//			status.put("coins",  tip.getMMRSet().getEntryNumber());
-			
-			//MMR DB
-			status.put("mmrentrydb", MMREntryDB.getDB().getSize());
-			
-//			//COINDB
-//			status.put("coindb", getMainDB().getCoinDB().getComplete().size());
 			
 			//TxPOWDB
 			status.put("txpowdb", getMainDB().getTxPowDB().getSize());

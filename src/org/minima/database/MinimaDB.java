@@ -7,14 +7,12 @@ import java.io.DataOutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.StringTokenizer;
 
 import org.minima.GlobalParams;
 import org.minima.database.mmr.MMRData;
 import org.minima.database.mmr.MMREntry;
-import org.minima.database.mmr.MMREntryDB;
 import org.minima.database.mmr.MMRProof;
 import org.minima.database.mmr.MMRSet;
 import org.minima.database.txpowdb.TxPOWDBRow;
@@ -49,7 +47,6 @@ import org.minima.utils.MinimaLogger;
 import org.minima.utils.ObjectStack;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.messages.Message;
-import org.mozilla.javascript.Token;
 
 public class MinimaDB {
 
@@ -262,9 +259,6 @@ public class MinimaDB {
 			//Reset transaction from that block onwards
 			mTxPOWDB.resetBlocksFromOnwards(lastblock);
 			
-			//Reset coins from that block onwards
-//			mCoinDB.resetCoinsFomOnwards(lastblock);
-			
 			//Now sort
 			for(BlockTreeNode treenode : list) {
 				//Get the Block
@@ -334,9 +328,6 @@ public class MinimaDB {
 			//Remove all TXPowRows that are less than the cascade node.. they will not be used again..
 			MiniNumber cascade 	= mMainTree.getCascadeNode().getBlockNumber();
 			
-			//Update the MMREntryDB to remove unneeded MMR data..
-			MMREntryDB.getDB().cleanUpDB(cascade);
-			
 			//Which txpow have been removed..
 			ArrayList<TxPOWDBRow> remrows =  mTxPOWDB.removeTxPOWInBlockLessThan(cascade);
 			
@@ -344,9 +335,6 @@ public class MinimaDB {
 			for(TxPOWDBRow remrow : remrows) {
 				getBackup().deleteTxpow(remrow.getTxPOW());
 			}
-			
-			//Remove all the coins no longer needed.. SPENT
-//			mCoinDB.removeOldSpentCoins(cascade);
 			
 			//Clean up..
 			System.gc();
@@ -979,7 +967,7 @@ public class MinimaDB {
 //			}
 			
 			//Get a proof from a while back.. more than confirmed depth, less than cascade
-			MMRProof proof = proofmmr.getCoinProof(entrynum);
+			MMRProof proof = proofmmr.getProof(entrynum);
 			
 //			//Hmm.. this should not happen
 //			if(proof == null) {

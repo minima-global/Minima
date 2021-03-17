@@ -6,7 +6,6 @@ import java.io.File;
 import java.util.ArrayList;
 
 import org.minima.database.MinimaDB;
-import org.minima.database.mmr.MMREntryDB;
 import org.minima.database.mmr.MMRSet;
 import org.minima.database.txpowdb.TxPOWDBRow;
 import org.minima.database.txpowtree.BlockTreeNode;
@@ -418,10 +417,6 @@ public class ConsensusBackup extends ConsensusProcessor {
 			}
 		}
 				
-		//Clear the MMRDB tree..
-		MiniNumber cascade = getMainDB().getMainTree().getCascadeNode().getBlockNumber();
-		MMREntryDB.getDB().cleanUpDB(cascade);
-		
 		ArrayList<TxPOWDBRow> test = getMainDB().getTxPowDB().getAllUnusedTxPOW();
 		if(test.size()>0) {
 			MinimaLogger.log("UNUSED TXPOW FOUND "+test.size());

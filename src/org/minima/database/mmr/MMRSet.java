@@ -26,7 +26,7 @@ public class MMRSet implements Streamable {
 	 * Maximum number of rows in this set.. 2^128 trx max.. 
 	 * Can be set higher - but takes more memory
 	 */
-	public static int MAXROWS = 128;
+	static int MAXROWS = 160;
 	
 	/**
 	 * What Block time does this MMR represent. Each represents 1 block.
@@ -43,7 +43,7 @@ public class MMRSet implements Streamable {
 	/**
 	 * What is the current entry number..
 	 */
-	public MiniNumber mEntryNumber = new MiniNumber(0);
+	MiniNumber mEntryNumber = new MiniNumber(0);
 	
 	/**
 	 * All the entries in this set 
@@ -64,11 +64,6 @@ public class MMRSet implements Streamable {
 	 * Which Entries do we keep
 	 */
 	ArrayList<MiniNumber> mKeepers;
-	
-	/**
-	 * Does this MMR use the MMREntryDB for duplicates
-	 */
-	boolean mUseMMREntryDB = true;
 	
 	/**
 	 * Has the set been Finalized (Peaks / Root )
@@ -94,19 +89,11 @@ public class MMRSet implements Streamable {
 		this(null, zBitLength);
 	}
 	
-	public MMRSet(int zBitLength, boolean zUseMMREntryDB) {
-		this(null, zBitLength,zUseMMREntryDB);
-	}
-	
 	public MMRSet(MMRSet zParent) {
 		this(zParent, 512);
 	}
 	
 	public MMRSet(MMRSet zParent, int zBitLength) {
-		this(zParent,zBitLength,true);
-	}
-	
-	public MMRSet(MMRSet zParent, int zBitLength, boolean zUseMMREntryDB) {
 		//All the Entries in this set
 		mSetEntries       = new Hashtable<>();
 		
@@ -122,9 +109,6 @@ public class MMRSet implements Streamable {
 		
 		//Not Finalized..
 		mFinalized = false;
-		
-		//Do we Use the MMREntryDB
-		mUseMMREntryDB = zUseMMREntryDB;
 		
 		//What HASH strength - ALL MMR database is 512
 		MMR_HASH_BITS = zBitLength;
@@ -198,53 +182,7 @@ public class MMRSet implements Streamable {
 		mParent = zParent;
 	}
 	
-	//Switch to the shared MMREntry DB
-	private void fixEntryDuplicates() {
-		//Do we use the duplicate DB
-		if(!mUseMMREntryDB) {
-			return;
-		}
-		
-		//Get the Duplicate Copy DB
-		MMREntryDB db = MMREntryDB.getDB();
-		
-		//Create Copies..
-		Hashtable<String, MMREntry> setEntries       = new Hashtable<>();
-		MMREntry maxEntries[] 						 = new MMREntry[MAXROWS];
-		
-		//Now cycle through and use the shared MMRENtry
-		Enumeration<MMREntry> entries = mSetEntries.elements();
-		while(entries.hasMoreElements()) {
-			//The Original
-			MMREntry entry = entries.nextElement();
-		
-			//Get Shared Version..
-			MMREntry sharedentry = db.getEntry(entry, mBlockTime);
-			
-			//Add it..
-			String name = getHashTableEntry(entry.getRow(), entry.getEntryNumber());
-			setEntries.put(name, sharedentry);
-		}
-		
-		for(int i=0;i<MAXROWS;i++) {
-			if(mMaxEntries[i] != null) {
-				//Get Shared Version..
-				MMREntry sharedentry = db.getEntry(mMaxEntries[i], mBlockTime);
-				
-				//Add it..
-				maxEntries[i] = sharedentry;
-			}
-		}
-		
-		//And now set these as the actual values
-		mSetEntries 		= setEntries;
-		mMaxEntries	 		= maxEntries;
-	}
-	
 	public void finalizeSet() {
-		//Fix Duplicates..
-//		fixEntryDuplicates();
-		
 		//Reset
 		mFinalized = false;
 				
@@ -273,6 +211,10 @@ public class MMRSet implements Streamable {
 		return mBlockTime;
 	}
 	
+	public MiniNumber getEntryNumber() {
+		return mEntryNumber;
+	}
+	
 	public MMRSet getParent() {
 		return mParent;
 	}
@@ -285,9 +227,7 @@ public class MMRSet implements Streamable {
 		return zRow+":"+zEntry.toString();
 	}
 	
-	//This is NEVER an empty MMREntry
 	private void addHashTableEntry(MMREntry zEntry) {
-		//Add the entry to the total list HashTable
 		String name = getHashTableEntry(zEntry.getRow(), zEntry.getEntryNumber());
 		mSetEntries.put(name, zEntry);
 	}
@@ -641,7 +581,11 @@ public class MMRSet implements Streamable {
 	 * Set entry to SPENT
 	 */
 	public MMREntry updateSpentCoin(MMRProof zProof) {
-//		MinimaLogger.log("SPEND COIN @ "+mBlockTime+" "+zProof);
+		//Double check the coin is valid..
+		if(!checkProof(zProof)) {
+			MinimaLogger.log("SERIOUS ERROR : trying to update MMR with invalid proof! "+zProof);
+			return null;
+		}
 		
 		//The original MMRData..
 		MMRData original = zProof.getMMRData();
@@ -774,13 +718,6 @@ public class MMRSet implements Streamable {
 		return proof;
 	}
 	
-	public MMRProof getCoinProof(MiniNumber zEntryNumber) {
-		//Get the Basic Proof..
-//		return getProofToPeak(zEntryNumber);
-		
-		return getProof(zEntryNumber);
-	}
-	
 	public MMRProof getProofToPeak(MiniNumber zEntryNumber) {
 		//First get the initial Entry.. check parents aswell..
 		MMREntry entry = getEntry(0, zEntryNumber);
@@ -818,7 +755,7 @@ public class MMRSet implements Streamable {
 		MMREntry keeper 		= null;
 		while(peaks.size() > 1) {
 			//Create a new MMR
-			MMRSet newmmr = new MMRSet(MMR_HASH_BITS,false);
+			MMRSet newmmr = new MMRSet(MMR_HASH_BITS);
 			
 			//Add all the peaks to it..
 			for(MMREntry peak : peaks) {
@@ -896,24 +833,7 @@ public class MMRSet implements Streamable {
 		
 		//Calculate the proof..
 		MiniData proofpeak = zProof.getFinalHash();
-		
-//		//Is this is a Peak ? - if so, go no further..
-//		boolean found = false;
-//		MiniNumber peakvalue = null;
-//		for(MMREntry peak : peaks) {
-//			if(proofpeak.isEqual(peak.getHashValue())) {
-//				found     = true;
-//				peakvalue = peak.getData().getValueSum();
-//				break;
-//			}
-//		}
-//		
-//		//Was it one of the peaks ?
-//		if(!found) {
-//			MinimaLogger.log("checkProof Proof No Peak Found "+zProof);
-//			return false;
-//		}
-		
+				
 		//Get the root..
 		MMRData root = proofset.getMMRRoot();
 		
@@ -928,15 +848,10 @@ public class MMRSet implements Streamable {
 		
 		//Is it there ?
 		if(!entry.isEmpty()) {
-			if(!entry.getData().getValueSum().isEqual(zProof.getMMRData().getValueSum())) {
-				MinimaLogger.log("ERROR Proof Coin value changed since proof created "+zProof);
-				MinimaLogger.log("Proof : "+zProof.getMMRData().getValueSum()+" / MMR : "+entry.getData().getValueSum()+" @ "+entry.getBlockTime());
+			if(!entry.getData().getFinalHash().isEqual(zProof.getMMRData().getFinalHash())) {
+				MinimaLogger.log("ERROR Proof Coin changed since proof created "+zProof);
 				return false;
 			}
-//			if(!entry.getHashValue().isEqual(zProof.getMMRData().getFinalHash())) {
-//				MinimaLogger.log("ERROR Proof Coin value changed since proof created "+zProof);
-//				return false;
-//			}
 		}
 		
 		//It was valid at the parent.. there is NO SPEND since.. so it's Valid!
@@ -1304,7 +1219,7 @@ public class MMRSet implements Streamable {
 	public static void spend(int zEntry){
 		MMRSet parent = getCurrentMMR().getParent().getParent();
 		
-		MMRProof pp = parent.getCoinProof(new MiniNumber(zEntry));
+		MMRProof pp = parent.getProof(new MiniNumber(zEntry));
 		
 		//Check the proof
 		boolean valid = getCurrentMMR().checkProof(pp);

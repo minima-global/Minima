@@ -4,7 +4,6 @@ import java.util.ArrayList;
 
 import org.minima.GlobalParams;
 import org.minima.database.MinimaDB;
-import org.minima.database.mmr.MMREntryDB;
 import org.minima.database.mmr.MMRSet;
 import org.minima.database.txpowdb.TxPOWDBRow;
 import org.minima.database.txpowtree.BlockTree;
@@ -847,10 +846,6 @@ public class ConsensusNet extends ConsensusProcessor {
 		
 		//And finally remove any unwanted TxPoW.. ( they will ALL be on the main chain)
 		getMainDB().getTxPowDB().removeAllUnused();
-		
-		//Clear the MMRDB tree..
-		MiniNumber cascade = getMainDB().getMainTree().getCascadeNode().getBlockNumber();
-		MMREntryDB.getDB().cleanUpDB(cascade);
 		
 		//FOR NOW
 		TxPoW tip = getMainDB().getMainTree().getChainTip().getTxPow();

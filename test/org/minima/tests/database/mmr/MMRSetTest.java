@@ -188,7 +188,7 @@ public class MMRSetTest {
     public void testMMRSetInsertions() {
         // Empty MMR
         MMRSet base = new MMRSet();
-        assertTrue("Empty MMR has no entries.", base.mEntryNumber.isEqual(new MiniNumber(0)));
+        assertTrue("Empty MMR has no entries.", base.getEntryNumber().isEqual(new MiniNumber(0)));
         assertTrue("Empty MMR", base.getMMRPeaks() != null && base.getMMRPeaks().size() == 0);
 
 		//Add a single zero entry to create the first peak.
@@ -196,7 +196,7 @@ public class MMRSetTest {
         MMRData gendata = new MMRData(MiniByte.FALSE, gencoin, MiniNumber.ZERO, new ArrayList<StateVariable>());
         MiniData gendataHash = gendata.getFinalHash();
 		base.addUnspentCoin(gendata);
-        assertTrue("Genesis MMR set has one entry.", base.mEntryNumber.isEqual(new MiniNumber(1)));
+        assertTrue("Genesis MMR set has one entry.", base.getEntryNumber().isEqual(new MiniNumber(1)));
         assertTrue("Genesis MMR only entry is also its only peak.", base.getMMRPeaks() != null && base.getMMRPeaks().size() == 1 && base.getMMRPeaks().get(0).getHashValue().isEqual(gendataHash));
         MMREntry e0 = base.getMMRPeaks().get(0);
         assertTrue("Genesis MMR unique element has entry number 0", e0.getEntryNumber().isEqual(new MiniNumber(0)));
@@ -221,7 +221,7 @@ public class MMRSetTest {
         
         MiniNumber sumNum = new MiniNumber(new MiniNumber("25")); // 0+25
         base.addUnspentCoin(data_a);
-        assertTrue("MMR set has two entries after adding one node.", base.mEntryNumber.isEqual(new MiniNumber(2)));
+        assertTrue("MMR set has two entries after adding one node.", base.getEntryNumber().isEqual(new MiniNumber(2)));
         assertTrue("MMR peaks count verification.", base.getMMRPeaks() != null && base.getMMRPeaks().size() == 1);
         assertTrue("MMR peak hash is not equal to previous peak hash.", base.getMMRPeaks() != null && !base.getMMRPeaks().get(0).getHashValue().isEqual(gendataHash));
         assertTrue("MMR peak hash is not equal to new node hash.", base.getMMRPeaks() != null && !base.getMMRPeaks().get(0).getHashValue().isEqual(hash_a));
@@ -236,7 +236,7 @@ public class MMRSetTest {
         // leaf nodes: 0 a
 
         base.addUnspentCoin(data_b);
-        assertTrue("MMR set has three entries after adding second node.", base.mEntryNumber.isEqual(new MiniNumber(3)));  // entryNumber only counts leaf nodes
+        assertTrue("MMR set has three entries after adding second node.", base.getEntryNumber().isEqual(new MiniNumber(3)));  // entryNumber only counts leaf nodes
         assertTrue("MMR has two peaks.", base.getMMRPeaks() != null && base.getMMRPeaks().size() == 2);
         assertTrue("MMR first peak hash is equal to constructed hash 0a.", base.getMMRPeaks() != null && base.getMMRPeaks().get(0).getHashValue().isEqual(hash_0a));
         assertTrue("MMR second peak hash is equal to hash b.", base.getMMRPeaks() != null && base.getMMRPeaks().get(1).getHashValue().isEqual(hash_b));
@@ -257,7 +257,7 @@ public class MMRSetTest {
         MiniData hash_0abc = Crypto.getInstance().hashAllObjects(512,hash_0a, hash_bc, new MiniNumber(75)); // MMRSet.MMR_HASH_BITS);
         
         base.addUnspentCoin(data_c);
-        assertTrue("MMR set has four entries after adding third node.", base.mEntryNumber.isEqual(new MiniNumber(4)));  // entryNumber only counts leaf nodes
+        assertTrue("MMR set has four entries after adding third node.", base.getEntryNumber().isEqual(new MiniNumber(4)));  // entryNumber only counts leaf nodes
         assertTrue("MMR has one peak.", base.getMMRPeaks() != null && base.getMMRPeaks().size() == 1);
         assertTrue("MMR highest peak is at level 2", base.getMMRPeaks().get(0).getRow() == 2);
         assertTrue("MMR peak hash is equal to constructed hash 0abc.", base.getMMRPeaks() != null && base.getMMRPeaks().get(0).getHashValue().isEqual(hash_0abc));
@@ -274,7 +274,7 @@ public class MMRSetTest {
         MiniData hash_0abcd = Crypto.getInstance().hashAllObjects(512, hash_0abc, hash_d, new MiniNumber(100)); // MMRSet.MMR_HASH_BITS);
 
         base.addUnspentCoin(data_d);
-        assertTrue("MMR set has five entries after adding fourth node.", base.mEntryNumber.isEqual(new MiniNumber(5)));  // entryNumber only counts leaf nodes
+        assertTrue("MMR set has five entries after adding fourth node.", base.getEntryNumber().isEqual(new MiniNumber(5)));  // entryNumber only counts leaf nodes
         assertTrue("MMR has two peaks.", base.getMMRPeaks() != null && base.getMMRPeaks().size() == 2);
         assertTrue("MMR highest peak is at level 2", base.getMMRPeaks().get(0).getRow() == 2);
         assertTrue("MMR first peak hash is equal to constructed hash 0abc.", base.getMMRPeaks() != null && base.getMMRPeaks().get(0).getHashValue().isEqual(hash_0abc));
@@ -297,7 +297,7 @@ public class MMRSetTest {
         MiniData hash_0a_spent_bcd =  Crypto.getInstance().hashAllObjects(512, hash_0a_spent_bc, hash_d,  new MiniNumber(75)); // MMRSet.MMR_HASH_BITS);
         base.updateSpentCoin(mmrProofa);
         
-        assertTrue("MMR set has five entries after adding fourth node.", base.mEntryNumber.isEqual(new MiniNumber(5)));  // entryNumber only counts leaf nodes
+        assertTrue("MMR set has five entries after adding fourth node.", base.getEntryNumber().isEqual(new MiniNumber(5)));  // entryNumber only counts leaf nodes
         assertTrue("MMR has two peaks.", base.getMMRPeaks() != null && base.getMMRPeaks().size() == 2);
         assertTrue("MMR highest peak is at level 2", base.getMMRPeaks().get(0).getRow() == 2);
         assertTrue("MMR first peak hash is equal to recomputed hash 0a_spent_bc.", base.getMMRPeaks() != null && base.getMMRPeaks().get(0).getHashValue().isEqual(hash_0a_spent_bc));
