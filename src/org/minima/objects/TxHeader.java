@@ -63,6 +63,11 @@ public class TxHeader implements Streamable {
 	public MiniNumber mMMRTotal = MiniNumber.ZERO;
 	
 	/**
+	 * The hash of the MMR peaks - taking position into account..
+	 */
+	public MiniData mMMRPeaks = new MiniData();
+	
+	/**
 	 * The HASH of the TxBody
 	 */
 	public MiniData mTxBodyHash    = new MiniData("0x00");
@@ -135,6 +140,7 @@ public class TxHeader implements Streamable {
 		
 		txpow.put("mmr", mMMRRoot.toString());
 		txpow.put("total", mMMRTotal.toString());
+		txpow.put("mmrpeaks", mMMRPeaks.toString());
 		
 		txpow.put("nonce", mNonce.toString());
 		txpow.put("timemilli", mTimeMilli.toString());
@@ -191,6 +197,7 @@ public class TxHeader implements Streamable {
 		//Write out the MMR DB
 		mMMRRoot.writeHashToStream(zOut);
 		mMMRTotal.writeDataStream(zOut);
+		mMMRPeaks.writeDataStream(zOut);
 		
 		//Write the Boddy Hash
 		mTxBodyHash.writeHashToStream(zOut);
@@ -221,6 +228,7 @@ public class TxHeader implements Streamable {
 		//read in the MMR state..
 		mMMRRoot  = MiniData.ReadHashFromStream(zIn);
 		mMMRTotal = MiniNumber.ReadFromStream(zIn);
+		mMMRPeaks = MiniData.ReadHashFromStream(zIn);
 		
 		//The TxBody Hash
 		mTxBodyHash = MiniData.ReadHashFromStream(zIn);
