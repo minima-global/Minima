@@ -9,6 +9,7 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 
 import org.minima.objects.Coin;
+import org.minima.objects.StateVariable;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
@@ -1161,7 +1162,7 @@ public class MMRSet implements Streamable {
 	 */
 	public static MMRData makeMMRData(int zValue) {
 		Coin cc = new Coin(MiniData.getRandomData(20), new MiniData("0x01"), new MiniNumber(zValue), MiniData.ZERO_TXPOWID);
-		return new MMRData(MiniByte.FALSE, cc, MiniNumber.ZERO, new ArrayList<>());
+		return new MMRData(MiniByte.FALSE, cc, MiniNumber.ZERO, new ArrayList<StateVariable>());
 	}
 	
 	public static void getAllProofs(MMRSet zSet){
