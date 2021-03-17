@@ -392,7 +392,6 @@ public class MMRSet implements Streamable {
 			return null;
 		}
 		
-		
 		//Store the Maximum
 		if(zRow>mMaxRow) {
 			mMaxRow = zRow;
@@ -421,11 +420,6 @@ public class MMRSet implements Streamable {
 		}else if(mMaxEntries[zRow].getEntryNumber().isLess(zEntry)) {
 			mMaxEntries[zRow] = entry;
 		}
-		
-//		if(mUseMMREntryDB) {
-//			MinimaLogger.log("SETENTRY @ "+mBlockTime+" "+zRow+":"+zEntry+" "+zData);
-//		}
-		
 		
 		//Return
 		return entry;
@@ -631,15 +625,7 @@ public class MMRSet implements Streamable {
 			
 			//Do we need to fill it in..
 			if(sibling.isEmpty()) {
-	//			MinimaLogger.log("EMPTY SIBLING");
 				sibling = setEntry(sibling.getRow(), sibling.getEntryNumber(), new MMRData(phash, pval));
-			}else if(sibling.getBlockTime().isLessEqual(zProof.getBlockTime())) {
-				//Is it the original.. has all the micro details.. internal nodes are just the hash anyway
-				MiniData orighash = sibling.getData().getFinalHash();
-				if(!orighash.isEqual(phash)) {
-					MinimaLogger.log("SIBLING DIFFERENT HASH");
-					sibling = setEntry(sibling.getRow(), sibling.getEntryNumber(), new MMRData(phash, pval));
-				}
 			}
 			
 			//Set the Sibling in this MMRSET!.. this way the MMR peaks still work.. (as the max in a row MUST be on the left to be a peak ))
@@ -679,15 +665,7 @@ public class MMRSet implements Streamable {
 				phash = chunk.getHash();
 				pval  = chunk.getValue();
 				if(sibling.isEmpty()) {
-	//				MinimaLogger.log("EMPTY SIBLING 2");
 					sibling = setEntry(sibling.getRow(), sibling.getEntryNumber(), new MMRData(phash,pval));		
-				}else if(sibling.getBlockTime().isLessEqual(zProof.getBlockTime())) {
-					//Is it the original.. has all the micro details.. internal nodes are just the hash anyway
-					MiniData orighash = sibling.getData().getFinalHash();
-					if(!orighash.isEqual(phash)) {
-						MinimaLogger.log("SIBLING DIFFERENT HASH 2");
-						sibling = setEntry(sibling.getRow(), sibling.getEntryNumber(), new MMRData(phash,pval));	
-					}
 				}
 			}
 		}
