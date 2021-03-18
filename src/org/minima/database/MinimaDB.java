@@ -945,10 +945,7 @@ public class MinimaDB {
 		
 		//Check not past the cascade..
 		MiniNumber proofblock = currentblock.sub(howdeep);
-//		if(proofblock.isLess(getMainTree().getCascadeNode().getBlockNumber())) {
-//			proofblock = getMainTree().getCascadeNode().getBlockNumber();
-//		}
-		
+	
 		//The Actual MMR block we will use..
 		MMRSet proofmmr = basemmr.getParentAtTime(proofblock);
 		
@@ -959,21 +956,8 @@ public class MinimaDB {
 			//Get the entry
 			entrynum = proofmmr.findEntry(cc.getCoinID()).getEntryNumber();
 			
-//			CoinDBRow crow = getCoinDB().getCoinRow(cc.getCoinID());
-//			if(crow != null) {
-//				entrynum = crow.getMMREntry();
-//			}else {
-//				entrynum = proofmmr.findEntry(cc.getCoinID()).getEntryNumber();
-//			}
-			
 			//Get a proof from a while back.. more than confirmed depth, less than cascade
 			MMRProof proof = proofmmr.getProof(entrynum);
-			
-//			//Hmm.. this should not happen
-//			if(proof == null) {
-//				MinimaLogger.log("ERROR valid MMR cannot find proof");
-//				return null;
-//			}
 			
 			//Add the proof for this coin..
 			zWitness.addMMRProof(proof);
@@ -1247,6 +1231,10 @@ public class MinimaDB {
 			}
 		}
 		
+		//The Oldest proof allowed..
+		MiniNumber oldestproof = getMainTree().getCascadeNode().getBlockNumber()
+				.add(GlobalParams.MINIMA_MMR_PROOF_HISTORY.mult(MiniNumber.TWO));
+		
 		//Set the current Transaction List!
 		ArrayList<TxPOWDBRow> unused = mTxPOWDB.getAllUnusedTxPOW();
 		for(TxPOWDBRow row : unused) {
@@ -1265,6 +1253,13 @@ public class MinimaDB {
 			if(txp.isTransaction()) {
 				//Are we already mining this transaction
 				if(checkTransactionForMining(txp.getTransaction())) {
+					continue;
+				}
+				
+				//Are the proofs too old..
+				MiniNumber oldest = getOldestProof(txp);
+				if(oldest.isLess(oldestproof)) {
+					//TOO OLD..!
 					continue;
 				}
 				
@@ -1306,6 +1301,44 @@ public class MinimaDB {
 		
 		//And return..
 		return txpow;
+	}
+	
+	/**
+	 * Get the OLDest proof for a transaction
+	 */
+	public MiniNumber getOldestProof(TxPoW zTxPow) {
+		//The Base current MMRSet
+		MMRSet basemmr  = getMMRTip();
+				
+		//What Block are we on..
+		MiniNumber currentblock = basemmr.getBlockTime();
+				
+		if(!zTxPow.isTransaction()) {
+			return currentblock;
+		}
+				
+		//Get the Input coins
+		ArrayList<Coin> ins = zTxPow.getTransaction().getAllInputs();
+		
+		//What's the most recent coin used..
+		MiniNumber oldest = null;
+		for(Coin cc : ins) {
+			MiniNumber inblock = null;
+					
+			//Search for the coin..
+			MMREntry entry =  basemmr.findEntry(cc.getCoinID());
+			
+			//Which block is it in..
+			inblock = entry.getData().getInBlock();
+			
+			if(oldest == null) {
+				oldest = inblock;
+			}else if(inblock.isLess(oldest)) {
+				oldest = inblock; 
+			}
+		}
+		
+		return oldest;
 	}
 	
 	/**

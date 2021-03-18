@@ -132,7 +132,6 @@ public class FastJavaDB implements TxPowDB {
 		while(allrows.hasMoreElements()) {
 			JavaDBRow row  = allrows.nextElement();
 			TxPoW rowtxpow = row.getTxPOW();
-			
 			String txpid = rowtxpow.getTxPowID().to0xString();
 			
 				//It's a main block
@@ -146,8 +145,6 @@ public class FastJavaDB implements TxPowDB {
 				//It's a transaction but not that old
 			}else if(rowtxpow.isTransaction() && !row.isInBlock() && row.getTxPOW().getBlockNumber().isMoreEqual(minunused)) {
 				newtable.put(txpid,row);
-			
-//				MinimaLogger.log("KEEP UNUSED TXN : "+txpid);
 				
 				//It's a block but not past the cascade
 			}else if(rowtxpow.isBlock() && !row.isMainChainBlock() && row.getTxPOW().getBlockNumber().isMoreEqual(minused)) {
