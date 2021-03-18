@@ -614,6 +614,9 @@ public class MMRSet implements Streamable {
 			return ret;
 		}
 		
+		//What time is this proof
+		MiniNumber prooftime = zProof.getBlockTime();
+		
 		//Are there any proof chunks
 		ProofChunk chunk  = null;
 		MiniData phash    = null;
@@ -624,8 +627,14 @@ public class MMRSet implements Streamable {
 			phash = chunk.getHash();
 			pval  = chunk.getValue();
 			
-			//Do we need to fill it in..
+			//Do we need to fill it in.. 
+			//don't need to check the Proof time as is either SPEMNT or UNSPENT ( and might be full details for the user..)
 			if(sibling.isEmpty()) {
+				sibling = setEntry(sibling.getRow(), sibling.getEntryNumber(), new MMRData(phash, pval));
+			
+			}else if(sibling.getBlockTime().isLess(zProof.getBlockTime()) && !sibling.getData().getFinalHash().isEqual(phash)) {
+				//This might be FULL details..
+				MinimaLogger.log("ZERO 0 SIBLING DIFFERENT HASH");
 				sibling = setEntry(sibling.getRow(), sibling.getEntryNumber(), new MMRData(phash, pval));
 			}
 			
@@ -645,7 +654,7 @@ public class MMRSet implements Streamable {
 			}
 			
 			//Set the Sibling in this MMRSET!.. this way the MMR peaks still work.. (as the max in a row MUST be on the left to be a peak ))
-			setEntry(sibling.getRow(), sibling.getEntryNumber(),sibling.getData());
+			setEntry(sibling.getRow(), sibling.getEntryNumber(), sibling.getData());
 			
 			//Set the Parent
 			entry = setEntry(entry.getParentRow(), entry.getParentEntry(), parentdata);
@@ -665,7 +674,7 @@ public class MMRSet implements Streamable {
 				chunk = zProof.getProofChunk(pcount++);
 				phash = chunk.getHash();
 				pval  = chunk.getValue();
-				if(sibling.isEmpty()) {
+				if(sibling.isEmpty() || sibling.getBlockTime().isLess(prooftime)) {
 					sibling = setEntry(sibling.getRow(), sibling.getEntryNumber(), new MMRData(phash,pval));		
 				}
 			}

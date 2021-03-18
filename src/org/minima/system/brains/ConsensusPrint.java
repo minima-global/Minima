@@ -436,6 +436,11 @@ public class ConsensusPrint extends ConsensusProcessor {
 			InputHandler.endResponse(zMessage, true, "");
 			
 		}else if(zMessage.isMessageType(CONSENSUS_BALANCE)){
+			//Are we raedy
+			if(getMainDB().getMainTree().getChainTip() == null) {
+				return;
+			}
+			
 			//Is this a HARD reset..
 			if(!zMessage.exists("hard") && mOldBalanceJSON != null) {
 				InputHandler.setFullResponse(zMessage, mOldBalanceJSON);

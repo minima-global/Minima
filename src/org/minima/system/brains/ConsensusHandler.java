@@ -228,6 +228,9 @@ public class ConsensusHandler extends MessageProcessor {
 			//A TXPOW - that has been checked already and added to the DB
 			TxPoW txpow = (TxPoW) zMessage.getObject("txpow");
 			
+			//ADD TO THE DATABASE..
+			getMainDB().addNewTxPow(txpow);
+			
 			//Check the validity..
 			String txpowid = txpow.getTxPowID().to0xString();
 			
@@ -239,19 +242,16 @@ public class ConsensusHandler extends MessageProcessor {
 				network.removeRequestedTxPow(txpowid);
 			}
 			
+			//Is this a syncmessage
+			boolean syncmessage = zMessage.getBoolean("sync");
+			
 			//Check the Validity..
 			boolean txnok = TxPoWChecker.checkTransactionMMR(txpow, getMainDB());
 			if(!txnok) {
-				//Was it requested.. ?
-				if(requested) {
-					//Ok - could be from a different branch block.. 
-					MinimaLogger.log("WARNING Invalid TXPOW (Requested..) trans:"+txpow.isTransaction()+" blk:"+txpow.isBlock()+" " +txpow.getBlockNumber()+" "+txpow.getTxPowID()+" tip:"+getMainDB().getTopBlock()); 
-				}else {
-					//Not requested invalid transaction.. could be from a branch chain though..
-					MinimaLogger.log("WARNING Invalid TXPOW (UN-Requested..) trans:"+txpow.isTransaction()+" blk:"+txpow.isBlock()+" " +txpow.getBlockNumber()+" "+txpow.getTxPowID()+" tip:"+getMainDB().getTopBlock()); 
-					//Remove it from the DB.. FOR NOW KEEP
-					//getMainDB().getTxPowDB().removeTxPOW(txpow.getTxPowID());
-					//return;	
+				MinimaLogger.log("WARNING Invalid TXPOW (Requested.. "+requested+" ) trans:"+txpow.isTransaction()+" blk:"+txpow.isBlock()+" " +txpow.getBlockNumber()+" "+txpow.getTxPowID()+" tip:"+getMainDB().getTopBlock());
+				if(!requested) {
+					//What to do.. could be in a spearate branch.. but if unrequested.. 
+					//..	
 				}
 			}
 			
@@ -296,11 +296,13 @@ public class ConsensusHandler extends MessageProcessor {
 				PostDAPPJSONMessage(newblock);
 				
 				//Do the balance.. Update listeners if changed..
-				PostMessage(new Message(ConsensusPrint.CONSENSUS_BALANCE).addBoolean("hard", true));
+				if(!syncmessage) {
+					PostMessage(new Message(ConsensusPrint.CONSENSUS_BALANCE).addBoolean("hard", true));
 				
-				//Print the tree..
-				if(mPrintChain) {
-					PostMessage(new Message(ConsensusPrint.CONSENSUS_PRINTCHAIN_TREE).addBoolean("systemout", true));
+					//Print the tree..
+					if(mPrintChain) {
+						PostMessage(new Message(ConsensusPrint.CONSENSUS_PRINTCHAIN_TREE).addBoolean("systemout", true));
+					}
 				}
 			}
 			
@@ -314,19 +316,19 @@ public class ConsensusHandler extends MessageProcessor {
 				
 				//Do we need to update the balance.. or did we do it already..
 				updateListeners(new Message(CONSENSUS_NOTIFY_BALANCE));
-				if(!newbalance) {
+				if(!newbalance && !syncmessage) {
 					PostMessage(new Message(ConsensusPrint.CONSENSUS_BALANCE).addBoolean("hard", true));
 				}				
 			}
 					
 			//BROADCAST Message for ALL the clients - only if valid / or block.. ( they can request it if need be..)
-//			if(txnok || txpow.isBlock()) {
+			if(!syncmessage && (txnok || txpow.isBlock())) {
 				Message netmsg  = new Message(MinimaClient.NETCLIENT_SENDTXPOWID).addObject("txpowid", txpow.getTxPowID());
 				Message netw    = new Message(NetworkHandler.NETWORK_SENDALL).addObject("message", netmsg);
 				Main.getMainHandler().getNetworkHandler().PostMessage(netw);
-//			}
+			}
 			
-			//Remove from the List of Mined transactions..
+			//Remove from the List of Mined transactions.. ( probably not ours but good to do it here )
 			getMainDB().remeoveMiningTransaction(txpow.getTransaction());
 				
 		/**

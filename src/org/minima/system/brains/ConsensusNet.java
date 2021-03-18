@@ -69,6 +69,11 @@ public class ConsensusNet extends ConsensusProcessor {
 	DataTimer mDataTimer = new DataTimer();
 	
 	/**
+	 * What tip are we syncing to..
+	 */
+	MiniNumber mCurrentSyncTip = MiniNumber.MINUSONE;
+	
+	/**
 	 * Has the initial Sync been done..
 	 */
 	public boolean mInitialSync;
@@ -166,9 +171,6 @@ public class ConsensusNet extends ConsensusProcessor {
 				MinimaLogger.log("DIFFERENT VERSION ON GREETING "+greet.getVersion());
 			}
 			
-			//Hmm..
-			setInitialSyncComplete();
-			
 			//Are we a new User.. with no Chain.. if so you can do nothing
 			if(getMainDB().getMainTree().getAsList().size()==0) {
 				return;
@@ -199,7 +201,30 @@ public class ConsensusNet extends ConsensusProcessor {
 			
 			//How Many blocks do we need to send..
 			int blocklen = top.getBlockNumber().sub(cross).getAsInt(); 
-			MinimaLogger.log("BLOCK TO SEND "+blocklen);
+			MinimaLogger.log("BLOCKS TO SEND "+blocklen);
+			
+			//How long
+			int len = greet.getList().size();
+			
+			//What is the top block..
+			MiniNumber greettip = greet.getList().get(len-1).getNumber();
+			
+			//Did we find a crossover..
+			if(greettip.isEqual(top.getBlockNumber())) {
+				//We are equal..
+				getConsensusHandler().PostMessage(CONSENSUS_NET_SYNCOMPLETE);
+				
+			}else{
+				//Set a sync tip..
+				if(greettip.isMore(mCurrentSyncTip)) {
+					mCurrentSyncTip = greettip;
+				}
+				MinimaLogger.log("SYNC TO "+mCurrentSyncTip);
+				
+				//Set the initial sync threshold and fire a timer message just in case..
+				getConsensusHandler().PostTimerMessage(new TimerMessage(60000, CONSENSUS_NET_SYNCOMPLETE));
+			}
+			
 			if(blocklen == 0) {
 				//Nothing to send..
 				return;
@@ -344,7 +369,7 @@ public class ConsensusNet extends ConsensusProcessor {
 			//Otherwise lets load blocks and send them..
 			MiniNumber mycasc = getMainDB().getMainTree().getCascadeNode().getBlockNumber();
 			int blockstoload = mycasc.sub(lowestnum).getAsInt();
-			MinimaLogger.log("SENDING RESYNC HEADER ONLY BLOCKS "+blockstoload);
+			MinimaLogger.log("SENDING RESYNC ONLY BLOCKS "+blockstoload);
 			
 			//Create a non-intro syncpackage
 			SyncPackage sp = new SyncPackage();
@@ -527,19 +552,32 @@ public class ConsensusNet extends ConsensusProcessor {
 			
 			finishUpSync();
 			
+			/**
+			 * Has the Sync Completed..
+			 */
+		}else if(zMessage.isMessageType(CONSENSUS_NET_SYNCOMPLETE)) {
+			if(!mInitialSync) {
+				MinimaLogger.log("Initial Sync Complete..");
+			}
+			setInitialSyncComplete();
+			
 		/**
 		 * You have received multiple TxPoW messages 	
 		 */
 		}else if ( zMessage.isMessageType(CONSENSUS_NET_TXPOWLIST)) {
 			TxPoWList block = (TxPoWList)zMessage.getObject("txpowlist"); 
 			
-			//Hmm..
-			setInitialSyncComplete();
-			
 			//Cycle through.. and Post as normal..
 			ArrayList<TxPoW> txps = block.getList();
 			for(TxPoW txp : txps) {
-				PostNetClientMessage(zMessage, new Message(CONSENSUS_NET_TXPOW).addObject("txpow", txp));
+				PostNetClientMessage(zMessage, new Message(CONSENSUS_NET_TXPOW).addObject("txpow", txp).addObject("sync", true));
+			
+				//Have we reached the sync tip..
+				if(txp.getBlockNumber().isMoreEqual(mCurrentSyncTip)) {
+					//We are equal..
+					MinimaLogger.log("SYNC TIP HIT!!");
+					getConsensusHandler().PostMessage(CONSENSUS_NET_SYNCOMPLETE);
+				}
 			}
 			
 		/**
@@ -640,29 +678,31 @@ public class ConsensusNet extends ConsensusProcessor {
 			getConsensusHandler().PostMessage(txpownet);
 			
 		}else if(zMessage.isMessageType(CONSENSUS_NET_TXPOW)) {
+			//Is this a sync message
+			boolean syncmessage = false;
+			if(zMessage.exists("sync")) {
+				syncmessage = true;
+			}
+			
 			/**
 			 * The SINGLE entry point into the system for NEW TXPOW messages..
 			 */
 			//Have we done the initial SYNC..
-			if(!mInitialSync) {
+			if(!mInitialSync && !syncmessage) {
 				MinimaLogger.log("NET TxPoW received before Initial Sync Finished.");
 				return;
 			}
 			
 			//The TxPoW
 			TxPoW txpow = (TxPoW)zMessage.getObject("txpow");
-		
+			
 			//First check that this is WITHIN acceptable linits .. so not too far ahead of the current chain..
 			MiniNumber timetip   = getMainDB().getMainTree().getChainTip().getTxPow().getBlockNumber();
 			MiniNumber timeblock = txpow.getBlockNumber();
 			if(timeblock.sub(timetip).isMore(GlobalParams.MINIMA_CASCADE_START_DEPTH)) {
-				//TOO FAR!!
 				MinimaLogger.log("NET Transaction TOO FAR IN THE FUTURE.. new:"+timeblock+" / current:"+timetip);
 				return;
 			}
-			
-			//DEBUG logs..
-			//MinimaLogger.log("TXPOW RECEIVED "+txpow.getBlockNumber()+" "+txpow.getTxPowID());
 			
 			//Do we have it.. now check DB - hmmm..
 			if(getMainDB().getTxPOW(txpow.getTxPowID()) != null) {
@@ -671,32 +711,29 @@ public class ConsensusNet extends ConsensusProcessor {
 			}
 			
 			/**
-			 * IT PASSES!
-			 * 
-			 * Add it to the database.. Do this HERE as there may be other messages in the queue. 
-			 * Can't wait for ConsensusHandler to catch up.
+			 * IT PASSES! - process..
 			 */
-			getMainDB().addNewTxPow(txpow);
-			
-			//Process the TxPOW
-			Message newtxpow = new Message(ConsensusHandler.CONSENSUS_PROCESSTXPOW).addObject("txpow", txpow);
+			Message newtxpow = new Message(ConsensusHandler.CONSENSUS_PROCESSTXPOW).addObject("txpow", txpow).addObject("sync", syncmessage);
 			getConsensusHandler().PostMessage(newtxpow);
 			
-			//Now check we have the parent.. and txns..
-			if(txpow.isBlock()) {
-				MiniData parentID = txpow.getParentID();
-				if(getMainDB().getTxPOW(parentID) == null) {
-					//We don't have it, get it..
-					MinimaLogger.log("Request Parent TxPoW @ "+txpow.getBlockNumber()+" parent:"+parentID); 
-					sendTxPowRequest(zMessage, parentID);
-				}
-			
-				//And now check the Txn list..
-				ArrayList<MiniData> txns = txpow.getBlockTransactions();
-				for(MiniData txn : txns) {
-					if(getMainDB().getTxPOW(txn) == null ) {
-						MinimaLogger.log("Request missing TxPoW in block "+txpow.getBlockNumber()+" "+txn);
-						sendTxPowRequest(zMessage, txn);
+			//if this is a sync message no need to check.. the details will be coming..
+			if(!syncmessage) {
+				//Now check we have the parent.. and txns..
+				if(txpow.isBlock()) {
+					MiniData parentID = txpow.getParentID();
+					if(getMainDB().getTxPOW(parentID) == null) {
+						//We don't have it, get it..
+						MinimaLogger.log("Request Parent TxPoW @ "+txpow.getBlockNumber()+" parent:"+parentID); 
+						sendTxPowRequest(zMessage, parentID);
+					}
+				
+					//And now check the Txn list..
+					ArrayList<MiniData> txns = txpow.getBlockTransactions();
+					for(MiniData txn : txns) {
+						if(getMainDB().getTxPOW(txn) == null ) {
+							MinimaLogger.log("Request missing TxPoW in block "+txpow.getBlockNumber()+" "+txn);
+							sendTxPowRequest(zMessage, txn);
+						}
 					}
 				}
 			}
@@ -839,7 +876,6 @@ public class ConsensusNet extends ConsensusProcessor {
 	private void finishUpSync() {
 		//Reset weights
 		getMainDB().getMainTree().resetWeights();
-//		getMainDB().hardResetChain();
 		
 		//Now correect the TxPoWDB
 		getMainDB().resetAllTxPowOnMainChain();
@@ -861,7 +897,7 @@ public class ConsensusNet extends ConsensusProcessor {
 		getConsensusHandler().PostTimerMessage(new TimerMessage(2000,ConsensusBackup.CONSENSUSBACKUP_BACKUP));
 	
 		//Sync complete
-//		setInitialSyncComplete();
+		getConsensusHandler().PostMessage(CONSENSUS_NET_SYNCOMPLETE);
 	}
 	
 	
