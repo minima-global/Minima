@@ -2,7 +2,6 @@ package org.minima.tests.database.txpowdb.java;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
@@ -23,7 +22,6 @@ public class JavaDBRowTest {
         assertFalse("should be false ", jdbr.isInBlock());
         assertFalse("should be false ", jdbr.isMainChainBlock());
         assertEquals("should be equal ", TxPOWDBRow.TXPOWDBROW_STATE_BASIC, jdbr.getBlockState());
-        assertEquals("should be equal ", 0, jdbr.getDeleteTime());
         assertEquals("should be equal ", MiniNumber.ZERO, jdbr.getInBlockNumber());
         assertFalse("should be false ", jdbr.isMonoTonic());
     }
@@ -38,15 +36,12 @@ public class JavaDBRowTest {
         assertFalse("should be false ", jdbr.isMainChainBlock());
         assertEquals("should be equal ", TxPOWDBRow.TXPOWDBROW_STATE_BASIC, jdbr.getBlockState());
         assertEquals("should be equal ", "BASIC", jdbr.getStatusAsString());
-        assertEquals("should be equal ", 0, jdbr.getDeleteTime());
         assertEquals("should be equal ", MiniNumber.ZERO, jdbr.getInBlockNumber());
         assertFalse("should be false ", jdbr.isMonoTonic());
 
         jdbr.setIsInBlock(true);
         jdbr.setMainChainBlock(true);
         jdbr.setBlockState(TxPOWDBRow.TXPOWDBROW_STATE_FULL);
-        jdbr.deleteRow();
-        jdbr.deleteRow();
         jdbr.setInBlockNumber(MiniNumber.EIGHT);
         jdbr.setMonotonic(true);
 
@@ -54,14 +49,11 @@ public class JavaDBRowTest {
         assertTrue("should be true ", jdbr.isMainChainBlock());
         assertEquals("should be equal ", TxPOWDBRow.TXPOWDBROW_STATE_FULL, jdbr.getBlockState());
         assertEquals("should be equal ", "FULL", jdbr.getStatusAsString());
-        assertNotEquals("should not be equal ", 0, jdbr.getDeleteTime());
         assertEquals("should be equal ", MiniNumber.EIGHT, jdbr.getInBlockNumber());
         assertTrue("should be true ", jdbr.isMonoTonic());
 
         jdbr.setBlockState(-1);
         assertEquals("should be equal ", "ERROR", jdbr.getStatusAsString());
-
-        jdbr.getAddedTime();
     }
 
     @Test

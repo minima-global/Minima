@@ -1231,10 +1231,6 @@ public class MinimaDB {
 			}
 		}
 		
-		//The Oldest proof allowed..
-		MiniNumber oldestproof = getMainTree().getCascadeNode().getBlockNumber()
-				.add(GlobalParams.MINIMA_MMR_PROOF_HISTORY.mult(MiniNumber.TWO));
-		
 		//Set the current Transaction List!
 		ArrayList<TxPOWDBRow> unused = mTxPOWDB.getAllUnusedTxPOW();
 		for(TxPOWDBRow row : unused) {
@@ -1250,18 +1246,11 @@ public class MinimaDB {
 			 * MUST be a transaction as that prevents double entry. A block with no transaction 
 			 * is valid.. but no way to check it has already been added
 			 */
-			if(txp.isTransaction()) {
+			if(txp.isTransaction() && row.getFailedAttempts()<3) {
 				//Are we already mining this transaction
 				if(checkTransactionForMining(txp.getTransaction())) {
 					continue;
-				}
-				
-				//Are the proofs too old..
-				MiniNumber oldest = getOldestProof(txp);
-				if(oldest.isLess(oldestproof)) {
-					//TOO OLD..!
-					continue;
-				}
+				}			
 				
 				//test counter if valid
 				MiniNumber txncountertest = txncounter.increment();
@@ -1279,18 +1268,10 @@ public class MinimaDB {
 				}else {
 					//Could be a transaction that is only valid in a different  branch.					
 					MinimaLogger.log("Invalid TXPOW found. (leaving.. could be in other branch) "+txp.getTxPowID());
+				
+					//Store that it failed..
+					row.incrementFailedAttempts();
 				}
-			}else {
-				//ONLY ADD VALID TRANSACTIONS - the mmr is the checker for previous inclusion
-				//and a non-transaction has no mmr data to chcek
-//				//A block with no transaction.. make sure within range..
-//				if(!txp.getBlockNumber().sub(txpow.getBlockNumber()).abs().isMoreEqual(MiniNumber.EIGHT)) {
-//					//Valid so added
-//					txncounter = txncounter.increment();
-//						
-//					//Add it..
-//					txpow.addBlockTxPOW(txp);		
-//				}
 			}
 		}
 		
@@ -1301,44 +1282,6 @@ public class MinimaDB {
 		
 		//And return..
 		return txpow;
-	}
-	
-	/**
-	 * Get the OLDest proof for a transaction
-	 */
-	public MiniNumber getOldestProof(TxPoW zTxPow) {
-		//The Base current MMRSet
-		MMRSet basemmr  = getMMRTip();
-				
-		//What Block are we on..
-		MiniNumber currentblock = basemmr.getBlockTime();
-				
-		if(!zTxPow.isTransaction()) {
-			return currentblock;
-		}
-				
-		//Get the Input coins
-		ArrayList<Coin> ins = zTxPow.getTransaction().getAllInputs();
-		
-		//What's the most recent coin used..
-		MiniNumber oldest = null;
-		for(Coin cc : ins) {
-			MiniNumber inblock = null;
-					
-			//Search for the coin..
-			MMREntry entry =  basemmr.findEntry(cc.getCoinID());
-			
-			//Which block is it in..
-			inblock = entry.getData().getInBlock();
-			
-			if(oldest == null) {
-				oldest = inblock;
-			}else if(inblock.isLess(oldest)) {
-				oldest = inblock; 
-			}
-		}
-		
-		return oldest;
 	}
 	
 	/**
