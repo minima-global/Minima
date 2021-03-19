@@ -289,6 +289,11 @@ public class JavaUserDB implements UserDB, Streamable{
 			}
 		}
 		
+		//And finally check the State Variables..
+		if(isStateListRelevant(zTrans.getCompleteState())) {
+			return true;
+		}
+		
 		return false;
 	}
 
