@@ -508,9 +508,6 @@ public class ConsensusHandler extends MessageProcessor {
 			
 			InputHandler.endResponse(zMessage, true, "Send Success");
 			
-			//OK - Some new outputs addresses for sure.. do a backup..
-			PostMessage(ConsensusBackup.CONSENSUSBACKUP_BACKUPUSER);
-			
 		}else if ( zMessage.isMessageType(CONSENSUS_CREATETRANS) ) {
 			//How much to who ?
 			String address 	= zMessage.getString("address");
