@@ -53,11 +53,6 @@ public class Coin implements Streamable {
 	 * Floating Input Coins can be attached to any coin with the correct address and tokenid and AT LEAST the amount.
 	 */
 	boolean mFloating = false;
-
-//	/**
-//	 * Outputs can be designated as REMAINDERS for all the value remaining of a certain tokenid.. should the floating input change it.
-//	 */
-//	boolean mRemainder = false;
 	
 	/**
 	 * Main Constructor
@@ -73,7 +68,6 @@ public class Coin implements Streamable {
 		mTokenID = zTokenID;
 		
 		mFloating  = zFloating;
-//		mRemainder = zRemainder;
 	}
 	
 	private Coin() {}
@@ -85,30 +79,14 @@ public class Coin implements Streamable {
 	public boolean isFloating() {
 		return mFloating;
 	}
-	
-//	public void setRemainder(boolean zRemainder) {
-//		mRemainder = zRemainder;
-//	}
-//	
-//	public boolean isRemainder() {
-//		return mRemainder;
-//	}
-	
+		
 	/**
 	 * Floating inputs change the CoinID
 	 */
 	public void resetCoinID(MiniData zCoinID) {
 		mCoinID = zCoinID;
 	}
-	
-//	/**
-//	 * Floating inputs or Remainder Outputs change the Amount
-//	 */
-//	public void resetAmount(MiniNumber zAmount) {
-//		mAmount = zAmount;
-//	}
-	
-	
+		
 	public MiniData getCoinID() {
 		return mCoinID;
 	}
@@ -145,7 +123,6 @@ public class Coin implements Streamable {
 		obj.put("tokenid", mTokenID.toString());
 		
 		obj.put("floating", mFloating);
-//		obj.put("remainder", mRemainder);
 		
 		return obj;
 	}
@@ -162,12 +139,6 @@ public class Coin implements Streamable {
 		}else {
 			MiniByte.FALSE.writeDataStream(zOut);
 		}
-		
-//		if(mRemainder) {
-//			MiniByte.TRUE.writeDataStream(zOut);
-//		}else {
-//			MiniByte.FALSE.writeDataStream(zOut);
-//		}
 	}
 
 	@Override
@@ -178,7 +149,6 @@ public class Coin implements Streamable {
 		mTokenID  = MiniData.ReadHashFromStream(zIn);
 		
 		mFloating  = MiniByte.ReadFromStream(zIn).isTrue();
-//		mRemainder = MiniByte.ReadFromStream(zIn).isTrue();
 	}
 	
 	public static Coin ReadFromStream(DataInputStream zIn) throws IOException {
