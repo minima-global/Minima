@@ -41,8 +41,8 @@ public class JavaUserDB implements UserDB, Streamable{
 	ArrayList<Address>    mScriptAddresses;
 	
 	//The current address used for any transaction change etc..
-	Address mCurrentAddress = null;
-	int mCurentUses 		= 0;
+	Address 	mCurrentAddress;
+	MiniNumber 	mCurrentUses;
 	
 	//The Sum of the simple and script addresses
 	ArrayList<Address> mTotalAddresses;
@@ -88,6 +88,10 @@ public class JavaUserDB implements UserDB, Streamable{
 		mRows  = new ArrayList<>();
 		
 		mHistory = new ArrayList<>();
+	
+		//Set the initial..
+		mCurrentAddress  = new Address(new MiniData("0x00"));
+		mCurrentUses     = MiniNumber.ZERO;
 	}
 	
 	@Override
@@ -190,14 +194,15 @@ public class JavaUserDB implements UserDB, Streamable{
 	@Override
 	public Address getCurrentAddress(ConsensusHandler zBackup) {
 		//Do we have one.. how many times have we asked for it..
-		if(mCurrentAddress == null || mCurentUses>3800) {
+		if( mCurrentAddress.getAddressData().isEqual(new MiniData("0x00")) || 
+			mCurrentUses.isMore(new MiniNumber(4000))) {
 			//Create a new KEY - give 16*16*16 signatures = 4096
 			MultiKey key = new MultiKey(GlobalParams.MINIMA_DEFAULT_HASH_STRENGTH, 
 					new MiniNumber(16), new MiniNumber(3));
 			
 			//Create a new address.. with a few thousand uses..
-			mCurrentAddress = newSimpleAddress(key);
-			mCurentUses     = 0;
+			mCurrentAddress  = newSimpleAddress(key);
+			mCurrentUses     = MiniNumber.ZERO;
 			
 			//Log it..
 			MinimaLogger.log("NEW base address created : "+mCurrentAddress.getMinimaAddress());
@@ -207,7 +212,7 @@ public class JavaUserDB implements UserDB, Streamable{
 		}
 		
 		//increment
-		mCurentUses++;
+		mCurrentUses = mCurrentUses.increment();
 		
 		return mCurrentAddress;
 	}
@@ -402,10 +407,12 @@ public class JavaUserDB implements UserDB, Streamable{
 
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
-		int len =0;
+		//Current address
+		mCurrentUses.writeDataStream(zOut);
+		mCurrentAddress.writeDataStream(zOut);
 		
 		//Pub priv keys
-		len = mPubPrivKeys.size();
+		int len = mPubPrivKeys.size();
 		zOut.writeInt(len);
 		for(MultiKey key : mPubPrivKeys) {
 			key.writeDataStream(zOut);
@@ -473,6 +480,10 @@ public class JavaUserDB implements UserDB, Streamable{
 		mRows            = new ArrayList<>();	
 		mAllTokens		 = new ArrayList<>();
 		
+		//Current address
+		mCurrentUses = MiniNumber.ReadFromStream(zIn);
+		mCurrentAddress.readDataStream(zIn);
+				
 		//Pub Priv Keys
 		int len = zIn.readInt();
 		for(int i=0;i<len;i++) {

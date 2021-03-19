@@ -10,7 +10,7 @@ public class currentaddress extends CommandFunction {
 	public currentaddress() {
 		super("currentaddress");
 		
-		setHelp("", "Return your current reusable Minima address and info", "");
+		setHelp("", "Return your current change address and key info.. used internally", "");
 	}
 	
 	@Override
