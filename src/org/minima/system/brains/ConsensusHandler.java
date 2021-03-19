@@ -499,16 +499,6 @@ public class ConsensusHandler extends MessageProcessor {
 				
 				return;
 			}
-					
-			//Add to the list of Mined Coins!
-//			boolean newtrans = getMainDB().addMiningTransaction(txpow.getTransaction());
-//			if(newtrans) {
-//				//Notify listeners that Mining is starting...
-//				JSONObject mining = new JSONObject();
-//				mining.put("event","txpowstart");
-//				mining.put("transaction",txpow.getTransaction().toJSON());
-//				PostDAPPJSONMessage(mining);
-//			}
 			
 			//Send it to the Miner.. This is the ONLY place this happens..
 			Message mine = new Message(TxPoWMiner.TXMINER_MINETXPOW).addObject("txpow", txpow);

@@ -527,6 +527,12 @@ public class ConsensusTxn extends ConsensusProcessor {
 				return;
 			}
 			
+			//Notify listeners that Mining is starting...
+			JSONObject mining = new JSONObject();
+			mining.put("event","txpowstart");
+			mining.put("transaction",trx.toJSON());
+			getConsensusHandler().PostDAPPJSONMessage(mining);
+			
 			//Create the message
 			Message msg = new Message(ConsensusHandler.CONSENSUS_SENDTRANS)
 								.addObject("transaction", trx)
