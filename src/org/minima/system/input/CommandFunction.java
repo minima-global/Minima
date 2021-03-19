@@ -82,7 +82,7 @@ public abstract class CommandFunction {
 	 */
 	public static CommandFunction[] ALL_FUNCTIONS = 
 		{
-			new backup(), new restore(), new balance(), new connect(), new disconnect(),
+			new backup(), new restore(), new balance(), new connect(), new disconnect(), new currentaddress(),
 			new gimme50(), new help(), new intro(), new automine(), new newaddress(), new coins(), new coinsimple(), new txpowinfo(), new keys(),
 			new newscript(), new printdb(), new printtree(), new quit(),new reconnect(), new runscript(), new cleanscript(), 
 			new send(), new sendpoll(), new status(), new test(), new trace(), new tutorial(), new history(), new topblock(),

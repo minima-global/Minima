@@ -42,6 +42,7 @@ public class JavaUserDB implements UserDB, Streamable{
 	
 	//The current address used for any transaction change etc..
 	Address mCurrentAddress = null;
+	int mCurentUses 		= 0;
 	
 	//The Sum of the simple and script addresses
 	ArrayList<Address> mTotalAddresses;
@@ -188,14 +189,15 @@ public class JavaUserDB implements UserDB, Streamable{
 	
 	@Override
 	public Address getCurrentAddress(ConsensusHandler zBackup) {
-		//Do we have one..
-		if(mCurrentAddress == null) {
-			//Create a new KEY
+		//Do we have one.. how many times have we asked for it..
+		if(mCurrentAddress == null || mCurentUses>3800) {
+			//Create a new KEY - give 16*16*16 signatures = 4096
 			MultiKey key = new MultiKey(GlobalParams.MINIMA_DEFAULT_HASH_STRENGTH, 
 					new MiniNumber(16), new MiniNumber(3));
 			
 			//Create a new address.. with a few thousand uses..
 			mCurrentAddress = newSimpleAddress(key);
+			mCurentUses     = 0;
 			
 			//Log it..
 			MinimaLogger.log("NEW base address created : "+mCurrentAddress.getMinimaAddress());
@@ -204,21 +206,8 @@ public class JavaUserDB implements UserDB, Streamable{
 			zBackup.PostMessage(ConsensusBackup.CONSENSUSBACKUP_BACKUPUSER);
 		}
 		
-		//What is the pubkey..
-		MiniData pubk = getPublicKeyForSimpleAddress(mCurrentAddress.getAddressData());
-		
-		//Check the uses.. ( give yourself some lee way.. )
-		MultiKey signer = getPubPrivKey(pubk);
-		if(signer.getUses().isMore(signer.getTotalAllowedUses().sub(MiniNumber.THIRTYTWO))) {
-			//LIMIT REACHED!!
-			mCurrentAddress = newSimpleAddress();
-			
-			//Log it..
-			MinimaLogger.log("( Limit reached.. "+signer.getUses()+"/"+signer.getTotalAllowedUses()+" ) NEW base address created : "+mCurrentAddress.getMinimaAddress());
-		
-			//Backup
-			zBackup.PostMessage(ConsensusBackup.CONSENSUSBACKUP_BACKUPUSER);
-		}
+		//increment
+		mCurentUses++;
 		
 		return mCurrentAddress;
 	}
