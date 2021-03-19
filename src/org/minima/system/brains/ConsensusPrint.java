@@ -425,6 +425,7 @@ public class ConsensusPrint extends ConsensusProcessor {
 			baseobj.put("tokenid", Coin.MINIMA_TOKENID.to0xString());
 			baseobj.put("token", "Minima");
 			baseobj.put("total", "1000000000");
+			baseobj.put("decimals", ""+MiniNumber.MAX_DECIMAL_PLACES);
 			tokarray.add(baseobj);
 			
 			for(TokenProof tok : tokens) {
@@ -468,6 +469,7 @@ public class ConsensusPrint extends ConsensusProcessor {
 			basejobj.put("tokenid", Coin.MINIMA_TOKENID.to0xString());
 			basejobj.put("token", "Minima");
 			basejobj.put("total", "1000000000");
+			basejobj.put("decimals", ""+MiniNumber.MAX_DECIMAL_PLACES);
 			basejobj.put("confirmed", MiniNumber.ZERO);
 			basejobj.put("unconfirmed", MiniNumber.ZERO);
 			basejobj.put("mempool", MiniNumber.ZERO.toString());
@@ -606,6 +608,7 @@ public class ConsensusPrint extends ConsensusProcessor {
 					jobj.put("confirmed", tot_conf.toString());
 					jobj.put("unconfirmed", tot_unconf.toString());
 					jobj.put("total", "1000000000");
+					jobj.put("decimals", ""+MiniNumber.MAX_DECIMAL_PLACES);
 					
 					//MEMPOOL
 					MiniNumber memp = mempool.get(Coin.MINIMA_TOKENID.to0xString());

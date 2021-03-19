@@ -85,6 +85,10 @@ public class TokenProof implements Streamable{
 		return mTokenMinimaAmount.mult(getScaleFactor());
 	}
 	
+	public MiniNumber getDecimalPlaces() {
+		return new MiniNumber(MiniNumber.MAX_DECIMAL_PLACES - getScale().getAsInt());
+	}
+	
 	public MiniString getName() {
 		return mTokenName;
 	}
@@ -173,6 +177,7 @@ public class TokenProof implements Streamable{
 		
 		MiniNumber total = mTokenMinimaAmount.mult(getScaleFactor());
 		obj.put("total", total.toString());
+		obj.put("decimals", getDecimalPlaces().toString());
 		obj.put("script", mTokenScript.toString());
 		obj.put("coinid", mCoinID.to0xString());
 		obj.put("totalamount", mTokenMinimaAmount.toString());

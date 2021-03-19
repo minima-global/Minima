@@ -570,6 +570,12 @@ public class ConsensusHandler extends MessageProcessor {
 			//Send details..
 			MiniNumber sendamount 	= new MiniNumber(amount);
 			
+			//Check is a valid amount.
+			if(!sendamount.isValidMinimaValue() || !sendamount.isMore(MiniNumber.ZERO)) {
+				InputHandler.endResponse(zMessage, false, "Invalid amount specified for send amount! "+sendamount);
+				return;
+			}
+			
 			//How much do we have..
 			MiniNumber total = new MiniNumber(); 
 			ArrayList<Coin> confirmed = null;
@@ -702,40 +708,30 @@ public class ConsensusHandler extends MessageProcessor {
 			String proof  	 	= zMessage.getString("proof");
 			String script       = zMessage.getString("script");
 			
-			/* 
-			 * ASSERT FLOOR ( @AMOUNT ) EQ @AMOUNT LET checkout = 0 
-			 * WHILE ( checkout LT @TOTOUT ) DO 
-			 *  IF GETOUTTOK ( checkout ) EQ @TOKENID THEN 
-			 *   LET outamt = GETOUTAMT ( checkout ) 
-			 *   ASSERT FLOOR ( outamt ) EQ outamt 
-			 *  ENDIF 
-			 *  LET checkout = INC ( checkout ) 
-			 * ENDWHILE 
-			 * RETURN TRUE
-			 * 
-			 */
-			
+			//The  token create coin id..
 			MiniData tok  		= Coin.TOKENID_CREATE;
 			MiniData changetok 	= Coin.MINIMA_TOKENID;
 			
-			//Get a new address to receive the tokens..
-			Address recipient = getMainDB().getUserDB().newSimpleAddress();
-			
-			//How much Minima will it take to colour.. for now lets stay under 0.001 minima
-			//This is not protocol specific and can change later
-			BigDecimal max    = new BigDecimal("0.01");
-			BigDecimal num    = new BigDecimal(amount);
-			BigDecimal actnum = new BigDecimal(amount);
-			
-			//Cylce to the right size..
-			int scale = 0;
-			while(actnum.compareTo(max)>0) {
-				actnum = actnum.divide(BigDecimal.TEN);
-				scale++;
+			//Are we specifying the number of decimal places.. default to 8
+			int decimalplaces = 8;
+			int decimalpoint = amount.indexOf(".");
+			if(decimalpoint != -1) {
+				String decs   = amount.substring(decimalpoint+1);
+				decimalplaces = Integer.parseInt(decs);
 			}
 			
+			//The actual amount of tokens..
+			MiniNumber totaltoks = new MiniNumber(amount).floor(); 
+			MiniNumber totaldecs = MiniNumber.TEN.pow(decimalplaces); 
+			
+			//How much Minima will it take to colour.. 
+			MiniNumber colorminima = MiniNumber.MINI_UNIT.mult(totaldecs).mult(totaltoks);
+			
+			//What is the scale..
+			int scale = MiniNumber.MAX_DECIMAL_PLACES - decimalplaces;
+			
 			//The actual amount of Minima that needs to be sent
-			MiniNumber sendamount = new MiniNumber(actnum);
+			MiniNumber sendamount = new MiniNumber(colorminima);
 			
 			//How much do we have..
 			MiniNumber total = new MiniNumber(); 
@@ -752,6 +748,9 @@ public class ConsensusHandler extends MessageProcessor {
 				InputHandler.endResponse(zMessage, false, "Insufficient funds! You only have : "+total);
 				
 			}else {
+				//Get a new address to receive the tokens..
+				Address recipient = getMainDB().getUserDB().newSimpleAddress();
+				
 				//Blank address - check change is non-null
 				Address change = new Address(); 
 				if(!total.isEqual(sendamount)) {
