@@ -13,6 +13,7 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.keys.MultiKey;
 import org.minima.objects.proofs.TokenProof;
+import org.minima.system.brains.ConsensusHandler;
 
 public interface UserDB {
 
@@ -35,6 +36,8 @@ public interface UserDB {
 	public Address newSimpleAddress();
 	public Address newSimpleAddress(int zBitLength);
 	public Address newSimpleAddress(MultiKey zPubPriv);
+	
+	public Address getCurrentAddress(ConsensusHandler zBackup);
 	
 	public boolean isSimpleAddress(MiniData zAddress);
 	public MiniData getPublicKeyForSimpleAddress(MiniData zAddress);

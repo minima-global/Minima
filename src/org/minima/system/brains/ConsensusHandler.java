@@ -1,6 +1,5 @@
 package org.minima.system.brains;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
@@ -599,7 +598,7 @@ public class ConsensusHandler extends MessageProcessor {
 			//Blank address - check change is non-null
 			Address change = new Address(); 
 			if(!total.isEqual(sendamount)) {
-				change = getMainDB().getUserDB().newSimpleAddress();
+				change = getMainDB().getUserDB().getCurrentAddress(this);
 			}
 			
 			//Create the Transaction
@@ -661,8 +660,7 @@ public class ConsensusHandler extends MessageProcessor {
 			mLastGimme = timenow;
 			
 			//construct a special transaction that pays 50 mini to an address this user controls..
-			Address addr1 = getMainDB().getUserDB().newSimpleAddress();
-			Address addr2 = getMainDB().getUserDB().newSimpleAddress();
+			Address currentaddr = getMainDB().getUserDB().getCurrentAddress(this);
 			
 			//Now create a transaction that always pays out..
 			Transaction trans = new Transaction();
@@ -678,8 +676,8 @@ public class ConsensusHandler extends MessageProcessor {
 			wit.addScript(Address.TRUE_ADDRESS.getScript(), in.getAddress().getLength()*8);
 			
 			//And send to the new addresses
-			trans.addOutput(new Coin(Coin.COINID_OUTPUT,addr1.getAddressData(),new MiniNumber("25"), Coin.MINIMA_TOKENID));
-			trans.addOutput(new Coin(Coin.COINID_OUTPUT,addr2.getAddressData(),new MiniNumber("25"), Coin.MINIMA_TOKENID));
+			trans.addOutput(new Coin(Coin.COINID_OUTPUT,currentaddr.getAddressData(),new MiniNumber("25"), Coin.MINIMA_TOKENID));
+			trans.addOutput(new Coin(Coin.COINID_OUTPUT,currentaddr.getAddressData(),new MiniNumber("25"), Coin.MINIMA_TOKENID));
 			
 			//Now send it..
 			Message mine = new Message(ConsensusHandler.CONSENSUS_SENDTRANS)
@@ -739,12 +737,12 @@ public class ConsensusHandler extends MessageProcessor {
 				
 			}else {
 				//Get a new address to receive the tokens..
-				Address recipient = getMainDB().getUserDB().newSimpleAddress();
+				Address recipient = getMainDB().getUserDB().getCurrentAddress(this);
 				
 				//Blank address - check change is non-null
 				Address change = new Address(); 
 				if(!total.isEqual(sendamount)) {
-					change = getMainDB().getUserDB().newSimpleAddress();
+					change = recipient;
 				}
 				
 				//CHECK NAME of TOKEN IS VALID!

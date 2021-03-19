@@ -54,6 +54,9 @@ public class ConsensusUser extends ConsensusProcessor {
 	public static final String CONSENSUS_RUNSCRIPT 			= CONSENSUS_PREFIX+"RUNSCRIPT";
 	public static final String CONSENSUS_CLEANSCRIPT 		= CONSENSUS_PREFIX+"CLEANSCRIPT";
 	
+	public static final String CONSENSUS_CURRENTADDRESS 	= CONSENSUS_PREFIX+"CURRENTADDRESS";
+	
+	
 	public static final String CONSENSUS_KEEPCOIN 			= CONSENSUS_PREFIX+"KEEPCOIN";
 	public static final String CONSENSUS_UNKEEPCOIN 		= CONSENSUS_PREFIX+"UNKEEPCOIN";
 	
@@ -210,6 +213,22 @@ public class ConsensusUser extends ConsensusProcessor {
 			
 			//Do a backup..
 			getConsensusHandler().PostMessage(ConsensusBackup.CONSENSUSBACKUP_BACKUPUSER);
+			
+		}else if(zMessage.isMessageType(CONSENSUS_CURRENTADDRESS)) {
+			//Get the current address
+			Address current = getMainDB().getUserDB().getCurrentAddress(getConsensusHandler());
+		
+			//get the pubkey..
+			MiniData pubkey = getMainDB().getUserDB().getPublicKeyForSimpleAddress(current.getAddressData());
+			
+			//And now the multikey
+			MultiKey key = getMainDB().getUserDB().getPubPrivKey(pubkey);
+			
+			JSONObject resp = InputHandler.getResponseJSON(zMessage);
+			resp.put("current", current.toJSON());
+			resp.put("key", key.toJSON());
+			
+			InputHandler.endResponse(zMessage, true, "");
 			
 		}else if(zMessage.isMessageType(CONSENSUS_CHECK)) {
 			String data = zMessage.getString("data");

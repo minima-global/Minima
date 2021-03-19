@@ -266,7 +266,7 @@ public class ConsensusTxn extends ConsensusProcessor {
 			//Blank address - check change is non-null
 			Address change = new Address(); 
 			if(!total.isEqual(sendamount)) {
-				change = getMainDB().getUserDB().newSimpleAddress();
+				change = getMainDB().getUserDB().getCurrentAddress(getConsensusHandler());
 			}
 			
 			//May already have had some state variables set..

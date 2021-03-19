@@ -13,7 +13,7 @@ import org.minima.utils.MinimaLogger;
 public class MultiKey extends BaseKey {
 	
 	public static final MiniNumber DEFAULT_KEYS_PER_LEVEL = new MiniNumber(16);
-	public static final MiniNumber DEFAULT_LEVELS 		  = new MiniNumber(2);
+	public static final MiniNumber DEFAULT_LEVELS 		  = new MiniNumber(3);
 	
 	//The Leaf Node Keys..
 	SingleKey[] mSingleKeys;
@@ -300,7 +300,7 @@ public class MultiKey extends BaseKey {
 //		if(true) {System.exit(0);}
 		
 		//MULTI SIGN EXAMPLE
-		for(int i=0;i<30;i++) {
+		for(int i=0;i<1;i++) {
 			MiniData sig = mkey.sign(data);
 			System.out.println(i+")\tSigLength:"
 					+sig.getLength()+"\thash:"
