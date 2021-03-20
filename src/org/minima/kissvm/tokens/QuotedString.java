@@ -94,23 +94,4 @@ public class QuotedString {
 	public int getQuotesSize() {
 		return mQuotes.size();
 	}
-	
-	public static void main(String[] zArgs) {
-		
-		String tester = " let x = [   asjd let s=3  hajs [ asd asd ]asdad ]LET Y=[ 87876 ] ";
-		System.out.println("String : "+tester);
-		tester = Contract.cleanScript(tester);		
-		System.out.println("Clean : "+tester);
-		
-		QuotedString qs = new QuotedString(tester);
-		
-		System.out.println("String : "+tester);
-		System.out.println("Quoted : "+qs.getDeQuotedString());
-		
-		for(int i=0;i<qs.getQuotesSize();i++) {
-			System.out.println("Quote ["+i+"]: "+qs.getQuote(i));	
-		}
-		
-	}
-	
 }

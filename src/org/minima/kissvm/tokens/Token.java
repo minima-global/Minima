@@ -179,10 +179,4 @@ public class Token {
 	public static boolean isVariable(String str){
 		 return str.matches("[a-z]*"); 
 	}
-	
-	
-	public static void main(String[] zArgs) {
-		String text = "asFg";
-		System.out.println(text.matches("[a-z]*"));
-	}
 }
