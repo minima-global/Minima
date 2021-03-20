@@ -44,6 +44,18 @@ public class ValueTests {
         assertThrows(IllegalArgumentException.class, () -> {
             Value.getValueType("z");
         });
+        assertThrows(IllegalArgumentException.class, () -> {
+            Value.getValueType("[z");
+        });
+        assertThrows(IllegalArgumentException.class, () -> {
+            Value.getValueType("!]");
+        });
+
+        assertEquals("should be equal ", "BOOLEAN", Value.getValueTypeString(Value.VALUE_BOOLEAN));
+        assertEquals("should be equal ", "HEX", Value.getValueTypeString(Value.VALUE_HEX));
+        assertEquals("should be equal ", "NUMBER", Value.getValueTypeString(Value.VALUE_NUMBER));
+        assertEquals("should be equal ", "SCRIPT", Value.getValueTypeString(Value.VALUE_SCRIPT));
+        assertEquals("should be equal ", "ERROR_UNKNOWN_TYPE", Value.getValueTypeString(-99));
     }
 
     @Test

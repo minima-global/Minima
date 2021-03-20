@@ -136,25 +136,4 @@ public abstract class Value {
 			throw new IllegalArgumentException("Operation requires that both value types are of type "+zType);
 		}
 	}
-	
-	/**
-	 * Test Program
-	 */
-	public static void main(String[] zArgs) {
-		Value vv = new HEXValue ("0xF184A0A4295AD508CEC610C7430CE328F184A0A4295AD508CEC610C7430CE328");
-		
-		MiniNumber q = new MiniNumber("1");
-		MiniNumber e = new MiniNumber("3");
-		MiniNumber t = q.div(e);
-		
-		System.out.println(vv);
-		
-//		//Get the data..
-//		BigInteger bb = vv.getRamNumber().getAsBigInteger();
-//		BigInteger cc = bb.shiftRight(2);
-//		
-//		Value v2 = new Value (cc.toString());
-//		System.out.println(v2.mNumber);
-		
-	}	
 }
