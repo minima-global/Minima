@@ -24,6 +24,7 @@ import org.minima.kissvm.values.Value;
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
 import org.minima.objects.Transaction;
+import org.minima.objects.TxPoW;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniNumber;
 import org.minima.tests.database.MinimaDBTests;
@@ -77,7 +78,7 @@ public class GETOUTTOKTests {
             w.addScript(addr1.getScript(), in1.getAddress().getLength() * 8);
             w.addScript(addr2.getScript(), in2.getAddress().getLength() * 8);
         } catch (Exception ex) {
-            Logger.getLogger(MinimaDBTests.class.getName()).log(Level.SEVERE, null, ex);
+            fail();
         }
 
         Contract ctr = new Contract("", "", w, trx, new ArrayList<>());
@@ -137,7 +138,7 @@ public class GETOUTTOKTests {
             w.addScript(addr1.getScript(), in1.getAddress().getLength() * 8);
             w.addScript(addr2.getScript(), in2.getAddress().getLength() * 8);
         } catch (Exception ex) {
-            Logger.getLogger(MinimaDBTests.class.getName()).log(Level.SEVERE, null, ex);
+            fail();
         }
 
         Contract ctr = new Contract("", "", w, trx, new ArrayList<>());

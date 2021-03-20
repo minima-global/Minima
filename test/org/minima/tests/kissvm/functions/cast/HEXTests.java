@@ -156,5 +156,22 @@ public class HEXTests {
                 Value res = mf.runFunction(ctr);
             });
         }
+        {
+            MinimaFunction mf = fn.getNewFunction();
+            mf.addParameter(new ConstantExpression(new NumberValue(0)));
+            mf.addParameter(new ConstantExpression(new NumberValue(0)));
+            assertThrows(ExecutionException.class, () -> {
+                Value res = mf.runFunction(ctr);
+            });
+        }
+
+        // Invalid param domain
+        {
+            MinimaFunction mf = fn.getNewFunction();
+            mf.addParameter(new ConstantExpression(new NumberValue(0.5)));
+            assertThrows(ExecutionException.class, () -> {
+                Value res = mf.runFunction(ctr);
+            });
+        }
     }
 }
