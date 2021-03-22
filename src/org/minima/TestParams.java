@@ -71,12 +71,6 @@ public class TestParams {
 	 */
 	public static boolean MINIMA_ZERO_DIFF_BLK  = false;
 
-//	/** 
-//	 * ( Not sure if I'll use this..)
-//	 * MAX Difficulty change per block
-//	 */
-//	public static final MiniNumber MINIMA_MAX_SPEED_RATIO  = new MiniNumber("0.5");
-	
 	/**
 	 * Set these as the GlobalParams..
 	 */

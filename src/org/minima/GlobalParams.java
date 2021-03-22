@@ -63,23 +63,11 @@ public class GlobalParams {
 	 */
 	public static MiniNumber MINIMA_MMR_PROOF_HISTORY = new MiniNumber(256);
 	
-//	/**
-//	 * Are we debugging the chain in short chain mode..
-//	 */
-//	public static boolean SHORT_CHAIN_DEBUG_MODE = false;
-//	
 	/**
 	 * Just create a block every transaction. Useful when not mining 
 	 * and just want a block every single transaction to debug.
 	 * Automatically disables the auto mining
 	 */
 	public static boolean MINIMA_ZERO_DIFF_BLK  = false;
-
-//	/** 
-//	 * ( Not sure if I'll use this..)
-//	 * MAX Difficulty change per block
-//	 */
-//	public static final MiniNumber MINIMA_MAX_SPEED_RATIO  = new MiniNumber("0.5");
-	
 
 }
