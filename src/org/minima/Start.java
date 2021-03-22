@@ -192,26 +192,6 @@ public class Start {
 					//Use the Test PARAMS!
 					TestParams.setTestParams();
 				
-					
-					//MY HACK WAY OF TESTING SOMETHING
-				}else if(arg.equals("-specialfunction")) {
-					//Which Block
-					String block = zArgs[counter++];
-					MinimaLogger.log("Block : "+block);
-					
-					//BLocks folder..
-					File blocksdb = new File(conf,"blocks");
-					MinimaLogger.log("Blocks Folder : "+blocksdb.getAbsolutePath());
-					
-					//Full file
-					File blkfile = BackupManager.getBlockFile(blocksdb, new MiniNumber(block));
-					MinimaLogger.log("Final File : "+blkfile.getAbsolutePath()+" "+blkfile.exists());
-					
-					//Do Something special
-					SyncPacket spack = SyncPacket.loadBlock(blkfile);
-					
-					System.exit(0);
-					
 				}else if(arg.equals("")) {
 					//Do nothing..
 					

@@ -308,29 +308,6 @@ public class BackupManager extends MessageProcessor {
 		return savefile;
 	}
 	
-	public static File getBlockFile(File zBLocksFolder, MiniNumber zBlockNumber) {
-		//Top level Folder
-		MiniNumber fold1 = zBlockNumber.div(MiniNumber.MILLION).floor();
-		
-		//Inside Top Level
-		MiniNumber remainder = zBlockNumber.sub(MiniNumber.MILLION.mult(fold1));
-		MiniNumber fold2     = remainder.div(MiniNumber.THOUSAND).floor();
-		
-		//Get the number..
-		String f1 = MiniFormat.zeroPad(6, fold1);
-		String f2 = MiniFormat.zeroPad(6, fold2);
-		String filename = MiniFormat.zeroPad(12, zBlockNumber);
-		
-		//Create the File
-		File back1 = new File(zBLocksFolder,f1);
-		File back2 = new File(back1,f2);
-		ensureFolder(back2);
-		
-		File savefile = new File(back2,filename+".block");
-		
-		return savefile;
-	}
-	
 	private void initFolders() {
 		//The Root
 		mRoot      = ensureFolder(new File(mConfigurationFolder));
