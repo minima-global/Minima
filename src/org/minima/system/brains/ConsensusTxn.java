@@ -527,6 +527,9 @@ public class ConsensusTxn extends ConsensusProcessor {
 				return;
 			}
 			
+			//Add all the inputs to the mining..
+			getMainDB().addMiningTransaction(trx);
+			
 			//Notify listeners that Mining is starting...
 			JSONObject mining = new JSONObject();
 			mining.put("event","txpowstart");

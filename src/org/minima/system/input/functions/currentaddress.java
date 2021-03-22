@@ -17,6 +17,8 @@ public class currentaddress extends CommandFunction {
 	public void doFunction(String[] zInput) throws Exception {
 		Message msg = getResponseMessage(ConsensusUser.CONSENSUS_CURRENTADDRESS);
 			
+//		check for new and return other details..
+		
 		//Post It..
 		getMainHandler().getConsensusHandler().PostMessage(msg);
 	}

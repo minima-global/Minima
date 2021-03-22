@@ -790,53 +790,32 @@ public class ConsensusPrint extends ConsensusProcessor {
 			
 			//Current TIP
 			BlockTreeNode tip  	 = getMainDB().getMainTree().getChainTip();
-			MiniNumber minblock  = tip.getTxPow().getBlockNumber().sub(GlobalParams.MINIMA_CONFIRM_DEPTH);
-			MMRSet baseset 	     = tip.getMMRSet().getParentAtTime(minblock);
 			
-			//Search for coins..
-			ArrayList<MMREntry> res = baseset.searchCoins(	relevant, 
-															checkaddress, addr, 
-															checkamount,  amt, 
-															checktokenid, tok);
-			
-			//And add to the response..
-			for(MMREntry entry : res) {
-				totcoins.add(baseset.getProof(entry.getEntryNumber()).toJSON());
+			if(tip != null) {
+				MiniNumber minblock  = tip.getTxPow().getBlockNumber().sub(GlobalParams.MINIMA_CONFIRM_DEPTH);
+				MMRSet baseset 	     = tip.getMMRSet().getParentAtTime(minblock);
+				
+				if(baseset != null) {
+					//Search for coins..
+					ArrayList<MMREntry> res = baseset.searchCoins(	relevant, 
+																	checkaddress, addr, 
+																	checkamount,  amt, 
+																	checktokenid, tok);
+					
+					//And add to the response..
+					for(MMREntry entry : res) {
+						totcoins.add(baseset.getProof(entry.getEntryNumber()).toJSON());
+					}
+					
+					allcoins.put("total", res.size());
+				}else {
+					allcoins.put("total", 0);
+				}
+				
+			}else {
+				allcoins.put("total", 0);
 			}
 			
-			allcoins.put("total", res.size());
-			
-//			//Cycle..
-//			ArrayList<CoinDBRow> coins = getMainDB().getCoinDB().getComplete();
-//			for(CoinDBRow coin : coins) {
-//				//RELEVANT..
-//				if(relevant && !coin.isRelevant()) {continue;}
-//				
-//				//SPEND TYPE
-//				if(type.equals("spent") && !coin.isSpent()) {continue;}
-//				if(type.equals("unspent") && coin.isSpent()) {continue;}
-//				
-//				//ADDRESS
-//				if(checkaddress && !coin.getCoin().getAddress().isEqual(addr)) {
-//					continue;
-//				}
-//				
-//				//TOKEN
-//				if(checktokenid && !coin.getCoin().getTokenID().isEqual(tok)) {
-//					continue;
-//				}
-//				
-//				//AMOUNT
-//				if(checkamount && !coin.getCoin().getAmount().isEqual(amt)) {
-//					continue;
-//				}
-//				
-//				//DEEP ENOUGH - for now add any found
-////				if(coin.getInBlockNumber().isLessEqual(minblock)) {
-//					//OK - FOUND ONE!
-//					totcoins.add(baseset.getProof(coin.getMMREntry()).toJSON());	
-////				}
-//			}
 			
 			//Add it to the output
 			InputHandler.endResponse(zMessage, true, "");

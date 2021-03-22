@@ -31,7 +31,6 @@ public class JavaUserDB implements UserDB, Streamable{
 	/**
 	 * Minima stores any output that has a key you own in the STATE
 	 */
-//	ArrayList<PubPrivKey> mPubPrivKeys;
 	ArrayList<MultiKey> mPubPrivKeys;
 	
 	/**
@@ -40,11 +39,14 @@ public class JavaUserDB implements UserDB, Streamable{
 	ArrayList<Address>    mSimpleAddresses;
 	ArrayList<Address>    mScriptAddresses;
 	
-	//The current address used for any transaction change etc..
-	Address 	mCurrentAddress;
-	MiniNumber 	mCurrentUses;
+	/**
+	 * The current address used for any transaction change etc..
+	 */
+	CurrentAddress 	mCurrentAddress;
 	
-	//The Sum of the simple and script addresses
+	/**
+	 * The Sum of the simple and script addresses
+	 */
 	ArrayList<Address> mTotalAddresses;
 	
 	/**
@@ -82,16 +84,10 @@ public class JavaUserDB implements UserDB, Streamable{
 		mTotalAddresses  = new ArrayList<>();
 		mExtraAddresses  = new ArrayList<>();
 		mRelevantCoinID  = new ArrayList<>();
-		
 		mAllTokens		 = new ArrayList<>();
-		
-		mRows  = new ArrayList<>();
-		
-		mHistory = new ArrayList<>();
-	
-		//Set the initial..
-		mCurrentAddress  = new Address(new MiniData("0x00"));
-		mCurrentUses     = MiniNumber.ZERO;
+		mRows  			 = new ArrayList<>();
+		mHistory 		 = new ArrayList<>();
+		mCurrentAddress  = new CurrentAddress();
 	}
 	
 	@Override
@@ -193,28 +189,7 @@ public class JavaUserDB implements UserDB, Streamable{
 	
 	@Override
 	public Address getCurrentAddress(ConsensusHandler zBackup) {
-		//Do we have one.. how many times have we asked for it..
-		if( mCurrentAddress.getAddressData().isEqual(new MiniData("0x00")) || 
-			mCurrentUses.isMore(new MiniNumber(4000))) {
-			//Create a new KEY - give 16*16*16 signatures = 4096
-			MultiKey key = new MultiKey(GlobalParams.MINIMA_DEFAULT_HASH_STRENGTH, 
-					new MiniNumber(16), new MiniNumber(3));
-			
-			//Create a new address.. with a few thousand uses..
-			mCurrentAddress  = newSimpleAddress(key);
-			mCurrentUses     = MiniNumber.ZERO;
-			
-			//Log it..
-			MinimaLogger.log("NEW base address created : "+mCurrentAddress.getMinimaAddress());
-			
-			//Backup
-			zBackup.PostMessage(ConsensusBackup.CONSENSUSBACKUP_BACKUPUSER);
-		}
-		
-		//increment
-		mCurrentUses = mCurrentUses.increment();
-		
-		return mCurrentAddress;
+		return mCurrentAddress.getCurrentAddress(this, zBackup);
 	}
 
 	@Override
@@ -408,7 +383,6 @@ public class JavaUserDB implements UserDB, Streamable{
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
 		//Current address
-		mCurrentUses.writeDataStream(zOut);
 		mCurrentAddress.writeDataStream(zOut);
 		
 		//Pub priv keys
@@ -481,7 +455,7 @@ public class JavaUserDB implements UserDB, Streamable{
 		mAllTokens		 = new ArrayList<>();
 		
 		//Current address
-		mCurrentUses = MiniNumber.ReadFromStream(zIn);
+		mCurrentAddress = new CurrentAddress();
 		mCurrentAddress.readDataStream(zIn);
 				
 		//Pub Priv Keys
@@ -495,8 +469,7 @@ public class JavaUserDB implements UserDB, Streamable{
 		//Address
 		len = zIn.readInt();
 		for(int i=0;i<len;i++) {
-			Address addr = new Address();
-			addr.readDataStream(zIn);
+			Address addr = Address.ReadFromStream(zIn);
 			mSimpleAddresses.add(addr);
 			mTotalAddresses.add(addr);
 		}
@@ -504,8 +477,7 @@ public class JavaUserDB implements UserDB, Streamable{
 		//Script Address
 		len = zIn.readInt();
 		for(int i=0;i<len;i++) {
-			Address addr = new Address();
-			addr.readDataStream(zIn);
+			Address addr = Address.ReadFromStream(zIn);
 			mScriptAddresses.add(addr);
 			mTotalAddresses.add(addr);
 		}
@@ -513,8 +485,7 @@ public class JavaUserDB implements UserDB, Streamable{
 		//Extra Address
 		len = zIn.readInt();
 		for(int i=0;i<len;i++) {
-			Address addr = new Address();
-			addr.readDataStream(zIn);
+			Address addr = Address.ReadFromStream(zIn);
 			mExtraAddresses.add(addr);
 		}
 		

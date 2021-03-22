@@ -744,7 +744,7 @@ public class ConsensusHandler extends MessageProcessor {
 				}
 				
 				//CHECK NAME of TOKEN IS VALID!
-				//TODO
+				//TODO Important! - Check token name and details are valid.. add function to TokenProof
 				
 				//Create the JSON descriptor..
 				JSONObject tokenjson = new JSONObject();

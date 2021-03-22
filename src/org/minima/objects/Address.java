@@ -116,6 +116,12 @@ public class Address implements Streamable{
 		}	
 	}
 	
+	public static Address ReadFromStream(DataInputStream zIn) throws IOException {
+		Address addr = new Address();
+		addr.readDataStream(zIn);
+		return addr;
+	}
+	
 	/**
 	 * Convert an address into a Minima Checksum Base32 address
 	 * 
