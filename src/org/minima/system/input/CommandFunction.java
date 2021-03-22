@@ -53,7 +53,6 @@ import org.minima.system.input.functions.txpowinfo;
 import org.minima.system.input.functions.txpowsearch;
 import org.minima.system.input.functions.unkeepcoin;
 import org.minima.system.input.functions.verify;
-import org.minima.system.input.functions.weblink;
 import org.minima.system.input.functions.transfer.exportkey;
 import org.minima.system.input.functions.transfer.importkey;
 import org.minima.system.input.functions.txns.txnauto;
