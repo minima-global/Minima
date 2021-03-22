@@ -1087,6 +1087,10 @@ public class MMRSet implements Streamable {
 		MMRSet current = this;
 		
 		while(current != null) {
+			if(current.getParent() == null) {
+				return current;
+			}
+			
 			current = current.getParent();
 		}
 		
