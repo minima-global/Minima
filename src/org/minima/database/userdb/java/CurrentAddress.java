@@ -91,6 +91,7 @@ public class CurrentAddress implements Streamable {
 			//Create a new address.. with a few thousand uses..
 			mAddresses[index].setAddress(zUserDB.newSimpleAddress(key));
 			
+			//Total addreses used
 			mTotalUsed = mTotalUsed.increment();
 			
 			//Log it..
