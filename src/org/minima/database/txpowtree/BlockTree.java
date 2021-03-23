@@ -468,28 +468,39 @@ public class BlockTree {
 							
 							//need a  body for this..
 							if(row.getTxPOW().hasBody()) {
-								//Create an MMR set that will ONLY be used if the block is VALID..
-								MMRSet mmrset = new MMRSet(pnode.getMMRSet());
+								//Is this block too old to check..
 								
-								//Set this MMR..
-								zNode.setMMRset(mmrset);
+								MiniNumber minblock = getCascadeNode().getBlockNumber().add(GlobalParams.MINIMA_MMR_PROOF_HISTORY);
+								MiniNumber blknum   = row.getTxPOW().getBlockNumber();
 								
-								//Check all the transactions in the block are correct..
-								allok = getDB().checkAllTxPOW(zNode, mmrset);
+								if(blknum.isMore(GlobalParams.MINIMA_BLOCKS_SPEED_CALC) && blknum.isLess(minblock)) {
+									MinimaLogger.log("IGNORE OLD BLOCK.. ( proofs too old.. ) blk:"+row.getTxPOW().getBlockNumber()+" currenttip:"+getChainTip().getBlockNumber());
+									allok = false;
 								
-								//Check the root MMR..
-								if(allok) {
-									if(!row.getTxPOW().getMMRRoot().isEqual(mmrset.getMMRRoot().getFinalHash())) {
-										MinimaLogger.log("INVALID BLOCK MMRROOT "+zNode.getBlockNumber());
-										allok = false;	
-									}
-									
-									if(!row.getTxPOW().getMMRTotal().isEqual(mmrset.getMMRRoot().getValueSum())) {
-										MinimaLogger.log("INVALID BLOCK MMRSUM "+zNode.getBlockNumber());
-										allok = false;
-									}
 								}else {
-									MinimaLogger.log("INVALID BLOCK TRANSACTIONS "+zNode.getBlockNumber());
+									//Create an MMR set that will ONLY be used if the block is VALID..
+									MMRSet mmrset = new MMRSet(pnode.getMMRSet());
+									
+									//Set this MMR..
+									zNode.setMMRset(mmrset);
+									
+									//Check all the transactions in the block are correct..
+									allok = getDB().checkAllTxPOW(zNode, mmrset);
+									
+									//Check the root MMR..
+									if(allok) {
+										if(!row.getTxPOW().getMMRRoot().isEqual(mmrset.getMMRRoot().getFinalHash())) {
+											MinimaLogger.log("INVALID BLOCK MMRROOT "+zNode.getBlockNumber());
+											allok = false;	
+										}
+										
+										if(!row.getTxPOW().getMMRTotal().isEqual(mmrset.getMMRRoot().getValueSum())) {
+											MinimaLogger.log("INVALID BLOCK MMRSUM "+zNode.getBlockNumber());
+											allok = false;
+										}
+									}else {
+										MinimaLogger.log("INVALID BLOCK TRANSACTIONS "+zNode.getBlockNumber());
+									}
 								}
 							}else {
 								MinimaLogger.log("INVALID BLOCK no body TxPoW..! "+zNode.toString());
