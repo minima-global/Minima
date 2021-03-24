@@ -16,6 +16,8 @@ plugins {
     // test coverage
     id 'jacoco'
 
+    // eclipse classpath generation: ./gradlew cleanEclipse eclipse
+    id 'eclipse'
 
     // shadowJar plugin to build fat jar
     id 'com.github.johnrengelman.shadow' version '6.1.0'
@@ -45,6 +47,10 @@ sourceSets {
          java {
             srcDirs = ['src']
          }
+         
+        resources {
+            srcDirs = ['resources']
+        }
     }
 
     test {
@@ -71,8 +77,4 @@ jar {
         attributes 'Main-Class': 'org.minima.Start'
     }
 }
-jar {
-    manifest {
-        attributes 'Main-Class': 'org.minima.Start'
-    }
-}
+

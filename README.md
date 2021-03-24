@@ -63,6 +63,38 @@ You can add -private and all the other parameters to that.
 Apple Silicon: please use OpenJDK Java 11 (LTS) macOS ARM 64 bit (Zuul version 11.45.27 or later)
 https://www.azul.com/downloads/zulu-community/?version=java-11-lts&os=macos&architecture=arm-64-bit&package=jdk
 
+### building Minima
+
+The most reliable way to build Minima is to use gradlew (the gradle wrapper). You do not need to install anything except a JDK, the wrapper will install gradle locally.
+
+To build using gradlew from the command line, you only need to type:
+```
+./gradlew build
+```
+
+To build a fatjar (all in one jar containing everything needed to run Minima) from the command line, use the following command:
+```
+./gradlew shadowJar
+```
+
+To run the fatjar:
+```
+java -jar build/libs/minima-all.jar
+```
+
+To build from the IDE, you will first need to generate IDE configuration files. This is valid for Eclipse, VS Code, etc. It is better to stop your IDE before running this command.
+```
+./gradlew cleanEclipse eclipse
+```
+
+If you still have project errors, try in Visual Studio Code: View > Command Palette... > Java: Clean Java Language Server Workspace > Restart and delete.
+
+To run non default main tasks, try:
+```
+./gradlew runp2p
+```
+
+
 ### Tests
 
 You can run the tests directly from your IDE or from command-line.
