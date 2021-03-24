@@ -339,17 +339,17 @@ public class StatementParser {
 			if(tok.getTokenType() == Token.TOKEN_COMMAND && tok.getToken().equals("ENDIF")) {
 				//We've found the end to the current depth IF
 				rettokens.add(tok);
-				return rettokens;
+				break;
 			
 			}else if(zElseAlso && (tok.getTokenType() == Token.TOKEN_COMMAND && tok.getToken().equals("ELSEIF")) ) {
 				//We've found the end to the current depth IF
 				rettokens.add(tok);
-				return rettokens;
+				break;
 			
 			}else if(zElseAlso && (tok.getTokenType() == Token.TOKEN_COMMAND && tok.getToken().equals("ELSE")) ) {
 				//We've found the end to the current depth IF
 				rettokens.add(tok);
-				return rettokens;
+				break;
 				
 			}else if(tok.getTokenType() == Token.TOKEN_COMMAND && tok.getToken().equals("IF")) {
 				//Add it..
@@ -393,7 +393,7 @@ public class StatementParser {
 			if(tok.getTokenType() == Token.TOKEN_COMMAND && tok.getToken().equals("ENDWHILE")) {
 				//We've found the end to the current depth IF
 				rettokens.add(tok);
-				return rettokens;
+				break;
 				
 			}else if(tok.getTokenType() == Token.TOKEN_COMMAND && tok.getToken().equals("WHILE")) {
 				//Add it..
@@ -432,7 +432,7 @@ public class StatementParser {
 		while(ret<total) {
 			Token tok = zTokens.get(ret);
 			if(tok.getTokenType() == Token.TOKEN_COMMAND) {
-				return rettokens;
+				break;
 			}else {
 				//Add it to the list
 				rettokens.add(tok);
@@ -459,7 +459,7 @@ public class StatementParser {
 		while(ret<total) {
 			Token tok = zTokens.get(ret);
 			if(tok.getTokenType() == Token.TOKEN_OPERATOR && tok.getToken().equals("=")) {
-				return rettokens;
+				break;
 			}else {
 				//Add it to the list
 				rettokens.add(tok);

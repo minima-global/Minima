@@ -310,6 +310,110 @@ public class StatementParserTests {
     }
 
     @Test
+    public void testParsingIF() {
+        {
+            String[] Exps = {"TRUE", "FALSE", "0x01", "0x00", "1", "0", "1.5", "0.0", "[hello world]", "[]"};
+            for (String Exp : Exps) {
+                try {
+                    String Script = "IF " + Exp + " THEN RETURN TRUE ENDIF";
+                    List<Token> tokens = Token.tokenize(Contract.cleanScript(Script));
+                    StatementBlock sb = StatementParser.parseTokens(tokens);
+                } catch (MinimaParseException ex) {
+                    fail();
+                } catch (Exception ex) {
+                    fail();
+                }
+
+                try {
+                    String Script = "IF " + Exp + " THEN RETURN TRUE ELSE RETURN FALSE ENDIF";
+                    List<Token> tokens = Token.tokenize(Contract.cleanScript(Script));
+                    StatementBlock sb = StatementParser.parseTokens(tokens);
+                } catch (MinimaParseException ex) {
+                    fail();
+                } catch (Exception ex) {
+                    fail();
+                }
+
+                try {
+                    String Script = "IF " + Exp + " THEN RETURN TRUE ELSEIF FALSE THEN RETURN FALSE ELSE RETURN FALSE ENDIF";
+                    List<Token> tokens = Token.tokenize(Contract.cleanScript(Script));
+                    StatementBlock sb = StatementParser.parseTokens(tokens);
+                } catch (MinimaParseException ex) {
+                    fail();
+                } catch (Exception ex) {
+                    fail();
+                }
+
+                try {
+                    String Script = "IF " + Exp + " THEN RETURN TRUE ELSE IF FALSE THEN RETURN FALSE ELSE RETURN FALSE ENDIF ENDIF";
+                    List<Token> tokens = Token.tokenize(Contract.cleanScript(Script));
+                    StatementBlock sb = StatementParser.parseTokens(tokens);
+                } catch (MinimaParseException ex) {
+                    fail();
+                } catch (Exception ex) {
+                    fail();
+                }
+            }
+        }
+
+        {
+            assertThrows(MinimaParseException.class, () -> {
+                String Script = "IF ( ) THEN RETURN TRUE ENDIF";
+                List<Token> tokens = Token.tokenize(Contract.cleanScript(Script));
+                StatementBlock sb = StatementParser.parseTokens(tokens);
+            });
+        }
+        {
+            assertThrows(MinimaParseException.class, () -> {
+                String Script = "IF ( A + ) THEN RETURN TRUE ENDIF";
+                List<Token> tokens = Token.tokenize(Contract.cleanScript(Script));
+                StatementBlock sb = StatementParser.parseTokens(tokens);
+            });
+        }
+
+        {
+            assertThrows(MinimaParseException.class, () -> {
+                String Script = "IF FALSE THEN RETURN TRUE HELLO FALSE THEN RETURN FALSE ELSE RETURN FALSE ENDIF";
+                List<Token> tokens = Token.tokenize(Contract.cleanScript(Script));
+                StatementBlock sb = StatementParser.parseTokens(tokens);
+            });
+        }
+
+    }
+
+    @Test
+    public void testParsingWHILE() {
+        {
+            String[] Exps = {"TRUE", "FALSE", "0x01", "0x00", "1", "0", "1.5", "0.0", "[hello world]", "[]"};
+            for (String Exp : Exps) {
+                try {
+                    String Script = "WHILE " + Exp + " DO RETURN TRUE ENDWHILE";
+                    List<Token> tokens = Token.tokenize(Contract.cleanScript(Script));
+                    StatementBlock sb = StatementParser.parseTokens(tokens);
+                } catch (MinimaParseException ex) {
+                    fail();
+                } catch (Exception ex) {
+                    fail();
+                }
+            }
+        }
+        {
+            String[] Exps = {"TRUE", "FALSE", "0x01", "0x00", "1", "0", "1.5", "0.0", "[hello world]", "[]"};
+            for (String Exp : Exps) {
+                try {
+                    String Script = "WHILE " + Exp + " DO WHILE " + Exp + " DO RETURN TRUE ENDWHILE ENDWHILE";
+                    List<Token> tokens = Token.tokenize(Contract.cleanScript(Script));
+                    StatementBlock sb = StatementParser.parseTokens(tokens);
+                } catch (MinimaParseException ex) {
+                    fail();
+                } catch (Exception ex) {
+                    fail();
+                }
+            }
+        }
+    }
+
+    @Test
     public void testParsingASSERT() {
         {
             try {
