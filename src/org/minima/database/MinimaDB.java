@@ -1050,7 +1050,12 @@ public class MinimaDB {
 		//And one for change
 		MiniNumber change  = currentin.sub(zAmount);
 		if(!change.isEqual(MiniNumber.ZERO)) {
-			Coin chg = new Coin(Coin.COINID_OUTPUT, zChangeAddress.getAddressData(), change, zChangeTokenID);
+			Coin chg = new Coin(Coin.COINID_OUTPUT, 
+					zChangeAddress.getAddressData(), 
+					change, 
+					zChangeTokenID,
+					false, false);
+			
 			trx.addOutput(chg);	
 		}
 		

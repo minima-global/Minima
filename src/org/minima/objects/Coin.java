@@ -53,21 +53,27 @@ public class Coin implements Streamable {
 	 * Floating Input Coins can be attached to any coin with the correct address and tokenid and AT LEAST the amount.
 	 */
 	boolean mFloating = false;
+
+	/**
+	 * Output coins can choose to not store the state data and save space - change output for instance
+	 */
+	boolean mStoreState = true;
 	
 	/**
 	 * Main Constructor
 	 */
 	public Coin(MiniData zCoinID, MiniData zAddress, MiniNumber zAmount, MiniData zTokenID) {
-		this(zCoinID, zAddress, zAmount, zTokenID, false);
+		this(zCoinID, zAddress, zAmount, zTokenID, false, true);
 	}
 		
-	public Coin(MiniData zCoinID, MiniData zAddress, MiniNumber zAmount, MiniData zTokenID, boolean zFloating) {
+	public Coin(MiniData zCoinID, MiniData zAddress, MiniNumber zAmount, MiniData zTokenID, boolean zFloating, boolean zStoreState) {
 		mCoinID  = zCoinID;
 		mAddress = zAddress;
 		mAmount  = zAmount;
 		mTokenID = zTokenID;
 		
-		mFloating  = zFloating;
+		mFloating   = zFloating;
+		mStoreState = zStoreState;
 	}
 	
 	private Coin() {}
@@ -86,7 +92,15 @@ public class Coin implements Streamable {
 	public void resetCoinID(MiniData zCoinID) {
 		mCoinID = zCoinID;
 	}
-		
+	
+	/**
+	 * Do we store the state for this coin
+	 * @return
+	 */
+	public boolean storeState() {
+		return mStoreState;
+	}
+	
 	public MiniData getCoinID() {
 		return mCoinID;
 	}
@@ -123,6 +137,7 @@ public class Coin implements Streamable {
 		obj.put("tokenid", mTokenID.toString());
 		
 		obj.put("floating", mFloating);
+		obj.put("storestate", mStoreState);
 		
 		return obj;
 	}
@@ -139,6 +154,12 @@ public class Coin implements Streamable {
 		}else {
 			MiniByte.FALSE.writeDataStream(zOut);
 		}
+		
+		if(mStoreState) {
+			MiniByte.TRUE.writeDataStream(zOut);
+		}else {
+			MiniByte.FALSE.writeDataStream(zOut);
+		}
 	}
 
 	@Override
@@ -148,7 +169,8 @@ public class Coin implements Streamable {
 		mAmount   = MiniNumber.ReadFromStream(zIn);
 		mTokenID  = MiniData.ReadHashFromStream(zIn);
 		
-		mFloating  = MiniByte.ReadFromStream(zIn).isTrue();
+		mFloating   = MiniByte.ReadFromStream(zIn).isTrue();
+		mStoreState = MiniByte.ReadFromStream(zIn).isTrue();
 	}
 	
 	public static Coin ReadFromStream(DataInputStream zIn) throws IOException {

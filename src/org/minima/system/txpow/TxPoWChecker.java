@@ -16,6 +16,7 @@ import org.minima.kissvm.values.NumberValue;
 import org.minima.kissvm.values.ScriptValue;
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
+import org.minima.objects.StateVariable;
 import org.minima.objects.Transaction;
 import org.minima.objects.TxPoW;
 import org.minima.objects.Witness;
@@ -849,10 +850,15 @@ public class TxPoWChecker {
 				}
 				
 				//Create a new Coin..
-				Coin mmrcoin = new Coin(coinid, output.getAddress(), output.getAmount(), tokid);
+				Coin mmrcoin = new Coin(coinid, output.getAddress(), output.getAmount(), tokid, output.isFloating(), output.storeState());
 				
-				//Now add as an unspent to the MMR
-				MMRData mmrdata = new MMRData(MiniByte.FALSE, mmrcoin, tBlockNumber, trans.getCompleteState());
+				//Create the MMRData and see if we store the state.. 
+				MMRData mmrdata = null;
+				if(output.storeState()) {
+					mmrdata = new MMRData(MiniByte.FALSE, mmrcoin, tBlockNumber, trans.getCompleteState());
+				}else {
+					mmrdata = new MMRData(MiniByte.FALSE, mmrcoin, tBlockNumber, new ArrayList<StateVariable>());
+				}
 				
 				//And Add it..
 				MMREntry unspent = zMMRSet.addUnspentCoin(mmrdata);
@@ -861,7 +867,7 @@ public class TxPoWChecker {
 				boolean reladdress = zDB.getUserDB().isCoinRelevant(output);
 				
 				//Do we keep it..
-				if(reladdress || relstate) {
+				if( reladdress || ( relstate && output.storeState() ) ) {
 					//Keep this MMR record
 					zMMRSet.addKeeper(unspent.getEntryNumber());	
 				}	
