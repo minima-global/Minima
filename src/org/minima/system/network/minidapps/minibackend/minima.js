@@ -267,7 +267,6 @@ var Minima = {
 				len = responses.length;
 				for(i=0;i<len;i++){
 					if(responses[i].status != true){
-						alert(responses[i].message+"\n\nERROR @ "+responses[i].minifunc);
 						Minima.log("ERROR in Multi-Command ["+i+"] "+JSON.stringify(responses[i],null,2));
 						return false;
 					}
