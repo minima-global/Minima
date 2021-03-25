@@ -76,7 +76,7 @@ public class REVTests {
         {
             MinimaFunction mf = fn.getNewFunction();
             mf.addParameter(new ConstantExpression(new HEXValue("0x01234567")));
-            mf.addParameter(new ConstantExpression(new HEXValue("0x01234567"))); // Should fail, as more than one parameter provided
+            mf.addParameter(new ConstantExpression(new HEXValue("0x01234567")));
             assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
             });
@@ -85,7 +85,7 @@ public class REVTests {
         // Invalid param domain
         {
             MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new HEXValue(""))); // should fail for invalid input
+            mf.addParameter(new ConstantExpression(new HEXValue("")));
             mf.addParameter(new ConstantExpression(new HEXValue("")));
             assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);

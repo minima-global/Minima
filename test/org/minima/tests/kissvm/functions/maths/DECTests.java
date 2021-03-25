@@ -133,7 +133,7 @@ public class DECTests {
                 try {
                     Value res = mf.runFunction(ctr);
                     assertEquals(Value.VALUE_NUMBER, res.getValueType());
-                    //assertEquals("-5.0000000000000001", ((NumberValue) res).toString()); // should be -5.0000000000000001
+                    //assertEquals("-0.50000000000000001", ((NumberValue) res).toString()); // should be -0.50000000000000001
                     assertEquals("-0.5", ((NumberValue) res).toString());
                 } catch (ExecutionException ex) {
                     fail();

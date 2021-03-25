@@ -104,7 +104,7 @@ public class EXECstatementTests {
             EXECstatement es = new EXECstatement(Garbage);
 
             Contract ctr = new Contract("", "", new Witness(), new Transaction(), new ArrayList<>());
-            assertThrows(ExecutionException.class, () -> { // should throw this
+            assertThrows(ExecutionException.class, () -> {
                 es.execute(ctr);
             });
             assertEquals(false, ctr.isSuccessSet());

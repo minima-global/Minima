@@ -76,13 +76,13 @@ public class NumberValueTests {
         nv1 = new NumberValue(Long.MAX_VALUE);
         nv2 = new NumberValue(Long.MIN_VALUE);
         res = new NumberValue(-1);
-        //assertTrue("should be true ", nv1.add(nv2).isEqual(res)); // Invalid result
-        //assertTrue("should be true ", nv2.add(nv1).isEqual(res)); // Invalid result
+        assertTrue("should be true ", nv1.add(nv2).isEqual(res));
+        assertTrue("should be true ", nv2.add(nv1).isEqual(res));
 
         nv1 = new NumberValue(Long.MAX_VALUE);
         nv2 = new NumberValue(1L);
         res = new NumberValue(new MiniNumber(1L).add(new MiniNumber(Long.MAX_VALUE)));
-        //assertFalse("should be false ", res.getNumber().isEqual(new MiniNumber(Long.MAX_VALUE))); // Invalid arithmetic
+        assertFalse("should be false ", res.getNumber().isEqual(new MiniNumber(Long.MAX_VALUE)));
         assertTrue("should be true ", nv1.add(nv2).isEqual(res));
         assertTrue("should be true ", nv2.add(nv1).isEqual(res));
 
@@ -130,7 +130,6 @@ public class NumberValueTests {
 
         nv1 = new NumberValue(1000000);
         nv2 = new NumberValue(1000000);
-        //res = new NumberValue(1000000 * 1000000); // 32bit integers do not overflow???
         res = new NumberValue(Long.valueOf(1000000) * Long.valueOf(1000000));
         assertTrue("should be true ", nv1.mult(nv2).isEqual(res));
         assertTrue("should be true ", nv2.mult(nv1).isEqual(res));
@@ -197,7 +196,7 @@ public class NumberValueTests {
         res2 = new NumberValue(Double.valueOf(1) / Integer.MIN_VALUE);
         assertTrue("should be true ", nv1.div(nv2).isEqual(res));
         res = new NumberValue(nv2.getNumber().div(nv1.getNumber()));
-        //assertTrue("should be true ", res.isEqual(res2)); // precision issue -0.00000000046566128730773926 vs -0.000000000465661287307739257
+        //assertTrue("should be true ", res.isEqual(res2)); // precision issue -0.00000000046566128730773926 vs -0.0000000004656612873077392578125
 
         nv1 = new NumberValue(Long.MIN_VALUE);
         nv2 = new NumberValue(1);
@@ -205,7 +204,7 @@ public class NumberValueTests {
         res2 = new NumberValue(Double.valueOf(1) / Long.MIN_VALUE);
         assertTrue("should be true ", nv1.div(nv2).isEqual(res));
         res = new NumberValue(nv2.getNumber().div(nv1.getNumber()));
-        //assertTrue("should be true ", res.isEqual(res2)); // precision issue -0.000000000000000000108420217248550443 vs -0.00000000000000000010842021724855044
+        //assertTrue("should be true ", res.isEqual(res2)); // precision issue -0.0000000000000000001084202172485504434007452800869941 vs -0.00000000000000000010842021724855044
 
         nv1 = new NumberValue(Integer.MAX_VALUE);
         nv2 = new NumberValue(1);
@@ -213,7 +212,7 @@ public class NumberValueTests {
         res2 = new NumberValue(Double.valueOf(1) / Integer.MAX_VALUE);
         assertTrue("should be true ", nv1.div(nv2).isEqual(res));
         res = new NumberValue(nv2.getNumber().div(nv1.getNumber()));
-        //assertTrue("should be true ", res.isEqual(res2)); // precision issue -0.00000000046566128730773926 vs -0.000000000465661287307739257
+        //assertTrue("should be true ", res.isEqual(res2)); // precision issue 0.0000000004656612875245796924105750827167998 vs 0.0000000004656612875245797
 
         nv1 = new NumberValue(Long.MAX_VALUE);
         nv2 = new NumberValue(1);
@@ -221,7 +220,7 @@ public class NumberValueTests {
         res2 = new NumberValue(Double.valueOf(1) / Long.MAX_VALUE);
         assertTrue("should be true ", nv1.div(nv2).isEqual(res));
         res = new NumberValue(nv2.getNumber().div(nv1.getNumber()));
-        //assertTrue("should be true ", res.isEqual(res2)); // precision issue -0.000000000000000000108420217248550443 vs -0.00000000000000000010842021724855044
+        //assertTrue("should be true ", res.isEqual(res2)); // precision issue 0.000000000000000000108420217248550443412500223595217 vs 0.00000000000000000010842021724855044
     }
 
     @Test

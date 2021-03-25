@@ -47,7 +47,7 @@ public class CEILTests {
 
         CEIL fn = new CEIL();
 
-        { // More tests to be added, once the arithmetic is fixed, and we now the precision
+        { // More tests to be added, once the arithmetic is fixed, and we know the precision
             {
                 MinimaFunction mf = fn.getNewFunction();
                 mf.addParameter(new ConstantExpression(new NumberValue(-1)));

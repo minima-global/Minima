@@ -75,28 +75,6 @@ public class StatementBlockTests {
             }
 
         }
-//        //Parse the tokens
-//        try {
-//            //Tokenize the script
-//            List<Token> tokens = Token.tokenize(mRamScript);
-//
-//            int count = 0;
-//            for (Token tok : tokens) {
-//                traceLog((count++) + ") Token : [" + tok.getTokenTypeString() + "] " + tok.getToken());
-//            }
-//
-//            //Convert this list of Tokens into a list of Statements
-//            mBlock = StatementParser.parseTokens(tokens);
-//
-//            traceLog("Script token parse OK.");
-//            mParseOK = true;
-//
-//        } catch (Exception e) {
-//            mException = true;
-//            mExceptionString = e.toString();
-//
-//            traceLog("PARSE ERROR : " + mExceptionString);
-//        }
     }
 
     @Test

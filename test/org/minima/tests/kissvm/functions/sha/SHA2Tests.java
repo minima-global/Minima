@@ -67,6 +67,33 @@ public class SHA2Tests {
             }
         }
 
+        {
+            HEXValue Param = new HEXValue("");
+            HEXValue Result = new HEXValue(Crypto.getInstance().hashSHA2(Param.getRawData()));
+
+            MinimaFunction mf = fn.getNewFunction();
+            mf.addParameter(new ConstantExpression(Param));
+            try {
+                Value res = mf.runFunction(ctr);
+                assertEquals(Value.VALUE_HEX, res.getValueType());
+                assertEquals(Result.toString(), ((HEXValue) res).toString());
+            } catch (ExecutionException ex) {
+                fail();
+            }
+        }
+
+        {
+            MinimaFunction mf = fn.getNewFunction();
+            mf.addParameter(new ConstantExpression(new ScriptValue("")));
+            try {
+                Value res = mf.runFunction(ctr);
+                assertEquals(Value.VALUE_HEX, res.getValueType());
+                assertEquals("0xE3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855", ((HEXValue) res).toString());
+            } catch (ExecutionException ex) {
+                fail();
+            }
+        }
+
     }
 
     @Test
@@ -93,20 +120,6 @@ public class SHA2Tests {
 
         // Invalid param domain
         {
-            MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new HEXValue("")));
-            //assertThrows(ExecutionException.class, () -> { // Should throw this
-            //    Value res = mf.runFunction(ctr);
-            //});
-            // But does not throw
-        }
-        {
-            MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new ScriptValue("")));
-            //assertThrows(ExecutionException.class, () -> { // Should throw this
-            //    Value res = mf.runFunction(ctr);
-            //});
-            // But does not throw
         }
 
         // Invalid param types

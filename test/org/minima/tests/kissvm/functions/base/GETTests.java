@@ -258,9 +258,6 @@ public class GETTests {
             });
         }
 
-        // Non existing variable
-        // This functionality should probably raise exception because it
-        // is not advisable to return a value for non existing variable
         {
             MinimaFunction mf = fn.getNewFunction();
             mf.addParameter(new ConstantExpression(new NumberValue(1234567890)));

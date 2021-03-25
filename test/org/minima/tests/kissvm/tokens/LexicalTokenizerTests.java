@@ -26,7 +26,7 @@ public class LexicalTokenizerTests {
     @Test
     public void testConstructors() {
         LexicalTokenizer lt = new LexicalTokenizer(new ArrayList<Token>());
-        assertThrows(MinimaParseException.class, () -> { // should throw this
+        assertThrows(MinimaParseException.class, () -> {
             lt.getNextToken();
         });
         assertEquals(0, lt.getCurrentPosition());

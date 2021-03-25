@@ -86,7 +86,7 @@ public class MINTests {
                 try {
                     Value res = mf.runFunction(ctr);
                     assertEquals(Value.VALUE_NUMBER, res.getValueType());
-                    //assertEquals(Long.toString(Long.MIN_VALUE), ((NumberValue) res).toString()); // test fails due to arithmetic problems
+                    assertEquals(Long.toString(Long.MIN_VALUE), ((NumberValue) res).toString());
                 } catch (ExecutionException ex) {
                     fail();
                 }
@@ -122,7 +122,7 @@ public class MINTests {
                 try {
                     Value res = mf.runFunction(ctr);
                     assertEquals(Value.VALUE_NUMBER, res.getValueType());
-                    //assertEquals(Long.toString(Long.MIN_VALUE), ((NumberValue) res).toString()); // test fails due to arithmetic problems
+                    assertEquals(Long.toString(Long.MIN_VALUE), ((NumberValue) res).toString());
                 } catch (ExecutionException ex) {
                     fail();
                 }
@@ -164,7 +164,7 @@ public class MINTests {
                 try {
                     Value res = mf.runFunction(ctr);
                     assertEquals(Value.VALUE_NUMBER, res.getValueType());
-                    //assertEquals(Long.toString(Long.MIN_VALUE), ((NumberValue) res).toString()); // test fails due to arithmetic problems
+                    assertEquals(Long.toString(Long.MIN_VALUE), ((NumberValue) res).toString());
                 } catch (ExecutionException ex) {
                     fail();
                 }
