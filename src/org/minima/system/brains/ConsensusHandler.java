@@ -311,7 +311,7 @@ public class ConsensusHandler extends MessageProcessor {
 				Hashtable<String, MiniNumber> tokamt = getMainDB().getTransactionTokenAmounts(txpow);
 				
 				//Store ion the database..
-				getMainDB().getUserDB().addToHistory(txpow,tokamt);
+				getMainDB().getUserDB().addToHistory(txpow.deepCopy(),tokamt);
 				
 				//Do we need to update the balance.. or did we do it already..
 				updateListeners(new Message(CONSENSUS_NOTIFY_BALANCE));
