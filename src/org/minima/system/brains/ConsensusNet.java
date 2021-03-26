@@ -807,26 +807,28 @@ public class ConsensusNet extends ConsensusProcessor {
 		for(BlockTreeNode block : chain) {
 			//BLock number and hash.. BOTH have to match
 			MiniNumber bnum  = block.getTxPow().getBlockNumber();
-			MiniData txpowid = block.getTxPowID();
 			
 			//only use nodes after our cascade..
 			if(bnum.isMore(maincascade)) {
-				
 				//Run through the intro chain..
 				MiniNumber snum = zGreeting.getTopBlock();
 				for(MiniData introtxpowid : introchain) {
-					//Only use nodes after intro cascade
 					if(snum.isMore(introcascade)) {
 						if(snum.isEqual(bnum)) {
-							if(introtxpowid.isEqual(txpowid)) {
-								//Crossover!
+							//Only check for hash now..
+							if(introtxpowid.isEqual(block.getTxPowID())) {
 								found     = true;
 								crossover = bnum;
 								break;
 							}
+							
+						}else if(snum.isLess(bnum)) {
+							//no chance of collision..
+							break;
 						}
 					}
 					
+					//One down..
 					snum = snum.decrement();
 				}
 			}
