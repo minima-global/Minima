@@ -15,11 +15,11 @@ import org.junit.Test;
 import org.minima.database.mmr.MMRData;
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
-import org.minima.objects.PubPrivKey;
 import org.minima.objects.StateVariable;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.objects.keys.PubPrivKey;
 import org.minima.utils.json.JSONObject;
 
 public class MMRDataTest {

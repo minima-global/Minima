@@ -1,4 +1,4 @@
-package org.minima.objects;
+package org.minima.objects.keys;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

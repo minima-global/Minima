@@ -5,8 +5,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
-import org.minima.objects.PubPrivKey;
 import org.minima.objects.base.MiniData;
+import org.minima.objects.keys.PubPrivKey;
 import org.minima.utils.json.JSONObject;
 
 public class PubPrivKeyTests {
