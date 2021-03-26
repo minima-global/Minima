@@ -799,13 +799,7 @@ public class ConsensusNet extends ConsensusProcessor {
 		MiniNumber crossover = MiniNumber.MINUSONE;
 		
 		//Simple checks first..
-		if(introtip.isLess(maincascade)) {
-			//No hit..
-			return crossover;
-		}
-		
-		if(maintip.isLess(introcascade)) {
-			//No hit..
+		if(introtip.isLess(maincascade) || maintip.isLess(introcascade)) {
 			return crossover;
 		}
 		
@@ -821,14 +815,9 @@ public class ConsensusNet extends ConsensusProcessor {
 				//Run through the intro chain..
 				MiniNumber snum = zGreeting.getTopBlock();
 				for(MiniData introtxpowid : introchain) {
-					MinimaLogger.log("crossover : "+snum+" "+bnum);
-					
 					//Only use nodes after intro cascade
 					if(snum.isMore(introcascade)) {
 						if(snum.isEqual(bnum)) {
-							MinimaLogger.log("CHECK HASH "+introtxpowid+" "+txpowid);
-							
-							//Check the TxPOWID..
 							if(introtxpowid.isEqual(txpowid)) {
 								//Crossover!
 								found     = true;
