@@ -44,9 +44,6 @@ public class MinimaClient extends MessageProcessor {
 	
 	public static final String NETCLIENT_SENDTXPOWID 	= "NETCLIENT_SENDTXPOWID";
 	
-	//Small random delay in propagating..
-	public static final String NETCLIENT_POSTTXPOWID 	= "NETCLIENT_POSTTXPOWID";
-	
 	public static final String NETCLIENT_SENDTXPOW 	    = "NETCLIENT_SENDTXPOW";
 	public static final String NETCLIENT_SENDTXPOWREQ 	= "NETCLIENT_SENDTXPOWREQ";
 	
@@ -246,10 +243,6 @@ public class MinimaClient extends MessageProcessor {
 			sendMessage(MinimaReader.NETMESSAGE_INTRO, sp);
 		
 		}else if(zMessage.isMessageType(NETCLIENT_SENDTXPOWID)) {
-			MiniData txpowid = (MiniData)zMessage.getObject("txpowid");
-			sendMessage(MinimaReader.NETMESSAGE_TXPOWID, txpowid);
-			
-		}else if(zMessage.isMessageType(NETCLIENT_POSTTXPOWID)) {
 			MiniData txpowid = (MiniData)zMessage.getObject("txpowid");
 			sendMessage(MinimaReader.NETMESSAGE_TXPOWID, txpowid);
 				
