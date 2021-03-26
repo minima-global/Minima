@@ -115,6 +115,7 @@ public class help extends CommandFunction{
 			addJSONDesc(new verify());
 			addJSONDesc(new chainsha());
 			addJSONDesc(new random());
+			addJSONDesc(new hash());
 			
 			addJSONDesc(new maxima());
 			addJSONDesc(new sshtunnel());

@@ -24,6 +24,7 @@ import org.minima.objects.Coin;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.objects.base.MiniString;
 import org.minima.objects.keys.MultiKey;
 import org.minima.objects.proofs.TokenProof;
 import org.minima.system.Main;
@@ -31,6 +32,7 @@ import org.minima.system.input.InputHandler;
 import org.minima.system.network.base.MinimaClient;
 import org.minima.system.network.minidapps.DAPPManager;
 import org.minima.system.network.rpc.RPCClient;
+import org.minima.utils.Crypto;
 import org.minima.utils.Maths;
 import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;
@@ -59,6 +61,7 @@ public class ConsensusPrint extends ConsensusProcessor {
 	public static final String CONSENSUS_TOKENVALIDATE 		= CONSENSUS_PREFIX+"TOKENVALIDATE";
 	
 	public static final String CONSENSUS_RANDOM 			= CONSENSUS_PREFIX+"RANDOM";
+	public static final String CONSENSUS_HASH 				= CONSENSUS_PREFIX+"HASH";
 	
 	public static final String CONSENSUS_STATUS 			= CONSENSUS_PREFIX+"STATUS";
 	public static final String CONSENSUS_PRINTCHAIN 		= CONSENSUS_PREFIX+"PRINTCHAIN";
@@ -354,6 +357,26 @@ public class ConsensusPrint extends ConsensusProcessor {
 			//Now check whether they are unspent..
 			JSONObject dets = InputHandler.getResponseJSON(zMessage);
 			dets.put("coins", allcoins);
+			InputHandler.endResponse(zMessage, true, "");
+		
+		}else if(zMessage.isMessageType(CONSENSUS_HASH)){
+			int bitlen = zMessage.getInteger("bitlength");
+			String data = zMessage.getString("data");
+		
+			MiniData res = null;
+			if(data.startsWith("0x")) {
+				//It's HEX
+				MiniData hex = new MiniData(data);
+				res = new MiniData( Crypto.getInstance().hashData(hex.getData(), bitlen) );
+			}else {
+				//Treat as a string
+				MiniString str = new MiniString(data);
+				res = new MiniData( Crypto.getInstance().hashData(str.getData(), bitlen) );
+			}
+			
+			JSONObject dets = InputHandler.getResponseJSON(zMessage);
+			dets.put("data", data);
+			dets.put("hash", res.to0xString());
 			InputHandler.endResponse(zMessage, true, "");
 		
 		}else if(zMessage.isMessageType(CONSENSUS_RANDOM)){
