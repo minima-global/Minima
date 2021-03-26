@@ -302,43 +302,50 @@ public class MinimaDB {
 			/**
 			 * Cascade the tree
 			 */
-			CascadeTree casc = new CascadeTree(mMainTree);
-			
-			//Cascade the tree
-			casc.cascadedTree();
-			
-			//Get the removals
-			ArrayList<BlockTreeNode> removals = casc.getRemoved();
-			
-			//Get the Tree
-			mMainTree = casc.getCascadeTree();
-			
-			//Remove the deleted blocks..
-			for(BlockTreeNode node : removals) {
-				//We can't keep it..
-				TxPOWDBRow row = getTxPOWRow(node.getTxPowID());
-				
-				//Discard.. no longer an on chain block..
-				row.setMainChainBlock(false);
-				
-				//And delete / move to different folder any file backups..
-				getBackup().deleteTxpow(node.getTxPow());
-			}
-			
-			//Remove all TXPowRows that are less than the cascade node.. they will not be used again..
-			MiniNumber cascade 	= mMainTree.getCascadeNode().getBlockNumber();
-			
-			//Which txpow have been removed..
-			ArrayList<TxPOWDBRow> remrows =  mTxPOWDB.removeTxPOWInBlockLessThan(cascade);
-			
-			//Remove the deleted txpow..
-			for(TxPOWDBRow remrow : remrows) {
-				getBackup().deleteTxpow(remrow.getTxPOW());
-			}
-			
-			//Clean up..
-			System.gc();
+			cascadeTheTree();
 		}
+	}
+	
+	public void cascadeTheTree() {
+		/**
+		 * Cascade the tree
+		 */
+		CascadeTree casc = new CascadeTree(mMainTree);
+		
+		//Cascade the tree
+		casc.cascadedTree();
+		
+		//Get the removals
+		ArrayList<BlockTreeNode> removals = casc.getRemoved();
+		
+		//Get the Tree
+		mMainTree = casc.getCascadeTree();
+		
+		//Remove the deleted blocks..
+		for(BlockTreeNode node : removals) {
+			//We can't keep it..
+			TxPOWDBRow row = getTxPOWRow(node.getTxPowID());
+			
+			//Discard.. no longer an on chain block..
+			row.setMainChainBlock(false);
+			
+			//And delete / move to different folder any file backups..
+			getBackup().deleteTxpow(node.getTxPow());
+		}
+		
+		//Remove all TXPowRows that are less than the cascade node.. they will not be used again..
+		MiniNumber cascade 	= mMainTree.getCascadeNode().getBlockNumber();
+		
+		//Which txpow have been removed..
+		ArrayList<TxPOWDBRow> remrows =  mTxPOWDB.removeTxPOWInBlockLessThan(cascade);
+		
+		//Remove the deleted txpow..
+		for(TxPOWDBRow remrow : remrows) {
+			getBackup().deleteTxpow(remrow.getTxPOW());
+		}
+		
+		//Clean up..
+		System.gc();
 	}
 	
 	/**
