@@ -23,6 +23,11 @@ public class Greeting implements Streamable {
 	MiniString mVersion = new MiniString(GlobalParams.MINIMA_VERSION);
 	
 	/**
+	 * The Top block in our list
+	 */
+	MiniNumber mTopBlock;
+	
+	/**
 	 * A complete list of all the hashes in our blockchain 
 	 */
 	ArrayList<HashNumber> mTxPowList = new ArrayList<>(); 
