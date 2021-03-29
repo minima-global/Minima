@@ -166,7 +166,8 @@ public class MMREntry implements Streamable {
 		mEntryNumber.writeDataStream(zOut);
 		
 		//The Row..
-		zOut.writeInt(mRow);
+		MiniNumber row = new MiniNumber(mRow);
+		row.writeDataStream(zOut);
 		
 		//And finally the data
 		mData.writeDataStream(zOut);
@@ -175,7 +176,7 @@ public class MMREntry implements Streamable {
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
 		mEntryNumber = MiniNumber.ReadFromStream(zIn);
-		mRow         = zIn.readInt();
+		mRow         = MiniNumber.ReadFromStream(zIn).getAsInt();
 		mData        = MMRData.ReadFromStream(zIn);
 		mIsEmpty     = false;
 	}
