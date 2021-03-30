@@ -69,7 +69,7 @@ public class TestParams {
 	 * and just want a block every single transaction to debug.
 	 * Automatically disables the auto mining
 	 */
-	public static boolean MINIMA_ZERO_DIFF_BLK  = true;
+	public static boolean MINIMA_ZERO_DIFF_BLK  = false;
 
 	/**
 	 * Set these as the GlobalParams..
