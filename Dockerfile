@@ -2,7 +2,7 @@
 FROM adoptopenjdk/openjdk11:x86_64-alpine-jdk-11.0.9_11-slim as build-stage
 WORKDIR /usr/src/minima/
 COPY gradle gradle
-COPY gradlew settings.gradle build.gradle .classpath ./
+COPY gradlew settings.gradle build.gradle ./
 WORKDIR /usr/src/minima/
 # Call gradlew before copying the source code to only download the gradle distribution once (layer will be cached)
 #RUN ./gradlew --no-daemon -v
