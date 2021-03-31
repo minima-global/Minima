@@ -11,7 +11,6 @@ import java.math.BigInteger;
 import java.math.MathContext;
 import java.math.RoundingMode;
 
-import org.minima.utils.Crypto;
 import org.minima.utils.Streamable;
 
 /**
@@ -30,9 +29,9 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 	public static final int MAX_DIGITS = 34;
 	
 	/**
-	 * Max Decimal Places for any MiniNumber
+	 * Max Decimal Places for any MiniNumber - 1 billion is max for Minima so...
 	 */
-	public static final int MAX_DECIMAL_PLACES = 24;
+	public static final int MAX_DECIMAL_PLACES = MAX_DIGITS - 10;
 	
 	/** 
 	 * The base Math Context used for all operations
@@ -50,6 +49,11 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 	public static final BigDecimal MIN_MININUMBER = MAX_MININUMBER.negate();
 	
 	/**
+	 * The smallest unit possible
+	 */
+	public static final MiniNumber MINI_UNIT = new MiniNumber("1E-"+MAX_DECIMAL_PLACES);
+	
+	/**
 	 * Useful numbers
 	 */
 	public static final MiniNumber ZERO 		= new MiniNumber("0");
@@ -65,17 +69,15 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 	public static final MiniNumber FIVEONE12    = new MiniNumber("512");
 	public static final MiniNumber THOUSAND24   = new MiniNumber("1024");
 	
-	public static final MiniNumber TEN          = new MiniNumber("10");
-	public static final MiniNumber HUNDRED      = new MiniNumber("100");
-	public static final MiniNumber THOUSAND     = new MiniNumber("1000");
-	public static final MiniNumber MILLION      = new MiniNumber("1000000");
-	public static final MiniNumber BILLION      = new MiniNumber("1000000000");
+	public static final MiniNumber TEN          = new MiniNumber("1E1");
+	public static final MiniNumber HUNDRED      = new MiniNumber("1E2");
+	public static final MiniNumber THOUSAND     = new MiniNumber("1E3");
+	public static final MiniNumber MILLION      = new MiniNumber("1E6");
+	public static final MiniNumber HUNDMILLION  = new MiniNumber("1E8");
+	public static final MiniNumber BILLION      = new MiniNumber("1E9");
+	public static final MiniNumber TRILLION     = new MiniNumber("1E12");
 	
 	public static final MiniNumber MINUSONE 	= new MiniNumber("-1");
-	
-	public static final MiniNumber POINTONE 	= new MiniNumber("0.1");
-	public static final MiniNumber ONEPOINTONE 	= new MiniNumber("1.1");
-	public static final MiniNumber POINTNINE 	= new MiniNumber("0.9");
 	
 	/**
 	 * The number representation
@@ -136,7 +138,7 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 		}
 		
 		if(mNumber.scale() > MAX_DECIMAL_PLACES) {
-			mNumber.setScale(MAX_DECIMAL_PLACES, RoundingMode.DOWN);
+			mNumber = mNumber.setScale(MAX_DECIMAL_PLACES, RoundingMode.DOWN);
 		}
 	}
 	
@@ -201,11 +203,6 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 	public MiniNumber div(MiniNumber zNumber) {
 		return new MiniNumber( mNumber.divide(zNumber.getAsBigDecimal(), MATH_CONTEXT) );
 	}
-	
-//	public MiniNumber divRoundDown(MiniNumber zNumber) {
-//		return div(zNumber).floor(); 
-////		return new MiniNumber( mNumber.divide(zNumber.getAsBigDecimal(), RoundingMode.DOWN) );
-//	}
 	
 	public MiniNumber mult(MiniNumber zNumber) {
 		return new MiniNumber( mNumber.multiply(zNumber.getAsBigDecimal(),MATH_CONTEXT) );
@@ -327,21 +324,12 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 	}
 	
 	public static void main(String[] zargs) {
-		MiniNumber num1 = new MiniNumber("100000000");
-		System.out.println(num1 + " valid:"+num1.isValidMinimaValue());
+		MiniNumber tt = MiniNumber.MINI_UNIT;
 		
-		MiniNumber num2 = new MiniNumber("0.0000000001");
-		System.out.println(num2+" "+num2.decimalPlaces());
-	
-		MiniNumber num3 = new MiniNumber("0.00000000000001");
-		System.out.println(num3 + " "+num3.getAsMinimaValue()+" valid:"+num3.isValidMinimaValue());
+		System.out.println("Smallest : "+tt+" "+tt.getNumber().scale());
 		
-		MiniNumber num4 = new MiniNumber("1.23E+04");
-		System.out.println(num4);
-		
-		//MiniNumber num5 = new MiniNumber(new MiniData("0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF").getDataValue());
-		MiniNumber num5 = new MiniNumber(Crypto.MAX_HASH.getDataValue());
-		System.out.println(num5);
+		System.out.println("TEN      : "+new MiniNumber("1E1"));
+		System.out.println("HUNDRED  : "+new MiniNumber("1E2"));
 		
 		
 	}
