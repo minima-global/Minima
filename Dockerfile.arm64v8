@@ -3,7 +3,7 @@
 FROM arm64v8/adoptopenjdk:11-jdk-hotspot-focal as build-stage
 WORKDIR /usr/src/minima/
 COPY gradle gradle
-COPY gradlew settings.gradle build.gradle .classpath ./
+COPY gradlew settings.gradle build.gradle ./
 WORKDIR /usr/src/minima/
 # Call gradlew before copying the source code to only download the gradle distribution once (layer will be cached)
 #RUN ./gradlew --no-daemon -v
