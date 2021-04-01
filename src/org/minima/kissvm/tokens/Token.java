@@ -92,6 +92,11 @@ public class Token {
 		return mToken;
 	}
 	
+	@Override
+	public String toString() {
+		return getTokenTypeString()+":"+getToken();
+	}
+	
 	/**
 	 * Tokenize a MiniScript into a list of Tokens
 	 * @param zMiniScript
@@ -177,6 +182,6 @@ public class Token {
 	}
 	
 	public static boolean isVariable(String str){
-		 return str.matches("[a-z]*"); 
+		 return str.matches("[a-z]+"); 
 	}
 }
