@@ -63,14 +63,12 @@ public class ExpressionParser {
 				exp = new BooleanExpression(exp, getRelation(zTokens), BooleanExpression.BOOLEAN_OR);
 			}else if(tok.getToken().equals("XOR")) {
 				exp = new BooleanExpression(exp, getRelation(zTokens), BooleanExpression.BOOLEAN_XOR);
-			
 			}else if(tok.getToken().equals("NAND")) {
 				exp = new BooleanExpression(exp, getRelation(zTokens), BooleanExpression.BOOLEAN_NAND);
 			}else if(tok.getToken().equals("NOR")) {
 				exp = new BooleanExpression(exp, getRelation(zTokens), BooleanExpression.BOOLEAN_NOR);
 			}else if(tok.getToken().equals("NXOR")) {
 				exp = new BooleanExpression(exp, getRelation(zTokens), BooleanExpression.BOOLEAN_NXOR);
-			
 			}else{
 				zTokens.goBackToken();
 				break;
