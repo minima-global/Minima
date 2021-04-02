@@ -10,7 +10,9 @@ import org.minima.kissvm.functions.MinimaFunction;
 import org.minima.kissvm.tokens.LexicalTokenizer;
 import org.minima.kissvm.tokens.Token;
 import org.minima.kissvm.values.BooleanValue;
+import org.minima.kissvm.values.NumberValue;
 import org.minima.kissvm.values.Value;
+import org.minima.objects.base.MiniNumber;
 
 /**
  * @author Spartacus Rex
@@ -262,8 +264,23 @@ public class ExpressionParser {
 				throw new MinimaParseException("Missing close bracket. Found : "+closebracket.getToken());
 			}
 	
+		}else if(tok.getToken().equals("-")) {
+			//Could be a negative number.. or an error as this should not be here
+			Token numtok = zTokens.getNextToken();
+			if( numtok.getTokenType()==Token.TOKEN_VALUE && 
+				Value.getValueType(numtok.getToken())==Value.VALUE_NUMBER) {
+				
+				//MUST be a number..
+				MiniNumber val 			= new MiniNumber(numtok.getToken());
+				NumberValue minusval 	= new NumberValue(val.mult(MiniNumber.MINUSONE));
+				
+				exp = new ConstantExpression(minusval);
+			}else {
+				throw new MinimaParseException("Incorrect Token in script "+tok.getToken()+" @ "+zTokens.getCurrentPosition());
+			}
+			
 		}else{
-			throw new MinimaParseException("Incorrect Token in script "+tok.getToken());
+			throw new MinimaParseException("Incorrect Token in script "+tok.getToken()+" @ "+zTokens.getCurrentPosition());
 		}
 		
 		return exp;

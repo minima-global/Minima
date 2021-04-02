@@ -41,13 +41,18 @@ public class Tokenizer {
 	/**
 	 * Words end when they encounter 
 	 */
-	public final String[] TOKENS_EOW   = 
+	public final String[] TOKENS_ENDOFWORD   = 
 		{" ","+","-","/","*","%","&","|","^","=","(",")","[","]","<",">"};
-	public final List<String> mAllEOW  = Arrays.asList(TOKENS_EOW);
+	public final List<String> mAllEOW  = Arrays.asList(TOKENS_ENDOFWORD);
 	
-	
+	/**
+	 * The script we are tokenizing
+	 */
 	StringBuffer mScript;
 	
+	/**
+	 * Position and length
+	 */
 	int mPos;
 	int mLength; 
 	
@@ -57,7 +62,6 @@ public class Tokenizer {
 		mScript = new StringBuffer(zScript);
 		mPos    = 0;
 		mLength = mScript.length();
-		
 	}
 	
 	
@@ -177,7 +181,6 @@ public class Tokenizer {
 							break;
 						}
 					}
-					
 					mPos++;
 				}
 				
@@ -190,10 +193,11 @@ public class Tokenizer {
 				
 					//What is it..
 				if(allcommands.contains(word)) {
+					//Must have a space before a command word
 					if(!waslastspace) {
-						//Must have a space before a command word
-						throw new SyntaxException("Missing space @ "+mPos+" "+word);
+						throw new SyntaxException("Missing space before Command @ "+mPos+" "+word);
 					}
+					
 					//It's a command
 					tokens.add(new Token(Token.TOKEN_COMMAND, word));
 				
@@ -243,7 +247,7 @@ public class Tokenizer {
 //		System.out.println(isNumber("22.88"));
 //		System.out.println(isNumber("10.88"));
 		
-		String script = "LET f=(2 NEQ 3) LET r=34";
+		String script = "LET f= -5 + -3";
 		
 		try {
 			//Then run it..
