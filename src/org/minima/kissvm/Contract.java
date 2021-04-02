@@ -11,6 +11,7 @@ import org.minima.kissvm.functions.MinimaFunction;
 import org.minima.kissvm.statements.StatementBlock;
 import org.minima.kissvm.statements.StatementParser;
 import org.minima.kissvm.tokens.Token;
+import org.minima.kissvm.tokens.Tokenizer;
 import org.minima.kissvm.values.BooleanValue;
 import org.minima.kissvm.values.HEXValue;
 import org.minima.kissvm.values.NumberValue;
@@ -101,8 +102,9 @@ public class Contract {
 		mTraceON     = zTrace;
 		
 		//Clean the RamScript
-		mRamScript = cleanScript(zRamScript);
-	
+//		mRamScript = cleanScript(zRamScript);
+		mRamScript = zRamScript;
+		
 		mTransaction = zTransaction;
 		mWitness     = zWitness;
 	
@@ -158,7 +160,11 @@ public class Contract {
 		//Parse the tokens
 		try {
 			//Tokenize the script
-			List<Token> tokens = Token.tokenize(mRamScript);
+			Tokenizer tokenize = new Tokenizer(zRamScript);
+			
+			//Tokenize the script
+//			List<Token> tokens = Token.tokenize(mRamScript);
+			List<Token> tokens = tokenize.tokenize();
 			
 			int count=0;
 			for(Token tok : tokens) {
@@ -390,10 +396,10 @@ public class Contract {
 		String stateval = mTransaction.getStateValue(zStateNum).getValue().toString();
 		
 		//Clean it
-		String clean = cleanScript(stateval);
+//		String clean = cleanScript(stateval);
 		
 		//Clean it..
-		return Value.getValue(clean);
+		return Value.getValue(stateval);
 	}
 	
 	public Value getPrevState(int zPrev) throws ExecutionException {
@@ -401,7 +407,7 @@ public class Contract {
 		for(StateVariable sv : mPrevState) {
 			if(sv.getPort() == zPrev) {
 				//Clean it..
-				String stateval = cleanScript(sv.getValue().toString());
+				String stateval = sv.getValue().toString();
 				
 				//Work it out
 				return Value.getValue(stateval);
@@ -493,6 +499,12 @@ public class Contract {
 	 * @return The Converted Script
 	 */
 	public static String cleanScript(String zScript) {
+		
+		//FOR NOW
+		if(true) {
+			return zScript;
+		}
+		
 		//Quick check for empty..
 		if(zScript.equals("")) {
 			return "";

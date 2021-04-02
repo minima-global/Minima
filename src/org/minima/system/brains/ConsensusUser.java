@@ -346,12 +346,12 @@ public class ConsensusUser extends ConsensusProcessor {
 				return;
 			}
 			
-			String sigs      = Contract.cleanScript(zMessage.getString("sigs").trim());
-			String state     = Contract.cleanScript(zMessage.getString("state").trim());
-			String prevstate = Contract.cleanScript(zMessage.getString("prevstate").trim());
-			String globals   = Contract.cleanScript(zMessage.getString("globals").trim());
-			String outputs   = Contract.cleanScript(zMessage.getString("outputs").trim());
-			String scripts   = Contract.cleanScript(zMessage.getString("scripts").trim());
+			String sigs      = zMessage.getString("sigs").trim();
+			String state     = zMessage.getString("state").trim();
+			String prevstate = zMessage.getString("prevstate").trim();
+			String globals   = zMessage.getString("globals").trim();
+			String outputs   = zMessage.getString("outputs").trim();
+			String scripts   = zMessage.getString("scripts").trim();
 			
 			//Create the transaction..
 			Transaction trans = new Transaction();

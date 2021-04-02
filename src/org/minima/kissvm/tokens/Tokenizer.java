@@ -3,41 +3,46 @@ package org.minima.kissvm.tokens;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.StringTokenizer;
 
-import org.minima.kissvm.exceptions.MinimaParseException;
+import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.SyntaxException;
 import org.minima.kissvm.functions.MinimaFunction;
+import org.minima.kissvm.values.NumberValue;
+import org.minima.objects.Transaction;
+import org.minima.objects.Witness;
 
 public class Tokenizer {
 
 	/**
-	 * Main Statements
+	 * Main Commands
 	 */
-	public final String[] TOKENS_COMMAND     = 
-		{"let",
-		 "if","then","elseif","else","endif",
-		 "resturn",
-		 "assert",
-		 "while","do","endwhile",
-		 "exec",
-		 "mast"};
+	public static final String[] TOKENS_COMMAND     = 
+		{"LET",
+		 "IF","THEN","ELSEIF","ELSE","ENDIF",
+		 "RETURN",
+		 "ASSERT",
+		 "WHILE","DO","ENDWHILE",
+		 "EXEC",
+		 "MAST"};
 	
 	/**
-	 * Number operators
+	 * Number operators - << and >> and dealt with separately
 	 */
-	public static final String[] TOKENS_OPERATOR = 
+	public static final String[] TOKENS_NUMBER_OPERATOR = 
 		{"+","-","/","*","%","&","|","^","="};
+
+	/**
+	 * Boolean Operators
+	 */
+	public static final String[] TOKENS_BOOLEAN_OPERATOR = 
+		{"LT","GT","GTE","LTE","EQ","NEQ","NEG","XOR",
+		 "AND","OR","NXOR","NAND","NOR","NOT"};
 	
 	/**
-	 * Brackets
+	 * Words end when they encounter 
 	 */
-	public static final String[] TOKENS_BRACKETS = 
-		{"(",")"};
-	
-	
-	
-	public final String[] TOKENS_EOW   = {" ","+","-","/","*","=","(",")"};
+	public final String[] TOKENS_EOW   = 
+		{" ","+","-","/","*","%","&","|","^","=","(",")","[","]","<",">"};
 	public final List<String> mAllEOW  = Arrays.asList(TOKENS_EOW);
 	
 	
@@ -81,13 +86,20 @@ public class Tokenizer {
 		return word;
 	}
 	
-	public boolean isNumber(String zWord){
-		return zWord.matches("[0-9]+");
-		//return str.matches("-?\\d+(\\.\\d+)?");  //match a number with optional '-' and decimal.
+	public static boolean isNumber(String zWord){
+		return zWord.matches("^[0-9]+(\\.[0-9]+)?");  //match a number with optional '-' and decimal.
 	}
 	
-	public boolean isVariable(String zWord){
-		return zWord.matches("[a-z]+");
+	public static boolean isHex(String zWord){
+		return zWord.matches("0x[0-9a-fA-F]+");
+	}
+	
+	public static boolean isVariable(String zWord){
+		return zWord.matches("[a-zA-Z]+");
+	}
+	
+	public static boolean isGlobal(String zWord){
+		return zWord.matches("@[A-Z]+");
 	}
 	
 	public ArrayList<Token> tokenize() throws SyntaxException{
@@ -95,71 +107,131 @@ public class Tokenizer {
 		
 		//Get the defaults..
 		List<String> allcommands  	= Arrays.asList(TOKENS_COMMAND);
-		List<String> allnumops 		= Arrays.asList(TOKENS_OPERATOR);
-		List<String> allbrackets 	= Arrays.asList(TOKENS_BRACKETS);
+		List<String> allnumops 		= Arrays.asList(TOKENS_NUMBER_OPERATOR);
+		List<String> allboolops 	= Arrays.asList(TOKENS_BOOLEAN_OPERATOR);
 		
 		List<String> allfunctions 	= new ArrayList<>();
 		for(MinimaFunction func : MinimaFunction.ALL_FUNCTIONS) {
 			allfunctions.add(func.getName());
 		}
 		
-		//What was the previous token - check for negative numbers..
-		int previoustok = -1;
-		
 		//Now run through..
 		mPos = 0;
+		boolean waslastspace = true;
 		while(mPos<mLength) {
 			//Get the next symbol..
 			String nextchar = Character.toString(mScript.charAt(mPos));
 			
 			//space check..
+			boolean wasspace = false;
 			if(nextchar.equals(" ")) {
 				//ignore and move on..
 				mPos++;
-			
+				wasspace = true;
+				
 				//Is it a one character operator
 			}else if(allnumops.contains(nextchar)) {
 				tokens.add(new Token(Token.TOKEN_OPERATOR, nextchar));
 				mPos++;
-
-				previoustok = Token.TOKEN_OPERATOR;
-				
-				//Is it a bracket
-			}else if(allbrackets.contains(nextchar)) {
-				if(nextchar.equals("(")) {
-					tokens.add(new Token(Token.TOKEN_OPENBRACKET, nextchar));
-				}else if(nextchar.equals(")")) {
-					tokens.add(new Token(Token.TOKEN_CLOSEBRACKET, nextchar));
+			
+				//Is it >> or <<
+			}else if(nextchar.equals("<")) {
+				String testchar = Character.toString(mScript.charAt(mPos+1));
+				if(!testchar.equals("<")) {
+					throw new SyntaxException("Incorrect Token found @ "+mPos+" "+nextchar+testchar);
 				}
+				tokens.add(new Token(Token.TOKEN_OPERATOR, "<<"));
+				mPos+=2;
+			
+			}else if(nextchar.equals(">")) {
+				String testchar = Character.toString(mScript.charAt(mPos+1));
+				if(!testchar.equals(">")) {
+					throw new SyntaxException("Incorrect Token found @ "+mPos+" "+nextchar+testchar);
+				}
+				tokens.add(new Token(Token.TOKEN_OPERATOR, ">>"));
+				mPos+=2;
+			
+				//Is it a bracket
+			}else if(nextchar.equals("(")) {
+				tokens.add(new Token(Token.TOKEN_OPENBRACKET, nextchar));
+				mPos++;
+			}else if(nextchar.equals(")")) {
+				tokens.add(new Token(Token.TOKEN_CLOSEBRACKET, nextchar));
 				mPos++;
 
+				//Is it a SQUARE bracket
+			}else if(nextchar.equals("[")) {
+				//Ok get to the end of this sequence..
+				String str  = "";
+				int sq		= 0;
+				while(mPos<mLength) {
+					nextchar = Character.toString(mScript.charAt(mPos));
+					str 	+= nextchar;
+					
+					if(nextchar.equals("[")) {
+						sq++;
+					}else if(nextchar.equals("]")) {
+						sq--;
+						if(sq==0) {
+							mPos++;
+							break;
+						}
+					}
+					
+					mPos++;
+				}
+				
+				//It's a String
+				tokens.add(new Token(Token.TOKEN_VALUE, str));
+				
 			}else{
 				//get the next word..
 				String word = getNextWord();
 				
-				//What is it..
+					//What is it..
 				if(allcommands.contains(word)) {
+					if(!waslastspace) {
+						//Must have a space before a command word
+						throw new SyntaxException("Missing space @ "+mPos+" "+word);
+					}
 					//It's a command
 					tokens.add(new Token(Token.TOKEN_COMMAND, word));
+				
 				}else if(allfunctions.contains(word)) {
 					//It's a function
 					tokens.add(new Token(Token.TOKEN_FUNCTIION, word));
 				
-				}else if(isNumber(word)) {
+				}else if(allboolops.contains(word)) {
+					//It's a function
+					tokens.add(new Token(Token.TOKEN_OPERATOR, word));
+				
+				}else if(isNumber(word) || isHex(word)) {
 					//It's a number
 					tokens.add(new Token(Token.TOKEN_VALUE, word));
 				
+				}else if(word.equals("TRUE")) {
+					//It's a number
+					tokens.add(new Token(Token.TOKEN_TRUE, word));
+				
+				}else if(word.equals("FALSE")) {
+					//It's a number
+					tokens.add(new Token(Token.TOKEN_FALSE, word));
+				
+				}else if(isGlobal(word)) {
+					//It's a global
+					tokens.add(new Token(Token.TOKEN_GLOBAL, word));
+					
 				}else if(isVariable(word)) {
 					//It's a number
 					tokens.add(new Token(Token.TOKEN_VARIABLE, word));
 				
 				}else {
-					System.out.println("ERROR TOKEN "+word);
-					break;
+					throw new SyntaxException("Incorrect Token found @ "+mPos+" "+word);
 				}
-				
 			}
 			
+			//Save this - commands have to have this as true
+			waslastspace = wasspace;
 		}
 		
 		return tokens;
@@ -167,22 +239,19 @@ public class Tokenizer {
 	
 	public static void main(String[] zArgs) {
 		
-		String script = "let f= 22--23+-67 ";
+//		System.out.println(isNumber("22"));
+//		System.out.println(isNumber("22.88"));
+//		System.out.println(isNumber("10.88"));
+		
+		String script = "LET f=(2 NEQ 3) LET r=34";
 		
 		try {
-			Tokenizer tokz = new Tokenizer(script);
+			//Then run it..
+			Contract cc = new Contract(script, "", new Witness(), new Transaction(), new ArrayList<>(),true);
+			cc.setGlobalVariable("@BLKNUM", new NumberValue(22));
+			cc.run();
 			
-			ArrayList<Token> toks = tokz.tokenize();
-		
-			int count = 0;
-			for(Token tok : toks) {
-				System.out.println(count+") TOKEN > "+tok);
-				count++;
-			}
-			
-			System.out.println("TOTAL :  "+toks.size());
-			
-		} catch (SyntaxException e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

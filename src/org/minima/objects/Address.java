@@ -42,11 +42,8 @@ public class Address implements Streamable{
 	}
 	
 	public Address(String zScript, int zBitLength) {
-		//Clean the script up..
-		String cleanscript = Contract.cleanScript(zScript);
-		
 		//Convert script..
-		mScript = new MiniString(cleanscript);
+		mScript = new MiniString(zScript);
 		
 		//Set the Address..
 		mAddressData = new MiniData(Crypto.getInstance().hashData(mScript.getData(),zBitLength));

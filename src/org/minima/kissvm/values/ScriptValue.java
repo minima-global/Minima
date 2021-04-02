@@ -12,7 +12,7 @@ public class ScriptValue extends HEXValue {
 	
 	public ScriptValue(String zScript) {
 		//Remove the bracket and space at the beginning and end
-		super(Contract.cleanScript(zScript).getBytes(MiniString.MINIMA_CHARSET));
+		super(zScript.getBytes(MiniString.MINIMA_CHARSET));
 
 		mScript = new String( getRawData(), MiniString.MINIMA_CHARSET );
 	}
@@ -34,6 +34,6 @@ public class ScriptValue extends HEXValue {
 	 * @return
 	 */
 	public ScriptValue add(ScriptValue zSCValue) {
-		return new ScriptValue(mScript+" "+zSCValue.toString());
+		return new ScriptValue(mScript+zSCValue.toString());
 	}
 }
