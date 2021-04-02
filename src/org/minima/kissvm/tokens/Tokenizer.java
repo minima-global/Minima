@@ -58,8 +58,6 @@ public class Tokenizer {
 	int mPos;
 	int mLength; 
 	
-	String mLastEOW = "";
-	
 	public Tokenizer(String zScript) {
 		mScript = new StringBuffer(zScript);
 		mPos    = 0;
@@ -70,23 +68,19 @@ public class Tokenizer {
 	public String getNextWord() {
 		String word = "";
 		
-		//Get all the characters uop to the next End Of Word symbol..
-		mLastEOW = "";
+		//Get all the characters up to the next End Of Word symbol..
 		while(mPos<mLength){
 			//get the next Character
 			String c = Character.toString(mScript.charAt(mPos));
 			
 			//Is it an end of Word..
 			if(mAllEOW.contains(c)) {
-				//Store the last EOW
-				mLastEOW = c;
-				
-				//All done..
 				break;
 			}
 			
 			//Add to the word
-			word += mScript.charAt(mPos++);
+			word += mScript.charAt(mPos);
+			mPos++;
 		}
 		
 		return word;
@@ -249,7 +243,7 @@ public class Tokenizer {
 //		System.out.println(isNumber("22.88"));
 //		System.out.println(isNumber("10.88"));
 		
-		String script = "LET gg= 1 - -2";
+		String script = " LET   gg=1 - -2+3 LET p=[34]+[ - 90] RETURN TRUE ";
 		
 		try {
 			//Then run it..
