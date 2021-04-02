@@ -247,7 +247,7 @@ public class Tokenizer {
 //		System.out.println(isNumber("22.88"));
 //		System.out.println(isNumber("10.88"));
 		
-		String script = "LET f= -5 + -3";
+		String script = "LET gg= - FLOOR((1.234+0.2)) + 2";
 		
 		try {
 			//Then run it..

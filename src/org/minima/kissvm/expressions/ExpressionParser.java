@@ -175,25 +175,24 @@ public class ExpressionParser {
 	}
 	
 	private static Expression getPrimary(LexicalTokenizer zTokens) throws MinimaParseException{
-		//NOT and NEG treated slightly differently..
-		Expression exp = null;
+		//The final result
+		Expression exp = null; 
 		
-		while(zTokens.hasMoreElements()) {
-			Token tok = zTokens.getNextToken();
+		//get the Token
+		Token tok = zTokens.getNextToken();
+		
+		if(tok.getToken().equals("NOT")) {
+			exp = new BooleanExpression(getPrimary(zTokens), BooleanExpression.BOOLEAN_NOT);
 			
-			if(tok.getToken().equals("NOT")) {
-				//Return immediately.. no more drilling..
-				return new BooleanExpression(getPrimary(zTokens), BooleanExpression.BOOLEAN_NOT);
-				
-			}else if(tok.getToken().equals("NEG")) {
-				//Return immediately.. no more drilling..
-				return new OperatorExpression(getPrimary(zTokens), OperatorExpression.OPERATOR_NEG);
-				
-			}else {
-				zTokens.goBackToken();
-				exp = getBaseUnit(zTokens);
-				break;
-			}
+		}else if(tok.getToken().equals("NEG")) {
+			exp = new OperatorExpression(getPrimary(zTokens), OperatorExpression.OPERATOR_NEG);
+		
+		}else if(tok.getToken().equals("-")) {
+			exp = new OperatorExpression(getBaseUnit(zTokens), OperatorExpression.OPERATOR_NEG);
+		
+		}else {
+			zTokens.goBackToken();
+			exp = getBaseUnit(zTokens);
 		}
 		
 		return exp;
@@ -262,21 +261,6 @@ public class ExpressionParser {
 			
 			if(closebracket.getTokenType() != Token.TOKEN_CLOSEBRACKET) {
 				throw new MinimaParseException("Missing close bracket. Found : "+closebracket.getToken());
-			}
-	
-		}else if(tok.getToken().equals("-")) {
-			//Could be a negative number.. or an error as this should not be here
-			Token numtok = zTokens.getNextToken();
-			if( numtok.getTokenType()==Token.TOKEN_VALUE && 
-				Value.getValueType(numtok.getToken())==Value.VALUE_NUMBER) {
-				
-				//MUST be a number..
-				MiniNumber val 			= new MiniNumber(numtok.getToken());
-				NumberValue minusval 	= new NumberValue(val.mult(MiniNumber.MINUSONE));
-				
-				exp = new ConstantExpression(minusval);
-			}else {
-				throw new MinimaParseException("Incorrect Token in script "+tok.getToken()+" @ "+zTokens.getCurrentPosition());
 			}
 			
 		}else{
