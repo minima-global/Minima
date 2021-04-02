@@ -35,8 +35,10 @@ public class Tokenizer {
 	 * Boolean Operators
 	 */
 	public static final String[] TOKENS_BOOLEAN_OPERATOR = 
-		{"LT","GT","GTE","LTE","EQ","NEQ","NEG","XOR",
-		 "AND","OR","NXOR","NAND","NOR","NOT"};
+		{"LT","LTE","GT","GTE","EQ","NEQ",
+		 "XOR","AND","OR",
+		 "NXOR","NAND","NOR",
+		 "NOT"};
 	
 	/**
 	 * Words end when they encounter 
