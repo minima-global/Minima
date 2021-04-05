@@ -80,6 +80,11 @@ public class StatementParser {
 					//Remove the last token..
 					arraypos.remove(arrsize-1);
 					
+					//Check is a valid non-empty expression
+					if(arraypos.size() == 0) {
+						throw new MinimaParseException("Incorrect LET statement, EMPTY ARRAY POS @ "+currentPosition);
+					}
+					
 					//Create a Lexical Tokenizer.. there may be multiple expressions..
 					LexicalTokenizer lt = new LexicalTokenizer(arraypos);
 					
@@ -108,7 +113,7 @@ public class StatementParser {
 					
 					//The next token is always =
 					var = zTokens.get(currentPosition++);
-					if(var.getTokenType() != Token.TOKEN_OPERATOR && !var.getToken().equals("=")) {
+					if(!var.getToken().equals("=")) {
 						throw new MinimaParseException("Incorrect LET statement, missing = (.."+var.getToken()+")");
 					}
 				
