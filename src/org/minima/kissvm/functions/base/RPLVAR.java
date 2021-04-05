@@ -4,6 +4,7 @@ import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.functions.MinimaFunction;
 import org.minima.kissvm.tokens.Token;
+import org.minima.kissvm.tokens.Tokenizer;
 import org.minima.kissvm.values.ScriptValue;
 import org.minima.kissvm.values.Value;
 
@@ -47,7 +48,7 @@ public class RPLVAR extends MinimaFunction {
 		
 		//Now find the end..
 		int end = script.toString().length();
-		for(String command : Token.TOKENS_COMMAND) {
+		for(String command : Tokenizer.TOKENS_COMMAND) {
 			int comm = ss.indexOf(command,start);
 			if(comm != -1) {
 				if(comm < end) {

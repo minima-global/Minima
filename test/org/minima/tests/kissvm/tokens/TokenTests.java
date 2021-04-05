@@ -1,9 +1,10 @@
 package org.minima.tests.kissvm.tokens;
 
 import org.minima.kissvm.tokens.Token;
-
+import org.minima.kissvm.tokens.Tokenizer;
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.MinimaParseException;
+import org.minima.kissvm.exceptions.SyntaxException;
 import org.minima.kissvm.functions.MinimaFunction;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
@@ -25,7 +26,7 @@ public class TokenTests {
 
     @Test
     public void testConstructors() {
-        for (String s : Token.TOKENS_COMMAND) {
+        for (String s : Tokenizer.TOKENS_COMMAND) {
             Token t = new Token(Token.TOKEN_COMMAND, s);
             assertEquals(Token.TOKEN_COMMAND, t.getTokenType());
             assertEquals(s, t.getToken());
@@ -43,7 +44,14 @@ public class TokenTests {
             assertEquals("FUNCTION", t.getTokenTypeString());
         }
 
-        for (String s : Token.TOKENS_OPERATOR) {
+        for (String s : Tokenizer.TOKENS_NUMBER_OPERATOR) {
+            Token t = new Token(Token.TOKEN_OPERATOR, s);
+            assertEquals(Token.TOKEN_OPERATOR, t.getTokenType());
+            assertEquals(s, t.getToken());
+            assertEquals("OPERATOR", t.getTokenTypeString());
+        }
+        
+        for (String s : Tokenizer.TOKENS_BOOLEAN_OPERATOR) {
             Token t = new Token(Token.TOKEN_OPERATOR, s);
             assertEquals(Token.TOKEN_OPERATOR, t.getTokenType());
             assertEquals(s, t.getToken());
@@ -235,16 +243,16 @@ public class TokenTests {
     public void testTokenize() {
         {
             String Script = "";
-            for (String s : Token.TOKENS_COMMAND) {
+            for (String s : Tokenizer.TOKENS_COMMAND) {
                 Script = Script + s + " ";
             }
             try {
                 List<Token> tokens = Token.tokenize(Script);
-                for (int i = 0; i < Token.TOKENS_COMMAND.length; i++) {
+                for (int i = 0; i < Tokenizer.TOKENS_COMMAND.length; i++) {
                     assertEquals(Token.TOKEN_COMMAND, tokens.get(i).getTokenType());
-                    assertEquals(Token.TOKENS_COMMAND[i], tokens.get(i).getToken());
+                    assertEquals(Tokenizer.TOKENS_COMMAND[i], tokens.get(i).getToken());
                 }
-            } catch (MinimaParseException ex) {
+            } catch (SyntaxException ex) {
                 fail();
             }
         }
@@ -260,23 +268,23 @@ public class TokenTests {
                     assertEquals(Token.TOKEN_FUNCTIION, tokens.get(i).getTokenType());
                     assertEquals(MinimaFunction.ALL_FUNCTIONS[i].getName(), tokens.get(i).getToken());
                 }
-            } catch (MinimaParseException ex) {
+            } catch (SyntaxException ex) {
                 fail();
             }
         }
 
         {
             String Script = "";
-            for (String s : Token.TOKENS_OPERATOR) {
+            for (String s : Tokenizer.TOKENS_NUMBER_OPERATOR) {
                 Script = Script + s + " ";
             }
             try {
                 List<Token> tokens = Token.tokenize(Script);
-                for (int i = 0; i < Token.TOKENS_OPERATOR.length; i++) {
+                for (int i = 0; i < Tokenizer.TOKENS_NUMBER_OPERATOR.length; i++) {
                     assertEquals(Token.TOKEN_OPERATOR, tokens.get(i).getTokenType());
-                    assertEquals(Token.TOKENS_OPERATOR[i], tokens.get(i).getToken());
+                    assertEquals(Tokenizer.TOKENS_NUMBER_OPERATOR[i], tokens.get(i).getToken());
                 }
-            } catch (MinimaParseException ex) {
+            } catch (SyntaxException ex) {
                 fail();
             }
         }
@@ -293,7 +301,7 @@ public class TokenTests {
                     assertEquals(Token.TOKEN_VALUE, tokens.get(i).getTokenType());
                     assertEquals(Values[i], tokens.get(i).getToken());
                 }
-            } catch (MinimaParseException ex) {
+            } catch (SyntaxException ex) {
                 fail();
             }
         }
@@ -353,7 +361,7 @@ public class TokenTests {
                     assertEquals(Values[i], tokens.get(i).getToken());
                 }
 
-            } catch (MinimaParseException ex) {
+            } catch (SyntaxException ex) {
                 fail();
             }
         }
@@ -376,7 +384,7 @@ public class TokenTests {
                     assertEquals(Values[i], tokens.get(i).getToken());
                 }
 
-            } catch (MinimaParseException ex) {
+            } catch (SyntaxException ex) {
                 fail();
             }
         }
@@ -440,7 +448,7 @@ public class TokenTests {
                 assertEquals(Token.TOKEN_CLOSEBRACKET, tokens.get(i).getTokenType());
                 assertEquals(")", tokens.get(i).getToken());
                 i++;
-            } catch (MinimaParseException ex) {
+            } catch (SyntaxException ex) {
                 fail();
             }
         }
@@ -504,7 +512,7 @@ public class TokenTests {
                 assertEquals(Token.TOKEN_FALSE, tokens.get(i).getTokenType());
                 assertEquals("FALSE", tokens.get(i).getToken());
                 i++;
-            } catch (MinimaParseException ex) {
+            } catch (SyntaxException ex) {
                 fail();
             }
         }
@@ -522,7 +530,7 @@ public class TokenTests {
                     assertEquals(Values[i], tokens.get(i).getToken());
                 }
 
-            } catch (MinimaParseException ex) {
+            } catch (SyntaxException ex) {
                 fail();
             }
         }
@@ -540,7 +548,7 @@ public class TokenTests {
                     assertEquals(Values[i], tokens.get(i).getToken());
                 }
 
-            } catch (MinimaParseException ex) {
+            } catch (SyntaxException ex) {
                 fail();
             }
         }

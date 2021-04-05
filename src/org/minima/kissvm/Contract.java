@@ -568,13 +568,13 @@ public class Contract {
 		script = script.replaceAll(" eq ", " EQ ");
 		script = script.replaceAll(" lt ", " LT ");
 		
-		//Commands
-		String[] allcommands = Token.TOKENS_COMMAND;
-		for(int i=0;i<allcommands.length;i++) {
-			String find = " "+allcommands[i].toLowerCase()+" ";
-			String repl = " "+allcommands[i]+" ";
-			script = script.replaceAll(find,repl);
-		}
+//		//Commands
+//		String[] allcommands = Token.TOKENS_COMMAND;
+//		for(int i=0;i<allcommands.length;i++) {
+//			String find = " "+allcommands[i].toLowerCase()+" ";
+//			String repl = " "+allcommands[i]+" ";
+//			script = script.replaceAll(find,repl);
+//		}
 		
 		script = script.replaceAll(" true ", " TRUE ");
 		script = script.replaceAll(" false ", " FALSE ");

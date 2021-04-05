@@ -243,7 +243,7 @@ public class Tokenizer {
 //		System.out.println(isNumber("22.88"));
 //		System.out.println(isNumber("10.88"));
 		
-		String script = " LET   gg=1 - -2+3 LET p=[34]+[ - 90] RETURN TRUE ";
+		String script = "LET gg=-2*2*2";
 		
 		try {
 			//Then run it..

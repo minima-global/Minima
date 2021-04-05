@@ -4,6 +4,7 @@ import org.minima.kissvm.tokens.LexicalTokenizer;
 
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.MinimaParseException;
+import org.minima.kissvm.exceptions.SyntaxException;
 import org.minima.kissvm.functions.MinimaFunction;
 import org.minima.kissvm.tokens.Token;
 import org.minima.objects.Transaction;
@@ -77,9 +78,9 @@ public class LexicalTokenizerTests {
             assertEquals(21, lt.getCurrentPosition());
             lt.goBackToken();
             assertEquals(20, lt.getCurrentPosition());
-        } catch (MinimaParseException ex) {
+        } catch (SyntaxException ex) {
             fail();
-        }
+        } 
     }
 
 }

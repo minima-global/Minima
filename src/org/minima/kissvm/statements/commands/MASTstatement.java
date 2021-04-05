@@ -9,6 +9,7 @@ import org.minima.kissvm.statements.Statement;
 import org.minima.kissvm.statements.StatementBlock;
 import org.minima.kissvm.statements.StatementParser;
 import org.minima.kissvm.tokens.Token;
+import org.minima.kissvm.tokens.Tokenizer;
 import org.minima.kissvm.values.HEXValue;
 import org.minima.objects.Witness;
 import org.minima.objects.proofs.ScriptProof;
@@ -43,8 +44,11 @@ public class MASTstatement implements Statement {
 		String script = scrpr.getScript().toString();
 		
 		try {
+			//Tokenize the script
+			Tokenizer tokz = new Tokenizer(script.toString());
+			
 			//Convert the script to KISSVM!
-			List<Token> tokens = Token.tokenize(script);
+			List<Token> tokens = tokz.tokenize();	
 		
 			//And now convert to a statement block..
 			StatementBlock mBlock = StatementParser.parseTokens(tokens);

@@ -4,6 +4,7 @@
 package org.minima.kissvm.values;
 
 import org.minima.kissvm.tokens.Token;
+import org.minima.kissvm.tokens.Tokenizer;
 import org.minima.objects.base.MiniNumber;
 
 /**
@@ -63,7 +64,8 @@ public abstract class Value {
 		}else if(zValue.equals("FALSE")) {
 			return BooleanValue.FALSE;
 
-		}else if(Token.isNumeric(zValue)){
+		}else if(zValue.startsWith("-") || 
+				Tokenizer.isNumber(zValue)){
 			return new NumberValue(zValue);
 		
 		}else {
@@ -88,9 +90,10 @@ public abstract class Value {
 		}else if(zValue.equals("FALSE")) {
 			return VALUE_BOOLEAN;
 
-		}else if(Token.isNumeric(zValue)){
+		}else if(zValue.startsWith("-") || 
+				Tokenizer.isNumber(zValue)){
 			return VALUE_NUMBER;
-	
+			
 		}else {
 			throw new IllegalArgumentException("Invalid value type : "+zValue);
 		}
