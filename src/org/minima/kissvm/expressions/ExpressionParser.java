@@ -27,6 +27,11 @@ public class ExpressionParser {
 	 * @return
 	 */
 	public static Expression getExpression(List<Token> zTokens) throws MinimaParseException{
+		//Must have some tokens!
+		if(zTokens.size() == 0) {
+			throw new MinimaParseException("Cannot have EMPTY expression");
+		}
+		
 		//Create a Lexical Tokenizer..
 		LexicalTokenizer lt = new LexicalTokenizer(zTokens);
 		
