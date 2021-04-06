@@ -34,4 +34,8 @@ public class BooleanValue extends Value {
 	public int getValueType() {
 		return VALUE_BOOLEAN;
 	}
+	
+	public boolean isEqual(BooleanValue zBool) {
+		return mTrue == zBool.isTrue();
+	}
 }

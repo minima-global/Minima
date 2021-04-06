@@ -53,6 +53,10 @@ public class BooleanExpression implements Expression {
 		mBooleanType	= zBooleanType;
 	}
 	
+	public BooleanValue getBooleanValue(Contract zContract) throws ExecutionException {
+		return (BooleanValue)getValue(zContract);
+	}
+	
 	@Override
 	public Value getValue(Contract zContract) throws ExecutionException {
 		Value ret = null;

@@ -49,8 +49,8 @@ public class BooleanValueTests {
         assertFalse("should be false", bvt1.isEqual(bvf1));
         assertFalse("should be false ", bvf2.isEqual(bvt2));
 
-        assertEquals("should be equal ", MiniNumber.ONE.getAsInt(), bvt1.getNumber().getAsInt());
-        assertEquals("should be equal ", MiniNumber.ZERO.getAsInt(), bvf1.getNumber().getAsInt());
+//        assertEquals("should be equal ", MiniNumber.ONE.getAsInt(), bvt1.getNumber().getAsInt());
+//        assertEquals("should be equal ", MiniNumber.ZERO.getAsInt(), bvf1.getNumber().getAsInt());
     }
 
 }
