@@ -22,6 +22,7 @@ import org.minima.kissvm.values.ScriptValue;
 import org.minima.kissvm.values.Value;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
+import org.minima.utils.MinimaLogger;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -74,31 +75,19 @@ public class StatementParserTests {
         }
 
         {
-            //assertThrows(MinimaParseException.class, () -> {
-            try {
+            assertThrows(MinimaParseException.class, () -> {
                 String Script = "LET (A * ) = TRUE";
                 List<Token> tokens = Token.tokenize(Contract.cleanScript(Script));
                 StatementBlock sb = StatementParser.parseTokens(tokens);
-            } catch (MinimaParseException ex) {
-                fail();
-            } catch (Exception ex) {
-                fail();
-            }
-            //});
+            });	
         }
 
         {
-            //assertThrows(MinimaParseException.class, () -> {
-            try {
+            assertThrows(MinimaParseException.class, () -> {
                 String Script = "LET ( ) = 5";
                 List<Token> tokens = Token.tokenize(Contract.cleanScript(Script));
                 StatementBlock sb = StatementParser.parseTokens(tokens);
-            } catch (MinimaParseException ex) {
-                fail();
-            } catch (Exception ex) {
-                fail();
-            }
-            //});
+            });
         }
 
         {
@@ -191,18 +180,14 @@ public class StatementParserTests {
         }
 
         {
-            try {
+        	assertThrows(MinimaParseException.class, () -> {
                 ArrayList<Token> tokens = new ArrayList<>();
                 tokens.add(new Token(Token.TOKEN_COMMAND, "LET"));
                 tokens.add(new Token(Token.TOKEN_VARIABLE, "a"));
                 tokens.add(new Token(Token.TOKEN_OPERATOR, "+"));
                 tokens.add(new Token(Token.TOKEN_VALUE, "5"));
                 StatementBlock sb = StatementParser.parseTokens(tokens);
-            } catch (MinimaParseException ex) {
-                fail();
-            } catch (Exception ex) {
-                fail();
-            }
+        	});
         }
 
         {
