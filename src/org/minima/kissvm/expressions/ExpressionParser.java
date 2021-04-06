@@ -10,7 +10,10 @@ import org.minima.kissvm.functions.MinimaFunction;
 import org.minima.kissvm.tokens.LexicalTokenizer;
 import org.minima.kissvm.tokens.Token;
 import org.minima.kissvm.values.BooleanValue;
+import org.minima.kissvm.values.NumberValue;
 import org.minima.kissvm.values.Value;
+import org.minima.objects.base.MiniNumber;
+import org.minima.utils.MinimaLogger;
 
 /**
  * @author Spartacus Rex
@@ -188,9 +191,6 @@ public class ExpressionParser {
 		}else if(tok.getToken().equals("NEG")) {
 			exp = new OperatorExpression(getPrimary(zTokens), OperatorExpression.OPERATOR_NEG);
 		
-		}else if(tok.getToken().equals("-")) {
-			exp = new OperatorExpression(getBaseUnit(zTokens), OperatorExpression.OPERATOR_NEG);
-		
 		}else {
 			zTokens.goBackToken();
 			exp = getBaseUnit(zTokens);
@@ -208,6 +208,15 @@ public class ExpressionParser {
 		
 		if(tok.getTokenType() == Token.TOKEN_VALUE) {
 			exp = new ConstantExpression( Value.getValue(tok.getToken()) ); 
+		
+			//Negative NUmbers handled here..
+		}else if(tok.getToken().equals("-")) {
+			//The next token MUST be a number
+			Token num = zTokens.getNextToken();
+			
+			//Create a Negative Number 
+			MiniNumber numv = new MiniNumber(num.getToken()).mult(MiniNumber.MINUSONE);
+			exp = new ConstantExpression(new NumberValue(numv));
 			
 		}else if(tok.getTokenType() == Token.TOKEN_GLOBAL) {
 			exp = new GlobalExpression(tok.getToken());

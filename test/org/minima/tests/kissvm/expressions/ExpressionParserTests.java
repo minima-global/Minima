@@ -13,6 +13,7 @@ import org.minima.kissvm.expressions.VariableExpression;
 import org.minima.kissvm.statements.StatementBlock;
 import org.minima.kissvm.statements.StatementParser;
 import org.minima.kissvm.tokens.Token;
+import org.minima.utils.MinimaLogger;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -318,7 +319,7 @@ public class ExpressionParserTests {
                     List<Token> tokens = Token.tokenize(Contract.cleanScript(Script));
                     Expression expr = ExpressionParser.getExpression(tokens);
                     assertEquals(expr.getClass(), BooleanExpression.class);
-                    assertEquals("( variable:a " + Op + " variable:b )", expr.toString());
+                    assertEquals("( variable:A " + Op + " variable:B )", expr.toString());
                 } catch (MinimaParseException ex) {
                     fail();
                 } catch (Exception ex) {
@@ -332,7 +333,7 @@ public class ExpressionParserTests {
                     List<Token> tokens = Token.tokenize(Contract.cleanScript(Script));
                     Expression expr = ExpressionParser.getExpression(tokens);
                     assertEquals(expr.getClass(), BooleanExpression.class);
-                    assertEquals("( hello world " + Op + " hello world )", expr.toString());
+                    assertEquals("( Hello World " + Op + " Hello World )", expr.toString());
                 } catch (MinimaParseException ex) {
                     fail();
                 } catch (Exception ex) {
@@ -382,7 +383,7 @@ public class ExpressionParserTests {
                     List<Token> tokens = Token.tokenize(Contract.cleanScript(Script));
                     Expression expr = ExpressionParser.getExpression(tokens);
                     assertEquals(expr.getClass(), BooleanExpression.class);
-                    assertEquals("( variable:a " + Op + " variable:b )", expr.toString());
+                    assertEquals("( variable:A " + Op + " variable:B )", expr.toString());
                 } catch (MinimaParseException ex) {
                     fail();
                 } catch (Exception ex) {
@@ -396,7 +397,7 @@ public class ExpressionParserTests {
                     List<Token> tokens = Token.tokenize(Contract.cleanScript(Script));
                     Expression expr = ExpressionParser.getExpression(tokens);
                     assertEquals(expr.getClass(), BooleanExpression.class);
-                    assertEquals("( variable:a " + Op + " variable:b )", expr.toString());
+                    assertEquals("( variable:A " + Op + " variable:B )", expr.toString());
                 } catch (MinimaParseException ex) {
                     fail();
                 } catch (Exception ex) {
@@ -570,7 +571,7 @@ public class ExpressionParserTests {
                 List<Token> tokens = Token.tokenize(Contract.cleanScript(Script));
                 Expression expr = ExpressionParser.getExpression(tokens);
                 assertEquals(expr.getClass(), BooleanExpression.class);
-                assertEquals("NOT ( variable:a )", expr.toString());
+                assertEquals("NOT ( variable:A )", expr.toString());
             } catch (MinimaParseException ex) {
                 fail();
             } catch (Exception ex) {
@@ -584,7 +585,7 @@ public class ExpressionParserTests {
                 List<Token> tokens = Token.tokenize(Contract.cleanScript(Script));
                 Expression expr = ExpressionParser.getExpression(tokens);
                 assertEquals(expr.getClass(), BooleanExpression.class);
-                assertEquals("NOT ( hello world )", expr.toString());
+                assertEquals("NOT ( Hello World )", expr.toString());
             } catch (MinimaParseException ex) {
                 fail();
             } catch (Exception ex) {
@@ -943,7 +944,7 @@ public class ExpressionParserTests {
                     List<Token> tokens = Token.tokenize(Contract.cleanScript(Script));
                     Expression expr = ExpressionParser.getExpression(tokens);
                     assertEquals(expr.getClass(), OperatorExpression.class);
-                    assertEquals("( variable:a " + Op + " variable:b )", expr.toString());
+                    assertEquals("( variable:A " + Op + " variable:B )", expr.toString());
                 } catch (MinimaParseException ex) {
                     fail();
                 } catch (Exception ex) {
@@ -957,7 +958,7 @@ public class ExpressionParserTests {
                     List<Token> tokens = Token.tokenize(Contract.cleanScript(Script));
                     Expression expr = ExpressionParser.getExpression(tokens);
                     assertEquals(expr.getClass(), OperatorExpression.class);
-                    assertEquals("( hello world " + Op + " hello world )", expr.toString());
+                    assertEquals("( Hello World " + Op + " Hello World )", expr.toString());
                 } catch (MinimaParseException ex) {
                     fail();
                 } catch (Exception ex) {
@@ -1007,7 +1008,7 @@ public class ExpressionParserTests {
                     List<Token> tokens = Token.tokenize(Contract.cleanScript(Script));
                     Expression expr = ExpressionParser.getExpression(tokens);
                     assertEquals(expr.getClass(), OperatorExpression.class);
-                    assertEquals("( variable:a " + Op + " variable:b )", expr.toString());
+                    assertEquals("( variable:A " + Op + " variable:B )", expr.toString());
                 } catch (MinimaParseException ex) {
                     fail();
                 } catch (Exception ex) {
@@ -1021,7 +1022,7 @@ public class ExpressionParserTests {
                     List<Token> tokens = Token.tokenize(Contract.cleanScript(Script));
                     Expression expr = ExpressionParser.getExpression(tokens);
                     assertEquals(expr.getClass(), OperatorExpression.class);
-                    assertEquals("( variable:a " + Op + " variable:b )", expr.toString());
+                    assertEquals("( variable:A " + Op + " variable:B )", expr.toString());
                 } catch (MinimaParseException ex) {
                     fail();
                 } catch (Exception ex) {
@@ -1195,7 +1196,7 @@ public class ExpressionParserTests {
                 List<Token> tokens = Token.tokenize(Contract.cleanScript(Script));
                 Expression expr = ExpressionParser.getExpression(tokens);
                 assertEquals(expr.getClass(), OperatorExpression.class);
-                assertEquals(" - ( variable:a )", expr.toString());
+                assertEquals(" - ( variable:A )", expr.toString());
             } catch (MinimaParseException ex) {
                 fail();
             } catch (Exception ex) {
@@ -1209,7 +1210,7 @@ public class ExpressionParserTests {
                 List<Token> tokens = Token.tokenize(Contract.cleanScript(Script));
                 Expression expr = ExpressionParser.getExpression(tokens);
                 assertEquals(expr.getClass(), OperatorExpression.class);
-                assertEquals(" - ( hello world )", expr.toString());
+                assertEquals(" - ( Hello World )", expr.toString());
             } catch (MinimaParseException ex) {
                 fail();
             } catch (Exception ex) {

@@ -94,41 +94,41 @@ public class ContractTests {
             assertTrue(ctr.getCompleteTraceLog().length() > 0);
         }
 
-        {
-            Contract ctr = new Contract("/* Comment */ RETURN TRUE", "", new Witness(), new Transaction(), new ArrayList<StateVariable>(), true);
-
-            assertTrue(ctr.isParseOK());
-            assertFalse(ctr.isException());
-            assertEquals("", ctr.getException());
-            assertTrue(ctr.getCompleteTraceLog().length() > 0);
-        }
-
-        {
-            Contract ctr = new Contract("RETURN TRUE /* Comment */", "", new Witness(), new Transaction(), new ArrayList<StateVariable>(), true);
-
-            assertTrue(ctr.isParseOK());
-            assertFalse(ctr.isException());
-            assertEquals("", ctr.getException());
-            assertTrue(ctr.getCompleteTraceLog().length() > 0);
-        }
-
-        {
-            Contract ctr = new Contract("/* Comment */ RETURN TRUE /* Comment */", "", new Witness(), new Transaction(), new ArrayList<StateVariable>(), true);
-
-            assertTrue(ctr.isParseOK());
-            assertFalse(ctr.isException());
-            assertEquals("", ctr.getException());
-            assertTrue(ctr.getCompleteTraceLog().length() > 0);
-        }
-
-        {
-            Contract ctr = new Contract("/*Comment*/RETURN TRUE/*Comment*/", "", new Witness(), new Transaction(), new ArrayList<StateVariable>(), true);
-
-            assertTrue(ctr.isParseOK());
-            assertFalse(ctr.isException());
-            assertEquals("", ctr.getException());
-            assertTrue(ctr.getCompleteTraceLog().length() > 0);
-        }
+//        {
+//            Contract ctr = new Contract("/* Comment */ RETURN TRUE", "", new Witness(), new Transaction(), new ArrayList<StateVariable>(), true);
+//
+//            assertTrue(ctr.isParseOK());
+//            assertFalse(ctr.isException());
+//            assertEquals("", ctr.getException());
+//            assertTrue(ctr.getCompleteTraceLog().length() > 0);
+//        }
+//
+//        {
+//            Contract ctr = new Contract("RETURN TRUE /* Comment */", "", new Witness(), new Transaction(), new ArrayList<StateVariable>(), true);
+//
+//            assertTrue(ctr.isParseOK());
+//            assertFalse(ctr.isException());
+//            assertEquals("", ctr.getException());
+//            assertTrue(ctr.getCompleteTraceLog().length() > 0);
+//        }
+//
+//        {
+//            Contract ctr = new Contract("/* Comment */ RETURN TRUE /* Comment */", "", new Witness(), new Transaction(), new ArrayList<StateVariable>(), true);
+//
+//            assertTrue(ctr.isParseOK());
+//            assertFalse(ctr.isException());
+//            assertEquals("", ctr.getException());
+//            assertTrue(ctr.getCompleteTraceLog().length() > 0);
+//        }
+//
+//        {
+//            Contract ctr = new Contract("/*Comment*/RETURN TRUE/*Comment*/", "", new Witness(), new Transaction(), new ArrayList<StateVariable>(), true);
+//
+//            assertTrue(ctr.isParseOK());
+//            assertFalse(ctr.isException());
+//            assertEquals("", ctr.getException());
+//            assertTrue(ctr.getCompleteTraceLog().length() > 0);
+//        }
 
         {
             String Script = "lorem ipsum";

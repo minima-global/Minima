@@ -243,7 +243,7 @@ public class Tokenizer {
 //		System.out.println(isNumber("22.88"));
 //		System.out.println(isNumber("10.88"));
 		
-		String script = "LET  =  gg";
+		String script = "LET  a =  -1.5 - -1.5";
 		
 		try {
 			//Then run it..
