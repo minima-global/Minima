@@ -86,7 +86,7 @@ public class OperatorExpression implements Expression{
 					return lnv.add(rnv);
 				
 				}else {
-					throw new ExecutionException("Invalid type in ADD. MUST be Number or String. ");
+					throw new ExecutionException("Invalid type in ADD. MUST be Number or String "+lval.toString());
 				}
 			}
 			
