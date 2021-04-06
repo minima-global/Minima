@@ -71,7 +71,7 @@ public class ASSERTstatementTests {
         }
         {
             ASSERTstatement as = new ASSERTstatement(new ConstantExpression(new ScriptValue("Hello World")));
-            assertEquals("ASSERT hello world", as.toString());
+            assertEquals("ASSERT Hello World", as.toString());
         }
     }
 
@@ -105,35 +105,29 @@ public class ASSERTstatementTests {
             ConstantExpression ce = new ConstantExpression(new HEXValue(""));
             ASSERTstatement as = new ASSERTstatement(ce);
             Contract ctr = new Contract("", "", new Witness(), new Transaction(), new ArrayList<>());
-            try {
-                as.execute(ctr);
-            } catch (ExecutionException ex) {
-                fail();
-            }
-            assertEquals(true, ctr.isSuccessSet());
+            assertThrows(ExecutionException.class, () -> {
+            	as.execute(ctr);
+            });
+            assertEquals(false, ctr.isSuccessSet());
             assertEquals(false, ctr.isSuccess());
         }
         {
             ConstantExpression ce = new ConstantExpression(new HEXValue("0x00"));
             ASSERTstatement as = new ASSERTstatement(ce);
             Contract ctr = new Contract("", "", new Witness(), new Transaction(), new ArrayList<>());
-            try {
-                as.execute(ctr);
-            } catch (ExecutionException ex) {
-                fail();
-            }
-            assertEquals(true, ctr.isSuccessSet());
+            assertThrows(ExecutionException.class, () -> {
+            	as.execute(ctr);
+            });
+            assertEquals(false, ctr.isSuccessSet());
             assertEquals(false, ctr.isSuccess());
         }
         {
             ConstantExpression ce = new ConstantExpression(new HEXValue("0x12345678"));
             ASSERTstatement as = new ASSERTstatement(ce);
             Contract ctr = new Contract("", "", new Witness(), new Transaction(), new ArrayList<>());
-            try {
-                as.execute(ctr);
-            } catch (ExecutionException ex) {
-                fail();
-            }
+            assertThrows(ExecutionException.class, () -> {
+            	as.execute(ctr);
+            });
             assertEquals(false, ctr.isSuccessSet());
             assertEquals(false, ctr.isSuccess());
         }
@@ -141,11 +135,9 @@ public class ASSERTstatementTests {
             ConstantExpression ce = new ConstantExpression(new HEXValue("0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"));
             ASSERTstatement as = new ASSERTstatement(ce);
             Contract ctr = new Contract("", "", new Witness(), new Transaction(), new ArrayList<>());
-            try {
-                as.execute(ctr);
-            } catch (ExecutionException ex) {
-                fail();
-            }
+            assertThrows(ExecutionException.class, () -> {
+            	as.execute(ctr);
+            });
             assertEquals(false, ctr.isSuccessSet());
             assertEquals(false, ctr.isSuccess());
         }
@@ -153,11 +145,9 @@ public class ASSERTstatementTests {
             ConstantExpression ce = new ConstantExpression(new NumberValue(-1));
             ASSERTstatement as = new ASSERTstatement(ce);
             Contract ctr = new Contract("", "", new Witness(), new Transaction(), new ArrayList<>());
-            try {
-                as.execute(ctr);
-            } catch (ExecutionException ex) {
-                fail();
-            }
+            assertThrows(ExecutionException.class, () -> {
+            	as.execute(ctr);
+            });
             assertEquals(false, ctr.isSuccessSet());
             assertEquals(false, ctr.isSuccess());
         }
@@ -165,23 +155,19 @@ public class ASSERTstatementTests {
             ConstantExpression ce = new ConstantExpression(new NumberValue(0));
             ASSERTstatement as = new ASSERTstatement(ce);
             Contract ctr = new Contract("", "", new Witness(), new Transaction(), new ArrayList<>());
-            try {
-                as.execute(ctr);
-            } catch (ExecutionException ex) {
-                fail();
-            }
-            assertEquals(true, ctr.isSuccessSet());
+            assertThrows(ExecutionException.class, () -> {
+            	as.execute(ctr);
+            });
+            assertEquals(false, ctr.isSuccessSet());
             assertEquals(false, ctr.isSuccess());
         }
         {
             ConstantExpression ce = new ConstantExpression(new NumberValue(1));
             ASSERTstatement as = new ASSERTstatement(ce);
             Contract ctr = new Contract("", "", new Witness(), new Transaction(), new ArrayList<>());
-            try {
-                as.execute(ctr);
-            } catch (ExecutionException ex) {
-                fail();
-            }
+            assertThrows(ExecutionException.class, () -> {
+            	as.execute(ctr);
+            });
             assertEquals(false, ctr.isSuccessSet());
             assertEquals(false, ctr.isSuccess());
         }
@@ -189,23 +175,19 @@ public class ASSERTstatementTests {
             ConstantExpression ce = new ConstantExpression(new ScriptValue(""));
             ASSERTstatement as = new ASSERTstatement(ce);
             Contract ctr = new Contract("", "", new Witness(), new Transaction(), new ArrayList<>());
-            try {
-                as.execute(ctr);
-            } catch (ExecutionException ex) {
-                fail();
-            }
-            assertEquals(true, ctr.isSuccessSet());
+            assertThrows(ExecutionException.class, () -> {
+            	as.execute(ctr);
+            });
+            assertEquals(false, ctr.isSuccessSet());
             assertEquals(false, ctr.isSuccess());
         }
         {
             ConstantExpression ce = new ConstantExpression(new ScriptValue("Hello World"));
             ASSERTstatement as = new ASSERTstatement(ce);
             Contract ctr = new Contract("", "", new Witness(), new Transaction(), new ArrayList<>());
-            try {
-                as.execute(ctr);
-            } catch (ExecutionException ex) {
-                fail();
-            }
+            assertThrows(ExecutionException.class, () -> {
+            	as.execute(ctr);
+            });
             assertEquals(false, ctr.isSuccessSet());
             assertEquals(false, ctr.isSuccess());
         }

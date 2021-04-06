@@ -71,7 +71,7 @@ public class RETURNstatementTests {
         }
         {
             RETURNstatement rs = new RETURNstatement(new ConstantExpression(new ScriptValue("Hello World")));
-            assertEquals("RETURN hello world", rs.toString());
+            assertEquals("RETURN Hello World", rs.toString());
         }
     }
 
@@ -105,109 +105,91 @@ public class RETURNstatementTests {
             ConstantExpression ce = new ConstantExpression(new HEXValue(""));
             RETURNstatement rs = new RETURNstatement(ce);
             Contract ctr = new Contract("", "", new Witness(), new Transaction(), new ArrayList<>());
-            try {
-                rs.execute(ctr);
-            } catch (ExecutionException ex) {
-                fail();
-            }
-            assertEquals(true, ctr.isSuccessSet());
+            assertThrows(ExecutionException.class, () -> {
+            	rs.execute(ctr);
+            });
+            assertEquals(false, ctr.isSuccessSet());
             assertEquals(false, ctr.isSuccess());
         }
         {
             ConstantExpression ce = new ConstantExpression(new HEXValue("0x00"));
             RETURNstatement rs = new RETURNstatement(ce);
             Contract ctr = new Contract("", "", new Witness(), new Transaction(), new ArrayList<>());
-            try {
-                rs.execute(ctr);
-            } catch (ExecutionException ex) {
-                fail();
-            }
-            assertEquals(true, ctr.isSuccessSet());
+            assertThrows(ExecutionException.class, () -> {
+            	rs.execute(ctr);
+            });
+            assertEquals(false, ctr.isSuccessSet());
             assertEquals(false, ctr.isSuccess());
         }
         {
             ConstantExpression ce = new ConstantExpression(new HEXValue("0x12345678"));
             RETURNstatement rs = new RETURNstatement(ce);
             Contract ctr = new Contract("", "", new Witness(), new Transaction(), new ArrayList<>());
-            try {
-                rs.execute(ctr);
-            } catch (ExecutionException ex) {
-                fail();
-            }
-            assertEquals(true, ctr.isSuccessSet());
-            assertEquals(true, ctr.isSuccess());
+            assertThrows(ExecutionException.class, () -> {
+            	rs.execute(ctr);
+            });
+            assertEquals(false, ctr.isSuccessSet());
+            assertEquals(false, ctr.isSuccess());
         }
         {
             ConstantExpression ce = new ConstantExpression(new HEXValue("0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"));
             RETURNstatement rs = new RETURNstatement(ce);
             Contract ctr = new Contract("", "", new Witness(), new Transaction(), new ArrayList<>());
-            try {
-                rs.execute(ctr);
-            } catch (ExecutionException ex) {
-                fail();
-            }
-            assertEquals(true, ctr.isSuccessSet());
-            assertEquals(true, ctr.isSuccess());
+            assertThrows(ExecutionException.class, () -> {
+            	rs.execute(ctr);
+            });
+            assertEquals(false, ctr.isSuccessSet());
+            assertEquals(false, ctr.isSuccess());
         }
         {
             ConstantExpression ce = new ConstantExpression(new NumberValue(-1));
             RETURNstatement rs = new RETURNstatement(ce);
             Contract ctr = new Contract("", "", new Witness(), new Transaction(), new ArrayList<>());
-            try {
-                rs.execute(ctr);
-            } catch (ExecutionException ex) {
-                fail();
-            }
-            assertEquals(true, ctr.isSuccessSet());
-            assertEquals(true, ctr.isSuccess());
+            assertThrows(ExecutionException.class, () -> {
+            	rs.execute(ctr);
+            });
+            assertEquals(false, ctr.isSuccessSet());
+            assertEquals(false, ctr.isSuccess());
         }
         {
             ConstantExpression ce = new ConstantExpression(new NumberValue(0));
             RETURNstatement rs = new RETURNstatement(ce);
             Contract ctr = new Contract("", "", new Witness(), new Transaction(), new ArrayList<>());
-            try {
-                rs.execute(ctr);
-            } catch (ExecutionException ex) {
-                fail();
-            }
-            assertEquals(true, ctr.isSuccessSet());
+            assertThrows(ExecutionException.class, () -> {
+            	rs.execute(ctr);
+            });
+            assertEquals(false, ctr.isSuccessSet());
             assertEquals(false, ctr.isSuccess());
         }
         {
             ConstantExpression ce = new ConstantExpression(new NumberValue(1));
             RETURNstatement rs = new RETURNstatement(ce);
             Contract ctr = new Contract("", "", new Witness(), new Transaction(), new ArrayList<>());
-            try {
-                rs.execute(ctr);
-            } catch (ExecutionException ex) {
-                fail();
-            }
-            assertEquals(true, ctr.isSuccessSet());
-            assertEquals(true, ctr.isSuccess());
+            assertThrows(ExecutionException.class, () -> {
+            	rs.execute(ctr);
+            });
+            assertEquals(false, ctr.isSuccessSet());
+            assertEquals(false, ctr.isSuccess());
         }
         {
             ConstantExpression ce = new ConstantExpression(new ScriptValue(""));
             RETURNstatement rs = new RETURNstatement(ce);
             Contract ctr = new Contract("", "", new Witness(), new Transaction(), new ArrayList<>());
-            try {
-                rs.execute(ctr);
-            } catch (ExecutionException ex) {
-                fail();
-            }
-            assertEquals(true, ctr.isSuccessSet());
+            assertThrows(ExecutionException.class, () -> {
+            	rs.execute(ctr);
+            });
+            assertEquals(false, ctr.isSuccessSet());
             assertEquals(false, ctr.isSuccess());
         }
         {
             ConstantExpression ce = new ConstantExpression(new ScriptValue("Hello World"));
             RETURNstatement rs = new RETURNstatement(ce);
             Contract ctr = new Contract("", "", new Witness(), new Transaction(), new ArrayList<>());
-            try {
-                rs.execute(ctr);
-            } catch (ExecutionException ex) {
-                fail();
-            }
-            assertEquals(true, ctr.isSuccessSet());
-            assertEquals(true, ctr.isSuccess());
+            assertThrows(ExecutionException.class, () -> {
+            	rs.execute(ctr);
+            });
+            assertEquals(false, ctr.isSuccessSet());
+            assertEquals(false, ctr.isSuccess());
         }
     }
 
