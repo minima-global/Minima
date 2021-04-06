@@ -143,27 +143,11 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 	}
 	
 	/**
-	 * Make a VALID Minima number.. within the allowed range and decimals
-	 * @return
-	 */
-	public MiniNumber getAsMinimaValue() {
-		if(isMore(BILLION)) {
-			return BILLION;
-		}
-		
-		if(isLess(ZERO)) {
-			return ZERO;
-		}
-		
-		return this;
-	}
-	
-	/**
 	 * Is this a valid number for an input or an output in Minima
 	 * @return true false..
 	 */
 	public boolean isValidMinimaValue() {
-		return isEqual(getAsMinimaValue());
+		return isLessEqual(MiniNumber.BILLION) && isMoreEqual(MiniNumber.ZERO);
 	}
 	
 	/**
