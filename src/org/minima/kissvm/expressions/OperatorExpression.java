@@ -64,24 +64,36 @@ public class OperatorExpression implements Expression{
 						
 		//Which Operator..
 		switch (mOperatorType) {
+		
+			/**
+			 * ADD is SPECIAL
+			 * 
+			 * Works with Number OR SCRIPT
+			 */
 		case OPERATOR_ADD :
 			{
 				if(lval.getValueType() == Value.VALUE_NUMBER) {
-					Value.checkSameType(lval, rval,Value.VALUE_NUMBER);
+					Value.checkSameType(lval, rval);
 					NumberValue lnv = (NumberValue)lval;
 					NumberValue rnv = (NumberValue)rval;
-					ret = lnv.add(rnv);
+					MiniNumber ans = lnv.getNumber().add(rnv.getNumber());
+					return new NumberValue(ans);
+					
 				}else if(lval.getValueType() == Value.VALUE_SCRIPT) {
-					Value.checkSameType(lval, rval,Value.VALUE_SCRIPT);
+					Value.checkSameType(lval, rval);
 					ScriptValue lnv = (ScriptValue)lval;
 					ScriptValue rnv = (ScriptValue)rval;
-					ret = lnv.add(rnv);
+					return lnv.add(rnv);
+				
 				}else {
-					throw new ExecutionException("Invalid parameters for +");
+					throw new ExecutionException("Invalid type in ADD. MUST be Number or String. ");
 				}
 			}
-			break;
 			
+			
+			/**
+			 * MUST be NUMBERS
+			 */
 		case OPERATOR_SUB :
 			{
 				Value.checkSameType(lval, rval,Value.VALUE_NUMBER);
@@ -128,7 +140,9 @@ public class OperatorExpression implements Expression{
 			}
 			break;
 		
-			
+			/**
+			 * MUST be HEX
+			 */
 		case OPERATOR_SHIFTL :
 			{
 				lval.verifyType(Value.VALUE_HEX);
@@ -149,7 +163,7 @@ public class OperatorExpression implements Expression{
 			break;
 			
 			/**
-			 * Bitwise operators - done on the RAW data - not the number
+			 * MUST be HEX
 			 */
 		case OPERATOR_AND :
 			{
