@@ -60,9 +60,12 @@ public class BooleanExpression implements Expression {
 		Value lval = mLeft.getValue(zContract);
 		Value rval = mRight.getValue(zContract);
 
-		//Make sure both Values are of the same type
-		Value.checkSameType(lval, rval);
-				
+		//Only check for double value expressions
+		if(mBooleanType != BOOLEAN_NOT) {
+			//Make sure both Values are of the same type
+			Value.checkSameType(lval, rval);
+		}
+		
 		//TRUE or FALSE - all types have this
 		boolean left   	= lval.isTrue(); 
 		boolean right  	= rval.isTrue();

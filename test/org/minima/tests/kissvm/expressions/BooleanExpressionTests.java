@@ -155,20 +155,20 @@ public class BooleanExpressionTests {
             assertTrue(be.getValue(ctr).isTrue());
 
             // Fails due to check checkSameType(lval, rval), no second parameter
-            //be = new BooleanExpression(cet, BooleanExpression.BOOLEAN_NOT);
-            //assertTrue(be.getValue(ctr).isFalse());
-            assertThrows(IllegalArgumentException.class, () -> {
-                BooleanExpression be1 = new BooleanExpression(cet, BooleanExpression.BOOLEAN_NOT);
-                be1.getValue(ctr);
-            });
+            be = new BooleanExpression(cet, BooleanExpression.BOOLEAN_NOT);
+            assertTrue(be.getValue(ctr).isFalse());
+//            assertThrows(IllegalArgumentException.class, () -> {
+//                BooleanExpression be1 = new BooleanExpression(cet, BooleanExpression.BOOLEAN_NOT);
+//                be1.getValue(ctr);
+//            });
 
             // Fails due to check checkSameType(lval, rval), no second parameter
-            //be = new BooleanExpression(cef, BooleanExpression.BOOLEAN_NOT);
-            //assertTrue(be.getValue(ctr).isTrue());
-            assertThrows(IllegalArgumentException.class, () -> {
-                BooleanExpression be1 = new BooleanExpression(cef, BooleanExpression.BOOLEAN_NOT);
-                be1.getValue(ctr);
-            });
+            be = new BooleanExpression(cef, BooleanExpression.BOOLEAN_NOT);
+            assertTrue(be.getValue(ctr).isTrue());
+//            assertThrows(IllegalArgumentException.class, () -> {
+//                BooleanExpression be1 = new BooleanExpression(cef, BooleanExpression.BOOLEAN_NOT);
+//                be1.getValue(ctr);
+//            });
         }
 
         {
@@ -234,20 +234,20 @@ public class BooleanExpressionTests {
             assertTrue(be.getValue(ctr).isTrue());
 
             // Fails due to check checkSameType(lval, rval), no second parameter
-            //be = new BooleanExpression(cet, BooleanExpression.BOOLEAN_NOT);
-            //assertTrue(be.getValue(ctr).isFalse());
-            assertThrows(IllegalArgumentException.class, () -> {
-                BooleanExpression be1 = new BooleanExpression(cet, BooleanExpression.BOOLEAN_NOT);
-                be1.getValue(ctr);
-            });
+            be = new BooleanExpression(cet, BooleanExpression.BOOLEAN_NOT);
+            assertTrue(be.getValue(ctr).isFalse());
+//            assertThrows(IllegalArgumentException.class, () -> {
+//                BooleanExpression be1 = new BooleanExpression(cet, BooleanExpression.BOOLEAN_NOT);
+//                be1.getValue(ctr);
+//            });
 
             // Fails due to check checkSameType(lval, rval), no second parameter
-            //be = new BooleanExpression(cef, BooleanExpression.BOOLEAN_NOT);
-            //assertTrue(be.getValue(ctr).isTrue());
-            assertThrows(IllegalArgumentException.class, () -> {
-                BooleanExpression be1 = new BooleanExpression(cef, BooleanExpression.BOOLEAN_NOT);
-                be1.getValue(ctr);
-            });
+            be = new BooleanExpression(cef, BooleanExpression.BOOLEAN_NOT);
+            assertTrue(be.getValue(ctr).isTrue());
+//            assertThrows(IllegalArgumentException.class, () -> {
+//                BooleanExpression be1 = new BooleanExpression(cef, BooleanExpression.BOOLEAN_NOT);
+//                be1.getValue(ctr);
+//            });
         }
 
         {
@@ -313,20 +313,20 @@ public class BooleanExpressionTests {
             assertTrue(be.getValue(ctr).isTrue());
 
             // Fails due to check checkSameType(lval, rval), no second parameter
-            //be = new BooleanExpression(cet, BooleanExpression.BOOLEAN_NOT);
-            //assertTrue(be.getValue(ctr).isFalse());
-            assertThrows(IllegalArgumentException.class, () -> {
-                BooleanExpression be1 = new BooleanExpression(cet, BooleanExpression.BOOLEAN_NOT);
-                be1.getValue(ctr);
-            });
+            be = new BooleanExpression(cet, BooleanExpression.BOOLEAN_NOT);
+            assertTrue(be.getValue(ctr).isFalse());
+//            assertThrows(IllegalArgumentException.class, () -> {
+//                BooleanExpression be1 = new BooleanExpression(cet, BooleanExpression.BOOLEAN_NOT);
+//                be1.getValue(ctr);
+//            });
 
             // Fails due to check checkSameType(lval, rval), no second parameter
-            //be = new BooleanExpression(cef, BooleanExpression.BOOLEAN_NOT);
-            //assertTrue(be.getValue(ctr).isTrue());
-            assertThrows(IllegalArgumentException.class, () -> {
-                BooleanExpression be1 = new BooleanExpression(cef, BooleanExpression.BOOLEAN_NOT);
-                be1.getValue(ctr);
-            });
+            be = new BooleanExpression(cef, BooleanExpression.BOOLEAN_NOT);
+            assertTrue(be.getValue(ctr).isTrue());
+//            assertThrows(IllegalArgumentException.class, () -> {
+//                BooleanExpression be1 = new BooleanExpression(cef, BooleanExpression.BOOLEAN_NOT);
+//                be1.getValue(ctr);
+//            });
         }
 
         {
