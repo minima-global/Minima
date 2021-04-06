@@ -38,7 +38,7 @@ public class Tokenizer {
 		{"LT","LTE","GT","GTE","EQ","NEQ",
 		 "XOR","AND","OR",
 		 "NXOR","NAND","NOR",
-		 "NOT"};
+		 "NOT","NEG"};
 	
 	/**
 	 * Words end when they encounter 

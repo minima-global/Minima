@@ -129,7 +129,7 @@ public class BOOLTests {
         }
         {
             MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new ScriptValue("")));
+            mf.addParameter(new ConstantExpression(new ScriptValue("FALSE")));
             try {
                 Value res = mf.runFunction(ctr);
                 assertEquals(Value.VALUE_BOOLEAN, res.getValueType());

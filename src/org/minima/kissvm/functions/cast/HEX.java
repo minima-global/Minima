@@ -52,7 +52,7 @@ public class HEX extends MinimaFunction{
 		
 		}else if(type == Value.VALUE_SCRIPT) {
 			ScriptValue cval = (ScriptValue)val;
-			ret = new MiniData(cval.toString());
+			ret = new MiniData(cval.toString().getBytes());
 		
 		}else {
 			throw new ExecutionException("Invalid Type in HEX cast "+type);

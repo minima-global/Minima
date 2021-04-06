@@ -55,7 +55,7 @@ public class RPLVARTests {
             try {
                 Value res = mf.runFunction(ctr);
                 assertEquals(Value.VALUE_SCRIPT, res.getValueType());
-                assertEquals("LET a = b", ((ScriptValue) res).toString());
+                assertEquals("LET A = B", ((ScriptValue) res).toString());
             } catch (ExecutionException ex) {
                 fail();
             }
@@ -188,7 +188,7 @@ public class RPLVARTests {
             try {
                 Value res = mf.runFunction(ctr);
                 assertEquals(Value.VALUE_SCRIPT, res.getValueType());
-                assertEquals("abcdefghijklmnopqrstuvwxyz", ((ScriptValue) res).toString());
+                assertEquals("ABCDEFGHIJKLMNOPQRSTUVWXYZ", ((ScriptValue) res).toString());
             } catch (ExecutionException ex) {
                 fail();
             }
@@ -201,7 +201,7 @@ public class RPLVARTests {
             try {
                 Value res = mf.runFunction(ctr);
                 assertEquals(Value.VALUE_SCRIPT, res.getValueType());
-                assertEquals("abcdefghijklmnopqrstuvwxyz 99", ((ScriptValue) res).toString());
+                assertEquals("ABCDEFGHIJKLMNOPQRSTUVWXYZ 99", ((ScriptValue) res).toString());
             } catch (ExecutionException ex) {
                 fail();
             }

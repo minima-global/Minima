@@ -123,8 +123,7 @@ public class HEXTests {
             try {
                 Value res = mf.runFunction(ctr);
                 assertEquals(Value.VALUE_HEX, res.getValueType());
-                //assertEquals("0x4142434445464748494A4B4C4D4E4F505152535455565758595A", ((HEXValue) res).toString()); // test fails because script value forces lowercase
-                assertEquals("0x6162636465666768696A6B6C6D6E6F707172737475767778797A", ((HEXValue) res).toString());
+                assertEquals("0x4142434445464748494A4B4C4D4E4F505152535455565758595A", ((HEXValue) res).toString()); // test fails because script value forces lowercase
             } catch (ExecutionException ex) {
                 fail();
             }
@@ -135,8 +134,7 @@ public class HEXTests {
             try {
                 Value res = mf.runFunction(ctr);
                 assertEquals(Value.VALUE_HEX, res.getValueType());
-                //assertEquals("0x48656C6C6F20576F726C64", ((HEXValue) res).toString()); // test fails because script value forces lowercase
-                assertEquals("0x68656C6C6F20776F726C64", ((HEXValue) res).toString());
+                assertEquals("0x48656C6C6F20576F726C64", ((HEXValue) res).toString()); // test fails because script value forces lowercase
             } catch (ExecutionException ex) {
                 fail();
             }

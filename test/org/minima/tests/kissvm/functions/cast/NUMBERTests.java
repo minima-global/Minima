@@ -57,7 +57,7 @@ public class NUMBERTests {
                 Value res = mf.runFunction(ctr);
                 assertEquals(Value.VALUE_NUMBER, res.getValueType());
                 assertEquals("1", ((NumberValue) res).toString());
-            } catch (ExecutionException ex) {
+            } catch (Exception ex) {
                 fail();
             }
         }
@@ -119,24 +119,16 @@ public class NUMBERTests {
         {
             MinimaFunction mf = fn.getNewFunction();
             mf.addParameter(new ConstantExpression(new ScriptValue("ABCDEFGHIJKLMNOPQRSTUVWXYZ")));
-            try {
+            assertThrows(NumberFormatException.class, () -> {
                 Value res = mf.runFunction(ctr);
-                //assertEquals(Value.VALUE_NUMBER, res.getValueType()); // Test fails due to invalid return type
-                //assertEquals("", ((NumberValue) res).toString()); // Test not completed
-            } catch (ExecutionException ex) {
-                fail();
-            }
+            });
         }
         {
             MinimaFunction mf = fn.getNewFunction();
             mf.addParameter(new ConstantExpression(new ScriptValue("Hello World")));
-            try {
+            assertThrows(NumberFormatException.class, () -> {
                 Value res = mf.runFunction(ctr);
-                //assertEquals(Value.VALUE_NUMBER, res.getValueType()); // Test fails due to invalid return type
-                //assertEquals("", ((NumberValue) res).toString()); // Test not completed
-            } catch (ExecutionException ex) {
-                fail();
-            }
+            });
         }
     }
 

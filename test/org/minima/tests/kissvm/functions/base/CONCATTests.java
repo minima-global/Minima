@@ -94,7 +94,7 @@ public class CONCATTests {
             try {
                 Value res = mf.runFunction(ctr);
                 assertEquals(Value.VALUE_SCRIPT, res.getValueType());
-                assertEquals("hello world", ((ScriptValue) res).toString());
+                assertEquals("HELLO WORLD", ((ScriptValue) res).toString());
             } catch (ExecutionException ex) {
                 fail();
             }
@@ -109,7 +109,7 @@ public class CONCATTests {
             try {
                 Value res = mf.runFunction(ctr);
                 assertEquals(Value.VALUE_SCRIPT, res.getValueType());
-                assertEquals("hello world MINIMA is here", ((ScriptValue) res).toString());
+                assertEquals("HELLO WORLD MINIMA IS HERE", ((ScriptValue) res).toString());
             } catch (ExecutionException ex) {
                 fail();
             }

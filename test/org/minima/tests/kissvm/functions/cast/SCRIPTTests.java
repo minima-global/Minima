@@ -72,14 +72,14 @@ public class SCRIPTTests {
                 fail();
             }
         }
+
         {
             MinimaFunction mf = fn.getNewFunction();
             mf.addParameter(new ConstantExpression(new HEXValue("0x414243444546")));
             try {
                 Value res = mf.runFunction(ctr);
                 assertEquals(Value.VALUE_SCRIPT, res.getValueType());
-                //assertEquals("ABCDEF", ((ScriptValue) res).toString()); // test fails because script value forces lowercase
-                assertEquals("abcdef", ((ScriptValue) res).toString());
+                assertEquals("0x414243444546", ((ScriptValue) res).toString()); // test fails because script value forces lowercase
             } catch (ExecutionException ex) {
                 fail();
             }
@@ -90,12 +90,12 @@ public class SCRIPTTests {
             try {
                 Value res = mf.runFunction(ctr);
                 assertEquals(Value.VALUE_SCRIPT, res.getValueType());
-                //ssertEquals("ABCDEFGHIJKLMNOPQRSTUVWXYZ", ((ScriptValue) res).toString()); // test fails because script value forces lowercase
-                assertEquals("abcdefghijklmnopqrstuvwxyz", ((ScriptValue) res).toString());
+                assertEquals("0x4142434445464748494A4B4C4D4E4F505152535455565758595A", ((ScriptValue) res).toString()); // test fails because script value forces lowercase
             } catch (ExecutionException ex) {
                 fail();
             }
         }
+        
         {
             MinimaFunction mf = fn.getNewFunction();
             mf.addParameter(new ConstantExpression(new NumberValue(0)));
@@ -135,8 +135,8 @@ public class SCRIPTTests {
             try {
                 Value res = mf.runFunction(ctr);
                 assertEquals(Value.VALUE_SCRIPT, res.getValueType());
-                //assertEquals("ABCDEFGHIJKLMNOPQRSTUVWXYZ", ((ScriptValue) res).toString()); // test fails because script value forces lowercase
-                assertEquals("abcdefghijklmnopqrstuvwxyz", ((ScriptValue) res).toString());
+                assertEquals("ABCDEFGHIJKLMNOPQRSTUVWXYZ", ((ScriptValue) res).toString()); // test fails because script value forces lowercase
+                //assertEquals("abcdefghijklmnopqrstuvwxyz", ((ScriptValue) res).toString());
             } catch (ExecutionException ex) {
                 fail();
             }
@@ -147,8 +147,8 @@ public class SCRIPTTests {
             try {
                 Value res = mf.runFunction(ctr);
                 assertEquals(Value.VALUE_SCRIPT, res.getValueType());
-                //assertEquals("Hello World", ((ScriptValue) res).toString()); // test fails because script value forces lowercase
-                assertEquals("hello world", ((ScriptValue) res).toString());
+                assertEquals("Hello World", ((ScriptValue) res).toString()); // test fails because script value forces lowercase
+                //assertEquals("hello world", ((ScriptValue) res).toString());
             } catch (ExecutionException ex) {
                 fail();
             }
