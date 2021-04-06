@@ -5,6 +5,8 @@ import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.expressions.Expression;
 import org.minima.kissvm.statements.Statement;
 import org.minima.kissvm.statements.StatementBlock;
+import org.minima.kissvm.values.BooleanValue;
+import org.minima.kissvm.values.Value;
 
 /**
  * WHILE..DO..ENDWHILE
@@ -32,8 +34,19 @@ public class WHILEstatement implements Statement {
 	
 	@Override
 	public void execute(Contract zContract) throws ExecutionException {
+		//Calculate the value..
+		Value val = mWhileCheck.getValue(zContract);
+		
+		//MUST be a boolean
+		if(val.getValueType() != Value.VALUE_BOOLEAN) {
+			throw new ExecutionException("RETURN MUST use a BOOLEAN expression : "+toString());
+		}
+		
+		//Check it..
+		BooleanValue bval = (BooleanValue)val;
+		
 		//Check the expression - this loop wil end when the number of execution points is over 1000
-		while(mWhileCheck.getValue(zContract).isTrue()) {
+		while(bval.isTrue()) {
 			//Run the code..
 			mWhileBlock.run(zContract);
 			
@@ -41,6 +54,17 @@ public class WHILEstatement implements Statement {
 			if(zContract.isSuccessSet()) {
 				return;
 			}
+			
+			//Calculate the value..
+			val = mWhileCheck.getValue(zContract);
+			
+			//MUST be a boolean
+			if(val.getValueType() != Value.VALUE_BOOLEAN) {
+				throw new ExecutionException("RETURN MUST use a BOOLEAN expression : "+toString());
+			}
+			
+			//Check it..
+			bval = (BooleanValue)val;
 		}
 	}
 	

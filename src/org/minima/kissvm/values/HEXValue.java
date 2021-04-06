@@ -1,7 +1,5 @@
 package org.minima.kissvm.values;
 
-import java.math.BigInteger;
-
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 
@@ -87,30 +85,25 @@ public class HEXValue extends Value {
 		return VALUE_HEX;
 	}
 	
-	@Override
-	public boolean isFalse() {
-		return mData.getDataValue().equals(BigInteger.ZERO);
-	}
-	
 	public boolean isEqual(HEXValue zValue) {
 		return mData.isEqual(zValue.getMiniData());
 	}
 	
-	public boolean isLess(HEXValue zValue) {
-		return mData.isLess(zValue.getMiniData());
-	}
-	
-	public boolean isLessEqual(HEXValue zValue) {
-		return mData.isLessEqual(zValue.getMiniData());
-	}
-	
-	public boolean isMore(HEXValue zValue) {
-		return mData.isMore(zValue.getMiniData());
-	}
-	
-	public boolean isMoreEqual(HEXValue zValue) {
-		return mData.isMoreEqual(zValue.getMiniData());
-	}
+//	public boolean isLess(HEXValue zValue) {
+//		return mData.isLess(zValue.getMiniData());
+//	}
+//	
+//	public boolean isLessEqual(HEXValue zValue) {
+//		return mData.isLessEqual(zValue.getMiniData());
+//	}
+//	
+//	public boolean isMore(HEXValue zValue) {
+//		return mData.isMore(zValue.getMiniData());
+//	}
+//	
+//	public boolean isMoreEqual(HEXValue zValue) {
+//		return mData.isMoreEqual(zValue.getMiniData());
+//	}
 	
 	@Override
 	public String toString() {

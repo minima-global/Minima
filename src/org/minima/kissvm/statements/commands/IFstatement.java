@@ -10,6 +10,8 @@ import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.expressions.Expression;
 import org.minima.kissvm.statements.Statement;
 import org.minima.kissvm.statements.StatementBlock;
+import org.minima.kissvm.values.BooleanValue;
+import org.minima.kissvm.values.Value;
 
 /**
  * @author Spartacus Rex
@@ -56,10 +58,19 @@ public class IFstatement implements Statement {
 		//Loop..
 		for(int loop=0;loop<size;loop++) {
 			//What Condition
-			Expression conditional 		 = mConditions.get(loop);
+			Expression conditional = mConditions.get(loop);
+			
+			//Calculate the value..
+			Value val = conditional.getValue(zContract);
+			
+			//MUST be a boolean
+			if(val.getValueType() != Value.VALUE_BOOLEAN) {
+				throw new ExecutionException("IF conditional MUST use a BOOLEAN expression : "+conditional.toString());
+			}
 			
 			//Check it..
-			if(conditional.getValue(zContract).isTrue()) {
+			BooleanValue bval = (BooleanValue)val;
+			if(bval.isTrue()) {
 				//What Action
 				StatementBlock codeblock = mActions.get(loop);
 				

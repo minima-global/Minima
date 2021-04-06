@@ -38,7 +38,7 @@ public class BaseConverter {
 		//Check that every char is a valid base 16 value..
 		boolean isHex = hex.matches("[0-9A-F]+");
 		if(!isHex) {
-			throw new NumberFormatException("Invalid HEX string in decode16");
+			throw new NumberFormatException("Invalid HEX string in decode16 : "+zHex);
 		}
 		
 		//Must be 2 digits per byte

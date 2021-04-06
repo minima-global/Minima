@@ -10,9 +10,7 @@ import org.minima.kissvm.functions.MinimaFunction;
 import org.minima.kissvm.tokens.LexicalTokenizer;
 import org.minima.kissvm.tokens.Token;
 import org.minima.kissvm.values.BooleanValue;
-import org.minima.kissvm.values.NumberValue;
 import org.minima.kissvm.values.Value;
-import org.minima.objects.base.MiniNumber;
 
 /**
  * @author Spartacus Rex

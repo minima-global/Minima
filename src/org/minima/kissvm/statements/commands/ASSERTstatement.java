@@ -7,6 +7,8 @@ import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.expressions.Expression;
 import org.minima.kissvm.statements.Statement;
+import org.minima.kissvm.values.BooleanValue;
+import org.minima.kissvm.values.Value;
 
 /**
  * @author Spartacus Rex
@@ -23,17 +25,20 @@ public class ASSERTstatement implements Statement{
 		mAssertValue = zAssertValue;
 	}
 	
-	/* (non-JavadocStat)
-	 * @see org.ramcash.ramscript.statements.Statement#execute(org.ramcash.ramscript.Contract)
-	 */
 	@Override
 	public void execute(Contract zContract) throws ExecutionException {
-		boolean success = mAssertValue.getValue(zContract).isTrue();
+		//Get the expression
+		Value val = mAssertValue.getValue(zContract);
 		
-		//Trace log
-		//zContract.traceLog(toString()+" result:"+success);
+		//MUST be a boolean
+		if(val.getValueType() != Value.VALUE_BOOLEAN) {
+			throw new ExecutionException("ASSERT MUST use a BOOLEAN expression : "+toString());
+		}
 		
-		//Tell the Contract
+		//Does it pass
+		boolean success = ((BooleanValue)val).isTrue();
+		
+		//Tell the Contract to FAIL if FALSE
 		if(!success) {
 			zContract.setRETURNValue(false);
 		}

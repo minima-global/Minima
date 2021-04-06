@@ -17,7 +17,6 @@ import org.minima.kissvm.functions.base.RPLVAR;
 import org.minima.kissvm.functions.base.SUBSET;
 import org.minima.kissvm.functions.cast.BOOL;
 import org.minima.kissvm.functions.cast.HEX;
-import org.minima.kissvm.functions.cast.MINIMA;
 import org.minima.kissvm.functions.cast.NUMBER;
 import org.minima.kissvm.functions.cast.SCRIPT;
 import org.minima.kissvm.functions.maths.ABS;
@@ -67,7 +66,7 @@ public abstract class MinimaFunction {
 	public static MinimaFunction[] ALL_FUNCTIONS = 
 			{ 
 				new CONCAT(), new LEN(), new RPLVAR(),new REV(),new SUBSET(), new GET(),
-				new BOOL(), new HEX(), new MINIMA(), new NUMBER(), new SCRIPT(),
+				new BOOL(), new HEX(), new NUMBER(), new SCRIPT(),
 				new ABS(), new CEIL(), new FLOOR(),new MAX(), new MIN(), new DEC(), new INC(), 
 				new SIGDIG(), new POW(), 
 				new TOKENSCRIPT(), new TOKENTOTAL(), new TOKENSCALE(),

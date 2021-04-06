@@ -1,9 +1,6 @@
 package org.minima.kissvm.values;
 
-import org.minima.kissvm.Contract;
-import org.minima.objects.base.MiniString;
-
-public class ScriptValue extends HEXValue {
+public class ScriptValue extends Value {
 	
 	/**
 	 * The Script
@@ -11,10 +8,7 @@ public class ScriptValue extends HEXValue {
 	String mScript;
 	
 	public ScriptValue(String zScript) {
-		//Remove the bracket and space at the beginning and end
-		super(zScript.getBytes(MiniString.MINIMA_CHARSET));
-
-		mScript = new String( getRawData(), MiniString.MINIMA_CHARSET );
+		mScript = new String( zScript );
 	}
 	
 	@Override
@@ -25,6 +19,10 @@ public class ScriptValue extends HEXValue {
 	@Override
 	public int getValueType() {
 		return VALUE_SCRIPT;
+	}
+	
+	public boolean isEqual(ScriptValue zValue) {
+		return mScript.equals(zValue.toString());
 	}
 	
 	/**

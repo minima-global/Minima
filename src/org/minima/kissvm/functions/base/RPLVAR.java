@@ -3,7 +3,6 @@ package org.minima.kissvm.functions.base;
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.functions.MinimaFunction;
-import org.minima.kissvm.tokens.Token;
 import org.minima.kissvm.tokens.Tokenizer;
 import org.minima.kissvm.values.ScriptValue;
 import org.minima.kissvm.values.Value;

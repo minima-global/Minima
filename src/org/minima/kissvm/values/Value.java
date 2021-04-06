@@ -3,9 +3,7 @@
  */
 package org.minima.kissvm.values;
 
-import org.minima.kissvm.tokens.Token;
 import org.minima.kissvm.tokens.Tokenizer;
-import org.minima.objects.base.MiniNumber;
 
 /**
  * @author Spartacus Rex
@@ -27,21 +25,22 @@ public abstract class Value {
 	 */
 	public abstract int getValueType();
 	
-	/**
-	 * TRUE or FALSE
-	 */
-	public boolean isTrue() {
-		return !isFalse();
-	}
-	
-	public abstract boolean isFalse();
+//	/**
+//	 * TRUE or FALSE
+//	 */
+//	public boolean isTrue() {
+//		return !isFalse();
+//	}
+//	
+//	public abstract boolean isFalse();
 	
 	/**
 	 * Strict Check this type and throw an exception if not
 	 */
 	public void verifyType(int zType) throws IllegalArgumentException{
 		if (getValueType() != zType) {
-			throw new IllegalArgumentException("Incorrect value type, expected "+zType+" found "+getValueType());
+			throw new IllegalArgumentException("Incorrect value type, expected "
+					+getValueTypeString(zType)+" found "+getValueTypeString(getValueType()));
 		}
 	}
 	

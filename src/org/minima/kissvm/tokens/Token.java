@@ -4,13 +4,8 @@
 package org.minima.kissvm.tokens;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.StringTokenizer;
 
-import org.minima.kissvm.exceptions.MinimaParseException;
 import org.minima.kissvm.exceptions.SyntaxException;
-import org.minima.kissvm.functions.MinimaFunction;
 
 /**
  * @author Spartacus Rex
