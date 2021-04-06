@@ -73,7 +73,9 @@ public class SHA3Tests {
             for (int i = 0; i < 100; i++) {
                 for (int j = 160; i <= 512; i = i + 32) {
                     ScriptValue Param = new ScriptValue(MiniData.getRandomData(64).to0xString());
-                    HEXValue Result = new HEXValue(Crypto.getInstance().hashData(Param.getRawData(), j));
+                    
+                    MiniData strdata = new MiniData(Param.toString().getBytes());
+                    HEXValue Result = new HEXValue(Crypto.getInstance().hashData(strdata.getData(), j));
 
                     MinimaFunction mf = fn.getNewFunction();
                     mf.addParameter(new ConstantExpression(new NumberValue(j)));
