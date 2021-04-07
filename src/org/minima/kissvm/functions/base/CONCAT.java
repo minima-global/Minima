@@ -7,7 +7,6 @@ import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.expressions.Expression;
 import org.minima.kissvm.functions.MinimaFunction;
 import org.minima.kissvm.values.HexValue;
-import org.minima.kissvm.values.StringValue;
 import org.minima.kissvm.values.Value;
 
 public class CONCAT extends MinimaFunction{
