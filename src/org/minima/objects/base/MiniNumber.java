@@ -26,12 +26,12 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 	/**
 	 * The MAX Number of Significant digits for any MiniNUmber
 	 */
-	public static final int MAX_DIGITS = 34;
+	public static final int MAX_DIGITS = 64;
 	
 	/**
-	 * Max Decimal Places for any MiniNumber - 1 billion is max for Minima so...
+	 * MAX number is 8 byte unsigned long.. 2^64 -1 .. 20 digits
 	 */
-	public static final int MAX_DECIMAL_PLACES = MAX_DIGITS - 10;
+	public static final int MAX_DECIMAL_PLACES = MAX_DIGITS - 20;
 	
 	/** 
 	 * The base Math Context used for all operations
@@ -40,8 +40,10 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 	
 	/**
 	 * The MAXIMUM value any MiniNumber can be..
+	 * 
+	 * 2^64 - 1 or as HEX 0xFFFFFFFFFFFFFFFF
 	 */
-	public static final BigDecimal MAX_MININUMBER = new BigDecimal(10,MATH_CONTEXT).pow(512,MATH_CONTEXT);
+	public static final BigDecimal MAX_MININUMBER = new BigDecimal(2).pow(64,MATH_CONTEXT).subtract(BigDecimal.ONE,MATH_CONTEXT);
 	
 	/**
 	 * The Minimum value any MiniNumber can be..
@@ -130,11 +132,11 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 	 */
 	private void checkLimits() {
 		if(mNumber.compareTo(MAX_MININUMBER)>0) {
-			throw new NumberFormatException("MiniNumber too large - outside allowed range 10^512");
+			throw new NumberFormatException("MiniNumber too large - outside allowed range 2^64 "+mNumber);
 		}
 		
 		if(mNumber.compareTo(MIN_MININUMBER)<0) {
-			throw new NumberFormatException("MiniNumber too small - outside allowed range -(10^512)");
+			throw new NumberFormatException("MiniNumber too small - outside allowed range -(2^64)");
 		}
 		
 		if(mNumber.scale() > MAX_DECIMAL_PLACES) {
@@ -159,10 +161,6 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 	
 	public BigInteger getAsBigInteger() {
 		return mNumber.toBigInteger();
-	}
-	
-	public double getAsDouble() {
-		return mNumber.doubleValue();
 	}
 	
 	public long getAsLong() {
@@ -309,6 +307,8 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 	
 	public static void main(String[] zargs) {
 		MiniNumber tt = MiniNumber.MINI_UNIT;
+		
+		System.out.println("Large : "+MiniNumber.MAX_MININUMBER);
 		
 		System.out.println("Smallest : "+tt+" "+tt.getNumber().scale());
 		

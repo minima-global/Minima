@@ -50,19 +50,19 @@ public class TOKENSCALETests {
 
         TokenProof tp1 = new TokenProof(MiniData.getRandomData(16),
                 MiniNumber.EIGHT,
-                MiniNumber.THOUSAND,
+                MiniNumber.ONE,
                 new MiniString("TestToken1"),
                 new MiniString("Hello from TestToken1"));
 
         TokenProof tp2 = new TokenProof(MiniData.getRandomData(16),
                 MiniNumber.TEN,
-                MiniNumber.MILLION,
+                MiniNumber.TEN,
                 new MiniString("TestToken2"),
                 new MiniString("Hello from TestToken2"));
 
         TokenProof tp3 = new TokenProof(MiniData.getRandomData(16),
                 MiniNumber.TWELVE,
-                MiniNumber.BILLION,
+                MiniNumber.THOUSAND,
                 new MiniString("TestToken3"),
                 new MiniString("Hello from TestToken3"));
 
