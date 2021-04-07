@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import org.minima.kissvm.exceptions.ExecutionException;
+import org.minima.kissvm.exceptions.MinimaParseException;
 import org.minima.kissvm.functions.MinimaFunction;
 import org.minima.kissvm.statements.StatementBlock;
 import org.minima.kissvm.statements.StatementParser;
@@ -101,7 +102,6 @@ public class Contract {
 		mTraceON     = zTrace;
 		
 		//Clean the RamScript
-//		mRamScript = cleanScript(zRamScript);
 		mRamScript = zRamScript;
 		
 		mTransaction = zTransaction;
@@ -493,134 +493,64 @@ public class Contract {
 	}
 	
 	/**
-	 * Convert a SCRIPT into the Required Format for MiniScript.
+	 * Clean up a script..
+	 * 
 	 * @param zScript
 	 * @return The Converted Script
 	 */
 	public static String cleanScript(String zScript) {
 		
-		//FOR NOW
-		if(true) {
+		//The final result
+		StringBuffer ret = new StringBuffer();
+		
+		//Remove all the excess white space
+		String script = zScript.replaceAll("\\s+"," ").trim();
+		
+		//First CONVERT..
+		Tokenizer tokz = new Tokenizer(script, true);
+		try {
+			//Get the list of Tokens..
+			ArrayList<Token> tokens = tokz.tokenize();
+		
+			//Now add them correctly..
+			boolean first = true;
+			for(Token tok : tokens) {
+				if(tok.getTokenType() == Token.TOKEN_COMMAND) {
+					if(first) {
+						ret.append(tok.getToken()+" ");
+						first = false;
+					}else {
+						ret.append(" "+tok.getToken()+" ");
+					}
+					
+				}else if(Tokenizer.mBooleanToks.contains(tok.getToken())) {
+					ret.append(" "+tok.getToken()+" ");
+				
+				}else if(tok.getToken().startsWith("0x")) {
+					String hex = "0x"+tok.getToken().substring(2).toUpperCase();
+					ret.append(hex);
+					
+				}else {
+					ret.append(tok.getToken());
+				}
+			}
+		
+		} catch (MinimaParseException e) {
+			MinimaLogger.log("Clean Script Error",e);
 			return zScript;
 		}
 		
-		//Quick check for empty..
-		if(zScript.equals("")) {
-			return "";
-		}
+		return ret.toString().trim();
+	}
+	
+	public static void main(String[] zArgs) {
 		
-		//Start cleaning..
-		String script = new String(" "+zScript.toLowerCase()+" ");
+		String scr = new String("let a  = 0x456abde let Fann = [ hello From MINMIMA!!   ]");
 		
-		//Replace whitespace with a single space
-		script = script.replaceAll("\\s+"," ");
+		String clean = Contract.cleanScript(scr);
 		
-		//Remove comments /* .. */
-		int comment = script.indexOf("/*");
-		while(comment != -1) {
-			int endcomment = script.indexOf("*/",comment);
-			int len = script.length();
-			script = " "+script.substring(0,comment)+" "+script.substring(endcomment+2, len)+" ";
-			comment = script.indexOf("/*");
-		}
+		MinimaLogger.log(scr);
+		MinimaLogger.log(clean);
 		
-		//Incase this is a 'param' string
-		script = script.replaceAll(",", " , ");
-		script = script.replaceAll(";", " ; ");
-		script = script.replaceAll(":", " : ");
-		script = script.replaceAll("#", " # ");
-		
-		//Double up the spaces.. in case of double NOT 
-		script = script.replaceAll(" ", "  ");
-		
-		//STILL NEED TO DO - .. minus.. ignoring numbers..
-//		script = script.replaceAll("\\-[a-z]", " - ");
-		
-		//Operators
-		script = script.replaceAll("\\(", " ( ");
-		script = script.replaceAll("\\)", " ) ");
-		script = script.replaceAll("\\[", " [ ");
-		script = script.replaceAll("\\]", " ] ");
-		script = script.replaceAll("<<", " << ");
-		script = script.replaceAll(">>", " >> ");
-		script = script.replaceAll("\\&" , " & ");
-		script = script.replaceAll("\\|" , " | ");
-		script = script.replaceAll("\\^" , " ^ ");
-		script = script.replaceAll("\\*", " * ");
-		script = script.replaceAll("\\+", " + ");
-		script = script.replaceAll("\\=", " = ");
-		script = script.replaceAll("\\%", " % ");
-			
-		//Boolean
-		script = script.replaceAll(" nand ", " NAND ");
-		script = script.replaceAll(" nxor ", " NXOR ");
-		script = script.replaceAll(" nor ", " NOR ");
-		script = script.replaceAll(" and ", " AND ");
-		script = script.replaceAll(" xor ", " XOR ");
-		script = script.replaceAll(" or ", " OR ");
-		script = script.replaceAll(" not ", " NOT ");
-		script = script.replaceAll(" neg ", " NEG ");
-		script = script.replaceAll(" neq ", " NEQ ");
-		script = script.replaceAll(" gte ", " GTE ");
-		script = script.replaceAll(" lte ", " LTE ");
-		script = script.replaceAll(" gt ", " GT ");
-		script = script.replaceAll(" eq ", " EQ ");
-		script = script.replaceAll(" lt ", " LT ");
-		
-//		//Commands
-//		String[] allcommands = Token.TOKENS_COMMAND;
-//		for(int i=0;i<allcommands.length;i++) {
-//			String find = " "+allcommands[i].toLowerCase()+" ";
-//			String repl = " "+allcommands[i]+" ";
-//			script = script.replaceAll(find,repl);
-//		}
-		
-		script = script.replaceAll(" true ", " TRUE ");
-		script = script.replaceAll(" false ", " FALSE ");
-		
-		//@Globals
-		script = script.replaceAll(" @blknum "	    , " @BLKNUM ");
-		script = script.replaceAll(" @blktime "	    , " @BLKTIME ");
-		script = script.replaceAll(" @prevblkhash " , " @PREVBLKHASH ");
-		script = script.replaceAll(" @input "	    , " @INPUT ");
-		script = script.replaceAll(" @address "	    , " @ADDRESS ");
-		script = script.replaceAll(" @amount "	    , " @AMOUNT "); 
-		script = script.replaceAll(" @coinid "	    , " @COINID "); 
-		script = script.replaceAll(" @script "	    , " @SCRIPT "); 
-		script = script.replaceAll(" @tokenid "	    , " @TOKENID "); 
-		script = script.replaceAll(" @tokenscript "	, " @TOKENSCRIPT "); 
-		script = script.replaceAll(" @tokentotal"	, " @TOKENTOTAL"); 
-		script = script.replaceAll(" @floating "	, " @FLOATING"); 
-		script = script.replaceAll(" @totin "	    , " @TOTIN "); 
-		script = script.replaceAll(" @totout " 	    , " @TOTOUT ");
-		script = script.replaceAll(" @inblknum "    , " @INBLKNUM ");
-		script = script.replaceAll(" @blkdiff "     , " @BLKDIFF ");
-		
-		//And now do all the functions
-		for(MinimaFunction func : MinimaFunction.ALL_FUNCTIONS) {
-			//Name
-			String name = func.getName();
-			
-			//replace
-			script = script.replaceAll(" "+name.toLowerCase()+" ", " "+name+" ");
-		}
-			
-		//Convert the HEX to upper case..
-		String finalstring = "";
-		StringTokenizer strtok = new StringTokenizer(script," ");
-		while(strtok.hasMoreTokens()) {
-			String tok = strtok.nextToken();
-			if(tok.startsWith("0x")) {
-				finalstring = finalstring.concat(" 0x"+tok.substring(2).toUpperCase());
-			}else {
-				finalstring = finalstring.concat(" "+tok);
-			}
-		}
-		
-		//Remove all the excess white space
-		script = script.replaceAll("\\s+"," ").trim();
-				
-		//Boom..
-		return finalstring.trim();
 	}
 }

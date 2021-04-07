@@ -39,13 +39,14 @@ public class Tokenizer {
 		 "XOR","AND","OR",
 		 "NXOR","NAND","NOR",
 		 "NOT","NEG"};
+	public static final List<String> mBooleanToks  = Arrays.asList(TOKENS_BOOLEAN_OPERATOR);
 	
 	/**
 	 * Words end when they encounter 
 	 */
-	public final String[] TOKENS_ENDOFWORD   = 
-		{" ","+","-","/","*","%","&","|","^","=","(",")","[","]","<",">"};
-	public final List<String> mAllEOW  = Arrays.asList(TOKENS_ENDOFWORD);
+	public static final String[] TOKENS_ENDOFWORD   = 
+		{"+","-","/","*","%","&","|","^","=","(",")","[","]","<",">"};
+	public static final List<String> mAllEOW  = Arrays.asList(TOKENS_ENDOFWORD);
 	
 	/**
 	 * The script we are tokenizing
@@ -58,10 +59,17 @@ public class Tokenizer {
 	int mPos;
 	int mLength; 
 	
+	boolean mCaseInsensitive = false;
+	
 	public Tokenizer(String zScript) {
+		this(zScript, false);
+	}
+	
+	public Tokenizer(String zScript, boolean zCaseInsensitive) {
 		mScript = new StringBuffer(zScript);
 		mPos    = 0;
 		mLength = mScript.length();
+		mCaseInsensitive = zCaseInsensitive;
 	}
 	
 	
@@ -74,7 +82,7 @@ public class Tokenizer {
 			String c = Character.toString(mScript.charAt(mPos));
 			
 			//Is it an end of Word..
-			if(mAllEOW.contains(c)) {
+			if(mAllEOW.contains(c) || isWhiteSpace(c)) {
 				break;
 			}
 			
@@ -102,6 +110,10 @@ public class Tokenizer {
 		return zWord.matches("@[A-Z]+");
 	}
 	
+	public static boolean isWhiteSpace(String zWord) {
+		return zWord.matches("\\s+");
+	}
+	
 	public ArrayList<Token> tokenize() throws MinimaParseException{
 		ArrayList<Token> tokens = new ArrayList<Token>();
 		
@@ -124,7 +136,7 @@ public class Tokenizer {
 			
 			//space check..
 			boolean wasspace = false;
-			if(nextchar.equals(" ")) {
+			if(isWhiteSpace(nextchar)) {
 				//ignore and move on..
 				mPos++;
 				wasspace = true;
@@ -187,43 +199,51 @@ public class Tokenizer {
 				//get the next word..
 				String word = getNextWord();
 				
+				//Uppercase..Lowercase - for cleanscript..
+				String uppercase = word;
+				String lowercase = word;
+				if(mCaseInsensitive) {
+					uppercase = word.toUpperCase();
+					lowercase = word.toLowerCase();
+				}
+				
 					//What is it..
-				if(allcommands.contains(word)) {
+				if(allcommands.contains(uppercase)) {
 					//Must have a space before a command word
 					if(!waslastspace) {
-						throw new MinimaParseException("Missing space before Command @ "+mPos+" "+word);
+						throw new MinimaParseException("Missing space before Command @ "+mPos+" "+uppercase);
 					}
 					
 					//It's a command
-					tokens.add(new Token(Token.TOKEN_COMMAND, word));
+					tokens.add(new Token(Token.TOKEN_COMMAND, uppercase));
 				
-				}else if(allfunctions.contains(word)) {
+				}else if(allfunctions.contains(uppercase)) {
 					//It's a function
-					tokens.add(new Token(Token.TOKEN_FUNCTIION, word));
+					tokens.add(new Token(Token.TOKEN_FUNCTIION, uppercase));
 				
-				}else if(allboolops.contains(word)) {
+				}else if(allboolops.contains(uppercase)) {
 					//It's a function
-					tokens.add(new Token(Token.TOKEN_OPERATOR, word));
+					tokens.add(new Token(Token.TOKEN_OPERATOR, uppercase));
 				
 				}else if(isNumber(word) || isHex(word)) {
 					//It's a number
 					tokens.add(new Token(Token.TOKEN_VALUE, word));
 				
-				}else if(word.equals("TRUE")) {
+				}else if(uppercase.equals("TRUE")) {
 					//It's a number
-					tokens.add(new Token(Token.TOKEN_TRUE, word));
+					tokens.add(new Token(Token.TOKEN_TRUE, uppercase));
 				
-				}else if(word.equals("FALSE")) {
+				}else if(uppercase.equals("FALSE")) {
 					//It's a number
-					tokens.add(new Token(Token.TOKEN_FALSE, word));
+					tokens.add(new Token(Token.TOKEN_FALSE, uppercase));
 				
-				}else if(isGlobal(word)) {
+				}else if(isGlobal(uppercase)) {
 					//It's a global
-					tokens.add(new Token(Token.TOKEN_GLOBAL, word));
+					tokens.add(new Token(Token.TOKEN_GLOBAL, uppercase));
 					
-				}else if(isVariable(word)) {
+				}else if(isVariable(lowercase)) {
 					//It's a number
-					tokens.add(new Token(Token.TOKEN_VARIABLE, word));
+					tokens.add(new Token(Token.TOKEN_VARIABLE, lowercase));
 				
 				}else {
 					throw new MinimaParseException("Incorrect Token found @ "+mPos+" "+word);
@@ -243,7 +263,8 @@ public class Tokenizer {
 //		System.out.println(isNumber("22.88"));
 //		System.out.println(isNumber("10.88"));
 		
-		String script = "LET  a =  -1.5 - -1.5";
+		String script = "\tLET\na =  \n -1.5 - -1.5\nLET\nb=23\n";
+//		String script = "\nLET";
 		
 		try {
 			//Then run it..
