@@ -17,12 +17,16 @@ public class BaseConverter {
 	        hexChars[j * 2 + 1] = HEX16ARRAY[v & 0x0F];
 	    }
 	    
+	    if(hexChars.length == 0) {
+	    	return "";
+	    }
+	    
 	    return "0x"+new String(hexChars);
 	}
 	
 	public static byte[] decode16(String zHex) throws NumberFormatException {
 		String hex = zHex;
-		if(hex.startsWith("0x")) {
+		if(hex.toLowerCase().startsWith("0x")) {
 			hex = zHex.substring(2);
 		}		
 		
@@ -175,7 +179,7 @@ public class BaseConverter {
 	
 	public static void main(String[] zArgs) {
 		
-		byte[] data = decode16("0xvvFFFF");
+		byte[] data = decode16("");
 		
 		System.out.print(data.length);
 		
