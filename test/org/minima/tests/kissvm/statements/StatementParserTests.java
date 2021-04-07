@@ -34,7 +34,7 @@ public class StatementParserTests {
     public void testParsingLETArrays() {
         {
             try {
-                String Script = "LET (A) = TRUE LET (B) = FALSE";
+                String Script = "LET (a) = TRUE LET (b) = FALSE";
                 List<Token> tokens = Token.tokenize(Contract.cleanScript(Script));
                 StatementBlock sb = StatementParser.parseTokens(tokens);
             } catch (MinimaParseException ex) {
@@ -46,7 +46,7 @@ public class StatementParserTests {
 
         {
             assertThrows(MinimaParseException.class, () -> {
-                String Script = "LET (A = TRUE";
+                String Script = "LET (a = TRUE";
                 List<Token> tokens = Token.tokenize(Contract.cleanScript(Script));
                 StatementBlock sb = StatementParser.parseTokens(tokens);
             });
@@ -54,7 +54,7 @@ public class StatementParserTests {
 
         {
             assertThrows(MinimaParseException.class, () -> {
-                String Script = "LET (A * ) = TRUE";
+                String Script = "LET (a * ) = TRUE";
                 List<Token> tokens = Token.tokenize(Contract.cleanScript(Script));
                 StatementBlock sb = StatementParser.parseTokens(tokens);
             });	
@@ -70,7 +70,7 @@ public class StatementParserTests {
 
         {
             try {
-                String Script = "LET (A B C D E) = TRUE LET (B C D E F) = FALSE";
+                String Script = "LET (a b c d e) = TRUE LET (b c d e f) = FALSE";
                 List<Token> tokens = Token.tokenize(Contract.cleanScript(Script));
                 StatementBlock sb = StatementParser.parseTokens(tokens);
             } catch (MinimaParseException ex) {
@@ -82,11 +82,11 @@ public class StatementParserTests {
 
         {
             try {
-                String Script = "LET (TRUE 1 0x123456 D BOOL(1)) = TRUE LET (FALSE -1 0xABCDEF D SCRIPT(0xABCDEF)) = FALSE";
+                String Script = "LET (TRUE 1 0x123456 d BOOL(1)) = TRUE LET (FALSE -1 0xABCDEF d SCRIPT(0xABCDEF)) = FALSE";
                 List<Token> tokens = Token.tokenize(Contract.cleanScript(Script));
                 StatementBlock sb = StatementParser.parseTokens(tokens);
             } catch (MinimaParseException ex) {
-                fail();
+            	fail();
             } catch (Exception ex) {
                 fail();
             }

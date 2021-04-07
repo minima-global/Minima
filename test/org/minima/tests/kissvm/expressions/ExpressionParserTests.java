@@ -305,11 +305,11 @@ public class ExpressionParserTests {
 
             {
                 try {
-                    String Script = "A " + Op + " B";
+                    String Script = "a " + Op + " b";
                     List<Token> tokens = Token.tokenize(Contract.cleanScript(Script));
                     Expression expr = ExpressionParser.getExpression(tokens);
                     assertEquals(expr.getClass(), BooleanExpression.class);
-                    assertEquals("( variable:A " + Op + " variable:B )", expr.toString());
+                    assertEquals("( variable:a " + Op + " variable:b )", expr.toString());
                 } catch (MinimaParseException ex) {
                     fail();
                 } catch (Exception ex) {
@@ -369,11 +369,11 @@ public class ExpressionParserTests {
 
             {
                 try {
-                    String Script = "((A) " + Op + " (((B))))";
+                    String Script = "((a) " + Op + " (((b))))";
                     List<Token> tokens = Token.tokenize(Contract.cleanScript(Script));
                     Expression expr = ExpressionParser.getExpression(tokens);
                     assertEquals(expr.getClass(), BooleanExpression.class);
-                    assertEquals("( variable:A " + Op + " variable:B )", expr.toString());
+                    assertEquals("( variable:a " + Op + " variable:b )", expr.toString());
                 } catch (MinimaParseException ex) {
                     fail();
                 } catch (Exception ex) {
@@ -383,11 +383,11 @@ public class ExpressionParserTests {
 
             {
                 try {
-                    String Script = "((A) " + Op + " (((B))))";
+                    String Script = "((a) " + Op + " (((b))))";
                     List<Token> tokens = Token.tokenize(Contract.cleanScript(Script));
                     Expression expr = ExpressionParser.getExpression(tokens);
                     assertEquals(expr.getClass(), BooleanExpression.class);
-                    assertEquals("( variable:A " + Op + " variable:B )", expr.toString());
+                    assertEquals("( variable:a " + Op + " variable:b )", expr.toString());
                 } catch (MinimaParseException ex) {
                     fail();
                 } catch (Exception ex) {
@@ -557,11 +557,11 @@ public class ExpressionParserTests {
 
         {
             try {
-                String Script = "NOT A";
+                String Script = "NOT a";
                 List<Token> tokens = Token.tokenize(Contract.cleanScript(Script));
                 Expression expr = ExpressionParser.getExpression(tokens);
                 assertEquals(expr.getClass(), BooleanExpression.class);
-                assertEquals("NOT ( variable:A )", expr.toString());
+                assertEquals("NOT ( variable:a )", expr.toString());
             } catch (MinimaParseException ex) {
                 fail();
             } catch (Exception ex) {
@@ -930,11 +930,11 @@ public class ExpressionParserTests {
 
             {
                 try {
-                    String Script = "A " + Op + " B";
+                    String Script = "a " + Op + " b";
                     List<Token> tokens = Token.tokenize(Contract.cleanScript(Script));
                     Expression expr = ExpressionParser.getExpression(tokens);
                     assertEquals(expr.getClass(), OperatorExpression.class);
-                    assertEquals("( variable:A " + Op + " variable:B )", expr.toString());
+                    assertEquals("( variable:a " + Op + " variable:b )", expr.toString());
                 } catch (MinimaParseException ex) {
                     fail();
                 } catch (Exception ex) {
@@ -994,11 +994,11 @@ public class ExpressionParserTests {
 
             {
                 try {
-                    String Script = "((A) " + Op + " (((B))))";
+                    String Script = "((a) " + Op + " (((b))))";
                     List<Token> tokens = Token.tokenize(Contract.cleanScript(Script));
                     Expression expr = ExpressionParser.getExpression(tokens);
                     assertEquals(expr.getClass(), OperatorExpression.class);
-                    assertEquals("( variable:A " + Op + " variable:B )", expr.toString());
+                    assertEquals("( variable:a " + Op + " variable:b )", expr.toString());
                 } catch (MinimaParseException ex) {
                     fail();
                 } catch (Exception ex) {
@@ -1008,11 +1008,11 @@ public class ExpressionParserTests {
 
             {
                 try {
-                    String Script = "((A) " + Op + " (((B))))";
+                    String Script = "((a) " + Op + " (((b))))";
                     List<Token> tokens = Token.tokenize(Contract.cleanScript(Script));
                     Expression expr = ExpressionParser.getExpression(tokens);
                     assertEquals(expr.getClass(), OperatorExpression.class);
-                    assertEquals("( variable:A " + Op + " variable:B )", expr.toString());
+                    assertEquals("( variable:a " + Op + " variable:b )", expr.toString());
                 } catch (MinimaParseException ex) {
                     fail();
                 } catch (Exception ex) {
@@ -1182,11 +1182,11 @@ public class ExpressionParserTests {
 
         {
             try {
-                String Script = "NEG A";
+                String Script = "NEG a";
                 List<Token> tokens = Token.tokenize(Contract.cleanScript(Script));
                 Expression expr = ExpressionParser.getExpression(tokens);
                 assertEquals(expr.getClass(), OperatorExpression.class);
-                assertEquals(" - ( variable:A )", expr.toString());
+                assertEquals(" - ( variable:a )", expr.toString());
             } catch (MinimaParseException ex) {
                 fail();
             } catch (Exception ex) {

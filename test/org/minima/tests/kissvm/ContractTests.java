@@ -259,7 +259,7 @@ public class ContractTests {
         {
             String Script = "";
             for (int i = 0; i < Contract.MAX_INSTRUCTIONS; i++) {
-                Script = Script + "LET A = " + i + " ";
+                Script = Script + "LET a = " + i + " ";
             }
 
             {
@@ -274,7 +274,7 @@ public class ContractTests {
         {
             String Script = "";
             for (int i = 0; i <= Contract.MAX_INSTRUCTIONS; i++) {
-                Script = Script + "LET A = " + i + " ";
+                Script = Script + "LET a = " + i + " ";
             }
 
             {
@@ -289,7 +289,7 @@ public class ContractTests {
         {
             String Script = "";
             for (int i = 0; i <= Contract.MAX_INSTRUCTIONS; i++) {
-                Script = Script + "LET A = " + i + " ";
+                Script = Script + "LET a = " + i + " ";
             }
 
             {
