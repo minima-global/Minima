@@ -286,7 +286,7 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 		
 		//Read in the byte array for unscaled BigInteger
 		int len = zIn.readInt();
-		if(len > 256 || len<1) {
+		if(len > 64 || len<1) {
 			throw new IOException("ERROR reading MiniNumber - input too large or negative "+len);
 		}
 		
