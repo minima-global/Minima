@@ -146,7 +146,7 @@ public class OperatorExpressionTests {
         assertEquals("0x20", ((HEXValue) (new OperatorExpression(ceHex01, ce5, OperatorExpression.OPERATOR_SHIFTL)).getValue(ctr)).toString());
 
         assertEquals("0x0100", ((HEXValue) (new OperatorExpression(ceHex0100, ce0, OperatorExpression.OPERATOR_SHIFTR)).getValue(ctr)).toString());
-        assertEquals("0x0080", ((HEXValue) (new OperatorExpression(ceHex0100, ce1, OperatorExpression.OPERATOR_SHIFTR)).getValue(ctr)).toString());
+        assertEquals("0x80", ((HEXValue) (new OperatorExpression(ceHex0100, ce1, OperatorExpression.OPERATOR_SHIFTR)).getValue(ctr)).toString());
         assertEquals("0x20", ((HEXValue) (new OperatorExpression(ceHex0100, ce3, OperatorExpression.OPERATOR_SHIFTR)).getValue(ctr)).toString());
         assertEquals("0x08", ((HEXValue) (new OperatorExpression(ceHex0100, ce5, OperatorExpression.OPERATOR_SHIFTR)).getValue(ctr)).toString());
 
