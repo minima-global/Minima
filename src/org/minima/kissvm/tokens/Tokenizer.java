@@ -39,7 +39,7 @@ public class Tokenizer {
 		 "XOR","AND","OR",
 		 "NXOR","NAND","NOR",
 		 "NOT","NEG"};
-	public static final List<String> mBooleanToks  = Arrays.asList(TOKENS_BOOLEAN_OPERATOR);
+	public static final List<String> BOOLEAN_TOKENS_LIST  = Arrays.asList(TOKENS_BOOLEAN_OPERATOR);
 	
 	/**
 	 * Words end when they encounter 

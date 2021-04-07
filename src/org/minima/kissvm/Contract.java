@@ -523,7 +523,7 @@ public class Contract {
 						ret.append(" "+tok.getToken()+" ");
 					}
 					
-				}else if(Tokenizer.mBooleanToks.contains(tok.getToken())) {
+				}else if(Tokenizer.BOOLEAN_TOKENS_LIST.contains(tok.getToken())) {
 					ret.append(" "+tok.getToken()+" ");
 				
 				}else if(tok.getToken().startsWith("0x")) {
