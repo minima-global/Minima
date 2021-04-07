@@ -212,9 +212,9 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 		//1-max digits..
 		int sigdig = zSignificantDigits;
 		if(sigdig>MAX_DIGITS) {
-			sigdig = MAX_DIGITS;	
-		}else if(sigdig<1) {
-			sigdig = 1;
+			throw new NumberFormatException("Cannot specify this many significant digits "+sigdig);	
+		}else if(sigdig<0) {
+			throw new NumberFormatException("Cannot specify negative significant digits "+sigdig);
 		}
 		
 		return new MiniNumber( mNumber.round(new MathContext(sigdig, RoundingMode.DOWN))) ;

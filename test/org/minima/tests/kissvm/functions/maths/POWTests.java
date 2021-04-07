@@ -95,7 +95,7 @@ public class POWTests {
         // Invalid param domain
         {
             MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new NumberValue(0.5)));
+            mf.addParameter(new ConstantExpression(new NumberValue("0.5")));
             mf.addParameter(new ConstantExpression(new NumberValue(16)));
             assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);

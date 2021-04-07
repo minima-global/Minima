@@ -25,6 +25,10 @@ public class SIGDIG extends MinimaFunction {
 			throw new ExecutionException("SIGDIG precision must be to a whole Number");
 		}
 		
+		if(significantdigits.getNumber().isLess(MiniNumber.ZERO)) {
+			throw new ExecutionException("SIGDIG precision must be a positive whole number : "+significantdigits);
+		}
+		
 		return new NumberValue(number.getNumber().setSignificantDigits(significantdigits.getNumber().getAsInt()));
 	}
 	
