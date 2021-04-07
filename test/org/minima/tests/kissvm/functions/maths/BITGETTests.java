@@ -115,10 +115,7 @@ public class BITGETTests {
             MinimaFunction mf = fn.getNewFunction();
             mf.addParameter(new ConstantExpression(new HEXValue("0x01234567")));
             mf.addParameter(new ConstantExpression(new NumberValue(Integer.MIN_VALUE)));
-            //assertThrows(ExecutionException.class, () -> { // Should throw this
-            //    Value res = mf.runFunction(ctr);
-            //});
-            assertThrows(IndexOutOfBoundsException.class, () -> { // but throws this
+            assertThrows(ExecutionException.class, () -> { // Should throw this
                 Value res = mf.runFunction(ctr);
             });
         }
@@ -126,10 +123,7 @@ public class BITGETTests {
             MinimaFunction mf = fn.getNewFunction();
             mf.addParameter(new ConstantExpression(new HEXValue("0x01234567")));
             mf.addParameter(new ConstantExpression(new NumberValue(-32)));
-            //assertThrows(ExecutionException.class, () -> { // Should throw this
-            //    Value res = mf.runFunction(ctr);
-            //});
-            assertThrows(IndexOutOfBoundsException.class, () -> { // but throws this
+            assertThrows(ExecutionException.class, () -> { // Should throw this
                 Value res = mf.runFunction(ctr);
             });
         }
@@ -137,10 +131,7 @@ public class BITGETTests {
             MinimaFunction mf = fn.getNewFunction();
             mf.addParameter(new ConstantExpression(new HEXValue("0x01234567")));
             mf.addParameter(new ConstantExpression(new NumberValue(-31)));
-            //assertThrows(ExecutionException.class, () -> { // Should throw this
-            //    Value res = mf.runFunction(ctr);
-            //});
-            assertThrows(IndexOutOfBoundsException.class, () -> { // but throws this
+            assertThrows(ExecutionException.class, () -> { // Should throw this
                 Value res = mf.runFunction(ctr);
             });
         }
@@ -148,19 +139,17 @@ public class BITGETTests {
             MinimaFunction mf = fn.getNewFunction();
             mf.addParameter(new ConstantExpression(new HEXValue("0x01234567")));
             mf.addParameter(new ConstantExpression(new NumberValue(-4)));
-            //assertThrows(ExecutionException.class, () -> { // Should throw this
-            //    Value res = mf.runFunction(ctr);
-            //});
-            // But does not throw
+            assertThrows(ExecutionException.class, () -> { // Should throw this
+                Value res = mf.runFunction(ctr);
+            });
         }
         {
             MinimaFunction mf = fn.getNewFunction();
             mf.addParameter(new ConstantExpression(new HEXValue("0x01234567")));
             mf.addParameter(new ConstantExpression(new NumberValue(-1)));
-            //assertThrows(ExecutionException.class, () -> { // Should throw this
-            //    Value res = mf.runFunction(ctr);
-            //});
-            // But does not throw
+            assertThrows(ExecutionException.class, () -> { // Should throw this
+                Value res = mf.runFunction(ctr);
+            });
         }
         {
             MinimaFunction mf = fn.getNewFunction();

@@ -32,6 +32,11 @@ public class SUBSET extends MinimaFunction {
 		//Now pick it out of the 3rd value..
 		byte[] orig = zContract.getHEXParam(2, this).getRawData();
 		
+		//Check limits
+		if(start<0 || end>orig.length) {
+			throw new ExecutionException("SUBSET range outside size of data array "+start+"-"+end+" length:"+orig.length);
+		}
+		
 		//Now get the subset
 		byte[] subs = new byte[len];
 		System.arraycopy(orig, start, subs, 0, len);

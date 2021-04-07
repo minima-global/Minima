@@ -96,6 +96,17 @@ public class HEXTests {
         }
         {
             MinimaFunction mf = fn.getNewFunction();
+            mf.addParameter(new ConstantExpression(new NumberValue(1)));
+            try {
+                Value res = mf.runFunction(ctr);
+                assertEquals(Value.VALUE_HEX, res.getValueType());
+                assertEquals("0x01", ((HEXValue) res).toString());
+            } catch (ExecutionException ex) {
+                fail();
+            }
+        }
+        {
+            MinimaFunction mf = fn.getNewFunction();
             mf.addParameter(new ConstantExpression(new NumberValue(0)));
             try {
                 Value res = mf.runFunction(ctr);
@@ -111,8 +122,7 @@ public class HEXTests {
             try {
                 Value res = mf.runFunction(ctr);
                 assertEquals(Value.VALUE_HEX, res.getValueType());
-                //assertEquals("0xFFFF", ((HEXValue) res).toString()); // Test fails, because MiniNumber prepends 00
-                assertEquals("0x00FFFF", ((HEXValue) res).toString());
+                assertEquals("0xFFFF", ((HEXValue) res).toString()); // Test fails, because MiniNumber prepends 00
             } catch (ExecutionException ex) {
                 fail();
             }
@@ -163,13 +173,5 @@ public class HEXTests {
             });
         }
 
-        // Invalid param domain
-        {
-            MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new NumberValue(0.5)));
-            assertThrows(ExecutionException.class, () -> {
-                Value res = mf.runFunction(ctr);
-            });
-        }
     }
 }

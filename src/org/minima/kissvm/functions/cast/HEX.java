@@ -10,6 +10,7 @@ import org.minima.kissvm.values.ScriptValue;
 import org.minima.kissvm.values.Value;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.utils.BaseConverter;
 
 public class HEX extends MinimaFunction{
 
@@ -44,7 +45,7 @@ public class HEX extends MinimaFunction{
 			
 			//Check no decimal places..
 			MiniNumber num = cval.getNumber();
-			if(!num.floor().isEqual(num) || !num.abs().isEqual(num)) {
+			if(!num.floor().isEqual(num) || num.isLess(MiniNumber.ZERO)) {
 				throw new ExecutionException("Cannot ONLY convert positive whole NUMBERs to HEX : "+num);
 			}
 			

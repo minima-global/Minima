@@ -215,27 +215,27 @@ public class BITSETTests {
             mf.addParameter(new ConstantExpression(new HEXValue("0x00")));
             mf.addParameter(new ConstantExpression(new NumberValue(0)));
             mf.addParameter(new ConstantExpression(new HEXValue("0x00")));
-            //assertThrows(ExecutionException.class, () -> { // does not fail due to implicit conversion to bool
-            //    Value res = mf.runFunction(ctr);
-            //});
+            assertThrows(ExecutionException.class, () -> { // does not fail due to implicit conversion to bool
+                Value res = mf.runFunction(ctr);
+            });
         }
         {
             MinimaFunction mf = fn.getNewFunction();
             mf.addParameter(new ConstantExpression(new HEXValue("0x00")));
             mf.addParameter(new ConstantExpression(new NumberValue(0)));
             mf.addParameter(new ConstantExpression(new NumberValue(0)));
-            //assertThrows(ExecutionException.class, () -> { // does not fail due to implicit conversion to bool
-            //    Value res = mf.runFunction(ctr);
-            //});
+            assertThrows(ExecutionException.class, () -> { // does not fail due to implicit conversion to bool
+                Value res = mf.runFunction(ctr);
+            });
         }
         {
             MinimaFunction mf = fn.getNewFunction();
             mf.addParameter(new ConstantExpression(new HEXValue("0x00")));
             mf.addParameter(new ConstantExpression(new NumberValue(0)));
             mf.addParameter(new ConstantExpression(new ScriptValue("Hello World")));
-            //assertThrows(ExecutionException.class, () -> { // does not fail due to implicit conversion to bool
-            //    Value res = mf.runFunction(ctr);
-            //});
+            assertThrows(ExecutionException.class, () -> { // does not fail due to implicit conversion to bool
+                Value res = mf.runFunction(ctr);
+            });
         }
 
     }

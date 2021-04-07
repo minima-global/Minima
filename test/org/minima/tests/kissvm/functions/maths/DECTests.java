@@ -61,19 +61,18 @@ public class DECTests {
             }
             {
                 MinimaFunction mf = fn.getNewFunction();
-                mf.addParameter(new ConstantExpression(new NumberValue(-0.99999999999999999)));
+                mf.addParameter(new ConstantExpression(new NumberValue("-0.99999999999999999")));
                 try {
                     Value res = mf.runFunction(ctr);
                     assertEquals(Value.VALUE_NUMBER, res.getValueType());
-                    //assertEquals("-1.99999999999999999", ((NumberValue) res).toString()); // should be -1.99999999999999999
-                    assertEquals("-2", ((NumberValue) res).toString()); // Should be 0
+                    assertEquals("-1.99999999999999999", ((NumberValue) res).toString()); // should be -1.99999999999999999
                 } catch (ExecutionException ex) {
                     fail();
                 }
             }
             {
                 MinimaFunction mf = fn.getNewFunction();
-                mf.addParameter(new ConstantExpression(new NumberValue(-0.99999)));
+                mf.addParameter(new ConstantExpression(new NumberValue("-0.99999")));
                 try {
                     Value res = mf.runFunction(ctr);
                     assertEquals(Value.VALUE_NUMBER, res.getValueType());
@@ -84,19 +83,18 @@ public class DECTests {
             }
             {
                 MinimaFunction mf = fn.getNewFunction();
-                mf.addParameter(new ConstantExpression(new NumberValue(-0.49999999999999999)));
+                mf.addParameter(new ConstantExpression(new NumberValue("-0.49999999999999999")));
                 try {
                     Value res = mf.runFunction(ctr);
                     assertEquals(Value.VALUE_NUMBER, res.getValueType());
-                    //assertEquals("-1.49999999999999999", ((NumberValue) res).toString()); // should be -1.49999999999999999
-                    assertEquals("-1.5", ((NumberValue) res).toString());
+                    assertEquals("-1.49999999999999999", ((NumberValue) res).toString()); // should be -1.49999999999999999
                 } catch (ExecutionException ex) {
                     fail();
                 }
             }
             {
                 MinimaFunction mf = fn.getNewFunction();
-                mf.addParameter(new ConstantExpression(new NumberValue(-0.49999)));
+                mf.addParameter(new ConstantExpression(new NumberValue("-0.49999")));
                 try {
                     Value res = mf.runFunction(ctr);
                     assertEquals(Value.VALUE_NUMBER, res.getValueType());
@@ -118,7 +116,7 @@ public class DECTests {
             }
             {
                 MinimaFunction mf = fn.getNewFunction();
-                mf.addParameter(new ConstantExpression(new NumberValue(0.49999)));
+                mf.addParameter(new ConstantExpression(new NumberValue("0.49999")));
                 try {
                     Value res = mf.runFunction(ctr);
                     assertEquals(Value.VALUE_NUMBER, res.getValueType());
@@ -129,19 +127,18 @@ public class DECTests {
             }
             {
                 MinimaFunction mf = fn.getNewFunction();
-                mf.addParameter(new ConstantExpression(new NumberValue(0.49999999999999999)));
+                mf.addParameter(new ConstantExpression(new NumberValue("0.49999999999999999")));
                 try {
                     Value res = mf.runFunction(ctr);
                     assertEquals(Value.VALUE_NUMBER, res.getValueType());
-                    //assertEquals("-0.50000000000000001", ((NumberValue) res).toString()); // should be -0.50000000000000001
-                    assertEquals("-0.5", ((NumberValue) res).toString());
+                    assertEquals("-0.50000000000000001", ((NumberValue) res).toString()); // should be -0.50000000000000001
                 } catch (ExecutionException ex) {
                     fail();
                 }
             }
             {
                 MinimaFunction mf = fn.getNewFunction();
-                mf.addParameter(new ConstantExpression(new NumberValue(0.99999)));
+                mf.addParameter(new ConstantExpression(new NumberValue("0.99999")));
                 try {
                     Value res = mf.runFunction(ctr);
                     assertEquals(Value.VALUE_NUMBER, res.getValueType());
@@ -152,12 +149,11 @@ public class DECTests {
             }
             {
                 MinimaFunction mf = fn.getNewFunction();
-                mf.addParameter(new ConstantExpression(new NumberValue(0.99999999999999999)));
+                mf.addParameter(new ConstantExpression(new NumberValue("0.99999999999999999")));
                 try {
                     Value res = mf.runFunction(ctr);
                     assertEquals(Value.VALUE_NUMBER, res.getValueType());
-                    //assertEquals("-0.00000000000000001", ((NumberValue) res).toString()); // should be -0.00000000000000001
-                    assertEquals("0", ((NumberValue) res).toString());
+                    assertEquals("-0.00000000000000001", ((NumberValue) res).toString()); // should be -0.00000000000000001
                 } catch (ExecutionException ex) {
                     fail();
                 }
