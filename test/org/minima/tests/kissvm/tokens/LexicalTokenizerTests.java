@@ -1,26 +1,16 @@
 package org.minima.tests.kissvm.tokens;
 
-import org.minima.kissvm.tokens.LexicalTokenizer;
-
-import org.minima.kissvm.Contract;
-import org.minima.kissvm.exceptions.MinimaParseException;
-import org.minima.kissvm.exceptions.SyntaxException;
-import org.minima.kissvm.functions.MinimaFunction;
-import org.minima.kissvm.tokens.Token;
-import org.minima.objects.Transaction;
-import org.minima.objects.Witness;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import org.junit.Test;
+import org.minima.kissvm.exceptions.MinimaParseException;
+import org.minima.kissvm.tokens.LexicalTokenizer;
+import org.minima.kissvm.tokens.Token;
 
 public class LexicalTokenizerTests {
 
@@ -78,7 +68,7 @@ public class LexicalTokenizerTests {
             assertEquals(21, lt.getCurrentPosition());
             lt.goBackToken();
             assertEquals(20, lt.getCurrentPosition());
-        } catch (SyntaxException ex) {
+        } catch (MinimaParseException ex) {
             fail();
         } 
     }

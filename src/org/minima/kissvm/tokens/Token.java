@@ -5,7 +5,7 @@ package org.minima.kissvm.tokens;
 
 import java.util.ArrayList;
 
-import org.minima.kissvm.exceptions.SyntaxException;
+import org.minima.kissvm.exceptions.MinimaParseException;
 
 /**
  * @author Spartacus Rex
@@ -78,7 +78,7 @@ public class Token {
 	/**
 	 * Utility functions to fix tests
 	 */
-	public static ArrayList<Token> tokenize(String zScript) throws SyntaxException {
+	public static ArrayList<Token> tokenize(String zScript) throws MinimaParseException {
 		Tokenizer tokz = new Tokenizer(zScript);
         return tokz.tokenize();
 	}

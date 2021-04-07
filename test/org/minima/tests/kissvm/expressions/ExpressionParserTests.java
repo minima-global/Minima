@@ -1,30 +1,20 @@
 package org.minima.tests.kissvm.expressions;
 
-import org.minima.kissvm.Contract;
-import org.minima.kissvm.exceptions.MinimaParseException;
-import org.minima.kissvm.expressions.BooleanExpression;
-import org.minima.kissvm.expressions.ConstantExpression;
-import org.minima.kissvm.expressions.Expression;
-import org.minima.kissvm.expressions.ExpressionParser;
-import org.minima.kissvm.expressions.FunctionExpression;
-import org.minima.kissvm.expressions.GlobalExpression;
-import org.minima.kissvm.expressions.OperatorExpression;
-import org.minima.kissvm.expressions.VariableExpression;
-import org.minima.kissvm.statements.StatementBlock;
-import org.minima.kissvm.statements.StatementParser;
-import org.minima.kissvm.tokens.Token;
-import org.minima.utils.MinimaLogger;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import org.junit.Test;
+import org.minima.kissvm.Contract;
+import org.minima.kissvm.exceptions.MinimaParseException;
+import org.minima.kissvm.expressions.BooleanExpression;
+import org.minima.kissvm.expressions.Expression;
+import org.minima.kissvm.expressions.ExpressionParser;
+import org.minima.kissvm.expressions.OperatorExpression;
+import org.minima.kissvm.tokens.Token;
 
 public class ExpressionParserTests {
 

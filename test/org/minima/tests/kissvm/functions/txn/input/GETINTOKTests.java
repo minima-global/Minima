@@ -5,8 +5,6 @@ import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.junit.Test;
 import org.minima.database.MinimaDB;
@@ -24,10 +22,8 @@ import org.minima.kissvm.values.Value;
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
 import org.minima.objects.Transaction;
-import org.minima.objects.TxPoW;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniNumber;
-import org.minima.tests.database.MinimaDBTests;
 
 //HEXValue GETINTOK (NumberValue input)
 public class GETINTOKTests {

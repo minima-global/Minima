@@ -5,7 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.minima.kissvm.Contract;
-import org.minima.kissvm.exceptions.SyntaxException;
+import org.minima.kissvm.exceptions.MinimaParseException;
 import org.minima.kissvm.functions.MinimaFunction;
 import org.minima.kissvm.values.NumberValue;
 import org.minima.objects.Transaction;
@@ -102,7 +102,7 @@ public class Tokenizer {
 		return zWord.matches("@[A-Z]+");
 	}
 	
-	public ArrayList<Token> tokenize() throws SyntaxException{
+	public ArrayList<Token> tokenize() throws MinimaParseException{
 		ArrayList<Token> tokens = new ArrayList<Token>();
 		
 		//Get the defaults..
@@ -138,7 +138,7 @@ public class Tokenizer {
 			}else if(nextchar.equals("<")) {
 				String testchar = Character.toString(mScript.charAt(mPos+1));
 				if(!testchar.equals("<")) {
-					throw new SyntaxException("Incorrect Token found @ "+mPos+" "+nextchar+testchar);
+					throw new MinimaParseException("Incorrect Token found @ "+mPos+" "+nextchar+testchar);
 				}
 				tokens.add(new Token(Token.TOKEN_OPERATOR, "<<"));
 				mPos+=2;
@@ -146,7 +146,7 @@ public class Tokenizer {
 			}else if(nextchar.equals(">")) {
 				String testchar = Character.toString(mScript.charAt(mPos+1));
 				if(!testchar.equals(">")) {
-					throw new SyntaxException("Incorrect Token found @ "+mPos+" "+nextchar+testchar);
+					throw new MinimaParseException("Incorrect Token found @ "+mPos+" "+nextchar+testchar);
 				}
 				tokens.add(new Token(Token.TOKEN_OPERATOR, ">>"));
 				mPos+=2;
@@ -191,7 +191,7 @@ public class Tokenizer {
 				if(allcommands.contains(word)) {
 					//Must have a space before a command word
 					if(!waslastspace) {
-						throw new SyntaxException("Missing space before Command @ "+mPos+" "+word);
+						throw new MinimaParseException("Missing space before Command @ "+mPos+" "+word);
 					}
 					
 					//It's a command
@@ -226,7 +226,7 @@ public class Tokenizer {
 					tokens.add(new Token(Token.TOKEN_VARIABLE, word));
 				
 				}else {
-					throw new SyntaxException("Incorrect Token found @ "+mPos+" "+word);
+					throw new MinimaParseException("Incorrect Token found @ "+mPos+" "+word);
 				}
 			}
 			

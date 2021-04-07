@@ -6,7 +6,6 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 import org.minima.kissvm.values.BooleanValue;
-import org.minima.objects.base.MiniNumber;
 
 public class BooleanValueTests {
 
