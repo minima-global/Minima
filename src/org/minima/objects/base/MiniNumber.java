@@ -149,7 +149,7 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 	 * @return true false..
 	 */
 	public boolean isValidMinimaValue() {
-		return isLessEqual(MiniNumber.BILLION) && isMoreEqual(MiniNumber.ZERO);
+		return isLessEqual(MiniNumber.BILLION) && isMore(MiniNumber.ZERO);
 	}
 	
 	/**
@@ -286,8 +286,7 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 		
 		//Read in the byte array for unscaled BigInteger
 		int len = zIn.readInt();
-		if(len > 128 || len<1) {
-			//Something wrong..
+		if(len > 256 || len<1) {
 			throw new IOException("ERROR reading MiniNumber - input too large or negative "+len);
 		}
 		
@@ -304,19 +303,4 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 		data.readDataStream(zIn);
 		return data;
 	}
-	
-	public static void main(String[] zargs) {
-		MiniNumber tt = MiniNumber.MINI_UNIT;
-		
-		System.out.println("Large : "+MiniNumber.MAX_MININUMBER);
-		
-		System.out.println("Smallest : "+tt+" "+tt.getNumber().scale());
-		
-		System.out.println("TEN      : "+new MiniNumber("1E1"));
-		System.out.println("HUNDRED  : "+new MiniNumber("1E2"));
-		
-		
-	}
-	
-	
 }
