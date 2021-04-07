@@ -1,5 +1,7 @@
 package org.minima.kissvm.values;
 
+import org.minima.objects.base.MiniString;
+
 public class ScriptValue extends Value {
 	
 	/**
@@ -14,6 +16,10 @@ public class ScriptValue extends Value {
 	@Override
 	public String toString() {
 		return mScript;
+	}
+	
+	public byte[] getBytes(){
+		return mScript.getBytes(MiniString.MINIMA_CHARSET);
 	}
 	
 	@Override

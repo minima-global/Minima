@@ -4,6 +4,7 @@ import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.functions.MinimaFunction;
 import org.minima.kissvm.values.HEXValue;
+import org.minima.kissvm.values.ScriptValue;
 import org.minima.kissvm.values.Value;
 import org.minima.utils.Crypto;
 
@@ -26,10 +27,19 @@ public class SHA2 extends MinimaFunction {
 		Value vv = getParameter(0).getValue(zContract);
 		checkIsOfType(vv, Value.VALUE_HEX | Value.VALUE_SCRIPT);
 		
-		//get the Input Data - HEX or SCRIPT
-		HEXValue hex = (HEXValue)vv;
-		byte[] data = hex.getRawData();
-
+		byte[] data = null;
+		if(vv.getValueType() == Value.VALUE_HEX) {
+			//HEX
+			HEXValue hex = (HEXValue)vv;
+			data = hex.getRawData();
+			
+		}else {
+			//Script..
+			ScriptValue scr = (ScriptValue)vv;
+			data = scr.getBytes();
+			
+		}
+		
 		//Perform the SHA2 Operation
 		byte[] ans = Crypto.getInstance().hashSHA2(data);
 		

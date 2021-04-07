@@ -21,6 +21,7 @@ import org.minima.kissvm.values.ScriptValue;
 import org.minima.kissvm.values.Value;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
+import org.minima.utils.MinimaLogger;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -139,12 +140,10 @@ public class StatementBlockTests {
             StatementBlock sb = new StatementBlock(Stats);
 
             Contract ctr = new Contract("", "", new Witness(), new Transaction(), new ArrayList<>());
-            try {
+            assertThrows(ExecutionException.class, () -> {
                 sb.run(ctr);
-            } catch (ExecutionException e) {
-                fail();
-            }
-            assertEquals(true, ctr.isSuccessSet());
+            });
+            assertEquals(false, ctr.isSuccessSet());
             assertEquals(false, ctr.isSuccess());
         }
 
@@ -162,13 +161,11 @@ public class StatementBlockTests {
             StatementBlock sb = new StatementBlock(Stats);
 
             Contract ctr = new Contract("", "", new Witness(), new Transaction(), new ArrayList<>());
-            try {
+            assertThrows(ExecutionException.class, () -> {
                 sb.run(ctr);
-            } catch (ExecutionException e) {
-                fail();
-            }
-            assertEquals(true, ctr.isSuccessSet());
-            assertEquals(true, ctr.isSuccess());
+            });
+            assertEquals(false, ctr.isSuccessSet());
+            assertEquals(false, ctr.isSuccess());
         }
 
         {
@@ -187,13 +184,11 @@ public class StatementBlockTests {
             StatementBlock sb = new StatementBlock(Stats);
 
             Contract ctr = new Contract("", "", new Witness(), new Transaction(), new ArrayList<>());
-            try {
+            assertThrows(ExecutionException.class, () -> {
                 sb.run(ctr);
-            } catch (ExecutionException e) {
-                fail();
-            }
-            assertEquals(true, ctr.isSuccessSet());
-            assertEquals(true, ctr.isSuccess());
+            });
+            assertEquals(false, ctr.isSuccessSet());
+            assertEquals(false, ctr.isSuccess());
         }
     }
 }

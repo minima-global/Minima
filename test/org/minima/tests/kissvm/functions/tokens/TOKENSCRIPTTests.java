@@ -81,7 +81,7 @@ public class TOKENSCRIPTTests {
             try {
                 Value res = mf.runFunction(ctr);
                 assertEquals(Value.VALUE_SCRIPT, res.getValueType());
-                assertEquals(tp1.getTokenScript().toString().toLowerCase(), ((ScriptValue) res).toString());
+                assertEquals(tp1.getTokenScript().toString(), ((ScriptValue) res).toString());
             } catch (ExecutionException ex) {
                 fail();
             }
@@ -92,7 +92,7 @@ public class TOKENSCRIPTTests {
             try {
                 Value res = mf.runFunction(ctr);
                 assertEquals(Value.VALUE_SCRIPT, res.getValueType());
-                assertEquals(tp2.getTokenScript().toString().toLowerCase(), ((ScriptValue) res).toString());
+                assertEquals(tp2.getTokenScript().toString(), ((ScriptValue) res).toString());
             } catch (ExecutionException ex) {
                 fail();
             }
@@ -103,7 +103,7 @@ public class TOKENSCRIPTTests {
             try {
                 Value res = mf.runFunction(ctr);
                 assertEquals(Value.VALUE_SCRIPT, res.getValueType());
-                assertEquals(tp3.getTokenScript().toString().toLowerCase(), ((ScriptValue) res).toString());
+                assertEquals(tp3.getTokenScript().toString(), ((ScriptValue) res).toString());
             } catch (ExecutionException ex) {
                 fail();
             }
