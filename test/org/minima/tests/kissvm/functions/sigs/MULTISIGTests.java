@@ -154,19 +154,17 @@ public class MULTISIGTests {
             MinimaFunction mf = fn.getNewFunction();
             mf.addParameter(new ConstantExpression(new NumberValue(-1)));
             mf.addParameter(new ConstantExpression(new HEXValue("0x01234567")));
-            //assertThrows(ExecutionException.class, () -> { // Should throw this, for negative value of valid sigs
-            //    Value res = mf.runFunction(ctr);
-            //});
-            // But does not throw, returns true
+            assertThrows(ExecutionException.class, () -> { // Should throw this, for negative value of valid sigs
+                Value res = mf.runFunction(ctr);
+            });
         }
         {
             MinimaFunction mf = fn.getNewFunction();
             mf.addParameter(new ConstantExpression(new NumberValue(0)));
             mf.addParameter(new ConstantExpression(new HEXValue("0x01234567")));
-            //assertThrows(ExecutionException.class, () -> { // Should throw this, for zero valid sigs
-            //    Value res = mf.runFunction(ctr);
-            //});
-            // But does not throw, returns true
+            assertThrows(ExecutionException.class, () -> { // Should throw this, for zero valid sigs
+                Value res = mf.runFunction(ctr);
+            });
         }
 
         // Invalid param types

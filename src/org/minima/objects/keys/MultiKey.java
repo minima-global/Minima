@@ -203,12 +203,18 @@ public class MultiKey extends BaseKey {
 
 	@Override
 	public boolean verify(MiniData zData, MiniData zMultiSignature) {
+		//Check signature
+		if(zMultiSignature.getLength() == 0) {
+			MinimaLogger.log("Invalid ZERO length MultiSig");
+			return false;
+		}
+		
 		//Convert into a MultiSig Structure
 		MultiSig sigdata;
 		try {
 			sigdata = new MultiSig(zMultiSignature);
 		} catch (IOException e) {
-			MinimaLogger.log(e);
+			MinimaLogger.log("Invalid MultiSig",e);
 			return false;
 		}
 		

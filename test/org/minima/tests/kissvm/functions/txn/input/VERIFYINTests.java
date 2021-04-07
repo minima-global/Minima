@@ -390,10 +390,7 @@ public class VERIFYINTests {
             mf.addParameter(new ConstantExpression(new HEXValue("0x12345678")));
             mf.addParameter(new ConstantExpression(new NumberValue(0)));
             mf.addParameter(new ConstantExpression(new HEXValue("0x12345678")));
-            //assertThrows(ExecutionException.class, () -> { // should throw this
-            //    Value res = mf.runFunction(ctr);
-            //});
-            assertThrows(IndexOutOfBoundsException.class, () -> { // but throws this
+            assertThrows(ExecutionException.class, () -> { // should throw this
                 Value res = mf.runFunction(ctr);
             });
         }

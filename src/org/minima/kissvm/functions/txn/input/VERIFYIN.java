@@ -47,10 +47,10 @@ public class VERIFYIN extends MinimaFunction{
 		//Check an output exists..
 		Transaction trans = zContract.getTransaction();
 	
-		//Check output exists..
+		//Check input exists..
 		ArrayList<Coin> ins = trans.getAllInputs();
-		if(ins.size()<=input) {
-			throw new ExecutionException("Input number too high "+input+"/"+ins.size());
+		if(input<0 || ins.size()<=input) {
+			throw new ExecutionException("Input number out of range "+input+"/"+ins.size());
 		}
 		
 		//Get it..

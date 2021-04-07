@@ -32,6 +32,11 @@ public class SAMESTATE extends MinimaFunction {
 			end = zContract.getNumberParam(1, this).getNumber().getAsInt();
 		}
 		
+		//Simple checks..
+		if(start<0 || end<start) {
+			throw new ExecutionException("Invalid range check for SAMESTATE "+start+" "+end);
+		}
+		
 		//Now check the old state and the current state are the same
 		for(int i=start;i<=end;i++) {
 			//Get the old state..

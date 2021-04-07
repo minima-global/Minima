@@ -161,10 +161,7 @@ public class GETINADDRTests {
         {
             MinimaFunction mf = fn.getNewFunction();
             mf.addParameter(new ConstantExpression(new NumberValue(-1)));
-            //assertThrows(ExecutionException.class, () -> { // should throw this
-            //    Value res = mf.runFunction(ctr);
-            //});
-            assertThrows(IndexOutOfBoundsException.class, () -> { // but throws this
+            assertThrows(ExecutionException.class, () -> { // should throw this
                 Value res = mf.runFunction(ctr);
             });
         }

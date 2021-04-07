@@ -29,8 +29,8 @@ public class GETINAMT extends MinimaFunction {
 		
 		//Check output exists..
 		ArrayList<Coin> ins = trans.getAllInputs();
-		if(ins.size()<=input) {
-			throw new ExecutionException("Input number too high "+input+"/"+ins.size());
+		if(input<0 || ins.size()<=input) {
+			throw new ExecutionException("Input number out of range "+input+"/"+ins.size());
 		}
 		
 		//Get it..

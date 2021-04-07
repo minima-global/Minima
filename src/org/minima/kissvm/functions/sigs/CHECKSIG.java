@@ -37,6 +37,11 @@ public class CHECKSIG extends MinimaFunction {
 		//Check it..
 		MiniData pubk = new MiniData(pubkey.getMiniData().getData());
 		
+		//Simple checks..
+		if(pubk.getLength() == 0 || sig.getMiniData().getLength()==0) {
+			throw new ExecutionException("Invalid ZERO length param,s for CHECKSIG");
+		}
+		
 		//Create a MultiKey to check the signature
 		MultiKey checker = new MultiKey();
 		checker.setPublicKey(pubk);

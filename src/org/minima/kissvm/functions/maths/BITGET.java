@@ -30,7 +30,7 @@ public class BITGET extends MinimaFunction {
 		
 		//Get the desired Bit
 		int bit = zContract.getNumberParam(1, this).getNumber().getAsInt();
-		if(bit>totbits) {
+		if(bit<0 || bit>totbits) {
 			throw new ExecutionException("BitGet too large "+bit+" / "+totbits);
 		}
 		

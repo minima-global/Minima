@@ -212,9 +212,9 @@ public class CHECKSIGTests {
             mf.addParameter(new ConstantExpression(new HEXValue("")));
             mf.addParameter(new ConstantExpression(new HEXValue("")));
             mf.addParameter(new ConstantExpression(new HEXValue("")));
-            //assertThrows(ExecutionException.class, () -> { // Test fails due MiniData throwing java.lang.NullPointerException
-            //    Value res = mf.runFunction(ctr);
-            //});
+            assertThrows(ExecutionException.class, () -> { // Test fails due MiniData throwing java.lang.NullPointerException
+                Value res = mf.runFunction(ctr);
+            });
         }
 
         // Invalid param types

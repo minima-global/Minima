@@ -160,11 +160,9 @@ public class SAMESTATETests {
             MinimaFunction mf = fn.getNewFunction();
             mf.addParameter(new ConstantExpression(new NumberValue(-1)));
             mf.addParameter(new ConstantExpression(new NumberValue(-5)));
-            //assertThrows(ExecutionException.class, () -> { // Should throw this
-            //    Value res = mf.runFunction(ctr);
-            //});
-            // but returns true
-            // contract is not checking state variable range
+            assertThrows(ExecutionException.class, () -> { // Should throw this
+                Value res = mf.runFunction(ctr);
+            });
         }
         {
             MinimaFunction mf = fn.getNewFunction();

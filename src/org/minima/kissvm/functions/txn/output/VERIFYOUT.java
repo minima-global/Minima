@@ -46,11 +46,11 @@ public class VERIFYOUT extends MinimaFunction{
 			
 		//Check an output exists..
 		Transaction trans = zContract.getTransaction();
-	
+		
 		//Check output exists..
 		ArrayList<Coin> outs = trans.getAllOutputs();
-		if(outs.size()<=output) {
-			return new BooleanValue( false );
+		if(output<0 || outs.size()<=output) {
+			throw new ExecutionException("Output out of range "+output+"/"+outs.size());
 		}
 		
 		//Get it..
