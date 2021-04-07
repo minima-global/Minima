@@ -24,66 +24,36 @@ public class CONCAT extends MinimaFunction{
 		//Run through the function parameters and concatenate..
 		ArrayList<Expression> params = getAllParameters();
 		
-		//Check first param..
-		Value valcheck  = params.get(0).getValue(zContract);
-		boolean isHex = false;
-		int ptype = valcheck.getValueType();
-		if(ptype == Value.VALUE_HEX) {
-			isHex = true;
-		}else if(ptype == Value.VALUE_SCRIPT) {
-			isHex = false;
-		}else {
-			throw new ExecutionException("CONCAT parameters must be HEX or SCRIPT");
-		}
-		
 		//Check all the same type
-		checkAllParamsType(ptype, zContract);
+		checkAllParamsType(Value.VALUE_HEX, zContract);
 		
-		//Is it HEX or SCRIPT
-		if(isHex) {
-			//Sum them
-			byte[][] parambytes = new byte[getAllParameters().size()][];
-			int totlen  = 0;
-			int counter = 0;
-			for(Expression exp : params) {
-				Value vv = exp.getValue(zContract);
-				
-				//This is a HEXValue
-				HexValue hex = (HexValue)vv;
-				
-				//Get the bytes
-				parambytes[counter] = hex.getRawData();
-				totlen += parambytes[counter].length;
-				counter++;
-			}
+		//Sum them
+		byte[][] parambytes = new byte[getAllParameters().size()][];
+		int totlen  = 0;
+		int counter = 0;
+		for(Expression exp : params) {
+			Value vv = exp.getValue(zContract);
 			
-			//The result is placed in here
-			byte[] result     = new byte[totlen];
-			//And sum
-			int pos=0;
-			for(int i=0;i<counter;i++) {
-				//Is it RAW data
-				System.arraycopy(parambytes[i], 0, result, pos, parambytes[i].length);
-				pos += parambytes[i].length;
-			}
+			//This is a HEXValue
+			HexValue hex = (HexValue)vv;
 			
-			return new HexValue(result);
-		
-		}else {
-			//Sum them
-			String fullstring = "";
-			for(Expression exp : params) {
-				Value vv = exp.getValue(zContract);
-				
-				//This is a ScriptValue
-				StringValue scr = (StringValue)vv;
-				
-				//Add it..
-				fullstring += scr.toString()+" ";
-			}
-				
-			return new StringValue(fullstring.trim());
+			//Get the bytes
+			parambytes[counter] = hex.getRawData();
+			totlen += parambytes[counter].length;
+			counter++;
 		}
+		
+		//The result is placed in here
+		byte[] result     = new byte[totlen];
+		//And sum
+		int pos=0;
+		for(int i=0;i<counter;i++) {
+			//Is it RAW data
+			System.arraycopy(parambytes[i], 0, result, pos, parambytes[i].length);
+			pos += parambytes[i].length;
+		}
+		
+		return new HexValue(result);
 	}
 	
 	@Override

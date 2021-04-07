@@ -75,45 +75,6 @@ public class CONCATTests {
                 fail();
             }
         }
-        {
-            MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new StringValue("")));
-            mf.addParameter(new ConstantExpression(new StringValue("")));
-            try {
-                Value res = mf.runFunction(ctr);
-                assertEquals(Value.VALUE_SCRIPT, res.getValueType());
-                assertEquals("", ((StringValue) res).toString());
-            } catch (ExecutionException ex) {
-                fail();
-            }
-        }
-        {
-            MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new StringValue("HELLO")));
-            mf.addParameter(new ConstantExpression(new StringValue("WORLD")));
-            try {
-                Value res = mf.runFunction(ctr);
-                assertEquals(Value.VALUE_SCRIPT, res.getValueType());
-                assertEquals("HELLO WORLD", ((StringValue) res).toString());
-            } catch (ExecutionException ex) {
-                fail();
-            }
-        }
-        {
-            MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new StringValue("HELLO")));
-            mf.addParameter(new ConstantExpression(new StringValue("WORLD")));
-            mf.addParameter(new ConstantExpression(new StringValue("MINIMA")));
-            mf.addParameter(new ConstantExpression(new StringValue("IS")));
-            mf.addParameter(new ConstantExpression(new StringValue("HERE")));
-            try {
-                Value res = mf.runFunction(ctr);
-                assertEquals(Value.VALUE_SCRIPT, res.getValueType());
-                assertEquals("HELLO WORLD MINIMA IS HERE", ((StringValue) res).toString());
-            } catch (ExecutionException ex) {
-                fail();
-            }
-        }
     }
 
     @Test
