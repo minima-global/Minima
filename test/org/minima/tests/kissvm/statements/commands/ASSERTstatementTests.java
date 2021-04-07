@@ -39,7 +39,7 @@ public class ASSERTstatementTests {
         }
         {
             ASSERTstatement as = new ASSERTstatement(new ConstantExpression(new HEXValue("")));
-            assertEquals("ASSERT 0x", as.toString()); // Wrong???
+            assertEquals("ASSERT ", as.toString()); // Wrong???
         }
         {
             ASSERTstatement as = new ASSERTstatement(new ConstantExpression(new HEXValue("0x00")));

@@ -16,13 +16,13 @@ public class ScriptValueTests {
         ScriptValue sv3 = new ScriptValue("return true");
         ScriptValue sv4 = new ScriptValue("HELLO WORLD");
 
-        assertEquals("should be equal ", "hello world", Value.getValue("[HELLO WORLD]").toString());
-        assertEquals("should be equal ", "[ ]", sv2.toString());
-        assertEquals("should be equal ", "RETURN TRUE", sv3.toString());
-        assertEquals("should be equal ", "hello world", sv4.toString());
+        assertEquals("should be equal ", "HELLO WORLD", Value.getValue("[HELLO WORLD]").toString());
+        assertEquals("should be equal ", "[]", sv2.toString());
+        assertEquals("should be equal ", "return true", sv3.toString());
+        assertEquals("should be equal ", "HELLO WORLD", sv4.toString());
 
-        assertEquals("should be equal ", "RETURN TRUE hello world", sv3.add(sv4).toString());
-        assertEquals("should be equal ", "hello world RETURN TRUE", sv4.add(sv3).toString());
+        assertEquals("should be equal ", "return trueHELLO WORLD", sv3.add(sv4).toString());
+        assertEquals("should be equal ", "HELLO WORLDreturn true", sv4.add(sv3).toString());
 
         assertEquals("should be equal ", ScriptValue.VALUE_SCRIPT, sv1.getValueType());
         assertEquals("should be equal ", ScriptValue.VALUE_SCRIPT, sv2.getValueType());

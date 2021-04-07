@@ -39,7 +39,7 @@ public class RETURNstatementTests {
         }
         {
             RETURNstatement rs = new RETURNstatement(new ConstantExpression(new HEXValue("")));
-            assertEquals("RETURN 0x", rs.toString()); // Wrong???
+            assertEquals("RETURN ", rs.toString()); // Wrong???
         }
         {
             RETURNstatement rs = new RETURNstatement(new ConstantExpression(new HEXValue("0x00")));

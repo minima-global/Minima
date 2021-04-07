@@ -243,15 +243,11 @@ public class StatementParserTests {
         }
 
         {
-            try { // Strange
+        	assertThrows(MinimaParseException.class, () -> {
                 String Script = "EXEC RETURN";
                 List<Token> tokens = Token.tokenize(Contract.cleanScript(Script));
                 StatementBlock sb = StatementParser.parseTokens(tokens);
-            } catch (MinimaParseException ex) {
-                fail();
-            } catch (Exception ex) {
-                fail();
-            }
+            });
         }
     }
 
@@ -282,15 +278,11 @@ public class StatementParserTests {
         }
 
         {
-            try { // Strange
+        	assertThrows(MinimaParseException.class, () -> {
                 String Script = "MAST RETURN TRUE";
                 List<Token> tokens = Token.tokenize(Contract.cleanScript(Script));
                 StatementBlock sb = StatementParser.parseTokens(tokens);
-            } catch (MinimaParseException ex) {
-                fail();
-            } catch (Exception ex) {
-                fail();
-            }
+            });
         }
     }
 
@@ -425,27 +417,19 @@ public class StatementParserTests {
         }
 
         {
-            try { // Strange
+        	assertThrows(MinimaParseException.class, () -> {
                 String Script = "ASSERT RETURN TRUE";
                 List<Token> tokens = Token.tokenize(Contract.cleanScript(Script));
                 StatementBlock sb = StatementParser.parseTokens(tokens);
-            } catch (MinimaParseException ex) {
-                fail();
-            } catch (Exception ex) {
-                fail();
-            }
+            });
         }
 
         {
-            try { // Strange
+        	assertThrows(MinimaParseException.class, () -> {
                 String Script = "ASSERT RETURN A + @BLKNUM";
                 List<Token> tokens = Token.tokenize(Contract.cleanScript(Script));
                 StatementBlock sb = StatementParser.parseTokens(tokens);
-            } catch (MinimaParseException ex) {
-                fail();
-            } catch (Exception ex) {
-                fail();
-            }
+            });
         }
 
         {
@@ -488,15 +472,11 @@ public class StatementParserTests {
         }
 
         {
-            try { // Strange
+        	assertThrows(MinimaParseException.class, () -> {
                 String Script = "RETURN MAST 1";
                 List<Token> tokens = Token.tokenize(Contract.cleanScript(Script));
                 StatementBlock sb = StatementParser.parseTokens(tokens);
-            } catch (MinimaParseException ex) {
-                fail();
-            } catch (Exception ex) {
-                fail();
-            }
+            });
         }
     }
 

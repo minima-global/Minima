@@ -95,7 +95,7 @@ public class Tokenizer {
 	}
 	
 	public static boolean isVariable(String zWord){
-		return zWord.matches("[a-zA-Z]+");
+		return zWord.matches("[a-z]+");
 	}
 	
 	public static boolean isGlobal(String zWord){

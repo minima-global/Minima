@@ -41,7 +41,7 @@ public class MASTstatementTests {
         ConstantExpression Random = new ConstantExpression(new HEXValue("0xBC05B9280323A07AE6B2C6FA183F20991D38D01BC91F02C439CB5A33113E106C"));
 
         MASTstatement ms1 = new MASTstatement(Empty);
-        assertEquals("MAST 0x", ms1.toString());
+        assertEquals("MAST ", ms1.toString());
 
         MASTstatement ms2 = new MASTstatement(Random);
         assertEquals("MAST 0xBC05B9280323A07AE6B2C6FA183F20991D38D01BC91F02C439CB5A33113E106C", ms2.toString());

@@ -63,7 +63,7 @@ public class BITSETTests {
                     try {
                         Value res = mf.runFunction(ctr);
                         assertEquals(Value.VALUE_HEX, res.getValueType());
-                        assertEquals("0x", ((HEXValue) res).toString());
+                        assertEquals("", ((HEXValue) res).toString());
                     } catch (ExecutionException ex) {
                         fail();
                     }

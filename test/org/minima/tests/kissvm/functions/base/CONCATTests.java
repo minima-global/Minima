@@ -155,7 +155,7 @@ public class CONCATTests {
             try {
                 Value res = mf.runFunction(ctr);
                 assertEquals(Value.VALUE_HEX, res.getValueType());
-                assertEquals("0x", ((HEXValue) res).toString()); // invalid HEX number representation
+                assertEquals("", ((HEXValue) res).toString()); // invalid HEX number representation
             } catch (ExecutionException ex) {
                 fail();
             }
