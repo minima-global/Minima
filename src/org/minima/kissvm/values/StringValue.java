@@ -5,21 +5,21 @@ import org.minima.objects.base.MiniString;
 public class StringValue extends Value {
 	
 	/**
-	 * The Script
+	 * The String
 	 */
-	String mScript;
+	MiniString mScript;
 	
 	public StringValue(String zScript) {
-		mScript = new String( zScript );
+		mScript = new MiniString( zScript );
 	}
 	
 	@Override
 	public String toString() {
-		return mScript;
+		return mScript.toString();
 	}
 	
 	public byte[] getBytes(){
-		return mScript.getBytes(MiniString.MINIMA_CHARSET);
+		return mScript.getData();
 	}
 	
 	@Override
@@ -28,16 +28,10 @@ public class StringValue extends Value {
 	}
 	
 	public boolean isEqual(StringValue zValue) {
-		return mScript.equals(zValue.toString());
+		return mScript.toString().equals(zValue.toString());
 	}
 	
-	/**
-	 * Add this script and return the result
-	 * 
-	 * @param zSCValue
-	 * @return
-	 */
 	public StringValue add(StringValue zSCValue) {
-		return new StringValue(mScript+zSCValue.toString());
+		return new StringValue(mScript.toString()+zSCValue.toString());
 	}
 }
