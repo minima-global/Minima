@@ -10,7 +10,7 @@ import org.minima.kissvm.statements.StatementBlock;
 import org.minima.kissvm.statements.StatementParser;
 import org.minima.kissvm.tokens.Token;
 import org.minima.kissvm.tokens.Tokenizer;
-import org.minima.kissvm.values.HEXValue;
+import org.minima.kissvm.values.HexValue;
 import org.minima.objects.Witness;
 import org.minima.objects.proofs.ScriptProof;
 
@@ -28,7 +28,7 @@ public class MASTstatement implements Statement {
 	@Override
 	public void execute(Contract zContract) throws ExecutionException {
 		//get the MAST Value..
-		HEXValue mast = (HEXValue) mMASTScript.getValue(zContract);
+		HexValue mast = (HexValue) mMASTScript.getValue(zContract);
 		
 		//Now get that Script from the transaction..
 		Witness wit = zContract.getWitness();

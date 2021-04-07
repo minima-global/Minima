@@ -6,8 +6,8 @@ import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.expressions.Expression;
 import org.minima.kissvm.functions.MinimaFunction;
-import org.minima.kissvm.values.HEXValue;
-import org.minima.kissvm.values.ScriptValue;
+import org.minima.kissvm.values.HexValue;
+import org.minima.kissvm.values.StringValue;
 import org.minima.kissvm.values.Value;
 
 public class CONCAT extends MinimaFunction{
@@ -49,7 +49,7 @@ public class CONCAT extends MinimaFunction{
 				Value vv = exp.getValue(zContract);
 				
 				//This is a HEXValue
-				HEXValue hex = (HEXValue)vv;
+				HexValue hex = (HexValue)vv;
 				
 				//Get the bytes
 				parambytes[counter] = hex.getRawData();
@@ -67,7 +67,7 @@ public class CONCAT extends MinimaFunction{
 				pos += parambytes[i].length;
 			}
 			
-			return new HEXValue(result);
+			return new HexValue(result);
 		
 		}else {
 			//Sum them
@@ -76,13 +76,13 @@ public class CONCAT extends MinimaFunction{
 				Value vv = exp.getValue(zContract);
 				
 				//This is a ScriptValue
-				ScriptValue scr = (ScriptValue)vv;
+				StringValue scr = (StringValue)vv;
 				
 				//Add it..
 				fullstring += scr.toString()+" ";
 			}
 				
-			return new ScriptValue(fullstring.trim());
+			return new StringValue(fullstring.trim());
 		}
 	}
 	

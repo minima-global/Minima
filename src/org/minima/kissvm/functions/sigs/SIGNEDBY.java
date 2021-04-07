@@ -4,7 +4,7 @@ import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.functions.MinimaFunction;
 import org.minima.kissvm.values.BooleanValue;
-import org.minima.kissvm.values.HEXValue;
+import org.minima.kissvm.values.HexValue;
 import org.minima.kissvm.values.Value;
 
 public class SIGNEDBY extends MinimaFunction{
@@ -18,7 +18,7 @@ public class SIGNEDBY extends MinimaFunction{
 		checkExactParamNumber(1);
 		
 		//get the Pub Key
-		HEXValue pubkey = zContract.getHEXParam(0, this);
+		HexValue pubkey = zContract.getHEXParam(0, this);
 		
 		//Check it..
 		boolean valid = zContract.checkSignature(pubkey);

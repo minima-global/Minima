@@ -19,9 +19,9 @@ import org.minima.database.txpowdb.TxPOWDBRow;
 import org.minima.database.txpowdb.TxPowDB;
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.values.BooleanValue;
-import org.minima.kissvm.values.HEXValue;
+import org.minima.kissvm.values.HexValue;
 import org.minima.kissvm.values.NumberValue;
-import org.minima.kissvm.values.ScriptValue;
+import org.minima.kissvm.values.StringValue;
 import org.minima.kissvm.values.Value;
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
@@ -267,7 +267,7 @@ public class ConsensusUser extends ConsensusProcessor {
 				
 				//What type of data..
 				int valtype = Value.getValueType(leafstr);
-				if(valtype == HEXValue.VALUE_HEX ) {
+				if(valtype == HexValue.VALUE_HEX ) {
 					finaldata = new MiniData(leafstr);
 					mmrnode.put("data",finaldata.toString());
 					
@@ -471,8 +471,8 @@ public class ConsensusUser extends ConsensusProcessor {
 			MiniNumber blocktime = top.getTimeMilli();
 			
 			//These 2 are set automatically..
-			cc.setGlobalVariable("@ADDRESS", new HEXValue(ccaddress.getAddressData()));
-			cc.setGlobalVariable("@SCRIPT", new ScriptValue(script));
+			cc.setGlobalVariable("@ADDRESS", new HexValue(ccaddress.getAddressData()));
+			cc.setGlobalVariable("@SCRIPT", new StringValue(script));
 			
 			//These can be played with..
 			cc.setGlobalVariable("@BLKNUM", new NumberValue(blocknum));
@@ -480,12 +480,12 @@ public class ConsensusUser extends ConsensusProcessor {
 			cc.setGlobalVariable("@INPUT", new NumberValue(0));
 			cc.setGlobalVariable("@INBLKNUM", new NumberValue(0));
 			cc.setGlobalVariable("@AMOUNT", new NumberValue(0));
-			cc.setGlobalVariable("@COINID", new HEXValue("0x00"));
+			cc.setGlobalVariable("@COINID", new HexValue("0x00"));
 			cc.setGlobalVariable("@TOTIN", new NumberValue(1));
 			cc.setGlobalVariable("@TOTOUT", new NumberValue(trans.getAllOutputs().size()));
 			
-			cc.setGlobalVariable("@TOKENID", new HEXValue("0x00"));
-			cc.setGlobalVariable("@TOKENSCRIPT", new ScriptValue(""));
+			cc.setGlobalVariable("@TOKENID", new HexValue("0x00"));
+			cc.setGlobalVariable("@TOKENSCRIPT", new StringValue(""));
 			cc.setGlobalVariable("@TOKENTOTAL", new NumberValue(MiniNumber.BILLION));
 			
 			
@@ -494,8 +494,8 @@ public class ConsensusUser extends ConsensusProcessor {
 			MiniData prevblkhash = MiniData.getRandomData(64);
 			MiniData prng        = MiniData.getRandomData(64);
 			
-			cc.setGlobalVariable("@PREVBLKHASH", new HEXValue(prevblkhash));
-			cc.setGlobalVariable("@PRNG", new HEXValue(prng));
+			cc.setGlobalVariable("@PREVBLKHASH", new HexValue(prevblkhash));
+			cc.setGlobalVariable("@PRNG", new HexValue(prng));
 			
 			//GLOBALS.. Overide if set..
 			if(!globals.equals("")) {

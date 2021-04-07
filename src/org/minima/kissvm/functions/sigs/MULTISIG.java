@@ -4,7 +4,7 @@ import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.functions.MinimaFunction;
 import org.minima.kissvm.values.BooleanValue;
-import org.minima.kissvm.values.HEXValue;
+import org.minima.kissvm.values.HexValue;
 import org.minima.kissvm.values.Value;
 
 public class MULTISIG extends MinimaFunction {
@@ -31,7 +31,7 @@ public class MULTISIG extends MinimaFunction {
 		//Cycle..
 		int found =0;
 		for(int i=0;i<tot;i++) {
-			HEXValue sig = zContract.getHEXParam(1+i, this);
+			HexValue sig = zContract.getHEXParam(1+i, this);
 		
 			if(zContract.checkSignature(sig)) {
 				found++;

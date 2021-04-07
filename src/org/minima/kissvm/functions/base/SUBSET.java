@@ -3,7 +3,7 @@ package org.minima.kissvm.functions.base;
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.functions.MinimaFunction;
-import org.minima.kissvm.values.HEXValue;
+import org.minima.kissvm.values.HexValue;
 import org.minima.kissvm.values.Value;
 
 /**
@@ -41,7 +41,7 @@ public class SUBSET extends MinimaFunction {
 		byte[] subs = new byte[len];
 		System.arraycopy(orig, start, subs, 0, len);
 		
-		return new HEXValue(subs);	
+		return new HexValue(subs);	
 	}
 	
 	@Override

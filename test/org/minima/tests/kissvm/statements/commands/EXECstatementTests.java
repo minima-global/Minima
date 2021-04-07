@@ -11,7 +11,7 @@ import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.expressions.ConstantExpression;
 import org.minima.kissvm.statements.commands.EXECstatement;
-import org.minima.kissvm.values.ScriptValue;
+import org.minima.kissvm.values.StringValue;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
 
@@ -19,9 +19,9 @@ public class EXECstatementTests {
 
     @Test
     public void testConstructors() {
-        ConstantExpression Empty = new ConstantExpression(new ScriptValue(""));
-        ConstantExpression ReturnTrue = new ConstantExpression(new ScriptValue("RETURN TRUE"));
-        ConstantExpression ReturnFalse = new ConstantExpression(new ScriptValue("RETURN FALSE"));
+        ConstantExpression Empty = new ConstantExpression(new StringValue(""));
+        ConstantExpression ReturnTrue = new ConstantExpression(new StringValue("RETURN TRUE"));
+        ConstantExpression ReturnFalse = new ConstantExpression(new StringValue("RETURN FALSE"));
 
         EXECstatement es1 = new EXECstatement(Empty);
         assertEquals("EXEC ", es1.toString());
@@ -35,10 +35,10 @@ public class EXECstatementTests {
 
     @Test
     public void testExecution() {
-        ConstantExpression Empty = new ConstantExpression(new ScriptValue(""));
-        ConstantExpression ReturnTrue = new ConstantExpression(new ScriptValue("RETURN TRUE"));
-        ConstantExpression ReturnFalse = new ConstantExpression(new ScriptValue("RETURN FALSE"));
-        ConstantExpression Garbage = new ConstantExpression(new ScriptValue("Hello World"));
+        ConstantExpression Empty = new ConstantExpression(new StringValue(""));
+        ConstantExpression ReturnTrue = new ConstantExpression(new StringValue("RETURN TRUE"));
+        ConstantExpression ReturnFalse = new ConstantExpression(new StringValue("RETURN FALSE"));
+        ConstantExpression Garbage = new ConstantExpression(new StringValue("Hello World"));
 
         {
             EXECstatement es = new EXECstatement(Empty);

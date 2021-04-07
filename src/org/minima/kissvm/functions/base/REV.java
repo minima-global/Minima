@@ -3,7 +3,7 @@ package org.minima.kissvm.functions.base;
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.functions.MinimaFunction;
-import org.minima.kissvm.values.HEXValue;
+import org.minima.kissvm.values.HexValue;
 import org.minima.kissvm.values.Value;
 
 public class REV extends MinimaFunction {
@@ -17,7 +17,7 @@ public class REV extends MinimaFunction {
 		checkExactParamNumber(1);
 		
 		//The Data
-		HEXValue hex = zContract.getHEXParam(0, this);
+		HexValue hex = zContract.getHEXParam(0, this);
 		
 		//get the bytes..
 		byte[] array  = hex.getRawData();
@@ -34,7 +34,7 @@ public class REV extends MinimaFunction {
 		}
 		
 		// Return reversed value
-		return new HEXValue(revdata);
+		return new HexValue(revdata);
 	}
 
 	@Override

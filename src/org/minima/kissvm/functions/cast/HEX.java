@@ -4,13 +4,12 @@ import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.functions.MinimaFunction;
 import org.minima.kissvm.values.BooleanValue;
-import org.minima.kissvm.values.HEXValue;
+import org.minima.kissvm.values.HexValue;
 import org.minima.kissvm.values.NumberValue;
-import org.minima.kissvm.values.ScriptValue;
+import org.minima.kissvm.values.StringValue;
 import org.minima.kissvm.values.Value;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
-import org.minima.utils.BaseConverter;
 
 public class HEX extends MinimaFunction{
 
@@ -37,7 +36,7 @@ public class HEX extends MinimaFunction{
 			}
 		
 		}else if(type == Value.VALUE_HEX) {
-			HEXValue cval = (HEXValue)val;
+			HexValue cval = (HexValue)val;
 			ret = cval.getMiniData();
 		
 		}else if(type == Value.VALUE_NUMBER) {
@@ -52,14 +51,14 @@ public class HEX extends MinimaFunction{
 			ret = new MiniData(num.getAsBigInteger());
 		
 		}else if(type == Value.VALUE_SCRIPT) {
-			ScriptValue cval = (ScriptValue)val;
+			StringValue cval = (StringValue)val;
 			ret = new MiniData(cval.getBytes());
 		
 		}else {
 			throw new ExecutionException("Invalid Type in HEX cast "+type);
 		}
 		
-		return new HEXValue(ret);
+		return new HexValue(ret);
 	}
 
 	@Override

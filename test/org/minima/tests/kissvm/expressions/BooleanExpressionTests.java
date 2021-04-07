@@ -12,9 +12,9 @@ import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.expressions.BooleanExpression;
 import org.minima.kissvm.expressions.ConstantExpression;
 import org.minima.kissvm.values.BooleanValue;
-import org.minima.kissvm.values.HEXValue;
+import org.minima.kissvm.values.HexValue;
 import org.minima.kissvm.values.NumberValue;
-import org.minima.kissvm.values.ScriptValue;
+import org.minima.kissvm.values.StringValue;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
 
@@ -93,8 +93,8 @@ public class BooleanExpressionTests {
         }
 
         {
-            ConstantExpression cet = new ConstantExpression(new HEXValue("0x01"));
-            ConstantExpression cef = new ConstantExpression(new HEXValue("0x00"));
+            ConstantExpression cet = new ConstantExpression(new HexValue("0x01"));
+            ConstantExpression cef = new ConstantExpression(new HexValue("0x00"));
 
             BooleanExpression be;
 
@@ -169,8 +169,8 @@ public class BooleanExpressionTests {
         }
         
         {
-            ConstantExpression cet = new ConstantExpression(new ScriptValue("hello world"));
-            ConstantExpression cef = new ConstantExpression(new ScriptValue(""));
+            ConstantExpression cet = new ConstantExpression(new StringValue("hello world"));
+            ConstantExpression cef = new ConstantExpression(new StringValue(""));
 
             BooleanExpression be;
 
@@ -255,8 +255,8 @@ public class BooleanExpressionTests {
         }
         
         {
-            ConstantExpression ce1 = new ConstantExpression(new HEXValue("0x01"));
-            ConstantExpression ce2 = new ConstantExpression(new HEXValue("0x02"));
+            ConstantExpression ce1 = new ConstantExpression(new HexValue("0x01"));
+            ConstantExpression ce2 = new ConstantExpression(new HexValue("0x02"));
 
             BooleanExpression be;
 
@@ -303,8 +303,8 @@ public class BooleanExpressionTests {
         }
         
         {
-            ConstantExpression ce1 = new ConstantExpression(new ScriptValue("hello world"));
-            ConstantExpression ce2 = new ConstantExpression(new ScriptValue(""));
+            ConstantExpression ce1 = new ConstantExpression(new StringValue("hello world"));
+            ConstantExpression ce2 = new ConstantExpression(new StringValue(""));
 
             BooleanExpression be;
 

@@ -4,7 +4,7 @@ import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.functions.MinimaFunction;
 import org.minima.kissvm.values.BooleanValue;
-import org.minima.kissvm.values.HEXValue;
+import org.minima.kissvm.values.HexValue;
 import org.minima.kissvm.values.Value;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.keys.MultiKey;
@@ -26,13 +26,13 @@ public class CHECKSIG extends MinimaFunction {
 		checkExactParamNumber(3);
 		
 		//Get the Pbkey
-		HEXValue pubkey = zContract.getHEXParam(0, this);
+		HexValue pubkey = zContract.getHEXParam(0, this);
 		
 		//get the data
-		HEXValue data   = zContract.getHEXParam(1, this);
+		HexValue data   = zContract.getHEXParam(1, this);
 		
 		//Get the signature
-		HEXValue sig    = zContract.getHEXParam(2, this);
+		HexValue sig    = zContract.getHEXParam(2, this);
 		
 		//Check it..
 		MiniData pubk = new MiniData(pubkey.getMiniData().getData());

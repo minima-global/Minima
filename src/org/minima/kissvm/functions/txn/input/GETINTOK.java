@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.functions.MinimaFunction;
-import org.minima.kissvm.values.HEXValue;
+import org.minima.kissvm.values.HexValue;
 import org.minima.kissvm.values.Value;
 import org.minima.objects.Coin;
 import org.minima.objects.Transaction;
@@ -36,7 +36,7 @@ public class GETINTOK extends MinimaFunction {
 		Coin cc = ins.get(input);
 		
 		//Return the address	
-		return new HEXValue(cc.getTokenID());
+		return new HexValue(cc.getTokenID());
 	}
 
 	@Override

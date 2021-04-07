@@ -13,9 +13,9 @@ import org.minima.kissvm.functions.base.CONCAT;
 import org.minima.kissvm.functions.base.LEN;
 import org.minima.kissvm.functions.maths.ABS;
 import org.minima.kissvm.functions.maths.INC;
-import org.minima.kissvm.values.HEXValue;
+import org.minima.kissvm.values.HexValue;
 import org.minima.kissvm.values.NumberValue;
-import org.minima.kissvm.values.ScriptValue;
+import org.minima.kissvm.values.StringValue;
 import org.minima.kissvm.values.Value;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
@@ -25,11 +25,11 @@ public class FunctionExpressionTests {
     @Test
     public void testConstructors() throws ExecutionException {
 
-        HEXValue hv1 = new HEXValue("0x1234567");
+        HexValue hv1 = new HexValue("0x1234567");
         NumberValue nv1 = new NumberValue(10);
         NumberValue nv2 = new NumberValue(-10);
-        ScriptValue sv1 = new ScriptValue("HELLO");
-        ScriptValue sv2 = new ScriptValue("WORLD");
+        StringValue sv1 = new StringValue("HELLO");
+        StringValue sv2 = new StringValue("WORLD");
 
         CONCAT fCONCAT = new CONCAT();
         fCONCAT.addParameter(new ConstantExpression(sv1));
@@ -63,8 +63,8 @@ public class FunctionExpressionTests {
 
         NumberValue nv1 = new NumberValue(10);
         NumberValue nv2 = new NumberValue(-10);
-        ScriptValue sv1 = new ScriptValue("[HELLO]");
-        ScriptValue sv2 = new ScriptValue("[WORLD]");
+        StringValue sv1 = new StringValue("[HELLO]");
+        StringValue sv2 = new StringValue("[WORLD]");
 
         CONCAT fCONCAT = new CONCAT();
         fCONCAT.addParameter(new ConstantExpression(sv1));

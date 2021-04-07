@@ -5,7 +5,7 @@ import java.util.BitSet;
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.functions.MinimaFunction;
-import org.minima.kissvm.values.HEXValue;
+import org.minima.kissvm.values.HexValue;
 import org.minima.kissvm.values.Value;
 
 public class BITSET extends MinimaFunction {
@@ -47,7 +47,7 @@ public class BITSET extends MinimaFunction {
 		byte[] newarray = bits.toByteArray();
 		
 		//Return the new HEXValue
-		return new HEXValue(newarray);		
+		return new HexValue(newarray);		
 	}
 	
 	@Override

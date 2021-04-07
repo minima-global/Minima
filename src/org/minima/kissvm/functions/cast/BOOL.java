@@ -4,9 +4,9 @@ import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.functions.MinimaFunction;
 import org.minima.kissvm.values.BooleanValue;
-import org.minima.kissvm.values.HEXValue;
+import org.minima.kissvm.values.HexValue;
 import org.minima.kissvm.values.NumberValue;
-import org.minima.kissvm.values.ScriptValue;
+import org.minima.kissvm.values.StringValue;
 import org.minima.kissvm.values.Value;
 import org.minima.objects.base.MiniNumber;
 
@@ -31,7 +31,7 @@ public class BOOL extends MinimaFunction {
 			ret = cval.isTrue();
 		
 		}else if(type == Value.VALUE_HEX) {
-			HEXValue cval = (HEXValue)val;
+			HexValue cval = (HexValue)val;
 			
 			//Convert to a mininumber - this ensures is not TOO big a data structure
 			MiniNumber num = new MiniNumber(cval.getMiniData().getDataValue());
@@ -46,7 +46,7 @@ public class BOOL extends MinimaFunction {
 			ret = !cval.getNumber().isEqual(MiniNumber.ZERO);
 		
 		}else if(type == Value.VALUE_SCRIPT) {
-			ScriptValue cval = (ScriptValue)val;
+			StringValue cval = (StringValue)val;
 			
 			//check for FALSE - everything else is TRUE
 			ret = !cval.toString().equals("FALSE");

@@ -14,9 +14,9 @@ import org.minima.kissvm.expressions.ConstantExpression;
 import org.minima.kissvm.functions.MinimaFunction;
 import org.minima.kissvm.functions.base.SUBSET;
 import org.minima.kissvm.values.BooleanValue;
-import org.minima.kissvm.values.HEXValue;
+import org.minima.kissvm.values.HexValue;
 import org.minima.kissvm.values.NumberValue;
-import org.minima.kissvm.values.ScriptValue;
+import org.minima.kissvm.values.StringValue;
 import org.minima.kissvm.values.Value;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
@@ -53,11 +53,11 @@ public class SUBSETTests {
             MinimaFunction mf = fn.getNewFunction();
             mf.addParameter(new ConstantExpression(new NumberValue(0)));
             mf.addParameter(new ConstantExpression(new NumberValue(2)));
-            mf.addParameter(new ConstantExpression(new HEXValue("0x01234567")));
+            mf.addParameter(new ConstantExpression(new HexValue("0x01234567")));
             try {
                 Value res = mf.runFunction(ctr);
                 assertEquals(Value.VALUE_HEX, res.getValueType());
-                assertEquals("0x0123", ((HEXValue) res).toString());
+                assertEquals("0x0123", ((HexValue) res).toString());
             } catch (ExecutionException ex) {
                 fail();
             }
@@ -66,11 +66,11 @@ public class SUBSETTests {
             MinimaFunction mf = fn.getNewFunction();
             mf.addParameter(new ConstantExpression(new NumberValue(0)));
             mf.addParameter(new ConstantExpression(new NumberValue(4)));
-            mf.addParameter(new ConstantExpression(new HEXValue("0x01234567")));
+            mf.addParameter(new ConstantExpression(new HexValue("0x01234567")));
             try {
                 Value res = mf.runFunction(ctr);
                 assertEquals(Value.VALUE_HEX, res.getValueType());
-                assertEquals("0x01234567", ((HEXValue) res).toString());
+                assertEquals("0x01234567", ((HexValue) res).toString());
             } catch (ExecutionException ex) {
             	MinimaLogger.log(ex);
                 fail();
@@ -80,7 +80,7 @@ public class SUBSETTests {
             MinimaFunction mf = fn.getNewFunction();
             mf.addParameter(new ConstantExpression(new NumberValue(12)));
             mf.addParameter(new ConstantExpression(new NumberValue(13)));
-            mf.addParameter(new ConstantExpression(new HEXValue("0x0123456789ABCDEF")));
+            mf.addParameter(new ConstantExpression(new HexValue("0x0123456789ABCDEF")));
             assertThrows(ExecutionException.class, () -> { // Should throw this
                 Value res = mf.runFunction(ctr);
             });
@@ -89,7 +89,7 @@ public class SUBSETTests {
             MinimaFunction mf = fn.getNewFunction();
             mf.addParameter(new ConstantExpression(new NumberValue(0)));
             mf.addParameter(new ConstantExpression(new NumberValue(12)));
-            mf.addParameter(new ConstantExpression(new HEXValue("0x0123456789ABCDEF")));
+            mf.addParameter(new ConstantExpression(new HexValue("0x0123456789ABCDEF")));
             assertThrows(ExecutionException.class, () -> { // Should throw this
                 Value res = mf.runFunction(ctr);
             });
@@ -99,7 +99,7 @@ public class SUBSETTests {
             MinimaFunction mf = fn.getNewFunction();
             mf.addParameter(new ConstantExpression(new NumberValue(0)));
             mf.addParameter(new ConstantExpression(new NumberValue(5)));
-            mf.addParameter(new ConstantExpression(new ScriptValue("Hello World Minima is here")));
+            mf.addParameter(new ConstantExpression(new StringValue("Hello World Minima is here")));
             assertThrows(ExecutionException.class, () -> { // Should throw this
                 Value res = mf.runFunction(ctr);
             });
@@ -108,7 +108,7 @@ public class SUBSETTests {
             MinimaFunction mf = fn.getNewFunction();
             mf.addParameter(new ConstantExpression(new NumberValue(13)));
             mf.addParameter(new ConstantExpression(new NumberValue(19)));
-            mf.addParameter(new ConstantExpression(new ScriptValue("Hello World Minima is here")));
+            mf.addParameter(new ConstantExpression(new StringValue("Hello World Minima is here")));
             assertThrows(ExecutionException.class, () -> { // Should throw this
                 Value res = mf.runFunction(ctr);
             });
@@ -117,7 +117,7 @@ public class SUBSETTests {
             MinimaFunction mf = fn.getNewFunction();
             mf.addParameter(new ConstantExpression(new NumberValue(22)));
             mf.addParameter(new ConstantExpression(new NumberValue(32)));
-            mf.addParameter(new ConstantExpression(new HEXValue("0x0123456789ABCDEF")));
+            mf.addParameter(new ConstantExpression(new HexValue("0x0123456789ABCDEF")));
             assertThrows(ExecutionException.class, () -> { // Should throw this
                 Value res = mf.runFunction(ctr);
             });
@@ -126,7 +126,7 @@ public class SUBSETTests {
             MinimaFunction mf = fn.getNewFunction();
             mf.addParameter(new ConstantExpression(new NumberValue(0)));
             mf.addParameter(new ConstantExpression(new NumberValue(12)));
-            mf.addParameter(new ConstantExpression(new HEXValue("0x0123456789ABCDEF")));
+            mf.addParameter(new ConstantExpression(new HexValue("0x0123456789ABCDEF")));
             assertThrows(ExecutionException.class, () -> { // Should throw this
                 Value res = mf.runFunction(ctr);
             });
@@ -167,7 +167,7 @@ public class SUBSETTests {
             MinimaFunction mf = fn.getNewFunction();
             mf.addParameter(new ConstantExpression(new NumberValue(-9)));
             mf.addParameter(new ConstantExpression(new NumberValue(-5)));
-            mf.addParameter(new ConstantExpression(new HEXValue("0x01234567")));
+            mf.addParameter(new ConstantExpression(new HexValue("0x01234567")));
             assertThrows(ExecutionException.class, () -> { // Should throw this
                 Value res = mf.runFunction(ctr);
             });
@@ -176,7 +176,7 @@ public class SUBSETTests {
             MinimaFunction mf = fn.getNewFunction();
             mf.addParameter(new ConstantExpression(new NumberValue(2)));
             mf.addParameter(new ConstantExpression(new NumberValue(0)));
-            mf.addParameter(new ConstantExpression(new HEXValue("0x01234567")));
+            mf.addParameter(new ConstantExpression(new HexValue("0x01234567")));
             assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
             });
@@ -187,25 +187,25 @@ public class SUBSETTests {
             MinimaFunction mf = fn.getNewFunction();
             mf.addParameter(new ConstantExpression(new BooleanValue(true)));
             mf.addParameter(new ConstantExpression(new NumberValue(2)));
-            mf.addParameter(new ConstantExpression(new HEXValue("0x01234567")));
+            mf.addParameter(new ConstantExpression(new HexValue("0x01234567")));
             assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
             });
         }
         {
             MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new HEXValue("0x00")));
+            mf.addParameter(new ConstantExpression(new HexValue("0x00")));
             mf.addParameter(new ConstantExpression(new NumberValue(2)));
-            mf.addParameter(new ConstantExpression(new HEXValue("0x01234567")));
+            mf.addParameter(new ConstantExpression(new HexValue("0x01234567")));
             assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
             });
         }
         {
             MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new ScriptValue("Hello World")));
+            mf.addParameter(new ConstantExpression(new StringValue("Hello World")));
             mf.addParameter(new ConstantExpression(new NumberValue(2)));
-            mf.addParameter(new ConstantExpression(new HEXValue("0x01234567")));
+            mf.addParameter(new ConstantExpression(new HexValue("0x01234567")));
             assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
             });
@@ -214,7 +214,7 @@ public class SUBSETTests {
             MinimaFunction mf = fn.getNewFunction();
             mf.addParameter(new ConstantExpression(new NumberValue(0)));
             mf.addParameter(new ConstantExpression(new BooleanValue(true)));
-            mf.addParameter(new ConstantExpression(new HEXValue("0x01234567")));
+            mf.addParameter(new ConstantExpression(new HexValue("0x01234567")));
             assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
             });
@@ -222,8 +222,8 @@ public class SUBSETTests {
         {
             MinimaFunction mf = fn.getNewFunction();
             mf.addParameter(new ConstantExpression(new NumberValue(0)));
-            mf.addParameter(new ConstantExpression(new HEXValue("0x00")));
-            mf.addParameter(new ConstantExpression(new HEXValue("0x01234567")));
+            mf.addParameter(new ConstantExpression(new HexValue("0x00")));
+            mf.addParameter(new ConstantExpression(new HexValue("0x01234567")));
             assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
             });
@@ -231,8 +231,8 @@ public class SUBSETTests {
         {
             MinimaFunction mf = fn.getNewFunction();
             mf.addParameter(new ConstantExpression(new NumberValue(0)));
-            mf.addParameter(new ConstantExpression(new ScriptValue("Hello World")));
-            mf.addParameter(new ConstantExpression(new HEXValue("0x01234567")));
+            mf.addParameter(new ConstantExpression(new StringValue("Hello World")));
+            mf.addParameter(new ConstantExpression(new HexValue("0x01234567")));
             assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
             });
@@ -242,25 +242,25 @@ public class SUBSETTests {
             MinimaFunction mf = fn.getNewFunction();
             mf.addParameter(new ConstantExpression(new BooleanValue(true)));
             mf.addParameter(new ConstantExpression(new NumberValue(5)));
-            mf.addParameter(new ConstantExpression(new ScriptValue("Hello World Minima is here")));
+            mf.addParameter(new ConstantExpression(new StringValue("Hello World Minima is here")));
             assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
             });
         }
         {
             MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new HEXValue("0x00")));
+            mf.addParameter(new ConstantExpression(new HexValue("0x00")));
             mf.addParameter(new ConstantExpression(new NumberValue(5)));
-            mf.addParameter(new ConstantExpression(new ScriptValue("Hello World Minima is here")));
+            mf.addParameter(new ConstantExpression(new StringValue("Hello World Minima is here")));
             assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
             });
         }
         {
             MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new ScriptValue("Hello World")));
+            mf.addParameter(new ConstantExpression(new StringValue("Hello World")));
             mf.addParameter(new ConstantExpression(new NumberValue(5)));
-            mf.addParameter(new ConstantExpression(new ScriptValue("Hello World Minima is here")));
+            mf.addParameter(new ConstantExpression(new StringValue("Hello World Minima is here")));
             assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
             });
@@ -269,7 +269,7 @@ public class SUBSETTests {
             MinimaFunction mf = fn.getNewFunction();
             mf.addParameter(new ConstantExpression(new NumberValue(0)));
             mf.addParameter(new ConstantExpression(new BooleanValue(true)));
-            mf.addParameter(new ConstantExpression(new ScriptValue("Hello World Minima is here")));
+            mf.addParameter(new ConstantExpression(new StringValue("Hello World Minima is here")));
             assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
             });
@@ -277,8 +277,8 @@ public class SUBSETTests {
         {
             MinimaFunction mf = fn.getNewFunction();
             mf.addParameter(new ConstantExpression(new NumberValue(0)));
-            mf.addParameter(new ConstantExpression(new HEXValue("0x00")));
-            mf.addParameter(new ConstantExpression(new ScriptValue("Hello World Minima is here")));
+            mf.addParameter(new ConstantExpression(new HexValue("0x00")));
+            mf.addParameter(new ConstantExpression(new StringValue("Hello World Minima is here")));
             assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
             });
@@ -286,8 +286,8 @@ public class SUBSETTests {
         {
             MinimaFunction mf = fn.getNewFunction();
             mf.addParameter(new ConstantExpression(new NumberValue(0)));
-            mf.addParameter(new ConstantExpression(new ScriptValue("Hello World")));
-            mf.addParameter(new ConstantExpression(new ScriptValue("Hello World Minima is here")));
+            mf.addParameter(new ConstantExpression(new StringValue("Hello World")));
+            mf.addParameter(new ConstantExpression(new StringValue("Hello World Minima is here")));
             assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
             });

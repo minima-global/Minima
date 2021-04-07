@@ -12,9 +12,9 @@ import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.expressions.ConstantExpression;
 import org.minima.kissvm.statements.commands.ASSERTstatement;
 import org.minima.kissvm.values.BooleanValue;
-import org.minima.kissvm.values.HEXValue;
+import org.minima.kissvm.values.HexValue;
 import org.minima.kissvm.values.NumberValue;
-import org.minima.kissvm.values.ScriptValue;
+import org.minima.kissvm.values.StringValue;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
 
@@ -31,19 +31,19 @@ public class ASSERTstatementTests {
             assertEquals("ASSERT FALSE", as.toString());
         }
         {
-            ASSERTstatement as = new ASSERTstatement(new ConstantExpression(new HEXValue("")));
+            ASSERTstatement as = new ASSERTstatement(new ConstantExpression(new HexValue("")));
             assertEquals("ASSERT ", as.toString()); // Wrong???
         }
         {
-            ASSERTstatement as = new ASSERTstatement(new ConstantExpression(new HEXValue("0x00")));
+            ASSERTstatement as = new ASSERTstatement(new ConstantExpression(new HexValue("0x00")));
             assertEquals("ASSERT 0x00", as.toString());
         }
         {
-            ASSERTstatement as = new ASSERTstatement(new ConstantExpression(new HEXValue("0x12345678")));
+            ASSERTstatement as = new ASSERTstatement(new ConstantExpression(new HexValue("0x12345678")));
             assertEquals("ASSERT 0x12345678", as.toString());
         }
         {
-            ASSERTstatement as = new ASSERTstatement(new ConstantExpression(new HEXValue("0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF")));
+            ASSERTstatement as = new ASSERTstatement(new ConstantExpression(new HexValue("0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF")));
             assertEquals("ASSERT 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", as.toString());
         }
         {
@@ -59,11 +59,11 @@ public class ASSERTstatementTests {
             assertEquals("ASSERT 1", as.toString());
         }
         {
-            ASSERTstatement as = new ASSERTstatement(new ConstantExpression(new ScriptValue("")));
+            ASSERTstatement as = new ASSERTstatement(new ConstantExpression(new StringValue("")));
             assertEquals("ASSERT ", as.toString()); // Wrong???
         }
         {
-            ASSERTstatement as = new ASSERTstatement(new ConstantExpression(new ScriptValue("Hello World")));
+            ASSERTstatement as = new ASSERTstatement(new ConstantExpression(new StringValue("Hello World")));
             assertEquals("ASSERT Hello World", as.toString());
         }
     }
@@ -95,7 +95,7 @@ public class ASSERTstatementTests {
             assertEquals(false, ctr.isSuccess());
         }
         {
-            ConstantExpression ce = new ConstantExpression(new HEXValue(""));
+            ConstantExpression ce = new ConstantExpression(new HexValue(""));
             ASSERTstatement as = new ASSERTstatement(ce);
             Contract ctr = new Contract("", "", new Witness(), new Transaction(), new ArrayList<>());
             assertThrows(ExecutionException.class, () -> {
@@ -105,7 +105,7 @@ public class ASSERTstatementTests {
             assertEquals(false, ctr.isSuccess());
         }
         {
-            ConstantExpression ce = new ConstantExpression(new HEXValue("0x00"));
+            ConstantExpression ce = new ConstantExpression(new HexValue("0x00"));
             ASSERTstatement as = new ASSERTstatement(ce);
             Contract ctr = new Contract("", "", new Witness(), new Transaction(), new ArrayList<>());
             assertThrows(ExecutionException.class, () -> {
@@ -115,7 +115,7 @@ public class ASSERTstatementTests {
             assertEquals(false, ctr.isSuccess());
         }
         {
-            ConstantExpression ce = new ConstantExpression(new HEXValue("0x12345678"));
+            ConstantExpression ce = new ConstantExpression(new HexValue("0x12345678"));
             ASSERTstatement as = new ASSERTstatement(ce);
             Contract ctr = new Contract("", "", new Witness(), new Transaction(), new ArrayList<>());
             assertThrows(ExecutionException.class, () -> {
@@ -125,7 +125,7 @@ public class ASSERTstatementTests {
             assertEquals(false, ctr.isSuccess());
         }
         {
-            ConstantExpression ce = new ConstantExpression(new HEXValue("0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"));
+            ConstantExpression ce = new ConstantExpression(new HexValue("0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"));
             ASSERTstatement as = new ASSERTstatement(ce);
             Contract ctr = new Contract("", "", new Witness(), new Transaction(), new ArrayList<>());
             assertThrows(ExecutionException.class, () -> {
@@ -165,7 +165,7 @@ public class ASSERTstatementTests {
             assertEquals(false, ctr.isSuccess());
         }
         {
-            ConstantExpression ce = new ConstantExpression(new ScriptValue(""));
+            ConstantExpression ce = new ConstantExpression(new StringValue(""));
             ASSERTstatement as = new ASSERTstatement(ce);
             Contract ctr = new Contract("", "", new Witness(), new Transaction(), new ArrayList<>());
             assertThrows(ExecutionException.class, () -> {
@@ -175,7 +175,7 @@ public class ASSERTstatementTests {
             assertEquals(false, ctr.isSuccess());
         }
         {
-            ConstantExpression ce = new ConstantExpression(new ScriptValue("Hello World"));
+            ConstantExpression ce = new ConstantExpression(new StringValue("Hello World"));
             ASSERTstatement as = new ASSERTstatement(ce);
             Contract ctr = new Contract("", "", new Witness(), new Transaction(), new ArrayList<>());
             assertThrows(ExecutionException.class, () -> {

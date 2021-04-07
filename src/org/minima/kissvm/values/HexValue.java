@@ -3,7 +3,7 @@ package org.minima.kissvm.values;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 
-public class HEXValue extends Value {
+public class HexValue extends Value {
 	
 	/**
 	 * The RAW bytes
@@ -13,14 +13,14 @@ public class HEXValue extends Value {
 	/**
 	 * Needed by ScriptValue to init
 	 */
-	protected HEXValue() {}
+	protected HexValue() {}
 	
 	/**
 	 * Convert a MiniData byte array into a HEXValue
 	 * 
 	 * @param zData
 	 */
-	public HEXValue(MiniData zData) {
+	public HexValue(MiniData zData) {
 		this(zData.getData()); 
 	}
 	
@@ -29,7 +29,7 @@ public class HEXValue extends Value {
 	 * 
 	 * @param zData
 	 */
-	public HEXValue(byte[] zData) {
+	public HexValue(byte[] zData) {
 		//It's a HEX value..
 		mData   = new MiniData(zData);
 	}
@@ -39,7 +39,7 @@ public class HEXValue extends Value {
 	 * 
 	 * @param zHex
 	 */
-	public HEXValue(String zHex) {
+	public HexValue(String zHex) {
 		//HEX
 		mData 	= new MiniData(zHex);
 	}
@@ -51,7 +51,7 @@ public class HEXValue extends Value {
 	 * 
 	 * @param zNumber
 	 */
-	public HEXValue(MiniNumber zNumber) {
+	public HexValue(MiniNumber zNumber) {
 		if(zNumber.isLess(MiniNumber.ZERO)){
 			throw new NumberFormatException("HEXValue Number must be positive");
 		}
@@ -85,7 +85,7 @@ public class HEXValue extends Value {
 		return VALUE_HEX;
 	}
 	
-	public boolean isEqual(HEXValue zValue) {
+	public boolean isEqual(HexValue zValue) {
 		return mData.isEqual(zValue.getMiniData());
 	}
 	

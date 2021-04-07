@@ -6,9 +6,9 @@ package org.minima.kissvm.expressions;
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.values.BooleanValue;
-import org.minima.kissvm.values.HEXValue;
+import org.minima.kissvm.values.HexValue;
 import org.minima.kissvm.values.NumberValue;
-import org.minima.kissvm.values.ScriptValue;
+import org.minima.kissvm.values.StringValue;
 import org.minima.kissvm.values.Value;
 
 /**
@@ -139,8 +139,8 @@ public class BooleanExpression implements Expression {
 					ret = left == right ? BooleanValue.TRUE : BooleanValue.FALSE;
 				
 				}else if(lval.getValueType() == Value.VALUE_HEX) {
-					HEXValue lefthex  = ((HEXValue)lval);
-					HEXValue righthex  = ((HEXValue)rval);
+					HexValue lefthex  = ((HexValue)lval);
+					HexValue righthex  = ((HexValue)rval);
 					ret = lefthex.isEqual(righthex) ? BooleanValue.TRUE : BooleanValue.FALSE;
 				
 				}else if(lval.getValueType() == Value.VALUE_NUMBER) {
@@ -149,8 +149,8 @@ public class BooleanExpression implements Expression {
 					ret = leftnum.isEqual(rightnum) ? BooleanValue.TRUE : BooleanValue.FALSE;
 				
 				}else if(lval.getValueType() == Value.VALUE_SCRIPT) {
-					ScriptValue leftstr   = ((ScriptValue)lval);
-					ScriptValue rightstr  = ((ScriptValue)rval);
+					StringValue leftstr   = ((StringValue)lval);
+					StringValue rightstr  = ((StringValue)rval);
 					ret = leftstr.isEqual(rightstr) ? BooleanValue.TRUE : BooleanValue.FALSE;
 				
 				}
@@ -165,8 +165,8 @@ public class BooleanExpression implements Expression {
 					ret = left == right ? BooleanValue.FALSE : BooleanValue.TRUE;
 				
 				}else if(lval.getValueType() == Value.VALUE_HEX) {
-					HEXValue lefthex  = ((HEXValue)lval);
-					HEXValue righthex  = ((HEXValue)rval);
+					HexValue lefthex  = ((HexValue)lval);
+					HexValue righthex  = ((HexValue)rval);
 					ret = lefthex.isEqual(righthex) ? BooleanValue.FALSE : BooleanValue.TRUE;
 				
 				}else if(lval.getValueType() == Value.VALUE_NUMBER) {
@@ -175,8 +175,8 @@ public class BooleanExpression implements Expression {
 					ret = leftnum.isEqual(rightnum) ? BooleanValue.FALSE : BooleanValue.TRUE;
 				
 				}else if(lval.getValueType() == Value.VALUE_SCRIPT) {
-					ScriptValue leftstr   = ((ScriptValue)lval);
-					ScriptValue rightstr  = ((ScriptValue)rval);
+					StringValue leftstr   = ((StringValue)lval);
+					StringValue rightstr  = ((StringValue)rval);
 					ret = leftstr.isEqual(rightstr) ? BooleanValue.FALSE : BooleanValue.TRUE;
 				
 				}

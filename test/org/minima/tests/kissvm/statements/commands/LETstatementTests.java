@@ -20,9 +20,9 @@ import org.minima.kissvm.functions.maths.DEC;
 import org.minima.kissvm.functions.sigs.CHECKSIG;
 import org.minima.kissvm.statements.commands.LETstatement;
 import org.minima.kissvm.values.BooleanValue;
-import org.minima.kissvm.values.HEXValue;
+import org.minima.kissvm.values.HexValue;
 import org.minima.kissvm.values.NumberValue;
-import org.minima.kissvm.values.ScriptValue;
+import org.minima.kissvm.values.StringValue;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
 
@@ -148,8 +148,8 @@ public class LETstatementTests {
             ArrayList<Expression> arl = new ArrayList<Expression>();
             arl.add(new ConstantExpression(new BooleanValue(true)));
             arl.add(new ConstantExpression(new NumberValue(1)));
-            arl.add(new ConstantExpression(new HEXValue("0x12345678")));
-            arl.add(new ConstantExpression(new ScriptValue("RETURN TRUE")));
+            arl.add(new ConstantExpression(new HexValue("0x12345678")));
+            arl.add(new ConstantExpression(new StringValue("RETURN TRUE")));
             LETstatement ls = new LETstatement(arl,
                     new ConstantExpression(new NumberValue(42)));
             assertEquals("LET ( TRUE 1 0x12345678 RETURN TRUE ) = 42", ls.toString());
@@ -355,8 +355,8 @@ public class LETstatementTests {
             ArrayList<Expression> arl = new ArrayList<Expression>();
             arl.add(new ConstantExpression(new BooleanValue(true)));
             arl.add(new ConstantExpression(new NumberValue(1)));
-            arl.add(new ConstantExpression(new HEXValue("0x12345678")));
-            arl.add(new ConstantExpression(new ScriptValue("RETURN TRUE")));
+            arl.add(new ConstantExpression(new HexValue("0x12345678")));
+            arl.add(new ConstantExpression(new StringValue("RETURN TRUE")));
             LETstatement ls = new LETstatement(arl,
                     new ConstantExpression(new NumberValue(42)));
 

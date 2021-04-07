@@ -52,10 +52,10 @@ public abstract class Value {
 		if(zValue.startsWith("[") && zValue.endsWith("]")) {
 			//remove the square brackets..
 			String sc = zValue.substring(1,zValue.length()-1);
-			return new ScriptValue(sc);
+			return new StringValue(sc);
 			
 		}else if(zValue.startsWith("0x")) {
-			return new HEXValue(zValue);
+			return new HexValue(zValue);
 
 		}else if(zValue.equals("TRUE")) {
 			return BooleanValue.TRUE;

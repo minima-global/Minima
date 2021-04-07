@@ -3,8 +3,8 @@ package org.minima.kissvm.functions.sha;
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.functions.MinimaFunction;
-import org.minima.kissvm.values.HEXValue;
-import org.minima.kissvm.values.ScriptValue;
+import org.minima.kissvm.values.HexValue;
+import org.minima.kissvm.values.StringValue;
 import org.minima.kissvm.values.Value;
 import org.minima.utils.Crypto;
 
@@ -30,12 +30,12 @@ public class SHA2 extends MinimaFunction {
 		byte[] data = null;
 		if(vv.getValueType() == Value.VALUE_HEX) {
 			//HEX
-			HEXValue hex = (HEXValue)vv;
+			HexValue hex = (HexValue)vv;
 			data = hex.getRawData();
 			
 		}else {
 			//Script..
-			ScriptValue scr = (ScriptValue)vv;
+			StringValue scr = (StringValue)vv;
 			data = scr.getBytes();
 			
 		}
@@ -44,7 +44,7 @@ public class SHA2 extends MinimaFunction {
 		byte[] ans = Crypto.getInstance().hashSHA2(data);
 		
 		//return the New HEXValue
-		return new HEXValue(ans);
+		return new HexValue(ans);
 	}
 	
 	@Override

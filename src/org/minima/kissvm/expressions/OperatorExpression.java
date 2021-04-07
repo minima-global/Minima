@@ -8,9 +8,9 @@ import java.math.BigInteger;
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.values.BooleanValue;
-import org.minima.kissvm.values.HEXValue;
+import org.minima.kissvm.values.HexValue;
 import org.minima.kissvm.values.NumberValue;
-import org.minima.kissvm.values.ScriptValue;
+import org.minima.kissvm.values.StringValue;
 import org.minima.kissvm.values.Value;
 import org.minima.objects.base.MiniNumber;
 
@@ -81,8 +81,8 @@ public class OperatorExpression implements Expression{
 					
 				}else if(lval.getValueType() == Value.VALUE_SCRIPT) {
 					Value.checkSameType(lval, rval);
-					ScriptValue lnv = (ScriptValue)lval;
-					ScriptValue rnv = (ScriptValue)rval;
+					StringValue lnv = (StringValue)lval;
+					StringValue rnv = (StringValue)rval;
 					return lnv.add(rnv);
 				
 				}else {
@@ -147,18 +147,18 @@ public class OperatorExpression implements Expression{
 			{
 				lval.verifyType(Value.VALUE_HEX);
 				rval.verifyType(Value.VALUE_NUMBER);
-				HEXValue    lhv = (HEXValue)lval;
+				HexValue    lhv = (HexValue)lval;
 				NumberValue rnv = (NumberValue)rval;
-				ret = new HEXValue( lhv.getMiniData().shiftl(rnv.getNumber().getAsInt()).to0xString() );
+				ret = new HexValue( lhv.getMiniData().shiftl(rnv.getNumber().getAsInt()).to0xString() );
 			}
 			break;
 		case OPERATOR_SHIFTR :
 			{
 				lval.verifyType(Value.VALUE_HEX);
 				rval.verifyType(Value.VALUE_NUMBER);
-				HEXValue    lhv = (HEXValue)lval;
+				HexValue    lhv = (HexValue)lval;
 				NumberValue rnv = (NumberValue)rval;
-				ret = new HEXValue( lhv.getMiniData().shiftr(rnv.getNumber().getAsInt()).to0xString() );
+				ret = new HexValue( lhv.getMiniData().shiftr(rnv.getNumber().getAsInt()).to0xString() );
 			}
 			break;
 			
@@ -168,37 +168,37 @@ public class OperatorExpression implements Expression{
 		case OPERATOR_AND :
 			{
 				Value.checkSameType(lval, rval,Value.VALUE_HEX);
-				HEXValue lhv  = (HEXValue)lval;
-				HEXValue rhv  = (HEXValue)rval;
+				HexValue lhv  = (HexValue)lval;
+				HexValue rhv  = (HexValue)rval;
 				
 				BigInteger lbig = lhv.getMiniData().getDataValue();
 				BigInteger rbig = rhv.getMiniData().getDataValue();
 				
-				ret = new HEXValue ( lbig.and(rbig).toString(16) );
+				ret = new HexValue ( lbig.and(rbig).toString(16) );
 			}
 			break;
 		case OPERATOR_OR :
 			{
 				Value.checkSameType(lval, rval,Value.VALUE_HEX);
-				HEXValue lhv  = (HEXValue)lval;
-				HEXValue rhv  = (HEXValue)rval;
+				HexValue lhv  = (HexValue)lval;
+				HexValue rhv  = (HexValue)rval;
 				
 				BigInteger lbig = lhv.getMiniData().getDataValue();
 				BigInteger rbig = rhv.getMiniData().getDataValue();
 				
-				ret = new HEXValue ( lbig.or(rbig).toString(16) );
+				ret = new HexValue ( lbig.or(rbig).toString(16) );
 			}
 			break;
 		case OPERATOR_XOR :
 			{
 				Value.checkSameType(lval, rval,Value.VALUE_HEX);
-				HEXValue lhv  = (HEXValue)lval;
-				HEXValue rhv  = (HEXValue)rval;
+				HexValue lhv  = (HexValue)lval;
+				HexValue rhv  = (HexValue)rval;
 				
 				BigInteger lbig = lhv.getMiniData().getDataValue();
 				BigInteger rbig = rhv.getMiniData().getDataValue();
 				
-				ret = new HEXValue ( lbig.xor(rbig).toString(16) );
+				ret = new HexValue ( lbig.xor(rbig).toString(16) );
 			}
 			break;
 			

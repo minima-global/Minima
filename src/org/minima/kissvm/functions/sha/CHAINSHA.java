@@ -3,7 +3,7 @@ package org.minima.kissvm.functions.sha;
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.functions.MinimaFunction;
-import org.minima.kissvm.values.HEXValue;
+import org.minima.kissvm.values.HexValue;
 import org.minima.kissvm.values.Value;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.proofs.Proof;
@@ -19,11 +19,11 @@ public class CHAINSHA extends MinimaFunction {
 	public Value runFunction(Contract zContract) throws ExecutionException {
 		checkExactParamNumber(2);
 		
-		HEXValue val  = zContract.getHEXParam(0, this);
+		HexValue val  = zContract.getHEXParam(0, this);
 		MiniData data = val.getMiniData();
 
 		//Get the hash data chain + 1 byte for left right 
-		HEXValue chain = zContract.getHEXParam(1, this);
+		HexValue chain = zContract.getHEXParam(1, this);
 		
 		//Bit Strength
 		int bits;
@@ -45,7 +45,7 @@ public class CHAINSHA extends MinimaFunction {
 		chainproof.setProof(chain.getMiniData());
 		
 		//Return..
-		return new HEXValue(chainproof.getFinalHash());
+		return new HexValue(chainproof.getFinalHash());
 	}
 	
 	@Override

@@ -4,9 +4,9 @@ import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.functions.MinimaFunction;
 import org.minima.kissvm.values.BooleanValue;
-import org.minima.kissvm.values.HEXValue;
+import org.minima.kissvm.values.HexValue;
 import org.minima.kissvm.values.NumberValue;
-import org.minima.kissvm.values.ScriptValue;
+import org.minima.kissvm.values.StringValue;
 import org.minima.kissvm.values.Value;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
@@ -40,13 +40,13 @@ public class NUMBER extends MinimaFunction{
 			}
 		
 		}else if(type == Value.VALUE_HEX) {
-			HEXValue cval = (HEXValue)val;
+			HexValue cval = (HexValue)val;
 			MiniData md1 = cval.getMiniData();
 			MiniNumber num = new MiniNumber(md1.getDataValue());
 			return new NumberValue(num);
 	
 		}else if(type == Value.VALUE_SCRIPT) {
-			ScriptValue cval = (ScriptValue)val;
+			StringValue cval = (StringValue)val;
 			return new NumberValue(cval.toString());
 		
 		}else if(type == Value.VALUE_NUMBER) {

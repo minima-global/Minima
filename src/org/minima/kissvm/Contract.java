@@ -13,9 +13,9 @@ import org.minima.kissvm.statements.StatementParser;
 import org.minima.kissvm.tokens.Token;
 import org.minima.kissvm.tokens.Tokenizer;
 import org.minima.kissvm.values.BooleanValue;
-import org.minima.kissvm.values.HEXValue;
+import org.minima.kissvm.values.HexValue;
 import org.minima.kissvm.values.NumberValue;
-import org.minima.kissvm.values.ScriptValue;
+import org.minima.kissvm.values.StringValue;
 import org.minima.kissvm.values.Value;
 import org.minima.objects.StateVariable;
 import org.minima.objects.Transaction;
@@ -39,7 +39,7 @@ public class Contract {
 	StatementBlock mBlock;
 	
 	//A list of valid signatures
-	ArrayList<HEXValue> mSignatures;
+	ArrayList<HexValue> mSignatures;
 	
 	//A list of all the user-defined variables
 	Hashtable<String, Value> mVariables;
@@ -133,7 +133,7 @@ public class Contract {
 		while(strtok.hasMoreTokens()) {
 			String sig = strtok.nextToken().trim();
 			traceLog("Signature : "+sig);
-			mSignatures.add( (HEXValue)Value.getValue(sig) );
+			mSignatures.add( (HexValue)Value.getValue(sig) );
 		}
 		
 		//Transaction..
@@ -351,20 +351,20 @@ public class Contract {
 		return (NumberValue)vv;
 	}
 	
-	public HEXValue getHEXParam(int zParamNumber, MinimaFunction zFunction) throws ExecutionException {
+	public HexValue getHEXParam(int zParamNumber, MinimaFunction zFunction) throws ExecutionException {
 		Value vv = zFunction.getParameter(zParamNumber).getValue(this);
 		if(vv.getValueType() != Value.VALUE_HEX) {
 			throw new ExecutionException("Incorrect Parameter type - should be HEXValue @ "+zParamNumber+" "+zFunction.getName());
 		}
-		return (HEXValue)vv;
+		return (HexValue)vv;
 	}
 	
-	public ScriptValue getScriptParam(int zParamNumber, MinimaFunction zFunction) throws ExecutionException {
+	public StringValue getScriptParam(int zParamNumber, MinimaFunction zFunction) throws ExecutionException {
 		Value vv = zFunction.getParameter(zParamNumber).getValue(this);
 		if(vv.getValueType() != Value.VALUE_SCRIPT) {
 			throw new ExecutionException("Incorrect Parameter type - should be ScriptValue @ "+zParamNumber+" "+zFunction.getName());
 		}
-		return (ScriptValue)vv;
+		return (StringValue)vv;
 	}
 	
 	public BooleanValue getBoolParam(int zParamNumber, MinimaFunction zFunction) throws ExecutionException {
@@ -480,10 +480,10 @@ public class Contract {
 	 * @param zSignature
 	 * @return
 	 */
-	public boolean checkSignature(HEXValue zSignature) {
+	public boolean checkSignature(HexValue zSignature) {
 		MiniData checksig = zSignature.getMiniData();
 		
-		for(HEXValue sig : mSignatures) {
+		for(HexValue sig : mSignatures) {
 			if(sig.getMiniData().isEqual(checksig)) {
 				return true;
 			}

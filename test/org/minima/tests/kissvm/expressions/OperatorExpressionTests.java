@@ -12,9 +12,9 @@ import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.expressions.ConstantExpression;
 import org.minima.kissvm.expressions.OperatorExpression;
 import org.minima.kissvm.values.BooleanValue;
-import org.minima.kissvm.values.HEXValue;
+import org.minima.kissvm.values.HexValue;
 import org.minima.kissvm.values.NumberValue;
-import org.minima.kissvm.values.ScriptValue;
+import org.minima.kissvm.values.StringValue;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniNumber;
@@ -28,13 +28,13 @@ public class OperatorExpressionTests {
         ConstantExpression ceTrue = new ConstantExpression(new BooleanValue(true));
         ConstantExpression ceFalse = new ConstantExpression(new BooleanValue(false));
 
-        ConstantExpression ceHexEmpty = new ConstantExpression(new HEXValue(""));
-        ConstantExpression ceHex00 = new ConstantExpression(new HEXValue("0x00"));
-        ConstantExpression ceHex01 = new ConstantExpression(new HEXValue("0x01"));
-        ConstantExpression ceHex0100 = new ConstantExpression(new HEXValue("0x0100"));
-        ConstantExpression ceHexDefault = new ConstantExpression(new HEXValue("0x12345678"));
-        ConstantExpression ceHex01L16 = new ConstantExpression(new HEXValue("0x0101010101010101"));
-        ConstantExpression ceHex10L16 = new ConstantExpression(new HEXValue("0x1010101010101010"));
+        ConstantExpression ceHexEmpty = new ConstantExpression(new HexValue(""));
+        ConstantExpression ceHex00 = new ConstantExpression(new HexValue("0x00"));
+        ConstantExpression ceHex01 = new ConstantExpression(new HexValue("0x01"));
+        ConstantExpression ceHex0100 = new ConstantExpression(new HexValue("0x0100"));
+        ConstantExpression ceHexDefault = new ConstantExpression(new HexValue("0x12345678"));
+        ConstantExpression ceHex01L16 = new ConstantExpression(new HexValue("0x0101010101010101"));
+        ConstantExpression ceHex10L16 = new ConstantExpression(new HexValue("0x1010101010101010"));
 
         ConstantExpression ce0 = new ConstantExpression(new NumberValue(0));
         ConstantExpression ce1 = new ConstantExpression(new NumberValue(1));
@@ -59,9 +59,9 @@ public class OperatorExpressionTests {
         ConstantExpression ceRPI = new ConstantExpression(new NumberValue(new MiniNumber("3.14")));
         ConstantExpression ceR_PI = new ConstantExpression(new NumberValue(new MiniNumber("-3.14")));
 
-        ConstantExpression ceScriptEmpty = new ConstantExpression(new ScriptValue(""));
-        ConstantExpression ceScriptDummy = new ConstantExpression(new ScriptValue("[Hello World]"));
-        ConstantExpression ceScriptMinima = new ConstantExpression(new ScriptValue("LET A = 1"));
+        ConstantExpression ceScriptEmpty = new ConstantExpression(new StringValue(""));
+        ConstantExpression ceScriptDummy = new ConstantExpression(new StringValue("[Hello World]"));
+        ConstantExpression ceScriptMinima = new ConstantExpression(new StringValue("LET A = 1"));
 
         assertEquals(5, ((NumberValue) (new OperatorExpression(ce5, ce0, OperatorExpression.OPERATOR_ADD)).getValue(ctr)).getNumber().getAsLong());
         assertEquals(5, ((NumberValue) (new OperatorExpression(ce0, ce5, OperatorExpression.OPERATOR_ADD)).getValue(ctr)).getNumber().getAsLong());
@@ -97,17 +97,17 @@ public class OperatorExpressionTests {
             (new OperatorExpression(ce1, ce0, OperatorExpression.OPERATOR_DIV)).getValue(ctr);
         });
 
-        assertEquals("", ((ScriptValue) (new OperatorExpression(ceScriptEmpty, ceScriptEmpty, OperatorExpression.OPERATOR_ADD)).getValue(ctr)).toString());
-        assertEquals("[Hello World]", ((ScriptValue) (new OperatorExpression(ceScriptEmpty, ceScriptDummy, OperatorExpression.OPERATOR_ADD)).getValue(ctr)).toString());
-        assertEquals("[Hello World]", ((ScriptValue) (new OperatorExpression(ceScriptDummy, ceScriptEmpty, OperatorExpression.OPERATOR_ADD)).getValue(ctr)).toString());
-        assertEquals("LET A = 1", ((ScriptValue) (new OperatorExpression(ceScriptEmpty, ceScriptMinima, OperatorExpression.OPERATOR_ADD)).getValue(ctr)).toString());
-        assertEquals("LET A = 1", ((ScriptValue) (new OperatorExpression(ceScriptMinima, ceScriptEmpty, OperatorExpression.OPERATOR_ADD)).getValue(ctr)).toString());
+        assertEquals("", ((StringValue) (new OperatorExpression(ceScriptEmpty, ceScriptEmpty, OperatorExpression.OPERATOR_ADD)).getValue(ctr)).toString());
+        assertEquals("[Hello World]", ((StringValue) (new OperatorExpression(ceScriptEmpty, ceScriptDummy, OperatorExpression.OPERATOR_ADD)).getValue(ctr)).toString());
+        assertEquals("[Hello World]", ((StringValue) (new OperatorExpression(ceScriptDummy, ceScriptEmpty, OperatorExpression.OPERATOR_ADD)).getValue(ctr)).toString());
+        assertEquals("LET A = 1", ((StringValue) (new OperatorExpression(ceScriptEmpty, ceScriptMinima, OperatorExpression.OPERATOR_ADD)).getValue(ctr)).toString());
+        assertEquals("LET A = 1", ((StringValue) (new OperatorExpression(ceScriptMinima, ceScriptEmpty, OperatorExpression.OPERATOR_ADD)).getValue(ctr)).toString());
 
-        assertEquals("[Hello World][Hello World]", ((ScriptValue) (new OperatorExpression(ceScriptDummy, ceScriptDummy, OperatorExpression.OPERATOR_ADD)).getValue(ctr)).toString());
-        assertEquals("[Hello World]LET A = 1", ((ScriptValue) (new OperatorExpression(ceScriptDummy, ceScriptMinima, OperatorExpression.OPERATOR_ADD)).getValue(ctr)).toString());
-        assertEquals("LET A = 1[Hello World]", ((ScriptValue) (new OperatorExpression(ceScriptMinima, ceScriptDummy, OperatorExpression.OPERATOR_ADD)).getValue(ctr)).toString());
+        assertEquals("[Hello World][Hello World]", ((StringValue) (new OperatorExpression(ceScriptDummy, ceScriptDummy, OperatorExpression.OPERATOR_ADD)).getValue(ctr)).toString());
+        assertEquals("[Hello World]LET A = 1", ((StringValue) (new OperatorExpression(ceScriptDummy, ceScriptMinima, OperatorExpression.OPERATOR_ADD)).getValue(ctr)).toString());
+        assertEquals("LET A = 1[Hello World]", ((StringValue) (new OperatorExpression(ceScriptMinima, ceScriptDummy, OperatorExpression.OPERATOR_ADD)).getValue(ctr)).toString());
 
-        assertEquals("LET A = 1LET A = 1", ((ScriptValue) (new OperatorExpression(ceScriptMinima, ceScriptMinima, OperatorExpression.OPERATOR_ADD)).getValue(ctr)).toString());
+        assertEquals("LET A = 1LET A = 1", ((StringValue) (new OperatorExpression(ceScriptMinima, ceScriptMinima, OperatorExpression.OPERATOR_ADD)).getValue(ctr)).toString());
 
         assertEquals(0, ((NumberValue) (new OperatorExpression(ce0, OperatorExpression.OPERATOR_NEG)).getValue(ctr)).getNumber().getAsLong());
         assertEquals(-1, ((NumberValue) (new OperatorExpression(ce1, OperatorExpression.OPERATOR_NEG)).getValue(ctr)).getNumber().getAsLong());
@@ -140,66 +140,66 @@ public class OperatorExpressionTests {
         // Division impossible
         //assertEquals("1", ((NumberValue) (new OperatorExpression(ceMinMini, ce3, OperatorExpression.OPERATOR_MODULO)).getValue(ctr)).getNumber().getAsBigInteger().toString());
 
-        assertEquals("0x01", ((HEXValue) (new OperatorExpression(ceHex01, ce0, OperatorExpression.OPERATOR_SHIFTL)).getValue(ctr)).toString());
-        assertEquals("0x02", ((HEXValue) (new OperatorExpression(ceHex01, ce1, OperatorExpression.OPERATOR_SHIFTL)).getValue(ctr)).toString());
-        assertEquals("0x08", ((HEXValue) (new OperatorExpression(ceHex01, ce3, OperatorExpression.OPERATOR_SHIFTL)).getValue(ctr)).toString());
-        assertEquals("0x20", ((HEXValue) (new OperatorExpression(ceHex01, ce5, OperatorExpression.OPERATOR_SHIFTL)).getValue(ctr)).toString());
+        assertEquals("0x01", ((HexValue) (new OperatorExpression(ceHex01, ce0, OperatorExpression.OPERATOR_SHIFTL)).getValue(ctr)).toString());
+        assertEquals("0x02", ((HexValue) (new OperatorExpression(ceHex01, ce1, OperatorExpression.OPERATOR_SHIFTL)).getValue(ctr)).toString());
+        assertEquals("0x08", ((HexValue) (new OperatorExpression(ceHex01, ce3, OperatorExpression.OPERATOR_SHIFTL)).getValue(ctr)).toString());
+        assertEquals("0x20", ((HexValue) (new OperatorExpression(ceHex01, ce5, OperatorExpression.OPERATOR_SHIFTL)).getValue(ctr)).toString());
 
-        assertEquals("0x0100", ((HEXValue) (new OperatorExpression(ceHex0100, ce0, OperatorExpression.OPERATOR_SHIFTR)).getValue(ctr)).toString());
-        assertEquals("0x80", ((HEXValue) (new OperatorExpression(ceHex0100, ce1, OperatorExpression.OPERATOR_SHIFTR)).getValue(ctr)).toString());
-        assertEquals("0x20", ((HEXValue) (new OperatorExpression(ceHex0100, ce3, OperatorExpression.OPERATOR_SHIFTR)).getValue(ctr)).toString());
-        assertEquals("0x08", ((HEXValue) (new OperatorExpression(ceHex0100, ce5, OperatorExpression.OPERATOR_SHIFTR)).getValue(ctr)).toString());
+        assertEquals("0x0100", ((HexValue) (new OperatorExpression(ceHex0100, ce0, OperatorExpression.OPERATOR_SHIFTR)).getValue(ctr)).toString());
+        assertEquals("0x80", ((HexValue) (new OperatorExpression(ceHex0100, ce1, OperatorExpression.OPERATOR_SHIFTR)).getValue(ctr)).toString());
+        assertEquals("0x20", ((HexValue) (new OperatorExpression(ceHex0100, ce3, OperatorExpression.OPERATOR_SHIFTR)).getValue(ctr)).toString());
+        assertEquals("0x08", ((HexValue) (new OperatorExpression(ceHex0100, ce5, OperatorExpression.OPERATOR_SHIFTR)).getValue(ctr)).toString());
 
-        assertEquals("0x01", ((HEXValue) (new OperatorExpression(ceHex01, ceHex01, OperatorExpression.OPERATOR_AND)).getValue(ctr)).toString());
-        assertEquals("0x00", ((HEXValue) (new OperatorExpression(ceHex01, ceHex00, OperatorExpression.OPERATOR_AND)).getValue(ctr)).toString());
-        assertEquals("0x00", ((HEXValue) (new OperatorExpression(ceHex00, ceHex01, OperatorExpression.OPERATOR_AND)).getValue(ctr)).toString());
-        assertEquals("0x00", ((HEXValue) (new OperatorExpression(ceHex00, ceHex00, OperatorExpression.OPERATOR_AND)).getValue(ctr)).toString());
-        assertEquals("0x0101010101010101", ((HEXValue) (new OperatorExpression(ceHex01L16, ceHex01L16, OperatorExpression.OPERATOR_AND)).getValue(ctr)).toString());
-        assertEquals("0x00", ((HEXValue) (new OperatorExpression(ceHex01L16, ceHex10L16, OperatorExpression.OPERATOR_AND)).getValue(ctr)).toString());
-        assertEquals("0x00", ((HEXValue) (new OperatorExpression(ceHex10L16, ceHex01L16, OperatorExpression.OPERATOR_AND)).getValue(ctr)).toString());
-        assertEquals("0x1010101010101010", ((HEXValue) (new OperatorExpression(ceHex10L16, ceHex10L16, OperatorExpression.OPERATOR_AND)).getValue(ctr)).toString());
-        assertEquals("0x01", ((HEXValue) (new OperatorExpression(ceHex01, ceHex01L16, OperatorExpression.OPERATOR_AND)).getValue(ctr)).toString());
-        assertEquals("0x00", ((HEXValue) (new OperatorExpression(ceHex01, ceHex10L16, OperatorExpression.OPERATOR_AND)).getValue(ctr)).toString());
-        assertEquals("0x00", ((HEXValue) (new OperatorExpression(ceHex00, ceHex01L16, OperatorExpression.OPERATOR_AND)).getValue(ctr)).toString());
-        assertEquals("0x00", ((HEXValue) (new OperatorExpression(ceHex00, ceHex10L16, OperatorExpression.OPERATOR_AND)).getValue(ctr)).toString());
-        assertEquals("0x01", ((HEXValue) (new OperatorExpression(ceHex01L16, ceHex01, OperatorExpression.OPERATOR_AND)).getValue(ctr)).toString());
-        assertEquals("0x00", ((HEXValue) (new OperatorExpression(ceHex01L16, ceHex00, OperatorExpression.OPERATOR_AND)).getValue(ctr)).toString());
-        assertEquals("0x00", ((HEXValue) (new OperatorExpression(ceHex10L16, ceHex01, OperatorExpression.OPERATOR_AND)).getValue(ctr)).toString());
-        assertEquals("0x00", ((HEXValue) (new OperatorExpression(ceHex10L16, ceHex00, OperatorExpression.OPERATOR_AND)).getValue(ctr)).toString());
+        assertEquals("0x01", ((HexValue) (new OperatorExpression(ceHex01, ceHex01, OperatorExpression.OPERATOR_AND)).getValue(ctr)).toString());
+        assertEquals("0x00", ((HexValue) (new OperatorExpression(ceHex01, ceHex00, OperatorExpression.OPERATOR_AND)).getValue(ctr)).toString());
+        assertEquals("0x00", ((HexValue) (new OperatorExpression(ceHex00, ceHex01, OperatorExpression.OPERATOR_AND)).getValue(ctr)).toString());
+        assertEquals("0x00", ((HexValue) (new OperatorExpression(ceHex00, ceHex00, OperatorExpression.OPERATOR_AND)).getValue(ctr)).toString());
+        assertEquals("0x0101010101010101", ((HexValue) (new OperatorExpression(ceHex01L16, ceHex01L16, OperatorExpression.OPERATOR_AND)).getValue(ctr)).toString());
+        assertEquals("0x00", ((HexValue) (new OperatorExpression(ceHex01L16, ceHex10L16, OperatorExpression.OPERATOR_AND)).getValue(ctr)).toString());
+        assertEquals("0x00", ((HexValue) (new OperatorExpression(ceHex10L16, ceHex01L16, OperatorExpression.OPERATOR_AND)).getValue(ctr)).toString());
+        assertEquals("0x1010101010101010", ((HexValue) (new OperatorExpression(ceHex10L16, ceHex10L16, OperatorExpression.OPERATOR_AND)).getValue(ctr)).toString());
+        assertEquals("0x01", ((HexValue) (new OperatorExpression(ceHex01, ceHex01L16, OperatorExpression.OPERATOR_AND)).getValue(ctr)).toString());
+        assertEquals("0x00", ((HexValue) (new OperatorExpression(ceHex01, ceHex10L16, OperatorExpression.OPERATOR_AND)).getValue(ctr)).toString());
+        assertEquals("0x00", ((HexValue) (new OperatorExpression(ceHex00, ceHex01L16, OperatorExpression.OPERATOR_AND)).getValue(ctr)).toString());
+        assertEquals("0x00", ((HexValue) (new OperatorExpression(ceHex00, ceHex10L16, OperatorExpression.OPERATOR_AND)).getValue(ctr)).toString());
+        assertEquals("0x01", ((HexValue) (new OperatorExpression(ceHex01L16, ceHex01, OperatorExpression.OPERATOR_AND)).getValue(ctr)).toString());
+        assertEquals("0x00", ((HexValue) (new OperatorExpression(ceHex01L16, ceHex00, OperatorExpression.OPERATOR_AND)).getValue(ctr)).toString());
+        assertEquals("0x00", ((HexValue) (new OperatorExpression(ceHex10L16, ceHex01, OperatorExpression.OPERATOR_AND)).getValue(ctr)).toString());
+        assertEquals("0x00", ((HexValue) (new OperatorExpression(ceHex10L16, ceHex00, OperatorExpression.OPERATOR_AND)).getValue(ctr)).toString());
 
-        assertEquals("0x01", ((HEXValue) (new OperatorExpression(ceHex01, ceHex01, OperatorExpression.OPERATOR_OR)).getValue(ctr)).toString());
-        assertEquals("0x01", ((HEXValue) (new OperatorExpression(ceHex01, ceHex00, OperatorExpression.OPERATOR_OR)).getValue(ctr)).toString());
-        assertEquals("0x01", ((HEXValue) (new OperatorExpression(ceHex00, ceHex01, OperatorExpression.OPERATOR_OR)).getValue(ctr)).toString());
-        assertEquals("0x00", ((HEXValue) (new OperatorExpression(ceHex00, ceHex00, OperatorExpression.OPERATOR_OR)).getValue(ctr)).toString());
-        assertEquals("0x0101010101010101", ((HEXValue) (new OperatorExpression(ceHex01L16, ceHex01L16, OperatorExpression.OPERATOR_OR)).getValue(ctr)).toString());
-        assertEquals("0x1111111111111111", ((HEXValue) (new OperatorExpression(ceHex01L16, ceHex10L16, OperatorExpression.OPERATOR_OR)).getValue(ctr)).toString());
-        assertEquals("0x1111111111111111", ((HEXValue) (new OperatorExpression(ceHex10L16, ceHex01L16, OperatorExpression.OPERATOR_OR)).getValue(ctr)).toString());
-        assertEquals("0x1010101010101010", ((HEXValue) (new OperatorExpression(ceHex10L16, ceHex10L16, OperatorExpression.OPERATOR_OR)).getValue(ctr)).toString());
-        assertEquals("0x0101010101010101", ((HEXValue) (new OperatorExpression(ceHex01, ceHex01L16, OperatorExpression.OPERATOR_OR)).getValue(ctr)).toString());
-        assertEquals("0x1010101010101011", ((HEXValue) (new OperatorExpression(ceHex01, ceHex10L16, OperatorExpression.OPERATOR_OR)).getValue(ctr)).toString());
-        assertEquals("0x0101010101010101", ((HEXValue) (new OperatorExpression(ceHex00, ceHex01L16, OperatorExpression.OPERATOR_OR)).getValue(ctr)).toString());
-        assertEquals("0x1010101010101010", ((HEXValue) (new OperatorExpression(ceHex00, ceHex10L16, OperatorExpression.OPERATOR_OR)).getValue(ctr)).toString());
-        assertEquals("0x0101010101010101", ((HEXValue) (new OperatorExpression(ceHex01L16, ceHex01, OperatorExpression.OPERATOR_OR)).getValue(ctr)).toString());
-        assertEquals("0x0101010101010101", ((HEXValue) (new OperatorExpression(ceHex01L16, ceHex00, OperatorExpression.OPERATOR_OR)).getValue(ctr)).toString());
-        assertEquals("0x1010101010101011", ((HEXValue) (new OperatorExpression(ceHex10L16, ceHex01, OperatorExpression.OPERATOR_OR)).getValue(ctr)).toString());
-        assertEquals("0x1010101010101010", ((HEXValue) (new OperatorExpression(ceHex10L16, ceHex00, OperatorExpression.OPERATOR_OR)).getValue(ctr)).toString());
+        assertEquals("0x01", ((HexValue) (new OperatorExpression(ceHex01, ceHex01, OperatorExpression.OPERATOR_OR)).getValue(ctr)).toString());
+        assertEquals("0x01", ((HexValue) (new OperatorExpression(ceHex01, ceHex00, OperatorExpression.OPERATOR_OR)).getValue(ctr)).toString());
+        assertEquals("0x01", ((HexValue) (new OperatorExpression(ceHex00, ceHex01, OperatorExpression.OPERATOR_OR)).getValue(ctr)).toString());
+        assertEquals("0x00", ((HexValue) (new OperatorExpression(ceHex00, ceHex00, OperatorExpression.OPERATOR_OR)).getValue(ctr)).toString());
+        assertEquals("0x0101010101010101", ((HexValue) (new OperatorExpression(ceHex01L16, ceHex01L16, OperatorExpression.OPERATOR_OR)).getValue(ctr)).toString());
+        assertEquals("0x1111111111111111", ((HexValue) (new OperatorExpression(ceHex01L16, ceHex10L16, OperatorExpression.OPERATOR_OR)).getValue(ctr)).toString());
+        assertEquals("0x1111111111111111", ((HexValue) (new OperatorExpression(ceHex10L16, ceHex01L16, OperatorExpression.OPERATOR_OR)).getValue(ctr)).toString());
+        assertEquals("0x1010101010101010", ((HexValue) (new OperatorExpression(ceHex10L16, ceHex10L16, OperatorExpression.OPERATOR_OR)).getValue(ctr)).toString());
+        assertEquals("0x0101010101010101", ((HexValue) (new OperatorExpression(ceHex01, ceHex01L16, OperatorExpression.OPERATOR_OR)).getValue(ctr)).toString());
+        assertEquals("0x1010101010101011", ((HexValue) (new OperatorExpression(ceHex01, ceHex10L16, OperatorExpression.OPERATOR_OR)).getValue(ctr)).toString());
+        assertEquals("0x0101010101010101", ((HexValue) (new OperatorExpression(ceHex00, ceHex01L16, OperatorExpression.OPERATOR_OR)).getValue(ctr)).toString());
+        assertEquals("0x1010101010101010", ((HexValue) (new OperatorExpression(ceHex00, ceHex10L16, OperatorExpression.OPERATOR_OR)).getValue(ctr)).toString());
+        assertEquals("0x0101010101010101", ((HexValue) (new OperatorExpression(ceHex01L16, ceHex01, OperatorExpression.OPERATOR_OR)).getValue(ctr)).toString());
+        assertEquals("0x0101010101010101", ((HexValue) (new OperatorExpression(ceHex01L16, ceHex00, OperatorExpression.OPERATOR_OR)).getValue(ctr)).toString());
+        assertEquals("0x1010101010101011", ((HexValue) (new OperatorExpression(ceHex10L16, ceHex01, OperatorExpression.OPERATOR_OR)).getValue(ctr)).toString());
+        assertEquals("0x1010101010101010", ((HexValue) (new OperatorExpression(ceHex10L16, ceHex00, OperatorExpression.OPERATOR_OR)).getValue(ctr)).toString());
 
-        assertEquals("0x00", ((HEXValue) (new OperatorExpression(ceHex01, ceHex01, OperatorExpression.OPERATOR_XOR)).getValue(ctr)).toString());
-        assertEquals("0x01", ((HEXValue) (new OperatorExpression(ceHex01, ceHex00, OperatorExpression.OPERATOR_XOR)).getValue(ctr)).toString());
-        assertEquals("0x01", ((HEXValue) (new OperatorExpression(ceHex00, ceHex01, OperatorExpression.OPERATOR_XOR)).getValue(ctr)).toString());
-        assertEquals("0x00", ((HEXValue) (new OperatorExpression(ceHex00, ceHex00, OperatorExpression.OPERATOR_XOR)).getValue(ctr)).toString());
-        assertEquals("0x00", ((HEXValue) (new OperatorExpression(ceHex01L16, ceHex01L16, OperatorExpression.OPERATOR_XOR)).getValue(ctr)).toString());
-        assertEquals("0x1111111111111111", ((HEXValue) (new OperatorExpression(ceHex01L16, ceHex10L16, OperatorExpression.OPERATOR_XOR)).getValue(ctr)).toString());
-        assertEquals("0x1111111111111111", ((HEXValue) (new OperatorExpression(ceHex10L16, ceHex01L16, OperatorExpression.OPERATOR_XOR)).getValue(ctr)).toString());
-        assertEquals("0x00", ((HEXValue) (new OperatorExpression(ceHex10L16, ceHex10L16, OperatorExpression.OPERATOR_XOR)).getValue(ctr)).toString());
-        assertEquals("0x0101010101010100", ((HEXValue) (new OperatorExpression(ceHex01, ceHex01L16, OperatorExpression.OPERATOR_XOR)).getValue(ctr)).toString());
-        assertEquals("0x1010101010101011", ((HEXValue) (new OperatorExpression(ceHex01, ceHex10L16, OperatorExpression.OPERATOR_XOR)).getValue(ctr)).toString());
-        assertEquals("0x0101010101010101", ((HEXValue) (new OperatorExpression(ceHex00, ceHex01L16, OperatorExpression.OPERATOR_XOR)).getValue(ctr)).toString());
-        assertEquals("0x1010101010101010", ((HEXValue) (new OperatorExpression(ceHex00, ceHex10L16, OperatorExpression.OPERATOR_XOR)).getValue(ctr)).toString());
-        assertEquals("0x0101010101010100", ((HEXValue) (new OperatorExpression(ceHex01L16, ceHex01, OperatorExpression.OPERATOR_XOR)).getValue(ctr)).toString());
-        assertEquals("0x0101010101010101", ((HEXValue) (new OperatorExpression(ceHex01L16, ceHex00, OperatorExpression.OPERATOR_XOR)).getValue(ctr)).toString());
-        assertEquals("0x1010101010101011", ((HEXValue) (new OperatorExpression(ceHex10L16, ceHex01, OperatorExpression.OPERATOR_XOR)).getValue(ctr)).toString());
-        assertEquals("0x1010101010101010", ((HEXValue) (new OperatorExpression(ceHex10L16, ceHex00, OperatorExpression.OPERATOR_XOR)).getValue(ctr)).toString());
+        assertEquals("0x00", ((HexValue) (new OperatorExpression(ceHex01, ceHex01, OperatorExpression.OPERATOR_XOR)).getValue(ctr)).toString());
+        assertEquals("0x01", ((HexValue) (new OperatorExpression(ceHex01, ceHex00, OperatorExpression.OPERATOR_XOR)).getValue(ctr)).toString());
+        assertEquals("0x01", ((HexValue) (new OperatorExpression(ceHex00, ceHex01, OperatorExpression.OPERATOR_XOR)).getValue(ctr)).toString());
+        assertEquals("0x00", ((HexValue) (new OperatorExpression(ceHex00, ceHex00, OperatorExpression.OPERATOR_XOR)).getValue(ctr)).toString());
+        assertEquals("0x00", ((HexValue) (new OperatorExpression(ceHex01L16, ceHex01L16, OperatorExpression.OPERATOR_XOR)).getValue(ctr)).toString());
+        assertEquals("0x1111111111111111", ((HexValue) (new OperatorExpression(ceHex01L16, ceHex10L16, OperatorExpression.OPERATOR_XOR)).getValue(ctr)).toString());
+        assertEquals("0x1111111111111111", ((HexValue) (new OperatorExpression(ceHex10L16, ceHex01L16, OperatorExpression.OPERATOR_XOR)).getValue(ctr)).toString());
+        assertEquals("0x00", ((HexValue) (new OperatorExpression(ceHex10L16, ceHex10L16, OperatorExpression.OPERATOR_XOR)).getValue(ctr)).toString());
+        assertEquals("0x0101010101010100", ((HexValue) (new OperatorExpression(ceHex01, ceHex01L16, OperatorExpression.OPERATOR_XOR)).getValue(ctr)).toString());
+        assertEquals("0x1010101010101011", ((HexValue) (new OperatorExpression(ceHex01, ceHex10L16, OperatorExpression.OPERATOR_XOR)).getValue(ctr)).toString());
+        assertEquals("0x0101010101010101", ((HexValue) (new OperatorExpression(ceHex00, ceHex01L16, OperatorExpression.OPERATOR_XOR)).getValue(ctr)).toString());
+        assertEquals("0x1010101010101010", ((HexValue) (new OperatorExpression(ceHex00, ceHex10L16, OperatorExpression.OPERATOR_XOR)).getValue(ctr)).toString());
+        assertEquals("0x0101010101010100", ((HexValue) (new OperatorExpression(ceHex01L16, ceHex01, OperatorExpression.OPERATOR_XOR)).getValue(ctr)).toString());
+        assertEquals("0x0101010101010101", ((HexValue) (new OperatorExpression(ceHex01L16, ceHex00, OperatorExpression.OPERATOR_XOR)).getValue(ctr)).toString());
+        assertEquals("0x1010101010101011", ((HexValue) (new OperatorExpression(ceHex10L16, ceHex01, OperatorExpression.OPERATOR_XOR)).getValue(ctr)).toString());
+        assertEquals("0x1010101010101010", ((HexValue) (new OperatorExpression(ceHex10L16, ceHex00, OperatorExpression.OPERATOR_XOR)).getValue(ctr)).toString());
 
         // Invalid
         assertThrows(ExecutionException.class, () -> { // IllegalArgumentException maybe, as all others
@@ -277,7 +277,7 @@ public class OperatorExpressionTests {
         //assertThrows(IllegalArgumentException.class, () -> {
         //    (new OperatorExpression(ceHex01, ce_3, OperatorExpression.OPERATOR_SHIFTL)).getValue(ctr);
         //});
-        assertEquals("0x00", ((HEXValue) (new OperatorExpression(ceHex01, ce_3, OperatorExpression.OPERATOR_SHIFTL)).getValue(ctr)).toString());
+        assertEquals("0x00", ((HexValue) (new OperatorExpression(ceHex01, ce_3, OperatorExpression.OPERATOR_SHIFTL)).getValue(ctr)).toString());
 
         assertThrows(IllegalArgumentException.class, () -> {
             (new OperatorExpression(ceHex00, ceFalse, OperatorExpression.OPERATOR_SHIFTL)).getValue(ctr);
@@ -302,7 +302,7 @@ public class OperatorExpressionTests {
         //assertThrows(IllegalArgumentException.class, () -> {
         //    (new OperatorExpression(ceHex01, ce_3, OperatorExpression.OPERATOR_SHIFTR)).getValue(ctr);
         //});
-        assertEquals("0x08", ((HEXValue) (new OperatorExpression(ceHex01, ce_3, OperatorExpression.OPERATOR_SHIFTR)).getValue(ctr)).toString());
+        assertEquals("0x08", ((HexValue) (new OperatorExpression(ceHex01, ce_3, OperatorExpression.OPERATOR_SHIFTR)).getValue(ctr)).toString());
 
         assertThrows(IllegalArgumentException.class, () -> {
             (new OperatorExpression(ceHex00, ceFalse, OperatorExpression.OPERATOR_SHIFTR)).getValue(ctr);

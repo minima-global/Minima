@@ -2,14 +2,14 @@ package org.minima.kissvm.values;
 
 import org.minima.objects.base.MiniString;
 
-public class ScriptValue extends Value {
+public class StringValue extends Value {
 	
 	/**
 	 * The Script
 	 */
 	String mScript;
 	
-	public ScriptValue(String zScript) {
+	public StringValue(String zScript) {
 		mScript = new String( zScript );
 	}
 	
@@ -27,7 +27,7 @@ public class ScriptValue extends Value {
 		return VALUE_SCRIPT;
 	}
 	
-	public boolean isEqual(ScriptValue zValue) {
+	public boolean isEqual(StringValue zValue) {
 		return mScript.equals(zValue.toString());
 	}
 	
@@ -37,7 +37,7 @@ public class ScriptValue extends Value {
 	 * @param zSCValue
 	 * @return
 	 */
-	public ScriptValue add(ScriptValue zSCValue) {
-		return new ScriptValue(mScript+zSCValue.toString());
+	public StringValue add(StringValue zSCValue) {
+		return new StringValue(mScript+zSCValue.toString());
 	}
 }

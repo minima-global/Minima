@@ -15,9 +15,9 @@ import org.minima.kissvm.expressions.ConstantExpression;
 import org.minima.kissvm.functions.MinimaFunction;
 import org.minima.kissvm.functions.txn.output.GETOUTTOK;
 import org.minima.kissvm.values.BooleanValue;
-import org.minima.kissvm.values.HEXValue;
+import org.minima.kissvm.values.HexValue;
 import org.minima.kissvm.values.NumberValue;
-import org.minima.kissvm.values.ScriptValue;
+import org.minima.kissvm.values.StringValue;
 import org.minima.kissvm.values.Value;
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
@@ -87,7 +87,7 @@ public class GETOUTTOKTests {
             try {
                 Value res = mf.runFunction(ctr);
                 assertEquals(Value.VALUE_HEX, res.getValueType());
-                assertEquals(out1.getTokenID(), ((HEXValue) res).getMiniData());
+                assertEquals(out1.getTokenID(), ((HexValue) res).getMiniData());
             } catch (ExecutionException ex) {
                 fail();
             }
@@ -98,7 +98,7 @@ public class GETOUTTOKTests {
             try {
                 Value res = mf.runFunction(ctr);
                 assertEquals(Value.VALUE_HEX, res.getValueType());
-                assertEquals(out2.getTokenID(), ((HEXValue) res).getMiniData());
+                assertEquals(out2.getTokenID(), ((HexValue) res).getMiniData());
             } catch (ExecutionException ex) {
                 fail();
             }
@@ -183,14 +183,14 @@ public class GETOUTTOKTests {
         }
         {
             MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new HEXValue("0x12345678")));
+            mf.addParameter(new ConstantExpression(new HexValue("0x12345678")));
             assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
             });
         }
         {
             MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new ScriptValue("Hello World")));
+            mf.addParameter(new ConstantExpression(new StringValue("Hello World")));
             assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
             });
