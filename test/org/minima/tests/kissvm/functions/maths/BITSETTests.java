@@ -13,7 +13,7 @@ import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.exceptions.MinimaParseException;
 import org.minima.kissvm.expressions.ConstantExpression;
 import org.minima.kissvm.functions.MinimaFunction;
-import org.minima.kissvm.functions.number.BITSET;
+import org.minima.kissvm.functions.hex.BITSET;
 import org.minima.kissvm.values.BooleanValue;
 import org.minima.kissvm.values.HexValue;
 import org.minima.kissvm.values.NumberValue;

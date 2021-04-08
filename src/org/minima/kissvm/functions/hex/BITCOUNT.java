@@ -1,4 +1,4 @@
-package org.minima.kissvm.functions.number;
+package org.minima.kissvm.functions.hex;
 
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
