@@ -3,41 +3,37 @@ package org.minima.kissvm.functions.string;
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.functions.MinimaFunction;
+import org.minima.kissvm.values.HexValue;
 import org.minima.kissvm.values.StringValue;
 import org.minima.kissvm.values.Value;
+import org.minima.objects.base.MiniString;
 
 /**
  * Replace ALL occurrences of str with replacemnet
  * 
  * @author spartacusrex
  */
-public class REPLACE extends MinimaFunction {
+public class UTF extends MinimaFunction {
 
-	public REPLACE() {
-		super("REPLACE");
+	public UTF() {
+		super("UTF");
 	}
 
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
-		checkExactParamNumber(2);
+		checkExactParamNumber(1);
 		
-		//Get the the first string
-		StringValue strmain   	= zContract.getStringParam(0, this);
-		StringValue strsearch 	= zContract.getStringParam(1, this);
-		StringValue strrepl 	= zContract.getStringParam(2, this);
+		//Get the HEX value
+		HexValue hex = zContract.getHexParam(0, this);
 		
-		String main 	= strmain.toString();
-		String search 	= strsearch.toString();
-		String repl 	= strrepl.toString();
-		
-		//Now replace..
-		String newstr = main.replace(search, repl);
+		//Now create a UTF8 String
+		String newstr = new String(hex.getRawData(), MiniString.MINIMA_CHARSET);
 		
 		return new StringValue(newstr);	
 	}
 	
 	@Override
 	public MinimaFunction getNewFunction() {
-		return new REPLACE();
+		return new UTF();
 	}
 }
