@@ -26,6 +26,11 @@ public class LEN extends MinimaFunction{
 	}
 
 	@Override
+	public int requiredParams() {
+		return 1;
+	}
+	
+	@Override
 	public MinimaFunction getNewFunction() {
 		return new LEN();
 	}

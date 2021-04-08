@@ -40,6 +40,11 @@ public class BITCOUNT extends MinimaFunction {
 	}
 	
 	@Override
+	public int requiredParams() {
+		return 1;
+	}
+	
+	@Override
 	public MinimaFunction getNewFunction() {
 		return new BITCOUNT();
 	}

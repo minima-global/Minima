@@ -19,7 +19,7 @@ public class HEX extends MinimaFunction{
 	
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
-		checkExactParamNumber(1);
+		checkExactParamNumber(requiredParams());
 		
 		//Get the Value..
 		Value val = getParameter(0).getValue(zContract);
@@ -61,6 +61,11 @@ public class HEX extends MinimaFunction{
 		return new HexValue(ret);
 	}
 
+	@Override
+	public int requiredParams() {
+		return 1;
+	}
+	
 	@Override
 	public MinimaFunction getNewFunction() {
 		return new HEX();

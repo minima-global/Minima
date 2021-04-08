@@ -172,6 +172,37 @@ public abstract class MinimaFunction {
 	public abstract MinimaFunction getNewFunction();
 	
 	/**
+	 * How many Parameters do you expect
+	 */
+	public abstract int requiredParams();
+	
+	/**
+	 * Can be overridden in calsses that set a minimum
+	 * @return
+	 */
+	public boolean isRequiredMinimumParameterNumber() {
+		return false;
+	}
+	
+	/**
+	 * External function to do a quick check
+	 */
+	public void checkParamNumberCorrect() throws MinimaParseException {
+		int paramsize = getAllParameters().size();
+		int reqparam  = requiredParams();
+		
+		if(isRequiredMinimumParameterNumber()) {
+			if(paramsize < reqparam) {
+				throw new MinimaParseException(getName()+" function requires a  minimum of "+reqparam+" parameters not "+paramsize);
+			}
+		}else {
+			if(paramsize != reqparam) {
+				throw new MinimaParseException(getName()+" function requires exactly "+reqparam+" parameters not "+paramsize);
+			}
+		}
+	}
+	
+	/**
 	 * Get a specific function given it's name
 	 * 
 	 * @param zFunction

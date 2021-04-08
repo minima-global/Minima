@@ -65,6 +65,11 @@ public class SHA3 extends MinimaFunction {
 	}
 	
 	@Override
+	public int requiredParams() {
+		return 2;
+	}
+	
+	@Override
 	public MinimaFunction getNewFunction() {
 		return new SHA3();
 	}

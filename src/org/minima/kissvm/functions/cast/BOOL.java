@@ -18,7 +18,7 @@ public class BOOL extends MinimaFunction {
 	
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
-		checkExactParamNumber(1);
+		checkExactParamNumber(requiredParams());
 		
 		//Get the Value..
 		Value val = getParameter(0).getValue(zContract);
@@ -58,6 +58,11 @@ public class BOOL extends MinimaFunction {
 		return new BooleanValue(ret);
 	}
 
+	@Override
+	public int requiredParams() {
+		return 1;
+	}
+	
 	@Override
 	public MinimaFunction getNewFunction() {
 		return new BOOL();

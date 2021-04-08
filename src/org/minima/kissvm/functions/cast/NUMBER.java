@@ -25,7 +25,7 @@ public class NUMBER extends MinimaFunction{
 	
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
-		checkExactParamNumber(1);
+		checkExactParamNumber(requiredParams());
 		
 		//Get the Value..
 		Value val = getParameter(0).getValue(zContract);
@@ -57,6 +57,11 @@ public class NUMBER extends MinimaFunction{
 		throw new ExecutionException("Invalid Type in NUMBER cast "+type);
 	}
 
+	@Override
+	public int requiredParams() {
+		return 1;
+	}
+	
 	@Override
 	public MinimaFunction getNewFunction() {
 		return new NUMBER();

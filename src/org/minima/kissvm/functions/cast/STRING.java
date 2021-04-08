@@ -14,13 +14,18 @@ public class STRING extends MinimaFunction {
 	
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
-		checkExactParamNumber(1);
+		checkExactParamNumber(requiredParams());
 		
 		Value val = getParameter(0).getValue(zContract);
 		
 		return new StringValue(val.toString());
 	}
 
+	@Override
+	public int requiredParams() {
+		return 1;
+	}
+	
 	@Override
 	public MinimaFunction getNewFunction() {
 		return new STRING();

@@ -22,6 +22,11 @@ public class DEC extends MinimaFunction {
 	}
 	
 	@Override
+	public int requiredParams() {
+		return 1;
+	}
+	
+	@Override
 	public MinimaFunction getNewFunction() {
 		return new DEC();
 	}

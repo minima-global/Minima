@@ -258,6 +258,9 @@ public class ExpressionParser {
 				}
 			}
 						
+			//Check the correct number of Parameters 
+			func.checkParamNumberCorrect();
+			
 			//Now create the Complete Expression
 			exp = new FunctionExpression(func);
 			

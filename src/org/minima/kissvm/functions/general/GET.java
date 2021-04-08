@@ -41,6 +41,16 @@ public class GET extends MinimaFunction{
 	}
 
 	@Override
+	public boolean isRequiredMinimumParameterNumber() {
+		return true;
+	}
+	
+	@Override
+	public int requiredParams() {
+		return 1;
+	}
+	
+	@Override
 	public MinimaFunction getNewFunction() {
 		return new GET();
 	}

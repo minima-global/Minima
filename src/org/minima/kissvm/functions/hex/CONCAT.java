@@ -18,7 +18,7 @@ public class CONCAT extends MinimaFunction{
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
 		//Check parameters..
-		checkMinParamNumber(2);
+		checkExactParamNumber(2);
 		
 		//Run through the function parameters and concatenate..
 		ArrayList<Expression> params = getAllParameters();
@@ -53,6 +53,11 @@ public class CONCAT extends MinimaFunction{
 		}
 		
 		return new HexValue(result);
+	}
+	
+	@Override
+	public int requiredParams() {
+		return 2;
 	}
 	
 	@Override

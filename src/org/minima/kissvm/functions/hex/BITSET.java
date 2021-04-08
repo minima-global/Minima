@@ -51,6 +51,11 @@ public class BITSET extends MinimaFunction {
 	}
 	
 	@Override
+	public int requiredParams() {
+		return 3;
+	}
+	
+	@Override
 	public MinimaFunction getNewFunction() {
 		return new BITSET();
 	}

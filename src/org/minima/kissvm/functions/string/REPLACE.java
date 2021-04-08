@@ -32,6 +32,11 @@ public class REPLACE extends MinimaFunction {
 	}
 
 	@Override
+	public int requiredParams() {
+		return 2;
+	}
+	
+	@Override
 	public MinimaFunction getNewFunction() {
 		return new REPLACE();
 	}

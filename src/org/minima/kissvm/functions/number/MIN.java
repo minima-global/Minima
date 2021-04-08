@@ -27,7 +27,7 @@ public class MIN extends MinimaFunction {
 	 */
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
-		checkMinParamNumber(2);
+		checkExactParamNumber(2);
 		checkAllParamsType(Value.VALUE_NUMBER, zContract);
 		
 		//Run through the function parameters and pick the maximum numeric value..
@@ -51,6 +51,11 @@ public class MIN extends MinimaFunction {
 		}
 		
 		return min;
+	}
+	
+	@Override
+	public int requiredParams() {
+		return 2;
 	}
 	
 	@Override
