@@ -32,35 +32,33 @@ STATEMENT   ::= LET VARIABLE = EXPRESSION |
                 MAST EXPRESSION |
                 ASSERT EXPRESSION |
                 RETURN EXPRESSION
-EXPRESSION  ::= RELATION AND RELATION  | RELATION OR RELATION  |  
-                RELATION XOR RELATION  | RELATION NAND RELATION | 
-                RELATION NOR RELATION  |  RELATION NXOR RELATION | RELATION
-RELATION    ::= LOGIC EQ LOGIC  | LOGIC NEQ LOGIC  | 
-                LOGIC GT LOGIC  | LOGIC GTE LOGIC  | 
-                LOGIC LT LOGIC  | LOGIC LTE LOGIC  | LOGIC
-LOGIC       ::= LOGIC & OPERATION | LOGIC | OPERATION | 
-                LOGIC ^ OPERATION | OPERATION
-OPERATION   ::= OPERATION + MULDIV | OPERATION - MULDIV | 
-                OPERATION % MULDIV | 
-                OPERATION << MULDIV | OPERATION >> MULDIV | MULDIV
-MULDIV      ::= MULDIV * PRIME | MULDIV / PRIME | PRIME
-PRIME       ::= NOT PRIME |  NEG PRIME | BASEUNIT
-BASEUNIT    ::= VARIABLE | VALUE | GLOBAL | FUNCTION | ( EXPRESSION )
-VARIABLE    ::= ^[a-z]{1,16}$
-VALUE       ::= NUMBER | BYTE | HEX | SCRIPT | BINARY
-NUMBER      ::= ^-?\\d*(\\.\\d+)?$
-BYTE        ::= [0-255]
-HEX         ::= 0x[0-9A-F]{2}*
-SCRIPT      ::= [ ASCII ]
-BINARY      ::= TRUE | FALSE
+EXPRESSION  ::= RELATION
+RELATION    ::= LOGIC AND LOGIC  | LOGIC OR LOGIC  |  
+                LOGIC XOR LOGIC  | LOGIC NAND LOGIC | 
+                LOGIC NOR LOGIC  | LOGIC NXOR LOGIC | LOGIC
+LOGIC       ::= OPERATION EQ OPERATION  | OPERATION NEQ OPERATION  | 
+                OPERATION GT OPERATION  | OPERATION GTE OPERATION  | 
+                OPERATION LT OPERATION  | OPERATION LTE OPERATION  | OPERATION
+OPERATION   ::= ADDSUB & ADDSUB | ADDSUB | ADDSUB | ADDSUB ^ ADDSUB | ADDSUB
+ADDSUB      ::= MULDIV + MULDIV | MULDIV - MULDIV | MULDIV % MULDIV |
+                MULDIV << MULDIV | MULDIV >> MULDIV | MULDIV
+MULDIV      ::= PRIME * PRIME | PRIME / PRIME | PRIME
+PRIME       ::= NOT PRIME |  NEG PRIME | NOT BASEUNIT | NEG BASEUNIT | BASEUNIT
+BASEUNIT    ::= VARIABLE | VALUE | -NUMBER | GLOBAL | FUNCTION | ( EXPRESSION )
+VARIABLE    ::= [a-z]+
+VALUE       ::= NUMBER | HEX | STRING | BOOLEAN
+NUMBER      ::= ^[0-9]+(\\.[0-9]+)?
+HEX         ::= 0x[0-9a-fA-F]+
+STRING      ::= [UTF8_String]
+BOOLEAN     ::= TRUE | FALSE
 FALSE       ::= 0
 TRUE        ::= NOT FALSE
-GLOBAL      ::= @BLKNUM | @INPUT | @INBLKNUM | @BLKDIFF
+GLOBAL      ::= @BLKNUM | @BLKTIME | @INPUT | @INBLKNUM | @BLKDIFF
       	        @AMOUNT | @ADDRESS | @TOKENID | @COINID |
                 @SCRIPT | @TOTIN | @TOTOUT
 FUNCTION    ::= FUNC ( EXPRESSION_1 EXPRESSION_2 .. EXPRESSION_n ) 
-FUNC        ::= CONCAT | LEN | REV | SUBSET | RPLVAR | GET |
-                ASCII | BOOL | HEX | NUMBER | SCRIPT |
+FUNC        ::= CONCAT | LEN | REV | SUBSET | GET |
+                BOOL | HEX | NUMBER | STRING | REPLACE | SUBSTR |
                 ABS | CEIL | FLOOR | MIN | MAX | INC | DEC | SIGDIG | POW |
                 BITSET | BITGET | BITCOUNT | CHAINSHA | SHA3 | SHA2 |
                 SIGNEDBY | MULTISIG | CHECKSIG |
@@ -90,8 +88,8 @@ Globals
 Functions
 ---------
 
-CONACT ( HEX_1 HEX_2 ... HEX_n ) | CONCAT ( SCRIPT_1 SCRIPT_2 ... SCRIPT_n )
-Concatenate the values. 
+CONACT ( HEX_1 HEX_2 ... HEX_n )
+Concatenate the HEX values. 
 
 LEN ( HEX|SCRIPT )
 Length of the data
@@ -102,14 +100,17 @@ Reverse the data
 SUBSET ( HEX|SCRIPT NUMBER NUMBER )
 Return the HEX subset of the data - start - length
 
-RPLVAR ( SCRIPT SCRIPT SCRIPT ) 
-In a script, replace a variable definition with the following Expression. Can be used with @SCRIPT for recursive covenants.
-
 GET ( NUMBER NUMBER .. NUMBER )
 Return the array value set with LET ( EXPRESSION EXPRESSION .. EXPRESSION )  
 
-ASCII ( HEX )
-Convert the HEX value of a script value to a script
+REPLACE ( STRING STRING STRING )
+Replace in 1st string all occurrence of 2nd string with 3rd
+
+SUBSTR ( STRING NUMBER NUMBER )
+Get the substring
+
+UTF8 ( HEX )
+Convert the HEX value of a script value to a string
 
 BOOL ( VALUE )
 Convert to TRUE or FALSE value
@@ -120,7 +121,7 @@ Convert SCRIPT to HEX
 NUMBER ( HEX )
 Convert HEX to NUMBER
 
-SCRIPT ( HEX ) 
+STRING ( HEX ) 
 Convert a HEX value to SCRIPT
 
 ABS ( NUMBER )
@@ -150,11 +151,11 @@ Returns the power of N of a number. N must be a whole number.
 SIGDIG ( NUMBER NUMBER )
 Set the significant digits of the number
 
-BITSET ( HEX NUMBER BINARY )
+BITSET ( HEX NUMBER BOOLEAN )
 Set the value of the BIT at that Position to 0 or 1
 
 BITGET ( HEX NUMBER ) 
-Get the BINARY value of the bit at the position.
+Get the BOOLEAN value of the bit at the position.
 
 BITCOUNT ( HEX ) 
 Count the number of bits set in a HEX value
@@ -186,8 +187,8 @@ Return the amount of the specified output
 GETOUTTOK ( NUMBER ) 
 Return the token id of the specified output
 
-VERIFYOUT ( NUMBER HEX NUMBER HEX [NUMBER])
-Verify the specified output has the specified address, amount and tokenid. Optional 4th parameter relates to AMOUNT. -1 LTE, 0 EQ, 1 GTE. Default EQ.
+VERIFYOUT ( NUMBER HEX NUMBER HEX )
+Verify the specified output has the specified address, amount and tokenid
 
 GETINADDR ( NUMBER ) 
 Return the HEX address of the specified input
@@ -198,8 +199,8 @@ Return the amount of the specified input
 GETINTOK ( NUMBER ) 
 Return the token id of the specified input
 
-VERIFYIN ( NUMBER HEX NUMBER HEX [NUMBER])
-Verify the specified input has the specified address, amount and tokenid. Optional 4th parameter relates to AMOUNT. -1 LTE, 0 EQ, 1 GTE. Default EQ.
+VERIFYIN ( NUMBER HEX NUMBER HEX)
+Verify the specified input has the specified address, amount and tokenid
 
 STATE ( NUMBER )
 Return the state value for the given number
@@ -207,8 +208,8 @@ Return the state value for the given number
 PREVSTATE ( NUMBER )
 Return the state value stored in the MMR data in the initial transaction this input was created. Allows for a state to be maintained from 1 spend to the next
 
-SAMESTATE ( NUMBER [NUMBER] )
-Return TRUE if the previous state and current state are the same. If 2 parameters are set then checks all the values inbetween the 2 values inclusively
+SAMESTATE ( NUMBER NUMBER )
+Return TRUE if the previous state and current state are the same for the start and end positions
 
 Examples
 --------
@@ -216,7 +217,7 @@ Examples
 LET thing = 23
 LET ( 12 2 ) = 45.345
 LET ( 0 0 1 ) = 0xFF
-LET ( 0xFF ( thing + 1 ) ) = [ RETURN TRUE ]
+LET ( 3 ( thing + 1 ) ) = [ RETURN TRUE ]
 
 --
 
@@ -245,11 +246,6 @@ EXEC [ RETURN TRUE ]
 --
 
 MAST 0xA6657D2133E29B0A343871CAE44224BBA6BB87A972A5247A38A45D3D2065F7E4
-
---
-
-LET old = [ LET add = 0xFFEEDDFFEEDD ]
-LET new = RPLVAR ( old [ add ] [ 0xEE ]] )
 
 --
 
