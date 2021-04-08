@@ -17,7 +17,7 @@ public class CHAINSHA extends MinimaFunction {
 	
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
-		checkExactParamNumber(2);
+		checkExactParamNumber(requiredParams());
 		
 		HexValue val  = zContract.getHexParam(0, this);
 		MiniData data = val.getMiniData();

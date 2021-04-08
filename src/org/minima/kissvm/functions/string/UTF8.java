@@ -13,15 +13,15 @@ import org.minima.objects.base.MiniString;
  * 
  * @author spartacusrex
  */
-public class UTF extends MinimaFunction {
+public class UTF8 extends MinimaFunction {
 
-	public UTF() {
-		super("UTF");
+	public UTF8() {
+		super("UTF8");
 	}
 
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
-		checkExactParamNumber(1);
+		checkExactParamNumber(requiredParams());
 		
 		//Get the HEX value
 		HexValue hex = zContract.getHexParam(0, this);
@@ -39,6 +39,6 @@ public class UTF extends MinimaFunction {
 	
 	@Override
 	public MinimaFunction getNewFunction() {
-		return new UTF();
+		return new UTF8();
 	}
 }

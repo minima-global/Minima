@@ -14,7 +14,7 @@ public class REV extends MinimaFunction {
 	
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
-		checkExactParamNumber(1);
+		checkExactParamNumber(requiredParams());
 		
 		//The Data
 		HexValue hex = zContract.getHexParam(0, this);

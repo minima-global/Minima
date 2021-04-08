@@ -19,7 +19,7 @@ public class SUBSET extends MinimaFunction {
 
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
-		checkExactParamNumber(3);
+		checkExactParamNumber(requiredParams());
 		
 		//Get a a subset of a hex value..
 		int start = zContract.getNumberParam(0, this).getNumber().getAsInt();

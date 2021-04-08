@@ -22,7 +22,7 @@ public class SHA2 extends MinimaFunction {
 	 */
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
-		checkExactParamNumber(1);
+		checkExactParamNumber(requiredParams());
 		
 		Value vv = getParameter(0).getValue(zContract);
 		checkIsOfType(vv, Value.VALUE_HEX | Value.VALUE_SCRIPT);

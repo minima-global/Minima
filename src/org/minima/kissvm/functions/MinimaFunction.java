@@ -41,7 +41,7 @@ import org.minima.kissvm.functions.state.SAMESTATE;
 import org.minima.kissvm.functions.state.STATE;
 import org.minima.kissvm.functions.string.REPLACE;
 import org.minima.kissvm.functions.string.SUBSTR;
-import org.minima.kissvm.functions.string.UTF;
+import org.minima.kissvm.functions.string.UTF8;
 import org.minima.kissvm.functions.txn.input.GETINADDR;
 import org.minima.kissvm.functions.txn.input.GETINAMT;
 import org.minima.kissvm.functions.txn.input.GETINID;
@@ -68,7 +68,7 @@ public abstract class MinimaFunction {
 				new BOOL(), new HEX(), new NUMBER(), new STRING(),
 				new ABS(), new CEIL(), new FLOOR(),new MAX(), new MIN(), new DEC(), new INC(), 
 				new SIGDIG(), new POW(), 
-				new REPLACE(), new SUBSTR(), new UTF(),
+				new REPLACE(), new SUBSTR(), new UTF8(),
 				new SHA3(), new SHA2(), new CHAINSHA(), new BITSET(), new BITGET(), new BITCOUNT(),
 				new SIGNEDBY(), new MULTISIG(), new CHECKSIG(),
 				new GETINADDR(), new GETINAMT(), new GETINID(), new GETINTOK(),new VERIFYIN(),

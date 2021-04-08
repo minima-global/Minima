@@ -23,7 +23,7 @@ public class CHECKSIG extends MinimaFunction {
 	
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
-		checkExactParamNumber(3);
+		checkExactParamNumber(requiredParams());
 		
 		//Get the Pbkey
 		HexValue pubkey = zContract.getHexParam(0, this);

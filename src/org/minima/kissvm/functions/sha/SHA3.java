@@ -31,7 +31,7 @@ public class SHA3 extends MinimaFunction {
 	 */
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
-		checkExactParamNumber(2);
+		checkExactParamNumber(requiredParams());
 		
 		//The Bit Length
 		int bitlength = zContract.getNumberParam(0, this).getNumber().getAsInt();

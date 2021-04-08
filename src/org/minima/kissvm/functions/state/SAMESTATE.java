@@ -22,7 +22,7 @@ public class SAMESTATE extends MinimaFunction {
 	
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
-		checkExactParamNumber(2);
+		checkExactParamNumber(requiredParams());
 		
 		//Is this a one off or a sequence..
 		int start = zContract.getNumberParam(0, this).getNumber().getAsInt();

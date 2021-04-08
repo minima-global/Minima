@@ -27,7 +27,7 @@ public class BITCOUNT extends MinimaFunction {
 	 */
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
-		checkExactParamNumber(1);
+		checkExactParamNumber(requiredParams());
 		
 		//get the Input Data
 		byte[] data = zContract.getHexParam(0, this).getRawData();

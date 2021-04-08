@@ -14,7 +14,7 @@ public class REPLACE extends MinimaFunction {
 
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
-		checkExactParamNumber(2);
+		checkExactParamNumber(requiredParams());
 
 		//Get the the first string
 		StringValue strmain   	= zContract.getStringParam(0, this);

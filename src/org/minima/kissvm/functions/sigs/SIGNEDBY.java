@@ -15,7 +15,7 @@ public class SIGNEDBY extends MinimaFunction{
 	
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
-		checkExactParamNumber(1);
+		checkExactParamNumber(requiredParams());
 		
 		//get the Pub Key
 		HexValue pubkey = zContract.getHexParam(0, this);

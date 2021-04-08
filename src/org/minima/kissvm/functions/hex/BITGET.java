@@ -22,7 +22,7 @@ public class BITGET extends MinimaFunction {
 	 */
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
-		checkExactParamNumber(2);
+		checkExactParamNumber(requiredParams());
 		
 		//get the Input Data
 		byte[] data = zContract.getHexParam(0, this).getRawData();

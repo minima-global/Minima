@@ -15,7 +15,7 @@ public class SIGDIG extends MinimaFunction {
 	
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
-		checkExactParamNumber(2);
+		checkExactParamNumber(requiredParams());
 		
 		NumberValue significantdigits 	= zContract.getNumberParam(0, this);
 		NumberValue number 				= zContract.getNumberParam(1, this);
