@@ -32,12 +32,12 @@ public class SCRIPTTests {
         STRING fn = new STRING();
         MinimaFunction mf = fn.getNewFunction();
 
-        assertEquals("SCRIPT", mf.getName());
+        assertEquals("STRING", mf.getName());
         assertEquals(0, mf.getParameterNum());
 
         try {
-            mf = MinimaFunction.getFunction("SCRIPT");
-            assertEquals("SCRIPT", mf.getName());
+            mf = MinimaFunction.getFunction("STRING");
+            assertEquals("STRING", mf.getName());
             assertEquals(0, mf.getParameterNum());
         } catch (MinimaParseException ex) {
             fail();

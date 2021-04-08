@@ -82,12 +82,4 @@ public class Token {
 		Tokenizer tokz = new Tokenizer(zScript);
         return tokz.tokenize();
 	}
-	
-	public static boolean isNumeric(String zVar) {
-		return Tokenizer.isNumber(zVar);
-	}
-	
-	public static boolean isVariable(String zVar) {
-		return Tokenizer.isVariable(zVar);
-	}
 }

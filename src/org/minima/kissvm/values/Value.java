@@ -64,7 +64,7 @@ public abstract class Value {
 			return BooleanValue.FALSE;
 
 		}else if(zValue.startsWith("-") || 
-				Tokenizer.isNumber(zValue)){
+				Tokenizer.isNumeric(zValue)){
 			return new NumberValue(zValue);
 		
 		}else {
@@ -90,7 +90,7 @@ public abstract class Value {
 			return VALUE_BOOLEAN;
 
 		}else if(zValue.startsWith("-") || 
-				Tokenizer.isNumber(zValue)){
+				Tokenizer.isNumeric(zValue)){
 			return VALUE_NUMBER;
 			
 		}else {

@@ -145,91 +145,91 @@ public class TokenTests {
 
     @Test
     public void testCheckers() {
-        assertTrue(Token.isVariable("a"));
-        assertTrue(Token.isVariable("b"));
-        assertTrue(Token.isVariable("c"));
-        assertTrue(Token.isVariable("ab"));
-        assertTrue(Token.isVariable("abc"));
-        assertTrue(Token.isVariable("abcd"));
-        assertTrue(Token.isVariable("abcde"));
-        assertTrue(Token.isVariable("abcdefghijklmnopqrstuvwxyz")); // Not a variable, name longer than 16
+        assertTrue(Tokenizer.isVariable("a"));
+        assertTrue(Tokenizer.isVariable("b"));
+        assertTrue(Tokenizer.isVariable("c"));
+        assertTrue(Tokenizer.isVariable("ab"));
+        assertTrue(Tokenizer.isVariable("abc"));
+        assertTrue(Tokenizer.isVariable("abcd"));
+        assertTrue(Tokenizer.isVariable("abcde"));
+        assertTrue(Tokenizer.isVariable("abcdefghijklmnopqrstuvwxyz")); // Not a variable, name longer than 16
 
-        assertFalse(Token.isNumeric("a"));
-        assertFalse(Token.isNumeric("b"));
-        assertFalse(Token.isNumeric("c"));
-        assertFalse(Token.isNumeric("ab"));
-        assertFalse(Token.isNumeric("abc"));
-        assertFalse(Token.isNumeric("abcd"));
-        assertFalse(Token.isNumeric("abcde"));
-        assertFalse(Token.isNumeric("abcdefghijklmnopqrstuvwxyz"));
+        assertFalse(Tokenizer.isNumeric("a"));
+        assertFalse(Tokenizer.isNumeric("b"));
+        assertFalse(Tokenizer.isNumeric("c"));
+        assertFalse(Tokenizer.isNumeric("ab"));
+        assertFalse(Tokenizer.isNumeric("abc"));
+        assertFalse(Tokenizer.isNumeric("abcd"));
+        assertFalse(Tokenizer.isNumeric("abcde"));
+        assertFalse(Tokenizer.isNumeric("abcdefghijklmnopqrstuvwxyz"));
 
-        assertFalse(Token.isVariable("0"));
-        assertFalse(Token.isVariable("-0"));
-        assertFalse(Token.isVariable("1"));
-        assertFalse(Token.isVariable("-1"));
-        assertFalse(Token.isVariable("0.0"));
-        assertFalse(Token.isVariable("123.456"));
+        assertFalse(Tokenizer.isVariable("0"));
+        assertFalse(Tokenizer.isVariable("-0"));
+        assertFalse(Tokenizer.isVariable("1"));
+        assertFalse(Tokenizer.isVariable("-1"));
+        assertFalse(Tokenizer.isVariable("0.0"));
+        assertFalse(Tokenizer.isVariable("123.456"));
 
-        assertTrue(Token.isNumeric("0"));
+        assertTrue(Tokenizer.isNumeric("0"));
 //        assertTrue(Token.isNumeric("-0"));
-        assertTrue(Token.isNumeric("1"));
+        assertTrue(Tokenizer.isNumeric("1"));
 //        assertTrue(Token.isNumeric("-1"));
-        assertTrue(Token.isNumeric("0.0"));
-        assertTrue(Token.isNumeric("123.456"));
+        assertTrue(Tokenizer.isNumeric("0.0"));
+        assertTrue(Tokenizer.isNumeric("123.456"));
 
-        assertFalse(Token.isVariable("-123.-456"));
-        assertFalse(Token.isVariable("A1"));
-        assertFalse(Token.isVariable("A2"));
-        assertFalse(Token.isVariable("A3"));
-        assertFalse(Token.isVariable("1$#@45"));
-        assertFalse(Token.isVariable("{}[]()"));
+        assertFalse(Tokenizer.isVariable("-123.-456"));
+        assertFalse(Tokenizer.isVariable("A1"));
+        assertFalse(Tokenizer.isVariable("A2"));
+        assertFalse(Tokenizer.isVariable("A3"));
+        assertFalse(Tokenizer.isVariable("1$#@45"));
+        assertFalse(Tokenizer.isVariable("{}[]()"));
 
-        assertFalse(Token.isNumeric("-123.-456"));
-        assertFalse(Token.isNumeric("A1"));
-        assertFalse(Token.isNumeric("A2"));
-        assertFalse(Token.isNumeric("A3"));
-        assertFalse(Token.isNumeric("1$#@45"));
-        assertFalse(Token.isNumeric("{}[]()"));
+        assertFalse(Tokenizer.isNumeric("-123.-456"));
+        assertFalse(Tokenizer.isNumeric("A1"));
+        assertFalse(Tokenizer.isNumeric("A2"));
+        assertFalse(Tokenizer.isNumeric("A3"));
+        assertFalse(Tokenizer.isNumeric("1$#@45"));
+        assertFalse(Tokenizer.isNumeric("{}[]()"));
 
-        assertFalse(Token.isVariable("+123"));
-        assertFalse(Token.isVariable("+123.456"));
-        assertFalse(Token.isVariable(".456"));
-        assertFalse(Token.isVariable("-.456"));
-        assertFalse(Token.isVariable("+.456"));
+        assertFalse(Tokenizer.isVariable("+123"));
+        assertFalse(Tokenizer.isVariable("+123.456"));
+        assertFalse(Tokenizer.isVariable(".456"));
+        assertFalse(Tokenizer.isVariable("-.456"));
+        assertFalse(Tokenizer.isVariable("+.456"));
 
-        assertFalse(Token.isNumeric("+123")); // Maybe we should allow this
-        assertFalse(Token.isNumeric("+123.456")); // Maybe we should allow this
-        assertFalse(Token.isNumeric(".456")); // Maybe we should allow this
-        assertFalse(Token.isNumeric("-.456")); // Maybe we should allow this
-        assertFalse(Token.isNumeric("+.456")); // Maybe we should allow this
+        assertFalse(Tokenizer.isNumeric("+123")); // Maybe we should allow this
+        assertFalse(Tokenizer.isNumeric("+123.456")); // Maybe we should allow this
+        assertFalse(Tokenizer.isNumeric(".456")); // Maybe we should allow this
+        assertFalse(Tokenizer.isNumeric("-.456")); // Maybe we should allow this
+        assertFalse(Tokenizer.isNumeric("+.456")); // Maybe we should allow this
 
-        assertFalse(Token.isVariable("A"));
-        assertFalse(Token.isVariable("B"));
-        assertFalse(Token.isVariable("C"));
-        assertFalse(Token.isVariable("AB"));
-        assertFalse(Token.isVariable("ABC"));
-        assertFalse(Token.isVariable("ABCD"));
-        assertFalse(Token.isVariable("ABCDE"));
-        assertFalse(Token.isVariable("ABCDEFGHIJKLMNOPQRSTUVWXYZ"));
-        assertFalse(Token.isVariable("A1"));
-        assertFalse(Token.isVariable("A2"));
-        assertFalse(Token.isVariable("A3"));
-        assertFalse(Token.isVariable("1$#@45"));
-        assertFalse(Token.isVariable("{}[]()"));
+        assertFalse(Tokenizer.isVariable("A"));
+        assertFalse(Tokenizer.isVariable("B"));
+        assertFalse(Tokenizer.isVariable("C"));
+        assertFalse(Tokenizer.isVariable("AB"));
+        assertFalse(Tokenizer.isVariable("ABC"));
+        assertFalse(Tokenizer.isVariable("ABCD"));
+        assertFalse(Tokenizer.isVariable("ABCDE"));
+        assertFalse(Tokenizer.isVariable("ABCDEFGHIJKLMNOPQRSTUVWXYZ"));
+        assertFalse(Tokenizer.isVariable("A1"));
+        assertFalse(Tokenizer.isVariable("A2"));
+        assertFalse(Tokenizer.isVariable("A3"));
+        assertFalse(Tokenizer.isVariable("1$#@45"));
+        assertFalse(Tokenizer.isVariable("{}[]()"));
 
-        assertFalse(Token.isNumeric("A"));
-        assertFalse(Token.isNumeric("B"));
-        assertFalse(Token.isNumeric("C"));
-        assertFalse(Token.isNumeric("AB"));
-        assertFalse(Token.isNumeric("ABC"));
-        assertFalse(Token.isNumeric("ABCD"));
-        assertFalse(Token.isNumeric("ABCDE"));
-        assertFalse(Token.isNumeric("ABCDEFGHIJKLMNOPQRSTUVWXYZ"));
-        assertFalse(Token.isNumeric("A1"));
-        assertFalse(Token.isNumeric("A2"));
-        assertFalse(Token.isNumeric("A3"));
-        assertFalse(Token.isNumeric("1$#@45"));
-        assertFalse(Token.isNumeric("{}[]()"));
+        assertFalse(Tokenizer.isNumeric("A"));
+        assertFalse(Tokenizer.isNumeric("B"));
+        assertFalse(Tokenizer.isNumeric("C"));
+        assertFalse(Tokenizer.isNumeric("AB"));
+        assertFalse(Tokenizer.isNumeric("ABC"));
+        assertFalse(Tokenizer.isNumeric("ABCD"));
+        assertFalse(Tokenizer.isNumeric("ABCDE"));
+        assertFalse(Tokenizer.isNumeric("ABCDEFGHIJKLMNOPQRSTUVWXYZ"));
+        assertFalse(Tokenizer.isNumeric("A1"));
+        assertFalse(Tokenizer.isNumeric("A2"));
+        assertFalse(Tokenizer.isNumeric("A3"));
+        assertFalse(Tokenizer.isNumeric("1$#@45"));
+        assertFalse(Tokenizer.isNumeric("{}[]()"));
     }
 
     @Test

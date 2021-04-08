@@ -24,9 +24,9 @@ public class LexicalTokenizerTests {
         assertEquals(true, lt.checkAllTokensUsed());
         assertEquals(false, lt.hasMoreElements());
 
-        lt.goBackToken(); // Can create negative position value
-        //assertEquals(0, lt.getCurrentPosition());
-        assertEquals(-1, lt.getCurrentPosition());
+        assertThrows(MinimaParseException.class, () -> {
+            lt.goBackToken(); // negative position not allowed
+        });
     }
 
     @Test

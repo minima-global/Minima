@@ -94,7 +94,7 @@ public class Tokenizer {
 		return word;
 	}
 	
-	public static boolean isNumber(String zWord){
+	public static boolean isNumeric(String zWord){
 		return zWord.matches("^[0-9]+(\\.[0-9]+)?");  //match a number with optional '-' and decimal.
 	}
 	
@@ -225,7 +225,7 @@ public class Tokenizer {
 					//It's a function
 					tokens.add(new Token(Token.TOKEN_OPERATOR, uppercase));
 				
-				}else if(isNumber(word) || isHex(word)) {
+				}else if(isNumeric(word) || isHex(word)) {
 					//It's a number
 					tokens.add(new Token(Token.TOKEN_VALUE, word));
 				
@@ -263,7 +263,7 @@ public class Tokenizer {
 //		System.out.println(isNumber("22.88"));
 //		System.out.println(isNumber("10.88"));
 		
-		String script = "\tLET\na =  \n -1.5 - -1.5\nLET\nb=23\n";
+		String script = "LET (1) = 21";
 //		String script = "\nLET";
 		
 		try {
