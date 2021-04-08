@@ -1,4 +1,4 @@
-package org.minima.kissvm.functions.maths;
+package org.minima.kissvm.functions.number;
 
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
@@ -30,7 +30,7 @@ public class BITCOUNT extends MinimaFunction {
 		checkExactParamNumber(1);
 		
 		//get the Input Data
-		byte[] data = zContract.getHEXParam(0, this).getRawData();
+		byte[] data = zContract.getHexParam(0, this).getRawData();
 		
 		//How many Bits are set..
 		int bits = totalBits(data);

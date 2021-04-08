@@ -26,13 +26,13 @@ public class CHECKSIG extends MinimaFunction {
 		checkExactParamNumber(3);
 		
 		//Get the Pbkey
-		HexValue pubkey = zContract.getHEXParam(0, this);
+		HexValue pubkey = zContract.getHexParam(0, this);
 		
 		//get the data
-		HexValue data   = zContract.getHEXParam(1, this);
+		HexValue data   = zContract.getHexParam(1, this);
 		
 		//Get the signature
-		HexValue sig    = zContract.getHEXParam(2, this);
+		HexValue sig    = zContract.getHexParam(2, this);
 		
 		//Check it..
 		MiniData pubk = new MiniData(pubkey.getMiniData().getData());

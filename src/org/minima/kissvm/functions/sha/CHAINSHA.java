@@ -19,11 +19,11 @@ public class CHAINSHA extends MinimaFunction {
 	public Value runFunction(Contract zContract) throws ExecutionException {
 		checkExactParamNumber(2);
 		
-		HexValue val  = zContract.getHEXParam(0, this);
+		HexValue val  = zContract.getHexParam(0, this);
 		MiniData data = val.getMiniData();
 
 		//Get the hash data chain + 1 byte for left right 
-		HexValue chain = zContract.getHEXParam(1, this);
+		HexValue chain = zContract.getHexParam(1, this);
 		
 		//Bit Strength
 		int bits;

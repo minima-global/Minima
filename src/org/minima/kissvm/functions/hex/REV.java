@@ -1,4 +1,4 @@
-package org.minima.kissvm.functions.base;
+package org.minima.kissvm.functions.hex;
 
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
@@ -17,7 +17,7 @@ public class REV extends MinimaFunction {
 		checkExactParamNumber(1);
 		
 		//The Data
-		HexValue hex = zContract.getHEXParam(0, this);
+		HexValue hex = zContract.getHexParam(0, this);
 		
 		//get the bytes..
 		byte[] array  = hex.getRawData();

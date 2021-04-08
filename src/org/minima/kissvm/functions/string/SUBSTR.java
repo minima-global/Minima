@@ -1,9 +1,9 @@
-package org.minima.kissvm.functions.hex;
+package org.minima.kissvm.functions.string;
 
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.functions.MinimaFunction;
-import org.minima.kissvm.values.HexValue;
+import org.minima.kissvm.values.StringValue;
 import org.minima.kissvm.values.Value;
 
 /**
@@ -11,10 +11,10 @@ import org.minima.kissvm.values.Value;
  * @author spartacusrex
  *
  */
-public class SUBSET extends MinimaFunction {
+public class SUBSTR extends MinimaFunction {
 
-	public SUBSET() {
-		super("SUBSET");
+	public SUBSTR() {
+		super("SUBSTR");
 	}
 
 	@Override
@@ -26,26 +26,26 @@ public class SUBSET extends MinimaFunction {
 		int end   = zContract.getNumberParam(1, this).getNumber().getAsInt();
 		int len   = end - start;
 		if(len<0) {
-			throw new ExecutionException("Negative SUBSET length "+len);
+			throw new ExecutionException("Negative SUBSTR length "+len);
 		}
 		
 		//Now pick it out of the 3rd value..
-		byte[] orig = zContract.getHexParam(2, this).getRawData();
+		StringValue str = zContract.getStringParam(2, this);
+		String main 	= str.toString();
 		
 		//Check limits
-		if(start<0 || end>orig.length) {
-			throw new ExecutionException("SUBSET range outside size of data array "+start+"-"+end+" length:"+orig.length);
+		if(start<0 || end>main.length()) {
+			throw new ExecutionException("SUBSTR range outside size of String "+start+"-"+end+" length:"+main.length());
 		}
 		
-		//Now get the subset
-		byte[] subs = new byte[len];
-		System.arraycopy(orig, start, subs, 0, len);
+		//Now get the substr
+		String substr = main.substring(start, end);  
 		
-		return new HexValue(subs);	
+		return new StringValue(substr);	
 	}
 	
 	@Override
 	public MinimaFunction getNewFunction() {
-		return new SUBSET();
+		return new SUBSTR();
 	}
 }

@@ -12,7 +12,7 @@ import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.exceptions.MinimaParseException;
 import org.minima.kissvm.expressions.ConstantExpression;
 import org.minima.kissvm.functions.MinimaFunction;
-import org.minima.kissvm.functions.cast.SCRIPT;
+import org.minima.kissvm.functions.cast.STRING;
 import org.minima.kissvm.values.BooleanValue;
 import org.minima.kissvm.values.HexValue;
 import org.minima.kissvm.values.NumberValue;
@@ -29,7 +29,7 @@ public class SCRIPTTests {
 
     @Test
     public void testConstructors() {
-        SCRIPT fn = new SCRIPT();
+        STRING fn = new STRING();
         MinimaFunction mf = fn.getNewFunction();
 
         assertEquals("SCRIPT", mf.getName());
@@ -48,7 +48,7 @@ public class SCRIPTTests {
     public void testValidParams() {
         Contract ctr = new Contract("", "", new Witness(), new Transaction(), new ArrayList<>());
 
-        SCRIPT fn = new SCRIPT();
+        STRING fn = new STRING();
 
         {
             MinimaFunction mf = fn.getNewFunction();
@@ -159,7 +159,7 @@ public class SCRIPTTests {
     public void testInvalidParams() {
         Contract ctr = new Contract("", "", new Witness(), new Transaction(), new ArrayList<>());
 
-        SCRIPT fn = new SCRIPT();
+        STRING fn = new STRING();
 
         // Invalid param count
         {

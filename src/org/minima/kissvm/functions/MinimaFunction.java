@@ -9,27 +9,27 @@ import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.exceptions.MinimaParseException;
 import org.minima.kissvm.expressions.Expression;
-import org.minima.kissvm.functions.base.CONCAT;
-import org.minima.kissvm.functions.base.GET;
-import org.minima.kissvm.functions.base.LEN;
-import org.minima.kissvm.functions.base.REV;
-import org.minima.kissvm.functions.base.SUBSET;
 import org.minima.kissvm.functions.cast.BOOL;
 import org.minima.kissvm.functions.cast.HEX;
 import org.minima.kissvm.functions.cast.NUMBER;
-import org.minima.kissvm.functions.cast.SCRIPT;
-import org.minima.kissvm.functions.maths.ABS;
-import org.minima.kissvm.functions.maths.BITCOUNT;
-import org.minima.kissvm.functions.maths.BITGET;
-import org.minima.kissvm.functions.maths.BITSET;
-import org.minima.kissvm.functions.maths.CEIL;
-import org.minima.kissvm.functions.maths.DEC;
-import org.minima.kissvm.functions.maths.FLOOR;
-import org.minima.kissvm.functions.maths.INC;
-import org.minima.kissvm.functions.maths.MAX;
-import org.minima.kissvm.functions.maths.MIN;
-import org.minima.kissvm.functions.maths.POW;
-import org.minima.kissvm.functions.maths.SIGDIG;
+import org.minima.kissvm.functions.cast.STRING;
+import org.minima.kissvm.functions.hex.CONCAT;
+import org.minima.kissvm.functions.hex.GET;
+import org.minima.kissvm.functions.hex.LEN;
+import org.minima.kissvm.functions.hex.REV;
+import org.minima.kissvm.functions.hex.SUBSET;
+import org.minima.kissvm.functions.number.ABS;
+import org.minima.kissvm.functions.number.BITCOUNT;
+import org.minima.kissvm.functions.number.BITGET;
+import org.minima.kissvm.functions.number.BITSET;
+import org.minima.kissvm.functions.number.CEIL;
+import org.minima.kissvm.functions.number.DEC;
+import org.minima.kissvm.functions.number.FLOOR;
+import org.minima.kissvm.functions.number.INC;
+import org.minima.kissvm.functions.number.MAX;
+import org.minima.kissvm.functions.number.MIN;
+import org.minima.kissvm.functions.number.POW;
+import org.minima.kissvm.functions.number.SIGDIG;
 import org.minima.kissvm.functions.sha.CHAINSHA;
 import org.minima.kissvm.functions.sha.SHA2;
 import org.minima.kissvm.functions.sha.SHA3;
@@ -65,7 +65,7 @@ public abstract class MinimaFunction {
 	public static MinimaFunction[] ALL_FUNCTIONS = 
 			{ 
 				new CONCAT(), new LEN(), new REV(),new SUBSET(), new GET(),
-				new BOOL(), new HEX(), new NUMBER(), new SCRIPT(),
+				new BOOL(), new HEX(), new NUMBER(), new STRING(),
 				new ABS(), new CEIL(), new FLOOR(),new MAX(), new MIN(), new DEC(), new INC(), 
 				new SIGDIG(), new POW(), 
 				new TOKENSCRIPT(), new TOKENTOTAL(), new TOKENSCALE(),

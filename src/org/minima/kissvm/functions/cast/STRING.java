@@ -6,10 +6,10 @@ import org.minima.kissvm.functions.MinimaFunction;
 import org.minima.kissvm.values.StringValue;
 import org.minima.kissvm.values.Value;
 
-public class SCRIPT extends MinimaFunction {
+public class STRING extends MinimaFunction {
 
-	public SCRIPT() {
-		super("SCRIPT");
+	public STRING() {
+		super("STRING");
 	}
 	
 	@Override
@@ -23,6 +23,6 @@ public class SCRIPT extends MinimaFunction {
 
 	@Override
 	public MinimaFunction getNewFunction() {
-		return new SCRIPT();
+		return new STRING();
 	}
 }

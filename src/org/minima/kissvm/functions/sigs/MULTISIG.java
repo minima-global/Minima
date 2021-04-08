@@ -31,7 +31,7 @@ public class MULTISIG extends MinimaFunction {
 		//Cycle..
 		int found =0;
 		for(int i=0;i<tot;i++) {
-			HexValue sig = zContract.getHEXParam(1+i, this);
+			HexValue sig = zContract.getHexParam(1+i, this);
 		
 			if(zContract.checkSignature(sig)) {
 				found++;

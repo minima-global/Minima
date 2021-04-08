@@ -1,4 +1,4 @@
-package org.minima.kissvm.functions.base;
+package org.minima.kissvm.functions.hex;
 
 import java.util.ArrayList;
 

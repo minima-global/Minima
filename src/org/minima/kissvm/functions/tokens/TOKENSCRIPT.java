@@ -19,7 +19,7 @@ public class TOKENSCRIPT extends MinimaFunction {
 		checkExactParamNumber(1);
 		
 		//get the Token ID..
-		HexValue tokenid  = zContract.getHEXParam(0, this);
+		HexValue tokenid  = zContract.getHexParam(0, this);
 		
 		//Get that tokens details..
 		TokenProof td = zContract.getWitness().getTokenDetail(tokenid.getMiniData());

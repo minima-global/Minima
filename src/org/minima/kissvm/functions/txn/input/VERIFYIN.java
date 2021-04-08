@@ -34,9 +34,9 @@ public class VERIFYIN extends MinimaFunction{
 		int input = zContract.getNumberParam(0, this).getNumber().getAsInt();
 		
 		//Get the details
-		MiniData address  = new MiniData(zContract.getHEXParam(1, this).getRawData());
+		MiniData address  = new MiniData(zContract.getHexParam(1, this).getRawData());
 		MiniNumber amount = zContract.getNumberParam(2, this).getNumber();
-		MiniData tokenid  = new MiniData(zContract.getHEXParam(3, this).getRawData());
+		MiniData tokenid  = new MiniData(zContract.getHexParam(3, this).getRawData());
 		
 		//Is there a 4th Parameter ?
 		int amountchecktype = 0 ;

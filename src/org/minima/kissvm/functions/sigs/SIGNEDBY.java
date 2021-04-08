@@ -18,7 +18,7 @@ public class SIGNEDBY extends MinimaFunction{
 		checkExactParamNumber(1);
 		
 		//get the Pub Key
-		HexValue pubkey = zContract.getHEXParam(0, this);
+		HexValue pubkey = zContract.getHexParam(0, this);
 		
 		//Check it..
 		boolean valid = zContract.checkSignature(pubkey);

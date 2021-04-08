@@ -45,7 +45,7 @@ public class HEX extends MinimaFunction{
 			//Check no decimal places..
 			MiniNumber num = cval.getNumber();
 			if(!num.floor().isEqual(num) || num.isLess(MiniNumber.ZERO)) {
-				throw new ExecutionException("Cannot ONLY convert positive whole NUMBERs to HEX : "+num);
+				throw new ExecutionException("Can ONLY convert positive whole NUMBERs to HEX : "+num);
 			}
 			
 			ret = new MiniData(num.getAsBigInteger());

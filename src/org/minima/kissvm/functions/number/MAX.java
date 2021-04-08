@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.minima.kissvm.functions.maths;
+package org.minima.kissvm.functions.number;
 
 import java.util.ArrayList;
 

@@ -1,4 +1,4 @@
-package org.minima.kissvm.functions.maths;
+package org.minima.kissvm.functions.number;
 
 import java.util.BitSet;
 
@@ -25,7 +25,7 @@ public class BITGET extends MinimaFunction {
 		checkExactParamNumber(2);
 		
 		//get the Input Data
-		byte[] data = zContract.getHEXParam(0, this).getRawData();
+		byte[] data = zContract.getHexParam(0, this).getRawData();
 		int totbits = (data.length * 8) - 1;
 		
 		//Get the desired Bit

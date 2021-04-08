@@ -351,7 +351,7 @@ public class Contract {
 		return (NumberValue)vv;
 	}
 	
-	public HexValue getHEXParam(int zParamNumber, MinimaFunction zFunction) throws ExecutionException {
+	public HexValue getHexParam(int zParamNumber, MinimaFunction zFunction) throws ExecutionException {
 		Value vv = zFunction.getParameter(zParamNumber).getValue(this);
 		if(vv.getValueType() != Value.VALUE_HEX) {
 			throw new ExecutionException("Incorrect Parameter type - should be HEXValue @ "+zParamNumber+" "+zFunction.getName());
@@ -359,7 +359,7 @@ public class Contract {
 		return (HexValue)vv;
 	}
 	
-	public StringValue getScriptParam(int zParamNumber, MinimaFunction zFunction) throws ExecutionException {
+	public StringValue getStringParam(int zParamNumber, MinimaFunction zFunction) throws ExecutionException {
 		Value vv = zFunction.getParameter(zParamNumber).getValue(this);
 		if(vv.getValueType() != Value.VALUE_SCRIPT) {
 			throw new ExecutionException("Incorrect Parameter type - should be ScriptValue @ "+zParamNumber+" "+zFunction.getName());
