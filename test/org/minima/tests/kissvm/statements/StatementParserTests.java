@@ -12,6 +12,7 @@ import org.minima.kissvm.exceptions.MinimaParseException;
 import org.minima.kissvm.statements.StatementBlock;
 import org.minima.kissvm.statements.StatementParser;
 import org.minima.kissvm.tokens.Token;
+import org.minima.utils.MinimaLogger;
 
 public class StatementParserTests {
 
@@ -86,6 +87,7 @@ public class StatementParserTests {
                 List<Token> tokens = Token.tokenize(Contract.cleanScript(Script));
                 StatementBlock sb = StatementParser.parseTokens(tokens);
             } catch (MinimaParseException ex) {
+            	MinimaLogger.log(ex);
             	fail();
             } catch (Exception ex) {
                 fail();

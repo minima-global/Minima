@@ -514,6 +514,7 @@ public class Contract {
 		
 			//Now add them correctly..
 			boolean first = true;
+			boolean whites = true;
 			for(Token tok : tokens) {
 				if(tok.getTokenType() == Token.TOKEN_COMMAND) {
 					if(first) {
@@ -523,20 +524,44 @@ public class Contract {
 						ret.append(" "+tok.getToken()+" ");
 					}
 					
+					whites = true;
+					
 				}else if(Tokenizer.BOOLEAN_TOKENS_LIST.contains(tok.getToken())) {
 					ret.append(" "+tok.getToken()+" ");
 				
+					whites = true;
+					
 				}else if(tok.getToken().startsWith("0x")) {
 					String hex = "0x"+tok.getToken().substring(2).toUpperCase();
-					ret.append(hex);
+					
+					if(whites) {
+						ret.append(hex);
+					}else {
+						ret.append(" "+hex);
+					}
+					
+					whites = false;
 					
 				}else {
-					ret.append(tok.getToken());
+					String strtok = tok.getToken();
+					
+					//Is it an end of word or whitespace..
+					if(Tokenizer.isWhiteSpace(strtok) || Tokenizer.mAllEOW.contains(strtok)) {
+						ret.append(tok.getToken());
+						whites = true;
+					}else {
+						if(whites) {
+							ret.append(tok.getToken());
+						}else {
+							ret.append(" "+tok.getToken());
+						}
+						whites = false;
+					}
 				}
 			}
 		
 		} catch (MinimaParseException e) {
-			MinimaLogger.log("Clean Script Error",e);
+			MinimaLogger.log("Clean Script Error @ "+zScript,e);
 			return zScript;
 		}
 		
@@ -545,7 +570,7 @@ public class Contract {
 	
 	public static void main(String[] zArgs) {
 		
-		String scr = new String("let a  = 0x456abde let Fann = [ hello From MINMIMA!!   ]");
+		String scr = new String("let (a 1 0xFF )  = 4 + -2  let t = concat( 0x00 0x34   0x45  )");
 		
 		String clean = Contract.cleanScript(scr);
 		

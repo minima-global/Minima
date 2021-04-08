@@ -25,15 +25,16 @@ public class FunctionExpressionTests {
     @Test
     public void testConstructors() throws ExecutionException {
 
-        HexValue hv1 = new HexValue("0x1234567");
+        HexValue hv1 = new HexValue("0x01234567");
+        HexValue hv2 = new HexValue("0x89");
         NumberValue nv1 = new NumberValue(10);
         NumberValue nv2 = new NumberValue(-10);
         StringValue sv1 = new StringValue("HELLO");
         StringValue sv2 = new StringValue("WORLD");
 
         CONCAT fCONCAT = new CONCAT();
-        fCONCAT.addParameter(new ConstantExpression(sv1));
-        fCONCAT.addParameter(new ConstantExpression(sv2));
+        fCONCAT.addParameter(new ConstantExpression(hv1));
+        fCONCAT.addParameter(new ConstantExpression(hv2));
 
         LEN fLEN = new LEN();
         fLEN.addParameter(new ConstantExpression(hv1));
@@ -51,7 +52,7 @@ public class FunctionExpressionTests {
 
         Contract ctr = new Contract("", "", new Witness(), new Transaction(), new ArrayList<>());
 
-        assertEquals("should be equal ", "HELLO WORLD", fe1.getValue(ctr).toString());
+        assertEquals("should be equal ", "0x0123456789", fe1.getValue(ctr).toString());
         assertEquals("should be equal ", "HELLO WORLD", Value.getValue("[HELLO WORLD]").toString());
         assertEquals("should be equal ", 4, ((NumberValue) fe2.getValue(ctr)).getNumber().getAsInt());
         assertEquals("should be equal ", 10, ((NumberValue) fe3.getValue(ctr)).getNumber().getAsInt());

@@ -131,16 +131,16 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 	 * Check MiniNumber is within the acceptable range
 	 */
 	private void checkLimits() {
+		if(mNumber.scale() > MAX_DECIMAL_PLACES) {
+			mNumber = mNumber.setScale(MAX_DECIMAL_PLACES, RoundingMode.DOWN);
+		}
+		
 		if(mNumber.compareTo(MAX_MININUMBER)>0) {
 			throw new NumberFormatException("MiniNumber too large - outside allowed range 2^64 "+mNumber);
 		}
 		
 		if(mNumber.compareTo(MIN_MININUMBER)<0) {
 			throw new NumberFormatException("MiniNumber too small - outside allowed range -(2^64)");
-		}
-		
-		if(mNumber.scale() > MAX_DECIMAL_PLACES) {
-			mNumber = mNumber.setScale(MAX_DECIMAL_PLACES, RoundingMode.DOWN);
 		}
 	}
 	
