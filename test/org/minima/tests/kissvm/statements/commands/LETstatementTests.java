@@ -15,7 +15,7 @@ import org.minima.kissvm.expressions.FunctionExpression;
 import org.minima.kissvm.expressions.GlobalExpression;
 import org.minima.kissvm.expressions.OperatorExpression;
 import org.minima.kissvm.expressions.VariableExpression;
-import org.minima.kissvm.functions.hex.GET;
+import org.minima.kissvm.functions.general.GET;
 import org.minima.kissvm.functions.number.DEC;
 import org.minima.kissvm.functions.sigs.CHECKSIG;
 import org.minima.kissvm.statements.commands.LETstatement;

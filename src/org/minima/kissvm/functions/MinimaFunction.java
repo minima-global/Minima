@@ -13,11 +13,11 @@ import org.minima.kissvm.functions.cast.BOOL;
 import org.minima.kissvm.functions.cast.HEX;
 import org.minima.kissvm.functions.cast.NUMBER;
 import org.minima.kissvm.functions.cast.STRING;
+import org.minima.kissvm.functions.general.GET;
 import org.minima.kissvm.functions.hex.BITCOUNT;
 import org.minima.kissvm.functions.hex.BITGET;
 import org.minima.kissvm.functions.hex.BITSET;
 import org.minima.kissvm.functions.hex.CONCAT;
-import org.minima.kissvm.functions.hex.GET;
 import org.minima.kissvm.functions.hex.LEN;
 import org.minima.kissvm.functions.hex.REV;
 import org.minima.kissvm.functions.hex.SUBSET;
@@ -39,9 +39,8 @@ import org.minima.kissvm.functions.sigs.SIGNEDBY;
 import org.minima.kissvm.functions.state.PREVSTATE;
 import org.minima.kissvm.functions.state.SAMESTATE;
 import org.minima.kissvm.functions.state.STATE;
-import org.minima.kissvm.functions.tokens.TOKENSCALE;
-import org.minima.kissvm.functions.tokens.TOKENSCRIPT;
-import org.minima.kissvm.functions.tokens.TOKENTOTAL;
+import org.minima.kissvm.functions.string.REPLACE;
+import org.minima.kissvm.functions.string.SUBSTR;
 import org.minima.kissvm.functions.txn.input.GETINADDR;
 import org.minima.kissvm.functions.txn.input.GETINAMT;
 import org.minima.kissvm.functions.txn.input.GETINID;
@@ -68,7 +67,7 @@ public abstract class MinimaFunction {
 				new BOOL(), new HEX(), new NUMBER(), new STRING(),
 				new ABS(), new CEIL(), new FLOOR(),new MAX(), new MIN(), new DEC(), new INC(), 
 				new SIGDIG(), new POW(), 
-				new TOKENSCRIPT(), new TOKENTOTAL(), new TOKENSCALE(),
+				new REPLACE(), new SUBSTR(),
 				new SHA3(), new SHA2(), new CHAINSHA(), new BITSET(), new BITGET(), new BITCOUNT(),
 				new SIGNEDBY(), new MULTISIG(), new CHECKSIG(),
 				new GETINADDR(), new GETINAMT(), new GETINID(), new GETINTOK(),new VERIFYIN(),
