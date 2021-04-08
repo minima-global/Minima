@@ -114,36 +114,36 @@ public class VERIFYINTests {
                 fail();
             }
         }
-        {
-            MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new NumberValue(0)));
-            mf.addParameter(new ConstantExpression(new HexValue(addr1.getAddressData())));
-            mf.addParameter(new ConstantExpression(new NumberValue(in1.getAmount())));
-            mf.addParameter(new ConstantExpression(new HexValue(in1.getTokenID())));
-            mf.addParameter(new ConstantExpression(new NumberValue(-1)));
-            try {
-                Value res = mf.runFunction(ctr);
-                assertEquals(Value.VALUE_BOOLEAN, res.getValueType());
-                assertEquals(true, ((BooleanValue) res).isTrue());
-            } catch (ExecutionException ex) {
-                fail();
-            }
-        }
-        {
-            MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new NumberValue(0)));
-            mf.addParameter(new ConstantExpression(new HexValue(addr1.getAddressData())));
-            mf.addParameter(new ConstantExpression(new NumberValue(in1.getAmount())));
-            mf.addParameter(new ConstantExpression(new HexValue(in1.getTokenID())));
-            mf.addParameter(new ConstantExpression(new NumberValue(1)));
-            try {
-                Value res = mf.runFunction(ctr);
-                assertEquals(Value.VALUE_BOOLEAN, res.getValueType());
-                assertEquals(true, ((BooleanValue) res).isTrue());
-            } catch (ExecutionException ex) {
-                fail();
-            }
-        }
+//        {
+//            MinimaFunction mf = fn.getNewFunction();
+//            mf.addParameter(new ConstantExpression(new NumberValue(0)));
+//            mf.addParameter(new ConstantExpression(new HexValue(addr1.getAddressData())));
+//            mf.addParameter(new ConstantExpression(new NumberValue(in1.getAmount())));
+//            mf.addParameter(new ConstantExpression(new HexValue(in1.getTokenID())));
+//            mf.addParameter(new ConstantExpression(new NumberValue(-1)));
+//            try {
+//                Value res = mf.runFunction(ctr);
+//                assertEquals(Value.VALUE_BOOLEAN, res.getValueType());
+//                assertEquals(true, ((BooleanValue) res).isTrue());
+//            } catch (ExecutionException ex) {
+//                fail();
+//            }
+//        }
+//        {
+//            MinimaFunction mf = fn.getNewFunction();
+//            mf.addParameter(new ConstantExpression(new NumberValue(0)));
+//            mf.addParameter(new ConstantExpression(new HexValue(addr1.getAddressData())));
+//            mf.addParameter(new ConstantExpression(new NumberValue(in1.getAmount())));
+//            mf.addParameter(new ConstantExpression(new HexValue(in1.getTokenID())));
+//            mf.addParameter(new ConstantExpression(new NumberValue(1)));
+//            try {
+//                Value res = mf.runFunction(ctr);
+//                assertEquals(Value.VALUE_BOOLEAN, res.getValueType());
+//                assertEquals(true, ((BooleanValue) res).isTrue());
+//            } catch (ExecutionException ex) {
+//                fail();
+//            }
+//        }
         {
             MinimaFunction mf = fn.getNewFunction();
             mf.addParameter(new ConstantExpression(new NumberValue(0)));
@@ -201,36 +201,36 @@ public class VERIFYINTests {
                 fail();
             }
         }
-        {
-            MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new NumberValue(1)));
-            mf.addParameter(new ConstantExpression(new HexValue(addr2.getAddressData())));
-            mf.addParameter(new ConstantExpression(new NumberValue(in2.getAmount().mult(tp.getScaleFactor()))));
-            mf.addParameter(new ConstantExpression(new HexValue(in2.getTokenID())));
-            mf.addParameter(new ConstantExpression(new NumberValue(-1)));
-            try {
-                Value res = mf.runFunction(ctr);
-                assertEquals(Value.VALUE_BOOLEAN, res.getValueType());
-                assertEquals(true, ((BooleanValue) res).isTrue());
-            } catch (ExecutionException ex) {
-                fail();
-            }
-        }
-        {
-            MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new NumberValue(1)));
-            mf.addParameter(new ConstantExpression(new HexValue(addr2.getAddressData())));
-            mf.addParameter(new ConstantExpression(new NumberValue(in2.getAmount().mult(tp.getScaleFactor()))));
-            mf.addParameter(new ConstantExpression(new HexValue(in2.getTokenID())));
-            mf.addParameter(new ConstantExpression(new NumberValue(1)));
-            try {
-                Value res = mf.runFunction(ctr);
-                assertEquals(Value.VALUE_BOOLEAN, res.getValueType());
-                assertEquals(true, ((BooleanValue) res).isTrue());
-            } catch (ExecutionException ex) {
-                fail();
-            }
-        }
+//        {
+//            MinimaFunction mf = fn.getNewFunction();
+//            mf.addParameter(new ConstantExpression(new NumberValue(1)));
+//            mf.addParameter(new ConstantExpression(new HexValue(addr2.getAddressData())));
+//            mf.addParameter(new ConstantExpression(new NumberValue(in2.getAmount().mult(tp.getScaleFactor()))));
+//            mf.addParameter(new ConstantExpression(new HexValue(in2.getTokenID())));
+//            mf.addParameter(new ConstantExpression(new NumberValue(-1)));
+//            try {
+//                Value res = mf.runFunction(ctr);
+//                assertEquals(Value.VALUE_BOOLEAN, res.getValueType());
+//                assertEquals(true, ((BooleanValue) res).isTrue());
+//            } catch (ExecutionException ex) {
+//                fail();
+//            }
+//        }
+//        {
+//            MinimaFunction mf = fn.getNewFunction();
+//            mf.addParameter(new ConstantExpression(new NumberValue(1)));
+//            mf.addParameter(new ConstantExpression(new HexValue(addr2.getAddressData())));
+//            mf.addParameter(new ConstantExpression(new NumberValue(in2.getAmount().mult(tp.getScaleFactor()))));
+//            mf.addParameter(new ConstantExpression(new HexValue(in2.getTokenID())));
+//            mf.addParameter(new ConstantExpression(new NumberValue(1)));
+//            try {
+//                Value res = mf.runFunction(ctr);
+//                assertEquals(Value.VALUE_BOOLEAN, res.getValueType());
+//                assertEquals(true, ((BooleanValue) res).isTrue());
+//            } catch (ExecutionException ex) {
+//                fail();
+//            }
+//        }
         {
             MinimaFunction mf = fn.getNewFunction();
             mf.addParameter(new ConstantExpression(new NumberValue(1)));
