@@ -614,6 +614,12 @@ public class ConsensusHandler extends MessageProcessor {
 			//get the Transaction
 			Transaction trans = (Transaction) ret.getObject("transaction");
 			
+			//Final check..
+			if(getMainDB().checkTransactionForMining(trans)) {
+				InputHandler.endResponse(zMessage, false, "ERROR double spend coin in mining pool.");
+				return;
+			}
+			
 			//Add all the inputs to the mining..
 			getMainDB().addMiningTransaction(trans);
 			
