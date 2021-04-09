@@ -30,6 +30,7 @@ import org.minima.system.network.base.metrics.LabelledMetric;
 import org.minima.system.network.base.metrics.MetricsSystem;
 import org.minima.system.network.base.metrics.TekuMetricCategory;
 import org.minima.system.network.base.peer.DisconnectReason;
+import org.minima.system.network.base.peer.DiscoveryPeer;
 import org.minima.system.network.base.peer.Peer;
 // // import org.hyperledger.besu.plugin.services.MetricsSystem;
 // // import org.hyperledger.besu.plugin.services.metrics.Counter;

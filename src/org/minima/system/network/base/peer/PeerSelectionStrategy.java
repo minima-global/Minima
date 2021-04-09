@@ -20,7 +20,7 @@ import java.util.function.Supplier;
 // import tech.pegasys.teku.networking.p2p.network.PeerAddress;
 // import tech.pegasys.teku.networking.p2p.peer.Peer;
 
-import org.minima.system.network.base.DiscoveryPeer;
+//import org.minima.system.network.base.DiscoveryPeer;
 import org.minima.system.network.base.P2PNetwork;
 
 public interface PeerSelectionStrategy {

@@ -15,6 +15,8 @@ package org.minima.system.network.base.gossip;
 
 import java.util.Collection;
 import java.util.Map;
+
+import org.apache.tuweni.bytes.Bytes;
 //import org.apache.tuweni.bytes.Bytes;
 import org.minima.system.network.base.SafeFuture;
 import org.minima.system.network.base.gossip.config.GossipTopicsScoringConfig;
@@ -23,7 +25,7 @@ import org.minima.system.network.base.gossip.config.GossipTopicsScoringConfig;
 import org.minima.system.network.base.peer.NodeId;
 
 public interface GossipNetwork {
-  SafeFuture<?> gossip(String topic, byte[] data);
+  SafeFuture<?> gossip(String topic, Bytes data);
 
   TopicChannel subscribe(String topic, TopicHandler topicHandler);
 

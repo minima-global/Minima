@@ -111,4 +111,10 @@ public final class ArrayIntCache<V> implements IntCache<V> {
   public void clear() {
     values = createArray(initSize);
   }
+
+  /** Returns the current number of items in the cache */
+  @Override
+  public int size() { 
+    return values.length; 
+  }
 }

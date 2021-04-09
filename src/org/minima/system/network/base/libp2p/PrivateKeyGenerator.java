@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 ConsenSys AG.
+ * Copyright 2021 ConsenSys AG.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -11,6 +11,14 @@
  * specific language governing permissions and limitations under the License.
  */
 
-package org.minima.system.network.base;
+package org.minima.system.network.base.libp2p;
 
-public class StreamClosedException extends RuntimeException {}
+import io.libp2p.core.crypto.KEY_TYPE;
+import io.libp2p.core.crypto.KeyKt;
+import io.libp2p.core.crypto.PrivKey;
+
+public class PrivateKeyGenerator {
+  public static PrivKey generate() {
+    return KeyKt.generateKeyPair(KEY_TYPE.SECP256K1).component1();
+  }
+}

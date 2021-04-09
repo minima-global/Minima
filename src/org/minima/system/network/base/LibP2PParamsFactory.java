@@ -27,6 +27,7 @@ import org.minima.system.network.base.gossip.config.GossipConfig;
 import org.minima.system.network.base.gossip.config.GossipPeerScoringConfig;
 import org.minima.system.network.base.gossip.config.GossipScoringConfig;
 import org.minima.system.network.base.gossip.config.GossipTopicScoringConfig;
+import org.minima.system.network.base.peer.LibP2PNodeId;
 import org.minima.system.network.base.gossip.config.GossipTopicScoringConfig;
 
 // import tech.pegasys.teku.networking.p2p.gossip.config.GossipConfig;

@@ -11,11 +11,11 @@
  * specific language governing permissions and limitations under the License.
  */
 
-package tech.pegasys.teku.networking.p2p.network;
+package org.minima.system.network.base.peer;
 
 import java.util.Objects;
 import java.util.Optional;
-import tech.pegasys.teku.networking.p2p.peer.NodeId;
+//import tech.pegasys.teku.networking.p2p.peer.NodeId;
 
 public class PeerAddress {
   private final NodeId id;

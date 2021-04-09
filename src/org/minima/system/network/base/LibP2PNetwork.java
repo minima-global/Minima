@@ -26,7 +26,7 @@ import io.libp2p.core.multiformats.Multiaddr;
 import io.libp2p.core.multistream.ProtocolBinding;
 import io.libp2p.core.mux.StreamMuxerProtocol;
 import io.libp2p.etc.types.ByteArrayExtKt;
-import io.libp2p.etc.util.P2PService.PeerHandler;
+//import io.libp2p.etc.util.P2PService.PeerHandler;
 import io.libp2p.protocol.Identify;
 import io.libp2p.protocol.Ping;
 import io.libp2p.security.noise.NoiseXXSecureChannel;
@@ -45,9 +45,14 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.tuweni.bytes.Bytes;
 import org.minima.system.network.base.gossip.PreparedGossipMessageFactory;
+import org.minima.system.network.base.gossip.TopicChannel;
+import org.minima.system.network.base.gossip.TopicHandler;
+import org.minima.system.network.base.gossip.config.GossipTopicsScoringConfig;
 import org.minima.system.network.base.libp2p.gossip.GossipTopicFilter;
 import org.minima.system.network.base.libp2p.gossip.LibP2PGossipNetwork;
 import org.minima.system.network.base.metrics.MetricsSystem;
+import org.minima.system.network.base.peer.DiscoveryPeer;
+import org.minima.system.network.base.peer.LibP2PNodeId;
 import org.minima.system.network.base.peer.MultiaddrPeerAddress;
 import org.minima.system.network.base.peer.MultiaddrUtil;
 import org.minima.system.network.base.peer.NodeId;
@@ -76,8 +81,10 @@ import org.minima.system.network.base.peer.Peer;
 import org.minima.system.network.base.peer.PeerAddress;
 import org.minima.system.network.base.peer.PeerConnectedSubscriber;
 import org.minima.system.network.base.peer.PeerManager;
+import org.minima.system.network.base.peer.PeerHandler;
 import org.minima.system.network.base.peer.ReputationManager;
 import org.minima.system.network.base.peer.RpcHandler;
+import org.minima.system.network.base.peer.RpcMethod;
 
 public class LibP2PNetwork implements P2PNetwork<Peer> {
 
@@ -174,7 +181,7 @@ public class LibP2PNetwork implements P2PNetwork<Peer> {
     IdentifyOuterClass.Identify identifyMsg =
         IdentifyOuterClass.Identify.newBuilder()
             .setProtocolVersion("ipfs/0.1.0")
-            .setAgentVersion(VersionProvider.CLIENT_IDENTITY + "/" + VersionProvider.VERSION)
+            .setAgentVersion("Minima_0.98.0-testss-p2p-Zulu-OpenJDK-11-AARCH64")
             .setPublicKey(ByteArrayExtKt.toProtobuf(privKey.publicKey().bytes()))
             .addListenAddrs(ByteArrayExtKt.toProtobuf(advertisedAddr.getBytes()))
             .setObservedAddr(ByteArrayExtKt.toProtobuf(advertisedAddr.getBytes()))
@@ -194,7 +201,7 @@ public class LibP2PNetwork implements P2PNetwork<Peer> {
     return SafeFuture.of(host.start())
         .thenApply(
             i -> {
-              STATUS_LOG.listeningForLibP2P(getNodeAddress());
+              //STATUS_LOG.listeningForLibP2P(getNodeAddress());
               return null;
             });
   }

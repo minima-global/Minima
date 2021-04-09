@@ -16,6 +16,10 @@ package org.minima.system.network.base.ssz;
 import java.util.Optional;
 import java.util.function.Function;
 
+/*** Attention */
+// This source file comes from ./infrastructure/collections/src/main/java/tech/pegasys/teku/infrastructure/collections/cache/Cache.java
+// and not ./ssz/src/main/java/tech/pegasys/teku/ssz/cache/Cache.java
+// the only difference is the additional size() method which then needs to be overriden in all implementing classes.
 /**
  * Cache
  *

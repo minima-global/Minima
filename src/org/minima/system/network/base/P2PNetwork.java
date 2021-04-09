@@ -23,7 +23,9 @@ import java.util.stream.Stream;
 // import tech.pegasys.teku.networking.p2p.peer.Peer;
 // import tech.pegasys.teku.networking.p2p.peer.PeerConnectedSubscriber;
 
+import org.apache.tuweni.bytes.Bytes;
 import org.minima.system.network.base.gossip.GossipNetwork;
+import org.minima.system.network.base.peer.DiscoveryPeer;
 import org.minima.system.network.base.peer.NodeId;
 import org.minima.system.network.base.peer.Peer;
 import org.minima.system.network.base.peer.PeerAddress;
@@ -76,7 +78,7 @@ public interface P2PNetwork<T extends Peer> extends GossipNetwork {
 
   boolean isConnected(PeerAddress peerAddress);
 
-  byte[] getPrivateKey();
+  Bytes getPrivateKey();
 
   Optional<T> getPeer(NodeId id);
 

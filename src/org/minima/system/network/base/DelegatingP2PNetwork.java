@@ -25,9 +25,11 @@ import java.util.Optional;
 // import tech.pegasys.teku.networking.p2p.peer.NodeId;
 // import tech.pegasys.teku.networking.p2p.peer.Peer;
 
+import org.apache.tuweni.bytes.Bytes;
 import org.minima.system.network.base.gossip.TopicChannel;
 import org.minima.system.network.base.gossip.TopicHandler;
 import org.minima.system.network.base.gossip.config.GossipTopicsScoringConfig;
+import org.minima.system.network.base.peer.DiscoveryPeer;
 import org.minima.system.network.base.peer.NodeId;
 import org.minima.system.network.base.peer.Peer;
 import org.minima.system.network.base.peer.PeerAddress;
@@ -60,7 +62,7 @@ public abstract class DelegatingP2PNetwork<T extends Peer> implements P2PNetwork
   }
 
   @Override
-  public byte[] getPrivateKey() {
+  public Bytes getPrivateKey() {
     return network.getPrivateKey();
   }
 
@@ -110,7 +112,7 @@ public abstract class DelegatingP2PNetwork<T extends Peer> implements P2PNetwork
   }
 
   @Override
-  public SafeFuture<?> gossip(final String topic, final byte[] data) {
+  public SafeFuture<?> gossip(final String topic, final Bytes data) {
     return network.gossip(topic, data);
   }
 

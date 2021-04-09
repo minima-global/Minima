@@ -43,4 +43,8 @@ public class NoopIntCache<V> implements IntCache<V> {
     return Optional.empty();
   }
 
+
+  /** Returns the current number of items in the cache */
+  @Override
+  public int size() { return INSTANCE.size(); }
 }

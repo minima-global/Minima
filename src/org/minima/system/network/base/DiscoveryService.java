@@ -17,6 +17,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 import org.apache.tuweni.bytes.Bytes;
 //import tech.pegasys.teku.infrastructure.async.SafeFuture;
+import org.minima.system.network.base.peer.DiscoveryPeer;
 
 public interface DiscoveryService {
 

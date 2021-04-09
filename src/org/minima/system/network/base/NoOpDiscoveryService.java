@@ -19,6 +19,7 @@ import org.apache.tuweni.bytes.Bytes;
 // import tech.pegasys.teku.infrastructure.async.SafeFuture;
 // import tech.pegasys.teku.networking.p2p.discovery.DiscoveryPeer;
 // import tech.pegasys.teku.networking.p2p.discovery.DiscoveryService;
+import org.minima.system.network.base.peer.DiscoveryPeer;
 
 public class NoOpDiscoveryService implements DiscoveryService {
 

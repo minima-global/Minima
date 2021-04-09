@@ -72,4 +72,9 @@ public interface IntCache<V> extends Cache<Integer, V> {
   /** Clears all cached values */
   @Override
   void clear();
+
+
+  /** Returns the current number of items in the cache */
+  @Override
+  int size();
 }

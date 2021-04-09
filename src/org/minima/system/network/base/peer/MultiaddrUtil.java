@@ -34,7 +34,7 @@ public class MultiaddrUtil {
     return addPeerId(fromInetSocketAddress(peer.getNodeAddress(), "udp"), getNodeId(peer));
   }
 
-  static Multiaddr fromInetSocketAddress(final InetSocketAddress address) {
+  public static Multiaddr fromInetSocketAddress(final InetSocketAddress address) {
     return fromInetSocketAddress(address, "tcp");
   }
 

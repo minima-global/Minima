@@ -31,7 +31,6 @@ import java.util.function.Supplier;
 //import org.minima.system.network.base.;
 
 import org.minima.system.network.base.P2PNetwork;
-import org.minima.system.network.base.DiscoveryPeer;
 
 public class SimplePeerSelectionStrategy implements PeerSelectionStrategy {
   private final TargetPeerRange targetPeerRange;

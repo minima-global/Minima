@@ -23,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.minima.system.network.base.libp2p.PrivateKeyGenerator;
 // import org.hyperledger.besu.metrics.noop.NoOpMetricsSystem;
 // import tech.pegasys.teku.infrastructure.async.DelayedExecutorAsyncRunner;
 // import tech.pegasys.teku.infrastructure.async.SafeFuture;

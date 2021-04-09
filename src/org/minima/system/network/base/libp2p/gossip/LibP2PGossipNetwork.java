@@ -48,8 +48,9 @@ import java.util.stream.Collectors;
 import kotlin.jvm.functions.Function0;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.tuweni.bytes.Bytes;
 import org.jetbrains.annotations.NotNull;
-import org.minima.system.network.base.LibP2PNodeId;
+//import org.minima.system.network.base.LibP2PNodeId;
 import org.minima.system.network.base.LibP2PParamsFactory;
 import org.minima.system.network.base.SafeFuture;
 // import org.apache.tuweni.bytes.Bytes;
@@ -75,6 +76,7 @@ import org.minima.system.network.base.gossip.TopicHandler;
 import org.minima.system.network.base.gossip.config.GossipConfig;
 import org.minima.system.network.base.gossip.config.GossipTopicsScoringConfig;
 import org.minima.system.network.base.metrics.MetricsSystem;
+import org.minima.system.network.base.peer.LibP2PNodeId;
 import org.minima.system.network.base.peer.NodeId;
 import org.minima.utils.Crypto;
 
@@ -178,9 +180,9 @@ public class LibP2PGossipNetwork implements GossipNetwork {
   }
 
   @Override
-  public SafeFuture<?> gossip(final String topic, final byte[] data) {
+  public SafeFuture<?> gossip(final String topic, final Bytes data) {
     return SafeFuture.of(
-        publisher.publish(Unpooled.wrappedBuffer(data), new Topic(topic)));
+        publisher.publish(Unpooled.wrappedBuffer(data.toArrayUnsafe()), new Topic(topic)));
   }
 
   @Override
