@@ -11,13 +11,6 @@
  * specific language governing permissions and limitations under the License.
  */
 
-package org.minima.system.network.base;
+package org.minima.system.network.base.peer;
 
-import org.minima.system.network.base.peer.RpcRequestHandler;
-
-public interface RpcMethod {
-
-  String getId();
-
-  RpcRequestHandler createIncomingRequestHandler();
-}
+public class StreamClosedException extends RuntimeException {}

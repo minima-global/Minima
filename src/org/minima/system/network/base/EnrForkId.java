@@ -13,13 +13,14 @@
 
 package org.minima.system.network.base;
 
-import javax.swing.tree.TreeNode;
-
 import org.minima.system.network.base.ssz.Bytes4;
+import org.minima.system.network.base.ssz.Container3;
+import org.minima.system.network.base.ssz.ContainerSchema3;
 import org.minima.system.network.base.ssz.SszBytes4;
 import org.minima.system.network.base.ssz.SszPrimitiveSchemas;
 import org.minima.system.network.base.ssz.SszUInt64;
 import org.minima.system.network.base.ssz.UInt64;
+import org.minima.system.network.base.ssz.TreeNode;
 
 // import tech.pegasys.teku.infrastructure.unsigned.UInt64;
 // import tech.pegasys.teku.ssz.containers.Container3;

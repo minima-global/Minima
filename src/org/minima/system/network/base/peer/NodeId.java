@@ -13,9 +13,11 @@
 
 package org.minima.system.network.base.peer;
 
+import org.apache.tuweni.bytes.Bytes;
+
 public abstract class NodeId {
 
-  public abstract byte[] toBytes();
+  public abstract Bytes toBytes();
 
   public abstract String toBase58();
 

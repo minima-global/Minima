@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 ConsenSys AG.
+ * Copyright 2020 ConsenSys AG.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -13,25 +13,28 @@
 
 package org.minima.system.network.base;
 
-import io.libp2p.core.PeerId;
-import org.apache.tuweni.bytes.Bytes;
-//import tech.pegasys.teku.networking.p2p.peer.NodeId;
-import org.minima.system.network.base.peer.NodeId;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import org.jetbrains.annotations.NotNull;
 
-public class LibP2PNodeId extends NodeId {
-  private final PeerId peerId;
+/** Simple {@link java.util.HashMap} backed {@link KeyValueStore} implementation */
+public class MemKeyValueStore<K, V> implements KeyValueStore<K, V> {
 
-  public LibP2PNodeId(final PeerId peerId) {
-    this.peerId = peerId;
+  private final Map<K, V> store = new ConcurrentHashMap<>();
+
+  @Override
+  public void put(@NotNull K key, @NotNull V value) {
+    store.put(key, value);
   }
 
   @Override
-  public Bytes toBytes() {
-    return Bytes.wrap(peerId.getBytes());
+  public void remove(@NotNull K key) {
+    store.remove(key);
   }
 
   @Override
-  public String toBase58() {
-    return peerId.toBase58();
+  public Optional<V> get(@NotNull K key) {
+    return Optional.ofNullable(store.get(key));
   }
 }

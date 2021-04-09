@@ -11,13 +11,18 @@
  * specific language governing permissions and limitations under the License.
  */
 
-package org.minima.system.network.base;
+package org.minima.system.network.base.peer;
 
-import org.minima.system.network.base.peer.RpcRequestHandler;
+import io.netty.buffer.ByteBuf;
+//import tech.pegasys.teku.networking.p2p.peer.NodeId;
 
-public interface RpcMethod {
+public interface RpcRequestHandler {
 
-  String getId();
+  void active(final NodeId nodeId, final RpcStream rpcStream);
 
-  RpcRequestHandler createIncomingRequestHandler();
+  void processData(final NodeId nodeId, final RpcStream rpcStream, final ByteBuf data);
+
+  void readComplete(final NodeId nodeId, final RpcStream rpcStream);
+
+  void closed(final NodeId nodeId, final RpcStream rpcStream);
 }

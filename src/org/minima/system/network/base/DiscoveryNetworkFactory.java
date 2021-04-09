@@ -45,7 +45,9 @@ import org.apache.logging.log4j.Logger;
 import org.minima.system.network.base.metrics.NoOpMetricsSystem;
 import org.minima.system.network.base.peer.Peer;
 import org.minima.system.network.base.peer.PeerSelectionStrategy;
-
+import org.minima.system.network.base.peer.ReputationManager;
+import org.minima.system.network.base.peer.SimplePeerSelectionStrategy;
+import org.minima.system.network.base.peer.TargetPeerRange;
 
 public class DiscoveryNetworkFactory {
 
@@ -55,6 +57,12 @@ public class DiscoveryNetworkFactory {
   private static final int MAX_PORT = 12000;
 
   private final List<DiscoveryNetwork<Peer>> networks = new ArrayList<>();
+
+  // from tech.pegasys.teku.util.config.Constants
+  public final class Constants {
+      public static final int    REPUTATION_MANAGER_CAPACITY = 1024;
+      public static final int ATTESTATION_SUBNET_COUNT = 64;
+  }
 
   public DiscoveryNetworkBuilder builder() {
     return new DiscoveryNetworkBuilder();

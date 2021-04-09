@@ -11,13 +11,11 @@
  * specific language governing permissions and limitations under the License.
  */
 
-package org.minima.system.network.base;
+package org.minima.system.network.base.peer;
 
-import org.minima.system.network.base.peer.RpcRequestHandler;
+public class StreamTimeoutException extends RuntimeException {
 
-public interface RpcMethod {
-
-  String getId();
-
-  RpcRequestHandler createIncomingRequestHandler();
+  public StreamTimeoutException(final String message) {
+    super(message);
+  }
 }

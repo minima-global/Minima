@@ -23,8 +23,6 @@ import java.util.stream.Stream;
 // import tech.pegasys.teku.networking.p2p.peer.Peer;
 // import tech.pegasys.teku.networking.p2p.peer.PeerConnectedSubscriber;
 
-import org.minima.system.network.base.DiscoveryPeer;
-import org.minima.system.network.base.SafeFuture;
 import org.minima.system.network.base.gossip.GossipNetwork;
 import org.minima.system.network.base.peer.NodeId;
 import org.minima.system.network.base.peer.Peer;

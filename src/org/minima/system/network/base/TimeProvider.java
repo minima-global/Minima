@@ -13,11 +13,17 @@
 
 package org.minima.system.network.base;
 
-import org.minima.system.network.base.peer.RpcRequestHandler;
+import org.minima.system.network.base.ssz.UInt64;
 
-public interface RpcMethod {
+//import tech.pegasys.teku.infrastructure.unsigned.UInt64;
 
-  String getId();
+public interface TimeProvider {
 
-  RpcRequestHandler createIncomingRequestHandler();
+  UInt64 MILLIS_PER_SECOND = UInt64.valueOf(1000);
+
+  UInt64 getTimeInMillis();
+
+  default UInt64 getTimeInSeconds() {
+    return getTimeInMillis().dividedBy(MILLIS_PER_SECOND);
+  }
 }

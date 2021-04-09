@@ -18,14 +18,14 @@ import java.util.Optional;
 
 //import org.minima.system.network.base.DisconnectReason;
 //import org.minima.system.network.base.peer.PeerDisconnectedSubscriber;
-import org.minima.system.network.base.RpcMethod;
-import org.minima.system.network.base.RpcRequestHandler;
-import org.minima.system.network.base.RpcStream;
+import org.minima.system.network.base.peer.RpcMethod;
+import org.minima.system.network.base.peer.RpcRequestHandler;
+import org.minima.system.network.base.peer.RpcStream;
 import org.minima.system.network.base.SafeFuture;
 
 //import tech.pegasys.teku.networking.p2p.peer.DisconnectRequestHandler;
 
-//import org.apache.tuweni.bytes.Bytes;
+import org.apache.tuweni.bytes.Bytes;
 //import tech.pegasys.teku.infrastructure.async.SafeFuture;
 //import tech.pegasys.teku.networking.p2p.network.PeerAddress;
 //import tech.pegasys.teku.networking.p2p.reputation.ReputationAdjustment;
@@ -52,7 +52,7 @@ public interface Peer {
   void subscribeDisconnect(PeerDisconnectedSubscriber subscriber);
 
   SafeFuture<RpcStream> sendRequest(
-      RpcMethod rpcMethod, byte[] initialPayload, RpcRequestHandler handler);
+      RpcMethod rpcMethod, Bytes initialPayload, RpcRequestHandler handler);
 
   boolean connectionInitiatedLocally();
 

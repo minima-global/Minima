@@ -11,20 +11,13 @@
  * specific language governing permissions and limitations under the License.
  */
 
-package org.minima.system.network.base;
+package org.minima.system.network.base.peer;
 
-import org.minima.system.network.base.peer.NodeId;
+public class PeerDisconnectedException extends RuntimeException {
 
-import io.netty.buffer.ByteBuf;
-//import tech.pegasys.teku.networking.p2p.peer.NodeId;
+  public PeerDisconnectedException() {}
 
-public interface RpcRequestHandler {
-
-  void active(final NodeId nodeId, final RpcStream rpcStream);
-
-  void processData(final NodeId nodeId, final RpcStream rpcStream, final ByteBuf data);
-
-  void readComplete(final NodeId nodeId, final RpcStream rpcStream);
-
-  void closed(final NodeId nodeId, final RpcStream rpcStream);
+  public PeerDisconnectedException(Throwable cause) {
+    super(cause);
+  }
 }

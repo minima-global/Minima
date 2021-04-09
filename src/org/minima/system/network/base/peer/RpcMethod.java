@@ -11,9 +11,7 @@
  * specific language governing permissions and limitations under the License.
  */
 
-package org.minima.system.network.base;
-
-import org.minima.system.network.base.peer.RpcRequestHandler;
+package org.minima.system.network.base.peer;
 
 public interface RpcMethod {
 
