@@ -686,21 +686,6 @@ public class MinimaDB {
 				mMiningCoins.add(coinid);
 			}
 		}
-		
-//		//Hash it..
-//		MiniData transhash = Crypto.getInstance().hashObject(zTrans, 160);
-//		String hash        = transhash.to0xString();
-//		
-//		//Do we have it..
-//		Transaction prev = mMiningTransactions.get(hash);
-//		if(prev!=null) {
-//			return false;
-//		}
-//		
-//		//Add it..
-//		mMiningTransactions.put(hash, zTrans);
-//		
-//		return true;
 	}
 	
 	public void remeoveMiningTransaction(Transaction zTrans) {
@@ -709,18 +694,12 @@ public class MinimaDB {
 			String coinid = input.getCoinID().to0xString();
 			mMiningCoins.remove(coinid);
 		}
-		
-//		//Hash it..
-//		MiniData transhash = Crypto.getInstance().hashObject(zTrans, 160);
-//		String hash        = transhash.to0xString();
-//		mMiningTransactions.remove(hash);
 	}
 	
 	public boolean checkTransactionForMining(Transaction zTrans) {
 		ArrayList<Coin> inputs = zTrans.getAllInputs();
 		for(Coin input : inputs) {
-			String coinid = input.getCoinID().to0xString();
-			if(mMiningCoins.contains(coinid)) {
+			if(checkInputForMining(input.getCoinID())) {
 				return true;
 			}
 		}
@@ -728,23 +707,9 @@ public class MinimaDB {
 	}
 	
 	public boolean checkInputForMining(MiniData zCoinID) {
-//		Enumeration<Transaction> alltrans = mMiningTransactions.elements();
-//		while(alltrans.hasMoreElements()) {
-//			Transaction trans = alltrans.nextElement();
-//			ArrayList<Coin> inputs = trans.getAllInputs();
-//			for(Coin input : inputs) {
-//				if(zCoinID.isEqual(input.getCoinID())) {
-//					return true;
-//				}
-//			}
-//		}
-		
 		String coinid = zCoinID.to0xString();
 		return mMiningCoins.contains(coinid);
-		
-//		return false;
 	}
-	
 	
 	public ArrayList<Coin> getTotalSimpleSpendableCoins(MiniData zTokenID) {
 		ArrayList<Coin> confirmed   = new ArrayList<>();

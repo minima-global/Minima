@@ -522,8 +522,13 @@ public class ConsensusTxn extends ConsensusProcessor {
 			
 			//Check the INPUTS against the MEMPOOL COINS..
 			if(getMainDB().checkTransactionForMempoolCoins(trx)) {
-				//No GOOD!
 				InputHandler.endResponse(zMessage, false, "ERROR double spend coin in mempool.");
+				return;
+			}
+			
+			//Check the INPUTS against the Mining pool..
+			if(getMainDB().checkTransactionForMining(trx)) {
+				InputHandler.endResponse(zMessage, false, "ERROR double spend coin in mining pool.");
 				return;
 			}
 			
