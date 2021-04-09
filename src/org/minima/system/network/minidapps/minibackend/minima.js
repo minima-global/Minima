@@ -74,7 +74,9 @@ var Minima = {
 	},
 	
 	log : function(output){
-		java.lang.System.out.println("Service @ "+new Date().toLocaleString()+" : "+output);
+		//MinimaLogger..
+		MinimaRPC("log",output,null);
+		//java.lang.System.out.println("Service @ "+new Date().toLocaleString()+" : "+output);
 	},
 	
 	/**
