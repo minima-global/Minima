@@ -151,18 +151,32 @@ public class TxPoWChecker {
 	}
 	
 	public static boolean checkTransactionMMR(TxPoW zTxPOW, MinimaDB zDB, 
-				TxPoW zBlock, MMRSet zMMRSet, boolean zTouchMMR) {
+			TxPoW zBlock, MMRSet zMMRSet, boolean zTouchMMR) {
+		return checkTransactionMMR(zTxPOW, zDB, zBlock, zMMRSet, zTouchMMR, new JSONArray());
+	}
+	
+	public static boolean checkTransactionMMR(TxPoW zTxPOW, MinimaDB zDB, 
+				TxPoW zBlock, MMRSet zMMRSet, boolean zTouchMMR, JSONArray zContraclogs) {
+		
+		JSONObject contractlog = new JSONObject();
+		
 		//need a body
 		if(!zTxPOW.hasBody()) {
+			contractlog.put("error", "TxPoW has no body!");
+			contractlog.put("txpow", zTxPOW.toJSON());
+			zContraclogs.add(contractlog);
 			return false;
 		}
 		
 		//Now Check the Transaction Link Hash..
 		if(!zTxPOW.getTransaction().getLinkHash().isEqual(new MiniData("0x00"))) {
+			contractlog.put("error", "LinkHash not equal to 0x00");
+			contractlog.put("txpow", zTxPOW.toJSON());
+			zContraclogs.add(contractlog);
 			return false;
 		}
 		
-		return checkTransactionMMR(zTxPOW.getTransaction(), zTxPOW.getWitness(), zDB, zBlock, zMMRSet, zTouchMMR, new JSONArray());	
+		return checkTransactionMMR(zTxPOW.getTransaction(), zTxPOW.getWitness(), zDB, zBlock, zMMRSet, zTouchMMR, zContraclogs);	
 	}
 	
 //	public static boolean checkTransactionMMR(Transaction zTrans, Witness zWit, MinimaDB zDB, 

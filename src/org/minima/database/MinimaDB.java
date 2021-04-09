@@ -1238,7 +1238,7 @@ public class MinimaDB {
 			
 			//MUST be valid.. ?
 			if(!valid) {
-				MinimaLogger.log("ERROR: Your own transaction is invalid !?");
+				MinimaLogger.log("ERROR: Your own transaction is invalid !? "+zContractLogs.toString());
 				return null;
 			}
 		}
@@ -1268,7 +1268,8 @@ public class MinimaDB {
 				MiniNumber txncountertest = txncounter.increment();
 				
 				//Check it
-				boolean valid = TxPoWChecker.checkTransactionMMR(txp, this, txpow, newset,true);
+				JSONArray contractlogs = new JSONArray();
+				boolean valid = TxPoWChecker.checkTransactionMMR(txp, this, txpow, newset,true,contractlogs);
 				
 				if(valid) {
 					//Valid so added
@@ -1278,11 +1279,11 @@ public class MinimaDB {
 					txpow.addBlockTxPOW(txp);	
 				
 				}else {
-					//Could be a transaction that is only valid in a different  branch.					
-					MinimaLogger.log("Invalid TXPOW found. (leaving.. could be in other branch) "+txp.getTxPowID());
-				
 					//Store that it failed..
 					row.incrementFailedAttempts();
+					
+					//Could be a transaction that is only valid in a different  branch.					
+					MinimaLogger.log("Invalid TXPOW found failed_attempts:"+row.getFailedAttempts()+" (leaving.. could be in other branch) txid:"+txp.getTxPowID()+" "+contractlogs.toString());
 				}
 			}
 		}
