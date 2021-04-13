@@ -16,6 +16,7 @@ package org.minima.system.network.base.peer;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 
+import org.apache.tuweni.bytes.Bytes;
 import org.minima.system.network.base.EnrForkId;
 import org.minima.system.network.base.ssz.SszBitvector;
 
@@ -26,13 +27,13 @@ import java.util.Optional;
 // import tech.pegasys.teku.ssz.collections.SszBitvector;
 
 public class DiscoveryPeer {
-  private final byte[] publicKey;
+  private final Bytes publicKey;
   private final InetSocketAddress nodeAddress;
   private final Optional<EnrForkId> enrForkId;
   private final SszBitvector persistentSubnets;
 
   public DiscoveryPeer(
-      final byte[] publicKey,
+      final Bytes publicKey,
       final InetSocketAddress nodeAddress,
       final Optional<EnrForkId> enrForkId,
       final SszBitvector persistentSubnets) {
@@ -42,7 +43,7 @@ public class DiscoveryPeer {
     this.persistentSubnets = persistentSubnets;
   }
 
-  public byte[] getPublicKey() {
+  public Bytes getPublicKey() {
     return publicKey;
   }
 

@@ -122,8 +122,8 @@ public class DiscoveryNetwork<P extends Peer> extends DelegatingP2PNetwork<P> {
     final DiscoveryService discoveryService;
     if (discoConfig.isDiscoveryEnabled()) {
       //TODO: activate V5 service
-      // discoveryService = DiscV5Service.create(discoConfig, p2pConfig, kvStore, privateKey);
-      discoveryService = new NoOpDiscoveryService();
+      discoveryService = DiscV5Service.create(discoConfig, p2pConfig, kvStore, privateKey);
+      //discoveryService = new NoOpDiscoveryService();
     } else {
       discoveryService = new NoOpDiscoveryService();
     }
