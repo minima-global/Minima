@@ -42,7 +42,7 @@ public class TimerMessage extends Message implements Runnable {
 			long timeafter = System.currentTimeMillis();
 			long diff = timeafter-timenow;
 			if(diff > mDelay*2) {
-				MinimaLogger.log("Timer Message Delay OVER twice as long as requested.. "+diff+"/"+mDelay);
+				MinimaLogger.log("Timer Message Delay OVER twice as long as requested.. "+diff+"/"+mDelay+" "+toString());
 			}
 			
 //			//Nice and easy - 2 second intervals..
