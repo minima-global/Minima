@@ -9,29 +9,27 @@ import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.exceptions.MinimaParseException;
 import org.minima.kissvm.expressions.Expression;
-import org.minima.kissvm.functions.base.CONCAT;
-import org.minima.kissvm.functions.base.GET;
-import org.minima.kissvm.functions.base.LEN;
-import org.minima.kissvm.functions.base.REV;
-import org.minima.kissvm.functions.base.RPLVAR;
-import org.minima.kissvm.functions.base.SUBSET;
 import org.minima.kissvm.functions.cast.BOOL;
 import org.minima.kissvm.functions.cast.HEX;
-import org.minima.kissvm.functions.cast.MINIMA;
 import org.minima.kissvm.functions.cast.NUMBER;
-import org.minima.kissvm.functions.cast.SCRIPT;
-import org.minima.kissvm.functions.maths.ABS;
-import org.minima.kissvm.functions.maths.BITCOUNT;
-import org.minima.kissvm.functions.maths.BITGET;
-import org.minima.kissvm.functions.maths.BITSET;
-import org.minima.kissvm.functions.maths.CEIL;
-import org.minima.kissvm.functions.maths.DEC;
-import org.minima.kissvm.functions.maths.FLOOR;
-import org.minima.kissvm.functions.maths.INC;
-import org.minima.kissvm.functions.maths.MAX;
-import org.minima.kissvm.functions.maths.MIN;
-import org.minima.kissvm.functions.maths.POW;
-import org.minima.kissvm.functions.maths.SIGDIG;
+import org.minima.kissvm.functions.cast.STRING;
+import org.minima.kissvm.functions.general.GET;
+import org.minima.kissvm.functions.hex.BITCOUNT;
+import org.minima.kissvm.functions.hex.BITGET;
+import org.minima.kissvm.functions.hex.BITSET;
+import org.minima.kissvm.functions.hex.CONCAT;
+import org.minima.kissvm.functions.hex.LEN;
+import org.minima.kissvm.functions.hex.REV;
+import org.minima.kissvm.functions.hex.SUBSET;
+import org.minima.kissvm.functions.number.ABS;
+import org.minima.kissvm.functions.number.CEIL;
+import org.minima.kissvm.functions.number.DEC;
+import org.minima.kissvm.functions.number.FLOOR;
+import org.minima.kissvm.functions.number.INC;
+import org.minima.kissvm.functions.number.MAX;
+import org.minima.kissvm.functions.number.MIN;
+import org.minima.kissvm.functions.number.POW;
+import org.minima.kissvm.functions.number.SIGDIG;
 import org.minima.kissvm.functions.sha.CHAINSHA;
 import org.minima.kissvm.functions.sha.SHA2;
 import org.minima.kissvm.functions.sha.SHA3;
@@ -41,9 +39,9 @@ import org.minima.kissvm.functions.sigs.SIGNEDBY;
 import org.minima.kissvm.functions.state.PREVSTATE;
 import org.minima.kissvm.functions.state.SAMESTATE;
 import org.minima.kissvm.functions.state.STATE;
-import org.minima.kissvm.functions.tokens.TOKENSCALE;
-import org.minima.kissvm.functions.tokens.TOKENSCRIPT;
-import org.minima.kissvm.functions.tokens.TOKENTOTAL;
+import org.minima.kissvm.functions.string.REPLACE;
+import org.minima.kissvm.functions.string.SUBSTR;
+import org.minima.kissvm.functions.string.UTF8;
 import org.minima.kissvm.functions.txn.input.GETINADDR;
 import org.minima.kissvm.functions.txn.input.GETINAMT;
 import org.minima.kissvm.functions.txn.input.GETINID;
@@ -66,11 +64,11 @@ public abstract class MinimaFunction {
 	 */
 	public static MinimaFunction[] ALL_FUNCTIONS = 
 			{ 
-				new CONCAT(), new LEN(), new RPLVAR(),new REV(),new SUBSET(), new GET(),
-				new BOOL(), new HEX(), new MINIMA(), new NUMBER(), new SCRIPT(),
+				new CONCAT(), new LEN(), new REV(),new SUBSET(), new GET(),
+				new BOOL(), new HEX(), new NUMBER(), new STRING(),
 				new ABS(), new CEIL(), new FLOOR(),new MAX(), new MIN(), new DEC(), new INC(), 
 				new SIGDIG(), new POW(), 
-				new TOKENSCRIPT(), new TOKENTOTAL(), new TOKENSCALE(),
+				new REPLACE(), new SUBSTR(), new UTF8(),
 				new SHA3(), new SHA2(), new CHAINSHA(), new BITSET(), new BITGET(), new BITCOUNT(),
 				new SIGNEDBY(), new MULTISIG(), new CHECKSIG(),
 				new GETINADDR(), new GETINAMT(), new GETINID(), new GETINTOK(),new VERIFYIN(),
@@ -172,6 +170,37 @@ public abstract class MinimaFunction {
 	 * @return
 	 */
 	public abstract MinimaFunction getNewFunction();
+	
+	/**
+	 * How many Parameters do you expect
+	 */
+	public abstract int requiredParams();
+	
+	/**
+	 * Can be overridden in calsses that set a minimum
+	 * @return
+	 */
+	public boolean isRequiredMinimumParameterNumber() {
+		return false;
+	}
+	
+	/**
+	 * External function to do a quick check
+	 */
+	public void checkParamNumberCorrect() throws MinimaParseException {
+		int paramsize = getAllParameters().size();
+		int reqparam  = requiredParams();
+		
+		if(isRequiredMinimumParameterNumber()) {
+			if(paramsize < reqparam) {
+				throw new MinimaParseException(getName()+" function requires a  minimum of "+reqparam+" parameters not "+paramsize);
+			}
+		}else {
+			if(paramsize != reqparam) {
+				throw new MinimaParseException(getName()+" function requires exactly "+reqparam+" parameters not "+paramsize);
+			}
+		}
+	}
 	
 	/**
 	 * Get a specific function given it's name

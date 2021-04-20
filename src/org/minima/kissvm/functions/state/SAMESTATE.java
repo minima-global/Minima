@@ -22,14 +22,15 @@ public class SAMESTATE extends MinimaFunction {
 	
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
-		checkExactParamNumber(2);
+		checkExactParamNumber(requiredParams());
 		
 		//Is this a one off or a sequence..
 		int start = zContract.getNumberParam(0, this).getNumber().getAsInt();
-		int end   = start;
+		int end   = zContract.getNumberParam(1, this).getNumber().getAsInt();
 		
-		if(getParameterNum() == 2) {
-			end = zContract.getNumberParam(1, this).getNumber().getAsInt();
+		//Simple checks..
+		if(start<0 || end<start) {
+			throw new ExecutionException("Invalid range check for SAMESTATE "+start+" "+end);
 		}
 		
 		//Now check the old state and the current state are the same
@@ -48,6 +49,11 @@ public class SAMESTATE extends MinimaFunction {
 		return BooleanValue.TRUE;
 	}
 
+	@Override
+	public int requiredParams() {
+		return 2;
+	}
+	
 	@Override
 	public MinimaFunction getNewFunction() {
 		return new SAMESTATE();

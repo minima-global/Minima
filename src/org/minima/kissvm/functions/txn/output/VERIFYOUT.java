@@ -26,31 +26,23 @@ public class VERIFYOUT extends MinimaFunction{
 	
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
-		if(getAllParameters().size()>5) {
-			throw new ExecutionException("Too many parameters for VERIFYOUT");
-		}
+		checkExactParamNumber(requiredParams());
 		
 		//Which Output
 		int output = zContract.getNumberParam(0, this).getNumber().getAsInt();
 		
 		//Get the details
-		MiniData address  = new MiniData(zContract.getHEXParam(1, this).getRawData());
+		MiniData address  = new MiniData(zContract.getHexParam(1, this).getRawData());
 		MiniNumber amount = zContract.getNumberParam(2, this).getNumber();
-		MiniData tokenid  = new MiniData(zContract.getHEXParam(3, this).getRawData());
+		MiniData tokenid  = new MiniData(zContract.getHexParam(3, this).getRawData());
 		
-		//Is there a 4th Parameter ?
-		int amountchecktype = 0 ;
-		if(getParameterNum()>4) {
-			amountchecktype = zContract.getNumberParam(4, this).getNumber().getAsInt();
-		}
-			
 		//Check an output exists..
 		Transaction trans = zContract.getTransaction();
-	
+		
 		//Check output exists..
 		ArrayList<Coin> outs = trans.getAllOutputs();
-		if(outs.size()<=output) {
-			return new BooleanValue( false );
+		if(output<0 || outs.size()<=output) {
+			throw new ExecutionException("Output out of range "+output+"/"+outs.size());
 		}
 		
 		//Get it..
@@ -60,7 +52,6 @@ public class VERIFYOUT extends MinimaFunction{
 		boolean addr = address.isEqual(cc.getAddress());  
 		boolean tok  = tokenid.isEqual(cc.getTokenID());  
 		
-		//Amount can be 3 type.. EQ, LTE, GTE
 		MiniNumber outamt = cc.getAmount();
 		
 		//Could be a token Amount!
@@ -74,19 +65,17 @@ public class VERIFYOUT extends MinimaFunction{
 			outamt = cc.getAmount().mult(td.getScaleFactor());
 		}
 		
-		boolean amt  = false;
-		if(amountchecktype == 0) {
-			amt  = outamt.isEqual(amount);
-		}else if(amountchecktype == -1) {
-			amt  = outamt.isLessEqual(amount);
-		}else {
-			amt  = outamt.isMoreEqual(amount);
-		}
+		boolean amt  = outamt.isEqual(amount);
 		
 		boolean ver = addr && amt && tok;
 		
 		//Return if all true
 		return new BooleanValue( ver );
+	}
+	
+	@Override
+	public int requiredParams() {
+		return 4;
 	}
 	
 	@Override

@@ -4,11 +4,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.junit.Test;
 import org.minima.database.MinimaDB;
@@ -93,7 +92,7 @@ public class MinimaDBTests {
         try {
             w.addScript(Address.TRUE_ADDRESS.getScript(), in.getAddress().getLength() * 8);
         } catch (Exception ex) {
-            Logger.getLogger(MinimaDBTests.class.getName()).log(Level.SEVERE, null, ex);
+            fail();
         }
 
         Coin out1 = new Coin(Coin.COINID_OUTPUT, addr1.getAddressData(), new MiniNumber("25"), Coin.MINIMA_TOKENID);

@@ -14,9 +14,9 @@ import org.minima.kissvm.expressions.ConstantExpression;
 import org.minima.kissvm.functions.MinimaFunction;
 import org.minima.kissvm.functions.cast.HEX;
 import org.minima.kissvm.values.BooleanValue;
-import org.minima.kissvm.values.HEXValue;
+import org.minima.kissvm.values.HexValue;
 import org.minima.kissvm.values.NumberValue;
-import org.minima.kissvm.values.ScriptValue;
+import org.minima.kissvm.values.StringValue;
 import org.minima.kissvm.values.Value;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
@@ -56,7 +56,7 @@ public class HEXTests {
             try {
                 Value res = mf.runFunction(ctr);
                 assertEquals(Value.VALUE_HEX, res.getValueType());
-                assertEquals("0x01", ((HEXValue) res).toString());
+                assertEquals("0x01", ((HexValue) res).toString());
             } catch (ExecutionException ex) {
                 fail();
             }
@@ -67,29 +67,40 @@ public class HEXTests {
             try {
                 Value res = mf.runFunction(ctr);
                 assertEquals(Value.VALUE_HEX, res.getValueType());
-                assertEquals("0x00", ((HEXValue) res).toString());
+                assertEquals("0x00", ((HexValue) res).toString());
             } catch (ExecutionException ex) {
                 fail();
             }
         }
         {
             MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new HEXValue("0x01234567")));
+            mf.addParameter(new ConstantExpression(new HexValue("0x01234567")));
             try {
                 Value res = mf.runFunction(ctr);
                 assertEquals(Value.VALUE_HEX, res.getValueType());
-                assertEquals("0x01234567", ((HEXValue) res).toString());
+                assertEquals("0x01234567", ((HexValue) res).toString());
             } catch (ExecutionException ex) {
                 fail();
             }
         }
         {
             MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new HEXValue("0x0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF")));
+            mf.addParameter(new ConstantExpression(new HexValue("0x0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF")));
             try {
                 Value res = mf.runFunction(ctr);
                 assertEquals(Value.VALUE_HEX, res.getValueType());
-                assertEquals("0x0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF", ((HEXValue) res).toString());
+                assertEquals("0x0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF", ((HexValue) res).toString());
+            } catch (ExecutionException ex) {
+                fail();
+            }
+        }
+        {
+            MinimaFunction mf = fn.getNewFunction();
+            mf.addParameter(new ConstantExpression(new NumberValue(1)));
+            try {
+                Value res = mf.runFunction(ctr);
+                assertEquals(Value.VALUE_HEX, res.getValueType());
+                assertEquals("0x01", ((HexValue) res).toString());
             } catch (ExecutionException ex) {
                 fail();
             }
@@ -100,7 +111,7 @@ public class HEXTests {
             try {
                 Value res = mf.runFunction(ctr);
                 assertEquals(Value.VALUE_HEX, res.getValueType());
-                assertEquals("0x00", ((HEXValue) res).toString());
+                assertEquals("0x00", ((HexValue) res).toString());
             } catch (ExecutionException ex) {
                 fail();
             }
@@ -111,32 +122,29 @@ public class HEXTests {
             try {
                 Value res = mf.runFunction(ctr);
                 assertEquals(Value.VALUE_HEX, res.getValueType());
-                //assertEquals("0xFFFF", ((HEXValue) res).toString()); // Test fails, because MiniNumber prepends 00
-                assertEquals("0x00FFFF", ((HEXValue) res).toString());
+                assertEquals("0xFFFF", ((HexValue) res).toString()); // Test fails, because MiniNumber prepends 00
             } catch (ExecutionException ex) {
                 fail();
             }
         }
         {
             MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new ScriptValue("ABCDEFGHIJKLMNOPQRSTUVWXYZ")));
+            mf.addParameter(new ConstantExpression(new StringValue("ABCDEFGHIJKLMNOPQRSTUVWXYZ")));
             try {
                 Value res = mf.runFunction(ctr);
                 assertEquals(Value.VALUE_HEX, res.getValueType());
-                //assertEquals("0x4142434445464748494A4B4C4D4E4F505152535455565758595A", ((HEXValue) res).toString()); // test fails because script value forces lowercase
-                assertEquals("0x6162636465666768696A6B6C6D6E6F707172737475767778797A", ((HEXValue) res).toString());
+                assertEquals("0x4142434445464748494A4B4C4D4E4F505152535455565758595A", ((HexValue) res).toString()); // test fails because script value forces lowercase
             } catch (ExecutionException ex) {
                 fail();
             }
         }
         {
             MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new ScriptValue("Hello World")));
+            mf.addParameter(new ConstantExpression(new StringValue("Hello World")));
             try {
                 Value res = mf.runFunction(ctr);
                 assertEquals(Value.VALUE_HEX, res.getValueType());
-                //assertEquals("0x48656C6C6F20576F726C64", ((HEXValue) res).toString()); // test fails because script value forces lowercase
-                assertEquals("0x68656C6C6F20776F726C64", ((HEXValue) res).toString());
+                assertEquals("0x48656C6C6F20576F726C64", ((HexValue) res).toString()); // test fails because script value forces lowercase
             } catch (ExecutionException ex) {
                 fail();
             }
@@ -156,5 +164,14 @@ public class HEXTests {
                 Value res = mf.runFunction(ctr);
             });
         }
+        {
+            MinimaFunction mf = fn.getNewFunction();
+            mf.addParameter(new ConstantExpression(new NumberValue(0)));
+            mf.addParameter(new ConstantExpression(new NumberValue(0)));
+            assertThrows(ExecutionException.class, () -> {
+                Value res = mf.runFunction(ctr);
+            });
+        }
+
     }
 }

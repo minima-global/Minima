@@ -19,7 +19,7 @@ public class GETOUTAMT extends MinimaFunction {
 	
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
-		checkExactParamNumber(1);
+		checkExactParamNumber(requiredParams());
 		
 		//Which Output - must be from 0-255
 		int output = zContract.getNumberParam(0, this).getNumber().getAsInt();
@@ -29,8 +29,8 @@ public class GETOUTAMT extends MinimaFunction {
 		
 		//Check output exists..
 		ArrayList<Coin> outs = trans.getAllOutputs();
-		if(outs.size()<=output) {
-			throw new ExecutionException("Output number too high "+output+"/"+outs.size());
+		if(output<0 || outs.size()<=output) {
+			throw new ExecutionException("Output out of range "+output+"/"+outs.size());
 		}
 		
 		//Get it..
@@ -50,6 +50,11 @@ public class GETOUTAMT extends MinimaFunction {
 		return new NumberValue(cc.getAmount());
 	}
 
+	@Override
+	public int requiredParams() {
+		return 1;
+	}
+	
 	@Override
 	public MinimaFunction getNewFunction() {
 		return new GETOUTAMT();

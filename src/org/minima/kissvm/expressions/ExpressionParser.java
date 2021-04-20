@@ -10,7 +10,9 @@ import org.minima.kissvm.functions.MinimaFunction;
 import org.minima.kissvm.tokens.LexicalTokenizer;
 import org.minima.kissvm.tokens.Token;
 import org.minima.kissvm.values.BooleanValue;
+import org.minima.kissvm.values.NumberValue;
 import org.minima.kissvm.values.Value;
+import org.minima.objects.base.MiniNumber;
 
 /**
  * @author Spartacus Rex
@@ -25,6 +27,11 @@ public class ExpressionParser {
 	 * @return
 	 */
 	public static Expression getExpression(List<Token> zTokens) throws MinimaParseException{
+		//Must have some tokens!
+		if(zTokens.size() == 0) {
+			throw new MinimaParseException("Cannot have EMPTY expression");
+		}
+		
 		//Create a Lexical Tokenizer..
 		LexicalTokenizer lt = new LexicalTokenizer(zTokens);
 		
@@ -61,14 +68,12 @@ public class ExpressionParser {
 				exp = new BooleanExpression(exp, getRelation(zTokens), BooleanExpression.BOOLEAN_OR);
 			}else if(tok.getToken().equals("XOR")) {
 				exp = new BooleanExpression(exp, getRelation(zTokens), BooleanExpression.BOOLEAN_XOR);
-			
 			}else if(tok.getToken().equals("NAND")) {
 				exp = new BooleanExpression(exp, getRelation(zTokens), BooleanExpression.BOOLEAN_NAND);
 			}else if(tok.getToken().equals("NOR")) {
 				exp = new BooleanExpression(exp, getRelation(zTokens), BooleanExpression.BOOLEAN_NOR);
 			}else if(tok.getToken().equals("NXOR")) {
 				exp = new BooleanExpression(exp, getRelation(zTokens), BooleanExpression.BOOLEAN_NXOR);
-			
 			}else{
 				zTokens.goBackToken();
 				break;
@@ -173,25 +178,21 @@ public class ExpressionParser {
 	}
 	
 	private static Expression getPrimary(LexicalTokenizer zTokens) throws MinimaParseException{
-		//NOT and NEG treated slightly differently..
-		Expression exp = null;
+		//The final result
+		Expression exp = null; 
 		
-		while(zTokens.hasMoreElements()) {
-			Token tok = zTokens.getNextToken();
+		//get the Token
+		Token tok = zTokens.getNextToken();
+		
+		if(tok.getToken().equals("NOT")) {
+			exp = new BooleanExpression(getPrimary(zTokens), BooleanExpression.BOOLEAN_NOT);
 			
-			if(tok.getToken().equals("NOT")) {
-				//Return immediately.. no more drilling..
-				return new BooleanExpression(getPrimary(zTokens), BooleanExpression.BOOLEAN_NOT);
-				
-			}else if(tok.getToken().equals("NEG")) {
-				//Return immediately.. no more drilling..
-				return new OperatorExpression(getPrimary(zTokens), OperatorExpression.OPERATOR_NEG);
-				
-			}else {
-				zTokens.goBackToken();
-				exp = getBaseUnit(zTokens);
-				break;
-			}
+		}else if(tok.getToken().equals("NEG")) {
+			exp = new OperatorExpression(getPrimary(zTokens), OperatorExpression.OPERATOR_NEG);
+		
+		}else {
+			zTokens.goBackToken();
+			exp = getBaseUnit(zTokens);
 		}
 		
 		return exp;
@@ -206,6 +207,15 @@ public class ExpressionParser {
 		
 		if(tok.getTokenType() == Token.TOKEN_VALUE) {
 			exp = new ConstantExpression( Value.getValue(tok.getToken()) ); 
+		
+			//Negative NUmbers handled here..
+		}else if(tok.getToken().equals("-")) {
+			//The next token MUST be a number
+			Token num = zTokens.getNextToken();
+			
+			//Create a Negative Number 
+			MiniNumber numv = new MiniNumber(num.getToken()).mult(MiniNumber.MINUSONE);
+			exp = new ConstantExpression(new NumberValue(numv));
 			
 		}else if(tok.getTokenType() == Token.TOKEN_GLOBAL) {
 			exp = new GlobalExpression(tok.getToken());
@@ -248,6 +258,9 @@ public class ExpressionParser {
 				}
 			}
 						
+			//Check the correct number of Parameters 
+			func.checkParamNumberCorrect();
+			
 			//Now create the Complete Expression
 			exp = new FunctionExpression(func);
 			
@@ -261,9 +274,9 @@ public class ExpressionParser {
 			if(closebracket.getTokenType() != Token.TOKEN_CLOSEBRACKET) {
 				throw new MinimaParseException("Missing close bracket. Found : "+closebracket.getToken());
 			}
-	
+			
 		}else{
-			throw new MinimaParseException("Incorrect Token in script "+tok.getToken());
+			throw new MinimaParseException("Incorrect Token in script "+tok.getToken()+" @ "+zTokens.getCurrentPosition());
 		}
 		
 		return exp;

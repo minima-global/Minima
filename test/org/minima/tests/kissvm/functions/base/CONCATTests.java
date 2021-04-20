@@ -12,11 +12,11 @@ import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.exceptions.MinimaParseException;
 import org.minima.kissvm.expressions.ConstantExpression;
 import org.minima.kissvm.functions.MinimaFunction;
-import org.minima.kissvm.functions.base.CONCAT;
+import org.minima.kissvm.functions.hex.CONCAT;
 import org.minima.kissvm.values.BooleanValue;
-import org.minima.kissvm.values.HEXValue;
+import org.minima.kissvm.values.HexValue;
 import org.minima.kissvm.values.NumberValue;
-import org.minima.kissvm.values.ScriptValue;
+import org.minima.kissvm.values.StringValue;
 import org.minima.kissvm.values.Value;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
@@ -50,66 +50,27 @@ public class CONCATTests {
 
         {
             MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new HEXValue("0x01234567")));
-            mf.addParameter(new ConstantExpression(new HEXValue("0x89ABCDEF")));
+            mf.addParameter(new ConstantExpression(new HexValue("0x01234567")));
+            mf.addParameter(new ConstantExpression(new HexValue("0x89ABCDEF")));
             try {
                 Value res = mf.runFunction(ctr);
                 assertEquals(Value.VALUE_HEX, res.getValueType());
-                assertEquals("0x0123456789ABCDEF", ((HEXValue) res).toString());
+                assertEquals("0x0123456789ABCDEF", ((HexValue) res).toString());
             } catch (ExecutionException ex) {
                 fail();
             }
         }
         {
             MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new HEXValue("0x01234567")));
-            mf.addParameter(new ConstantExpression(new HEXValue("0x89ABCDEF")));
-            mf.addParameter(new ConstantExpression(new HEXValue("0x01234567")));
-            mf.addParameter(new ConstantExpression(new HEXValue("0x89ABCDEF")));
-            mf.addParameter(new ConstantExpression(new HEXValue("0x01234567")));
+            mf.addParameter(new ConstantExpression(new HexValue("0x01234567")));
+            mf.addParameter(new ConstantExpression(new HexValue("0x89ABCDEF")));
+            mf.addParameter(new ConstantExpression(new HexValue("0x01234567")));
+            mf.addParameter(new ConstantExpression(new HexValue("0x89ABCDEF")));
+            mf.addParameter(new ConstantExpression(new HexValue("0x01234567")));
             try {
                 Value res = mf.runFunction(ctr);
                 assertEquals(Value.VALUE_HEX, res.getValueType());
-                assertEquals("0x0123456789ABCDEF0123456789ABCDEF01234567", ((HEXValue) res).toString());
-            } catch (ExecutionException ex) {
-                fail();
-            }
-        }
-        {
-            MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new ScriptValue("")));
-            mf.addParameter(new ConstantExpression(new ScriptValue("")));
-            try {
-                Value res = mf.runFunction(ctr);
-                assertEquals(Value.VALUE_SCRIPT, res.getValueType());
-                assertEquals("", ((ScriptValue) res).toString());
-            } catch (ExecutionException ex) {
-                fail();
-            }
-        }
-        {
-            MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new ScriptValue("HELLO")));
-            mf.addParameter(new ConstantExpression(new ScriptValue("WORLD")));
-            try {
-                Value res = mf.runFunction(ctr);
-                assertEquals(Value.VALUE_SCRIPT, res.getValueType());
-                assertEquals("hello world", ((ScriptValue) res).toString());
-            } catch (ExecutionException ex) {
-                fail();
-            }
-        }
-        {
-            MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new ScriptValue("HELLO")));
-            mf.addParameter(new ConstantExpression(new ScriptValue("WORLD")));
-            mf.addParameter(new ConstantExpression(new ScriptValue("MINIMA")));
-            mf.addParameter(new ConstantExpression(new ScriptValue("IS")));
-            mf.addParameter(new ConstantExpression(new ScriptValue("HERE")));
-            try {
-                Value res = mf.runFunction(ctr);
-                assertEquals(Value.VALUE_SCRIPT, res.getValueType());
-                assertEquals("hello world MINIMA is here", ((ScriptValue) res).toString());
+                assertEquals("0x0123456789ABCDEF0123456789ABCDEF01234567", ((HexValue) res).toString());
             } catch (ExecutionException ex) {
                 fail();
             }
@@ -131,14 +92,14 @@ public class CONCATTests {
         }
         {
             MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new HEXValue("0x01234567")));
+            mf.addParameter(new ConstantExpression(new HexValue("0x01234567")));
             assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
             });
         }
         {
             MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new ScriptValue("HELLO")));
+            mf.addParameter(new ConstantExpression(new StringValue("HELLO")));
             assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
             });
@@ -147,15 +108,15 @@ public class CONCATTests {
         // Invalid param domain
         {
             MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new HEXValue(""))); // should fail for invalid input
-            mf.addParameter(new ConstantExpression(new HEXValue("")));
+            mf.addParameter(new ConstantExpression(new HexValue(""))); // should fail for invalid input
+            mf.addParameter(new ConstantExpression(new HexValue("")));
             //assertThrows(ExecutionException.class, () -> {
             //    Value res = mf.runFunction(ctr);
             //});
             try {
                 Value res = mf.runFunction(ctr);
                 assertEquals(Value.VALUE_HEX, res.getValueType());
-                assertEquals("0x", ((HEXValue) res).toString()); // invalid HEX number representation
+                assertEquals("", ((HexValue) res).toString()); // invalid HEX number representation
             } catch (ExecutionException ex) {
                 fail();
             }
@@ -164,7 +125,7 @@ public class CONCATTests {
         // Invalid param types
         {
             MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new HEXValue("0x01234567")));
+            mf.addParameter(new ConstantExpression(new HexValue("0x01234567")));
             mf.addParameter(new ConstantExpression(new BooleanValue(true)));
             assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
@@ -172,7 +133,7 @@ public class CONCATTests {
         }
         {
             MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new HEXValue("0x01234567")));
+            mf.addParameter(new ConstantExpression(new HexValue("0x01234567")));
             mf.addParameter(new ConstantExpression(new NumberValue(100)));
             assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
@@ -180,15 +141,15 @@ public class CONCATTests {
         }
         {
             MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new HEXValue("0x01234567")));
-            mf.addParameter(new ConstantExpression(new ScriptValue("HELLO")));
+            mf.addParameter(new ConstantExpression(new HexValue("0x01234567")));
+            mf.addParameter(new ConstantExpression(new StringValue("HELLO")));
             assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
             });
         }
         {
             MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new ScriptValue("HELLO")));
+            mf.addParameter(new ConstantExpression(new StringValue("HELLO")));
             mf.addParameter(new ConstantExpression(new BooleanValue(true)));
             assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
@@ -196,15 +157,15 @@ public class CONCATTests {
         }
         {
             MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new ScriptValue("HELLO")));
-            mf.addParameter(new ConstantExpression(new HEXValue("0x01234567")));
+            mf.addParameter(new ConstantExpression(new StringValue("HELLO")));
+            mf.addParameter(new ConstantExpression(new HexValue("0x01234567")));
             assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
             });
         }
         {
             MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new ScriptValue("HELLO")));
+            mf.addParameter(new ConstantExpression(new StringValue("HELLO")));
             mf.addParameter(new ConstantExpression(new NumberValue(100)));
             assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);

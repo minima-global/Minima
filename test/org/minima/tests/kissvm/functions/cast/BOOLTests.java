@@ -14,9 +14,9 @@ import org.minima.kissvm.expressions.ConstantExpression;
 import org.minima.kissvm.functions.MinimaFunction;
 import org.minima.kissvm.functions.cast.BOOL;
 import org.minima.kissvm.values.BooleanValue;
-import org.minima.kissvm.values.HEXValue;
+import org.minima.kissvm.values.HexValue;
 import org.minima.kissvm.values.NumberValue;
-import org.minima.kissvm.values.ScriptValue;
+import org.minima.kissvm.values.StringValue;
 import org.minima.kissvm.values.Value;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
@@ -74,7 +74,7 @@ public class BOOLTests {
         }
         {
             MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new HEXValue("0x01")));
+            mf.addParameter(new ConstantExpression(new HexValue("0x01")));
             try {
                 Value res = mf.runFunction(ctr);
                 assertEquals(Value.VALUE_BOOLEAN, res.getValueType());
@@ -85,7 +85,7 @@ public class BOOLTests {
         }
         {
             MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new HEXValue("0x00")));
+            mf.addParameter(new ConstantExpression(new HexValue("0x00")));
             try {
                 Value res = mf.runFunction(ctr);
                 assertEquals(Value.VALUE_BOOLEAN, res.getValueType());
@@ -118,7 +118,7 @@ public class BOOLTests {
         }
         {
             MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new ScriptValue("Hello World")));
+            mf.addParameter(new ConstantExpression(new StringValue("Hello World")));
             try {
                 Value res = mf.runFunction(ctr);
                 assertEquals(Value.VALUE_BOOLEAN, res.getValueType());
@@ -129,7 +129,7 @@ public class BOOLTests {
         }
         {
             MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new ScriptValue("")));
+            mf.addParameter(new ConstantExpression(new StringValue("FALSE")));
             try {
                 Value res = mf.runFunction(ctr);
                 assertEquals(Value.VALUE_BOOLEAN, res.getValueType());

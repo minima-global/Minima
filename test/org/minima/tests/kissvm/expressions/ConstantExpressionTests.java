@@ -9,9 +9,9 @@ import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.expressions.ConstantExpression;
 import org.minima.kissvm.values.BooleanValue;
-import org.minima.kissvm.values.HEXValue;
+import org.minima.kissvm.values.HexValue;
 import org.minima.kissvm.values.NumberValue;
-import org.minima.kissvm.values.ScriptValue;
+import org.minima.kissvm.values.StringValue;
 import org.minima.objects.StateVariable;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
@@ -22,9 +22,9 @@ public class ConstantExpressionTests {
     @Test
     public void testConstructors() throws ExecutionException {
         BooleanValue bv = new BooleanValue(true);
-        HEXValue hv = new HEXValue(new MiniNumber(Integer.valueOf(255)));
+        HexValue hv = new HexValue(new MiniNumber(Integer.valueOf(255)));
         NumberValue nv = new NumberValue(0x12345678);
-        ScriptValue sv = new ScriptValue("[RETURN TRUE]");
+        StringValue sv = new StringValue("[RETURN TRUE]");
 
         ConstantExpression ce1 = new ConstantExpression(bv);
         ConstantExpression ce2 = new ConstantExpression(hv);
@@ -42,9 +42,9 @@ public class ConstantExpressionTests {
     @Test
     public void testToString() throws ExecutionException {
         BooleanValue bv = new BooleanValue(true);
-        HEXValue hv = new HEXValue(new MiniNumber(Integer.valueOf(255)));
+        HexValue hv = new HexValue(new MiniNumber(Integer.valueOf(255)));
         NumberValue nv = new NumberValue(0x12345678);
-        ScriptValue sv = new ScriptValue("[RETURN TRUE]");
+        StringValue sv = new StringValue("[RETURN TRUE]");
 
         ConstantExpression ce1 = new ConstantExpression(bv);
         ConstantExpression ce2 = new ConstantExpression(hv);
