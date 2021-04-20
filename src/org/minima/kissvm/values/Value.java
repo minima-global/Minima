@@ -3,8 +3,7 @@
  */
 package org.minima.kissvm.values;
 
-import org.minima.kissvm.tokens.Token;
-import org.minima.objects.base.MiniNumber;
+import org.minima.kissvm.tokens.Tokenizer;
 
 /**
  * @author Spartacus Rex
@@ -26,21 +25,22 @@ public abstract class Value {
 	 */
 	public abstract int getValueType();
 	
-	/**
-	 * TRUE or FALSE
-	 */
-	public boolean isTrue() {
-		return !isFalse();
-	}
-	
-	public abstract boolean isFalse();
+//	/**
+//	 * TRUE or FALSE
+//	 */
+//	public boolean isTrue() {
+//		return !isFalse();
+//	}
+//	
+//	public abstract boolean isFalse();
 	
 	/**
 	 * Strict Check this type and throw an exception if not
 	 */
 	public void verifyType(int zType) throws IllegalArgumentException{
 		if (getValueType() != zType) {
-			throw new IllegalArgumentException("Incorrect value type, expected "+zType+" found "+getValueType());
+			throw new IllegalArgumentException("Incorrect value type, expected "
+					+getValueTypeString(zType)+" found "+getValueTypeString(getValueType()));
 		}
 	}
 	
@@ -52,10 +52,10 @@ public abstract class Value {
 		if(zValue.startsWith("[") && zValue.endsWith("]")) {
 			//remove the square brackets..
 			String sc = zValue.substring(1,zValue.length()-1);
-			return new ScriptValue(sc);
+			return new StringValue(sc);
 			
 		}else if(zValue.startsWith("0x")) {
-			return new HEXValue(zValue);
+			return new HexValue(zValue);
 
 		}else if(zValue.equals("TRUE")) {
 			return BooleanValue.TRUE;
@@ -63,7 +63,8 @@ public abstract class Value {
 		}else if(zValue.equals("FALSE")) {
 			return BooleanValue.FALSE;
 
-		}else if(Token.isNumeric(zValue)){
+		}else if(zValue.startsWith("-") || 
+				Tokenizer.isNumeric(zValue)){
 			return new NumberValue(zValue);
 		
 		}else {
@@ -88,9 +89,10 @@ public abstract class Value {
 		}else if(zValue.equals("FALSE")) {
 			return VALUE_BOOLEAN;
 
-		}else if(Token.isNumeric(zValue)){
+		}else if(zValue.startsWith("-") || 
+				Tokenizer.isNumeric(zValue)){
 			return VALUE_NUMBER;
-	
+			
 		}else {
 			throw new IllegalArgumentException("Invalid value type : "+zValue);
 		}

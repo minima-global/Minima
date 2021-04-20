@@ -1,15 +1,12 @@
 package org.minima.tests.kissvm;
 
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 import org.junit.Test;
 import org.minima.kissvm.Contract;
@@ -18,9 +15,9 @@ import org.minima.kissvm.expressions.ConstantExpression;
 import org.minima.kissvm.functions.MinimaFunction;
 import org.minima.kissvm.functions.txn.input.GETINADDR;
 import org.minima.kissvm.values.BooleanValue;
-import org.minima.kissvm.values.HEXValue;
+import org.minima.kissvm.values.HexValue;
 import org.minima.kissvm.values.NumberValue;
-import org.minima.kissvm.values.ScriptValue;
+import org.minima.kissvm.values.StringValue;
 import org.minima.kissvm.values.Value;
 import org.minima.objects.StateVariable;
 import org.minima.objects.Transaction;
@@ -67,9 +64,9 @@ public class ContractTests {
             ArrayList<StateVariable> PrevStates = new ArrayList<StateVariable>();
             for (int i = 0; i < 16; i++) {
                 PrevStates.add(new StateVariable(4 * i + 0, new BooleanValue(true).toString()));
-                PrevStates.add(new StateVariable(4 * i + 1, new HEXValue("0x12345678").toString()));
+                PrevStates.add(new StateVariable(4 * i + 1, new HexValue("0x12345678").toString()));
                 PrevStates.add(new StateVariable(4 * i + 2, new NumberValue(i).toString()));
-                PrevStates.add(new StateVariable(4 * i + 3, new ScriptValue("[ Hello World " + Integer.toString(4 * i + 3)).toString() + " ]"));
+                PrevStates.add(new StateVariable(4 * i + 3, new StringValue("[ Hello World " + Integer.toString(4 * i + 3)).toString() + " ]"));
             }
 
             Contract ctr = new Contract(Script, SignaturesStr, new Witness(), new Transaction(), PrevStates);
@@ -94,41 +91,41 @@ public class ContractTests {
             assertTrue(ctr.getCompleteTraceLog().length() > 0);
         }
 
-        {
-            Contract ctr = new Contract("/* Comment */ RETURN TRUE", "", new Witness(), new Transaction(), new ArrayList<StateVariable>(), true);
-
-            assertTrue(ctr.isParseOK());
-            assertFalse(ctr.isException());
-            assertEquals("", ctr.getException());
-            assertTrue(ctr.getCompleteTraceLog().length() > 0);
-        }
-
-        {
-            Contract ctr = new Contract("RETURN TRUE /* Comment */", "", new Witness(), new Transaction(), new ArrayList<StateVariable>(), true);
-
-            assertTrue(ctr.isParseOK());
-            assertFalse(ctr.isException());
-            assertEquals("", ctr.getException());
-            assertTrue(ctr.getCompleteTraceLog().length() > 0);
-        }
-
-        {
-            Contract ctr = new Contract("/* Comment */ RETURN TRUE /* Comment */", "", new Witness(), new Transaction(), new ArrayList<StateVariable>(), true);
-
-            assertTrue(ctr.isParseOK());
-            assertFalse(ctr.isException());
-            assertEquals("", ctr.getException());
-            assertTrue(ctr.getCompleteTraceLog().length() > 0);
-        }
-
-        {
-            Contract ctr = new Contract("/*Comment*/RETURN TRUE/*Comment*/", "", new Witness(), new Transaction(), new ArrayList<StateVariable>(), true);
-
-            assertTrue(ctr.isParseOK());
-            assertFalse(ctr.isException());
-            assertEquals("", ctr.getException());
-            assertTrue(ctr.getCompleteTraceLog().length() > 0);
-        }
+//        {
+//            Contract ctr = new Contract("/* Comment */ RETURN TRUE", "", new Witness(), new Transaction(), new ArrayList<StateVariable>(), true);
+//
+//            assertTrue(ctr.isParseOK());
+//            assertFalse(ctr.isException());
+//            assertEquals("", ctr.getException());
+//            assertTrue(ctr.getCompleteTraceLog().length() > 0);
+//        }
+//
+//        {
+//            Contract ctr = new Contract("RETURN TRUE /* Comment */", "", new Witness(), new Transaction(), new ArrayList<StateVariable>(), true);
+//
+//            assertTrue(ctr.isParseOK());
+//            assertFalse(ctr.isException());
+//            assertEquals("", ctr.getException());
+//            assertTrue(ctr.getCompleteTraceLog().length() > 0);
+//        }
+//
+//        {
+//            Contract ctr = new Contract("/* Comment */ RETURN TRUE /* Comment */", "", new Witness(), new Transaction(), new ArrayList<StateVariable>(), true);
+//
+//            assertTrue(ctr.isParseOK());
+//            assertFalse(ctr.isException());
+//            assertEquals("", ctr.getException());
+//            assertTrue(ctr.getCompleteTraceLog().length() > 0);
+//        }
+//
+//        {
+//            Contract ctr = new Contract("/*Comment*/RETURN TRUE/*Comment*/", "", new Witness(), new Transaction(), new ArrayList<StateVariable>(), true);
+//
+//            assertTrue(ctr.isParseOK());
+//            assertFalse(ctr.isException());
+//            assertEquals("", ctr.getException());
+//            assertTrue(ctr.getCompleteTraceLog().length() > 0);
+//        }
 
         {
             String Script = "lorem ipsum";
@@ -150,9 +147,9 @@ public class ContractTests {
             ArrayList<StateVariable> PrevStates = new ArrayList<StateVariable>();
             for (int i = 0; i < 16; i++) {
                 PrevStates.add(new StateVariable(4 * i + 0, new BooleanValue(true).toString()));
-                PrevStates.add(new StateVariable(4 * i + 1, new HEXValue("0x12345678").toString()));
+                PrevStates.add(new StateVariable(4 * i + 1, new HexValue("0x12345678").toString()));
                 PrevStates.add(new StateVariable(4 * i + 2, new NumberValue(i).toString()));
-                PrevStates.add(new StateVariable(4 * i + 3, new ScriptValue("[ Hello World " + Integer.toString(4 * i + 3)).toString() + " ]"));
+                PrevStates.add(new StateVariable(4 * i + 3, new StringValue("[ Hello World " + Integer.toString(4 * i + 3)).toString() + " ]"));
             }
 
             Contract ctr = new Contract(Script, SignaturesStr, new Witness(), new Transaction(), PrevStates, true);
@@ -168,12 +165,12 @@ public class ContractTests {
     public void testGettersAndSetters() {
         {
             Hashtable<String, Value> Globals = new Hashtable<>();
-            Globals.put("@SCRIPT", new ScriptValue("0"));
+            Globals.put("@SCRIPT", new StringValue("0"));
             Globals.put("@BLKNUM", new NumberValue(1));
             Globals.put("@INBLKNUM", new NumberValue(2));
             Globals.put("@INPUT", new NumberValue(3));
-            Globals.put("@ADDRESS", new HEXValue("0x04"));
-            Globals.put("@TOKENID", new HEXValue("0x05"));
+            Globals.put("@ADDRESS", new HexValue("0x04"));
+            Globals.put("@TOKENID", new HexValue("0x05"));
             Globals.put("@AMOUNT", new NumberValue(6));
 
             Contract ctr = new Contract("", "", new Witness(), new Transaction(), null);
@@ -181,12 +178,12 @@ public class ContractTests {
 
             Hashtable<String, Value> RetrievedGlobals = ctr.getGlobalVariables();
             assertEquals(7, RetrievedGlobals.size());
-            assertEquals("0", ((ScriptValue) RetrievedGlobals.get("@SCRIPT")).toString());
+            assertEquals("0", ((StringValue) RetrievedGlobals.get("@SCRIPT")).toString());
             assertEquals("1", ((NumberValue) RetrievedGlobals.get("@BLKNUM")).toString());
             assertEquals("2", ((NumberValue) RetrievedGlobals.get("@INBLKNUM")).toString());
             assertEquals("3", ((NumberValue) RetrievedGlobals.get("@INPUT")).toString());
-            assertEquals("0x04", ((HEXValue) RetrievedGlobals.get("@ADDRESS")).toString());
-            assertEquals("0x05", ((HEXValue) RetrievedGlobals.get("@TOKENID")).toString());
+            assertEquals("0x04", ((HexValue) RetrievedGlobals.get("@ADDRESS")).toString());
+            assertEquals("0x05", ((HexValue) RetrievedGlobals.get("@TOKENID")).toString());
             assertEquals("6", ((NumberValue) RetrievedGlobals.get("@AMOUNT")).toString());
         }
 
@@ -194,9 +191,9 @@ public class ContractTests {
             Contract ctr = new Contract("", "", new Witness(), new Transaction(), null);
 
             BooleanValue bv = new BooleanValue(true);
-            HEXValue hv = new HEXValue(new MiniData());
+            HexValue hv = new HexValue(new MiniData());
             NumberValue nv = new NumberValue(0);
-            ScriptValue sv = new ScriptValue("[]");
+            StringValue sv = new StringValue("[]");
 
             ctr.setVariable("BooleanValue", bv);
             ctr.setVariable("HEXValue", hv);
@@ -246,9 +243,9 @@ public class ContractTests {
             ArrayList<StateVariable> PrevStates = new ArrayList<StateVariable>();
             for (int i = 0; i < 16; i++) {
                 PrevStates.add(new StateVariable(4 * i + 0, new BooleanValue(true).toString()));
-                PrevStates.add(new StateVariable(4 * i + 1, new HEXValue("0x12345678").toString()));
+                PrevStates.add(new StateVariable(4 * i + 1, new HexValue("0x12345678").toString()));
                 PrevStates.add(new StateVariable(4 * i + 2, new NumberValue(i).toString()));
-                PrevStates.add(new StateVariable(4 * i + 3, new ScriptValue("[ Hello World " + Integer.toString(4 * i + 3)).toString() + " ]"));
+                PrevStates.add(new StateVariable(4 * i + 3, new StringValue("[ Hello World " + Integer.toString(4 * i + 3)).toString() + " ]"));
             }
 
             Contract ctr = new Contract(Script, SignaturesStr, new Witness(), new Transaction(), PrevStates, true);
@@ -262,7 +259,7 @@ public class ContractTests {
         {
             String Script = "";
             for (int i = 0; i < Contract.MAX_INSTRUCTIONS; i++) {
-                Script = Script + "LET A = " + i + " ";
+                Script = Script + "LET a = " + i + " ";
             }
 
             {
@@ -277,7 +274,7 @@ public class ContractTests {
         {
             String Script = "";
             for (int i = 0; i <= Contract.MAX_INSTRUCTIONS; i++) {
-                Script = Script + "LET A = " + i + " ";
+                Script = Script + "LET a = " + i + " ";
             }
 
             {
@@ -292,7 +289,7 @@ public class ContractTests {
         {
             String Script = "";
             for (int i = 0; i <= Contract.MAX_INSTRUCTIONS; i++) {
-                Script = Script + "LET A = " + i + " ";
+                Script = Script + "LET a = " + i + " ";
             }
 
             {

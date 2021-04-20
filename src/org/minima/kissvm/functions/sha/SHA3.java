@@ -6,7 +6,8 @@ package org.minima.kissvm.functions.sha;
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.functions.MinimaFunction;
-import org.minima.kissvm.values.HEXValue;
+import org.minima.kissvm.values.HexValue;
+import org.minima.kissvm.values.StringValue;
 import org.minima.kissvm.values.Value;
 import org.minima.utils.Crypto;
 
@@ -30,7 +31,7 @@ public class SHA3 extends MinimaFunction {
 	 */
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
-		checkExactParamNumber(2);
+		checkExactParamNumber(requiredParams());
 		
 		//The Bit Length
 		int bitlength = zContract.getNumberParam(0, this).getNumber().getAsInt();
@@ -38,10 +39,19 @@ public class SHA3 extends MinimaFunction {
 		Value vv = getParameter(1).getValue(zContract);
 		checkIsOfType(vv, Value.VALUE_HEX | Value.VALUE_SCRIPT);
 		
-		//get the Input Data - HEX or SCRIPT
-		HEXValue hex = (HEXValue)vv;
-		byte[] data = hex.getRawData();
-
+		byte[] data = null;
+		if(vv.getValueType() == Value.VALUE_HEX) {
+			//HEX
+			HexValue hex = (HexValue)vv;
+			data = hex.getRawData();
+			
+		}else {
+			//Script..
+			StringValue scr = (StringValue)vv;
+			data = scr.getBytes();
+			
+		}
+	
 		//Check valid..
 		if ( bitlength>512 || bitlength<160 || (bitlength%32!=0) ) {
 			throw new ExecutionException("Bitlength incompatible with SHA3 "+bitlength);
@@ -51,7 +61,12 @@ public class SHA3 extends MinimaFunction {
 		byte[] ans = Crypto.getInstance().hashData(data,bitlength);
 		
 		//return the New HEXValue
-		return new HEXValue(ans);
+		return new HexValue(ans);
+	}
+	
+	@Override
+	public int requiredParams() {
+		return 2;
 	}
 	
 	@Override

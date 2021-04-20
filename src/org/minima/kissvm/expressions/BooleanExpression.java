@@ -6,8 +6,9 @@ package org.minima.kissvm.expressions;
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.values.BooleanValue;
-import org.minima.kissvm.values.HEXValue;
+import org.minima.kissvm.values.HexValue;
 import org.minima.kissvm.values.NumberValue;
+import org.minima.kissvm.values.StringValue;
 import org.minima.kissvm.values.Value;
 
 /**
@@ -52,6 +53,10 @@ public class BooleanExpression implements Expression {
 		mBooleanType	= zBooleanType;
 	}
 	
+	public BooleanValue getBooleanValue(Contract zContract) throws ExecutionException {
+		return (BooleanValue)getValue(zContract);
+	}
+	
 	@Override
 	public Value getValue(Contract zContract) throws ExecutionException {
 		Value ret = null;
@@ -60,110 +65,167 @@ public class BooleanExpression implements Expression {
 		Value lval = mLeft.getValue(zContract);
 		Value rval = mRight.getValue(zContract);
 
-		//Make sure both Values are of the same type
-		Value.checkSameType(lval, rval);
-				
-		//TRUE or FALSE - all types have this
-		boolean left   	= lval.isTrue(); 
-		boolean right  	= rval.isTrue();
+		//Only check for double value expressions
+		if(mBooleanType != BOOLEAN_NOT) {
+			//Make sure both Values are of the same type
+			Value.checkSameType(lval, rval);
+		}
 		
+		boolean left,right;
 		switch(mBooleanType) {
+		
+				/**
+				 * ONLY Works for BOOLEAN value types
+				 */
 			case BOOLEAN_AND :
+				lval.verifyType(Value.VALUE_BOOLEAN);
+				left  = ((BooleanValue)lval).isTrue();
+				right = ((BooleanValue)rval).isTrue();
+				
 				ret = left && right ? BooleanValue.TRUE : BooleanValue.FALSE;
 				break;
 			case BOOLEAN_NAND :
+				lval.verifyType(Value.VALUE_BOOLEAN);
+				left  = ((BooleanValue)lval).isTrue();
+				right = ((BooleanValue)rval).isTrue();
+				
 				ret = left && right ? BooleanValue.FALSE : BooleanValue.TRUE;
 				break;
-				
 			case BOOLEAN_OR :
+				lval.verifyType(Value.VALUE_BOOLEAN);
+				left  = ((BooleanValue)lval).isTrue();
+				right = ((BooleanValue)rval).isTrue();
+				
 				ret = left || right ? BooleanValue.TRUE : BooleanValue.FALSE;
 				break;
 			case BOOLEAN_NOR :
+				lval.verifyType(Value.VALUE_BOOLEAN);
+				left  = ((BooleanValue)lval).isTrue();
+				right = ((BooleanValue)rval).isTrue();
+				
 				ret = left || right ? BooleanValue.FALSE : BooleanValue.TRUE;
 				break;
 			
 			case BOOLEAN_XOR :
+				lval.verifyType(Value.VALUE_BOOLEAN);
+				left  = ((BooleanValue)lval).isTrue();
+				right = ((BooleanValue)rval).isTrue();
+				
 				ret = left ^ right ? BooleanValue.TRUE : BooleanValue.FALSE;
 				break;
 			case BOOLEAN_NXOR :
+				lval.verifyType(Value.VALUE_BOOLEAN);
+				left  = ((BooleanValue)lval).isTrue();
+				right = ((BooleanValue)rval).isTrue();
+				
 				ret = left ^ right ? BooleanValue.FALSE : BooleanValue.TRUE;
 				break;
-				
-			case BOOLEAN_EQ :
-				if(lval.getValueType() == Value.VALUE_BOOLEAN || lval.getValueType() == Value.VALUE_NUMBER) {
-					NumberValue lnv = (NumberValue)lval;
-					NumberValue rnv = (NumberValue)rval;
-					ret = lnv.isEqual(rnv) ? BooleanValue.TRUE : BooleanValue.FALSE;
-				}else {
-					HEXValue lhv = (HEXValue)lval;
-					HEXValue rhv = (HEXValue)rval;
-					ret = lhv.isEqual(rhv) ? BooleanValue.TRUE : BooleanValue.FALSE;
-				}
-				break;
-			case BOOLEAN_NEQ :
-				if(lval.getValueType() == Value.VALUE_BOOLEAN || lval.getValueType() == Value.VALUE_NUMBER) {
-					NumberValue lnv = (NumberValue)lval;
-					NumberValue rnv = (NumberValue)rval;
-					ret = lnv.isEqual(rnv) ? BooleanValue.FALSE : BooleanValue.TRUE;
-				}else {
-					HEXValue lhv = (HEXValue)lval;
-					HEXValue rhv = (HEXValue)rval;
-					ret = lhv.isEqual(rhv) ? BooleanValue.FALSE : BooleanValue.TRUE;
-				}
-				break;
-			
-			case BOOLEAN_LT :
-				if(lval.getValueType() == Value.VALUE_BOOLEAN || lval.getValueType() == Value.VALUE_NUMBER) {
-					NumberValue lnv = (NumberValue)lval;
-					NumberValue rnv = (NumberValue)rval;
-					ret = lnv.isLess(rnv) ? BooleanValue.TRUE : BooleanValue.FALSE;
-				}else {
-					HEXValue lhv = (HEXValue)lval;
-					HEXValue rhv = (HEXValue)rval;
-					ret = lhv.isLess(rhv) ? BooleanValue.TRUE : BooleanValue.FALSE;
-				}
-				break;
-			case BOOLEAN_LTE :
-				if(lval.getValueType() == Value.VALUE_BOOLEAN || lval.getValueType() == Value.VALUE_NUMBER) {
-					NumberValue lnv = (NumberValue)lval;
-					NumberValue rnv = (NumberValue)rval;
-					ret = lnv.isLessEqual(rnv) ? BooleanValue.TRUE : BooleanValue.FALSE;
-				}else {
-					HEXValue lhv = (HEXValue)lval;
-					HEXValue rhv = (HEXValue)rval;
-					ret = lhv.isLessEqual(rhv) ? BooleanValue.TRUE : BooleanValue.FALSE;
-				}
-				break;
-			
-			case BOOLEAN_GT :
-				if(lval.getValueType() == Value.VALUE_BOOLEAN || lval.getValueType() == Value.VALUE_NUMBER) {
-					NumberValue lnv = (NumberValue)lval;
-					NumberValue rnv = (NumberValue)rval;
-					ret = lnv.isMore(rnv) ? BooleanValue.TRUE : BooleanValue.FALSE;
-				}else {
-					HEXValue lhv = (HEXValue)lval;
-					HEXValue rhv = (HEXValue)rval;
-					ret = lhv.isMore(rhv) ? BooleanValue.TRUE : BooleanValue.FALSE;
-				}
-				break;
-			case BOOLEAN_GTE :
-				if(lval.getValueType() == Value.VALUE_BOOLEAN || lval.getValueType() == Value.VALUE_NUMBER) {
-					NumberValue lnv = (NumberValue)lval;
-					NumberValue rnv = (NumberValue)rval;
-					ret = lnv.isMoreEqual(rnv) ? BooleanValue.TRUE : BooleanValue.FALSE;
-				}else {
-					HEXValue lhv = (HEXValue)lval;
-					HEXValue rhv = (HEXValue)rval;
-					ret = lhv.isMoreEqual(rhv) ? BooleanValue.TRUE : BooleanValue.FALSE;
-				}
-				break;
-			
 			case BOOLEAN_NOT :
+				lval.verifyType(Value.VALUE_BOOLEAN);
+				left  = ((BooleanValue)lval).isTrue();
+				
 				ret = left ? BooleanValue.FALSE : BooleanValue.TRUE;
 				break;
+			
+				
+				/**
+				 * Works for ANY value types
+				 */
+			case BOOLEAN_EQ :
+			{
+				if(lval.getValueType() == Value.VALUE_BOOLEAN) {
+					left  = ((BooleanValue)lval).isTrue();
+					right = ((BooleanValue)rval).isTrue();
+					ret = left == right ? BooleanValue.TRUE : BooleanValue.FALSE;
+				
+				}else if(lval.getValueType() == Value.VALUE_HEX) {
+					HexValue lefthex  = ((HexValue)lval);
+					HexValue righthex  = ((HexValue)rval);
+					ret = lefthex.isEqual(righthex) ? BooleanValue.TRUE : BooleanValue.FALSE;
+				
+				}else if(lval.getValueType() == Value.VALUE_NUMBER) {
+					NumberValue leftnum  = ((NumberValue)lval);
+					NumberValue rightnum  = ((NumberValue)rval);
+					ret = leftnum.isEqual(rightnum) ? BooleanValue.TRUE : BooleanValue.FALSE;
+				
+				}else if(lval.getValueType() == Value.VALUE_SCRIPT) {
+					StringValue leftstr   = ((StringValue)lval);
+					StringValue rightstr  = ((StringValue)rval);
+					ret = leftstr.isEqual(rightstr) ? BooleanValue.TRUE : BooleanValue.FALSE;
+				
+				}
+				
+				break;
+			}
+			case BOOLEAN_NEQ :
+			{
+				if(lval.getValueType() == Value.VALUE_BOOLEAN) {
+					left  = ((BooleanValue)lval).isTrue();
+					right = ((BooleanValue)rval).isTrue();
+					ret = left == right ? BooleanValue.FALSE : BooleanValue.TRUE;
+				
+				}else if(lval.getValueType() == Value.VALUE_HEX) {
+					HexValue lefthex  = ((HexValue)lval);
+					HexValue righthex  = ((HexValue)rval);
+					ret = lefthex.isEqual(righthex) ? BooleanValue.FALSE : BooleanValue.TRUE;
+				
+				}else if(lval.getValueType() == Value.VALUE_NUMBER) {
+					NumberValue leftnum  = ((NumberValue)lval);
+					NumberValue rightnum  = ((NumberValue)rval);
+					ret = leftnum.isEqual(rightnum) ? BooleanValue.FALSE : BooleanValue.TRUE;
+				
+				}else if(lval.getValueType() == Value.VALUE_SCRIPT) {
+					StringValue leftstr   = ((StringValue)lval);
+					StringValue rightstr  = ((StringValue)rval);
+					ret = leftstr.isEqual(rightstr) ? BooleanValue.FALSE : BooleanValue.TRUE;
+				
+				}
+				
+				break;
+			}
+			
+				/**
+				 * ONLY works for NUMBER value types
+				 */
+			case BOOLEAN_LT :
+			{
+				lval.verifyType(Value.VALUE_NUMBER);
+				NumberValue leftnum  = ((NumberValue)lval);
+				NumberValue rightnum  = ((NumberValue)rval);
+				ret = leftnum.isLess(rightnum) ? BooleanValue.TRUE : BooleanValue.FALSE;
+			
+				break;
+			}
+			case BOOLEAN_LTE :
+			{
+				lval.verifyType(Value.VALUE_NUMBER);
+				NumberValue leftnum  = ((NumberValue)lval);
+				NumberValue rightnum  = ((NumberValue)rval);
+				ret = leftnum.isLessEqual(rightnum) ? BooleanValue.TRUE : BooleanValue.FALSE;
+			
+				break;
+			}	
+			case BOOLEAN_GT :
+			{
+				lval.verifyType(Value.VALUE_NUMBER);
+				NumberValue leftnum  = ((NumberValue)lval);
+				NumberValue rightnum  = ((NumberValue)rval);
+				ret = leftnum.isMore(rightnum) ? BooleanValue.TRUE : BooleanValue.FALSE;
+			
+				break;
+			}
+			case BOOLEAN_GTE :
+			{
+				lval.verifyType(Value.VALUE_NUMBER);
+				NumberValue leftnum  = ((NumberValue)lval);
+				NumberValue rightnum  = ((NumberValue)rval);
+				ret = leftnum.isMoreEqual(rightnum) ? BooleanValue.TRUE : BooleanValue.FALSE;
+			
+				break;
+			}
 				
 			default :
-				throw new ExecutionException("UNKNOWN boolean operator");	
+				throw new ExecutionException("UNKNOWN boolean operator : "+mBooleanType);	
 		}
 		
 		//This action counts as one instruction
@@ -180,7 +242,6 @@ public class BooleanExpression implements Expression {
 		String ret = "ERROR";
 		
 		switch (mBooleanType) {
-		
 			case BOOLEAN_AND :
 				ret = "AND";
 				break;

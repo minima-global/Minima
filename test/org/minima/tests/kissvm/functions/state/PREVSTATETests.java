@@ -14,9 +14,9 @@ import org.minima.kissvm.expressions.ConstantExpression;
 import org.minima.kissvm.functions.MinimaFunction;
 import org.minima.kissvm.functions.state.PREVSTATE;
 import org.minima.kissvm.values.BooleanValue;
-import org.minima.kissvm.values.HEXValue;
+import org.minima.kissvm.values.HexValue;
 import org.minima.kissvm.values.NumberValue;
-import org.minima.kissvm.values.ScriptValue;
+import org.minima.kissvm.values.StringValue;
 import org.minima.kissvm.values.Value;
 import org.minima.objects.StateVariable;
 import org.minima.objects.Transaction;
@@ -51,9 +51,9 @@ public class PREVSTATETests {
         ArrayList<StateVariable> PrevStates = new ArrayList<StateVariable>();
         for (int i = 0; i < 16; i++) {
             PrevStates.add(new StateVariable(4 * i + 0, new BooleanValue(true).toString()));
-            PrevStates.add(new StateVariable(4 * i + 1, new HEXValue("0x12345678").toString()));
+            PrevStates.add(new StateVariable(4 * i + 1, new HexValue("0x12345678").toString()));
             PrevStates.add(new StateVariable(4 * i + 2, new NumberValue(i).toString()));
-            PrevStates.add(new StateVariable(4 * i + 3, new ScriptValue("[ Hello World " + Integer.toString(4 * i + 3)).toString() + " ]"));
+            PrevStates.add(new StateVariable(4 * i + 3, new StringValue("[ Hello World " + Integer.toString(4 * i + 3)).toString() + " ]"));
         }
 
         Contract ctr = new Contract("", "", new Witness(), new Transaction(), PrevStates);
@@ -72,7 +72,7 @@ public class PREVSTATETests {
                     }
                     if (i % 4 == 1) {
                         assertEquals(Value.VALUE_HEX, res.getValueType());
-                        assertEquals(Value.getValue(PrevStates.get(i).getValue().toString()).toString(), ((HEXValue) res).toString());
+                        assertEquals(Value.getValue(PrevStates.get(i).getValue().toString()).toString(), ((HexValue) res).toString());
                     }
                     if (i % 4 == 2) {
                         assertEquals(Value.VALUE_NUMBER, res.getValueType());
@@ -80,7 +80,7 @@ public class PREVSTATETests {
                     }
                     if (i % 4 == 3) {
                         assertEquals(Value.VALUE_SCRIPT, res.getValueType());
-                        assertEquals(Value.getValue(PrevStates.get(i).getValue().toString()).toString(), ((ScriptValue) res).toString());
+                        assertEquals(Value.getValue(PrevStates.get(i).getValue().toString()).toString(), ((StringValue) res).toString());
                     }
 
                 } catch (ExecutionException ex) {
@@ -138,14 +138,14 @@ public class PREVSTATETests {
         }
         {
             MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new HEXValue("0x12345678")));
+            mf.addParameter(new ConstantExpression(new HexValue("0x12345678")));
             assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
             });
         }
         {
             MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new ScriptValue("Hello World")));
+            mf.addParameter(new ConstantExpression(new StringValue("Hello World")));
             assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
             });

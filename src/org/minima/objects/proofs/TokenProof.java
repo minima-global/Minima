@@ -55,15 +55,15 @@ public class TokenProof implements Streamable{
 	 * The Only Public Constructor
 	 * @param zCoindID
 	 * @param zScale
-	 * @param zAmount
+	 * @param zMinimaAmount
 	 * @param zName
 	 */
-	public TokenProof(MiniData zCoindID, MiniNumber zScale, MiniNumber zAmount, MiniString zName, MiniString zTokenScript) {
+	public TokenProof(MiniData zCoindID, MiniNumber zScale, MiniNumber zMinimaAmount, MiniString zName, MiniString zTokenScript) {
 				
 		mCoinID 			= zCoindID;
 		mTokenName 			= zName;
 		mTokenScale 		= zScale;
-		mTokenMinimaAmount 	= zAmount;
+		mTokenMinimaAmount 	= zMinimaAmount;
 		mTokenScript        = new MiniString(zTokenScript.toString()) ;
 		
 		calculateTokenID();
@@ -172,6 +172,7 @@ public class TokenProof implements Streamable{
 		}
 		
 		MiniNumber total = mTokenMinimaAmount.mult(getScaleFactor());
+		
 		obj.put("total", total.toString());
 		obj.put("script", mTokenScript.toString());
 		obj.put("coinid", mCoinID.to0xString());

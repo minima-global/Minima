@@ -4,7 +4,7 @@ import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.functions.MinimaFunction;
 import org.minima.kissvm.values.BooleanValue;
-import org.minima.kissvm.values.HEXValue;
+import org.minima.kissvm.values.HexValue;
 import org.minima.kissvm.values.Value;
 
 public class MULTISIG extends MinimaFunction {
@@ -15,7 +15,7 @@ public class MULTISIG extends MinimaFunction {
 
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
-		checkMinParamNumber(2);
+		checkMinParamNumber(requiredParams());
 		
 		//How many required.. 
 		int num = zContract.getNumberParam(0, this).getNumber().getAsInt();
@@ -23,10 +23,15 @@ public class MULTISIG extends MinimaFunction {
 		//How many to check from
 		int tot= getParameterNum()-1;
 		
+		//CHeck valid request..
+		if(num<=0) {
+			throw new ExecutionException("Must check 1 or more sigs in MULTISIG "+num);
+		}
+		
 		//Cycle..
 		int found =0;
 		for(int i=0;i<tot;i++) {
-			HEXValue sig = zContract.getHEXParam(1+i, this);
+			HexValue sig = zContract.getHexParam(1+i, this);
 		
 			if(zContract.checkSignature(sig)) {
 				found++;
@@ -44,6 +49,16 @@ public class MULTISIG extends MinimaFunction {
 		}
 	}
 
+	@Override
+	public boolean isRequiredMinimumParameterNumber() {
+		return true;
+	}
+	
+	@Override
+	public int requiredParams() {
+		return 2;
+	}
+	
 	@Override
 	public MinimaFunction getNewFunction() {
 		return new MULTISIG();

@@ -1,43 +1,27 @@
 package org.minima.tests.kissvm.statements.commands;
 
-import org.minima.kissvm.statements.commands.EXECstatement;
-
-import org.minima.kissvm.Contract;
-import org.minima.kissvm.exceptions.ExecutionException;
-import org.minima.kissvm.exceptions.MinimaParseException;
-import org.minima.kissvm.expressions.BooleanExpression;
-import org.minima.kissvm.expressions.ConstantExpression;
-import org.minima.kissvm.expressions.OperatorExpression;
-import org.minima.kissvm.expressions.VariableExpression;
-import org.minima.kissvm.statements.Statement;
-import org.minima.kissvm.statements.StatementBlock;
-import org.minima.kissvm.statements.commands.LETstatement;
-import org.minima.kissvm.statements.commands.RETURNstatement;
-import org.minima.kissvm.values.BooleanValue;
-import org.minima.kissvm.values.HEXValue;
-import org.minima.kissvm.values.NumberValue;
-import org.minima.kissvm.values.ScriptValue;
-import org.minima.kissvm.values.Value;
-import org.minima.objects.Transaction;
-import org.minima.objects.Witness;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import org.junit.Test;
+import org.minima.kissvm.Contract;
+import org.minima.kissvm.exceptions.ExecutionException;
+import org.minima.kissvm.expressions.ConstantExpression;
+import org.minima.kissvm.statements.commands.EXECstatement;
+import org.minima.kissvm.values.StringValue;
+import org.minima.objects.Transaction;
+import org.minima.objects.Witness;
 
 public class EXECstatementTests {
 
     @Test
     public void testConstructors() {
-        ConstantExpression Empty = new ConstantExpression(new ScriptValue(""));
-        ConstantExpression ReturnTrue = new ConstantExpression(new ScriptValue("RETURN TRUE"));
-        ConstantExpression ReturnFalse = new ConstantExpression(new ScriptValue("RETURN FALSE"));
+        ConstantExpression Empty = new ConstantExpression(new StringValue(""));
+        ConstantExpression ReturnTrue = new ConstantExpression(new StringValue("RETURN TRUE"));
+        ConstantExpression ReturnFalse = new ConstantExpression(new StringValue("RETURN FALSE"));
 
         EXECstatement es1 = new EXECstatement(Empty);
         assertEquals("EXEC ", es1.toString());
@@ -51,10 +35,10 @@ public class EXECstatementTests {
 
     @Test
     public void testExecution() {
-        ConstantExpression Empty = new ConstantExpression(new ScriptValue(""));
-        ConstantExpression ReturnTrue = new ConstantExpression(new ScriptValue("RETURN TRUE"));
-        ConstantExpression ReturnFalse = new ConstantExpression(new ScriptValue("RETURN FALSE"));
-        ConstantExpression Garbage = new ConstantExpression(new ScriptValue("Hello World"));
+        ConstantExpression Empty = new ConstantExpression(new StringValue(""));
+        ConstantExpression ReturnTrue = new ConstantExpression(new StringValue("RETURN TRUE"));
+        ConstantExpression ReturnFalse = new ConstantExpression(new StringValue("RETURN FALSE"));
+        ConstantExpression Garbage = new ConstantExpression(new StringValue("Hello World"));
 
         {
             EXECstatement es = new EXECstatement(Empty);

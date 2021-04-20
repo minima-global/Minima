@@ -1,10 +1,13 @@
 package org.minima.tests.kissvm.statements.commands;
 
-import org.minima.kissvm.statements.commands.LETstatement;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
+import java.util.ArrayList;
+
+import org.junit.Test;
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
-import org.minima.kissvm.exceptions.MinimaParseException;
 import org.minima.kissvm.expressions.BooleanExpression;
 import org.minima.kissvm.expressions.ConstantExpression;
 import org.minima.kissvm.expressions.Expression;
@@ -12,26 +15,16 @@ import org.minima.kissvm.expressions.FunctionExpression;
 import org.minima.kissvm.expressions.GlobalExpression;
 import org.minima.kissvm.expressions.OperatorExpression;
 import org.minima.kissvm.expressions.VariableExpression;
-import org.minima.kissvm.functions.base.GET;
-import org.minima.kissvm.functions.maths.DEC;
+import org.minima.kissvm.functions.general.GET;
+import org.minima.kissvm.functions.number.DEC;
 import org.minima.kissvm.functions.sigs.CHECKSIG;
+import org.minima.kissvm.statements.commands.LETstatement;
 import org.minima.kissvm.values.BooleanValue;
-import org.minima.kissvm.values.HEXValue;
+import org.minima.kissvm.values.HexValue;
 import org.minima.kissvm.values.NumberValue;
-import org.minima.kissvm.values.ScriptValue;
-import org.minima.kissvm.values.Value;
+import org.minima.kissvm.values.StringValue;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
-
-import java.util.ArrayList;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import org.junit.Test;
 
 public class LETstatementTests {
 
@@ -155,8 +148,8 @@ public class LETstatementTests {
             ArrayList<Expression> arl = new ArrayList<Expression>();
             arl.add(new ConstantExpression(new BooleanValue(true)));
             arl.add(new ConstantExpression(new NumberValue(1)));
-            arl.add(new ConstantExpression(new HEXValue("0x12345678")));
-            arl.add(new ConstantExpression(new ScriptValue("RETURN TRUE")));
+            arl.add(new ConstantExpression(new HexValue("0x12345678")));
+            arl.add(new ConstantExpression(new StringValue("RETURN TRUE")));
             LETstatement ls = new LETstatement(arl,
                     new ConstantExpression(new NumberValue(42)));
             assertEquals("LET ( TRUE 1 0x12345678 RETURN TRUE ) = 42", ls.toString());
@@ -362,8 +355,8 @@ public class LETstatementTests {
             ArrayList<Expression> arl = new ArrayList<Expression>();
             arl.add(new ConstantExpression(new BooleanValue(true)));
             arl.add(new ConstantExpression(new NumberValue(1)));
-            arl.add(new ConstantExpression(new HEXValue("0x12345678")));
-            arl.add(new ConstantExpression(new ScriptValue("RETURN TRUE")));
+            arl.add(new ConstantExpression(new HexValue("0x12345678")));
+            arl.add(new ConstantExpression(new StringValue("RETURN TRUE")));
             LETstatement ls = new LETstatement(arl,
                     new ConstantExpression(new NumberValue(42)));
 

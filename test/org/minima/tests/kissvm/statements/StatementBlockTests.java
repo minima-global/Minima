@@ -1,37 +1,25 @@
 package org.minima.tests.kissvm.statements;
 
-import org.minima.kissvm.statements.StatementBlock;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.fail;
 
+import java.util.ArrayList;
+
+import org.junit.Test;
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
-import org.minima.kissvm.exceptions.MinimaParseException;
-import org.minima.kissvm.expressions.BooleanExpression;
 import org.minima.kissvm.expressions.ConstantExpression;
 import org.minima.kissvm.expressions.OperatorExpression;
 import org.minima.kissvm.expressions.VariableExpression;
 import org.minima.kissvm.statements.Statement;
-import org.minima.kissvm.statements.StatementParser;
+import org.minima.kissvm.statements.StatementBlock;
 import org.minima.kissvm.statements.commands.LETstatement;
 import org.minima.kissvm.statements.commands.RETURNstatement;
-import org.minima.kissvm.tokens.Token;
 import org.minima.kissvm.values.BooleanValue;
-import org.minima.kissvm.values.HEXValue;
 import org.minima.kissvm.values.NumberValue;
-import org.minima.kissvm.values.ScriptValue;
-import org.minima.kissvm.values.Value;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import org.junit.Test;
 
 public class StatementBlockTests {
 
@@ -139,12 +127,10 @@ public class StatementBlockTests {
             StatementBlock sb = new StatementBlock(Stats);
 
             Contract ctr = new Contract("", "", new Witness(), new Transaction(), new ArrayList<>());
-            try {
+            assertThrows(ExecutionException.class, () -> {
                 sb.run(ctr);
-            } catch (ExecutionException e) {
-                fail();
-            }
-            assertEquals(true, ctr.isSuccessSet());
+            });
+            assertEquals(false, ctr.isSuccessSet());
             assertEquals(false, ctr.isSuccess());
         }
 
@@ -162,13 +148,11 @@ public class StatementBlockTests {
             StatementBlock sb = new StatementBlock(Stats);
 
             Contract ctr = new Contract("", "", new Witness(), new Transaction(), new ArrayList<>());
-            try {
+            assertThrows(ExecutionException.class, () -> {
                 sb.run(ctr);
-            } catch (ExecutionException e) {
-                fail();
-            }
-            assertEquals(true, ctr.isSuccessSet());
-            assertEquals(true, ctr.isSuccess());
+            });
+            assertEquals(false, ctr.isSuccessSet());
+            assertEquals(false, ctr.isSuccess());
         }
 
         {
@@ -187,13 +171,11 @@ public class StatementBlockTests {
             StatementBlock sb = new StatementBlock(Stats);
 
             Contract ctr = new Contract("", "", new Witness(), new Transaction(), new ArrayList<>());
-            try {
+            assertThrows(ExecutionException.class, () -> {
                 sb.run(ctr);
-            } catch (ExecutionException e) {
-                fail();
-            }
-            assertEquals(true, ctr.isSuccessSet());
-            assertEquals(true, ctr.isSuccess());
+            });
+            assertEquals(false, ctr.isSuccessSet());
+            assertEquals(false, ctr.isSuccess());
         }
     }
 }

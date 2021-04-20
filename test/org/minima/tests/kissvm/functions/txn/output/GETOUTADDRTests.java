@@ -5,8 +5,6 @@ import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.junit.Test;
 import org.minima.database.MinimaDB;
@@ -17,17 +15,15 @@ import org.minima.kissvm.expressions.ConstantExpression;
 import org.minima.kissvm.functions.MinimaFunction;
 import org.minima.kissvm.functions.txn.output.GETOUTADDR;
 import org.minima.kissvm.values.BooleanValue;
-import org.minima.kissvm.values.HEXValue;
+import org.minima.kissvm.values.HexValue;
 import org.minima.kissvm.values.NumberValue;
-import org.minima.kissvm.values.ScriptValue;
+import org.minima.kissvm.values.StringValue;
 import org.minima.kissvm.values.Value;
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
 import org.minima.objects.Transaction;
-import org.minima.objects.TxPoW;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniNumber;
-import org.minima.tests.database.MinimaDBTests;
 
 //HEXValue GETOUTADDR (NumberValue input)
 public class GETOUTADDRTests {
@@ -91,7 +87,7 @@ public class GETOUTADDRTests {
             try {
                 Value res = mf.runFunction(ctr);
                 assertEquals(Value.VALUE_HEX, res.getValueType());
-                assertEquals(addr3.getAddressData(), ((HEXValue) res).getMiniData());
+                assertEquals(addr3.getAddressData(), ((HexValue) res).getMiniData());
             } catch (ExecutionException ex) {
                 fail();
             }
@@ -102,7 +98,7 @@ public class GETOUTADDRTests {
             try {
                 Value res = mf.runFunction(ctr);
                 assertEquals(Value.VALUE_HEX, res.getValueType());
-                assertEquals(addr4.getAddressData(), ((HEXValue) res).getMiniData());
+                assertEquals(addr4.getAddressData(), ((HexValue) res).getMiniData());
             } catch (ExecutionException ex) {
                 fail();
             }
@@ -165,10 +161,7 @@ public class GETOUTADDRTests {
         {
             MinimaFunction mf = fn.getNewFunction();
             mf.addParameter(new ConstantExpression(new NumberValue(-1)));
-            //assertThrows(ExecutionException.class, () -> { // should throw this
-            //    Value res = mf.runFunction(ctr);
-            //});
-            assertThrows(IndexOutOfBoundsException.class, () -> { // but throws this
+            assertThrows(ExecutionException.class, () -> { // should throw this
                 Value res = mf.runFunction(ctr);
             });
         }
@@ -190,14 +183,14 @@ public class GETOUTADDRTests {
         }
         {
             MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new HEXValue("0x12345678")));
+            mf.addParameter(new ConstantExpression(new HexValue("0x12345678")));
             assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
             });
         }
         {
             MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new ScriptValue("Hello World")));
+            mf.addParameter(new ConstantExpression(new StringValue("Hello World")));
             assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
             });

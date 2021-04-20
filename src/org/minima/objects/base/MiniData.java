@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.security.SecureRandom;
+import java.util.Arrays;
 
 import org.minima.system.network.base.MinimaReader;
 import org.minima.utils.BaseConverter;
@@ -61,7 +62,20 @@ public class MiniData implements Streamable {
 	 * @param zBigInteger
 	 */
 	public MiniData(BigInteger zBigInteger) {
-		mData = zBigInteger.toByteArray();
+		//Only Positive numbers
+		if(zBigInteger.signum() == -1) {
+			throw new IllegalArgumentException("MiniData value must be a postitive BigInteger");
+		}
+		
+		//Get the Byte array
+		byte[] signedValue = zBigInteger.toByteArray();
+        
+		//Remove a leading zero..
+		if(signedValue.length>1 && signedValue[0] == 0x00) {
+			mData = Arrays.copyOfRange(signedValue, 1, signedValue.length);
+        }else {
+        	mData = signedValue;
+        }
 	}
 	
 	public int getLength() {

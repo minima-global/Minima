@@ -26,31 +26,23 @@ public class VERIFYIN extends MinimaFunction{
 	
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
-		if(getAllParameters().size()>5) {
-			throw new ExecutionException("Too many parameters for VERIFYIN");
-		}
+		checkExactParamNumber(requiredParams());
 		
 		//Which Output
 		int input = zContract.getNumberParam(0, this).getNumber().getAsInt();
 		
 		//Get the details
-		MiniData address  = new MiniData(zContract.getHEXParam(1, this).getRawData());
+		MiniData address  = new MiniData(zContract.getHexParam(1, this).getRawData());
 		MiniNumber amount = zContract.getNumberParam(2, this).getNumber();
-		MiniData tokenid  = new MiniData(zContract.getHEXParam(3, this).getRawData());
-		
-		//Is there a 4th Parameter ?
-		int amountchecktype = 0 ;
-		if(getParameterNum()>4) {
-			amountchecktype = zContract.getNumberParam(4, this).getNumber().getAsInt();
-		}
+		MiniData tokenid  = new MiniData(zContract.getHexParam(3, this).getRawData());
 		
 		//Check an output exists..
 		Transaction trans = zContract.getTransaction();
 	
-		//Check output exists..
+		//Check input exists..
 		ArrayList<Coin> ins = trans.getAllInputs();
-		if(ins.size()<=input) {
-			throw new ExecutionException("Input number too high "+input+"/"+ins.size());
+		if(input<0 || ins.size()<=input) {
+			throw new ExecutionException("Input number out of range "+input+"/"+ins.size());
 		}
 		
 		//Get it..
@@ -60,7 +52,7 @@ public class VERIFYIN extends MinimaFunction{
 		boolean addr = address.isEqual(cc.getAddress());  
 		boolean tok  = tokenid.isEqual(cc.getTokenID());  
 		
-		//Amount can be 3 type.. EQ, LTE, GTE
+		//Amount
 		MiniNumber inamt = cc.getAmount();
 		
 		//Could be a token Amount!
@@ -73,18 +65,16 @@ public class VERIFYIN extends MinimaFunction{
 			inamt = cc.getAmount().mult(td.getScaleFactor());
 		}
 		
-		//Amount can be 3 type.. EQ, LTE, GTE
-		boolean amt  = false;
-		if(amountchecktype == 0) {
-			amt  = inamt.isEqual(amount);
-		}else if(amountchecktype == -1) {
-			amt  = inamt.isLessEqual(amount);
-		}else {
-			amt  = inamt.isMoreEqual(amount);
-		}
+		//Check Amount
+		boolean amt  = inamt.isEqual(amount);
 		
 		//Return if all true
 		return new BooleanValue( addr && amt && tok );
+	}
+	
+	@Override
+	public int requiredParams() {
+		return 4;
 	}
 	
 	@Override

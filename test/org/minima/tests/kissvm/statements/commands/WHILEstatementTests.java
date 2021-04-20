@@ -1,10 +1,13 @@
 package org.minima.tests.kissvm.statements.commands;
 
-import org.minima.kissvm.statements.commands.WHILEstatement;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
+import java.util.ArrayList;
+
+import org.junit.Test;
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
-import org.minima.kissvm.exceptions.MinimaParseException;
 import org.minima.kissvm.expressions.BooleanExpression;
 import org.minima.kissvm.expressions.ConstantExpression;
 import org.minima.kissvm.expressions.OperatorExpression;
@@ -13,23 +16,11 @@ import org.minima.kissvm.statements.Statement;
 import org.minima.kissvm.statements.StatementBlock;
 import org.minima.kissvm.statements.commands.LETstatement;
 import org.minima.kissvm.statements.commands.RETURNstatement;
+import org.minima.kissvm.statements.commands.WHILEstatement;
 import org.minima.kissvm.values.BooleanValue;
-import org.minima.kissvm.values.HEXValue;
 import org.minima.kissvm.values.NumberValue;
-import org.minima.kissvm.values.ScriptValue;
-import org.minima.kissvm.values.Value;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
-
-import java.util.ArrayList;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import org.junit.Test;
 
 public class WHILEstatementTests {
 
