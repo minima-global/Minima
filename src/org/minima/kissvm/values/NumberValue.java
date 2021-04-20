@@ -17,16 +17,11 @@ public class NumberValue extends Value {
 		this(Long.toString(zValue));
 	}
 	
-	public NumberValue(double zValue) {
-		this(Double.toString(zValue));
-	}
-	
 	public NumberValue(MiniNumber zValue) {
 		mNumber = zValue;
 	}
 	
 	public NumberValue(String zNumber) {
-		//NUMERIC
 		mNumber = new MiniNumber(zNumber);
 	}
 	

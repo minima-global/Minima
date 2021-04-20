@@ -14,9 +14,9 @@ import org.minima.kissvm.expressions.ConstantExpression;
 import org.minima.kissvm.functions.MinimaFunction;
 import org.minima.kissvm.functions.sigs.MULTISIG;
 import org.minima.kissvm.values.BooleanValue;
-import org.minima.kissvm.values.HEXValue;
+import org.minima.kissvm.values.HexValue;
 import org.minima.kissvm.values.NumberValue;
-import org.minima.kissvm.values.ScriptValue;
+import org.minima.kissvm.values.StringValue;
 import org.minima.kissvm.values.Value;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
@@ -85,7 +85,7 @@ public class MULTISIGTests {
                 MinimaFunction mf = fn.getNewFunction();
                 mf.addParameter(new ConstantExpression(new NumberValue(i)));
                 for (int j = 0; j < i; j++) {
-                    mf.addParameter(new ConstantExpression(new HEXValue(Signatures.get(j))));
+                    mf.addParameter(new ConstantExpression(new HexValue(Signatures.get(j))));
                 }
                 try {
                     Value res = mf.runFunction(ctr);
@@ -99,9 +99,9 @@ public class MULTISIGTests {
                 MinimaFunction mf = fn.getNewFunction();
                 mf.addParameter(new ConstantExpression(new NumberValue(i)));
                 for (int j = 0; j < i - 1; j++) {
-                    mf.addParameter(new ConstantExpression(new HEXValue(Signatures.get(j))));
+                    mf.addParameter(new ConstantExpression(new HexValue(Signatures.get(j))));
                 }
-                mf.addParameter(new ConstantExpression(new HEXValue(UntrackedSingleSig)));
+                mf.addParameter(new ConstantExpression(new HexValue(UntrackedSingleSig)));
                 try {
                     Value res = mf.runFunction(ctr);
                     assertEquals(Value.VALUE_BOOLEAN, res.getValueType());
@@ -114,9 +114,9 @@ public class MULTISIGTests {
                 MinimaFunction mf = fn.getNewFunction();
                 mf.addParameter(new ConstantExpression(new NumberValue(i + 1)));
                 for (int j = 0; j < i; j++) {
-                    mf.addParameter(new ConstantExpression(new HEXValue(Signatures.get(j))));
+                    mf.addParameter(new ConstantExpression(new HexValue(Signatures.get(j))));
                 }
-                mf.addParameter(new ConstantExpression(new HEXValue(UntrackedSingleSig)));
+                mf.addParameter(new ConstantExpression(new HexValue(UntrackedSingleSig)));
                 try {
                     Value res = mf.runFunction(ctr);
                     assertEquals(Value.VALUE_BOOLEAN, res.getValueType());
@@ -153,43 +153,41 @@ public class MULTISIGTests {
         {
             MinimaFunction mf = fn.getNewFunction();
             mf.addParameter(new ConstantExpression(new NumberValue(-1)));
-            mf.addParameter(new ConstantExpression(new HEXValue("0x01234567")));
-            //assertThrows(ExecutionException.class, () -> { // Should throw this, for negative value of valid sigs
-            //    Value res = mf.runFunction(ctr);
-            //});
-            // But does not throw, returns true
+            mf.addParameter(new ConstantExpression(new HexValue("0x01234567")));
+            assertThrows(ExecutionException.class, () -> { // Should throw this, for negative value of valid sigs
+                Value res = mf.runFunction(ctr);
+            });
         }
         {
             MinimaFunction mf = fn.getNewFunction();
             mf.addParameter(new ConstantExpression(new NumberValue(0)));
-            mf.addParameter(new ConstantExpression(new HEXValue("0x01234567")));
-            //assertThrows(ExecutionException.class, () -> { // Should throw this, for zero valid sigs
-            //    Value res = mf.runFunction(ctr);
-            //});
-            // But does not throw, returns true
+            mf.addParameter(new ConstantExpression(new HexValue("0x01234567")));
+            assertThrows(ExecutionException.class, () -> { // Should throw this, for zero valid sigs
+                Value res = mf.runFunction(ctr);
+            });
         }
 
         // Invalid param types
         {
             MinimaFunction mf = fn.getNewFunction();
             mf.addParameter(new ConstantExpression(new BooleanValue(true)));
-            mf.addParameter(new ConstantExpression(new HEXValue("0x01234567")));
+            mf.addParameter(new ConstantExpression(new HexValue("0x01234567")));
             assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
             });
         }
         {
             MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new HEXValue("0x01234567")));
-            mf.addParameter(new ConstantExpression(new HEXValue("0x01234567")));
+            mf.addParameter(new ConstantExpression(new HexValue("0x01234567")));
+            mf.addParameter(new ConstantExpression(new HexValue("0x01234567")));
             assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
             });
         }
         {
             MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new ScriptValue("Hello World")));
-            mf.addParameter(new ConstantExpression(new HEXValue("0x01234567")));
+            mf.addParameter(new ConstantExpression(new StringValue("Hello World")));
+            mf.addParameter(new ConstantExpression(new HexValue("0x01234567")));
             assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
             });
@@ -213,7 +211,7 @@ public class MULTISIGTests {
         {
             MinimaFunction mf = fn.getNewFunction();
             mf.addParameter(new ConstantExpression(new NumberValue(1)));
-            mf.addParameter(new ConstantExpression(new ScriptValue("Hello World")));
+            mf.addParameter(new ConstantExpression(new StringValue("Hello World")));
             assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
             });

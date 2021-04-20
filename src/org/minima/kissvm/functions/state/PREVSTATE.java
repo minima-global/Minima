@@ -13,7 +13,7 @@ public class PREVSTATE extends MinimaFunction {
 	
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
-		checkExactParamNumber(1);
+		checkExactParamNumber(requiredParams());
 		
 		//Which Output
 		int statenum = zContract.getNumberParam(0, this).getNumber().getAsInt();
@@ -22,6 +22,11 @@ public class PREVSTATE extends MinimaFunction {
 		return zContract.getPrevState( statenum );
 	}
 
+	@Override
+	public int requiredParams() {
+		return 1;
+	}
+	
 	@Override
 	public MinimaFunction getNewFunction() {
 		return new PREVSTATE();

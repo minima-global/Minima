@@ -26,12 +26,12 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 	/**
 	 * The MAX Number of Significant digits for any MiniNUmber
 	 */
-	public static final int MAX_DIGITS = 34;
+	public static final int MAX_DIGITS = 64;
 	
 	/**
-	 * Max Decimal Places for any MiniNumber - 1 billion is max for Minima so...
+	 * MAX number is 8 byte unsigned long.. 2^64 -1 .. 20 digits
 	 */
-	public static final int MAX_DECIMAL_PLACES = MAX_DIGITS - 10;
+	public static final int MAX_DECIMAL_PLACES = MAX_DIGITS - 20;
 	
 	/** 
 	 * The base Math Context used for all operations
@@ -40,8 +40,10 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 	
 	/**
 	 * The MAXIMUM value any MiniNumber can be..
+	 * 
+	 * 2^64 - 1 or as HEX 0xFFFFFFFFFFFFFFFF
 	 */
-	public static final BigDecimal MAX_MININUMBER = new BigDecimal(10,MATH_CONTEXT).pow(512,MATH_CONTEXT);
+	public static final BigDecimal MAX_MININUMBER = new BigDecimal(2).pow(64,MATH_CONTEXT).subtract(BigDecimal.ONE,MATH_CONTEXT);
 	
 	/**
 	 * The Minimum value any MiniNumber can be..
@@ -129,33 +131,17 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 	 * Check MiniNumber is within the acceptable range
 	 */
 	private void checkLimits() {
-		if(mNumber.compareTo(MAX_MININUMBER)>0) {
-			throw new NumberFormatException("MiniNumber too large - outside allowed range 10^512");
-		}
-		
-		if(mNumber.compareTo(MIN_MININUMBER)<0) {
-			throw new NumberFormatException("MiniNumber too small - outside allowed range -(10^512)");
-		}
-		
 		if(mNumber.scale() > MAX_DECIMAL_PLACES) {
 			mNumber = mNumber.setScale(MAX_DECIMAL_PLACES, RoundingMode.DOWN);
 		}
-	}
-	
-	/**
-	 * Make a VALID Minima number.. within the allowed range and decimals
-	 * @return
-	 */
-	public MiniNumber getAsMinimaValue() {
-		if(isMore(BILLION)) {
-			return BILLION;
+		
+		if(mNumber.compareTo(MAX_MININUMBER)>0) {
+			throw new NumberFormatException("MiniNumber too large - outside allowed range 2^64 "+mNumber);
 		}
 		
-		if(isLess(ZERO)) {
-			return ZERO;
+		if(mNumber.compareTo(MIN_MININUMBER)<0) {
+			throw new NumberFormatException("MiniNumber too small - outside allowed range -(2^64)");
 		}
-		
-		return this;
 	}
 	
 	/**
@@ -163,7 +149,7 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 	 * @return true false..
 	 */
 	public boolean isValidMinimaValue() {
-		return isEqual(getAsMinimaValue());
+		return isLessEqual(MiniNumber.BILLION) && isMore(MiniNumber.ZERO);
 	}
 	
 	/**
@@ -175,10 +161,6 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 	
 	public BigInteger getAsBigInteger() {
 		return mNumber.toBigInteger();
-	}
-	
-	public double getAsDouble() {
-		return mNumber.doubleValue();
 	}
 	
 	public long getAsLong() {
@@ -228,9 +210,9 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 		//1-max digits..
 		int sigdig = zSignificantDigits;
 		if(sigdig>MAX_DIGITS) {
-			sigdig = MAX_DIGITS;	
-		}else if(sigdig<1) {
-			sigdig = 1;
+			throw new NumberFormatException("Cannot specify this many significant digits "+sigdig);	
+		}else if(sigdig<0) {
+			throw new NumberFormatException("Cannot specify negative significant digits "+sigdig);
 		}
 		
 		return new MiniNumber( mNumber.round(new MathContext(sigdig, RoundingMode.DOWN))) ;
@@ -304,8 +286,7 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 		
 		//Read in the byte array for unscaled BigInteger
 		int len = zIn.readInt();
-		if(len > 128 || len<1) {
-			//Something wrong..
+		if(len > 64 || len<1) {
 			throw new IOException("ERROR reading MiniNumber - input too large or negative "+len);
 		}
 		
@@ -322,7 +303,7 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 		data.readDataStream(zIn);
 		return data;
 	}
-	
+
 	public static void main(String[] zargs) {
 		MiniNumber tt = MiniNumber.MINI_UNIT;
 		
@@ -330,9 +311,6 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 		
 		System.out.println("TEN      : "+new MiniNumber("1E1"));
 		System.out.println("HUNDRED  : "+new MiniNumber("1E2"));
-		
-		
 	}
-	
 	
 }

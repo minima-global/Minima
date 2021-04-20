@@ -6,7 +6,6 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 import org.minima.kissvm.values.BooleanValue;
-import org.minima.objects.base.MiniNumber;
 
 public class BooleanValueTests {
 
@@ -49,12 +48,8 @@ public class BooleanValueTests {
         assertFalse("should be false", bvt1.isEqual(bvf1));
         assertFalse("should be false ", bvf2.isEqual(bvt2));
 
-        assertEquals("should be equal ", MiniNumber.ONE.getAsInt(), bvt1.getNumber().getAsInt());
-        assertEquals("should be equal ", MiniNumber.ZERO.getAsInt(), bvf1.getNumber().getAsInt());
-
-        //PADDY This is not what get MiniDataVersion does..
-//        assertEquals("should be equal ", MiniData.getMiniDataVersion(new MiniNumber("1")), bvt1.getMiniData());
-//        assertEquals("should be equal ", MiniData.getMiniDataVersion(new MiniNumber("0")), bvf1.getMiniData());
+//        assertEquals("should be equal ", MiniNumber.ONE.getAsInt(), bvt1.getNumber().getAsInt());
+//        assertEquals("should be equal ", MiniNumber.ZERO.getAsInt(), bvf1.getNumber().getAsInt());
     }
 
 }

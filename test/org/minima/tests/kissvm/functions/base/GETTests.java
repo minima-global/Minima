@@ -12,11 +12,11 @@ import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.exceptions.MinimaParseException;
 import org.minima.kissvm.expressions.ConstantExpression;
 import org.minima.kissvm.functions.MinimaFunction;
-import org.minima.kissvm.functions.base.GET;
+import org.minima.kissvm.functions.general.GET;
 import org.minima.kissvm.values.BooleanValue;
-import org.minima.kissvm.values.HEXValue;
+import org.minima.kissvm.values.HexValue;
 import org.minima.kissvm.values.NumberValue;
-import org.minima.kissvm.values.ScriptValue;
+import org.minima.kissvm.values.StringValue;
 import org.minima.kissvm.values.Value;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
@@ -245,22 +245,19 @@ public class GETTests {
         }
         {
             MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new HEXValue("0x1234")));
+            mf.addParameter(new ConstantExpression(new HexValue("0x1234")));
             assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
             });
         }
         {
             MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new ScriptValue("HELLO WORLD")));
+            mf.addParameter(new ConstantExpression(new StringValue("HELLO WORLD")));
             assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
             });
         }
 
-        // Non existing variable
-        // This functionality should probably raise exception because it
-        // is not advisable to return a value for non existing variable
         {
             MinimaFunction mf = fn.getNewFunction();
             mf.addParameter(new ConstantExpression(new NumberValue(1234567890)));
