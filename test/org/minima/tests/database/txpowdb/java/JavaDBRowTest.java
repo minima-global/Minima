@@ -68,7 +68,6 @@ public class JavaDBRowTest {
         assertTrue("JSON object should contain inblock key", json.containsKey("inblock"));
         assertTrue("JSON object should contain blockstate key", json.containsKey("blockstate"));
         assertTrue("JSON object should contain monotonic key", json.containsKey("monotonic"));
-        assertTrue("JSON object should contain deleted key", json.containsKey("deleted"));
     }
 
     @Test

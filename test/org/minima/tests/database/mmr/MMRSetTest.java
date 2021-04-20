@@ -1,5 +1,6 @@
 package org.minima.tests.database.mmr;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
@@ -23,99 +24,103 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.keys.PubPrivKey;
 import org.minima.utils.Crypto;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
 
 public class MMRSetTest {
 
     @Test
     public void testWriteAndReadDataStream() {
-        //try {
-        //    MMRSet mmrs1 = new MMRSet();
-        //
-        //    ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        //    DataOutputStream dos = new DataOutputStream(bos);
-        //
-        //    mmrs1.writeDataStream(dos);
-        //
-        //    InputStream inputStream = new ByteArrayInputStream(bos.toByteArray());
-        //    DataInputStream dis = new DataInputStream(inputStream);
-        //
-        //    MMRSet mmrs2 = new MMRSet();
-        //    mmrs2.readDataStream(dis);
-        //
-        //    assertEquals("should be equal ", mmrs1., mmrs2.;
-        //} catch (final IOException e) {
-        //    System.out.println("IOException: " + e.toString() + " msg=" + e.getMessage());
-        //    assertTrue(" there should not be an IOException", false);
-        //}
 
-        //try {
-        //    MMRSet mmrs1 = new MMRSet(512);
-        //
-        //    ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        //    DataOutputStream dos = new DataOutputStream(bos);
-        //
-        //    mmrs1.writeDataStream(dos);
-        //
-        //    InputStream inputStream = new ByteArrayInputStream(bos.toByteArray());
-        //    DataInputStream dis = new DataInputStream(inputStream);
-        //
-        //    MMRSet mmrs2 = new MMRSet();
-        //    mmrs2.readDataStream(dis);
-        //
-        //    //assertEquals("should be equal ", mmrs1., mmrs2.;
-        //} catch (final IOException e) {
-        //    System.out.println("IOException: " + e.toString() + " msg=" + e.getMessage());
-        //    assertTrue(" there should not be an IOException", false);
-        //}
-        //try {
-        //    MMRSet mmrs1 = new MMRSet(512);
-        //
-        //    ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        //    DataOutputStream dos = new DataOutputStream(bos);
-        //
-        //    mmrs1.writeDataStream(dos);
-        //
-        //    InputStream inputStream = new ByteArrayInputStream(bos.toByteArray());
-        //    DataInputStream dis = new DataInputStream(inputStream);
-        //
-        //    MMRSet mmrs2 = new MMRSet();
-        //    mmrs2.readDataStream(dis);
-        //
-        //    //assertEquals("should be equal ", mmrs1., mmrs2.;
-        //} catch (final IOException e) {
-        //    System.out.println("IOException: " + e.toString() + " msg=" + e.getMessage());
-        //    assertTrue(" there should not be an IOException", false);
-        //}
         try {
-            MMRSet mmrs1 = new MMRSet();
-
-            MMRProof mmrp1 = new MMRProof(new MiniNumber(1234567890), new MMRData(new MiniData("0x01"), new MiniNumber(new MiniNumber(1234567890))), new MiniNumber(987654321));
-            mmrs1.addExternalUnspentCoin(mmrp1);
-            MMRProof mmrp2 = new MMRProof(new MiniNumber(123456789), new MMRData(new MiniData("0x03"), new MiniNumber(new MiniNumber(123456789))), new MiniNumber(98765432));
-            mmrs1.addExternalUnspentCoin(mmrp2);
-            //MMRProof mmrp3 = new MMRProof(new MiniNumber(1234567891), new MMRData(new MiniData("0x02"), new MiniNumber(new MiniNumber(1234567891))), new MiniNumber(987654322));
-            //mmrs1.addExternalUnspentCoin(mmrp3);
-
-            MMRSet mmrs2 = new MMRSet(mmrs1);
-            //mmrs2.setParent(mmrs1);
-
+            MMRSet mmrs1 = new MMRSet(512);
+            mmrs1.addLeafNode(new MiniData("0x00"));
+            
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             DataOutputStream dos = new DataOutputStream(bos);
-
-            mmrs2.writeDataStream(dos);
-
+        
+            mmrs1.writeDataStream(dos);
+        
             InputStream inputStream = new ByteArrayInputStream(bos.toByteArray());
             DataInputStream dis = new DataInputStream(inputStream);
-
-            MMRSet mmrs3 = new MMRSet();
-            mmrs3.readDataStream(dis);
-
-            //assertEquals("should be equal ", mmrs1., mmrs2.;
+        
+            MMRSet mmrs2 = new MMRSet();
+            mmrs2.readDataStream(dis);
+        
+            assertEquals(mmrs1.getMMRRoot().getFinalHash().to0xString(), mmrs2.getMMRRoot().getFinalHash().to0xString());
+            
         } catch (final IOException e) {
             System.out.println("IOException: " + e.toString() + " msg=" + e.getMessage());
             assertTrue(" there should not be an IOException", false);
         }
+        
+        try {
+            MMRSet mmrs1 = new MMRSet(512);
+            
+            mmrs1.addLeafNode(new MiniData("0x00"));
+            mmrs1.addLeafNode(new MiniData("0x01"));
+            mmrs1.addLeafNode(new MiniData("0x02"));
+            mmrs1.addLeafNode(new MiniData("0x03"));
+            mmrs1.addLeafNode(new MiniData("0x04"));
+            
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            DataOutputStream dos = new DataOutputStream(bos);
+        
+            mmrs1.writeDataStream(dos);
+        
+            InputStream inputStream = new ByteArrayInputStream(bos.toByteArray());
+            DataInputStream dis = new DataInputStream(inputStream);
+        
+            MMRSet mmrs2 = new MMRSet();
+            mmrs2.readDataStream(dis);
+        
+            assertEquals(mmrs1.getMMRRoot().getFinalHash().to0xString(), mmrs2.getMMRRoot().getFinalHash().to0xString());
+            
+        } catch (final IOException e) {
+            System.out.println("IOException: " + e.toString() + " msg=" + e.getMessage());
+            assertTrue(" there should not be an IOException", false);
+        }
+        
+        
+//        try {
+//            MMRSet mmrs1 = new MMRSet();
+//            MMREntry entry1 = mmrs1.addLeafNode(new MiniData("0x00"));
+//            MMREntry entry2 = mmrs1.addLeafNode(new MiniData("0x00"));
+//            
+//            MMRProof mmrp1 = 
+//            		
+//            MinimaLogger.log("NEW ONE");
+//            MMRSet mmrs2 = new MMRSet(mmrs1);
+//            
+//            
+//            MMRProof mmrp1 = new MMRProof(new MiniNumber(1234567890), new MMRData(new MiniData("0x01"), new MiniNumber(new MiniNumber(1234567890))), new MiniNumber(987654321));
+//            mmrs1.addExternalUnspentCoin(mmrp1);
+//            MMRProof mmrp2 = new MMRProof(new MiniNumber(123456789), new MMRData(new MiniData("0x03"), new MiniNumber(new MiniNumber(123456789))), new MiniNumber(98765432));
+//            mmrs1.addExternalUnspentCoin(mmrp2);
+//            //MMRProof mmrp3 = new MMRProof(new MiniNumber(1234567891), new MMRData(new MiniData("0x02"), new MiniNumber(new MiniNumber(1234567891))), new MiniNumber(987654322));
+//            //mmrs1.addExternalUnspentCoin(mmrp3);
+//
+//            MinimaLogger.log("NEW ONE");
+//            MMRSet mmrs2 = new MMRSet(mmrs1);
+//            //mmrs2.setParent(mmrs1);
+//
+//            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+//            DataOutputStream dos = new DataOutputStream(bos);
+//
+//            mmrs2.writeDataStream(dos);
+//
+//            InputStream inputStream = new ByteArrayInputStream(bos.toByteArray());
+//            DataInputStream dis = new DataInputStream(inputStream);
+//
+//            MinimaLogger.log("NEW TWO");
+//            MMRSet mmrs3 = new MMRSet();
+//            mmrs3.readDataStream(dis);
+//
+//            //assertEquals("should be equal ", mmrs1., mmrs2.;
+//        } catch (final IOException e) {
+//            System.out.println("IOException: " + e.toString() + " msg=" + e.getMessage());
+//            assertTrue(" there should not be an IOException", false);
+//        }
 
         try {
             MMRSet mmrs1 = new MMRSet();
@@ -134,10 +139,10 @@ public class MMRSetTest {
             mmrs1.addUnspentCoin(mmrd1);
             mmrs1.addUnspentCoin(mmrd2);
 
-            MMRProof mmrp1 = new MMRProof(new MiniNumber(1234567890), new MMRData(new MiniData("0x01"), new MiniNumber(new MiniNumber(1234567890))), new MiniNumber(987654321));
-            mmrs1.addExternalUnspentCoin(mmrp1);
-            MMRProof mmrp2 = new MMRProof(new MiniNumber(123456789), new MMRData(new MiniData("0x03"), new MiniNumber(new MiniNumber(123456789))), new MiniNumber(98765432));
-            mmrs1.addExternalUnspentCoin(mmrp2);
+//            MMRProof mmrp1 = new MMRProof(new MiniNumber(1234567890), new MMRData(new MiniData("0x01"), new MiniNumber(new MiniNumber(1234567890))), new MiniNumber(987654321));
+//            mmrs1.addExternalUnspentCoin(mmrp1);
+//            MMRProof mmrp2 = new MMRProof(new MiniNumber(123456789), new MMRData(new MiniData("0x03"), new MiniNumber(new MiniNumber(123456789))), new MiniNumber(98765432));
+//            mmrs1.addExternalUnspentCoin(mmrp2);
 
             MMRSet mmrs2 = new MMRSet(mmrs1);
 
@@ -289,7 +294,9 @@ public class MMRSetTest {
 
         // Now we spend the first coin (a, 25 coins, block zero)
         MMRData data_a_spent = new MMRData(MiniByte.TRUE, gimme50_a, MiniNumber.ZERO, new ArrayList<StateVariable>());
-        MMRProof mmrProofa = new MMRProof(new MiniNumber(1), data_a, MiniNumber.ONE);
+        
+        MMRProof mmrProofa = base.getProof(new MiniNumber(1));
+//        MMRProof mmrProofa = new MMRProof(new MiniNumber(1), data_a, MiniNumber.ZERO);
         // updateSpentCoin will replace a by a_spent -> new hash
         MiniData hash_a_spent = data_a_spent.getFinalHash();
         MiniData hash_0a_spent = Crypto.getInstance().hashAllObjects(512, gendataHash, hash_a_spent, new MiniNumber(0));
