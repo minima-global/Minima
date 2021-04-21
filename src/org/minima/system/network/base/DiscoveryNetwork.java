@@ -26,7 +26,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.minima.system.network.base.metrics.MetricsSystem;
 import org.minima.system.network.base.peer.NodeId;
-//import org.apache.logging.log4j.status.StatusLogger;
+import org.apache.logging.log4j.status.StatusLogger;
 import org.apache.tuweni.bytes.Bytes;
 import org.apache.tuweni.bytes.Bytes32;
 // import org.hyperledger.besu.plugin.services.MetricsSystem;
@@ -121,10 +121,11 @@ public class DiscoveryNetwork<P extends Peer> extends DelegatingP2PNetwork<P> {
       final Bytes privateKey) {
     final DiscoveryService discoveryService;
     if (discoConfig.isDiscoveryEnabled()) {
-      //TODO: activate V5 service
+      System.out.println("P2P: Starting DiscV5 service");
       discoveryService = DiscV5Service.create(discoConfig, p2pConfig, kvStore, privateKey);
       //discoveryService = new NoOpDiscoveryService();
     } else {
+      System.out.println("P2P: Starting NoOp Disc service");
       discoveryService = new NoOpDiscoveryService();
     }
     return discoveryService;
@@ -135,8 +136,8 @@ public class DiscoveryNetwork<P extends Peer> extends DelegatingP2PNetwork<P> {
   public SafeFuture<?> start() {
     return SafeFuture.allOfFailFast(p2pNetwork.start(), discoveryService.start())
         .thenCompose(__ -> connectionManager.start())
-        .thenRun(() -> getEnr()); // TODO: log ENR info and discovery start
-  } // ifPresent(StatusLogger.STATUS_LOG::listeningForDiscv5)
+        .thenRun(() -> getEnr().ifPresent( enr -> { LOG.warn("logwarn: listening for discv5: " + enr); System.out.println("sysout: listening for discv5: " + enr);})); // TODO: log ENR info and discovery start
+  } //::listeningForDiscv5
 
   @Override
   public SafeFuture<?> stop() {

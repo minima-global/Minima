@@ -1,10 +1,20 @@
 package org.minima.system.network.base;
 
+import java.net.InetSocketAddress;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
+
+// Import log4j classes.
 
 // Import log4j classes.
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.ethereum.beacon.discovery.schema.NodeRecord;
+import org.ethereum.beacon.discovery.schema.NodeRecordInfo;
 import org.minima.system.network.base.peer.LibP2PNodeId;
 import org.minima.system.network.base.peer.NodeId;
 import org.minima.system.network.base.peer.Peer;
@@ -24,8 +34,9 @@ public class P2PStart {
         System.out.println("Hello world!");
         // attempt 1: start with DiscoveryNetworkFactory
         DiscoveryNetworkFactory factory = new DiscoveryNetworkFactory();
+        final DiscoveryNetwork<Peer> network;
         try {
-            final DiscoveryNetwork<Peer> network;
+            
             String node1_id;
             String[] node1_addr_fields;
             String node2_id;
@@ -34,16 +45,18 @@ public class P2PStart {
             String addr;
             NodeId id;
 
-            if (args.length == 2) { // first is p2p addr
+            if (args.length == 2) { // first is p2p addr, second is enr
                 System.out.println("Found addr node 1: " + args[0]);
-                System.out.println("Found addr node 2: " + args[1]);
+                System.out.println("Found boot node 1: " + args[1]);
                 node1_addr_fields = args[0].split("/");
                 node1_id = node1_addr_fields[node1_addr_fields.length-1];
-                node2_addr_fields = args[1].split("/");
-                node2_id = node2_addr_fields[node2_addr_fields.length-1];
-                System.out.println("Found node2_id: " + node1_id);
+//                node2_addr_fields = args[1].split("/");
+//                node2_id = node2_addr_fields[node2_addr_fields.length-1];
+//                System.out.println("Found node2_id: " + node1_id);
+                String bootnode_1 = args[1];
+                System.out.println("Found boot node addr: " + bootnode_1);
                 // Multiaddr address = Multiaddr.fromString(args[0]);
-                network = factory.builder().staticPeer(args[0]).buildAndStart();
+                network = factory.builder().staticPeer(args[0]).bootnode(bootnode_1).buildAndStart();
                 //network.getEnr()
                 //network = factory.builder().bootnode(args[0])
                 Thread.sleep(5000);
@@ -57,7 +70,8 @@ public class P2PStart {
                 //discoveryNetworkFactory.builder().bootnode(network1.getEnr().orElseThrow()).buildAndStart();
 
                 LibP2PNodeId id_1 = new LibP2PNodeId(PeerId.fromBase58(node1_id));
-                LibP2PNodeId id_2 = new LibP2PNodeId(PeerId.fromBase58(node2_id));
+
+//                LibP2PNodeId id_2 = new LibP2PNodeId(PeerId.fromBase58(node2_id));
                 //Thread.sleep(5000);
                 Waiter.waitFor(
                    () -> {
@@ -67,12 +81,12 @@ public class P2PStart {
                        } else {
                           System.out.println("First node not found.");
                        }
-                       Optional<Peer> secondNode = network.getPeer(id_2);
-                       if(secondNode.isPresent()) {
-                        System.out.println("Success! We found the second node: " + secondNode.get().getAddress());
-                    } else {
-                       System.out.println("Second node not found.");
-                    }
+//                       Optional<Peer> secondNode = network.getPeer(id_2);
+                    //    if(secondNode.isPresent()) {
+                    //     System.out.println("Success! We found the second node: " + secondNode.get().getAddress());
+                    // } else {
+                    //    System.out.println("Second node not found.");
+                    // }
                        System.out.println("peerCount = " + peerCount);
                 });
             } else if (args.length == 1) { // first is p2p addr
@@ -112,15 +126,53 @@ public class P2PStart {
                 System.out.println("Creating new address...");
                 network = factory.builder().buildAndStart();
                 id = network.getNodeId();
+                Optional<String>  discAddr = network.getDiscoveryAddress();
+                Optional<String>  enr = network.getEnr();
                 System.out.println("id = " + id.toString());
+                System.out.println("discAddr = " + discAddr.toString());
+                System.out.println("enr = " + enr.get().substring(3));
+                
             }
             System.out.println("network node address: " + network.getNodeAddress());
+            Optional<String>  discAddr = network.getDiscoveryAddress();
+            System.out.println("network discovery address: " + discAddr.get());
+            System.out.println("network node id: " + network.getNodeId());
+            logger.warn("LOGGER nodeid: " + network.getNodeId() + " , nodeAddress: " + network.getNodeAddress() + " , discovery address: " + discAddr.get() );
+            System.out.println("Starting discovery loop info");
+
+    if(network != null) {
+        Set<NodeRecord> activeKnownNodes = new HashSet<>();
+        while (true) {
+    //      List<NodeRecord> newActiveNodes =
+              network
+                  .streamPeers()
+                  .filter(peer -> peer.getId() != null)
+                  .forEach(
+                      peer -> {
+                          System.out.println("peer " + peer.getId());
+                          System.out.println("peer " + peer.getAddress().toString());
+                      }
+                  );
+                //   .map(NodeRecordInfo::getNode)
+                //   .filter(r -> !activeKnownNodes.contains(r))
+                //   .collect(Collectors.toList());
+    
+        //   activeKnownNodes.addAll(newActiveNodes);
+        //   newActiveNodes.forEach(
+        //       n -> {
+        //         System.out.println(
+        //             "New active node: "
+        //                 + n.getNodeId()
+        //                 + " @ "
+        //                 + n.getUdpAddress().map(InetSocketAddress::toString).orElse("<unknown>"));
+        //       });
+          Thread.sleep(5000);
+        }
+        }
         } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-
-        // attempt 2: start with Eth2P2PNetworkFactory and Eth2P2PNetwork
 
 
     }

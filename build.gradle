@@ -38,9 +38,6 @@ repositories {
         url "https://artifacts.consensys.net/public/maven/maven/"
     }
 
-
-
-
 }
 
 dependencies {
@@ -69,6 +66,11 @@ dependencies {
 
     implementation("org.apache.logging.log4j:log4j-api:2.11.2")
     implementation("org.apache.logging.log4j:log4j-core:2.11.2")
+   
+    // below is needed to actually capture the log messages from log4j 
+    implementation group: 'org.slf4j', name: 'slf4j-simple', version: '2.0.0-alpha1' // '1.7.30'
+
+    //implementation("org.slf4j:slf4j-api:2.0.0-alpha1")
 
     // Bytes object needed for collections such as KVS
     implementation("org.apache.tuweni:bytes:1.3.0")
@@ -126,7 +128,12 @@ task(runp2p, dependsOn: 'classes', type: JavaExec) {
    classpath = sourceSets.main.runtimeClasspath
    // args ''/ip4/127.0.0.1/tcp/63407/ipfs/QmRGduDqyGXEsAGxAw9gM6tZrJbg1NEKSvmqwnjQqKwRVk'  // use this line to hardcode args 
    // systemProperty 'simple.message', 'Hello '
-   // systemProperty 'log4j2.debug', 'true'
+   systemProperty 'log4j2.debug', 'true'
+//   systemProperty 'log4j.configurationFile', 'log4j2-p2p.properties'
+  systemProperty 'log4j.configurationFile', 'log4j2.xml'  
+// use below to log to file
+//  systemProperty "log4j.configurationFile", "log4j2-test-discovery.xml"
+
 }
 
 jar {

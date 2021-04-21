@@ -99,7 +99,7 @@ public class DiscoveryNetworkFactory {
         final DiscoveryConfig discoveryConfig =
             DiscoveryConfig.builder().staticPeers(staticPeers).bootnodes(bootnodes).build();
         final NetworkConfig config =
-            NetworkConfig.builder().listenPort(port).networkInterface("127.0.0.1").build();
+            NetworkConfig.builder().listenPort(port).networkInterface("0.0.0.0").build();
         final NoOpMetricsSystem metricsSystem = new NoOpMetricsSystem();
         final ReputationManager reputationManager =
             new ReputationManager(
@@ -129,7 +129,7 @@ public class DiscoveryNetworkFactory {
                 discoveryConfig,
                 config);
         try {
-          network.start().get(30, TimeUnit.SECONDS);
+          network.start().get(5, TimeUnit.SECONDS);
           networks.add(network);
           return network;
         } catch (final ExecutionException e) {
