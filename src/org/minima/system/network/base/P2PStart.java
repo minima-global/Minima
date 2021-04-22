@@ -2,6 +2,7 @@ package org.minima.system.network.base;
 
 import java.net.InetSocketAddress;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -48,47 +49,10 @@ public class P2PStart {
                 System.out.println("Found boot node 1: " + args[1]);
                 node1_addr_fields = args[0].split("/");
                 node1_id = node1_addr_fields[node1_addr_fields.length - 1];
-                // node2_addr_fields = args[1].split("/");
-                // node2_id = node2_addr_fields[node2_addr_fields.length-1];
-                // System.out.println("Found node2_id: " + node1_id);
                 String bootnode_1 = args[1];
-                // System.out.println("Found boot node addr: " + bootnode_1);
-                // Multiaddr address = Multiaddr.fromString(args[0]);
                 network = factory.builder().staticPeer(args[0]).bootnode(bootnode_1).buildAndStart();
-                // network.getEnr()
-                // network = factory.builder().bootnode(args[0])
-                // Thread.sleep(5000);
-                // Peer peer = network.getPeer(args[0]);
-                // peerCount = network.getPeerCount();
-                // addr = network.getNodeAddress();
-                // id = network.getNodeId();
-                // // System.out.println("peerCount = " + peerCount);
-                // System.out.println("addr = " + addr);
-                // System.out.println("id = " + id.toString());
-                // discoveryNetworkFactory.builder().bootnode(network1.getEnr().orElseThrow()).buildAndStart();
-
                 LibP2PNodeId id_1 = new LibP2PNodeId(PeerId.fromBase58(node1_id));
 
-                // LibP2PNodeId id_2 = new LibP2PNodeId(PeerId.fromBase58(node2_id));
-                // Thread.sleep(5000);
-                // Waiter.waitFor(
-                // () -> {
-                // Optional<Peer> firstNode = network.getPeer(id_1);
-                // if(firstNode.isPresent()) {
-                // System.out.println("Success! We found the first node: " +
-                // firstNode.get().getAddress());
-                // } else {
-                // System.out.println("First node not found.");
-                // }
-                // // Optional<Peer> secondNode = network.getPeer(id_2);
-                // // if(secondNode.isPresent()) {
-                // // System.out.println("Success! We found the second node: " +
-                // secondNode.get().getAddress());
-                // // } else {
-                // // System.out.println("Second node not found.");
-                // // }
-                // System.out.println("peerCount = " + peerCount);
-                // });
             } else if (args.length == 1) { // first is p2p addr - deprecated - should start with p2p addr and ENR
                                            // (application level address)
                 logger.warn("Careful! This mode is deprecated, either start with 0 or 2 args, not 1.");
@@ -99,32 +63,6 @@ public class P2PStart {
                 System.out.println("Found node1_id: " + node1_id);
                 // Multiaddr address = Multiaddr.fromString(args[0]);
                 network = factory.builder().staticPeer(args[0]).buildAndStart();
-                // network.getEnr()
-                // network = factory.builder().bootnode(args[0])
-                // Thread.sleep(1000);
-                // Peer peer = network.getPeer(args[0]);
-                // peerCount = network.getPeerCount();
-                // addr = network.getNodeAddress();
-                // id = network.getNodeId();
-                // System.out.println("peerCount = " + peerCount);
-                // System.out.println("addr = " + addr);
-                // System.out.println("id = " + id.toString());
-                // discoveryNetworkFactory.builder().bootnode(network1.getEnr().orElseThrow()).buildAndStart();
-
-                // LibP2PNodeId idfirst = new LibP2PNodeId(PeerId.fromBase58(node1_id));
-                // Thread.sleep(5000);
-                // Waiter.waitFor(
-                // () -> {
-                // Optional<Peer> firstNode = network.getPeer(idfirst);
-                // if(firstNode.isPresent()) {
-                // System.out.println("Success! We found the first node: " +
-                // firstNode.get().getAddress());
-                // } else {
-                // System.out.println("First node not found.");
-                // }
-                // System.out.println("peerCount = " + peerCount);
-
-                // });
             } else {
                 // server mode only - no peer to connect to
                 network = factory.builder().buildAndStart();
@@ -137,28 +75,30 @@ public class P2PStart {
             System.out.println("Starting discovery loop info");
 
             if (network != null) {
-                Set<NodeRecord> activeKnownNodes = new HashSet<>();
+                Set<InetSocketAddress> activeKnownNodes = new HashSet<>();
                 while (true) {
                     network.streamPeers().filter(peer -> peer.getId() != null).forEach(peer -> {
                         logger.debug("peer: id=" + peer.getId()); // peer address == peer id and " isConnected=" true
                     });
 
-                    logger.debug("trying to stream dicovery peers");
+                    Set<InetSocketAddress> newActiveNodes = new HashSet<>();
+                    //logger.debug("trying to stream dicovery peers");
                     network.streamKnownDiscoveryPeers()
                             .forEach(discoPeer -> { // disc peer node address should be inetsocketaddr
-                                logger.debug("discovery peer: " + discoPeer.getNodeAddress() + " pubkey="
-                                        + discoPeer.getPublicKey());
+                              //  logger.debug("discovery peer: " + discoPeer.getNodeAddress() + " pubkey=" + discoPeer.getPublicKey());         
+                                newActiveNodes.add(discoPeer.getNodeAddress());
                             });
 
-                    // activeKnownNodes.addAll(newActiveNodes);
-                    // newActiveNodes.forEach(
-                    // n -> {
-                    // System.out.println(
-                    // "New active node: "
-                    // + n.getNodeId()
-                    // + " @ "
-                    // + n.getUdpAddress().map(InetSocketAddress::toString).orElse("<unknown>"));
-                    // });
+                    Set<InetSocketAddress> delta = new HashSet<InetSocketAddress>(newActiveNodes);
+                    delta.removeAll(activeKnownNodes); //now contains only new sockets
+                           
+                    for(InetSocketAddress i: delta) {
+                        logger.info("New peer address: " + i.toString());
+                    }
+
+                    // update known nodes
+                    activeKnownNodes = newActiveNodes;
+
                     Thread.sleep(5000);
                 }
             }

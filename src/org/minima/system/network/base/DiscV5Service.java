@@ -128,7 +128,7 @@ public class DiscV5Service extends Service implements DiscoveryService {
 
   @Override
   public Stream<DiscoveryPeer> streamKnownPeers() {
-    LOG.info("Returning all active nodes as known peers - " + activeNodes().count());
+//    LOG.info("Returning all active nodes as known peers - " + activeNodes().count());
     return activeNodes().map(NodeRecordConverter::convertToDiscoveryPeer).flatMap(Optional::stream);
   }
 
@@ -165,7 +165,7 @@ public class DiscV5Service extends Service implements DiscoveryService {
   }
 
   private Stream<NodeRecord> activeNodes() {
-    LOG.info("Returning all nodes known by discovery system and active");
+ //   LOG.info("Returning all nodes known by discovery system and active");
     return discoverySystem
         .streamKnownNodes()
         .filter(record -> record.getStatus() == NodeStatus.ACTIVE)
