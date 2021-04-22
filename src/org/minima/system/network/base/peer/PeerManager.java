@@ -139,7 +139,7 @@ public class PeerManager implements ConnectionHandler {
       peer.subscribeDisconnect(
           (reason, locallyInitiated) -> onDisconnectedPeer(peer, reason, locallyInitiated));
     } else {
-      LOG.trace("Disconnecting duplicate connection to {}", peer::getId);
+      LOG.debug("Disconnecting duplicate connection to {}", peer::getId);
       peer.disconnectImmediately(Optional.empty(), true);
       throw new PeerAlreadyConnectedException(peer);
     }

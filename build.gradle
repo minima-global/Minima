@@ -128,7 +128,7 @@ task(runp2p, dependsOn: 'classes', type: JavaExec) {
    classpath = sourceSets.main.runtimeClasspath
    // args ''/ip4/127.0.0.1/tcp/63407/ipfs/QmRGduDqyGXEsAGxAw9gM6tZrJbg1NEKSvmqwnjQqKwRVk'  // use this line to hardcode args 
    // systemProperty 'simple.message', 'Hello '
-   systemProperty 'log4j2.debug', 'true'
+   systemProperty 'log4j2.debug', 'false'
 //   systemProperty 'log4j.configurationFile', 'log4j2-p2p.properties'
   systemProperty 'log4j.configurationFile', 'log4j2.xml'  
 // use below to log to file

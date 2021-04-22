@@ -25,6 +25,7 @@ import com.google.common.io.ByteSink;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.minima.system.network.base.metrics.MetricsSystem;
+import org.minima.system.network.base.peer.DiscoveryPeer;
 import org.minima.system.network.base.peer.NodeId;
 import org.apache.logging.log4j.status.StatusLogger;
 import org.apache.tuweni.bytes.Bytes;
@@ -231,5 +232,15 @@ public class DiscoveryNetwork<P extends Peer> extends DelegatingP2PNetwork<P> {
   public Stream<P> streamPeers() {
     return p2pNetwork.streamPeers();
   }
+
+  public Stream<DiscoveryPeer> streamKnownDiscoveryPeers() {
+    return discoveryService.streamKnownPeers();
+  }
+
+  public int getP2PPeerCount() {
+    LibP2PNetwork net = (LibP2PNetwork) p2pNetwork;
+    return net.getPeerCount();
+  }
+  
 }
 

@@ -122,10 +122,10 @@ public class ConnectionManager extends Service {
 
   private void searchForPeers() {
     if (!isRunning()) {
-      LOG.trace("Not running so not searching for peers");
+      LOG.debug("Not running so not searching for peers");
       return;
     }
-    LOG.trace("Searching for peers");
+    LOG.debug("Searching for peers");
     discoveryService
         .searchForPeers()
         .orTimeout(10, TimeUnit.SECONDS)
@@ -138,19 +138,19 @@ public class ConnectionManager extends Service {
   }
 
   private void attemptConnection(final PeerAddress peerAddress) {
-    LOG.trace("Attempting to connect to {}", peerAddress.getId());
+    LOG.debug("Attempting to connect to {}", peerAddress.getId());
     attemptedConnectionCounter.inc();
     network
         .connect(peerAddress)
         .finish(
             peer -> {
-              LOG.trace("Successfully connected to peer {}", peer.getId());
+              LOG.debug("Successfully connected to peer {}", peer.getId());
               successfulConnectionCounter.inc();
               peer.subscribeDisconnect(
                   (reason, locallyInitiated) -> peerPools.forgetPeer(peer.getId()));
             },
             error -> {
-              LOG.trace(() -> "Failed to connect to peer: " + peerAddress.getId(), error);
+              LOG.debug(() -> "Failed to connect to peer: " + peerAddress.getId(), error);
               failedConnectionCounter.inc();
               peerPools.forgetPeer(peerAddress.getId());
             });

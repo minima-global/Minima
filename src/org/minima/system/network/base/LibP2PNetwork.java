@@ -202,6 +202,7 @@ public class LibP2PNetwork implements P2PNetwork<Peer> {
         .thenApply(
             i -> {
               //STATUS_LOG.listeningForLibP2P(getNodeAddress());
+              LOG.debug("Listening for LibP2P - " + getNodeAddress());
               return null;
             });
   }
