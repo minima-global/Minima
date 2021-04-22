@@ -90,7 +90,7 @@ public class PeerManager implements ConnectionHandler {
   }
 
   private SafeFuture<Peer> doConnect(final MultiaddrPeerAddress peer, final Network network) {
-    LOG.debug("Connecting to {}", peer);
+    LOG.debug("PeerMgr - Connecting to {}", peer);
 
     return SafeFuture.of(() -> network.connect(peer.getMultiaddr()))
         .thenApply(

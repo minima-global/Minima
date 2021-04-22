@@ -27,7 +27,6 @@ import org.apache.logging.log4j.Logger;
 import org.minima.system.network.base.metrics.MetricsSystem;
 import org.minima.system.network.base.peer.DiscoveryPeer;
 import org.minima.system.network.base.peer.NodeId;
-import org.apache.logging.log4j.status.StatusLogger;
 import org.apache.tuweni.bytes.Bytes;
 import org.apache.tuweni.bytes.Bytes32;
 // import org.hyperledger.besu.plugin.services.MetricsSystem;
@@ -241,6 +240,6 @@ public class DiscoveryNetwork<P extends Peer> extends DelegatingP2PNetwork<P> {
     LibP2PNetwork net = (LibP2PNetwork) p2pNetwork;
     return net.getPeerCount();
   }
-  
+
 }
 

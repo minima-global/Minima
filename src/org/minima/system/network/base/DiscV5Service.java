@@ -18,6 +18,11 @@ package org.minima.system.network.base;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
+
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import org.apache.tuweni.bytes.Bytes;
 import org.minima.system.network.base.peer.DiscoveryPeer;
 import org.minima.system.network.base.peer.MultiaddrUtil;
@@ -59,6 +64,8 @@ public class DiscV5Service extends Service implements DiscoveryService {
 
   private final DiscoverySystem discoverySystem;
   private final KeyValueStore<String, Bytes> kvStore;
+
+  private static final Logger LOG = LogManager.getLogger();
 
   private DiscV5Service(
       final DiscoveryConfig discoConfig,
@@ -102,27 +109,32 @@ public class DiscV5Service extends Service implements DiscoveryService {
   }
 
   private void localNodeRecordUpdated(NodeRecord oldRecord, NodeRecord newRecord) {
+    LOG.info("Updating NodeRecord for " + newRecord.getNodeId() + "(" + newRecord.getTcpAddress() + ")");
     kvStore.put(SEQ_NO_STORE_KEY, newRecord.getSeq().toBytes());
   }
 
   @Override
   protected SafeFuture<?> doStart() {
+    LOG.info("Starting discovery system"); 
     return SafeFuture.of(discoverySystem.start());
   }
 
   @Override
   protected SafeFuture<?> doStop() {
+    LOG.info("Stopping discovery system");
     discoverySystem.stop();
     return SafeFuture.completedFuture(null);
   }
 
   @Override
   public Stream<DiscoveryPeer> streamKnownPeers() {
+    LOG.info("Returning all active nodes as known peers - " + activeNodes().count());
     return activeNodes().map(NodeRecordConverter::convertToDiscoveryPeer).flatMap(Optional::stream);
   }
 
   @Override
   public SafeFuture<Void> searchForPeers() {
+    LOG.info("Searching for new peers");
     return SafeFuture.of(discoverySystem.searchForNewPeers());
   }
 
@@ -153,6 +165,7 @@ public class DiscV5Service extends Service implements DiscoveryService {
   }
 
   private Stream<NodeRecord> activeNodes() {
+    LOG.info("Returning all nodes known by discovery system and active");
     return discoverySystem
         .streamKnownNodes()
         .filter(record -> record.getStatus() == NodeStatus.ACTIVE)
