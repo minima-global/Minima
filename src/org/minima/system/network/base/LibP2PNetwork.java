@@ -88,7 +88,7 @@ import org.minima.system.network.base.peer.RpcMethod;
 
 public class LibP2PNetwork implements P2PNetwork<Peer> {
 
-  private static final Logger LOG = LogManager.getLogger();
+  private static final Logger LOG = LogManager.getLogger(LibP2PNetwork.class);
   private static final int REMOTE_OPEN_STREAMS_RATE_LIMIT = 256;
   private static final int REMOTE_PARALLEL_OPEN_STREAMS_COUNT_LIMIT = 256;
 

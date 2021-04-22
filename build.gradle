@@ -41,6 +41,7 @@ repositories {
 
 }
 
+
 dependencies {
     // This dependency is used by the application.
     implementation 'com.google.guava:guava:29.0-jre'
@@ -142,5 +143,6 @@ task(runp2p, dependsOn: 'classes', type: JavaExec) {
 jar {
     manifest {
         attributes 'Main-Class': 'org.minima.Start'
+        attributes "Multi-Release": true 
     }
 }

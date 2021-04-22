@@ -65,7 +65,7 @@ public class DiscV5Service extends Service implements DiscoveryService {
   private final DiscoverySystem discoverySystem;
   private final KeyValueStore<String, Bytes> kvStore;
 
-  private static final Logger LOG = LogManager.getLogger();
+  private static final Logger LOG = LogManager.getLogger(DiscV5Service.class);
 
   private DiscV5Service(
       final DiscoveryConfig discoConfig,

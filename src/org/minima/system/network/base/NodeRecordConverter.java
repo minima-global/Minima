@@ -29,7 +29,7 @@ import org.minima.system.network.base.peer.DiscoveryPeer;
 import org.minima.system.network.base.ssz.SszBitvector;
 
 public class NodeRecordConverter {
-  private static final Logger LOG = LogManager.getLogger();
+  private static final Logger LOG = LogManager.getLogger(NodeRecordConverter.class);
 
   static Optional<DiscoveryPeer> convertToDiscoveryPeer(final NodeRecord nodeRecord) {
     return nodeRecord

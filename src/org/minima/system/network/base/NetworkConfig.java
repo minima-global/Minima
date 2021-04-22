@@ -29,7 +29,7 @@ import org.apache.logging.log4j.Logger;
 import org.minima.system.network.base.gossip.config.GossipConfig;
 
 public class NetworkConfig {
-  private static final Logger LOG = LogManager.getLogger();
+  private static final Logger LOG = LogManager.getLogger(NetworkConfig.class);
 
   private final GossipConfig gossipConfig;
   private final WireLogsConfig wireLogsConfig;

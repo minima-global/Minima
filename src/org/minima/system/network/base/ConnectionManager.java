@@ -53,7 +53,7 @@ import org.minima.system.network.base.peer.PeerSelectionStrategy;
 import org.minima.system.network.base.peer.PeerPools.PeerPool;
 
 public class ConnectionManager extends Service {
-  private static final Logger LOG = LogManager.getLogger();
+  private static final Logger LOG = LogManager.getLogger(ConnectionManager.class);
   private static final Duration RECONNECT_TIMEOUT = Duration.ofSeconds(20);
   private static final Duration DISCOVERY_INTERVAL = Duration.ofSeconds(30);
   private final AsyncRunner asyncRunner;

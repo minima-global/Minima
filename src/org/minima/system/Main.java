@@ -10,6 +10,7 @@ import org.minima.system.brains.ConsensusHandler;
 import org.minima.system.brains.SendManager;
 import org.minima.system.input.InputHandler;
 import org.minima.system.network.NetworkHandler;
+import org.minima.system.network.base.P2PStart;
 import org.minima.system.txpow.TxPoWMiner;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.SQLHandler;
@@ -64,7 +65,13 @@ public class Main extends MessageProcessor {
 	 * The Backup Manager - runs in a separate thread
 	 */
 	private BackupManager mBackup;
+
+	/** 
+	 * P2P nodes discovery layer
+	 */
 	
+	 private P2PStart mP2P;
+
 	/**
 	 * Are we creating a network from scratch
 	 */
@@ -106,6 +113,7 @@ public class Main extends MessageProcessor {
 		mTXMiner 	= new TxPoWMiner();
 		mConsensus  = new ConsensusHandler();
 		mSendManager = new SendManager();
+		mP2P = new P2PStart(null, null);
 		
 		//Are we the genesis
 		mGenesis 	= zGenesis;

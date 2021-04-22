@@ -43,7 +43,7 @@ import org.minima.system.network.base.peer.RpcRequestHandler;
 import org.minima.system.network.base.peer.RpcStream;
 
 public class LibP2PPeer implements Peer {
-  private static final Logger LOG = LogManager.getLogger();
+  private static final Logger LOG = LogManager.getLogger(LibP2PPeer.class);
 
   private final Map<RpcMethod, RpcHandler> rpcHandlers;
   private final ReputationManager reputationManager;

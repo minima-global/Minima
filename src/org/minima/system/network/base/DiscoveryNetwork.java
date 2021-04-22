@@ -54,7 +54,7 @@ import org.minima.system.network.base.ssz.SszBitvectorSchema;
 // import tech.pegasys.teku.storage.store.KeyValueStore;
 
 public class DiscoveryNetwork<P extends Peer> extends DelegatingP2PNetwork<P> {
-  private static final Logger LOG = LogManager.getLogger();
+  private static final Logger LOG = LogManager.getLogger(DiscoveryNetwork.class);
 
   public static final String ATTESTATION_SUBNET_ENR_FIELD = "attnets";
   public static final String ETH2_ENR_FIELD = "eth2";

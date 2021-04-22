@@ -46,7 +46,7 @@ import org.minima.system.network.base.metrics.TekuMetricCategory;
 
 public class PeerManager implements ConnectionHandler {
 
-  private static final Logger LOG = LogManager.getLogger();
+  private static final Logger LOG = LogManager.getLogger(PeerManager.class);
 
   private final Map<RpcMethod, RpcHandler> rpcHandlers;
 
