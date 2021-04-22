@@ -34,7 +34,8 @@ repositories {
 
     maven { 
         url "https://dl.cloudsmith.io/public/libp2p/jvm-libp2p/maven/" 
-        // we use consensys eth discovery v5 implementation for now for nodes discovery
+    }
+    maven {
         url "https://artifacts.consensys.net/public/maven/maven/"
     }
 
@@ -58,7 +59,8 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.0-M1")
 
-    implementation 'io.libp2p:jvm-libp2p-minimal:0.7.0-RELEASE'
+    //implementation('io.libp2p:jvm-libp2p-minimal:0.8.1-RELEASE')
+    implementation 'io.libp2p:jvm-libp2p-minimal:0.8.1-RELEASE'
     // implementation 'io.libp2p:jvm-libp2p-minimal'
 //    compile files('libs/jvm-libp2p-minimal-0.8.0-RELEASE.jar')
 
@@ -84,7 +86,8 @@ dependencies {
     // awaitility is used by Waiter.java
     implementation group: 'org.awaitility', name: 'awaitility', version: '4.0.3'
 
-    implementation 'tech.pegasys.discovery:discovery:0.4.3-dev-57c2fd81'
+    implementation 'tech.pegasys.discovery:discovery:0.4.6'
+ //   implementation 'tech.pegasys.discovery:discovery:0.4.3-dev-57c2fd81'
 
 
 
