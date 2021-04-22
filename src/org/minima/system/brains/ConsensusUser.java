@@ -400,7 +400,8 @@ public class ConsensusUser extends ConsensusProcessor {
 							wit.addTokenDetails(tprf);
 						
 							//Recalculate the amount.. given the token scale..
-							amt = amt.div(tprf.getScaleFactor());
+							amt = tprf.getScaledMinimaAmount(amt);
+//							amt = amt.div(tprf.getScaleFactor());
 						}
 						
 						//Create this coin

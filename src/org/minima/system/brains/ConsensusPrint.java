@@ -653,17 +653,11 @@ public class ConsensusPrint extends ConsensusProcessor {
 				}else {
 					TokenProof td = getMainDB().getUserDB().getTokenDetail(tok);
 					
-					//CHECK NOT NULL!
-					MiniNumber scfactor = MiniNumber.ONE;
-					if(td != null) {
-						scfactor = td.getScaleFactor();
-					}
-					
 					//Now work out the actual amounts..
 					MiniNumber tot_conf     = (MiniNumber) jobj.get("confirmed");
-					MiniNumber tot_scconf   = tot_conf.mult(scfactor);
+					MiniNumber tot_scconf   = td.getScaledTokenAmount(tot_conf);
 					MiniNumber tot_unconf   = (MiniNumber) jobj.get("unconfirmed");
-					MiniNumber tot_scunconf = tot_unconf.mult(scfactor);
+					MiniNumber tot_scunconf = td.getScaledTokenAmount(tot_unconf);
 					
 					//And re-add
 					jobj.put("confirmed", tot_scconf.toString());
@@ -674,7 +668,7 @@ public class ConsensusPrint extends ConsensusProcessor {
 					if(memp == null) {
 						memp = MiniNumber.ZERO;
 					}
-					jobj.put("mempool", memp.mult(scfactor).toString());
+					jobj.put("mempool", td.getScaledTokenAmount(memp).toString());
 					
 					//SIMPLE SENDS
 					MiniNumber tot_simple = MiniNumber.ZERO;
@@ -688,7 +682,9 @@ public class ConsensusPrint extends ConsensusProcessor {
 							tot_simple = tot_simple.add(confc.getAmount());	
 						}
 					}
-					jobj.put("sendable", tot_simple.mult(scfactor).toString());
+					
+					jobj.put("sendable", td.getScaledTokenAmount(tot_simple).toString());
+					//jobj.put("sendable", tot_simple.mult(scfactor).toString());
 				}
 				
 				//add it to the mix
@@ -763,7 +759,8 @@ public class ConsensusPrint extends ConsensusProcessor {
 				MiniNumber tokenamount = coin.getAmount();
 				if(!coin.getTokenID().isEqual(coin.MINIMA_TOKENID)) {
 					TokenProof td = getMainDB().getUserDB().getTokenDetail(coin.getTokenID());
-					tokenamount = coin.getAmount().mult(td.getScaleFactor());	
+					tokenamount = td.getScaledTokenAmount(coin.getAmount());
+//					tokenamount = coin.getAmount().mult(td.getScaleFactor());
 				}
 				
 				//Create the JSON

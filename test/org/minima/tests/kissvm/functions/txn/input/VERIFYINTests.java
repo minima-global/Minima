@@ -191,7 +191,8 @@ public class VERIFYINTests {
             MinimaFunction mf = fn.getNewFunction();
             mf.addParameter(new ConstantExpression(new NumberValue(1)));
             mf.addParameter(new ConstantExpression(new HexValue(addr2.getAddressData())));
-            mf.addParameter(new ConstantExpression(new NumberValue(in2.getAmount().mult(tp.getScaleFactor()))));
+            mf.addParameter(new ConstantExpression(new NumberValue(tp.getScaledTokenAmount(in2.getAmount()))));
+//            mf.addParameter(new ConstantExpression(new NumberValue(in2.getAmount().mult(tp.getScaleFactor()))));
             mf.addParameter(new ConstantExpression(new HexValue(in2.getTokenID())));
             try {
                 Value res = mf.runFunction(ctr);
@@ -235,7 +236,8 @@ public class VERIFYINTests {
             MinimaFunction mf = fn.getNewFunction();
             mf.addParameter(new ConstantExpression(new NumberValue(1)));
             mf.addParameter(new ConstantExpression(new HexValue(addr1.getAddressData())));
-            mf.addParameter(new ConstantExpression(new NumberValue(in2.getAmount().mult(tp.getScaleFactor()))));
+            mf.addParameter(new ConstantExpression(new NumberValue(tp.getScaledTokenAmount(in2.getAmount()))));
+//            mf.addParameter(new ConstantExpression(new NumberValue(in2.getAmount().mult(tp.getScaleFactor()))));
             mf.addParameter(new ConstantExpression(new HexValue(in2.getTokenID())));
             try {
                 Value res = mf.runFunction(ctr);
@@ -263,7 +265,8 @@ public class VERIFYINTests {
             MinimaFunction mf = fn.getNewFunction();
             mf.addParameter(new ConstantExpression(new NumberValue(1)));
             mf.addParameter(new ConstantExpression(new HexValue(addr2.getAddressData())));
-            mf.addParameter(new ConstantExpression(new NumberValue(in2.getAmount().mult(tp.getScaleFactor()))));
+            mf.addParameter(new ConstantExpression(new NumberValue(tp.getScaledTokenAmount(in2.getAmount()))));
+//            mf.addParameter(new ConstantExpression(new NumberValue(in2.getAmount().mult(tp.getScaleFactor()))));
             mf.addParameter(new ConstantExpression(new HexValue(MiniData.getRandomData(16))));
             try {
                 Value res = mf.runFunction(ctr);
@@ -278,7 +281,8 @@ public class VERIFYINTests {
             MinimaFunction mf = fn.getNewFunction();
             mf.addParameter(new ConstantExpression(new NumberValue(2)));
             mf.addParameter(new ConstantExpression(new HexValue(addr3.getAddressData())));
-            mf.addParameter(new ConstantExpression(new NumberValue(in3.getAmount().mult(tp.getScaleFactor()))));
+            mf.addParameter(new ConstantExpression(new NumberValue(tp.getScaledTokenAmount(in2.getAmount()))));
+//            mf.addParameter(new ConstantExpression(new NumberValue(in3.getAmount().mult(tp.getScaleFactor()))));
             mf.addParameter(new ConstantExpression(new HexValue(in3.getTokenID())));
             assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);

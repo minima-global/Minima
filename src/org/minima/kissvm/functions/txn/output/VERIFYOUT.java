@@ -62,7 +62,8 @@ public class VERIFYOUT extends MinimaFunction{
 				throw new ExecutionException("No Token found for ID "+cc.getTokenID());
 			}
 			
-			outamt = cc.getAmount().mult(td.getScaleFactor());
+			outamt = td.getScaledTokenAmount(cc.getAmount());
+//			outamt = cc.getAmount().mult(td.getScaleFactor());
 		}
 		
 		boolean amt  = outamt.isEqual(amount);

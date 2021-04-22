@@ -224,7 +224,8 @@ public class ConsensusTxn extends ConsensusProcessor {
 				}
 				
 				//Scale..
-				samount = samount.div(tokendets.getScaleFactor());
+				samount = tokendets.getScaledMinimaAmount(samount);
+//				samount = samount.div(tokendets.getScaleFactor());
 				
 				//And set the new value..
 				amount = samount.toString();
@@ -251,7 +252,9 @@ public class ConsensusTxn extends ConsensusProcessor {
 			if(total.isLess(sendamount)) {
 				//Insufficient funds!
 				if(!tokenid.equals(Coin.MINIMA_TOKENID.to0xString())) {
-					total = total.mult(tokendets.getScaleFactor());
+					total = tokendets.getScaledTokenAmount(total);
+//					total = total.mult(tokendets.getScaleFactor());
+					
 					InputHandler.endResponse(zMessage, false, "Insufficient funds! You only have : "+total);
 				}else {
 					InputHandler.endResponse(zMessage, false, "Insufficient funds! You only have : "+total);

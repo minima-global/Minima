@@ -62,7 +62,9 @@ public class VERIFYIN extends MinimaFunction{
 			if(td == null) {
 				throw new ExecutionException("No Token found for ID "+cc.getTokenID());
 			}
-			inamt = cc.getAmount().mult(td.getScaleFactor());
+			
+			inamt = td.getScaledTokenAmount(cc.getAmount());
+//			inamt = cc.getAmount().mult(td.getScaleFactor());
 		}
 		
 		//Check Amount
