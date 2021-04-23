@@ -117,4 +117,9 @@ public interface UserDB {
 	public void addToHistory(TxPoW zTxPOW, Hashtable<String, MiniNumber> zValues);
 	public void clearHistory();
 	
+	/**
+	 * Clear the Database.. for RESET
+	 */
+	public void clearDB();
+	
 }

@@ -76,6 +76,10 @@ public class JavaUserDB implements UserDB, Streamable{
 	 * Base constructor
 	 */
 	public JavaUserDB() {
+		init();
+	}
+	
+	private void init() {
 		mPubPrivKeys 	 = new ArrayList<>();
 		mSimpleAddresses = new ArrayList<>();
 		mScriptAddresses = new ArrayList<>();
@@ -571,5 +575,9 @@ public class JavaUserDB implements UserDB, Streamable{
 	public void clearHistory() {
 		mHistory.clear();
 	}
-	
+
+	@Override
+	public void clearDB() {
+		init();
+	}
 }
