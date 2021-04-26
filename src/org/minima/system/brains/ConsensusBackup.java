@@ -412,7 +412,7 @@ public class ConsensusBackup extends ConsensusProcessor {
 						}
 					}
 				}else {
-					MinimaLogger.log("MISSING "+txid.to0xString());
+					//MinimaLogger.log("MISSING "+txid.to0xString());
 				}
 			}
 		}
