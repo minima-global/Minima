@@ -813,7 +813,10 @@ public class ConsensusPrint extends ConsensusProcessor {
 			
 			if(tip != null) {
 				MiniNumber minblock  = tip.getTxPow().getBlockNumber().sub(GlobalParams.MINIMA_CONFIRM_DEPTH);
-				MMRSet baseset 	     = tip.getMMRSet().getParentAtTime(minblock);
+				
+				//Return all coins no matter the depth
+//				MMRSet baseset 	     = tip.getMMRSet().getParentAtTime(minblock);
+				MMRSet baseset 	     = tip.getMMRSet();
 				
 				if(baseset != null) {
 					//Search for coins..
