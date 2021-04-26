@@ -70,7 +70,6 @@ public class BackupManager extends MessageProcessor {
 		
 		//A timerMessage that leans out the blocks folder..
 		PostTimerMessage(new TimerMessage(10000, BACKUP_CLEAN_BLOCKS));
-//		PostMessage(BACKUP_CLEAN_BLOCKS);
 	}
 	
 	public File getRootFolder() {
@@ -250,7 +249,7 @@ public class BackupManager extends MessageProcessor {
 				}
 			}
 			
-			MinimaLogger.log("FIRST BackUp Block : "+mFirstBlock);
+//			MinimaLogger.log("FIRST BackUp Block : "+mFirstBlock);
 			
 			//Check the scan worked
 			if(!mFirstBlock.isMoreEqual(MiniNumber.ZERO) || !mLastBlock.isMore(MiniNumber.ZERO)) {
