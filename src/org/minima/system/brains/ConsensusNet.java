@@ -376,31 +376,39 @@ public class ConsensusNet extends ConsensusProcessor {
 			
 			MiniNumber currentblock = lowestnum;
 			for(int i=0;i<blockstoload;i++) {
+				
 				//Load it.. 
 				SyncPacket spack = SyncPacket.loadBlock(backup.getBlockFile(currentblock));
 				if(spack == null) {
-					//Hmm..
-					MinimaLogger.log("SERIOUS ERROR : Blocks not loading from file.. ");
-					
-					//Add it..
-					sp.getAllNodes().add(spack);
-					
-					//Can't sync him.. Disconnect him..
+					MinimaLogger.log("SERIOUS ERROR : Block not loading from file.. "+currentblock);
 					client.noReconnect();
 					client.PostMessage(new Message(MinimaClient.NETCLIENT_SHUTDOWN));
-					
 					return;
 				}
 				
 				//Add it..
 				sp.getAllNodes().add(spack);
 				
+				//How many have been added..
+				if(sp.getAllNodes().size()>MAX_TXPOW_LIST_SIZE) {
+					//Send this and start a new package
+					client.PostMessage(new Message(MinimaClient.NETCLIENT_INTRO).addObject("syncpackage", sp));
+					
+					//New package
+					sp = new SyncPackage();
+					sp.setCascadeNode(MiniNumber.MINUSONE);
+				}
+				
 				//increment
 				currentblock = currentblock.increment();
 			}
 			
-			//And send it..
-			client.PostMessage(new Message(MinimaClient.NETCLIENT_INTRO).addObject("syncpackage", sp));
+			if(sp.getAllNodes().size()>0) {
+				MinimaLogger.log("Send final packets");
+				
+				//And send it..
+				client.PostMessage(new Message(MinimaClient.NETCLIENT_INTRO).addObject("syncpackage", sp));
+			}
 			
 			//And the rest.. ignoring the cascade nodes..
 			sp   = getMainDB().getSyncPackage();
@@ -498,7 +506,6 @@ public class ConsensusNet extends ConsensusProcessor {
 			
 			//Clear the database..
 			getMainDB().getMainTree().clearTree();
-//			getMainDB().getCoinDB().clearDB();
 			getMainDB().getTxPowDB().ClearDB();
 			
 			//Wipe the txpow folder..
