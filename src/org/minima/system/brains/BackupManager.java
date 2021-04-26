@@ -10,6 +10,7 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.objects.greet.SyncPacket;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MiniFormat;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageProcessor;
@@ -68,7 +69,8 @@ public class BackupManager extends MessageProcessor {
 		initFolders();
 		
 		//A timerMessage that leans out the blocks folder..
-		PostTimerMessage(new TimerMessage(CLEAN_UP_TIMER, BACKUP_CLEAN_BLOCKS));
+//		PostTimerMessage(new TimerMessage(CLEAN_UP_TIMER, BACKUP_CLEAN_BLOCKS));
+		PostMessage(BACKUP_CLEAN_BLOCKS);
 	}
 	
 	public File getRootFolder() {
@@ -199,8 +201,10 @@ public class BackupManager extends MessageProcessor {
 			
 			//First scan the main blocks folder and start parsing..
 			File[] level1 = mBlocksDB.listFiles();
-			if(level1 == null) {level1 = new File[0];}
+			if(level1 == null){level1 = new File[0];}
 			
+			sortFilesByNumber(level1);
+					
 			//Find the lowest block we have..
 			for(File lv1 : level1) {
 				//If found jump out
@@ -209,6 +213,8 @@ public class BackupManager extends MessageProcessor {
 				//Scan lower levels
 				File[] level2 = lv1.listFiles();
 				if(level2 == null) {level2 = new File[0];}
+				
+				sortFilesByNumber(level2);
 				
 				if(level2.length > 0) {
 					for(File lv2 : level2) {
@@ -221,13 +227,7 @@ public class BackupManager extends MessageProcessor {
 						
 						//Any Files..
 						if(files.length>0) {
-							//Sort alphabetically..
-							Arrays.sort(files, new Comparator<File>() {
-								@Override
-								public int compare(File arg0, File arg1) {
-									return arg0.getName().compareTo(arg1.getName());
-								}
-							});
+							sortFilesByNumber(files);
 							
 							//Get the top
 							File first  = files[0];
@@ -236,6 +236,7 @@ public class BackupManager extends MessageProcessor {
 							name        = name.substring(0,index);
 							
 							mFirstBlock = new MiniNumber(name);
+							
 							found = true;
 						}else {
 							//MinimaLogger.log("DELETE EMPTY FOLDER "+lv2);
@@ -248,6 +249,8 @@ public class BackupManager extends MessageProcessor {
 					MiniFile.deleteFileOrFolder(mRootPath, lv1);
 				}
 			}
+			
+			MinimaLogger.log("FIRST BackUp Block : "+mFirstBlock);
 			
 			//Check the scan worked
 			if(!mFirstBlock.isMoreEqual(MiniNumber.ZERO) || !mLastBlock.isMore(MiniNumber.ZERO)) {
@@ -274,6 +277,16 @@ public class BackupManager extends MessageProcessor {
 				mFirstBlock = mFirstBlock.increment();
 			}
 		}
+	}
+	
+	private void sortFilesByNumber(File[] zFiles) {
+		//Sort alphabetically..
+		Arrays.sort(zFiles, new Comparator<File>() {
+			@Override
+			public int compare(File arg0, File arg1) {
+				return arg0.getName().compareTo(arg1.getName());
+			}
+		});
 	}
 	
 	/**
