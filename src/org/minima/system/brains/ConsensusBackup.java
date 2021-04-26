@@ -258,7 +258,7 @@ public class ConsensusBackup extends ConsensusProcessor {
 			
 			//Clear the database..
 			getMainDB().getMainTree().clearTree();
-//			getMainDB().getCoinDB().clearDB();
+			getMainDB().getUserDB().clearDB();
 			getMainDB().getTxPowDB().ClearDB();
 			
 			//Wipe everything BUT the minidapp folder
