@@ -69,8 +69,8 @@ public class BackupManager extends MessageProcessor {
 		initFolders();
 		
 		//A timerMessage that leans out the blocks folder..
-//		PostTimerMessage(new TimerMessage(CLEAN_UP_TIMER, BACKUP_CLEAN_BLOCKS));
-		PostMessage(BACKUP_CLEAN_BLOCKS);
+		PostTimerMessage(new TimerMessage(10000, BACKUP_CLEAN_BLOCKS));
+//		PostMessage(BACKUP_CLEAN_BLOCKS);
 	}
 	
 	public File getRootFolder() {
