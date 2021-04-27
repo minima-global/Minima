@@ -15,6 +15,9 @@ import org.minima.database.txpowdb.TxPOWDBRow;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.objects.greet.SyncPacket;
+import org.minima.system.Main;
+import org.minima.system.brains.BackupManager;
 import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
 
@@ -467,14 +470,15 @@ public class BlockTree {
 							//..TODO
 							
 							//need a  body for this..
-							if(row.getTxPOW().hasBody()) {
+							TxPoW txpow = row.getTxPOW();
+							if(txpow.hasBody()) {
 								//Is this block too old to check..
 								
 								MiniNumber minblock = getCascadeNode().getBlockNumber().add(GlobalParams.MINIMA_MMR_PROOF_HISTORY);
-								MiniNumber blknum   = row.getTxPOW().getBlockNumber();
+								MiniNumber blknum   = txpow.getBlockNumber();
 								
 								if(blknum.isMore(GlobalParams.MINIMA_BLOCKS_SPEED_CALC) && blknum.isLess(minblock)) {
-									MinimaLogger.log("IGNORE OLD BLOCK.. ( proofs too old.. ) blk:"+row.getTxPOW().getBlockNumber()+" currenttip:"+getChainTip().getBlockNumber());
+									MinimaLogger.log("IGNORE OLD BLOCK.. ( proofs too old.. ) blk:"+txpow.getBlockNumber()+" currenttip:"+getChainTip().getBlockNumber());
 									allok = false;
 								
 								}else {
@@ -489,12 +493,12 @@ public class BlockTree {
 									
 									//Check the root MMR..
 									if(allok) {
-										if(!row.getTxPOW().getMMRRoot().isEqual(mmrset.getMMRRoot().getFinalHash())) {
+										if(!txpow.getMMRRoot().isEqual(mmrset.getMMRRoot().getFinalHash())) {
 											MinimaLogger.log("INVALID BLOCK MMRROOT "+zNode.getBlockNumber());
 											allok = false;	
 										}
 										
-										if(!row.getTxPOW().getMMRTotal().isEqual(mmrset.getMMRRoot().getValueSum())) {
+										if(!txpow.getMMRTotal().isEqual(mmrset.getMMRRoot().getValueSum())) {
 											MinimaLogger.log("INVALID BLOCK MMRSUM "+zNode.getBlockNumber());
 											allok = false;
 										}
@@ -510,6 +514,25 @@ public class BlockTree {
 							if(allok) {
 								//it's all valid!
 								zNode.setState(BlockTreeNode.BLOCKSTATE_VALID);
+								
+								//Save this Block+MMR!
+								BackupManager backup = Main.getMainHandler().getBackupManager();
+								
+								//Create a deep copy.. so that clear the cascade node makes no difference..
+								TxPoW copytx = txpow.deepCopy();
+								copytx.clearBody();
+								
+								//Now make a tree node..
+								BlockTreeNode copynode = new BlockTreeNode(copytx);
+								copynode.setMMRset(zNode.getMMRSet());
+								copynode.setCascade(false);
+								
+								//Now make a syncpacket
+								SyncPacket pack = new SyncPacket(copynode, false);
+								
+								//Saver..
+								backup.backupTempBlock(pack);
+								
 							}else{
 								//No good..
 								zNode.setState(BlockTreeNode.BLOCKSTATE_INVALID);

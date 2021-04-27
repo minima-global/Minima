@@ -23,6 +23,9 @@ public class BackupManager extends MessageProcessor {
 	
 	private static final String BACKUP_CLEAN_BLOCKS       = "BACKUP_CLEAN_BLOCKS";
 	private static final String BACKUP_WRITE_BLOCK        = "BACKUP_WRITE_BLOCK";
+
+	private static final String BACKUP_WRITE_TEMPBLOCKID  = "BACKUP_WRITE_TEMPBLOCKID";
+	private static final String BACKUP_SAVE_TEMPBLOCKID   = "BACKUP_SAVE_TEMPBLOCKID";
 	
 	//Clean up blocks every 10 minutes..
 	private long CLEAN_UP_TIMER 						  = 1000 * 60 *10;
@@ -42,6 +45,8 @@ public class BackupManager extends MessageProcessor {
 	
 	File mTxPOWDB;
 	
+	File mTempBlocksDB;
+	
 	File mBlocksDB;
 	
 	File mMiniDAPPS;
@@ -57,8 +62,8 @@ public class BackupManager extends MessageProcessor {
 	MiniNumber mLastBlock  = MiniNumber.ZERO;
 	MiniNumber mFirstBlock = MiniNumber.MINUSONE;
 	
-	//500,000 blocks @ 4320 blocks a day.. ~3 months
-	private static MiniNumber MAX_BLOCKS  = MiniNumber.MILLION.div(MiniNumber.TWO);
+	//For Now.. 2 weeks
+	private static MiniNumber MAX_BLOCKS  = new MiniNumber(4320*14);
 	
 	public BackupManager(String zConfFolder) {
 		super("BACKUP");
@@ -100,6 +105,10 @@ public class BackupManager extends MessageProcessor {
 		return mWebRoot;
 	}
 	
+	public File getTempBlockDB() {
+		return mTempBlocksDB;
+	}
+	
 	public File getBackUpFolder() {
 		return mBackup;
 	}
@@ -133,6 +142,21 @@ public class BackupManager extends MessageProcessor {
 		backup.addObject("block", zBlock);
 		PostMessage(backup);
 	}
+	
+	public void backupTempBlock(SyncPacket zBlock) {
+		//Do in separate thread so returns fast
+		Message backup = new Message(BackupManager.BACKUP_WRITE_TEMPBLOCKID);
+		backup.addObject("block", zBlock);
+		PostMessage(backup);
+	}
+	
+	public void backupSaveTempBlock(MiniNumber zBlockNumber, String zTxPoWID) {
+		//Do in separate thread so returns fast
+		Message backup = new Message(BackupManager.BACKUP_SAVE_TEMPBLOCKID);
+		backup.addObject("block", zBlockNumber);
+		backup.addObject("txpowid", zTxPoWID);
+		PostMessage(backup);
+	}
 
 	public MiniNumber getOldestBackupBlock() {
 		return mFirstBlock;
@@ -145,6 +169,12 @@ public class BackupManager extends MessageProcessor {
 		//Do in separate thread so returns fast
 		Message delete = new Message(BackupManager.BACKUP_DELETE);
 		delete.addObject("file", delfile);
+		PostMessage(delete);
+		
+		//And Delete the possible Block ID file..
+		File delblock = new File(mTempBlocksDB,zTxPOW.getTxPowID().toString()+".block");
+		delete = new Message(BackupManager.BACKUP_DELETE);
+		delete.addObject("file", delblock);
 		PostMessage(delete);
 	}
 	
@@ -190,6 +220,42 @@ public class BackupManager extends MessageProcessor {
 			
 			//Write..
 			MiniFile.writeObjectToFile(savefile, block);	
+		
+		}else if(zMessage.isMessageType(BACKUP_WRITE_TEMPBLOCKID)) {
+			//Get the Block..
+			SyncPacket block = (SyncPacket) zMessage.getObject("block");
+			
+			//Write it out with the TxPowID as the filename..
+			String ID = block.getTxPOW().getTxPowID().to0xString();
+					
+			//Get the File..v
+			File savefile = new File(mTempBlocksDB, ID+".block");
+			
+			MinimaLogger.log("************ save ID block : "+savefile);
+			
+			//Write..
+			MiniFile.writeObjectToFile(savefile, block);	
+		
+		}else if(zMessage.isMessageType(BACKUP_SAVE_TEMPBLOCKID)) {
+			//Get the Block ID..
+			MiniNumber block = (MiniNumber) zMessage.getObject("block");
+			String txpowid   = zMessage.getString("txpowid");
+			
+			//Get the File..
+			File blockfile = new File(mTempBlocksDB, txpowid+".block");
+			
+			//Which Block is this..
+			if(block.isMore(mLastBlock)) {
+				mLastBlock = block;
+			}
+					
+			//Get the File..v
+			File savefile = getBlockFile(block);
+			
+			//Now copy from one to the other
+			MiniFile.copyFile(blockfile, savefile);
+			
+			MinimaLogger.log("************ COPY ID block : "+blockfile+" to "+savefile);
 			
 		}else if(zMessage.isMessageType(BACKUP_CLEAN_BLOCKS)) {
 			//Check again
@@ -330,7 +396,10 @@ public class BackupManager extends MessageProcessor {
 		
 		//Current Blocks
 		mBlocksDB    = ensureFolder(new File(mRoot,"blocks"));
-				
+		
+		//Folder with ALL the txpow blocks named after the TxPoWID
+		mTempBlocksDB = ensureFolder(new File(mRoot,"blockstempid")); 
+		
 		//The Backup folder
 		mBackup    = ensureFolder(new File(mRoot,"backup"));
 		
@@ -360,6 +429,7 @@ public class BackupManager extends MessageProcessor {
 	public static void deleteConfFolder(File zFolder) {
 		MiniFile.deleteFileOrFolder(mRootPath,new File(zFolder,"txpow"));
 		MiniFile.deleteFileOrFolder(mRootPath,new File(zFolder,"blocks"));
+		MiniFile.deleteFileOrFolder(mRootPath,new File(zFolder,"blockstempid"));
 		MiniFile.deleteFileOrFolder(mRootPath,new File(zFolder,"backup"));
 		MiniFile.deleteFileOrFolder(mRootPath,new File(zFolder,"maxima"));
 		MiniFile.deleteFileOrFolder(mRootPath,new File(zFolder,"tunnel"));

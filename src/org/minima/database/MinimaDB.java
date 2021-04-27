@@ -36,6 +36,7 @@ import org.minima.objects.greet.SyncPackage;
 import org.minima.objects.greet.SyncPacket;
 import org.minima.objects.keys.MultiKey;
 import org.minima.objects.proofs.TokenProof;
+import org.minima.system.Main;
 import org.minima.system.brains.BackupManager;
 import org.minima.system.brains.ConsensusHandler;
 import org.minima.system.input.functions.gimme50;
@@ -142,6 +143,21 @@ public class MinimaDB {
 				
 		//Back it up..
 		getBackup().backupTxpow(gen); 
+		
+		//Backup the Temp block
+		TxPoW copytx = gen.deepCopy();
+		copytx.clearBody();
+		
+		//Now make a tree node..
+		BlockTreeNode copynode = new BlockTreeNode(copytx);
+		copynode.setMMRset(root.getMMRSet());
+		copynode.setCascade(false);
+		
+		//Now make a syncpacket
+		SyncPacket pack = new SyncPacket(copynode, false);
+		
+		//Saver..
+		getBackup().backupTempBlock(pack);
 	}
 	
 	public TxPoW getTxPOW(MiniData zTxPOWID) {
