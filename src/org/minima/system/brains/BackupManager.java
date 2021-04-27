@@ -22,7 +22,7 @@ public class BackupManager extends MessageProcessor {
 	private static final String BACKUP_DELETE             = "BACKUP_DELETE";
 	
 	private static final String BACKUP_CLEAN_BLOCKS       = "BACKUP_CLEAN_BLOCKS";
-	private static final String BACKUP_WRITE_BLOCK        = "BACKUP_WRITE_BLOCK";
+//	private static final String BACKUP_WRITE_BLOCK        = "BACKUP_WRITE_BLOCK";
 
 	private static final String BACKUP_WRITE_TEMPBLOCKID  = "BACKUP_WRITE_TEMPBLOCKID";
 	private static final String BACKUP_SAVE_TEMPBLOCKID   = "BACKUP_SAVE_TEMPBLOCKID";
@@ -136,12 +136,12 @@ public class BackupManager extends MessageProcessor {
 		PostMessage(backup);
 	}
 	
-	public void backupBlock(SyncPacket zBlock) {
-		//Do in separate thread so returns fast
-		Message backup = new Message(BackupManager.BACKUP_WRITE_BLOCK);
-		backup.addObject("block", zBlock);
-		PostMessage(backup);
-	}
+//	public void backupBlock(SyncPacket zBlock) {
+//		//Do in separate thread so returns fast
+//		Message backup = new Message(BackupManager.BACKUP_WRITE_BLOCK);
+//		backup.addObject("block", zBlock);
+//		PostMessage(backup);
+//	}
 	
 	public void backupTempBlock(SyncPacket zBlock) {
 		//Do in separate thread so returns fast
@@ -207,19 +207,19 @@ public class BackupManager extends MessageProcessor {
 			File ff = (File) zMessage.getObject("file");
 			MiniFile.deleteFileOrFolder(mRootPath, ff);
 		
-		}else if(zMessage.isMessageType(BACKUP_WRITE_BLOCK)) {
-			//Get the Block..
-			SyncPacket block = (SyncPacket) zMessage.getObject("block");
-			
-			//Which Block is this..
-			mLastBlock = block.getTxPOW().getBlockNumber();
-					
-			//Get the File..v
-			File savefile = getBlockFile(mLastBlock);
-			//MinimaLogger.log("************ save block : "+savefile);
-			
-			//Write..
-			MiniFile.writeObjectToFile(savefile, block);	
+//		}else if(zMessage.isMessageType(BACKUP_WRITE_BLOCK)) {
+//			//Get the Block..
+//			SyncPacket block = (SyncPacket) zMessage.getObject("block");
+//			
+//			//Which Block is this..
+//			mLastBlock = block.getTxPOW().getBlockNumber();
+//					
+//			//Get the File..v
+//			File savefile = getBlockFile(mLastBlock);
+//			//MinimaLogger.log("************ save block : "+savefile);
+//			
+//			//Write..
+//			MiniFile.writeObjectToFile(savefile, block);	
 		
 		}else if(zMessage.isMessageType(BACKUP_WRITE_TEMPBLOCKID)) {
 			//Get the Block..
