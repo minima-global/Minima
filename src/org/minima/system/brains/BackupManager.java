@@ -137,20 +137,6 @@ public class BackupManager extends MessageProcessor {
 		PostMessage(backup);
 	}
 	
-//	public void backupBlock(SyncPacket zBlock) {
-//		//Do in separate thread so returns fast
-//		Message backup = new Message(BackupManager.BACKUP_WRITE_BLOCK);
-//		backup.addObject("block", zBlock);
-//		PostMessage(backup);
-//	}
-	
-//	public void backupTempBlock(SyncPacket zBlock) {
-//		//Do in separate thread so returns fast
-//		Message backup = new Message(BackupManager.BACKUP_WRITE_TEMPBLOCKID);
-//		backup.addObject("block", zBlock);
-//		PostMessage(backup);
-//	}
-	
 	public void backupTempBlock(BlockTreeNode zBlock) {
 		//Backup the Temp block
 		TxPoW copytx = zBlock.getTxPow().deepCopy();
