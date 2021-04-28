@@ -158,7 +158,7 @@ public class BackupManager extends MessageProcessor {
 		
 		//Now make a tree node..
 		BlockTreeNode copynode = new BlockTreeNode(copytx);
-		copynode.setMMRset(zBlock.getMMRSet());
+		copynode.setMMRset(zBlock.getMMRSet().deepCopy());
 		copynode.setCascade(false);
 		
 		//Now make a syncpacket
