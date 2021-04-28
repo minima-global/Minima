@@ -1,5 +1,7 @@
 package org.minima.database.mmr;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -10,6 +12,7 @@ import java.util.Hashtable;
 
 import org.minima.objects.Coin;
 import org.minima.objects.StateVariable;
+import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
@@ -1174,6 +1177,36 @@ public class MMRSet implements Streamable {
 		finalizeSet();
 	}
 	
+	/**
+	 * Get a DEEP copy of this transaction
+	 * @throws IOException 
+	 */
+	public MMRSet deepCopy(){
+		try {
+			//First write transaction out to a byte array
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			DataOutputStream dos = new DataOutputStream(baos);
+			writeDataStream(dos);
+			dos.flush();
+			dos.close();
+			
+			ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+			DataInputStream dis = new DataInputStream(bais);
+			
+			MMRSet mmr = new MMRSet();
+			mmr.readDataStream(dis);
+			
+			dis.close();
+			baos.close();
+			
+			return mmr;
+			
+		}catch(IOException ioexc) {
+			MinimaLogger.log(ioexc);
+		}	
+		
+		return null;
+	}
 	
 	/**
 	 * Serious tester Code
