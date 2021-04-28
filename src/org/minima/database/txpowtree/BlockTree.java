@@ -516,22 +516,7 @@ public class BlockTree {
 								zNode.setState(BlockTreeNode.BLOCKSTATE_VALID);
 								
 								//Save this Block+MMR!
-								BackupManager backup = Main.getMainHandler().getBackupManager();
-								
-								//Create a deep copy.. so that clear the cascade node makes no difference..
-								TxPoW copytx = txpow.deepCopy();
-								copytx.clearBody();
-								
-								//Now make a tree node..
-								BlockTreeNode copynode = new BlockTreeNode(copytx);
-								copynode.setMMRset(zNode.getMMRSet());
-								copynode.setCascade(false);
-								
-								//Now make a syncpacket
-								SyncPacket pack = new SyncPacket(copynode, false);
-								
-								//Saver..
-								backup.backupTempBlock(pack);
+								Main.getMainHandler().getBackupManager().backupTempBlock(zNode);
 								
 							}else{
 								//No good..

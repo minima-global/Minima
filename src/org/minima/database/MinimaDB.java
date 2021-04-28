@@ -145,19 +145,7 @@ public class MinimaDB {
 		getBackup().backupTxpow(gen); 
 		
 		//Backup the Temp block
-		TxPoW copytx = gen.deepCopy();
-		copytx.clearBody();
-		
-		//Now make a tree node..
-		BlockTreeNode copynode = new BlockTreeNode(copytx);
-		copynode.setMMRset(root.getMMRSet());
-		copynode.setCascade(false);
-		
-		//Now make a syncpacket
-		SyncPacket pack = new SyncPacket(copynode, false);
-		
-		//Saver..
-		getBackup().backupTempBlock(pack);
+		getBackup().backupTempBlock(root);
 	}
 	
 	public TxPoW getTxPOW(MiniData zTxPOWID) {

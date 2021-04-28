@@ -4,13 +4,13 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Comparator;
 
+import org.minima.database.txpowtree.BlockTreeNode;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.greet.SyncPacket;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MiniFormat;
-import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageProcessor;
@@ -28,8 +28,11 @@ public class BackupManager extends MessageProcessor {
 	private static final String BACKUP_SAVE_TEMPBLOCKID   = "BACKUP_SAVE_TEMPBLOCKID";
 	
 	//Clean up blocks every 10 minutes..
-	private long CLEAN_UP_TIMER 						  = 1000 * 60 *10;
+	private long CLEAN_UP_TIMER = 1000 * 60 * 10;
 	
+	//For Now.. 1 month
+	private static MiniNumber MAX_BLOCKS  = new MiniNumber(4320 * 30);
+		
 	/**
 	 * User Configuration
 	 */
@@ -62,8 +65,6 @@ public class BackupManager extends MessageProcessor {
 	MiniNumber mLastBlock  = MiniNumber.ZERO;
 	MiniNumber mFirstBlock = MiniNumber.MINUSONE;
 	
-	//For Now.. 2 weeks
-	private static MiniNumber MAX_BLOCKS  = new MiniNumber(4320*14);
 	
 	public BackupManager(String zConfFolder) {
 		super("BACKUP");
@@ -74,7 +75,7 @@ public class BackupManager extends MessageProcessor {
 		initFolders();
 		
 		//A timerMessage that leans out the blocks folder..
-		PostTimerMessage(new TimerMessage(10000, BACKUP_CLEAN_BLOCKS));
+		PostMessage(BACKUP_CLEAN_BLOCKS);
 	}
 	
 	public File getRootFolder() {
@@ -143,10 +144,29 @@ public class BackupManager extends MessageProcessor {
 //		PostMessage(backup);
 //	}
 	
-	public void backupTempBlock(SyncPacket zBlock) {
+//	public void backupTempBlock(SyncPacket zBlock) {
+//		//Do in separate thread so returns fast
+//		Message backup = new Message(BackupManager.BACKUP_WRITE_TEMPBLOCKID);
+//		backup.addObject("block", zBlock);
+//		PostMessage(backup);
+//	}
+	
+	public void backupTempBlock(BlockTreeNode zBlock) {
+		//Backup the Temp block
+		TxPoW copytx = zBlock.getTxPow().deepCopy();
+		copytx.clearBody();
+		
+		//Now make a tree node..
+		BlockTreeNode copynode = new BlockTreeNode(copytx);
+		copynode.setMMRset(zBlock.getMMRSet());
+		copynode.setCascade(false);
+		
+		//Now make a syncpacket
+		SyncPacket pack = new SyncPacket(copynode, false);
+		
 		//Do in separate thread so returns fast
 		Message backup = new Message(BackupManager.BACKUP_WRITE_TEMPBLOCKID);
-		backup.addObject("block", zBlock);
+		backup.addObject("block", pack);
 		PostMessage(backup);
 	}
 	
@@ -231,7 +251,7 @@ public class BackupManager extends MessageProcessor {
 			//Get the File..v
 			File savefile = new File(mTempBlocksDB, ID+".block");
 			
-			MinimaLogger.log("************ save ID block : "+savefile);
+//			MinimaLogger.log("************ save ID block : "+savefile);
 			
 			//Write..
 			MiniFile.writeObjectToFile(savefile, block);	
@@ -248,14 +268,16 @@ public class BackupManager extends MessageProcessor {
 			if(block.isMore(mLastBlock)) {
 				mLastBlock = block;
 			}
-					
+			
+//			MinimaLogger.log("BLOCKS "+mFirstBlock+" - "+mLastBlock);
+			
 			//Get the File..v
 			File savefile = getBlockFile(block);
 			
 			//Now copy from one to the other
 			MiniFile.copyFile(blockfile, savefile);
 			
-			MinimaLogger.log("************ COPY ID block : "+blockfile+" to "+savefile);
+//			MinimaLogger.log("************ COPY ID block : "+blockfile+" to "+savefile);
 			
 		}else if(zMessage.isMessageType(BACKUP_CLEAN_BLOCKS)) {
 			//Check again

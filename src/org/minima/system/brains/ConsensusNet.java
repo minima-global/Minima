@@ -473,6 +473,9 @@ public class ConsensusNet extends ConsensusProcessor {
 				//Set the MMR
 				node.setMMRset(mmr);
 				
+				//Save this block
+				backup.backupTempBlock(node);
+				
 				//Set the MMR parent..
 				mmr.setParent(parent.getMMRSet());
 				
@@ -529,6 +532,9 @@ public class ConsensusNet extends ConsensusProcessor {
 				//Scan for coins..
 				if(mmr!=null) {
 					getMainDB().scanMMRSetForCoins(mmr);
+				
+					//Save this block
+					backup.backupTempBlock(node);
 				}
 				
 				//Is this the cascade block
