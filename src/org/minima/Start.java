@@ -95,18 +95,23 @@ public class Start {
 	public static void main(String[] zArgs){
 		//Check command line inputs
 		int arglen 				= zArgs.length;
+		
+		//Whcih port are we listening on
 		int port 				= 9001;
 		
 		boolean connect         = true;
 		
 		//Pick a random host
-		Random rand = new Random();
-		int hostnum = rand.nextInt(VALID_BOOTSTRAP_NODES.length);
-		//hostnum = 3;
+		Random rand  = new Random();
 		
+		//Which Boot node
+		int hostnum  = rand.nextInt(VALID_BOOTSTRAP_NODES.length);
+		
+		//9001, 10001, 11001 are valid ports from the BOOT nodes
+		int portrand 			= rand.nextInt(3);
 		ArrayList<String> connectlist = new ArrayList<>();
 		String connecthost      = VALID_BOOTSTRAP_NODES[hostnum];
-		int connectport         = 9001;
+		int connectport         = 9001 + (1000*portrand);
 		String host             = "";
 
 		String external 		= "";

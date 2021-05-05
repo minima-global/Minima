@@ -416,14 +416,19 @@ public class NetworkHandler extends MessageProcessor {
 				//Is this one of the Initial Host/Port BootStrap Server ?
 				boolean bootstrapnode = false;
 				for(int i=0;i<Start.VALID_BOOTSTRAP_NODES.length;i++) {
-					if(host.equals(Start.VALID_BOOTSTRAP_NODES[i]) && port==9001) {
+					if(host.equals(Start.VALID_BOOTSTRAP_NODES[i])) {
 						bootstrapnode = true;
 						break;
 					}
 				}
 				if(bootstrapnode) {
 					String oldhost = new String(host);
-					host = Start.VALID_BOOTSTRAP_NODES[new Random().nextInt(Start.VALID_BOOTSTRAP_NODES.length)];
+					
+					//Pick random host and one of 3 ports
+					Random rand = new Random();
+					host = Start.VALID_BOOTSTRAP_NODES[rand.nextInt(Start.VALID_BOOTSTRAP_NODES.length)];
+					port = 9001 + (1000*rand.nextInt(3));
+							
 					MinimaLogger.log("BOOTSTRAP NODE Connection lost.. resetting from "+oldhost+" to "+host);
 				}
 				
