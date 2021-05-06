@@ -516,7 +516,7 @@ public class BlockTree {
 								zNode.setState(BlockTreeNode.BLOCKSTATE_VALID);
 								
 								//Save this Block+MMR!
-								Main.getMainHandler().getBackupManager().backupTempBlock(zNode);
+								getDB().getBackup().backupTempBlock(zNode);
 								
 							}else{
 								//No good..
