@@ -74,7 +74,9 @@ var Minima = {
 	},
 	
 	log : function(output){
-		java.lang.System.out.println("Service @ "+new Date().toLocaleString()+" : "+output);
+		//MinimaLogger..
+		MinimaRPC("log",output,null);
+		//java.lang.System.out.println("Service @ "+new Date().toLocaleString()+" : "+output);
 	},
 	
 	/**
@@ -267,7 +269,6 @@ var Minima = {
 				len = responses.length;
 				for(i=0;i<len;i++){
 					if(responses[i].status != true){
-						alert(responses[i].message+"\n\nERROR @ "+responses[i].minifunc);
 						Minima.log("ERROR in Multi-Command ["+i+"] "+JSON.stringify(responses[i],null,2));
 						return false;
 					}

@@ -6,7 +6,7 @@ import java.security.SecureRandom;
 public class SeedPhrase {
 
 	public static String[] ARTICLE  = 
-		{"THE","A","SOME","ONE"};
+		{"THE","A"};
 	
 	public static String[] ADJS     = 
 		{"QUICK","SLOW","SLY","FAST","FAT","THIN","GREEDY","WARM","TIRED","SHORT","PLAIN",
@@ -27,21 +27,32 @@ public class SeedPhrase {
 	public static String[] VERB     = 
 		{"LICKED","TOUCHED","KICKED","LIKED","ATE","EYED","SAW","SNIFFED","PUSHED",
 		"PULLED","DRAGGED","DROPPED","CHEWED","PUNCHED","TICKLED","FLICKED","WASHED",
-		"TOUCHED","GRABBED","TWISTED","BROKE","PINCHED"};
+		"TOUCHED","GRABBED","TWISTED","BROKE","PINCHED","STROKED"};
 	
 	public static String[] CONJ     = {"AND","AS","BUT","WHEN","AFTER","BEFORE"};
 	
-	private static String       mFinalSentance;
-	private static BigInteger   mTotalCount;
-	private static SecureRandom mSecRand;
+	private String        mFinalSentance;
+	private BigInteger    mTotalCount;
+	private SecureRandom  mSecRand;
 	
-	public static void main(String[] zArgs) {
-		//Get a secure random number generator..
-		mSecRand = new SecureRandom();
-		
-		//generate a random seed phrase..
-		mFinalSentance = "";
-		mTotalCount    = BigInteger.ONE;
+	public SeedPhrase() {}
+	
+	private void addFullNoun() {
+		addRandom(ARTICLE);
+		addRandom(ADJS);
+		addRandom(COLOUR);
+		addRandom(NOUNS);
+	}
+	
+	private void addRandom(String[] zWordBlock) {
+		mFinalSentance += zWordBlock[mSecRand.nextInt(zWordBlock.length)]+" ";
+		mTotalCount    = mTotalCount.multiply(new BigInteger(""+zWordBlock.length));
+	}
+	
+	public String getNewSeedPhrase() {
+		mFinalSentance 	= new String("");
+		mSecRand 		= new SecureRandom();
+		mTotalCount     = BigInteger.ZERO;
 		
 		//NOw start..
 		addFullNoun();
@@ -58,53 +69,13 @@ public class SeedPhrase {
 		
 		addFullNoun();
 		
-		//All done..
-//				System.out.println(mFinalSentance.trim());
-		
-		double sec = Maths.log2BI(mTotalCount);
-		
-		System.out.println("Total possible : "+mTotalCount);
-		System.out.println("Security 2^"+sec);
-		System.out.println();
-		
-		//generate a random seed phrase..
-		mFinalSentance = "";
-		mTotalCount    = BigInteger.ONE;
-		
-		for(int i=0;i<10;i++) {
-			mFinalSentance = "";
-			
-			//NOw start..
-			addFullNoun();
-			
-			addRandom(VERB);
-			
-			addFullNoun();
-			
-			addRandom(CONJ);
-			
-			addFullNoun();
-			
-			addRandom(VERB);
-			
-			addFullNoun();
-			
-			//All done..
-			System.out.println(mFinalSentance.trim());
-			System.out.println();
-		}
+		return mFinalSentance;
 	}
 	
-	private static void addFullNoun() {
-		addRandom(ARTICLE);
-		addRandom(ADJS);
-		addRandom(COLOUR);
-		addRandom(NOUNS);
-	}
-	
-	private static void addRandom(String[] zWordBlock) {
-		mFinalSentance += zWordBlock[mSecRand.nextInt(zWordBlock.length)]+" ";
-		mTotalCount    = mTotalCount.multiply(new BigInteger(""+zWordBlock.length));
+	public static void main(String[] zArgs) {
+		SeedPhrase sp = new SeedPhrase();
+		
+		System.out.println(sp.getNewSeedPhrase());
 	}
 	
 }

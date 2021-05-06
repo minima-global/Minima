@@ -69,8 +69,26 @@ public class TokenProof implements Streamable{
 		calculateTokenID();
 	}
 	
-	public MiniNumber getScaleFactor() {
-		return MiniNumber.TEN.pow(mTokenScale.getAsInt());
+//	public MiniNumber getScaleFactor() {
+//		return MiniNumber.TEN.pow(mTokenScale.getAsInt());
+//	}
+	
+	public MiniNumber getScaledTokenAmount(MiniNumber zMinimaAmount) {
+		int scale = mTokenScale.getAsInt();
+		MiniNumber current = zMinimaAmount;
+		for(int i=0;i<scale;i++){
+			current = current.mult(MiniNumber.TEN);
+		}
+		return current;
+	}
+	
+	public MiniNumber getScaledMinimaAmount(MiniNumber zTokenAmount) {
+		int scale = mTokenScale.getAsInt();
+		MiniNumber current = zTokenAmount;
+		for(int i=0;i<scale;i++){
+			current = current.div(MiniNumber.TEN);
+		}
+		return current;
 	}
 	
 	public MiniNumber getScale() {
@@ -82,7 +100,11 @@ public class TokenProof implements Streamable{
 	}
 	
 	public MiniNumber getTotalTokens() {
-		return mTokenMinimaAmount.mult(getScaleFactor());
+		return getScaledTokenAmount(mTokenMinimaAmount);
+	}
+	
+	public MiniNumber getDecimalPlaces() {
+		return new MiniNumber(MiniNumber.MAX_DECIMAL_PLACES - getScale().getAsInt());
 	}
 	
 	public MiniString getName() {
@@ -171,14 +193,12 @@ public class TokenProof implements Streamable{
 			obj.put("proof", "");	
 		}
 		
-		MiniNumber total = mTokenMinimaAmount.mult(getScaleFactor());
-		
-		obj.put("total", total.toString());
+		obj.put("total", getTotalTokens().toString());
+		obj.put("decimals", getDecimalPlaces().toString());
 		obj.put("script", mTokenScript.toString());
 		obj.put("coinid", mCoinID.to0xString());
 		obj.put("totalamount", mTokenMinimaAmount.toString());
 		obj.put("scale", mTokenScale.toString());
-		obj.put("scalefactor", getScaleFactor().toString());
 		
 		return obj;
 	}

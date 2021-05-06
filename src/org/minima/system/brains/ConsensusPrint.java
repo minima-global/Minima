@@ -11,9 +11,7 @@ import java.util.Hashtable;
 
 import org.minima.GlobalParams;
 import org.minima.database.MinimaDB;
-import org.minima.database.coindb.CoinDBRow;
 import org.minima.database.mmr.MMREntry;
-import org.minima.database.mmr.MMREntryDB;
 import org.minima.database.mmr.MMRSet;
 import org.minima.database.txpowdb.TxPOWDBRow;
 import org.minima.database.txpowtree.BlockTree;
@@ -26,6 +24,7 @@ import org.minima.objects.Coin;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.objects.base.MiniString;
 import org.minima.objects.keys.MultiKey;
 import org.minima.objects.proofs.TokenProof;
 import org.minima.system.Main;
@@ -33,6 +32,7 @@ import org.minima.system.input.InputHandler;
 import org.minima.system.network.base.MinimaClient;
 import org.minima.system.network.minidapps.DAPPManager;
 import org.minima.system.network.rpc.RPCClient;
+import org.minima.utils.Crypto;
 import org.minima.utils.Maths;
 import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;
@@ -61,6 +61,7 @@ public class ConsensusPrint extends ConsensusProcessor {
 	public static final String CONSENSUS_TOKENVALIDATE 		= CONSENSUS_PREFIX+"TOKENVALIDATE";
 	
 	public static final String CONSENSUS_RANDOM 			= CONSENSUS_PREFIX+"RANDOM";
+	public static final String CONSENSUS_HASH 				= CONSENSUS_PREFIX+"HASH";
 	
 	public static final String CONSENSUS_STATUS 			= CONSENSUS_PREFIX+"STATUS";
 	public static final String CONSENSUS_PRINTCHAIN 		= CONSENSUS_PREFIX+"PRINTCHAIN";
@@ -91,16 +92,16 @@ public class ConsensusPrint extends ConsensusProcessor {
 			
 			JSONObject dets = InputHandler.getResponseJSON(zMessage);
 			
-			if(coins) {
-				JSONArray coinjson = new JSONArray();
-				ArrayList<CoinDBRow> coindb = getMainDB().getCoinDB().getComplete();
-				for(CoinDBRow row : coindb) {
-					coinjson.add(row.toJSON());
-				}
-				
-				dets.put("coindbsize" , coindb.size()); 
-				dets.put("coindb", coinjson);
-			}
+//			if(coins) {
+//				JSONArray coinjson = new JSONArray();
+//				ArrayList<CoinDBRow> coindb = getMainDB().getCoinDB().getComplete();
+//				for(CoinDBRow row : coindb) {
+//					coinjson.add(row.toJSON());
+//				}
+//				
+//				dets.put("coindbsize" , coindb.size()); 
+//				dets.put("coindb", coinjson);
+//			}
 			
 			if(txpow) {
 				JSONArray txpowjson = new JSONArray();
@@ -358,6 +359,26 @@ public class ConsensusPrint extends ConsensusProcessor {
 			dets.put("coins", allcoins);
 			InputHandler.endResponse(zMessage, true, "");
 		
+		}else if(zMessage.isMessageType(CONSENSUS_HASH)){
+			int bitlen = zMessage.getInteger("bitlength");
+			String data = zMessage.getString("data");
+		
+			MiniData res = null;
+			if(data.startsWith("0x")) {
+				//It's HEX
+				MiniData hex = new MiniData(data);
+				res = new MiniData( Crypto.getInstance().hashData(hex.getData(), bitlen) );
+			}else {
+				//Treat as a string
+				MiniString str = new MiniString(data);
+				res = new MiniData( Crypto.getInstance().hashData(str.getData(), bitlen) );
+			}
+			
+			JSONObject dets = InputHandler.getResponseJSON(zMessage);
+			dets.put("data", data);
+			dets.put("hash", res.to0xString());
+			InputHandler.endResponse(zMessage, true, "");
+		
 		}else if(zMessage.isMessageType(CONSENSUS_RANDOM)){
 			int len = zMessage.getInteger("length");
 			
@@ -424,6 +445,7 @@ public class ConsensusPrint extends ConsensusProcessor {
 			baseobj.put("tokenid", Coin.MINIMA_TOKENID.to0xString());
 			baseobj.put("token", "Minima");
 			baseobj.put("total", "1000000000");
+			baseobj.put("decimals", ""+MiniNumber.MAX_DECIMAL_PLACES);
 			tokarray.add(baseobj);
 			
 			for(TokenProof tok : tokens) {
@@ -435,6 +457,11 @@ public class ConsensusPrint extends ConsensusProcessor {
 			InputHandler.endResponse(zMessage, true, "");
 			
 		}else if(zMessage.isMessageType(CONSENSUS_BALANCE)){
+			//Are we raedy
+			if(getMainDB().getMainTree().getChainTip() == null) {
+				return;
+			}
+			
 			//Is this a HARD reset..
 			if(!zMessage.exists("hard") && mOldBalanceJSON != null) {
 				InputHandler.setFullResponse(zMessage, mOldBalanceJSON);
@@ -462,6 +489,7 @@ public class ConsensusPrint extends ConsensusProcessor {
 			basejobj.put("tokenid", Coin.MINIMA_TOKENID.to0xString());
 			basejobj.put("token", "Minima");
 			basejobj.put("total", "1000000000");
+			basejobj.put("decimals", ""+MiniNumber.MAX_DECIMAL_PLACES);
 			basejobj.put("confirmed", MiniNumber.ZERO);
 			basejobj.put("unconfirmed", MiniNumber.ZERO);
 			basejobj.put("mempool", MiniNumber.ZERO.toString());
@@ -474,22 +502,26 @@ public class ConsensusPrint extends ConsensusProcessor {
 			Hashtable<String, MiniNumber> totals_confirmed   = new Hashtable<>();
 			Hashtable<String, MiniNumber> totals_unconfirmed = new Hashtable<>();
 			
-			UserDB userdb = getMainDB().getUserDB();
-			ArrayList<CoinDBRow> coins = getMainDB().getCoinDB().getCompleteRelevant();
-			for(CoinDBRow coin : coins) {
-				//Is this one of ours ? Could be an import or someone elses 
-				boolean rel = userdb.isAddressRelevant(coin.getCoin().getAddress());
+			//Current TIP
+			MMRSet baseset = getMainDB().getMMRTip();
+			ArrayList<MMREntry> allcoins = baseset.searchAllRelevantCoins();
+			
+			//Cycle through your coins..
+			for(MMREntry coinentry : allcoins) {
+				//Get this coin..
+				Coin coin = coinentry.getData().getCoin();
 				
 				//Are we only checking one address
+				boolean rel = true;
 				if(!onlyaddress.equals("")) {
-					rel = rel && ( coin.getCoin().getAddress().to0xString().equals(onlyaddress) );
+					rel = coin.getAddress().to0xString().equals(onlyaddress);
 				}
 				
-				if(coin.isInBlock() && rel) {
+				if(rel) {
 					//What Token..
-					String     tokid 	= coin.getCoin().getTokenID().to0xString();
+					String     tokid 	= coin.getTokenID().to0xString();
 					MiniData   tokhash 	= new MiniData(tokid);
-					MiniNumber blknum   = coin.getInBlockNumber();
+					MiniNumber blknum   = coinentry.getData().getInBlock();
 					MiniNumber depth 	= top.sub(blknum);
 					
 					//Get the Token Details.
@@ -524,42 +556,41 @@ public class ConsensusPrint extends ConsensusProcessor {
 						full_details.put(tokid, jobj);
 					}
 					
-					if(!coin.isSpent()) {
-						//At least one coin is unspent..
-						jobj.put("unspent", "true");
+					//At least one coin is unspent..
+					jobj.put("unspent", "true");
+					
+					if(depth.isMoreEqual(GlobalParams.MINIMA_CONFIRM_DEPTH)) {
+						//Get the Current total..
+						MiniNumber curr = totals_confirmed.get(tokid);
 						
-						if(depth.isMoreEqual(GlobalParams.MINIMA_CONFIRM_DEPTH)) {
-							//Get the Current total..
-							MiniNumber curr = totals_confirmed.get(tokid);
-							
-							if(curr == null) {
-								curr = MiniNumber.ZERO;
-							}
-							
-							//Add it..
-							curr = curr.add(coin.getCoin().getAmount());
-							
-							//Re-add..
-							totals_confirmed.put(tokid, curr);
-							
-							//Add to the JSON object
-							jobj.put("confirmed", curr);
-							
-						}else {
-							//Get the Current total..
-							MiniNumber curr = totals_unconfirmed.get(tokid);
-							if(curr == null) {curr = MiniNumber.ZERO;}
-							
-							//Add it..
-							curr = curr.add(coin.getCoin().getAmount());
-							
-							//Re-add..
-							totals_unconfirmed.put(tokid, curr);
-							
-							//Add to the JSON object
-							jobj.put("unconfirmed", curr);
+						if(curr == null) {
+							curr = MiniNumber.ZERO;
 						}
+						
+						//Add it..
+						curr = curr.add(coin.getAmount());
+						
+						//Re-add..
+						totals_confirmed.put(tokid, curr);
+						
+						//Add to the JSON object
+						jobj.put("confirmed", curr);
+						
+					}else {
+						//Get the Current total..
+						MiniNumber curr = totals_unconfirmed.get(tokid);
+						if(curr == null) {curr = MiniNumber.ZERO;}
+						
+						//Add it..
+						curr = curr.add(coin.getAmount());
+						
+						//Re-add..
+						totals_unconfirmed.put(tokid, curr);
+						
+						//Add to the JSON object
+						jobj.put("unconfirmed", curr);
 					}
+					
 				}
 			}
 			
@@ -597,6 +628,7 @@ public class ConsensusPrint extends ConsensusProcessor {
 					jobj.put("confirmed", tot_conf.toString());
 					jobj.put("unconfirmed", tot_unconf.toString());
 					jobj.put("total", "1000000000");
+					jobj.put("decimals", ""+MiniNumber.MAX_DECIMAL_PLACES);
 					
 					//MEMPOOL
 					MiniNumber memp = mempool.get(Coin.MINIMA_TOKENID.to0xString());
@@ -621,17 +653,11 @@ public class ConsensusPrint extends ConsensusProcessor {
 				}else {
 					TokenProof td = getMainDB().getUserDB().getTokenDetail(tok);
 					
-					//CHECK NOT NULL!
-					MiniNumber scfactor = MiniNumber.ONE;
-					if(td != null) {
-						scfactor = td.getScaleFactor();
-					}
-					
 					//Now work out the actual amounts..
 					MiniNumber tot_conf     = (MiniNumber) jobj.get("confirmed");
-					MiniNumber tot_scconf   = tot_conf.mult(scfactor);
+					MiniNumber tot_scconf   = td.getScaledTokenAmount(tot_conf);
 					MiniNumber tot_unconf   = (MiniNumber) jobj.get("unconfirmed");
-					MiniNumber tot_scunconf = tot_unconf.mult(scfactor);
+					MiniNumber tot_scunconf = td.getScaledTokenAmount(tot_unconf);
 					
 					//And re-add
 					jobj.put("confirmed", tot_scconf.toString());
@@ -642,7 +668,7 @@ public class ConsensusPrint extends ConsensusProcessor {
 					if(memp == null) {
 						memp = MiniNumber.ZERO;
 					}
-					jobj.put("mempool", memp.mult(scfactor).toString());
+					jobj.put("mempool", td.getScaledTokenAmount(memp).toString());
 					
 					//SIMPLE SENDS
 					MiniNumber tot_simple = MiniNumber.ZERO;
@@ -656,7 +682,9 @@ public class ConsensusPrint extends ConsensusProcessor {
 							tot_simple = tot_simple.add(confc.getAmount());	
 						}
 					}
-					jobj.put("sendable", tot_simple.mult(scfactor).toString());
+					
+					jobj.put("sendable", td.getScaledTokenAmount(tot_simple).toString());
+					//jobj.put("sendable", tot_simple.mult(scfactor).toString());
 				}
 				
 				//add it to the mix
@@ -731,7 +759,8 @@ public class ConsensusPrint extends ConsensusProcessor {
 				MiniNumber tokenamount = coin.getAmount();
 				if(!coin.getTokenID().isEqual(coin.MINIMA_TOKENID)) {
 					TokenProof td = getMainDB().getUserDB().getTokenDetail(coin.getTokenID());
-					tokenamount = coin.getAmount().mult(td.getScaleFactor());	
+					tokenamount = td.getScaledTokenAmount(coin.getAmount());
+//					tokenamount = coin.getAmount().mult(td.getScaleFactor());
 				}
 				
 				//Create the JSON
@@ -745,6 +774,7 @@ public class ConsensusPrint extends ConsensusProcessor {
 			
 			//Add to the main JSON
 			allcoins.put("coins", totcoins);
+			allcoins.put("total", coins.size());
 			
 			//Add it to the output
 			InputHandler.endResponse(zMessage, true, "");
@@ -755,7 +785,6 @@ public class ConsensusPrint extends ConsensusProcessor {
 			String address     = zMessage.getString("address");
 			String tokenid     = zMessage.getString("tokenid");
 			String amount      = zMessage.getString("amount");
-			String type        = zMessage.getString("type");
 			
 			//What gets checked..
 			boolean checkaddress  = !address.equals("");
@@ -781,46 +810,35 @@ public class ConsensusPrint extends ConsensusProcessor {
 			
 			//Current TIP
 			BlockTreeNode tip  	 = getMainDB().getMainTree().getChainTip();
-			if(tip == null) {
-				//Starting up..
-				InputHandler.endResponse(zMessage, true, "No tip found..");
-				return;
+			
+			if(tip != null) {
+				MiniNumber minblock  = tip.getTxPow().getBlockNumber().sub(GlobalParams.MINIMA_CONFIRM_DEPTH);
+				
+				//Return all coins no matter the depth
+//				MMRSet baseset 	     = tip.getMMRSet().getParentAtTime(minblock);
+				MMRSet baseset 	     = tip.getMMRSet();
+				
+				if(baseset != null) {
+					//Search for coins..
+					ArrayList<MMREntry> res = baseset.searchCoins(	relevant, 
+																	checkaddress, addr, 
+																	checkamount,  amt, 
+																	checktokenid, tok);
+					
+					//And add to the response..
+					for(MMREntry entry : res) {
+						totcoins.add(baseset.getProof(entry.getEntryNumber()).toJSON());
+					}
+					
+					allcoins.put("total", res.size());
+				}else {
+					allcoins.put("total", 0);
+				}
+				
+			}else {
+				allcoins.put("total", 0);
 			}
 			
-//			MiniNumber minblock  = tip.getTxPow().getBlockNumber().sub(GlobalParams.MINIMA_CONFIRM_DEPTH);
-			MMRSet baseset 	     = tip.getMMRSet();//.getParentAtTime(minblock);
-			
-			//Cycle..
-			ArrayList<CoinDBRow> coins = getMainDB().getCoinDB().getComplete();
-			for(CoinDBRow coin : coins) {
-				//RELEVANT..
-				if(relevant && !coin.isRelevant()) {continue;}
-				
-				//SPEND TYPE
-				if(type.equals("spent") && !coin.isSpent()) {continue;}
-				if(type.equals("unspent") && coin.isSpent()) {continue;}
-				
-				//ADDRESS
-				if(checkaddress && !coin.getCoin().getAddress().isEqual(addr)) {
-					continue;
-				}
-				
-				//TOKEN
-				if(checktokenid && !coin.getCoin().getTokenID().isEqual(tok)) {
-					continue;
-				}
-				
-				//AMOUNT
-				if(checkamount && !coin.getCoin().getAmount().isEqual(amt)) {
-					continue;
-				}
-				
-				//DEEP ENOUGH - for now add any found
-//				if(coin.getInBlockNumber().isLessEqual(minblock)) {
-					//OK - FOUND ONE!
-					totcoins.add(baseset.getProof(coin.getMMREntry()).toJSON());	
-//				}
-			}
 			
 			//Add it to the output
 			InputHandler.endResponse(zMessage, true, "");
@@ -886,6 +904,7 @@ public class ConsensusPrint extends ConsensusProcessor {
 			
 			//And add to the final response
 			allbal.put("history",totbal);
+			allbal.put("total",totbal.size());
 			
 			//All good
 			InputHandler.endResponse(zMessage, true, "");
@@ -1003,12 +1022,6 @@ public class ConsensusPrint extends ConsensusProcessor {
 			status.put("cascade", getMainDB().getMainTree().getCascadeNode().getTxPow().getBlockNumber().toString());
 			
 			status.put("difficulty", tip.getTxPow().getBlockDifficulty().to0xString());
-			
-			//MMR DB
-			status.put("mmrentrydb", MMREntryDB.getDB().getSize());
-			
-			//COINDB
-			status.put("coindb", getMainDB().getCoinDB().getComplete().size());
 			
 			//TxPOWDB
 			status.put("txpowdb", getMainDB().getTxPowDB().getSize());

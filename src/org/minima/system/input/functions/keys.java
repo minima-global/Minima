@@ -1,6 +1,7 @@
 package org.minima.system.input.functions;
 
 import org.minima.GlobalParams;
+import org.minima.objects.keys.MultiKey;
 import org.minima.system.brains.ConsensusPrint;
 import org.minima.system.brains.ConsensusUser;
 import org.minima.system.input.CommandFunction;
@@ -21,8 +22,8 @@ public class keys extends CommandFunction {
 			Message newkey  = getResponseMessage(ConsensusUser.CONSENSUS_NEWKEY);
 			
 			//Default 
-			newkey.addInteger("keys", 16);
-			newkey.addInteger("levels", 2);
+			newkey.addInteger("keys", MultiKey.DEFAULT_KEYS_PER_LEVEL.getAsInt());
+			newkey.addInteger("levels", MultiKey.DEFAULT_LEVELS.getAsInt());
 			
 			if(zInput.length>4) {
 				//Get the bit length

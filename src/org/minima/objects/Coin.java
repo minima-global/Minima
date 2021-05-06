@@ -54,26 +54,26 @@ public class Coin implements Streamable {
 	 */
 	boolean mFloating = false;
 
-//	/**
-//	 * Outputs can be designated as REMAINDERS for all the value remaining of a certain tokenid.. should the floating input change it.
-//	 */
-//	boolean mRemainder = false;
+	/**
+	 * Output coins can choose to not store the state data and save space - change output for instance
+	 */
+	boolean mStoreState = true;
 	
 	/**
 	 * Main Constructor
 	 */
 	public Coin(MiniData zCoinID, MiniData zAddress, MiniNumber zAmount, MiniData zTokenID) {
-		this(zCoinID, zAddress, zAmount, zTokenID, false);
+		this(zCoinID, zAddress, zAmount, zTokenID, false, true);
 	}
 		
-	public Coin(MiniData zCoinID, MiniData zAddress, MiniNumber zAmount, MiniData zTokenID, boolean zFloating) {
+	public Coin(MiniData zCoinID, MiniData zAddress, MiniNumber zAmount, MiniData zTokenID, boolean zFloating, boolean zStoreState) {
 		mCoinID  = zCoinID;
 		mAddress = zAddress;
 		mAmount  = zAmount;
 		mTokenID = zTokenID;
 		
-		mFloating  = zFloating;
-//		mRemainder = zRemainder;
+		mFloating   = zFloating;
+		mStoreState = zStoreState;
 	}
 	
 	private Coin() {}
@@ -85,15 +85,7 @@ public class Coin implements Streamable {
 	public boolean isFloating() {
 		return mFloating;
 	}
-	
-//	public void setRemainder(boolean zRemainder) {
-//		mRemainder = zRemainder;
-//	}
-//	
-//	public boolean isRemainder() {
-//		return mRemainder;
-//	}
-	
+		
 	/**
 	 * Floating inputs change the CoinID
 	 */
@@ -101,13 +93,13 @@ public class Coin implements Streamable {
 		mCoinID = zCoinID;
 	}
 	
-//	/**
-//	 * Floating inputs or Remainder Outputs change the Amount
-//	 */
-//	public void resetAmount(MiniNumber zAmount) {
-//		mAmount = zAmount;
-//	}
-	
+	/**
+	 * Do we store the state for this coin
+	 * @return
+	 */
+	public boolean storeState() {
+		return mStoreState;
+	}
 	
 	public MiniData getCoinID() {
 		return mCoinID;
@@ -145,7 +137,7 @@ public class Coin implements Streamable {
 		obj.put("tokenid", mTokenID.toString());
 		
 		obj.put("floating", mFloating);
-//		obj.put("remainder", mRemainder);
+		obj.put("storestate", mStoreState);
 		
 		return obj;
 	}
@@ -163,11 +155,11 @@ public class Coin implements Streamable {
 			MiniByte.FALSE.writeDataStream(zOut);
 		}
 		
-//		if(mRemainder) {
-//			MiniByte.TRUE.writeDataStream(zOut);
-//		}else {
-//			MiniByte.FALSE.writeDataStream(zOut);
-//		}
+		if(mStoreState) {
+			MiniByte.TRUE.writeDataStream(zOut);
+		}else {
+			MiniByte.FALSE.writeDataStream(zOut);
+		}
 	}
 
 	@Override
@@ -177,8 +169,8 @@ public class Coin implements Streamable {
 		mAmount   = MiniNumber.ReadFromStream(zIn);
 		mTokenID  = MiniData.ReadHashFromStream(zIn);
 		
-		mFloating  = MiniByte.ReadFromStream(zIn).isTrue();
-//		mRemainder = MiniByte.ReadFromStream(zIn).isTrue();
+		mFloating   = MiniByte.ReadFromStream(zIn).isTrue();
+		mStoreState = MiniByte.ReadFromStream(zIn).isTrue();
 	}
 	
 	public static Coin ReadFromStream(DataInputStream zIn) throws IOException {

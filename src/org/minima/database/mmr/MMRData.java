@@ -31,7 +31,7 @@ public class MMRData implements Streamable{
 	/**
 	 * The Block number that this output was created in - OP_CSV 
 	 */
-	MiniNumber mBlockNumber;
+	MiniNumber mBlockCreated;
 	
 	/**
 	 * The State variables in the transaction this coin was created
@@ -81,7 +81,7 @@ public class MMRData implements Streamable{
 	public MMRData(MiniByte zSpent, Coin zCoin, MiniNumber zInBlock, ArrayList<StateVariable> zState) {
 		mSpent 		 = zSpent;
 		mCoin 		 = zCoin;
-		mBlockNumber = zInBlock;
+		mBlockCreated = zInBlock;
 		
 		//Copy the state - only keep the keepers..
 		for(StateVariable sv : zState) {
@@ -159,7 +159,7 @@ public class MMRData implements Streamable{
 	}
 	
 	public MiniNumber getInBlock() {
-		return mBlockNumber;
+		return mBlockCreated;
 	}
 	
 	public boolean isHashOnly() {
@@ -179,7 +179,7 @@ public class MMRData implements Streamable{
 			
 			obj.put("spent", isSpent());
 			obj.put("coin", mCoin);
-			obj.put("inblock", mBlockNumber.toString());
+			obj.put("inblock", mBlockCreated.toString());
 			
 			//State
 			JSONArray outs = new JSONArray();
@@ -214,7 +214,7 @@ public class MMRData implements Streamable{
 			//Write out the data..
 			mSpent.writeDataStream(zOut);
 			mCoin.writeDataStream(zOut);
-			mBlockNumber.writeDataStream(zOut);
+			mBlockCreated.writeDataStream(zOut);
 			
 			//How many state variables..
 			int len = mPrevState.size();
@@ -240,7 +240,7 @@ public class MMRData implements Streamable{
 		}else {
 			mSpent   	 = MiniByte.ReadFromStream(zIn);
 			mCoin    	 = Coin.ReadFromStream(zIn);
-			mBlockNumber = MiniNumber.ReadFromStream(zIn);
+			mBlockCreated = MiniNumber.ReadFromStream(zIn);
 			
 			//State Variables
 			mPrevState = new ArrayList<StateVariable>();

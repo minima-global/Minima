@@ -218,6 +218,11 @@ public class Transaction implements Streamable {
 			if(!cc.getAmount().isValidMinimaValue()) {
 				return false;
 			}
+			
+			//Inputs MUST be more than ZERO
+			if(cc.getAmount().isLessEqual(MiniNumber.ZERO)) {
+				return false;
+			}
 		}
 		
 		for(Coin cc : mOutputs) {

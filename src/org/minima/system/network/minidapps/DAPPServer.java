@@ -21,6 +21,7 @@ import org.minima.system.network.minidapps.minihub.hexdata.installdapphtml;
 import org.minima.system.network.minidapps.minihub.hexdata.manropettf;
 import org.minima.system.network.minidapps.minihub.hexdata.minidapphubpng;
 import org.minima.system.network.minidapps.minihub.hexdata.minidappscss;
+import org.minima.system.network.minidapps.minihub.hexdata.sharepng;
 import org.minima.system.network.minidapps.minihub.hexdata.tilegreyjpeg;
 import org.minima.system.network.minidapps.minihub.hexdata.uninstalldapphtml;
 import org.minima.system.network.minidapps.minihub.hexdata.uninstallpng;
@@ -198,6 +199,9 @@ public class DAPPServer extends NanoHTTPD{
 				}else if(fileRequested.equals("download.png")) {
 					return getOKResponse(downloadpng.returnData(), "image/jpeg");	
 				
+				}else if(fileRequested.equals("share.png")) {
+					return getOKResponse(sharepng.returnData(), "image/jpeg");	
+				
 				}else if(fileRequested.equals("uninstall.png")) {
 					return getOKResponse(uninstallpng.returnData(), "image/jpeg");	
 				
@@ -359,7 +363,7 @@ public class DAPPServer extends NanoHTTPD{
 					+ "				</td>\n"
 					+ "				<td onclick='"+openwebpage+"' style='cursor:pointer;font-size:16px;'><B>"+name+"</B></td>\n"
 					+ "				<td rowspan=3 nowrap>\n"
-					+ "					&nbsp;<a href='"+download+"' download><img height=30 src='download.png'></a>&nbsp;&nbsp;&nbsp;\n"
+					+ "					&nbsp;<a href='"+download+"' download><img height=30 src='share.png'></a>&nbsp;&nbsp;&nbsp;\n"
 					+ "					<img style='cursor:pointer;' onclick=\"uninstallDAPP('"+name+"','"+uid+"');\" height=30 src='uninstall.png'>&nbsp;\n"
 					+ "				</td>\n"
 					+ "			</tr>\n"

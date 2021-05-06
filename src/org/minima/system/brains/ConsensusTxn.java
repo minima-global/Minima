@@ -1,16 +1,12 @@
 package org.minima.system.brains;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.util.ArrayList;
 import java.util.Random;
 
 import org.minima.database.MinimaDB;
-import org.minima.database.coindb.CoinDBRow;
 import org.minima.database.mmr.MMREntry;
-import org.minima.database.mmr.MMRProof;
 import org.minima.database.mmr.MMRSet;
 import org.minima.database.txpowtree.BlockTreeNode;
 import org.minima.database.userdb.UserDBRow;
@@ -228,7 +224,8 @@ public class ConsensusTxn extends ConsensusProcessor {
 				}
 				
 				//Scale..
-				samount = samount.div(tokendets.getScaleFactor());
+				samount = tokendets.getScaledMinimaAmount(samount);
+//				samount = samount.div(tokendets.getScaleFactor());
 				
 				//And set the new value..
 				amount = samount.toString();
@@ -255,7 +252,9 @@ public class ConsensusTxn extends ConsensusProcessor {
 			if(total.isLess(sendamount)) {
 				//Insufficient funds!
 				if(!tokenid.equals(Coin.MINIMA_TOKENID.to0xString())) {
-					total = total.mult(tokendets.getScaleFactor());
+					total = tokendets.getScaledTokenAmount(total);
+//					total = total.mult(tokendets.getScaleFactor());
+					
 					InputHandler.endResponse(zMessage, false, "Insufficient funds! You only have : "+total);
 				}else {
 					InputHandler.endResponse(zMessage, false, "Insufficient funds! You only have : "+total);
@@ -270,7 +269,7 @@ public class ConsensusTxn extends ConsensusProcessor {
 			//Blank address - check change is non-null
 			Address change = new Address(); 
 			if(!total.isEqual(sendamount)) {
-				change = getMainDB().getUserDB().newSimpleAddress();
+				change = getMainDB().getUserDB().getCurrentAddress(getConsensusHandler());
 			}
 			
 			//May already have had some state variables set..
@@ -352,11 +351,11 @@ public class ConsensusTxn extends ConsensusProcessor {
 			Witness wit     =  getMainDB().getUserDB().getUserRow(trans).getWitness();
 			
 			//Get the Coin..
-			CoinDBRow crow = getMainDB().getCoinDB().getCoinRow(coinid);
+//			CoinDBRow crow = getMainDB().getCoinDB().getCoinRow(coinid);
 			Coin cc        = null;
 			
 			//If it isn't one of OUR coins..
-			if(crow==null) {
+//			if(crow==null) {
 				//Get the MMRSet
 				MMRSet basemmr = getMainDB().getMainTree().getChainTip().getMMRSet();
 				
@@ -370,9 +369,9 @@ public class ConsensusTxn extends ConsensusProcessor {
 					InputHandler.endResponse(zMessage, false, "CoinID not found : "+coinid);
 					return;	
 				}
-			}else {
-				cc = crow.getCoin();
-			}
+//			}else {
+//				cc = crow.getCoin();
+//			}
 						
 			//Is it a Token ? 
 			if(!cc.getTokenID().isEqual(Coin.MINIMA_TOKENID)) {
@@ -526,10 +525,24 @@ public class ConsensusTxn extends ConsensusProcessor {
 			
 			//Check the INPUTS against the MEMPOOL COINS..
 			if(getMainDB().checkTransactionForMempoolCoins(trx)) {
-				//No GOOD!
 				InputHandler.endResponse(zMessage, false, "ERROR double spend coin in mempool.");
 				return;
 			}
+			
+			//Check the INPUTS against the Mining pool..
+			if(getMainDB().checkTransactionForMining(trx)) {
+				InputHandler.endResponse(zMessage, false, "ERROR double spend coin in mining pool.");
+				return;
+			}
+			
+			//Add all the inputs to the mining..
+			getMainDB().addMiningTransaction(trx);
+			
+			//Notify listeners that Mining is starting...
+			JSONObject mining = new JSONObject();
+			mining.put("event","txpowstart");
+			mining.put("transaction",trx.toJSON());
+			getConsensusHandler().PostDAPPJSONMessage(mining);
 			
 			//Create the message
 			Message msg = new Message(ConsensusHandler.CONSENSUS_SENDTRANS)
@@ -702,40 +715,45 @@ public class ConsensusTxn extends ConsensusProcessor {
 			dos.close();
 		
 		}else if(zMessage.isMessageType(CONSENSUS_TXNIMPORT)) {
+			//FOR NOW
+			InputHandler.endResponse(zMessage, false, "THIS FUNCTION CURRENTLY UNAVAILABLE!");
+			
 			//Import to this transaction 
-			int trans = zMessage.getInteger("transaction");
-			String data = zMessage.getString("data");
-			MiniData md = new MiniData(data);
 			
-			//Delete if Exists
-			getMainDB().getUserDB().deleteUserRow(trans);
-			UserDBRow row =  getMainDB().getUserDB().addUserRow(trans);
 			
-			//Convert to a data stream
-			ByteArrayInputStream bais = new ByteArrayInputStream(md.getData());
-			DataInputStream dis = new DataInputStream(bais);
-			
-			//Now get the TRansaction
-			row.getTransaction().readDataStream(dis);
-			
-			//And the Witness..
-			row.getWitness().readDataStream(dis);
-			
-			//Import all the proofs..
-			JSONObject resp = InputHandler.getResponseJSON(zMessage);
-			for(MMRProof proof : row.getWitness().getAllMMRProofs()) {
-				boolean valid = ConsensusUser.importCoin(getMainDB(), proof);
-			
-				if(!valid) {
-					resp.put("error", "INVALID PROOF!");
-					resp.put("proof", proof.toJSON());	
-					InputHandler.endResponse(zMessage, true, "");
-					
-					return;
-				}
-			}
-			
-			listTransactions(zMessage);
+//			int trans = zMessage.getInteger("transaction");
+//			String data = zMessage.getString("data");
+//			MiniData md = new MiniData(data);
+//			
+//			//Delete if Exists
+//			getMainDB().getUserDB().deleteUserRow(trans);
+//			UserDBRow row =  getMainDB().getUserDB().addUserRow(trans);
+//			
+//			//Convert to a data stream
+//			ByteArrayInputStream bais = new ByteArrayInputStream(md.getData());
+//			DataInputStream dis = new DataInputStream(bais);
+//			
+//			//Now get the TRansaction
+//			row.getTransaction().readDataStream(dis);
+//			
+//			//And the Witness..
+//			row.getWitness().readDataStream(dis);
+//			
+//			//Import all the proofs..
+//			JSONObject resp = InputHandler.getResponseJSON(zMessage);
+//			for(MMRProof proof : row.getWitness().getAllMMRProofs()) {
+//				boolean valid = ConsensusUser.importCoin(getMainDB(), proof);
+//			
+//				if(!valid) {
+//					resp.put("error", "INVALID PROOF!");
+//					resp.put("proof", proof.toJSON());	
+//					InputHandler.endResponse(zMessage, true, "");
+//					
+//					return;
+//				}
+//			}
+//			
+//			listTransactions(zMessage);
 		}
 		
 		

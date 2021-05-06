@@ -43,7 +43,9 @@ public class GETOUTAMT extends MinimaFunction {
 			if(td == null) {
 				throw new ExecutionException("No Token found for ID "+cc.getTokenID());
 			}
-			return new NumberValue(cc.getAmount().mult(td.getScaleFactor()));
+			
+			return new NumberValue(td.getScaledTokenAmount(cc.getAmount()));
+			//return new NumberValue(cc.getAmount().mult(td.getScaleFactor()));
 		}
 		
 		//Return the address	

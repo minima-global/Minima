@@ -78,21 +78,9 @@ public class CascadeTree {
 		//Get all the blocks we have to save as .block..
 		BlockTreeNode savenode = newcascade.getParent();
 		while(savenode!=null && savenode.getBlockNumber().isMoreEqual(minblock)) {
-			//Create a deep copy.. so that clear the cascade node makes no difference..
-			TxPoW copytx = savenode.getTxPow().deepCopy();
-			copytx.clearBody();
+			//Tell the backup manager to save this file..
+			backup.backupSaveTempBlock(savenode.getBlockNumber(), savenode.getTxPow().getTxPowID().to0xString());
 			
-			//Now make a tree node..
-			BlockTreeNode copynode = new BlockTreeNode(copytx);
-			copynode.setMMRset(savenode.getMMRSet());
-			copynode.setCascade(false);
-			
-			//Now make a syncpacket
-			SyncPacket pack = new SyncPacket(copynode, false);
-			
-			//Saver..
-			backup.backupBlock(pack);
-		
 			//Get the Parent
 			savenode = savenode.getParent();
 		}

@@ -11,10 +11,12 @@ import org.minima.system.input.functions.cleanscript;
 import org.minima.system.input.functions.coins;
 import org.minima.system.input.functions.coinsimple;
 import org.minima.system.input.functions.connect;
+import org.minima.system.input.functions.currentaddress;
 import org.minima.system.input.functions.disconnect;
 import org.minima.system.input.functions.extrascript;
 import org.minima.system.input.functions.flushmempool;
 import org.minima.system.input.functions.gimme50;
+import org.minima.system.input.functions.hash;
 import org.minima.system.input.functions.help;
 import org.minima.system.input.functions.history;
 import org.minima.system.input.functions.intro;
@@ -52,10 +54,7 @@ import org.minima.system.input.functions.txpowinfo;
 import org.minima.system.input.functions.txpowsearch;
 import org.minima.system.input.functions.unkeepcoin;
 import org.minima.system.input.functions.verify;
-import org.minima.system.input.functions.weblink;
-import org.minima.system.input.functions.transfer.exportcoin;
 import org.minima.system.input.functions.transfer.exportkey;
-import org.minima.system.input.functions.transfer.importcoin;
 import org.minima.system.input.functions.transfer.importkey;
 import org.minima.system.input.functions.txns.txnauto;
 import org.minima.system.input.functions.txns.txncreate;
@@ -83,13 +82,14 @@ public abstract class CommandFunction {
 	 */
 	public static CommandFunction[] ALL_FUNCTIONS = 
 		{
-			new backup(), new restore(), new balance(), new connect(), new disconnect(), new weblink(),
+			new backup(), new restore(), new balance(), new connect(), new disconnect(), new currentaddress(),
 			new gimme50(), new help(), new intro(), new automine(), new newaddress(), new coins(), new coinsimple(), new txpowinfo(), new keys(),
 			new newscript(), new printdb(), new printtree(), new quit(),new reconnect(), new runscript(), new cleanscript(), 
 			new send(), new sendpoll(), new status(), new test(), new trace(), new tutorial(), new history(), new topblock(),
 			new tokens(), new tokencreate(), new tokenvalidate(), new mineblock(),
-			new maxima(), new sshtunnel(), new reset(),
-			new exportkey(), new importkey(), new exportcoin(), new importcoin(), new search(),
+			new maxima(), new sshtunnel(), new reset(), new hash(),
+//			new exportcoin(), new importcoin(),
+			new exportkey(), new importkey(),  new search(),
 			new chainsha(), new keepcoin(), new unkeepcoin(), new scripts(), new network(), new minidapps(),
 			new txncreate(), new txndelete(), new txninput(), new txnlist(), new txnauto(),
 			new txnstate(), new txnexport(), new txnimport(), new txnscript(), new txnreminput(), new txnremoutput(),

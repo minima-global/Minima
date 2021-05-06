@@ -83,6 +83,7 @@ public class help extends CommandFunction{
 			addJSONDesc(new send());
 			addJSONDesc(new sendpoll());
 			addJSONDesc(new newaddress());
+//			addJSONDesc(new currentaddress());
 			addJSONDesc(new balance());
 			
 			addJSONDesc(new keys());
@@ -114,6 +115,7 @@ public class help extends CommandFunction{
 			addJSONDesc(new verify());
 			addJSONDesc(new chainsha());
 			addJSONDesc(new random());
+			addJSONDesc(new hash());
 			
 			addJSONDesc(new maxima());
 			addJSONDesc(new sshtunnel());
@@ -149,7 +151,7 @@ public class help extends CommandFunction{
 		String params = zFunc.getParams().replaceAll("\\{", "\\(").replaceAll("\\}", "\\)").trim();
 		
 		//The Name.. same length for better reading
-		String name = getStrOfLength(14, zFunc.getName());
+		String name = getStrOfLength(16, zFunc.getName());
 		
 		//Auto fill
 		if(params.equals("")) {

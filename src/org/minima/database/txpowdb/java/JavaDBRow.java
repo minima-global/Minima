@@ -16,25 +16,22 @@ public class JavaDBRow implements TxPOWDBRow {
 	private MiniNumber mInBlocknumber;
 	
 	private int mBlockState;
-	
-	private long mDeleteTime;
-	
-	private long mAddedTime;
-	
+		
 	private boolean mMonotonic;
 	
 	private boolean mAssumeValid;
+	
+	private int mFailedCheck = 0;
 	
 	public JavaDBRow(TxPoW zTxPOW) {
 		mTxPOW 				= zTxPOW;
 		mIsInBlock 			= false;
 		mIsMainChainBlock   = false;
 		mBlockState         = TXPOWDBROW_STATE_BASIC;
-		mDeleteTime         = 0;
-		mAddedTime          = System.currentTimeMillis();
 		mInBlocknumber      = MiniNumber.ZERO;
 		mMonotonic          = false;
-	
+		mFailedCheck 		= 0;
+		
 		if(zTxPOW.hasBody()) {
 			mAssumeValid = false;
 		}else {
@@ -52,7 +49,6 @@ public class JavaDBRow implements TxPOWDBRow {
 		ret.put("inblock",mInBlocknumber.toString());
 		ret.put("blockstate",getStatusAsString());
 		ret.put("monotonic",mMonotonic);
-		ret.put("deleted",mDeleteTime);
 		
 		return ret;
 	}
@@ -119,24 +115,6 @@ public class JavaDBRow implements TxPOWDBRow {
 	}
 
 	@Override
-	public void deleteRow() {
-		if(mDeleteTime == 0) {
-			mDeleteTime = System.currentTimeMillis();
-		}
-	}
-
-	@Override
-	public long getDeleteTime() {
-		return mDeleteTime;
-	}
-
-	@Override
-	public long getAddedTime() {
-		return mAddedTime;
-		
-	}
-
-	@Override
 	public boolean isMonoTonic() {
 		return mMonotonic;
 	}
@@ -154,5 +132,15 @@ public class JavaDBRow implements TxPOWDBRow {
 	@Override
 	public void setAssumeValid(boolean zValid) {
 		mAssumeValid = zValid;
+	}
+
+	@Override
+	public int getFailedAttempts() {
+		return mFailedCheck;
+	}
+
+	@Override
+	public void incrementFailedAttempts() {
+		mFailedCheck++;
 	}
 }

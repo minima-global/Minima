@@ -118,7 +118,8 @@ public class GETINAMTTests {
             try {
                 Value res = mf.runFunction(ctr);
                 assertEquals(Value.VALUE_NUMBER, res.getValueType());
-                assertEquals(in2.getAmount().mult(tp.getScaleFactor()).getAsLong(), ((NumberValue) res).getNumber().getAsLong());
+                assertEquals(tp.getScaledTokenAmount(in2.getAmount()).getAsLong(), ((NumberValue) res).getNumber().getAsLong());
+//                assertEquals(in2.getAmount().mult(tp.getScaleFactor()).getAsLong(), ((NumberValue) res).getNumber().getAsLong());
             } catch (ExecutionException ex) {
                 fail();
             }

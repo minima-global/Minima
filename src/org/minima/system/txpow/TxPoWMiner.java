@@ -70,7 +70,7 @@ public class TxPoWMiner extends MessageProcessor {
 			long maxTime  	  = currentTime + MINE_CONSECUTIVE_MAX;
 			
 			if(mShowTXPOWMine) {
-				MinimaLogger.log("START TXPOW MINING "+txpow.getTransaction());
+				MinimaLogger.log("START TXPOW MINING @ "+txpow.getBlockNumber()+" "+txpow.getTransaction());
 			}
 			
 			while(mining && currentTime < maxTime && isRunning()) {
@@ -111,12 +111,12 @@ public class TxPoWMiner extends MessageProcessor {
 				Main.getMainHandler().getConsensusHandler().PostMessage(sametr);
 				
 			}else {
-				if(mShowTXPOWMine) {
-					MinimaLogger.log("TXPOW MINED!");
-				}
-				
 				//Set the TxPOW
 				txpow.calculateTXPOWID();
+				
+				if(mShowTXPOWMine) {
+					MinimaLogger.log("TXPOW MINED! @ "+txpow.getBlockNumber()+" isBlock:"+txpow.isBlock()+" "+txpow.getTransaction());
+				}
 				
 				//We have a valid TX-POW..
 				Message msg = new Message(ConsensusHandler.CONSENSUS_FINISHED_MINE).addObject("txpow", txpow);

@@ -1,5 +1,7 @@
 package org.minima.database.mmr;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -7,9 +9,10 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
-import java.util.Random;
 
 import org.minima.objects.Coin;
+import org.minima.objects.StateVariable;
+import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
@@ -27,7 +30,7 @@ public class MMRSet implements Streamable {
 	 * Maximum number of rows in this set.. 2^128 trx max.. 
 	 * Can be set higher - but takes more memory
 	 */
-	public static int MAXROWS = 128;
+	static int MAXROWS = 160;
 	
 	/**
 	 * What Block time does this MMR represent. Each represents 1 block.
@@ -44,13 +47,12 @@ public class MMRSet implements Streamable {
 	/**
 	 * What is the current entry number..
 	 */
-	public MiniNumber mEntryNumber = new MiniNumber(0);
+	MiniNumber mEntryNumber = new MiniNumber(0);
 	
 	/**
 	 * All the entries in this set 
 	 */
 	public Hashtable<String, MMREntry> mSetEntries;
-	public Hashtable<String, MMREntry> mSetEntriesCoinID;
 	
 	/**
 	 * The maximum row used in this Set
@@ -66,11 +68,6 @@ public class MMRSet implements Streamable {
 	 * Which Entries do we keep
 	 */
 	ArrayList<MiniNumber> mKeepers;
-	
-	/**
-	 * Does this MMR use the MMREntryDB for duplicates
-	 */
-	boolean mUseMMREntryDB = true;
 	
 	/**
 	 * Has the set been Finalized (Peaks / Root )
@@ -96,22 +93,13 @@ public class MMRSet implements Streamable {
 		this(null, zBitLength);
 	}
 	
-	public MMRSet(int zBitLength, boolean zUseMMREntryDB) {
-		this(null, zBitLength,zUseMMREntryDB);
-	}
-	
 	public MMRSet(MMRSet zParent) {
 		this(zParent, 512);
 	}
 	
 	public MMRSet(MMRSet zParent, int zBitLength) {
-		this(zParent,zBitLength,true);
-	}
-	
-	public MMRSet(MMRSet zParent, int zBitLength, boolean zUseMMREntryDB) {
 		//All the Entries in this set
 		mSetEntries       = new Hashtable<>();
-		mSetEntriesCoinID = new Hashtable<>();
 		
 		//The Maximum Rows and entries
 		mMaxEntries = new MMREntry[MAXROWS];
@@ -125,9 +113,6 @@ public class MMRSet implements Streamable {
 		
 		//Not Finalized..
 		mFinalized = false;
-		
-		//Do we Use the MMREntryDB
-		mUseMMREntryDB = zUseMMREntryDB;
 		
 		//What HASH strength - ALL MMR database is 512
 		MMR_HASH_BITS = zBitLength;
@@ -201,68 +186,7 @@ public class MMRSet implements Streamable {
 		mParent = zParent;
 	}
 	
-	//Switch to the shared MMREntry DB
-	private void fixEntryDuplicates() {
-		//Do we use the duplicate DB
-		if(!mUseMMREntryDB) {
-			return;
-		}
-		
-		//Get the Duplicate Copy DB
-		MMREntryDB db = MMREntryDB.getDB();
-		
-		//Create Copies..
-		Hashtable<String, MMREntry> setEntries       = new Hashtable<>();
-		Hashtable<String, MMREntry> setEntriesCoinID = new Hashtable<>();
-		MMREntry maxEntries[] 						 = new MMREntry[MAXROWS];
-		
-		//Now cycle through and use the shared MMRENtry
-		Enumeration<MMREntry> entries = mSetEntries.elements();
-		while(entries.hasMoreElements()) {
-			//The Original
-			MMREntry entry = entries.nextElement();
-		
-			//Get Shared Version..
-			MMREntry sharedentry = db.getEntry(entry, mBlockTime);
-			
-			//Add it..
-			String name = getHashTableEntry(entry.getRow(), entry.getEntryNumber());
-			setEntries.put(name, sharedentry);
-		}
-		
-		Enumeration<MMREntry> entriescoinid = mSetEntriesCoinID.elements();
-		while(entriescoinid.hasMoreElements()) {
-			//The Original
-			MMREntry entry = entriescoinid.nextElement();
-		
-			//Get Shared Version..
-			MMREntry sharedentry = db.getEntry(entry, mBlockTime);
-			
-			//Add it..
-			String name = entry.getData().getCoin().getCoinID().to0xString();
-			setEntriesCoinID.put(name, sharedentry);
-		}
-		
-		for(int i=0;i<MAXROWS;i++) {
-			if(mMaxEntries[i] != null) {
-				//Get Shared Version..
-				MMREntry sharedentry = db.getEntry(mMaxEntries[i], mBlockTime);
-				
-				//Add it..
-				maxEntries[i] = sharedentry;
-			}
-		}
-		
-		//And now set these as the actual values
-		mSetEntries 		= setEntries;
-		mSetEntriesCoinID 	= setEntriesCoinID;
-		mMaxEntries	 		= maxEntries;
-	}
-	
 	public void finalizeSet() {
-		//Fix Duplicates..
-		fixEntryDuplicates();
-		
 		//Reset
 		mFinalized = false;
 				
@@ -291,12 +215,12 @@ public class MMRSet implements Streamable {
 		return mBlockTime;
 	}
 	
-	public MMRSet getParent() {
-		return mParent;
-	}
-	
 	public MiniNumber getEntryNumber() {
 		return mEntryNumber;
+	}
+	
+	public MMRSet getParent() {
+		return mParent;
 	}
 	
 	private void incrementEntryNumber() {
@@ -307,19 +231,9 @@ public class MMRSet implements Streamable {
 		return zRow+":"+zEntry.toString();
 	}
 	
-	//This is NEVER an empty MMREntry
 	private void addHashTableEntry(MMREntry zEntry) {
-		//Add the entry to the total list HashTable
 		String name = getHashTableEntry(zEntry.getRow(), zEntry.getEntryNumber());
 		mSetEntries.put(name, zEntry);
-		
-		//Do we add to the CoinID Table..
-		if(zEntry.getRow()==0) {
-			if(!zEntry.getData().isHashOnly()) {
-				String coinid = zEntry.getData().getCoin().getCoinID().to0xString();
-				mSetEntriesCoinID.put(coinid, zEntry);
-			}
-		}
 	}
 	
 	public ArrayList<MMREntry> getRow(int zRow){
@@ -345,38 +259,97 @@ public class MMRSet implements Streamable {
 	}
 	
 	/**
-	 * Search for the first valid unspent Address and Tokenid with AT LEAST Amount coin
-	 * @param zCoinID
+	 * Search for unspent coins
 	 * @return
 	 */
-	public MMREntry searchAddress(MiniData zAddress, MiniNumber zAmount, MiniData zTokenID) {
+	public ArrayList<MMREntry> searchAllRelevantCoins() {
+		return searchCoins(true, 
+				false, new MiniData(), 
+				false, new MiniNumber(),
+				false, new MiniData());
+	}
+	
+	public ArrayList<MMREntry> searchAllCoins() {
+		return searchCoins(false, 
+				false, new MiniData(), 
+				false, new MiniNumber(),
+				false, new MiniData());
+	}
+	
+	public ArrayList<MMREntry> searchCoins(
+			boolean zKeeper, 
+			boolean zSearchAddress, MiniData zAddress, 
+			boolean zSearchAmount, MiniNumber zAmount, 
+			boolean zSearchTokenid,MiniData zTokenID) {
+		
+		//Return structure
+		ArrayList<MMREntry> ret = new ArrayList<>();
+		
+		//If you find a spent coin don't add it later as unspent..
+		ArrayList<String> addedcoins = new ArrayList<>();
+		
 		//Loop through all
 		MMRSet current = this;
 		
 		//Cycle through them..
 		while(current != null) {
-			//Get the zero row - no parents..
-			ArrayList<MMREntry> zero = current.getZeroRow();
-			for(MMREntry entry : zero) {
+			//The list of entries to search in the Set
+			ArrayList<MMREntry> entries = new ArrayList<>();
+			
+			//Only search relevant coins.. ?
+			if(zKeeper) {
+				for(MiniNumber keep : current.getKeepers()) {
+					entries.add( current.getEntry(0, keep) );	
+				}
+			}else {
+				entries = current.getZeroRow();
+			}
+				
+			//Now cycle through these entries
+			for(MMREntry entry : entries) {
 				if(!entry.getData().isHashOnly()) {
 					Coin cc = entry.getData().getCoin();
 					
-					boolean notspent  = !entry.getData().isSpent();
-					boolean addr      = cc.getAddress().isEqual(zAddress);
-					boolean amount    = cc.getAmount().isMoreEqual(zAmount);
-					boolean tok       = cc.getTokenID().isEqual(zTokenID);
+					//Is it spent
+					boolean spent  		= entry.getData().isSpent();
 					
-					if(addr && amount && tok && notspent){
-						return entry;
+					//Does it match what we are looking for
+					boolean addr      	= true;
+					boolean amount    	= true;
+					boolean tok       	= true;
+					
+					if(zSearchAddress) {
+						addr      		= cc.getAddress().isEqual(zAddress);
+					}
+					
+					if(zSearchAmount) {
+						amount    		= cc.getAmount().isEqual(zAmount);
+					}
+					
+					if(zSearchTokenid) {
+						tok       		= cc.getTokenID().isEqual(zTokenID);
+					}
+					
+					//It matches..
+					if(addr && amount && tok){
+						String coinid = cc.getCoinID().to0xString();
+						
+						//Have we already added it..
+						if(!addedcoins.contains(coinid)) {
+							addedcoins.add(coinid);
+							if(!spent) {
+								ret.add(entry);
+							}
+						}
 					}
 				}
 			}
-			
+				
 			//Search the parent..
 			current = current.getParent();
 		}
 		
-		return null;
+		return ret;
 	}
 	
 	/**
@@ -390,10 +363,17 @@ public class MMRSet implements Streamable {
 		
 		//Cycle through them..
 		String coinid = zCoinID.to0xString();
+		
+		//Check the ZERO row..
 		while(current != null) {
-			MMREntry entry = mSetEntriesCoinID.get(coinid);
-			if(entry != null) {
-				return entry;
+			
+			ArrayList<MMREntry> zero = current.getZeroRow();
+			for(MMREntry entry : zero) {
+				if(!entry.getData().isHashOnly()) {
+					if(entry.getData().getCoin().getCoinID().to0xString().equals(coinid)) {
+						return entry;
+					}
+				}
 			}
 			
 			//Search the parent..
@@ -410,7 +390,12 @@ public class MMRSet implements Streamable {
 	 * @param zData
 	 * @return
 	 */
-	protected MMREntry setEntry(int zRow, MiniNumber zEntry, MMRData zData) {
+	private MMREntry setEntry(int zRow, MiniNumber zEntry, MMRData zData) {
+		if(mFinalized) {
+			MinimaLogger.log("SETTING IN FINALIZED MMR!");
+			return null;
+		}
+		
 		//Store the Maximum
 		if(zRow>mMaxRow) {
 			mMaxRow = zRow;
@@ -492,12 +477,12 @@ public class MMRSet implements Streamable {
 		while(entry.isRight()) {
 			//Get the Sibling.. will be the left
 			MMREntry sibling = getEntry(entry.getRow(), entry.getSibling());
-						
-			//The New MMRData
-			MMRData data = getParentMMRData(sibling, entry);
 			
+			//Create the new row - hash LEFT + RIGHT
+			MMRData parentdata = getParentMMRData(sibling, entry);
+						
 			//Set the Parent Entry
-			entry = setEntry(entry.getParentRow(),entry.getParentEntry(),data);
+			entry = setEntry(entry.getParentRow(),entry.getParentEntry(),parentdata);
 		}
 		
 		return ret;
@@ -513,90 +498,93 @@ public class MMRSet implements Streamable {
 	/**
 	 * Add data - an UNSPENT coin - Must be added to the correct mmrset
 	 */
-	public MMREntry addExternalUnspentCoin(MMRProof zProof) {
-		//The Details
-		MiniNumber entrynum = zProof.getEntryNumber();
-		MMRData proofdata    = zProof.getMMRData();
-		
-		//Do we already have this Entry..
-		MMREntry entry = getEntry(0, entrynum);
-		if(!entry.isEmpty() && !entry.getData().isHashOnly()) {
-			//Make sure its a keeper
-			addKeeper(entrynum);
-			
-			//We have it..
-			return entry;
-		}
-		
-		//Create a new entry
-		entry = setEntry(0, entrynum, proofdata);
-		MMREntry ret = entry;
-		
-		//Now go up the tree..
-		int prooflen = zProof.getProofLen();
-		int proofnum = 0;
-		while(proofnum < prooflen) {
-			MMREntry sibling = getEntry(entry.getRow(), entry.getSibling());
-			
-			//Do we add our own..
-			ProofChunk chunk = zProof.getProofChunk(proofnum++);
-			MMRData pdata = new MMRData(chunk.getHash(), chunk.getValue());
-			if(sibling.isEmpty()) {
-				//Set the data
-				sibling = setEntry(sibling.getRow(), sibling.getEntryNumber(), pdata);
-				
-			}else {
-				//Check the value is what we expect it to be
-				if(!sibling.getData().getFinalHash().isEqual(pdata.getFinalHash())) {
-					//Hmm..
-					MinimaLogger.log("Sibling Inconsistency!! in MMR @ "+entrynum+" when hard adding proof");
-					
-					return null;
-				}else {
-					//We have all this allready!
-					break;
-				}
-			}
-			
-			//Create the new combined value..
-			MMRData data = null;
-			if(entry.isLeft()) {
-				data = getParentMMRData(entry, sibling);
-			}else {
-				data = getParentMMRData(sibling, entry);
-			}
-						
-			//Check if we have it..
-			MMREntry parent = getEntry(entry.getParentRow(),entry.getParentEntry());  
-			if(!parent.isEmpty()) {
-				if(!parent.getData().getFinalHash().isEqual(data.getFinalHash())) {
-					//Hmm..
-					MinimaLogger.log("Parent Inconsistency!! in MMR @ "+entrynum+" when hard adding proof");
-					
-					return null;
-				}else {
-					//We have this..!
-					break;
-				}
-			}
-			
-			//Set the Parent Entry
-			entry = setEntry(entry.getParentRow(),entry.getParentEntry(),data);
-		}
-		
-		//Its a keeper..
-		addKeeper(entrynum);
-		
-		return ret;
-	}
+//	public MMREntry addExternalUnspentCoin(MMRProof zProof) {
+//		//The Details
+//		MiniNumber entrynum  = zProof.getEntryNumber();
+//		MMRData proofdata    = zProof.getMMRData();
+//		
+//		//Do we already have this Entry..
+//		MMREntry entry = getEntry(0, entrynum);
+//		if(!entry.isEmpty() && !entry.getData().isHashOnly()) {
+//			//Make sure its a keeper
+//			addKeeper(entrynum);
+//			
+//			//We have it..
+//			return entry;
+//		}
+//		
+//		//Create a new entry
+//		entry = setEntry(0, entrynum, proofdata);
+//		MMREntry ret = entry;
+//		
+//		//Now go up the tree..
+//		int prooflen = zProof.getProofLen();
+//		int proofnum = 0;
+//		while(proofnum < prooflen) {
+//			MMREntry sibling = getEntry(entry.getRow(), entry.getSibling());
+//			
+//			//Do we add our own..
+//			ProofChunk chunk = zProof.getProofChunk(proofnum++);
+//			MMRData pdata = new MMRData(chunk.getHash(), chunk.getValue());
+//			if(sibling.isEmpty()) {
+//				//Set the data
+//				sibling = setEntry(sibling.getRow(), sibling.getEntryNumber(), pdata);
+//				
+//			}else {
+//				//Check the value is what we expect it to be
+//				if(!sibling.getData().getFinalHash().isEqual(pdata.getFinalHash())) {
+//					//Hmm..
+//					MinimaLogger.log("Sibling Inconsistency!! in MMR @ "+entrynum+" when hard adding proof");
+//					
+//					return null;
+//				}else {
+//					//We have all this allready!
+//					break;
+//				}
+//			}
+//			
+//			//Create the new combined value..
+//			MMRData parentdata = null;
+//			if(entry.isLeft()) {
+//				parentdata = getParentMMRData(entry, sibling);
+//			}else {
+//				parentdata = getParentMMRData(sibling, entry);
+//			}
+//			
+//			//Check if we have it..
+//			MMREntry parent = getEntry(entry.getParentRow(),entry.getParentEntry());  
+//			if(!parent.isEmpty()) {
+//				if(!parent.getData().getFinalHash().isEqual(parentdata.getFinalHash())) {
+//					//Hmm..
+//					MinimaLogger.log("Parent Inconsistency!! in MMR @ "+entrynum+" when hard adding proof");
+//					
+//					return null;
+//				}else {
+//					//We have this..!
+//					break;
+//				}
+//			}
+//			
+//			//Set the Parent Entry
+//			entry = setEntry(entry.getParentRow(),entry.getParentEntry(),parentdata);
+//		}
+//		
+//		//Its a keeper..
+//		addKeeper(entrynum);
+//		
+//		return ret;
+//	}
 	
 	/**
 	 * Set entry to SPENT
-	 * 
-	 * @param zProof
-	 * @return
 	 */
 	public MMREntry updateSpentCoin(MMRProof zProof) {
+		//Double check the coin is valid..
+		if(!checkProof(zProof)) {
+			MinimaLogger.log("SERIOUS ERROR : trying to update MMR with invalid proof! "+zProof);
+			return null;
+		}
+		
 		//The original MMRData..
 		MMRData original = zProof.getMMRData();
 		
@@ -613,53 +601,54 @@ public class MMRSet implements Streamable {
 		MMREntry entry = setEntry(0, zProof.getEntryNumber(), spentmmr);
 		MMREntry ret   = entry;
 		
-		//How big is the proof
-		int prooflen = zProof.getProofLen();
+		//Is this is a Peak ? - if so, go no further..
+		for(MMREntry peak : peaks) {
+			if(entry.checkPosition(peak)) {
+				return ret;
+			}
+		}
 		
-		//Start checking..
-		int pcount = 0;
-		while(true) {
-			//Check..
-			for(MMREntry peak : peaks) {
-				if(entry.checkPosition(peak)) {
-					return ret;
-				}
-			}
+		//Now update the tree - Get the Sibling.. 
+		MMREntry sibling = getEntry(0, entry.getSibling());
+		
+		//Is this a peak..
+		int prooflen = zProof.getProofLen();
+		if(sibling.isEmpty() && prooflen==0) {
+			return ret;
+		}
+		
+		//What time is this proof
+		MiniNumber prooftime = zProof.getBlockTime();
+		
+		//Are there any proof chunks
+		ProofChunk chunk  = null;
+		MiniData phash    = null;
+		MiniNumber pval   = null;
+		int pcount        = 0;
+		if(prooflen>0) {
+			chunk = zProof.getProofChunk(pcount++);
+			phash = chunk.getHash();
+			pval  = chunk.getValue();
 			
-			//Get the sibling.. Not yet at a peak..
-			MMREntry sibling = getEntry(entry.getRow(), entry.getSibling());
-			
-			//Is it empty - or do we use the proof value
+			//Do we need to fill it in.. 
+			//don't need to check the Proof time as is either SPEMNT or UNSPENT ( and might be full details for the user..)
 			if(sibling.isEmpty()) {
-				//The current proof..
-				ProofChunk chunk = zProof.getProofChunk(pcount);
-				MiniData phash   = chunk.getHash();
-				MiniNumber pval  = chunk.getValue();
-				
-				//Set the Sibling data to the current proof
-				sibling.setData(new MMRData(phash,pval));
-			}else{
-				//Is it older than the proof.. if newer leave it.. or if proof finished..
-				if(sibling.getBlockTime().isLess(zProof.getBlockTime()) && pcount<prooflen) {
-					//The current proof..
-					ProofChunk chunk = zProof.getProofChunk(pcount);
-					MiniData phash   = chunk.getHash();
-					MiniNumber pval  = chunk.getValue();
-					
-					if(!sibling.getHashValue().isEqual(phash)) {
-						//The proof is newer and different - set it..
-						sibling.setData(new MMRData(phash,pval));
-					}
-				}
+				sibling = setEntry(sibling.getRow(), sibling.getEntryNumber(), new MMRData(phash, pval));
+			
+			}else if(sibling.getBlockTime().isLess(zProof.getBlockTime()) && !sibling.getData().getFinalHash().isEqual(phash)) {
+				//This might be FULL details..
+				MinimaLogger.log("ZERO 0 SIBLING DIFFERENT HASH");
+				sibling = setEntry(sibling.getRow(), sibling.getEntryNumber(), new MMRData(phash, pval));
 			}
 			
-			//Set the Sibling in this MMRSET!.. Could be a FULL non hash only.. this way the MMR peaks still work.. (as the max in a row MUST be on the left to be a peak ))
-			sibling = setEntry(sibling.getRow(), sibling.getEntryNumber(), sibling.getData());
-			
-			//increase the count..
-			pcount++;
-			
-			//Now calculate the parent
+			//Set the Sibling in this MMRSET!.. this way the MMR peaks still work.. (as the max in a row MUST be on the left to be a peak ))
+			setEntry(sibling.getRow(), sibling.getEntryNumber(),sibling.getData());
+		}
+		
+		//Now go up the tree..
+		while(!sibling.isEmpty()) {
+			//Create the new parent
+			//Create the new combined value..
 			MMRData parentdata = null;
 			if(entry.isLeft()) {
 				parentdata = getParentMMRData(entry, sibling);
@@ -667,14 +656,59 @@ public class MMRSet implements Streamable {
 				parentdata = getParentMMRData(sibling, entry);
 			}
 			
+			//Set the Sibling in this MMRSET!.. this way the MMR peaks still work.. (as the max in a row MUST be on the left to be a peak ))
+			setEntry(sibling.getRow(), sibling.getEntryNumber(), sibling.getData());
+			
 			//Set the Parent
 			entry = setEntry(entry.getParentRow(), entry.getParentEntry(), parentdata);
+			
+			//Is this is a Peak ? - if so, go no further..
+			for(MMREntry peak : peaks) {
+				if(entry.checkPosition(peak)) {
+					return ret;
+				}
+			}
+			
+			//Get the Sibling..
+			sibling = getEntry(entry.getRow(), entry.getSibling());
+			
+			//Check for a valid sibling
+			if(pcount < prooflen) {
+				chunk = zProof.getProofChunk(pcount++);
+				phash = chunk.getHash();
+				pval  = chunk.getValue();
+				if(sibling.isEmpty() || sibling.getBlockTime().isLess(prooftime)) {
+					sibling = setEntry(sibling.getRow(), sibling.getEntryNumber(), new MMRData(phash,pval));		
+				}
+			}
 		}
+		
+		return ret;
 	}
 	
 	/**
 	 * Get An MMR Proof
 	 */
+	public MMRProof getProof(MiniNumber zEntryNumber) {
+		//Get the Basic Proof..
+		MMRProof proof = getProofToPeak(zEntryNumber);
+		
+		//Now get the peak this points to..
+		MiniData peak = proof.getFinalHash();
+		
+		//Now find the path to root for this peak
+		MMRProof rootproof = getPeakToRoot(peak);
+		
+		//Now add the two..
+		int len = rootproof.getProofLen();
+		for(int i=0;i<len;i++) {
+			ProofChunk chunk = rootproof.getProofChunk(i);
+			proof.addProofChunk(chunk.getLeft(), chunk.getHash(), chunk.getValue());
+		}
+
+		return proof;
+	}
+	
 	protected MMRProof getProofToPeak(MiniNumber zEntryNumber) {
 		//First get the initial Entry.. check parents aswell..
 		MMREntry entry = getEntry(0, zEntryNumber);
@@ -699,9 +733,6 @@ public class MMRSet implements Streamable {
 		return proof;
 	}
 	
-	/**
-	 * Get Proof to ROOT
-	 */
 	protected MMRProof getPeakToRoot(MiniData zPeak) {
 		//Sum of all the initial proofs...
 		MMRProof totalproof = new MMRProof();
@@ -715,7 +746,7 @@ public class MMRSet implements Streamable {
 		MMREntry keeper 		= null;
 		while(peaks.size() > 1) {
 			//Create a new MMR
-			MMRSet newmmr = new MMRSet(MMR_HASH_BITS,false);
+			MMRSet newmmr = new MMRSet(MMR_HASH_BITS);
 			
 			//Add all the peaks to it..
 			for(MMREntry peak : peaks) {
@@ -726,13 +757,10 @@ public class MMRSet implements Streamable {
 				MMREntry current = newmmr.addUnspentCoin(data);
 				
 				//Is this the one to follow..
-				if(keeper==null && peak.getHashValue().isEqual(currentpeak)) {
+				if(peak.getHashValue().isEqual(currentpeak)) {
 					keeper = current;
 				}
 			}
-			
-			//Finalise..
-			newmmr.finalizeSet();
 			
 			//MUST have found the desired peak..
 			if(keeper == null) {
@@ -760,33 +788,7 @@ public class MMRSet implements Streamable {
 		
 		return totalproof;
 	}
-	
-	/**
-	 * Get the full proof to the root of the MMR
-	 * 
-	 * @param zEntry
-	 * @return
-	 */
-	public MMRProof getProof(MiniNumber zEntry) {
-		//Get the Basic Proof..
-		MMRProof proof = getProofToPeak(zEntry);
 		
-		//Now get the peak this points to..
-		MiniData peak = proof.getFinalHash();
-		
-		//Now find the path to root for this peak
-		MMRProof rootproof = getPeakToRoot(peak);
-		
-		//Now add the two..
-		int len = rootproof.getProofLen();
-		for(int i=0;i<len;i++) {
-			ProofChunk chunk = rootproof.getProofChunk(i);
-			proof.addProofChunk(chunk.getLeft(), chunk.getHash(), chunk.getValue());
-		}
-		
-		return proof;
-	}
-	
 	/**
 	 * Check this is a valid UNSPENT output.
 	 * 
@@ -798,13 +800,13 @@ public class MMRSet implements Streamable {
 	public boolean checkProof(MMRProof zProof) {
 		//MUST have data to be checked
 		if(zProof.getMMRData().isHashOnly()) {
-			MinimaLogger.log("Invalid PROOF check HASHONLY! : "+zProof);
+			MinimaLogger.log("checkProof PROOF check HASHONLY! : "+zProof);
 			return false;
 		}
 		
 		//Check is not spent.. 
 		if(zProof.getMMRData().isSpent()) {
-			MinimaLogger.log("Invalid PROOF is SPENT! : "+zProof);
+			MinimaLogger.log("checkProof PROOF is SPENT! : "+zProof);
 			return false;
 		}
 		
@@ -813,16 +815,17 @@ public class MMRSet implements Streamable {
 		
 		//The proof is it too old.. we can't check it. It's invalid.
 		if(proofset == null) {
-			MinimaLogger.log("ERROR Proof too Old "+zProof);
+			MMRSet oldest = getOldestMMR();
+			MinimaLogger.log("checkProof Proof too Old MAX:"+oldest.getBlockTime()+" proof:"+zProof);
 			return false;
 		}
-		
-		//Check the root..
+				
+		//Get the root..
 		MMRData root = proofset.getMMRRoot();
 		
-		//Check the merkle proof
+		//Check..
 		if(!zProof.getFinalHash().isEqual(root.getFinalHash())) {
-			MinimaLogger.log("ERROR Proof does not match root "+zProof);
+			MinimaLogger.log("checkProof Proof not equal to ROOT! "+zProof);
 			return false;
 		}
 		
@@ -831,8 +834,8 @@ public class MMRSet implements Streamable {
 		
 		//Is it there ?
 		if(!entry.isEmpty()) {
-			if(!entry.getHashValue().isEqual(zProof.getMMRData().getFinalHash())) {
-				MinimaLogger.log("ERROR Proof Coin value changed since proof created "+zProof);
+			if(!entry.getData().getFinalHash().isEqual(zProof.getMMRData().getFinalHash())) {
+				MinimaLogger.log("ERROR Proof Coin changed since proof created "+zProof);
 				return false;
 			}
 		}
@@ -887,7 +890,7 @@ public class MMRSet implements Streamable {
 		while(peaks.size() > 1) {
 		
 			//Create a new MMR
-			MMRSet newmmr = new MMRSet(MMR_HASH_BITS,false);
+			MMRSet newmmr = new MMRSet(MMR_HASH_BITS);
 			
 			//Add all the peaks to it..
 			for(MMREntry peak : peaks) {
@@ -941,7 +944,10 @@ public class MMRSet implements Streamable {
 	 * 
 	 * All the Keepers are moved Up one level..
 	 */
-	public void copyParentKeepers() {
+	private void copyParentKeepers() {
+		//Set not finalized..
+		mFinalized = false;
+		
 		//First get the Keepers..
 		ArrayList<MiniNumber> parentkeepers = new ArrayList<>();
 		if(mParent!=null) {
@@ -1074,6 +1080,20 @@ public class MMRSet implements Streamable {
 		return null;
 	}
 	
+	private MMRSet getOldestMMR() {
+		MMRSet current = this;
+		
+		while(current != null) {
+			if(current.getParent() == null) {
+				return current;
+			}
+			
+			current = current.getParent();
+		}
+		
+		return current;
+	}
+	
 	/**
 	 * Return the Parent of 2 sibling children
 	 * @param zLeftChild
@@ -1086,7 +1106,7 @@ public class MMRSet implements Streamable {
 		
 		//Make the unique MMRData Hash
 //		MiniData combined = Crypto.getInstance().hashAllObjects( MMR_HASH_BITS,
-//				zLeftChild.getHashValue(),zRightChild.getHashValue(),sumvalue);
+//				zLeftChild.getHashValue(),zRightChild.getHashValue());
 		MiniData combined = Crypto.getInstance().hashAllObjects( MMR_HASH_BITS,
 				zLeftChild.getHashValue(),zRightChild.getHashValue(),sumvalue);
 		
@@ -1126,7 +1146,6 @@ public class MMRSet implements Streamable {
 		
 		//Now the Entries..
 		mSetEntries       = new Hashtable<>();
-		mSetEntriesCoinID = new Hashtable<>();
 		mMaxEntries       = new MMREntry[MAXROWS];
 		mMaxRow = 0;
 		
@@ -1158,61 +1177,157 @@ public class MMRSet implements Streamable {
 		finalizeSet();
 	}
 	
-public static void main(String[] zARgs) {
+	/**
+	 * Get a DEEP copy of this transaction
+	 * @throws IOException 
+	 */
+	public MMRSet deepCopy(){
+		try {
+			//First write transaction out to a byte array
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			DataOutputStream dos = new DataOutputStream(baos);
+			writeDataStream(dos);
+			dos.flush();
+			dos.close();
+			
+			ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+			DataInputStream dis = new DataInputStream(bais);
+			
+			MMRSet mmr = new MMRSet();
+			mmr.readDataStream(dis);
+			
+			dis.close();
+			baos.close();
+			
+			return mmr;
+			
+		}catch(IOException ioexc) {
+			MinimaLogger.log(ioexc);
+		}	
 		
-		System.out.println("Start Tests");
-
-//		//New set for each test
-//		MMRSet mmrset = new MMRSet(160, false);
-//		int num = 6;
-//		
-//		for(int i=0;i<num;i++) {
-//			mmrset.addLeafNode(new MiniData("0xFF"));
-//		}
-//		
-//		for(int i=0;i<num;i++) {
-//			MMREntry peak = mmrset.getProofPeak(new MiniNumber(i));
-//			System.out.println(i+" "+peak);
-//		}
-		
-		
-		//RUN THROUGH MANY SIZES
-		for(int testsize=1;testsize<16;testsize++) {
-			
-//			int testsize = 8;
-			
-			//New set for each test
-			MMRSet testset = new MMRSet(160, false);
-			
-			Random rr = new Random();
-			//Add the leaf nodes
-			for(int nodes=0;nodes<testsize;nodes++) {
-				testset.addUnspentCoin(new MMRData(new MiniData("0xFF"), new MiniNumber(rr.nextInt())));
-//				testset.addUnspentCoin(new MMRData(new MiniData("0xFF"), new MiniNumber(0)));
-//				testset.addLeafNode();
-			}
-			
-			//Get the root of the tree
-			MiniData root = testset.getMMRRoot().getFinalHash();
-			System.out.println("ROOT @ Testsize:"+testsize+" peaks:"+testset.getMMRPeaks().size()+" "+testset.getMMRRoot().getValueSum()+" "+root);
-			
-			//Now check all the proofs point to that
-			for(int nodes=0;nodes<testsize;nodes++) {
-//				int nodes=6;
-//				System.out.println("Proof : "+nodes);
-				
-				MMRProof proof = testset.getProof(new MiniNumber(nodes));
-//				System.out.println(proof.toJSON());
-				
-				MiniData hash  = proof.getFinalHash();
-				if(!hash.equals(root)) {
-					System.out.println("ERROR @ Testsize:"+testsize+" node:"+nodes);
-				}
-				
-			}
-			
+		return null;
+	}
+	
+	/**
+	 * Serious tester Code
+	 */
+	public static MMRData makeMMRData(int zValue) {
+		Coin cc = new Coin(MiniData.getRandomData(20), new MiniData("0x01"), new MiniNumber(zValue), MiniData.ZERO_TXPOWID);
+		return new MMRData(MiniByte.FALSE, cc, MiniNumber.ZERO, new ArrayList<StateVariable>());
+	}
+	
+	public static void getAllProofs(MMRSet zSet){
+		int num = zSet.mEntryNumber.getAsInt();
+		for(int i=0;i<num;i++) {
+			MMRProof pp = zSet.getProof(new MiniNumber(i));
 		}
-		System.out.println("Finished Tests");
+	}
+	
+	public static void printMMR() {
+		getCurrentMMR().finalizeSet();
+		
+		System.out.println("MMR : "+getCurrentMMR().getBlockTime());
+		ArrayList<MMREntry> zero = getCurrentMMR().getZeroRow();
+		for(MMREntry entry : zero) {
+			System.out.println(entry.getRow()+"/"+entry.getEntryNumber()+":"+entry.getData().getValueSum()+" "+entry.getData().isHashOnly());
+		}
+		
+		ArrayList<MMREntry> peaks = getCurrentMMR().getMMRPeaks(); 
+		System.out.println("PEAKS:"+peaks.size());
+		for(MMREntry entry : peaks) {
+			System.out.println(entry.getRow()+" "+entry.getEntryNumber()+" "+entry.getData().getValueSum());
+		}
+		
+		System.out.println("MAX ENTRY:"+getCurrentMMR().mEntryNumber);
+		
+		System.out.println("ROOT:"+getCurrentMMR().getMMRRoot());
+		System.out.println();
+		
+		getAllProofs(getCurrentMMR());
+	}
+	
+	public static void spend(int zEntry){
+		MMRSet parent = getCurrentMMR().getParent().getParent();
+		
+		MMRProof pp = parent.getProof(new MiniNumber(zEntry));
+		
+		//Check the proof
+		boolean valid = getCurrentMMR().checkProof(pp);
+		if(!valid) {
+			System.out.println("ERROR PROOF");
+		}
+	
+		MiniNumber value = pp.getMMRData().getValueSum();
+		getCurrentMMR().updateSpentCoin(pp);
+		getCurrentMMR().addUnspentCoin(makeMMRData(value.getAsInt()));
+	}
+	
+	static MMRSet currentMMR = null;
+	public static void nextMMR() {
+		currentMMR =  new MMRSet(currentMMR);
+	}
+	
+	public static MMRSet getCurrentMMR() {
+		return currentMMR;
+	}
+	
+	public static void main(String[] zArgs) {
+		//Start
+		currentMMR = new MMRSet();
+		
+		//Genesis
+		getCurrentMMR().addUnspentCoin(makeMMRData(0));
+		printMMR();
+		
+		nextMMR();
+		getCurrentMMR().addUnspentCoin(makeMMRData(10));
+		getCurrentMMR().addUnspentCoin(makeMMRData(10));
+		getCurrentMMR().addUnspentCoin(makeMMRData(30));
+//		getCurrentMMR().addUnspentCoin(makeMMRData(5));
+		printMMR();
+		
+		nextMMR();
+		nextMMR();
+		spend(1);
+		spend(2);
+		spend(3);
+		printMMR();
+		
+		nextMMR();
+		nextMMR();
+		nextMMR();
+		nextMMR();
+		
+		spend(6);
+		printMMR();
+		
+//		nextMMR();
+//		nextMMR();
+//		nextMMR();
+//		
+//		spend(3);
+//		printMMR();
+		
+		
+//		nextMMR();
+//		spend(4);
+//		spend(5);
+//		printMMR();
+//		
+//		nextMMR();
+//		spend(6);
+//		spend(2);
+//		printMMR();
+//		
+//		nextMMR();
+//		nextMMR();
+//		nextMMR();
+//		spend(10);
+//		spend(8);
+//		spend(9);
+//		printMMR();
+		
 		
 	}
+	
 }

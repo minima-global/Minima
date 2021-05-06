@@ -15,6 +15,9 @@ import org.minima.database.txpowdb.TxPOWDBRow;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.objects.greet.SyncPacket;
+import org.minima.system.Main;
+import org.minima.system.brains.BackupManager;
 import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
 
@@ -467,29 +470,41 @@ public class BlockTree {
 							//..TODO
 							
 							//need a  body for this..
-							if(row.getTxPOW().hasBody()) {
-								//Create an MMR set that will ONLY be used if the block is VALID..
-								MMRSet mmrset = new MMRSet(pnode.getMMRSet());
+							TxPoW txpow = row.getTxPOW();
+							if(txpow.hasBody()) {
+								//Is this block too old to check..
 								
-								//Set this MMR..
-								zNode.setMMRset(mmrset);
+								MiniNumber minblock = getCascadeNode().getBlockNumber().add(GlobalParams.MINIMA_MMR_PROOF_HISTORY);
+								MiniNumber blknum   = txpow.getBlockNumber();
 								
-								//Check all the transactions in the block are correct..
-								allok = getDB().checkAllTxPOW(zNode, mmrset);
+								if(blknum.isMore(GlobalParams.MINIMA_BLOCKS_SPEED_CALC) && blknum.isLess(minblock)) {
+									MinimaLogger.log("IGNORE OLD BLOCK.. ( proofs too old.. ) blk:"+txpow.getBlockNumber()+" currenttip:"+getChainTip().getBlockNumber());
+									allok = false;
 								
-								//Check the root MMR..
-								if(allok) {
-									if(!row.getTxPOW().getMMRRoot().isEqual(mmrset.getMMRRoot().getFinalHash())) {
-										MinimaLogger.log("INVALID BLOCK MMRROOT "+zNode.getBlockNumber());
-										allok = false;	
-									}
-									
-									if(!row.getTxPOW().getMMRTotal().isEqual(mmrset.getMMRRoot().getValueSum())) {
-										MinimaLogger.log("INVALID BLOCK MMRSUM "+zNode.getBlockNumber());
-										allok = false;
-									}
 								}else {
-									MinimaLogger.log("INVALID BLOCK TRANSACTIONS "+zNode.getBlockNumber());
+									//Create an MMR set that will ONLY be used if the block is VALID..
+									MMRSet mmrset = new MMRSet(pnode.getMMRSet());
+									
+									//Set this MMR..
+									zNode.setMMRset(mmrset);
+									
+									//Check all the transactions in the block are correct..
+									allok = getDB().checkAllTxPOW(zNode, mmrset);
+									
+									//Check the root MMR..
+									if(allok) {
+										if(!txpow.getMMRRoot().isEqual(mmrset.getMMRRoot().getFinalHash())) {
+											MinimaLogger.log("INVALID BLOCK MMRROOT "+zNode.getBlockNumber());
+											allok = false;	
+										}
+										
+										if(!txpow.getMMRTotal().isEqual(mmrset.getMMRRoot().getValueSum())) {
+											MinimaLogger.log("INVALID BLOCK MMRSUM "+zNode.getBlockNumber());
+											allok = false;
+										}
+									}else {
+										MinimaLogger.log("INVALID BLOCK TRANSACTIONS "+zNode.getBlockNumber());
+									}
 								}
 							}else {
 								MinimaLogger.log("INVALID BLOCK no body TxPoW..! "+zNode.toString());
@@ -499,6 +514,10 @@ public class BlockTree {
 							if(allok) {
 								//it's all valid!
 								zNode.setState(BlockTreeNode.BLOCKSTATE_VALID);
+								
+								//Save this Block+MMR!
+								getDB().getBackup().backupTempBlock(zNode);
+								
 							}else{
 								//No good..
 								zNode.setState(BlockTreeNode.BLOCKSTATE_INVALID);

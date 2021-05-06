@@ -8,6 +8,7 @@ import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.MinimaParseException;
 import org.minima.kissvm.functions.MinimaFunction;
 import org.minima.kissvm.values.NumberValue;
+import org.minima.objects.StateVariable;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
 
@@ -268,7 +269,7 @@ public class Tokenizer {
 		
 		try {
 			//Then run it..
-			Contract cc = new Contract(script, "", new Witness(), new Transaction(), new ArrayList<>(),true);
+			Contract cc = new Contract(script, "", new Witness(), new Transaction(), new ArrayList<StateVariable>(),true);
 			cc.setGlobalVariable("@BLKNUM", new NumberValue(22));
 			cc.run();
 			

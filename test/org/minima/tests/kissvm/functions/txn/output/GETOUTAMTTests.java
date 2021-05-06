@@ -118,7 +118,8 @@ public class GETOUTAMTTests {
             try {
                 Value res = mf.runFunction(ctr);
                 assertEquals(Value.VALUE_NUMBER, res.getValueType());
-                assertEquals(out2.getAmount().mult(tp.getScaleFactor()).getAsLong(), ((NumberValue) res).getNumber().getAsLong());
+                assertEquals(tp.getScaledTokenAmount(out2.getAmount()).getAsLong(), ((NumberValue) res).getNumber().getAsLong());
+//                assertEquals(out2.getAmount().mult(tp.getScaleFactor()).getAsLong(), ((NumberValue) res).getNumber().getAsLong());
             } catch (ExecutionException ex) {
                 fail();
             }

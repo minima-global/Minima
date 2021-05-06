@@ -136,7 +136,7 @@ public abstract class BaseKey implements Streamable {
 	}
 	
 	public MiniNumber getUses() {
-		return new MiniNumber(mUses.getAsBigInteger());
+		return mUses;
 	}
 	
 	public void incrementUses() {

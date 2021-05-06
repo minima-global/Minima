@@ -303,4 +303,14 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 		data.readDataStream(zIn);
 		return data;
 	}
+
+	public static void main(String[] zargs) {
+		MiniNumber tt = MiniNumber.MINI_UNIT;
+		
+		System.out.println("Smallest : "+tt+" "+tt.getNumber().scale());
+		
+		System.out.println("TEN      : "+new MiniNumber("1E1"));
+		System.out.println("HUNDRED  : "+new MiniNumber("1E2"));
+	}
+	
 }

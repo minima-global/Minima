@@ -319,6 +319,10 @@ public class TxPoW implements Streamable {
 	}
 	
 	public boolean isTransaction() {
+		if(!hasBody()) {
+			return false;
+		}
+		
 		return _mIsTxnPOW;
 	}
 	

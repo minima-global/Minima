@@ -47,15 +47,8 @@ public interface TxPOWDBRow {
 	public int getBlockState();
 	public void setBlockState(int zState);
 	
-	/**
-	 * When you want to delete a block - sets timemilli
-	 */
-	public void deleteRow();
-	public long getDeleteTime();
-	
 	public JSONObject toJSON();
 	
-	public long getAddedTime();
 	
 	/**
 	 * Is this TxPoW Monotonic - do we need to recheck the Transaction Script given a different block..
@@ -68,5 +61,11 @@ public interface TxPOWDBRow {
 	 */
 	public boolean isAssumeValid();
 	public void setAssumeValid(boolean zValid);
+	
+	/**
+	 * Has it failed a check before..
+	 */
+	public int getFailedAttempts();
+	public void incrementFailedAttempts();
 	
 }
