@@ -12,7 +12,7 @@ public class BaseConverterTests {
 
     final static String[] inputs = {"", "f", "fo", "foo", "foob", "fooba", "foobar", "too", "0x446a1837e14bfec34a9q0141a55ec020f73e15"};
 
-    final static String[] ouputs = {"0x", "0x66", "0x666F", "0x666F6F", "0x666F6F62", "0x666F6F6261",
+    final static String[] ouputs = {"", "0x66", "0x666F", "0x666F6F", "0x666F6F62", "0x666F6F6261",
         "0x666F6F626172"};
 
     final static String[] ouputs32Hex = {"", "CO======", "CPNG====", "CPNMU===", "CPNMUOG=", "CPNMUOJ1",

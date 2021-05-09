@@ -1,29 +1,25 @@
 package org.minima.tests.kissvm.functions.cast;
 
-import org.minima.kissvm.functions.cast.NUMBER;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.fail;
 
+import java.util.ArrayList;
+
+import org.junit.Test;
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.exceptions.MinimaParseException;
 import org.minima.kissvm.expressions.ConstantExpression;
 import org.minima.kissvm.functions.MinimaFunction;
+import org.minima.kissvm.functions.cast.NUMBER;
 import org.minima.kissvm.values.BooleanValue;
-import org.minima.kissvm.values.HEXValue;
+import org.minima.kissvm.values.HexValue;
 import org.minima.kissvm.values.NumberValue;
-import org.minima.kissvm.values.ScriptValue;
+import org.minima.kissvm.values.StringValue;
 import org.minima.kissvm.values.Value;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
-
-import java.util.ArrayList;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import org.junit.Test;
 
 //NumberValue NUMBER (BooleanValue var)
 //NumberValue NUMBER (HEXValue var)
@@ -61,7 +57,7 @@ public class NUMBERTests {
                 Value res = mf.runFunction(ctr);
                 assertEquals(Value.VALUE_NUMBER, res.getValueType());
                 assertEquals("1", ((NumberValue) res).toString());
-            } catch (ExecutionException ex) {
+            } catch (Exception ex) {
                 fail();
             }
         }
@@ -78,7 +74,7 @@ public class NUMBERTests {
         }
         {
             MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new HEXValue("0xFFFF")));
+            mf.addParameter(new ConstantExpression(new HexValue("0xFFFF")));
             try {
                 Value res = mf.runFunction(ctr);
                 assertEquals(Value.VALUE_NUMBER, res.getValueType());
@@ -89,7 +85,7 @@ public class NUMBERTests {
         }
         {
             MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new HEXValue("0xFFFFFFFFFFFFFFFF")));
+            mf.addParameter(new ConstantExpression(new HexValue("0xFFFFFFFFFFFFFFFF")));
             try {
                 Value res = mf.runFunction(ctr);
                 assertEquals(Value.VALUE_NUMBER, res.getValueType());
@@ -122,25 +118,17 @@ public class NUMBERTests {
         }
         {
             MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new ScriptValue("ABCDEFGHIJKLMNOPQRSTUVWXYZ")));
-            try {
+            mf.addParameter(new ConstantExpression(new StringValue("ABCDEFGHIJKLMNOPQRSTUVWXYZ")));
+            assertThrows(NumberFormatException.class, () -> {
                 Value res = mf.runFunction(ctr);
-                //assertEquals(Value.VALUE_NUMBER, res.getValueType()); // Test fails due to invalid return type
-                //assertEquals("", ((NumberValue) res).toString()); // Test not completed
-            } catch (ExecutionException ex) {
-                fail();
-            }
+            });
         }
         {
             MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new ScriptValue("Hello World")));
-            try {
+            mf.addParameter(new ConstantExpression(new StringValue("Hello World")));
+            assertThrows(NumberFormatException.class, () -> {
                 Value res = mf.runFunction(ctr);
-                //assertEquals(Value.VALUE_NUMBER, res.getValueType()); // Test fails due to invalid return type
-                //assertEquals("", ((NumberValue) res).toString()); // Test not completed
-            } catch (ExecutionException ex) {
-                fail();
-            }
+            });
         }
     }
 

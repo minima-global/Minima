@@ -9,17 +9,17 @@ public class coins extends CommandFunction {
 	public coins() {
 		super("coins");
 		
-		setHelp("(relevant) (address:address) (amount:amount) (tokenid:tokenid) (type:spent|unspent|all)", 
-				"Search coin database. Defaults to all unspent coins.", "");
+		setHelp("(relevant) (address:address) (amount:amount) (tokenid:tokenid)", 
+				"Search for unspent coins - either that are relevant to you or ALL coins", "");
 	}
 	
 	@Override
 	public void doFunction(String[] zInput) throws Exception {
 		int len = zInput.length;
-//		if(len == 1) {
-//			getResponseStream().endStatus(false, "MUST specify some criteria for search..");
-//			return;
-//		}
+		if(len == 1) {
+			getResponseStream().endStatus(false, "MUST specify some criteria for search..");
+			return;
+		}
 		
 		//The extra data
 		boolean relevant      = false;
@@ -27,7 +27,6 @@ public class coins extends CommandFunction {
 		String address        = "";
 		String amount         = "";
 		String tokenid        = "";
-		String type           = "unspent";
 		
 		//Cycle through..
 		for(int i=1;i<len;i++) {
@@ -45,9 +44,6 @@ public class coins extends CommandFunction {
 			}else if(param.startsWith("tokenid:")) {
 				tokenid = param.substring(8);
 			
-			}else if(param.startsWith("type:")) {
-				type = param.substring(5);
-			
 			}else {
 				getResponseStream().endStatus(false, "UNKNOWN parameter : "+zInput[i]);		
 				return;
@@ -60,7 +56,6 @@ public class coins extends CommandFunction {
 		sender.addString("address",   address);
 		sender.addString("amount",    amount);
 		sender.addString("tokenid",   tokenid);
-		sender.addString("type",      type);
 		
 		//Post It..
 		getMainHandler().getConsensusHandler().PostMessage(sender);
@@ -68,7 +63,6 @@ public class coins extends CommandFunction {
 
 	@Override
 	public CommandFunction getNewFunction() {
-		// TODO Auto-generated method stub
 		return new coins();
 	}
 }

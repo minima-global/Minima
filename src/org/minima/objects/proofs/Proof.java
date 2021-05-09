@@ -7,7 +7,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import org.minima.objects.base.MMRSumNumber;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
@@ -20,12 +19,14 @@ import org.minima.utils.json.JSONObject;
 
 public class Proof implements Streamable {
 
-	public class ProofChunk {
+	public class ProofChunk implements Streamable {
 		MiniData mHash;
-		MMRSumNumber mValue;
+		MiniNumber mValue;
 		MiniByte mLeftRight;
 		
-		public ProofChunk(MiniByte zLeft, MiniData zHash, MMRSumNumber zValue) {
+		public ProofChunk() {}
+		
+		public ProofChunk(MiniByte zLeft, MiniData zHash, MiniNumber zValue) {
 			mLeftRight = zLeft;
 			mHash = zHash;
 			mValue = zValue;
@@ -39,13 +40,42 @@ public class Proof implements Streamable {
 			return mHash;
 		}
 		
-		public MMRSumNumber getValue() {
+		public MiniNumber getValue() {
 			return mValue;
+		}
+
+		@Override
+		public void writeDataStream(DataOutputStream zOut) throws IOException {
+			mLeftRight.writeDataStream(zOut);
+			mHash.writeDataStream(zOut);
+			
+			//Encode 0 value as 0x00.. for scripts and signatures
+			if(mValue.isEqual(MiniNumber.ZERO)) {
+				MiniByte.FALSE.writeDataStream(zOut);
+			}else {
+				MiniByte.TRUE.writeDataStream(zOut);
+				mValue.writeDataStream(zOut);
+			}
+		}
+
+		@Override
+		public void readDataStream(DataInputStream zIn) throws IOException {
+			mLeftRight 	= MiniByte.ReadFromStream(zIn);
+			mHash 		= MiniData.ReadFromStream(zIn);
+			
+			//If value is 0 then false sent
+			MiniByte isvalue = MiniByte.ReadFromStream(zIn);
+			if(isvalue.isTrue()) {
+				mValue 		= MiniNumber.ReadFromStream(zIn);
+			}else {
+				mValue 		= MiniNumber.ZERO;
+			}
 		}
 	}
 	
 	//The data you are trying to prove..
-	protected MiniData mData;
+	protected MiniData 	mData;
+	MiniNumber 			mValue;
 	
 	//The Merkle Branch that when applied to the data gives the final proof;
 	protected ArrayList<ProofChunk> mProofChain;
@@ -62,7 +92,12 @@ public class Proof implements Streamable {
 	}
 
 	public void setData(MiniData zData) {
-		mData = zData;
+		setData(zData, MiniNumber.ZERO);
+	}
+	
+	public void setData(MiniData zData, MiniNumber zValue) {
+		mData  = zData;
+		mValue = zValue;
 	}
 	
 	public MiniData getData() {
@@ -82,14 +117,11 @@ public class Proof implements Streamable {
 			HASH_BITS = hb * 32;
 			
 			while(dis.available()>0) {
-				//Is it to the left or the right 
-				MiniByte leftrigt = MiniByte.ReadFromStream(dis);
-				
-				//What data to hash
-				MiniData data = MiniData.ReadFromStream(dis);
+				ProofChunk pc = new ProofChunk();
+				pc.readDataStream(dis);
 				
 				//Add to the Proof..
-				addProofChunk(leftrigt, data);
+				addProofChunk(pc);
 			}
 		
 			dis.close();
@@ -104,16 +136,51 @@ public class Proof implements Streamable {
 		finalizeHash();
 	}
 	
+	public MiniData getChainSHAProof() {
+		if(mFinalized) {
+			return mChainSHA;
+		}
+		
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		DataOutputStream dos = new DataOutputStream(baos);
+		
+		try {
+			//First write out the HASH_BITS
+			MiniByte hb = new MiniByte(HASH_BITS / 32);
+			hb.writeDataStream(dos);
+			
+			//Now write out the data..
+			int len = mProofChain.size();
+			for(int i=0;i<len;i++){
+				mProofChain.get(i).writeDataStream(dos);
+			}
+			
+			dos.close();
+			baos.close();
+			
+		} catch (IOException e) {
+			MinimaLogger.log("getChainSHAProof Error "+e);
+			e.printStackTrace();
+		}
+		
+		//Convert to MiniData..
+		return new MiniData(baos.toByteArray());
+	}
+	
 	public void setHashBitLength(int zBitLength) {
 		HASH_BITS = zBitLength;
 	}
 	
 	public void addProofChunk(MiniByte zLeft, MiniData zHash) {
-		addProofChunk(zLeft, zHash, MMRSumNumber.ZERO);
+		addProofChunk(zLeft, zHash, MiniNumber.ZERO);
 	}
 	
-	public void addProofChunk(MiniByte zLeft, MiniData zHash, MMRSumNumber zValue) {
-		mProofChain.add(new ProofChunk(zLeft, zHash, zValue));
+	public void addProofChunk(MiniByte zLeft, MiniData zHash, MiniNumber zValue) {
+		addProofChunk(new ProofChunk(zLeft, zHash, zValue));
+	}
+	
+	public void addProofChunk(ProofChunk zChunk) {
+		mProofChain.add(zChunk);
 	}
 	
 	public int getProofLen() {
@@ -136,59 +203,31 @@ public class Proof implements Streamable {
 		mFinalized = true;
 	}
 	
-	public MiniData getChainSHAProof() {
-		if(mFinalized) {
-			return mChainSHA;
-		}
-		
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		DataOutputStream dos = new DataOutputStream(baos);
-		
-		try {
-			//First write out the HASH_BITS
-			MiniByte hb = new MiniByte(HASH_BITS / 32);
-			hb.writeDataStream(dos);
-			
-			//Now write out the data..
-			int len = mProofChain.size();
-			for(int i=0;i<len;i++){
-				ProofChunk chunk = mProofChain.get(i);
-				chunk.getLeft().writeDataStream(dos);
-				chunk.getHash().writeHashToStream(dos);
-			}
-			
-			dos.close();
-			baos.close();
-			
-		} catch (IOException e) {
-			MinimaLogger.log("getChainSHAProof Error "+e);
-			e.printStackTrace();
-		}
-		
-		//Convert to MiniData..
-		return new MiniData(baos.toByteArray());
-	}
-	
 	public MiniData getFinalHash() {
 		if(mFinalized) {
 			return mFinalHash;
 		}
 		
 		//Get the Final Hash of the Data
-		MiniData current = mData;
+		MiniData   currentdata  = mData;
+		MiniNumber currentvalue = mValue;
 		
 		int len = getProofLen();
 		for(int i=0;i<len;i++) {
 			ProofChunk chunk = mProofChain.get(i);
 			
+			currentvalue = currentvalue.add(chunk.getValue());
+			
 			if(chunk.getLeft().isTrue()) {
-				current = Crypto.getInstance().hashObjects(chunk.getHash(), current, HASH_BITS);
+				currentdata = Crypto.getInstance().hashAllObjects(HASH_BITS, chunk.getHash(), currentdata,currentvalue);
+//				currentdata = Crypto.getInstance().hashAllObjects(HASH_BITS, chunk.getHash(), currentdata);
 			}else {
-				current = Crypto.getInstance().hashObjects(current, chunk.getHash(), HASH_BITS);
+				currentdata = Crypto.getInstance().hashAllObjects(HASH_BITS, currentdata, chunk.getHash(),currentvalue);
+//				currentdata = Crypto.getInstance().hashAllObjects(HASH_BITS, currentdata, chunk.getHash());
 			}
 		}
 		
-		return current;
+		return currentdata;
 	}
 
 	public JSONObject toJSON() {
@@ -223,6 +262,8 @@ public class Proof implements Streamable {
 		hb.writeDataStream(zOut);
 		
 		mData.writeDataStream(zOut);
+		mValue.writeDataStream(zOut);
+		
 		MiniNumber mlen = new MiniNumber(mProofChain.size());
 		mlen.writeDataStream(zOut);
 		int len = mlen.getAsInt();
@@ -239,14 +280,16 @@ public class Proof implements Streamable {
 		MiniByte hb = MiniByte.ReadFromStream(zIn);
 		HASH_BITS   = hb.getValue() * 32;
 		
-		mData = MiniData.ReadFromStream(zIn);
+		mData  = MiniData.ReadFromStream(zIn);
+		mValue = MiniNumber.ReadFromStream(zIn);
+		
 		mProofChain = new ArrayList<>();
 		MiniNumber mlen = MiniNumber.ReadFromStream(zIn);
 		int len = mlen.getAsInt();
 		for(int i=0;i<len;i++) {
 			MiniByte left    = MiniByte.ReadFromStream(zIn);
 			MiniData hash    = MiniData.ReadHashFromStream(zIn);
-			MMRSumNumber val = MMRSumNumber.ReadFromStream(zIn);
+			MiniNumber val   = MiniNumber.ReadFromStream(zIn);
 			mProofChain.add(new ProofChunk(left, hash, val));
 		}
 		

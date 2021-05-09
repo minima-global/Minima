@@ -122,12 +122,16 @@ public class FastJavaDB implements TxPowDB {
 		
 		//The minimum block before its too late for an UNUSED TxPoW
 		MiniNumber minunused = zCascade.add(MiniNumber.TWOFIVESIX);
-				
+		
+		//Debug mode params
+		if(GlobalParams.MINIMA_CASCADE_START_DEPTH.isLess(MiniNumber.TWOFIVESIX)) {
+			minunused = zCascade.add(MiniNumber.FOUR);
+		}
+		
 		Enumeration<JavaDBRow> allrows = mTxPoWRows.elements();
 		while(allrows.hasMoreElements()) {
 			JavaDBRow row  = allrows.nextElement();
 			TxPoW rowtxpow = row.getTxPOW();
-			
 			String txpid = rowtxpow.getTxPowID().to0xString();
 			
 				//It's a main block
@@ -141,33 +145,19 @@ public class FastJavaDB implements TxPowDB {
 				//It's a transaction but not that old
 			}else if(rowtxpow.isTransaction() && !row.isInBlock() && row.getTxPOW().getBlockNumber().isMoreEqual(minunused)) {
 				newtable.put(txpid,row);
-			
+				
 				//It's a block but not past the cascade
 			}else if(rowtxpow.isBlock() && !row.isMainChainBlock() && row.getTxPOW().getBlockNumber().isMoreEqual(minused)) {
 				newtable.put(txpid,row);
 				
 			}else {
-				if(GlobalParams.MINIMA_CASCADE_START_DEPTH.isLess(MiniNumber.TWOFIVESIX)) {
-				//if(GlobalParams.SHORT_CHAIN_DEBUG_MODE) {
-					if(row.getTxPOW().isTransaction() && !row.isInBlock()) {
-						MinimaLogger.log("SHORT CHAIN DEBUG : Transaction NOT in block NOT removed.. "+row);
-						
-						//Add it anyway..
-						newtable.put(txpid,row);
-					}else {
-						//Remove it..
-						removed.add(row);
-						mChildrenOfParents.remove(txpid);
-					}
-				}else{
-					if(row.getTxPOW().isTransaction() && !row.isInBlock()) {
-						MinimaLogger.log("Transaction NOT in block removed.. "+row);
-					}
-					
-					//Remove it..
-					removed.add(row);
-					mChildrenOfParents.remove(txpid);
+				if(row.getTxPOW().isTransaction() && !row.isInBlock()) {
+					MinimaLogger.log("Transaction NOT in block removed.. "+row);
 				}
+				
+				//Remove it..
+				removed.add(row);
+				mChildrenOfParents.remove(txpid);
 			}		
 		}
 		

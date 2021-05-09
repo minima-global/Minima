@@ -7,7 +7,7 @@ import org.minima.utils.messages.Message;
 
 public class tokencreate extends CommandFunction {
 	
-	public static MiniNumber MAX_COINS = new MiniNumber("1000000000");
+	public static MiniNumber MAX_COINS = MiniNumber.TRILLION;
 	
 	public tokencreate() {
 		super("tokencreate");
@@ -61,7 +61,12 @@ public class tokencreate extends CommandFunction {
 			return;
 		}
 		
-		MiniNumber coins = new MiniNumber(total);
+		if(script.equals("")) {
+			getResponseStream().endStatus(false, "CANNOT have blank script as is unspendable");
+			return;
+		}
+		
+		MiniNumber coins = new MiniNumber(total).floor();
 		if(coins.isMore(MAX_COINS)) {
 			getResponseStream().endStatus(false, MAX_COINS+" MAX.. for now..");
 			return;

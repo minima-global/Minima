@@ -80,6 +80,11 @@ public class StatementParser {
 					//Remove the last token..
 					arraypos.remove(arrsize-1);
 					
+					//Check is a valid non-empty expression
+					if(arraypos.size() == 0) {
+						throw new MinimaParseException("Incorrect LET statement, EMPTY ARRAY POS @ "+currentPosition);
+					}
+					
 					//Create a Lexical Tokenizer.. there may be multiple expressions..
 					LexicalTokenizer lt = new LexicalTokenizer(arraypos);
 					
@@ -108,7 +113,7 @@ public class StatementParser {
 					
 					//The next token is always =
 					var = zTokens.get(currentPosition++);
-					if(var.getTokenType() != Token.TOKEN_OPERATOR && !var.getToken().equals("=")) {
+					if(!var.getToken().equals("=")) {
 						throw new MinimaParseException("Incorrect LET statement, missing = (.."+var.getToken()+")");
 					}
 				
@@ -339,17 +344,17 @@ public class StatementParser {
 			if(tok.getTokenType() == Token.TOKEN_COMMAND && tok.getToken().equals("ENDIF")) {
 				//We've found the end to the current depth IF
 				rettokens.add(tok);
-				return rettokens;
+				break;
 			
 			}else if(zElseAlso && (tok.getTokenType() == Token.TOKEN_COMMAND && tok.getToken().equals("ELSEIF")) ) {
 				//We've found the end to the current depth IF
 				rettokens.add(tok);
-				return rettokens;
+				break;
 			
 			}else if(zElseAlso && (tok.getTokenType() == Token.TOKEN_COMMAND && tok.getToken().equals("ELSE")) ) {
 				//We've found the end to the current depth IF
 				rettokens.add(tok);
-				return rettokens;
+				break;
 				
 			}else if(tok.getTokenType() == Token.TOKEN_COMMAND && tok.getToken().equals("IF")) {
 				//Add it..
@@ -393,7 +398,7 @@ public class StatementParser {
 			if(tok.getTokenType() == Token.TOKEN_COMMAND && tok.getToken().equals("ENDWHILE")) {
 				//We've found the end to the current depth IF
 				rettokens.add(tok);
-				return rettokens;
+				break;
 				
 			}else if(tok.getTokenType() == Token.TOKEN_COMMAND && tok.getToken().equals("WHILE")) {
 				//Add it..
@@ -432,7 +437,7 @@ public class StatementParser {
 		while(ret<total) {
 			Token tok = zTokens.get(ret);
 			if(tok.getTokenType() == Token.TOKEN_COMMAND) {
-				return rettokens;
+				break;
 			}else {
 				//Add it to the list
 				rettokens.add(tok);
@@ -459,7 +464,7 @@ public class StatementParser {
 		while(ret<total) {
 			Token tok = zTokens.get(ret);
 			if(tok.getTokenType() == Token.TOKEN_OPERATOR && tok.getToken().equals("=")) {
-				return rettokens;
+				break;
 			}else {
 				//Add it to the list
 				rettokens.add(tok);

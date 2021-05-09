@@ -19,14 +19,16 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
 import org.minima.objects.keys.MultiKey;
 import org.minima.objects.proofs.TokenProof;
+import org.minima.system.brains.ConsensusHandler;
 import org.minima.utils.Streamable;
 
 public class JavaUserDB implements UserDB, Streamable{
 	
+	public static int MAX_HISTORY = 100;
+	
 	/**
 	 * Minima stores any output that has a key you own in the STATE
 	 */
-//	ArrayList<PubPrivKey> mPubPrivKeys;
 	ArrayList<MultiKey> mPubPrivKeys;
 	
 	/**
@@ -35,7 +37,14 @@ public class JavaUserDB implements UserDB, Streamable{
 	ArrayList<Address>    mSimpleAddresses;
 	ArrayList<Address>    mScriptAddresses;
 	
-	//The Sum of the simple and script addresses
+	/**
+	 * The current address used for any transaction change etc..
+	 */
+	CurrentAddress 	mCurrentAddress;
+	
+	/**
+	 * The Sum of the simple and script addresses
+	 */
 	ArrayList<Address> mTotalAddresses;
 	
 	/**
@@ -67,18 +76,20 @@ public class JavaUserDB implements UserDB, Streamable{
 	 * Base constructor
 	 */
 	public JavaUserDB() {
+		init();
+	}
+	
+	private void init() {
 		mPubPrivKeys 	 = new ArrayList<>();
 		mSimpleAddresses = new ArrayList<>();
 		mScriptAddresses = new ArrayList<>();
 		mTotalAddresses  = new ArrayList<>();
 		mExtraAddresses  = new ArrayList<>();
 		mRelevantCoinID  = new ArrayList<>();
-		
 		mAllTokens		 = new ArrayList<>();
-		
-		mRows  = new ArrayList<>();
-		
-		mHistory = new ArrayList<>();
+		mRows  			 = new ArrayList<>();
+		mHistory 		 = new ArrayList<>();
+		mCurrentAddress  = new CurrentAddress();
 	}
 	
 	@Override
@@ -107,6 +118,15 @@ public class JavaUserDB implements UserDB, Streamable{
 		mPubPrivKeys.add(pubkey);
 		return pubkey;
 	}
+	
+	@Override
+	public MultiKey newPublicKey(int zBitLength, int zKeys, int zLevels) {
+		MultiKey pubkey = new MultiKey(zBitLength, 
+				new MiniNumber(zKeys) , new MiniNumber(zLevels));
+		mPubPrivKeys.add(pubkey);
+		return pubkey;
+	}
+	
 	
 	@Override
 	public ArrayList<UserDBRow> getAllRows() {
@@ -169,6 +189,10 @@ public class JavaUserDB implements UserDB, Streamable{
 		return addr;
 	}
 	
+	@Override
+	public Address getCurrentAddress(ConsensusHandler zBackup) {
+		return mCurrentAddress.getCurrentAddress(this, zBackup);
+	}
 
 	@Override
 	public boolean isSimpleAddress(MiniData zAddress) {
@@ -278,6 +302,11 @@ public class JavaUserDB implements UserDB, Streamable{
 			}
 		}
 		
+		//And finally check the State Variables..
+		if(isStateListRelevant(zTrans.getCompleteState())) {
+			return true;
+		}
+		
 		return false;
 	}
 
@@ -355,10 +384,11 @@ public class JavaUserDB implements UserDB, Streamable{
 
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
-		int len =0;
+		//Current address
+		mCurrentAddress.writeDataStream(zOut);
 		
 		//Pub priv keys
-		len = mPubPrivKeys.size();
+		int len = mPubPrivKeys.size();
 		zOut.writeInt(len);
 		for(MultiKey key : mPubPrivKeys) {
 			key.writeDataStream(zOut);
@@ -426,6 +456,10 @@ public class JavaUserDB implements UserDB, Streamable{
 		mRows            = new ArrayList<>();	
 		mAllTokens		 = new ArrayList<>();
 		
+		//Current address
+		mCurrentAddress = new CurrentAddress();
+		mCurrentAddress.readDataStream(zIn);
+				
 		//Pub Priv Keys
 		int len = zIn.readInt();
 		for(int i=0;i<len;i++) {
@@ -437,8 +471,7 @@ public class JavaUserDB implements UserDB, Streamable{
 		//Address
 		len = zIn.readInt();
 		for(int i=0;i<len;i++) {
-			Address addr = new Address();
-			addr.readDataStream(zIn);
+			Address addr = Address.ReadFromStream(zIn);
 			mSimpleAddresses.add(addr);
 			mTotalAddresses.add(addr);
 		}
@@ -446,8 +479,7 @@ public class JavaUserDB implements UserDB, Streamable{
 		//Script Address
 		len = zIn.readInt();
 		for(int i=0;i<len;i++) {
-			Address addr = new Address();
-			addr.readDataStream(zIn);
+			Address addr = Address.ReadFromStream(zIn);
 			mScriptAddresses.add(addr);
 			mTotalAddresses.add(addr);
 		}
@@ -455,8 +487,7 @@ public class JavaUserDB implements UserDB, Streamable{
 		//Extra Address
 		len = zIn.readInt();
 		for(int i=0;i<len;i++) {
-			Address addr = new Address();
-			addr.readDataStream(zIn);
+			Address addr = Address.ReadFromStream(zIn);
 			mExtraAddresses.add(addr);
 		}
 		
@@ -516,6 +547,12 @@ public class JavaUserDB implements UserDB, Streamable{
 		}
 	}
 
+	@Override
+	public void clearTokens() {
+		mAllTokens.clear();
+	}
+	
+	
 	/**
 	 * Transasction History 
 	 */
@@ -527,24 +564,20 @@ public class JavaUserDB implements UserDB, Streamable{
 	@Override
 	public void addToHistory(TxPoW zTxPOW, Hashtable<String, MiniNumber> zValues) {
 		mHistory.add(new reltxpow( zTxPOW, zValues));
+	
+		int size = mHistory.size();
+		if(size>MAX_HISTORY) {
+			mHistory = new ArrayList<reltxpow>(mHistory.subList(size-MAX_HISTORY, MAX_HISTORY));
+		}
 	}
-
-//	@Override
-//	public void removeHistory(MiniData zTxPowID) {
-//		ArrayList<TxPOW> newhist = new ArrayList<TxPOW>();
-//		
-//		for(TxPOW txpow : mHistory) {
-//			if(!txpow.getTxPowID().isExactlyEqual(zTxPowID)) {
-//				newhist.add(txpow);
-//			}
-//		}
-//		
-//		mHistory = newhist;
-//	}
 
 	@Override
 	public void clearHistory() {
 		mHistory.clear();
 	}
-	
+
+	@Override
+	public void clearDB() {
+		init();
+	}
 }

@@ -4,11 +4,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.junit.Test;
 import org.minima.database.MinimaDB;
@@ -18,7 +17,6 @@ import org.minima.objects.Transaction;
 import org.minima.objects.TxPoW;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniInteger;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.brains.BackupManager;
 import org.minima.system.input.functions.gimme50;
@@ -33,8 +31,9 @@ public class MinimaDBTests {
     public void testConstructors() {
         MinimaDB mdb = new MinimaDB();
 
-        assertEquals(0, mdb.getCoinDB().getComplete().size());
-        assertEquals(0, mdb.getCoinDB().getCompleteRelevant().size());
+//        assertEquals(0, mdb.getCoinDB().getComplete().size());
+//        assertEquals(0, mdb.getCoinDB().getCompleteRelevant().size());
+        
         assertEquals(0, mdb.getMainTree().getAsList().size());
         assertEquals(0, mdb.getMempoolCoins().size());
         assertNull(mdb.getMainTree().getChainTip());
@@ -52,8 +51,8 @@ public class MinimaDBTests {
 
         mdb.DoGenesis();
 
-        assertEquals(0, mdb.getCoinDB().getComplete().size());
-        assertEquals(0, mdb.getCoinDB().getCompleteRelevant().size());
+//        assertEquals(0, mdb.getCoinDB().getComplete().size());
+//        assertEquals(0, mdb.getCoinDB().getCompleteRelevant().size());
         assertEquals(1, mdb.getMainTree().getAsList().size()); // single peak
         assertEquals(0, mdb.getMempoolCoins().size());
         assertNotNull(mdb.getMainTree().getChainTip());
@@ -65,7 +64,7 @@ public class MinimaDBTests {
         assertEquals(0, mdb.getUserDB().getAllRows().size());
 
         TxPoW txp = new TxPoW();
-        txp.setNonce(MiniInteger.TWO);
+        txp.setNonce(MiniNumber.TWO);
         txp.calculateTXPOWID();
         assertNull(mdb.getTxPOW(txp.getTxPowID()));
         assertNotNull(mdb.getTxPOW(mdb.getTopTxPoW().getTxPowID()));
@@ -94,7 +93,7 @@ public class MinimaDBTests {
         try {
             w.addScript(Address.TRUE_ADDRESS.getScript(), in.getAddress().getLength() * 8);
         } catch (Exception ex) {
-            Logger.getLogger(MinimaDBTests.class.getName()).log(Level.SEVERE, null, ex);
+            fail();
         }
 
         Coin out1 = new Coin(Coin.COINID_OUTPUT, addr1.getAddressData(), new MiniNumber("25"), Coin.MINIMA_TOKENID);
@@ -117,7 +116,7 @@ public class MinimaDBTests {
 
         // TXMINER_MINETXPOW begin
         txp1.setHeaderBodyHash();
-        MiniInteger nonce = new MiniInteger(0);
+        MiniNumber nonce = new MiniNumber(0);
         while (true) {
             txp1.setNonce(nonce);
             txp1.setTimeMilli(new MiniNumber(System.currentTimeMillis()));
@@ -157,8 +156,11 @@ public class MinimaDBTests {
         // CONSENSUS_PROCESSTXPOW end
 
         // Checks
-        assertEquals(3, mdb.getCoinDB().getComplete().size());
-        assertEquals(2, mdb.getCoinDB().getCompleteRelevant().size());
+//        assertEquals(3, mdb.getCoinDB().getComplete().size());
+//        assertEquals(2, mdb.getCoinDB().getCompleteRelevant().size());
+        assertEquals(3, mdb.getMMRTip().searchAllCoins().size());
+        assertEquals(2, mdb.getMMRTip().searchAllRelevantCoins().size());
+        
         assertEquals(2, mdb.getMainTree().getAsList().size());
         assertEquals(0, mdb.getMempoolCoins().size());
         assertNotNull(mdb.getMainTree().getChainTip());
@@ -181,8 +183,10 @@ public class MinimaDBTests {
         mdb.addNewTxPow(blocktx);
         mdb.processTxPOW(blocktx);
 
-        assertEquals(3, mdb.getCoinDB().getComplete().size());
-        assertEquals(2, mdb.getCoinDB().getCompleteRelevant().size());
+        assertEquals(3, mdb.getMMRTip().searchAllCoins().size());
+        assertEquals(2, mdb.getMMRTip().searchAllRelevantCoins().size());
+//        assertEquals(3, mdb.getCoinDB().getComplete().size());
+//        assertEquals(2, mdb.getCoinDB().getCompleteRelevant().size());
         assertEquals(5, mdb.getMainTree().getAsList().size());
         assertEquals(0, mdb.getMempoolCoins().size());
         assertNotNull(mdb.getMainTree().getChainTip());
@@ -201,7 +205,7 @@ public class MinimaDBTests {
     private TxPoW mineblock(MinimaDB mdb) {
         TxPoW txpow = mdb.getCurrentTxPow(new Transaction(), new Witness(), new JSONArray());
         txpow.setHeaderBodyHash();
-        MiniInteger nonce = new MiniInteger(0);
+        MiniNumber nonce = new MiniNumber(0);
         while (true) {
             txpow.setNonce(nonce);
             txpow.setTimeMilli(new MiniNumber(System.currentTimeMillis()));

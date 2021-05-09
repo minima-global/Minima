@@ -7,20 +7,21 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import org.minima.kissvm.exceptions.ExecutionException;
+import org.minima.kissvm.exceptions.MinimaParseException;
 import org.minima.kissvm.functions.MinimaFunction;
 import org.minima.kissvm.statements.StatementBlock;
 import org.minima.kissvm.statements.StatementParser;
 import org.minima.kissvm.tokens.Token;
+import org.minima.kissvm.tokens.Tokenizer;
 import org.minima.kissvm.values.BooleanValue;
-import org.minima.kissvm.values.HEXValue;
+import org.minima.kissvm.values.HexValue;
 import org.minima.kissvm.values.NumberValue;
-import org.minima.kissvm.values.ScriptValue;
+import org.minima.kissvm.values.StringValue;
 import org.minima.kissvm.values.Value;
 import org.minima.objects.StateVariable;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniNumber;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
 
@@ -39,7 +40,7 @@ public class Contract {
 	StatementBlock mBlock;
 	
 	//A list of valid signatures
-	ArrayList<HEXValue> mSignatures;
+	ArrayList<HexValue> mSignatures;
 	
 	//A list of all the user-defined variables
 	Hashtable<String, Value> mVariables;
@@ -101,8 +102,8 @@ public class Contract {
 		mTraceON     = zTrace;
 		
 		//Clean the RamScript
-		mRamScript = cleanScript(zRamScript);
-	
+		mRamScript = zRamScript;
+		
 		mTransaction = zTransaction;
 		mWitness     = zWitness;
 	
@@ -132,7 +133,7 @@ public class Contract {
 		while(strtok.hasMoreTokens()) {
 			String sig = strtok.nextToken().trim();
 			traceLog("Signature : "+sig);
-			mSignatures.add( (HEXValue)Value.getValue(sig) );
+			mSignatures.add( (HexValue)Value.getValue(sig) );
 		}
 		
 		//Transaction..
@@ -158,7 +159,11 @@ public class Contract {
 		//Parse the tokens
 		try {
 			//Tokenize the script
-			List<Token> tokens = Token.tokenize(mRamScript);
+			Tokenizer tokenize = new Tokenizer(zRamScript);
+			
+			//Tokenize the script
+//			List<Token> tokens = Token.tokenize(mRamScript);
+			List<Token> tokens = tokenize.tokenize();
 			
 			int count=0;
 			for(Token tok : tokens) {
@@ -346,20 +351,20 @@ public class Contract {
 		return (NumberValue)vv;
 	}
 	
-	public HEXValue getHEXParam(int zParamNumber, MinimaFunction zFunction) throws ExecutionException {
+	public HexValue getHexParam(int zParamNumber, MinimaFunction zFunction) throws ExecutionException {
 		Value vv = zFunction.getParameter(zParamNumber).getValue(this);
 		if(vv.getValueType() != Value.VALUE_HEX) {
 			throw new ExecutionException("Incorrect Parameter type - should be HEXValue @ "+zParamNumber+" "+zFunction.getName());
 		}
-		return (HEXValue)vv;
+		return (HexValue)vv;
 	}
 	
-	public ScriptValue getScriptParam(int zParamNumber, MinimaFunction zFunction) throws ExecutionException {
+	public StringValue getStringParam(int zParamNumber, MinimaFunction zFunction) throws ExecutionException {
 		Value vv = zFunction.getParameter(zParamNumber).getValue(this);
 		if(vv.getValueType() != Value.VALUE_SCRIPT) {
 			throw new ExecutionException("Incorrect Parameter type - should be ScriptValue @ "+zParamNumber+" "+zFunction.getName());
 		}
-		return (ScriptValue)vv;
+		return (StringValue)vv;
 	}
 	
 	public BooleanValue getBoolParam(int zParamNumber, MinimaFunction zFunction) throws ExecutionException {
@@ -390,10 +395,10 @@ public class Contract {
 		String stateval = mTransaction.getStateValue(zStateNum).getValue().toString();
 		
 		//Clean it
-		String clean = cleanScript(stateval);
+//		String clean = cleanScript(stateval);
 		
 		//Clean it..
-		return Value.getValue(clean);
+		return Value.getValue(stateval);
 	}
 	
 	public Value getPrevState(int zPrev) throws ExecutionException {
@@ -401,7 +406,7 @@ public class Contract {
 		for(StateVariable sv : mPrevState) {
 			if(sv.getPort() == zPrev) {
 				//Clean it..
-				String stateval = cleanScript(sv.getValue().toString());
+				String stateval = sv.getValue().toString();
 				
 				//Work it out
 				return Value.getValue(stateval);
@@ -475,10 +480,10 @@ public class Contract {
 	 * @param zSignature
 	 * @return
 	 */
-	public boolean checkSignature(HEXValue zSignature) {
+	public boolean checkSignature(HexValue zSignature) {
 		MiniData checksig = zSignature.getMiniData();
 		
-		for(HEXValue sig : mSignatures) {
+		for(HexValue sig : mSignatures) {
 			if(sig.getMiniData().isEqual(checksig)) {
 				return true;
 			}
@@ -488,186 +493,89 @@ public class Contract {
 	}
 	
 	/**
-	 * Convert a SCRIPT into the Required Format for MiniScript.
+	 * Clean up a script..
+	 * 
 	 * @param zScript
 	 * @return The Converted Script
 	 */
 	public static String cleanScript(String zScript) {
-		//Quick check for empty..
-		if(zScript.equals("")) {
-			return "";
-		}
 		
-		//Start cleaning..
-		String script = new String(" "+zScript.toLowerCase()+" ");
-		
-		//Replace whitespace with a single space
-		script = script.replaceAll("\\s+"," ");
-		
-		//Remove comments /* .. */
-		int comment = script.indexOf("/*");
-		while(comment != -1) {
-			int endcomment = script.indexOf("*/",comment);
-			int len = script.length();
-			script = " "+script.substring(0,comment)+" "+script.substring(endcomment+2, len)+" ";
-			comment = script.indexOf("/*");
-		}
-		
-		//Incase this is a 'param' string
-		script = script.replaceAll(",", " , ");
-		script = script.replaceAll(";", " ; ");
-		script = script.replaceAll(":", " : ");
-		script = script.replaceAll("#", " # ");
-		
-		//Double up the spaces.. in case of double NOT 
-		script = script.replaceAll(" ", "  ");
-		
-		//STILL NEED TO DO - .. minus.. ignoring numbers..
-//		script = script.replaceAll("\\-[a-z]", " - ");
-		
-		//Operators
-		script = script.replaceAll("\\(", " ( ");
-		script = script.replaceAll("\\)", " ) ");
-		script = script.replaceAll("\\[", " [ ");
-		script = script.replaceAll("\\]", " ] ");
-		script = script.replaceAll("<<", " << ");
-		script = script.replaceAll(">>", " >> ");
-		script = script.replaceAll("\\&" , " & ");
-		script = script.replaceAll("\\|" , " | ");
-		script = script.replaceAll("\\^" , " ^ ");
-		script = script.replaceAll("\\*", " * ");
-		script = script.replaceAll("\\+", " + ");
-		script = script.replaceAll("\\=", " = ");
-		script = script.replaceAll("\\%", " % ");
-			
-		//Boolean
-		script = script.replaceAll(" nand ", " NAND ");
-		script = script.replaceAll(" nxor ", " NXOR ");
-		script = script.replaceAll(" nor ", " NOR ");
-		script = script.replaceAll(" and ", " AND ");
-		script = script.replaceAll(" xor ", " XOR ");
-		script = script.replaceAll(" or ", " OR ");
-		script = script.replaceAll(" not ", " NOT ");
-		script = script.replaceAll(" neg ", " NEG ");
-		script = script.replaceAll(" neq ", " NEQ ");
-		script = script.replaceAll(" gte ", " GTE ");
-		script = script.replaceAll(" lte ", " LTE ");
-		script = script.replaceAll(" gt ", " GT ");
-		script = script.replaceAll(" eq ", " EQ ");
-		script = script.replaceAll(" lt ", " LT ");
-		
-		//Commands
-		String[] allcommands = Token.TOKENS_COMMAND;
-		for(int i=0;i<allcommands.length;i++) {
-			String find = " "+allcommands[i].toLowerCase()+" ";
-			String repl = " "+allcommands[i]+" ";
-			script = script.replaceAll(find,repl);
-		}
-		
-		script = script.replaceAll(" true ", " TRUE ");
-		script = script.replaceAll(" false ", " FALSE ");
-		
-		//@Globals
-		script = script.replaceAll(" @blknum "	    , " @BLKNUM ");
-		script = script.replaceAll(" @blktime "	    , " @BLKTIME ");
-		script = script.replaceAll(" @prevblkhash " , " @PREVBLKHASH ");
-		script = script.replaceAll(" @input "	    , " @INPUT ");
-		script = script.replaceAll(" @address "	    , " @ADDRESS ");
-		script = script.replaceAll(" @amount "	    , " @AMOUNT "); 
-		script = script.replaceAll(" @coinid "	    , " @COINID "); 
-		script = script.replaceAll(" @script "	    , " @SCRIPT "); 
-		script = script.replaceAll(" @tokenid "	    , " @TOKENID "); 
-		script = script.replaceAll(" @tokenscript "	, " @TOKENSCRIPT "); 
-		script = script.replaceAll(" @tokentotal"	, " @TOKENTOTAL"); 
-		script = script.replaceAll(" @floating "	, " @FLOATING"); 
-		script = script.replaceAll(" @totin "	    , " @TOTIN "); 
-		script = script.replaceAll(" @totout " 	    , " @TOTOUT ");
-		script = script.replaceAll(" @inblknum "    , " @INBLKNUM ");
-		script = script.replaceAll(" @blkdiff "     , " @BLKDIFF ");
-		
-		//And now do all the functions
-		for(MinimaFunction func : MinimaFunction.ALL_FUNCTIONS) {
-			//Name
-			String name = func.getName();
-			
-			//replace
-			script = script.replaceAll(" "+name.toLowerCase()+" ", " "+name+" ");
-		}
-			
-		//Convert the HEX to upper case..
-		String finalstring = "";
-		StringTokenizer strtok = new StringTokenizer(script," ");
-		while(strtok.hasMoreTokens()) {
-			String tok = strtok.nextToken();
-			if(tok.startsWith("0x")) {
-				finalstring = finalstring.concat(" 0x"+tok.substring(2).toUpperCase());
-			}else {
-				finalstring = finalstring.concat(" "+tok);
-			}
-		}
+		//The final result
+		StringBuffer ret = new StringBuffer();
 		
 		//Remove all the excess white space
-		script = script.replaceAll("\\s+"," ").trim();
+		String script = zScript.replaceAll("\\s+"," ").trim();
+		
+		//First CONVERT..
+		Tokenizer tokz = new Tokenizer(script, true);
+		try {
+			//Get the list of Tokens..
+			ArrayList<Token> tokens = tokz.tokenize();
+		
+			//Now add them correctly..
+			boolean first = true;
+			boolean whites = true;
+			for(Token tok : tokens) {
+				if(tok.getTokenType() == Token.TOKEN_COMMAND) {
+					if(first) {
+						ret.append(tok.getToken()+" ");
+						first = false;
+					}else {
+						ret.append(" "+tok.getToken()+" ");
+					}
+					
+					whites = true;
+					
+				}else if(Tokenizer.BOOLEAN_TOKENS_LIST.contains(tok.getToken())) {
+					ret.append(" "+tok.getToken()+" ");
 				
-		//Boom..
-		return finalstring.trim();
+					whites = true;
+					
+				}else if(tok.getToken().startsWith("0x")) {
+					String hex = "0x"+tok.getToken().substring(2).toUpperCase();
+					
+					if(whites) {
+						ret.append(hex);
+					}else {
+						ret.append(" "+hex);
+					}
+					
+					whites = false;
+					
+				}else {
+					String strtok = tok.getToken();
+					
+					//Is it an end of word or whitespace..
+					if(Tokenizer.isWhiteSpace(strtok) || Tokenizer.mAllEOW.contains(strtok)) {
+						ret.append(tok.getToken());
+						whites = true;
+					}else {
+						if(whites) {
+							ret.append(tok.getToken());
+						}else {
+							ret.append(" "+tok.getToken());
+						}
+						whites = false;
+					}
+				}
+			}
+		
+		} catch (MinimaParseException e) {
+			MinimaLogger.log("Clean Script Error @ "+zScript,e);
+			return zScript;
+		}
+		
+		return ret.toString().trim();
 	}
 	
 	public static void main(String[] zArgs) {
 		
-//		String RamScript = 
-//				  "let y=4 "
-//				+ "IF y EQ 0 THEN "
-//				+ "  let x =1 "
-//				+ "ELSEif y EQ 3 THEN "
-//				+ "  let x=2 "
-//				+ "ELSE"				
-//				+ "  let x =3 "
-//				+ "ENDIF let p=0";
+		String scr = new String("let (a 1 0xFF )  = 4 + -2  let t = concat( 0x00 0x34   0x45  )");
 		
-//		String RamScript = 
-//				"let he = 0xeeff let sc = [hello you] let bool = true let x=0 let y=0 while x LT 2 do let y=y+1 let x = x+1 endwhile ";
+		String clean = Contract.cleanScript(scr);
 		
-//		String RamScript = "return VERifyoutput( 0 0xffeeff00ff11 10 0x00)";
-//		String RamScript = "return VERifyoutput( 0 0xffeeff00ff11 10 0x00)";
-//		String RamScript = "return true or 1 lt 2 and true";
+		MinimaLogger.log(scr);
+		MinimaLogger.log(clean);
 		
-//		String RamScript = "LET x=1 while x Lt 10 THEN LET x = x + 1 ENDWHILE LET y =x";
-//		String RamScript = "if 1 EQ 1 THEN let y = 3 endif";
-//		String RamScript = "let x = true or false let y = [return x] Exec y";
-		
-//		String RamScript = "ASSERT VERIFYOUT ( ( @INPUT + 1 ) @ADDRESS ( @AMOUNT - amt ) @TOKENID )";
-//		String RamScript = "let t = 1 LET ( [ hello ] (3 - t*2) t ) = 123 let gg = get ( [hello] 1 t )";
-
-//		String RamScript = "let g = [ goodbye ] let t = DYNSTATE ( 0 [hello] ) let tt = DYNSTATE ( 0 0xFFE ) let y  = state(0)";
-
-		String RamScript = "let x = [return true] let y=sha3(160 x) exec x";
-		
-		//String RamScript = "let t = @SCRIPT let f = @AMOUNT +1 let g = State(1001) + [ sha3(123)]";
-
-//		String RamScript = "let gg = [hello] let ff = 0x45678 let t = CONCAT ( gg [if signedby] SCRIPT(ff) [and @blknum gt 12345])";
-		
-		Transaction tt = new Transaction();
-		tt.addStateVariable(new StateVariable(0, "987"));
-		//tt.setStateValue(0, new StateVariable("[ let y = 0xFF ]"));
-//		tt.setStateValue(2, new StateVariable("1.2345"));
-		
-		Contract ctr = new Contract(RamScript,
-				"0x74A2222436C592046A6F576F67200C75DB3D9051BE31262BD0A0BF0DB30137C4",
-				new Witness(),
-				tt,null,true);
-		
-		ctr.setFloating(true);
-		
-		ctr.setGlobalVariable("@SCRIPT", new ScriptValue(RamScript));
-		ctr.setGlobalVariable("@BLKNUM", new NumberValue(new MiniNumber("31")));
-		ctr.setGlobalVariable("@INBLKNUM", new NumberValue(new MiniNumber("10")));
-		ctr.setGlobalVariable("@INPUT", new NumberValue(new MiniNumber("1")));
-		ctr.setGlobalVariable("@ADDRESS", new HEXValue("0x67876AB"));
-		ctr.setGlobalVariable("@TOKENID", new HEXValue("0x00"));
-		ctr.setGlobalVariable("@AMOUNT", new NumberValue(new MiniNumber("1")));
-		
-		ctr.run();
 	}
-	
 }

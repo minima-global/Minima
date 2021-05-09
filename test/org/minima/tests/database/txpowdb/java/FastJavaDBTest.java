@@ -11,7 +11,6 @@ import org.minima.database.txpowdb.TxPOWDBRow;
 import org.minima.database.txpowdb.java.FastJavaDB;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniInteger;
 import org.minima.objects.base.MiniNumber;
 
 public class FastJavaDBTest {
@@ -26,39 +25,39 @@ public class FastJavaDBTest {
         FastJavaDB jdb = new FastJavaDB();
 
         TxPoW txp0 = new TxPoW();
-        txp0.setNonce(new MiniInteger(10));
+        txp0.setNonce(new MiniNumber(10));
         txp0.setBlockNumber(new MiniNumber(100));
         txp0.calculateTXPOWID();
         TxPoW txp1 = new TxPoW();
-        txp1.setNonce(new MiniInteger(11));
+        txp1.setNonce(new MiniNumber(11));
         txp1.setBlockNumber(new MiniNumber(101));
         txp1.calculateTXPOWID();
         TxPoW txp2 = new TxPoW();
-        txp2.setNonce(new MiniInteger(12));
+        txp2.setNonce(new MiniNumber(12));
         txp2.setBlockNumber(new MiniNumber(102));
         txp2.calculateTXPOWID();
         TxPoW txp3 = new TxPoW();
-        txp3.setNonce(new MiniInteger(13));
+        txp3.setNonce(new MiniNumber(13));
         txp3.setBlockNumber(new MiniNumber(103));
         txp3.calculateTXPOWID();
         TxPoW txp4 = new TxPoW();
-        txp4.setNonce(new MiniInteger(14));
+        txp4.setNonce(new MiniNumber(14));
         txp4.setBlockNumber(new MiniNumber(104));
         txp4.calculateTXPOWID();
         TxPoW txp5 = new TxPoW();
-        txp5.setNonce(new MiniInteger(15));
+        txp5.setNonce(new MiniNumber(15));
         txp5.setBlockNumber(new MiniNumber(105));
         txp5.calculateTXPOWID();
         TxPoW txp6 = new TxPoW();
-        txp6.setNonce(new MiniInteger(16));
+        txp6.setNonce(new MiniNumber(16));
         txp6.setBlockNumber(new MiniNumber(106));
         txp6.calculateTXPOWID();
         TxPoW txp7 = new TxPoW();
-        txp7.setNonce(new MiniInteger(17));
+        txp7.setNonce(new MiniNumber(17));
         txp7.setBlockNumber(new MiniNumber(107));
         txp7.calculateTXPOWID();
         TxPoW txp8 = new TxPoW();
-        txp8.setNonce(new MiniInteger(18));
+        txp8.setNonce(new MiniNumber(18));
         txp8.setBlockNumber(new MiniNumber(108));
         txp8.calculateTXPOWID();
 

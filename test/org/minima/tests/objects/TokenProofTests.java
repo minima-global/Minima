@@ -39,7 +39,7 @@ public class TokenProofTests {
         System.out.println("token id  value " + t.getTokenID());
         assertEquals("Should be equal ", twelve, t.getScale());
         System.out.println("scale value " + t.getScale());
-        System.out.println("scale factor  value " + t.getScaleFactor());
+//        System.out.println("scale factor  value " + t.getScaleFactor());
         System.out.println("Json  value " + t.toJSON());
 
     }

@@ -33,7 +33,10 @@ public class LexicalTokenizer{
 		return mPos;
 	}
 	
-	public void goBackToken() {
+	public void goBackToken() throws MinimaParseException {
+		if(mPos==0 ) {
+			throw new MinimaParseException("LexicalTokenizer cannot go back as at 0 position");
+		}
 		mPos--;
 	}
 	

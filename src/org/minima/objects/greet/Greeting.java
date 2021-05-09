@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import org.minima.GlobalParams;
+import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
@@ -23,23 +24,62 @@ public class Greeting implements Streamable {
 	MiniString mVersion = new MiniString(GlobalParams.MINIMA_VERSION);
 	
 	/**
+	 * The Top block in our list
+	 */
+	MiniNumber mTopBlock;
+	
+	/**
+	 * The Top block in our list
+	 */
+	MiniNumber mStartBlock;
+	
+	/**
 	 * A complete list of all the hashes in our blockchain 
 	 */
-	ArrayList<HashNumber> mTxPowList = new ArrayList<>(); 
+	ArrayList<MiniData> mTxPowList = new ArrayList<>(); 
 	
 	/**
 	 * A JSONObject of extra information
 	 */
 	JSONObject mDetails = new JSONObject();
 	
-	public Greeting() {}
-	
-	public void addBlock(MiniData zHash, MiniNumber zBlockNumber){
-		HashNumber hn = new HashNumber(zHash,zBlockNumber);
-		mTxPowList.add(hn);
+	public Greeting() {
+		mTopBlock   = MiniNumber.MINUSONE;
+		mStartBlock = MiniNumber.MINUSONE;
 	}
 	
-	public ArrayList<HashNumber> getList() {
+	public void setTopBlock(MiniNumber zTopBlock) {
+		mTopBlock = zTopBlock;
+	}
+	
+	public MiniNumber getTopBlock() {
+		return mTopBlock;
+	}
+	
+	public MiniNumber getFirstBlock() {
+		return mStartBlock;
+	}
+	
+	public void addBlock(TxPoW zBlock){
+		MiniNumber blknum = zBlock.getBlockNumber();
+		
+		//Check..
+		if(mTopBlock.isEqual(MiniNumber.MINUSONE)) {
+			mTopBlock = blknum;
+		}else if(blknum.isMore(mTopBlock)) {
+			mTopBlock = blknum;
+		}
+		
+		if(mStartBlock.isEqual(MiniNumber.MINUSONE)) {
+			mStartBlock = blknum;
+		}else if(blknum.isLess(mStartBlock)) {
+			mStartBlock = blknum;
+		}
+		
+		mTxPowList.add(zBlock.getTxPowID());
+	}
+	
+	public ArrayList<MiniData> getList() {
 		return mTxPowList;
 	}
 	
@@ -56,14 +96,18 @@ public class Greeting implements Streamable {
 		//First the version.. 
 		mVersion.writeDataStream(zOut);
 		
+		//The Top Block
+		mTopBlock.writeDataStream(zOut);
+		mStartBlock.writeDataStream(zOut);
+		
 		//Next the details..
 		int len = mTxPowList.size();
 		MiniNumber size = new MiniNumber(len);
 		size.writeDataStream(zOut);
 		
 		//Write it all out..
-		for(HashNumber hntxpow : mTxPowList) {
-			hntxpow.writeDataStream(zOut);
+		for(MiniData txpowid : mTxPowList) {
+			txpowid.writeDataStream(zOut);
 		}
 		
 		//Write out the details..
@@ -74,13 +118,16 @@ public class Greeting implements Streamable {
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
 		mVersion = MiniString.ReadFromStream(zIn);
+		
+		mTopBlock   = MiniNumber.ReadFromStream(zIn);
+		mStartBlock = MiniNumber.ReadFromStream(zIn);
+		
 		MiniNumber minlen = MiniNumber.ReadFromStream(zIn);
 	
 		mTxPowList = new ArrayList<>();
 		int len = minlen.getAsInt();
 		for(int i=0;i<len;i++) {
-			HashNumber hn = HashNumber.ReadFromStream(zIn);
-			mTxPowList.add(hn);
+			mTxPowList.add(MiniData.ReadFromStream(zIn));
 		}
 		
 		//Read the details..

@@ -91,6 +91,8 @@ dependencies {
  //   implementation 'tech.pegasys.discovery:discovery:0.4.3-dev-57c2fd81'
 
 
+    implementation 'com.h2database:h2:1.4.200'
+//    implementation group: 'com.h2database', name: 'h2', version: '1.4.200'
 
 }
 
@@ -140,6 +142,7 @@ task(runp2p, dependsOn: 'classes', type: JavaExec) {
 
 }
 
+// needed for log4j to work with fatjar
 jar {
     manifest {
         attributes 'Main-Class': 'org.minima.Start'

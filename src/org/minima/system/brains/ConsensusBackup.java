@@ -6,7 +6,6 @@ import java.io.File;
 import java.util.ArrayList;
 
 import org.minima.database.MinimaDB;
-import org.minima.database.mmr.MMREntryDB;
 import org.minima.database.mmr.MMRSet;
 import org.minima.database.txpowdb.TxPOWDBRow;
 import org.minima.database.txpowtree.BlockTreeNode;
@@ -38,8 +37,11 @@ public class ConsensusBackup extends ConsensusProcessor {
 	
 	public static String CONSENSUSBACKUP_RESTORE        = CONSENSUS_PREFIX+"RESTORE"; 
 	public static String CONSENSUSBACKUP_RESTOREUSERDB  = CONSENSUS_PREFIX+"RESTOREUSERDB"; 
-	public static String CONSENSUSBACKUP_RESTORETXPOW   = CONSENSUS_PREFIX+"RESTORETXPOW"; 
-	public static String CONSENSUSBACKUP_RESTORETREEDB  = CONSENSUS_PREFIX+"RESTORETREEDB"; 
+//	public static String CONSENSUSBACKUP_RESTORETXPOW   = CONSENSUS_PREFIX+"RESTORETXPOW"; 
+//	public static String CONSENSUSBACKUP_RESTORETREEDB  = CONSENSUS_PREFIX+"RESTORETREEDB"; 
+	
+	public static String CONSENSUSBACKUP_RESET        	= CONSENSUS_PREFIX+"RESET"; 
+	
 	
 	public static final String USERDB_BACKUP = "user.minima";
 	public static final String SYNC_BACKUP   = "sync.package";
@@ -145,6 +147,8 @@ public class ConsensusBackup extends ConsensusProcessor {
 			}
 			
 		}else if(zMessage.isMessageType(CONSENSUSBACKUP_RESTORE)) {
+			MinimaLogger.log("Begin Restore..");
+			
 			//Get this as will need it a few times..
 			BackupManager backup = getBackup();
 			
@@ -254,7 +258,7 @@ public class ConsensusBackup extends ConsensusProcessor {
 			
 			//Clear the database..
 			getMainDB().getMainTree().clearTree();
-			getMainDB().getCoinDB().clearDB();
+			getMainDB().getUserDB().clearDB();
 			getMainDB().getTxPowDB().ClearDB();
 			
 			//Wipe everything BUT the minidapp folder
@@ -287,7 +291,28 @@ public class ConsensusBackup extends ConsensusProcessor {
 		
 			//Message
 			InputHandler.endResponse(zMessage, true, "Restore complete - reconnecting to network");
+		
+		}else if(zMessage.isMessageType(CONSENSUSBACKUP_RESET)) {
+			//Return details..
+			JSONObject details = InputHandler.getResponseJSON(zMessage);
+			
+			MinimaLogger.log("RESETTING MINIMA..");
+			
+			//Clear the database..
+			getMainDB().getMainTree().clearTree();
+			getMainDB().getUserDB().clearDB();
+			getMainDB().getTxPowDB().ClearDB();
+			
+			//Wipe everything BUT the minidapp folder
+			BackupManager.deleteConfFolder(getBackup().getRootFolder());
+			
+			//Disconnect and Reconnect to the network..
+			getNetworkHandler().PostMessage(NetworkHandler.NETWORK_RECONNECT);
+		
+			//Message
+			InputHandler.endResponse(zMessage, true, "FULL RESET complete - reconnecting to network");
 		}
+		
 	}
 	
 	public void loadSyncPackage(SyncPackage zPackage) {
@@ -342,7 +367,7 @@ public class ConsensusBackup extends ConsensusProcessor {
 		MinimaLogger.log("Checking DB.. 100%");
 		
 		//Reset weights
-		getMainDB().hardResetChain();
+		getMainDB().getMainTree().resetWeights();
 		
 		//And Now sort the TXPOWDB
 		ArrayList<BlockTreeNode> list = getMainDB().getMainTree().getAsList();
@@ -386,13 +411,19 @@ public class ConsensusBackup extends ConsensusProcessor {
 							getMainDB().addTreeChildren(tpow.getTxPowID());
 						}
 					}
+				}else {
+					//MinimaLogger.log("MISSING "+txid.to0xString());
 				}
 			}
 		}
 				
-		//Clear the MMRDB tree..
-		MiniNumber cascade = getMainDB().getMainTree().getCascadeNode().getBlockNumber();
-		MMREntryDB.getDB().cleanUpDB(cascade);
+		ArrayList<TxPOWDBRow> test = getMainDB().getTxPowDB().getAllUnusedTxPOW();
+		if(test.size()>0) {
+			MinimaLogger.log("UNUSED TXPOW FOUND "+test.size());
+			for(TxPOWDBRow row : test) {
+				MinimaLogger.log(row.getTxPOW().getTxPowID().to0xString());
+			}
+		}
 		
 		//MinimaLogger.log("DB.. 100%");
 		getConsensusHandler().updateListeners(new Message(ConsensusHandler.CONSENSUS_NOTIFY_INITIALPERC).addString("info", "Restoring DB..100%"));

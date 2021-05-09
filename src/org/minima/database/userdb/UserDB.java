@@ -13,6 +13,7 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.keys.MultiKey;
 import org.minima.objects.proofs.TokenProof;
+import org.minima.system.brains.ConsensusHandler;
 
 public interface UserDB {
 
@@ -21,6 +22,7 @@ public interface UserDB {
 	 */
 	public ArrayList<MultiKey> getKeys();
 	public MultiKey newPublicKey(int zBitLength);
+	public MultiKey newPublicKey(int zBitLength, int zKeys, int zLevels);
 	public MultiKey getPubPrivKey(MiniData zPubKey);
 	
 	/**
@@ -34,6 +36,8 @@ public interface UserDB {
 	public Address newSimpleAddress();
 	public Address newSimpleAddress(int zBitLength);
 	public Address newSimpleAddress(MultiKey zPubPriv);
+	
+	public Address getCurrentAddress(ConsensusHandler zBackup);
 	
 	public boolean isSimpleAddress(MiniData zAddress);
 	public MiniData getPublicKeyForSimpleAddress(MiniData zAddress);
@@ -101,7 +105,7 @@ public interface UserDB {
 	 * Token Details
 	 */
 	public ArrayList<TokenProof> getAllKnownTokens();
-	
+	public void clearTokens();
 	public TokenProof getTokenDetail(MiniData zTokenID);
 	
 	public void addTokenDetails(TokenProof zToken);
@@ -112,5 +116,10 @@ public interface UserDB {
 	public ArrayList<reltxpow> getHistory();
 	public void addToHistory(TxPoW zTxPOW, Hashtable<String, MiniNumber> zValues);
 	public void clearHistory();
+	
+	/**
+	 * Clear the Database.. for RESET
+	 */
+	public void clearDB();
 	
 }

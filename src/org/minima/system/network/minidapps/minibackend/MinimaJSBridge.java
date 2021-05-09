@@ -7,6 +7,7 @@ import org.minima.system.network.commands.NET;
 import org.minima.system.network.commands.SQL;
 import org.minima.system.network.minidapps.DAPPManager;
 import org.minima.utils.MinimaLogger;
+import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
 import org.mozilla.javascript.Function;
 
@@ -94,6 +95,18 @@ public class MinimaJSBridge {
 			
 			//Get the Response..
         	finalresult = netcomm.getFinalResult();
+		
+		}else if(zType.equals("log")) {
+			//Log a message
+			MinimaLogger.log("ServiceID "+mBackBone.getMiniDAPPID()+" > "+zData);
+			
+			JSONObject resp = new JSONObject();
+			resp.put("status", true);
+			resp.put("function", "log");
+			resp.put("message", "message logged");
+			resp.put("response", new JSONObject());
+			
+			finalresult = resp.toString();
 		}
 	    
 		//Run it in a safe environment.. check for crashes..

@@ -8,9 +8,7 @@ import static org.junit.Assert.assertTrue;
 import java.math.BigDecimal;
 
 import org.junit.Test;
-import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.values.NumberValue;
-import org.minima.kissvm.values.Value;
 import org.minima.objects.base.MiniNumber;
 
 public class NumberValueTests {
@@ -20,29 +18,29 @@ public class NumberValueTests {
 
         int intNumber = 0x00FFFFFF;
         long longNumber = 0x00FFFFFFFFFFFFFFL;
-        double doubleNumber = 1.123456789;
+//        double doubleNumber = 1.123456789;
         MiniNumber miniNumber = new MiniNumber(intNumber + 64);
 
         NumberValue nv1 = new NumberValue(intNumber);
         NumberValue nv1a = new NumberValue(Integer.toString(intNumber));
         NumberValue nv2 = new NumberValue(longNumber);
         NumberValue nv2a = new NumberValue(Long.toString(longNumber));
-        NumberValue nv3 = new NumberValue(doubleNumber);
-        NumberValue nv3a = new NumberValue(Double.toString(doubleNumber));
+//        NumberValue nv3 = new NumberValue(doubleNumber);
+//        NumberValue nv3a = new NumberValue(Double.toString(doubleNumber));
         NumberValue nv4 = new NumberValue(miniNumber);
         NumberValue nv4a = new NumberValue(miniNumber.toString());
 
         assertEquals("should be equal ", nv1.getNumber().getAsInt(), nv1a.getNumber().getAsInt());
         assertEquals("should be equal ", nv2.getNumber().getAsLong(), nv2a.getNumber().getAsLong());
-        assertTrue("should be true ", nv3.getNumber().getAsDouble() == nv3a.getNumber().getAsDouble());
+//        assertTrue("should be true ", nv3.getNumber().getAsDouble() == nv3a.getNumber().getAsDouble());
         assertEquals("should be equal ", nv4.getNumber().getAsBigInteger(), nv4a.getNumber().getAsBigInteger());
 
         assertEquals("should be equal ", NumberValue.VALUE_NUMBER, nv1.getValueType());
         assertEquals("should be equal ", NumberValue.VALUE_NUMBER, nv1a.getValueType());
         assertEquals("should be equal ", NumberValue.VALUE_NUMBER, nv2.getValueType());
         assertEquals("should be equal ", NumberValue.VALUE_NUMBER, nv2a.getValueType());
-        assertEquals("should be equal ", NumberValue.VALUE_NUMBER, nv3.getValueType());
-        assertEquals("should be equal ", NumberValue.VALUE_NUMBER, nv3a.getValueType());
+//        assertEquals("should be equal ", NumberValue.VALUE_NUMBER, nv3.getValueType());
+//        assertEquals("should be equal ", NumberValue.VALUE_NUMBER, nv3a.getValueType());
 
     }
 
@@ -78,13 +76,13 @@ public class NumberValueTests {
         nv1 = new NumberValue(Long.MAX_VALUE);
         nv2 = new NumberValue(Long.MIN_VALUE);
         res = new NumberValue(-1);
-        //assertTrue("should be true ", nv1.add(nv2).isEqual(res)); // Invalid result
-        //assertTrue("should be true ", nv2.add(nv1).isEqual(res)); // Invalid result
+        assertTrue("should be true ", nv1.add(nv2).isEqual(res));
+        assertTrue("should be true ", nv2.add(nv1).isEqual(res));
 
         nv1 = new NumberValue(Long.MAX_VALUE);
         nv2 = new NumberValue(1L);
         res = new NumberValue(new MiniNumber(1L).add(new MiniNumber(Long.MAX_VALUE)));
-        //assertFalse("should be false ", res.getNumber().isEqual(new MiniNumber(Long.MAX_VALUE))); // Invalid arithmetic
+        assertFalse("should be false ", res.getNumber().isEqual(new MiniNumber(Long.MAX_VALUE)));
         assertTrue("should be true ", nv1.add(nv2).isEqual(res));
         assertTrue("should be true ", nv2.add(nv1).isEqual(res));
 
@@ -132,7 +130,6 @@ public class NumberValueTests {
 
         nv1 = new NumberValue(1000000);
         nv2 = new NumberValue(1000000);
-        //res = new NumberValue(1000000 * 1000000); // 32bit integers do not overflow???
         res = new NumberValue(Long.valueOf(1000000) * Long.valueOf(1000000));
         assertTrue("should be true ", nv1.mult(nv2).isEqual(res));
         assertTrue("should be true ", nv2.mult(nv1).isEqual(res));
@@ -180,50 +177,50 @@ public class NumberValueTests {
         res = new NumberValue(0);
         assertTrue("should be true ", nv1.div(nv2).isEqual(res));
 
-        nv1 = new NumberValue(20000);
-        nv2 = new NumberValue(10000);
-        res = new NumberValue(20000 / 10000);
-        res2 = new NumberValue(Double.valueOf(10000) / Double.valueOf(20000));
-        assertTrue("should be true ", nv1.div(nv2).isEqual(res));
-        assertTrue("should be true ", nv2.div(nv1).isEqual(res2));
-
-        nv1 = new NumberValue(1000000);
-        nv2 = new NumberValue(1000000);
-        res = new NumberValue(1);
-        assertTrue("should be true ", nv1.div(nv2).isEqual(res));
-        assertTrue("should be true ", nv2.div(nv1).isEqual(res));
-
-        nv1 = new NumberValue(Integer.MIN_VALUE);
-        nv2 = new NumberValue(1);
-        res = new NumberValue(Integer.MIN_VALUE);
-        res2 = new NumberValue(Double.valueOf(1) / Integer.MIN_VALUE);
-        assertTrue("should be true ", nv1.div(nv2).isEqual(res));
-        res = new NumberValue(nv2.getNumber().div(nv1.getNumber()));
-        //assertTrue("should be true ", res.isEqual(res2)); // precision issue -0.00000000046566128730773926 vs -0.000000000465661287307739257
-
-        nv1 = new NumberValue(Long.MIN_VALUE);
-        nv2 = new NumberValue(1);
-        res = new NumberValue(Long.MIN_VALUE);
-        res2 = new NumberValue(Double.valueOf(1) / Long.MIN_VALUE);
-        assertTrue("should be true ", nv1.div(nv2).isEqual(res));
-        res = new NumberValue(nv2.getNumber().div(nv1.getNumber()));
-        //assertTrue("should be true ", res.isEqual(res2)); // precision issue -0.000000000000000000108420217248550443 vs -0.00000000000000000010842021724855044
-
-        nv1 = new NumberValue(Integer.MAX_VALUE);
-        nv2 = new NumberValue(1);
-        res = new NumberValue(Integer.MAX_VALUE);
-        res2 = new NumberValue(Double.valueOf(1) / Integer.MAX_VALUE);
-        assertTrue("should be true ", nv1.div(nv2).isEqual(res));
-        res = new NumberValue(nv2.getNumber().div(nv1.getNumber()));
-        //assertTrue("should be true ", res.isEqual(res2)); // precision issue -0.00000000046566128730773926 vs -0.000000000465661287307739257
-
-        nv1 = new NumberValue(Long.MAX_VALUE);
-        nv2 = new NumberValue(1);
-        res = new NumberValue(Long.MAX_VALUE);
-        res2 = new NumberValue(Double.valueOf(1) / Long.MAX_VALUE);
-        assertTrue("should be true ", nv1.div(nv2).isEqual(res));
-        res = new NumberValue(nv2.getNumber().div(nv1.getNumber()));
-        //assertTrue("should be true ", res.isEqual(res2)); // precision issue -0.000000000000000000108420217248550443 vs -0.00000000000000000010842021724855044
+//        nv1 = new NumberValue(20000);
+//        nv2 = new NumberValue(10000);
+//        res = new NumberValue(20000 / 10000);
+//        res2 = new NumberValue(Double.valueOf(10000) / Double.valueOf(20000));
+//        assertTrue("should be true ", nv1.div(nv2).isEqual(res));
+//        assertTrue("should be true ", nv2.div(nv1).isEqual(res2));
+//
+//        nv1 = new NumberValue(1000000);
+//        nv2 = new NumberValue(1000000);
+//        res = new NumberValue(1);
+//        assertTrue("should be true ", nv1.div(nv2).isEqual(res));
+//        assertTrue("should be true ", nv2.div(nv1).isEqual(res));
+//
+//        nv1 = new NumberValue(Integer.MIN_VALUE);
+//        nv2 = new NumberValue(1);
+//        res = new NumberValue(Integer.MIN_VALUE);
+////        res2 = new NumberValue(Double.valueOf(1) / Integer.MIN_VALUE);
+//        assertTrue("should be true ", nv1.div(nv2).isEqual(res));
+//        res = new NumberValue(nv2.getNumber().div(nv1.getNumber()));
+//        //assertTrue("should be true ", res.isEqual(res2)); // precision issue -0.00000000046566128730773926 vs -0.0000000004656612873077392578125
+//
+//        nv1 = new NumberValue(Long.MIN_VALUE);
+//        nv2 = new NumberValue(1);
+//        res = new NumberValue(Long.MIN_VALUE);
+//        res2 = new NumberValue(Double.valueOf(1) / Long.MIN_VALUE);
+//        assertTrue("should be true ", nv1.div(nv2).isEqual(res));
+//        res = new NumberValue(nv2.getNumber().div(nv1.getNumber()));
+//        //assertTrue("should be true ", res.isEqual(res2)); // precision issue -0.0000000000000000001084202172485504434007452800869941 vs -0.00000000000000000010842021724855044
+//
+//        nv1 = new NumberValue(Integer.MAX_VALUE);
+//        nv2 = new NumberValue(1);
+//        res = new NumberValue(Integer.MAX_VALUE);
+//        res2 = new NumberValue(Double.valueOf(1) / Integer.MAX_VALUE);
+//        assertTrue("should be true ", nv1.div(nv2).isEqual(res));
+//        res = new NumberValue(nv2.getNumber().div(nv1.getNumber()));
+//        //assertTrue("should be true ", res.isEqual(res2)); // precision issue 0.0000000004656612875245796924105750827167998 vs 0.0000000004656612875245797
+//
+//        nv1 = new NumberValue(Long.MAX_VALUE);
+//        nv2 = new NumberValue(1);
+//        res = new NumberValue(Long.MAX_VALUE);
+//        res2 = new NumberValue(Double.valueOf(1) / Long.MAX_VALUE);
+//        assertTrue("should be true ", nv1.div(nv2).isEqual(res));
+//        res = new NumberValue(nv2.getNumber().div(nv1.getNumber()));
+//        //assertTrue("should be true ", res.isEqual(res2)); // precision issue 0.000000000000000000108420217248550443412500223595217 vs 0.00000000000000000010842021724855044
     }
 
     @Test
@@ -245,10 +242,10 @@ public class NumberValueTests {
                     nv1 = new NumberValue(Long.valueOf(0));
                     nv2 = new NumberValue(Long.valueOf(0));
                     break;
-                case 3:
-                    nv1 = new NumberValue(Double.valueOf(0));
-                    nv2 = new NumberValue(Double.valueOf(0));
-                    break;
+//                case 3:
+//                    nv1 = new NumberValue(Double.valueOf(0));
+//                    nv2 = new NumberValue(Double.valueOf(0));
+//                    break;
                 case 4:
                     nv1 = new NumberValue(new MiniNumber(Integer.valueOf(0)));
                     nv2 = new NumberValue(new MiniNumber(Integer.valueOf(0)));
@@ -290,10 +287,10 @@ public class NumberValueTests {
                     nv1 = new NumberValue(Long.valueOf(5));
                     nv2 = new NumberValue(Long.valueOf(10));
                     break;
-                case 3:
-                    nv1 = new NumberValue(Double.valueOf(5));
-                    nv2 = new NumberValue(Double.valueOf(10));
-                    break;
+//                case 3:
+//                    nv1 = new NumberValue(Double.valueOf(5));
+//                    nv2 = new NumberValue(Double.valueOf(10));
+//                    break;
                 case 4:
                     nv1 = new NumberValue(new MiniNumber(Integer.valueOf(5)));
                     nv2 = new NumberValue(new MiniNumber(Integer.valueOf(10)));
@@ -335,17 +332,17 @@ public class NumberValueTests {
                     nv1 = new NumberValue(Long.MIN_VALUE);
                     nv2 = new NumberValue(Long.MAX_VALUE);
                     break;
-                case 3:
-                    nv1 = new NumberValue(-Double.MAX_VALUE);
-                    nv2 = new NumberValue(Double.MAX_VALUE);
-                    break;
+//                case 3:
+//                    nv1 = new NumberValue(-Double.MAX_VALUE);
+//                    nv2 = new NumberValue(Double.MAX_VALUE);
+//                    break;
                 case 4:
-                    assertThrows(NumberFormatException.class, () -> {
-                        new NumberValue(-Double.MIN_VALUE);
-                    });
-                    assertThrows(NumberFormatException.class, () -> {
-                        new NumberValue(Double.MIN_VALUE);
-                    });
+//                    assertThrows(NumberFormatException.class, () -> {
+//                        new NumberValue(-Double.MIN_VALUE);
+//                    });
+//                    assertThrows(NumberFormatException.class, () -> {
+//                        new NumberValue(Double.MIN_VALUE);
+//                    });
                     continue;
                 case 5:
                     nv1 = new NumberValue(new MiniNumber(Integer.MIN_VALUE));

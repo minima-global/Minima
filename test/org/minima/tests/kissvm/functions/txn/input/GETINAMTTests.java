@@ -1,46 +1,32 @@
 package org.minima.tests.kissvm.functions.txn.input;
 
-import org.minima.kissvm.functions.txn.input.GETINAMT;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.fail;
 
+import java.util.ArrayList;
+
+import org.junit.Test;
+import org.minima.database.MinimaDB;
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.exceptions.MinimaParseException;
 import org.minima.kissvm.expressions.ConstantExpression;
 import org.minima.kissvm.functions.MinimaFunction;
+import org.minima.kissvm.functions.txn.input.GETINAMT;
 import org.minima.kissvm.values.BooleanValue;
-import org.minima.kissvm.values.HEXValue;
+import org.minima.kissvm.values.HexValue;
 import org.minima.kissvm.values.NumberValue;
-import org.minima.kissvm.values.ScriptValue;
+import org.minima.kissvm.values.StringValue;
 import org.minima.kissvm.values.Value;
-import org.minima.objects.StateVariable;
+import org.minima.objects.Address;
+import org.minima.objects.Coin;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
-import org.minima.objects.keys.MultiKey;
 import org.minima.objects.proofs.TokenProof;
-
-import java.util.ArrayList;
-import java.util.Random;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import org.junit.Test;
-import org.minima.database.MinimaDB;
-import org.minima.objects.Address;
-import org.minima.objects.Coin;
-import org.minima.objects.TxPoW;
-import org.minima.system.brains.BackupManager;
-import org.minima.system.input.functions.gimme50;
-import org.minima.tests.database.MinimaDBTests;
-import org.minima.utils.json.JSONArray;
 
 //NumberValue GETINAMT (NumberValue input)
 public class GETINAMTTests {
@@ -132,7 +118,8 @@ public class GETINAMTTests {
             try {
                 Value res = mf.runFunction(ctr);
                 assertEquals(Value.VALUE_NUMBER, res.getValueType());
-                assertEquals(in2.getAmount().mult(tp.getScaleFactor()).getAsLong(), ((NumberValue) res).getNumber().getAsLong());
+                assertEquals(tp.getScaledTokenAmount(in2.getAmount()).getAsLong(), ((NumberValue) res).getNumber().getAsLong());
+//                assertEquals(in2.getAmount().mult(tp.getScaleFactor()).getAsLong(), ((NumberValue) res).getNumber().getAsLong());
             } catch (ExecutionException ex) {
                 fail();
             }
@@ -219,10 +206,7 @@ public class GETINAMTTests {
         {
             MinimaFunction mf = fn.getNewFunction();
             mf.addParameter(new ConstantExpression(new NumberValue(-1)));
-            //assertThrows(ExecutionException.class, () -> { // should throw this
-            //    Value res = mf.runFunction(ctr);
-            //});
-            assertThrows(IndexOutOfBoundsException.class, () -> { // but throws this
+            assertThrows(ExecutionException.class, () -> { // should throw this
                 Value res = mf.runFunction(ctr);
             });
         }
@@ -244,14 +228,14 @@ public class GETINAMTTests {
         }
         {
             MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new HEXValue("0x12345678")));
+            mf.addParameter(new ConstantExpression(new HexValue("0x12345678")));
             assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
             });
         }
         {
             MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new ScriptValue("Hello World")));
+            mf.addParameter(new ConstantExpression(new StringValue("Hello World")));
             assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
             });

@@ -12,7 +12,9 @@ import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.expressions.BooleanExpression;
 import org.minima.kissvm.expressions.ConstantExpression;
 import org.minima.kissvm.values.BooleanValue;
+import org.minima.kissvm.values.HexValue;
 import org.minima.kissvm.values.NumberValue;
+import org.minima.kissvm.values.StringValue;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
 
@@ -20,128 +22,393 @@ public class BooleanExpressionTests {
 
     @Test
     public void testConstructors() throws ExecutionException {
+        
+    	{
+            ConstantExpression cet = new ConstantExpression(new BooleanValue(true));
+            ConstantExpression cef = new ConstantExpression(new BooleanValue(false));
 
-        ConstantExpression cet = new ConstantExpression(new BooleanValue(true));
-        ConstantExpression cef = new ConstantExpression(new BooleanValue(false));
+            BooleanExpression be;
 
-        BooleanExpression be;
+            Contract ctr = new Contract("", "", new Witness(), new Transaction(), new ArrayList<>());
+            
+            be = new BooleanExpression(cet, cet, BooleanExpression.BOOLEAN_AND);
+            assertTrue(be.getBooleanValue(ctr).isTrue());
+            be = new BooleanExpression(cet, cef, BooleanExpression.BOOLEAN_AND);
+            assertTrue(be.getBooleanValue(ctr).isFalse());
+            be = new BooleanExpression(cef, cet, BooleanExpression.BOOLEAN_AND);
+            assertTrue(be.getBooleanValue(ctr).isFalse());
+            be = new BooleanExpression(cef, cef, BooleanExpression.BOOLEAN_AND);
+            assertTrue(be.getBooleanValue(ctr).isFalse());
 
-        Contract ctr = new Contract("", "", new Witness(), new Transaction(), new ArrayList<>());
+            be = new BooleanExpression(cet, cet, BooleanExpression.BOOLEAN_NAND);
+            assertTrue(be.getBooleanValue(ctr).isFalse());
+            be = new BooleanExpression(cet, cef, BooleanExpression.BOOLEAN_NAND);
+            assertTrue(be.getBooleanValue(ctr).isTrue());
+            be = new BooleanExpression(cef, cet, BooleanExpression.BOOLEAN_NAND);
+            assertTrue(be.getBooleanValue(ctr).isTrue());
+            be = new BooleanExpression(cef, cef, BooleanExpression.BOOLEAN_NAND);
+            assertTrue(be.getBooleanValue(ctr).isTrue());
 
-        be = new BooleanExpression(cet, cet, BooleanExpression.BOOLEAN_AND);
-        assertTrue(be.getValue(ctr).isTrue());
-        be = new BooleanExpression(cet, cef, BooleanExpression.BOOLEAN_AND);
-        assertTrue(be.getValue(ctr).isFalse());
-        be = new BooleanExpression(cef, cet, BooleanExpression.BOOLEAN_AND);
-        assertTrue(be.getValue(ctr).isFalse());
-        be = new BooleanExpression(cef, cef, BooleanExpression.BOOLEAN_AND);
-        assertTrue(be.getValue(ctr).isFalse());
+            be = new BooleanExpression(cet, cet, BooleanExpression.BOOLEAN_OR);
+            assertTrue(be.getBooleanValue(ctr).isTrue());
+            be = new BooleanExpression(cet, cef, BooleanExpression.BOOLEAN_OR);
+            assertTrue(be.getBooleanValue(ctr).isTrue());
+            be = new BooleanExpression(cef, cet, BooleanExpression.BOOLEAN_OR);
+            assertTrue(be.getBooleanValue(ctr).isTrue());
+            be = new BooleanExpression(cef, cef, BooleanExpression.BOOLEAN_OR);
+            assertTrue(be.getBooleanValue(ctr).isFalse());
 
-        be = new BooleanExpression(cet, cet, BooleanExpression.BOOLEAN_NAND);
-        assertTrue(be.getValue(ctr).isFalse());
-        be = new BooleanExpression(cet, cef, BooleanExpression.BOOLEAN_NAND);
-        assertTrue(be.getValue(ctr).isTrue());
-        be = new BooleanExpression(cef, cet, BooleanExpression.BOOLEAN_NAND);
-        assertTrue(be.getValue(ctr).isTrue());
-        be = new BooleanExpression(cef, cef, BooleanExpression.BOOLEAN_NAND);
-        assertTrue(be.getValue(ctr).isTrue());
+            be = new BooleanExpression(cet, cet, BooleanExpression.BOOLEAN_NOR);
+            assertTrue(be.getBooleanValue(ctr).isFalse());
+            be = new BooleanExpression(cet, cef, BooleanExpression.BOOLEAN_NOR);
+            assertTrue(be.getBooleanValue(ctr).isFalse());
+            be = new BooleanExpression(cef, cet, BooleanExpression.BOOLEAN_NOR);
+            assertTrue(be.getBooleanValue(ctr).isFalse());
+            be = new BooleanExpression(cef, cef, BooleanExpression.BOOLEAN_NOR);
+            assertTrue(be.getBooleanValue(ctr).isTrue());
 
-        be = new BooleanExpression(cet, cet, BooleanExpression.BOOLEAN_OR);
-        assertTrue(be.getValue(ctr).isTrue());
-        be = new BooleanExpression(cet, cef, BooleanExpression.BOOLEAN_OR);
-        assertTrue(be.getValue(ctr).isTrue());
-        be = new BooleanExpression(cef, cet, BooleanExpression.BOOLEAN_OR);
-        assertTrue(be.getValue(ctr).isTrue());
-        be = new BooleanExpression(cef, cef, BooleanExpression.BOOLEAN_OR);
-        assertTrue(be.getValue(ctr).isFalse());
+            be = new BooleanExpression(cet, cet, BooleanExpression.BOOLEAN_XOR);
+            assertTrue(be.getBooleanValue(ctr).isFalse());
+            be = new BooleanExpression(cet, cef, BooleanExpression.BOOLEAN_XOR);
+            assertTrue(be.getBooleanValue(ctr).isTrue());
+            be = new BooleanExpression(cef, cet, BooleanExpression.BOOLEAN_XOR);
+            assertTrue(be.getBooleanValue(ctr).isTrue());
+            be = new BooleanExpression(cef, cef, BooleanExpression.BOOLEAN_XOR);
+            assertTrue(be.getBooleanValue(ctr).isFalse());
 
-        be = new BooleanExpression(cet, cet, BooleanExpression.BOOLEAN_NOR);
-        assertTrue(be.getValue(ctr).isFalse());
-        be = new BooleanExpression(cet, cef, BooleanExpression.BOOLEAN_NOR);
-        assertTrue(be.getValue(ctr).isFalse());
-        be = new BooleanExpression(cef, cet, BooleanExpression.BOOLEAN_NOR);
-        assertTrue(be.getValue(ctr).isFalse());
-        be = new BooleanExpression(cef, cef, BooleanExpression.BOOLEAN_NOR);
-        assertTrue(be.getValue(ctr).isTrue());
+            be = new BooleanExpression(cet, cet, BooleanExpression.BOOLEAN_NXOR);
+            assertTrue(be.getBooleanValue(ctr).isTrue());
+            be = new BooleanExpression(cet, cef, BooleanExpression.BOOLEAN_NXOR);
+            assertTrue(be.getBooleanValue(ctr).isFalse());
+            be = new BooleanExpression(cef, cet, BooleanExpression.BOOLEAN_NXOR);
+            assertTrue(be.getBooleanValue(ctr).isFalse());
+            be = new BooleanExpression(cef, cef, BooleanExpression.BOOLEAN_NXOR);
+            assertTrue(be.getBooleanValue(ctr).isTrue());
 
-        be = new BooleanExpression(cet, cet, BooleanExpression.BOOLEAN_XOR);
-        assertTrue(be.getValue(ctr).isFalse());
-        be = new BooleanExpression(cet, cef, BooleanExpression.BOOLEAN_XOR);
-        assertTrue(be.getValue(ctr).isTrue());
-        be = new BooleanExpression(cef, cet, BooleanExpression.BOOLEAN_XOR);
-        assertTrue(be.getValue(ctr).isTrue());
-        be = new BooleanExpression(cef, cef, BooleanExpression.BOOLEAN_XOR);
-        assertTrue(be.getValue(ctr).isFalse());
+            be = new BooleanExpression(cet, BooleanExpression.BOOLEAN_NOT);
+            assertTrue(be.getBooleanValue(ctr).isFalse());
 
-        be = new BooleanExpression(cet, cet, BooleanExpression.BOOLEAN_NXOR);
-        assertTrue(be.getValue(ctr).isTrue());
-        be = new BooleanExpression(cet, cef, BooleanExpression.BOOLEAN_NXOR);
-        assertTrue(be.getValue(ctr).isFalse());
-        be = new BooleanExpression(cef, cet, BooleanExpression.BOOLEAN_NXOR);
-        assertTrue(be.getValue(ctr).isFalse());
-        be = new BooleanExpression(cef, cef, BooleanExpression.BOOLEAN_NXOR);
-        assertTrue(be.getValue(ctr).isTrue());
+            be = new BooleanExpression(cef, BooleanExpression.BOOLEAN_NOT);
+            assertTrue(be.getBooleanValue(ctr).isTrue());
+        }
 
-        be = new BooleanExpression(cet, BooleanExpression.BOOLEAN_NOT);
-        assertTrue(be.getValue(ctr).isFalse());
+        {
+            ConstantExpression cet = new ConstantExpression(new HexValue("0x01"));
+            ConstantExpression cef = new ConstantExpression(new HexValue("0x00"));
 
-        be = new BooleanExpression(cef, BooleanExpression.BOOLEAN_NOT);
-        assertTrue(be.getValue(ctr).isTrue());
+            BooleanExpression be;
 
-        ConstantExpression ce1 = new ConstantExpression(new NumberValue(1));
-        ConstantExpression ce2 = new ConstantExpression(new NumberValue(2));
+            Contract ctr = new Contract("", "", new Witness(), new Transaction(), new ArrayList<>());
 
-        be = new BooleanExpression(ce1, ce1, BooleanExpression.BOOLEAN_EQ);
-        assertTrue(be.getValue(ctr).isTrue());
-        be = new BooleanExpression(ce1, ce2, BooleanExpression.BOOLEAN_EQ);
-        assertTrue(be.getValue(ctr).isFalse());
-        be = new BooleanExpression(ce2, ce1, BooleanExpression.BOOLEAN_EQ);
-        assertTrue(be.getValue(ctr).isFalse());
+            assertThrows(IllegalArgumentException.class, () -> {
+	            BooleanExpression be1 = new BooleanExpression(cet, cet, BooleanExpression.BOOLEAN_AND);
+	            be1.getValue(ctr);
+	        });
+            assertThrows(IllegalArgumentException.class, () -> {
+	            BooleanExpression be1 = new BooleanExpression(cet, cet, BooleanExpression.BOOLEAN_NAND);
+	            be1.getValue(ctr);
+	        });
+            assertThrows(IllegalArgumentException.class, () -> {
+	            BooleanExpression be1 = new BooleanExpression(cet, cet, BooleanExpression.BOOLEAN_OR);
+	            be1.getValue(ctr);
+	        });
+            assertThrows(IllegalArgumentException.class, () -> {
+	            BooleanExpression be1 = new BooleanExpression(cet, cet, BooleanExpression.BOOLEAN_NOR);
+	            be1.getValue(ctr);
+	        });
+            assertThrows(IllegalArgumentException.class, () -> {
+	            BooleanExpression be1 = new BooleanExpression(cet, cet, BooleanExpression.BOOLEAN_XOR);
+	            be1.getValue(ctr);
+	        });
+            assertThrows(IllegalArgumentException.class, () -> {
+	            BooleanExpression be1 = new BooleanExpression(cet, cet, BooleanExpression.BOOLEAN_NXOR);
+	            be1.getValue(ctr);
+	        });
+            assertThrows(IllegalArgumentException.class, () -> {
+	            BooleanExpression be1 = new BooleanExpression(cet, BooleanExpression.BOOLEAN_NOT);
+	            be1.getValue(ctr);
+	        });
+        }
+        
+        {
+            ConstantExpression cet = new ConstantExpression(new NumberValue(1));
+            ConstantExpression cef = new ConstantExpression(new NumberValue(0));
 
-        be = new BooleanExpression(ce1, ce1, BooleanExpression.BOOLEAN_NEQ);
-        assertTrue(be.getValue(ctr).isFalse());
-        be = new BooleanExpression(ce1, ce2, BooleanExpression.BOOLEAN_NEQ);
-        assertTrue(be.getValue(ctr).isTrue());
-        be = new BooleanExpression(ce2, ce1, BooleanExpression.BOOLEAN_NEQ);
-        assertTrue(be.getValue(ctr).isTrue());
+            BooleanExpression be;
 
-        be = new BooleanExpression(ce1, ce1, BooleanExpression.BOOLEAN_LT);
-        assertTrue(be.getValue(ctr).isFalse());
-        be = new BooleanExpression(ce1, ce2, BooleanExpression.BOOLEAN_LT);
-        assertTrue(be.getValue(ctr).isTrue());
-        be = new BooleanExpression(ce2, ce1, BooleanExpression.BOOLEAN_LT);
-        assertTrue(be.getValue(ctr).isFalse());
+            Contract ctr = new Contract("", "", new Witness(), new Transaction(), new ArrayList<>());
 
-        be = new BooleanExpression(ce1, ce1, BooleanExpression.BOOLEAN_LTE);
-        assertTrue(be.getValue(ctr).isTrue());
-        be = new BooleanExpression(ce1, ce2, BooleanExpression.BOOLEAN_LTE);
-        assertTrue(be.getValue(ctr).isTrue());
-        be = new BooleanExpression(ce2, ce1, BooleanExpression.BOOLEAN_LTE);
-        assertTrue(be.getValue(ctr).isFalse());
+            assertThrows(IllegalArgumentException.class, () -> {
+	            BooleanExpression be1 = new BooleanExpression(cet, cet, BooleanExpression.BOOLEAN_AND);
+	            be1.getValue(ctr);
+	        });
+            assertThrows(IllegalArgumentException.class, () -> {
+	            BooleanExpression be1 = new BooleanExpression(cet, cet, BooleanExpression.BOOLEAN_NAND);
+	            be1.getValue(ctr);
+	        });
+            assertThrows(IllegalArgumentException.class, () -> {
+	            BooleanExpression be1 = new BooleanExpression(cet, cet, BooleanExpression.BOOLEAN_OR);
+	            be1.getValue(ctr);
+	        });
+            assertThrows(IllegalArgumentException.class, () -> {
+	            BooleanExpression be1 = new BooleanExpression(cet, cet, BooleanExpression.BOOLEAN_NOR);
+	            be1.getValue(ctr);
+	        });
+            assertThrows(IllegalArgumentException.class, () -> {
+	            BooleanExpression be1 = new BooleanExpression(cet, cet, BooleanExpression.BOOLEAN_XOR);
+	            be1.getValue(ctr);
+	        });
+            assertThrows(IllegalArgumentException.class, () -> {
+	            BooleanExpression be1 = new BooleanExpression(cet, cet, BooleanExpression.BOOLEAN_NXOR);
+	            be1.getValue(ctr);
+	        });
+            assertThrows(IllegalArgumentException.class, () -> {
+	            BooleanExpression be1 = new BooleanExpression(cet, BooleanExpression.BOOLEAN_NOT);
+	            be1.getValue(ctr);
+	        });
+        }
+        
+        {
+            ConstantExpression cet = new ConstantExpression(new StringValue("hello world"));
+            ConstantExpression cef = new ConstantExpression(new StringValue(""));
 
-        be = new BooleanExpression(ce1, ce1, BooleanExpression.BOOLEAN_GT);
-        assertTrue(be.getValue(ctr).isFalse());
-        be = new BooleanExpression(ce1, ce2, BooleanExpression.BOOLEAN_GT);
-        assertTrue(be.getValue(ctr).isFalse());
-        be = new BooleanExpression(ce2, ce1, BooleanExpression.BOOLEAN_GT);
-        assertTrue(be.getValue(ctr).isTrue());
+            BooleanExpression be;
 
-        be = new BooleanExpression(ce1, ce1, BooleanExpression.BOOLEAN_GTE);
-        assertTrue(be.getValue(ctr).isTrue());
-        be = new BooleanExpression(ce1, ce2, BooleanExpression.BOOLEAN_GTE);
-        assertTrue(be.getValue(ctr).isFalse());
-        be = new BooleanExpression(ce2, ce1, BooleanExpression.BOOLEAN_GTE);
-        assertTrue(be.getValue(ctr).isTrue());
+            Contract ctr = new Contract("", "", new Witness(), new Transaction(), new ArrayList<>());
 
-        BooleanExpression be1 = new BooleanExpression(ce1, ce2, Integer.MIN_VALUE);
-        //assertThrows(ExecutionException.class, () -> {  // should throw ExecutionException on invalid operation
-        //    be1.getValue(ctr);
-        //});
-        assertThrows(ExecutionException.class, () -> {  // but throws NullPointerException
-            be1.getValue(ctr);
-        });
+            assertThrows(IllegalArgumentException.class, () -> {
+	            BooleanExpression be1 = new BooleanExpression(cet, cet, BooleanExpression.BOOLEAN_AND);
+	            be1.getValue(ctr);
+	        });
+            assertThrows(IllegalArgumentException.class, () -> {
+	            BooleanExpression be1 = new BooleanExpression(cet, cet, BooleanExpression.BOOLEAN_NAND);
+	            be1.getValue(ctr);
+	        });
+            assertThrows(IllegalArgumentException.class, () -> {
+	            BooleanExpression be1 = new BooleanExpression(cet, cet, BooleanExpression.BOOLEAN_OR);
+	            be1.getValue(ctr);
+	        });
+            assertThrows(IllegalArgumentException.class, () -> {
+	            BooleanExpression be1 = new BooleanExpression(cet, cet, BooleanExpression.BOOLEAN_NOR);
+	            be1.getValue(ctr);
+	        });
+            assertThrows(IllegalArgumentException.class, () -> {
+	            BooleanExpression be1 = new BooleanExpression(cet, cet, BooleanExpression.BOOLEAN_XOR);
+	            be1.getValue(ctr);
+	        });
+            assertThrows(IllegalArgumentException.class, () -> {
+	            BooleanExpression be1 = new BooleanExpression(cet, cet, BooleanExpression.BOOLEAN_NXOR);
+	            be1.getValue(ctr);
+	        });
+            assertThrows(IllegalArgumentException.class, () -> {
+	            BooleanExpression be1 = new BooleanExpression(cet, BooleanExpression.BOOLEAN_NOT);
+	            be1.getValue(ctr);
+	        });
+        }
+        
+        {
+            ConstantExpression ce1 = new ConstantExpression(new BooleanValue(false));
+            ConstantExpression ce2 = new ConstantExpression(new BooleanValue(true));
+
+            BooleanExpression be;
+
+            Contract ctr = new Contract("", "", new Witness(), new Transaction(), new ArrayList<>());
+
+            be = new BooleanExpression(ce1, ce1, BooleanExpression.BOOLEAN_EQ);
+            assertTrue(be.getBooleanValue(ctr).isTrue());
+            be = new BooleanExpression(ce2, ce2, BooleanExpression.BOOLEAN_EQ);
+            assertTrue(be.getBooleanValue(ctr).isTrue());
+            be = new BooleanExpression(ce1, ce2, BooleanExpression.BOOLEAN_EQ);
+            assertTrue(be.getBooleanValue(ctr).isFalse());
+            be = new BooleanExpression(ce2, ce1, BooleanExpression.BOOLEAN_EQ);
+            assertTrue(be.getBooleanValue(ctr).isFalse());
+            
+            be = new BooleanExpression(ce1, ce1, BooleanExpression.BOOLEAN_NEQ);
+            assertTrue(be.getBooleanValue(ctr).isFalse());
+            be = new BooleanExpression(ce1, ce2, BooleanExpression.BOOLEAN_NEQ);
+            assertTrue(be.getBooleanValue(ctr).isTrue());
+            be = new BooleanExpression(ce2, ce1, BooleanExpression.BOOLEAN_NEQ);
+            assertTrue(be.getBooleanValue(ctr).isTrue());
+
+            
+            assertThrows(IllegalArgumentException.class, () -> {
+	            BooleanExpression be1 = new BooleanExpression(ce1, ce2, BooleanExpression.BOOLEAN_LT);
+	            be1.getValue(ctr);
+	        });
+            assertThrows(IllegalArgumentException.class, () -> {
+	            BooleanExpression be1 = new BooleanExpression(ce1, ce2, BooleanExpression.BOOLEAN_LTE);
+	            be1.getValue(ctr);
+	        });
+            assertThrows(IllegalArgumentException.class, () -> {
+	            BooleanExpression be1 = new BooleanExpression(ce1, ce2, BooleanExpression.BOOLEAN_GT);
+	            be1.getValue(ctr);
+	        });
+            assertThrows(IllegalArgumentException.class, () -> {
+	            BooleanExpression be1 = new BooleanExpression(ce1, ce2, BooleanExpression.BOOLEAN_GTE);
+	            be1.getValue(ctr);
+	        });
+            
+            BooleanExpression be1 = new BooleanExpression(ce1, ce2, Integer.MIN_VALUE);
+  		  	assertThrows(ExecutionException.class, () -> {
+  		  		be1.getValue(ctr);
+  		  	});
+        }
+        
+        {
+            ConstantExpression ce1 = new ConstantExpression(new HexValue("0x01"));
+            ConstantExpression ce2 = new ConstantExpression(new HexValue("0x02"));
+
+            BooleanExpression be;
+
+            Contract ctr = new Contract("", "", new Witness(), new Transaction(), new ArrayList<>());
+
+            be = new BooleanExpression(ce1, ce1, BooleanExpression.BOOLEAN_EQ);
+            assertTrue(be.getBooleanValue(ctr).isTrue());
+            be = new BooleanExpression(ce2, ce2, BooleanExpression.BOOLEAN_EQ);
+            assertTrue(be.getBooleanValue(ctr).isTrue());
+            be = new BooleanExpression(ce1, ce2, BooleanExpression.BOOLEAN_EQ);
+            assertTrue(be.getBooleanValue(ctr).isFalse());
+            be = new BooleanExpression(ce2, ce1, BooleanExpression.BOOLEAN_EQ);
+            assertTrue(be.getBooleanValue(ctr).isFalse());
+            
+            be = new BooleanExpression(ce1, ce1, BooleanExpression.BOOLEAN_NEQ);
+            assertTrue(be.getBooleanValue(ctr).isFalse());
+            be = new BooleanExpression(ce1, ce2, BooleanExpression.BOOLEAN_NEQ);
+            assertTrue(be.getBooleanValue(ctr).isTrue());
+            be = new BooleanExpression(ce2, ce1, BooleanExpression.BOOLEAN_NEQ);
+            assertTrue(be.getBooleanValue(ctr).isTrue());
+
+            
+            assertThrows(IllegalArgumentException.class, () -> {
+	            BooleanExpression be1 = new BooleanExpression(ce1, ce2, BooleanExpression.BOOLEAN_LT);
+	            be1.getValue(ctr);
+	        });
+            assertThrows(IllegalArgumentException.class, () -> {
+	            BooleanExpression be1 = new BooleanExpression(ce1, ce2, BooleanExpression.BOOLEAN_LTE);
+	            be1.getValue(ctr);
+	        });
+            assertThrows(IllegalArgumentException.class, () -> {
+	            BooleanExpression be1 = new BooleanExpression(ce1, ce2, BooleanExpression.BOOLEAN_GT);
+	            be1.getValue(ctr);
+	        });
+            assertThrows(IllegalArgumentException.class, () -> {
+	            BooleanExpression be1 = new BooleanExpression(ce1, ce2, BooleanExpression.BOOLEAN_GTE);
+	            be1.getValue(ctr);
+	        });
+            
+            BooleanExpression be1 = new BooleanExpression(ce1, ce2, Integer.MIN_VALUE);
+  		  	assertThrows(ExecutionException.class, () -> {
+  		  		be1.getValue(ctr);
+  		  	});
+        }
+        
+        {
+            ConstantExpression ce1 = new ConstantExpression(new StringValue("hello world"));
+            ConstantExpression ce2 = new ConstantExpression(new StringValue(""));
+
+            BooleanExpression be;
+
+            Contract ctr = new Contract("", "", new Witness(), new Transaction(), new ArrayList<>());
+
+            be = new BooleanExpression(ce1, ce1, BooleanExpression.BOOLEAN_EQ);
+            assertTrue(be.getBooleanValue(ctr).isTrue());
+            be = new BooleanExpression(ce2, ce2, BooleanExpression.BOOLEAN_EQ);
+            assertTrue(be.getBooleanValue(ctr).isTrue());
+            be = new BooleanExpression(ce1, ce2, BooleanExpression.BOOLEAN_EQ);
+            assertTrue(be.getBooleanValue(ctr).isFalse());
+            be = new BooleanExpression(ce2, ce1, BooleanExpression.BOOLEAN_EQ);
+            assertTrue(be.getBooleanValue(ctr).isFalse());
+            
+            be = new BooleanExpression(ce1, ce1, BooleanExpression.BOOLEAN_NEQ);
+            assertTrue(be.getBooleanValue(ctr).isFalse());
+            be = new BooleanExpression(ce1, ce2, BooleanExpression.BOOLEAN_NEQ);
+            assertTrue(be.getBooleanValue(ctr).isTrue());
+            be = new BooleanExpression(ce2, ce1, BooleanExpression.BOOLEAN_NEQ);
+            assertTrue(be.getBooleanValue(ctr).isTrue());
+
+            
+            assertThrows(IllegalArgumentException.class, () -> {
+	            BooleanExpression be1 = new BooleanExpression(ce1, ce2, BooleanExpression.BOOLEAN_LT);
+	            be1.getValue(ctr);
+	        });
+            assertThrows(IllegalArgumentException.class, () -> {
+	            BooleanExpression be1 = new BooleanExpression(ce1, ce2, BooleanExpression.BOOLEAN_LTE);
+	            be1.getValue(ctr);
+	        });
+            assertThrows(IllegalArgumentException.class, () -> {
+	            BooleanExpression be1 = new BooleanExpression(ce1, ce2, BooleanExpression.BOOLEAN_GT);
+	            be1.getValue(ctr);
+	        });
+            assertThrows(IllegalArgumentException.class, () -> {
+	            BooleanExpression be1 = new BooleanExpression(ce1, ce2, BooleanExpression.BOOLEAN_GTE);
+	            be1.getValue(ctr);
+	        });
+            
+            BooleanExpression be1 = new BooleanExpression(ce1, ce2, Integer.MIN_VALUE);
+  		  	assertThrows(ExecutionException.class, () -> {
+  		  		be1.getValue(ctr);
+  		  	});
+        }
+        
+	    {
+		  ConstantExpression ce1 = new ConstantExpression(new NumberValue(1));
+		  ConstantExpression ce2 = new ConstantExpression(new NumberValue(2));
+		
+		  BooleanExpression be;
+		
+		  Contract ctr = new Contract("", "", new Witness(), new Transaction(), new ArrayList<>());
+		
+		  be = new BooleanExpression(ce1, ce1, BooleanExpression.BOOLEAN_EQ);
+		  assertTrue(be.getBooleanValue(ctr).isTrue());
+		  be = new BooleanExpression(ce1, ce2, BooleanExpression.BOOLEAN_EQ);
+		  assertTrue(be.getBooleanValue(ctr).isFalse());
+		  be = new BooleanExpression(ce2, ce1, BooleanExpression.BOOLEAN_EQ);
+		  assertTrue(be.getBooleanValue(ctr).isFalse());
+		
+		  be = new BooleanExpression(ce1, ce1, BooleanExpression.BOOLEAN_NEQ);
+		  assertTrue(be.getBooleanValue(ctr).isFalse());
+		  be = new BooleanExpression(ce1, ce2, BooleanExpression.BOOLEAN_NEQ);
+		  assertTrue(be.getBooleanValue(ctr).isTrue());
+		  be = new BooleanExpression(ce2, ce1, BooleanExpression.BOOLEAN_NEQ);
+		  assertTrue(be.getBooleanValue(ctr).isTrue());
+		
+		  be = new BooleanExpression(ce1, ce1, BooleanExpression.BOOLEAN_LT);
+		  assertTrue(be.getBooleanValue(ctr).isFalse());
+		  be = new BooleanExpression(ce1, ce2, BooleanExpression.BOOLEAN_LT);
+		  assertTrue(be.getBooleanValue(ctr).isTrue());
+		  be = new BooleanExpression(ce2, ce1, BooleanExpression.BOOLEAN_LT);
+		  assertTrue(be.getBooleanValue(ctr).isFalse());
+		
+		  be = new BooleanExpression(ce1, ce1, BooleanExpression.BOOLEAN_LTE);
+		  assertTrue(be.getBooleanValue(ctr).isTrue());
+		  be = new BooleanExpression(ce1, ce2, BooleanExpression.BOOLEAN_LTE);
+		  assertTrue(be.getBooleanValue(ctr).isTrue());
+		  be = new BooleanExpression(ce2, ce1, BooleanExpression.BOOLEAN_LTE);
+		  assertTrue(be.getBooleanValue(ctr).isFalse());
+		
+		  be = new BooleanExpression(ce1, ce1, BooleanExpression.BOOLEAN_GT);
+		  assertTrue(be.getBooleanValue(ctr).isFalse());
+		  be = new BooleanExpression(ce1, ce2, BooleanExpression.BOOLEAN_GT);
+		  assertTrue(be.getBooleanValue(ctr).isFalse());
+		  be = new BooleanExpression(ce2, ce1, BooleanExpression.BOOLEAN_GT);
+		  assertTrue(be.getBooleanValue(ctr).isTrue());
+		
+		  be = new BooleanExpression(ce1, ce1, BooleanExpression.BOOLEAN_GTE);
+		  assertTrue(be.getBooleanValue(ctr).isTrue());
+		  be = new BooleanExpression(ce1, ce2, BooleanExpression.BOOLEAN_GTE);
+		  assertTrue(be.getBooleanValue(ctr).isFalse());
+		  be = new BooleanExpression(ce2, ce1, BooleanExpression.BOOLEAN_GTE);
+		  assertTrue(be.getBooleanValue(ctr).isTrue());
+		
+		  BooleanExpression be1 = new BooleanExpression(ce1, ce2, Integer.MIN_VALUE);
+		  assertThrows(ExecutionException.class, () -> {
+		      be1.getValue(ctr);
+		  });
+		  
+	  }
     }
-
+        
+	    
     @Test
     public void testToString() {
         ConstantExpression ce1 = new ConstantExpression(new BooleanValue(true));
@@ -222,4 +489,5 @@ public class BooleanExpressionTests {
         obj_s = be.toString();
         assertEquals("should be equal ", exp_s, obj_s);
     }
+    
 }

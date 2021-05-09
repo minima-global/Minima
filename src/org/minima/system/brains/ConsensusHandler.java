@@ -1,6 +1,5 @@
 package org.minima.system.brains;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
@@ -158,7 +157,7 @@ public class ConsensusHandler extends MessageProcessor {
 		mConsensusBackup = new ConsensusBackup(mMainDB, this);
 		
 		//Are we HARD mining.. debugging / private chain
-		PostTimerMessage(new TimerMessage(1000, CONSENSUS_MINEBLOCK));
+		PostTimerMessage(new TimerMessage(5000, CONSENSUS_MINEBLOCK));
 	
 		//Redo every 10 minutes..
 		PostTimerMessage(new TimerMessage(10 * 60 * 1000, CONSENSUS_AUTOBACKUP));
@@ -228,6 +227,9 @@ public class ConsensusHandler extends MessageProcessor {
 			//A TXPOW - that has been checked already and added to the DB
 			TxPoW txpow = (TxPoW) zMessage.getObject("txpow");
 			
+			//ADD TO THE DATABASE..
+			getMainDB().addNewTxPow(txpow);
+			
 			//Check the validity..
 			String txpowid = txpow.getTxPowID().to0xString();
 			
@@ -239,19 +241,16 @@ public class ConsensusHandler extends MessageProcessor {
 				network.removeRequestedTxPow(txpowid);
 			}
 			
+			//Is this a syncmessage
+			boolean syncmessage = zMessage.getBoolean("sync");
+			
 			//Check the Validity..
 			boolean txnok = TxPoWChecker.checkTransactionMMR(txpow, getMainDB());
 			if(!txnok) {
-				//Was it requested.. ?
-				if(requested) {
-					//Ok - could be from a different branch block.. 
-					MinimaLogger.log("WARNING Invalid TXPOW (Requested..) : "+txpow.getBlockNumber()+" "+txpow.getTxPowID()); 
-				}else {
-					//Not requested invalid transaction.. could be from a branch chain though..
-					MinimaLogger.log("WARNING Invalid TXPOW (UN-Requested..) : "+txpow.getBlockNumber()+" "+txpow.getTxPowID()); 
-					//Remove it from the DB.. FOR NOW KEEP
-					//getMainDB().getTxPowDB().removeTxPOW(txpow.getTxPowID());
-					//return;	
+				MinimaLogger.log("WARNING Invalid TXPOW (Requested.. "+requested+" ) trans:"+txpow.isTransaction()+" blk:"+txpow.isBlock()+" " +txpow.getBlockNumber()+" "+txpow.getTxPowID()+" tip:"+getMainDB().getTopBlock());
+				if(!requested) {
+					//What to do.. could be in a spearate branch.. but if unrequested.. 
+					//..	
 				}
 			}
 			
@@ -296,11 +295,13 @@ public class ConsensusHandler extends MessageProcessor {
 				PostDAPPJSONMessage(newblock);
 				
 				//Do the balance.. Update listeners if changed..
-				PostMessage(new Message(ConsensusPrint.CONSENSUS_BALANCE).addBoolean("hard", true));
+				if(!syncmessage) {
+					PostMessage(new Message(ConsensusPrint.CONSENSUS_BALANCE).addBoolean("hard", true));
 				
-				//Print the tree..
-				if(mPrintChain) {
-					PostMessage(new Message(ConsensusPrint.CONSENSUS_PRINTCHAIN_TREE).addBoolean("systemout", true));
+					//Print the tree..
+					if(mPrintChain) {
+						PostMessage(new Message(ConsensusPrint.CONSENSUS_PRINTCHAIN_TREE).addBoolean("systemout", true));
+					}
 				}
 			}
 			
@@ -310,22 +311,25 @@ public class ConsensusHandler extends MessageProcessor {
 				Hashtable<String, MiniNumber> tokamt = getMainDB().getTransactionTokenAmounts(txpow);
 				
 				//Store ion the database..
-				getMainDB().getUserDB().addToHistory(txpow,tokamt);
+				getMainDB().getUserDB().addToHistory(txpow.deepCopy(),tokamt);
 				
 				//Do we need to update the balance.. or did we do it already..
 				updateListeners(new Message(CONSENSUS_NOTIFY_BALANCE));
-				if(!newbalance) {
+				if(!newbalance && !syncmessage) {
 					PostMessage(new Message(ConsensusPrint.CONSENSUS_BALANCE).addBoolean("hard", true));
 				}				
 			}
 					
 			//BROADCAST Message for ALL the clients - only if valid / or block.. ( they can request it if need be..)
-			if(txnok || txpow.isBlock()) {
+			if(!syncmessage && (txnok || txpow.isBlock())) {
 				Message netmsg  = new Message(MinimaClient.NETCLIENT_SENDTXPOWID).addObject("txpowid", txpow.getTxPowID());
 				Message netw    = new Message(NetworkHandler.NETWORK_SENDALL).addObject("message", netmsg);
 				Main.getMainHandler().getNetworkHandler().PostMessage(netw);
 			}
 			
+			//Remove from the List of Mined transactions.. ( probably not ours but good to do it here )
+			getMainDB().remeoveMiningTransaction(txpow.getTransaction());
+				
 		/**
 		 * Called every 10 Minutes to do a few tasks
 		 */
@@ -335,6 +339,9 @@ public class ConsensusHandler extends MessageProcessor {
 			
 			//Flush / Check the mem-pool
 			PostMessage(new Message(ConsensusUser.CONSENSUS_FLUSHMEMPOOL));
+			
+			//Clean the Tokens..
+			getMainDB().checkTokens();
 			
 			//Redo every 10 minutes..
 			PostTimerMessage(new TimerMessage(10 * 60 * 1000, CONSENSUS_AUTOBACKUP));
@@ -397,6 +404,13 @@ public class ConsensusHandler extends MessageProcessor {
 			//Fresh TXPOW
 			TxPoW txpow = getMainDB().getCurrentTxPow(new Transaction(), new Witness(), new JSONArray());
 			
+			//Do we have any blocks.. could be syncing
+			if(txpow == null) {
+				//Try again in a minute
+				PostTimerMessage(new TimerMessage(20000, CONSENSUS_MINEBLOCK));
+				return;
+			}
+			
 			//Send it to the Miner..
 			Message mine = new Message(TxPoWMiner.TXMINER_MEGAMINER).addObject("txpow", txpow);
 			
@@ -434,6 +448,9 @@ public class ConsensusHandler extends MessageProcessor {
 			
 			//Is is valid.. ?
 			if(txpow==null) {
+				//Remove from the List of Mined transactions..
+				getMainDB().remeoveMiningTransaction(trans);
+				
 				resp.put("contractlogs", contractlogs);
 				InputHandler.endResponse(zMessage, false, "Invalid Transaction");
 				return;
@@ -446,6 +463,9 @@ public class ConsensusHandler extends MessageProcessor {
 			//Check the SIGS!
 			boolean sigsok = TxPoWChecker.checkSigs(txpow);
 			if(!sigsok) {
+				//Remove from the List of Mined transactions..
+				getMainDB().remeoveMiningTransaction(txpow.getTransaction());
+				
 				//Reject
 				InputHandler.endResponse(zMessage, false, "Invalid Signatures! - TXNAUTO must be done AFTER adding state variables ?");
 				return;
@@ -453,6 +473,9 @@ public class ConsensusHandler extends MessageProcessor {
 			
 			//Final check of the mempool coins..
 			if(getMainDB().checkTransactionForMempoolCoins(trans)) {
+				//Remove from the List of Mined transactions..
+				getMainDB().remeoveMiningTransaction(txpow.getTransaction());
+				
 				//No GOOD!
 				InputHandler.endResponse(zMessage, false, "ERROR double spend coin in mempool.");
 				return;
@@ -464,6 +487,9 @@ public class ConsensusHandler extends MessageProcessor {
 			resp.put("outputs", txpow.getTransaction().getAllOutputs().size());
 			
 			if(txpow.getSizeinBytes() > MinimaReader.MAX_TXPOW) {
+				//Remove from the List of Mined transactions..
+				getMainDB().remeoveMiningTransaction(txpow.getTransaction());
+				
 				//Add the TxPoW
 				resp.put("transaction", txpow.getTransaction());
 				
@@ -471,16 +497,6 @@ public class ConsensusHandler extends MessageProcessor {
 				InputHandler.endResponse(zMessage, false, "YOUR TXPOW TRANSACTION IS TOO BIG! MAX SIZE : "+MinimaReader.MAX_TXPOW);
 				
 				return;
-			}
-					
-			//Add to the list of Mined Coins!
-			boolean newtrans = getMainDB().addMiningTransaction(txpow.getTransaction());
-			if(newtrans) {
-				//Notify listeners that Mining is starting...
-				JSONObject mining = new JSONObject();
-				mining.put("event","txpowstart");
-				mining.put("transaction",txpow.getTransaction().toJSON());
-				PostDAPPJSONMessage(mining);
 			}
 			
 			//Send it to the Miner.. This is the ONLY place this happens..
@@ -491,9 +507,6 @@ public class ConsensusHandler extends MessageProcessor {
 			resp.put("txpow", txpow);
 			
 			InputHandler.endResponse(zMessage, true, "Send Success");
-			
-			//OK - Some new outputs addresses for sure.. do a backup..
-			PostMessage(ConsensusBackup.CONSENSUSBACKUP_BACKUPUSER);
 			
 		}else if ( zMessage.isMessageType(CONSENSUS_CREATETRANS) ) {
 			//How much to who ?
@@ -534,7 +547,8 @@ public class ConsensusHandler extends MessageProcessor {
 				}
 				
 				//Scale..
-				samount = samount.div(tokendets.getScaleFactor());
+				samount = tokendets.getScaledMinimaAmount(samount);
+//				samount = samount.div(tokendets.getScaleFactor());
 				
 				//And set the new value..
 				amount = samount.toString();
@@ -542,6 +556,12 @@ public class ConsensusHandler extends MessageProcessor {
 			
 			//Send details..
 			MiniNumber sendamount 	= new MiniNumber(amount);
+			
+			//Check is a valid amount.
+			if(!sendamount.isValidMinimaValue() || !sendamount.isMore(MiniNumber.ZERO)) {
+				InputHandler.endResponse(zMessage, false, "Invalid amount specified for send amount! "+sendamount);
+				return;
+			}
 			
 			//How much do we have..
 			MiniNumber total = new MiniNumber(); 
@@ -561,7 +581,8 @@ public class ConsensusHandler extends MessageProcessor {
 			if(total.isLess(sendamount)) {
 				//Insufficient funds!
 				if(!tokenid.equals(Coin.MINIMA_TOKENID.to0xString())) {
-					total = total.mult(tokendets.getScaleFactor());
+					total = tokendets.getScaledTokenAmount(total);
+//					total = total.mult(tokendets.getScaleFactor());
 					InputHandler.endResponse(zMessage, false, "Insufficient funds! You only have : "+total);
 				}else {
 					InputHandler.endResponse(zMessage, false, "Insufficient funds! You only have : "+total);
@@ -576,7 +597,7 @@ public class ConsensusHandler extends MessageProcessor {
 			//Blank address - check change is non-null
 			Address change = new Address(); 
 			if(!total.isEqual(sendamount)) {
-				change = getMainDB().getUserDB().newSimpleAddress();
+				change = getMainDB().getUserDB().getCurrentAddress(this);
 			}
 			
 			//Create the Transaction
@@ -592,6 +613,24 @@ public class ConsensusHandler extends MessageProcessor {
 				wit.addTokenDetails(tokendets);
 			}
 			
+			//get the Transaction
+			Transaction trans = (Transaction) ret.getObject("transaction");
+			
+			//Final check..
+			if(getMainDB().checkTransactionForMining(trans)) {
+				InputHandler.endResponse(zMessage, false, "ERROR double spend coin in mining pool.");
+				return;
+			}
+			
+			//Add all the inputs to the mining..
+			getMainDB().addMiningTransaction(trans);
+			
+			//Notify listeners that Mining is starting...
+			JSONObject mining = new JSONObject();
+			mining.put("event","txpowstart");
+			mining.put("transaction",trans.toJSON());
+			PostDAPPJSONMessage(mining);
+			
 			//Get the message ready
 			InputHandler.addResponseMesage(ret, zMessage);
 			
@@ -602,9 +641,9 @@ public class ConsensusHandler extends MessageProcessor {
 			//The TXPOW
 			TxPoW txpow = (TxPoW) zMessage.getObject("txpow");
 			
-			//Remove from the List of Mined transactions..
-			getMainDB().remeoveMiningTransaction(txpow.getTransaction());
-			
+//			//Remove from the List of Mined transactions..
+//			getMainDB().remeoveMiningTransaction(txpow.getTransaction());
+//			
 			//And now forward the message to the single entry point..
 			Message msg = new Message(ConsensusNet.CONSENSUS_NET_CHECKSIZE_TXPOW).addObject("txpow", txpow);
 			PostMessage(msg);
@@ -626,8 +665,8 @@ public class ConsensusHandler extends MessageProcessor {
 			mLastGimme = timenow;
 			
 			//construct a special transaction that pays 50 mini to an address this user controls..
-			Address addr1 = getMainDB().getUserDB().newSimpleAddress();
-			Address addr2 = getMainDB().getUserDB().newSimpleAddress();
+			Address addr1 = getMainDB().getUserDB().getCurrentAddress(this);
+			Address addr2 = getMainDB().getUserDB().getCurrentAddress(this);
 			
 			//Now create a transaction that always pays out..
 			Transaction trans = new Transaction();
@@ -663,40 +702,30 @@ public class ConsensusHandler extends MessageProcessor {
 			String proof  	 	= zMessage.getString("proof");
 			String script       = zMessage.getString("script");
 			
-			/* 
-			 * ASSERT FLOOR ( @AMOUNT ) EQ @AMOUNT LET checkout = 0 
-			 * WHILE ( checkout LT @TOTOUT ) DO 
-			 *  IF GETOUTTOK ( checkout ) EQ @TOKENID THEN 
-			 *   LET outamt = GETOUTAMT ( checkout ) 
-			 *   ASSERT FLOOR ( outamt ) EQ outamt 
-			 *  ENDIF 
-			 *  LET checkout = INC ( checkout ) 
-			 * ENDWHILE 
-			 * RETURN TRUE
-			 * 
-			 */
-			
+			//The  token create coin id..
 			MiniData tok  		= Coin.TOKENID_CREATE;
 			MiniData changetok 	= Coin.MINIMA_TOKENID;
 			
-			//Get a new address to receive the tokens..
-			Address recipient = getMainDB().getUserDB().newSimpleAddress();
-			
-			//How much Minima will it take to colour.. for now lets stay under 0.001 minima
-			//This is not protocol specific and can change later
-			BigDecimal max    = new BigDecimal("0.01");
-			BigDecimal num    = new BigDecimal(amount);
-			BigDecimal actnum = new BigDecimal(amount);
-			
-			//Cylce to the right size..
-			int scale = 0;
-			while(actnum.compareTo(max)>0) {
-				actnum = actnum.divide(BigDecimal.TEN);
-				scale++;
+			//Are we specifying the number of decimal places.. default to 8
+			int decimalplaces = 8;
+			int decimalpoint = amount.indexOf(".");
+			if(decimalpoint != -1) {
+				String decs   = amount.substring(decimalpoint+1);
+				decimalplaces = Integer.parseInt(decs);
 			}
 			
+			//The actual amount of tokens..
+			MiniNumber totaltoks = new MiniNumber(amount).floor(); 
+			MiniNumber totaldecs = MiniNumber.TEN.pow(decimalplaces); 
+			
+			//How much Minima will it take to colour.. 
+			MiniNumber colorminima = MiniNumber.MINI_UNIT.mult(totaldecs).mult(totaltoks);
+			
+			//What is the scale..
+			int scale = MiniNumber.MAX_DECIMAL_PLACES - decimalplaces;
+			
 			//The actual amount of Minima that needs to be sent
-			MiniNumber sendamount = new MiniNumber(actnum);
+			MiniNumber sendamount = new MiniNumber(colorminima);
 			
 			//How much do we have..
 			MiniNumber total = new MiniNumber(); 
@@ -713,14 +742,17 @@ public class ConsensusHandler extends MessageProcessor {
 				InputHandler.endResponse(zMessage, false, "Insufficient funds! You only have : "+total);
 				
 			}else {
+				//Get a new address to receive the tokens..
+				Address recipient = getMainDB().getUserDB().getCurrentAddress(this);
+				
 				//Blank address - check change is non-null
 				Address change = new Address(); 
 				if(!total.isEqual(sendamount)) {
-					change = getMainDB().getUserDB().newSimpleAddress();
+					change = getMainDB().getUserDB().getCurrentAddress(this);
 				}
 				
 				//CHECK NAME of TOKEN IS VALID!
-				//TODO
+				//TODO Important! - Check token name and details are valid.. add function to TokenProof
 				
 				//Create the JSON descriptor..
 				JSONObject tokenjson = new JSONObject();

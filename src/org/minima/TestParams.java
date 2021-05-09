@@ -19,7 +19,7 @@ public class TestParams {
 	 * -  0.05  = 20 second block time
 	 * - 0.2 = 5 second blocktime
 	 */
-	public static MiniNumber MINIMA_BLOCK_SPEED  = new MiniNumber("1");
+	public static MiniNumber MINIMA_BLOCK_SPEED  = new MiniNumber("0.5");
 	
 	/**
 	 * When checking speed and average difficulty only look at this many blocks back
@@ -62,13 +62,8 @@ public class TestParams {
 	 * Max Proof History - how far back to use a proof of coin..
 	 * If there is a re-org of more than this the proof will be invalid 
 	 */
-	public static MiniNumber MINIMA_MMR_PROOF_HISTORY = new MiniNumber(8);
+	public static MiniNumber MINIMA_MMR_PROOF_HISTORY = new MiniNumber(5);
 	
-//	/**
-//	 * Are we debugging the chain in short chain mode..
-//	 */
-//	public static boolean SHORT_CHAIN_DEBUG_MODE = false;
-//	
 	/**
 	 * Just create a block every transaction. Useful when not mining 
 	 * and just want a block every single transaction to debug.
@@ -76,12 +71,6 @@ public class TestParams {
 	 */
 	public static boolean MINIMA_ZERO_DIFF_BLK  = false;
 
-//	/** 
-//	 * ( Not sure if I'll use this..)
-//	 * MAX Difficulty change per block
-//	 */
-//	public static final MiniNumber MINIMA_MAX_SPEED_RATIO  = new MiniNumber("0.5");
-	
 	/**
 	 * Set these as the GlobalParams..
 	 */

@@ -87,6 +87,12 @@ public class MiniFile {
 	}
 	
 	public static void copyFile(File zOrig, File zCopy) throws IOException {
+		//Check file exists
+		if(!zOrig.exists()){
+			MinimaLogger.log("Trying to copy file that does not exist "+zOrig.getAbsolutePath());
+			return;
+		}
+		
 		//read in the original..
 		byte[] orig = readCompleteFile(zOrig);
 		

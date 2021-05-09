@@ -69,10 +69,10 @@ public class reltxpow implements Streamable {
 					json.put("name", "null (UNKNOWN)");
 				}else {
 					json.put("name", tp.getName().toString());
-					scale = tp.getScaleFactor();
+					amt = tp.getScaledTokenAmount(amt);
 				}
 			}
-			json.put("amount", amt.mult(scale).toString());
+			json.put("amount", amt.toString());
 			tokarray.add(json);
 		}
 		mJSON.put("values", tokarray);

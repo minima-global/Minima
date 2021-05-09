@@ -10,10 +10,8 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import org.minima.objects.base.MMRSumNumber;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniInteger;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.txpow.TxPoWMiner;
 import org.minima.utils.Crypto;
@@ -87,11 +85,11 @@ public class TxPoW implements Streamable {
 		mBody = null;
 	}
 	
-	public void setNonce(MiniInteger zNonce) {
+	public void setNonce(MiniNumber zNonce) {
 		mHeader.mNonce = zNonce;
 	}
 	
-	public MiniInteger getNonce() {
+	public MiniNumber getNonce() {
 		return mHeader.mNonce;
 	}
 	
@@ -176,20 +174,12 @@ public class TxPoW implements Streamable {
 		return mHeader.mSuperParents[zLevel];
 	}
 	
-	public void setTimeSecs(MiniNumber zSecs) {
-		mHeader.mTimeSecs = zSecs;
-	}
-	
-	public MiniNumber getTimeSecs() {
-		return mHeader.mTimeSecs;
-	}
-	
 	public void setTimeMilli(MiniNumber zMilli) {
-		mHeader.mTimeSecs = zMilli.divRoundDown(MiniNumber.THOUSAND);
+		mHeader.mTimeMilli = zMilli;
 	}
 	
 	public MiniNumber getTimeMilli() {
-		return mHeader.mTimeSecs.mult(MiniNumber.THOUSAND);
+		return mHeader.mTimeMilli;
 	}
 	
 	public void setBlockNumber(MiniNumber zBlockNum) {
@@ -212,11 +202,11 @@ public class TxPoW implements Streamable {
 		mHeader.mMMRRoot = zRoot;
 	}
 	
-	public MMRSumNumber getMMRTotal() {
+	public MiniNumber getMMRTotal() {
 		return mHeader.mMMRTotal;
 	}
 	
-	public void setMMRTotal(MMRSumNumber zTotal) {
+	public void setMMRTotal(MiniNumber zTotal) {
 		mHeader.mMMRTotal= zTotal;
 	}
 	
@@ -329,6 +319,10 @@ public class TxPoW implements Streamable {
 	}
 	
 	public boolean isTransaction() {
+		if(!hasBody()) {
+			return false;
+		}
+		
 		return _mIsTxnPOW;
 	}
 	

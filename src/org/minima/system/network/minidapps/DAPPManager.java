@@ -439,27 +439,41 @@ public class DAPPManager extends MessageProcessor {
 			//Now extract the contents to that folder..
 			byte[] buffer = new byte[2048];
 			ByteArrayInputStream bais = new ByteArrayInputStream(data.getData());
-			
 			BufferedInputStream bis = new BufferedInputStream(bais);
             ZipInputStream stream   = new ZipInputStream(bis);
 	        ZipEntry entry          = null;
 	        
-	        //Cycle through all the files..
-	        boolean first = true;
+	        //First find the minidapp.conf file..
 	        String folder = "";
 	        while ((entry = stream.getNextEntry()) != null) {
 	        	//The file name..
 	        	String name = entry.getName();
 	        	
-	        	//The Name..
-	        	if(first) {
-	        		first = false;
-	        		if(entry.isDirectory()) {
-						//OK - strip this from all future files..
-		        		folder = name;
-		            }	
+	        	//Is it the file
+	        	if(name.endsWith("minidapp.conf")) {
+	        		//OK - we have it.. what folder
+	        		folder = name.substring(0, name.length()-13);	        		
+	        		MinimaLogger.log("Found minidapp.conf @ "+name+" folder:"+folder);
+	        		break;
 	        	}
-	        	
+	        }
+	        
+	        //Close it up..
+	        stream.close();
+	        bis.close();
+	        bais.close();
+	        
+	        //reset the zip stream..
+	        bais 	= new ByteArrayInputStream(data.getData());
+	        bis 	= new BufferedInputStream(bais);
+            stream  = new ZipInputStream(bis);
+	        entry   = null;
+	        
+	        //Cycle through all the files..
+	        while ((entry = stream.getNextEntry()) != null) {
+	        	//The file name..
+	        	String name = entry.getName();
+
 	        	//Strip folder from name..
 	        	if(name.startsWith(folder)) {
 	        		name = name.substring(folder.length());

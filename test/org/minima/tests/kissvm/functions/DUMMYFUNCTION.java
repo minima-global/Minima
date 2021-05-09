@@ -21,4 +21,14 @@ public class DUMMYFUNCTION extends MinimaFunction {
     public MinimaFunction getNewFunction() {
         return new DUMMYFUNCTION();
     }
+
+    @Override
+	public boolean isRequiredMinimumParameterNumber() {
+		return true;
+	}
+    
+	@Override
+	public int requiredParams() {
+		return 1;
+	}
 }

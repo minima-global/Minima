@@ -5,7 +5,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 import org.minima.GlobalParams;
-import org.minima.kissvm.Contract;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniString;
 import org.minima.utils.BaseConverter;
@@ -42,11 +41,8 @@ public class Address implements Streamable{
 	}
 	
 	public Address(String zScript, int zBitLength) {
-		//Clean the script up..
-		String cleanscript = Contract.cleanScript(zScript);
-		
 		//Convert script..
-		mScript = new MiniString(cleanscript);
+		mScript = new MiniString(zScript);
 		
 		//Set the Address..
 		mAddressData = new MiniData(Crypto.getInstance().hashData(mScript.getData(),zBitLength));
@@ -114,6 +110,12 @@ public class Address implements Streamable{
 		}else {
 			mMinimaAddress  = makeMinimaAddress(mAddressData);	
 		}	
+	}
+	
+	public static Address ReadFromStream(DataInputStream zIn) throws IOException {
+		Address addr = new Address();
+		addr.readDataStream(zIn);
+		return addr;
 	}
 	
 	/**

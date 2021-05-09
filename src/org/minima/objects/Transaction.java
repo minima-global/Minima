@@ -198,9 +198,29 @@ public class Transaction implements Streamable {
 			}
 		}
 		
+		//Check all the inputs have a unique CoinID..
+		int ins = mInputs.size();
+		if(ins>1){
+			for(int i=0;i<ins;i++) {
+				for(int j=i+1;j<ins;j++) {
+					//Get the Input
+					Coin input1 = mInputs.get(i);
+					Coin input2 = mInputs.get(j);
+					if(input1.getCoinID().isEqual(input2.getCoinID())) {
+						return false;
+					}
+				}
+			}
+		}
+		
 		//Check that all the inputs and outputs are valid Minima Values
 		for(Coin cc : mInputs) {
 			if(!cc.getAmount().isValidMinimaValue()) {
+				return false;
+			}
+			
+			//Inputs MUST be more than ZERO
+			if(cc.getAmount().isLessEqual(MiniNumber.ZERO)) {
 				return false;
 			}
 		}

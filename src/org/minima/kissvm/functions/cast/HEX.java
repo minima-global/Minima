@@ -3,10 +3,13 @@ package org.minima.kissvm.functions.cast;
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.functions.MinimaFunction;
-import org.minima.kissvm.values.HEXValue;
+import org.minima.kissvm.values.BooleanValue;
+import org.minima.kissvm.values.HexValue;
 import org.minima.kissvm.values.NumberValue;
-import org.minima.kissvm.values.ScriptValue;
+import org.minima.kissvm.values.StringValue;
 import org.minima.kissvm.values.Value;
+import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniNumber;
 
 public class HEX extends MinimaFunction{
 
@@ -16,36 +19,53 @@ public class HEX extends MinimaFunction{
 	
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
-		checkExactParamNumber(1);
+		checkExactParamNumber(requiredParams());
 		
 		//Get the Value..
 		Value val = getParameter(0).getValue(zContract);
 		
-		if(val.getValueType() == Value.VALUE_BOOLEAN) {
-			if(val.isTrue()) {
-				return new HEXValue("0x01");
-			}else{
-				return new HEXValue("0x00");
+		//What Type..
+		MiniData ret = null;
+		int type = val.getValueType();
+		if(type == Value.VALUE_BOOLEAN) {
+			BooleanValue cval = (BooleanValue)val;
+			if(cval.isTrue()) {
+				ret = new MiniData("0x01");
+			}else {
+				ret = new MiniData("0x00");
 			}
 		
-		}else if(val.getValueType() == Value.VALUE_NUMBER) {
-			NumberValue nv = (NumberValue)val;
+		}else if(type == Value.VALUE_HEX) {
+			HexValue cval = (HexValue)val;
+			ret = cval.getMiniData();
+		
+		}else if(type == Value.VALUE_NUMBER) {
+			NumberValue cval = (NumberValue)val;
 			
-			try {
-				HEXValue hex = new HEXValue(nv.getNumber());
-				return hex;
-			}catch(NumberFormatException nexc) {
-				throw new ExecutionException(nexc.toString());
+			//Check no decimal places..
+			MiniNumber num = cval.getNumber();
+			if(!num.floor().isEqual(num) || num.isLess(MiniNumber.ZERO)) {
+				throw new ExecutionException("Can ONLY convert positive whole NUMBERs to HEX : "+num);
 			}
-	
-		}else if(val.getValueType() == Value.VALUE_SCRIPT) {
-			ScriptValue nv = (ScriptValue)val;
-			return new HEXValue(nv.getMiniData().to0xString());
+			
+			ret = new MiniData(num.getAsBigInteger());
+		
+		}else if(type == Value.VALUE_SCRIPT) {
+			StringValue cval = (StringValue)val;
+			ret = new MiniData(cval.getBytes());
+		
+		}else {
+			throw new ExecutionException("Invalid Type in HEX cast "+type);
 		}
 		
-		return val;
+		return new HexValue(ret);
 	}
 
+	@Override
+	public int requiredParams() {
+		return 1;
+	}
+	
 	@Override
 	public MinimaFunction getNewFunction() {
 		return new HEX();

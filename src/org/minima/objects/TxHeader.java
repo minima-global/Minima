@@ -6,10 +6,8 @@ import java.io.IOException;
 import java.util.Date;
 
 import org.minima.GlobalParams;
-import org.minima.objects.base.MMRSumNumber;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniInteger;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.Crypto;
 import org.minima.utils.Streamable;
@@ -21,12 +19,12 @@ public class TxHeader implements Streamable {
 	/**
 	 * The NONCE - the user definable data you cycle through to change the final hash of this TxPow
 	 */
-	public MiniInteger mNonce = new MiniInteger(0);
+	public MiniNumber mNonce = new MiniNumber(0);
 	
 	/**
-	 * Time Secs - needs to be a MiniNumber as is used in Scripts.. 
+	 * Time Milli - needs to be a MiniNumber as is used in Scripts.. 
 	 */
-	public MiniNumber 	mTimeSecs = new MiniNumber(System.currentTimeMillis() / 1000).floor();
+	public MiniNumber mTimeMilli = new MiniNumber(System.currentTimeMillis());
 	
 	/**
 	 * The Block Number - needs to be a MiniNumber as is used in Scripts..
@@ -62,7 +60,12 @@ public class TxHeader implements Streamable {
 	/**
 	 * The Total Sum Of All coins in the system
 	 */
-	public MMRSumNumber mMMRTotal = MMRSumNumber.ZERO;
+	public MiniNumber mMMRTotal = MiniNumber.ZERO;
+	
+	/**
+	 * The hash of the MMR peaks - taking position into account..
+	 */
+	public MiniData mMMRPeaks = new MiniData();
 	
 	/**
 	 * The HASH of the TxBody
@@ -137,12 +140,11 @@ public class TxHeader implements Streamable {
 		
 		txpow.put("mmr", mMMRRoot.toString());
 		txpow.put("total", mMMRTotal.toString());
+		txpow.put("mmrpeaks", mMMRPeaks.toString());
 		
 		txpow.put("nonce", mNonce.toString());
-		txpow.put("timesecs", mTimeSecs.toString());
-		
-		long timemilli = mTimeSecs.mult(MiniNumber.THOUSAND).getAsLong();
-		txpow.put("date", new Date(timemilli).toString());
+		txpow.put("timemilli", mTimeMilli.toString());
+		txpow.put("date", new Date(mTimeMilli.getAsLong()).toString());
 		
 		return txpow;
 	}
@@ -150,7 +152,7 @@ public class TxHeader implements Streamable {
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
 		mNonce.writeDataStream(zOut);
-		mTimeSecs.writeDataStream(zOut);
+		mTimeMilli.writeDataStream(zOut);
 		mBlockNumber.writeDataStream(zOut);
 		mBlockDifficulty.writeDataStream(zOut);
 		
@@ -195,6 +197,7 @@ public class TxHeader implements Streamable {
 		//Write out the MMR DB
 		mMMRRoot.writeHashToStream(zOut);
 		mMMRTotal.writeDataStream(zOut);
+		mMMRPeaks.writeDataStream(zOut);
 		
 		//Write the Boddy Hash
 		mTxBodyHash.writeHashToStream(zOut);
@@ -202,8 +205,8 @@ public class TxHeader implements Streamable {
 
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
-		mNonce           = MiniInteger.ReadFromStream(zIn);
-		mTimeSecs        = MiniNumber.ReadFromStream(zIn);
+		mNonce           = MiniNumber.ReadFromStream(zIn);
+		mTimeMilli       = MiniNumber.ReadFromStream(zIn);
 		mBlockNumber     = MiniNumber.ReadFromStream(zIn);
 		mBlockDifficulty = MiniData.ReadFromStream(zIn);
 		
@@ -224,7 +227,8 @@ public class TxHeader implements Streamable {
 		
 		//read in the MMR state..
 		mMMRRoot  = MiniData.ReadHashFromStream(zIn);
-		mMMRTotal = MMRSumNumber.ReadFromStream(zIn);
+		mMMRTotal = MiniNumber.ReadFromStream(zIn);
+		mMMRPeaks = MiniData.ReadHashFromStream(zIn);
 		
 		//The TxBody Hash
 		mTxBodyHash = MiniData.ReadHashFromStream(zIn);

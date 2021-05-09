@@ -26,8 +26,8 @@ public class MinimaLogger {
 	/**
 	 * Previous Output..
 	 */
-	public static int MAX_FULL_LEN = 100000;
-	public static int CLIP_LEN     = 10000;
+	public static int MAX_FULL_LEN =  250000;
+	public static int CLIP_LEN     =  200000;
 	private static StringBuffer mFullOutput = new StringBuffer();
 	public static String getFullOutput() {
 		return mFullOutput.toString();

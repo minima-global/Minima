@@ -1,16 +1,12 @@
 package org.minima.system.brains;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
 import org.minima.GlobalParams;
 import org.minima.database.MinimaDB;
-import org.minima.database.coindb.CoinDBRow;
 import org.minima.database.mmr.MMRData;
 import org.minima.database.mmr.MMREntry;
 import org.minima.database.mmr.MMRProof;
@@ -19,9 +15,9 @@ import org.minima.database.txpowdb.TxPOWDBRow;
 import org.minima.database.txpowdb.TxPowDB;
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.values.BooleanValue;
-import org.minima.kissvm.values.HEXValue;
+import org.minima.kissvm.values.HexValue;
 import org.minima.kissvm.values.NumberValue;
-import org.minima.kissvm.values.ScriptValue;
+import org.minima.kissvm.values.StringValue;
 import org.minima.kissvm.values.Value;
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
@@ -29,9 +25,7 @@ import org.minima.objects.StateVariable;
 import org.minima.objects.Transaction;
 import org.minima.objects.TxPoW;
 import org.minima.objects.Witness;
-import org.minima.objects.base.MMRSumNumber;
 import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniInteger;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
 import org.minima.objects.keys.MultiKey;
@@ -60,6 +54,9 @@ public class ConsensusUser extends ConsensusProcessor {
 	public static final String CONSENSUS_RUNSCRIPT 			= CONSENSUS_PREFIX+"RUNSCRIPT";
 	public static final String CONSENSUS_CLEANSCRIPT 		= CONSENSUS_PREFIX+"CLEANSCRIPT";
 	
+	public static final String CONSENSUS_CURRENTADDRESS 	= CONSENSUS_PREFIX+"CURRENTADDRESS";
+	
+	
 	public static final String CONSENSUS_KEEPCOIN 			= CONSENSUS_PREFIX+"KEEPCOIN";
 	public static final String CONSENSUS_UNKEEPCOIN 		= CONSENSUS_PREFIX+"UNKEEPCOIN";
 	
@@ -82,12 +79,19 @@ public class ConsensusUser extends ConsensusProcessor {
 		
 		if(zMessage.isMessageType(CONSENSUS_NEWSIMPLE)) {
 			int bitlength = GlobalParams.MINIMA_DEFAULT_HASH_STRENGTH;
+			int keys   = 16;
+			int levels = 2;
 			if(zMessage.exists("bitlength")) {
 				bitlength = zMessage.getInteger("bitlength");
+				keys = zMessage.getInteger("keys");
+				levels = zMessage.getInteger("levels");
 			}
 			
+			//Create a new key..
+			MultiKey mkey = new MultiKey(bitlength, new MiniNumber(keys), new MiniNumber(levels));
+			
 			//Create a new simple address
-			Address addr = getMainDB().getUserDB().newSimpleAddress(bitlength);
+			Address addr = getMainDB().getUserDB().newSimpleAddress(mkey);
 			
 			JSONObject resp = InputHandler.getResponseJSON(zMessage);
 			resp.put("address", addr.toJSON());
@@ -195,10 +199,12 @@ public class ConsensusUser extends ConsensusProcessor {
 			
 		}else if(zMessage.isMessageType(CONSENSUS_NEWKEY)) {
 			//Get the bitlength
-			int bitl = zMessage.getInteger("bitlength");
+			int bitl   = zMessage.getInteger("bitlength");
+			int keys   = zMessage.getInteger("keys");
+			int levels = zMessage.getInteger("levels");
 			
 			//Create a new key pair..
-			MultiKey key = getMainDB().getUserDB().newPublicKey(bitl);
+			MultiKey key = getMainDB().getUserDB().newPublicKey(bitl,keys,levels);
 			
 			//return to sender!
 			JSONObject resp = InputHandler.getResponseJSON(zMessage);
@@ -207,6 +213,22 @@ public class ConsensusUser extends ConsensusProcessor {
 			
 			//Do a backup..
 			getConsensusHandler().PostMessage(ConsensusBackup.CONSENSUSBACKUP_BACKUPUSER);
+			
+		}else if(zMessage.isMessageType(CONSENSUS_CURRENTADDRESS)) {
+			//Get the current address
+			Address current = getMainDB().getUserDB().getCurrentAddress(getConsensusHandler());
+		
+			//get the pubkey..
+			MiniData pubkey = getMainDB().getUserDB().getPublicKeyForSimpleAddress(current.getAddressData());
+			
+			//And now the multikey
+			MultiKey key = getMainDB().getUserDB().getPubPrivKey(pubkey);
+			
+			JSONObject resp = InputHandler.getResponseJSON(zMessage);
+			resp.put("current", current.toJSON());
+			resp.put("key", key.toJSON());
+			
+			InputHandler.endResponse(zMessage, true, "");
 			
 		}else if(zMessage.isMessageType(CONSENSUS_CHECK)) {
 			String data = zMessage.getString("data");
@@ -249,7 +271,7 @@ public class ConsensusUser extends ConsensusProcessor {
 			ArrayList<MiniString> leaves = (ArrayList<MiniString>) zMessage.getObject("leaves");
 		
 			//First create an MMR Tree..
-			MMRSet mmr = new MMRSet(bitlength, false);
+			MMRSet mmr = new MMRSet(bitlength);
 			
 			//Now add each 
 			JSONArray nodearray = new JSONArray();
@@ -260,7 +282,7 @@ public class ConsensusUser extends ConsensusProcessor {
 				
 				//What type of data..
 				int valtype = Value.getValueType(leafstr);
-				if(valtype == HEXValue.VALUE_HEX ) {
+				if(valtype == HexValue.VALUE_HEX ) {
 					finaldata = new MiniData(leafstr);
 					mmrnode.put("data",finaldata.toString());
 					
@@ -296,7 +318,7 @@ public class ConsensusUser extends ConsensusProcessor {
 				nodearray.add(mmrnode);
 				
 				//Add to the MMR
-				mmr.addUnspentCoin(new MMRData(finalhash,MMRSumNumber.ZERO));
+				mmr.addUnspentCoin(new MMRData(finalhash,MiniNumber.ZERO));
 			}
 
 			//Now finalize..
@@ -308,7 +330,7 @@ public class ConsensusUser extends ConsensusProcessor {
 				JSONObject node = (JSONObject) nodearray.get(i);
 				
 				//Get the proof..
-				MMRProof proof = mmr.getFullProofToRoot(new MiniInteger(i));
+				MMRProof proof = mmr.getProof(new MiniNumber(i));
 				
 				//Calculate the CHAINSHA proof..
 				node.put("chainsha", proof.getChainSHAProof().to0xString());
@@ -339,12 +361,12 @@ public class ConsensusUser extends ConsensusProcessor {
 				return;
 			}
 			
-			String sigs      = Contract.cleanScript(zMessage.getString("sigs").trim());
-			String state     = Contract.cleanScript(zMessage.getString("state").trim());
-			String prevstate = Contract.cleanScript(zMessage.getString("prevstate").trim());
-			String globals   = Contract.cleanScript(zMessage.getString("globals").trim());
-			String outputs   = Contract.cleanScript(zMessage.getString("outputs").trim());
-			String scripts   = Contract.cleanScript(zMessage.getString("scripts").trim());
+			String sigs      = zMessage.getString("sigs").trim();
+			String state     = zMessage.getString("state").trim();
+			String prevstate = zMessage.getString("prevstate").trim();
+			String globals   = zMessage.getString("globals").trim();
+			String outputs   = zMessage.getString("outputs").trim();
+			String scripts   = zMessage.getString("scripts").trim();
 			
 			//Create the transaction..
 			Transaction trans = new Transaction();
@@ -378,7 +400,8 @@ public class ConsensusUser extends ConsensusProcessor {
 							wit.addTokenDetails(tprf);
 						
 							//Recalculate the amount.. given the token scale..
-							amt = amt.div(tprf.getScaleFactor());
+							amt = tprf.getScaledMinimaAmount(amt);
+//							amt = amt.div(tprf.getScaleFactor());
 						}
 						
 						//Create this coin
@@ -461,11 +484,11 @@ public class ConsensusUser extends ConsensusProcessor {
 			//Set the environment
 			TxPoW top = getMainDB().getTopTxPoW();
 			MiniNumber blocknum  = top.getBlockNumber();
-			MiniNumber blocktime = top.getTimeSecs();
+			MiniNumber blocktime = top.getTimeMilli();
 			
 			//These 2 are set automatically..
-			cc.setGlobalVariable("@ADDRESS", new HEXValue(ccaddress.getAddressData()));
-			cc.setGlobalVariable("@SCRIPT", new ScriptValue(script));
+			cc.setGlobalVariable("@ADDRESS", new HexValue(ccaddress.getAddressData()));
+			cc.setGlobalVariable("@SCRIPT", new StringValue(script));
 			
 			//These can be played with..
 			cc.setGlobalVariable("@BLKNUM", new NumberValue(blocknum));
@@ -473,12 +496,12 @@ public class ConsensusUser extends ConsensusProcessor {
 			cc.setGlobalVariable("@INPUT", new NumberValue(0));
 			cc.setGlobalVariable("@INBLKNUM", new NumberValue(0));
 			cc.setGlobalVariable("@AMOUNT", new NumberValue(0));
-			cc.setGlobalVariable("@COINID", new HEXValue("0x00"));
+			cc.setGlobalVariable("@COINID", new HexValue("0x00"));
 			cc.setGlobalVariable("@TOTIN", new NumberValue(1));
 			cc.setGlobalVariable("@TOTOUT", new NumberValue(trans.getAllOutputs().size()));
 			
-			cc.setGlobalVariable("@TOKENID", new HEXValue("0x00"));
-			cc.setGlobalVariable("@TOKENSCRIPT", new ScriptValue(""));
+			cc.setGlobalVariable("@TOKENID", new HexValue("0x00"));
+			cc.setGlobalVariable("@TOKENSCRIPT", new StringValue(""));
 			cc.setGlobalVariable("@TOKENTOTAL", new NumberValue(MiniNumber.BILLION));
 			
 			
@@ -487,8 +510,8 @@ public class ConsensusUser extends ConsensusProcessor {
 			MiniData prevblkhash = MiniData.getRandomData(64);
 			MiniData prng        = MiniData.getRandomData(64);
 			
-			cc.setGlobalVariable("@PREVBLKHASH", new HEXValue(prevblkhash));
-			cc.setGlobalVariable("@PRNG", new HEXValue(prng));
+			cc.setGlobalVariable("@PREVBLKHASH", new HexValue(prevblkhash));
+			cc.setGlobalVariable("@PRNG", new HexValue(prng));
 			
 			//GLOBALS.. Overide if set..
 			if(!globals.equals("")) {
@@ -614,20 +637,28 @@ public class ConsensusUser extends ConsensusProcessor {
 			InputHandler.endResponse(zMessage, true, "Mempool Flushed");
 			
 		}else if(zMessage.isMessageType(CONSENSUS_UNKEEPCOIN)) {
-			//Once a coin has been used - say in a DEX.. you can remove it from your coinDB
-			String cid = zMessage.getString("coinid");
-			
-			//Remove from the UserDB
-			getMainDB().getUserDB().removeRelevantCoinID(new MiniData(cid));
-			
-			//Remove from the coindb..
-			boolean found = getMainDB().getCoinDB().removeCoin(new MiniData(cid));
-			
-			//Now you have the proof..
-			JSONObject resp = InputHandler.getResponseJSON(zMessage);
-			resp.put("found", found);
-			resp.put("coinid", cid);
-			InputHandler.endResponse(zMessage, true, "Coin removed");
+//			//Once a coin has been used - say in a DEX.. you can remove it from your coinDB
+//			String cid = zMessage.getString("coinid");
+//			
+//			//Remove from the UserDB
+//			getMainDB().getUserDB().removeRelevantCoinID(new MiniData(cid));
+//			
+//			//Get the MMRSet
+//			MMRSet basemmr = getMainDB().getMMRTip();
+//			
+//			//Search for the coin..
+//			MiniData coinid = new MiniData(cid);
+//			MMREntry entry =  basemmr.findEntry(coinid);
+//			
+//			//Now ask to keep it..
+//			MMRSet coinset = basemmr.getParentAtTime(entry.getBlockTime());
+//			boolean found = coinset.removeKeeper(entry.getEntryNumber());
+//			
+//			//Now you have the proof..
+//			JSONObject resp = InputHandler.getResponseJSON(zMessage);
+//			resp.put("found", found);
+//			resp.put("coinid", cid);
+//			InputHandler.endResponse(zMessage, true, "Coin removed");
 			
 		}else if(zMessage.isMessageType(CONSENSUS_KEEPCOIN)) {
 			String cid = zMessage.getString("coinid");
@@ -636,7 +667,7 @@ public class ConsensusUser extends ConsensusProcessor {
 			resp.put("coinid", cid);
 			
 			//Get the MMRSet
-			MMRSet basemmr = getMainDB().getMainTree().getChainTip().getMMRSet();
+			MMRSet basemmr = getMainDB().getMMRTip();
 			
 			//Search for the coin..
 			MiniData coinid = new MiniData(cid);
@@ -655,17 +686,17 @@ public class ConsensusUser extends ConsensusProcessor {
 			MMRSet coinset = basemmr.getParentAtTime(entry.getBlockTime());
 			coinset.addKeeper(entry.getEntryNumber());
 			
-			//Get the coin
-			Coin cc = entry.getData().getCoin();
-			
-			//add it to the database
-			CoinDBRow crow = getMainDB().getCoinDB().addCoinRow(cc);
-			crow.setRelevant(true);
-			crow.setKeeper(true);
-			crow.setIsSpent(entry.getData().isSpent());
-			crow.setIsInBlock(true);
-			crow.setInBlockNumber(entry.getData().getInBlock());
-			crow.setMMREntry(entry.getEntryNumber());
+//			//Get the coin
+//			Coin cc = entry.getData().getCoin();
+//			
+//			//add it to the database
+//			CoinDBRow crow = getMainDB().getCoinDB().addCoinRow(cc);
+//			crow.setRelevant(true);
+//			crow.setKeeper(true);
+//			crow.setIsSpent(entry.getData().isSpent());
+//			crow.setIsInBlock(true);
+//			crow.setInBlockNumber(entry.getData().getInBlock());
+//			crow.setMMREntry(entry.getEntryNumber());
 			
 			//Now you have the proof..
 			resp.put("coin", basemmr.getProof(entry.getEntryNumber()));
@@ -675,78 +706,78 @@ public class ConsensusUser extends ConsensusProcessor {
 			getConsensusHandler().PostMessage(ConsensusBackup.CONSENSUSBACKUP_BACKUP);
 			
 		}else if(zMessage.isMessageType(CONSENSUS_IMPORTCOIN)) {
-			MiniData data = (MiniData)zMessage.getObject("proof");
-			
-			ByteArrayInputStream bais = new ByteArrayInputStream(data.getData());
-			DataInputStream dis = new DataInputStream(bais);
-			
-			//Now make the proof..
-			MMRProof proof = MMRProof.ReadFromStream(dis);
-			
-			if(proof.getMMRData().isSpent()) {
-				//ONLY UNSPENT COINS..
-				InputHandler.endResponse(zMessage, false, "Coin already SPENT!");
-				return;
-			}
-			
-			//Get the MMRSet
-			MMRSet basemmr = getMainDB().getMainTree().getChainTip().getMMRSet();
-			
-			//Check it..
-			boolean valid  = basemmr.checkProof(proof);
-			
-			//Stop if invalid.. 
-			if(!valid) {
-				//Now you have the proof..
-				InputHandler.endResponse(zMessage, false, "INVALID PROOF");
-				return;
-			}
-			
-			//Get the MMRSet where this proof was made..
-			MMRSet proofmmr = basemmr.getParentAtTime(proof.getBlockTime());
-			if(proofmmr == null) {
-				//Now you have the proof..
-				InputHandler.endResponse(zMessage, false, "Proof too old - no MMRSet found @ "+proof.getBlockTime());
-				return;
-			}
-			
-			//Now add this proof to the set.. if not already added
-			MMREntry entry =  proofmmr.addExternalUnspentCoin(proof);
-			
-			//Error.
-			if(entry == null) {
-				InputHandler.endResponse(zMessage, false, "Consensus error addding proof !");
-				return;
-			}
-			
-			//And now refinalize..
-			proofmmr.finalizeSet();
-			
-			//Get the coin
-			Coin cc = entry.getData().getCoin();
-			
-			//Is it relevant..
-			boolean rel = false;
-			if( getMainDB().getUserDB().isAddressRelevant(cc.getAddress()) ){
-				rel = true;
-			}
-			
-			//add it to the database
-			CoinDBRow crow = getMainDB().getCoinDB().addCoinRow(cc);
-			crow.setRelevant(rel);
-			crow.setKeeper(true);
-			crow.setIsSpent(entry.getData().isSpent());
-			crow.setIsInBlock(true);
-			crow.setInBlockNumber(entry.getData().getInBlock());
-			crow.setMMREntry(entry.getEntryNumber());
-			
-			//Now you have the proof..
-			JSONObject resp = InputHandler.getResponseJSON(zMessage);
-			resp.put("proof", proof.toJSON());
-			InputHandler.endResponse(zMessage, true, "");
-			
-			//Do a backup..
-			getConsensusHandler().PostMessage(ConsensusBackup.CONSENSUSBACKUP_BACKUP);
+//			MiniData data = (MiniData)zMessage.getObject("proof");
+//			
+//			ByteArrayInputStream bais = new ByteArrayInputStream(data.getData());
+//			DataInputStream dis = new DataInputStream(bais);
+//			
+//			//Now make the proof..
+//			MMRProof proof = MMRProof.ReadFromStream(dis);
+//			
+//			if(proof.getMMRData().isSpent()) {
+//				//ONLY UNSPENT COINS..
+//				InputHandler.endResponse(zMessage, false, "Coin already SPENT!");
+//				return;
+//			}
+//			
+//			//Get the MMRSet
+//			MMRSet basemmr = getMainDB().getMainTree().getChainTip().getMMRSet();
+//			
+//			//Check it..
+//			boolean valid  = basemmr.checkProof(proof);
+//			
+//			//Stop if invalid.. 
+//			if(!valid) {
+//				//Now you have the proof..
+//				InputHandler.endResponse(zMessage, false, "INVALID PROOF");
+//				return;
+//			}
+//			
+//			//Get the MMRSet where this proof was made..
+//			MMRSet proofmmr = basemmr.getParentAtTime(proof.getBlockTime());
+//			if(proofmmr == null) {
+//				//Now you have the proof..
+//				InputHandler.endResponse(zMessage, false, "Proof too old - no MMRSet found @ "+proof.getBlockTime());
+//				return;
+//			}
+//			
+//			//Now add this proof to the set.. if not already added
+//			MMREntry entry =  proofmmr.addExternalUnspentCoin(proof);
+//			
+//			//Error.
+//			if(entry == null) {
+//				InputHandler.endResponse(zMessage, false, "Consensus error addding proof !");
+//				return;
+//			}
+//			
+//			//And now refinalize..
+//			proofmmr.finalizeSet();
+//			
+//			//Get the coin
+//			Coin cc = entry.getData().getCoin();
+//			
+//			//Is it relevant..
+//			boolean rel = false;
+//			if( getMainDB().getUserDB().isAddressRelevant(cc.getAddress()) ){
+//				rel = true;
+//			}
+//			
+//			//add it to the database
+//			CoinDBRow crow = getMainDB().getCoinDB().addCoinRow(cc);
+//			crow.setRelevant(rel);
+//			crow.setKeeper(true);
+//			crow.setIsSpent(entry.getData().isSpent());
+//			crow.setIsInBlock(true);
+//			crow.setInBlockNumber(entry.getData().getInBlock());
+//			crow.setMMREntry(entry.getEntryNumber());
+//			
+//			//Now you have the proof..
+//			JSONObject resp = InputHandler.getResponseJSON(zMessage);
+//			resp.put("proof", proof.toJSON());
+//			InputHandler.endResponse(zMessage, true, "");
+//			
+//			//Do a backup..
+//			getConsensusHandler().PostMessage(ConsensusBackup.CONSENSUSBACKUP_BACKUP);
 			
 		}else if(zMessage.isMessageType(CONSENSUS_EXPORTCOIN)) {
 			MiniData coinid = (MiniData)zMessage.getObject("coinid");
@@ -758,11 +789,12 @@ public class ConsensusUser extends ConsensusProcessor {
 			MMRSet proofmmr = basemmr.getParentAtTime(getMainDB().getTopBlock().sub(GlobalParams.MINIMA_CONFIRM_DEPTH));
 			
 			//Find this coin..
-			CoinDBRow row  = getMainDB().getCoinDB().getCoinRow(coinid);
+			MMREntry coin  = proofmmr.findEntry(coinid);
+//			CoinDBRow row  = getMainDB().getCoinDB().getCoinRow(coinid);
 			
 			//Get a proof from a while back.. more than confirmed depth, less than cascade
 //			MMRProof proof = getMainTree().getChainTip().getMMRSet().getProof(row.getMMREntry());
-			MMRProof proof = proofmmr.getProof(row.getMMREntry());
+			MMRProof proof = proofmmr.getProof(coin.getEntryNumber());
 			
 			//Now write this out to  MiniData Block
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -808,75 +840,75 @@ public class ConsensusUser extends ConsensusProcessor {
 		}
 	}
 	
-	public static boolean importCoin(MinimaDB zDB, MMRProof zProof) throws IOException{
-		//Get the MMRSet
-		MMRSet basemmr = zDB.getMainTree().getChainTip().getMMRSet();
-		
-		//Check it..
-		boolean valid  = basemmr.checkProof(zProof);
-		
-		//Stop if invalid.. 
-		if(!valid) {
-			return false;
-		}
-		
-		//Get the MMRSet where this proof was made..
-		MMRSet proofmmr = basemmr.getParentAtTime(zProof.getBlockTime());
-		if(proofmmr == null) {
-			return false;
-		}
-		
-		//Now add this proof to the set.. if not already added
-		MMREntry entry =  proofmmr.addExternalUnspentCoin(zProof);
-		
-		//Error..
-		if(entry == null) {
-			return false;
-		}
-		
-		//And now refinalize..
-		proofmmr.finalizeSet();
-		
-		//Get the coin
-		Coin cc = entry.getData().getCoin();
-		
-		//Is it relevant..
-		boolean rel = false;
-		if( zDB.getUserDB().isAddressRelevant(cc.getAddress()) ){
-			rel = true;
-		}
-		
-		//add it to the database
-		CoinDBRow crow = zDB.getCoinDB().addCoinRow(cc);
-		crow.setKeeper(true);
-		crow.setRelevant(rel);
-		crow.setIsSpent(entry.getData().isSpent());
-		crow.setIsInBlock(true);
-		crow.setInBlockNumber(entry.getData().getInBlock());
-		crow.setMMREntry(entry.getEntryNumber());
-		
-		return true;
-	}
+//	public static boolean importCoin(MinimaDB zDB, MMRProof zProof) throws IOException{
+//		//Get the MMRSet
+//		MMRSet basemmr = zDB.getMainTree().getChainTip().getMMRSet();
+//		
+//		//Check it..
+//		boolean valid  = basemmr.checkProof(zProof);
+//		
+//		//Stop if invalid.. 
+//		if(!valid) {
+//			return false;
+//		}
+//		
+//		//Get the MMRSet where this proof was made..
+//		MMRSet proofmmr = basemmr.getParentAtTime(zProof.getBlockTime());
+//		if(proofmmr == null) {
+//			return false;
+//		}
+//		
+//		//Now add this proof to the set.. if not already added
+//		MMREntry entry =  proofmmr.addExternalUnspentCoin(zProof);
+//		
+//		//Error..
+//		if(entry == null) {
+//			return false;
+//		}
+//		
+//		//And now refinalize..
+//		proofmmr.finalizeSet();
+//		
+//		//Get the coin
+//		Coin cc = entry.getData().getCoin();
+//		
+//		//Is it relevant..
+//		boolean rel = false;
+//		if( zDB.getUserDB().isAddressRelevant(cc.getAddress()) ){
+//			rel = true;
+//		}
+//		
+//		//add it to the database
+//		CoinDBRow crow = zDB.getCoinDB().addCoinRow(cc);
+//		crow.setKeeper(true);
+//		crow.setRelevant(rel);
+//		crow.setIsSpent(entry.getData().isSpent());
+//		crow.setIsInBlock(true);
+//		crow.setInBlockNumber(entry.getData().getInBlock());
+//		crow.setMMREntry(entry.getEntryNumber());
+//		
+//		return true;
+//	}
 	
-	public static MiniData exportCoin(MinimaDB zDB, MiniData zCoinID) throws IOException {
-		//The Base current MMRSet
-		MMRSet basemmr  = zDB.getMainTree().getChainTip().getMMRSet();
-		
-		//Get proofs from a while back so reorgs don't invalidate them..
-		MMRSet proofmmr = basemmr.getParentAtTime(zDB.getTopBlock().sub(GlobalParams.MINIMA_CONFIRM_DEPTH));
-		
-		//Find this coin..
-		CoinDBRow row  = zDB.getCoinDB().getCoinRow(zCoinID);
-		
-		//Get a proof from a while back.. more than confirmed depth, less than cascade
-		MMRProof proof = proofmmr.getProof(row.getMMREntry());
-		
-		//Now write this out to  MiniData Block
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		DataOutputStream dos = new DataOutputStream(baos);
-		proof.writeDataStream(dos);
-		dos.flush();
-		
-		return new MiniData(baos.toByteArray());
-	}
+//	public static MiniData exportCoin(MinimaDB zDB, MiniData zCoinID) throws IOException {
+//		//The Base current MMRSet
+//		MMRSet basemmr  = zDB.getMainTree().getChainTip().getMMRSet();
+//		
+//		//Get proofs from a while back so reorgs don't invalidate them..
+//		MMRSet proofmmr = basemmr.getParentAtTime(zDB.getTopBlock().sub(GlobalParams.MINIMA_CONFIRM_DEPTH));
+//		
+//		//Find this coin..
+//		CoinDBRow row  = zDB.getCoinDB().getCoinRow(zCoinID);
+//		
+//		//Get a proof from a while back.. more than confirmed depth, less than cascade
+//		MMRProof proof = proofmmr.getProof(row.getMMREntry());
+//		
+//		//Now write this out to  MiniData Block
+//		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+//		DataOutputStream dos = new DataOutputStream(baos);
+//		proof.writeDataStream(dos);
+//		dos.flush();
+//		
+//		return new MiniData(baos.toByteArray());
+//	}
 }

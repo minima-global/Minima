@@ -164,14 +164,21 @@ public class SendManager extends MessageProcessor {
 
 				//Get the Response..
 				String resp = cmd.getFinalResult();
-				MinimaLogger.log(resp);
 				
 				//Convert to JSON
 				JSONObject jsonresp = (JSONObject)(new JSONParser().parse(resp));
 				
+				//Was it a success..
+				boolean status = (boolean) jsonresp.get("status");
+				
+				if(!status) {
+					MinimaLogger.log(resp);
+				}
+				
 				//Get the status
-				if((boolean) jsonresp.get("status")) {
+				if(status) {
 					//Success ..it's done
+					//..
 				}else {
 					//Fail..
 					int attempt = (int) command.get("attempts");
@@ -183,7 +190,7 @@ public class SendManager extends MessageProcessor {
 				}
 				
 				//Wait a second..
-				Thread.sleep(1000);
+				Thread.sleep(250);
 			}
 			
 			//Switch..
