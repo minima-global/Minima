@@ -93,7 +93,7 @@ public class Main extends MessageProcessor {
 	 * @param zPort
 	 * @param zGenesis
 	 */
-	public Main(String zHost, int zPort, boolean zGenesis, String zConfFolder) {
+	public Main(String zHost, int zPort, boolean zGenesis, String zConfFolder, String[] p2pStaticNodes, String[] p2pBootnodes) {
 		super("MAIN");
 		
 		mMainHandler = this;
@@ -113,8 +113,8 @@ public class Main extends MessageProcessor {
 		mTXMiner 	= new TxPoWMiner();
 		mConsensus  = new ConsensusHandler();
 		mSendManager = new SendManager();
-		mP2P = new P2PStart(null, null);
-		
+		mP2P = new P2PStart(mNetwork, p2pStaticNodes, p2pBootnodes);
+
 		//Are we the genesis
 		mGenesis 	= zGenesis;
 		

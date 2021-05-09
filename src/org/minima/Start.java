@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.Set;
+import java.util.HashSet;
 
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.greet.SyncPacket;
@@ -27,7 +29,7 @@ public class Start {
 	/**
 	 * A list of default valid nodes to connect to at startup..
 	 */
-	public static final String[] VALID_BOOTSTRAP_NODES = 
+	public static String[] VALID_BOOTSTRAP_NODES = 
 		{"35.204.181.120",
 		 "35.204.119.15",
 		 "34.91.220.49",
@@ -116,6 +118,9 @@ public class Start {
 		boolean genesis 		= false;
 		boolean daemon          = false;
 		boolean automine 		= false;
+
+		Set<String> p2pStaticSet = new HashSet<String>();
+		Set<String> p2pBootnodeSet = new HashSet<String>();
 		
 		//Configuration folder
 		File conf = new File(System.getProperty("user.home"),".minima");
@@ -149,6 +154,9 @@ public class Start {
 					MinimaLogger.log("        -connect [host] [port] : Don't connect to MainNet but connect to this node instead.");
 					MinimaLogger.log("        -daemon                : Accepts no input from STDIN. Can run in background process.");
 					MinimaLogger.log("        -externalurl           : Send a POST request to this URL with Minima JSON information.");
+					MinimaLogger.log("        -p2p-static			 : static peer address for p2p network discovery.");
+					MinimaLogger.log("        -p2p-bootnode			 : bootnode record for p2p network discovery.");
+					
 					MinimaLogger.log("        -help                  : Show this help");
 					MinimaLogger.log("");
 					MinimaLogger.log("With zero parameters Minima will start and connect to a set of default nodes.");
@@ -210,6 +218,16 @@ public class Start {
 					
 					System.exit(0);
 					
+				} else if(arg.equals("-p2p-static")) {
+					p2pStaticSet.add(zArgs[counter++]);
+					// if this set is not empty we must ignore valid_bootstrap_nodes and connecthost / connectport
+					VALID_BOOTSTRAP_NODES = new String[0]; 
+					connecthost = "";
+				} else if(arg.equals("-p2p-bootnode")) {
+					p2pBootnodeSet.add(zArgs[counter++]);
+					// if this set is not empty we must ignore valid_bootstrap_nodes and connecthost / connectport
+					VALID_BOOTSTRAP_NODES = new String[0]; 
+					connecthost = "";
 				}else if(arg.equals("")) {
 					//Do nothing..
 					
@@ -235,15 +253,18 @@ public class Start {
 			//Wipe webroot too..
 			BackupManager.deleteWebRoot(conffile);
 		}
-		
+		// TODO: replace array with dynamic set and extract array when calling Main
+		// TODO: manage more than one staticpeer / bootnode from commandline by pushing to set
+		// TODO: read staticpeers and bootnodes from config file depending on some flag - maybe combined with command line args
+
 		//Start the main Minima server
-		Main rcmainserver = new Main(host, port, genesis, conffile.getAbsolutePath());
+		Main rcmainserver = new Main(host, port, genesis, conffile.getAbsolutePath(), p2pStaticSet.toArray(new String[0]), p2pBootnodeSet.toArray(new String[0]));
 		
 		//Link it.
 		mMainServer = rcmainserver;
 		
 		//Have we added any connect hosts..
-		if(connectlist.size() == 0 && connect) {
+		if((connectlist.size() == 0) && connecthost != null && !connecthost.isEmpty() && connect) {
 			rcmainserver.addAutoConnectHostPort(connecthost+":"+connectport);
 		}else {
 			for(String hostport : connectlist) {

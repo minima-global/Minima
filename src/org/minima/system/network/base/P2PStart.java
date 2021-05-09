@@ -16,6 +16,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.ethereum.beacon.discovery.schema.NodeRecord;
 import org.ethereum.beacon.discovery.schema.NodeRecordInfo;
+import org.minima.system.network.NetworkHandler;
 import org.minima.system.network.base.peer.LibP2PNodeId;
 import org.minima.system.network.base.peer.NodeId;
 import org.minima.system.network.base.peer.Peer;
@@ -35,14 +36,15 @@ public class P2PStart extends MessageProcessor {
     public static final String P2P_START_SCAN = "P2P_START_SCAN";
     public static final String P2P_STOP_SCAN = "P2P_STOP_SCAN";
     
-
+    private NetworkHandler mNetwork;
     private DiscoveryNetwork<Peer> network;
     Set<InetSocketAddress> activeKnownNodes;
 
     // staticPeers = list of static peers in multiaddr format: /ip4/127.0.0.1/tcp/10219/p2p/16Uiu2HAmCnuHVjxoQtZzqenqjRr6hAja1XWCuC1SiqcWcWcp4iSt
     // bootnodes = list of ENR: enr:-Iu4QGvbP4hn3cxao3aFyZfeGBG0Ygp-KPJsK9h7pM_0FfCGauk0P2haW7AEiLaMLEDxRngy4SjCx6GGfwlsRBf0BBwBgmlkgnY0gmlwhH8AAAGJc2VjcDI1NmsxoQMCButDl63KBqEEyxV2R3nCvnHb7sEIgOACbb6yt6oxqYN0Y3CCJ-uDdWRwgifr 
-    public P2PStart(String[] staticPeers, String[] bootnodes) {
+    public P2PStart(NetworkHandler minimaNet, String[] staticPeers, String[] bootnodes) {
         super(P2P_THREAD);
+        mNetwork = minimaNet;
         if(staticPeers == null || staticPeers.length == 0) {
             logger.info("P2P layer - no static peer.");
         }
@@ -52,9 +54,11 @@ public class P2PStart extends MessageProcessor {
         DiscoveryNetworkFactory factory = new DiscoveryNetworkFactory();
         try {
             if(staticPeers != null && staticPeers.length > 0 && bootnodes != null && bootnodes.length > 0) {
+                System.out.println("Building p2p layer using provided params: staticpeer=" + staticPeers[0] + " and bootnode=" + bootnodes[0]);
                 network = factory.builder().staticPeer(staticPeers[0]).bootnode(bootnodes[0]).buildAndStart();
             } else if(staticPeers == null || staticPeers.length == 0) {
                 logger.info("P2P: starting in standalone mode");
+                System.out.println("P2P: starting in standalone mode");
                 network = factory.builder().buildAndStart();
             }
         } catch (Exception e) {
@@ -67,6 +71,8 @@ public class P2PStart extends MessageProcessor {
             Optional<String> discAddr = network.getDiscoveryAddress();
             logger.warn("LOGGER nodeid: " + network.getNodeId() + " , nodeAddress: " + network.getNodeAddress()
                     + " , discovery address: " + discAddr.get());
+            System.out.println("P2P nodeid: " + network.getNodeId() + " , nodeAddress: " + network.getNodeAddress()
+            + " , discovery address: " + discAddr.get());
             System.out.println("Starting discovery loop info");
             activeKnownNodes = new HashSet<>();
             // TODO: send to yourself a message 5 seconds in the future
@@ -105,7 +111,10 @@ public class P2PStart extends MessageProcessor {
                 delta.removeAll(activeKnownNodes); //now contains only new sockets
                        
                 for(InetSocketAddress i: delta) {
-                    logger.info("New peer address: " + i.toString());
+                    logger.info("New peer address: " + i.toString().substring(1));
+                    System.out.println("Starting MinimaClient: " + i.toString().substring(1) + ":9001");
+                    MinimaClient mclient = new MinimaClient(i.getAddress().toString().substring(1), 9001, mNetwork); // hardcode port for now
+                    mNetwork.PostMessage(new Message(NetworkHandler.NETWORK_NEWCLIENT).addObject("client", mclient));
                 }
 
                 // update known nodes
@@ -124,6 +133,7 @@ public class P2PStart extends MessageProcessor {
             
     }
 
+    //TODO: refactor below code to use above object and constructor instead - if possible
     public static void main(String[] args) throws ExecutionException, InterruptedException {
         System.out.println("Hello world!");
         // attempt 1: start with DiscoveryNetworkFactory
