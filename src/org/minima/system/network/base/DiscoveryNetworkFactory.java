@@ -23,7 +23,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.minima.system.network.base.libp2p.PrivateKeyGenerator;
+
+import io.libp2p.core.crypto.PrivKey;
+
 // import org.hyperledger.besu.metrics.noop.NoOpMetricsSystem;
 // import tech.pegasys.teku.infrastructure.async.DelayedExecutorAsyncRunner;
 // import tech.pegasys.teku.infrastructure.async.SafeFuture;
@@ -77,6 +79,7 @@ public class DiscoveryNetworkFactory {
   public class DiscoveryNetworkBuilder {
     private final List<String> staticPeers = new ArrayList<>();
     private final List<String> bootnodes = new ArrayList<>();
+    private PrivKey privKey;
 
     private DiscoveryNetworkBuilder() {}
 
@@ -90,6 +93,10 @@ public class DiscoveryNetworkFactory {
       return this;
     }
 
+    public DiscoveryNetworkBuilder setPrivKey(final PrivKey privKey) {
+      this.privKey = privKey;
+      return this;
+    }
     public DiscoveryNetwork<Peer> buildAndStart() throws Exception {
       int attempt = 1;
       while (true) {
@@ -108,6 +115,7 @@ public class DiscoveryNetworkFactory {
                 Constants.REPUTATION_MANAGER_CAPACITY);
         final PeerSelectionStrategy peerSelectionStrategy =
             new SimplePeerSelectionStrategy(new TargetPeerRange(20, 30, 0));
+
         final DiscoveryNetwork<Peer> network =
             DiscoveryNetwork.create(
                 metricsSystem,
@@ -116,7 +124,7 @@ public class DiscoveryNetworkFactory {
                 new LibP2PNetwork(
                     DelayedExecutorAsyncRunner.create(),
                     config,
-                    PrivateKeyGenerator::generate,
+                    privKey,
                     reputationManager,
                     METRICS_SYSTEM,
                     Collections.emptyList(),

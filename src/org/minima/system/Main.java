@@ -113,7 +113,7 @@ public class Main extends MessageProcessor {
 		mTXMiner 	= new TxPoWMiner();
 		mConsensus  = new ConsensusHandler();
 		mSendManager = new SendManager();
-		mP2P = new P2PStart(mNetwork, p2pStaticNodes, p2pBootnodes);
+		mP2P = new P2PStart(zConfFolder, mNetwork, p2pStaticNodes, p2pBootnodes);
 
 		//Are we the genesis
 		mGenesis 	= zGenesis;

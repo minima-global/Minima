@@ -107,16 +107,19 @@ public class LibP2PNetwork implements P2PNetwork<Peer> {
   public LibP2PNetwork(
       final AsyncRunner asyncRunner,
       final NetworkConfig config,
-      final PrivateKeyProvider privateKeyProvider,
+      final PrivKey privKey,
       final ReputationManager reputationManager,
       final MetricsSystem metricsSystem,
       final List<RpcMethod> rpcMethods,
       final List<PeerHandler> peerHandlers,
       final PreparedGossipMessageFactory defaultMessageFactory,
       final GossipTopicFilter gossipTopicFilter) {
-    this.privKey = privateKeyProvider.get();
+
+    this.privKey = privKey;
     this.nodeId = new LibP2PNodeId(PeerId.fromPubKey(privKey.publicKey()));
 
+    System.out.println("LibP2PNetwork - privKey = " + privKey.toString());
+    System.out.println("LibP2PNetwork - nodeId  = " + nodeId);
     advertisedAddr =
         MultiaddrUtil.fromInetSocketAddress(
             new InetSocketAddress(config.getAdvertisedIp(), config.getAdvertisedPort()), nodeId);

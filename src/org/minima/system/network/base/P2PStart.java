@@ -1,5 +1,10 @@
 package org.minima.system.network.base;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -17,6 +22,8 @@ import org.apache.logging.log4j.LogManager;
 import org.ethereum.beacon.discovery.schema.NodeRecord;
 import org.ethereum.beacon.discovery.schema.NodeRecordInfo;
 import org.minima.system.network.NetworkHandler;
+import org.minima.system.network.base.LibP2PNetwork.PrivateKeyProvider;
+import org.minima.system.network.base.libp2p.PrivateKeyGenerator;
 import org.minima.system.network.base.peer.LibP2PNodeId;
 import org.minima.system.network.base.peer.NodeId;
 import org.minima.system.network.base.peer.Peer;
@@ -24,6 +31,11 @@ import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageProcessor;
 
 import io.libp2p.core.PeerId;
+import io.libp2p.core.crypto.PrivKey;
+import io.libp2p.core.crypto.KEY_TYPE;
+import io.libp2p.core.crypto.KeyKt;
+import io.libp2p.crypto.keys.Secp256k1PrivateKey;
+
 import io.libp2p.etc.encode.Base58;
 
 import org.apache.logging.log4j.LogManager;
@@ -36,14 +48,16 @@ public class P2PStart extends MessageProcessor {
     public static final String P2P_START_SCAN = "P2P_START_SCAN";
     public static final String P2P_STOP_SCAN = "P2P_STOP_SCAN";
     
+    private String mConfFolder;
     private NetworkHandler mNetwork;
     private DiscoveryNetwork<Peer> network;
     Set<InetSocketAddress> activeKnownNodes;
 
     // staticPeers = list of static peers in multiaddr format: /ip4/127.0.0.1/tcp/10219/p2p/16Uiu2HAmCnuHVjxoQtZzqenqjRr6hAja1XWCuC1SiqcWcWcp4iSt
     // bootnodes = list of ENR: enr:-Iu4QGvbP4hn3cxao3aFyZfeGBG0Ygp-KPJsK9h7pM_0FfCGauk0P2haW7AEiLaMLEDxRngy4SjCx6GGfwlsRBf0BBwBgmlkgnY0gmlwhH8AAAGJc2VjcDI1NmsxoQMCButDl63KBqEEyxV2R3nCvnHb7sEIgOACbb6yt6oxqYN0Y3CCJ-uDdWRwgifr 
-    public P2PStart(NetworkHandler minimaNet, String[] staticPeers, String[] bootnodes) {
+    public P2PStart(String zConfFolder, NetworkHandler minimaNet, String[] staticPeers, String[] bootnodes) {
         super(P2P_THREAD);
+        this.mConfFolder = zConfFolder;
         mNetwork = minimaNet;
         if(staticPeers == null || staticPeers.length == 0) {
             logger.info("P2P layer - no static peer.");
@@ -51,15 +65,68 @@ public class P2PStart extends MessageProcessor {
         if(bootnodes == null || bootnodes.length == 0) {
             logger.info("P2P layer - no bootnode.");
         }
+
+
+        // check config file for SECP256K1 private key
+        File mRoot      = ensureFolder(new File(mConfFolder));
+        String mRootPath  = mRoot.getAbsolutePath();
+        
+        //Current used TxPOW
+        File mP2PDir   = ensureFolder(new File(mRoot,"p2p"));
+        File mP2PNodePrivKeyFile = new File(mP2PDir, "NodePrivKey.pkey");
+        // two lines below just to get rid of temporary not initialized issue
+        PrivateKeyProvider provider = PrivateKeyGenerator::generate;
+        PrivKey privKey = provider.get();
+        if(mP2PNodePrivKeyFile.exists()) {
+            // try loading file from private key
+            // if error, bailout?
+            FileInputStream inputStream;
+            try {
+                inputStream = new FileInputStream(mP2PNodePrivKeyFile);
+                byte[] keyBuffer;
+                keyBuffer = inputStream.readAllBytes();
+                privKey = KeyKt.unmarshalPrivateKey(keyBuffer);
+            } catch (FileNotFoundException e) {
+                System.out.println("Failed to read private key from disk - " + e.getMessage());
+                e.printStackTrace();
+             } catch (IOException e) {
+                System.out.println("Failed to read private key from disk - " + e.getMessage());
+                e.printStackTrace();
+            }
+        } else {
+            // generate a SECP256K1 private key
+            //PrivateKeyProvider keyProvider = PrivateKeyGenerator::generate;
+            privKey = KeyKt.generateKeyPair(KEY_TYPE.SECP256K1).component1();
+            // privKey = keyProvider.get();
+            // save priv key to file
+            try {
+                FileOutputStream outputStream = new FileOutputStream(mP2PNodePrivKeyFile);
+                outputStream.write(KeyKt.marshalPrivateKey(privKey));
+            } catch (Exception e) {
+                System.out.println("Failed to save private key to disk - " + e.getMessage());
+            }
+        }
+        if(privKey == null) {
+            System.out.println("P2P Error - priv key uninitialized!");
+            return;
+        }
+        // privKey.toString();
+        logger.warn("P2P layer - generated node private key: " + privKey.toString());
+        System.out.println("P2P layer - generated node private key: " + privKey.toString());
+        //System.out.println("P2P layer - generated node private key bytes: " + String. privKey.raw();
+        NodeId nodeId = new LibP2PNodeId(PeerId.fromPubKey(privKey.publicKey()));
+        System.out.println("P2P layer - nodeid: " + nodeId.toString());
+        System.out.println("P2P layer - nodeid base58: " + nodeId.toBase58());
+        
         DiscoveryNetworkFactory factory = new DiscoveryNetworkFactory();
         try {
             if(staticPeers != null && staticPeers.length > 0 && bootnodes != null && bootnodes.length > 0) {
                 System.out.println("Building p2p layer using provided params: staticpeer=" + staticPeers[0] + " and bootnode=" + bootnodes[0]);
-                network = factory.builder().staticPeer(staticPeers[0]).bootnode(bootnodes[0]).buildAndStart();
+                network = factory.builder().setPrivKey(privKey).staticPeer(staticPeers[0]).bootnode(bootnodes[0]).buildAndStart();
             } else if(staticPeers == null || staticPeers.length == 0) {
                 logger.info("P2P: starting in standalone mode");
                 System.out.println("P2P: starting in standalone mode");
-                network = factory.builder().buildAndStart();
+                network = factory.builder().setPrivKey(privKey).buildAndStart();
             }
         } catch (Exception e) {
             logger.error("P2P failed to start through DiscoveyrNetworkFactory.");
@@ -208,6 +275,15 @@ public class P2PStart extends MessageProcessor {
             e.printStackTrace();
         }
 
+    }
+
+            
+    private static File ensureFolder(File zFolder) {
+        if(!zFolder.exists()) {
+                zFolder.mkdirs();
+        }
+        
+        return zFolder;
     }
 
 }
