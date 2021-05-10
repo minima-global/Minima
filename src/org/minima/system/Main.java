@@ -174,9 +174,6 @@ public class Main extends MessageProcessor {
 		getConsensusHandler().setBackUpManager();
 		
 		if(zNeedGenesis){
-			//Genesis block required
-			MinimaLogger.log("Genesis block required..");
-			
 			//Sort the genesis Block
 			mConsensus.genesis();
 		}

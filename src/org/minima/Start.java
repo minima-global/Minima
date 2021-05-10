@@ -239,9 +239,9 @@ public class Start {
 		//Are we private!
 		if(privatenetwork) {
 			//Do we need a gensis block
-			boolean needgensis = clean || BackupManager.requiresPrivateGenesis(conffile);
+			boolean needgenesis = clean || BackupManager.requiresPrivateGenesis(conffile);
 			
-			rcmainserver.privateChain(needgensis);
+			rcmainserver.privateChain(needgenesis);
 		}
 		
 		if(automine) {
