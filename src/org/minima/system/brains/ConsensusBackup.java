@@ -43,8 +43,8 @@ public class ConsensusBackup extends ConsensusProcessor {
 	public static String CONSENSUSBACKUP_RESET        	= CONSENSUS_PREFIX+"RESET"; 
 	
 	
-	public static final String USERDB_BACKUP = "user.minima";
-	public static final String SYNC_BACKUP   = "sync.package";
+//	public static final String USERDB_BACKUP = "user.minima";
+//	public static final String SYNC_BACKUP   = "sync.package";
 	
 	public ConsensusBackup(MinimaDB zDB, ConsensusHandler zHandler) {
 		super(zDB, zHandler);
@@ -62,7 +62,7 @@ public class ConsensusBackup extends ConsensusProcessor {
 			
 			//First backup the UserDB..
 			JavaUserDB userdb = (JavaUserDB) getMainDB().getUserDB();
-			File backuser     = backup.getBackUpFile(USERDB_BACKUP);
+			File backuser     = backup.getBackUpFile(BackupManager.USERDB_BACKUP);
 			MiniFile.writeObjectToFile(backuser, userdb);
 	
 		}else if(zMessage.isMessageType(CONSENSUSBACKUP_SYNCBACKUP)) {
@@ -120,13 +120,13 @@ public class ConsensusBackup extends ConsensusProcessor {
 			//First backup the UserDB..
 			try {
 				JavaUserDB userdb = (JavaUserDB) getMainDB().getUserDB();
-				File backuser     = backup.getBackUpFile(USERDB_BACKUP);
+				File backuser     = backup.getBackUpFile(BackupManager.USERDB_BACKUP);
 				MiniFile.writeObjectToFile(backuser, userdb);
 				details.put("userdb", backuser.getAbsolutePath());
 				
 				//Now the complete SyncPackage..
 				SyncPackage sp = getMainDB().getSyncPackage();
-				File backsync  = backup.getBackUpFile(SYNC_BACKUP);
+				File backsync  = backup.getBackUpFile(BackupManager.SYNC_BACKUP);
 				MiniFile.writeObjectToFile(backsync, sp);
 				details.put("chaindb", backsync.getAbsolutePath());
 				
@@ -153,8 +153,8 @@ public class ConsensusBackup extends ConsensusProcessor {
 			BackupManager backup = getBackup();
 			
 			//Check the backups exist..
-			File backuser  = backup.getBackUpFile(USERDB_BACKUP);
-			File backsync  = backup.getBackUpFile(SYNC_BACKUP);
+			File backuser  = backup.getBackUpFile(BackupManager.USERDB_BACKUP);
+			File backsync  = backup.getBackUpFile(BackupManager.SYNC_BACKUP);
 			
 			//Are we ok ?
 			if(!backuser.exists()) {
