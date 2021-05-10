@@ -1,24 +1,15 @@
 package org.minima.tests.objects;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import org.junit.Test;
-import org.minima.objects.Magic;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.keys.PubPrivKey;
 import org.minima.utils.json.JSONObject;
 
-public class PubPrivKeyTests {
+public class StateVariableTests {
 
     public static final int w = 12;
 
@@ -77,29 +68,5 @@ public class PubPrivKeyTests {
 
     public void testSignAndVerifyEvolution() {
         testSigningAndVerifying("The Evolution will not be Centralised");
-    }
-
-    @Test
-    public void testStaticReadAndWriteDataStream() {
-        try {
-            PubPrivKey pk = new PubPrivKey(MiniData.getRandomData(32));
-
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            DataOutputStream dos = new DataOutputStream(bos);
-
-            pk.writeDataStream(dos);
-
-            InputStream inputStream = new ByteArrayInputStream(bos.toByteArray());
-            DataInputStream dis = new DataInputStream(inputStream);
-
-            PubPrivKey pk2 = new PubPrivKey();
-            pk2.readDataStream(dis);
-
-            assertTrue(pk.getPublicKey().isEqual(pk2.getPublicKey()));
-            assertTrue(pk.getPrivateSeed().isEqual(pk2.getPrivateSeed()));
-            assertEquals(pk.getBitLength(), pk2.getBitLength());
-        } catch (final IOException e) {
-            fail();
-        }
     }
 }

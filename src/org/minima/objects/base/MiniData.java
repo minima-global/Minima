@@ -293,16 +293,4 @@ public class MiniData implements Streamable {
 		rand.nextBytes(data);
 		return new MiniData(data);
 	}
-	
-	public static void main(String[] zArgs) {
-		
-		MiniData dd = new MiniData(BigInteger.ONE.multiply(new BigInteger("-1")));
-		System.out.println(dd.getDataValue()+" "+dd.to0xString());
-		
-		MiniData ff = dd.shiftr(1);
-		
-		System.out.println(dd.getDataValue()+" "+ff.getDataValue()+" "+ff.shiftr(1).getDataValue());
-		System.out.println(dd.to0xString()+" "+ff.to0xString()+" "+ff.shiftr(1).to0xString());
-		
-	}
 }

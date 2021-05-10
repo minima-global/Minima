@@ -17,7 +17,6 @@ import org.minima.utils.json.JSONObject;
 
 public class TxHeaderTests {
 
-
     public void TxHeaderTests() {
         // in real use case Txheader is configured / built by TxPoW
         TxHeader mHeader = new TxHeader();

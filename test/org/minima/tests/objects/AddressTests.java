@@ -3,7 +3,10 @@ package org.minima.tests.objects;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -11,120 +14,169 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import org.junit.Assert;
 
 import org.junit.Test;
 import org.junit.internal.ArrayComparisonFailure;
 import org.minima.objects.Address;
 import org.minima.objects.base.MiniData;
+import org.minima.utils.json.JSONObject;
 
 public class AddressTests {
 
     @Test
-    public void testAddress() {
-        MiniData c = new MiniData();
-        MiniData j = new MiniData("0xFFFF");
-        MiniData n = new MiniData("0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
-        Address ad = new Address();
-        Address a = new Address("0xf0f0");
-        Address abc = new Address("0xf0f0");
-        assertNotNull("should not be null", a);
-        // System.out.println("address value " + a);
-        a.getAddressData();
-        // System.out.println("address value " + a.getAddressData());
-        Address adr = new Address(j);
-        // System.out.println("address value " + adr);
-        Address adrTwo = new Address(n);
-        // System.out.println("address value " + adrTwo);
-        Address adrThree = new Address(c);
-        // System.out.println("address value " + adrThree);
-        // System.out.println("json  value " + adrTwo.toJSON());
-        // System.out.println("script  value " + adrTwo.getScript());
-        // System.out.println("minima addess  value " + adrTwo.getMinimaAddress());
-        assertFalse("should not be equal ", a.isEqual(adrThree));
-        assertTrue("should not be equal ", a.isEqual(abc));
+    public void testConstructors() {
+        {
+            Address addr = Address.TRUE_ADDRESS;
+            assertNotNull(addr);
+            assertEquals("RETURN TRUE", addr.getScript());
+        }
+        {
+            Address addr = new Address();
+            assertNotNull(addr);
+            //assertNull(addr.getScript()); // default constructor does not initialize MiniString
+        }
+        {
+            Address addr = new Address("RETURN TRUE");
+            assertNotNull(addr);
+            assertEquals("RETURN TRUE", addr.getScript());
+        }
+        {
+            MiniData md = new MiniData();
+            Address addr = new Address(md);
+            assertNotNull(addr);
+            assertEquals("", addr.getScript());
+        }
+        {
+            for (int i = 16; i <= 68; i = i + 4) {
+                if (i == 44) {
+                    continue;
+                }
+                MiniData md1 = MiniData.getRandomData(i);
+                Address addr1 = new Address(md1);
+                assertNotNull(addr1);
+                assertEquals("", addr1.getScript());
+                assertEquals(md1, addr1.getAddressData());
+                assertEquals(Address.makeMinimaAddress(md1), addr1.getMinimaAddress());
 
+                MiniData md2 = MiniData.getRandomData(i);
+                Address addr2 = new Address(md2);
+                assertNotNull(addr2);
+                assertEquals("", addr2.getScript());
+                assertEquals(md2, addr2.getAddressData());
+                assertEquals(Address.makeMinimaAddress(md2), addr2.getMinimaAddress());
+
+                assertTrue(addr1.isEqual(addr1));
+                assertFalse(addr1.isEqual(addr2));
+
+            }
+        }
     }
 
     @Test
     public void testWriteAndReadDataStream() {
         try {
-            MiniData i = new MiniData("0xfff0f0");
-            Address a = new Address(i);
+            for (int i = 16; i <= 64; i = i + 4) {
+                if (i == 44) {
+                    continue;
+                }
+                MiniData md1 = MiniData.getRandomData(i);
+                Address addr1 = new Address(md1);
+                assertNotNull(addr1);
+                assertEquals("", addr1.getScript());
+                assertEquals(md1, addr1.getAddressData());
+                assertEquals(Address.makeMinimaAddress(md1), addr1.getMinimaAddress());
 
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            DataOutputStream dos = new DataOutputStream(bos);
-            a.writeDataStream(dos);
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                DataOutputStream dos = new DataOutputStream(bos);
 
-            InputStream inputStream = new ByteArrayInputStream(bos.toByteArray());
-            DataInputStream dis = new DataInputStream(inputStream);
+                addr1.writeDataStream(dos);
 
-            a.readDataStream(dis);
-            // System.out.println("minima  value " + a.toString());
+                InputStream inputStream = new ByteArrayInputStream(bos.toByteArray());
+                DataInputStream dis = new DataInputStream(inputStream);
 
-            assertNotNull(i);
-            assertEquals("0xFFF0F0", a.toString());
+                Address addr2 = new Address();
+                addr2.readDataStream(dis);
+
+                assertTrue(addr1.isEqual(addr2));
+            }
         } catch (final IOException e) {
-            System.out.println("IOException: " + e.toString() + " msg=" + e.getMessage());
-            assertTrue(" there should not be an IOException", false);
+            fail();
         }
-
     }
 
     @Test
-    public void testMakeMinimaAddress() {
+    public void testJSONConversion() {
+        for (int i = 16; i <= 68; i = i + 4) {
+            if (i == 44) {
+                continue;
+            }
+            MiniData md1 = MiniData.getRandomData(i);
+            Address addr1 = new Address(md1);
+            assertNotNull(addr1);
+            assertEquals("", addr1.getScript());
+            assertEquals(md1, addr1.getAddressData());
+            assertEquals(Address.makeMinimaAddress(md1), addr1.getMinimaAddress());
 
-        MiniData i = new MiniData("0xffffffffffffffffffffffffffffffffffffffff");
+            JSONObject json = addr1.toJSON();
 
-        String mxAddress = Address.makeMinimaAddress(i);
-        MiniData j = Address.convertMinimaAddress(mxAddress);
-        try {
-            assertEquals("should be equal", i, j);
-            System.out.println("should be equal to - " + i);
-        } catch (ArrayComparisonFailure failure) {
-            System.out.println("Test failed: " + failure.getMessage());
-            assertFalse("test should not fail:" + failure.getMessage(), true);
+            assertTrue("JSON object should contain script key", json.containsKey("script"));
+            assertTrue("JSON object should contain hexaddress key", json.containsKey("hexaddress"));
+            assertTrue("JSON object should contain miniaddress key", json.containsKey("miniaddress"));
         }
+    }
 
-        MiniData q = new MiniData(
-                "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
-        // byte[] data1 = q.getData();
+    @Test
+    public void testToString() {
+        for (int i = 16; i <= 68; i = i + 4) {
+            if (i == 44) {
+                continue;
+            }
+            MiniData md1 = MiniData.getRandomData(i);
+            Address addr1 = new Address(md1);
+            assertNotNull(addr1);
+            assertEquals("", addr1.getScript());
+            assertEquals(md1, addr1.getAddressData());
+            assertEquals(Address.makeMinimaAddress(md1), addr1.getMinimaAddress());
 
-        // //First hash it to add some checksum digits..
-        // byte[] hash1 = Crypto.getInstance().hashData(data1, 160);
-        // //Calculate a new length - ONLY certain lengths allowed!
-        // int len1 = data1.length;
-        // System.out.println("New 32bit len1 " + len1);
-        String mxAddress1 = Address.makeMinimaAddress(q);
-        MiniData p = Address.convertMinimaAddress(mxAddress1);
-        try {
-            assertEquals("should be equal", q, p);
-            // System.out.println("should be equal to - " + q);
-        } catch (ArrayComparisonFailure failure) {
-            System.out.println("Test failed: " + failure.getMessage());
-            assertFalse("test should not fail:" + failure.getMessage(), true);
+            String exp_s = addr1.getAddressData().toString();
+            String obj_s = addr1.toString();
+            assertEquals("should be equal ", exp_s, obj_s);
         }
+    }
 
-        MiniData l = new MiniData("0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
-        MiniData o = new MiniData("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
-        MiniData v = new MiniData("0xffffffffffffffffffffffffffffffffffffffff");
+    @Test
+    public void testconvertMinimaAddress() {
+        {
+            for (int i = 16; i <= 68; i = i + 4) {
+                if (i == 44) {
+                    continue;
+                }
+                MiniData md1 = MiniData.getRandomData(i);
+                Address addr1 = new Address(md1);
+                assertNotNull(addr1);
+                assertEquals("", addr1.getScript());
+                assertEquals(md1, addr1.getAddressData());
+                assertEquals(Address.makeMinimaAddress(md1), addr1.getMinimaAddress());
 
-        String mxAddress3 = Address.makeMinimaAddress(l);
-        String mxAddress4 = Address.makeMinimaAddress(v);
-        String mxAddress5 = Address.makeMinimaAddress(o);
-        MiniData m = Address.convertMinimaAddress(mxAddress3);
-        MiniData m2 = Address.convertMinimaAddress(mxAddress4);
-        MiniData m3 = Address.convertMinimaAddress(mxAddress5);
+                if (i == 16) {
+                    // makeMinimaAddress does not create mx address for length less than 20
+                    assertThrows(ArithmeticException.class, () -> {
+                        Address.convertMinimaAddress(addr1.getMinimaAddress());
+                    });
+                    continue;
+                }
+                if (i == 68) {
+                    // makeMinimaAddress does not create mx address for length greater than 64
+                    assertThrows(ArithmeticException.class, () -> {
+                        Address.convertMinimaAddress(addr1.getMinimaAddress());
+                    });
+                    continue;
+                }
 
-        try {
-            assertEquals("should be equal", l, m);
-            assertEquals("should be equal", v, m2);
-            assertEquals("should be equal", o, m3);
-
-            // System.out.println("should be equal to - " + l);
-        } catch (ArrayComparisonFailure failure) {
-            System.out.println("Test failed: " + failure.getMessage());
-            assertFalse("test should not fail:" + failure.getMessage(), true);
+                MiniData md2 = Address.convertMinimaAddress(addr1.getMinimaAddress());
+                assertEquals(md1, md2);
+            }
         }
-
     }
 }
