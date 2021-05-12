@@ -118,12 +118,18 @@ public class MiniFile {
 		}
 		
 		//And finally delete the actual file.. (double check is a minima file.. )
+		boolean del = true;
 		if(mParentCheck.equals("")) {
-			zFile.delete();
+			del = zFile.delete();
 		}else if(zFile.getAbsolutePath().startsWith(mParentCheck)) {
-			zFile.delete();
+			del = zFile.delete();
 		}else {
 			MinimaLogger.log("Attempt to delete File NOT child of parent check "+zFile.getAbsolutePath()+" / "+mParentCheck);
+		}
+		
+		//Did it work..
+		if(!del) {
+			MinimaLogger.log("ERROR deleting file "+zFile.getAbsolutePath());
 		}
 	}
 	

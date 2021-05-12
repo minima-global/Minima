@@ -1,29 +1,75 @@
 package org.minima.utils;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.StringTokenizer;
 
+import org.minima.system.Main;
+import org.minima.system.brains.BackupManager;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
 public class SQLHandler {
 
 	/**
-	 * Hashtable of SQL connections currently 
+	 * Are we using MySQL
+	 */
+	static boolean mMySQL 			= false;
+	static String mMySQLHost 		= "";
+	static String mMySQLUser 		= "";
+	static String mMySQLPassword 	= "";
+	
+	/**
+	 * Have we attempted to create this DB before
+	 */
+	private static ArrayList<String> MYSQL_CREATDATABASE = new ArrayList<String>();
+	
+	public static boolean isMySQLEnabled() {
+		return mMySQL;
+	}
+	
+	public static boolean setMySQLDetails(String zHost, String zUser, String zPassword) {
+		try {
+			//Load MySQL classes
+			Class.forName("com.mysql.cj.jdbc.Driver");
+		
+			//Create a test connection
+			Connection conn = DriverManager.getConnection("jdbc:mysql://"+zHost+"/",zUser,zPassword);
+			
+			//If all good..
+			conn.close();
+			
+			//Store these details
+			mMySQL 			= true;
+			mMySQLHost 		= zHost;
+			mMySQLUser 		= zUser;
+			mMySQLPassword  = zPassword;
+			
+		}catch (Exception e) {
+			MinimaLogger.log(e);
+			mMySQL = false;
+		}
+		
+		return mMySQL;
+	}
+	
+	/**
+	 * Hash table of SQL connections currently 
 	 */
 	private static Hashtable<String, Connection> SQL_POOLS = new Hashtable<>();
-	private static synchronized Connection getConnection(String zDataBaseURL) throws SQLException {
+	private static synchronized Connection getConnection(String zDataBaseURL, String zUser, String zPassword) throws SQLException {
 		//Check if we have a pool already..
 		if(!SQL_POOLS.containsKey(zDataBaseURL)) {
 			 //Create new connection..
-			 Connection newconn = DriverManager.getConnection("jdbc:h2:"+zDataBaseURL+";AUTO_RECONNECT=TRUE", "SA", "");
+			 Connection newconn = DriverManager.getConnection(zDataBaseURL, zUser, zPassword);
 			 
 			 //Add it to the hashtable..
 			 SQL_POOLS.put(zDataBaseURL, newconn);
@@ -36,9 +82,9 @@ public class SQLHandler {
 		Connection conn = SQL_POOLS.get(zDataBaseURL);
 		if(conn.isClosed()) {
 			//restart this..
-			conn = DriverManager.getConnection("jdbc:h2:"+zDataBaseURL+";AUTO_RECONNECT=TRUE", "SA", "");
+			conn = DriverManager.getConnection(zDataBaseURL, zUser, zPassword);
 			 
-			//Add it to the hashtable..
+			//Add it to the hash table..
 			SQL_POOLS.put(zDataBaseURL, conn);
 			
 			//Created a connection
@@ -54,7 +100,9 @@ public class SQLHandler {
 		while(allconns.hasMoreElements()) {
 			Connection conn = allconns.nextElement();
 			try {
-				conn.close();
+				if(!conn.isClosed()) {
+					conn.close();
+				}
 			} catch (SQLException e) {
 				MinimaLogger.log(e);
 			}
@@ -65,17 +113,75 @@ public class SQLHandler {
 		MinimaLogger.log("All database connections closed");	
 	}
 	
+	
+	public static String getMiniDappMySQLName(String zMiniDAPPID) {
+		return "minidapp"+zMiniDAPPID;
+	}
+	
 	//Connection to the Database
 	Connection mSQLConnection;
 	
 	//The Database..
 	String mDataBase;
 	
-	public SQLHandler(String zDatabaseAbsolutePath) throws SQLException, ClassNotFoundException {
-		//Start a database Connection..
-//		mSQLConnection = DriverManager.getConnection("jdbc:h2:"+zDatabaseAbsolutePath, "SA", "");
-		mSQLConnection = getConnection(zDatabaseAbsolutePath);
-		mDataBase      = zDatabaseAbsolutePath;
+	/**
+	 * Constructors for both types of DB
+	 */
+	public SQLHandler(String zMiniDAppID) throws SQLException, ClassNotFoundException {
+		this(zMiniDAppID, false);
+	}
+	
+	public SQLHandler(String zMiniDAppID,boolean zFullPath) throws SQLException, ClassNotFoundException {
+		//Create the Database URL
+		if(mMySQL) {
+			//Use ther MySQL JDBC
+			String url = "jdbc:mysql://"+mMySQLHost+"/";
+			String db  = getMiniDappMySQLName(zMiniDAppID);
+			
+			//Need to create the DB if not exists..
+			if(!MYSQL_CREATDATABASE.contains(db)) {
+				MYSQL_CREATDATABASE.add(db);
+				
+				Connection conn = DriverManager.getConnection(url,mMySQLUser,mMySQLPassword);
+	
+				//Get a statement
+				Statement stmt = conn.createStatement();
+				
+				//Run some SQL..
+				String query = "CREATE DATABASE IF NOT EXISTS "+db;
+				stmt.execute(query);
+				
+				//Close connection
+				conn.close();
+			}
+			
+			//Now create the full Database url
+			mDataBase = url+db;
+			
+			//Get the connection
+			mSQLConnection = getConnection(mDataBase,mMySQLUser,mMySQLPassword);
+			
+		}else {
+			if(!zFullPath) {
+				//Calculate the Database file..
+				BackupManager backup  = Main.getMainHandler().getBackupManager();
+				File minidappdatabase = new File(backup.getMiniDAPPFolder(zMiniDAppID),"_sqldb");
+				String path = minidappdatabase.getAbsolutePath();
+				
+				//Use H2 JDBC
+				mDataBase = "jdbc:h2:"+path;
+			}else {
+				//Use H2 JDBC
+				mDataBase = "jdbc:h2:"+zMiniDAppID;
+			}
+			
+			//Get the connection
+			mSQLConnection = getConnection(mDataBase,"SA","");
+		}
+	}
+	
+	public String getDataBaseURL() {
+		return mDataBase;
 	}
 	
 	public void close() throws SQLException {
@@ -187,25 +293,33 @@ public class SQLHandler {
 	public static void main(String[] zArgs) {
 		
 		try {
-			SQLHandler handle = new SQLHandler("/home/spartacusrex/.minima/temp/_tempdb");
-		
-			String sql = "CREATE TABLE IF NOT EXISTS preimage ( image VARCHAR(160) NOT NULL, hash VARCHAR(160) NOT NULL )";
-			JSONObject results = handle.executeSQL(sql);
-			System.out.println(sql);
-			System.out.println(MiniFormat.JSONPretty(results.toString()));
+//			SQLHandler handle = new SQLHandler("~/tester/temp/_tempdb",true);
 			
-//			sql = "INSERT INTO preimage (image, hash) VALUES ('xxx','hashxxx')";
-//			results = handle.executeSQL(sql);
-//			System.out.println(sql);
-//			System.out.println(MiniFormat.JSONPretty(results.toString()));
 			
-			sql =     "INSERT INTO preimage (image, hash) VALUES ('xxx','hashxxx');"
-					+ "SELECT * FROM preimage WHERE HASH='hashxxx';"
-					+ "sdsdSELECT * FROM preimage WHERE HASH='hashxxx';"
-					+ "SELECT * FROM preimage WHERE HASH='hashxxx';";
-			JSONArray resultsarray = handle.executeMultiSQL(sql);
-//			System.out.println(sql);
-			System.out.println(MiniFormat.JSONPretty(resultsarray.toString()));
+//			for(int i=0;i<3;i++) {
+			
+				SQLHandler handle = new SQLHandler("110022");
+				
+				String sql = "CREATE TABLE IF NOT EXISTS preimage ( image VARCHAR(160) NOT NULL, hash VARCHAR(160) NOT NULL )";
+				JSONObject results = handle.executeSQL(sql);
+				System.out.println(sql);
+				System.out.println(MiniFormat.JSONPretty(results.toString()));
+				sql =     "INSERT INTO preimage (image, hash) VALUES ('xxx','hashxxx');"
+						+ "SELECT * FROM preimage WHERE HASH='hashxxx';";
+				JSONArray resultsarray = handle.executeMultiSQL(sql);
+				System.out.println(MiniFormat.JSONPretty(resultsarray.toString()));
+				
+				//Close the connection
+				handle.close(true);
+//			}
+			
+			//Now delete
+//				SQLHandler handle = new SQLHandler("110022");
+//				
+//				//Create the DROP SQL
+//				String drop = "DROP DATABASE "+db;
+				
+				
 			
 //			//Create a Table..
 //			String sql = "CREATE TABLE IF NOT EXISTS users ( "
@@ -236,8 +350,7 @@ public class SQLHandler {
 //			selectresults = handle.executeSQL(select);
 //			System.out.println(MiniFormat.JSONPretty(selectresults.toString()));
 		
-			//Close the connection
-			handle.close(true);
+			
 		
 		} catch (Exception e) {
 			// TODO Auto-generated catch block

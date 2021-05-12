@@ -28,19 +28,15 @@ public class SQL implements Runnable {
 		//The SQL results
 		JSONObject res = new JSONObject();
 		
-		//Where is the database..
-		BackupManager backup  = Main.getMainHandler().getBackupManager();
-		File minidappdatabase = new File(backup.getMiniDAPPFolder(mMiniDAPPID),"_sqldb");
-		
 		//Get the Function..
-		res.put("db", minidappdatabase.getAbsolutePath());
 		res.put("sql", mSQL);
 		
 	    //Now lets do some SQL
 		try {
 			//Start the SQL handler
-			SQLHandler handler = new SQLHandler(minidappdatabase.getAbsolutePath());
-				
+			SQLHandler handler = new SQLHandler(mMiniDAPPID);
+			res.put("db", handler.getDataBaseURL());
+			
 			//Run the SQL..
 			if(mSQL.indexOf(";")!=-1) {
 				JSONArray resp  = handler.executeMultiSQL(mSQL);

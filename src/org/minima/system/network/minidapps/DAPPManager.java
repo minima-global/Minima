@@ -24,6 +24,7 @@ import org.minima.system.brains.BackupManager;
 import org.minima.system.brains.ConsensusHandler;
 import org.minima.system.input.InputHandler;
 import org.minima.system.network.NetworkHandler;
+import org.minima.system.network.commands.SQL;
 import org.minima.system.network.minidapps.comms.CommsManager;
 import org.minima.system.network.minidapps.minibackend.BackEndDAPP;
 import org.minima.system.network.minidapps.websocket.WebSocketManager;
@@ -538,6 +539,23 @@ public class DAPPManager extends MessageProcessor {
 			
 			MinimaLogger.log("UNINSTALLING : "+minidapp);
 			
+			//Delete the DB
+			if(SQLHandler.isMySQLEnabled()) {
+				//What is the DB
+				String db = SQLHandler.getMiniDappMySQLName(minidapp);
+				
+				//Create the DROP SQL
+				String drop = "DROP DATABASE "+db;
+				
+				//Delete the MySQL DB
+				SQL sqldel = new SQL(drop, minidapp);
+				sqldel.run();
+			}else {
+				//Close the DB connection..
+				
+				
+			}
+			
 			//UNINSTALL the DAPP
 			File appfolder = new File(getMiniDAPPSFolder(),minidapp);
 		
@@ -545,6 +563,9 @@ public class DAPPManager extends MessageProcessor {
 				InputHandler.endResponse(zMessage, false, "MiniDAPP not found..");	
 				return;
 			}
+			
+			//Close the DB connections first..
+			SQLHandler.CloseSQL();
 			
 			//Delete the app root..
 			BackupManager.safeDelete(appfolder);
