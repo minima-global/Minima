@@ -777,6 +777,24 @@ public class ConsensusHandler extends MessageProcessor {
 				//Create the Transaction
 				Message ret = getMainDB().createTransaction(sendamount, recipient, change, confirmed, tok, changetok,tokengen);
 				
+				//get the Transaction
+				Transaction trans = (Transaction) ret.getObject("transaction");
+				
+				//Final check..
+				if(getMainDB().checkTransactionForMining(trans)) {
+					InputHandler.endResponse(zMessage, false, "ERROR double spend coin in mining pool.");
+					return;
+				}
+				
+				//Add all the inputs to the mining..
+				getMainDB().addMiningTransaction(trans);
+				
+				//Notify listeners that Mining is starting...
+				JSONObject mining = new JSONObject();
+				mining.put("event","txpowstart");
+				mining.put("transaction",trans.toJSON());
+				PostDAPPJSONMessage(mining);
+				
 				//Continue the log output trail
 				InputHandler.addResponseMesage(ret, zMessage);
 				
