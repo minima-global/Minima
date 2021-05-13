@@ -1,5 +1,5 @@
 #FROM keymetrics/pm2:latest-alpine
-FROM node:15-alpine
+FROM node:16-alpine
 #FROM node:10
 #FROM mhart/alpine-node:15
 
@@ -7,7 +7,7 @@ WORKDIR /app/
 
 # install some packages on Alpine
 RUN apk --no-cache add \
-    python \
+    python2 \
     bash
 
 # Copy nodejs package files
