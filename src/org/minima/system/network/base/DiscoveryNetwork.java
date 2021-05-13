@@ -68,6 +68,8 @@ public class DiscoveryNetwork<P extends Peer> extends DelegatingP2PNetwork<P> {
 
   private volatile Optional<EnrForkId> enrForkId = Optional.empty();
 
+  private String mENR;
+
   DiscoveryNetwork(
       final P2PNetwork<P> p2pNetwork,
       final DiscoveryService discoveryService,
@@ -131,12 +133,20 @@ public class DiscoveryNetwork<P extends Peer> extends DelegatingP2PNetwork<P> {
     return discoveryService;
   }
 
+  public String getENR() {
+    return mENR;
+  }
 
   @Override
   public SafeFuture<?> start() {
     return SafeFuture.allOfFailFast(p2pNetwork.start(), discoveryService.start())
         .thenCompose(__ -> connectionManager.start())
-        .thenRun(() -> getEnr().ifPresent( enr -> { LOG.warn("logwarn: listening for discv5: " + enr); System.out.println("sysout: listening for discv5: " + enr);})); // TODO: log ENR info and discovery start
+        .thenRun(() -> getEnr().ifPresent( 
+          enr -> { 
+            LOG.warn("logwarn: listening for discv5: " + enr); 
+            System.out.println("sysout: listening for discv5: " + enr); 
+            mENR = enr;
+          })); 
   } //::listeningForDiscv5
 
   @Override

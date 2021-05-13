@@ -181,6 +181,10 @@ public class Main extends MessageProcessor {
 		return mBackup;
 	}
 	
+	public P2PStart getP2P() {
+		return mP2P;
+	}
+	
 	public TxPoWMiner getMiner() {
 		return mTXMiner;
 	}

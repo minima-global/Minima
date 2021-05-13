@@ -32,6 +32,7 @@ import org.minima.utils.messages.MessageProcessor;
 
 import io.libp2p.core.PeerId;
 import io.libp2p.core.crypto.PrivKey;
+import io.libp2p.core.crypto.PubKey;
 import io.libp2p.core.crypto.KEY_TYPE;
 import io.libp2p.core.crypto.KeyKt;
 import io.libp2p.crypto.keys.Secp256k1PrivateKey;
@@ -52,6 +53,9 @@ public class P2PStart extends MessageProcessor {
     private NetworkHandler mNetwork;
     private DiscoveryNetwork<Peer> network;
     Set<InetSocketAddress> activeKnownNodes;
+    private NodeId nodeId;
+    private PubKey pubKey;
+    
 
     // staticPeers = list of static peers in multiaddr format: /ip4/127.0.0.1/tcp/10219/p2p/16Uiu2HAmCnuHVjxoQtZzqenqjRr6hAja1XWCuC1SiqcWcWcp4iSt
     // bootnodes = list of ENR: enr:-Iu4QGvbP4hn3cxao3aFyZfeGBG0Ygp-KPJsK9h7pM_0FfCGauk0P2haW7AEiLaMLEDxRngy4SjCx6GGfwlsRBf0BBwBgmlkgnY0gmlwhH8AAAGJc2VjcDI1NmsxoQMCButDl63KBqEEyxV2R3nCvnHb7sEIgOACbb6yt6oxqYN0Y3CCJ-uDdWRwgifr 
@@ -109,15 +113,16 @@ public class P2PStart extends MessageProcessor {
         if(privKey == null) {
             System.out.println("P2P Error - priv key uninitialized!");
             return;
-        }
+        } 
         // privKey.toString();
         logger.warn("P2P layer - generated node private key: " + privKey.toString());
         System.out.println("P2P layer - generated node private key: " + privKey.toString());
         //System.out.println("P2P layer - generated node private key bytes: " + String. privKey.raw();
-        NodeId nodeId = new LibP2PNodeId(PeerId.fromPubKey(privKey.publicKey()));
+        nodeId = new LibP2PNodeId(PeerId.fromPubKey(privKey.publicKey()));
         System.out.println("P2P layer - nodeid: " + nodeId.toString());
         System.out.println("P2P layer - nodeid base58: " + nodeId.toBase58());
-        
+        pubKey = privKey.publicKey();
+
         DiscoveryNetworkFactory factory = new DiscoveryNetworkFactory();
         try {
             if(staticPeers != null && staticPeers.length > 0 && bootnodes != null && bootnodes.length > 0) {
@@ -151,7 +156,22 @@ public class P2PStart extends MessageProcessor {
 
     }
 
+    public NodeId getNodeId() {
+        return nodeId;
+    }
 
+    public PubKey getPubKey() {
+        return pubKey;
+    }
+
+    public String getENR() {
+        return network.getENR();
+    }
+    
+    public Optional<String> getDiscoveryAddress() {
+        return network.getDiscoveryAddress();
+    }
+    
     @Override
     protected void processMessage(Message zMessage) throws Exception {
         // TODO Auto-generated method stub

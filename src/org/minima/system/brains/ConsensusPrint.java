@@ -8,6 +8,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Optional;
 
 import org.minima.GlobalParams;
 import org.minima.database.MinimaDB;
@@ -1067,6 +1068,12 @@ public class ConsensusPrint extends ConsensusProcessor {
 			//Add the network connections
 			ArrayList<MinimaClient> nets = main.getNetworkHandler().getNetClients();
 			status.put("connections", nets.size());
+			
+			status.put("p2pnodeid", main.getP2P().getNodeId());
+			Optional<String> discAddr = main.getP2P().getDiscoveryAddress();
+			status.put("p2pdiscoveryaddr", discAddr.isPresent()?discAddr.get():"unavailable");
+			String enr = main.getP2P().getENR();
+			status.put("p2penr", enr!=null?enr:"unavailable");
 			
 			//Add it to the output
 			InputHandler.endResponse(zMessage, true, "");
