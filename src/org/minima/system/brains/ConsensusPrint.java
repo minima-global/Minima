@@ -68,6 +68,8 @@ public class ConsensusPrint extends ConsensusProcessor {
 	
 	public static final String CONSENSUS_NETWORK 			= CONSENSUS_PREFIX+"NETWORK";
 	
+	public static final String CONSENSUS_BURN 				= CONSENSUS_PREFIX+"BURN";
+	
 	public static final String CONSENSUS_PRINTCHAIN_TREE 	= CONSENSUS_PREFIX+"PRINTCHAIN_TREE";
 	
 	public static final String CONSENSUS_MINIDAPPS 			= CONSENSUS_PREFIX+"MINIDAPPS";
@@ -359,6 +361,19 @@ public class ConsensusPrint extends ConsensusProcessor {
 			dets.put("coins", allcoins);
 			InputHandler.endResponse(zMessage, true, "");
 		
+		}else if(zMessage.isMessageType(CONSENSUS_BURN)){
+			//Search for a BURN..
+			BlockTreeNode tip = getMainDB().getMainTree().getChainTip();
+			
+			while(tip.getTxPow().hasBody()) {
+				//Get the total..
+				MinimaLogger.log(tip.getTxPow().getMMRTotal().toString()+" "+tip.getTxPow().getBlockNumber()+" "+tip.getTxPowID().to0xString());
+				
+				tip = tip.getParent();
+			}
+			
+			InputHandler.endResponse(zMessage, true, "All Block Totals");
+			
 		}else if(zMessage.isMessageType(CONSENSUS_HASH)){
 			int bitlen = zMessage.getInteger("bitlength");
 			String data = zMessage.getString("data");
