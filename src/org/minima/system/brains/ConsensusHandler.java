@@ -685,6 +685,12 @@ public class ConsensusHandler extends MessageProcessor {
 			trans.addOutput(new Coin(Coin.COINID_OUTPUT,addr1.getAddressData(),new MiniNumber("25"), Coin.MINIMA_TOKENID));
 			trans.addOutput(new Coin(Coin.COINID_OUTPUT,addr2.getAddressData(),new MiniNumber("25"), Coin.MINIMA_TOKENID));
 			
+			//Notify listeners that Mining is starting...
+			JSONObject mining = new JSONObject();
+			mining.put("event","txpowstart");
+			mining.put("transaction",trans.toJSON());
+			PostDAPPJSONMessage(mining);
+			
 			//Now send it..
 			Message mine = new Message(ConsensusHandler.CONSENSUS_SENDTRANS)
 								.addObject("transaction", trans)
