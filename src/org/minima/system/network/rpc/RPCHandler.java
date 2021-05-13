@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.URLDecoder;
+import java.nio.Buffer;
 import java.util.Date;
 import java.util.StringTokenizer;
 
@@ -191,6 +192,17 @@ public class RPCHandler implements Runnable {
 			}else {
 				finalresult = "{\"status\":false, \"message\":\"Incorrect request TYPE.. GET or POST only\"}";
 			}
+			
+//			int codelen  = finalresult.codePointCount(0, finalresult.length());
+//			int reallen  = finalresult.length();
+//			MinimaLogger.log("DEBUG:"+reallen+" / "+codelen);
+			
+			//Remove EMOJI and other weird symbols
+			String characterFilter = "[^\\p{L}\\p{M}\\p{N}\\p{P}\\p{Z}\\p{Cf}\\p{Cs}\\s]";
+			finalresult = finalresult.replaceAll(characterFilter,"");
+
+//			MinimaLogger.log("");
+//			MinimaLogger.log("EMOJILESS:"+finalresult);
 			
 			// send HTTP Headers
 			out.println("HTTP/1.1 200 OK");
