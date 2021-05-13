@@ -20,6 +20,11 @@ import org.minima.utils.json.JSONObject;
 public class SQLHandler {
 
 	/**
+	 * Logging
+	 */
+	private boolean SQL_LOGGING = false;
+	
+	/**
 	 * Are we using MySQL
 	 */
 	static boolean mMySQL 			= false;
@@ -257,7 +262,8 @@ public class SQLHandler {
 					counter++;
 					JSONObject row = new JSONObject();
 					for(int i=1;i<=columnnum;i++) {
-						String column = rsmd.getColumnName(i);
+						//ALWAYS UPPERCASE
+						String column = rsmd.getColumnName(i).toUpperCase();
 						Object obj    = resset.getObject(i);
 						row.put(column, obj.toString());					
 					}
@@ -278,6 +284,11 @@ public class SQLHandler {
 			
 			//Close the statement
 			stmt.close();
+			
+			//Do we log..
+			if(SQL_LOGGING) {
+				MinimaLogger.log("SQL LOGGING : "+results.toString());
+			}
 			
 		}catch(SQLException exc) {
 			MinimaLogger.log("SQL ERROR @ "+mDataBase+" : "+zSQL);
