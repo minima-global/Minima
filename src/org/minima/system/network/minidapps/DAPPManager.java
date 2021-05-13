@@ -639,9 +639,13 @@ public class DAPPManager extends MessageProcessor {
 			//First the Back End..
 			sendToBackEND(minidapp,json);
 			
+			//Remove funny characters
+			String characterFilter = "[^\\p{L}\\p{M}\\p{N}\\p{P}\\p{Z}\\p{Cf}\\p{Cs}\\s]";
+			String JSONEvent = json.toString().replaceAll(characterFilter,"");
+			
 			Message msg = new Message(WebSocketManager.WEBSOCK_SEND);
 			msg.addString("minidappid", minidapp);
-			msg.addString("message", json.toString());
+			msg.addString("message", JSONEvent);
 			mNetwork.getWebSocketManager().PostMessage(msg);
 			
 		}else if(zMessage.isMessageType(DAPP_MINIDAPP_POSTALL)) {
@@ -651,8 +655,12 @@ public class DAPPManager extends MessageProcessor {
 			//First the Back End..
 			sendToBackEND("",json);
 			
+			//Remove funny characters
+			String characterFilter = "[^\\p{L}\\p{M}\\p{N}\\p{P}\\p{Z}\\p{Cf}\\p{Cs}\\s]";
+			String JSONEvent = json.toString().replaceAll(characterFilter,"");
+			
 			Message msg = new Message(WebSocketManager.WEBSOCK_SENDTOALL);
-			msg.addString("message", json.toString());
+			msg.addString("message", JSONEvent);
 			mNetwork.getWebSocketManager().PostMessage(msg);
 			
 			//Post it to an URL..
@@ -660,20 +668,21 @@ public class DAPPManager extends MessageProcessor {
 				//Get the URL
 				String url = mNetwork.getExternalURL();
 				if(!url.equals("")) {
-//					MinimaLogger.log("Attempt to call external URL "+url); 
 					String reply = RPCClient.sendPOST(url, json.toString(), "application/json");
-//					MinimaLogger.log("Reply : "+reply); 
 				}
 			}catch(Exception exc) {
 				MinimaLogger.log("ExternalURL error : "+exc.toString()+" "+json.toString());
 			}
-		}
-		
+		}	
 	}
 	
 	private void sendToBackEND(String zMiniDAPPID, JSONObject zJSON) {
 		//Create the same EVent as on the Web
 	    String JSONEvent = zJSON.toString();
+	    
+	    //Remove EMOJI and other weird symbols
+		String characterFilter = "[^\\p{L}\\p{M}\\p{N}\\p{P}\\p{Z}\\p{Cf}\\p{Cs}\\s]";
+		JSONEvent = JSONEvent.replaceAll(characterFilter,"");
 	    
 		if(zMiniDAPPID.equals("")){
 			Enumeration<BackEndDAPP> bends = mBackends.elements();
