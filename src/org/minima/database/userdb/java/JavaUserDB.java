@@ -20,11 +20,12 @@ import org.minima.objects.base.MiniString;
 import org.minima.objects.keys.MultiKey;
 import org.minima.objects.proofs.TokenProof;
 import org.minima.system.brains.ConsensusHandler;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 
 public class JavaUserDB implements UserDB, Streamable{
 	
-	public static int MAX_HISTORY = 100;
+	public static int MAX_HISTORY = 64;
 	
 	/**
 	 * Minima stores any output that has a key you own in the STATE
@@ -563,11 +564,31 @@ public class JavaUserDB implements UserDB, Streamable{
 
 	@Override
 	public void addToHistory(TxPoW zTxPOW, Hashtable<String, MiniNumber> zValues) {
+		//Add to our history
 		mHistory.add(new reltxpow( zTxPOW, zValues));
 	
-		int size = mHistory.size();
-		if(size>MAX_HISTORY) {
-			mHistory = new ArrayList<reltxpow>(mHistory.subList(size-MAX_HISTORY, MAX_HISTORY));
+		//Check size
+		if(mHistory.size()>MAX_HISTORY) {
+			MinimaLogger.log("History too large.. cropping..");
+			
+			//Create a new shorter history
+			ArrayList<reltxpow> newhistory = new ArrayList<>();
+			int count=0;
+			for(reltxpow hist : mHistory) {
+				//Skip the first few..
+				if(count <= 10) {
+					count++;
+					continue;
+				}
+				
+				//New trans
+				count++;
+				
+				//Add to the new history
+				newhistory.add(hist);
+			}
+			
+			mHistory = newhistory;
 		}
 	}
 
