@@ -120,7 +120,7 @@ public class Start {
 		
 		boolean clean           = false;
 		boolean cleanhard       = false;
-		boolean genesis 		= false;
+		boolean privatenetwork 	= false;
 		boolean daemon          = false;
 		boolean automine 		= false;
 
@@ -169,9 +169,9 @@ public class Start {
 					return;
 				
 				}else if(arg.equals("-private")) {
-					genesis     = true;
-					connect 	= false;
-					automine    = true;
+					privatenetwork  = true;
+					connect 		= false;
+					automine    	= true;
 					
 				}else if(arg.equals("-noconnect")) {
 					connect = false;
@@ -221,11 +221,8 @@ public class Start {
 				}
 			}
 		}
-		
-//		//Add a version number to the CONF folder
-//		int dotindex = GlobalParams.MINIMA_VERSION.indexOf(".",2);
-//		String versionfolder = GlobalParams.MINIMA_VERSION.substring(0, dotindex);
-//		File conffile = new File(conffolder,versionfolder);
+
+		//Configuration folder
 		File conffile = new File(conffolder);
 		
 		//Clean up..
@@ -242,7 +239,7 @@ public class Start {
 		// TODO: read staticpeers and bootnodes from config file depending on some flag - maybe combined with command line args
 
 		//Start the main Minima server
-		Main rcmainserver = new Main(host, port, genesis, conffile.getAbsolutePath(), p2pStaticSet.toArray(new String[0]), p2pBootnodeSet.toArray(new String[0]));
+		Main rcmainserver = new Main(host, port, conffile.getAbsolutePath(), p2pStaticSet.toArray(new String[0]), p2pBootnodeSet.toArray(new String[0]));
 		
 		//Link it.
 		mMainServer = rcmainserver;
@@ -260,8 +257,11 @@ public class Start {
 		rcmainserver.setAutoConnect(connect);
 		
 		//Are we private!
-		if(genesis) {
-			rcmainserver.privateChain(clean);
+		if(privatenetwork) {
+			//Do we need a gensis block
+			boolean needgenesis = clean || BackupManager.requiresPrivateGenesis(conffile);
+			
+			rcmainserver.privateChain(needgenesis);
 		}
 		
 		if(automine) {

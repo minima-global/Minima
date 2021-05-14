@@ -16,12 +16,11 @@ require('chai').assert;
 const cfg = {
     image: 'minima:latest',  // docker image name to run -> can be customised
     docker_net: "minima-e2e-testnet", // docker private network name -> MUST BE CREATED MANUALLY
-    node1_args: ["-private"], // only node 1 should be started with -private
+    node1_args: ["-private", "-clean"], // only node 1 should be started with -private
     node_prefix: "minima-node-",
     HTTP_TIMEOUT: 30000,
     DELAY_BEFORE_TESTS: 5000,
-    hostConfig1: {  AutoRemove: true, NetworkMode: "minima-e2e-testnet",  'Binds': ['/Users/jeromerousselot/src/minima/Minima/node1/p2p:/root/.minima/p2p']  },
-    hostConfig:  {  AutoRemove: true, NetworkMode: "minima-e2e-testnet"  },
+    hostCfg: {  AutoRemove: true, NetworkMode: "minima-e2e-testnet" },
     // unused - can be applied on a node to expose its RPC port on localhost - not needed for our tests
     hostCfgExpose: { AutoRemove: true, NetworkMode: "minima-e2e-testnet", PortBindings: {"9002/tcp": [ { "HostPort": "9002"} ] } },
     host_port: 9002,
@@ -31,8 +30,6 @@ const cfg = {
 
 var containers = {};
 var ip_addrs = {};
-var p2pdiscoveryaddr = "";
-var p2penr = "";
 
 createMinimaContainer = async function(cmd, name, hostConfig) {
     return await docker.createContainer({
@@ -45,31 +42,15 @@ createMinimaContainer = async function(cmd, name, hostConfig) {
     });
 }
 
-function sleep(ms) {
-  return new Promise((resolve) => {
-    setTimeout(resolve, ms);
-  });
-} 
-
 const start_docker_node_1 = async function (topology, nbNodes, tests_collection) {
-    console.log("Creating container 1");
     // Create the container.
-    containers["1"] = await createMinimaContainer(cfg.node1_args, cfg.node_prefix + "1", cfg.hostConfig1);
+    containers["1"] = await createMinimaContainer(cfg.node1_args, cfg.node_prefix + "1", cfg.hostCfg);
     // Start the container.
     await containers["1"].start();
-    process.stdout.write("Trying to sleep for 5 seconds...");
-    await sleep(5000);
-    process.stdout.write("Did I sleep 5 seconds?");
-
     containers["1"].inspect(function (err, data) {
-            ip_addrs["1"] = data.NetworkSettings.Networks[cfg.docker_net].IPAddress;
-            //TODO: add curl status and retrieve discovery address and ENR
-// 	    process.stdout.write("Trying to sleep for 10 seconds...");
-//            await sleep(10000);
-//            process.stdout.write("Did I sleep 10 seconds?");
-            get_node_p2p_params(ip_addrs["1"], function() {
-                    start_other_nodes(topology, nbNodes, tests_collection);    
-                });
+        ip_addrs["1"] = data.NetworkSettings.Networks[cfg.docker_net].IPAddress;
+        console.log("Started node 1 IP: " + ip_addrs["1"]);
+        start_other_nodes(topology, nbNodes, tests_collection);
     });
 }
 
@@ -77,19 +58,15 @@ get_node_args = function(topology, pos) {
     var parent = 0;
     if(topology === cfg.TOPO_STAR) {
         parent = ip_addrs["1"];
+        console.log("Parent IP: " + parent);
     } else if (topology === cfg.TOPO_LINE) {
         parent = ip_addrs['' + (pos - 1)];
-    }
-    p2p = true;
-    var node_args;
-    if(p2p) {
-
-         // these two fields must be retrieved programmatically from node1
-         // node_args = ["-p2p-static","/ip4/172.18.0.2/udp/11522/p2p/16Uiu2HAkvSYiDo3G4Cw7XVicPK5BMjgm8vMHKYtGNCWQvskV3RdQ","-p2p-bootnode","enr:-Iu4QDirGhMYfgvNha7PVhMshqn1INf8ZjV2As0YkMgszLR1OlglWz68HjTLNxUml_BHbNGmq1C9zM3OyQiJzjX6YJYBgmlkgnY0gmlwhKwSAAKJc2VjcDI1NmsxoQIPFQyakHo15u_GazoWP_L3Qboxkjgpv2gK-Des9SMZj4N0Y3CCLQKDdWRwgi0C"];
-         node_args = ["-p2p-static", p2pdiscoveryaddr, "-p2p-bootnode", p2penr];
+        console.log("Parent IP: " + parent);
     } else {
-         node_args = ["-connect", parent, "9001"];
+        console.log("Unsupported topology! This error should be caught earlier.");
+        console.log("    topology="+topology);
     }
+    const node_args = ["-connect", parent, "9001"];
     return node_args;
 }
 
@@ -97,7 +74,7 @@ start_other_nodes_star = async function(nbNodes, tests_collection) {
     for (let pos = 2; pos < nbNodes+1; pos++) {
         var node_args = get_node_args(cfg.TOPO_STAR, pos);
         console.log("topo star node " + pos + " args: " + node_args);
-        containers[pos] = await createMinimaContainer(node_args, cfg.node_prefix + pos, cfg.hostConfig);
+        containers[pos] = await createMinimaContainer(node_args, cfg.node_prefix + pos, cfg.hostCfg);
         // Start the container.
         await containers[pos].start();
         containers[pos].inspect(function (err, data) {
@@ -115,10 +92,9 @@ start_other_nodes_line = async function (nbNodes, pos, tests_collection) {
     if (pos < 2 || pos > nbNodes) {
         return;
     }
-    var node_args = get_node_args(cfg.TOPO_LINE, pos);
+    var node_args = get_node_args(cfg.TOPO_line, pos);
     console.log("topo line node " + pos + " args: " + node_args);
-    containers[pos] = await createMinimaContainer(node_args, cfg.node_prefix + pos, cfg.hostConfig);
-
+    containers[pos] = await createMinimaContainer(nodes_args, cfg.node_prefix + pos, cfg.hostCfg);
     // Start the container.
     await containers[pos].start();
     containers[pos].inspect(function (err, data) {
@@ -140,51 +116,9 @@ start_other_nodes = async function (topology, nbNodes, tests_collection) {
         start_other_nodes_line(nbNodes, 2, tests_collection);
     } else {
         console.log("Unsupported topology! This error should be caught earlier.");
-        console.log("    topology=" + topology);
+        console.log("    topology="+topology);
     }
 }
-
-get_node_p2p_params = function(host, cb) {
-    const url =  "http://" + host + ":" + cfg.host_port + '/status';
-    var disc = '';
-    var enr = '';
-    axios.get(url, {timeout: cfg.HTTP_TIMEOUT}, {maxContentLength: 3000},  {responseType: 'plain'})
-    .then(function (response) {
-      // handle success
-      if(response && response.status == 200) {
-          console.log("received axios answer code 200");
-          //console.log("response: " + JSON.stringify(response));
-          console.log("response.data.response: " + response.data.response);
-          //data = JSON.parse(response.data);
-          console.log("response.data.status: " + response.data.status);
-          console.log("response.data.response.p2penr: " + response.data.response.p2penr);
-          //console.log("data: " + data);
-          //console.log("data.status: " + data.status);
-          //console.log("data.response.p2penr: " + data.response.p2penr);
-          if(response.data.status == true) {
-	        console.log("received data with status = true, extracting p2p fields");
-            disc =  response.data.response.p2pdiscoveryaddr;
-            enr  =  response.data.response.p2penr;
-            console.log("disc=" + disc + " enr=" + enr);
-            p2pdiscoveryaddr = disc;
-            p2penr = enr;
-            cb();
-          } else {
-	        console.log("json data incorrect, not calling callback");
-            console.log("data.status was: " + response.data.status);
-          }
-      }
-     })
-    .catch(function (error) {
-      // handle error
-      console.log("axios error handler:");
-      console.log(error);
-    })
-    .then(function () {
-      // always executed
-    });
-}
-
 
 // this function calls HTTP GET on host:endpoint, expects a minima answer, and runs tests_to_run if server success.
 run_some_tests_get = async function(host, endpoint, params="", tests) {
@@ -193,19 +127,15 @@ run_some_tests_get = async function(host, endpoint, params="", tests) {
     axios.get(url, {timeout: cfg.HTTP_TIMEOUT}, {maxContentLength: 3000},  {responseType: 'plain'})
     .then(function (response) {
       // handle success
-        if(response && response.status == 200) {
+      if(response && response.status == 200) {
           console.log(response.data);
           if(response.data.status == true) {
-	          // console.log("received data with status = true, calling tests");
-              tests(response.data.response);
-          } else {
-	          console.log("json data incorrect, skipping tests");
+            tests(response.data.response);
           }
-        }
+      }
      })
     .catch(function (error) {
       // handle error
-      console.log("axios error handler:");
       console.log(error);
     })
     .then(function () {
@@ -244,7 +174,7 @@ stop_docker_nodes = async function() {
             if(containers) { 
                 containers.forEach(function (containerInfo) {
                     if(containerInfo.Names[0].startsWith("/" + cfg.node_prefix)) {
-                        console.log ("Found a minima node(" + containerInfo.Names[0] + "), stopping.");
+                        console.log ("Found a dangling minima node(" + containerInfo.Names[0] + "), stopping.");
                         docker.getContainer(containerInfo.Id).stop();
                     }
                 });

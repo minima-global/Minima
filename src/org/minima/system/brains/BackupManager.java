@@ -27,6 +27,9 @@ public class BackupManager extends MessageProcessor {
 	private static final String BACKUP_WRITE_TEMPBLOCKID  = "BACKUP_WRITE_TEMPBLOCKID";
 	private static final String BACKUP_SAVE_TEMPBLOCKID   = "BACKUP_SAVE_TEMPBLOCKID";
 	
+	public static final String USERDB_BACKUP = "user.minima";
+	public static final String SYNC_BACKUP   = "sync.package";
+	
 	//Clean up blocks every 10 minutes..
 	private long CLEAN_UP_TIMER = 1000 * 60 * 10;
 	
@@ -428,6 +431,19 @@ public class BackupManager extends MessageProcessor {
 		
 		//Make it..
 		mTempFolder = ensureFolder(new File(mRoot,"temp"));
+	}
+	
+	/**
+	 * Check if there is block data..
+	 * 
+	 * @param zConf
+	 * @return
+	 */
+	public static boolean requiresPrivateGenesis(File zConfFolder) {
+		File backupfolder 	= new File(zConfFolder,"backup");
+		File syncdb 		= new File(backupfolder,SYNC_BACKUP);
+		
+		return !syncdb.exists();
 	}
 	
 	public static void safeDelete(File zFile) {

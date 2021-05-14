@@ -93,7 +93,7 @@ public class Main extends MessageProcessor {
 	 * @param zPort
 	 * @param zGenesis
 	 */
-	public Main(String zHost, int zPort, boolean zGenesis, String zConfFolder, String[] p2pStaticNodes, String[] p2pBootnodes) {
+	public Main(String zHost, int zPort, String zConfFolder, String[] p2pStaticNodes, String[] p2pBootnodes) {
 		super("MAIN");
 		
 		mMainHandler = this;
@@ -114,9 +114,6 @@ public class Main extends MessageProcessor {
 		mConsensus  = new ConsensusHandler();
 		mSendManager = new SendManager();
 		mP2P = new P2PStart(zConfFolder, mNetwork, p2pStaticNodes, p2pBootnodes);
-
-		//Are we the genesis
-		mGenesis 	= zGenesis;
 		
 		/**
 		 * Introduction..
@@ -189,11 +186,11 @@ public class Main extends MessageProcessor {
 		return mTXMiner;
 	}
 		
-	public void privateChain(boolean zClean) {
+	public void privateChain(boolean zNeedGenesis) {
 		//Set the Database backup manager
 		getConsensusHandler().setBackUpManager();
 		
-		if(zClean){
+		if(zNeedGenesis){
 			//Sort the genesis Block
 			mConsensus.genesis();
 		}
