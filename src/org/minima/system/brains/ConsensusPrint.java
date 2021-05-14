@@ -1068,8 +1068,8 @@ public class ConsensusPrint extends ConsensusProcessor {
 			//Add the network connections
 			ArrayList<MinimaClient> nets = main.getNetworkHandler().getNetClients();
 			status.put("connections", nets.size());
-			
-			status.put("p2pnodeid", main.getP2P().getNodeId());
+			String nodeid = main.getP2P().getNodeId().toString();
+			status.put("p2pnodeid", nodeid==null?"unavailable":nodeid);
 			Optional<String> discAddr = main.getP2P().getDiscoveryAddress();
 			status.put("p2pdiscoveryaddr", discAddr.isPresent()?discAddr.get():"unavailable");
 			String enr = main.getP2P().getENR();
