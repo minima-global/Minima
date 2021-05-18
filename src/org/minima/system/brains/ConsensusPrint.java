@@ -668,6 +668,12 @@ public class ConsensusPrint extends ConsensusProcessor {
 				}else {
 					TokenProof td = getMainDB().getUserDB().getTokenDetail(tok);
 					
+					if(td == null) {
+						//Hmm. serious error..
+						MinimaLogger.log("ERROR TOKEN PROOF MISSING : "+tok);
+						continue;
+					}
+					
 					//Now work out the actual amounts..
 					MiniNumber tot_conf     = (MiniNumber) jobj.get("confirmed");
 					MiniNumber tot_scconf   = td.getScaledTokenAmount(tot_conf);
