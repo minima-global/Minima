@@ -68,6 +68,7 @@ import org.minima.system.input.functions.txns.txnoutput;
 import org.minima.system.input.functions.txns.txnpost;
 import org.minima.system.input.functions.txns.txnreminput;
 import org.minima.system.input.functions.txns.txnremoutput;
+import org.minima.system.input.functions.txns.tokenscale;
 import org.minima.system.input.functions.txns.txnscript;
 import org.minima.system.input.functions.txns.txnsign;
 import org.minima.system.input.functions.txns.txnsignauto;
@@ -92,7 +93,7 @@ public abstract class CommandFunction {
 //			new exportcoin(), new importcoin(),
 			new exportkey(), new importkey(),  new search(),
 			new chainsha(), new keepcoin(), new unkeepcoin(), new scripts(), new network(), new minidapps(),
-			new txncreate(), new txndelete(), new txninput(), new txnlist(), new txnauto(),
+			new txncreate(), new txndelete(), new txninput(), new txnlist(), new txnauto(), new tokenscale(),
 			new txnstate(), new txnexport(), new txnimport(), new txnscript(), new txnreminput(), new txnremoutput(),
 			new txnoutput(), new txnpost(), new txnsign(), new txnvalidate(),new txnsignauto(),
 			new extrascript(), new sign(), new verify(), new txpowsearch(), new flushmempool(), new random(), new check()

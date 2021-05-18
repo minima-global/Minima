@@ -57,7 +57,7 @@ public class ConsensusNet extends ConsensusProcessor {
 	
 	public static final String CONSENSUS_NET_SYNCOMPLETE 		= CONSENSUS_PREFIX+"NET_MESSAGE_SYNCCOMPLETE";
 	
-	private static int MAX_TXPOW_LIST_SIZE = 100;
+	private static int MAX_TXPOW_LIST_SIZE = 1;
 	
 	/**
 	 * Check when you sent out a request for a TxPOW
@@ -189,8 +189,19 @@ public class ConsensusNet extends ConsensusProcessor {
 			
 			//If there no immediate crossover check backup files..
 			if(cross.isEqual(MiniNumber.MINUSONE)) {
+				//Check if we are below..
+				MiniNumber mytop = getMainDB().getMainTree().getChainTip().getBlockNumber();
+				if(greet.getFirstBlock().isMore(mytop)) {
+					MinimaLogger.log("WE ARE BEHIND THEM - NOTHING TO SEND ");
+					
+					//Set the sync top..
+					
+					
+					return;
+				}
+				
+				//Look for a crossover..
 				PostNetClientMessage(zMessage, new Message(CONSENSUS_NET_GREET_BACKSYNC).addObject("greet", greet));
-//				PostNetClientMessage(zMessage, new Message(CONSENSUS_NET_GREET_BACKSYNC).addObject("greetlist", blocks));
 				return;
 			}
 			
@@ -645,6 +656,10 @@ public class ConsensusNet extends ConsensusProcessor {
 			//DO a basic check..
 			if(!TxPoWChecker.basicTxPowChecks(txpow)) {
 				MinimaLogger.log("ERROR - You've Mined A TxPoW that fails basic checks!");
+				
+				//Remove from mining..
+				getMainDB().remeoveMiningTransaction(txpow.getTransaction());
+				
 				return;
 			}
 			
@@ -660,6 +675,10 @@ public class ConsensusNet extends ConsensusProcessor {
 			
 			if(txpow.getSizeinBytes() > MinimaReader.MAX_TXPOW) {
 				MinimaLogger.log("ERROR - You've Mined A TxPoW that is too BIG! "+txpow.getSizeinBytes()+" / "+MinimaReader.MAX_TXPOW);
+				
+				//Remove from mining..
+				getMainDB().remeoveMiningTransaction(txpow.getTransaction());
+				
 				return;
 			}
 			
