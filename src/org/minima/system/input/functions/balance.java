@@ -19,7 +19,12 @@ public class balance extends CommandFunction {
 		
 		//Can specify to check ONLY a single address..
 		if(zInput.length>1) {
-			msg.addString("address", zInput[1]);
+			//small hack
+			if(zInput[1].equals("hard")) {
+				msg.addBoolean("hard", true);
+			}else {
+				msg.addString("address", zInput[1]);
+			}
 		}
 			
 		//Post It..
