@@ -31,6 +31,7 @@ import org.minima.system.network.minidapps.websocket.WebSocketManager;
 import org.minima.system.network.rpc.RPCClient;
 import org.minima.utils.Crypto;
 import org.minima.utils.MiniFile;
+import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.SQLHandler;
 import org.minima.utils.json.JSONArray;
@@ -640,8 +641,7 @@ public class DAPPManager extends MessageProcessor {
 			sendToBackEND(minidapp,json);
 			
 			//Remove funny characters
-			String characterFilter = "[^\\p{L}\\p{M}\\p{N}\\p{P}\\p{Z}\\p{Cf}\\p{Cs}\\s]";
-			String JSONEvent = json.toString().replaceAll(characterFilter,"");
+			String JSONEvent = MiniFormat.filterSafeTextEmoji(json.toString());
 			
 			Message msg = new Message(WebSocketManager.WEBSOCK_SEND);
 			msg.addString("minidappid", minidapp);
@@ -656,8 +656,7 @@ public class DAPPManager extends MessageProcessor {
 			sendToBackEND("",json);
 			
 			//Remove funny characters
-			String characterFilter = "[^\\p{L}\\p{M}\\p{N}\\p{P}\\p{Z}\\p{Cf}\\p{Cs}\\s]";
-			String JSONEvent = json.toString().replaceAll(characterFilter,"");
+			String JSONEvent = MiniFormat.filterSafeTextEmoji(json.toString());
 			
 			Message msg = new Message(WebSocketManager.WEBSOCK_SENDTOALL);
 			msg.addString("message", JSONEvent);
@@ -678,11 +677,7 @@ public class DAPPManager extends MessageProcessor {
 	
 	private void sendToBackEND(String zMiniDAPPID, JSONObject zJSON) {
 		//Create the same EVent as on the Web
-	    String JSONEvent = zJSON.toString();
-	    
-	    //Remove EMOJI and other weird symbols
-		String characterFilter = "[^\\p{L}\\p{M}\\p{N}\\p{P}\\p{Z}\\p{Cf}\\p{Cs}\\s]";
-		JSONEvent = JSONEvent.replaceAll(characterFilter,"");
+	    String JSONEvent = MiniFormat.filterSafeTextEmoji(zJSON.toString());
 	    
 		if(zMiniDAPPID.equals("")){
 			Enumeration<BackEndDAPP> bends = mBackends.elements();

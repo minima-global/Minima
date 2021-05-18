@@ -10,10 +10,12 @@ import java.nio.Buffer;
 import java.util.Date;
 import java.util.StringTokenizer;
 
+import org.minima.objects.base.MiniString;
 import org.minima.system.network.commands.CMD;
 import org.minima.system.network.commands.FILE;
 import org.minima.system.network.commands.NET;
 import org.minima.system.network.commands.SQL;
+import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;
 
 /**
@@ -193,16 +195,8 @@ public class RPCHandler implements Runnable {
 				finalresult = "{\"status\":false, \"message\":\"Incorrect request TYPE.. GET or POST only\"}";
 			}
 			
-//			int codelen  = finalresult.codePointCount(0, finalresult.length());
-//			int reallen  = finalresult.length();
-//			MinimaLogger.log("DEBUG:"+reallen+" / "+codelen);
-			
 			//Remove EMOJI and other weird symbols
-			String characterFilter = "[^\\p{L}\\p{M}\\p{N}\\p{P}\\p{Z}\\p{Cf}\\p{Cs}\\s]";
-			finalresult = finalresult.replaceAll(characterFilter,"");
-
-//			MinimaLogger.log("");
-//			MinimaLogger.log("EMOJILESS:"+finalresult);
+			finalresult = MiniFormat.filterSafeTextEmoji(finalresult);
 			
 			// send HTTP Headers
 			out.println("HTTP/1.1 200 OK");
