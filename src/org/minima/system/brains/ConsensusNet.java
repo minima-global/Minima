@@ -57,7 +57,7 @@ public class ConsensusNet extends ConsensusProcessor {
 	
 	public static final String CONSENSUS_NET_SYNCOMPLETE 		= CONSENSUS_PREFIX+"NET_MESSAGE_SYNCCOMPLETE";
 	
-	private static int MAX_TXPOW_LIST_SIZE = 1;
+	private static int MAX_TXPOW_LIST_SIZE = 100;
 	
 	/**
 	 * Check when you sent out a request for a TxPOW
@@ -194,8 +194,8 @@ public class ConsensusNet extends ConsensusProcessor {
 				if(greet.getFirstBlock().isMore(mytop)) {
 					MinimaLogger.log("WE ARE BEHIND THEM - NOTHING TO SEND ");
 					
-					//Set the sync top..
-					
+					//Set the sync top.. with a little lee way
+					mCurrentSyncTip = greet.getTopBlock().sub(MiniNumber.SIXTYFOUR);
 					
 					return;
 				}
@@ -346,7 +346,6 @@ public class ConsensusNet extends ConsensusProcessor {
 		}else if(zMessage.isMessageType(CONSENSUS_NET_GREET_BACKSYNC)) {
 			//Get the greeting list
 			Greeting greet = (Greeting)zMessage.getObject("greet"); 
-//			ArrayList<HashNumber> blocks = (ArrayList<HashNumber>) zMessage.getObject("greetlist");
 			
 			//Check if we are below..
 			MiniNumber mytop = getMainDB().getMainTree().getChainTip().getBlockNumber();
@@ -356,7 +355,6 @@ public class ConsensusNet extends ConsensusProcessor {
 			}
 			
 			//Check if the cascade is an old block of ours..
-//			HashNumber startblock = blocks.get(0);
 			MiniNumber lowestnum  = greet.getFirstBlock();
 			
 			//Get the Backup manager where OLD blocks are stored..
@@ -437,9 +435,8 @@ public class ConsensusNet extends ConsensusProcessor {
 			MiniNumber casc = getMainDB().getMainTree().getCascadeNode().getBlockNumber();
 			MiniNumber tip  = getMainDB().getMainTree().getChainTip().getBlockNumber();
 			
-			MinimaLogger.log("RESYNC MESSAGE RECEIVED! mycasc:"+casc+" mytip:"+tip);
-			
 			//Drill down 
+			MiniNumber lastblock = MiniNumber.ZERO;
 			ArrayList<SyncPacket> packets = sp.getAllNodes();
 			for(SyncPacket spack : packets) {
 				TxPoW txpow = spack.getTxPOW();
@@ -495,9 +492,28 @@ public class ConsensusNet extends ConsensusProcessor {
 				
 				//Scan for coins..
 				getMainDB().scanMMRSetForCoins(mmr);
+				
+				//What block ios this..
+				lastblock = mmr.getBlockTime();
 			}
 			
 			finishUpSync();
+			
+//			//What is the current diff..
+//			MiniNumber diff = lastblock.sub(tip);
+//			if(diff.isMore(MiniNumber.THOUSAND24)) {
+//				MinimaLogger.log("Clearing Sync Tree");
+//				finishUpSync();
+//				return;
+//			}
+//			
+//			//Are we near the sync tip
+//			if(lastblock.isMoreEqual(mCurrentSyncTip)) {
+//				MinimaLogger.log("SYNC TIP HIT!!");
+//				finishUpSync();
+//			}else {
+//				MinimaLogger.log("RESYNC MESSAGE RECEIVED! mycasc:"+casc+" mytip:"+tip+" lastblock:"+lastblock);
+//			}
 			
 		}else if(zMessage.isMessageType(CONSENSUS_NET_INTRO)) {
 			//Get the Sync Package..
