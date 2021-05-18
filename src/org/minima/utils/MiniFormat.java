@@ -182,13 +182,4 @@ public class MiniFormat {
 		return num;
 	}
 	
-	public static void main(String[] zArgs) {
-		
-		String test = "Hello | !£$%^&*() you!";
-		
-//		String characterFilter = "[^[\\x00-\\x7F]\\p{L}\\p{M}\\p{N}\\p{P}\\p{Z}\\p{Cf}\\p{Cs}\\s]";
-//		return zText.replaceAll(characterFilter,"");
-		
-		System.out.println(filterSafeTextEmoji(test));
-	}
 }
