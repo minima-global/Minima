@@ -961,79 +961,79 @@ public class MMRSet implements Streamable {
 		return false;
 	}
 	
-	/**
-	 * Used when Pruning the MMR tree..
-	 * 
-	 * All the Keepers are moved Up one level..
-	 */
-	private void copyParentKeepers() {
-		//Set not finalized..
-		mFinalized = false;
-		
-		//First get the Keepers..
-		ArrayList<MiniNumber> parentkeepers = new ArrayList<>();
-		if(mParent!=null) {
-			parentkeepers = mParent.getKeepers();
-		}
-		
-		//Cycle through the current crop..
-		ArrayList<MiniNumber> newkeepers = new ArrayList<>();
-		for(MiniNumber keep : mKeepers) {
-			//Get that LATEST entry and all the entries it uses on the way up..
-			MMREntry entry = getEntry(0, keep);
-			if(!entry.getData().isSpent()) {
-				newkeepers.add(keep);
-			}
-		}
-		
-		//Reset
-		mKeepers = newkeepers;
-		
-		//Cycle through the Keepers..
-		for(MiniNumber keep : parentkeepers) {
-			//Get that LATEST entry and all the entries it uses on the way up..
-			MMREntry entry = getEntry(0, keep);
-			
-			//Check valid.. SHOULD NOT HAPPEN
-			if(entry.isEmpty() || entry.getData().isHashOnly()) {
-				MinimaLogger.log("copyKeepers on NULL Keeper Entry! "+keep);
-				continue;
-			}
-			
-			//If it's spent we don't keep it..
-			if(entry.getData().isSpent()) {
-				continue;
-			}
-			
-			//Keep it..
-			boolean added = addKeeper(keep);
-			
-			//Has it already been added..
-//			if(added) {
-				//Add it.. to THIS set.. not the parent..
-				entry = setEntry(0, keep, entry.getData());
-				
-				//And now go go up the tree..
-				MMREntry sibling = getEntry(entry.getRow(), entry.getSibling());
-				while(!sibling.isEmpty()) {
-					//Add to our Set..
-					setEntry(sibling.getRow(), sibling.getEntryNumber(), sibling.getData());
-					
-					//Now get the Parent.. just need a reference even if is empty. To find the sibling.
-					MMREntry parent = new MMREntry( sibling.getParentRow(), sibling.getParentEntry() );
-					
-					//And get the Sibling of the Parent..
-					sibling = getEntry(parent.getRow(), parent.getSibling());
-				}
+//	/**
+//	 * Used when Pruning the MMR tree..
+//	 * 
+//	 * All the Keepers are moved Up one level..
+//	 */
+//	private void copyParentKeepers() {
+//		//Set not finalized..
+//		mFinalized = false;
+//		
+//		//First get the Keepers..
+//		ArrayList<MiniNumber> parentkeepers = new ArrayList<>();
+//		if(mParent!=null) {
+//			parentkeepers = mParent.getKeepers();
+//		}
+//		
+//		//Cycle through the current crop..
+//		ArrayList<MiniNumber> newkeepers = new ArrayList<>();
+//		for(MiniNumber keep : mKeepers) {
+//			//Get that LATEST entry and all the entries it uses on the way up..
+//			MMREntry entry = getEntry(0, keep);
+//			if(!entry.getData().isSpent()) {
+//				newkeepers.add(keep);
 //			}
-		}
-		
-		//Now we have all the data stored for the keeper coins.. We can remove the parent..		
-		mParent = null;
-		
-		//Re-finalise..
-		finalizeSet();
-	}
+//		}
+//		
+//		//Reset
+//		mKeepers = newkeepers;
+//		
+//		//Cycle through the Keepers..
+//		for(MiniNumber keep : parentkeepers) {
+//			//Get that LATEST entry and all the entries it uses on the way up..
+//			MMREntry entry = getEntry(0, keep);
+//			
+//			//Check valid.. SHOULD NOT HAPPEN
+//			if(entry.isEmpty() || entry.getData().isHashOnly()) {
+//				MinimaLogger.log("copyKeepers on NULL Keeper Entry! "+keep);
+//				continue;
+//			}
+//			
+//			//If it's spent we don't keep it..
+//			if(entry.getData().isSpent()) {
+//				continue;
+//			}
+//			
+//			//Keep it..
+//			boolean added = addKeeper(keep);
+//			
+//			//Has it already been added..
+////			if(added) {
+//				//Add it.. to THIS set.. not the parent..
+//				entry = setEntry(0, keep, entry.getData());
+//				
+//				//And now go go up the tree..
+//				MMREntry sibling = getEntry(entry.getRow(), entry.getSibling());
+//				while(!sibling.isEmpty()) {
+//					//Add to our Set..
+//					setEntry(sibling.getRow(), sibling.getEntryNumber(), sibling.getData());
+//					
+//					//Now get the Parent.. just need a reference even if is empty. To find the sibling.
+//					MMREntry parent = new MMREntry( sibling.getParentRow(), sibling.getParentEntry() );
+//					
+//					//And get the Sibling of the Parent..
+//					sibling = getEntry(parent.getRow(), parent.getSibling());
+//				}
+////			}
+//		}
+//		
+//		//Now we have all the data stored for the keeper coins.. We can remove the parent..		
+//		mParent = null;
+//		
+//		//Re-finalise..
+//		finalizeSet();
+//	}
 
 	private void copyParentKeepers(ArrayList<MiniNumber> zKeepers) {
 		//Set not finalized..
