@@ -670,7 +670,7 @@ public class ConsensusPrint extends ConsensusProcessor {
 					
 					if(td == null) {
 						//Hmm. serious error..
-						MinimaLogger.log("ERROR TOKEN PROOF MISSING : "+tok);
+						//MinimaLogger.log("ERROR TOKEN PROOF MISSING : "+tok);
 						continue;
 					}
 					

@@ -497,23 +497,24 @@ public class ConsensusNet extends ConsensusProcessor {
 				lastblock = mmr.getBlockTime();
 			}
 			
-			finishUpSync();
+			//Simple
+//			finishUpSync();
 			
-//			//What is the current diff..
-//			MiniNumber diff = lastblock.sub(tip);
-//			if(diff.isMore(MiniNumber.THOUSAND24)) {
-//				MinimaLogger.log("Clearing Sync Tree");
-//				finishUpSync();
-//				return;
-//			}
-//			
-//			//Are we near the sync tip
-//			if(lastblock.isMoreEqual(mCurrentSyncTip)) {
-//				MinimaLogger.log("SYNC TIP HIT!!");
-//				finishUpSync();
-//			}else {
-//				MinimaLogger.log("RESYNC MESSAGE RECEIVED! mycasc:"+casc+" mytip:"+tip+" lastblock:"+lastblock);
-//			}
+			//What is the current diff..
+			MiniNumber diff = lastblock.sub(tip);
+			
+			//Are we near the sync tip
+			if(lastblock.isMoreEqual(mCurrentSyncTip)) {
+				MinimaLogger.log("SYNC TIP HIT!!");
+				finishUpSync();
+			
+			}else if(diff.isMore(MiniNumber.THOUSAND24)) {
+				MinimaLogger.log("Clearing Sync Tree..");
+				finishUpSync(false);
+			
+			}else {
+				MinimaLogger.log("RESYNC MESSAGE RECEIVED! mycasc:"+casc+" mytip:"+tip+" lastblock:"+lastblock);
+			}
 			
 		}else if(zMessage.isMessageType(CONSENSUS_NET_INTRO)) {
 			//Get the Sync Package..
@@ -894,6 +895,10 @@ public class ConsensusNet extends ConsensusProcessor {
 	 * When you finish a Sync Up.. 
 	 */
 	private void finishUpSync() {
+		finishUpSync(true);
+	}
+	
+	private void finishUpSync(boolean zFullUpdate) {
 		//Reset weights
 		getMainDB().getMainTree().resetWeights();
 		
@@ -906,21 +911,23 @@ public class ConsensusNet extends ConsensusProcessor {
 		//Cascade..
 		getMainDB().cascadeTheTree();
 		
-		//FOR NOW
-		TxPoW tip = getMainDB().getMainTree().getChainTip().getTxPow();
-		MinimaLogger.log("Initial Sync Complete.. Reset Current block : "+tip.getBlockNumber());
-	
-		//Do the balance.. Update listeners if changed..
-		getConsensusHandler().PostMessage(new Message(ConsensusPrint.CONSENSUS_BALANCE).addBoolean("hard", true));
+		if(zFullUpdate) {
+			//FOR NOW
+			TxPoW tip = getMainDB().getMainTree().getChainTip().getTxPow();
+			MinimaLogger.log("Initial Sync Complete.. Reset Current block : "+tip.getBlockNumber());
 		
-		//Post a message to those listening
-		getConsensusHandler().updateListeners(new Message(ConsensusHandler.CONSENSUS_NOTIFY_NEWBLOCK).addObject("txpow", tip));
+			//Do the balance.. Update listeners if changed..
+			getConsensusHandler().PostMessage(new Message(ConsensusPrint.CONSENSUS_BALANCE).addBoolean("hard", true));
+			
+			//Post a message to those listening
+			getConsensusHandler().updateListeners(new Message(ConsensusHandler.CONSENSUS_NOTIFY_NEWBLOCK).addObject("txpow", tip));
+			
+			//Backup the system..
+			getConsensusHandler().PostTimerMessage(new TimerMessage(2000,ConsensusBackup.CONSENSUSBACKUP_BACKUP));
 		
-		//Backup the system..
-		getConsensusHandler().PostTimerMessage(new TimerMessage(2000,ConsensusBackup.CONSENSUSBACKUP_BACKUP));
-	
-		//Sync complete
-		getConsensusHandler().PostMessage(CONSENSUS_NET_SYNCOMPLETE);
+			//Sync complete
+			getConsensusHandler().PostMessage(CONSENSUS_NET_SYNCOMPLETE);
+		}
 	}
 	
 	

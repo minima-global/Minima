@@ -8,6 +8,7 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.objects.greet.SyncPacket;
 import org.minima.system.Main;
 import org.minima.system.brains.BackupManager;
+import org.minima.utils.MinimaLogger;
 
 public class CascadeTree {
 
@@ -46,6 +47,10 @@ public class CascadeTree {
 		//Are we long enough..
 		BlockTreeNode cascadenode = mMainTree.getCascadeNode();
 		MiniNumber cascnumber = cascadenode.getBlockNumber();
+		
+//		MinimaLogger.log("CASCADE START TIP:"+oldtip.getBlockNumber()+" CASC:"+cascnumber);
+		
+		
 		MiniNumber totlength = oldtip.getBlockNumber().sub(cascadenode.getBlockNumber());
 		if(totlength.isLess(GlobalParams.MINIMA_CASCADE_START_DEPTH)) {
 			return;
@@ -156,5 +161,9 @@ public class CascadeTree {
 		
 		//And clear it out..
 		mCascadeTree.clearCascadeBody();
+		
+//		MinimaLogger.log("CASCADE FINISH TIP:"+mCascadeTree.getChainTip().getBlockNumber()
+//				+" CASC:"+mCascadeTree.getCascadeNode().getBlockNumber());
+		
 	}
 }
