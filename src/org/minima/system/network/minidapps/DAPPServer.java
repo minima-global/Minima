@@ -10,8 +10,10 @@ import java.util.Map;
 import java.util.Set;
 
 import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
 import org.minima.system.brains.BackupManager;
+import org.minima.system.network.commands.CMD;
 import org.minima.system.network.minidapps.minihub.hexdata.downloadpng;
 import org.minima.system.network.minidapps.minihub.hexdata.faviconico;
 import org.minima.system.network.minidapps.minihub.hexdata.helphtml;
@@ -73,7 +75,7 @@ public class DAPPServer extends NanoHTTPD{
 			
         	//What are they looking for..
         	String fileRequested = session.getUri();
-        	//MinimaLogger.log("RPC REQUEST "+fileRequested);
+//        	MinimaLogger.log("RPC REQUEST "+fileRequested);
         	
         	//Which MiniDAPP
         	String MiniDAPPID="";
@@ -224,6 +226,23 @@ public class DAPPServer extends NanoHTTPD{
 					
 					return getNotFoundResponse();
 				}
+			}else if(fileRequested.startsWith("api/")) {
+				//Which minidapp..
+				int mini = fileRequested.indexOf("/",4);
+				if(mini == -1) {
+					return getNotFoundResponse();
+				}
+				
+				//Get the Name..
+				String name = fileRequested.substring(4,mini);
+				MinimaLogger.log("MiniDAPP API call to "+name+" "+minparams);
+				
+				//now post it..
+				CMD poster = new CMD("minidapps post:0xFFEEFFEEFFEE "+JSONObject.escape(minparams.toString()) );
+				poster.run();
+				
+				//And return..
+				return getOKResponse(poster.getFinalResult().getBytes(MiniString.MINIMA_CHARSET), "text/txt");
 			}
 			
 			//Are we uploading a file..

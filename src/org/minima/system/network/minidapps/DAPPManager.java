@@ -111,6 +111,14 @@ public class DAPPManager extends MessageProcessor {
 			mCommsManager.shutdown();
 		}
 		
+		//And the back ends..
+		Enumeration<BackEndDAPP> bends = mBackends.elements();
+		while(bends.hasMoreElements()) {
+			BackEndDAPP bend = bends.nextElement();
+			bend.shutdown();
+		}
+		
+		//Stop this..
 		stopMessageProcessor();
 	}
 	
@@ -605,14 +613,24 @@ public class DAPPManager extends MessageProcessor {
 			wsmsg.put("event","network");
 			wsmsg.put("details",json);
 			
+			MinimaLogger.log("DIRECT POST "+wsmsg.toString());
+			
+			
+			//Check it exists
+			BackEndDAPP bend = mBackends.get(minidapp);
+			if(bend == null) {
+				InputHandler.endResponse(zMessage, false, "MiniDAPP not found "+minidapp);
+				return;
+			}
+			
 			//Send to the backend
 			sendToBackEND(minidapp,wsmsg);
 			
-			//And to the front end..
-			Message msg = new Message(WebSocketManager.WEBSOCK_SEND);
-			msg.addString("message", wsmsg.toString());
-			msg.addString("minidappid", minidapp);
-			mNetwork.getWebSocketManager().PostMessage(msg);
+//			//And to the front end..
+//			Message msg = new Message(WebSocketManager.WEBSOCK_SEND);
+//			msg.addString("message", wsmsg.toString());
+//			msg.addString("minidappid", minidapp);
+//			mNetwork.getWebSocketManager().PostMessage(msg);
 		
 		}else if(zMessage.getMessageType().equals(DAPP_DIRECTREPLY)) {
 			//Get the REPLY ID
