@@ -1,6 +1,8 @@
 package org.minima.system.network.minidapps;
 
 import java.io.File;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.HashMap;
@@ -230,19 +232,15 @@ public class DAPPServer extends NanoHTTPD{
 				//Which minidapp..
 				int mini = fileRequested.indexOf("/",4);
 				if(mini == -1) {
+					MinimaLogger.log("Incorrect input for API call "+fileRequested);
 					return getNotFoundResponse();
 				}
 				
-				//Get the Name..
+				//Get the MiniDAPP Name..
 				String name = fileRequested.substring(4,mini);
-				MinimaLogger.log("MiniDAPP API call to "+name+" "+minparams);
 				
-				//now post it..
-				CMD poster = new CMD("minidapps post:0xFFEEFFEEFFEE "+JSONObject.escape(minparams.toString()) );
-				poster.run();
-				
-				//And return..
-				return getOKResponse(poster.getFinalResult().getBytes(MiniString.MINIMA_CHARSET), "text/txt");
+				//Run it..
+				return runAPIcall(name, minparams);
 			}
 			
 			//Are we uploading a file..
@@ -298,6 +296,39 @@ public class DAPPServer extends NanoHTTPD{
         	return getInternalErrorResponse("INTERNAL ERROR");
         }
     }
+	
+	/**
+	 * Send a API call to a specific MiniDAPP
+	 * @param zMiniDAPP
+	 * @param zParams
+	 * @throws UnsupportedEncodingException 
+	 */
+	protected Response runAPIcall(String zMiniDAPP, JSONObject zParams) throws UnsupportedEncodingException {
+		//Assume ID by defult
+		String minidappid = zMiniDAPP;
+		
+		//Get the MIniDAPP
+		if(!zMiniDAPP.startsWith("0x")) {
+			//It's the name of the mindapp
+			minidappid = mDAPPManager.getMiniDAPPID(zMiniDAPP);
+			
+			if(minidappid.equals("")) {
+				MinimaLogger.log("API call fail to MiniDAPP "+zMiniDAPP);
+				return getNotFoundResponse();
+			}
+		}
+		
+		//Get the params..
+		String uriparam = zParams.toString();
+		String encparams = URLEncoder.encode(uriparam, "UTF-8");
+		
+		//now post it..
+		CMD poster = new CMD("minidapps post:"+minidappid+" "+encparams);
+		poster.run();
+		
+		//Return the result
+		return getOKResponse(poster.getFinalResult().getBytes(MiniString.MINIMA_CHARSET), "text/txt");
+	}
 	
 	protected Response getOKResponse(byte[] zHTML, String zContentType) {
 		Response resp = Response.newFixedLengthResponse(Status.OK, zContentType, zHTML);

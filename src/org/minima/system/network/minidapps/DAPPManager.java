@@ -134,6 +134,22 @@ public class DAPPManager extends MessageProcessor {
 		return CURRENT_MINIDAPPS;
 	}
 	
+	public String getMiniDAPPID(String zMiniDAPPNAme) {
+		int len = CURRENT_MINIDAPPS.size();
+		for(int i=0;i<len;i++) {
+			//Get the object
+			JSONObject minidapp = (JSONObject) CURRENT_MINIDAPPS.get(i);
+
+			//Is it the right one..
+			String name = (String) minidapp.get("name"); 
+			if(name.equalsIgnoreCase(zMiniDAPPNAme)) {
+				return (String) minidapp.get("uid");
+			}
+		}
+		
+		return "";
+	}
+	
 	public String getMiniDAPPSFolder() {
 		return MINIDAPPS_FOLDER;
 	}
@@ -613,8 +629,7 @@ public class DAPPManager extends MessageProcessor {
 			wsmsg.put("event","network");
 			wsmsg.put("details",json);
 			
-			MinimaLogger.log("DIRECT POST "+wsmsg.toString());
-			
+			//MinimaLogger.log("DIRECT POST "+wsmsg.toString());
 			
 			//Check it exists
 			BackEndDAPP bend = mBackends.get(minidapp);
