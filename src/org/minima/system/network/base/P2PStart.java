@@ -6,13 +6,18 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.AbstractMap;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 // Import log4j classes.
 
@@ -24,6 +29,7 @@ import org.ethereum.beacon.discovery.schema.NodeRecordInfo;
 import org.minima.system.network.NetworkHandler;
 import org.minima.system.network.base.LibP2PNetwork.PrivateKeyProvider;
 import org.minima.system.network.base.libp2p.PrivateKeyGenerator;
+import org.minima.system.network.base.peer.DiscoveryPeer;
 import org.minima.system.network.base.peer.LibP2PNodeId;
 import org.minima.system.network.base.peer.NodeId;
 import org.minima.system.network.base.peer.Peer;
@@ -56,6 +62,16 @@ public class P2PStart extends MessageProcessor {
     private NodeId nodeId;
     private PubKey pubKey;
     
+    class MinimaNodeInfo {
+        final public InetSocketAddress socket;
+        final public String nodeRecord;
+        final public String nodeID;
+        public MinimaNodeInfo(String nodeID, String nodeRecord, InetSocketAddress socket) {
+            this.nodeID = nodeID;
+            this.nodeRecord = nodeRecord;
+            this.socket = socket;
+        }
+    }
 
     // staticPeers = list of static peers in multiaddr format: /ip4/127.0.0.1/tcp/10219/p2p/16Uiu2HAmCnuHVjxoQtZzqenqjRr6hAja1XWCuC1SiqcWcWcp4iSt
     // bootnodes = list of ENR: enr:-Iu4QGvbP4hn3cxao3aFyZfeGBG0Ygp-KPJsK9h7pM_0FfCGauk0P2haW7AEiLaMLEDxRngy4SjCx6GGfwlsRBf0BBwBgmlkgnY0gmlwhH8AAAGJc2VjcDI1NmsxoQMCButDl63KBqEEyxV2R3nCvnHb7sEIgOACbb6yt6oxqYN0Y3CCJ-uDdWRwgifr 
@@ -118,6 +134,7 @@ public class P2PStart extends MessageProcessor {
         logger.warn("P2P layer - generated node private key: " + privKey.toString());
         System.out.println("P2P layer - generated node private key: " + privKey.toString());
         //System.out.println("P2P layer - generated node private key bytes: " + String. privKey.raw();
+        // generate ENR nodeid - not to be confused with libp2pnodeid which is session specific!
         nodeId = new LibP2PNodeId(PeerId.fromPubKey(privKey.publicKey()));
         System.out.println("P2P layer - nodeid: " + nodeId.toString());
         System.out.println("P2P layer - nodeid base58: " + nodeId.toBase58());
@@ -153,7 +170,6 @@ public class P2PStart extends MessageProcessor {
             // initialization failed - what do we do?
             logger.error("Failed to start P2P network.");
         }
-
     }
 
     public NodeId getNodeId() {
@@ -167,14 +183,27 @@ public class P2PStart extends MessageProcessor {
     public String getENR() {
         return network.getENR();
     }
-    
+
     public Optional<String> getDiscoveryAddress() {
         return network.getDiscoveryAddress();
     }
     
+    public int getP2PPeerCount() {
+       // return network.get
+       return network.getP2PPeerCount();
+    }
+
+    public Stream<Peer> streamPeers() {
+        return network.streamPeers();
+    }
+
+    public Stream<DiscoveryPeer> streamDiscoveryPeers() {
+        return network.streamKnownDiscoveryPeers();
+    }
+
+
     @Override
     protected void processMessage(Message zMessage) throws Exception {
-        // TODO Auto-generated method stub
         logger.warn("P2PStart received message: " + zMessage.toString());
 
         if(zMessage.isMessageType(P2P_START_SCAN)) {
@@ -182,26 +211,63 @@ public class P2PStart extends MessageProcessor {
           if(network != null) {
             Set<InetSocketAddress> activeKnownNodes = new HashSet<>();
             while (true) {
+
+                // we dont really care about this list...
                 network.streamPeers().filter(peer -> peer.getId() != null).forEach(peer -> {
                     logger.debug("peer: id=" + peer.getId()); // peer address == peer id and " isConnected=" true
+                    
                 });
+                                
+                ArrayList<MinimaClient> mClients = mNetwork.getNetClients();
+
+                Set<String> knownNodeIDs = new HashSet<>();
+
+                for(MinimaClient mClient: mClients) {
+                    logger.debug(" mclient nodeid=" + mClient.getNodeID() + ", nodeRecord=" + mClient.getNodeRecord());
+                    knownNodeIDs.add(mClient.getNodeID());
+                }
 
                 Set<InetSocketAddress> newActiveNodes = new HashSet<>();
+                Set<MinimaNodeInfo> unconnectedNewNodes = new HashSet<>();
                 //logger.debug("trying to stream discovery peers");
                 network.streamKnownDiscoveryPeers()
                         .forEach(discoPeer -> { // disc peer node address should be inetsocketaddr
-                          //  logger.debug("discovery peer: " + discoPeer.getNodeAddress() + " pubkey=" + discoPeer.getPublicKey());         
+                            PeerId peerid = new PeerId(discoPeer.getNodeID().toArray());
+                            logger.debug("discovery peer: " + discoPeer.getNodeAddress() + " pubkey=" + discoPeer.getPublicKey()
+                                        + " peerid: " + peerid 
+                                        + " nodeid:" + discoPeer.getNodeID().toHexString() + " enr: " + discoPeer.getNodeRecord()); 
+                                        //TODO: establish link between Bytes nodeID and libp2p nodeid / peerid
+                                        //TODO: verify values for nodeid and enr and filter existing nodes vs new based on nodeid      
                             newActiveNodes.add(discoPeer.getNodeAddress());
+
+                            if(!knownNodeIDs.contains(discoPeer.getNodeID().toString())) {
+                                logger.debug("FOUND NEW NODE: nodeid:" + discoPeer.getNodeID().toString() + " " + discoPeer.getNodeRecord().toString());
+                                unconnectedNewNodes.add(new MinimaNodeInfo(discoPeer.getNodeID().toHexString(),
+                                                                            discoPeer.getNodeRecord().toString(), 
+                                                                    discoPeer.getNodeAddress()));
+                            } else {
+                                logger.debug("SKIPPING an already connected node: nodeid:" + discoPeer.getNodeID().toHexString() + " " + discoPeer.getNodeRecord().toString());
+                            }
                         });
 
+                
                 Set<InetSocketAddress> delta = new HashSet<InetSocketAddress>(newActiveNodes);
                 delta.removeAll(activeKnownNodes); //now contains only new sockets
-                       
-                for(InetSocketAddress i: delta) {
-                    logger.info("New peer address: " + i.toString().substring(1));
-                    System.out.println("Starting MinimaClient: " + i.toString().substring(1) + ":9001");
-                    MinimaClient mclient = new MinimaClient(i.getAddress().toString().substring(1), 9001, mNetwork); // hardcode port for now
-                    mNetwork.PostMessage(new Message(NetworkHandler.NETWORK_NEWCLIENT).addObject("client", mclient));
+
+                for(MinimaNodeInfo i: unconnectedNewNodes) {
+                    logger.info("New peer address: " + i.socket.toString().substring(1));
+                    // TODO: replace ENR with nodeID, but P2PStart.nodeID is not the correct value (16... and not the bytes)
+                    if (i.nodeRecord.compareTo(network.getENR())==0) { 
+                        logger.warn("IGNORING node ENR in list of new peers."); 
+                    } else if(i.nodeRecord == null || i.nodeID == null) {
+                        logger.warn("IGNORING empty ndoeRecord or nodeID."); 
+                    } else {
+                        logger.info("CONNECTING to new ENR " + i.nodeRecord);
+                        System.out.println("Starting MinimaClient: " + i.socket.toString().substring(1) + ":9001");
+                        String nodeRecord = i.nodeRecord, nodeID = i.nodeID;
+                        MinimaClient mclient = new MinimaClient(i.socket.getAddress().toString().substring(1), 9001, mNetwork, nodeID, nodeRecord); // hardcode port for now
+                        mNetwork.PostMessage(new Message(NetworkHandler.NETWORK_NEWCLIENT).addObject("client", mclient));
+                    }
                 }
 
                 // update known nodes

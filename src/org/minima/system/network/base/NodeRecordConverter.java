@@ -50,8 +50,11 @@ public class NodeRecordConverter {
                 DiscV5Service.SUBNET_SUBSCRIPTIONS_SCHEMA::fromBytes)
             .orElse(DiscV5Service.SUBNET_SUBSCRIPTIONS_SCHEMA.getDefault());
 
+            
+            Bytes nodeId =  nodeRecord.getNodeId();
+            String enr        =  nodeRecord.asEnr();
     return new DiscoveryPeer(
-        ((Bytes) nodeRecord.get(EnrField.PKEY_SECP256K1)), address, enrForkId, persistentSubnets);
+        ((Bytes) nodeRecord.get(EnrField.PKEY_SECP256K1)), address, enrForkId, persistentSubnets, nodeId, enr);
   }
 
   private static <T> Optional<T> parseField(

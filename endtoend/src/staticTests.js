@@ -59,7 +59,7 @@ const start_docker_node_1 = async function (topology, nbNodes, tests_collection)
     await containers["1"].start();
     process.stdout.write("Trying to sleep for 5 seconds...");
     await sleep(5000);
-    process.stdout.write("Did I sleep 5 seconds?");
+//    process.stdout.write("Did I sleep 5 seconds?");
 
     containers["1"].inspect(function (err, data) {
             ip_addrs["1"] = data.NetworkSettings.Networks[cfg.docker_net].IPAddress;
@@ -157,14 +157,15 @@ get_node_p2p_params = function(host, cb) {
           console.log("response.data.response: " + response.data.response);
           //data = JSON.parse(response.data);
           console.log("response.data.status: " + response.data.status);
-          console.log("response.data.response.p2penr: " + response.data.response.p2penr);
+          console.log("response.data.response.p2pEnr: " + response.data.response.p2pEnr);
+          //TODO: check values for p2pEnr and p2pDiscoveryAddr, block if empty
           //console.log("data: " + data);
           //console.log("data.status: " + data.status);
           //console.log("data.response.p2penr: " + data.response.p2penr);
           if(response.data.status == true) {
 	        console.log("received data with status = true, extracting p2p fields");
-            disc =  response.data.response.p2pdiscoveryaddr;
-            enr  =  response.data.response.p2penr;
+            disc =  response.data.response.p2pDiscoveryaddr;
+            enr  =  response.data.response.p2pEnr;
             console.log("disc=" + disc + " enr=" + enr);
             p2pdiscoveryaddr = disc;
             p2penr = enr;

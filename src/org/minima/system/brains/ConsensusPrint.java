@@ -1069,11 +1069,12 @@ public class ConsensusPrint extends ConsensusProcessor {
 			ArrayList<MinimaClient> nets = main.getNetworkHandler().getNetClients();
 			status.put("connections", nets.size());
 			String nodeid = main.getP2P().getNodeId().toString();
-			status.put("p2pnodeid", nodeid==null?"unavailable":nodeid);
+			status.put("p2pNodeid", nodeid==null?"unavailable":nodeid);
 			Optional<String> discAddr = main.getP2P().getDiscoveryAddress();
-			status.put("p2pdiscoveryaddr", discAddr.isPresent()?discAddr.get():"unavailable");
+			status.put("p2pDiscoveryaddr", discAddr.isPresent()?discAddr.get():"unavailable");
 			String enr = main.getP2P().getENR();
-			status.put("p2penr", enr!=null?enr:"unavailable");
+			status.put("p2pEnr", enr!=null?enr:"unavailable");
+			status.put("p2pPeercount", main.getP2P().getP2PPeerCount());
 			
 			//Add it to the output
 			InputHandler.endResponse(zMessage, true, "");

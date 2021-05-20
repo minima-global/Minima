@@ -71,6 +71,10 @@ public class MinimaClient extends MessageProcessor {
 	//The UID
 	String mUID;
 	
+	// NodeID
+	private String nodeID; // this should never change
+	private String nodeRecord; // this is updated when node IP changes
+
 	//The Host and Port
 	String mHost;
 	int    mPort;
@@ -84,7 +88,21 @@ public class MinimaClient extends MessageProcessor {
 	 */
 	boolean mReconnect     = false;
 	int mReconnectAttempts = 0;
-	
+
+		/**
+	 * Constructor
+	 * 
+	 * @param zSock
+	 * @param zNetwork
+	 * @throws IOException 
+	 * @throws UnknownHostException 
+	 */
+	public MinimaClient(String zHost, int zPort, NetworkHandler zNetwork, String nodeID, String nodeRecord) {
+		this(zHost, zPort, zNetwork);
+		this.nodeID = nodeID;
+		this.nodeRecord = nodeRecord;
+	}
+
 	/**
 	 * Constructor
 	 * 
@@ -158,6 +176,14 @@ public class MinimaClient extends MessageProcessor {
 	
 	public String getUID() {
 		return mUID;
+	}
+	
+	public String getNodeID() {
+		return nodeID;
+	}
+
+	public String getNodeRecord() {
+		return nodeRecord;
 	}
 	
 	public NetworkHandler getNetworkHandler() {

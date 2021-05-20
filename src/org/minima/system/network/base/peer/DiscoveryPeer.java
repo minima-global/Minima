@@ -31,6 +31,8 @@ public class DiscoveryPeer {
   private final InetSocketAddress nodeAddress;
   private final Optional<EnrForkId> enrForkId;
   private final SszBitvector persistentSubnets;
+  private String nodeRecord;
+  private Bytes nodeId;
 
   public DiscoveryPeer(
       final Bytes publicKey,
@@ -41,6 +43,25 @@ public class DiscoveryPeer {
     this.nodeAddress = nodeAddress;
     this.enrForkId = enrForkId;
     this.persistentSubnets = persistentSubnets;
+  }
+
+  public DiscoveryPeer(
+    final Bytes publicKey,
+    final InetSocketAddress nodeAddress,
+    final Optional<EnrForkId> enrForkId,
+    final SszBitvector persistentSubnets,
+    Bytes nodeId, String nodeRecord) {
+      this(publicKey, nodeAddress, enrForkId, persistentSubnets);
+      this.nodeId = nodeId;
+      this.nodeRecord = nodeRecord;
+  }
+
+  public String getNodeRecord() {
+      return nodeRecord;
+  }
+  
+  public Bytes getNodeID() {
+      return nodeId;
   }
 
   public Bytes getPublicKey() {

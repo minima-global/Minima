@@ -22,12 +22,12 @@ test_star_static = function () {
         // curl -s 127.0.0.1:9002/status | jq '.response.connections'
         staticTests.run_some_tests_get(ip_addrs["1"], '/status', "", function (response) {
             response.connections.should.be.above(0);
-            response.connections.should.be.equal((nbNodes-1)*2);
+            response.connections.should.be.above((nbNodes-1)); // be at least connected to each node
         });
 
         staticTests.run_some_tests_get(ip_addrs["3"], '/status', "", function (response) {
             response.connections.should.be.above(0);
-            response.connections.should.be.equal((nbNodes-1)*2);
+            response.connections.should.be.above((nbNodes-1));
         });
         //1. send funds with no money and assert failure
         //staticTests.run_some_tests_get(ip_addrs["1"], '/send', {"amount": 1, "address": "0xFF", "tokenid": "0x00"}, 
@@ -62,7 +62,7 @@ test_star_static = function () {
         setTimeout(function() {
                     staticTests.run_some_tests_get(ip_addrs["2"], '/status', "", function (response) {
                     response.connections.should.be.above(0);
-                    response.connections.should.be.equal((nbNodes-1)*2);
+                    response.connections.should.be.above((nbNodes-1));
                 });
             }, 
             10000
