@@ -14,7 +14,7 @@ public class NodeCounter {
 		
 		//Check some data given..
 		if(zArgs.length < 1) {
-			System.out.println("Must specify hosts..");
+			System.out.println("Must specify hosts.. with # delimiter");
 			return;
 		}
 		
@@ -28,11 +28,8 @@ public class NodeCounter {
 		}
 		
 		//Hosts found..
-		System.out.println(allhosts.size()+" hosts found..");
-		System.out.println(allhosts);
-		
-		//Connect manager
-		RPCClient client = new RPCClient();
+		MinimaLogger.log(allhosts.size()+" hosts found..");
+		MinimaLogger.log(allhosts.toString());
 		
 		//loop
 		while(true) {
@@ -40,9 +37,8 @@ public class NodeCounter {
 			long total = 0;
 			for(String host : allhosts) {
 				try {
-					
 					//Get the current status
-					String hoststatus = client.sendGET("http://"+host+"/status");
+					String hoststatus = RPCClient.sendGET("http://"+host+"/status");
 				
 					//Convert to JSON
 					JSONObject status = (JSONObject) new JSONParser().parse(hoststatus);
@@ -67,10 +63,11 @@ public class NodeCounter {
 											+ "connections="+total;
 			
 			//And now make this GET request..
-			System.out.println(urlcall);
+			MinimaLogger.log(urlcall);
+			
 			try {
-				String finalresp = client.sendGET(urlcall);
-				System.out.println(finalresp);
+				String finalresp = RPCClient.sendGET(urlcall);
+				MinimaLogger.log(finalresp);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
