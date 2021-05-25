@@ -1,11 +1,10 @@
-package org.external.utils;
+package org.minima.utils;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
 import org.minima.system.network.rpc.RPCClient;
-import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.json.parser.JSONParser;
 
