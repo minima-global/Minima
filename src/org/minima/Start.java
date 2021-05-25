@@ -7,9 +7,11 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Random;
 
+import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
 import org.minima.system.brains.BackupManager;
 import org.minima.system.network.commands.CMD;
@@ -316,7 +318,7 @@ public class Start {
             }
 		}else {
 			//Listen for input
-		    InputStreamReader is    = new InputStreamReader(System.in);
+			InputStreamReader is    = new InputStreamReader(System.in, MiniString.MINIMA_CHARSET);
 		    BufferedReader bis      = new BufferedReader(is);
 	
 		    //Loop until finished..
@@ -348,6 +350,8 @@ public class Start {
 		            	//trim it..
 		            	input = input.trim();
 
+//		            	System.out.println("input: "+input);
+		            	
 		            	//Create a Command
 		            	CMD cmd = new CMD(input);
 		            	

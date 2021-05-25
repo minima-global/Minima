@@ -198,12 +198,15 @@ public class RPCHandler implements Runnable {
 			//Remove EMOJI and other weird symbols
 			finalresult = MiniFormat.filterSafeTextEmoji(finalresult);
 			
+			//Calculate the amountof data..
+			byte[] strlen = finalresult.getBytes(MiniString.MINIMA_CHARSET); 
+			
 			// send HTTP Headers
 			out.println("HTTP/1.1 200 OK");
 			out.println("Server: HTTP RPC Server from Minima : 1.0");
 			out.println("Date: " + new Date());
 			out.println("Content-type: text/plain");
-			out.println("Content-length: " + finalresult.length());
+			out.println("Content-length: " + strlen.length);
 			out.println("Access-Control-Allow-Origin: *");
 			out.println(); // blank line between headers and content, very important !
 			out.println(finalresult);
