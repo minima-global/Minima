@@ -151,9 +151,16 @@ public class MiniFormat {
 //		return ret;
 //	}
 	
+	/**
+	 * For now do nothing..
+	 * @param zText
+	 * @return
+	 */
 	public static String filterSafeTextEmoji(String zText) {
-		String characterFilter = "[^\\x00-\\x7F\\p{L}\\p{M}\\p{N}\\p{P}\\p{Z}\\p{Cf}\\p{Cs}\\s]";
-		return zText.replaceAll(characterFilter,"");
+		return zText;
+		
+//		String characterFilter = "[^\\x00-\\x7F\\p{L}\\p{M}\\p{N}\\p{P}\\p{Z}\\p{Cf}\\p{Cs}\\s]";
+//		return zText.replaceAll(characterFilter,"");
 	}
 	
 	private static String maketabstring(int zNum) {

@@ -49,7 +49,7 @@ public class RPCHandler implements Runnable {
 		
 		try {
 			// Input Stream
-			in = new BufferedReader(new InputStreamReader(mSocket.getInputStream()));
+			in = new BufferedReader(new InputStreamReader(mSocket.getInputStream(), MiniString.MINIMA_CHARSET));
 			
 			// Output Stream
 			out = new PrintWriter(mSocket.getOutputStream());
