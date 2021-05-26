@@ -31,7 +31,7 @@ public abstract class BaseKey implements Streamable {
 	/**
 	 * Public Key
 	 */
-	protected MiniData mPublicKey = null;
+	protected MiniData mPublicKey;
 
 	/**
 	 * Number of Times you can use this Key
