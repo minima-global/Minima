@@ -25,8 +25,6 @@ import org.minima.utils.Streamable;
 
 public class JavaUserDB implements UserDB, Streamable{
 	
-	public static boolean LOGGING_LOAD = false;
-	
 	public static int MAX_HISTORY = 64;
 	
 	/**
@@ -463,23 +461,19 @@ public class JavaUserDB implements UserDB, Streamable{
 		mCurrentAddress = new CurrentAddress();
 		mCurrentAddress.readDataStream(zIn);
 		
-		//Logging 
-		if(LOGGING_LOAD) {
-			MinimaLogger.log("Current addresses loaded.. "+mCurrentAddress.mTotalUsed+"/"+mCurrentAddress.CURRENT_ADDRESS_NUM);
-		}
-		
 		//Pub Priv Keys
 		int len = zIn.readInt();
+		MinimaLogger.log("Loading private keys.. "+len);
 		for(int i=0;i<len;i++) {
 			MultiKey pp = new MultiKey();
 			pp.readDataStream(zIn);
 			mPubPrivKeys.add(pp);
+			
+			if((i!=0) && (i % 5 == 0) ) {
+				MinimaLogger.log("Keys loaded.. "+i);
+			}
 		}
-		
-		//Logging 
-		if(LOGGING_LOAD) {
-			MinimaLogger.log("Public keys loaded.."+mPubPrivKeys.size());
-		}
+		MinimaLogger.log("Loading private keys done..");
 		
 		//Address
 		len = zIn.readInt();
@@ -489,11 +483,6 @@ public class JavaUserDB implements UserDB, Streamable{
 			mTotalAddresses.add(addr);
 		}
 		
-		//Logging 
-		if(LOGGING_LOAD) {
-			MinimaLogger.log("Simple addresses loaded.."+mSimpleAddresses.size());
-		}
-		
 		//Script Address
 		len = zIn.readInt();
 		for(int i=0;i<len;i++) {
@@ -501,22 +490,12 @@ public class JavaUserDB implements UserDB, Streamable{
 			mScriptAddresses.add(addr);
 			mTotalAddresses.add(addr);
 		}
-
-		//Logging 
-		if(LOGGING_LOAD) {
-			MinimaLogger.log("Script addresses loaded.."+mScriptAddresses.size());
-		}
-
+	
 		//Extra Address
 		len = zIn.readInt();
 		for(int i=0;i<len;i++) {
 			Address addr = Address.ReadFromStream(zIn);
 			mExtraAddresses.add(addr);
-		}
-
-		//Logging 
-		if(LOGGING_LOAD) {
-			MinimaLogger.log("Extra addresses loaded.."+mExtraAddresses.size());
 		}
 
 		//Relevant Coins
@@ -526,21 +505,11 @@ public class JavaUserDB implements UserDB, Streamable{
 			mRelevantCoinID.add(coinid);
 		}
 		
-		//Logging 
-		if(LOGGING_LOAD) {
-			MinimaLogger.log("Relevant coins loaded.."+mRelevantCoinID.size());
-		}	
-		
 		//Token Details
 		len = zIn.readInt();
 		for(int i=0;i<len;i++) {
 			mAllTokens.add(TokenProof.ReadFromStream(zIn));
 		}
-
-		//Logging 
-		if(LOGGING_LOAD) {
-			MinimaLogger.log("Tokens loaded.."+mAllTokens.size());
-		}	
 
 		//transaction..
 		len = zIn.readInt();
@@ -549,11 +518,6 @@ public class JavaUserDB implements UserDB, Streamable{
 			row.readDataStream(zIn);
 			mRows.add(row);
 		}
-
-		//Logging 
-		if(LOGGING_LOAD) {
-			MinimaLogger.log("Custom Transactions loaded.."+mRows.size());
-		}	
 		
 		//History
 		mHistory = new ArrayList<reltxpow>();
@@ -563,12 +527,6 @@ public class JavaUserDB implements UserDB, Streamable{
 			rpow.readDataStream(zIn);
 			mHistory.add(rpow);
 		}
-		
-		//Logging 
-		if(LOGGING_LOAD) {
-			MinimaLogger.log("History loaded.."+mHistory.size());
-		}	
-
 	}
 
 	@Override
