@@ -65,17 +65,17 @@ public class MultiKey extends BaseKey {
 		mLevel    = zLevel;
 		mUses     = MiniNumber.ZERO;
 		
-		initKeys(zPrivateSeed);
-	}
-	
-	@Override
-	protected void initKeys(MiniData zPrivateSeed) {
 		//Can calculate from the Private Seed
 		mBitLength = new MiniNumber(zPrivateSeed.getLength()*8);
 		
 		//Store it
 		mPrivateSeed = zPrivateSeed;
 		
+		initKeys(zPrivateSeed);
+	}
+	
+	@Override
+	protected void initKeys(MiniData zPrivateSeed) {
 		//Create the Key Tree
 		mSingleKeys = new SingleKey[mMaxUses.getAsInt()];
 		
@@ -101,8 +101,6 @@ public class MultiKey extends BaseKey {
 		//Get the root of the tree..
 		mPublicKey = mMMR.getMMRRoot().getFinalHash();
 	}
-	
-	public static int totalsigns = 0;
 	
 	@Override
 	public MiniData sign(MiniData zData) {
