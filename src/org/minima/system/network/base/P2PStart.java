@@ -6,26 +6,16 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-// Import log4j classes.
 
 // Import log4j classes.
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-import org.ethereum.beacon.discovery.schema.NodeRecord;
-import org.ethereum.beacon.discovery.schema.NodeRecordInfo;
 import org.minima.system.network.NetworkHandler;
 import org.minima.system.network.base.LibP2PNetwork.PrivateKeyProvider;
 import org.minima.system.network.base.libp2p.PrivateKeyGenerator;
@@ -41,11 +31,6 @@ import io.libp2p.core.crypto.PrivKey;
 import io.libp2p.core.crypto.PubKey;
 import io.libp2p.core.crypto.KEY_TYPE;
 import io.libp2p.core.crypto.KeyKt;
-import io.libp2p.crypto.keys.Secp256k1PrivateKey;
-
-import io.libp2p.etc.encode.Base58;
-
-import org.apache.logging.log4j.LogManager;
 
 public class P2PStart extends MessageProcessor {
 
