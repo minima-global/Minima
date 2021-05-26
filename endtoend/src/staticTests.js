@@ -20,10 +20,12 @@ const cfg = {
     node_prefix: "minima-node-",
     HTTP_TIMEOUT: 30000,
     DELAY_BEFORE_TESTS: 5000,
-    hostConfig1: {  AutoRemove: true, NetworkMode: "minima-e2e-testnet",  'Binds': ['/Users/jeromerousselot/src/minima/Minima/node1/p2p:/root/.minima/p2p']  },
-    hostConfig:  {  AutoRemove: true, NetworkMode: "minima-e2e-testnet"  },
+    hostConfig1: {  // AutoRemove: true, // comment this out to inspect stopped containers
+            NetworkMode: "minima-e2e-testnet",  'Binds': ['/Users/jeromerousselot/src/minima/Minima/node1/p2p:/root/.minima/p2p']  },
+    hostConfig:  {  // AutoRemove: true, // comment this out to inspect stopped containers
+        NetworkMode: "minima-e2e-testnet"  },
     // unused - can be applied on a node to expose its RPC port on localhost - not needed for our tests
-    hostCfgExpose: { AutoRemove: true, NetworkMode: "minima-e2e-testnet", PortBindings: {"9002/tcp": [ { "HostPort": "9002"} ] } },
+    hostCfgExpose: { NetworkMode: "minima-e2e-testnet", PortBindings: {"9002/tcp": [ { "HostPort": "9002"} ] } },
     host_port: 9002,
     TOPO_STAR: "star",
     TOPO_LINE: "line"
