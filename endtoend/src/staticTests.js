@@ -22,11 +22,14 @@ const cfg = {
     DELAY_BEFORE_TESTS: 5000,
     hostConfig1: {  
 	    AutoRemove: true, // comment this out to inspect stopped containers
-            NetworkMode: "minima-e2e-testnet",  'Binds': ['/Users/jeromerousselot/src/minima/Minima/node1/p2p:/root/.minima/p2p']  
+            NetworkMode: "minima-e2e-testnet",  
+	    'Binds': ['/Users/jeromerousselot/src/minima/Minima/node1/p2p:/root/.minima/p2p'],
+            CpuShares: 10,   // node 1 in private mode uses auto-mining and aim for 100% CPU usage, so we throttle it
     },
     hostConfig:  {  
             AutoRemove: true, // comment this out to inspect stopped containers
-            NetworkMode: "minima-e2e-testnet"  
+            NetworkMode: "minima-e2e-testnet",
+            CpuShares: 10,
     },
     // unused - can be applied on a node to expose its RPC port on localhost - not needed for our tests
     hostCfgExpose: { NetworkMode: "minima-e2e-testnet", PortBindings: {"9002/tcp": [ { "HostPort": "9002"} ] } },

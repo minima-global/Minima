@@ -4,7 +4,7 @@ require('chai')
 .use(require('chai-as-promised'));
 require('chai').assert;
 
-const nbNodes = 9;
+const nbNodes = 10;
 
 
 function sleep(ms) {
