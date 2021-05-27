@@ -1,5 +1,7 @@
 package org.minima.objects.keys;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 
 import org.minima.database.mmr.MMRSet;
@@ -31,6 +33,11 @@ public class MultiKey extends BaseKey {
 	
 	//The MMR tree of keys
 	MMRSet mMMR;
+	
+	/**
+	 * Have we initialsed this key..
+	 */
+	boolean mInitilised = false;
 	
 	/**
 	 * For verification only can start like this..
@@ -76,6 +83,9 @@ public class MultiKey extends BaseKey {
 	
 	@Override
 	protected void initKeys(MiniData zPrivateSeed) {
+		//We are ready..
+		mInitilised = true;
+		
 		//Create the Key Tree
 		mSingleKeys = new SingleKey[mMaxUses.getAsInt()];
 		
@@ -99,11 +109,16 @@ public class MultiKey extends BaseKey {
 		mMMR.finalizeSet();
 		
 		//Get the root of the tree..
-		mPublicKey = mMMR.getMMRRoot().getFinalHash();
+		setPublicKey(mMMR.getMMRRoot().getFinalHash());
 	}
 	
 	@Override
 	public MiniData sign(MiniData zData) {
+		//Are we ready..
+		if(!mInitilised) {
+			initKeys(mPrivateSeed);
+		}
+		
 		//Which key are we on..
 		MiniNumber keynum = getUses();
 		
@@ -218,7 +233,7 @@ public class MultiKey extends BaseKey {
 		}
 		
 		//First check the Public Key is correct
-		if(!sigdata.getRootKey().isEqual(mPublicKey)) {
+		if(!sigdata.getRootKey().isEqual(getPublicKey())) {
 			return false;
 		}
 		
@@ -257,6 +272,30 @@ public class MultiKey extends BaseKey {
 		
 		//Just check the data was signed 
 		return skey.verify(zData, sigdata.getSignature());
+	}
+	
+	@Override
+	public void readDataStream(DataInputStream zIn) throws IOException {
+		setPublicKey(MiniData.ReadFromStream(zIn));
+		mPrivateSeed = MiniData.ReadFromStream(zIn);
+		
+		//FOR NOW MUST BE 12..in future.. maybe higher..
+		mWinternitz  = MiniNumber.ReadFromStream(zIn);
+		if(!mWinternitz.isEqual(MiniNumber.TWELVE)) {
+			throw new IOException("INVALID Winternitz : must be 12!");
+		}
+		
+		//Important values
+		mLevel       = MiniNumber.ReadFromStream(zIn);
+		mMaxUses     = MiniNumber.ReadFromStream(zIn);
+		mUses        = MiniNumber.ReadFromStream(zIn);
+		
+		//Number of Bits of security
+		mBitLength = new MiniNumber(mPrivateSeed.getLength()*8);
+		
+		//Init the variables 
+		mInitilised = false;
+//		initKeys(mPrivateSeed);
 	}
 	
 	

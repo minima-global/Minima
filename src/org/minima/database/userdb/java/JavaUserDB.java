@@ -463,17 +463,17 @@ public class JavaUserDB implements UserDB, Streamable{
 		
 		//Pub Priv Keys
 		int len = zIn.readInt();
-		MinimaLogger.log("Loading private keys.. "+len);
+//		MinimaLogger.log("Loading private keys.. "+len);
 		for(int i=0;i<len;i++) {
 			MultiKey pp = new MultiKey();
 			pp.readDataStream(zIn);
 			mPubPrivKeys.add(pp);
 			
-			if((i!=0) && (i % 5 == 0) ) {
-				MinimaLogger.log("Keys loaded.. "+i);
-			}
+//			if((i!=0) && (i % 5 == 0) ) {
+//				MinimaLogger.log("Keys loaded.. "+i);
+//			}
 		}
-		MinimaLogger.log("Loading private keys done..");
+//		MinimaLogger.log("Loading private keys done..");
 		
 		//Address
 		len = zIn.readInt();

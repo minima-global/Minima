@@ -1,7 +1,12 @@
 package org.minima.objects.keys;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.digest.WinternitzOTSVerify;
 import org.minima.utils.digest.WinternitzOTSignature;
 
@@ -41,7 +46,7 @@ public class SingleKey extends BaseKey {
 		mWOTS = new WinternitzOTSignature(mPrivateSeed.getData(), getHashFunction(mBitLength), getWinternitz());
 		
 		//Get the Public Key..
-		mPublicKey  = new MiniData(mWOTS.getPublicKey());
+		setPublicKey(new MiniData(mWOTS.getPublicKey()));
 	}
 	
 	@Override
@@ -65,6 +70,6 @@ public class SingleKey extends BaseKey {
 		MiniData resp = new MiniData(pubkey);
 		
 		//Check..
-		return resp.isEqual(mPublicKey);
+		return resp.isEqual(getPublicKey());
 	}
 }
