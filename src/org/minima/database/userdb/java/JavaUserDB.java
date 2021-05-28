@@ -194,6 +194,11 @@ public class JavaUserDB implements UserDB, Streamable{
 	public Address getCurrentAddress(ConsensusHandler zBackup) {
 		return mCurrentAddress.getCurrentAddress(this, zBackup);
 	}
+	
+	@Override
+	public boolean checkInitKeys(ConsensusHandler zBackup) {
+		return mCurrentAddress.checkKeysInitSatatus(this, zBackup);
+	}
 
 	@Override
 	public boolean isSimpleAddress(MiniData zAddress) {

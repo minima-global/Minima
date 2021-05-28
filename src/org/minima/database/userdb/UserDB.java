@@ -38,6 +38,7 @@ public interface UserDB {
 	public Address newSimpleAddress(MultiKey zPubPriv);
 	
 	public Address getCurrentAddress(ConsensusHandler zBackup);
+	public boolean checkInitKeys(ConsensusHandler zBackup);
 	
 	public boolean isSimpleAddress(MiniData zAddress);
 	public MiniData getPublicKeyForSimpleAddress(MiniData zAddress);

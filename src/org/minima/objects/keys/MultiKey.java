@@ -81,6 +81,14 @@ public class MultiKey extends BaseKey {
 		initKeys(zPrivateSeed);
 	}
 	
+	public boolean isInitialised() {
+		return mInitilised;
+	}
+	
+	public void autoInit() {
+		initKeys(mPrivateSeed);
+	}
+	
 	@Override
 	protected void initKeys(MiniData zPrivateSeed) {
 		//We are ready..
