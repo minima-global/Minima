@@ -4,8 +4,9 @@ require('chai')
 .use(require('chai-as-promised'));
 require('chai').assert;
 
-const nbNodes = 10;
+const nbNodes = parseInt(process.env.nbNodes);
 
+console.log("test===>", nbNodes)
 
 function sleep(ms) {
     return new Promise((resolve) => {

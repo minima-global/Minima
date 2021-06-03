@@ -26,4 +26,10 @@ COPY src /app/src
 
 CMD ["node", "src/index.js"]
 
+ARG nbNodes
+
+ENV nbNodes=$nbNodes
+
+RUN echo $nbNodes
+
 
