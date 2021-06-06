@@ -94,7 +94,7 @@ publishing {
     repositories {
         maven {
             name = "GitHubPackages"
-            url = "https://maven.pkg.github.com/1mprobable/Minima"
+            url = "https://maven.pkg.github.com/minima-global/Minima"
             credentials {
                 username = System.getenv("GITHUB_ACTOR")
                 password = System.getenv("GITHUB_TOKEN")
