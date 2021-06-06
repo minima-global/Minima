@@ -22,7 +22,16 @@ plugins {
     // shadowJar plugin to build fat jar
     id 'com.github.johnrengelman.shadow' version '6.1.0'
 
+    // Plugin to publish artifacts to github and maven
+    id 'maven-publish'
+
 }
+
+sourceCompatibility = JavaVersion.VERSION_11
+
+group 'org.minima'
+version '0.98.15'
+
 
 repositories {
     // Use jcenter for resolving dependencies.
@@ -81,4 +90,20 @@ jar {
         attributes 'Main-Class': 'org.minima.Start'
     }
 }
-
+publishing {
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = "https://maven.pkg.github.com/1mprobable/Minima"
+            credentials {
+                username = System.getenv("GITHUB_ACTOR")
+                password = System.getenv("GITHUB_TOKEN")
+            }
+        }
+    }
+    publications {
+        gpr(MavenPublication) {
+            from(components.java)
+        }
+    }
+}
