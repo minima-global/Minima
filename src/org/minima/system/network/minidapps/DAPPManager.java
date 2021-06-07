@@ -630,23 +630,28 @@ public class DAPPManager extends MessageProcessor {
 			wsmsg.put("details",json);
 			
 			//MinimaLogger.log("DIRECT POST "+wsmsg.toString());
-			
-			//Check it exists
-			BackEndDAPP bend = mBackends.get(minidapp);
-			if(bend == null) {
-				InputHandler.endResponse(zMessage, false, "MiniDAPP not found "+minidapp);
-				return;
-			}
+//			//Check it exists
+//			BackEndDAPP bend = mBackends.get(minidapp);
+//			if(bend == null) {
+//				InputHandler.endResponse(zMessage, false, "MiniDAPP not found "+minidapp);
+//				return;
+//			}
 			
 			//Send to the backend
 			sendToBackEND(minidapp,wsmsg);
 			
-//			//And to the front end..
-//			Message msg = new Message(WebSocketManager.WEBSOCK_SEND);
-//			msg.addString("message", wsmsg.toString());
-//			msg.addString("minidappid", minidapp);
-//			mNetwork.getWebSocketManager().PostMessage(msg);
+			//And to the front end..
+			Message msg = new Message(WebSocketManager.WEBSOCK_SEND);
+			msg.addString("message", wsmsg.toString());
+			msg.addString("minidappid", minidapp);
+			mNetwork.getWebSocketManager().PostMessage(msg);
 		
+			//Finished attempted forwarding
+			JSONObject mdapps = InputHandler.getResponseJSON(zMessage);
+			mdapps.put("message", wsmsg.toString());
+			mdapps.put("minidappid", minidapp);
+			InputHandler.endResponse(zMessage, true, "MiniDAPP message forwarded");
+			
 		}else if(zMessage.getMessageType().equals(DAPP_DIRECTREPLY)) {
 			//Get the REPLY ID
 			String replyid = zMessage.getString("replyid");
