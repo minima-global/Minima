@@ -19,7 +19,7 @@ import org.minima.utils.Streamable;
 
 public class CurrentAddress implements Streamable {
 
-	private static final int CURRENT_ADDRESS_NUM = 32;
+	private static final int CURRENT_ADDRESS_NUM = 4;
 	
 	public static MiniNumber MAX_REQUEST = new MiniNumber(4000);
 	

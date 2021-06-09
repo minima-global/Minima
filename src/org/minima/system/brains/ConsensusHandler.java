@@ -2,6 +2,7 @@ package org.minima.system.brains;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.Random;
 
 import org.minima.GlobalParams;
 import org.minima.database.MinimaDB;
@@ -677,13 +678,13 @@ public class ConsensusHandler extends MessageProcessor {
 			
 		}else if(zMessage.isMessageType(CONSENSUS_GIMME50)) {
 			//Check time
-			long timenow = System.currentTimeMillis();
-			if(timenow - mLastGimme < MIN_GIMME50_TIME_GAP) {
-				//You can only do one of these every 10 minutes..
-				InputHandler.endResponse(zMessage, false, "You may only gimme50 once every 10 minutes");
-				return;
-			}
-			mLastGimme = timenow;
+//			long timenow = System.currentTimeMillis();
+//			if(timenow - mLastGimme < MIN_GIMME50_TIME_GAP) {
+//				//You can only do one of these every 10 minutes..
+//				InputHandler.endResponse(zMessage, false, "You may only gimme50 once every 10 minutes");
+//				return;
+//			}
+//			mLastGimme = timenow;
 			
 			//construct a special transaction that pays 50 mini to an address this user controls..
 			Address addr1 = getMainDB().getUserDB().getCurrentAddress(this);
@@ -702,9 +703,14 @@ public class ConsensusHandler extends MessageProcessor {
 			trans.addInput(in);
 			wit.addScript(Address.TRUE_ADDRESS.getScript(), in.getAddress().getLength()*8);
 			
+			//Create a small variance in amount.. so coinid is different per coin
+			MiniNumber rr = new MiniNumber(new Random().nextLong()).mult(MiniNumber.MINI_UNIT);
+			MiniNumber out1 = new MiniNumber("25").sub(rr);
+			MiniNumber out2 = new MiniNumber("25").add(rr);
+			
 			//And send to the new addresses
-			trans.addOutput(new Coin(Coin.COINID_OUTPUT,addr1.getAddressData(),new MiniNumber("25"), Coin.MINIMA_TOKENID));
-			trans.addOutput(new Coin(Coin.COINID_OUTPUT,addr2.getAddressData(),new MiniNumber("25"), Coin.MINIMA_TOKENID));
+			trans.addOutput(new Coin(Coin.COINID_OUTPUT,addr1.getAddressData(),out1, Coin.MINIMA_TOKENID));
+			trans.addOutput(new Coin(Coin.COINID_OUTPUT,addr2.getAddressData(),out2, Coin.MINIMA_TOKENID));
 			
 			//Notify listeners that Mining is starting...
 			JSONObject mining = new JSONObject();

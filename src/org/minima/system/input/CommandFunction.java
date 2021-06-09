@@ -12,6 +12,7 @@ import org.minima.system.input.functions.cleanscript;
 import org.minima.system.input.functions.coins;
 import org.minima.system.input.functions.coinsimple;
 import org.minima.system.input.functions.connect;
+import org.minima.system.input.functions.consolidate;
 import org.minima.system.input.functions.currentaddress;
 import org.minima.system.input.functions.disconnect;
 import org.minima.system.input.functions.extrascript;
@@ -91,7 +92,7 @@ public abstract class CommandFunction {
 			new tokens(), new tokencreate(), new tokenvalidate(), new mineblock(),
 			new maxima(), new sshtunnel(), new reset(), new hash(), new burn(),
 //			new exportcoin(), new importcoin(),
-			new exportkey(), new importkey(),  new search(),
+			new exportkey(), new importkey(),  new search(),new consolidate(),
 			new chainsha(), new keepcoin(), new unkeepcoin(), new scripts(), new network(), new minidapps(),
 			new txncreate(), new txndelete(), new txninput(), new txnlist(), new txnauto(), new tokenscale(),
 			new txnstate(), new txnexport(), new txnimport(), new txnscript(), new txnreminput(), new txnremoutput(),
