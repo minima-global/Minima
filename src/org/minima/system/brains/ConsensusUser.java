@@ -870,6 +870,8 @@ public class ConsensusUser extends ConsensusProcessor {
 				curr.add(coin);
 			}
 		
+			int MAX_COLL = 10;
+			
 			//Now create transactions..
 			Set<String> keys = pubcoins.keySet();
 			for(String key : keys) {
@@ -884,18 +886,25 @@ public class ConsensusUser extends ConsensusProcessor {
 					Witness wit 	  = new Witness();
 					
 					//Cycle through the inputs and get the total..
+					int tot = 0;
 					for(Coin incoin : allcoins) {
 						//Total value of the inputs
 						totalval = totalval.add(incoin.getAmount());
+					
+						tot++;
+						if(tot>=MAX_COLL) {
+							break;
+						}
 					}
 					
 					//Create a transaction..
-					MinimaLogger.log("Consolidate "+allcoins.size()+" coins with pubkey "+key+" total value :"+totalval);
+					MinimaLogger.log("Consolidate "+tot+"/"+allcoins.size()+" coins with pubkey "+key+" total value :"+totalval);
 			
 					//Send back to me..
 					Address recipient = getMainDB().getUserDB().getCurrentAddress(getConsensusHandler());
 					
 					//Create Transaction
+					tot = 0;
 					for(Coin incoin : allcoins) {
 						//Add it
 						trans.addInput(incoin);
@@ -905,6 +914,11 @@ public class ConsensusUser extends ConsensusProcessor {
 						
 						//Add to the witness
 						wit.addScript(script, incoin.getAddress().getLength()*8);
+					
+						tot++;
+						if(tot>=MAX_COLL) {
+							break;
+						}
 					}
 					
 					//Add one Output..
@@ -929,13 +943,11 @@ public class ConsensusUser extends ConsensusProcessor {
 					//Post it..
 					Message msg = new Message(ConsensusHandler.CONSENSUS_SENDTRANS)
 										.addObject("transaction", trans)
-										.addObject("witness", wit);
+										.addObject("witness", newwit);
 					
 					//Post it..
 					getConsensusHandler().PostMessage(msg);
 			
-					MinimaLogger.log("Transaction sent!");
-				
 				}else {
 					MinimaLogger.log("Not enough coins @ "+key+" only "+allcoins.size()+" coins..");
 				}

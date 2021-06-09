@@ -516,6 +516,7 @@ public class ConsensusHandler extends MessageProcessor {
 				resp.put("transaction", txpow.getTransaction());
 				
 				//ITS TOO BIG!
+				MinimaLogger.log("Transaction TOO big! "+txpow.getSizeinBytes());
 				InputHandler.endResponse(zMessage, false, "YOUR TXPOW TRANSACTION IS TOO BIG! MAX SIZE : "+MinimaReader.MAX_TXPOW);
 				
 				return;
