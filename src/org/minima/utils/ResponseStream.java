@@ -7,7 +7,7 @@ public class ResponseStream {
 	/**
 	 * Maximum Amount of time to wait for a response finish
 	 */
-	public static final long MAX_WAITTIME = 20000;
+	public static final long MAX_WAITTIME = 30000;
 	
 	/**
 	 * What is the response
