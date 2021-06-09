@@ -11,7 +11,7 @@ RUN apk --no-cache add \
     bash
 
 # Copy nodejs package files
-COPY package-lock.json package.json /app/
+COPY package-lock.json package.json minima-api-1.0.0.tgz /app/
 
 # Install packages
 #ENV NPM_CONFIG_LOGLEVEL warn
@@ -26,7 +26,7 @@ COPY src /app/src
 
 CMD ["node", "src/index.js"]
 
-ARG nbNodes
+ARG nbNodes=3
 
 ENV nbNodes=$nbNodes
 

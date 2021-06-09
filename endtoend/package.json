@@ -13,6 +13,7 @@
     "chai": "^4.3.0",
     "chai-as-promised": "^7.1.1",
     "chai-bn": "^0.2.1",
-    "dockerode": "^3.2.1"
+    "dockerode": "^3.2.1",
+    "minima-api": "file:minima-api-1.0.0.tgz"
   }
 }
