@@ -997,7 +997,7 @@ public class ConsensusUser extends ConsensusProcessor {
 				getConsensusHandler().PostMessage(msg);
 		
 			}else {
-				MinimaLogger.log("Not enough "+zTokenID.to0xString()+" coins @ "+key+" only "+allcoins.size()+" coins..");
+				//MinimaLogger.log("Not enough "+zTokenID.to0xString()+" coins @ "+key+" only "+allcoins.size()+" coins..");
 			}
 		}
 	}
