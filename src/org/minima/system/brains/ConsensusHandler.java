@@ -72,7 +72,6 @@ public class ConsensusHandler extends MessageProcessor {
 	/**
 	 * Create Tokens
 	 */
-	public static final String CONSENSUS_CREATETOKEN 		= "CONSENSUS_CREATETOKEN";
 	public static final String CONSENSUS_TOKENCREATE 		= "CONSENSUS_TOKENCREATE";
 	
 	/**
