@@ -26,10 +26,14 @@ COPY src /app/src
 
 CMD ["node", "src/index.js"]
 
+ARG topology=star
 ARG nbNodes=3
+ARG nodeFailure=2
 
+ENV topology=$topology
 ENV nbNodes=$nbNodes
+ENV nodeFailure=$nodeFailure
 
+RUN echo $topology
 RUN echo $nbNodes
-
-
+RUN echo $nodeFailure

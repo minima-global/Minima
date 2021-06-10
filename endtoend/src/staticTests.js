@@ -67,19 +67,23 @@ const start_docker_node_1 = async function (topology, nbNodes, tests_collection)
     // Start the container.
     await containers["1"].start();
     process.stdout.write("Trying to sleep for 5 seconds...");
-    await sleep(5000);
+    await sleep(10000);
 //    process.stdout.write("Did I sleep 5 seconds?");
 
-    containers["1"].inspect(function (err, data) {
+    console.log("Hello1");
+    await runContainerInspect(topology, nbNodes, tests_collection);
+}
+
+const runContainerInspect = (topology, nbNodes, tests_collection) => {
+    return new Promise((resolve, reject) => {
+        containers["1"].inspect(async function(err, data) {
             ip_addrs["1"] = data.NetworkSettings.Networks[cfg.docker_net].IPAddress;
-            //TODO: add curl status and retrieve discovery address and ENR
-// 	    process.stdout.write("Trying to sleep for 10 seconds...");
-//            await sleep(10000);
-//            process.stdout.write("Did I sleep 10 seconds?");
+            console.log("Started node 1," + " IP:  " + JSON.stringify(data.NetworkSettings.Networks[cfg.docker_net].IPAddress));
             get_node_p2p_params(ip_addrs["1"], function() {
-                    start_other_nodes(topology, nbNodes, tests_collection);    
-                });
-    });
+                resolve(start_other_nodes(topology, nbNodes, tests_collection));    
+            });
+        })
+    })
 }
 
 get_node_args = function(topology, pos) {
@@ -108,16 +112,28 @@ start_other_nodes_star = async function(nbNodes, tests_collection) {
         console.log("topo star node " + pos + " args: " + node_args);
         containers[pos] = await createMinimaContainer(node_args, cfg.node_prefix + pos, cfg.hostConfig);
         // Start the container.
+
         await containers[pos].start();
-        containers[pos].inspect(function (err, data) {
+
+        await sleep(10000);
+        console.log("node " + pos);
+        await starContainerInspect(pos, nbNodes, tests_collection);
+      }
+}
+
+const starContainerInspect = (pos, nbNodes, tests_collection) => {
+    return new Promise((resolve) => {
+        containers[''+pos].inspect(async function(err, data) {
             console.log("Started node " + pos + " IP:  " + JSON.stringify(data.NetworkSettings.Networks[cfg.docker_net].IPAddress));
             ip_addrs[pos] = data.NetworkSettings.Networks[cfg.docker_net].IPAddress;
-            if(pos == nbNodes) { // run tests after we created last node
-                // need to sleep to let node sync with others
-                setTimeout(function () { tests_collection(ip_addrs) }, cfg.DELAY_BEFORE_TESTS);
+            if(pos == nbNodes) {
+                await sleep(5000);
+                resolve(tests_collection(0, ip_addrs))
+            } else {
+                resolve(null)
             }
-        });
-      }
+        })
+    })
 }
 
 start_other_nodes_line = async function (nbNodes, pos, tests_collection) {
@@ -130,23 +146,31 @@ start_other_nodes_line = async function (nbNodes, pos, tests_collection) {
 
     // Start the container.
     await containers[pos].start();
-    containers[pos].inspect(function (err, data) {
-        console.log("Started node " + pos + " IP:  " + JSON.stringify(data.NetworkSettings.Networks[cfg.docker_net].IPAddress));
-        ip_addrs[pos] = data.NetworkSettings.Networks[cfg.docker_net].IPAddress;
-        if (pos == nbNodes) { // run tests after we created last node
-            // need to sleep to let node sync with others
-            setTimeout(function () { tests_collection(ip_addrs) }, cfg.DELAY_BEFORE_TESTS);
-        } else {
-            start_other_nodes_line(nbNodes, pos+1, tests_collection);
-        }
-    });
+    await sleep(10000);
+
+    await lineContainerInspect(pos, nbNodes, tests_collection);
+}
+
+const lineContainerInspect = (pos, nbNodes, tests_collection) => {
+    return new Promise((resolve) => {
+        containers[''+pos].inspect(async function(err, data) {
+            console.log("Started node " + pos + " IP:  " + JSON.stringify(data.NetworkSettings.Networks[cfg.docker_net].IPAddress));
+            ip_addrs[pos] = data.NetworkSettings.Networks[cfg.docker_net].IPAddress;
+            if(pos == nbNodes) {
+                await sleep(5000);
+                resolve(tests_collection(0, ip_addrs))
+            } else {
+                resolve(start_other_nodes_line(nbNodes, pos+1, tests_collection))
+            }
+        })
+    })
 }
 
 start_other_nodes = async function (topology, nbNodes, tests_collection) {
     if(topology === cfg.TOPO_STAR) {
-        start_other_nodes_star(nbNodes, tests_collection);
+        await start_other_nodes_star(nbNodes, tests_collection);
     } else if(topology === cfg.TOPO_LINE) {
-        start_other_nodes_line(nbNodes, 2, tests_collection);
+        await start_other_nodes_line(nbNodes, 2, tests_collection);
     } else {
         console.log("Unsupported topology! This error should be caught earlier.");
         console.log("    topology=" + topology);
@@ -195,77 +219,25 @@ get_node_p2p_params = function(host, cb) {
     });
 }
 
-
-// this function calls HTTP GET on host:endpoint, expects a minima answer, and runs tests_to_run if server success.
-run_some_tests_get = async function(host, endpoint, params="", tests) {
-    const url =  "http://" + host + ":" + cfg.host_port + endpoint + params;
-    
-    axios.get(url, {timeout: cfg.HTTP_TIMEOUT}, {maxContentLength: 3000},  {responseType: 'plain'})
-    .then(function (response) {
-      // handle success
-        if(response && response.status == 200) {
-          console.log(response.data);
-          if(response.data.status == true) {
-	          // console.log("received data with status = true, calling tests");
-              tests(response.data.response);
-          } else {
-	          console.log("json data incorrect, skipping tests");
-          }
-        }
-     })
-    .catch(function (error) {
-      // handle error
-      console.log("axios error handler:");
-      console.log(error);
-    })
-    .then(function () {
-      // always executed
-    });
-}
-
-// TODO / DO NOT USE
-// this function calls HTTP POST on host:endpoint, expects a minima answer, and runs tests_to_run if server success.
-run_some_tests_post = async function(host, endpoint, tests_to_run) {
-    const url =  "http://" + host + ":" + cfg.host_port + endpoint;
-    axios.post(url, {timeout: cfg.HTTP_TIMEOUT}, {maxContentLength: 3000},  {responseType: 'plain'})
-    .then(function (response) {
-      // handle success
-      if(response && response.status == 200) {
-          console.log(response.data);
-          if(response.data.status == true) {
-            tests_to_run(response.data.response);
-          }
-      }
-     })
-    .catch(function (error) {
-      // handle error
-      console.log(error);
-    })
-    .then(function () {
-      // always executed
-    });
-}
-
 stop_docker_nodes = async function() {
     console.log("stop_docker_nodes");
     // iterate over all running containers and stop them if their name starts with node_prefix
-    docker.listContainers({ all:false },
-      function (err, containers) {
-            if(containers) { 
-                containers.forEach(function (containerInfo) {
-                    if(containerInfo.Names[0].startsWith("/" + cfg.node_prefix)) {
-                        console.log ("Found a minima node(" + containerInfo.Names[0] + "), stopping.");
-                        docker.getContainer(containerInfo.Id).stop();
-                    }
-                });
-            } else {
-                console.log("Found no running docker instances\n");
-            }
-      });
+    docker.listContainers({ all:false }, function (err, containers) {
+        if(containers) { 
+            containers.forEach(function (containerInfo) {
+                if(containerInfo.Names[0].startsWith("/" + cfg.node_prefix)) {
+                    console.log ("Found a minima node(" + containerInfo.Names[0] + "), stopping.");
+                    docker.getContainer(containerInfo.Id).stop();
+                }
+            });
+        } else {
+            console.log("Found no running docker instances\n");
+        }
+    });
 }
 
 // setup a network of nbNodes minima nodes in star topology and runs tests_collection on it with argument ip_addrs[node_prefix+ "01"] .
-start_static_network_tests = async function (topology, nbNodes, tests_collection) {
+start_static_network_tests = async function (topology, nbNodes, nodeFailure, tests_collection) {
     if(!(topology === cfg.TOPO_STAR || topology === cfg.TOPO_LINE)) {
         console.log("Error! Unsupported topology: " + topology);
         return;
@@ -283,9 +255,15 @@ start_static_network_tests = async function (topology, nbNodes, tests_collection
     }
     await stop_docker_nodes();
     // give 5 seconds to stop all docker nodes (should depend on nbNodes but also system performance)
-    setTimeout(function() { start_docker_node_1(topology, nbNodes, tests_collection); }, 5000);    
+    await sleep(5000);
+    await start_docker_node_1(topology, nbNodes, tests_collection);    
+
+    //stop one node and run tests
+    await containers[''+nodeFailure].stop();
+    console.log("node " + nodeFailure + " stopping...");
+    await sleep(10000);
+    await tests_collection(1, ip_addrs);
 }
 
 exports.cfg = cfg;
 exports.start_static_network_tests = start_static_network_tests;
-exports.run_some_tests_get = run_some_tests_get;
