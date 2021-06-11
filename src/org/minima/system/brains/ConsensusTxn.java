@@ -46,6 +46,8 @@ public class ConsensusTxn extends ConsensusProcessor {
 	public static final String CONSENSUS_TXNINPUT 			= CONSENSUS_PREFIX+"TXNINPUT";
 	public static final String CONSENSUS_TXNOUTPUT 			= CONSENSUS_PREFIX+"TXNOUTPUT";
 	
+	public static final String CONSENSUS_TXNSCALE 			= CONSENSUS_PREFIX+"TXNSCALE";
+	
 	public static final String CONSENSUS_TXNSTATEVAR 		= CONSENSUS_PREFIX+"TXNSTATEVAR";
 	
 	public static final String CONSENSUS_TXNSIGN 			= CONSENSUS_PREFIX+"TXNSIGN";
@@ -351,27 +353,22 @@ public class ConsensusTxn extends ConsensusProcessor {
 			Witness wit     =  getMainDB().getUserDB().getUserRow(trans).getWitness();
 			
 			//Get the Coin..
-//			CoinDBRow crow = getMainDB().getCoinDB().getCoinRow(coinid);
 			Coin cc        = null;
 			
 			//If it isn't one of OUR coins..
-//			if(crow==null) {
-				//Get the MMRSet
-				MMRSet basemmr = getMainDB().getMainTree().getChainTip().getMMRSet();
-				
-				//Search for the coin..
-				MMREntry entry =  basemmr.findEntry(coinid);
-				
-				//Coin found..
-				if(entry != null) {
-					cc = entry.getData().getCoin();	
-				}else {
-					InputHandler.endResponse(zMessage, false, "CoinID not found : "+coinid);
-					return;	
-				}
-//			}else {
-//				cc = crow.getCoin();
-//			}
+			//Get the MMRSet
+			MMRSet basemmr = getMainDB().getMainTree().getChainTip().getMMRSet();
+			
+			//Search for the coin..
+			MMREntry entry =  basemmr.findEntry(coinid);
+			
+			//Coin found..
+			if(entry != null) {
+				cc = entry.getData().getCoin();	
+			}else {
+				InputHandler.endResponse(zMessage, false, "CoinID not found : "+coinid);
+				return;	
+			}
 						
 			//Is it a Token ? 
 			if(!cc.getTokenID().isEqual(Coin.MINIMA_TOKENID)) {
@@ -459,6 +456,57 @@ public class ConsensusTxn extends ConsensusProcessor {
 			}
 			
 			outputTransaction(zMessage,trans);
+			
+		
+		}else if(zMessage.isMessageType(CONSENSUS_TXNSCALE)) {
+			//Scale a value..
+			String amount 		= zMessage.getString("amount");
+			String tokenid 		= zMessage.getString("tokenid");
+			boolean isminima 	= zMessage.getBoolean("isminima");
+			
+			JSONObject resp = InputHandler.getResponseJSON(zMessage);
+			
+			//Is it Minima
+			if(tokenid.equals("0x00")) {
+				MiniNumber amt = new MiniNumber(amount);
+				
+				resp.put("name", "Minima");
+				resp.put("tokenid", tokenid);
+				resp.put("total", MiniNumber.BILLION.toString());
+				resp.put("scale", 1);
+				resp.put("token", amt.toString());
+				resp.put("minima",amt.toString());
+				InputHandler.endResponse(zMessage, true, "Minima token no change");
+				return;
+			}
+			
+			//Get the token
+			TokenProof tokendets = getMainDB().getUserDB().getTokenDetail(new MiniData(tokenid));
+			
+			if(tokendets == null) {
+				InputHandler.endResponse(zMessage, false, "Invalid Token : "+tokenid);
+				return;
+			}
+			
+			//get the scaled amount
+			MiniNumber tokenamount  = null;
+			MiniNumber minimaamount = null;
+			
+			if(isminima) {
+				minimaamount = new MiniNumber(amount);
+				tokenamount  = tokendets.getScaledTokenAmount(minimaamount);
+			}else {
+				tokenamount  = new MiniNumber(amount);
+				minimaamount = tokendets.getScaledMinimaAmount(tokenamount);
+			}
+			
+			resp.put("name", tokendets.getShowName());
+			resp.put("tokenid", tokenid);
+			resp.put("total", tokendets.getTotalTokens().toString());
+			resp.put("scale", tokendets.getScale());
+			resp.put("token", tokenamount.toString());
+			resp.put("minima", minimaamount.toString());
+			InputHandler.endResponse(zMessage, true, "Token amount scaled");
 			
 		}else if(zMessage.isMessageType(CONSENSUS_REMOUTPUT)) {
 			int trans    	= zMessage.getInteger("transaction");

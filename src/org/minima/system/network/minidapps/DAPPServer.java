@@ -1,6 +1,8 @@
 package org.minima.system.network.minidapps;
 
 import java.io.File;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.HashMap;
@@ -10,8 +12,10 @@ import java.util.Map;
 import java.util.Set;
 
 import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
 import org.minima.system.brains.BackupManager;
+import org.minima.system.network.commands.CMD;
 import org.minima.system.network.minidapps.minihub.hexdata.downloadpng;
 import org.minima.system.network.minidapps.minihub.hexdata.faviconico;
 import org.minima.system.network.minidapps.minihub.hexdata.helphtml;
@@ -73,7 +77,7 @@ public class DAPPServer extends NanoHTTPD{
 			
         	//What are they looking for..
         	String fileRequested = session.getUri();
-        	//MinimaLogger.log("RPC REQUEST "+fileRequested);
+//        	MinimaLogger.log("RPC REQUEST "+fileRequested);
         	
         	//Which MiniDAPP
         	String MiniDAPPID="";
@@ -224,6 +228,19 @@ public class DAPPServer extends NanoHTTPD{
 					
 					return getNotFoundResponse();
 				}
+			}else if(fileRequested.startsWith("api/")) {
+				//Which minidapp..
+				int mini = fileRequested.indexOf("/",4);
+				if(mini == -1) {
+					MinimaLogger.log("Incorrect input for API call "+fileRequested);
+					return getNotFoundResponse();
+				}
+				
+				//Get the MiniDAPP Name..
+				String name = fileRequested.substring(4,mini);
+				
+				//Run it..
+				return runAPIcall(name, minparams);
 			}
 			
 			//Are we uploading a file..
@@ -279,6 +296,39 @@ public class DAPPServer extends NanoHTTPD{
         	return getInternalErrorResponse("INTERNAL ERROR");
         }
     }
+	
+	/**
+	 * Send a API call to a specific MiniDAPP
+	 * @param zMiniDAPP
+	 * @param zParams
+	 * @throws UnsupportedEncodingException 
+	 */
+	protected Response runAPIcall(String zMiniDAPP, JSONObject zParams) throws UnsupportedEncodingException {
+		//Assume ID by defult
+		String minidappid = zMiniDAPP;
+		
+		//Get the MIniDAPP
+		if(!zMiniDAPP.startsWith("0x")) {
+			//It's the name of the mindapp
+			minidappid = mDAPPManager.getMiniDAPPID(zMiniDAPP);
+			
+			if(minidappid.equals("")) {
+				MinimaLogger.log("API call fail to MiniDAPP "+zMiniDAPP);
+				return getNotFoundResponse();
+			}
+		}
+		
+		//Get the params..
+		String uriparam = zParams.toString();
+		String encparams = URLEncoder.encode(uriparam, "UTF-8");
+		
+		//now post it..
+		CMD poster = new CMD("minidapps post:"+minidappid+" "+encparams);
+		poster.run();
+		
+		//Return the result
+		return getOKResponse(poster.getFinalResult().getBytes(MiniString.MINIMA_CHARSET), "text/txt");
+	}
 	
 	protected Response getOKResponse(byte[] zHTML, String zContentType) {
 		Response resp = Response.newFixedLengthResponse(Status.OK, zContentType, zHTML);

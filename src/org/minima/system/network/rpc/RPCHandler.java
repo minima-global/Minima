@@ -6,13 +6,16 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.URLDecoder;
+import java.nio.Buffer;
 import java.util.Date;
 import java.util.StringTokenizer;
 
+import org.minima.objects.base.MiniString;
 import org.minima.system.network.commands.CMD;
 import org.minima.system.network.commands.FILE;
 import org.minima.system.network.commands.NET;
 import org.minima.system.network.commands.SQL;
+import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;
 
 /**
@@ -46,7 +49,7 @@ public class RPCHandler implements Runnable {
 		
 		try {
 			// Input Stream
-			in = new BufferedReader(new InputStreamReader(mSocket.getInputStream()));
+			in = new BufferedReader(new InputStreamReader(mSocket.getInputStream(), MiniString.MINIMA_CHARSET));
 			
 			// Output Stream
 			out = new PrintWriter(mSocket.getOutputStream());
@@ -192,12 +195,18 @@ public class RPCHandler implements Runnable {
 				finalresult = "{\"status\":false, \"message\":\"Incorrect request TYPE.. GET or POST only\"}";
 			}
 			
+			//Remove EMOJI and other weird symbols
+			finalresult = MiniFormat.filterSafeTextEmoji(finalresult);
+			
+			//Calculate the amountof data..
+			byte[] strlen = finalresult.getBytes(MiniString.MINIMA_CHARSET); 
+			
 			// send HTTP Headers
 			out.println("HTTP/1.1 200 OK");
 			out.println("Server: HTTP RPC Server from Minima : 1.0");
 			out.println("Date: " + new Date());
 			out.println("Content-type: text/plain");
-			out.println("Content-length: " + finalresult.length());
+			out.println("Content-length: " + strlen.length);
 			out.println("Access-Control-Allow-Origin: *");
 			out.println(); // blank line between headers and content, very important !
 			out.println(finalresult);

@@ -9,7 +9,7 @@ public class unkeepcoin extends CommandFunction{
 	public unkeepcoin() {
 		super("unkeepcoin");
 		
-		setHelp("[coinid]", "Remove a coin form your list of tracked coins..", "");
+		setHelp("[coinid]", "Remove a coin from your list of tracked coins..", "");
 	}
 	
 	@Override

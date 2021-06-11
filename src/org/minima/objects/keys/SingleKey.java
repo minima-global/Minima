@@ -1,12 +1,23 @@
 package org.minima.objects.keys;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.digest.WinternitzOTSVerify;
 import org.minima.utils.digest.WinternitzOTSignature;
 
 public class SingleKey extends BaseKey {
 
+	/**
+	 * The Winternitz key.. only create it once..
+	 */
+	private WinternitzOTSignature mWOTS = null;
+	
+	
 	public SingleKey() {
 		super();
 	}
@@ -19,32 +30,29 @@ public class SingleKey extends BaseKey {
 		mMaxUses  = MiniNumber.ONE;
 		mUses     = MiniNumber.ZERO;
 		
+		//Number of Bits of security
+		mBitLength = new MiniNumber(zPrivateSeed.getLength()*8);
+		
+		//Create a random seed
+		mPrivateSeed = zPrivateSeed;
+		
 		//Initialise
 		initKeys(zPrivateSeed);
 	}
 	
 	@Override
 	protected void initKeys(MiniData zPrivateSeed) {
-		//Number of Bits of security
-		mBitLength = new MiniNumber(zPrivateSeed.getLength()*8);
-		
-		//Create a random seed
-		mPrivateSeed = zPrivateSeed;
-
 		//Create a WOTS
-		WinternitzOTSignature wots = new WinternitzOTSignature(mPrivateSeed.getData(), getHashFunction(mBitLength), getWinternitz());
+		mWOTS = new WinternitzOTSignature(mPrivateSeed.getData(), getHashFunction(mBitLength), getWinternitz());
 		
 		//Get the Public Key..
-		mPublicKey  = new MiniData(wots.getPublicKey());
+		setPublicKey(new MiniData(mWOTS.getPublicKey()));
 	}
 	
 	@Override
 	public MiniData sign(MiniData zData) {
-		//Create a WOTS
-		WinternitzOTSignature wots = new WinternitzOTSignature(mPrivateSeed.getData(), getHashFunction(mBitLength), getWinternitz());
-		
 		//Sign the data..
-		byte[] signature = wots.getSignature(zData.getData());
+		byte[] signature = mWOTS.getSignature(zData.getData());
 		
 		//Return 
 		return new MiniData(signature);
@@ -62,6 +70,6 @@ public class SingleKey extends BaseKey {
 		MiniData resp = new MiniData(pubkey);
 		
 		//Check..
-		return resp.isEqual(mPublicKey);
+		return resp.isEqual(getPublicKey());
 	}
 }

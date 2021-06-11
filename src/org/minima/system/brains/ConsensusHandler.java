@@ -44,6 +44,12 @@ public class ConsensusHandler extends MessageProcessor {
 	public static final String CONSENSUS_AUTOBACKUP 	       = "CONSENSUS_AUTOBACKUP";
 	
 	/**
+	 * Initialise the 32 keys you use by default for change
+	 * This can be slow at time of send so best to do it incrementally..
+	 */
+	public static final String CONSENSUS_INITKEYS 	       		= "CONSENSUS_INITKEYS";
+	
+	/**
 	 * HARD CORE MINIMG for the bootstrap period 
 	 */
 	public static final String CONSENSUS_ACTIVATEMINE 		   = "CONSENSUS_ACTIVATEMINE";
@@ -161,6 +167,9 @@ public class ConsensusHandler extends MessageProcessor {
 	
 		//Redo every 10 minutes..
 		PostTimerMessage(new TimerMessage(10 * 60 * 1000, CONSENSUS_AUTOBACKUP));
+		
+		//Initialise the multi keys..
+		PostTimerMessage(new TimerMessage(10 * 1000, CONSENSUS_INITKEYS));
 	}
 	
 	public void setBackUpManager() {
@@ -348,6 +357,18 @@ public class ConsensusHandler extends MessageProcessor {
 			
 			//Clean the Memory..
 			System.gc();
+		
+			/**
+			 * Initilise the Multi Keys..
+			 */
+		}else if ( zMessage.isMessageType(CONSENSUS_INITKEYS) ) {
+			//Check keys..
+			boolean inited = getMainDB().getUserDB().checkInitKeys(this);
+			
+			//Do it again..
+			if(inited) {
+				PostTimerMessage(new TimerMessage(20 * 1000, CONSENSUS_INITKEYS));
+			}
 			
 		/**
 		 * Network Messages
@@ -685,6 +706,12 @@ public class ConsensusHandler extends MessageProcessor {
 			trans.addOutput(new Coin(Coin.COINID_OUTPUT,addr1.getAddressData(),new MiniNumber("25"), Coin.MINIMA_TOKENID));
 			trans.addOutput(new Coin(Coin.COINID_OUTPUT,addr2.getAddressData(),new MiniNumber("25"), Coin.MINIMA_TOKENID));
 			
+			//Notify listeners that Mining is starting...
+			JSONObject mining = new JSONObject();
+			mining.put("event","txpowstart");
+			mining.put("transaction",trans.toJSON());
+			PostDAPPJSONMessage(mining);
+			
 			//Now send it..
 			Message mine = new Message(ConsensusHandler.CONSENSUS_SENDTRANS)
 								.addObject("transaction", trans)
@@ -776,6 +803,24 @@ public class ConsensusHandler extends MessageProcessor {
 				
 				//Create the Transaction
 				Message ret = getMainDB().createTransaction(sendamount, recipient, change, confirmed, tok, changetok,tokengen);
+				
+				//get the Transaction
+				Transaction trans = (Transaction) ret.getObject("transaction");
+				
+				//Final check..
+				if(getMainDB().checkTransactionForMining(trans)) {
+					InputHandler.endResponse(zMessage, false, "ERROR double spend coin in mining pool.");
+					return;
+				}
+				
+				//Add all the inputs to the mining..
+				getMainDB().addMiningTransaction(trans);
+				
+				//Notify listeners that Mining is starting...
+				JSONObject mining = new JSONObject();
+				mining.put("event","txpowstart");
+				mining.put("transaction",trans.toJSON());
+				PostDAPPJSONMessage(mining);
 				
 				//Continue the log output trail
 				InputHandler.addResponseMesage(ret, zMessage);

@@ -28,7 +28,7 @@ public class MiniString implements Streamable {
 	}
 	
 	public MiniString(byte[] zBytesData) {
-		mString = new String(zBytesData);
+		mString = new String(zBytesData,MINIMA_CHARSET);
 	}
 	
 	@Override
@@ -37,7 +37,7 @@ public class MiniString implements Streamable {
 	}
 	
 	public byte[] getData() {
-		return mString.getBytes();
+		return mString.getBytes(MINIMA_CHARSET);
 	}
 	
 	@Override

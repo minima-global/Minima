@@ -16,6 +16,7 @@ import org.minima.system.input.functions.txns.txnoutput;
 import org.minima.system.input.functions.txns.txnpost;
 import org.minima.system.input.functions.txns.txnreminput;
 import org.minima.system.input.functions.txns.txnremoutput;
+import org.minima.system.input.functions.txns.tokenscale;
 import org.minima.system.input.functions.txns.txnscript;
 import org.minima.system.input.functions.txns.txnsign;
 import org.minima.system.input.functions.txns.txnsignauto;
@@ -109,6 +110,7 @@ public class help extends CommandFunction{
 			
 			addJSONDesc(new tokens());
 			addJSONDesc(new tokencreate());
+			addJSONDesc(new tokenscale());
 			addJSONDesc(new tokenvalidate());
 			
 			addJSONDesc(new sign());

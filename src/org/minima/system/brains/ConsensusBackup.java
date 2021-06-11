@@ -255,6 +255,7 @@ public class ConsensusBackup extends ConsensusProcessor {
 			}
 			
 			//OK - LETS DO IT..
+			InputHandler.endResponse(zMessage, true, "Restore file found..");
 			
 			//Clear the database..
 			getMainDB().getMainTree().clearTree();
@@ -268,12 +269,16 @@ public class ConsensusBackup extends ConsensusProcessor {
 			ByteArrayInputStream bais 	= new ByteArrayInputStream(restore);
 			DataInputStream dis 		= new DataInputStream(bais);
 			
+			MinimaLogger.log("Loading UserDB");
+			
 			//First the UserDB
 			JavaUserDB jdb = new JavaUserDB();
 			jdb.readDataStream(dis);
 				
 			//Set it..
 			getMainDB().setUserDB(jdb);
+			
+			MinimaLogger.log("Loading Block Tree");
 			
 			//And now..
 			SyncPackage sp = new SyncPackage();
@@ -286,11 +291,13 @@ public class ConsensusBackup extends ConsensusProcessor {
 			//And now load it..
 			loadSyncPackage(sp);
 			
+			//getNetworkHandler().setGlobalReconnect(false);
+			
 			//Disconnect and Reconnect to the network..
 			getNetworkHandler().PostMessage(NetworkHandler.NETWORK_RECONNECT);
 		
 			//Message
-			InputHandler.endResponse(zMessage, true, "Restore complete - reconnecting to network");
+//			InputHandler.endResponse(zMessage, true, "Restore complete - reconnecting to network");
 		
 		}else if(zMessage.isMessageType(CONSENSUSBACKUP_RESET)) {
 			//Return details..

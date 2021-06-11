@@ -16,7 +16,7 @@ public abstract class BaseKey implements Streamable {
 	/**
 	 * The Winternitz number used by all the Lamport Signatures
 	 */
-	private MiniNumber mWinternitz = MiniNumber.TWELVE;
+	protected MiniNumber mWinternitz = MiniNumber.TWELVE;
 	
 	/**
 	 * Security of the signature in Bits
@@ -31,7 +31,7 @@ public abstract class BaseKey implements Streamable {
 	/**
 	 * Public Key
 	 */
-	protected MiniData mPublicKey;
+	private MiniData mPublicKey;
 
 	/**
 	 * Number of Times you can use this Key
@@ -107,16 +107,20 @@ public abstract class BaseKey implements Streamable {
 	 * @param zPublicKey
 	 */
 	public void setPublicKey(MiniData zPublicKey) {
+		//Hard set the public key
 		mPublicKey = zPublicKey;
+		
+		//Bitlength too..
 		mBitLength = new MiniNumber(zPublicKey.getLength()*8); 
-	}
-	
-	public MiniNumber getLevel() {
-		return mLevel;
 	}
 	
 	public MiniData getPublicKey() {
 		return mPublicKey;
+	}
+	
+	
+	public MiniNumber getLevel() {
+		return mLevel;
 	}
 	
 	public MiniData getPrivateSeed() {
@@ -177,6 +181,9 @@ public abstract class BaseKey implements Streamable {
 		mLevel       = MiniNumber.ReadFromStream(zIn);
 		mMaxUses     = MiniNumber.ReadFromStream(zIn);
 		mUses        = MiniNumber.ReadFromStream(zIn);
+		
+		//Number of Bits of security
+		mBitLength = new MiniNumber(mPrivateSeed.getLength()*8);
 		
 		//Init the variables 
 		initKeys(mPrivateSeed);

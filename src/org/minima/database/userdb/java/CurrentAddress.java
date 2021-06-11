@@ -9,6 +9,7 @@ import org.minima.GlobalParams;
 import org.minima.database.userdb.UserDB;
 import org.minima.objects.Address;
 import org.minima.objects.base.MiniByte;
+import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.keys.MultiKey;
 import org.minima.system.brains.ConsensusBackup;
@@ -18,7 +19,7 @@ import org.minima.utils.Streamable;
 
 public class CurrentAddress implements Streamable {
 
-	public static int CURRENT_ADDRESS_NUM = 32;
+	private static final int CURRENT_ADDRESS_NUM = 32;
 	
 	public static MiniNumber MAX_REQUEST = new MiniNumber(4000);
 	
@@ -65,6 +66,65 @@ public class CurrentAddress implements Streamable {
 	public CurrentAddress() {
 		mAddresses = new CAddressDetails[CURRENT_ADDRESS_NUM];
 		mTotalUsed = MiniNumber.ZERO;
+	}
+	
+	/**
+	 * 	Init or create one key at a time..
+	 *  if they donp;t yet exist or are not inited..
+	 * @return
+	 */
+	public boolean checkKeysInitSatatus(UserDB zUserDB, ConsensusHandler zBackup) {
+		//Cycle through and check they are all there aND ALL INITED.. 
+		for(int i=0;i<CURRENT_ADDRESS_NUM;i++) {
+			//Does it exist..
+			if(mAddresses[i] == null) {
+				//Create a new Key!
+				mAddresses[i] = new CAddressDetails();
+				
+				//Create a new KEY - give 16*16*16 signatures = 4096
+				MultiKey key = new MultiKey(GlobalParams.MINIMA_DEFAULT_HASH_STRENGTH, 
+						new MiniNumber(16), new MiniNumber(3));
+				
+				//Create a new address.. with a few thousand uses..
+				mAddresses[i].setAddress(zUserDB.newSimpleAddress(key));
+				
+				//Total addresses used
+				mTotalUsed = mTotalUsed.increment();
+				
+				//Log it..
+				MinimaLogger.log("AUTO NEW base address created ["+i+" / "+mTotalUsed+"] : "+mAddresses[i].getAddress().getMinimaAddress());
+				
+				//Backup
+				zBackup.PostMessage(ConsensusBackup.CONSENSUSBACKUP_BACKUPUSER);
+				
+				//We have inited a new key - so call me again!
+				return true;
+				
+			}else{
+				//Is it inited..
+				Address addr = mAddresses[i].getAddress();
+				
+				//Get the public key
+				MiniData pubk = zUserDB.getPublicKeyForSimpleAddress(addr.getAddressData());
+				
+				//Get the multi key..
+				MultiKey mk = zUserDB.getPubPrivKey(pubk);
+				
+				//Is it inited..
+				if(!mk.isInitialised()) {
+					MinimaLogger.log("AUTO base address initilised ["+i+" / "+mTotalUsed+"] : "+mAddresses[i].getAddress().getMinimaAddress());
+					mk.autoInit();
+					return true;
+				}
+			}
+			
+			//Keep checking the keys..
+		}
+		
+		MinimaLogger.log("All base keys created and initialised..");
+		
+		//All  keys created and Inited!
+		return false;
 	}
 	
 	public Address getCurrentAddress(UserDB zUserDB, ConsensusHandler zBackup) {

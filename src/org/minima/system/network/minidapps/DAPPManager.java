@@ -24,12 +24,14 @@ import org.minima.system.brains.BackupManager;
 import org.minima.system.brains.ConsensusHandler;
 import org.minima.system.input.InputHandler;
 import org.minima.system.network.NetworkHandler;
+import org.minima.system.network.commands.SQL;
 import org.minima.system.network.minidapps.comms.CommsManager;
 import org.minima.system.network.minidapps.minibackend.BackEndDAPP;
 import org.minima.system.network.minidapps.websocket.WebSocketManager;
 import org.minima.system.network.rpc.RPCClient;
 import org.minima.utils.Crypto;
 import org.minima.utils.MiniFile;
+import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.SQLHandler;
 import org.minima.utils.json.JSONArray;
@@ -109,6 +111,14 @@ public class DAPPManager extends MessageProcessor {
 			mCommsManager.shutdown();
 		}
 		
+		//And the back ends..
+		Enumeration<BackEndDAPP> bends = mBackends.elements();
+		while(bends.hasMoreElements()) {
+			BackEndDAPP bend = bends.nextElement();
+			bend.shutdown();
+		}
+		
+		//Stop this..
 		stopMessageProcessor();
 	}
 	
@@ -122,6 +132,22 @@ public class DAPPManager extends MessageProcessor {
 		}
 		
 		return CURRENT_MINIDAPPS;
+	}
+	
+	public String getMiniDAPPID(String zMiniDAPPNAme) {
+		int len = CURRENT_MINIDAPPS.size();
+		for(int i=0;i<len;i++) {
+			//Get the object
+			JSONObject minidapp = (JSONObject) CURRENT_MINIDAPPS.get(i);
+
+			//Is it the right one..
+			String name = (String) minidapp.get("name"); 
+			if(name.equalsIgnoreCase(zMiniDAPPNAme)) {
+				return (String) minidapp.get("uid");
+			}
+		}
+		
+		return "";
 	}
 	
 	public String getMiniDAPPSFolder() {
@@ -538,6 +564,23 @@ public class DAPPManager extends MessageProcessor {
 			
 			MinimaLogger.log("UNINSTALLING : "+minidapp);
 			
+			//Delete the DB
+			if(SQLHandler.isMySQLEnabled()) {
+				//What is the DB
+				String db = SQLHandler.getMiniDappMySQLName(minidapp);
+				
+				//Create the DROP SQL
+				String drop = "DROP DATABASE "+db;
+				
+				//Delete the MySQL DB
+				SQL sqldel = new SQL(drop, minidapp);
+				sqldel.run();
+			}else {
+				//Close the DB connection..
+				
+				
+			}
+			
 			//UNINSTALL the DAPP
 			File appfolder = new File(getMiniDAPPSFolder(),minidapp);
 		
@@ -545,6 +588,9 @@ public class DAPPManager extends MessageProcessor {
 				InputHandler.endResponse(zMessage, false, "MiniDAPP not found..");	
 				return;
 			}
+			
+			//Close the DB connections first..
+			SQLHandler.CloseSQL();
 			
 			//Delete the app root..
 			BackupManager.safeDelete(appfolder);
@@ -583,6 +629,14 @@ public class DAPPManager extends MessageProcessor {
 			wsmsg.put("event","network");
 			wsmsg.put("details",json);
 			
+			//MinimaLogger.log("DIRECT POST "+wsmsg.toString());
+//			//Check it exists
+//			BackEndDAPP bend = mBackends.get(minidapp);
+//			if(bend == null) {
+//				InputHandler.endResponse(zMessage, false, "MiniDAPP not found "+minidapp);
+//				return;
+//			}
+			
 			//Send to the backend
 			sendToBackEND(minidapp,wsmsg);
 			
@@ -592,6 +646,12 @@ public class DAPPManager extends MessageProcessor {
 			msg.addString("minidappid", minidapp);
 			mNetwork.getWebSocketManager().PostMessage(msg);
 		
+			//Finished attempted forwarding
+			JSONObject mdapps = InputHandler.getResponseJSON(zMessage);
+			mdapps.put("message", wsmsg.toString());
+			mdapps.put("minidappid", minidapp);
+			InputHandler.endResponse(zMessage, true, "MiniDAPP message forwarded");
+			
 		}else if(zMessage.getMessageType().equals(DAPP_DIRECTREPLY)) {
 			//Get the REPLY ID
 			String replyid = zMessage.getString("replyid");
@@ -618,9 +678,12 @@ public class DAPPManager extends MessageProcessor {
 			//First the Back End..
 			sendToBackEND(minidapp,json);
 			
+			//Remove funny characters
+			String JSONEvent = MiniFormat.filterSafeTextEmoji(json.toString());
+			
 			Message msg = new Message(WebSocketManager.WEBSOCK_SEND);
 			msg.addString("minidappid", minidapp);
-			msg.addString("message", json.toString());
+			msg.addString("message", JSONEvent);
 			mNetwork.getWebSocketManager().PostMessage(msg);
 			
 		}else if(zMessage.isMessageType(DAPP_MINIDAPP_POSTALL)) {
@@ -630,8 +693,11 @@ public class DAPPManager extends MessageProcessor {
 			//First the Back End..
 			sendToBackEND("",json);
 			
+			//Remove funny characters
+			String JSONEvent = MiniFormat.filterSafeTextEmoji(json.toString());
+			
 			Message msg = new Message(WebSocketManager.WEBSOCK_SENDTOALL);
-			msg.addString("message", json.toString());
+			msg.addString("message", JSONEvent);
 			mNetwork.getWebSocketManager().PostMessage(msg);
 			
 			//Post it to an URL..
@@ -639,20 +705,17 @@ public class DAPPManager extends MessageProcessor {
 				//Get the URL
 				String url = mNetwork.getExternalURL();
 				if(!url.equals("")) {
-//					MinimaLogger.log("Attempt to call external URL "+url); 
-					String reply = RPCClient.sendPOST(url, json.toString(), "application/json");
-//					MinimaLogger.log("Reply : "+reply); 
+					String reply = RPCClient.sendPOST(url, JSONEvent, "application/json");
 				}
 			}catch(Exception exc) {
 				MinimaLogger.log("ExternalURL error : "+exc.toString()+" "+json.toString());
 			}
-		}
-		
+		}	
 	}
 	
 	private void sendToBackEND(String zMiniDAPPID, JSONObject zJSON) {
 		//Create the same EVent as on the Web
-	    String JSONEvent = zJSON.toString();
+	    String JSONEvent = MiniFormat.filterSafeTextEmoji(zJSON.toString());
 	    
 		if(zMiniDAPPID.equals("")){
 			Enumeration<BackEndDAPP> bends = mBackends.elements();

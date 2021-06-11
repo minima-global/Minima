@@ -20,11 +20,12 @@ import org.minima.objects.base.MiniString;
 import org.minima.objects.keys.MultiKey;
 import org.minima.objects.proofs.TokenProof;
 import org.minima.system.brains.ConsensusHandler;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 
 public class JavaUserDB implements UserDB, Streamable{
 	
-	public static int MAX_HISTORY = 100;
+	public static int MAX_HISTORY = 64;
 	
 	/**
 	 * Minima stores any output that has a key you own in the STATE
@@ -192,6 +193,11 @@ public class JavaUserDB implements UserDB, Streamable{
 	@Override
 	public Address getCurrentAddress(ConsensusHandler zBackup) {
 		return mCurrentAddress.getCurrentAddress(this, zBackup);
+	}
+	
+	@Override
+	public boolean checkInitKeys(ConsensusHandler zBackup) {
+		return mCurrentAddress.checkKeysInitSatatus(this, zBackup);
 	}
 
 	@Override
@@ -459,14 +465,20 @@ public class JavaUserDB implements UserDB, Streamable{
 		//Current address
 		mCurrentAddress = new CurrentAddress();
 		mCurrentAddress.readDataStream(zIn);
-				
+		
 		//Pub Priv Keys
 		int len = zIn.readInt();
+//		MinimaLogger.log("Loading private keys.. "+len);
 		for(int i=0;i<len;i++) {
 			MultiKey pp = new MultiKey();
 			pp.readDataStream(zIn);
 			mPubPrivKeys.add(pp);
+			
+//			if((i!=0) && (i % 5 == 0) ) {
+//				MinimaLogger.log("Keys loaded.. "+i);
+//			}
 		}
+//		MinimaLogger.log("Loading private keys done..");
 		
 		//Address
 		len = zIn.readInt();
@@ -483,14 +495,14 @@ public class JavaUserDB implements UserDB, Streamable{
 			mScriptAddresses.add(addr);
 			mTotalAddresses.add(addr);
 		}
-		
+	
 		//Extra Address
 		len = zIn.readInt();
 		for(int i=0;i<len;i++) {
 			Address addr = Address.ReadFromStream(zIn);
 			mExtraAddresses.add(addr);
 		}
-		
+
 		//Relevant Coins
 		len = zIn.readInt();
 		for(int i=0;i<len;i++) {
@@ -503,7 +515,7 @@ public class JavaUserDB implements UserDB, Streamable{
 		for(int i=0;i<len;i++) {
 			mAllTokens.add(TokenProof.ReadFromStream(zIn));
 		}
-		
+
 		//transaction..
 		len = zIn.readInt();
 		for(int i=0;i<len;i++) {
@@ -563,11 +575,31 @@ public class JavaUserDB implements UserDB, Streamable{
 
 	@Override
 	public void addToHistory(TxPoW zTxPOW, Hashtable<String, MiniNumber> zValues) {
+		//Add to our history
 		mHistory.add(new reltxpow( zTxPOW, zValues));
 	
-		int size = mHistory.size();
-		if(size>MAX_HISTORY) {
-			mHistory = new ArrayList<reltxpow>(mHistory.subList(size-MAX_HISTORY, MAX_HISTORY));
+		//Check size
+		if(mHistory.size()>MAX_HISTORY) {
+			MinimaLogger.log("History too large.. cropping..");
+			
+			//Create a new shorter history
+			ArrayList<reltxpow> newhistory = new ArrayList<>();
+			int count=0;
+			for(reltxpow hist : mHistory) {
+				//Skip the first few..
+				if(count <= 10) {
+					count++;
+					continue;
+				}
+				
+				//New trans
+				count++;
+				
+				//Add to the new history
+				newhistory.add(hist);
+			}
+			
+			mHistory = newhistory;
 		}
 	}
 
