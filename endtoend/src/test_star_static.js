@@ -6,6 +6,7 @@ require('chai').assert;
 
 var { Minima_API } = require('minima-api');
 var fs = require('fs');
+const createCsvWriter = require("csv-writer").createObjectCsvWriter;
 
 const topology = process.env.topology;
 const nbNodes = parseInt(process.env.nbNodes);
@@ -17,19 +18,6 @@ function sleep(ms) {
     return new Promise((resolve) => {
       setTimeout(resolve, ms);
     });
-} 
-
-function writeFunction(data) {
-    
-    return new Promise((resolve, reject) => {
-        fs.appendFile("./log/result.txt", data, function(err) {
-            if (err) {
-                reject(err);
-            } else {
-                resolve(null)
-            }
-        });
-    })
 }
 
 test_star_static = function () {
@@ -39,17 +27,24 @@ test_star_static = function () {
         //wait for processing(should depend on nbNodes but also system performance)
         await sleep(60000);
 
-        if (!fs.existsSync("./log")){
-            fs.mkdirSync("./log");
+        if (!fs.existsSync("./results")){
+            fs.mkdirSync("./results");
         }
 
-        if (flag == 0) {
-            await writeFunction("The Result before stopping node.\n")
-        }
+        let current = new Date();
 
-        if(flag == 1) {
-            await writeFunction("\n\n\nThe Result after stopping node " + nodeFailure + "\n");
-        }
+        let csvWriter = createCsvWriter({
+            path: flag == 0 ? `./results/result-${current.getDate()}_${current.getMonth()+1}_${current.getFullYear()}-${current.getHours()}_${current.getMinutes()}-part1.csv` 
+                            : `./results/result-${current.getDate()}_${current.getMonth()+1}_${current.getFullYear()}-${current.getHours()}_${current.getMinutes()}-part2.csv`,
+            header: [
+              { id: "node", title: "Node" },
+              { id: "ip", title: "IP" },
+              { id: "request", title: "Request" },
+              { id: "response", title: "Response" },
+            ],
+        });
+
+        let data = [];
 
         for(child = 1; child < nbNodes+1; child++) {
             if (flag == 1 && child == nodeFailure) continue;
@@ -57,16 +52,25 @@ test_star_static = function () {
 
             await Minima_API.init(ip_addrs[child.toString()]);
 
+            let midData = {};
+            midData["node"] = child;
+            midData["ip"] = ip_addrs[child.toString()];
+
             var status = await Minima_API.status();
-            var data = "\n " + ip_addrs[child.toString()] + ":\nStatus: \n" + JSON.stringify(status) + "\n";
-            await writeFunction(data);
-    
+            midData["request"] = "status";
+            midData["response"] = JSON.stringify(status);
+            data.push(midData);
+            
+            let tempData = {}
             var network = await Minima_API.network();
-            data = "network: \n" + JSON.stringify(network) + "\n";
-            await writeFunction(data);
+            tempData["node"] = child;
+            tempData["ip"] = ip_addrs[child.toString()];
+            tempData["request"] = "network";
+            tempData["response"] = JSON.stringify(network);
+            data.push(tempData);
         }
+        await csvWriter.writeRecords(data)
     })
 }
-
 
 module.exports = test_star_static
