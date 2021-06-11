@@ -340,7 +340,7 @@ public class ConsensusHandler extends MessageProcessor {
 			getMainDB().remeoveMiningTransaction(txpow.getTransaction());
 				
 		/**
-		 * Called every 10 Minutes to do a few tasks
+		 * Called every 10 Minutes to do a few background tasks
 		 */
 		}else if ( zMessage.isMessageType(CONSENSUS_AUTOBACKUP) ) {
 			//Backup the system..
@@ -352,6 +352,9 @@ public class ConsensusHandler extends MessageProcessor {
 			//Clean the Tokens..
 			getMainDB().checkTokens();
 			
+			//Consolidate your coins!
+			PostMessage(new Message(ConsensusUser.CONSENSUS_CONSOLIDATE));
+			
 			//Redo every 10 minutes..
 			PostTimerMessage(new TimerMessage(10 * 60 * 1000, CONSENSUS_AUTOBACKUP));
 			
@@ -359,7 +362,7 @@ public class ConsensusHandler extends MessageProcessor {
 			System.gc();
 		
 			/**
-			 * Initilise the Multi Keys..
+			 * Initialise the Multi Keys..
 			 */
 		}else if ( zMessage.isMessageType(CONSENSUS_INITKEYS) ) {
 			//Check keys..
@@ -678,13 +681,13 @@ public class ConsensusHandler extends MessageProcessor {
 			
 		}else if(zMessage.isMessageType(CONSENSUS_GIMME50)) {
 			//Check time
-//			long timenow = System.currentTimeMillis();
-//			if(timenow - mLastGimme < MIN_GIMME50_TIME_GAP) {
-//				//You can only do one of these every 10 minutes..
-//				InputHandler.endResponse(zMessage, false, "You may only gimme50 once every 10 minutes");
-//				return;
-//			}
-//			mLastGimme = timenow;
+			long timenow = System.currentTimeMillis();
+			if(timenow - mLastGimme < MIN_GIMME50_TIME_GAP) {
+				//You can only do one of these every 10 minutes..
+				InputHandler.endResponse(zMessage, false, "You may only gimme50 once every 10 minutes");
+				return;
+			}
+			mLastGimme = timenow;
 			
 			//construct a special transaction that pays 50 mini to an address this user controls..
 			Address addr1 = getMainDB().getUserDB().getCurrentAddress(this);
