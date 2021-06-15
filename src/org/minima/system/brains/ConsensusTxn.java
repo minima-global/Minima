@@ -587,10 +587,7 @@ public class ConsensusTxn extends ConsensusProcessor {
 			getMainDB().addMiningTransaction(trx);
 			
 			//Notify listeners that Mining is starting...
-			JSONObject mining = new JSONObject();
-			mining.put("event","txpowstart");
-			mining.put("transaction",trx.toJSON());
-			getConsensusHandler().PostDAPPJSONMessage(mining);
+			getConsensusHandler().PostDAPPStartMining(trx);
 			
 			//Create the message
 			Message msg = new Message(ConsensusHandler.CONSENSUS_SENDTRANS)

@@ -988,10 +988,7 @@ public class ConsensusUser extends ConsensusProcessor {
 				getMainDB().addMiningTransaction(trans);
 				
 				//Notify listeners that Mining is starting...
-				JSONObject mining = new JSONObject();
-				mining.put("event","txpowstart");
-				mining.put("transaction",trans.toJSON());
-				getConsensusHandler().PostDAPPJSONMessage(mining);
+				getConsensusHandler().PostDAPPStartMining(trans);
 				
 				//Post it..
 				getConsensusHandler().PostMessage(msg);
