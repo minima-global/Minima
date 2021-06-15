@@ -373,6 +373,8 @@ public class ConsensusHandler extends MessageProcessor {
 				PostTimerMessage(new TimerMessage(20 * 1000, CONSENSUS_INITKEYS));
 			}
 			
+			System.gc();
+			
 		/**
 		 * Network Messages
 		 */
