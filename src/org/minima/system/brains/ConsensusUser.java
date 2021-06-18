@@ -866,6 +866,8 @@ public class ConsensusUser extends ConsensusProcessor {
 				//Token..
 				MiniData tokenid = new MiniData(tok);
 				consolidateToken(tokenid);
+				
+				System.gc();
 			}
 			
 			//All done..
@@ -896,7 +898,7 @@ public class ConsensusUser extends ConsensusProcessor {
 			curr.add(coin);
 		}
 	
-		int MAX_COLL = 10;
+		int MAX_COLL = 5;
 		
 		//Now create transactions..
 		Set<String> keys = pubcoins.keySet();
