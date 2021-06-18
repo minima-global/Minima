@@ -34,7 +34,7 @@ public class RPCHandler implements Runnable {
 	Socket mSocket;
 	
 	/**
-	 * Main COnstructor
+	 * Main Constructor
 	 * @param zSocket
 	 */
 	public RPCHandler(Socket zSocket) {
@@ -203,7 +203,7 @@ public class RPCHandler implements Runnable {
 			
 			// send HTTP Headers
 			out.println("HTTP/1.1 200 OK");
-			out.println("Server: HTTP RPC Server from Minima : 1.0");
+			out.println("Server: HTTP RPC Server from Minima : 1.1");
 			out.println("Date: " + new Date());
 			out.println("Content-type: text/plain");
 			out.println("Content-length: " + finallength);
