@@ -54,8 +54,7 @@ public class RPCHandler implements Runnable {
 			in = new BufferedReader(new InputStreamReader(mSocket.getInputStream(), MiniString.MINIMA_CHARSET));
 			
 			// Output Stream
-			OutputStreamWriter osw = new OutputStreamWriter(mSocket.getOutputStream(), MiniString.MINIMA_CHARSET);
-			out = new PrintWriter(osw);
+			out = new PrintWriter(new OutputStreamWriter(mSocket.getOutputStream(), MiniString.MINIMA_CHARSET));
 			
 			// get first line of the request from the client
 			String input = in.readLine();
@@ -195,7 +194,7 @@ public class RPCHandler implements Runnable {
             	finalresult = netcomm.getFinalResult();
 			
 			}else {
-				finalresult = "{\"status\":false, \"message\":\"Incorrect request TYPE.. GET or POST only\"}";
+				finalresult = "{\"status\":false, \"message\":\"Incorrect command TYPE..\"}";
 			}
 			
 			//Calculate the amountof data..
