@@ -845,6 +845,23 @@ public class ConsensusUser extends ConsensusProcessor {
 		
 			
 		}else if(zMessage.isMessageType(CONSENSUS_CONSOLIDATE)) {
+			//Is there a parameter ?
+			String param = zMessage.getString("param");
+			boolean hard = false;
+			if(param.equals("hard")) {
+				hard = true;
+			
+			}else if(param.equals("on")) {
+				//Turn consolidation on!..
+				
+			
+				//All done..
+				InputHandler.endResponse(zMessage, true, "Coin Consolidation turned ON");
+				
+			}else if(param.equals("on")) {
+				
+				InputHandler.endResponse(zMessage, true, "Coin Consolidation turned OFF");
+			}
 			
 			//List of tokens..
 			ArrayList<String> alltokens = new ArrayList<>();
@@ -865,7 +882,11 @@ public class ConsensusUser extends ConsensusProcessor {
 			for(String tok : alltokens) {
 				//Token..
 				MiniData tokenid = new MiniData(tok);
-				consolidateToken(tokenid);
+				if(hard) {
+					consolidateTokenHard(tokenid);
+				}else {
+					consolidateTokenPerKey(tokenid);
+				}
 				
 				System.gc();
 			}
@@ -875,7 +896,7 @@ public class ConsensusUser extends ConsensusProcessor {
 		}
 	}
 	
-	private void consolidateToken(MiniData zTokenID) throws Exception {
+	private void consolidateTokenPerKey(MiniData zTokenID) throws Exception {
 		//A list of coins per pub key
 		Hashtable<String, ArrayList<Coin>> pubcoins = new Hashtable<>();
 		
@@ -998,6 +1019,111 @@ public class ConsensusUser extends ConsensusProcessor {
 			}else {
 				//MinimaLogger.log("Not enough "+zTokenID.to0xString()+" coins @ "+key+" only "+allcoins.size()+" coins..");
 			}
+		}
+	}
+	
+	private void consolidateTokenHard(MiniData zTokenID) throws Exception {
+		//First get a list of coins..
+		ArrayList<Coin> allcoins = getMainDB().getTotalSimpleSpendableCoins(zTokenID);
+		
+		int MAX_COLL = 5;
+		
+		//Now create transactions..
+		int coinsize = allcoins.size();
+		
+		//Are there more than 1..
+		if(coinsize>1) {
+			MiniNumber totalval = MiniNumber.ZERO;
+			
+			//Now create a transaction
+			Transaction trans = new Transaction();
+			Witness wit 	  = new Witness();
+			
+			//Cycle through the inputs and get the total..
+			int tot = 0;
+			ArrayList<Coin> usecoins = new ArrayList<>();
+			for(Coin incoin : allcoins) {
+				//Use this coin
+				usecoins.add(incoin);
+				
+				//Total value of the inputs
+				totalval = totalval.add(incoin.getAmount());
+			
+				tot++;
+				if(tot>=MAX_COLL) {
+					break;
+				}
+			}
+			
+			//Add the token proofs..
+			MiniNumber showamount = totalval;
+			if(!zTokenID.isEqual(Coin.MINIMA_TOKENID)) {
+				//Get the token proof..
+				TokenProof tokendets = getMainDB().getUserDB().getTokenDetail(zTokenID);
+				
+				//Add to the witness..
+				wit.addTokenDetails(tokendets);
+				
+				//How much is it..
+				showamount = tokendets.getScaledTokenAmount(totalval);
+			}
+			
+//			//Create a transaction..
+//			MinimaLogger.log("Consolidate "+usecoins.size()+"/"+allcoins.size()+" "+zTokenID.to0xString()
+//					+" with pubkey "+key+" total value :"+showamount);
+	
+			//Send back to me..
+			Address recipient = getMainDB().getUserDB().getCurrentAddress(getConsensusHandler());
+			
+			//Create Transaction
+			for(Coin incoin : usecoins) {
+				//Add it
+				trans.addInput(incoin);
+				
+				//Get the Script associated with this coin
+				String script = getMainDB().getUserDB().getScript(incoin.getAddress());
+				
+				//Add to the witness
+				wit.addScript(script, incoin.getAddress().getLength()*8);
+			}
+			
+			//Add one Output..
+			trans.addOutput(new Coin(Coin.COINID_OUTPUT, recipient.getAddressData(), totalval, zTokenID, false, false));
+			
+			//Create the correct MMR Proofs
+			Witness newwit = getMainDB().createValidMMRPRoofs(trans, wit);
+			
+//			//Now sign it..
+//			MiniData publick = new MiniData(key);
+//			MultiKey pubkkey = getMainDB().getUserDB().getPubPrivKey(publick);
+			
+			//Hash of the transaction
+			MiniData transhash = Crypto.getInstance().hashObject(trans);
+			
+			//Now sign it..
+//			for(Coin incoin : usecoins) {
+			
+			
+//			//Sign it
+//			MiniData signature = pubkkey.sign(transhash);
+//			
+//			//Now set the SIG.. 
+//			wit.addSignature(publick, signature);
+			
+			//Post it..
+			Message msg = new Message(ConsensusHandler.CONSENSUS_SENDTRANS)
+								.addObject("transaction", trans)
+								.addObject("witness", newwit);
+			
+			//Add all the inputs to the mining..
+			getMainDB().addMiningTransaction(trans);
+			
+			//Notify listeners that Mining is starting...
+			getConsensusHandler().PostDAPPStartMining(trans);
+			
+			//Post it..
+			getConsensusHandler().PostMessage(msg);
+	
 		}
 	}
 	

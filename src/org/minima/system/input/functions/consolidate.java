@@ -9,14 +9,21 @@ public class consolidate extends CommandFunction {
 	public consolidate() {
 		super("consolidate");
 		
-		setHelp("", "Merge your coins into fewer larger amounts", "");
+		setHelp("(info|hard|on|off)", "Merge your coins into fewer larger amounts", "");
 	}
 	
 	@Override
 	public void doFunction(String[] zInput) throws Exception {
 		//Get the current balance of the user for all tokens..
 		Message msg = getResponseMessage(ConsensusUser.CONSENSUS_CONSOLIDATE);
-			
+		msg.addString("param", "");
+		
+		//Are there any parameters..
+		if(zInput.length > 1) {
+			String param = zInput[1];
+			msg.addString("param", param);
+		}
+		
 		//Post It..
 		getMainHandler().getConsensusHandler().PostMessage(msg);
 	}

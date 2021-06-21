@@ -1,4 +1,4 @@
-package org.minima.database;
+package org.minima.database.prefs;
 
 import org.minima.utils.JsonDB;
 

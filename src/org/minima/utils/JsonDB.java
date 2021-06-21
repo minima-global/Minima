@@ -39,6 +39,10 @@ public class JsonDB implements Streamable{
 		return (boolean)mParams.get(zName);
 	}
 	
+	public void setBoolean(String zName, boolean zData) {
+		mParams.put(zName, new Boolean(zData));
+	}
+	
 	public MiniNumber getNumber(String zName, MiniNumber zDefault) {
 		if(mParams.get(zName) == null) {
 			return zDefault;
