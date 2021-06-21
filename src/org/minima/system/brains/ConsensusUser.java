@@ -846,14 +846,12 @@ public class ConsensusUser extends ConsensusProcessor {
 			
 		}else if(zMessage.isMessageType(CONSENSUS_CONSOLIDATE)) {
 			//Is there a parameter ?
-			String param = zMessage.getString("param");
 			boolean hard = false;
+			/*String param = zMessage.getString("param");
 			if(param.equals("hard")) {
 				hard = true;
-			
 			}else if(param.equals("on")) {
 				//Turn consolidation on!..
-				
 			
 				//All done..
 				InputHandler.endResponse(zMessage, true, "Coin Consolidation turned ON");
@@ -861,7 +859,7 @@ public class ConsensusUser extends ConsensusProcessor {
 			}else if(param.equals("on")) {
 				
 				InputHandler.endResponse(zMessage, true, "Coin Consolidation turned OFF");
-			}
+			}*/
 			
 			//List of tokens..
 			ArrayList<String> alltokens = new ArrayList<>();
