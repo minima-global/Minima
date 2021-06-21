@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
+import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.json.parser.JSONParser;
@@ -21,7 +22,7 @@ public class JsonDB implements Streamable{
 	public JsonDB() {
 		mParams = new JSONObject();
 	}
-
+	
 	public JSONObject getAllData() {
 		return mParams;
 	}
@@ -30,13 +31,34 @@ public class JsonDB implements Streamable{
 		return mParams.get(zName) != null;
 	}
 	
-	public String getString(String zName) {
+	public boolean getBoolean(String zName, boolean zDefault) {
+		if(mParams.get(zName) == null) {
+			return zDefault;
+		}
+		
+		return (boolean)mParams.get(zName);
+	}
+	
+	public MiniNumber getNumber(String zName, MiniNumber zDefault) {
+		if(mParams.get(zName) == null) {
+			return zDefault;
+		}
+		
+		return (MiniNumber)mParams.get(zName);
+	}
+	
+	public String getString(String zName, String zDefault) {
+		if(mParams.get(zName) == null) {
+			return zDefault;
+		}
+		
 		return (String)mParams.get(zName);
 	}
 	
 	public void setString(String zName, String zData) {
 		mParams.put(zName, zData);
 	}
+	
 	
 	public void clean() {
 		mParams = new JSONObject();
