@@ -907,7 +907,7 @@ public class ConsensusUser extends ConsensusProcessor {
 			int coinsize = allcoins.size();
 			
 			//Are there more than 1..
-			if(coinsize>1) {
+			if(coinsize>3) {
 				MiniNumber totalval = MiniNumber.ZERO;
 				
 				//Now create a transaction
