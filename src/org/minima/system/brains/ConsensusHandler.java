@@ -607,7 +607,6 @@ public class ConsensusHandler extends MessageProcessor {
 			}
 			
 			//How much do we have..
-			MiniNumber total = new MiniNumber(); 
 			ArrayList<Coin> confirmed = null;
 			if(tok.isEqual(Coin.TOKENID_CREATE)) {
 				confirmed = getMainDB().getTotalSimpleSpendableCoins(Coin.MINIMA_TOKENID);
@@ -621,34 +620,28 @@ public class ConsensusHandler extends MessageProcessor {
 		
 			//Do we have enough funds..
 			if(selectedCoins.size()==0) {
+				//Sum the confirmed coins..
+				MiniNumber conftotal = new MiniNumber();
+				for(Coin cc : confirmed) {
+					conftotal = conftotal.add(cc.getAmount());
+				}
+				
 				//Insufficient funds!
 				if(!tokenid.equals(Coin.MINIMA_TOKENID.to0xString())) {
-					total = tokendets.getScaledTokenAmount(total);
-					InputHandler.endResponse(zMessage, false, "Insufficient funds! You only have : "+total);
+					conftotal = tokendets.getScaledTokenAmount(conftotal);
+					InputHandler.endResponse(zMessage, false, "Insufficient funds! You only have : "+conftotal);
 				}else {
-					InputHandler.endResponse(zMessage, false, "Insufficient funds! You only have : "+total);
+					InputHandler.endResponse(zMessage, false, "Insufficient funds! You only have : "+conftotal);
 				}
 				
 				return;
 			}
 
-//			for(Coin cc : confirmed) {
-//				total = total.add(cc.getAmount());
-//			}
-//
-//			//Do we have that much..
-//			if(total.isLess(sendamount)) {
-//				//Insufficient funds!
-//				if(!tokenid.equals(Coin.MINIMA_TOKENID.to0xString())) {
-//					total = tokendets.getScaledTokenAmount(total);
-////					total = total.mult(tokendets.getScaleFactor());
-//					InputHandler.endResponse(zMessage, false, "Insufficient funds! You only have : "+total);
-//				}else {
-//					InputHandler.endResponse(zMessage, false, "Insufficient funds! You only have : "+total);
-//				}
-//				
-//				return;
-//			}
+			//What are we sending
+			MiniNumber total = new MiniNumber(); 
+			for(Coin cc : selectedCoins) {
+				total = total.add(cc.getAmount());
+			}
 			
 			//Continue constructing the transaction - outputs don't need scripts
 			Address recipient= new Address(new MiniData(address));
@@ -789,7 +782,6 @@ public class ConsensusHandler extends MessageProcessor {
 			MiniNumber sendamount = new MiniNumber(colorminima);
 			
 			//How much do we have..
-			MiniNumber total = new MiniNumber(); 
 			ArrayList<Coin> confirmed = getMainDB().getTotalSimpleSpendableCoins(Coin.MINIMA_TOKENID);
 			
 			//Select the coins to use in the transaction
@@ -797,79 +789,78 @@ public class ConsensusHandler extends MessageProcessor {
 		
 			//Do we have enough funds..
 			if(selectedCoins.size()==0) {
-				//Insufficient funds!
-				InputHandler.endResponse(zMessage, false, "Insufficient funds! You only have : "+total);
+				//Sum the confirmed coins..
+				MiniNumber conftotal = new MiniNumber();
+				for(Coin cc : confirmed) {
+					conftotal = conftotal.add(cc.getAmount());
+				}
 				
+				//Insufficient funds!
+				InputHandler.endResponse(zMessage, false, "Insufficient funds! You only have : "+conftotal);
 				return;
 			}
 			
-//			//Add all the available outputs to the list
-//			for(Coin cc : confirmed) {
-//				total = total.add(cc.getAmount());
-//			}
-//
-//			//Do we have that much..
-//			if(total.isLess(sendamount)) {
-//				//Insufficient funds!
-//				InputHandler.endResponse(zMessage, false, "Insufficient funds! You only have : "+total);
-//				
-//			}else {
-				//Get a new address to receive the tokens..
-				Address recipient = getMainDB().getUserDB().getCurrentAddress(this);
-				
-				//Blank address - check change is non-null
-				Address change = new Address(); 
-				if(!total.isEqual(sendamount)) {
-					change = getMainDB().getUserDB().getCurrentAddress(this);
-				}
-				
-				//CHECK NAME of TOKEN IS VALID!
-				//TODO Important! - Check token name and details are valid.. add function to TokenProof
-				
-				//Create the JSON descriptor..
-				JSONObject tokenjson = new JSONObject();
-				tokenjson.put("name", name);
-				if(!description.equals("")) {
-					tokenjson.put("description", description);	
-				}
-				if(!icon.equals("")) {
-					tokenjson.put("icon", icon);	
-				}
-				if(!proof.equals("")) {
-					tokenjson.put("proof", proof);	
-				}
-				
-				//Create the token gen details
-				TokenProof tokengen = new TokenProof(Coin.COINID_OUTPUT, 
-													 new MiniNumber(scale+""), 
-													 sendamount, 
-													 new MiniString(tokenjson.toString()),
-													 new MiniString(script));
-				
-				//Create the Transaction
-				Message ret = getMainDB().createTransaction(sendamount, recipient, change, selectedCoins, tok, changetok,tokengen);
-				
-				//get the Transaction
-				Transaction trans = (Transaction) ret.getObject("transaction");
-				
-				//Final check..
-				if(getMainDB().checkTransactionForMining(trans)) {
-					InputHandler.endResponse(zMessage, false, "ERROR double spend coin in mining pool.");
-					return;
-				}
-				
-				//Add all the inputs to the mining..
-				getMainDB().addMiningTransaction(trans);
-				
-				//Notify listeners that Mining is starting...
-				PostDAPPStartMining(trans);
-				
-				//Continue the log output trail
-				InputHandler.addResponseMesage(ret, zMessage);
-				
-				//Send it..
-				PostMessage(ret);
-//			}
+			//How much are we sending
+			MiniNumber total = new MiniNumber();
+			for(Coin cc : selectedCoins) {
+				total = total.add(cc.getAmount());
+			}
+			
+			//Get a new address to receive the tokens..
+			Address recipient = getMainDB().getUserDB().getCurrentAddress(this);
+			
+			//Blank address - check change is non-null
+			Address change = new Address(); 
+			if(!total.isEqual(sendamount)) {
+				change = getMainDB().getUserDB().getCurrentAddress(this);
+			}
+			
+			//CHECK NAME of TOKEN IS VALID!
+			//TODO Important! - Check token name and details are valid.. add function to TokenProof
+			
+			//Create the JSON descriptor..
+			JSONObject tokenjson = new JSONObject();
+			tokenjson.put("name", name);
+			if(!description.equals("")) {
+				tokenjson.put("description", description);	
+			}
+			if(!icon.equals("")) {
+				tokenjson.put("icon", icon);	
+			}
+			if(!proof.equals("")) {
+				tokenjson.put("proof", proof);	
+			}
+			
+			//Create the token gen details
+			TokenProof tokengen = new TokenProof(Coin.COINID_OUTPUT, 
+												 new MiniNumber(scale+""), 
+												 sendamount, 
+												 new MiniString(tokenjson.toString()),
+												 new MiniString(script));
+			
+			//Create the Transaction
+			Message ret = getMainDB().createTransaction(sendamount, recipient, change, selectedCoins, tok, changetok,tokengen);
+			
+			//get the Transaction
+			Transaction trans = (Transaction) ret.getObject("transaction");
+			
+			//Final check..
+			if(getMainDB().checkTransactionForMining(trans)) {
+				InputHandler.endResponse(zMessage, false, "ERROR double spend coin in mining pool.");
+				return;
+			}
+			
+			//Add all the inputs to the mining..
+			getMainDB().addMiningTransaction(trans);
+			
+			//Notify listeners that Mining is starting...
+			PostDAPPStartMining(trans);
+			
+			//Continue the log output trail
+			InputHandler.addResponseMesage(ret, zMessage);
+			
+			//Send it..
+			PostMessage(ret);
 		}
 	}	
 	
