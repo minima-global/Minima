@@ -1,6 +1,8 @@
 package org.minima.system.brains;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.Random;
 
@@ -8,6 +10,7 @@ import org.minima.GlobalParams;
 import org.minima.database.MinimaDB;
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
+import org.minima.objects.StateVariable;
 import org.minima.objects.Transaction;
 import org.minima.objects.TxPoW;
 import org.minima.objects.Witness;
@@ -18,6 +21,7 @@ import org.minima.objects.proofs.TokenProof;
 import org.minima.system.Main;
 import org.minima.system.input.InputHandler;
 import org.minima.system.input.functions.gimme50;
+import org.minima.system.input.functions.newaddress;
 import org.minima.system.network.NetworkHandler;
 import org.minima.system.network.base.MinimaClient;
 import org.minima.system.network.base.MinimaReader;
@@ -612,16 +616,14 @@ public class ConsensusHandler extends MessageProcessor {
 				confirmed = getMainDB().getTotalSimpleSpendableCoins(tok);
 			}
 			
-			for(Coin cc : confirmed) {
-				total = total.add(cc.getAmount());
-			}
-
-			//Do we have that much..
-			if(total.isLess(sendamount)) {
+			//Select the coins to use in the transaction
+			ArrayList<Coin> selectedCoins = selectCoins(confirmed, sendamount);
+		
+			//Do we have enough funds..
+			if(selectedCoins.size()==0) {
 				//Insufficient funds!
 				if(!tokenid.equals(Coin.MINIMA_TOKENID.to0xString())) {
 					total = tokendets.getScaledTokenAmount(total);
-//					total = total.mult(tokendets.getScaleFactor());
 					InputHandler.endResponse(zMessage, false, "Insufficient funds! You only have : "+total);
 				}else {
 					InputHandler.endResponse(zMessage, false, "Insufficient funds! You only have : "+total);
@@ -629,6 +631,24 @@ public class ConsensusHandler extends MessageProcessor {
 				
 				return;
 			}
+
+//			for(Coin cc : confirmed) {
+//				total = total.add(cc.getAmount());
+//			}
+//
+//			//Do we have that much..
+//			if(total.isLess(sendamount)) {
+//				//Insufficient funds!
+//				if(!tokenid.equals(Coin.MINIMA_TOKENID.to0xString())) {
+//					total = tokendets.getScaledTokenAmount(total);
+////					total = total.mult(tokendets.getScaleFactor());
+//					InputHandler.endResponse(zMessage, false, "Insufficient funds! You only have : "+total);
+//				}else {
+//					InputHandler.endResponse(zMessage, false, "Insufficient funds! You only have : "+total);
+//				}
+//				
+//				return;
+//			}
 			
 			//Continue constructing the transaction - outputs don't need scripts
 			Address recipient= new Address(new MiniData(address));
@@ -641,7 +661,7 @@ public class ConsensusHandler extends MessageProcessor {
 			
 			//Create the Transaction
 			Message ret = getMainDB().createTransaction(sendamount, recipient, change, 
-					confirmed, tok, changetok, null, new Transaction(), state, true);
+					selectedCoins, tok, changetok, null, new Transaction(), state, true);
 			
 			//Is this a token transaction
 			if(tokendets != null) {
@@ -772,17 +792,28 @@ public class ConsensusHandler extends MessageProcessor {
 			MiniNumber total = new MiniNumber(); 
 			ArrayList<Coin> confirmed = getMainDB().getTotalSimpleSpendableCoins(Coin.MINIMA_TOKENID);
 			
-			//Add all the available outputs to the list
-			for(Coin cc : confirmed) {
-				total = total.add(cc.getAmount());
-			}
-
-			//Do we have that much..
-			if(total.isLess(sendamount)) {
+			//Select the coins to use in the transaction
+			ArrayList<Coin> selectedCoins = selectCoins(confirmed, sendamount);
+		
+			//Do we have enough funds..
+			if(selectedCoins.size()==0) {
 				//Insufficient funds!
 				InputHandler.endResponse(zMessage, false, "Insufficient funds! You only have : "+total);
 				
-			}else {
+				return;
+			}
+			
+//			//Add all the available outputs to the list
+//			for(Coin cc : confirmed) {
+//				total = total.add(cc.getAmount());
+//			}
+//
+//			//Do we have that much..
+//			if(total.isLess(sendamount)) {
+//				//Insufficient funds!
+//				InputHandler.endResponse(zMessage, false, "Insufficient funds! You only have : "+total);
+//				
+//			}else {
 				//Get a new address to receive the tokens..
 				Address recipient = getMainDB().getUserDB().getCurrentAddress(this);
 				
@@ -816,7 +847,7 @@ public class ConsensusHandler extends MessageProcessor {
 													 new MiniString(script));
 				
 				//Create the Transaction
-				Message ret = getMainDB().createTransaction(sendamount, recipient, change, confirmed, tok, changetok,tokengen);
+				Message ret = getMainDB().createTransaction(sendamount, recipient, change, selectedCoins, tok, changetok,tokengen);
 				
 				//get the Transaction
 				Transaction trans = (Transaction) ret.getObject("transaction");
@@ -838,9 +869,69 @@ public class ConsensusHandler extends MessageProcessor {
 				
 				//Send it..
 				PostMessage(ret);
-			}
+//			}
 		}
 	}	
+	
+	/**
+	 * Coin Selection Algorithm..
+	 * 
+	 * Which coins to use when sending a transaction
+	 * Expects all the coins to be of the same tokenid
+	 */
+	public static ArrayList<Coin> selectCoins(ArrayList<Coin> zAllCoins, MiniNumber zAmountRequired){
+		ArrayList<Coin> ret = new ArrayList<>();
+		
+		//First sort the coins by size..
+		Collections.sort(zAllCoins, new Comparator<Coin>() {
+			@Override
+			public int compare(Coin zCoin1, Coin zCoin2) {
+				MiniNumber amt1 = zCoin1.getAmount();
+				MiniNumber amt2 = zCoin2.getAmount();
+				return amt2.compareTo(amt1);
+			}
+		});
+
+		//Now go through and pick a coin big enough.. but keep looking for smaller coins  
+		boolean found    = false;
+		Coin currentcoin = null;
+		for(Coin cc : zAllCoins) {
+			if(cc.getAmount().isMoreEqual(zAmountRequired)) {
+				found = true;
+				currentcoin = cc;
+			}else {
+				//Not big enough - all others will be smaller..
+				break;
+			}
+		}
+		
+		//Did we find one..
+		MiniNumber tot = MiniNumber.ZERO;
+		if(found) {
+			ret.add(currentcoin);
+			tot = currentcoin.getAmount();
+		}else {
+			//Will need to add up multiple coins..
+			for(Coin cc : zAllCoins) {
+				ret.add(cc);
+				tot = tot.add(cc.getAmount());
+				
+				if(tot.isMoreEqual(zAmountRequired)) {
+					break;
+				}
+			}
+		}
+		
+		//Did we reach the required amount..
+		if(tot.isMoreEqual(zAmountRequired)) {
+			return ret;
+		}
+		
+		//Not enough funds
+		return new ArrayList<Coin>();
+	}
+	
+	
 	
 	/**
 	 * Post a message to all the MiniDAPPs
@@ -873,4 +964,24 @@ public class ConsensusHandler extends MessageProcessor {
 		mining.put("transaction",zTrans.toJSON());
 		PostDAPPJSONMessage(mining);
 	}
+	
+	public static void main(String[] zArgs) {
+		Coin cc1 = new Coin(new MiniData(), new MiniData(), new MiniNumber(1), new MiniData());
+		Coin cc2 = new Coin(new MiniData(), new MiniData(), new MiniNumber(2), new MiniData());
+		Coin cc3 = new Coin(new MiniData(), new MiniData(), new MiniNumber(3), new MiniData());
+		
+		ArrayList<Coin> coins = new ArrayList<>();
+		coins.add(cc1);
+		coins.add(cc2);
+		coins.add(cc3);
+		
+		System.out.println(coins.toString());
+		
+		ArrayList<Coin> ret = selectCoins(coins, new MiniNumber("3.5"));
+		System.out.println(ret.toString());
+		
+		
+	}
+	
+	
 }
