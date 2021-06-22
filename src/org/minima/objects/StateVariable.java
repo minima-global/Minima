@@ -14,14 +14,25 @@ import org.minima.utils.json.JSONObject;
 public class StateVariable implements Streamable {
 
 	/**
-	 * Positive Integer Number
-	 * @param zData
+	 * All possible state variable types
 	 */
-	int mPort;
+	public static final MiniByte STATETYPE_BOOL 	= new MiniByte(0);
+	public static final MiniByte STATETYPE_HEX 		= new MiniByte(1);
+	public static final MiniByte STATETYPE_NUMBER 	= new MiniByte(2);
+	public static final MiniByte STATETYPE_STRING 	= new MiniByte(3);
 	
 	/**
-	 * The data can represent any of the value types used in script..
-	 * HEX, Number or Script
+	 * What type is this
+	 */
+	MiniByte mType;
+	
+	/**
+	 * Positive Integer Number from 0-255
+	 */
+	MiniByte mPort;
+	
+	/**
+	 * The data 
 	 */
 	MiniString mData; 
 	
@@ -32,36 +43,46 @@ public class StateVariable implements Streamable {
 	MiniByte mKeepMMR;
 	
 	/**
-	 * Port and Data and do you store long term..
-	 * 
-	 * @param zPort
-	 * @param zData
+	 * Constructors
 	 */
+	private StateVariable() {}
+	
 	public StateVariable(int zPort, String zData) {
 		this(zPort, zData, MiniByte.TRUE);
 	}
 	
 	public StateVariable(int zPort, String zData, MiniByte zKeepMMR) {
 		//Store as MiniNumber
-		mPort = Math.abs(zPort);
+		mPort = new MiniByte(zPort);
 		
-		//Cannot add Mx addresses.. only HEX addresses in SCRIPT
+		//Cannot add Mx addresses.. these are a clienty side trick.. only HEX addresses
 		if(zData.startsWith("Mx")) {
-			//Convert to HEX
 			mData = new MiniString(Address.convertMinimaAddress(zData).to0xString());
+			mType = STATETYPE_HEX;
+		
+		}else if(zData.startsWith("0x")) {
+			mData = new MiniString(new MiniData(zData).to0xString());
+			mType = STATETYPE_HEX;
+		
+		}else if(zData.equalsIgnoreCase("true")) {
+			mData = new MiniString("TRUE");
+			mType = STATETYPE_BOOL;
+		
+		}else if(zData.equalsIgnoreCase("false")) {
+			mData = new MiniString("FALSE");
+			mType = STATETYPE_BOOL;
+		
+		}else if(zData.startsWith("[") && zData.endsWith("]")) {
+			mData = new MiniString(zData.substring(1,zData.length()-1));
+			mType = STATETYPE_STRING;
+		
 		}else {
-			mData = new MiniString(zData);	
+			mData = new MiniString(new MiniNumber(zData).toString());	
+			mType = STATETYPE_NUMBER;
 		}
 		
-		//deafults to true
+		//Is this value kept in the MMR
 		mKeepMMR = zKeepMMR;
-	}
-	
-	private StateVariable() {}
-	
-	public void resetData(MiniString zData, MiniByte zKeeper) {
-		mData    = zData;
-		mKeepMMR = zKeeper;
 	}
 	
 	public MiniString getValue() {
@@ -69,7 +90,11 @@ public class StateVariable implements Streamable {
 	}
 	
 	public int getPort() {
-		return mPort;
+		return mPort.getValue();
+	}
+	
+	public MiniByte getType() {
+		return mType;
 	}
 	
 	public boolean isKeepMMR() {
@@ -80,6 +105,7 @@ public class StateVariable implements Streamable {
 		JSONObject ret = new JSONObject();
 		ret.put("port", mPort);
 		ret.put("data", mData.toString());
+		ret.put("type", mType);
 		ret.put("keeper", mKeepMMR.isTrue());
 		return ret;
 	}
@@ -91,20 +117,27 @@ public class StateVariable implements Streamable {
 
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
-		MiniNumber port = new MiniNumber(mPort);
-		port.writeDataStream(zOut);
+		//Port and Type
+		mPort.writeDataStream(zOut);
+		mType.writeDataStream(zOut);
 		
-		//Optimisation.. if is DATA
-		if(mData.toString().startsWith("0x")) {
-			//It's DATA.. might as well send it as that - half the size.
+		//Write the data in the correct format
+		if(mType.isEqual(STATETYPE_BOOL)) {
+			if(mData.isEqual("TRUE")) {
+				MiniByte.TRUE.writeDataStream(zOut);
+			}else {
+				MiniByte.FALSE.writeDataStream(zOut);
+			}
+		}else if(mType.isEqual(STATETYPE_HEX)) {
 			MiniData data = new MiniData(mData.toString());
-			
-			MiniByte.TRUE.writeDataStream(zOut);
 			data.writeDataStream(zOut);
-		}else {
-			//Just send it as normal.. number or script
-			MiniByte.FALSE.writeDataStream(zOut);
-			mData.writeDataStream(zOut);	
+			
+		}else if(mType.isEqual(STATETYPE_NUMBER)) {
+			MiniNumber number = new MiniNumber(mData.toString());
+			number.writeDataStream(zOut);
+		
+		}else if(mType.isEqual(STATETYPE_STRING)) {
+			mData.writeDataStream(zOut);
 		}
 		
 		mKeepMMR.writeDataStream(zOut);
@@ -112,15 +145,28 @@ public class StateVariable implements Streamable {
 
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
-		mPort = MiniNumber.ReadFromStream(zIn).getAsInt();
+		mPort = MiniByte.ReadFromStream(zIn);
+		mType = MiniByte.ReadFromStream(zIn);
 		
-		//Was it sent as DATA or SCRIPT
-		MiniByte isdata = MiniByte.ReadFromStream(zIn);
-		if(isdata.isTrue()) {
+		//What Data Type..
+		if(mType.isEqual(STATETYPE_BOOL)) {
+			MiniByte bool = MiniByte.ReadFromStream(zIn);
+			if(bool.isTrue()) {
+				mData = new MiniString("TRUE");
+			}else {
+				mData = new MiniString("FALSE");
+			}
+		}else if(mType.isEqual(STATETYPE_HEX)) {
 			MiniData data = MiniData.ReadFromStream(zIn);
 			mData = new MiniString(data.to0xString());
-		}else {
-			mData = MiniString.ReadFromStream(zIn);	
+			
+		}else if(mType.isEqual(STATETYPE_NUMBER)) {
+			MiniNumber number = MiniNumber.ReadFromStream(zIn);
+			mData = new MiniString(number.toString());
+		
+		}else if(mType.isEqual(STATETYPE_STRING)) {
+			mData = MiniString.ReadFromStream(zIn);
+		
 		}
 		
 		mKeepMMR = MiniByte.ReadFromStream(zIn);

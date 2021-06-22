@@ -10,7 +10,7 @@ import org.minima.utils.Streamable;
 public class MiniString implements Streamable {
 
 	/**
-	 * Default Minima Charset
+	 *  Minima Charset
 	 */
 	public static Charset MINIMA_CHARSET = Charset.forName("UTF-8");
 	
@@ -20,15 +20,19 @@ public class MiniString implements Streamable {
 	String mString;
 	
 	public MiniString(MiniString zString) {
-		this(zString.toString());
+		this(zString.getData());
+	}
+	
+	public MiniString(byte[] zBytesData) {
+		mString = new String(zBytesData,MINIMA_CHARSET);
 	}
 	
 	public MiniString(String zString) {
 		mString = new String(zString.getBytes(MINIMA_CHARSET));
 	}
 	
-	public MiniString(byte[] zBytesData) {
-		mString = new String(zBytesData,MINIMA_CHARSET);
+	public boolean isEqual(String zString) {
+		return toString().equals(zString);
 	}
 	
 	@Override
@@ -42,12 +46,14 @@ public class MiniString implements Streamable {
 	
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
-		zOut.writeUTF(mString);
+		MiniData strdata = new MiniData(getData());
+		strdata.writeDataStream(zOut);
 	}
 
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
-		mString = zIn.readUTF();
+		MiniData strdata = MiniData.ReadFromStream(zIn);
+		mString = new String(strdata.getData(),MINIMA_CHARSET);
 	}
 	
 	public static MiniString ReadFromStream(DataInputStream zIn) throws IOException{
