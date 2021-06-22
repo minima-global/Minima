@@ -74,6 +74,13 @@ public class ConsensusHandler extends MessageProcessor {
 	public static final String CONSENSUS_FINISHED_MINE 		   = "CONSENSUS_FINISHED_MINE";
 	
 	/**
+	 * PULSE
+	 */
+	public static final String CONSENSUS_PULSE_START 			= "CONSENSUS_PULSE_START";
+	public static final String CONSENSUS_PULSE 			   		= "CONSENSUS_PULSE";
+	public static final String CONSENSUS_PULSE_MINED 			= "CONSENSUS_PULSE_MINED";
+	
+	/**
 	 * Create Tokens
 	 */
 	public static final String CONSENSUS_TOKENCREATE 		= "CONSENSUS_TOKENCREATE";
@@ -146,6 +153,11 @@ public class ConsensusHandler extends MessageProcessor {
 	long mLastGimme = 0;
 	public static final long MIN_GIMME50_TIME_GAP = 1000 * 60 * 10;
 	
+	/**
+	 * PULSE Timer - every 10 mins
+	 */
+	public static final long PULSE_TIMER = 1000 * 60 * 10;
+	
 	/**	
 	 * Main Constructor
 	 * @param zMain
@@ -174,6 +186,9 @@ public class ConsensusHandler extends MessageProcessor {
 		
 		//Initialise the multi keys..
 		PostTimerMessage(new TimerMessage(10 * 1000, CONSENSUS_INITKEYS));
+		
+		//Start the PULSE - every 10 minutes
+		PostTimerMessage(new TimerMessage(PULSE_TIMER, CONSENSUS_PULSE_START));
 	}
 	
 	public void setBackUpManager() {
@@ -688,13 +703,43 @@ public class ConsensusHandler extends MessageProcessor {
 			//Send it..
 			PostMessage(ret);
 		
+		}else if ( zMessage.isMessageType(CONSENSUS_PULSE_START) ) {
+			//Post a PULSE message
+			PostMessage(CONSENSUS_PULSE);
+		
+			//Start again in 10 minutes..
+			PostTimerMessage(new TimerMessage(PULSE_TIMER, CONSENSUS_PULSE_START));
+			
+		}else if ( zMessage.isMessageType(CONSENSUS_PULSE) ) {
+			//PULSE Txn 
+			TxPoW txpow = getMainDB().getCurrentTxPow(new Transaction(), new Witness(), new JSONArray());
+			
+			//Send it to the Miner..
+			Message mine = new Message(TxPoWMiner.TXMINER_PULSE).addObject("txpow", txpow);
+			
+			//Post to the Miner
+			Main.getMainHandler().getMiner().PostMessage(mine);
+			
+		}else if ( zMessage.isMessageType(CONSENSUS_PULSE_MINED) ) {
+			//The TXPOW
+			TxPoW txpow = (TxPoW) zMessage.getObject("txpow");
+
+			//Is it a block ? - otherwise do nothing..
+			if(txpow.isBlock()) {
+				//Post onwards!
+				MinimaLogger.log("Congratulations! You found a PULSE block @ "+txpow.getBlockNumber());
+				
+				//And now forward the message to the single entry point..
+				Message msg = new Message(ConsensusNet.CONSENSUS_NET_CHECKSIZE_TXPOW).addObject("txpow", txpow);
+				PostMessage(msg);
+			}else {
+//				MinimaLogger.log("PULSE Finished @ "+txpow.getBlockNumber());
+			}
+			
 		}else if(zMessage.isMessageType(CONSENSUS_FINISHED_MINE)) {
 			//The TXPOW
 			TxPoW txpow = (TxPoW) zMessage.getObject("txpow");
 			
-//			//Remove from the List of Mined transactions..
-//			getMainDB().remeoveMiningTransaction(txpow.getTransaction());
-//			
 			//And now forward the message to the single entry point..
 			Message msg = new Message(ConsensusNet.CONSENSUS_NET_CHECKSIZE_TXPOW).addObject("txpow", txpow);
 			PostMessage(msg);
