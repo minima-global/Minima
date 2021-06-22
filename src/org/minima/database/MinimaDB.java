@@ -978,9 +978,8 @@ public class MinimaDB {
 		
 		//Which signatures are required
 		ArrayList<String> sigpubk = new ArrayList<>();
-//		ArrayList<MiniData> sigpubk = new ArrayList<>();
 		
-		//Sort the iputs
+		//Sort the inputs
 		MiniNumber currentin = new MiniNumber();
 		for(Coin cc : zConfirmed) {
 			if(currentin.isLess(zAmount)) {
