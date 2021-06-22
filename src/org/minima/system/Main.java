@@ -4,6 +4,7 @@ package org.minima.system;
 import java.util.ArrayList;
 
 import org.minima.GlobalParams;
+import org.minima.database.prefs.UserPrefs;
 import org.minima.system.brains.BackupManager;
 import org.minima.system.brains.ConsensusBackup;
 import org.minima.system.brains.ConsensusHandler;
@@ -66,6 +67,11 @@ public class Main extends MessageProcessor {
 	private BackupManager mBackup;
 
 	/**
+	 * User Preferences
+	 */
+	UserPrefs mUserPrefs;
+	
+	/**
 	 * Default nodes to connect to
 	 */
 	public boolean mAutoConnect        = false;
@@ -117,6 +123,10 @@ public class Main extends MessageProcessor {
 		MinimaLogger.log("Welcome to Minima. For assistance type help. Then press enter.");
 		MinimaLogger.log("Minima files : "+zConfFolder);
 		MinimaLogger.log("Minima version "+GlobalParams.MINIMA_VERSION);
+		
+		//Load the UserPrefs
+		mUserPrefs = new UserPrefs();
+		mUserPrefs.loadDB(mBackup.getUserPrefs());
 	}
 	
 	public void setAutoConnect(boolean zAuto) {
@@ -169,6 +179,10 @@ public class Main extends MessageProcessor {
 		return mTXMiner;
 	}
 		
+	public UserPrefs getUserPrefs() {
+		return mUserPrefs;
+	}
+	
 	public void privateChain(boolean zNeedGenesis) {
 		//Set the Database backup manager
 		getConsensusHandler().setBackUpManager();
@@ -195,7 +209,6 @@ public class Main extends MessageProcessor {
 	protected void processMessage(Message zMessage) throws Exception {
 		
 		if (zMessage.isMessageType(SYSTEM_STARTUP) ) {
-			
 			//Set the Database backup manager
 			getConsensusHandler().setBackUpManager();
 			
@@ -238,6 +251,9 @@ public class Main extends MessageProcessor {
 			getConsensusHandler().PostMessage(backshut);
 			
 		}else if ( zMessage.isMessageType(SYSTEM_FULLSHUTDOWN) ) {
+			
+			//Savew ther UserPrefs
+			mUserPrefs.saveDB(mBackup.getUserPrefs());
 			
 			//Notify Listeners..
 			mConsensus.updateListeners(new Message(ConsensusHandler.CONSENSUS_NOTIFY_QUIT));
