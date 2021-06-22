@@ -86,6 +86,7 @@ public class help extends CommandFunction{
 			addJSONDesc(new newaddress());
 //			addJSONDesc(new currentaddress());
 			addJSONDesc(new balance());
+			addJSONDesc(new consolidate());
 			
 			addJSONDesc(new keys());
 			addJSONDesc(new exportkey());
@@ -93,8 +94,8 @@ public class help extends CommandFunction{
 			
 			addJSONDesc(new coins());
 			addJSONDesc(new coinsimple());
-			addJSONDesc(new exportcoin());
-			addJSONDesc(new importcoin());
+//			addJSONDesc(new exportcoin());
+//			addJSONDesc(new importcoin());
 			addJSONDesc(new keepcoin());
 			addJSONDesc(new unkeepcoin());
 			

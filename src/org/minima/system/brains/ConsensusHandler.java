@@ -356,8 +356,10 @@ public class ConsensusHandler extends MessageProcessor {
 			//Clean the Tokens..
 			getMainDB().checkTokens();
 			
-			//Consolidate your coins!
-			PostMessage(new Message(ConsensusUser.CONSENSUS_CONSOLIDATE));
+			//Consolidate your coins! - default is TRUE
+			if(Main.getMainHandler().getUserPrefs().getBoolean("consolidate", true)) {
+				PostMessage(new Message(ConsensusUser.CONSENSUS_CONSOLIDATE));
+			}
 			
 			//Redo every 10 minutes..
 			PostTimerMessage(new TimerMessage(10 * 60 * 1000, CONSENSUS_AUTOBACKUP));

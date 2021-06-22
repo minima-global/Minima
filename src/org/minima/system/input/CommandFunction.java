@@ -90,7 +90,7 @@ public abstract class CommandFunction {
 			new newscript(), new printdb(), new printtree(), new quit(),new reconnect(), new runscript(), new cleanscript(), 
 			new send(), new sendpoll(), new status(), new test(), new trace(), new tutorial(), new history(), new topblock(),
 			new tokens(), new tokencreate(), new tokenvalidate(), new mineblock(),
-			new maxima(), new sshtunnel(), new reset(), new hash(), new burn(),
+			new maxima(), new sshtunnel(), new reset(), new hash(), new burn(), new consolidate(),
 //			new exportcoin(), new importcoin(),
 			new exportkey(), new importkey(),  new search(),new consolidate(),
 			new chainsha(), new keepcoin(), new unkeepcoin(), new scripts(), new network(), new minidapps(),
