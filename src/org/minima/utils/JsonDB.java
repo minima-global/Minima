@@ -98,6 +98,13 @@ public class JsonDB implements Streamable{
 	}
 	
 	/**
+	 * Wipe the DB
+	 */
+	public void clean() {
+		mParams.clear();
+	}
+	
+	/**
 	 * Load and Save
 	 */
 	public void saveDB(File zFile) {
