@@ -907,7 +907,7 @@ public class ConsensusUser extends ConsensusProcessor {
 			//All done..
 			if(infoonly) {
 				InputHandler.getResponseJSON(zMessage).put("coins", coininfo);
-				InputHandler.endResponse(zMessage, true, "Coins Consolidation info. 5 Max trigger on 3.");
+				InputHandler.endResponse(zMessage, true, "Coins Consolidation info. 5 Max consolidated - trigger on 3.");
 			}else {
 				InputHandler.endResponse(zMessage, true, "Coins Consolidated");
 			}
