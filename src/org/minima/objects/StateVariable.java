@@ -73,7 +73,9 @@ public class StateVariable implements Streamable {
 			mType = STATETYPE_BOOL;
 		
 		}else if(zData.startsWith("[") && zData.endsWith("]")) {
-			mData = new MiniString(zData.substring(1,zData.length()-1));
+			FIX THIS
+//			mData = new MiniString(zData.substring(1,zData.length()-1));
+			mData = new MiniString(zData);
 			mType = STATETYPE_STRING;
 		
 		}else {
@@ -104,8 +106,8 @@ public class StateVariable implements Streamable {
 	public JSONObject toJSON() {
 		JSONObject ret = new JSONObject();
 		ret.put("port", mPort);
-		ret.put("data", mData.toString());
 		ret.put("type", mType);
+		ret.put("data", mData.toString());
 		ret.put("keeper", mKeepMMR.isTrue());
 		return ret;
 	}

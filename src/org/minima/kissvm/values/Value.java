@@ -63,8 +63,7 @@ public abstract class Value {
 		}else if(zValue.equals("FALSE")) {
 			return BooleanValue.FALSE;
 
-		}else if(zValue.startsWith("-") || 
-				Tokenizer.isNumeric(zValue)){
+		}else if(zValue.startsWith("-") || Tokenizer.isNumeric(zValue)){
 			return new NumberValue(zValue);
 		
 		}else {
