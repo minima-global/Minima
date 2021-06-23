@@ -3,12 +3,12 @@ package org.minima.tests.objects;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
+import org.minima.objects.Token;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
 import org.minima.objects.proofs.ScriptProof;
-import org.minima.objects.proofs.Token;
 import org.minima.utils.json.JSONObject;
 
 public class WitnessTests {

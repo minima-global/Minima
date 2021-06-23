@@ -8,8 +8,8 @@ import org.minima.kissvm.functions.MinimaFunction;
 import org.minima.kissvm.values.NumberValue;
 import org.minima.kissvm.values.Value;
 import org.minima.objects.Coin;
+import org.minima.objects.Token;
 import org.minima.objects.Transaction;
-import org.minima.objects.proofs.Token;
 
 public class GETOUTAMT extends MinimaFunction {
 

@@ -7,10 +7,10 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 
 import org.minima.database.MinimaDB;
+import org.minima.objects.Token;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
-import org.minima.objects.proofs.Token;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;

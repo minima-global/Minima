@@ -14,7 +14,6 @@ import java.util.Hashtable;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
-import org.minima.objects.proofs.Token;
 import org.minima.system.input.functions.gimme50;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONArray;

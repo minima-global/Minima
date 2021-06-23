@@ -12,10 +12,10 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.junit.Test;
+import org.minima.objects.Token;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
-import org.minima.objects.proofs.Token;
 
 public class TokenProofTests {
 

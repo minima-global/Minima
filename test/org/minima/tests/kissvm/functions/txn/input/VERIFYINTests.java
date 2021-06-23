@@ -20,12 +20,12 @@ import org.minima.kissvm.values.NumberValue;
 import org.minima.kissvm.values.Value;
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
+import org.minima.objects.Token;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
-import org.minima.objects.proofs.Token;
 
 //BooleanValue VERIFYIN (NumberValue input HEXValue address NumberValue amount HEXValue tokenind [NumberValue amountchecktype])
 public class VERIFYINTests {

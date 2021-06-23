@@ -8,10 +8,10 @@ import org.minima.kissvm.functions.MinimaFunction;
 import org.minima.kissvm.values.BooleanValue;
 import org.minima.kissvm.values.Value;
 import org.minima.objects.Coin;
+import org.minima.objects.Token;
 import org.minima.objects.Transaction;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
-import org.minima.objects.proofs.Token;
 
 /**
  * Verify that the specified output exists in the transaction.

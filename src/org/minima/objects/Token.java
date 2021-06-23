@@ -1,4 +1,4 @@
-package org.minima.objects.proofs;
+package org.minima.objects;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;

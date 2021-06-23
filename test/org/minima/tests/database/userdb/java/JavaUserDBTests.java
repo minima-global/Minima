@@ -23,13 +23,13 @@ import org.minima.database.userdb.java.reltxpow;
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
 import org.minima.objects.StateVariable;
+import org.minima.objects.Token;
 import org.minima.objects.Transaction;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
 import org.minima.objects.keys.MultiKey;
-import org.minima.objects.proofs.Token;
 import org.minima.utils.json.JSONObject;
 
 public class JavaUserDBTests {
