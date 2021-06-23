@@ -605,6 +605,7 @@ public class MMRSet implements Streamable {
 		//The NEW spent MMRData..
 		MMRData spentmmr = new MMRData(MiniByte.TRUE, 
 										original.getCoin(),
+										original.getToken(),
 										original.getInBlock(),
 										original.getPrevState());
 		
@@ -1374,7 +1375,7 @@ public class MMRSet implements Streamable {
 	 */
 	public static MMRData makeMMRData(int zValue) {
 		Coin cc = new Coin(MiniData.getRandomData(20), new MiniData("0x01"), new MiniNumber(zValue), MiniData.ZERO_TXPOWID);
-		return new MMRData(MiniByte.FALSE, cc, MiniNumber.ZERO, new ArrayList<StateVariable>());
+		return new MMRData(MiniByte.FALSE, cc, null,  MiniNumber.ZERO, new ArrayList<StateVariable>());
 	}
 	
 	public static void getAllProofs(MMRSet zSet){

@@ -8,10 +8,12 @@ import java.util.ArrayList;
 
 import org.minima.objects.Coin;
 import org.minima.objects.StateVariable;
+import org.minima.objects.Token;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.Crypto;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
@@ -27,6 +29,11 @@ public class MMRData implements Streamable{
 	 * The Coin
 	 */
 	Coin mCoin;
+	
+	/**
+	 * The Token - or null if Minima
+	 */
+	Token mToken;
 	
 	/**
 	 * The Block number that this output was created in - OP_CSV 
@@ -79,9 +86,18 @@ public class MMRData implements Streamable{
 	 * @param zOutput
 	 */
 	public MMRData(MiniByte zSpent, Coin zCoin, MiniNumber zInBlock, ArrayList<StateVariable> zState) {
-		mSpent 		 = zSpent;
-		mCoin 		 = zCoin;
-		mBlockCreated = zInBlock;
+		this(zSpent, zCoin, null, zInBlock, zState);
+	}
+	
+	public MMRData(MiniByte zSpent, Coin zCoin, Token zToken, MiniNumber zInBlock, ArrayList<StateVariable> zState) {
+		mSpent 		 	= zSpent;
+		mCoin 		 	= zCoin;
+		if(!mCoin.getTokenID().isEqual(Coin.MINIMA_TOKENID) && zToken==null) {
+			MinimaLogger.log("MUST specify the Token for non Minima MMRData");
+			throw new IllegalArgumentException("MUST specify the Token for non Minima MMRData");
+		}
+		mToken		 	= zToken;
+		mBlockCreated 	= zInBlock;
 		
 		//Copy the state - only keep the keepers..
 		for(StateVariable sv : zState) {
@@ -154,6 +170,10 @@ public class MMRData implements Streamable{
 		return mCoin;
 	}
 	
+	public Token getToken() {
+		return mToken;
+	}
+	
 	public ArrayList<StateVariable> getPrevState() {
 		return mPrevState;
 	}
@@ -214,6 +234,12 @@ public class MMRData implements Streamable{
 			//Write out the data..
 			mSpent.writeDataStream(zOut);
 			mCoin.writeDataStream(zOut);
+			
+			//Is there a Token
+			if(!mCoin.getTokenID().isEqual(Coin.MINIMA_TOKENID)) {
+				mToken.writeDataStream(zOut);
+			}
+			
 			mBlockCreated.writeDataStream(zOut);
 			
 			//How many state variables..
@@ -240,6 +266,13 @@ public class MMRData implements Streamable{
 		}else {
 			mSpent   	 = MiniByte.ReadFromStream(zIn);
 			mCoin    	 = Coin.ReadFromStream(zIn);
+			
+			if(!mCoin.getTokenID().isEqual(Coin.MINIMA_TOKENID)) {
+				mToken = Token.ReadFromStream(zIn);
+			}else {
+				mToken = null;
+			}
+			
 			mBlockCreated = MiniNumber.ReadFromStream(zIn);
 			
 			//State Variables

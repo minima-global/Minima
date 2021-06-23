@@ -400,7 +400,7 @@ public class TxPoWChecker {
 		
 		//ONLY NOW - Touch MMR and Add All KNOWN Tokens..
 		if(zTouchMMR) {
-			//Is there aq new token
+			//Is there a new token
 			Token newtokdets = null;
 			
 			//Is the STATE relevant.. does it have a KEY we own..
@@ -445,11 +445,11 @@ public class TxPoWChecker {
 				if(tokid.isEqual(Coin.TOKENID_CREATE)) {
 					//Make it the HASH ( CoinID | Total Amount..the token details )
 					Token gentoken = trans.getTokenGenerationDetails();
-					newtokdets = new Token(coinid, 
-												gentoken.getScale(), 
-												gentoken.getAmount(), 
-												gentoken.getName(), 
-												gentoken.getTokenScript());
+					newtokdets = new Token( coinid, 
+											gentoken.getScale(), 
+											gentoken.getAmount(), 
+											gentoken.getName(), 
+											gentoken.getTokenScript());
 					
 					//Set the Globally Unique TokenID!
 					tokid = newtokdets.getTokenID();
@@ -458,6 +458,10 @@ public class TxPoWChecker {
 				}else if(!tokid.isEqual(Coin.MINIMA_TOKENID)) {
 					//Get the token..
 					newtokdets = zWit.getTokenDetail(tokid);
+				
+				}else {
+					//It's Minima..
+					newtokdets = null;
 				}
 				
 				//Create a new Coin..
@@ -466,9 +470,9 @@ public class TxPoWChecker {
 				//Create the MMRData and see if we store the state.. 
 				MMRData mmrdata = null;
 				if(output.storeState()) {
-					mmrdata = new MMRData(MiniByte.FALSE, mmrcoin, tBlockNumber, trans.getCompleteState());
+					mmrdata = new MMRData(MiniByte.FALSE, mmrcoin, newtokdets, tBlockNumber, trans.getCompleteState());
 				}else {
-					mmrdata = new MMRData(MiniByte.FALSE, mmrcoin, tBlockNumber, new ArrayList<StateVariable>());
+					mmrdata = new MMRData(MiniByte.FALSE, mmrcoin, newtokdets, tBlockNumber, new ArrayList<StateVariable>());
 				}
 				
 				//And Add it..
