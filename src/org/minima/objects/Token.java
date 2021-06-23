@@ -32,7 +32,7 @@ public class Token implements Streamable{
 	MiniNumber mTokenMinimaAmount;
 	
 	/**
-	 * The Token Name
+	 * The Token Name / Description.. can be a string / JSON
 	 */
 	MiniString mTokenName;
 	
@@ -68,10 +68,6 @@ public class Token implements Streamable{
 		
 		calculateTokenID();
 	}
-	
-//	public MiniNumber getScaleFactor() {
-//		return MiniNumber.TEN.pow(mTokenScale.getAsInt());
-//	}
 	
 	public MiniNumber getScaledTokenAmount(MiniNumber zMinimaAmount) {
 		int scale = mTokenScale.getAsInt();
