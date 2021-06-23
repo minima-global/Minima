@@ -11,7 +11,7 @@ import org.minima.kissvm.exceptions.MinimaParseException;
  * @author Spartacus Rex
  *
  */
-public class Token {
+public class ScriptToken {
 
 	public static final int TOKEN_COMMAND 		    = 0;
 	public static final int TOKEN_FUNCTIION 		= 1;
@@ -27,7 +27,7 @@ public class Token {
 	private int 	mTokenType;
 	private String 	mToken;
 	
-	public Token(int zTokenType, String zToken) {
+	public ScriptToken(int zTokenType, String zToken) {
 		mTokenType 	= zTokenType;
 		mToken		= zToken;
 	}
@@ -78,8 +78,8 @@ public class Token {
 	/**
 	 * Utility functions to fix tests
 	 */
-	public static ArrayList<Token> tokenize(String zScript) throws MinimaParseException {
-		Tokenizer tokz = new Tokenizer(zScript);
+	public static ArrayList<ScriptToken> tokenize(String zScript) throws MinimaParseException {
+		ScriptTokenizer tokz = new ScriptTokenizer(zScript);
         return tokz.tokenize();
 	}
 }

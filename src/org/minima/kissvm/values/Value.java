@@ -3,7 +3,7 @@
  */
 package org.minima.kissvm.values;
 
-import org.minima.kissvm.tokens.Tokenizer;
+import org.minima.kissvm.tokens.ScriptTokenizer;
 
 /**
  * @author Spartacus Rex
@@ -63,7 +63,7 @@ public abstract class Value {
 		}else if(zValue.equals("FALSE")) {
 			return BooleanValue.FALSE;
 
-		}else if(zValue.startsWith("-") || Tokenizer.isNumeric(zValue)){
+		}else if(zValue.startsWith("-") || ScriptTokenizer.isNumeric(zValue)){
 			return new NumberValue(zValue);
 		
 		}else {
@@ -89,7 +89,7 @@ public abstract class Value {
 			return VALUE_BOOLEAN;
 
 		}else if(zValue.startsWith("-") || 
-				Tokenizer.isNumeric(zValue)){
+				ScriptTokenizer.isNumeric(zValue)){
 			return VALUE_NUMBER;
 			
 		}else {

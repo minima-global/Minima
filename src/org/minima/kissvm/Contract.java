@@ -11,8 +11,8 @@ import org.minima.kissvm.exceptions.MinimaParseException;
 import org.minima.kissvm.functions.MinimaFunction;
 import org.minima.kissvm.statements.StatementBlock;
 import org.minima.kissvm.statements.StatementParser;
-import org.minima.kissvm.tokens.Token;
-import org.minima.kissvm.tokens.Tokenizer;
+import org.minima.kissvm.tokens.ScriptToken;
+import org.minima.kissvm.tokens.ScriptTokenizer;
 import org.minima.kissvm.values.BooleanValue;
 import org.minima.kissvm.values.HexValue;
 import org.minima.kissvm.values.NumberValue;
@@ -159,14 +159,14 @@ public class Contract {
 		//Parse the tokens
 		try {
 			//Tokenize the script
-			Tokenizer tokenize = new Tokenizer(zRamScript);
+			ScriptTokenizer tokenize = new ScriptTokenizer(zRamScript);
 			
 			//Tokenize the script
 //			List<Token> tokens = Token.tokenize(mRamScript);
-			List<Token> tokens = tokenize.tokenize();
+			List<ScriptToken> tokens = tokenize.tokenize();
 			
 			int count=0;
-			for(Token tok : tokens) {
+			for(ScriptToken tok : tokens) {
 				traceLog((count++)+") Token : ["+tok.getTokenTypeString()+"] "+tok.getToken());
 			}
 		
@@ -504,16 +504,16 @@ public class Contract {
 		String script = zScript.replaceAll("\\s+"," ").trim();
 		
 		//First CONVERT..
-		Tokenizer tokz = new Tokenizer(script, true);
+		ScriptTokenizer tokz = new ScriptTokenizer(script, true);
 		try {
 			//Get the list of Tokens..
-			ArrayList<Token> tokens = tokz.tokenize();
+			ArrayList<ScriptToken> tokens = tokz.tokenize();
 		
 			//Now add them correctly..
 			boolean first = true;
 			boolean whites = true;
-			for(Token tok : tokens) {
-				if(tok.getTokenType() == Token.TOKEN_COMMAND) {
+			for(ScriptToken tok : tokens) {
+				if(tok.getTokenType() == ScriptToken.TOKEN_COMMAND) {
 					if(first) {
 						ret.append(tok.getToken()+" ");
 						first = false;
@@ -523,7 +523,7 @@ public class Contract {
 					
 					whites = true;
 					
-				}else if(Tokenizer.BOOLEAN_TOKENS_LIST.contains(tok.getToken())) {
+				}else if(ScriptTokenizer.BOOLEAN_TOKENS_LIST.contains(tok.getToken())) {
 					ret.append(" "+tok.getToken()+" ");
 				
 					whites = true;
@@ -543,7 +543,7 @@ public class Contract {
 					String strtok = tok.getToken();
 					
 					//Is it an end of word or whitespace..
-					if(Tokenizer.isWhiteSpace(strtok) || Tokenizer.mAllEOW.contains(strtok)) {
+					if(ScriptTokenizer.isWhiteSpace(strtok) || ScriptTokenizer.mAllEOW.contains(strtok)) {
 						ret.append(tok.getToken());
 						whites = true;
 					}else {

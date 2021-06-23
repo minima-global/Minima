@@ -12,7 +12,7 @@ import org.minima.objects.StateVariable;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
 
-public class Tokenizer {
+public class ScriptTokenizer {
 
 	/**
 	 * Main Commands
@@ -62,11 +62,11 @@ public class Tokenizer {
 	
 	boolean mCaseInsensitive = false;
 	
-	public Tokenizer(String zScript) {
+	public ScriptTokenizer(String zScript) {
 		this(zScript, false);
 	}
 	
-	public Tokenizer(String zScript, boolean zCaseInsensitive) {
+	public ScriptTokenizer(String zScript, boolean zCaseInsensitive) {
 		mScript = new StringBuffer(zScript);
 		mPos    = 0;
 		mLength = mScript.length();
@@ -115,8 +115,8 @@ public class Tokenizer {
 		return zWord.matches("\\s+");
 	}
 	
-	public ArrayList<Token> tokenize() throws MinimaParseException{
-		ArrayList<Token> tokens = new ArrayList<Token>();
+	public ArrayList<ScriptToken> tokenize() throws MinimaParseException{
+		ArrayList<ScriptToken> tokens = new ArrayList<ScriptToken>();
 		
 		//Get the defaults..
 		List<String> allcommands  	= Arrays.asList(TOKENS_COMMAND);
@@ -144,7 +144,7 @@ public class Tokenizer {
 				
 				//Is it a one character operator
 			}else if(allnumops.contains(nextchar)) {
-				tokens.add(new Token(Token.TOKEN_OPERATOR, nextchar));
+				tokens.add(new ScriptToken(ScriptToken.TOKEN_OPERATOR, nextchar));
 				mPos++;
 			
 				//Is it >> or <<
@@ -153,7 +153,7 @@ public class Tokenizer {
 				if(!testchar.equals("<")) {
 					throw new MinimaParseException("Incorrect Token found @ "+mPos+" "+nextchar+testchar);
 				}
-				tokens.add(new Token(Token.TOKEN_OPERATOR, "<<"));
+				tokens.add(new ScriptToken(ScriptToken.TOKEN_OPERATOR, "<<"));
 				mPos+=2;
 			
 			}else if(nextchar.equals(">")) {
@@ -161,15 +161,15 @@ public class Tokenizer {
 				if(!testchar.equals(">")) {
 					throw new MinimaParseException("Incorrect Token found @ "+mPos+" "+nextchar+testchar);
 				}
-				tokens.add(new Token(Token.TOKEN_OPERATOR, ">>"));
+				tokens.add(new ScriptToken(ScriptToken.TOKEN_OPERATOR, ">>"));
 				mPos+=2;
 			
 				//Is it a bracket
 			}else if(nextchar.equals("(")) {
-				tokens.add(new Token(Token.TOKEN_OPENBRACKET, nextchar));
+				tokens.add(new ScriptToken(ScriptToken.TOKEN_OPENBRACKET, nextchar));
 				mPos++;
 			}else if(nextchar.equals(")")) {
-				tokens.add(new Token(Token.TOKEN_CLOSEBRACKET, nextchar));
+				tokens.add(new ScriptToken(ScriptToken.TOKEN_CLOSEBRACKET, nextchar));
 				mPos++;
 
 				//Is it a SQUARE bracket
@@ -194,7 +194,7 @@ public class Tokenizer {
 				}
 				
 				//It's a String
-				tokens.add(new Token(Token.TOKEN_VALUE, str));
+				tokens.add(new ScriptToken(ScriptToken.TOKEN_VALUE, str));
 				
 			}else{
 				//get the next word..
@@ -216,35 +216,35 @@ public class Tokenizer {
 					}
 					
 					//It's a command
-					tokens.add(new Token(Token.TOKEN_COMMAND, uppercase));
+					tokens.add(new ScriptToken(ScriptToken.TOKEN_COMMAND, uppercase));
 				
 				}else if(allfunctions.contains(uppercase)) {
 					//It's a function
-					tokens.add(new Token(Token.TOKEN_FUNCTIION, uppercase));
+					tokens.add(new ScriptToken(ScriptToken.TOKEN_FUNCTIION, uppercase));
 				
 				}else if(allboolops.contains(uppercase)) {
 					//It's a function
-					tokens.add(new Token(Token.TOKEN_OPERATOR, uppercase));
+					tokens.add(new ScriptToken(ScriptToken.TOKEN_OPERATOR, uppercase));
 				
 				}else if(isNumeric(word) || isHex(word)) {
 					//It's a number
-					tokens.add(new Token(Token.TOKEN_VALUE, word));
+					tokens.add(new ScriptToken(ScriptToken.TOKEN_VALUE, word));
 				
 				}else if(uppercase.equals("TRUE")) {
 					//It's a number
-					tokens.add(new Token(Token.TOKEN_TRUE, uppercase));
+					tokens.add(new ScriptToken(ScriptToken.TOKEN_TRUE, uppercase));
 				
 				}else if(uppercase.equals("FALSE")) {
 					//It's a number
-					tokens.add(new Token(Token.TOKEN_FALSE, uppercase));
+					tokens.add(new ScriptToken(ScriptToken.TOKEN_FALSE, uppercase));
 				
 				}else if(isGlobal(uppercase)) {
 					//It's a global
-					tokens.add(new Token(Token.TOKEN_GLOBAL, uppercase));
+					tokens.add(new ScriptToken(ScriptToken.TOKEN_GLOBAL, uppercase));
 					
 				}else if(isVariable(lowercase)) {
 					//It's a number
-					tokens.add(new Token(Token.TOKEN_VARIABLE, lowercase));
+					tokens.add(new ScriptToken(ScriptToken.TOKEN_VARIABLE, lowercase));
 				
 				}else {
 					throw new MinimaParseException("Incorrect Token found @ "+mPos+" "+word);

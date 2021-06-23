@@ -12,17 +12,17 @@ import org.minima.kissvm.exceptions.MinimaParseException;
  *
  */
 public class LexicalTokenizer{
-	List<Token> mTokens;
+	List<ScriptToken> mTokens;
 	int 		mPos;
 	int 		mSize;
 	
-	public LexicalTokenizer(List<Token> zTokens) {
+	public LexicalTokenizer(List<ScriptToken> zTokens) {
 		mTokens = zTokens;
 		mPos 	= 0;
 		mSize   = zTokens.size();
 	}
 	
-	public Token getNextToken() throws MinimaParseException {
+	public ScriptToken getNextToken() throws MinimaParseException {
 		if(mPos >= mSize) {
 			throw new MinimaParseException("Run out of tokens!..");
 		}

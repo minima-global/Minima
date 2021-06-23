@@ -8,8 +8,8 @@ import org.minima.kissvm.expressions.Expression;
 import org.minima.kissvm.statements.Statement;
 import org.minima.kissvm.statements.StatementBlock;
 import org.minima.kissvm.statements.StatementParser;
-import org.minima.kissvm.tokens.Token;
-import org.minima.kissvm.tokens.Tokenizer;
+import org.minima.kissvm.tokens.ScriptToken;
+import org.minima.kissvm.tokens.ScriptTokenizer;
 import org.minima.kissvm.values.HexValue;
 import org.minima.objects.Witness;
 import org.minima.objects.proofs.ScriptProof;
@@ -45,10 +45,10 @@ public class MASTstatement implements Statement {
 		
 		try {
 			//Tokenize the script
-			Tokenizer tokz = new Tokenizer(script.toString());
+			ScriptTokenizer tokz = new ScriptTokenizer(script.toString());
 			
 			//Convert the script to KISSVM!
-			List<Token> tokens = tokz.tokenize();	
+			List<ScriptToken> tokens = tokz.tokenize();	
 		
 			//And now convert to a statement block..
 			StatementBlock mBlock = StatementParser.parseTokens(tokens);
