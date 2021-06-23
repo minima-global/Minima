@@ -12,6 +12,7 @@ import java.util.Hashtable;
 
 import org.minima.objects.Coin;
 import org.minima.objects.StateVariable;
+import org.minima.objects.Token;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
@@ -351,6 +352,48 @@ public class MMRSet implements Streamable {
 		
 		return ret;
 	}
+	
+	/**
+	 * Search for All tokens in the current MMR Chain
+	 */
+	public ArrayList<Token> getAllTokens(){
+		//All the tokens and a sting version
+		ArrayList<Token> alltoks 		= new ArrayList<>();
+		ArrayList<String> addedtoks 	= new ArrayList<>();
+		
+		//Loop through all
+		MMRSet current = this;
+		
+		//Cycle through them..
+		while(current != null) {
+			//Now cycle through all entries
+			Enumeration<MMREntry> entries = current.mSetEntries.elements();
+			while(entries.hasMoreElements()) {
+				//Get the entry
+				MMREntry entry = entries.nextElement();
+				
+				//Get the data
+				MMRData data = entry.getData();
+				if(!data.isHashOnly()) {
+					Token tok = data.getToken();
+					if(tok!=null) {
+						//Add it!
+						String tokid = tok.getTokenID().to0xString();
+						if(!addedtoks.contains(tokid)) {
+							addedtoks.add(tokid);
+							alltoks.add(tok);
+						}
+					}
+				}
+			}
+			
+			//Search the parent..
+			current = current.getParent();
+		}
+			
+		return alltoks;
+	}
+	
 	
 	/**
 	 * Find an entry
