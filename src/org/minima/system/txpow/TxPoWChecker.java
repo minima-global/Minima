@@ -400,9 +400,6 @@ public class TxPoWChecker {
 		
 		//ONLY NOW - Touch MMR and Add All KNOWN Tokens..
 		if(zTouchMMR) {
-			//Is there a new token
-			Token newtokdets = null;
-			
 			//Is the STATE relevant.. does it have a KEY we own..
 			boolean relstate = zDB.getUserDB().isStateListRelevant(trans.getCompleteState());
 					
@@ -440,7 +437,10 @@ public class TxPoWChecker {
 				
 				//Is this a token create output..
 				MiniData tokid 	= output.getTokenID();
-			
+
+				//Is there a new token
+				Token newtokdets = null;
+				
 				//Is this a token or are we creating a Token
 				if(tokid.isEqual(Coin.TOKENID_CREATE)) {
 					//Make it the HASH ( CoinID | Total Amount..the token details )
@@ -454,6 +454,9 @@ public class TxPoWChecker {
 					//Set the Globally Unique TokenID!
 					tokid = newtokdets.getTokenID();
 				
+					//Add to the UserDB
+					zDB.getUserDB().addTokenDetails(newtokdets);
+					
 					//Its a regular token transaction
 				}else if(!tokid.isEqual(Coin.MINIMA_TOKENID)) {
 					//Get the token..
@@ -486,11 +489,6 @@ public class TxPoWChecker {
 					//Keep this MMR record
 					zMMRSet.addKeeper(unspent.getEntryNumber());	
 				}	
-			}
-			
-			
-			if(newtokdets != null) {
-				zDB.getUserDB().addTokenDetails(newtokdets);
 			}
 			
 			//Add all the tokens..
