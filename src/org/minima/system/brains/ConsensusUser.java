@@ -34,7 +34,7 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
 import org.minima.objects.keys.MultiKey;
 import org.minima.objects.proofs.ScriptProof;
-import org.minima.objects.proofs.TokenProof;
+import org.minima.objects.proofs.Token;
 import org.minima.system.Main;
 import org.minima.system.input.InputHandler;
 import org.minima.system.input.functions.gimme50;
@@ -402,7 +402,7 @@ public class ConsensusUser extends ConsensusProcessor {
 						String tokenid = tok.substring(index+1).trim();
 						
 						//Add the details to the witness..
-						TokenProof tprf = getMainDB().getUserDB().getTokenDetail(new MiniData(tokenid));
+						Token tprf = getMainDB().getUserDB().getTokenDetail(new MiniData(tokenid));
 						if(tprf != null) {
 							wit.addTokenDetails(tprf);
 						
@@ -535,7 +535,7 @@ public class ConsensusUser extends ConsensusProcessor {
 						
 						if(global.equals("@TOKENID")) {
 							//Add the details to the witness..
-							TokenProof tprf = getMainDB().getUserDB().getTokenDetail(new MiniData(value));
+							Token tprf = getMainDB().getUserDB().getTokenDetail(new MiniData(value));
 							if(tprf != null) {
 								wit.addTokenDetails(tprf);
 							}	
@@ -1021,7 +1021,7 @@ public class ConsensusUser extends ConsensusProcessor {
 				MiniNumber showamount = totalval;
 				if(!zTokenID.isEqual(Coin.MINIMA_TOKENID)) {
 					//Get the token proof..
-					TokenProof tokendets = getMainDB().getUserDB().getTokenDetail(zTokenID);
+					Token tokendets = getMainDB().getUserDB().getTokenDetail(zTokenID);
 					
 					//Add to the witness..
 					wit.addTokenDetails(tokendets);

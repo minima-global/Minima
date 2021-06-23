@@ -25,7 +25,7 @@ import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
-import org.minima.objects.proofs.TokenProof;
+import org.minima.objects.proofs.Token;
 
 //BooleanValue VERIFYIN (NumberValue input HEXValue address NumberValue amount HEXValue tokenind [NumberValue amountchecktype])
 public class VERIFYINTests {
@@ -61,7 +61,7 @@ public class VERIFYINTests {
 
         Witness w = new Witness();
 
-        TokenProof tp = new TokenProof(MiniData.getRandomData(16),
+        Token tp = new Token(MiniData.getRandomData(16),
                 MiniNumber.TEN,
                 MiniNumber.MILLION,
                 new MiniString("TestToken"),
@@ -304,7 +304,7 @@ public class VERIFYINTests {
 
         Witness w = new Witness();
 
-        TokenProof tp = new TokenProof(MiniData.getRandomData(16),
+        Token tp = new Token(MiniData.getRandomData(16),
                 MiniNumber.TEN,
                 MiniNumber.MILLION,
                 new MiniString("TestToken"),

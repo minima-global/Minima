@@ -15,7 +15,7 @@ import org.junit.Test;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
-import org.minima.objects.proofs.TokenProof;
+import org.minima.objects.proofs.Token;
 
 public class TokenProofTests {
 
@@ -25,7 +25,7 @@ public class TokenProofTests {
         MiniString script = new MiniString("FFFF");
         MiniData coinId = new MiniData("0xffff");
         MiniNumber twelve = MiniNumber.TWELVE;
-        TokenProof t = new TokenProof(coinId, twelve, twelve, name, script);
+        Token t = new Token(coinId, twelve, twelve, name, script);
         assertNotNull(t);
         assertEquals("Should be equal ", twelve, t.getAmount());
         System.out.println("amount  value " + t.getAmount());
@@ -51,7 +51,7 @@ public class TokenProofTests {
             MiniString script = new MiniString("FFFF");
             MiniData coinId = new MiniData("0xffff");
             MiniNumber twelve = MiniNumber.TWELVE;
-            TokenProof t = new TokenProof(coinId, twelve, twelve, name, script);
+            Token t = new Token(coinId, twelve, twelve, name, script);
 
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             DataOutputStream dos = new DataOutputStream(bos);
@@ -59,7 +59,7 @@ public class TokenProofTests {
 
             InputStream inputStream = new ByteArrayInputStream(bos.toByteArray());
             DataInputStream dis = new DataInputStream(inputStream);
-            TokenProof.ReadFromStream(dis);
+            Token.ReadFromStream(dis);
             System.out.println("Proof json values in read and write stream - " + t.toJSON());
 
             assertNotNull(t);

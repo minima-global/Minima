@@ -14,7 +14,7 @@ import java.util.Hashtable;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
-import org.minima.objects.proofs.TokenProof;
+import org.minima.objects.proofs.Token;
 import org.minima.system.input.functions.gimme50;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONArray;
@@ -57,7 +57,7 @@ public class Transaction implements Streamable {
 	 * If you are generating a TOKEN.. here are the details..
 	 * Needs to be here instead of witness so no-one can alter it - you sign this.
 	 */
-	protected TokenProof mTokenGenDetails = null;
+	protected Token mTokenGenDetails = null;
 	
 	/**
 	 * Constructor
@@ -342,11 +342,11 @@ public class Transaction implements Streamable {
 	/**
 	 * Token Generation
 	 */
-	public void setTokenGenerationDetails(TokenProof zTokenDetails) {
+	public void setTokenGenerationDetails(Token zTokenDetails) {
 		mTokenGenDetails = zTokenDetails;
 	}
 	
-	public TokenProof getTokenGenerationDetails() {
+	public Token getTokenGenerationDetails() {
 		return mTokenGenDetails;
 	}
 	
@@ -457,7 +457,7 @@ public class Transaction implements Streamable {
 		//Token generation
 		MiniByte tokgen = MiniByte.ReadFromStream(zIn);
 		if(tokgen.isTrue()) {
-			mTokenGenDetails = TokenProof.ReadFromStream(zIn);
+			mTokenGenDetails = Token.ReadFromStream(zIn);
 		}else {
 			mTokenGenDetails = null;
 		}

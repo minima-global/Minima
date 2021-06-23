@@ -8,7 +8,7 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
 import org.minima.objects.proofs.ScriptProof;
-import org.minima.objects.proofs.TokenProof;
+import org.minima.objects.proofs.Token;
 import org.minima.utils.json.JSONObject;
 
 public class WitnessTests {
@@ -16,7 +16,7 @@ public class WitnessTests {
     @Test
     public void testWitness() {
         Witness witness = new Witness();
-        witness.addTokenDetails(new TokenProof(new MiniData("0x00ff"),
+        witness.addTokenDetails(new Token(new MiniData("0x00ff"),
                 new MiniNumber(4),
                 new MiniNumber(1000),
                 new MiniString("TestToken"),

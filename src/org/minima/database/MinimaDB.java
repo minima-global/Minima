@@ -35,7 +35,7 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.objects.greet.SyncPackage;
 import org.minima.objects.greet.SyncPacket;
 import org.minima.objects.keys.MultiKey;
-import org.minima.objects.proofs.TokenProof;
+import org.minima.objects.proofs.Token;
 import org.minima.system.Main;
 import org.minima.system.brains.BackupManager;
 import org.minima.system.brains.ConsensusHandler;
@@ -600,7 +600,7 @@ public class MinimaDB {
 	 */
 	public void checkTokens() {
 		//The new list of Tokenas..
-		ArrayList<TokenProof> newTokens = new ArrayList<>();
+		ArrayList<Token> newTokens = new ArrayList<>();
 		
 		//Get the current tree list..
 		ArrayList<TxPOWDBRow> allrows = getTxPowDB().getAllTxPOWDBRow();
@@ -634,7 +634,7 @@ public class MinimaDB {
 				//Is it a Token
 				if(!cc.getTokenID().isEqual(Coin.MINIMA_TOKENID)) {
 					//Get it..
-					TokenProof tok = getUserDB().getTokenDetail(cc.getTokenID());
+					Token tok = getUserDB().getTokenDetail(cc.getTokenID());
 				
 					//Add it to our list
 					if(tok != null) {
@@ -652,23 +652,23 @@ public class MinimaDB {
 		getUserDB().clearTokens();
 		
 		//And Now add all the tokens..
-		for(TokenProof tok : newTokens) {
+		for(Token tok : newTokens) {
 			getUserDB().addTokenDetails(tok);
 		}
 	}
 	
-	private void scanForTokens(TxPoW zTxPoW, ArrayList<TokenProof> zTokens) {
+	private void scanForTokens(TxPoW zTxPoW, ArrayList<Token> zTokens) {
 		//Is it a transaction..
 		if(zTxPoW.isTransaction()) {
 			//Check for token generator..
-			TokenProof tgd 		= zTxPoW.getTransaction().getTokenGenerationDetails();
+			Token tgd 		= zTxPoW.getTransaction().getTokenGenerationDetails();
 			if(tgd != null) {
 				zTokens.add(tgd);
 			}
 			
 			//Check the Witness..
-			ArrayList<TokenProof> tokens =  zTxPoW.getWitness().getAllTokenDetails();
-			for(TokenProof tp : tokens) {
+			ArrayList<Token> tokens =  zTxPoW.getWitness().getAllTokenDetails();
+			for(Token tp : tokens) {
 				zTokens.add(tp);
 			}
 		}
@@ -956,7 +956,7 @@ public class MinimaDB {
 									 ArrayList<Coin> zConfirmed,
 									 MiniData zTokenID,
 									 MiniData zChangeTokenID,
-									 TokenProof zTokenGen) {
+									 Token zTokenGen) {
 		
 		return createTransaction(zAmount, zToAddress, zChangeAddress, 
 				zConfirmed, zTokenID, zChangeTokenID, zTokenGen, new Transaction(),"",true);
@@ -967,7 +967,7 @@ public class MinimaDB {
 				 ArrayList<Coin> zConfirmed,
 				 MiniData zTokenID,
 				 MiniData zChangeTokenID,
-				 TokenProof zTokenGen, 
+				 Token zTokenGen, 
 				 Transaction zUseThisTransaction,
 				 String zStateVars,
 				 boolean zSignTransaction) {

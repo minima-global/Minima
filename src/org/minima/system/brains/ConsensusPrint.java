@@ -26,7 +26,7 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
 import org.minima.objects.keys.MultiKey;
-import org.minima.objects.proofs.TokenProof;
+import org.minima.objects.proofs.Token;
 import org.minima.system.Main;
 import org.minima.system.input.InputHandler;
 import org.minima.system.network.base.MinimaClient;
@@ -410,7 +410,7 @@ public class ConsensusPrint extends ConsensusProcessor {
 			JSONObject dets = InputHandler.getResponseJSON(zMessage);
 			dets.put("valid", false);
 			
-			TokenProof td = getMainDB().getUserDB().getTokenDetail(new MiniData(tokenid));
+			Token td = getMainDB().getUserDB().getTokenDetail(new MiniData(tokenid));
 			if(td == null) {
 				InputHandler.endResponse(zMessage, false, "TokenID "+tokenid+" not found");	
 				return;
@@ -452,7 +452,7 @@ public class ConsensusPrint extends ConsensusProcessor {
 			
 		}else if(zMessage.isMessageType(CONSENSUS_TOKENS)){
 			//Get all the tokens..
-			ArrayList<TokenProof> tokens = getMainDB().getUserDB().getAllKnownTokens();
+			ArrayList<Token> tokens = getMainDB().getUserDB().getAllKnownTokens();
 			
 			JSONArray tokarray = new JSONArray();
 			
@@ -463,7 +463,7 @@ public class ConsensusPrint extends ConsensusProcessor {
 			baseobj.put("decimals", ""+MiniNumber.MAX_DECIMAL_PLACES);
 			tokarray.add(baseobj);
 			
-			for(TokenProof tok : tokens) {
+			for(Token tok : tokens) {
 				tokarray.add(tok.toJSON());	
 			}
 			
@@ -540,7 +540,7 @@ public class ConsensusPrint extends ConsensusProcessor {
 					MiniNumber depth 	= top.sub(blknum);
 					
 					//Get the Token Details.
-					TokenProof td = getMainDB().getUserDB().getTokenDetail(tokhash);
+					Token td = getMainDB().getUserDB().getTokenDetail(tokhash);
 					
 					//Get the JSON object for this Token..
 					JSONObject jobj = null;
@@ -666,7 +666,7 @@ public class ConsensusPrint extends ConsensusProcessor {
 					}
 					jobj.put("sendable", tot_simple.toString());
 				}else {
-					TokenProof td = getMainDB().getUserDB().getTokenDetail(tok);
+					Token td = getMainDB().getUserDB().getTokenDetail(tok);
 					
 					if(td == null) {
 						//Hmm. serious error..
@@ -779,7 +779,7 @@ public class ConsensusPrint extends ConsensusProcessor {
 				//Get the TRUE value given the Token..
 				MiniNumber tokenamount = coin.getAmount();
 				if(!coin.getTokenID().isEqual(coin.MINIMA_TOKENID)) {
-					TokenProof td = getMainDB().getUserDB().getTokenDetail(coin.getTokenID());
+					Token td = getMainDB().getUserDB().getTokenDetail(coin.getTokenID());
 					tokenamount = td.getScaledTokenAmount(coin.getAmount());
 //					tokenamount = coin.getAmount().mult(td.getScaleFactor());
 				}

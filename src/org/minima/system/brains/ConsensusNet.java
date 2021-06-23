@@ -15,7 +15,7 @@ import org.minima.objects.greet.Greeting;
 import org.minima.objects.greet.SyncPackage;
 import org.minima.objects.greet.SyncPacket;
 import org.minima.objects.greet.TxPoWList;
-import org.minima.objects.proofs.TokenProof;
+import org.minima.objects.proofs.Token;
 import org.minima.system.Main;
 import org.minima.system.network.base.MinimaClient;
 import org.minima.system.network.base.MinimaReader;
@@ -573,13 +573,13 @@ public class ConsensusNet extends ConsensusProcessor {
 				
 				//Add all the tokens..
 				if(txpow.isTransaction()) {
-					TokenProof tokp = txpow.getTransaction().getTokenGenerationDetails();
+					Token tokp = txpow.getTransaction().getTokenGenerationDetails();
 					if(tokp!=null) {
 						getMainDB().getUserDB().addTokenDetails(tokp);
 					}	
 					
-					ArrayList<TokenProof> tokens =  txpow.getWitness().getAllTokenDetails();
-					for(TokenProof tp : tokens) {
+					ArrayList<Token> tokens =  txpow.getWitness().getAllTokenDetails();
+					for(Token tp : tokens) {
 						getMainDB().getUserDB().addTokenDetails(tp);
 					}
 				}

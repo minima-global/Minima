@@ -10,7 +10,7 @@ import org.minima.database.MinimaDB;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
-import org.minima.objects.proofs.TokenProof;
+import org.minima.objects.proofs.Token;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
@@ -63,7 +63,7 @@ public class reltxpow implements Streamable {
 			
 			}else {
 				//Get the Token Proof..
-				TokenProof tp = zDB.getUserDB().getTokenDetail(new MiniData(token));
+				Token tp = zDB.getUserDB().getTokenDetail(new MiniData(token));
 				
 				if(tp == null) {
 					json.put("name", "null (UNKNOWN)");

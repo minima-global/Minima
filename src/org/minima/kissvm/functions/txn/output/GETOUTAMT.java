@@ -9,7 +9,7 @@ import org.minima.kissvm.values.NumberValue;
 import org.minima.kissvm.values.Value;
 import org.minima.objects.Coin;
 import org.minima.objects.Transaction;
-import org.minima.objects.proofs.TokenProof;
+import org.minima.objects.proofs.Token;
 
 public class GETOUTAMT extends MinimaFunction {
 
@@ -39,7 +39,7 @@ public class GETOUTAMT extends MinimaFunction {
 		//Is it a Token..
 		if(!cc.getTokenID().isEqual(Coin.MINIMA_TOKENID)) {
 			//Get the Multiple..
-			TokenProof td = zContract.getWitness().getTokenDetail(cc.getTokenID());
+			Token td = zContract.getWitness().getTokenDetail(cc.getTokenID());
 			if(td == null) {
 				throw new ExecutionException("No Token found for ID "+cc.getTokenID());
 			}

@@ -14,7 +14,7 @@ import org.minima.utils.json.JSONObject;
 import org.minima.utils.json.parser.JSONParser;
 import org.minima.utils.json.parser.ParseException;
 
-public class TokenProof implements Streamable{
+public class Token implements Streamable{
 
 	/**
 	 * The CoinID used when creating the token initially
@@ -49,7 +49,7 @@ public class TokenProof implements Streamable{
 	/**
 	 * Blank Constructor for ReadDataStream
 	 */
-	private TokenProof() {}
+	private Token() {}
 	
 	/**
 	 * The Only Public Constructor
@@ -58,7 +58,7 @@ public class TokenProof implements Streamable{
 	 * @param zMinimaAmount
 	 * @param zName
 	 */
-	public TokenProof(MiniData zCoindID, MiniNumber zScale, MiniNumber zMinimaAmount, MiniString zName, MiniString zTokenScript) {
+	public Token(MiniData zCoindID, MiniNumber zScale, MiniNumber zMinimaAmount, MiniString zName, MiniString zTokenScript) {
 				
 		mCoinID 			= zCoindID;
 		mTokenName 			= zName;
@@ -251,8 +251,8 @@ public class TokenProof implements Streamable{
 		calculateTokenID();
 	}
 	
-	public static TokenProof ReadFromStream(DataInputStream zIn) throws IOException{
-		TokenProof td = new TokenProof();
+	public static Token ReadFromStream(DataInputStream zIn) throws IOException{
+		Token td = new Token();
 		td.readDataStream(zIn);
 		return td;
 	}

@@ -17,7 +17,7 @@ import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
-import org.minima.objects.proofs.TokenProof;
+import org.minima.objects.proofs.Token;
 import org.minima.system.Main;
 import org.minima.system.input.InputHandler;
 import org.minima.system.input.functions.gimme50;
@@ -591,7 +591,7 @@ public class ConsensusHandler extends MessageProcessor {
 			tokenid = tok.to0xString();
 			
 			//Is this a token amount or a minima amount
-			TokenProof tokendets = null;
+			Token tokendets = null;
 			if(!tok.isEqual(Coin.MINIMA_TOKENID)) {
 				//It's a token.. scale it..
 				MiniNumber samount = new MiniNumber(amount);
@@ -879,7 +879,7 @@ public class ConsensusHandler extends MessageProcessor {
 			}
 			
 			//Create the token gen details
-			TokenProof tokengen = new TokenProof(Coin.COINID_OUTPUT, 
+			Token tokengen = new Token(Coin.COINID_OUTPUT, 
 												 new MiniNumber(scale+""), 
 												 sendamount, 
 												 new MiniString(tokenjson.toString()),

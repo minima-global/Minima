@@ -29,7 +29,7 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
 import org.minima.objects.keys.MultiKey;
-import org.minima.objects.proofs.TokenProof;
+import org.minima.objects.proofs.Token;
 import org.minima.utils.json.JSONObject;
 
 public class JavaUserDBTests {
@@ -309,12 +309,12 @@ public class JavaUserDBTests {
 
         assertEquals("should contain 0 tokens ", 0, db.getAllKnownTokens().size());
 
-        TokenProof[] tokens = {
-            new TokenProof(new MiniData("0x00"), MiniNumber.ONE, MiniNumber.TEN, new MiniString("TEST1"), new MiniString("RETURN")),
-            new TokenProof(new MiniData("0xFF"), MiniNumber.EIGHT, MiniNumber.HUNDRED, new MiniString("TEST2"), new MiniString("RETURN")),
-            new TokenProof(new MiniData("0x01"), MiniNumber.SIXTEEN, MiniNumber.THOUSAND, new MiniString("TEST3"), new MiniString("RETURN")),
-            new TokenProof(new MiniData("0x02"), MiniNumber.THIRTYTWO, MiniNumber.MILLION, new MiniString("TEST4"), new MiniString("RETURN")),
-            new TokenProof(new MiniData("0x03"), MiniNumber.SIXTYFOUR, MiniNumber.BILLION, new MiniString("TEST5"), new MiniString("RETURN"))
+        Token[] tokens = {
+            new Token(new MiniData("0x00"), MiniNumber.ONE, MiniNumber.TEN, new MiniString("TEST1"), new MiniString("RETURN")),
+            new Token(new MiniData("0xFF"), MiniNumber.EIGHT, MiniNumber.HUNDRED, new MiniString("TEST2"), new MiniString("RETURN")),
+            new Token(new MiniData("0x01"), MiniNumber.SIXTEEN, MiniNumber.THOUSAND, new MiniString("TEST3"), new MiniString("RETURN")),
+            new Token(new MiniData("0x02"), MiniNumber.THIRTYTWO, MiniNumber.MILLION, new MiniString("TEST4"), new MiniString("RETURN")),
+            new Token(new MiniData("0x03"), MiniNumber.SIXTYFOUR, MiniNumber.BILLION, new MiniString("TEST5"), new MiniString("RETURN"))
         };
         for (int i = 0; i < tokens.length; i++) {
             db.addTokenDetails(tokens[i]);
@@ -324,11 +324,11 @@ public class JavaUserDBTests {
         db.addTokenDetails(db.getTokenDetail(tokens[0].getTokenID())); // try to add duplicate
         assertEquals("should contain 5 tokens ", 5, db.getAllKnownTokens().size());
 
-        TokenProof untracked_token = new TokenProof(new MiniData("0x05"), new MiniNumber(8), MiniNumber.BILLION, new MiniString("TEST6"), new MiniString("RETURN"));
+        Token untracked_token = new Token(new MiniData("0x05"), new MiniNumber(8), MiniNumber.BILLION, new MiniString("TEST6"), new MiniString("RETURN"));
         assertEquals("should contain 5 tokens ", 5, db.getAllKnownTokens().size());
 
         for (int i = 0; i < tokens.length; i++) {
-            TokenProof token = db.getTokenDetail(tokens[i].getTokenID());
+            Token token = db.getTokenDetail(tokens[i].getTokenID());
             assertEquals("should be equal ", tokens[i].getCoinID(), token.getCoinID());
             assertEquals("should be equal ", tokens[i].getScale(), token.getScale());
             assertEquals("should be equal ", tokens[i].getAmount(), token.getAmount());
@@ -373,12 +373,12 @@ public class JavaUserDBTests {
 
         assertEquals("should contain 5 reltxpows ", 5, db.getHistory().size());
 
-        TokenProof[] tokens = {
-            new TokenProof(new MiniData("0x00"), MiniNumber.ONE, MiniNumber.TEN, new MiniString("0x00"), new MiniString("RETURN")),
-            new TokenProof(new MiniData("0xFF"), MiniNumber.EIGHT, MiniNumber.HUNDRED, new MiniString("0xFF"), new MiniString("RETURN")),
-            new TokenProof(new MiniData("0x01"), MiniNumber.SIXTEEN, MiniNumber.THOUSAND, new MiniString("0x01"), new MiniString("RETURN")),
-            new TokenProof(new MiniData("0x02"), MiniNumber.THIRTYTWO, MiniNumber.MILLION, new MiniString("TEST4"), new MiniString("RETURN")),
-            new TokenProof(new MiniData("0x03"), MiniNumber.SIXTYFOUR, MiniNumber.BILLION, new MiniString("TEST5"), new MiniString("RETURN"))
+        Token[] tokens = {
+            new Token(new MiniData("0x00"), MiniNumber.ONE, MiniNumber.TEN, new MiniString("0x00"), new MiniString("RETURN")),
+            new Token(new MiniData("0xFF"), MiniNumber.EIGHT, MiniNumber.HUNDRED, new MiniString("0xFF"), new MiniString("RETURN")),
+            new Token(new MiniData("0x01"), MiniNumber.SIXTEEN, MiniNumber.THOUSAND, new MiniString("0x01"), new MiniString("RETURN")),
+            new Token(new MiniData("0x02"), MiniNumber.THIRTYTWO, MiniNumber.MILLION, new MiniString("TEST4"), new MiniString("RETURN")),
+            new Token(new MiniData("0x03"), MiniNumber.SIXTYFOUR, MiniNumber.BILLION, new MiniString("TEST5"), new MiniString("RETURN"))
         };
         for (int i = 0; i < tokens.length; i++) {
             mdb.getUserDB().addTokenDetails(tokens[i]);
@@ -492,12 +492,12 @@ public class JavaUserDBTests {
             db.addUserRow(4)
         };
 
-        TokenProof[] tokens = {
-            new TokenProof(new MiniData("0x00"), MiniNumber.ONE, MiniNumber.TEN, new MiniString("TEST1"), new MiniString("RETURN")),
-            new TokenProof(new MiniData("0xFF"), MiniNumber.EIGHT, MiniNumber.HUNDRED, new MiniString("TEST2"), new MiniString("RETURN")),
-            new TokenProof(new MiniData("0x01"), MiniNumber.SIXTEEN, MiniNumber.THOUSAND, new MiniString("TEST3"), new MiniString("RETURN")),
-            new TokenProof(new MiniData("0x02"), MiniNumber.THIRTYTWO, MiniNumber.MILLION, new MiniString("TEST4"), new MiniString("RETURN")),
-            new TokenProof(new MiniData("0x03"), MiniNumber.SIXTYFOUR, MiniNumber.BILLION, new MiniString("TEST5"), new MiniString("RETURN"))
+        Token[] tokens = {
+            new Token(new MiniData("0x00"), MiniNumber.ONE, MiniNumber.TEN, new MiniString("TEST1"), new MiniString("RETURN")),
+            new Token(new MiniData("0xFF"), MiniNumber.EIGHT, MiniNumber.HUNDRED, new MiniString("TEST2"), new MiniString("RETURN")),
+            new Token(new MiniData("0x01"), MiniNumber.SIXTEEN, MiniNumber.THOUSAND, new MiniString("TEST3"), new MiniString("RETURN")),
+            new Token(new MiniData("0x02"), MiniNumber.THIRTYTWO, MiniNumber.MILLION, new MiniString("TEST4"), new MiniString("RETURN")),
+            new Token(new MiniData("0x03"), MiniNumber.SIXTYFOUR, MiniNumber.BILLION, new MiniString("TEST5"), new MiniString("RETURN"))
         };
         for (int i = 0; i < tokens.length; i++) {
             db.addTokenDetails(tokens[i]);

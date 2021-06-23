@@ -11,7 +11,7 @@ import org.minima.objects.Coin;
 import org.minima.objects.Transaction;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
-import org.minima.objects.proofs.TokenProof;
+import org.minima.objects.proofs.Token;
 
 /**
  * Verify that the specified output exists in the transaction.
@@ -57,7 +57,7 @@ public class VERIFYOUT extends MinimaFunction{
 		//Could be a token Amount!
 		if(!cc.getTokenID().isEqual(Coin.MINIMA_TOKENID)) {
 			//Get the Multiple..
-			TokenProof td = zContract.getWitness().getTokenDetail(cc.getTokenID());
+			Token td = zContract.getWitness().getTokenDetail(cc.getTokenID());
 			if(td == null) {
 				throw new ExecutionException("No Token found for ID "+cc.getTokenID());
 			}

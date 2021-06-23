@@ -26,7 +26,7 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.objects.keys.MultiKey;
 import org.minima.objects.proofs.ScriptProof;
 import org.minima.objects.proofs.SignatureProof;
-import org.minima.objects.proofs.TokenProof;
+import org.minima.objects.proofs.Token;
 import org.minima.system.input.functions.gimme50;
 import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
@@ -279,7 +279,7 @@ public class TxPoWChecker {
 				
 				if(!input.getTokenID().isEqual(Coin.MINIMA_TOKENID)) {
 					//Do we have a token Script..
-					TokenProof tokdets = zWit.getTokenDetail(input.getTokenID());
+					Token tokdets = zWit.getTokenDetail(input.getTokenID());
 					
 					if(tokdets == null) {
 						contractlog.put("error", "Token Details for coin missing! "+input.getTokenID());
@@ -401,7 +401,7 @@ public class TxPoWChecker {
 		//ONLY NOW - Touch MMR and Add All KNOWN Tokens..
 		if(zTouchMMR) {
 			//Is there aq new token
-			TokenProof newtokdets = null;
+			Token newtokdets = null;
 			
 			//Is the STATE relevant.. does it have a KEY we own..
 			boolean relstate = zDB.getUserDB().isStateListRelevant(trans.getCompleteState());
@@ -444,8 +444,8 @@ public class TxPoWChecker {
 				//Is this a token or are we creating a Token
 				if(tokid.isEqual(Coin.TOKENID_CREATE)) {
 					//Make it the HASH ( CoinID | Total Amount..the token details )
-					TokenProof gentoken = trans.getTokenGenerationDetails();
-					newtokdets = new TokenProof(coinid, 
+					Token gentoken = trans.getTokenGenerationDetails();
+					newtokdets = new Token(coinid, 
 												gentoken.getScale(), 
 												gentoken.getAmount(), 
 												gentoken.getName(), 
@@ -490,8 +490,8 @@ public class TxPoWChecker {
 			}
 			
 			//Add all the tokens..
-			ArrayList<TokenProof> tokens =  zWit.getAllTokenDetails();
-			for(TokenProof tp : tokens) {
+			ArrayList<Token> tokens =  zWit.getAllTokenDetails();
+			for(Token tp : tokens) {
 				zDB.getUserDB().addTokenDetails(tp);
 			}
 		}

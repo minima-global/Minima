@@ -10,7 +10,7 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.proofs.ScriptProof;
 import org.minima.objects.proofs.SignatureProof;
-import org.minima.objects.proofs.TokenProof;
+import org.minima.objects.proofs.Token;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
@@ -30,7 +30,7 @@ public class Witness implements Streamable {
 	/**
 	 * Any tokens used in any inputs must provide the Token Details
 	 */
-	ArrayList<TokenProof> mTokenProofs;
+	ArrayList<Token> mTokenProofs;
 	
 	/**
 	 * The Scripts used in the transactions 
@@ -99,18 +99,18 @@ public class Witness implements Streamable {
 	 * Token Proofs
 	 */
 	
-	public ArrayList<TokenProof> getAllTokenDetails(){
+	public ArrayList<Token> getAllTokenDetails(){
 		return mTokenProofs;
 	}
 	
-	public void addTokenDetails(TokenProof zDetails) {
+	public void addTokenDetails(Token zDetails) {
 		if(getTokenDetail(zDetails.getTokenID()) == null){
 			mTokenProofs.add(zDetails);	
 		}
 	}
 	
-	public TokenProof getTokenDetail(MiniData zTokenID) {
-		for(TokenProof td : mTokenProofs) {
+	public Token getTokenDetail(MiniData zTokenID) {
+		for(Token td : mTokenProofs) {
 			if(td.getTokenID().isEqual(zTokenID)) {
 				return td;
 			}
@@ -167,7 +167,7 @@ public class Witness implements Streamable {
 
 		//Token Details
 		arr = new JSONArray();
-		for(TokenProof td : mTokenProofs) {
+		for(Token td : mTokenProofs) {
 			arr.add(td.toJSON());
 		}
 		obj.put("tokens", arr);
@@ -206,7 +206,7 @@ public class Witness implements Streamable {
 		//Tokens
 		len = new MiniNumber(mTokenProofs.size());
 		len.writeDataStream(zOut);
-		for(TokenProof td : mTokenProofs) {
+		for(Token td : mTokenProofs) {
 			td.writeDataStream(zOut);
 		}
 		
@@ -238,7 +238,7 @@ public class Witness implements Streamable {
 		mlen = MiniNumber.ReadFromStream(zIn);
 		len  = mlen.getAsInt();
 		for(int i=0;i<len;i++) {
-			mTokenProofs.add(TokenProof.ReadFromStream(zIn));
+			mTokenProofs.add(Token.ReadFromStream(zIn));
 		}
 		
 		mScriptProofs = new ArrayList<>();

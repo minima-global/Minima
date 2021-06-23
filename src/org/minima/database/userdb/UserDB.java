@@ -12,7 +12,7 @@ import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.keys.MultiKey;
-import org.minima.objects.proofs.TokenProof;
+import org.minima.objects.proofs.Token;
 import org.minima.system.brains.ConsensusHandler;
 
 public interface UserDB {
@@ -105,11 +105,11 @@ public interface UserDB {
 	/**
 	 * Token Details
 	 */
-	public ArrayList<TokenProof> getAllKnownTokens();
+	public ArrayList<Token> getAllKnownTokens();
 	public void clearTokens();
-	public TokenProof getTokenDetail(MiniData zTokenID);
+	public Token getTokenDetail(MiniData zTokenID);
 	
-	public void addTokenDetails(TokenProof zToken);
+	public void addTokenDetails(Token zToken);
 	
 	/**
 	 * Transaction History
