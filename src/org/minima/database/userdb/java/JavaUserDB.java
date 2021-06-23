@@ -320,10 +320,10 @@ public class JavaUserDB implements UserDB, Streamable{
 	public boolean isStateListRelevant(ArrayList<StateVariable> zStateVarList) {
 		for(StateVariable sv : zStateVarList) {
 			//Get the data
-			MiniString data = sv.getValue();
+			String data = sv.toString();
 			
 			//Only check HEX values..
-			if(data.toString().startsWith("0x")) {
+			if(data.startsWith("0x")) {
 				//Create the MiniData
 				MiniData svdata = new MiniData(data.toString());
 				

@@ -240,7 +240,7 @@ public class JavaUserDBTests {
         ArrayList<StateVariable> StateVarList = new ArrayList<StateVariable>();
 
         StateVarList.clear();
-        StateVarList.add(new StateVariable(0, "dummy"));
+        StateVarList.add(new StateVariable(0, "[dummy]"));
         assertFalse("should be irrelevant ", db.isStateListRelevant(StateVarList));
 
         StateVarList.clear();

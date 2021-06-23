@@ -75,10 +75,10 @@ public class TransactionTests {
             // maybe stateExists should limit input values to 0-255
             assertFalse("Transaction should have no state existing", t.stateExists(i));
         }
-        String HelloWorld = "HelloWorld";
+        String HelloWorld = "[HelloWorld]";
         t.addStateVariable(new StateVariable(1, HelloWorld));
         assertTrue("Transaction should have state port 1 defined", t.stateExists(1));
-        assertTrue("Variable set should match original String", t.getStateValue(1).getValue().toString().compareTo(HelloWorld) == 0);
+        assertTrue("Variable set should match original String", t.getStateValue(1).toString().compareTo(HelloWorld) == 0);
 
         try {
             Transaction tcopy = t.deepCopy();

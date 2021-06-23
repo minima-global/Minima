@@ -143,7 +143,7 @@ public class Contract {
 		//State Variables
 		ArrayList<StateVariable> svs = mTransaction.getCompleteState();
 		for(StateVariable sv : svs) {
-			traceLog("State["+sv.getPort()+"] : "+sv.getValue().toString());
+			traceLog("State["+sv.getPort()+"] : "+sv.toString());
 		}
 
 		//PREVSTATE
@@ -152,7 +152,7 @@ public class Contract {
 		}else {
 			mPrevState = zPrevState;
 			for(StateVariable sv : mPrevState) {
-				traceLog("PrevState["+sv.getPort()+"] : "+sv.getValue().toString());
+				traceLog("PrevState["+sv.getPort()+"] : "+sv.toString());
 			}	
 		}
 		
@@ -392,10 +392,7 @@ public class Contract {
 		}
 
 		//Get it from the Transaction..
-		String stateval = mTransaction.getStateValue(zStateNum).getValue().toString();
-		
-		//Clean it
-//		String clean = cleanScript(stateval);
+		String stateval = mTransaction.getStateValue(zStateNum).toString();
 		
 		//Clean it..
 		return Value.getValue(stateval);
@@ -406,7 +403,7 @@ public class Contract {
 		for(StateVariable sv : mPrevState) {
 			if(sv.getPort() == zPrev) {
 				//Clean it..
-				String stateval = sv.getValue().toString();
+				String stateval = sv.toString();
 				
 				//Work it out
 				return Value.getValue(stateval);

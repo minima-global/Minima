@@ -44,7 +44,7 @@ public class MMRProofTest {
 
         ArrayList<StateVariable> states = new ArrayList<StateVariable>();
         states.clear();
-        states.add(new StateVariable(0, "dummy"));
+        states.add(new StateVariable(0, "[dummy]"));
 
         MMRData mmrd1 = new MMRData(new MiniByte(123), coin1, new MiniNumber(1234567890), states);
         MMRData mmrd2 = new MMRData(new MiniByte(123), coin2, new MiniNumber(1234567890), states);

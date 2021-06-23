@@ -132,7 +132,7 @@ public class MMRSetTest {
             Address addr = new Address(script, pk.getBitLength());
             ArrayList<StateVariable> states = new ArrayList<StateVariable>();
             states.clear();
-            states.add(new StateVariable(0, "dummy"));
+            states.add(new StateVariable(0, "[dummy]"));
 
             MMRData mmrd2 = new MMRData(new MiniByte(0), new Coin(new MiniData("0x00"), addr.getAddressData(), MiniNumber.TEN, new MiniData("0x00")), new MiniNumber(1234567890), states);
 

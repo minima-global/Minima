@@ -113,7 +113,7 @@ public class MMREntryTest {
 
                 ArrayList<StateVariable> states = new ArrayList<StateVariable>();
                 states.clear();
-                states.add(new StateVariable(0, "dummy"));
+                states.add(new StateVariable(0, "[dummy]"));
 
                 MMRData mmrd = new MMRData(new MiniByte(123), coin, new MiniNumber(1234567890), states);
                 mmre1.setData(mmrd);
@@ -164,7 +164,7 @@ public class MMREntryTest {
 
             ArrayList<StateVariable> states = new ArrayList<StateVariable>();
             states.clear();
-            states.add(new StateVariable(0, "dummy"));
+            states.add(new StateVariable(0, "[dummy]"));
 
             MMRData mmrd = new MMRData(new MiniByte(123), coin, new MiniNumber(1234567890), states);
             mmre.setData(mmrd);

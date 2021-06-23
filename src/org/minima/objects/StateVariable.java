@@ -16,10 +16,10 @@ public class StateVariable implements Streamable {
 	/**
 	 * All possible state variable types
 	 */
-	public static final MiniByte STATETYPE_BOOL 	= new MiniByte(0);
 	public static final MiniByte STATETYPE_HEX 		= new MiniByte(1);
 	public static final MiniByte STATETYPE_NUMBER 	= new MiniByte(2);
-	public static final MiniByte STATETYPE_STRING 	= new MiniByte(3);
+	public static final MiniByte STATETYPE_STRING 	= new MiniByte(4);
+	public static final MiniByte STATETYPE_BOOL 	= new MiniByte(8);
 	
 	/**
 	 * What type is this
@@ -55,7 +55,7 @@ public class StateVariable implements Streamable {
 		//Store as MiniNumber
 		mPort = new MiniByte(zPort);
 		
-		//Cannot add Mx addresses.. these are a clienty side trick.. only HEX addresses
+		//Set the Data
 		if(zData.startsWith("Mx")) {
 			mData = new MiniString(Address.convertMinimaAddress(zData).to0xString());
 			mType = STATETYPE_HEX;
@@ -73,8 +73,6 @@ public class StateVariable implements Streamable {
 			mType = STATETYPE_BOOL;
 		
 		}else if(zData.startsWith("[") && zData.endsWith("]")) {
-			FIX THIS
-//			mData = new MiniString(zData.substring(1,zData.length()-1));
 			mData = new MiniString(zData);
 			mType = STATETYPE_STRING;
 		
@@ -85,10 +83,6 @@ public class StateVariable implements Streamable {
 		
 		//Is this value kept in the MMR
 		mKeepMMR = zKeepMMR;
-	}
-	
-	public MiniString getValue() {
-		return mData;
 	}
 	
 	public int getPort() {
@@ -114,7 +108,7 @@ public class StateVariable implements Streamable {
 	
 	@Override
 	public String toString(){
-		return toJSON().toString();
+		return mData.toString();
 	}
 
 	@Override

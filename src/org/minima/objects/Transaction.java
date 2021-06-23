@@ -242,13 +242,11 @@ public class Transaction implements Streamable {
 	 * @param zValue
 	 */
 	public void addStateVariable(StateVariable zValue) {
-		//If it exists overwrite it..
-		StateVariable sv = getStateValue(zValue.getPort());
-		if(sv != null) {
-			sv.resetData(zValue.getValue(), new MiniByte(zValue.isKeepMMR()));
-		}else {
-			mState.add(zValue);
-		}
+		//If it exists remove it
+		removeStateVariable(zValue.getPort());
+		
+		//And now add it..
+		mState.add(zValue);
 		
 		//Order the state
 		Collections.sort(mState,new Comparator<StateVariable>() {
@@ -262,12 +260,47 @@ public class Transaction implements Streamable {
 	}
 	
 	/**
-	 * @param zStateNum
+	 * Remove a State Variable
+	 * @param zPort
+	 */
+	public void removeStateVariable(int zPort) {
+		//Cycle through and add the remaining
+		boolean found = false;
+		ArrayList<StateVariable> newvars = new ArrayList<>();
+		for(StateVariable sv : mState) {
+			if(sv.getPort() != zPort){
+				newvars.add(sv);
+			}else {
+				found = true;
+			}
+		}
+		
+		//Did we remove it..
+		if(!found) {
+			return;
+		}
+		
+		//Set the new state
+		mState = newvars;
+		
+		//Order the state
+		Collections.sort(mState,new Comparator<StateVariable>() {
+			@Override
+			public int compare(StateVariable o1, StateVariable o2) {
+				int s1 = o1.getPort();
+				int s2 = o2.getPort();
+				return Integer.compare(s1, s2);
+			}
+		});
+	}
+	
+	/**
+	 * @param zPort
 	 * @return
 	 */
-	public StateVariable getStateValue(int zStateNum) {
+	public StateVariable getStateValue(int zPort) {
 		for(StateVariable sv : mState) {
-			if(sv.getPort() == zStateNum){
+			if(sv.getPort() == zPort){
 				return sv;
 			}
 		}
