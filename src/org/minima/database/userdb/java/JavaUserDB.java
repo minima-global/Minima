@@ -534,10 +534,10 @@ public class JavaUserDB implements UserDB, Streamable{
 		}
 	}
 
-	@Override
-	public ArrayList<Token> getAllKnownTokens() {
-		return mAllTokens;
-	}
+//	@Override
+//	public ArrayList<Token> getAllKnownTokens() {
+//		return mAllTokens;
+//	}
 
 	@Override
 	public Token getTokenDetail(MiniData zTokenID) {
