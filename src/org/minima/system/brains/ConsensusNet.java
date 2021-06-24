@@ -571,19 +571,6 @@ public class ConsensusNet extends ConsensusProcessor {
 					getMainDB().hardSetCascadeNode(node);
 				}
 				
-				//Add all the tokens..
-				if(txpow.isTransaction()) {
-					Token tokp = txpow.getTransaction().getTokenGenerationDetails();
-					if(tokp!=null) {
-						getMainDB().getUserDB().addTokenDetails(tokp);
-					}	
-					
-					ArrayList<Token> tokens =  txpow.getWitness().getAllTokenDetails();
-					for(Token tp : tokens) {
-						getMainDB().getUserDB().addTokenDetails(tp);
-					}
-				}
-				
 				//Notify..
 				counter++;
 				int totperc = (int)((counter / totpacks) * 100.0f);

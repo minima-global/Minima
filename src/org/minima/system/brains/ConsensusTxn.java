@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import org.minima.database.MinimaDB;
+import org.minima.database.mmr.MMRData;
 import org.minima.database.mmr.MMREntry;
 import org.minima.database.mmr.MMRSet;
 import org.minima.database.txpowtree.BlockTreeNode;
@@ -209,6 +210,21 @@ public class ConsensusTxn extends ConsensusProcessor {
 			//Replace with the HASH value.. 
 			tokenid = tok.to0xString();
 			
+			//How much do we have..
+			ArrayList<MMRData> confirmed = null;
+			if(tok.isEqual(Coin.TOKENID_CREATE)) {
+				confirmed = getMainDB().getTotalSimpleSpendableCoins(Coin.MINIMA_TOKENID);
+				changetok = Coin.MINIMA_TOKENID;
+			}else {
+				confirmed = getMainDB().getTotalSimpleSpendableCoins(tok);
+			}
+			
+			if(confirmed.size()==0) {
+				//No coins available..
+				InputHandler.endResponse(zMessage, false, "Insufficient funds! You have : 0");
+				return;
+			}
+			
 			//Is this a token amount or a minima amount
 			Token tokendets = null;
 			if(!tok.isEqual(Coin.MINIMA_TOKENID)) {
@@ -216,18 +232,10 @@ public class ConsensusTxn extends ConsensusProcessor {
 				MiniNumber samount = new MiniNumber(amount);
 				
 				//Now divide by the scale factor..
-				tokendets = getMainDB().getUserDB().getTokenDetail(new MiniData(tokenid));
-				
-				//Do we have it,.
-				if(tokendets == null) {
-					//Unknown token!
-					InputHandler.endResponse(zMessage, false, "No details found for the specified token : "+tokenid);
-					return;
-				}
+				tokendets = confirmed.get(0).getToken();
 				
 				//Scale..
 				samount = tokendets.getScaledMinimaAmount(samount);
-//				samount = samount.div(tokendets.getScaleFactor());
 				
 				//And set the new value..
 				amount = samount.toString();
@@ -236,15 +244,6 @@ public class ConsensusTxn extends ConsensusProcessor {
 			//Send details..
 			MiniNumber sendamount 	= new MiniNumber(amount);
 			
-			//How much do we have..
-			ArrayList<Coin> confirmed = null;
-			if(tok.isEqual(Coin.TOKENID_CREATE)) {
-				confirmed = getMainDB().getTotalSimpleSpendableCoins(Coin.MINIMA_TOKENID);
-				changetok = Coin.MINIMA_TOKENID;
-			}else {
-				confirmed = getMainDB().getTotalSimpleSpendableCoins(tok);
-			}
-		
 			//Select the coins to use in the transaction
 			ArrayList<Coin> selectedCoins = ConsensusHandler.selectCoins(confirmed, sendamount);
 		
@@ -252,8 +251,8 @@ public class ConsensusTxn extends ConsensusProcessor {
 			if(selectedCoins.size()==0) {
 				//Sum the confirmed coins..
 				MiniNumber conftotal = new MiniNumber();
-				for(Coin cc : confirmed) {
-					conftotal = conftotal.add(cc.getAmount());
+				for(MMRData cc : confirmed) {
+					conftotal = conftotal.add(cc.getCoin().getAmount());
 				}
 				
 				//Insufficient funds!
@@ -381,14 +380,7 @@ public class ConsensusTxn extends ConsensusProcessor {
 			//Is it a Token ? 
 			if(!cc.getTokenID().isEqual(Coin.MINIMA_TOKENID)) {
 				//Add the Token details..
-				Token tokendets = getMainDB().getUserDB().getTokenDetail(cc.getTokenID());
-				
-				//Do we have it,.
-				if(tokendets == null) {
-					//Unknown token!
-					InputHandler.endResponse(zMessage, false, "No details found for the specified token : "+cc.getTokenID());
-					return;
-				}
+				Token tokendets = entry.getData().getToken();
 				
 				//Add it..
 				wit.addTokenDetails(tokendets);
@@ -442,7 +434,7 @@ public class ConsensusTxn extends ConsensusProcessor {
 			//Is it a Token ? 
 			if(!out.getTokenID().isEqual(Coin.MINIMA_TOKENID)) {
 				//Add the Token details..
-				Token tokendets = getMainDB().getUserDB().getTokenDetail(out.getTokenID());
+				Token tokendets = getMainDB().getMMRTip().findToken(out.getTokenID());
 				
 				//Do we have it,.
 				if(tokendets == null) {
@@ -489,7 +481,7 @@ public class ConsensusTxn extends ConsensusProcessor {
 			}
 			
 			//Get the token
-			Token tokendets = getMainDB().getUserDB().getTokenDetail(new MiniData(tokenid));
+			Token tokendets = getMainDB().getMMRTip().findToken(new MiniData(tokenid));
 			
 			if(tokendets == null) {
 				InputHandler.endResponse(zMessage, false, "Invalid Token : "+tokenid);

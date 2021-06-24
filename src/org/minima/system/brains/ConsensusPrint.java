@@ -663,14 +663,14 @@ public class ConsensusPrint extends ConsensusProcessor {
 					
 					//SIMPLE SENDS
 					MiniNumber tot_simple = MiniNumber.ZERO;
-					ArrayList<Coin> confirmed = getMainDB().getTotalSimpleSpendableCoins(Coin.MINIMA_TOKENID);
-					for(Coin confc : confirmed) {
+					ArrayList<MMRData> confirmed = getMainDB().getTotalSimpleSpendableCoins(Coin.MINIMA_TOKENID);
+					for(MMRData confc : confirmed) {
 						if(!onlyaddress.equals("")) {
-							if(confc.getAddress().isEqual(onlyaddrdata)) {
-								tot_simple = tot_simple.add(confc.getAmount());
+							if(confc.getCoin().getAddress().isEqual(onlyaddrdata)) {
+								tot_simple = tot_simple.add(confc.getCoin().getAmount());
 							}
 						}else {
-							tot_simple = tot_simple.add(confc.getAmount());	
+							tot_simple = tot_simple.add(confc.getCoin().getAmount());	
 						}
 					}
 					jobj.put("sendable", tot_simple.toString());
@@ -703,14 +703,14 @@ public class ConsensusPrint extends ConsensusProcessor {
 					
 					//SIMPLE SENDS
 					MiniNumber tot_simple = MiniNumber.ZERO;
-					ArrayList<Coin> confirmed = getMainDB().getTotalSimpleSpendableCoins(tok);
-					for(Coin confc : confirmed) {
+					ArrayList<MMRData> confirmed = getMainDB().getTotalSimpleSpendableCoins(tok);
+					for(MMRData confc : confirmed) {
 						if(!onlyaddress.equals("")) {
-							if(confc.getAddress().isEqual(onlyaddrdata)) {
-								tot_simple = tot_simple.add(confc.getAmount());
+							if(confc.getCoin().getAddress().isEqual(onlyaddrdata)) {
+								tot_simple = tot_simple.add(confc.getCoin().getAmount());
 							}
 						}else {
-							tot_simple = tot_simple.add(confc.getAmount());	
+							tot_simple = tot_simple.add(confc.getCoin().getAmount());	
 						}
 					}
 					
@@ -781,17 +781,16 @@ public class ConsensusPrint extends ConsensusProcessor {
 			JSONObject allcoins = InputHandler.getResponseJSON(zMessage);
 			JSONArray totcoins = new JSONArray();
 			
-			ArrayList<Coin> coins = getMainDB().getTotalSimpleSpendableCoins(new MiniData(tokenid));
-			for(Coin coin : coins) {
+			ArrayList<MMRData> coins = getMainDB().getTotalSimpleSpendableCoins(new MiniData(tokenid));
+			for(MMRData coin : coins) {
 				//Get the Public Key..
-				MiniData pubk = getMainDB().getUserDB().getPublicKeyForSimpleAddress(coin.getAddress());
+				MiniData pubk = getMainDB().getUserDB().getPublicKeyForSimpleAddress(coin.getCoin().getAddress());
 				
 				//Get the TRUE value given the Token..
-				MiniNumber tokenamount = coin.getAmount();
-				if(!coin.getTokenID().isEqual(coin.MINIMA_TOKENID)) {
-					Token td = getMainDB().getUserDB().getTokenDetail(coin.getTokenID());
-					tokenamount = td.getScaledTokenAmount(coin.getAmount());
-//					tokenamount = coin.getAmount().mult(td.getScaleFactor());
+				MiniNumber tokenamount = coin.getCoin().getAmount();
+				if(!coin.getCoin().getTokenID().isEqual(Coin.MINIMA_TOKENID)) {
+					Token td = coin.getToken();
+					tokenamount = td.getScaledTokenAmount(coin.getCoin().getAmount());
 				}
 				
 				//Create the JSON

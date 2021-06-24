@@ -401,14 +401,15 @@ public class ConsensusUser extends ConsensusProcessor {
 						//Tokenid
 						String tokenid = tok.substring(index+1).trim();
 						
-						//Add the details to the witness..
-						Token tprf = getMainDB().getUserDB().getTokenDetail(new MiniData(tokenid));
-						if(tprf != null) {
-							wit.addTokenDetails(tprf);
-						
-							//Recalculate the amount.. given the token scale..
-							amt = tprf.getScaledMinimaAmount(amt);
-//							amt = amt.div(tprf.getScaleFactor());
+						if(!tokenid.equals("0x00")) {
+							//Add the details to the witness..
+							Token tprf = getMainDB().getMMRTip().findToken(new MiniData(tokenid));
+							if(tprf != null) {
+								wit.addTokenDetails(tprf);
+							
+								//Recalculate the amount.. given the token scale..
+								amt = tprf.getScaledMinimaAmount(amt);
+							}
 						}
 						
 						//Create this coin
@@ -535,7 +536,7 @@ public class ConsensusUser extends ConsensusProcessor {
 						
 						if(global.equals("@TOKENID")) {
 							//Add the details to the witness..
-							Token tprf = getMainDB().getUserDB().getTokenDetail(new MiniData(value));
+							Token tprf = getMainDB().getMMRTip().findToken(new MiniData(value));
 							if(tprf != null) {
 								wit.addTokenDetails(tprf);
 							}	
@@ -919,11 +920,11 @@ public class ConsensusUser extends ConsensusProcessor {
 		Hashtable<String, ArrayList<Coin>> pubcoins = new Hashtable<>();
 		
 		//First get a list of coins..
-		ArrayList<Coin> coins = getMainDB().getTotalSimpleSpendableCoins(zTokenID);
-		for(Coin coin : coins) {
+		ArrayList<MMRData> coins = getMainDB().getTotalSimpleSpendableCoins(zTokenID);
+		for(MMRData coin : coins) {
 			
 			//Get the Public Key..
-			MiniData pubk 	= getMainDB().getUserDB().getPublicKeyForSimpleAddress(coin.getAddress());
+			MiniData pubk 	= getMainDB().getUserDB().getPublicKeyForSimpleAddress(coin.getCoin().getAddress());
 			String pk 		= pubk.to0xString();
 			
 			//Get the current array
@@ -934,7 +935,7 @@ public class ConsensusUser extends ConsensusProcessor {
 			}
 		
 			//Now add this coin..
-			curr.add(coin);
+			curr.add(coin.getCoin());
 		}
 		
 		//Now create transactions..
@@ -953,7 +954,7 @@ public class ConsensusUser extends ConsensusProcessor {
 		
 		//Add it
 		JSONObject cointok = new JSONObject();
-		cointok.put("tokenid", zTokenID);
+		cointok.put("tokenid", zTokenID.to0xString());
 		cointok.put("coins", consarray);
 		zCoinInfo.add(cointok);
 		
@@ -966,11 +967,12 @@ public class ConsensusUser extends ConsensusProcessor {
 		Hashtable<String, ArrayList<Coin>> pubcoins = new Hashtable<>();
 		
 		//First get a list of coins..
-		ArrayList<Coin> coins = getMainDB().getTotalSimpleSpendableCoins(zTokenID);
-		for(Coin coin : coins) {
+		Token token = null;
+		ArrayList<MMRData> coins = getMainDB().getTotalSimpleSpendableCoins(zTokenID);
+		for(MMRData coin : coins) {
 			
 			//Get the Public Key..
-			MiniData pubk 	= getMainDB().getUserDB().getPublicKeyForSimpleAddress(coin.getAddress());
+			MiniData pubk 	= getMainDB().getUserDB().getPublicKeyForSimpleAddress(coin.getCoin().getAddress());
 			String pk 		= pubk.to0xString();
 			
 			//Get the current array
@@ -981,7 +983,10 @@ public class ConsensusUser extends ConsensusProcessor {
 			}
 		
 			//Now add this coin..
-			curr.add(coin);
+			curr.add(coin.getCoin());
+			
+			//Store the Token
+			token = coin.getToken();
 		}
 	
 		int MAX_COLL = 5;
@@ -1020,14 +1025,11 @@ public class ConsensusUser extends ConsensusProcessor {
 				//Add the token proofs..
 				MiniNumber showamount = totalval;
 				if(!zTokenID.isEqual(Coin.MINIMA_TOKENID)) {
-					//Get the token proof..
-					Token tokendets = getMainDB().getUserDB().getTokenDetail(zTokenID);
-					
 					//Add to the witness..
-					wit.addTokenDetails(tokendets);
+					wit.addTokenDetails(token);
 					
 					//How much is it..
-					showamount = tokendets.getScaledTokenAmount(totalval);
+					showamount = token.getScaledTokenAmount(totalval);
 				}
 				
 				//Create a transaction..

@@ -8,6 +8,7 @@ import java.util.Random;
 
 import org.minima.GlobalParams;
 import org.minima.database.MinimaDB;
+import org.minima.database.mmr.MMRData;
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
 import org.minima.objects.StateVariable;
@@ -587,6 +588,21 @@ public class ConsensusHandler extends MessageProcessor {
 			//Replace with the HASH value.. 
 			tokenid = tok.to0xString();
 			
+			//How much do we have..
+			ArrayList<MMRData> confirmed = null;
+			if(tok.isEqual(Coin.TOKENID_CREATE)) {
+				confirmed = getMainDB().getTotalSimpleSpendableCoins(Coin.MINIMA_TOKENID);
+				changetok = Coin.MINIMA_TOKENID;
+			}else {
+				confirmed = getMainDB().getTotalSimpleSpendableCoins(tok);
+			}
+			
+			if(confirmed.size()==0) {
+				//No coins available..
+				InputHandler.endResponse(zMessage, false, "Insufficient funds! You have : 0");
+				return;
+			}
+			
 			//Is this a token amount or a minima amount
 			Token tokendets = null;
 			if(!tok.isEqual(Coin.MINIMA_TOKENID)) {
@@ -594,18 +610,10 @@ public class ConsensusHandler extends MessageProcessor {
 				MiniNumber samount = new MiniNumber(amount);
 				
 				//Now divide by the scale factor..
-				tokendets = getMainDB().getUserDB().getTokenDetail(new MiniData(tokenid));
-				
-				//Do we have it,.
-				if(tokendets == null) {
-					//Unknown token!
-					InputHandler.endResponse(zMessage, false, "No details found for the specified token : "+tokenid);
-					return;
-				}
+				tokendets = confirmed.get(0).getToken();
 				
 				//Scale..
 				samount = tokendets.getScaledMinimaAmount(samount);
-//				samount = samount.div(tokendets.getScaleFactor());
 				
 				//And set the new value..
 				amount = samount.toString();
@@ -620,15 +628,6 @@ public class ConsensusHandler extends MessageProcessor {
 				return;
 			}
 			
-			//How much do we have..
-			ArrayList<Coin> confirmed = null;
-			if(tok.isEqual(Coin.TOKENID_CREATE)) {
-				confirmed = getMainDB().getTotalSimpleSpendableCoins(Coin.MINIMA_TOKENID);
-				changetok = Coin.MINIMA_TOKENID;
-			}else {
-				confirmed = getMainDB().getTotalSimpleSpendableCoins(tok);
-			}
-			
 			//Select the coins to use in the transaction
 			ArrayList<Coin> selectedCoins = selectCoins(confirmed, sendamount);
 		
@@ -636,8 +635,8 @@ public class ConsensusHandler extends MessageProcessor {
 			if(selectedCoins.size()==0) {
 				//Sum the confirmed coins..
 				MiniNumber conftotal = new MiniNumber();
-				for(Coin cc : confirmed) {
-					conftotal = conftotal.add(cc.getAmount());
+				for(MMRData cc : confirmed) {
+					conftotal = conftotal.add(cc.getCoin().getAmount());
 				}
 				
 				//Insufficient funds!
@@ -826,7 +825,7 @@ public class ConsensusHandler extends MessageProcessor {
 			MiniNumber sendamount = new MiniNumber(colorminima);
 			
 			//How much do we have..
-			ArrayList<Coin> confirmed = getMainDB().getTotalSimpleSpendableCoins(Coin.MINIMA_TOKENID);
+			ArrayList<MMRData> confirmed = getMainDB().getTotalSimpleSpendableCoins(Coin.MINIMA_TOKENID);
 			
 			//Select the coins to use in the transaction
 			ArrayList<Coin> selectedCoins = selectCoins(confirmed, sendamount);
@@ -835,8 +834,8 @@ public class ConsensusHandler extends MessageProcessor {
 			if(selectedCoins.size()==0) {
 				//Sum the confirmed coins..
 				MiniNumber conftotal = new MiniNumber();
-				for(Coin cc : confirmed) {
-					conftotal = conftotal.add(cc.getAmount());
+				for(MMRData cc : confirmed) {
+					conftotal = conftotal.add(cc.getCoin().getAmount());
 				}
 				
 				//Insufficient funds!
@@ -914,15 +913,15 @@ public class ConsensusHandler extends MessageProcessor {
 	 * Which coins to use when sending a transaction
 	 * Expects all the coins to be of the same tokenid
 	 */
-	public static ArrayList<Coin> selectCoins(ArrayList<Coin> zAllCoins, MiniNumber zAmountRequired){
+	public static ArrayList<Coin> selectCoins(ArrayList<MMRData> zAllCoins, MiniNumber zAmountRequired){
 		ArrayList<Coin> ret = new ArrayList<>();
 		
 		//First sort the coins by size..
-		Collections.sort(zAllCoins, new Comparator<Coin>() {
+		Collections.sort(zAllCoins, new Comparator<MMRData>() {
 			@Override
-			public int compare(Coin zCoin1, Coin zCoin2) {
-				MiniNumber amt1 = zCoin1.getAmount();
-				MiniNumber amt2 = zCoin2.getAmount();
+			public int compare(MMRData zCoin1, MMRData zCoin2) {
+				MiniNumber amt1 = zCoin1.getCoin().getAmount();
+				MiniNumber amt2 = zCoin2.getCoin().getAmount();
 				return amt2.compareTo(amt1);
 			}
 		});
@@ -930,10 +929,10 @@ public class ConsensusHandler extends MessageProcessor {
 		//Now go through and pick a coin big enough.. but keep looking for smaller coins  
 		boolean found    = false;
 		Coin currentcoin = null;
-		for(Coin cc : zAllCoins) {
-			if(cc.getAmount().isMoreEqual(zAmountRequired)) {
+		for(MMRData cc : zAllCoins) {
+			if(cc.getCoin().getAmount().isMoreEqual(zAmountRequired)) {
 				found = true;
-				currentcoin = cc;
+				currentcoin = cc.getCoin();
 			}else {
 				//Not big enough - all others will be smaller..
 				break;
@@ -947,9 +946,9 @@ public class ConsensusHandler extends MessageProcessor {
 			tot = currentcoin.getAmount();
 		}else {
 			//Will need to add up multiple coins..
-			for(Coin cc : zAllCoins) {
-				ret.add(cc);
-				tot = tot.add(cc.getAmount());
+			for(MMRData cc : zAllCoins) {
+				ret.add(cc.getCoin());
+				tot = tot.add(cc.getCoin().getAmount());
 				
 				if(tot.isMoreEqual(zAmountRequired)) {
 					break;
@@ -1012,8 +1011,8 @@ public class ConsensusHandler extends MessageProcessor {
 		
 		System.out.println(coins.toString());
 		
-		ArrayList<Coin> ret = selectCoins(coins, new MiniNumber("3.5"));
-		System.out.println(ret.toString());
+//		ArrayList<Coin> ret = selectCoins(coins, new MiniNumber("3.5"));
+//		System.out.println(ret.toString());
 		
 		
 	}

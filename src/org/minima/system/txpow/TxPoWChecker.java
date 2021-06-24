@@ -453,9 +453,6 @@ public class TxPoWChecker {
 					
 					//Set the Globally Unique TokenID!
 					tokid = newtokdets.getTokenID();
-				
-					//Add to the UserDB
-					zDB.getUserDB().addTokenDetails(newtokdets);
 					
 					//Its a regular token transaction
 				}else if(!tokid.isEqual(Coin.MINIMA_TOKENID)) {
@@ -489,12 +486,6 @@ public class TxPoWChecker {
 					//Keep this MMR record
 					zMMRSet.addKeeper(unspent.getEntryNumber());	
 				}	
-			}
-			
-			//Add all the tokens..
-			ArrayList<Token> tokens =  zWit.getAllTokenDetails();
-			for(Token tp : tokens) {
-				zDB.getUserDB().addTokenDetails(tp);
 			}
 		}
 				

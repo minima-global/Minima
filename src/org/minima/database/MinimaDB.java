@@ -629,8 +629,8 @@ public class MinimaDB {
 		return mMiningCoins.contains(coinid);
 	}
 	
-	public ArrayList<Coin> getTotalSimpleSpendableCoins(MiniData zTokenID) {
-		ArrayList<Coin> confirmed   = new ArrayList<>();
+	public ArrayList<MMRData> getTotalSimpleSpendableCoins(MiniData zTokenID) {
+		ArrayList<MMRData> confirmed   = new ArrayList<>();
 		if(getMainTree().getChainRoot() == null) {
 			return confirmed;
 		}
@@ -669,7 +669,7 @@ public class MinimaDB {
 						
 						//Is it safe to use ?
 						if(!found) {
-							confirmed.add(coin);	
+							confirmed.add(coindata);	
 						}	
 					}
 				}

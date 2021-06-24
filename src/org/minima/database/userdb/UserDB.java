@@ -103,15 +103,6 @@ public interface UserDB {
 	public void deleteUserRow(int zID);
 	
 	/**
-	 * Token Details
-	 */
-//	public ArrayList<Token> getAllKnownTokens();
-	public void clearTokens();
-//	public Token getTokenDetail(MiniData zTokenID);
-	
-	public void addTokenDetails(Token zToken);
-	
-	/**
 	 * Transaction History
 	 */
 	public ArrayList<reltxpow> getHistory();
