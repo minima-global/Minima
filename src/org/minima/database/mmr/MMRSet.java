@@ -354,6 +354,37 @@ public class MMRSet implements Streamable {
 	}
 	
 	/**
+	 * Search for a specific Token
+	 */
+	public Token findToken(MiniData zTokenID){
+		//Loop through all
+		MMRSet current = this;
+		
+		//Cycle through them..
+		while(current != null) {
+			//Now cycle through all entries
+			Enumeration<MMREntry> entries = current.mSetEntries.elements();
+			while(entries.hasMoreElements()) {
+				//Get the entry
+				MMREntry entry = entries.nextElement();
+				
+				//Get the data
+				MMRData data = entry.getData();
+				if(!data.isHashOnly()) {
+					if(data.getCoin().getTokenID().isEqual(zTokenID)) {
+						return data.getToken();
+					}
+				}
+			}
+			
+			//Search the parent..
+			current = current.getParent();
+		}
+			
+		return null;
+	}
+	
+	/**
 	 * Search for All tokens in the current MMR Chain
 	 */
 	public ArrayList<Token> getAllTokens(){

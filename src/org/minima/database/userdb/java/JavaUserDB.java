@@ -539,24 +539,24 @@ public class JavaUserDB implements UserDB, Streamable{
 //		return mAllTokens;
 //	}
 
-	@Override
-	public Token getTokenDetail(MiniData zTokenID) {
-		for(Token td : mAllTokens) {
-			if(td.getTokenID().isEqual(zTokenID)) {
-				return td;
-			}
-		}
-		
-		return null;
-	}
+//	@Override
+//	public Token getTokenDetail(MiniData zTokenID) {
+//		for(Token td : mAllTokens) {
+//			if(td.getTokenID().isEqual(zTokenID)) {
+//				return td;
+//			}
+//		}
+//		
+//		return null;
+//	}
 
 	@Override
 	public void addTokenDetails(Token zToken) {
-		//Check if we have it..
-		if(getTokenDetail(zToken.getTokenID()) == null) {
-			//We don't have it - add it
-			mAllTokens.add(zToken);	
-		}
+//		//Check if we have it..
+//		if(getTokenDetail(zToken.getTokenID()) == null) {
+//			//We don't have it - add it
+//			mAllTokens.add(zToken);	
+//		}
 	}
 
 	@Override

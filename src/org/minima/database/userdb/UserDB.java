@@ -107,7 +107,7 @@ public interface UserDB {
 	 */
 //	public ArrayList<Token> getAllKnownTokens();
 	public void clearTokens();
-	public Token getTokenDetail(MiniData zTokenID);
+//	public Token getTokenDetail(MiniData zTokenID);
 	
 	public void addTokenDetails(Token zToken);
 	

@@ -11,6 +11,7 @@ import java.util.Hashtable;
 
 import org.minima.GlobalParams;
 import org.minima.database.MinimaDB;
+import org.minima.database.mmr.MMRData;
 import org.minima.database.mmr.MMREntry;
 import org.minima.database.mmr.MMRSet;
 import org.minima.database.txpowdb.TxPOWDBRow;
@@ -410,7 +411,15 @@ public class ConsensusPrint extends ConsensusProcessor {
 			JSONObject dets = InputHandler.getResponseJSON(zMessage);
 			dets.put("valid", false);
 			
-			Token td = getMainDB().getUserDB().getTokenDetail(new MiniData(tokenid));
+			//Main Minima coin
+			if(tokenid.equals("0x00")) {
+				InputHandler.endResponse(zMessage, true, "Valid Token - Main Minima Coin");
+				dets.put("valid", true);
+				return;
+			}
+			
+//			Token td = getMainDB().getUserDB().getTokenDetail(new MiniData(tokenid));
+			Token td = getMainDB().getMMRTip().findToken(new MiniData(tokenid));
 			if(td == null) {
 				InputHandler.endResponse(zMessage, false, "TokenID "+tokenid+" not found");	
 				return;
@@ -452,7 +461,8 @@ public class ConsensusPrint extends ConsensusProcessor {
 			
 		}else if(zMessage.isMessageType(CONSENSUS_TOKENS)){
 			//Get all the tokens..
-			ArrayList<Token> tokens = getMainDB().getUserDB().getAllKnownTokens();
+//			ArrayList<Token> tokens = getMainDB().getUserDB().getAllKnownTokens();
+			ArrayList<Token> tokens = getMainDB().getMMRTip().getAllTokens();
 			
 			JSONArray tokarray = new JSONArray();
 			
@@ -521,10 +531,14 @@ public class ConsensusPrint extends ConsensusProcessor {
 			MMRSet baseset = getMainDB().getMMRTip();
 			ArrayList<MMREntry> allcoins = baseset.searchAllRelevantCoins();
 			
+			//List of the Tokens found
+			Hashtable<String, Token> alltokens = new Hashtable<>();
+			
 			//Cycle through your coins..
 			for(MMREntry coinentry : allcoins) {
 				//Get this coin..
-				Coin coin = coinentry.getData().getCoin();
+				MMRData coindata 	= coinentry.getData();
+				Coin coin 			= coindata.getCoin();
 				
 				//Are we only checking one address
 				boolean rel = true;
@@ -535,12 +549,11 @@ public class ConsensusPrint extends ConsensusProcessor {
 				if(rel) {
 					//What Token..
 					String     tokid 	= coin.getTokenID().to0xString();
-					MiniData   tokhash 	= new MiniData(tokid);
 					MiniNumber blknum   = coinentry.getData().getInBlock();
 					MiniNumber depth 	= top.sub(blknum);
 					
 					//Get the Token Details.
-					Token td = getMainDB().getUserDB().getTokenDetail(tokhash);
+					Token td = coindata.getToken();
 					
 					//Get the JSON object for this Token..
 					JSONObject jobj = null;
@@ -552,14 +565,10 @@ public class ConsensusPrint extends ConsensusProcessor {
 							jobj.put("tokenid", tokid);
 							jobj.put("token", "Minima");
 						}else {
-							//Check is a valid Token..
-							if(td == null) {
-								//VARY BAD - you have coins for a token you don't know..
-								jobj.put("tokenid", tokid);
-								jobj.put("token", "ERROR_UNKNOWN_TOKEN");
-							}else {
-								jobj = td.toJSON();
-							}
+							jobj = td.toJSON();
+							
+							//Add to our list
+							alltokens.put(tokid, td);
 						}
 						
 						//Default Values
@@ -666,7 +675,8 @@ public class ConsensusPrint extends ConsensusProcessor {
 					}
 					jobj.put("sendable", tot_simple.toString());
 				}else {
-					Token td = getMainDB().getUserDB().getTokenDetail(tok);
+//					Token td = getMainDB().getUserDB().getTokenDetail(tok);
+					Token td = alltokens.get(tokenid);
 					
 					if(td == null) {
 						//Hmm. serious error..
@@ -915,11 +925,11 @@ public class ConsensusPrint extends ConsensusProcessor {
 //					}
 					
 					if(found) {
-						totbal.add(rpow.toJSON(getMainDB()));
+						totbal.add(rpow.toJSON());
 					}
 					
 				}else {
-					totbal.add(rpow.toJSON(getMainDB()));	
+					totbal.add(rpow.toJSON());	
 				}
 			}
 			

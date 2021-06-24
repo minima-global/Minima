@@ -96,13 +96,19 @@ public class MMRData implements Streamable{
 		if(mCoin.getTokenID().isEqual(Coin.MINIMA_TOKENID) && zToken!=null) {
 			MinimaLogger.log("MUST specify the NULL Token for Minima MMRData");
 			throw new IllegalArgumentException("MUST specify the NULL Token for Minima MMRData");
-			
 		}else if(!mCoin.getTokenID().isEqual(Coin.MINIMA_TOKENID) && zToken==null) {
 			MinimaLogger.log("MUST specify the Token for non Minima MMRData");
 			throw new IllegalArgumentException("MUST specify the Token for non Minima MMRData");
-		
 		}
 		
+		//Check the Token is Valid..
+		if(zToken != null) {
+			if(!zToken.getTokenID().isEqual(zCoin.getTokenID())) {
+				throw new IllegalArgumentException("TokenID mismatch in MMRData creation "+zToken.toJSON());
+			}
+		}
+		
+		//All good
 		mToken		 	= zToken;
 		mBlockCreated 	= zInBlock;
 		

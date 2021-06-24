@@ -368,9 +368,6 @@ public class ConsensusHandler extends MessageProcessor {
 			//Flush / Check the mem-pool
 			PostMessage(new Message(ConsensusUser.CONSENSUS_FLUSHMEMPOOL));
 			
-			//Clean the Tokens..
-			getMainDB().checkTokens();
-			
 			//Consolidate your coins! - default is TRUE
 			if(Main.getMainHandler().getUserPrefs().getBoolean("consolidate", true)) {
 				PostMessage(new Message(ConsensusUser.CONSENSUS_CONSOLIDATE));

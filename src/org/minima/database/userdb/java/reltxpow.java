@@ -34,7 +34,7 @@ public class reltxpow implements Streamable {
 		return mTxPow;
 	}
 	
-	public JSONObject toJSON(MinimaDB zDB) {
+	public JSONObject toJSON() {
 		//Never changes so only do it once..
 		if(mJSON != null) {
 			return mJSON;	
@@ -58,20 +58,17 @@ public class reltxpow implements Streamable {
 			MiniNumber scale = MiniNumber.ONE;
 			if(token.equals("0x00")) {
 				json.put("name", "Minima");	
+			
 			}else if(token.equals("0xFF")) {
 				json.put("name", "Create Token");	
 			
 			}else {
 				//Get the Token Proof..
-				Token tp = zDB.getUserDB().getTokenDetail(new MiniData(token));
-				
-				if(tp == null) {
-					json.put("name", "null (UNKNOWN)");
-				}else {
-					json.put("name", tp.getName().toString());
-					amt = tp.getScaledTokenAmount(amt);
-				}
+				Token tp = mTxPow.getWitness().getTokenDetail(new MiniData(token));
+				json.put("name", tp.getName().toString());
+				amt = tp.getScaledTokenAmount(amt);
 			}
+			
 			json.put("amount", amt.toString());
 			tokarray.add(json);
 		}
