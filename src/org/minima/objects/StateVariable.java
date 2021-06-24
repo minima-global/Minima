@@ -52,6 +52,11 @@ public class StateVariable implements Streamable {
 	}
 	
 	public StateVariable(int zPort, String zData, MiniByte zKeepMMR) {
+		//Check within range
+		if(zPort<0 || zPort>255) {
+			throw new IllegalArgumentException("State Variable port MUSRT be 0-255");
+		}
+		
 		//Store as MiniNumber
 		mPort = new MiniByte(zPort);
 		
