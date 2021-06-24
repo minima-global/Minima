@@ -43,10 +43,7 @@ public class JavaUserDBTests {
 
         assertNotNull("should not be null ", db.getSimpleAddresses());
         assertEquals("should be empty ", 0, db.getSimpleAddresses().size());
-
-        assertNotNull("should not be null ", db.getAllKnownTokens());
-        assertEquals("should be empty ", 0, db.getAllKnownTokens().size());
-
+        
         assertNotNull("should not be null ", db.getAllRows());
         assertEquals("should be empty ", 0, db.getAllRows().size());
 
@@ -307,7 +304,7 @@ public class JavaUserDBTests {
     public void testTokenHandling() {
         JavaUserDB db = new JavaUserDB();
 
-        assertEquals("should contain 0 tokens ", 0, db.getAllKnownTokens().size());
+//        assertEquals("should contain 0 tokens ", 0, db.getAllKnownTokens().size());
 
         Token[] tokens = {
             new Token(new MiniData("0x00"), MiniNumber.ONE, MiniNumber.TEN, new MiniString("TEST1"), new MiniString("RETURN")),
@@ -316,27 +313,27 @@ public class JavaUserDBTests {
             new Token(new MiniData("0x02"), MiniNumber.THIRTYTWO, MiniNumber.MILLION, new MiniString("TEST4"), new MiniString("RETURN")),
             new Token(new MiniData("0x03"), MiniNumber.SIXTYFOUR, MiniNumber.BILLION, new MiniString("TEST5"), new MiniString("RETURN"))
         };
-        for (int i = 0; i < tokens.length; i++) {
-            db.addTokenDetails(tokens[i]);
-        }
-        assertEquals("should contain 5 tokens ", 5, db.getAllKnownTokens().size());
-
-        db.addTokenDetails(db.getTokenDetail(tokens[0].getTokenID())); // try to add duplicate
-        assertEquals("should contain 5 tokens ", 5, db.getAllKnownTokens().size());
-
-        Token untracked_token = new Token(new MiniData("0x05"), new MiniNumber(8), MiniNumber.BILLION, new MiniString("TEST6"), new MiniString("RETURN"));
-        assertEquals("should contain 5 tokens ", 5, db.getAllKnownTokens().size());
-
-        for (int i = 0; i < tokens.length; i++) {
-            Token token = db.getTokenDetail(tokens[i].getTokenID());
-            assertEquals("should be equal ", tokens[i].getCoinID(), token.getCoinID());
-            assertEquals("should be equal ", tokens[i].getScale(), token.getScale());
-            assertEquals("should be equal ", tokens[i].getAmount(), token.getAmount());
-            assertEquals("should be equal ", tokens[i].getName(), token.getName());
-            assertEquals("should be equal ", tokens[i].getTokenScript(), token.getTokenScript());
-        }
-
-        assertNull("should be null ", db.getTokenDetail(untracked_token.getCoinID()));
+//        for (int i = 0; i < tokens.length; i++) {
+//            db.addTokenDetails(tokens[i]);
+//        }
+//        assertEquals("should contain 5 tokens ", 5, db.getAllKnownTokens().size());
+//
+//        db.addTokenDetails(db.getTokenDetail(tokens[0].getTokenID())); // try to add duplicate
+//        assertEquals("should contain 5 tokens ", 5, db.getAllKnownTokens().size());
+//
+//        Token untracked_token = new Token(new MiniData("0x05"), new MiniNumber(8), MiniNumber.BILLION, new MiniString("TEST6"), new MiniString("RETURN"));
+//        assertEquals("should contain 5 tokens ", 5, db.getAllKnownTokens().size());
+//
+//        for (int i = 0; i < tokens.length; i++) {
+//            Token token = db.getTokenDetail(tokens[i].getTokenID());
+//            assertEquals("should be equal ", tokens[i].getCoinID(), token.getCoinID());
+//            assertEquals("should be equal ", tokens[i].getScale(), token.getScale());
+//            assertEquals("should be equal ", tokens[i].getAmount(), token.getAmount());
+//            assertEquals("should be equal ", tokens[i].getName(), token.getName());
+//            assertEquals("should be equal ", tokens[i].getTokenScript(), token.getTokenScript());
+//        }
+//
+//        assertNull("should be null ", db.getTokenDetail(untracked_token.getCoinID()));
     }
 
     @Test
@@ -381,7 +378,7 @@ public class JavaUserDBTests {
             new Token(new MiniData("0x03"), MiniNumber.SIXTYFOUR, MiniNumber.BILLION, new MiniString("TEST5"), new MiniString("RETURN"))
         };
         for (int i = 0; i < tokens.length; i++) {
-            mdb.getUserDB().addTokenDetails(tokens[i]);
+//            mdb.getUserDB().addTokenDetails(tokens[i]);
             System.out.println(tokens[i].getTokenID().toString());
         }
 
@@ -391,9 +388,9 @@ public class JavaUserDBTests {
         for (int i = 0; i < reltxpows.length; i++) {
             assertEquals("should be equal ", txps[i], reltxpows[i].getTxPOW());
 
-            JSONObject json1 = reltxpows[i].toJSON(mdb);
+            JSONObject json1 = reltxpows[i].toJSON();
 
-            JSONObject json2 = reltxpows[i].toJSON(mdb);
+            JSONObject json2 = reltxpows[i].toJSON();
 
         }
 
@@ -420,7 +417,7 @@ public class JavaUserDBTests {
 
             assertEquals("should be equal ", db1.getKeys().size(), db2.getKeys().size());
             assertEquals("should be equal ", db1.getSimpleAddresses().size(), db2.getSimpleAddresses().size());
-            assertEquals("should be equal ", db1.getAllKnownTokens().size(), db2.getAllKnownTokens().size());
+//            assertEquals("should be equal ", db1.getAllKnownTokens().size(), db2.getAllKnownTokens().size());
             assertEquals("should be equal ", db1.getAllRows().size(), db2.getAllRows().size());
             assertEquals("should be equal ", db1.getHistory().size(), db2.getHistory().size());
             assertEquals("should be equal ", db1.getAllAddresses().size(), db2.getAllAddresses().size());
@@ -499,9 +496,9 @@ public class JavaUserDBTests {
             new Token(new MiniData("0x02"), MiniNumber.THIRTYTWO, MiniNumber.MILLION, new MiniString("TEST4"), new MiniString("RETURN")),
             new Token(new MiniData("0x03"), MiniNumber.SIXTYFOUR, MiniNumber.BILLION, new MiniString("TEST5"), new MiniString("RETURN"))
         };
-        for (int i = 0; i < tokens.length; i++) {
-            db.addTokenDetails(tokens[i]);
-        }
+//        for (int i = 0; i < tokens.length; i++) {
+//            db.addTokenDetails(tokens[i]);
+//        }
 
         TxPoW[] txps = {
             new TxPoW(),

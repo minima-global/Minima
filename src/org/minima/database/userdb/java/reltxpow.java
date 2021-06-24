@@ -65,8 +65,13 @@ public class reltxpow implements Streamable {
 			}else {
 				//Get the Token Proof..
 				Token tp = mTxPow.getWitness().getTokenDetail(new MiniData(token));
-				json.put("name", tp.getName().toString());
-				amt = tp.getScaledTokenAmount(amt);
+				if(tp == null) {
+					json.put("name", "ERROR UNKNOWN TOKEN");
+				}else {
+					json.put("name", tp.getName().toString());
+					amt = tp.getScaledTokenAmount(amt);
+				}
+				
 			}
 			
 			json.put("amount", amt.toString());

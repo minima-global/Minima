@@ -11,6 +11,7 @@ import java.util.Hashtable;
 
 import org.junit.Test;
 import org.minima.database.MinimaDB;
+import org.minima.database.mmr.MMRData;
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
 import org.minima.objects.Transaction;
@@ -191,12 +192,12 @@ public class MinimaDBTests {
         assertEquals(0, mdb.getMempoolCoins().size());
         assertNotNull(mdb.getMainTree().getChainTip());
         assertEquals(4, mdb.getTopBlock().getAsInt());
-        ArrayList<Coin> coins = mdb.getTotalSimpleSpendableCoins(Coin.MINIMA_TOKENID);
+        ArrayList<MMRData> coins = mdb.getTotalSimpleSpendableCoins(Coin.MINIMA_TOKENID);
         assertEquals(2, coins.size());
-        assertEquals(25, coins.get(0).getAmount().getAsInt());
-        assertEquals(Coin.MINIMA_TOKENID, coins.get(0).getTokenID());
-        assertEquals(25, coins.get(1).getAmount().getAsInt());
-        assertEquals(Coin.MINIMA_TOKENID, coins.get(1).getTokenID());
+        assertEquals(25, coins.get(0).getCoin().getAmount().getAsInt());
+        assertEquals(Coin.MINIMA_TOKENID, coins.get(0).getCoin().getTokenID());
+        assertEquals(25, coins.get(1).getCoin().getAmount().getAsInt());
+        assertEquals(Coin.MINIMA_TOKENID, coins.get(1).getCoin().getTokenID());
         assertEquals(0, mdb.getTotalUnusedAmount().size());
         assertEquals(5, mdb.getTxPowDB().getSize());
         assertEquals(0, mdb.getUserDB().getAllRows().size());
