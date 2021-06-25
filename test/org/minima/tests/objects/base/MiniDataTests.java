@@ -270,7 +270,7 @@ public class MiniDataTests {
             assertFalse("We should not reach this line", true);
         } catch (final IOException e) {
             assertTrue(" there should be an IOException with message HASH Length too large ",
-                    e.getMessage().contains(new String(" HASH Length greater then 64")));
+                    e.getMessage().contains(new String(" HASH Length greater than 64")));
         }
 
     }

@@ -290,6 +290,10 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 		
 		//Read in the byte array for unscaled BigInteger
 		int len = MiniByte.ReadFromStream(zIn).getValue();
+		if(len > 64 || len<1) {
+			throw new IOException("ERROR reading MiniNumber - input too large or negative "+len);
+		}
+		
 		byte[] data = new byte[len];
 		zIn.readFully(data);
 		
