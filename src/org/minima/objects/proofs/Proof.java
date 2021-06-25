@@ -20,19 +20,16 @@ import org.minima.utils.json.JSONObject;
 public class Proof implements Streamable {
 
 	public class ProofChunk implements Streamable {
-		MiniData mHash;
-		MiniNumber mValue;
-		MiniByte mLeftRight;
-		
-		//Is Value in stream..
-		boolean mReadWriteValue = true;
+		MiniByte 	mLeftRight;
+		MiniData 	mHash;
+		MiniNumber 	mValue;
 		
 		public ProofChunk() {}
 		
 		public ProofChunk(MiniByte zLeft, MiniData zHash, MiniNumber zValue) {
-			mLeftRight = zLeft;
-			mHash = zHash;
-			mValue = zValue;
+			mLeftRight 	= zLeft;
+			mHash 		= zHash;
+			mValue 		= zValue;
 		}
 		
 		public MiniByte getLeft() {
@@ -123,24 +120,17 @@ public class Proof implements Streamable {
 			HASH_BITS = hb * 32;
 			
 			//Read the Proof
-			MiniNumber mlen = MiniNumber.ReadFromStream(dis);
-			int len = mlen.getAsInt();
-			for(int i=0;i<len;i++) {
-				ProofChunk pc = new ProofChunk();
-				pc.readDataStream(dis);
-				addProofChunk(pc);
-			}
+			readProofChain(dis);
 		
 			dis.close();
 			bais.close();
+		
+			finalizeHash();
 			
 		} catch (IOException e) {
 			MinimaLogger.log("setProof Error "+e);
 			e.printStackTrace();
 		}
-		
-		
-		finalizeHash();
 	}
 	
 	public MiniData getProof() {
@@ -157,29 +147,13 @@ public class Proof implements Streamable {
 			hb.writeDataStream(dos);
 			
 			//Write the proof chain
-			MiniNumber mlen = new MiniNumber(mProofChain.size());
-			mlen.writeDataStream(dos);
-			int len = mlen.getAsInt();
-			
-			//Do we need to output the value or is it always ZERO
-			boolean nonzero = false;
-			for(int i=0;i<len;i++) {
-				if(!mProofChain.get(i).getValue().isEqual(MiniNumber.ZERO)){
-					nonzero = true;
-					break;
-				}
-			}
-			
-			//Write it
-			for(int i=0;i<len;i++) {
-				mProofChain.get(i).writeDataStream(dos);
-			}
+			writeProofChain(dos);
 			
 			dos.close();
 			baos.close();
 			
 		} catch (IOException e) {
-			MinimaLogger.log("getChainSHAProof Error "+e);
+			MinimaLogger.log("getProof Error "+e);
 			e.printStackTrace();
 		}
 		
@@ -267,6 +241,27 @@ public class Proof implements Streamable {
 		return json;
 	}
 	
+	//Helper just write chain
+	private void writeProofChain(DataOutputStream zOut) throws IOException {
+		MiniNumber mlen = new MiniNumber(mProofChain.size());
+		mlen.writeDataStream(zOut);
+		int len = mlen.getAsInt();
+		for(int i=0;i<len;i++) {
+			mProofChain.get(i).writeDataStream(zOut);
+		}
+	}
+	
+	private void readProofChain(DataInputStream zIn) throws IOException {
+		mProofChain 	= new ArrayList<>();
+		MiniNumber mlen = MiniNumber.ReadFromStream(zIn);
+		int len = mlen.getAsInt();
+		for(int i=0;i<len;i++) {
+			ProofChunk pc = new ProofChunk();
+			pc.readDataStream(zIn);
+			addProofChunk(pc);
+		}
+	}
+	
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
 		MiniByte hb = new MiniByte(HASH_BITS / 32);
@@ -275,12 +270,7 @@ public class Proof implements Streamable {
 		mData.writeDataStream(zOut);
 		mValue.writeDataStream(zOut);
 		
-		MiniNumber mlen = new MiniNumber(mProofChain.size());
-		mlen.writeDataStream(zOut);
-		int len = mlen.getAsInt();
-		for(int i=0;i<len;i++) {
-			mProofChain.get(i).writeDataStream(zOut);
-		}
+		writeProofChain(zOut);
 	}
 
 	@Override
@@ -291,14 +281,7 @@ public class Proof implements Streamable {
 		mData  = MiniData.ReadFromStream(zIn);
 		mValue = MiniNumber.ReadFromStream(zIn);
 		
-		mProofChain = new ArrayList<>();
-		MiniNumber mlen = MiniNumber.ReadFromStream(zIn);
-		int len = mlen.getAsInt();
-		for(int i=0;i<len;i++) {
-			ProofChunk pc = new ProofChunk();
-			pc.readDataStream(zIn);
-			addProofChunk(pc);
-		}
+		readProofChain(zIn);
 		
 		finalizeHash();
 	}
