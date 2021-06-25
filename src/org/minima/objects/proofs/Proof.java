@@ -24,6 +24,9 @@ public class Proof implements Streamable {
 		MiniNumber mValue;
 		MiniByte mLeftRight;
 		
+		//Is Value in stream..
+		boolean mReadWriteValue = true;
+		
 		public ProofChunk() {}
 		
 		public ProofChunk(MiniByte zLeft, MiniData zHash, MiniNumber zValue) {
@@ -157,6 +160,17 @@ public class Proof implements Streamable {
 			MiniNumber mlen = new MiniNumber(mProofChain.size());
 			mlen.writeDataStream(dos);
 			int len = mlen.getAsInt();
+			
+			//Do we need to output the value or is it always ZERO
+			boolean nonzero = false;
+			for(int i=0;i<len;i++) {
+				if(!mProofChain.get(i).getValue().isEqual(MiniNumber.ZERO)){
+					nonzero = true;
+					break;
+				}
+			}
+			
+			//Write it
 			for(int i=0;i<len;i++) {
 				mProofChain.get(i).writeDataStream(dos);
 			}
