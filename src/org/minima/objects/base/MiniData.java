@@ -237,7 +237,7 @@ public class MiniData implements Streamable {
 	 */
 	public void writeHashToStream(DataOutputStream zOut) throws IOException {
 		if(mData.length > Crypto.MINIMA_MAX_HASH_LENGTH) {
-			throw new IOException("Write Error : HASH Length greater than 64! "+mData.length);
+			throw new IOException("Write Error : HASH Length greater than  MAX "+Crypto.MINIMA_MAX_HASH_LENGTH+"! "+mData.length);
 		}
 		
 		zOut.writeInt(mData.length);
@@ -247,7 +247,7 @@ public class MiniData implements Streamable {
 	public void readHashFromStream(DataInputStream zIn) throws IOException {
 		int len = zIn.readInt();
 		if(len > Crypto.MINIMA_MAX_HASH_LENGTH) {
-			throw new IOException("Read Error : HASH Length greater then 64! "+len);
+			throw new IOException("Read Error : HASH Length greater than MAX "+Crypto.MINIMA_MAX_HASH_LENGTH+"! "+len);
 		}else if(len<0) {
 			throw new IOException("Read Error : HASH Length less than 0! "+len);
 		}

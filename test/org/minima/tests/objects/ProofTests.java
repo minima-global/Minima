@@ -27,8 +27,8 @@ public class ProofTests {
         p.setData(proofValue);
         System.out.println("Proof created values - " + p.getData());
         assertEquals(p.getData(), proofValue);
-        System.out.println("Proof created values - " + p.getChainSHAProof());
-        MiniData chainsha = p.getChainSHAProof();
+        System.out.println("Proof created values - " + p.getProof());
+        MiniData chainsha = p.getProof();
         System.out.println("Proof length values - " + p.getProofLen());
         p.setProof(chainsha);
         System.out.println("Proof json values - " + p.toJSON());
@@ -45,16 +45,16 @@ public class ProofTests {
         p.addProofChunk(j, proofValue);
         System.out.println("Proof length values - " + p.getProofLen());
         p.setHashBitLength(6);
-        p.getChainSHAProof();
-        System.out.println("Sha Chain Proof length values - " + p.getChainSHAProof());
+        p.getProof();
+        System.out.println("Sha Chain Proof length values - " + p.getProof());
         MiniData proofValue2 = new MiniData("0xffffffffffffffffffffffffff");
         p.setData(proofValue2);
-        MiniData chainsha2 = p.getChainSHAProof();
+        MiniData chainsha2 = p.getProof();
         p.setProof(chainsha2);
         p.addProofChunk(m, proofValue2);
         p.setHashBitLength(8);
         System.out.println("Proof length values - " + p.getProofLen());
-        System.out.println("Sha Chain Proof length values - " + p.getChainSHAProof());
+        System.out.println("Sha Chain Proof length values - " + p.getProof());
         System.out.println("Final hash values - " + p.getFinalHash());
         System.out.println("Proof json values - " + p.toJSON());
 
@@ -79,7 +79,7 @@ public class ProofTests {
             DataInputStream dis = new DataInputStream(inputStream);
             Proof.ReadFromStream(dis);
             System.out.println("Proof json values in read and write stream - " + p.toJSON());
-            MiniData md = p.getChainSHAProof();
+            MiniData md = p.getProof();
             String shastr = md.toString();
             try {
                 assertNotNull(Proof.getChainSHABits(shastr));

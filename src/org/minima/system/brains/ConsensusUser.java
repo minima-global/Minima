@@ -340,7 +340,7 @@ public class ConsensusUser extends ConsensusProcessor {
 				MMRProof proof = mmr.getProof(new MiniNumber(i));
 				
 				//Calculate the CHAINSHA proof..
-				node.put("chainsha", proof.getChainSHAProof().to0xString());
+				node.put("chainsha", proof.getProof().to0xString());
 			}
 			
 			//return to sender!

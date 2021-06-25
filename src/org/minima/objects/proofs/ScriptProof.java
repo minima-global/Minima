@@ -20,29 +20,53 @@ public class ScriptProof extends Proof {
 	
 	public ScriptProof(String zScript, int zBitLength) throws Exception {
 		super();
-		init(zScript,BaseConverter.numberToHex(zBitLength/32));
+		
+		//Store the script
+		mScript = new MiniString(zScript);
+		
+		//Set Bit Strength
+		setHashBitLength(zBitLength);
+		
+		//Create an address
+		Address addr = new Address(mScript.toString(),zBitLength);
+		setData(addr.getAddressData());
+		
+		//Make the final hash and chain proof
+		finalizeHash();
 	}
 	
 	public ScriptProof(String zScript, String zChainSHAProof) throws Exception {
 		super();
-		init(zScript,zChainSHAProof);
-	}
-	
-	private void init(String zScript, String zChainSHAProof) throws Exception {
+		
+		//Store the script
 		mScript = new MiniString(zScript);
 		
-		//How many Bits in HASH
-		int bits = Proof.getChainSHABits(zChainSHAProof);
-		
-		//Create an address
-		Address addr = new Address(mScript.toString(),bits);
-		setData(addr.getAddressData());
-		setHashBitLength(bits);
-		
+		//Set the proof!
 		setProof(new MiniData(zChainSHAProof));
 		
+		//Create an address
+		Address addr = new Address(mScript.toString(),getHashBits());
+		setData(addr.getAddressData());
+		
+		//Make the final hash and chain proof
 		finalizeHash();
 	}
+	
+//	private void init(String zScript, String zChainSHAProof) throws Exception {
+//		mScript = new MiniString(zScript);
+//		
+//		//How many Bits in HASH
+//		int bits = Proof.getChainSHABits(zChainSHAProof);
+//		
+//		//Create an address
+//		Address addr = new Address(mScript.toString(),bits);
+//		setData(addr.getAddressData());
+//		setHashBitLength(bits);
+//		
+//		setProof(new MiniData(zChainSHAProof));
+//		
+//		finalizeHash();
+//	}
 	
 	
 	public MiniString getScript() {
