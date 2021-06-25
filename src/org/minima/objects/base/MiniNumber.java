@@ -10,6 +10,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
 import java.math.RoundingMode;
+import java.util.Arrays;
 
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
@@ -309,13 +310,13 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 
 	public static void main(String[] zargs) {
 //		MiniNumber tt = new MiniNumber(MiniNumber.MIN_MININUMBER).add(MiniNumber.MINI_UNIT).add(MiniNumber.MINI_UNIT) ;
-		MiniNumber tt = new MiniNumber("9999") ;
+		MiniNumber tt = new MiniNumber(MAX_MININUMBER) ;
 		
 		int scale = tt.getAsBigDecimal().scale();
 		byte[] data = tt.mNumber.unscaledValue().toByteArray();
 		int size  = data.length;
 		
-		MinimaLogger.log("MINUMBER SCALE : "+tt.toString()+"  "+scale+" "+size+" "+data[0]);
+		MinimaLogger.log("MINUMBER SCALE : "+tt.toString()+"  "+scale+" "+size+" "+Arrays.toString(data));
 		
 //		System.out.println("Smallest : "+tt+" "+tt.getNumber().scale());
 //		System.out.println("TEN      : "+new MiniNumber("1E1"));
