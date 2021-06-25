@@ -64,11 +64,6 @@ public class JavaUserDB implements UserDB, Streamable{
 	ArrayList<UserDBRow> mRows;
 	
 	/**
-	 * Token Details
-	 */
-	ArrayList<Token> mAllTokens;
-	
-	/**
 	 * Transaction History
 	 */
 	ArrayList<reltxpow> mHistory;
@@ -87,7 +82,6 @@ public class JavaUserDB implements UserDB, Streamable{
 		mTotalAddresses  = new ArrayList<>();
 		mExtraAddresses  = new ArrayList<>();
 		mRelevantCoinID  = new ArrayList<>();
-		mAllTokens		 = new ArrayList<>();
 		mRows  			 = new ArrayList<>();
 		mHistory 		 = new ArrayList<>();
 		mCurrentAddress  = new CurrentAddress();
@@ -428,13 +422,6 @@ public class JavaUserDB implements UserDB, Streamable{
 			zOut.writeUTF(coinid);
 		}
 		
-		//Token Details
-		len = mAllTokens.size();
-		zOut.writeInt(len);
-		for(Token td : mAllTokens) {
-			td.writeDataStream(zOut);
-		}
-		
 		//transactions..
 		len = mRows.size();
 		zOut.writeInt(len);
@@ -460,7 +447,6 @@ public class JavaUserDB implements UserDB, Streamable{
 		mTotalAddresses  = new ArrayList<>();
 		mExtraAddresses  = new ArrayList<>();
 		mRows            = new ArrayList<>();	
-		mAllTokens		 = new ArrayList<>();
 		
 		//Current address
 		mCurrentAddress = new CurrentAddress();
@@ -509,13 +495,7 @@ public class JavaUserDB implements UserDB, Streamable{
 			String coinid = zIn.readUTF();
 			mRelevantCoinID.add(coinid);
 		}
-		
-		//Token Details
-		len = zIn.readInt();
-		for(int i=0;i<len;i++) {
-			mAllTokens.add(Token.ReadFromStream(zIn));
-		}
-
+	
 		//transaction..
 		len = zIn.readInt();
 		for(int i=0;i<len;i++) {
