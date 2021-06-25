@@ -270,9 +270,9 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 	 */
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
-		//Write out the scale.. ALWYAS NON_NEGATIVE!  
-		MiniByte scale = new MiniByte(mNumber.scale());
-		scale.writeDataStream(zOut);
+		//Write out the scale.. 
+		int scale = mNumber.scale();
+		zOut.writeInt(scale);
 		
 		//And now the unscaled value.. never larger than 255 bytes
 		byte[] data = mNumber.unscaledValue().toByteArray();
@@ -286,7 +286,7 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
 		//Read in the scale
-		int scale = MiniByte.ReadFromStream(zIn).getValue();
+		int scale = zIn.readInt();
 		
 		//Read in the byte array for unscaled BigInteger
 		int len = MiniByte.ReadFromStream(zIn).getValue();
