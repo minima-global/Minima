@@ -71,8 +71,8 @@ public class MMRDataTest {
                 states.clear();
                 states.add(new StateVariable(0, "[dummy]"));
 
-                MMRData mmrd1 = new MMRData(new MiniByte(0), new Coin(new MiniData("0x00"), addr.getAddressData(), MiniNumber.TEN, new MiniData("0x00")), new MiniNumber(1234567890), states);
-
+                MMRData mmrd1 = new MMRData(false, new Coin(new MiniData("0x00"), addr.getAddressData(), MiniNumber.TEN, new MiniData("0x00")), new MiniNumber(1234567890), states);
+                
                 ByteArrayOutputStream bos = new ByteArrayOutputStream();
                 DataOutputStream dos = new DataOutputStream(bos);
 
@@ -82,10 +82,14 @@ public class MMRDataTest {
                 DataInputStream dis1 = new DataInputStream(inputStream1);
 
                 MMRData mmrd2 = new MMRData(new MiniData(), new MiniNumber(new MiniNumber(1234567890)));
+                
                 mmrd2.readDataStream(dis1);
-
+                
                 assertEquals("should be equal ", mmrd1.getFinalHash(), mmrd2.getFinalHash());
+                
+                System.out.println(mmrd1.getValueSum().getNumber()+" "+mmrd2.getValueSum().getNumber());
                 assertEquals("should be equal ", mmrd1.getValueSum().getNumber(), mmrd2.getValueSum().getNumber());
+                
                 assertEquals("should be equal ", mmrd1.isSpent(), mmrd2.isSpent());
                 //assertEquals("should be equal ", mmrd1.getCoin(), mmrd2.getCoin());
                 //assertEquals("should be equal ", mmrd1.getPrevState(), mmrd2.getPrevState());
@@ -114,7 +118,7 @@ public class MMRDataTest {
                 states.clear();
                 states.add(new StateVariable(0, "[dummy]"));
 
-                MMRData mmrd1 = new MMRData(new MiniByte(123), new Coin(new MiniData("0x00"), addr.getAddressData(), MiniNumber.TEN, new MiniData("0x00")), new MiniNumber(1234567890), states);
+                MMRData mmrd1 = new MMRData(true, new Coin(new MiniData("0x00"), addr.getAddressData(), MiniNumber.TEN, new MiniData("0x00")), new MiniNumber(1234567890), states);
 
                 ByteArrayOutputStream bos = new ByteArrayOutputStream();
                 DataOutputStream dos = new DataOutputStream(bos);
@@ -177,7 +181,7 @@ public class MMRDataTest {
             states.clear();
             states.add(new StateVariable(0, "[dummy]"));
 
-            MMRData mmrd = new MMRData(new MiniByte(0), new Coin(new MiniData("0x00"), addr.getAddressData(), MiniNumber.TEN, new MiniData("0x00")), new MiniNumber(1234567890), states);
+            MMRData mmrd = new MMRData(false, new Coin(new MiniData("0x00"), addr.getAddressData(), MiniNumber.TEN, new MiniData("0x00")), new MiniNumber(1234567890), states);
             JSONObject json = mmrd.toJSON();
             assertTrue("JSON object should contain hashonly key", json.containsKey("hashonly"));
             assertTrue("JSON object should contain value key", json.containsKey("value"));
@@ -196,7 +200,7 @@ public class MMRDataTest {
             states.clear();
             states.add(new StateVariable(0, "[dummy]"));
 
-            MMRData mmrd = new MMRData(new MiniByte(123), new Coin(new MiniData("0x00"), addr.getAddressData(), MiniNumber.TEN, new MiniData("0x00")), new MiniNumber(1234567890), states);
+            MMRData mmrd = new MMRData(true, new Coin(new MiniData("0x00"), addr.getAddressData(), MiniNumber.TEN, new MiniData("0x00")), new MiniNumber(1234567890), states);
             JSONObject json = mmrd.toJSON();
             assertTrue("JSON object should contain hashonly key", json.containsKey("hashonly"));
             assertTrue("JSON object should contain value key", json.containsKey("value"));

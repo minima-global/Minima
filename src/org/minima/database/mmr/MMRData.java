@@ -85,12 +85,19 @@ public class MMRData implements Streamable{
 	 * Create an Unspent MMRDATA coin from a coin
 	 * @param zOutput
 	 */
-	public MMRData(MiniByte zSpent, Coin zCoin, MiniNumber zInBlock, ArrayList<StateVariable> zState) {
+	public MMRData(boolean zSpent, Coin zCoin, MiniNumber zInBlock, ArrayList<StateVariable> zState) {
 		this(zSpent, zCoin, null, zInBlock, zState);
 	}
 	
-	public MMRData(MiniByte zSpent, Coin zCoin, Token zToken, MiniNumber zInBlock, ArrayList<StateVariable> zState) {
-		mSpent 		 	= zSpent;
+	public MMRData(boolean zSpent, Coin zCoin, Token zToken, MiniNumber zInBlock, ArrayList<StateVariable> zState) {
+		//Is it Spent
+		if(zSpent) {
+			mSpent = MiniByte.TRUE;
+		}else {
+			mSpent = MiniByte.FALSE;
+		}
+		
+		//The actual coin
 		mCoin 		 	= zCoin;
 		
 		if(mCoin.getTokenID().isEqual(Coin.MINIMA_TOKENID) && zToken!=null) {
@@ -241,6 +248,7 @@ public class MMRData implements Streamable{
 		
 			//And the SUM
 			mValueSum.writeDataStream(zOut);
+			
 		}else {
 			MiniByte.FALSE.writeDataStream(zOut);
 		

@@ -115,7 +115,7 @@ public class MMREntryTest {
                 states.clear();
                 states.add(new StateVariable(0, "[dummy]"));
 
-                MMRData mmrd = new MMRData(new MiniByte(123), coin, new MiniNumber(1234567890), states);
+                MMRData mmrd = new MMRData(true, coin, new MiniNumber(1234567890), states);
                 mmre1.setData(mmrd);
 
                 ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -166,7 +166,7 @@ public class MMREntryTest {
             states.clear();
             states.add(new StateVariable(0, "[dummy]"));
 
-            MMRData mmrd = new MMRData(new MiniByte(123), coin, new MiniNumber(1234567890), states);
+            MMRData mmrd = new MMRData(true, coin, new MiniNumber(1234567890), states);
             mmre.setData(mmrd);
 
             JSONObject json = mmre.toJSON();

@@ -107,7 +107,7 @@ public class MinimaDB {
 		
 		//Add a single zero entry to create the first peak..
 		Coin gencoin    = new Coin(new MiniData("0x00"), Address.TRUE_ADDRESS.getAddressData(), MiniNumber.ZERO, Coin.MINIMA_TOKENID);
-		MMRData gendata = new MMRData(MiniByte.FALSE, gencoin, null, MiniNumber.ZERO, new ArrayList<StateVariable>());
+		MMRData gendata = new MMRData(false, gencoin, null, MiniNumber.ZERO, new ArrayList<StateVariable>());
 		base.addUnspentCoin(gendata);
 		
 		//Get the root

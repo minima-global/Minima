@@ -470,9 +470,9 @@ public class TxPoWChecker {
 				//Create the MMRData and see if we store the state.. 
 				MMRData mmrdata = null;
 				if(output.storeState()) {
-					mmrdata = new MMRData(MiniByte.FALSE, mmrcoin, newtokdets, tBlockNumber, trans.getCompleteState());
+					mmrdata = new MMRData(false, mmrcoin, newtokdets, tBlockNumber, trans.getCompleteState());
 				}else {
-					mmrdata = new MMRData(MiniByte.FALSE, mmrcoin, newtokdets, tBlockNumber, new ArrayList<StateVariable>());
+					mmrdata = new MMRData(false, mmrcoin, newtokdets, tBlockNumber, new ArrayList<StateVariable>());
 				}
 				
 				//And Add it..

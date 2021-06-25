@@ -134,7 +134,7 @@ public class MMRSetTest {
             states.clear();
             states.add(new StateVariable(0, "[dummy]"));
 
-            MMRData mmrd2 = new MMRData(new MiniByte(0), new Coin(new MiniData("0x00"), addr.getAddressData(), MiniNumber.TEN, new MiniData("0x00")), new MiniNumber(1234567890), states);
+            MMRData mmrd2 = new MMRData(false, new Coin(new MiniData("0x00"), addr.getAddressData(), MiniNumber.TEN, new MiniData("0x00")), new MiniNumber(1234567890), states);
 
             mmrs1.addUnspentCoin(mmrd1);
             mmrs1.addUnspentCoin(mmrd2);
@@ -198,7 +198,7 @@ public class MMRSetTest {
 
 		//Add a single zero entry to create the first peak.
 		Coin gencoin    = new Coin(new MiniData("0x00"), Address.TRUE_ADDRESS.getAddressData(), MiniNumber.ZERO, Coin.MINIMA_TOKENID);
-        MMRData gendata = new MMRData(MiniByte.FALSE, gencoin, MiniNumber.ZERO, new ArrayList<StateVariable>());
+        MMRData gendata = new MMRData(false, gencoin, MiniNumber.ZERO, new ArrayList<StateVariable>());
         MiniData gendataHash = gendata.getFinalHash();
 		base.addUnspentCoin(gendata);
         assertTrue("Genesis MMR set has one entry.", base.getEntryNumber().isEqual(new MiniNumber(1)));
@@ -217,8 +217,8 @@ public class MMRSetTest {
         // tx outputs (we send twice to true address instead of new addresses, should fail as same data)
         Coin gimme50_a = new Coin(Coin.COINID_OUTPUT, Address.TRUE_ADDRESS.getAddressData(), new MiniNumber("25"), Coin.MINIMA_TOKENID);
         Coin gimme50_b = new Coin(Coin.COINID_OUTPUT, Address.TRUE_ADDRESS.getAddressData(), new MiniNumber("25"), Coin.MINIMA_TOKENID);
-        MMRData data_a = new MMRData(MiniByte.FALSE, gimme50_a, MiniNumber.ZERO, new ArrayList<StateVariable>());
-        MMRData data_b = new MMRData(MiniByte.FALSE, gimme50_b, MiniNumber.ZERO, new ArrayList<StateVariable>());
+        MMRData data_a = new MMRData(false, gimme50_a, MiniNumber.ZERO, new ArrayList<StateVariable>());
+        MMRData data_b = new MMRData(false, gimme50_b, MiniNumber.ZERO, new ArrayList<StateVariable>());
         MiniData hash_a = data_a.getFinalHash();
         MiniData hash_b = data_b.getFinalHash();
         MiniData hash_0a = Crypto.getInstance().hashAllObjects(512,gendataHash, hash_a, new MiniNumber(25)); // MMRSet.MMR_HASH_BITS);
@@ -256,7 +256,7 @@ public class MMRSetTest {
         // leaf nodes: 0 a b
 
         Coin coins_c = new Coin(Coin.COINID_OUTPUT, Address.TRUE_ADDRESS.getAddressData(), new MiniNumber("25"), Coin.MINIMA_TOKENID);
-        MMRData data_c = new MMRData(MiniByte.FALSE, coins_c, MiniNumber.ZERO, new ArrayList<StateVariable>());
+        MMRData data_c = new MMRData(false, coins_c, MiniNumber.ZERO, new ArrayList<StateVariable>());
         MiniData hash_c = data_c.getFinalHash();
         MiniData hash_bc   = Crypto.getInstance().hashAllObjects(512, hash_b, hash_c, new MiniNumber(50)); // MMRSet.MMR_HASH_BITS);
         MiniData hash_0abc = Crypto.getInstance().hashAllObjects(512,hash_0a, hash_bc, new MiniNumber(75)); // MMRSet.MMR_HASH_BITS);
@@ -274,7 +274,7 @@ public class MMRSetTest {
         // leaf nodes: 0 a b c
 
         Coin coins_d = new Coin(Coin.COINID_OUTPUT, Address.TRUE_ADDRESS.getAddressData(), new MiniNumber("25"), Coin.MINIMA_TOKENID);
-        MMRData data_d = new MMRData(MiniByte.FALSE, coins_d, MiniNumber.ZERO, new ArrayList<StateVariable>());
+        MMRData data_d = new MMRData(false, coins_d, MiniNumber.ZERO, new ArrayList<StateVariable>());
         MiniData hash_d = data_d.getFinalHash();
         MiniData hash_0abcd = Crypto.getInstance().hashAllObjects(512, hash_0abc, hash_d, new MiniNumber(100)); // MMRSet.MMR_HASH_BITS);
 
@@ -293,7 +293,7 @@ public class MMRSetTest {
         // leaf nodes:     0 a  b c d
 
         // Now we spend the first coin (a, 25 coins, block zero)
-        MMRData data_a_spent = new MMRData(MiniByte.TRUE, gimme50_a, MiniNumber.ZERO, new ArrayList<StateVariable>());
+        MMRData data_a_spent = new MMRData(true, gimme50_a, MiniNumber.ZERO, new ArrayList<StateVariable>());
         
         MMRProof mmrProofa = base.getProof(new MiniNumber(1));
 //        MMRProof mmrProofa = new MMRProof(new MiniNumber(1), data_a, MiniNumber.ZERO);
