@@ -11,6 +11,7 @@ import java.math.BigInteger;
 import java.math.MathContext;
 import java.math.RoundingMode;
 
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 
 /**
@@ -43,7 +44,7 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 	 * 
 	 * 2^64 - 1 or as HEX 0xFFFFFFFFFFFFFFFF
 	 */
-	public static final BigDecimal MAX_MININUMBER = new BigDecimal(2).pow(64,MATH_CONTEXT).subtract(BigDecimal.ONE,MATH_CONTEXT);
+	public static final BigDecimal MAX_MININUMBER = new BigDecimal(2).pow(64).subtract(BigDecimal.ONE);
 	
 	/**
 	 * The Minimum value any MiniNumber can be..
@@ -269,27 +270,26 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 	 */
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
-		//Write out the scale..
-		zOut.writeInt(mNumber.scale());
+		//Write out the scale.. ALWYAS NON_NEGATIVE!  
+		MiniByte scale = new MiniByte(mNumber.scale());
+		scale.writeDataStream(zOut);
 		
-		//And now the unscaled value..
+		//And now the unscaled value.. never larger than 255 bytes
 		byte[] data = mNumber.unscaledValue().toByteArray();
-		int len = data.length;
-		zOut.writeInt(len);
+		MiniByte length = new MiniByte(data.length);
+		length.writeDataStream(zOut);
+		
+		//WRITE THE DATA
 		zOut.write(data);
 	}
 
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
 		//Read in the scale
-		int scale = zIn.readInt();
+		int scale = MiniByte.ReadFromStream(zIn).getValue();
 		
 		//Read in the byte array for unscaled BigInteger
-		int len = zIn.readInt();
-		if(len > 64 || len<1) {
-			throw new IOException("ERROR reading MiniNumber - input too large or negative "+len);
-		}
-		
+		int len = MiniByte.ReadFromStream(zIn).getValue();
 		byte[] data = new byte[len];
 		zIn.readFully(data);
 		
@@ -305,12 +305,18 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 	}
 
 	public static void main(String[] zargs) {
-		MiniNumber tt = MiniNumber.MINI_UNIT;
+//		MiniNumber tt = new MiniNumber(MiniNumber.MIN_MININUMBER).add(MiniNumber.MINI_UNIT).add(MiniNumber.MINI_UNIT) ;
+		MiniNumber tt = new MiniNumber("9999") ;
 		
-		System.out.println("Smallest : "+tt+" "+tt.getNumber().scale());
+		int scale = tt.getAsBigDecimal().scale();
+		byte[] data = tt.mNumber.unscaledValue().toByteArray();
+		int size  = data.length;
 		
-		System.out.println("TEN      : "+new MiniNumber("1E1"));
-		System.out.println("HUNDRED  : "+new MiniNumber("1E2"));
+		MinimaLogger.log("MINUMBER SCALE : "+tt.toString()+"  "+scale+" "+size+" "+data[0]);
+		
+//		System.out.println("Smallest : "+tt+" "+tt.getNumber().scale());
+//		System.out.println("TEN      : "+new MiniNumber("1E1"));
+//		System.out.println("HUNDRED  : "+new MiniNumber("1E2"));
 	}
 	
 }
