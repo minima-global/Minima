@@ -270,14 +270,13 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 	 */
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
-		//Write out the scale.. 
+		//Write out the scale.. can be negative - never more than 1 byte in size though  
 		int scale = mNumber.scale();
-		zOut.writeInt(scale);
+		zOut.writeByte(scale);
 		
-		//And now the unscaled value.. never larger than 255 bytes
+		//And now the unscaled value.. never larger than 64
 		byte[] data = mNumber.unscaledValue().toByteArray();
-		MiniByte length = new MiniByte(data.length);
-		length.writeDataStream(zOut);
+		zOut.writeByte(data.length);
 		
 		//WRITE THE DATA
 		zOut.write(data);
@@ -286,10 +285,10 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
 		//Read in the scale
-		int scale = zIn.readInt();
+		int scale = (int)zIn.readByte();
 		
 		//Read in the byte array for unscaled BigInteger
-		int len = MiniByte.ReadFromStream(zIn).getValue();
+		int len = (int)zIn.readByte();
 		if(len > 64 || len<1) {
 			throw new IOException("ERROR reading MiniNumber - input too large or negative "+len);
 		}
