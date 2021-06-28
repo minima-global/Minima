@@ -14,31 +14,25 @@ import org.minima.utils.json.JSONObject;
 public class Magic implements Streamable {
 
 	/**
-	 * A Random Magic number so that everyone is working on a different TxPoW in the pulse 
-	 * (since there is no coinbase..)
+	 * The Current MAGIC numbers.. based on a weighted average of the chain..
 	 */
-	public MiniData mPRNG = MiniData.getRandomData(64);
+	public MiniNumber mCurrentMaxTxPoWSize          = new MiniNumber(20000);
+	public MiniNumber mCurrentMaxTxnPerBlock        = new MiniNumber(32);
+	public MiniNumber mCurrentMaxKISSVMInstructions = new MiniNumber(128);
 	
 	/**
-	 * The MAGIC numbers.. set by chain vote avg over the last 4096 blocks..
+	 * The Desired MAGIC numbers.. user sets this..
 	 */
 	public MiniNumber mDesiredMaxTxPoWSize          = new MiniNumber(20000);
 	public MiniNumber mDesiredMaxTxnPerBlock        = new MiniNumber(32);
 	public MiniNumber mDesiredMaxKISSVMInstructions = new MiniNumber(128);
 	
-	/**
-	 * The Curent MAGIC numbers.. based on a weighted average of the chain..
-	 */
-	public MiniNumber mCurrentMaxTxPoWSize          = new MiniNumber(20000);
-	public MiniNumber mCurrentMaxTxnPerBlock        = new MiniNumber(32);
-	public MiniNumber mCurrentMaxKISSVMInstructions = new MiniNumber(128);
 	
 	public Magic() {}
 
 	public JSONObject toJSON() {
 		JSONObject magic = new JSONObject();
 		
-		magic.put("prng", mPRNG.to0xString());
 		magic.put("maxtxpow", mDesiredMaxTxPoWSize.getAsInt());
 		magic.put("maxtxn", mDesiredMaxTxnPerBlock.getAsInt());
 		magic.put("maxkissvm", mDesiredMaxKISSVMInstructions.getAsInt());
@@ -86,6 +80,9 @@ public class Magic implements Streamable {
 			
 			//Add the desired to each level below this..
 			for(int i=0;i<=slevel;i++) {
+				//The multiplier..
+				MiniNumber multiplier = MiniNumber.TWO.pow(i);
+				
 				if(numadded[i]<MAX_ADDED) {
 					//Increment 
 					numadded[i]++;
@@ -119,7 +116,10 @@ public class Magic implements Streamable {
 	
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
-		mPRNG.writeHashToStream(zOut);
+		mCurrentMaxTxPoWSize.writeDataStream(zOut);
+		mCurrentMaxTxnPerBlock.writeDataStream(zOut);
+		mCurrentMaxKISSVMInstructions.writeDataStream(zOut);
+		
 		mDesiredMaxTxPoWSize.writeDataStream(zOut);
 		mDesiredMaxTxnPerBlock.writeDataStream(zOut);
 		mDesiredMaxKISSVMInstructions.writeDataStream(zOut);
@@ -127,7 +127,10 @@ public class Magic implements Streamable {
 
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
-		mPRNG = MiniData.ReadHashFromStream(zIn);
+		mCurrentMaxTxPoWSize = MiniNumber.ReadFromStream(zIn);
+		mCurrentMaxTxnPerBlock = MiniNumber.ReadFromStream(zIn);
+		mCurrentMaxKISSVMInstructions = MiniNumber.ReadFromStream(zIn);
+		
 		mDesiredMaxTxPoWSize = MiniNumber.ReadFromStream(zIn);
 		mDesiredMaxTxnPerBlock = MiniNumber.ReadFromStream(zIn);
 		mDesiredMaxKISSVMInstructions = MiniNumber.ReadFromStream(zIn);
