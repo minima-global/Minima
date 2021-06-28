@@ -19,9 +19,11 @@ public class TxPoWMiner extends MessageProcessor {
 //	public static final MiniData BASE_TXN 	= Crypto.MAX_HASH;
 	public static final MiniData BASE_BLOCK = Crypto.MAX_HASH;
 	
-	public static final String TXMINER_TESTHASHING = "MINE_TESTHASHING";
-	public static final String TXMINER_MINETXPOW   = "MINE_MINETXPOW";
-	public static final String TXMINER_MEGAMINER   = "MINE_MEGAMINER";
+	public static final String TXMINER_TESTHASHING  = "MINE_TESTHASHING";
+	public static final String TXMINER_MINETXPOW    = "MINE_MINETXPOW";
+	public static final String TXMINER_MEGAMINER    = "MINE_MEGAMINER";
+	
+	public static final String TXMINER_PULSE   		= "MINE_PULSE";
 	
 	//Mine a single Block
 	public static final String TXMINER_DEBUGBLOCK   = "MINE_DEBUGBLOCK";
@@ -226,6 +228,63 @@ public class TxPoWMiner extends MessageProcessor {
 				Main.getMainHandler().getConsensusHandler().PostMessage(msg);
 			}else {
 				InputHandler.endResponse(zMessage, false, "ERROR - debug miner failed to find a block..");
+			}
+			
+		}else if(zMessage.isMessageType(TXMINER_PULSE)) {
+			//Get TXPOW..
+			TxPoW txpow = (TxPoW) zMessage.getObject("txpow");
+			
+			//Hard set the Header Body hash - now we are mining it can never change
+			txpow.setHeaderBodyHash();
+			
+			//The Start Nonce..
+			MiniNumber nonce = new MiniNumber(0);
+			
+			//And now start hashing.. 
+			MiniData hash = null;
+			boolean mining 	= true;
+			
+			//Do so many then recalculate.. to have the latest block data
+			long currentTime  = System.currentTimeMillis();
+			
+			//should be about 10..
+			long maxTime  	  = currentTime + MINE_CONSECUTIVE_MAX;
+			
+			while(mining && currentTime < maxTime && isRunning()) {
+				//Set the Nonce..
+				txpow.setNonce(nonce);
+
+				//Set the Time..
+				txpow.setTimeMilli(new MiniNumber(currentTime));
+				
+				//Now Hash it..
+				hash = Crypto.getInstance().hashObject(txpow.getTxHeader());
+				
+				if(hash.isLess(txpow.getTxnDifficulty())) {
+					//For Now..
+					mining = false;
+					break;
+				}
+				
+				//Increment the nonce..
+				nonce = nonce.increment();
+				
+				//New time
+				currentTime  = System.currentTimeMillis();
+			}
+			
+			//Did we find it.. ?
+			if(mining) {
+				//Send it..
+				Main.getMainHandler().getConsensusHandler().PostMessage(new Message(ConsensusHandler.CONSENSUS_PULSE));
+				
+			}else {
+				//Set the TxPOW
+				txpow.calculateTXPOWID();
+				
+				//We have a valid TX-POW..
+				Message msg = new Message(ConsensusHandler.CONSENSUS_PULSE_MINED).addObject("txpow", txpow);
+				Main.getMainHandler().getConsensusHandler().PostMessage(msg);
 			}
 			
 		}else if(zMessage.isMessageType(TXMINER_TESTHASHING)) {

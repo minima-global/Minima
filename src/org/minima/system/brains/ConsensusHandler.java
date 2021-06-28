@@ -1,12 +1,16 @@
 package org.minima.system.brains;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Hashtable;
+import java.util.Random;
 
 import org.minima.GlobalParams;
 import org.minima.database.MinimaDB;
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
+import org.minima.objects.StateVariable;
 import org.minima.objects.Transaction;
 import org.minima.objects.TxPoW;
 import org.minima.objects.Witness;
@@ -17,6 +21,7 @@ import org.minima.objects.proofs.TokenProof;
 import org.minima.system.Main;
 import org.minima.system.input.InputHandler;
 import org.minima.system.input.functions.gimme50;
+import org.minima.system.input.functions.newaddress;
 import org.minima.system.network.NetworkHandler;
 import org.minima.system.network.base.MinimaClient;
 import org.minima.system.network.base.MinimaReader;
@@ -69,9 +74,15 @@ public class ConsensusHandler extends MessageProcessor {
 	public static final String CONSENSUS_FINISHED_MINE 		   = "CONSENSUS_FINISHED_MINE";
 	
 	/**
+	 * PULSE
+	 */
+	public static final String CONSENSUS_PULSE_START 			= "CONSENSUS_PULSE_START";
+	public static final String CONSENSUS_PULSE 			   		= "CONSENSUS_PULSE";
+	public static final String CONSENSUS_PULSE_MINED 			= "CONSENSUS_PULSE_MINED";
+	
+	/**
 	 * Create Tokens
 	 */
-	public static final String CONSENSUS_CREATETOKEN 		= "CONSENSUS_CREATETOKEN";
 	public static final String CONSENSUS_TOKENCREATE 		= "CONSENSUS_TOKENCREATE";
 	
 	/**
@@ -142,6 +153,11 @@ public class ConsensusHandler extends MessageProcessor {
 	long mLastGimme = 0;
 	public static final long MIN_GIMME50_TIME_GAP = 1000 * 60 * 10;
 	
+	/**
+	 * PULSE Timer - every 10 mins
+	 */
+	public static final long PULSE_TIMER = 1000 * 60 * 10;
+	
 	/**	
 	 * Main Constructor
 	 * @param zMain
@@ -170,6 +186,9 @@ public class ConsensusHandler extends MessageProcessor {
 		
 		//Initialise the multi keys..
 		PostTimerMessage(new TimerMessage(10 * 1000, CONSENSUS_INITKEYS));
+		
+		//Start the PULSE - every 10 minutes
+		PostTimerMessage(new TimerMessage(PULSE_TIMER, CONSENSUS_PULSE_START));
 	}
 	
 	public void setBackUpManager() {
@@ -340,7 +359,7 @@ public class ConsensusHandler extends MessageProcessor {
 			getMainDB().remeoveMiningTransaction(txpow.getTransaction());
 				
 		/**
-		 * Called every 10 Minutes to do a few tasks
+		 * Called every 10 Minutes to do a few background tasks
 		 */
 		}else if ( zMessage.isMessageType(CONSENSUS_AUTOBACKUP) ) {
 			//Backup the system..
@@ -352,6 +371,11 @@ public class ConsensusHandler extends MessageProcessor {
 			//Clean the Tokens..
 			getMainDB().checkTokens();
 			
+			//Consolidate your coins! - default is TRUE
+			if(Main.getMainHandler().getUserPrefs().getBoolean("consolidate", true)) {
+				PostMessage(new Message(ConsensusUser.CONSENSUS_CONSOLIDATE));
+			}
+			
 			//Redo every 10 minutes..
 			PostTimerMessage(new TimerMessage(10 * 60 * 1000, CONSENSUS_AUTOBACKUP));
 			
@@ -359,7 +383,7 @@ public class ConsensusHandler extends MessageProcessor {
 			System.gc();
 		
 			/**
-			 * Initilise the Multi Keys..
+			 * Initialise the Multi Keys..
 			 */
 		}else if ( zMessage.isMessageType(CONSENSUS_INITKEYS) ) {
 			//Check keys..
@@ -369,6 +393,8 @@ public class ConsensusHandler extends MessageProcessor {
 			if(inited) {
 				PostTimerMessage(new TimerMessage(20 * 1000, CONSENSUS_INITKEYS));
 			}
+			
+			System.gc();
 			
 		/**
 		 * Network Messages
@@ -472,6 +498,9 @@ public class ConsensusHandler extends MessageProcessor {
 				//Remove from the List of Mined transactions..
 				getMainDB().remeoveMiningTransaction(trans);
 				
+				//Notify listeners that Mining is starting...
+				PostDAPPEndMining(trans);
+				
 				resp.put("contractlogs", contractlogs);
 				InputHandler.endResponse(zMessage, false, "Invalid Transaction");
 				return;
@@ -487,6 +516,9 @@ public class ConsensusHandler extends MessageProcessor {
 				//Remove from the List of Mined transactions..
 				getMainDB().remeoveMiningTransaction(txpow.getTransaction());
 				
+				//Notify listeners that Mining is starting...
+				PostDAPPEndMining(txpow.getTransaction());
+				
 				//Reject
 				InputHandler.endResponse(zMessage, false, "Invalid Signatures! - TXNAUTO must be done AFTER adding state variables ?");
 				return;
@@ -496,6 +528,9 @@ public class ConsensusHandler extends MessageProcessor {
 			if(getMainDB().checkTransactionForMempoolCoins(trans)) {
 				//Remove from the List of Mined transactions..
 				getMainDB().remeoveMiningTransaction(txpow.getTransaction());
+				
+				//Notify listeners that Mining is starting...
+				PostDAPPEndMining(txpow.getTransaction());
 				
 				//No GOOD!
 				InputHandler.endResponse(zMessage, false, "ERROR double spend coin in mempool.");
@@ -511,10 +546,14 @@ public class ConsensusHandler extends MessageProcessor {
 				//Remove from the List of Mined transactions..
 				getMainDB().remeoveMiningTransaction(txpow.getTransaction());
 				
+				//Notify listeners that Mining is starting...
+				PostDAPPEndMining(txpow.getTransaction());
+				
 				//Add the TxPoW
 				resp.put("transaction", txpow.getTransaction());
 				
 				//ITS TOO BIG!
+				MinimaLogger.log("Transaction TOO big! "+txpow.getSizeinBytes());
 				InputHandler.endResponse(zMessage, false, "YOUR TXPOW TRANSACTION IS TOO BIG! MAX SIZE : "+MinimaReader.MAX_TXPOW);
 				
 				return;
@@ -585,7 +624,6 @@ public class ConsensusHandler extends MessageProcessor {
 			}
 			
 			//How much do we have..
-			MiniNumber total = new MiniNumber(); 
 			ArrayList<Coin> confirmed = null;
 			if(tok.isEqual(Coin.TOKENID_CREATE)) {
 				confirmed = getMainDB().getTotalSimpleSpendableCoins(Coin.MINIMA_TOKENID);
@@ -594,22 +632,32 @@ public class ConsensusHandler extends MessageProcessor {
 				confirmed = getMainDB().getTotalSimpleSpendableCoins(tok);
 			}
 			
-			for(Coin cc : confirmed) {
-				total = total.add(cc.getAmount());
-			}
-
-			//Do we have that much..
-			if(total.isLess(sendamount)) {
+			//Select the coins to use in the transaction
+			ArrayList<Coin> selectedCoins = selectCoins(confirmed, sendamount);
+		
+			//Do we have enough funds..
+			if(selectedCoins.size()==0) {
+				//Sum the confirmed coins..
+				MiniNumber conftotal = new MiniNumber();
+				for(Coin cc : confirmed) {
+					conftotal = conftotal.add(cc.getAmount());
+				}
+				
 				//Insufficient funds!
 				if(!tokenid.equals(Coin.MINIMA_TOKENID.to0xString())) {
-					total = tokendets.getScaledTokenAmount(total);
-//					total = total.mult(tokendets.getScaleFactor());
-					InputHandler.endResponse(zMessage, false, "Insufficient funds! You only have : "+total);
+					conftotal = tokendets.getScaledTokenAmount(conftotal);
+					InputHandler.endResponse(zMessage, false, "Insufficient funds! You only have : "+conftotal);
 				}else {
-					InputHandler.endResponse(zMessage, false, "Insufficient funds! You only have : "+total);
+					InputHandler.endResponse(zMessage, false, "Insufficient funds! You only have : "+conftotal);
 				}
 				
 				return;
+			}
+
+			//What are we sending
+			MiniNumber total = new MiniNumber(); 
+			for(Coin cc : selectedCoins) {
+				total = total.add(cc.getAmount());
 			}
 			
 			//Continue constructing the transaction - outputs don't need scripts
@@ -623,7 +671,7 @@ public class ConsensusHandler extends MessageProcessor {
 			
 			//Create the Transaction
 			Message ret = getMainDB().createTransaction(sendamount, recipient, change, 
-					confirmed, tok, changetok, null, new Transaction(), state, true);
+					selectedCoins, tok, changetok, null, new Transaction(), state, true);
 			
 			//Is this a token transaction
 			if(tokendets != null) {
@@ -647,10 +695,7 @@ public class ConsensusHandler extends MessageProcessor {
 			getMainDB().addMiningTransaction(trans);
 			
 			//Notify listeners that Mining is starting...
-			JSONObject mining = new JSONObject();
-			mining.put("event","txpowstart");
-			mining.put("transaction",trans.toJSON());
-			PostDAPPJSONMessage(mining);
+			PostDAPPStartMining(trans);
 			
 			//Get the message ready
 			InputHandler.addResponseMesage(ret, zMessage);
@@ -658,22 +703,49 @@ public class ConsensusHandler extends MessageProcessor {
 			//Send it..
 			PostMessage(ret);
 		
+		}else if ( zMessage.isMessageType(CONSENSUS_PULSE_START) ) {
+			//Post a PULSE message
+			PostMessage(CONSENSUS_PULSE);
+		
+			//Start again in 10 minutes..
+			PostTimerMessage(new TimerMessage(PULSE_TIMER, CONSENSUS_PULSE_START));
+			
+		}else if ( zMessage.isMessageType(CONSENSUS_PULSE) ) {
+			//PULSE Txn 
+			TxPoW txpow = getMainDB().getCurrentTxPow(new Transaction(), new Witness(), new JSONArray());
+			
+			//Send it to the Miner..
+			Message mine = new Message(TxPoWMiner.TXMINER_PULSE).addObject("txpow", txpow);
+			
+			//Post to the Miner
+			Main.getMainHandler().getMiner().PostMessage(mine);
+			
+		}else if ( zMessage.isMessageType(CONSENSUS_PULSE_MINED) ) {
+			//The TXPOW
+			TxPoW txpow = (TxPoW) zMessage.getObject("txpow");
+
+			//Is it a block ? - otherwise do nothing..
+			if(txpow.isBlock()) {
+				//Post onwards!
+				MinimaLogger.log("Congratulations! You found a PULSE block @ "+txpow.getBlockNumber());
+				
+				//And now forward the message to the single entry point..
+				Message msg = new Message(ConsensusNet.CONSENSUS_NET_CHECKSIZE_TXPOW).addObject("txpow", txpow);
+				PostMessage(msg);
+			}else {
+//				MinimaLogger.log("PULSE Finished @ "+txpow.getBlockNumber());
+			}
+			
 		}else if(zMessage.isMessageType(CONSENSUS_FINISHED_MINE)) {
 			//The TXPOW
 			TxPoW txpow = (TxPoW) zMessage.getObject("txpow");
 			
-//			//Remove from the List of Mined transactions..
-//			getMainDB().remeoveMiningTransaction(txpow.getTransaction());
-//			
 			//And now forward the message to the single entry point..
 			Message msg = new Message(ConsensusNet.CONSENSUS_NET_CHECKSIZE_TXPOW).addObject("txpow", txpow);
 			PostMessage(msg);
 			
 			//Notify listeners that Mining is starting...
-			JSONObject mining = new JSONObject();
-			mining.put("event","txpowend");
-			mining.put("transaction",txpow.getTransaction().toJSON());
-			PostDAPPJSONMessage(mining);
+			PostDAPPEndMining(txpow.getTransaction());
 			
 		}else if(zMessage.isMessageType(CONSENSUS_GIMME50)) {
 			//Check time
@@ -702,15 +774,17 @@ public class ConsensusHandler extends MessageProcessor {
 			trans.addInput(in);
 			wit.addScript(Address.TRUE_ADDRESS.getScript(), in.getAddress().getLength()*8);
 			
+			//Create a small variance in amount.. so coinid is different per coin
+			MiniNumber rr = new MiniNumber(new Random().nextLong()).mult(MiniNumber.MINI_UNIT);
+			MiniNumber out1 = new MiniNumber("25").sub(rr);
+			MiniNumber out2 = new MiniNumber("25").add(rr);
+			
 			//And send to the new addresses
-			trans.addOutput(new Coin(Coin.COINID_OUTPUT,addr1.getAddressData(),new MiniNumber("25"), Coin.MINIMA_TOKENID));
-			trans.addOutput(new Coin(Coin.COINID_OUTPUT,addr2.getAddressData(),new MiniNumber("25"), Coin.MINIMA_TOKENID));
+			trans.addOutput(new Coin(Coin.COINID_OUTPUT,addr1.getAddressData(),out1, Coin.MINIMA_TOKENID));
+			trans.addOutput(new Coin(Coin.COINID_OUTPUT,addr2.getAddressData(),out2, Coin.MINIMA_TOKENID));
 			
 			//Notify listeners that Mining is starting...
-			JSONObject mining = new JSONObject();
-			mining.put("event","txpowstart");
-			mining.put("transaction",trans.toJSON());
-			PostDAPPJSONMessage(mining);
+			PostDAPPStartMining(trans);
 			
 			//Now send it..
 			Message mine = new Message(ConsensusHandler.CONSENSUS_SENDTRANS)
@@ -755,81 +829,147 @@ public class ConsensusHandler extends MessageProcessor {
 			MiniNumber sendamount = new MiniNumber(colorminima);
 			
 			//How much do we have..
-			MiniNumber total = new MiniNumber(); 
 			ArrayList<Coin> confirmed = getMainDB().getTotalSimpleSpendableCoins(Coin.MINIMA_TOKENID);
 			
-			//Add all the available outputs to the list
-			for(Coin cc : confirmed) {
+			//Select the coins to use in the transaction
+			ArrayList<Coin> selectedCoins = selectCoins(confirmed, sendamount);
+		
+			//Do we have enough funds..
+			if(selectedCoins.size()==0) {
+				//Sum the confirmed coins..
+				MiniNumber conftotal = new MiniNumber();
+				for(Coin cc : confirmed) {
+					conftotal = conftotal.add(cc.getAmount());
+				}
+				
+				//Insufficient funds!
+				InputHandler.endResponse(zMessage, false, "Insufficient funds! You only have : "+conftotal);
+				return;
+			}
+			
+			//How much are we sending
+			MiniNumber total = new MiniNumber();
+			for(Coin cc : selectedCoins) {
 				total = total.add(cc.getAmount());
 			}
-
-			//Do we have that much..
-			if(total.isLess(sendamount)) {
-				//Insufficient funds!
-				InputHandler.endResponse(zMessage, false, "Insufficient funds! You only have : "+total);
-				
-			}else {
-				//Get a new address to receive the tokens..
-				Address recipient = getMainDB().getUserDB().getCurrentAddress(this);
-				
-				//Blank address - check change is non-null
-				Address change = new Address(); 
-				if(!total.isEqual(sendamount)) {
-					change = getMainDB().getUserDB().getCurrentAddress(this);
-				}
-				
-				//CHECK NAME of TOKEN IS VALID!
-				//TODO Important! - Check token name and details are valid.. add function to TokenProof
-				
-				//Create the JSON descriptor..
-				JSONObject tokenjson = new JSONObject();
-				tokenjson.put("name", name);
-				if(!description.equals("")) {
-					tokenjson.put("description", description);	
-				}
-				if(!icon.equals("")) {
-					tokenjson.put("icon", icon);	
-				}
-				if(!proof.equals("")) {
-					tokenjson.put("proof", proof);	
-				}
-				
-				//Create the token gen details
-				TokenProof tokengen = new TokenProof(Coin.COINID_OUTPUT, 
-													 new MiniNumber(scale+""), 
-													 sendamount, 
-													 new MiniString(tokenjson.toString()),
-													 new MiniString(script));
-				
-				//Create the Transaction
-				Message ret = getMainDB().createTransaction(sendamount, recipient, change, confirmed, tok, changetok,tokengen);
-				
-				//get the Transaction
-				Transaction trans = (Transaction) ret.getObject("transaction");
-				
-				//Final check..
-				if(getMainDB().checkTransactionForMining(trans)) {
-					InputHandler.endResponse(zMessage, false, "ERROR double spend coin in mining pool.");
-					return;
-				}
-				
-				//Add all the inputs to the mining..
-				getMainDB().addMiningTransaction(trans);
-				
-				//Notify listeners that Mining is starting...
-				JSONObject mining = new JSONObject();
-				mining.put("event","txpowstart");
-				mining.put("transaction",trans.toJSON());
-				PostDAPPJSONMessage(mining);
-				
-				//Continue the log output trail
-				InputHandler.addResponseMesage(ret, zMessage);
-				
-				//Send it..
-				PostMessage(ret);
+			
+			//Get a new address to receive the tokens..
+			Address recipient = getMainDB().getUserDB().getCurrentAddress(this);
+			
+			//Blank address - check change is non-null
+			Address change = new Address(); 
+			if(!total.isEqual(sendamount)) {
+				change = getMainDB().getUserDB().getCurrentAddress(this);
 			}
+			
+			//CHECK NAME of TOKEN IS VALID!
+			//TODO Important! - Check token name and details are valid.. add function to TokenProof
+			
+			//Create the JSON descriptor..
+			JSONObject tokenjson = new JSONObject();
+			tokenjson.put("name", name);
+			if(!description.equals("")) {
+				tokenjson.put("description", description);	
+			}
+			if(!icon.equals("")) {
+				tokenjson.put("icon", icon);	
+			}
+			if(!proof.equals("")) {
+				tokenjson.put("proof", proof);	
+			}
+			
+			//Create the token gen details
+			TokenProof tokengen = new TokenProof(Coin.COINID_OUTPUT, 
+												 new MiniNumber(scale+""), 
+												 sendamount, 
+												 new MiniString(tokenjson.toString()),
+												 new MiniString(script));
+			
+			//Create the Transaction
+			Message ret = getMainDB().createTransaction(sendamount, recipient, change, selectedCoins, tok, changetok,tokengen);
+			
+			//get the Transaction
+			Transaction trans = (Transaction) ret.getObject("transaction");
+			
+			//Final check..
+			if(getMainDB().checkTransactionForMining(trans)) {
+				InputHandler.endResponse(zMessage, false, "ERROR double spend coin in mining pool.");
+				return;
+			}
+			
+			//Add all the inputs to the mining..
+			getMainDB().addMiningTransaction(trans);
+			
+			//Notify listeners that Mining is starting...
+			PostDAPPStartMining(trans);
+			
+			//Continue the log output trail
+			InputHandler.addResponseMesage(ret, zMessage);
+			
+			//Send it..
+			PostMessage(ret);
 		}
 	}	
+	
+	/**
+	 * Coin Selection Algorithm..
+	 * 
+	 * Which coins to use when sending a transaction
+	 * Expects all the coins to be of the same tokenid
+	 */
+	public static ArrayList<Coin> selectCoins(ArrayList<Coin> zAllCoins, MiniNumber zAmountRequired){
+		ArrayList<Coin> ret = new ArrayList<>();
+		
+		//First sort the coins by size..
+		Collections.sort(zAllCoins, new Comparator<Coin>() {
+			@Override
+			public int compare(Coin zCoin1, Coin zCoin2) {
+				MiniNumber amt1 = zCoin1.getAmount();
+				MiniNumber amt2 = zCoin2.getAmount();
+				return amt2.compareTo(amt1);
+			}
+		});
+
+		//Now go through and pick a coin big enough.. but keep looking for smaller coins  
+		boolean found    = false;
+		Coin currentcoin = null;
+		for(Coin cc : zAllCoins) {
+			if(cc.getAmount().isMoreEqual(zAmountRequired)) {
+				found = true;
+				currentcoin = cc;
+			}else {
+				//Not big enough - all others will be smaller..
+				break;
+			}
+		}
+		
+		//Did we find one..
+		MiniNumber tot = MiniNumber.ZERO;
+		if(found) {
+			ret.add(currentcoin);
+			tot = currentcoin.getAmount();
+		}else {
+			//Will need to add up multiple coins..
+			for(Coin cc : zAllCoins) {
+				ret.add(cc);
+				tot = tot.add(cc.getAmount());
+				
+				if(tot.isMoreEqual(zAmountRequired)) {
+					break;
+				}
+			}
+		}
+		
+		//Did we reach the required amount..
+		if(tot.isMoreEqual(zAmountRequired)) {
+			return ret;
+		}
+		
+		//Not enough funds
+		return new ArrayList<Coin>();
+	}
+	
+	
 	
 	/**
 	 * Post a message to all the MiniDAPPs
@@ -846,4 +986,40 @@ public class ConsensusHandler extends MessageProcessor {
 		Message wsmsg = new Message(DAPPManager.DAPP_MINIDAPP_POSTALL).addObject("message", zJSON);
 		Main.getMainHandler().getNetworkHandler().getDAPPManager().PostMessage(wsmsg);
 	}
+	
+	public void PostDAPPStartMining(Transaction zTrans) {
+		//Notify listeners that Mining is starting...
+		JSONObject mining = new JSONObject();
+		mining.put("event","txpowstart");
+		mining.put("transaction",zTrans.toJSON());
+		PostDAPPJSONMessage(mining);
+	}
+	
+	public void PostDAPPEndMining(Transaction zTrans) {
+		//Notify listeners that Mining is starting...
+		JSONObject mining = new JSONObject();
+		mining.put("event","txpowend");
+		mining.put("transaction",zTrans.toJSON());
+		PostDAPPJSONMessage(mining);
+	}
+	
+	public static void main(String[] zArgs) {
+		Coin cc1 = new Coin(new MiniData(), new MiniData(), new MiniNumber(1), new MiniData());
+		Coin cc2 = new Coin(new MiniData(), new MiniData(), new MiniNumber(2), new MiniData());
+		Coin cc3 = new Coin(new MiniData(), new MiniData(), new MiniNumber(3), new MiniData());
+		
+		ArrayList<Coin> coins = new ArrayList<>();
+		coins.add(cc1);
+		coins.add(cc2);
+		coins.add(cc3);
+		
+		System.out.println(coins.toString());
+		
+		ArrayList<Coin> ret = selectCoins(coins, new MiniNumber("3.5"));
+		System.out.println(ret.toString());
+		
+		
+	}
+	
+	
 }
