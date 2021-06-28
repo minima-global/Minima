@@ -806,7 +806,7 @@ public class MMRSet implements Streamable {
 		return getProofToPeak(zEntryNumber, false);
 	}
 	
-	protected MMRProof getProofToPeak(MiniNumber zEntryNumber,boolean zFullOnly) {
+	public MMRProof getProofToPeak(MiniNumber zEntryNumber,boolean zFullOnly) {
 		//First get the initial Entry.. check parents aswell..
 		MMREntry entry = getEntry(0, zEntryNumber, zFullOnly);
 		
@@ -920,9 +920,28 @@ public class MMRSet implements Streamable {
 		//Get the root..
 		MMRData root = proofset.getMMRRoot();
 		
-		//Check..
-		if(!zProof.getFinalHash().isEqual(root.getFinalHash())) {
-			MinimaLogger.log("checkProof Proof not equal to ROOT! "+zProof);
+		//Check proof root is equal to the root or one of the peaks
+		MiniData fhash = zProof.getFinalHash();
+		boolean foundpeak = false;
+		if(fhash.isEqual(root.getFinalHash())) {
+			foundpeak = true;
+		}
+		
+		//Could be a proof to peak
+		if(!foundpeak) {
+			//Check against all the peaks..
+			ArrayList<MMREntry> peaks = proofset.getMMRPeaks();
+			for(MMREntry peak : peaks) {
+				if(peak.getData().getFinalHash().isEqual(fhash)){
+					foundpeak = true;
+					break;
+				}
+			}
+		}
+		
+		//Did we find a valid peak equal to the hash
+		if(!foundpeak) {
+			MinimaLogger.log("checkProof Proof not equal to ROOT OR any Peaks!! "+zProof);
 			return false;
 		}
 		

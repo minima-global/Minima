@@ -847,7 +847,9 @@ public class MinimaDB {
 			entrynum = proofmmr.findEntry(cc.getCoinID()).getEntryNumber();
 			
 			//Get a proof from a while back.. more than confirmed depth, less than cascade
-			MMRProof proof = proofmmr.getProof(entrynum,true);
+//			MMRProof proof = proofmmr.getProof(entrynum,true);
+			//Only need to the Peak! - smaller..
+			MMRProof proof = proofmmr.getProofToPeak(entrynum,true);
 			
 			//Add the proof for this coin..
 			zWitness.addMMRProof(proof);
