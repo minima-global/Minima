@@ -134,9 +134,14 @@ public class MMRSet implements Streamable {
 			
 			ArrayList<MMREntry> peaks = mParent.getMMRPeaks();
 			for(MMREntry peak : peaks) {
-				//Add the peak
-				setEntry(peak.getRow(), peak.getEntryNumber(), peak.getData());
-			
+				//Add the peak - hash only details..
+				if(peak.getData().isHashOnly()) {
+					setEntry(peak.getRow(), peak.getEntryNumber(), peak.getData());
+				}else {
+					MMRData pdata = peak.getData();
+					setEntry(peak.getRow(), peak.getEntryNumber(), new MMRData(pdata.getFinalHash(),pdata.getValueSum()));
+				}
+				
 				//Add to the total entries.. the peaks are the binary value
 				tot = tot.add(two.pow(peak.getRow()));
 			}
@@ -440,7 +445,6 @@ public class MMRSet implements Streamable {
 		
 		//Check the ZERO row..
 		while(current != null) {
-			
 			ArrayList<MMREntry> zero = current.getZeroRow();
 			for(MMREntry entry : zero) {
 				if(!entry.getData().isHashOnly()) {
@@ -1055,80 +1059,6 @@ public class MMRSet implements Streamable {
 		return false;
 	}
 	
-//	/**
-//	 * Used when Pruning the MMR tree..
-//	 * 
-//	 * All the Keepers are moved Up one level..
-//	 */
-//	private void copyParentKeepers() {
-//		//Set not finalized..
-//		mFinalized = false;
-//		
-//		//First get the Keepers..
-//		ArrayList<MiniNumber> parentkeepers = new ArrayList<>();
-//		if(mParent!=null) {
-//			parentkeepers = mParent.getKeepers();
-//		}
-//		
-//		//Cycle through the current crop..
-//		ArrayList<MiniNumber> newkeepers = new ArrayList<>();
-//		for(MiniNumber keep : mKeepers) {
-//			//Get that LATEST entry and all the entries it uses on the way up..
-//			MMREntry entry = getEntry(0, keep);
-//			if(!entry.getData().isSpent()) {
-//				newkeepers.add(keep);
-//			}
-//		}
-//		
-//		//Reset
-//		mKeepers = newkeepers;
-//		
-//		//Cycle through the Keepers..
-//		for(MiniNumber keep : parentkeepers) {
-//			//Get that LATEST entry and all the entries it uses on the way up..
-//			MMREntry entry = getEntry(0, keep);
-//			
-//			//Check valid.. SHOULD NOT HAPPEN
-//			if(entry.isEmpty() || entry.getData().isHashOnly()) {
-//				MinimaLogger.log("copyKeepers on NULL Keeper Entry! "+keep);
-//				continue;
-//			}
-//			
-//			//If it's spent we don't keep it..
-//			if(entry.getData().isSpent()) {
-//				continue;
-//			}
-//			
-//			//Keep it..
-//			boolean added = addKeeper(keep);
-//			
-//			//Has it already been added..
-////			if(added) {
-//				//Add it.. to THIS set.. not the parent..
-//				entry = setEntry(0, keep, entry.getData());
-//				
-//				//And now go go up the tree..
-//				MMREntry sibling = getEntry(entry.getRow(), entry.getSibling());
-//				while(!sibling.isEmpty()) {
-//					//Add to our Set..
-//					setEntry(sibling.getRow(), sibling.getEntryNumber(), sibling.getData());
-//					
-//					//Now get the Parent.. just need a reference even if is empty. To find the sibling.
-//					MMREntry parent = new MMREntry( sibling.getParentRow(), sibling.getParentEntry() );
-//					
-//					//And get the Sibling of the Parent..
-//					sibling = getEntry(parent.getRow(), parent.getSibling());
-//				}
-////			}
-//		}
-//		
-//		//Now we have all the data stored for the keeper coins.. We can remove the parent..		
-//		mParent = null;
-//		
-//		//Re-finalise..
-//		finalizeSet();
-//	}
-
 	private void copyParentKeepers(ArrayList<MiniNumber> zKeepers) {
 		//Set not finalized..
 		mFinalized = false;
@@ -1169,26 +1099,22 @@ public class MMRSet implements Streamable {
 			
 			//Keep it..
 			boolean added = addKeeper(keep);
-//			if(!added) {MinimaLogger.log("KEEPING ALREADY KEPT "+keep);}
 			
-			//Has it already been added..
-//			if(added) {
-				//Add it.. to THIS set.. not the parent..
-				entry = setEntry(0, keep, entry.getData());
+			//Add it.. to THIS set.. not the parent..
+			entry = setEntry(0, keep, entry.getData());
+			
+			//And now go go up the tree..
+			MMREntry sibling = getEntry(entry.getRow(), entry.getSibling());
+			while(!sibling.isEmpty()) {
+				//Add to our Set..
+				setEntry(sibling.getRow(), sibling.getEntryNumber(), sibling.getData());
 				
-				//And now go go up the tree..
-				MMREntry sibling = getEntry(entry.getRow(), entry.getSibling());
-				while(!sibling.isEmpty()) {
-					//Add to our Set..
-					setEntry(sibling.getRow(), sibling.getEntryNumber(), sibling.getData());
-					
-					//Now get the Parent.. just need a reference even if is empty. To find the sibling.
-					MMREntry parent = new MMREntry( sibling.getParentRow(), sibling.getParentEntry() );
-					
-					//And get the Sibling of the Parent..
-					sibling = getEntry(parent.getRow(), parent.getSibling());
-				}
-//			}
+				//Now get the Parent.. just need a reference even if is empty. To find the sibling.
+				MMREntry parent = new MMREntry( sibling.getParentRow(), sibling.getParentEntry() );
+				
+				//And get the Sibling of the Parent..
+				sibling = getEntry(parent.getRow(), parent.getSibling());
+			}
 		}
 		
 		//Now we have all the data stored for the keeper coins.. We can remove the parent..		
@@ -1198,58 +1124,9 @@ public class MMRSet implements Streamable {
 		finalizeSet();
 	}
 	
-	/**
-	 * Recursively copy the parents..
-	 * 
-	 * Returns the minimum block copied..
-	 */
-//	public MiniNumber copyAllParentKeepers(MiniNumber zCascade) {
-//		//Start at this point..
-//		MMRSet curr = this;
-//		
-//		MinimaLogger.log("COPY PARENTS @ "+getBlockTime());
-//		
-//		//Minimum block copied
-//		MiniNumber minblock = zCascade;
-//		
-//		//Store all the pparents..
-//		ObjectStack stack = new ObjectStack();
-//		while(curr.getBlockTime().isMore(zCascade)) {
-//			//Add to the stack..
-//			stack.push(curr);
-//			
-//			//Get the parent..
-//			curr = curr.getParent();
-//		}
-//		
-//		//Now run through the stack..
-//		while(!stack.isEmpty()) {
-//			//Get the parent MMR..
-//			MMRSet mmr = (MMRSet) stack.pop();
-//			
-//			//Store it..
-//			if(mmr.getParent() != null) {
-//				MiniNumber pblock = mmr.getParent().getBlockTime();
-//				if(minblock == null) {
-//					minblock = pblock;
-//				}else if(pblock.isLess(minblock)) {
-//					minblock = pblock;
-//				}
-//			}
-//			
-//			//Copy the parents MMR keepers..
-//			mmr.copyParentKeepers();
-//		}
-//		
-//		//Return minimum block..
-//		return minblock;
-//	}
-	
 	public MiniNumber copyAllParentKeepers(MiniNumber zCascade) {
 		//Start at this point..
 		MMRSet curr = this;
-		
-//		MinimaLogger.log("COPY PARENTS @ "+getBlockTime());
 		
 		//Minimum block copied
 		MiniNumber minblock = zCascade;
@@ -1283,7 +1160,6 @@ public class MMRSet implements Streamable {
 				}
 			
 				ArrayList<MiniNumber> parkeepers = parent.getKeepers();
-//				MinimaLogger.log("SEARCHING KEEPERS BLOCK:"+parent.getBlockTime()+" "+parkeepers);
 				for(MiniNumber keep : parkeepers) {
 					//Have we already added it
 					boolean found = false;
@@ -1302,12 +1178,8 @@ public class MMRSet implements Streamable {
 			}
 		}
 		
-//		MinimaLogger.log("FOUND KEEPERS : "+keepers+" CURRENT : "+mKeepers+" BLOCK:"+getBlockTime());
-		
 		//Ok we have all the keepers we want to keep..
 		copyParentKeepers(keepers);
-		
-//		MinimaLogger.log("FINAL KEEPERS : "+mKeepers);
 		
 		//Return minimum block..
 		return minblock;
