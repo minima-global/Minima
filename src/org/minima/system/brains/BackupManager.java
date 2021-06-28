@@ -93,6 +93,10 @@ public class BackupManager extends MessageProcessor {
 		return mMiniDAPPS;
 	}
 	
+	public File getUserPrefs() {
+		return getBackUpFile("userprefs.dat");
+	}
+	
 	public File getMaximaFolder() {
 		return mMaximaRoot;
 	}

@@ -22,6 +22,7 @@ import org.minima.system.network.base.MinimaReader;
 import org.minima.system.txpow.TxPoWChecker;
 import org.minima.utils.DataTimer;
 import org.minima.utils.MinimaLogger;
+import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.TimerMessage;
 
@@ -677,6 +678,9 @@ public class ConsensusNet extends ConsensusProcessor {
 				//Remove from mining..
 				getMainDB().remeoveMiningTransaction(txpow.getTransaction());
 				
+				//Notify listeners that Mining is ending...
+				getConsensusHandler().PostDAPPEndMining(txpow.getTransaction());
+				
 				return;
 			}
 			
@@ -695,6 +699,9 @@ public class ConsensusNet extends ConsensusProcessor {
 				
 				//Remove from mining..
 				getMainDB().remeoveMiningTransaction(txpow.getTransaction());
+				
+				//Notify listeners that Mining is ending...
+				getConsensusHandler().PostDAPPEndMining(txpow.getTransaction());
 				
 				return;
 			}
