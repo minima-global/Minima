@@ -14,6 +14,12 @@ import org.minima.utils.json.JSONObject;
 public class TxBody implements Streamable {
 
 	/**
+	 * A Random number so that everyone is working on a different TxPoW in the pulse 
+	 * (since there is no coinbase..)
+	 */
+	public MiniData 	mPRNG = MiniData.getRandomData(64);
+
+	/**
 	 * The Difficulty for this TXPOW to be valid.
 	 */
 	public MiniData 	mTxnDifficulty = new MiniData();
@@ -52,6 +58,8 @@ public class TxBody implements Streamable {
 	public JSONObject toJSON() {
 		JSONObject txpow = new JSONObject();
 		
+		txpow.put("prng", mPRNG.to0xString());
+		
 		txpow.put("txndiff", mTxnDifficulty.to0xString());
 		
 		txpow.put("txn", mTransaction.toJSON());
@@ -73,6 +81,8 @@ public class TxBody implements Streamable {
 
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
+		mPRNG.writeHashToStream(zOut);
+		
 		mTxnDifficulty.writeDataStream(zOut);
 		mTransaction.writeDataStream(zOut);
 		mWitness.writeDataStream(zOut);
@@ -90,6 +100,8 @@ public class TxBody implements Streamable {
 
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
+		mPRNG = MiniData.ReadHashFromStream(zIn);
+		
 		mTxnDifficulty  = MiniData.ReadFromStream(zIn);
 		mTransaction.readDataStream(zIn);
 		mWitness.readDataStream(zIn);
