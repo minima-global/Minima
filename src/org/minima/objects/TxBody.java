@@ -44,11 +44,6 @@ public class TxBody implements Streamable {
 	 */
 	public ArrayList<MiniData> mTxPowIDList;
 	
-	/**
-	 * MAGIC numbers that set the chain parameters
-	 */
-	public Magic mMagic = new Magic();
-	
 	public TxBody() {
 		//List of the transctions in this block
 		mTxPowIDList = new ArrayList<>();
@@ -58,6 +53,7 @@ public class TxBody implements Streamable {
 		JSONObject txpow = new JSONObject();
 		
 		txpow.put("txndiff", mTxnDifficulty.to0xString());
+		
 		txpow.put("txn", mTransaction.toJSON());
 		txpow.put("witness", mWitness.toJSON());
 		
@@ -71,8 +67,6 @@ public class TxBody implements Streamable {
 			txns.add(txn.to0xString());
 		}
 		txpow.put("txnlist", txns);
-		
-		txpow.put("magic", mMagic.toJSON());
 		
 		return txpow;
 	}
@@ -92,8 +86,6 @@ public class TxBody implements Streamable {
 		for(MiniData txpowid : mTxPowIDList) {
 			txpowid.writeHashToStream(zOut);
 		}
-		
-		mMagic.writeDataStream(zOut);
 	}
 
 	@Override
@@ -111,7 +103,5 @@ public class TxBody implements Streamable {
 		for(int i=0;i<len;i++) {
 			mTxPowIDList.add(MiniData.ReadHashFromStream(zIn));
 		}
-		
-		mMagic.readDataStream(zIn);
 	}
 }

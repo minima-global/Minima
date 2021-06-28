@@ -42,15 +42,9 @@ public class TxHeader implements Streamable {
 	public MiniData[] mSuperParents;
 	
 	/**
-	 * A Chain ID. Useful when running side-chains, as only this TokenID will be valid to POS mine it. 
-	 * 0x00 is the main chain
+	 * MAGIC numbers that set the chain parameters
 	 */
-	public MiniData mChainID      = new MiniData("0x00");
-	
-	/**
-	 * Every Side chain has a parent chain
-	 */
-	public MiniData mParentChainID = new MiniData("0x00");
+	public Magic mMagic = new Magic();
 	
 	/**
 	 * The MMR Root!
@@ -135,8 +129,7 @@ public class TxHeader implements Streamable {
 		}
 		txpow.put("superparents", supers);
 		
-		txpow.put("chainid", mChainID.toString());
-		txpow.put("parentchainid", mParentChainID.toString());
+		txpow.put("magic", mMagic.toJSON());
 		
 		txpow.put("mmr", mMMRRoot.toString());
 		txpow.put("total", mMMRTotal.toString());
@@ -155,9 +148,6 @@ public class TxHeader implements Streamable {
 		mTimeMilli.writeDataStream(zOut);
 		mBlockNumber.writeDataStream(zOut);
 		mBlockDifficulty.writeDataStream(zOut);
-		
-		mChainID.writeHashToStream(zOut);
-		mParentChainID.writeHashToStream(zOut);
 		
 		//The Super parents are efficiently encoded in RLE
 		MiniByte cascnum = new MiniByte(GlobalParams.MINIMA_CASCADE_LEVELS);
@@ -197,7 +187,10 @@ public class TxHeader implements Streamable {
 		//Write out the MMR DB
 		mMMRRoot.writeHashToStream(zOut);
 		mMMRTotal.writeDataStream(zOut);
-		mMMRPeaks.writeDataStream(zOut);
+		mMMRPeaks.writeHashToStream(zOut);
+	
+		//Write the Magic Number
+		mMagic.writeDataStream(zOut);
 		
 		//Write the Boddy Hash
 		mTxBodyHash.writeHashToStream(zOut);
@@ -209,9 +202,6 @@ public class TxHeader implements Streamable {
 		mTimeMilli       = MiniNumber.ReadFromStream(zIn);
 		mBlockNumber     = MiniNumber.ReadFromStream(zIn);
 		mBlockDifficulty = MiniData.ReadFromStream(zIn);
-		
-		mChainID         = MiniData.ReadHashFromStream(zIn);
-		mParentChainID   = MiniData.ReadHashFromStream(zIn);
 		
 		//How many cascade levels.. will probably NEVER change..
 		MiniByte cascnum = MiniByte.ReadFromStream(zIn);
@@ -229,6 +219,9 @@ public class TxHeader implements Streamable {
 		mMMRRoot  = MiniData.ReadHashFromStream(zIn);
 		mMMRTotal = MiniNumber.ReadFromStream(zIn);
 		mMMRPeaks = MiniData.ReadHashFromStream(zIn);
+		
+		//Read the Magic..
+		mMagic	= Magic.ReadFromStream(zIn);
 		
 		//The TxBody Hash
 		mTxBodyHash = MiniData.ReadHashFromStream(zIn);

@@ -93,22 +93,10 @@ public class TxPoW implements Streamable {
 		return mHeader.mNonce;
 	}
 	
-	public void setChainID(MiniData zChainID) {
-		mHeader.mChainID = zChainID;
+	public Magic getMagic() {
+		return mHeader.mMagic;
 	}
 	
-	public void setParentChainID(MiniData zChainID) {
-		mHeader.mParentChainID = zChainID;
-	}
-	
-	public MiniData getChainID() {
-		return mHeader.mChainID;
-	}
-	
-	public MiniData getParentChainID() {
-		return mHeader.mParentChainID;
-	}
-		
 	public void setTxDifficulty(MiniData zDifficulty) {
 		mBody.mTxnDifficulty = zDifficulty;
 	}
@@ -188,10 +176,6 @@ public class TxPoW implements Streamable {
 	
 	public MiniNumber getBlockNumber() {
 		return mHeader.mBlockNumber;
-	}
-	
-	public MiniData getMagic() {
-		return mBody.mMagic.mPRNG;
 	}
 	
 	public MiniData getMMRRoot() {
