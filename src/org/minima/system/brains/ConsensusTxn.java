@@ -237,7 +237,6 @@ public class ConsensusTxn extends ConsensusProcessor {
 			MiniNumber sendamount 	= new MiniNumber(amount);
 			
 			//How much do we have..
-			MiniNumber total = new MiniNumber(); 
 			ArrayList<Coin> confirmed = null;
 			if(tok.isEqual(Coin.TOKENID_CREATE)) {
 				confirmed = getMainDB().getTotalSimpleSpendableCoins(Coin.MINIMA_TOKENID);
@@ -245,24 +244,33 @@ public class ConsensusTxn extends ConsensusProcessor {
 			}else {
 				confirmed = getMainDB().getTotalSimpleSpendableCoins(tok);
 			}
-			
-			for(Coin cc : confirmed) {
-				total = total.add(cc.getAmount());
-			}
-
-			//Do we have that much..
-			if(total.isLess(sendamount)) {
+		
+			//Select the coins to use in the transaction
+			ArrayList<Coin> selectedCoins = ConsensusHandler.selectCoins(confirmed, sendamount);
+		
+			//Do we have enough funds..
+			if(selectedCoins.size()==0) {
+				//Sum the confirmed coins..
+				MiniNumber conftotal = new MiniNumber();
+				for(Coin cc : confirmed) {
+					conftotal = conftotal.add(cc.getAmount());
+				}
+				
 				//Insufficient funds!
 				if(!tokenid.equals(Coin.MINIMA_TOKENID.to0xString())) {
-					total = tokendets.getScaledTokenAmount(total);
-//					total = total.mult(tokendets.getScaleFactor());
-					
-					InputHandler.endResponse(zMessage, false, "Insufficient funds! You only have : "+total);
+					conftotal = tokendets.getScaledTokenAmount(conftotal);
+					InputHandler.endResponse(zMessage, false, "Insufficient funds! You only have : "+conftotal);
 				}else {
-					InputHandler.endResponse(zMessage, false, "Insufficient funds! You only have : "+total);
+					InputHandler.endResponse(zMessage, false, "Insufficient funds! You only have : "+conftotal);
 				}
 				
 				return;
+			}
+
+			//What are we sending
+			MiniNumber total = new MiniNumber(); 
+			for(Coin cc : selectedCoins) {
+				total = total.add(cc.getAmount());
 			}
 			
 			//Continue constructing the transaction - outputs don't need scripts
@@ -279,7 +287,7 @@ public class ConsensusTxn extends ConsensusProcessor {
 			
 			//Create the Transaction
 			Message ret = getMainDB().createTransaction(sendamount, 
-					recipient, change, confirmed, tok, changetok,null,trx,"",true);
+					recipient, change, selectedCoins, tok, changetok,null,trx,"",true);
 			
 			//Get the witness and add relevant info..
 			Witness wit             = (Witness) ret.getObject("witness");
@@ -587,10 +595,7 @@ public class ConsensusTxn extends ConsensusProcessor {
 			getMainDB().addMiningTransaction(trx);
 			
 			//Notify listeners that Mining is starting...
-			JSONObject mining = new JSONObject();
-			mining.put("event","txpowstart");
-			mining.put("transaction",trx.toJSON());
-			getConsensusHandler().PostDAPPJSONMessage(mining);
+			getConsensusHandler().PostDAPPStartMining(trx);
 			
 			//Create the message
 			Message msg = new Message(ConsensusHandler.CONSENSUS_SENDTRANS)

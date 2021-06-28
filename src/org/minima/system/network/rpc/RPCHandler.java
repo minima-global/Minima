@@ -3,9 +3,11 @@ package org.minima.system.network.rpc;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.nio.Buffer;
 import java.util.Date;
 import java.util.StringTokenizer;
@@ -32,7 +34,7 @@ public class RPCHandler implements Runnable {
 	Socket mSocket;
 	
 	/**
-	 * Main COnstructor
+	 * Main Constructor
 	 * @param zSocket
 	 */
 	public RPCHandler(Socket zSocket) {
@@ -52,7 +54,7 @@ public class RPCHandler implements Runnable {
 			in = new BufferedReader(new InputStreamReader(mSocket.getInputStream(), MiniString.MINIMA_CHARSET));
 			
 			// Output Stream
-			out = new PrintWriter(mSocket.getOutputStream());
+			out = new PrintWriter(new OutputStreamWriter(mSocket.getOutputStream(), MiniString.MINIMA_CHARSET));
 			
 			// get first line of the request from the client
 			String input = in.readLine();
@@ -192,21 +194,18 @@ public class RPCHandler implements Runnable {
             	finalresult = netcomm.getFinalResult();
 			
 			}else {
-				finalresult = "{\"status\":false, \"message\":\"Incorrect request TYPE.. GET or POST only\"}";
+				finalresult = "{\"status\":false, \"message\":\"Incorrect command TYPE..\"}";
 			}
 			
-			//Remove EMOJI and other weird symbols
-			finalresult = MiniFormat.filterSafeTextEmoji(finalresult);
-			
 			//Calculate the amountof data..
-			byte[] strlen = finalresult.getBytes(MiniString.MINIMA_CHARSET); 
+			int finallength = finalresult.getBytes(MiniString.MINIMA_CHARSET).length; 
 			
 			// send HTTP Headers
 			out.println("HTTP/1.1 200 OK");
-			out.println("Server: HTTP RPC Server from Minima : 1.0");
+			out.println("Server: HTTP RPC Server from Minima : 1.1");
 			out.println("Date: " + new Date());
 			out.println("Content-type: text/plain");
-			out.println("Content-length: " + strlen.length);
+			out.println("Content-length: " + finallength);
 			out.println("Access-Control-Allow-Origin: *");
 			out.println(); // blank line between headers and content, very important !
 			out.println(finalresult);

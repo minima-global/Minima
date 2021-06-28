@@ -977,9 +977,9 @@ public class MinimaDB {
 		Witness wit 	= new Witness();
 		
 		//Which signatures are required
-		ArrayList<MiniData> sigpubk = new ArrayList<>();
+		ArrayList<String> sigpubk = new ArrayList<>();
 		
-		//Sort the iputs
+		//Sort the inputs
 		MiniNumber currentin = new MiniNumber();
 		for(Coin cc : zConfirmed) {
 			if(currentin.isLess(zAmount)) {
@@ -1002,8 +1002,11 @@ public class MinimaDB {
 				//And finally sign!
 				MiniData pubk = getUserDB().getPublicKeyForSimpleAddress(cc.getAddress());
 				
-				//Add to list of signatures..
-				sigpubk.add(pubk);
+				//Add to list of signatures.. if not allready added
+				String sigstr = pubk.to0xString(); 
+				if(!sigpubk.contains(sigstr)) {
+					sigpubk.add(sigstr);
+				}
 				
 				//And the total
 				currentin = currentin.add(cc.getAmount());
@@ -1077,7 +1080,10 @@ public class MinimaDB {
 		//Now we have a full transaction we can sign it!
 		if(zSignTransaction) {
 			MiniData transhash = Crypto.getInstance().hashObject(trx);
-			for(MiniData pubk : sigpubk) {
+			for(String pubkstr : sigpubk) {
+				//Create the MiniData
+				MiniData pubk = new MiniData(pubkstr);
+				
 				//Get the Pub Priv..
 				MultiKey signer = getUserDB().getPubPrivKey(pubk);
 				

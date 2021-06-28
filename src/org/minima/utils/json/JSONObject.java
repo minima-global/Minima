@@ -11,6 +11,8 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.minima.objects.base.MiniString;
+
 /**
  * A JSON object. Key value pairs are unordered. JSONObject supports java.util.Map interface.
  * 
@@ -89,7 +91,12 @@ public class JSONObject extends LinkedHashMap implements JSONAware, JSONStreamAw
 		
 		try {
 			writeJSONString(map, writer);
-			return writer.toString();
+			
+			//Create a UTF-8 String..
+			return new String(writer.toString().getBytes(MiniString.MINIMA_CHARSET));
+			
+			//Old way
+//			return writer.toString();
 		} catch (IOException e) {
 			// This should never happen with a StringWriter
 			throw new RuntimeException(e);

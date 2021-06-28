@@ -3,6 +3,8 @@ package org.minima.system.brains;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.util.ArrayList;
+import java.util.Hashtable;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.minima.GlobalParams;
@@ -11,8 +13,10 @@ import org.minima.database.mmr.MMRData;
 import org.minima.database.mmr.MMREntry;
 import org.minima.database.mmr.MMRProof;
 import org.minima.database.mmr.MMRSet;
+import org.minima.database.prefs.UserPrefs;
 import org.minima.database.txpowdb.TxPOWDBRow;
 import org.minima.database.txpowdb.TxPowDB;
+import org.minima.database.userdb.UserDBRow;
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.values.BooleanValue;
 import org.minima.kissvm.values.HexValue;
@@ -31,7 +35,9 @@ import org.minima.objects.base.MiniString;
 import org.minima.objects.keys.MultiKey;
 import org.minima.objects.proofs.ScriptProof;
 import org.minima.objects.proofs.TokenProof;
+import org.minima.system.Main;
 import org.minima.system.input.InputHandler;
+import org.minima.system.input.functions.gimme50;
 import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
@@ -56,7 +62,6 @@ public class ConsensusUser extends ConsensusProcessor {
 	
 	public static final String CONSENSUS_CURRENTADDRESS 	= CONSENSUS_PREFIX+"CURRENTADDRESS";
 	
-	
 	public static final String CONSENSUS_KEEPCOIN 			= CONSENSUS_PREFIX+"KEEPCOIN";
 	public static final String CONSENSUS_UNKEEPCOIN 		= CONSENSUS_PREFIX+"UNKEEPCOIN";
 	
@@ -70,6 +75,8 @@ public class ConsensusUser extends ConsensusProcessor {
 	public static final String CONSENSUS_IMPORTCOIN 		= CONSENSUS_PREFIX+"IMPORTCOIN";
 	
 	public static final String CONSENSUS_MMRTREE 		    = CONSENSUS_PREFIX+"MMRTREE";
+	
+	public static final String CONSENSUS_CONSOLIDATE 		= CONSENSUS_PREFIX+"CONSOLIDATE";
 	
 	public ConsensusUser(MinimaDB zDB, ConsensusHandler zHandler) {
 		super(zDB, zHandler);
@@ -837,8 +844,250 @@ public class ConsensusUser extends ConsensusProcessor {
 			
 			//Do a backup..
 			getConsensusHandler().PostMessage(ConsensusBackup.CONSENSUSBACKUP_BACKUPUSER);
+		
+			
+		}else if(zMessage.isMessageType(CONSENSUS_CONSOLIDATE)) {
+			//Is there a parameter ?
+			boolean infoonly = false;
+			if(zMessage.exists("param")) {
+				String param 	= zMessage.getString("param");
+				UserPrefs prefs	= Main.getMainHandler().getUserPrefs();
+				
+				if(param.equals("on")) {
+					prefs.setBoolean("consolidate", true);
+					InputHandler.getResponseJSON(zMessage).put("auto", true);
+					InputHandler.endResponse(zMessage, true, "AUTO Coin Consolidation turned ON");
+					return;
+				}else if(param.equals("off")) {
+					prefs.setBoolean("consolidate", false);
+					InputHandler.getResponseJSON(zMessage).put("auto", false);
+					InputHandler.endResponse(zMessage, true, "AUTO Coin Consolidation turned OFF");
+					return;
+				}else if(param.equals("info")) {
+					boolean auto = prefs.getBoolean("consolidate", true);
+					InputHandler.getResponseJSON(zMessage).put("auto", auto);
+					infoonly = true;
+				}else {
+					InputHandler.endResponse(zMessage, false, "Unknown parameter : "+param);
+					return;
+				}
+			}
+			
+			//List of tokens..
+			ArrayList<String> alltokens = new ArrayList<>();
+			
+			//Get a list of all the tokens this user has..
+			ArrayList<MMREntry> relevant = getMainDB().getMMRTip().searchAllRelevantCoins();
+			for(MMREntry relcoin : relevant) {
+				MMRData coindata = relcoin.getData();
+				Coin coin 		 = coindata.getCoin();
+				String token 	 = coin.getTokenID().to0xString();
+				
+				if(!alltokens.contains(token)) {
+					alltokens.add(token);
+				}
+			}
+			
+			//Now cycle through and consolidate each token..
+			JSONArray coininfo = new JSONArray();
+			for(String tok : alltokens) {
+				//Token..
+				MiniData tokenid = new MiniData(tok);
+				if(infoonly) {
+					//Work out the details only..
+					consolidateTokenInfo(tokenid, coininfo);
+				}else {
+					consolidateToken(tokenid);
+				}
+				
+				//Uses memory up.. clean it..
+				System.gc();
+			}
+			
+			//All done..
+			if(infoonly) {
+				InputHandler.getResponseJSON(zMessage).put("coins", coininfo);
+				InputHandler.endResponse(zMessage, true, "Coins Consolidation info. 5 Max consolidated - trigger on 3.");
+			}else {
+				InputHandler.endResponse(zMessage, true, "Coins Consolidated");
+			}
 		}
 	}
+	
+	private void consolidateTokenInfo(MiniData zTokenID, JSONArray zCoinInfo) throws Exception {
+		//A list of coins per pub key
+		Hashtable<String, ArrayList<Coin>> pubcoins = new Hashtable<>();
+		
+		//First get a list of coins..
+		ArrayList<Coin> coins = getMainDB().getTotalSimpleSpendableCoins(zTokenID);
+		for(Coin coin : coins) {
+			
+			//Get the Public Key..
+			MiniData pubk 	= getMainDB().getUserDB().getPublicKeyForSimpleAddress(coin.getAddress());
+			String pk 		= pubk.to0xString();
+			
+			//Get the current array
+			ArrayList<Coin> curr = pubcoins.get(pk);
+			if(curr == null) {
+				curr = new ArrayList<Coin>();
+				pubcoins.put(pk, curr);
+			}
+		
+			//Now add this coin..
+			curr.add(coin);
+		}
+		
+		//Now create transactions..
+		JSONArray consarray = new JSONArray();
+		Set<String> keys = pubcoins.keySet();
+		for(String key : keys) {
+			ArrayList<Coin> allcoins = pubcoins.get(key);
+			int coinsize = allcoins.size();
+			
+			//Enough coins to consolidate
+			JSONObject ccoin = new JSONObject();
+			ccoin.put("key", key);
+			ccoin.put("number", coinsize);
+			consarray.add(ccoin);
+		}	
+		
+		//Add it
+		JSONObject cointok = new JSONObject();
+		cointok.put("tokenid", zTokenID);
+		cointok.put("coins", consarray);
+		zCoinInfo.add(cointok);
+		
+		return;
+	}
+	
+	
+	private void consolidateToken(MiniData zTokenID) throws Exception {
+		//A list of coins per pub key
+		Hashtable<String, ArrayList<Coin>> pubcoins = new Hashtable<>();
+		
+		//First get a list of coins..
+		ArrayList<Coin> coins = getMainDB().getTotalSimpleSpendableCoins(zTokenID);
+		for(Coin coin : coins) {
+			
+			//Get the Public Key..
+			MiniData pubk 	= getMainDB().getUserDB().getPublicKeyForSimpleAddress(coin.getAddress());
+			String pk 		= pubk.to0xString();
+			
+			//Get the current array
+			ArrayList<Coin> curr = pubcoins.get(pk);
+			if(curr == null) {
+				curr = new ArrayList<Coin>();
+				pubcoins.put(pk, curr);
+			}
+		
+			//Now add this coin..
+			curr.add(coin);
+		}
+	
+		int MAX_COLL = 5;
+		int TRIGGER  = 3;
+		
+		//Now create transactions..
+		Set<String> keys = pubcoins.keySet();
+		for(String key : keys) {
+			ArrayList<Coin> allcoins = pubcoins.get(key);
+			int coinsize = allcoins.size();
+			
+			//Are there more than 1..
+			if(coinsize>=TRIGGER) {
+				MiniNumber totalval = MiniNumber.ZERO;
+				
+				//Now create a transaction
+				Transaction trans = new Transaction();
+				Witness wit 	  = new Witness();
+				
+				//Cycle through the inputs and get the total..
+				int tot = 0;
+				ArrayList<Coin> usecoins = new ArrayList<>();
+				for(Coin incoin : allcoins) {
+					//Use this coin
+					usecoins.add(incoin);
+					
+					//Total value of the inputs
+					totalval = totalval.add(incoin.getAmount());
+				
+					tot++;
+					if(tot>=MAX_COLL) {
+						break;
+					}
+				}
+				
+				//Add the token proofs..
+				MiniNumber showamount = totalval;
+				if(!zTokenID.isEqual(Coin.MINIMA_TOKENID)) {
+					//Get the token proof..
+					TokenProof tokendets = getMainDB().getUserDB().getTokenDetail(zTokenID);
+					
+					//Add to the witness..
+					wit.addTokenDetails(tokendets);
+					
+					//How much is it..
+					showamount = tokendets.getScaledTokenAmount(totalval);
+				}
+				
+				//Create a transaction..
+				MinimaLogger.log("Consolidate "+usecoins.size()+"/"+allcoins.size()+" "+zTokenID.to0xString()
+						+" with pubkey "+key+" total value :"+showamount);
+		
+				//Send back to me..
+				Address recipient = getMainDB().getUserDB().getCurrentAddress(getConsensusHandler());
+				
+				//Create Transaction
+				for(Coin incoin : usecoins) {
+					//Add it
+					trans.addInput(incoin);
+					
+					//Get the Script associated with this coin
+					String script = getMainDB().getUserDB().getScript(incoin.getAddress());
+					
+					//Add to the witness
+					wit.addScript(script, incoin.getAddress().getLength()*8);
+				}
+				
+				//Add one Output..
+				trans.addOutput(new Coin(Coin.COINID_OUTPUT, recipient.getAddressData(), totalval, zTokenID, false, false));
+				
+				//Create the correct MMR Proofs
+				Witness newwit = getMainDB().createValidMMRPRoofs(trans, wit);
+				
+				//Now sign it..
+				MiniData publick = new MiniData(key);
+				MultiKey pubkkey = getMainDB().getUserDB().getPubPrivKey(publick);
+				
+				//Hash of the transaction
+				MiniData transhash = Crypto.getInstance().hashObject(trans);
+				
+				//Sign it
+				MiniData signature = pubkkey.sign(transhash);
+				
+				//Now set the SIG.. 
+				wit.addSignature(publick, signature);
+				
+				//Post it..
+				Message msg = new Message(ConsensusHandler.CONSENSUS_SENDTRANS)
+									.addObject("transaction", trans)
+									.addObject("witness", newwit);
+				
+				//Add all the inputs to the mining..
+				getMainDB().addMiningTransaction(trans);
+				
+				//Notify listeners that Mining is starting...
+				getConsensusHandler().PostDAPPStartMining(trans);
+				
+				//Post it..
+				getConsensusHandler().PostMessage(msg);
+		
+			}else {
+				//MinimaLogger.log("Not enough "+zTokenID.to0xString()+" coins @ "+key+" only "+allcoins.size()+" coins..");
+			}
+		}
+	}
+	
 	
 //	public static boolean importCoin(MinimaDB zDB, MMRProof zProof) throws IOException{
 //		//Get the MMRSet
