@@ -97,12 +97,16 @@ public class DiscoveryNetworkFactory {
       this.privKey = privKey;
       return this;
     }
-    public DiscoveryNetwork<Peer> buildAndStart() throws Exception {
+    public DiscoveryNetwork<Peer> buildAndStart(int _port) throws Exception {
       int attempt = 1;
       while (true) {
-
-        final Random random = new Random();
-        final int port = MIN_PORT + random.nextInt(MAX_PORT - MIN_PORT);
+        final int port;
+        if(_port == 0) {
+            final Random random = new Random();
+            port = MIN_PORT + random.nextInt(MAX_PORT - MIN_PORT);
+        } else {
+          port = _port;
+        }
         final DiscoveryConfig discoveryConfig =
             DiscoveryConfig.builder().staticPeers(staticPeers).bootnodes(bootnodes).build();
         final NetworkConfig config =

@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -71,10 +72,12 @@ public class P2PStart extends MessageProcessor {
     private DiscoveryNetwork<Peer> network;
     Set<InetSocketAddress> activeKnownNodes;
     Set<MinimaNodeInfo> allDiscoveredNodes = new HashSet<>();
+    Hashtable<String, MinimaNodeInfo> allDiscoveredNodes2 = new Hashtable<>();
     private NodeId nodeId;
     private PubKey pubKey;
     private File mP2PBootnodesFile;
-    
+    private File mRoot;
+
     class MinimaNodeInfo {
         final public InetSocketAddress socket;
         final public String nodeRecord;
@@ -118,7 +121,7 @@ public class P2PStart extends MessageProcessor {
         }
 
         // check config file for SECP256K1 private key
-        File mRoot      = ensureFolder(new File(mConfFolder));
+        mRoot      = ensureFolder(new File(mConfFolder));
         String mRootPath  = mRoot.getAbsolutePath();
         
         //Current used TxPOW
@@ -208,6 +211,7 @@ public class P2PStart extends MessageProcessor {
             List<List<String>> records = new ArrayList<>();
             try (BufferedReader br = new BufferedReader(new FileReader(mP2PBootnodesFile))) {
                 String line;
+                logger.debug("starting to read p2p bootnodes CSV file: " + mP2PBootnodesFile.getAbsolutePath());
                 while ((line = br.readLine()) != null) {
                     if(line.length() > 0) {
                         String[] values = line.split(P2PStart.COMMA_DELIMITER);
@@ -246,12 +250,12 @@ public class P2PStart extends MessageProcessor {
                 for(int i = 0; i < staticPeers.size(); i++) {
                     builder = builder.staticPeer(staticPeers.get(i)).bootnode(bootnodes.get(i));
                 }
-                network = builder.buildAndStart();
+                network = builder.buildAndStart(mNetwork.getBasePort() + 5);
 //  network = factory.builder().setPrivKey(privKey).staticPeer(staticPeers[0]).bootnode(bootnodes[0]).buildAndStart();
             } else if(staticPeers == null || staticPeers.size() == 0) {
                 logger.info("P2P: starting in standalone mode");
                 System.out.println("P2P: starting in standalone mode");
-                network = factory.builder().setPrivKey(privKey).buildAndStart();
+                network = factory.builder().setPrivKey(privKey).buildAndStart(mNetwork.getBasePort() + 5);
             }
         } catch (Exception e) {
             logger.error("P2P failed to start through DiscoveyrNetworkFactory.");
@@ -357,30 +361,30 @@ public class P2PStart extends MessageProcessor {
     private void p2pSaveNeighbours() {
         logger.debug("p2pSaveNeighbours: trying to save neighbours list");
         System.out.println("p2pSaveNeighbours: trying to save neighbours list");
-        if(allDiscoveredNodes.size() == 0) {
+        if(allDiscoveredNodes2.size() == 0) {
             logger.debug("p2pSaveNeighbours: empty nodes list, nothing to save, exiting.");
             return;
         }
         try {
+            File mP2PDir   = ensureFolder(new File(mRoot,"p2p"));
             //File csvOutputFile = new File(CSV_FILE_NAME);
             File csvOutputFile = mP2PBootnodesFile;
             FileWriter csvWriter = new FileWriter(csvOutputFile);
             try (PrintWriter pw = new PrintWriter(csvWriter, true)) {
-                for(MinimaNodeInfo i: allDiscoveredNodes) {
-                    logger.debug("saving node i: " + i.nodeRecord);
+                for(MinimaNodeInfo i: allDiscoveredNodes2.values()) {
+                    logger.debug("saving node i: " + i.nodeRecord + "line=" + convertToCSV(i));
                     pw.println(convertToCSV(i));
                 }
-//              allDiscoveredNodes.stream()
-// //            dataLines.stream()
-//               .map(this::convertToCSV)
-//               .forEach(pw::println);
+            } catch(Exception e) {
+                logger.warn("Could not write lines to neighbours list file! " + "msg=" + e.getMessage());
+                e.printStackTrace();
+//                logger.warn("Stack trace: " + e.getStackTrace().toString());
             }
             csvWriter.flush();
-            csvWriter.close();
-            //csvOutputFile.
-            //assertTrue(csvOutputFile.exists());
         } catch(IOException e) {
-            logger.warn("Could not save neighbours list to file! msg=" + e.getMessage());
+            logger.warn("Could not flush and close neighbours list file! " + "msg=" + e.getMessage());
+            e.printStackTrace();
+//            logger.warn("Stack trace: " + e.getStackTrace().toString());
         }
         logger.debug("p2pSaveNeighbours: end");
         // try {
@@ -437,7 +441,7 @@ public class P2PStart extends MessageProcessor {
                                     getDiscoMultiAddrTCPFromENR(discoPeer.getNodeRecord(), discoPeer.getPublicKey().toArray())
                                 );
                                 unconnectedNewNodes.add(aNewNodeInfo);
-                                allDiscoveredNodes.add(aNewNodeInfo);
+                                allDiscoveredNodes2.put(aNewNodeInfo.nodeID, aNewNodeInfo);
                             } else {
                                 logger.debug("SKIPPING an already connected node: nodeid:" + discoPeer.getNodeID().toHexString() + " " + discoPeer.getNodeRecord().toString());
                             }
@@ -525,7 +529,7 @@ public class P2PStart extends MessageProcessor {
                 node1_addr_fields = args[0].split("/");
                 node1_id = node1_addr_fields[node1_addr_fields.length - 1];
                 String bootnode_1 = args[1];
-                network = factory.builder().staticPeer(args[0]).bootnode(bootnode_1).buildAndStart();
+                network = factory.builder().staticPeer(args[0]).bootnode(bootnode_1).buildAndStart(0);
                 LibP2PNodeId id_1 = new LibP2PNodeId(PeerId.fromBase58(node1_id));
 
             } else if (args.length == 1) { // first is p2p addr - deprecated - should start with p2p addr and ENR
@@ -538,10 +542,10 @@ public class P2PStart extends MessageProcessor {
 
                 System.out.println("Found node1_id: " + node1_id);
                 // Multiaddr address = Multiaddr.fromString(args[0]);
-                network = factory.builder().staticPeer(args[0]).buildAndStart();
+                network = factory.builder().staticPeer(args[0]).buildAndStart(0);
             } else {
                 // server mode only - no peer to connect to
-                network = factory.builder().buildAndStart();
+                network = factory.builder().buildAndStart(0);
                 //id = network.getNodeId();
             }
 
@@ -579,7 +583,7 @@ public class P2PStart extends MessageProcessor {
                 }
             }
         } catch (Exception e) {
-            // TODO Auto-generated catch block
+            // TODO Auto-generated catch blocks
             e.printStackTrace();
         }
 
