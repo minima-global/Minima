@@ -1066,6 +1066,9 @@ public class MinimaDB {
 		MiniNumber currenttip = tip.getTxPow().getBlockNumber();
 		txpow.setBlockNumber(currenttip.increment());
 		
+		//The user defined Magic parameters
+		txpow.getMagic().calculateCurrentMax(tip);
+		
 		//Do we have enough blocks to get an accurate speed reading..
 		if(!GlobalParams.MINIMA_ZERO_DIFF_BLK && currenttip.isMore(GlobalParams.MINIMA_BLOCKS_SPEED_CALC) ) {
 			//Desired Speed.. in blocks per second
@@ -1183,6 +1186,10 @@ public class MinimaDB {
 		MMRData root = newset.getMMRRoot();
 		txpow.setMMRRoot(root.getFinalHash());
 		txpow.setMMRTotal(root.getValueSum());
+		
+		//Calculate the MMR complete value.. the HASH of the complete MMRSet
+		MiniData mmrhash = Crypto.getInstance().hashObject(newset);
+		txpow.setMMRComplete(mmrhash);
 		
 		//And return..
 		return txpow;
