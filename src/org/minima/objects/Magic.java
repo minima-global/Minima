@@ -4,6 +4,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+import org.minima.GlobalParams;
 import org.minima.database.mmr.MMRSet;
 import org.minima.database.txpowtree.BlockTreeNode;
 import org.minima.objects.base.MiniData;
@@ -35,7 +36,11 @@ public class Magic implements Streamable {
 	public MiniNumber mDesiredMaxTxnPerBlock        = MIN_TXPOW_TXNS;
 	public MiniNumber mDesiredMaxKISSVMInstructions = MIN_KISSVM_INST;
 	
-	public Magic() {}
+	public Magic() {
+		mCurrentMaxKISSVMInstructions 	= MiniNumber.ZERO;
+		mCurrentMaxTxPoWSize 			= MiniNumber.ZERO;
+		mCurrentMaxTxnPerBlock			= MiniNumber.ZERO;
+	}
 
 	public JSONObject toJSON() {
 		JSONObject magic = new JSONObject();
@@ -51,21 +56,13 @@ public class Magic implements Streamable {
 		return magic;
 	}
 	
-	
-	public void setToZero() {
-		mCurrentMaxKISSVMInstructions 	= MiniNumber.ZERO;
-		mCurrentMaxTxPoWSize 			= MiniNumber.ZERO;
-		mCurrentMaxTxnPerBlock			= MiniNumber.ZERO;
-	}
-	
 	/**
 	 * Calculate the current desired MAX values by taking a 
 	 * weighted average of the last 128 blocks at EACH super block level
 	 */
 	public void calculateCurrentMax(BlockTreeNode mTip) {
 		//How many levels to average
-		int MAX_ADDED 	= 3;
-		int MAX_LEVEL 	= 3;
+		int MAX_LEVEL 	= 13; //12 MAX ~ 1 day * 128 = 120 days..
 		
 		//An array of totals..
 		MiniNumber tnum 	= MiniNumber.ZERO;
@@ -73,7 +70,6 @@ public class Magic implements Streamable {
 		
 		//Running totals
 		Magic ctotal 		= new Magic();
-		ctotal.setToZero();
 		
 		//Set to ZERO..
 		for(int l=0;l<MAX_LEVEL;l++) {
@@ -89,11 +85,10 @@ public class Magic implements Streamable {
 			//Get the Magic
 			Magic mag = current.getTxPow().getMagic();
 			
-			//Check upto super block level 12 which is 120 days worth
-			//Whcih are 30, 60, and 120 days..so 3 months..
+			//Run through and add each level!
 			for(int num=0;num<MAX_LEVEL;num++) {
 				if(slevel >= num) {
-					if(numadded[num]<MAX_ADDED) {
+					if(numadded[num]<GlobalParams.MINIMA_CASCADE_LEVEL_NODES) {
 						numadded[num]++;
 						MiniNumber multiplier = MiniNumber.TWO.pow(num);
 						ctotal.mCurrentMaxTxPoWSize = 
