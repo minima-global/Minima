@@ -30,8 +30,6 @@ public class TxPoWTests {
         assertTrue("New TxPow should have empty super parent", txpow.getNonce().isEqual(new MiniNumber(0)));
         assertTrue("New TxPow should not be a block", txpow.isBlock() == false);
         assertTrue("New TxPow should have super level zero", txpow.getSuperLevel() == 0);
-        assertTrue("New TxPow should be on main chain", txpow.getChainID().isEqual(new MiniData("0x00")));
-        assertTrue("New TxPow parent chain id should be zero", txpow.getParentChainID().isEqual(new MiniData("0x00")));
         assertTrue("New TxPow should have txpowid zero", txpow.getTxPowID().isEqual(new MiniData("0x00")));
         assertTrue("New TxPow should have transid zero", txpow.getTransID().isEqual(new MiniData("0x00")));
         assertTrue("New TxPow should have a witness", txpow.getWitness() != null);
