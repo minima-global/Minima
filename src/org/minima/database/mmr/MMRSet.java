@@ -1232,8 +1232,6 @@ public class MMRSet implements Streamable {
 		MiniNumber sumvalue   = zLeftChild.getData().getValueSum().add(zRightChild.getData().getValueSum());
 		
 		//Make the unique MMRData Hash
-//		MiniData combined = Crypto.getInstance().hashAllObjects( MMR_HASH_BITS,
-//				zLeftChild.getHashValue(),zRightChild.getHashValue());
 		MiniData combined = Crypto.getInstance().hashAllObjects( MMR_HASH_BITS,
 				zLeftChild.getHashValue(),zRightChild.getHashValue(),sumvalue);
 		
