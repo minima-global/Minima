@@ -57,9 +57,12 @@ public class TxHeader implements Streamable {
 	public MiniNumber mMMRTotal = MiniNumber.ZERO;
 	
 	/**
-	 * The hash of the MMR peaks - taking position into account..
+	 * The hash of the complete MMR.. so you know you have been given the correct one
+	 * 
+	 * This is not defined perfectly by just knowing the sum and the hash of the root. 
+	 * This ensures every piece of information in the MMR has been added
 	 */
-	public MiniData mMMRPeaks = new MiniData();
+	public MiniData mMMRComplete = new MiniData();
 	
 	/**
 	 * The HASH of the TxBody
@@ -133,7 +136,7 @@ public class TxHeader implements Streamable {
 		
 		txpow.put("mmr", mMMRRoot.toString());
 		txpow.put("total", mMMRTotal.toString());
-		txpow.put("mmrpeaks", mMMRPeaks.toString());
+		txpow.put("mmrpeaks", mMMRComplete.toString());
 		
 		txpow.put("nonce", mNonce.toString());
 		txpow.put("timemilli", mTimeMilli.toString());
@@ -187,7 +190,7 @@ public class TxHeader implements Streamable {
 		//Write out the MMR DB
 		mMMRRoot.writeHashToStream(zOut);
 		mMMRTotal.writeDataStream(zOut);
-		mMMRPeaks.writeHashToStream(zOut);
+		mMMRComplete.writeHashToStream(zOut);
 	
 		//Write the Magic Number
 		mMagic.writeDataStream(zOut);
@@ -218,7 +221,7 @@ public class TxHeader implements Streamable {
 		//read in the MMR state..
 		mMMRRoot  = MiniData.ReadHashFromStream(zIn);
 		mMMRTotal = MiniNumber.ReadFromStream(zIn);
-		mMMRPeaks = MiniData.ReadHashFromStream(zIn);
+		mMMRComplete = MiniData.ReadHashFromStream(zIn);
 		
 		//Read the Magic..
 		mMagic	= Magic.ReadFromStream(zIn);

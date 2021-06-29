@@ -194,6 +194,14 @@ public class TxPoW implements Streamable {
 		mHeader.mMMRTotal= zTotal;
 	}
 	
+	public MiniData getMMRComplete() {
+		return mHeader.mMMRComplete;
+	}
+	
+	public void setMMRComplete(MiniData zComplete) {
+		mHeader.mMMRComplete = zComplete;
+	}
+	
 	public JSONObject toJSON() {
 		JSONObject txpow = new JSONObject();
 		
