@@ -1144,7 +1144,7 @@ public class MinimaDB {
 			TxPoW txp = row.getTxPOW();
 			
 			//Current MAX transactions.. #TODO.. this needs to be dynamic..
-			if(txncounter.isMore(MiniNumber.SIXTYFOUR)) {
+			if(txncounter.isMoreEqual(txpow.getMagic().getMaxNumTxns())) {
 				break;
 			}
 			

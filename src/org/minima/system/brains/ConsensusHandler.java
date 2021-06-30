@@ -540,7 +540,9 @@ public class ConsensusHandler extends MessageProcessor {
 			resp.put("inputs", txpow.getTransaction().getAllInputs().size());
 			resp.put("outputs", txpow.getTransaction().getAllOutputs().size());
 			
-			if(txpow.getSizeinBytes() > MinimaReader.MAX_TXPOW) {
+			int maxsize = txpow.getMagic().getMaxTxPoWSize(txpow.getBlockTransactions().size());
+			
+			if(txpow.getSizeinBytes() > maxsize) {
 				//Remove from the List of Mined transactions..
 				getMainDB().remeoveMiningTransaction(txpow.getTransaction());
 				
@@ -552,7 +554,7 @@ public class ConsensusHandler extends MessageProcessor {
 				
 				//ITS TOO BIG!
 				MinimaLogger.log("Transaction TOO big! "+txpow.getSizeinBytes());
-				InputHandler.endResponse(zMessage, false, "YOUR TXPOW TRANSACTION IS TOO BIG! MAX SIZE : "+MinimaReader.MAX_TXPOW);
+				InputHandler.endResponse(zMessage, false, "YOUR TXPOW TRANSACTION IS TOO BIG! MAX SIZE : "+maxsize);
 				
 				return;
 			}
@@ -726,7 +728,7 @@ public class ConsensusHandler extends MessageProcessor {
 				MinimaLogger.log("Congratulations! You found a PULSE block @ "+txpow.getBlockNumber());
 				
 				//And now forward the message to the single entry point..
-				Message msg = new Message(ConsensusNet.CONSENSUS_NET_CHECKSIZE_TXPOW).addObject("txpow", txpow);
+				Message msg = new Message(ConsensusNet.CONSENSUS_NET_CHECKSIZE_INTERNAL_TXPOW).addObject("txpow", txpow);
 				PostMessage(msg);
 			}else {
 //				MinimaLogger.log("PULSE Finished @ "+txpow.getBlockNumber());
@@ -737,7 +739,7 @@ public class ConsensusHandler extends MessageProcessor {
 			TxPoW txpow = (TxPoW) zMessage.getObject("txpow");
 			
 			//And now forward the message to the single entry point..
-			Message msg = new Message(ConsensusNet.CONSENSUS_NET_CHECKSIZE_TXPOW).addObject("txpow", txpow);
+			Message msg = new Message(ConsensusNet.CONSENSUS_NET_CHECKSIZE_INTERNAL_TXPOW).addObject("txpow", txpow);
 			PostMessage(msg);
 			
 			//Notify listeners that Mining is starting...

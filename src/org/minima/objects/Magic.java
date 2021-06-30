@@ -18,7 +18,7 @@ public class Magic implements Streamable {
 	/**
 	 * Default starting values..
 	 */
-	public static final MiniNumber MIN_TXPOW_DEFAULT 	= new MiniNumber(20000);
+	public static final MiniNumber MIN_TXPOW_SIZE 	= new MiniNumber(20000);
 	public static final MiniNumber MIN_TXPOW_TXNS 	 	= new MiniNumber(100);
 	public static final MiniNumber MIN_KISSVM_INST		= new MiniNumber(128);
 	
@@ -32,14 +32,14 @@ public class Magic implements Streamable {
 	/**
 	 * The Desired MAGIC numbers.. user sets this..
 	 */
-	public MiniNumber mDesiredMaxTxPoWSize          = MIN_TXPOW_DEFAULT;
+	public MiniNumber mDesiredMaxTxPoWSize          = MIN_TXPOW_SIZE;
 	public MiniNumber mDesiredMaxTxnPerBlock        = MIN_TXPOW_TXNS;
 	public MiniNumber mDesiredMaxKISSVMInstructions = MIN_KISSVM_INST;
 	
 	public Magic() {
-		mCurrentMaxKISSVMInstructions 	= MiniNumber.ZERO;
-		mCurrentMaxTxPoWSize 			= MiniNumber.ZERO;
-		mCurrentMaxTxnPerBlock			= MiniNumber.ZERO;
+		mCurrentMaxKISSVMInstructions 	= MIN_KISSVM_INST;
+		mCurrentMaxTxPoWSize 			= MIN_TXPOW_SIZE;
+		mCurrentMaxTxnPerBlock			= MIN_TXPOW_TXNS;
 	}
 
 	public JSONObject toJSON() {
@@ -54,6 +54,23 @@ public class Magic implements Streamable {
 		magic.put("maxkissvm", mCurrentMaxKISSVMInstructions.getAsInt());
 		
 		return magic;
+	}
+	
+	/**
+	 * Get the Maximums
+	 */
+	public int getMaxTxPoWSize(int zNumTxns) {
+		int txnList = zNumTxns * 64;
+		int txpow   = mCurrentMaxTxPoWSize.getAsInt();
+		return txnList + txpow;
+	}
+	
+	public MiniNumber getMaxNumTxns() {
+		return mCurrentMaxTxnPerBlock;
+	}
+	
+	public int getMaxKISSInst() {
+		return mCurrentMaxKISSVMInstructions.getAsInt();
 	}
 	
 	/**
@@ -110,7 +127,7 @@ public class Magic implements Streamable {
 		
 		//Now do dividion..
 		if(tnum.isEqual(MiniNumber.ZERO)) {
-			ctotal.mCurrentMaxTxPoWSize 			= MIN_TXPOW_DEFAULT;
+			ctotal.mCurrentMaxTxPoWSize 			= MIN_TXPOW_SIZE;
 			ctotal.mCurrentMaxTxnPerBlock 			= MIN_TXPOW_TXNS;
 			ctotal.mCurrentMaxKISSVMInstructions 	= MIN_KISSVM_INST;
 		}else {
@@ -124,7 +141,20 @@ public class Magic implements Streamable {
 		mCurrentMaxTxnPerBlock 			= ctotal.mCurrentMaxTxnPerBlock;
 		mCurrentMaxKISSVMInstructions 	= ctotal.mCurrentMaxKISSVMInstructions;
 		
-		MinimaLogger.log("MAGIC "+tnum+" "+toJSON().toString());
+		//Check Within Params..
+		if(mCurrentMaxTxPoWSize.isLess(MIN_TXPOW_SIZE)) {
+			mCurrentMaxTxPoWSize = MIN_TXPOW_SIZE;
+		}
+		
+		if(mCurrentMaxTxnPerBlock.isLess(MIN_TXPOW_TXNS)) {
+			mCurrentMaxTxnPerBlock = MIN_TXPOW_TXNS;
+		}
+		
+		if(mCurrentMaxKISSVMInstructions.isLess(MIN_KISSVM_INST)) {
+			mCurrentMaxKISSVMInstructions = MIN_KISSVM_INST;
+		}
+		
+//		MinimaLogger.log("MAGIC "+tnum+" "+toJSON().toString());
 	}
 	
 	

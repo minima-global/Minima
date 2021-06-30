@@ -168,7 +168,7 @@ public class TxPoWMiner extends MessageProcessor {
 			txpow.calculateTXPOWID();
 			
 			if(txpow.isBlock()) {
-				Message msg = new Message(ConsensusNet.CONSENSUS_NET_CHECKSIZE_TXPOW).addObject("txpow", txpow);
+				Message msg = new Message(ConsensusNet.CONSENSUS_NET_CHECKSIZE_INTERNAL_TXPOW).addObject("txpow", txpow);
 				Main.getMainHandler().getConsensusHandler().PostMessage(msg);
 			}
 			
@@ -224,7 +224,7 @@ public class TxPoWMiner extends MessageProcessor {
 			if(txpow.isBlock()) {
 				InputHandler.endResponse(zMessage, true, "Block Mined");
 				
-				Message msg = new Message(ConsensusNet.CONSENSUS_NET_CHECKSIZE_TXPOW).addObject("txpow", txpow);
+				Message msg = new Message(ConsensusNet.CONSENSUS_NET_CHECKSIZE_INTERNAL_TXPOW).addObject("txpow", txpow);
 				Main.getMainHandler().getConsensusHandler().PostMessage(msg);
 			}else {
 				InputHandler.endResponse(zMessage, false, "ERROR - debug miner failed to find a block..");

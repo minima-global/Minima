@@ -33,7 +33,7 @@ public class ConsensusNet extends ConsensusProcessor {
 	 */
 	public static final String CONSENSUS_PREFIX 				= "CONSENSUSNET_";
 	
-	public static final String CONSENSUS_NET_CHECKSIZE_TXPOW 	= CONSENSUS_PREFIX+"NET_MESSAGE_MYTXPOW";
+	public static final String CONSENSUS_NET_CHECKSIZE_INTERNAL_TXPOW 	= CONSENSUS_PREFIX+"NET_MESSAGE_MYTXPOW";
 	
 	public static final String CONSENSUS_NET_INITIALISE 		= CONSENSUS_PREFIX+"NET_INITIALISE";
 	
@@ -654,7 +654,7 @@ public class ConsensusNet extends ConsensusProcessor {
 		}else if(zMessage.isMessageType(CONSENSUS_NET_GENERIC)) {
 			MinimaLogger.log("GENERIC NET MESSAGE : "+zMessage);
 		
-		}else if(zMessage.isMessageType(CONSENSUS_NET_CHECKSIZE_TXPOW)) {
+		}else if(zMessage.isMessageType(CONSENSUS_NET_CHECKSIZE_INTERNAL_TXPOW)) {
 			//Internal message sent from you..
 			TxPoW txpow = (TxPoW)zMessage.getObject("txpow");
 			
@@ -681,8 +681,11 @@ public class ConsensusNet extends ConsensusProcessor {
 				txpownet.addObject("netclient", client);
 			}
 			
-			if(txpow.getSizeinBytes() > MinimaReader.MAX_TXPOW) {
-				MinimaLogger.log("ERROR - You've Mined A TxPoW that is too BIG! "+txpow.getSizeinBytes()+" / "+MinimaReader.MAX_TXPOW);
+			//Max Current TXPOW size..
+			int maxsize = txpow.getMagic().getMaxTxPoWSize(txpow.getBlockTransactions().size());
+			
+			if(txpow.getSizeinBytes() > maxsize) {
+				MinimaLogger.log("ERROR - You've Mined A TxPoW that is too BIG! "+txpow.getSizeinBytes()+" / "+maxsize);
 				
 				//Remove from mining..
 				getMainDB().remeoveMiningTransaction(txpow.getTransaction());
@@ -714,6 +717,22 @@ public class ConsensusNet extends ConsensusProcessor {
 			
 			//The TxPoW
 			TxPoW txpow = (TxPoW)zMessage.getObject("txpow");
+			
+			//Check Number of Txns..
+			int maxtxns = getMainDB().getTopTxPoW().getMagic().getMaxNumTxns().getAsInt();
+			if(txpow.getBlockTransactions().size() > maxtxns) {
+				MinimaLogger.log("NET TxPoW received TOO MANY Txns "+txpow.getBlockTransactions().size()+" max:"+maxtxns);
+				return;
+			}
+					
+			//Check the Size..
+			int maxsize = getMainDB().getTopTxPoW().getMagic().
+					getMaxTxPoWSize(txpow.getBlockTransactions().size());
+			
+			if(txpow.getSizeinBytes() > maxsize) {
+				MinimaLogger.log("NET TxPoW received TOO LARGE "+txpow.getSizeinBytes()+" max:"+maxsize+" txns:"+txpow.getBlockTransactions().size());
+				return;
+			}
 			
 			//First check that this is WITHIN acceptable linits .. so not too far ahead of the current chain..
 			MiniNumber timetip   = getMainDB().getMainTree().getChainTip().getTxPow().getBlockNumber();

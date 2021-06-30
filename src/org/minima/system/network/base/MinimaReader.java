@@ -33,14 +33,8 @@ public class MinimaReader implements Runnable {
 	 * Maximum Message sizes..
 	 */
 	
-	//50 MB MAX INTRO / Greeting / and TxPoW List
-	public static final int MAX_INTRO = 1024 * 1000 * 50;
-	
-	//20 KB MAX MESSAGE
-	public static final int MAX_TXPOW = 1024 * 20;
-			
-	//The Length of a TxPoWID message 64 + 4 byte int
-	public static final int TXPOWID_LEN = Crypto.MINIMA_MAX_HASH_LENGTH + 4;
+	//20 MB MAX INTRO / Greeting / and TxPoW List
+	public static final int MAX_MSG = 1024 * 1000 * 20;
 		
 	/**
 	 * Greeting message that tells what Net Protocol this peer speaks, and a complete block chain header list. Any Blocks 
@@ -129,31 +123,36 @@ public class MinimaReader implements Runnable {
 				//What length..
 				int len = MiniNumber.ReadFromStream(mInput).getAsInt();
 				
-				//Check within acceptable parameters - this should be set in TxPoW header.. for now fixed
-				if( msgtype.isEqual(NETMESSAGE_TXPOWID) || 
-					msgtype.isEqual(NETMESSAGE_TXPOW_REQUEST)) {
-					if(len > TXPOWID_LEN) {
-						throw new ProtocolException("Receive Invalid Message length for TXPOWID type:"+msgtype+" len:"+len);
-					}
-				}else if(msgtype.isEqual(NETMESSAGE_INTRO) || 
-						 msgtype.isEqual(NETMESSAGE_GREETING) || 
-						 msgtype.isEqual(NETMESSAGE_TXPOWLIST)) {
-					if(len > MAX_INTRO) {
-						throw new ProtocolException("Receive Invalid Message length for TXPOW_INTRO type:"+msgtype+" len:"+len);
-					}
-				}else if(msgtype.isEqual(NETMESSAGE_TXPOW)) {
-					if(len > MAX_TXPOW) {
-						throw new ProtocolException("Receive Invalid Message length for TXPOW type:"+msgtype+" len:"+len);
-					}
-				}else if(msgtype.isEqual(NETMESSAGE_GENERIC)) {
-					if(len > MAX_TXPOW) {
-						throw new ProtocolException("Receive Invalid GENERIC Message length :"+len);
-					}
-				}else if(msgtype.isEqual(NETMESSAGE_PING)) {
-					if(len > 1) {
-						throw new ProtocolException("Receive Invalid Message length for PING message type:"+msgtype+" len:"+len);
-					}
+				//Check within acceptable params
+				if(len > MAX_MSG) {
+					throw new ProtocolException("Receive Invalid Message TOO LARGE :"+msgtype+" len:"+len+" max:"+MAX_MSG);
 				}
+				
+//				//Check within acceptable parameters - this should be set in TxPoW header.. for now fixed
+//				if( msgtype.isEqual(NETMESSAGE_TXPOWID) || 
+//					msgtype.isEqual(NETMESSAGE_TXPOW_REQUEST)) {
+//					if(len > TXPOWID_LEN) {
+//						throw new ProtocolException("Receive Invalid Message length for TXPOWID type:"+msgtype+" len:"+len);
+//					}
+//				}else if(msgtype.isEqual(NETMESSAGE_INTRO) || 
+//						 msgtype.isEqual(NETMESSAGE_GREETING) || 
+//						 msgtype.isEqual(NETMESSAGE_TXPOWLIST)) {
+//					if(len > MAX_MSG) {
+//						throw new ProtocolException("Receive Invalid Message length for TXPOW_INTRO type:"+msgtype+" len:"+len);
+//					}
+//				}else if(msgtype.isEqual(NETMESSAGE_TXPOW)) {
+//					if(len > MAX_TXPOW) {
+//						throw new ProtocolException("Receive Invalid Message length for TXPOW type:"+msgtype+" len:"+len);
+//					}
+//				}else if(msgtype.isEqual(NETMESSAGE_GENERIC)) {
+//					if(len > MAX_TXPOW) {
+//						throw new ProtocolException("Receive Invalid GENERIC Message length :"+len);
+//					}
+//				}else if(msgtype.isEqual(NETMESSAGE_PING)) {
+//					if(len > 1) {
+//						throw new ProtocolException("Receive Invalid Message length for PING message type:"+msgtype+" len:"+len);
+//					}
+//				}
 			
 				//The FULL message
 				MiniData fullmsg = null;

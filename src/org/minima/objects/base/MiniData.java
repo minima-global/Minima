@@ -202,7 +202,7 @@ public class MiniData implements Streamable {
 		int len = zIn.readInt();
 		
 		//Check against maximum allowed
-		if(len > MinimaReader.MAX_INTRO) {
+		if(len > MinimaReader.MAX_MSG) {
 			throw new IOException("Read Error : MiniData Length larger than maximum allowed "+len);
 		}
 		
