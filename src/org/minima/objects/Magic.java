@@ -168,7 +168,7 @@ public class Magic implements Streamable {
 			mCurrentMaxKISSVMInstructions = MIN_KISSVM_INST;
 		}
 		
-		MinimaLogger.log("MAGIC "+(mTip.getBlockNumber().increment())+" "+tnum+" "+toJSON().toString());
+//		MinimaLogger.log("MAGIC "+(mTip.getBlockNumber().increment())+" "+tnum+" "+toJSON().toString());
 	}
 	
 	
