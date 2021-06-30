@@ -18,6 +18,7 @@ import org.minima.kissvm.values.HexValue;
 import org.minima.kissvm.values.NumberValue;
 import org.minima.kissvm.values.StringValue;
 import org.minima.kissvm.values.Value;
+import org.minima.objects.Magic;
 import org.minima.objects.StateVariable;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
@@ -81,7 +82,11 @@ public class Contract {
 	 * The Number Of Instructions!
 	 */
 	int mNumInstructions;
-	public static final int MAX_INSTRUCTIONS = 512;
+	
+	/**
+	 * Maximum allowed number of KISSVM instructions
+	 */
+	public static int MAX_INSTRUCTIONS = Magic.MIN_KISSVM_INST.getAsInt();
 	
 	/**
 	 * A complete log of the contract execution
@@ -235,6 +240,10 @@ public class Contract {
 	
 	public int getNumberOfInstructions() {
 		return mNumInstructions;
+	}
+	
+	public void setMaxInstructions(int zMax) {
+		MAX_INSTRUCTIONS = zMax;
 	}
 	
 	public void run() {

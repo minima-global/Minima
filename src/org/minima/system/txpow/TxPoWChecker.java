@@ -296,6 +296,9 @@ public class TxPoWChecker {
 				//Create the Contract to check..
 				Contract cc = new Contract(script, sigs, zWit, trans,proof.getMMRData().getPrevState());
 				
+				//Set MAX instructions
+				cc.setMaxInstructions(zBlock.getMagic().getMaxKISSInst());
+				
 				//set the environment
 				cc.setGlobalVariable("@BLKNUM", new NumberValue(tBlockNumber));
 				cc.setGlobalVariable("@BLKTIME", new NumberValue(tBlockTime));
@@ -342,6 +345,9 @@ public class TxPoWChecker {
 					if(!tokscript.equals("RETURN TRUE")) {
 						//Check the Token Script!
 						Contract tokencc = new Contract(tokscript, sigs, zWit, trans, proof.getMMRData().getPrevState());
+				
+						//Set MAX instructions
+						cc.setMaxInstructions(zBlock.getMagic().getMaxKISSInst());
 						
 						//set the environment - same as the first contract
 						tokencc.setAllGlobalVariables(cc.getGlobalVariables());

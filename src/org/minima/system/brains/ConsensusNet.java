@@ -8,6 +8,7 @@ import org.minima.database.mmr.MMRSet;
 import org.minima.database.txpowdb.TxPOWDBRow;
 import org.minima.database.txpowtree.BlockTree;
 import org.minima.database.txpowtree.BlockTreeNode;
+import org.minima.objects.Magic;
 import org.minima.objects.Token;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
@@ -683,7 +684,6 @@ public class ConsensusNet extends ConsensusProcessor {
 			
 			//Max Current TXPOW size..
 			int maxsize = txpow.getMagic().getMaxTxPoWSize(txpow.getBlockTransactions().size());
-			
 			if(txpow.getSizeinBytes() > maxsize) {
 				MinimaLogger.log("ERROR - You've Mined A TxPoW that is too BIG! "+txpow.getSizeinBytes()+" / "+maxsize);
 				
@@ -718,17 +718,18 @@ public class ConsensusNet extends ConsensusProcessor {
 			//The TxPoW
 			TxPoW txpow = (TxPoW)zMessage.getObject("txpow");
 			
+			//Check against the current cascade Node.. in a rough / loose way (is checked later at precision)
+			Magic cmag = getMainDB().getMainTree().getCascadeNode().getTxPow().getMagic();
+			
 			//Check Number of Txns..
-			int maxtxns = getMainDB().getTopTxPoW().getMagic().getMaxNumTxns().getAsInt();
+			int maxtxns =cmag.getMaxNumTxns().getAsInt()*2;
 			if(txpow.getBlockTransactions().size() > maxtxns) {
 				MinimaLogger.log("NET TxPoW received TOO MANY Txns "+txpow.getBlockTransactions().size()+" max:"+maxtxns);
 				return;
 			}
 					
 			//Check the Size..
-			int maxsize = getMainDB().getTopTxPoW().getMagic().
-					getMaxTxPoWSize(txpow.getBlockTransactions().size());
-			
+			int maxsize = cmag.getMaxTxPoWSize(txpow.getBlockTransactions().size())*2;
 			if(txpow.getSizeinBytes() > maxsize) {
 				MinimaLogger.log("NET TxPoW received TOO LARGE "+txpow.getSizeinBytes()+" max:"+maxsize+" txns:"+txpow.getBlockTransactions().size());
 				return;

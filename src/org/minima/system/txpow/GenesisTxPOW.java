@@ -39,39 +39,6 @@ public class GenesisTxPOW extends TxPoW{
 		Transaction trans = new Transaction();
 		Witness wit       = new Witness();
 
-//		Coin in = new Coin(GENESIS_INPUT,new Address("RETURN TRUE"),new MiniNumber(50));
-//		trans.addInput(in);
-//		wit.addParam("");
-//		
-//		//And send to the new address
-//		Address outaddr = new Address(new MiniData32(MiniData.getRandomData(32).getData()));
-//		Coin out = new Coin(Coin.COINID_OUTPUT,outaddr,new MiniNumber(50));
-//		trans .addOutput(out);
-		
-		//Set transaction
-		setTransaction(trans);
-		setWitness(wit);
-		
-//		//Calculate the Ouput COINID.. for the MMR..
-//		MiniData32 transhash = Crypto.getInstance().hashObject(trans);
-//				
-//		//Now calculate the CoinID / TokenID
-//		MiniData32 coinid    = Crypto.getInstance().hashObjects(transhash, new MiniByte(0));
-//		
-//		//Calcualte the MMR..
-//		MMR mmr = new MMR();
-//		
-//		//Add that CoinID.. There are no other txns in the genesis TXPOW
-//		mmr.insertData(coinid, MiniNumber.ZERO);
-//		
-//		//Now get the Peaks..
-//		MMRState mmrstate = mmr.getMMRState();
-//		
-//		//Now add to the TXPOW..
-//		setMMRState(mmrstate);
-		
-//		mSuperParents[0] = new MiniData(MiniData.getRandomData(32).getData());
-		
 		//Set the body hash
 		setHeaderBodyHash();
 		
