@@ -12,6 +12,7 @@ import org.minima.GlobalParams;
 import org.minima.database.MinimaDB;
 import org.minima.database.mmr.MMRSet;
 import org.minima.database.txpowdb.TxPOWDBRow;
+import org.minima.objects.Magic;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
@@ -466,11 +467,37 @@ public class BlockTree {
 								}
 							}
 							
+							//need a  body for this..
+							TxPoW txpow = row.getTxPOW();
+							
 							//Check the Super Block Levels are Correct! and point to the correct blocks
 							//..TODO
 							
-							//need a  body for this..
-							TxPoW txpow = row.getTxPOW();
+							//Check the MAGIC params..
+							Magic checkmag = new Magic();
+							checkmag.calculateCurrentMax(pnode);
+							if(!txpow.getMagic().checkSame(checkmag)) {
+								MinimaLogger.log("INVALID BLOCK MAGIC NUMBERS! "+txpow.getMagic().toJSON().toString()+" expected:"+checkmag.toJSON().toString());
+								zNode.setState(BlockTreeNode.BLOCKSTATE_INVALID);
+								return;
+							}
+							
+							//Check number of TXNS..
+							int txnnum=txpow.getBlockTransactions().size();
+							if(txnnum>txpow.getMagic().getMaxNumTxns().getAsInt()) {
+								MinimaLogger.log("INVALID BLOCK TOO MANY TXNS "+txnnum+" "+txpow.getMagic().toJSON().toString());
+								zNode.setState(BlockTreeNode.BLOCKSTATE_INVALID);
+								return;
+							}
+							
+							//Check Size..
+							if(txpow.getSizeinBytes()>txpow.getMagic().getMaxTxPoWSize(txnnum)) {
+								MinimaLogger.log("INVALID BLOCK TOO LARGE "+txpow.getSizeinBytes()+" "+txpow.getMagic().getMaxTxPoWSize(txnnum));
+								zNode.setState(BlockTreeNode.BLOCKSTATE_INVALID);
+								return;
+							}
+							
+							//Check for a body
 							if(txpow.hasBody()) {
 								//Is this block too old to check..
 								

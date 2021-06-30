@@ -25,9 +25,9 @@ public class Magic implements Streamable {
 	/**
 	 * The Current MAGIC numbers.. based on a weighted average of the chain..
 	 */
-	public MiniNumber mCurrentMaxTxPoWSize          = new MiniNumber(20000);
-	public MiniNumber mCurrentMaxTxnPerBlock        = new MiniNumber(32);
-	public MiniNumber mCurrentMaxKISSVMInstructions = new MiniNumber(128);
+	public MiniNumber mCurrentMaxTxPoWSize;
+	public MiniNumber mCurrentMaxTxnPerBlock;
+	public MiniNumber mCurrentMaxKISSVMInstructions;
 	
 	/**
 	 * The Desired MAGIC numbers.. user sets this..
@@ -56,6 +56,14 @@ public class Magic implements Streamable {
 		return magic;
 	}
 	
+	public boolean checkSame(Magic zMagic) {
+		boolean x = mCurrentMaxTxPoWSize.isEqual(zMagic.mCurrentMaxTxPoWSize);
+		boolean y = mCurrentMaxTxnPerBlock.isEqual(zMagic.mCurrentMaxTxnPerBlock);
+		boolean z = mCurrentMaxKISSVMInstructions.isEqual(zMagic.mCurrentMaxKISSVMInstructions);
+		
+		return x && y && z;
+	}
+	
 	/**
 	 * Get the Maximums
 	 */
@@ -80,6 +88,7 @@ public class Magic implements Streamable {
 	public void calculateCurrentMax(BlockTreeNode mTip) {
 		//How many levels to average
 		int MAX_LEVEL 	= 13; //12 MAX ~ 1 day * 128 = 120 days..
+//		int MAX_LEVEL 	= 5; //TEST
 		
 		//An array of totals..
 		MiniNumber tnum 	= MiniNumber.ZERO;
@@ -88,6 +97,11 @@ public class Magic implements Streamable {
 		//Running totals
 		Magic ctotal 		= new Magic();
 		
+		//Set to ZERO
+		ctotal.mCurrentMaxKISSVMInstructions 	= MiniNumber.ZERO;
+		ctotal.mCurrentMaxTxPoWSize 			= MiniNumber.ZERO;
+		ctotal.mCurrentMaxTxnPerBlock			= MiniNumber.ZERO;
+				
 		//Set to ZERO..
 		for(int l=0;l<MAX_LEVEL;l++) {
 			numadded[l] = 0;
@@ -116,7 +130,7 @@ public class Magic implements Streamable {
 								ctotal.mCurrentMaxKISSVMInstructions.add(mag.mDesiredMaxKISSVMInstructions.mult(multiplier));
 						
 						tnum=tnum.add(multiplier);
-						//MinimaLogger.log(num+" CT:"+ctotal.mCurrentMaxTxPoWSize+" "+mag.mDesiredMaxTxPoWSize+" "+tnum.toString());
+//						MinimaLogger.log(num+" CT:"+ctotal.mCurrentMaxTxPoWSize+" "+mag.mDesiredMaxTxPoWSize+" "+tnum.toString());
 					}
 				}
 			}
@@ -154,7 +168,7 @@ public class Magic implements Streamable {
 			mCurrentMaxKISSVMInstructions = MIN_KISSVM_INST;
 		}
 		
-//		MinimaLogger.log("MAGIC "+tnum+" "+toJSON().toString());
+		MinimaLogger.log("MAGIC "+(mTip.getBlockNumber().increment())+" "+tnum+" "+toJSON().toString());
 	}
 	
 	
