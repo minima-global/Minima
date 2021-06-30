@@ -92,7 +92,7 @@ public class CurrentAddress implements Streamable {
 				mTotalUsed = mTotalUsed.increment();
 				
 				//Log it..
-				MinimaLogger.log("AUTO NEW base address created ["+i+" / "+mTotalUsed+"] : "+mAddresses[i].getAddress().getMinimaAddress());
+//				MinimaLogger.log("AUTO NEW base address created ["+i+" / "+mTotalUsed+"] : "+mAddresses[i].getAddress().getMinimaAddress());
 				
 				//Backup
 				zBackup.PostMessage(ConsensusBackup.CONSENSUSBACKUP_BACKUPUSER);
@@ -112,7 +112,7 @@ public class CurrentAddress implements Streamable {
 				
 				//Is it inited..
 				if(!mk.isInitialised()) {
-					MinimaLogger.log("AUTO base address initilised ["+i+" / "+mTotalUsed+"] : "+mAddresses[i].getAddress().getMinimaAddress());
+//					MinimaLogger.log("AUTO base address initilised ["+i+" / "+mTotalUsed+"] : "+mAddresses[i].getAddress().getMinimaAddress());
 					mk.autoInit();
 					return true;
 				}
