@@ -756,6 +756,10 @@ public class ConsensusNet extends ConsensusProcessor {
 					}
 				}
 			}
+		
+		}else {
+			//UNKNOWN NETWORK MESSAGE!!
+			//..
 		}
 	}
 	
