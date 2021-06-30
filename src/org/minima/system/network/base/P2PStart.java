@@ -72,7 +72,6 @@ public class P2PStart extends MessageProcessor {
     private NetworkHandler mNetwork;
     private DiscoveryNetwork<Peer> network;
     Set<InetSocketAddress> activeKnownNodes;
-    Set<MinimaNodeInfo> allDiscoveredNodes = new HashSet<>();
     Hashtable<String, MinimaNodeInfo> allDiscoveredNodes2 = new Hashtable<>();
     private NodeId nodeId;
     private PubKey pubKey;
@@ -140,6 +139,7 @@ public class P2PStart extends MessageProcessor {
 
         if(privKey == null) {
             System.out.println("P2P Error - priv key uninitialized!");
+            logger.error("P2P Error - priv key uninitialized!");
             return;
         } 
         
@@ -158,8 +158,7 @@ public class P2PStart extends MessageProcessor {
         //ByteBuf wrappedBuf = wrappedBuffer(marshaledPubKey);
         // logger.debug("P2P layer - wrapped buff protobuf pubkey (hex)): "  +  hex(wrappedBuf.array())); // Integer.toHexString(marshaledPubKey.length));
         // logger.debug("P2P layer - wrapped buff protobuf pubkey capacity (dec): " + wrappedBuf.capacity());
-        
-        // this line below does not work. it should just add 0x0025 in front of the protobuf (identity+protobuf pubkey length).
+        // The line below does not work. It should just add 0x0025 in front of the protobuf (identity+protobuf pubkey length).
         //Multihash mhash = Multihash.digest(new Multihash.Descriptor(Multihash.Digest.Identity, null), wrappedBuf, (marshaledPubKey.length)*8);
         //System.out.println("P2P layer - multihash Str value: " + mhash.toString());
         // last 8 bytes are zeros for some reason 
@@ -209,7 +208,6 @@ public class P2PStart extends MessageProcessor {
             + " , discovery address: " + discAddr.get());
             System.out.println("Starting discovery loop info");
             activeKnownNodes = new HashSet<>();
-            // TODO: send to yourself a message 5 seconds in the future
             PostMessage(P2P_START_SCAN); // could also be a TimerMessage
             PostMessage(P2P_SAVE_NEIGHBOURS); // for now we save neighbours at the end of each scan, this timer is not used
             // PostTimerMessage(new TimerMessage(SAVE_NEIGHBOURS_DELAY, P2P_SAVE_NEIGHBOURS));
@@ -332,11 +330,12 @@ public class P2PStart extends MessageProcessor {
         try {
             FileOutputStream outputStream = new FileOutputStream(mP2PNodePrivKeyFile);
             outputStream.write(KeyKt.marshalPrivateKey(privKey));
-            System.out.println("Generated new private key and saved to local dir: " + hex(privKey.bytes()));
-            System.out.println("Computed public key: " + hex(pubKey.bytes()));
+            //System.out.println("Generated new node private key and saved to local dir: " + hex(privKey.bytes()));
+            System.out.println("Computed node public key: " + hex(pubKey.bytes()));
             outputStream.close();
         } catch (Exception e) {
-            System.out.println("Failed to save private key to disk - " + e.getMessage());
+            System.out.println("Failed to save node private key to disk - " + e.getMessage());
+            logger.error("Failed to save node private key to disk - " + e.getMessage());
         }
         return privKey;
     }
@@ -359,9 +358,11 @@ public class P2PStart extends MessageProcessor {
                         // expect public key, p2p multiaddr and ENR
                         // TODO: add fields validation
                         records.add(Arrays.asList(values));
-                        System.out.println("Loaded bootnode from CSV: " + records.get(records.size() - 1).toString());
+                        //System.out.println("Loaded bootnode from CSV: " + records.get(records.size() - 1).toString());
+                        logger.info("Loaded bootnode from CSV: " + records.get(records.size() - 1).toString());
                     } else {
-                        logger.warn("Failed to parse line from CSV: " + line);
+                        logger.error("Failed to parse line from CSV: " + line);
+                        System.out.println("P2P - error parsing line from CSV: " + line);
                     }
                 } else {
                     logger.debug("P2PStart: skipping empty line in CSV");
@@ -377,7 +378,6 @@ public class P2PStart extends MessageProcessor {
 
     private void saveP2PNeighbours() {
         logger.debug("saveP2PNeighbours: trying to save neighbours list");
-        System.out.println("saveP2PNeighbours: trying to save neighbours list");
         if(allDiscoveredNodes2.size() == 0) {
             logger.debug("savep2pNeighbours: empty nodes list, nothing to save, exiting.");
             return;
@@ -397,27 +397,19 @@ public class P2PStart extends MessageProcessor {
             } catch(Exception e) {
                 logger.warn("Could not write lines to neighbours list file! " + "msg=" + e.getMessage());
                 e.printStackTrace();
-//                logger.warn("Stack trace: " + e.getStackTrace().toString());
             }
             //csvWriter.flush();
         } catch(IOException e) {
             logger.warn("Could not flush and close neighbours list file! " + "msg=" + e.getMessage());
             e.printStackTrace();
-//            logger.warn("Stack trace: " + e.getStackTrace().toString());
         }
         logger.debug("saveP2PNeighbours: end");
-        // try {
-        //     Thread.sleep(SAVE_NEIGHBOURS_DELAY);
-        //     PostMessage(P2P_SAVE_NEIGHBOURS);
-        // } catch(Exception e) {
-        // }
     }
 
     private void p2pAddNewNodes() {
         if(network != null) {
             Set<InetSocketAddress> activeKnownNodes = new HashSet<>();
             while (true) {
-
                 // we dont really care about this list...
                 network.streamPeers().filter(peer -> peer.getId() != null).forEach(peer -> {
                     logger.debug("peer: id=" + peer.getId()); // peer address == peer id and " isConnected=" true
@@ -533,78 +525,6 @@ public class P2PStart extends MessageProcessor {
     //TODO: refactor below code to use above object and constructor instead - if possible
     public static void main(String[] args) throws ExecutionException, InterruptedException {
         System.out.println("Hello world!");
-        // attempt 1: start with DiscoveryNetworkFactory
-        DiscoveryNetworkFactory factory = new DiscoveryNetworkFactory();
-        final DiscoveryNetwork<Peer> network;
-        try {
-
-            String node1_id;
-            String[] node1_addr_fields;
-
-            if (args.length == 2) { // first is p2p addr, second is enr
-                System.out.println("Found addr node 1: " + args[0]);
-                System.out.println("Found boot node 1: " + args[1]);
-                node1_addr_fields = args[0].split("/");
-                node1_id = node1_addr_fields[node1_addr_fields.length - 1];
-                String bootnode_1 = args[1];
-                network = factory.builder().staticPeer(args[0]).bootnode(bootnode_1).buildAndStart(0);
-                LibP2PNodeId id_1 = new LibP2PNodeId(PeerId.fromBase58(node1_id));
-
-            } else if (args.length == 1) { // first is p2p addr - deprecated - should start with p2p addr and ENR
-                                           // (application level address)
-                                           // DiscV5 cant start without at least one boot ndoe
-                logger.warn("Careful! This mode is deprecated, either start with 0 or 2 args, not 1.");
-                System.out.println("Found addr: " + args[0]);
-                node1_addr_fields = args[0].split("/");
-                node1_id = node1_addr_fields[node1_addr_fields.length - 1];
-
-                System.out.println("Found node1_id: " + node1_id);
-                // Multiaddr address = Multiaddr.fromString(args[0]);
-                network = factory.builder().staticPeer(args[0]).buildAndStart(0);
-            } else {
-                // server mode only - no peer to connect to
-                network = factory.builder().buildAndStart(0);
-                //id = network.getNodeId();
-            }
-
-            Optional<String> discAddr = network.getDiscoveryAddress();
-            logger.warn("LOGGER nodeid: " + network.getNodeId() + " , nodeAddress: " + network.getNodeAddress()
-                    + " , discovery address: " + discAddr.get());
-            System.out.println("Starting discovery loop info");
-
-            if (network != null) {
-                Set<InetSocketAddress> activeKnownNodes = new HashSet<>();
-                while (true) {
-                    network.streamPeers().filter(peer -> peer.getId() != null).forEach(peer -> {
-                        logger.debug("peer: id=" + peer.getId()); // peer address == peer id and " isConnected=" true
-                    });
-
-                    Set<InetSocketAddress> newActiveNodes = new HashSet<>();
-                    //logger.debug("trying to stream discovery peers");
-                    network.streamKnownDiscoveryPeers()
-                            .forEach(discoPeer -> { // disc peer node address should be inetsocketaddr
-                              //  logger.debug("discovery peer: " + discoPeer.getNodeAddress() + " pubkey=" + discoPeer.getPublicKey());         
-                                newActiveNodes.add(discoPeer.getNodeAddress());
-                            });
-
-                    Set<InetSocketAddress> delta = new HashSet<InetSocketAddress>(newActiveNodes);
-                    delta.removeAll(activeKnownNodes); //now contains only new sockets
-                           
-                    for(InetSocketAddress i: delta) {
-                        logger.info("New peer address: " + i.toString());
-                    }
-
-                    // update known nodes
-                    activeKnownNodes = newActiveNodes;
-
-                    Thread.sleep(5000);
-                }
-            }
-        } catch (Exception e) {
-            // TODO Auto-generated catch blocks
-            e.printStackTrace();
-        }
-
     }
             
     private static File ensureFolder(File zFolder) {
