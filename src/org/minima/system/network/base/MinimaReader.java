@@ -85,6 +85,11 @@ public class MinimaReader implements Runnable {
 	 */
 	public static final MiniByte NETMESSAGE_GENERIC		     = new MiniByte(7);
 	
+	/**
+	 * PULSE
+	 */
+	public static final MiniByte NETMESSAGE_PULSE		     = new MiniByte(8);
+	
 	
 	/**
 	 * Netclient owner
@@ -119,6 +124,7 @@ public class MinimaReader implements Runnable {
 			while(true) {
 				//What message type
 				msgtype = MiniByte.ReadFromStream(mInput);
+				boolean knownmsg = true;
 				
 				//What length..
 				int len = MiniNumber.ReadFromStream(mInput).getAsInt();
@@ -282,6 +288,14 @@ public class MinimaReader implements Runnable {
 					//Add this ID
 					rec.addObject("sent", mb);
 				
+				}else if(msgtype.isEqual(NETMESSAGE_PULSE)) {
+					//A complete TxPOW
+					TxPoW txpow = new TxPoW();
+					txpow.readDataStream(inputstream);
+					
+					//Could be a no txn no block.. but MUST have paid the work
+					rec.addObject("txpow", txpow);
+					
 				}else if(msgtype.isEqual(NETMESSAGE_GENERIC)) {
 					MiniString msg = MiniString.ReadFromStream(inputstream);
 					
@@ -289,14 +303,19 @@ public class MinimaReader implements Runnable {
 					rec.addObject("generic", msg);
 				
 				}else {
-					throw new Exception("Invalid message on network : "+rec);
+					//An UNKNOWN Message!
+					MinimaLogger.log("MinimaReader UNKNONN MESSAGE : "+msgtype);
+					knownmsg = false;	
+//					throw new Exception("Invalid message on network : "+rec);
 				}
 				
 				//Check there is nothing left..
-				int left = inputstream.available();
-				if(inputstream.available()>0) {
-					//Something gone wrong..
-					throw new ProtocolException("Data left in inputstream when reading.. "+left);
+				if(knownmsg) {
+					int left = inputstream.available();
+					if(inputstream.available()>0) {
+						//Something gone wrong..
+						throw new ProtocolException("Data left in inputstream when reading.. "+left);
+					}
 				}
 				
 				//Clean up..
