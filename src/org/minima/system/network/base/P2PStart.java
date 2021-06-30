@@ -21,6 +21,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.Vector;
 import java.util.concurrent.ExecutionException;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -132,111 +133,50 @@ public class P2PStart extends MessageProcessor {
         // two lines below just to get rid of temporary not initialized issue
         PrivateKeyProvider provider = PrivateKeyGenerator::generate;
         PrivKey privKey = provider.get();
-        if(mP2PNodePrivKeyFile.exists()) {
-            // try loading file from private key
-            // if error, bailout?
-            FileInputStream inputStream;
-            try {
-                inputStream = new FileInputStream(mP2PNodePrivKeyFile);
-                byte[] keyBuffer;
-                keyBuffer = inputStream.readAllBytes();
-                privKey = KeyKt.unmarshalPrivateKey(keyBuffer);
-                PubKey pubKey = privKey.publicKey();
-                System.out.println("Loaded private key from local dir: " + hex(privKey.bytes()));
-                System.out.println("Computed public key: " + hex(pubKey.bytes()));
-            } catch (FileNotFoundException e) {
-                System.out.println("Failed to read private key from disk - " + e.getMessage());
-                e.printStackTrace();
-             } catch (IOException e) {
-                System.out.println("Failed to read private key from disk - " + e.getMessage());
-                e.printStackTrace();
-            }
-        } else {
-            // generate a SECP256K1 private key
-            //PrivateKeyProvider keyProvider = PrivateKeyGenerator::generate;
-            privKey = KeyKt.generateKeyPair(KEY_TYPE.SECP256K1).component1();
-            // privKey = keyProvider.get();
-            // save priv key to file
-            try {
-                FileOutputStream outputStream = new FileOutputStream(mP2PNodePrivKeyFile);
-                outputStream.write(KeyKt.marshalPrivateKey(privKey));
-                System.out.println("Generated new private key and saved to local dir: " + hex(privKey.bytes()));
-                System.out.println("Computed public key: " + hex(pubKey.bytes()) );
-                outputStream.close();
-            } catch (Exception e) {
-                System.out.println("Failed to save private key to disk - " + e.getMessage());
-            }
+        privKey = loadNodePrivateKey(mP2PNodePrivKeyFile);
+        if(privKey == null) {
+            privKey = generateNodePrivateKey(mP2PNodePrivKeyFile);
         }
+
         if(privKey == null) {
             System.out.println("P2P Error - priv key uninitialized!");
             return;
         } 
-        // privKey.toString();
-        logger.warn("P2P layer - generated node private key: " + privKey.toString());
-        System.out.println("P2P layer - generated node private key: " + privKey.toString());
-        //System.out.println("P2P layer - generated node private key bytes: " + String. privKey.raw();
-        // generate ENR nodeid - not to be confused with libp2pnodeid which is session specific!
+        
         PeerId pid = PeerId.fromPubKey(privKey.publicKey());
-        byte[] marshaledPubKey = KeyKt.marshalPublicKey(privKey.publicKey());
         nodeId = new LibP2PNodeId(pid);
+        pubKey = privKey.publicKey();
+
+        //byte[] marshaledPubKey = KeyKt.marshalPublicKey(privKey.publicKey());
         // if pubkey is less than 42 bytes then peerid will be 
         // the multihash digest of identity (0) and the pubkey as a protobuf (keytype, data)
-        System.out.println("P2P layer - peerid - raw hex: " + pid.toHex()); 
-        System.out.println("P2P layer - pubkey - raw hex: " + hex(privKey.publicKey().bytes()));
-        System.out.println("P2P layer - protobuf pubkey: "  + P2PStart.hex(marshaledPubKey));
-        System.out.println("P2P layer - protobuf pubkey length (dec): "  + marshaledPubKey.length);
-        System.out.println("P2P layer - protobuf pubkey length (hex)): "  + Integer.toHexString(marshaledPubKey.length));
-        ByteBuf wrappedBuf = wrappedBuffer(marshaledPubKey);
-        System.out.println("P2P layer - wrapped buff protobuf pubkey (hex)): "  +  hex(wrappedBuf.array())); // Integer.toHexString(marshaledPubKey.length));
-        System.out.println("P2P layer - wrapped buff protobuf pubkey capacity (dec): " + wrappedBuf.capacity());
+        // logger.debug("P2P layer - peerid - raw hex: " + pid.toHex()); 
+        // logger.debug("P2P layer - pubkey - raw hex: " + hex(privKey.publicKey().bytes()));
+        // logger.debug("P2P layer - protobuf pubkey: "  + P2PStart.hex(marshaledPubKey));
+        // logger.debug("P2P layer - protobuf pubkey length (dec): "  + marshaledPubKey.length);
+        // logger.debug("P2P layer - protobuf pubkey length (hex)): "  + Integer.toHexString(marshaledPubKey.length));
+        //ByteBuf wrappedBuf = wrappedBuffer(marshaledPubKey);
+        // logger.debug("P2P layer - wrapped buff protobuf pubkey (hex)): "  +  hex(wrappedBuf.array())); // Integer.toHexString(marshaledPubKey.length));
+        // logger.debug("P2P layer - wrapped buff protobuf pubkey capacity (dec): " + wrappedBuf.capacity());
         
         // this line below does not work. it should just add 0x0025 in front of the protobuf (identity+protobuf pubkey length).
-        Multihash mhash = Multihash.digest(new Multihash.Descriptor(Multihash.Digest.Identity, null), wrappedBuf, (marshaledPubKey.length)*8);
+        //Multihash mhash = Multihash.digest(new Multihash.Descriptor(Multihash.Digest.Identity, null), wrappedBuf, (marshaledPubKey.length)*8);
         //System.out.println("P2P layer - multihash Str value: " + mhash.toString());
         // last 8 bytes are zeros for some reason 
         // as we are fixed size we only copy the meaningful bytes before Base58 encoding.
-        byte[] mhashbytes = mhash.getBytes().copy(0, 39).array();
-        System.out.println("P2P layer - multihash hex bytes value: " + hex(mhashbytes));
-        System.out.println("P2P layer - multihash base58 value: " +    Base58.INSTANCE.encode(mhashbytes));
+        //byte[] mhashbytes = mhash.getBytes().copy(0, 39).array();
+        //logger.debug("P2P layer - multihash hex bytes value: " + hex(mhashbytes));
+        //logger.debug("P2P layer - multihash base58 value: " +    Base58.INSTANCE.encode(mhashbytes)); // same as nodeId.toBase58()
+        //logger.debug("P2P layer - peerid - base58 encoded: " + pid.toHex()); 
+        //logger.debug("P2P layer - nodeid (peerid base58): " + nodeId.toString()); // same as .toBase58()
+        logger.debug("P2P layer - nodeid base58: " + nodeId.toBase58());
 
-        System.out.println("P2P layer - peerid - base58 encoded: " + pid.toHex()); 
-        System.out.println("P2P layer - nodeid (peerid base58): " + nodeId.toString());
-        System.out.println("P2P layer - nodeid base58: " + nodeId.toBase58());
-        pubKey = privKey.publicKey();
-
-
-        // bootnodes
-        if(mP2PBootnodesFile.exists()) {
-            // try loading bootnodes from CSV file
-            List<List<String>> records = new ArrayList<>();
-            try (BufferedReader br = new BufferedReader(new FileReader(mP2PBootnodesFile))) {
-                String line;
-                logger.debug("starting to read p2p bootnodes CSV file: " + mP2PBootnodesFile.getAbsolutePath());
-                while ((line = br.readLine()) != null) {
-                    if(line.length() > 0) {
-                        String[] values = line.split(P2PStart.COMMA_DELIMITER);
-                        logger.debug("P2PStart:csv load: read and CSV split one line: " + line);
-                        if(values.length == 2) { 
-                            // expect p2p multiaddr and ENR
-                            // TODO: add fields validation
-                            records.add(Arrays.asList(values));
-                            System.out.println("Loaded bootnode from CSV: " + records.get(records.size()-1).toString());
-                        } else {
-                            logger.warn("Failed to parse line from CSV: " + line);    
-                        }
-                    } else {
-                        logger.debug("P2PStart: skipping empty line in CSV");
-                    }
-                }
-            } catch(FileNotFoundException e) {
-
-            } catch(IOException e) {
-
-            }
-
-            for( List<String> record: records) {
-                staticPeers.add(record.get(0));
-                bootnodes.add(record.get(1));
+        // bootnodes CSV
+        List<List<String>> records = loadP2PNeighbours(mP2PBootnodesFile);
+        if (records != null) {
+            for (List<String> record : records) {
+                staticPeers.add(record.get(1));
+                bootnodes.add(record.get(2));
             }
         }
 
@@ -244,14 +184,12 @@ public class P2PStart extends MessageProcessor {
         try {
             if(staticPeers != null && staticPeers.size() > 0 && bootnodes != null && bootnodes.size() > 0) {
                 System.out.println("Building p2p layer using provided params: staticpeer=" + staticPeers.get(0) + " and bootnode=" + bootnodes.get(0));
-                //TODO: refactor below line to loop over staticPeers and bootnode data
                 DiscoveryNetworkBuilder builder = factory.builder();
                 builder = builder.setPrivKey(privKey);
                 for(int i = 0; i < staticPeers.size(); i++) {
                     builder = builder.staticPeer(staticPeers.get(i)).bootnode(bootnodes.get(i));
                 }
-                network = builder.buildAndStart(mNetwork.getBasePort() + 5);
-//  network = factory.builder().setPrivKey(privKey).staticPeer(staticPeers[0]).bootnode(bootnodes[0]).buildAndStart();
+                network = builder.buildAndStart(mNetwork.getBasePort() + 5); 
             } else if(staticPeers == null || staticPeers.size() == 0) {
                 logger.info("P2P: starting in standalone mode");
                 System.out.println("P2P: starting in standalone mode");
@@ -273,14 +211,13 @@ public class P2PStart extends MessageProcessor {
             activeKnownNodes = new HashSet<>();
             // TODO: send to yourself a message 5 seconds in the future
             PostMessage(P2P_START_SCAN); // could also be a TimerMessage
-            PostMessage(P2P_SAVE_NEIGHBOURS);
+            PostMessage(P2P_SAVE_NEIGHBOURS); // for now we save neighbours at the end of each scan, this timer is not used
             // PostTimerMessage(new TimerMessage(SAVE_NEIGHBOURS_DELAY, P2P_SAVE_NEIGHBOURS));
         } else {
             // initialization failed - what do we do?
             logger.error("Failed to start P2P network.");
         }
     }
-
 
     public static String hex(byte[] bytes) {
         StringBuilder result = new StringBuilder();
@@ -292,8 +229,10 @@ public class P2PStart extends MessageProcessor {
         return result.toString();
     }
 
-    public String convertToCSV(MinimaNodeInfo i) {
+    public String convertToCSV(String pubKey, MinimaNodeInfo i) {
         StringBuilder builder = new StringBuilder();
+        builder.append(pubKey);
+        builder.append(",");
         builder.append(i.discoMultiAddrTCP);
         builder.append(",");
         builder.append(i.nodeRecord);
@@ -352,46 +291,125 @@ public class P2PStart extends MessageProcessor {
 
         if(zMessage.isMessageType(P2P_START_SCAN)) {
             p2pAddNewNodes();
-            // p2pSaveNeighbours(); // for now save neighbours list after each scan
+            // saveP2PNeighbours(); // for now save neighbours list after each scan
         } else if(zMessage.isMessageType(P2P_SAVE_NEIGHBOURS)) {
-          //  p2pSaveNeighbours();
+          //  saveP2PNeighbours();
         }   
     }
 
-    private void p2pSaveNeighbours() {
-        logger.debug("p2pSaveNeighbours: trying to save neighbours list");
-        System.out.println("p2pSaveNeighbours: trying to save neighbours list");
+    private PrivKey loadNodePrivateKey(File mP2PNodePrivKeyFile) {
+        if (!mP2PNodePrivKeyFile.exists()) {
+            return null;
+        }
+        PrivKey privKey = null;
+        // try loading file from private key
+        // if error, bailout?
+        FileInputStream inputStream;
+        try {
+            inputStream = new FileInputStream(mP2PNodePrivKeyFile);
+            byte[] keyBuffer;
+            keyBuffer = inputStream.readAllBytes();
+            privKey = KeyKt.unmarshalPrivateKey(keyBuffer);
+            PubKey pubKey = privKey.publicKey();
+            System.out.println("Loaded private key from local dir: " + hex(privKey.bytes()));
+            System.out.println("Computed public key: " + hex(pubKey.bytes()));
+        } catch (FileNotFoundException e) {
+            System.out.println("Failed to read private key from disk - " + e.getMessage());
+            e.printStackTrace();
+        } catch (IOException e) {
+            System.out.println("Failed to read private key from disk - " + e.getMessage());
+            e.printStackTrace();
+        }
+        return privKey;
+    }
+
+    private PrivKey generateNodePrivateKey(File mP2PNodePrivKeyFile) {
+        // generate a SECP256K1 private key
+        // PrivateKeyProvider keyProvider = PrivateKeyGenerator::generate;
+        PrivKey privKey = KeyKt.generateKeyPair(KEY_TYPE.SECP256K1).component1();
+        // privKey = keyProvider.get();
+        // save priv key to file
+        try {
+            FileOutputStream outputStream = new FileOutputStream(mP2PNodePrivKeyFile);
+            outputStream.write(KeyKt.marshalPrivateKey(privKey));
+            System.out.println("Generated new private key and saved to local dir: " + hex(privKey.bytes()));
+            System.out.println("Computed public key: " + hex(pubKey.bytes()));
+            outputStream.close();
+        } catch (Exception e) {
+            System.out.println("Failed to save private key to disk - " + e.getMessage());
+        }
+        return privKey;
+    }
+
+    private List<List<String>> loadP2PNeighbours(File mP2PBootnodesFile) {
+        if(!mP2PBootnodesFile.exists()) {
+            return null;
+        }
+        
+        // try loading bootnodes from CSV file
+        List<List<String>> records = new ArrayList<>();
+        try (BufferedReader br = new BufferedReader(new FileReader(mP2PBootnodesFile))) {
+            String line;
+            logger.debug("starting to read p2p bootnodes CSV file: " + mP2PBootnodesFile.getAbsolutePath());
+            while ((line = br.readLine()) != null) {
+                if (line.length() > 0) {
+                    String[] values = line.split(P2PStart.COMMA_DELIMITER);
+                    logger.debug("P2PStart:csv load: read and CSV split one line: " + line);
+                    if (values.length == 2) {
+                        // expect public key, p2p multiaddr and ENR
+                        // TODO: add fields validation
+                        records.add(Arrays.asList(values));
+                        System.out.println("Loaded bootnode from CSV: " + records.get(records.size() - 1).toString());
+                    } else {
+                        logger.warn("Failed to parse line from CSV: " + line);
+                    }
+                } else {
+                    logger.debug("P2PStart: skipping empty line in CSV");
+                }
+            }
+        } catch (FileNotFoundException e) {
+
+        } catch (IOException e) {
+
+        }
+        return records;
+    }
+
+    private void saveP2PNeighbours() {
+        logger.debug("saveP2PNeighbours: trying to save neighbours list");
+        System.out.println("saveP2PNeighbours: trying to save neighbours list");
         if(allDiscoveredNodes2.size() == 0) {
-            logger.debug("p2pSaveNeighbours: empty nodes list, nothing to save, exiting.");
+            logger.debug("savep2pNeighbours: empty nodes list, nothing to save, exiting.");
             return;
         }
         try {
-            File mP2PDir   = ensureFolder(new File(mRoot,"p2p"));
             //File csvOutputFile = new File(CSV_FILE_NAME);
             File csvOutputFile = mP2PBootnodesFile;
             FileWriter csvWriter = new FileWriter(csvOutputFile);
-            try (PrintWriter pw = new PrintWriter(csvWriter, true)) {
-                for(MinimaNodeInfo i: allDiscoveredNodes2.values()) {
-                    logger.debug("saving node i: " + i.nodeRecord + "line=" + convertToCSV(i));
-                    pw.println(convertToCSV(i));
-                }
+            try (PrintWriter pw = new PrintWriter(csvWriter, true)) { 
+                allDiscoveredNodes2.forEach(new BiConsumer<String, MinimaNodeInfo>() {
+                    @Override
+                    public void accept(String pubKey, MinimaNodeInfo i) {
+                        logger.debug("saving node i: pubkey=" +  pubKey + " enr=" + i.nodeRecord + " line=" + convertToCSV(pubKey, i));
+                        pw.println(convertToCSV(pubKey, i));
+                    }
+                });
             } catch(Exception e) {
                 logger.warn("Could not write lines to neighbours list file! " + "msg=" + e.getMessage());
                 e.printStackTrace();
 //                logger.warn("Stack trace: " + e.getStackTrace().toString());
             }
-            csvWriter.flush();
+            //csvWriter.flush();
         } catch(IOException e) {
             logger.warn("Could not flush and close neighbours list file! " + "msg=" + e.getMessage());
             e.printStackTrace();
 //            logger.warn("Stack trace: " + e.getStackTrace().toString());
         }
-        logger.debug("p2pSaveNeighbours: end");
+        logger.debug("saveP2PNeighbours: end");
         // try {
         //     Thread.sleep(SAVE_NEIGHBOURS_DELAY);
         //     PostMessage(P2P_SAVE_NEIGHBOURS);
         // } catch(Exception e) {
-
         // }
     }
 
@@ -471,7 +489,7 @@ public class P2PStart extends MessageProcessor {
                 activeKnownNodes = newActiveNodes;
 
                 // save list
-                p2pSaveNeighbours(); 
+                saveP2PNeighbours(); 
                 try {
                     Thread.sleep(5000);
                     PostMessage(P2P_START_SCAN);
@@ -588,7 +606,6 @@ public class P2PStart extends MessageProcessor {
         }
 
     }
-
             
     private static File ensureFolder(File zFolder) {
         if(!zFolder.exists()) {
