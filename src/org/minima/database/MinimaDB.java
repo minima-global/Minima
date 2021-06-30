@@ -1066,10 +1066,6 @@ public class MinimaDB {
 		MiniNumber currenttip = tip.getTxPow().getBlockNumber();
 		txpow.setBlockNumber(currenttip.increment());
 		
-		if(txpow.getBlockNumber().isMore(MiniNumber.SIXTEEN)) {
-			txpow.getMagic().mDesiredMaxTxPoWSize = new MiniNumber(40000);
-		}
-		
 		//The user defined Magic parameters
 		txpow.getMagic().calculateCurrentMax(tip);
 		
