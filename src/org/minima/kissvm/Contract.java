@@ -260,7 +260,7 @@ public class Contract {
 			
 		} catch (Exception e) {
 			if(mTraceON) {
-				e.printStackTrace();
+				MinimaLogger.log(e);
 			}
 			
 			mException = true;
