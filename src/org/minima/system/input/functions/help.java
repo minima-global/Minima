@@ -1,10 +1,9 @@
 package org.minima.system.input.functions;
 
 import org.minima.system.input.CommandFunction;
-import org.minima.system.input.functions.transfer.exportcoin;
 import org.minima.system.input.functions.transfer.exportkey;
-import org.minima.system.input.functions.transfer.importcoin;
 import org.minima.system.input.functions.transfer.importkey;
+import org.minima.system.input.functions.txns.tokenscale;
 import org.minima.system.input.functions.txns.txnauto;
 import org.minima.system.input.functions.txns.txncreate;
 import org.minima.system.input.functions.txns.txndelete;
@@ -16,7 +15,6 @@ import org.minima.system.input.functions.txns.txnoutput;
 import org.minima.system.input.functions.txns.txnpost;
 import org.minima.system.input.functions.txns.txnreminput;
 import org.minima.system.input.functions.txns.txnremoutput;
-import org.minima.system.input.functions.txns.tokenscale;
 import org.minima.system.input.functions.txns.txnscript;
 import org.minima.system.input.functions.txns.txnsign;
 import org.minima.system.input.functions.txns.txnsignauto;

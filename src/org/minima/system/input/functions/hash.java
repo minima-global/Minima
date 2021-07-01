@@ -1,7 +1,5 @@
 package org.minima.system.input.functions;
 
-import org.minima.objects.base.MiniData;
-import org.minima.system.brains.ConsensusHandler;
 import org.minima.system.brains.ConsensusPrint;
 import org.minima.system.input.CommandFunction;
 import org.minima.utils.messages.Message;

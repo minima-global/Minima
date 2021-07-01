@@ -9,7 +9,6 @@ import org.minima.database.txpowdb.TxPOWDBRow;
 import org.minima.database.txpowtree.BlockTree;
 import org.minima.database.txpowtree.BlockTreeNode;
 import org.minima.objects.Magic;
-import org.minima.objects.Token;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
@@ -23,7 +22,6 @@ import org.minima.system.network.base.MinimaReader;
 import org.minima.system.txpow.TxPoWChecker;
 import org.minima.utils.DataTimer;
 import org.minima.utils.MinimaLogger;
-import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.TimerMessage;
 

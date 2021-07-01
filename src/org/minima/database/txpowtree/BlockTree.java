@@ -16,9 +16,6 @@ import org.minima.objects.Magic;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
-import org.minima.objects.greet.SyncPacket;
-import org.minima.system.Main;
-import org.minima.system.brains.BackupManager;
 import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
 

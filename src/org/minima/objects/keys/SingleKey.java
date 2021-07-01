@@ -1,12 +1,7 @@
 package org.minima.objects.keys;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
-import org.minima.utils.MinimaLogger;
 import org.minima.utils.digest.WinternitzOTSVerify;
 import org.minima.utils.digest.WinternitzOTSignature;
 

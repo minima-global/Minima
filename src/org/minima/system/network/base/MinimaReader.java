@@ -21,7 +21,6 @@ import org.minima.system.brains.ConsensusHandler;
 import org.minima.system.brains.ConsensusNet;
 import org.minima.system.network.NetworkHandler;
 import org.minima.system.txpow.TxPoWChecker;
-import org.minima.utils.Crypto;
 import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.ProtocolException;

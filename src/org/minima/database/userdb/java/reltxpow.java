@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
-import org.minima.database.MinimaDB;
 import org.minima.objects.Token;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;

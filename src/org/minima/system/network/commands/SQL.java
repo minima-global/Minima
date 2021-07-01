@@ -1,9 +1,5 @@
 package org.minima.system.network.commands;
 
-import java.io.File;
-
-import org.minima.system.Main;
-import org.minima.system.brains.BackupManager;
 import org.minima.utils.SQLHandler;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
