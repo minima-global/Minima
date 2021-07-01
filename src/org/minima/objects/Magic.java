@@ -18,7 +18,7 @@ public class Magic implements Streamable {
 	/**
 	 * Default starting values..
 	 */
-	public static final MiniNumber MIN_TXPOW_SIZE 	= new MiniNumber(20000);
+	public static final MiniNumber MIN_TXPOW_SIZE 		= new MiniNumber(32000);
 	public static final MiniNumber MIN_TXPOW_TXNS 	 	= new MiniNumber(100);
 	public static final MiniNumber MIN_KISSVM_INST		= new MiniNumber(128);
 	
@@ -83,7 +83,8 @@ public class Magic implements Streamable {
 	
 	/**
 	 * Calculate the current desired MAX values by taking a 
-	 * weighted average of the last 128 blocks at EACH super block level
+	 * weighted average of the last MINIMA_CASCADE_LEVEL_NODES blocks at EACH super block level
+	 * This is ALWAYS the same and available for every node.. as they all have that many cascade nodes
 	 */
 	public void calculateCurrentMax(BlockTreeNode mTip) {
 		//How many levels to average

@@ -8,6 +8,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.Random;
 import java.util.StringTokenizer;
 
 import org.minima.GlobalParams;
@@ -1065,6 +1066,10 @@ public class MinimaDB {
 		//Block Details..
 		MiniNumber currenttip = tip.getTxPow().getBlockNumber();
 		txpow.setBlockNumber(currenttip.increment());
+		
+		//DEBUG
+//		int ranssize = 20000 + new Random().nextInt(20000);
+//		txpow.getMagic().mDesiredMaxTxPoWSize = new MiniNumber(ranssize);
 		
 		//The user defined Magic parameters
 		txpow.getMagic().calculateCurrentMax(tip);
