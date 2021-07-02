@@ -58,7 +58,7 @@ public class ConsensusHandler extends MessageProcessor {
 	/**
 	 * Auto Consolidate 
 	 */
-	public static final String CONSENSUS_CONSOLIDATE 	       = "CONSENSUS_CONSOLIDATE";
+	public static final String CONSENSUS_AUTOCONSOLIDATE 	   = "CONSENSUS_AUTOCONSOLIDATE";
 	public static final long CONSOLIDATE_TIMER 				   = 1000 * 60 * 60;
 	
 	/**
@@ -214,7 +214,7 @@ public class ConsensusHandler extends MessageProcessor {
 		PostTimerMessage(new TimerMessage(PULSE_TIMER, CONSENSUS_PULSE_START));
 		
 		//Auto Consolidate - every hour
-		PostTimerMessage(new TimerMessage(CONSOLIDATE_TIMER, CONSENSUS_CONSOLIDATE));
+		PostTimerMessage(new TimerMessage(CONSOLIDATE_TIMER, CONSENSUS_AUTOCONSOLIDATE));
 	}
 	
 	public void setBackUpManager() {
@@ -406,14 +406,14 @@ public class ConsensusHandler extends MessageProcessor {
 			//Redo every 10 minutes..
 			PostTimerMessage(new TimerMessage(AUTOBACKUP_TIMER, CONSENSUS_AUTOBACKUP));
 			
-		}else if ( zMessage.isMessageType(CONSENSUS_CONSOLIDATE) ) {
+		}else if ( zMessage.isMessageType(CONSENSUS_AUTOCONSOLIDATE) ) {
 			//Consolidate your coins! - default is FALSE
 			if(Main.getMainHandler().getUserPrefs().getBoolean("consolidate", false)) {
 				PostMessage(new Message(ConsensusUser.CONSENSUS_CONSOLIDATE));
 			}
 		
 			//Auto Consolidate - every hour
-			PostTimerMessage(new TimerMessage(CONSOLIDATE_TIMER, CONSENSUS_CONSOLIDATE));
+			PostTimerMessage(new TimerMessage(CONSOLIDATE_TIMER, CONSENSUS_AUTOCONSOLIDATE));
 			
 			/**
 			 * Initialise the Multi Keys..
