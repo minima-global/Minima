@@ -864,7 +864,7 @@ public class ConsensusUser extends ConsensusProcessor {
 					InputHandler.endResponse(zMessage, true, "AUTO Coin Consolidation turned OFF");
 					return;
 				}else if(param.equals("info")) {
-					boolean auto = prefs.getBoolean("consolidate", true);
+					boolean auto = prefs.getBoolean("consolidate", false);
 					InputHandler.getResponseJSON(zMessage).put("auto", auto);
 					infoonly = true;
 				}else {
@@ -907,7 +907,7 @@ public class ConsensusUser extends ConsensusProcessor {
 			//All done..
 			if(infoonly) {
 				InputHandler.getResponseJSON(zMessage).put("coins", coininfo);
-				InputHandler.endResponse(zMessage, true, "Coins Consolidation info. 5 Max consolidated - trigger on 3.");
+				InputHandler.endResponse(zMessage, true, "Coins Consolidation info. 5 Max consolidated.");
 			}else {
 				InputHandler.endResponse(zMessage, true, "Coins Consolidated");
 			}
@@ -953,7 +953,7 @@ public class ConsensusUser extends ConsensusProcessor {
 		
 		//Add it
 		JSONObject cointok = new JSONObject();
-		cointok.put("tokenid", zTokenID);
+		cointok.put("tokenid", zTokenID.to0xString());
 		cointok.put("coins", consarray);
 		zCoinInfo.add(cointok);
 		
@@ -985,7 +985,7 @@ public class ConsensusUser extends ConsensusProcessor {
 		}
 	
 		int MAX_COLL = 5;
-		int TRIGGER  = 3;
+		int TRIGGER  = 5;
 		
 		//Now create transactions..
 		Set<String> keys = pubcoins.keySet();

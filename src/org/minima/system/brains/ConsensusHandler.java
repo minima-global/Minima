@@ -47,12 +47,26 @@ public class ConsensusHandler extends MessageProcessor {
 	 * Auto backup every 10 minutes..
 	 */
 	public static final String CONSENSUS_AUTOBACKUP 	       = "CONSENSUS_AUTOBACKUP";
+	public static final long AUTOBACKUP_TIMER 				   = 1000 * 60 * 30;
+	
+	/**
+	 * Flush the mempool..
+	 */
+	public static final String CONSENSUS_FLUSH 	       		   = "CONSENSUS_FLUSH";
+	public static final long FLUSH_TIMER 				   	   = 1000 * 60 * 10;
+	
+	/**
+	 * Auto Consolidate 
+	 */
+	public static final String CONSENSUS_AUTOCONSOLIDATE 	   = "CONSENSUS_AUTOCONSOLIDATE";
+	public static final long CONSOLIDATE_TIMER 				   = 1000 * 60 * 60;
 	
 	/**
 	 * Initialise the 32 keys you use by default for change
 	 * This can be slow at time of send so best to do it incrementally..
 	 */
 	public static final String CONSENSUS_INITKEYS 	       		= "CONSENSUS_INITKEYS";
+	public static final long INITKEYS_TIMER 				    = 1000 * 60;
 	
 	/**
 	 * HARD CORE MINIMG for the bootstrap period 
@@ -79,6 +93,7 @@ public class ConsensusHandler extends MessageProcessor {
 	public static final String CONSENSUS_PULSE_START 			= "CONSENSUS_PULSE_START";
 	public static final String CONSENSUS_PULSE 			   		= "CONSENSUS_PULSE";
 	public static final String CONSENSUS_PULSE_MINED 			= "CONSENSUS_PULSE_MINED";
+	public static final long PULSE_TIMER = 1000 * 60 * 10;
 	
 	/**
 	 * Create Tokens
@@ -156,7 +171,12 @@ public class ConsensusHandler extends MessageProcessor {
 	/**
 	 * PULSE Timer - every 10 mins
 	 */
-	public static final long PULSE_TIMER = 1000 * 60 * 10;
+	
+	
+	/**
+	 * Consolidate Time - Every  hour
+	 */
+	
 	
 	/**	
 	 * Main Constructor
@@ -182,13 +202,19 @@ public class ConsensusHandler extends MessageProcessor {
 		PostTimerMessage(new TimerMessage(5000, CONSENSUS_MINEBLOCK));
 	
 		//Redo every 10 minutes..
-		PostTimerMessage(new TimerMessage(10 * 60 * 1000, CONSENSUS_AUTOBACKUP));
+		PostTimerMessage(new TimerMessage(AUTOBACKUP_TIMER, CONSENSUS_AUTOBACKUP));
+		
+		//Flush Mempool
+		PostTimerMessage(new TimerMessage(FLUSH_TIMER, CONSENSUS_FLUSH));
 		
 		//Initialise the multi keys..
-		PostTimerMessage(new TimerMessage(10 * 1000, CONSENSUS_INITKEYS));
+		PostTimerMessage(new TimerMessage(INITKEYS_TIMER, CONSENSUS_INITKEYS));
 		
 		//Start the PULSE - every 10 minutes
 		PostTimerMessage(new TimerMessage(PULSE_TIMER, CONSENSUS_PULSE_START));
+		
+		//Auto Consolidate - every hour
+		PostTimerMessage(new TimerMessage(CONSOLIDATE_TIMER, CONSENSUS_AUTOCONSOLIDATE));
 	}
 	
 	public void setBackUpManager() {
@@ -358,30 +384,37 @@ public class ConsensusHandler extends MessageProcessor {
 			//Remove from the List of Mined transactions.. ( probably not ours but good to do it here )
 			getMainDB().remeoveMiningTransaction(txpow.getTransaction());
 				
-		/**
-		 * Called every 10 Minutes to do a few background tasks
-		 */
-		}else if ( zMessage.isMessageType(CONSENSUS_AUTOBACKUP) ) {
-			//Backup the system..
-			PostMessage(ConsensusBackup.CONSENSUSBACKUP_BACKUP);
-			
+	
+			//AUTO Messages
+		}else if ( zMessage.isMessageType(CONSENSUS_FLUSH) ) {
 			//Flush / Check the mem-pool
 			PostMessage(new Message(ConsensusUser.CONSENSUS_FLUSHMEMPOOL));
 			
 			//Clean the Tokens..
 			getMainDB().checkTokens();
 			
-			//Consolidate your coins! - default is TRUE
-			if(Main.getMainHandler().getUserPrefs().getBoolean("consolidate", true)) {
-				PostMessage(new Message(ConsensusUser.CONSENSUS_CONSOLIDATE));
-			}
-			
-			//Redo every 10 minutes..
-			PostTimerMessage(new TimerMessage(10 * 60 * 1000, CONSENSUS_AUTOBACKUP));
+			//Re-do
+			PostTimerMessage(new TimerMessage(FLUSH_TIMER, CONSENSUS_FLUSH));
 			
 			//Clean the Memory..
 			System.gc();
+			
+		}else if ( zMessage.isMessageType(CONSENSUS_AUTOBACKUP) ) {
+			//Backup the system..
+			PostMessage(ConsensusBackup.CONSENSUSBACKUP_BACKUP);
+			
+			//Redo every 10 minutes..
+			PostTimerMessage(new TimerMessage(AUTOBACKUP_TIMER, CONSENSUS_AUTOBACKUP));
+			
+		}else if ( zMessage.isMessageType(CONSENSUS_AUTOCONSOLIDATE) ) {
+			//Consolidate your coins! - default is FALSE
+			if(Main.getMainHandler().getUserPrefs().getBoolean("consolidate", false)) {
+				PostMessage(new Message(ConsensusUser.CONSENSUS_CONSOLIDATE));
+			}
 		
+			//Auto Consolidate - every hour
+			PostTimerMessage(new TimerMessage(CONSOLIDATE_TIMER, CONSENSUS_AUTOCONSOLIDATE));
+			
 			/**
 			 * Initialise the Multi Keys..
 			 */
@@ -391,7 +424,7 @@ public class ConsensusHandler extends MessageProcessor {
 			
 			//Do it again..
 			if(inited) {
-				PostTimerMessage(new TimerMessage(20 * 1000, CONSENSUS_INITKEYS));
+				PostTimerMessage(new TimerMessage(INITKEYS_TIMER, CONSENSUS_INITKEYS));
 			}
 			
 			System.gc();
