@@ -864,7 +864,7 @@ public class ConsensusUser extends ConsensusProcessor {
 					InputHandler.endResponse(zMessage, true, "AUTO Coin Consolidation turned OFF");
 					return;
 				}else if(param.equals("info")) {
-					boolean auto = prefs.getBoolean("consolidate", true);
+					boolean auto = prefs.getBoolean("consolidate", false);
 					InputHandler.getResponseJSON(zMessage).put("auto", auto);
 					infoonly = true;
 				}else {
@@ -953,7 +953,7 @@ public class ConsensusUser extends ConsensusProcessor {
 		
 		//Add it
 		JSONObject cointok = new JSONObject();
-		cointok.put("tokenid", zTokenID);
+		cointok.put("tokenid", zTokenID.to0xString());
 		cointok.put("coins", consarray);
 		zCoinInfo.add(cointok);
 		
