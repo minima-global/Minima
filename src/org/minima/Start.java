@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
@@ -38,6 +40,16 @@ public class Start {
 		 "35.204.62.177",
 		 "35.204.139.141",
 		 "35.204.194.45"};
+	
+	private static final String IPV4_PATTERN =
+            "^(([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])(\\.(?!$)|$)){4}$";
+
+    private static final Pattern pattern = Pattern.compile(IPV4_PATTERN);
+
+    public static boolean isValidIPv4(final String email) {
+        Matcher matcher = pattern.matcher(email);
+        return matcher.matches();
+    }
 	
 	/**
 	 * A static link to the main server - for Android
@@ -98,61 +110,50 @@ public class Start {
 	 */
 	public static void main(String[] zArgs){
 		/**
-		 * Load the EXTRA pub servers for 0.98 - 0.99 has different P2P
+		 * Load the EXTRA public Minima servers for 0.98 - 0.99 has different P2P
 		 */
 		try {
 			//Get a list of the EXTRA Minima clients..
 			String extraclients = RPCClient.sendGET("http://34.118.59.216/pubextra.txt");
 		
-			//Check there is a COMMA..
-			boolean addservers = true;
-			if(extraclients.indexOf(",") == -1) {
-				//Something wrong..
-				addservers = false;
-			}
-			
-			if(addservers) {
-				//Now chop them up..
-				ArrayList<String> pubextra = new ArrayList<>();
-				StringTokenizer strtok = new StringTokenizer(extraclients,",");
-				while(strtok.hasMoreElements()) {
-					String ip = strtok.nextToken().trim();
+			//Now chop them up..
+			ArrayList<String> pubextra = new ArrayList<>();
+			StringTokenizer strtok = new StringTokenizer(extraclients,",");
+			while(strtok.hasMoreElements()) {
+				String ip = strtok.nextToken().trim();
+				if(isValidIPv4(ip)) {
 					pubextra.add(ip);
+				}else {
+					MinimaLogger.log("Invalid Extra Minima Peer : "+ip);
 				}
-			
-				//Old list
-//				MinimaLogger.log(Arrays.toString(VALID_BOOTSTRAP_NODES));
-				
-				//Now add all these nodes..
-				String[] newnodes = new String[VALID_BOOTSTRAP_NODES.length+pubextra.size()];
-				for(int i=0;i<VALID_BOOTSTRAP_NODES.length;i++) {
-					newnodes[i] = VALID_BOOTSTRAP_NODES[i];
-				}
-				
-				for(int i=0;i<pubextra.size();i++) {
-					newnodes[VALID_BOOTSTRAP_NODES.length+i] = pubextra.get(i);
-				}
-				
-				//Now re-assign..
-//				MinimaLogger.log(Arrays.toString(newnodes));
-				
-				//Re-assign!
-				VALID_BOOTSTRAP_NODES = newnodes;
 			}
 			
-		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
+			//Now add all these nodes..
+			String[] newnodes = new String[VALID_BOOTSTRAP_NODES.length+pubextra.size()];
+			for(int i=0;i<VALID_BOOTSTRAP_NODES.length;i++) {
+				newnodes[i] = VALID_BOOTSTRAP_NODES[i];
+			}
+			
+			for(int i=0;i<pubextra.size();i++) {
+				newnodes[VALID_BOOTSTRAP_NODES.length+i] = pubextra.get(i);
+			}
+			
+			//Re-assign!
+			VALID_BOOTSTRAP_NODES = newnodes;
+			
+		} catch (Exception e1) {
+			MinimaLogger.log(e1);
+			
+			//RESET
+			VALID_BOOTSTRAP_NODES = new String[]{"35.204.181.120",
+												 "35.204.119.15",
+												 "34.91.220.49",
+												 "35.204.62.177",
+												 "35.204.139.141",
+												 "35.204.194.45"};
+			
+			MinimaLogger.log("Minima Bootstrap noides reset : "+Arrays.toString(VALID_BOOTSTRAP_NODES));
 		}
-		
-		
-//		VALID_BOOTSTRAP_NODES = new String[]{"34.118.59.216"};
-//		MinimaLogger.log(Arrays.toString(VALID_BOOTSTRAP_NODES));
-		
-//		//HACK
-//		if(true) {
-//			System.exit(0);
-//		}
 		
 		//Check command line inputs
 		int arglen 				= zArgs.length;
