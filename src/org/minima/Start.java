@@ -155,6 +155,8 @@ public class Start {
 			MinimaLogger.log("Minima Bootstrap noides reset : "+Arrays.toString(VALID_BOOTSTRAP_NODES));
 		}
 		
+		//MinimaLogger.log("Minima Bootstrap Nodes : "+Arrays.toString(VALID_BOOTSTRAP_NODES));
+		
 		//Check command line inputs
 		int arglen 				= zArgs.length;
 		
