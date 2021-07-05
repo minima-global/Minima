@@ -152,7 +152,7 @@ public class Start {
 												 "35.204.139.141",
 												 "35.204.194.45"};
 			
-			MinimaLogger.log("Minima Bootstrap noides reset : "+Arrays.toString(VALID_BOOTSTRAP_NODES));
+			MinimaLogger.log("Minima Bootstrap nodes reset : "+Arrays.toString(VALID_BOOTSTRAP_NODES));
 		}
 		
 		//MinimaLogger.log("Minima Bootstrap Nodes : "+Arrays.toString(VALID_BOOTSTRAP_NODES));
