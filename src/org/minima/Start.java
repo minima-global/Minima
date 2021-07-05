@@ -9,12 +9,15 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Random;
+import java.util.StringTokenizer;
 
 import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
 import org.minima.system.brains.BackupManager;
 import org.minima.system.network.commands.CMD;
+import org.minima.system.network.rpc.RPCClient;
 import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.SQLHandler;
@@ -28,15 +31,13 @@ public class Start {
 	/**
 	 * A list of default valid nodes to connect to at startup..
 	 */
-	public static final String[] VALID_BOOTSTRAP_NODES = 
+	public static String[] VALID_BOOTSTRAP_NODES = 
 		{"35.204.181.120",
 		 "35.204.119.15",
 		 "34.91.220.49",
 		 "35.204.62.177",
 		 "35.204.139.141",
 		 "35.204.194.45"};
-	
-//	public static final String[] VALID_BOOTSTRAP_NODES = {"35.228.18.150"};
 	
 	/**
 	 * A static link to the main server - for Android
@@ -96,6 +97,63 @@ public class Start {
 	 * @param zArgs
 	 */
 	public static void main(String[] zArgs){
+		/**
+		 * Load the EXTRA pub servers for 0.98 - 0.99 has different P2P
+		 */
+		try {
+			//Get a list of the EXTRA Minima clients..
+			String extraclients = RPCClient.sendGET("http://34.118.59.216/pubextra.txt");
+		
+			//Check there is a COMMA..
+			boolean addservers = true;
+			if(extraclients.indexOf(",") == -1) {
+				//Something wrong..
+				addservers = false;
+			}
+			
+			if(addservers) {
+				//Now chop them up..
+				ArrayList<String> pubextra = new ArrayList<>();
+				StringTokenizer strtok = new StringTokenizer(extraclients,",");
+				while(strtok.hasMoreElements()) {
+					String ip = strtok.nextToken().trim();
+					pubextra.add(ip);
+				}
+			
+				//Old list
+//				MinimaLogger.log(Arrays.toString(VALID_BOOTSTRAP_NODES));
+				
+				//Now add all these nodes..
+				String[] newnodes = new String[VALID_BOOTSTRAP_NODES.length+pubextra.size()];
+				for(int i=0;i<VALID_BOOTSTRAP_NODES.length;i++) {
+					newnodes[i] = VALID_BOOTSTRAP_NODES[i];
+				}
+				
+				for(int i=0;i<pubextra.size();i++) {
+					newnodes[VALID_BOOTSTRAP_NODES.length+i] = pubextra.get(i);
+				}
+				
+				//Now re-assign..
+//				MinimaLogger.log(Arrays.toString(newnodes));
+				
+				//Re-assign!
+				VALID_BOOTSTRAP_NODES = newnodes;
+			}
+			
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
+		
+//		VALID_BOOTSTRAP_NODES = new String[]{"34.118.59.216"};
+//		MinimaLogger.log(Arrays.toString(VALID_BOOTSTRAP_NODES));
+		
+//		//HACK
+//		if(true) {
+//			System.exit(0);
+//		}
+		
 		//Check command line inputs
 		int arglen 				= zArgs.length;
 		
