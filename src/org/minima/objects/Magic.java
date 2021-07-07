@@ -220,10 +220,12 @@ public class Magic implements Streamable {
 		mCurrentMaxTxPoWSize.writeDataStream(zOut);
 		mCurrentMaxTxnPerBlock.writeDataStream(zOut);
 		mCurrentMaxKISSVMInstructions.writeDataStream(zOut);
+		mCurrentMinTxPoWWork.writeDataStream(zOut);
 		
 		mDesiredMaxTxPoWSize.writeDataStream(zOut);
 		mDesiredMaxTxnPerBlock.writeDataStream(zOut);
 		mDesiredMaxKISSVMInstructions.writeDataStream(zOut);
+		mDesiredMinTxPoWWork.writeDataStream(zOut);
 	}
 
 	@Override
@@ -231,10 +233,12 @@ public class Magic implements Streamable {
 		mCurrentMaxTxPoWSize = MiniNumber.ReadFromStream(zIn);
 		mCurrentMaxTxnPerBlock = MiniNumber.ReadFromStream(zIn);
 		mCurrentMaxKISSVMInstructions = MiniNumber.ReadFromStream(zIn);
+		mCurrentMinTxPoWWork = MiniData.ReadFromStream(zIn);
 		
 		mDesiredMaxTxPoWSize = MiniNumber.ReadFromStream(zIn);
 		mDesiredMaxTxnPerBlock = MiniNumber.ReadFromStream(zIn);
 		mDesiredMaxKISSVMInstructions = MiniNumber.ReadFromStream(zIn);
+		mDesiredMinTxPoWWork = MiniData.ReadFromStream(zIn);
 	}
 	
 	public static Magic ReadFromStream(DataInputStream zIn) throws IOException {
