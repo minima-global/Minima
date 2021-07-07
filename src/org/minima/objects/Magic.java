@@ -10,7 +10,6 @@ import org.minima.database.txpowtree.BlockTreeNode;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.Crypto;
-import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONObject;
 
