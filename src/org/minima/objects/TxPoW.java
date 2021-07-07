@@ -343,7 +343,7 @@ public class TxPoW implements Streamable {
 				_mIsTxnPOW = true;
 			}
 			//Must be at least the minimum..
-			if(getTxnDifficulty().isMore(TxPoWMiner.BASE_TXN)) {
+			if(getTxnDifficulty().isMore(Magic.MIN_TXPOW_WORK)) {
 				_mIsTxnPOW = false;
 			}
 		}

@@ -16,6 +16,7 @@ import org.minima.kissvm.values.NumberValue;
 import org.minima.kissvm.values.StringValue;
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
+import org.minima.objects.Magic;
 import org.minima.objects.StateVariable;
 import org.minima.objects.Token;
 import org.minima.objects.Transaction;
@@ -99,7 +100,7 @@ public class TxPoWChecker {
 		}
 		
 		//Is the Transaction PoWerful enough..
-		if(txpow.isTransaction() && txpow.getTxnDifficulty().isMore(TxPoWMiner.BASE_TXN)) {
+		if(txpow.isTransaction() && txpow.getTxnDifficulty().isMore(Magic.MIN_TXPOW_WORK)) {
 			MinimaLogger.log("ERROR NET - Transaction not enough TxPOW: "+txpow.getTxnDifficulty()+" "+txpow);
 			return false;
 		}

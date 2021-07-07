@@ -15,14 +15,14 @@ import org.minima.utils.messages.MessageProcessor;
 
 public class TxPoWMiner extends MessageProcessor {
 	
-	public static final MiniData BASE_TXN 	= Crypto.MEGA_HASH;
-//	public static final MiniData BASE_TXN 	= Crypto.MAX_HASH;
 	public static final MiniData BASE_BLOCK = Crypto.MAX_HASH;
-	
+
+	/**
+	 * Different Mining Messages
+	 */
 	public static final String TXMINER_TESTHASHING  = "MINE_TESTHASHING";
 	public static final String TXMINER_MINETXPOW    = "MINE_MINETXPOW";
 	public static final String TXMINER_MEGAMINER    = "MINE_MEGAMINER";
-	
 	public static final String TXMINER_PULSE   		= "MINE_PULSE";
 	
 	//Mine a single Block

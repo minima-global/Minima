@@ -25,6 +25,7 @@ import org.minima.database.userdb.UserDB;
 import org.minima.database.userdb.java.JavaUserDB;
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
+import org.minima.objects.Magic;
 import org.minima.objects.StateVariable;
 import org.minima.objects.Token;
 import org.minima.objects.Transaction;
@@ -1049,27 +1050,36 @@ public class MinimaDB {
 		txpow.setTransaction(zTrans);
 		txpow.setWitness(zWitness);
 		
+		//DEBUG
+		if(tip.getBlockNumber().isMore(MiniNumber.THIRTYTWO)) {
+			BigInteger tMEGA_VAL 			= Crypto.MAX_VAL.divide(new BigInteger("200000"));	
+			MiniData   tMIN_TXPOW_WORK		= new MiniData("0x"+tMEGA_VAL.toString(16));
+			
+			txpow.getMagic().mDesiredMinTxPoWWork = tMIN_TXPOW_WORK;
+			
+//			int ranssize = 20000 + new Random().nextInt(20000);
+//			txpow.getMagic().mDesiredMaxTxPoWSize = new MiniNumber(ranssize);
+		}
+		
+		//The user defined Magic parameters
+		txpow.getMagic().calculateCurrentMax(tip);
+		
+		MinimaLogger.log("MAGIC "+tip.getBlockNumber()+" "+txpow.getMagic().toJSON().toString());
+				
 		//Block and Transaction difficulty
-		txpow.setTxDifficulty(TxPoWMiner.BASE_TXN);
+		txpow.setTxDifficulty(txpow.getMagic().getMinTxPowWork());
 		
 		//Are we debugging
 		if(GlobalParams.MINIMA_ZERO_DIFF_BLK) {
 			//Minimum Difficulty - any hash will do
 			txpow.setBlockDifficulty(TxPoWMiner.BASE_BLOCK);	
 		}else {
-			txpow.setBlockDifficulty(TxPoWMiner.BASE_TXN);		
+			txpow.setBlockDifficulty(Magic.MIN_TXPOW_WORK);		
 		}
 		
 		//Block Details..
 		MiniNumber currenttip = tip.getTxPow().getBlockNumber();
 		txpow.setBlockNumber(currenttip.increment());
-		
-		//DEBUG
-//		int ranssize = 20000 + new Random().nextInt(20000);
-//		txpow.getMagic().mDesiredMaxTxPoWSize = new MiniNumber(ranssize);
-		
-		//The user defined Magic parameters
-		txpow.getMagic().calculateCurrentMax(tip);
 		
 		//Do we have enough blocks to get an accurate speed reading..
 		if(!GlobalParams.MINIMA_ZERO_DIFF_BLK && currenttip.isMore(GlobalParams.MINIMA_BLOCKS_SPEED_CALC) ) {
@@ -1078,18 +1088,7 @@ public class MinimaDB {
 			
 			//Calculate the speed ratio
 			MiniNumber speedratio   = GlobalParams.MINIMA_BLOCK_SPEED.div(actualspeed);
-			
-//			//Check within acceptable parameters..
-//			MiniNumber high = MiniNumber.ONE.add(GlobalParams.MINIMA_MAX_SPEED_RATIO);
-//			MiniNumber low  = MiniNumber.ONE.sub(GlobalParams.MINIMA_MAX_SPEED_RATIO);
-//			if(speedratio.isMore(high)){
-//				//MinimaLogger.log("SPEED RATIO TOO HIGH : "+speedratio);
-//				speedratio = high;
-//			}else if(speedratio.isLess(low)){
-//				//MinimaLogger.log("SPEED RATIO TOO LOW : "+speedratio);
-//				speedratio = low;
-//			}
-			
+
 			//Current average
 			BigInteger avgdiff = mMainTree.getAvgChainDifficulty(tip);
 			BigDecimal avgdiffdec = new BigDecimal(avgdiff);
@@ -1099,8 +1098,8 @@ public class MinimaDB {
 			BigInteger newdiff    = newdiffdec.toBigInteger();
 						
 			//Check more than TX-MIN..
-			if(newdiff.compareTo(Crypto.MEGA_VAL)>0) {
-				newdiff = Crypto.MEGA_VAL;
+			if(newdiff.compareTo(Magic.MEGA_VAL)>0) {
+				newdiff = Magic.MEGA_VAL;
 			}
 							
 			//Create the hash

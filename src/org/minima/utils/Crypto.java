@@ -18,8 +18,14 @@ import org.minima.utils.digest.SHA256Digest;
  */
 public class Crypto {
 
+	/**
+	 * Minima MAX Hash length 2^512
+	 */
 	public static final int MINIMA_MAX_HASH_LENGTH = 64;
 	
+	/*
+	 * Largest Number
+	 */
 	public static final BigInteger MAX_VAL = new BigInteger(
 					  "FFFFFFFFFFFFFFFFFFFF"+
 					  "FFFFFFFFFFFFFFFFFFFF"+
@@ -30,6 +36,9 @@ public class Crypto {
 					  "FFFFFFFFFFFFFFFFFFFF"+
 					  "FFFF", 16); 
 	
+	/**
+	 * Largest HEX value
+	 */
 	public static final MiniData MAX_HASH = new MiniData(
 					"0xFFFFFFFFFFFFFFFFFFFF"+
 					  "FFFFFFFFFFFFFFFFFFFF"+
@@ -39,13 +48,6 @@ public class Crypto {
 					  "FFFFFFFFFFFFFFFFFFFF"+
 					  "FFFFFFFFFFFFFFFFFFFF"+
 					  "FFFF");
-	
-	/**
-	 * 1 Mega Hash - for now 100,000 - just to test..
-	 */
-	public static final BigInteger MEGA_VAL = MAX_VAL.divide(new BigInteger("100000"));	
-	public static final MiniData MEGA_HASH  = new MiniData("0x"+MEGA_VAL.toString(16));
-	
 	
 	/**
 	 * Get the default instance..
