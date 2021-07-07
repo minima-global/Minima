@@ -575,10 +575,9 @@ public class DAPPManager extends MessageProcessor {
 				//Delete the MySQL DB
 				SQL sqldel = new SQL(drop, minidapp);
 				sqldel.run();
-			}else {
-				//Close the DB connection..
 				
-				
+				//And Tell the SQL Handler..
+				SQLHandler.DropMySQLDB(db);	
 			}
 			
 			//UNINSTALL the DAPP
