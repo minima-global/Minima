@@ -9,7 +9,7 @@ public class consolidate extends CommandFunction {
 	public consolidate() {
 		super("consolidate");
 		
-		setHelp("(info|on|off)", "Merge your coins into fewer larger amounts. Turn auto consolidate ON or OFF. Default is ON.", "");
+		setHelp("(info|on|off)", "Merge your coins into fewer larger amounts. Turn auto consolidate ON or OFF. Default is OFF.", "");
 	}
 	
 	@Override
@@ -21,6 +21,8 @@ public class consolidate extends CommandFunction {
 		if(zInput.length > 1) {
 			String param = zInput[1];
 			msg.addString("param", param);
+		}else {
+			msg.addBoolean("manual", true);
 		}
 		
 		//Post It..

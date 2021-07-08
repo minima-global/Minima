@@ -8,12 +8,17 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Random;
+import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
 import org.minima.system.brains.BackupManager;
 import org.minima.system.network.commands.CMD;
+import org.minima.system.network.rpc.RPCClient;
 import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.SQLHandler;
@@ -27,7 +32,7 @@ public class Start {
 	/**
 	 * A list of default valid nodes to connect to at startup..
 	 */
-	public static final String[] VALID_BOOTSTRAP_NODES = 
+	public static String[] VALID_BOOTSTRAP_NODES = 
 		{"35.204.181.120",
 		 "35.204.119.15",
 		 "34.91.220.49",
@@ -35,7 +40,15 @@ public class Start {
 		 "35.204.139.141",
 		 "35.204.194.45"};
 	
-//	public static final String[] VALID_BOOTSTRAP_NODES = {"35.228.18.150"};
+	private static final String IPV4_PATTERN =
+            "^(([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])(\\.(?!$)|$)){4}$";
+
+    private static final Pattern pattern = Pattern.compile(IPV4_PATTERN);
+
+    public static boolean isValidIPv4(final String email) {
+        Matcher matcher = pattern.matcher(email);
+        return matcher.matches();
+    }
 	
 	/**
 	 * A static link to the main server - for Android
@@ -95,6 +108,54 @@ public class Start {
 	 * @param zArgs
 	 */
 	public static void main(String[] zArgs){
+		/**
+		 * Load the EXTRA public Minima servers for 0.98 - 0.99 has different P2P
+		 */
+		try {
+			//Get a list of the EXTRA Minima clients..
+			String extraclients = RPCClient.sendGET("http://34.118.59.216/pubextra.txt");
+		
+			//Now chop them up..
+			ArrayList<String> pubextra = new ArrayList<>();
+			StringTokenizer strtok = new StringTokenizer(extraclients,",");
+			while(strtok.hasMoreElements()) {
+				String ip = strtok.nextToken().trim();
+				if(isValidIPv4(ip)) {
+					pubextra.add(ip);
+				}else {
+					MinimaLogger.log("Invalid Extra Minima Peer : "+ip);
+				}
+			}
+			
+			//Now add all these nodes..
+			String[] newnodes = new String[VALID_BOOTSTRAP_NODES.length+pubextra.size()];
+			for(int i=0;i<VALID_BOOTSTRAP_NODES.length;i++) {
+				newnodes[i] = VALID_BOOTSTRAP_NODES[i];
+			}
+			
+			for(int i=0;i<pubextra.size();i++) {
+				newnodes[VALID_BOOTSTRAP_NODES.length+i] = pubextra.get(i);
+			}
+			
+			//Re-assign!
+			VALID_BOOTSTRAP_NODES = newnodes;
+			
+		} catch (Exception e1) {
+			MinimaLogger.log(e1);
+			
+			//RESET
+			VALID_BOOTSTRAP_NODES = new String[]{"35.204.181.120",
+												 "35.204.119.15",
+												 "34.91.220.49",
+												 "35.204.62.177",
+												 "35.204.139.141",
+												 "35.204.194.45"};
+			
+			MinimaLogger.log("Minima Bootstrap nodes reset : "+Arrays.toString(VALID_BOOTSTRAP_NODES));
+		}
+		
+//		MinimaLogger.log("Minima Bootstrap Nodes : "+Arrays.toString(VALID_BOOTSTRAP_NODES));
+		
 		//Check command line inputs
 		int arglen 				= zArgs.length;
 		

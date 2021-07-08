@@ -863,13 +863,19 @@ public class ConsensusUser extends ConsensusProcessor {
 					InputHandler.endResponse(zMessage, true, "AUTO Coin Consolidation turned OFF");
 					return;
 				}else if(param.equals("info")) {
-					boolean auto = prefs.getBoolean("consolidate", true);
+					boolean auto = prefs.getBoolean("consolidate", false);
 					InputHandler.getResponseJSON(zMessage).put("auto", auto);
 					infoonly = true;
 				}else {
 					InputHandler.endResponse(zMessage, false, "Unknown parameter : "+param);
 					return;
 				}
+			}
+			
+			//Is this a manual Consolidation
+			boolean manual = false;
+			if(zMessage.exists("manual")) {
+				manual = true;
 			}
 			
 			//List of tokens..
@@ -896,7 +902,15 @@ public class ConsensusUser extends ConsensusProcessor {
 					//Work out the details only..
 					consolidateTokenInfo(tokenid, coininfo);
 				}else {
-					consolidateToken(tokenid);
+					JSONArray coinret = null;
+					if(manual) {
+						coinret = consolidateToken(tokenid,1);
+					}else {
+						coinret = consolidateToken(tokenid,3);
+					}
+					
+					//Add to coininfo
+					coininfo.add(coinret);
 				}
 				
 				//Uses memory up.. clean it..
@@ -904,9 +918,9 @@ public class ConsensusUser extends ConsensusProcessor {
 			}
 			
 			//All done..
+			InputHandler.getResponseJSON(zMessage).put("coins", coininfo);
 			if(infoonly) {
-				InputHandler.getResponseJSON(zMessage).put("coins", coininfo);
-				InputHandler.endResponse(zMessage, true, "Coins Consolidation info. 5 Max consolidated - trigger on 3.");
+				InputHandler.endResponse(zMessage, true, "Coins Consolidation Info");
 			}else {
 				InputHandler.endResponse(zMessage, true, "Coins Consolidated");
 			}
@@ -960,7 +974,10 @@ public class ConsensusUser extends ConsensusProcessor {
 	}
 	
 	
-	private void consolidateToken(MiniData zTokenID) throws Exception {
+	private JSONArray consolidateToken(MiniData zTokenID, int zTrigger) throws Exception {
+		//The consolidated coins
+		JSONArray cons = new JSONArray();
+		
 		//A list of coins per pub key
 		Hashtable<String, ArrayList<Coin>> pubcoins = new Hashtable<>();
 		
@@ -988,7 +1005,7 @@ public class ConsensusUser extends ConsensusProcessor {
 		}
 	
 		int MAX_COLL = 5;
-		int TRIGGER  = 3;
+		int TRIGGER  = zTrigger;
 		
 		//Now create transactions..
 		Set<String> keys = pubcoins.keySet();
@@ -997,7 +1014,7 @@ public class ConsensusUser extends ConsensusProcessor {
 			int coinsize = allcoins.size();
 			
 			//Are there more than 1..
-			if(coinsize>=TRIGGER) {
+			if(coinsize>TRIGGER) {
 				MiniNumber totalval = MiniNumber.ZERO;
 				
 				//Now create a transaction
@@ -1034,6 +1051,15 @@ public class ConsensusUser extends ConsensusProcessor {
 				MinimaLogger.log("Consolidate "+usecoins.size()+"/"+allcoins.size()+" "+zTokenID.to0xString()
 						+" with pubkey "+key+" total value :"+showamount);
 		
+				//Add to response..
+				JSONObject ccoin = new JSONObject();
+				ccoin.put("token", zTokenID.to0xString());
+				ccoin.put("publickey", key);
+				ccoin.put("allcoins", allcoins.size());
+				ccoin.put("coins", usecoins.size());
+				ccoin.put("value", showamount.toString());
+				cons.add(ccoin);
+				
 				//Send back to me..
 				Address recipient = getMainDB().getUserDB().getCurrentAddress(getConsensusHandler());
 				
@@ -1086,6 +1112,8 @@ public class ConsensusUser extends ConsensusProcessor {
 				//MinimaLogger.log("Not enough "+zTokenID.to0xString()+" coins @ "+key+" only "+allcoins.size()+" coins..");
 			}
 		}
+		
+		return cons;
 	}
 	
 	
