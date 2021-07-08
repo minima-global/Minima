@@ -35,10 +35,14 @@ public class SQLHandler {
 	/**
 	 * Have we attempted to create this DB before
 	 */
-	private static ArrayList<String> MYSQL_CREATDATABASE = new ArrayList<String>();
+	private static ArrayList<String> MYSQL_CREATEDATABASE = new ArrayList<String>();
 	
 	public static boolean isMySQLEnabled() {
 		return mMySQL;
+	}
+	
+	public static void DropMySQLDB(String zDB) {
+		MYSQL_CREATEDATABASE.remove(zDB);
 	}
 	
 	public static boolean setMySQLDetails(String zHost, String zUser, String zPassword) {
@@ -144,8 +148,8 @@ public class SQLHandler {
 			String db  = getMiniDappMySQLName(zMiniDAppID);
 			
 			//Need to create the DB if not exists..
-			if(!MYSQL_CREATDATABASE.contains(db)) {
-				MYSQL_CREATDATABASE.add(db);
+			if(!MYSQL_CREATEDATABASE.contains(db)) {
+				MYSQL_CREATEDATABASE.add(db);
 				
 				Connection conn = DriverManager.getConnection(url,mMySQLUser,mMySQLPassword);
 	
