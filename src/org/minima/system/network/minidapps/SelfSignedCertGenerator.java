@@ -26,13 +26,10 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
 
-/**
- * Utility class for generating self-signed certificates.
- */
+
 public final class SelfSignedCertGenerator {
 
     public static final String CERTIFICATE_ALIAS = "MINIMA_NODE";
-    public static final String CERTIFICATE_NAME = "minima.keystore";
 
     private SelfSignedCertGenerator() {
     }
