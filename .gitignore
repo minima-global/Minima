@@ -5,10 +5,13 @@
 
 # Ignore Gradle build output directory
 build
+# Ignore the java docs directory
+docs
 
 # ignore IDE config and use instead the following command to re-generate them correctly: ./gradlew cleanEclipse eclipse 
 .settings/*
 .vscode/*
+.idea/*
 .settings/org.eclipse.buildship.core.prefs
 .settings/org.eclipse.jdt.core.prefs
 .classpath
