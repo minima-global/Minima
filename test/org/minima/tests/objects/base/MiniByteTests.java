@@ -10,11 +10,14 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import org.junit.Assert;
+import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 import org.minima.objects.base.MiniByte;
 
 public class MiniByteTests {
+
     @Test
     public void testValueBytes() {
         byte byt = 0;
@@ -56,8 +59,11 @@ public class MiniByteTests {
             InputStream inputStream = new ByteArrayInputStream(bos.toByteArray());
             DataInputStream dis = new DataInputStream(inputStream);
 
-            i.ReadFromStream(dis);
-            assertNotNull(i);
+            MiniByte i1 = MiniByte.ReadFromStream(dis);
+            assertNotNull(i1);
+
+            assertEquals(i.getValue(), i1.getValue());
+            assertEquals(i.getByteValue(), i1.getByteValue());
             System.out.println(" i is now equal to " + i);
         } catch (final IOException e) {
             System.out.println("IOException: " + e.toString() + " msg=" + e.getMessage());

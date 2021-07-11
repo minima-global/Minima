@@ -16,11 +16,12 @@ import org.junit.Test;
 import org.minima.objects.Coin;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.utils.json.JSONObject;
 
 public class CoinTests {
 
     @Test
-    public void testCoin() {
+    public void testConstructors() {
         MiniData md = Coin.COINID_OUTPUT;
         MiniData md3 = Coin.TOKENID_CREATE;
         MiniData md2 = Coin.MINIMA_TOKENID;
@@ -103,5 +104,40 @@ public class CoinTests {
             System.out.println("IOException: " + e.toString() + " msg=" + e.getMessage());
             assertTrue(" there should not be an IOException", false);
         }
+    }
+
+    @Test
+    public void testGettersAndSetters() {
+    }
+
+    @Test
+    public void testJSONConversion() {
+        MiniData coinId = MiniData.getRandomData(16);
+        MiniData coinAddress = MiniData.getRandomData(20);
+        MiniNumber twelve = MiniNumber.TWELVE;
+        MiniData tokenId = MiniData.getRandomData(16);
+        Coin c = new Coin(coinId, coinAddress, twelve, tokenId);
+
+        JSONObject json = c.toJSON();
+
+        assertTrue("JSON object should contain coinid key", json.containsKey("coinid"));
+        assertTrue("JSON object should contain address key", json.containsKey("address"));
+        assertTrue("JSON object should contain mxaddress key", json.containsKey("mxaddress"));
+        assertTrue("JSON object should contain amount key", json.containsKey("amount"));
+        assertTrue("JSON object should contain tokenid key", json.containsKey("tokenid"));
+        assertTrue("JSON object should contain floating key", json.containsKey("floating"));
+    }
+
+    @Test
+    public void testToString() {
+        MiniData coinId = MiniData.getRandomData(16);
+        MiniData coinAddress = MiniData.getRandomData(20);
+        MiniNumber twelve = MiniNumber.TWELVE;
+        MiniData tokenId = MiniData.getRandomData(16);
+        Coin c = new Coin(coinId, coinAddress, twelve, tokenId);
+
+        String exp_s = c.toJSON().toString();
+        String obj_s = c.toString();
+        assertEquals("should be equal ", exp_s, obj_s);
     }
 }
