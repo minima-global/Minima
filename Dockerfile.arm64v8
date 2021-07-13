@@ -6,7 +6,7 @@ COPY gradle gradle
 COPY gradlew settings.gradle build.gradle ./
 WORKDIR /usr/src/minima/
 # Call gradlew before copying the source code to only download the gradle distribution once (layer will be cached)
-#RUN ./gradlew --no-daemon -v
+RUN ./gradlew --no-daemon -v
 COPY lib lib
 COPY src src
 COPY test test

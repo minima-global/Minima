@@ -13,6 +13,10 @@ require('chai')
 require('chai').assert;
 
 // *** config ***
+DOCKER_P2P_PATH = '/root/.minima/p2p'
+DOCKER_HOST_CONFIG_ROOT = '/Users/jeromerousselot/src/minima/Minima/data-e2e'
+DOCKER_HOST_CONFIG_DIR = '/p2p'
+
 const cfg = {
     image: 'minima:latest',  // docker image name to run -> can be customised
     docker_net: "minima-e2e-testnet", // docker private network name -> MUST BE CREATED MANUALLY
@@ -23,12 +27,14 @@ const cfg = {
     hostConfig1: {  
 	    AutoRemove: true, // comment this out to inspect stopped containers
             NetworkMode: "minima-e2e-testnet",  
-	    'Binds': ['/Users/jeromerousselot/src/minima/Minima/node1/p2p:/root/.minima/p2p'],
+            'Binds': [],
+	    //'Binds': [ DOCKER_HOST_CONFIG_ROOT + '/node1' + DOCKER_HOST_CONFIG_DIR + ':' + DOCKER_P2P_PATH],
             CpuShares: 10,   // node 1 in private mode uses auto-mining and aim for 100% CPU usage, so we throttle it
     },
     hostConfig:  {  
             AutoRemove: true, // comment this out to inspect stopped containers
             NetworkMode: "minima-e2e-testnet",
+            'Binds': [],
             CpuShares: 10,
     },
     // unused - can be applied on a node to expose its RPC port on localhost - not needed for our tests
@@ -63,6 +69,8 @@ function sleep(ms) {
 
 const start_docker_node_1 = async function (topology, nbNodes, tests_collection) {
     console.log("Creating container 1");
+    // set node 1 config path
+    cfg.hostConfig1.Binds = [ DOCKER_HOST_CONFIG_ROOT + '/node' + '1' + DOCKER_HOST_CONFIG_DIR + ':' + DOCKER_P2P_PATH];
     // Create the container.
     containers["1"] = await createMinimaContainer(cfg.node1_args, cfg.node_prefix + "1", cfg.hostConfig1);
     // Start the container.
@@ -116,6 +124,7 @@ start_other_nodes_star = async function(nbNodes, tests_collection) {
     for (let pos = 2; pos < nbNodes+1; pos++) {
         var node_args = get_node_args(cfg.TOPO_STAR, pos);
         console.log("topo star node " + pos + " args: " + node_args);
+        cfg.hostConfig.Binds = [ DOCKER_HOST_CONFIG_ROOT + '/node' + pos + DOCKER_HOST_CONFIG_DIR + ':' + DOCKER_P2P_PATH];
         containers[pos] = await createMinimaContainer(node_args, cfg.node_prefix + pos, cfg.hostConfig);
         // Start the container.
 
