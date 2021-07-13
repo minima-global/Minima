@@ -108,12 +108,12 @@ get_node_args = function(topology, pos) {
     } else if (topology === cfg.TOPO_LINE) {
         node_args = ["-connect", ip_addrs['' + (pos - 1)], "9001"];
     } else if (topology === cfg.TOPO_CLUSTER) {
-        if (pos < 5 + 1) {
+        if (pos < 3 + 1) {
             for(let i = 1; i < pos; i++) {
                 node_args.push("-connect", ip_addrs['' + i], "9001");
             }
         } else {
-            var rn = Math.ceil(Math.random() * 5);
+            var rn = Math.ceil(Math.random() * 3);
             node_args.push("-connect", ip_addrs['' + rn], '9001');
         }
     }
