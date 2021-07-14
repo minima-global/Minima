@@ -1,34 +1,11 @@
 package org.minima.system.network.minidapps;
 
-import java.io.File;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
 import org.minima.system.brains.BackupManager;
 import org.minima.system.network.commands.CMD;
-import org.minima.system.network.minidapps.minihub.hexdata.downloadpng;
-import org.minima.system.network.minidapps.minihub.hexdata.faviconico;
-import org.minima.system.network.minidapps.minihub.hexdata.helphtml;
-import org.minima.system.network.minidapps.minihub.hexdata.iconpng;
-import org.minima.system.network.minidapps.minihub.hexdata.indexhtml;
-import org.minima.system.network.minidapps.minihub.hexdata.installdapphtml;
-import org.minima.system.network.minidapps.minihub.hexdata.manropettf;
-import org.minima.system.network.minidapps.minihub.hexdata.minidapphubpng;
-import org.minima.system.network.minidapps.minihub.hexdata.minidappscss;
-import org.minima.system.network.minidapps.minihub.hexdata.sharepng;
-import org.minima.system.network.minidapps.minihub.hexdata.tilegreyjpeg;
-import org.minima.system.network.minidapps.minihub.hexdata.uninstalldapphtml;
-import org.minima.system.network.minidapps.minihub.hexdata.uninstallpng;
+import org.minima.system.network.minidapps.minihub.hexdata.*;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
@@ -39,6 +16,17 @@ import org.minima.utils.nanohttpd.protocols.http.NanoHTTPD;
 import org.minima.utils.nanohttpd.protocols.http.request.Method;
 import org.minima.utils.nanohttpd.protocols.http.response.Response;
 import org.minima.utils.nanohttpd.protocols.http.response.Status;
+
+import javax.net.ssl.KeyManagerFactory;
+import java.io.File;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.security.*;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.*;
 
 public class DAPPServer extends NanoHTTPD{
 
@@ -60,15 +48,37 @@ public class DAPPServer extends NanoHTTPD{
 	
 	public DAPPServer(int zPort, DAPPManager zDAPPManager) {
 		super(zPort);
-		
+
 		mDAPPManager = zDAPPManager;
-		mBackup      = Main.getMainHandler().getBackupManager();
-		mWebRoot     = mBackup.getWebRoot();
-		
+		mBackup = Main.getMainHandler().getBackupManager();
+		mWebRoot = mBackup.getWebRoot();
 		//Store of all the params and files for a MiniDAPP..
 		mParams = new Hashtable<>();
-	}
+		try {
+			KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
+			keyPairGenerator.initialize(4096);
+			KeyPair keyPair = keyPairGenerator.generateKeyPair();
+			final X509Certificate cert = SelfSignedCertGenerator.generate(keyPair, "SHA256withRSA", "localhost", 730);
+			KeyStore keystore = SelfSignedCertGenerator.createKeystore(cert, keyPair.getPrivate());
+			KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+			keyManagerFactory.init(keystore, "MINIMAPWD".toCharArray());
 
+			makeSecure(NanoHTTPD.makeSSLSocketFactory(keystore, keyManagerFactory), null);
+		}
+		catch (IOException e) {
+			MinimaLogger.log("MiniDAPP server error " + e.toString());
+		} catch (KeyStoreException e) {
+			MinimaLogger.log("MiniDAPP KeyStoreException " + e.toString());
+		} catch (NoSuchAlgorithmException e) {
+			MinimaLogger.log("MiniDAPP NoSuchAlgorithmException " + e.toString());
+		} catch (UnrecoverableKeyException e) {
+			MinimaLogger.log("MiniDAPP UnrecoverableKeyException " + e.toString());
+		} catch (CertificateException e) {
+			MinimaLogger.log("MiniDAPP CertificateException " + e.toString());
+		} catch (java.lang.Exception e){
+			MinimaLogger.log("MiniDAPP server error " + e.toString());
+		}
+	}
 	@Override
     public Response serve(IHTTPSession session) {
         try {
