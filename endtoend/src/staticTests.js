@@ -130,7 +130,7 @@ start_other_nodes_star = async function(nbNodes, tests_collection) {
 
         await containers[pos].start();
 
-        await sleep(10000);
+        await sleep(20000);
         console.log("node " + pos);
         await starContainerInspect(pos, nbNodes, tests_collection);
       }
@@ -161,7 +161,7 @@ start_other_nodes_line = async function (nbNodes, pos, tests_collection) {
 
     // Start the container.
     await containers[pos].start();
-    await sleep(10000);
+    await sleep(20000);
 
     await lineContainerInspect(pos, nbNodes, tests_collection);
 }
@@ -191,7 +191,7 @@ start_other_nodes_cluster = async function (nbNodes, pos, tests_collection) {
 
     // Start the container.
     await containers[pos].start();
-    await sleep(10000);
+    await sleep(20000);
 
     await clusterContainerInspect(pos, nbNodes, tests_collection);
 }
