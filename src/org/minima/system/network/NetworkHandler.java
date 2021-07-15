@@ -1,11 +1,24 @@
 package org.minima.system.network;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Random;
+
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLServerSocketFactory;
+import javax.net.ssl.SSLSocketFactory;
 
 import org.minima.Start;
 import org.minima.system.Main;
@@ -15,6 +28,7 @@ import org.minima.system.network.base.MinimaClient;
 import org.minima.system.network.base.MinimaServer;
 import org.minima.system.network.maxima.Maxima;
 import org.minima.system.network.minidapps.DAPPManager;
+import org.minima.system.network.minidapps.SelfSignedCertGenerator;
 import org.minima.system.network.minidapps.websocket.WebSocketManager;
 import org.minima.system.network.rpc.RPCServer;
 import org.minima.system.network.sshtunnel.SSHTunnel;
@@ -23,6 +37,7 @@ import org.minima.utils.json.JSONArray;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageProcessor;
 import org.minima.utils.messages.TimerMessage;
+import org.minima.utils.nanohttpd.protocols.http.NanoHTTPD;
 
 public class NetworkHandler extends MessageProcessor {
 
@@ -117,6 +132,12 @@ public class NetworkHandler extends MessageProcessor {
 	int mBasePort;
 	
 	/**
+	 * SSL Socket Factory
+	 */
+	SSLServerSocketFactory mSSLFactory;
+	boolean SSL_ENABLED = true;
+	
+	/**
 	 * 
 	 * @param zMain
 	 */
@@ -138,6 +159,41 @@ public class NetworkHandler extends MessageProcessor {
 		mBasePort   = zMainPort;
 		mRemoteMinima = mBasePort;
 		mRemoteMaxima = mBasePort+4;
+		
+		//SSL Factory
+		try {
+			KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
+			keyPairGenerator.initialize(4096);
+			KeyPair keyPair = keyPairGenerator.generateKeyPair();
+			final X509Certificate cert = SelfSignedCertGenerator.generate(keyPair, "SHA256withRSA", "localhost", 730);
+			KeyStore keystore = SelfSignedCertGenerator.createKeystore(cert, keyPair.getPrivate());
+			KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+			keyManagerFactory.init(keystore, "MINIMAPWD".toCharArray());
+
+			//And create!
+			mSSLFactory =  NanoHTTPD.makeSSLSocketFactory(keystore, keyManagerFactory);
+		
+		}catch (IOException e) {
+			MinimaLogger.log("MiniDAPP server error " + e.toString());
+		} catch (KeyStoreException e) {
+			MinimaLogger.log("MiniDAPP KeyStoreException " + e.toString());
+		} catch (NoSuchAlgorithmException e) {
+			MinimaLogger.log("MiniDAPP NoSuchAlgorithmException " + e.toString());
+		} catch (UnrecoverableKeyException e) {
+			MinimaLogger.log("MiniDAPP UnrecoverableKeyException " + e.toString());
+		} catch (CertificateException e) {
+			MinimaLogger.log("MiniDAPP CertificateException " + e.toString());
+		} catch (java.lang.Exception e){
+			MinimaLogger.log("MiniDAPP SSL create error " + e.toString());
+		}
+	}
+	
+	public SSLServerSocketFactory getSSLServerFactory() {
+		return mSSLFactory;
+	}
+	
+	public boolean isSSLEnabled() {
+		return SSL_ENABLED;
 	}
 	
 	public void sshHardSetIP(boolean zRemoteOn, String zIP, int zRemoteBase) {

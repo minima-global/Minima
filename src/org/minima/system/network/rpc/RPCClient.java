@@ -99,7 +99,7 @@ public class RPCClient {
 
 	    
 //		String host = "127.0.0.1";
-//		int port    = 9005;
+//		int port    = 9002;
 //		String request = "status";
 //		
 //		try {			
@@ -124,10 +124,11 @@ public class RPCClient {
 //		}
 		
 		//String url = "https://incentivedb.minima.global/items/directus_users?filter={ \"email\": { \"_eq\": \"'+this.username.value+'\" }}'";
-		String url = "https://127.0.0.1:2305/hello";
+		String url = "https://127.0.0.1:9002/status";
 		
 		String ret = sendGET(url);
 		
 		System.out.println(ret);
+		
 	}
 }
