@@ -66,6 +66,7 @@ public class P2PStart extends MessageProcessor {
     public static final String P2P_START_SCAN = "P2P_START_SCAN";
     public static final String P2P_STOP_SCAN = "P2P_STOP_SCAN";
     public static final String P2P_SAVE_NEIGHBOURS = "P2P_SAVE_NEIGHBOURS";
+    public static final int    P2P_SCAN_INTERVAL = 10*1000; // sync neighbours table from p2p layer every N ms.
     public static final int    SAVE_NEIGHBOURS_DELAY = 10*1000; // save list every 10 seconds
     public static final String COMMA_DELIMITER = ",";
     private String mConfFolder;
@@ -208,8 +209,8 @@ public class P2PStart extends MessageProcessor {
             + " , discovery address: " + discAddr.get());
             System.out.println("Starting discovery loop info");
             activeKnownNodes = new HashSet<>();
-            PostMessage(P2P_START_SCAN); // could also be a TimerMessage
-            PostMessage(P2P_SAVE_NEIGHBOURS); // for now we save neighbours at the end of each scan, this timer is not used
+            PostTimerMessage(new TimerMessage(P2P_SCAN_INTERVAL, P2P_START_SCAN)); // could also be a TimerMessage
+            // PostMessage(P2P_SAVE_NEIGHBOURS); // for now we save neighbours at the end of each scan, this timer is not used
             // PostTimerMessage(new TimerMessage(SAVE_NEIGHBOURS_DELAY, P2P_SAVE_NEIGHBOURS));
         } else {
             // initialization failed - what do we do?
@@ -289,10 +290,14 @@ public class P2PStart extends MessageProcessor {
 
         if(zMessage.isMessageType(P2P_START_SCAN)) {
             p2pAddNewNodes();
-            // saveP2PNeighbours(); // for now save neighbours list after each scan
+            // timer must be re-sent each time
+            PostTimerMessage(new TimerMessage(P2P_SCAN_INTERVAL, P2P_START_SCAN));
         } else if(zMessage.isMessageType(P2P_SAVE_NEIGHBOURS)) {
           //  saveP2PNeighbours();
-        }   
+        }  else if(zMessage.isMessageType(P2P_STOP_SCAN)) {
+            // TODO: stop scanning
+            // also stop P2P layer?
+        }
     }
 
     private PrivKey loadNodePrivateKey(File mP2PNodePrivKeyFile) {
@@ -407,89 +412,92 @@ public class P2PStart extends MessageProcessor {
     }
 
     private void p2pAddNewNodes() {
-        if(network != null) {
+        logger.debug("p2pAddNewNodes: start");
+        if (network != null) {
             Set<InetSocketAddress> activeKnownNodes = new HashSet<>();
-            while (true) {
-                // we dont really care about this list...
-                network.streamPeers().filter(peer -> peer.getId() != null).forEach(peer -> {
-                    logger.debug("peer: id=" + peer.getId()); // peer address == peer id and " isConnected=" true
-                    
-                });
-                                
-                ArrayList<MinimaClient> mClients = mNetwork.getNetClients();
 
-                Set<String> knownNodeIDs = new HashSet<>();
+            // // we dont really care about this list...
+            // network.streamPeers().filter(peer -> peer.getId() != null).forEach(peer -> {
+            //     logger.debug("peer: id=" + peer.getId()); // peer address == peer id and " isConnected=" true
+            // });
 
-                for(MinimaClient mClient: mClients) {
-                    logger.debug(" mclient nodeid=" + mClient.getNodeID() + ", nodeRecord=" + mClient.getNodeRecord());
-                    knownNodeIDs.add(mClient.getNodeID());
+            ArrayList<MinimaClient> mClients = mNetwork.getNetClients();
+
+            Set<String> knownNodeIDs = new HashSet<>();
+
+            for (MinimaClient mClient : mClients) {
+                logger.debug(" mclient nodeid=" + mClient.getNodeID() + ", nodeRecord=" + mClient.getNodeRecord());
+                knownNodeIDs.add(mClient.getNodeID());
+            }
+
+            Set<InetSocketAddress> newActiveNodes = new HashSet<>();
+            Set<MinimaNodeInfo> unconnectedNewNodes = new HashSet<>();
+            network.streamKnownDiscoveryPeers().forEach(discoPeer -> { // disc peer node address should be
+                                                                       // inetsocketaddr
+                PeerId peerid = new PeerId(discoPeer.getNodeID().toArray());
+                // nodeAddress: enr_ip:enr_port
+                // pubkey:enr_secp256k1
+                // nodeid: derived(enr_secp256k1)
+                logger.debug("discovery peer: " + discoPeer.getNodeAddress() + " pubkey=" + discoPeer.getPublicKey()
+                        + " peerid: " + peerid + " nodeid:" + discoPeer.getNodeID().toHexString() + " enr: "
+                        + discoPeer.getNodeRecord());
+                // TODO: establish link between Bytes nodeID and libp2p nodeid / peerid
+                // TODO: verify values for nodeid and enr and filter existing nodes vs new based
+                // on nodeid
+                // Optional<DiscoveryPeer> tmpdiscopeer =
+                // NodeRecordConverter.convertToDiscoveryPeer(discoPeer.getNodeRecord());
+
+                // nodeRecord.getNodeId()
+                newActiveNodes.add(discoPeer.getNodeAddress());
+
+                if (!knownNodeIDs.contains(discoPeer.getNodeID().toString())) {
+                    logger.debug("FOUND NEW NODE: nodeid:" + discoPeer.getNodeID().toString() + " "
+                            + discoPeer.getNodeRecord().toString());
+                    MinimaNodeInfo aNewNodeInfo = new MinimaNodeInfo(discoPeer.getNodeID().toHexString(),
+                            discoPeer.getNodeRecord().toString(), discoPeer.getNodeAddress(),
+                            getDiscoMultiAddrTCPFromENR(discoPeer.getNodeRecord(), discoPeer.getPublicKey().toArray()));
+                    unconnectedNewNodes.add(aNewNodeInfo);
+                    allDiscoveredNodes2.put(aNewNodeInfo.nodeID, aNewNodeInfo);
+                } else {
+                    logger.debug("SKIPPING an already connected node: nodeid:" + discoPeer.getNodeID().toHexString()
+                            + " " + discoPeer.getNodeRecord().toString());
                 }
+            });
 
-                Set<InetSocketAddress> newActiveNodes = new HashSet<>();
-                Set<MinimaNodeInfo> unconnectedNewNodes = new HashSet<>();
-                network.streamKnownDiscoveryPeers()
-                        .forEach(discoPeer -> { // disc peer node address should be inetsocketaddr
-                            PeerId peerid = new PeerId(discoPeer.getNodeID().toArray());
-                            // nodeAddress: enr_ip:enr_port
-                            // pubkey:enr_secp256k1
-                            // nodeid: derived(enr_secp256k1)
-                            logger.debug("discovery peer: " + discoPeer.getNodeAddress() + " pubkey=" + discoPeer.getPublicKey()
-                                        + " peerid: " + peerid 
-                                        + " nodeid:" + discoPeer.getNodeID().toHexString() + " enr: " + discoPeer.getNodeRecord()); 
-                            //TODO: establish link between Bytes nodeID and libp2p nodeid / peerid
-                            //TODO: verify values for nodeid and enr and filter existing nodes vs new based on nodeid      
-                            //Optional<DiscoveryPeer> tmpdiscopeer = NodeRecordConverter.convertToDiscoveryPeer(discoPeer.getNodeRecord());
+            Set<InetSocketAddress> delta = new HashSet<InetSocketAddress>(newActiveNodes);
+            delta.removeAll(activeKnownNodes); // now contains only new sockets
 
-                            //nodeRecord.getNodeId()
-                            newActiveNodes.add(discoPeer.getNodeAddress());
-
-                            if(!knownNodeIDs.contains(discoPeer.getNodeID().toString())) {
-                                logger.debug("FOUND NEW NODE: nodeid:" + discoPeer.getNodeID().toString() + " " + discoPeer.getNodeRecord().toString());
-                                MinimaNodeInfo aNewNodeInfo = new MinimaNodeInfo(discoPeer.getNodeID().toHexString(),
-                                     discoPeer.getNodeRecord().toString(), 
-                                    discoPeer.getNodeAddress(),
-                                    getDiscoMultiAddrTCPFromENR(discoPeer.getNodeRecord(), discoPeer.getPublicKey().toArray())
-                                );
-                                unconnectedNewNodes.add(aNewNodeInfo);
-                                allDiscoveredNodes2.put(aNewNodeInfo.nodeID, aNewNodeInfo);
-                            } else {
-                                logger.debug("SKIPPING an already connected node: nodeid:" + discoPeer.getNodeID().toHexString() + " " + discoPeer.getNodeRecord().toString());
-                            }
-                        });
-
-                
-                Set<InetSocketAddress> delta = new HashSet<InetSocketAddress>(newActiveNodes);
-                delta.removeAll(activeKnownNodes); //now contains only new sockets
-
-                for(MinimaNodeInfo i: unconnectedNewNodes) {
-                    logger.info("New peer address: " + i.socket.toString().substring(1));
-                    // TODO: replace ENR with nodeID, but P2PStart.nodeID is not the correct value (16... and not the bytes)
-                    if (i.nodeRecord.compareTo(network.getENR())==0) { 
-                        logger.warn("IGNORING node ENR in list of new peers."); 
-                    } else if(i.nodeRecord == null || i.nodeID == null) {
-                        logger.warn("IGNORING empty nodeRecord or nodeID."); 
-                    } else {
-                        logger.info("CONNECTING to new ENR " + i.nodeRecord);
-                        System.out.println("Starting MinimaClient: " + i.socket.toString().substring(1) + ":9001");
-                        String nodeRecord = i.nodeRecord, nodeID = i.nodeID;
-                        MinimaClient mclient = new MinimaClient(i.socket.getAddress().toString().substring(1), 9001, mNetwork, nodeID, nodeRecord); // hardcode port for now
-                        mNetwork.PostMessage(new Message(NetworkHandler.NETWORK_NEWCLIENT).addObject("client", mclient));
-                    }
-                }
-
-                // update known nodes
-                activeKnownNodes = newActiveNodes;
-
-                // save list
-                saveP2PNeighbours(); 
-                try {
-                    Thread.sleep(5000);
-                    PostMessage(P2P_START_SCAN);
-                } catch(Exception e) {
-
+            for (MinimaNodeInfo i : unconnectedNewNodes) {
+                logger.info("New peer address: " + i.socket.toString().substring(1));
+                // TODO: replace ENR with nodeID, but P2PStart.nodeID is not the correct value
+                // (16... and not the bytes)
+                if (i.nodeRecord.compareTo(network.getENR()) == 0) {
+                    logger.warn("IGNORING node ENR in list of new peers.");
+                } else if (i.nodeRecord == null || i.nodeID == null) {
+                    logger.warn("IGNORING empty nodeRecord or nodeID.");
+                } else {
+                    logger.info("CONNECTING to new ENR " + i.nodeRecord);
+                    System.out.println("Starting MinimaClient: " + i.socket.toString().substring(1) + ":9001");
+                    String nodeRecord = i.nodeRecord, nodeID = i.nodeID;
+                    MinimaClient mclient = new MinimaClient(i.socket.getAddress().toString().substring(1), 9001,
+                            mNetwork, nodeID, nodeRecord); // hardcode port for now
+                    mNetwork.PostMessage(new Message(NetworkHandler.NETWORK_NEWCLIENT).addObject("client", mclient));
                 }
             }
+
+            // update known nodes
+            activeKnownNodes = newActiveNodes;
+
+            // save list
+            saveP2PNeighbours();
+            // try {
+            // Thread.sleep(5000);
+            // PostMessage(P2P_START_SCAN);
+            // } catch(Exception e) {
+
+            // }
         }
+        logger.debug("p2pAddNewNodes: end");
     }
 
     public String getDiscoMultiAddrTCPFromENR(String ENR, byte[] marshalledPubKey)  {
