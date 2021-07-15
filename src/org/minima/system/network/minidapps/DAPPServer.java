@@ -63,7 +63,7 @@ public class DAPPServer extends NanoHTTPD{
 			KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
 			keyManagerFactory.init(keystore, "MINIMAPWD".toCharArray());
 
-			makeSecure(NanoHTTPD.makeSSLSocketFactory(keystore, keyManagerFactory), null);
+			//makeSecure(NanoHTTPD.makeSSLSocketFactory(keystore, keyManagerFactory), null);
 		}
 		catch (IOException e) {
 			MinimaLogger.log("MiniDAPP server error " + e.toString());
