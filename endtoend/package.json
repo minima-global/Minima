@@ -10,6 +10,8 @@
   "license": "ISC",
   "dependencies": {
     "axios": "^0.21.1",
+    "bn.js": "^4.11.9",
+    "bn.js-types": "^1.0.1",
     "chai": "^4.3.0",
     "chai-as-promised": "^7.1.1",
     "chai-bn": "^0.2.1",

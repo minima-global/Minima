@@ -41,7 +41,8 @@ const cfg = {
     hostCfgExpose: { NetworkMode: "minima-e2e-testnet", PortBindings: {"9002/tcp": [ { "HostPort": "9002"} ] } },
     host_port: 9002,
     TOPO_STAR: "star",
-    TOPO_LINE: "line"
+    TOPO_LINE: "line",
+    TOPO_CLUSTER: "cluster"
 }
 
 var containers = {};
@@ -95,21 +96,26 @@ const runContainerInspect = (topology, nbNodes, tests_collection) => {
 }
 
 get_node_args = function(topology, pos) {
-    var parent = 0;
-    if(topology === cfg.TOPO_STAR) {
-        parent = ip_addrs["1"];
-    } else if (topology === cfg.TOPO_LINE) {
-        parent = ip_addrs['' + (pos - 1)];
-    }
-    p2p = true;
-    var node_args;
+    p2p = false;
+    var node_args = [];
     if(p2p) {
 
          // these two fields must be retrieved programmatically from node1
          // node_args = ["-p2p-static","/ip4/172.18.0.2/udp/11522/p2p/16Uiu2HAkvSYiDo3G4Cw7XVicPK5BMjgm8vMHKYtGNCWQvskV3RdQ","-p2p-bootnode","enr:-Iu4QDirGhMYfgvNha7PVhMshqn1INf8ZjV2As0YkMgszLR1OlglWz68HjTLNxUml_BHbNGmq1C9zM3OyQiJzjX6YJYBgmlkgnY0gmlwhKwSAAKJc2VjcDI1NmsxoQIPFQyakHo15u_GazoWP_L3Qboxkjgpv2gK-Des9SMZj4N0Y3CCLQKDdWRwgi0C"];
          node_args = ["-p2p-static", p2pdiscoveryaddr, "-p2p-bootnode", p2penr];
-    } else {
-         node_args = ["-connect", parent, "9001"];
+    } else if (topology === cfg.TOPO_STAR) {
+         node_args = ["-connect", ip_addrs["1"], "9001"];
+    } else if (topology === cfg.TOPO_LINE) {
+        node_args = ["-connect", ip_addrs['' + (pos - 1)], "9001"];
+    } else if (topology === cfg.TOPO_CLUSTER) {
+        if (pos < 3 + 1) {
+            for(let i = 1; i < pos; i++) {
+                node_args.push("-connect", ip_addrs['' + i], "9001");
+            }
+        } else {
+            var rn = Math.ceil(Math.random() * 3);
+            node_args.push("-connect", ip_addrs['' + rn], '9001');
+        }
     }
     return node_args;
 }
@@ -124,7 +130,7 @@ start_other_nodes_star = async function(nbNodes, tests_collection) {
 
         await containers[pos].start();
 
-        await sleep(10000);
+        await sleep(20000);
         console.log("node " + pos);
         await starContainerInspect(pos, nbNodes, tests_collection);
       }
@@ -155,7 +161,7 @@ start_other_nodes_line = async function (nbNodes, pos, tests_collection) {
 
     // Start the container.
     await containers[pos].start();
-    await sleep(10000);
+    await sleep(20000);
 
     await lineContainerInspect(pos, nbNodes, tests_collection);
 }
@@ -175,11 +181,43 @@ const lineContainerInspect = (pos, nbNodes, tests_collection) => {
     })
 }
 
+start_other_nodes_cluster = async function (nbNodes, pos, tests_collection) {
+    if (pos < 2 || pos > nbNodes) {
+        return;
+    }
+    var node_args = get_node_args(cfg.TOPO_CLUSTER, pos);
+    console.log("topo cluster node " + pos + " args: " + node_args);
+    containers[pos] = await createMinimaContainer(node_args, cfg.node_prefix + pos, cfg.hostConfig);
+
+    // Start the container.
+    await containers[pos].start();
+    await sleep(20000);
+
+    await clusterContainerInspect(pos, nbNodes, tests_collection);
+}
+
+const clusterContainerInspect = (pos, nbNodes, tests_collection) => {
+    return new Promise((resolve) => {
+        containers[''+pos].inspect(async function(err, data) {
+            console.log("Started node " + pos + " IP:  " + JSON.stringify(data.NetworkSettings.Networks[cfg.docker_net].IPAddress));
+            ip_addrs[pos] = data.NetworkSettings.Networks[cfg.docker_net].IPAddress;
+            if(pos == nbNodes) {
+                await sleep(5000);
+                resolve(tests_collection(0, ip_addrs))
+            } else {
+                resolve(start_other_nodes_cluster(nbNodes, pos+1, tests_collection))
+            }
+        })
+    })
+}
+
 start_other_nodes = async function (topology, nbNodes, tests_collection) {
     if(topology === cfg.TOPO_STAR) {
         await start_other_nodes_star(nbNodes, tests_collection);
     } else if(topology === cfg.TOPO_LINE) {
         await start_other_nodes_line(nbNodes, 2, tests_collection);
+    } else if(topology === cfg.TOPO_CLUSTER) {
+        await start_other_nodes_cluster(nbNodes, 2, tests_collection);
     } else {
         console.log("Unsupported topology! This error should be caught earlier.");
         console.log("    topology=" + topology);
@@ -247,7 +285,7 @@ stop_docker_nodes = async function() {
 
 // setup a network of nbNodes minima nodes in star topology and runs tests_collection on it with argument ip_addrs[node_prefix+ "01"] .
 start_static_network_tests = async function (topology, nbNodes, nodeFailure, tests_collection) {
-    if(!(topology === cfg.TOPO_STAR || topology === cfg.TOPO_LINE)) {
+    if(!(topology === cfg.TOPO_STAR || topology === cfg.TOPO_LINE || topology === cfg.TOPO_CLUSTER)) {
         console.log("Error! Unsupported topology: " + topology);
         return;
     }

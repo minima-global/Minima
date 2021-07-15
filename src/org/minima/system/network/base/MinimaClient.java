@@ -78,6 +78,7 @@ public class MinimaClient extends MessageProcessor {
 	//The Host and Port
 	String mHost;
 	int    mPort;
+	int    mLocalPort;
 	
 	//Ping each other to know you are still up and running.. every 10 mins..
 	public static final int PING_INTERVAL = 1000 * 60 * 10;
@@ -89,7 +90,12 @@ public class MinimaClient extends MessageProcessor {
 	boolean mReconnect     = false;
 	int mReconnectAttempts = 0;
 
-		/**
+	/**
+	 * Incoming or Outgoing
+	 */
+	boolean mIncoming;
+	
+	/**
 	 * Constructor
 	 * 
 	 * @param zSock
@@ -117,6 +123,7 @@ public class MinimaClient extends MessageProcessor {
 		//Store
 		mHost = zHost;
 		mPort = zPort;
+		mLocalPort = zPort;
 		
 		//We will attempt to reconnect if this connection breaks..
 		mReconnect  = true;
@@ -127,6 +134,9 @@ public class MinimaClient extends MessageProcessor {
 		//Create a UID
 		mUID = ""+Math.abs(new Random().nextInt());
 		
+		//Outgoing connection
+		mIncoming = false;
+		
 		//Start the connection
 		PostMessage(NETCLIENT_INITCONNECT);
 	}
@@ -136,13 +146,14 @@ public class MinimaClient extends MessageProcessor {
 		
 		//This is an incoming connection.. no reconnect attempt
 		mReconnect = false;
-		
+				
 		//Store
 		mSocket 		= zSock;
 		
 		//Store
 		mHost = mSocket.getInetAddress().getHostAddress();
 		mPort = mSocket.getPort();
+		mLocalPort = mSocket.getLocalPort();
 		
 		//Main network Handler
 		mNetworkMain 	= zNetwork;
@@ -150,6 +161,9 @@ public class MinimaClient extends MessageProcessor {
 		//Create a UID
 		mUID = ""+Math.abs(new Random().nextInt());
 		
+		//Incoming connection
+		mIncoming = true;
+				
 		//Start the system..
 		PostMessage(NETCLIENT_STARTUP);
 	}
@@ -178,6 +192,14 @@ public class MinimaClient extends MessageProcessor {
 		return mUID;
 	}
 	
+	public boolean isIncoming() {
+		return mIncoming;
+	}
+	
+	public int getLocalPort() {
+		return mLocalPort;
+	}
+	
 	public String getNodeID() {
 		return nodeID;
 	}
@@ -196,6 +218,8 @@ public class MinimaClient extends MessageProcessor {
 		ret.put("uid", mUID);
 		ret.put("host", getHost());
 		ret.put("port", getPort());
+		ret.put("localport", getLocalPort());
+		ret.put("incoming", mIncoming);
 		
 		return ret;
 	}
