@@ -30,6 +30,7 @@ import org.minima.system.network.maxima.Maxima;
 import org.minima.system.network.minidapps.DAPPManager;
 import org.minima.system.network.minidapps.SelfSignedCertGenerator;
 import org.minima.system.network.minidapps.websocket.WebSocketManager;
+import org.minima.system.network.rpc.NanoRPCServer;
 import org.minima.system.network.rpc.RPCServer;
 import org.minima.system.network.sshtunnel.SSHTunnel;
 import org.minima.utils.MinimaLogger;
@@ -67,7 +68,8 @@ public class NetworkHandler extends MessageProcessor {
 	/**
 	 * The RPC server listening for remote commands
 	 */
-	RPCServer mRPCServer;
+//	RPCServer mRPCServer;
+	NanoRPCServer mNanoRPC;
 	
 	/**
 	 * DAPP Server
@@ -299,9 +301,9 @@ public class NetworkHandler extends MessageProcessor {
 		return mServer;
 	}
 	
-	public RPCServer getRPCServer() {
-		return mRPCServer;
-	}
+//	public RPCServer getRPCServer() {
+//		return mRPCServer;
+//	}
 	
 	public DAPPManager getDAPPManager() {
 		return mDAPPManager;
@@ -339,10 +341,13 @@ public class NetworkHandler extends MessageProcessor {
 			Thread.sleep(200);
 			
 			//Start the RPC server
-			mRPCServer = new RPCServer(getRPCPort());
-			Thread rpc = new Thread(mRPCServer, "RPC Server");
-			rpc.setDaemon(true);
-			rpc.start();
+			mNanoRPC = new NanoRPCServer(getRPCPort());
+			mNanoRPC.start(NanoHTTPD.SOCKET_READ_TIMEOUT, false);
+			
+//			mRPCServer = new RPCServer(getRPCPort());
+//			Thread rpc = new Thread(mRPCServer, "RPC Server");
+//			rpc.setDaemon(true);
+//			rpc.start();
 			
 			//Small pause..
 			Thread.sleep(200);
@@ -366,9 +371,13 @@ public class NetworkHandler extends MessageProcessor {
 			}
 			
 			//Stop the RPC server
-			try {mRPCServer.stop();}catch(Exception exc) {
+			try {mNanoRPC.stop();}catch(Exception exc) {
 				MinimaLogger.log(exc);
 			}
+			
+//			try {mRPCServer.stop();}catch(Exception exc) {
+//				MinimaLogger.log(exc);
+//			}
 			
 			//Stop the RPC server
 			try {mDAPPManager.stop();}catch(Exception exc) {
