@@ -1,4 +1,4 @@
-#FROM openjdk:11
+#FROM openjdk:11-slim
 FROM adoptopenjdk/openjdk11:x86_64-alpine-jdk-11.0.9_11-slim as build-stage
 WORKDIR /usr/src/minima/
 COPY gradle gradle
@@ -18,6 +18,9 @@ RUN ls -l build/libs/*
 RUN stat build/libs/minima-all.jar
 #RUN tar -cf minimajar.tar build/libs/minima-all.jar
 
+#FROM openjdk:11-slim as production-stage
+#RUN apt-get update
+#RUN apt-get install -y curl
 FROM adoptopenjdk/openjdk11:x86_64-alpine-jdk-11.0.9_11-slim as production-stage
 RUN apk --no-cache add curl
 COPY --from=build-stage /usr/src/minima/build/libs/minima-all.jar /opt/minima/minima.jar
