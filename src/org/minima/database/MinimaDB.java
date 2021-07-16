@@ -1050,21 +1050,21 @@ public class MinimaDB {
 		txpow.setTransaction(zTrans);
 		txpow.setWitness(zWitness);
 		
-		//DEBUG
-		if(tip.getBlockNumber().isMore(MiniNumber.THIRTYTWO)) {
-			BigInteger tMEGA_VAL 			= Crypto.MAX_VAL.divide(new BigInteger("200000"));	
-			MiniData   tMIN_TXPOW_WORK		= new MiniData("0x"+tMEGA_VAL.toString(16));
-			
-			txpow.getMagic().mDesiredMinTxPoWWork = tMIN_TXPOW_WORK;
-			
-//			int ranssize = 20000 + new Random().nextInt(20000);
-//			txpow.getMagic().mDesiredMaxTxPoWSize = new MiniNumber(ranssize);
-		}
+//		//DEBUG
+//		if(tip.getBlockNumber().isMore(MiniNumber.THIRTYTWO)) {
+//			BigInteger tMEGA_VAL 			= Crypto.MAX_VAL.divide(new BigInteger("200000"));	
+//			MiniData   tMIN_TXPOW_WORK		= new MiniData("0x"+tMEGA_VAL.toString(16));
+//			
+//			txpow.getMagic().mDesiredMinTxPoWWork = tMIN_TXPOW_WORK;
+//			
+////			int ranssize = 20000 + new Random().nextInt(20000);
+////			txpow.getMagic().mDesiredMaxTxPoWSize = new MiniNumber(ranssize);
+//		}
 		
 		//The user defined Magic parameters
 		txpow.getMagic().calculateCurrentMax(tip);
 		
-		MinimaLogger.log("MAGIC "+tip.getBlockNumber()+" "+txpow.getMagic().toJSON().toString());
+//		MinimaLogger.log("MAGIC "+tip.getBlockNumber()+" "+txpow.getMagic().toJSON().toString());
 				
 		//Block and Transaction difficulty
 		txpow.setTxDifficulty(txpow.getMagic().getMinTxPowWork());
