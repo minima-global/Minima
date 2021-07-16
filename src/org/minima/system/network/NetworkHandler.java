@@ -1,9 +1,15 @@
 package org.minima.system.network;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.security.Key;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.KeyStore;
@@ -18,7 +24,6 @@ import java.util.Random;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLServerSocketFactory;
-import javax.net.ssl.SSLSocketFactory;
 
 import org.minima.Start;
 import org.minima.system.Main;
@@ -31,7 +36,6 @@ import org.minima.system.network.minidapps.DAPPManager;
 import org.minima.system.network.minidapps.SelfSignedCertGenerator;
 import org.minima.system.network.minidapps.websocket.WebSocketManager;
 import org.minima.system.network.rpc.NanoRPCServer;
-import org.minima.system.network.rpc.RPCServer;
 import org.minima.system.network.sshtunnel.SSHTunnel;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
@@ -164,14 +168,45 @@ public class NetworkHandler extends MessageProcessor {
 		
 		//SSL Factory
 		try {
-			KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
-			keyPairGenerator.initialize(4096);
-			KeyPair keyPair = keyPairGenerator.generateKeyPair();
-			final X509Certificate cert = SelfSignedCertGenerator.generate(keyPair, "SHA256withRSA", "localhost", 730);
-			KeyStore keystore = SelfSignedCertGenerator.createKeystore(cert, keyPair.getPrivate());
+			//The KeyStore
+			KeyStore keystore = null;
+			
+			//The keystore file
+			File keysfile = Main.getMainHandler().getBackupManager().getBackUpFile("sslkeystore");
+			
+			//Do we have a store allready..
+			if(keysfile.exists()) {
+				MinimaLogger.log("Loading SSL Keystore.. "+KeyStore.getDefaultType());
+				
+				//Load it..
+				 KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+				 InputStream fis = new FileInputStream(keysfile);
+				 keyStore.load(fis, "MINIMAPWD".toCharArray());
+				 fis.close();
+				
+				 //Get the KEY - this breaks..?
+				 Key kk = keystore.getKey(SelfSignedCertGenerator.CERTIFICATE_ALIAS, "MINIMAPWD".toCharArray());
+				 MinimaLogger.log("KEY "+kk.toString());
+				 
+			}else {
+				MinimaLogger.log("Generating SSL Keystore..");
+				
+				KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
+				keyPairGenerator.initialize(4096);
+				KeyPair keyPair = keyPairGenerator.generateKeyPair();
+				final X509Certificate cert = SelfSignedCertGenerator.generate(keyPair, "SHA256withRSA", "localhost", 730);
+				keystore = SelfSignedCertGenerator.createKeystore(cert, keyPair.getPrivate());
+			
+				//Save it..
+				OutputStream fos = new FileOutputStream(keysfile);
+				keystore.store(fos, "MINIMAPWD".toCharArray());
+				fos.flush();
+				fos.close();
+			}
+			
 			KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
 			keyManagerFactory.init(keystore, "MINIMAPWD".toCharArray());
-
+			
 			//And create!
 			mSSLFactory =  NanoHTTPD.makeSSLSocketFactory(keystore, keyManagerFactory);
 		

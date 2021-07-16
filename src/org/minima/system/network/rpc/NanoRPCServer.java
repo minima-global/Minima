@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
@@ -65,7 +66,7 @@ public class NanoRPCServer extends NanoHTTPD{
         	//Any Files Uploaded..
         	Map<String, String> files = new HashMap<String, String>();
         	
-        	String command = null,reqtype = null,finalresult = null;
+        	String command = "",reqtype = "",finalresult = null;
         	
         	//GET or POST
 			if(Method.GET.equals(method)) {
@@ -104,7 +105,19 @@ public class NanoRPCServer extends NanoHTTPD{
 	        	
 	        	MinimaLogger.log("NANORPC POST "+params.toString());
 	        	
+	        	reqtype = new String(fileRequested);
 	        	
+	        	//Get the message
+	        	if(!params.isEmpty()) {
+	        		//Get all the parameters..
+					Set<String> keys =  params.keySet();
+					
+					//Get the first
+					for(String key : keys) {
+						command=key;
+						break;
+					}
+				}
 			}
 			
 			//Get the MinDAPP ID
@@ -114,6 +127,11 @@ public class NanoRPCServer extends NanoHTTPD{
 				MiniDAPPID = fileRequested.substring(slash+1);
 				reqtype    = reqtype.substring(0,slash);
 			}
+			
+			MinimaLogger.log("NANORPC MINIDAPPID "+MiniDAPPID);
+			MinimaLogger.log("NANORPC FUNCTION "+reqtype);
+			MinimaLogger.log("NANORPC COMMAND "+command);
+			
 			
 			//Is this a SQL function
 			if(reqtype.equals("sql")) {
@@ -156,7 +174,7 @@ public class NanoRPCServer extends NanoHTTPD{
             	finalresult = netcomm.getFinalResult();
 			
 			}else {
-				finalresult = "{\"status\":false, \"message\":\"Incorrect command TYPE..\"}";
+				finalresult = "{\"status\":false, \"message\":\"Incorrect command TYPE.. "+reqtype+"\"}";
 			}
 			
 			//Make sure in the correct CHARSET
@@ -171,7 +189,7 @@ public class NanoRPCServer extends NanoHTTPD{
 	
 	protected Response getOKResponse(String zText, String zContentType) {
 		Response resp = Response.newFixedLengthResponse(Status.OK, zContentType, zText);
-		resp.addHeader("Server", "HTTP RPC Server from Minima v0.95.14");
+		resp.addHeader("Server", "HTTP RPC Server from Minima v0.98.31");
 		resp.addHeader("Date", new Date().toString());
 		resp.addHeader("Access-Control-Allow-Origin", "*");
 		return resp;
@@ -179,7 +197,7 @@ public class NanoRPCServer extends NanoHTTPD{
 	
     protected Response getInternalErrorResponse(String s) {
     	Response resp = Response.newFixedLengthResponse(Status.INTERNAL_ERROR, NanoHTTPD.MIME_PLAINTEXT, "INTERNAL ERROR: " + s);
-		resp.addHeader("Server", "HTTP RPC Server from Minima v0.95.14");
+		resp.addHeader("Server", "HTTP RPC Server from Minima v0.98.31");
 		resp.addHeader("Date", new Date().toString());
 		resp.addHeader("Access-Control-Allow-Origin", "*");
 		return resp;
