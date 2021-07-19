@@ -185,7 +185,7 @@ public class NetworkHandler extends MessageProcessor {
 				 fis.close();
 				
 				 //Get the KEY - this breaks..?
-				 Key kk = keystore.getKey(SelfSignedCertGenerator.CERTIFICATE_ALIAS, "MINIMAPWD".toCharArray());
+                 KeyStore.PrivateKeyEntry kk = (KeyStore.PrivateKeyEntry) keystore.getEntry(SelfSignedCertGenerator.CERTIFICATE_ALIAS, new KeyStore.PasswordProtection("MINIMAPWD".toCharArray()));
 				 MinimaLogger.log("KEY "+kk.toString());
 				 
 			}else {
