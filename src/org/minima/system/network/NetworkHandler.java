@@ -9,7 +9,6 @@ import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
-import java.security.Key;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.KeyStore;
@@ -167,48 +166,101 @@ public class NetworkHandler extends MessageProcessor {
 		mRemoteMaxima = mBasePort+4;
 		
 		//SSL Factory
+//		if(SSL_ENABLED) {
+//			try {
+//				//The keystore file
+//				File keysfile = Main.getMainHandler().getBackupManager().getBackUpFile("sslkeystore");
+//				
+//				if(!keysfile.exists()) {
+//					MinimaLogger.log("Generating SSL Keystore.. "+KeyStore.getDefaultType());
+//					
+//					// Create Key
+//			        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
+//			        keyPairGenerator.initialize(4096);
+//			        KeyPair keyPair = keyPairGenerator.generateKeyPair();
+//			        final X509Certificate cert = SelfSignedCertGenerator.generate(keyPair, "SHA256withRSA", "localhost", 730);
+//			        KeyStore createkeystore = SelfSignedCertGenerator.createKeystore(cert, keyPair.getPrivate());
+//	
+//			        // Save the File
+//			        OutputStream fos = new FileOutputStream(keysfile);
+//			        createkeystore.store(fos, "MINIMAPWD".toCharArray());
+//			        fos.flush();
+//			        fos.close();
+//				}else {
+//					MinimaLogger.log("SSL Keystore Exists.. ");
+//				}
+//				
+//		        // Load the keystore
+//		        KeyStore loadedKeyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+//		        InputStream fis = new FileInputStream(keysfile);
+//		        loadedKeyStore.load(fis, "MINIMAPWD".toCharArray());
+//		        fis.close();
+//				
+//				KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+//				keyManagerFactory.init(loadedKeyStore, "MINIMAPWD".toCharArray());
+//				
+//				//And create!
+//				mSSLFactory =  NanoHTTPD.makeSSLSocketFactory(loadedKeyStore, keyManagerFactory);
+//			
+//			}catch (IOException e) {
+//				MinimaLogger.log("MiniDAPP server error " + e.toString());
+//			} catch (KeyStoreException e) {
+//				MinimaLogger.log("MiniDAPP KeyStoreException " + e.toString());
+//			} catch (NoSuchAlgorithmException e) {
+//				MinimaLogger.log("MiniDAPP NoSuchAlgorithmException " + e.toString());
+//			} catch (UnrecoverableKeyException e) {
+//				MinimaLogger.log("MiniDAPP UnrecoverableKeyException " + e.toString());
+//			} catch (CertificateException e) {
+//				MinimaLogger.log("MiniDAPP CertificateException " + e.toString());
+//			} catch (java.lang.Exception e){
+//				MinimaLogger.log("MiniDAPP SSL create error " + e.toString());
+//			}
+//		}
+	}
+	
+	public SSLServerSocketFactory getSSLServerFactory() {
+		return mSSLFactory;
+	}
+	
+	public boolean isSSLEnabled() {
+		return SSL_ENABLED;
+	}
+	
+	private void initSSL() {
 		try {
-			//The KeyStore
-			KeyStore keystore = null;
-			
 			//The keystore file
 			File keysfile = Main.getMainHandler().getBackupManager().getBackUpFile("sslkeystore");
 			
-			//Do we have a store allready..
-			if(keysfile.exists()) {
-				MinimaLogger.log("Loading SSL Keystore.. "+KeyStore.getDefaultType());
+			if(!keysfile.exists()) {
+				MinimaLogger.log("Generating SSL Keystore.. "+KeyStore.getDefaultType());
 				
-				//Load it..
-				 KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
-				 InputStream fis = new FileInputStream(keysfile);
-				 keyStore.load(fis, "MINIMAPWD".toCharArray());
-				 fis.close();
-				
-				 //Get the KEY - this breaks..?
-                 KeyStore.PrivateKeyEntry kk = (KeyStore.PrivateKeyEntry) keystore.getEntry(SelfSignedCertGenerator.CERTIFICATE_ALIAS, new KeyStore.PasswordProtection("MINIMAPWD".toCharArray()));
-				 MinimaLogger.log("KEY "+kk.toString());
-				 
+				// Create Key
+		        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
+		        keyPairGenerator.initialize(4096);
+		        KeyPair keyPair = keyPairGenerator.generateKeyPair();
+		        final X509Certificate cert = SelfSignedCertGenerator.generate(keyPair, "SHA256withRSA", "localhost", 730);
+		        KeyStore createkeystore = SelfSignedCertGenerator.createKeystore(cert, keyPair.getPrivate());
+
+		        // Save the File
+		        OutputStream fos = new FileOutputStream(keysfile);
+		        createkeystore.store(fos, "MINIMAPWD".toCharArray());
+		        fos.flush();
+		        fos.close();
 			}else {
-				MinimaLogger.log("Generating SSL Keystore..");
-				
-				KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
-				keyPairGenerator.initialize(4096);
-				KeyPair keyPair = keyPairGenerator.generateKeyPair();
-				final X509Certificate cert = SelfSignedCertGenerator.generate(keyPair, "SHA256withRSA", "localhost", 730);
-				keystore = SelfSignedCertGenerator.createKeystore(cert, keyPair.getPrivate());
-			
-				//Save it..
-				OutputStream fos = new FileOutputStream(keysfile);
-				keystore.store(fos, "MINIMAPWD".toCharArray());
-				fos.flush();
-				fos.close();
+				MinimaLogger.log("Loading SSL Keystore.. ");
 			}
 			
-			KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-			keyManagerFactory.init(keystore, "MINIMAPWD".toCharArray());
+	        // Load the keystore
+	        KeyStore loadedKeyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+	        InputStream fis = new FileInputStream(keysfile);
+	        loadedKeyStore.load(fis, "MINIMAPWD".toCharArray());
+	        fis.close();
+			
+	        KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+			keyManagerFactory.init(loadedKeyStore, "MINIMAPWD".toCharArray());
 			
 			//And create!
-			mSSLFactory =  NanoHTTPD.makeSSLSocketFactory(keystore, keyManagerFactory);
+			mSSLFactory =  NanoHTTPD.makeSSLSocketFactory(loadedKeyStore, keyManagerFactory);
 		
 		}catch (IOException e) {
 			MinimaLogger.log("MiniDAPP server error " + e.toString());
@@ -223,14 +275,6 @@ public class NetworkHandler extends MessageProcessor {
 		} catch (java.lang.Exception e){
 			MinimaLogger.log("MiniDAPP SSL create error " + e.toString());
 		}
-	}
-	
-	public SSLServerSocketFactory getSSLServerFactory() {
-		return mSSLFactory;
-	}
-	
-	public boolean isSSLEnabled() {
-		return SSL_ENABLED;
 	}
 	
 	public void sshHardSetIP(boolean zRemoteOn, String zIP, int zRemoteBase) {
@@ -365,6 +409,11 @@ public class NetworkHandler extends MessageProcessor {
 		
 		if(zMessage.isMessageType(NETWORK_STARTUP)) {
 			MinimaLogger.log("Network Startup..");
+			
+			//Init the SSL
+			if(SSL_ENABLED) {
+				initSSL();
+			}
 			
 			//Start the network Server
 			mServer = new MinimaServer(this,getMinimaPort());
