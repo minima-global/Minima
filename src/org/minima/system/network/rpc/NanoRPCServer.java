@@ -58,7 +58,7 @@ public class NanoRPCServer extends NanoHTTPD{
 				fileRequested = fileRequested.substring(1);
 			}
         	
-        	MinimaLogger.log("NANORPC REQUEST "+fileRequested);
+//        	MinimaLogger.log("NANORPC REQUEST "+fileRequested);
         	
 			//Any parameters
         	Map<String, List<String>> params = new HashMap<>();
@@ -73,7 +73,7 @@ public class NanoRPCServer extends NanoHTTPD{
 				//Any parameters
 	        	params = session.getParameters();
 			
-	        	MinimaLogger.log("NANORPC GET "+params.toString());
+//	        	MinimaLogger.log("NANORPC GET "+params.toString());
 				
 	        	//decode URL message
 				String function = URLDecoder.decode(fileRequested,"UTF-8").trim();
@@ -128,9 +128,9 @@ public class NanoRPCServer extends NanoHTTPD{
 				reqtype    = reqtype.substring(0,slash);
 			}
 			
-			MinimaLogger.log("NANORPC MINIDAPPID "+MiniDAPPID);
-			MinimaLogger.log("NANORPC FUNCTION "+reqtype);
-			MinimaLogger.log("NANORPC COMMAND "+command);
+//			MinimaLogger.log("NANORPC MINIDAPPID "+MiniDAPPID);
+//			MinimaLogger.log("NANORPC FUNCTION "+reqtype);
+//			MinimaLogger.log("NANORPC COMMAND "+command);
 			
 			
 			//Is this a SQL function

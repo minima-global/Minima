@@ -164,58 +164,6 @@ public class NetworkHandler extends MessageProcessor {
 		mBasePort   = zMainPort;
 		mRemoteMinima = mBasePort;
 		mRemoteMaxima = mBasePort+4;
-		
-		//SSL Factory
-//		if(SSL_ENABLED) {
-//			try {
-//				//The keystore file
-//				File keysfile = Main.getMainHandler().getBackupManager().getBackUpFile("sslkeystore");
-//				
-//				if(!keysfile.exists()) {
-//					MinimaLogger.log("Generating SSL Keystore.. "+KeyStore.getDefaultType());
-//					
-//					// Create Key
-//			        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
-//			        keyPairGenerator.initialize(4096);
-//			        KeyPair keyPair = keyPairGenerator.generateKeyPair();
-//			        final X509Certificate cert = SelfSignedCertGenerator.generate(keyPair, "SHA256withRSA", "localhost", 730);
-//			        KeyStore createkeystore = SelfSignedCertGenerator.createKeystore(cert, keyPair.getPrivate());
-//	
-//			        // Save the File
-//			        OutputStream fos = new FileOutputStream(keysfile);
-//			        createkeystore.store(fos, "MINIMAPWD".toCharArray());
-//			        fos.flush();
-//			        fos.close();
-//				}else {
-//					MinimaLogger.log("SSL Keystore Exists.. ");
-//				}
-//				
-//		        // Load the keystore
-//		        KeyStore loadedKeyStore = KeyStore.getInstance(KeyStore.getDefaultType());
-//		        InputStream fis = new FileInputStream(keysfile);
-//		        loadedKeyStore.load(fis, "MINIMAPWD".toCharArray());
-//		        fis.close();
-//				
-//				KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-//				keyManagerFactory.init(loadedKeyStore, "MINIMAPWD".toCharArray());
-//				
-//				//And create!
-//				mSSLFactory =  NanoHTTPD.makeSSLSocketFactory(loadedKeyStore, keyManagerFactory);
-//			
-//			}catch (IOException e) {
-//				MinimaLogger.log("MiniDAPP server error " + e.toString());
-//			} catch (KeyStoreException e) {
-//				MinimaLogger.log("MiniDAPP KeyStoreException " + e.toString());
-//			} catch (NoSuchAlgorithmException e) {
-//				MinimaLogger.log("MiniDAPP NoSuchAlgorithmException " + e.toString());
-//			} catch (UnrecoverableKeyException e) {
-//				MinimaLogger.log("MiniDAPP UnrecoverableKeyException " + e.toString());
-//			} catch (CertificateException e) {
-//				MinimaLogger.log("MiniDAPP CertificateException " + e.toString());
-//			} catch (java.lang.Exception e){
-//				MinimaLogger.log("MiniDAPP SSL create error " + e.toString());
-//			}
-//		}
 	}
 	
 	public SSLServerSocketFactory getSSLServerFactory() {
@@ -427,11 +375,6 @@ public class NetworkHandler extends MessageProcessor {
 			//Start the RPC server
 			mNanoRPC = new NanoRPCServer(getRPCPort());
 			mNanoRPC.start(NanoHTTPD.SOCKET_READ_TIMEOUT, false);
-			
-//			mRPCServer = new RPCServer(getRPCPort());
-//			Thread rpc = new Thread(mRPCServer, "RPC Server");
-//			rpc.setDaemon(true);
-//			rpc.start();
 			
 			//Small pause..
 			Thread.sleep(200);
