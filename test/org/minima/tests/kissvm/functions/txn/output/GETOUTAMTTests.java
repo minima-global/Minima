@@ -68,7 +68,7 @@ public class GETOUTAMTTests {
                 new MiniString("TestToken"),
                 new MiniString("Hello from TestToken"));
 
-        w.addTokenDetails(tp);
+        w.addTempTokenDetails(tp);
 
         Transaction trx = new Transaction();
 
@@ -153,7 +153,7 @@ public class GETOUTAMTTests {
                 new MiniString("TestToken"),
                 new MiniString("Hello from TestToken"));
 
-        w.addTokenDetails(tp);
+        w.addTempTokenDetails(tp);
 
         Transaction trx = new Transaction();
 

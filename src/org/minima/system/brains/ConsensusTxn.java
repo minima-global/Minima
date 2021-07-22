@@ -292,11 +292,11 @@ public class ConsensusTxn extends ConsensusProcessor {
 			Witness wit             = (Witness) ret.getObject("witness");
 			Transaction transaction = (Transaction) ret.getObject("transaction");
 			
-			//Is this a token transaction
-			if(tokendets != null) {
-				//Get the token details..
-				wit.addTokenDetails(tokendets);
-			}
+//			//Is this a token transaction
+//			if(tokendets != null) {
+//				//Get the token details..
+//				wit.addTokenDetails(tokendets);
+//			}
 			
 			//Now We gave a valid transaction and witness.!
 			getMainDB().getUserDB().getUserRow(trans).setTransaction(transaction);
@@ -377,14 +377,14 @@ public class ConsensusTxn extends ConsensusProcessor {
 				return;	
 			}
 						
-			//Is it a Token ? 
-			if(!cc.getTokenID().isEqual(Coin.MINIMA_TOKENID)) {
-				//Add the Token details..
-				Token tokendets = entry.getData().getToken();
-				
-				//Add it..
-				wit.addTokenDetails(tokendets);
-			}
+//			//Is it a Token ? 
+//			if(!cc.getTokenID().isEqual(Coin.MINIMA_TOKENID)) {
+//				//Add the Token details..
+//				Token tokendets = entry.getData().getToken();
+//				
+//				//Add it..
+//				wit.addTokenDetails(tokendets);
+//			}
 			
 			//Add it..
 			if(zMessage.exists("position")) {
@@ -431,21 +431,21 @@ public class ConsensusTxn extends ConsensusProcessor {
 			Transaction trx = getMainDB().getUserDB().getUserRow(trans).getTransaction();
 			Witness wit     = getMainDB().getUserDB().getUserRow(trans).getWitness();
 			
-			//Is it a Token ? 
-			if(!out.getTokenID().isEqual(Coin.MINIMA_TOKENID)) {
-				//Add the Token details..
-				Token tokendets = getMainDB().getMMRTip().findToken(out.getTokenID());
-				
-				//Do we have it,.
-				if(tokendets == null) {
-					//Unknown token!
-					InputHandler.endResponse(zMessage, false, "No details found for the specified token : "+out.getTokenID());
-					return;
-				}
-				
-				//Add it..
-				wit.addTokenDetails(tokendets);
-			}
+//			//Is it a Token ? 
+//			if(!out.getTokenID().isEqual(Coin.MINIMA_TOKENID)) {
+//				//Add the Token details..
+//				Token tokendets = getMainDB().getMMRTip().findToken(out.getTokenID());
+//				
+//				//Do we have it,.
+//				if(tokendets == null) {
+//					//Unknown token!
+//					InputHandler.endResponse(zMessage, false, "No details found for the specified token : "+out.getTokenID());
+//					return;
+//				}
+//				
+//				//Add it..
+//				wit.addTokenDetails(tokendets);
+//			}
 			
 			//Add it..
 			if(zMessage.exists("position")) {

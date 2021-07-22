@@ -403,7 +403,7 @@ public class ConsensusUser extends ConsensusProcessor {
 							//Add the details to the witness..
 							Token tprf = getMainDB().getMMRTip().findToken(new MiniData(tokenid));
 							if(tprf != null) {
-								wit.addTokenDetails(tprf);
+								wit.addTempTokenDetails(tprf);
 							
 								//Recalculate the amount.. given the token scale..
 								amt = tprf.getScaledMinimaAmount(amt);
@@ -536,7 +536,7 @@ public class ConsensusUser extends ConsensusProcessor {
 							//Add the details to the witness..
 							Token tprf = getMainDB().getMMRTip().findToken(new MiniData(value));
 							if(tprf != null) {
-								wit.addTokenDetails(tprf);
+								wit.addTempTokenDetails(tprf);
 							}	
 						}
 						
@@ -1041,7 +1041,7 @@ public class ConsensusUser extends ConsensusProcessor {
 				MiniNumber showamount = totalval;
 				if(!zTokenID.isEqual(Coin.MINIMA_TOKENID)) {
 					//Add to the witness..
-					wit.addTokenDetails(token);
+					wit.addTempTokenDetails(token);
 					
 					//How much is it..
 					showamount = token.getScaledTokenAmount(totalval);

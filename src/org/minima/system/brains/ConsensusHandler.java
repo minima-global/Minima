@@ -701,14 +701,14 @@ public class ConsensusHandler extends MessageProcessor {
 			Message ret = getMainDB().createTransaction(sendamount, recipient, change, 
 					selectedCoins, tok, changetok, null, new Transaction(), state, true);
 			
-			//Is this a token transaction
-			if(tokendets != null) {
-				//Get the witness and add relevant info..
-				Witness wit = (Witness) ret.getObject("witness");
-				
-				//Get the token details..
-				wit.addTokenDetails(tokendets);
-			}
+//			//Is this a token transaction
+//			if(tokendets != null) {
+//				//Get the witness and add relevant info..
+//				Witness wit = (Witness) ret.getObject("witness");
+//				
+//				//Get the token details..
+//				wit.addTokenDetails(tokendets);
+//			}
 			
 			//get the Transaction
 			Transaction trans = (Transaction) ret.getObject("transaction");
