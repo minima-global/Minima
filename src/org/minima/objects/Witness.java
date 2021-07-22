@@ -32,7 +32,8 @@ public class Witness implements Streamable {
 	private ArrayList<ScriptProof> mScriptProofs;
 
 	/**
-	 * When testing runscript - this is where temp tokens are placed - not sent or stored..
+	 * When testing runscript - this is where temp tokens are placed since no MMRData available
+	 * not sent or stored..
 	 */
 	private ArrayList<Token> mTempTokens;
 	
