@@ -140,7 +140,7 @@ public class NetworkHandler extends MessageProcessor {
 	 * SSL Socket Factory
 	 */
 	SSLServerSocketFactory mSSLFactory;
-	boolean SSL_ENABLED = true;
+	boolean SSL_ENABLED = false;
 	
 	/**
 	 * 
