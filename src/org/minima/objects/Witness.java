@@ -19,22 +19,22 @@ public class Witness implements Streamable {
 	/**
 	 * The MMR Proofs that each input Coin is valid and unspent.
 	 */
-	ArrayList<MMRProof> mMMRProofs;
+	private ArrayList<MMRProof> mMMRProofs;
 	
 	/**
 	 * The Signatures
 	 */
-	ArrayList<SignatureProof> mSignatureProofs;
+	private ArrayList<SignatureProof> mSignatureProofs;
 	
 	/**
 	 * The Scripts used in the transactions 
 	 */
-	protected ArrayList<ScriptProof> mScriptProofs;
+	private ArrayList<ScriptProof> mScriptProofs;
 
 	/**
 	 * When testing runscript - this is where temp tokens are placed - not sent or stored..
 	 */
-	ArrayList<Token> mTempTokens;
+	private ArrayList<Token> mTempTokens;
 	
 	/**
 	 * General Constructor
@@ -95,6 +95,8 @@ public class Witness implements Streamable {
 	/**
 	 * Token Proofs
 	 */
+	
+	//Temp function when testing scripts - and no MMRData
 	public void addTempTokenDetails(Token zDetails) {
 		if(getTokenDetail(zDetails.getTokenID()) == null){
 			mTempTokens.add(zDetails);	
