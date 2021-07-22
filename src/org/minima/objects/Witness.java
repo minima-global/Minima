@@ -230,5 +230,8 @@ public class Witness implements Streamable {
 		for(int i=0;i<len;i++) {
 			mScriptProofs.add(ScriptProof.ReadFromStream(zIn));
 		}
+		
+		//For testing run scripts.. when no MMR data available
+		mTempTokens = new ArrayList<>();
 	}
 }
