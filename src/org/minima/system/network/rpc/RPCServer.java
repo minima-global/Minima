@@ -10,8 +10,10 @@ import java.net.Socket;
 import java.net.SocketException;
 
 import javax.net.ServerSocketFactory;
+import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
 
+import org.minima.system.Main;
 import org.minima.utils.MinimaLogger;
 
 public class RPCServer implements Runnable{
@@ -47,8 +49,24 @@ public class RPCServer implements Runnable{
 	@Override
 	public void run() {
 		try {
-			//Start a server Socket..
-			mServerSocket = new ServerSocket(mPort);
+			//SSL ?
+			if(Main.getMainHandler().getNetworkHandler().isSSLEnabled()) {
+				//Start a SSL server Socket..
+//				mServerSocket = Main.getMainHandler().getNetworkHandler().getSSLServerFactory().createServerSocket(mPort);
+				
+				SSLServerSocket ss = null;
+		        ss = (SSLServerSocket) Main.getMainHandler().getNetworkHandler().getSSLServerFactory().createServerSocket(mPort);
+		        ss.setEnabledProtocols(ss.getSupportedProtocols());
+		        ss.setUseClientMode(false);
+		        ss.setWantClientAuth(false);
+		        ss.setNeedClientAuth(false);
+		        
+		        mServerSocket = ss;
+		        
+			}else {
+				//Start a server Socket..
+				mServerSocket = new ServerSocket(mPort);
+			}
 			
 			//Keep listening..
 			while(mRunning) {

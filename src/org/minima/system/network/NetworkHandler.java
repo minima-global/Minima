@@ -1,11 +1,28 @@
 package org.minima.system.network;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Random;
+
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLServerSocketFactory;
 
 import org.minima.Start;
 import org.minima.system.Main;
@@ -15,14 +32,16 @@ import org.minima.system.network.base.MinimaClient;
 import org.minima.system.network.base.MinimaServer;
 import org.minima.system.network.maxima.Maxima;
 import org.minima.system.network.minidapps.DAPPManager;
+import org.minima.system.network.minidapps.SelfSignedCertGenerator;
 import org.minima.system.network.minidapps.websocket.WebSocketManager;
-import org.minima.system.network.rpc.RPCServer;
+import org.minima.system.network.rpc.NanoRPCServer;
 import org.minima.system.network.sshtunnel.SSHTunnel;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageProcessor;
 import org.minima.utils.messages.TimerMessage;
+import org.minima.utils.nanohttpd.protocols.http.NanoHTTPD;
 
 public class NetworkHandler extends MessageProcessor {
 
@@ -52,7 +71,8 @@ public class NetworkHandler extends MessageProcessor {
 	/**
 	 * The RPC server listening for remote commands
 	 */
-	RPCServer mRPCServer;
+//	RPCServer mRPCServer;
+	NanoRPCServer mNanoRPC;
 	
 	/**
 	 * DAPP Server
@@ -117,6 +137,12 @@ public class NetworkHandler extends MessageProcessor {
 	int mBasePort;
 	
 	/**
+	 * SSL Socket Factory
+	 */
+	SSLServerSocketFactory mSSLFactory;
+	boolean SSL_ENABLED = true;
+	
+	/**
 	 * 
 	 * @param zMain
 	 */
@@ -138,6 +164,65 @@ public class NetworkHandler extends MessageProcessor {
 		mBasePort   = zMainPort;
 		mRemoteMinima = mBasePort;
 		mRemoteMaxima = mBasePort+4;
+	}
+	
+	public SSLServerSocketFactory getSSLServerFactory() {
+		return mSSLFactory;
+	}
+	
+	public boolean isSSLEnabled() {
+		return SSL_ENABLED;
+	}
+	
+	private void initSSL() {
+		try {
+			//The keystore file
+			File keysfile = Main.getMainHandler().getBackupManager().getBackUpFile("sslkeystore");
+			
+			if(!keysfile.exists()) {
+				MinimaLogger.log("Generating SSL Keystore.. "+KeyStore.getDefaultType());
+				
+				// Create Key
+		        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
+		        keyPairGenerator.initialize(4096);
+		        KeyPair keyPair = keyPairGenerator.generateKeyPair();
+		        final X509Certificate cert = SelfSignedCertGenerator.generate(keyPair, "SHA256withRSA", "localhost", 730);
+		        KeyStore createkeystore = SelfSignedCertGenerator.createKeystore(cert, keyPair.getPrivate());
+
+		        // Save the File
+		        OutputStream fos = new FileOutputStream(keysfile);
+		        createkeystore.store(fos, "MINIMAPWD".toCharArray());
+		        fos.flush();
+		        fos.close();
+			}else {
+				MinimaLogger.log("Loading SSL Keystore.. ");
+			}
+			
+	        // Load the keystore
+	        KeyStore loadedKeyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+	        InputStream fis = new FileInputStream(keysfile);
+	        loadedKeyStore.load(fis, "MINIMAPWD".toCharArray());
+	        fis.close();
+			
+	        KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+			keyManagerFactory.init(loadedKeyStore, "MINIMAPWD".toCharArray());
+			
+			//And create!
+			mSSLFactory =  NanoHTTPD.makeSSLSocketFactory(loadedKeyStore, keyManagerFactory);
+		
+		}catch (IOException e) {
+			MinimaLogger.log("MiniDAPP server error " + e.toString());
+		} catch (KeyStoreException e) {
+			MinimaLogger.log("MiniDAPP KeyStoreException " + e.toString());
+		} catch (NoSuchAlgorithmException e) {
+			MinimaLogger.log("MiniDAPP NoSuchAlgorithmException " + e.toString());
+		} catch (UnrecoverableKeyException e) {
+			MinimaLogger.log("MiniDAPP UnrecoverableKeyException " + e.toString());
+		} catch (CertificateException e) {
+			MinimaLogger.log("MiniDAPP CertificateException " + e.toString());
+		} catch (java.lang.Exception e){
+			MinimaLogger.log("MiniDAPP SSL create error " + e.toString());
+		}
 	}
 	
 	public void sshHardSetIP(boolean zRemoteOn, String zIP, int zRemoteBase) {
@@ -243,9 +328,9 @@ public class NetworkHandler extends MessageProcessor {
 		return mServer;
 	}
 	
-	public RPCServer getRPCServer() {
-		return mRPCServer;
-	}
+//	public RPCServer getRPCServer() {
+//		return mRPCServer;
+//	}
 	
 	public DAPPManager getDAPPManager() {
 		return mDAPPManager;
@@ -273,6 +358,11 @@ public class NetworkHandler extends MessageProcessor {
 		if(zMessage.isMessageType(NETWORK_STARTUP)) {
 			MinimaLogger.log("Network Startup..");
 			
+			//Init the SSL
+			if(SSL_ENABLED) {
+				initSSL();
+			}
+			
 			//Start the network Server
 			mServer = new MinimaServer(this,getMinimaPort());
 			Thread multimain = new Thread(mServer, "Multi Server");
@@ -283,10 +373,8 @@ public class NetworkHandler extends MessageProcessor {
 			Thread.sleep(200);
 			
 			//Start the RPC server
-			mRPCServer = new RPCServer(getRPCPort());
-			Thread rpc = new Thread(mRPCServer, "RPC Server");
-			rpc.setDaemon(true);
-			rpc.start();
+			mNanoRPC = new NanoRPCServer(getRPCPort());
+			mNanoRPC.start(NanoHTTPD.SOCKET_READ_TIMEOUT, false);
 			
 			//Small pause..
 			Thread.sleep(200);
@@ -310,9 +398,13 @@ public class NetworkHandler extends MessageProcessor {
 			}
 			
 			//Stop the RPC server
-			try {mRPCServer.stop();}catch(Exception exc) {
+			try {mNanoRPC.stop();}catch(Exception exc) {
 				MinimaLogger.log(exc);
 			}
+			
+//			try {mRPCServer.stop();}catch(Exception exc) {
+//				MinimaLogger.log(exc);
+//			}
 			
 			//Stop the RPC server
 			try {mDAPPManager.stop();}catch(Exception exc) {

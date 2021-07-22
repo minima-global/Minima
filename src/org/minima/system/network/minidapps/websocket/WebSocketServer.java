@@ -1,5 +1,6 @@
 package org.minima.system.network.minidapps.websocket;
 
+import org.minima.system.Main;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.nanohttpd.protocols.http.IHTTPSession;
 import org.minima.utils.nanohttpd.protocols.websockets.NanoWSD;
@@ -15,6 +16,11 @@ public class WebSocketServer extends NanoWSD {
 		//Keep this..
 		mWSManager = zWSManager;
 		
+		//SSL ?
+		if(Main.getMainHandler().getNetworkHandler().isSSLEnabled()) {
+			makeSecure(Main.getMainHandler().getNetworkHandler().getSSLServerFactory(), null);
+		}
+				
 		//Log it..
 		MinimaLogger.log("WebSocket Server started on port "+zPort);
 	}

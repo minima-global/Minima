@@ -60,15 +60,19 @@ public class DAPPServer extends NanoHTTPD{
 	
 	public DAPPServer(int zPort, DAPPManager zDAPPManager) {
 		super(zPort);
-		
+
 		mDAPPManager = zDAPPManager;
-		mBackup      = Main.getMainHandler().getBackupManager();
-		mWebRoot     = mBackup.getWebRoot();
-		
+		mBackup = Main.getMainHandler().getBackupManager();
+		mWebRoot = mBackup.getWebRoot();
 		//Store of all the params and files for a MiniDAPP..
 		mParams = new Hashtable<>();
+		
+		//SSL ?
+		if(zDAPPManager.getNetworkHandler().isSSLEnabled()) {
+			makeSecure(zDAPPManager.getNetworkHandler().getSSLServerFactory(), null);
+		}
 	}
-
+	
 	@Override
     public Response serve(IHTTPSession session) {
         try {
