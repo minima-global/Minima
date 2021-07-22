@@ -96,7 +96,7 @@ const runContainerInspect = (topology, nbNodes, tests_collection) => {
 }
 
 get_node_args = function(topology, pos) {
-    p2p = false;
+    p2p = true;
     var node_args = [];
     if(p2p) {
 
