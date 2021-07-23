@@ -115,8 +115,19 @@ public class P2PManager extends MessageProcessor{
 //			obj.put("data", "something");
 //			String str = obj.toString();
 			
+//			//Connect to someone
+//			Message connect  = new Message(NetworkHandler.NETWORK_CONNECT).addInteger("port", port).addString("host", host);
+//			getNetworkHandler().PostMessage(connect);
+			
+			//Disconnect
+//			Message disconnect  = getResponseMessage(NetworkHandler.NETWORK_DISCONNECT).addString("uid", uid);
+//			getNetworkHandler().PostMessage(disconnect);
+			
 			//Send a string
 			sendMessageAll("Hello!");
+
+			//More stuff..
+			//..
 			
 			//Do it again..
 			PostTimerMessage(new TimerMessage(60000, P2P_REPEATLOOP));
