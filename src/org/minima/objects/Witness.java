@@ -17,14 +17,14 @@ import org.minima.utils.json.JSONObject;
 public class Witness implements Streamable {
 	
 	/**
-	 * The MMR Proofs that each input Coin is valid and unspent.
-	 */
-	private ArrayList<MMRProof> mMMRProofs;
-	
-	/**
 	 * The Signatures
 	 */
 	private ArrayList<SignatureProof> mSignatureProofs;
+	
+	/**
+	 * The MMR Proofs that each input Coin is valid and unspent.
+	 */
+	private ArrayList<MMRProof> mMMRProofs;
 	
 	/**
 	 * The Scripts used in the transactions 
