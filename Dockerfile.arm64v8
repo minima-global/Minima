@@ -1,4 +1,4 @@
-#FROM openjdk:11
+#FROM openjdk:11 as build-stage
 #FROM adoptopenjdk/openjdk11:x86_64-alpine-jdk-11.0.9_11-slim as build-stage
 FROM arm64v8/adoptopenjdk:11-jdk-hotspot-focal as build-stage
 WORKDIR /usr/src/minima/
@@ -19,6 +19,8 @@ RUN ls -l build/libs/*
 RUN stat build/libs/minima-all.jar
 #RUN tar -cf minimajar.tar build/libs/minima-all.jar
 
+# no alpine multi arch images yet, so we build with 11-jdk-hotspot-focal to build a 500 MB image (:11 leads to 700 MB image)
+#FROM openjdk:11 as production-stage
 #FROM adoptopenjdk/openjdk11:x86_64-alpine-jdk-11.0.9_11-slim as production-stage
 FROM arm64v8/adoptopenjdk:11-jdk-hotspot-focal as production-stage
 #COPY --from=build-stage /usr/src/minima/build/resources/main/log4j2.xml /opt/minima/log4j2.xml
