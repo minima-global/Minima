@@ -16,6 +16,7 @@ import org.minima.utils.MinimaLogger;
 import org.minima.utils.SQLHandler;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageProcessor;
+import org.minima.utils.messages.TimerProcessor;
 
 public class Main extends MessageProcessor {
 
@@ -278,6 +279,9 @@ public class Main extends MessageProcessor {
 			
 			//Shut the database.
 			SQLHandler.CloseSQL();
+			
+			//Stop Timer Processor
+			TimerProcessor.getTimerProcessor().stop();
 			
 			//Wait a second..
 			Thread.sleep(1000);
