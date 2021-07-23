@@ -7,7 +7,7 @@ import org.minima.utils.MinimaLogger;
 public class TimerProcessor implements Runnable {
 
 	/**
-	 * Static functiond for all
+	 * Static function for all Timed Messages
 	 */
 	private static TimerProcessor mTimerProcessor = new TimerProcessor();
 	public static TimerProcessor getTimerProcessor() {
@@ -40,7 +40,6 @@ public class TimerProcessor implements Runnable {
 	}
 	
 	public void PostMessage(TimerMessage zMessage) {
-//		MinimaLogger.log("Time Message : "+zMessage.toString());
 		synchronized (mTimerMessages) {
 			mTimerMessages.add(zMessage);
 		}
@@ -52,9 +51,6 @@ public class TimerProcessor implements Runnable {
 			
 			//Check the stack for messages..
 			synchronized (mTimerMessages) {
-				
-//				MinimaLogger.log("Timers : "+mTimerMessages.size());
-				
 				//New list to store the ongoing timers
 				LinkedList<TimerMessage> newlist = new LinkedList<TimerMessage>();
 				
@@ -65,8 +61,7 @@ public class TimerProcessor implements Runnable {
 				for(TimerMessage tm : mTimerMessages) {
 					//Get the time..
 					if(tm.getTimer()<time) {
-//						MinimaLogger.log("Process Time Message : "+tm.toString());
-						
+						//Who get's it
 						MessageProcessor process = tm.getProcessor();
 						
 						//And Post..
