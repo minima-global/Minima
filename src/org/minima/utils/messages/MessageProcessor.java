@@ -46,7 +46,6 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
     	mRunning = true;
     
     	mMainThread = new Thread(this,zName);
-//    	mMainThread.setDaemon(true);
         mMainThread.start();
     }
     
@@ -71,11 +70,6 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
     	
     	//Post it on the TimerProcessor
     	TimerProcessor.getTimerProcessor().PostMessage(zMessage);
-    	
-//    	//Create a Thread that fires//
-//    	Thread timer = new Thread(zMessage);
-//    	timer.setDaemon(true);
-//    	timer.start();
     }
     
     public void run() {
