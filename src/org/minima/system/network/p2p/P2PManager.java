@@ -19,13 +19,13 @@ import org.minima.utils.messages.TimerMessage;
 
 public class P2PManager extends MessageProcessor{
 
-	public static final String P2P_INIT = new String("P2P_INIT");
-	public static final String P2P_SHUTDOWN = new String("P2P_SHUTDOWN");
-	
-	public static final String P2P_REPEATLOOP = new String("P2P_REPEATLOOP");
-	
+	/**
+	 * P2P Functions..
+	 */
+	public static final String P2P_INIT 		= new String("P2P_INIT");
+	public static final String P2P_SHUTDOWN 	= new String("P2P_SHUTDOWN");
+	public static final String P2P_REPEATLOOP 	= new String("P2P_REPEATLOOP");
 	public static final String P2P_RECMESSAGE 	= new String("P2P_RECMESSAGE");
-	
 	public static final String P2P_PEERINFO 	= new String("P2P_SHOWPEERLIST");
 	
 	//The data store
