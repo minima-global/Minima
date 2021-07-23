@@ -415,6 +415,10 @@ public class NetworkHandler extends MessageProcessor {
 				MinimaLogger.log(exc);
 			}
 			
+			try {mP2P.stop();}catch(Exception exc) {
+				MinimaLogger.log(exc);
+			}
+			
 //			try {mRPCServer.stop();}catch(Exception exc) {
 //				MinimaLogger.log(exc);
 //			}

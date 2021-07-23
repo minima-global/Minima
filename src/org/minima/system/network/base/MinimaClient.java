@@ -12,6 +12,7 @@ import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.objects.base.MiniString;
 import org.minima.objects.greet.Greeting;
 import org.minima.objects.greet.SyncPackage;
 import org.minima.objects.greet.TxPoWList;
@@ -55,6 +56,8 @@ public class MinimaClient extends MessageProcessor {
 	
 	public static final String NETCLIENT_PULSE 	        = "NETCLIENT_PULSE";
 	public static final String NETCLIENT_PING 	        = "NETCLIENT_PING";
+	
+	public static final String NETCLIENT_PEERS 	        = "NETCLIENT_PEERS";
 	
 	//Main Network Handler
 	NetworkHandler mNetworkMain;
@@ -291,6 +294,10 @@ public class MinimaClient extends MessageProcessor {
 		}else if(zMessage.isMessageType(NETCLIENT_INTRO)) {
 			SyncPackage sp = (SyncPackage)zMessage.getObject("syncpackage");
 			sendMessage(MinimaReader.NETMESSAGE_INTRO, sp);
+		
+		}else if(zMessage.isMessageType(NETCLIENT_PEERS)) {
+			MiniString str = (MiniString)zMessage.getObject("peersinfo");
+			sendMessage(MinimaReader.NETMESSAGE_PEERS, str);
 		
 		}else if(zMessage.isMessageType(NETCLIENT_SENDTXPOWID)) {
 			MiniData txpowid = (MiniData)zMessage.getObject("txpowid");

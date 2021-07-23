@@ -12,6 +12,7 @@ import org.minima.objects.Magic;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.objects.base.MiniString;
 import org.minima.objects.greet.Greeting;
 import org.minima.objects.greet.SyncPackage;
 import org.minima.objects.greet.SyncPacket;
@@ -19,6 +20,7 @@ import org.minima.objects.greet.TxPoWList;
 import org.minima.system.Main;
 import org.minima.system.network.base.MinimaClient;
 import org.minima.system.network.base.MinimaReader;
+import org.minima.system.network.p2p.P2PManager;
 import org.minima.system.txpow.TxPoWChecker;
 import org.minima.utils.DataTimer;
 import org.minima.utils.MinimaLogger;
@@ -54,6 +56,8 @@ public class ConsensusNet extends ConsensusProcessor {
 	public static final String CONSENSUS_NET_PING 				= CONSENSUS_PREFIX+"NET_MESSAGE_"+MinimaReader.NETMESSAGE_PING.getValue();
 	
 	public static final String CONSENSUS_NET_GENERIC 			= CONSENSUS_PREFIX+"NET_MESSAGE_"+MinimaReader.NETMESSAGE_GENERIC.getValue();
+	
+	public static final String CONSENSUS_NET_PEERS 				= CONSENSUS_PREFIX+"NET_MESSAGE_"+MinimaReader.NETMESSAGE_PEERS.getValue();
 	
 	public static final String CONSENSUS_NET_SYNCOMPLETE 		= CONSENSUS_PREFIX+"NET_MESSAGE_SYNCCOMPLETE";
 	
@@ -653,6 +657,19 @@ public class ConsensusNet extends ConsensusProcessor {
 		}else if(zMessage.isMessageType(CONSENSUS_NET_GENERIC)) {
 			MinimaLogger.log("GENERIC NET MESSAGE : "+zMessage);
 		
+		}else if(zMessage.isMessageType(CONSENSUS_NET_PEERS)) {
+			//get the Message..
+			MiniString info 	= (MiniString) zMessage.getObject("peersinfo");
+			MinimaClient client = (MinimaClient) zMessage.getObject("netclient");
+			
+			//Create a new Message
+			Message msg = new Message(P2PManager.P2P_RECMESSAGE);
+			msg.addObject("minimaclient", client);
+			msg.addObject("peersinfo", info);
+			
+			//Send it to the P2Pmanager
+			getNetworkHandler().getP2PManager().PostMessage(msg);
+			
 		}else if(zMessage.isMessageType(CONSENSUS_NET_CHECKSIZE_INTERNAL_TXPOW)) {
 			//Internal message sent from you..
 			TxPoW txpow = (TxPoW)zMessage.getObject("txpow");

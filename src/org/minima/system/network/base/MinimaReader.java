@@ -83,6 +83,11 @@ public class MinimaReader implements Runnable {
 	 */
 	public static final MiniByte NETMESSAGE_PULSE		     = new MiniByte(8);
 	
+	/**
+	 * PEER LIST INFO
+	 */
+	public static final MiniByte NETMESSAGE_PEERS		     = new MiniByte(9);
+	
 	
 	/**
 	 * Netclient owner
@@ -299,6 +304,12 @@ public class MinimaReader implements Runnable {
 					
 					//Add this ID
 					rec.addObject("generic", msg);
+				
+				}else if(msgtype.isEqual(NETMESSAGE_PEERS)) {
+					MiniString msg = MiniString.ReadFromStream(inputstream);
+					
+					//Add this ID
+					rec.addObject("peersinfo", msg);
 				
 				}else {
 					//An UNKNOWN Message!

@@ -30,6 +30,7 @@ import org.minima.system.input.functions.minidapps;
 import org.minima.system.input.functions.network;
 import org.minima.system.input.functions.newaddress;
 import org.minima.system.input.functions.newscript;
+import org.minima.system.input.functions.p2pinfo;
 import org.minima.system.input.functions.printdb;
 import org.minima.system.input.functions.printtree;
 import org.minima.system.input.functions.quit;
@@ -92,6 +93,7 @@ public abstract class CommandFunction {
 			new tokens(), new tokencreate(), new tokenvalidate(), new mineblock(),
 			new maxima(), new sshtunnel(), new reset(), new hash(), new burn(), new consolidate(),
 //			new exportcoin(), new importcoin(),
+			new p2pinfo(),
 			new exportkey(), new importkey(),  new search(),new consolidate(),
 			new chainsha(), new keepcoin(), new unkeepcoin(), new scripts(), new network(), new minidapps(),
 			new txncreate(), new txndelete(), new txninput(), new txnlist(), new txnauto(), new tokenscale(),

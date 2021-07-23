@@ -2,12 +2,17 @@ package org.minima.system.network.p2p;
 
 import java.util.ArrayList;
 
+import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
 import org.minima.system.brains.BackupManager;
+import org.minima.system.input.InputHandler;
+import org.minima.system.input.functions.send;
 import org.minima.system.network.NetworkHandler;
 import org.minima.system.network.base.MinimaClient;
 import org.minima.utils.JsonDB;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
+import org.minima.utils.json.parser.JSONParser;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageProcessor;
 import org.minima.utils.messages.TimerMessage;
@@ -21,18 +26,18 @@ public class P2PManager extends MessageProcessor{
 	
 	public static final String P2P_RECMESSAGE 	= new String("P2P_RECMESSAGE");
 	
-	public static final String P2P_SHOWPEERLIST 	= new String("P2P_SHOWPEERLIST");
+	public static final String P2P_PEERINFO 	= new String("P2P_SHOWPEERLIST");
 	
-	
+	//The data store
 	JsonDB mP2PStore;
 	
 	public P2PManager() {
 		super("P2PManager");
 	
+		mP2PStore = new JsonDB();
+		
 		//Start the Ball rolling..
 		PostMessage(P2P_INIT);
-		
-		//You can post delayed Messages with 
 	}
 	
 	public void stop() {
@@ -51,16 +56,25 @@ public class P2PManager extends MessageProcessor{
 		return Main.getMainHandler().getNetworkHandler();
 	}
 	
+	/**
+	 * All the current connections
+	 * @return
+	 */
 	protected ArrayList<MinimaClient> getCurrentMinimaClients(){
 		return getNetworkHandler().getNetClients();
 	}
 	
-	protected void sendMessage(MinimaClient zClient, JSONObject zJson) {
-		
+	protected void sendMessage(MinimaClient zClient, String zMessage) {
+		Message sender = new Message(MinimaClient.NETCLIENT_PEERS);
+		sender.addObject("peersinfo", new MiniString(zMessage));
+		zClient.PostMessage(sender);
 	}
 	
-	protected void sendMessageAll(JSONObject zJson) {
-		
+	protected void sendMessageAll(String zMessage) {
+		ArrayList<MinimaClient> allclient = getCurrentMinimaClients();
+		for(MinimaClient client : allclient) {
+			sendMessage(client, zMessage);
+		}
 	}
 	
 	@Override
@@ -95,23 +109,42 @@ public class P2PManager extends MessageProcessor{
 			//DO Stuff every minute to check peers etc
 			//..
 			
+			//Send a message ?
+			//If JSON..
+//			JSONObject obj = new JSONObject();
+//			obj.put("data", "something");
+//			String str = obj.toString();
+			
+			//Send a string
+			sendMessageAll("Hello!");
 			
 			//Do it again..
 			PostTimerMessage(new TimerMessage(60000, P2P_REPEATLOOP));
 		
 		}else if(zMessage.getMessageType().equals(P2P_RECMESSAGE)) {
-			//Recieved a message over the network..
-//			JSON
+			//Received a message over the network..
+			MinimaClient client = (MinimaClient) zMessage.getObject("minimaclient");
+			MiniString str 		= (MiniString) zMessage.getObject("peersinfo");
 			
+			//Do something.. if it's a JSON..
+			//JSONObject json = (JSONObject) new JSONParser().parse(str.toString());
+			
+			MinimaLogger.log("REC Peer info Client "+client.toJSON()+" "+str.toString());
 		
-		}else if(zMessage.getMessageType().equals(P2P_SHOWPEERLIST)) {
+		}else if(zMessage.getMessageType().equals(P2P_PEERINFO)) {
 			//Return info to the peerlist function.. from terminal command
 			//You can use the 'network function to see a list of current peers
-			//but this you can use to test/debug' - use 'peers'
+			//but this you can use to test/debug' - use 'p2pinfo'
 			
+			//This is generic way to respond to messages from terminal
+			JSONObject resp = InputHandler.getResponseJSON(zMessage);
 			
+			//Add some details.. 
+			resp.put("info", "Some info!");
+			resp.put("moreinfo", "Some more info!");
 			
-			
+			//status true!
+			InputHandler.endResponse(zMessage, true, "");
 		}		
 	}
 
