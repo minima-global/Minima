@@ -20,7 +20,7 @@ import org.minima.objects.greet.TxPoWList;
 import org.minima.system.Main;
 import org.minima.system.network.base.MinimaClient;
 import org.minima.system.network.base.MinimaReader;
-import org.minima.system.network.p2p.P2PManager;
+import org.minima.system.network.p2p.P2PMessageProcessor;
 import org.minima.system.txpow.TxPoWChecker;
 import org.minima.utils.DataTimer;
 import org.minima.utils.MinimaLogger;
@@ -663,7 +663,7 @@ public class ConsensusNet extends ConsensusProcessor {
 			MinimaClient client = (MinimaClient) zMessage.getObject("netclient");
 			
 			//Create a new Message
-			Message msg = new Message(P2PManager.P2P_RECMESSAGE);
+			Message msg = new Message(P2PMessageProcessor.P2P_RECMESSAGE);
 			msg.addObject("minimaclient", client);
 			msg.addObject("peersinfo", info);
 			

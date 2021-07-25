@@ -34,7 +34,7 @@ import org.minima.system.network.maxima.Maxima;
 import org.minima.system.network.minidapps.DAPPManager;
 import org.minima.system.network.minidapps.SelfSignedCertGenerator;
 import org.minima.system.network.minidapps.websocket.WebSocketManager;
-import org.minima.system.network.p2p.P2PManager;
+import org.minima.system.network.p2p.P2PMessageProcessor;
 import org.minima.system.network.rpc.NanoRPCServer;
 import org.minima.system.network.sshtunnel.SSHTunnel;
 import org.minima.utils.MinimaLogger;
@@ -98,7 +98,7 @@ public class NetworkHandler extends MessageProcessor {
 	/**
 	 * P2PManager
 	 */
-	P2PManager mP2P;
+	P2PMessageProcessor mP2P;
 	
 	/**
 	 * URL to call with MiniDAPP JSON details
@@ -346,7 +346,7 @@ public class NetworkHandler extends MessageProcessor {
 		return mWebSocketManager;
 	}
 	
-	public P2PManager getP2PManager() {
+	public P2PMessageProcessor getP2PManager() {
 		return mP2P;
 	}
 	
@@ -383,7 +383,7 @@ public class NetworkHandler extends MessageProcessor {
 			Thread.sleep(200);
 			
 			//Start ther P2P
-			mP2P = new P2PManager();
+			mP2P = new P2PMessageProcessor();
 			
 			//Start the RPC server
 			mNanoRPC = new NanoRPCServer(getRPCPort());

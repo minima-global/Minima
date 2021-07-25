@@ -1,7 +1,7 @@
 package org.minima.system.input.functions;
 
 import org.minima.system.input.CommandFunction;
-import org.minima.system.network.p2p.P2PManager;
+import org.minima.system.network.p2p.P2PMessageProcessor;
 import org.minima.utils.messages.Message;
 
 public class p2pinfo extends CommandFunction{
@@ -14,7 +14,7 @@ public class p2pinfo extends CommandFunction{
 	@Override
 	public void doFunction(String[] zInput) throws Exception {
 		//Print the DB
-		Message msg = getResponseMessage(P2PManager.P2P_PEERINFO);
+		Message msg = getResponseMessage(P2PMessageProcessor.P2P_PEERINFO);
 		getMainHandler().getNetworkHandler().getP2PManager().PostMessage(msg);
 	}
 	
