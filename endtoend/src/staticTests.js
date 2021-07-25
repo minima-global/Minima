@@ -76,7 +76,7 @@ const start_docker_node_1 = async function (topology, nbNodes, tests_collection)
     // Start the container.
     await containers["1"].start();
     process.stdout.write("Trying to sleep for 5 seconds...");
-    await sleep(10000);
+    await sleep(5000);
 
     await runContainerInspect(topology, nbNodes, tests_collection);
 }
@@ -128,7 +128,7 @@ start_other_nodes_star = async function(nbNodes, tests_collection) {
 
         await containers[pos].start();
 
-        await sleep(10000);
+        await sleep(5000);
         await starContainerInspect(pos, nbNodes, tests_collection);
       }
 }
@@ -157,7 +157,7 @@ start_other_nodes_line = async function (nbNodes, pos, tests_collection) {
 
     // Start the container.
     await containers[pos].start();
-    await sleep(10000);
+    await sleep(5000);
 
     await lineContainerInspect(pos, nbNodes, tests_collection);
 }
@@ -186,7 +186,7 @@ start_other_nodes_cluster = async function (nbNodes, pos, tests_collection) {
 
     // Start the container.
     await containers[pos].start();
-    await sleep(10000);
+    await sleep(5000);
 
     await clusterContainerInspect(pos, nbNodes, tests_collection);
 }
@@ -296,7 +296,7 @@ start_static_network_tests = async function (topology, nbNodes, nodeFailure, tes
     }
     await stop_docker_nodes();
     // give 5 seconds to stop all docker nodes (should depend on nbNodes but also system performance)
-    await sleep(10000);
+    await sleep(5000);
     await start_docker_node_1(topology, nbNodes, tests_collection);
 
     //stop one node and run tests
