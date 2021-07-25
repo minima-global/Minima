@@ -25,7 +25,7 @@ test_star_static = function () {
         console.log("tests collection");
 
         //wait for processing(should depend on nbNodes but also system performance)
-        await sleep(100000);
+        await sleep(60000);
 
         if (!fs.existsSync("./results")){
             fs.mkdirSync("./results");
@@ -57,6 +57,7 @@ test_star_static = function () {
             midData["ip"] = ip_addrs[child.toString()];
 
             var status = await Minima_API.status();
+            console.log("============test============")
             midData["request"] = "status";
             midData["response"] = JSON.stringify(status);
             data.push(midData);
