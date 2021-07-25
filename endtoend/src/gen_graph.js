@@ -120,7 +120,8 @@ const readFiles = (dirname) => {
         });
         data = data.slice(1);
         const reg = /\"p2pPeercount\"\:([0-9]+)\}/;
-        const count = parseInt(data[0].match(reg)[1]);
+        let counts = data.map((item, index) => index % 2 === 0 && parseInt(item.match(reg)[1]));
+        var count = counts.reduce(function(a, b) { return Math.max(a, b); });
 
         if (!sign) {
           if (partName === "part1") set1.push(count);
@@ -166,6 +167,6 @@ const readFiles = (dirname) => {
   });
 };
 
-module.exports = test_graph_gen
+// module.exports = test_graph_gen
 
-// test_graph_gen()
+test_graph_gen()

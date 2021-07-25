@@ -76,10 +76,8 @@ const start_docker_node_1 = async function (topology, nbNodes, tests_collection)
     // Start the container.
     await containers["1"].start();
     process.stdout.write("Trying to sleep for 5 seconds...");
-    await sleep(10000);
-//    process.stdout.write("Did I sleep 5 seconds?");
+    await sleep(5000);
 
-    console.log("Hello1");
     await runContainerInspect(topology, nbNodes, tests_collection);
 }
 
@@ -89,7 +87,7 @@ const runContainerInspect = (topology, nbNodes, tests_collection) => {
             ip_addrs["1"] = data.NetworkSettings.Networks[cfg.docker_net].IPAddress;
             console.log("Started node 1," + " IP:  " + JSON.stringify(data.NetworkSettings.Networks[cfg.docker_net].IPAddress));
             get_node_p2p_params(ip_addrs["1"], function() {
-                resolve(start_other_nodes(topology, nbNodes, tests_collection));    
+                resolve(start_other_nodes(topology, nbNodes, tests_collection));
             });
         })
     })
@@ -130,8 +128,7 @@ start_other_nodes_star = async function(nbNodes, tests_collection) {
 
         await containers[pos].start();
 
-        await sleep(20000);
-        console.log("node " + pos);
+        await sleep(5000);
         await starContainerInspect(pos, nbNodes, tests_collection);
       }
 }
@@ -142,7 +139,6 @@ const starContainerInspect = (pos, nbNodes, tests_collection) => {
             console.log("Started node " + pos + " IP:  " + JSON.stringify(data.NetworkSettings.Networks[cfg.docker_net].IPAddress));
             ip_addrs[pos] = data.NetworkSettings.Networks[cfg.docker_net].IPAddress;
             if(pos == nbNodes) {
-                await sleep(5000);
                 resolve(tests_collection(0, ip_addrs))
             } else {
                 resolve(null)
@@ -161,7 +157,7 @@ start_other_nodes_line = async function (nbNodes, pos, tests_collection) {
 
     // Start the container.
     await containers[pos].start();
-    await sleep(20000);
+    await sleep(5000);
 
     await lineContainerInspect(pos, nbNodes, tests_collection);
 }
@@ -172,7 +168,6 @@ const lineContainerInspect = (pos, nbNodes, tests_collection) => {
             console.log("Started node " + pos + " IP:  " + JSON.stringify(data.NetworkSettings.Networks[cfg.docker_net].IPAddress));
             ip_addrs[pos] = data.NetworkSettings.Networks[cfg.docker_net].IPAddress;
             if(pos == nbNodes) {
-                await sleep(5000);
                 resolve(tests_collection(0, ip_addrs))
             } else {
                 resolve(start_other_nodes_line(nbNodes, pos+1, tests_collection))
@@ -191,7 +186,7 @@ start_other_nodes_cluster = async function (nbNodes, pos, tests_collection) {
 
     // Start the container.
     await containers[pos].start();
-    await sleep(20000);
+    await sleep(5000);
 
     await clusterContainerInspect(pos, nbNodes, tests_collection);
 }
@@ -202,7 +197,6 @@ const clusterContainerInspect = (pos, nbNodes, tests_collection) => {
             console.log("Started node " + pos + " IP:  " + JSON.stringify(data.NetworkSettings.Networks[cfg.docker_net].IPAddress));
             ip_addrs[pos] = data.NetworkSettings.Networks[cfg.docker_net].IPAddress;
             if(pos == nbNodes) {
-                await sleep(5000);
                 resolve(tests_collection(0, ip_addrs))
             } else {
                 resolve(start_other_nodes_cluster(nbNodes, pos+1, tests_collection))
@@ -308,7 +302,6 @@ start_static_network_tests = async function (topology, nbNodes, nodeFailure, tes
     //stop one node and run tests
     await containers[''+nodeFailure].stop();
     console.log("node " + nodeFailure + " stopping...");
-    await sleep(10000);
     await tests_collection(1, ip_addrs);
 }
 
