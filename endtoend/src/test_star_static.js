@@ -25,7 +25,7 @@ test_star_static = function () {
         console.log("tests collection");
 
         //wait for processing(should depend on nbNodes but also system performance)
-        await sleep(60000);
+        await sleep(100000);
 
         if (!fs.existsSync("./results")){
             fs.mkdirSync("./results");
