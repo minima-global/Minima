@@ -167,6 +167,6 @@ const readFiles = (dirname) => {
   });
 };
 
-// module.exports = test_graph_gen
+module.exports = test_graph_gen
 
-test_graph_gen()
+// test_graph_gen()
