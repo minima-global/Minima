@@ -609,17 +609,12 @@ public class MinimaDB {
 		for(TxPOWDBRow row : allrows) {
 			TxPoW txpow = row.getTxPOW();
 			
-			//Check this..
-			scanForTokens(txpow, newTokens);
-			
-			//Now the Txns..
-			if(txpow.isBlock()) {
-				ArrayList<MiniData> txpowlist = txpow.getBlockTransactions();
-				for(MiniData txid : txpowlist) {
-					TxPOWDBRow trow = getTxPowDB().findTxPOWDBRow(txid);
-					if(trow!=null) {
-						scanForTokens(trow.getTxPOW(), newTokens);
-					}
+			//Check fopr tokens if has a valid body
+			if(txpow.isTransaction()) {
+				//Check the Witness..
+				ArrayList<TokenProof> tokens =  txpow.getWitness().getAllTokenDetails();
+				for(TokenProof tp : tokens) {
+					newTokens.add(tp);
 				}
 			}
 		}
@@ -660,11 +655,11 @@ public class MinimaDB {
 	private void scanForTokens(TxPoW zTxPoW, ArrayList<TokenProof> zTokens) {
 		//Is it a transaction..
 		if(zTxPoW.isTransaction()) {
-			//Check for token generator..
-			TokenProof tgd 		= zTxPoW.getTransaction().getTokenGenerationDetails();
-			if(tgd != null) {
-				zTokens.add(tgd);
-			}
+//			//Check for token generator..
+//			TokenProof tgd 		= zTxPoW.getTransaction().getTokenGenerationDetails();
+//			if(tgd != null) {
+//				zTokens.add(tgd);
+//			}
 			
 			//Check the Witness..
 			ArrayList<TokenProof> tokens =  zTxPoW.getWitness().getAllTokenDetails();
