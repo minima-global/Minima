@@ -732,8 +732,8 @@ public class ConsensusNet extends ConsensusProcessor {
 			MiniNumber timetip   = getMainDB().getMainTree().getChainTip().getTxPow().getBlockNumber();
 			MiniNumber timeblock = txpow.getBlockNumber();
 			if(timeblock.sub(timetip).isMore(GlobalParams.MINIMA_CASCADE_START_DEPTH)) {
-				MinimaLogger.log("NET Transaction TOO FAR IN THE FUTURE.. new:"+timeblock+" / current:"+timetip);
-				return;
+				MinimaLogger.log("NET Transaction FAR IN THE FUTURE.. new:"+timeblock+" / current:"+timetip);
+//				return;
 			}
 			
 			//Do we have it.. now check DB - hmmm..
