@@ -61,6 +61,11 @@ public class ConsensusNet extends ConsensusProcessor {
 	private static int MAX_TXPOW_LIST_SIZE = 100;
 	
 	/**
+	 * Wait five minutes before resuming normal service
+	 */
+	private static int MAX_SYNC_TIMEOUT = 300000;
+	
+	/**
 	 * Check when you sent out a request for a TxPOW
 	 */
 	DataTimer mDataTimer = new DataTimer();
@@ -232,7 +237,7 @@ public class ConsensusNet extends ConsensusProcessor {
 				MinimaLogger.log("SYNC TO "+mCurrentSyncTip);
 				
 				//Set the initial sync threshold and fire a timer message just in case..
-				getConsensusHandler().PostTimerMessage(new TimerMessage(60000, CONSENSUS_NET_SYNCOMPLETE));
+				getConsensusHandler().PostTimerMessage(new TimerMessage(MAX_SYNC_TIMEOUT, CONSENSUS_NET_SYNCOMPLETE));
 			}
 			
 			if(blocklen == 0) {
@@ -728,12 +733,21 @@ public class ConsensusNet extends ConsensusProcessor {
 			//The TxPoW
 			TxPoW txpow = (TxPoW)zMessage.getObject("txpow");
 			
-			//First check that this is WITHIN acceptable linits .. so not too far ahead of the current chain..
+			//First check that this is WITHIN acceptable limits .. so not too far ahead of the current chain..
 			MiniNumber timetip   = getMainDB().getMainTree().getChainTip().getTxPow().getBlockNumber();
+			MiniNumber cascade   = getMainDB().getMainTree().getCascadeNode().getBlockNumber();
 			MiniNumber timeblock = txpow.getBlockNumber();
-			if(timeblock.sub(timetip).isMore(GlobalParams.MINIMA_CASCADE_START_DEPTH)) {
-				MinimaLogger.log("NET Transaction FAR IN THE FUTURE.. new:"+timeblock+" / current:"+timetip);
-//				return;
+			
+			if(!syncmessage && txpow.isBlock()) {
+				if(timeblock.sub(timetip).isMore(GlobalParams.MINIMA_CASCADE_START_DEPTH)) {
+					MinimaLogger.log("NET Transaction FAR IN THE FUTURE.. new:"+timeblock+" / current:"+timetip);
+					return;
+				}
+			
+				if(timeblock.isLess(cascade)) {
+					MinimaLogger.log("NET Transaction BLOCK TOO OLD! "+timeblock+" / cascade:"+cascade);
+					return;
+				}
 			}
 			
 			//Do we have it.. now check DB - hmmm..
@@ -766,7 +780,7 @@ public class ConsensusNet extends ConsensusProcessor {
 							MinimaLogger.log("Request missing TxPoW in block "+txpow.getBlockNumber()+" "+txn);
 							sendTxPowRequest(zMessage, txn);
 						}
-					}
+					}	
 				}
 			}
 		}
