@@ -194,7 +194,7 @@ public class BlockTree {
 		//Go down the whole tree..
 		_recurseTree(new NodeAction() {
 			@Override
-			public void runAction(BlockTreeNode zNode) {
+			public void runAction(BlockTreeNode zNode) throws Exception {
 				//Reset the weight..
 				zNode.resetCurrentWeight();
 				
@@ -314,7 +314,7 @@ public class BlockTree {
 			//SLOWER recursive method.. replaced by the fast hashtable
 			NodeAction finder = new NodeAction(zTxPOWID) {
 				@Override
-				public void runAction(BlockTreeNode zNode) {
+				public void runAction(BlockTreeNode zNode) throws Exception{
 					if(zNode.getTxPowID().isEqual(getExtraData())) {
 	        			setReturnObject(zNode);
 	        		}
@@ -373,7 +373,7 @@ public class BlockTree {
 		//Action that checks for a specific node..
 		NodeAction nodestates = new NodeAction(zMainDB) {
 			@Override
-			public void runAction(BlockTreeNode zNode) {
+			public void runAction(BlockTreeNode zNode) throws Exception {
 				//Default state
 				int parentstate = BlockTreeNode.BLOCKSTATE_INVALID;
 				
@@ -394,6 +394,13 @@ public class BlockTree {
 					if(zNode.getState() == BlockTreeNode.BLOCKSTATE_BASIC) {
 						//Get the txpow row - do this now as slow function
 						TxPOWDBRow row = getDB().getTxPOWRow(zNode.getTxPowID());
+						
+						//Seeing this sometimes.. SHOULD NOT HAPPEN
+						if(row == null) {
+							MinimaLogger.log("ERROR : BlockTree node missing TxPoW.. Parent : "+zNode.getParent().getBlockNumber());
+							zNode.setState(BlockTreeNode.BLOCKSTATE_INVALID);
+							return;
+						}
 						
 						//Is it full
 						if(row.getBlockState() == TxPOWDBRow.TXPOWDBROW_STATE_FULL) {
@@ -538,7 +545,7 @@ public class BlockTree {
 		//Action that checks for a specific node..
 		NodeAction printer = new NodeAction() {
 			@Override
-			public void runAction(BlockTreeNode zNode) {
+			public void runAction(BlockTreeNode zNode) throws Exception {
 				BlockTreeNode parent = zNode.getParent();
 				if(parent!=null) {
 					MinimaLogger.log(zNode.getTxPowID().to0xString(10)+" parent:"+zNode.getParent().getTxPowID());	
@@ -566,9 +573,14 @@ public class BlockTree {
 			//Get the top stack item
 			BlockTreeNode node = stack.pop();
 			
-			//Do the action..
-			zNodeAction.runAction(node);
-    		
+			//Catch any errors! - SHOULD NOT HAPPEN
+			try {
+				//Do the action..
+				zNodeAction.runAction(node);
+			}catch(Exception exc) {
+				MinimaLogger.log(exc);
+			}
+			
     		//Have we found what we were looking for..
     		if(zNodeAction.returnObject()) {
     			return zNodeAction.getObject();
