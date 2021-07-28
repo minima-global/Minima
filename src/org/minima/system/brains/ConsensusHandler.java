@@ -166,7 +166,7 @@ public class ConsensusHandler extends MessageProcessor {
 	 * The Last Gimme50..
 	 */
 	long mLastGimme = 0;
-	public static final long MIN_GIMME50_TIME_GAP = 1000 * 60 * 10;
+	public static final long MIN_GIMME50_TIME_GAP = 1000 * 60 * 60 * 24;
 	
 	/**
 	 * PULSE Timer - every 10 mins
@@ -784,8 +784,8 @@ public class ConsensusHandler extends MessageProcessor {
 			//Check time
 			long timenow = System.currentTimeMillis();
 			if(timenow - mLastGimme < MIN_GIMME50_TIME_GAP) {
-				//You can only do one of these every 10 minutes..
-				InputHandler.endResponse(zMessage, false, "You may only gimme50 once every 10 minutes");
+				//You can only do one of these every 24 hours..
+				InputHandler.endResponse(zMessage, false, "You may only gimme50 once a day.. (TestNET coins NOT real Minima)");
 				return;
 			}
 			mLastGimme = timenow;
