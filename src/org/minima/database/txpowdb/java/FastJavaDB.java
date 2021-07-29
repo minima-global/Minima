@@ -129,7 +129,7 @@ public class FastJavaDB implements TxPowDB {
 			TxPoW rowtxpow 	= row.getTxPOW();
 			String txpid 	= rowtxpow.getTxPowID().to0xString();
 			
-			//It's a main block
+				//It's a main block
 			if(row.isMainChainBlock()) {
 				newtable.put(txpid,row);
 				
@@ -138,11 +138,7 @@ public class FastJavaDB implements TxPowDB {
 				newtable.put(txpid,row);
 			
 				//It's a transaction but still relevant
-			}else if(row.getLatestRelevantBlockTime().isMore(minused)) {
-				newtable.put(txpid,row);
-				
-				//It's a block but not past the cascade
-			}else if(row.getReceivedTime() > mintime) {
+			}else if(row.getLatestRelevantBlockTime().isMore(minused) || row.getReceivedTime() > mintime) {
 				newtable.put(txpid,row);
 				
 			}else {
