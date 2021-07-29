@@ -56,6 +56,14 @@ public class ConsensusHandler extends MessageProcessor {
 	public static final long FLUSH_TIMER 				   	   = 1000 * 60 * 10;
 	
 	/**
+	 * Reconnect if need be - no tip change for 5 mins..
+	 */
+	public static final String CONSENSUS_CHECK_RECONNECT 	   = "CONSENSUS_CHECK_RECONNECT";
+	public static final long CHECK_RECONNECT_TIMER 			   = 1000 * 60 * 10;
+	boolean mFirstReconnectRun 	= true;
+	MiniNumber mLastTip 		= MiniNumber.ZERO;
+	
+	/**
 	 * Auto Consolidate 
 	 */
 	public static final String CONSENSUS_AUTOCONSOLIDATE 	   = "CONSENSUS_AUTOCONSOLIDATE";
@@ -215,6 +223,9 @@ public class ConsensusHandler extends MessageProcessor {
 		
 		//Auto Consolidate - every hour
 		PostTimerMessage(new TimerMessage(CONSOLIDATE_TIMER, CONSENSUS_AUTOCONSOLIDATE));
+	
+		//Re-check 
+		PostTimerMessage(new TimerMessage(CHECK_RECONNECT_TIMER, CONSENSUS_CHECK_RECONNECT));
 	}
 	
 	public void setBackUpManager() {
@@ -398,6 +409,41 @@ public class ConsensusHandler extends MessageProcessor {
 			
 			//Clean the Memory..
 			System.gc();
+		
+		}else if ( zMessage.isMessageType(CONSENSUS_CHECK_RECONNECT) ) {
+			//Check ready
+			if(getMainDB().getMainTree().getChainTip() == null) {
+				//Wait a bit..
+				PostTimerMessage(new TimerMessage(CHECK_RECONNECT_TIMER, CONSENSUS_CHECK_RECONNECT));
+				return;
+			}
+			
+			//Current tip
+			MiniNumber currenttip = getMainDB().getTopBlock();
+			
+			//Is it the first time 
+			if(mFirstReconnectRun) {
+				mLastTip 			= currenttip;
+				mFirstReconnectRun 	= false;
+			
+			}else{
+				//Check if there is a change..
+				if(mLastTip.isEqual(currenttip)) {
+					MinimaLogger.log("RECONNECT after no tip change! @ "+mLastTip);
+					
+					//Same block number after 5 mins ? reconnect and resync..
+					Message reconnect = new Message(NetworkHandler.NETWORK_RECONNECT);
+					Main.getMainHandler().getNetworkHandler().PostMessage(reconnect);
+					
+					mFirstReconnectRun = true;
+				}
+				
+				//And check for next time
+				mLastTip = currenttip;
+			}
+			
+			//Re-check 
+			PostTimerMessage(new TimerMessage(CHECK_RECONNECT_TIMER, CONSENSUS_CHECK_RECONNECT));
 			
 		}else if ( zMessage.isMessageType(CONSENSUS_AUTOBACKUP) ) {
 			//Backup the system..
