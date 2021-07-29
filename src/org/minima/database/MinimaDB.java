@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -38,6 +39,7 @@ import org.minima.objects.keys.MultiKey;
 import org.minima.objects.proofs.TokenProof;
 import org.minima.system.Main;
 import org.minima.system.brains.BackupManager;
+import org.minima.system.brains.ConsensusBackup;
 import org.minima.system.brains.ConsensusHandler;
 import org.minima.system.input.functions.gimme50;
 import org.minima.system.txpow.GenesisTxPOW;
@@ -159,8 +161,24 @@ public class MinimaDB {
 	public TxPoW getTxPOW(MiniData zTxPOWID) {
 		TxPOWDBRow row = mTxPOWDB.findTxPOWDBRow(zTxPOWID);
 		if(row == null) {
+//			//Do we have it as a file..
+//			File txpf = getBackup().getTxpowFile(zTxPOWID);
+//			if(txpf.exists()) {
+//				//Load it..
+//				TxPoW txp = ConsensusBackup.loadTxPOW(txpf);
+//				
+//				//Add it to the DB..
+//				if(txp != null) {
+//					MinimaLogger.log("Loaded missing TxPoW from File! "+txp.getTxPowID().to0xString());
+//					addNewTxPow(txp);
+//				}
+//				
+//				return txp;
+//			}
+			
 			return null;
 		}
+		
 		return row.getTxPOW();
 	}
 	
