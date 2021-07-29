@@ -175,9 +175,9 @@ public class BackupManager extends MessageProcessor {
 		return mFirstBlock;
 	}
 	
-	public void deleteTxpow(TxPoW zTxPOW) {
+	public void deleteTxpow(MiniData zTxPOWID) {
 		//Create the File
-		File delfile = new File(mTxPOWDB,zTxPOW.getTxPowID().toString()+".txpow");
+		File delfile = new File(mTxPOWDB,zTxPOWID.toString()+".txpow");
 		
 		//Do in separate thread so returns fast
 		Message delete = new Message(BackupManager.BACKUP_DELETE);
@@ -185,7 +185,7 @@ public class BackupManager extends MessageProcessor {
 		PostMessage(delete);
 		
 		//And Delete the possible Block ID file..
-		File delblock = new File(mTempBlocksDB,zTxPOW.getTxPowID().toString()+".block");
+		File delblock = new File(mTempBlocksDB,zTxPOWID.toString()+".block");
 		delete = new Message(BackupManager.BACKUP_DELETE);
 		delete.addObject("file", delblock);
 		PostMessage(delete);

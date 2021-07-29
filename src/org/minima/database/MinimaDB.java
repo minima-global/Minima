@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -38,6 +39,7 @@ import org.minima.objects.keys.MultiKey;
 import org.minima.objects.proofs.TokenProof;
 import org.minima.system.Main;
 import org.minima.system.brains.BackupManager;
+import org.minima.system.brains.ConsensusBackup;
 import org.minima.system.brains.ConsensusHandler;
 import org.minima.system.input.functions.gimme50;
 import org.minima.system.txpow.GenesisTxPOW;
@@ -148,16 +150,48 @@ public class MinimaDB {
 		getBackup().backupTempBlock(root);
 	}
 	
+	/**
+	 * Main TxPoW add, get, delete functions
+	 */
+	public TxPOWDBRow addNewTxPow(TxPoW zTxPOW) {
+		//That's that
+		return mTxPOWDB.addTxPOWDBRow(zTxPOW);
+	}
+	
 	public TxPoW getTxPOW(MiniData zTxPOWID) {
 		TxPOWDBRow row = mTxPOWDB.findTxPOWDBRow(zTxPOWID);
 		if(row == null) {
+//			//Do we have it as a file..
+//			File txpf = getBackup().getTxpowFile(zTxPOWID);
+//			if(txpf.exists()) {
+//				//Load it..
+//				TxPoW txp = ConsensusBackup.loadTxPOW(txpf);
+//				
+//				//Add it to the DB..
+//				if(txp != null) {
+//					MinimaLogger.log("Loaded missing TxPoW from File! "+txp.getTxPowID().to0xString());
+//					addNewTxPow(txp);
+//				}
+//				
+//				return txp;
+//			}
+			
 			return null;
 		}
+		
 		return row.getTxPOW();
 	}
 	
 	public TxPOWDBRow getTxPOWRow(MiniData zTxPOWID) {
 		return mTxPOWDB.findTxPOWDBRow(zTxPOWID);
+	}
+	
+	public void removeTxPowDB(MiniData zTxPOWID) {
+		//Remove from the DB	
+		mTxPOWDB.removeTxPOW(zTxPOWID);
+		
+		//Delete from DISK
+		getBackup().deleteTxpow(zTxPOWID);
 	}
 	
 	/**
@@ -195,10 +229,20 @@ public class MinimaDB {
 			boolean allok = true;
 			ArrayList<MiniData> txns = unblock.getTxPOW().getBlockTransactions();
 			for(MiniData txnid : txns) {
-				if(getTxPOW(txnid) == null) {
+				//Get the row
+				TxPOWDBRow txrow = getTxPOWRow(txnid);
+				if(txrow == null) {
+					//Keep check as will update the latesr relevant..
 					allok = false;
-					break;
+				}else {
+					//Set the latest relevant block
+					txrow.setLatestRelevantBlock(unblock.getTxPOW().getBlockNumber());
 				}
+				
+//				if(getTxPOW(txnid) == null) {
+//					allok = false;
+//					break;
+//				}
 			}
 			
 			//Store for later
@@ -334,7 +378,7 @@ public class MinimaDB {
 			row.setMainChainBlock(false);
 			
 			//And delete / move to different folder any file backups..
-			getBackup().deleteTxpow(node.getTxPow());
+			getBackup().deleteTxpow(node.getTxPowID());
 		}
 		
 		//Remove all TXPowRows that are less than the cascade node.. they will not be used again..
@@ -345,7 +389,7 @@ public class MinimaDB {
 		
 		//Remove the deleted txpow..
 		for(TxPOWDBRow remrow : remrows) {
-			getBackup().deleteTxpow(remrow.getTxPOW());
+			getBackup().deleteTxpow(remrow.getTxPOW().getTxPowID());
 		}
 		
 		//Clean up..
@@ -503,17 +547,6 @@ public class MinimaDB {
 		}
 		
 		return true;
-	}
-	
-	/**
-	 * Add it if it is not already in the list
-	 * 
-	 * @param zTxPOW
-	 * @return
-	 */
-	public TxPOWDBRow addNewTxPow(TxPoW zTxPOW) {
-		//That's that
-		return mTxPOWDB.addTxPOWDBRow(zTxPOW);
 	}
 	
 	public BlockTreeNode hardAddTxPOWBlock(TxPoW zTxPoW, MMRSet zMMR, boolean zCascade) {

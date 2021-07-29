@@ -54,5 +54,11 @@ public abstract class NodeAction {
 		return mDB;
 	}
 	
-	public abstract void runAction(BlockTreeNode zNode);
+	/**
+	 * Main Recurse function..
+	 * 
+	 * @param zNode
+	 * @throws Exception
+	 */
+	public abstract void runAction(BlockTreeNode zNode) throws Exception;
 }
