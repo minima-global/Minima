@@ -24,6 +24,7 @@ public class txpowsearch extends CommandFunction{
 		String input        = "";
 		String output       = "";
 		String token        = "";
+		String block    	= "";
 		
 		//Cycle through..
 		for(int i=1;i<len;i++) {
@@ -35,6 +36,8 @@ public class txpowsearch extends CommandFunction{
 				output = param.substring(7);
 			}else if(param.startsWith("tokenid:")) {
 				token = param.substring(8);
+			}else if(param.startsWith("block:")) {
+				block = param.substring(6);
 			}
 		}
 		
@@ -43,6 +46,7 @@ public class txpowsearch extends CommandFunction{
 		sender.addString("input", input);
 		sender.addString("output", output);
 		sender.addString("tokenid", token);
+		sender.addString("block", block);
 		
 		//Send it to the miner..
 		getMainHandler().getConsensusHandler().PostMessage(sender);
