@@ -172,12 +172,13 @@ public class Start {
 		int hostnum  = rand.nextInt(VALID_BOOTSTRAP_NODES.length);
 		
 		//9001, 10001, 11001 are valid ports from the BOOT nodes
-		int portrand 			= rand.nextInt(3);
 		ArrayList<String> connectlist = new ArrayList<>();
+		
+		int portrand 			= rand.nextInt(3);
 		String connecthost      = VALID_BOOTSTRAP_NODES[hostnum];
 		int connectport         = 9001 + (1000*portrand);
+		
 		String host             = "";
-
 		String external 		= "";
 		
 		boolean clean           = false;
@@ -209,6 +210,20 @@ public class Start {
 					//Hard code the HOST.. 
 					host = zArgs[counter++];
 				
+				}else if(arg.equals("-noextrahost")) {
+					//RESET
+					VALID_BOOTSTRAP_NODES = new String[]{"35.204.181.120",
+														 "35.204.119.15",
+														 "34.91.220.49",
+														 "35.204.62.177",
+														 "35.204.139.141",
+														 "35.204.194.45"};
+				
+					hostnum  	= rand.nextInt(VALID_BOOTSTRAP_NODES.length);
+					portrand 	= rand.nextInt(3);
+					connecthost = VALID_BOOTSTRAP_NODES[hostnum];
+					connectport = 9001 + (1000*portrand);
+						
 				}else if(arg.equals("-help")) {
 					//Printout HELP!
 					MinimaLogger.log("Minima "+GlobalParams.MINIMA_VERSION+" Alpha Test Net");
