@@ -612,6 +612,7 @@ public class ConsensusNet extends ConsensusProcessor {
 		 */
 		}else if ( zMessage.isMessageType(CONSENSUS_NET_TXPOWLIST)) {
 			TxPoWList block = (TxPoWList)zMessage.getObject("txpowlist"); 
+			boolean hittip = false;
 			
 			//Cycle through.. and Post as normal..
 			ArrayList<TxPoW> txps = block.getList();
@@ -622,9 +623,16 @@ public class ConsensusNet extends ConsensusProcessor {
 				if(txp.getBlockNumber().isMoreEqual(mCurrentSyncTip)) {
 					//We are equal..
 					MinimaLogger.log("SYNC TIP HIT!!");
-					getConsensusHandler().PostMessage(CONSENSUS_NET_SYNCOMPLETE);
+					hittip = true;
+//					getConsensusHandler().PostMessage(CONSENSUS_NET_SYNCOMPLETE);
 				}
 			}
+			
+			//Are we done
+			if(hittip) {
+				finishUpSync();
+			}
+			
 			
 		/**
 		 * A TxPoWID message from a client.. do you need it ?	
