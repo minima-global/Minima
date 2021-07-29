@@ -68,4 +68,14 @@ public interface TxPOWDBRow {
 	public int getFailedAttempts();
 	public void incrementFailedAttempts();
 	
+	/**
+	 * Is relevant to ANY block
+	 */
+	public void setLatestRelevantBlock(MiniNumber zBlock);
+	public MiniNumber 	getLatestRelevantBlockTime();
+	
+	/**
+	 * What time did we git it..
+	 */
+	public long 		getReceivedTime();
 }

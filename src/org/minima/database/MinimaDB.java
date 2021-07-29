@@ -229,10 +229,20 @@ public class MinimaDB {
 			boolean allok = true;
 			ArrayList<MiniData> txns = unblock.getTxPOW().getBlockTransactions();
 			for(MiniData txnid : txns) {
-				if(getTxPOW(txnid) == null) {
+				//Get the row
+				TxPOWDBRow txrow = getTxPOWRow(txnid);
+				if(txrow == null) {
+					//Keep check as will update the latesr relevant..
 					allok = false;
-					break;
+				}else {
+					//Set the latest relevant block
+					txrow.setLatestRelevantBlock(unblock.getTxPOW().getBlockNumber());
 				}
+				
+//				if(getTxPOW(txnid) == null) {
+//					allok = false;
+//					break;
+//				}
 			}
 			
 			//Store for later
