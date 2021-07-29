@@ -305,38 +305,42 @@ public class MinimaDB {
 			}
 			
 			//Reset transaction from that block onwards
-			mTxPOWDB.resetBlocksFromOnwards(lastblock);
+			resetAllTxPowOnMainChain();
+			//mTxPOWDB.resetBlocksFromOnwards(lastblock);
 			
 			//Now sort
 			for(BlockTreeNode treenode : list) {
-				//Get the Block
-				TxPoW txpow = treenode.getTxPow();
-		
-				//Get the database txpow..
-				TxPOWDBRow trow = mTxPOWDB.findTxPOWDBRow(txpow.getTxPowID());
-				
-				//What Block
-				MiniNumber block = txpow.getBlockNumber();
-				
-				//Set the details
-				trow.setMainChainBlock(true);
-				trow.setIsInBlock(true);
-				trow.setInBlockNumber(block);
-				
 				//Check for coins in the MMR
 				scanMMRSetForCoins(treenode.getMMRSet());
 				
-				//Now the Txns..
-				ArrayList<MiniData> txpowlist = txpow.getBlockTransactions();
-				for(MiniData txid : txpowlist) {
-					trow = mTxPOWDB.findTxPOWDBRow(txid);
-					if(trow!=null) {
-						//Set that it is in this block
-						trow.setMainChainBlock(false);
-						trow.setIsInBlock(true);
-						trow.setInBlockNumber(block);
-					}
-				}
+//				//Get the Block
+//				TxPoW txpow = treenode.getTxPow();
+//		
+//				//Get the database txpow..
+//				TxPOWDBRow trow = mTxPOWDB.findTxPOWDBRow(txpow.getTxPowID());
+//				
+//				//What Block
+//				MiniNumber block = txpow.getBlockNumber();
+//				
+//				//Set the details
+//				trow.setMainChainBlock(true);
+//				trow.setIsInBlock(true);
+//				trow.setInBlockNumber(block);
+//				
+//				//Check for coins in the MMR
+//				scanMMRSetForCoins(treenode.getMMRSet());
+//				
+//				//Now the Txns..
+//				ArrayList<MiniData> txpowlist = txpow.getBlockTransactions();
+//				for(MiniData txid : txpowlist) {
+//					trow = mTxPOWDB.findTxPOWDBRow(txid);
+//					if(trow!=null) {
+//						//Set that it is in this block
+//						trow.setMainChainBlock(false);
+//						trow.setIsInBlock(true);
+//						trow.setInBlockNumber(block);
+//					}
+//				}
 			}
 			
 			/**
@@ -591,6 +595,8 @@ public class MinimaDB {
 	 * Use after a re-sync
 	 */
 	public void resetAllTxPowOnMainChain(){
+		long timenow = System.currentTimeMillis();
+		
 		//And Now sort the TXPOWDB
 		ArrayList<BlockTreeNode> list = getMainTree().getAsList();
 		getTxPowDB().resetAllInBlocks();
@@ -620,6 +626,11 @@ public class MinimaDB {
 					trow.setInBlockNumber(block);
 				}
 			}
+		}
+		
+		long diff = System.currentTimeMillis() - timenow;
+		if(diff>500) {
+			MinimaLogger.log("LONG Reset All txpow on chain.. timer : "+diff+" milli ");
 		}
 	}
 	
