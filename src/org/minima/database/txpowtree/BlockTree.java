@@ -412,7 +412,7 @@ public class BlockTree {
 							
 							//Does it have a valid MMR.. or is it too late for this block.. the parent is a cascade node.
 							if(pnode.getMMRSet() == null) {
-								//MinimaLogger.log("NULL PARENT MMR "+zNode.getBlockNumber()+" "+getCascadeNode().getBlockNumber());
+								MinimaLogger.log("NULL PARENT MMR "+zNode.getBlockNumber()+" "+getCascadeNode().getBlockNumber());
 								zNode.setState(BlockTreeNode.BLOCKSTATE_INVALID);
 								return;
 							}
