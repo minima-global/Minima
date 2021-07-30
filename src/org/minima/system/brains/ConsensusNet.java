@@ -819,24 +819,24 @@ public class ConsensusNet extends ConsensusProcessor {
 			return;
 		}
 		
-		//Check if we have sent off for it recently..
-		String data  = zTxPoWID.to0xString();
-		
-		//Check for it.. in last 5 seconds..
-		boolean found = mDataTimer.checkForData(data, 5000);
-		
-		//If found.. repost the request on a 5 second timer..
-		if(found) {
-			//Wait 10 seconds before trying again..
-			TimerMessage newtxpowid = new TimerMessage(10000, CONSENSUS_NET_TXPOWID);
-			//Add the TxPOWID
-			newtxpowid.addObject("txpowid", zTxPoWID);
-			//And the Net Client..
-			newtxpowid.addObject("netclient", zClient);
-			//Post it for later..
-			getConsensusHandler().PostTimerMessage(newtxpowid);
-			return;
-		}
+//		//Check if we have sent off for it recently..
+//		String data  = zTxPoWID.to0xString();
+//		
+//		//Check for it.. in last 5 seconds..
+//		boolean found = mDataTimer.checkForData(data, 5000);
+//		
+//		//If found.. repost the request on a 5 second timer..
+//		if(found) {
+//			//Wait 10 seconds before trying again..
+//			TimerMessage newtxpowid = new TimerMessage(10000, CONSENSUS_NET_TXPOWID);
+//			//Add the TxPOWID
+//			newtxpowid.addObject("txpowid", zTxPoWID);
+//			//And the Net Client..
+//			newtxpowid.addObject("netclient", zClient);
+//			//Post it for later..
+//			getConsensusHandler().PostTimerMessage(newtxpowid);
+//			return;
+//		}
 		
 		//Add it to the list of requested..
 		getNetworkHandler().addRequestedTxPow(zTxPoWID.to0xString());
