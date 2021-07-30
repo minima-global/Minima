@@ -9,7 +9,7 @@ public class txpowsearch extends CommandFunction{
 	public txpowsearch() {
 		super("txpowsearch");
 		
-		setHelp("(input:address) (output:address) (tokenid:tokenid)", "Search for TXPOW messages with given input, output or tokenid","");
+		setHelp("(input:address) (output:address) (tokenid:tokenid) (block:blocknumber) (state:statevars)", "Search for TXPOW","");
 	}
 	
 	@Override
@@ -25,6 +25,7 @@ public class txpowsearch extends CommandFunction{
 		String output       = "";
 		String token        = "";
 		String block    	= "";
+		String state    	= "";
 		
 		//Cycle through..
 		for(int i=1;i<len;i++) {
@@ -38,6 +39,8 @@ public class txpowsearch extends CommandFunction{
 				token = param.substring(8);
 			}else if(param.startsWith("block:")) {
 				block = param.substring(6);
+			}else if(param.startsWith("state:")) {
+				state = param.substring(6);
 			}
 		}
 		
@@ -47,6 +50,7 @@ public class txpowsearch extends CommandFunction{
 		sender.addString("output", output);
 		sender.addString("tokenid", token);
 		sender.addString("block", block);
+		sender.addString("state", state);
 		
 		//Send it to the miner..
 		getMainHandler().getConsensusHandler().PostMessage(sender);

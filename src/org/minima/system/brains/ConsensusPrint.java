@@ -21,6 +21,7 @@ import org.minima.database.userdb.UserDB;
 import org.minima.database.userdb.java.reltxpow;
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
+import org.minima.objects.StateVariable;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
@@ -178,6 +179,7 @@ public class ConsensusPrint extends ConsensusProcessor {
 			String outputaddr  	= zMessage.getString("output");
 			String tokenid     	= zMessage.getString("tokenid");
 			String block     	= zMessage.getString("block");
+			String state     	= zMessage.getString("state");
 			
 			if(inputaddr.startsWith("Mx")) {
 				//It's a Minima Address!
@@ -202,6 +204,7 @@ public class ConsensusPrint extends ConsensusProcessor {
 			if(checkblock) {
 				blockdat = new MiniNumber(block);
 			}
+			boolean checkstate  = !state.equals("");
 			
 			//The ones we find..
 			JSONArray txpowlist = new JSONArray();
@@ -250,6 +253,20 @@ public class ConsensusPrint extends ConsensusProcessor {
 							}
 						}
 					}
+					
+					//Do we check State Variables..
+					if(checkstate) {
+						//Get the statevars..
+						ArrayList<StateVariable> statevars = txpowrow.getTxPOW().getTransaction().getCompleteState();
+						
+						//And check them..
+						for(StateVariable var : statevars) {
+							if(var.toString().contains(state)) {
+								found = true;
+								break;
+							}
+						}
+					}
 				}
 				
 				//Check the blocknumber..
@@ -258,6 +275,7 @@ public class ConsensusPrint extends ConsensusProcessor {
 						found = true;
 					}
 				}
+				
 				
 				//Do we keep and check it..
 				if(found) {
