@@ -423,7 +423,7 @@ public class ConsensusHandler extends MessageProcessor {
 			
 			//Is it the first time 
 			if(mFirstReconnectRun) {
-				MinimaLogger.log("FIRST RECONNECT @ "+currenttip);
+//				MinimaLogger.log("FIRST RECONNECT @ "+currenttip);
 				
 				mLastTip 			= currenttip;
 				mFirstReconnectRun 	= false;
@@ -439,7 +439,7 @@ public class ConsensusHandler extends MessageProcessor {
 					
 					mFirstReconnectRun = true;
 				}else {
-					MinimaLogger.log("TIP CHANGED RECONNECT @ "+mLastTip+" / "+currenttip);
+//					MinimaLogger.log("TIP CHANGED RECONNECT @ "+mLastTip+" / "+currenttip);
 				}
 				
 				//And check for next time

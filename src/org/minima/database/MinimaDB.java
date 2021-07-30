@@ -305,8 +305,9 @@ public class MinimaDB {
 			}
 			
 			//Reset transaction from that block onwards
-			resetAllTxPowOnMainChain();
 			//mTxPOWDB.resetBlocksFromOnwards(lastblock);
+			//INEFFICIENT!
+			resetAllTxPowOnMainChain();
 			
 			//Now sort
 			for(BlockTreeNode treenode : list) {
@@ -624,6 +625,7 @@ public class MinimaDB {
 					trow.setMainChainBlock(false);
 					trow.setIsInBlock(true);
 					trow.setInBlockNumber(block);
+					trow.setLatestRelevantBlock(block);
 				}
 			}
 		}
