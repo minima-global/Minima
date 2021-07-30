@@ -68,6 +68,7 @@ public class ConsensusUser extends ConsensusProcessor {
 	public static final String CONSENSUS_CHECK 		        = CONSENSUS_PREFIX+"CHECK";
 	
 	public static final String CONSENSUS_FLUSHMEMPOOL 		= CONSENSUS_PREFIX+"FLUSHMEMPOOL";
+	public static final String CONSENSUS_MEMPOOL 			= CONSENSUS_PREFIX+"MEMPOOL";
 	
 	public static final String CONSENSUS_EXPORTKEY 			= CONSENSUS_PREFIX+"EXPORTKEY";
 	public static final String CONSENSUS_IMPORTKEY 			= CONSENSUS_PREFIX+"IMPORTKEY";
@@ -643,6 +644,42 @@ public class ConsensusUser extends ConsensusProcessor {
 			resp.put("requested", requested);
 			InputHandler.endResponse(zMessage, true, "Mempool Flushed");
 			
+		}else if(zMessage.isMessageType(CONSENSUS_MEMPOOL)) {
+			//JSON response..
+			JSONObject resp = InputHandler.getResponseJSON(zMessage);
+			
+			//TxPOW DB
+			TxPowDB tdb = getMainDB().getTxPowDB();
+			
+			//Check the MEMPOOL transactions..
+			ArrayList<TxPOWDBRow> unused = tdb.getAllUnusedTxPOW();
+			int tested = unused.size();
+			
+			JSONArray alltrans = new JSONArray();
+			int blocks 	= 0;
+			int txns 	= 0;
+			
+			//Check them all..
+			for(TxPOWDBRow txrow : unused) {
+				TxPoW txpow    = txrow.getTxPOW();
+				
+				if(txpow.isBlock()) {
+					blocks++;
+				}
+				
+				if(txpow.isTransaction()) {
+					txns++;
+					alltrans.add(txpow.getTxPowID().to0xString());
+				}
+			}
+			
+			//Now you have the proof..
+			resp.put("allmempool", tested);
+			resp.put("alltransactions", alltrans);
+			resp.put("transactions", txns);
+			resp.put("blocks", blocks);
+			InputHandler.endResponse(zMessage, true, "Mempool Details");
+		
 		}else if(zMessage.isMessageType(CONSENSUS_UNKEEPCOIN)) {
 //			//Once a coin has been used - say in a DEX.. you can remove it from your coinDB
 //			String cid = zMessage.getString("coinid");
