@@ -511,7 +511,7 @@ public class ConsensusNet extends ConsensusProcessor {
 			
 			//Are we near the sync tip
 			if(lastblock.isMoreEqual(mCurrentSyncTip)) {
-				MinimaLogger.log("SYNC TIP HIT!!");
+				MinimaLogger.log("SYNC TIP HIT 2!! "+mCurrentSyncTip);
 				finishUpSync();
 			
 			}else if(diff.isMore(MiniNumber.THOUSAND24)) {
@@ -622,7 +622,7 @@ public class ConsensusNet extends ConsensusProcessor {
 				//Have we reached the sync tip..
 				if(txp.getBlockNumber().isMoreEqual(mCurrentSyncTip)) {
 					//We are equal..
-					MinimaLogger.log("SYNC TIP HIT!!");
+					MinimaLogger.log("SYNC TIP HIT!! "+mCurrentSyncTip);
 					hittip = true;
 //					getConsensusHandler().PostMessage(CONSENSUS_NET_SYNCOMPLETE);
 				}
@@ -760,7 +760,7 @@ public class ConsensusNet extends ConsensusProcessor {
 			
 			//Do we have it.. now check DB - hmmm..
 			if(getMainDB().getTxPOW(txpow.getTxPowID()) != null) {
-				MinimaLogger.log("NET Transaction we already have.. "+txpow.getBlockNumber()+" "+txpow.getTxPowID());
+//				MinimaLogger.log("NET Transaction we already have.. "+txpow.getBlockNumber()+" "+txpow.getTxPowID());
 				return;
 			}
 			
@@ -935,7 +935,8 @@ public class ConsensusNet extends ConsensusProcessor {
 		getMainDB().resetAllTxPowOnMainChain();
 		
 		//And finally remove any unwanted TxPoW.. ( they will ALL be on the main chain)
-		getMainDB().getTxPowDB().removeAllUnused();
+		//THIS BREAKS IT!.. 
+//		getMainDB().getTxPowDB().removeAllUnused();
 		
 		//Cascade..
 		getMainDB().cascadeTheTree();
