@@ -395,10 +395,17 @@ public class BlockTree {
 						//Get the txpow row - do this now as slow function
 						TxPOWDBRow row = getDB().getTxPOWRow(zNode.getTxPowID());
 						
-						//Seeing this sometimes.. SHOULD NOT HAPPEN
+						//Seeing this sometimes.. SHOULD NOT HAPPEN!
 						if(row == null) {
-							MinimaLogger.log("ERROR : BlockTree node missing TxPoW.. Parent : "+zNode.getParent().getBlockNumber());
-							zNode.setState(BlockTreeNode.BLOCKSTATE_INVALID);
+							MinimaLogger.log("SERIOUS ERROR : BlockTree node missing TxPoW.. parent:"+zNode.getParent().getBlockNumber()+" txpowid:"+zNode.getTxPowID());
+							
+							//Request IT! - if not already requseted
+							String id = zNode.getTxPowID().to0xString();
+							if(!Main.getMainHandler().getNetworkHandler().isRequestedTxPow(id)) {
+								MinimaLogger.log("REQUESTING MISSING TXPOW : "+id);
+								Main.getMainHandler().getConsensusHandler().getConsensusNet().sendTxPowRequest(zNode.getTxPowID());
+							}
+							//zNode.setState(BlockTreeNode.BLOCKSTATE_INVALID);
 							return;
 						}
 						
