@@ -7,6 +7,7 @@ import java.util.Hashtable;
 import org.minima.GlobalParams;
 import org.minima.database.txpowdb.TxPOWDBRow;
 import org.minima.database.txpowdb.TxPowDB;
+import org.minima.objects.Transaction;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
@@ -138,7 +139,7 @@ public class FastJavaDB implements TxPowDB {
 				newtable.put(txpid,row);
 			
 				//It's a transaction but still relevant
-			}else if(row.getLatestRelevantBlockTime().isMore(minused) || row.getReceivedTime() > mintime) {
+			}else if(row.getLatestRelevantBlockTime().isMore(minused)) {
 				newtable.put(txpid,row);
 				
 			}else {

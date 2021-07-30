@@ -3,6 +3,7 @@ package org.minima.system.brains;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Hashtable;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -669,12 +670,18 @@ public class ConsensusUser extends ConsensusProcessor {
 				
 				if(txpow.isTransaction()) {
 					txns++;
-					alltrans.add(txpow.getTxPowID().to0xString());
+					
+					JSONObject trx = new JSONObject();
+					trx.put("txpowid", txpow.getTxPowID().to0xString());
+					trx.put("relevant", txrow.getLatestRelevantBlockTime());
+					
+					alltrans.add(trx);
 				}
 			}
 			
 			//Now you have the proof..
 			resp.put("allmempool", tested);
+			resp.put("lastrelevant", getMainDB().getMainTree().getCascadeNode().getBlockNumber().sub(MiniNumber.SIXTYFOUR));
 			resp.put("alltransactions", alltrans);
 			resp.put("transactions", txns);
 			resp.put("blocks", blocks);
