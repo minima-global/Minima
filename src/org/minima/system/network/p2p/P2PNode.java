@@ -1,73 +1,80 @@
 package org.minima.system.network.p2p;
 
-import java.net.InetAddress;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import lombok.Getter;
+import lombok.Setter;
+import org.minima.utils.MinimaLogger;
 
+import java.net.InetAddress;
+import java.util.ArrayList;
+
+@Getter
+@Setter
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 public class P2PNode {
-    
-    private final InetAddress IPAddress;
-    private final int port;
+
+
+    private InetAddress IPAddress;
+    private int basePort;
     private long lastSeenTimestamp;
-    private int numActiveP2PConnections;
-    private int numActiveClientConnections;
+    private ArrayList<P2PNode> connectedP2PNodes;
+    private ArrayList<P2PNode> connectedClientNodes;
     private boolean isConnectedToNode;
     private boolean isConnectable;
 
-    public P2PNode(InetAddress IPAddress, int port, long lastSeenTimestamp, int numActiveP2PConnections, int numActiveClientConnections, boolean isConnectedToNode, boolean isConnectable) {
+    public P2PNode(){}
+
+    public P2PNode(InetAddress IPAddress, int basePort, long lastSeenTimestamp, ArrayList<P2PNode> connectedP2PNodes, ArrayList<P2PNode> connectedClientNodes, boolean isConnectedToNode, boolean isConnectable) {
         this.IPAddress = IPAddress;
-        this.port = port;
+        this.basePort = basePort;
         this.lastSeenTimestamp = lastSeenTimestamp;
-        this.numActiveP2PConnections = numActiveP2PConnections;
-        this.numActiveClientConnections = numActiveClientConnections;
         this.isConnectedToNode = isConnectedToNode;
         this.isConnectable = isConnectable;
+        if (connectedP2PNodes == null) {
+            this.connectedP2PNodes = new ArrayList<>();
+        } else {
+            this.connectedP2PNodes = connectedP2PNodes;
+        }
+
+        if (connectedClientNodes == null) {
+            this.connectedClientNodes = new ArrayList<>();
+        } else {
+            this.connectedClientNodes = connectedClientNodes;
+        }
     }
 
 
-    public long getLastSeenTimestamp() {
-        return lastSeenTimestamp;
+    public void AddConnectedP2PNode(P2PNode node) {
+        this.connectedP2PNodes.add(node);
     }
 
-    public void setLastSeenTime(long lastSeenTimestamp) {
-        this.lastSeenTimestamp = lastSeenTimestamp;
+    public boolean RemoveConnectedP2PNode(P2PNode node) {
+        return this.connectedP2PNodes.remove(node);
     }
 
-    public int getNumActiveP2PConnections() {
-        return numActiveP2PConnections;
+    public void AddConnectedClientNode(P2PNode node) {
+        this.connectedClientNodes.add(node);
     }
 
-    public void setNumActiveP2PConnections(int numActiveP2PConnections) {
-        this.numActiveP2PConnections = numActiveP2PConnections;
+    public boolean RemoveConnectedClientNode(P2PNode node) {
+        return this.connectedClientNodes.remove(node);
     }
 
-    public int getNumActiveClientConnections() {
-        return numActiveClientConnections;
+    @Override
+    public boolean equals(Object v) {
+        boolean retVal = false;
+        if (v instanceof P2PNode) {
+            P2PNode ptr = (P2PNode) v;
+            retVal = ptr.IPAddress == this.IPAddress;
+        }
+        return retVal;
     }
 
-    public void setNumActiveClientConnections(int numActiveClientConnections) {
-        this.numActiveClientConnections = numActiveClientConnections;
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 17 * hash + (this.IPAddress != null ? this.IPAddress.hashCode() : 0);
+        return hash;
     }
 
-    public boolean isConnectedToNode() {
-        return isConnectedToNode;
-    }
-
-    public void setConnectedToNode(boolean connectedToNode) {
-        isConnectedToNode = connectedToNode;
-    }
-
-    public boolean isConnectable() {
-        return isConnectable;
-    }
-
-    public void setConnectable(boolean connectable) {
-        isConnectable = connectable;
-    }
-
-    public InetAddress getIPAddress() {
-        return IPAddress;
-    }
-
-    public int getPort() {
-        return port;
-    }
 }

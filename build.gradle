@@ -22,6 +22,10 @@ plugins {
     // shadowJar plugin to build fat jar
     id 'com.github.johnrengelman.shadow' version '6.1.0'
 
+    // Get rid off all the pointless getters and setters that java is plagued with
+    // Can't use v6.x as needs gradle 7.x
+    id "io.freefair.lombok" version "5.3.3.3"
+
 }
 
 repositories {
