@@ -118,7 +118,8 @@ public class FastJavaDB implements TxPowDB {
 		ArrayList<TxPOWDBRow> removed = new ArrayList<>();
 		
 		//The minimum block before its too late
-		MiniNumber minused = zCascade.sub(MiniNumber.SIXTYFOUR);
+//		MiniNumber minused = zCascade.sub(MiniNumber.SIXTYFOUR);
+		MiniNumber minused = zCascade;
 		
 		//Keep them for at least 2 hours
 		long mintime = System.currentTimeMillis() - (1000 * 60 * 60 * 2);
@@ -137,15 +138,11 @@ public class FastJavaDB implements TxPowDB {
 			}else if(row.isInBlock() && row.getInBlockNumber().isMoreEqual(minused)) {
 				newtable.put(txpid,row);
 			
-				//It's a transaction but still relevant
-			}else if(row.getLatestRelevantBlockTime().isMore(minused) || row.getReceivedTime() > mintime) {
-				newtable.put(txpid,row);
+				//It's a transaction, maybe not on the main chain, but still relevant
+			}else if(row.getLatestRelevantBlockTime().isMoreEqual(minused) || row.getReceivedTime() > mintime) {
+					newtable.put(txpid,row);
 				
 			}else {
-				if(row.getTxPOW().isTransaction() && !row.isInBlock()) {
-					MinimaLogger.log("Transaction NOT in block removed.. "+row);
-				}
-				
 				//Remove it..
 				removed.add(row);
 				mChildrenOfParents.remove(txpid);

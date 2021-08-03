@@ -49,6 +49,7 @@ import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.ObjectStack;
 import org.minima.utils.json.JSONArray;
+import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
 
 public class MinimaDB {
@@ -305,43 +306,38 @@ public class MinimaDB {
 			}
 			
 			//Reset transaction from that block onwards
-			//mTxPOWDB.resetBlocksFromOnwards(lastblock);
-			//INEFFICIENT!
-			resetAllTxPowOnMainChain();
+			mTxPOWDB.resetBlocksFromOnwards(lastblock);
 			
 			//Now sort
 			for(BlockTreeNode treenode : list) {
 				//Check for coins in the MMR
 				scanMMRSetForCoins(treenode.getMMRSet());
 				
-//				//Get the Block
-//				TxPoW txpow = treenode.getTxPow();
-//		
-//				//Get the database txpow..
-//				TxPOWDBRow trow = mTxPOWDB.findTxPOWDBRow(txpow.getTxPowID());
-//				
-//				//What Block
-//				MiniNumber block = txpow.getBlockNumber();
-//				
-//				//Set the details
-//				trow.setMainChainBlock(true);
-//				trow.setIsInBlock(true);
-//				trow.setInBlockNumber(block);
-//				
-//				//Check for coins in the MMR
-//				scanMMRSetForCoins(treenode.getMMRSet());
-//				
-//				//Now the Txns..
-//				ArrayList<MiniData> txpowlist = txpow.getBlockTransactions();
-//				for(MiniData txid : txpowlist) {
-//					trow = mTxPOWDB.findTxPOWDBRow(txid);
-//					if(trow!=null) {
-//						//Set that it is in this block
-//						trow.setMainChainBlock(false);
-//						trow.setIsInBlock(true);
-//						trow.setInBlockNumber(block);
-//					}
-//				}
+				//Get the Block
+				TxPoW txpow = treenode.getTxPow();
+		
+				//Get the database txpow..
+				TxPOWDBRow trow = mTxPOWDB.findTxPOWDBRow(txpow.getTxPowID());
+				
+				//What Block
+				MiniNumber block = txpow.getBlockNumber();
+				
+				//Set the details
+				trow.setMainChainBlock(true);
+				trow.setIsInBlock(true);
+				trow.setInBlockNumber(block);
+				
+				//Now the Txns..
+				ArrayList<MiniData> txpowlist = txpow.getBlockTransactions();
+				for(MiniData txid : txpowlist) {
+					trow = mTxPOWDB.findTxPOWDBRow(txid);
+					if(trow!=null) {
+						//Set that it is in this block
+						trow.setMainChainBlock(false);
+						trow.setIsInBlock(true);
+						trow.setInBlockNumber(block);
+					}
+				}
 			}
 			
 			/**
@@ -1285,7 +1281,22 @@ public class MinimaDB {
 				
 				//Check it
 				JSONArray contractlogs = new JSONArray();
-				boolean valid = TxPoWChecker.checkTransactionMMR(txp, this, txpow, newset,true,contractlogs);
+				boolean valid = checkProofAges(txp);
+				
+				//IF Still valid do a full check
+				if(valid) {
+					valid = TxPoWChecker.checkTransactionMMR(txp, this, txpow, newset,true,contractlogs);
+				}else {
+					//This will never be checked again..
+					row.incrementFailedAttempts();
+					row.incrementFailedAttempts();
+					row.incrementFailedAttempts();
+					
+					//Log Error
+					JSONObject error = new JSONObject();
+					error.put("error", "TxPoW Proofs are too old.. Not checking again "+txp.toJSON().toString());
+					contractlogs.add(error);
+				}
 				
 				if(valid) {
 					//Valid so added
@@ -1311,6 +1322,29 @@ public class MinimaDB {
 		
 		//And return..
 		return txpow;
+	}
+	
+	/**
+	 * Check the MMR PRoofs all poi t to a time after the Cascade Block
+	 * @param zTxPow
+	 * @return
+	 */
+	private boolean checkProofAges(TxPoW zTxPow) {
+		//Cascade block
+		MiniNumber cascade  = getMainTree().getCascadeNode().getBlockNumber();
+		
+		if(zTxPow.isTransaction()) {
+			//Get all the proofs..
+			ArrayList<MMRProof> proofs = zTxPow.getWitness().getAllMMRProofs();
+			for(MMRProof proof : proofs) {
+				//Get the time..
+				if(proof.getBlockTime().isLessEqual(cascade)) {
+					return false;
+				}
+			}
+		}
+		
+		return true;
 	}
 	
 	/**

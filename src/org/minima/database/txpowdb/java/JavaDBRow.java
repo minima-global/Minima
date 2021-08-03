@@ -83,6 +83,9 @@ public class JavaDBRow implements TxPOWDBRow {
 	@Override
 	public void setInBlockNumber(MiniNumber zBlockNumber) {
 		mInBlocknumber = zBlockNumber;
+		
+		//See if it is more 
+		setLatestRelevantBlock(zBlockNumber);
 	}
 	
 	@Override
