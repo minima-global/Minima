@@ -661,14 +661,13 @@ public class ConsensusNet extends ConsensusProcessor {
 				//Have we reached the sync tip..
 				if(txp.getBlockNumber().isMoreEqual(mCurrentSyncTip)) {
 					//We are equal..
-					MinimaLogger.log("SYNC TIP HIT!! "+mCurrentSyncTip);
 					hittip = true;
-//					getConsensusHandler().PostMessage(CONSENSUS_NET_SYNCOMPLETE);
 				}
 			}
 			
 			//Are we done
 			if(hittip) {
+				MinimaLogger.log("SYNC TIP HIT!! "+mCurrentSyncTip);
 				finishUpSync();
 			}
 			
