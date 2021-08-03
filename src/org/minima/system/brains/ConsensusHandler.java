@@ -398,6 +398,9 @@ public class ConsensusHandler extends MessageProcessor {
 	
 			//AUTO Messages
 		}else if ( zMessage.isMessageType(CONSENSUS_FLUSH) ) {
+			//Post a FULL resync message
+			PostMessage(new Message(ConsensusNet.CONSENSUS_NET_FULLTREERESYSNC));
+			
 			//Flush / Check the mem-pool
 			PostMessage(new Message(ConsensusUser.CONSENSUS_FLUSHMEMPOOL));
 			

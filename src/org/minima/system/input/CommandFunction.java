@@ -38,6 +38,7 @@ import org.minima.system.input.functions.random;
 import org.minima.system.input.functions.reconnect;
 import org.minima.system.input.functions.reset;
 import org.minima.system.input.functions.restore;
+import org.minima.system.input.functions.resync;
 import org.minima.system.input.functions.runscript;
 import org.minima.system.input.functions.scripts;
 import org.minima.system.input.functions.search;
@@ -93,6 +94,7 @@ public abstract class CommandFunction {
 			new tokens(), new tokencreate(), new tokenvalidate(), new mineblock(),
 			new maxima(), new sshtunnel(), new reset(), new hash(), new burn(), new consolidate(),
 //			new exportcoin(), new importcoin(),
+			new resync(),
 			new exportkey(), new importkey(),  new search(),new consolidate(), new mempool(),
 			new chainsha(), new keepcoin(), new unkeepcoin(), new scripts(), new network(), new minidapps(),
 			new txncreate(), new txndelete(), new txninput(), new txnlist(), new txnauto(), new tokenscale(),

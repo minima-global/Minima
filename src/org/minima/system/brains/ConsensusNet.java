@@ -17,6 +17,8 @@ import org.minima.objects.greet.SyncPacket;
 import org.minima.objects.greet.TxPoWList;
 import org.minima.objects.proofs.TokenProof;
 import org.minima.system.Main;
+import org.minima.system.input.InputHandler;
+import org.minima.system.network.NetworkHandler;
 import org.minima.system.network.base.MinimaClient;
 import org.minima.system.network.base.MinimaReader;
 import org.minima.system.txpow.TxPoWChecker;
@@ -36,6 +38,7 @@ public class ConsensusNet extends ConsensusProcessor {
 	public static final String CONSENSUS_NET_CHECKSIZE_TXPOW 	= CONSENSUS_PREFIX+"NET_MESSAGE_MYTXPOW";
 	
 	public static final String CONSENSUS_NET_INITIALISE 		= CONSENSUS_PREFIX+"NET_INITIALISE";
+	public static final String CONSENSUS_NET_FULLTREERESYSNC 		= CONSENSUS_PREFIX+"NET_FULLRESYSNC";
 	
 	public static final String CONSENSUS_NET_INTRO 				= CONSENSUS_PREFIX+"NET_MESSAGE_"+MinimaReader.NETMESSAGE_INTRO.getValue();
 	public static final String CONSENSUS_NET_RESYNC 			= CONSENSUS_PREFIX+"RESYNC";
@@ -145,6 +148,42 @@ public class ConsensusNet extends ConsensusProcessor {
 			
 			//And Post it..
 			client.PostMessage(new Message(MinimaClient.NETCLIENT_GREETING).addObject("greeting", greet));
+		
+			
+			/**
+			 * This is a heavy innefficient way of sending all the details..
+			 */
+		}else if(zMessage.isMessageType(CONSENSUS_NET_FULLTREERESYSNC)) {
+			//An initial Greeting message..
+			Greeting greet = new Greeting();
+			
+			//Get the Tree
+			BlockTree tree = getMainDB().getMainTree();
+			
+			if(tree.getChainRoot()==null) {
+				InputHandler.endResponse(zMessage, false, "Empty block tree");
+				return;
+			}
+			
+			//Cascade Node
+			MiniNumber casc = tree.getCascadeNode().getTxPow().getBlockNumber();
+			ArrayList<BlockTreeNode> nodes = tree.getAsList();
+			
+			//Cycle through it all..
+			for(BlockTreeNode node : nodes) {
+				TxPoW txpow = node.getTxPow();
+				MiniNumber block = txpow.getBlockNumber();
+				if(block.isMoreEqual(casc)) {
+					greet.addBlock(txpow);
+				}
+			}
+		
+			//Send this to ALL clients..
+			Message netmsg  = new Message(MinimaClient.NETCLIENT_GREETING).addObject("greeting", greet);
+			Message netw    = new Message(NetworkHandler.NETWORK_SENDALL).addObject("message", netmsg);
+			Main.getMainHandler().getNetworkHandler().PostMessage(netw);
+			
+			InputHandler.endResponse(zMessage, true, "Full Resync Sent!");
 			
 		/**
 		 * You have received the initial Greeting Message	
@@ -760,6 +799,25 @@ public class ConsensusNet extends ConsensusProcessor {
 			
 			//Do we have it.. now check DB - hmmm..
 			if(getMainDB().getTxPOW(txpow.getTxPowID()) != null) {
+				//we may have it.. but do we have all the txns.. ? Could be FULL RESYNC Message.. 
+				if(txpow.isBlock()) {
+					MiniData parentID = txpow.getParentID();
+					if(getMainDB().getTxPOW(parentID) == null) {
+						//We don't have it, get it..
+						MinimaLogger.log("Request Parent TxPoW @ "+txpow.getBlockNumber()+" parent:"+parentID); 
+						sendTxPowRequest(zMessage, parentID);
+					}
+				
+					//And now check the Txn list..
+					ArrayList<MiniData> txns = txpow.getBlockTransactions();
+					for(MiniData txn : txns) {
+						if(getMainDB().getTxPOW(txn) == null ) {
+							MinimaLogger.log("Request missing TxPoW in block "+txpow.getBlockNumber()+" "+txn);
+							sendTxPowRequest(zMessage, txn);
+						}
+					}	
+				}
+				
 //				MinimaLogger.log("NET Transaction we already have.. "+txpow.getBlockNumber()+" "+txpow.getTxPowID());
 				return;
 			}
