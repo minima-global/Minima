@@ -162,20 +162,20 @@ public class MinimaDB {
 	public TxPoW getTxPOW(MiniData zTxPOWID) {
 		TxPOWDBRow row = mTxPOWDB.findTxPOWDBRow(zTxPOWID);
 		if(row == null) {
-			//Do we have it as a file..
-			File txpf = getBackup().getTxpowFile(zTxPOWID);
-			if(txpf.exists()) {
-				//Load it..
-				TxPoW txp = ConsensusBackup.loadTxPOW(txpf);
-				
-				//Add it to the DB..
-				if(txp != null) {
-					MinimaLogger.log("Loaded missing TxPoW from File! "+txp.getTxPowID().to0xString());
-					addNewTxPow(txp);
-				}
-				
-				return txp;
-			}
+//			//Do we have it as a file..
+//			File txpf = getBackup().getTxpowFile(zTxPOWID);
+//			if(txpf.exists()) {
+//				//Load it..
+//				TxPoW txp = ConsensusBackup.loadTxPOW(txpf);
+//				
+//				//Add it to the DB..
+//				if(txp != null) {
+//					MinimaLogger.log("Loaded missing TxPoW from File! "+txp.getTxPowID().to0xString());
+//					addNewTxPow(txp);
+//				}
+//				
+//				return txp;
+//			}
 			
 			return null;
 		}

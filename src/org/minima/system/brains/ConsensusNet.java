@@ -1,5 +1,6 @@
 package org.minima.system.brains;
 
+import java.io.File;
 import java.util.ArrayList;
 
 import org.minima.GlobalParams;
@@ -682,7 +683,7 @@ public class ConsensusNet extends ConsensusProcessor {
 			//Do we have it..
 			if(getMainDB().getTxPOW(txpowid) == null) {
 				//We don't have it, get it..
-				sendTxPowRequest(zMessage, txpowid);
+				sendTxPowRequestMessage(zMessage, txpowid);
 			}
 		
 		/**
@@ -834,7 +835,7 @@ public class ConsensusNet extends ConsensusProcessor {
 					if(getMainDB().getTxPOW(parentID) == null) {
 						//We don't have it, get it..
 						MinimaLogger.log("Request Parent TxPoW @ "+txpow.getBlockNumber()+" parent:"+parentID); 
-						sendTxPowRequest(zMessage, parentID);
+						sendTxPowRequestMessage(zMessage, parentID);
 					}
 				
 					//And now check the Txn list..
@@ -842,7 +843,7 @@ public class ConsensusNet extends ConsensusProcessor {
 					for(MiniData txn : txns) {
 						if(getMainDB().getTxPOW(txn) == null ) {
 							MinimaLogger.log("Request missing TxPoW in block "+txpow.getBlockNumber()+" "+txn);
-							sendTxPowRequest(zMessage, txn);
+							sendTxPowRequestMessage(zMessage, txn);
 						}
 					}	
 				}
@@ -858,20 +859,47 @@ public class ConsensusNet extends ConsensusProcessor {
 		//Asks ALL the clients..
 		ArrayList<MinimaClient> allclients = getNetworkHandler().getNetClients();
 		for(MinimaClient client : allclients) {
-			sendTxPowRequest(client,zTxPoWID);
+			sendTxPowRequestClient(client,zTxPoWID);
 		}
 	}
 	
-	public void sendTxPowRequest(Message zFromMessage, MiniData zTxPoWID) {
+	private void sendTxPowRequestMessage(Message zFromMessage, MiniData zTxPoWID) {
 		//Get the NetClient...
-		MinimaClient client = (MinimaClient) zFromMessage.getObject("netclient");
-		sendTxPowRequest(client, zTxPoWID);
+		if(zFromMessage.exists("netclient")) {
+			MinimaClient client = (MinimaClient) zFromMessage.getObject("netclient");
+			sendTxPowRequestClient(client, zTxPoWID);
+		}else {
+			sendTxPowRequestClient(null, zTxPoWID);
+		}
 	}
 	
-	public void sendTxPowRequest(MinimaClient zClient, MiniData zTxPoWID) {
+	private void sendTxPowRequestClient(MinimaClient zClient, MiniData zTxPoWID) {
 		//Don't ask for 0x00..
 		if(zTxPoWID.isEqual(MiniData.ZERO_TXPOWID)) {
 			//it's the genesis..
+			return;
+		}
+		
+		//Do we have it in the File systemm ?
+		File txpf = Main.getMainHandler().getBackupManager().getTxpowFile(zTxPoWID);
+		if(txpf.exists()) {
+			//Load it..
+			TxPoW txp = ConsensusBackup.loadTxPOW(txpf);
+			
+			//Add it to the DB..
+			if(txp != null) {
+				MinimaLogger.log("Loaded missing TxPoW from File! "+txp.getTxPowID().to0xString());
+			
+				//Send it to be processed!
+				Message txpownet = new Message(CONSENSUS_NET_TXPOW).addObject("txpow", txp);
+				getConsensusHandler().PostMessage(txpownet);
+			
+				return;
+			}
+		}
+
+		//Do we have a client
+		if(zClient == null) {
 			return;
 		}
 		
