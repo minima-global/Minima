@@ -798,25 +798,24 @@ public class ConsensusNet extends ConsensusProcessor {
 			
 			//Do we have it.. now check DB - hmmm..
 			if(getMainDB().getTxPOW(txpow.getTxPowID()) != null) {
-				//we may have it.. but do we have all the txns.. ? Could be FULL RESYNC Message.. 
-				if(txpow.isBlock()) {
-					MiniData parentID = txpow.getParentID();
-					if(getMainDB().getTxPOW(parentID) == null) {
-						//We don't have it, get it..
-						MinimaLogger.log("Request Parent TxPoW @ "+txpow.getBlockNumber()+" parent:"+parentID); 
-						sendTxPowRequest(zMessage, parentID);
-					}
-				
-					//And now check the Txn list..
-					ArrayList<MiniData> txns = txpow.getBlockTransactions();
-					for(MiniData txn : txns) {
-						if(getMainDB().getTxPOW(txn) == null ) {
-							MinimaLogger.log("Request missing TxPoW in block "+txpow.getBlockNumber()+" "+txn);
-							sendTxPowRequest(zMessage, txn);
-						}
-					}	
-				}
-				
+//				//we may have it..
+//				if(txpow.isBlock()) {
+//					MiniData parentID = txpow.getParentID();
+//					if(getMainDB().getTxPOW(parentID) == null) {
+//						//We don't have it, get it..
+//						MinimaLogger.log("(2) Request Parent TxPoW @ "+txpow.getBlockNumber()+" parent:"+parentID); 
+//						sendTxPowRequest(zMessage, parentID);
+//					}
+//				
+//					//And now check the Txn list..
+//					ArrayList<MiniData> txns = txpow.getBlockTransactions();
+//					for(MiniData txn : txns) {
+//						if(getMainDB().getTxPOW(txn) == null ) {
+//							MinimaLogger.log("(2) Request missing TxPoW in block "+txpow.getBlockNumber()+" "+txn);
+//							sendTxPowRequest(zMessage, txn);
+//						}
+//					}	
+//				}
 //				MinimaLogger.log("NET Transaction we already have.. "+txpow.getBlockNumber()+" "+txpow.getTxPowID());
 				return;
 			}
