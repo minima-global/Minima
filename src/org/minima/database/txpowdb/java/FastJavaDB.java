@@ -121,8 +121,8 @@ public class FastJavaDB implements TxPowDB {
 //		MiniNumber minused = zCascade.sub(MiniNumber.SIXTYFOUR);
 		MiniNumber minused = zCascade;
 		
-		//Keep them for at least 2 hours
-		long mintime = System.currentTimeMillis() - (1000 * 60 * 60 * 2);
+		//Keep them for at least 30 mins
+		long mintime = System.currentTimeMillis() - (1000 * 60 * 60 * 30);
 		
 		Enumeration<JavaDBRow> allrows = mTxPoWRows.elements();
 		while(allrows.hasMoreElements()) {
@@ -143,6 +143,10 @@ public class FastJavaDB implements TxPowDB {
 					newtable.put(txpid,row);
 				
 			}else {
+//				if(rowtxpow.isTransaction()) {
+//					MinimaLogger.log("Removing Transaction : "+rowtxpow.toJSON().toString());
+//				}
+				
 				//Remove it..
 				removed.add(row);
 				mChildrenOfParents.remove(txpid);

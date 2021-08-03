@@ -989,12 +989,8 @@ public class ConsensusNet extends ConsensusProcessor {
 		//Reset weights
 		getMainDB().getMainTree().resetWeights();
 		
-		//Now correect the TxPoWDB
+		//Now correct the TxPoWDB
 		getMainDB().resetAllTxPowOnMainChain();
-		
-		//And finally remove any unwanted TxPoW.. ( they will ALL be on the main chain)
-		//THIS BREAKS IT!.. 
-//		getMainDB().getTxPowDB().removeAllUnused();
 		
 		//Cascade..
 		getMainDB().cascadeTheTree();

@@ -596,7 +596,13 @@ public class MinimaDB {
 		
 		//And Now sort the TXPOWDB
 		ArrayList<BlockTreeNode> list = getMainTree().getAsList();
-		getTxPowDB().resetAllInBlocks();
+		
+		//Reset aLL TXPOW FROM CASCADE ONWARDS..
+		MiniNumber cascade = getMainTree().getCascadeNode().getBlockNumber();
+		getTxPowDB().resetBlocksFromOnwards(cascade);
+		
+		//This removes old transactions that are past the cascade
+		//getTxPowDB().resetAllInBlocks();
 		
 		//Now sort
 		for(BlockTreeNode treenode : list) {
