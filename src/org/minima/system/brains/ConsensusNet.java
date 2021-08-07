@@ -838,10 +838,43 @@ public class ConsensusNet extends ConsensusProcessor {
 	 * Check if has been done recently and reposts with a 5 second delay if it has
 	 */
 	public void sendTxPowRequest(MiniData zTxPoWID) {
+		//Don't ask for 0x00..
+		if(zTxPoWID.isEqual(MiniData.ZERO_TXPOWID)) {
+			//it's the genesis parent..
+			return;
+		}
+		
+		//Do we have it in the File systemm ?
+		File txpf = Main.getMainHandler().getBackupManager().getTxpowFile(zTxPoWID);
+		if(txpf.exists()) {
+			//Load it..
+			TxPoW txp = ConsensusBackup.loadTxPOW(txpf);
+			
+			//Add it to the DB..
+			if(txp != null) {
+				MinimaLogger.log("Loaded missing TxPoW from File! "+txp.getTxPowID().to0xString());
+			
+				//Send it to be processed!
+				Message txpownet = new Message(CONSENSUS_NET_TXPOW).addObject("txpow", txp);
+				getConsensusHandler().PostMessage(txpownet);
+			
+				return;
+			}
+		}
+		
+		//Add it to the list of requested..
+		getNetworkHandler().addRequestedTxPow(zTxPoWID.to0xString());
+				
+		//Give it to the client to send on..	
+		Message req = new Message(MinimaClient.NETCLIENT_SENDTXPOWREQ);
+		req.addObject("txpowid", zTxPoWID);
+		
 		//Asks ALL the clients..
 		ArrayList<MinimaClient> allclients = getNetworkHandler().getNetClients();
 		for(MinimaClient client : allclients) {
-			sendTxPowRequestClient(client,zTxPoWID);
+			//And Post it..
+			client.PostMessage(req);
+//			sendTxPowRequestClient(client,zTxPoWID);
 		}
 	}
 	
