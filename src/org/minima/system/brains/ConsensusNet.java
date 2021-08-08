@@ -864,17 +864,15 @@ public class ConsensusNet extends ConsensusProcessor {
 		
 		//Add it to the list of requested..
 		getNetworkHandler().addRequestedTxPow(zTxPoWID.to0xString());
-				
-		//Give it to the client to send on..	
-		Message req = new Message(MinimaClient.NETCLIENT_SENDTXPOWREQ);
-		req.addObject("txpowid", zTxPoWID);
 		
 		//Asks ALL the clients..
 		ArrayList<MinimaClient> allclients = getNetworkHandler().getNetClients();
 		for(MinimaClient client : allclients) {
+			//Give it to the client to send on..	
+			Message req = new Message(MinimaClient.NETCLIENT_SENDTXPOWREQ).addObject("txpowid", zTxPoWID);
+			
 			//And Post it..
 			client.PostMessage(req);
-//			sendTxPowRequestClient(client,zTxPoWID);
 		}
 	}
 	
@@ -903,12 +901,9 @@ public class ConsensusNet extends ConsensusProcessor {
 			
 			//Add it to the DB..
 			if(txp != null) {
-				MinimaLogger.log("Loaded missing TxPoW from File! "+txp.getTxPowID().to0xString());
-			
 				//Send it to be processed!
 				Message txpownet = new Message(CONSENSUS_NET_TXPOW).addObject("txpow", txp);
 				getConsensusHandler().PostMessage(txpownet);
-			
 				return;
 			}
 		}
