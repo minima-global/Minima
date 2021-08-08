@@ -683,7 +683,7 @@ public class ConsensusNet extends ConsensusProcessor {
 			//Do we have it..
 			if(getMainDB().getTxPOW(txpowid) == null) {
 				//We don't have it, get it..
-				sendTxPowRequestMessage(zMessage, txpowid);
+				sendTxPowRequestMessage(zMessage, txpowid, false);
 			}
 		
 		/**
@@ -816,16 +816,16 @@ public class ConsensusNet extends ConsensusProcessor {
 					MiniData parentID = txpow.getParentID();
 					if(getMainDB().getTxPOW(parentID) == null) {
 						//We don't have it, get it..
-//						MinimaLogger.log("Request Parent TxPoW @ "+txpow.getBlockNumber()+" parent:"+parentID); 
-						sendTxPowRequestMessage(zMessage, parentID);
+						MinimaLogger.log("Missing Parent TxPoW @ "+txpow.getBlockNumber()+" parent:"+parentID); 
+						sendTxPowRequestMessage(zMessage, parentID, true);
 					}
 				
 					//And now check the Txn list..
 					ArrayList<MiniData> txns = txpow.getBlockTransactions();
 					for(MiniData txn : txns) {
 						if(getMainDB().getTxPOW(txn) == null ) {
-//							MinimaLogger.log("Request missing TxPoW in block "+txpow.getBlockNumber()+" "+txn);
-							sendTxPowRequestMessage(zMessage, txn);
+							MinimaLogger.log("Missing TxPoW in block "+txpow.getBlockNumber()+" "+txn);
+							sendTxPowRequestMessage(zMessage, txn, true);
 						}
 					}	
 				}
@@ -862,8 +862,6 @@ public class ConsensusNet extends ConsensusProcessor {
 			}
 		}
 		
-		MinimaLogger.log("MULTI NET Request for missing TxPoW "+zTxPoWID.to0xString());
-		
 		//Add it to the list of requested..
 		getNetworkHandler().addRequestedTxPow(zTxPoWID.to0xString());
 		
@@ -876,23 +874,21 @@ public class ConsensusNet extends ConsensusProcessor {
 			//And Post it..
 			client.PostMessage(req);
 		}
+		
+		MinimaLogger.log("MULTI NET Request to "+allclients.size()+" peers for missing TxPoW "+zTxPoWID.to0xString());
 	}
 	
-	private void sendTxPowRequestMessage(Message zFromMessage, MiniData zTxPoWID) {
-		//Get the NetClient...
-		if(zFromMessage.exists("netclient")) {
-			MinimaClient client = (MinimaClient) zFromMessage.getObject("netclient");
-			sendTxPowRequestClient(client, zTxPoWID);
-		}else {
-			sendTxPowRequestClient(null, zTxPoWID);
-		}
-	}
-	
-	private void sendTxPowRequestClient(MinimaClient zClient, MiniData zTxPoWID) {
+	private void sendTxPowRequestMessage(Message zFromMessage, MiniData zTxPoWID, boolean zMissing) {
 		//Don't ask for 0x00..
 		if(zTxPoWID.isEqual(MiniData.ZERO_TXPOWID)) {
 			//it's the genesis..
 			return;
+		}
+		
+		//Who's asking?
+		MinimaClient client = null;
+		if(zFromMessage.exists("netclient")) {
+			client = (MinimaClient) zFromMessage.getObject("netclient");
 		}
 		
 		//Do we have it in the File systemm ?
@@ -911,7 +907,7 @@ public class ConsensusNet extends ConsensusProcessor {
 		}
 
 		//Do we have a client
-		if(zClient == null) {
+		if(client == null) {
 			return;
 		}
 		
@@ -934,7 +930,9 @@ public class ConsensusNet extends ConsensusProcessor {
 //			return;
 //		}
 		
-		MinimaLogger.log("NET Request for missing TxPoW "+zTxPoWID.to0xString());
+		if(zMissing) {
+			MinimaLogger.log("NET Request for missing TxPoW "+zTxPoWID.to0xString());
+		}
 		
 		//Add it to the list of requested..
 		getNetworkHandler().addRequestedTxPow(zTxPoWID.to0xString());
@@ -944,7 +942,7 @@ public class ConsensusNet extends ConsensusProcessor {
 		req.addObject("txpowid", zTxPoWID);
 		
 		//And Post it..
-		zClient.PostMessage(req);
+		client.PostMessage(req);
 	}
 	
 	/**
