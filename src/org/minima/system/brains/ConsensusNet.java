@@ -816,7 +816,7 @@ public class ConsensusNet extends ConsensusProcessor {
 					MiniData parentID = txpow.getParentID();
 					if(getMainDB().getTxPOW(parentID) == null) {
 						//We don't have it, get it..
-						MinimaLogger.log("Request Parent TxPoW @ "+txpow.getBlockNumber()+" parent:"+parentID); 
+//						MinimaLogger.log("Request Parent TxPoW @ "+txpow.getBlockNumber()+" parent:"+parentID); 
 						sendTxPowRequestMessage(zMessage, parentID);
 					}
 				
@@ -824,7 +824,7 @@ public class ConsensusNet extends ConsensusProcessor {
 					ArrayList<MiniData> txns = txpow.getBlockTransactions();
 					for(MiniData txn : txns) {
 						if(getMainDB().getTxPOW(txn) == null ) {
-							MinimaLogger.log("Request missing TxPoW in block "+txpow.getBlockNumber()+" "+txn);
+//							MinimaLogger.log("Request missing TxPoW in block "+txpow.getBlockNumber()+" "+txn);
 							sendTxPowRequestMessage(zMessage, txn);
 						}
 					}	
@@ -852,7 +852,7 @@ public class ConsensusNet extends ConsensusProcessor {
 			
 			//Add it to the DB..
 			if(txp != null) {
-				MinimaLogger.log("Loaded missing TxPoW from File! "+txp.getTxPowID().to0xString());
+//				MinimaLogger.log("Loaded missing TxPoW from File! "+txp.getTxPowID().to0xString());
 			
 				//Send it to be processed!
 				Message txpownet = new Message(CONSENSUS_NET_TXPOW).addObject("txpow", txp);
@@ -861,6 +861,8 @@ public class ConsensusNet extends ConsensusProcessor {
 				return;
 			}
 		}
+		
+		MinimaLogger.log("MULTI NET Request for missing TxPoW "+zTxPoWID.to0xString());
 		
 		//Add it to the list of requested..
 		getNetworkHandler().addRequestedTxPow(zTxPoWID.to0xString());
@@ -931,6 +933,8 @@ public class ConsensusNet extends ConsensusProcessor {
 //			getConsensusHandler().PostTimerMessage(newtxpowid);
 //			return;
 //		}
+		
+		MinimaLogger.log("NET Request for missing TxPoW "+zTxPoWID.to0xString());
 		
 		//Add it to the list of requested..
 		getNetworkHandler().addRequestedTxPow(zTxPoWID.to0xString());
