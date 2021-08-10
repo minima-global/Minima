@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.minima.utils.MinimaLogger;
 
-import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 
 @Getter
@@ -13,9 +13,8 @@ import java.util.ArrayList;
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 public class P2PNode {
 
-
-    private InetAddress IPAddress;
-    private int basePort;
+    // Port used is the port for the minima server - Default 9001
+    private InetSocketAddress IPAddress;
     private long lastSeenTimestamp;
     private ArrayList<P2PNode> connectedP2PNodes;
     private ArrayList<P2PNode> connectedClientNodes;
@@ -24,9 +23,8 @@ public class P2PNode {
 
     public P2PNode(){}
 
-    public P2PNode(InetAddress IPAddress, int basePort, long lastSeenTimestamp, ArrayList<P2PNode> connectedP2PNodes, ArrayList<P2PNode> connectedClientNodes, boolean isConnectedToNode, boolean isConnectable) {
+    public P2PNode(InetSocketAddress IPAddress, long lastSeenTimestamp, ArrayList<P2PNode> connectedP2PNodes, ArrayList<P2PNode> connectedClientNodes, boolean isConnectedToNode, boolean isConnectable) {
         this.IPAddress = IPAddress;
-        this.basePort = basePort;
         this.lastSeenTimestamp = lastSeenTimestamp;
         this.isConnectedToNode = isConnectedToNode;
         this.isConnectable = isConnectable;

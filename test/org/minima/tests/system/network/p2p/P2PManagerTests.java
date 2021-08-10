@@ -12,6 +12,7 @@ import org.minima.system.network.p2p.P2PNode;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -30,11 +31,11 @@ public class P2PManagerTests {
 
         for(int ii = 1; ii < 5; ii++) {
             for (int i = 0; i < 250; i++) {
-                testNodeList.add(new P2PNode(InetAddress.getByName("192.168.".concat(String.valueOf(ii)).concat(".").concat(String.valueOf(i))), 9001, 0, null, null, false, false));
+                testNodeList.add(new P2PNode(new InetSocketAddress(InetAddress.getByName("192.168.".concat(String.valueOf(ii)).concat(".").concat(String.valueOf(i))), 9001), 0, null, null, false, false));
             }
         }
 
-        p2p = new P2PManager(testNodeList, ip, 9001, dataFile);
+        p2p = new P2PManager(testNodeList, new InetSocketAddress(ip, 9001), dataFile);
 
     }
 
@@ -42,7 +43,7 @@ public class P2PManagerTests {
     public void testInitLoadDefaults() throws Exception {
         InetAddress ip = InetAddress.getLocalHost();
         File dataFile = new File("p2pdatafile.json");
-        P2PManager p2pLoadTester = new P2PManager(ip, 9001, dataFile);
+        P2PManager p2pLoadTester = new P2PManager(new InetSocketAddress(ip, 9001), dataFile);
 
         assertEquals(p2pLoadTester.getUnverifiedP2PNodeList().size(), Start.VALID_BOOTSTRAP_NODES.length);
     }
@@ -56,9 +57,9 @@ public class P2PManagerTests {
     public void testSaveLoadNodeList() throws Exception {
 
         ArrayList<P2PNode> testNodeList = new ArrayList<>();
-        testNodeList.add(new P2PNode(InetAddress.getByName("192.168.0.1"), 9001, 0, null, null, false, false));
-        testNodeList.add(new P2PNode(InetAddress.getByName("192.168.0.2"), 9001, 0, null, null, false, false));
-        testNodeList.add(new P2PNode(InetAddress.getByName("192.168.0.3"), 9001, 0, null, null, false, false));
+        testNodeList.add(new P2PNode(new InetSocketAddress(InetAddress.getByName("192.168.0.1"), 9001), 0, null, null, false, false));
+        testNodeList.add(new P2PNode(new InetSocketAddress(InetAddress.getByName("192.168.0.2"), 9001), 0, null, null, false, false));
+        testNodeList.add(new P2PNode(new InetSocketAddress(InetAddress.getByName("192.168.0.3"), 9001), 0, null, null, false, false));
 
         // Set private field
         Field reader = P2PManager.class.getDeclaredField("verifiedP2PNodeList");
@@ -74,27 +75,22 @@ public class P2PManagerTests {
 
     @Test
     public void testGenHandshakeWithNodeList() throws Exception {
-        ArrayList<P2PNode> testNodeList = new ArrayList<>();
-        testNodeList.add(new P2PNode(InetAddress.getByName("192.168.0.1"), 9001, 0, null, null, false, false));
-        testNodeList.add(new P2PNode(InetAddress.getByName("192.168.0.2"), 9001, 0, null, null, false, false));
-        testNodeList.add(new P2PNode(InetAddress.getByName("192.168.0.3"), 9001, 0, null, null, false, false));;
+        ArrayList<P2PHandshake> handshakes = p2p.GenHandshakeWithUnverifiedNodes();
 
-        ArrayList<P2PHandshake> handshakes = p2p.GenHandshakeWithNodeList(testNodeList);
-
-        assertEquals(handshakes.size(), testNodeList.size());
-        for(int i =0; i < handshakes.size(); i++){
-            assertEquals(handshakes.get(i).getTargetNode().getIPAddress(), testNodeList.get(i).getIPAddress());
+        assertEquals(handshakes.size(), 1000);
+        for(int i =0; i < p2p.getUnverifiedP2PNodeList().size(); i++){
+            assertEquals(handshakes.get(i).getTargetNode().getIPAddress(), p2p.getUnverifiedP2PNodeList().get(i).getIPAddress());
         }
     }
 
     @Test
     public void testGenHandshakeForNode() throws Exception {
         ArrayList<P2PNode> testNodeList = new ArrayList<>();
-        testNodeList.add(new P2PNode(InetAddress.getByName("192.168.0.1"), 9001, 0, null, null, false, false));
-        testNodeList.add(new P2PNode(InetAddress.getByName("192.168.0.2"), 9001, 0, null, null, false, false));
-        testNodeList.add(new P2PNode(InetAddress.getByName("192.168.0.3"), 9001, 0, null, null, false, false));
+        testNodeList.add(new P2PNode(new InetSocketAddress(InetAddress.getByName("192.168.0.1"), 9001), 0, null, null, false, false));
+        testNodeList.add(new P2PNode(new InetSocketAddress(InetAddress.getByName("192.168.0.2"), 9001), 0, null, null, false, false));
+        testNodeList.add(new P2PNode(new InetSocketAddress(InetAddress.getByName("192.168.0.3"), 9001), 0, null, null, false, false));
 
-        P2PNode targetNode = new P2PNode(InetAddress.getByName("192.168.0.1"), 9001, 0, null, null, false, false);
+        P2PNode targetNode = new P2PNode(new InetSocketAddress(InetAddress.getByName("192.168.0.1"), 9001), 0, null, null, false, false);
 
 
         // Set private field
@@ -104,20 +100,20 @@ public class P2PManagerTests {
 
 
         ArrayList<P2PNode> connectedP2PNodes = new ArrayList<>();
-        connectedP2PNodes.add(new P2PNode(InetAddress.getByName("192.168.0.1"), 9001, 0, null, null, true, true));
+        connectedP2PNodes.add(new P2PNode(new InetSocketAddress(InetAddress.getByName("192.168.0.1"), 9001), 0, null, null, true, true));
         ArrayList<P2PNode> connectedClientNodes = new ArrayList<>();
-        connectedClientNodes.add(new P2PNode(InetAddress.getByName("192.168.0.2"), 9001, 0, null, null, true, false));
+        connectedClientNodes.add(new P2PNode(new InetSocketAddress(InetAddress.getByName("192.168.0.2"), 9001), 0, null, null, true, false));
 
         p2p.getNode().setConnectedP2PNodes(connectedP2PNodes);
         p2p.getNode().setConnectedClientNodes(connectedClientNodes);
 
         P2PHandshake handshake = p2p.GenHandshakeForNode(targetNode);
         assertEquals(handshake.getKnownNodesList().size(), 3);
-        assertEquals(handshake.getThisNode().getIPAddress(), InetAddress.getLocalHost());
+        assertEquals(handshake.getThisNode().getIPAddress(), new InetSocketAddress(InetAddress.getLocalHost(), 9001));
         assertEquals(handshake.getThisNode().getConnectedP2PNodes().size(), 1);
-        assertEquals(handshake.getThisNode().getConnectedP2PNodes().get(0).getIPAddress(), InetAddress.getByName("192.168.0.1"));
+        assertEquals(handshake.getThisNode().getConnectedP2PNodes().get(0).getIPAddress(), new InetSocketAddress(InetAddress.getByName("192.168.0.1"), 9001));
         assertEquals(handshake.getThisNode().getConnectedClientNodes().size(), 1);
-        assertEquals(handshake.getThisNode().getConnectedClientNodes().get(0).getIPAddress(), InetAddress.getByName("192.168.0.2"));
+        assertEquals(handshake.getThisNode().getConnectedClientNodes().get(0).getIPAddress(), new InetSocketAddress(InetAddress.getByName("192.168.0.2"), 9001));
 
         assertEquals(handshake.getTargetNode().getIPAddress(), targetNode.getIPAddress());
     }
@@ -138,16 +134,16 @@ public class P2PManagerTests {
     @Test
     public void testUpdateNodeListForVerifiedNode() throws Exception {
         ArrayList<P2PNode> connectedP2PNodes = new ArrayList<>();
-        connectedP2PNodes.add(new P2PNode(InetAddress.getByName("192.168.0.1"), 9001, 0, null, null, true, true));
+        connectedP2PNodes.add(new P2PNode(new InetSocketAddress(InetAddress.getByName("192.168.0.1"), 9001), 0, null, null, true, true));
         ArrayList<P2PNode> connectedClientNodes = new ArrayList<>();
-        connectedClientNodes.add(new P2PNode(InetAddress.getByName("192.168.0.2"), 9001, 0, null, null, true, false));
+        connectedClientNodes.add(new P2PNode(new InetSocketAddress(InetAddress.getByName("192.168.0.2"), 9001), 0, null, null, true, false));
 
-        P2PNode testNode = new P2PNode(InetAddress.getByName("192.168.0.1"), 9001, 0, null, null, true, true);
+        P2PNode testNode = new P2PNode(new InetSocketAddress(InetAddress.getByName("192.168.0.1"), 9001), 0, null, null, true, true);
         ArrayList<P2PNode> testNodeList = new ArrayList<>();
         testNodeList.add(testNode);
 
-        HashMap<InetAddress, P2PNode> verifiedP2PNodeMap = new HashMap<>();
-        verifiedP2PNodeMap.put(InetAddress.getByName("192.168.0.1"), testNode);
+        HashMap<InetSocketAddress, P2PNode> verifiedP2PNodeMap = new HashMap<>();
+        verifiedP2PNodeMap.put(new InetSocketAddress(InetAddress.getByName("192.168.0.1"), 9001), testNode);
         // Set private field
         Field reader = P2PManager.class.getDeclaredField("verifiedP2PNodeList");
         reader.setAccessible(true);
@@ -157,13 +153,13 @@ public class P2PManagerTests {
         readerMap.setAccessible(true);
         readerMap.set(p2p, verifiedP2PNodeMap);
 
-        P2PNode verifiedNodeToCheck = p2p.getVerifiedP2PNodeMap().get(InetAddress.getByName("192.168.0.1"));
+        P2PNode verifiedNodeToCheck = p2p.getVerifiedP2PNodeMap().get(new InetSocketAddress(InetAddress.getByName("192.168.0.1"), 9001));
         assertNotNull(verifiedNodeToCheck);
         assertTrue(verifiedNodeToCheck.getConnectedClientNodes().isEmpty());
         assertTrue(verifiedNodeToCheck.getConnectedP2PNodes().isEmpty());
         assertEquals(verifiedNodeToCheck.getLastSeenTimestamp(), 0);
 
-        p2p.UpdateNodeLists(new P2PNode(InetAddress.getByName("192.168.0.1"), 9001, 0, connectedP2PNodes, connectedClientNodes, true, true));
+        p2p.UpdateNodeLists(new P2PNode(new InetSocketAddress(InetAddress.getByName("192.168.0.1"), 9001), 0, connectedP2PNodes, connectedClientNodes, true, true));
 
         assertNotNull(verifiedNodeToCheck.getConnectedClientNodes());
         assertNotNull(verifiedNodeToCheck.getConnectedP2PNodes());
@@ -173,27 +169,27 @@ public class P2PManagerTests {
     @Test
     public void testUpdateNodeListForUnverifiedNode() throws Exception {
         ArrayList<P2PNode> connectedP2PNodes = new ArrayList<>();
-        connectedP2PNodes.add(new P2PNode(InetAddress.getByName("192.168.0.1"), 9001, 0, null, null, true, true));
+        connectedP2PNodes.add(new P2PNode(new InetSocketAddress(InetAddress.getByName("192.168.0.1"), 9001), 0, null, null, true, true));
         ArrayList<P2PNode> connectedClientNodes = new ArrayList<>();
-        connectedClientNodes.add(new P2PNode(InetAddress.getByName("192.168.0.2"), 9001, 0, null, null, true, false));
+        connectedClientNodes.add(new P2PNode(new InetSocketAddress(InetAddress.getByName("192.168.0.2"), 9001), 0, null, null, true, false));
 
-        P2PNode testNode = new P2PNode(InetAddress.getByName("192.168.0.1"), 9001, 0, null, null, true, true);
+        P2PNode testNode = new P2PNode(new InetSocketAddress(InetAddress.getByName("192.168.0.1"), 9001), 0, null, null, true, true);
         ArrayList<P2PNode> testNodeList = new ArrayList<>();
         testNodeList.add(testNode);
 
         InetAddress ip = InetAddress.getLocalHost();
         File dataFile = new File("p2pdatafile.json");
-        P2PManager p2p = new P2PManager(testNodeList, ip, 9001, dataFile);
+        P2PManager p2p = new P2PManager(testNodeList, new InetSocketAddress(ip, 9001), dataFile);
 
-        P2PNode unverifiedNodeToCheck = p2p.getUnverifiedP2PNodeMap().get(InetAddress.getByName("192.168.0.1"));
+        P2PNode unverifiedNodeToCheck = p2p.getUnverifiedP2PNodeMap().get(new InetSocketAddress(InetAddress.getByName("192.168.0.1"), 9001));
         assertNotNull(unverifiedNodeToCheck);
         assertTrue(unverifiedNodeToCheck.getConnectedClientNodes().isEmpty());
         assertTrue(unverifiedNodeToCheck.getConnectedP2PNodes().isEmpty());
         assertEquals(unverifiedNodeToCheck.getLastSeenTimestamp(), 0);
 
-        p2p.UpdateNodeLists(new P2PNode(InetAddress.getByName("192.168.0.1"), 9001, 0, connectedP2PNodes, connectedClientNodes, true, true));
+        p2p.UpdateNodeLists(new P2PNode(new InetSocketAddress(InetAddress.getByName("192.168.0.1"), 9001), 0, connectedP2PNodes, connectedClientNodes, true, true));
 
-        P2PNode verifiedNodeToCheck = p2p.getVerifiedP2PNodeMap().get(InetAddress.getByName("192.168.0.1"));
+        P2PNode verifiedNodeToCheck = p2p.getVerifiedP2PNodeMap().get(new InetSocketAddress(InetAddress.getByName("192.168.0.1"), 9001));
         assertNotNull(verifiedNodeToCheck.getConnectedClientNodes());
         assertNotNull(verifiedNodeToCheck.getConnectedP2PNodes());
         assertNotEquals(verifiedNodeToCheck.getLastSeenTimestamp(), 0);
@@ -204,20 +200,20 @@ public class P2PManagerTests {
     @Test
     public void testUpdateNodeListForNewNode() throws Exception {
         ArrayList<P2PNode> connectedP2PNodes = new ArrayList<>();
-        connectedP2PNodes.add(new P2PNode(InetAddress.getByName("192.168.0.1"), 9001, 0, null, null, true, true));
+        connectedP2PNodes.add(new P2PNode(new InetSocketAddress(InetAddress.getByName("192.168.0.1"), 9001), 0, null, null, true, true));
         ArrayList<P2PNode> connectedClientNodes = new ArrayList<>();
-        connectedClientNodes.add(new P2PNode(InetAddress.getByName("192.168.0.2"), 9001, 0, null, null, true, false));
+        connectedClientNodes.add(new P2PNode(new InetSocketAddress(InetAddress.getByName("192.168.0.2"), 9001), 0, null, null, true, false));
 
-        P2PNode testNode = new P2PNode(InetAddress.getByName("192.168.0.1"), 9001, 0, null, null, true, true);
+        P2PNode testNode = new P2PNode(new InetSocketAddress(InetAddress.getByName("192.168.0.1"), 9001), 0, null, null, true, true);
         ArrayList<P2PNode> testNodeList = new ArrayList<>();
         testNodeList.add(testNode);
 
-        P2PNode unverifiedNodeToCheck = p2p.getUnverifiedP2PNodeMap().get(InetAddress.getByName("192.168.0.1"));
+        P2PNode unverifiedNodeToCheck = p2p.getUnverifiedP2PNodeMap().get(new InetSocketAddress(InetAddress.getByName("192.168.0.1"), 9001));
         assertNull(unverifiedNodeToCheck);
 
-        p2p.UpdateNodeLists(new P2PNode(InetAddress.getByName("192.168.0.1"), 9001, 0, connectedP2PNodes, connectedClientNodes, true, true));
+        p2p.UpdateNodeLists(new P2PNode(new InetSocketAddress(InetAddress.getByName("192.168.0.1"), 9001), 0, connectedP2PNodes, connectedClientNodes, true, true));
 
-        unverifiedNodeToCheck = p2p.getUnverifiedP2PNodeMap().get(InetAddress.getByName("192.168.0.1"));
+        unverifiedNodeToCheck = p2p.getUnverifiedP2PNodeMap().get(new InetSocketAddress(InetAddress.getByName("192.168.0.1"), 9001));
         assertNotNull(unverifiedNodeToCheck.getConnectedClientNodes());
         assertNotNull(unverifiedNodeToCheck.getConnectedP2PNodes());
         assertNotEquals(unverifiedNodeToCheck.getLastSeenTimestamp(), 0);
@@ -230,19 +226,19 @@ public class P2PManagerTests {
         // Note Only testing Response path as if it's not a response it just invokes
         // UpdateNodeList which is tested by the previous 3 tests
         ArrayList<P2PNode> connectedP2PNodes = new ArrayList<>();
-        connectedP2PNodes.add(new P2PNode(InetAddress.getByName("192.168.0.1"), 9001, 0, null, null, true, true));
+        connectedP2PNodes.add(new P2PNode(new InetSocketAddress(InetAddress.getByName("192.168.0.1"), 9001), 0, null, null, true, true));
         ArrayList<P2PNode> connectedClientNodes = new ArrayList<>();
-        connectedClientNodes.add(new P2PNode(InetAddress.getByName("192.168.0.2"), 9001, 0, null, null, true, false));
+        connectedClientNodes.add(new P2PNode(new InetSocketAddress(InetAddress.getByName("192.168.0.2"), 9001), 0, null, null, true, false));
 
-        P2PNode testNode = new P2PNode(InetAddress.getByName("192.168.0.1"), 9001, 0, null, null, true, true);
+        P2PNode testNode = new P2PNode(new InetSocketAddress(InetAddress.getByName("192.168.0.1"), 9001), 0, null, null, true, true);
         ArrayList<P2PNode> testNodeList = new ArrayList<>();
         testNodeList.add(testNode);
 
         InetAddress ip = InetAddress.getLocalHost();
         File dataFile = new File("p2pdatafile.json");
-        P2PManager p2p = new P2PManager(testNodeList, ip, 9001, dataFile);
+        P2PManager p2p = new P2PManager(testNodeList, new InetSocketAddress(ip, 9001), dataFile);
 
-        P2PNode unverifiedNodeToCheck = p2p.getUnverifiedP2PNodeMap().get(InetAddress.getByName("192.168.0.1"));
+        P2PNode unverifiedNodeToCheck = p2p.getUnverifiedP2PNodeMap().get(new InetSocketAddress(InetAddress.getByName("192.168.0.1"), 9001));
         assertNotNull(unverifiedNodeToCheck);
         assertTrue(unverifiedNodeToCheck.getConnectedClientNodes().isEmpty());
         assertTrue(unverifiedNodeToCheck.getConnectedP2PNodes().isEmpty());
@@ -250,12 +246,12 @@ public class P2PManagerTests {
 
         ArrayList<P2PNode> receivedNodeList = new ArrayList<>();
         for(int i = 0; i < 255; i++){
-            testNodeList.add(new P2PNode(InetAddress.getByName("192.168.0.".concat(String.valueOf(i))), 9001, 0, null, null, false, false));
+            testNodeList.add(new P2PNode(new InetSocketAddress(InetAddress.getByName("192.168.0.".concat(String.valueOf(i))), 9001), 0, null, null, false, false));
         }
 
-        p2p.ProcessHandshake(new P2PNode(InetAddress.getByName("192.168.0.1"), 9001, 0, connectedP2PNodes, connectedClientNodes, true, true), receivedNodeList, true);
+        p2p.ProcessHandshake(new P2PNode(new InetSocketAddress(InetAddress.getByName("192.168.0.1"), 9001), 0, connectedP2PNodes, connectedClientNodes, true, true), receivedNodeList, true);
 
-        P2PNode verifiedNodeToCheck = p2p.getVerifiedP2PNodeMap().get(InetAddress.getByName("192.168.0.1"));
+        P2PNode verifiedNodeToCheck = p2p.getVerifiedP2PNodeMap().get(new InetSocketAddress(InetAddress.getByName("192.168.0.1"), 9001));
         assertNotNull(verifiedNodeToCheck.getConnectedClientNodes());
         assertNotNull(verifiedNodeToCheck.getConnectedP2PNodes());
         assertNotEquals(verifiedNodeToCheck.getLastSeenTimestamp(), 0);
@@ -271,7 +267,7 @@ public class P2PManagerTests {
         reader.setAccessible(true);
         reader.set(p2p, p2p.getUnverifiedP2PNodeList());
 
-        P2PNode targetNode = new P2PNode(InetAddress.getByName("192.168.0.1"), 9001, 0, null, null, true, true);
+        P2PNode targetNode = new P2PNode(new InetSocketAddress(InetAddress.getByName("192.168.0.1"), 9001), 0, null, null, true, true);
         P2PHandshake handshake = new P2PHandshake(targetNode, p2p.getNode(), null);
         assertEquals(p2p.OnReceiveHandshakeRequest(handshake).getKnownNodesList().size(), 200);
     }
@@ -281,19 +277,19 @@ public class P2PManagerTests {
         // Note Only testing Response path as if it's not a response it just invokes
         // UpdateNodeList which is tested by the previous 3 tests
         ArrayList<P2PNode> connectedP2PNodes = new ArrayList<>();
-        connectedP2PNodes.add(new P2PNode(InetAddress.getByName("192.168.0.1"), 9001, 0, null, null, true, true));
+        connectedP2PNodes.add(new P2PNode(new InetSocketAddress(InetAddress.getByName("192.168.0.1"), 9001), 0, null, null, true, true));
         ArrayList<P2PNode> connectedClientNodes = new ArrayList<>();
-        connectedClientNodes.add(new P2PNode(InetAddress.getByName("192.168.0.2"), 9001, 0, null, null, true, false));
+        connectedClientNodes.add(new P2PNode(new InetSocketAddress(InetAddress.getByName("192.168.0.2"), 9001), 0, null, null, true, false));
 
-        P2PNode testNode = new P2PNode(InetAddress.getByName("192.168.0.1"), 9001, 0, null, null, true, true);
+        P2PNode testNode = new P2PNode(new InetSocketAddress(InetAddress.getByName("192.168.0.1"), 9001), 0, null, null, true, true);
         ArrayList<P2PNode> testNodeList = new ArrayList<>();
         testNodeList.add(testNode);
 
         InetAddress ip = InetAddress.getLocalHost();
         File dataFile = new File("p2pdatafile.json");
-        P2PManager p2p = new P2PManager(testNodeList, ip, 9001, dataFile);
+        P2PManager p2p = new P2PManager(testNodeList, new InetSocketAddress(ip, 9001), dataFile);
 
-        P2PNode unverifiedNodeToCheck = p2p.getUnverifiedP2PNodeMap().get(InetAddress.getByName("192.168.0.1"));
+        P2PNode unverifiedNodeToCheck = p2p.getUnverifiedP2PNodeMap().get(new InetSocketAddress(InetAddress.getByName("192.168.0.1"), 9001));
         assertNotNull(unverifiedNodeToCheck);
         assertTrue(unverifiedNodeToCheck.getConnectedClientNodes().isEmpty());
         assertTrue(unverifiedNodeToCheck.getConnectedP2PNodes().isEmpty());
@@ -301,14 +297,14 @@ public class P2PManagerTests {
 
         ArrayList<P2PNode> receivedNodeList = new ArrayList<>();
         for(int i = 0; i < 255; i++){
-            testNodeList.add(new P2PNode(InetAddress.getByName("192.168.0.".concat(String.valueOf(i))), 9001, 0, null, null, false, false));
+            testNodeList.add(new P2PNode(new InetSocketAddress(InetAddress.getByName("192.168.0.".concat(String.valueOf(i))), 9001), 0, null, null, false, false));
         }
 
-        P2PHandshake handshake = new P2PHandshake(p2p.getNode(), new P2PNode(InetAddress.getByName("192.168.0.1"), 9001, 0, connectedP2PNodes, connectedClientNodes, true, true), receivedNodeList);
+        P2PHandshake handshake = new P2PHandshake(p2p.getNode(), new P2PNode(new InetSocketAddress(InetAddress.getByName("192.168.0.1"), 9001), 0, connectedP2PNodes, connectedClientNodes, true, true), receivedNodeList);
 
         p2p.OnReceiveHandshakeResponse(handshake);
 
-        P2PNode verifiedNodeToCheck = p2p.getVerifiedP2PNodeMap().get(InetAddress.getByName("192.168.0.1"));
+        P2PNode verifiedNodeToCheck = p2p.getVerifiedP2PNodeMap().get(new InetSocketAddress(InetAddress.getByName("192.168.0.1"), 9001));
         assertNotNull(verifiedNodeToCheck.getConnectedClientNodes());
         assertNotNull(verifiedNodeToCheck.getConnectedP2PNodes());
         assertNotEquals(verifiedNodeToCheck.getLastSeenTimestamp(), 0);
@@ -319,7 +315,7 @@ public class P2PManagerTests {
 
     @Test
     public void testGenHeartbeatForNode() throws Exception {
-        P2PNode targetNode = new P2PNode(InetAddress.getByName("192.168.0.1"), 9001, 0, null, null, true, true);
+        P2PNode targetNode = new P2PNode(new InetSocketAddress(InetAddress.getByName("192.168.0.1"), 9001), 0, null, null, true, true);
         P2PHeartbeat hb = p2p.GenHeartbeatForNode(targetNode);
         assertEquals(hb.getTargetNode(), targetNode);
         assertEquals(hb.getThisNode(), p2p.getNode());
@@ -328,12 +324,11 @@ public class P2PManagerTests {
     @Test
     public void testOnReceiveHeartbeat() throws Exception {
 
-
         ArrayList<P2PNode> connectedP2PNodes = new ArrayList<>();
-        connectedP2PNodes.add(new P2PNode(InetAddress.getByName("192.168.0.1"), 9001, 0, null, null, true, true));
+        connectedP2PNodes.add(new P2PNode(new InetSocketAddress(InetAddress.getByName("192.168.0.1"), 9001), 0, null, null, true, true));
         ArrayList<P2PNode> connectedClientNodes = new ArrayList<>();
-        connectedClientNodes.add(new P2PNode(InetAddress.getByName("192.168.0.2"), 9001, 0, null, null, true, false));
-        P2PNode hbNode = new P2PNode(InetAddress.getByName("192.168.0.1"), 9001, 0, connectedP2PNodes, connectedClientNodes, true, true);
+        connectedClientNodes.add(new P2PNode(new InetSocketAddress(InetAddress.getByName("192.168.0.2"), 9001), 0, null, null, true, false));
+        P2PNode hbNode = new P2PNode(new InetSocketAddress(InetAddress.getByName("192.168.0.1"), 9001), 0, connectedP2PNodes, connectedClientNodes, true, true);
         ArrayList<P2PNode> verifiedNodes = new ArrayList<>();
         verifiedNodes.add(hbNode);
 
@@ -342,8 +337,8 @@ public class P2PManagerTests {
         reader.setAccessible(true);
         reader.set(p2p, verifiedNodes);
 
-        HashMap<InetAddress, P2PNode> verifiedP2PNodeMap = new HashMap<>();
-        verifiedP2PNodeMap.put(InetAddress.getByName("192.168.0.1"), hbNode);
+        HashMap<InetSocketAddress, P2PNode> verifiedP2PNodeMap = new HashMap<>();
+        verifiedP2PNodeMap.put(new InetSocketAddress(InetAddress.getByName("192.168.0.1"), 9001), hbNode);
 
         Field readerMap = P2PManager.class.getDeclaredField("verifiedP2PNodeMap");
         readerMap.setAccessible(true);
@@ -353,7 +348,7 @@ public class P2PManagerTests {
 
         p2p.OnReceiveHeartbeat(hb);
 
-        P2PNode verifiedNodeToCheck = p2p.getVerifiedP2PNodeMap().get(InetAddress.getByName("192.168.0.1"));
+        P2PNode verifiedNodeToCheck = p2p.getVerifiedP2PNodeMap().get(new InetSocketAddress(InetAddress.getByName("192.168.0.1"), 9001));
         assertNotNull(verifiedNodeToCheck.getConnectedClientNodes());
         assertNotNull(verifiedNodeToCheck.getConnectedP2PNodes());
         assertNotEquals(verifiedNodeToCheck.getLastSeenTimestamp(), 0);
@@ -379,7 +374,8 @@ public class P2PManagerTests {
         reader.setAccessible(true);
         reader.set(p2p, p2p.getUnverifiedP2PNodeList());
 
-        assertEquals(p2p.SelectNodesToConnect().size(), 10);    }
+        assertEquals(p2p.SelectNodesToConnect().size(), 10);
+    }
 
 
     @Test

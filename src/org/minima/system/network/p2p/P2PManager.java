@@ -8,6 +8,7 @@ import org.minima.utils.MinimaLogger;
 
 import java.io.*;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
@@ -102,9 +103,9 @@ public class P2PManager {
     private final File p2pDataFile;
     // TODO: Need a Sorted List of sorted by last seen time, which can then be used to prune dead nodes
     private ArrayList<P2PNode> verifiedP2PNodeList = new ArrayList<>();
-    private HashMap<InetAddress, P2PNode> verifiedP2PNodeMap = new HashMap<>();
+    private HashMap<InetSocketAddress, P2PNode> verifiedP2PNodeMap = new HashMap<>();
     private ArrayList<P2PNode> unverifiedP2PNodeList = new ArrayList<>();
-    private HashMap<InetAddress, P2PNode> unverifiedP2PNodeMap = new HashMap<>();
+    private HashMap<InetSocketAddress, P2PNode> unverifiedP2PNodeMap = new HashMap<>();
 
     // activeNodeList.sort(Comparator.comparing(P2PNode::getLastSeenTime));
 
@@ -114,9 +115,9 @@ public class P2PManager {
      * The default constructor for the P2P Manager
      * It loads the saved or hardcoded node list and sets them as the activeNodeList
      */
-    public P2PManager(InetAddress myIP, int basePort, File p2pDataFile) {
+    public P2PManager(InetSocketAddress myIP, File p2pDataFile) {
         this.p2pDataFile = p2pDataFile;
-        this.node = new P2PNode(myIP, basePort, 0, null, null, true, true);
+        this.node = new P2PNode(myIP, 0, null, null, true, true);
         LoadNodeList();
     }
 
@@ -127,13 +128,13 @@ public class P2PManager {
      *
      * @param nodeList The Node list to initialise the P2PManager with
      */
-    public P2PManager(ArrayList<P2PNode> nodeList, InetAddress myIP, int basePort, File p2pDataFile) {
+    public P2PManager(ArrayList<P2PNode> nodeList, InetSocketAddress myIP, File p2pDataFile) {
         this.unverifiedP2PNodeList = nodeList;
         for (P2PNode node: this.unverifiedP2PNodeList){
             this.unverifiedP2PNodeMap.put(node.getIPAddress(), node);
         }
         this.p2pDataFile = p2pDataFile;
-        this.node = new P2PNode(myIP, basePort, 0, null, null, true, true);
+        this.node = new P2PNode(myIP, 0, null, null, true, true);
 
     }
 
@@ -165,13 +166,13 @@ public class P2PManager {
             // If no data to load, then load the default list
             for (String ip : Start.VALID_BOOTSTRAP_NODES) {
                 try {
-                    InetAddress ipAddress = InetAddress.getByName(ip);
+                    InetSocketAddress ipAddress = new InetSocketAddress(InetAddress.getByName(ip), 9001);
                     // We use -1 to represent not knowing the number of connections data or last seen time
-                    P2PNode node = new P2PNode(ipAddress, 9001, -1, null, null, false, true);
+                    P2PNode node = new P2PNode(ipAddress, -1, null, null, false, true);
                     unverifiedP2PNodeList.add(node);
                     unverifiedP2PNodeMap.put(ipAddress, node);
                 } catch (UnknownHostException exception) {
-                    MinimaLogger.log("Node " + ip + " is not a valid INetAddress: " + exception);
+                    MinimaLogger.log("Node " + ip + " is not a valid InetSocketAddress: " + exception);
 
                 }
             }
@@ -201,12 +202,11 @@ public class P2PManager {
     /**
      * Takes im a list of nodes and generates a handshake to send
      *
-     * @param nodeList list of nodes to send handshakes request too
      * @return a list P2PHandshakeRequest to be sent out for handshake data
      */
-    public ArrayList<P2PHandshake> GenHandshakeWithNodeList(ArrayList<P2PNode> nodeList) {
+    public ArrayList<P2PHandshake> GenHandshakeWithUnverifiedNodes() {
         ArrayList<P2PHandshake> handshakeMsgs = new ArrayList<>();
-        for (P2PNode node : nodeList) {
+        for (P2PNode node : this.unverifiedP2PNodeList) {
             handshakeMsgs.add(GenHandshakeForNode(node));
         }
 
@@ -335,7 +335,7 @@ public class P2PManager {
      *
      * @param nodesIp Ip of the node we have just connected too
      */
-    public void OnConnectionEstablishedWithNode(InetAddress nodesIp) {
+    public void OnConnectionEstablishedWithNode(InetSocketAddress nodesIp) {
         P2PNode connectedNode = null;
         if (verifiedP2PNodeMap.get(nodesIp) != null) {
             connectedNode = verifiedP2PNodeMap.get(nodesIp);
@@ -366,7 +366,7 @@ public class P2PManager {
      *
      * @param nodesIp
      */
-    public void OnDisconnectedFromNode(InetAddress nodesIp) {
+    public void OnDisconnectedFromNode(InetSocketAddress nodesIp) {
         P2PNode connectedNode = null;
         if (verifiedP2PNodeMap.get(nodesIp) != null) {
             connectedNode = verifiedP2PNodeMap.get(nodesIp);
