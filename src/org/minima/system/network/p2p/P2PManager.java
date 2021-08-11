@@ -4,7 +4,10 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
 import org.minima.Start;
+import org.minima.system.network.NetworkHandler;
+import org.minima.system.network.base.MinimaClient;
 import org.minima.utils.MinimaLogger;
+import org.minima.utils.messages.Message;
 
 import java.io.*;
 import java.net.InetAddress;
@@ -16,79 +19,79 @@ import java.util.concurrent.TimeUnit;
 
 
 /**
-Design Notes
-------------
-P2P Manager, controls what nodes we connect to.
-To do this we need to keep the following information
-- A list of all nodes we can connect to - Node(IP, LastSeen, connections, connectable, connected_to_this_node)
-
-List is initialised from the save file or the hard coded list, if no save file is confirmed
-We then need to check which of these nodes can be connected to
-
-----  func VerifyNodeList()
-Iterates though list A doing CheckIsNodeAvailable each node on resp we update the entry in the list
-----  func HandshakeWithNode(Node) - Handshake (Request / Response is the same message)
-
-At this point we have an up to date list of Nodes, all of which will be connectable
-We don't want to shake hands with every node as that could be millions. So we cut it off at 100 responses or we have shaken hands with all known nodes, which ever comes first
-
-----  func List<Node> SelectNodesToConnect()
-MAIN LOGIC - rough idea needs refinement!
-Randomly select 10 nodes to connect to that, if possible, have < 10 peered connections each. If not possible, pick number so that there a set of NUM_HARDCODED_NODES possible nodes to connect to
-
-Do this n times, so we have n sets of nodes, score each set of nodes by (total number of connected p2p nodes) - (total num leach connections) x LEACH_FACTOR
-Connect to the most connected set.
-LEACH_FACTOR arbitrarily selected, goal is to load balance the leachers, without needing to know if you are a leacher or not.
-
-This should naturally ensure the most connected node set, whilst also keeping the connections fairly well distributed at a soft max of 10 connections per node
-
---- func List<Node> ConnectToPeers()
-standard network connection stuff
-
-
---- func void DropUnHealthyNodes()
-Remove node from list of known nodes, update p2p connections
-
-On Losing a Node
---- func Node DrawNewNode()
-Randomly selects a node from the available node pool
-
---- func bool IsNetworkHealthy()
-Do something to check that we haven't degraded our connectivity to - total p2p network connections should be greater than this nodes connections and network score should be above 0
-If false - try drop all connections and SelectNodesToConnect() again
-
---- func void SendHeartbeat()
-Just send a heartbeat message to all nodes you are connected to
-Every n minutes, maybe 10 min some arbitrary amount of time that wont swamp the network. Can be calculated eventually to account for less than 1% of network traffic
-
---- func void OnHeartbeat()
-Updated node information and last seen time
-
-
-Message P2PHandshake
-MY_IP_V4 // Redundant Should be in the packet already
-MY_IP_V6 // Redundant Should be in the packet already
-Port
-MY_NUM_P2P_CONNECTIONS
-MY_NUM_LEACH_CONNECTIONS
-MY_KNOWN_P2P_NODES
-
-Message P2PHeartbeat
-MY_IP_V4 // Redundant Should be in the packet already
-Port
-MY_NUM_P2P_CONNECTIONS
-MY_NUM_LEACH_CONNECTIONS
+ * Design Notes
+ * ------------
+ * P2P Manager, controls what nodes we connect to.
+ * To do this we need to keep the following information
+ * - A list of all nodes we can connect to - Node(IP, LastSeen, connections, connectable, connected_to_this_node)
+ * <p>
+ * List is initialised from the save file or the hard coded list, if no save file is confirmed
+ * We then need to check which of these nodes can be connected to
+ * <p>
+ * ----  func VerifyNodeList()
+ * Iterates though list A doing CheckIsNodeAvailable each node on resp we update the entry in the list
+ * ----  func HandshakeWithNode(Node) - Handshake (Request / Response is the same message)
+ * <p>
+ * At this point we have an up to date list of Nodes, all of which will be connectable
+ * We don't want to shake hands with every node as that could be millions. So we cut it off at 100 responses or we have shaken hands with all known nodes, which ever comes first
+ * <p>
+ * ----  func List<Node> SelectNodesToConnect()
+ * MAIN LOGIC - rough idea needs refinement!
+ * Randomly select 10 nodes to connect to that, if possible, have < 10 peered connections each. If not possible, pick number so that there a set of NUM_HARDCODED_NODES possible nodes to connect to
+ * <p>
+ * Do this n times, so we have n sets of nodes, score each set of nodes by (total number of connected p2p nodes) - (total num leach connections) x LEACH_FACTOR
+ * Connect to the most connected set.
+ * LEACH_FACTOR arbitrarily selected, goal is to load balance the leachers, without needing to know if you are a leacher or not.
+ * <p>
+ * This should naturally ensure the most connected node set, whilst also keeping the connections fairly well distributed at a soft max of 10 connections per node
+ * <p>
+ * --- func List<Node> ConnectToPeers()
+ * standard network connection stuff
+ * <p>
+ * <p>
+ * --- func void DropUnHealthyNodes()
+ * Remove node from list of known nodes, update p2p connections
+ * <p>
+ * On Losing a Node
+ * --- func Node DrawNewNode()
+ * Randomly selects a node from the available node pool
+ * <p>
+ * --- func bool IsNetworkHealthy()
+ * Do something to check that we haven't degraded our connectivity to - total p2p network connections should be greater than this nodes connections and network score should be above 0
+ * If false - try drop all connections and SelectNodesToConnect() again
+ * <p>
+ * --- func void SendHeartbeat()
+ * Just send a heartbeat message to all nodes you are connected to
+ * Every n minutes, maybe 10 min some arbitrary amount of time that wont swamp the network. Can be calculated eventually to account for less than 1% of network traffic
+ * <p>
+ * --- func void OnHeartbeat()
+ * Updated node information and last seen time
+ * <p>
+ * <p>
+ * Message P2PHandshake
+ * MY_IP_V4 // Redundant Should be in the packet already
+ * MY_IP_V6 // Redundant Should be in the packet already
+ * Port
+ * MY_NUM_P2P_CONNECTIONS
+ * MY_NUM_LEACH_CONNECTIONS
+ * MY_KNOWN_P2P_NODES
+ * <p>
+ * Message P2PHeartbeat
+ * MY_IP_V4 // Redundant Should be in the packet already
+ * Port
+ * MY_NUM_P2P_CONNECTIONS
+ * MY_NUM_LEACH_CONNECTIONS
  * ####################################################################
- *
+ * <p>
  * The P2PManager controls what nodes the minima node connects too.
  * It's a standalone class that isn't able to call the network functionality directly.
  * The P2PMessageProcessor has an instance of this class and calls the functions on this class to
  * generate the network messages that it needs to send and process the messages that have been received
- *
+ * <p>
  * Written with the assumptions:
- *      - there will be a large number of nodes so we can't map the entire network
- *      - we don't know if we are a P2P node or a client node.
- *              We could be seen as both depending on the connectivity of the nodes we connect too
+ * - there will be a large number of nodes so we can't map the entire network
+ * - we don't know if we are a P2P node or a client node.
+ * We could be seen as both depending on the connectivity of the nodes we connect too
  */
 @Getter
 public class P2PManager {
@@ -110,7 +113,6 @@ public class P2PManager {
     // activeNodeList.sort(Comparator.comparing(P2PNode::getLastSeenTime));
 
 
-
     /**
      * The default constructor for the P2P Manager
      * It loads the saved or hardcoded node list and sets them as the activeNodeList
@@ -130,7 +132,7 @@ public class P2PManager {
      */
     public P2PManager(ArrayList<P2PNode> nodeList, InetSocketAddress myIP, File p2pDataFile) {
         this.unverifiedP2PNodeList = nodeList;
-        for (P2PNode node: this.unverifiedP2PNodeList){
+        for (P2PNode node : this.unverifiedP2PNodeList) {
             this.unverifiedP2PNodeMap.put(node.getIPAddress(), node);
         }
         this.p2pDataFile = p2pDataFile;
@@ -140,6 +142,7 @@ public class P2PManager {
 
 
     // Saving and Loading Node Lists
+
     /**
      * Loads the node list from the saved node list file
      * If no node list file is present, it uses the hardcoded
@@ -155,8 +158,9 @@ public class P2PManager {
             try {
                 FileInputStream inputStream = new FileInputStream(p2pDataFile);
                 final ObjectMapper mapper = new ObjectMapper();
-                this.unverifiedP2PNodeList = mapper.readValue(inputStream, new TypeReference<ArrayList<P2PNode>>() {});
-                for (P2PNode node: this.unverifiedP2PNodeList){
+                this.unverifiedP2PNodeList = mapper.readValue(inputStream, new TypeReference<ArrayList<P2PNode>>() {
+                });
+                for (P2PNode node : this.unverifiedP2PNodeList) {
                     this.unverifiedP2PNodeMap.put(node.getIPAddress(), node);
                 }
             } catch (IOException ioe) {
@@ -223,7 +227,7 @@ public class P2PManager {
         return new P2PHandshake(targetNode, this.node, this.GetVerifiedNodeListSubset());
     }
 
-    public ArrayList<P2PNode> GetVerifiedNodeListSubset(){
+    public ArrayList<P2PNode> GetVerifiedNodeListSubset() {
         ArrayList<P2PNode> out = new ArrayList<>(NUMBER_OF_NODES_TO_SHARE);
         Iterator<P2PNode> iterator = verifiedP2PNodeList.iterator();
         for (int i = 0; i < NUMBER_OF_NODES_TO_SHARE && iterator.hasNext(); i++) {
@@ -232,10 +236,10 @@ public class P2PManager {
         return out;
     }
 
-    public void UpdateNodeLists(P2PNode receivedNode){
+    public void UpdateNodeLists(P2PNode receivedNode) {
         long timestamp = System.currentTimeMillis();
         receivedNode.setLastSeenTimestamp(timestamp);
-        if ((verifiedP2PNodeMap.get(receivedNode.getIPAddress()) == null) && (unverifiedP2PNodeMap.get(receivedNode.getIPAddress()) != null)){
+        if ((verifiedP2PNodeMap.get(receivedNode.getIPAddress()) == null) && (unverifiedP2PNodeMap.get(receivedNode.getIPAddress()) != null)) {
             // If we had this node in the unverified list already then move it to verified
             P2PNode newlyVerifiedNode = unverifiedP2PNodeMap.remove(receivedNode.getIPAddress());
             newlyVerifiedNode.setLastSeenTimestamp(timestamp);
@@ -244,7 +248,7 @@ public class P2PManager {
             unverifiedP2PNodeList.remove(newlyVerifiedNode);
             verifiedP2PNodeList.add(newlyVerifiedNode);
             verifiedP2PNodeMap.put(newlyVerifiedNode.getIPAddress(), newlyVerifiedNode);
-        } else if ((verifiedP2PNodeMap.get(receivedNode.getIPAddress()) == null) && (unverifiedP2PNodeMap.get(receivedNode.getIPAddress()) == null)){
+        } else if ((verifiedP2PNodeMap.get(receivedNode.getIPAddress()) == null) && (unverifiedP2PNodeMap.get(receivedNode.getIPAddress()) == null)) {
             // This is a totally new node which we can add to the unverifiedP2PNodeList
             unverifiedP2PNodeList.add(receivedNode);
             unverifiedP2PNodeMap.put(receivedNode.getIPAddress(), receivedNode);
@@ -260,7 +264,7 @@ public class P2PManager {
     }
 
     public void ProcessHandshake(P2PNode receivedNode, ArrayList<P2PNode> receivedNodeList, boolean is_response) {
-        if (is_response){
+        if (is_response) {
             UpdateNodeLists(receivedNode);
             P2PNode nodeToUpdate = verifiedP2PNodeMap.get(receivedNode.getIPAddress());
             if (nodeToUpdate != null) {
@@ -268,7 +272,7 @@ public class P2PManager {
             } else {
                 MinimaLogger.log("Got a response message from a node that's not being tracked!");
             }
-        } else{
+        } else {
             UpdateNodeLists(receivedNode);
         }
 
@@ -347,11 +351,11 @@ public class P2PManager {
             // Note we don't update the nodes active connection data as we
             // don't know if this node is a p2p node or a client node
             if (connectedNode.isConnectable()) {
-                if(!this.node.getConnectedP2PNodes().contains(connectedNode)) {
+                if (!this.node.getConnectedP2PNodes().contains(connectedNode)) {
                     this.node.AddConnectedP2PNode(connectedNode);
                 }
             } else {
-                if(!this.node.getConnectedClientNodes().contains(connectedNode)) {
+                if (!this.node.getConnectedClientNodes().contains(connectedNode)) {
                     this.node.AddConnectedClientNode(connectedNode);
                 }
             }
@@ -388,6 +392,7 @@ public class P2PManager {
     /**
      * Main Function!
      * Randomly select 10 nodes to connect to
+     *
      * @return
      */
     public ArrayList<P2PNode> SelectNodesToConnect() {
@@ -399,30 +404,68 @@ public class P2PManager {
         return nodeToConnectTo;
     }
 
-    public void RemoveUnresponsiveNodes() {
+    public ArrayList<P2PNode> RemoveUnresponsiveNodes() {
+        ArrayList<P2PNode> removedVerifiedNodes = new ArrayList<>();
         long oldestAllowedTimestamp = System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(TIME_UNTIL_NODE_REMOVED_MINS);
         long oldestNodeTimestamp = verifiedP2PNodeList.get(0).getLastSeenTimestamp();
-        while (oldestNodeTimestamp < oldestAllowedTimestamp){
+        while (oldestNodeTimestamp < oldestAllowedTimestamp) {
             P2PNode oldestNode = verifiedP2PNodeList.remove(0);
-            oldestNodeTimestamp =  verifiedP2PNodeList.get(0).getLastSeenTimestamp();
+            removedVerifiedNodes.add(oldestNode);
+            oldestNodeTimestamp = verifiedP2PNodeList.get(0).getLastSeenTimestamp();
             this.node.getConnectedP2PNodes().remove(oldestNode);
             this.node.getConnectedClientNodes().remove(oldestNode);
         }
         oldestNodeTimestamp = unverifiedP2PNodeList.get(0).getLastSeenTimestamp();
-        while (oldestNodeTimestamp < oldestAllowedTimestamp){
+        while (oldestNodeTimestamp < oldestAllowedTimestamp) {
             P2PNode oldestNode = unverifiedP2PNodeList.remove(0);
-            oldestNodeTimestamp =  unverifiedP2PNodeList.get(0).getLastSeenTimestamp();
+            oldestNodeTimestamp = unverifiedP2PNodeList.get(0).getLastSeenTimestamp();
             this.node.getConnectedP2PNodes().remove(oldestNode);
             this.node.getConnectedClientNodes().remove(oldestNode);
         }
+        return removedVerifiedNodes;
     }
 
-    public P2PNode DrawNewNode() {
-        return verifiedP2PNodeList.get(0);
+    public P2PNode DrawNewNode() throws NoSuchElementException {
+        return verifiedP2PNodeList.stream().filter(c -> !c.isConnectedToNode()).findAny().get();
     }
 
     public boolean IsNetworkHealthy() {
         return true;
     }
 
+    public void Update(NetworkHandler networkHandler) {
+        ArrayList<P2PNode> removedNodes = RemoveUnresponsiveNodes();
+        if (!removedNodes.isEmpty()) {
+            // Shutdown all empty clients
+            for (P2PNode node : removedNodes) {
+                ArrayList<MinimaClient> clients = networkHandler.getNetClients();
+                try {
+                    MinimaClient client = clients.stream()
+                            .filter(c -> c.getHost().equals(node.getIPAddress().getAddress().toString())
+                                    && (c.getPort() == node.getIPAddress().getPort()))
+                            .findFirst().get();
+                    client.PostMessage(new Message(MinimaClient.NETCLIENT_SHUTDOWN));
+                } catch (NoSuchElementException e) {
+                    MinimaLogger.log("No client connection to shutdown: " + e);
+                }
+            }
+        }
+
+        // If we have less than 10 connections try and connect to more nodes
+        int numConnectedNodes = this.node.getConnectedP2PNodes().size();
+        if (this.node.getConnectedP2PNodes().size() < 10) {
+            while (numConnectedNodes < 10) {
+                try {
+                    P2PNode nodeToConnectTo = DrawNewNode();
+                    networkHandler.PostMessage(new Message(NetworkHandler.NETWORK_CONNECT)
+                            .addInteger("port", nodeToConnectTo.getIPAddress().getPort())
+                            .addString("host", nodeToConnectTo.getIPAddress().getAddress().toString()));
+                    numConnectedNodes++;
+                } catch (NoSuchElementException e) {
+                    MinimaLogger.log("No New nodes to connect too: " + e);
+                    break;
+                }
+            }
+        }
+    }
 }
