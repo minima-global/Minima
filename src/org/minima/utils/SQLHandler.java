@@ -308,21 +308,29 @@ public class SQLHandler {
 	public static void main(String[] zArgs) {
 		
 		try {
-//			SQLHandler handle = new SQLHandler("~/tester/temp/_tempdb",true);
+			SQLHandler handle = new SQLHandler("~/temp/binarytester",true);
 			
+			String sql = "CREATE TABLE IF NOT EXISTS txdata ( bytedata BLOB(32k)";
+			JSONObject results = handle.executeSQL(sql);
+			System.out.println(sql);
+			System.out.println(MiniFormat.JSONPretty(results.toString()));
+			System.out.println();
 			
+			//Insert something..
+			sql =     "INSERT INTO txdata (image, hash) VALUES ('xxx','hashxxx');";
+					
 //			for(int i=0;i<3;i++) {
 			
-				SQLHandler handle = new SQLHandler("110022");
+//				SQLHandler handle = new SQLHandler("110022");
 				
-				String sql = "CREATE TABLE IF NOT EXISTS preimage ( image VARCHAR(160) NOT NULL, hash VARCHAR(160) NOT NULL )";
-				JSONObject results = handle.executeSQL(sql);
-				System.out.println(sql);
-				System.out.println(MiniFormat.JSONPretty(results.toString()));
-				sql =     "INSERT INTO preimage (image, hash) VALUES ('xxx','hashxxx');"
-						+ "SELECT * FROM preimage WHERE HASH='hashxxx';";
-				JSONArray resultsarray = handle.executeMultiSQL(sql);
-				System.out.println(MiniFormat.JSONPretty(resultsarray.toString()));
+//				String sql = "CREATE TABLE IF NOT EXISTS preimage ( image VARCHAR(160) NOT NULL, hash VARCHAR(160) NOT NULL )";
+//				JSONObject results = handle.executeSQL(sql);
+//				System.out.println(sql);
+//				System.out.println(MiniFormat.JSONPretty(results.toString()));
+//				sql =     "INSERT INTO preimage (image, hash) VALUES ('xxx','hashxxx');"
+//						+ "SELECT * FROM preimage WHERE HASH='hashxxx';";
+//				JSONArray resultsarray = handle.executeMultiSQL(sql);
+//				System.out.println(MiniFormat.JSONPretty(resultsarray.toString()));
 				
 				//Close the connection
 				handle.close(true);
