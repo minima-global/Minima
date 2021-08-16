@@ -1246,6 +1246,12 @@ public class MinimaDB {
 			}
 		}
 		
+		//Current time..
+		MiniNumber currenttime = new MiniNumber(System.currentTimeMillis());
+		
+		//Minimum time allowed for gimme50 transaction.. 1 hour!
+		MiniNumber mintime = currenttime.sub(new MiniNumber(1000 * 60 * 60 * 1));
+		
 		//Set the current Transaction List!
 		ArrayList<TxPOWDBRow> unused = mTxPOWDB.getAllUnusedTxPOW();
 		for(TxPOWDBRow row : unused) {
@@ -1262,6 +1268,20 @@ public class MinimaDB {
 			 * is valid.. but no way to check it has already been added
 			 */
 			if(txp.isTransaction() && row.getFailedAttempts()<3) {
+				//Is it the GIMME50..
+				if(txp.getTransaction().isGimme50()) {
+					//Check not tooo old.
+					if(txp.getTimeMilli().isLess(mintime)) {
+						//Don't add it
+						MinimaLogger.log("OLD GIMME50! not added to block..");
+						
+						//Remove it !
+						removeTxPowDB(txp.getTxPowID());
+						
+						break;
+					}
+				}
+				
 				//Are we already mining this transaction
 				if(checkTransactionForMining(txp.getTransaction())) {
 					continue;
