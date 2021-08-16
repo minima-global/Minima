@@ -1273,9 +1273,14 @@ public class MinimaDB {
 					//Check not tooo old.
 					if(txp.getTimeMilli().isLess(mintime)) {
 						//Don't add it
-						MinimaLogger.log("OLD GIMME50! not added to block..");
+						MinimaLogger.log("OLD GIMME50! not added to block.. "+txp.getTxPowID().to0xString());
 						
 						//Remove it !
+//						row.incrementFailedAttempts();
+//						row.incrementFailedAttempts();
+//						row.incrementFailedAttempts();
+						
+						//Can see issues with just removing.. 
 						removeTxPowDB(txp.getTxPowID());
 						
 						break;
