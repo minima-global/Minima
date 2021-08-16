@@ -308,73 +308,37 @@ public class SQLHandler {
 	public static void main(String[] zArgs) {
 		
 		try {
-			SQLHandler handle = new SQLHandler("~/temp/binarytester",true);
+//			SQLHandler handle = new SQLHandler("~/temp/binarytester",true);
 			
-			String sql = "CREATE TABLE IF NOT EXISTS txdata ( bytedata BLOB(32k)";
-			JSONObject results = handle.executeSQL(sql);
-			System.out.println(sql);
-			System.out.println(MiniFormat.JSONPretty(results.toString()));
-			System.out.println();
-			
-			//Insert something..
-			sql =     "INSERT INTO txdata (image, hash) VALUES ('xxx','hashxxx');";
-					
-//			for(int i=0;i<3;i++) {
-			
-//				SQLHandler handle = new SQLHandler("110022");
-				
-//				String sql = "CREATE TABLE IF NOT EXISTS preimage ( image VARCHAR(160) NOT NULL, hash VARCHAR(160) NOT NULL )";
-//				JSONObject results = handle.executeSQL(sql);
-//				System.out.println(sql);
-//				System.out.println(MiniFormat.JSONPretty(results.toString()));
-//				sql =     "INSERT INTO preimage (image, hash) VALUES ('xxx','hashxxx');"
-//						+ "SELECT * FROM preimage WHERE HASH='hashxxx';";
-//				JSONArray resultsarray = handle.executeMultiSQL(sql);
-//				System.out.println(MiniFormat.JSONPretty(resultsarray.toString()));
-				
-				//Close the connection
-				handle.close(true);
-//			}
-			
-			//Now delete
-//				SQLHandler handle = new SQLHandler("110022");
-//				
-//				//Create the DROP SQL
-//				String drop = "DROP DATABASE "+db;
-				
-				
-			
-//			//Create a Table..
-//			String sql = "CREATE TABLE IF NOT EXISTS users ( "
-//					+ "UID INTEGER IDENTITY PRIMARY KEY,"
-//                    + "NAME VARCHAR(45) NOT NULL,"
-//                    + "AGE DECIMAL(18,8) NOT NULL,"
-//                    + "DOB DATETIME NOT NULL,"
-//                    + "DESC LONGVARCHAR NULL,"
-//                    + "EMAIL VARCHAR(45) NOT NULL)";
-//			
+//			SQLHandler handle = new SQLHandler("110022");
+//			String sql = "CREATE TABLE IF NOT EXISTS preimage ( image VARCHAR(160) NOT NULL, hash VARCHAR(160) NOT NULL )";
 //			JSONObject results = handle.executeSQL(sql);
 //			System.out.println(sql);
 //			System.out.println(MiniFormat.JSONPretty(results.toString()));
-//			
-//			//Now insert some stuff..
-//			Random rr = new Random();
-//			String insert = "INSERT INTO USERS (NAME,AGE,DOB,DESC,EMAIL) values "
-//					+ "('paddy_"+rr.nextInt()+"', 22.345 , now(),'THIS IS A LONG STRING!','paddy@popo.com')";
-//			JSONObject insertresults = handle.executeSQL(insert);
-//			System.out.println(MiniFormat.JSONPretty(insertresults.toString()));
-//			
-//			//Now select some stuff..
-//			String select = "SELECT * FROM USERS";
-//			JSONObject selectresults = handle.executeSQL(select);
-//			System.out.println(MiniFormat.JSONPretty(selectresults.toString()));
-		
-//			select = "DELETE FROM USERS";
-//			selectresults = handle.executeSQL(select);
-//			System.out.println(MiniFormat.JSONPretty(selectresults.toString()));
-		
+//			sql =     "INSERT INTO preimage (image, hash) VALUES ('xxx','hashxxx');"
+//					+ "SELECT * FROM preimage WHERE HASH='hashxxx';";
+//			JSONArray resultsarray = handle.executeMultiSQL(sql);
+//			System.out.println(MiniFormat.JSONPretty(resultsarray.toString()));
+//			handle.close(true);
 			
-		
+			
+			String jdbc 	= "jdbc:h2:~/temp/binarytester";
+			
+			Connection conn = DriverManager.getConnection(jdbc, "SA", "");
+			
+			//Get a statement
+			Statement stmt = conn.createStatement();
+			
+			//Run some SQL..
+			String query = "CREATE DATABASE IF NOT EXISTS mydata;";
+			stmt.execute(query);
+			
+			
+			
+			
+			
+			
+			
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
