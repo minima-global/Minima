@@ -26,6 +26,8 @@ public class JavaDBRow implements TxPOWDBRow {
 	private MiniNumber 	mLastRelevantBlock 	= MiniNumber.ZERO;
 	private long 		mTimeReceived 	= 0;
 	
+	private int mRequestedNumber=0;
+	
 	public JavaDBRow(TxPoW zTxPOW) {
 		mTxPOW 				= zTxPOW;
 		mIsInBlock 			= false;
@@ -44,6 +46,8 @@ public class JavaDBRow implements TxPOWDBRow {
 		mTimeReceived = System.currentTimeMillis();
 		
 		setLatestRelevantBlock(zTxPOW.getBlockNumber());
+		
+		mRequestedNumber=0;
 	}
 
 	@Override

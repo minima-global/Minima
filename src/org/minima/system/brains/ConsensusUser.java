@@ -594,6 +594,8 @@ public class ConsensusUser extends ConsensusProcessor {
 			ArrayList<MiniData> remove = new ArrayList<>();
 			JSONArray found     = new JSONArray();
 			JSONArray requested = new JSONArray();
+		
+			ArrayList uniqueRequest = new ArrayList<>();
 			
 			//Check them all..
 			for(TxPOWDBRow txrow : unused) {
