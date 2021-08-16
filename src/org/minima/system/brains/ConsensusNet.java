@@ -795,9 +795,9 @@ public class ConsensusNet extends ConsensusProcessor {
 			MiniNumber cascade   = getMainDB().getMainTree().getCascadeNode().getBlockNumber();
 			MiniNumber timeblock = txpow.getBlockNumber();
 			
-			boolean requested = getNetworkHandler().isRequestedTxPow(txpow.getTxPowID().to0xString());
+			//boolean requested = getNetworkHandler().isRequestedTxPow(txpow.getTxPowID().to0xString());
 			
-			if(!requested && !syncmessage && txpow.isBlock()) {
+			if(!syncmessage && txpow.isBlock()) {
 				if(timeblock.sub(timetip).isMore(GlobalParams.MINIMA_CASCADE_START_DEPTH)) {
 					MinimaLogger.log("NET Transaction FAR IN THE FUTURE.. new:"+timeblock+" / current:"+timetip);
 					return;
@@ -841,25 +841,22 @@ public class ConsensusNet extends ConsensusProcessor {
 			getConsensusHandler().PostMessage(newtxpow);
 			
 			//if this is a sync message no need to check.. the details will be coming..
-			if(!syncmessage) {
-				//Now check we have the parent.. and txns..
-				if(txpow.isBlock()) {
-					MiniData parentID = txpow.getParentID();
-					if(getMainDB().getTxPOW(parentID) == null) {
-						//We don't have it, get it..
-						MinimaLogger.log("Missing Parent TxPoW @ "+txpow.getBlockNumber()+" parent:"+parentID); 
-						sendTxPowRequestMessage(zMessage, parentID, true);
-					}
-				
-					//And now check the Txn list..
-					ArrayList<MiniData> txns = txpow.getBlockTransactions();
-					for(MiniData txn : txns) {
-						if(getMainDB().getTxPOW(txn) == null ) {
-							MinimaLogger.log("Missing TxPoW in block "+txpow.getBlockNumber()+" "+txn);
-							sendTxPowRequestMessage(zMessage, txn, true);
-						}
-					}	
+			if(!syncmessage && txpow.isBlock()) {
+				MiniData parentID = txpow.getParentID();
+				if(getMainDB().getTxPOW(parentID) == null) {
+					//We don't have it, get it..
+					MinimaLogger.log("Missing Parent TxPoW @ "+txpow.getBlockNumber()+" parent:"+parentID+" casc:"+cascade); 
+					sendTxPowRequestMessage(zMessage, parentID, true);
 				}
+			
+				//And now check the Txn list..
+				ArrayList<MiniData> txns = txpow.getBlockTransactions();
+				for(MiniData txn : txns) {
+					if(getMainDB().getTxPOW(txn) == null ) {
+						MinimaLogger.log("Missing TxPoW in block "+txpow.getBlockNumber()+" "+txn+" casc:"+cascade);
+						sendTxPowRequestMessage(zMessage, txn, true);
+					}
+				}	
 			}
 		}
 	}
