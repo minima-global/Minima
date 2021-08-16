@@ -1276,12 +1276,12 @@ public class MinimaDB {
 						MinimaLogger.log("OLD GIMME50! not added to block.. "+txp.getTxPowID().to0xString());
 						
 						//Remove it !
-//						row.incrementFailedAttempts();
-//						row.incrementFailedAttempts();
-//						row.incrementFailedAttempts();
+						row.incrementFailedAttempts();
+						row.incrementFailedAttempts();
+						row.incrementFailedAttempts();
 						
 						//Can see issues with just removing.. 
-						removeTxPowDB(txp.getTxPowID());
+//						removeTxPowDB(txp.getTxPowID());
 						
 						break;
 					}

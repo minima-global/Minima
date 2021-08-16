@@ -808,7 +808,8 @@ public class ConsensusNet extends ConsensusProcessor {
 			}
 			
 			//Check Difficulty is high enough..
-			if(txpow.isBlock()) {
+			boolean requested = getNetworkHandler().isRequestedTxPow(txpow.getTxPowID().to0xString());
+			if(!requested && txpow.isBlock()) {
 				MiniData currentdiff = getMainDB().getTopTxPoW().getBlockDifficulty();
 				MiniData blockdiff 	 = txpow.getBlockDifficulty();
 				
@@ -826,8 +827,6 @@ public class ConsensusNet extends ConsensusProcessor {
 					MinimaLogger.log("DISCARD SIDECHAIN BLOCK : Current Block :"+getMainDB().getTopBlock()+" New Block:"+txpow.getBlockNumber()+" diffratio:"+ratio);
 					return;
 				}
-				
-//				MinimaLogger.log("Current Block :"+getMainDB().getTopBlock()+" New Block:"+txpow.getBlockNumber()+" diffratio:"+ratio);
 			}
 			
 			
