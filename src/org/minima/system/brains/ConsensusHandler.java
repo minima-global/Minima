@@ -398,6 +398,10 @@ public class ConsensusHandler extends MessageProcessor {
 	
 			//AUTO Messages
 		}else if ( zMessage.isMessageType(CONSENSUS_FLUSH) ) {
+			
+			//Clear the current Requested Transactions.. this should ask for them all anyway..
+			Main.getMainHandler().getNetworkHandler().clearAllrequestedTxPow();
+			
 			//Post a FULL resync message
 			PostMessage(new Message(ConsensusNet.CONSENSUS_NET_FULLTREERESYSNC));
 			
