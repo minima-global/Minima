@@ -1,6 +1,10 @@
 package org.minima.system.brains;
 
 import java.io.File;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.math.MathContext;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 
 import org.minima.GlobalParams;
@@ -78,6 +82,12 @@ public class ConsensusNet extends ConsensusProcessor {
 	 * What tip are we syncing to..
 	 */
 	MiniNumber mCurrentSyncTip = MiniNumber.MINUSONE;
+	
+	/**
+	 * Difficulty Math Context
+	 */
+	MathContext DIFF_MATH_CONTEXT 	= new MathContext(5, RoundingMode.DOWN);
+	BigDecimal DIFF_THRESHOLD 		= new BigDecimal(4);
 	
 	/**
 	 * Has the initial Sync been done..
@@ -796,6 +806,30 @@ public class ConsensusNet extends ConsensusProcessor {
 					return;
 				}
 			}
+			
+			//Check Difficulty is high enough..
+			if(txpow.isBlock()) {
+				MiniData currentdiff = getMainDB().getTopTxPoW().getBlockDifficulty();
+				MiniData blockdiff 	 = txpow.getBlockDifficulty();
+				
+				BigInteger cd = new BigInteger(1,currentdiff.getData());
+				BigInteger bd = new BigInteger(1,blockdiff.getData());
+				
+				BigDecimal cdd = new BigDecimal(cd);
+				BigDecimal bdd = new BigDecimal(bd);
+				
+				//Divide..
+				BigDecimal ratio = bdd.divide(cdd, DIFF_MATH_CONTEXT);
+				
+				if(ratio.compareTo(DIFF_THRESHOLD)>0) {
+					//Difficulty too low.. don't process - is a zombie sidechain
+					MinimaLogger.log("DISCARD SIDECHAIN BLOCK : Current Block :"+getMainDB().getTopBlock()+" New Block:"+txpow.getBlockNumber()+" diffratio:"+ratio);
+					return;
+				}
+				
+//				MinimaLogger.log("Current Block :"+getMainDB().getTopBlock()+" New Block:"+txpow.getBlockNumber()+" diffratio:"+ratio);
+			}
+			
 			
 			//Do we have it.. now check DB - hmmm..
 			if(getMainDB().getTxPOW(txpow.getTxPowID()) != null) {
