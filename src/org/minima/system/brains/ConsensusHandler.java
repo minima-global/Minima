@@ -402,7 +402,7 @@ public class ConsensusHandler extends MessageProcessor {
 			PostMessage(new Message(ConsensusNet.CONSENSUS_NET_FULLTREERESYSNC));
 			
 			//Flush / Check the mem-pool
-			PostMessage(new Message(ConsensusUser.CONSENSUS_FLUSHMEMPOOL));
+//			PostMessage(new Message(ConsensusUser.CONSENSUS_FLUSHMEMPOOL));
 			
 			//Clean the Tokens..
 			getMainDB().checkTokens();
