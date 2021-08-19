@@ -171,6 +171,7 @@ public class SQLHandler {
 			mSQLConnection = getConnection(mDataBase,mMySQLUser,mMySQLPassword);
 			
 		}else {
+			String mode = ";MODE=MySQL";
 			if(!zFullPath) {
 				//Calculate the Database file..
 				BackupManager backup  = Main.getMainHandler().getBackupManager();
@@ -178,10 +179,10 @@ public class SQLHandler {
 				String path = minidappdatabase.getAbsolutePath();
 				
 				//Use H2 JDBC
-				mDataBase = "jdbc:h2:"+path;
+				mDataBase = "jdbc:h2:"+path+mode;
 			}else {
 				//Use H2 JDBC
-				mDataBase = "jdbc:h2:"+zMiniDAppID;
+				mDataBase = "jdbc:h2:"+zMiniDAppID+mode;
 			}
 			
 			//Get the connection
