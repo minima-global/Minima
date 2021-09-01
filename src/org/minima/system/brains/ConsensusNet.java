@@ -275,8 +275,8 @@ public class ConsensusNet extends ConsensusProcessor {
 			MiniNumber greettip = greet.getTopBlock();
 			
 			//Did we find a crossover..
-			if(greettip.isEqual(top.getBlockNumber())) {
-				//We are equal..
+			if(greettip.isLessEqual(top.getBlockNumber())) {
+				//We are equal or infront..
 				getConsensusHandler().PostMessage(CONSENSUS_NET_SYNCOMPLETE);
 				
 			}else{
