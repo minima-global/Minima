@@ -797,10 +797,12 @@ public class ConsensusHandler extends MessageProcessor {
 			//Post a PULSE message
 			PostMessage(CONSENSUS_PULSE);
 		
-			//Start again in 10 minutes..
-			PostTimerMessage(new TimerMessage(PULSE_TIMER, CONSENSUS_PULSE_START));
+//			//Start again in 10 minutes..
+//			PostTimerMessage(new TimerMessage(PULSE_TIMER, CONSENSUS_PULSE_START));
 			
 		}else if ( zMessage.isMessageType(CONSENSUS_PULSE) ) {
+			MinimaLogger.log("PULSE MINE RUNNING..");
+			
 			//PULSE Txn 
 			TxPoW txpow = getMainDB().getCurrentTxPow(new Transaction(), new Witness(), new JSONArray());
 			
@@ -825,6 +827,10 @@ public class ConsensusHandler extends MessageProcessor {
 			}else {
 //				MinimaLogger.log("PULSE Finished @ "+txpow.getBlockNumber());
 			}
+			
+			//Start again in 10 minutes..
+			MinimaLogger.log("PULSE MINE FINISHED.. wait 10 minutes to restart");
+			PostTimerMessage(new TimerMessage(PULSE_TIMER, CONSENSUS_PULSE));
 			
 		}else if(zMessage.isMessageType(CONSENSUS_FINISHED_MINE)) {
 			//The TXPOW
