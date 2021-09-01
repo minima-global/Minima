@@ -71,7 +71,7 @@ public class ConsensusNet extends ConsensusProcessor {
 	/**
 	 * Wait five minutes before resuming normal service
 	 */
-	private static int MAX_SYNC_TIMEOUT = 300000;
+	private static int MAX_SYNC_TIMEOUT = 180000;
 	
 	/**
 	 * Check when you sent out a request for a TxPOW
