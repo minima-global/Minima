@@ -21,7 +21,7 @@ public class tester {
 //			seed[i] = (byte) i;
 //		}
 				
-		Digest digest = new KeccakDigest(160);
+		Digest digest = new KeccakDigest(256);
 
 		WinternitzOTSignature wots = new WinternitzOTSignature(seed, digest, 12);
 		

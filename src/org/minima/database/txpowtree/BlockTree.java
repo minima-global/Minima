@@ -16,6 +16,7 @@ import org.minima.objects.Magic;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.system.Main;
 import org.minima.utils.MinimaLogger;
 
 public class BlockTree {
@@ -191,7 +192,7 @@ public class BlockTree {
 		//Go down the whole tree..
 		_recurseTree(new NodeAction() {
 			@Override
-			public void runAction(BlockTreeNode zNode) {
+			public void runAction(BlockTreeNode zNode) throws Exception {
 				//Reset the weight..
 				zNode.resetCurrentWeight();
 				
@@ -311,7 +312,7 @@ public class BlockTree {
 			//SLOWER recursive method.. replaced by the fast hashtable
 			NodeAction finder = new NodeAction(zTxPOWID) {
 				@Override
-				public void runAction(BlockTreeNode zNode) {
+				public void runAction(BlockTreeNode zNode) throws Exception{
 					if(zNode.getTxPowID().isEqual(getExtraData())) {
 	        			setReturnObject(zNode);
 	        		}
@@ -370,7 +371,7 @@ public class BlockTree {
 		//Action that checks for a specific node..
 		NodeAction nodestates = new NodeAction(zMainDB) {
 			@Override
-			public void runAction(BlockTreeNode zNode) {
+			public void runAction(BlockTreeNode zNode) throws Exception {
 				//Default state
 				int parentstate = BlockTreeNode.BLOCKSTATE_INVALID;
 				
@@ -392,6 +393,20 @@ public class BlockTree {
 						//Get the txpow row - do this now as slow function
 						TxPOWDBRow row = getDB().getTxPOWRow(zNode.getTxPowID());
 						
+						//Seeing this sometimes.. SHOULD NOT HAPPEN!
+						if(row == null) {
+							MinimaLogger.log("SERIOUS ERROR : BlockTree node missing TxPoW.. parent:"+zNode.getParent().getBlockNumber()+" txpowid:"+zNode.getTxPowID());
+							
+							//Request IT! - if not already requseted
+							String id = zNode.getTxPowID().to0xString();
+							if(!Main.getMainHandler().getNetworkHandler().isRequestedTxPow(id)) {
+								MinimaLogger.log("REQUESTING MISSING TXPOW : "+id);
+								Main.getMainHandler().getConsensusHandler().getConsensusNet().sendTxPowRequest(zNode.getTxPowID());
+							}
+							//zNode.setState(BlockTreeNode.BLOCKSTATE_INVALID);
+							return;
+						}
+						
 						//Is it full
 						if(row.getBlockState() == TxPOWDBRow.TXPOWDBROW_STATE_FULL) {
 							//Need all ok for the block to be accepted
@@ -402,7 +417,7 @@ public class BlockTree {
 							
 							//Does it have a valid MMR.. or is it too late for this block.. the parent is a cascade node.
 							if(pnode.getMMRSet() == null) {
-								//MinimaLogger.log("NULL PARENT MMR "+zNode.getBlockNumber()+" "+getCascadeNode().getBlockNumber());
+								MinimaLogger.log("NULL PARENT MMR "+zNode.getBlockNumber()+" "+getCascadeNode().getBlockNumber());
 								zNode.setState(BlockTreeNode.BLOCKSTATE_INVALID);
 								return;
 							}
@@ -552,7 +567,7 @@ public class BlockTree {
 		//Action that checks for a specific node..
 		NodeAction printer = new NodeAction() {
 			@Override
-			public void runAction(BlockTreeNode zNode) {
+			public void runAction(BlockTreeNode zNode) throws Exception {
 				BlockTreeNode parent = zNode.getParent();
 				if(parent!=null) {
 					MinimaLogger.log(zNode.getTxPowID().to0xString(10)+" parent:"+zNode.getParent().getTxPowID());	
@@ -580,9 +595,14 @@ public class BlockTree {
 			//Get the top stack item
 			BlockTreeNode node = stack.pop();
 			
-			//Do the action..
-			zNodeAction.runAction(node);
-    		
+			//Catch any errors! - SHOULD NOT HAPPEN
+			try {
+				//Do the action..
+				zNodeAction.runAction(node);
+			}catch(Exception exc) {
+				MinimaLogger.log(exc);
+			}
+			
     		//Have we found what we were looking for..
     		if(zNodeAction.returnObject()) {
     			return zNodeAction.getObject();

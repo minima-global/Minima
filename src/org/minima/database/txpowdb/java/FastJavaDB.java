@@ -117,22 +117,18 @@ public class FastJavaDB implements TxPowDB {
 		Hashtable<String,JavaDBRow> newtable = new Hashtable<>();
 		ArrayList<TxPOWDBRow> removed = new ArrayList<>();
 		
-		//The minimum block before its too late for a USED TxPoW
-		MiniNumber minused = zCascade.sub(MiniNumber.SIXTYFOUR);
+		//The minimum block before its too late
+//		MiniNumber minused = zCascade.sub(MiniNumber.SIXTYFOUR);
+		MiniNumber minused = zCascade;
 		
-		//The minimum block before its too late for an UNUSED TxPoW
-		MiniNumber minunused = zCascade.add(MiniNumber.TWOFIVESIX);
-		
-		//Debug mode params
-		if(GlobalParams.MINIMA_CASCADE_START_DEPTH.isLess(MiniNumber.TWOFIVESIX)) {
-			minunused = zCascade.add(MiniNumber.FOUR);
-		}
+		//Keep them for at least 30 mins
+		long mintime = System.currentTimeMillis() - (1000 * 60 * 60 * 30);
 		
 		Enumeration<JavaDBRow> allrows = mTxPoWRows.elements();
 		while(allrows.hasMoreElements()) {
-			JavaDBRow row  = allrows.nextElement();
-			TxPoW rowtxpow = row.getTxPOW();
-			String txpid = rowtxpow.getTxPowID().to0xString();
+			JavaDBRow row  	= allrows.nextElement();
+			TxPoW rowtxpow 	= row.getTxPOW();
+			String txpid 	= rowtxpow.getTxPowID().to0xString();
 			
 				//It's a main block
 			if(row.isMainChainBlock()) {
@@ -142,23 +138,45 @@ public class FastJavaDB implements TxPowDB {
 			}else if(row.isInBlock() && row.getInBlockNumber().isMoreEqual(minused)) {
 				newtable.put(txpid,row);
 			
-				//It's a transaction but not that old
-			}else if(rowtxpow.isTransaction() && !row.isInBlock() && row.getTxPOW().getBlockNumber().isMoreEqual(minunused)) {
-				newtable.put(txpid,row);
-				
-				//It's a block but not past the cascade
-			}else if(rowtxpow.isBlock() && !row.isMainChainBlock() && row.getTxPOW().getBlockNumber().isMoreEqual(minused)) {
-				newtable.put(txpid,row);
+				//It's a transaction, maybe not on the main chain, but still relevant
+			}else if(row.getLatestRelevantBlockTime().isMoreEqual(minused) || row.getReceivedTime() > mintime) {
+					newtable.put(txpid,row);
 				
 			}else {
-				if(row.getTxPOW().isTransaction() && !row.isInBlock()) {
-					MinimaLogger.log("Transaction NOT in block removed.. "+row);
-				}
+//				if(rowtxpow.isTransaction()) {
+//					MinimaLogger.log("Removing Transaction : "+rowtxpow.toJSON().toString());
+//				}
 				
 				//Remove it..
 				removed.add(row);
 				mChildrenOfParents.remove(txpid);
-			}		
+			}	
+			
+//				//It's a main block
+//			if(row.isMainChainBlock()) {
+//				newtable.put(txpid,row);
+//				
+//				//It's a transaction on the main chain
+//			}else if(row.isInBlock() && row.getInBlockNumber().isMoreEqual(minused)) {
+//				newtable.put(txpid,row);
+//			
+//				//It's a transaction but not that old
+//			}else if(rowtxpow.isTransaction() && !row.isInBlock() && row.getTxPOW().getBlockNumber().isMoreEqual(minunused)) {
+//				newtable.put(txpid,row);
+//				
+//				//It's a block but not past the cascade
+//			}else if(rowtxpow.isBlock() && !row.isMainChainBlock() && row.getTxPOW().getBlockNumber().isMoreEqual(minused)) {
+//				newtable.put(txpid,row);
+//				
+//			}else {
+//				if(row.getTxPOW().isTransaction() && !row.isInBlock()) {
+//					MinimaLogger.log("Transaction NOT in block removed.. "+row);
+//				}
+//				
+//				//Remove it..
+//				removed.add(row);
+//				mChildrenOfParents.remove(txpid);
+//			}		
 		}
 		
 		//Switch to the new table..

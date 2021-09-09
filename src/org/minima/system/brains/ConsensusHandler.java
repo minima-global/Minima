@@ -54,6 +54,14 @@ public class ConsensusHandler extends MessageProcessor {
 	public static final long FLUSH_TIMER 				   	   = 1000 * 60 * 10;
 	
 	/**
+	 * Reconnect if need be - no tip change for 5 mins..
+	 */
+	public static final String CONSENSUS_CHECK_RECONNECT 	   = "CONSENSUS_CHECK_RECONNECT";
+	public static final long CHECK_RECONNECT_TIMER 			   = 1000 * 60 * 10;
+	boolean mFirstReconnectRun 	= true;
+	MiniNumber mLastTip 		= MiniNumber.ZERO;
+	
+	/**
 	 * Auto Consolidate 
 	 */
 	public static final String CONSENSUS_AUTOCONSOLIDATE 	   = "CONSENSUS_AUTOCONSOLIDATE";
@@ -164,7 +172,7 @@ public class ConsensusHandler extends MessageProcessor {
 	 * The Last Gimme50..
 	 */
 	long mLastGimme = 0;
-	public static final long MIN_GIMME50_TIME_GAP = 1000 * 60 * 10;
+	public static final long MIN_GIMME50_TIME_GAP = 1000 * 60 * 60 * 24;
 	
 	/**
 	 * PULSE Timer - every 10 mins
@@ -202,8 +210,8 @@ public class ConsensusHandler extends MessageProcessor {
 		//Redo every 10 minutes..
 		PostTimerMessage(new TimerMessage(AUTOBACKUP_TIMER, CONSENSUS_AUTOBACKUP));
 		
-		//Flush Mempool
-		PostTimerMessage(new TimerMessage(FLUSH_TIMER, CONSENSUS_FLUSH));
+		//Flush Mempool - 5 min delay
+		PostTimerMessage(new TimerMessage(FLUSH_TIMER + (1000 * 60 * 5), CONSENSUS_FLUSH));
 		
 		//Initialise the multi keys..
 		PostTimerMessage(new TimerMessage(INITKEYS_TIMER, CONSENSUS_INITKEYS));
@@ -213,6 +221,9 @@ public class ConsensusHandler extends MessageProcessor {
 		
 		//Auto Consolidate - every hour
 		PostTimerMessage(new TimerMessage(CONSOLIDATE_TIMER, CONSENSUS_AUTOCONSOLIDATE));
+	
+		//Re-check 
+		PostTimerMessage(new TimerMessage(CHECK_RECONNECT_TIMER, CONSENSUS_CHECK_RECONNECT));
 	}
 	
 	public void setBackUpManager() {
@@ -385,14 +396,60 @@ public class ConsensusHandler extends MessageProcessor {
 	
 			//AUTO Messages
 		}else if ( zMessage.isMessageType(CONSENSUS_FLUSH) ) {
+			
+			//Clear the current Requested Transactions.. this should ask for them all anyway..
+			Main.getMainHandler().getNetworkHandler().clearAllrequestedTxPow();
+			
+			//Post a FULL resync message
+			PostMessage(new Message(ConsensusNet.CONSENSUS_NET_FULLTREERESYSNC));
+			
 			//Flush / Check the mem-pool
-			PostMessage(new Message(ConsensusUser.CONSENSUS_FLUSHMEMPOOL));
+//			PostMessage(new Message(ConsensusUser.CONSENSUS_FLUSHMEMPOOL));
 			
 			//Re-do
 			PostTimerMessage(new TimerMessage(FLUSH_TIMER, CONSENSUS_FLUSH));
 			
 			//Clean the Memory..
 			System.gc();
+		
+		}else if ( zMessage.isMessageType(CONSENSUS_CHECK_RECONNECT) ) {
+			//Check ready
+			if(getMainDB().getMainTree().getChainTip() == null) {
+				//Wait a bit..
+				PostTimerMessage(new TimerMessage(CHECK_RECONNECT_TIMER, CONSENSUS_CHECK_RECONNECT));
+				return;
+			}
+			
+			//Current tip
+			MiniNumber currenttip = getMainDB().getTopBlock();
+			
+			//Is it the first time 
+			if(mFirstReconnectRun) {
+//				MinimaLogger.log("FIRST RECONNECT @ "+currenttip);
+				
+				mLastTip 			= currenttip;
+				mFirstReconnectRun 	= false;
+			
+			}else{
+				//Check if there is a change..
+				if(mLastTip.isEqual(currenttip)) {
+					MinimaLogger.log("RECONNECT after no tip change! @ "+mLastTip);
+					
+					//Same block number after 5 mins ? reconnect and resync..
+					Message reconnect = new Message(NetworkHandler.NETWORK_RECONNECT);
+					Main.getMainHandler().getNetworkHandler().PostMessage(reconnect);
+					
+					mFirstReconnectRun = true;
+				}else {
+//					MinimaLogger.log("TIP CHANGED RECONNECT @ "+mLastTip+" / "+currenttip);
+				}
+				
+				//And check for next time
+				mLastTip = currenttip;
+			}
+			
+			//Re-check 
+			PostTimerMessage(new TimerMessage(CHECK_RECONNECT_TIMER, CONSENSUS_CHECK_RECONNECT));
 			
 		}else if ( zMessage.isMessageType(CONSENSUS_AUTOBACKUP) ) {
 			//Backup the system..
@@ -735,10 +792,12 @@ public class ConsensusHandler extends MessageProcessor {
 			//Post a PULSE message
 			PostMessage(CONSENSUS_PULSE);
 		
-			//Start again in 10 minutes..
-			PostTimerMessage(new TimerMessage(PULSE_TIMER, CONSENSUS_PULSE_START));
+//			//Start again in 10 minutes..
+//			PostTimerMessage(new TimerMessage(PULSE_TIMER, CONSENSUS_PULSE_START));
 			
 		}else if ( zMessage.isMessageType(CONSENSUS_PULSE) ) {
+			MinimaLogger.log("PULSE MINE RUNNING..");
+			
 			//PULSE Txn 
 			TxPoW txpow = getMainDB().getCurrentTxPow(new Transaction(), new Witness(), new JSONArray());
 			
@@ -764,6 +823,10 @@ public class ConsensusHandler extends MessageProcessor {
 //				MinimaLogger.log("PULSE Finished @ "+txpow.getBlockNumber());
 			}
 			
+			//Start again in 10 minutes..
+			MinimaLogger.log("PULSE MINE FINISHED.. wait 10 minutes to restart");
+			PostTimerMessage(new TimerMessage(PULSE_TIMER, CONSENSUS_PULSE));
+			
 		}else if(zMessage.isMessageType(CONSENSUS_FINISHED_MINE)) {
 			//The TXPOW
 			TxPoW txpow = (TxPoW) zMessage.getObject("txpow");
@@ -779,8 +842,8 @@ public class ConsensusHandler extends MessageProcessor {
 			//Check time
 			long timenow = System.currentTimeMillis();
 			if(timenow - mLastGimme < MIN_GIMME50_TIME_GAP) {
-				//You can only do one of these every 10 minutes..
-				InputHandler.endResponse(zMessage, false, "You may only gimme50 once every 10 minutes");
+				//You can only do one of these every 24 hours..
+				InputHandler.endResponse(zMessage, false, "You may only gimme50 once a day.. (TestNET coins NOT real Minima)");
 				return;
 			}
 			mLastGimme = timenow;

@@ -3,6 +3,7 @@ package org.minima.system.brains;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Hashtable;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -66,6 +67,7 @@ public class ConsensusUser extends ConsensusProcessor {
 	public static final String CONSENSUS_CHECK 		        = CONSENSUS_PREFIX+"CHECK";
 	
 	public static final String CONSENSUS_FLUSHMEMPOOL 		= CONSENSUS_PREFIX+"FLUSHMEMPOOL";
+	public static final String CONSENSUS_MEMPOOL 			= CONSENSUS_PREFIX+"MEMPOOL";
 	
 	public static final String CONSENSUS_EXPORTKEY 			= CONSENSUS_PREFIX+"EXPORTKEY";
 	public static final String CONSENSUS_IMPORTKEY 			= CONSENSUS_PREFIX+"IMPORTKEY";
@@ -591,6 +593,8 @@ public class ConsensusUser extends ConsensusProcessor {
 			ArrayList<MiniData> remove = new ArrayList<>();
 			JSONArray found     = new JSONArray();
 			JSONArray requested = new JSONArray();
+		
+			ArrayList uniqueRequest = new ArrayList<>();
 			
 			//Check them all..
 			for(TxPOWDBRow txrow : unused) {
@@ -642,6 +646,48 @@ public class ConsensusUser extends ConsensusProcessor {
 			resp.put("requested", requested);
 			InputHandler.endResponse(zMessage, true, "Mempool Flushed");
 			
+		}else if(zMessage.isMessageType(CONSENSUS_MEMPOOL)) {
+			//JSON response..
+			JSONObject resp = InputHandler.getResponseJSON(zMessage);
+			
+			//TxPOW DB
+			TxPowDB tdb = getMainDB().getTxPowDB();
+			
+			//Check the MEMPOOL transactions..
+			ArrayList<TxPOWDBRow> unused = tdb.getAllUnusedTxPOW();
+			int tested = unused.size();
+			
+			JSONArray alltrans = new JSONArray();
+			int blocks 	= 0;
+			int txns 	= 0;
+			
+			//Check them all..
+			for(TxPOWDBRow txrow : unused) {
+				TxPoW txpow    = txrow.getTxPOW();
+				
+				if(txpow.isBlock()) {
+					blocks++;
+				}
+				
+				if(txpow.isTransaction()) {
+					txns++;
+					
+					JSONObject trx = new JSONObject();
+					trx.put("txpowid", txpow.getTxPowID().to0xString());
+					trx.put("relevant", txrow.getLatestRelevantBlockTime());
+					
+					alltrans.add(trx);
+				}
+			}
+			
+			//Now you have the proof..
+			resp.put("allmempool", tested);
+			resp.put("lastrelevant", getMainDB().getMainTree().getCascadeNode().getBlockNumber().sub(MiniNumber.SIXTYFOUR));
+			resp.put("alltransactions", alltrans);
+			resp.put("transactions", txns);
+			resp.put("blocks", blocks);
+			InputHandler.endResponse(zMessage, true, "Mempool Details");
+		
 		}else if(zMessage.isMessageType(CONSENSUS_UNKEEPCOIN)) {
 //			//Once a coin has been used - say in a DEX.. you can remove it from your coinDB
 //			String cid = zMessage.getString("coinid");

@@ -916,7 +916,7 @@ public class MMRSet implements Streamable {
 		//The proof is it too old.. we can't check it. It's invalid.
 		if(proofset == null) {
 			MMRSet oldest = getOldestMMR();
-			MinimaLogger.log("checkProof Proof too Old MAX:"+oldest.getBlockTime()+" proof:"+zProof);
+			MinimaLogger.log("checkProof Proof too Old current:"+getBlockTime()+" MAX:"+oldest.getBlockTime()+" proof:"+zProof);
 			return false;
 		}
 				

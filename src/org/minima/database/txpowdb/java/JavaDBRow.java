@@ -23,6 +23,11 @@ public class JavaDBRow implements TxPOWDBRow {
 	
 	private int mFailedCheck = 0;
 	
+	private MiniNumber 	mLastRelevantBlock 	= MiniNumber.ZERO;
+	private long 		mTimeReceived 	= 0;
+	
+	private int mRequestedNumber=0;
+	
 	public JavaDBRow(TxPoW zTxPOW) {
 		mTxPOW 				= zTxPOW;
 		mIsInBlock 			= false;
@@ -37,6 +42,12 @@ public class JavaDBRow implements TxPOWDBRow {
 		}else {
 			mAssumeValid = true;
 		}
+		
+		mTimeReceived = System.currentTimeMillis();
+		
+		setLatestRelevantBlock(zTxPOW.getBlockNumber());
+		
+		mRequestedNumber=0;
 	}
 
 	@Override
@@ -76,6 +87,9 @@ public class JavaDBRow implements TxPOWDBRow {
 	@Override
 	public void setInBlockNumber(MiniNumber zBlockNumber) {
 		mInBlocknumber = zBlockNumber;
+		
+		//See if it is more 
+		setLatestRelevantBlock(zBlockNumber);
 	}
 	
 	@Override
@@ -143,4 +157,21 @@ public class JavaDBRow implements TxPOWDBRow {
 	public void incrementFailedAttempts() {
 		mFailedCheck++;
 	}
+
+	@Override
+	public void setLatestRelevantBlock(MiniNumber zBlock) {
+		if(zBlock.isMore(mLastRelevantBlock)) {
+			mLastRelevantBlock = zBlock;
+		}
+	}
+	
+	@Override
+	public MiniNumber getLatestRelevantBlockTime() {
+		return mLastRelevantBlock;
+	}
+
+	@Override
+	public long getReceivedTime() {
+		return mTimeReceived;
+	}	
 }

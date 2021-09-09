@@ -22,6 +22,7 @@ import org.minima.database.userdb.UserDB;
 import org.minima.database.userdb.java.reltxpow;
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
+import org.minima.objects.StateVariable;
 import org.minima.objects.Token;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
@@ -175,9 +176,11 @@ public class ConsensusPrint extends ConsensusProcessor {
 			InputHandler.endResponse(zMessage, true, "");	
 			
 		}else if(zMessage.isMessageType(CONSENSUS_TXPOWSEARCH)){
-			String inputaddr   = zMessage.getString("input");
-			String outputaddr  = zMessage.getString("output");
-			String tokenid     = zMessage.getString("tokenid");
+			String inputaddr   	= zMessage.getString("input");
+			String outputaddr  	= zMessage.getString("output");
+			String tokenid     	= zMessage.getString("tokenid");
+			String block     	= zMessage.getString("block");
+			String state     	= zMessage.getString("state");
 			
 			if(inputaddr.startsWith("Mx")) {
 				//It's a Minima Address!
@@ -188,14 +191,21 @@ public class ConsensusPrint extends ConsensusProcessor {
 				outputaddr = Address.convertMinimaAddress(outputaddr).to0xString();
 			}
 			
-			MiniData inaddr   = new MiniData(inputaddr);
-			MiniData outaddr  = new MiniData(outputaddr);
-			MiniData tokendat = new MiniData(tokenid);
+			MiniData inaddr   	= new MiniData(inputaddr);
+			MiniData outaddr  	= new MiniData(outputaddr);
+			MiniData tokendat 	= new MiniData(tokenid);
+			MiniNumber blockdat = MiniNumber.ZERO;
+			
 			
 			//What gets checked..
 			boolean checkinput  = !inputaddr.equals("");
 			boolean checkoutput = !outputaddr.equals("");
 			boolean checktoken  = !tokenid.equals("");
+			boolean checkblock  = !block.equals("");
+			if(checkblock) {
+				blockdat = new MiniNumber(block);
+			}
+			boolean checkstate  = !state.equals("");
 			
 			//The ones we find..
 			JSONArray txpowlist = new JSONArray();
@@ -244,7 +254,29 @@ public class ConsensusPrint extends ConsensusProcessor {
 							}
 						}
 					}
+					
+					//Do we check State Variables..
+					if(checkstate) {
+						//Get the statevars..
+						ArrayList<StateVariable> statevars = txpowrow.getTxPOW().getTransaction().getCompleteState();
+						
+						//And check them..
+						for(StateVariable var : statevars) {
+							if(var.toString().contains(state)) {
+								found = true;
+								break;
+							}
+						}
+					}
 				}
+				
+				//Check the blocknumber..
+				if(checkblock) {
+					if(txpowrow.getTxPOW().getBlockNumber().isEqual(blockdat)) {
+						found = true;
+					}
+				}
+				
 				
 				//Do we keep and check it..
 				if(found) {
