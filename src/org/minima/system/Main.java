@@ -1,6 +1,7 @@
 
 package org.minima.system;
 
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 
 import org.minima.GlobalParams;
@@ -75,7 +76,7 @@ public class Main extends MessageProcessor {
 	 * Default nodes to connect to
 	 */
 	public boolean mAutoConnect        = false;
-	ArrayList<String> mAutoConnectList = new ArrayList<>();
+	ArrayList<InetSocketAddress> mAutoConnectList = new ArrayList<>();
 	
 	/**
 	 * When did this node start up..
@@ -133,12 +134,12 @@ public class Main extends MessageProcessor {
 		mAutoConnect = zAuto;
 	}
 	
-	public void clearAutoConnectHostPort(String zHostPort) {
+	public void clearAutoConnectHostPort() {
 		mAutoConnectList.clear();
 	}
 	
-	public void addAutoConnectHostPort(String zHostPort) {
-		mAutoConnectList.add(zHostPort);
+	public void addAutoConnectHostPort(InetSocketAddress address) {
+		mAutoConnectList.add(address);
 	}
 	
 	public long getNodeStartTime() {
@@ -223,14 +224,10 @@ public class Main extends MessageProcessor {
 			//And do we do an automatic logon..
 			if(mAutoConnect) {
 				//Connect to the the list of auto connect
-				for(String hostport : mAutoConnectList) {
-					int div     = hostport.indexOf(":");
-					String host = hostport.substring(0,div);
-					int port    = Integer.parseInt(hostport.substring(div+1));
-					
+				for(InetSocketAddress address : mAutoConnectList) {
 					//Send a TimedMessage..
 					Message connect  = new Message(NetworkHandler.NETWORK_CONNECT)
-							.addInteger("port", port).addString("host", host);
+							.addObject("address", address);
 					getNetworkHandler().PostMessage(connect);
 				
 					//Small Pause.. 10 seconds..

@@ -132,8 +132,13 @@ public class ConsensusNet extends ConsensusProcessor {
 		 * You start a network dialogue with this message
 		 */
 		if(zMessage.isMessageType(CONSENSUS_NET_INITIALISE)) {
+			NetworkHandler mNetworkHandler = Main.getMainHandler().getNetworkHandler();
 			//An initial Greeting message..
+			// A Return message passing info back to the node that has just connected to us
 			Greeting greet = new Greeting();
+
+			greet.addAdditionalDetails("isClient", mNetworkHandler.getP2PMessageProcessor().getState().isClient());
+			greet.addAdditionalDetails("minimaPort", mNetworkHandler.getBasePort());
 			
 			//Get the Tree
 			BlockTree tree = getMainDB().getMainTree();

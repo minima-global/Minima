@@ -1,6 +1,7 @@
 package org.minima.system.network;
 
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.ArrayList;
@@ -16,6 +17,7 @@ import org.minima.system.network.base.MinimaServer;
 import org.minima.system.network.maxima.Maxima;
 import org.minima.system.network.minidapps.DAPPManager;
 import org.minima.system.network.minidapps.websocket.WebSocketManager;
+import org.minima.system.network.p2p.P2PMessageProcessor;
 import org.minima.system.network.rpc.RPCServer;
 import org.minima.system.network.sshtunnel.SSHTunnel;
 import org.minima.utils.MinimaLogger;
@@ -68,7 +70,12 @@ public class NetworkHandler extends MessageProcessor {
 	 * MAXIMA..
 	 */
 	Maxima mMaxima;
-	
+
+	/**
+	 * P2PMessageProcessor
+	 */
+	P2PMessageProcessor mP2PMessageProcessor;
+
 	/**
 	 * SSH Tunnel
 	 */
@@ -118,7 +125,6 @@ public class NetworkHandler extends MessageProcessor {
 	
 	/**
 	 * 
-	 * @param zMain
 	 */
 	public NetworkHandler(String zHost, int zMainPort) {
 		super("NETWORK");
@@ -138,6 +144,8 @@ public class NetworkHandler extends MessageProcessor {
 		mBasePort   = zMainPort;
 		mRemoteMinima = mBasePort;
 		mRemoteMaxima = mBasePort+4;
+
+		mP2PMessageProcessor = new P2PMessageProcessor(calculateHostIP(), getMinimaPort());
 	}
 	
 	public void sshHardSetIP(boolean zRemoteOn, String zIP, int zRemoteBase) {
@@ -258,7 +266,11 @@ public class NetworkHandler extends MessageProcessor {
 	public Maxima getMaxima() {
 		return mMaxima;
 	}
-	
+
+	public P2PMessageProcessor getP2PMessageProcessor() {
+		return this.mP2PMessageProcessor;
+	}
+
 	public SSHTunnel getSSHTunnel() {
 		return mTunnel;
 	}
@@ -272,7 +284,7 @@ public class NetworkHandler extends MessageProcessor {
 		
 		if(zMessage.isMessageType(NETWORK_STARTUP)) {
 			MinimaLogger.log("Network Startup..");
-			
+
 			//Start the network Server
 			mServer = new MinimaServer(this,getMinimaPort());
 			Thread multimain = new Thread(mServer, "Multi Server");
@@ -343,18 +355,16 @@ public class NetworkHandler extends MessageProcessor {
 			stopMessageProcessor();
 			
 		}else if(zMessage.isMessageType(NETWORK_CONNECT)) {
-			String host = zMessage.getString("host");
-			int port 	= zMessage.getInteger("port");
-			
-			MinimaLogger.log("Attempting to connect to "+host+":"+port);
+			InetSocketAddress address = (InetSocketAddress) zMessage.getObject("address");
+			MinimaLogger.log("Attempting to connect to " + address);
 			
 			//Create a NetClient
-			MinimaClient client = new MinimaClient(host, port, this);
+			MinimaClient client = new MinimaClient(address, this);
 			
 			//Store with the rest
 			PostMessage(new Message(NETWORK_NEWCLIENT).addObject("client", client));
 		
-			InputHandler.endResponse(zMessage, true, "Attempting to connect to "+host+":"+port);
+			InputHandler.endResponse(zMessage, true, "Attempting to connect to " + address);
 			
 		}else if(zMessage.isMessageType(NETWORK_PING)) {
 			
@@ -384,9 +394,15 @@ public class NetworkHandler extends MessageProcessor {
 				if(client.getUID().equals(uid)) {
 					//Don;t want to reconnect if we choose to disconnect
 					client.noReconnect();
-					
+
+//					Message msg = new Message(P2PMessageProcessor.P2P_ON_DISCONNECTED);
+//					msg.addObject("client", client);
+//					msg.addString("uid", client.getUID());
+//					getP2PMessageProcessor().PostMessage(msg);
+
 					//tell it to shut down..
 					client.PostMessage(MinimaClient.NETCLIENT_SHUTDOWN);
+
 			
 					InputHandler.endResponse(zMessage, true, "Client "+uid+" disconnected - won't reconnect");
 					
@@ -402,6 +418,7 @@ public class NetworkHandler extends MessageProcessor {
 			
 			//Add it
 			mClients.add(client);
+			client.PostMessage(MinimaClient.NETCLIENT_P2P_RENDEZVOUS);
 			
 		}else if(zMessage.isMessageType(NETWORK_CLIENTERROR)) {
 			//get the client
@@ -434,8 +451,9 @@ public class NetworkHandler extends MessageProcessor {
 				
 				//And post a message..
 				TimerMessage  recon = new TimerMessage(30000,NETWORK_CONNECT);
-				recon.addString("host", host);
-				recon.addInteger("port", port);
+//				recon.addString("host", host);
+//				recon.addInteger("port", port);
+				recon.addObject("address", new InetSocketAddress(host, port));
 				
 				MinimaLogger.log("Attempting reconnect to "+host+":"+port+" in 30s..");
 				

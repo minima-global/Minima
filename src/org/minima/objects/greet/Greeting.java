@@ -59,6 +59,10 @@ public class Greeting implements Streamable {
 	public MiniNumber getFirstBlock() {
 		return mStartBlock;
 	}
+
+	public void addAdditionalDetails(String key, Object value){
+		mDetails.put(key, value);
+	}
 	
 	public void addBlock(TxPoW zBlock){
 		MiniNumber blknum = zBlock.getBlockNumber();

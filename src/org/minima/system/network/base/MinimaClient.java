@@ -18,6 +18,9 @@ import org.minima.objects.greet.TxPoWList;
 import org.minima.system.Main;
 import org.minima.system.brains.ConsensusNet;
 import org.minima.system.network.NetworkHandler;
+import org.minima.system.network.p2p.P2PFunctions;
+import org.minima.system.network.p2p.P2PMessageProcessor;
+import org.minima.system.network.p2p.messages.*;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONObject;
@@ -46,8 +49,11 @@ public class MinimaClient extends MessageProcessor {
 	
 	public static final String NETCLIENT_SENDTXPOW 	    = "NETCLIENT_SENDTXPOW";
 	public static final String NETCLIENT_SENDTXPOWREQ 	= "NETCLIENT_SENDTXPOWREQ";
-	
+
+	// Greeting is a return message
 	public static final String NETCLIENT_GREETING 	    = "NETCLIENT_GREETING";
+
+	// Sent to clients we have just connected too
 	public static final String NETCLIENT_GREETING_REQ 	= "NETCLIENT_TXPOWLIST_REQ";
 	
 	public static final String NETCLIENT_TXPOWLIST 	    = "NETCLIENT_TXPOWLIST";
@@ -55,7 +61,13 @@ public class MinimaClient extends MessageProcessor {
 	
 	public static final String NETCLIENT_PULSE 	        = "NETCLIENT_PULSE";
 	public static final String NETCLIENT_PING 	        = "NETCLIENT_PING";
-	
+
+	public static final String NETCLIENT_P2P_RENDEZVOUS = "NETCLIENT_P2P_RENDEZVOUS";
+	public static final String NETCLIENT_P2P_WALK_LINKS = "NETCLIENT_P2P_WALK_LINKS";
+	public static final String NETMESSAGE_P2P_SWAP_LINK = "NETMESSAGE_P2P_SWAP_LINK";
+	public static final String NETMESSAGE_P2P_DO_SWAP   = "NETMESSAGE_P2P_DO_SWAP";
+	public static final String NETMESSAGE_P2P_MAP_NETWORK = "NETMESSAGE_P2P_MAP_NETWORK";
+
 	//Main Network Handler
 	NetworkHandler mNetworkMain;
 	
@@ -74,6 +86,8 @@ public class MinimaClient extends MessageProcessor {
 	//The Host and Port
 	String mHost;
 	int    mPort;
+	InetSocketAddress address;
+	InetSocketAddress minimaAddress;
 	
 	//Ping each other to know you are still up and running.. every 10 mins..
 	public static final int PING_INTERVAL = 1000 * 60 * 10;
@@ -84,21 +98,27 @@ public class MinimaClient extends MessageProcessor {
 	 */
 	boolean mReconnect     = false;
 	int mReconnectAttempts = 0;
-	
+
+	/**
+	 * Incoming or Outgoing
+	 */
+	boolean mIncoming;
+
 	/**
 	 * Constructor
 	 * 
-	 * @param zSock
 	 * @param zNetwork
 	 * @throws IOException 
 	 * @throws UnknownHostException 
 	 */
-	public MinimaClient(String zHost, int zPort, NetworkHandler zNetwork) {
+	public MinimaClient(InetSocketAddress address, NetworkHandler zNetwork) {
 		super("NETCLIENT");
 		
 		//Store
-		mHost = zHost;
-		mPort = zPort;
+		mHost = address.getAddress().getHostAddress();
+		mPort = address.getPort();
+		this.address = address;
+		this.minimaAddress = address;
 		
 		//We will attempt to reconnect if this connection breaks..
 		mReconnect  = true;
@@ -108,6 +128,9 @@ public class MinimaClient extends MessageProcessor {
 		
 		//Create a UID
 		mUID = ""+Math.abs(new Random().nextInt());
+
+		//Outgoing connection
+		mIncoming = false;
 		
 		//Start the connection
 		PostMessage(NETCLIENT_INITCONNECT);
@@ -125,13 +148,17 @@ public class MinimaClient extends MessageProcessor {
 		//Store
 		mHost = mSocket.getInetAddress().getHostAddress();
 		mPort = mSocket.getPort();
+		address = new InetSocketAddress(mHost, mPort);
 		
 		//Main network Handler
 		mNetworkMain 	= zNetwork;
 				
 		//Create a UID
 		mUID = ""+Math.abs(new Random().nextInt());
-		
+
+		//Incoming connection
+		mIncoming = true;
+
 		//Start the system..
 		PostMessage(NETCLIENT_STARTUP);
 	}
@@ -147,7 +174,18 @@ public class MinimaClient extends MessageProcessor {
 	public void noReconnect() {
 		mReconnect=false;
 	}
-	
+
+	public InetSocketAddress getAddress() {
+		return address;
+	}
+
+	public InetSocketAddress getMinimaAddress() {
+		return minimaAddress;
+	}
+	public void setMinimaAddress(InetSocketAddress address) {
+		this.minimaAddress = address;
+	}
+
 	public String getHost() {
 		return mHost;
 	}
@@ -158,6 +196,10 @@ public class MinimaClient extends MessageProcessor {
 	
 	public String getUID() {
 		return mUID;
+	}
+
+	public boolean isIncoming() {
+		return mIncoming;
 	}
 	
 	public NetworkHandler getNetworkHandler() {
@@ -180,6 +222,7 @@ public class MinimaClient extends MessageProcessor {
 	}
 	
 	public void shutdown() {
+		this.noReconnect();
 		try {mOutput.close();}catch(Exception exc) {}
 		try {mInputThread.interrupt();}catch(Exception exc) {}
 		try {mSocket.close();}catch(Exception exc) {}
@@ -195,7 +238,8 @@ public class MinimaClient extends MessageProcessor {
 				mSocket = new Socket();
 				
 				//Connect with timeout
-				mSocket.connect(new InetSocketAddress(mHost, mPort), 60000);
+				mSocket.connect(this.address, 60000);
+
 				
 			}catch (Exception e) {
 				MinimaLogger.log("Error @ connection start : "+mHost+":"+mPort+" "+e);
@@ -204,8 +248,8 @@ public class MinimaClient extends MessageProcessor {
 				mNetworkMain.PostMessage(new Message(NetworkHandler.NETWORK_CLIENTERROR).addObject("client", this));
 				
 				return;
-			}	
-			
+			}
+
 			//Start the system..
 			PostMessage(NETCLIENT_STARTUP);
 			
@@ -287,7 +331,27 @@ public class MinimaClient extends MessageProcessor {
 			mLastPing = System.currentTimeMillis();
 		
 		}else if(zMessage.isMessageType(NETCLIENT_SHUTDOWN)) {
+			MinimaLogger.log("Shutting Down Client: " + address);
+			Message msg = new Message(P2PMessageProcessor.P2P_ON_DISCONNECTED);
+			msg.addObject("client", this);
+			msg.addString("uid", this.getUID());
+			getNetworkHandler().getP2PMessageProcessor().PostMessage(msg);
 			shutdown();
+		}else if(zMessage.isMessageType(NETCLIENT_P2P_RENDEZVOUS)) {
+			// To keep things simple we always send a Rendezvous list on initial connection
+			sendMessage(MinimaReader.NETMESSAGE_P2P_RENDEZVOUS, new P2PMsgRendezvous(P2PFunctions.GenRendezvousNodeList(mNetworkMain.getP2PMessageProcessor().getState(), 10)));
+		}else if(zMessage.isMessageType(NETCLIENT_P2P_WALK_LINKS)) {
+			P2PMsgWalkLinks data = (P2PMsgWalkLinks) zMessage.getObject("data");
+			sendMessage(MinimaReader.NETMESSAGE_P2P_WALK_LINKS, data);
+		}else if(zMessage.isMessageType(NETMESSAGE_P2P_SWAP_LINK)) {
+			P2PMsgSwapLink data = (P2PMsgSwapLink) zMessage.getObject("data");
+			sendMessage(MinimaReader.NETMESSAGE_P2P_SWAP_LINK, data);
+		}else if(zMessage.isMessageType(NETMESSAGE_P2P_DO_SWAP)) {
+			P2PMsgDoSwap data = (P2PMsgDoSwap) zMessage.getObject("data");
+			sendMessage(MinimaReader.NETMESSAGE_P2P_DO_SWAP, data);
+		}  else if(zMessage.isMessageType(NETMESSAGE_P2P_MAP_NETWORK)){
+			P2PMsgMapNetwork data = (P2PMsgMapNetwork) zMessage.getObject("data");
+			sendMessage(MinimaReader.NETMESSAGE_P2P_MAP_NETWORK, data);
 		}
 	}
 	

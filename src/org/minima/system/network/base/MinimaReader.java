@@ -20,6 +20,9 @@ import org.minima.system.Main;
 import org.minima.system.brains.ConsensusHandler;
 import org.minima.system.brains.ConsensusNet;
 import org.minima.system.network.NetworkHandler;
+import org.minima.system.network.p2p.P2PFunctions;
+import org.minima.system.network.p2p.P2PMessageProcessor;
+import org.minima.system.network.p2p.messages.*;
 import org.minima.system.txpow.TxPoWChecker;
 import org.minima.utils.Crypto;
 import org.minima.utils.MiniFormat;
@@ -84,8 +87,14 @@ public class MinimaReader implements Runnable {
 	 * GENERIC NETWORK MESSAGE
 	 */
 	public static final MiniByte NETMESSAGE_GENERIC		     = new MiniByte(7);
-	
-	
+
+
+	public static final MiniByte NETMESSAGE_P2P_RENDEZVOUS		     = new MiniByte(8);
+	public static final MiniByte NETMESSAGE_P2P_WALK_LINKS		     = new MiniByte(9);
+	public static final MiniByte NETMESSAGE_P2P_SWAP_LINK		     = new MiniByte(10);
+	public static final MiniByte NETMESSAGE_P2P_DO_SWAP			     = new MiniByte(11);
+	public static final MiniByte NETMESSAGE_P2P_MAP_NETWORK		     = new MiniByte(12);
+
 	/**
 	 * Netclient owner
 	 */
@@ -252,7 +261,12 @@ public class MinimaReader implements Runnable {
 					
 					//Get the Greeting
 					Greeting greet = Greeting.ReadFromStream(inputstream);
-					
+
+					Message msg = new Message(P2PMessageProcessor.P2P_ON_GREETED)
+							.addObject("greeting", greet)
+							.addObject("client", mNetClient);
+					mNetClient.getNetworkHandler().getP2PMessageProcessor().PostMessage(msg);
+
 					//Add this ID
 					rec.addObject("greeting", greet);
 				
@@ -287,7 +301,38 @@ public class MinimaReader implements Runnable {
 					
 					//Add this ID
 					rec.addObject("generic", msg);
-				
+
+				}else if(msgtype.isEqual(NETMESSAGE_P2P_RENDEZVOUS)) {
+					MinimaLogger.log("[P2P] NETMESSAGE_P2P_RENDEZVOUS");
+					P2PMsgRendezvous rendezvous = P2PMsgRendezvous.ReadFromStream(inputstream);
+					if (!mNetClient.getNetworkHandler().getP2PMessageProcessor().getState().isRendezvousComplete()){
+						Message msg = new Message(P2PMessageProcessor.P2P_RENDEZVOUS)
+								.addObject("rendezvous", rendezvous)
+								.addObject("client", mNetClient);
+						mNetClient.getNetworkHandler().getP2PMessageProcessor().PostMessage(msg);
+					}
+				}else if(msgtype.isEqual(NETMESSAGE_P2P_WALK_LINKS)) {
+					P2PMsgWalkLinks msgWalkLinks = P2PMsgWalkLinks.ReadFromStream(inputstream);
+					Message msg = new Message(P2PMessageProcessor.P2P_WALK_LINKS)
+							.addObject("walkLinksMsg", msgWalkLinks);
+					mNetClient.getNetworkHandler().getP2PMessageProcessor().PostMessage(msg);
+
+				}else if(msgtype.isEqual(NETMESSAGE_P2P_SWAP_LINK)) {
+					P2PMsgSwapLink data = P2PMsgSwapLink.ReadFromStream(inputstream);
+					Message msg = new Message(P2PMessageProcessor.P2P_SWAP_LINK)
+							.addObject("data", data);
+					mNetClient.getNetworkHandler().getP2PMessageProcessor().PostMessage(msg);
+				}else if(msgtype.isEqual(NETMESSAGE_P2P_DO_SWAP)) {
+					P2PMsgDoSwap data = P2PMsgDoSwap.ReadFromStream(inputstream);
+					Message msg = new Message(P2PMessageProcessor.P2P_DO_SWAP)
+							.addObject("data", data)
+							.addObject("client", mNetClient);
+					mNetClient.getNetworkHandler().getP2PMessageProcessor().PostMessage(msg);
+				}else if(msgtype.isEqual(NETMESSAGE_P2P_MAP_NETWORK)) {
+					P2PMsgMapNetwork data = P2PMsgMapNetwork.ReadFromStream(inputstream);
+					Message msg = new Message(P2PMessageProcessor.P2P_MAP_NETWORK)
+							.addObject("data", data);
+					mNetClient.getNetworkHandler().getP2PMessageProcessor().PostMessage(msg);
 				}else {
 					throw new Exception("Invalid message on network : "+rec);
 				}

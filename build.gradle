@@ -22,22 +22,45 @@ plugins {
     // shadowJar plugin to build fat jar
     id 'com.github.johnrengelman.shadow' version '6.1.0'
 
+    // Get rid off all the pointless getters and setters that java is plagued with
+    // Can't use v6.x as needs gradle 7.x
+    id "io.freefair.lombok" version "5.3.3.3"
+
+    id 'com.palantir.docker' version '0.28.0'
+    id 'io.spring.dependency-management' version '1.0.0.RC2'
+
+
 }
 
+dependencyManagement {
+    imports {
+        mavenBom 'org.apache.logging.log4j:log4j-bom:2.14.1'
+    }
+}
 repositories {
     // Use jcenter for resolving dependencies.
     // You can declare any Maven/Ivy/file repository here.
+    mavenCentral()
     jcenter()
 }
 
 dependencies {
+    implementation 'org.slf4j:slf4j-api:1.7.32'
+    compile 'org.apache.logging.log4j:log4j-slf4j-impl'
+    compile 'org.apache.logging.log4j:log4j-api'
+    compile 'org.apache.logging.log4j:log4j-core'
+    compile 'com.lmax:disruptor:3.3.4'
+
     // This dependency is used by the application.
+
     implementation 'com.google.guava:guava:29.0-jre'
 
-    // Use JUnit test framework
-    testImplementation 'junit:junit:4.13'
 
     implementation 'org.mozilla:rhino:1.7R4'
+
+    implementation 'com.fasterxml.jackson.core:jackson-annotations:2.8.0'
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.8.0'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.8.0'
 
     implementation 'com.jcraft:jsch:0.1.55'
 
@@ -45,15 +68,22 @@ dependencies {
 //    implementation group: 'com.h2database', name: 'h2', version: '1.4.200'
 
     implementation group: 'mysql', name: 'mysql-connector-java', version: '8.0.25'
-    
+    implementation 'org.bouncycastle:bcpkix-jdk15to18:1.68'
+    implementation 'org.bouncycastle:bcprov-jdk15to18:1.68'
+
+    // Use JUnit test framework
+    testImplementation 'junit:junit:4.13'
+    testImplementation "org.mockito:mockito-core:3.+"
+    testImplementation 'com.pholser:junit-quickcheck-core:1.0'
+    testImplementation 'com.pholser:junit-quickcheck-generators:1.0'
 }
 
 sourceSets {
     main {
-         java {
+        java {
             srcDirs = ['src']
-         }
-         
+        }
+
         resources {
             srcDirs = ['resources']
         }
@@ -70,6 +100,7 @@ sourceSets {
 tasks.withType(AbstractArchiveTask) {
     preserveFileTimestamps = false
     reproducibleFileOrder = true
+//    destinationDirectory = project.rootProject.file("build/jar")
 }
 
 application {
@@ -84,3 +115,10 @@ jar {
     }
 }
 
+
+docker {
+    name 'minima:latest'
+    files tasks.shadowJar, "$rootDir/scripts/installDapps.sh", "$rootDir/dapps/"
+    copySpec.from("$buildDir/lib/minima-all.jar",).into(".")
+    //"./scripts/installDapps.sh", "./dapps/block.minidapp", "./dapps/wallet.minidapp", "dapps/terminal.minidapp", "dapps/emh.minidapp"
+}

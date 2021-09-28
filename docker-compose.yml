@@ -1,0 +1,24 @@
+version: '3.7'
+
+networks:
+  minima_testnet:
+    name: minima_testnet
+
+services:
+  minima_one:
+    image: minima:latest
+    command: -private -automine -test -clean
+    networks:
+      minima_testnet:
+        aliases:
+          - minima_one
+
+  minima_peer:
+    image: minima:latest
+    command: -automine -test -clean -connect minima_one 9001
+    networks:
+      minima_testnet:
+        aliases:
+          - minima_peer
+    depends_on:
+      - minima_one

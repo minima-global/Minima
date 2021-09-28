@@ -7,6 +7,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,10 +18,12 @@ import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.checkerframework.checker.units.qual.A;
 import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
 import org.minima.system.brains.BackupManager;
 import org.minima.system.network.commands.CMD;
+import org.minima.system.network.p2p.P2PFunctions;
 import org.minima.system.network.rpc.RPCClient;
 import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;
@@ -99,8 +104,7 @@ public class Start {
 		Thread mainthread=new Thread(mainrunner);
 		mainthread.start();
 	}
-	
-	
+
 	/**
 	 * Main Minima Entry point from the command line
 	 * 
@@ -109,54 +113,10 @@ public class Start {
 	 * @param zArgs
 	 */
 	public static void main(String[] zArgs){
-		/**
-		 * Load the EXTRA public Minima servers for 0.98 - 0.99 has different P2P
-		 */
-		try {
-			//Get a list of the EXTRA Minima clients..
-			String extraclients = RPCClient.sendGET("http://34.118.59.216/pubextra.txt");
+
 		
-			//Now chop them up..
-			ArrayList<String> pubextra = new ArrayList<>();
-			StringTokenizer strtok = new StringTokenizer(extraclients,",");
-			while(strtok.hasMoreElements()) {
-				String ip = strtok.nextToken().trim();
-				if(isValidIPv4(ip)) {
-					pubextra.add(ip);
-				}else {
-					MinimaLogger.log("Invalid Extra Minima Peer : "+ip);
-				}
-			}
-			
-			//Now add all these nodes..
-			String[] newnodes = new String[VALID_BOOTSTRAP_NODES.length+pubextra.size()];
-			for(int i=0;i<VALID_BOOTSTRAP_NODES.length;i++) {
-				newnodes[i] = VALID_BOOTSTRAP_NODES[i];
-			}
-			
-			for(int i=0;i<pubextra.size();i++) {
-				newnodes[VALID_BOOTSTRAP_NODES.length+i] = pubextra.get(i);
-			}
-			
-			//Re-assign!
-			VALID_BOOTSTRAP_NODES = newnodes;
-			
-		} catch (Exception e1) {
-			MinimaLogger.log(e1);
-			
-			//RESET
-			VALID_BOOTSTRAP_NODES = new String[]{"35.204.181.120",
-												 "35.204.119.15",
-												 "34.91.220.49",
-												 "35.204.62.177",
-												 "35.204.139.141",
-												 "35.204.194.45"};
-			
-			MinimaLogger.log("Minima Bootstrap nodes reset : "+Arrays.toString(VALID_BOOTSTRAP_NODES));
-		}
-		
-//		MinimaLogger.log("Minima Bootstrap Nodes : "+Arrays.toString(VALID_BOOTSTRAP_NODES));
-		
+		InetSocketAddress connectionAddress = null;
+
 		//Check command line inputs
 		int arglen 				= zArgs.length;
 		
@@ -164,6 +124,7 @@ public class Start {
 		int port 				= 9001;
 		
 		boolean connect         = true;
+		boolean noextrahost     = false;
 		
 		//Pick a random host
 		Random rand  = new Random();
@@ -186,6 +147,7 @@ public class Start {
 		boolean privatenetwork 	= false;
 		boolean daemon          = false;
 		boolean automine 		= false;
+		boolean isClient 	    = false;
 		
 		boolean mysql 			= false;
 		String mysqlhost 		= "";
@@ -212,18 +174,7 @@ public class Start {
 				
 				}else if(arg.equals("-noextrahost")) {
 					//RESET
-					VALID_BOOTSTRAP_NODES = new String[]{"35.204.181.120",
-														 "35.204.119.15",
-														 "34.91.220.49",
-														 "35.204.62.177",
-														 "35.204.139.141",
-														 "35.204.194.45"};
-				
-					hostnum  	= rand.nextInt(VALID_BOOTSTRAP_NODES.length);
-					portrand 	= rand.nextInt(3);
-					connecthost = VALID_BOOTSTRAP_NODES[hostnum];
-					connectport = 9001 + (1000*portrand);
-						
+					noextrahost = true;
 				}else if(arg.equals("-help")) {
 					//Printout HELP!
 					MinimaLogger.log("Minima "+GlobalParams.MINIMA_VERSION+" Alpha Test Net");
@@ -261,9 +212,14 @@ public class Start {
 					automine = true;
 				
 				}else if(arg.equals("-connect")) {
-					String newconn = zArgs[counter++]+":"+zArgs[counter++];
-					connectlist.add(newconn);
-
+					String customHost = zArgs[counter++];
+					String customPort = zArgs[counter++];
+					try{
+						connectionAddress = new InetSocketAddress(InetAddress.getByName(customHost), Integer.parseInt(customPort));
+					}catch (UnknownHostException e){
+						MinimaLogger.log("Unknown host provided: " + customHost + " port : " + customPort);
+						System.exit(0);
+					}
 				}else if(arg.equals("-clean")) {
 					clean = true;
 				
@@ -301,10 +257,13 @@ public class Start {
 				}else if(arg.equals("-test")) {
 					//Use the Test PARAMS!
 					TestParams.setTestParams();
-				
+				}else if(arg.equals("-isclient")) {
+					//Use the Test PARAMS!
+					isClient = true;
+					MinimaLogger.log("[+] Setting to be client");
 				}else if(arg.equals("")) {
 					//Do nothing..
-					
+
 				}else {
 					MinimaLogger.log("UNKNOWN arg.. : "+arg);
 					System.exit(0);
@@ -333,24 +292,21 @@ public class Start {
 			//Wipe webroot too..
 			BackupManager.deleteWebRoot(conffile);
 		}
-		
-		
-		
-		
-		
+
 		//Start the main Minima server
 		Main rcmainserver = new Main(host, port, conffile.getAbsolutePath());
 		
 		//Link it.
 		mMainServer = rcmainserver;
-		
-		//Have we added any connect hosts..
-		if(connectlist.size() == 0 && connect) {
-			rcmainserver.addAutoConnectHostPort(connecthost+":"+connectport);
+
+		// Only connect to a single host for rendezvous with the p2p network
+		if(connect && connectionAddress != null) {
+			rcmainserver.addAutoConnectHostPort(connectionAddress);
 		}else {
-			for(String hostport : connectlist) {
-				rcmainserver.addAutoConnectHostPort(hostport);
-			}
+			MinimaLogger.log(mMainServer.getNetworkHandler().getP2PMessageProcessor().getHostIP().toString());
+			ArrayList<InetSocketAddress> rendezvousHosts = P2PFunctions.LoadNodeList(mMainServer.getNetworkHandler().getP2PMessageProcessor().getState(), VALID_BOOTSTRAP_NODES, noextrahost);
+			connectionAddress = P2PFunctions.SelectRandomAddress(rendezvousHosts);
+			mMainServer.addAutoConnectHostPort(connectionAddress);
 		}
 		
 		//Set the connect properties
@@ -360,8 +316,10 @@ public class Start {
 		if(privatenetwork) {
 			//Do we need a gensis block
 			boolean needgenesis = clean || BackupManager.requiresPrivateGenesis(conffile);
-			
+
 			rcmainserver.privateChain(needgenesis);
+			// If we are the genesis node of the private network, start with Rendezvous Complete
+			rcmainserver.getNetworkHandler().getP2PMessageProcessor().getState().setRendezvousComplete(true);
 		}
 		
 		if(automine) {
@@ -376,6 +334,8 @@ public class Start {
 		if(!external.equals("")) {
 			rcmainserver.getNetworkHandler().setExternalURL(external);
 		}
+
+		rcmainserver.getNetworkHandler().getP2PMessageProcessor().getState().setClient(isClient);
 		
 		//Start the system
 		rcmainserver.PostMessage(Main.SYSTEM_STARTUP);
