@@ -139,6 +139,7 @@ public class ConsensusNet extends ConsensusProcessor {
 
 			greet.addAdditionalDetails("isClient", mNetworkHandler.getP2PMessageProcessor().getState().isClient());
 			greet.addAdditionalDetails("minimaPort", mNetworkHandler.getBasePort());
+			greet.addAdditionalDetails("numClients", mNetworkHandler.getP2PMessageProcessor().getState().getClientLinks().size());
 			
 			//Get the Tree
 			BlockTree tree = getMainDB().getMainTree();

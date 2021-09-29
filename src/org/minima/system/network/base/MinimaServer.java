@@ -57,7 +57,7 @@ public class MinimaServer implements Runnable{
 				MinimaClient client = new MinimaClient(clientsock, mNetwork);
 				
 				//Tell the network Handler
-				mNetwork.PostMessage(new Message(NetworkHandler.NETWORK_NEWCLIENT).addObject("client", client));
+				mNetwork.PostMessage(new Message(NetworkHandler.NETWORK_NEWCLIENT).addObject("client", client).addBoolean("isIncoming", true));
 			}
 			
 		} catch (BindException e) {

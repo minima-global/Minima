@@ -25,5 +25,19 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.25'
+          cpus: '0.1'
+          memory: 500M
+  minima_client:
+    image: minima:latest
+    command: -automine -test -clean -isclient -connect minima_one 9001
+    networks:
+      minima_testnet:
+        aliases:
+          - minima_peer
+    depends_on:
+      - minima_one
+    deploy:
+      resources:
+        limits:
+          cpus: '0.1'
           memory: 500M

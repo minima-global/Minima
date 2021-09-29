@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Random;
 
+import lombok.extern.slf4j.Slf4j;
 import org.minima.Start;
 import org.minima.system.Main;
 import org.minima.system.brains.ConsensusHandler;
@@ -26,6 +27,7 @@ import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageProcessor;
 import org.minima.utils.messages.TimerMessage;
 
+@Slf4j
 public class NetworkHandler extends MessageProcessor {
 
 	public static final String NETWORK_STARTUP 		= "NETWORK_START";
@@ -128,7 +130,6 @@ public class NetworkHandler extends MessageProcessor {
 	 */
 	public NetworkHandler(String zHost, int zMainPort) {
 		super("NETWORK");
-
 		if(zHost.equals("")) {
 			mHardSetLocal = false;
 			calculateHostIP();
@@ -413,12 +414,17 @@ public class NetworkHandler extends MessageProcessor {
 			InputHandler.endResponse(zMessage, false, "Could not find client UID "+uid);
 			
 		}else if(zMessage.isMessageType(NETWORK_NEWCLIENT)) {
+
 			//get the client
 			MinimaClient client = (MinimaClient)zMessage.getObject("client");
-			
+			boolean isIncoming = zMessage.getBoolean("isIncoming");
+
+			log.warn("[!!] NETWORK_NEWCLIENT " + client.getAddress());
 			//Add it
 			mClients.add(client);
-			client.PostMessage(MinimaClient.NETCLIENT_P2P_RENDEZVOUS);
+			if (isIncoming) {
+				client.PostMessage(MinimaClient.NETCLIENT_P2P_RENDEZVOUS);
+			}
 			
 		}else if(zMessage.isMessageType(NETWORK_CLIENTERROR)) {
 			//get the client

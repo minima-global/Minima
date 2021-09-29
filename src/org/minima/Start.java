@@ -258,7 +258,6 @@ public class Start {
 					//Use the Test PARAMS!
 					TestParams.setTestParams();
 				}else if(arg.equals("-isclient")) {
-					//Use the Test PARAMS!
 					isClient = true;
 					MinimaLogger.log("[+] Setting to be client");
 				}else if(arg.equals("")) {
@@ -295,9 +294,10 @@ public class Start {
 
 		//Start the main Minima server
 		Main rcmainserver = new Main(host, port, conffile.getAbsolutePath());
-		
+
 		//Link it.
 		mMainServer = rcmainserver;
+		rcmainserver.getNetworkHandler().getP2PMessageProcessor().getState().setClient(isClient);
 
 		// Only connect to a single host for rendezvous with the p2p network
 		if(connect && connectionAddress != null) {
@@ -307,6 +307,10 @@ public class Start {
 			ArrayList<InetSocketAddress> rendezvousHosts = P2PFunctions.LoadNodeList(mMainServer.getNetworkHandler().getP2PMessageProcessor().getState(), VALID_BOOTSTRAP_NODES, noextrahost);
 			connectionAddress = P2PFunctions.SelectRandomAddress(rendezvousHosts);
 			mMainServer.addAutoConnectHostPort(connectionAddress);
+		}
+
+		if(isClient){
+			rcmainserver.getNetworkHandler().getP2PMessageProcessor().getState().setNumLinks(3);
 		}
 		
 		//Set the connect properties
@@ -320,6 +324,9 @@ public class Start {
 			rcmainserver.privateChain(needgenesis);
 			// If we are the genesis node of the private network, start with Rendezvous Complete
 			rcmainserver.getNetworkHandler().getP2PMessageProcessor().getState().setRendezvousComplete(true);
+			rcmainserver.getNetworkHandler().getP2PMessageProcessor().getState().getRandomNodeSet().add(
+					rcmainserver.getNetworkHandler().getP2PMessageProcessor().getState().getAddress()
+			);
 		}
 		
 		if(automine) {
@@ -335,7 +342,7 @@ public class Start {
 			rcmainserver.getNetworkHandler().setExternalURL(external);
 		}
 
-		rcmainserver.getNetworkHandler().getP2PMessageProcessor().getState().setClient(isClient);
+
 		
 		//Start the system
 		rcmainserver.PostMessage(Main.SYSTEM_STARTUP);

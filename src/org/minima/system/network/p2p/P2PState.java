@@ -17,7 +17,7 @@ import java.util.Map;
 @Slf4j
 public class P2PState {
 
-    private final int numLinks;
+    private int numLinks;
     private boolean isClient = false;
     private boolean isRendezvousComplete = false;
     private boolean isSetupComplete = false;

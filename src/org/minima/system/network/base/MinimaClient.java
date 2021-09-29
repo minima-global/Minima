@@ -338,7 +338,6 @@ public class MinimaClient extends MessageProcessor {
 			getNetworkHandler().getP2PMessageProcessor().PostMessage(msg);
 			shutdown();
 		}else if(zMessage.isMessageType(NETCLIENT_P2P_RENDEZVOUS)) {
-			// To keep things simple we always send a Rendezvous list on initial connection
 			sendMessage(MinimaReader.NETMESSAGE_P2P_RENDEZVOUS, new P2PMsgRendezvous(P2PFunctions.GenRendezvousNodeList(mNetworkMain.getP2PMessageProcessor().getState(), 10)));
 		}else if(zMessage.isMessageType(NETCLIENT_P2P_WALK_LINKS)) {
 			P2PMsgWalkLinks data = (P2PMsgWalkLinks) zMessage.getObject("data");

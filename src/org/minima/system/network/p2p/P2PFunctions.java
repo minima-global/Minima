@@ -147,7 +147,7 @@ public class P2PFunctions {
     {
         assert state.getOutLinks() != null : "OutLinks Array is null";
         assert state.getRandomNodeSet() != null : "InLinks Array is null";
-        return Stream.of(state.getOutLinks(), state.getRandomNodeSet())
+        return Stream.of(state.getRandomNodeSet(), state.getOutLinks())
                 .flatMap(Collection::stream).distinct().limit(numAddrToReturn).collect(Collectors.toCollection(ArrayList::new));
     }
 
@@ -169,7 +169,6 @@ public class P2PFunctions {
     }
 
     public static ArrayList<Message> Join(P2PState state, ArrayList<MinimaClient> clients) {
-        log.info("Processing Join message");
         boolean needOutLinks = state.getOutLinks().size() < state.getNumLinks();
         ArrayList<Message> msgs = new ArrayList<>();
         // If either is true we need more links
@@ -181,7 +180,7 @@ public class P2PFunctions {
                     log.info("Joining: " + address);
                     msgs.add(new Message(P2PMessageProcessor.P2P_CONNECT).addObject("address", address).addString("reason", "Entry node connection"));
                 }
-                else {
+                else if(state.isRendezvousComplete()){
                     int outLinksNeeded = state.getNumLinks() - state.getOutLinks().size();
                     int maxMsgsToSend = 10 - state.countActiveMessagesOfType(P2PMessageProcessor.P2P_WALK_LINKS);
                     int msgsToSend = Math.min(outLinksNeeded, maxMsgsToSend);
@@ -197,7 +196,7 @@ public class P2PFunctions {
                             minimaClient.PostMessage(walkMsg);
                             state.getExpiringMessageMap().put(walkLinks.getSecret(), new ExpiringMessage(new Message(P2PMessageProcessor.P2P_WALK_LINKS).addObject("data", walkLinks)));
                         } else {
-                            log.warn("MinimaClient for " + nextHop + " does not exist in clients list for outlink");
+                            log.warn("[-] P2P_JOIN MinimaClient for " + nextHop + " does not exist in clients list for outlink");
                         }
                     }
 

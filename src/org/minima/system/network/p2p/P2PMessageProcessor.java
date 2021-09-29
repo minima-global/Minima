@@ -209,6 +209,7 @@ public class P2PMessageProcessor extends MessageProcessor {
         if (greeting.getDetails().containsKey("isClient")) {
             boolean isClient = (boolean) greeting.getDetails().get("isClient");
             Long minimaPort = (Long) greeting.getDetails().get("minimaPort");
+            Long numClients = (Long) greeting.getDetails().get("numClients");
 
             InetSocketAddress address = new InetSocketAddress(client.getHost(), minimaPort.intValue());
             client.setMinimaAddress(address);
@@ -216,27 +217,38 @@ public class P2PMessageProcessor extends MessageProcessor {
             // Update State
             if (client.isIncoming()) {
                 if (isClient) {
-                    this.getState().addClientLink(address);
+                    state.addClientLink(address);
                 } else {
-                    this.getState().addInLink(address);
+                    state.addInLink(address);
                 }
-                this.getState().addToInLinkClientUidToMinimaAddress(client.getUID(), address);
+                state.addToInLinkClientUidToMinimaAddress(client.getUID(), address);
             } else {
-                this.getState().addOutLink(address);
+                state.addOutLink(address);
             }
 
-            if (state.getRequestSwapOnConnect().contains(client.getMinimaAddress())) {
-                P2PMsgSwapLink swapLink = new P2PMsgSwapLink();
-                swapLink.setSwapTarget(state.getAddress());
-                client.PostMessage(new Message(MinimaClient.NETMESSAGE_P2P_SWAP_LINK).addObject("data", swapLink));
-                state.removeRequestSwapOnConnect(client.getMinimaAddress());
-            }
-
-            // If we have no nodes to connect to, we add this node into the list
             if (!isClient) {
+
+                if (state.getRequestSwapOnConnect().contains(client.getMinimaAddress())) {
+                    P2PMsgSwapLink swapLink = new P2PMsgSwapLink();
+                    swapLink.setSwapTarget(state.getAddress());
+                    client.PostMessage(new Message(MinimaClient.NETMESSAGE_P2P_SWAP_LINK).addObject("data", swapLink));
+                    state.removeRequestSwapOnConnect(client.getMinimaAddress());
+                }
+
                 log.info("Adding node to RandomNodeSet");
-                if (!this.getState().getRandomNodeSet().contains(address)) {
-                    this.getState().addRandomNodeSet(address);
+                if (!state.getRandomNodeSet().contains(address)) {
+                    state.addRandomNodeSet(address);
+                }
+            }
+
+            if (state.isRendezvousComplete() && state.getClientLinks().size() < state.getNumLinks() * 4){
+                int numClientSlotsAvailable = (state.getNumLinks() * 4) - state.getClientLinks().size();
+                int numSwaps = Math.min(numClients.intValue() / 2, numClientSlotsAvailable);
+                for(int i = 0; i < numSwaps; i++){
+                    P2PMsgSwapLink swapLink = new P2PMsgSwapLink();
+                    swapLink.setSwapTarget(state.getAddress());
+                    swapLink.setSwapClientReq(true);
+                    client.PostMessage(new Message(MinimaClient.NETMESSAGE_P2P_SWAP_LINK).addObject("data", swapLink));
                 }
             }
         } else {
@@ -245,15 +257,19 @@ public class P2PMessageProcessor extends MessageProcessor {
     }
 
     private void processOnRendezvousMsg(Message zMessage) {
+        if (state.isRendezvousComplete()){
+            return;
+        }
+        
         P2PMsgRendezvous rendezvous = (P2PMsgRendezvous) zMessage.getObject("rendezvous");
         MinimaClient client = (MinimaClient) zMessage.getObject("client");
-        rendezvous.getAddresses().forEach(x -> this.getState().addRandomNodeSet(x));
-        this.getState().setRendezvousComplete(true);
+        rendezvous.getAddresses().forEach(state::addRandomNodeSet);
+        state.setRendezvousComplete(true);
 
         TimerMessage shutdownMsg = new TimerMessage(1_000, P2P_DISCONNECT);
         shutdownMsg.addObject("client", client);
         shutdownMsg.addInteger("attempt", 0);
-        shutdownMsg.addString("reason", "Disconnecting After Rendezvous");
+        shutdownMsg.addString("reason", "Disconnecting After Rendezvous ");
         PostTimerMessage(shutdownMsg);
     }
 
@@ -362,6 +378,27 @@ public class P2PMessageProcessor extends MessageProcessor {
             log.debug("[-] P2P_DO_SWAP not sent for conditional swap - not enough inLinks: " + state.getInLinks().size());
             return;
         }
+        if(swapLink.isSwapClientReq()){
+            InetSocketAddress addressToDoSwap = P2PFunctions.SelectRandomAddress(state.getClientLinks());
+
+            ArrayList<MinimaClient> clients = getCurrentMinimaClients().stream().filter(x -> !state.getDisconnectingClients().contains(x.getUID())).collect(Collectors.toCollection(ArrayList::new));
+
+            log.debug("[!] P2P_SWAP_LINK Num Clients post filter: " + clients.size() + " num disconnecting clients: " + state.getDisconnectingClients().size() + " num clients: " + getCurrentMinimaClients().size());
+            MinimaClient minimaClient = P2PFunctions.getClientForInetAddress(addressToDoSwap, clients, true);
+            if (minimaClient != null) {
+                log.debug("[+] P2P_DO_SWAP CLIENT Sending do swap message to client");
+                state.addDisconnectingClient(minimaClient.getUID());
+                Message doSwap = new Message(MinimaClient.NETMESSAGE_P2P_DO_SWAP);
+                P2PMsgDoSwap msgDoSwap = new P2PMsgDoSwap();
+                msgDoSwap.setSecret(swapLink.getSecret());
+                msgDoSwap.setSwapTarget(swapLink.getSwapTarget());
+                doSwap.addObject("data", msgDoSwap);
+                minimaClient.PostMessage(doSwap);
+            } else {
+                log.debug("[-] P2P_DO_SWAP not sent swap - no clients available");
+
+            }
+        } else{
         ArrayList<InetSocketAddress> filteredInLinks = (ArrayList<InetSocketAddress>) state.getInLinks().stream()
                 .filter(x -> !x.equals(swapLink.getSwapTarget()))
                 .collect(Collectors.toList());
@@ -385,6 +422,7 @@ public class P2PMessageProcessor extends MessageProcessor {
                 log.debug("[-] P2P_DO_SWAP not sent swap - no inLinks that are not the swap target");
 
             }
+        }
 //            else {
 //                TimerMessage timerMessage = new TimerMessage(1_000, zMessage.getMessageType());
 //                timerMessage.addObject("data", swapLink);
@@ -417,7 +455,7 @@ public class P2PMessageProcessor extends MessageProcessor {
             state.setSetupComplete(true);
         }
         if(!state.isSetupComplete()) {
-            ArrayList<Message> msgs = P2PFunctions.Join(this.getState(), getCurrentMinimaClients());
+            ArrayList<Message> msgs = P2PFunctions.Join(state, getCurrentMinimaClients());
             msgs.forEach(this::PostMessage);
         }
         if (this.state.dropExpiredMessages()) {
@@ -439,18 +477,17 @@ public class P2PMessageProcessor extends MessageProcessor {
     }
 
     private void processWalkLinksMsg(Message zMessage) {
-//        log.debug("P2P Walk Links Msg Processing");
         P2PMsgWalkLinks msgWalkLinks = (P2PMsgWalkLinks) zMessage.getObject("walkLinksMsg");
         InetSocketAddress nextHop;
         if (msgWalkLinks.isReturning()) {
-            nextHop = msgWalkLinks.getPreviousNode(this.getState().getAddress());
+            nextHop = msgWalkLinks.getPreviousNode(state.getAddress());
         } else {
             // Outbound
-            msgWalkLinks.addHopToPath(this.getState().getAddress());
+            msgWalkLinks.addHopToPath(state.getAddress());
 
             if (msgWalkLinks.getNumHopsToGo() == 0) {
                 msgWalkLinks.setReturning(true);
-                nextHop = msgWalkLinks.getPreviousNode(this.getState().getAddress());
+                nextHop = msgWalkLinks.getPreviousNode(state.getAddress());
                 sendSwapLinkMsgIfOutWalk(msgWalkLinks);
                 if (!msgWalkLinks.isWalkInLinks()) {
                     nextHop = null;
@@ -478,7 +515,7 @@ public class P2PMessageProcessor extends MessageProcessor {
                 if (nextHop == null){
                     msgWalkLinks.setReturning(true);
                     if (msgWalkLinks.isWalkInLinks()) {
-                        nextHop = msgWalkLinks.getPreviousNode(this.getState().getAddress());
+                        nextHop = msgWalkLinks.getPreviousNode(state.getAddress());
                     } else {
                         sendSwapLinkMsgIfOutWalk(msgWalkLinks);
                     }
@@ -510,12 +547,12 @@ public class P2PMessageProcessor extends MessageProcessor {
         if (msg.isWalkInLinks()) {
             InetSocketAddress finalAddress = msg.getPathTaken().get(msg.getPathTaken().size() - 1);
             if (!finalAddress.equals(this.state.getAddress())) {
-                if (!this.getState().getRandomNodeSet().contains(finalAddress)) {
-                    this.getState().addRandomNodeSet(finalAddress);
+                if (!state.getRandomNodeSet().contains(finalAddress)) {
+                    state.addRandomNodeSet(finalAddress);
                 }
                 if (this.state.getOutLinks().size() < this.state.getNumLinks()) {
                     if (msg.isJoiningWalk()) {
-                        this.getState().addRequestSwapOnConnect(finalAddress);
+                        state.addRequestSwapOnConnect(finalAddress);
                     }
                     PostMessage(new Message(P2P_CONNECT).addObject("address", finalAddress).addString("reason", "For completed connection walk"));
                 } else {
