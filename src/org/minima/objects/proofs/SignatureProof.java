@@ -36,6 +36,7 @@ public class SignatureProof extends Proof {
 		JSONObject json = new JSONObject();
 		json.put("signature", mSignature.to0xString());
 		json.put("proof", super.toJSON());
+		json.put("publickey", getFinalHash().to0xString());
 		return json;
 	}
 	

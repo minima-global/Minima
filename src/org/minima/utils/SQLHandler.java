@@ -178,10 +178,10 @@ public class SQLHandler {
 				String path = minidappdatabase.getAbsolutePath();
 				
 				//Use H2 JDBC
-				mDataBase = "jdbc:h2:"+path;
+				mDataBase = "jdbc:h2:"+path+";MODE=MySQL";
 			}else {
 				//Use H2 JDBC
-				mDataBase = "jdbc:h2:"+zMiniDAppID;
+				mDataBase = "jdbc:h2:"+zMiniDAppID+";MODE=MySQL";
 			}
 			
 			//Get the connection
@@ -322,7 +322,7 @@ public class SQLHandler {
 //			handle.close(true);
 			
 			
-			String jdbc 	= "jdbc:h2:~/temp/binarytester";
+			String jdbc 	= "jdbc:h2:~/temp/binarytester;MODE=MySQL";
 			
 			Connection conn = DriverManager.getConnection(jdbc, "SA", "");
 			
@@ -330,7 +330,7 @@ public class SQLHandler {
 			Statement stmt = conn.createStatement();
 			
 			//Run some SQL..
-			String query = "CREATE DATABASE IF NOT EXISTS mydata;";
+			String query = "CREATE SCHEMA IF NOT EXISTS mydata;";
 			stmt.execute(query);
 			
 			
