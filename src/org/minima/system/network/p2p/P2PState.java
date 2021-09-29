@@ -2,6 +2,7 @@ package org.minima.system.network.p2p;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.minima.objects.base.MiniData;
 import org.minima.utils.messages.Message;
 
@@ -13,11 +14,13 @@ import java.util.Map;
 
 @Getter
 @Setter
+@Slf4j
 public class P2PState {
 
     private final int numLinks;
     private boolean isClient = false;
     private boolean isRendezvousComplete = false;
+    private boolean isSetupComplete = false;
     private InetSocketAddress address;
     private final File p2pDataFile;
 
@@ -86,6 +89,7 @@ public class P2PState {
 
     public void addInLink(InetSocketAddress address) {
         this.inLinks.add(address);
+        log.debug(this.genPrintableState());
     }
 
     public boolean removeInLink(String uid) {
@@ -95,6 +99,7 @@ public class P2PState {
 
     public void addOutLink(InetSocketAddress address) {
         this.outLinks.add(address);
+        log.debug(this.genPrintableState());
     }
 
     public boolean removeOutLink(InetSocketAddress address) {
@@ -103,6 +108,7 @@ public class P2PState {
 
     public void addClientLink(InetSocketAddress address) {
         this.clientLinks.add(address);
+        log.debug(this.genPrintableState());
     }
 
     public boolean removeClientLink(String uid) {
@@ -131,6 +137,7 @@ public class P2PState {
         this.inLinks.remove(outLinkAddress);
         this.outLinks.remove(outLinkAddress);
         this.clientLinks.remove(outLinkAddress);
+        log.debug(this.genPrintableState());
     }
 
     public void addRandomNodeSet(InetSocketAddress address) {
@@ -150,6 +157,6 @@ public class P2PState {
     }
 
     public boolean dropExpiredMessages() {
-        return expiringMessageMap.values().removeIf(x -> x.getTimestamp() < System.currentTimeMillis() - 2_000);
+        return expiringMessageMap.values().removeIf(x -> x.getTimestamp() < System.currentTimeMillis() - 5_000);
     }
 }

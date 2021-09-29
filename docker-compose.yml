@@ -22,3 +22,8 @@ services:
           - minima_peer
     depends_on:
       - minima_one
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 500M

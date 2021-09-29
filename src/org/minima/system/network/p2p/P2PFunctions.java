@@ -191,6 +191,7 @@ public class P2PFunctions {
                         InetSocketAddress nextHop = P2PFunctions.SelectRandomAddress(state.getOutLinks());
                         MinimaClient minimaClient = getClientForInetAddress(nextHop, clients, false);
                         if (minimaClient != null) {
+                            log.debug("[+] P2P_JOIN Starting new join walk");
                             Message walkMsg = new Message(MinimaClient.NETCLIENT_P2P_WALK_LINKS);
                             walkMsg.addObject("data", walkLinks);
                             minimaClient.PostMessage(walkMsg);

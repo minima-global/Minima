@@ -1,6 +1,5 @@
 package org.minima.system.network.p2p;
 
-import javafx.geometry.Pos;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.minima.objects.greet.Greeting;
@@ -270,23 +269,24 @@ public class P2PMessageProcessor extends MessageProcessor {
         log.debug(this.state.genPrintableState());
         MinimaClient client = (MinimaClient) zMessage.getObject("client");
         String uid = zMessage.getString("uid");
-        log.debug("[!] Disconnected from " + this.state.getInLinkClientUidToMinimaAddress().get(uid));
-        if (client.isIncoming() && state.getInLinks().contains(client.getMinimaAddress())){
+        log.debug("[!] P2P_ON_DISCONNECT Disconnected from isInLink?" + client.isIncoming() + " IP: " + client.getMinimaAddress());
+        if (!client.isIncoming() && state.getOutLinks().size() <= state.getNumLinks()){
             // Replace Outlink
             P2PMsgWalkLinks walkLinks = new P2PMsgWalkLinks(true, true);
             InetSocketAddress nextHop = P2PFunctions.SelectRandomAddress(state.getInLinks());
             MinimaClient minimaClient = P2PFunctions.getClientForInetAddress(nextHop, getCurrentMinimaClients(), true);
             if (minimaClient != null) {
+                log.debug("[+] P2P_ON_DISCONNECT P2P_WALK Starting inLink walk to replace lost outLink neighbour");
                 Message walkMsg = new Message(MinimaClient.NETCLIENT_P2P_WALK_LINKS);
                 walkMsg.addObject("data", walkLinks);
                 minimaClient.PostMessage(walkMsg);
                 state.dropExpiredMessages();
                 state.getExpiringMessageMap().put(walkLinks.getSecret(), new ExpiringMessage(new Message(P2PMessageProcessor.P2P_WALK_LINKS).addObject("data", walkLinks)));
             } else {
-                log.warn("MinimaClient for " + nextHop + " does not exist in clients list for inlink");
+                log.warn("[-] P2P_ON_DISCONNECT MinimaClient for " + nextHop + " does not exist in clients list for inlink");
             }
         }
-        if (!client.isIncoming()){
+        if (client.isIncoming() && state.getInLinks().contains(client.getMinimaAddress()) && state.getInLinks().size() <= state.getNumLinks()){
             // Replace Inlink
             P2PMsgWalkLinks walkLinks = new P2PMsgWalkLinks(false, false);
             InetSocketAddress nextHop = P2PFunctions.SelectRandomAddress(state.getOutLinks());
@@ -296,13 +296,14 @@ public class P2PMessageProcessor extends MessageProcessor {
             }
             MinimaClient minimaClient = P2PFunctions.getClientForInetAddress(nextHop, getCurrentMinimaClients(), false);
             if (minimaClient != null) {
+                log.debug("[+] P2P_ON_DISCONNECT P2P_WALK Starting outLink walk to replace lost inLink neighbour");
                 Message walkMsg = new Message(MinimaClient.NETCLIENT_P2P_WALK_LINKS);
                 walkMsg.addObject("data", walkLinks);
                 minimaClient.PostMessage(walkMsg);
                 state.dropExpiredMessages();
                 state.getExpiringMessageMap().put(walkLinks.getSecret(), new ExpiringMessage(new Message(P2PMessageProcessor.P2P_WALK_LINKS).addObject("data", walkLinks)));
             } else {
-                log.warn("MinimaClient for " + nextHop + " does not exist in clients list for outlink");
+                log.warn("[-] P2P_ON_DISCONNECT MinimaClient for " + nextHop + " does not exist in clients list for outlink");
             }
         }
         state.removeDisconnectingClient(client.getUID());
@@ -331,7 +332,7 @@ public class P2PMessageProcessor extends MessageProcessor {
     private void processDisconnectMsg(Message zMessage) {
         MinimaClient client = (MinimaClient) zMessage.getObject("client");
         String reason = zMessage.getString("reason");
-        log.debug("[!] Disconnecting from " + client.getMinimaAddress() + " for: " + reason);
+        log.debug("[!] P2P_DISCONNECT Disconnecting from isInLink? " +client.isIncoming() + " IP: " + client.getMinimaAddress() + " for: " + reason);
         int attempt = zMessage.getInteger("attempt");
         if (this.state.getOutLinks().contains(client.getMinimaAddress()) ||
                 this.state.getInLinks().contains(client.getMinimaAddress()) ||
@@ -358,8 +359,8 @@ public class P2PMessageProcessor extends MessageProcessor {
     private void processSwapLinkMsg(Message zMessage) {
         P2PMsgSwapLink swapLink = (P2PMsgSwapLink) zMessage.getObject("data");
         if (swapLink.isConditionalSwapReq() && state.getInLinks().size() < state.getNumLinks()) {
+            log.debug("[-] P2P_DO_SWAP not sent for conditional swap - not enough inLinks: " + state.getInLinks().size());
             return;
-
         }
         ArrayList<InetSocketAddress> filteredInLinks = (ArrayList<InetSocketAddress>) state.getInLinks().stream()
                 .filter(x -> !x.equals(swapLink.getSwapTarget()))
@@ -369,9 +370,10 @@ public class P2PMessageProcessor extends MessageProcessor {
 
             ArrayList<MinimaClient> clients = getCurrentMinimaClients().stream().filter(x -> !state.getDisconnectingClients().contains(x.getUID())).collect(Collectors.toCollection(ArrayList::new));
 
-            log.debug("[!] Num Clients post filter: " + clients.size() + " num disconnecting clients: " + state.getDisconnectingClients().size() + " num clients: " + getCurrentMinimaClients().size());
+            log.debug("[!] P2P_SWAP_LINK Num Clients post filter: " + clients.size() + " num disconnecting clients: " + state.getDisconnectingClients().size() + " num clients: " + getCurrentMinimaClients().size());
             MinimaClient minimaClient = P2PFunctions.getClientForInetAddress(addressToDoSwap, clients, true);
             if (minimaClient != null) {
+                log.debug("[+] P2P_DO_SWAP Sending do swap message");
                 state.addDisconnectingClient(minimaClient.getUID());
                 Message doSwap = new Message(MinimaClient.NETMESSAGE_P2P_DO_SWAP);
                 P2PMsgDoSwap msgDoSwap = new P2PMsgDoSwap();
@@ -380,10 +382,14 @@ public class P2PMessageProcessor extends MessageProcessor {
                 doSwap.addObject("data", msgDoSwap);
                 minimaClient.PostMessage(doSwap);
             } else {
-                TimerMessage timerMessage = new TimerMessage(1_000, zMessage.getMessageType());
-                timerMessage.addObject("data", swapLink);
-                PostTimerMessage(timerMessage);
+                log.debug("[-] P2P_DO_SWAP not sent swap - no inLinks that are not the swap target");
+
             }
+//            else {
+//                TimerMessage timerMessage = new TimerMessage(1_000, zMessage.getMessageType());
+//                timerMessage.addObject("data", swapLink);
+//                PostTimerMessage(timerMessage);
+//            }
         }
 
     }
@@ -407,15 +413,29 @@ public class P2PMessageProcessor extends MessageProcessor {
     }
 
     private void processLoopMsg(Message zMessage) {
-        log.debug(this.state.genPrintableState());
-        ArrayList<Message> msgs = P2PFunctions.Join(this.getState(), getCurrentMinimaClients());
-        msgs.forEach(this::PostMessage);
+        if (state.getOutLinks().size() == state.getNumLinks()){
+            state.setSetupComplete(true);
+        }
+        if(!state.isSetupComplete()) {
+            ArrayList<Message> msgs = P2PFunctions.Join(this.getState(), getCurrentMinimaClients());
+            msgs.forEach(this::PostMessage);
+        }
         if (this.state.dropExpiredMessages()) {
             log.debug("[!] P2P Network messages timed out");
         }
 
 
         PostTimerMessage(new TimerMessage(10_000, P2P_LOOP));
+    }
+
+    private void sendSwapLinkMsgIfOutWalk(P2PMsgWalkLinks msgWalkLinks){
+        if (!msgWalkLinks.isWalkInLinks()) {
+            P2PMsgSwapLink swapLink = new P2PMsgSwapLink();
+            swapLink.setSecret(msgWalkLinks.getSecret());
+            swapLink.setSwapTarget(msgWalkLinks.getPathTaken().get(0));
+            swapLink.setConditionalSwapReq(true);
+            PostMessage(new Message(P2P_SWAP_LINK).addObject("data", swapLink));
+        }
     }
 
     private void processWalkLinksMsg(Message zMessage) {
@@ -425,35 +445,43 @@ public class P2PMessageProcessor extends MessageProcessor {
         if (msgWalkLinks.isReturning()) {
             nextHop = msgWalkLinks.getPreviousNode(this.getState().getAddress());
         } else {
+            // Outbound
             msgWalkLinks.addHopToPath(this.getState().getAddress());
 
             if (msgWalkLinks.getNumHopsToGo() == 0) {
                 msgWalkLinks.setReturning(true);
                 nextHop = msgWalkLinks.getPreviousNode(this.getState().getAddress());
+                sendSwapLinkMsgIfOutWalk(msgWalkLinks);
                 if (!msgWalkLinks.isWalkInLinks()) {
-                    P2PMsgSwapLink swapLink = new P2PMsgSwapLink();
-                    swapLink.setSecret(msgWalkLinks.getSecret());
-                    swapLink.setSwapTarget(msgWalkLinks.getPathTaken().get(0));
-                    swapLink.setConditionalSwapReq(true);
-                    PostMessage(new Message(P2P_SWAP_LINK).addObject("data", swapLink));
-                    // No need to return the message as this is to just replace an inLink
                     nextHop = null;
                 }
+
             } else {
                 if (msgWalkLinks.isWalkInLinks()) {
                     ArrayList<InetSocketAddress> filteredInLinks = (ArrayList<InetSocketAddress>) state.getInLinks().stream()
                             .filter(x -> msgWalkLinks.getPathTaken().stream().noneMatch(x::equals))
                             .collect(Collectors.toList());
+                    if (filteredInLinks.isEmpty()){
+                        log.debug("[-] P2P_WALK_LINKS no inLinks for the next hop. Origin address: "+ msgWalkLinks.getPathTaken().get(0));
+                    }
                     nextHop = P2PFunctions.SelectRandomAddress(filteredInLinks);
                 } else {
                     ArrayList<InetSocketAddress> filteredOutLinks = (ArrayList<InetSocketAddress>) state.getOutLinks().stream()
                             .filter(x -> msgWalkLinks.getPathTaken().stream().noneMatch(x::equals))
                             .collect(Collectors.toList());
+                    if (filteredOutLinks.isEmpty()){
+                        log.debug("[-] P2P_WALK_LINKS no outLinks for the next hop. Origin address: "+ msgWalkLinks.getPathTaken().get(0));
+                    }
                     nextHop = P2PFunctions.SelectRandomAddress(filteredOutLinks);
                 }
+
                 if (nextHop == null){
                     msgWalkLinks.setReturning(true);
-                    nextHop = msgWalkLinks.getPreviousNode(this.getState().getAddress());
+                    if (msgWalkLinks.isWalkInLinks()) {
+                        nextHop = msgWalkLinks.getPreviousNode(this.getState().getAddress());
+                    } else {
+                        sendSwapLinkMsgIfOutWalk(msgWalkLinks);
+                    }
                 }
             }
 
@@ -462,25 +490,22 @@ public class P2PMessageProcessor extends MessageProcessor {
         if (nextHop != null) {
             MinimaClient minimaClient = P2PFunctions.getClientForInetAddressEitherDirection(nextHop, getCurrentMinimaClients());
             if (minimaClient != null) {
+                log.debug("[+] P2P_WALK_LINKS Sending message to: " + nextHop + " isReturning: " + msgWalkLinks.isReturning());
                 Message walkMsg = new Message(MinimaClient.NETCLIENT_P2P_WALK_LINKS);
                 walkMsg.addObject("data", msgWalkLinks);
                 sendMessage(minimaClient, walkMsg);
             } else {
-                TimerMessage timerMessage = new TimerMessage(1_000, zMessage.getMessageType());
-                timerMessage.addObject("msgWalkLinks", zMessage.getObject("walkLinksMsg"));
-                PostTimerMessage(timerMessage);
-                log.warn("MinimaClient for " + nextHop + " does not exist");
+                log.warn("[-] P2P_WALK_LINKS MinimaClient for " + nextHop + " does not exist");
             }
-        } else {
-
-            processReturnedWalkMsg(msgWalkLinks);
-
         }
 
+        if (state.getAddress().equals(msgWalkLinks.getPathTaken().get(0))) {
+            processReturnedWalkMsg(msgWalkLinks);
+        }
     }
 
     public void processReturnedWalkMsg(P2PMsgWalkLinks msg) {
-        log.debug("We've returned to the start after hops: " + msg.getPathTaken().size() + " end node address: " + msg.getPathTaken().get(msg.getPathTaken().size() -1));
+        log.debug("[+] P2P_WALK_LINKS returned to the start after hops: " + msg.getPathTaken().size() + " end node address: " + msg.getPathTaken().get(msg.getPathTaken().size() -1));
 
         if (msg.isWalkInLinks()) {
             InetSocketAddress finalAddress = msg.getPathTaken().get(msg.getPathTaken().size() - 1);
