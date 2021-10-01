@@ -90,10 +90,11 @@ public class MinimaReader implements Runnable {
 
 	public static final MiniByte NETMESSAGE_P2P_RENDEZVOUS		     = new MiniByte(8);
 	public static final MiniByte NETMESSAGE_P2P_WALK_LINKS		     = new MiniByte(9);
-	public static final MiniByte NETMESSAGE_P2P_SWAP_LINK		     = new MiniByte(10);
-	public static final MiniByte NETMESSAGE_P2P_DO_SWAP			     = new MiniByte(11);
-	public static final MiniByte NETMESSAGE_P2P_MAP_NETWORK		     = new MiniByte(12);
-	public static final MiniByte NETMESSAGE_P2P_MAP_NETWORK_RESPONSE = new MiniByte(13);
+	public static final MiniByte NETMESSAGE_P2P_WALK_LINKS_RESPONSE  = new MiniByte(10);
+	public static final MiniByte NETMESSAGE_P2P_SWAP_LINK		     = new MiniByte(11);
+	public static final MiniByte NETMESSAGE_P2P_DO_SWAP			     = new MiniByte(12);
+	public static final MiniByte NETMESSAGE_P2P_MAP_NETWORK		     = new MiniByte(13);
+	public static final MiniByte NETMESSAGE_P2P_MAP_NETWORK_RESPONSE = new MiniByte(14);
 
 	/**
 	 * Netclient owner
@@ -314,9 +315,14 @@ public class MinimaReader implements Runnable {
 				}else if(msgtype.isEqual(NETMESSAGE_P2P_WALK_LINKS)) {
 					P2PMsgWalkLinks msgWalkLinks = P2PMsgWalkLinks.ReadFromStream(inputstream);
 					Message msg = new Message(P2PMessageProcessor.P2P_WALK_LINKS)
-							.addObject("walkLinksMsg", msgWalkLinks);
+							.addObject("data", msgWalkLinks);
 					mNetClient.getNetworkHandler().getP2PMessageProcessor().PostMessage(msg);
 
+				}else if(msgtype.isEqual(NETMESSAGE_P2P_WALK_LINKS_RESPONSE)) {
+					P2PMsgWalkLinks msgWalkLinks = P2PMsgWalkLinks.ReadFromStream(inputstream);
+					Message msg = new Message(P2PMessageProcessor.P2P_WALK_LINKS_RESPONSE)
+							.addObject("data", msgWalkLinks);
+					mNetClient.getNetworkHandler().getP2PMessageProcessor().PostMessage(msg);
 				}else if(msgtype.isEqual(NETMESSAGE_P2P_SWAP_LINK)) {
 					P2PMsgSwapLink data = P2PMsgSwapLink.ReadFromStream(inputstream);
 					Message msg = new Message(P2PMessageProcessor.P2P_SWAP_LINK)

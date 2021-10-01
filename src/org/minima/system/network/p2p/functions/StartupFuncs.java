@@ -1,16 +1,19 @@
-package org.minima.system.network.p2p;
+package org.minima.system.network.p2p.functions;
 
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.checkerframework.checker.units.qual.A;
-import org.minima.Start;
+import org.minima.objects.greet.Greeting;
 import org.minima.system.network.base.MinimaClient;
-import org.minima.system.network.p2p.messages.P2PMsgWalkLinks;
+import org.minima.system.network.p2p.messages.*;
+import org.minima.system.network.p2p.P2PMessageProcessor;
+import org.minima.system.network.p2p.P2PState;
 import org.minima.system.network.rpc.RPCClient;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.messages.Message;
+import org.minima.utils.messages.TimerMessage;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
@@ -20,14 +23,13 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.*;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Slf4j(topic="P2P")
-public class P2PFunctions {
+public class StartupFuncs {
 
     private static final String IPV4_PATTERN =
             "^(([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])(\\.(?!$)|$)){4}$";
@@ -138,6 +140,8 @@ public class P2PFunctions {
     }
 
 
+
+
     /**
      * PRECONDITION: Arrays A and B are provided
      * @param state
@@ -151,21 +155,103 @@ public class P2PFunctions {
                 .flatMap(Collection::stream).distinct().limit(numAddrToReturn).collect(Collectors.toCollection(ArrayList::new));
     }
 
-    public static void WalkLinks(P2PState state, boolean inDirection, int numHops) {
+    public static TimerMessage processOnRendezvousMsg(P2PState state, P2PMsgRendezvous rendezvous, MinimaClient client) {
 
+        rendezvous.getAddresses().forEach(state::addRandomNodeSet);
+        state.setRendezvousComplete(true);
+
+        TimerMessage shutdownMsg = new TimerMessage(P2PState.RENDEZVOUS_SHUTDOWN_DELAY, P2PMessageProcessor.P2P_DISCONNECT);
+        shutdownMsg.addObject("client", client);
+        shutdownMsg.addInteger("attempt", 0);
+        shutdownMsg.addString("reason", "Disconnecting After Rendezvous ");
+        return shutdownMsg;
     }
 
-    public static InetSocketAddress SelectRandomAddress(ArrayList<InetSocketAddress> addresses){
-        assert !addresses.isEmpty() : "Attempting to select from an empty list";
-        InetSocketAddress returnAddress = null;
-        if (!addresses.isEmpty()) {
-            int idx = 0;
-            if (addresses.size() > 1) {
-                idx = ThreadLocalRandom.current().nextInt(addresses.size() - 1);
+    /*
+     * SITUATIONS:
+     * 1) Message is from a none p2p node
+     * 2) Message is from a client
+     *
+     */
+    public static ArrayList<Message> onGreetedMsg(P2PState state,  Greeting greeting, MinimaClient client) {
+        ArrayList<Message> retMsgs = new ArrayList<>();
+        // If this message is coming from a p2p aware minima version
+        if (greeting.getDetails().containsKey("isClient")) {
+
+            boolean isClient = (boolean) greeting.getDetails().get("isClient");
+            Long minimaPort = (Long) greeting.getDetails().get("minimaPort");
+            Long numClients = (Long) greeting.getDetails().get("numClients");
+
+            InetSocketAddress address = new InetSocketAddress(client.getHost(), minimaPort.intValue());
+            client.setMinimaAddress(address);
+
+            // Update State
+            StartupFuncs.updateLinks(state, client, isClient);
+
+            if (!isClient) {
+                // Greet P2P Node
+                Message returnMessage = StartupFuncs.onGreetP2PNode(state, client);
+                if (returnMessage != null){
+                    retMsgs.add(returnMessage);
+                }
+
+                if (client.isIncoming()){
+                    state.setNumInLinkDisconnects(state.getNumInLinkDisconnects() - 1);
+                }
+
+                if (state.isRendezvousComplete() && state.getClientLinks().size() > state.getNumLinks() * 2) {
+                    // If we have
+                    retMsgs.addAll(StartupFuncs.genClientLoadBalanceRequests(state, numClients));
+                }
             }
-            returnAddress = addresses.get(idx);
+
         }
-        return  returnAddress;
+        return retMsgs;
+    }
+
+    public static void updateLinks(P2PState state, MinimaClient client, boolean isClient) {
+
+        if (client.isIncoming()) {
+            if (isClient) {
+                state.addClientLink(client.getMinimaAddress());
+            } else {
+                state.addInLink(client.getMinimaAddress());
+            }
+        } else {
+            state.addOutLink(client.getMinimaAddress());
+        }
+        log.debug(state.genPrintableState());
+    }
+
+    public static Message onGreetP2PNode(P2PState state, MinimaClient client){
+        Message ret = null;
+        if (state.getRequestSwapOnConnect().contains(client.getMinimaAddress())) {
+            P2PMsgSwapLink swapLink = new P2PMsgSwapLink();
+            swapLink.setSwapTarget(state.getAddress());
+
+            ret = new Message(MinimaClient.NETMESSAGE_P2P_SWAP_LINK).addObject("data", swapLink);
+
+            state.removeRequestSwapOnConnect(client.getMinimaAddress());
+        }
+
+        log.info("Adding node to RandomNodeSet");
+        if (!state.getRandomNodeSet().contains(client.getMinimaAddress())) {
+            state.addRandomNodeSet(client.getMinimaAddress());
+        }
+        return ret;
+    }
+
+    public static ArrayList<Message> genClientLoadBalanceRequests(P2PState state, Long numClients){
+        ArrayList<Message> retMsgs = new ArrayList<>();
+        int numClientSlotsAvailable = (state.getNumLinks() * 4) - state.getClientLinks().size();
+        int numSwaps = Math.min(numClients.intValue() / 2, numClientSlotsAvailable);
+        for (int i = 0; i < numSwaps; i++) {
+            P2PMsgSwapLink swapLink = new P2PMsgSwapLink();
+            swapLink.setSwapTarget(state.getAddress());
+            swapLink.setSwapClientReq(true);
+            retMsgs.add(new Message(MinimaClient.NETMESSAGE_P2P_SWAP_LINK).addObject("data", swapLink));
+        }
+        return retMsgs;
     }
 
     public static ArrayList<Message> Join(P2PState state, ArrayList<MinimaClient> clients) {
@@ -176,7 +262,7 @@ public class P2PFunctions {
             // connect
             if (!state.getRandomNodeSet().isEmpty()) {
                 if (state.getOutLinks().isEmpty()){
-                    InetSocketAddress address = P2PFunctions.SelectRandomAddress(state.getRandomNodeSet());
+                    InetSocketAddress address = UtilFuncs.SelectRandomAddress(state.getRandomNodeSet());
                     log.info("Joining: " + address);
                     msgs.add(new Message(P2PMessageProcessor.P2P_CONNECT).addObject("address", address).addString("reason", "Entry node connection"));
                 }
@@ -184,11 +270,11 @@ public class P2PFunctions {
                     int outLinksNeeded = state.getNumLinks() - state.getOutLinks().size();
                     int maxMsgsToSend = 10 - state.countActiveMessagesOfType(P2PMessageProcessor.P2P_WALK_LINKS);
                     int msgsToSend = Math.min(outLinksNeeded, maxMsgsToSend);
-                    for (int i = 0; i < msgsToSend; i++) {
+                    if (msgsToSend > 0){
                         P2PMsgWalkLinks walkLinks = new P2PMsgWalkLinks(true, true);
                         walkLinks.addHopToPath(state.getAddress());
-                        InetSocketAddress nextHop = P2PFunctions.SelectRandomAddress(state.getOutLinks());
-                        MinimaClient minimaClient = getClientForInetAddress(nextHop, clients, false);
+                        InetSocketAddress nextHop = UtilFuncs.SelectRandomAddress(state.getOutLinks());
+                        MinimaClient minimaClient = UtilFuncs.getClientForInetAddress(nextHop, clients, false);
                         if (minimaClient != null) {
                             log.debug("[+] P2P_JOIN Starting new join walk");
                             Message walkMsg = new Message(MinimaClient.NETCLIENT_P2P_WALK_LINKS);
@@ -206,56 +292,55 @@ public class P2PFunctions {
         return msgs;
     }
 
-    public static MinimaClient getClientForInetAddress(InetSocketAddress address, ArrayList<MinimaClient> clients, boolean isIncoming) {
-        MinimaClient returnClient = null;
-        if (address != null) {
-            for (MinimaClient client : clients) {
-                if (client != null)
-                {
-                    if (client.getMinimaAddress() != null)
-                    {
-                        if(client.getMinimaAddress().equals(address) && client.isIncoming() == isIncoming) {
-
-                            returnClient = client;
-                            break;
-                        }
-                    } else {
-                        log.debug("[-] Minima Address is null for client: " + client.getUID());
-                    }
-                } else {
-                    log.debug("[-] client is null");
-                }
+    public static Message onInLinkDisconnected(P2PState state, MinimaClient client, ArrayList<MinimaClient> minimaClients) {
+        Message returnMessage = null;
+        if (state.getInLinks().size() <= state.getNumLinks()) {
+            // Replace Inlink
+            P2PMsgWalkLinks walkLinks = new P2PMsgWalkLinks(false, false);
+            InetSocketAddress nextHop = UtilFuncs.SelectRandomAddress(state.getOutLinks());
+            if (nextHop == null) {
+                nextHop = UtilFuncs.SelectRandomAddress(state.getInLinks());
             }
-        } else {
-            log.debug("[-] address is null");
+            MinimaClient minimaClient = UtilFuncs.getClientForInetAddress(nextHop, minimaClients, false);
+            state.setNumInLinkDisconnects(state.getNumInLinkDisconnects() + 1);
+            returnMessage = genP2PWalkLinkMsg(state, minimaClient, walkLinks, nextHop);
         }
-        return returnClient;
+        if (client != null) {
+            state.removeDisconnectingClient(client.getUID());
+            state.removeLink(client.getMinimaAddress());
+        }
+        return returnMessage;
     }
 
+    public static Message onOutLinkDisconnected(P2PState state, MinimaClient client, ArrayList<MinimaClient> minimaClients) {
 
-    public static MinimaClient getClientForInetAddressEitherDirection(InetSocketAddress address, ArrayList<MinimaClient> clients) {
-        MinimaClient returnClient = null;
-        if (address != null) {
-            for (MinimaClient client : clients) {
-                if (client != null)
-                {
-                    if (client.getMinimaAddress() != null)
-                    {
-                        if(client.getMinimaAddress().equals(address)) {
-
-                            returnClient = client;
-                            break;
-                        }
-                    } else {
-                        log.debug("[-] Minima Address is null for client: " + client.getUID());
-                    }
-                } else {
-                    log.debug("[-] client is null");
-                }
-            }
-        } else {
-            log.debug("[-] address is null");
+        Message returnMessage = null;
+        if (state.getOutLinks().size() <= state.getNumLinks()) {
+            // Replace Outlink
+            P2PMsgWalkLinks walkLinks = new P2PMsgWalkLinks(true, true);
+            InetSocketAddress nextHop = UtilFuncs.SelectRandomAddress(state.getInLinks());
+            MinimaClient minimaClient = UtilFuncs.getClientForInetAddress(nextHop, minimaClients, true);
+            returnMessage = genP2PWalkLinkMsg(state, minimaClient, walkLinks, nextHop);
         }
-        return returnClient;
+
+        state.removeDisconnectingClient(client.getUID());
+        state.removeLink(client.getMinimaAddress());
+        return returnMessage;
+    }
+
+    public static Message genP2PWalkLinkMsg(P2PState state, MinimaClient minimaClient, P2PMsgWalkLinks walkLinks, InetSocketAddress nextHop){
+        Message retMsg = null;
+        if (minimaClient != null) {
+            log.debug("[+] P2P_ON_DISCONNECT P2P_WALK Starting inLink walk to replace lost outLink neighbour");
+            retMsg = new Message(P2PMessageProcessor.P2P_SEND_MESSAGE)
+                    .addObject("client", minimaClient)
+                    .addObject("message", new Message(MinimaClient.NETCLIENT_P2P_WALK_LINKS).addObject("data", walkLinks));
+            ExpiringMessage expiringMessage = new ExpiringMessage(new Message(P2PMessageProcessor.P2P_WALK_LINKS).addObject("data", walkLinks));
+            expiringMessage.setTimestamp(System.currentTimeMillis() + 5_000L);
+            state.getExpiringMessageMap().put(walkLinks.getSecret(), expiringMessage);
+        } else {
+            log.warn("[-] P2P_ON_DISCONNECT MinimaClient for " + nextHop + " does not exist in clients list for inlink");
+        }
+        return retMsg;
     }
 }

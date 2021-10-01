@@ -3,10 +3,9 @@ package org.minima.system.network.p2p;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.checkerframework.checker.units.qual.A;
 import org.minima.objects.base.MiniData;
+import org.minima.system.network.p2p.messages.ExpiringMessage;
 import org.minima.system.network.p2p.messages.P2PMsgMapNetwork;
-import org.minima.system.network.p2p.messages.P2PNode;
 import org.minima.utils.messages.Message;
 
 import java.io.File;
@@ -19,6 +18,8 @@ import java.util.Map;
 @Setter
 @Slf4j
 public class P2PState {
+
+    public static final int RENDEZVOUS_SHUTDOWN_DELAY = 1_000;
 
     private int numLinks;
     private boolean isClient = false;
@@ -33,16 +34,13 @@ public class P2PState {
 
     private ArrayList<InetSocketAddress> randomNodeSet = new ArrayList<>();
 
-    private Map<String, InetSocketAddress> inLinkClientUidToMinimaAddress = new HashMap<>();
-
     private Map<MiniData, ExpiringMessage> expiringMessageMap = new HashMap<>();
 
     private ArrayList<InetSocketAddress> requestSwapOnConnect = new ArrayList<>();
 
     private ArrayList<String> disconnectingClients = new ArrayList<>();
 
-    private Map<MiniData, ArrayList<P2PMsgMapNetwork>> networkMapRequests = new HashMap<>();
-    private Map<MiniData, MiniData> requestUIDtoMsgUID = new HashMap<>();
+    private int numInLinkDisconnects = 0;
 
     /**
      * Maps the hopped message secret to a routing message
@@ -68,11 +66,6 @@ public class P2PState {
         for (InetSocketAddress linkAddr : randomNodeSet) {
             randomStr.append("\n\t\t").append(linkAddr);
         }
-        StringBuilder mapStr = new StringBuilder();
-        for (String key : inLinkClientUidToMinimaAddress.keySet()) {
-            InetSocketAddress linkAddr = inLinkClientUidToMinimaAddress.get(key);
-            mapStr.append("\n\t\t").append(key).append(": ").append(linkAddr);
-        }
 
         return "\n[+] P2P State" +
                 "\n\tnumLinks: " + numLinks +
@@ -83,7 +76,6 @@ public class P2PState {
                 "\n\toutLinks: " + outLinksStr +
                 "\n\tclientLinks: " + clientLinksStr +
                 "\n\trandomNodeSet: " + randomStr +
-                "\n\tinLinkClientUidToMinimaAddress: " + mapStr +
                 "\n\texpiringMessageMap: " + expiringMessageMap.size();
     }
 
@@ -98,7 +90,6 @@ public class P2PState {
     }
 
     public boolean removeInLink(String uid) {
-        InetSocketAddress address = this.inLinkClientUidToMinimaAddress.remove(uid);
         return this.inLinks.remove(address);
     }
 
@@ -117,7 +108,6 @@ public class P2PState {
     }
 
     public boolean removeClientLink(String uid) {
-        InetSocketAddress address = this.inLinkClientUidToMinimaAddress.remove(uid);
         return this.clientLinks.remove(address);
     }
 
@@ -137,8 +127,7 @@ public class P2PState {
         return this.disconnectingClients.remove(uid);
     }
 
-    public void removeLink(String uid, InetSocketAddress outLinkAddress) {
-        this.inLinkClientUidToMinimaAddress.remove(uid);
+    public void removeLink(InetSocketAddress outLinkAddress) {
         this.inLinks.remove(outLinkAddress);
         this.outLinks.remove(outLinkAddress);
         this.clientLinks.remove(outLinkAddress);
@@ -153,12 +142,9 @@ public class P2PState {
         return this.randomNodeSet.remove(address);
     }
 
-    public void addToInLinkClientUidToMinimaAddress(String uid, InetSocketAddress minimaAddress) {
-        this.inLinkClientUidToMinimaAddress.put(uid, minimaAddress);
-    }
 
     public int countActiveMessagesOfType(String msgType) {
-        return (int) expiringMessageMap.values().stream().filter(x -> x.msg.isMessageType(msgType)).count();
+        return (int) expiringMessageMap.values().stream().filter(x -> x.getMsg().isMessageType(msgType)).count();
     }
 
     public ArrayList<ExpiringMessage> dropExpiredMessages() {

@@ -18,7 +18,7 @@ import org.minima.objects.greet.TxPoWList;
 import org.minima.system.Main;
 import org.minima.system.brains.ConsensusNet;
 import org.minima.system.network.NetworkHandler;
-import org.minima.system.network.p2p.P2PFunctions;
+import org.minima.system.network.p2p.functions.StartupFuncs;
 import org.minima.system.network.p2p.P2PMessageProcessor;
 import org.minima.system.network.p2p.messages.*;
 import org.minima.utils.MinimaLogger;
@@ -64,6 +64,7 @@ public class MinimaClient extends MessageProcessor {
 
 	public static final String NETCLIENT_P2P_RENDEZVOUS = "NETCLIENT_P2P_RENDEZVOUS";
 	public static final String NETCLIENT_P2P_WALK_LINKS = "NETCLIENT_P2P_WALK_LINKS";
+	public static final String NETCLIENT_P2P_WALK_LINKS_RESPONSE = "NETCLIENT_P2P_WALK_LINKS_RESPONSE";
 	public static final String NETMESSAGE_P2P_SWAP_LINK = "NETMESSAGE_P2P_SWAP_LINK";
 	public static final String NETMESSAGE_P2P_DO_SWAP   = "NETMESSAGE_P2P_DO_SWAP";
 	public static final String NETMESSAGE_P2P_MAP_NETWORK = "NETMESSAGE_P2P_MAP_NETWORK";
@@ -339,10 +340,13 @@ public class MinimaClient extends MessageProcessor {
 			getNetworkHandler().getP2PMessageProcessor().PostMessage(msg);
 			shutdown();
 		}else if(zMessage.isMessageType(NETCLIENT_P2P_RENDEZVOUS)) {
-			sendMessage(MinimaReader.NETMESSAGE_P2P_RENDEZVOUS, new P2PMsgRendezvous(P2PFunctions.GenRendezvousNodeList(mNetworkMain.getP2PMessageProcessor().getState(), 10)));
+			sendMessage(MinimaReader.NETMESSAGE_P2P_RENDEZVOUS, new P2PMsgRendezvous(StartupFuncs.GenRendezvousNodeList(mNetworkMain.getP2PMessageProcessor().getState(), 10)));
 		}else if(zMessage.isMessageType(NETCLIENT_P2P_WALK_LINKS)) {
 			P2PMsgWalkLinks data = (P2PMsgWalkLinks) zMessage.getObject("data");
 			sendMessage(MinimaReader.NETMESSAGE_P2P_WALK_LINKS, data);
+		}else if(zMessage.isMessageType(NETCLIENT_P2P_WALK_LINKS_RESPONSE)) {
+			P2PMsgWalkLinks data = (P2PMsgWalkLinks) zMessage.getObject("data");
+			sendMessage(MinimaReader.NETMESSAGE_P2P_WALK_LINKS_RESPONSE, data);
 		}else if(zMessage.isMessageType(NETMESSAGE_P2P_SWAP_LINK)) {
 			P2PMsgSwapLink data = (P2PMsgSwapLink) zMessage.getObject("data");
 			sendMessage(MinimaReader.NETMESSAGE_P2P_SWAP_LINK, data);

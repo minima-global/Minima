@@ -10,21 +10,17 @@ import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Random;
-import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.checkerframework.checker.units.qual.A;
 import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
 import org.minima.system.brains.BackupManager;
 import org.minima.system.network.commands.CMD;
-import org.minima.system.network.p2p.P2PFunctions;
-import org.minima.system.network.rpc.RPCClient;
+import org.minima.system.network.p2p.functions.StartupFuncs;
+import org.minima.system.network.p2p.functions.UtilFuncs;
 import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.SQLHandler;
@@ -304,8 +300,8 @@ public class Start {
 			rcmainserver.addAutoConnectHostPort(connectionAddress);
 		}else {
 			MinimaLogger.log(mMainServer.getNetworkHandler().getP2PMessageProcessor().getHostIP().toString());
-			ArrayList<InetSocketAddress> rendezvousHosts = P2PFunctions.LoadNodeList(mMainServer.getNetworkHandler().getP2PMessageProcessor().getState(), VALID_BOOTSTRAP_NODES, noextrahost);
-			connectionAddress = P2PFunctions.SelectRandomAddress(rendezvousHosts);
+			ArrayList<InetSocketAddress> rendezvousHosts = StartupFuncs.LoadNodeList(mMainServer.getNetworkHandler().getP2PMessageProcessor().getState(), VALID_BOOTSTRAP_NODES, noextrahost);
+			connectionAddress = UtilFuncs.SelectRandomAddress(rendezvousHosts);
 			mMainServer.addAutoConnectHostPort(connectionAddress);
 		}
 
