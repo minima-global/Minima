@@ -1,9 +1,11 @@
 package org.minima.system.network.p2p;
 
 import lombok.Getter;
+import lombok.Setter;
 import org.minima.utils.messages.Message;
 
 @Getter
+@Setter
 public class ExpiringMessage {
     Message msg;
     long timestamp;

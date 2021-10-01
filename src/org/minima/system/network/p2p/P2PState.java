@@ -3,7 +3,10 @@ package org.minima.system.network.p2p;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.checkerframework.checker.units.qual.A;
 import org.minima.objects.base.MiniData;
+import org.minima.system.network.p2p.messages.P2PMsgMapNetwork;
+import org.minima.system.network.p2p.messages.P2PNode;
 import org.minima.utils.messages.Message;
 
 import java.io.File;
@@ -38,6 +41,8 @@ public class P2PState {
 
     private ArrayList<String> disconnectingClients = new ArrayList<>();
 
+    private Map<MiniData, ArrayList<P2PMsgMapNetwork>> networkMapRequests = new HashMap<>();
+    private Map<MiniData, MiniData> requestUIDtoMsgUID = new HashMap<>();
 
     /**
      * Maps the hopped message secret to a routing message
@@ -156,7 +161,20 @@ public class P2PState {
         return (int) expiringMessageMap.values().stream().filter(x -> x.msg.isMessageType(msgType)).count();
     }
 
-    public boolean dropExpiredMessages() {
-        return expiringMessageMap.values().removeIf(x -> x.getTimestamp() < System.currentTimeMillis() - 5_000);
+    public ArrayList<ExpiringMessage> dropExpiredMessages() {
+
+        ArrayList<ExpiringMessage> expiringMessages = new ArrayList<>();
+        ArrayList<MiniData> toRemove = new ArrayList<>();
+        if (!expiringMessageMap.isEmpty()) {
+            for (MiniData key : expiringMessageMap.keySet()) {
+                ExpiringMessage msg = expiringMessageMap.get(key);
+                if (msg.getTimestamp() < System.currentTimeMillis()) {
+                    toRemove.add(key);
+                    expiringMessages.add(msg);
+                }
+            }
+        }
+        toRemove.forEach(expiringMessageMap::remove);
+        return expiringMessages;
     }
 }

@@ -67,6 +67,7 @@ public class MinimaClient extends MessageProcessor {
 	public static final String NETMESSAGE_P2P_SWAP_LINK = "NETMESSAGE_P2P_SWAP_LINK";
 	public static final String NETMESSAGE_P2P_DO_SWAP   = "NETMESSAGE_P2P_DO_SWAP";
 	public static final String NETMESSAGE_P2P_MAP_NETWORK = "NETMESSAGE_P2P_MAP_NETWORK";
+	public static final String NETMESSAGE_P2P_MAP_NETWORK_RESPONSE = "NETMESSAGE_P2P_MAP_NETWORK_RESPONSE";
 
 	//Main Network Handler
 	NetworkHandler mNetworkMain;
@@ -348,9 +349,12 @@ public class MinimaClient extends MessageProcessor {
 		}else if(zMessage.isMessageType(NETMESSAGE_P2P_DO_SWAP)) {
 			P2PMsgDoSwap data = (P2PMsgDoSwap) zMessage.getObject("data");
 			sendMessage(MinimaReader.NETMESSAGE_P2P_DO_SWAP, data);
-		}  else if(zMessage.isMessageType(NETMESSAGE_P2P_MAP_NETWORK)){
+		} else if(zMessage.isMessageType(NETMESSAGE_P2P_MAP_NETWORK)){
 			P2PMsgMapNetwork data = (P2PMsgMapNetwork) zMessage.getObject("data");
 			sendMessage(MinimaReader.NETMESSAGE_P2P_MAP_NETWORK, data);
+		} else if(zMessage.isMessageType(NETMESSAGE_P2P_MAP_NETWORK_RESPONSE)){
+			P2PMsgMapNetwork data = (P2PMsgMapNetwork) zMessage.getObject("data");
+			sendMessage(MinimaReader.NETMESSAGE_P2P_MAP_NETWORK_RESPONSE, data);
 		}
 	}
 	

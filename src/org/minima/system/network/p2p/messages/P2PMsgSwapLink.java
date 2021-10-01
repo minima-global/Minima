@@ -25,20 +25,13 @@ public class P2PMsgSwapLink implements Streamable {
     @Override
     public void writeDataStream(DataOutputStream zOut) throws IOException {
         secret.writeDataStream(zOut);
-        zOut.writeInt(swapTarget.getAddress().getAddress().length);
-        zOut.write(swapTarget.getAddress().getAddress());
-        zOut.writeInt(swapTarget.getPort());
+        InetSocketAddressIO.writeAddress(swapTarget, zOut);
     }
 
     @Override
     public void readDataStream(DataInputStream zIn) throws IOException {
         setSecret(MiniData.ReadFromStream(zIn));
-        int nodeAddrLen = zIn.readInt();
-        byte[] nodeAddr = new byte[nodeAddrLen];
-        zIn.readFully(nodeAddr);
-        int nodePort = zIn.readInt();
-        InetSocketAddress nodeAddress = new InetSocketAddress(InetAddress.getByAddress(nodeAddr), nodePort);
-        setSwapTarget(nodeAddress);
+        setSwapTarget(InetSocketAddressIO.readAddress(zIn));
     }
 
     public static P2PMsgSwapLink ReadFromStream(DataInputStream zIn) throws IOException {

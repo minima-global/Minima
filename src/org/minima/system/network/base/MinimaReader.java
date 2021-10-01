@@ -20,7 +20,6 @@ import org.minima.system.Main;
 import org.minima.system.brains.ConsensusHandler;
 import org.minima.system.brains.ConsensusNet;
 import org.minima.system.network.NetworkHandler;
-import org.minima.system.network.p2p.P2PFunctions;
 import org.minima.system.network.p2p.P2PMessageProcessor;
 import org.minima.system.network.p2p.messages.*;
 import org.minima.system.txpow.TxPoWChecker;
@@ -94,6 +93,7 @@ public class MinimaReader implements Runnable {
 	public static final MiniByte NETMESSAGE_P2P_SWAP_LINK		     = new MiniByte(10);
 	public static final MiniByte NETMESSAGE_P2P_DO_SWAP			     = new MiniByte(11);
 	public static final MiniByte NETMESSAGE_P2P_MAP_NETWORK		     = new MiniByte(12);
+	public static final MiniByte NETMESSAGE_P2P_MAP_NETWORK_RESPONSE = new MiniByte(13);
 
 	/**
 	 * Netclient owner
@@ -331,7 +331,13 @@ public class MinimaReader implements Runnable {
 				}else if(msgtype.isEqual(NETMESSAGE_P2P_MAP_NETWORK)) {
 					P2PMsgMapNetwork data = P2PMsgMapNetwork.ReadFromStream(inputstream);
 					Message msg = new Message(P2PMessageProcessor.P2P_MAP_NETWORK)
-							.addObject("data", data);
+							.addObject("data", data)
+							.addString("from_ip", mNetClient.getMinimaAddress().toString());
+					mNetClient.getNetworkHandler().getP2PMessageProcessor().PostMessage(msg);
+				}else if(msgtype.isEqual(NETMESSAGE_P2P_MAP_NETWORK_RESPONSE)) {
+					P2PMsgMapNetwork data = P2PMsgMapNetwork.ReadFromStream(inputstream);
+					Message msg = new Message(P2PMessageProcessor.P2P_MAP_NETWORK_RESPONSE)
+							.addObject("data", data).addString("from_ip", mNetClient.getMinimaAddress().toString());
 					mNetClient.getNetworkHandler().getP2PMessageProcessor().PostMessage(msg);
 				}else {
 					throw new Exception("Invalid message on network : "+rec);

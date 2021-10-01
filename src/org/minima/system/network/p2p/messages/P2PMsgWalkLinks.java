@@ -2,14 +2,12 @@ package org.minima.system.network.p2p.messages;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.checkerframework.checker.units.qual.A;
 import org.minima.objects.base.MiniData;
 import org.minima.utils.Streamable;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 
@@ -57,38 +55,15 @@ public class P2PMsgWalkLinks implements Streamable {
         return previousNode;
     }
 
-    static public void writeNodeArrayList(ArrayList<InetSocketAddress> nodes, DataOutputStream zOut) throws IOException {
-        zOut.writeInt(nodes.size());
-        for (InetSocketAddress address : nodes) {
-            zOut.writeInt(address.getAddress().getAddress().length);
-            zOut.write(address.getAddress().getAddress());
-            zOut.writeInt(address.getPort());
-        }
-    }
-
     @Override
     public void writeDataStream(DataOutputStream zOut) throws IOException {
         zOut.writeBoolean(walkInLinks);
         zOut.writeBoolean(isJoiningWalk);
         zOut.writeBoolean(isReturning);
         zOut.writeInt(numHopsToGo);
-        writeNodeArrayList(this.pathTaken, zOut);
+        InetSocketAddressIO.writeAddressList(this.pathTaken, zOut);
     }
 
-    static public ArrayList<InetSocketAddress> readNodeArrayList(DataInputStream zIn) throws IOException {
-        ArrayList<InetSocketAddress> addressArrayList = new ArrayList<>();
-        int numPeers = zIn.readInt();
-        for (int i = 0; i < numPeers; i++) {
-            int nodeAddrLen = zIn.readInt();
-            byte[] nodeAddr = new byte[nodeAddrLen];
-            zIn.readFully(nodeAddr);
-            int nodePort = zIn.readInt();
-            InetSocketAddress nodeAddress = new InetSocketAddress(InetAddress.getByAddress(nodeAddr), nodePort);
-            addressArrayList.add(nodeAddress);
-        }
-
-        return addressArrayList;
-    }
 
     @Override
     public void readDataStream(DataInputStream zIn) throws IOException {
@@ -96,7 +71,7 @@ public class P2PMsgWalkLinks implements Streamable {
         this.setJoiningWalk(zIn.readBoolean());
         this.setReturning(zIn.readBoolean());
         this.setNumHopsToGo(zIn.readInt());
-        this.setPathTaken(readNodeArrayList(zIn));
+        this.setPathTaken(InetSocketAddressIO.readAddressList(zIn));
     }
 
     public static P2PMsgWalkLinks ReadFromStream(DataInputStream zIn) throws IOException {

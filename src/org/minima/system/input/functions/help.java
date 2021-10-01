@@ -142,6 +142,7 @@ public class help extends CommandFunction{
 			addJSONDesc(new txnsignauto());
 			addJSONDesc(new txnvalidate());
 			addJSONDesc(new txnpost());
+			addJSONDesc(new MapNetwork());
 			
 			addJSONDesc(new quit());
 			
