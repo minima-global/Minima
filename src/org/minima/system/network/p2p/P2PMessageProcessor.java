@@ -8,10 +8,7 @@ import org.minima.system.brains.BackupManager;
 import org.minima.system.input.InputHandler;
 import org.minima.system.network.NetworkHandler;
 import org.minima.system.network.base.MinimaClient;
-import org.minima.system.network.p2p.functions.StartupFuncs;
-import org.minima.system.network.p2p.functions.SwapFuncs;
-import org.minima.system.network.p2p.functions.UtilFuncs;
-import org.minima.system.network.p2p.functions.WalkLinksFuncs;
+import org.minima.system.network.p2p.functions.*;
 import org.minima.system.network.p2p.messages.*;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
@@ -23,7 +20,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.stream.Collectors;
+import java.util.Random;
 
 import static org.minima.system.network.NetworkHandler.NETWORK_CONNECT;
 import static org.minima.system.network.NetworkHandler.NETWORK_DISCONNECT;
@@ -53,7 +50,6 @@ public class P2PMessageProcessor extends MessageProcessor {
     public static final String P2P_SWAP_LINK = "P2P_SWAP_LINK";
     public static final String P2P_DO_SWAP = "P2P_DO_SWAP";
     public static final String P2P_MAP_NETWORK = "P2P_MAP_NETWORK";
-    public static final String P2P_MAP_NETWORK_RESPONSE = "P2P_MAP_NETWORK_RESPONSE";
     public static final String P2P_PRINT_NETWORK_MAP = "P2P_PRINT_NETWORK_MAP";
     public static final String P2P_PRINT_NETWORK_MAP_RESPONSE = "P2P_PRINT_NETWORK_MAP_RESPONSE";
 
@@ -75,10 +71,9 @@ public class P2PMessageProcessor extends MessageProcessor {
 
     private final P2PState state;
     private final int minimaPort;
+    Message printNetworkMapRPCReq;
     //The data store
     private InetAddress hostIP;
-
-    Message printNetworkMapRPCReq;
 
     public P2PMessageProcessor() {
         super("P2P Message Processor");
@@ -197,8 +192,6 @@ public class P2PMessageProcessor extends MessageProcessor {
                     break;
                 case P2P_MAP_NETWORK:
                     break;
-                case P2P_MAP_NETWORK_RESPONSE:
-                    break;
                 case P2P_PRINT_NETWORK_MAP:
                     processPrintNetworkMapRequestMsg(zMessage);
                     break;
@@ -237,7 +230,7 @@ public class P2PMessageProcessor extends MessageProcessor {
         Greeting greeting = (Greeting) zMessage.getObject("greeting");
         MinimaClient client = (MinimaClient) zMessage.getObject("client");
 
-        StartupFuncs.onGreetedMsg(state, greeting, client).forEach(this::PostMessage);
+        GreetingFuncs.onGreetedMsg(state, greeting, client).forEach(this::PostMessage);
     }
 
     private void processOnRendezvousMsg(Message zMessage) {
@@ -247,7 +240,7 @@ public class P2PMessageProcessor extends MessageProcessor {
 
         P2PMsgRendezvous rendezvous = (P2PMsgRendezvous) zMessage.getObject("rendezvous");
         MinimaClient client = (MinimaClient) zMessage.getObject("client");
-        PostTimerMessage(StartupFuncs.processOnRendezvousMsg(state, rendezvous, client));
+        StartupFuncs.processOnRendezvousMsg(state, rendezvous, client);
     }
 
     private void processConnectMsg(Message zMessage) {
@@ -269,7 +262,7 @@ public class P2PMessageProcessor extends MessageProcessor {
         // Do nothing as we don't have enough info to process - wait until we get the greeting message
 //        log.debug("[+] P2PMessageProcessor processing P2P_ON_CONNECTED message");
         MinimaClient client = (MinimaClient) zMessage.getObject("client");
-        if (!client.isIncoming()){
+        if (!client.isIncoming()) {
             state.addOutLink(client.getMinimaAddress());
         }
     }
@@ -278,12 +271,14 @@ public class P2PMessageProcessor extends MessageProcessor {
     private void processOnDisconnectedMsg(Message zMessage) {
         log.debug(this.state.genPrintableState());
         MinimaClient client = (MinimaClient) zMessage.getObject("client");
-        log.debug("[!] P2P_ON_DISCONNECT Disconnected from isInLink?" + client.isIncoming() + " IP: " + client.getMinimaAddress());
+        if (client.isIncoming()) {
+        }
+        log.debug("[!] P2P_ON_DISCONNECT Disconnected from isInLink? " + client.isIncoming() + " IP: " + client.getMinimaAddress());
         Message walkMsg = null;
         if (client.isIncoming()) {
-            walkMsg = StartupFuncs.onInLinkDisconnected(state, client, getCurrentMinimaClients());
+            walkMsg = DisconnectionFuncs.onInLinkDisconnected(state, client, getCurrentMinimaClients());
         } else {
-            walkMsg = StartupFuncs.onOutLinkDisconnected(state, client, getCurrentMinimaClients());
+            walkMsg = DisconnectionFuncs.onOutLinkDisconnected(state, client, getCurrentMinimaClients());
         }
         if (walkMsg != null) {
             PostMessage(walkMsg);
@@ -333,66 +328,51 @@ public class P2PMessageProcessor extends MessageProcessor {
     private void processDoSwapMsg(Message zMessage) {
         P2PMsgDoSwap doSwap = (P2PMsgDoSwap) zMessage.getObject("data");
         MinimaClient client = (MinimaClient) zMessage.getObject("client");
-        SwapFuncs.executeDoSwap(doSwap, client).forEach(this::PostMessage);
+        SwapFuncs.executeDoSwap(state, doSwap, client).forEach(this::PostMessage);
+        state.getConnectionDetailsMap().put(client.getMinimaAddress(), new ConnectionDetails(ConnectionReason.DO_SWAP));
     }
 
     private void processWalkLinksMsg(Message zMessage) {
         P2PMsgWalkLinks msgWalkLinks = (P2PMsgWalkLinks) zMessage.getObject("data");
         Message message;
         if (msgWalkLinks.isWalkInLinks()) {
-            message = WalkLinksFuncs.onInLinkWalkMsg(state, msgWalkLinks,getCurrentMinimaClients());
+            message = WalkLinksFuncs.onInLinkWalkMsg(state, msgWalkLinks, getCurrentMinimaClients());
         } else {
-            message = WalkLinksFuncs.onOutLinkWalkMsg(state, msgWalkLinks,getCurrentMinimaClients());
+            message = WalkLinksFuncs.onOutLinkWalkMsg(state, msgWalkLinks, getCurrentMinimaClients());
         }
-        if (message != null){
+        if (message != null) {
             PostMessage(message);
         }
     }
 
-    public void processWalkLinksResponseMsg(Message zMessage){
+    public void processWalkLinksResponseMsg(Message zMessage) {
         P2PMsgWalkLinks p2pWalkLinks = (P2PMsgWalkLinks) zMessage.getObject("data");
         Message sendMsg = null;
         if (state.getAddress().equals(p2pWalkLinks.getPathTaken().get(0))) {
+            log.debug("[+] P2P_WALK_LINKS_RESPONSE returned to origin node");
             sendMsg = WalkLinksFuncs.onReturnedWalkMsg(state, p2pWalkLinks);
         } else {
             sendMsg = WalkLinksFuncs.onWalkLinkResponseMsg(state, p2pWalkLinks, getCurrentMinimaClients());
         }
-        if (sendMsg != null){
+        if (sendMsg != null) {
             PostMessage(sendMsg);
         }
     }
 
     private void processLoopMsg(Message zMessage) {
-        if (state.getOutLinks().size() == state.getNumLinks()) {
-            state.setSetupComplete(true);
-        }
-        if (!state.isSetupComplete()) {
-            ArrayList<Message> msgs = StartupFuncs.Join(state, getCurrentMinimaClients());
-            msgs.forEach(this::PostMessage);
+
+        if (!state.isRendezvousComplete()) {
+            JoiningFuncs.joinRendezvousNode(state, getCurrentMinimaClients()).forEach(this::PostMessage);
+        } else if (state.getOutLinks().size() < 3) {
+            JoiningFuncs.joinEntryNode(state, getCurrentMinimaClients()).forEach(this::PostMessage);
+        } else if (state.getOutLinks().size() < state.getNumLinks()) {
+            JoiningFuncs.joinScaleOutLinks(state, getCurrentMinimaClients()).forEach(this::PostMessage);
+
         }
         ArrayList<ExpiringMessage> expiringMessages = this.state.dropExpiredMessages();
-        if (!expiringMessages.isEmpty()) {
-            log.debug("[!] P2P Network messages timed out");
-            boolean startNewInLinkWalk = false;
-            for (ExpiringMessage expMsg : expiringMessages) {
-                if (expMsg.getMsg().isMessageType(P2P_WALK_LINKS)) {
-                    P2PMsgWalkLinks walkLinks = (P2PMsgWalkLinks) expMsg.getMsg().getObject("data");
-                    if (walkLinks.isWalkInLinks() && state.getNumInLinkDisconnects() > 0){
-                        startNewInLinkWalk = true;
-                    }
-                } else {
-                    log.debug("[!] " + expMsg.getMsg().getMessageType() + " expired without a response");
-                }
-            }
-            if (startNewInLinkWalk) {
-                Message linkWalk = StartupFuncs.onInLinkDisconnected(state, null, getCurrentMinimaClients());
-                if (linkWalk != null) {
-                    PostMessage(linkWalk);
-                }
-            }
-        }
-
-        PostTimerMessage(new TimerMessage(1_000, P2P_LOOP));
+//        log.debug(state.genPrintableState());
+        Random rand = new Random();
+        PostTimerMessage(new TimerMessage(60_000 + rand.nextInt(30_000), P2P_LOOP));
     }
 
 
@@ -400,8 +380,7 @@ public class P2PMessageProcessor extends MessageProcessor {
         printNetworkMapRPCReq = zMessage;
 
         P2PMsgMapNetwork mapNetwork = new P2PMsgMapNetwork();
-        log.error("[-] P2P_PRINT_NETWORK_MAP Request UID " + mapNetwork.getRequestUID());
-
+//        log.error("[-] P2P_PRINT_NETWORK_MAP Request UID " + mapNetwork.getRequestUID());
         PostMessage(new Message(P2P_MAP_NETWORK).addObject("data", mapNetwork).addString("from_ip", state.getAddress().toString()));
 
     }
@@ -411,8 +390,8 @@ public class P2PMessageProcessor extends MessageProcessor {
         if (printNetworkMapRPCReq != null) {
             JSONObject networkMapJSON = InputHandler.getResponseJSON(printNetworkMapRPCReq);
             P2PMsgMapNetwork networkMap = (P2PMsgMapNetwork) zMessage.getObject("data");
-            networkMapJSON.put("network_map", networkMap.toJSONArray());
-            networkMapJSON.put("total_nodes", networkMap.getNodes().size());
+//            networkMapJSON.put("network_map", networkMap.toJSONArray());
+//            networkMapJSON.put("total_nodes", networkMap.getNodes().size());
 
             //All good
             InputHandler.endResponse(printNetworkMapRPCReq, true, "");

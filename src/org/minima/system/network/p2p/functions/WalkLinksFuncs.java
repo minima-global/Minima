@@ -2,8 +2,11 @@ package org.minima.system.network.p2p.functions;
 
 import lombok.extern.slf4j.Slf4j;
 import org.minima.system.network.base.MinimaClient;
+import org.minima.system.network.p2p.ConnectionDetails;
+import org.minima.system.network.p2p.ConnectionReason;
 import org.minima.system.network.p2p.P2PMessageProcessor;
 import org.minima.system.network.p2p.P2PState;
+import org.minima.system.network.p2p.messages.ExpiringMessage;
 import org.minima.system.network.p2p.messages.P2PMsgSwapLink;
 import org.minima.system.network.p2p.messages.P2PMsgWalkLinks;
 import org.minima.utils.messages.Message;
@@ -19,7 +22,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class WalkLinksFuncs {
 
-    public static Message onOutLinkWalkMsg(P2PState state, P2PMsgWalkLinks p2pWalkLinks, ArrayList<MinimaClient> allClients){
+    public static Message onOutLinkWalkMsg(P2PState state, P2PMsgWalkLinks p2pWalkLinks, ArrayList<MinimaClient> allClients) {
         Message retMsg;
         p2pWalkLinks.addHopToPath(state.getAddress());
         ArrayList<InetSocketAddress> filteredOutLinks = (ArrayList<InetSocketAddress>) state.getOutLinks().stream()
@@ -51,8 +54,8 @@ public class WalkLinksFuncs {
         return retMsg;
     }
 
-    public static Message onInLinkWalkMsg(P2PState state, P2PMsgWalkLinks p2pWalkLinks, ArrayList<MinimaClient> allClients){
-        Message retMsg = null;
+    public static Message onInLinkWalkMsg(P2PState state, P2PMsgWalkLinks p2pWalkLinks, ArrayList<MinimaClient> allClients) {
+        Message retMsg;
         p2pWalkLinks.addHopToPath(state.getAddress());
         ArrayList<InetSocketAddress> filteredInLinks = (ArrayList<InetSocketAddress>) state.getInLinks().stream()
                 .filter(x -> p2pWalkLinks.getPathTaken().stream().noneMatch(x::equals))
@@ -63,13 +66,14 @@ public class WalkLinksFuncs {
             retMsg = createNextHopMsg(nextHop, p2pWalkLinks, allClients);
         } else {
             p2pWalkLinks.setReturning(true);
+            state.getExpectedAuthKeys().put(p2pWalkLinks.getSecret().toString(), System.currentTimeMillis() + P2PState.AUTH_KEY_EXPIRY);
             retMsg = onWalkLinkResponseMsg(state, p2pWalkLinks, allClients);
         }
 
         return retMsg;
     }
 
-    public static Message createNextHopMsg(InetSocketAddress nextHop, P2PMsgWalkLinks p2pWalkLinks, ArrayList<MinimaClient> allClients){
+    public static Message createNextHopMsg(InetSocketAddress nextHop, P2PMsgWalkLinks p2pWalkLinks, ArrayList<MinimaClient> allClients) {
         Message retMsg = null;
         MinimaClient minimaClient = UtilFuncs.getClientForInetAddressEitherDirection(nextHop, allClients);
         if (minimaClient != null) {
@@ -87,7 +91,7 @@ public class WalkLinksFuncs {
         return retMsg;
     }
 
-    public static Message onWalkLinkResponseMsg(P2PState state, P2PMsgWalkLinks p2pWalkLinks, ArrayList<MinimaClient> allClients){
+    public static Message onWalkLinkResponseMsg(P2PState state, P2PMsgWalkLinks p2pWalkLinks, ArrayList<MinimaClient> allClients) {
         Message retMsg = null;
         InetSocketAddress nextHop = p2pWalkLinks.getPreviousNode(state.getAddress());
         MinimaClient minimaClient = UtilFuncs.getClientForInetAddressEitherDirection(nextHop, allClients);
@@ -111,19 +115,48 @@ public class WalkLinksFuncs {
                 state.addRandomNodeSet(connectTargetAddress);
             }
             if (state.getOutLinks().size() < state.getNumLinks()) {
+                ConnectionReason reason = ConnectionReason.REPLACING_OUT_LINK;
                 if (msg.isJoiningWalk()) {
                     state.addRequestSwapOnConnect(connectTargetAddress);
+                    reason = ConnectionReason.ADDING_OUT_LINK;
+                    // On adding an outlink we also expect a do swap back to this node
+                    state.getExpectedAuthKeys().put(msg.getSecret().toString(), System.currentTimeMillis() + P2PState.AUTH_KEY_EXPIRY);
                 }
                 returnMessage = new Message(P2PMessageProcessor.P2P_CONNECT)
                         .addObject("address", connectTargetAddress)
-                        .addString("reason", "For completed connection walk");
+                        .addString("reason", reason + "triggered by a completed connection walk");
+                state.getConnectionDetailsMap().put(connectTargetAddress, new ConnectionDetails(reason, msg.getSecret()));
             } else {
-                log.debug("[!] P2P WalkLinks Result: Not Connecting already have max numLinks");
+                log.debug("[!] P2P_WALK_LINKS_RESPONSE: Not Connecting already have max numLinks");
             }
         } else {
-            log.debug("[!] P2P WalkLinks Result: Not Connecting as returned own address");
+            log.debug("[!] P2P_WALK_LINKS_RESPONSE: Not Connecting as returned own address");
         }
 
         return returnMessage;
+    }
+
+    public static Message genP2PWalkLinkMsg(P2PState state, MinimaClient minimaClient, P2PMsgWalkLinks walkLinks, String logType) {
+        Message retMsg = null;
+        if (minimaClient != null) {
+            if (walkLinks.isJoiningWalk()) {
+                log.debug("[+] " + logType + " P2P_WALK Starting inLink walk add outLink neighbour");
+            } else {
+                if (walkLinks.isWalkInLinks()) {
+                    log.debug("[+] " + logType + " P2P_WALK Starting inLink walk to replace lost outLink neighbour");
+                } else {
+                    log.debug("[+] " + logType + " P2P_WALK Starting outLink walk to replace lost inLink neighbour");
+                }
+            }
+            retMsg = new Message(P2PMessageProcessor.P2P_SEND_MESSAGE)
+                    .addObject("client", minimaClient)
+                    .addObject("message", new Message(MinimaClient.NETCLIENT_P2P_WALK_LINKS).addObject("data", walkLinks));
+            ExpiringMessage expiringMessage = new ExpiringMessage(new Message(P2PMessageProcessor.P2P_WALK_LINKS).addObject("data", walkLinks));
+            expiringMessage.setTimestamp(System.currentTimeMillis() + 5_000L);
+            state.getExpiringMessageMap().put(walkLinks.getSecret(), expiringMessage);
+            state.getExpectedAuthKeys().put(walkLinks.getSecret().toString(), System.currentTimeMillis() + P2PState.AUTH_KEY_EXPIRY);
+
+        }
+        return retMsg;
     }
 }

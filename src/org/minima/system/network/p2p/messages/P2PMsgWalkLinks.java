@@ -57,6 +57,7 @@ public class P2PMsgWalkLinks implements Streamable {
 
     @Override
     public void writeDataStream(DataOutputStream zOut) throws IOException {
+        secret.writeDataStream(zOut);
         zOut.writeBoolean(walkInLinks);
         zOut.writeBoolean(isJoiningWalk);
         zOut.writeBoolean(isReturning);
@@ -67,6 +68,7 @@ public class P2PMsgWalkLinks implements Streamable {
 
     @Override
     public void readDataStream(DataInputStream zIn) throws IOException {
+        this.setSecret(MiniData.ReadFromStream(zIn));
         this.setWalkInLinks(zIn.readBoolean());
         this.setJoiningWalk(zIn.readBoolean());
         this.setReturning(zIn.readBoolean());

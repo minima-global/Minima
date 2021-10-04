@@ -18,6 +18,8 @@ import org.minima.system.network.base.MinimaServer;
 import org.minima.system.network.maxima.Maxima;
 import org.minima.system.network.minidapps.DAPPManager;
 import org.minima.system.network.minidapps.websocket.WebSocketManager;
+import org.minima.system.network.p2p.ConnectionDetails;
+import org.minima.system.network.p2p.ConnectionReason;
 import org.minima.system.network.p2p.P2PMessageProcessor;
 import org.minima.system.network.rpc.RPCServer;
 import org.minima.system.network.sshtunnel.SSHTunnel;
@@ -102,7 +104,7 @@ public class NetworkHandler extends MessageProcessor {
 	/**
 	 * Is reconnect enabled or not ?
 	 */
-	boolean mGlobalReconnect = true;
+	boolean mGlobalReconnect = false;
 	
 	/**
 	 * HARD SET THE HOST
@@ -364,8 +366,12 @@ public class NetworkHandler extends MessageProcessor {
 			
 			//Store with the rest
 			PostMessage(new Message(NETWORK_NEWCLIENT).addObject("client", client));
-		
-			InputHandler.endResponse(zMessage, true, "Attempting to connect to " + address);
+			ConnectionDetails details = getP2PMessageProcessor().getState().getConnectionDetailsMap().get(address);
+			String reason = "None Found";
+			if (details != null){
+				reason = details.getReason().toString();
+			}
+			InputHandler.endResponse(zMessage, true, "Attempting to connect to " + address + " Reason: " + reason);
 			
 		}else if(zMessage.isMessageType(NETWORK_PING)) {
 			
@@ -422,10 +428,10 @@ public class NetworkHandler extends MessageProcessor {
 			log.warn("[!!] NETWORK_NEWCLIENT " + client.getAddress());
 			//Add it
 			mClients.add(client);
-			if (isIncoming) {
-				client.PostMessage(MinimaClient.NETCLIENT_P2P_RENDEZVOUS);
-			}
-			
+//			if (isIncoming) {
+//				client.PostMessage(MinimaClient.NETCLIENT_P2P_RENDEZVOUS);
+//			}
+
 		}else if(zMessage.isMessageType(NETWORK_CLIENTERROR)) {
 			//get the client
 			MinimaClient client = (MinimaClient)zMessage.getObject("client");
@@ -460,10 +466,11 @@ public class NetworkHandler extends MessageProcessor {
 //				recon.addString("host", host);
 //				recon.addInteger("port", port);
 				recon.addObject("address", new InetSocketAddress(host, port));
-				
-				MinimaLogger.log("Attempting reconnect to "+host+":"+port+" in 30s..");
-				
+
+				MinimaLogger.log("[-] NETWORK_CLIENTERROR Attempting reconnect to "+host+":"+port+" in 30s..");
+
 				PostTimerMessage(recon);
+
 			}
 			
 			//Remove him from our list..

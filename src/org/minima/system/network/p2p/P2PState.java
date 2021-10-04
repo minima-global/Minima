@@ -12,6 +12,7 @@ import java.io.File;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 @Getter
@@ -20,10 +21,12 @@ import java.util.Map;
 public class P2PState {
 
     public static final int RENDEZVOUS_SHUTDOWN_DELAY = 1_000;
+    public static final int AUTH_KEY_EXPIRY = 300_000;
 
     private int numLinks;
     private boolean isClient = false;
     private boolean isRendezvousComplete = false;
+    private boolean isEntryNodeConnected = false;
     private boolean isSetupComplete = false;
     private InetSocketAddress address;
     private final File p2pDataFile;
@@ -42,6 +45,9 @@ public class P2PState {
 
     private int numInLinkDisconnects = 0;
 
+    private Map<InetSocketAddress, ConnectionDetails> connectionDetailsMap = new HashMap<>();
+    private Map<String, Long> expectedAuthKeys = new HashMap<>();
+
     /**
      * Maps the hopped message secret to a routing message
      * When we receive a message that is in this map,
@@ -52,31 +58,36 @@ public class P2PState {
     public String genPrintableState() {
         StringBuilder inLinksStr = new StringBuilder();
         for (InetSocketAddress linkAddr : inLinks) {
-            inLinksStr.append("\n\t\t").append(linkAddr);
+            inLinksStr.append("\nP2P\t\t").append(linkAddr);
         }
         StringBuilder outLinksStr = new StringBuilder();
         for (InetSocketAddress linkAddr : outLinks) {
-            outLinksStr.append("\n\t\t").append(linkAddr);
+            outLinksStr.append("\nP2P\t\t").append(linkAddr);
         }
         StringBuilder clientLinksStr = new StringBuilder();
         for (InetSocketAddress linkAddr : clientLinks) {
-            clientLinksStr.append("\n\t\t").append(linkAddr);
+            clientLinksStr.append("\nP2P\t\t").append(linkAddr);
         }
         StringBuilder randomStr = new StringBuilder();
         for (InetSocketAddress linkAddr : randomNodeSet) {
-            randomStr.append("\n\t\t").append(linkAddr);
+            randomStr.append("\nP2P\t\t").append(linkAddr);
+        }
+        StringBuilder detailsStr = new StringBuilder();
+        for (InetSocketAddress linkAddr : connectionDetailsMap.keySet()) {
+            detailsStr.append("\nP2P\t\t").append(linkAddr).append(": ").append(connectionDetailsMap.get(linkAddr).getReason().toString());
         }
 
         return "\n[+] P2P State" +
-                "\n\tnumLinks: " + numLinks +
-                "\n\tisClient: " + isClient +
-                "\n\tisRendezvousComplete: " + isRendezvousComplete +
-                "\n\taddress: " + address +
-                "\n\tinLinks: " + inLinksStr +
-                "\n\toutLinks: " + outLinksStr +
-                "\n\tclientLinks: " + clientLinksStr +
-                "\n\trandomNodeSet: " + randomStr +
-                "\n\texpiringMessageMap: " + expiringMessageMap.size();
+                "\nP2P\tnumLinks: " + numLinks +
+                "\nP2P\tisClient: " + isClient +
+                "\nP2P\tisRendezvousComplete: " + isRendezvousComplete +
+                "\nP2P\taddress: " + address +
+                "\nP2P\tinLinks: " + inLinksStr +
+                "\nP2P\toutLinks: " + outLinksStr +
+                "\nP2P\tclientLinks: " + clientLinksStr +
+                "\nP2P\trandomNodeSet: " + randomStr +
+                "\nP2P\texpiringMessageMap: " + expiringMessageMap.size() +
+                "\nP2P\tconnectionDetails: " + detailsStr;
     }
 
     public P2PState(int numLinks, File p2pDataFile) {

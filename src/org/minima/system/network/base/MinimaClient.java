@@ -18,6 +18,8 @@ import org.minima.objects.greet.TxPoWList;
 import org.minima.system.Main;
 import org.minima.system.brains.ConsensusNet;
 import org.minima.system.network.NetworkHandler;
+import org.minima.system.network.p2p.ConnectionDetails;
+import org.minima.system.network.p2p.ConnectionReason;
 import org.minima.system.network.p2p.functions.StartupFuncs;
 import org.minima.system.network.p2p.P2PMessageProcessor;
 import org.minima.system.network.p2p.messages.*;
@@ -68,7 +70,6 @@ public class MinimaClient extends MessageProcessor {
 	public static final String NETMESSAGE_P2P_SWAP_LINK = "NETMESSAGE_P2P_SWAP_LINK";
 	public static final String NETMESSAGE_P2P_DO_SWAP   = "NETMESSAGE_P2P_DO_SWAP";
 	public static final String NETMESSAGE_P2P_MAP_NETWORK = "NETMESSAGE_P2P_MAP_NETWORK";
-	public static final String NETMESSAGE_P2P_MAP_NETWORK_RESPONSE = "NETMESSAGE_P2P_MAP_NETWORK_RESPONSE";
 
 	//Main Network Handler
 	NetworkHandler mNetworkMain;
@@ -278,8 +279,24 @@ public class MinimaClient extends MessageProcessor {
 		
 		}else if(zMessage.isMessageType(NETCLIENT_GREETING)) {
 			Greeting greet = (Greeting)zMessage.getObject("greeting");
+			// Send number of client connections regardless of if this is an incoming or outgoing connection
+			greet.addAdditionalDetails("numClients", getNetworkHandler().getP2PMessageProcessor().getState().getClientLinks().size());
+			greet.addAdditionalDetails("minimaPort", getNetworkHandler().getBasePort());
+			if (!this.isIncoming()){
+				// Outgoing connection only
+				ConnectionDetails details = getNetworkHandler().getP2PMessageProcessor().getState().getConnectionDetailsMap().remove(minimaAddress);
+				if (details != null){
+					ConnectionReason reason = details.getReason();
+					if(getNetworkHandler().getP2PMessageProcessor().getState().isClient()){
+						reason = ConnectionReason.CLIENT;
+					}
+					greet.addAdditionalDetails("reason", reason.toString());
+					if (details.getAuth_key() != null) {
+						greet.addAdditionalDetails("auth_key", details.getAuth_key().toString());
+					}
+				}
+			}
 			sendMessage(MinimaReader.NETMESSAGE_GREETING, greet);
-		
 		}else if(zMessage.isMessageType(NETCLIENT_TXPOWLIST)) {
 			TxPoWList txplist = (TxPoWList)zMessage.getObject("txpowlist");
 			sendMessage(MinimaReader.NETMESSAGE_TXPOWLIST, txplist);
@@ -340,7 +357,8 @@ public class MinimaClient extends MessageProcessor {
 			getNetworkHandler().getP2PMessageProcessor().PostMessage(msg);
 			shutdown();
 		}else if(zMessage.isMessageType(NETCLIENT_P2P_RENDEZVOUS)) {
-			sendMessage(MinimaReader.NETMESSAGE_P2P_RENDEZVOUS, new P2PMsgRendezvous(StartupFuncs.GenRendezvousNodeList(mNetworkMain.getP2PMessageProcessor().getState(), 10)));
+			P2PMsgRendezvous data = (P2PMsgRendezvous) zMessage.getObject("data");
+			sendMessage(MinimaReader.NETMESSAGE_P2P_RENDEZVOUS, data);
 		}else if(zMessage.isMessageType(NETCLIENT_P2P_WALK_LINKS)) {
 			P2PMsgWalkLinks data = (P2PMsgWalkLinks) zMessage.getObject("data");
 			sendMessage(MinimaReader.NETMESSAGE_P2P_WALK_LINKS, data);
@@ -356,9 +374,6 @@ public class MinimaClient extends MessageProcessor {
 		} else if(zMessage.isMessageType(NETMESSAGE_P2P_MAP_NETWORK)){
 			P2PMsgMapNetwork data = (P2PMsgMapNetwork) zMessage.getObject("data");
 			sendMessage(MinimaReader.NETMESSAGE_P2P_MAP_NETWORK, data);
-		} else if(zMessage.isMessageType(NETMESSAGE_P2P_MAP_NETWORK_RESPONSE)){
-			P2PMsgMapNetwork data = (P2PMsgMapNetwork) zMessage.getObject("data");
-			sendMessage(MinimaReader.NETMESSAGE_P2P_MAP_NETWORK_RESPONSE, data);
 		}
 	}
 	

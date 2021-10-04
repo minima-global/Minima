@@ -66,10 +66,12 @@ public class MinimaServer implements Runnable{
 			
 		} catch (SocketException e) {
 			if(mRunning) {
+				MinimaLogger.log("Socket Exception");
 				e.printStackTrace();
 			}
-		} catch (IOException e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
+			MinimaLogger.log("Server Exception");
 			e.printStackTrace();
 		}
 	}
