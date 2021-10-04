@@ -7,7 +7,7 @@ import org.minima.system.network.base.MinimaClient;
 import org.minima.system.network.p2p.ConnectionReason;
 import org.minima.system.network.p2p.P2PMessageProcessor;
 import org.minima.system.network.p2p.P2PState;
-import org.minima.system.network.p2p.messages.P2PMsgMapNetwork;
+import org.minima.system.network.p2p.messages.P2PMsgNetworkMap;
 import org.minima.system.network.p2p.messages.P2PMsgRendezvous;
 import org.minima.system.network.p2p.messages.P2PMsgSwapLink;
 import org.minima.utils.messages.Message;
@@ -221,9 +221,9 @@ public class GreetingFuncs {
     public static ArrayList<Message> onMappingGreeting(P2PState state, MinimaClient client) {
         ArrayList<Message> retMsgs = new ArrayList<>();
 
-        P2PMsgMapNetwork mapping = new P2PMsgMapNetwork(
-                Stream.of(state.getInLinks(), state.getOutLinks())
-                        .flatMap(Collection::stream).distinct().collect(Collectors.toCollection(ArrayList::new)),
+        P2PMsgNetworkMap mapping = new P2PMsgNetworkMap(
+                state.getAddress(),
+                state.getOutLinks(),
                 state.getClientLinks().size()
         );
 

@@ -20,7 +20,6 @@ import org.minima.system.brains.ConsensusNet;
 import org.minima.system.network.NetworkHandler;
 import org.minima.system.network.p2p.ConnectionDetails;
 import org.minima.system.network.p2p.ConnectionReason;
-import org.minima.system.network.p2p.functions.StartupFuncs;
 import org.minima.system.network.p2p.P2PMessageProcessor;
 import org.minima.system.network.p2p.messages.*;
 import org.minima.utils.MinimaLogger;
@@ -372,7 +371,7 @@ public class MinimaClient extends MessageProcessor {
 			P2PMsgDoSwap data = (P2PMsgDoSwap) zMessage.getObject("data");
 			sendMessage(MinimaReader.NETMESSAGE_P2P_DO_SWAP, data);
 		} else if(zMessage.isMessageType(NETMESSAGE_P2P_MAP_NETWORK)){
-			P2PMsgMapNetwork data = (P2PMsgMapNetwork) zMessage.getObject("data");
+			P2PMsgNetworkMap data = (P2PMsgNetworkMap) zMessage.getObject("data");
 			sendMessage(MinimaReader.NETMESSAGE_P2P_MAP_NETWORK, data);
 		}
 	}

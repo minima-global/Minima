@@ -4,15 +4,15 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.minima.objects.base.MiniData;
+import org.minima.system.network.base.MinimaClient;
 import org.minima.system.network.p2p.messages.ExpiringMessage;
-import org.minima.system.network.p2p.messages.P2PMsgMapNetwork;
+import org.minima.system.network.p2p.messages.P2PMsgNetworkMap;
 import org.minima.utils.messages.Message;
 
 import java.io.File;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 
 @Getter
@@ -39,14 +39,14 @@ public class P2PState {
 
     private Map<MiniData, ExpiringMessage> expiringMessageMap = new HashMap<>();
 
-    private ArrayList<InetSocketAddress> requestSwapOnConnect = new ArrayList<>();
-
     private ArrayList<String> disconnectingClients = new ArrayList<>();
-
-    private int numInLinkDisconnects = 0;
 
     private Map<InetSocketAddress, ConnectionDetails> connectionDetailsMap = new HashMap<>();
     private Map<String, Long> expectedAuthKeys = new HashMap<>();
+
+
+    private Map<InetSocketAddress, P2PMsgNetworkMap> networkMap = new HashMap<>();
+    private Map<InetSocketAddress, MinimaClient> activeMappingRequests = new HashMap<>();
 
     /**
      * Maps the hopped message secret to a routing message
@@ -120,14 +120,6 @@ public class P2PState {
 
     public boolean removeClientLink(String uid) {
         return this.clientLinks.remove(address);
-    }
-
-    public void addRequestSwapOnConnect(InetSocketAddress address) {
-        this.requestSwapOnConnect.add(address);
-    }
-
-    public boolean removeRequestSwapOnConnect(InetSocketAddress address) {
-        return this.requestSwapOnConnect.remove(address);
     }
 
     public void addDisconnectingClient(String uid) {

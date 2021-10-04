@@ -117,7 +117,6 @@ public class WalkLinksFuncs {
             if (state.getOutLinks().size() < state.getNumLinks()) {
                 ConnectionReason reason = ConnectionReason.REPLACING_OUT_LINK;
                 if (msg.isJoiningWalk()) {
-                    state.addRequestSwapOnConnect(connectTargetAddress);
                     reason = ConnectionReason.ADDING_OUT_LINK;
                     // On adding an outlink we also expect a do swap back to this node
                     state.getExpectedAuthKeys().put(msg.getSecret().toString(), System.currentTimeMillis() + P2PState.AUTH_KEY_EXPIRY);

@@ -4,8 +4,6 @@ import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
-import java.io.IOException;
-import java.net.SocketException;
 import java.util.ArrayList;
 
 import org.minima.objects.TxPoW;
@@ -333,7 +331,7 @@ public class MinimaReader implements Runnable {
 							.addObject("client", mNetClient);
 					mNetClient.getNetworkHandler().getP2PMessageProcessor().PostMessage(msg);
 				} else if (msgtype.isEqual(NETMESSAGE_P2P_MAP_NETWORK)) {
-					P2PMsgMapNetwork data = P2PMsgMapNetwork.ReadFromStream(inputstream);
+					P2PMsgNetworkMap data = P2PMsgNetworkMap.ReadFromStream(inputstream);
 					Message msg = new Message(P2PMessageProcessor.P2P_MAP_NETWORK)
 							.addObject("data", data);
 					mNetClient.getNetworkHandler().getP2PMessageProcessor().PostMessage(msg);

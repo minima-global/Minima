@@ -72,7 +72,6 @@ public class JoiningFuncs {
                 walkLinks.addHopToPath(state.getAddress());
                 InetSocketAddress nextHop = UtilFuncs.SelectRandomAddress(state.getOutLinks());
                 MinimaClient minimaClient = UtilFuncs.getClientForInetAddressEitherDirection(nextHop, clients);
-                state.setNumInLinkDisconnects(state.getNumInLinkDisconnects() + 1);
                 msgs.add(WalkLinksFuncs.genP2PWalkLinkMsg(state, minimaClient, walkLinks, "P2P_JOIN"));
             }
         }

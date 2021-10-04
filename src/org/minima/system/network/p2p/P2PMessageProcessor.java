@@ -10,6 +10,7 @@ import org.minima.system.network.NetworkHandler;
 import org.minima.system.network.base.MinimaClient;
 import org.minima.system.network.p2p.functions.*;
 import org.minima.system.network.p2p.messages.*;
+import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageProcessor;
@@ -20,7 +21,10 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Random;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.minima.system.network.NetworkHandler.NETWORK_CONNECT;
 import static org.minima.system.network.NetworkHandler.NETWORK_DISCONNECT;
@@ -191,6 +195,7 @@ public class P2PMessageProcessor extends MessageProcessor {
                     processDoSwapMsg(zMessage);
                     break;
                 case P2P_MAP_NETWORK:
+                    processNetworkMapMsg(zMessage);
                     break;
                 case P2P_PRINT_NETWORK_MAP:
                     processPrintNetworkMapRequestMsg(zMessage);
@@ -379,12 +384,44 @@ public class P2PMessageProcessor extends MessageProcessor {
     }
 
 
+    private void processNetworkMapMsg(Message zMessage) {
+        // On getting a network map back
+        P2PMsgNetworkMap networkMap = (P2PMsgNetworkMap) zMessage.getObject("data");
+        state.getNetworkMap().put(networkMap.getNodeAddress(), networkMap);
+        state.getActiveMappingRequests().remove(networkMap.getNodeAddress());
+        ArrayList<InetSocketAddress> newAddresses = networkMap.getAddresses().stream()
+                .filter(x -> !state.getNetworkMap().containsKey(x))
+                .distinct()
+                .collect(Collectors.toCollection(ArrayList::new));
+
+        log.debug("[+] P2P_MAP_NETWORK node: " + networkMap.toNodeJSON().toString() + " links: " + networkMap.toLinksJSON().toString());
+        if (state.getNetworkMap().size() < 1_000 && !newAddresses.isEmpty()) {
+            for (InetSocketAddress address: newAddresses){
+                // Connect and
+                state.getConnectionDetailsMap().put(address, new ConnectionDetails(ConnectionReason.MAPPING));
+                PostMessage(new Message(P2PMessageProcessor.P2P_CONNECT).addObject("address", address).addString("reason", "MAPPING connection"));
+            }
+        }
+        if (state.getActiveMappingRequests().isEmpty()){
+            PostMessage(new Message(P2P_PRINT_NETWORK_MAP_RESPONSE));
+        }
+
+    }
+
     private void processPrintNetworkMapRequestMsg(Message zMessage) {
         printNetworkMapRPCReq = zMessage;
 
-        P2PMsgMapNetwork mapNetwork = new P2PMsgMapNetwork();
+        ArrayList<InetSocketAddress> addresses = Stream.of(state.getRandomNodeSet(), state.getOutLinks(), state.getInLinks())
+                .flatMap(Collection::stream).distinct().collect(Collectors.toCollection(ArrayList::new));
+        for (InetSocketAddress address: addresses){
+            // Connect and
+            state.getConnectionDetailsMap().put(address, new ConnectionDetails(ConnectionReason.MAPPING));
+            PostMessage(new Message(P2PMessageProcessor.P2P_CONNECT).addObject("address", address).addString("reason", "MAPPING connection"));
+        }
+
+        PostTimerMessage(new TimerMessage(29_000, P2P_PRINT_NETWORK_MAP_RESPONSE));
 //        log.error("[-] P2P_PRINT_NETWORK_MAP Request UID " + mapNetwork.getRequestUID());
-        PostMessage(new Message(P2P_MAP_NETWORK).addObject("data", mapNetwork).addString("from_ip", state.getAddress().toString()));
+//        PostMessage(new Message(P2P_MAP_NETWORK).addObject("data", mapNetwork).addString("from_ip", state.getAddress().toString()));
 
     }
 
@@ -392,9 +429,16 @@ public class P2PMessageProcessor extends MessageProcessor {
     private void processPrintNetworkMapResponseMsg(Message zMessage) {
         if (printNetworkMapRPCReq != null) {
             JSONObject networkMapJSON = InputHandler.getResponseJSON(printNetworkMapRPCReq);
-            P2PMsgMapNetwork networkMap = (P2PMsgMapNetwork) zMessage.getObject("data");
-//            networkMapJSON.put("network_map", networkMap.toJSONArray());
-//            networkMapJSON.put("total_nodes", networkMap.getNodes().size());
+            // nodes
+            JSONArray nodes = new JSONArray();
+            JSONArray links = new JSONArray();
+            for (P2PMsgNetworkMap value: state.getNetworkMap().values()){
+                nodes.add(value.toNodeJSON());
+                links.addAll(value.toLinksJSON());
+            }
+            // links
+            networkMapJSON.put("nodes", nodes);
+            networkMapJSON.put("links", links);
 
             //All good
             InputHandler.endResponse(printNetworkMapRPCReq, true, "");
@@ -402,4 +446,5 @@ public class P2PMessageProcessor extends MessageProcessor {
             log.warn("[-] Failed to make network map");
         }
     }
+
 }

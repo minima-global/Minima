@@ -22,7 +22,6 @@ public class DisconnectionFuncs {
                 nextHop = UtilFuncs.SelectRandomAddress(state.getInLinks());
             }
             MinimaClient minimaClient = UtilFuncs.getClientForInetAddress(nextHop, minimaClients, false);
-            state.setNumInLinkDisconnects(state.getNumInLinkDisconnects() + 1);
             returnMessage = WalkLinksFuncs.genP2PWalkLinkMsg(state, minimaClient, walkLinks, "P2P_ON_DISCONNECTED");
 
         }
