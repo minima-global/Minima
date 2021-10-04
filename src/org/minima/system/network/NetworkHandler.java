@@ -370,6 +370,9 @@ public class NetworkHandler extends MessageProcessor {
 			String reason = "None Found";
 			if (details != null){
 				reason = details.getReason().toString();
+				if (details.getReason() == ConnectionReason.MAPPING){
+					getP2PMessageProcessor().getState().getActiveMappingRequests().put(client.getMinimaAddress(), client);
+				}
 			}
 			InputHandler.endResponse(zMessage, true, "Attempting to connect to " + address + " Reason: " + reason);
 			
