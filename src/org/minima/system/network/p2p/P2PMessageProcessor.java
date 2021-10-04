@@ -360,19 +360,22 @@ public class P2PMessageProcessor extends MessageProcessor {
     }
 
     private void processLoopMsg(Message zMessage) {
+        Random rand = new Random();
+        long loopDelay = 300_000 + rand.nextInt(30_000);
 
         if (!state.isRendezvousComplete()) {
             JoiningFuncs.joinRendezvousNode(state, getCurrentMinimaClients()).forEach(this::PostMessage);
+            loopDelay = 6_000 + rand.nextInt(3_000);
         } else if (state.getOutLinks().size() < 3) {
             JoiningFuncs.joinEntryNode(state, getCurrentMinimaClients()).forEach(this::PostMessage);
+            loopDelay = 6_000 + rand.nextInt(3_000);
         } else if (state.getOutLinks().size() < state.getNumLinks()) {
             JoiningFuncs.joinScaleOutLinks(state, getCurrentMinimaClients()).forEach(this::PostMessage);
-
         }
         ArrayList<ExpiringMessage> expiringMessages = this.state.dropExpiredMessages();
 //        log.debug(state.genPrintableState());
-        Random rand = new Random();
-        PostTimerMessage(new TimerMessage(60_000 + rand.nextInt(30_000), P2P_LOOP));
+
+        PostTimerMessage(new TimerMessage(loopDelay, P2P_LOOP));
     }
 
 
