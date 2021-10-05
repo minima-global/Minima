@@ -66,6 +66,9 @@ public class WalkLinksFuncs {
             retMsg = createNextHopMsg(nextHop, p2pWalkLinks, allClients);
         } else {
             p2pWalkLinks.setReturning(true);
+            if (p2pWalkLinks.isClientWalk()){
+                p2pWalkLinks.setAvailableClientSlots(state.getNumLinks() - state.getClientLinks().size());
+            }
             state.getExpectedAuthKeys().put(p2pWalkLinks.getSecret().toString(), System.currentTimeMillis() + P2PState.AUTH_KEY_EXPIRY);
             retMsg = onWalkLinkResponseMsg(state, p2pWalkLinks, allClients);
         }
@@ -111,7 +114,7 @@ public class WalkLinksFuncs {
         Message returnMessage = null;
         InetSocketAddress connectTargetAddress = msg.getPathTaken().get(msg.getPathTaken().size() - 1);
         if (!connectTargetAddress.equals(state.getAddress())) {
-            if (!state.getRandomNodeSet().contains(connectTargetAddress)) {
+            if (!state.getRecentJoiners().contains(connectTargetAddress)) {
                 state.addRandomNodeSet(connectTargetAddress);
             }
             if (state.getOutLinks().size() < state.getNumLinks()) {
@@ -123,7 +126,7 @@ public class WalkLinksFuncs {
                 }
                 returnMessage = new Message(P2PMessageProcessor.P2P_CONNECT)
                         .addObject("address", connectTargetAddress)
-                        .addString("reason", reason + "triggered by a completed connection walk");
+                        .addString("reason", reason + " triggered by a completed connection walk");
                 state.getConnectionDetailsMap().put(connectTargetAddress, new ConnectionDetails(reason, msg.getSecret()));
             } else {
                 log.debug("[!] P2P_WALK_LINKS_RESPONSE: Not Connecting already have max numLinks");
@@ -134,6 +137,24 @@ public class WalkLinksFuncs {
 
         return returnMessage;
     }
+
+    public static ArrayList<Message> onReturnedClientWalkMsg(P2PState state, P2PMsgWalkLinks msg) {
+        ArrayList<Message> returnMessage = new ArrayList<>();
+        InetSocketAddress connectTargetAddress = msg.getPathTaken().get(msg.getPathTaken().size() - 1);
+        if (!connectTargetAddress.equals(state.getAddress())) {
+            if (!state.getRecentJoiners().contains(connectTargetAddress)) {
+                state.addRandomNodeSet(connectTargetAddress);
+            }
+            log.debug("[!] P2P_WALK_LINKS_RESPONSE: CLIENT creating do swap messages");
+            returnMessage.addAll(GreetingFuncs.genClientLoadBalanceRequests(state, connectTargetAddress, (long) msg.getAvailableClientSlots()));
+
+        } else {
+            log.debug("[!] P2P_WALK_LINKS_RESPONSE: Not Connecting as returned own address");
+        }
+
+        return returnMessage;
+    }
+
 
     public static Message genP2PWalkLinkMsg(P2PState state, MinimaClient minimaClient, P2PMsgWalkLinks walkLinks, String logType) {
         Message retMsg = null;

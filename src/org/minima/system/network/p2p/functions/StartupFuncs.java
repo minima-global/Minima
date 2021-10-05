@@ -4,18 +4,11 @@ package org.minima.system.network.p2p.functions;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.minima.objects.base.MiniData;
-import org.minima.objects.greet.Greeting;
 import org.minima.system.network.base.MinimaClient;
-import org.minima.system.network.p2p.ConnectionDetails;
-import org.minima.system.network.p2p.ConnectionReason;
-import org.minima.system.network.p2p.P2PMessageProcessor;
 import org.minima.system.network.p2p.P2PState;
 import org.minima.system.network.p2p.messages.*;
 import org.minima.system.network.rpc.RPCClient;
 import org.minima.utils.MinimaLogger;
-import org.minima.utils.messages.Message;
-import org.minima.utils.messages.TimerMessage;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
@@ -131,7 +124,7 @@ public class StartupFuncs {
                 final ObjectMapper mapper = new ObjectMapper();
                 loadedNodeList = mapper.readValue(inputStream, new TypeReference<ArrayList<InetSocketAddress>>() {
                 });
-                state.getRandomNodeSet().addAll(loadedNodeList);
+                state.getRecentJoiners().addAll(loadedNodeList);
             } catch (IOException ioe) {
                 log.error("Error whilst reading in p2pDataFile: ", ioe);
             }
@@ -154,8 +147,8 @@ public class StartupFuncs {
      */
     public static ArrayList<InetSocketAddress> GenRendezvousNodeList(P2PState state, int numAddrToReturn) {
         assert state.getOutLinks() != null : "OutLinks Array is null";
-        assert state.getRandomNodeSet() != null : "InLinks Array is null";
-        return Stream.of(state.getRandomNodeSet(), state.getOutLinks())
+        assert state.getRecentJoiners() != null : "InLinks Array is null";
+        return Stream.of(state.getRecentJoiners(), state.getOutLinks())
                 .flatMap(Collection::stream).distinct().limit(numAddrToReturn).collect(Collectors.toCollection(ArrayList::new));
     }
 

@@ -298,12 +298,12 @@ public class Start {
 		// Only connect to a single host for rendezvous with the p2p network
 		if(connect && connectionAddress != null) {
 //			rcmainserver.addAutoConnectHostPort(connectionAddress);
-			mMainServer.getNetworkHandler().getP2PMessageProcessor().getState().getRandomNodeSet().add(connectionAddress);
+			mMainServer.getNetworkHandler().getP2PMessageProcessor().getState().getRecentJoiners().add(connectionAddress);
 		}else if(connect){
 			MinimaLogger.log(mMainServer.getNetworkHandler().getP2PMessageProcessor().getHostIP().toString());
 			ArrayList<InetSocketAddress> rendezvousHosts = StartupFuncs.LoadNodeList(mMainServer.getNetworkHandler().getP2PMessageProcessor().getState(), VALID_BOOTSTRAP_NODES, noextrahost);
 			connectionAddress = UtilFuncs.SelectRandomAddress(rendezvousHosts);
-			mMainServer.getNetworkHandler().getP2PMessageProcessor().getState().getRandomNodeSet().add(connectionAddress);
+			mMainServer.getNetworkHandler().getP2PMessageProcessor().getState().getRecentJoiners().add(connectionAddress);
 		}
 
 		if(isClient){

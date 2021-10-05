@@ -18,6 +18,8 @@ public class P2PMsgWalkLinks implements Streamable {
     private MiniData secret = MiniData.getRandomData(8);
     boolean walkInLinks;
     boolean isJoiningWalk;
+    boolean isClientWalk;
+    int availableClientSlots = 0;
     boolean isReturning = false;
     int numHopsToGo = 10;
     ArrayList<InetSocketAddress> pathTaken = new ArrayList<>();
@@ -60,6 +62,8 @@ public class P2PMsgWalkLinks implements Streamable {
         secret.writeDataStream(zOut);
         zOut.writeBoolean(walkInLinks);
         zOut.writeBoolean(isJoiningWalk);
+        zOut.writeBoolean(isClientWalk);
+        zOut.writeInt(availableClientSlots);
         zOut.writeBoolean(isReturning);
         zOut.writeInt(numHopsToGo);
         InetSocketAddressIO.writeAddressList(this.pathTaken, zOut);
@@ -71,6 +75,8 @@ public class P2PMsgWalkLinks implements Streamable {
         this.setSecret(MiniData.ReadFromStream(zIn));
         this.setWalkInLinks(zIn.readBoolean());
         this.setJoiningWalk(zIn.readBoolean());
+        this.setClientWalk(zIn.readBoolean());
+        this.setAvailableClientSlots(zIn.readInt());
         this.setReturning(zIn.readBoolean());
         this.setNumHopsToGo(zIn.readInt());
         this.setPathTaken(InetSocketAddressIO.readAddressList(zIn));

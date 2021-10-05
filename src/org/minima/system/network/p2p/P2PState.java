@@ -36,7 +36,7 @@ public class P2PState {
     private ArrayList<InetSocketAddress> outLinks = new ArrayList<>();
     private ArrayList<InetSocketAddress> clientLinks = new ArrayList<>();
 
-    private EvictingQueue<InetSocketAddress> randomNodeSet = EvictingQueue.create(10);
+    private EvictingQueue<InetSocketAddress> recentJoiners = EvictingQueue.create(10);
 
     private Map<MiniData, ExpiringMessage> expiringMessageMap = new HashMap<>();
 
@@ -70,7 +70,7 @@ public class P2PState {
             clientLinksStr.append("\nP2P\t\t").append(linkAddr);
         }
         StringBuilder randomStr = new StringBuilder();
-        for (InetSocketAddress linkAddr : randomNodeSet) {
+        for (InetSocketAddress linkAddr : recentJoiners) {
             randomStr.append("\nP2P\t\t").append(linkAddr);
         }
         StringBuilder detailsStr = new StringBuilder();
@@ -135,11 +135,11 @@ public class P2PState {
     }
 
     public void addRandomNodeSet(InetSocketAddress address) {
-        this.randomNodeSet.add(address);
+        this.recentJoiners.add(address);
     }
 
     public boolean removeRandomNodeSet(InetSocketAddress address) {
-        return this.randomNodeSet.remove(address);
+        return this.recentJoiners.remove(address);
     }
 
 

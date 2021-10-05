@@ -10,6 +10,7 @@ import org.minima.system.network.p2p.P2PState;
 import org.minima.system.network.p2p.messages.P2PMsgNetworkMap;
 import org.minima.system.network.p2p.messages.P2PMsgRendezvous;
 import org.minima.system.network.p2p.messages.P2PMsgSwapLink;
+import org.minima.system.network.p2p.messages.P2PMsgWalkLinks;
 import org.minima.utils.messages.Message;
 
 import java.net.InetSocketAddress;
@@ -19,7 +20,7 @@ import java.util.ArrayList;
 @Slf4j
 public class GreetingFuncs {
 
-    public static ArrayList<Message> onGreetedMsg(P2PState state, Greeting greeting, MinimaClient client) {
+    public static ArrayList<Message> onGreetedMsg(P2PState state, Greeting greeting, MinimaClient client, ArrayList<MinimaClient> allClients) {
         ArrayList<Message> retMsgs = new ArrayList<>();
         // If this message is coming from a p2p aware minima version
         if (greeting.getDetails().containsKey("minimaPort")) {
@@ -62,7 +63,7 @@ public class GreetingFuncs {
                     case ENTRY_NODE:
                         retMsgs.addAll(onEntryNodeGreeting(state, client));
                         if (state.isRendezvousComplete()) {
-                            retMsgs.addAll(genClientLoadBalanceRequests(state, client, numClientSlotsAvailable));
+                            retMsgs.addAll(genClientLoadBalanceRequests(state, client.getMinimaAddress(), numClientSlotsAvailable));
                         }
                         break;
                     case DO_SWAP:
@@ -71,17 +72,17 @@ public class GreetingFuncs {
                     case ADDING_OUT_LINK:
                         retMsgs.addAll(onAddOutLinkGreeting(state, client, authKey));
                         if (state.isRendezvousComplete()) {
-                            retMsgs.addAll(genClientLoadBalanceRequests(state, client, numClientSlotsAvailable));
+                            retMsgs.addAll(genClientLoadBalanceRequests(state, client.getMinimaAddress(), numClientSlotsAvailable));
                         }
                         break;
                     case REPLACING_OUT_LINK:
                         retMsgs.addAll(onReplacingOutLinkGreeting(state, client, authKey));
                         if (state.isRendezvousComplete()) {
-                            retMsgs.addAll(genClientLoadBalanceRequests(state, client, numClientSlotsAvailable));
+                            retMsgs.addAll(genClientLoadBalanceRequests(state, client.getMinimaAddress(), numClientSlotsAvailable));
                         }
                         break;
                     case CLIENT:
-                        retMsgs.addAll(onClientGreeting(state, client));
+                        retMsgs.addAll(onClientGreeting(state, client, allClients));
                         break;
                     case MAPPING:
                         retMsgs.addAll(onMappingGreeting(state, client));
@@ -91,8 +92,8 @@ public class GreetingFuncs {
             }
 
 
-            if (!isClient && state.getRandomNodeSet().size() < 5 && !state.getRandomNodeSet().contains(address) && !address.equals(state.getAddress())) {
-                state.getRandomNodeSet().add(address);
+            if (!isClient && state.getRecentJoiners().size() < 5 && !state.getRecentJoiners().contains(address) && !address.equals(state.getAddress())) {
+                state.getRecentJoiners().add(address);
             }
 
         }
@@ -204,7 +205,7 @@ public class GreetingFuncs {
         return retMsgs;
     }
 
-    public static ArrayList<Message> onClientGreeting(P2PState state, MinimaClient client) {
+    public static ArrayList<Message> onClientGreeting(P2PState state, MinimaClient client, ArrayList<MinimaClient> minimaClients) {
         ArrayList<Message> retMsgs = new ArrayList<>();
         client.setIsClient(true);
         if (state.getClientLinks().contains(client.getMinimaAddress())) {
@@ -216,6 +217,14 @@ public class GreetingFuncs {
         } else {
             state.addClientLink(client.getMinimaAddress());
             log.debug(state.genPrintableState());
+            if (state.isSetupComplete() && !state.isClient() && state.getOutLinks().size() < state.getNumLinks()) {
+                // Replace Outlink
+                P2PMsgWalkLinks walkLinks = new P2PMsgWalkLinks(true, false);
+                walkLinks.setClientWalk(true);
+                InetSocketAddress nextHop = UtilFuncs.SelectRandomAddress(state.getOutLinks());
+                MinimaClient minimaClient = UtilFuncs.getClientForInetAddress(nextHop, minimaClients, false);
+                retMsgs.add(WalkLinksFuncs.genP2PWalkLinkMsg(state, minimaClient, walkLinks, "P2P_ON_DISCONNECTED"));
+            }
 
         }
 
@@ -248,8 +257,7 @@ public class GreetingFuncs {
         return retMsgs;
     }
 
-    public static ArrayList<Message> genClientLoadBalanceRequests(P2PState state, MinimaClient client, Long maxClientsCanReceive) {
-
+    public static ArrayList<Message> genClientLoadBalanceRequests(P2PState state, InetSocketAddress address, Long maxClientsCanReceive) {
 
         ArrayList<Message> retMsgs = new ArrayList<>();
         // TODO: Add * 2 to reduce the amount of load balancing messages
@@ -259,7 +267,7 @@ public class GreetingFuncs {
             for (int i = 0; i < numSwaps; i++) {
                 // Send a DOSWAP message to numSwaps clients
                 P2PMsgSwapLink swapLink = new P2PMsgSwapLink();
-                swapLink.setSwapTarget(client.getMinimaAddress());
+                swapLink.setSwapTarget(address);
                 swapLink.setSwapClientReq(true);
                 retMsgs.add(new Message(P2PMessageProcessor.P2P_SWAP_LINK).addObject("data", swapLink));
             }

@@ -227,7 +227,7 @@ public class P2PMessageProcessor extends MessageProcessor {
         Greeting greeting = (Greeting) zMessage.getObject("greeting");
         MinimaClient client = (MinimaClient) zMessage.getObject("client");
 
-        GreetingFuncs.onGreetedMsg(state, greeting, client).forEach(this::PostMessage);
+        GreetingFuncs.onGreetedMsg(state, greeting, client, getCurrentMinimaClients()).forEach(this::PostMessage);
     }
 
     private void processOnRendezvousMsg(Message zMessage) {
@@ -345,7 +345,15 @@ public class P2PMessageProcessor extends MessageProcessor {
         Message sendMsg = null;
         if (state.getAddress().equals(p2pWalkLinks.getPathTaken().get(0))) {
             log.debug("[+] P2P_WALK_LINKS_RESPONSE returned to origin node");
-            sendMsg = WalkLinksFuncs.onReturnedWalkMsg(state, p2pWalkLinks);
+            if(p2pWalkLinks.isClientWalk())
+            {
+                ArrayList<Message> msgs = WalkLinksFuncs.onReturnedClientWalkMsg(state, p2pWalkLinks);
+                msgs.forEach(this::PostMessage);
+            } else {
+                sendMsg = WalkLinksFuncs.onReturnedWalkMsg(state, p2pWalkLinks);
+            }
+
+
         } else {
             sendMsg = WalkLinksFuncs.onWalkLinkResponseMsg(state, p2pWalkLinks, getCurrentMinimaClients());
         }
@@ -406,7 +414,7 @@ public class P2PMessageProcessor extends MessageProcessor {
                 state.getOutLinks(),
                 state.getClientLinks().size()
         ));
-        ArrayList<InetSocketAddress> addresses = Stream.of(state.getRandomNodeSet(), state.getOutLinks(), state.getInLinks())
+        ArrayList<InetSocketAddress> addresses = Stream.of(state.getRecentJoiners(), state.getOutLinks(), state.getInLinks())
                 .flatMap(Collection::stream).distinct().collect(Collectors.toCollection(ArrayList::new));
         for (InetSocketAddress address: addresses){
             // Connect and
