@@ -297,23 +297,23 @@ public class NetworkHandler extends MessageProcessor {
 			//Small pause..
 			Thread.sleep(200);
 			
-//			//Start the RPC server
-//			mRPCServer = new RPCServer(getRPCPort());
-//			Thread rpc = new Thread(mRPCServer, "RPC Server");
-//			rpc.setDaemon(true);
-//			rpc.start();
-//
-//			//Small pause..
-//			Thread.sleep(200);
-//
-//			//Start the DAPP Server
-//			mDAPPManager = new DAPPManager();
-//
-//			//Start the WebSocket Manager
-//			mWebSocketManager = new WebSocketManager(getWSPort());
-//
-//			//Start Maxima
-//			mMaxima = new Maxima();
+			//Start the RPC server
+			mRPCServer = new RPCServer(getRPCPort());
+			Thread rpc = new Thread(mRPCServer, "RPC Server");
+			rpc.setDaemon(true);
+			rpc.start();
+
+			//Small pause..
+			Thread.sleep(200);
+
+			//Start the DAPP Server
+			mDAPPManager = new DAPPManager();
+
+			//Start the WebSocket Manager
+			mWebSocketManager = new WebSocketManager(getWSPort());
+
+			//Start Maxima
+			mMaxima = new Maxima();
 			
 			//Start the SSH Tunnel Manager
 			mTunnel = new SSHTunnel();
