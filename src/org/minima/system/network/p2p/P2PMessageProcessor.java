@@ -58,6 +58,7 @@ public class P2PMessageProcessor extends MessageProcessor {
     public static final String P2P_PRINT_NETWORK_MAP_RESPONSE = "P2P_PRINT_NETWORK_MAP_RESPONSE";
 
     public static final String P2P_SEND_MESSAGE = "P2P_SEND_MESSAGE";
+    public static final String P2P_CLIENT_UPDATE_LOOP = "P2P_CLIENT_UPDATE_LOOP";
 
 
 
@@ -121,8 +122,6 @@ public class P2PMessageProcessor extends MessageProcessor {
 
     /**
      * You can use this to get your HOST/IP etc
-     *
-     * @return
      */
     protected NetworkHandler getNetworkHandler() {
         return Main.getMainHandler().getNetworkHandler();
@@ -130,15 +129,9 @@ public class P2PMessageProcessor extends MessageProcessor {
 
     /**
      * All the current connections
-     *
-     * @return
      */
     protected ArrayList<MinimaClient> getCurrentMinimaClients() {
         return getNetworkHandler().getNetClients();
-    }
-
-    protected void sendMessage(MinimaClient zClient, Message zMessage) {
-        zClient.PostMessage(zMessage);
     }
 
 
@@ -146,7 +139,6 @@ public class P2PMessageProcessor extends MessageProcessor {
      * Routes messages to the correct processing function
      *
      * @param zMessage The Full Message
-     * @throws Exception
      */
     @Override
     protected void processMessage(Message zMessage) throws Exception {
@@ -211,7 +203,7 @@ public class P2PMessageProcessor extends MessageProcessor {
             StringBuilder builder = new StringBuilder();
             StackTraceElement[] trace = e.getStackTrace();
             for (StackTraceElement traceElement : trace)
-                builder.append("\tat " + traceElement + "\n");
+                builder.append("\tat ").append(traceElement).append("\n");
 
             log.error("[!] Exception in P2P Message Processor: " + e + "\n" + builder);
         }
@@ -276,10 +268,8 @@ public class P2PMessageProcessor extends MessageProcessor {
     private void processOnDisconnectedMsg(Message zMessage) {
         log.debug(this.state.genPrintableState());
         MinimaClient client = (MinimaClient) zMessage.getObject("client");
-        if (client.isIncoming()) {
-        }
         log.debug("[!] P2P_ON_DISCONNECT Disconnected from isInLink? " + client.isIncoming() + " IP: " + client.getMinimaAddress());
-        Message walkMsg = null;
+        Message walkMsg;
         if (client.isIncoming()) {
             walkMsg = DisconnectionFuncs.onInLinkDisconnected(state, client, getCurrentMinimaClients());
         } else {
@@ -321,7 +311,7 @@ public class P2PMessageProcessor extends MessageProcessor {
         } else if (swapLink.isConditionalSwapReq() && state.getInLinks().size() > state.getNumLinks()) {
             // Send SwapLink message if we have more inLinks than desired
             messageToSend = SwapFuncs.onSwapReq(state, swapLink, getCurrentMinimaClients());
-        } else {
+        } else if (!swapLink.isConditionalSwapReq()){
             messageToSend = SwapFuncs.onSwapReq(state, swapLink, getCurrentMinimaClients());
         }
         if (messageToSend != null) {
@@ -374,7 +364,7 @@ public class P2PMessageProcessor extends MessageProcessor {
         } else if (state.getOutLinks().size() < 3) {
             JoiningFuncs.joinEntryNode(state, getCurrentMinimaClients()).forEach(this::PostMessage);
             loopDelay = 6_000 + rand.nextInt(3_000);
-        } else if (state.getOutLinks().size() < state.getNumLinks()) {
+        } else if (!state.isClient() && state.getOutLinks().size() < state.getNumLinks()) {
             JoiningFuncs.joinScaleOutLinks(state, getCurrentMinimaClients()).forEach(this::PostMessage);
         }
         ArrayList<ExpiringMessage> expiringMessages = this.state.dropExpiredMessages();
@@ -411,6 +401,11 @@ public class P2PMessageProcessor extends MessageProcessor {
     private void processPrintNetworkMapRequestMsg(Message zMessage) {
         printNetworkMapRPCReq = zMessage;
 
+        state.getNetworkMap().put(state.getAddress(), new P2PMsgNetworkMap(
+                state.getAddress(),
+                state.getOutLinks(),
+                state.getClientLinks().size()
+        ));
         ArrayList<InetSocketAddress> addresses = Stream.of(state.getRandomNodeSet(), state.getOutLinks(), state.getInLinks())
                 .flatMap(Collection::stream).distinct().collect(Collectors.toCollection(ArrayList::new));
         for (InetSocketAddress address: addresses){

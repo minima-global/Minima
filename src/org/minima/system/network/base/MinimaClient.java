@@ -21,6 +21,7 @@ import org.minima.system.network.NetworkHandler;
 import org.minima.system.network.p2p.ConnectionDetails;
 import org.minima.system.network.p2p.ConnectionReason;
 import org.minima.system.network.p2p.P2PMessageProcessor;
+import org.minima.system.network.p2p.P2PState;
 import org.minima.system.network.p2p.messages.*;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
@@ -107,6 +108,11 @@ public class MinimaClient extends MessageProcessor {
 	boolean mIncoming;
 
 	/**
+	 * Incoming or Outgoing
+	 */
+	boolean isClient = false;
+
+	/**
 	 * Constructor
 	 * 
 	 * @param zNetwork
@@ -121,7 +127,7 @@ public class MinimaClient extends MessageProcessor {
 		mPort = address.getPort();
 		this.address = address;
 		this.minimaAddress = address;
-		
+
 		//We will attempt to reconnect if this connection breaks..
 		mReconnect  = true;
 		mReconnectAttempts = 0;
@@ -186,6 +192,13 @@ public class MinimaClient extends MessageProcessor {
 	}
 	public void setMinimaAddress(InetSocketAddress address) {
 		this.minimaAddress = address;
+	}
+
+	public boolean isClient() {
+		return isClient;
+	}
+	public void setIsClient(boolean isClient) {
+		this.isClient = isClient;
 	}
 
 	public String getHost() {
@@ -279,20 +292,26 @@ public class MinimaClient extends MessageProcessor {
 		}else if(zMessage.isMessageType(NETCLIENT_GREETING)) {
 			Greeting greet = (Greeting)zMessage.getObject("greeting");
 			// Send number of client connections regardless of if this is an incoming or outgoing connection
-			greet.addAdditionalDetails("numClients", getNetworkHandler().getP2PMessageProcessor().getState().getClientLinks().size());
+			P2PState state = getNetworkHandler().getP2PMessageProcessor().getState();
+			int numClientSlotsAvailable = state.getNumLinks() * 2 - state.getClientLinks().size();
+			greet.addAdditionalDetails("numClientSlotsAvailable", numClientSlotsAvailable);
 			greet.addAdditionalDetails("minimaPort", getNetworkHandler().getBasePort());
+			greet.addAdditionalDetails("isClient", state.isClient());
 			if (!this.isIncoming()){
 				// Outgoing connection only
-				ConnectionDetails details = getNetworkHandler().getP2PMessageProcessor().getState().getConnectionDetailsMap().remove(minimaAddress);
+				ConnectionDetails details = state.getConnectionDetailsMap().remove(minimaAddress);
+				ConnectionReason reason;
 				if (details != null){
-					ConnectionReason reason = details.getReason();
-					if(getNetworkHandler().getP2PMessageProcessor().getState().isClient()){
+					reason = details.getReason();
+					if(state.isClient() && details.getReason() != ConnectionReason.RENDEZVOUS){
 						reason = ConnectionReason.CLIENT;
 					}
 					greet.addAdditionalDetails("reason", reason.toString());
 					if (details.getAuth_key() != null) {
 						greet.addAdditionalDetails("auth_key", details.getAuth_key().toString());
 					}
+				} else {
+					reason = ConnectionReason.CLIENT;
 				}
 			}
 			sendMessage(MinimaReader.NETMESSAGE_GREETING, greet);

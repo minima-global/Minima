@@ -65,6 +65,23 @@ public class UtilFuncs {
         return returnClient;
     }
 
+    public static MinimaClient getMinimaClientForClient(InetSocketAddress address, ArrayList<MinimaClient> clients) {
+        MinimaClient returnClient = null;
+        if (address != null) {
+            for (MinimaClient client : clients) {
+                    if (client.getMinimaAddress() != null && client.isClient() && client.getMinimaAddress().equals(address))
+                    {
+                            returnClient = client;
+                    } else {
+                        log.debug("[-] Minima Address is null for client: " + client.getUID());
+                    }
+            }
+        } else {
+            log.debug("[-] address is null");
+        }
+        return returnClient;
+    }
+
     public static InetSocketAddress SelectRandomAddress(ArrayList<InetSocketAddress> addresses){
         assert !addresses.isEmpty() : "Attempting to select from an empty list";
         InetSocketAddress returnAddress = null;

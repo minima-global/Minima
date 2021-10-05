@@ -21,7 +21,7 @@ public class SwapFuncs {
         InetSocketAddress addressToDoSwap = UtilFuncs.SelectRandomAddress(state.getClientLinks());
 
         ArrayList<MinimaClient> clients = allClients.stream()
-                .filter(x -> !state.getDisconnectingClients().contains(x.getUID()))
+                .filter(MinimaClient::isClient)
                 .collect(Collectors.toCollection(ArrayList::new));
 
         log.debug("[!] P2P_SWAP_LINK Num Clients post filter: " + clients.size() + " num disconnecting clients: " + state.getDisconnectingClients().size() + " num clients: " + allClients.size());
@@ -57,7 +57,6 @@ public class SwapFuncs {
 
         if (minimaClient != null) {
             log.debug("[+] P2P_DO_SWAP CLIENT Sending do swap message to client");
-            state.addDisconnectingClient(minimaClient.getUID());
 
             P2PMsgDoSwap msgDoSwap = new P2PMsgDoSwap();
             msgDoSwap.setSecret(swapLink.getSecret());
@@ -85,7 +84,11 @@ public class SwapFuncs {
                 .addObject("address", doSwap.getSwapTarget())
                 .addString("reason", " for a DO_SWAP Request")
         );
-        state.getConnectionDetailsMap().put(doSwap.getSwapTarget(), new ConnectionDetails(ConnectionReason.DO_SWAP, doSwap.getSecret()));
+        ConnectionReason reason = ConnectionReason.DO_SWAP;
+        if (state.isClient()){
+            reason = ConnectionReason.CLIENT;
+        }
+        state.getConnectionDetailsMap().put(doSwap.getSwapTarget(), new ConnectionDetails(reason, doSwap.getSecret()));
 
         // Disconnect from old client
         messages.add(new Message(P2PMessageProcessor.P2P_DISCONNECT)

@@ -14,9 +14,6 @@ import org.minima.utils.messages.Message;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 
 @Slf4j
@@ -27,7 +24,8 @@ public class GreetingFuncs {
         // If this message is coming from a p2p aware minima version
         if (greeting.getDetails().containsKey("minimaPort")) {
             Long minimaPort = (Long) greeting.getDetails().get("minimaPort");
-            Long numClients = (Long) greeting.getDetails().get("numClients");
+            Long numClientSlotsAvailable = (Long) greeting.getDetails().get("numClientSlotsAvailable");
+            boolean isClient = (boolean) greeting.getDetails().get("isClient");
 
             InetSocketAddress address = new InetSocketAddress(client.getHost(), minimaPort.intValue());
             client.setMinimaAddress(address);
@@ -47,6 +45,7 @@ public class GreetingFuncs {
                 authKey = new MiniData();
             }
             if (reason == null) {
+                // OutLinks
                 // This message is being received by a node that has just done an outgoing connection
                 if (client.isIncoming()) {
                     state.getInLinks().add(client.getMinimaAddress());
@@ -55,6 +54,7 @@ public class GreetingFuncs {
                     state.getOutLinks().add(client.getMinimaAddress());
                 }
             } else {
+                // InLinks
                 switch (reason) {
                     case RENDEZVOUS:
                         retMsgs.addAll(onRendezvousGreeting(state, client));
@@ -82,12 +82,11 @@ public class GreetingFuncs {
             }
 
             if (reason != ConnectionReason.CLIENT &&
-                    state.isRendezvousComplete() &&
-                    state.getClientLinks().size() > state.getNumLinks() * 2) {
-                retMsgs.addAll(genClientLoadBalanceRequests(state, numClients));
+                    state.isRendezvousComplete()) {
+                retMsgs.addAll(genClientLoadBalanceRequests(state, client, numClientSlotsAvailable));
             }
 
-            if (state.getRandomNodeSet().size() < 5 && !state.getRandomNodeSet().contains(address) && !address.equals(state.getAddress())) {
+            if (!isClient && state.getRandomNodeSet().size() < 5 && !state.getRandomNodeSet().contains(address) && !address.equals(state.getAddress())) {
                 state.getRandomNodeSet().add(address);
             }
 
@@ -202,7 +201,7 @@ public class GreetingFuncs {
 
     public static ArrayList<Message> onClientGreeting(P2PState state, MinimaClient client) {
         ArrayList<Message> retMsgs = new ArrayList<>();
-
+        client.setIsClient(true);
         if (state.getClientLinks().contains(client.getMinimaAddress())) {
             retMsgs.add(new Message(P2PMessageProcessor.P2P_DISCONNECT)
                     .addObject("client", client)
@@ -244,15 +243,21 @@ public class GreetingFuncs {
         return retMsgs;
     }
 
-    public static ArrayList<Message> genClientLoadBalanceRequests(P2PState state, Long numClients) {
+    public static ArrayList<Message> genClientLoadBalanceRequests(P2PState state, MinimaClient client, Long maxClientsCanReceive) {
+
+
         ArrayList<Message> retMsgs = new ArrayList<>();
-        int numClientSlotsAvailable = (state.getNumLinks() * 4) - state.getClientLinks().size();
-        int numSwaps = Math.min(numClients.intValue() / 2, numClientSlotsAvailable);
-        for (int i = 0; i < numSwaps; i++) {
-            P2PMsgSwapLink swapLink = new P2PMsgSwapLink();
-            swapLink.setSwapTarget(state.getAddress());
-            swapLink.setSwapClientReq(true);
-            retMsgs.add(new Message(MinimaClient.NETMESSAGE_P2P_SWAP_LINK).addObject("data", swapLink));
+        // TODO: Add * 2 to reduce the amount of load balancing messages
+        if (state.getClientLinks().size() > state.getNumLinks()) {
+            int numClientsToSend = state.getClientLinks().size() / 2;
+            int numSwaps = Math.min(numClientsToSend, maxClientsCanReceive.intValue());
+            for (int i = 0; i < numSwaps; i++) {
+                // Send a DOSWAP message to numSwaps clients
+                P2PMsgSwapLink swapLink = new P2PMsgSwapLink();
+                swapLink.setSwapTarget(client.getMinimaAddress());
+                swapLink.setSwapClientReq(true);
+                retMsgs.add(new Message(P2PMessageProcessor.P2P_SWAP_LINK).addObject("data", swapLink));
+            }
         }
         return retMsgs;
     }
