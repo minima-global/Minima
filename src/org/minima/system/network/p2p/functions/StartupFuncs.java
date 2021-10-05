@@ -131,7 +131,7 @@ public class StartupFuncs {
                 final ObjectMapper mapper = new ObjectMapper();
                 loadedNodeList = mapper.readValue(inputStream, new TypeReference<ArrayList<InetSocketAddress>>() {
                 });
-                state.setRandomNodeSet(loadedNodeList);
+                state.getRandomNodeSet().addAll(loadedNodeList);
             } catch (IOException ioe) {
                 log.error("Error whilst reading in p2pDataFile: ", ioe);
             }

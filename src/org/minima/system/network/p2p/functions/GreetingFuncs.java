@@ -61,15 +61,24 @@ public class GreetingFuncs {
                         break;
                     case ENTRY_NODE:
                         retMsgs.addAll(onEntryNodeGreeting(state, client));
+                        if (state.isRendezvousComplete()) {
+                            retMsgs.addAll(genClientLoadBalanceRequests(state, client, numClientSlotsAvailable));
+                        }
                         break;
                     case DO_SWAP:
                         retMsgs.addAll(onDoSwapGreeting(state, client, authKey));
                         break;
                     case ADDING_OUT_LINK:
                         retMsgs.addAll(onAddOutLinkGreeting(state, client, authKey));
+                        if (state.isRendezvousComplete()) {
+                            retMsgs.addAll(genClientLoadBalanceRequests(state, client, numClientSlotsAvailable));
+                        }
                         break;
                     case REPLACING_OUT_LINK:
                         retMsgs.addAll(onReplacingOutLinkGreeting(state, client, authKey));
+                        if (state.isRendezvousComplete()) {
+                            retMsgs.addAll(genClientLoadBalanceRequests(state, client, numClientSlotsAvailable));
+                        }
                         break;
                     case CLIENT:
                         retMsgs.addAll(onClientGreeting(state, client));
@@ -81,10 +90,6 @@ public class GreetingFuncs {
                 }
             }
 
-            if (reason != ConnectionReason.CLIENT &&
-                    state.isRendezvousComplete()) {
-                retMsgs.addAll(genClientLoadBalanceRequests(state, client, numClientSlotsAvailable));
-            }
 
             if (!isClient && state.getRandomNodeSet().size() < 5 && !state.getRandomNodeSet().contains(address) && !address.equals(state.getAddress())) {
                 state.getRandomNodeSet().add(address);

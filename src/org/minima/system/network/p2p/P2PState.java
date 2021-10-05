@@ -1,5 +1,6 @@
 package org.minima.system.network.p2p;
 
+import com.google.common.collect.EvictingQueue;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -35,7 +36,7 @@ public class P2PState {
     private ArrayList<InetSocketAddress> outLinks = new ArrayList<>();
     private ArrayList<InetSocketAddress> clientLinks = new ArrayList<>();
 
-    private ArrayList<InetSocketAddress> randomNodeSet = new ArrayList<>();
+    private EvictingQueue<InetSocketAddress> randomNodeSet = EvictingQueue.create(10);
 
     private Map<MiniData, ExpiringMessage> expiringMessageMap = new HashMap<>();
 
@@ -120,10 +121,6 @@ public class P2PState {
 
     public boolean removeClientLink(String uid) {
         return this.clientLinks.remove(address);
-    }
-
-    public void addDisconnectingClient(String uid) {
-        this.disconnectingClients.add(uid);
     }
 
     public boolean removeDisconnectingClient(String uid) {

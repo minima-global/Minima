@@ -12,6 +12,7 @@ import org.minima.utils.messages.Message;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class JoiningFuncs {
@@ -19,7 +20,7 @@ public class JoiningFuncs {
     {
         ArrayList<Message> msgs = new ArrayList<>();
         if (!state.getRandomNodeSet().isEmpty()) {
-            InetSocketAddress address = UtilFuncs.SelectRandomAddress(state.getRandomNodeSet());
+            InetSocketAddress address = UtilFuncs.SelectRandomAddress(new ArrayList<>(state.getRandomNodeSet()));
             msgs.add(new Message(P2PMessageProcessor.P2P_CONNECT).addObject("address", address).addString("reason", "RENDEZVOUS connection"));
             state.getConnectionDetailsMap().put(address, new ConnectionDetails(ConnectionReason.RENDEZVOUS));
         } else {
@@ -32,7 +33,7 @@ public class JoiningFuncs {
     {
         ArrayList<Message> msgs = new ArrayList<>();
         if (!state.getRandomNodeSet().isEmpty()) {
-            InetSocketAddress address = UtilFuncs.SelectRandomAddress(state.getRandomNodeSet());
+            InetSocketAddress address = UtilFuncs.SelectRandomAddress(new ArrayList<>(state.getRandomNodeSet()));
             msgs.add(new Message(P2PMessageProcessor.P2P_CONNECT).addObject("address", address).addString("reason", "ENTRY_NODE connection"));
             state.getConnectionDetailsMap().put(address, new ConnectionDetails(ConnectionReason.ENTRY_NODE));
             state.setEntryNodeConnected(true);
