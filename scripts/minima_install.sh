@@ -2,7 +2,7 @@
 set -e
 
 UNSECURE_FLAG=''
-CLEAN_FLAG='false'
+CLEAN_FLAG=''
 PORT='9121'
 HOME="/home/minima"
 LOCAL="/usr/local"
@@ -34,8 +34,8 @@ then
   exit 1;
 fi
 
-#sudo apt update
-#sudo apt install openjdk-11-jre-headless -y
+sudo apt update
+sudo apt install openjdk-11-jre-headless -y
 
 DOWNLOAD_URL="https://github.com/minima-global/Minima/raw/feature_p2p/jar/minima-p2p-alpha.jar"
 MINIMA_JAR_NAME="minima-p2p-alpha.jar"
