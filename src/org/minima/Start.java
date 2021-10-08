@@ -144,6 +144,7 @@ public class Start {
 		boolean daemon          = false;
 		boolean automine 		= false;
 		boolean isClient 	    = false;
+		boolean secureNode		= false;
 		
 		boolean mysql 			= false;
 		String mysqlhost 		= "";
@@ -167,7 +168,11 @@ public class Start {
 				}else if(arg.equals("-host")) {
 					//Hard code the HOST.. 
 					host = zArgs[counter++];
-				
+
+				}else if(arg.equals("-secure")) {
+					//Hard code the HOST..
+					secureNode = true;
+
 				}else if(arg.equals("-noextrahost")) {
 					//RESET
 					noextrahost = true;
@@ -186,7 +191,7 @@ public class Start {
 					MinimaLogger.log("        -daemon                : Accepts no input from STDIN. Can run in background process.");
 					MinimaLogger.log("        -mysql                 : Specify a MySQL server to use instead of built in H2 database. user:password@host");
 					MinimaLogger.log("        -externalurl           : Send a POST request to this URL with Minima JSON information.");
-					
+					MinimaLogger.log("        -secure           	  : Disables RPC and MiniDapp functionality");
 					MinimaLogger.log("        -help                  : Show this help");
 					MinimaLogger.log("");
 					MinimaLogger.log("With zero parameters Minima will start and connect to a set of default nodes.");
@@ -252,6 +257,7 @@ public class Start {
 				
 				}else if(arg.equals("-test")) {
 					//Use the Test PARAMS!
+					// TODO: Add the p2p parameters to Global Params and Test Params
 					TestParams.setTestParams();
 				}else if(arg.equals("-isclient")) {
 					isClient = true;
@@ -289,7 +295,7 @@ public class Start {
 		}
 
 		//Start the main Minima server
-		Main rcmainserver = new Main(host, port, conffile.getAbsolutePath());
+		Main rcmainserver = new Main(host, port, !secureNode, conffile.getAbsolutePath());
 
 		//Link it.
 		mMainServer = rcmainserver;

@@ -224,7 +224,7 @@ public class P2PMessageProcessor extends MessageProcessor {
     }
 
     private void processOnGreetedMsg(Message zMessage) {
-        Greeting greeting = (Greeting) zMessage.getObject("greeting");
+        P2PMsgGreeting greeting = (P2PMsgGreeting) zMessage.getObject("data");
         MinimaClient client = (MinimaClient) zMessage.getObject("client");
 
         GreetingFuncs.onGreetedMsg(state, greeting, client, getCurrentMinimaClients()).forEach(this::PostMessage);
@@ -384,15 +384,16 @@ public class P2PMessageProcessor extends MessageProcessor {
 
     private void processNetworkMapMsg(Message zMessage) {
         // On getting a network map back
-        P2PMsgNetworkMap networkMap = (P2PMsgNetworkMap) zMessage.getObject("data");
+        P2PMsgNode networkMap = (P2PMsgNode) zMessage.getObject("data");
         state.getNetworkMap().put(networkMap.getNodeAddress(), networkMap);
+
         state.getActiveMappingRequests().remove(networkMap.getNodeAddress());
-        ArrayList<InetSocketAddress> newAddresses = networkMap.getAddresses().stream()
-                .filter(x -> !state.getNetworkMap().containsKey(x))
+
+        ArrayList<InetSocketAddress> newAddresses = networkMap.getOutLinks().stream()
+                .filter(x -> !state.getNetworkMap().containsKey(x) && !state.getActiveMappingRequests().containsKey(x))
                 .distinct()
                 .collect(Collectors.toCollection(ArrayList::new));
 
-        log.debug("[+] P2P_MAP_NETWORK node: " + networkMap.toNodeJSON().toString() + " links: " + networkMap.toLinksJSON().toString());
         if (state.getNetworkMap().size() < 1_000 && !newAddresses.isEmpty()) {
             for (InetSocketAddress address: newAddresses){
                 // Connect and
@@ -400,8 +401,11 @@ public class P2PMessageProcessor extends MessageProcessor {
                 PostMessage(new Message(P2PMessageProcessor.P2P_CONNECT).addObject("address", address).addString("reason", "MAPPING connection"));
             }
         }
+
         if (state.getActiveMappingRequests().isEmpty()){
             PostMessage(new Message(P2P_PRINT_NETWORK_MAP_RESPONSE));
+        } else {
+            log.debug("[+] P2P_MAP_NETWORK active mappings left: " + state.getActiveMappingRequests().keySet());
         }
 
     }
@@ -409,20 +413,17 @@ public class P2PMessageProcessor extends MessageProcessor {
     private void processPrintNetworkMapRequestMsg(Message zMessage) {
         printNetworkMapRPCReq = zMessage;
 
-        state.getNetworkMap().put(state.getAddress(), new P2PMsgNetworkMap(
-                state.getAddress(),
-                state.getOutLinks(),
-                state.getClientLinks().size()
-        ));
+        state.getNetworkMap().put(state.getAddress(), new P2PMsgNode(state));
         ArrayList<InetSocketAddress> addresses = Stream.of(state.getRecentJoiners(), state.getOutLinks(), state.getInLinks())
                 .flatMap(Collection::stream).distinct().collect(Collectors.toCollection(ArrayList::new));
+
         for (InetSocketAddress address: addresses){
             // Connect and
             state.getConnectionDetailsMap().put(address, new ConnectionDetails(ConnectionReason.MAPPING));
             PostMessage(new Message(P2PMessageProcessor.P2P_CONNECT).addObject("address", address).addString("reason", "MAPPING connection"));
         }
 
-        PostTimerMessage(new TimerMessage(29_000, P2P_PRINT_NETWORK_MAP_RESPONSE));
+        PostTimerMessage(new TimerMessage(20_000, P2P_PRINT_NETWORK_MAP_RESPONSE));
 //        log.error("[-] P2P_PRINT_NETWORK_MAP Request UID " + mapNetwork.getRequestUID());
 //        PostMessage(new Message(P2P_MAP_NETWORK).addObject("data", mapNetwork).addString("from_ip", state.getAddress().toString()));
 
@@ -435,7 +436,7 @@ public class P2PMessageProcessor extends MessageProcessor {
             // nodes
             JSONArray nodes = new JSONArray();
             JSONArray links = new JSONArray();
-            for (P2PMsgNetworkMap value: state.getNetworkMap().values()){
+            for (P2PMsgNode value: state.getNetworkMap().values()){
                 nodes.add(value.toNodeJSON());
                 links.addAll(value.toLinksJSON());
             }

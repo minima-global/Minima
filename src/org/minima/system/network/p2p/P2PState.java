@@ -7,7 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.minima.objects.base.MiniData;
 import org.minima.system.network.base.MinimaClient;
 import org.minima.system.network.p2p.messages.ExpiringMessage;
-import org.minima.system.network.p2p.messages.P2PMsgNetworkMap;
+import org.minima.system.network.p2p.messages.P2PMsgNode;
 import org.minima.utils.messages.Message;
 
 import java.io.File;
@@ -46,7 +46,7 @@ public class P2PState {
     private Map<String, Long> expectedAuthKeys = new HashMap<>();
 
 
-    private Map<InetSocketAddress, P2PMsgNetworkMap> networkMap = new HashMap<>();
+    private Map<InetSocketAddress, P2PMsgNode> networkMap = new HashMap<>();
     private Map<InetSocketAddress, MinimaClient> activeMappingRequests = new HashMap<>();
 
     /**

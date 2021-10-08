@@ -146,7 +146,7 @@ public class WalkLinksFuncs {
                 state.addRandomNodeSet(connectTargetAddress);
             }
             log.debug("[!] P2P_WALK_LINKS_RESPONSE: CLIENT creating do swap messages");
-            returnMessage.addAll(GreetingFuncs.genClientLoadBalanceRequests(state, connectTargetAddress, (long) msg.getAvailableClientSlots()));
+            returnMessage.addAll(GreetingFuncs.genClientLoadBalanceRequests(state, connectTargetAddress, msg.getAvailableClientSlots()));
 
         } else {
             log.debug("[!] P2P_WALK_LINKS_RESPONSE: Not Connecting as returned own address");

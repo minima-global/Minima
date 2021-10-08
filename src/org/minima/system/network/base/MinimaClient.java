@@ -65,6 +65,7 @@ public class MinimaClient extends MessageProcessor {
 	public static final String NETCLIENT_PING 	        = "NETCLIENT_PING";
 
 	public static final String NETCLIENT_P2P_RENDEZVOUS = "NETCLIENT_P2P_RENDEZVOUS";
+	public static final String NETCLIENT_P2P_GREETING = "NETCLIENT_P2P_GREETING";
 	public static final String NETCLIENT_P2P_WALK_LINKS = "NETCLIENT_P2P_WALK_LINKS";
 	public static final String NETCLIENT_P2P_WALK_LINKS_RESPONSE = "NETCLIENT_P2P_WALK_LINKS_RESPONSE";
 	public static final String NETMESSAGE_P2P_SWAP_LINK = "NETMESSAGE_P2P_SWAP_LINK";
@@ -279,6 +280,9 @@ public class MinimaClient extends MessageProcessor {
 			mInputThread.start();
 			
 			//First thing to do..
+			PostMessage(new Message(NETCLIENT_P2P_GREETING));
+
+
 			Message init = new Message(ConsensusNet.CONSENSUS_NET_INITIALISE);
 			init.addObject("netclient", this);
 			Main.getMainHandler().getConsensusHandler().PostMessage(init);
@@ -291,29 +295,6 @@ public class MinimaClient extends MessageProcessor {
 		
 		}else if(zMessage.isMessageType(NETCLIENT_GREETING)) {
 			Greeting greet = (Greeting)zMessage.getObject("greeting");
-			// Send number of client connections regardless of if this is an incoming or outgoing connection
-			P2PState state = getNetworkHandler().getP2PMessageProcessor().getState();
-			int numClientSlotsAvailable = state.getNumLinks() * 2 - state.getClientLinks().size();
-			greet.addAdditionalDetails("numClientSlotsAvailable", numClientSlotsAvailable);
-			greet.addAdditionalDetails("minimaPort", getNetworkHandler().getBasePort());
-			greet.addAdditionalDetails("isClient", state.isClient());
-			if (!this.isIncoming()){
-				// Outgoing connection only
-				ConnectionDetails details = state.getConnectionDetailsMap().remove(minimaAddress);
-				ConnectionReason reason;
-				if (details != null){
-					reason = details.getReason();
-					if(state.isClient() && details.getReason() != ConnectionReason.RENDEZVOUS){
-						reason = ConnectionReason.CLIENT;
-					}
-					greet.addAdditionalDetails("reason", reason.toString());
-					if (details.getAuth_key() != null) {
-						greet.addAdditionalDetails("auth_key", details.getAuth_key().toString());
-					}
-				} else {
-					reason = ConnectionReason.CLIENT;
-				}
-			}
 			sendMessage(MinimaReader.NETMESSAGE_GREETING, greet);
 		}else if(zMessage.isMessageType(NETCLIENT_TXPOWLIST)) {
 			TxPoWList txplist = (TxPoWList)zMessage.getObject("txpowlist");
@@ -374,6 +355,9 @@ public class MinimaClient extends MessageProcessor {
 			msg.addString("uid", this.getUID());
 			getNetworkHandler().getP2PMessageProcessor().PostMessage(msg);
 			shutdown();
+		}else if(zMessage.isMessageType(NETCLIENT_P2P_GREETING)) {
+			P2PMsgGreeting data = new P2PMsgGreeting(getNetworkHandler().getP2PMessageProcessor().getState(), this);
+			sendMessage(MinimaReader.NETMESSAGE_P2P_GREETING, data);
 		}else if(zMessage.isMessageType(NETCLIENT_P2P_RENDEZVOUS)) {
 			P2PMsgRendezvous data = (P2PMsgRendezvous) zMessage.getObject("data");
 			sendMessage(MinimaReader.NETMESSAGE_P2P_RENDEZVOUS, data);
@@ -390,7 +374,7 @@ public class MinimaClient extends MessageProcessor {
 			P2PMsgDoSwap data = (P2PMsgDoSwap) zMessage.getObject("data");
 			sendMessage(MinimaReader.NETMESSAGE_P2P_DO_SWAP, data);
 		} else if(zMessage.isMessageType(NETMESSAGE_P2P_MAP_NETWORK)){
-			P2PMsgNetworkMap data = (P2PMsgNetworkMap) zMessage.getObject("data");
+			P2PMsgNode data = (P2PMsgNode) zMessage.getObject("data");
 			sendMessage(MinimaReader.NETMESSAGE_P2P_MAP_NETWORK, data);
 		}
 	}

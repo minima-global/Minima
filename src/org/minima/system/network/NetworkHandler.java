@@ -126,11 +126,12 @@ public class NetworkHandler extends MessageProcessor {
 	 * So you can specify just one port per client.
 	 */
 	int mBasePort;
-	
+
+	boolean fullNode;
 	/**
 	 * 
 	 */
-	public NetworkHandler(String zHost, int zMainPort) {
+	public NetworkHandler(String zHost, int zMainPort, boolean fullNode) {
 		super("NETWORK");
 		if(zHost.equals("")) {
 			mHardSetLocal = false;
@@ -147,7 +148,7 @@ public class NetworkHandler extends MessageProcessor {
 		mBasePort   = zMainPort;
 		mRemoteMinima = mBasePort;
 		mRemoteMaxima = mBasePort+4;
-
+		this.fullNode = fullNode;
 		mP2PMessageProcessor = new P2PMessageProcessor(calculateHostIP(), getMinimaPort());
 	}
 	
@@ -296,25 +297,26 @@ public class NetworkHandler extends MessageProcessor {
 			
 			//Small pause..
 			Thread.sleep(200);
-			
-//			//Start the RPC server
-//			mRPCServer = new RPCServer(getRPCPort());
-//			Thread rpc = new Thread(mRPCServer, "RPC Server");
-//			rpc.setDaemon(true);
-//			rpc.start();
-//
-//			//Small pause..
-//			Thread.sleep(200);
-//
-//			//Start the DAPP Server
-//			mDAPPManager = new DAPPManager();
-//
-//			//Start the WebSocket Manager
-//			mWebSocketManager = new WebSocketManager(getWSPort());
-//
-//			//Start Maxima
-//			mMaxima = new Maxima();
-			
+
+			if (fullNode) {
+				//Start the RPC server
+				mRPCServer = new RPCServer(getRPCPort());
+				Thread rpc = new Thread(mRPCServer, "RPC Server");
+				rpc.setDaemon(true);
+				rpc.start();
+
+				//Small pause..
+				Thread.sleep(200);
+
+				//Start the DAPP Server
+				mDAPPManager = new DAPPManager();
+
+				//Start the WebSocket Manager
+				mWebSocketManager = new WebSocketManager(getWSPort());
+
+				//Start Maxima
+				mMaxima = new Maxima();
+			}
 			//Start the SSH Tunnel Manager
 			mTunnel = new SSHTunnel();
 			
@@ -338,7 +340,12 @@ public class NetworkHandler extends MessageProcessor {
 			try {mWebSocketManager.stop();}catch(Exception exc) {
 				MinimaLogger.log(exc);
 			}
-			
+
+			//Stop the P2P Manager server
+			try {mP2PMessageProcessor.stop();}catch(Exception exc) {
+				MinimaLogger.log(exc);
+			}
+
 			//Stop Maxima
 			try {mMaxima.stop();}catch(Exception exc) {
 				MinimaLogger.log(exc);

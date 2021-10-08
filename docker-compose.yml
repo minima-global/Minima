@@ -12,10 +12,17 @@ services:
       minima_testnet:
         aliases:
           - minima_one
+    ports:
+      - "9002:9002"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.2'
+          memory: 500M
 
   minima_peer:
     image: minima:latest
-    command: -automine -test -clean -connect minima_one 9001
+    command: -test -clean -connect minima_one 9001
     networks:
       minima_testnet:
         aliases:
@@ -26,10 +33,10 @@ services:
       resources:
         limits:
           cpus: '0.1'
-          memory: 500M
+          memory: 400M
   minima_client:
     image: minima:latest
-    command: -automine -test -clean -isclient -connect minima_one 9001
+    command: -test -clean -isclient -connect minima_one 9001
     networks:
       minima_testnet:
         aliases:
@@ -40,4 +47,4 @@ services:
       resources:
         limits:
           cpus: '0.1'
-          memory: 500M
+          memory: 400M

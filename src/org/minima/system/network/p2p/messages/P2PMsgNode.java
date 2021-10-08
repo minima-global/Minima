@@ -3,6 +3,7 @@ package org.minima.system.network.p2p.messages;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.minima.system.network.p2p.P2PState;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
@@ -16,21 +17,24 @@ import java.util.ArrayList;
 @Getter
 @Setter
 @Slf4j
-public class P2PMsgNetworkMap implements Streamable {
+public class P2PMsgNode implements Streamable {
     InetSocketAddress nodeAddress;
-    private ArrayList<InetSocketAddress> addresses;
-    private int numClients;
+    private ArrayList<InetSocketAddress> inLinks;
+    private ArrayList<InetSocketAddress> outLinks;
+    private ArrayList<InetSocketAddress> clientLinks;
 
-    public P2PMsgNetworkMap() {}
-
-    public P2PMsgNetworkMap(InetSocketAddress nodeAddress, ArrayList<InetSocketAddress> addresses, int numClients) {
-        this.nodeAddress = nodeAddress;
-        this.addresses = addresses;
-        this.numClients = numClients;
+    public P2PMsgNode() {
     }
 
-    public static P2PMsgNetworkMap ReadFromStream(DataInputStream zIn) throws IOException {
-        P2PMsgNetworkMap rendezvous = new P2PMsgNetworkMap();
+    public P2PMsgNode(P2PState state) {
+        this.nodeAddress = state.getAddress();
+        this.inLinks = state.getInLinks();
+        this.outLinks = state.getOutLinks();
+        this.clientLinks = state.getClientLinks();
+    }
+
+    public static P2PMsgNode ReadFromStream(DataInputStream zIn) throws IOException {
+        P2PMsgNode rendezvous = new P2PMsgNode();
         rendezvous.readDataStream(zIn);
         return rendezvous;
     }
@@ -38,28 +42,29 @@ public class P2PMsgNetworkMap implements Streamable {
     @Override
     public void writeDataStream(DataOutputStream zOut) throws IOException {
         InetSocketAddressIO.writeAddress(nodeAddress, zOut);
-        InetSocketAddressIO.writeAddressList(this.addresses, zOut);
-        zOut.writeInt(numClients);
+        InetSocketAddressIO.writeAddressList(this.inLinks, zOut);
+        InetSocketAddressIO.writeAddressList(this.outLinks, zOut);
+        InetSocketAddressIO.writeAddressList(this.clientLinks, zOut);
     }
 
     @Override
     public void readDataStream(DataInputStream zIn) throws IOException {
         this.setNodeAddress(InetSocketAddressIO.readAddress(zIn));
-        this.setAddresses(InetSocketAddressIO.readAddressList(zIn));
-        this.setNumClients(zIn.readInt());
+        this.setInLinks(InetSocketAddressIO.readAddressList(zIn));
+        this.setOutLinks(InetSocketAddressIO.readAddressList(zIn));
+        this.setClientLinks(InetSocketAddressIO.readAddressList(zIn));
     }
-
 
     public JSONObject toNodeJSON(){
         JSONObject json = new JSONObject();
         json.put("id", nodeAddress.toString());
-        json.put("num_clients", numClients);
+        json.put("num_clients", getClientLinks().size());
         return json;
     }
 
     public JSONArray toLinksJSON(){
         JSONArray links = new JSONArray();
-        for (InetSocketAddress inetSocketAddress: addresses){
+        for (InetSocketAddress inetSocketAddress: getOutLinks()){
             JSONObject link = new JSONObject();
             link.put("source", nodeAddress.toString());
             link.put("target", inetSocketAddress.toString());

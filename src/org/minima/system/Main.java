@@ -86,9 +86,8 @@ public class Main extends MessageProcessor {
 	/**
 	 * Main Constructor
 	 * @param zPort
-	 * @param zGenesis
 	 */
-	public Main(String zHost, int zPort, String zConfFolder) {
+	public Main(String zHost, int zPort, boolean fullNode, String zConfFolder) {
 		super("MAIN");
 		
 		mMainHandler = this;
@@ -104,7 +103,7 @@ public class Main extends MessageProcessor {
 		
 		//The guts..
 		mInput 		= new InputHandler();
-		mNetwork 	= new NetworkHandler(zHost, zPort);
+		mNetwork 	= new NetworkHandler(zHost, zPort, fullNode);
 		mTXMiner 	= new TxPoWMiner();
 		mConsensus  = new ConsensusHandler();
 		mSendManager = new SendManager();
@@ -248,7 +247,8 @@ public class Main extends MessageProcessor {
 			getConsensusHandler().PostMessage(backshut);
 			
 		}else if ( zMessage.isMessageType(SYSTEM_FULLSHUTDOWN) ) {
-			
+
+			// todo stop p2pmanager
 			//Savew ther UserPrefs
 			mUserPrefs.saveDB(mBackup.getUserPrefs());
 			

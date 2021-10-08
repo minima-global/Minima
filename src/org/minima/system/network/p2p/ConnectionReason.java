@@ -1,7 +1,7 @@
 package org.minima.system.network.p2p;
 
 public enum ConnectionReason {
-    NONE_EXPECTED,
+    NONE,
     RENDEZVOUS,
     ENTRY_NODE,
     DO_SWAP,
