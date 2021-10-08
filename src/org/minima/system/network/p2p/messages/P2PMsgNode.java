@@ -72,4 +72,22 @@ public class P2PMsgNode implements Streamable {
         }
         return links;
     }
+
+    public JSONObject toDetailsJSON(){
+        JSONObject json = new JSONObject();
+        json.put("address", nodeAddress.toString().replaceAll("/",""));
+        json.put("out_links", addressListToJSONArray(outLinks));
+        json.put("in_links", addressListToJSONArray(inLinks));
+        json.put("client_links", addressListToJSONArray(clientLinks));
+
+        return json;
+    }
+
+    private JSONArray addressListToJSONArray(ArrayList<InetSocketAddress> addresses){
+        JSONArray links = new JSONArray();
+        for (InetSocketAddress inetSocketAddress: addresses){
+            links.add(inetSocketAddress.toString().replaceAll("/",""));
+        }
+        return links;
+    }
 }

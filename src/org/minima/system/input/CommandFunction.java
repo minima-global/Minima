@@ -77,7 +77,7 @@ import org.minima.system.input.functions.txns.txnsign;
 import org.minima.system.input.functions.txns.txnsignauto;
 import org.minima.system.input.functions.txns.txnstate;
 import org.minima.system.input.functions.txns.txnvalidate;
-import org.minima.system.input.functions.MapNetwork;
+import org.minima.system.input.functions.p2pnetwork;
 import org.minima.utils.ResponseStream;
 import org.minima.utils.messages.Message;
 
@@ -101,7 +101,7 @@ public abstract class CommandFunction {
 			new txncreate(), new txndelete(), new txninput(), new txnlist(), new txnauto(), new tokenscale(),
 			new txnstate(), new txnexport(), new txnimport(), new txnscript(), new txnreminput(), new txnremoutput(),
 			new txnoutput(), new txnpost(), new txnsign(), new txnvalidate(),new txnsignauto(),
-			new extrascript(), new sign(), new verify(), new txpowsearch(), new flushmempool(), new random(), new check(), new MapNetwork()
+			new extrascript(), new sign(), new verify(), new txpowsearch(), new flushmempool(), new random(), new check(), new p2pnetwork()
 		};  
 	
 	/**

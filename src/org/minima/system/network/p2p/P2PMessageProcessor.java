@@ -435,14 +435,12 @@ public class P2PMessageProcessor extends MessageProcessor {
             JSONObject networkMapJSON = InputHandler.getResponseJSON(printNetworkMapRPCReq);
             // nodes
             JSONArray nodes = new JSONArray();
-            JSONArray links = new JSONArray();
             for (P2PMsgNode value: state.getNetworkMap().values()){
-                nodes.add(value.toNodeJSON());
-                links.addAll(value.toLinksJSON());
+                nodes.add(value.toDetailsJSON());
             }
             // links
+            networkMapJSON.put("total_nodes", state.getNetworkMap().size());
             networkMapJSON.put("nodes", nodes);
-            networkMapJSON.put("links", links);
 
             //All good
             InputHandler.endResponse(printNetworkMapRPCReq, true, "");

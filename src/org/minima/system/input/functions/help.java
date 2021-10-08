@@ -1,9 +1,7 @@
 package org.minima.system.input.functions;
 
 import org.minima.system.input.CommandFunction;
-import org.minima.system.input.functions.transfer.exportcoin;
 import org.minima.system.input.functions.transfer.exportkey;
-import org.minima.system.input.functions.transfer.importcoin;
 import org.minima.system.input.functions.transfer.importkey;
 import org.minima.system.input.functions.txns.txnauto;
 import org.minima.system.input.functions.txns.txncreate;
@@ -142,7 +140,7 @@ public class help extends CommandFunction{
 			addJSONDesc(new txnsignauto());
 			addJSONDesc(new txnvalidate());
 			addJSONDesc(new txnpost());
-			addJSONDesc(new MapNetwork());
+			addJSONDesc(new p2pnetwork());
 			
 			addJSONDesc(new quit());
 			
