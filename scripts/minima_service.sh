@@ -10,14 +10,16 @@ HOME="/home/minima"
 LOCAL="/usr/local"
 CONNECTION_HOST=''
 CONNECTION_PORT=''
+SLEEP=''
 
 print_usage() {
   printf "Usage: Setups a new minima service for the specified port, default 9121 \n \t -c REQUIRED connection host and port HOST:PORT \n \t -u flag Use unsecure p2p version with rpc ports active, ignored if -a isn't also set \n \t -x flag enable clean flag \n \t -p minima port to use eg. -p 9121 \n \t -h minima home directory eg -h /home/minima \n \t -a use the p2p alphas \n"
 }
 
-while getopts ':uxac::p:h:' flag; do
+while getopts ':uxsac::p:h:' flag; do
   case "${flag}" in
     a) P2P_ALPHA='true';;
+    s) SLEEP='true';;
     u) UNSECURE_FLAG='true';;
     x) CLEAN_FLAG='true';;
     c) CONNECTION_HOST=$(echo $OPTARG | cut -f1 -d:);
@@ -28,6 +30,10 @@ while getopts ':uxac::p:h:' flag; do
        exit 1 ;;
   esac
 done
+if [ $SLEEP ]; then
+  #Random Pause up to 1 hr
+  sleep $[$RANDOM % 3600]
+fi
 
 if [ ! $(getent group minima) ]; then
   echo "[+] Adding minima group"
