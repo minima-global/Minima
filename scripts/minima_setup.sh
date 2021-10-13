@@ -52,10 +52,12 @@ wget -q -O $LOCAL"/minima_service.sh" "https://github.com/minima-global/Minima/r
 chown minima:minima $LOCAL"/minima_service.sh"
 chmod +x $LOCAL"/minima_service.sh"
 
+CMD="$LOCAL/minima_service.sh -s -a -c 34.89.151.186:9121 $@"
 CRONSTRING="#!/bin/sh
-$LOCAL/minima_service.sh -s -a -c 34.89.151.186:9121 $@"
+$CMD"
 
 echo "$CRONSTRING" > /etc/cron.daily/minima_$PORT
 chmod a+x /etc/cron.daily/minima_$PORT
 
-/etc/cron.daily/minima_$PORT
+CMD="$LOCAL/minima_service.sh -a -c 34.89.151.186:9121 $@"
+/bin/sh -c "$CMD"
