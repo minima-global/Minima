@@ -28,8 +28,8 @@ while getopts ':auxc::p:h:' flag; do
   esac
 done
 
-#sudo apt update
-#sudo apt install openjdk-11-jre-headless -y
+sudo apt update
+sudo apt install openjdk-11-jre-headless -y
 
 if [ ! $(getent group minima) ]; then
   echo "[+] Adding minima group"
