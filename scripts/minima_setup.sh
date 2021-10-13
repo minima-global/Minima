@@ -28,26 +28,26 @@ while getopts ':auxc::p:h:' flag; do
   esac
 done
 
-sudo apt update
-sudo apt install openjdk-11-jre-headless -y
+apt update
+apt install openjdk-11-jre-headless -y
 
 if [ ! $(getent group minima) ]; then
   echo "[+] Adding minima group"
-  sudo groupadd -g 9001 minima
+  groupadd -g 9001 minima
 fi
 
 if ! id -u 9001 > /dev/null 2>&1; then
   echo "[+] Adding minima user"
-    sudo useradd -r -u 9001 -g 9001 -d $HOME minima
-    sudo mkdir $HOME
-    sudo chown minima:minima $HOME
+    useradd -r -u 9001 -g 9001 -d $HOME minima
+    mkdir $HOME
+    chown minima:minima $HOME
 fi
 
 if  ! cat /etc/systemd/journald.conf | grep "Storage=persistent"; then
-sudo tee <<EOF >/dev/null /etc/systemd/journald.conf
+tee <<EOF >/dev/null /etc/systemd/journald.conf
 Storage=persistent
 EOF
-sudo systemctl restart systemd-journald
+systemctl restart systemd-journald
 fi
 
 DOWNLOAD_URL="https://github.com/minima-global/Minima/raw/master/jar/minima.jar"
@@ -59,17 +59,12 @@ if [ $P2P_ALPHA ];
     MINIMA_JAR_NAME="minima-p2p-alpha.jar"
 fi
 
-sudo sudo wget -q -O $LOCAL"/minima_service.sh" "https://github.com/minima-global/Minima/raw/feature_p2p/scripts/minima_service.sh"
-sudo chown minima:minima $LOCAL"/minima_service.sh"
-sudo chmod +x $LOCAL"/minima_service.sh"
+wget -q -O $LOCAL"/minima_service.sh" "https://github.com/minima-global/Minima/raw/feature_p2p/scripts/minima_service.sh"
+chown minima:minima $LOCAL"/minima_service.sh"
+chmod +x $LOCAL"/minima_service.sh"
 
+CRONSTRING="#!/bin/sh
+$LOCAL/minima_service.sh -s $@"
 
-RANDOM_MIN=$(shuf -i10-59 -n1)
-CRONSTRING="$RANDOM_MIN 1 * * *  $LOCAL/minima_service.sh $@"
-
-
-CRONSTRING="#!/bin/sh\n$LOCAL/minima_service.sh $@"
-
-sudo echo "$CRONSTRING" >> /etc/cron.daily/minima
-sudo chmod a+x /etc/cron.daily/minima
-
+echo "$CRONSTRING" > /etc/cron.daily/minima_$PORT
+chmod a+x /etc/cron.daily/minima

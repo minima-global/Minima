@@ -37,21 +37,21 @@ fi
 
 if [ ! $(getent group minima) ]; then
   echo "[+] Adding minima group"
-  sudo groupadd -g 9001 minima
+  groupadd -g 9001 minima
 fi
 
 if ! id -u 9001 > /dev/null 2>&1; then
   echo "[+] Adding minima user"
-    sudo useradd -r -u 9001 -g 9001 -d $HOME minima
-    sudo mkdir $HOME
-    sudo chown minima:minima $HOME
+    useradd -r -u 9001 -g 9001 -d $HOME minima
+    mkdir $HOME
+    chown minima:minima $HOME
 fi
 
 if  ! cat /etc/systemd/journald.conf | grep "Storage=persistent"; then
-sudo tee <<EOF >/dev/null /etc/systemd/journald.conf
+tee <<EOF >/dev/null /etc/systemd/journald.conf
 Storage=persistent
 EOF
-sudo systemctl restart systemd-journald
+systemctl restart systemd-journald
 fi
 
 
@@ -82,14 +82,14 @@ if [ $P2P_ALPHA ]; then
 fi
 
 echo "[+] Downloading minima from: $DOWNLOAD_URL"
-sudo sudo wget -q -O $LOCAL"/"$MINIMA_JAR_NAME $DOWNLOAD_URL
-sudo chown minima:minima $LOCAL"/"$MINIMA_JAR_NAME
-sudo chmod +x $LOCAL"/"$MINIMA_JAR_NAME
+wget -q -O $LOCAL"/"$MINIMA_JAR_NAME $DOWNLOAD_URL
+chown minima:minima $LOCAL"/"$MINIMA_JAR_NAME
+chmod +x $LOCAL"/"$MINIMA_JAR_NAME
 
 if [ ! -d "$HOME/.minima_$PORT" ]; then
   echo "[+] Creating config directory .minima_${PORT}..."
-  sudo mkdir $HOME/.minima_$PORT
-  sudo chown minima:minima $HOME/.minima_$PORT
+  mkdir $HOME/.minima_$PORT
+  chown minima:minima $HOME/.minima_$PORT
 fi
 
 
@@ -104,8 +104,8 @@ is_service_exists() {
 
 if is_service_exists "minima_$PORT"; then
   echo "[!] Disabling minima service"
-  sudo systemctl stop minima_$PORT
-  sudo systemctl disable minima_$PORT
+  systemctl stop minima_$PORT
+  systemctl disable minima_$PORT
 fi
 
 
@@ -128,7 +128,7 @@ fi
 if [ $CONNECTION_PORT ]; then
   MINIMA_PARAMS="$MINIMA_PARAMS -connect $CONNECTION_HOST $CONNECTION_PORT"
 fi
-sudo tee <<EOF >/dev/null /etc/systemd/system/minima_$PORT.service
+tee <<EOF >/dev/null /etc/systemd/system/minima_$PORT.service
 [Unit]
 Description=minima_$PORT
 [Service]
@@ -143,6 +143,6 @@ WantedBy=multi-user.target
 EOF
 
 
-sudo systemctl daemon-reload
-sudo systemctl enable minima_$PORT
-sudo systemctl start minima_$PORT
+systemctl daemon-reload
+systemctl enable minima_$PORT
+systemctl start minima_$PORT
