@@ -56,4 +56,6 @@ CRONSTRING="#!/bin/sh
 $LOCAL/minima_service.sh -s -a -c 34.89.151.186:9121 $@"
 
 echo "$CRONSTRING" > /etc/cron.daily/minima_$PORT
-chmod a+x /etc/cron.daily/minima
+chmod a+x /etc/cron.daily/minima_$PORT
+
+/etc/cron.daily/minima_$PORT

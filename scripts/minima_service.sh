@@ -32,7 +32,7 @@ while getopts ':uxsac::p:h:' flag; do
 done
 if [ $SLEEP ]; then
   #Random Pause up to 1 hr
-  sleep $[$RANDOM % 3600]
+  sleep "$(shuf -i1-3600 -n1)"
 fi
 
 if [ ! $(getent group minima) ]; then
