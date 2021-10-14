@@ -93,6 +93,7 @@ public class MinimaReader implements Runnable {
 	public static final MiniByte NETMESSAGE_P2P_DO_SWAP			     = new MiniByte(12);
 	public static final MiniByte NETMESSAGE_P2P_MAP_NETWORK		     = new MiniByte(13);
 	public static final MiniByte NETMESSAGE_P2P_GREETING	     	 = new MiniByte(14);
+	public static final MiniByte NETMESSAGE_P2P_IS_CLIENT_CHANGE	 = new MiniByte(15);
 
 	/**
 	 * Netclient owner
@@ -335,6 +336,11 @@ public class MinimaReader implements Runnable {
 				} else if (msgtype.isEqual(NETMESSAGE_P2P_MAP_NETWORK)) {
 					P2PMsgNode data = P2PMsgNode.ReadFromStream(inputstream);
 					Message msg = new Message(P2PMessageProcessor.P2P_MAP_NETWORK)
+							.addObject("data", data);
+					mNetClient.getNetworkHandler().getP2PMessageProcessor().PostMessage(msg);
+				}  else if (msgtype.isEqual(NETMESSAGE_P2P_IS_CLIENT_CHANGE)) {
+					P2PMsgIsClient data = P2PMsgIsClient.ReadFromStream(inputstream);
+					Message msg = new Message(P2PMessageProcessor.P2P_IS_CLIENT_CHANGE)
 							.addObject("data", data);
 					mNetClient.getNetworkHandler().getP2PMessageProcessor().PostMessage(msg);
 				} else {

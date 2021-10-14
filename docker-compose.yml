@@ -48,3 +48,17 @@ services:
         limits:
           cpus: '0.1'
           memory: 400M
+  minima_client_firewall:
+    image: minima:latest
+    command: -test -clean -connect minima_one 9001 -port 9010
+    networks:
+      minima_testnet:
+        aliases:
+          - minima_peer
+    depends_on:
+      - minima_one
+    deploy:
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: 400M

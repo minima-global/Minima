@@ -2,7 +2,6 @@ package org.minima.system.network.p2p;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.minima.objects.greet.Greeting;
 import org.minima.system.Main;
 import org.minima.system.brains.BackupManager;
 import org.minima.system.input.InputHandler;
@@ -22,10 +21,12 @@ import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static java.util.stream.Collectors.toList;
 import static org.minima.system.network.NetworkHandler.NETWORK_CONNECT;
 import static org.minima.system.network.NetworkHandler.NETWORK_DISCONNECT;
 
@@ -58,10 +59,8 @@ public class P2PMessageProcessor extends MessageProcessor {
     public static final String P2P_PRINT_NETWORK_MAP_RESPONSE = "P2P_PRINT_NETWORK_MAP_RESPONSE";
 
     public static final String P2P_SEND_MESSAGE = "P2P_SEND_MESSAGE";
-    public static final String P2P_CLIENT_UPDATE_LOOP = "P2P_CLIENT_UPDATE_LOOP";
-
-
-
+    public static final String P2P_IS_CLIENT_CHANGE_CHECK = "P2P_IS_CLIENT_CHANGE_CHECK";
+    public static final String P2P_IS_CLIENT_CHANGE = "P2P_IS_CLIENT_CHANGE";
 
 
     /*
@@ -113,7 +112,7 @@ public class P2PMessageProcessor extends MessageProcessor {
         //Start the Ball rolling..
 //        this.setLOG(true);
         PostTimerMessage(new TimerMessage(10_000, P2P_LOOP));
-
+        PostTimerMessage(new TimerMessage(30_000, P2P_IS_CLIENT_CHANGE_CHECK));
     }
 
     public void stop() {
@@ -128,12 +127,21 @@ public class P2PMessageProcessor extends MessageProcessor {
     }
 
     /**
-     * All the current connections
+     * All current connections
      */
     protected ArrayList<MinimaClient> getCurrentMinimaClients() {
         return getNetworkHandler().getNetClients();
     }
 
+    /**
+     * All current incoming connections using the minima port
+     */
+    protected List<MinimaClient> getCurrentIncomingMinimaClientsOnMinimaPort() {
+        return getNetworkHandler().getNetClients().stream()
+                .filter(MinimaClient::isIncoming)
+                .filter(MinimaClient::isUsingMinimaPort)
+                .collect(toList());
+    }
 
     /**
      * Routes messages to the correct processing function
@@ -194,6 +202,12 @@ public class P2PMessageProcessor extends MessageProcessor {
                     break;
                 case P2P_PRINT_NETWORK_MAP_RESPONSE:
                     processPrintNetworkMapResponseMsg(zMessage);
+                    break;
+                case P2P_IS_CLIENT_CHANGE_CHECK:
+                    processIsClientChangeCheckMsg();
+                    break;
+                case P2P_IS_CLIENT_CHANGE:
+                    processIsClientChangeMsg(zMessage);
                     break;
                 default:
                     break;
@@ -381,6 +395,31 @@ public class P2PMessageProcessor extends MessageProcessor {
         PostTimerMessage(new TimerMessage(loopDelay, P2P_LOOP));
     }
 
+    /**
+     * checks the the node is a client via the number of minima port inbound connections to currently has.
+     * if it is now a client, store the change in node status/role and broadcasts the change to outbound neighbour nodes.
+     *
+     * Note:  Restart of the node needed to flip back to original once status/role of node has changed
+     */
+    private void processIsClientChangeCheckMsg() {
+        if (!state.isClient() && state.isRendezvousComplete()) {
+            if (getCurrentIncomingMinimaClientsOnMinimaPort().size() == 0) {
+                BroadcastFuncs.broadcastIsClientChange(state, getCurrentMinimaClients())
+                        .forEach(this::PostMessage);
+                state.setClient(true);
+                log.debug(state.genPrintableState());
+            }
+        }
+        PostTimerMessage(new TimerMessage(30_000, P2P_IS_CLIENT_CHANGE_CHECK));
+    }
+
+    private void processIsClientChangeMsg(Message zMessage) {
+        P2PMsgIsClient isClientMsg = (P2PMsgIsClient) zMessage.getObject("data");
+        if (state.getInLinks().remove(isClientMsg.getBroadcaster())) {
+            state.getClientLinks().add(isClientMsg.getBroadcaster());
+            log.debug("[+] P2P_IS_CLIENT_CHANGE Moving " + isClientMsg.getBroadcaster() + " from inlinks to clientLinks");
+        }
+    }
 
     private void processNetworkMapMsg(Message zMessage) {
         // On getting a network map back
