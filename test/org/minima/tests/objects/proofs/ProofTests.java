@@ -1,8 +1,4 @@
-package org.minima.tests.objects;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+package org.minima.tests.objects.proofs;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -16,6 +12,9 @@ import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.proofs.Proof;
+import org.minima.objects.proofs.Proof.ProofChunk;
+
+import static org.junit.Assert.*;
 
 public class ProofTests {
 
@@ -58,6 +57,27 @@ public class ProofTests {
         System.out.println("Final hash values - " + p.getFinalHash());
         System.out.println("Proof json values - " + p.toJSON());
 
+        assertEquals(160, Proof.getChainSHABits("0x05"));
+        assertEquals(192, Proof.getChainSHABits("0x06"));
+        assertEquals(224, Proof.getChainSHABits("0x07"));
+        assertEquals(256, Proof.getChainSHABits("0x08"));
+        assertEquals(288, Proof.getChainSHABits("0x09"));
+        assertEquals(320, Proof.getChainSHABits("0x0A"));
+        assertEquals(384, Proof.getChainSHABits("0x0C"));
+        assertEquals(416, Proof.getChainSHABits("0x0D"));
+        assertEquals(448, Proof.getChainSHABits("0x0E"));
+        assertEquals(480, Proof.getChainSHABits("0x0F"));
+        assertEquals(512, Proof.getChainSHABits("0x10"));
+
+        assertThrows(Exception.class, () -> {
+            Proof.getChainSHABits("0x04");
+        });
+        assertThrows(Exception.class, () -> {
+            Proof.getChainSHABits("0x0B");
+        });
+        assertThrows(Exception.class, () -> {
+            Proof.getChainSHABits("0x11");
+        });
     }
 
     @Test
@@ -95,6 +115,54 @@ public class ProofTests {
         } catch (final IOException e) {
             System.out.println("IOException: " + e.toString() + " msg=" + e.getMessage());
             assertTrue(" there should not be an IOException", false);
+        }
+    }
+
+    @Test
+    public void testReadAndWriteDataStreamProofChunk() {
+        {
+            try {
+                Proof p = new Proof();
+                Proof.ProofChunk pc = p.new ProofChunk(new MiniByte(8), MiniData.getRandomData(32), MiniNumber.ONE);
+
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                DataOutputStream dos = new DataOutputStream(bos);
+
+                pc.writeDataStream(dos);
+
+                InputStream inputStream = new ByteArrayInputStream(bos.toByteArray());
+                DataInputStream dis = new DataInputStream(inputStream);
+
+                Proof p1 = new Proof();
+                Proof.ProofChunk pc1 = p.new ProofChunk();
+
+                pc1.readDataStream(dis);
+
+            } catch (Exception e) {
+                fail();
+            }
+        }
+        {
+            try {
+                Proof p = new Proof();
+                Proof.ProofChunk pc = p.new ProofChunk(new MiniByte(8), MiniData.getRandomData(32), MiniNumber.ZERO);
+
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                DataOutputStream dos = new DataOutputStream(bos);
+
+                pc.writeDataStream(dos);
+
+                InputStream inputStream = new ByteArrayInputStream(bos.toByteArray());
+                DataInputStream dis = new DataInputStream(inputStream);
+
+                Proof p1 = new Proof();
+                Proof.ProofChunk pc1 = p.new ProofChunk();
+
+                pc1.readDataStream(dis);
+
+            } catch (Exception e) {
+                fail();
+            }
         }
     }
 }

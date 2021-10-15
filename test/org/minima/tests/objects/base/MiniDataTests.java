@@ -1,21 +1,22 @@
 package org.minima.tests.objects.base;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigInteger;
 import java.util.Arrays;
 
 import org.junit.Test;
+import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.objects.base.MiniData;
 
+import static org.junit.Assert.*;
+
 public class MiniDataTests {
+
     @Test
     public void testValueBytes() {
         MiniData i = new MiniData("0x1388");
@@ -83,6 +84,16 @@ public class MiniDataTests {
         System.out.println("i.isMoreEqual(j) i:" + i + " j:" + j + " resolves as " + i.isMoreEqual(j));
         assertTrue("should be more that or equal with value true", j.isMoreEqual(j));
         System.out.println("j.isMoreEqual(j) j:" + j + " j:" + j + " resolves as " + j.isMoreEqual(j));
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            MiniData md = new MiniData(BigInteger.valueOf(-1));
+        });
+        assertThrows(IllegalArgumentException.class, () -> {
+            MiniData md = new MiniData(BigInteger.valueOf(-100));
+        });
+        assertThrows(IllegalArgumentException.class, () -> {
+            MiniData md = new MiniData(BigInteger.valueOf(-123456789));
+        });
     }
 
     @Test
@@ -116,6 +127,133 @@ public class MiniDataTests {
             assertTrue("test", true);
         }
 
+    }
+
+    @Test
+    public void testWriteAndReadDataStream() {
+        {
+            try {
+                MiniData md = new MiniData("");
+
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                DataOutputStream dos = new DataOutputStream(bos);
+
+                md.writeDataStream(dos);
+
+                InputStream inputStream = new ByteArrayInputStream(bos.toByteArray());
+                DataInputStream dis = new DataInputStream(inputStream);
+
+                MiniData md1 = new MiniData("01234567");
+                md1.readDataStream(dis);
+
+                assertEquals(md.getLength(), md1.getLength());
+                assertTrue(md.isEqual(md1));
+            } catch (Exception e) {
+                fail();
+            }
+        }
+
+        {
+            try {
+                MiniData md = new MiniData("1234567890");
+
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                DataOutputStream dos = new DataOutputStream(bos);
+
+                md.writeDataStream(dos);
+
+                InputStream inputStream = new ByteArrayInputStream(bos.toByteArray());
+                DataInputStream dis = new DataInputStream(inputStream);
+
+                MiniData md1 = new MiniData("01234567");
+                md1.readDataStream(dis, md.getLength());
+
+                assertEquals(md.getLength(), md1.getLength());
+                assertTrue(md.isEqual(md1));
+            } catch (Exception e) {
+                fail();
+            }
+        }
+
+        {
+            try {
+                MiniData md = new MiniData("1234567890");
+
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                DataOutputStream dos = new DataOutputStream(bos);
+
+                md.writeDataStream(dos);
+
+                InputStream inputStream = new ByteArrayInputStream(bos.toByteArray());
+                DataInputStream dis = new DataInputStream(inputStream);
+
+                MiniData md1 = new MiniData("01234567");
+                assertThrows(IOException.class, () -> {
+                    md1.readDataStream(dis, md.getLength() + 16);
+                });
+            } catch (Exception e) {
+                fail();
+            }
+        }
+    }
+
+    @Test
+    public void testWriteAndReadHashDataStream() {
+        {
+            try {
+                MiniData md = MiniData.getRandomData(65);
+
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                DataOutputStream dos = new DataOutputStream(bos);
+
+                assertThrows(IOException.class, () -> {
+                    md.writeHashToStream(dos);
+                });
+            } catch (Exception e) {
+                fail();
+            }
+        }
+        {
+            try {
+                MiniData md = MiniData.getRandomData(65);
+
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                DataOutputStream dos = new DataOutputStream(bos);
+
+                md.writeDataStream(dos);
+
+                InputStream inputStream = new ByteArrayInputStream(bos.toByteArray());
+                DataInputStream dis = new DataInputStream(inputStream);
+
+                MiniData md1 = new MiniData("01234567");
+                assertThrows(IOException.class, () -> {
+                    md1.readHashFromStream(dis);
+                });
+            } catch (Exception e) {
+                fail();
+            }
+        }
+        {
+            try {
+                MiniData md = MiniData.getRandomData(65);
+
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                DataOutputStream dos = new DataOutputStream(bos);
+
+                dos.writeInt(-5);
+                dos.write(md.getData());
+
+                InputStream inputStream = new ByteArrayInputStream(bos.toByteArray());
+                DataInputStream dis = new DataInputStream(inputStream);
+
+                MiniData md1 = new MiniData("01234567");
+                assertThrows(IOException.class, () -> {
+                    md1.readHashFromStream(dis);
+                });
+            } catch (Exception e) {
+                fail();
+            }
+        }
     }
 
     @Test
@@ -275,4 +413,15 @@ public class MiniDataTests {
 
     }
 
+    @Test
+    public void testgetMiniDataVersion() {
+        {
+            try {
+                MiniData md = MiniData.getRandomData(128);
+                MiniData md1 = MiniData.getMiniDataVersion(md);
+            } catch (Exception e) {
+                fail();
+            }
+        }
+    }
 }

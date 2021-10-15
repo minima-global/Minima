@@ -1,5 +1,6 @@
 package org.minima.tests.objects.base;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -19,16 +20,20 @@ public class MiniStringTests {
     public void testValueString() {
         MiniString i = new MiniString("MinimaTest");
         MiniString j = new MiniString(i);
+        MiniString k = new MiniString(i.getData());
         System.out.println("MiniString(\"MinimaTest\") i is now equal to " + i);
         System.out.println("MiniString(i) j is now equal to " + j);
         assertNotNull("should not be null", i);
         System.out.println("i value is " + i);
         assertNotNull("should not be null", j);
         System.out.println("j value is " + j);
+        assertNotNull("should not be null", k);
+        System.out.println("j value is " + k);
         assertNotNull("should not be null", i.toString());
         System.out.println("i.toString() value is " + i.toString());
         assertNotNull("should not be null", i.getData());
         System.out.println("i.getData() value is " + i.getData());
+        assertEquals(i.toString(), k.toString());
     }
 
     @Test

@@ -12,8 +12,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import org.junit.Assert;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.fail;
 
 import org.junit.Test;
+import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 
 public class MiniNumberTests {
@@ -50,6 +55,7 @@ public class MiniNumberTests {
         BigInteger k = new BigInteger("2147483649");
         MiniNumber l = new MiniNumber(k);
         BigDecimal m = new BigDecimal(1.0);
+        MiniNumber n = new MiniNumber(l);
         System.out.println("MiniNumber() i value is " + i);
         System.out.println("MiniNumber(2147483649L) j value is " + j);
         System.out.println("BigInteger(\"2147483649\") k value is " + k);
@@ -60,6 +66,7 @@ public class MiniNumberTests {
         assertNotNull("should not be null", k);
         assertNotNull("should not be null", l);
         assertNotNull("should not be null", MiniNumber.ONE);
+        assertNotNull("should not be null", n);
         System.out.println("MiniNumber.ONE value is " + MiniNumber.ONE);
         assertNotNull("should not be null", MiniNumber.ONE.getAsBigInteger());
         System.out.println("MiniNumber.ONE.getAsBigInteger() value is " + MiniNumber.ONE.getAsBigInteger());
@@ -128,6 +135,50 @@ public class MiniNumberTests {
     }
 
     @Test
+    public void testLimits() {
+        MiniNumber mn = new MiniNumber("0.111111111111111111111111111111111111111111111");
+        assertEquals(mn.getNumber().scale(), MiniNumber.MAX_DECIMAL_PLACES);
+        assertEquals(mn.decimalPlaces(), MiniNumber.MAX_DECIMAL_PLACES);
+
+        assertThrows(NumberFormatException.class, () -> {
+            MiniNumber mn1 = new MiniNumber(MiniNumber.MAX_MININUMBER.add(BigDecimal.TEN));
+        });
+
+        assertThrows(NumberFormatException.class, () -> {
+            MiniNumber mn2 = new MiniNumber(MiniNumber.MIN_MININUMBER.subtract(BigDecimal.TEN));
+        });
+
+        mn = new MiniNumber(-1);
+        assertFalse(mn.isValidMinimaValue());
+
+        mn = new MiniNumber(0);
+        assertFalse(mn.isValidMinimaValue());
+
+        mn = new MiniNumber(1);
+        assertTrue(mn.isValidMinimaValue());
+
+        mn = new MiniNumber(999999999);
+        assertTrue(mn.isValidMinimaValue());
+
+        mn = new MiniNumber(1000000000);
+        assertTrue(mn.isValidMinimaValue());
+
+        mn = new MiniNumber(1000000001);
+        assertFalse(mn.isValidMinimaValue());
+
+        mn = new MiniNumber(2000000001);
+        assertFalse(mn.isValidMinimaValue());
+
+        assertThrows(NumberFormatException.class, () -> {
+            MiniNumber.ONE.setSignificantDigits(MiniNumber.MAX_DIGITS + 1);
+        });
+        assertThrows(NumberFormatException.class, () -> {
+            MiniNumber.ONE.setSignificantDigits(-1);
+        });
+
+    }
+
+    @Test
     public void testWriteDataStream() {
         try {
             MiniNumber i = new MiniNumber("1");
@@ -162,6 +213,47 @@ public class MiniNumberTests {
             assertTrue(" there should not be an IOException", false);
         }
 
+    }
+
+    @Test
+    public void testInvalidReadDataStream() {
+        try {
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            DataOutputStream dos = new DataOutputStream(bos);
+
+            dos.writeInt(0);
+            dos.writeInt(65);
+            dos.write(MiniData.getRandomData(65).getData());
+
+            InputStream inputStream = new ByteArrayInputStream(bos.toByteArray());
+            DataInputStream dis = new DataInputStream(inputStream);
+
+            assertThrows(IOException.class, () -> {
+                MiniNumber mn = MiniNumber.ONE;
+                mn.readDataStream(dis);
+            });
+        } catch (Exception e) {
+            fail();
+        }
+
+        try {
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            DataOutputStream dos = new DataOutputStream(bos);
+
+            dos.writeInt(0);
+            dos.writeInt(0);
+            dos.write(MiniData.getRandomData(65).getData());
+
+            InputStream inputStream = new ByteArrayInputStream(bos.toByteArray());
+            DataInputStream dis = new DataInputStream(inputStream);
+
+            assertThrows(IOException.class, () -> {
+                MiniNumber mn = MiniNumber.ONE;
+                mn.readDataStream(dis);
+            });
+        } catch (Exception e) {
+            fail();
+        }
     }
 
     @Test

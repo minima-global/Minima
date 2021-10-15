@@ -1,4 +1,4 @@
-package org.minima.tests.objects;
+package org.minima.tests.objects.proofs;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
