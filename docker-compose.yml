@@ -3,6 +3,8 @@ version: '3.7'
 networks:
   minima_testnet:
     name: minima_testnet
+  outside_minima_testnet:
+    name: outside_minima_testnet
 
 services:
   minima_one:
@@ -13,6 +15,7 @@ services:
         aliases:
           - minima_one
     ports:
+      - "9001:9001"
       - "9002:9002"
     deploy:
       resources:
@@ -41,6 +44,18 @@ services:
       minima_testnet:
         aliases:
           - minima_peer
+    depends_on:
+      - minima_one
+    deploy:
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: 400M
+  minima_client_firewall:
+    image: minima:latest
+    command: -test -clean -connect host.docker.internal 9001 -port 9055
+    networks:
+      outside_minima_testnet:
     depends_on:
       - minima_one
     deploy:

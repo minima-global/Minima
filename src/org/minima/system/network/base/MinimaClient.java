@@ -18,10 +18,7 @@ import org.minima.objects.greet.TxPoWList;
 import org.minima.system.Main;
 import org.minima.system.brains.ConsensusNet;
 import org.minima.system.network.NetworkHandler;
-import org.minima.system.network.p2p.ConnectionDetails;
-import org.minima.system.network.p2p.ConnectionReason;
 import org.minima.system.network.p2p.P2PMessageProcessor;
-import org.minima.system.network.p2p.P2PState;
 import org.minima.system.network.p2p.messages.*;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
@@ -71,6 +68,7 @@ public class MinimaClient extends MessageProcessor {
 	public static final String NETMESSAGE_P2P_SWAP_LINK = "NETMESSAGE_P2P_SWAP_LINK";
 	public static final String NETMESSAGE_P2P_DO_SWAP   = "NETMESSAGE_P2P_DO_SWAP";
 	public static final String NETMESSAGE_P2P_MAP_NETWORK = "NETMESSAGE_P2P_MAP_NETWORK";
+	public static final String NETMESSAGE_P2P_NODE_NOT_ACCEPTING = "NETMESSAGE_P2P_NODE_NOT_ACCEPTING";
 
 	//Main Network Handler
 	NetworkHandler mNetworkMain;
@@ -228,6 +226,7 @@ public class MinimaClient extends MessageProcessor {
 		ret.put("uid", mUID);
 		ret.put("host", getHost());
 		ret.put("port", getPort());
+		ret.put("incoming", isIncoming());
 		
 		return ret;
 	}
@@ -376,6 +375,9 @@ public class MinimaClient extends MessageProcessor {
 		} else if(zMessage.isMessageType(NETMESSAGE_P2P_MAP_NETWORK)){
 			P2PMsgNode data = (P2PMsgNode) zMessage.getObject("data");
 			sendMessage(MinimaReader.NETMESSAGE_P2P_MAP_NETWORK, data);
+		} else if(zMessage.isMessageType(NETMESSAGE_P2P_NODE_NOT_ACCEPTING)) {
+			P2PMsgNodeNotAccepting data = (P2PMsgNodeNotAccepting) zMessage.getObject("data");
+			sendMessage(MinimaReader.NETMESSAGE_P2P_NODE_NOT_ACCEPTING, data);
 		}
 	}
 	

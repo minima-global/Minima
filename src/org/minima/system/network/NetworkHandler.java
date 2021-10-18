@@ -488,7 +488,8 @@ public class NetworkHandler extends MessageProcessor {
 		
 			//Shut him down..
 			client.PostMessage(new Message(MinimaClient.NETCLIENT_SHUTDOWN));
-			
+			log.warn("[!!] NETCLIENT_SHUTDOWN " + client);
+
 		}else if(zMessage.isMessageType(NETWORK_TRACE)) {
 			boolean traceon = zMessage.getBoolean("trace");
 			
