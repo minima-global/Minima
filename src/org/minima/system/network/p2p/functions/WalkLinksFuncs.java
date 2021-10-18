@@ -65,6 +65,7 @@ public class WalkLinksFuncs {
         if (nextHop != null) {
             retMsg = createNextHopMsg(nextHop, p2pWalkLinks, allClients);
         } else {
+            // todo: need to check if we are a client or not
             p2pWalkLinks.setReturning(true);
             if (p2pWalkLinks.isClientWalk()){
                 p2pWalkLinks.setAvailableClientSlots(state.getNumLinks() - state.getClientLinks().size());

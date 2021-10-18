@@ -343,16 +343,17 @@ public class MinimaReader implements Runnable {
 					Message msg = new Message(P2PMessageProcessor.P2P_NODE_NOT_ACCEPTING)
 							.addObject("data", data);
 					mNetClient.getNetworkHandler().getP2PMessageProcessor().PostMessage(msg);
-				} else {
-					throw new Exception("Invalid message on network : " + rec);
 				}
+//				else {
+//					throw new Exception("Invalid message on network : " + rec);
+//				}
 
 				//Check there is nothing left..
-				int left = inputstream.available();
-				if (inputstream.available() > 0) {
-					//Something gone wrong..
-					throw new ProtocolException("Data left in inputstream when reading.. " + left);
-				}
+//				int left = inputstream.available();
+//				if (inputstream.available() > 0) {
+//					//Something gone wrong..
+//					throw new ProtocolException("Data left in inputstream when reading.. " + left);
+//				}
 
 				//Clean up..
 				inputstream.close();

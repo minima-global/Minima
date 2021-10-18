@@ -21,6 +21,7 @@ import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -61,7 +62,6 @@ public class P2PMessageProcessor extends MessageProcessor {
     public static final String P2P_SEND_MESSAGE = "P2P_SEND_MESSAGE";
     public static final String P2P_NODE_NOT_ACCEPTING_CHECK = "P2P_NODE_NOT_ACCEPTING_CHECK";
     public static final String P2P_NODE_NOT_ACCEPTING = "P2P_NODE_NOT_ACCEPTING";
-
 
     /*
      * Network Messages
@@ -486,6 +486,7 @@ public class P2PMessageProcessor extends MessageProcessor {
 
             //All good
             InputHandler.endResponse(printNetworkMapRPCReq, true, "");
+            state.setNetworkMap(new HashMap<>());
         } else {
             log.warn("[-] Failed to make network map");
         }
