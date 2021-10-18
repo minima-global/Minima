@@ -59,8 +59,8 @@ public class P2PMessageProcessor extends MessageProcessor {
     public static final String P2P_PRINT_NETWORK_MAP_RESPONSE = "P2P_PRINT_NETWORK_MAP_RESPONSE";
 
     public static final String P2P_SEND_MESSAGE = "P2P_SEND_MESSAGE";
-    public static final String P2P_IS_CLIENT_CHANGE_CHECK = "P2P_IS_CLIENT_CHANGE_CHECK";
-    public static final String P2P_IS_CLIENT_CHANGE = "P2P_IS_CLIENT_CHANGE";
+    public static final String P2P_NODE_NOT_ACCEPTING_CHECK = "P2P_NODE_NOT_ACCEPTING_CHECK";
+    public static final String P2P_NODE_NOT_ACCEPTING = "P2P_NODE_NOT_ACCEPTING";
 
 
     /*
@@ -112,7 +112,7 @@ public class P2PMessageProcessor extends MessageProcessor {
         //Start the Ball rolling..
 //        this.setLOG(true);
         PostTimerMessage(new TimerMessage(10_000, P2P_LOOP));
-        PostTimerMessage(new TimerMessage(30_000, P2P_IS_CLIENT_CHANGE_CHECK));
+        PostTimerMessage(new TimerMessage(60_000, P2P_NODE_NOT_ACCEPTING_CHECK));
     }
 
     public void stop() {
@@ -139,7 +139,6 @@ public class P2PMessageProcessor extends MessageProcessor {
     protected List<MinimaClient> getCurrentIncomingMinimaClientsOnMinimaPort() {
         return getNetworkHandler().getNetClients().stream()
                 .filter(MinimaClient::isIncoming)
-                .filter(MinimaClient::isUsingMinimaPort)
                 .collect(toList());
     }
 
@@ -203,11 +202,11 @@ public class P2PMessageProcessor extends MessageProcessor {
                 case P2P_PRINT_NETWORK_MAP_RESPONSE:
                     processPrintNetworkMapResponseMsg(zMessage);
                     break;
-                case P2P_IS_CLIENT_CHANGE_CHECK:
-                    processIsClientChangeCheckMsg();
+                case P2P_NODE_NOT_ACCEPTING_CHECK:
+                    processNodeNotAcceptingMsgCheck();
                     break;
-                case P2P_IS_CLIENT_CHANGE:
-                    processIsClientChangeMsg(zMessage);
+                case P2P_NODE_NOT_ACCEPTING:
+                    processNodeNotAcceptingMsg(zMessage);
                     break;
                 default:
                     break;
@@ -396,28 +395,32 @@ public class P2PMessageProcessor extends MessageProcessor {
     }
 
     /**
-     * checks the the node is a client via the number of minima port inbound connections to currently has.
-     * if it is now a client, store the change in node status/role and broadcasts the change to outbound neighbour nodes.
-     *
-     * Note:  Restart of the node needed to flip back to original once status/role of node has changed
+     * Checks the the node is 'not accepting' via the number of inbound connections it currently has.
+     * If it is 'not accepting' and was previously flagged as not a client {@link P2PState#isClient()}, flag as a client and broadcast 'not accepting' to outbound neighbour nodes.
+     *<p/>
+     * Note:  Restart of the node needed to flip back to {@link P2PState#isClient()} - true if that was the start state
      */
-    private void processIsClientChangeCheckMsg() {
+    private void processNodeNotAcceptingMsgCheck() {
         if (!state.isClient() && state.isRendezvousComplete()) {
             if (getCurrentIncomingMinimaClientsOnMinimaPort().size() == 0) {
-                BroadcastFuncs.broadcastIsClientChange(state, getCurrentMinimaClients())
+                BroadcastFuncs.broadcastNodeNotAccepting(state, getCurrentMinimaClients())
                         .forEach(this::PostMessage);
                 state.setClient(true);
                 log.debug(state.genPrintableState());
             }
         }
-        PostTimerMessage(new TimerMessage(30_000, P2P_IS_CLIENT_CHANGE_CHECK));
+        PostTimerMessage(new TimerMessage(60_000, P2P_NODE_NOT_ACCEPTING_CHECK));
     }
 
-    private void processIsClientChangeMsg(Message zMessage) {
-        P2PMsgIsClient isClientMsg = (P2PMsgIsClient) zMessage.getObject("data");
+    /**
+     * Move broadcasting node's address from inlinks to clientlinks
+     */
+    private void processNodeNotAcceptingMsg(Message zMessage) {
+        P2PMsgNodeNotAccepting isClientMsg = (P2PMsgNodeNotAccepting) zMessage.getObject("data");
         if (state.getInLinks().remove(isClientMsg.getBroadcaster())) {
             state.getClientLinks().add(isClientMsg.getBroadcaster());
-            log.debug("[+] P2P_IS_CLIENT_CHANGE Moving " + isClientMsg.getBroadcaster() + " from inlinks to clientLinks");
+            log.debug("[+] P2P_NODE_NOT_ACCEPTING_CHECK Moving " + isClientMsg.getBroadcaster() + " from inlinks to clientLinks");
+
         }
     }
 

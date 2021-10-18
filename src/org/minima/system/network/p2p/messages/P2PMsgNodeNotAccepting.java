@@ -12,28 +12,30 @@ import java.net.InetSocketAddress;
 
 import static lombok.AccessLevel.PRIVATE;
 
+/**
+ * P2P message suggesting that a node is not accepting messages
+ */
 @AllArgsConstructor
 @NoArgsConstructor(access = PRIVATE)
 @Getter
-public class P2PMsgIsClient implements Streamable {
-
-    private boolean isClient;
+public class P2PMsgNodeNotAccepting implements Streamable {
+    /**
+     * Node broadcasting the message
+     */
     private InetSocketAddress broadcaster;
 
     @Override
     public void writeDataStream(DataOutputStream zOut) throws IOException {
-        zOut.writeBoolean(isClient);
         InetSocketAddressIO.writeAddress(broadcaster, zOut);
     }
 
     @Override
     public void readDataStream(DataInputStream zIn) throws IOException {
-        isClient = zIn.readBoolean();
         broadcaster = InetSocketAddressIO.readAddress(zIn);
     }
 
-    public static P2PMsgIsClient ReadFromStream(DataInputStream zIn) throws IOException {
-        P2PMsgIsClient data = new P2PMsgIsClient();
+    public static P2PMsgNodeNotAccepting ReadFromStream(DataInputStream zIn) throws IOException {
+    P2PMsgNodeNotAccepting data = new P2PMsgNodeNotAccepting();
         data.readDataStream(zIn);
         return data;
     }

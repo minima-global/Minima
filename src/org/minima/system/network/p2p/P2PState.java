@@ -25,6 +25,10 @@ public class P2PState {
     public static final int AUTH_KEY_EXPIRY = 300_000;
 
     private int numLinks;
+    /**
+     * Node's role is a client in the network.
+     * Either stated at startup as parameter or derived by no inbound connections being created after startup and rendezvous.
+     */
     private boolean isClient = false;
     private boolean isRendezvousComplete = false;
     private boolean isEntryNodeConnected = false;
