@@ -26,6 +26,7 @@ public class P2PMsgNode implements Streamable, Traceable {
     private ArrayList<InetSocketAddress> inLinks;
     private ArrayList<InetSocketAddress> outLinks;
     private ArrayList<InetSocketAddress> clientLinks;
+    private long expireTime;
 
     public P2PMsgNode() {
     }

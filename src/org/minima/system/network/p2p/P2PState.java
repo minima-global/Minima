@@ -131,10 +131,16 @@ public class P2PState {
         return this.disconnectingClients.remove(uid);
     }
 
-    public void removeLink(InetSocketAddress outLinkAddress) {
-        this.inLinks.remove(outLinkAddress);
-        this.outLinks.remove(outLinkAddress);
-        this.clientLinks.remove(outLinkAddress);
+    public void removeLink(MinimaClient client) {
+        if (!client.isIncoming()){
+            this.outLinks.remove(client.getMinimaAddress());
+        } else {
+            if (client.isClient()){
+                this.clientLinks.remove(client.getMinimaAddress());
+            } else {
+                this.inLinks.remove(client.getMinimaAddress());
+            }
+        }
         log.debug(this.genPrintableState());
     }
 

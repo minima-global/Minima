@@ -155,6 +155,7 @@ public class StartupFuncs {
     public static void processOnRendezvousMsg(P2PState state, P2PMsgRendezvous rendezvous, MinimaClient client) {
 
         rendezvous.getAddresses().forEach(state::addRandomNodeSet);
+        state.setAddress(rendezvous.getTargetAddress());
         state.setRendezvousComplete(true);
     }
 

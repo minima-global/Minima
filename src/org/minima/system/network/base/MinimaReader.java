@@ -45,42 +45,44 @@ public class MinimaReader implements Runnable {
 	//The Length of a TxPoWID message 64 + 4 byte int
 	public static final int TXPOWID_LEN = Crypto.MINIMA_MAX_HASH_LENGTH + 4;
 
-	/**
-	 * Netclient owner
-	 */
-	MinimaClient 		mNetClient;
-	
-	/**
-	 * Constructor
-	 * 
-	 * @param zNetClient
-	 */
-	public MinimaReader(MinimaClient zNetClient) {
-		mNetClient 		= zNetClient;
-	}
+    /**
+     * Netclient owner
+     */
+    MinimaClient mNetClient;
 
-	public void notifyListeners(String zMessage) {
-		Main.getMainHandler().getConsensusHandler().notifyInitialListeners(zMessage);
-	}
-	
-	@Override
-	public void run() {
-		try {
-			//Create an input stream
-			DataInputStream mInput = new DataInputStream(new BufferedInputStream(mNetClient.getSocket().getInputStream()));
+    /**
+     * Constructor
+     *
+     * @param zNetClient
+     */
+    public MinimaReader(MinimaClient zNetClient) {
+        mNetClient = zNetClient;
+    }
 
-			//The message type
-			MsgType msgtype = UNKNOWN;
+    public void notifyListeners(String zMessage) {
+        Main.getMainHandler().getConsensusHandler().notifyInitialListeners(zMessage);
+    }
 
-			//The Consensus
-			ConsensusHandler consensus = Main.getMainHandler().getConsensusHandler();
+    @Override
+    public void run() {
+        try {
+            //Create an input stream
+            DataInputStream mInput = new DataInputStream(new BufferedInputStream(mNetClient.getSocket().getInputStream()));
 
-			while (true) {
-				//What message type
-				msgtype = valueOf(MiniByte.ReadFromStream(mInput));
+            //The message type
+            MsgType msgtype = UNKNOWN;
 
-				//What length..
-				int len = MiniNumber.ReadFromStream(mInput).getAsInt();
+            //The Consensus
+            ConsensusHandler consensus = Main.getMainHandler().getConsensusHandler();
+
+            while (!mNetClient.getSocket().isClosed()) {
+                try {
+                    if (mInput.available() > 0) {
+                        //What message type
+                        msgtype = valueOf(MiniByte.ReadFromStream(mInput));
+
+                        //What length..
+                        int len = MiniNumber.ReadFromStream(mInput).getAsInt();
 
 				//Check within acceptable parameters - this should be set in TxPoW header.. for now fixed
 				if (msgtype == NETMESSAGE_TXPOWID || msgtype == NETMESSAGE_TXPOW_REQUEST) {
@@ -100,235 +102,239 @@ public class MinimaReader implements Runnable {
 						throw new ProtocolException("Receive Invalid GENERIC Message length :" + len);
 					}
 				} else if (msgtype == NETMESSAGE_PING) {
-					if (len > 1) {
-						throw new ProtocolException("Receive Invalid Message length for PING message type:" + msgtype + " len:" + len);
-					}
-				}
+                            if (len > 1) {
+                                throw new ProtocolException("Receive Invalid Message length for PING message type:" + msgtype + " len:" + len);
+                            }
+                        }
 
-				//The FULL message
-				MiniData fullmsg = null;
+                        //The FULL message
+                        MiniData fullmsg = null;
 
-				//Is this the LARGE initial Intro message..
-				if (msgtype == NETMESSAGE_INTRO) {
-					//tell us how big the sync was..
-					String ibdsize = MiniFormat.formatSize(len);
-					MinimaLogger.log("Initial Sync Message : " + ibdsize);
-					notifyListeners("Initial Sync Message : " + ibdsize);
+                        //Is this the LARGE initial Intro message..
+                        if (msgtype == NETMESSAGE_INTRO) {
+                            //tell us how big the sync was..
+                            String ibdsize = MiniFormat.formatSize(len);
+                            MinimaLogger.log("Initial Sync Message : " + ibdsize);
+                            notifyListeners("Initial Sync Message : " + ibdsize);
 
-					//This is a MiniData Structure..
-					int datalen = mInput.readInt();
+                            //This is a MiniData Structure..
+                            int datalen = mInput.readInt();
 
-					//Buffer for reading
-					byte[] datarr = new byte[8096];
+                            //Buffer for reading
+                            byte[] datarr = new byte[8096];
 
-					ByteArrayOutputStream baos = new ByteArrayOutputStream(datalen);
-					long tot = 0;
-					long lastnotify = -1;
-					while (tot < datalen) {
-						long remain = datalen - tot;
-						if (remain > 8096) {
-							remain = 8096;
-						}
+                            ByteArrayOutputStream baos = new ByteArrayOutputStream(datalen);
+                            long tot = 0;
+                            long lastnotify = -1;
+                            while (tot < datalen) {
+                                long remain = datalen - tot;
+                                if (remain > 8096) {
+                                    remain = 8096;
+                                }
 
-						//Read in the data..
-						int read = mInput.read(datarr, 0, (int) remain);
-						baos.write(datarr, 0, read);
-						tot += read;
+                                //Read in the data..
+                                int read = mInput.read(datarr, 0, (int) remain);
+                                baos.write(datarr, 0, read);
+                                tot += read;
 
-						//What Percent Done..
-						long newnotify = (tot * 100) / datalen;
-						if (newnotify != lastnotify) {
-							lastnotify = newnotify;
-							notifyListeners("IBD download : " + lastnotify + "% of " + ibdsize);
+                                //What Percent Done..
+                                long newnotify = (tot * 100) / datalen;
+                                if (newnotify != lastnotify) {
+                                    lastnotify = newnotify;
+                                    notifyListeners("IBD download : " + lastnotify + "% of " + ibdsize);
 //							MinimaLogger.log("IBD download : "+lastnotify+"% of "+ibdsize);
-						}
-					}
-					baos.flush();
+                                }
+                            }
+                            baos.flush();
 
-					//Create the MiniData..
-					fullmsg = new MiniData(baos.toByteArray());
+                            //Create the MiniData..
+                            fullmsg = new MiniData(baos.toByteArray());
 
-				} else {
-					//Now read in the full message
-					fullmsg = MiniData.ReadFromStream(mInput, len);
-				}
+                        } else {
+                            //Now read in the full message
+                            fullmsg = MiniData.ReadFromStream(mInput, len);
+                        }
 
-				//Now convert to an 
-				ByteArrayInputStream bais = new ByteArrayInputStream(fullmsg.getData());
-				DataInputStream inputstream = new DataInputStream(bais);
+                        //Now convert to an
+                        ByteArrayInputStream bais = new ByteArrayInputStream(fullmsg.getData());
+                        DataInputStream inputstream = new DataInputStream(bais);
 
-				//New Message received
-				Message rec = new Message(ConsensusNet.CONSENSUS_PREFIX + "NET_MESSAGE_" + msgtype);
+                        //New Message received
+                        Message rec = new Message(ConsensusNet.CONSENSUS_PREFIX + "NET_MESSAGE_" + msgtype);
 
-				//Always add the client
-				rec.addObject("netclient", mNetClient);
+                        //Always add the client
+                        rec.addObject("netclient", mNetClient);
 
-				//What kind of message is it..
-				if (msgtype == NETMESSAGE_INTRO) {
-					//Read in the SyncPackage
-					SyncPackage sp = new SyncPackage();
-					sp.readDataStream(inputstream);
+                        //What kind of message is it..
+                        if (msgtype == NETMESSAGE_INTRO) {
+                            //Read in the SyncPackage
+                            SyncPackage sp = new SyncPackage();
+                            sp.readDataStream(inputstream);
 
-					//Add and send
-					rec.addObject("sync", sp);
+                            //Add and send
+                            rec.addObject("sync", sp);
 
-				} else if (msgtype == NETMESSAGE_TXPOWID) {
-					//Peer now has this TXPOW - if you don't you can request the full version
-					MiniData hash = MiniData.ReadFromStream(inputstream);
+                        } else if (msgtype == NETMESSAGE_TXPOWID) {
+                            //Peer now has this TXPOW - if you don't you can request the full version
+                            MiniData hash = MiniData.ReadFromStream(inputstream);
 
-					//Add this ID
-					rec.addObject("txpowid", hash);
+                            //Add this ID
+                            rec.addObject("txpowid", hash);
 
-				} else if (msgtype == NETMESSAGE_TXPOW) {
-					//A complete TxPOW
-					TxPoW txpow = new TxPoW();
-					txpow.readDataStream(inputstream);
+                        } else if (msgtype == NETMESSAGE_TXPOW) {
+                            //A complete TxPOW
+                            TxPoW txpow = new TxPoW();
+                            txpow.readDataStream(inputstream);
 
-					//Is it even a valid TxPOW.. 
-					if (!TxPoWChecker.basicTxPowChecks(txpow)) {
-						//Hmm. something wrong..
-						throw new ProtocolException("INVALID TxPoW received : closing connection..");
-					}
+                            //Is it even a valid TxPOW..
+                            if (!TxPoWChecker.basicTxPowChecks(txpow)) {
+                                //Hmm. something wrong..
+                                throw new ProtocolException("INVALID TxPoW received : closing connection..");
+                            }
 
-					//Add this ID
-					rec.addObject("txpow", txpow);
+                            //Add this ID
+                            rec.addObject("txpow", txpow);
 
-				} else if (msgtype == NETMESSAGE_TXPOW_REQUEST) {
-					//Requesting a TxPOW
-					MiniData hash = MiniData.ReadFromStream(inputstream);
+                        } else if (msgtype == NETMESSAGE_TXPOW_REQUEST) {
+                            //Requesting a TxPOW
+                            MiniData hash = MiniData.ReadFromStream(inputstream);
 
-					//Add this ID
-					rec.addObject("txpowid", hash);
+                            //Add this ID
+                            rec.addObject("txpowid", hash);
 
-				} else if (msgtype == NETMESSAGE_GREETING) {
-					notifyListeners("Greeting Received..");
+                        } else if (msgtype == NETMESSAGE_GREETING) {
+                            notifyListeners("Greeting Received..");
 
-					String greetsize = MiniFormat.formatSize(len);
-					MinimaLogger.log("Greeting Message : " + greetsize);
+                            String greetsize = MiniFormat.formatSize(len);
+                            MinimaLogger.log("Greeting Message : " + greetsize);
 
-					//Get the Greeting
-					Greeting greet = Greeting.ReadFromStream(inputstream);
+                            //Get the Greeting
+                            Greeting greet = Greeting.ReadFromStream(inputstream);
 
-					//Add this ID
-					rec.addObject("greeting", greet);
+                            //Add this ID
+                            rec.addObject("greeting", greet);
 
-				} else if (msgtype == NETMESSAGE_TXPOWLIST) {
-					//tell us how big the sync was..
-					MinimaLogger.log("TxPoW List Message : " + MiniFormat.formatSize(len));
+                        } else if (msgtype == NETMESSAGE_TXPOWLIST) {
+                            //tell us how big the sync was..
+                            MinimaLogger.log("TxPoW List Message : " + MiniFormat.formatSize(len));
 
-					//Get the List
-					TxPoWList txplist = new TxPoWList();
-					txplist.readDataStream(inputstream);
+                            //Get the List
+                            TxPoWList txplist = new TxPoWList();
+                            txplist.readDataStream(inputstream);
 
-					//Check them all..
-					ArrayList<TxPoW> txps = txplist.getList();
-					for (TxPoW txp : txps) {
-						if (!TxPoWChecker.basicTxPowChecks(txp)) {
-							//Hmm. something wrong..
-							throw new ProtocolException("INVALID TxPoW received in TxPoW List : closing connection..");
-						}
-					}
+                            //Check them all..
+                            ArrayList<TxPoW> txps = txplist.getList();
+                            for (TxPoW txp : txps) {
+                                if (!TxPoWChecker.basicTxPowChecks(txp)) {
+                                    //Hmm. something wrong..
+                                    throw new ProtocolException("INVALID TxPoW received in TxPoW List : closing connection..");
+                                }
+                            }
 
-					//Add this ID
-					rec.addObject("txpowlist", txplist);
+                            //Add this ID
+                            rec.addObject("txpowlist", txplist);
 
-				} else if (msgtype == NETMESSAGE_PING) {
-					MiniByte mb = MiniByte.ReadFromStream(inputstream);
+                        } else if (msgtype == NETMESSAGE_PING) {
+                            MiniByte mb = MiniByte.ReadFromStream(inputstream);
 
-					//Add this ID
-					rec.addObject("sent", mb);
+                            //Add this ID
+                            rec.addObject("sent", mb);
 
-				} else if (msgtype == NETMESSAGE_GENERIC) {
-					MiniString msg = MiniString.ReadFromStream(inputstream);
+                        } else if (msgtype == NETMESSAGE_GENERIC) {
+                            MiniString msg = MiniString.ReadFromStream(inputstream);
 
-					//Add this ID
-					rec.addObject("generic", msg);
+                            //Add this ID
+                            rec.addObject("generic", msg);
 
-				} else if (msgtype == MsgType.NETMESSAGE_P2P_RENDEZVOUS) {
-					MinimaLogger.log("[P2P] NETMESSAGE_P2P_RENDEZVOUS");
-					P2PMsgRendezvous rendezvous = P2PMsgRendezvous.ReadFromStream(inputstream);
-					if (!mNetClient.getNetworkHandler().getP2PMessageProcessor().getState().isRendezvousComplete()) {
-						Message msg = new Message(P2PMessageProcessor.P2P_RENDEZVOUS)
-								.addObject("rendezvous", rendezvous)
-								.addObject("client", mNetClient);
-						mNetClient.getNetworkHandler().getP2PMessageProcessor().PostMessage(msg);
-					}
-				} else if (msgtype == NETMESSAGE_P2P_GREETING) {
-					P2PMsgGreeting data = P2PMsgGreeting.ReadFromStream(inputstream);
-					Message msg = new Message(P2PMessageProcessor.P2P_ON_GREETED)
-							.addObject("data", data)
-							.addObject("client", mNetClient);
-					mNetClient.getNetworkHandler().getP2PMessageProcessor().PostMessage(msg);
-				}else if (msgtype == NETMESSAGE_P2P_WALK_LINKS) {
-					P2PMsgWalkLinks msgWalkLinks = P2PMsgWalkLinks.ReadFromStream(inputstream);
-					Message msg = new Message(P2PMessageProcessor.P2P_WALK_LINKS)
-							.addObject("data", msgWalkLinks);
-					mNetClient.getNetworkHandler().getP2PMessageProcessor().PostMessage(msg);
-				} else if (msgtype == NETMESSAGE_P2P_WALK_LINKS_RESPONSE) {
-					P2PMsgWalkLinks msgWalkLinks = P2PMsgWalkLinks.ReadFromStream(inputstream);
-					Message msg = new Message(P2PMessageProcessor.P2P_WALK_LINKS_RESPONSE)
-							.addObject("data", msgWalkLinks);
-					mNetClient.getNetworkHandler().getP2PMessageProcessor().PostMessage(msg);
-				} else if (msgtype == NETMESSAGE_P2P_SWAP_LINK) {
-					P2PMsgSwapLink data = P2PMsgSwapLink.ReadFromStream(inputstream);
-					Message msg = new Message(P2PMessageProcessor.P2P_SWAP_LINK)
-							.addObject("data", data);
-					mNetClient.getNetworkHandler().getP2PMessageProcessor().PostMessage(msg);
-				} else if (msgtype == NETMESSAGE_P2P_DO_SWAP) {
-					P2PMsgDoSwap data = P2PMsgDoSwap.ReadFromStream(inputstream);
-					Message msg = new Message(P2PMessageProcessor.P2P_DO_SWAP)
-							.addObject("data", data)
-							.addObject("client", mNetClient);
-					mNetClient.getNetworkHandler().getP2PMessageProcessor().PostMessage(msg);
-				} else if (msgtype == NETMESSAGE_P2P_MAP_NETWORK) {
-					P2PMsgNode data = P2PMsgNode.ReadFromStream(inputstream);
-					Message msg = new Message(P2PMessageProcessor.P2P_MAP_NETWORK)
-							.addObject("data", data);
-					mNetClient.getNetworkHandler().getP2PMessageProcessor().PostMessage(msg);
-				}  else if (msgtype == NETMESSAGE_P2P_NODE_NOT_ACCEPTING) {
-					P2PMsgNodeNotAccepting data = P2PMsgNodeNotAccepting.ReadFromStream(inputstream);
-					Message msg = new Message(P2PMessageProcessor.P2P_NODE_NOT_ACCEPTING)
-							.addObject("data", data);
-					mNetClient.getNetworkHandler().getP2PMessageProcessor().PostMessage(msg);
-				}
+                        } else if (msgtype == MsgType.NETMESSAGE_P2P_RENDEZVOUS) {
+                            MinimaLogger.log("[P2P] NETMESSAGE_P2P_RENDEZVOUS");
+                            P2PMsgRendezvous rendezvous = P2PMsgRendezvous.ReadFromStream(inputstream);
+                            if (!mNetClient.getNetworkHandler().getP2PMessageProcessor().getState().isRendezvousComplete()) {
+                                Message msg = new Message(P2PMessageProcessor.P2P_RENDEZVOUS)
+                                        .addObject("rendezvous", rendezvous)
+                                        .addObject("client", mNetClient);
+                                mNetClient.getNetworkHandler().getP2PMessageProcessor().PostMessage(msg);
+                            }
+                        } else if (msgtype == NETMESSAGE_P2P_GREETING) {
+                            P2PMsgGreeting data = P2PMsgGreeting.ReadFromStream(inputstream);
+                            Message msg = new Message(P2PMessageProcessor.P2P_ON_GREETED)
+                                    .addObject("data", data)
+                                    .addObject("client", mNetClient);
+                            mNetClient.getNetworkHandler().getP2PMessageProcessor().PostMessage(msg);
+                        } else if (msgtype == NETMESSAGE_P2P_WALK_LINKS) {
+                            P2PMsgWalkLinks msgWalkLinks = P2PMsgWalkLinks.ReadFromStream(inputstream);
+                            Message msg = new Message(P2PMessageProcessor.P2P_WALK_LINKS)
+                                    .addObject("data", msgWalkLinks);
+                            mNetClient.getNetworkHandler().getP2PMessageProcessor().PostMessage(msg);
+                        } else if (msgtype == NETMESSAGE_P2P_WALK_LINKS_RESPONSE) {
+                            P2PMsgWalkLinks msgWalkLinks = P2PMsgWalkLinks.ReadFromStream(inputstream);
+                            Message msg = new Message(P2PMessageProcessor.P2P_WALK_LINKS_RESPONSE)
+                                    .addObject("data", msgWalkLinks);
+                            mNetClient.getNetworkHandler().getP2PMessageProcessor().PostMessage(msg);
+                        } else if (msgtype == NETMESSAGE_P2P_SWAP_LINK) {
+                            P2PMsgSwapLink data = P2PMsgSwapLink.ReadFromStream(inputstream);
+                            Message msg = new Message(P2PMessageProcessor.P2P_SWAP_LINK)
+                                    .addObject("data", data);
+                            mNetClient.getNetworkHandler().getP2PMessageProcessor().PostMessage(msg);
+                        } else if (msgtype == NETMESSAGE_P2P_DO_SWAP) {
+                            P2PMsgDoSwap data = P2PMsgDoSwap.ReadFromStream(inputstream);
+                            Message msg = new Message(P2PMessageProcessor.P2P_DO_SWAP)
+                                    .addObject("data", data)
+                                    .addObject("client", mNetClient);
+                            mNetClient.getNetworkHandler().getP2PMessageProcessor().PostMessage(msg);
+                        } else if (msgtype == NETMESSAGE_P2P_MAP_NETWORK) {
+                            P2PMsgNode data = P2PMsgNode.ReadFromStream(inputstream);
+                            Message msg = new Message(P2PMessageProcessor.P2P_MAP_NETWORK)
+                                    .addObject("data", data)
+                                    .addObject("client", mNetClient);
+                            mNetClient.getNetworkHandler().getP2PMessageProcessor().PostMessage(msg);
+                        } else if (msgtype == NETMESSAGE_P2P_NODE_NOT_ACCEPTING) {
+                            P2PMsgNodeNotAccepting data = P2PMsgNodeNotAccepting.ReadFromStream(inputstream);
+                            Message msg = new Message(P2PMessageProcessor.P2P_NODE_NOT_ACCEPTING)
+                                    .addObject("data", data);
+                            mNetClient.getNetworkHandler().getP2PMessageProcessor().PostMessage(msg);
+                        }
 //				else {
 //					throw new Exception("Invalid message on network : " + rec);
 //				}
 
-				//Check there is nothing left..
+                        //Check there is nothing left..
 //				int left = inputstream.available();
 //				if (inputstream.available() > 0) {
 //					//Something gone wrong..
 //					throw new ProtocolException("Data left in inputstream when reading.. " + left);
 //				}
 
-				//Clean up..
-				inputstream.close();
-				bais.close();
+                        //Clean up..
+                        inputstream.close();
+                        bais.close();
 
-				//Post it..
-				consensus.PostMessage(rec);
-			}
-		} catch(ProtocolException exc) {
-			MinimaLogger.log("PROTOCOL ERROR.. "+exc);
-			MinimaLogger.log(exc);
-			
-		}catch(OutOfMemoryError exc) {
-			MinimaLogger.log("MEMORY ERROR.. "+exc);
-			exc.printStackTrace();
-			
-			//DRASTIC ACTION.. Use ONLY if bash script in place to restart on Exit
-			//System.exit(99);
-			
-		}catch(Exception exc) {
-			//General Exception	
-			MinimaLogger.log("NETCLIENTREADER ERROR.. ");
-			MinimaLogger.log(exc);
-		}
-		
-		//Tell the network Handler
-		mNetClient.getNetworkHandler().PostMessage(new Message(NetworkHandler.NETWORK_CLIENTERROR).addObject("client", mNetClient));
-	}
+                        //Post it..
+                        consensus.PostMessage(rec);
+                    }
+                } catch (ProtocolException exc) {
+                    MinimaLogger.log("PROTOCOL ERROR.. " + exc);
+                    MinimaLogger.log(exc);
+                } catch (OutOfMemoryError exc) {
+                    MinimaLogger.log("MEMORY ERROR.. " + exc);
+                    exc.printStackTrace();
+                    //DRASTIC ACTION.. Use ONLY if bash script in place to restart on Exit
+                    //System.exit(99);
+                } catch (Exception exc) {
+                    //General Exception
+                    MinimaLogger.log("NETCLIENTREADER ERROR.. ");
+                    MinimaLogger.log(exc);
+                }
+            }
+        }catch (Exception exc) {
+            //General Exception
+            MinimaLogger.log("NETCLIENTREADER ERROR Client Disconnected.. ");
+            MinimaLogger.log(exc);
+        }
+
+        //Tell the network Handler
+        mNetClient.getNetworkHandler().PostMessage(new Message(NetworkHandler.NETWORK_CLIENTERROR).addObject("client", mNetClient));
+    }
 
 	  public enum MsgType {
 		NETMESSAGE_GREETING(new MiniByte(0)),
