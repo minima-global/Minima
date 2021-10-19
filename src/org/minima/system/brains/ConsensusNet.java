@@ -45,24 +45,24 @@ public class ConsensusNet extends ConsensusProcessor {
 	public static final String CONSENSUS_NET_INITIALISE 		= CONSENSUS_PREFIX+"NET_INITIALISE";
 	public static final String CONSENSUS_NET_FULLTREERESYSNC 		= CONSENSUS_PREFIX+"NET_FULLRESYSNC";
 	
-	public static final String CONSENSUS_NET_INTRO 				= CONSENSUS_PREFIX+"NET_MESSAGE_"+MinimaReader.NETMESSAGE_INTRO.getValue();
+	public static final String CONSENSUS_NET_INTRO 				= CONSENSUS_PREFIX+"NET_MESSAGE_"+MinimaReader.MsgType.NETMESSAGE_INTRO.getMiniByte().getValue();
 	public static final String CONSENSUS_NET_RESYNC 			= CONSENSUS_PREFIX+"RESYNC";
 	
-	public static final String CONSENSUS_NET_TXPOWID 			= CONSENSUS_PREFIX+"NET_MESSAGE_"+MinimaReader.NETMESSAGE_TXPOWID.getValue();
-	public static final String CONSENSUS_NET_TXPOWREQUEST		= CONSENSUS_PREFIX+"NET_MESSAGE_"+MinimaReader.NETMESSAGE_TXPOW_REQUEST.getValue();
-	public static final String CONSENSUS_NET_TXPOW 				= CONSENSUS_PREFIX+"NET_MESSAGE_"+MinimaReader.NETMESSAGE_TXPOW.getValue();
+	public static final String CONSENSUS_NET_TXPOWID 			= CONSENSUS_PREFIX+"NET_MESSAGE_"+MinimaReader.MsgType.NETMESSAGE_TXPOWID.getMiniByte().getValue();
+	public static final String CONSENSUS_NET_TXPOWREQUEST		= CONSENSUS_PREFIX+"NET_MESSAGE_"+MinimaReader.MsgType.NETMESSAGE_TXPOW_REQUEST.getMiniByte().getValue();
+	public static final String CONSENSUS_NET_TXPOW 				= CONSENSUS_PREFIX+"NET_MESSAGE_"+MinimaReader.MsgType.NETMESSAGE_TXPOW.getMiniByte().getValue();
 	
-	public static final String CONSENSUS_NET_GREETING 		    = CONSENSUS_PREFIX+"NET_MESSAGE_"+MinimaReader.NETMESSAGE_GREETING.getValue();
+	public static final String CONSENSUS_NET_GREETING 		    = CONSENSUS_PREFIX+"NET_MESSAGE_"+MinimaReader.MsgType.NETMESSAGE_GREETING.getMiniByte().getValue();
 	
 	public static final String CONSENSUS_NET_GREET_FULLINTRO	= CONSENSUS_PREFIX+"GREET_FULLINTRO";
 	public static final String CONSENSUS_NET_GREET_RAMSYNCUP	= CONSENSUS_PREFIX+"GREET_RAMSYNCUP";
 	public static final String CONSENSUS_NET_GREET_BACKSYNC		= CONSENSUS_PREFIX+"GREET_BACKSYNC";
 	
-	public static final String CONSENSUS_NET_TXPOWLIST 			= CONSENSUS_PREFIX+"NET_MESSAGE_"+MinimaReader.NETMESSAGE_TXPOWLIST.getValue();
+	public static final String CONSENSUS_NET_TXPOWLIST 			= CONSENSUS_PREFIX+"NET_MESSAGE_"+MinimaReader.MsgType.NETMESSAGE_TXPOWLIST.getMiniByte().getValue();
 	
-	public static final String CONSENSUS_NET_PING 				= CONSENSUS_PREFIX+"NET_MESSAGE_"+MinimaReader.NETMESSAGE_PING.getValue();
+	public static final String CONSENSUS_NET_PING 				= CONSENSUS_PREFIX+"NET_MESSAGE_"+MinimaReader.MsgType.NETMESSAGE_PING.getMiniByte().getValue();
 	
-	public static final String CONSENSUS_NET_GENERIC 			= CONSENSUS_PREFIX+"NET_MESSAGE_"+MinimaReader.NETMESSAGE_GENERIC.getValue();
+	public static final String CONSENSUS_NET_GENERIC 			= CONSENSUS_PREFIX+"NET_MESSAGE_"+ MinimaReader.MsgType.NETMESSAGE_GENERIC.getMiniByte().getValue();
 	
 	public static final String CONSENSUS_NET_SYNCOMPLETE 		= CONSENSUS_PREFIX+"NET_MESSAGE_SYNCCOMPLETE";
 	

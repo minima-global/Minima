@@ -3,6 +3,8 @@ package org.minima.system.network.p2p.messages;
 import lombok.Getter;
 import lombok.Setter;
 import org.minima.objects.base.MiniData;
+import org.minima.system.network.p2p.Traceable;
+import org.minima.system.network.p2p.event.EventPublisher;
 import org.minima.utils.Streamable;
 
 import java.io.DataInputStream;
@@ -13,7 +15,7 @@ import java.net.InetSocketAddress;
 
 @Getter
 @Setter
-public class P2PMsgDoSwap implements Streamable {
+public class P2PMsgDoSwap implements Streamable, Traceable {
 
     private MiniData secret = MiniData.getRandomData(8);
     private InetSocketAddress swapTarget;
@@ -24,12 +26,14 @@ public class P2PMsgDoSwap implements Streamable {
     public void writeDataStream(DataOutputStream zOut) throws IOException {
         secret.writeDataStream(zOut);
         InetSocketAddressIO.writeAddress(swapTarget, zOut);
+        EventPublisher.publishWrittenStream(this);
     }
 
     @Override
     public void readDataStream(DataInputStream zIn) throws IOException {
         setSecret(MiniData.ReadFromStream(zIn));
         setSwapTarget(InetSocketAddressIO.readAddress(zIn));
+        EventPublisher.publishReadStream(this);
     }
 
     public static P2PMsgDoSwap ReadFromStream(DataInputStream zIn) throws IOException {
@@ -37,5 +41,10 @@ public class P2PMsgDoSwap implements Streamable {
         data.readDataStream(zIn);
         return data;
 
+    }
+
+    @Override
+    public String getTraceId() {
+        return secret.to0xString();
     }
 }

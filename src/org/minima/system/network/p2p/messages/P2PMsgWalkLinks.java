@@ -3,6 +3,8 @@ package org.minima.system.network.p2p.messages;
 import lombok.Getter;
 import lombok.Setter;
 import org.minima.objects.base.MiniData;
+import org.minima.system.network.p2p.Traceable;
+import org.minima.system.network.p2p.event.EventPublisher;
 import org.minima.utils.Streamable;
 
 import java.io.DataInputStream;
@@ -13,7 +15,7 @@ import java.util.ArrayList;
 
 @Setter
 @Getter
-public class P2PMsgWalkLinks implements Streamable {
+public class P2PMsgWalkLinks implements Streamable, Traceable {
 
     private MiniData secret = MiniData.getRandomData(8);
     boolean walkInLinks;
@@ -67,6 +69,7 @@ public class P2PMsgWalkLinks implements Streamable {
         zOut.writeBoolean(isReturning);
         zOut.writeInt(numHopsToGo);
         InetSocketAddressIO.writeAddressList(this.pathTaken, zOut);
+        EventPublisher.publishWrittenStream(this);
     }
 
 
@@ -80,6 +83,7 @@ public class P2PMsgWalkLinks implements Streamable {
         this.setReturning(zIn.readBoolean());
         this.setNumHopsToGo(zIn.readInt());
         this.setPathTaken(InetSocketAddressIO.readAddressList(zIn));
+        EventPublisher.publishReadStream(this);
     }
 
     public static P2PMsgWalkLinks ReadFromStream(DataInputStream zIn) throws IOException {
@@ -88,4 +92,8 @@ public class P2PMsgWalkLinks implements Streamable {
         return msgWalkLinks;
     }
 
+    @Override
+    public String getTraceId() {
+        return secret.to0xString();
+    }
 }

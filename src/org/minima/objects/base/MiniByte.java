@@ -4,8 +4,10 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+import lombok.EqualsAndHashCode;
 import org.minima.utils.Streamable;
 
+@EqualsAndHashCode
 public class MiniByte implements Streamable{
 
 	/**

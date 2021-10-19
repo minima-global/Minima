@@ -7,6 +7,8 @@ import org.minima.system.brains.BackupManager;
 import org.minima.system.input.InputHandler;
 import org.minima.system.network.NetworkHandler;
 import org.minima.system.network.base.MinimaClient;
+import org.minima.system.network.p2p.event.Event;
+import org.minima.system.network.p2p.event.EventPublisher;
 import org.minima.system.network.p2p.functions.*;
 import org.minima.system.network.p2p.messages.*;
 import org.minima.utils.json.JSONArray;
@@ -19,11 +21,7 @@ import java.io.File;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -57,7 +55,9 @@ public class P2PMessageProcessor extends MessageProcessor {
     public static final String P2P_DO_SWAP = "P2P_DO_SWAP";
     public static final String P2P_MAP_NETWORK = "P2P_MAP_NETWORK";
     public static final String P2P_PRINT_NETWORK_MAP = "P2P_PRINT_NETWORK_MAP";
+    public static final String P2P_EVENT_LOG = "P2P_EVENT_LOG";
     public static final String P2P_PRINT_NETWORK_MAP_RESPONSE = "P2P_PRINT_NETWORK_MAP_RESPONSE";
+    public static final String P2P_EVENT_LOG_RESPONSE = "P2P_EVENT_LOG_RESPONSE";
 
     public static final String P2P_SEND_MESSAGE = "P2P_SEND_MESSAGE";
     public static final String P2P_NODE_NOT_ACCEPTING_CHECK = "P2P_NODE_NOT_ACCEPTING_CHECK";
@@ -149,6 +149,8 @@ public class P2PMessageProcessor extends MessageProcessor {
      */
     @Override
     protected void processMessage(Message zMessage) throws Exception {
+        EventPublisher.publish("process " + zMessage.getMessageType());
+
         if (!zMessage.isMessageType(P2P_WALK_LINKS)) {
             log.debug("[+] P2PMessageProcessor processing: " + zMessage.getMessageType());
         }
@@ -201,6 +203,9 @@ public class P2PMessageProcessor extends MessageProcessor {
                     break;
                 case P2P_PRINT_NETWORK_MAP_RESPONSE:
                     processPrintNetworkMapResponseMsg(zMessage);
+                    break;
+                case P2P_EVENT_LOG:
+                    processEventLog(zMessage);
                     break;
                 case P2P_NODE_NOT_ACCEPTING_CHECK:
                     processNodeNotAcceptingMsgCheck();
@@ -450,6 +455,7 @@ public class P2PMessageProcessor extends MessageProcessor {
             log.debug("[+] P2P_MAP_NETWORK active mappings left: " + state.getActiveMappingRequests().keySet());
         }
 
+        EventPublisher.publish("processed " + zMessage.getMessageType());
     }
 
     private void processPrintNetworkMapRequestMsg(Message zMessage) {
@@ -471,6 +477,22 @@ public class P2PMessageProcessor extends MessageProcessor {
 
     }
 
+
+    private void processEventLog(Message zMessage) {
+        try {
+            String traceId1 = zMessage.getString("traceId1");
+            JSONObject networkMapJSON = InputHandler.getResponseJSON(zMessage);
+            networkMapJSON.put("events", new JSONArray((EventPublisher.getEvents().stream()
+                    .map(Event::toJSONObject)
+                    .filter(e -> traceId1 == null || traceId1.equals(e.get("traceId1")))
+                    .collect(toList()))));
+            InputHandler.endResponse(zMessage, true, "");
+        } catch (Exception e) {
+            log.error("processEventLog", e);
+            zMessage.addString("error", Arrays.toString(e.getStackTrace()));
+            InputHandler.endResponse(zMessage , true, "");
+        }
+    }
 
     private void processPrintNetworkMapResponseMsg(Message zMessage) {
         if (printNetworkMapRPCReq != null) {

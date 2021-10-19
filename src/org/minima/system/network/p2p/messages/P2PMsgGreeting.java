@@ -9,6 +9,8 @@ import org.minima.system.network.base.MinimaClient;
 import org.minima.system.network.p2p.ConnectionDetails;
 import org.minima.system.network.p2p.ConnectionReason;
 import org.minima.system.network.p2p.P2PState;
+import org.minima.system.network.p2p.Traceable;
+import org.minima.system.network.p2p.event.EventPublisher;
 import org.minima.utils.Streamable;
 
 import java.io.DataInputStream;
@@ -17,8 +19,9 @@ import java.io.IOException;
 
 @Getter
 @Setter
-public class P2PMsgGreeting implements Streamable {
+public class P2PMsgGreeting implements Streamable, Traceable {
 
+    private MiniData traceId = MiniData.getRandomData(8);
     int numClientSlotsAvailable;
     int minimaPort;
     boolean isClient;
@@ -60,19 +63,28 @@ public class P2PMsgGreeting implements Streamable {
 
     @Override
     public void writeDataStream(DataOutputStream zOut) throws IOException {
+        traceId.writeDataStream(zOut);
         zOut.writeInt(numClientSlotsAvailable);
         zOut.writeInt(minimaPort);
         zOut.writeBoolean(isClient);
         new MiniString(reason.toString()).writeDataStream(zOut);
         auth_key.writeDataStream(zOut);
+        EventPublisher.publishWrittenStream(this);
     }
 
     @Override
     public void readDataStream(DataInputStream zIn) throws IOException {
+        setTraceId(MiniData.ReadFromStream(zIn));
         this.setNumClientSlotsAvailable(zIn.readInt());
         this.setMinimaPort(zIn.readInt());
         this.setClient(zIn.readBoolean());
         this.setReason(ConnectionReason.valueOf(MiniString.ReadFromStream(zIn).toString()));
         this.setAuth_key(MiniData.ReadFromStream(zIn));
+        EventPublisher.publishReadStream(this);
+    }
+
+    @Override
+    public String getTraceId() {
+        return traceId.to0xString();
     }
 }

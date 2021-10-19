@@ -3,6 +3,8 @@
  */
 package org.minima.utils.messages;
 
+import org.minima.system.network.p2p.event.EventPublisher;
+
 import java.util.LinkedList;
 
 /**
@@ -45,8 +47,9 @@ public class MessageStack{
     public void PostMessage(Message zMessage){
     	//Multiple threads can call this..
     	synchronized(mMessages) {
-    		mMessages.add(zMessage);	
-    	}
+    		mMessages.add(zMessage);
+			EventPublisher.publish("posted " + zMessage.getMessageType());
+		}
     	
     	//There is something in the stack
         notifyLock();
@@ -84,8 +87,9 @@ public class MessageStack{
     		if(!mMessages.isEmpty()){
                 //Get the first message
                 nxtmsg = mMessages.getFirst();
-                
-                //Remove it from the list
+				EventPublisher.publish("posted " + nxtmsg.getMessageType());
+
+				//Remove it from the list
                 mMessages.remove(nxtmsg);
     		}	
 		}

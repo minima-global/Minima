@@ -16,6 +16,7 @@ import org.minima.system.input.functions.consolidate;
 import org.minima.system.input.functions.currentaddress;
 import org.minima.system.input.functions.disconnect;
 import org.minima.system.input.functions.extrascript;
+import org.minima.system.input.functions.eventlog;
 import org.minima.system.input.functions.flushmempool;
 import org.minima.system.input.functions.gimme50;
 import org.minima.system.input.functions.hash;
@@ -101,7 +102,7 @@ public abstract class CommandFunction {
 			new txncreate(), new txndelete(), new txninput(), new txnlist(), new txnauto(), new tokenscale(),
 			new txnstate(), new txnexport(), new txnimport(), new txnscript(), new txnreminput(), new txnremoutput(),
 			new txnoutput(), new txnpost(), new txnsign(), new txnvalidate(),new txnsignauto(),
-			new extrascript(), new sign(), new verify(), new txpowsearch(), new flushmempool(), new random(), new check(), new p2pnetwork()
+			new extrascript(), new sign(), new verify(), new txpowsearch(), new flushmempool(), new random(), new check(), new p2pnetwork(), new eventlog()
 		};  
 	
 	/**

@@ -3,7 +3,10 @@ package org.minima.system.network.p2p.messages;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.minima.objects.base.MiniData;
 import org.minima.system.network.p2p.P2PState;
+import org.minima.system.network.p2p.Traceable;
+import org.minima.system.network.p2p.event.EventPublisher;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
@@ -17,7 +20,8 @@ import java.util.ArrayList;
 @Getter
 @Setter
 @Slf4j
-public class P2PMsgNode implements Streamable {
+public class P2PMsgNode implements Streamable, Traceable {
+    private MiniData traceId = MiniData.getRandomData(8);
     InetSocketAddress nodeAddress;
     private ArrayList<InetSocketAddress> inLinks;
     private ArrayList<InetSocketAddress> outLinks;
@@ -41,18 +45,22 @@ public class P2PMsgNode implements Streamable {
 
     @Override
     public void writeDataStream(DataOutputStream zOut) throws IOException {
+        traceId.writeDataStream(zOut);
         InetSocketAddressIO.writeAddress(nodeAddress, zOut);
         InetSocketAddressIO.writeAddressList(this.inLinks, zOut);
         InetSocketAddressIO.writeAddressList(this.outLinks, zOut);
         InetSocketAddressIO.writeAddressList(this.clientLinks, zOut);
+        EventPublisher.publishWrittenStream(this);
     }
 
     @Override
     public void readDataStream(DataInputStream zIn) throws IOException {
+        setTraceId(MiniData.ReadFromStream(zIn));
         this.setNodeAddress(InetSocketAddressIO.readAddress(zIn));
         this.setInLinks(InetSocketAddressIO.readAddressList(zIn));
         this.setOutLinks(InetSocketAddressIO.readAddressList(zIn));
         this.setClientLinks(InetSocketAddressIO.readAddressList(zIn));
+        EventPublisher.publishReadStream(this);
     }
 
     public JSONObject toNodeJSON(){
@@ -89,5 +97,10 @@ public class P2PMsgNode implements Streamable {
             links.add(inetSocketAddress.toString().replaceAll("/",""));
         }
         return links;
+    }
+
+    @Override
+    public String getTraceId() {
+        return traceId.to0xString();
     }
 }

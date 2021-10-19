@@ -17,6 +17,8 @@ services:
     ports:
       - "9001:9001"
       - "9002:9002"
+      - "9003:9003"
+      - "9004:9004"
     deploy:
       resources:
         limits:
@@ -32,6 +34,11 @@ services:
           - minima_peer
     depends_on:
       - minima_one
+    ports:
+      - "7100-7110:9001"
+      - "7200-7210:9002"
+      - "7300-7310:9003"
+      - "7400-7410:9004"
     deploy:
       resources:
         limits:
@@ -46,6 +53,11 @@ services:
           - minima_peer
     depends_on:
       - minima_one
+    ports:
+      - "6100-6110:9001"
+      - "6200-6210:9002"
+      - "6300-6310:9003"
+      - "6400-6410:9004"
     deploy:
       resources:
         limits:
