@@ -241,6 +241,7 @@ public class MinimaClient extends MessageProcessor {
 		ret.put("host", getHost());
 		ret.put("port", getPort());
 		ret.put("incoming", isIncoming());
+		ret.put("isTemp", isTemp());
 		
 		return ret;
 	}
@@ -296,12 +297,7 @@ public class MinimaClient extends MessageProcessor {
 			if (!isIncoming()) {
 				// Only send this message if this is an outgoing connection
 				PostMessage(new Message(NETCLIENT_P2P_GREETING));
-				P2PState state = getNetworkHandler().getP2PMessageProcessor().getState();
-				if (state.isRendezvousComplete()) {
-					if (!state.getActiveMappingRequests().containsKey(minimaAddress)) {
-						state.getOutLinks().add(minimaAddress);
-					}
-				}
+
 			}
 
 			Message init = new Message(ConsensusNet.CONSENSUS_NET_INITIALISE);

@@ -191,12 +191,12 @@ public class P2PMessageProcessor extends MessageProcessor {
                 case P2P_WALK_LINKS_RESPONSE:
                     processWalkLinksResponseMsg(zMessage);
                     break;
-//                case P2P_SWAP_LINK:
-//                    processSwapLinkMsg(zMessage);
-//                    break;
-//                case P2P_DO_SWAP:
-//                    processDoSwapMsg(zMessage);
-//                    break;
+                case P2P_SWAP_LINK:
+                    processSwapLinkMsg(zMessage);
+                    break;
+                case P2P_DO_SWAP:
+                    processDoSwapMsg(zMessage);
+                    break;
                 case P2P_MAP_NETWORK:
                     processNetworkMapMsg(zMessage);
                     break;
@@ -278,18 +278,8 @@ public class P2PMessageProcessor extends MessageProcessor {
         }
     }
 
-    private void processOnConnectedMsg(Message zMessage) {
-        // Do nothing as we don't have enough info to process - wait until we get the greeting message
-//        log.debug("[+] P2PMessageProcessor processing P2P_ON_CONNECTED message");
-        MinimaClient client = (MinimaClient) zMessage.getObject("client");
-        if (!client.isIncoming()) {
-            state.addOutLink(client.getMinimaAddress());
-        }
-    }
-
 
     private void processOnDisconnectedMsg(Message zMessage) {
-        log.debug(this.state.genPrintableState());
         MinimaClient client = (MinimaClient) zMessage.getObject("client");
         if (!client.isTemp()) {
             log.debug("[!] P2P_ON_DISCONNECT Disconnected from isInLink? " + client.isIncoming() + " IP: " + client.getMinimaAddress());
@@ -304,14 +294,16 @@ public class P2PMessageProcessor extends MessageProcessor {
 //            }
             state.removeDisconnectingClient(client.getUID());
             state.removeLink(client);
+            log.debug(this.state.genPrintableState());
         }
+
     }
 
 
     private void processDisconnectMsg(Message zMessage) {
         MinimaClient client = (MinimaClient) zMessage.getObject("client");
         String reason = zMessage.getString("reason");
-        log.debug("[!] P2P_DISCONNECT Disconnecting from isInLink? " + client.isIncoming() + " IP: " + client.getMinimaAddress() + " for: " + reason);
+        log.debug("[!] P2P_DISCONNECT Disconnecting from isInLink? " + client.isIncoming() + " IP: " + client.getMinimaAddress() + " UID: " + client.getUID() + " for: " + reason);
         int attempt = zMessage.getInteger("attempt");
         if (this.state.getOutLinks().contains(client.getMinimaAddress()) ||
                 this.state.getInLinks().contains(client.getMinimaAddress()) ||
@@ -351,7 +343,6 @@ public class P2PMessageProcessor extends MessageProcessor {
         P2PMsgDoSwap doSwap = (P2PMsgDoSwap) zMessage.getObject("data");
         MinimaClient client = (MinimaClient) zMessage.getObject("client");
         SwapFuncs.executeDoSwap(state, doSwap, client).forEach(this::PostMessage);
-        state.getConnectionDetailsMap().put(client.getMinimaAddress(), new ConnectionDetails(ConnectionReason.DO_SWAP));
     }
 
     private void processWalkLinksMsg(Message zMessage) {
@@ -442,6 +433,8 @@ public class P2PMessageProcessor extends MessageProcessor {
         P2PMsgNode networkMap = (P2PMsgNode) zMessage.getObject("data");
         MinimaClient client = (MinimaClient) zMessage.getObject("client");
         networkMap.setNodeAddress(client.getMinimaAddress());
+        networkMap.setExpireTime(System.currentTimeMillis() + 300_000);
+
         state.getNetworkMap().put(networkMap.getNodeAddress(), networkMap);
 
         state.getActiveMappingRequests().remove(networkMap.getNodeAddress());
@@ -476,9 +469,22 @@ public class P2PMessageProcessor extends MessageProcessor {
     private void processPrintNetworkMapRequestMsg(Message zMessage) {
         printNetworkMapRPCReq = zMessage;
 
+        ArrayList<InetSocketAddress> keysToRemove = new ArrayList<>();
+        for (InetSocketAddress key: state.getNetworkMap().keySet()){
+            if (state.getNetworkMap().get(key).getExpireTime() < System.currentTimeMillis()){
+                keysToRemove.add(key);
+            }
+        }
+        for(InetSocketAddress key: keysToRemove) {
+            state.getNetworkMap().remove(key);
+
+        }
+
         state.getNetworkMap().put(state.getAddress(), new P2PMsgNode(state));
         ArrayList<InetSocketAddress> addresses = Stream.of(state.getRecentJoiners(), state.getOutLinks(), state.getInLinks())
-                .flatMap(Collection::stream).distinct().collect(Collectors.toCollection(ArrayList::new));
+                .flatMap(Collection::stream).distinct()
+                .filter(x -> !state.getNetworkMap().containsKey(x) && !state.getActiveMappingRequests().containsKey(x))
+                .collect(Collectors.toCollection(ArrayList::new));
 
         for (InetSocketAddress address : addresses) {
             // Connect and
@@ -507,8 +513,7 @@ public class P2PMessageProcessor extends MessageProcessor {
 
             //All good
             InputHandler.endResponse(printNetworkMapRPCReq, true, "");
-            state.setNetworkMap(new HashMap<>());
-            state.setActiveMappingRequests(new HashMap<>());
+
         } else {
             log.warn("[-] Failed to make network map");
         }

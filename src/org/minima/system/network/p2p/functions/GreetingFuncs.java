@@ -46,7 +46,6 @@ public class GreetingFuncs {
                 retMsgs.addAll(onRendezvousGreeting(state, client));
                 break;
             case ENTRY_NODE:
-                client.setIsTemp(true);
                 retMsgs.addAll(onEntryNodeGreeting(state, client));
                 if (state.isRendezvousComplete()) {
                     retMsgs.addAll(genClientLoadBalanceRequests(state, client.getMinimaAddress(), greeting.getNumClientSlotsAvailable()));
@@ -119,6 +118,7 @@ public class GreetingFuncs {
 //                    .addString("reason", "Disconnecting as reason for connection is ENTRY_NODE but it already has an incoming connection to this node")
 //            );
 //        } else {
+        client.setIsTemp(false);
         state.addInLink(client.getMinimaAddress());
         log.debug(state.genPrintableState());
 //        }
@@ -132,8 +132,8 @@ public class GreetingFuncs {
         if (state.getExpectedAuthKeys().containsKey(authKey.toString())) {
             state.getExpectedAuthKeys().remove(authKey.toString());
             state.addInLink(client.getMinimaAddress());
+            client.setIsTemp(false);
             log.debug(state.genPrintableState());
-            client.setIsTemp(true);
 
         } else {
             retMsgs.add(new Message(P2PMessageProcessor.P2P_DISCONNECT)
@@ -150,18 +150,19 @@ public class GreetingFuncs {
         ArrayList<Message> retMsgs = new ArrayList<>();
 
         if (state.getExpectedAuthKeys().containsKey(authKey.toString())) {
-            client.setIsTemp(true);
+            client.setIsTemp(false);
             state.getExpectedAuthKeys().remove(authKey.toString());
             state.addInLink(client.getMinimaAddress());
             log.debug(state.genPrintableState());
 
-
-            P2PMsgSwapLink swapLink = new P2PMsgSwapLink();
-            swapLink.setSwapTarget(client.getMinimaAddress());
-            swapLink.setSecret(authKey);
-            retMsgs.add(
-                    new Message(P2PMessageProcessor.P2P_SWAP_LINK).addObject("data", swapLink)
-            );
+            if (state.getInLinks().size() >= state.getNumLinks()) {
+                P2PMsgSwapLink swapLink = new P2PMsgSwapLink();
+                swapLink.setSwapTarget(client.getMinimaAddress());
+                swapLink.setSecret(authKey);
+                retMsgs.add(
+                        new Message(P2PMessageProcessor.P2P_SWAP_LINK).addObject("data", swapLink)
+                );
+            }
 
         } else {
             retMsgs.add(new Message(P2PMessageProcessor.P2P_DISCONNECT)
@@ -178,7 +179,7 @@ public class GreetingFuncs {
         ArrayList<Message> retMsgs = new ArrayList<>();
 
         if (state.getExpectedAuthKeys().containsKey(authKey.toString())) {
-            client.setIsTemp(true);
+            client.setIsTemp(false);
             state.getExpectedAuthKeys().remove(authKey.toString());
             state.addInLink(client.getMinimaAddress());
             log.debug(state.genPrintableState());
@@ -203,7 +204,7 @@ public class GreetingFuncs {
                     .addString("reason", "Disconnecting as already connected to this client")
             );
         } else {
-            client.setIsTemp(true);
+            client.setIsTemp(false);
             state.addClientLink(client.getMinimaAddress());
             log.debug(state.genPrintableState());
             if (state.isSetupComplete() && !state.isClient() && state.getOutLinks().size() < state.getNumLinks()) {

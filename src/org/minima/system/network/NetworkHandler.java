@@ -21,6 +21,7 @@ import org.minima.system.network.minidapps.websocket.WebSocketManager;
 import org.minima.system.network.p2p.ConnectionDetails;
 import org.minima.system.network.p2p.ConnectionReason;
 import org.minima.system.network.p2p.P2PMessageProcessor;
+import org.minima.system.network.p2p.P2PState;
 import org.minima.system.network.rpc.RPCServer;
 import org.minima.system.network.sshtunnel.SSHTunnel;
 import org.minima.utils.MinimaLogger;
@@ -374,12 +375,19 @@ public class NetworkHandler extends MessageProcessor {
 			//Store with the rest
 			PostMessage(new Message(NETWORK_NEWCLIENT).addObject("client", client));
 			ConnectionDetails details = getP2PMessageProcessor().getState().getConnectionDetailsMap().get(address);
+			P2PState state = this.getP2PMessageProcessor().getState();
+
 			String reason = "None Found";
 			if (details != null){
 				reason = details.getReason().toString();
 				if (details.getReason() == ConnectionReason.MAPPING){
 					getP2PMessageProcessor().getState().getActiveMappingRequests().put(client.getMinimaAddress(), client);
 				}
+				if (details.getReason() != ConnectionReason.MAPPING && details.getReason() != ConnectionReason.RENDEZVOUS){
+					client.setIsTemp(false);
+					state.getOutLinks().add(client.getMinimaAddress());
+				}
+
 			}
 			InputHandler.endResponse(zMessage, true, "Attempting to connect to " + address + " Reason: " + reason);
 			

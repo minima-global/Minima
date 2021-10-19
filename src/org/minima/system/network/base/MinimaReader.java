@@ -368,14 +368,11 @@ public class MinimaReader implements Runnable {
                 } catch (ProtocolException exc) {
                     MinimaLogger.log("PROTOCOL ERROR.. " + exc);
                     MinimaLogger.log(exc);
-
                 } catch (OutOfMemoryError exc) {
                     MinimaLogger.log("MEMORY ERROR.. " + exc);
                     exc.printStackTrace();
-
                     //DRASTIC ACTION.. Use ONLY if bash script in place to restart on Exit
                     //System.exit(99);
-
                 } catch (Exception exc) {
                     //General Exception
                     MinimaLogger.log("NETCLIENTREADER ERROR.. ");
