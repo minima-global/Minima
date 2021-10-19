@@ -395,13 +395,12 @@ public class P2PMessageProcessor extends MessageProcessor {
         if (!state.isRendezvousComplete()) {
             JoiningFuncs.joinRendezvousNode(state, getCurrentMinimaClients()).forEach(this::PostMessage);
             loopDelay = 6_000 + rand.nextInt(3_000);
-        } else if (state.getOutLinks().size() < 5) {
+        } else if (state.getOutLinks().size() < 1) {
             JoiningFuncs.joinEntryNode(state, getCurrentMinimaClients()).forEach(this::PostMessage);
             loopDelay = 6_000 + rand.nextInt(3_000);
+        } else if (state.getOutLinks().size() < state.getNumLinks()) {
+            JoiningFuncs.joinScaleOutLinks(state, getCurrentMinimaClients()).forEach(this::PostMessage);
         }
-//        else if (state.getOutLinks().size() < state.getNumLinks()) {
-//            JoiningFuncs.joinScaleOutLinks(state, getCurrentMinimaClients()).forEach(this::PostMessage);
-//        }
         ArrayList<ExpiringMessage> expiringMessages = this.state.dropExpiredMessages();
 //        log.debug(state.genPrintableState());
 
