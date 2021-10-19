@@ -87,7 +87,7 @@ public class GreetingFuncs {
     public static ArrayList<Message> onRendezvousGreeting(P2PState state, MinimaClient client) {
         ArrayList<Message> retMsgs = new ArrayList<>();
 
-        P2PMsgRendezvous rendezvous = new P2PMsgRendezvous(StartupFuncs.GenRendezvousNodeList(state, 10));
+        P2PMsgRendezvous rendezvous = new P2PMsgRendezvous(StartupFuncs.GenRendezvousNodeList(state, 10), client.getMinimaAddress());
 //        if (rendezvous.getAddresses().isEmpty()){
 //            rendezvous.getAddresses().add(state.getAddress());
 //        }
