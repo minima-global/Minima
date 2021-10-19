@@ -19,6 +19,7 @@ import org.minima.system.Main;
 import org.minima.system.brains.ConsensusNet;
 import org.minima.system.network.NetworkHandler;
 import org.minima.system.network.p2p.P2PMessageProcessor;
+import org.minima.system.network.p2p.P2PState;
 import org.minima.system.network.p2p.messages.*;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
@@ -107,9 +108,14 @@ public class MinimaClient extends MessageProcessor {
 	boolean mIncoming;
 
 	/**
-	 * Incoming or Outgoing
+	 * Does this client accept incoming connections
 	 */
 	boolean isClient = false;
+
+	/**
+	 * Is this connection a temporary one
+	 */
+	boolean isTemp = true;
 
 	/**
 	 * Constructor
@@ -118,6 +124,7 @@ public class MinimaClient extends MessageProcessor {
 	 * @throws IOException 
 	 * @throws UnknownHostException 
 	 */
+
 	public MinimaClient(InetSocketAddress address, NetworkHandler zNetwork) {
 		super("NETCLIENT");
 		
@@ -200,6 +207,13 @@ public class MinimaClient extends MessageProcessor {
 		this.isClient = isClient;
 	}
 
+	public boolean isTemp() {
+		return isTemp;
+	}
+	public void setIsTemp(boolean isTemp) {
+		this.isTemp = isTemp;
+	}
+
 	public String getHost() {
 		return mHost;
 	}
@@ -279,8 +293,16 @@ public class MinimaClient extends MessageProcessor {
 			mInputThread.start();
 			
 			//First thing to do..
-			PostMessage(new Message(NETCLIENT_P2P_GREETING));
-
+			if (!isIncoming()) {
+				// Only send this message if this is an outgoing connection
+				PostMessage(new Message(NETCLIENT_P2P_GREETING));
+				P2PState state = getNetworkHandler().getP2PMessageProcessor().getState();
+				if (state.isRendezvousComplete()) {
+					if (!state.getActiveMappingRequests().containsKey(minimaAddress)) {
+						state.getOutLinks().add(minimaAddress);
+					}
+				}
+			}
 
 			Message init = new Message(ConsensusNet.CONSENSUS_NET_INITIALISE);
 			init.addObject("netclient", this);

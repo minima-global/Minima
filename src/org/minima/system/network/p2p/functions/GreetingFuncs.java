@@ -26,7 +26,12 @@ public class GreetingFuncs {
         client.setMinimaAddress(address);
         client.setIsClient(greeting.isClient());
 
-        log.debug("[+] P2P_GREETING reason: " + greeting.getReason());
+        StringBuilder reasonString = new StringBuilder();
+        reasonString.append("[+] P2P_GREETING reason: ").append(greeting.getReason());
+        if (!client.isIncoming()){
+            reasonString.append(" for outbound connection");
+        }
+        log.debug(reasonString.toString());
 
 
         // InLinks
@@ -35,14 +40,13 @@ public class GreetingFuncs {
                 if (client.isIncoming()) {
                     state.getInLinks().add(client.getMinimaAddress());
                     log.warn("[-] P2P Incoming connection with no reason");
-                } else {
-                    state.getOutLinks().add(client.getMinimaAddress());
                 }
                 break;
             case RENDEZVOUS:
                 retMsgs.addAll(onRendezvousGreeting(state, client));
                 break;
             case ENTRY_NODE:
+                client.setIsTemp(true);
                 retMsgs.addAll(onEntryNodeGreeting(state, client));
                 if (state.isRendezvousComplete()) {
                     retMsgs.addAll(genClientLoadBalanceRequests(state, client.getMinimaAddress(), greeting.getNumClientSlotsAvailable()));
@@ -77,6 +81,7 @@ public class GreetingFuncs {
             state.getRecentJoiners().add(address);
         }
 
+        log.debug(state.genPrintableState());
         return retMsgs;
     }
 
@@ -95,11 +100,11 @@ public class GreetingFuncs {
                 .addObject("message", message)
         );
 
-        retMsgs.add(new Message(P2PMessageProcessor.P2P_DISCONNECT)
-                .addObject("client", client)
-                .addInteger("attempt", 0)
-                .addString("reason", "Disconnecting after sending rendezvous message")
-        );
+//        retMsgs.add(new Message(P2PMessageProcessor.P2P_DISCONNECT)
+//                .addObject("client", client)
+//                .addInteger("attempt", 0)
+//                .addString("reason", "Disconnecting after sending rendezvous message")
+//        );
 
         return retMsgs;
     }
@@ -128,6 +133,7 @@ public class GreetingFuncs {
             state.getExpectedAuthKeys().remove(authKey.toString());
             state.addInLink(client.getMinimaAddress());
             log.debug(state.genPrintableState());
+            client.setIsTemp(true);
 
         } else {
             retMsgs.add(new Message(P2PMessageProcessor.P2P_DISCONNECT)
@@ -144,6 +150,7 @@ public class GreetingFuncs {
         ArrayList<Message> retMsgs = new ArrayList<>();
 
         if (state.getExpectedAuthKeys().containsKey(authKey.toString())) {
+            client.setIsTemp(true);
             state.getExpectedAuthKeys().remove(authKey.toString());
             state.addInLink(client.getMinimaAddress());
             log.debug(state.genPrintableState());
@@ -171,6 +178,7 @@ public class GreetingFuncs {
         ArrayList<Message> retMsgs = new ArrayList<>();
 
         if (state.getExpectedAuthKeys().containsKey(authKey.toString())) {
+            client.setIsTemp(true);
             state.getExpectedAuthKeys().remove(authKey.toString());
             state.addInLink(client.getMinimaAddress());
             log.debug(state.genPrintableState());
@@ -195,6 +203,7 @@ public class GreetingFuncs {
                     .addString("reason", "Disconnecting as already connected to this client")
             );
         } else {
+            client.setIsTemp(true);
             state.addClientLink(client.getMinimaAddress());
             log.debug(state.genPrintableState());
             if (state.isSetupComplete() && !state.isClient() && state.getOutLinks().size() < state.getNumLinks()) {
@@ -224,11 +233,11 @@ public class GreetingFuncs {
                 .addObject("message", message)
         );
 
-        retMsgs.add(new Message(P2PMessageProcessor.P2P_DISCONNECT)
-                .addObject("client", client)
-                .addInteger("attempt", 0)
-                .addString("reason", "Disconnecting after sending mapping message")
-        );
+//        retMsgs.add(new Message(P2PMessageProcessor.P2P_DISCONNECT)
+//                .addObject("client", client)
+//                .addInteger("attempt", 0)
+//                .addString("reason", "Disconnecting after sending mapping message")
+//        );
 
         return retMsgs;
     }

@@ -27,7 +27,7 @@ public class DisconnectionFuncs {
         }
         if (client != null) {
             state.removeDisconnectingClient(client.getUID());
-            state.removeLink(client.getMinimaAddress());
+            state.removeLink(client);
         }
         return returnMessage;
     }
@@ -44,7 +44,7 @@ public class DisconnectionFuncs {
         }
 
         state.removeDisconnectingClient(client.getUID());
-        state.removeLink(client.getMinimaAddress());
+        state.removeLink(client);
         return returnMessage;
     }
 }
