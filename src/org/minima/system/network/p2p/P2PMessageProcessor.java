@@ -116,7 +116,7 @@ public class P2PMessageProcessor extends MessageProcessor {
         //Start the Ball rolling..
 //        this.setLOG(true);
         PostTimerMessage(new TimerMessage(10_000, P2P_LOOP));
-//        PostTimerMessage(new TimerMessage(300_000, P2P_NODE_NOT_ACCEPTING_CHECK));
+        PostTimerMessage(new TimerMessage(3600_000, P2P_NODE_NOT_ACCEPTING_CHECK));
     }
 
     public void stop() {
@@ -206,12 +206,12 @@ public class P2PMessageProcessor extends MessageProcessor {
                 case P2P_PRINT_NETWORK_MAP_RESPONSE:
                     processPrintNetworkMapResponseMsg(zMessage);
                     break;
-//                case P2P_NODE_NOT_ACCEPTING_CHECK:
-//                    processNodeNotAcceptingMsgCheck();
-//                    break;
-//                case P2P_NODE_NOT_ACCEPTING:
-//                    processNodeNotAcceptingMsg(zMessage);
-//                    break;
+                case P2P_NODE_NOT_ACCEPTING_CHECK:
+                    processNodeNotAcceptingMsgCheck();
+                    break;
+                case P2P_NODE_NOT_ACCEPTING:
+                    processNodeNotAcceptingMsg(zMessage);
+                    break;
                 default:
                     break;
             }
@@ -420,7 +420,7 @@ public class P2PMessageProcessor extends MessageProcessor {
                 log.debug(state.genPrintableState());
             }
         }
-        PostTimerMessage(new TimerMessage(60_000, P2P_NODE_NOT_ACCEPTING_CHECK));
+        PostTimerMessage(new TimerMessage(3600_000, P2P_NODE_NOT_ACCEPTING_CHECK));
     }
 
     /**
