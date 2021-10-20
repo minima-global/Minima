@@ -304,12 +304,12 @@ public class Start {
 		// Only connect to a single host for rendezvous with the p2p network
 		if(connect && connectionAddress != null) {
 //			rcmainserver.addAutoConnectHostPort(connectionAddress);
-			mMainServer.getNetworkHandler().getP2PMessageProcessor().getState().getRecentJoiners().add(connectionAddress);
+			mMainServer.getNetworkHandler().getP2PMessageProcessor().getState().addRecentJoiner(connectionAddress);
 		}else if(connect){
 			MinimaLogger.log(mMainServer.getNetworkHandler().getP2PMessageProcessor().getHostIP().toString());
 			ArrayList<InetSocketAddress> rendezvousHosts = StartupFuncs.LoadNodeList(mMainServer.getNetworkHandler().getP2PMessageProcessor().getState(), VALID_BOOTSTRAP_NODES, noextrahost);
 			connectionAddress = UtilFuncs.SelectRandomAddress(rendezvousHosts);
-			mMainServer.getNetworkHandler().getP2PMessageProcessor().getState().getRecentJoiners().add(connectionAddress);
+			mMainServer.getNetworkHandler().getP2PMessageProcessor().getState().addRecentJoiner(connectionAddress);
 		}
 
 		if(isClient){
@@ -326,7 +326,7 @@ public class Start {
 
 			rcmainserver.privateChain(needgenesis);
 			// If we are the genesis node of the private network, start with Rendezvous Complete
-			rcmainserver.getNetworkHandler().getP2PMessageProcessor().getState().setRendezvousComplete(true);
+			rcmainserver.getNetworkHandler().getP2PMessageProcessor().getState().rendezvousComplete();
 		}
 		
 		if(automine) {

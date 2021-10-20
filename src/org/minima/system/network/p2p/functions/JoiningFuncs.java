@@ -18,8 +18,8 @@ public class JoiningFuncs {
     public static ArrayList<Message> joinRendezvousNode(P2PState state, ArrayList<MinimaClient> clients)
     {
         ArrayList<Message> msgs = new ArrayList<>();
-        if (!state.getRecentJoiners().isEmpty()) {
-            InetSocketAddress address = UtilFuncs.SelectRandomAddress(new ArrayList<>(state.getRecentJoiners()));
+        if (!state.getRecentJoinersCopy().isEmpty()) {
+            InetSocketAddress address = UtilFuncs.SelectRandomAddress(new ArrayList<>(state.getRecentJoinersCopy()));
             msgs.add(new Message(P2PMessageProcessor.P2P_CONNECT).addObject("address", address).addString("reason", "RENDEZVOUS connection"));
             state.getConnectionDetailsMap().put(address, new ConnectionDetails(ConnectionReason.RENDEZVOUS));
         } else {
@@ -31,11 +31,11 @@ public class JoiningFuncs {
     public static ArrayList<Message> joinEntryNode(P2PState state, ArrayList<MinimaClient> clients)
     {
         ArrayList<Message> msgs = new ArrayList<>();
-        if (!state.getRecentJoiners().isEmpty()) {
-            InetSocketAddress address = UtilFuncs.SelectRandomAddress(new ArrayList<>(state.getRecentJoiners()));
+        if (!state.getRecentJoinersCopy().isEmpty()) {
+            InetSocketAddress address = UtilFuncs.SelectRandomAddress(new ArrayList<>(state.getRecentJoinersCopy()));
             msgs.add(new Message(P2PMessageProcessor.P2P_CONNECT).addObject("address", address).addString("reason", "ENTRY_NODE connection"));
             state.getConnectionDetailsMap().put(address, new ConnectionDetails(ConnectionReason.ENTRY_NODE));
-            state.setEntryNodeConnected(true);
+            state.entryNodeConnected();
         } else {
             log.error("No nodes to Rendezvous with - RandomNodeSet is empty");
         }
@@ -46,13 +46,13 @@ public class JoiningFuncs {
     public static ArrayList<Message> joinScaleOutLinks(P2PState state, ArrayList<MinimaClient> clients)
     {
         ArrayList<Message> msgs = new ArrayList<>();
-        if(state.getOutLinks().size() < state.getNumLinks()) {
+        if(state.getOutLinksCopy().size() < state.getNumLinks()) {
             int numActiveWalks = countActiveWalkLinks(state, true, true);
-            boolean createWalk = state.getOutLinks().size() - numActiveWalks > 0;
+            boolean createWalk = state.getOutLinksCopy().size() - numActiveWalks > 0;
             if (createWalk) {
                 P2PMsgWalkLinks walkLinks = new P2PMsgWalkLinks(true, true);
                 walkLinks.addHopToPath(state.getAddress());
-                InetSocketAddress nextHop = UtilFuncs.SelectRandomAddress(state.getOutLinks());
+                InetSocketAddress nextHop = UtilFuncs.SelectRandomAddress(state.getOutLinksCopy());
                 MinimaClient minimaClient = UtilFuncs.getClientForInetAddressEitherDirection(nextHop, clients);
                 msgs.add(WalkLinksFuncs.genP2PWalkLinkMsg(state, minimaClient, walkLinks, "P2P_JOIN"));
             }
@@ -63,14 +63,14 @@ public class JoiningFuncs {
     public static ArrayList<Message> joinScaleInLinks(P2PState state, ArrayList<MinimaClient> clients)
     {
         ArrayList<Message> msgs = new ArrayList<>();
-        if(state.getInLinks().size() < state.getNumLinks()) {
+        if(state.getInLinksCopy().size() < state.getNumLinks()) {
             int numActiveWalks = countActiveWalkLinks(state, false, false);
-            boolean createWalk = state.getInLinks().size() - numActiveWalks > 0;
+            boolean createWalk = state.getInLinksCopy().size() - numActiveWalks > 0;
             if (createWalk) {
                 // Replace Inlink
                 P2PMsgWalkLinks walkLinks = new P2PMsgWalkLinks(false, false);
                 walkLinks.addHopToPath(state.getAddress());
-                InetSocketAddress nextHop = UtilFuncs.SelectRandomAddress(state.getOutLinks());
+                InetSocketAddress nextHop = UtilFuncs.SelectRandomAddress(state.getOutLinksCopy());
                 MinimaClient minimaClient = UtilFuncs.getClientForInetAddressEitherDirection(nextHop, clients);
                 msgs.add(WalkLinksFuncs.genP2PWalkLinkMsg(state, minimaClient, walkLinks, "P2P_JOIN"));
             }
@@ -79,7 +79,7 @@ public class JoiningFuncs {
     }
     public static int countActiveWalkLinks(P2PState state, boolean isInLinksWalk, boolean isJoiningWalk){
         int numActiveMessages = 0;
-        for(ExpiringMessage expiringMessage: state.getExpiringMessageMap().values()){
+        for(ExpiringMessage expiringMessage: state.getExpiringMessageMapCopy().values()){
             Message message = expiringMessage.getMsg();
             if (message.isMessageType(P2PMessageProcessor.P2P_WALK_LINKS)) {
                 P2PMsgWalkLinks walkLinks = (P2PMsgWalkLinks) message.getObject("data");

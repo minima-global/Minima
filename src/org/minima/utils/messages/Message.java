@@ -3,7 +3,14 @@
  */
 package org.minima.utils.messages;
 
+import org.minima.objects.base.MiniData;
+import org.minima.system.network.p2p.Traceable;
+import org.minima.system.network.p2p.event.EventPublisher;
+import org.minima.utils.json.JSONObject;
+
 import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 /**
@@ -12,7 +19,9 @@ import java.util.Set;
  * @author Spartacus Rex
  *
  */
-public class Message {
+public class Message implements Traceable {
+
+	private final MiniData traceId = MiniData.getRandomData(100);
 
 	/**
 	 * Message Type
@@ -37,6 +46,10 @@ public class Message {
 		
 		//Create the message contents container
 		mContents = new HashMap<String, Object>();
+
+		if (EventPublisher.threadTraceId.get() == null) {
+			EventPublisher.threadTraceId.set(getTraceId());
+		}
 	}
 	
 	/**
@@ -48,6 +61,10 @@ public class Message {
 		
 		//Create the message contents container
 		mContents = new HashMap<String, Object>();
+
+		if (EventPublisher.threadTraceId.get() == null) {
+			EventPublisher.threadTraceId.set(getTraceId());
+		}
 	}
 	
 	/**
@@ -180,6 +197,21 @@ public class Message {
 		}
 		
 		return "[ "+mMessageType+", "+contents+" ]";
+	}
+
+	@Override
+	public JSONObject getContent() {
+		return new JSONObject(new HashMap());
+	}
+
+	@Override
+	public String getTraceId() {
+		return traceId.toString();
+	}
+
+	@Override
+	public String getName() {
+		return mMessageType;
 	}
 }
 

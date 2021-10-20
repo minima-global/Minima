@@ -4,7 +4,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniString;
-import org.minima.system.network.NetworkHandler;
 import org.minima.system.network.base.MinimaClient;
 import org.minima.system.network.p2p.ConnectionDetails;
 import org.minima.system.network.p2p.ConnectionReason;
@@ -12,10 +11,13 @@ import org.minima.system.network.p2p.P2PState;
 import org.minima.system.network.p2p.Traceable;
 import org.minima.system.network.p2p.event.EventPublisher;
 import org.minima.utils.Streamable;
+import org.minima.utils.json.JSONObject;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 @Getter
 @Setter
@@ -30,10 +32,13 @@ public class P2PMsgGreeting implements Streamable, Traceable {
 
 
     public P2PMsgGreeting() {
+        if (EventPublisher.threadTraceId.get() == null) {
+            EventPublisher.threadTraceId.set(getTraceId());
+        }
     }
 
     public P2PMsgGreeting(P2PState state, MinimaClient client){
-        numClientSlotsAvailable = state.getNumLinks() * 2 - state.getClientLinks().size();
+        numClientSlotsAvailable = state.getNumLinks() * 2 - state.getClientLinksCopy().size();
         minimaPort = state.getAddress().getPort();
         isClient = state.isClient();
 
@@ -86,5 +91,17 @@ public class P2PMsgGreeting implements Streamable, Traceable {
     @Override
     public String getTraceId() {
         return traceId.to0xString();
+    }
+
+    @Override
+    public JSONObject getContent() {
+        Map<String, Object> map = new HashMap<>();
+        map.put("numClientSlotsAvailable", numClientSlotsAvailable);
+        map.put("minimaPort", minimaPort);
+        map.put("isClient", isClient);
+        map.put("reason", reason.name());
+        map.put("auth_key", auth_key.toString());
+
+        return new JSONObject(map);
     }
 }

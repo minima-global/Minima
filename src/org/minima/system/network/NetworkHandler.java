@@ -385,7 +385,7 @@ public class NetworkHandler extends MessageProcessor {
 				}
 				if (details.getReason() != ConnectionReason.MAPPING && details.getReason() != ConnectionReason.RENDEZVOUS){
 					client.setIsTemp(false);
-					state.getOutLinks().add(client.getMinimaAddress());
+					state.addOutLink(client.getMinimaAddress());
 				}
 
 			}

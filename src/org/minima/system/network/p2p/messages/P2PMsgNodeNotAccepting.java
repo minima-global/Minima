@@ -5,13 +5,17 @@ import org.minima.objects.base.MiniData;
 import org.minima.system.network.p2p.Traceable;
 import org.minima.system.network.p2p.event.EventPublisher;
 import org.minima.utils.Streamable;
+import org.minima.utils.json.JSONObject;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.HashMap;
+import java.util.Map;
 
 import static lombok.AccessLevel.PRIVATE;
+import static org.minima.system.network.p2p.util.JSONObjectUtils.from;
 
 /**
  * P2P message suggesting that a node is not accepting messages
@@ -30,6 +34,9 @@ public class P2PMsgNodeNotAccepting implements Streamable, Traceable {
 
     public P2PMsgNodeNotAccepting(InetSocketAddress broadcaster) {
         this.broadcaster = broadcaster;
+        if (EventPublisher.threadTraceId.get() == null) {
+            EventPublisher.threadTraceId.set(getTraceId());
+        }
     }
 
     @Override
@@ -55,5 +62,13 @@ public class P2PMsgNodeNotAccepting implements Streamable, Traceable {
     @Override
     public String getTraceId() {
         return traceId.to0xString();
+    }
+
+    @Override
+    public JSONObject getContent() {
+
+        Map<String, Object> map = new HashMap<>();
+        map.put("broadcaster", from(broadcaster));
+        return new JSONObject(map);
     }
 }

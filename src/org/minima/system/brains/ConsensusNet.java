@@ -29,7 +29,6 @@ import org.minima.system.network.base.MinimaReader;
 import org.minima.system.txpow.TxPoWChecker;
 import org.minima.utils.DataTimer;
 import org.minima.utils.MinimaLogger;
-import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.TimerMessage;
 
@@ -139,7 +138,7 @@ public class ConsensusNet extends ConsensusProcessor {
 
 			greet.addAdditionalDetails("isClient", mNetworkHandler.getP2PMessageProcessor().getState().isClient());
 			greet.addAdditionalDetails("minimaPort", mNetworkHandler.getBasePort());
-			greet.addAdditionalDetails("numClients", mNetworkHandler.getP2PMessageProcessor().getState().getClientLinks().size());
+			greet.addAdditionalDetails("numClients", mNetworkHandler.getP2PMessageProcessor().getState().getClientLinksCopy().size());
 			
 			//Get the Tree
 			BlockTree tree = getMainDB().getMainTree();

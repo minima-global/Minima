@@ -48,7 +48,7 @@ public class MessageStack{
     	//Multiple threads can call this..
     	synchronized(mMessages) {
     		mMessages.add(zMessage);
-			EventPublisher.publish("posted " + zMessage.getMessageType());
+			EventPublisher.publish("posted",  zMessage);
 		}
     	
     	//There is something in the stack
@@ -87,7 +87,7 @@ public class MessageStack{
     		if(!mMessages.isEmpty()){
                 //Get the first message
                 nxtmsg = mMessages.getFirst();
-				EventPublisher.publish("posted " + nxtmsg.getMessageType());
+				EventPublisher.publish("popped", nxtmsg);
 
 				//Remove it from the list
                 mMessages.remove(nxtmsg);

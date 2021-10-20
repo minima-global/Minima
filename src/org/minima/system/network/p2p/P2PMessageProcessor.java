@@ -2,7 +2,6 @@ package org.minima.system.network.p2p;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.minima.objects.greet.Greeting;
 import org.minima.system.Main;
 import org.minima.system.brains.BackupManager;
 import org.minima.system.input.InputHandler;
@@ -153,7 +152,7 @@ public class P2PMessageProcessor extends MessageProcessor {
      */
     @Override
     protected void processMessage(Message zMessage) throws Exception {
-        EventPublisher.publish("process " + zMessage.getMessageType());
+        EventPublisher.publish("process ", zMessage);
 
         if (!zMessage.isMessageType(P2P_WALK_LINKS)) {
             log.debug("[+] P2PMessageProcessor processing: " + zMessage.getMessageType());
@@ -310,9 +309,9 @@ public class P2PMessageProcessor extends MessageProcessor {
         String reason = zMessage.getString("reason");
         log.debug("[!] P2P_DISCONNECT Disconnecting from isInLink? " + client.isIncoming() + " IP: " + client.getMinimaAddress() + " UID: " + client.getUID() + " for: " + reason);
         int attempt = zMessage.getInteger("attempt");
-        if (this.state.getOutLinks().contains(client.getMinimaAddress()) ||
-                this.state.getInLinks().contains(client.getMinimaAddress()) ||
-                this.state.getClientLinks().contains(client.getMinimaAddress())) {
+        if (this.state.getOutLinksCopy().contains(client.getMinimaAddress()) ||
+                this.state.getInLinksCopy().contains(client.getMinimaAddress()) ||
+                this.state.getClientLinksCopy().contains(client.getMinimaAddress())) {
             getNetworkHandler().PostMessage(new Message(NETWORK_DISCONNECT).addString("uid", client.getUID()));
         } else {
             if (attempt < 3) {
@@ -332,7 +331,7 @@ public class P2PMessageProcessor extends MessageProcessor {
         Message messageToSend = null;
         if (swapLink.isSwapClientReq()) {
             messageToSend = SwapFuncs.onSwapClientsReq(state, swapLink, getCurrentMinimaClients());
-        } else if (swapLink.isConditionalSwapReq() && state.getInLinks().size() > state.getNumLinks()) {
+        } else if (swapLink.isConditionalSwapReq() && state.getInLinksCopy().size() > state.getNumLinks()) {
             // Send SwapLink message if we have more inLinks than desired
             messageToSend = SwapFuncs.onSwapReq(state, swapLink, getCurrentMinimaClients());
         } else if (!swapLink.isConditionalSwapReq()) {
@@ -391,10 +390,10 @@ public class P2PMessageProcessor extends MessageProcessor {
         if (!state.isRendezvousComplete()) {
             JoiningFuncs.joinRendezvousNode(state, getCurrentMinimaClients()).forEach(this::PostMessage);
             loopDelay = 6_000 + rand.nextInt(3_000);
-        } else if (state.getOutLinks().size() < 1) {
+        } else if (state.getOutLinksCopy().size() < 1) {
             JoiningFuncs.joinEntryNode(state, getCurrentMinimaClients()).forEach(this::PostMessage);
             loopDelay = 6_000 + rand.nextInt(3_000);
-        } else if (state.getOutLinks().size() < state.getNumLinks()) {
+        } else if (state.getOutLinksCopy().size() < state.getNumLinks()) {
             JoiningFuncs.joinScaleOutLinks(state, getCurrentMinimaClients()).forEach(this::PostMessage);
         }
         ArrayList<ExpiringMessage> expiringMessages = this.state.dropExpiredMessages();
@@ -426,8 +425,8 @@ public class P2PMessageProcessor extends MessageProcessor {
      */
     private void processNodeNotAcceptingMsg(Message zMessage) {
         P2PMsgNodeNotAccepting isClientMsg = (P2PMsgNodeNotAccepting) zMessage.getObject("data");
-        if (state.getInLinks().remove(isClientMsg.getBroadcaster())) {
-            state.getClientLinks().add(isClientMsg.getBroadcaster());
+        if (state.removeInLink(isClientMsg.getBroadcaster())) {
+            state.addClientLink(isClientMsg.getBroadcaster());
             log.debug("[+] P2P_NODE_NOT_ACCEPTING_CHECK Moving " + isClientMsg.getBroadcaster() + " from inlinks to clientLinks");
 
         }
@@ -486,7 +485,7 @@ public class P2PMessageProcessor extends MessageProcessor {
         }
 
         state.getNetworkMap().put(state.getAddress(), new P2PMsgNode(state));
-        ArrayList<InetSocketAddress> addresses = Stream.of(state.getRecentJoiners(), state.getOutLinks(), state.getInLinks())
+        ArrayList<InetSocketAddress> addresses = Stream.of(state.getRecentJoinersCopy(), state.getOutLinksCopy(), state.getInLinksCopy())
                 .flatMap(Collection::stream).distinct()
                 .filter(x -> !state.getNetworkMap().containsKey(x) && !state.getActiveMappingRequests().containsKey(x))
                 .collect(Collectors.toCollection(ArrayList::new));

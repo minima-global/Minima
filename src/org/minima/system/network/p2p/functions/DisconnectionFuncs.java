@@ -14,12 +14,12 @@ public class DisconnectionFuncs {
 
     public static Message onInLinkDisconnected(P2PState state, MinimaClient client, ArrayList<MinimaClient> minimaClients) {
         Message returnMessage = null;
-        if (state.isSetupComplete() && !state.isClient() && !state.getOutLinks().isEmpty() && state.getInLinks().size() < state.getNumLinks()) {
+        if (state.isSetupComplete() && !state.isClient() && !state.getOutLinksCopy().isEmpty() && state.getInLinksCopy().size() < state.getNumLinks()) {
             // Replace Inlink
             P2PMsgWalkLinks walkLinks = new P2PMsgWalkLinks(false, false);
-            InetSocketAddress nextHop = UtilFuncs.SelectRandomAddress(state.getOutLinks());
+            InetSocketAddress nextHop = UtilFuncs.SelectRandomAddress(state.getOutLinksCopy());
             if (nextHop == null) {
-                nextHop = UtilFuncs.SelectRandomAddress(state.getInLinks());
+                nextHop = UtilFuncs.SelectRandomAddress(state.getInLinksCopy());
             }
             MinimaClient minimaClient = UtilFuncs.getClientForInetAddress(nextHop, minimaClients, false);
             returnMessage = WalkLinksFuncs.genP2PWalkLinkMsg(state, minimaClient, walkLinks, "P2P_ON_DISCONNECTED");
@@ -35,10 +35,10 @@ public class DisconnectionFuncs {
     public static Message onOutLinkDisconnected(P2PState state, MinimaClient client, ArrayList<MinimaClient> minimaClients) {
 
         Message returnMessage = null;
-        if (state.isSetupComplete() && !state.isClient() && !state.getInLinks().isEmpty() && state.getOutLinks().size() < state.getNumLinks()) {
+        if (state.isSetupComplete() && !state.isClient() && !state.getInLinksCopy().isEmpty() && state.getOutLinksCopy().size() < state.getNumLinks()) {
             // Replace Outlink
             P2PMsgWalkLinks walkLinks = new P2PMsgWalkLinks(true, false);
-            InetSocketAddress nextHop = UtilFuncs.SelectRandomAddress(state.getInLinks());
+            InetSocketAddress nextHop = UtilFuncs.SelectRandomAddress(state.getInLinksCopy());
             MinimaClient minimaClient = UtilFuncs.getClientForInetAddress(nextHop, minimaClients, true);
             returnMessage = WalkLinksFuncs.genP2PWalkLinkMsg(state, minimaClient, walkLinks, "P2P_ON_DISCONNECTED");
         }

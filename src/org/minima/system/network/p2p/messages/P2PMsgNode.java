@@ -29,13 +29,16 @@ public class P2PMsgNode implements Streamable, Traceable {
     private long expireTime;
 
     public P2PMsgNode() {
+        if (EventPublisher.threadTraceId.get() == null) {
+            EventPublisher.threadTraceId.set(getTraceId());
+        }
     }
 
     public P2PMsgNode(P2PState state) {
         this.nodeAddress = state.getAddress();
-        this.inLinks = state.getInLinks();
-        this.outLinks = state.getOutLinks();
-        this.clientLinks = state.getClientLinks();
+        this.inLinks = state.getInLinksCopy();
+        this.outLinks = state.getOutLinksCopy();
+        this.clientLinks = state.getClientLinksCopy();
     }
 
     public static P2PMsgNode ReadFromStream(DataInputStream zIn) throws IOException {
@@ -103,5 +106,10 @@ public class P2PMsgNode implements Streamable, Traceable {
     @Override
     public String getTraceId() {
         return traceId.to0xString();
+    }
+
+    @Override
+    public JSONObject getContent() {
+        return toDetailsJSON();
     }
 }

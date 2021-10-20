@@ -25,7 +25,7 @@ public class WalkLinksFuncs {
     public static Message onOutLinkWalkMsg(P2PState state, P2PMsgWalkLinks p2pWalkLinks, ArrayList<MinimaClient> allClients) {
         Message retMsg;
         p2pWalkLinks.addHopToPath(state.getAddress());
-        ArrayList<InetSocketAddress> filteredOutLinks = (ArrayList<InetSocketAddress>) state.getOutLinks().stream()
+        ArrayList<InetSocketAddress> filteredOutLinks = (ArrayList<InetSocketAddress>) state.getOutLinksCopy().stream()
                 .filter(x -> p2pWalkLinks.getPathTaken().stream().noneMatch(x::equals))
                 .collect(Collectors.toList());
         InetSocketAddress nextHop = UtilFuncs.SelectRandomAddress(filteredOutLinks);
@@ -38,7 +38,6 @@ public class WalkLinksFuncs {
 
         return retMsg;
     }
-
     public static Message createSwapLinkMsg(P2PMsgWalkLinks msgWalkLinks) {
         Message retMsg = null;
         if (!msgWalkLinks.isWalkInLinks()) {
@@ -57,7 +56,7 @@ public class WalkLinksFuncs {
     public static Message onInLinkWalkMsg(P2PState state, P2PMsgWalkLinks p2pWalkLinks, ArrayList<MinimaClient> allClients) {
         Message retMsg;
         p2pWalkLinks.addHopToPath(state.getAddress());
-        ArrayList<InetSocketAddress> filteredInLinks = (ArrayList<InetSocketAddress>) state.getInLinks().stream()
+        ArrayList<InetSocketAddress> filteredInLinks = (ArrayList<InetSocketAddress>) state.getInLinksCopy().stream()
                 .filter(x -> p2pWalkLinks.getPathTaken().stream().noneMatch(x::equals))
                 .collect(Collectors.toList());
         InetSocketAddress nextHop = UtilFuncs.SelectRandomAddress(filteredInLinks);
@@ -68,9 +67,9 @@ public class WalkLinksFuncs {
             // todo: need to check if we are a client or not
             p2pWalkLinks.setReturning(true);
             if (p2pWalkLinks.isClientWalk()){
-                p2pWalkLinks.setAvailableClientSlots(state.getNumLinks() - state.getClientLinks().size());
+                p2pWalkLinks.setAvailableClientSlots(state.getNumLinks() - state.getClientLinksCopy().size());
             }
-            state.getExpectedAuthKeys().put(p2pWalkLinks.getSecret().toString(), System.currentTimeMillis() + P2PState.AUTH_KEY_EXPIRY);
+            state.addExpectedAuthKeyAndValue(p2pWalkLinks.getSecret().toString(), System.currentTimeMillis() + P2PState.AUTH_KEY_EXPIRY);
             retMsg = onWalkLinkResponseMsg(state, p2pWalkLinks, allClients);
         }
 
@@ -115,15 +114,15 @@ public class WalkLinksFuncs {
         Message returnMessage = null;
         InetSocketAddress connectTargetAddress = msg.getPathTaken().get(msg.getPathTaken().size() - 1);
         if (!connectTargetAddress.equals(state.getAddress())) {
-            if (!state.getRecentJoiners().contains(connectTargetAddress)) {
+            if (!state.getRecentJoinersCopy().contains(connectTargetAddress)) {
                 state.addRandomNodeSet(connectTargetAddress);
             }
-            if (state.getOutLinks().size() < state.getNumLinks()) {
+            if (state.getOutLinksCopy().size() < state.getNumLinks()) {
                 ConnectionReason reason = ConnectionReason.REPLACING_OUT_LINK;
                 if (msg.isJoiningWalk()) {
                     reason = ConnectionReason.ADDING_OUT_LINK;
                     // On adding an outlink we also expect a do swap back to this node
-                    state.getExpectedAuthKeys().put(msg.getSecret().toString(), System.currentTimeMillis() + P2PState.AUTH_KEY_EXPIRY);
+                    state.addExpectedAuthKeyAndValue(msg.getSecret().toString(), System.currentTimeMillis() + P2PState.AUTH_KEY_EXPIRY);
                 }
                 returnMessage = new Message(P2PMessageProcessor.P2P_CONNECT)
                         .addObject("address", connectTargetAddress)
@@ -143,7 +142,7 @@ public class WalkLinksFuncs {
         ArrayList<Message> returnMessage = new ArrayList<>();
         InetSocketAddress connectTargetAddress = msg.getPathTaken().get(msg.getPathTaken().size() - 1);
         if (!connectTargetAddress.equals(state.getAddress())) {
-            if (!state.getRecentJoiners().contains(connectTargetAddress)) {
+            if (!state.getRecentJoinersCopy().contains(connectTargetAddress)) {
                 state.addRandomNodeSet(connectTargetAddress);
             }
             log.debug("[!] P2P_WALK_LINKS_RESPONSE: CLIENT creating do swap messages");
@@ -174,8 +173,8 @@ public class WalkLinksFuncs {
                     .addObject("message", new Message(MinimaClient.NETCLIENT_P2P_WALK_LINKS).addObject("data", walkLinks));
             ExpiringMessage expiringMessage = new ExpiringMessage(new Message(P2PMessageProcessor.P2P_WALK_LINKS).addObject("data", walkLinks));
             expiringMessage.setTimestamp(System.currentTimeMillis() + 5_000L);
-            state.getExpiringMessageMap().put(walkLinks.getSecret(), expiringMessage);
-            state.getExpectedAuthKeys().put(walkLinks.getSecret().toString(), System.currentTimeMillis() + P2PState.AUTH_KEY_EXPIRY);
+            state.addExpiringMessage(walkLinks.getSecret(), expiringMessage);
+            state.addExpectedAuthKeyAndValue(walkLinks.getSecret().toString(), System.currentTimeMillis() + P2PState.AUTH_KEY_EXPIRY);
 
         }
         return retMsg;

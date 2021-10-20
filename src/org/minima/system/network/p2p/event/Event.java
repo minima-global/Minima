@@ -13,16 +13,16 @@ public class Event {
     private final String traceId1;
     private final String traceId2;
     private final String type;
+    private final JSONObject details;
     private long time = System.currentTimeMillis();
 
-
     public JSONObject toJSONObject() {
-        Map<String, String> h = new HashMap();
-        h.put("traceId1", traceId1);
-        h.put("traceId2", traceId2);
-        h.put("type", type);
-        h.put("time", String.valueOf(time));
-
-        return new JSONObject(h);
+        Map<String, Object> map = new HashMap<>();
+        map.put("traceId1", traceId1);
+        map.put("traceId2", traceId2);
+        map.put("type", type);
+        map.put("time", time);
+        map.put("details", details);
+        return new JSONObject(map);
     }
 }

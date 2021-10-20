@@ -18,13 +18,13 @@ import java.util.stream.Collectors;
 public class SwapFuncs {
 
     public static Message onSwapClientsReq(P2PState state, P2PMsgSwapLink swapLink, ArrayList<MinimaClient> allClients){
-        InetSocketAddress addressToDoSwap = UtilFuncs.SelectRandomAddress(state.getClientLinks());
+        InetSocketAddress addressToDoSwap = UtilFuncs.SelectRandomAddress(state.getClientLinksCopy());
 
         ArrayList<MinimaClient> clients = allClients.stream()
                 .filter(MinimaClient::isClient)
                 .collect(Collectors.toCollection(ArrayList::new));
 
-        log.debug("[!] P2P_SWAP_LINK Num Clients post filter: " + clients.size() + " num disconnecting clients: " + state.getDisconnectingClients().size() + " num clients: " + allClients.size());
+        log.debug("[!] P2P_SWAP_LINK Num Clients post filter: " + clients.size() + " num disconnecting clients: " + state.getDisconnectingClientsCopy().size() + " num clients: " + allClients.size());
         MinimaClient minimaClient = UtilFuncs.getClientForInetAddress(addressToDoSwap, clients, true);
         return  SwapFuncs.generateDoSwapMessage(state, swapLink, minimaClient);
     }
@@ -34,7 +34,7 @@ public class SwapFuncs {
 
 
         // SwapTarget
-        ArrayList<InetSocketAddress> filteredInLinks = (ArrayList<InetSocketAddress>) state.getInLinks().stream()
+        ArrayList<InetSocketAddress> filteredInLinks = (ArrayList<InetSocketAddress>) state.getInLinksCopy().stream()
                 .filter(x -> !x.equals(swapLink.getSwapTarget()))
                 .distinct()
                 .collect(Collectors.toList());
@@ -44,9 +44,9 @@ public class SwapFuncs {
             InetSocketAddress addressToDoSwap = UtilFuncs.SelectRandomAddress(filteredInLinks);
 
             ArrayList<MinimaClient> clients = allClients.stream()
-                    .filter(x -> !state.getDisconnectingClients()
+                    .filter(x -> !state.getDisconnectingClientsCopy()
                             .contains(x.getUID())).collect(Collectors.toCollection(ArrayList::new));
-            log.debug("[!] P2P_SWAP_LINK  from: " + state.getAddress() + " Num Clients post filter: " + clients.size() + " num disconnecting clients: " + state.getDisconnectingClients().size() + " num clients: " + allClients.size());
+            log.debug("[!] P2P_SWAP_LINK  from: " + state.getAddress() + " Num Clients post filter: " + clients.size() + " num disconnecting clients: " + state.getDisconnectingClientsCopy().size() + " num clients: " + allClients.size());
             minimaClient = UtilFuncs.getClientForInetAddress(addressToDoSwap, clients, true);
         }
         return  SwapFuncs.generateDoSwapMessage(state, swapLink, minimaClient);

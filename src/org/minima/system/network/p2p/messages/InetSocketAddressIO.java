@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.List;
 
 public class InetSocketAddressIO {
 
@@ -16,7 +17,7 @@ public class InetSocketAddressIO {
     }
 
 
-    static public void writeAddressList(ArrayList<InetSocketAddress> nodes, DataOutputStream zOut) throws IOException {
+    static public void writeAddressList(List<InetSocketAddress> nodes, DataOutputStream zOut) throws IOException {
         zOut.writeInt(nodes.size());
         for (InetSocketAddress address : nodes) {
             writeAddress(address, zOut);

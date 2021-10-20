@@ -2,9 +2,7 @@ package org.minima.system.network.p2p.functions;
 
 import lombok.extern.slf4j.Slf4j;
 import org.minima.objects.base.MiniData;
-import org.minima.objects.greet.Greeting;
 import org.minima.system.network.base.MinimaClient;
-import org.minima.system.network.p2p.ConnectionReason;
 import org.minima.system.network.p2p.P2PMessageProcessor;
 import org.minima.system.network.p2p.P2PState;
 import org.minima.system.network.p2p.messages.*;
@@ -12,7 +10,6 @@ import org.minima.utils.messages.Message;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
-import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -38,7 +35,7 @@ public class GreetingFuncs {
         switch (greeting.getReason()) {
             case NONE:
                 if (client.isIncoming()) {
-                    state.getInLinks().add(client.getMinimaAddress());
+                    state.addInLink(client.getMinimaAddress());
                     log.warn("[-] P2P Incoming connection with no reason");
                 }
                 break;
@@ -76,8 +73,8 @@ public class GreetingFuncs {
         }
 
 
-        if (!greeting.isClient() && state.getRecentJoiners().size() < 5 && !state.getRecentJoiners().contains(address) && !address.equals(state.getAddress())) {
-            state.getRecentJoiners().add(address);
+        if (!greeting.isClient() && state.getRecentJoinersCopy().size() < 5 && !state.getRecentJoinersCopy().contains(address) && !address.equals(state.getAddress())) {
+            state.addRecentJoiner(address);
         }
 
         log.debug(state.genPrintableState());
@@ -129,8 +126,8 @@ public class GreetingFuncs {
     public static ArrayList<Message> onDoSwapGreeting(P2PState state, MinimaClient client, MiniData authKey) {
         ArrayList<Message> retMsgs = new ArrayList<>();
 
-        if (state.getExpectedAuthKeys().containsKey(authKey.toString())) {
-            state.getExpectedAuthKeys().remove(authKey.toString());
+        if (state.getExpectedAuthKeysCopy().containsKey(authKey.toString())) {
+            state.removeExpectedAuthKey(authKey.toString());
             state.addInLink(client.getMinimaAddress());
             client.setIsTemp(false);
             log.debug(state.genPrintableState());
@@ -139,7 +136,7 @@ public class GreetingFuncs {
             retMsgs.add(new Message(P2PMessageProcessor.P2P_DISCONNECT)
                     .addObject("client", client)
                     .addInteger("attempt", 0)
-                    .addString("reason", "Disconnecting DO_SWAP link as didn't provide a valid auth key: " + authKey + " valid keys: " + state.getExpectedAuthKeys().keySet())
+                    .addString("reason", "Disconnecting DO_SWAP link as didn't provide a valid auth key: " + authKey + " valid keys: " + state.getExpiringMessageMapCopy().keySet())
             );
         }
 
@@ -149,13 +146,13 @@ public class GreetingFuncs {
     public static ArrayList<Message> onAddOutLinkGreeting(P2PState state, MinimaClient client, MiniData authKey) {
         ArrayList<Message> retMsgs = new ArrayList<>();
 
-        if (state.getExpectedAuthKeys().containsKey(authKey.toString())) {
+        if (state.getExpectedAuthKeysCopy().containsKey(authKey.toString())) {
             client.setIsTemp(false);
-            state.getExpectedAuthKeys().remove(authKey.toString());
+            state.removeExpectedAuthKey(authKey.toString());
             state.addInLink(client.getMinimaAddress());
             log.debug(state.genPrintableState());
 
-            if (state.getInLinks().size() >= state.getNumLinks()) {
+            if (state.getInLinksCopy().size() >= state.getNumLinks()) {
                 P2PMsgSwapLink swapLink = new P2PMsgSwapLink();
                 swapLink.setSwapTarget(client.getMinimaAddress());
                 swapLink.setSecret(authKey);
@@ -168,7 +165,7 @@ public class GreetingFuncs {
             retMsgs.add(new Message(P2PMessageProcessor.P2P_DISCONNECT)
                     .addObject("client", client)
                     .addInteger("attempt", 0)
-                    .addString("reason", "Disconnecting add outLink as didn't provide a valid auth key: " + authKey + " valid keys: " + state.getExpectedAuthKeys().keySet())
+                    .addString("reason", "Disconnecting add outLink as didn't provide a valid auth key: " + authKey + " valid keys: " + state.getExpectedAuthKeysCopy().keySet())
             );
         }
 
@@ -178,16 +175,16 @@ public class GreetingFuncs {
     public static ArrayList<Message> onReplacingOutLinkGreeting(P2PState state, MinimaClient client, MiniData authKey) {
         ArrayList<Message> retMsgs = new ArrayList<>();
 
-        if (state.getExpectedAuthKeys().containsKey(authKey.toString())) {
+        if (state.getExpectedAuthKeysCopy().containsKey(authKey.toString())) {
             client.setIsTemp(false);
-            state.getExpectedAuthKeys().remove(authKey.toString());
+            state.removeExpectedAuthKey(authKey.toString());
             state.addInLink(client.getMinimaAddress());
             log.debug(state.genPrintableState());
         } else {
             retMsgs.add(new Message(P2PMessageProcessor.P2P_DISCONNECT)
                     .addObject("client", client)
                     .addInteger("attempt", 0)
-                    .addString("reason", "Disconnecting replace outLink as didn't provide a valid auth key: " + authKey + " valid keys: " + state.getExpectedAuthKeys().keySet())
+                    .addString("reason", "Disconnecting replace outLink as didn't provide a valid auth key: " + authKey + " valid keys: " + state.getExpectedAuthKeysCopy().keySet())
             );
         }
 
@@ -197,7 +194,7 @@ public class GreetingFuncs {
     public static ArrayList<Message> onClientGreeting(P2PState state, MinimaClient client, ArrayList<MinimaClient> minimaClients) {
         ArrayList<Message> retMsgs = new ArrayList<>();
         client.setIsClient(true);
-        if (state.getClientLinks().contains(client.getMinimaAddress())) {
+        if (state.getClientLinksCopy().contains(client.getMinimaAddress())) {
             retMsgs.add(new Message(P2PMessageProcessor.P2P_DISCONNECT)
                     .addObject("client", client)
                     .addInteger("attempt", 0)
@@ -207,11 +204,11 @@ public class GreetingFuncs {
             client.setIsTemp(false);
             state.addClientLink(client.getMinimaAddress());
             log.debug(state.genPrintableState());
-            if (state.isSetupComplete() && !state.isClient() && state.getOutLinks().size() < state.getNumLinks()) {
+            if (state.isSetupComplete() && !state.isClient() && state.getOutLinksCopy().size() < state.getNumLinks()) {
                 // Replace Outlink
                 P2PMsgWalkLinks walkLinks = new P2PMsgWalkLinks(true, false);
                 walkLinks.setClientWalk(true);
-                InetSocketAddress nextHop = UtilFuncs.SelectRandomAddress(state.getOutLinks());
+                InetSocketAddress nextHop = UtilFuncs.SelectRandomAddress(state.getOutLinksCopy());
                 MinimaClient minimaClient = UtilFuncs.getClientForInetAddress(nextHop, minimaClients, false);
                 retMsgs.add(WalkLinksFuncs.genP2PWalkLinkMsg(state, minimaClient, walkLinks, "P2P_ON_DISCONNECTED"));
             }
@@ -247,8 +244,8 @@ public class GreetingFuncs {
 
         ArrayList<Message> retMsgs = new ArrayList<>();
         // TODO: Add * 2 to reduce the amount of load balancing messages
-        if (state.getClientLinks().size() > state.getNumLinks()) {
-            int numClientsToSend = state.getClientLinks().size() / 2;
+        if (state.getClientLinksCopy().size() > state.getNumLinks()) {
+            int numClientsToSend = state.getClientLinksCopy().size() / 2;
             int numSwaps = Math.min(numClientsToSend, maxClientsCanReceive);
             for (int i = 0; i < numSwaps; i++) {
                 // Send a DOSWAP message to numSwaps clients

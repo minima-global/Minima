@@ -5,13 +5,20 @@ import lombok.Setter;
 import org.minima.objects.base.MiniData;
 import org.minima.system.network.p2p.Traceable;
 import org.minima.system.network.p2p.event.EventPublisher;
+import org.minima.system.network.p2p.util.JSONObjectUtils;
 import org.minima.utils.Streamable;
+import org.minima.utils.json.JSONArray;
+import org.minima.utils.json.JSONObject;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
+import static java.util.stream.Collectors.toList;
 
 @Setter
 @Getter
@@ -27,7 +34,11 @@ public class P2PMsgWalkLinks implements Streamable, Traceable {
     ArrayList<InetSocketAddress> pathTaken = new ArrayList<>();
 
 
-    public P2PMsgWalkLinks() {}
+    public P2PMsgWalkLinks() {
+        if (EventPublisher.threadTraceId.get() == null) {
+            EventPublisher.threadTraceId.set(getTraceId());
+        }
+    }
 
     public P2PMsgWalkLinks(boolean walkInLinks, boolean isJoiningWalk) {
         this.walkInLinks = walkInLinks;
@@ -95,5 +106,21 @@ public class P2PMsgWalkLinks implements Streamable, Traceable {
     @Override
     public String getTraceId() {
         return secret.to0xString();
+    }
+
+    @Override
+    public JSONObject getContent() {
+
+        Map<String, Object> map = new HashMap<>();
+        map.put("walkInLinks", walkInLinks);
+        map.put("isJoiningWalk", isJoiningWalk);
+        map.put("isClientWalk", isClientWalk);
+        map.put("availableClientSlots", availableClientSlots);
+        map.put("isReturning", isReturning);
+        map.put("numHopsToGo", numHopsToGo);
+        map.put("pathTaken", new JSONArray(pathTaken.stream()
+                .map(JSONObjectUtils::from)
+                .collect(toList())));
+        return new JSONObject(map);
     }
 }

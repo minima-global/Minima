@@ -29,6 +29,9 @@ import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageProcessor;
 import org.minima.utils.messages.TimerMessage;
 
+import static org.minima.system.network.p2p.util.JSONObjectUtils.from;
+import static org.minima.system.network.p2p.util.MapUtils.MapBuilder.using;
+
 public class MinimaClient extends MessageProcessor {
 		
 	/**
@@ -436,7 +439,8 @@ public class MinimaClient extends MessageProcessor {
 			
 			//Now write the complete package..
 			complete.writeDataStream(mOutput);
-			EventPublisher.publish("sent " + zMessageType.name());
+			EventPublisher.publish("sent " + zMessageType.name(),
+					new JSONObject(using("target", from(this.minimaAddress)).asMap()));
 
 			//Send..
 			mOutput.flush();

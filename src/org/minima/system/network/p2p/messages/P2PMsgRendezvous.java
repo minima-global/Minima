@@ -5,13 +5,21 @@ import lombok.Setter;
 import org.minima.objects.base.MiniData;
 import org.minima.system.network.p2p.Traceable;
 import org.minima.system.network.p2p.event.EventPublisher;
+import org.minima.system.network.p2p.util.JSONObjectUtils;
 import org.minima.utils.Streamable;
+import org.minima.utils.json.JSONArray;
+import org.minima.utils.json.JSONObject;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
+import static java.util.stream.Collectors.toList;
+import static org.minima.system.network.p2p.util.JSONObjectUtils.from;
 
 @Getter
 @Setter
@@ -24,6 +32,9 @@ public class P2PMsgRendezvous implements Streamable, Traceable {
     public P2PMsgRendezvous(ArrayList<InetSocketAddress> addresses, InetSocketAddress targetAddress) {
         this.addresses = addresses;
         this.targetAddress = targetAddress;
+        if (EventPublisher.threadTraceId.get() == null) {
+            EventPublisher.threadTraceId.set(getTraceId());
+        }
     }
 
     @Override
@@ -49,5 +60,16 @@ public class P2PMsgRendezvous implements Streamable, Traceable {
     @Override
     public String getTraceId() {
         return secret.to0xString();
+    }
+
+    @Override
+    public JSONObject getContent() {
+
+        Map<String, Object> map = new HashMap<>();
+        map.put("targetAddress", from(targetAddress));
+        map.put("addresses", new JSONArray(addresses.stream()
+                .map(JSONObjectUtils::from)
+                .collect(toList())));
+        return new JSONObject(map);
     }
 }

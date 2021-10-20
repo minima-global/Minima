@@ -124,7 +124,7 @@ public class StartupFuncs {
                 final ObjectMapper mapper = new ObjectMapper();
                 loadedNodeList = mapper.readValue(inputStream, new TypeReference<ArrayList<InetSocketAddress>>() {
                 });
-                state.getRecentJoiners().addAll(loadedNodeList);
+                state.addRecentJoiners(loadedNodeList);
             } catch (IOException ioe) {
                 log.error("Error whilst reading in p2pDataFile: ", ioe);
             }
@@ -146,9 +146,9 @@ public class StartupFuncs {
      * @return
      */
     public static ArrayList<InetSocketAddress> GenRendezvousNodeList(P2PState state, int numAddrToReturn) {
-        assert state.getOutLinks() != null : "OutLinks Array is null";
-        assert state.getRecentJoiners() != null : "InLinks Array is null";
-        return Stream.of(state.getRecentJoiners(), state.getOutLinks())
+        assert state.getOutLinksCopy() != null : "OutLinks Array is null";
+        assert state.getRecentJoinersCopy() != null : "InLinks Array is null";
+        return Stream.of(state.getRecentJoinersCopy(), state.getOutLinksCopy())
                 .flatMap(Collection::stream).distinct().limit(numAddrToReturn).collect(Collectors.toCollection(ArrayList::new));
     }
 
@@ -156,7 +156,7 @@ public class StartupFuncs {
 
         rendezvous.getAddresses().forEach(state::addRandomNodeSet);
         state.setAddress(rendezvous.getTargetAddress());
-        state.setRendezvousComplete(true);
+        state.rendezvousComplete();
     }
 
 }

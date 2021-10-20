@@ -19,7 +19,7 @@ public class BroadcastFuncs {
 
     public static List<Message> broadcastNodeNotAccepting(P2PState state, ArrayList<MinimaClient> clients) {
 
-        return state.getOutLinks().stream()
+        return state.getOutLinksCopy().stream()
                 .map(outLink -> new Message(P2P_SEND_MESSAGE)
                 .addObject("client", getClientForInetAddress(outLink, clients, false))
                 .addObject("message", new Message(NETMESSAGE_P2P_NODE_NOT_ACCEPTING).addObject("data", new P2PMsgNodeNotAccepting(state.getAddress()))))
