@@ -382,16 +382,23 @@ public class P2PMessageProcessor extends MessageProcessor {
     private void processLoopMsg(Message zMessage) {
         Random rand = new Random();
         long loopDelay = 6_000 + rand.nextInt(3_000); //300_000 + rand.nextInt(30_000);
+        int num_entry_nodes = 1;
+        if (state.isClient()){
+            num_entry_nodes = 3;
+        }
 
         if (!state.isRendezvousComplete()) {
             JoiningFuncs.joinRendezvousNode(state, getCurrentMinimaClients()).forEach(this::PostMessage);
             loopDelay = 6_000 + rand.nextInt(3_000);
-        } else if (state.getOutLinks().size() < 1) {
+        } else if (state.getOutLinks().size() < num_entry_nodes) {
             JoiningFuncs.joinEntryNode(state, getCurrentMinimaClients()).forEach(this::PostMessage);
             loopDelay = 6_000 + rand.nextInt(3_000);
-        } else if (state.getOutLinks().size() < state.getNumLinks()) {
+        } else if (!state.isClient() && state.getOutLinks().size() < state.getNumLinks()) {
             JoiningFuncs.joinScaleOutLinks(state, getCurrentMinimaClients()).forEach(this::PostMessage);
+        } else if (!state.isClient() && state.getInLinks().size() < state.getNumLinks()) {
+            JoiningFuncs.requestInLinks(state, getCurrentMinimaClients()).forEach(this::PostMessage);
         }
+
         ArrayList<ExpiringMessage> expiringMessages = this.state.dropExpiredMessages();
 //        log.debug(state.genPrintableState());
 

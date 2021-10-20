@@ -207,7 +207,7 @@ public class GreetingFuncs {
             client.setIsTemp(false);
             state.addClientLink(client.getMinimaAddress());
             log.debug(state.genPrintableState());
-            if (state.isSetupComplete() && !state.isClient() && state.getOutLinks().size() < state.getNumLinks()) {
+            if (state.getClientLinks().size() > state.getNumLinks()) {
                 // Replace Outlink
                 P2PMsgWalkLinks walkLinks = new P2PMsgWalkLinks(true, false);
                 walkLinks.setClientWalk(true);

@@ -344,6 +344,7 @@ public class Start {
 
 		//Start the system
 		rcmainserver.PostMessage(Main.SYSTEM_STARTUP);
+
 		Runtime.getRuntime().addShutdownHook(new Thread()
 		{
 			@Override
