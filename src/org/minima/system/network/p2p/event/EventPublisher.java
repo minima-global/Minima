@@ -1,6 +1,5 @@
 package org.minima.system.network.p2p.event;
 
-import lombok.extern.log4j.Log4j2;
 import org.minima.system.network.p2p.Traceable;
 import org.minima.utils.json.JSONObject;
 
@@ -8,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-@Log4j2
 public class EventPublisher {
 
     private static final List<Event> eventList = Collections.synchronizedList(new ArrayList<>());
@@ -22,7 +20,7 @@ public class EventPublisher {
     }
 
     public static void publishReadStream(Traceable traceable) {
-        publish("reading stream", traceable);
+        publish("read stream", traceable);
     }
 
     public static void publishWrittenStream(Traceable traceable) {
@@ -38,12 +36,10 @@ public class EventPublisher {
     }
 
     private static void internalPublish(String eventType, JSONObject details, Traceable traceable) {
-        if (eventType.contains("CONSENSUS") || eventType.contains("SENDTXPOW")) { // TODO Remove and add filter to endpoint
-            return;
-        }
         String derivedEventType = eventType + " " + traceable.getName();
+        String category = derivedEventType.toLowerCase().contains("p2p") ? "p2p" : null;
 
-        Event event = new Event(traceable.getTraceId(), null, derivedEventType, details);
+        Event event = new Event(traceable.getTraceId(), category, derivedEventType, details);
         eventList.add(event);
     }
 }

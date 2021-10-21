@@ -10,16 +10,16 @@ import java.util.Map;
 @RequiredArgsConstructor
 @Getter
 public class Event {
-    private final String traceId1;
-    private final String traceId2;
+    private final String traceId;
+    private final String category;
     private final String type;
     private final JSONObject details;
     private long time = System.currentTimeMillis();
 
     public JSONObject toJSONObject() {
         Map<String, Object> map = new HashMap<>();
-        map.put("traceId1", traceId1);
-        map.put("traceId2", traceId2);
+        map.put("traceId", traceId);
+        map.put("category", category);
         map.put("type", type);
         map.put("time", time);
         map.put("details", details);

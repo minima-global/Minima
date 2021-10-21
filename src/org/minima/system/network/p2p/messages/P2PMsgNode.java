@@ -3,7 +3,6 @@ package org.minima.system.network.p2p.messages;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
 import org.minima.objects.base.MiniData;
 import org.minima.system.network.p2p.P2PState;
 import org.minima.system.network.p2p.Traceable;
@@ -24,7 +23,6 @@ import static lombok.AccessLevel.PRIVATE;
 @NoArgsConstructor(access = PRIVATE)
 @Getter
 @Setter
-@Slf4j
 public class P2PMsgNode implements Streamable, Traceable {
     private MiniData traceId;
     InetSocketAddress nodeAddress;

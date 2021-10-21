@@ -112,7 +112,7 @@ public class StartupFuncs {
             out.writeTo(fos);
             fos.close();
         } catch (IOException ioe) {
-            log.error("Failed to write data to file: ", ioe);
+            MinimaLogger.log("Failed to write data to file: ", ioe);
         }
     }
 
@@ -127,7 +127,7 @@ public class StartupFuncs {
                 });
                 state.addRecentJoiners(loadedNodeList, traceable);
             } catch (IOException ioe) {
-                log.error("Error whilst reading in p2pDataFile: ", ioe);
+                MinimaLogger.log("Error whilst reading in p2pDataFile: ", ioe);
             }
         } else {
             if (noExtraHosts) {

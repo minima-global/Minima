@@ -1,19 +1,18 @@
 package org.minima.system.network.p2p.functions;
 
-import lombok.extern.slf4j.Slf4j;
 import org.minima.objects.base.MiniData;
 import org.minima.system.network.base.MinimaClient;
 import org.minima.system.network.p2p.P2PMessageProcessor;
 import org.minima.system.network.p2p.P2PState;
 import org.minima.system.network.p2p.Traceable;
 import org.minima.system.network.p2p.messages.*;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.messages.Message;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 
 
-@Slf4j
 public class GreetingFuncs {
 
     public static ArrayList<Message> onGreetedMsg(P2PState state, P2PMsgGreeting greeting, MinimaClient client, ArrayList<MinimaClient> allClients, Traceable traceable) {
@@ -29,7 +28,7 @@ public class GreetingFuncs {
         if (!client.isIncoming()){
             reasonString.append(" for outbound connection");
         }
-        log.debug(reasonString.toString());
+        MinimaLogger.log(reasonString.toString());
 
 
         // InLinks
@@ -37,7 +36,7 @@ public class GreetingFuncs {
             case NONE:
                 if (client.isIncoming()) {
                     state.addInLink(client.getMinimaAddress(), traceable);
-                    log.warn("[-] P2P Incoming connection with no reason");
+                    MinimaLogger.log("[-] P2P Incoming connection with no reason");
                 }
                 break;
             case RENDEZVOUS:
@@ -78,7 +77,7 @@ public class GreetingFuncs {
             state.addRecentJoiner(address, traceable);
         }
 
-        log.debug(state.genPrintableState());
+        MinimaLogger.log(state.genPrintableState());
         return retMsgs;
     }
 
@@ -120,7 +119,7 @@ public class GreetingFuncs {
 //        } else {
         client.setIsTemp(false);
         state.addInLink(client.getMinimaAddress(), traceable);
-        log.debug(state.genPrintableState());
+        MinimaLogger.log(state.genPrintableState());
 //        }
 
         return retMsgs;
@@ -133,7 +132,7 @@ public class GreetingFuncs {
             state.removeExpectedAuthKey(authKey.toString(), traceable);
             state.addInLink(client.getMinimaAddress(), traceable);
             client.setIsTemp(false);
-            log.debug(state.genPrintableState());
+            MinimaLogger.log(state.genPrintableState());
 
         } else {
             retMsgs.add(new Message(P2PMessageProcessor.P2P_DISCONNECT, traceable)
@@ -153,7 +152,7 @@ public class GreetingFuncs {
             client.setIsTemp(false);
             state.removeExpectedAuthKey(authKey.toString(), traceable);
             state.addInLink(client.getMinimaAddress(), traceable);
-            log.debug(state.genPrintableState());
+            MinimaLogger.log(state.genPrintableState());
 
             if (state.getInLinksCopy().size() >= state.getNumLinks()) {
                 P2PMsgSwapLink swapLink = new P2PMsgSwapLink(authKey, client.getMinimaAddress(), false, false, traceable);
@@ -180,7 +179,7 @@ public class GreetingFuncs {
             client.setIsTemp(false);
             state.removeExpectedAuthKey(authKey.toString(), traceable);
             state.addInLink(client.getMinimaAddress(), traceable);
-            log.debug(state.genPrintableState());
+            MinimaLogger.log(state.genPrintableState());
         } else {
             retMsgs.add(new Message(P2PMessageProcessor.P2P_DISCONNECT, traceable)
                     .addObject("client", client)
@@ -204,7 +203,7 @@ public class GreetingFuncs {
         } else {
             client.setIsTemp(false);
             state.addClientLink(client.getMinimaAddress(), traceable);
-            log.debug(state.genPrintableState());
+            MinimaLogger.log(state.genPrintableState());
             if (state.getClientLinksCopy().size() > state.getNumLinks()) {
                 // Replace Outlink
                 P2PMsgWalkLinks walkLinks = new P2PMsgWalkLinks(true, false, traceable);

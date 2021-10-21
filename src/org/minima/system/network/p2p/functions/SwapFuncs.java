@@ -5,6 +5,7 @@ import org.minima.system.network.base.MinimaClient;
 import org.minima.system.network.p2p.*;
 import org.minima.system.network.p2p.messages.P2PMsgDoSwap;
 import org.minima.system.network.p2p.messages.P2PMsgSwapLink;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.messages.Message;
 
 import java.net.InetSocketAddress;
@@ -21,7 +22,7 @@ public class SwapFuncs {
                 .filter(MinimaClient::isClient)
                 .collect(Collectors.toCollection(ArrayList::new));
 
-        log.debug("[!] P2P_SWAP_LINK Num Clients post filter: " + clients.size() + " num disconnecting clients: " + state.getDisconnectingClientsCopy().size() + " num clients: " + allClients.size());
+        MinimaLogger.log("[!] P2P_SWAP_LINK Num Clients post filter: " + clients.size() + " num disconnecting clients: " + state.getDisconnectingClientsCopy().size() + " num clients: " + allClients.size());
         MinimaClient minimaClient = UtilFuncs.getClientForInetAddress(addressToDoSwap, clients, true);
         return  SwapFuncs.generateDoSwapMessage(state, swapLink, minimaClient, traceable);
     }
@@ -43,7 +44,7 @@ public class SwapFuncs {
             ArrayList<MinimaClient> clients = allClients.stream()
                     .filter(x -> !state.getDisconnectingClientsCopy()
                             .contains(x.getUID())).collect(Collectors.toCollection(ArrayList::new));
-            log.debug("[!] P2P_SWAP_LINK  from: " + state.getAddress() + " Num Clients post filter: " + clients.size() + " num disconnecting clients: " + state.getDisconnectingClientsCopy().size() + " num clients: " + allClients.size());
+            MinimaLogger.log("[!] P2P_SWAP_LINK  from: " + state.getAddress() + " Num Clients post filter: " + clients.size() + " num disconnecting clients: " + state.getDisconnectingClientsCopy().size() + " num clients: " + allClients.size());
             minimaClient = UtilFuncs.getClientForInetAddress(addressToDoSwap, clients, true);
         }
         return  SwapFuncs.generateDoSwapMessage(state, swapLink, minimaClient, traceable);
@@ -53,7 +54,7 @@ public class SwapFuncs {
         Message retMsg = null;
 
         if (minimaClient != null) {
-            log.debug("[+] P2P_DO_SWAP CLIENT Sending do swap message to client");
+            MinimaLogger.log("[+] P2P_DO_SWAP CLIENT Sending do swap message to client");
 
             P2PMsgDoSwap msgDoSwap = new P2PMsgDoSwap(swapLink.getSecret(), swapLink.getSwapTarget(), traceable);
 
@@ -65,7 +66,7 @@ public class SwapFuncs {
                     .addObject("message", message);
 
         } else {
-            log.debug("[-] P2P_DO_SWAP not sent swap - no clients available");
+            MinimaLogger.log("[-] P2P_DO_SWAP not sent swap - no clients available");
 
         }
         return retMsg;

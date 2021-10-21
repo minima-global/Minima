@@ -2,12 +2,12 @@ package org.minima.system.network.p2p;
 
 import com.google.common.collect.*;
 import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
 import org.minima.objects.base.MiniData;
 import org.minima.system.network.base.MinimaClient;
 import org.minima.system.network.p2p.event.EventPublisher;
 import org.minima.system.network.p2p.messages.ExpiringMessage;
 import org.minima.system.network.p2p.messages.P2PMsgNode;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
 
@@ -15,11 +15,9 @@ import java.io.File;
 import java.net.InetSocketAddress;
 import java.util.*;
 
-import static java.util.Collections.copy;
 import static org.minima.system.network.p2p.util.JSONObjectUtils.from;
 import static org.minima.system.network.p2p.util.MapUtils.MapBuilder.*;
 
-@Slf4j
 public class P2PState {
 
     @Getter
@@ -116,7 +114,7 @@ public class P2PState {
                         .asMap()),
                 traceable);
 
-        log.debug(this.genPrintableState());
+        MinimaLogger.log(this.genPrintableState());
     }
 
     public boolean removeInLink(InetSocketAddress address, Traceable traceable) {
@@ -140,7 +138,7 @@ public class P2PState {
                         .asMap()),
                 traceable);
 
-        log.debug(this.genPrintableState());
+        MinimaLogger.log(this.genPrintableState());
     }
 
     public boolean removeClientLink(InetSocketAddress address, Traceable traceable) {
@@ -164,7 +162,7 @@ public class P2PState {
                         .asMap()),
                 traceable);
 
-        log.debug(this.genPrintableState());
+        MinimaLogger.log(this.genPrintableState());
     }
 
     public boolean removeDisconnectingClient(String uid, Traceable traceable) {
@@ -195,7 +193,7 @@ public class P2PState {
                         .asMap()),
                 traceable);
 
-        log.debug(this.genPrintableState());
+        MinimaLogger.log(this.genPrintableState());
     }
 
     public void addRandomNodeSet(InetSocketAddress address, Traceable traceable) {

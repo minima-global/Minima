@@ -7,16 +7,20 @@ import org.minima.utils.messages.Message;
 public class eventlog extends CommandFunction {
 
     public eventlog() {
-        super("eventlog.json");
+        super("eventlog");
     }
 
     @Override
     public void doFunction(String[] zInput) throws Exception {
 
-        String traceId1 = zInput[1];
+        String category = zInput[1];
+        String traceId = zInput[2];
         Message msg = getResponseMessage(P2PMessageProcessor.P2P_EVENT_LOG);
-        if (!"*".equals(traceId1)) {
-            msg.addString("traceId1", traceId1);
+        if (!"*".equals(traceId)) {
+            msg.addString("traceId", traceId);
+        }
+        if (!"*".equals(category)) {
+            msg.addString("category", category);
         }
 
         getMainHandler().getNetworkHandler().getP2PMessageProcessor().PostMessage(msg);

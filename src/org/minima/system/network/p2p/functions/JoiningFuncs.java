@@ -1,16 +1,15 @@
 package org.minima.system.network.p2p.functions;
 
-import lombok.extern.slf4j.Slf4j;
 import org.minima.system.network.base.MinimaClient;
 import org.minima.system.network.p2p.*;
 import org.minima.system.network.p2p.messages.ExpiringMessage;
 import org.minima.system.network.p2p.messages.P2PMsgWalkLinks;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.messages.Message;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 
-@Slf4j
 public class JoiningFuncs {
     public static ArrayList<Message> joinRendezvousNode(P2PState state, ArrayList<MinimaClient> clients, Traceable traceable)
     {
@@ -20,7 +19,7 @@ public class JoiningFuncs {
             msgs.add(new Message(P2PMessageProcessor.P2P_CONNECT, traceable).addObject("address", address).addString("reason", "RENDEZVOUS connection"));
             state.getConnectionDetailsMap().put(address, new ConnectionDetails(ConnectionReason.RENDEZVOUS));
         } else {
-            log.error("No nodes to Rendezvous with - RandomNodeSet is empty");
+            MinimaLogger.log("No nodes to Rendezvous with - RandomNodeSet is empty");
         }
         return msgs;
     }
@@ -34,7 +33,7 @@ public class JoiningFuncs {
             state.getConnectionDetailsMap().put(address, new ConnectionDetails(ConnectionReason.ENTRY_NODE));
             state.entryNodeConnected(traceable);
         } else {
-            log.error("No nodes to Rendezvous with - RandomNodeSet is empty");
+            MinimaLogger.log("No nodes to Rendezvous with - RandomNodeSet is empty");
         }
 
         return msgs;

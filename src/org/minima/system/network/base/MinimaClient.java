@@ -441,7 +441,8 @@ public class MinimaClient extends MessageProcessor {
 			//Now write the complete package..
 			complete.writeDataStream(mOutput);
 			EventPublisher.publish("sent " + zMessageType.name(),
-					new JSONObject(using("target", from(this.minimaAddress)).asMap()), traceable);
+					new JSONObject(using("target", from(this.address))
+							.and("target-minima", from(this.minimaAddress)).asMap()), traceable);
 
 			//Send..
 			mOutput.flush();

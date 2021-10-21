@@ -7,6 +7,7 @@ import org.minima.system.network.p2p.*;
 import org.minima.system.network.p2p.messages.ExpiringMessage;
 import org.minima.system.network.p2p.messages.P2PMsgSwapLink;
 import org.minima.system.network.p2p.messages.P2PMsgWalkLinks;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.messages.Message;
 
 import java.net.InetSocketAddress;
@@ -80,7 +81,7 @@ public class WalkLinksFuncs {
         Message retMsg = null;
         MinimaClient minimaClient = UtilFuncs.getClientForInetAddressEitherDirection(nextHop, allClients);
         if (minimaClient != null) {
-            log.debug("[+] P2P_WALK_LINKS Sending message to: " + nextHop + " isReturning: " + p2pWalkLinks.isReturning());
+            MinimaLogger.log("[+] P2P_WALK_LINKS Sending message to: " + nextHop + " isReturning: " + p2pWalkLinks.isReturning());
 
             Message message = new Message(MinimaClient.NETCLIENT_P2P_WALK_LINKS)
                     .addObject("data", p2pWalkLinks);
@@ -89,7 +90,7 @@ public class WalkLinksFuncs {
                     .addObject("client", minimaClient)
                     .addObject("message", message);
         } else {
-            log.warn("[-] P2P_WALK_LINKS MinimaClient for " + nextHop + " does not exist");
+            MinimaLogger.log("[-] P2P_WALK_LINKS MinimaClient for " + nextHop + " does not exist");
         }
         return retMsg;
     }
@@ -129,10 +130,10 @@ public class WalkLinksFuncs {
                         .addString("reason", reason + " triggered by a completed connection walk");
                 state.getConnectionDetailsMap().put(connectTargetAddress, new ConnectionDetails(reason, msg.getSecret()));
             } else {
-                log.debug("[!] P2P_WALK_LINKS_RESPONSE: Not Connecting already have max numLinks");
+                MinimaLogger.log("[!] P2P_WALK_LINKS_RESPONSE: Not Connecting already have max numLinks");
             }
         } else {
-            log.debug("[!] P2P_WALK_LINKS_RESPONSE: Not Connecting as returned own address");
+            MinimaLogger.log("[!] P2P_WALK_LINKS_RESPONSE: Not Connecting as returned own address");
         }
 
         return returnMessage;
@@ -145,11 +146,11 @@ public class WalkLinksFuncs {
             if (!state.getRecentJoinersCopy().contains(connectTargetAddress)) {
                 state.addRandomNodeSet(connectTargetAddress, msg);
             }
-            log.debug("[!] P2P_WALK_LINKS_RESPONSE: CLIENT creating do swap messages");
+            MinimaLogger.log("[!] P2P_WALK_LINKS_RESPONSE: CLIENT creating do swap messages");
             returnMessage.addAll(GreetingFuncs.genClientLoadBalanceRequests(state, connectTargetAddress, msg.getAvailableClientSlots(), msg));
 
         } else {
-            log.debug("[!] P2P_WALK_LINKS_RESPONSE: Not Connecting as returned own address");
+            MinimaLogger.log("[!] P2P_WALK_LINKS_RESPONSE: Not Connecting as returned own address");
         }
 
         return returnMessage;
@@ -160,12 +161,12 @@ public class WalkLinksFuncs {
         Message retMsg = null;
         if (minimaClient != null) {
             if (walkLinks.isJoiningWalk()) {
-                log.debug("[+] " + logType + " P2P_WALK Starting inLink walk add outLink neighbour");
+                MinimaLogger.log("[+] " + logType + " P2P_WALK Starting inLink walk add outLink neighbour");
             } else {
                 if (walkLinks.isWalkInLinks()) {
-                    log.debug("[+] " + logType + " P2P_WALK Starting inLink walk to replace lost outLink neighbour");
+                    MinimaLogger.log("[+] " + logType + " P2P_WALK Starting inLink walk to replace lost outLink neighbour");
                 } else {
-                    log.debug("[+] " + logType + " P2P_WALK Starting outLink walk to replace lost inLink neighbour");
+                    MinimaLogger.log("[+] " + logType + " P2P_WALK Starting outLink walk to replace lost inLink neighbour");
                 }
             }
             retMsg = new Message(P2PMessageProcessor.P2P_SEND_MESSAGE, traceable);

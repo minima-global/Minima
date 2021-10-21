@@ -1,6 +1,5 @@
 package org.minima.system.network.p2p.functions;
 
-import lombok.extern.slf4j.Slf4j;
 import org.minima.system.network.base.MinimaClient;
 import org.minima.system.network.p2p.P2PState;
 import org.minima.system.network.p2p.Traceable;
@@ -10,7 +9,6 @@ import org.minima.utils.messages.Message;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 
-@Slf4j
 public class DisconnectionFuncs {
 
     public static Message onInLinkDisconnected(P2PState state, MinimaClient client, ArrayList<MinimaClient> minimaClients, Traceable traceable) {
