@@ -99,7 +99,7 @@ public class P2PMsgWalkLinks implements Streamable, Traceable {
 
     @Override
     public String getTraceId() {
-        return secret.to0xString();
+        return traceId.toString();
     }
 
     @Override

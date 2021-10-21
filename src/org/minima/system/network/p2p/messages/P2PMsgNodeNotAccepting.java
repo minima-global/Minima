@@ -59,7 +59,7 @@ public class P2PMsgNodeNotAccepting implements Streamable, Traceable {
 
     @Override
     public String getTraceId() {
-        return traceId.to0xString();
+        return traceId.toString();
     }
 
     @Override

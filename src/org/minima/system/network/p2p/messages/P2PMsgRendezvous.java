@@ -3,6 +3,7 @@ package org.minima.system.network.p2p.messages;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.minima.objects.base.MiniData;
 import org.minima.system.network.p2p.Traceable;
 import org.minima.system.network.p2p.event.EventPublisher;
@@ -26,6 +27,7 @@ import static org.minima.system.network.p2p.util.JSONObjectUtils.from;
 @NoArgsConstructor(access = PRIVATE)
 @Getter
 @Setter(PRIVATE)
+@Slf4j
 public class P2PMsgRendezvous implements Streamable, Traceable {
 
     private MiniData traceId;
@@ -66,7 +68,7 @@ public class P2PMsgRendezvous implements Streamable, Traceable {
 
     @Override
     public String getTraceId() {
-        return secret.to0xString();
+        return traceId.toString();
     }
 
     @Override

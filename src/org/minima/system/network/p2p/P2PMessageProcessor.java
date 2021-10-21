@@ -2,6 +2,7 @@ package org.minima.system.network.p2p;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.minima.GlobalParams;
 import org.minima.system.Main;
 import org.minima.system.brains.BackupManager;
 import org.minima.system.input.InputHandler;
@@ -66,15 +67,6 @@ public class P2PMessageProcessor extends MessageProcessor {
 
     public static final String P2P_PRINT_EVENT_LIST = "P2P_PRINT_EVENT_LIST";
 
-    /*
-     * Network Messages
-     * RENDEZVOUS
-     * WALK_LINKS
-     * SWAP_LINK
-     * MAP_NETWORK
-     */
-
-    private static final int CLEANUP_LOOP_DELAY = 60_000;
 
     private final P2PState state;
     private final int minimaPort;
@@ -114,8 +106,8 @@ public class P2PMessageProcessor extends MessageProcessor {
         state.setAddress(new InetSocketAddress(getHostIP(), getMinimaPort()), Traceable.NEW_TRACEABLE);
         //Start the Ball rolling..
 //        this.setLOG(true);
-        PostTimerMessage(new TimerMessage(10_000, P2P_LOOP));
-//        PostTimerMessage(new TimerMessage(300_000, P2P_NODE_NOT_ACCEPTING_CHECK));
+        PostTimerMessage(new TimerMessage(GlobalParams.P2P_LOOP_DELAY, P2P_LOOP));
+        PostTimerMessage(new TimerMessage(GlobalParams.P2P_NODE_NOT_ACCEPTING_CHECK_DELAY, P2P_NODE_NOT_ACCEPTING_CHECK));
     }
 
     public void stop(Traceable traceable) {
@@ -385,17 +377,22 @@ public class P2PMessageProcessor extends MessageProcessor {
 
     private void processLoopMsg(Message zMessage) {
         Random rand = new Random();
-        long loopDelay = 6_000 + rand.nextInt(3_000); //300_000 + rand.nextInt(30_000);
+        long loopDelay = GlobalParams.P2P_LOOP_DELAY + rand.nextInt(GlobalParams.P2P_LOOP_DELAY_VARIABILITY);
+        int num_entry_nodes = 1;
+        if (state.isClient()){
+            num_entry_nodes = 3;
+        }
 
         if (!state.isRendezvousComplete()) {
             JoiningFuncs.joinRendezvousNode(state, getCurrentMinimaClients(), zMessage).forEach(this::PostMessage);
-            loopDelay = 6_000 + rand.nextInt(3_000);
-        } else if (state.getOutLinksCopy().size() < 1) {
+        } else if (state.getOutLinksCopy().size() < num_entry_nodes) {
             JoiningFuncs.joinEntryNode(state, getCurrentMinimaClients(), zMessage).forEach(this::PostMessage);
-            loopDelay = 6_000 + rand.nextInt(3_000);
-        } else if (state.getOutLinksCopy().size() < state.getNumLinks()) {
+        } else if (!state.isClient() && state.getOutLinksCopy().size() < state.getNumLinks()) {
             JoiningFuncs.joinScaleOutLinks(state, getCurrentMinimaClients(), zMessage).forEach(this::PostMessage);
+        } else if (!state.isClient() && state.getInLinksCopy().size() < state.getNumLinks()) {
+            JoiningFuncs.requestInLinks(state, getCurrentMinimaClients(), zMessage).forEach(this::PostMessage);
         }
+
         ArrayList<ExpiringMessage> expiringMessages = this.state.dropExpiredMessages(zMessage);
 //        log.debug(state.genPrintableState());
 
@@ -417,7 +414,7 @@ public class P2PMessageProcessor extends MessageProcessor {
                 log.debug(state.genPrintableState());
             }
         }
-        PostTimerMessage(new TimerMessage(60_000, P2P_NODE_NOT_ACCEPTING_CHECK));
+        PostTimerMessage(new TimerMessage(GlobalParams.P2P_NODE_NOT_ACCEPTING_CHECK_DELAY, P2P_NODE_NOT_ACCEPTING_CHECK));
     }
 
     /**
@@ -437,18 +434,18 @@ public class P2PMessageProcessor extends MessageProcessor {
         P2PMsgNode networkMap = (P2PMsgNode) zMessage.getObject("data");
         MinimaClient client = (MinimaClient) zMessage.getObject("client");
         networkMap.setNodeAddress(client.getMinimaAddress());
-        networkMap.setExpireTime(System.currentTimeMillis() + 300_000);
+        networkMap.setExpireTime(System.currentTimeMillis() + GlobalParams.P2P_NETWORK_MAP_TTL);
 
         state.getNetworkMap().put(networkMap.getNodeAddress(), networkMap);
 
         state.getActiveMappingRequests().remove(networkMap.getNodeAddress());
 
         ArrayList<InetSocketAddress> newAddresses = networkMap.getOutLinks().stream()
-                .filter(x -> !state.getNetworkMap().containsKey(x) && !state.getActiveMappingRequests().containsKey(x))
+                .filter(x -> !(state.getNetworkMap().containsKey(x) || state.getActiveMappingRequests().containsKey(x)))
                 .distinct()
                 .collect(Collectors.toCollection(ArrayList::new));
 
-        if (state.getNetworkMap().size() < 1_000 && !newAddresses.isEmpty()) {
+        if (state.getNetworkMap().size() < GlobalParams.P2P_MAX_NETWORK_MAP_SIZE && !newAddresses.isEmpty()) {
             for (InetSocketAddress address : newAddresses) {
                 // Connect and
                 state.getConnectionDetailsMap().put(address, new ConnectionDetails(ConnectionReason.MAPPING));
@@ -473,6 +470,7 @@ public class P2PMessageProcessor extends MessageProcessor {
     private void processPrintNetworkMapRequestMsg(Message zMessage) {
         printNetworkMapRPCReq = zMessage;
 
+        // Remove old network map details
         ArrayList<InetSocketAddress> keysToRemove = new ArrayList<>();
         for (InetSocketAddress key: state.getNetworkMap().keySet()){
             if (state.getNetworkMap().get(key).getExpireTime() < System.currentTimeMillis()){
@@ -487,7 +485,7 @@ public class P2PMessageProcessor extends MessageProcessor {
         state.getNetworkMap().put(state.getAddress(), new P2PMsgNode(state, zMessage));
         ArrayList<InetSocketAddress> addresses = Stream.of(state.getRecentJoinersCopy(), state.getOutLinksCopy(), state.getInLinksCopy())
                 .flatMap(Collection::stream).distinct()
-                .filter(x -> !state.getNetworkMap().containsKey(x) && !state.getActiveMappingRequests().containsKey(x))
+                .filter(x -> !(state.getNetworkMap().containsKey(x) || state.getActiveMappingRequests().containsKey(x)))
                 .collect(Collectors.toCollection(ArrayList::new));
 
         for (InetSocketAddress address : addresses) {
@@ -496,9 +494,8 @@ public class P2PMessageProcessor extends MessageProcessor {
             PostMessage(new Message(P2PMessageProcessor.P2P_CONNECT, zMessage).addObject("address", address).addString("reason", "MAPPING connection"));
         }
 
-        PostTimerMessage(new TimerMessage(20_000, P2P_PRINT_NETWORK_MAP_RESPONSE));
-//        log.error("[-] P2P_PRINT_NETWORK_MAP Request UID " + mapNetwork.getRequestUID());
-//        PostMessage(new Message(P2P_MAP_NETWORK).addObject("data", mapNetwork).addString("from_ip", state.getAddress().toString()));
+        PostTimerMessage(new TimerMessage(GlobalParams.P2P_MAX_NETWORK_MAP_RESPONSE_TIME, P2P_PRINT_NETWORK_MAP_RESPONSE));
+
 
     }
 

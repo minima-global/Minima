@@ -113,7 +113,7 @@ public class Start {
 	 */
 	public static void main(String[] zArgs){
 
-		
+		// TODO SHUTDOWN HOOK!!
 		InetSocketAddress connectionAddress = null;
 
 		//Check command line inputs
@@ -347,11 +347,17 @@ public class Start {
 			rcmainserver.getNetworkHandler().setExternalURL(external);
 		}
 
-
-		
 		//Start the system
 		rcmainserver.PostMessage(Main.SYSTEM_STARTUP, traceable);
-		
+
+		Runtime.getRuntime().addShutdownHook(new Thread()
+		{
+			@Override
+			public void run()
+			{
+				rcmainserver.PostMessage(Main.SYSTEM_SHUTDOWN, traceable);
+			}
+		});
 		//Are we a daemon thread
 		if(daemon) {
 			MinimaLogger.log("Daemon Started..");

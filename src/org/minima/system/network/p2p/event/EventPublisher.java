@@ -1,5 +1,6 @@
 package org.minima.system.network.p2p.event;
 
+import lombok.extern.log4j.Log4j2;
 import org.minima.system.network.p2p.Traceable;
 import org.minima.utils.json.JSONObject;
 
@@ -7,13 +8,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static java.util.Optional.ofNullable;
-
+@Log4j2
 public class EventPublisher {
 
     private static final List<Event> eventList = Collections.synchronizedList(new ArrayList<>());
-    private static final ThreadLocal<String> TRACE_ID = new ThreadLocal<>();
-
 
     public static ArrayList<Event> getEvents() {
         ArrayList<Event> retEvents = new ArrayList<>();

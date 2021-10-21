@@ -57,7 +57,7 @@ public class JoiningFuncs {
         return msgs;
     }
 
-    public static ArrayList<Message> joinScaleInLinks(P2PState state, ArrayList<MinimaClient> clients, Traceable traceable)
+    public static ArrayList<Message> requestInLinks(P2PState state, ArrayList<MinimaClient> clients, Traceable traceable)
     {
         ArrayList<Message> msgs = new ArrayList<>();
         if(state.getInLinksCopy().size() < state.getNumLinks()) {

@@ -22,9 +22,6 @@ import static org.minima.system.network.p2p.util.MapUtils.MapBuilder.*;
 @Slf4j
 public class P2PState {
 
-    public static final int RENDEZVOUS_SHUTDOWN_DELAY = 1_000;
-    public static final int AUTH_KEY_EXPIRY = 300_000;
-
     @Getter
     private int numLinks;
     /**

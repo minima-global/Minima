@@ -88,7 +88,7 @@ public class P2PMsgGreeting implements Streamable, Traceable {
 
     @Override
     public String getTraceId() {
-        return traceId.to0xString();
+        return traceId.toString();
     }
 
     @Override

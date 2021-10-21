@@ -67,7 +67,7 @@ public class P2PMsgSwapLink implements Streamable, Traceable {
 
     @Override
     public String getTraceId() {
-        return secret.to0xString();
+        return traceId.toString();
     }
 
     @Override
