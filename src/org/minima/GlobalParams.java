@@ -70,4 +70,45 @@ public class GlobalParams {
 	 */
 	public static boolean MINIMA_ZERO_DIFF_BLK  = false;
 
+	/**
+	 * Time between P2P system assessing its state in milliseconds
+	 */
+	public static int P2P_LOOP_DELAY = 600_000;
+
+	/**
+	 * Max additional ms to add to loop delay (mostly useful during testing to ensure all nodes
+	 * aren't perfectly in sync)
+	 */
+	public static int P2P_LOOP_DELAY_VARIABILITY = 30_000;
+
+	/**
+	 * Time between P2P system assessing if it can receive inbound connections milliseconds
+	 */
+	public static int P2P_NODE_NOT_ACCEPTING_CHECK_DELAY = 3600_000;
+
+	/**
+	 * Time we store network mapping info on a node milliseconds
+	 */
+	public static int P2P_NETWORK_MAP_TTL = 3600_000;
+
+	/**
+	 * Max number of nodes to store in memory
+	 */
+	public static int P2P_MAX_NETWORK_MAP_SIZE = 10_000;
+
+	/**
+	 * Max time in ms before we return the network map (needs to be less than the global timeout hard coded to 30s)
+	 */
+	public static int P2P_MAX_NETWORK_MAP_RESPONSE_TIME = 20_000;
+
+	/**
+	 * Time in ms before walk link messages expire
+	 */
+	public static int P2P_WALK_LINKS_EXPIRE_TIME = 10_000;
+
+	/**
+	 * Time before auth key to expire - required to accept DoSwap and walk based connections
+	 */
+	public static int P2P_AUTH_KEY_EXPIRY = 300_000;
+	
 }

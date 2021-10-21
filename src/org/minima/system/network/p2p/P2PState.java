@@ -21,9 +21,6 @@ import java.util.Map;
 @Slf4j
 public class P2PState {
 
-    public static final int RENDEZVOUS_SHUTDOWN_DELAY = 1_000;
-    public static final int AUTH_KEY_EXPIRY = 300_000;
-
     private int numLinks;
     /**
      * Node's role is a client in the network.
