@@ -437,11 +437,11 @@ public class P2PMessageProcessor extends MessageProcessor {
         state.getActiveMappingRequests().remove(networkMap.getNodeAddress());
 
         ArrayList<InetSocketAddress> newAddresses = networkMap.getOutLinks().stream()
-                .filter(x -> !state.getNetworkMap().containsKey(x) && !state.getActiveMappingRequests().containsKey(x))
+                .filter(x -> !(state.getNetworkMap().containsKey(x) || state.getActiveMappingRequests().containsKey(x)))
                 .distinct()
                 .collect(Collectors.toCollection(ArrayList::new));
 
-        if (state.getNetworkMap().size() < 10_000 && !newAddresses.isEmpty()) {
+        if (state.getNetworkMap().size() < GlobalParams.P2P_MAX_NETWORK_MAP_SIZE && !newAddresses.isEmpty()) {
             for (InetSocketAddress address : newAddresses) {
                 // Connect and
                 state.getConnectionDetailsMap().put(address, new ConnectionDetails(ConnectionReason.MAPPING));
@@ -466,6 +466,7 @@ public class P2PMessageProcessor extends MessageProcessor {
     private void processPrintNetworkMapRequestMsg(Message zMessage) {
         printNetworkMapRPCReq = zMessage;
 
+        // Remove old network map details
         ArrayList<InetSocketAddress> keysToRemove = new ArrayList<>();
         for (InetSocketAddress key: state.getNetworkMap().keySet()){
             if (state.getNetworkMap().get(key).getExpireTime() < System.currentTimeMillis()){
@@ -480,7 +481,7 @@ public class P2PMessageProcessor extends MessageProcessor {
         state.getNetworkMap().put(state.getAddress(), new P2PMsgNode(state));
         ArrayList<InetSocketAddress> addresses = Stream.of(state.getRecentJoiners(), state.getOutLinks(), state.getInLinks())
                 .flatMap(Collection::stream).distinct()
-                .filter(x -> !state.getNetworkMap().containsKey(x) && !state.getActiveMappingRequests().containsKey(x))
+                .filter(x -> !(state.getNetworkMap().containsKey(x) || state.getActiveMappingRequests().containsKey(x)))
                 .collect(Collectors.toCollection(ArrayList::new));
 
         for (InetSocketAddress address : addresses) {

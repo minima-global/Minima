@@ -90,7 +90,7 @@ public class TestParams {
 	/**
 	 * Time we store network mapping info on a node milliseconds
 	 */
-	public static int P2P_NETWORK_MAP_TTL = 10_000;
+	public static int P2P_NETWORK_MAP_TTL = 600_000;
 
 	/**
 	 * Max number of nodes to store in memory
