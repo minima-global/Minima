@@ -3,9 +3,12 @@
  */
 package org.minima.utils.messages;
 
+import org.minima.system.network.p2p.Traceable;
 import org.minima.system.network.p2p.event.EventPublisher;
 
 import java.util.LinkedList;
+
+import static org.minima.system.network.p2p.Traceable.NEW_TRACEABLE;
 
 /**
  * Thread Safe Message Stack
@@ -37,11 +40,18 @@ public class MessageStack{
     /**
      * Utility function to add a message given just the message type
      */
-    public void PostMessage(String zMessage){
-        PostMessage(new Message(zMessage)); 
+    public void PostMessage(String zMessage, Traceable traceable){
+        PostMessage(new Message(zMessage, traceable));
     }
-    
-    /**
+
+	/**
+	 * Utility function to add a message given just the message type
+	 */
+	public void PostMessage(String zMessage){
+		PostMessage(new Message(zMessage, NEW_TRACEABLE));
+	}
+
+	/**
      * Synchronized function to add a Message onto the Stack
      */
     public void PostMessage(Message zMessage){

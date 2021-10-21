@@ -1,6 +1,7 @@
 package org.minima.system.network.p2p.messages;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.minima.objects.base.MiniData;
@@ -17,24 +18,23 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 
+import static lombok.AccessLevel.PRIVATE;
+
+// TODO candidate for vo dto split
+@NoArgsConstructor(access = PRIVATE)
 @Getter
 @Setter
 @Slf4j
 public class P2PMsgNode implements Streamable, Traceable {
-    private MiniData traceId = MiniData.getRandomData(8);
+    private MiniData traceId;
     InetSocketAddress nodeAddress;
     private ArrayList<InetSocketAddress> inLinks;
     private ArrayList<InetSocketAddress> outLinks;
     private ArrayList<InetSocketAddress> clientLinks;
     private long expireTime;
 
-    public P2PMsgNode() {
-        if (EventPublisher.threadTraceId.get() == null) {
-            EventPublisher.threadTraceId.set(getTraceId());
-        }
-    }
-
-    public P2PMsgNode(P2PState state) {
+    public P2PMsgNode(P2PState state, Traceable traceable) {
+        traceId = new MiniData(traceable.getTraceId());
         this.nodeAddress = state.getAddress();
         this.inLinks = state.getInLinksCopy();
         this.outLinks = state.getOutLinksCopy();

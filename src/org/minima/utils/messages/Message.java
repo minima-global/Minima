@@ -21,7 +21,7 @@ import java.util.Set;
  */
 public class Message implements Traceable {
 
-	private final MiniData traceId = MiniData.getRandomData(100);
+	private final String traceId;
 
 	/**
 	 * Message Type
@@ -34,37 +34,26 @@ public class Message implements Traceable {
 	 * The Contents of the Message
 	 */
 	private HashMap<String, Object> mContents;
-	
-	/**
-	 * Main constructor
-	 * 
-	 * @param zMessageType The type of message this is
-	 */
-	public Message(String zMessageType){
+
+	public Message(String zMessageType, Traceable traceable){
 		//Store the Message Type
 		mMessageType = zMessageType;
 		
 		//Create the message contents container
 		mContents = new HashMap<String, Object>();
+		traceId = traceable.getTraceId();
+				//= MiniData.getRandomData(8);
+	}
 
-		if (EventPublisher.threadTraceId.get() == null) {
-			EventPublisher.threadTraceId.set(getTraceId());
-		}
+	public Message(String zMessageType){
+		this(zMessageType, Traceable.NEW_TRACEABLE);
 	}
 	
 	/**
 	 * Must set the message type later on
 	 */
-	public Message(){
-		//Store the Message Type
-		mMessageType = "";
-		
-		//Create the message contents container
-		mContents = new HashMap<String, Object>();
-
-		if (EventPublisher.threadTraceId.get() == null) {
-			EventPublisher.threadTraceId.set(getTraceId());
-		}
+	public Message(Traceable traceable){
+		this("");
 	}
 	
 	/**

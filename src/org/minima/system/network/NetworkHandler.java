@@ -343,7 +343,7 @@ public class NetworkHandler extends MessageProcessor {
 			}
 
 			//Stop the P2P Manager server
-			try {mP2PMessageProcessor.stop();}catch(Exception exc) {
+			try {mP2PMessageProcessor.stop(zMessage);}catch(Exception exc) {
 				MinimaLogger.log(exc);
 			}
 
@@ -373,7 +373,7 @@ public class NetworkHandler extends MessageProcessor {
 			MinimaClient client = new MinimaClient(address, this);
 			
 			//Store with the rest
-			PostMessage(new Message(NETWORK_NEWCLIENT).addObject("client", client));
+			PostMessage(new Message(NETWORK_NEWCLIENT, zMessage).addObject("client", client));
 			ConnectionDetails details = getP2PMessageProcessor().getState().getConnectionDetailsMap().get(address);
 			P2PState state = this.getP2PMessageProcessor().getState();
 
@@ -385,7 +385,7 @@ public class NetworkHandler extends MessageProcessor {
 				}
 				if (details.getReason() != ConnectionReason.MAPPING && details.getReason() != ConnectionReason.RENDEZVOUS){
 					client.setIsTemp(false);
-					state.addOutLink(client.getMinimaAddress());
+					state.addOutLink(client.getMinimaAddress(), zMessage);
 				}
 
 			}
@@ -402,7 +402,7 @@ public class NetworkHandler extends MessageProcessor {
 				shut.add(client.getUID());
 				
 				//tell it to shut down..
-				client.PostMessage(MinimaClient.NETCLIENT_SHUTDOWN);
+				client.PostMessage(MinimaClient.NETCLIENT_SHUTDOWN, zMessage);
 			}
 			
 			InputHandler.getResponseJSON(zMessage).put("total", shut.size());
@@ -410,7 +410,7 @@ public class NetworkHandler extends MessageProcessor {
 			InputHandler.endResponse(zMessage, true, "All network clients reset - reconnect in 30 seconds");
 	
 			//Notify..
-			Main.getMainHandler().getConsensusHandler().updateListeners(new Message(ConsensusHandler.CONSENSUS_NOTIFY_RECONNECT));
+			Main.getMainHandler().getConsensusHandler().updateListeners(new Message(ConsensusHandler.CONSENSUS_NOTIFY_RECONNECT, zMessage));
 			
 		}else if(zMessage.isMessageType(NETWORK_DISCONNECT)) {
 			String uid = zMessage.getString("uid");
@@ -426,7 +426,7 @@ public class NetworkHandler extends MessageProcessor {
 //					getP2PMessageProcessor().PostMessage(msg);
 
 					//tell it to shut down..
-					client.PostMessage(MinimaClient.NETCLIENT_SHUTDOWN);
+					client.PostMessage(MinimaClient.NETCLIENT_SHUTDOWN, zMessage);
 
 			
 					InputHandler.endResponse(zMessage, true, "Client "+uid+" disconnected - won't reconnect");
@@ -495,7 +495,7 @@ public class NetworkHandler extends MessageProcessor {
 			mClients.remove(client);
 		
 			//Shut him down..
-			client.PostMessage(new Message(MinimaClient.NETCLIENT_SHUTDOWN));
+			client.PostMessage(new Message(MinimaClient.NETCLIENT_SHUTDOWN, zMessage));
 			log.warn("[!!] NETCLIENT_SHUTDOWN " + client);
 
 		}else if(zMessage.isMessageType(NETWORK_TRACE)) {

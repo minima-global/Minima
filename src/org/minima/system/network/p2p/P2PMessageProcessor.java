@@ -91,7 +91,7 @@ public class P2PMessageProcessor extends MessageProcessor {
             log.error("Could not identify the local ip address: " + hostIP);
         }
         state = new P2PState(5, null);
-        state.setAddress(new InetSocketAddress(getHostIP(), getMinimaPort()));
+        state.setAddress(new InetSocketAddress(getHostIP(), getMinimaPort()), Traceable.NEW_TRACEABLE);
         this.minimaPort = 9001;
 
     }
@@ -111,15 +111,15 @@ public class P2PMessageProcessor extends MessageProcessor {
         BackupManager backup = Main.getMainHandler().getBackupManager();
         File p2pDataFile = backup.getBackUpFile("p2pdata.json");
         state = new P2PState(5, p2pDataFile);
-        state.setAddress(new InetSocketAddress(getHostIP(), getMinimaPort()));
+        state.setAddress(new InetSocketAddress(getHostIP(), getMinimaPort()), Traceable.NEW_TRACEABLE);
         //Start the Ball rolling..
 //        this.setLOG(true);
         PostTimerMessage(new TimerMessage(10_000, P2P_LOOP));
 //        PostTimerMessage(new TimerMessage(300_000, P2P_NODE_NOT_ACCEPTING_CHECK));
     }
 
-    public void stop() {
-        PostMessage(P2P_SHUTDOWN);
+    public void stop(Traceable traceable) {
+        PostMessage(P2P_SHUTDOWN, traceable);
     }
 
     /**
@@ -210,12 +210,12 @@ public class P2PMessageProcessor extends MessageProcessor {
                 case P2P_EVENT_LOG:
                     processEventLog(zMessage);
                     break;
-//                case P2P_NODE_NOT_ACCEPTING_CHECK:
-//                    processNodeNotAcceptingMsgCheck();
-//                    break;
-//                case P2P_NODE_NOT_ACCEPTING:
-//                    processNodeNotAcceptingMsg(zMessage);
-//                    break;
+                case P2P_NODE_NOT_ACCEPTING_CHECK:
+                    processNodeNotAcceptingMsgCheck(zMessage);
+                    break;
+                case P2P_NODE_NOT_ACCEPTING:
+                    processNodeNotAcceptingMsg(zMessage);
+                    break;
                 default:
                     break;
             }
@@ -248,7 +248,7 @@ public class P2PMessageProcessor extends MessageProcessor {
         P2PMsgGreeting greeting = (P2PMsgGreeting) zMessage.getObject("data");
         MinimaClient client = (MinimaClient) zMessage.getObject("client");
 
-        GreetingFuncs.onGreetedMsg(state, greeting, client, getCurrentMinimaClients()).forEach(this::PostMessage);
+        GreetingFuncs.onGreetedMsg(state, greeting, client, getCurrentMinimaClients(), zMessage).forEach(this::PostMessage);
     }
 
     private void processOnRendezvousMsg(Message zMessage) {
@@ -260,7 +260,7 @@ public class P2PMessageProcessor extends MessageProcessor {
         MinimaClient client = (MinimaClient) zMessage.getObject("client");
         StartupFuncs.processOnRendezvousMsg(state, rendezvous, client);
 
-        PostMessage(new Message(P2PMessageProcessor.P2P_DISCONNECT)
+        PostMessage(new Message(P2PMessageProcessor.P2P_DISCONNECT, zMessage)
                 .addObject("client", client)
                 .addInteger("attempt", 0)
                 .addString("reason", "Disconnecting after sending rendezvous message")
@@ -272,13 +272,13 @@ public class P2PMessageProcessor extends MessageProcessor {
         String reason = zMessage.getString("reason");
         if (!state.getAddress().equals(address)) {
 
-            Message msg = new Message(NETWORK_CONNECT);
+            Message msg = new Message(NETWORK_CONNECT, zMessage);
             msg.addObject("address", address);
             log.debug("[+] P2P_CONNECT to: " + address + " reason: " + reason);
             Main.getMainHandler().getNetworkHandler().PostMessage(msg);
         } else {
             log.debug("[!] Attempting to connect to self");
-            state.removeRandomNodeSet(address);
+            state.removeRandomNodeSet(address, zMessage);
         }
     }
 
@@ -296,8 +296,8 @@ public class P2PMessageProcessor extends MessageProcessor {
 //            if (walkMsg != null) {
 //                PostMessage(walkMsg);
 //            }
-            state.removeDisconnectingClient(client.getUID());
-            state.removeLink(client);
+            state.removeDisconnectingClient(client.getUID(), zMessage);
+            state.removeLink(client, zMessage);
             log.debug(this.state.genPrintableState());
         }
 
@@ -312,7 +312,7 @@ public class P2PMessageProcessor extends MessageProcessor {
         if (this.state.getOutLinksCopy().contains(client.getMinimaAddress()) ||
                 this.state.getInLinksCopy().contains(client.getMinimaAddress()) ||
                 this.state.getClientLinksCopy().contains(client.getMinimaAddress())) {
-            getNetworkHandler().PostMessage(new Message(NETWORK_DISCONNECT).addString("uid", client.getUID()));
+            getNetworkHandler().PostMessage(new Message(NETWORK_DISCONNECT, zMessage).addString("uid", client.getUID()));
         } else {
             if (attempt < 3) {
                 TimerMessage shutdownMsg = new TimerMessage(1_000, P2P_DISCONNECT);
@@ -330,12 +330,12 @@ public class P2PMessageProcessor extends MessageProcessor {
         P2PMsgSwapLink swapLink = (P2PMsgSwapLink) zMessage.getObject("data");
         Message messageToSend = null;
         if (swapLink.isSwapClientReq()) {
-            messageToSend = SwapFuncs.onSwapClientsReq(state, swapLink, getCurrentMinimaClients());
+            messageToSend = SwapFuncs.onSwapClientsReq(state, swapLink, getCurrentMinimaClients(), zMessage);
         } else if (swapLink.isConditionalSwapReq() && state.getInLinksCopy().size() > state.getNumLinks()) {
             // Send SwapLink message if we have more inLinks than desired
-            messageToSend = SwapFuncs.onSwapReq(state, swapLink, getCurrentMinimaClients());
+            messageToSend = SwapFuncs.onSwapReq(state, swapLink, getCurrentMinimaClients(), zMessage);
         } else if (!swapLink.isConditionalSwapReq()) {
-            messageToSend = SwapFuncs.onSwapReq(state, swapLink, getCurrentMinimaClients());
+            messageToSend = SwapFuncs.onSwapReq(state, swapLink, getCurrentMinimaClients(), zMessage);
         }
         if (messageToSend != null) {
             PostMessage(messageToSend);
@@ -388,15 +388,15 @@ public class P2PMessageProcessor extends MessageProcessor {
         long loopDelay = 6_000 + rand.nextInt(3_000); //300_000 + rand.nextInt(30_000);
 
         if (!state.isRendezvousComplete()) {
-            JoiningFuncs.joinRendezvousNode(state, getCurrentMinimaClients()).forEach(this::PostMessage);
+            JoiningFuncs.joinRendezvousNode(state, getCurrentMinimaClients(), zMessage).forEach(this::PostMessage);
             loopDelay = 6_000 + rand.nextInt(3_000);
         } else if (state.getOutLinksCopy().size() < 1) {
-            JoiningFuncs.joinEntryNode(state, getCurrentMinimaClients()).forEach(this::PostMessage);
+            JoiningFuncs.joinEntryNode(state, getCurrentMinimaClients(), zMessage).forEach(this::PostMessage);
             loopDelay = 6_000 + rand.nextInt(3_000);
         } else if (state.getOutLinksCopy().size() < state.getNumLinks()) {
-            JoiningFuncs.joinScaleOutLinks(state, getCurrentMinimaClients()).forEach(this::PostMessage);
+            JoiningFuncs.joinScaleOutLinks(state, getCurrentMinimaClients(), zMessage).forEach(this::PostMessage);
         }
-        ArrayList<ExpiringMessage> expiringMessages = this.state.dropExpiredMessages();
+        ArrayList<ExpiringMessage> expiringMessages = this.state.dropExpiredMessages(zMessage);
 //        log.debug(state.genPrintableState());
 
         PostTimerMessage(new TimerMessage(loopDelay, P2P_LOOP));
@@ -408,12 +408,12 @@ public class P2PMessageProcessor extends MessageProcessor {
      * <p/>
      * Note:  Restart of the node needed to flip back to {@link P2PState#isClient()} - true if that was the start state
      */
-    private void processNodeNotAcceptingMsgCheck() {
+    private void processNodeNotAcceptingMsgCheck(Message zMessage) {
         if (!state.isClient() && state.isRendezvousComplete()) {
             if (getCurrentIncomingMinimaClientsOnMinimaPort().size() == 0) {
                 BroadcastFuncs.broadcastNodeNotAccepting(state, getCurrentMinimaClients())
                         .forEach(this::PostMessage);
-                state.setClient(true);
+                state.setClient(true, zMessage);
                 log.debug(state.genPrintableState());
             }
         }
@@ -425,8 +425,8 @@ public class P2PMessageProcessor extends MessageProcessor {
      */
     private void processNodeNotAcceptingMsg(Message zMessage) {
         P2PMsgNodeNotAccepting isClientMsg = (P2PMsgNodeNotAccepting) zMessage.getObject("data");
-        if (state.removeInLink(isClientMsg.getBroadcaster())) {
-            state.addClientLink(isClientMsg.getBroadcaster());
+        if (state.removeInLink(isClientMsg.getBroadcaster(), zMessage)) {
+            state.addClientLink(isClientMsg.getBroadcaster(), zMessage);
             log.debug("[+] P2P_NODE_NOT_ACCEPTING_CHECK Moving " + isClientMsg.getBroadcaster() + " from inlinks to clientLinks");
 
         }
@@ -452,17 +452,17 @@ public class P2PMessageProcessor extends MessageProcessor {
             for (InetSocketAddress address : newAddresses) {
                 // Connect and
                 state.getConnectionDetailsMap().put(address, new ConnectionDetails(ConnectionReason.MAPPING));
-                PostMessage(new Message(P2PMessageProcessor.P2P_CONNECT).addObject("address", address).addString("reason", "MAPPING connection"));
+                PostMessage(new Message(P2PMessageProcessor.P2P_CONNECT, zMessage).addObject("address", address).addString("reason", "MAPPING connection"));
             }
         }
 
         if (state.getActiveMappingRequests().isEmpty()) {
-            PostMessage(new Message(P2P_PRINT_NETWORK_MAP_RESPONSE));
+            PostMessage(new Message(P2P_PRINT_NETWORK_MAP_RESPONSE, zMessage));
         } else {
             log.debug("[+] P2P_MAP_NETWORK active mappings left: " + state.getActiveMappingRequests().keySet());
         }
 
-        PostMessage(new Message(P2PMessageProcessor.P2P_DISCONNECT)
+        PostMessage(new Message(P2PMessageProcessor.P2P_DISCONNECT, zMessage)
                 .addObject("client", client)
                 .addInteger("attempt", 0)
                 .addString("reason", "Disconnecting after sending mapping message")
@@ -484,7 +484,7 @@ public class P2PMessageProcessor extends MessageProcessor {
 
         }
 
-        state.getNetworkMap().put(state.getAddress(), new P2PMsgNode(state));
+        state.getNetworkMap().put(state.getAddress(), new P2PMsgNode(state, zMessage));
         ArrayList<InetSocketAddress> addresses = Stream.of(state.getRecentJoinersCopy(), state.getOutLinksCopy(), state.getInLinksCopy())
                 .flatMap(Collection::stream).distinct()
                 .filter(x -> !state.getNetworkMap().containsKey(x) && !state.getActiveMappingRequests().containsKey(x))
@@ -493,7 +493,7 @@ public class P2PMessageProcessor extends MessageProcessor {
         for (InetSocketAddress address : addresses) {
             // Connect and
             state.getConnectionDetailsMap().put(address, new ConnectionDetails(ConnectionReason.MAPPING));
-            PostMessage(new Message(P2PMessageProcessor.P2P_CONNECT).addObject("address", address).addString("reason", "MAPPING connection"));
+            PostMessage(new Message(P2PMessageProcessor.P2P_CONNECT, zMessage).addObject("address", address).addString("reason", "MAPPING connection"));
         }
 
         PostTimerMessage(new TimerMessage(20_000, P2P_PRINT_NETWORK_MAP_RESPONSE));

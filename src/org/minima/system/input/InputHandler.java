@@ -41,7 +41,7 @@ public class InputHandler extends MessageProcessor {
 			String input = zMessage.getString(INPUT_FUNCTION);
 			
 			//Notify something happening..
-			Message action = new Message(ConsensusHandler.CONSENSUS_NOTIFY_ACTION);
+			Message action = new Message(ConsensusHandler.CONSENSUS_NOTIFY_ACTION, zMessage);
 			action.addString("action", input);
 			Main.getMainHandler().getConsensusHandler().updateListeners(action);
 			

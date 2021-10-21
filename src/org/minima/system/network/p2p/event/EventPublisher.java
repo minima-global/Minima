@@ -11,8 +11,6 @@ import static java.util.Optional.ofNullable;
 
 public class EventPublisher {
 
-    public static final ThreadLocal<String> threadTraceId = new ThreadLocal<>();
-
     private static final List<Event> eventList = Collections.synchronizedList(new ArrayList<>());
     private static final ThreadLocal<String> TRACE_ID = new ThreadLocal<>();
 
@@ -33,29 +31,21 @@ public class EventPublisher {
         publish("written stream", traceable);
     }
 
+    public static void publish(String eventType, JSONObject details, Traceable traceable){
+        internalPublish(eventType, details, traceable);
+    }
+
     public static void publish(String eventType, Traceable traceable) {
-        String derivedEventType = eventType + " " + traceable.getName();
-
-        Event event = new Event(threadTraceId.get(), traceable.getTraceId(), derivedEventType, traceable.getContent());
-        eventList.add(event);
+        internalPublish(eventType, traceable.getContent(), traceable);
     }
 
-    public static void publish(String eventType, JSONObject details){
-        internalPublish(eventType, details);
-    }
-
-    public static void publish(String eventType) {
-        internalPublish(eventType, new JSONObject());
-    }
-
-    private static void internalPublish(String eventType, JSONObject details) {
+    private static void internalPublish(String eventType, JSONObject details, Traceable traceable) {
         if (eventType.contains("CONSENSUS") || eventType.contains("SENDTXPOW")) { // TODO Remove and add filter to endpoint
             return;
         }
-        String traceId2 = ofNullable(TRACE_ID.get())
-                .map(Object::toString)
-                .orElse(null);
-        Event event = new Event(threadTraceId.get(), null, eventType, details);
+        String derivedEventType = eventType + " " + traceable.getName();
+
+        Event event = new Event(traceable.getTraceId(), null, derivedEventType, details);
         eventList.add(event);
     }
 }

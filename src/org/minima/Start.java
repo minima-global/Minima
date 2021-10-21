@@ -19,11 +19,14 @@ import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
 import org.minima.system.brains.BackupManager;
 import org.minima.system.network.commands.CMD;
+import org.minima.system.network.p2p.Traceable;
 import org.minima.system.network.p2p.functions.StartupFuncs;
 import org.minima.system.network.p2p.functions.UtilFuncs;
 import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.SQLHandler;
+
+import static org.minima.system.network.p2p.Traceable.NEW_TRACEABLE;
 
 /**
  * @author Paddy Cerri
@@ -297,23 +300,25 @@ public class Start {
 		//Start the main Minima server
 		Main rcmainserver = new Main(host, port, !secureNode, conffile.getAbsolutePath());
 
+		Traceable traceable = NEW_TRACEABLE;
+
 		//Link it.
 		mMainServer = rcmainserver;
-		rcmainserver.getNetworkHandler().getP2PMessageProcessor().getState().setClient(isClient);
+		rcmainserver.getNetworkHandler().getP2PMessageProcessor().getState().setClient(isClient, traceable);
 
 		// Only connect to a single host for rendezvous with the p2p network
 		if(connect && connectionAddress != null) {
 //			rcmainserver.addAutoConnectHostPort(connectionAddress);
-			mMainServer.getNetworkHandler().getP2PMessageProcessor().getState().addRecentJoiner(connectionAddress);
+			mMainServer.getNetworkHandler().getP2PMessageProcessor().getState().addRecentJoiner(connectionAddress, traceable);
 		}else if(connect){
 			MinimaLogger.log(mMainServer.getNetworkHandler().getP2PMessageProcessor().getHostIP().toString());
-			ArrayList<InetSocketAddress> rendezvousHosts = StartupFuncs.LoadNodeList(mMainServer.getNetworkHandler().getP2PMessageProcessor().getState(), VALID_BOOTSTRAP_NODES, noextrahost);
+			ArrayList<InetSocketAddress> rendezvousHosts = StartupFuncs.LoadNodeList(mMainServer.getNetworkHandler().getP2PMessageProcessor().getState(), VALID_BOOTSTRAP_NODES, noextrahost, traceable);
 			connectionAddress = UtilFuncs.SelectRandomAddress(rendezvousHosts);
-			mMainServer.getNetworkHandler().getP2PMessageProcessor().getState().addRecentJoiner(connectionAddress);
+			mMainServer.getNetworkHandler().getP2PMessageProcessor().getState().addRecentJoiner(connectionAddress, traceable);
 		}
 
 		if(isClient){
-			rcmainserver.getNetworkHandler().getP2PMessageProcessor().getState().setNumLinks(3);
+			rcmainserver.getNetworkHandler().getP2PMessageProcessor().getState().setNumLinks(3, traceable);
 		}
 		
 		//Set the connect properties
@@ -326,7 +331,7 @@ public class Start {
 
 			rcmainserver.privateChain(needgenesis);
 			// If we are the genesis node of the private network, start with Rendezvous Complete
-			rcmainserver.getNetworkHandler().getP2PMessageProcessor().getState().rendezvousComplete();
+			rcmainserver.getNetworkHandler().getP2PMessageProcessor().getState().rendezvousComplete(traceable);
 		}
 		
 		if(automine) {
@@ -345,7 +350,7 @@ public class Start {
 
 		
 		//Start the system
-		rcmainserver.PostMessage(Main.SYSTEM_STARTUP);
+		rcmainserver.PostMessage(Main.SYSTEM_STARTUP, traceable);
 		
 		//Are we a daemon thread
 		if(daemon) {

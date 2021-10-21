@@ -1,6 +1,7 @@
 package org.minima.system.network.p2p.messages;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.minima.objects.base.MiniData;
 import org.minima.system.network.p2p.Traceable;
@@ -15,23 +16,26 @@ import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
 
+import static lombok.AccessLevel.PRIVATE;
 import static org.minima.system.network.p2p.util.JSONObjectUtils.from;
 
+@NoArgsConstructor(access = PRIVATE)
 @Getter
-@Setter
+@Setter(PRIVATE)
 public class P2PMsgDoSwap implements Streamable, Traceable {
-
+    private MiniData traceId;
     private MiniData secret = MiniData.getRandomData(8);
     private InetSocketAddress swapTarget;
 
-    public P2PMsgDoSwap() {
-        if (EventPublisher.threadTraceId.get() == null) {
-            EventPublisher.threadTraceId.set(getTraceId());
-        }
+    public P2PMsgDoSwap(MiniData secret, InetSocketAddress swapTarget, Traceable traceable) {
+        traceId = new MiniData(traceable.getTraceId());
+        this.secret = secret;
+        this.swapTarget = swapTarget;
     }
 
     @Override
     public void writeDataStream(DataOutputStream zOut) throws IOException {
+        traceId.writeDataStream(zOut);
         secret.writeDataStream(zOut);
         InetSocketAddressIO.writeAddress(swapTarget, zOut);
         EventPublisher.publishWrittenStream(this);
@@ -39,6 +43,7 @@ public class P2PMsgDoSwap implements Streamable, Traceable {
 
     @Override
     public void readDataStream(DataInputStream zIn) throws IOException {
+        setTraceId(MiniData.ReadFromStream(zIn));
         setSecret(MiniData.ReadFromStream(zIn));
         setSwapTarget(InetSocketAddressIO.readAddress(zIn));
         EventPublisher.publishReadStream(this);

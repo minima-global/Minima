@@ -122,7 +122,7 @@ public class WebSocketManager extends MessageProcessor {
 				mws.setMiniDAPPUID(id);
 				
 			}else if(msgtype.equals("reply")) {
-				Message replymsg = new Message(DAPPManager.DAPP_DIRECTREPLY);
+				Message replymsg = new Message(DAPPManager.DAPP_DIRECTREPLY, zMessage);
 				replymsg.addString("replyid", (String)msgobj.get("replyid"));
 				replymsg.addString("message", (String)msgobj.get("message"));
 				

@@ -2,10 +2,7 @@ package org.minima.system.network.p2p.functions;
 
 import lombok.extern.slf4j.Slf4j;
 import org.minima.system.network.base.MinimaClient;
-import org.minima.system.network.p2p.ConnectionDetails;
-import org.minima.system.network.p2p.ConnectionReason;
-import org.minima.system.network.p2p.P2PMessageProcessor;
-import org.minima.system.network.p2p.P2PState;
+import org.minima.system.network.p2p.*;
 import org.minima.system.network.p2p.messages.ExpiringMessage;
 import org.minima.system.network.p2p.messages.P2PMsgSwapLink;
 import org.minima.system.network.p2p.messages.P2PMsgWalkLinks;
@@ -41,10 +38,11 @@ public class WalkLinksFuncs {
     public static Message createSwapLinkMsg(P2PMsgWalkLinks msgWalkLinks) {
         Message retMsg = null;
         if (!msgWalkLinks.isWalkInLinks()) {
-            P2PMsgSwapLink swapLink = new P2PMsgSwapLink();
-            swapLink.setSecret(msgWalkLinks.getSecret());
-            swapLink.setSwapTarget(msgWalkLinks.getPathTaken().get(0));
-            swapLink.setConditionalSwapReq(true);
+            P2PMsgSwapLink swapLink = new P2PMsgSwapLink(msgWalkLinks.getSecret(),
+                    msgWalkLinks.getPathTaken().get(0),
+                    false,
+                    true,
+                    msgWalkLinks);
 
             retMsg = new Message(P2PMessageProcessor.P2P_SWAP_LINK)
                     .addObject("data", swapLink);
@@ -69,7 +67,7 @@ public class WalkLinksFuncs {
             if (p2pWalkLinks.isClientWalk()){
                 p2pWalkLinks.setAvailableClientSlots(state.getNumLinks() - state.getClientLinksCopy().size());
             }
-            state.addExpectedAuthKeyAndValue(p2pWalkLinks.getSecret().toString(), System.currentTimeMillis() + P2PState.AUTH_KEY_EXPIRY);
+            state.addExpectedAuthKeyAndValue(p2pWalkLinks.getSecret().toString(), System.currentTimeMillis() + P2PState.AUTH_KEY_EXPIRY, p2pWalkLinks);
             retMsg = onWalkLinkResponseMsg(state, p2pWalkLinks, allClients);
         }
 
@@ -115,14 +113,14 @@ public class WalkLinksFuncs {
         InetSocketAddress connectTargetAddress = msg.getPathTaken().get(msg.getPathTaken().size() - 1);
         if (!connectTargetAddress.equals(state.getAddress())) {
             if (!state.getRecentJoinersCopy().contains(connectTargetAddress)) {
-                state.addRandomNodeSet(connectTargetAddress);
+                state.addRandomNodeSet(connectTargetAddress, msg);
             }
             if (state.getOutLinksCopy().size() < state.getNumLinks()) {
                 ConnectionReason reason = ConnectionReason.REPLACING_OUT_LINK;
                 if (msg.isJoiningWalk()) {
                     reason = ConnectionReason.ADDING_OUT_LINK;
                     // On adding an outlink we also expect a do swap back to this node
-                    state.addExpectedAuthKeyAndValue(msg.getSecret().toString(), System.currentTimeMillis() + P2PState.AUTH_KEY_EXPIRY);
+                    state.addExpectedAuthKeyAndValue(msg.getSecret().toString(), System.currentTimeMillis() + P2PState.AUTH_KEY_EXPIRY, msg);
                 }
                 returnMessage = new Message(P2PMessageProcessor.P2P_CONNECT)
                         .addObject("address", connectTargetAddress)
@@ -143,10 +141,10 @@ public class WalkLinksFuncs {
         InetSocketAddress connectTargetAddress = msg.getPathTaken().get(msg.getPathTaken().size() - 1);
         if (!connectTargetAddress.equals(state.getAddress())) {
             if (!state.getRecentJoinersCopy().contains(connectTargetAddress)) {
-                state.addRandomNodeSet(connectTargetAddress);
+                state.addRandomNodeSet(connectTargetAddress, msg);
             }
             log.debug("[!] P2P_WALK_LINKS_RESPONSE: CLIENT creating do swap messages");
-            returnMessage.addAll(GreetingFuncs.genClientLoadBalanceRequests(state, connectTargetAddress, msg.getAvailableClientSlots()));
+            returnMessage.addAll(GreetingFuncs.genClientLoadBalanceRequests(state, connectTargetAddress, msg.getAvailableClientSlots(), msg));
 
         } else {
             log.debug("[!] P2P_WALK_LINKS_RESPONSE: Not Connecting as returned own address");
@@ -156,7 +154,7 @@ public class WalkLinksFuncs {
     }
 
 
-    public static Message genP2PWalkLinkMsg(P2PState state, MinimaClient minimaClient, P2PMsgWalkLinks walkLinks, String logType) {
+    public static Message genP2PWalkLinkMsg(P2PState state, MinimaClient minimaClient, P2PMsgWalkLinks walkLinks, String logType, Traceable traceable) {
         Message retMsg = null;
         if (minimaClient != null) {
             if (walkLinks.isJoiningWalk()) {
@@ -168,13 +166,13 @@ public class WalkLinksFuncs {
                     log.debug("[+] " + logType + " P2P_WALK Starting outLink walk to replace lost inLink neighbour");
                 }
             }
-            retMsg = new Message(P2PMessageProcessor.P2P_SEND_MESSAGE)
-                    .addObject("client", minimaClient)
-                    .addObject("message", new Message(MinimaClient.NETCLIENT_P2P_WALK_LINKS).addObject("data", walkLinks));
-            ExpiringMessage expiringMessage = new ExpiringMessage(new Message(P2PMessageProcessor.P2P_WALK_LINKS).addObject("data", walkLinks));
+            retMsg = new Message(P2PMessageProcessor.P2P_SEND_MESSAGE, traceable);
+            retMsg.addObject("client", minimaClient)
+                    .addObject("message", new Message(MinimaClient.NETCLIENT_P2P_WALK_LINKS, retMsg).addObject("data", walkLinks));
+            ExpiringMessage expiringMessage = new ExpiringMessage(new Message(P2PMessageProcessor.P2P_WALK_LINKS, retMsg).addObject("data", walkLinks));
             expiringMessage.setTimestamp(System.currentTimeMillis() + 5_000L);
-            state.addExpiringMessage(walkLinks.getSecret(), expiringMessage);
-            state.addExpectedAuthKeyAndValue(walkLinks.getSecret().toString(), System.currentTimeMillis() + P2PState.AUTH_KEY_EXPIRY);
+            state.addExpiringMessage(walkLinks.getSecret(), expiringMessage, traceable);
+            state.addExpectedAuthKeyAndValue(walkLinks.getSecret().toString(), System.currentTimeMillis() + P2PState.AUTH_KEY_EXPIRY, traceable);
 
         }
         return retMsg;

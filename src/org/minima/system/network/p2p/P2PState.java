@@ -110,74 +110,80 @@ public class P2PState {
         this.p2pDataFile = p2pDataFile;
     }
 
-    public void addInLink(InetSocketAddress address) {
+    public void addInLink(InetSocketAddress address, Traceable traceable) {
         this.inLinks.add(address);
 
         EventPublisher.publish("state change - in-link addition attempt",
                 new JSONObject(using("address", from(address))
                         .and("success", true)
-                        .asMap()));
+                        .asMap()),
+                traceable);
 
         log.debug(this.genPrintableState());
     }
 
-    public boolean removeInLink(InetSocketAddress address) {
+    public boolean removeInLink(InetSocketAddress address, Traceable traceable) {
         boolean result = this.inLinks.remove(address);
 
         EventPublisher.publish("state change - in-links removal attempt",
                 new JSONObject(using("address", from(address))
                         .and("success", result)
-                        .asMap()));
+                        .asMap()),
+                traceable);
 
         return result;
     }
 
-    public void addClientLink(InetSocketAddress address) {
+    public void addClientLink(InetSocketAddress address, Traceable traceable) {
         this.clientLinks.add(address);
 
         EventPublisher.publish("state change - client-link addition attempt",
                 new JSONObject(using("address", from(address))
                         .and("success", true)
-                        .asMap()));
+                        .asMap()),
+                traceable);
 
         log.debug(this.genPrintableState());
     }
 
-    public boolean removeClientLink(InetSocketAddress address) {
+    public boolean removeClientLink(InetSocketAddress address, Traceable traceable) {
         boolean result = this.clientLinks.remove(address);
 
         EventPublisher.publish("state change - client-links removal attempt",
                 new JSONObject(using("address", from(address))
                         .and("success", result)
-                        .asMap()));
+                        .asMap()),
+                traceable);
 
         return result;
     }
 
-    public void addOutLink(InetSocketAddress address) {
+    public void addOutLink(InetSocketAddress address, Traceable traceable) {
         this.outLinks.add(address);
 
         EventPublisher.publish("state change - out-link addition attempt",
                 new JSONObject(using("address", from(address))
                         .and("success", true)
-                        .asMap()));
+                        .asMap()),
+                traceable);
 
         log.debug(this.genPrintableState());
     }
 
-    public boolean removeDisconnectingClient(String uid) {
+    public boolean removeDisconnectingClient(String uid, Traceable traceable) {
 
         boolean result = this.disconnectingClients.remove(uid);
 
         EventPublisher.publish("state change - disconnecting client removal attempt",
                 new JSONObject(using("uid", uid)
                         .and("success", result)
-                        .asMap()));
+                        .asMap()),
+                traceable);
 
         return result;
     }
 
-    public void removeLink(MinimaClient client) {
+    public void removeLink(MinimaClient client, Traceable traceable) {
         if (!client.isIncoming()){
             this.outLinks.remove(client.getMinimaAddress());
         } else {
@@ -189,27 +195,30 @@ public class P2PState {
         }
         EventPublisher.publish("state change - link removal attempt",
                 new JSONObject(using("address", from(client.getMinimaAddress()))
-                        .asMap()));
+                        .asMap()),
+                traceable);
 
         log.debug(this.genPrintableState());
     }
 
-    public void addRandomNodeSet(InetSocketAddress address) {
+    public void addRandomNodeSet(InetSocketAddress address, Traceable traceable) {
         this.recentJoiners.add(address);
 
         EventPublisher.publish("state change - random node set address addition attempt",
                 new JSONObject(using("address", from(address))
                         .and("success", true)
-                        .asMap()));
+                        .asMap()),
+                traceable);
     }
 
-    public boolean removeRandomNodeSet(InetSocketAddress address) {
+    public boolean removeRandomNodeSet(InetSocketAddress address, Traceable traceable) {
         boolean result = this.recentJoiners.remove(address);
 
         EventPublisher.publish("state change - random node set address removal attempt",
                 new JSONObject(using("address", from(address))
                        .and("success", result)
-                        .asMap()));
+                        .asMap()),
+                traceable);
 
         return result;
     }
@@ -220,7 +229,7 @@ public class P2PState {
                 .count();
     }
 
-    public ArrayList<ExpiringMessage> dropExpiredMessages() {
+    public ArrayList<ExpiringMessage> dropExpiredMessages(Traceable traceable) {
 
         ArrayList<ExpiringMessage> expiringMessages = new ArrayList<>();
         ArrayList<MiniData> toRemove = new ArrayList<>();
@@ -235,36 +244,38 @@ public class P2PState {
         }
         toRemove.forEach(expiringMessageMap::remove);
 
-        EventPublisher.publish("state change - dropping expired messages");
+        EventPublisher.publish("state change - dropping expired messages", traceable);
 
         return expiringMessages;
     }
 
-    public void setClient(boolean client) {
+    public void setClient(boolean client, Traceable traceable) {
 
         this.isClient = client;
         EventPublisher.publish("state change - client",
                 new JSONObject(using("client", client)
-                        .asMap()));
+                        .asMap()),
+                traceable);
     }
 
-    public void rendezvousComplete() {
+    public void rendezvousComplete(Traceable traceable) {
 
         isRendezvousComplete = true;
-        EventPublisher.publish("state change - rendezvous complete");
+        EventPublisher.publish("state change - rendezvous complete", traceable);
     }
 
-    public void entryNodeConnected() {
+    public void entryNodeConnected(Traceable traceable) {
 
         isEntryNodeConnected = true;
-        EventPublisher.publish("state change - entry node connected");
+        EventPublisher.publish("state change - entry node connected", traceable);
     }
 
-    public void setAddress(InetSocketAddress address) {
+    public void setAddress(InetSocketAddress address, Traceable traceable) {
         EventPublisher.publish("state change - address changed",
                 new JSONObject(using("from", from(this.address))
                         .and("to", from(address))
-                        .asMap()));
+                        .asMap()),
+                traceable);
 
         this.address = address;
     }
@@ -281,20 +292,22 @@ public class P2PState {
         return new ArrayList<>(clientLinks);
     }
 
-    public boolean addRecentJoiners(Collection<InetSocketAddress> addresses) {
+    public boolean addRecentJoiners(Collection<InetSocketAddress> addresses, Traceable traceable) {
         EventPublisher.publish("state change - recent joiner addition(s) attempted",
                 new JSONObject(using("addresses", from(addresses))
                         .and("success", true)
-                        .asMap()));
+                        .asMap()),
+                traceable);
 
         return recentJoiners.addAll(addresses);
     }
 
-    public boolean addRecentJoiner(InetSocketAddress address) {
+    public boolean addRecentJoiner(InetSocketAddress address, Traceable traceable) {
         EventPublisher.publish("state change - recent joiner addition attempted",
                 new JSONObject(using("address", from(address))
                         .and("success", true)
-                        .asMap()));
+                        .asMap()),
+                traceable);
 
         return recentJoiners.add(address);
     }
@@ -307,12 +320,13 @@ public class P2PState {
         return ImmutableMap.copyOf(expiringMessageMap);
     }
 
-    public void addExpiringMessage(MiniData miniData, ExpiringMessage msg) {
+    public void addExpiringMessage(MiniData miniData, ExpiringMessage msg, Traceable traceable) {
         EventPublisher.publish("state change - adding auth key addition attempted",
-                new JSONObject(using("miniData", miniData)
+                new JSONObject(using("miniData", miniData.toString())
                         .and("msg", msg.getMsg().getMessageType())
                         .and("inner-msg-type", msg.getMsg().getMessageType())
-                        .asMap()));
+                        .asMap()),
+                traceable);
         expiringMessageMap.put(miniData, msg);
     }
 
@@ -320,31 +334,34 @@ public class P2PState {
         return ImmutableMap.copyOf(expectedAuthKeys);
     }
 
-    public void addExpectedAuthKeyAndValue(String authKey, Long value) {
+    public void addExpectedAuthKeyAndValue(String authKey, Long value, Traceable traceable) {
         EventPublisher.publish("state change - expected auth key addition attempted",
                 new JSONObject(using("authKey", authKey)
                         .and("value", value)
-                        .asMap()));
+                        .asMap()),
+                traceable);
         expectedAuthKeys.put(authKey, value);
     }
 
-    public Long removeExpectedAuthKey(String authKey) {
+    public Long removeExpectedAuthKey(String authKey, Traceable traceable) {
 
         Long result = expectedAuthKeys.remove(authKey);
 
         EventPublisher.publish("state change - expected auth key removal attempted",
                 new JSONObject(using("authKey", authKey)
                         .and("success", result != null)
-                        .asMap()));
+                        .asMap()),
+                traceable);
         return result;
     }
 
-    public void setNumLinks(int numLinks) {
+    public void setNumLinks(int numLinks, Traceable traceable) {
 
         EventPublisher.publish("state change - number of links changed",
                 new JSONObject(using("from", this.numLinks)
                         .and("to", numLinks)
-                        .asMap()));
+                        .asMap()),
+                traceable);
         this.numLinks = numLinks;
     }
 

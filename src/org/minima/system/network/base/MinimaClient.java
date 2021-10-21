@@ -20,6 +20,7 @@ import org.minima.system.brains.ConsensusNet;
 import org.minima.system.network.NetworkHandler;
 import org.minima.system.network.p2p.P2PMessageProcessor;
 import org.minima.system.network.p2p.P2PState;
+import org.minima.system.network.p2p.Traceable;
 import org.minima.system.network.p2p.event.EventPublisher;
 import org.minima.system.network.p2p.messages.*;
 import org.minima.utils.MinimaLogger;
@@ -285,7 +286,7 @@ public class MinimaClient extends MessageProcessor {
 			}
 
 			//Start the system..
-			PostMessage(NETCLIENT_STARTUP);
+			PostMessage(NETCLIENT_STARTUP, zMessage);
 			
 		}else if(zMessage.isMessageType(NETCLIENT_STARTUP)) {
 			
@@ -316,22 +317,22 @@ public class MinimaClient extends MessageProcessor {
 		
 		}else if(zMessage.isMessageType(NETCLIENT_GREETING)) {
 			Greeting greet = (Greeting)zMessage.getObject("greeting");
-			sendMessage(MinimaReader.MsgType.NETMESSAGE_GREETING, greet);
+			sendMessage(MinimaReader.MsgType.NETMESSAGE_GREETING, greet, zMessage);
 		}else if(zMessage.isMessageType(NETCLIENT_TXPOWLIST)) {
 			TxPoWList txplist = (TxPoWList)zMessage.getObject("txpowlist");
-			sendMessage(MinimaReader.MsgType.NETMESSAGE_TXPOWLIST, txplist);
+			sendMessage(MinimaReader.MsgType.NETMESSAGE_TXPOWLIST, txplist, zMessage);
 			
 		}else if(zMessage.isMessageType(NETCLIENT_INTRO)) {
 			SyncPackage sp = (SyncPackage)zMessage.getObject("syncpackage");
-			sendMessage(MinimaReader.MsgType.NETMESSAGE_INTRO, sp);
+			sendMessage(MinimaReader.MsgType.NETMESSAGE_INTRO, sp, zMessage);
 		
 		}else if(zMessage.isMessageType(NETCLIENT_SENDTXPOWID)) {
 			MiniData txpowid = (MiniData)zMessage.getObject("txpowid");
-			sendMessage(MinimaReader.MsgType.NETMESSAGE_TXPOWID, txpowid);
+			sendMessage(MinimaReader.MsgType.NETMESSAGE_TXPOWID, txpowid, zMessage);
 				
 		}else if(zMessage.isMessageType(NETCLIENT_SENDTXPOW)) {
 			TxPoW txpow = (TxPoW)zMessage.getObject("txpow");
-			sendMessage(MinimaReader.MsgType.NETMESSAGE_TXPOW, txpow);
+			sendMessage(MinimaReader.MsgType.NETMESSAGE_TXPOW, txpow, zMessage);
 				
 		}else if(zMessage.isMessageType(NETCLIENT_SENDTXPOWREQ)) {
 			//get the TxPOW
@@ -344,7 +345,7 @@ public class MinimaClient extends MessageProcessor {
 			}
 			
 			//Send it..
-			sendMessage(MinimaReader.MsgType.NETMESSAGE_TXPOW_REQUEST, txpowid);
+			sendMessage(MinimaReader.MsgType.NETMESSAGE_TXPOW_REQUEST, txpowid, zMessage);
 	
 		}else if(zMessage.isMessageType(NETCLIENT_PULSE)) {
 			//When was the last PING message..
@@ -360,7 +361,7 @@ public class MinimaClient extends MessageProcessor {
 			}
 			
 			//Send a PULSE message..
-			sendMessage(MinimaReader.MsgType.NETMESSAGE_PING, MiniByte.TRUE);
+			sendMessage(MinimaReader.MsgType.NETMESSAGE_PING, MiniByte.TRUE, zMessage);
 			
 			//Send it again in a while..
 			PostTimerMessage(new TimerMessage(PING_INTERVAL, NETCLIENT_PULSE));
@@ -377,36 +378,36 @@ public class MinimaClient extends MessageProcessor {
 			getNetworkHandler().getP2PMessageProcessor().PostMessage(msg);
 			shutdown();
 		}else if(zMessage.isMessageType(NETCLIENT_P2P_GREETING)) {
-			P2PMsgGreeting data = new P2PMsgGreeting(getNetworkHandler().getP2PMessageProcessor().getState(), this);
-			sendMessage(MinimaReader.MsgType.NETMESSAGE_P2P_GREETING, data);
+			P2PMsgGreeting data = new P2PMsgGreeting(getNetworkHandler().getP2PMessageProcessor().getState(), this, zMessage);
+			sendMessage(MinimaReader.MsgType.NETMESSAGE_P2P_GREETING, data, zMessage);
 		}else if(zMessage.isMessageType(NETCLIENT_P2P_RENDEZVOUS)) {
 			P2PMsgRendezvous data = (P2PMsgRendezvous) zMessage.getObject("data");
-			sendMessage(MinimaReader.MsgType.NETMESSAGE_P2P_RENDEZVOUS, data);
+			sendMessage(MinimaReader.MsgType.NETMESSAGE_P2P_RENDEZVOUS, data, zMessage);
 		}else if(zMessage.isMessageType(NETCLIENT_P2P_WALK_LINKS)) {
 			P2PMsgWalkLinks data = (P2PMsgWalkLinks) zMessage.getObject("data");
-			sendMessage(MinimaReader.MsgType.NETMESSAGE_P2P_WALK_LINKS, data);
+			sendMessage(MinimaReader.MsgType.NETMESSAGE_P2P_WALK_LINKS, data, zMessage);
 		}else if(zMessage.isMessageType(NETCLIENT_P2P_WALK_LINKS_RESPONSE)) {
 			P2PMsgWalkLinks data = (P2PMsgWalkLinks) zMessage.getObject("data");
-			sendMessage(MinimaReader.MsgType.NETMESSAGE_P2P_WALK_LINKS_RESPONSE, data);
+			sendMessage(MinimaReader.MsgType.NETMESSAGE_P2P_WALK_LINKS_RESPONSE, data, zMessage);
 		}else if(zMessage.isMessageType(NETMESSAGE_P2P_SWAP_LINK)) {
 			P2PMsgSwapLink data = (P2PMsgSwapLink) zMessage.getObject("data");
-			sendMessage(MinimaReader.MsgType.NETMESSAGE_P2P_SWAP_LINK, data);
+			sendMessage(MinimaReader.MsgType.NETMESSAGE_P2P_SWAP_LINK, data, zMessage);
 		}else if(zMessage.isMessageType(NETMESSAGE_P2P_DO_SWAP)) {
 			P2PMsgDoSwap data = (P2PMsgDoSwap) zMessage.getObject("data");
-			sendMessage(MinimaReader.MsgType.NETMESSAGE_P2P_DO_SWAP, data);
+			sendMessage(MinimaReader.MsgType.NETMESSAGE_P2P_DO_SWAP, data, zMessage);
 		} else if(zMessage.isMessageType(NETMESSAGE_P2P_MAP_NETWORK)){
 			P2PMsgNode data = (P2PMsgNode) zMessage.getObject("data");
-			sendMessage(MinimaReader.MsgType.NETMESSAGE_P2P_MAP_NETWORK, data);
+			sendMessage(MinimaReader.MsgType.NETMESSAGE_P2P_MAP_NETWORK, data, zMessage);
 		} else if(zMessage.isMessageType(NETMESSAGE_P2P_NODE_NOT_ACCEPTING)) {
 			P2PMsgNodeNotAccepting data = (P2PMsgNodeNotAccepting) zMessage.getObject("data");
-			sendMessage(MinimaReader.MsgType.NETMESSAGE_P2P_NODE_NOT_ACCEPTING, data);
+			sendMessage(MinimaReader.MsgType.NETMESSAGE_P2P_NODE_NOT_ACCEPTING, data, zMessage);
 		}
 	}
 	
 	/**
 	 * Send a message down the network
 	 */
-	protected void sendMessage(MinimaReader.MsgType zMessageType, Streamable zObject) {
+	protected void sendMessage(MinimaReader.MsgType zMessageType, Streamable zObject, Traceable traceable) {
 		//Are we connected ...
 		if(mOutput == null) {
 			//No connection yet..
@@ -440,7 +441,7 @@ public class MinimaClient extends MessageProcessor {
 			//Now write the complete package..
 			complete.writeDataStream(mOutput);
 			EventPublisher.publish("sent " + zMessageType.name(),
-					new JSONObject(using("target", from(this.minimaAddress)).asMap()));
+					new JSONObject(using("target", from(this.minimaAddress)).asMap()), traceable);
 
 			//Send..
 			mOutput.flush();

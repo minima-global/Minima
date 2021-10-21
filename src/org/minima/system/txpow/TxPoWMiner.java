@@ -105,7 +105,7 @@ public class TxPoWMiner extends MessageProcessor {
 				}
 				
 				//Repost the same transaction.. get a new TxPOW block with latest details
-				Message sametr = new Message(ConsensusHandler.CONSENSUS_SENDTRANS)
+				Message sametr = new Message(ConsensusHandler.CONSENSUS_SENDTRANS, zMessage)
 										.addObject("transaction", txpow.getTransaction())
 										.addObject("witness", txpow.getWitness());
 
@@ -121,7 +121,7 @@ public class TxPoWMiner extends MessageProcessor {
 				}
 				
 				//We have a valid TX-POW..
-				Message msg = new Message(ConsensusHandler.CONSENSUS_FINISHED_MINE).addObject("txpow", txpow);
+				Message msg = new Message(ConsensusHandler.CONSENSUS_FINISHED_MINE, zMessage).addObject("txpow", txpow);
 				Main.getMainHandler().getConsensusHandler().PostMessage(msg);
 			}
 			
@@ -168,7 +168,7 @@ public class TxPoWMiner extends MessageProcessor {
 			txpow.calculateTXPOWID();
 			
 			if(txpow.isBlock()) {
-				Message msg = new Message(ConsensusNet.CONSENSUS_NET_CHECKSIZE_TXPOW).addObject("txpow", txpow);
+				Message msg = new Message(ConsensusNet.CONSENSUS_NET_CHECKSIZE_TXPOW, zMessage).addObject("txpow", txpow);
 				Main.getMainHandler().getConsensusHandler().PostMessage(msg);
 			}
 			
@@ -224,7 +224,7 @@ public class TxPoWMiner extends MessageProcessor {
 			if(txpow.isBlock()) {
 				InputHandler.endResponse(zMessage, true, "Block Mined");
 				
-				Message msg = new Message(ConsensusNet.CONSENSUS_NET_CHECKSIZE_TXPOW).addObject("txpow", txpow);
+				Message msg = new Message(ConsensusNet.CONSENSUS_NET_CHECKSIZE_TXPOW, zMessage).addObject("txpow", txpow);
 				Main.getMainHandler().getConsensusHandler().PostMessage(msg);
 			}else {
 				InputHandler.endResponse(zMessage, false, "ERROR - debug miner failed to find a block..");
@@ -276,14 +276,14 @@ public class TxPoWMiner extends MessageProcessor {
 			//Did we find it.. ?
 			if(mining) {
 				//Send it..
-				Main.getMainHandler().getConsensusHandler().PostMessage(new Message(ConsensusHandler.CONSENSUS_PULSE));
+				Main.getMainHandler().getConsensusHandler().PostMessage(new Message(ConsensusHandler.CONSENSUS_PULSE, zMessage));
 				
 			}else {
 				//Set the TxPOW
 				txpow.calculateTXPOWID();
 				
 				//We have a valid TX-POW..
-				Message msg = new Message(ConsensusHandler.CONSENSUS_PULSE_MINED).addObject("txpow", txpow);
+				Message msg = new Message(ConsensusHandler.CONSENSUS_PULSE_MINED, zMessage).addObject("txpow", txpow);
 				Main.getMainHandler().getConsensusHandler().PostMessage(msg);
 			}
 			

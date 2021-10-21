@@ -1,6 +1,7 @@
 package org.minima.system.network.p2p.messages;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.minima.objects.base.MiniData;
 import org.minima.system.network.p2p.Traceable;
@@ -19,11 +20,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static java.util.stream.Collectors.toList;
+import static lombok.AccessLevel.PRIVATE;
 
+@NoArgsConstructor(access = PRIVATE)
 @Setter
 @Getter
 public class P2PMsgWalkLinks implements Streamable, Traceable {
 
+    private MiniData traceId;
     private MiniData secret = MiniData.getRandomData(8);
     boolean walkInLinks;
     boolean isJoiningWalk;
@@ -34,22 +38,10 @@ public class P2PMsgWalkLinks implements Streamable, Traceable {
     ArrayList<InetSocketAddress> pathTaken = new ArrayList<>();
 
 
-    public P2PMsgWalkLinks() {
-        if (EventPublisher.threadTraceId.get() == null) {
-            EventPublisher.threadTraceId.set(getTraceId());
-        }
-    }
-
-    public P2PMsgWalkLinks(boolean walkInLinks, boolean isJoiningWalk) {
+    public P2PMsgWalkLinks(boolean walkInLinks, boolean isJoiningWalk, Traceable traceable) {
         this.walkInLinks = walkInLinks;
         this.isJoiningWalk = isJoiningWalk;
-    }
-
-    public P2PMsgWalkLinks(boolean walkInLinks, boolean isReturning, int numHopsToGo, ArrayList<InetSocketAddress> pathTaken) {
-        this.walkInLinks = walkInLinks;
-        this.isReturning = isReturning;
-        this.numHopsToGo = numHopsToGo;
-        this.pathTaken = pathTaken;
+        traceId = new MiniData(traceable.getTraceId());
     }
 
     public void addHopToPath(InetSocketAddress address) {
@@ -72,6 +64,7 @@ public class P2PMsgWalkLinks implements Streamable, Traceable {
 
     @Override
     public void writeDataStream(DataOutputStream zOut) throws IOException {
+        traceId.writeDataStream(zOut);
         secret.writeDataStream(zOut);
         zOut.writeBoolean(walkInLinks);
         zOut.writeBoolean(isJoiningWalk);
@@ -86,6 +79,7 @@ public class P2PMsgWalkLinks implements Streamable, Traceable {
 
     @Override
     public void readDataStream(DataInputStream zIn) throws IOException {
+        this.setTraceId(MiniData.ReadFromStream(zIn));
         this.setSecret(MiniData.ReadFromStream(zIn));
         this.setWalkInLinks(zIn.readBoolean());
         this.setJoiningWalk(zIn.readBoolean());

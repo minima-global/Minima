@@ -386,7 +386,7 @@ public class DAPPManager extends MessageProcessor {
 			recalculateMiniDAPPS();
 			
 			//We HAVE LIFT OFF!
-			Main.getMainHandler().getConsensusHandler().updateListeners(new Message(ConsensusHandler.CONSENSUS_NOTIFY_INITIALSYNC));
+			Main.getMainHandler().getConsensusHandler().updateListeners(new Message(ConsensusHandler.CONSENSUS_NOTIFY_INITIALSYNC, zMessage));
 			
 			//Create the MiniDAPP server
 			mDAPPServer = new DAPPServer(mNetwork.getMiniDAPPServerPort(), this);
@@ -410,7 +410,7 @@ public class DAPPManager extends MessageProcessor {
 			mdapps.put("minidapps", CURRENT_MINIDAPPS);
 			InputHandler.endResponse(zMessage, true, "MiniDAPPs reloaded");
 			
-			Main.getMainHandler().getConsensusHandler().updateListeners(new Message(ConsensusHandler.CONSENSUS_NOTIFY_DAPP_RELOAD));
+			Main.getMainHandler().getConsensusHandler().updateListeners(new Message(ConsensusHandler.CONSENSUS_NOTIFY_DAPP_RELOAD, zMessage));
 			
 		}else if(zMessage.getMessageType().equals(DAPP_INSTALL)) {
 			//Get the Data
@@ -556,7 +556,7 @@ public class DAPPManager extends MessageProcessor {
 			
 			//Notify those listening..
 			Main.getMainHandler().getConsensusHandler()
-				.updateListeners(new Message(ConsensusHandler.CONSENSUS_NOTIFY_DAPP_INSTALLED).addString("name", filename));
+				.updateListeners(new Message(ConsensusHandler.CONSENSUS_NOTIFY_DAPP_INSTALLED, zMessage).addString("name", filename));
 			
 		}else if(zMessage.getMessageType().equals(DAPP_UNINSTALL)) {
 			String minidapp = zMessage.getString("minidapp");
@@ -634,7 +634,7 @@ public class DAPPManager extends MessageProcessor {
 			sendToBackEND(minidapp,wsmsg);
 			
 			//And to the front end..
-			Message msg = new Message(WebSocketManager.WEBSOCK_SEND);
+			Message msg = new Message(WebSocketManager.WEBSOCK_SEND, zMessage);
 			msg.addString("message", wsmsg.toString());
 			msg.addString("minidappid", minidapp);
 			mNetwork.getWebSocketManager().PostMessage(msg);
@@ -668,7 +668,7 @@ public class DAPPManager extends MessageProcessor {
 			//Remove funny characters
 			String JSONEvent = MiniFormat.filterSafeTextEmoji(json.toString());
 			
-			Message msg = new Message(WebSocketManager.WEBSOCK_SEND);
+			Message msg = new Message(WebSocketManager.WEBSOCK_SEND, zMessage);
 			msg.addString("minidappid", minidapp);
 			msg.addString("message", JSONEvent);
 			mNetwork.getWebSocketManager().PostMessage(msg);
@@ -683,7 +683,7 @@ public class DAPPManager extends MessageProcessor {
 			//Remove funny characters
 			String JSONEvent = MiniFormat.filterSafeTextEmoji(json.toString());
 			
-			Message msg = new Message(WebSocketManager.WEBSOCK_SENDTOALL);
+			Message msg = new Message(WebSocketManager.WEBSOCK_SENDTOALL, zMessage);
 			msg.addString("message", JSONEvent);
 			mNetwork.getWebSocketManager().PostMessage(msg);
 			

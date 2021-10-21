@@ -351,7 +351,7 @@ public class ConsensusHandler extends MessageProcessor {
 				newbalance = true;
 				
 				//Notify..
-				updateListeners(new Message(CONSENSUS_NOTIFY_NEWBLOCK).addObject("txpow", newtip));
+				updateListeners(new Message(CONSENSUS_NOTIFY_NEWBLOCK, zMessage).addObject("txpow", newtip));
 			
 				//Update the web listeners..
 				JSONObject newblock = new JSONObject();
@@ -361,11 +361,11 @@ public class ConsensusHandler extends MessageProcessor {
 				
 				//Do the balance.. Update listeners if changed..
 				if(!syncmessage) {
-					PostMessage(new Message(ConsensusPrint.CONSENSUS_BALANCE).addBoolean("hard", true));
+					PostMessage(new Message(ConsensusPrint.CONSENSUS_BALANCE, zMessage).addBoolean("hard", true));
 				
 					//Print the tree..
 					if(mPrintChain) {
-						PostMessage(new Message(ConsensusPrint.CONSENSUS_PRINTCHAIN_TREE).addBoolean("systemout", true));
+						PostMessage(new Message(ConsensusPrint.CONSENSUS_PRINTCHAIN_TREE, zMessage).addBoolean("systemout", true));
 					}
 				}
 			}
@@ -379,16 +379,16 @@ public class ConsensusHandler extends MessageProcessor {
 				getMainDB().getUserDB().addToHistory(txpow.deepCopy(),tokamt);
 				
 				//Do we need to update the balance.. or did we do it already..
-				updateListeners(new Message(CONSENSUS_NOTIFY_BALANCE));
+				updateListeners(new Message(CONSENSUS_NOTIFY_BALANCE, zMessage));
 				if(!newbalance && !syncmessage) {
-					PostMessage(new Message(ConsensusPrint.CONSENSUS_BALANCE).addBoolean("hard", true));
+					PostMessage(new Message(ConsensusPrint.CONSENSUS_BALANCE, zMessage).addBoolean("hard", true));
 				}				
 			}
 					
 			//BROADCAST Message for ALL the clients - only if valid / or block.. ( they can request it if need be..)
 			if(!syncmessage && (txnok || txpow.isBlock())) {
-				Message netmsg  = new Message(MinimaClient.NETCLIENT_SENDTXPOWID).addObject("txpowid", txpow.getTxPowID());
-				Message netw    = new Message(NetworkHandler.NETWORK_SENDALL).addObject("message", netmsg);
+				Message netmsg  = new Message(MinimaClient.NETCLIENT_SENDTXPOWID, zMessage).addObject("txpowid", txpow.getTxPowID());
+				Message netw    = new Message(NetworkHandler.NETWORK_SENDALL, zMessage).addObject("message", netmsg);
 				Main.getMainHandler().getNetworkHandler().PostMessage(netw);
 			}
 			
@@ -403,7 +403,7 @@ public class ConsensusHandler extends MessageProcessor {
 			Main.getMainHandler().getNetworkHandler().clearAllrequestedTxPow();
 			
 			//Post a FULL resync message
-			PostMessage(new Message(ConsensusNet.CONSENSUS_NET_FULLTREERESYSNC));
+			PostMessage(new Message(ConsensusNet.CONSENSUS_NET_FULLTREERESYSNC, zMessage));
 			
 			//Flush / Check the mem-pool
 //			PostMessage(new Message(ConsensusUser.CONSENSUS_FLUSHMEMPOOL));
@@ -441,7 +441,7 @@ public class ConsensusHandler extends MessageProcessor {
 					MinimaLogger.log("RECONNECT after no tip change! @ "+mLastTip);
 					
 					//Same block number after 5 mins ? reconnect and resync..
-					Message reconnect = new Message(NetworkHandler.NETWORK_RECONNECT);
+					Message reconnect = new Message(NetworkHandler.NETWORK_RECONNECT, zMessage);
 					Main.getMainHandler().getNetworkHandler().PostMessage(reconnect);
 					
 					mFirstReconnectRun = true;
@@ -466,7 +466,7 @@ public class ConsensusHandler extends MessageProcessor {
 		}else if ( zMessage.isMessageType(CONSENSUS_AUTOCONSOLIDATE) ) {
 			//Consolidate your coins! - default is FALSE
 			if(Main.getMainHandler().getUserPrefs().getBoolean("consolidate", false)) {
-				PostMessage(new Message(ConsensusUser.CONSENSUS_CONSOLIDATE));
+				PostMessage(new Message(ConsensusUser.CONSENSUS_CONSOLIDATE, zMessage));
 			}
 		
 			//Auto Consolidate - every hour
@@ -549,7 +549,7 @@ public class ConsensusHandler extends MessageProcessor {
 			}
 			
 			//Send it to the Miner..
-			Message mine = new Message(TxPoWMiner.TXMINER_MEGAMINER).addObject("txpow", txpow);
+			Message mine = new Message(TxPoWMiner.TXMINER_MEGAMINER, zMessage).addObject("txpow", txpow);
 			
 			//Post to the Miner
 			Main.getMainHandler().getMiner().PostMessage(mine);
@@ -559,7 +559,7 @@ public class ConsensusHandler extends MessageProcessor {
 			TxPoW txpow = getMainDB().getCurrentTxPow(new Transaction(), new Witness(), new JSONArray());
 			
 			//Send it to the Miner..
-			Message mine = new Message(TxPoWMiner.TXMINER_DEBUGBLOCK).addObject("txpow", txpow);
+			Message mine = new Message(TxPoWMiner.TXMINER_DEBUGBLOCK, zMessage).addObject("txpow", txpow);
 			
 			//Continue the log output trail
 			InputHandler.addResponseMesage(mine, zMessage);
@@ -650,7 +650,7 @@ public class ConsensusHandler extends MessageProcessor {
 			}
 			
 			//Send it to the Miner.. This is the ONLY place this happens..
-			Message mine = new Message(TxPoWMiner.TXMINER_MINETXPOW).addObject("txpow", txpow);
+			Message mine = new Message(TxPoWMiner.TXMINER_MINETXPOW, zMessage).addObject("txpow", txpow);
 			Main.getMainHandler().getMiner().PostMessage(mine);
 		
 			//Add the TxPoW
@@ -807,7 +807,7 @@ public class ConsensusHandler extends MessageProcessor {
 			TxPoW txpow = getMainDB().getCurrentTxPow(new Transaction(), new Witness(), new JSONArray());
 			
 			//Send it to the Miner..
-			Message mine = new Message(TxPoWMiner.TXMINER_PULSE).addObject("txpow", txpow);
+			Message mine = new Message(TxPoWMiner.TXMINER_PULSE, zMessage).addObject("txpow", txpow);
 			
 			//Post to the Miner
 			Main.getMainHandler().getMiner().PostMessage(mine);
@@ -822,7 +822,7 @@ public class ConsensusHandler extends MessageProcessor {
 				MinimaLogger.log("Congratulations! You found a PULSE block @ "+txpow.getBlockNumber());
 				
 				//And now forward the message to the single entry point..
-				Message msg = new Message(ConsensusNet.CONSENSUS_NET_CHECKSIZE_TXPOW).addObject("txpow", txpow);
+				Message msg = new Message(ConsensusNet.CONSENSUS_NET_CHECKSIZE_TXPOW, zMessage).addObject("txpow", txpow);
 				PostMessage(msg);
 			}else {
 //				MinimaLogger.log("PULSE Finished @ "+txpow.getBlockNumber());
@@ -837,7 +837,7 @@ public class ConsensusHandler extends MessageProcessor {
 			TxPoW txpow = (TxPoW) zMessage.getObject("txpow");
 			
 			//And now forward the message to the single entry point..
-			Message msg = new Message(ConsensusNet.CONSENSUS_NET_CHECKSIZE_TXPOW).addObject("txpow", txpow);
+			Message msg = new Message(ConsensusNet.CONSENSUS_NET_CHECKSIZE_TXPOW, zMessage).addObject("txpow", txpow);
 			PostMessage(msg);
 			
 			//Notify listeners that Mining is starting...
@@ -883,7 +883,7 @@ public class ConsensusHandler extends MessageProcessor {
 			PostDAPPStartMining(trans);
 			
 			//Now send it..
-			Message mine = new Message(ConsensusHandler.CONSENSUS_SENDTRANS)
+			Message mine = new Message(ConsensusHandler.CONSENSUS_SENDTRANS, zMessage)
 								.addObject("transaction", trans)
 								.addObject("witness", wit);
 			InputHandler.addResponseMesage(mine, zMessage);

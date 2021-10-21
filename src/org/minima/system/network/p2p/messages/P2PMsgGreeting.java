@@ -1,6 +1,7 @@
 package org.minima.system.network.p2p.messages;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniString;
@@ -19,25 +20,22 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import static lombok.AccessLevel.PRIVATE;
+
+@NoArgsConstructor(access = PRIVATE)
 @Getter
-@Setter
+@Setter(PRIVATE)
 public class P2PMsgGreeting implements Streamable, Traceable {
 
-    private MiniData traceId = MiniData.getRandomData(8);
+    private MiniData traceId;
     int numClientSlotsAvailable;
     int minimaPort;
     boolean isClient;
     ConnectionReason reason = ConnectionReason.NONE;
     MiniData auth_key = new MiniData();
 
-
-    public P2PMsgGreeting() {
-        if (EventPublisher.threadTraceId.get() == null) {
-            EventPublisher.threadTraceId.set(getTraceId());
-        }
-    }
-
-    public P2PMsgGreeting(P2PState state, MinimaClient client){
+    public P2PMsgGreeting(P2PState state, MinimaClient client, Traceable traceable){
+        traceId = new MiniData(traceable.getTraceId());
         numClientSlotsAvailable = state.getNumLinks() * 2 - state.getClientLinksCopy().size();
         minimaPort = state.getAddress().getPort();
         isClient = state.isClient();

@@ -213,19 +213,19 @@ public class Main extends MessageProcessor {
 			getConsensusHandler().setBackUpManager();
 			
 			//Restore..
-			getConsensusHandler().PostMessage(ConsensusBackup.CONSENSUSBACKUP_RESTORE);
+			getConsensusHandler().PostMessage(ConsensusBackup.CONSENSUSBACKUP_RESTORE, zMessage);
 			
 		}else if ( zMessage.isMessageType(SYSTEM_INIT) ) {
 			
 			//Start the network..	
-			mNetwork.PostMessage(NetworkHandler.NETWORK_STARTUP);
+			mNetwork.PostMessage(NetworkHandler.NETWORK_STARTUP, zMessage);
 
 			//And do we do an automatic logon..
 			if(mAutoConnect) {
 				//Connect to the the list of auto connect
 				for(InetSocketAddress address : mAutoConnectList) {
 					//Send a TimedMessage..
-					Message connect  = new Message(NetworkHandler.NETWORK_CONNECT)
+					Message connect  = new Message(NetworkHandler.NETWORK_CONNECT, zMessage)
 							.addObject("address", address);
 					getNetworkHandler().PostMessage(connect);
 				
@@ -237,7 +237,7 @@ public class Main extends MessageProcessor {
 		}else if ( zMessage.isMessageType(SYSTEM_SHUTDOWN) ) {
 			
 			//make a backup and shutdown message
-			Message backshut = new Message(ConsensusBackup.CONSENSUSBACKUP_BACKUP);
+			Message backshut = new Message(ConsensusBackup.CONSENSUSBACKUP_BACKUP, zMessage);
 			backshut.addBoolean("shutdown", true);
 			
 			//Keep the response message
@@ -253,13 +253,13 @@ public class Main extends MessageProcessor {
 			mUserPrefs.saveDB(mBackup.getUserPrefs());
 			
 			//Notify Listeners..
-			mConsensus.updateListeners(new Message(ConsensusHandler.CONSENSUS_NOTIFY_QUIT));
+			mConsensus.updateListeners(new Message(ConsensusHandler.CONSENSUS_NOTIFY_QUIT, zMessage));
 			
 			//Gracefull shutdown..
-			mNetwork.PostMessage(NetworkHandler.NETWORK_SHUTDOWN);
+			mNetwork.PostMessage(NetworkHandler.NETWORK_SHUTDOWN, zMessage);
 			
 			//Shut the Send Manager
-			mSendManager.PostMessage(SendManager.SENDMANAGER_SHUTDOWN);
+			mSendManager.PostMessage(SendManager.SENDMANAGER_SHUTDOWN, zMessage);
 			
 			//Shut down the individual systems..
 			mInput.stopMessageProcessor();

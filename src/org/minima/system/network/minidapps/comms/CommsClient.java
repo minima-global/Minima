@@ -161,7 +161,7 @@ public class CommsClient extends MessageProcessor {
 				MinimaLogger.log("COMMS: Error @ connection start : "+mHost+":"+mPort+" "+e);
 				
 				//Shut down the client..
-				Message shutdown = new Message(CommsClient.COMMSCLIENT_SHUTDOWN);
+				Message shutdown = new Message(CommsClient.COMMSCLIENT_SHUTDOWN, zMessage);
 				shutdown.addString("minidappid", mMiniDAPPID);
 				shutdown.addString("error", e.toString());
 				PostMessage(shutdown);
@@ -182,7 +182,7 @@ public class CommsClient extends MessageProcessor {
 			mInputThread.start();
 		
 			//Post a message..
-			Message newclient = new Message(CommsManager.COMMS_NEWCLIENT);
+			Message newclient = new Message(CommsManager.COMMS_NEWCLIENT, zMessage);
 			newclient.addString("minidappid", mMiniDAPPID);
 			newclient.addObject("client", this);
 			
@@ -216,7 +216,7 @@ public class CommsClient extends MessageProcessor {
 			shutdown();
 			
 			//And Notify the Manager..
-			Message clientshut = new Message(CommsManager.COMMS_CLIENTSHUT);
+			Message clientshut = new Message(CommsManager.COMMS_CLIENTSHUT, zMessage);
 			clientshut.addString("minidappid", mMiniDAPPID);
 			clientshut.addObject("client", this);
 			

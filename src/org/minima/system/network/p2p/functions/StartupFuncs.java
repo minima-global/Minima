@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.minima.system.network.base.MinimaClient;
 import org.minima.system.network.p2p.P2PState;
+import org.minima.system.network.p2p.Traceable;
 import org.minima.system.network.p2p.messages.*;
 import org.minima.system.network.rpc.RPCClient;
 import org.minima.utils.MinimaLogger;
@@ -115,7 +116,7 @@ public class StartupFuncs {
         }
     }
 
-    public static ArrayList<InetSocketAddress> LoadNodeList(P2PState state, String[] defaultNodeList, boolean noExtraHosts) {
+    public static ArrayList<InetSocketAddress> LoadNodeList(P2PState state, String[] defaultNodeList, boolean noExtraHosts, Traceable traceable) {
         // Try and load node list from the saved data
         ArrayList<InetSocketAddress> loadedNodeList = new ArrayList<>();
         if (state.getP2pDataFile().exists()) {
@@ -124,7 +125,7 @@ public class StartupFuncs {
                 final ObjectMapper mapper = new ObjectMapper();
                 loadedNodeList = mapper.readValue(inputStream, new TypeReference<ArrayList<InetSocketAddress>>() {
                 });
-                state.addRecentJoiners(loadedNodeList);
+                state.addRecentJoiners(loadedNodeList, traceable);
             } catch (IOException ioe) {
                 log.error("Error whilst reading in p2pDataFile: ", ioe);
             }
@@ -154,9 +155,9 @@ public class StartupFuncs {
 
     public static void processOnRendezvousMsg(P2PState state, P2PMsgRendezvous rendezvous, MinimaClient client) {
 
-        rendezvous.getAddresses().forEach(state::addRandomNodeSet);
-        state.setAddress(rendezvous.getTargetAddress());
-        state.rendezvousComplete();
+        rendezvous.getAddresses().forEach(add -> state.addRandomNodeSet(add, rendezvous));
+        state.setAddress(rendezvous.getTargetAddress(), rendezvous);
+        state.rendezvousComplete(rendezvous);
     }
 
 }

@@ -1,6 +1,7 @@
 package org.minima.system.network.p2p.messages;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.minima.objects.base.MiniData;
 import org.minima.system.network.p2p.Traceable;
@@ -15,25 +16,36 @@ import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
 
+import static lombok.AccessLevel.PRIVATE;
 import static org.minima.system.network.p2p.util.JSONObjectUtils.from;
 
+// TODO split this class into two. A VO and then a DTO without the booleans being used for conditional logic
+@NoArgsConstructor(access = PRIVATE)
 @Getter
-@Setter
+@Setter(PRIVATE)
 public class P2PMsgSwapLink implements Streamable, Traceable {
 
+    private MiniData traceId;
     private MiniData secret = MiniData.getRandomData(8);
     private InetSocketAddress swapTarget;
     private boolean isSwapClientReq = false;
     private boolean isConditionalSwapReq = false;
 
-    public P2PMsgSwapLink(){
-        if (EventPublisher.threadTraceId.get() == null) {
-            EventPublisher.threadTraceId.set(getTraceId());
-        }
+    public P2PMsgSwapLink(MiniData secret,
+                          InetSocketAddress swapTarget,
+                          boolean isSwapClientReq,
+                          boolean isConditionalSwapReq,
+                          Traceable traceable) {
+        this.secret = secret;
+        this.swapTarget = swapTarget;
+        this.isSwapClientReq = isSwapClientReq;
+        this.isConditionalSwapReq = isConditionalSwapReq;
+        traceId = new MiniData(traceable.getTraceId());
     }
 
     @Override
     public void writeDataStream(DataOutputStream zOut) throws IOException {
+        traceId.writeDataStream(zOut);
         secret.writeDataStream(zOut);
         InetSocketAddressIO.writeAddress(swapTarget, zOut);
         EventPublisher.publishWrittenStream(this);
@@ -41,6 +53,7 @@ public class P2PMsgSwapLink implements Streamable, Traceable {
 
     @Override
     public void readDataStream(DataInputStream zIn) throws IOException {
+        setTraceId(MiniData.ReadFromStream(zIn));
         setSecret(MiniData.ReadFromStream(zIn));
         setSwapTarget(InetSocketAddressIO.readAddress(zIn));
         EventPublisher.publishReadStream(this);

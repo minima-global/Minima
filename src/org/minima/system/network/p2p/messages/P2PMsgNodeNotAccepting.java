@@ -26,17 +26,15 @@ import static org.minima.system.network.p2p.util.JSONObjectUtils.from;
 @Setter(PRIVATE)
 public class P2PMsgNodeNotAccepting implements Streamable, Traceable {
 
-    private MiniData traceId = MiniData.getRandomData(8);
+    private MiniData traceId;
     /**
      * Node broadcasting the message
      */
     private InetSocketAddress broadcaster;
 
-    public P2PMsgNodeNotAccepting(InetSocketAddress broadcaster) {
+    public P2PMsgNodeNotAccepting(InetSocketAddress broadcaster, Traceable traceable) {
         this.broadcaster = broadcaster;
-        if (EventPublisher.threadTraceId.get() == null) {
-            EventPublisher.threadTraceId.set(getTraceId());
-        }
+        traceId = new MiniData(traceable.getTraceId());
     }
 
     @Override
