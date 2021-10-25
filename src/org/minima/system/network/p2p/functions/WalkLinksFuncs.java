@@ -66,10 +66,9 @@ public class WalkLinksFuncs {
         if (nextHop != null) {
             retMsg = createNextHopMsg(nextHop, p2pWalkLinks, allClients);
         } else {
-            // todo: need to check if we are a client or not
             p2pWalkLinks.setReturning(true);
             if (p2pWalkLinks.isClientWalk()){
-                p2pWalkLinks.setAvailableClientSlots(state.getNumLinks() - state.getClientLinks().size());
+                p2pWalkLinks.setAvailableClientSlots(GlobalParams.P2P_NUM_CLIENT_LINKS - state.getClientLinks().size());
             }
             state.getExpectedAuthKeys().put(p2pWalkLinks.getSecret().toString(), System.currentTimeMillis() + GlobalParams.P2P_AUTH_KEY_EXPIRY);
             retMsg = onWalkLinkResponseMsg(state, p2pWalkLinks, allClients);
@@ -119,7 +118,7 @@ public class WalkLinksFuncs {
             if (!state.getRecentJoiners().contains(connectTargetAddress)) {
                 state.addRandomNodeSet(connectTargetAddress);
             }
-            if (state.getOutLinks().size() < state.getNumLinks()) {
+            if (state.getOutLinks().size() < GlobalParams.P2P_NUM_LINKS) {
                 ConnectionReason reason = ConnectionReason.REPLACING_OUT_LINK;
                 if (msg.isJoiningWalk()) {
                     reason = ConnectionReason.ADDING_OUT_LINK;

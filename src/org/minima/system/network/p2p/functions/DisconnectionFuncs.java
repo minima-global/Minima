@@ -1,6 +1,7 @@
 package org.minima.system.network.p2p.functions;
 
 import lombok.extern.slf4j.Slf4j;
+import org.minima.GlobalParams;
 import org.minima.system.network.base.MinimaClient;
 import org.minima.system.network.p2p.P2PState;
 import org.minima.system.network.p2p.messages.P2PMsgWalkLinks;
@@ -14,7 +15,7 @@ public class DisconnectionFuncs {
 
     public static Message onInLinkDisconnected(P2PState state, MinimaClient client, ArrayList<MinimaClient> minimaClients) {
         Message returnMessage = null;
-        if (state.isSetupComplete() && !state.isClient() && !state.getOutLinks().isEmpty() && state.getInLinks().size() < state.getNumLinks()) {
+        if (state.isSetupComplete() && !state.isClient() && !state.getOutLinks().isEmpty() && state.getInLinks().size() < GlobalParams.P2P_NUM_LINKS) {
             // Replace Inlink
             P2PMsgWalkLinks walkLinks = new P2PMsgWalkLinks(false, false);
             InetSocketAddress nextHop = UtilFuncs.SelectRandomAddress(state.getOutLinks());
@@ -35,7 +36,7 @@ public class DisconnectionFuncs {
     public static Message onOutLinkDisconnected(P2PState state, MinimaClient client, ArrayList<MinimaClient> minimaClients) {
 
         Message returnMessage = null;
-        if (state.isSetupComplete() && !state.isClient() && !state.getInLinks().isEmpty() && state.getOutLinks().size() < state.getNumLinks()) {
+        if (state.isSetupComplete() && !state.isClient() && !state.getInLinks().isEmpty() && state.getOutLinks().size() < GlobalParams.P2P_NUM_LINKS) {
             // Replace Outlink
             P2PMsgWalkLinks walkLinks = new P2PMsgWalkLinks(true, false);
             InetSocketAddress nextHop = UtilFuncs.SelectRandomAddress(state.getInLinks());

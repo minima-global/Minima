@@ -1,6 +1,7 @@
 package org.minima.system.network.p2p.functions;
 
 import lombok.extern.slf4j.Slf4j;
+import org.minima.GlobalParams;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.greet.Greeting;
 import org.minima.system.network.base.MinimaClient;
@@ -155,7 +156,7 @@ public class GreetingFuncs {
             state.addInLink(client.getMinimaAddress());
             log.debug(state.genPrintableState());
 
-            if (state.getInLinks().size() >= state.getNumLinks()) {
+            if (state.getInLinks().size() >= GlobalParams.P2P_NUM_LINKS) {
                 P2PMsgSwapLink swapLink = new P2PMsgSwapLink();
                 swapLink.setSwapTarget(client.getMinimaAddress());
                 swapLink.setSecret(authKey);
@@ -207,7 +208,7 @@ public class GreetingFuncs {
             client.setIsTemp(false);
             state.addClientLink(client.getMinimaAddress());
             log.debug(state.genPrintableState());
-            if (state.getClientLinks().size() > state.getNumLinks()) {
+            if (state.getClientLinks().size() > GlobalParams.P2P_NUM_CLIENT_LINKS) {
                 // Replace Outlink
                 P2PMsgWalkLinks walkLinks = new P2PMsgWalkLinks(true, false);
                 walkLinks.setClientWalk(true);
@@ -246,8 +247,7 @@ public class GreetingFuncs {
     public static ArrayList<Message> genClientLoadBalanceRequests(P2PState state, InetSocketAddress address, int maxClientsCanReceive) {
 
         ArrayList<Message> retMsgs = new ArrayList<>();
-        // TODO: Add * 2 to reduce the amount of load balancing messages
-        if (state.getClientLinks().size() > state.getNumLinks()) {
+        if (state.getClientLinks().size() > GlobalParams.P2P_NUM_CLIENT_LINKS) {
             int numClientsToSend = state.getClientLinks().size() / 2;
             int numSwaps = Math.min(numClientsToSend, maxClientsCanReceive);
             for (int i = 0; i < numSwaps; i++) {

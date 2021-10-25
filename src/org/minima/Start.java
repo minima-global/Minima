@@ -312,10 +312,6 @@ public class Start {
 			mMainServer.getNetworkHandler().getP2PMessageProcessor().getState().getRecentJoiners().add(connectionAddress);
 		}
 
-		if(isClient){
-			rcmainserver.getNetworkHandler().getP2PMessageProcessor().getState().setNumLinks(3);
-		}
-		
 		//Set the connect properties
 		rcmainserver.setAutoConnect(connect);
 		

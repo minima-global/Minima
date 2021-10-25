@@ -72,6 +72,21 @@ public class TestParams {
 	public static boolean MINIMA_ZERO_DIFF_BLK  = false;
 
 	/**
+	 * Desired number of in link and out links to maintain
+	 */
+	public static int P2P_NUM_LINKS = 5;
+
+	/**
+	 * Desired number of client (nodes that can't accept inbound connections) to maintain
+	 */
+	public static int P2P_NUM_CLIENT_LINKS = 20;
+
+	/**
+	 * Desired number of connections clients should maintain
+	 */
+	public static int P2P_NUM_CLIENT_CONNECTIONS = 3;
+
+	/**
 	 * Time between P2P system assessing its state in milliseconds
 	 */
 	public static int P2P_LOOP_DELAY = 10_000;
@@ -136,6 +151,9 @@ public class TestParams {
 		GlobalParams.P2P_MAX_NETWORK_MAP_RESPONSE_TIME = TestParams.P2P_MAX_NETWORK_MAP_RESPONSE_TIME;
 		GlobalParams.P2P_WALK_LINKS_EXPIRE_TIME = TestParams.P2P_WALK_LINKS_EXPIRE_TIME;
 		GlobalParams.P2P_AUTH_KEY_EXPIRY = TestParams.P2P_AUTH_KEY_EXPIRY;
+		GlobalParams.P2P_NUM_LINKS = TestParams.P2P_NUM_LINKS;
+		GlobalParams.P2P_NUM_CLIENT_LINKS = TestParams.P2P_NUM_CLIENT_LINKS;
+		GlobalParams.P2P_NUM_CLIENT_CONNECTIONS = TestParams.P2P_NUM_CLIENT_CONNECTIONS;
 	}
 	
 }

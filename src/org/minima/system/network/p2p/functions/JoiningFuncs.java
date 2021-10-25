@@ -1,6 +1,7 @@
 package org.minima.system.network.p2p.functions;
 
 import lombok.extern.slf4j.Slf4j;
+import org.minima.GlobalParams;
 import org.minima.system.network.base.MinimaClient;
 import org.minima.system.network.p2p.ConnectionDetails;
 import org.minima.system.network.p2p.ConnectionReason;
@@ -46,7 +47,7 @@ public class JoiningFuncs {
     public static ArrayList<Message> joinScaleOutLinks(P2PState state, ArrayList<MinimaClient> clients)
     {
         ArrayList<Message> msgs = new ArrayList<>();
-        if(state.getOutLinks().size() < state.getNumLinks()) {
+        if(state.getOutLinks().size() < GlobalParams.P2P_NUM_LINKS) {
             int numActiveWalks = countActiveWalkLinks(state, true, true);
             boolean createWalk = state.getOutLinks().size() - numActiveWalks > 0;
             if (createWalk) {
@@ -63,7 +64,7 @@ public class JoiningFuncs {
     public static ArrayList<Message> requestInLinks(P2PState state, ArrayList<MinimaClient> clients)
     {
         ArrayList<Message> msgs = new ArrayList<>();
-        if(state.getInLinks().size() < state.getNumLinks()) {
+        if(state.getInLinks().size() < GlobalParams.P2P_NUM_LINKS) {
             int numActiveWalks = countActiveWalkLinks(state, false, false);
             boolean createWalk = state.getInLinks().size() - numActiveWalks > 0;
             if (createWalk) {

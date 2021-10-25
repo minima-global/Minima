@@ -4,6 +4,7 @@ import com.google.common.collect.EvictingQueue;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.minima.GlobalParams;
 import org.minima.objects.base.MiniData;
 import org.minima.system.network.base.MinimaClient;
 import org.minima.system.network.p2p.messages.ExpiringMessage;
@@ -21,7 +22,6 @@ import java.util.Map;
 @Slf4j
 public class P2PState {
 
-    private int numLinks;
     /**
      * Node's role is a client in the network.
      * Either stated at startup as parameter or derived by no inbound connections being created after startup and rendezvous.
@@ -80,7 +80,6 @@ public class P2PState {
         }
 
         return "\n[+] P2P State" +
-                "\nP2P\tnumLinks: " + numLinks +
                 "\nP2P\tisClient: " + isClient +
                 "\nP2P\tisRendezvousComplete: " + isRendezvousComplete +
                 "\nP2P\taddress: " + address +
@@ -92,8 +91,7 @@ public class P2PState {
                 "\nP2P\tconnectionDetails: " + detailsStr;
     }
 
-    public P2PState(int numLinks, File p2pDataFile) {
-        this.numLinks = numLinks;
+    public P2PState(File p2pDataFile) {
         this.p2pDataFile = p2pDataFile;
     }
 

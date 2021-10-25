@@ -83,7 +83,7 @@ public class P2PMessageProcessor extends MessageProcessor {
         } catch (UnknownHostException e) {
             log.error("Could not identify the local ip address: " + hostIP);
         }
-        state = new P2PState(5, null);
+        state = new P2PState(null);
         state.setAddress(new InetSocketAddress(getHostIP(), getMinimaPort()));
         this.minimaPort = 9001;
 
@@ -103,11 +103,11 @@ public class P2PMessageProcessor extends MessageProcessor {
         //Get the BackupManager
         BackupManager backup = Main.getMainHandler().getBackupManager();
         File p2pDataFile = backup.getBackUpFile("p2pdata.json");
-        state = new P2PState(5, p2pDataFile);
+        state = new P2PState(p2pDataFile);
         state.setAddress(new InetSocketAddress(getHostIP(), getMinimaPort()));
         //Start the Ball rolling..
 //        this.setLOG(true);
-        PostTimerMessage(new TimerMessage(GlobalParams.P2P_LOOP_DELAY, P2P_LOOP));
+        PostTimerMessage(new TimerMessage(1_000, P2P_LOOP));
         PostTimerMessage(new TimerMessage(GlobalParams.P2P_NODE_NOT_ACCEPTING_CHECK_DELAY, P2P_NODE_NOT_ACCEPTING_CHECK));
     }
 
@@ -319,7 +319,7 @@ public class P2PMessageProcessor extends MessageProcessor {
         Message messageToSend = null;
         if (swapLink.isSwapClientReq()) {
             messageToSend = SwapFuncs.onSwapClientsReq(state, swapLink, getCurrentMinimaClients());
-        } else if (swapLink.isConditionalSwapReq() && state.getInLinks().size() > state.getNumLinks()) {
+        } else if (swapLink.isConditionalSwapReq() && state.getInLinks().size() > GlobalParams.P2P_NUM_LINKS) {
             // Send SwapLink message if we have more inLinks than desired
             messageToSend = SwapFuncs.onSwapReq(state, swapLink, getCurrentMinimaClients());
         } else if (!swapLink.isConditionalSwapReq()) {
@@ -376,16 +376,20 @@ public class P2PMessageProcessor extends MessageProcessor {
         long loopDelay = GlobalParams.P2P_LOOP_DELAY + rand.nextInt(GlobalParams.P2P_LOOP_DELAY_VARIABILITY);
         int num_entry_nodes = 1;
         if (state.isClient()){
-            num_entry_nodes = 3;
+            num_entry_nodes = GlobalParams.P2P_NUM_CLIENT_CONNECTIONS;
         }
-
+        loopDelay = 5_000 + rand.nextInt(3_000);
         if (!state.isRendezvousComplete()) {
             JoiningFuncs.joinRendezvousNode(state, getCurrentMinimaClients()).forEach(this::PostMessage);
-        } else if (state.getOutLinks().size() < num_entry_nodes) {
+            // Loop is set to be quite fast at this point to ensure we connect to the network
+            loopDelay = 5_000 + rand.nextInt(3_000);
+        } else if (state.getOutLinks().size() < 5) {
             JoiningFuncs.joinEntryNode(state, getCurrentMinimaClients()).forEach(this::PostMessage);
-        } else if (!state.isClient() && state.getOutLinks().size() < state.getNumLinks()) {
+            // Loop is set to be quite fast at this point to ensure we connect to the network
+            loopDelay = 10_000 + rand.nextInt(3_000);
+        } else if (!state.isClient() && state.getOutLinks().size() < GlobalParams.P2P_NUM_LINKS) {
             JoiningFuncs.joinScaleOutLinks(state, getCurrentMinimaClients()).forEach(this::PostMessage);
-        } else if (!state.isClient() && state.getInLinks().size() < state.getNumLinks()) {
+        } else if (!state.isClient() && state.getInLinks().size() < GlobalParams.P2P_NUM_LINKS) {
             JoiningFuncs.requestInLinks(state, getCurrentMinimaClients()).forEach(this::PostMessage);
         }
 

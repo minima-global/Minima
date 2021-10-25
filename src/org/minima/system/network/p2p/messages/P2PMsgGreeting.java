@@ -2,6 +2,7 @@ package org.minima.system.network.p2p.messages;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.minima.GlobalParams;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniString;
 import org.minima.system.network.NetworkHandler;
@@ -30,7 +31,7 @@ public class P2PMsgGreeting implements Streamable {
     }
 
     public P2PMsgGreeting(P2PState state, MinimaClient client){
-        numClientSlotsAvailable = state.getNumLinks() * 2 - state.getClientLinks().size();
+        numClientSlotsAvailable = GlobalParams.P2P_NUM_CLIENT_LINKS - state.getClientLinks().size();
         minimaPort = state.getAddress().getPort();
         isClient = state.isClient();
 
