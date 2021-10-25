@@ -12,6 +12,7 @@ import org.minima.system.brains.ConsensusHandler;
 import org.minima.system.brains.SendManager;
 import org.minima.system.input.InputHandler;
 import org.minima.system.network.NetworkHandler;
+import org.minima.system.network.p2p.P2PMessageProcessor;
 import org.minima.system.txpow.TxPoWMiner;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.SQLHandler;
@@ -249,6 +250,8 @@ public class Main extends MessageProcessor {
 		}else if ( zMessage.isMessageType(SYSTEM_FULLSHUTDOWN) ) {
 
 			// todo stop p2pmanager
+			mNetwork.getP2PMessageProcessor().PostMessage(P2PMessageProcessor.P2P_SHUTDOWN);
+			
 			//Savew ther UserPrefs
 			mUserPrefs.saveDB(mBackup.getUserPrefs());
 			

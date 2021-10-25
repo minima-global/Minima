@@ -1,13 +1,12 @@
 package org.minima.system.network.p2p.functions;
 
-import lombok.extern.slf4j.Slf4j;
 import org.minima.system.network.base.MinimaClient;
+import org.minima.utils.MinimaLogger;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.concurrent.ThreadLocalRandom;
 
-@Slf4j
 public class UtilFuncs {
 
     public static MinimaClient getClientForInetAddress(InetSocketAddress address, ArrayList<MinimaClient> clients, boolean isIncoming) {
@@ -26,14 +25,14 @@ public class UtilFuncs {
                             break;
                         }
                     } else {
-                        log.debug("[-] Minima Address is null for client: " + client.getUID());
+                        MinimaLogger.log("[-] Minima Address is null for client: " + client.getUID());
                     }
                 } else {
-                    log.debug("[-] client is null");
+                    MinimaLogger.log("[-] client is null");
                 }
             }
         } else {
-            log.debug("[-] address is null");
+            MinimaLogger.log("[-] address is null");
         }
         return returnClient;
     }
@@ -53,14 +52,14 @@ public class UtilFuncs {
                             break;
                         }
                     } else {
-                        log.debug("[-] Minima Address is null for client: " + client.getUID());
+                        MinimaLogger.log("[-] Minima Address is null for client: " + client.getUID());
                     }
                 } else {
-                    log.debug("[-] client is null");
+                    MinimaLogger.log("[-] client is null");
                 }
             }
         } else {
-            log.debug("[-] address is null");
+            MinimaLogger.log("[-] address is null");
         }
         return returnClient;
     }
@@ -73,11 +72,11 @@ public class UtilFuncs {
                     {
                             returnClient = client;
                     } else {
-                        log.debug("[-] Minima Address is null for client: " + client.getUID());
+                        MinimaLogger.log("[-] Minima Address is null for client: " + client.getUID());
                     }
             }
         } else {
-            log.debug("[-] address is null");
+            MinimaLogger.log("[-] address is null");
         }
         return returnClient;
     }

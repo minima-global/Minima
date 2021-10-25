@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Random;
 
-import lombok.extern.slf4j.Slf4j;
 import org.minima.Start;
 import org.minima.system.Main;
 import org.minima.system.brains.ConsensusHandler;
@@ -30,7 +29,6 @@ import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageProcessor;
 import org.minima.utils.messages.TimerMessage;
 
-@Slf4j
 public class NetworkHandler extends MessageProcessor {
 
 	public static final String NETWORK_STARTUP 		= "NETWORK_START";
@@ -141,6 +139,8 @@ public class NetworkHandler extends MessageProcessor {
 			mHardSetLocal 	  = true;
 			mLocalHost    	  = zHost;
 		}
+		
+		mLogON = true;
 		
 		//Starts local
 		mIsRemoteOn = false;
@@ -443,7 +443,7 @@ public class NetworkHandler extends MessageProcessor {
 			MinimaClient client = (MinimaClient)zMessage.getObject("client");
 			boolean isIncoming = zMessage.getBoolean("isIncoming");
 
-			log.warn("[!!] NETWORK_NEWCLIENT " + client.getAddress());
+			MinimaLogger.log("[!!] NETWORK_NEWCLIENT " + client.getAddress());
 			//Add it
 			mClients.add(client);
 //			if (isIncoming) {
@@ -496,7 +496,7 @@ public class NetworkHandler extends MessageProcessor {
 		
 			//Shut him down..
 			client.PostMessage(new Message(MinimaClient.NETCLIENT_SHUTDOWN));
-			log.warn("[!!] NETCLIENT_SHUTDOWN " + client);
+			MinimaLogger.log("[!!] NETCLIENT_SHUTDOWN " + client);
 
 		}else if(zMessage.isMessageType(NETWORK_TRACE)) {
 			boolean traceon = zMessage.getBoolean("trace");

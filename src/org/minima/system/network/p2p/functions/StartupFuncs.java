@@ -3,7 +3,6 @@ package org.minima.system.network.p2p.functions;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.extern.slf4j.Slf4j;
 import org.minima.system.network.base.MinimaClient;
 import org.minima.system.network.p2p.P2PState;
 import org.minima.system.network.p2p.messages.*;
@@ -26,7 +25,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@Slf4j(topic = "P2P")
 public class StartupFuncs {
 
     private static final String IPV4_PATTERN =
@@ -111,7 +109,7 @@ public class StartupFuncs {
             out.writeTo(fos);
             fos.close();
         } catch (IOException ioe) {
-            log.error("Failed to write data to file: ", ioe);
+            MinimaLogger.log("Failed to write data to file: ", ioe);
         }
     }
 
@@ -126,7 +124,7 @@ public class StartupFuncs {
                 });
                 state.getRecentJoiners().addAll(loadedNodeList);
             } catch (IOException ioe) {
-                log.error("Error whilst reading in p2pDataFile: ", ioe);
+                MinimaLogger.log("Error whilst reading in p2pDataFile: ", ioe);
             }
         } else {
             if (noExtraHosts) {

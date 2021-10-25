@@ -146,6 +146,8 @@ public class MinimaClient extends MessageProcessor {
 		//Outgoing connection
 		mIncoming = false;
 		
+		mLogON = true;
+		
 		//Start the connection
 		PostMessage(NETCLIENT_INITCONNECT);
 	}
@@ -173,6 +175,8 @@ public class MinimaClient extends MessageProcessor {
 		//Incoming connection
 		mIncoming = true;
 
+		mLogON = true;
+		
 		//Start the system..
 		PostMessage(NETCLIENT_STARTUP);
 	}

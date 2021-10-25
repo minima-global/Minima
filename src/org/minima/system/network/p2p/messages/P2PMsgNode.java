@@ -2,7 +2,6 @@ package org.minima.system.network.p2p.messages;
 
 import lombok.Getter;
 import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
 import org.minima.system.network.p2p.P2PState;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONArray;
@@ -16,7 +15,6 @@ import java.util.ArrayList;
 
 @Getter
 @Setter
-@Slf4j
 public class P2PMsgNode implements Streamable {
     InetSocketAddress nodeAddress;
     private ArrayList<InetSocketAddress> inLinks;

@@ -3,12 +3,12 @@ package org.minima.system.network.p2p;
 import com.google.common.collect.EvictingQueue;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
 import org.minima.GlobalParams;
 import org.minima.objects.base.MiniData;
 import org.minima.system.network.base.MinimaClient;
 import org.minima.system.network.p2p.messages.ExpiringMessage;
 import org.minima.system.network.p2p.messages.P2PMsgNode;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.messages.Message;
 
 import java.io.File;
@@ -19,7 +19,6 @@ import java.util.Map;
 
 @Getter
 @Setter
-@Slf4j
 public class P2PState {
 
     /**
@@ -97,7 +96,7 @@ public class P2PState {
 
     public void addInLink(InetSocketAddress address) {
         this.inLinks.add(address);
-        log.debug(this.genPrintableState());
+        MinimaLogger.log(this.genPrintableState());
     }
 
     public boolean removeInLink(String uid) {
@@ -106,7 +105,7 @@ public class P2PState {
 
     public void addOutLink(InetSocketAddress address) {
         this.outLinks.add(address);
-        log.debug(this.genPrintableState());
+        MinimaLogger.log(this.genPrintableState());
     }
 
     public boolean removeOutLink(InetSocketAddress address) {
@@ -115,7 +114,7 @@ public class P2PState {
 
     public void addClientLink(InetSocketAddress address) {
         this.clientLinks.add(address);
-        log.debug(this.genPrintableState());
+        MinimaLogger.log(this.genPrintableState());
     }
 
     public boolean removeClientLink(String uid) {
@@ -136,7 +135,7 @@ public class P2PState {
                 this.inLinks.remove(client.getMinimaAddress());
             }
         }
-        log.debug(this.genPrintableState());
+        MinimaLogger.log(this.genPrintableState());
     }
 
     public void addRandomNodeSet(InetSocketAddress address) {
