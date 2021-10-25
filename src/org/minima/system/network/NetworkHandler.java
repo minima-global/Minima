@@ -140,6 +140,8 @@ public class NetworkHandler extends MessageProcessor {
 			mLocalHost    	  = zHost;
 		}
 		
+		mLogON = true;
+		
 		//Starts local
 		mIsRemoteOn = false;
 		

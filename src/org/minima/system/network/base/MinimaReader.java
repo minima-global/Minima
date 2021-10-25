@@ -4,6 +4,8 @@ import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
+import java.io.IOException;
+import java.net.SocketException;
 import java.util.ArrayList;
 
 import org.minima.objects.TxPoW;
@@ -19,7 +21,13 @@ import org.minima.system.brains.ConsensusHandler;
 import org.minima.system.brains.ConsensusNet;
 import org.minima.system.network.NetworkHandler;
 import org.minima.system.network.p2p.P2PMessageProcessor;
-import org.minima.system.network.p2p.messages.*;
+import org.minima.system.network.p2p.messages.P2PMsgDoSwap;
+import org.minima.system.network.p2p.messages.P2PMsgGreeting;
+import org.minima.system.network.p2p.messages.P2PMsgNode;
+import org.minima.system.network.p2p.messages.P2PMsgNodeNotAccepting;
+import org.minima.system.network.p2p.messages.P2PMsgRendezvous;
+import org.minima.system.network.p2p.messages.P2PMsgSwapLink;
+import org.minima.system.network.p2p.messages.P2PMsgWalkLinks;
 import org.minima.system.txpow.TxPoWChecker;
 import org.minima.utils.Crypto;
 import org.minima.utils.MiniFormat;
@@ -125,8 +133,8 @@ public class MinimaReader implements Runnable {
             //The Consensus
             ConsensusHandler consensus = Main.getMainHandler().getConsensusHandler();
 
-            while (!mNetClient.getSocket().isClosed()) {
-                try {
+            while (true) {
+//                try {
                     if (mInput.available() > 0) {
                         //What message type
                         msgtype = MiniByte.ReadFromStream(mInput);
@@ -346,17 +354,11 @@ public class MinimaReader implements Runnable {
                             Message msg = new Message(P2PMessageProcessor.P2P_NODE_NOT_ACCEPTING)
                                     .addObject("data", data);
                             mNetClient.getNetworkHandler().getP2PMessageProcessor().PostMessage(msg);
+                        
+                        }else {
+                        	//Unknown Message..
+                        	MinimaLogger.log("UNKNOWN MESSAGE MINIMAREADER.. "+msgtype);
                         }
-//				else {
-//					throw new Exception("Invalid message on network : " + rec);
-//				}
-
-                        //Check there is nothing left..
-//				int left = inputstream.available();
-//				if (inputstream.available() > 0) {
-//					//Something gone wrong..
-//					throw new ProtocolException("Data left in inputstream when reading.. " + left);
-//				}
 
                         //Clean up..
                         inputstream.close();
@@ -365,25 +367,32 @@ public class MinimaReader implements Runnable {
                         //Post it..
                         consensus.PostMessage(rec);
                     }
-                } catch (ProtocolException exc) {
-                    MinimaLogger.log("PROTOCOL ERROR.. " + exc);
-                    MinimaLogger.log(exc);
-                } catch (OutOfMemoryError exc) {
-                    MinimaLogger.log("MEMORY ERROR.. " + exc);
-                    exc.printStackTrace();
-                    //DRASTIC ACTION.. Use ONLY if bash script in place to restart on Exit
-                    //System.exit(99);
-                } catch (Exception exc) {
-                    //General Exception
-                    MinimaLogger.log("NETCLIENTREADER ERROR.. ");
-                    MinimaLogger.log(exc);
-                }
             }
-        }catch (Exception exc) {
-            //General Exception
-            MinimaLogger.log("NETCLIENTREADER ERROR Client Disconnected.. ");
-            MinimaLogger.log(exc);
-        }
+                    
+        }catch(SocketException exc) {
+			//Network error.. reset and reconnect..
+    			MinimaLogger.log("SocketException.. "+exc);
+		}catch(IOException exc) {
+			//Network error.. reset and reconnect..
+    			MinimaLogger.log("IOEXC.. "+exc);
+//    			exc.printStackTrace();
+			
+		}catch(ProtocolException exc) {
+			MinimaLogger.log("PROTOCOL ERROR.. "+exc);
+			MinimaLogger.log(exc);
+			
+		}catch(OutOfMemoryError exc) {
+			MinimaLogger.log("MEMORY ERROR.. "+exc);
+			exc.printStackTrace();
+			
+			//DRASTIC ACTION.. Use ONLY if bash script in place to restart on Exit
+			//System.exit(99);
+			
+		}catch(Exception exc) {
+			//General Exception	
+			MinimaLogger.log("NETCLIENTREADER ERROR.. ");
+			MinimaLogger.log(exc);
+		}
 
         //Tell the network Handler
         mNetClient.getNetworkHandler().PostMessage(new Message(NetworkHandler.NETWORK_CLIENTERROR).addObject("client", mNetClient));
