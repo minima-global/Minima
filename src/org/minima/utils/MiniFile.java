@@ -1,12 +1,16 @@
 package org.minima.utils;
 
 import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+
+import org.minima.objects.base.MiniData;
 
 public class MiniFile {
 
@@ -84,6 +88,42 @@ public class MiniFile {
         fis.close();
     
         return ret;
+	}
+	
+	public static void loadObject(File zFile, Streamable zObject) {
+		//Does the File exist
+		if(!zFile.exists()) {
+			MinimaLogger.log("Load Object file does not exist : "+zFile.getAbsolutePath());
+			return;
+		}
+		
+		try {
+			//Read the whole file.. fast
+			byte[] data = MiniFile.readCompleteFile(zFile);
+			
+			//Convert to a Streamable object
+			ByteArrayInputStream bais = new ByteArrayInputStream(data);
+			DataInputStream dis = new DataInputStream(bais);
+			zObject.readDataStream(dis);
+			dis.close();
+			bais.close();
+			
+		} catch (IOException e) {
+			MinimaLogger.log(e);
+		}
+	}
+	
+	public static void saveObject(File zFile, Streamable zObject) {
+		try {
+			//Write into byte array
+			MiniData casc = MiniData.getMiniDataVersion(zObject);
+			
+			//save to disk
+			MiniFile.writeDataToFile(zFile, casc.getBytes());
+			
+		}catch(IOException exc) {
+			MinimaLogger.log(exc);
+		}
 	}
 	
 	public static void copyFile(File zOrig, File zCopy) throws IOException {

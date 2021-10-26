@@ -4,9 +4,9 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-import org.minima.GlobalParams;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniString;
+import org.minima.system.params.GlobalParams;
 import org.minima.utils.BaseConverter;
 import org.minima.utils.Crypto;
 import org.minima.utils.Streamable;
@@ -45,7 +45,7 @@ public class Address implements Streamable{
 		mScript = new MiniString(zScript);
 		
 		//Set the Address..
-		mAddressData = new MiniData(Crypto.getInstance().hashData(mScript.getData(),zBitLength));
+		mAddressData = Crypto.getInstance().hashObject(mScript);
 		
 		//The Minima address as short as can be..
 		mMinimaAddress = makeMinimaAddress(mAddressData);
@@ -66,7 +66,7 @@ public class Address implements Streamable{
 		JSONObject addr = new JSONObject();
 		addr.put("script", mScript.toString());
 		addr.put("hexaddress", mAddressData.toString());
-		addr.put("miniaddress", mMinimaAddress);
+//		addr.put("miniaddress", mMinimaAddress);
 		return addr;
 	}
 	
@@ -126,10 +126,10 @@ public class Address implements Streamable{
 	 */
 	public static String makeMinimaAddress(MiniData zAddress) throws ArithmeticException {
 		//The Original data
-		byte[] data = zAddress.getData();
+		byte[] data = zAddress.getBytes();
 		
 		//First hash it to add some checksum digits..
-		byte[] hash = Crypto.getInstance().hashData(data, 160);
+		byte[] hash = Crypto.getInstance().hashData(data, 256);
 		
 		//Calculate a new length - ONLY certain lengths allowed!
 		int len    = data.length;
@@ -259,7 +259,7 @@ public class Address implements Streamable{
 		}
 		
 		//Now Hash it.. 
-		byte[] hash = Crypto.getInstance().hashData(newdata, 160);
+		byte[] hash = Crypto.getInstance().hashData(newdata, 256);
 				
 		//Check it with the checksum..
 		for(int i=0;i<hashlen;i++) {

@@ -6,7 +6,6 @@ package org.minima.utils.messages;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import org.minima.system.input.InputHandler;
 import org.minima.utils.MinimaLogger;
 
 /**
@@ -25,10 +24,15 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
      */
     private boolean mRunning;
     
+    /**
+     * Have we finbished shutting down
+     */
+    private boolean mShutDownComplete;
+    
 	/**
 	 * LOG messages ?
 	 */
-	protected boolean mLogON = false;
+	protected boolean mTrace = false;
 	
 	/**
 	 * Processor Name
@@ -41,21 +45,28 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
     public MessageProcessor(String zName){
     	super();
     	
-    	mName = zName;
+    	mName 				= zName;
+    	mRunning 			= true;
+    	mShutDownComplete 	= false;
     	
-    	mRunning = true;
-    
     	mMainThread = new Thread(this,zName);
-//    	mMainThread.setDaemon(true);
         mMainThread.start();
     }
     
-    public void setLOG(boolean zLogON) {
-    	mLogON = zLogON;
+    public void setFullLogging(boolean zLogON) {
+    	mTrace = zLogON;
+    }
+    
+    public boolean isTrace() {
+    	return mTrace;
     }
     
     public boolean isRunning(){
     	return mRunning;
+    }
+    
+    public boolean isShutdownComplete() {
+    	return mShutDownComplete;
     }
     
     public void stopMessageProcessor(){
@@ -69,15 +80,11 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
     	//Set this is the processor..
     	zMessage.setProcessor(this);
     	
-    	//Create a Thread that fires//
-    	Thread timer = new Thread(zMessage);
-    	timer.setDaemon(true);
-    	timer.start();
+    	//Post it on the TimerProcessor
+    	TimerProcessor.getTimerProcessor().PostMessage(zMessage);
     }
     
     public void run() {
-//    	MinimaLogger.log("MESSAGE_PROCESSOR "+mName+" STARTED");
-    	
     	//Format the time
     	SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss.SSS");
 
@@ -91,7 +98,7 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
                 //Process that message
                 try{
                 	//Are we logging  ?
-                	if(mLogON) {
+                	if(mTrace) {
                 		MinimaLogger.log("["+getSize()+"] "+sdf.format(new Date())+" [ "+mMainThread.getName()+" ] \t"+msg);
                 	}
                 
@@ -99,11 +106,11 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
                     processMessage(msg);
                 
                 }catch(Error noclass){
-                	MinimaLogger.log("**SERIOUS SETUP ERROR "+msg+" "+noclass.toString());
+                	MinimaLogger.log("**SERIOUS SETUP ERROR "+msg.getMessageType()+" "+noclass.toString());
                 	
                 }catch(Exception exc){
-                    MinimaLogger.log("MESSAGE PROCESSING ERROR @ "+msg,exc);
-                	InputHandler.endResponse(msg, false, "SYSTEM ERROR PROCESSING : "+msg+" exception:"+exc);
+                	MinimaLogger.log("MESSAGE PROCESSING ERROR @ "+msg.getMessageType());
+                	MinimaLogger.log(exc);
                 } 
                 
                 //Are there more messages..
@@ -124,7 +131,8 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
 			}
         }
 
-//        MinimaLogger.log("MESSAGE_PROCESSOR "+mName+" STOPPED");
+        //All done..
+        mShutDownComplete = true;
     }
     
     /**

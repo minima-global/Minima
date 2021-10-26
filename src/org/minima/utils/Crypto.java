@@ -5,12 +5,13 @@ package org.minima.utils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 
+import org.bouncycastle.crypto.Digest;
+import org.bouncycastle.crypto.digests.KeccakDigest;
+import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.minima.objects.base.MiniData;
-import org.minima.utils.digest.Digest;
-import org.minima.utils.digest.KeccakDigest;
-import org.minima.utils.digest.SHA256Digest;
 
 /**
  * @author Spartacus Rex
@@ -18,34 +19,23 @@ import org.minima.utils.digest.SHA256Digest;
  */
 public class Crypto {
 
-	public static final int MINIMA_MAX_HASH_LENGTH = 64;
+	public int HASH_STRENGTH = 256;
 	
+	/**
+	 * Largest Number
+	 */
 	public static final BigInteger MAX_VAL = new BigInteger(
 					  "FFFFFFFFFFFFFFFFFFFF"+
 					  "FFFFFFFFFFFFFFFFFFFF"+
 					  "FFFFFFFFFFFFFFFFFFFF"+
-					  "FFFF"+
-					  "FFFFFFFFFFFFFFFFFFFF"+
-					  "FFFFFFFFFFFFFFFFFFFF"+
-					  "FFFFFFFFFFFFFFFFFFFF"+
-					  "FFFF", 16); 
+					  "FFFF", 16);
 	
-	public static final MiniData MAX_HASH = new MiniData(
-					"0xFFFFFFFFFFFFFFFFFFFF"+
-					  "FFFFFFFFFFFFFFFFFFFF"+
-					  "FFFFFFFFFFFFFFFFFFFF"+
-					  "FFFF"+
-					  "FFFFFFFFFFFFFFFFFFFF"+
-					  "FFFFFFFFFFFFFFFFFFFF"+
-					  "FFFFFFFFFFFFFFFFFFFF"+
-					  "FFFF");
+	public static BigDecimal MAX_VALDEC = new BigDecimal(MAX_VAL);
 	
 	/**
-	 * 1 Mega Hash - for now 100,000 - just to test..
+	 * Largest HEX value
 	 */
-	public static final BigInteger MEGA_VAL = MAX_VAL.divide(new BigInteger("100000"));	
-	public static final MiniData MEGA_HASH  = new MiniData("0x"+MEGA_VAL.toString(16));
-	
+	public static final MiniData MAX_HASH = new MiniData(MAX_VAL);
 	
 	/**
 	 * Get the default instance..
@@ -80,7 +70,7 @@ public class Crypto {
 //	}
 	
 	public byte[] hashData(byte[] zData){
-		return hashData(zData, 512);
+		return hashData(zData, HASH_STRENGTH);
 	}
 	
 	public byte[] hashData(byte[] zData, int zBitLength){
@@ -128,7 +118,7 @@ public class Crypto {
 	}
 
 	public MiniData hashObject(Streamable zObject) {
-		return hashObject(zObject, 512);
+		return hashObject(zObject, HASH_STRENGTH);
 	}
 	
 	public MiniData hashObject(Streamable zObject, int zBitLength) {
@@ -164,7 +154,7 @@ public class Crypto {
 	}
 	
 	public MiniData hashObjects(Streamable zLeftObject, Streamable zRightObject2) {
-		return hashObjects(zLeftObject, zRightObject2, 512);
+		return hashObjects(zLeftObject, zRightObject2, HASH_STRENGTH);
 	}
 	
 	public MiniData hashObjects(Streamable zLeftObject, Streamable zRightObject2, int zBitLength) {
@@ -202,17 +192,21 @@ public class Crypto {
 		return null;
 	}
 	
-	public MiniData hashAllObjects(int zBitLength, Streamable... zObjects) {
+	public MiniData hashAllObjects(Streamable... zObjects) {
 		try {
 			//Get the Data..
 			ByteArrayOutputStream baos 	= new ByteArrayOutputStream();
 			DataOutputStream dos 		= new DataOutputStream(baos);
 			
+//			System.out.println("***HASH_ALL_OBJECTS START");
 			for(Streamable object : zObjects) {
+				//Notify..
+//				System.out.println(object.toString()+",");
+				
 				//Write to the stream
 				object.writeDataStream(dos);
 			}
-				
+			
 			//Flush the stream
 			dos.flush();
 			
@@ -220,12 +214,14 @@ public class Crypto {
 			byte[] objdata = baos.toByteArray();
 			
 			//Hash That
-			byte[] hashdata = hashData(objdata,zBitLength);
+			byte[] hashdata = hashData(objdata);
 		
 			MiniData ret = new MiniData(hashdata);
 			
 			dos.close();
 			baos.close();
+			
+//			System.out.println("HASH FINISHED "+ret.to0xString());
 			
 			return ret;
 					

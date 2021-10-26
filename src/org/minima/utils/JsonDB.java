@@ -3,7 +3,6 @@ package org.minima.utils;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 
 import org.minima.objects.base.MiniData;
@@ -44,7 +43,7 @@ public class JsonDB implements Streamable{
 	}
 	
 	public void setBoolean(String zName, boolean zData) {
-		mParams.put(zName, new Boolean(zData));
+		mParams.put(zName, zData);
 	}
 	
 	/**
@@ -67,7 +66,7 @@ public class JsonDB implements Streamable{
 	/**
 	 * HEX Data functions
 	 */
-	public MiniData getHexData(String zName, MiniData zDefault) {
+	public MiniData getData(String zName, MiniData zDefault) {
 		if(mParams.get(zName) == null) {
 			return zDefault;
 		}
@@ -77,7 +76,7 @@ public class JsonDB implements Streamable{
 		return new MiniData(data);
 	}
 	
-	public void setHexData(String zName, MiniData zData) {
+	public void setData(String zName, MiniData zData) {
 		mParams.put(zName, zData.toString());
 	}
 	
@@ -98,44 +97,16 @@ public class JsonDB implements Streamable{
 	}
 	
 	/**
-	 * Wipe the DB
-	 */
-	public void clean() {
-		mParams.clear();
-	}
-	
-	/**
 	 * Load and Save
 	 */
-	public void saveDB(File zFile) {
-		try {
-			MiniFile.writeObjectToFile(zFile, this);
-		} catch (IOException e) {
-			MinimaLogger.log(e);
-		}
-	}
-	
 	public void loadDB(File zFile) {
-		//Does the File exist
-		if(!zFile.exists()) {
-			MinimaLogger.log("JSONDB file does not exist : "+zFile);
-			return;
-		}
-		
-		try {
-			FileInputStream fis = new FileInputStream(zFile);
-			DataInputStream dis = new DataInputStream(fis);
-			
-			readDataStream(dis);
-			
-			dis.close();
-			fis.close();
-		}catch(Exception exc) {
-			MinimaLogger.log(exc);
-		}
+		MiniFile.loadObject(zFile, this);
 	}
 	
-
+	public void saveDB(File zFile) {
+		MiniFile.saveObject(zFile, this);
+	}
+	
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
 		MiniString data = new MiniString(mParams.toString());

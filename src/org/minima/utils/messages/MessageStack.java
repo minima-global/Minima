@@ -64,7 +64,7 @@ public class MessageStack{
      * Is there a next message!
      * @return
      */
-    protected boolean isNextMessage(){
+    public boolean isNextMessage(){
     	boolean avail;
     	
     	synchronized (mMessages) {

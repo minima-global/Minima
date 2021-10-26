@@ -11,11 +11,8 @@ import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
-import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
-import org.minima.objects.proofs.TokenProof;
-import org.minima.system.input.functions.gimme50;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
@@ -34,7 +31,7 @@ public class Transaction implements Streamable {
 	 * The Hash of a prior transaction if this is a burn transaction
 	 * MUST Be 0x00 to be a normal transaction.
 	 * 
-	 * MUST be thenHash of the Transaction if this is a Burn Transaction
+	 * MUST be the Hash of the Transaction if this is a Burn Transaction
 	 */
 	protected MiniData mLinkHash = new MiniData("0x00");
 	
@@ -54,12 +51,6 @@ public class Transaction implements Streamable {
 	protected ArrayList<StateVariable> mState = new ArrayList<>();
 	
 	/**
-	 * If you are generating a TOKEN.. here are the details..
-	 * Needs to be here instead of witness so no-one can alter it - you sign this.
-	 */
-	protected TokenProof mTokenGenDetails = null;
-	
-	/**
 	 * Constructor
 	 */
 	public Transaction() {}
@@ -68,16 +59,8 @@ public class Transaction implements Streamable {
 		mInputs.add(zCoin);
 	}
 	
-	public void addInput(Coin zCoin, int zPosition) {
-		mInputs.add(zPosition, zCoin);
-	}
-	
 	public void addOutput(Coin zCoin) {
 		mOutputs.add(zCoin);
-	}
-	
-	public void addOutput(Coin zCoin, int zPosition) {
-		mOutputs.add(zPosition, zCoin);
 	}
 	
 	public boolean isEmpty() {
@@ -129,43 +112,27 @@ public class Transaction implements Streamable {
 	}
 	
 	/**
-	 * Is this a Gimme50 transaction.. ?
-	 * @return
-	 */
-	public boolean isGimme50() {
-		for(Coin input : mInputs) {
-			if(input.getCoinID().isEqual(gimme50.COINID_INPUT) && input.getAmount().isLessEqual(new MiniNumber("50"))){
-				return true;
-			}
-		}	
-		
-		return false;
-	}
-	
-//	/**
-//	 * Get the Remainder Output Coin for a specific token..
-//	 */
-//	public Coin getRemainderCoin(MiniData zTokenID) {
-//		for(Coin cc : mOutputs) {
-//			if(cc.isRemainder() && cc.getTokenID().isEqual(zTokenID)) {
-//				return cc;
-//			}
-//		}
-//		return null;
-//	}
-	
-	/**
 	 * You only need to check that there are enough Inputs for the Outputs.
 	 * The rest is BURN..
 	 * @return
 	 */
-	public boolean checkValidInOutPerToken(){
+	public boolean checkValid(){
+		//Basics
+		int ins = mInputs.size();
+		if(ins<1 || ins>256) {
+			return false;
+		}
+		int outs = mOutputs.size();
+		if(outs>256) {
+			return false;
+		}
+		
 		//First get a list of all the Ouput tokens..
 		ArrayList<String> tokens = new ArrayList<>();
 		for(Coin cc : mOutputs) {
 			MiniData tokenhash = cc.getTokenID();
-			if(tokenhash.isEqual(Coin.TOKENID_CREATE)){
-				tokenhash = Coin.MINIMA_TOKENID;
+			if(tokenhash.isEqual(Token.TOKENID_CREATE)){
+				tokenhash = Token.TOKENID_MINIMA;
 			}
 			
 			String tok = tokenhash.to0xString();
@@ -199,7 +166,6 @@ public class Transaction implements Streamable {
 		}
 		
 		//Check all the inputs have a unique CoinID..
-		int ins = mInputs.size();
 		if(ins>1){
 			for(int i=0;i<ins;i++) {
 				for(int j=i+1;j<ins;j++) {
@@ -242,13 +208,11 @@ public class Transaction implements Streamable {
 	 * @param zValue
 	 */
 	public void addStateVariable(StateVariable zValue) {
-		//If it exists overwrite it..
-		StateVariable sv = getStateValue(zValue.getPort());
-		if(sv != null) {
-			sv.resetData(zValue.getValue(), new MiniByte(zValue.isKeepMMR()));
-		}else {
-			mState.add(zValue);
-		}
+		//If it exists remove it
+		removeStateVariable(zValue.getPort());
+		
+		//And now add it..
+		mState.add(zValue);
 		
 		//Order the state
 		Collections.sort(mState,new Comparator<StateVariable>() {
@@ -262,12 +226,47 @@ public class Transaction implements Streamable {
 	}
 	
 	/**
-	 * @param zStateNum
+	 * Remove a State Variable
+	 * @param zPort
+	 */
+	public void removeStateVariable(int zPort) {
+		//Cycle through and add the remaining
+		boolean found = false;
+		ArrayList<StateVariable> newvars = new ArrayList<>();
+		for(StateVariable sv : mState) {
+			if(sv.getPort() != zPort){
+				newvars.add(sv);
+			}else {
+				found = true;
+			}
+		}
+		
+		//Did we remove it..
+		if(!found) {
+			return;
+		}
+		
+		//Set the new state
+		mState = newvars;
+		
+		//Order the state
+		Collections.sort(mState,new Comparator<StateVariable>() {
+			@Override
+			public int compare(StateVariable o1, StateVariable o2) {
+				int s1 = o1.getPort();
+				int s2 = o2.getPort();
+				return Integer.compare(s1, s2);
+			}
+		});
+	}
+	
+	/**
+	 * @param zPort
 	 * @return
 	 */
-	public StateVariable getStateValue(int zStateNum) {
+	public StateVariable getStateValue(int zPort) {
 		for(StateVariable sv : mState) {
-			if(sv.getPort() == zStateNum){
+			if(sv.getPort() == zPort){
 				return sv;
 			}
 		}
@@ -306,17 +305,6 @@ public class Transaction implements Streamable {
 		return mLinkHash;
 	}
 	
-	/**
-	 * Token Generation
-	 */
-	public void setTokenGenerationDetails(TokenProof zTokenDetails) {
-		mTokenGenDetails = zTokenDetails;
-	}
-	
-	public TokenProof getTokenGenerationDetails() {
-		return mTokenGenDetails;
-	}
-	
 	@Override
 	public String toString() {
 		return toJSON().toString();
@@ -346,11 +334,6 @@ public class Transaction implements Streamable {
 		}
 		ret.put("state", outs);
 		
-		//Token Generation..
-		if(mTokenGenDetails != null) {
-			ret.put("tokengen", mTokenGenDetails.toJSON());
-		}
-		
 		ret.put("linkhash", mLinkHash.to0xString());
 		
 		return ret;
@@ -379,14 +362,6 @@ public class Transaction implements Streamable {
 			sv.writeDataStream(zOut);
 		}
 		
-		//Token generation
-		if(mTokenGenDetails == null) {
-			MiniByte.FALSE.writeDataStream(zOut);
-		}else {
-			MiniByte.TRUE.writeDataStream(zOut);
-			mTokenGenDetails.writeDataStream(zOut);
-		}
-	
 		//The Link Hash
 		mLinkHash.writeHashToStream(zOut);
 	}
@@ -419,14 +394,6 @@ public class Transaction implements Streamable {
 		for(int i=0;i<len;i++){
 			StateVariable sv = StateVariable.ReadFromStream(zIn);
 			mState.add(sv);
-		}
-		
-		//Token generation
-		MiniByte tokgen = MiniByte.ReadFromStream(zIn);
-		if(tokgen.isTrue()) {
-			mTokenGenDetails = TokenProof.ReadFromStream(zIn);
-		}else {
-			mTokenGenDetails = null;
 		}
 		
 		mLinkHash = MiniData.ReadHashFromStream(zIn);
