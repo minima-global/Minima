@@ -45,7 +45,10 @@ dependencies {
 //    implementation group: 'com.h2database', name: 'h2', version: '1.4.200'
 
     implementation group: 'mysql', name: 'mysql-connector-java', version: '8.0.25'
-    
+ 
+ 	implementation 'org.bouncycastle:bcpkix-jdk15on:1.69'
+ 	implementation 'org.bouncycastle:bcpprov-jdk15on:1.69'
+ 	implementation 'org.bouncycastle:bcputil-jdk15on:1.69'
 }
 
 sourceSets {
@@ -74,13 +77,13 @@ tasks.withType(AbstractArchiveTask) {
 
 application {
     // Define the main class for the application.
-    mainClassName = 'org.minima.Start'
+    mainClassName = 'org.minima.Minima'
     //mainClass.set("org.minima.Start") // new syntax for gradle 6.7+, plugins not compatible yet
 }
 
 jar {
     manifest {
-        attributes 'Main-Class': 'org.minima.Start'
+        attributes 'Main-Class': 'org.minima.Minima'
     }
 }
 
