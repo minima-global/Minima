@@ -386,10 +386,8 @@ public class TxPoW implements Streamable {
 	/**
 	 * Pre-compute the transaction hash
 	 */
-	
-	public MiniData calculateTransactionID() {
+	public void calculateTransactionID() {
 		_mTransID = Crypto.getInstance().hashObject(mBody.mTransaction);
-		return _mTransID;
 	}
 	
 	/**
@@ -482,7 +480,7 @@ public class TxPoW implements Streamable {
 		_mIsTxnPOW = false;
 		if(hasBody()) {
 			//Whats the Transaction ID
-			_mTransID = calculateTransactionID();
+			calculateTransactionID();
 		
 			//Valid Transaction
 			if(_mTxPOWID.isLess(getTxnDifficulty()) && !getTransaction().isEmpty()) {

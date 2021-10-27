@@ -117,8 +117,6 @@ public class balance extends Command {
 			balance.add(tokbal);
 		}
 		
-	
-		
 		//Add balance..
 		ret.put("response", balance);
 		

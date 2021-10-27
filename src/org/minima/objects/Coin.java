@@ -221,10 +221,11 @@ public class Coin implements Streamable {
 		obj.put("address", mAddress.toString());
 		
 		//Get the MxAddress..
-		String mxaddr = Address.makeMinimaAddress(mAddress);
-		obj.put("mxaddress", mxaddr);
+//		String mxaddr = Address.makeMinimaAddress(mAddress);
+//		obj.put("mxaddress", mxaddr);
 		
 		obj.put("tokenid", mTokenID.toString());
+		obj.put("token", mToken.toJSON());
 		
 		obj.put("floating", mFloating);
 		obj.put("storestate", mStoreState);
@@ -237,7 +238,7 @@ public class Coin implements Streamable {
 	}
 	
 	/**
-	 * Get a DEEP copy of this TxPoW
+	 * Get a DEEP copy of this Coin
 	 */
 	public Coin deepCopy(){
 		try {
@@ -286,6 +287,8 @@ public class Coin implements Streamable {
 		for(StateVariable sv : mState) {
 			sv.writeDataStream(zOut);
 		}
+		
+		mToken.writeDataStream(zOut);
 	}
 
 	@Override
@@ -307,6 +310,8 @@ public class Coin implements Streamable {
 		for(int i=0;i<len;i++) {
 			mState.add(StateVariable.ReadFromStream(zIn));
 		}
+		
+		mToken = Token.ReadFromStream(zIn);
 	}
 	
 	public static Coin ReadFromStream(DataInputStream zIn) throws IOException {

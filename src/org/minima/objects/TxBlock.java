@@ -12,6 +12,7 @@ import org.minima.database.mmr.MMREntryNumber;
 import org.minima.database.mmr.MMRProof;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.objects.base.MiniString;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 
@@ -60,9 +61,6 @@ public class TxBlock implements Streamable {
 		//Needs to be a transaction
 		if(zTxPoW.isTransaction()) {
 			
-			//What Block is this..
-			MiniNumber block = zPreviousMMR.getBlockTime().increment();
-			
 			//Get all the input coins
 			ArrayList<CoinProof> coinspent = zTxPoW.getWitness().getAllCoinProofs();
 			
@@ -99,34 +97,45 @@ public class TxBlock implements Streamable {
 			ArrayList<Coin> outputs = zTxPoW.getTransaction().getAllOutputs();
 			int num=0;
 			for(Coin newoutput : outputs) {
+				
 				//Set the correct state variables
 				if(newoutput.storeState()) {
 					newoutput.setState(newstate);
 				}
 				
 				//Calculate the Correct CoinID for this coin.. TransactionID already calculated
-				MiniData coinid = zTxPoW.calculateCoinID(num++);
+				MiniData coinid = zTxPoW.calculateCoinID(num);
 				
 				//Create a new coin with correct coinid
 				Coin correctcoin = newoutput.getSameCoinWithCoinID(coinid);
 				
-//				//Is this a create token output..
-//				if(newoutput.getTokenID().isEqual(Token.TOKENID_CREATE)) {
-//					//Get the details..
-//					Token newtoken = new Token(coinid, new MiniNumber(36), newoutput.getAmount(), 
-//							new MiniString("token Name"), new MiniString("RETURN TRUE") ); 
-//					
-//					MinimaLogger.log("Token Creation! "+newtoken.toJSON().toString());
-//					
-//					//Get the tokenid..
-//					MiniData tokenid = newtoken.getTokenID();
-//					
-//					//Set it..
-//					correctcoin.resetTokenID(tokenid);
-//				}
+				//Is this a create token output..
+				if(newoutput.getTokenID().isEqual(Token.TOKENID_CREATE)) {
+					
+					//Get the Create token details..
+					Token creator = newoutput.getToken();
+					
+					//Get the details..
+					Token newtoken = new Token(	coinid, 
+												creator.getScale(), 
+												newoutput.getAmount(), 
+												creator.getName(),
+												creator.getTokenScript() ); 
+					
+					MinimaLogger.log("Token Created! "+newtoken.toJSON().toString());
+					
+					//Set it..
+					correctcoin.resetTokenID(newtoken.getTokenID());
+					
+					//And set that as the token..
+					correctcoin.setToken(newtoken);
+				}
 				
 				//Add to our list
 				mNewCoins.add(correctcoin);
+				
+				//Next coin down
+				num++;
 			}
 		}
 	}
