@@ -90,7 +90,7 @@ public class Coin implements Streamable {
 	/**
 	 * Then Token Details 
 	 */
-	Token mToken;
+	Token mToken = null;
 	
 	/**
 	 * Main Constructor
@@ -225,7 +225,11 @@ public class Coin implements Streamable {
 //		obj.put("mxaddress", mxaddr);
 		
 		obj.put("tokenid", mTokenID.toString());
-		obj.put("token", mToken.toJSON());
+		if(mToken == null) {
+			obj.put("token", null);
+		}else {
+			obj.put("token", mToken.toJSON());
+		}
 		
 		obj.put("floating", mFloating);
 		obj.put("storestate", mStoreState);
@@ -288,7 +292,12 @@ public class Coin implements Streamable {
 			sv.writeDataStream(zOut);
 		}
 		
-		mToken.writeDataStream(zOut);
+		if(mToken == null) {
+			MiniByte.WriteToStream(zOut, false);
+		}else {
+			MiniByte.WriteToStream(zOut, true);
+			mToken.writeDataStream(zOut);
+		}
 	}
 
 	@Override
@@ -311,7 +320,11 @@ public class Coin implements Streamable {
 			mState.add(StateVariable.ReadFromStream(zIn));
 		}
 		
-		mToken = Token.ReadFromStream(zIn);
+		//Is there a token descriptor
+		mToken = null;
+		if(MiniByte.ReadFromStream(zIn).isTrue()) {
+			mToken = Token.ReadFromStream(zIn);
+		}
 	}
 	
 	public static Coin ReadFromStream(DataInputStream zIn) throws IOException {

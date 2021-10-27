@@ -36,7 +36,7 @@ public class P2PManager extends MessageProcessor {
 	protected void processMessage(Message zMessage) throws Exception {
 		
 		//For Now..
-		MinimaLogger.log(zMessage.toString());
+//		MinimaLogger.log(zMessage.toString());
 		
 		//Process messages..
 		if(zMessage.isMessageType(P2PFunctions.P2P_INIT)) {

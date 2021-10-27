@@ -15,7 +15,7 @@ import org.minima.utils.json.parser.JSONParser;
 import org.minima.utils.json.parser.ParseException;
 
 public class Token implements Streamable{
-
+	
 	/**
 	 * Token create requires a special tokeni
 	 */
@@ -117,25 +117,6 @@ public class Token implements Streamable{
 		return mTokenName;
 	}
 	
-	public String getShowName() {
-		if(mTokenName.toString().startsWith("{")) {
-			//Break it down..
-			try {
-				//Get the JSON..
-				return getNameJSON().get("name").toString();
-				
-			}catch(ParseException exc){
-				return getName().toString();
-			}
-		}else {
-			return getName().toString();
-		}
-	}
-	
-	public JSONObject getNameJSON() throws ParseException {
-		return (JSONObject) new JSONParser().parse(mTokenName.toString());
-	}
-	
 	public MiniString getTokenScript() {
 		return mTokenScript;
 	}
@@ -151,54 +132,8 @@ public class Token implements Streamable{
 	public JSONObject toJSON() {
 		JSONObject obj = new JSONObject();
 		
-		//The big boy first
+		obj.put("name", mTokenName);
 		obj.put("tokenid", mTokenID.to0xString());
-		
-		//Check if the name is a JSON..
-		String name = mTokenName.toString().trim();
-		
-		if(name.startsWith("{")) {
-			//Break it down..
-			try {
-				//Get the JSON..
-				JSONObject tokjson = getNameJSON();
-			
-				//Get the name..
-				obj.put("token", tokjson.get("name").toString());
-				
-				//Defaults
-				obj.put("description", "");
-				obj.put("icon", "");
-				obj.put("proof", "");
-				
-				//Get the rest if they exist..
-				if(tokjson.containsKey("description")) {
-					obj.put("description", tokjson.get("description").toString());	
-				}
-				
-				if(tokjson.containsKey("icon")) {
-					obj.put("icon", tokjson.get("icon").toString());	
-				}
-				
-				if(tokjson.containsKey("proof")) {
-					obj.put("proof", tokjson.get("proof").toString());	
-				}
-				
-			} catch (ParseException e) {
-				//Incorrectly formed JSON
-				obj.put("token", name);
-				obj.put("description", "");
-				obj.put("icon", "");
-				obj.put("proof", "");
-			}
-				
-		}else {
-			obj.put("token", name);
-			obj.put("description", "");
-			obj.put("icon", "");
-			obj.put("proof", "");	
-		}
-		
 		obj.put("total", getTotalTokens().toString());
 		obj.put("decimals", getDecimalPlaces().toString());
 		obj.put("script", mTokenScript.toString());

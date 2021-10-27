@@ -35,6 +35,7 @@ public class balance extends Command {
 		
 		//Keep track of totals..
 		ArrayList<String> alltokens 				= new ArrayList<>();
+		Hashtable<String, Token> tokens 			= new Hashtable<>();
 		Hashtable<String, MiniNumber> confirmed 	= new Hashtable<>();
 		Hashtable<String, MiniNumber> unconfirmed 	= new Hashtable<>();
 		
@@ -73,7 +74,9 @@ public class balance extends Command {
 			//Which Token..
 			String tokenid = coin.getTokenID().to0xString();
 			if(!alltokens.contains(tokenid)) {
+				//Add to out token list
 				alltokens.add(tokenid);
+				tokens.put(tokenid, coin.getToken());
 			}
 			
 			//How deep is this coin
@@ -109,9 +112,24 @@ public class balance extends Command {
 			}
 			
 			JSONObject tokbal = new JSONObject();
-			tokbal.put("tokenid", token);
-			tokbal.put("confirmed", conf.toString());
-			tokbal.put("unconfirmed", unconf.toString());
+			
+			if(token.equals("0x00")) {
+				//It's Minima
+				tokbal.put("token", "Minima");
+				tokbal.put("tokenid", token);
+				tokbal.put("confirmed", conf.toString());
+				tokbal.put("unconfirmed", unconf.toString());
+				tokbal.put("total", "1000000000");
+			}else {
+				//Get the token
+				Token tok = tokens.get(token);
+				
+				tokbal.put("token", tok.getName());
+				tokbal.put("tokenid", token);
+				tokbal.put("confirmed", tok.getScaledTokenAmount(conf).toString());
+				tokbal.put("unconfirmed", tok.getScaledTokenAmount(unconf).toString());
+				tokbal.put("total", tok.getTotalTokens());
+			}
 			
 			//And add to the total..
 			balance.add(tokbal);
