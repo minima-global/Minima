@@ -47,8 +47,8 @@ dependencies {
     implementation group: 'mysql', name: 'mysql-connector-java', version: '8.0.25'
  
  	implementation 'org.bouncycastle:bcpkix-jdk15on:1.69'
- 	implementation 'org.bouncycastle:bcpprov-jdk15on:1.69'
- 	implementation 'org.bouncycastle:bcputil-jdk15on:1.69'
+ //	implementation 'org.bouncycastle:bcpprov-jdk15on:1.69'
+ 	//implementation 'org.bouncycastle:bcputil-jdk15on:1.69'
 }
 
 sourceSets {
