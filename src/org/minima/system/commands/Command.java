@@ -17,6 +17,7 @@ import org.minima.system.commands.all.printtree;
 import org.minima.system.commands.all.quit;
 import org.minima.system.commands.all.send;
 import org.minima.system.commands.all.status;
+import org.minima.system.commands.all.tokencreate;
 import org.minima.system.commands.all.trace;
 import org.minima.system.commands.all.txpow;
 import org.minima.utils.json.JSONArray;
@@ -27,7 +28,7 @@ public abstract class Command {
 	public static final Command[] ALL_COMMANDS = 
 		{   new quit(), new status(), new txpow(), new connect(), new disconnect(), new network(),
 			new message(), new trace(), new help(), new printtree(), new automine(), new printmmr(),
-			new send(), new balance(), new newaddress() };
+			new send(), new balance(), new tokencreate(), new newaddress() };
 	
 	String mName;
 	String mHelp;
