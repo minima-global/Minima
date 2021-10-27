@@ -120,4 +120,25 @@ public class Maths {
 						yr,mn, wk, dy, hr, min, sec, ms);
 	}	
 	
+	public static void main(String[] zArgs) {
+		
+		MiniData diff 	= new MiniData("0xFFFF");
+		
+		for(int i=1;i<65536;i++) {
+			BigInteger val  = new BigInteger(""+i);
+			MiniData txpow 	= new MiniData(val);
+		
+			BigInteger supbig = diff.getDataValue().divide(txpow.getDataValue());
+			int tester = supbig.bitLength()-1;
+			int myway = (int) Maths.log2BI(supbig);
+			
+			if(tester != myway) {
+				System.out.println(txpow.to0xString()+" new:"+tester+" old:"+myway);
+			}
+		}
+		
+		
+		
+	}
+	
 }
