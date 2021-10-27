@@ -17,14 +17,8 @@ public class P2PManager extends MessageProcessor {
 	//Every 5 mins..
 	public long P2P_LOOP_DELAY			= 1000 * 60 * 5;
 	
-	//Main function calls.. USE THIS
-	P2PFunctions mP2PFunctions;
-	
-	public P2PManager(P2PFunctions zP2PFunctions) {
+	public P2PManager() {
 		super("P2PMANAGER");
-		
-		//Use THIS.
-		mP2PFunctions = zP2PFunctions;
 		
 		//And start the loop timer..
 		PostTimerMessage(new TimerMessage(P2P_LOOP_DELAY, P2P_LOOP));
@@ -80,7 +74,7 @@ public class P2PManager extends MessageProcessor {
 			hello.put("array",array);
 			
 			//And send it..
-			mP2PFunctions.sendP2PMessage(uid, hello);
+			P2PFunctions.sendP2PMessage(uid, hello);
 			
 		}else if(zMessage.isMessageType(P2PFunctions.P2P_DISCONNECTED)) {
 		

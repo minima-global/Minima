@@ -18,20 +18,12 @@ public class NetworkManager {
 	 */
 	P2PManager mP2PManager;
 	
-	/**
-	 * The P2P Functions
-	 */
-	P2PFunctions mP2P;
-	
 	public NetworkManager() {
 		//The main NIO server manager
 		mNIOManager = new NIOManager();
 		
-		//Create the function handler
-		mP2P = new P2PFunctions();
-		
 		//Create the Managewr
-		mP2PManager = new P2PManager(mP2P);
+		mP2PManager = new P2PManager();
 		
 		//Post an Init message
 		mP2PManager.PostMessage(P2PFunctions.P2P_INIT);

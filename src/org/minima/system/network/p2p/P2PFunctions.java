@@ -31,12 +31,10 @@ public class P2PFunctions {
 	 */
 	public static final String P2P_MESSAGE 			= "P2P_MESSAGE";
 	
-	public P2PFunctions() {}
-	
 	/**
 	 * Connect to a Host and port
 	 */
-	public void connect(String zHost, int zPort) {
+	public static void connect(String zHost, int zPort) {
 		//Connect Message
 		Message msg = new Message(NIOManager.NIO_CONNECT);
 		msg.addString("host", zHost);
@@ -49,7 +47,7 @@ public class P2PFunctions {
 	/**
 	 * Disconnect using the UID
 	 */
-	public void disconnect(String zUID) {
+	public static void disconnect(String zUID) {
 		//Call the NIOManager
 		Main.getInstance().getNIOManager().disconnect(zUID);
 	}
@@ -59,7 +57,7 @@ public class P2PFunctions {
 	 * 
 	 * status shows connecting or connected..
 	 */
-	public JSONArray getAllConnections() {
+	public static JSONArray getAllConnections() {
 		return Main.getInstance().getNetworkManager().getNIOManager().getAllConnections();
 	}
 	
@@ -67,7 +65,7 @@ public class P2PFunctions {
 	 * Send a message to a specific peer
 	 * @throws IOException 
 	 */
-	public void sendP2PMessage(String zUID, JSONObject zMessage) throws IOException {
+	public static void sendP2PMessage(String zUID, JSONObject zMessage) throws IOException {
 		//Convert the message to a streamable..
 		MiniString json = new MiniString(zMessage.toString());
 		
@@ -79,7 +77,7 @@ public class P2PFunctions {
 	 * Send ALL peers a message
 	 * @throws IOException 
 	 */
-	public void sendP2PMessageAll(JSONObject zMessage) throws IOException {
+	public static void sendP2PMessageAll(JSONObject zMessage) throws IOException {
 		sendP2PMessage("", zMessage);
 	}
 }
