@@ -15,6 +15,9 @@ import org.minima.utils.json.JSONObject;
 
 public class Signature implements Streamable {
 
+	/**
+	 * A list of Signature trees that sign the root of the child tree
+	 */
 	ArrayList<SignatureProof> mSignatures = new ArrayList<>();
 	
 	public Signature() {}
