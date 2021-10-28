@@ -10,6 +10,7 @@ import org.minima.database.txpowdb.TxPoWDB;
 import org.minima.database.txpowtree.TxPowTree;
 import org.minima.database.userprefs.UserDB;
 import org.minima.database.wallet.Wallet;
+import org.minima.system.network.p2p.P2PDB;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.JsonDB;
 import org.minima.utils.MinimaLogger;
@@ -44,7 +45,7 @@ public class MinimaDB {
 	/**
 	 * For P2P Information
 	 */
-	JsonDB			mP2PDB;
+	P2PDB			mP2PDB;
 	
 	/**
 	 * LOCKING the MinimaDB for read write operations..
@@ -62,7 +63,7 @@ public class MinimaDB {
 		mUserDB		= new UserDB();
 		mWallet		= new Wallet();
 		
-		mP2PDB		= new JsonDB();
+		mP2PDB		= new P2PDB();
 		
 		mRWLock = new ReentrantReadWriteLock();
 	}
@@ -119,7 +120,7 @@ public class MinimaDB {
 		return mArchive;
 	}
 	
-	public JsonDB getP2PDB() {
+	public P2PDB getP2PDB() {
 		return mP2PDB;
 	}
 	
