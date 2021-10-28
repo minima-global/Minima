@@ -29,37 +29,37 @@ public class Token implements Streamable{
 	/**
 	 * The CoinID used when creating the token initially
 	 */
-	MiniData  mCoinID;
+	protected MiniData  mCoinID;
 	
 	/**
 	 * The Scale of the Token vs the amount
 	 */
-	MiniNumber mTokenScale;
+	protected MiniNumber mTokenScale;
 	
 	/**
 	 * The total amount of Minima Used
 	 */
-	MiniNumber mTokenMinimaAmount;
+	protected MiniNumber mTokenMinimaAmount;
 	
 	/**
 	 * The Token Name / Description.. can be a string / JSON
 	 */
-	MiniString mTokenName;
+	protected MiniString mTokenName;
 	
 	/**
 	 * The Token Script
 	 */
-	MiniString mTokenScript;
+	protected MiniString mTokenScript;
 	
 	/**
 	 * TokenID created after all the details are set
 	 */
-	MiniData mTokenID;
+	protected MiniData mTokenID;
 	
 	/**
 	 * Blank Constructor for ReadDataStream
 	 */
-	private Token() {}
+	protected Token() {}
 	
 	/**
 	 * The Only Public Constructor
@@ -132,7 +132,7 @@ public class Token implements Streamable{
 	public JSONObject toJSON() {
 		JSONObject obj = new JSONObject();
 		
-		obj.put("name", mTokenName);
+		obj.put("name", mTokenName.toString());
 		obj.put("tokenid", mTokenID.to0xString());
 		obj.put("total", getTotalTokens().toString());
 		obj.put("decimals", getDecimalPlaces().toString());

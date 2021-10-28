@@ -4,10 +4,16 @@ import java.util.ArrayList;
 
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.objects.Coin;
+import org.minima.objects.base.MiniData;
 
 public class TxPoWSearcher {
 
+	
 	public static ArrayList<Coin> getRelevantUnspentCoins(TxPoWTreeNode zStartNode) {
+		return getRelevantUnspentCoins(zStartNode, "");
+	}
+	
+	public static ArrayList<Coin> getRelevantUnspentCoins(TxPoWTreeNode zStartNode, String zTokenID ) {
 		
 		//The list of Coins
 		ArrayList<Coin> coinentry = new ArrayList<>();
@@ -28,7 +34,9 @@ public class TxPoWSearcher {
 			for(Coin coin : coins) {
 				
 				//Are we searching for a specific token..
-				//..
+				if(!zTokenID.equals("") && !coin.getTokenID().to0xString().equals(zTokenID)) {
+					continue;
+				}
 				
 				//Get the CoinID
 				String coinid = coin.getCoinID().to0xString();

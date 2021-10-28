@@ -80,7 +80,7 @@ public class tokencreate extends Command {
 										new MiniString(script));
 		
 		//The actual amount of Minima that needs to be sent
-		MiniNumber sendamount = new MiniNumber(colorminima);
+		MiniNumber sendamount 	= new MiniNumber(colorminima);
 		
 		//Send it to ourselves
 		KeyRow sendkey 			= MinimaDB.getDB().getWallet().createNewKey();
@@ -102,7 +102,7 @@ public class tokencreate extends Command {
 		}
 		
 		//Lets build a transaction..
-		ArrayList<Coin> relcoins = TxPoWSearcher.getRelevantUnspentCoins(tip);
+		ArrayList<Coin> relcoins = TxPoWSearcher.getRelevantUnspentCoins(tip,"0x00");
 		
 		//The current total
 		MiniNumber currentamount 	= MiniNumber.ZERO;

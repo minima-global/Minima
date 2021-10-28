@@ -134,8 +134,6 @@ public class TxBlock implements Streamable {
 				//Add to our list
 				mNewCoins.add(correctcoin);
 				
-				MinimaLogger.log("New Coin : "+correctcoin.toJSON().toString());
-				
 				//Next coin down
 				num++;
 			}

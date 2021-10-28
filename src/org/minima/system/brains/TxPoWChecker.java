@@ -23,7 +23,6 @@ public class TxPoWChecker {
 	 * Parallel check all the transactions in this block
 	 */
 	public static boolean checkTxPoWBlock(MMR zParentMMR, TxPoW zTxPoW, ArrayList<TxPoW> zTransactions) {
-		
 		//First check this
 		if(zTxPoW.isTransaction()) {
 			boolean valid = checkTxPoW(zParentMMR, zTxPoW);

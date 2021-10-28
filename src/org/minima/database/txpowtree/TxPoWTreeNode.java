@@ -23,6 +23,7 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.brains.TxPoWSearcher;
 import org.minima.utils.Crypto;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 
 public class TxPoWTreeNode implements Streamable {
@@ -161,6 +162,7 @@ public class TxPoWTreeNode implements Streamable {
 			Coin newcoin = output.deepCopy();
 			newcoin.setMMREntryNumber(entrynumber);
 			newcoin.setBlockCreated(block);
+			newcoin.setSpent(false);
 			
 			//Get the Hash of this 
 			MiniData hashunspent = Crypto.getInstance().hashObject(newcoin);
@@ -173,6 +175,8 @@ public class TxPoWTreeNode implements Streamable {
 			
 			//Add to the total List of coins fro this block
 			mCoins.add(newcoin);
+			
+			MinimaLogger.log("TxPoWTreeNode New Coin rel:"+zFindRelevant+" "+newcoin.toJSON().toString());
 			
 			//Is this Relevant to us..
 			if(checkRelevant(output, allrel)) {
