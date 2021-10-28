@@ -176,7 +176,7 @@ public class TxPoWTreeNode implements Streamable {
 			//Add to the total List of coins fro this block
 			mCoins.add(newcoin);
 			
-			MinimaLogger.log("TxPoWTreeNode New Coin rel:"+zFindRelevant+" "+newcoin.toJSON().toString());
+//			MinimaLogger.log("TxPoWTreeNode New Coin rel:"+zFindRelevant+" "+newcoin.toJSON().toString());
 			
 			//Is this Relevant to us..
 			if(checkRelevant(output, allrel)) {

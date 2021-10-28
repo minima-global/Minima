@@ -121,7 +121,7 @@ public class TxBlock implements Streamable {
 												creator.getName(),
 												creator.getTokenScript() ); 
 					
-					MinimaLogger.log("Token Created! "+newtoken.toJSON().toString());
+//					quitMinimaLogger.log("Token Created! "+newtoken.toJSON().toString());
 					
 					//Set it..
 					correctcoin.resetTokenID(newtoken.getTokenID());
