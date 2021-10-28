@@ -48,7 +48,12 @@ public class tokencreate extends Command {
 		
 		int decimals = 8;
 		if(getParams().containsKey("decimals")) {
-			decimals	= Integer.parseInt((String)getParams().get("decimals"));
+			decimals = Integer.parseInt((String)getParams().get("decimals"));
+			
+			//Safety check.. not consensus set - could be more.
+			if(decimals>16) {
+				throw new Exception("MAX 16 decimal places");
+			}
 		}
 		
 		String script = "RETURN TRUE";
@@ -63,6 +68,14 @@ public class tokencreate extends Command {
 		
 		//The actual amount of tokens..
 		MiniNumber totaltoks = new MiniNumber(amount).floor(); 
+		
+		//Safety check Amount is within tolerant levels.. could use ALL their Minima otherwise..
+		//This is not set by consensus - could be more - just for safety
+		if(totaltoks.isMore(MiniNumber.TRILLION)) {
+			throw new Exception("MAX 1 Trillion coins for a token");
+		}
+		
+		//Decimals as a number
 		MiniNumber totaldecs = MiniNumber.TEN.pow(decimals); 
 		
 		//How much Minima will it take to colour.. 
