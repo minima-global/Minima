@@ -26,9 +26,6 @@ public class status extends Command {
 	public JSONObject runCommand() throws Exception{
 		JSONObject ret = getJSONReply();
 		
-		//Quick clean
-		System.gc();
-		
 		JSONObject details = new JSONObject();
 		details.put("time", new Date().toString());
 		details.put("version", GlobalParams.MINIMA_VERSION);
