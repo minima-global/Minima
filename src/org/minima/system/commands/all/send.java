@@ -17,6 +17,7 @@ import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.keys.Signature;
+import org.minima.system.Main;
 import org.minima.system.brains.TxPoWGenerator;
 import org.minima.system.brains.TxPoWSearcher;
 import org.minima.system.commands.Command;
@@ -42,14 +43,18 @@ public class send extends Command {
 			throw new Exception("MUST specify adress and amount");
 		}
 		
-		String tokenid = "0x00";
-		if(getParams().containsKey("tokenid")) {
-			tokenid = (String)getParams().get("tokenid");
-		}
-		
 		//How much are we sending..
 		MiniNumber sendamount 	= new MiniNumber(amount);
 		MiniData sendaddress	= new MiniData(address);
+		
+		//What is the Token
+		String tokenid = "0x00";
+		if(getParams().containsKey("tokenid")) {
+			tokenid = (String)getParams().get("tokenid");
+			
+			//Change the SendAmount accordingly..
+			
+		}
 		
 		//get the tip..
 		TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
@@ -67,7 +72,7 @@ public class send extends Command {
 		}
 		
 		//Lets build a transaction..
-		ArrayList<Coin> relcoins = TxPoWSearcher.getRelevantUnspentCoins(tip);
+		ArrayList<Coin> relcoins = TxPoWSearcher.getRelevantUnspentCoins(tip,tokenid);
 		
 		//The current total
 		MiniNumber currentamount 	= MiniNumber.ZERO;
@@ -76,34 +81,31 @@ public class send extends Command {
 		//Now cycle through..
 		Token token = null;
 		for(Coin coin : relcoins) {
+		
+			//Add this coin..
+			currentcoins.add(coin);
 			
-			//Is it the correct token..
-			if(coin.getTokenID().to0xString().equals(tokenid)) {
-			
-				//Add this coin..
-				currentcoins.add(coin);
-				
-				//Get the actual ammount..
-				if(tokenid.equals("0x00")) {
-					currentamount = currentamount.add(coin.getAmount());
-				}else {
-					//Store it..
-					if(token == null) {
-						token = coin.getToken();
-					}
-					
-					//Calculate the Token Amount..
-					MiniNumber amt = coin.getToken().getScaledTokenAmount(coin.getAmount());
-					
-					//Add that to the total
-					currentamount = currentamount.add(amt);
+			//Get the actual ammount..
+			if(tokenid.equals("0x00")) {
+				currentamount = currentamount.add(coin.getAmount());
+			}else {
+				//Store it..
+				if(token == null) {
+					token = coin.getToken();
 				}
 				
-				//Do we have enough..
-				if(currentamount.isMoreEqual(sendamount)) {
-					break;
-				}
+				//Calculate the Token Amount..
+				MiniNumber amt = coin.getToken().getScaledTokenAmount(coin.getAmount());
+				
+				//Add that to the total
+				currentamount = currentamount.add(amt);
 			}
+			
+			//Do we have enough..
+			if(currentamount.isMoreEqual(sendamount)) {
+				break;
+			}
+		
 		}
 		
 		//Did we add enough
@@ -183,8 +185,21 @@ public class send extends Command {
 			}
 		}
 		
-		//Now add the output..
+		//Now make the sendamount correct
+		if(!tokenid.equals("0x00")) {
+			sendamount = token.getScaledMinimaAmount(sendamount);
+		}
+		
+		//Create the output
 		Coin recipient = new Coin(Coin.COINID_OUTPUT, sendaddress, sendamount, Token.TOKENID_MINIMA);
+		
+		//Do we need to add the Token..
+		if(!tokenid.equals("0x00")) {
+			recipient.resetTokenID(new MiniData(tokenid));
+			recipient.setToken(token);
+		}
+		
+		//Add to the Transaction
 		transaction.addOutput(recipient);
 		
 		//Do we need to send change..
@@ -201,6 +216,12 @@ public class send extends Command {
 			}
 			
 			Coin changecoin = new Coin(Coin.COINID_OUTPUT, chgaddress, changeamount, Token.TOKENID_MINIMA);
+			if(!tokenid.equals("0x00")) {
+				changecoin.resetTokenID(new MiniData(tokenid));
+				changecoin.setToken(token);
+			}
+			
+			//And finally.. add the change output
 			transaction.addOutput(changecoin);
 		}
 		
@@ -227,7 +248,7 @@ public class send extends Command {
 		ret.put("response", txpow.toJSON());
 				
 		//Send it to the Miner..
-//		Main.getInstance().getTxPoWMiner().mineTxPoW(txpow);
+		Main.getInstance().getTxPoWMiner().mineTxPoW(txpow);
 		
 		return ret;
 	}

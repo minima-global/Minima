@@ -62,6 +62,7 @@ public class TxPoWChecker {
 		
 		//Basic tests and Check Values add up..
 		if(!transaction.checkValid()) {
+			MinimaLogger.log("Invalid Transaction Inputs and Outputs.. "+transaction.toJSON());
 			return false;
 		}
 		
