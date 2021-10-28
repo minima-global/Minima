@@ -48,6 +48,11 @@ public class NIOClient {
 	
 	long mTimeConnected = 0;
 	
+	/**
+	 * Specify extra info
+	 */
+	private Object mExtraData = null;
+	
 	public NIOClient(String zHost, int zPort) {
 		mUID 		= MiniFormat.createRandomString(8);
 		mHost		= zHost;
@@ -94,6 +99,14 @@ public class NIOClient {
 		return ret;
 	}
 	
+	public void setExtraData(Object zExtraData) {
+		mExtraData = zExtraData;
+	}
+	
+	public Object getExtraData() {
+		return mExtraData;
+	}
+	
 	public String getUID() {
 		return mUID;
 	}
@@ -112,6 +125,10 @@ public class NIOClient {
 	
 	public void setWelcomeMessage(String zWelcome) {
 		mWelcomeMessage = zWelcome;
+	}
+	
+	public long getTimeConnected() {
+		return  mTimeConnected;
 	}
 	
 	public void sendData(MiniData zData) {

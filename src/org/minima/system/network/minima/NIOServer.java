@@ -51,15 +51,15 @@ public class NIOServer implements Runnable {
 		return mClients.size();
 	}
 	
-	public JSONArray getAllClients(){
-		JSONArray ret = new JSONArray();
+	public ArrayList<NIOClient> getAllNIOClients(){
+		ArrayList<NIOClient> allclients = new ArrayList<>();
 		
 		Enumeration<NIOClient> clients = mClients.elements();
 		while(clients.hasMoreElements()) {
-			ret.add(clients.nextElement().toJSON());
+			allclients.add(clients.nextElement());
 		}
 		
-		return ret;
+		return allclients;
 	}
 	
 	public void regsiterNewSocket(SocketChannel zChannel) {

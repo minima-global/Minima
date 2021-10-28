@@ -5,6 +5,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.channels.SocketChannel;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -80,28 +81,23 @@ public class NIOManager extends MessageProcessor {
 		return mConnectingClients.size();
 	}
 	
-	public JSONArray getAllConnections() {
+	public ArrayList<NIOClientInfo> getAllConnectionInfo() {
 		//A list of all the connections
-		JSONArray connections = new JSONArray();
+		ArrayList<NIOClientInfo> connections = new ArrayList<>();
 		
 		//Who are we trying to connect to
 		Enumeration<NIOClient> clients = mConnectingClients.elements();
 		while(clients.hasMoreElements()) {
-			NIOClient nc = clients.nextElement();
-			
-			JSONObject dets = nc.toJSON();
-			dets.put("status", "connecting");
-			
-			connections.add(dets);
+			NIOClient nc 		= clients.nextElement();
+			NIOClientInfo ninfo = new NIOClientInfo(nc, false);
+			connections.add(ninfo);
 		}
 		
 		//Who are we connected to..
-		JSONArray conns = mNIOServer.getAllClients();
-		for(Object conn : conns) {
-			JSONObject dets = (JSONObject)conn;
-			dets.put("status", "connected");
-			
-			connections.add(dets);
+		ArrayList<NIOClient> conns = mNIOServer.getAllNIOClients();
+		for(NIOClient conn : conns) {
+			NIOClientInfo ninfo = new NIOClientInfo(conn, true);
+			connections.add(ninfo);
 		}
 		
 		return connections;

@@ -11,6 +11,7 @@ import org.minima.database.txpowtree.TxPowTree;
 import org.minima.database.userprefs.UserDB;
 import org.minima.database.wallet.Wallet;
 import org.minima.system.params.GeneralParams;
+import org.minima.utils.JsonDB;
 import org.minima.utils.MinimaLogger;
 
 public class MinimaDB {
@@ -41,6 +42,11 @@ public class MinimaDB {
 	Wallet			mWallet;
 	
 	/**
+	 * For P2P Information
+	 */
+	JsonDB			mP2PDB;
+	
+	/**
 	 * LOCKING the MinimaDB for read write operations..
 	 */
 	ReadWriteLock mRWLock;
@@ -55,6 +61,8 @@ public class MinimaDB {
 		mCacscade	= new Cascade();
 		mUserDB		= new UserDB();
 		mWallet		= new Wallet();
+		
+		mP2PDB		= new JsonDB();
 		
 		mRWLock = new ReentrantReadWriteLock();
 	}
@@ -111,6 +119,10 @@ public class MinimaDB {
 		return mArchive;
 	}
 	
+	public JsonDB getP2PDB() {
+		return mP2PDB;
+	}
+	
 	public File getBaseDBFolder() {
 		return new File(GeneralParams.CONFIGURATION_FOLDER,"databases");
 	}
@@ -139,17 +151,25 @@ public class MinimaDB {
 		
 		//Load the TxPoWTree
 		mTxPoWTree.loadDB(new File(basedb,"chaintree.db"));
+		
+		//And finally..
+		mP2PDB.loadDB(new File(basedb,"p2p.db"));
 	}
 	
 	public void saveAllDB() {
 		//Get the base Database folder
 		File basedb = getBaseDBFolder();
 		
-		//Clean shutdown of SQL DB
+		//Clean shutdown of SQL DBs
 		mTxPoWDB.saveDB();
+		mArchive.saveDB();
+		mWallet.saveDB();
 		
-		//Save all the rest
+		//JsonDBs
 		mUserDB.saveDB(new File(basedb,"userprefs.db"));
+		mP2PDB.saveDB(new File(basedb,"p2p.db"));
+		
+		//Custom
 		mCacscade.saveDB(new File(basedb,"cascade.db"));
 		mTxPoWTree.saveDB(new File(basedb,"chaintree.db"));
 	}

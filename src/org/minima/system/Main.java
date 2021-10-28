@@ -121,9 +121,6 @@ public class Main extends MessageProcessor {
 		
 		//No More timer Messages
 		TimerProcessor.stopTimerProcessor();
-				
-		//Now backup the  databases
-		MinimaDB.getDB().saveAllDB();
 		
 		//Wait for the networking to finish
 		while(!mNetwork.isShutDownComplete()) {
@@ -132,9 +129,14 @@ public class Main extends MessageProcessor {
 		
 		//Stop this..
 		stopMessageProcessor();
+				
+		//Now backup the  databases
+		MinimaDB.getDB().saveAllDB();
+		
+		//Wait for it..
 		while(!isShutdownComplete()) {
 			try {Thread.sleep(50);} catch (InterruptedException e) {}
-		}
+		}		
 	}
 	
 	public NetworkManager getNetworkManager() {
