@@ -17,6 +17,11 @@ import org.minima.utils.SqlDB;
 public class ArchiveManager extends SqlDB {
 
 	/**
+	 * How long does data remains in the Archive DB
+	 */
+	long MAX_SQL_MILLI = 1000 * 60 * 60 * 24;
+	
+	/**
 	 * PreparedStatements
 	 */
 	PreparedStatement SQL_INSERT_SYNCBLOCK 		= null;
@@ -24,6 +29,7 @@ public class ArchiveManager extends SqlDB {
 	PreparedStatement SQL_EXISTS_SYNCBLOCK 		= null;
 	PreparedStatement SQL_SELECT_RANGE			= null;
 	PreparedStatement SQL_TOTAL_COUNT 			= null;
+	PreparedStatement SQL_DELETE_TXBLOCKS		= null;
 	
 	public ArchiveManager() {
 		super();
@@ -66,6 +72,7 @@ public class ArchiveManager extends SqlDB {
 			SQL_EXISTS_SYNCBLOCK	= mSQLCOnnection.prepareStatement("SELECT block FROM syncblock WHERE txpowid=?");
 			SQL_TOTAL_COUNT			= mSQLCOnnection.prepareStatement("SELECT COUNT(*) as tot FROM syncblock");
 			SQL_SELECT_RANGE		= mSQLCOnnection.prepareStatement("SELECT syncdata FROM syncblock WHERE block>? AND block<? ORDER BY block DESC");
+			SQL_DELETE_TXBLOCKS		= mSQLCOnnection.prepareStatement("DELETE FROM syncblock WHERE timemilli < ?");
 			
 		} catch (SQLException e) {
 			MinimaLogger.log(e);
@@ -215,6 +222,27 @@ public class ArchiveManager extends SqlDB {
 		}
 		
 		return blocks;
+	}
+	
+	public synchronized int cleanDB() {
+		try {
+			//Current MAX time..
+			long maxtime = System.currentTimeMillis() - MAX_SQL_MILLI;
+			
+			//Set the parameters
+			SQL_DELETE_TXBLOCKS.clearParameters();
+			
+			//Set the time milli
+			SQL_DELETE_TXBLOCKS.setLong(1, maxtime);
+			
+			//Run the query
+			return SQL_DELETE_TXBLOCKS.executeUpdate();
+			
+		} catch (SQLException e) {
+			MinimaLogger.log(e);
+		}
+		
+		return 0;
 	}
 	
 	public static void main(String[] zArgs) {

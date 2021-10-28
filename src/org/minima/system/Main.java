@@ -205,14 +205,13 @@ public class Main extends MessageProcessor {
 				return;
 			}
 			
-//			//Check it..
+//			//Check it.. just in case.. 
 //			if(txpow.isTransaction()) {
 //				MinimaLogger.log("Transaction Mined! "+txpow.getTxPoWID() );
 //				
 //				//Check it..
 //				TxPoWChecker.checkTxPoW(MinimaDB.getDB().getTxPoWTree().getTip().getMMR(), txpow);
 //			}
-			
 			
 			//New TxPoW!.. add to database and send on to the Processor
 			mTxPoWProcessor.postProcessTxPoW(txpow);
@@ -234,16 +233,14 @@ public class Main extends MessageProcessor {
 		
 		}else if(zMessage.getMessageType().equals(MAIN_CLEANDB)) {
 			
-			System.gc();
-			
-			TxPoWDB txpdb = MinimaDB.getDB().getTxPoWDB();
-			
-//			MinimaLogger.log("CLEAN DB BEFORE .. ram:"+txpdb.getRamSize()+" sql:"+txpdb.getSqlSize());
-			
 			//Do some house keeping on the DB
 			MinimaDB.getDB().getTxPoWDB().cleanDB();
 			
-//			MinimaLogger.log("CLEAN DB AFTER .. ram:"+txpdb.getRamSize()+" sql:"+txpdb.getSqlSize());
+			//Same with the ArchiveDB
+			MinimaDB.getDB().getArchive().cleanDB();
+			
+			//Clean up the RAM Memory
+			System.gc();
 			
 			//Do it again..
 			PostTimerMessage(new TimerMessage(CLEANDB_TIMER, MAIN_CLEANDB));
