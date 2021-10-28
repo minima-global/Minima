@@ -19,7 +19,7 @@ public class ArchiveManager extends SqlDB {
 	/**
 	 * How long does data remains in the Archive DB
 	 */
-	long MAX_SQL_MILLI = 1000 * 60 * 60 * 24;
+	long MAX_SQL_MILLI = 1000 * 60 * 60 * 1;
 	
 	/**
 	 * PreparedStatements
