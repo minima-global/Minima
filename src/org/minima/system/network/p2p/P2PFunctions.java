@@ -1,9 +1,11 @@
 package org.minima.system.network.p2p;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
+import org.minima.system.network.minima.NIOClientInfo;
 import org.minima.system.network.minima.NIOManager;
 import org.minima.system.network.minima.NIOMessage;
 import org.minima.utils.json.JSONArray;
@@ -48,7 +50,6 @@ public class P2PFunctions {
 	 * Disconnect using the UID
 	 */
 	public static void disconnect(String zUID) {
-		//Call the NIOManager
 		Main.getInstance().getNIOManager().disconnect(zUID);
 	}
 	
@@ -57,8 +58,23 @@ public class P2PFunctions {
 	 * 
 	 * status shows connecting or connected..
 	 */
-	public static JSONArray getAllConnections() {
-		return Main.getInstance().getNetworkManager().getNIOManager().getAllConnections();
+	public static ArrayList<NIOClientInfo> getAllConnections() {
+		return Main.getInstance().getNetworkManager().getNIOManager().getAllConnectionInfo();
+	}
+	
+	/**
+	 * Get a specific Client.. you can set and get extra data.. 
+	 */
+	public static NIOClientInfo getNIOCLientInfo(String zUID) {
+		ArrayList<NIOClientInfo> allclients = getAllConnections();
+		
+		for(NIOClientInfo info : allclients) {
+			if(info.getUID().equals(zUID)) {
+				return info;
+			}
+		}
+		
+		return null;
 	}
 	
 	/**

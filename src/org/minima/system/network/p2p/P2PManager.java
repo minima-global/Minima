@@ -1,5 +1,6 @@
 package org.minima.system.network.p2p;
 
+import org.minima.database.MinimaDB;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
@@ -40,14 +41,20 @@ public class P2PManager extends MessageProcessor {
 		//Process messages..
 		if(zMessage.isMessageType(P2PFunctions.P2P_INIT)) {
 			
+			//Get the P2P DB
+			P2PDB p2pdb = MinimaDB.getDB().getP2PDB();
+			
 			//Initialise..
 			//..
 			
 		}else if(zMessage.isMessageType(P2PFunctions.P2P_SHUTDOWN)) {			
 			
-			//Save stuff..
+			//Write stuff to P2P DB..
 			//..
 			
+			
+			
+			//I save the DB.. you don't do it..!
 			
 			//And finish with..
 			stopMessageProcessor();

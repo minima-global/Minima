@@ -1,7 +1,11 @@
 package org.minima.system.commands.all;
 
+import java.util.ArrayList;
+
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
+import org.minima.system.network.minima.NIOClientInfo;
+import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
 public class network extends Command {
@@ -15,15 +19,16 @@ public class network extends Command {
 		JSONObject ret = getJSONReply();
 		
 		//Get the NIO Details
-		JSONObject nio = new JSONObject();
-		nio.put("nio", Main.getInstance().getNetworkManager().getNIOManager().getAllConnections());
-		ret.put("response", nio);
+		ArrayList<NIOClientInfo> clients = Main.getInstance().getNetworkManager().getNIOManager().getAllConnectionInfo();
 		
-		//Get the P2P details
-		//..
+		//Create a JSONArray
+		JSONArray clarr = new JSONArray();
+		for(NIOClientInfo info : clients) {
+			clarr.add(info.toJSON());
+		}
 		
-		//Get the RPC details..
-		//..
+		//Add to the response
+		ret.put("response", clarr);
 		
 		return ret;
 	}
