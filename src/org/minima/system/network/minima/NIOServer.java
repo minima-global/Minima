@@ -14,7 +14,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.minima.objects.base.MiniData;
 import org.minima.utils.MinimaLogger;
-import org.minima.utils.json.JSONArray;
 import org.minima.utils.messages.Message;
 
 public class NIOServer implements Runnable {

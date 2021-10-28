@@ -4,7 +4,6 @@ import java.util.ArrayList;
 
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.objects.Coin;
-import org.minima.objects.base.MiniData;
 
 public class TxPoWSearcher {
 

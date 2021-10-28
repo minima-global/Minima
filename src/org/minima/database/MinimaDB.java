@@ -12,7 +12,6 @@ import org.minima.database.userprefs.UserDB;
 import org.minima.database.wallet.Wallet;
 import org.minima.system.network.p2p.P2PDB;
 import org.minima.system.params.GeneralParams;
-import org.minima.utils.JsonDB;
 import org.minima.utils.MinimaLogger;
 
 public class MinimaDB {
