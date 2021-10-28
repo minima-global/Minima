@@ -29,7 +29,7 @@ import org.minima.utils.json.JSONObject;
 public class tokencreate extends Command {
 
 	public tokencreate() {
-		super("tokencreate","[name:] [amount:] (description:) (decimals:) (script:)  - Create a token");
+		super("tokencreate","[name:] [amount:] (decimals:) (script:)  - Create a token");
 	}
 	
 	@Override
@@ -40,12 +40,13 @@ public class tokencreate extends Command {
 		String name 	= (String)getParams().get("name");
 		String amount   = (String)getParams().get("amount");
 		
-		//Optional
-		String description = "";
-		if(getParams().containsKey("description")) {
-			description	= (String)getParams().get("description");
-		}
+//		//Optional
+//		String description = "";
+//		if(getParams().containsKey("description")) {
+//			description	= (String)getParams().get("description");
+//		}
 		
+		//How many decimals - can be 0.. for an NFT
 		int decimals = 8;
 		if(getParams().containsKey("decimals")) {
 			decimals = Integer.parseInt((String)getParams().get("decimals"));
