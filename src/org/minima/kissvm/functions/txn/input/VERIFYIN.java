@@ -56,15 +56,10 @@ public class VERIFYIN extends MinimaFunction{
 		MiniNumber inamt = cc.getAmount();
 		
 		//Could be a token Amount!
-		if(!cc.getTokenID().isEqual(Coin.MINIMA_TOKENID)) {
-			//Get the Multiple..
-			Token td = zContract.getWitness().getTokenDetail(cc.getTokenID());
-			if(td == null) {
-				throw new ExecutionException("No Token found for ID "+cc.getTokenID());
-			}
-			
+		if(!cc.getTokenID().isEqual(Token.TOKENID_MINIMA)) {
+			//Get the Token
+			Token td = cc.getToken();
 			inamt = td.getScaledTokenAmount(cc.getAmount());
-//			inamt = cc.getAmount().mult(td.getScaleFactor());
 		}
 		
 		//Check Amount

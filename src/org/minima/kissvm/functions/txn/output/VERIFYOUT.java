@@ -52,22 +52,22 @@ public class VERIFYOUT extends MinimaFunction{
 		boolean addr = address.isEqual(cc.getAddress());  
 		boolean tok  = tokenid.isEqual(cc.getTokenID());  
 		
+		//The amount may need to be scaled
 		MiniNumber outamt = cc.getAmount();
 		
 		//Could be a token Amount!
-		if(!cc.getTokenID().isEqual(Coin.MINIMA_TOKENID)) {
-			//Get the Multiple..
-			Token td = zContract.getWitness().getTokenDetail(cc.getTokenID());
-			if(td == null) {
-				throw new ExecutionException("No Token found for ID "+cc.getTokenID());
-			}
+		if(!cc.getTokenID().isEqual(Token.TOKENID_MINIMA)) {
+			//Get the token details
+			Token cctok = cc.getToken();
 			
-			outamt = td.getScaledTokenAmount(cc.getAmount());
-//			outamt = cc.getAmount().mult(td.getScaleFactor());
+			//Scale the amount
+			outamt = cctok.getScaledTokenAmount(cc.getAmount());
 		}
 		
+		//Are they equal
 		boolean amt  = outamt.isEqual(amount);
 		
+		//If all equal..
 		boolean ver = addr && amt && tok;
 		
 		//Return if all true
