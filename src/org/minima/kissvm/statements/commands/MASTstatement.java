@@ -11,8 +11,8 @@ import org.minima.kissvm.statements.StatementParser;
 import org.minima.kissvm.tokens.ScriptToken;
 import org.minima.kissvm.tokens.ScriptTokenizer;
 import org.minima.kissvm.values.HexValue;
+import org.minima.objects.ScriptProof;
 import org.minima.objects.Witness;
-import org.minima.objects.proofs.ScriptProof;
 
 public class MASTstatement implements Statement {
 

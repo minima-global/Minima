@@ -7,12 +7,11 @@ import org.minima.kissvm.values.BooleanValue;
 import org.minima.kissvm.values.HexValue;
 import org.minima.kissvm.values.Value;
 import org.minima.objects.base.MiniData;
-import org.minima.objects.keys.MultiKey;
+import org.minima.objects.keys.Signature;
+import org.minima.objects.keys.TreeKey;
 
 /**
- * 
  * @author spartacusrex
- *
  */
 public class CHECKSIG extends MinimaFunction {
 
@@ -34,19 +33,25 @@ public class CHECKSIG extends MinimaFunction {
 		HexValue sig    = zContract.getHexParam(2, this);
 		
 		//Check it..
-		MiniData pubk = new MiniData(pubkey.getMiniData().getData());
+		MiniData pubk = new MiniData(pubkey.getMiniData().getBytes());
 		
 		//Simple checks..
 		if(pubk.getLength() == 0 || sig.getMiniData().getLength()==0) {
-			throw new ExecutionException("Invalid ZERO length param,s for CHECKSIG");
+			throw new ExecutionException("Invalid ZERO length params for CHECKSIG");
 		}
 		
-		//Create a MultiKey to check the signature
-		MultiKey checker = new MultiKey();
+		//Create a TreeKey to check the signature
+		TreeKey checker = new TreeKey();
 		checker.setPublicKey(pubk);
 		
+		//Convert the bytes into a signature Object
+		Signature signature = Signature.convertMiniDataVersion(sig.getMiniData());
+		
+		//Get the signed data
+		MiniData sigdata = data.getMiniData();
+				
 		//Check it..
-		boolean ok = checker.verify(new MiniData(data.getRawData()), sig.getMiniData());
+		boolean ok = checker.verify(sigdata,signature);
 		
 		return new BooleanValue(ok);
 	}
