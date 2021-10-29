@@ -56,6 +56,13 @@ public class Minima {
 				}else if(arg.equals("-private")) {
 					GeneralParams.PRIVATE_NETWORK 	= true;
 				
+				}else if(arg.equals("-nop2p")) {
+					GeneralParams.P2P_ENABLED = false;
+				
+				}else if(arg.equals("-p2pnode")) {
+					//What is the root node to connect the P2P too.. can be comma separated
+					GeneralParams.P2P_ROOTNODE = zArgs[counter++];
+					
 				}else if(arg.equals("-automine")) {
 					GeneralParams.AUTOMINE 			= true;
 				
@@ -72,6 +79,7 @@ public class Minima {
 					GeneralParams.AUTOMINE 			= true;
 					
 				}else if(arg.equals("-test")) {
+					GeneralParams.TEST_PARAMS = true;
 					GeneralParams.PRIVATE_NETWORK 	= true;
 					TestParams.setTestParams();
 				

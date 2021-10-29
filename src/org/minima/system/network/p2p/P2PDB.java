@@ -1,6 +1,5 @@
 package org.minima.system.network.p2p;
 
-import org.minima.system.params.GlobalParams;
 import org.minima.utils.JsonDB;
 
 public class P2PDB extends JsonDB {

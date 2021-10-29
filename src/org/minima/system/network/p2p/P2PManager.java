@@ -1,7 +1,6 @@
 package org.minima.system.network.p2p;
 
 import org.minima.database.MinimaDB;
-import org.minima.utils.JsonDB;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
