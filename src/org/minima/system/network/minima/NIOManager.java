@@ -219,7 +219,7 @@ public class NIOManager extends MessageProcessor {
 	/**
 	 * Connect to a client.. in a separate thread so returns immediately
 	 */
-	public void connect(NIOClient zNIOClient) {
+	private void connect(NIOClient zNIOClient) {
 		
 		Runnable connector = new Runnable() {
 			
