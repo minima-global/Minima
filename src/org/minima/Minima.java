@@ -21,15 +21,6 @@ public class Minima {
 
 	public static void main(String[] zArgs) {
 		
-		MinimaLogger.log("**********************************************");
-		MinimaLogger.log("*  __  __  ____  _  _  ____  __  __    __    *");
-		MinimaLogger.log("* (  \\/  )(_  _)( \\( )(_  _)(  \\/  )  /__\\   *");
-		MinimaLogger.log("*  )    (  _)(_  )  (  _)(_  )    (  /(__)\\  *");
-		MinimaLogger.log("* (_/\\/\\_)(____)(_)\\_)(____)(_/\\/\\_)(__)(__) *");
-		MinimaLogger.log("*                                            *");
-		MinimaLogger.log("**********************************************");
-		MinimaLogger.log("Welcome to Minima "+GlobalParams.MINIMA_VERSION+" - for assistance type help. Then press enter.");
-		
 		//Set the main configuration folder
 		File conf = new File(System.getProperty("user.home"),".minima");
 		GeneralParams.CONFIGURATION_FOLDER = conf.getAbsolutePath(); 
@@ -110,6 +101,15 @@ public class Minima {
 				}
 			}
 		}
+		
+		MinimaLogger.log("**********************************************");
+		MinimaLogger.log("*  __  __  ____  _  _  ____  __  __    __    *");
+		MinimaLogger.log("* (  \\/  )(_  _)( \\( )(_  _)(  \\/  )  /__\\   *");
+		MinimaLogger.log("*  )    (  _)(_  )  (  _)(_  )    (  /(__)\\  *");
+		MinimaLogger.log("* (_/\\/\\_)(____)(_)\\_)(____)(_/\\/\\_)(__)(__) *");
+		MinimaLogger.log("*                                            *");
+		MinimaLogger.log("**********************************************");
+		MinimaLogger.log("Welcome to Minima "+GlobalParams.MINIMA_VERSION+" - for assistance type help. Then press enter.");
 		
 		//Main handler..
 		Main main = new Main();
