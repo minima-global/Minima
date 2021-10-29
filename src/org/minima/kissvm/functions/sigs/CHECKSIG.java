@@ -10,7 +10,6 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.keys.MultiKey;
 
 /**
- * for now only retur  true..
  * 
  * @author spartacusrex
  *
