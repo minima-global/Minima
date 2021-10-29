@@ -16,28 +16,40 @@ public class connect extends Command {
 	public JSONObject runCommand() throws Exception {
 		JSONObject ret = getJSONReply();
 		
-		//Get the txpowid
+		//Get the host:port
 		String fullhost = (String)getParams().get("host");
 		if(fullhost == null) {
 			throw new Exception("No host specified");
 		}
 		
-		//IP and PORT
-		int index 	 = fullhost.indexOf(":");
-		if(index == -1) {
+		//Create the Message
+		Message connect = createConnectMessage(fullhost);
+		if(connect == null) {
 			throw new Exception("Must specify host:port");
 		}
 		
-		String ip 	 = fullhost.substring(0,index).trim();
-		String ports = fullhost.substring(index+1).trim();
+		Main.getInstance().getNIOManager().PostMessage(connect);
+		
+		ret.put("message", "Attempting to connect to "+fullhost);
+	
+		return ret;
+	}
+
+	public static Message createConnectMessage(String zFullHost) {
+		//IP and PORT
+		int index = zFullHost.indexOf(":");
+		if(index == -1) {
+			return null;
+		}
+		
+		String ip 	 = zFullHost.substring(0,index).trim();
+		String ports = zFullHost.substring(index+1).trim();
 		
 		int port = 0;
 		try {
-			port 	 = Integer.parseInt(ports);
+			port = Integer.parseInt(ports);
 		}catch(NumberFormatException exc) {
-			if(index == -1) {
-				new Exception("Port not an integer");
-			}
+			return null;
 		}
 		
 		//Post a message
@@ -45,13 +57,9 @@ public class connect extends Command {
 		msg.addString("host", ip);
 		msg.addInteger("port", port);
 		
-		Main.getInstance().getNIOManager().PostMessage(msg);
-		
-		ret.put("message", "Attempting to connect to "+fullhost);
-	
-		return ret;
+		return msg;
 	}
-
+	
 	@Override
 	public Command getFunction() {
 		return new connect();

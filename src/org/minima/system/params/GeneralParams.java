@@ -51,4 +51,9 @@ public class GeneralParams {
 	 * Host and IP of the first P2P node..
 	 */
 	public static String P2P_ROOTNODE = "";
+	
+	/**
+	 * Manual list of Minima nodes to connect to
+	 */
+	public static String CONNECT_LIST = "";
 }
