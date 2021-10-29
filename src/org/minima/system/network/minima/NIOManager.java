@@ -219,7 +219,7 @@ public class NIOManager extends MessageProcessor {
 	/**
 	 * Connect to a client.. in a separate thread so returns immediately
 	 */
-	private void connectAttempt(NIOClient zNIOClient) {
+	private void connectAttempt(final NIOClient zNIOClient) {
 		
 		Runnable connector = new Runnable() {
 			
@@ -232,10 +232,10 @@ public class NIOManager extends MessageProcessor {
 					SocketChannel sc 		= SocketChannel.open(addr);
 					
 					//Remove from the connecting..
-					mConnectingClients.remove(zNIOClient.getUID());
+					NIOManager.this.mConnectingClients.remove(zNIOClient.getUID());
 					
 					//we connected.. 
-					mNIOServer.regsiterNewSocket(sc);
+					NIOManager.this.mNIOServer.regsiterNewSocket(sc);
 					
 				}catch(Exception exc) {
 					//Try again in a minute..
