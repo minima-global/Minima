@@ -140,7 +140,7 @@ public class NIOManager extends MessageProcessor {
 			}
 			
 			//Connect in separate thread..
-			connect(nc);
+			connectAttempt(nc);
 			
 		}else if(zMessage.getMessageType().equals(NIO_DISCONNECT)) {
 			//Get the UID
@@ -219,7 +219,7 @@ public class NIOManager extends MessageProcessor {
 	/**
 	 * Connect to a client.. in a separate thread so returns immediately
 	 */
-	private void connect(NIOClient zNIOClient) {
+	private void connectAttempt(NIOClient zNIOClient) {
 		
 		Runnable connector = new Runnable() {
 			
