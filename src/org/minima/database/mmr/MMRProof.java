@@ -1,5 +1,6 @@
 package org.minima.database.mmr;
 
+import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -9,6 +10,7 @@ import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.Crypto;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
@@ -213,6 +215,29 @@ public class MMRProof implements Streamable {
 	public static MMRProof ReadFromStream(DataInputStream zIn) throws IOException{
 		MMRProof proof = new MMRProof();
 		proof.readDataStream(zIn);
+		return proof;
+	}
+	
+	/**
+	 * Convert a MiniData version into an MMRProof
+	 */
+	public static MMRProof convertMiniDataVersion(MiniData zMMRProof) {
+		ByteArrayInputStream bais 	= new ByteArrayInputStream(zMMRProof.getBytes());
+		DataInputStream dis 		= new DataInputStream(bais);
+		
+		MMRProof proof = null;
+		
+		try {
+			//Convert data into a TxPoW
+			proof = MMRProof.ReadFromStream(dis);
+		
+			dis.close();
+			bais.close();
+			
+		} catch (IOException e) {
+			MinimaLogger.log(e);
+		}
+		
 		return proof;
 	}
 }

@@ -1,13 +1,13 @@
 package org.minima.kissvm.functions.sha;
 
+import org.minima.database.mmr.MMRData;
+import org.minima.database.mmr.MMRProof;
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.functions.MinimaFunction;
 import org.minima.kissvm.values.HexValue;
 import org.minima.kissvm.values.Value;
 import org.minima.objects.base.MiniData;
-import org.minima.objects.proofs.Proof;
-import org.minima.utils.Crypto;
 
 public class CHAINSHA extends MinimaFunction {
 
@@ -19,33 +19,23 @@ public class CHAINSHA extends MinimaFunction {
 	public Value runFunction(Contract zContract) throws ExecutionException {
 		checkExactParamNumber(requiredParams());
 		
-		HexValue val  = zContract.getHexParam(0, this);
-		MiniData data = val.getMiniData();
+		//Get the initial data
+		MiniData data = zContract.getHexParam(0, this).getMiniData();
 
-		//Get the hash data chain + 1 byte for left right 
+		//Create an MMRData object - 0 value..
+		MMRData mmrdata = new MMRData(data);
+		
+		//Get the proof chain 
 		HexValue chain = zContract.getHexParam(1, this);
 		
-		//Bit Strength
-		int bits;
-		try {
-			bits = Proof.getChainSHABits(chain.toString());
-		} catch (Exception e) {
-			throw new ExecutionException(e.toString());
-		}
+		//Create into the MMRProof..
+		MMRProof proof = MMRProof.convertMiniDataVersion(chain.getMiniData());
 		
-		//Hash the data
-		byte[] hash = Crypto.getInstance().hashData(data.getData(), bits);
-		MiniData finalhash = new MiniData(hash);
-		
-		//Create a proof..
-		Proof chainproof = new Proof();
-
-		//Hash the Input..		
-		chainproof.setData(finalhash);
-		chainproof.setProof(chain.getMiniData());
-		
+		//And calculate the final chain value..
+		MMRData root = proof.calculateProof(mmrdata); 
+				
 		//Return..
-		return new HexValue(chainproof.getFinalHash());
+		return new HexValue(root.getData());
 	}
 	
 	@Override
