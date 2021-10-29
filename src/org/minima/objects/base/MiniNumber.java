@@ -43,12 +43,12 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 	 * 
 	 * 2^64 - 1 or as HEX 0xFFFFFFFFFFFFFFFF
 	 */
-	protected static final BigDecimal MAX_MININUMBER = new BigDecimal(2).pow(64).subtract(BigDecimal.ONE);
+	public static final BigDecimal MAX_MININUMBER = new BigDecimal(2).pow(64).subtract(BigDecimal.ONE);
 	
 	/**
 	 * The Minimum value any MiniNumber can be..
 	 */
-	protected static final BigDecimal MIN_MININUMBER = MAX_MININUMBER.negate();
+	public static final BigDecimal MIN_MININUMBER = MAX_MININUMBER.negate();
 	
 	/**
 	 * The smallest unit possible
