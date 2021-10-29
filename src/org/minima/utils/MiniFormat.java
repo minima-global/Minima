@@ -3,6 +3,7 @@ package org.minima.utils;
 import java.math.BigInteger;
 import java.util.Iterator;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.json.JSONArray;
@@ -165,6 +166,37 @@ public class MiniFormat {
 		return num;
 	}
 	
+	public static String ConvertMilliToTime(long zMilli) {
+		
+		long milliseconds = zMilli;
+		
+		long dy = TimeUnit.MILLISECONDS.toDays(milliseconds);
+		
+		long yr = dy / 365;
+		dy %= 365;
+		
+		long mn = dy / 30;
+		dy %= 30;
+		
+		long wk = dy / 7;
+		dy %= 7;
+		
+		long hr = TimeUnit.MILLISECONDS.toHours(milliseconds)
+				- TimeUnit.DAYS.toHours(TimeUnit.MILLISECONDS.toDays(milliseconds));
+		
+		long min = TimeUnit.MILLISECONDS.toMinutes(milliseconds)
+				- TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(milliseconds));
+		
+		long sec = TimeUnit.MILLISECONDS.toSeconds(milliseconds)
+				- TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(milliseconds));
+		
+		long ms = TimeUnit.MILLISECONDS.toMillis(milliseconds)
+				- TimeUnit.SECONDS.toMillis(TimeUnit.MILLISECONDS.toSeconds(milliseconds));
+		
+		return String.format("%d Years %d Months %d Weeks %d Days %d Hours %d Minutes %d Seconds %d Milliseconds", 
+						yr,mn, wk, dy, hr, min, sec, ms);
+	}
+
 	public static String createRandomString(int len) {
 		Random rand = new Random();
 		byte[] data = new byte[len];

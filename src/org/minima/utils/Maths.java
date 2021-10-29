@@ -89,42 +89,13 @@ public class Maths {
 	    // bases, correct the result, NOT this number!
 	}
 	
-	public static String ConvertMilliToTime(long zMilli) {
-		
-		long milliseconds = zMilli;
-		
-		long dy = TimeUnit.MILLISECONDS.toDays(milliseconds);
-		
-		long yr = dy / 365;
-		dy %= 365;
-		
-		long mn = dy / 30;
-		dy %= 30;
-		
-		long wk = dy / 7;
-		dy %= 7;
-		
-		long hr = TimeUnit.MILLISECONDS.toHours(milliseconds)
-				- TimeUnit.DAYS.toHours(TimeUnit.MILLISECONDS.toDays(milliseconds));
-		
-		long min = TimeUnit.MILLISECONDS.toMinutes(milliseconds)
-				- TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(milliseconds));
-		
-		long sec = TimeUnit.MILLISECONDS.toSeconds(milliseconds)
-				- TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(milliseconds));
-		
-		long ms = TimeUnit.MILLISECONDS.toMillis(milliseconds)
-				- TimeUnit.SECONDS.toMillis(TimeUnit.MILLISECONDS.toSeconds(milliseconds));
-		
-		return String.format("%d Years %d Months %d Weeks %d Days %d Hours %d Minutes %d Seconds %d Milliseconds", 
-						yr,mn, wk, dy, hr, min, sec, ms);
-	}	
-	
 	public static void main(String[] zArgs) {
 		
-		MiniData diff 	= new MiniData("0xFFFF");
+		BigInteger size = new BigInteger("255");
 		
-		for(int i=1;i<65536;i++) {
+		MiniData diff 	= new MiniData(size);
+		
+		for(int i=1;i<=size.intValue();i++) {
 			BigInteger val  = new BigInteger(""+i);
 			MiniData txpow 	= new MiniData(val);
 		
@@ -132,13 +103,10 @@ public class Maths {
 			int tester = supbig.bitLength()-1;
 			int myway = (int) Maths.log2BI(supbig);
 			
-			if(tester != myway) {
+//			if(tester != myway) {
 				System.out.println(txpow.to0xString()+" new:"+tester+" old:"+myway);
-			}
+//			}
 		}
-		
-		
-		
 	}
 	
 }

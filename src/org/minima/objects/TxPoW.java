@@ -9,6 +9,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.math.MathContext;
 import java.util.ArrayList;
 
@@ -494,7 +495,7 @@ public class TxPoW implements Streamable {
 		}
 		
 		//What Super Level are we..
-		_mSuperBlock = Maths.getSuperLevel(getBlockDifficulty(), _mTxPOWID);
+		_mSuperBlock = getSuperLevel(getBlockDifficulty(), _mTxPOWID);
 	
 		//What size are we..
 		try {
@@ -513,5 +514,18 @@ public class TxPoW implements Streamable {
 		} catch (IOException e) {
 			MinimaLogger.log(e);
 		}
+	}
+	
+	/**
+	 * This calculates the Log2 of the Difficulty and TxPoW unit..
+	 */
+	public int getSuperLevel(MiniData zBlockDifficulty, MiniData zTxPoWID) {
+		//What is the 
+		BigInteger quot = zBlockDifficulty.getDataValue().divide(zTxPoWID.getDataValue());
+		
+		//Use a clever trick.. the bit length
+		int sup = quot.bitLength()-1;
+		
+		return sup;
 	}
 }
