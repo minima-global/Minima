@@ -18,11 +18,14 @@ import org.minima.kissvm.values.HexValue;
 import org.minima.kissvm.values.NumberValue;
 import org.minima.kissvm.values.StringValue;
 import org.minima.kissvm.values.Value;
+import org.minima.objects.Coin;
 import org.minima.objects.Magic;
 import org.minima.objects.StateVariable;
 import org.minima.objects.Transaction;
+import org.minima.objects.TxPoW;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniNumber;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
 
@@ -97,11 +100,19 @@ public class Contract {
 	 * Main Constructor
 	 * @param zRamScript - the RamScript
 	 */
-	public Contract(String zRamScript, String zSigs, Witness zWitness, Transaction zTransaction, ArrayList<StateVariable> zPrevState) {	
-		this(zRamScript, zSigs, zWitness, zTransaction, zPrevState, false);
+	public Contract(String zRamScript, String zSignatures, Witness zWitness, Transaction zTransaction, ArrayList<StateVariable> zPrevState) {	
+		this(zRamScript, new ArrayList<>(), zWitness, zTransaction, zPrevState, false);
 	}
 	
-	public Contract(String zRamScript, String zSigs, Witness zWitness, Transaction zTransaction, ArrayList<StateVariable> zPrevState, boolean zTrace) {
+	public Contract(String zRamScript, String zSignatures, Witness zWitness, Transaction zTransaction, ArrayList<StateVariable> zPrevState, boolean zTraceON) {	
+		this(zRamScript, new ArrayList<>(), zWitness, zTransaction, zPrevState, zTraceON);
+	}
+	
+	public Contract(String zRamScript, ArrayList<MiniData> zSignatures, Witness zWitness, Transaction zTransaction, ArrayList<StateVariable> zPrevState) {	
+		this(zRamScript, zSignatures, zWitness, zTransaction, zPrevState, false);
+	}
+	
+	public Contract(String zRamScript, ArrayList<MiniData> zSignatures, Witness zWitness, Transaction zTransaction, ArrayList<StateVariable> zPrevState, boolean zTrace) {
 		//Trace?
 		mCompleteLog ="";
 		mTraceON     = zTrace;
@@ -134,11 +145,9 @@ public class Contract {
 		traceLog("Size       : "+mRamScript.length());
 		
 		//Load the Signatures
-		StringTokenizer strtok = new StringTokenizer(zSigs, "#");
-		while(strtok.hasMoreTokens()) {
-			String sig = strtok.nextToken().trim();
-			traceLog("Signature : "+sig);
-			mSignatures.add( (HexValue)Value.getValue(sig) );
+		for(MiniData sig : zSignatures) {
+			traceLog("Signature : "+sig.to0xString());
+			mSignatures.add( new HexValue(sig) );
 		}
 		
 		//Transaction..
@@ -189,8 +198,35 @@ public class Contract {
 		}
 	}
 	
-	public void setGlobals() {
+	public void setGlobals(	MiniNumber zBlock, 
+							TxPoW zTrx, 
+							int zInput, 
+							MiniNumber zInputBlkCreate, 
+							String zScript) {
 		
+		//The Transaction
+		Transaction trx = zTrx.getTransaction();
+		
+		//Get the Coin
+		Coin cc = trx.getAllInputs().get(zInput);
+		
+		//set the environment
+		setGlobalVariable("@BLKNUM", new NumberValue(zBlock));
+		setGlobalVariable("@INBLKNUM", new NumberValue(zInputBlkCreate));
+		setGlobalVariable("@BLKDIFF", new NumberValue(zBlock.sub(zInputBlkCreate)));
+		
+//		setGlobalVariable("@BLKTIME", new NumberValue(zBlock.getTimeMilli()));
+//		setGlobalVariable("@PREVBLKHASH", new HexValue(zBlock.getParentID()));
+		
+		setGlobalVariable("@INPUT", new NumberValue(zInput));
+		setGlobalVariable("@AMOUNT", new NumberValue(cc.getAmount()));
+		setGlobalVariable("@ADDRESS", new HexValue(cc.getAddress()));
+		setGlobalVariable("@COINID", new HexValue(cc.getCoinID()));
+		setGlobalVariable("@TOKENID", new HexValue(cc.getTokenID()));
+		setGlobalVariable("@SCRIPT", new StringValue(zScript));
+		
+		setGlobalVariable("@TOTIN", new NumberValue(trx.getAllInputs().size()));
+		setGlobalVariable("@TOTOUT", new NumberValue(trx.getAllOutputs().size()));
 	}
 	
 	public void setGlobalVariable(String zGlobal, Value zValue) {

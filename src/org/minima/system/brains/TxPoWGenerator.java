@@ -107,7 +107,7 @@ public class TxPoWGenerator {
 		for(TxPoW memtxp : mempool) {
 			
 			//Check if Valid!
-			if(TxPoWChecker.checkTxPoW(tip.getMMR(), memtxp)) {
+			if(TxPoWChecker.checkTxPoW(tip.getMMR(), memtxp, txpow.getBlockNumber())) {
 				//Add to our list
 				chosentxns.add(memtxp);
 				

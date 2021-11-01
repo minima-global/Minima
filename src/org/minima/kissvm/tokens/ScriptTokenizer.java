@@ -258,27 +258,4 @@ public class ScriptTokenizer {
 		return tokens;
 	}
 	
-	public static void main(String[] zArgs) {
-		
-//		System.out.println(isNumber("22"));
-//		System.out.println(isNumber("22.88"));
-//		System.out.println(isNumber("10.88"));
-		
-		String script = "LET (1) = 21";
-//		String script = "\nLET";
-		
-		try {
-			//Then run it..
-			Contract cc = new Contract(script, "", new Witness(), new Transaction(), new ArrayList<StateVariable>(),true);
-			cc.setGlobalVariable("@BLKNUM", new NumberValue(22));
-			cc.run();
-			
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		
-	}
-	
 }

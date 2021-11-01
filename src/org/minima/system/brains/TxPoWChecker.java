@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import org.minima.database.mmr.MMR;
 import org.minima.database.mmr.MMRData;
 import org.minima.database.txpowtree.TxPoWTreeNode;
+import org.minima.kissvm.Contract;
 import org.minima.objects.Coin;
 import org.minima.objects.CoinProof;
 import org.minima.objects.ScriptProof;
@@ -13,6 +14,7 @@ import org.minima.objects.TxBlock;
 import org.minima.objects.TxPoW;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniNumber;
 import org.minima.objects.keys.Signature;
 import org.minima.objects.keys.TreeKey;
 import org.minima.utils.MinimaLogger;
@@ -25,7 +27,7 @@ public class TxPoWChecker {
 	public static boolean checkTxPoWBlock(MMR zParentMMR, TxPoW zTxPoW, ArrayList<TxPoW> zTransactions) {
 		//First check this
 		if(zTxPoW.isTransaction()) {
-			boolean valid = checkTxPoW(zParentMMR, zTxPoW);
+			boolean valid = checkTxPoW(zParentMMR, zTxPoW, zTxPoW.getBlockNumber());
 			if(!valid) {
 				return false;
 			}
@@ -33,7 +35,7 @@ public class TxPoWChecker {
 		
 		//Now check all the internal Transactions
 		for(TxPoW txpow : zTransactions) {
-			boolean valid = checkTxPoW(zParentMMR, txpow);
+			boolean valid = checkTxPoW(zParentMMR, txpow, zTxPoW.getBlockNumber());
 			if(!valid) {
 				return false;
 			}
@@ -53,7 +55,7 @@ public class TxPoWChecker {
 		return true;
 	}
 	
-	public static boolean checkTxPoW(MMR zTipMMR, TxPoW zTxPoW) {
+	public static boolean checkTxPoW(MMR zTipMMR, TxPoW zTxPoW, MiniNumber zBlock) {
 		//Get the main Transaction..
 		Transaction transaction = zTxPoW.getTransaction();
 		if(transaction.isEmpty()) {
@@ -104,9 +106,14 @@ public class TxPoWChecker {
 				return false;
 			}
 			
-			//Run the scripts
-			
-			
+			//Check the Script
+			Contract contract = new Contract(prfs.getScript().toString(), witness.getAllSignatureKeys(), witness, transaction, input.getState());
+			contract.setGlobals(zBlock, zTxPoW, i, cproof.getCoin().getBlockCreated(), prfs.getScript().toString());
+			contract.run();
+			if(!contract.isSuccess()) {
+				MinimaLogger.log("Script FAIL "+prfs.getScript().toString());
+				return false;
+			}
 		}
 		
 		//All good

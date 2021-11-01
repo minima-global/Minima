@@ -70,36 +70,6 @@ public class Witness implements Streamable {
 		return mCoinProofs;
 	}
 
-	
-//	/**
-//	 * Token Proofs
-//	 */
-//	
-//	//Temp function when testing scripts - and no MMRData
-//	public void addTempTokenDetails(Token zDetails) {
-//		if(getTokenDetail(zDetails.getTokenID()) == null){
-//			mTempTokens.add(zDetails);	
-//		}
-//	}
-//	
-//	public Token getTokenDetail(MiniData zTokenID) {
-//		//Check MMR Details
-//		for(MMRProof proof : mCoinProofs) {
-//			if(proof.getMMRData().getToken().getTokenID().isEqual(zTokenID)) {
-//				return proof.getMMRData().getToken();
-//			}
-//		}
-//		
-//		//Check Temp - When runscript etc and no MMR proofs attached
-//		for(Token td : mTempTokens) {
-//			if(td.getTokenID().isEqual(zTokenID)) {
-//				return td;
-//			}
-//		}
-//		
-//		return null;
-//	}
-	
 	/**
 	 * Script Proofs
 	 * 
