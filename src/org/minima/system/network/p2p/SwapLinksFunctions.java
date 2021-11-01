@@ -56,12 +56,21 @@ public class SwapLinksFunctions {
         boolean reconnect = zMessage.getBoolean("reconnect");
 
         // Remove uid from current connections
+        InetSocketAddress removedAddress = null;
         if (incoming) {
-            state.getInLinks().remove(uid);
-            state.getNoneP2PLinks().remove(uid);
+
+            removedAddress = state.getInLinks().remove(uid);
+            if (removedAddress == null) {
+                removedAddress = state.getNoneP2PLinks().remove(uid);
+            }
         } else {
-            state.getOutLinks().remove(uid);
+            removedAddress = state.getOutLinks().remove(uid);
         }
+        if (removedAddress != null){
+            // Removed address from known peers when it goes down
+            state.getKnownPeers().remove(removedAddress);
+        }
+
     }
 
     public static void processGreeting(P2PState state, Greeting greeting, String uid) {
@@ -75,30 +84,28 @@ public class SwapLinksFunctions {
         state.getKnownPeers().addAll(newPeers);
         // TODO: Limit Set Size
         NIOClientInfo client = P2PFunctions.getNIOCLientInfo(uid);
-        String host = client.getHost();
-        int port = greeting.getMyMinimaPort();
-        InetSocketAddress minimaAddress = new InetSocketAddress(host, port);
-        state.getKnownPeers().add(minimaAddress);
+        if (client != null) {
+            String host = client.getHost();
+            int port = greeting.getMyMinimaPort();
+            InetSocketAddress minimaAddress = new InetSocketAddress(host, port);
+            state.getKnownPeers().add(minimaAddress);
 
-        // Peers are assumed to not be P2P Links until we get a valid P2P Greeting
-        state.getNoneP2PLinks().remove(uid);
-        if (client.isIncoming()){
-            state.getInLinks().put(uid, minimaAddress);
-//            if (state.getInLinks().size() > P2PParams.TGT_NUM_LINKS) {
-//                P2PFunctions.disconnect(uid);
-//                MinimaLogger.log("[-] Too many incoming connections, disconnecting");
-//            }
-        } else {
-            state.getOutLinks().put(uid, minimaAddress);
-            if (state.getOutLinks().size() > P2PParams.TGT_NUM_LINKS) {
-                P2PFunctions.disconnect(uid);
-                MinimaLogger.log("[-] Too many outgoing connections, disconnecting");
+            // Peers are assumed to not be P2P Links until we get a valid P2P Greeting
+            state.getNoneP2PLinks().remove(uid);
+            if (client.isIncoming()) {
+                state.getInLinks().put(uid, minimaAddress);
+            } else {
+                state.getOutLinks().put(uid, minimaAddress);
+                if (state.getOutLinks().size() > P2PParams.TGT_NUM_LINKS) {
+                    P2PFunctions.disconnect(uid);
+                    MinimaLogger.log("[-] Too many outgoing connections, disconnecting");
+                }
             }
-        }
 
-        if (state.isDoingDiscoveryConnection()){
-            state.setDoingDiscoveryConnection(false);
-            P2PFunctions.disconnect(uid);
+            if (state.isDoingDiscoveryConnection()) {
+                state.setDoingDiscoveryConnection(false);
+                P2PFunctions.disconnect(uid);
+            }
         }
     }
 
