@@ -365,6 +365,9 @@ public class MMR implements Streamable {
 	public MMRProof getProof(MMREntryNumber zEntryNumber) {
 		//Get this entry
 		MMREntry entry = getEntry(0, zEntryNumber);
+		if(entry.isEmpty()) {
+			MinimaLogger.log("ERROR MMR EMPTY!");
+		}
 		
 		//Get the Basic Proof..
 		MMRProof proof = getProofToPeak(zEntryNumber);

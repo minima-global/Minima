@@ -100,7 +100,8 @@ public class ScriptProof implements Streamable {
 	
 	public JSONObject toJSON() {
 		JSONObject json = new JSONObject();
-		json.put("address", mAddress.toJSON());
+		json.put("script", mScript.toString());
+		json.put("address", mAddress.getAddressData().to0xString());
 		json.put("proof", mProof.toJSON());
 		return json;
 	}
