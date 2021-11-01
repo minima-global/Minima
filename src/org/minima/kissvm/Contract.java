@@ -95,7 +95,7 @@ public class Contract {
 	
 	/**
 	 * Main Constructor
-	 * @param zRamScript - the RamScript in ASCII
+	 * @param zRamScript - the RamScript
 	 */
 	public Contract(String zRamScript, String zSigs, Witness zWitness, Transaction zTransaction, ArrayList<StateVariable> zPrevState) {	
 		this(zRamScript, zSigs, zWitness, zTransaction, zPrevState, false);
@@ -471,11 +471,14 @@ public class Contract {
 	 * @throws ExecutionException
 	 */
 	public Value getGlobal(String zGlobal) throws ExecutionException {
-		mMonotonic = false;
-		
 		Value ret = mGlobals.get(zGlobal);
 		if(ret==null) {
 			throw new ExecutionException("Global not found - "+zGlobal);
+		}
+		
+		//Will this break monotonic
+		if(zGlobal.equals("@BLKNUM") || zGlobal.equals("@BLKDIFF")) {
+			mMonotonic = false;
 		}
 		
 		return ret;
