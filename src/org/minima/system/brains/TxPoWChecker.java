@@ -93,6 +93,11 @@ public class TxPoWChecker {
 			CoinProof cproof = mmrproofs.get(i);
 			
 			//Check the Coin Proof
+			if(cproof.getCoin().getSpent()) {
+				MinimaLogger.log("Trying to spend spent coin..");
+				return false;
+			}
+			
 			boolean validmmr = zTipMMR.checkProofTimeValid(cproof.getCoin().getMMREntryNumber(), cproof.getMMRData(), cproof.getMMRProof());
 			if(!validmmr) {
 				MinimaLogger.log("Invalid MMR Proof!");
