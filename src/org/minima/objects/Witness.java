@@ -103,7 +103,7 @@ public class Witness implements Streamable {
 	/**
 	 * Script Proofs
 	 * 
-	 * Scripts and there merkle paths to addresses or MAST used in the transaction
+	 * Scripts and their merkle paths to addresses or MAST used in the transaction
 	 * 
 	 */
 	public void addScript(ScriptProof zScriptProof) {

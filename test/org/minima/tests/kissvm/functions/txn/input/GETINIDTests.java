@@ -21,8 +21,11 @@ import org.minima.kissvm.values.StringValue;
 import org.minima.kissvm.values.Value;
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
+import org.minima.objects.ScriptProof;
+import org.minima.objects.Token;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
+import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 
 //HEXValue GETINID (NumberValue input)
@@ -45,34 +48,45 @@ public class GETINIDTests {
         }
     }
 
+    public static Address newSimpleAddress() {
+    	//Random public key
+    	MiniData pubk = MiniData.getRandomData(32);
+    	
+    	//Create a simple address
+    	String simpleaddress = new String("RETURN SIGNEDBY("+pubk.to0xString()+")"); 
+    	
+    	//Now create the address
+    	Address addr = new Address(simpleaddress);
+    	
+    	return addr;
+    }
+    
     @Test
     public void testValidParams() {
 
-        MinimaDB mdb = new MinimaDB();
-
-        Address addr1 = mdb.getUserDB().newSimpleAddress();
-        Address addr2 = mdb.getUserDB().newSimpleAddress();
-        Address addr3 = mdb.getUserDB().newSimpleAddress();
-        Address addr4 = mdb.getUserDB().newSimpleAddress();
+    	Address addr1 = newSimpleAddress();
+        Address addr2 = newSimpleAddress();
+        Address addr3 = newSimpleAddress();
+        Address addr4 = newSimpleAddress();
 
         Transaction trx = new Transaction();
 
-        Coin in1 = new Coin(Coin.MINIMA_TOKENID, addr1.getAddressData(), new MiniNumber("25"), Coin.MINIMA_TOKENID);
+        Coin in1 = new Coin(Coin.COINID_OUTPUT, addr1.getAddressData(), new MiniNumber("25"), Token.TOKENID_MINIMA);
         trx.addInput(in1);
 
-        Coin in2 = new Coin(Coin.MINIMA_TOKENID, addr2.getAddressData(), new MiniNumber("75"), Coin.MINIMA_TOKENID);
+        Coin in2 = new Coin(Coin.COINID_OUTPUT, addr2.getAddressData(), new MiniNumber("75"), Token.TOKENID_MINIMA);
         trx.addInput(in2);
 
-        Coin out1 = new Coin(Coin.MINIMA_TOKENID, addr3.getAddressData(), new MiniNumber("40"), Coin.MINIMA_TOKENID);
+        Coin out1 = new Coin(Coin.COINID_OUTPUT, addr3.getAddressData(), new MiniNumber("40"), Token.TOKENID_MINIMA);
         trx.addOutput(out1);
 
-        Coin out2 = new Coin(Coin.MINIMA_TOKENID, addr4.getAddressData(), new MiniNumber("60"), Coin.MINIMA_TOKENID);
+        Coin out2 = new Coin(Coin.COINID_OUTPUT, addr4.getAddressData(), new MiniNumber("60"), Token.TOKENID_MINIMA);
         trx.addOutput(out2);
 
         Witness w = new Witness();
         try {
-            w.addScript(addr1.getScript(), in1.getAddress().getLength() * 8);
-            w.addScript(addr2.getScript(), in2.getAddress().getLength() * 8);
+        	w.addScript(new ScriptProof(addr1.getScript()));
+        	w.addScript(new ScriptProof(addr2.getScript()));
         } catch (Exception ex) {
             fail();
         }
@@ -108,31 +122,29 @@ public class GETINIDTests {
     @Test
     public void testInvalidParams() {
 
-        MinimaDB mdb = new MinimaDB();
-
-        Address addr1 = mdb.getUserDB().newSimpleAddress();
-        Address addr2 = mdb.getUserDB().newSimpleAddress();
-        Address addr3 = mdb.getUserDB().newSimpleAddress();
-        Address addr4 = mdb.getUserDB().newSimpleAddress();
+    	Address addr1 = newSimpleAddress();
+        Address addr2 = newSimpleAddress();
+        Address addr3 = newSimpleAddress();
+        Address addr4 = newSimpleAddress();
 
         Transaction trx = new Transaction();
 
-        Coin in1 = new Coin(Coin.MINIMA_TOKENID, addr1.getAddressData(), new MiniNumber("25"), Coin.MINIMA_TOKENID);
+        Coin in1 = new Coin(Coin.COINID_OUTPUT, addr1.getAddressData(), new MiniNumber("25"), Token.TOKENID_MINIMA);
         trx.addInput(in1);
 
-        Coin in2 = new Coin(Coin.MINIMA_TOKENID, addr2.getAddressData(), new MiniNumber("75"), Coin.MINIMA_TOKENID);
+        Coin in2 = new Coin(Coin.COINID_OUTPUT, addr2.getAddressData(), new MiniNumber("75"), Token.TOKENID_MINIMA);
         trx.addInput(in2);
 
-        Coin out1 = new Coin(Coin.MINIMA_TOKENID, addr3.getAddressData(), new MiniNumber("40"), Coin.MINIMA_TOKENID);
+        Coin out1 = new Coin(Coin.COINID_OUTPUT, addr3.getAddressData(), new MiniNumber("40"), Token.TOKENID_MINIMA);
         trx.addOutput(out1);
 
-        Coin out2 = new Coin(Coin.MINIMA_TOKENID, addr4.getAddressData(), new MiniNumber("60"), Coin.MINIMA_TOKENID);
+        Coin out2 = new Coin(Coin.COINID_OUTPUT, addr4.getAddressData(), new MiniNumber("60"), Token.TOKENID_MINIMA);
         trx.addOutput(out2);
 
         Witness w = new Witness();
         try {
-            w.addScript(addr1.getScript(), in1.getAddress().getLength() * 8);
-            w.addScript(addr2.getScript(), in2.getAddress().getLength() * 8);
+        	w.addScript(new ScriptProof(addr1.getScript()));
+        	w.addScript(new ScriptProof(addr2.getScript()));
         } catch (Exception ex) {
             fail();
         }

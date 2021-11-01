@@ -1,5 +1,7 @@
 package org.minima.kissvm.functions.sha;
 
+import java.io.IOException;
+
 import org.minima.database.mmr.MMRData;
 import org.minima.database.mmr.MMRProof;
 import org.minima.kissvm.Contract;
@@ -29,7 +31,13 @@ public class CHAINSHA extends MinimaFunction {
 		HexValue chain = zContract.getHexParam(1, this);
 		
 		//Create into the MMRProof..
-		MMRProof proof = MMRProof.convertMiniDataVersion(chain.getMiniData());
+		MMRProof proof = null;
+		try {
+			proof = MMRProof.convertMiniDataVersion(chain.getMiniData());
+		} catch (IOException e) {
+			//Invalid Proof..
+			throw new ExecutionException("Invalid MMRProof at CHAINSHA "+chain.getMiniData().to0xString());
+		}
 		
 		//And calculate the final chain value..
 		MMRData root = proof.calculateProof(mmrdata); 

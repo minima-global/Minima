@@ -221,22 +221,17 @@ public class MMRProof implements Streamable {
 	/**
 	 * Convert a MiniData version into an MMRProof
 	 */
-	public static MMRProof convertMiniDataVersion(MiniData zMMRProof) {
+	public static MMRProof convertMiniDataVersion(MiniData zMMRProof) throws IOException {
 		ByteArrayInputStream bais 	= new ByteArrayInputStream(zMMRProof.getBytes());
 		DataInputStream dis 		= new DataInputStream(bais);
 		
 		MMRProof proof = null;
 		
-		try {
-			//Convert data into a TxPoW
-			proof = MMRProof.ReadFromStream(dis);
-		
-			dis.close();
-			bais.close();
-			
-		} catch (IOException e) {
-			MinimaLogger.log(e);
-		}
+		//Convert data into a TxPoW
+		proof = MMRProof.ReadFromStream(dis);
+	
+		dis.close();
+		bais.close();
 		
 		return proof;
 	}

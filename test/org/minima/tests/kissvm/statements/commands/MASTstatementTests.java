@@ -12,9 +12,9 @@ import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.expressions.ConstantExpression;
 import org.minima.kissvm.statements.commands.MASTstatement;
 import org.minima.kissvm.values.HexValue;
+import org.minima.objects.ScriptProof;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
-import org.minima.objects.proofs.ScriptProof;
 
 public class MASTstatementTests {
 
@@ -34,8 +34,8 @@ public class MASTstatementTests {
     public void testExecution() {
         {
             try {
-                ScriptProof sp = new ScriptProof("", 256);
-                MASTstatement ms = new MASTstatement(new ConstantExpression(new HexValue(sp.getFinalHash())));
+                ScriptProof sp = new ScriptProof("");
+                MASTstatement ms = new MASTstatement(new ConstantExpression(new HexValue(sp.getAddress().getAddressData())));
 
                 Witness w = new Witness();
                 w.addScript(sp);
@@ -54,8 +54,8 @@ public class MASTstatementTests {
         }
         {
             try {
-                ScriptProof sp = new ScriptProof("RETURN TRUE", 256);
-                MASTstatement ms = new MASTstatement(new ConstantExpression(new HexValue(sp.getFinalHash())));
+                ScriptProof sp = new ScriptProof("RETURN TRUE");
+                MASTstatement ms = new MASTstatement(new ConstantExpression(new HexValue(sp.getAddress().getAddressData())));
 
                 Witness w = new Witness();
                 w.addScript(sp);
@@ -74,8 +74,8 @@ public class MASTstatementTests {
         }
         {
             try {
-                ScriptProof sp = new ScriptProof("RETURN FALSE", 256);
-                MASTstatement ms = new MASTstatement(new ConstantExpression(new HexValue(sp.getFinalHash())));
+                ScriptProof sp = new ScriptProof("RETURN FALSE");
+                MASTstatement ms = new MASTstatement(new ConstantExpression(new HexValue(sp.getAddress().getAddressData())));
 
                 Witness w = new Witness();
                 w.addScript(sp);
@@ -94,8 +94,8 @@ public class MASTstatementTests {
         }
         {
             try {
-                ScriptProof sp = new ScriptProof("Hello World", 256);
-                MASTstatement ms = new MASTstatement(new ConstantExpression(new HexValue(sp.getFinalHash())));
+                ScriptProof sp = new ScriptProof("Hello World");
+                MASTstatement ms = new MASTstatement(new ConstantExpression(new HexValue(sp.getAddress().getAddressData())));
 
                 Witness w = new Witness();
                 w.addScript(sp);
@@ -112,8 +112,8 @@ public class MASTstatementTests {
         }
         {
             try {
-                ScriptProof sp = new ScriptProof("RETURN TRUE", 256);
-                MASTstatement ms = new MASTstatement(new ConstantExpression(new HexValue(sp.getFinalHash())));
+                ScriptProof sp = new ScriptProof("RETURN TRUE");
+                MASTstatement ms = new MASTstatement(new ConstantExpression(new HexValue(sp.getAddress().getAddressData())));
 
                 Witness w = new Witness();
                 Contract ctr = new Contract("", "", w, new Transaction(), new ArrayList<>());

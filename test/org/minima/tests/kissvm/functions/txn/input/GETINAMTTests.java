@@ -21,6 +21,7 @@ import org.minima.kissvm.values.StringValue;
 import org.minima.kissvm.values.Value;
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
+import org.minima.objects.ScriptProof;
 import org.minima.objects.Token;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
@@ -48,51 +49,63 @@ public class GETINAMTTests {
         }
     }
 
+    public static Address newSimpleAddress() {
+    	//Random public key
+    	MiniData pubk = MiniData.getRandomData(32);
+    	
+    	//Create a simple address
+    	String simpleaddress = new String("RETURN SIGNEDBY("+pubk.to0xString()+")"); 
+    	
+    	//Now create the address
+    	Address addr = new Address(simpleaddress);
+    	
+    	return addr;
+    }
+    
     @Test
     public void testValidParams() {
 
-        MinimaDB mdb = new MinimaDB();
-
-        Address addr1 = mdb.getUserDB().newSimpleAddress();
-        Address addr2 = mdb.getUserDB().newSimpleAddress();
-        Address addr3 = mdb.getUserDB().newSimpleAddress();
-        Address addr4 = mdb.getUserDB().newSimpleAddress();
-        Address addr5 = mdb.getUserDB().newSimpleAddress();
-        Address addr6 = mdb.getUserDB().newSimpleAddress();
+        Address addr1 = newSimpleAddress();
+        Address addr2 = newSimpleAddress();
+        Address addr3 = newSimpleAddress();
+        Address addr4 = newSimpleAddress();
+        Address addr5 = newSimpleAddress();
+        Address addr6 = newSimpleAddress();
 
         Witness w = new Witness();
 
-        Token tp = new Token(MiniData.getRandomData(16),
+        Token tmp = new Token(MiniData.getRandomData(16),
                 MiniNumber.TEN,
                 MiniNumber.MILLION,
                 new MiniString("TestToken"),
                 new MiniString("Hello from TestToken"));
-
-        w.addTempTokenDetails(tp);
-
+        
         Transaction trx = new Transaction();
 
-        Coin in1 = new Coin(MiniData.getRandomData(16), addr1.getAddressData(), new MiniNumber("50"), Coin.MINIMA_TOKENID);
+        Coin in1 = new Coin(MiniData.getRandomData(16), addr1.getAddressData(), new MiniNumber("50"), Token.TOKENID_MINIMA);
         trx.addInput(in1);
 
-        Coin in2 = new Coin(MiniData.getRandomData(16), addr2.getAddressData(), new MiniNumber("75"), tp.getTokenID());
+        Coin in2 = new Coin(MiniData.getRandomData(16), addr2.getAddressData(), new MiniNumber("75"), tmp.getTokenID());
+        in2.setToken(tmp);
         trx.addInput(in2);
 
         Coin in3 = new Coin(MiniData.getRandomData(16), addr3.getAddressData(), new MiniNumber("1"), MiniData.getRandomData(16));
         trx.addInput(in3);
 
-        Coin out1 = new Coin(MiniData.getRandomData(16), addr4.getAddressData(), new MiniNumber("40"), Coin.MINIMA_TOKENID);
+        Coin out1 = new Coin(MiniData.getRandomData(16), addr4.getAddressData(), new MiniNumber("40"), Token.TOKENID_MINIMA);
         trx.addOutput(out1);
 
-        Coin out2 = new Coin(MiniData.getRandomData(16), addr5.getAddressData(), new MiniNumber("30"), tp.getTokenID());
+        Coin out2 = new Coin(MiniData.getRandomData(16), addr5.getAddressData(), new MiniNumber("30"), tmp.getTokenID());
+        out2.setToken(tmp);
         trx.addOutput(out2);
 
         Coin out3 = new Coin(MiniData.getRandomData(16), addr6.getAddressData(), new MiniNumber("1"), in3.getTokenID());
+        out2.setToken(in3.getToken());
         trx.addOutput(out3);
 
         try {
-            w.addScript(addr1.getScript(), in1.getAddress().getLength() * 8);
-            w.addScript(addr2.getScript(), in2.getAddress().getLength() * 8);
+            w.addScript(new ScriptProof(addr1.getScript()));
+            w.addScript(new ScriptProof(addr2.getScript()));
         } catch (Exception ex) {
             fail();
         }
@@ -118,7 +131,7 @@ public class GETINAMTTests {
             try {
                 Value res = mf.runFunction(ctr);
                 assertEquals(Value.VALUE_NUMBER, res.getValueType());
-                assertEquals(tp.getScaledTokenAmount(in2.getAmount()).getAsLong(), ((NumberValue) res).getNumber().getAsLong());
+                assertEquals(tmp.getScaledTokenAmount(in2.getAmount()).getAsLong(), ((NumberValue) res).getNumber().getAsLong());
 //                assertEquals(in2.getAmount().mult(tp.getScaleFactor()).getAsLong(), ((NumberValue) res).getNumber().getAsLong());
             } catch (ExecutionException ex) {
                 fail();
@@ -136,48 +149,46 @@ public class GETINAMTTests {
     @Test
     public void testInvalidParams() {
 
-        MinimaDB mdb = new MinimaDB();
-
-        Address addr1 = mdb.getUserDB().newSimpleAddress();
-        Address addr2 = mdb.getUserDB().newSimpleAddress();
-        Address addr3 = mdb.getUserDB().newSimpleAddress();
-        Address addr4 = mdb.getUserDB().newSimpleAddress();
-        Address addr5 = mdb.getUserDB().newSimpleAddress();
-        Address addr6 = mdb.getUserDB().newSimpleAddress();
+    	Address addr1 = newSimpleAddress();
+        Address addr2 = newSimpleAddress();
+        Address addr3 = newSimpleAddress();
+        Address addr4 = newSimpleAddress();
+        Address addr5 = newSimpleAddress();
+        Address addr6 = newSimpleAddress();
 
         Witness w = new Witness();
 
-        Token tp = new Token(MiniData.getRandomData(16),
+        Token tmp = new Token(MiniData.getRandomData(16),
                 MiniNumber.TEN,
                 MiniNumber.MILLION,
                 new MiniString("TestToken"),
                 new MiniString("Hello from TestToken"));
-
-        w.addTempTokenDetails(tp);
-
+        
         Transaction trx = new Transaction();
 
-        Coin in1 = new Coin(MiniData.getRandomData(16), addr1.getAddressData(), new MiniNumber("50"), Coin.MINIMA_TOKENID);
+        Coin in1 = new Coin(MiniData.getRandomData(16), addr1.getAddressData(), new MiniNumber("50"), Token.TOKENID_MINIMA);
         trx.addInput(in1);
 
-        Coin in2 = new Coin(MiniData.getRandomData(16), addr2.getAddressData(), new MiniNumber("75"), tp.getTokenID());
+        Coin in2 = new Coin(MiniData.getRandomData(16), addr2.getAddressData(), new MiniNumber("75"), tmp.getTokenID());
+        in2.setToken(tmp);
         trx.addInput(in2);
 
         Coin in3 = new Coin(MiniData.getRandomData(16), addr3.getAddressData(), new MiniNumber("1"), MiniData.getRandomData(16));
         trx.addInput(in3);
 
-        Coin out1 = new Coin(MiniData.getRandomData(16), addr4.getAddressData(), new MiniNumber("40"), Coin.MINIMA_TOKENID);
+        Coin out1 = new Coin(MiniData.getRandomData(16), addr4.getAddressData(), new MiniNumber("40"), Token.TOKENID_MINIMA);
         trx.addOutput(out1);
 
-        Coin out2 = new Coin(MiniData.getRandomData(16), addr5.getAddressData(), new MiniNumber("30"), tp.getTokenID());
+        Coin out2 = new Coin(MiniData.getRandomData(16), addr5.getAddressData(), new MiniNumber("30"), tmp.getTokenID());
+        out2.setToken(tmp);
         trx.addOutput(out2);
 
         Coin out3 = new Coin(MiniData.getRandomData(16), addr6.getAddressData(), new MiniNumber("1"), in3.getTokenID());
         trx.addOutput(out3);
 
         try {
-            w.addScript(addr1.getScript(), in1.getAddress().getLength() * 8);
-            w.addScript(addr2.getScript(), in2.getAddress().getLength() * 8);
+            w.addScript(new ScriptProof(addr1.getScript()));
+            w.addScript(new ScriptProof(addr2.getScript()));
         } catch (Exception ex) {
             fail();
         }

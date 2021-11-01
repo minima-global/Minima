@@ -40,6 +40,9 @@ public class GETINAMT extends MinimaFunction {
 		if(!cc.getTokenID().isEqual(Token.TOKENID_MINIMA)) {
 			//Get the Multiple..
 			Token td = cc.getToken();
+			if(td == null) {
+				throw new ExecutionException("No Token for Input Coin @ "+input+" "+cc.getToken());
+			}
 			
 			return new NumberValue(td.getScaledTokenAmount(cc.getAmount()));
 		}

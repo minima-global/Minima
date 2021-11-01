@@ -39,6 +39,12 @@ public class TxBlock implements Streamable {
 	
 	private TxBlock() {}
 	
+	//For Tests
+	public TxBlock(TxPoW zTxPoW) {
+		//Main Block
+		mTxPoW = zTxPoW;
+	}
+	
 	public TxBlock(MMR zParentMMR, TxPoW zTxPoW, ArrayList<TxPoW> zAllTrans) {
 		//Main Block
 		mTxPoW = zTxPoW;

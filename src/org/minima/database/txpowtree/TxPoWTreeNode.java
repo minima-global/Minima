@@ -85,10 +85,11 @@ public class TxPoWTreeNode implements Streamable {
 	
 	//Used in tests.. BROKEN
 	public TxPoWTreeNode(TxPoW zTestTxPoW) {
-//		mSyncBlock		= new TxBlock(zTestTxPoW);
+		mTxBlock		= new TxBlock(zTestTxPoW);
 		mChildren 	 	= new ArrayList<>();
 		mTotalWeight 	= BigDecimal.ZERO;
 		mParent			= null;
+		mMMR			= new MMR();
 	}
 	
 	/**

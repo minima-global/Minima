@@ -59,6 +59,10 @@ public class VERIFYIN extends MinimaFunction{
 		if(!cc.getTokenID().isEqual(Token.TOKENID_MINIMA)) {
 			//Get the Token
 			Token td = cc.getToken();
+			if(td == null) {
+				throw new ExecutionException("No token specified @ Input coin "+input+" "+cc.getTokenID());
+			}
+			
 			inamt = td.getScaledTokenAmount(cc.getAmount());
 		}
 		

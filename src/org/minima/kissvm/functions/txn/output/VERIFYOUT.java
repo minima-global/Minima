@@ -59,6 +59,9 @@ public class VERIFYOUT extends MinimaFunction{
 		if(!cc.getTokenID().isEqual(Token.TOKENID_MINIMA)) {
 			//Get the token details
 			Token cctok = cc.getToken();
+			if(cctok == null) {
+				throw new ExecutionException("No token specified @ Output coin "+output+" "+cc.getTokenID());
+			}
 			
 			//Scale the amount
 			outamt = cctok.getScaledTokenAmount(cc.getAmount());
