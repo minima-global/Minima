@@ -2,6 +2,7 @@ package org.minima.system;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.StringTokenizer;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
@@ -11,6 +12,7 @@ import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.brains.TxPoWMiner;
 import org.minima.system.brains.TxPoWProcessor;
+import org.minima.system.commands.all.connect;
 import org.minima.system.genesis.GenesisMMR;
 import org.minima.system.genesis.GenesisTxPoW;
 import org.minima.system.network.NetworkManager;
@@ -94,7 +96,24 @@ public class Main extends MessageProcessor {
 		
 		//Start the networking..
 		mNetwork = new NetworkManager();
+		
+		//Any nodes to auto connect to..
+		if(!GeneralParams.CONNECT_LIST.equals("")) {
+			
+			StringTokenizer strtok = new StringTokenizer(GeneralParams.CONNECT_LIST,",");
+			while(strtok.hasMoreTokens()) {
+				String host = strtok.nextToken().trim();
 				
+				//Create the connect message
+				Message msg = connect.createConnectMessage(host);
+				if(msg == null) {
+					MinimaLogger.log("ERROR connect host specified incorrectly : "+host);
+				}else {
+					getNIOManager().PostMessage(msg);
+				}
+			}
+		}
+		
 		//Simulate traffic message ( only if auto mine is set )
 		PostMessage(MAIN_AUTOMINE);
 		

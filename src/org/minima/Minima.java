@@ -21,15 +21,6 @@ public class Minima {
 
 	public static void main(String[] zArgs) {
 		
-		MinimaLogger.log("**********************************************");
-		MinimaLogger.log("*  __  __  ____  _  _  ____  __  __    __    *");
-		MinimaLogger.log("* (  \\/  )(_  _)( \\( )(_  _)(  \\/  )  /__\\   *");
-		MinimaLogger.log("*  )    (  _)(_  )  (  _)(_  )    (  /(__)\\  *");
-		MinimaLogger.log("* (_/\\/\\_)(____)(_)\\_)(____)(_/\\/\\_)(__)(__) *");
-		MinimaLogger.log("*                                            *");
-		MinimaLogger.log("**********************************************");
-		MinimaLogger.log("Welcome to Minima "+GlobalParams.MINIMA_VERSION+" - for assistance type help. Then press enter.");
-		
 		//Set the main configuration folder
 		File conf = new File(System.getProperty("user.home"),".minima");
 		GeneralParams.CONFIGURATION_FOLDER = conf.getAbsolutePath(); 
@@ -56,8 +47,18 @@ public class Minima {
 				}else if(arg.equals("-private")) {
 					GeneralParams.PRIVATE_NETWORK 	= true;
 				
+				}else if(arg.equals("-nop2p")) {
+					GeneralParams.P2P_ENABLED = false;
+				
+				}else if(arg.equals("-p2pnode")) {
+					GeneralParams.P2P_ROOTNODE = zArgs[counter++];
+					
 				}else if(arg.equals("-automine")) {
-					GeneralParams.AUTOMINE 			= true;
+					GeneralParams.AUTOMINE = true;
+				
+				}else if(arg.equals("-connect")) {
+					GeneralParams.P2P_ENABLED  = false;
+					GeneralParams.CONNECT_LIST = zArgs[counter++];
 				
 				}else if(arg.equals("-noautomine")) {
 					GeneralParams.AUTOMINE 			= false;
@@ -72,15 +73,43 @@ public class Minima {
 					GeneralParams.AUTOMINE 			= true;
 					
 				}else if(arg.equals("-test")) {
+					GeneralParams.TEST_PARAMS = true;
 					GeneralParams.PRIVATE_NETWORK 	= true;
 					TestParams.setTestParams();
 				
+				}else if(arg.equals("-help")) {
+					
+					System.out.println("Minima Help");
+					System.out.println(" -port       : Specify the Minima port");
+					System.out.println(" -conf       : Specify the configuration folder");
+					System.out.println(" -daemon     : Run in daemon mode with no stdin input ( services )");
+					System.out.println(" -nop2p      : Disable the automatic P2P system");
+					System.out.println(" -p2pnode    : Specify the initial P2P host:port list to connect to");
+					System.out.println(" -automine   : Simulate user traffic to construct the blockchain");
+					System.out.println(" -noautomine : Do not simulate user traffic to construct the blockchain");
+					System.out.println(" -clean      : Wipe configuration folder and all data at startup");
+					System.out.println(" -genesis    : Create a genesis block, -clean and -automine");
+					System.out.println(" -connect    : Disable the p2p and manually connect to this list of host:port");
+					System.out.println(" -test       : Use test params");
+					System.out.println(" -help       : Print this help");
+					
+					System.exit(1);
+					
 				}else {
-					MinimaLogger.log("Unknown parameter : "+arg);
+					System.out.println("Unknown parameter : "+arg);
 					System.exit(1);
 				}
 			}
 		}
+		
+		MinimaLogger.log("**********************************************");
+		MinimaLogger.log("*  __  __  ____  _  _  ____  __  __    __    *");
+		MinimaLogger.log("* (  \\/  )(_  _)( \\( )(_  _)(  \\/  )  /__\\   *");
+		MinimaLogger.log("*  )    (  _)(_  )  (  _)(_  )    (  /(__)\\  *");
+		MinimaLogger.log("* (_/\\/\\_)(____)(_)\\_)(____)(_/\\/\\_)(__)(__) *");
+		MinimaLogger.log("*                                            *");
+		MinimaLogger.log("**********************************************");
+		MinimaLogger.log("Welcome to Minima "+GlobalParams.MINIMA_VERSION+" - for assistance type help. Then press enter.");
 		
 		//Main handler..
 		Main main = new Main();

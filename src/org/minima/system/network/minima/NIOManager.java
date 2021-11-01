@@ -139,26 +139,8 @@ public class NIOManager extends MessageProcessor {
 				return;
 			}
 			
-			try {
-				//Create the socket channel if possible..
-				InetSocketAddress addr 	= new InetSocketAddress(nc.getHost(), nc.getPort());
-				SocketChannel sc 		= SocketChannel.open(addr);
-				
-				//Remove from the connecting..
-				mConnectingClients.remove(nc.getUID());
-				
-				//we connected.. 
-				mNIOServer.regsiterNewSocket(sc);
-				
-			}catch(Exception exc) {
-				//Try again in a minute..
-				MinimaLogger.log("Error connecting to "+nc.getHost()+":"+nc.getPort()+" "+exc.toString());
-				
-				//Try again..
-				TimerMessage tmsg = new TimerMessage(RECONNECT_TIMER, NIO_CONNECTATTEMPT);
-				tmsg.addObject("client", nc);
-				PostTimerMessage(tmsg);
-			}
+			//Connect in separate thread..
+			connectAttempt(nc);
 			
 		}else if(zMessage.getMessageType().equals(NIO_DISCONNECT)) {
 			//Get the UID
@@ -232,6 +214,43 @@ public class NIOManager extends MessageProcessor {
 			//Process it.. in a thread pool..
 			THREAD_POOL.execute(niomsg);
 		}
+	}
+	
+	/**
+	 * Connect to a client.. in a separate thread so returns immediately
+	 */
+	private void connectAttempt(final NIOClient zNIOClient) {
+		
+		Runnable connector = new Runnable() {
+			
+			@Override
+			public void run() {
+			
+				try {
+					//Create the socket channel if possible..
+					InetSocketAddress addr 	= new InetSocketAddress(zNIOClient.getHost(), zNIOClient.getPort());
+					SocketChannel sc 		= SocketChannel.open(addr);
+					
+					//Remove from the connecting..
+					NIOManager.this.mConnectingClients.remove(zNIOClient.getUID());
+					
+					//we connected.. 
+					NIOManager.this.mNIOServer.regsiterNewSocket(sc);
+					
+				}catch(Exception exc) {
+					//Try again in a minute..
+					MinimaLogger.log("Error connecting to "+zNIOClient.getHost()+":"+zNIOClient.getPort()+" "+exc.toString()+" ..will retry");
+					
+					//Try again..
+					TimerMessage tmsg = new TimerMessage(RECONNECT_TIMER, NIO_CONNECTATTEMPT);
+					tmsg.addObject("client", zNIOClient);
+					NIOManager.this.PostTimerMessage(tmsg);
+				}
+			}
+		};
+		
+		Thread tt = new Thread(connector);
+		tt.start();
 	}
 	
 	/**

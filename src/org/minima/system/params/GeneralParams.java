@@ -37,4 +37,23 @@ public class GeneralParams {
 	 */
 	public static int RPC_PORT = 9002;
 	
+	/**
+	 * Test Params or Main Params
+	 */
+	public static boolean TEST_PARAMS = false;
+	
+	/**
+	 * Is ther P2P System Enabled
+	 */
+	public static boolean P2P_ENABLED = true;
+	
+	/**
+	 * Host and IP of the first P2P node..
+	 */
+	public static String P2P_ROOTNODE = "";
+	
+	/**
+	 * Manual list of Minima nodes to connect to
+	 */
+	public static String CONNECT_LIST = "";
 }
