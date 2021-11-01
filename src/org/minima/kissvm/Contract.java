@@ -189,6 +189,10 @@ public class Contract {
 		}
 	}
 	
+	public void setGlobals() {
+		
+	}
+	
 	public void setGlobalVariable(String zGlobal, Value zValue) {
 		mGlobals.put(zGlobal, zValue);
 		traceLog("Global ["+zGlobal+"] : "+zValue);

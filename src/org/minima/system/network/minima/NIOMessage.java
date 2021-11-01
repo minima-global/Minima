@@ -12,6 +12,7 @@ import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
+import org.minima.system.brains.TxPoWChecker;
 import org.minima.system.network.p2p.P2PFunctions;
 import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;
@@ -189,7 +190,14 @@ public class NIOMessage implements Runnable {
 					return;
 				}
 				
-				//If not.. Lets check it.. will ignore if sigs fail, too big. not enough PoW or critical error..
+				//OK - Some basic checks..
+				boolean checksigs = TxPoWChecker.checkSignatures(txpow); 
+				if(!checksigs) {
+					MinimaLogger.log("ERROR : Invalid signatures on txpow "+txpow.getTxPoWID());
+					return;
+				}
+				
+				//More CHECKS.. will ignore if sigs fail, too big. not enough PoW or critical error..
 				//TODO
 				boolean valid = true;
 				

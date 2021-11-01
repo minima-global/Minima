@@ -105,7 +105,8 @@ public class TxPoWChecker {
 			}
 			
 			//Run the scripts
-			//..
+			
+			
 		}
 		
 		//All good
