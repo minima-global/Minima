@@ -1,5 +1,7 @@
 package org.minima.database.mmr;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -8,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
+import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.Crypto;
@@ -365,9 +368,6 @@ public class MMR implements Streamable {
 	public MMRProof getProof(MMREntryNumber zEntryNumber) {
 		//Get this entry
 		MMREntry entry = getEntry(0, zEntryNumber);
-		if(entry.isEmpty()) {
-			MinimaLogger.log("ERROR MMR EMPTY!");
-		}
 		
 		//Get the Basic Proof..
 		MMRProof proof = getProofToPeak(zEntryNumber);
@@ -639,6 +639,37 @@ public class MMR implements Streamable {
 			MMREntry entry = entries.nextElement();
 			entry.writeDataStream(zOut);
 		}
+	}
+	
+	/**
+	 * Get a DEEP copy of this TxPoW
+	 */
+	public MMR deepCopy(){
+		try {
+			//First write transaction out to a byte array
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			DataOutputStream dos = new DataOutputStream(baos);
+			writeDataStream(dos);
+			dos.flush();
+			dos.close();
+			
+			byte[] mmrbytes = baos.toByteArray();
+			ByteArrayInputStream bais = new ByteArrayInputStream(mmrbytes);
+			DataInputStream dis = new DataInputStream(bais);
+			
+			MMR deepcopy = new MMR();
+			deepcopy.readDataStream(dis);
+			
+			dis.close();
+			baos.close();
+			
+			return deepcopy;
+			
+		}catch(IOException ioexc) {
+			MinimaLogger.log(ioexc);
+		}	
+		
+		return null;
 	}
 
 	@Override

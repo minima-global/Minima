@@ -52,16 +52,20 @@ public class TxBlock implements Streamable {
 		//Get the Previous Peaks..
 		mPreviousPeaks = zParentMMR.getPeaks();
 		
+		//Make a copy of the MMR that you can play with..
+		MMR copymmr = zParentMMR.deepCopy();
+		copymmr.setFinalized(false);
+		
 		//Cycle through the Main Block TxPoW
-		calculateCoins(zParentMMR,zTxPoW);
+		calculateCoins(copymmr,zTxPoW);
 		
 		//Now cycle through the transactions
 		for(TxPoW txpow : zAllTrans) {
-			calculateCoins(zParentMMR,txpow);
+			calculateCoins(copymmr,txpow);
 		}
 	}
 	
-	private void calculateCoins(MMR zPreviousMMR, TxPoW zTxPoW) {
+	private void calculateCoins(MMR zPreviousMMRCopy, TxPoW zTxPoW) {
 		
 		//Needs to be a transaction
 		if(zTxPoW.isTransaction()) {
@@ -77,8 +81,11 @@ public class TxBlock implements Streamable {
 				//Get the ENTRY NUmber..
 				MMREntryNumber entry = coin.getMMREntryNumber();
 			
+				//Update this in the MMR - so we can get a proof..
+				zPreviousMMRCopy.updateEntry(entry, csp.getMMRProof(), csp.getMMRData());
+				
 				//The Proof - from the previous block
-				MMRProof proof = zPreviousMMR.getProof(entry);
+				MMRProof proof = zPreviousMMRCopy.getProofToPeak(entry);
 			
 				//Construct the CoinProof
 				CoinProof cp = new CoinProof(coin, proof);
