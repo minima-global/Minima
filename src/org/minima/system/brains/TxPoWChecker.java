@@ -119,6 +119,9 @@ public class TxPoWChecker {
 				MinimaLogger.log("Script FAIL "+prfs.getScript().toString());
 				return false;
 			}
+			
+			//Is there a token script..
+			//..TODO
 		}
 		
 		//All good
