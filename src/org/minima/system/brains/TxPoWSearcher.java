@@ -2,8 +2,10 @@ package org.minima.system.brains;
 
 import java.util.ArrayList;
 
+import org.minima.database.MinimaDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.objects.Coin;
+import org.minima.objects.base.MiniData;
 
 public class TxPoWSearcher {
 
@@ -54,6 +56,44 @@ public class TxPoWSearcher {
 						coinentry.add(coin);
 					}
 				}
+			}
+			
+			//And move back up the tree
+			tip = tip.getParent();
+		}
+		
+		return coinentry;
+	}
+	
+	public static ArrayList<Coin> searchCoins(	boolean zRelevant, 
+												boolean zCheckCoinID, MiniData zCoinID,
+												boolean zCheckAddress, MiniData zAddress) {
+		
+		//The list of Coins
+		ArrayList<Coin> coinentry = new ArrayList<>();
+		
+		//Get the tip..
+		TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
+		
+		//A list of spent CoinID..
+		ArrayList<String> spentcoins = new ArrayList<>();
+		
+		//Now cycle through and get all your coins..
+		while(tip != null) {
+			
+			//Get the Relevant coins..
+			ArrayList<Coin> coins = null;
+			if(zRelevant) {
+				coins = tip.getRelevantCoins();
+			}else {
+				coins = tip.getAllCoins();
+			}
+			
+			//Get the details..
+			for(Coin coin : coins) {
+				
+				
+				
 			}
 			
 			//And move back up the tree
