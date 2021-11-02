@@ -10,11 +10,6 @@ public class GlobalParams {
 	public static String MINIMA_VERSION = "0.100.0"; 
 	
 	/**
-	 * Number of seconds before sending a pulse message - every 10 minutes
-	 */
-	public static long USER_PULSE_FREQ   = 1000 * 20;
-	
-	/**
 	 * Speed in blocks per second.. 
 	 * 0.02 = 50 second block time
 	 */

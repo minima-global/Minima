@@ -10,11 +10,6 @@ public class TestParams {
 	public static String MINIMA_VERSION = GlobalParams.MINIMA_VERSION+"-TEST"; 
 	
 	/**
-	 * Number of seconds before sending a pulse message - every 10 minutes
-	 */
-	public static long USER_PULSE_FREQ   = 1000 * 60 * 10;
-	
-	/**
 	 * Speed in blocks per second.. 
 	 * -  0.05  = 20 second block time
 	 * - 0.2 = 5 second blocktime

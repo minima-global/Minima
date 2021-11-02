@@ -3,10 +3,8 @@ package org.minima.kissvm.functions.string;
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.functions.MinimaFunction;
-import org.minima.kissvm.values.HexValue;
 import org.minima.kissvm.values.StringValue;
 import org.minima.kissvm.values.Value;
-import org.minima.objects.base.MiniString;
 
 /**
  * CLEAN a script to it's minimal correct representation

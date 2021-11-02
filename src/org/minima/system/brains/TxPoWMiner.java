@@ -7,23 +7,17 @@ import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
-import org.minima.system.params.GlobalParams;
 import org.minima.utils.Crypto;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageProcessor;
-import org.minima.utils.messages.TimerMessage;
 
 public class TxPoWMiner extends MessageProcessor {
 
-	public static final String TXPOWMINER_EMPTYTXPOW 	= "TXPOWMINER_EMPTYTXPOW";
 	public static final String TXPOWMINER_MINETXPOW 	= "TXPOWMINER_MINETXPOW";
-	public static final String TXPOWMINER_MINEPULSE 	= "TXPOWMINER_MINEPULSE";
+	public static final String TXPOWMINER_EMPTYTXPOW 	= "TXPOWMINER_EMPTYTXPOW";
 	
 	public TxPoWMiner() {
 		super("MINER");
-		
-		//Start a Pulse
-//		PostTimerMessage(new TimerMessage(GlobalParams.USER_PULSE_FREQ, TXPOWMINER_MINEPULSE));
 	}
 	
 	public void mineTxPoW(TxPoW zTxPoW) {
@@ -85,16 +79,7 @@ public class TxPoWMiner extends MessageProcessor {
 				//Mine a TxPow..
 				PostMessage(new Message(TXPOWMINER_MINETXPOW).addObject("txpow", txpow).addBoolean("automine", true));
 			}
-		
-		}else if(zMessage.isMessageType(TXPOWMINER_MINEPULSE)) {
-			
-			//Try and mine a txpow
-			PostMessage(TXPOWMINER_EMPTYTXPOW);
-			
-			//Next Pulse
-			PostTimerMessage(new TimerMessage(GlobalParams.USER_PULSE_FREQ, TXPOWMINER_MINEPULSE));
 		}
-		
 	}
 
 }

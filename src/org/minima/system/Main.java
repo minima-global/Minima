@@ -2,7 +2,6 @@ package org.minima.system;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.StringTokenizer;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
@@ -13,7 +12,6 @@ import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.brains.TxPoWMiner;
 import org.minima.system.brains.TxPoWProcessor;
-import org.minima.system.commands.all.connect;
 import org.minima.system.genesis.GenesisMMR;
 import org.minima.system.genesis.GenesisTxPoW;
 import org.minima.system.network.NetworkManager;
@@ -103,7 +101,7 @@ public class Main extends MessageProcessor {
 		PostTimerMessage(new TimerMessage(MiniNumber.THOUSAND.div(GlobalParams.MINIMA_BLOCK_SPEED).getAsLong(), MAIN_AUTOMINE));
 		
 		//Set the PULSE message timer.
-		PostTimerMessage(new TimerMessage(GlobalParams.USER_PULSE_FREQ, MAIN_PULSE));
+		PostTimerMessage(new TimerMessage(GeneralParams.USER_PULSE_FREQ, MAIN_PULSE));
 	}
 	
 	public void shutdown() {
@@ -220,7 +218,7 @@ public class Main extends MessageProcessor {
 			mTxPoWProcessor.postProcessTxPoW(txpow);
 			
 			//FOR NOW.. ( Should just send the full TxPoW - we just mined it so noone has it)
-			NIOManager.sendNetworkMessage("", NIOMessage.MSG_TXPOWID, txpow.getTxPoWIDData());
+			NIOManager.sendNetworkMessageAll(NIOMessage.MSG_TXPOWID, txpow.getTxPoWIDData());
 		
 		}else if(zMessage.getMessageType().equals(MAIN_AUTOMINE)) {
 			
@@ -254,10 +252,13 @@ public class Main extends MessageProcessor {
 			Pulse pulse = Pulse.createPulse(MinimaDB.getDB().getTxPoWTree().getTip());
 		
 			//And send it to all your peers..
-			NIOManager.sendNetworkMessage("", NIOMessage.MSG_PULSE, pulse);
+			NIOManager.sendNetworkMessageAll(NIOMessage.MSG_PULSE, pulse);
 		
+			//Mine a TxPoW
+			mTxPoWMiner.PostMessage(TxPoWMiner.TXPOWMINER_EMPTYTXPOW);
+			
 			//And then wait again..
-			PostTimerMessage(new TimerMessage(GlobalParams.USER_PULSE_FREQ, MAIN_PULSE));
+			PostTimerMessage(new TimerMessage(GeneralParams.USER_PULSE_FREQ, MAIN_PULSE));
 		}
 	}
 }

@@ -1,18 +1,7 @@
 package org.minima.system.commands.all;
 
-import java.util.ArrayList;
-import java.util.Hashtable;
-
-import org.minima.database.MinimaDB;
-import org.minima.database.txpowtree.TxPowTree;
-import org.minima.objects.Coin;
-import org.minima.objects.Token;
-import org.minima.objects.base.MiniNumber;
-import org.minima.system.brains.TxPoWSearcher;
 import org.minima.system.commands.Command;
 import org.minima.system.params.GeneralParams;
-import org.minima.system.params.GlobalParams;
-import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
 public class debugfunc extends Command {

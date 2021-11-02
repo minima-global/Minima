@@ -4,13 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.MinimaParseException;
 import org.minima.kissvm.functions.MinimaFunction;
-import org.minima.kissvm.values.NumberValue;
-import org.minima.objects.StateVariable;
-import org.minima.objects.Transaction;
-import org.minima.objects.Witness;
 
 public class ScriptTokenizer {
 

@@ -18,7 +18,6 @@ import org.minima.objects.base.MiniData;
 import org.minima.system.Main;
 import org.minima.system.commands.all.connect;
 import org.minima.system.network.p2p.P2PFunctions;
-import org.minima.system.network.p2p.P2PManager;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
@@ -286,6 +285,10 @@ public class NIOManager extends MessageProcessor {
 	public void disconnect(String zClientUID) {
 		Message msg = new Message(NIOManager.NIO_DISCONNECT).addString("uid", zClientUID);
 		PostMessage(msg);
+	}
+	
+	public static void sendNetworkMessageAll(MiniByte zType, Streamable zObject) throws IOException {
+		sendNetworkMessage("", zType, zObject);
 	}
 	
 	public static void sendNetworkMessage(String zUID, MiniByte zType, Streamable zObject) throws IOException {

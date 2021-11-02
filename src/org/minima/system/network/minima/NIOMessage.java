@@ -16,7 +16,6 @@ import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
 import org.minima.system.brains.TxPoWChecker;
 import org.minima.system.network.p2p.P2PFunctions;
-import org.minima.system.params.GeneralParams;
 import org.minima.utils.ListCheck;
 import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;
@@ -222,7 +221,7 @@ public class NIOMessage implements Runnable {
 					Main.getInstance().getTxPoWProcessor().postProcessTxPoW(txpow);
 					
 					//Forward to the network
-					NIOManager.sendNetworkMessage("", MSG_TXPOWID, txpow.getTxPoWIDData());
+					NIOManager.sendNetworkMessageAll(MSG_TXPOWID, txpow.getTxPoWIDData());
 					
 					//Check all the Transactions..
 					ArrayList<MiniData> txns = txpow.getBlockTransactions();
