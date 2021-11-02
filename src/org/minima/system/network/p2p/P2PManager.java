@@ -49,35 +49,6 @@ public class P2PManager extends MessageProcessor {
         ret.put("numOutLinks", state.getOutLinks().size());
         ret.put("numNoneP2PLinks", state.getNoneP2PLinks().size());
         ret.put("numKnownPeers", state.getKnownPeers().size());
-//
-//        JSONArray inLinksArr = new JSONArray();
-//        for (String uid : state.getInLinks().keySet()) {
-//            JSONObject tmp = new JSONObject();
-//            tmp.put("uid", uid);
-//            tmp.put("host", state.getInLinks().get(uid).getAddress().getHostAddress());
-//            tmp.put("port", state.getInLinks().get(uid).getPort());
-//            inLinksArr.add(tmp);
-//        }
-//        ret.put("inLinks", inLinksArr);
-//
-//        JSONArray outLinksArr = new JSONArray();
-//        for (String uid : state.getOutLinks().keySet()) {
-//            JSONObject tmp = new JSONObject();
-//            tmp.put("uid", uid);
-//            tmp.put("host", state.getOutLinks().get(uid).getAddress().getHostAddress());
-//            tmp.put("port", state.getOutLinks().get(uid).getPort());
-//            outLinksArr.add(tmp);
-//        }
-//        ret.put("outLinks", outLinksArr);
-//
-//        JSONArray knownArr = new JSONArray();
-//        for (InetSocketAddress peer : state.getKnownPeers()) {
-//            JSONObject tmp = new JSONObject();
-//            tmp.put("host", peer.getAddress().getHostAddress());
-//            tmp.put("port", peer.getPort());
-//            knownArr.add(tmp);
-//        }
-//        ret.put("KnownPeers", knownArr);
 
         return ret;
     }
@@ -118,6 +89,7 @@ public class P2PManager extends MessageProcessor {
                 MinimaLogger.log("[+] Connecting to saved node: " + connectionAddress);
             } else {
                 state.setDoingDiscoveryConnection(true);
+//              TODO: When we have a default Node list uncomment these lines
 //				connectionAddress = P2PParams.DEFAULT_NODE_LIST.get(rand.nextInt(P2PParams.DEFAULT_NODE_LIST.size()));
 //				MinimaLogger.log("[+] Doing discovery connection with default node: " + connectionAddress);
             }

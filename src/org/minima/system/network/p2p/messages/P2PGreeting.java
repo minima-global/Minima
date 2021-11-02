@@ -173,7 +173,6 @@ public class P2PGreeting {
         this.knownPeers = knownPeers;
     }
 
-    // Overriding equals() to compare two Complex objects
     @Override
     public boolean equals(Object o) {
 
@@ -188,7 +187,7 @@ public class P2PGreeting {
             return false;
         }
 
-        // typecast o to Complex so that we can compare data members
+        // typecast o to P2PGreeting so that we can compare data members
         P2PGreeting c = (P2PGreeting) o;
 
         // Compare the data members and return accordingly
