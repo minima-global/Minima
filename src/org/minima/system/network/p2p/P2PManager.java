@@ -1,13 +1,12 @@
 package org.minima.system.network.p2p;
 
-import org.minima.Minima;
 import org.minima.database.MinimaDB;
-import org.minima.system.network.p2p.messages.Greeting;
+import org.minima.system.network.minima.NIOClientInfo;
+import org.minima.system.network.p2p.messages.P2PGreeting;
 import org.minima.system.network.p2p.params.P2PParams;
 import org.minima.system.network.p2p.params.P2PTestParams;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.MinimaLogger;
-import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageProcessor;
@@ -141,7 +140,8 @@ public class P2PManager extends MessageProcessor {
 
         } else if (zMessage.isMessageType(P2PFunctions.P2P_CONNECTED)) {
             String uid = zMessage.getString("uid");
-            List<JSONObject> msgs = SwapLinksFunctions.onConnected(state, zMessage);
+            NIOClientInfo info = P2PFunctions.getNIOCLientInfo(uid);
+            List<JSONObject> msgs = SwapLinksFunctions.onConnected(state, zMessage, info);
             for (JSONObject msg : msgs) {
                 P2PFunctions.sendP2PMessage(uid, msg);
             }
@@ -157,12 +157,14 @@ public class P2PManager extends MessageProcessor {
             JSONObject swapLinksMsg = (JSONObject) message.get("swap_links_p2p");
             if (swapLinksMsg != null) {
                 if (swapLinksMsg.containsKey("greeting")) {
-                    Greeting greeting = Greeting.fromJSON((JSONObject) swapLinksMsg.get("greeting"));
-                    SwapLinksFunctions.processGreeting(state, greeting, uid);
+                    P2PGreeting greeting = P2PGreeting.fromJSON((JSONObject) swapLinksMsg.get("greeting"));
+                    NIOClientInfo client = P2PFunctions.getNIOCLientInfo(uid);
+                    SwapLinksFunctions.updateKnownPeersFromGreeting(state, greeting);
+                    SwapLinksFunctions.processGreeting(state, greeting, uid, client);
                     MinimaLogger.log(getStatus().toString());
                 }
                 if (swapLinksMsg.containsKey("req_ip")) {
-                    P2PFunctions.sendP2PMessage(uid, SwapLinksFunctions.processRequestIPMsg(state, swapLinksMsg, P2PFunctions.getNIOCLientInfo(uid).getHost()));
+                    P2PFunctions.sendP2PMessage(uid, SwapLinksFunctions.processRequestIPMsg(swapLinksMsg, P2PFunctions.getNIOCLientInfo(uid).getHost()));
                 }
                 if (swapLinksMsg.containsKey("res_ip")) {
                     SwapLinksFunctions.processResponseIPMsg(state, swapLinksMsg);

@@ -3,6 +3,7 @@ package org.minima.system.network.p2p;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.File;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -50,11 +51,17 @@ public class P2PDBTest {
     }
 
     @Test
-    public void testSetAndGetPeersList() {
+    public void testSavingAndLoadingPeersList() {
 
         P2PDB db = new P2PDB();
 
         db.setPeersList(testPeers);
+
+        // Save, Load and Delete the file
+        File tmp = new File("tmp.db");
+        db.saveDB(tmp);
+        db.loadDB(tmp);
+        tmp.delete();
 
         ArrayList<InetSocketAddress> loadedPeers = db.getPeersList();
 

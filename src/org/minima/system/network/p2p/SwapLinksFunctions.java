@@ -2,7 +2,7 @@ package org.minima.system.network.p2p;
 
 import org.minima.objects.base.MiniData;
 import org.minima.system.network.minima.NIOClientInfo;
-import org.minima.system.network.p2p.messages.Greeting;
+import org.minima.system.network.p2p.messages.P2PGreeting;
 import org.minima.system.network.p2p.params.P2PParams;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
@@ -23,20 +23,20 @@ public class SwapLinksFunctions {
         return msg;
     }
 
-    public static List<JSONObject> onConnected(P2PState state, Message zMessage) {
+    public static List<JSONObject> onConnected(P2PState state, Message zMessage, NIOClientInfo info) {
         List<JSONObject> msgs = new ArrayList<>();
         //Get the details
         String uid = zMessage.getString("uid");
         boolean incoming = zMessage.getBoolean("incoming");
 
-        NIOClientInfo info = P2PFunctions.getNIOCLientInfo(uid);
+
         if (incoming) {
             state.getNoneP2PLinks().put(uid, new InetSocketAddress(info.getHost(), 0));
         } else {
             state.getNoneP2PLinks().put(uid, new InetSocketAddress(info.getHost(), info.getPort()));
         }
 
-        Greeting greeting = new Greeting(state);
+        P2PGreeting greeting = new P2PGreeting(state);
         msgs.add(wrapP2PMsg(greeting.toJson()));
 
         if (state.getMyMinimaAddress() == null) {
@@ -73,7 +73,7 @@ public class SwapLinksFunctions {
 
     }
 
-    public static void processGreeting(P2PState state, Greeting greeting, String uid) {
+    public static void updateKnownPeersFromGreeting(P2PState state, P2PGreeting greeting){
         List<InetSocketAddress> newPeers = Stream.of(greeting.getInLinks(), greeting.getOutLinks(), greeting.getKnownPeers())
                 .flatMap(Collection::stream)
                 .distinct()
@@ -83,7 +83,10 @@ public class SwapLinksFunctions {
 
         state.getKnownPeers().addAll(newPeers);
         // TODO: Limit Set Size
-        NIOClientInfo client = P2PFunctions.getNIOCLientInfo(uid);
+    }
+
+    public static void processGreeting(P2PState state, P2PGreeting greeting, String uid, NIOClientInfo client) {
+
         if (client != null) {
             String host = client.getHost();
             int port = greeting.getMyMinimaPort();
@@ -92,6 +95,7 @@ public class SwapLinksFunctions {
 
             // Peers are assumed to not be P2P Links until we get a valid P2P Greeting
             state.getNoneP2PLinks().remove(uid);
+
             if (client.isIncoming()) {
                 state.getInLinks().put(uid, minimaAddress);
             } else {
@@ -109,7 +113,7 @@ public class SwapLinksFunctions {
         }
     }
 
-    public static JSONObject processRequestIPMsg(P2PState state, JSONObject swapLinksMsg, String host){
+    public static JSONObject processRequestIPMsg(JSONObject swapLinksMsg, String host){
         MiniData secret = new MiniData((String) swapLinksMsg.get("req_ip"));
         JSONObject responseMsg = new JSONObject();
         JSONObject IpResponse = new JSONObject();

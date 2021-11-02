@@ -8,7 +8,7 @@ import org.minima.utils.json.JSONObject;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 
-public class Greeting {
+public class P2PGreeting {
 
     /**
      * The Minima Protocol Port
@@ -48,10 +48,10 @@ public class Greeting {
      */
     private ArrayList<InetSocketAddress> knownPeers;
 
-    public Greeting() {
+    public P2PGreeting() {
     }
 
-    public Greeting(P2PState state) {
+    public P2PGreeting(P2PState state) {
 
         this.myMinimaPort = GeneralParams.MINIMA_PORT;
         this.isAcceptingInLinks = state.isAcceptingInLinks();
@@ -65,7 +65,7 @@ public class Greeting {
     /**
      * Constructor for when the node can't accept inLinks
      */
-    public Greeting(int myMinimaPort, ArrayList<InetSocketAddress> knownPeers) {
+    public P2PGreeting(int myMinimaPort, ArrayList<InetSocketAddress> knownPeers) {
         this.myMinimaPort = myMinimaPort;
         this.knownPeers = knownPeers;
         this.isAcceptingInLinks = false;
@@ -74,7 +74,7 @@ public class Greeting {
     /**
      * Constructor for a full P2P Node
      */
-    public Greeting(int myMinimaPort, boolean isAcceptingInLinks, ArrayList<InetSocketAddress> outLinks, ArrayList<InetSocketAddress> inLinks, int numNoneP2PConnections, int maxNumNoneP2PConnections, ArrayList<InetSocketAddress> knownPeers) {
+    public P2PGreeting(int myMinimaPort, boolean isAcceptingInLinks, ArrayList<InetSocketAddress> outLinks, ArrayList<InetSocketAddress> inLinks, int numNoneP2PConnections, int maxNumNoneP2PConnections, ArrayList<InetSocketAddress> knownPeers) {
         this.myMinimaPort = myMinimaPort;
         this.isAcceptingInLinks = isAcceptingInLinks;
         this.outLinks = outLinks;
@@ -84,16 +84,18 @@ public class Greeting {
         this.knownPeers = knownPeers;
     }
 
-    public static Greeting fromJSON(JSONObject jsonObject) {
-        Greeting greeting = new Greeting();
-        greeting.setMyMinimaPort(Math.toIntExact((long) jsonObject.getOrDefault("myMinimaPort", 0)));
+
+
+    public static P2PGreeting fromJSON(JSONObject jsonObject) {
+        P2PGreeting greeting = new P2PGreeting();
+        greeting.setMyMinimaPort(InetSocketAddressIO.safeReadInt(jsonObject, "myMinimaPort"));
         greeting.setAcceptingInLinks((boolean) jsonObject.getOrDefault("isAcceptingInLinks", false));
         greeting.setKnownPeers(InetSocketAddressIO.addressesJSONToList((JSONArray) jsonObject.getOrDefault("knownPeers", new JSONArray())));
         if (greeting.isAcceptingInLinks()) {
             greeting.setOutLinks(InetSocketAddressIO.addressesJSONToList((JSONArray) jsonObject.getOrDefault("outLinks", new JSONArray())));
             greeting.setInLinks(InetSocketAddressIO.addressesJSONToList((JSONArray) jsonObject.getOrDefault("inLinks", new JSONArray())));
-            greeting.setNumNoneP2PConnections(Math.toIntExact((long) jsonObject.getOrDefault("numNoneP2PConnections", 0)));
-            greeting.setMaxNumNoneP2PConnections(Math.toIntExact((long) jsonObject.getOrDefault("maxNumNoneP2PConnections", 0)));
+            greeting.setNumNoneP2PConnections(InetSocketAddressIO.safeReadInt(jsonObject, "numNoneP2PConnections"));
+            greeting.setMaxNumNoneP2PConnections(InetSocketAddressIO.safeReadInt(jsonObject, "maxNumNoneP2PConnections"));
         }
         return greeting;
     }
@@ -169,5 +171,29 @@ public class Greeting {
 
     public void setKnownPeers(ArrayList<InetSocketAddress> knownPeers) {
         this.knownPeers = knownPeers;
+    }
+
+    // Overriding equals() to compare two Complex objects
+    @Override
+    public boolean equals(Object o) {
+
+        // If the object is compared with itself then return true
+        if (o == this) {
+            return true;
+        }
+
+        /* Check if o is an instance of Complex or not
+          "null instanceof [type]" also returns false */
+        if (!(o instanceof P2PGreeting)) {
+            return false;
+        }
+
+        // typecast o to Complex so that we can compare data members
+        P2PGreeting c = (P2PGreeting) o;
+
+        // Compare the data members and return accordingly
+        return myMinimaPort == c.getMyMinimaPort()
+            && isAcceptingInLinks == c.isAcceptingInLinks()
+            && knownPeers.size() == c.getKnownPeers().size();
     }
 }

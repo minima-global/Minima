@@ -1,6 +1,7 @@
 package org.minima.system.network.p2p;
 
 import org.minima.objects.base.MiniData;
+import org.minima.system.network.p2p.params.P2PParams;
 import org.minima.system.params.GeneralParams;
 
 import java.net.InetSocketAddress;
@@ -33,7 +34,7 @@ public class P2PState {
     /**
      * A secret to send with the ip request message
      */
-    private MiniData ipReqSecret;
+    private MiniData ipReqSecret = new MiniData();
 
     /**
      * Can this node accept InLinks
@@ -45,7 +46,7 @@ public class P2PState {
      * The max number of connections this node
      * can take that are not part of the p2p system
      */
-    private int maxNumNoneP2PConnections;
+    private int maxNumNoneP2PConnections = P2PParams.TGT_NUM_LINKS * 4;
 
 
     /**
