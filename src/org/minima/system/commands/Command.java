@@ -65,6 +65,18 @@ public abstract class Command {
 		return mParams;
 	}
 	
+	public boolean existsParam(String zParamName) {
+		return mParams.containsKey(zParamName);
+	}
+	
+	public String getParam(String zParamName, String zDefault) {
+		if(existsParam(zParamName)) {
+			return (String) mParams.get(zParamName);
+		}
+		
+		return zDefault;
+	}
+	
 	public abstract JSONObject runCommand() throws Exception;
 	
 	public abstract Command getFunction();

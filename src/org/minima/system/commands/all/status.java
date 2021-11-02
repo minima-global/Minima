@@ -5,6 +5,7 @@ import java.util.Date;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.archive.ArchiveManager;
+import org.minima.database.cascade.Cascade;
 import org.minima.database.txpowdb.TxPoWDB;
 import org.minima.database.txpowtree.TxPowTree;
 import org.minima.system.Main;
@@ -19,20 +20,26 @@ import org.minima.utils.json.JSONObject;
 public class status extends Command {
 
 	public status() {
-		super("status","Show general status for Minima");
+		super("status","(clean:true|false) - Show general status for Minima and Garbage collect RAM");
 	}
 	
 	@Override
 	public JSONObject runCommand() throws Exception{
 		JSONObject ret = getJSONReply();
 		
+		//Are we clearing memory
+		if(getParam("clean", "false").equals("true")) {
+			System.gc();
+		}
+		
 		JSONObject details = new JSONObject();
-		details.put("time", new Date().toString());
 		details.put("version", GlobalParams.MINIMA_VERSION);
 		details.put("configuration", GeneralParams.CONFIGURATION_FOLDER);
 		
 		//The Database
 		TxPoWDB txpdb 		= MinimaDB.getDB().getTxPoWDB();
+		TxPowTree txptree 	= MinimaDB.getDB().getTxPoWTree();
+		Cascade	cascade		= MinimaDB.getDB().getCascade();
 		ArchiveManager arch = MinimaDB.getDB().getArchive(); 
 		
 		JSONObject database = new JSONObject();
@@ -43,12 +50,15 @@ public class status extends Command {
 		database.put("syncdb", arch.getSize());
 //		database.put("syncdbfile", arch.getSQLFile().getAbsolutePath());
 		database.put("syncdbsize", MiniFormat.formatSize(arch.getSQLFile().length()));
+		
 		details.put("database", database);
 		
 		//The main Chain
-		TxPowTree txptree = MinimaDB.getDB().getTxPoWTree();
+		
 		JSONObject tree = new JSONObject();
 		if(txptree.getRoot() != null) {
+			tree.put("time", new Date(txptree.getTip().getTxPoW().getTimeMilli().getAsLong()));
+			
 			tree.put("root", txptree.getRoot().getTxPoW().getTxPoWID());
 			tree.put("rootblock", txptree.getRoot().getTxPoW().getBlockNumber());
 			tree.put("top", txptree.getTip().getTxPoW().getTxPoWID());
@@ -71,7 +81,10 @@ public class status extends Command {
 		details.put("chain", tree);
 		
 		//The Cascade
-		//..
+		JSONObject casc = new JSONObject();
+		casc.put("length", cascade.getLength());
+		casc.put("weight", cascade.getTotalWeight().toPlainString());
+		details.put("cascade", casc);
 		
 		//Network..
 		NetworkManager netmanager = Main.getInstance().getNetworkManager();

@@ -44,6 +44,17 @@ public class Cascade implements Streamable {
 		return mTotalWeight;
 	}
 	
+	public int getLength() {
+		int length=0;
+		CascadeNode current 	= mTip;
+		while(current != null) {
+			length++;
+			current = current.getParent();
+		}
+		
+		return length;
+	}
+	
 	public void cascadeChain() {
 		//check not empty
 		if(getTip() == null) {
