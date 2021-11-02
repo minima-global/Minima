@@ -147,7 +147,7 @@ public class TxPoWGenerator {
 		if(pastblock == null) {
 			//too soon..
 			MinimaLogger.log("SPEED TOO SOON "+zTopBlock.getTxPoW().getBlockNumber()+" "+GlobalParams.MINIMA_BLOCKS_SPEED_CALC);
-			return MiniNumber.ZERO;
+			return MiniNumber.ONE;
 		}
 		
 		MiniNumber blockpast	= pastblock.getTxPoW().getBlockNumber();
