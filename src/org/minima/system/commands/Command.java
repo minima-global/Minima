@@ -6,6 +6,7 @@ import java.util.StringTokenizer;
 import org.minima.system.commands.all.automine;
 import org.minima.system.commands.all.balance;
 import org.minima.system.commands.all.connect;
+import org.minima.system.commands.all.debugfunc;
 import org.minima.system.commands.all.disconnect;
 import org.minima.system.commands.all.help;
 import org.minima.system.commands.all.message;
@@ -28,7 +29,7 @@ public abstract class Command {
 	public static final Command[] ALL_COMMANDS = 
 		{   new quit(), new status(), new txpow(), new connect(), new disconnect(), new network(),
 			new message(), new trace(), new help(), new printtree(), new automine(), new printmmr(),
-			new send(), new balance(), new tokencreate(), new newaddress() };
+			new send(), new balance(), new tokencreate(), new newaddress(), new debugfunc() };
 	
 	String mName;
 	String mHelp;

@@ -12,7 +12,7 @@ public class GlobalParams {
 	/**
 	 * Number of seconds before sending a pulse message - every 10 minutes
 	 */
-	public static long USER_PULSE_FREQ   = 1000 * 60;
+	public static long USER_PULSE_FREQ   = 1000 * 20;
 	
 	/**
 	 * Speed in blocks per second.. 

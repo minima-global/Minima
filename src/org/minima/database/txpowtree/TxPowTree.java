@@ -10,6 +10,7 @@ import java.util.Comparator;
 import java.util.Hashtable;
 
 import org.minima.objects.TxPoW;
+import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MinimaLogger;
@@ -42,6 +43,12 @@ public class TxPowTree implements Streamable {
 	 * A hashtable o(1) look up table to find nodes in the tree
 	 */
 	Hashtable<String, TxPoWTreeNode> mFastLink;
+	
+	/**
+	 * The PULSE list.. a ready to use list of TxPoWID from tip..
+	 * Updated whenever we recalculste the tree
+	 */
+	ArrayList<MiniData> mPulseList = new ArrayList<>();
 	
 	/**
 	 * Main Constructor
@@ -167,8 +174,32 @@ public class TxPowTree implements Streamable {
 				}
 			}
 		}
+		
+		//Do this once.. used every time you receive a pulse
+		calculatePulseList();
 	}
 
+	public ArrayList<MiniData> getPulseList(){
+		return mPulseList;
+	}
+	
+	/**
+	 * Get the Top 256 blocks.. 
+	 */
+	private void calculatePulseList() {
+		ArrayList<MiniData> blocklist = new ArrayList<>();
+		TxPoWTreeNode current = getTip();
+		int counter = 0;
+		while(current!=null && counter<256) {
+			blocklist.add(current.getTxPoW().getTxPoWIDData());
+			current = current.getParent();
+			counter++;
+		}
+		
+		//And switch..
+		mPulseList = blocklist;
+	}
+	
 	public ArrayList<TxPoWTreeNode> getHeaviestBranch() {
 		//Cycle back from the tip
 		ArrayList<TxPoWTreeNode> hbranch = new ArrayList<>();

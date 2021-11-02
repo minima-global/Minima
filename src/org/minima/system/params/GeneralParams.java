@@ -71,4 +71,9 @@ public class GeneralParams {
 	 * How many days do you archive the TxBlocks to resync Users
 	 */
 	public static int NUMBER_DAYS_ARCHIVE = 7;
+	
+	/**
+	 * MY Debug Func flag - for testing
+	 */
+	public static boolean DEBUGFUNC = false; 
 }

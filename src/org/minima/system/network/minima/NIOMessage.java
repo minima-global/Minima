@@ -5,8 +5,10 @@ import java.io.DataInputStream;
 import java.util.ArrayList;
 
 import org.minima.database.MinimaDB;
+import org.minima.database.txpowdb.TxPoWDB;
 import org.minima.objects.Greeting;
 import org.minima.objects.IBD;
+import org.minima.objects.Pulse;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
@@ -14,6 +16,8 @@ import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
 import org.minima.system.brains.TxPoWChecker;
 import org.minima.system.network.p2p.P2PFunctions;
+import org.minima.system.params.GeneralParams;
+import org.minima.utils.ListCheck;
 import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
@@ -32,7 +36,6 @@ public class NIOMessage implements Runnable {
 	public static final MiniByte MSG_TXPOW 		= new MiniByte(4);
 	public static final MiniByte MSG_GENMESSAGE = new MiniByte(5);
 	public static final MiniByte MSG_PULSE 		= new MiniByte(6);
-	
 	public static final MiniByte MSG_P2P 		= new MiniByte(7);
 	
 	/**
@@ -189,6 +192,12 @@ public class NIOMessage implements Runnable {
 				//Read the TxPoW
 				TxPoW txpow = TxPoW.ReadFromStream(dis);
 				
+				//DEBUG HACK
+				if(GeneralParams.DEBUGFUNC) {
+					MinimaLogger.log("DEBUGFUNC active : ignoring this TXPOW @ "+txpow.getBlockNumber()+" "+txpow.getTxPoWID());
+					return;
+				}
+				
 				//Do we have it..
 				boolean exists = MinimaDB.getDB().getTxPoWDB().exists(txpow.getTxPoWID());
 				if(exists) {
@@ -198,7 +207,7 @@ public class NIOMessage implements Runnable {
 				//OK - Some basic checks..
 				boolean checksigs = TxPoWChecker.checkSignatures(txpow); 
 				if(!checksigs) {
-					MinimaLogger.log("ERROR : Invalid signatures on txpow "+txpow.getTxPoWID());
+					MinimaLogger.log("SERIOUS ERROR : Invalid signatures on txpow from "+mClientUID+" "+txpow.getTxPoWID());
 					return;
 				}
 				
@@ -259,6 +268,75 @@ public class NIOMessage implements Runnable {
 				
 				//And forward to thew P2P
 				Main.getInstance().getNetworkManager().getP2PManager().PostMessage(p2p);
+				
+			}else if(type.isEqual(MSG_PULSE)) {
+				
+				//Read in the Pulse..
+				Pulse pulse = Pulse.ReadFromStream(dis);
+				
+				//We'll need this
+				TxPoWDB txpdb = MinimaDB.getDB().getTxPoWDB();
+				
+				//Message
+				MinimaLogger.log("PULSE received from "+mClientUID+" "+MiniFormat.formatSize(mData.getLength())+" "+pulse.getBlockList().size());
+				
+				GeneralParams.DEBUGFUNC = false;
+				
+				//Now check this list against your ownn..
+				ArrayList<MiniData> mylist 		= MinimaDB.getDB().getTxPoWTree().getPulseList();
+				ArrayList<MiniData> requestlist = new ArrayList<>();
+				
+				//Now check for intersection
+				int counter=0;
+				boolean found = false;
+				ArrayList<MiniData> pulsemsg = pulse.getBlockList();
+				for(MiniData block : pulsemsg) {
+					if(!ListCheck.MiniDataListContains(mylist, block)) {
+						//Do we have it..!
+						TxPoW check = txpdb.getTxPoW(block.to0xString());
+						
+						if(check == null) {
+							//We don't have it..
+							MinimaLogger.log("REQuESTING PULSE BLOCK.. "+block.to0xString());
+							requestlist.add(0, block);
+							
+						}else {
+							//Do we have all the transactions..
+							ArrayList<MiniData> txns = check.getBlockTransactions();
+							for(MiniData txn : txns) {
+								
+								TxPoW blocktrans = txpdb.getTxPoW(txn.to0xString());
+								
+								if(blocktrans == null) {
+									//We don't have it..
+									MinimaLogger.log("REQuESTING PULSE BLOCK TXN.. "+txn.to0xString());
+									requestlist.add(0, txn);
+									
+									NIOManager.sendNetworkMessage(mClientUID, MSG_TXPOWREQ, txn);
+								}
+							}
+						}
+					}else {
+						//Crossover found!
+						MinimaLogger.log("PULSE CROSSOVER BLOCK FOUND.. "+counter);
+						found = true;
+						break;
+					}
+					
+					counter++;
+				}
+				
+				//Did we find a crossover..
+				if(found) {
+					//Request all the blocks.. that are in the correct order
+					for(MiniData block : requestlist) {
+						NIOManager.sendNetworkMessage(mClientUID, MSG_TXPOWREQ, block);
+					}
+					
+				}else {
+					MinimaLogger.log("NO CROSSOVER BLOCK FOUND from "+mClientUID);
+					//DISCONNECT!
+				}
 				
 			}else {
 				//UNKNOWN MESSAGE..

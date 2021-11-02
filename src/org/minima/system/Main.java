@@ -7,6 +7,7 @@ import java.util.StringTokenizer;
 import org.minima.database.MinimaDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.database.wallet.KeyRow;
+import org.minima.objects.Pulse;
 import org.minima.objects.TxBlock;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniNumber;
@@ -40,6 +41,7 @@ public class Main extends MessageProcessor {
 	public static final String MAIN_TXPOWMINED 	= "MAIN_TXPOWMINED";
 	public static final String MAIN_AUTOMINE 	= "MAIN_AUTOMINE";
 	public static final String MAIN_CLEANDB 	= "MAIN_CLEANDB";
+	public static final String MAIN_PULSE 		= "MAIN_PULSE";
 	
 	/**
 	 * Main TxPoW Processor
@@ -98,7 +100,10 @@ public class Main extends MessageProcessor {
 		mNetwork = new NetworkManager();
 		
 		//Simulate traffic message ( only if auto mine is set )
-		PostMessage(MAIN_AUTOMINE);
+		PostTimerMessage(new TimerMessage(MiniNumber.THOUSAND.div(GlobalParams.MINIMA_BLOCK_SPEED).getAsLong(), MAIN_AUTOMINE));
+		
+		//Set the PULSE message timer.
+		PostTimerMessage(new TimerMessage(GlobalParams.USER_PULSE_FREQ, MAIN_PULSE));
 	}
 	
 	public void shutdown() {
@@ -242,6 +247,17 @@ public class Main extends MessageProcessor {
 			
 			//Do it again..
 			PostTimerMessage(new TimerMessage(CLEANDB_TIMER, MAIN_CLEANDB));
+		
+		}else if(zMessage.getMessageType().equals(MAIN_PULSE)) {
+			
+			//Create Pulse Message
+			Pulse pulse = Pulse.createPulse(MinimaDB.getDB().getTxPoWTree().getTip());
+		
+			//And send it to all your peers..
+			NIOManager.sendNetworkMessage("", NIOMessage.MSG_PULSE, pulse);
+		
+			//And then wait again..
+			PostTimerMessage(new TimerMessage(GlobalParams.USER_PULSE_FREQ, MAIN_PULSE));
 		}
 	}
 }
