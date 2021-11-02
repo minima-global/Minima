@@ -29,7 +29,7 @@ import org.minima.utils.messages.TimerProcessor;
 public class Main extends MessageProcessor {
 
 	/**
-	 * Static link to thwe MAIN class
+	 * Static link to the MAIN class
 	 */
 	private static Main mMainInstance = null;
 	public static Main getInstance() {
