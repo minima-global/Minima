@@ -76,7 +76,7 @@ public class Pulse implements Streamable {
 	/**
 	 * Create a PULSE message to help peers keep in sync with you
 	 */
-	public static Pulse createPulse(TxPoWTreeNode zTip) {
+	public static Pulse createPulse() {
 		Pulse pulse = new Pulse();
 		
 		//Get the Current Pulse

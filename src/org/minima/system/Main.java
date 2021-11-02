@@ -249,7 +249,7 @@ public class Main extends MessageProcessor {
 		}else if(zMessage.getMessageType().equals(MAIN_PULSE)) {
 			
 			//Create Pulse Message
-			Pulse pulse = Pulse.createPulse(MinimaDB.getDB().getTxPoWTree().getTip());
+			Pulse pulse = Pulse.createPulse();
 		
 			//And send it to all your peers..
 			NIOManager.sendNetworkMessageAll(NIOMessage.MSG_PULSE, pulse);
