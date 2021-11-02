@@ -20,7 +20,7 @@ import org.minima.utils.json.JSONObject;
 public class status extends Command {
 
 	public status() {
-		super("status","(clean:true|false) - Show general status for Minima and Garbage collect RAM");
+		super("status","(clean:true) - Show general status for Minima and Garbage collect RAM");
 	}
 	
 	@Override
@@ -28,7 +28,7 @@ public class status extends Command {
 		JSONObject ret = getJSONReply();
 		
 		//Are we clearing memory
-		if(getParam("clean", "false").equals("true")) {
+		if(existsParam("clean")){
 			System.gc();
 		}
 		
