@@ -206,9 +206,9 @@ public class Main extends MessageProcessor {
 				return;
 			}
 			
-//			//Check it.. just in case.. 
-//			if(txpow.isTransaction()) {
-//				MinimaLogger.log("Transaction Mined! "+txpow.getTxPoWID() );
+//			//Did we find a block 
+//			if(txpow.isBlock()) {
+//				MinimaLogger.log("You found a block! "+txpow.getTxPoWID() );
 //				
 //				//Check it..
 //				TxPoWChecker.checkTxPoW(MinimaDB.getDB().getTxPoWTree().getTip().getMMR(), txpow);
