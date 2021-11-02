@@ -13,7 +13,7 @@ public class Pulse implements Streamable {
 	public static int PULSE_VERSION = 1; 
 	
 	/**
-	 * A list of the latest block hashes ( not all - just the last 20 minutes )
+	 * A list of the latest block hashes ( not all - just the last 60 minutes )
 	 */
 	ArrayList<MiniData> mBlockList;
 	
@@ -29,12 +29,10 @@ public class Pulse implements Streamable {
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
 		
-		
 	}
 
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
-		// TODO Auto-generated method stub
 		
 	}
 
