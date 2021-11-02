@@ -62,9 +62,9 @@ public class Main extends MessageProcessor {
 	boolean mShuttingdown = false;
 	
 	/**
-	 * Timer delay for CleanDB messages - every 10 mins
+	 * Timer delay for CleanDB messages - every 30 mins
 	 */
-	long CLEANDB_TIMER	= 1000 * 60 * 20;
+	long CLEANDB_TIMER	= 1000 * 60 * 30;
 	
 	public Main() {
 		super("MAIN");
