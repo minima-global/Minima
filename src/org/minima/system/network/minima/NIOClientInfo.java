@@ -38,6 +38,7 @@ public class NIOClientInfo {
 		mHost = zNIOClient.getHost();
 		mPort = zNIOClient.getPort();
 		mUID = zNIOClient.getUID();
+		isIncoming = zNIOClient.isIncoming();
 	}
 	
 	public String getUID() {
