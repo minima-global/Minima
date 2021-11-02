@@ -32,9 +32,9 @@ public class NIOServer implements Runnable {
 	
 	ArrayList<String> mDisconnectChannels;
 	
-	public NIOServer(int zPort, NIOManager zNetwork) {
+	public NIOServer(int zPort, NIOManager zNIOManager) {
 		mPort 				= zPort;
-		mNIOManager 		= zNetwork;
+		mNIOManager 		= zNIOManager;
 		mRegisterChannels	= new ArrayList<>();
 		mDisconnectChannels	= new ArrayList<>();
 	}
@@ -126,7 +126,10 @@ public class NIOServer implements Runnable {
 	        // Set our key's interest OPs to "Accept"
 	        acceptKey.interestOps(SelectionKey.OP_ACCEPT);
 	
-	        // This is our main loop, it can be offloaded to a separate thread if wanted.
+	        //Ok - we are up and running..
+	        mNIOManager.PostMessage(NIOManager.NIO_SERVERSTARTED);
+	        
+	        // This is the main loop
 	        while (!mShutDown) {
 	        	
 	        	//Select something.. 

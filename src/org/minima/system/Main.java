@@ -97,28 +97,8 @@ public class Main extends MessageProcessor {
 		//Start the networking..
 		mNetwork = new NetworkManager();
 		
-		//Any nodes to auto connect to..
-		if(!GeneralParams.CONNECT_LIST.equals("")) {
-			
-			StringTokenizer strtok = new StringTokenizer(GeneralParams.CONNECT_LIST,",");
-			while(strtok.hasMoreTokens()) {
-				String host = strtok.nextToken().trim();
-				
-				//Create the connect message
-				Message msg = connect.createConnectMessage(host);
-				if(msg == null) {
-					MinimaLogger.log("ERROR connect host specified incorrectly : "+host);
-				}else {
-					getNIOManager().PostMessage(msg);
-				}
-			}
-		}
-		
 		//Simulate traffic message ( only if auto mine is set )
 		PostMessage(MAIN_AUTOMINE);
-		
-		//Post a clean db message
-		PostTimerMessage(new TimerMessage(CLEANDB_TIMER, MAIN_CLEANDB));
 	}
 	
 	public void shutdown() {

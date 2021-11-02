@@ -7,6 +7,7 @@ import java.net.InetSocketAddress;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -15,7 +16,9 @@ import org.minima.objects.Greeting;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.system.Main;
+import org.minima.system.commands.all.connect;
 import org.minima.system.network.p2p.P2PFunctions;
+import org.minima.system.network.p2p.P2PManager;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
@@ -25,6 +28,8 @@ import org.minima.utils.messages.TimerMessage;
 
 public class NIOManager extends MessageProcessor {
 
+	public static final String NIO_SERVERSTARTED 	= "NIO_SERVERSTARTED";
+	
 	public static final String NIO_SHUTDOWN 		= "NIO_SHUTDOWN";
 	
 	public static final String NIO_CONNECT 			= "NIO_CONNECT";
@@ -104,7 +109,29 @@ public class NIOManager extends MessageProcessor {
 	@Override
 	protected void processMessage(Message zMessage) throws Exception {
 		
-		if(zMessage.getMessageType().equals(NIO_SHUTDOWN)) {
+		if(zMessage.getMessageType().equals(NIO_SERVERSTARTED)) {
+			
+			//The NIOServer has started you can now start up the P2P and pre-connect list
+			Main.getInstance().getNetworkManager().getP2PManager().PostMessage(P2PFunctions.P2P_INIT);
+			
+			//Any nodes to auto connect to.. comma separated list
+			if(!GeneralParams.CONNECT_LIST.equals("")) {
+				
+				StringTokenizer strtok = new StringTokenizer(GeneralParams.CONNECT_LIST,",");
+				while(strtok.hasMoreTokens()) {
+					String host = strtok.nextToken().trim();
+					
+					//Create the connect message
+					Message msg = connect.createConnectMessage(host);
+					if(msg == null) {
+						MinimaLogger.log("ERROR connect host specified incorrectly : "+host);
+					}else {
+						PostMessage(msg);
+					}
+				}
+			}
+			
+		}else if(zMessage.getMessageType().equals(NIO_SHUTDOWN)) {
 			
 			//Stop the Thread pool
 			THREAD_POOL.shutdownNow();
