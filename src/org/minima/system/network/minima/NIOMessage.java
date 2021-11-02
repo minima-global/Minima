@@ -277,9 +277,6 @@ public class NIOMessage implements Runnable {
 				//We'll need this
 				TxPoWDB txpdb = MinimaDB.getDB().getTxPoWDB();
 				
-				//Message
-				MinimaLogger.log("PULSE received from "+mClientUID+" "+MiniFormat.formatSize(mData.getLength())+" "+pulse.getBlockList().size());
-				
 				GeneralParams.DEBUGFUNC = false;
 				
 				//Now check this list against your ownn..
@@ -292,33 +289,18 @@ public class NIOMessage implements Runnable {
 				ArrayList<MiniData> pulsemsg = pulse.getBlockList();
 				for(MiniData block : pulsemsg) {
 					if(!ListCheck.MiniDataListContains(mylist, block)) {
-						//Do we have it..!
 						TxPoW check = txpdb.getTxPoW(block.to0xString());
-						
 						if(check == null) {
-							//We don't have it..
-							MinimaLogger.log("REQuESTING PULSE BLOCK.. "+block.to0xString());
 							requestlist.add(0, block);
-							
 						}else {
-							//Do we have all the transactions..
 							ArrayList<MiniData> txns = check.getBlockTransactions();
 							for(MiniData txn : txns) {
-								
-								TxPoW blocktrans = txpdb.getTxPoW(txn.to0xString());
-								
-								if(blocktrans == null) {
-									//We don't have it..
-									MinimaLogger.log("REQuESTING PULSE BLOCK TXN.. "+txn.to0xString());
+								if(!txpdb.exists(txn.to0xString())) {
 									requestlist.add(0, txn);
-									
-									NIOManager.sendNetworkMessage(mClientUID, MSG_TXPOWREQ, txn);
 								}
 							}
 						}
 					}else {
-						//Crossover found!
-						MinimaLogger.log("PULSE CROSSOVER BLOCK FOUND.. "+counter);
 						found = true;
 						break;
 					}
@@ -328,14 +310,15 @@ public class NIOMessage implements Runnable {
 				
 				//Did we find a crossover..
 				if(found) {
-					//Request all the blocks.. that are in the correct order
+					//Request all the blocks.. in the correct order
 					for(MiniData block : requestlist) {
+						MinimaLogger.log("REQUESTING PULSE TxPoW from "+mClientUID+" "+block.to0xString());
 						NIOManager.sendNetworkMessage(mClientUID, MSG_TXPOWREQ, block);
 					}
 					
 				}else {
-					MinimaLogger.log("NO CROSSOVER BLOCK FOUND from "+mClientUID);
-					//DISCONNECT!
+					MinimaLogger.log("NO CROSSOVER BLOCK FOUND from "+mClientUID+" .. disconnecting");
+					Main.getInstance().getNIOManager().disconnect(mClientUID);
 				}
 				
 			}else {
