@@ -39,9 +39,6 @@ public class NetworkManager {
 				}
 			};
 		}
-		
-		//Post an Init message
-		mP2PManager.PostMessage(P2PFunctions.P2P_INIT);
 	}
 	
 	public JSONObject getStatus() {
