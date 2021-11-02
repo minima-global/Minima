@@ -192,11 +192,11 @@ public class NIOMessage implements Runnable {
 				//Read the TxPoW
 				TxPoW txpow = TxPoW.ReadFromStream(dis);
 				
-				//DEBUG HACK
-				if(GeneralParams.DEBUGFUNC) {
-					MinimaLogger.log("DEBUGFUNC active : ignoring this TXPOW @ "+txpow.getBlockNumber()+" "+txpow.getTxPoWID());
-					return;
-				}
+//				//DEBUG HACK
+//				if(GeneralParams.DEBUGFUNC) {
+//					MinimaLogger.log("DEBUGFUNC active : ignoring this TXPOW @ "+txpow.getBlockNumber()+" "+txpow.getTxPoWID());
+//					return;
+//				}
 				
 				//Do we have it..
 				boolean exists = MinimaDB.getDB().getTxPoWDB().exists(txpow.getTxPoWID());
@@ -272,19 +272,14 @@ public class NIOMessage implements Runnable {
 			}else if(type.isEqual(MSG_PULSE)) {
 				
 				//Read in the Pulse..
-				Pulse pulse = Pulse.ReadFromStream(dis);
-				
-				//We'll need this
-				TxPoWDB txpdb = MinimaDB.getDB().getTxPoWDB();
-				
-				GeneralParams.DEBUGFUNC = false;
+				Pulse pulse 	= Pulse.ReadFromStream(dis);
+				TxPoWDB txpdb 	= MinimaDB.getDB().getTxPoWDB();
 				
 				//Now check this list against your ownn..
 				ArrayList<MiniData> mylist 		= MinimaDB.getDB().getTxPoWTree().getPulseList();
 				ArrayList<MiniData> requestlist = new ArrayList<>();
 				
 				//Now check for intersection
-				int counter=0;
 				boolean found = false;
 				ArrayList<MiniData> pulsemsg = pulse.getBlockList();
 				for(MiniData block : pulsemsg) {
@@ -304,19 +299,17 @@ public class NIOMessage implements Runnable {
 						found = true;
 						break;
 					}
-					
-					counter++;
 				}
 				
 				//Did we find a crossover..
 				if(found) {
 					//Request all the blocks.. in the correct order
 					for(MiniData block : requestlist) {
-						MinimaLogger.log("REQUESTING PULSE TxPoW from "+mClientUID+" "+block.to0xString());
+						MinimaLogger.log("Requesting PULSE TxPoW from "+mClientUID+" "+block.to0xString());
 						NIOManager.sendNetworkMessage(mClientUID, MSG_TXPOWREQ, block);
 					}
 					
-				}else {
+				}else{
 					MinimaLogger.log("NO CROSSOVER BLOCK FOUND from "+mClientUID+" .. disconnecting");
 					Main.getInstance().getNIOManager().disconnect(mClientUID);
 				}
