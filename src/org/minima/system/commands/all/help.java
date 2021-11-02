@@ -23,6 +23,7 @@ public class help extends Command {
 		addCommand(details, new automine());
 		
 		addCommand(details, new txpow());
+		addCommand(details, new coins());
 		
 		addCommand(details, new message());
 		

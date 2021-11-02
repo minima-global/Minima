@@ -67,7 +67,8 @@ public class TxPoWSearcher {
 	
 	public static ArrayList<Coin> searchCoins(	boolean zRelevant, 
 												boolean zCheckCoinID, MiniData zCoinID,
-												boolean zCheckAddress, MiniData zAddress) {
+												boolean zCheckAddress, MiniData zAddress,
+												boolean zCheckTokenID, MiniData zTokenID) {
 		
 		//The list of Coins
 		ArrayList<Coin> coinentry = new ArrayList<>();
@@ -92,8 +93,36 @@ public class TxPoWSearcher {
 			//Get the details..
 			for(Coin coin : coins) {
 				
+				//Are we searching for a specific token..
+				if(zCheckTokenID && !coin.getTokenID().isEqual(zTokenID)) {
+					continue;
+				}
 				
+				if(zCheckCoinID && !coin.getCoinID().isEqual(zCoinID)) {
+					continue;
+				}
 				
+				if(zCheckAddress && !coin.getAddress().isEqual(zAddress)) {
+					continue;
+				}
+				
+				//Get the CoinID
+				String coinid = coin.getCoinID().to0xString();
+				
+				//is it spent..
+				boolean spent = coin.getSpent();
+				
+				//Add it to our list of spent coins..
+				if(spent) {
+					spentcoins.add(coinid);
+				}else {
+					//Check if this has been spent in a previous block..
+					if(!spentcoins.contains(coinid)) {
+						
+						//OK - fresh unspent coin
+						coinentry.add(coin);
+					}
+				}
 			}
 			
 			//And move back up the tree
