@@ -16,15 +16,14 @@ public class txpow extends Command {
 		JSONObject ret = getJSONReply();
 		
 		//Get the txpowid
-		Object txpowid = getParams().get("txpowid");
-		
-		if(txpowid == null) {
+		if(!existsParam("txpowid")) {
 			throw new Exception("No txpowid parameter specified");
 		}
 		
-		//Search for a given txpow
-		TxPoW txpow = MinimaDB.getDB().getTxPoWDB().getTxPoW((String)txpowid);
+		String txpowid = getParam("txpowid", "0x01");
 		
+		//Search for a given txpow
+		TxPoW txpow = MinimaDB.getDB().getTxPoWDB().getTxPoW(txpowid);
 		if(txpow == null) {
 			throw new Exception("TxPoW not found : "+txpowid);
 		}
