@@ -43,7 +43,7 @@ public abstract class SqlDB {
 				
 		try {
 			//Create the connection - IGNORECASE=TRUE?
-			mSQLCOnnection = DriverManager.getConnection("jdbc:h2:"+path+";MODE=MySQL", "SA", "");
+			mSQLCOnnection = DriverManager.getConnection("jdbc:h2:"+path+";MODE=MySQL;DB_CLOSE_ON_EXIT=FALSE", "SA", "");
 			
 			//Auto commit changes
 			mSQLCOnnection.setAutoCommit(true);
