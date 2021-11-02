@@ -84,7 +84,7 @@ public class TxPoWTreeNode implements Streamable {
 		constructMMR(zFindRelevant);
 	}
 	
-	//Used in tests.. BROKEN
+	//Used in tests..
 	public TxPoWTreeNode(TxPoW zTestTxPoW) {
 		mTxBlock		= new TxBlock(zTestTxPoW);
 		mChildren 	 	= new ArrayList<>();
