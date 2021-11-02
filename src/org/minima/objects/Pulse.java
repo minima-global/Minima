@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import org.minima.database.MinimaDB;
-import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.MinimaLogger;
