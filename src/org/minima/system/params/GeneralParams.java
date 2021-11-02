@@ -43,7 +43,7 @@ public class GeneralParams {
 	public static boolean TEST_PARAMS = false;
 	
 	/**
-	 * Is ther P2P System Enabled
+	 * Is the P2P System Enabled
 	 */
 	public static boolean P2P_ENABLED = true;
 	
@@ -56,4 +56,19 @@ public class GeneralParams {
 	 * Manual list of Minima nodes to connect to
 	 */
 	public static String CONNECT_LIST = "";
+	
+	/**
+	 * How many days do you keep the TxPoW in the SQL DB
+	 */
+	public static int NUMBER_DAYS_SQLTXPOWDB = 2;
+	
+	/**
+	 * How Many Hours do you keep the TxPOW in the RAM mempool
+	 */
+	public static int NUMBER_HOURS_RAMTXPOWDB = 2;
+	
+	/**
+	 * How many days do you archive the TxBlocks to resync Users
+	 */
+	public static int NUMBER_DAYS_ARCHIVE = 7;
 }

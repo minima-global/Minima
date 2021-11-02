@@ -16,9 +16,9 @@ public class GlobalParams {
 	
 	/**
 	 * Speed in blocks per second.. 
-	 * -  0.05  = 20 second block time
+	 * 0.02 = 50 second block time
 	 */
-	public static MiniNumber MINIMA_BLOCK_SPEED  = new MiniNumber("0.05");
+	public static MiniNumber MINIMA_BLOCK_SPEED  = new MiniNumber("0.02");
 	
 	/**
 	 * When checking speed and difficulty only look at this many blocks back

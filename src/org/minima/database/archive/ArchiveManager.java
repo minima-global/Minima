@@ -11,6 +11,7 @@ import org.minima.objects.TxBlock;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.system.params.GeneralParams;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.SqlDB;
 
@@ -19,7 +20,7 @@ public class ArchiveManager extends SqlDB {
 	/**
 	 * How long does data remains in the Archive DB
 	 */
-	long MAX_SQL_MILLI = 1000 * 60 * 60 * 1;
+	public long MAX_SQL_MILLI = 1000 * 60 * 60 * 24 * GeneralParams.NUMBER_DAYS_ARCHIVE;
 	
 	/**
 	 * PreparedStatements

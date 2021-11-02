@@ -6,10 +6,14 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
+import org.minima.system.params.GeneralParams;
 
 public class RamDB {
 
-	public static long MAX_TIME = 1000 * 60 * 3;
+	/**
+	 * How long does data remain in RAM DB in milli seconds
+	 */
+	public long MAX_TIME = 1000 * 60 * 60 * GeneralParams.NUMBER_HOURS_RAMTXPOWDB;
 	
 	ConcurrentHashMap<String, RamData> mTxPoWDB;
 	
