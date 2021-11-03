@@ -7,7 +7,7 @@ import org.minima.system.commands.all.automine;
 import org.minima.system.commands.all.balance;
 import org.minima.system.commands.all.coins;
 import org.minima.system.commands.all.connect;
-import org.minima.system.commands.all.debugfunc;
+import org.minima.system.commands.all.debugflag;
 import org.minima.system.commands.all.disconnect;
 import org.minima.system.commands.all.help;
 import org.minima.system.commands.all.message;
@@ -30,7 +30,7 @@ public abstract class Command {
 	public static final Command[] ALL_COMMANDS = 
 		{   new quit(), new status(), new coins(), new txpow(), new connect(), new disconnect(), new network(),
 			new message(), new trace(), new help(), new printtree(), new automine(), new printmmr(),
-			new send(), new balance(), new tokencreate(), new newaddress(), new debugfunc() };
+			new send(), new balance(), new tokencreate(), new newaddress(), new debugflag() };
 	
 	String mName;
 	String mHelp;
@@ -69,6 +69,10 @@ public abstract class Command {
 	
 	public boolean existsParam(String zParamName) {
 		return mParams.containsKey(zParamName);
+	}
+	
+	public String getParam(String zParamName) {
+		return getParam(zParamName, "");
 	}
 	
 	public String getParam(String zParamName, String zDefault) {

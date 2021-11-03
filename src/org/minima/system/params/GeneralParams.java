@@ -78,8 +78,9 @@ public class GeneralParams {
 	public static long USER_PULSE_FREQ   = 1000 * 60 * 10;
 	
 	/**
-	 * MY Debug Func flag - for testing
+	 * MY Debug Func flag - for testing.. can set with debugfunc
 	 */
-	public static boolean DEBUGFUNC = false; 
+	public static boolean DEBUGFLAG = false;
+	public static String DEBUGVAR 	= "";
 	
 }

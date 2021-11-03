@@ -29,12 +29,12 @@ public class TestParams {
 	/**
 	 * How often do we cascade the chain
 	 */
-	public static MiniNumber MINIMA_CASCADE_FREQUENCY = new MiniNumber(3);
+	public static MiniNumber MINIMA_CASCADE_FREQUENCY = new MiniNumber(10);
 	
 	/**
 	 * Depth before we cascade..
 	 */
-	public static MiniNumber MINIMA_CASCADE_START_DEPTH = new MiniNumber(64);
+	public static MiniNumber MINIMA_CASCADE_START_DEPTH = new MiniNumber(32);
 	
 	
 	/**
