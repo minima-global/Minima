@@ -46,7 +46,7 @@ public class MULTISIGTests {
     public void testValidParams() {
 
         ArrayList<MiniData> Signatures = new ArrayList<MiniData>();
-        String SignaturesStr = "";
+//        String SignaturesStr = "";
         for (int i = 20; i <= 64; i = i + 4) {
             if (i == 44) { // skip bit length 352
                 continue;
@@ -62,10 +62,10 @@ public class MULTISIGTests {
             MiniData SingleSig = MiniData.getRandomData(i);
             Signatures.add(SingleSig);
 
-            if (!SignaturesStr.isEmpty()) {
-                SignaturesStr = SignaturesStr + "#";
-            }
-            SignaturesStr = SignaturesStr + SingleSig.toString();
+//            if (!SignaturesStr.isEmpty()) {
+//                SignaturesStr = SignaturesStr + "#";
+//            }
+//            SignaturesStr = SignaturesStr + SingleSig.toString();
         }
         // MULTISIG is actually string search in a list of signatures
         // So we can simplify test without actual keys
@@ -76,7 +76,7 @@ public class MULTISIGTests {
 
         MiniData UntrackedSingleSig = MiniData.getRandomData(20);
 
-        Contract ctr = new Contract("", SignaturesStr, new Witness(), new Transaction(), new ArrayList<>());
+        Contract ctr = new Contract("", Signatures, new Witness(), new Transaction(), new ArrayList<>());
 
         MULTISIG fn = new MULTISIG();
 
