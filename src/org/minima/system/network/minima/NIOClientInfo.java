@@ -15,30 +15,48 @@ public class NIOClientInfo {
 	 * Are we connected yet
 	 */
 	boolean 	mConnected;
-	
+
+	String mUID;
+
+	String mHost;
+
+	int mPort;
+
+	boolean isIncoming;
+
+	public NIOClientInfo(String uid, String zHost, int zPort, boolean zIsIncoming){
+		mConnected = true;
+		mUID = uid;
+		mHost = zHost;
+		mPort = zPort;
+		isIncoming = zIsIncoming;
+	}
+
 	public NIOClientInfo(NIOClient zNIOClient, boolean zConnected) {
 		mNIOClient 	= zNIOClient;
 		mConnected	= zConnected;
+		mHost = zNIOClient.getHost();
+		mPort = zNIOClient.getPort();
+		mUID = zNIOClient.getUID();
+		isIncoming = zNIOClient.isIncoming();
 	}
 	
 	public String getUID() {
-		return mNIOClient.getUID();
+		return mUID;
 	}
 	
 	public boolean isIncoming() {
-		return mNIOClient.isIncoming();
+		return isIncoming;
 	}
 	
 	public boolean isConnected() {
 		return mConnected;
 	}
 	
-	public String getHost() {
-		return mNIOClient.getHost();
-	}
+	public String getHost() {return mHost;}
 	
 	public int getPort() {
-		return mNIOClient.getPort();
+		return mPort;
 	}
 	
 	public long getTimeConnected() {
@@ -61,7 +79,9 @@ public class NIOClientInfo {
 		ret.put("host", getHost());
 		ret.put("port", getPort());
 		ret.put("isconnected", isConnected());
-		ret.put("connected", new Date(getTimeConnected()).toString());
+		if (mNIOClient != null) {
+			ret.put("connected", new Date(getTimeConnected()).toString());
+		}
 		
 		return ret;
 	}
