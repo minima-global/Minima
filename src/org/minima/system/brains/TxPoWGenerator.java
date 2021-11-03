@@ -22,11 +22,16 @@ public class TxPoWGenerator {
 	/**
 	 * TESTER hash difficulty
 	 */
-	public static final MiniData TESTER_MIN_HASH = new MiniData(
+	public static final MiniData MIN_DIFFICULTY = new MiniData(
 					"0xFFFFFFFFFFFFFFFFFFFF"+
 					  "FFFFFFFFFFFFFFFFFFFF"+
 					  "FFFFFFFFFFFFFFFFFFFF"+
 					  "FFFF");
+	
+	/**
+	 * For Now - Hard set the Min TxPoW Difficulty
+	 */
+	public static final MiniData MIN_TXPOWDIFF = new MiniData(Crypto.MAX_VAL.divide(new BigInteger("1000")));
 	
 	public static TxPoW generateTxPoW(Transaction zTransaction, Witness zWitness) {
 		//Base
@@ -43,7 +48,7 @@ public class TxPoWGenerator {
 		txpow.setWitness(zWitness);
 		
 		//Set the TXN Difficulty..
-		txpow.setTxDifficulty(TESTER_MIN_HASH);
+		txpow.setTxDifficulty(MIN_TXPOWDIFF);
 		
 		//Set the details..
 		txpow.setBlockNumber(tip.getTxPoW().getBlockNumber().increment());
@@ -67,7 +72,7 @@ public class TxPoWGenerator {
 		 */
 		//And the new block difficulty
 		if(tip.getTxPoW().getBlockNumber().isLessEqual(GlobalParams.MINIMA_BLOCKS_SPEED_CALC)) {
-			txpow.setBlockDifficulty(TESTER_MIN_HASH);
+			txpow.setBlockDifficulty(MIN_TXPOWDIFF);
 		}else {
 			//Get current speed
 			MiniNumber speed 		= getChainSpeed(tip);

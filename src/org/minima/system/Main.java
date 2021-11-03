@@ -66,6 +66,11 @@ public class Main extends MessageProcessor {
 	 */
 	long CLEANDB_TIMER	= 1000 * 60 * 30;
 	
+	/**
+	 * Timer for the automine message - twice every blocktime
+	 */
+	long AUTOMINE_TIMER = 1000 *60;
+	
 	public Main() {
 		super("MAIN");
 	
@@ -98,10 +103,14 @@ public class Main extends MessageProcessor {
 		mNetwork = new NetworkManager();
 		
 		//Simulate traffic message ( only if auto mine is set )
-		PostTimerMessage(new TimerMessage(MiniNumber.THOUSAND.div(GlobalParams.MINIMA_BLOCK_SPEED).getAsLong(), MAIN_AUTOMINE));
+		AUTOMINE_TIMER = MiniNumber.THOUSAND.div(GlobalParams.MINIMA_BLOCK_SPEED).getAsLong();
+		PostTimerMessage(new TimerMessage(AUTOMINE_TIMER, MAIN_AUTOMINE));
 		
 		//Set the PULSE message timer.
 		PostTimerMessage(new TimerMessage(GeneralParams.USER_PULSE_FREQ, MAIN_PULSE));
+		
+		//Clean the DB (delete old records)
+		PostTimerMessage(new TimerMessage(CLEANDB_TIMER, MAIN_CLEANDB));
 	}
 	
 	public void shutdown() {
@@ -230,7 +239,7 @@ public class Main extends MessageProcessor {
 			}
 			
 			//Next Attempt
-			PostTimerMessage(new TimerMessage(MiniNumber.THOUSAND.div(GlobalParams.MINIMA_BLOCK_SPEED).getAsLong(), MAIN_AUTOMINE));
+			PostTimerMessage(new TimerMessage(AUTOMINE_TIMER, MAIN_AUTOMINE));
 		
 		}else if(zMessage.getMessageType().equals(MAIN_CLEANDB)) {
 			

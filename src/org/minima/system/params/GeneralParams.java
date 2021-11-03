@@ -65,7 +65,7 @@ public class GeneralParams {
 	/**
 	 * How Many Hours do you keep the TxPOW in the RAM mempool
 	 */
-	public static int NUMBER_HOURS_RAMTXPOWDB = 2;
+	public static int NUMBER_HOURS_RAMTXPOWDB = 1;
 	
 	/**
 	 * How many days do you archive the TxBlocks to resync Users
