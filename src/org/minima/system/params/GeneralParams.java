@@ -55,6 +55,11 @@ public class GeneralParams {
 	/**
 	 * Manual list of Minima nodes to connect to
 	 */
+	public static boolean NOCONNECT = false;
+	
+	/**
+	 * Manual list of Minima nodes to connect to
+	 */
 	public static String CONNECT_LIST = "";
 	
 	/**

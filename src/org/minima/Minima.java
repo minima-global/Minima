@@ -47,6 +47,9 @@ public class Minima {
 				}else if(arg.equals("-private")) {
 					GeneralParams.PRIVATE_NETWORK 	= true;
 				
+				}else if(arg.equals("-noconnect")) {
+					GeneralParams.NOCONNECT = true;
+					
 				}else if(arg.equals("-nop2p")) {
 					GeneralParams.P2P_ENABLED = false;
 				
