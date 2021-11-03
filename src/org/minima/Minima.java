@@ -38,6 +38,9 @@ public class Minima {
 				if(arg.equals("-port")) {
 					GeneralParams.MINIMA_PORT = Integer.parseInt(zArgs[counter++]);
 				
+				}else if(arg.equals("-host")) {
+					GeneralParams.MINIMA_HOST = zArgs[counter++];
+				
 				}else if(arg.equals("-conf")) {
 					GeneralParams.CONFIGURATION_FOLDER = zArgs[counter++];
 				
@@ -83,6 +86,7 @@ public class Minima {
 				}else if(arg.equals("-help")) {
 					
 					System.out.println("Minima Help");
+					System.out.println(" -host       : Specify the host IP");
 					System.out.println(" -port       : Specify the Minima port");
 					System.out.println(" -conf       : Specify the configuration folder");
 					System.out.println(" -daemon     : Run in daemon mode with no stdin input ( services )");

@@ -28,6 +28,11 @@ public class GeneralParams {
 	public static String CONFIGURATION_FOLDER = "";
 	
 	/**
+	 * The Host IP
+	 */
+	public static String MINIMA_HOST = "";
+	
+	/**
 	 * The main Minima port
 	 */
 	public static int MINIMA_PORT = 9001;
