@@ -31,7 +31,8 @@ public class TxPoWGenerator {
 	/**
 	 * For Now - Hard set the Min TxPoW Difficulty
 	 */
-	public static final MiniData MIN_TXPOWDIFF = new MiniData(Crypto.MAX_VAL.divide(new BigInteger("1000")));
+	public static final BigInteger MIN_TXPOW_VAL 	= Crypto.MAX_VAL.divide(new BigInteger("1000"));
+	public static final MiniData MIN_TXPOWDIFF 		= new MiniData(MIN_TXPOW_VAL);
 	
 	public static TxPoW generateTxPoW(Transaction zTransaction, Witness zWitness) {
 		//Base
@@ -70,16 +71,22 @@ public class TxPoWGenerator {
 		/**
 		 * Calculate the current speed and block difficulty
 		 */
-		//And the new block difficulty
-		if(tip.getTxPoW().getBlockNumber().isLessEqual(GlobalParams.MINIMA_BLOCKS_SPEED_CALC)) {
+		MiniNumber topblock = tip.getTxPoW().getBlockNumber();
+		
+		if(topblock.isLessEqual(MiniNumber.TWO)) {
 			txpow.setBlockDifficulty(MIN_TXPOWDIFF);
 		}else {
+			MiniNumber blocksback = GlobalParams.MINIMA_BLOCKS_SPEED_CALC;
+			if(topblock.isLessEqual(GlobalParams.MINIMA_BLOCKS_SPEED_CALC)) {
+				blocksback = topblock.decrement();
+			}
+			
 			//Get current speed
-			MiniNumber speed 		= getChainSpeed(tip);
-			MiniNumber speedratio 	= GlobalParams.MINIMA_BLOCK_SPEED.div(speed);
+			MiniNumber speed 		= getChainSpeed(tip, blocksback);
+			MiniNumber speedratio 	= blocksback.div(speed);
 			
 			//Get average difficulty over that period
-			BigInteger averagedifficulty 	= getAverageDifficulty(tip);
+			BigInteger averagedifficulty 	= getAverageDifficulty(tip, blocksback);
 			BigDecimal averagedifficultydec	= new BigDecimal(averagedifficulty);
 			
 			//Recalculate..
@@ -87,8 +94,8 @@ public class TxPoWGenerator {
 			BigInteger newdifficulty	= newdifficultydec.toBigInteger();
 			
 			//Check within limits..
-			if(newdifficulty.compareTo(Crypto.MAX_VAL)>0) {
-				newdifficulty = Crypto.MAX_VAL;
+			if(newdifficulty.compareTo(MIN_TXPOW_VAL)>0) {
+				newdifficulty = MIN_TXPOW_VAL;
 			}
 			
 			txpow.setBlockDifficulty(new MiniData(newdifficulty));
@@ -143,15 +150,15 @@ public class TxPoWGenerator {
 		return txpow;
 	}
 	
-	public static MiniNumber getChainSpeed(TxPoWTreeNode zTopBlock) {
+	public static MiniNumber getChainSpeed(TxPoWTreeNode zTopBlock, MiniNumber zBlocksBack) {
 		//Which block are we looking for..
-		MiniNumber block = zTopBlock.getTxPoW().getBlockNumber().sub(GlobalParams.MINIMA_BLOCKS_SPEED_CALC);
+		MiniNumber block = zTopBlock.getTxPoW().getBlockNumber().sub(zBlocksBack);
 		
 		//Get the past block - initially there may be less than that available
 		TxPoWTreeNode pastblock = zTopBlock.getPastNode(block);
 		if(pastblock == null) {
 			//too soon..
-			MinimaLogger.log("SPEED TOO SOON "+zTopBlock.getTxPoW().getBlockNumber()+" "+GlobalParams.MINIMA_BLOCKS_SPEED_CALC);
+			MinimaLogger.log("SPEED TOO SOON "+zTopBlock.getTxPoW().getBlockNumber()+" "+zBlocksBack);
 			return MiniNumber.ONE;
 		}
 		
@@ -170,9 +177,9 @@ public class TxPoWGenerator {
 		return speedsecs;
 	}
 	
-	private static BigInteger getAverageDifficulty(TxPoWTreeNode zTopBlock) {
+	private static BigInteger getAverageDifficulty(TxPoWTreeNode zTopBlock, MiniNumber zBlocksBack) {
 		BigInteger total 	= BigInteger.ZERO;
-		int totalblock 		= GlobalParams.MINIMA_BLOCKS_SPEED_CALC.getAsInt();
+		int totalblock 		= zBlocksBack.getAsInt();
 		
 		TxPoWTreeNode current 	= zTopBlock;
 		int counter 			= 0;

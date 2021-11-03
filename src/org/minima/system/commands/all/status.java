@@ -8,6 +8,7 @@ import org.minima.database.archive.ArchiveManager;
 import org.minima.database.cascade.Cascade;
 import org.minima.database.txpowdb.TxPoWDB;
 import org.minima.database.txpowtree.TxPowTree;
+import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
 import org.minima.system.brains.TxPoWGenerator;
 import org.minima.system.commands.Command;
@@ -65,7 +66,12 @@ public class status extends Command {
 			tree.put("topblock", txptree.getTip().getTxPoW().getBlockNumber().getAsLong());
 			
 			//Speed..
-			tree.put("speed", TxPoWGenerator.getChainSpeed(txptree.getTip()));
+			MiniNumber blocksback = GlobalParams.MINIMA_BLOCKS_SPEED_CALC;
+			if(txptree.getTip().getTxPoW().getBlockNumber().isLessEqual(GlobalParams.MINIMA_BLOCKS_SPEED_CALC)) {
+				blocksback = txptree.getTip().getTxPoW().getBlockNumber();
+			}
+			
+			tree.put("speed", TxPoWGenerator.getChainSpeed(txptree.getTip(),blocksback));
 			tree.put("difficulty", txptree.getTip().getTxPoW().getBlockDifficulty().to0xString());
 			
 			//Total weight..
