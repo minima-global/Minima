@@ -114,15 +114,15 @@ public class Minima {
 		//Main handler..
 		Main main = new Main();
 
-		Runtime.getRuntime().addShutdownHook(new Thread()
-		{
-			@Override
-			public void run()
-			{
-				MinimaLogger.log("[!] Safely Shutting Down");
-				main.shutdown();
-			}
-		});
+//		Runtime.getRuntime().addShutdownHook(new Thread()
+//		{
+//			@Override
+//			public void run()
+//			{
+//				MinimaLogger.log("[!] Safely Shutting Down");
+//				main.shutdown();
+//			}
+//		});
 
 		//Daemon mode has no stdin input
 		if(daemon) {
