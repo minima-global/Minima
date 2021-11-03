@@ -76,6 +76,12 @@ tasks.withType(AbstractArchiveTask) {
     reproducibleFileOrder = true
 }
 
+compileJava {
+	sourceCompatibility = '11'
+    targetCompatibility = '11'
+    //options.compilerArgs << '-something'
+}
+
 application {
     // Define the main class for the application.
     mainClassName = 'org.minima.Minima'
