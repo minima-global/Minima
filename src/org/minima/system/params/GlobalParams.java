@@ -18,7 +18,7 @@ public class GlobalParams {
 	/**
 	 * When checking speed and difficulty only look at this many blocks back
 	 */
-	public static MiniNumber MINIMA_BLOCKS_SPEED_CALC = new MiniNumber(1024);
+	public static MiniNumber MINIMA_BLOCKS_SPEED_CALC = new MiniNumber(256);
 	
 	/**
 	 * How deep before we think confirmed..
@@ -33,7 +33,7 @@ public class GlobalParams {
 	/**
 	 * Depth before we cascade..
 	 */
-	public static MiniNumber MINIMA_CASCADE_START_DEPTH = new MiniNumber(2000);
+	public static MiniNumber MINIMA_CASCADE_START_DEPTH = new MiniNumber(1024);
 	
 	/**
 	 * Number of blocks at each cascade level 
