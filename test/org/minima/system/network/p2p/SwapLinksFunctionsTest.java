@@ -107,7 +107,7 @@ public class SwapLinksFunctionsTest extends TestCase {
         P2PGreeting greeting = new P2PGreeting(greetingState);
 
         P2PState state = QuickState.stateNoneP2PLink(1, 9001);
-        SwapLinksFunctions.processGreeting(state, greeting, "noneP2PUID1", client);
+        SwapLinksFunctions.processGreeting(state, greeting, "noneP2PUID1", client, true);
 
         assertFalse(state.getInLinks().isEmpty());
         assertTrue(state.getNoneP2PLinks().isEmpty());
@@ -123,7 +123,7 @@ public class SwapLinksFunctionsTest extends TestCase {
         P2PGreeting greeting = new P2PGreeting(greetingState);
 
         P2PState state = QuickState.stateNoneP2PLink(1, 9001);
-        SwapLinksFunctions.processGreeting(state, greeting, "noneP2PUID1", client);
+        SwapLinksFunctions.processGreeting(state, greeting, "noneP2PUID1", client, true);
 
         assertFalse(state.getOutLinks().isEmpty());
         assertTrue(state.getNoneP2PLinks().isEmpty());
