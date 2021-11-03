@@ -73,17 +73,18 @@ public class TxPoWGenerator {
 		 */
 		MiniNumber topblock = tip.getTxPoW().getBlockNumber();
 		
+		//First couple of blocks 
 		if(topblock.isLessEqual(MiniNumber.TWO)) {
 			txpow.setBlockDifficulty(MIN_TXPOWDIFF);
 		}else {
 			MiniNumber blocksback = GlobalParams.MINIMA_BLOCKS_SPEED_CALC;
-			if(topblock.isLessEqual(GlobalParams.MINIMA_BLOCKS_SPEED_CALC)) {
+			if(topblock.isLessEqual(blocksback)) {
 				blocksback = topblock.decrement();
 			}
 			
 			//Get current speed
 			MiniNumber speed 		= getChainSpeed(tip, blocksback);
-			MiniNumber speedratio 	= blocksback.div(speed);
+			MiniNumber speedratio 	= GlobalParams.MINIMA_BLOCK_SPEED.div(speed);
 			
 			//Get average difficulty over that period
 			BigInteger averagedifficulty 	= getAverageDifficulty(tip, blocksback);
@@ -94,6 +95,11 @@ public class TxPoWGenerator {
 			BigInteger newdifficulty	= newdifficultydec.toBigInteger();
 			
 			//Check within limits..
+//			if(newdifficulty.compareTo(Crypto.MAX_VAL)>0) {
+//				newdifficulty = Crypto.MAX_VAL;
+//			}
+
+			//MUST be more than the MIN TxPoW..
 			if(newdifficulty.compareTo(MIN_TXPOW_VAL)>0) {
 				newdifficulty = MIN_TXPOW_VAL;
 			}

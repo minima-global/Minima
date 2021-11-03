@@ -66,12 +66,16 @@ public class status extends Command {
 			tree.put("topblock", txptree.getTip().getTxPoW().getBlockNumber().getAsLong());
 			
 			//Speed..
-			MiniNumber blocksback = GlobalParams.MINIMA_BLOCKS_SPEED_CALC;
-			if(txptree.getTip().getTxPoW().getBlockNumber().isLessEqual(GlobalParams.MINIMA_BLOCKS_SPEED_CALC)) {
-				blocksback = txptree.getTip().getTxPoW().getBlockNumber();
+			if(txptree.getTip().getTxPoW().getBlockNumber().isLessEqual(MiniNumber.TWO)){
+				tree.put("speed", 1);
+			}else {
+				MiniNumber blocksback = GlobalParams.MINIMA_BLOCKS_SPEED_CALC;
+				if(txptree.getTip().getTxPoW().getBlockNumber().isLessEqual(GlobalParams.MINIMA_BLOCKS_SPEED_CALC)) {
+					blocksback = txptree.getTip().getTxPoW().getBlockNumber().decrement();
+				}
+				tree.put("speed", TxPoWGenerator.getChainSpeed(txptree.getTip(),blocksback));
 			}
 			
-			tree.put("speed", TxPoWGenerator.getChainSpeed(txptree.getTip(),blocksback));
 			tree.put("difficulty", txptree.getTip().getTxPoW().getBlockDifficulty().to0xString());
 			
 			//Total weight..
