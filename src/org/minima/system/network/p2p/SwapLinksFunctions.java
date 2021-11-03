@@ -29,7 +29,6 @@ public class SwapLinksFunctions {
         String uid = zMessage.getString("uid");
         boolean incoming = zMessage.getBoolean("incoming");
 
-
         if (incoming) {
             state.getNoneP2PLinks().put(uid, new InetSocketAddress(info.getHost(), 0));
         } else {
@@ -85,7 +84,7 @@ public class SwapLinksFunctions {
         // TODO: Limit Set Size
     }
 
-    public static void processGreeting(P2PState state, P2PGreeting greeting, String uid, NIOClientInfo client) {
+    public static boolean processGreeting(P2PState state, P2PGreeting greeting, String uid, NIOClientInfo client, boolean noconnect) {
 
         if (client != null) {
             String host = client.getHost();
@@ -106,11 +105,17 @@ public class SwapLinksFunctions {
                 }
             }
 
+            // Disable no connect once we get a p2p connection
+            if(noconnect){
+                noconnect = false;
+            }
+
             if (state.isDoingDiscoveryConnection()) {
                 state.setDoingDiscoveryConnection(false);
                 P2PFunctions.disconnect(uid);
             }
         }
+        return noconnect;
     }
 
     public static JSONObject processRequestIPMsg(JSONObject swapLinksMsg, String host){

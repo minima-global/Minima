@@ -9,7 +9,7 @@ networks:
 services:
   minima_one:
     image: minima:latest
-    command: -daemon -genesis -automine -test
+    command: -daemon -genesis -automine -test -noconnect
     networks:
       minima_testnet:
         aliases:

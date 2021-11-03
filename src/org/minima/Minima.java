@@ -87,6 +87,7 @@ public class Minima {
 					System.out.println(" -conf       : Specify the configuration folder");
 					System.out.println(" -daemon     : Run in daemon mode with no stdin input ( services )");
 					System.out.println(" -nop2p      : Disable the automatic P2P system");
+					System.out.println(" -noconnect  : Stops the P2P system from connecting to other nodes until it's been connected too");
 					System.out.println(" -p2pnode    : Specify the initial P2P host:port list to connect to");
 					System.out.println(" -automine   : Simulate user traffic to construct the blockchain");
 					System.out.println(" -noautomine : Do not simulate user traffic to construct the blockchain");
