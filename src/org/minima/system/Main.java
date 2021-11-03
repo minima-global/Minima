@@ -111,6 +111,9 @@ public class Main extends MessageProcessor {
 		
 		//Clean the DB (delete old records)
 		PostTimerMessage(new TimerMessage(CLEANDB_TIMER, MAIN_CLEANDB));
+		
+		//Quick Clean up..
+		System.gc();
 	}
 	
 	public void shutdown() {
