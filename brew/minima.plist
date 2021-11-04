@@ -6,8 +6,7 @@
           <string>homebrew.mxcl.minima</string>
           <key>ProgramArguments</key>
           <array>
-            <string>/usr/local/bin/minima</string>
-            <string>run</string>
+            <string>##BIN##/minima</string>
           </array>
         </dict>
       </plist>
