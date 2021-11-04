@@ -63,6 +63,19 @@ public class Minima {
 		mainthread.start();
 	}
 	
+	public String runMinimaCMD(String zInput){
+		//trim it..
+		String input = zInput.trim();
+    	
+    	//Run it..
+    	JSONArray res = Command.runMultiCommand(input);
+    	
+    	//Get the result.. 
+    	String result = MiniFormat.JSONPretty(res);
+    	
+		return result;
+	}
+	
 	public static void main(String[] zArgs) {
 		
 		//Set the main configuration folder
