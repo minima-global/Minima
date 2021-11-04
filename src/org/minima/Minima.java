@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.minima.objects.base.MiniString;
@@ -19,6 +20,49 @@ import org.minima.utils.json.JSONObject;
 
 public class Minima {
 
+	/**
+	 * Needed for the fireStarter function on Android..
+	 */
+	String mConfFolder;
+	
+	public Minima() {}
+	
+	public void fireStarter(String zConfFolder) {
+		mConfFolder = zConfFolder;
+		
+		//Create a separate thread
+		Runnable mainrunner = new Runnable() {
+			@Override
+			public void run() {
+				System.out.println("Minima Started..");
+				
+				//Start up Variables
+				ArrayList<String> vars = new ArrayList<>();
+				
+				vars.add("-daemon");
+				
+				vars.add("-genesis");
+				vars.add("-test");
+				
+//				vars.add("-port");
+//				vars.add("9001");
+//				vars.add("-connect");
+//				vars.add("34.90.172.118");
+//				vars.add("9001");
+				
+				vars.add("-conf");
+				vars.add(mConfFolder);
+				
+				//And call it..
+				main( vars.toArray(new String[0]) );
+			}
+		};
+		
+		//Run it..
+		Thread mainthread=new Thread(mainrunner);
+		mainthread.start();
+	}
+	
 	public static void main(String[] zArgs) {
 		
 		//Set the main configuration folder
