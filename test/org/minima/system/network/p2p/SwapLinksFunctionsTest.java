@@ -36,12 +36,6 @@ public class SwapLinksFunctionsTest extends TestCase {
         outConnectMsg = new Message().addString("uid", "uid1").addBoolean("incoming", false);
     }
 
-    public void tearDown() throws Exception {
-    }
-
-    public void testWrapP2PMsg() {
-    }
-
     public void testOnConnectedInLink() throws UnknownHostException {
         P2PState state = QuickState.stateNoConnections(true);
         NIOClientInfo client = new NIOClientInfo("uid1", "192.168.0.1", 9001, true);
@@ -102,12 +96,12 @@ public class SwapLinksFunctionsTest extends TestCase {
 
     public void testProcessGreetingInLink() throws UnknownHostException{
         NIOClientInfo client = new NIOClientInfo("noneP2PUID1", "10.0.1.1", 9001, true);
-        P2PState greetingState = QuickState.stateInAndOutLinks(2, 3);
+        P2PState greetingState = QuickState.stateInAndOutLinks(2, 3, 0);
         greetingState.setMyMinimaAddress("10.0.1.1");
         P2PGreeting greeting = new P2PGreeting(greetingState);
 
         P2PState state = QuickState.stateNoneP2PLink(1, 9001);
-        SwapLinksFunctions.processGreeting(state, greeting, "noneP2PUID1", client);
+        SwapLinksFunctions.processGreeting(state, greeting, "noneP2PUID1", client, true);
 
         assertFalse(state.getInLinks().isEmpty());
         assertTrue(state.getNoneP2PLinks().isEmpty());
@@ -118,12 +112,12 @@ public class SwapLinksFunctionsTest extends TestCase {
 
     public void testProcessGreetingOutLink() throws UnknownHostException{
         NIOClientInfo client = new NIOClientInfo("noneP2PUID1", "10.0.1.1", 9001, false);
-        P2PState greetingState = QuickState.stateInAndOutLinks(2, 3);
+        P2PState greetingState = QuickState.stateInAndOutLinks(2, 3, 0);
         greetingState.setMyMinimaAddress("10.0.1.1");
         P2PGreeting greeting = new P2PGreeting(greetingState);
 
         P2PState state = QuickState.stateNoneP2PLink(1, 9001);
-        SwapLinksFunctions.processGreeting(state, greeting, "noneP2PUID1", client);
+        SwapLinksFunctions.processGreeting(state, greeting, "noneP2PUID1", client, true);
 
         assertFalse(state.getOutLinks().isEmpty());
         assertTrue(state.getNoneP2PLinks().isEmpty());
@@ -140,7 +134,7 @@ public class SwapLinksFunctionsTest extends TestCase {
     public void testProcessResponseIPMsg() throws UnknownHostException{
         JSONObject json = new JSONObject();
         MiniData secret = MiniData.getRandomData(12);
-        P2PState state = QuickState.stateInAndOutLinks(1, 2);
+        P2PState state = QuickState.stateInAndOutLinks(1, 2, 0);
         state.setMyMinimaAddress("127.0.0.1");
         state.setIpReqSecret(secret);
         state.setKnownPeers(new HashSet<>());
@@ -160,7 +154,7 @@ public class SwapLinksFunctionsTest extends TestCase {
     public void testProcessResponseIPMsgIncorrectSecret() throws UnknownHostException{
         JSONObject json = new JSONObject();
         MiniData secret = MiniData.getRandomData(12);
-        P2PState state = QuickState.stateInAndOutLinks(1, 2);
+        P2PState state = QuickState.stateInAndOutLinks(1, 2, 0);
 
         json.put("req_ip", secret.toString());
         JSONObject respMsg = SwapLinksFunctions.processRequestIPMsg(json, "147.258.369.1");
@@ -172,7 +166,7 @@ public class SwapLinksFunctionsTest extends TestCase {
     }
 
     public void testUpdateKnownPeersFromGreeting() throws UnknownHostException {
-        P2PState greetingState = QuickState.stateInAndOutLinks(5, 5);
+        P2PState greetingState = QuickState.stateInAndOutLinks(5, 5, 0);
         greetingState.setMyMinimaAddress("10.0.1.1");
         P2PGreeting greeting = new P2PGreeting(greetingState);
 

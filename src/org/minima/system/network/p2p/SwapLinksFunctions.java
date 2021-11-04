@@ -3,6 +3,7 @@ package org.minima.system.network.p2p;
 import org.minima.objects.base.MiniData;
 import org.minima.system.network.minima.NIOClientInfo;
 import org.minima.system.network.p2p.messages.P2PGreeting;
+import org.minima.system.network.p2p.messages.P2PWalkLinks;
 import org.minima.system.network.p2p.params.P2PParams;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
@@ -81,6 +82,7 @@ public class SwapLinksFunctions {
                 .collect(Collectors.toCollection(ArrayList::new));
 
         state.getKnownPeers().addAll(newPeers);
+//        if(state.getKnownPeers().contains(state.getMyMinimaAddress()))
         // TODO: Limit Set Size
     }
 
@@ -138,6 +140,28 @@ public class SwapLinksFunctions {
         } else {
             MinimaLogger.log("[-] Failed to set my ip. Secrets do not match. MySecret: " + state.getIpReqSecret() + " Received secret: " + secret);
         }
+    }
+
+    public static P2PWalkLinks joinScaleOutLinks(P2PState state, int targetNumLinks, ArrayList<NIOClientInfo> clients) {
+        P2PWalkLinks walkLinksMsg = null;
+        InetSocketAddress nextHop = UtilFuncs.selectRandomAddress(new ArrayList<>(state.getOutLinks().values()));
+        NIOClientInfo minimaClient = UtilFuncs.getClientFromInetAddressEitherDirection(nextHop, clients);
+        if (minimaClient != null && state.getOutLinks().size() < targetNumLinks) {
+            walkLinksMsg = new P2PWalkLinks(true, true, minimaClient.getUID());
+        }
+        return walkLinksMsg;
+    }
+
+    public static P2PWalkLinks requestInLinks(P2PState state, int targetNumLinks, ArrayList<NIOClientInfo> clients) {
+        P2PWalkLinks walkLinksMsg = null;
+        if (state.getInLinks().size() < targetNumLinks) {
+            InetSocketAddress nextHop = UtilFuncs.selectRandomAddress(new ArrayList<>(state.getOutLinks().values()));
+            NIOClientInfo minimaClient = UtilFuncs.getClientFromInetAddressEitherDirection(nextHop, clients);
+            if (minimaClient != null) {
+                walkLinksMsg = new P2PWalkLinks(false, false, minimaClient.getUID());
+            }
+        }
+        return walkLinksMsg;
     }
 
 }

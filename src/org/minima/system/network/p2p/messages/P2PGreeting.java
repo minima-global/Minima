@@ -7,6 +7,7 @@ import org.minima.utils.json.JSONObject;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.List;
 
 public class P2PGreeting {
 
@@ -24,12 +25,12 @@ public class P2PGreeting {
     /**
      * List of connected OutLinks
      */
-    private ArrayList<InetSocketAddress> outLinks;
+    private List<InetSocketAddress> outLinks;
 
     /**
      * List of connected InLinks
      */
-    private ArrayList<InetSocketAddress> inLinks;
+    private List<InetSocketAddress> inLinks;
 
     /**
      * Number of connections that are not part of
@@ -46,7 +47,7 @@ public class P2PGreeting {
     /**
      * List of known P2P Peers
      */
-    private ArrayList<InetSocketAddress> knownPeers;
+    private List<InetSocketAddress> knownPeers;
 
     public P2PGreeting() {
     }
@@ -65,7 +66,7 @@ public class P2PGreeting {
     /**
      * Constructor for when the node can't accept inLinks
      */
-    public P2PGreeting(int myMinimaPort, ArrayList<InetSocketAddress> knownPeers) {
+    public P2PGreeting(int myMinimaPort, List<InetSocketAddress> knownPeers) {
         this.myMinimaPort = myMinimaPort;
         this.knownPeers = knownPeers;
         this.isAcceptingInLinks = false;
@@ -74,7 +75,7 @@ public class P2PGreeting {
     /**
      * Constructor for a full P2P Node
      */
-    public P2PGreeting(int myMinimaPort, boolean isAcceptingInLinks, ArrayList<InetSocketAddress> outLinks, ArrayList<InetSocketAddress> inLinks, int numNoneP2PConnections, int maxNumNoneP2PConnections, ArrayList<InetSocketAddress> knownPeers) {
+    public P2PGreeting(int myMinimaPort, boolean isAcceptingInLinks, List<InetSocketAddress> outLinks, List<InetSocketAddress> inLinks, int numNoneP2PConnections, int maxNumNoneP2PConnections, List<InetSocketAddress> knownPeers) {
         this.myMinimaPort = myMinimaPort;
         this.isAcceptingInLinks = isAcceptingInLinks;
         this.outLinks = outLinks;
@@ -133,19 +134,19 @@ public class P2PGreeting {
         isAcceptingInLinks = acceptingInLinks;
     }
 
-    public ArrayList<InetSocketAddress> getOutLinks() {
+    public List<InetSocketAddress> getOutLinks() {
         return outLinks;
     }
 
-    public void setOutLinks(ArrayList<InetSocketAddress> outLinks) {
+    public void setOutLinks(List<InetSocketAddress> outLinks) {
         this.outLinks = outLinks;
     }
 
-    public ArrayList<InetSocketAddress> getInLinks() {
+    public List<InetSocketAddress> getInLinks() {
         return inLinks;
     }
 
-    public void setInLinks(ArrayList<InetSocketAddress> inLinks) {
+    public void setInLinks(List<InetSocketAddress> inLinks) {
         this.inLinks = inLinks;
     }
 
@@ -165,11 +166,11 @@ public class P2PGreeting {
         this.maxNumNoneP2PConnections = maxNumNoneP2PConnections;
     }
 
-    public ArrayList<InetSocketAddress> getKnownPeers() {
+    public List<InetSocketAddress> getKnownPeers() {
         return knownPeers;
     }
 
-    public void setKnownPeers(ArrayList<InetSocketAddress> knownPeers) {
+    public void setKnownPeers(List<InetSocketAddress> knownPeers) {
         this.knownPeers = knownPeers;
     }
 

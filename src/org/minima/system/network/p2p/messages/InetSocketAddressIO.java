@@ -5,10 +5,14 @@ import org.minima.utils.json.JSONObject;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.List;
 
 public class InetSocketAddressIO {
 
-    public static JSONArray addressesListToJSON(ArrayList<InetSocketAddress> peers) {
+    private InetSocketAddressIO() {
+    }
+
+    public static JSONArray addressesListToJSON(List<InetSocketAddress> peers) {
         JSONArray array = new JSONArray();
         if (!peers.isEmpty()) {
             for (InetSocketAddress address : peers) {
@@ -21,7 +25,7 @@ public class InetSocketAddressIO {
         return array;
     }
 
-    public static ArrayList<InetSocketAddress> addressesJSONToList(JSONArray jsonArray) {
+    public static List<InetSocketAddress> addressesJSONToList(JSONArray jsonArray) {
         ArrayList<InetSocketAddress> peers = new ArrayList<>();
         if (!jsonArray.isEmpty()) {
             for (Object object : jsonArray) {

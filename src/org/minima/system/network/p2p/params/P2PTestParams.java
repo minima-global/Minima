@@ -24,13 +24,13 @@ public class P2PTestParams {
     /**
      * Time between P2P system assessing its state in milliseconds
      */
-    public static int LOOP_DELAY = 20_000;
+    public static int LOOP_DELAY = 5_000;
 
     /**
      * Max additional ms to add to loop delay (mostly useful during testing to ensure all nodes
      * aren't perfectly in sync)
      */
-    public static int LOOP_DELAY_VARIABILITY = 5_000;
+    public static int LOOP_DELAY_VARIABILITY = 3_000;
 
     /**
      * Time between P2P system assessing if it can receive inbound connections milliseconds
