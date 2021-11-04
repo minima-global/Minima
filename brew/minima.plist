@@ -9,6 +9,6 @@
             <string>##BIN##/minima</string>
           </array>
           <key>StandardOutPath</key>
-          <string>#PREFIX#/logs/##PLIST_NAME##.log</string>
+          <string>##PREFIX##/logs/##PLIST_NAME##.log</string>
         </dict>
       </plist>
