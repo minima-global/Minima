@@ -173,4 +173,17 @@ public class MinimaDB {
 		mCacscade.saveDB(new File(basedb,"cascade.db"));
 		mTxPoWTree.saveDB(new File(basedb,"chaintree.db"));
 	}
+	
+	public void saveState() {
+		//Get the base Database folder
+		File basedb = getBaseDBFolder();
+		
+		//JsonDBs
+		mUserDB.saveDB(new File(basedb,"userprefs.db"));
+		mP2PDB.saveDB(new File(basedb,"p2p.db"));
+		
+		//Custom
+		mCacscade.saveDB(new File(basedb,"cascade.db"));
+		mTxPoWTree.saveDB(new File(basedb,"chaintree.db"));
+	}
 }
