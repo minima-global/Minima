@@ -24,7 +24,10 @@ public class Minima {
 
 	public Minima() {}
 	
-	public void fireStarter(final String zConfFolder, final String zConnectHost) {
+	/**
+	 * Call main() with a set of variables
+	 */
+	public void fireStarter(final ArrayList<String> zArgs) {
 		
 		//Create a separate thread
 		Runnable mainrunner = new Runnable() {
@@ -32,25 +35,8 @@ public class Minima {
 			public void run() {
 				System.out.println("Minima Started..");
 				
-				//Start up Variables
-				ArrayList<String> vars = new ArrayList<>();
-				
-				vars.add("-daemon");
-				
-//				vars.add("-genesis");
-//				vars.add("-test");
-				
-				vars.add("-connect");
-				vars.add(zConnectHost);
-				
-//				vars.add("-port");
-//				vars.add("9001");
-				
-				vars.add("-conf");
-				vars.add(zConfFolder);
-				
 				//And call it..
-				main( vars.toArray(new String[0]) );
+				main( zArgs.toArray(new String[0]) );
 			}
 		};
 		
