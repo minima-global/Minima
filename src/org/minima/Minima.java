@@ -17,18 +17,14 @@ import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
+import org.minima.utils.messages.Message;
+import org.minima.utils.messages.MessageListener;
 
 public class Minima {
 
-	/**
-	 * Needed for the fireStarter function on Android..
-	 */
-	String mConfFolder;
-	
 	public Minima() {}
 	
-	public void fireStarter(String zConfFolder) {
-		mConfFolder = zConfFolder;
+	public void fireStarter(final String zConfFolder) {
 		
 		//Create a separate thread
 		Runnable mainrunner = new Runnable() {
@@ -51,7 +47,7 @@ public class Minima {
 //				vars.add("9001");
 				
 				vars.add("-conf");
-				vars.add(mConfFolder);
+				vars.add(zConfFolder);
 				
 				//And call it..
 				main( vars.toArray(new String[0]) );
@@ -63,6 +59,9 @@ public class Minima {
 		mainthread.start();
 	}
 	
+	/**
+	 * Run a command on Minima and return the result
+	 */
 	public String runMinimaCMD(String zInput){
 		//trim it..
 		String input = zInput.trim();
@@ -76,6 +75,11 @@ public class Minima {
 		return result;
 	}
 	
+	/**
+	 * Main entry point for the Java Application
+	 * 
+	 * Called by fireStarter on Android
+	 */
 	public static void main(String[] zArgs) {
 		
 		//Set the main configuration folder

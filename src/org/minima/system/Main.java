@@ -22,6 +22,7 @@ import org.minima.system.params.GlobalParams;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.messages.Message;
+import org.minima.utils.messages.MessageListener;
 import org.minima.utils.messages.MessageProcessor;
 import org.minima.utils.messages.TimerMessage;
 import org.minima.utils.messages.TimerProcessor;
@@ -36,10 +37,27 @@ public class Main extends MessageProcessor {
 		return mMainInstance;
 	}
 	
+	/**
+	 * Is there someone listening to Minima messages
+	 */
+	public static MessageListener MINIMA_LISTENER = null;
+	public static void setMinimaListener(MessageListener zListener) {
+		MINIMA_LISTENER = zListener;
+	}
+	public static void postMinimaListener(Message zMessage) {		
+		if(MINIMA_LISTENER != null) {
+			MINIMA_LISTENER.processMessage(zMessage);
+		}
+	}
+	
+	/**
+	 * Main loop messages
+	 */
 	public static final String MAIN_TXPOWMINED 	= "MAIN_TXPOWMINED";
 	public static final String MAIN_AUTOMINE 	= "MAIN_AUTOMINE";
 	public static final String MAIN_CLEANDB 	= "MAIN_CLEANDB";
 	public static final String MAIN_PULSE 		= "MAIN_PULSE";
+	public static final String MAIN_NEWBLOCK 	= "MAIN_NEWBLOCK";
 	
 	/**
 	 * Main TxPoW Processor
@@ -271,6 +289,15 @@ public class Main extends MessageProcessor {
 			
 			//And then wait again..
 			PostTimerMessage(new TimerMessage(GeneralParams.USER_PULSE_FREQ, MAIN_PULSE));
+		
+		}else if(zMessage.getMessageType().equals(MAIN_NEWBLOCK)) {
+			
+			//The tip of the TxPoWTree has changed - we have a new block..
+			postMinimaListener(zMessage);
+			
+			//Notify other sections?
+			//..
+			
 		}
 	}
 }
