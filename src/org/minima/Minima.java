@@ -24,7 +24,7 @@ public class Minima {
 
 	public Minima() {}
 	
-	public void fireStarter(final String zConfFolder) {
+	public void fireStarter(final String zConfFolder, final String zConnectHost) {
 		
 		//Create a separate thread
 		Runnable mainrunner = new Runnable() {
@@ -37,13 +37,13 @@ public class Minima {
 				
 				vars.add("-daemon");
 				
-				vars.add("-genesis");
-				vars.add("-test");
+//				vars.add("-genesis");
+//				vars.add("-test");
+				
+				vars.add("-connect");
+				vars.add(zConnectHost);
 				
 //				vars.add("-port");
-//				vars.add("9001");
-//				vars.add("-connect");
-//				vars.add("34.90.172.118");
 //				vars.add("9001");
 				
 				vars.add("-conf");
