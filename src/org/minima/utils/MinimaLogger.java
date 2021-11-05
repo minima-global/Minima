@@ -7,6 +7,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+import org.minima.system.Main;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageListener;
 
@@ -16,15 +17,7 @@ import org.minima.utils.messages.MessageListener;
  */
 public class MinimaLogger {
 	
-	static MessageListener mLogListener = null;
-	
-	public static void setListener(MessageListener zLogListener) {
-		mLogListener = zLogListener;
-	}
-	
-	public static void resetListener() {
-		mLogListener = null;
-	}
+	public static final String MINIMA_LOG = "MINIMA_LOG";
 	
 	public static final SimpleDateFormat DATEFORMAT = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.ENGLISH );
 	
@@ -34,9 +27,7 @@ public class MinimaLogger {
 		System.out.println(full_log);
 		
 		//Is there a listener..
-		if(mLogListener != null) {
-			mLogListener.processMessage(new Message("").addString("log", full_log));
-		}
+		Main.postMinimaListener(new Message(MINIMA_LOG).addString("log", full_log));	
 	}
 	
 	public static void log(Exception zException){
