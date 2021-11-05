@@ -124,15 +124,22 @@ public class TxPoWGenerator {
 		int totaladded = 0;
 		for(TxPoW memtxp : mempool) {
 			
-			//Check if Valid!
-			if(TxPoWChecker.checkTxPoW(tip.getMMR(), memtxp, txpow.getBlockNumber())) {
-				//Add to our list
-				chosentxns.add(memtxp);
+			try {
 				
-				//Add to this TxPoW
-				txpow.addBlockTxPOW(memtxp.getTxPoWIDData());
+				//Check if Valid!
+				if(TxPoWChecker.checkTxPoW(tip.getMMR(), memtxp, txpow.getBlockNumber())) {
+					//Add to our list
+					chosentxns.add(memtxp);
+					
+					//Add to this TxPoW
+					txpow.addBlockTxPOW(memtxp.getTxPoWIDData());
+					
+					//One more to the total..
+					totaladded++;
+				}
 				
-				totaladded++;
+			}catch(Exception exc) {
+				MinimaLogger.log("ERROR CHecking TxPoW "+memtxp.getTxPoWID());
 			}
 			
 			//Max allowed.. 1 txn/s

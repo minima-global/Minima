@@ -25,37 +25,46 @@ public class TxPoWChecker {
 	 * Parallel check all the transactions in this block
 	 */
 	public static boolean checkTxPoWBlock(MMR zParentMMR, TxPoW zTxPoW, ArrayList<TxPoW> zTransactions) {
-		//First check this
-		if(zTxPoW.isTransaction()) {
-			boolean valid = checkTxPoW(zParentMMR, zTxPoW, zTxPoW.getBlockNumber());
-			if(!valid) {
-				return false;
-			}
-		}
 		
-		//Now check all the internal Transactions
-		for(TxPoW txpow : zTransactions) {
-			boolean valid = checkTxPoW(zParentMMR, txpow, zTxPoW.getBlockNumber());
-			if(!valid) {
-				return false;
+		try {
+			//First check this
+			if(zTxPoW.isTransaction()) {
+				boolean valid = checkTxPoW(zParentMMR, zTxPoW, zTxPoW.getBlockNumber());
+				if(!valid) {
+					return false;
+				}
 			}
-		}
-		
-		//Construct the MMR.. to see if it is correct..
-		TxBlock txblock 		= new TxBlock(zParentMMR, zTxPoW, zTransactions);
-		TxPoWTreeNode node 		= new TxPoWTreeNode(txblock, false);
+			
+			//Now check all the internal Transactions
+			for(TxPoW txpow : zTransactions) {
+				boolean valid = checkTxPoW(zParentMMR, txpow, zTxPoW.getBlockNumber());
+				if(!valid) {
+					return false;
+				}
+			}
+			
+			//Construct the MMR.. to see if it is correct..
+			TxBlock txblock 		= new TxBlock(zParentMMR, zTxPoW, zTransactions);
+			TxPoWTreeNode node 		= new TxPoWTreeNode(txblock, false);
 
-		//Check Correct..
-		MMRData root = node.getMMR().getRoot();
-		if(!root.getData().isEqual(zTxPoW.getMMRRoot()) || !root.getValue().isEqual(zTxPoW.getMMRTotal())) {
-			MinimaLogger.log("ERROR : MMR in TxPOW and calculated don't match! @ "+zTxPoW.getBlockNumber()+" "+zTxPoW.getTxPoWID());
+			//Check Correct..
+			MMRData root = node.getMMR().getRoot();
+			if(!root.getData().isEqual(zTxPoW.getMMRRoot()) || !root.getValue().isEqual(zTxPoW.getMMRTotal())) {
+				MinimaLogger.log("ERROR : MMR in TxPOW and calculated don't match! @ "+zTxPoW.getBlockNumber()+" "+zTxPoW.getTxPoWID());
+				return false;
+			}
+			
+		}catch(Exception exc) {
+			MinimaLogger.log("ERROR checking TxPoW..");
+			MinimaLogger.log(exc);
+			
 			return false;
 		}
 		
 		return true;
 	}
 	
-	public static boolean checkTxPoW(MMR zTipMMR, TxPoW zTxPoW, MiniNumber zBlock) {
+	public static boolean checkTxPoW(MMR zTipMMR, TxPoW zTxPoW, MiniNumber zBlock) throws Exception {
 		//Get the main Transaction..
 		Transaction transaction = zTxPoW.getTransaction();
 		if(transaction.isEmpty()) {
