@@ -145,7 +145,6 @@ public class MinimaDB {
 		
 		//Load the User Prefs
 		mUserDB.loadDB(new File(basedb,"userprefs.db"));
-		MinimaLogger.log("LOAD DB : "+mUserDB.isRPCEnabled());
 		
 		//Load the Cascade
 		mCacscade.loadDB(new File(basedb,"cascade.db"));
@@ -167,7 +166,6 @@ public class MinimaDB {
 		mWallet.saveDB();
 		
 		//JsonDBs
-		MinimaLogger.log("SAVE DB : "+mUserDB.isRPCEnabled());
 		mUserDB.saveDB(new File(basedb,"userprefs.db"));
 		mP2PDB.saveDB(new File(basedb,"p2p.db"));
 		
