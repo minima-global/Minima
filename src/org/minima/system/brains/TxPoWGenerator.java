@@ -135,8 +135,8 @@ public class TxPoWGenerator {
 				totaladded++;
 			}
 			
-			//Max allowed..
-			if(totaladded > 5) {
+			//Max allowed.. 1 txn/s
+			if(totaladded > 50) {
 				break;
 			}
 		}
