@@ -126,7 +126,7 @@ public class NetworkManager {
 	public void startRPC() {
 		if(mRPCServer == null) {
 			//Start The RPC server
-			mRPCServer = new RPCServer(9002);
+			mRPCServer = new RPCServer(GeneralParams.RPC_PORT);
 		}else {
 			//Already started..
 		}

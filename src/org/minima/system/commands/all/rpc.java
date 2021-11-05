@@ -5,12 +5,13 @@ import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
 import org.minima.system.network.minima.NIOMessage;
+import org.minima.system.params.GeneralParams;
 import org.minima.utils.json.JSONObject;
 
 public class rpc extends Command {
 
 	public rpc() {
-		super("rpc","[enable:true|false] - Enable and disable RPC (default is off)");
+		super("rpc","[enable:true|false] - Enable and disable RPC on port "+GeneralParams.RPC_PORT+" (default is off)");
 	}
 	
 	@Override

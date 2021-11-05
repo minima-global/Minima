@@ -86,6 +86,9 @@ public class Minima {
 				}else if(arg.equals("-host")) {
 					GeneralParams.MINIMA_HOST = zArgs[counter++];
 				
+				}else if(arg.equals("-rpc")) {
+					GeneralParams.RPC_PORT = Integer.parseInt(zArgs[counter++]);
+					
 				}else if(arg.equals("-conf")) {
 					GeneralParams.CONFIGURATION_FOLDER = zArgs[counter++];
 				
@@ -133,6 +136,7 @@ public class Minima {
 					System.out.println("Minima Help");
 					System.out.println(" -host       : Specify the host IP");
 					System.out.println(" -port       : Specify the Minima port");
+					System.out.println(" -rpc        : Specify the RPC port");
 					System.out.println(" -conf       : Specify the configuration folder");
 					System.out.println(" -daemon     : Run in daemon mode with no stdin input ( services )");
 					System.out.println(" -nop2p      : Disable the automatic P2P system");
