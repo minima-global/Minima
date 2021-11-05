@@ -270,6 +270,9 @@ public class Main extends MessageProcessor {
 			//Same with the ArchiveDB
 			MinimaDB.getDB().getArchive().cleanDB();
 			
+			//Now save the state - in case system crashed..
+			MinimaDB.getDB().saveState();
+			
 			//Clean up the RAM Memory
 			System.gc();
 			
