@@ -8,6 +8,7 @@ import java.util.Enumeration;
 import org.minima.system.network.minima.NIOManager;
 import org.minima.system.network.p2p.P2PFunctions;
 import org.minima.system.network.p2p.P2PManager;
+import org.minima.system.network.rpc.RPCServer;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
@@ -25,6 +26,11 @@ public class NetworkManager {
 	 * P2P Manager..
 	 */
 	MessageProcessor mP2PManager;
+	
+	/**
+	 * The RPC server
+	 */
+	RPCServer mRPCServer;
 	
 	public NetworkManager() {
 		//Calculate the local host
@@ -48,6 +54,9 @@ public class NetworkManager {
 		
 		//The main NIO server manager
 		mNIOManager = new NIOManager();
+		
+		//The RPC server
+		mRPCServer = new RPCServer(9002);
 	}
 	
 	public void calculateHostIP() {
@@ -116,6 +125,9 @@ public class NetworkManager {
 		
 		//Send a message to the P2P
 		mP2PManager.PostMessage(P2PFunctions.P2P_SHUTDOWN);
+		
+		//Stop the RPC
+		mRPCServer.stop();
 	}
 	
 	public boolean isShutDownComplete() {
