@@ -55,7 +55,7 @@ public class TxPoWChecker {
 			}
 			
 		}catch(Exception exc) {
-			MinimaLogger.log("ERROR checking TxPoW..");
+			MinimaLogger.log("ERROR checking TxPoW Block..");
 			MinimaLogger.log(exc);
 			
 			return false;
