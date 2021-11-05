@@ -17,6 +17,7 @@ import org.minima.system.commands.all.newaddress;
 import org.minima.system.commands.all.printmmr;
 import org.minima.system.commands.all.printtree;
 import org.minima.system.commands.all.quit;
+import org.minima.system.commands.all.rpc;
 import org.minima.system.commands.all.send;
 import org.minima.system.commands.all.status;
 import org.minima.system.commands.all.tokencreate;
@@ -29,7 +30,7 @@ public abstract class Command {
 
 	public static final Command[] ALL_COMMANDS = 
 		{   new quit(), new status(), new coins(), new txpow(), new connect(), new disconnect(), new network(),
-			new message(), new trace(), new help(), new printtree(), new automine(), new printmmr(),
+			new message(), new trace(), new help(), new printtree(), new automine(), new printmmr(), new rpc(),
 			new send(), new balance(), new tokencreate(), new newaddress(), new debugflag() };
 	
 	String mName;

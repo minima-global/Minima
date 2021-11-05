@@ -17,10 +17,7 @@ public class RPCServer implements Runnable{
 	
 	public RPCServer(int zPort) {
 		mPort = zPort;
-		
 		start();
-		
-	    MinimaLogger.log("RPC Server started on port : "+mPort);
 	}
 	
 	public int getPort() {
@@ -37,11 +34,15 @@ public class RPCServer implements Runnable{
 		} catch (Exception e) {
 			MinimaLogger.log(e);
 		}
+		
+		MinimaLogger.log("RPC Server stopped");
 	}
 	
 	public void start() {
 		Thread runner = new Thread(this);
 		runner.start();
+		
+		MinimaLogger.log("RPC Server started on port : "+mPort);
 	}
 	
 	@Override
@@ -73,8 +74,7 @@ public class RPCServer implements Runnable{
 				MinimaLogger.log("RPCServer : Socket Shutdown.. "+e);
 			}
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			MinimaLogger.log(e);
 		}
 	}
 }

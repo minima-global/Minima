@@ -5,6 +5,7 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Enumeration;
 
+import org.minima.database.MinimaDB;
 import org.minima.system.network.minima.NIOManager;
 import org.minima.system.network.p2p.P2PFunctions;
 import org.minima.system.network.p2p.P2PManager;
@@ -30,7 +31,7 @@ public class NetworkManager {
 	/**
 	 * The RPC server
 	 */
-	RPCServer mRPCServer;
+	RPCServer mRPCServer = null;
 	
 	public NetworkManager() {
 		//Calculate the local host
@@ -55,8 +56,10 @@ public class NetworkManager {
 		//The main NIO server manager
 		mNIOManager = new NIOManager();
 		
-		//The RPC server
-		mRPCServer = new RPCServer(9002);
+		//Do we start the RPC server
+		if(MinimaDB.getDB().getUserDB().isRPCEnabled()) {
+			startRPC();
+		}
 	}
 	
 	public void calculateHostIP() {
@@ -108,7 +111,7 @@ public class NetworkManager {
 		stats.put("connected", mNIOManager.getConnectedClients());
 		
 		//RPC Stats
-		//..
+		stats.put("rpc", MinimaDB.getDB().getUserDB().isRPCEnabled());
 		
 		//P2P stats
 		if(GeneralParams.P2P_ENABLED) {
@@ -120,14 +123,32 @@ public class NetworkManager {
 		return stats;
 	}
 	
+	public void startRPC() {
+		if(mRPCServer == null) {
+			//Start The RPC server
+			mRPCServer = new RPCServer(9002);
+		}else {
+			//Already started..
+		}
+	}
+	
+	public void stopRPC() {
+		if(mRPCServer != null) {
+			//Stop the RPC
+			mRPCServer.stop();
+			mRPCServer = null;
+		}
+	}
+	
 	public void shutdownNetwork() {
+		//And the RPC
+		stopRPC();
+		
+		//Stop the NIO Manager
 		mNIOManager.PostMessage(NIOManager.NIO_SHUTDOWN);
 		
 		//Send a message to the P2P
 		mP2PManager.PostMessage(P2PFunctions.P2P_SHUTDOWN);
-		
-		//Stop the RPC
-		mRPCServer.stop();
 	}
 	
 	public boolean isShutDownComplete() {

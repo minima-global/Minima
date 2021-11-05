@@ -145,6 +145,7 @@ public class MinimaDB {
 		
 		//Load the User Prefs
 		mUserDB.loadDB(new File(basedb,"userprefs.db"));
+		MinimaLogger.log("LOAD DB : "+mUserDB.isRPCEnabled());
 		
 		//Load the Cascade
 		mCacscade.loadDB(new File(basedb,"cascade.db"));
@@ -166,6 +167,7 @@ public class MinimaDB {
 		mWallet.saveDB();
 		
 		//JsonDBs
+		MinimaLogger.log("SAVE DB : "+mUserDB.isRPCEnabled());
 		mUserDB.saveDB(new File(basedb,"userprefs.db"));
 		mP2PDB.saveDB(new File(basedb,"p2p.db"));
 		
@@ -175,15 +177,27 @@ public class MinimaDB {
 	}
 	
 	public void saveState() {
-		//Get the base Database folder
-		File basedb = getBaseDBFolder();
 		
-		//JsonDBs
-		mUserDB.saveDB(new File(basedb,"userprefs.db"));
-		mP2PDB.saveDB(new File(basedb,"p2p.db"));
+		//We need read lock 
+		readLock(true);
 		
-		//Custom
-		mCacscade.saveDB(new File(basedb,"cascade.db"));
-		mTxPoWTree.saveDB(new File(basedb,"chaintree.db"));
+		try {
+			//Get the base Database folder
+			File basedb = getBaseDBFolder();
+			
+			//JsonDBs
+			mUserDB.saveDB(new File(basedb,"userprefs.db"));
+			mP2PDB.saveDB(new File(basedb,"p2p.db"));
+			
+			//Custom
+			mCacscade.saveDB(new File(basedb,"cascade.db"));
+			mTxPoWTree.saveDB(new File(basedb,"chaintree.db"));
+		
+		}catch(Exception exc) {
+			MinimaLogger.log("ERROR saving state "+exc);
+		}
+		
+		//Release the krakken
+		readLock(false);
 	}
 }

@@ -9,12 +9,26 @@ public class UserDB extends JsonDB{
 		super();
 	}
 	
+	/**
+	 * Set your Welcome message
+	 */
 	public void setWelcome(String zWelcome) {
 		setString("welcome", zWelcome);
 	}
 	
 	public String getWelcome() {
 		return getString("welcome", "Running Minima "+GlobalParams.MINIMA_VERSION);
+	}
+	
+	/**
+	 * Is RPC Enabled on this system..
+	 */
+	public boolean isRPCEnabled() {
+		return getBoolean("rpcenable", false);
+	}
+	
+	public void setRPCEnabled(boolean zEnabled) {
+		setBoolean("rpcenable", zEnabled);
 	}
 	
 	
