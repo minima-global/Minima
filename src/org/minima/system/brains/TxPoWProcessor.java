@@ -11,7 +11,6 @@ import org.minima.database.txpowtree.TxPowTree;
 import org.minima.objects.IBD;
 import org.minima.objects.TxBlock;
 import org.minima.objects.TxPoW;
-import org.minima.objects.base.MiniData;
 import org.minima.system.Main;
 import org.minima.system.params.GlobalParams;
 import org.minima.utils.MinimaLogger;

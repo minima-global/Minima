@@ -1,12 +1,12 @@
 package org.minima.system.network.p2p;
 
+import java.net.InetSocketAddress;
+import java.util.ArrayList;
+
 import org.minima.system.network.p2p.messages.InetSocketAddressIO;
 import org.minima.system.network.p2p.params.P2PParams;
 import org.minima.utils.JsonDB;
 import org.minima.utils.json.JSONArray;
-
-import java.net.InetSocketAddress;
-import java.util.ArrayList;
 
 public class P2PDB extends JsonDB {
 

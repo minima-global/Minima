@@ -2,12 +2,8 @@ package org.minima.system.commands.all;
 
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
-import org.minima.system.network.minima.NIOClientInfo;
 import org.minima.system.network.p2p.P2PManager;
-import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
-
-import java.util.ArrayList;
 
 public class p2pnetwork extends Command {
 

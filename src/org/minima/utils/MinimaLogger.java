@@ -9,7 +9,6 @@ import java.util.Locale;
 
 import org.minima.system.Main;
 import org.minima.utils.messages.Message;
-import org.minima.utils.messages.MessageListener;
 
 /**
  * @author Spartacus Rex

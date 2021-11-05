@@ -1,10 +1,10 @@
 package org.minima.system.network.p2p.messages;
 
-import org.minima.utils.json.JSONArray;
-import org.minima.utils.json.JSONObject;
-
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+
+import org.minima.utils.json.JSONArray;
+import org.minima.utils.json.JSONObject;
 
 public class InetSocketAddressIO {
 

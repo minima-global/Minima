@@ -1,12 +1,12 @@
 package org.minima.system.network.p2p.messages;
 
+import java.net.InetSocketAddress;
+import java.util.ArrayList;
+
 import org.minima.system.network.p2p.P2PState;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
-
-import java.net.InetSocketAddress;
-import java.util.ArrayList;
 
 public class P2PGreeting {
 

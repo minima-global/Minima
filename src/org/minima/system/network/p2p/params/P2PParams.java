@@ -2,7 +2,6 @@ package org.minima.system.network.p2p.params;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class P2PParams {
