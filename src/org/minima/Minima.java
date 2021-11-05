@@ -27,16 +27,14 @@ public class Minima {
 	/**
 	 * Call main() with a set of variables
 	 */
-	public void fireStarter(final ArrayList<String> zArgs) {
+	public void mainStarter(final String[] zArgs) {
 		
 		//Create a separate thread
 		Runnable mainrunner = new Runnable() {
 			@Override
 			public void run() {
-				System.out.println("Minima Started..");
-				
 				//And call it..
-				main( zArgs.toArray(new String[0]) );
+				main( zArgs );
 			}
 		};
 		
