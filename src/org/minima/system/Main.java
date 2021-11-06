@@ -98,7 +98,7 @@ public class Main extends MessageProcessor {
 		if(GeneralParams.CLEAN) {
 			MinimaLogger.log("Wiping previous config files..");
 			//Delete the conf folder
-			MiniFile.deleteFileOrFolder(GeneralParams.CONFIGURATION_FOLDER, new File(GeneralParams.CONFIGURATION_FOLDER));
+			MiniFile.deleteFileOrFolder(GeneralParams.DATA_FOLDER, new File(GeneralParams.DATA_FOLDER));
 		}
 		
 		//Create the MinmaDB

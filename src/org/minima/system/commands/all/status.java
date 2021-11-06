@@ -35,7 +35,7 @@ public class status extends Command {
 		
 		JSONObject details = new JSONObject();
 		details.put("version", GlobalParams.MINIMA_VERSION);
-		details.put("configuration", GeneralParams.CONFIGURATION_FOLDER);
+		details.put("configuration", GeneralParams.DATA_FOLDER);
 		
 		//The Database
 		TxPoWDB txpdb 		= MinimaDB.getDB().getTxPoWDB();

@@ -23,9 +23,9 @@ public class GeneralParams {
 	public static boolean CLEAN = false;
 	
 	/**
-	 * Where are the configuration and database files stored. This is set at startup.
+	 * Where are the database files stored. This is set at startup.
 	 */
-	public static String CONFIGURATION_FOLDER = "";
+	public static String DATA_FOLDER = "";
 	
 	/**
 	 * The Host IP
