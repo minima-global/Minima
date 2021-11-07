@@ -5,12 +5,9 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import org.minima.database.mmr.MMRProof;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
-import org.minima.objects.proofs.ScriptProof;
-import org.minima.objects.proofs.SignatureProof;
-import org.minima.objects.proofs.TokenProof;
+import org.minima.objects.keys.Signature;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
@@ -18,166 +15,113 @@ import org.minima.utils.json.JSONObject;
 public class Witness implements Streamable {
 	
 	/**
-	 * The MMR Proofs that each input Coin is valid and unspent.
-	 */
-	ArrayList<MMRProof> mMMRProofs;
-	
-	/**
 	 * The Signatures
 	 */
-	ArrayList<SignatureProof> mSignatureProofs;
+	private ArrayList<Signature> mSignatureProofs;
 	
 	/**
-	 * Any tokens used in any inputs must provide the Token Details
+	 * The MMR Proofs that each input Coin is valid and unspent.
 	 */
-	ArrayList<TokenProof> mTokenProofs;
+	private ArrayList<CoinProof> mCoinProofs;
 	
 	/**
 	 * The Scripts used in the transactions 
-	 * 
-	 * Addresses
-	 * Tokens
-	 * MAST
 	 */
-	protected ArrayList<ScriptProof> mScriptProofs;
-	
+	private ArrayList<ScriptProof> mScriptProofs;
+
 	/**
 	 * General Constructor
 	 */
 	public Witness() {
-		mMMRProofs       = new ArrayList<>();
-		mSignatureProofs = new ArrayList<>();
-		mTokenProofs     = new ArrayList<>();
-		mScriptProofs    = new ArrayList<>();
+		mCoinProofs       	= new ArrayList<>();
+		mSignatureProofs 	= new ArrayList<>();
+		mScriptProofs    	= new ArrayList<>();
 	}
 	
 	/**
 	 * Signature functions
 	 */
-	public void addSignature(MiniData zPubKey, MiniData zSignature) {
-		mSignatureProofs.add(new SignatureProof(zPubKey, zSignature));
-	}
-	
-	public void addSignature(SignatureProof zSigProof) {
+	public void addSignature(Signature zSigProof) {
 		mSignatureProofs.add(zSigProof);
 	}
 	
-	public ArrayList<SignatureProof> getAllSignatures(){
+	public ArrayList<Signature> getAllSignatures(){
 		return mSignatureProofs;
 	}
 	
-	public void clearSignatures() {
-		mSignatureProofs.clear();
-	}
-	
-	public String getAllPubKeysCSV(){
-		String ret = "";
-		for(SignatureProof sig : mSignatureProofs) {
-			ret += sig.getFinalHash().to0xString()+" # ";
+	public ArrayList<MiniData> getAllSignatureKeys(){
+		ArrayList<MiniData> pubkeys = new ArrayList<>();
+		for(Signature sigproof : mSignatureProofs) {
+			
+			//Get the root key
+			pubkeys.add(sigproof.getRootPublicKey());
 		}
-
-		return ret.trim();
+		return pubkeys;
 	}
 	
 	/**
 	 * MMR Functions
 	 */
-	public void addMMRProof(MMRProof zProof) {
-		mMMRProofs.add(zProof);
+	public void addCoinProof(CoinProof zProof) {
+		mCoinProofs.add(zProof);
 	}
 	
-	public void clearMMRProofs(){
-		mMMRProofs.clear();	
-	}
-	
-	public ArrayList<MMRProof> getAllMMRProofs(){
-		return mMMRProofs;
+	public ArrayList<CoinProof> getAllCoinProofs(){
+		return mCoinProofs;
 	}
 
-	
-	/**
-	 * Token Proofs
-	 */
-	
-	public ArrayList<TokenProof> getAllTokenDetails(){
-		return mTokenProofs;
-	}
-	
-	public void addTokenDetails(TokenProof zDetails) {
-		if(getTokenDetail(zDetails.getTokenID()) == null){
-			mTokenProofs.add(zDetails);	
-		}
-	}
-	
-	public TokenProof getTokenDetail(MiniData zTokenID) {
-		for(TokenProof td : mTokenProofs) {
-			if(td.getTokenID().isEqual(zTokenID)) {
-				return td;
-			}
-		}
-		return null;
-	}
-	
 	/**
 	 * Script Proofs
+	 * 
+	 * Scripts and their merkle paths to addresses or MAST used in the transaction
+	 * 
 	 */
-	public boolean addScript(String zScript, int zBitLength) throws Exception {
-		return addScript(new ScriptProof(zScript,zBitLength));
-	}
-	
-	public boolean addScript(ScriptProof zScriptProof) {
-		if(!scriptExists(zScriptProof.getFinalHash())) {
-			mScriptProofs.add(zScriptProof);		
-			return true;
+	public void addScript(ScriptProof zScriptProof) {
+		if(!scriptExists(zScriptProof.getAddress().getAddressData())) {
+			mScriptProofs.add(zScriptProof);
 		}
-		return false;
 	}
 	
 	public ScriptProof getScript(MiniData zAddress) {
-		for(ScriptProof proof : mScriptProofs) {
-			if(proof.getFinalHash().isEqual(zAddress)) {
-				return proof;
+		for(ScriptProof proofscr : mScriptProofs) {
+			if(proofscr.getAddress().getAddressData().isEqual(zAddress)) {
+				return proofscr;
 			}
 		}
 		
 		return null;
 	}
 	
-	public boolean scriptExists(MiniData zHash) {
-		return getScript(zHash)!=null;
+	private boolean scriptExists(MiniData zAddress) {
+		return getScript(zAddress) != null;
 	}
-	
 	
 	public JSONObject toJSON() {
 		JSONObject obj = new JSONObject();
 		
 		//Signatures
 		JSONArray arr = new JSONArray();
-		for(SignatureProof sg : mSignatureProofs) {
+		for(Signature sg : mSignatureProofs) {
 			arr.add(sg.toJSON());
 		}
 		obj.put("signatures", arr);
 
 		//MMRProofs
 		arr = new JSONArray();
-		for(MMRProof proof : mMMRProofs) {
+		for(CoinProof proof : mCoinProofs) {
 			arr.add(proof.toJSON());
 		}
 		obj.put("mmrproofs", arr);
 
-		//Token Details
-		arr = new JSONArray();
-		for(TokenProof td : mTokenProofs) {
-			arr.add(td.toJSON());
-		}
-		obj.put("tokens", arr);
-		
 		//Scripts
 		arr = new JSONArray();
-		for(ScriptProof sp : mScriptProofs) {
-			arr.add(sp.toJSON());
+		for(ScriptProof proofscr : mScriptProofs) {
+			arr.add(proofscr.toJSON());
 		}
 		obj.put("scripts", arr);
+
+		//Tokens..
+		//..
 		
 		return obj;
 	}
@@ -190,29 +134,19 @@ public class Witness implements Streamable {
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
 		//Signatures 
-		MiniNumber len = new MiniNumber(mSignatureProofs.size());
-		len.writeDataStream(zOut);
-		for(SignatureProof sp : mSignatureProofs) {
+		MiniNumber.WriteToStream(zOut, mSignatureProofs.size());
+		for(Signature sp : mSignatureProofs) {
 			sp.writeDataStream(zOut);
 		}
 		
 		//MMRProofs
-		len = new MiniNumber(mMMRProofs.size());
-		len.writeDataStream(zOut);
-		for(MMRProof proof : mMMRProofs) {
-			proof.writeDataStream(zOut);
-		}
-		
-		//Tokens
-		len = new MiniNumber(mTokenProofs.size());
-		len.writeDataStream(zOut);
-		for(TokenProof td : mTokenProofs) {
-			td.writeDataStream(zOut);
+		MiniNumber.WriteToStream(zOut, mCoinProofs.size());
+		for(CoinProof cproof : mCoinProofs) {
+			cproof.writeDataStream(zOut);
 		}
 		
 		//Scripts
-		len = new MiniNumber(mScriptProofs.size());
-		len.writeDataStream(zOut);
+		MiniNumber.WriteToStream(zOut, mScriptProofs.size());
 		for(ScriptProof sp : mScriptProofs) {
 			sp.writeDataStream(zOut);
 		}
@@ -224,21 +158,14 @@ public class Witness implements Streamable {
 		MiniNumber mlen = MiniNumber.ReadFromStream(zIn);
 		int len = mlen.getAsInt();
 		for(int i=0;i<len;i++) {
-			mSignatureProofs.add(SignatureProof.ReadFromStream(zIn));
+			mSignatureProofs.add(Signature.ReadFromStream(zIn));
 		}
 		
-		mMMRProofs = new ArrayList<>();
+		mCoinProofs = new ArrayList<>();
 		mlen = MiniNumber.ReadFromStream(zIn);
 		len  = mlen.getAsInt();
 		for(int i=0;i<len;i++) {
-			mMMRProofs.add(MMRProof.ReadFromStream(zIn));
-		}
-		
-		mTokenProofs = new ArrayList<>();
-		mlen = MiniNumber.ReadFromStream(zIn);
-		len  = mlen.getAsInt();
-		for(int i=0;i<len;i++) {
-			mTokenProofs.add(TokenProof.ReadFromStream(zIn));
+			mCoinProofs.add(CoinProof.ReadFromStream(zIn));
 		}
 		
 		mScriptProofs = new ArrayList<>();

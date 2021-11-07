@@ -21,8 +21,7 @@ import org.minima.kissvm.values.Value;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniNumber;
-import org.minima.objects.keys.MultiKey;
+import org.minima.objects.keys.TreeKey;
 
 //BooleanValue CHECKSIG (HEXValue pubkey HEXValue data HEXValue sig)
 public class CHECKSIGTests {
@@ -52,12 +51,12 @@ public class CHECKSIGTests {
 
         MiniData Seed1 = MiniData.getRandomData(32);
         MiniData Seed2 = MiniData.getRandomData(64);
-        MultiKey MKeySign1 = new MultiKey(Seed1, new MiniNumber("16"), new MiniNumber("2"));
-        MultiKey MKeySign2 = new MultiKey(Seed2, new MiniNumber("16"), new MiniNumber("2"));
+        TreeKey MKeySign1 = new TreeKey(Seed1, 16, 2);
+        TreeKey MKeySign2 = new TreeKey(Seed2, 16, 2);
         MiniData Data1 = MiniData.getRandomData(32);
         MiniData Data2 = MiniData.getRandomData(64);
-        MiniData SingleSig1 = MKeySign1.sign(Data1);
-        MiniData SingleSig2 = MKeySign2.sign(Data2);
+        MiniData SingleSig1 = MiniData.getMiniDataVersion(MKeySign1.sign(Data1));
+        MiniData SingleSig2 = MiniData.getMiniDataVersion(MKeySign2.sign(Data2));
 
         {
             MinimaFunction mf = fn.getNewFunction();

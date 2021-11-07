@@ -282,7 +282,7 @@ public class ContractTests {
                 ctr.run();
                 assertTrue(ctr.isParseOK());
                 assertTrue(ctr.isException());
-                assertEquals("org.minima.kissvm.exceptions.ExecutionException: MAX instruction number reached! 513", ctr.getException());
+                assertEquals("org.minima.kissvm.exceptions.ExecutionException: MAX instruction number reached! 129", ctr.getException());
             }
         }
 
@@ -297,7 +297,7 @@ public class ContractTests {
                 ctr.run();
                 assertTrue(ctr.isParseOK());
                 assertTrue(ctr.isException());
-                assertEquals("org.minima.kissvm.exceptions.ExecutionException: MAX instruction number reached! 513", ctr.getException());
+                assertEquals("org.minima.kissvm.exceptions.ExecutionException: MAX instruction number reached! 129", ctr.getException());
             }
         }
     }

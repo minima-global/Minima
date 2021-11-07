@@ -8,8 +8,8 @@ import org.minima.kissvm.functions.MinimaFunction;
 import org.minima.kissvm.values.NumberValue;
 import org.minima.kissvm.values.Value;
 import org.minima.objects.Coin;
+import org.minima.objects.Token;
 import org.minima.objects.Transaction;
-import org.minima.objects.proofs.TokenProof;
 
 public class GETINAMT extends MinimaFunction {
 
@@ -37,17 +37,17 @@ public class GETINAMT extends MinimaFunction {
 		Coin cc = ins.get(input);
 		
 		//Is it a Token..
-		if(!cc.getTokenID().isEqual(Coin.MINIMA_TOKENID)) {
+		if(!cc.getTokenID().isEqual(Token.TOKENID_MINIMA)) {
 			//Get the Multiple..
-			TokenProof td = zContract.getWitness().getTokenDetail(cc.getTokenID());
+			Token td = cc.getToken();
 			if(td == null) {
-				throw new ExecutionException("No Token found for ID "+cc.getTokenID());
+				throw new ExecutionException("No Token for Input Coin @ "+input+" "+cc.getToken());
 			}
-//			return new NumberValue(cc.getAmount().mult(td.getScaleFactor()));
+			
 			return new NumberValue(td.getScaledTokenAmount(cc.getAmount()));
 		}
 		
-		//Return the address	
+		//Return the Amount
 		return new NumberValue(cc.getAmount());
 	}
 

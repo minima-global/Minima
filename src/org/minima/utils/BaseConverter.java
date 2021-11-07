@@ -179,9 +179,61 @@ public class BaseConverter {
 	
 	public static void main(String[] zArgs) {
 		
-		byte[] data = decode16("");
+//		byte[] data = decode16("");
+//		System.out.print(data.length);
 		
-		System.out.print(data.length);
+//		for(int i=0;i<64;i++) {
+//			BigInteger ii = new BigInteger(""+i);
+//			System.out.println(i+") "+ii.toString(32));
+//		}
+		
+		//HEX version
+		String hex = "0764584756847564800198798798798799";
+		System.out.println("HEX    : "+hex);
+		
+		//Base32 version
+		BigInteger len 	= new BigInteger(""+hex.length());
+		String hlen 	= len.toString(16);
+		if(hlen.length() == 1) {
+			hlen = "0"+hlen;
+		}
+		System.out.println("HEXLEN : "+hlen);
+		
+		String newhex = "1"+hlen+hex;
+		System.out.println("NEWHEX : "+newhex);
+		
+		//Now add checksum..
+		String checksum = "0f0fa2c4";
+		newhex = newhex+checksum;
+		System.out.println("CHECKS : "+newhex);
+		
+		//Now convert to Base32
+		BigInteger b32 = new BigInteger(newhex,16);
+		System.out.println("BASE16 : "+b32.toString(16));
+		
+		String mxaddress = b32.toString(32).toUpperCase();
+		System.out.println("BASE32 : "+b32.toString(32).toUpperCase());
+		
+		//Convert back..
+		System.out.println();
+		BigInteger bconv = new BigInteger(mxaddress,32);
+		String conv16  = bconv.toString(16);
+		System.out.println("CONV   : "+conv16);
+		
+		//remove the 1..
+		String norm = conv16.substring(1);
+		System.out.println("NORM   : "+norm);
+		String lens  = norm.substring(0,2);
+		
+		System.out.println("LENS   : "+lens);
+		int il = Integer.parseInt(lens);
+		String val   = norm.substring(2,2+il);
+		
+		System.out.println("VAL    : "+val);
+		
+		
+//		BigInteger ii = new BigInteger("0001",16);
+//		System.out.println(ii.toString(32));
 		
 //		String tt = numberToHex(8687);
 //		System.out.println(tt);
