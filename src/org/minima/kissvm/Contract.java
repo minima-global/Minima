@@ -88,7 +88,7 @@ public class Contract {
 	/**
 	 * Maximum allowed number of KISSVM instructions
 	 */
-	public static int MAX_INSTRUCTIONS = Magic.MIN_KISSVM_INST.getAsInt();
+	public static int MAX_INSTRUCTIONS = 256;
 	
 	/**
 	 * A complete log of the contract execution
