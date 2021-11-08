@@ -53,11 +53,8 @@ public class P2PParams {
 
 
 
-    public static List<InetSocketAddress> DEFAULT_NODE_LIST = new ArrayList<>();
-
-//            Arrays.asList(
-//            new InetSocketAddress("127.0.0.1", 9999),
-//            new InetSocketAddress("127.0.0.1", 9888)
-//            );
+    public static List<InetSocketAddress> DEFAULT_NODE_LIST = Arrays.asList(
+            new InetSocketAddress("35.246.45.106", 9001)
+            );
 
 }
