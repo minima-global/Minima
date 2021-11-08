@@ -31,7 +31,8 @@ public class TxPoWGenerator {
 	/**
 	 * For Now - Hard set the Min TxPoW Difficulty
 	 */
-	public static final BigInteger MIN_TXPOW_VAL 	= Crypto.MAX_VAL.divide(new BigInteger("1000"));
+	public static final BigInteger MIN_HASHES 		= new BigInteger("1000");
+	public static final BigInteger MIN_TXPOW_VAL 	= Crypto.MAX_VAL.divide(MIN_HASHES);
 	public static final MiniData MIN_TXPOWDIFF 		= new MiniData(MIN_TXPOW_VAL);
 	
 	public static TxPoW generateTxPoW(Transaction zTransaction, Witness zWitness) {

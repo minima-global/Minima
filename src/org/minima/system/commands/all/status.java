@@ -1,6 +1,8 @@
 package org.minima.system.commands.all;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.math.MathContext;
 import java.util.Date;
 
 import org.minima.database.MinimaDB;
@@ -8,6 +10,7 @@ import org.minima.database.archive.ArchiveManager;
 import org.minima.database.cascade.Cascade;
 import org.minima.database.txpowdb.TxPoWDB;
 import org.minima.database.txpowtree.TxPowTree;
+import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
 import org.minima.system.brains.TxPoWGenerator;
@@ -15,6 +18,7 @@ import org.minima.system.commands.Command;
 import org.minima.system.network.NetworkManager;
 import org.minima.system.params.GeneralParams;
 import org.minima.system.params.GlobalParams;
+import org.minima.utils.Crypto;
 import org.minima.utils.MiniFormat;
 import org.minima.utils.json.JSONObject;
 
@@ -104,6 +108,18 @@ public class status extends Command {
 		long mem 		= Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
 		String memused 	= MiniFormat.formatSize(mem);
 		details.put("ram", memused);
+		
+		//How many Devices..
+		BigDecimal blkweightdec 	= new BigDecimal(txptree.getTip().getTxPoW().getBlockDifficulty().getDataValue());
+		BigDecimal blockWeight 		= Crypto.MAX_VALDEC.divide(blkweightdec, MathContext.DECIMAL32);
+		
+		MiniNumber ratio 			= new MiniNumber(blockWeight).div(new MiniNumber(TxPoWGenerator.MIN_HASHES));
+		MiniNumber pulsespeed 		= MiniNumber.THOUSAND.div(new MiniNumber(GeneralParams.USER_PULSE_FREQ));
+		
+		MiniNumber usersperpulse 	= MiniNumber.ONE.div(new MiniNumber(""+pulsespeed).div(GlobalParams.MINIMA_BLOCK_SPEED));
+		MiniNumber totaldevs 		= usersperpulse.mult(ratio).floor();
+		
+		details.put("devices", totaldevs.toString());
 		
 		//Add all the details
 		ret.put("response", details);
