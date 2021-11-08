@@ -198,4 +198,14 @@ public class MinimaDB {
 		//Release the krakken
 		readLock(false);
 	}
+	
+	public void saveUserDB() {
+		
+		//Get the base Database folder
+		File basedb = getBaseDBFolder();
+		
+		//JsonDBs
+		mUserDB.saveDB(new File(basedb,"userprefs.db"));
+		
+	}
 }

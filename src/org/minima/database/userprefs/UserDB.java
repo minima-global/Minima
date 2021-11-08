@@ -31,5 +31,16 @@ public class UserDB extends JsonDB{
 		setBoolean("rpcenable", zEnabled);
 	}
 	
+
+	/**
+	 * The Incentive Cash User
+	 */
+	public String getIncentiveCashUserID() {
+		return getString("uid", "");
+	}
+	
+	public void setIncentiveCashUserID(String zUID) {
+		setString("uid", zUID);
+	}
 	
 }

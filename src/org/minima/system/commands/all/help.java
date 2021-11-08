@@ -38,6 +38,8 @@ public class help extends Command {
 		addCommand(details, new disconnect());
 		addCommand(details, new rpc());
 		
+		addCommand(details, new incentivecash());
+		
 		addCommand(details, new quit());
 		
 		ret.put("response", details);

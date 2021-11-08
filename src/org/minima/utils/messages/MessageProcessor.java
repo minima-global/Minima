@@ -32,7 +32,8 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
 	/**
 	 * LOG messages ?
 	 */
-	protected boolean mTrace = false;
+	protected boolean mTrace 		= false;
+	protected String mTraceFilter 	= "";
 	
 	/**
 	 * Processor Name
@@ -53,8 +54,9 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
         mMainThread.start();
     }
     
-    public void setFullLogging(boolean zLogON) {
-    	mTrace = zLogON;
+    public void setFullLogging(boolean zLogON, String zTraceFilter) {
+    	mTrace 			= zLogON;
+    	mTraceFilter 	= zTraceFilter;
     }
     
     public boolean isTrace() {
@@ -99,7 +101,10 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
                 try{
                 	//Are we logging  ?
                 	if(mTrace) {
-                		MinimaLogger.log("["+getSize()+"] "+sdf.format(new Date())+" [ "+mMainThread.getName()+" ] \t"+msg);
+                		String tracemsg = msg.toString();
+                		if(tracemsg.contains(mTraceFilter)) {
+                			MinimaLogger.log("["+getSize()+"] "+sdf.format(new Date())+" [ "+mMainThread.getName()+" ] \t"+msg);
+                		}
                 	}
                 
                 	//Process Message

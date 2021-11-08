@@ -26,7 +26,7 @@ public class rpc extends Command {
 		}
 		
 		//Save the state..
-		MinimaDB.getDB().saveState();
+		MinimaDB.getDB().saveUserDB();
 		
 		//Get the Network manager on it..
 		boolean enabled = MinimaDB.getDB().getUserDB().isRPCEnabled();

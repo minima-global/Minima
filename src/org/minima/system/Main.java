@@ -21,6 +21,7 @@ import org.minima.system.params.GeneralParams;
 import org.minima.system.params.GlobalParams;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MinimaLogger;
+import org.minima.utils.RPCClient;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageListener;
 import org.minima.utils.messages.MessageProcessor;
@@ -58,6 +59,14 @@ public class Main extends MessageProcessor {
 	public static final String MAIN_CLEANDB 	= "MAIN_CLEANDB";
 	public static final String MAIN_PULSE 		= "MAIN_PULSE";
 	public static final String MAIN_NEWBLOCK 	= "MAIN_NEWBLOCK";
+	
+	/**
+	 * Incentive Cash User ping..
+	 * 
+	 * Every 8 hours
+	 */
+	public static final String MAIN_INCENTIVE 	= "MAIN_INCENTIVE";
+	long IC_TIMER = 1000 * 60 * 60 * 8;
 	
 	/**
 	 * Main TxPoW Processor
@@ -130,6 +139,9 @@ public class Main extends MessageProcessor {
 		//Clean the DB (delete old records)
 		PostTimerMessage(new TimerMessage(CLEANDB_TIMER, MAIN_CLEANDB));
 		
+		//Store the IC USer
+		PostTimerMessage(new TimerMessage(IC_TIMER, MAIN_INCENTIVE));
+				
 		//Quick Clean up..
 		System.gc();
 	}
@@ -186,12 +198,12 @@ public class Main extends MessageProcessor {
 		return mTxPoWMiner;
 	}
 	
-	public void setTrace(boolean zTrace) {
-		setFullLogging(zTrace);
-		mTxPoWProcessor.setFullLogging(zTrace);
-		mTxPoWMiner.setFullLogging(zTrace);
-		mNetwork.getNIOManager().setFullLogging(zTrace);
-		mNetwork.getP2PManager().setFullLogging(zTrace);
+	public void setTrace(boolean zTrace, String zFilter) {
+		setFullLogging(zTrace,zFilter);
+		mTxPoWProcessor.setFullLogging(zTrace,zFilter);
+		mTxPoWMiner.setFullLogging(zTrace,zFilter);
+		mNetwork.getNIOManager().setFullLogging(zTrace,zFilter);
+		mNetwork.getP2PManager().setFullLogging(zTrace,zFilter);
 	}
 	
 	private void doGenesis() {
@@ -293,6 +305,17 @@ public class Main extends MessageProcessor {
 			//And then wait again..
 			PostTimerMessage(new TimerMessage(GeneralParams.USER_PULSE_FREQ, MAIN_PULSE));
 		
+		}else if(zMessage.getMessageType().equals(MAIN_INCENTIVE)) {
+			
+			//Get the User
+			String user = MinimaDB.getDB().getUserDB().getIncentiveCashUserID();
+			
+			//Call the RPC End point..
+			RPCClient.sendPUT("http://incentivecash.minima.global/ping/"+user);
+			
+			//Do it agin..
+			PostTimerMessage(new TimerMessage(IC_TIMER, MAIN_INCENTIVE));
+			
 		}else if(zMessage.getMessageType().equals(MAIN_NEWBLOCK)) {
 			
 			//The tip of the TxPoWTree has changed - we have a new block..

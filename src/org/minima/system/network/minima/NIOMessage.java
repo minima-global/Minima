@@ -101,9 +101,9 @@ public class NIOMessage implements Runnable {
 			MiniByte type = MiniByte.ReadFromStream(dis);
 			
 			//Output some info
-			if(mTrace) {
-				MinimaLogger.log("[NIOMessage] uid:"+mClientUID+" type:"+convertMessageType(type)+" size:"+MiniFormat.formatSize(data.length));
-			}
+//			if(mTrace) {
+//				MinimaLogger.log("[NIOMessage] uid:"+mClientUID+" type:"+convertMessageType(type)+" size:"+MiniFormat.formatSize(data.length));
+//			}
 			
 			//Now find the right message
 			if(type.isEqual(MSG_GREETING)) {
