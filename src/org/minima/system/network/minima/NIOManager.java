@@ -12,6 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.minima.database.MinimaDB;
 import org.minima.objects.Greeting;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
@@ -39,6 +40,8 @@ public class NIOManager extends MessageProcessor {
 	public static final String NIO_DISCONNECTED		= "NIO_DISCONNECTED";
 	
 	public static final String NIO_INCOMINGMSG 		= "NIO_NEWMSG";
+	
+	public static final String NIO_TXPOWREQ 		= "NIO_REQTXPOW";
 	
 	/**
 	 * How long before a reconnect attempt
@@ -239,6 +242,23 @@ public class NIOManager extends MessageProcessor {
 			
 			//Process it.. in a thread pool..
 			THREAD_POOL.execute(niomsg);
+		
+		}else if(zMessage.getMessageType().equals(NIO_TXPOWREQ)) {
+			
+			//Get the TxPoWID
+			String txpowid = zMessage.getString("txpowid");
+			
+			//Which client..
+			String clientid = zMessage.getString("client");
+			
+			//Check if we have it..
+			if(!MinimaDB.getDB().getTxPoWDB().exists(txpowid)) {
+				
+				MinimaLogger.log("Requesting TxPoW "+txpowid);
+				
+				//Now get it..
+				sendNetworkMessage(clientid, NIOMessage.MSG_TXPOWREQ, new MiniData(txpowid));
+			}
 		}
 	}
 	
@@ -286,7 +306,20 @@ public class NIOManager extends MessageProcessor {
 		Message msg = new Message(NIOManager.NIO_DISCONNECT).addString("uid", zClientUID);
 		PostMessage(msg);
 	}
+
+	/**
+	 * Small delay before actually posting the request.. 2 second..
+	 */
+	public static void sendDelayedTxPoWReq(String zClientID, String zTxPoWID) {
+		TimerMessage timed = new TimerMessage(2000, NIO_TXPOWREQ);
+		timed.addString("client", zClientID);
+		timed.addString("txpowid", zTxPoWID);
+		Main.getInstance().getNIOManager().PostTimerMessage(timed);
+	}
 	
+	/**
+	 * Send network messages
+	 */
 	public static void sendNetworkMessageAll(MiniByte zType, Streamable zObject) throws IOException {
 		sendNetworkMessage("", zType, zObject);
 	}

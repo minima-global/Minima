@@ -195,11 +195,12 @@ public class NIOMessage implements Runnable {
 //				if(GeneralParams.DEBUGFUNC) {
 //					MinimaLogger.log("DEBUGFUNC active : ignoring this TXPOW @ "+txpow.getBlockNumber()+" "+txpow.getTxPoWID());
 //					return;
-//				}
+//				
 				
 				//Do we have it..
 				boolean exists = MinimaDB.getDB().getTxPoWDB().exists(txpow.getTxPoWID());
 				if(exists) {
+					MinimaLogger.log("Received TxPoW we already have : "+txpow.getTxPoWID());
 					return;
 				}
 				
@@ -228,8 +229,10 @@ public class NIOMessage implements Runnable {
 					for(MiniData txn : txns) {
 						exists = MinimaDB.getDB().getTxPoWDB().exists(txn.to0xString());
 						if(!exists) {
-							//request it..
-							NIOManager.sendNetworkMessage(mClientUID, MSG_TXPOWREQ, txn);
+							//request it.. with a slight delay - as may be in process stack
+							MinimaLogger.log("Delayed Request Missing Txn in TxPoW "+mClientUID+" "+txn.to0xString());
+							NIOManager.sendDelayedTxPoWReq(mClientUID, txn.to0xString());
+//							NIOManager.sendNetworkMessage(mClientUID, MSG_TXPOWREQ, txn);
 						}
 					}
 					
@@ -237,7 +240,9 @@ public class NIOMessage implements Runnable {
 					exists = MinimaDB.getDB().getTxPoWDB().exists(txpow.getParentID().to0xString());
 					if(!exists) {
 						//request it..
-						NIOManager.sendNetworkMessage(mClientUID, MSG_TXPOWREQ, txpow.getParentID());
+						MinimaLogger.log("Delayed Request Missing Parent in TxPoW "+mClientUID+" "+txpow.getParentID().to0xString());
+						NIOManager.sendDelayedTxPoWReq(mClientUID, txpow.getParentID().to0xString());
+//						NIOManager.sendNetworkMessage(mClientUID, MSG_TXPOWREQ, txpow.getParentID());
 					}
 					
 				}else {
@@ -304,8 +309,9 @@ public class NIOMessage implements Runnable {
 				if(found) {
 					//Request all the blocks.. in the correct order
 					for(MiniData block : requestlist) {
-						MinimaLogger.log("Requesting PULSE TxPoW from "+mClientUID+" "+block.to0xString());
-						NIOManager.sendNetworkMessage(mClientUID, MSG_TXPOWREQ, block);
+						MinimaLogger.log("Delayed Request PULSE TxPoW from "+mClientUID+" "+block.to0xString());
+						NIOManager.sendDelayedTxPoWReq(mClientUID, block.to0xString());
+//						NIOManager.sendNetworkMessage(mClientUID, MSG_TXPOWREQ, block);
 					}
 					
 				}else{
