@@ -7,6 +7,7 @@ import org.minima.utils.json.JSONArray;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.List;
 
 public class P2PDB extends JsonDB {
 
@@ -18,7 +19,7 @@ public class P2PDB extends JsonDB {
 	 * Loads the peers list from the DB
 	 * @return A list of peers or an empty list if there is no data to load
 	 */
-    public ArrayList<InetSocketAddress>  getPeersList() {
+    public List<InetSocketAddress> getPeersList() {
         ArrayList<InetSocketAddress> peers = new ArrayList<>();
         JSONArray jsonArray = (JSONArray) getAllData().getOrDefault("peers", new JSONArray());
 		if (!jsonArray.isEmpty()){
@@ -31,7 +32,7 @@ public class P2PDB extends JsonDB {
 	 * Stores a list of InetSocketAddress peers as json array of strings in the db
 	 * @param peers ArrayList of discovery peers host:minimaPort
 	 */
-    public void setPeersList(ArrayList<InetSocketAddress> peers) {
+    public void setPeersList(List<InetSocketAddress> peers) {
         getAllData().put("peers", InetSocketAddressIO.addressesListToJSON(peers));
     }
 

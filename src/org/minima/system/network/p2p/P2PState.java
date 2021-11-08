@@ -5,9 +5,9 @@ import org.minima.system.network.p2p.params.P2PParams;
 import org.minima.system.params.GeneralParams;
 
 import java.net.InetSocketAddress;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 public class P2PState {
@@ -16,15 +16,16 @@ public class P2PState {
      * Connection maps
      * UID - P2PConnection
      */
-    private HashMap<String, InetSocketAddress> inLinks = new HashMap<>();
-    private HashMap<String, InetSocketAddress> outLinks = new HashMap<>();
-    private HashMap<String, InetSocketAddress> NoneP2PLinks = new HashMap<>();
+    private Map<String, InetSocketAddress> inLinks = new HashMap<>();
+    private Map<String, InetSocketAddress> outLinks = new HashMap<>();
+    private Map<String, InetSocketAddress> notAcceptingConnP2PLinks = new HashMap<>();
+    private Map<String, InetSocketAddress> noneP2PLinks = new HashMap<>();
 
 
     /**
      * Set of known peers
      */
-    private Set<InetSocketAddress> knownPeers = new HashSet<InetSocketAddress>();
+    private Set<InetSocketAddress> knownPeers = new HashSet<>();
 
     /**
      * The hosts Minima Address
@@ -46,7 +47,7 @@ public class P2PState {
      * The max number of connections this node
      * can take that are not part of the p2p system
      */
-    private int maxNumNoneP2PConnections = P2PParams.TGT_NUM_LINKS * 4;
+    private int maxNumNoneP2PConnections = P2PParams.TGT_NUM_NONE_P2P_LINKS;
 
 
     /**
@@ -55,8 +56,14 @@ public class P2PState {
      */
     private boolean doingDiscoveryConnection = false;
 
+    /**
+     * The loop delay for the p2p manager
+     */
+    private long loopDelay = P2PParams.LOOP_DELAY;
+
 
     public P2PState() {
+        // Creates a new empty state
     }
 
 
@@ -76,28 +83,28 @@ public class P2PState {
         isAcceptingInLinks = acceptingInLinks;
     }
 
-    public HashMap<String, InetSocketAddress> getInLinks() {
+    public Map<String, InetSocketAddress> getInLinks() {
         return inLinks;
     }
 
-    public void setInLinks(HashMap<String, InetSocketAddress> inLinks) {
+    public void setInLinks(Map<String, InetSocketAddress> inLinks) {
         this.inLinks = inLinks;
     }
 
-    public HashMap<String, InetSocketAddress> getOutLinks() {
+    public Map<String, InetSocketAddress> getOutLinks() {
         return outLinks;
     }
 
-    public void setOutLinks(HashMap<String, InetSocketAddress> outLinks) {
+    public void setOutLinks(Map<String, InetSocketAddress> outLinks) {
         this.outLinks = outLinks;
     }
 
-    public HashMap<String, InetSocketAddress> getNoneP2PLinks() {
-        return NoneP2PLinks;
+    public Map<String, InetSocketAddress> getNoneP2PLinks() {
+        return noneP2PLinks;
     }
 
-    public void setNoneP2PLinks(HashMap<String, InetSocketAddress> noneP2PLinks) {
-        NoneP2PLinks = noneP2PLinks;
+    public void setNoneP2PLinks(Map<String, InetSocketAddress> noneP2PLinks) {
+        this.noneP2PLinks = noneP2PLinks;
     }
 
     public int getMaxNumNoneP2PConnections() {
@@ -130,5 +137,29 @@ public class P2PState {
 
     public void setIpReqSecret(MiniData ipReqSecret) {
         this.ipReqSecret = ipReqSecret;
+    }
+
+    public long getLoopDelay() {
+        return loopDelay;
+    }
+
+    public void setLoopDelay(long loopDelay) {
+        this.loopDelay = loopDelay;
+    }
+
+    public void setLoopDelayToParamValue(){
+        this.loopDelay = P2PParams.LOOP_DELAY;
+    }
+
+    public Map<String, InetSocketAddress> getNotAcceptingConnP2PLinks() {
+        return notAcceptingConnP2PLinks;
+    }
+
+    public void setNotAcceptingConnP2PLinks(Map<String, InetSocketAddress> notAcceptingConnP2PLinks) {
+        this.notAcceptingConnP2PLinks = notAcceptingConnP2PLinks;
+    }
+
+    public void setMyMinimaAddress(InetSocketAddress myMinimaAddress) {
+        this.myMinimaAddress = myMinimaAddress;
     }
 }

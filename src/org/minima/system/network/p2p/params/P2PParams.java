@@ -8,7 +8,7 @@ import java.util.List;
 public class P2PParams {
 
     // P2P Version number (Major - breaking changes. Minor - none breaking changes)
-    public static String VERSION = "dev-0.1";
+    public static String VERSION = "dev-1.0";
 
     /**
      * Desired number of in link and out links to maintain
@@ -18,7 +18,7 @@ public class P2PParams {
     /**
      * Desired number of client (nodes that can't accept inbound connections) to maintain
      */
-    public static int TGT_NUM_NONE_P2P_LINKS = 20;
+    public static int TGT_NUM_NONE_P2P_LINKS = 30;
 
     /**
      * Desired number of connections clients should maintain
@@ -53,11 +53,8 @@ public class P2PParams {
 
 
 
-    public static List<InetSocketAddress> DEFAULT_NODE_LIST = new ArrayList<>();
-
-//            Arrays.asList(
-//            new InetSocketAddress("127.0.0.1", 9999),
-//            new InetSocketAddress("127.0.0.1", 9888)
-//            );
+    public static List<InetSocketAddress> DEFAULT_NODE_LIST = Arrays.asList(
+            new InetSocketAddress("35.246.45.106", 9001)
+            );
 
 }
