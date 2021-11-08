@@ -3,9 +3,7 @@ package org.minima.system.network.p2p.testingutils;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Random;
+import java.util.*;
 
 public class QuickInetLists {
 
@@ -17,8 +15,8 @@ public class QuickInetLists {
      * @return the list of addresses
      * @throws UnknownHostException
      */
-    public static ArrayList<InetSocketAddress> generateInetSockAddrList(String prefix, int numElements, int port) throws UnknownHostException {
-        ArrayList<InetSocketAddress> outLinks = new ArrayList<>();
+    public static List<InetSocketAddress> generateInetSockAddrList(String prefix, int numElements, int port) throws UnknownHostException {
+        List<InetSocketAddress> outLinks = new ArrayList<>();
 
         for (int i = 0; i < numElements; i++) {
             outLinks.add(new InetSocketAddress(InetAddress.getByName(prefix.concat(String.valueOf(i + 1))), port));
@@ -35,14 +33,14 @@ public class QuickInetLists {
      * @return the list of addresses
      * @throws UnknownHostException
      */
-    public static ArrayList<InetSocketAddress> generateInetSockAddrWithHostnameList(String hostname, String prefix, int numElements, int port) throws UnknownHostException {
+    public static List<InetSocketAddress> generateInetSockAddrWithHostnameList(String hostname, String prefix, int numElements, int port) throws UnknownHostException {
         return generateInetSockAddrList(hostname.concat("/").concat(prefix), numElements, port);
     }
 
 
-    public static HashMap<String, InetSocketAddress> generateConnectionUIDMap(String uidPrefix, String ipPrefix, int numElements, int port) throws UnknownHostException {
+    public static Map<String, InetSocketAddress> generateConnectionUIDMap(String uidPrefix, String ipPrefix, int numElements, int port) throws UnknownHostException {
         Random rand = new Random();
-        HashMap<String, InetSocketAddress> links = new HashMap<>();
+        Map<String, InetSocketAddress> links = new HashMap<>();
         boolean randomisePort = false;
         if (port <= 0 ) {
             randomisePort = true;
