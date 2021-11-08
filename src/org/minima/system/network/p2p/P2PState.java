@@ -1,14 +1,13 @@
 package org.minima.system.network.p2p;
 
 import java.net.InetSocketAddress;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import org.minima.objects.base.MiniData;
 import org.minima.system.network.p2p.params.P2PParams;
 import org.minima.system.params.GeneralParams;
+import org.minima.utils.json.JSONArray;
+import org.minima.utils.json.JSONObject;
 
 public class P2PState {
 
@@ -161,5 +160,24 @@ public class P2PState {
 
     public void setMyMinimaAddress(InetSocketAddress myMinimaAddress) {
         this.myMinimaAddress = myMinimaAddress;
+    }
+
+    public JSONObject toJson(){
+        JSONObject json = new JSONObject();
+        json.put("address", myMinimaAddress.toString().replace("/",""));
+        json.put("out_links", addressListToJSONArray(new ArrayList<>(outLinks.values())));
+        json.put("in_links", addressListToJSONArray(new ArrayList<>(inLinks.values())));
+        json.put("not_accepting_conn_links", addressListToJSONArray(new ArrayList<>(notAcceptingConnP2PLinks.values())));
+        json.put("none_p2p_links", addressListToJSONArray(new ArrayList<>(noneP2PLinks.values())));
+        json.put("is_accepting_connections", isAcceptingInLinks);
+        return json;
+    }
+
+    private JSONArray addressListToJSONArray(ArrayList<InetSocketAddress> addresses){
+        JSONArray links = new JSONArray();
+        for (InetSocketAddress inetSocketAddress: addresses){
+            links.add(inetSocketAddress.toString().replaceAll("/",""));
+        }
+        return links;
     }
 }
