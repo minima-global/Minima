@@ -3,9 +3,7 @@ package org.minima.system.commands.all;
 import org.minima.database.MinimaDB;
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
-import org.minima.system.network.minima.NIOManager;
 import org.minima.utils.json.JSONObject;
-import org.minima.utils.messages.Message;
 
 public class incentivecash extends Command {
 

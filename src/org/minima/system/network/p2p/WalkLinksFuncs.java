@@ -1,18 +1,18 @@
 package org.minima.system.network.p2p;
 
-import org.minima.objects.base.MiniData;
-import org.minima.system.network.minima.NIOClientInfo;
-import org.minima.system.network.p2p.messages.P2PDoSwap;
-import org.minima.system.network.p2p.messages.P2PWalkLinks;
-import org.minima.utils.MinimaLogger;
-import org.minima.utils.messages.Message;
-
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
+
+import org.minima.objects.base.MiniData;
+import org.minima.system.network.minima.NIOClientInfo;
+import org.minima.system.network.p2p.messages.P2PDoSwap;
+import org.minima.system.network.p2p.messages.P2PWalkLinks;
+import org.minima.utils.MinimaLogger;
+import org.minima.utils.messages.Message;
 
 /*
  * CLASS TO HOLD NO STATE. FUNCTIONS NOT STATIC FOR EASE OF TESTING

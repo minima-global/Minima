@@ -1,9 +1,9 @@
 package org.minima.system.network.p2p.messages;
 
+import java.net.InetSocketAddress;
+
 import org.minima.objects.base.MiniData;
 import org.minima.utils.json.JSONObject;
-
-import java.net.InetSocketAddress;
 
 
 public class P2PDoSwap {

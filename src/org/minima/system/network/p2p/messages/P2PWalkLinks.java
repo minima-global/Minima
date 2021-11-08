@@ -1,12 +1,12 @@
 package org.minima.system.network.p2p.messages;
 
-import org.minima.objects.base.MiniData;
-import org.minima.utils.json.JSONArray;
-import org.minima.utils.json.JSONObject;
-
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.minima.objects.base.MiniData;
+import org.minima.utils.json.JSONArray;
+import org.minima.utils.json.JSONObject;
 
 
 public class P2PWalkLinks {
