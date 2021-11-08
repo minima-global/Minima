@@ -3,9 +3,12 @@ package org.minima.system.network.minima;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.util.ArrayList;
+import java.util.Date;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.txpowdb.TxPoWDB;
+import org.minima.database.txpowtree.TxPoWTreeNode;
+import org.minima.database.txpowtree.TxPowTree;
 import org.minima.objects.Greeting;
 import org.minima.objects.IBD;
 import org.minima.objects.Pulse;
@@ -200,6 +203,7 @@ public class NIOMessage implements Runnable {
 				//Do we have it..
 				boolean exists = MinimaDB.getDB().getTxPoWDB().exists(txpow.getTxPoWID());
 				if(exists) {
+					MinimaLogger.log("Received TxPoW in full we already have "+txpow.getTxPoWID());
 					return;
 				}
 				
@@ -230,6 +234,8 @@ public class NIOMessage implements Runnable {
 						if(!exists) {
 							//request it..
 							NIOManager.sendNetworkMessage(mClientUID, MSG_TXPOWREQ, txn);
+							
+							MinimaLogger.log("Request Missing Txn "+txn.to0xString());
 						}
 					}
 					
@@ -238,6 +244,8 @@ public class NIOMessage implements Runnable {
 					if(!exists) {
 						//request it..
 						NIOManager.sendNetworkMessage(mClientUID, MSG_TXPOWREQ, txpow.getParentID());
+						
+						MinimaLogger.log("Request Missing Parent of "+txpow.getTxPoWID()+" "+txpow.getParentID().to0xString());
 					}
 					
 				}else {
@@ -271,10 +279,11 @@ public class NIOMessage implements Runnable {
 			}else if(type.isEqual(MSG_PULSE)) {
 				
 				//Read in the Pulse..
-				Pulse pulse 	= Pulse.ReadFromStream(dis);
-				TxPoWDB txpdb 	= MinimaDB.getDB().getTxPoWDB();
+				Pulse pulse 		= Pulse.ReadFromStream(dis);
+				TxPoWDB txpdb 		= MinimaDB.getDB().getTxPoWDB();
+				TxPowTree txptree 	= MinimaDB.getDB().getTxPoWTree();
 				
-				//Now check this list against your ownn..
+				//Now check this list against your own..
 				ArrayList<MiniData> mylist 		= MinimaDB.getDB().getTxPoWTree().getPulseList();
 				ArrayList<MiniData> requestlist = new ArrayList<>();
 				
@@ -282,15 +291,34 @@ public class NIOMessage implements Runnable {
 				boolean found = false;
 				ArrayList<MiniData> pulsemsg = pulse.getBlockList();
 				for(MiniData block : pulsemsg) {
+					
 					if(!ListCheck.MiniDataListContains(mylist, block)) {
 						TxPoW check = txpdb.getTxPoW(block.to0xString());
 						if(check == null) {
 							requestlist.add(0, block);
+							
+							//Check if we have this block in our tree..
+							TxPoWTreeNode node = txptree.findNode(block.to0xString());
+							if(node != null) {
+								MinimaLogger.log("PULSE : adding block we have in txptree.. "+node.getTxPoW().toJSON());
+							}else {
+								
+								if(txpdb.exists(block.to0xString())) {
+									MinimaLogger.log("PULSE : adding missing block.. We don't have "+block.to0xString());
+								}else {
+									MinimaLogger.log("PULSE : adding missing block.. We DO have "+block.to0xString());
+								}
+							}
+							
+							
+							
 						}else {
 							ArrayList<MiniData> txns = check.getBlockTransactions();
 							for(MiniData txn : txns) {
 								if(!txpdb.exists(txn.to0xString())) {
 									requestlist.add(0, txn);
+									
+									MinimaLogger.log("PULSE : adding missing txn.. "+txn.to0xString());
 								}
 							}
 						}
@@ -302,10 +330,23 @@ public class NIOMessage implements Runnable {
 				
 				//Did we find a crossover..
 				if(found) {
+					
+					//Print out some stats..
+					if(requestlist.size()>0) {
+						MinimaLogger.log("PULSE variance.. mytip:"+MinimaDB.getDB().getTxPoWTree().getTip().getTxPoW().toJSON().toString());
+					}
+					
+					
 					//Request all the blocks.. in the correct order
 					for(MiniData block : requestlist) {
-						MinimaLogger.log("Requesting PULSE TxPoW from "+mClientUID+" "+block.to0xString());
-						NIOManager.sendNetworkMessage(mClientUID, MSG_TXPOWREQ, block);
+						
+						//Check if we have it..
+						if(txpdb.exists(block.to0xString())) {
+							MinimaLogger.log("NOT Requesting PULSE TxPoW we already have from "+mClientUID+" "+block.to0xString());
+						}else {
+							MinimaLogger.log("Requesting PULSE TxPoW from "+mClientUID+" "+block.to0xString());
+							NIOManager.sendNetworkMessage(mClientUID, MSG_TXPOWREQ, block);
+						}
 					}
 					
 				}else{
