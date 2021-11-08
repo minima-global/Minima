@@ -129,23 +129,55 @@ public class Magic implements Streamable {
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
 		mCurrentMaxTxPoWSize.writeDataStream(zOut);
 		mCurrentMaxTxnPerBlock.writeDataStream(zOut);
+		new MiniNumber(128).writeDataStream(zOut);
 		mCurrentMinTxPoWWork.writeDataStream(zOut);
 		
 		mDesiredMaxTxPoWSize.writeDataStream(zOut);
 		mDesiredMaxTxnPerBlock.writeDataStream(zOut);
+		new MiniNumber(128).writeDataStream(zOut);
 		mDesiredMinTxPoWWork.writeDataStream(zOut);
 	}
 
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
-		mCurrentMaxTxPoWSize 	= MiniNumber.ReadFromStream(zIn);
-		mCurrentMaxTxnPerBlock 	= MiniNumber.ReadFromStream(zIn);
-		mCurrentMinTxPoWWork 	= MiniData.ReadFromStream(zIn);
+		mCurrentMaxTxPoWSize = MiniNumber.ReadFromStream(zIn);
+		mCurrentMaxTxnPerBlock = MiniNumber.ReadFromStream(zIn);
 		
-		mDesiredMaxTxPoWSize 	= MiniNumber.ReadFromStream(zIn);
-		mDesiredMaxTxnPerBlock 	= MiniNumber.ReadFromStream(zIn);
-		mDesiredMinTxPoWWork 	= MiniData.ReadFromStream(zIn);
+		//KISS HACK
+		MiniNumber.ReadFromStream(zIn);
+		
+		mCurrentMinTxPoWWork = MiniData.ReadFromStream(zIn);
+		
+		mDesiredMaxTxPoWSize = MiniNumber.ReadFromStream(zIn);
+		mDesiredMaxTxnPerBlock = MiniNumber.ReadFromStream(zIn);
+		
+		//KISS HaCK
+		MiniNumber.ReadFromStream(zIn);
+		
+		mDesiredMinTxPoWWork = MiniData.ReadFromStream(zIn);
 	}
+	
+//	@Override
+//	public void writeDataStream(DataOutputStream zOut) throws IOException {
+//		mCurrentMaxTxPoWSize.writeDataStream(zOut);
+//		mCurrentMaxTxnPerBlock.writeDataStream(zOut);
+//		mCurrentMinTxPoWWork.writeDataStream(zOut);
+//		
+//		mDesiredMaxTxPoWSize.writeDataStream(zOut);
+//		mDesiredMaxTxnPerBlock.writeDataStream(zOut);
+//		mDesiredMinTxPoWWork.writeDataStream(zOut);
+//	}
+//
+//	@Override
+//	public void readDataStream(DataInputStream zIn) throws IOException {
+//		mCurrentMaxTxPoWSize 	= MiniNumber.ReadFromStream(zIn);
+//		mCurrentMaxTxnPerBlock 	= MiniNumber.ReadFromStream(zIn);
+//		mCurrentMinTxPoWWork 	= MiniData.ReadFromStream(zIn);
+//		
+//		mDesiredMaxTxPoWSize 	= MiniNumber.ReadFromStream(zIn);
+//		mDesiredMaxTxnPerBlock 	= MiniNumber.ReadFromStream(zIn);
+//		mDesiredMinTxPoWWork 	= MiniData.ReadFromStream(zIn);
+//	}
 	
 	public static Magic ReadFromStream(DataInputStream zIn) throws IOException {
 		Magic mag = new Magic();
