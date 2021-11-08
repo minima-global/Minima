@@ -101,6 +101,7 @@ public class P2PManager extends MessageProcessor {
 
         List<InetSocketAddress> peers = p2pdb.getPeersList();
         state.getKnownPeers().addAll(peers);
+        state.setAcceptingInLinks(GeneralParams.IS_ACCEPTING_IN_LINKS);
 
         //Initialise..
         //..

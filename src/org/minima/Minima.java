@@ -53,6 +53,9 @@ public class Minima {
 				}else if(arg.equals("-nop2p")) {
 					GeneralParams.P2P_ENABLED = false;
 				
+				}else if(arg.equals("-isclient")) {
+					GeneralParams.IS_ACCEPTING_IN_LINKS = false;
+
 				}else if(arg.equals("-p2pnode")) {
 					GeneralParams.P2P_ROOTNODE = zArgs[counter++];
 					
@@ -87,6 +90,7 @@ public class Minima {
 					System.out.println(" -conf       : Specify the configuration folder");
 					System.out.println(" -daemon     : Run in daemon mode with no stdin input ( services )");
 					System.out.println(" -nop2p      : Disable the automatic P2P system");
+					System.out.println(" -isclient   : Tells the P2P System that this node can't accept incoming connections");
 					System.out.println(" -noconnect  : Stops the P2P system from connecting to other nodes until it's been connected too");
 					System.out.println(" -p2pnode    : Specify the initial P2P host:port list to connect to");
 					System.out.println(" -automine   : Simulate user traffic to construct the blockchain");
