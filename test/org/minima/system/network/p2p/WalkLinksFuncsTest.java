@@ -28,7 +28,7 @@ public class WalkLinksFuncsTest extends TestCase {
 
     public void testOnInLinkWalkMsgNextHop() throws UnknownHostException{
         List<NIOClientInfo> allClients = QuickClients.generateClientInfoList("60.0.0.", 5,9001, "inLinkUID", true);
-        int tgtNumLinks = 5;
+
         NIOClientInfo clientMsgIsFrom = new NIOClientInfo("uid1", "192.168.0.1", 9001, true);
 
         // InLinks inLinkUID 60.0.0. OutLinks outLinkUID 70.0.0.
@@ -37,7 +37,7 @@ public class WalkLinksFuncsTest extends TestCase {
         P2PWalkLinks p2pWalkLinks = new P2PWalkLinks(true, true, "inLinkUID2");
         p2pWalkLinks.setPathTaken(QuickInetLists.generateInetSockAddrList("60.0.0.", 2, 9001));
 
-        Message retMsg = WalkLinksFuncs.onInLinkWalkMsg(state, p2pWalkLinks, clientMsgIsFrom, tgtNumLinks, allClients);
+        Message retMsg = WalkLinksFuncs.onInLinkWalkMsg(state, p2pWalkLinks, clientMsgIsFrom, allClients);
         assertNotNull(retMsg);
         String uid = retMsg.getString("uid");
         JSONObject json = (JSONObject) retMsg.getObject("json");
@@ -47,7 +47,6 @@ public class WalkLinksFuncsTest extends TestCase {
 
     public void testOnInLinkWalkMsgEndOfPath() throws UnknownHostException {
         List<NIOClientInfo> allClients = QuickClients.generateClientInfoList("60.0.0.", 20,9001, "inLinkUID", true);
-        int tgtNumLinks = 5;
         NIOClientInfo clientMsgIsFrom = new NIOClientInfo("inLinkUID5", "60.0.0.9", 9001, true);
 
         // InLinks inLinkUID 60.0.0. OutLinks outLinkUID 70.0.0.
@@ -56,7 +55,7 @@ public class WalkLinksFuncsTest extends TestCase {
         P2PWalkLinks p2pWalkLinks = new P2PWalkLinks(false, false, "outLinkUID9");
         p2pWalkLinks.setPathTaken(QuickInetLists.generateInetSockAddrList("60.0.0.", 9, 9001));
 
-        Message retMsg = WalkLinksFuncs.onInLinkWalkMsg(state, p2pWalkLinks, clientMsgIsFrom, tgtNumLinks, allClients);
+        Message retMsg = WalkLinksFuncs.onInLinkWalkMsg(state, p2pWalkLinks, clientMsgIsFrom, allClients);
         assertNotNull(retMsg);
         String uid = retMsg.getString("uid");
         JSONObject json = (JSONObject) retMsg.getObject("json");
@@ -208,9 +207,9 @@ public class WalkLinksFuncsTest extends TestCase {
         state.setMyMinimaAddress("60.0.0.1");
         List<InetSocketAddress> pathTaken = QuickInetLists.generateInetSockAddrList("60.0.0.", 10, 9001);
         P2PWalkLinks msgWalkLinks = new P2PWalkLinks(true, false, pathTaken);
-        InetSocketAddress address = WalkLinksFuncs.onReturnedWalkMsg(state, msgWalkLinks, 5);
+        List<Message> address = WalkLinksFuncs.onReturnedWalkMsg(state, msgWalkLinks, 5);
         assertNotNull(address);
-        assertEquals(11, state.getKnownPeers().size());
+        assertEquals(10, state.getKnownPeers().size());
     }
 
     public void testOnReturnedWalkMsgConnectingToSelf() throws UnknownHostException{
@@ -218,8 +217,8 @@ public class WalkLinksFuncsTest extends TestCase {
         state.setMyMinimaAddress("60.0.0.1");
         List<InetSocketAddress> pathTaken = QuickInetLists.generateInetSockAddrList("60.0.0.", 1, 9001);
         P2PWalkLinks msgWalkLinks = new P2PWalkLinks(true, false, pathTaken);
-        InetSocketAddress address = WalkLinksFuncs.onReturnedWalkMsg(state, msgWalkLinks, 5);
-        assertNull(address);
+        List<Message> address = WalkLinksFuncs.onReturnedWalkMsg(state, msgWalkLinks, 5);
+        assertTrue(address.isEmpty());
     }
 
     public void testOnReturnedWalkMsgOutLinksFull() throws UnknownHostException{
@@ -227,8 +226,8 @@ public class WalkLinksFuncsTest extends TestCase {
         state.setMyMinimaAddress("60.0.0.1");
         List<InetSocketAddress> pathTaken = QuickInetLists.generateInetSockAddrList("60.0.0.", 10, 9001);
         P2PWalkLinks msgWalkLinks = new P2PWalkLinks(true, false, pathTaken);
-        InetSocketAddress address = WalkLinksFuncs.onReturnedWalkMsg(state, msgWalkLinks, 5);
-        assertNull(address);
+        List<Message> address = WalkLinksFuncs.onReturnedWalkMsg(state, msgWalkLinks, 5);
+        assertTrue(address.isEmpty());
     }
 
 }

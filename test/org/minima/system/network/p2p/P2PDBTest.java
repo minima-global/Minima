@@ -2,6 +2,8 @@ package org.minima.system.network.p2p;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.minima.system.network.p2p.params.P2PParams;
+import org.minima.system.params.GeneralParams;
 
 import java.io.File;
 import java.net.InetAddress;
@@ -72,4 +74,23 @@ public class P2PDBTest {
 
     }
 
+
+    @Test
+    public void testSavingAndLoadingVersion() {
+
+        P2PDB db = new P2PDB();
+
+        db.setVersion();
+
+        // Save, Load and Delete the file
+        File tmp = new File("tmp.db");
+        db.saveDB(tmp);
+        db.loadDB(tmp);
+        tmp.delete();
+
+        String loadedVersion = db.getVersion();
+
+        assertTrue(P2PParams.VERSION.equals(loadedVersion));
+
+    }
 }

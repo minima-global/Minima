@@ -25,12 +25,12 @@ public class P2PGreeting {
     /**
      * List of connected OutLinks
      */
-    private List<InetSocketAddress> outLinks;
+    private List<InetSocketAddress> outLinks = new ArrayList<>();
 
     /**
      * List of connected InLinks
      */
-    private List<InetSocketAddress> inLinks;
+    private List<InetSocketAddress> inLinks = new ArrayList<>();
 
     /**
      * Number of connections that are not part of
@@ -47,7 +47,7 @@ public class P2PGreeting {
     /**
      * List of known P2P Peers
      */
-    private List<InetSocketAddress> knownPeers;
+    private List<InetSocketAddress> knownPeers = new ArrayList<>();
 
     public P2PGreeting() {
     }

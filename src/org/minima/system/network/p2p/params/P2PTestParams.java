@@ -14,7 +14,7 @@ public class P2PTestParams {
     /**
      * Desired number of client (nodes that can't accept inbound connections) to maintain
      */
-    public static int TGT_NUM_NONE_P2P_LINKS = 20;
+    public static int TGT_NUM_NONE_P2P_LINKS = 10;
 
     /**
      * Desired number of connections clients should maintain
@@ -35,7 +35,7 @@ public class P2PTestParams {
     /**
      * Time between P2P system assessing if it can receive inbound connections milliseconds
      */
-    public static int NODE_NOT_ACCEPTING_CHECK_DELAY = 300_000;
+    public static int NODE_NOT_ACCEPTING_CHECK_DELAY = 600_000;
 
     /**
      * Time in ms before walk link messages expire
@@ -55,7 +55,6 @@ public class P2PTestParams {
 
     public static void setTestParams() {
         P2PParams.DEFAULT_NODE_LIST = DEFAULT_NODE_LIST;
-
         P2PParams.LOOP_DELAY = LOOP_DELAY;
         P2PParams.LOOP_DELAY_VARIABILITY = LOOP_DELAY_VARIABILITY;
         P2PParams.NODE_NOT_ACCEPTING_CHECK_DELAY = NODE_NOT_ACCEPTING_CHECK_DELAY;

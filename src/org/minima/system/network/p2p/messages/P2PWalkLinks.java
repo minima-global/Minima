@@ -23,7 +23,7 @@ public class P2PWalkLinks {
     boolean walkInLinks;
     boolean isJoiningWalk;
     boolean isClientWalk;
-    int availableClientSlots = 0;
+    int availableNoneP2PConnectionSlots = 0;
     boolean isReturning = false;
     List<InetSocketAddress> pathTaken = new ArrayList<>();
     private MiniData secret = MiniData.getRandomData(8);
@@ -73,7 +73,7 @@ public class P2PWalkLinks {
         contents.put("walkInLinks", walkInLinks);
         contents.put("isJoiningWalk", isJoiningWalk);
         contents.put("isClientWalk", isClientWalk);
-        contents.put("availableClientSlots", "availableClientSlots");
+        contents.put("availableClientSlots", availableNoneP2PConnectionSlots);
         contents.put("isReturning", isReturning);
         contents.put("pathTaken", InetSocketAddressIO.addressesListToJSON(pathTaken));
         JSONObject main = new JSONObject();
@@ -97,7 +97,7 @@ public class P2PWalkLinks {
             this.setClientWalk((boolean) contents.get("isClientWalk"));
         }
         if (contents.containsKey("availableClientSlots")) {
-            this.setAvailableClientSlots(InetSocketAddressIO.safeReadInt(contents, "availableClientSlots"));
+            this.setAvailableNoneP2PConnectionSlots(InetSocketAddressIO.safeReadInt(contents, "availableClientSlots"));
         }
         if (contents.containsKey("isReturning")) {
             this.setReturning((boolean) contents.get("isReturning"));
@@ -140,12 +140,12 @@ public class P2PWalkLinks {
         isClientWalk = clientWalk;
     }
 
-    public int getAvailableClientSlots() {
-        return availableClientSlots;
+    public int getAvailableNoneP2PConnectionSlots() {
+        return availableNoneP2PConnectionSlots;
     }
 
-    public void setAvailableClientSlots(int availableClientSlots) {
-        this.availableClientSlots = availableClientSlots;
+    public void setAvailableNoneP2PConnectionSlots(int availableNoneP2PConnectionSlots) {
+        this.availableNoneP2PConnectionSlots = availableNoneP2PConnectionSlots;
     }
 
     public boolean isReturning() {
