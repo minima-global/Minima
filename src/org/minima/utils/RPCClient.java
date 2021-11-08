@@ -1,4 +1,5 @@
-package org.minima.system.network.rpc;
+package org.minima.utils;
+
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -7,8 +8,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-
-import org.minima.utils.MinimaLogger;
 
 public class RPCClient {
 
@@ -41,7 +40,40 @@ public class RPCClient {
 			is.close();
 			
 		} else {
-			MinimaLogger.log("GET request not HTTP_OK resp:"+responseCode+" @ "+zHost);
+			System.out.println("GET request not HTTP_OK resp:"+responseCode+" @ "+zHost);
+		}
+			
+		return response.toString(); 
+	}
+	
+	public static String sendPUT(String zHost) throws IOException {
+		//Create the URL
+		URL obj = new URL(zHost);
+		
+		//Open her up
+		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+		con.setRequestMethod("PUT");
+		con.setRequestProperty("User-Agent", USER_AGENT);
+		con.setRequestProperty("Connection", "close");
+		
+		int responseCode = con.getResponseCode();
+		StringBuffer response = new StringBuffer();
+		
+		if (responseCode == HttpURLConnection.HTTP_OK) { // success
+			InputStream is = con.getInputStream();
+			
+			BufferedReader in = new BufferedReader(new InputStreamReader(is));
+			String inputLine;
+			
+			while ((inputLine = in.readLine()) != null) {
+				response.append(inputLine);
+			}
+			
+			in.close();
+			is.close();
+			
+		} else {
+			System.out.println("PUT request not HTTP_OK resp:"+responseCode+" @ "+zHost);
 		}
 			
 		return response.toString(); 
@@ -88,7 +120,7 @@ public class RPCClient {
 			return response.toString();
 		
 		} else {
-			MinimaLogger.log("POST request not HTTP_OK resp:"+responseCode+" @ "+zHost+" params "+zParams);
+			System.out.println("POST request not HTTP_OK resp:"+responseCode+" @ "+zHost+" params "+zParams);
 		}
 		
 		return "ERROR";
