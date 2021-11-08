@@ -243,4 +243,24 @@ public class Magic implements Streamable {
 		mag.readDataStream(zIn);
 		return mag;
 	}
+	
+	public static void main(String[] zArgs) {
+		
+		MiniNumber newnorm = new MiniNumber(200);
+		
+		MiniNumber current = new MiniNumber(100);
+		
+		for(int i=0;i<1000;i++) {
+			
+			MiniNumber newcurrent 	= current.mult(new MiniNumber(99)).add(newnorm);
+			MiniNumber newavg 		= newcurrent.div(MiniNumber.HUNDRED);
+			
+			System.out.println(i+") "+newavg);
+			
+			current = newavg;
+
+			
+		}
+		
+	}
 }
