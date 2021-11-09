@@ -39,6 +39,11 @@ public class GeneralParams {
 	public static int MINIMA_PORT = 9001;
 	
 	/**
+	 * The Maxima port
+	 */
+	public static int MAXIMA_PORT = 9003;
+	
+	/**
 	 * The Minima RPC port
 	 */
 	public static int RPC_PORT = 9002;

@@ -10,6 +10,7 @@ import org.minima.system.network.minima.NIOManager;
 import org.minima.system.network.p2p.P2PFunctions;
 import org.minima.system.network.p2p.P2PManager;
 import org.minima.system.network.rpc.RPCServer;
+import org.minima.system.network.sshtunnel.SSHManager;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
@@ -32,6 +33,11 @@ public class NetworkManager {
 	 * The RPC server
 	 */
 	RPCServer mRPCServer = null;
+	
+	/**
+	 * The SSH Tunnel Manager
+	 */
+	SSHManager mSSHManager;
 	
 	public NetworkManager() {
 		//Calculate the local host
@@ -60,6 +66,9 @@ public class NetworkManager {
 		if(MinimaDB.getDB().getUserDB().isRPCEnabled()) {
 			startRPC();
 		}
+		
+		//Start the SSH Tunnel manager
+		mSSHManager = new SSHManager();
 	}
 	
 	public void calculateHostIP() {
@@ -149,10 +158,15 @@ public class NetworkManager {
 		
 		//Send a message to the P2P
 		mP2PManager.PostMessage(P2PFunctions.P2P_SHUTDOWN);
+		
+		//And the SSH
+		mSSHManager.PostMessage(SSHManager.SSHTUNNEL_SHUTDOWN);
 	}
 	
 	public boolean isShutDownComplete() {
-		return mNIOManager.isShutdownComplete() && mP2PManager.isShutdownComplete();
+		return 	mNIOManager.isShutdownComplete() 
+				&& 	mP2PManager.isShutdownComplete() 
+				&& 	mSSHManager.isShutdownComplete();
 	}
 	
 	public MessageProcessor getP2PManager() {
@@ -161,5 +175,9 @@ public class NetworkManager {
 	
 	public NIOManager getNIOManager() {
 		return mNIOManager;
+	}
+	
+	public SSHManager getSSHManager() {
+		return mSSHManager;
 	}
 }
