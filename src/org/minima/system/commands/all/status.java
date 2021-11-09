@@ -69,10 +69,11 @@ public class status extends Command {
 		if(txptree.getRoot() != null) {
 			tree.put("time", new Date(txptree.getTip().getTxPoW().getTimeMilli().getAsLong()));
 			
-			tree.put("root", txptree.getRoot().getTxPoW().getTxPoWID());
-			tree.put("rootblock", txptree.getRoot().getTxPoW().getBlockNumber());
 			tree.put("top", txptree.getTip().getTxPoW().getTxPoWID());
 			tree.put("topblock", txptree.getTip().getTxPoW().getBlockNumber().getAsLong());
+			
+			tree.put("root", txptree.getRoot().getTxPoW().getTxPoWID());
+			tree.put("rootblock", txptree.getRoot().getTxPoW().getBlockNumber());
 			
 			//Speed..
 			if(txptree.getTip().getTxPoW().getBlockNumber().isLessEqual(MiniNumber.TWO)){
