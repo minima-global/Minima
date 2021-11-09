@@ -60,6 +60,7 @@ public class P2PState {
      */
     private long loopDelay = P2PParams.LOOP_DELAY;
 
+    private boolean noConnect = false;
 
     public P2PState() {
         // Creates a new empty state
@@ -179,5 +180,13 @@ public class P2PState {
             links.add(inetSocketAddress.toString().replaceAll("/",""));
         }
         return links;
+    }
+
+    public boolean isNoConnect() {
+        return noConnect;
+    }
+
+    public void setNoConnect(boolean noConnect) {
+        this.noConnect = noConnect;
     }
 }

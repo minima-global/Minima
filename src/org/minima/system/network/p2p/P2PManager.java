@@ -109,12 +109,14 @@ public class P2PManager extends MessageProcessor {
             state.setMyMinimaAddress(GeneralParams.MINIMA_HOST);
         }
 
+        state.setNoConnect(GeneralParams.NOCONNECT);
+
         //Initialise..
         //..
         state.setMaxNumNoneP2PConnections(P2PParams.TGT_NUM_NONE_P2P_LINKS);
 
         InetSocketAddress connectionAddress = null;
-        if (!GeneralParams.NOCONNECT) {
+        if (!state.isNoConnect()) {
             if (!GeneralParams.P2P_ROOTNODE.isEmpty()) {
                 String host = GeneralParams.P2P_ROOTNODE.split(":")[0];
                 int port = Integer.parseInt(GeneralParams.P2P_ROOTNODE.split(":")[1]);
@@ -183,9 +185,9 @@ public class P2PManager extends MessageProcessor {
             if (swapLinksMsg.containsKey("greeting")) {
                 P2PGreeting greeting = P2PGreeting.fromJSON((JSONObject) swapLinksMsg.get("greeting"));
                 SwapLinksFunctions.updateKnownPeersFromGreeting(state, greeting);
-                boolean noconnect = SwapLinksFunctions.processGreeting(state, greeting, uid, client, GeneralParams.NOCONNECT);
-                if (GeneralParams.NOCONNECT != noconnect) {
-                    GeneralParams.NOCONNECT = noconnect;
+                boolean noConnect = SwapLinksFunctions.processGreeting(state, greeting, uid, client, GeneralParams.NOCONNECT);
+                if (!noConnect) {
+                    state.setNoConnect(false);
                 }
             }
             if (swapLinksMsg.containsKey("req_ip")) {
@@ -273,7 +275,7 @@ public class P2PManager extends MessageProcessor {
 
     private static List<Message> processLoop(P2PState state) throws IOException {
         List<Message> sendMsgs = new ArrayList<>();
-        if (!GeneralParams.NOCONNECT) {
+        if (!state.isNoConnect()) {
             state.setLoopDelay(P2PParams.LOOP_DELAY + (long) rand.nextInt(P2PParams.LOOP_DELAY_VARIABILITY));
             int numEntryNodes = 1;
             if (!state.isAcceptingInLinks()) {
