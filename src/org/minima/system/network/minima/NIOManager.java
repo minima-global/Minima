@@ -18,6 +18,7 @@ import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.system.Main;
 import org.minima.system.commands.all.connect;
+import org.minima.system.commands.all.sshtunnel;
 import org.minima.system.network.p2p.P2PFunctions;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.MinimaLogger;
@@ -115,6 +116,9 @@ public class NIOManager extends MessageProcessor {
 			
 			//The NIOServer has started you can now start up the P2P and pre-connect list
 			Main.getInstance().getNetworkManager().getP2PManager().PostMessage(P2PFunctions.P2P_INIT);
+			
+			//Do we need to start up the SSHTunnel..
+			sshtunnel.startSSHTunnel();
 			
 			//Any nodes to auto connect to.. comma separated list
 			if(!GeneralParams.CONNECT_LIST.equals("")) {

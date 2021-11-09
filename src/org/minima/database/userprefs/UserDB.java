@@ -63,25 +63,8 @@ public class UserDB extends JsonDB{
 		setJSON("sshtunnelsettings", zSettings);
 	}
 	
-	public JSONObject getSSHTunnelSettings(boolean zShowPassword) {
-		
-		String json = getJSON("sshtunnelsettings", new JSONObject()).toString();
-		
-		//And convert back..
-		try {
-			JSONObject newssh = (JSONObject) new JSONParser().parse(json);
-		
-			if(!zShowPassword) {
-				newssh.put("password", "*****");
-			}
-			
-			return newssh;
-			
-		} catch (ParseException e) {
-			MinimaLogger.log(e);
-		}
-		
-		return new JSONObject();
+	public JSONObject getSSHTunnelSettings() {
+		return getJSON("sshtunnelsettings", new JSONObject());
 	}
 	
 }

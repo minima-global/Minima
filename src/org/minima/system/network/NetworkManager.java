@@ -115,8 +115,17 @@ public class NetworkManager {
 	public JSONObject getStatus() {
 		JSONObject stats = new JSONObject();
 		
-		stats.put("host", GeneralParams.MINIMA_HOST);
-		stats.put("port", GeneralParams.MINIMA_PORT);
+		UserDB udb 				= MinimaDB.getDB().getUserDB();
+		JSONObject sshsettings = udb.getSSHTunnelSettings();
+		if(udb.isSSHTunnelEnabled()) {
+			stats.put("host", sshsettings.get("host"));
+			stats.put("port", sshsettings.get("remoteport"));
+			
+		}else {
+			stats.put("host", GeneralParams.MINIMA_HOST);
+			stats.put("port", GeneralParams.MINIMA_PORT);
+		}
+		
 		stats.put("connecting", mNIOManager.getConnnectingClients());
 		stats.put("connected", mNIOManager.getConnectedClients());
 		
@@ -132,11 +141,9 @@ public class NetworkManager {
 		
 		//SSH Tunnel
 		JSONObject ssh = new JSONObject();
-		
-		UserDB udb = MinimaDB.getDB().getUserDB();
 		if(udb.isSSHTunnelEnabled()) {
 			ssh.put("enabled", true);
-			ssh.put("settings", udb.getSSHTunnelSettings(false));
+			ssh.put("user", sshsettings.get("username")+"@"+sshsettings.get("host"));
 		}else {
 			ssh.put("enabled", false);
 		}

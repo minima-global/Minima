@@ -60,49 +60,42 @@ public class sshtunnel extends Command {
 		
 		//And add this to the UserDB - used at startup..
 		MinimaDB.getDB().getUserDB().setSSHTunnelSettings(ssht);
+		
+		//We are now enabled..
 		MinimaDB.getDB().getUserDB().setSSHTunnelEnabled(true);
 		
 		//And save it..
 		MinimaDB.getDB().saveUserDB();
 		
 		//Now send a message..
-		Message startssh = new Message(SSHManager.SSHTUNNEL_START);
-		startssh.addString("username", user);
-		startssh.addString("password", password);
-		startssh.addString("host", host);
-		startssh.addInteger("remoteport", Integer.parseInt(rport));
-		
-		Main.getInstance().getNetworkManager().getSSHManager().PostMessage(startssh);
+		startSSHTunnel();
 
 		ret.put("response", "SSHTunnel started..");
 		
 		return ret;
 	}
 
-	public static Message createConnectMessage(String zFullHost) {
-		//IP and PORT
-		int index = zFullHost.indexOf(":");
-		if(index == -1) {
-			return null;
+	/**
+	 * If it is enabled
+	 */
+	public static void startSSHTunnel() {
+		if(MinimaDB.getDB().getUserDB().isSSHTunnelEnabled()){
+			
+			//Get the Settings..
+			JSONObject settings = MinimaDB.getDB().getUserDB().getSSHTunnelSettings();
+			
+			//Now send a message..
+			Message startssh = new Message(SSHManager.SSHTUNNEL_START);
+			startssh.addString("username", (String)settings.get("username"));
+			startssh.addString("password", (String)settings.get("password"));
+			startssh.addString("host", (String)settings.get("host"));
+			startssh.addInteger("remoteport", Integer.parseInt((String)settings.get("remoteport")));
+			
+			//And fire away
+			Main.getInstance().getNetworkManager().getSSHManager().PostMessage(startssh);
 		}
-		
-		String ip 	 = zFullHost.substring(0,index).trim();
-		String ports = zFullHost.substring(index+1).trim();
-		
-		int port = 0;
-		try {
-			port = Integer.parseInt(ports);
-		}catch(NumberFormatException exc) {
-			return null;
-		}
-		
-		//Post a message
-		Message msg = new Message(NIOManager.NIO_CONNECT);
-		msg.addString("host", ip);
-		msg.addInteger("port", port);
-		
-		return msg;
 	}
+	
 	
 	@Override
 	public Command getFunction() {

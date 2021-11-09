@@ -94,9 +94,9 @@ public class Main extends MessageProcessor {
 	long CLEANDB_TIMER	= 1000 * 60 * 30;
 	
 	/**
-	 * Timer for the automine message - twice every blocktime
+	 * Timer for the automine message
 	 */
-	long AUTOMINE_TIMER = 1000 *60;
+	long AUTOMINE_TIMER = 1000 * 60;
 	
 	public Main() {
 		super("MAIN");
