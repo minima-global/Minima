@@ -52,7 +52,7 @@ public class P2PTestParams {
     public static String METRICS_URL = "http://metrics:5000/network";
 
     public static List<InetSocketAddress> DEFAULT_NODE_LIST = Arrays.asList(
-            new InetSocketAddress("127.0.0.1", 9001)
+            new InetSocketAddress("minima_one", 9001)
     );
 
     public static void setTestParams() {
