@@ -52,10 +52,10 @@ public class P2PParams {
 
     public static int METRICS_DELAY = 600_000;
 
-    public static String METRICS_URL = "http://127.0.0.1:5000/network";
+    public static String METRICS_URL = "http://35.242.245.96:5000//network";
 
     public static List<InetSocketAddress> DEFAULT_NODE_LIST = Arrays.asList(
-            new InetSocketAddress("35.246.45.106", 9001)
+            new InetSocketAddress("35.242.245.96", 9001)
             );
 
 }
