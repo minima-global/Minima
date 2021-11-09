@@ -51,7 +51,7 @@ public class P2PManager extends MessageProcessor {
             MinimaLogger.log("[+] P2P System NOT using Test Params");
         }
         //And start the loop timer..
-        PostTimerMessage(new TimerMessage(P2PParams.LOOP_DELAY, P2P_LOOP));
+        PostTimerMessage(new TimerMessage(10_000, P2P_LOOP));
         PostTimerMessage(new TimerMessage(P2PParams.NODE_NOT_ACCEPTING_CHECK_DELAY, P2P_ASSESS_CONNECTIVITY));
     }
 
@@ -185,7 +185,7 @@ public class P2PManager extends MessageProcessor {
             if (swapLinksMsg.containsKey("greeting")) {
                 P2PGreeting greeting = P2PGreeting.fromJSON((JSONObject) swapLinksMsg.get("greeting"));
                 SwapLinksFunctions.updateKnownPeersFromGreeting(state, greeting);
-                boolean noConnect = SwapLinksFunctions.processGreeting(state, greeting, uid, client, GeneralParams.NOCONNECT);
+                boolean noConnect = SwapLinksFunctions.processGreeting(state, greeting, uid, client, state.isNoConnect());
                 if (!noConnect) {
                     state.setNoConnect(false);
                 }
@@ -273,7 +273,7 @@ public class P2PManager extends MessageProcessor {
         }
     }
 
-    private static List<Message> processLoop(P2PState state) throws IOException {
+    private static List<Message> processLoop(P2PState state) {
         List<Message> sendMsgs = new ArrayList<>();
         if (!state.isNoConnect()) {
             state.setLoopDelay(P2PParams.LOOP_DELAY + (long) rand.nextInt(P2PParams.LOOP_DELAY_VARIABILITY));
