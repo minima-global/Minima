@@ -123,8 +123,6 @@ public class sshforwarder implements Runnable {
 		    	//Port forward - Minima
 		    	mSession.setPortForwardingR("*",mRemotePort, "127.0.0.1", minimaport);
 		    	
-		    	
-		    	
 		    	//Port forward - Maxima
 //		    	mSession.setPortForwardingR("*",mRemotePort+1, "127.0.0.1", maximaport);
 		    	

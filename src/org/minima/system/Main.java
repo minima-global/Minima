@@ -200,10 +200,13 @@ public class Main extends MessageProcessor {
 	
 	public void setTrace(boolean zTrace, String zFilter) {
 		setFullLogging(zTrace,zFilter);
+		
 		mTxPoWProcessor.setFullLogging(zTrace,zFilter);
 		mTxPoWMiner.setFullLogging(zTrace,zFilter);
+		
 		mNetwork.getNIOManager().setFullLogging(zTrace,zFilter);
 		mNetwork.getP2PManager().setFullLogging(zTrace,zFilter);
+		mNetwork.getSSHManager().setFullLogging(zTrace,zFilter);
 	}
 	
 	private void doGenesis() {
@@ -310,8 +313,11 @@ public class Main extends MessageProcessor {
 			//Get the User
 			String user = MinimaDB.getDB().getUserDB().getIncentiveCashUserID();
 			
-			//Call the RPC End point..
-			RPCClient.sendPUT("https://incentivecash.minima.global/api/ping/"+user);
+			//Make sure there is a User specified
+			if(!user.equals("")) {
+				//Call the RPC End point..
+				RPCClient.sendPUT("https://incentivecash.minima.global/api/ping/"+user);
+			}
 			
 			//Do it agin..
 			PostTimerMessage(new TimerMessage(IC_TIMER, MAIN_INCENTIVE));

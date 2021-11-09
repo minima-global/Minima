@@ -25,10 +25,10 @@ public class SSHManager extends MessageProcessor {
 	//The SSH Tunnel manager
 	sshforwarder mSSH = null;
 	
-	boolean mLogging = true;
+	boolean mLogging = false;
 	
 	public SSHManager() {
-		super("SSHMANAGER");
+		super("SSH_MANAGER");
 	
 		//Initialise..
 		PostMessage(SSHTUNNEL_INIT);
@@ -41,49 +41,24 @@ public class SSHManager extends MessageProcessor {
 	@Override
 	protected void processMessage(Message zMessage) throws Exception {
 		
-		MinimaLogger.log(zMessage.toString());
-		
 		if(zMessage.getMessageType().equals(SSHTUNNEL_INIT)) {
 			//Some logging..
 			JSch.setLogger(new Logger() {
 				@Override
 				public void log(int zLevel, String zLog) {
-					MinimaLogger.log("SSH TUNNEL : "+zLevel+") "+zLog);
+					MinimaLogger.log("[SSH_TUNNEL] "+zLevel+") "+zLog);
 				}
 				
 				@Override
 				public boolean isEnabled(int zLevel) {
-					return mLogging;
+					return mTrace;
 				}
 			});
 			
-//			//New DB
-//			mTunnelDB = new JsonDB();
-//			
-//			//Load the setting from the database
-//			BackupManager bk = Main.getMainHandler().getBackupManager();
-//			File tunnel = new File(bk.getSSHTunnelFolder(),"tunnel.db");
-//			if(tunnel.exists()) {
-//				mTunnelDB.loadDB(tunnel);
-//			}
-//			
-//			//Does it exist..
-//			if(mTunnelDB.exists("host")) {
-//				//Boot her up!
-//				PostMessage(SSHTUNNEL_START);
-//			}
 		
 		}else if(zMessage.getMessageType().equals(SSHTUNNEL_SHUTDOWN)){
 			//Stop if Running..
-			if(mSSH != null) {
-				mSSH.stop();
-				mSSH = null;
-			}
-			
-//			//Save the DB
-//			BackupManager bk = Main.getMainHandler().getBackupManager();
-//			File tunnel = new File(bk.getSSHTunnelFolder(),"tunnel.db");
-//			mTunnelDB.saveDB(tunnel);
+			stopSSHTunnel();
 			
 			//Stop this..
 			stopMessageProcessor();
@@ -94,12 +69,6 @@ public class SSHManager extends MessageProcessor {
 
 		}else if(zMessage.getMessageType().equals(SSHTUNNEL_LOGGING)){
 			mLogging = zMessage.getBoolean("logging");
-			
-//			if(mLogging) {
-//				InputHandler.endResponse(zMessage, true, "SSH Logging ENABLED");
-//			}else {
-//				InputHandler.endResponse(zMessage, true, "SSH Logging DISABLED");
-//			}
 			
 		}else if(zMessage.getMessageType().equals(SSHTUNNEL_INFO)){
 //			//Print the details
@@ -135,25 +104,8 @@ public class SSHManager extends MessageProcessor {
 			
 		}else if(zMessage.getMessageType().equals(SSHTUNNEL_START)){
 			
-						
-//			//Get the parameters
-//			JSONObject params = mTunnelDB.getAllData();
-//			
-//			//Is there a port..
-//			String host = (String) params.get("host");
-//			int sshport = 22;
-//			int index = host.indexOf(":");
-//			if(index != -1) {
-//				sshport = Integer.parseInt(host.substring(index+1));
-//			}
-//			MinimaLogger.log("sshport "+sshport);
-			
 			//Are we already running..
-			if(mSSH != null) {
-				MinimaLogger.log("SSH Tunnel already running.. shutting down..");
-				mSSH.stop();
-				mSSH = null;
-			}
+			stopSSHTunnel();
 			
 			String host = zMessage.getString("host");
 			String user = zMessage.getString("username");
@@ -165,18 +117,18 @@ public class SSHManager extends MessageProcessor {
 			Thread tt = new Thread(mSSH);
 			tt.start();
 			
-//			InputHandler.endResponse(zMessage, true, "SSH tunnel started");
-			
 		}else if(zMessage.getMessageType().equals(SSHTUNNEL_STOP)){
 			//Stop if Running..
-			if(mSSH != null) {
-				mSSH.stop();
-				mSSH = null;
-			}
-			
-//			InputHandler.endResponse(zMessage,true,"SSH Tunnel stopped");		
+			stopSSHTunnel();
 		}
 		
+	}
+	
+	private void stopSSHTunnel() {
+		if(mSSH != null) {
+			mSSH.stop();
+			mSSH = null;
+		}
 	}
 
 	public static void main(String[] zArgs) {

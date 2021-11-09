@@ -97,6 +97,21 @@ public class JsonDB implements Streamable{
 	}
 	
 	/**
+	 * JSONObject
+	 */
+	public void setJSON(String zName, JSONObject zJSON) {
+		mParams.put(zName, zJSON);
+	}
+	
+	public JSONObject getJSON(String zName, JSONObject zDefault) {
+		if(mParams.get(zName) == null) {
+			return zDefault;
+		}
+		
+		return (JSONObject)mParams.get(zName);
+	}
+	
+	/**
 	 * Load and Save
 	 */
 	public void loadDB(File zFile) {

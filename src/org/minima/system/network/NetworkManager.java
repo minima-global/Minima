@@ -6,6 +6,7 @@ import java.net.SocketException;
 import java.util.Enumeration;
 
 import org.minima.database.MinimaDB;
+import org.minima.database.userprefs.UserDB;
 import org.minima.system.network.minima.NIOManager;
 import org.minima.system.network.p2p.P2PFunctions;
 import org.minima.system.network.p2p.P2PManager;
@@ -128,6 +129,19 @@ public class NetworkManager {
 		}else {
 			stats.put("p2p", "disabled");
 		}
+		
+		//SSH Tunnel
+		JSONObject ssh = new JSONObject();
+		
+		UserDB udb = MinimaDB.getDB().getUserDB();
+		if(udb.isSSHTunnelEnabled()) {
+			ssh.put("enabled", true);
+			ssh.put("settings", udb.getSSHTunnelSettings(false));
+		}else {
+			ssh.put("enabled", false);
+		}
+		
+		stats.put("sshtunnel", ssh);
 		
 		return stats;
 	}
