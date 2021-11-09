@@ -55,7 +55,7 @@ public class Main extends MessageProcessor {
 	 * Main loop messages
 	 */
 	public static final String MAIN_TXPOWMINED 	= "MAIN_TXPOWMINED";
-	public static final String MAIN_AUTOMINE 	= "MAIN_AUTOMINE";
+	public static final String MAIN_AUTOMINE 	= "MAIN_CHECKAUTOMINE";
 	public static final String MAIN_CLEANDB 	= "MAIN_CLEANDB";
 	public static final String MAIN_PULSE 		= "MAIN_PULSE";
 	public static final String MAIN_NEWBLOCK 	= "MAIN_NEWBLOCK";
