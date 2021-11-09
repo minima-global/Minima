@@ -185,6 +185,8 @@ public class NIOMessage implements Runnable {
 				if(txpow != null) {
 					//request it..
 					NIOManager.sendNetworkMessage(mClientUID, MSG_TXPOW, txpow);
+				}else {
+					MinimaLogger.log("TxPoW requested from "+mClientUID+" that we don't have.. "+txpowid.to0xString());
 				}
 			
 			}else if(type.isEqual(MSG_TXPOW)) {
@@ -230,19 +232,14 @@ public class NIOMessage implements Runnable {
 						exists = MinimaDB.getDB().getTxPoWDB().exists(txn.to0xString());
 						if(!exists) {
 							//request it.. with a slight delay - as may be in process stack
-							MinimaLogger.log("Delayed Request Missing Txn in TxPoW "+mClientUID+" "+txn.to0xString());
-							NIOManager.sendDelayedTxPoWReq(mClientUID, txn.to0xString());
-//							NIOManager.sendNetworkMessage(mClientUID, MSG_TXPOWREQ, txn);
+							NIOManager.sendDelayedTxPoWReq(mClientUID, txn.to0xString(), txpow.getTxPoWID()+" missing txn");
 						}
 					}
 					
 					//Get the parent if we don't have it..
 					exists = MinimaDB.getDB().getTxPoWDB().exists(txpow.getParentID().to0xString());
 					if(!exists) {
-						//request it..
-						MinimaLogger.log("Delayed Request Missing Parent in TxPoW "+mClientUID+" "+txpow.getParentID().to0xString());
-						NIOManager.sendDelayedTxPoWReq(mClientUID, txpow.getParentID().to0xString());
-//						NIOManager.sendNetworkMessage(mClientUID, MSG_TXPOWREQ, txpow.getParentID());
+						NIOManager.sendDelayedTxPoWReq(mClientUID, txpow.getParentID().to0xString(), txpow.getTxPoWID()+" missing parent");
 					}
 					
 				}else {
@@ -309,9 +306,7 @@ public class NIOMessage implements Runnable {
 				if(found) {
 					//Request all the blocks.. in the correct order
 					for(MiniData block : requestlist) {
-						MinimaLogger.log("Delayed Request PULSE TxPoW from "+mClientUID+" "+block.to0xString());
-						NIOManager.sendDelayedTxPoWReq(mClientUID, block.to0xString());
-//						NIOManager.sendNetworkMessage(mClientUID, MSG_TXPOWREQ, block);
+						NIOManager.sendDelayedTxPoWReq(mClientUID, block.to0xString(), "PULSE");
 					}
 					
 				}else{

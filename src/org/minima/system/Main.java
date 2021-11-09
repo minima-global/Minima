@@ -311,7 +311,7 @@ public class Main extends MessageProcessor {
 			String user = MinimaDB.getDB().getUserDB().getIncentiveCashUserID();
 			
 			//Call the RPC End point..
-			RPCClient.sendPUT("http://incentivecash.minima.global/ping/"+user);
+			RPCClient.sendPUT("https://incentivecash.minima.global/api/ping/"+user);
 			
 			//Do it agin..
 			PostTimerMessage(new TimerMessage(IC_TIMER, MAIN_INCENTIVE));

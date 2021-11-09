@@ -250,11 +250,15 @@ public class NIOManager extends MessageProcessor {
 			
 			//Which client..
 			String clientid = zMessage.getString("client");
+
+			//Why
+			String reason = zMessage.getString("reason"); 
 			
 			//Check if we have it..
 			if(!MinimaDB.getDB().getTxPoWDB().exists(txpowid)) {
-				
-				MinimaLogger.log("Requesting TxPoW "+txpowid);
+		
+				//Notify..
+				MinimaLogger.log("Requesting TxPoW "+txpowid+" from "+clientid+" : "+reason);
 				
 				//Now get it..
 				sendNetworkMessage(clientid, NIOMessage.MSG_TXPOWREQ, new MiniData(txpowid));
@@ -310,10 +314,11 @@ public class NIOManager extends MessageProcessor {
 	/**
 	 * Small delay before actually posting the request.. 2 second..
 	 */
-	public static void sendDelayedTxPoWReq(String zClientID, String zTxPoWID) {
+	public static void sendDelayedTxPoWReq(String zClientID, String zTxPoWID, String zReason) {
 		TimerMessage timed = new TimerMessage(2000, NIO_TXPOWREQ);
 		timed.addString("client", zClientID);
 		timed.addString("txpowid", zTxPoWID);
+		timed.addString("reason",zReason);
 		Main.getInstance().getNIOManager().PostTimerMessage(timed);
 	}
 	
@@ -325,6 +330,11 @@ public class NIOManager extends MessageProcessor {
 	}
 	
 	public static void sendNetworkMessage(String zUID, MiniByte zType, Streamable zObject) throws IOException {
+		//Make sure not null
+		if(zObject == null) {
+			throw new IOException("Cannot sendNetworkMessage with a NULL Object");
+		}
+		
 		//Create a stream to write to
 		ByteArrayOutputStream baos 	= new ByteArrayOutputStream();
 		DataOutputStream dos 		= new DataOutputStream(baos);
