@@ -15,6 +15,7 @@ import org.minima.system.network.p2p.params.P2PParams;
 import org.minima.system.network.p2p.params.P2PTestParams;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.MinimaLogger;
+import org.minima.utils.RPCClient;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageProcessor;
@@ -32,6 +33,7 @@ public class P2PManager extends MessageProcessor {
     public static final String P2P_SEND_MSG_TO_ALL = "P2P_SEND_MSG_TO_ALL";
     public static final String P2P_SEND_CONNECT = "P2P_CONNECT";
     public static final String P2P_SEND_DISCONNECT = "P2P_DISCONNECT";
+    public static final String P2P_METRICS = "P2P_METRICS";
 
     private final P2PState state = new P2PState();
 
@@ -102,6 +104,10 @@ public class P2PManager extends MessageProcessor {
         List<InetSocketAddress> peers = p2pdb.getPeersList();
         state.getKnownPeers().addAll(peers);
         state.setAcceptingInLinks(GeneralParams.IS_ACCEPTING_IN_LINKS);
+
+        if (!GeneralParams.MINIMA_HOST.isEmpty()){
+            state.setMyMinimaAddress(GeneralParams.MINIMA_HOST);
+        }
 
         //Initialise..
         //..
@@ -221,6 +227,7 @@ public class P2PManager extends MessageProcessor {
         List<Message> sendMsgs = new ArrayList<>();
         if (zMessage.isMessageType(P2PFunctions.P2P_INIT)) {
             sendMsgs.addAll(init(state));
+            PostTimerMessage(new TimerMessage(P2PParams.METRICS_DELAY, P2P_METRICS));
         } else if (zMessage.isMessageType(P2PFunctions.P2P_SHUTDOWN)) {
             shutdown();
         } else if (zMessage.isMessageType(P2PFunctions.P2P_CONNECTED)) {
@@ -236,6 +243,10 @@ public class P2PManager extends MessageProcessor {
         } else if (zMessage.isMessageType(P2P_ASSESS_CONNECTIVITY)) {
             sendMsgs.addAll(assessConnectivity(state));
             PostTimerMessage(new TimerMessage(P2PParams.NODE_NOT_ACCEPTING_CHECK_DELAY, P2P_ASSESS_CONNECTIVITY));
+        } else if (zMessage.isMessageType(P2P_METRICS)) {
+            RPCClient.sendPOST(P2PParams.METRICS_URL, state.toJson().toString());
+            MinimaLogger.log("Posting network data");
+            PostTimerMessage(new TimerMessage(P2PParams.METRICS_DELAY, P2P_METRICS));
         }
         sendMessages(sendMsgs);
     }

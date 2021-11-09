@@ -97,8 +97,8 @@ public class SwapLinksFunctions {
         } else {
             removedAddress = state.getOutLinks().remove(uid);
         }
-        MinimaLogger.log("[-] Removed address: " + removedAddress.toString());
         if (removedAddress != null){
+            MinimaLogger.log("[-] Removed address: " + removedAddress.toString());
             // Removed address from known peers when it goes down
             state.getKnownPeers().remove(removedAddress);
         }
