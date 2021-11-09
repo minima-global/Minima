@@ -77,27 +77,27 @@ public class Pulse implements Streamable {
 	 */
 	public static Pulse createPulse() {
 		
+		//New Pulse
+		Pulse pulse = new Pulse();
+		
+		//Lock - don't want it changing half way through
 		MinimaDB.getDB().readLock(true);
 		
 		try {
-			//New Pulse
-			Pulse pulse = new Pulse();
-		
+			
 			//Get the Current Pulse
 			ArrayList<MiniData> blocks = MinimaDB.getDB().getTxPoWTree().getPulseList();
 			
 			//Set it
 			pulse.setBlockList(blocks);
 			
-			//And return..
-			return pulse;
-			
 		}catch(Exception exc) {
 			MinimaLogger.log(exc);
 		}
 		
+		//Unlock
 		MinimaDB.getDB().readLock(false);
 		
-		return null;
+		return pulse;
 	}
 }
