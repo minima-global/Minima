@@ -2,12 +2,10 @@
 set -e
 PATH=/sbin:/bin:/usr/bin
 
-P2P_ALPHA=''
 CLEAN_FLAG=''
 PORT=''
 HOST=''
 HOME="/home/minima"
-LOCAL="/usr/local"
 CONNECTION_HOST=''
 CONNECTION_PORT=''
 SLEEP=''
@@ -72,9 +70,9 @@ DOWNLOAD_URL="https://github.com/minima-global/Minima/raw/development-0.100/jar/
 MINIMA_JAR_NAME="minima.jar"
 
 echo "[+] Downloading minima from: $DOWNLOAD_URL"
-wget -q -O $LOCAL"/"$MINIMA_JAR_NAME $DOWNLOAD_URL
-chown minima:minima $LOCAL"/"$MINIMA_JAR_NAME
-chmod +x $LOCAL"/"$MINIMA_JAR_NAME
+wget -q -O $HOME"/"$MINIMA_JAR_NAME $DOWNLOAD_URL
+chown minima:minima $HOME"/"$MINIMA_JAR_NAME
+chmod +x $HOME"/"$MINIMA_JAR_NAME
 
 if [ ! -d "$HOME/.minima_$PORT" ]; then
   echo "[+] Creating config directory .minima_${PORT}..."
@@ -121,7 +119,7 @@ Description=minima_$PORT
 [Service]
 User=minima
 Type=simple
-ExecStart=/usr/bin/java -Xmx1G -jar $LOCAL/$MINIMA_JAR_NAME $MINIMA_PARAMS
+ExecStart=/usr/bin/java -Xmx1G -jar $HOME/$MINIMA_JAR_NAME $MINIMA_PARAMS
 Restart=always
 RestartSec=100
 [Install]
