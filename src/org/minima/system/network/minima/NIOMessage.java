@@ -101,17 +101,14 @@ public class NIOMessage implements Runnable {
 			MiniByte type = MiniByte.ReadFromStream(dis);
 			
 			//Output some info
-//			if(mTrace) {
-//				MinimaLogger.log("[NIOMessage] uid:"+mClientUID+" type:"+convertMessageType(type)+" size:"+MiniFormat.formatSize(data.length));
-//			}
+			if(mTrace) {
+				MinimaLogger.log("[NIOMessage] uid:"+mClientUID+" type:"+convertMessageType(type)+" size:"+MiniFormat.formatSize(data.length));
+			}
 			
 			//Now find the right message
 			if(type.isEqual(MSG_GREETING)) {
 				//We have received a greeting message
 				Greeting greet = Greeting.ReadFromStream(dis);
-				
-				//Message
-				MinimaLogger.log("Greeting received from "+mClientUID+" "+MiniFormat.formatSize(mData.getLength()));
 				
 				//Get the welcome message..
 				String welcome = (String) greet.getExtraData().get("welcome");
@@ -130,9 +127,6 @@ public class NIOMessage implements Runnable {
 			}else if(type.isEqual(MSG_IBD)) {
 				//IBD received..
 				IBD ibd = IBD.ReadFromStream(dis);
-				
-				//Message
-				MinimaLogger.log("IBD received from "+mClientUID+" "+MiniFormat.formatSize(mData.getLength()));
 				
 				//Do some checking!
 //				//Sort the Sync blocks - low to high - they should be in the correct order but just in case..

@@ -206,7 +206,7 @@ public class NIOServer implements Runnable {
 	                    }
 	                    
 	                } catch (Exception e) {
-	                	MinimaLogger.log("NIOClient:"+client.getUID()+" "+e);
+//	                	MinimaLogger.log("NIOClient:"+client.getUID()+" "+e);
 	                    
 	                    // Disconnect the user
 	                    client.disconnect();

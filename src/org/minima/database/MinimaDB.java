@@ -128,50 +128,74 @@ public class MinimaDB {
 	}
 	
 	public void loadAllDB() {
-		//Get the base Database folder
-		File basedb = getBaseDBFolder();
 		
-		//Set the Archive folder
-		File archsqlfolder = new File(basedb,"archivesql");
-		mArchive.loadDB(new File(archsqlfolder,"archive"));
+		//We need read lock 
+		writeLock(true);
 		
-		//Load the wallet
-		File walletsqlfolder = new File(basedb,"walletsql");
-		mWallet.loadDB(new File(walletsqlfolder,"wallet"));
+		try {
+			
+			//Get the base Database folder
+			File basedb = getBaseDBFolder();
+			
+			//Set the Archive folder
+			File archsqlfolder = new File(basedb,"archivesql");
+			mArchive.loadDB(new File(archsqlfolder,"archive"));
+			
+			//Load the wallet
+			File walletsqlfolder = new File(basedb,"walletsql");
+			mWallet.loadDB(new File(walletsqlfolder,"wallet"));
+			
+			//Load the SQL DB
+			File txpowsqlfolder = new File(basedb,"txpowsql");
+			mTxPoWDB.loadSQLDB(new File(txpowsqlfolder,"txpow"));
+			
+			//Load the User Prefs
+			mUserDB.loadDB(new File(basedb,"userprefs.db"));
+			
+			//Load the Cascade
+			mCacscade.loadDB(new File(basedb,"cascade.db"));
+			
+			//Load the TxPoWTree
+			mTxPoWTree.loadDB(new File(basedb,"chaintree.db"));
+			
+			//And finally..
+			mP2PDB.loadDB(new File(basedb,"p2p.db"));
+			
+		}catch(Exception exc) {
+			MinimaLogger.log("ERROR loadAllDB "+exc);
+		}
 		
-		//Load the SQL DB
-		File txpowsqlfolder = new File(basedb,"txpowsql");
-		mTxPoWDB.loadSQLDB(new File(txpowsqlfolder,"txpow"));
-		
-		//Load the User Prefs
-		mUserDB.loadDB(new File(basedb,"userprefs.db"));
-		
-		//Load the Cascade
-		mCacscade.loadDB(new File(basedb,"cascade.db"));
-		
-		//Load the TxPoWTree
-		mTxPoWTree.loadDB(new File(basedb,"chaintree.db"));
-		
-		//And finally..
-		mP2PDB.loadDB(new File(basedb,"p2p.db"));
+		//Release the krakken
+		writeLock(false);
 	}
 	
 	public void saveAllDB() {
-		//Get the base Database folder
-		File basedb = getBaseDBFolder();
+		//We need read lock 
+		readLock(true);
 		
-		//Clean shutdown of SQL DBs
-		mTxPoWDB.saveDB();
-		mArchive.saveDB();
-		mWallet.saveDB();
+		try {
+			//Get the base Database folder
+			File basedb = getBaseDBFolder();
+			
+			//Clean shutdown of SQL DBs
+			mTxPoWDB.saveDB();
+			mArchive.saveDB();
+			mWallet.saveDB();
+			
+			//JsonDBs
+			mUserDB.saveDB(new File(basedb,"userprefs.db"));
+			mP2PDB.saveDB(new File(basedb,"p2p.db"));
+			
+			//Custom
+			mCacscade.saveDB(new File(basedb,"cascade.db"));
+			mTxPoWTree.saveDB(new File(basedb,"chaintree.db"));
+			
+		}catch(Exception exc) {
+			MinimaLogger.log("ERROR saveAllDB "+exc);
+		}
 		
-		//JsonDBs
-		mUserDB.saveDB(new File(basedb,"userprefs.db"));
-		mP2PDB.saveDB(new File(basedb,"p2p.db"));
-		
-		//Custom
-		mCacscade.saveDB(new File(basedb,"cascade.db"));
-		mTxPoWTree.saveDB(new File(basedb,"chaintree.db"));
+		//Release the krakken
+		readLock(false);
 	}
 	
 	public void saveState() {

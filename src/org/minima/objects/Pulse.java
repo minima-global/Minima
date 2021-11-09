@@ -89,6 +89,9 @@ public class Pulse implements Streamable {
 			//Set it
 			pulse.setBlockList(blocks);
 			
+			//And return..
+			return pulse;
+			
 		}catch(Exception exc) {
 			MinimaLogger.log(exc);
 		}
