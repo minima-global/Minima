@@ -71,7 +71,7 @@ public class SwapLinksFunctionsTest extends TestCase {
         P2PState state = QuickState.stateInLinkKnownPeerOnly();
         Message msg = new Message().addString("uid", "knownPeer").addBoolean("incoming", true).addBoolean("reconnect", false);
         SwapLinksFunctions.onDisconnected(state, msg);
-        assertTrue(state.getKnownPeers().isEmpty());
+        assertFalse(state.getKnownPeers().isEmpty());
     }
 
 
