@@ -1,12 +1,8 @@
 package org.minima.database.userprefs;
 
-import org.minima.system.commands.all.newaddress;
 import org.minima.system.params.GlobalParams;
 import org.minima.utils.JsonDB;
-import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
-import org.minima.utils.json.parser.JSONParser;
-import org.minima.utils.json.parser.ParseException;
 
 public class UserDB extends JsonDB{
 

@@ -1,6 +1,5 @@
 package org.minima.system.network.sshtunnel;
 
-import org.minima.utils.JsonDB;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;

@@ -1,6 +1,5 @@
 package org.minima.system.network.sshtunnel;
 
-import org.minima.system.Main;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.MinimaLogger;
 
