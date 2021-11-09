@@ -9,6 +9,7 @@ import org.minima.database.archive.ArchiveManager;
 import org.minima.database.cascade.Cascade;
 import org.minima.database.txpowdb.TxPoWDB;
 import org.minima.database.txpowtree.TxPowTree;
+import org.minima.database.wallet.Wallet;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
 import org.minima.system.brains.TxPoWGenerator;
@@ -44,15 +45,21 @@ public class status extends Command {
 		TxPowTree txptree 	= MinimaDB.getDB().getTxPoWTree();
 		Cascade	cascade		= MinimaDB.getDB().getCascade();
 		ArchiveManager arch = MinimaDB.getDB().getArchive(); 
+		Wallet wallet 		= MinimaDB.getDB().getWallet();
 		
 		JSONObject database = new JSONObject();
 		database.put("ramdb", txpdb.getRamSize());
 		database.put("sqldb", txpdb.getSqlSize());
 //		database.put("sqldbfile", txpdb.getSqlFile().getAbsolutePath());
 		database.put("sqldbsize", MiniFormat.formatSize(txpdb.getSqlFile().length()));
-		database.put("syncdb", arch.getSize());
+		database.put("archivedb", arch.getSize());
 //		database.put("syncdbfile", arch.getSQLFile().getAbsolutePath());
-		database.put("syncdbsize", MiniFormat.formatSize(arch.getSQLFile().length()));
+		database.put("archivedbsize", MiniFormat.formatSize(arch.getSQLFile().length()));
+		
+		long cascsize = MinimaDB.getDB().getCascadeFileSize();
+		database.put("cascade", MiniFormat.formatSize(cascsize));
+		
+		database.put("wallet", MiniFormat.formatSize(wallet.getSQLFile().length()));
 		
 		details.put("database", database);
 		

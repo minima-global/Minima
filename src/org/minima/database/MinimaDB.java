@@ -107,6 +107,19 @@ public class MinimaDB {
 		mCacscade = zCascade;
 	}
 	
+	public long getCascadeFileSize() {
+		//Get the base Database folder
+		File basedb = getBaseDBFolder();
+		
+		//The cascade
+		File casc = new File(basedb,"cascade.db");
+		if(casc.exists()) {
+			return casc.length();
+		}
+		
+		return 0;
+	}
+	
 	public UserDB getUserDB() {
 		return mUserDB;
 	}
