@@ -22,7 +22,7 @@ public class SSHManager extends MessageProcessor {
 	public static String SSHTUNNEL_STOP    = "SSHTUNNEL_STOP";
 
 	//The SSH Tunnel manager
-	sshforwarder mSSH = null;
+	SSHForwarder mSSH = null;
 	
 	boolean mLogging = false;
 	
@@ -112,7 +112,7 @@ public class SSHManager extends MessageProcessor {
 			int remotep = zMessage.getInteger("remoteport");
 			
 			//Start up
-			mSSH = new sshforwarder(host, 22, user, pass, false, remotep);
+			mSSH = new SSHForwarder(host, 22, user, pass, false, remotep);
 			Thread tt = new Thread(mSSH);
 			tt.start();
 			

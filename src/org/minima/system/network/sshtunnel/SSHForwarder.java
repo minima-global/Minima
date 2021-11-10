@@ -7,7 +7,7 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 
-public class sshforwarder implements Runnable {
+public class SSHForwarder implements Runnable {
 
 	JSch mSSH;
 	
@@ -24,7 +24,7 @@ public class sshforwarder implements Runnable {
 	
 	boolean mRunning = false;
 	
-	public sshforwarder(String zHost, int zPort, String zUsername, String zPassword, boolean zIsPublicKey, int zRemotePortForward) {
+	public SSHForwarder(String zHost, int zPort, String zUsername, String zPassword, boolean zIsPublicKey, int zRemotePortForward) {
 		mHost = zHost;
 		mPort = zPort;
 		mUsername = zUsername;
