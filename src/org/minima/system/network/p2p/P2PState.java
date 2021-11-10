@@ -2,6 +2,7 @@ package org.minima.system.network.p2p;
 
 import java.net.InetSocketAddress;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import org.minima.objects.base.MiniData;
 import org.minima.system.network.p2p.params.P2PParams;
@@ -170,14 +171,19 @@ public class P2PState {
         json.put("in_links", addressListToJSONArray(new ArrayList<>(inLinks.values())));
         json.put("not_accepting_conn_links", addressListToJSONArray(new ArrayList<>(notAcceptingConnP2PLinks.values())));
         json.put("none_p2p_links", addressListToJSONArray(new ArrayList<>(noneP2PLinks.values())));
+        json.put("knownPeers", addressListToJSONArray(new ArrayList<>(knownPeers)));
         json.put("is_accepting_connections", isAcceptingInLinks);
         return json;
     }
 
     private JSONArray addressListToJSONArray(ArrayList<InetSocketAddress> addresses){
         JSONArray links = new JSONArray();
-        for (InetSocketAddress inetSocketAddress: addresses){
-            links.add(inetSocketAddress.toString().replaceAll("/",""));
+        if(!addresses.isEmpty()) {
+            for (InetSocketAddress inetSocketAddress : addresses) {
+                if (inetSocketAddress != null) {
+                    links.add(inetSocketAddress.toString().replaceAll("/", ""));
+                }
+            }
         }
         return links;
     }
