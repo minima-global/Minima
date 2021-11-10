@@ -2,6 +2,7 @@ package org.minima.system.commands.all;
 
 import java.io.File;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.math.MathContext;
 import java.util.Date;
 
@@ -60,6 +61,11 @@ public class status extends Command {
 		
 		details.put("devices", totaldevs.toString());
 		
+		//The total weight of the chain + cascade
+		BigInteger chainweight 	= txptree.getRoot().getTotalWeight().toBigInteger();
+		BigInteger cascweight 	= MinimaDB.getDB().getCascade().getTotalWeight().toBigInteger();
+		details.put("weight", chainweight.add(cascweight));
+		
 		details.put("configuration", GeneralParams.CONFIGURATION_FOLDER);
 		
 		JSONObject files = new JSONObject();
@@ -114,8 +120,8 @@ public class status extends Command {
 			tree.put("difficulty", txptree.getTip().getTxPoW().getBlockDifficulty().to0xString());
 			
 			//Total weight..
-			BigDecimal weight = MinimaDB.getDB().getCascade().getTotalWeight().add(txptree.getRoot().getTotalWeight());
-			tree.put("weight", weight.toPlainString());
+			BigDecimal weighttree = txptree.getRoot().getTotalWeight();
+			tree.put("weight", chainweight);
 			
 		}else {
 			tree.put("root", "0x00");
@@ -126,8 +132,9 @@ public class status extends Command {
 		
 		//The Cascade
 		JSONObject casc = new JSONObject();
+		casc.put("start", cascade.getTip().getTxPoW().getBlockNumber().toString());
 		casc.put("length", cascade.getLength());
-		casc.put("weight", cascade.getTotalWeight().toPlainString());
+		casc.put("weight", cascweight);
 		tree.put("cascade", casc);
 		
 		//Add the chain details
