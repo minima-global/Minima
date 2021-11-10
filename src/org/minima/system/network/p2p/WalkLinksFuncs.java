@@ -59,14 +59,14 @@ public class WalkLinksFuncs {
     public static Message onOutLinkWalkMsg(P2PState state, P2PWalkLinks p2pWalkLinks, NIOClientInfo clientMsgIsFrom, int tgtNumLinks, List<NIOClientInfo> allClients) {
         Message retMsg;
         // Add the previous address to the list
-        p2pWalkLinks.addHopToPath(new InetSocketAddress(clientMsgIsFrom.getHost(), clientMsgIsFrom.getPort()));
+        p2pWalkLinks.addHopToPath(getAddressFromUID(state, clientMsgIsFrom.getUID()));
 
         List<InetSocketAddress> filteredOutLinks = removeIPsInBFromA(state.getOutLinks(), p2pWalkLinks.getPathTaken());
 
         InetSocketAddress nextHop = UtilFuncs.selectRandomAddress(filteredOutLinks);
 
         if (p2pWalkLinks.getPathTaken().size() < 9 && nextHop != null) {
-            retMsg = createNextHopMsg(nextHop, p2pWalkLinks, allClients);
+            retMsg = createNextHopMsg(nextHop, p2pWalkLinks, state);
         } else {
             retMsg = generateDoSwapMessageFromWalk(state, p2pWalkLinks, tgtNumLinks);
         }
@@ -82,9 +82,9 @@ public class WalkLinksFuncs {
      * @param allClients         list of all connected clients
      * @return null if there is no client for the destination Ip
      */
-    public static Message createNextHopMsg(InetSocketAddress destinationAddress, P2PWalkLinks p2pWalkLinks, List<NIOClientInfo> allClients) {
+    public static Message createNextHopMsg(InetSocketAddress destinationAddress, P2PWalkLinks p2pWalkLinks, P2PState state) {
         Message retMsg = null;
-        NIOClientInfo client = UtilFuncs.getClientFromInetAddressEitherDirection(destinationAddress, allClients);
+        NIOClientInfo client = UtilFuncs.getClientFromInetAddress(destinationAddress, state);
         if (client != null) {
             retMsg = new Message(P2PManager.P2P_SEND_MSG)
                     .addString("uid", client.getUID())
@@ -122,6 +122,22 @@ public class WalkLinksFuncs {
         return msg;
     }
 
+    public static InetSocketAddress getAddressFromUID(P2PState state, String uid){
+        InetSocketAddress address;
+        address = state.getInLinks().get(uid);
+        if (address == null){
+            address = state.getOutLinks().get(uid);
+        }
+        if (address == null){
+            address = state.getNotAcceptingConnP2PLinks().get(uid);
+        }
+        if (address == null){
+            address = state.getNoneP2PLinks().get(uid);
+        }
+        return address;
+    }
+
+
     /**
      * Process and InLinks Walk from a WalkLinks Msg
      * 1) Adds the previous address to the path
@@ -140,19 +156,20 @@ public class WalkLinksFuncs {
     public static Message onInLinkWalkMsg(P2PState state, P2PWalkLinks p2pWalkLinks, NIOClientInfo clientMsgIsFrom, List<NIOClientInfo> allClients) {
         Message retMsg;
         // Add the previous address to the list
-        p2pWalkLinks.addHopToPath(new InetSocketAddress(clientMsgIsFrom.getHost(), clientMsgIsFrom.getPort()));
+
+        p2pWalkLinks.addHopToPath(getAddressFromUID(state, clientMsgIsFrom.getUID()));
         List<InetSocketAddress> filteredInLinks = removeIPsInBFromA(state.getInLinks(), p2pWalkLinks.getPathTaken());
         InetSocketAddress nextHop = UtilFuncs.selectRandomAddress(filteredInLinks);
 
         if (p2pWalkLinks.getPathTaken().size() < 9 && nextHop != null) {
-            retMsg = createNextHopMsg(nextHop, p2pWalkLinks, allClients);
+            retMsg = createNextHopMsg(nextHop, p2pWalkLinks, state);
         } else {
             p2pWalkLinks.addHopToPath(state.getMyMinimaAddress());
             p2pWalkLinks.setReturning(true);
             if (p2pWalkLinks.isClientWalk()) {
                 p2pWalkLinks.setAvailableNoneP2PConnectionSlots(state.getMaxNumNoneP2PConnections() - state.getNotAcceptingConnP2PLinks().size());
             }
-            retMsg = onWalkLinkResponseMsg(state, p2pWalkLinks, allClients);
+            retMsg = onWalkLinkResponseMsg(state, p2pWalkLinks);
         }
 
         return retMsg;
@@ -167,10 +184,10 @@ public class WalkLinksFuncs {
      * @param allClients   all clients this node is connected too
      * @return null if there is no client for the previous or message to be sent back
      */
-    public static Message onWalkLinkResponseMsg(P2PState state, P2PWalkLinks p2pWalkLinks, List<NIOClientInfo> allClients) {
+    public static Message onWalkLinkResponseMsg(P2PState state, P2PWalkLinks p2pWalkLinks) {
         Message retMsg = null;
         InetSocketAddress nextHop = p2pWalkLinks.getPreviousNode(state.getMyMinimaAddress());
-        NIOClientInfo client = UtilFuncs.getClientFromInetAddressEitherDirection(nextHop, allClients);
+        NIOClientInfo client = UtilFuncs.getClientFromInetAddress(nextHop, state);
         if (client != null) {
 
             retMsg = new Message(P2PManager.P2P_SEND_MSG)

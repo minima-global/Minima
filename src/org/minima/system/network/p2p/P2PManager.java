@@ -34,12 +34,9 @@ public class P2PManager extends MessageProcessor {
     public static final String P2P_SEND_CONNECT = "P2P_CONNECT";
     public static final String P2P_SEND_DISCONNECT = "P2P_DISCONNECT";
     public static final String P2P_METRICS = "P2P_METRICS";
-
-    private final P2PState state = new P2PState();
-
-    private static final Random rand = new Random();
-
     public static final String ADDRESS_LITERAL = "address";
+    private static final Random rand = new Random();
+    private final P2PState state = new P2PState();
 
     public P2PManager() {
         super("P2PMANAGER");
@@ -75,7 +72,7 @@ public class P2PManager extends MessageProcessor {
                 msgs.addAll(WalkLinksFuncs.onReturnedWalkMsg(state, p2pWalkLinks, P2PParams.TGT_NUM_LINKS));
             }
         } else {
-            msgs.add(WalkLinksFuncs.onWalkLinkResponseMsg(state, p2pWalkLinks, P2PFunctions.getAllConnections()));
+            msgs.add(WalkLinksFuncs.onWalkLinkResponseMsg(state, p2pWalkLinks));
         }
         return msgs;
     }
@@ -105,7 +102,7 @@ public class P2PManager extends MessageProcessor {
         state.getKnownPeers().addAll(peers);
         state.setAcceptingInLinks(GeneralParams.IS_ACCEPTING_IN_LINKS);
 
-        if (!GeneralParams.MINIMA_HOST.isEmpty()){
+        if (!GeneralParams.MINIMA_HOST.isEmpty()) {
             state.setMyMinimaAddress(GeneralParams.MINIMA_HOST);
         }
 
@@ -128,8 +125,8 @@ public class P2PManager extends MessageProcessor {
                 MinimaLogger.log("[+] Connecting to saved node: " + connectionAddress);
             } else {
                 state.setDoingDiscoveryConnection(true);
-				connectionAddress = P2PParams.DEFAULT_NODE_LIST.get(rand.nextInt(P2PParams.DEFAULT_NODE_LIST.size()));
-				MinimaLogger.log("[+] Doing discovery connection with default node: " + connectionAddress);
+                connectionAddress = P2PParams.DEFAULT_NODE_LIST.get(rand.nextInt(P2PParams.DEFAULT_NODE_LIST.size()));
+                MinimaLogger.log("[+] Doing discovery connection with default node: " + connectionAddress);
             }
         }
         if (connectionAddress != null) {
@@ -146,32 +143,6 @@ public class P2PManager extends MessageProcessor {
         List<Message> msgs = SwapLinksFunctions.onConnected(state, uid, incoming, info);
         msgs.addAll(SwapLinksFunctions.onConnectedLoadBalanceRequest(state, P2PFunctions.getAllConnections()));
         return msgs;
-    }
-
-    public JSONObject getStatus() {
-        JSONObject ret = new JSONObject();
-
-        ret.put("isNoConnect", state.isNoConnect());
-        ret.put("isAcceptingInLinks", state.isAcceptingInLinks());
-        ret.put("numInLinks", state.getInLinks().size());
-        ret.put("numOutLinks", state.getOutLinks().size());
-        ret.put("numNotAcceptingConnP2PLinks", state.getNotAcceptingConnP2PLinks().size());
-        ret.put("numNoneP2PLinks", state.getNoneP2PLinks().size());
-        ret.put("numKnownPeers", state.getKnownPeers().size());
-
-        return ret;
-    }
-
-    public void shutdown() {
-        //Write stuff to P2P DB..
-        P2PDB p2pdb = MinimaDB.getDB().getP2PDB();
-        p2pdb.setVersion();
-        p2pdb.setPeersList(new ArrayList<>(state.getKnownPeers()));
-
-        //I save the DB.. you don't do it..!
-
-        //And finish with..
-        stopMessageProcessor();
     }
 
     protected static List<Message> processJsonMessages(Message zMessage, P2PState state) throws IOException {
@@ -213,7 +184,7 @@ public class P2PManager extends MessageProcessor {
         return sendMsgs;
     }
 
-    protected static List<Message> assessConnectivity(P2PState state){
+    protected static List<Message> assessConnectivity(P2PState state) {
         List<Message> sendmsgs = new ArrayList<>();
         if (!state.getInLinks().isEmpty() && !state.getOutLinks().isEmpty()) {
             state.setAcceptingInLinks(false);
@@ -223,6 +194,66 @@ public class P2PManager extends MessageProcessor {
 
         }
         return sendmsgs;
+    }
+
+    private static List<Message> processLoop(P2PState state) {
+        List<Message> sendMsgs = new ArrayList<>();
+        if (state.getOutLinks().size() >= P2PParams.TGT_NUM_LINKS) {
+            state.setLoopDelay(P2PParams.LOOP_DELAY + (long) rand.nextInt(P2PParams.LOOP_DELAY_VARIABILITY));
+        } else {
+            state.setLoopDelay(10_000 + (long) rand.nextInt(3_000));
+        }
+
+        if (!state.isNoConnect()) {
+            int numEntryNodes = 1;
+            if (!state.isAcceptingInLinks()) {
+                numEntryNodes = P2PParams.MIN_NUM_CONNECTIONS;
+            }
+            if (!state.getKnownPeers().isEmpty()) {
+                if (state.isDoingDiscoveryConnection()) {
+                    // Loop is set to be quite fast at this point to ensure we connect to the network
+                    InetSocketAddress connectionAddress = (InetSocketAddress) state.getKnownPeers().toArray()[rand.nextInt(state.getKnownPeers().size())];
+                    P2PFunctions.checkConnect(connectionAddress.getHostString(), connectionAddress.getPort());
+                } else if (state.getOutLinks().size() < numEntryNodes) {
+                    InetSocketAddress connectionAddress = (InetSocketAddress) state.getKnownPeers().toArray()[rand.nextInt(state.getKnownPeers().size())];
+                    P2PFunctions.checkConnect(connectionAddress.getHostString(), connectionAddress.getPort());
+                } else {
+                    sendMsgs.addAll(SwapLinksFunctions.joinScaleOutLinks(state, P2PParams.TGT_NUM_LINKS, P2PFunctions.getAllConnections()));
+                    sendMsgs.addAll(SwapLinksFunctions.requestInLinks(state, P2PParams.TGT_NUM_LINKS, P2PFunctions.getAllConnections()));
+                    sendMsgs.addAll(SwapLinksFunctions.onConnectedLoadBalanceRequest(state, P2PFunctions.getAllConnections()));
+                }
+            } else {
+                MinimaLogger.log("[-] No Known peers!");
+            }
+        }
+        return sendMsgs;
+    }
+
+    public JSONObject getStatus() {
+        JSONObject ret = new JSONObject();
+
+        ret.put("isDoingDiscoveryConnection", state.isDoingDiscoveryConnection());
+        ret.put("isNoConnect", state.isNoConnect());
+        ret.put("isAcceptingInLinks", state.isAcceptingInLinks());
+        ret.put("numInLinks", state.getInLinks().size());
+        ret.put("numOutLinks", state.getOutLinks().size());
+        ret.put("numNotAcceptingConnP2PLinks", state.getNotAcceptingConnP2PLinks().size());
+        ret.put("numNoneP2PLinks", state.getNoneP2PLinks().size());
+        ret.put("numKnownPeers", state.getKnownPeers().size());
+
+        return ret;
+    }
+
+    public void shutdown() {
+        //Write stuff to P2P DB..
+        P2PDB p2pdb = MinimaDB.getDB().getP2PDB();
+        p2pdb.setVersion();
+        p2pdb.setPeersList(new ArrayList<>(state.getKnownPeers()));
+
+        //I save the DB.. you don't do it..!
+
+        //And finish with..
+        stopMessageProcessor();
     }
 
     @Override
@@ -255,17 +286,17 @@ public class P2PManager extends MessageProcessor {
         sendMessages(sendMsgs);
     }
 
-    private void sendMessages(List<Message> sendMessages) throws IOException{
+    private void sendMessages(List<Message> sendMessages) throws IOException {
         if (!sendMessages.isEmpty()) {
             for (Message msg : sendMessages) {
                 if (msg != null) {
                     if (msg.isMessageType(P2P_SEND_CONNECT)) {
                         InetSocketAddress address = (InetSocketAddress) msg.getObject(ADDRESS_LITERAL);
-                        P2PFunctions.connect(address.getHostString(), address.getPort());
+                        P2PFunctions.checkConnect(address.getHostString(), address.getPort());
                     } else if (msg.isMessageType(P2P_SEND_DISCONNECT)) {
                         String uid = msg.getString("uid");
                         P2PFunctions.disconnect(uid);
-                    }else if (msg.isMessageType(P2P_SEND_MSG)) {
+                    } else if (msg.isMessageType(P2P_SEND_MSG)) {
                         P2PFunctions.sendP2PMessage(msg.getString("uid"), SwapLinksFunctions.wrapP2PMsg((JSONObject) msg.getObject("json")));
                     } else if (msg.isMessageType(P2P_SEND_MSG_TO_ALL)) {
                         P2PFunctions.sendP2PMessageAll(SwapLinksFunctions.wrapP2PMsg((JSONObject) msg.getObject("json")));
@@ -273,38 +304,5 @@ public class P2PManager extends MessageProcessor {
                 }
             }
         }
-    }
-
-    private static List<Message> processLoop(P2PState state) {
-        List<Message> sendMsgs = new ArrayList<>();
-        if (state.getOutLinks().size() >= P2PParams.TGT_NUM_LINKS){
-            state.setLoopDelay(P2PParams.LOOP_DELAY + (long) rand.nextInt(P2PParams.LOOP_DELAY_VARIABILITY));
-        } else {
-            state.setLoopDelay(10_000 + (long) rand.nextInt(3_000));
-        }
-
-        if (!state.isNoConnect()) {
-            int numEntryNodes = 1;
-            if (!state.isAcceptingInLinks()) {
-                numEntryNodes = P2PParams.MIN_NUM_CONNECTIONS;
-            }
-            if (state.isDoingDiscoveryConnection()) {
-                // Loop is set to be quite fast at this point to ensure we connect to the network
-                if (!state.getKnownPeers().isEmpty()) {
-                    InetSocketAddress connectionAddress = (InetSocketAddress) state.getKnownPeers().toArray()[rand.nextInt(state.getKnownPeers().size())];
-                    P2PFunctions.connect(connectionAddress.getHostString(), connectionAddress.getPort());
-                }
-            } else if (state.getOutLinks().size() < numEntryNodes) {
-                if (!state.getKnownPeers().isEmpty()) {
-                    InetSocketAddress connectionAddress = (InetSocketAddress) state.getKnownPeers().toArray()[rand.nextInt(state.getKnownPeers().size())];
-                    P2PFunctions.connect(connectionAddress.getHostString(), connectionAddress.getPort());
-                }
-            } else {
-                sendMsgs.addAll(SwapLinksFunctions.joinScaleOutLinks(state, P2PParams.TGT_NUM_LINKS, P2PFunctions.getAllConnections()));
-                sendMsgs.addAll(SwapLinksFunctions.requestInLinks(state, P2PParams.TGT_NUM_LINKS, P2PFunctions.getAllConnections()));
-                sendMsgs.addAll(SwapLinksFunctions.onConnectedLoadBalanceRequest(state, P2PFunctions.getAllConnections()));
-            }
-        }
-        return sendMsgs;
     }
 }

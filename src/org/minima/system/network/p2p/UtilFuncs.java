@@ -1,7 +1,9 @@
 package org.minima.system.network.p2p;
 
 import java.net.InetSocketAddress;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
 import org.minima.system.network.minima.NIOClientInfo;
@@ -11,42 +13,28 @@ public class UtilFuncs {
 
     private UtilFuncs(){}
 
-    public static NIOClientInfo getClientFromInetAddress(InetSocketAddress address, List<NIOClientInfo> clients, boolean isIncoming) {
-        NIOClientInfo returnClient = null;
-        if (address != null) {
-            for (NIOClientInfo client : clients) {
-                if ((client != null)) {
-                    if (new InetSocketAddress(client.getHost(), client.getPort()).equals(address) && client.isIncoming() == isIncoming) {
-                        returnClient = client;
-                        break;
-                    }
-                } else {
-                    MinimaLogger.log("[-] client is null");
-                }
+    public static NIOClientInfo searchLinksMapForAddress(InetSocketAddress address, Map<String, InetSocketAddress> links){
+        for (String uid:links.keySet()){
+            if (links.get(uid).equals(address)){
+                return P2PFunctions.getNIOCLientInfo(uid);
             }
-        } else {
-            MinimaLogger.log("[-] address is null");
         }
-        return returnClient;
+        return null;
     }
 
-    public static NIOClientInfo getClientFromInetAddressEitherDirection(InetSocketAddress address, List<NIOClientInfo> clients) {
-        NIOClientInfo returnClient = null;
-        if (address != null) {
-            for (NIOClientInfo client : clients) {
-                if ((client != null)) {
-                    if (new InetSocketAddress(client.getHost(), client.getPort()).equals(address)) {
-                        returnClient = client;
-                        break;
-                    }
-                } else {
-                    MinimaLogger.log("[-] client is null");
-                }
-            }
-        } else {
-            MinimaLogger.log("[-] address is null");
+    public static NIOClientInfo getClientFromInetAddress(InetSocketAddress address, P2PState state) {
+        NIOClientInfo clientInfo;
+        clientInfo = searchLinksMapForAddress(address, state.getInLinks());
+        if (clientInfo == null){
+            clientInfo = searchLinksMapForAddress(address, state.getOutLinks());
         }
-        return returnClient;
+        if (clientInfo == null){
+            clientInfo = searchLinksMapForAddress(address, state.getNotAcceptingConnP2PLinks());
+        }
+        if (clientInfo == null){
+            clientInfo = searchLinksMapForAddress(address, state.getNoneP2PLinks());
+        }
+        return clientInfo;
     }
 
     public static InetSocketAddress selectRandomAddress(List<InetSocketAddress> addresses) {
