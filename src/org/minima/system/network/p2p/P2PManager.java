@@ -186,7 +186,7 @@ public class P2PManager extends MessageProcessor {
 
     protected static List<Message> assessConnectivity(P2PState state) {
         List<Message> sendmsgs = new ArrayList<>();
-        if (state.getInLinks().isEmpty() && !state.getOutLinks().isEmpty()) {
+        if (state.getInLinks().isEmpty() && state.getNotAcceptingConnP2PLinks().isEmpty() && state.getNoneP2PLinks().isEmpty() && !state.getOutLinks().isEmpty()) {
             state.setAcceptingInLinks(false);
             JSONObject notAcceptingMsg = new JSONObject();
             notAcceptingMsg.put("notAcceptingMsg", false);
