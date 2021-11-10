@@ -68,7 +68,7 @@ public class SwapLinksFunctions {
      */
     public static List<Message> onConnectedLoadBalanceRequest(P2PState state, List<NIOClientInfo> clients) {
         List<Message> msgs = new ArrayList<>();
-        if (state.getMyMinimaAddress() != null && state.getNotAcceptingConnP2PLinks().size() > state.getMaxNumNoneP2PConnections() && !state.getInLinks().isEmpty()) {
+        if (state.isAcceptingInLinks() && state.getMyMinimaAddress() != null && state.getNotAcceptingConnP2PLinks().size() > state.getMaxNumNoneP2PConnections() && !state.getInLinks().isEmpty()) {
             InetSocketAddress nextHop = UtilFuncs.selectRandomAddress(new ArrayList<>(state.getInLinks().values()));
             NIOClientInfo minimaClient = UtilFuncs.getClientFromInetAddress(nextHop, state);
             P2PWalkLinks walkLinks = new P2PWalkLinks(true, false, minimaClient.getUID());

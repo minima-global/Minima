@@ -45,22 +45,6 @@ if ! id -u 9001 > /dev/null 2>&1; then
     chown minima:minima $HOME
 fi
 
-if  ! cat /etc/systemd/journald.conf | grep "Storage=persistent"; then
-tee <<EOF >/dev/null /etc/systemd/journald.conf
-Storage=persistent
-EOF
-systemctl restart systemd-journald
-fi
-
-
-CURL_RETURN_CODE=0
-curl --fail {127.0.0.1:$PORT/quit} 2> /dev/null || CURL_RETURN_CODE=$?
-if [ ${CURL_RETURN_CODE} -eq 0 ];
-  then
-    # Give minima time to shutdown
-    echo "[!] Shutting down Minima"
-    sleep 40
-fi
 
 if [ ! $PORT ]; then
     PORT='9001'
