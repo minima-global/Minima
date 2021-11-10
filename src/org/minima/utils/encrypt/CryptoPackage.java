@@ -5,13 +5,22 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.security.KeyPair;
+import java.util.Arrays;
 
 import org.minima.objects.base.MiniData;
 import org.minima.utils.Streamable;
 
 public class CryptoPackage implements Streamable {
 
+	/**
+	 * The secret that SYMMETRICALLY encrypts the data 
+	 * but is asymmetrically encrypted itself with a public key
+	 */
 	MiniData mSecret;
+	
+	/**
+	 * The data that is encrypted by the unencrypted secret
+	 */
 	MiniData mData;
 	
 	public CryptoPackage() {}
@@ -46,11 +55,17 @@ public class CryptoPackage implements Streamable {
 		return dec;
 	}
 	
+	/**
+	 * Get the MiniData version of this Object
+	 */
 	public MiniData getCompleteEncryptedData() {
 		return MiniData.getMiniDataVersion(this);
 	}
 	
-	public void ConvertCompleteData(MiniData zComplete) throws IOException {
+	/**
+	 * Convert a MiniData Version
+	 */
+	public void ConvertMiniDataVersion(MiniData zComplete) throws IOException {
 		ByteArrayInputStream bais = new ByteArrayInputStream(zComplete.getBytes());
 		DataInputStream dis = new DataInputStream(bais);
 		readDataStream(dis);
@@ -70,16 +85,23 @@ public class CryptoPackage implements Streamable {
 		mData = MiniData.ReadFromStream(zIn);
 	}
 	
+	public static CryptoPackage ReadFromStream(DataInputStream zIn) throws IOException {
+		CryptoPackage crypt = new CryptoPackage();
+		crypt.readDataStream(zIn);
+		return crypt;
+	} 
+	
 	public static void main(String[] zArgs) throws Exception {
 		KeyPair generateKeyPair = EncryptDecrypt.generateKeyPair();
-		byte[] publicKey = generateKeyPair.getPublic().getEncoded();
-		byte[] privateKey = generateKeyPair.getPrivate().getEncoded();
+		byte[] publicKey 		= generateKeyPair.getPublic().getEncoded();
+		byte[] privateKey	 	= generateKeyPair.getPrivate().getEncoded();
 
-		String data = new String("HEELO YOU!! this is a long message");
+		String data = new String("HEELO YOU!! this is a long message alskjd lkasdj lkas jdlkadjslkasjd lkasjdlkasjd lkasjd");
 		CryptoPackage cp = new CryptoPackage();
 		cp.encrypt(data.getBytes(), publicKey);
 		
-//		System.out.println(cp.getEncryptedData().to0xString());
+		System.out.println("Public Key : "+publicKey.length+" "+Arrays.toString(publicKey));
+		System.out.println(cp.getCompleteEncryptedData().to0xString());
 		
 		byte[] dec = cp.decrypt(privateKey);
 		
