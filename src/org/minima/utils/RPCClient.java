@@ -9,6 +9,8 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import org.minima.objects.base.MiniString;
+
 public class RPCClient {
 
 	public static String USER_AGENT = "Minima/1.0";
@@ -99,7 +101,7 @@ public class RPCClient {
 		// For POST only - START
 		con.setDoOutput(true);
 		OutputStream os = con.getOutputStream();
-		os.write(zParams.getBytes());
+		os.write(zParams.getBytes(MiniString.MINIMA_CHARSET));
 		os.flush();
 		os.close();
 		// For POST only - END
@@ -107,23 +109,19 @@ public class RPCClient {
 		int responseCode = con.getResponseCode();
 		
 		if (responseCode == HttpURLConnection.HTTP_OK) { //success
-			BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
-			String inputLine;
-			StringBuffer response = new StringBuffer();
+			BufferedReader in 		= new BufferedReader(new InputStreamReader(con.getInputStream(),MiniString.MINIMA_CHARSET));
+			StringBuffer response 	= new StringBuffer();
 
+			String inputLine;
 			while ((inputLine = in.readLine()) != null) {
 				response.append(inputLine);
 			}
 			in.close();
 
-			// print result
 			return response.toString();
+		} 
 		
-		} else {
-			System.out.println("POST request not HTTP_OK resp:"+responseCode+" @ "+zHost+" params "+zParams);
-		}
-		
-		return "ERROR";
+		throw new IOException("POST request not HTTP_OK resp:"+responseCode+" @ "+zHost+" params "+zParams);
 	}
 
 	
