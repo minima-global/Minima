@@ -99,7 +99,7 @@ public class IBD implements Streamable {
 							mTxBlocks.add(0,block);
 						}
 					}else {
-						MinimaLogger.log("No Archive bloicks found to match New User.. ");
+						MinimaLogger.log("No Archive blocks found to match New User.. ");
 					}
 					
 				}else if(greetroot.isMore(mytip)) {
