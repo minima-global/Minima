@@ -18,7 +18,7 @@ import org.minima.utils.messages.Message;
 
 public class SwapLinksFunctions {
 
-    public static JSONObject wrapP2PMsg(JSONObject data){
+    public static JSONObject wrapP2PMsg(JSONObject data) {
         JSONObject msg = new JSONObject();
         msg.put("swap_links_p2p", data);
         return msg;
@@ -28,10 +28,11 @@ public class SwapLinksFunctions {
      * Adds connections to the NoneP2PLinks set whilst waiting for a valid greeting.
      * Generates and send a greeting message to the newly connected client
      * Sends a request for its IP if the node's minima address has not been set yet
-     * @param state the current P2P State
-     * @param uid the uid of the client that just connected
+     *
+     * @param state    the current P2P State
+     * @param uid      the uid of the client that just connected
      * @param incoming if the connection is an incoming one
-     * @param info NIOClientInfo for the client that just connected
+     * @param info     NIOClientInfo for the client that just connected
      * @return a list of messages to be sent (greeting and possible a request IP message)
      */
     public static List<Message> onConnected(P2PState state, String uid, boolean incoming, NIOClientInfo info) {
@@ -60,13 +61,14 @@ public class SwapLinksFunctions {
     /**
      * If the node has more noneP2PNodes that its desired max then
      * Start a Random Walk to find a node that can take excess clients
-     * @param state P2P State
+     *
+     * @param state   P2P State
      * @param clients all NIOClients
      * @return list of load balance walk messages to send
      */
     public static List<Message> onConnectedLoadBalanceRequest(P2PState state, List<NIOClientInfo> clients) {
         List<Message> msgs = new ArrayList<>();
-        if (state.getMyMinimaAddress() != null && state.getNotAcceptingConnP2PLinks().size() > state.getMaxNumNoneP2PConnections()){
+        if (state.getMyMinimaAddress() != null && state.getNotAcceptingConnP2PLinks().size() > state.getMaxNumNoneP2PConnections()) {
             InetSocketAddress nextHop = UtilFuncs.selectRandomAddress(new ArrayList<>(state.getInLinks().values()));
             NIOClientInfo minimaClient = UtilFuncs.getClientFromInetAddressEitherDirection(nextHop, clients);
             P2PWalkLinks walkLinks = new P2PWalkLinks(true, false, minimaClient.getUID());
@@ -77,7 +79,7 @@ public class SwapLinksFunctions {
         return msgs;
     }
 
-    public static void onDisconnected(P2PState state, Message zMessage){
+    public static void onDisconnected(P2PState state, Message zMessage) {
         //Get the details
         String uid = zMessage.getString("uid");
         boolean incoming = zMessage.getBoolean("incoming");
@@ -97,15 +99,10 @@ public class SwapLinksFunctions {
         } else {
             removedAddress = state.getOutLinks().remove(uid);
         }
-        MinimaLogger.log("[-] Removed address: " + removedAddress.toString());
-        if (removedAddress != null){
-            // Removed address from known peers when it goes down
-            state.getKnownPeers().remove(removedAddress);
-        }
 
     }
 
-    public static void updateKnownPeersFromGreeting(P2PState state, P2PGreeting greeting){
+    public static void updateKnownPeersFromGreeting(P2PState state, P2PGreeting greeting) {
         List<InetSocketAddress> newPeers = Stream.of(greeting.getInLinks(), greeting.getOutLinks(), greeting.getKnownPeers())
                 .flatMap(Collection::stream)
                 .distinct()
@@ -155,7 +152,7 @@ public class SwapLinksFunctions {
         return noconnect;
     }
 
-    public static JSONObject processRequestIPMsg(JSONObject swapLinksMsg, String host){
+    public static JSONObject processRequestIPMsg(JSONObject swapLinksMsg, String host) {
         MiniData secret = new MiniData((String) swapLinksMsg.get("req_ip"));
         JSONObject responseMsg = new JSONObject();
         JSONObject IpResponse = new JSONObject();
@@ -165,7 +162,7 @@ public class SwapLinksFunctions {
         return responseMsg;
     }
 
-    public static void processResponseIPMsg(P2PState state, JSONObject swapLinksMsg){
+    public static void processResponseIPMsg(P2PState state, JSONObject swapLinksMsg) {
         MiniData secret = new MiniData((String) swapLinksMsg.get("secret"));
         if (state.getIpReqSecret().isEqual(secret)) {
             String hostIP = (String) swapLinksMsg.get("res_ip");
