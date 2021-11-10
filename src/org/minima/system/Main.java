@@ -64,6 +64,7 @@ public class Main extends MessageProcessor {
 	 * Notify Users..
 	 */
 	public static final String MAIN_NEWBLOCK 	= "MAIN_NEWBLOCK";
+	public static final String MAIN_BALANCE 	= "MAIN_BALANCE";
 	
 	/**
 	 * Incentive Cash User ping..
@@ -339,6 +340,18 @@ public class Main extends MessageProcessor {
 			JSONObject event = new JSONObject();
 			event.put("event", "NEWBLOCK");
 			event.put("txpow", txpow.toJSON());
+			
+			//And Post it..
+			getNetworkManager().getNotifyManager().PostEvent(event);
+		
+		}else if(zMessage.getMessageType().equals(MAIN_BALANCE)) {
+			
+			//The tip of the TxPoWTree has changed - we have a new block..
+			postMinimaListener(zMessage);
+			
+			//Notify The Web Hook Listeners
+			JSONObject event = new JSONObject();
+			event.put("event", "NEWBALANCE");
 			
 			//And Post it..
 			getNetworkManager().getNotifyManager().PostEvent(event);

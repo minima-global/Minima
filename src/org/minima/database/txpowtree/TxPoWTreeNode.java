@@ -21,6 +21,7 @@ import org.minima.objects.TxBlock;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.system.Main;
 import org.minima.system.brains.TxPoWSearcher;
 import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
@@ -123,6 +124,9 @@ public class TxPoWTreeNode implements Streamable {
 		//Calculate the Entry NUmber
 		mMMR.calculateEntryNumberFromPeaks();
 		
+		//Has the balance changed
+		boolean balancechange = false;
+		
 		//Now you have all the previous peaks.. update the spent coins..
 		ArrayList<CoinProof> spentcoins = mTxBlock.getInputCoinProofs();
 		for(CoinProof input : spentcoins) {
@@ -152,6 +156,7 @@ public class TxPoWTreeNode implements Streamable {
 				
 				//Message..
 				MinimaLogger.log("NEW Spent Coin : "+spentcoin.toJSON());
+				balancechange = true;
 			}
 		}
 		
@@ -186,6 +191,7 @@ public class TxPoWTreeNode implements Streamable {
 				
 				//Message..
 				MinimaLogger.log("NEW Unspent Coin : "+newcoin.toJSON());
+				balancechange = true;
 			}
 		}
 		
@@ -195,6 +201,11 @@ public class TxPoWTreeNode implements Streamable {
 		//Calculate the Relevant Coins..
 		if(zFindRelevant) {
 			calculateRelevantCoins();
+		}
+		
+		//Has the balance changed
+		if(balancechange) {
+			Main.getInstance().PostMessage(Main.MAIN_BALANCE);
 		}
 	}
 	
