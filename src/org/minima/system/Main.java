@@ -22,6 +22,7 @@ import org.minima.system.params.GlobalParams;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.RPCClient;
+import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageListener;
 import org.minima.utils.messages.MessageProcessor;
@@ -58,6 +59,10 @@ public class Main extends MessageProcessor {
 	public static final String MAIN_AUTOMINE 	= "MAIN_CHECKAUTOMINE";
 	public static final String MAIN_CLEANDB 	= "MAIN_CLEANDB";
 	public static final String MAIN_PULSE 		= "MAIN_PULSE";
+	
+	/**
+	 * Notify Users..
+	 */
 	public static final String MAIN_NEWBLOCK 	= "MAIN_NEWBLOCK";
 	
 	/**
@@ -324,12 +329,19 @@ public class Main extends MessageProcessor {
 			
 		}else if(zMessage.getMessageType().equals(MAIN_NEWBLOCK)) {
 			
+			//Get the TxPoW
+			TxPoW txpow = (TxPoW) zMessage.getObject("txpow");
+			
 			//The tip of the TxPoWTree has changed - we have a new block..
 			postMinimaListener(zMessage);
 			
-			//Notify other sections?
-			//..
+			//Notify The Web Hook Listeners
+			JSONObject event = new JSONObject();
+			event.put("event", "NEWBLOCK");
+			event.put("txpow", txpow.toJSON());
 			
+			//And Post it..
+			getNetworkManager().getNotifyManager().PostEvent(event);
 		}
 	}
 }

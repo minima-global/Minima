@@ -13,7 +13,6 @@ public class NotifyManager extends MessageProcessor {
 	public static final String NOTIFY_INIT 		= "NOTIFY_INIT";
 	public static final String NOTIFY_SHUTDOWN 	= "NOTIFY_SHUTDOWN";
 	
-	public static final String NOTIFY_ADDHOOK 	= "NOTIFY_ADDHOOK";
 	public static final String NOTIFY_POST 		= "NOTIFY_POST";
 	
 	ArrayList<String> mHooks;
@@ -35,6 +34,24 @@ public class NotifyManager extends MessageProcessor {
 		PostMessage(msg);
 	}
 	
+	public ArrayList<String> getAllWebHooks(){
+		return mHooks;
+	}
+	
+	public void addHook(String zHook) {
+		if(!mHooks.contains(zHook) && !zHook.equals("")) {
+			mHooks.add(zHook);
+		}
+	}
+	
+	public void removeHook(String zHook) {
+		mHooks.remove(zHook);
+	}
+	
+	public void clearHooks() {
+		mHooks.clear();
+	}
+	
 	@Override
 	protected void processMessage(Message zMessage) throws Exception {
 	
@@ -49,16 +66,6 @@ public class NotifyManager extends MessageProcessor {
 			//..
 			
 			stopMessageProcessor();
-			
-		}else if(zMessage.isMessageType(NOTIFY_ADDHOOK)) {
-			
-			//Get the new Hook
-			String hook = zMessage.getString("webhook");
-			
-			//Add if not already added
-			if(!mHooks.contains(hook)) {
-				mHooks.add(hook);
-			}
 			
 		}else if(zMessage.isMessageType(NOTIFY_POST)) {
 			

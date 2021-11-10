@@ -12,6 +12,7 @@ import org.minima.system.network.p2p.P2PFunctions;
 import org.minima.system.network.p2p.P2PManager;
 import org.minima.system.network.rpc.RPCServer;
 import org.minima.system.network.sshtunnel.SSHManager;
+import org.minima.system.network.webhooks.NotifyManager;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
@@ -39,6 +40,11 @@ public class NetworkManager {
 	 * The SSH Tunnel Manager
 	 */
 	SSHManager mSSHManager;
+	
+	/**
+	 * The Web Hooks for Minima messages
+	 */
+	NotifyManager mNotifyManager;
 	
 	public NetworkManager() {
 		//Calculate the local host
@@ -70,6 +76,9 @@ public class NetworkManager {
 		
 		//Start the SSH Tunnel manager
 		mSSHManager = new SSHManager();
+		
+		//Notifucation of Events
+		mNotifyManager = new NotifyManager();
 	}
 	
 	public void calculateHostIP() {
@@ -182,12 +191,14 @@ public class NetworkManager {
 		
 		//And the SSH
 		mSSHManager.PostMessage(SSHManager.SSHTUNNEL_SHUTDOWN);
+		
+		//And the notify Manager
+		mNotifyManager.PostMessage(NotifyManager.NOTIFY_SHUTDOWN);
 	}
 	
 	public boolean isShutDownComplete() {
-		return 	mNIOManager.isShutdownComplete() 
-				&& 	mP2PManager.isShutdownComplete() 
-				&& 	mSSHManager.isShutdownComplete();
+		return 		mNIOManager.isShutdownComplete() 
+				&& 	mP2PManager.isShutdownComplete();
 	}
 	
 	public MessageProcessor getP2PManager() {
@@ -200,5 +211,9 @@ public class NetworkManager {
 	
 	public SSHManager getSSHManager() {
 		return mSSHManager;
+	}
+	
+	public NotifyManager getNotifyManager() {
+		return mNotifyManager;
 	}
 }

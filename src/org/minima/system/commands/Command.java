@@ -25,6 +25,7 @@ import org.minima.system.commands.all.status;
 import org.minima.system.commands.all.tokencreate;
 import org.minima.system.commands.all.trace;
 import org.minima.system.commands.all.txpow;
+import org.minima.system.commands.all.webhooks;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
@@ -34,7 +35,7 @@ public abstract class Command {
 		{   new quit(), new status(), new coins(), new txpow(), new connect(), new disconnect(), new network(),
 			new message(), new trace(), new help(), new printtree(), new automine(), new printmmr(), new rpc(),
 			new send(), new balance(), new tokencreate(), new newaddress(), new debugflag(),
-			new incentivecash(), new sshtunnel()};
+			new incentivecash(), new sshtunnel(), new webhooks()};
 	
 	String mName;
 	String mHelp;

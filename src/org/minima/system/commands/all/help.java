@@ -37,6 +37,7 @@ public class help extends Command {
 		addCommand(details, new connect());
 		addCommand(details, new disconnect());
 		addCommand(details, new rpc());
+		addCommand(details, new webhooks());
 		
 		addCommand(details, new incentivecash());
 		
