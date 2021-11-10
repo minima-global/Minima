@@ -323,6 +323,9 @@ public class NIOManager extends MessageProcessor {
 		timed.addString("client", zClientID);
 		timed.addString("txpowid", zTxPoWID);
 		timed.addString("reason",zReason);
+		
+		MinimaLogger.log("DELAYED Request : "+zTxPoWID+" "+zReason);
+		
 		Main.getInstance().getNIOManager().PostTimerMessage(timed);
 	}
 	

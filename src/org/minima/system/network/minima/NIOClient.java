@@ -10,6 +10,7 @@ import java.util.Date;
 import org.minima.objects.base.MiniData;
 import org.minima.system.Main;
 import org.minima.utils.MiniFormat;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
 
@@ -161,12 +162,13 @@ public class NIOClient {
 		//read in..
  	   	int readbytes = mSocket.read(mBufferIn);
  	   	if(readbytes == -1) {
- 		   throw new IOException("Socket Closed!");
+ 	   		throw new IOException("Socket Closed!");
  	   	}
  	   
  	   	//Nothing..
  	   	if(readbytes == 0) {
- 		   return;
+ 	   		MinimaLogger.log("handleRead : 0 "+mBufferIn.hasRemaining()+" "+mBufferIn.remaining());
+ 	   		return;
  	   	}
  	   
  	   	//Ready to read
@@ -187,12 +189,15 @@ public class NIOClient {
  	   				//Not enough for the size..
  	   				break;
  	   			}
- 	   		}else {
+ 	   		}
+ 	   		
+ 	   		//We have something..
+ 	   		if(mReadData != null) {
  	   			//How much left to read for this object
-				int readremaining 	= mReadCurrentLimit - mReadCurrentPosition;
+				int readremaining = mReadCurrentLimit - mReadCurrentPosition;
 				   
 				//How much is there still to read
-				int buffread	= mBufferIn.remaining();
+				int buffread = mBufferIn.remaining();
 				if(buffread > readremaining) {
 					buffread = readremaining;
 				}
@@ -241,12 +246,10 @@ public class NIOClient {
 			
 			//We have data to write
 			if(mWriteData != null) {
-				//How much left in the buffer
-				int remaining 	= mBufferOut.remaining();
-				   
+				
 				//Have we written the size yet
 				if(!mWriteStart) {
-					if(remaining >= 4) {
+					if(mBufferOut.remaining() >= 4) {
 						mBufferOut.putInt(mWriteLimit);
 						mWriteStart = true;
 					}else {
@@ -257,7 +260,7 @@ public class NIOClient {
 				
 				if(mWriteStart) {
 					//How much left in the buffer
-					remaining = mBufferOut.remaining();
+					int remaining = mBufferOut.remaining();
 					
 					//How much left to write
 					int writeremain = mWriteLimit - mWritePosition;
@@ -280,8 +283,14 @@ public class NIOClient {
 		//Ready to write
 		mBufferOut.flip();
 		
+		int amt = mBufferOut.remaining();
+		
 		//Write
-		mSocket.write(mBufferOut);
+		int written = mSocket.write(mBufferOut);
+		
+		if(amt!=written) {
+			MinimaLogger.log("Wrote not full amount : "+written+" / "+amt+" "+mBufferOut.hasRemaining());
+		}
 		
 		//Any left
 		synchronized (mMessages) {
