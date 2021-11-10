@@ -106,7 +106,8 @@ public class NetworkManager {
 	                
 	                //Only get the IPv4
 	                if(!ip.contains(":")) {
-	                	GeneralParams.MINIMA_HOST = ip;
+						// This breaks P2P
+						// GeneralParams.MINIMA_HOST = ip;
 	                	
 	                	//If you're on WiFi..
 	                	if(name.startsWith("wl")) {
