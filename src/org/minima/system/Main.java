@@ -9,6 +9,7 @@ import org.minima.database.wallet.KeyRow;
 import org.minima.objects.Pulse;
 import org.minima.objects.TxBlock;
 import org.minima.objects.TxPoW;
+import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.brains.TxPoWMiner;
 import org.minima.system.brains.TxPoWProcessor;
@@ -59,6 +60,12 @@ public class Main extends MessageProcessor {
 	public static final String MAIN_AUTOMINE 	= "MAIN_CHECKAUTOMINE";
 	public static final String MAIN_CLEANDB 	= "MAIN_CLEANDB";
 	public static final String MAIN_PULSE 		= "MAIN_PULSE";
+	
+	/**
+	 * Debug Function
+	 */
+	public static final String MAIN_CHECKER 	= "MAIN_CHECKER";
+	MiniData mOldTip 							= MiniData.ZERO_TXPOWID;
 	
 	/**
 	 * Notify Users..
@@ -145,9 +152,12 @@ public class Main extends MessageProcessor {
 		//Clean the DB (delete old records)
 		PostTimerMessage(new TimerMessage(CLEANDB_TIMER, MAIN_CLEANDB));
 		
-		//Store the IC USer
-		PostTimerMessage(new TimerMessage(IC_TIMER, MAIN_INCENTIVE));
-				
+		//Store the IC User - do fast first time - 30 seconds in.. then every 8 hours
+		PostTimerMessage(new TimerMessage(1000*30, MAIN_INCENTIVE));
+		
+		//Debug Checker
+		PostTimerMessage(new TimerMessage(1000*30, MAIN_CHECKER));
+		
 		//Quick Clean up..
 		System.gc();
 	}
@@ -355,6 +365,18 @@ public class Main extends MessageProcessor {
 			
 			//And Post it..
 			getNetworkManager().getNotifyManager().PostEvent(event);
+		
+		}else if(zMessage.getMessageType().equals(MAIN_CHECKER)) {
+			
+			TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
+			
+			if(tip.getTxPoW().getTxPoWIDData().isEqual(mOldTip)) {
+				MinimaLogger.log("Chain tip hasn't changed in 120 seconds "+tip.getTxPoW().getTxPoWID()+" "+tip.getTxPoW().getBlockNumber().toString());
+			}
+			
+			mOldTip = tip.getTxPoW().getTxPoWIDData();
+			
+			PostTimerMessage(new TimerMessage(1000*120, MAIN_CHECKER));
 		}
 	}
 }

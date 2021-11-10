@@ -127,6 +127,9 @@ public class TxPoWGenerator {
 			
 			try {
 				
+				//Check CoinID not added already..!
+				//..
+				
 				//Check if Valid!
 				if(TxPoWChecker.checkTxPoW(tip.getMMR(), memtxp, txpow.getBlockNumber())) {
 					//Add to our list

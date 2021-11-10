@@ -27,6 +27,10 @@ public class TxPoWChecker {
 	public static boolean checkTxPoWBlock(MMR zParentMMR, TxPoW zTxPoW, ArrayList<TxPoW> zTransactions) {
 		
 		try {
+			
+			//Check all the input coinid are Unique
+			//..
+			
 			//First check this
 			if(zTxPoW.isTransaction()) {
 				boolean valid = checkTxPoW(zParentMMR, zTxPoW, zTxPoW.getBlockNumber());
