@@ -49,6 +49,7 @@ public class status extends Command {
 		
 		JSONObject database = new JSONObject();
 		database.put("ramdb", txpdb.getRamSize());
+		database.put("mempool", txpdb.getAllUnusedTxns().size());
 		database.put("sqldb", txpdb.getSqlSize());
 //		database.put("sqldbfile", txpdb.getSqlFile().getAbsolutePath());
 		database.put("sqldbsize", MiniFormat.formatSize(txpdb.getSqlFile().length()));
