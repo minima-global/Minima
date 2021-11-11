@@ -16,6 +16,8 @@ import org.minima.utils.messages.Message;
 
 public class NIOClient {
 
+	public static boolean mTraceON = false;
+	
 	public static final int MAX_NIO_BUFFERS = 64 * 1024;
 	
 	String mUID;
@@ -171,6 +173,11 @@ public class NIOClient {
  	   		return;
  	   	}
  	   
+ 	   	//Debug
+ 		if(mTraceON) {
+ 			MinimaLogger.log("[NIOCLIENT] "+mUID+" : START handleRead called "+readbytes);
+ 		}
+ 	   	
  	   	//Ready to read
  	   	mBufferIn.flip();
  	   	
@@ -220,15 +227,25 @@ public class NIOClient {
  	   		}
  	   	}
  	   
+ 	   	//Debug
+ 		if(mTraceON) {
+ 			MinimaLogger.log("[NIOCLIENT] "+mUID+" : FINISH handleRead ");
+ 		}
+ 	   	
 		//ready to read more..
 		mBufferIn.compact();
 	}
 	
 	public void handleWrite() throws IOException {
 		
+		//Debug
+ 		if(mTraceON) {
+ 			MinimaLogger.log("[NIOCLIENT] "+mUID+" : START handleWrite ");
+ 		}
+		
 		//First fill the buffer if it has the space
 		while(mBufferOut.hasRemaining()) {
-		
+			
 			//Do we have a packet we are working on
 			if(mWriteData == null) {
 				
@@ -295,6 +312,11 @@ public class NIOClient {
 		
 		//Compact..
 		mBufferOut.compact();
+		
+		//Debug
+ 		if(mTraceON) {
+ 			MinimaLogger.log("[NIOCLIENT] "+mUID+" : FINISH handleWrite ");
+ 		}
 	}
 	
 	public void disconnect() {

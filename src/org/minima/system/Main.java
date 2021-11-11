@@ -16,6 +16,7 @@ import org.minima.system.brains.TxPoWProcessor;
 import org.minima.system.genesis.GenesisMMR;
 import org.minima.system.genesis.GenesisTxPoW;
 import org.minima.system.network.NetworkManager;
+import org.minima.system.network.minima.NIOClient;
 import org.minima.system.network.minima.NIOManager;
 import org.minima.system.network.minima.NIOMessage;
 import org.minima.system.params.GeneralParams;
@@ -226,6 +227,8 @@ public class Main extends MessageProcessor {
 		mNetwork.getNIOManager().setFullLogging(zTrace,zFilter);
 		mNetwork.getP2PManager().setFullLogging(zTrace,zFilter);
 		mNetwork.getSSHManager().setFullLogging(zTrace,zFilter);
+		
+		NIOClient.mTraceON = zTrace;
 	}
 	
 	private void doGenesis() {
