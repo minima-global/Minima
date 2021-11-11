@@ -78,6 +78,8 @@ public class TxPoW implements Streamable {
 		_mTestIsBlock 		= zIsBlock;
 		_mTestIsTxn 		= zIsTransaction;
 		_mTestParent 		= new MiniData(zParent);
+		
+		mHeader				= new TxHeader();
 	}
 	
 	//TEST FUNCTION
