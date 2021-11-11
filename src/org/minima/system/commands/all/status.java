@@ -59,7 +59,11 @@ public class status extends Command {
 		MiniNumber usersperpulse 	= MiniNumber.ONE.div(new MiniNumber(""+pulsespeed).div(GlobalParams.MINIMA_BLOCK_SPEED));
 		MiniNumber totaldevs 		= usersperpulse.mult(ratio).floor();
 		
-		details.put("devices", totaldevs.toString());
+		details.put("devices", totaldevs.getAsLong());
+		
+		//The Current total Length of the Minima Chain
+		long totallength = txptree.getHeaviestBranchLength()+cascade.getLength();
+		details.put("length", totallength);
 		
 		//The total weight of the chain + cascade
 		BigInteger chainweight 	= txptree.getRoot().getTotalWeight().toBigInteger();
@@ -79,28 +83,23 @@ public class status extends Command {
 		long allfiles = MiniFile.getTotalFileSize(new File(GeneralParams.CONFIGURATION_FOLDER));
 		files.put("files", MiniFormat.formatSize(allfiles));
 		
-		details.put("memory", files);
-		
 		JSONObject database = new JSONObject();
-		database.put("ramdb", txpdb.getRamSize());
-		database.put("mempool", txpdb.getAllUnusedTxns().size());
-		database.put("sqldb", txpdb.getSqlSize());
-//		database.put("sqldbfile", txpdb.getSqlFile().getAbsolutePath());
-		database.put("sqldbsize", MiniFormat.formatSize(txpdb.getSqlFile().length()));
-		database.put("archivedb", arch.getSize());
-//		database.put("syncdbfile", arch.getSQLFile().getAbsolutePath());
-		database.put("archivedbsize", MiniFormat.formatSize(arch.getSQLFile().length()));
+		database.put("txpowdb", MiniFormat.formatSize(txpdb.getSqlFile().length()));
+		database.put("archivedb", MiniFormat.formatSize(arch.getSQLFile().length()));
 		
 		long cascsize = MinimaDB.getDB().getCascadeFileSize();
 		database.put("cascade", MiniFormat.formatSize(cascsize));
 		
 		database.put("wallet", MiniFormat.formatSize(wallet.getSQLFile().length()));
+		files.put("database", database);
+		
+		details.put("memory", files);
 		
 		//The main Chain
 		JSONObject tree = new JSONObject();
 		if(txptree.getRoot() != null) {
 			tree.put("block", txptree.getTip().getTxPoW().getBlockNumber().getAsLong());
-			tree.put("time", new Date(txptree.getTip().getTxPoW().getTimeMilli().getAsLong()));
+			tree.put("time", new Date(txptree.getTip().getTxPoW().getTimeMilli().getAsLong()).toString());
 			tree.put("hash", txptree.getTip().getTxPoW().getTxPoWID());
 			
 //			tree.put("root", txptree.getRoot().getTxPoW().getTxPoWID());
@@ -118,6 +117,9 @@ public class status extends Command {
 			}
 			
 			tree.put("difficulty", txptree.getTip().getTxPoW().getBlockDifficulty().to0xString());
+		
+			tree.put("size", txptree.getSize());
+			tree.put("length", txptree.getHeaviestBranchLength());
 			
 			//Total weight..
 			BigDecimal weighttree = txptree.getRoot().getTotalWeight();
@@ -125,20 +127,23 @@ public class status extends Command {
 			
 		}else {
 			tree.put("root", "0x00");
-			tree.put("tip", "0x00");
-			tree.put("topblock", "-1");
 		}
-		tree.put("length", txptree.getSize());
 		
 		//The Cascade
 		JSONObject casc = new JSONObject();
-		casc.put("start", cascade.getTip().getTxPoW().getBlockNumber().toString());
+		casc.put("start", cascade.getTip().getTxPoW().getBlockNumber().getAsLong());
 		casc.put("length", cascade.getLength());
 		casc.put("weight", cascweight);
 		tree.put("cascade", casc);
 		
 		//Add the chain details
 		details.put("chain", tree);
+		
+		database = new JSONObject();
+		database.put("mempool", txpdb.getAllUnusedTxns().size());
+		database.put("ramdb", txpdb.getRamSize());
+		database.put("txpowdb", txpdb.getSqlSize());
+		database.put("archivedb", arch.getSize());
 		
 		//Add ther adatabse
 		details.put("database", database);
