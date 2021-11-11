@@ -21,7 +21,7 @@ public class NIOClient {
 	/**
 	 * 8K buffer for send and receive..
 	 */
-	public static final int MAX_NIO_BUFFERS = 8 * 1024;
+	public static final int MAX_NIO_BUFFERS = 32 * 1024;
 	
 	String mUID;
 	
