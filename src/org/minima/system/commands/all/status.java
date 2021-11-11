@@ -12,6 +12,7 @@ import org.minima.database.cascade.Cascade;
 import org.minima.database.txpowdb.TxPoWDB;
 import org.minima.database.txpowtree.TxPowTree;
 import org.minima.database.wallet.Wallet;
+import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
 import org.minima.system.brains.TxPoWGenerator;
@@ -117,7 +118,8 @@ public class status extends Command {
 				tree.put("speed", TxPoWGenerator.getChainSpeed(txptree.getTip(),blocksback).toString());
 			}
 			
-			tree.put("difficulty", txptree.getTip().getTxPoW().getBlockDifficulty().to0xString());
+			MiniData difficulty = new MiniData(txptree.getTip().getTxPoW().getBlockDifficulty().getBytes(),32);
+			tree.put("difficulty", difficulty.to0xString());
 		
 			tree.put("size", txptree.getSize());
 			tree.put("length", txptree.getHeaviestBranchLength());

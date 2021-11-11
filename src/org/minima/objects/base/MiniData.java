@@ -64,6 +64,33 @@ public class MiniData implements Streamable {
 	}
 	
 	/**
+	 * Make sure is at least Min Length in size
+	 */
+	public MiniData(byte[] zData, int zMinLength) {
+		
+		//How big is it
+		int len = zData.length;
+		
+		if(len<zMinLength) {
+			byte[] data = new byte[zMinLength];
+			
+			//And the rest..
+			int diff = zMinLength - len;
+			for(int i=0;i<diff;i++) {
+				data[i] = 0;
+			}
+			
+			for(int i=0;i<len;i++) {
+				data[i+diff] = zData[i];
+			}
+			
+			mData = data;
+		}else {
+			mData = zData;
+		}
+	}
+	
+	/**
 	 * Use a BigInteger to create
 	 * 
 	 * @param zBigInteger
@@ -307,5 +334,16 @@ public class MiniData implements Streamable {
 		byte[] data = new byte[len];
 		rand.nextBytes(data);
 		return new MiniData(data);
+	}
+	
+	public static void main(String[] zArgs) {
+		
+		MiniData origdata = MiniData.getRandomData(10);
+		System.out.println("ORIG   : "+origdata.getLength()+" "+origdata.to0xString() +" "+origdata.getDataValue());
+		
+		MiniData lendata = new MiniData(origdata.getBytes(), 16);
+		System.out.println("LENGTH : "+lendata.getLength()+" "+lendata.to0xString() +" "+lendata.getDataValue());
+		
+		
 	}
 }
