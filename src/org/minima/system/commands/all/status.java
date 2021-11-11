@@ -121,6 +121,7 @@ public class status extends Command {
 		
 			tree.put("size", txptree.getSize());
 			tree.put("length", txptree.getHeaviestBranchLength());
+			tree.put("branches", txptree.getSize() - txptree.getHeaviestBranchLength());
 			
 			//Total weight..
 			BigDecimal weighttree = txptree.getRoot().getTotalWeight();
