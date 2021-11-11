@@ -5,6 +5,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.MathContext;
+import java.util.Date;
 
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniNumber;
@@ -75,7 +76,9 @@ public class CascadeNode implements Streamable{
 	
 	@Override
 	public String toString() {
-		return "["+getLevel()+"/"+getSuperLevel()+"] "+mTxPoW.getTxPoWID()+" @ "+mTxPoW.getBlockNumber()+" weight:"+getCurrentWeight();
+		return "["+getLevel()+"/"+getSuperLevel()+"] "+mTxPoW.getTxPoWID()
+					+" @ "+mTxPoW.getBlockNumber()+" weight:"+getCurrentWeight()
+					+" @ "+new Date(getTxPoW().getTimeMilli().getAsLong()).toString();
 	}
 
 	@Override

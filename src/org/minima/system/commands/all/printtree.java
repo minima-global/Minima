@@ -4,30 +4,37 @@ import java.math.BigDecimal;
 
 import org.minima.database.MinimaDB;
 import org.minima.system.commands.Command;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
 
 public class printtree extends Command {
 
 	public printtree() {
-		super("printtree", "Print a tree representation of the blockchain");
+		super("printtree", "(depth:) (cascade:true|false) - Print a tree representation of the blockchain. Depth default 32, Cascade true.");
 	}
 	
 	@Override
 	public JSONObject runCommand() throws Exception {
 		JSONObject ret = getJSONReply();
 		
+		JSONObject resp = new JSONObject();
+		
+		String depthstr = getParam("depth","32");
+		int depth = Integer.parseInt(depthstr);
+		
+		boolean casc = getParam("cascade","true").equals("true");
+		
 		//Print it..
-		MinimaDB.getDB().getCascade().printCascade();
-		MinimaDB.getDB().getTxPoWTree().printTree();
+		if(casc) {
+			String cascade = MinimaDB.getDB().getCascade().printCascade();
+			resp.put("cascade", "\n"+cascade);
+		}
 		
-		BigDecimal total = MinimaDB.getDB().getTxPoWTree().getRoot().getTotalWeight().add(MinimaDB.getDB().getCascade().getTotalWeight());
+		String treestr = MinimaDB.getDB().getTxPoWTree().printTree(depth);
+		resp.put("chain", "\n"+treestr);
 		
-		System.out.println("Cascade Weight :"+MinimaDB.getDB().getCascade().getTotalWeight());
-		System.out.println("Chain Weight   :"+MinimaDB.getDB().getTxPoWTree().getRoot().getTotalWeight());
-		System.out.println("Total  Weight  :"+total);
-		System.out.println();
+		ret.put("response", resp);
 		
-		ret.put("message", "Printed to stdout");
 		return ret;
 	}
 

@@ -138,7 +138,10 @@ public class Cascade implements Streamable {
 		return deepcopy;
 	}
 	
-	public void printCascade() {
+	public String printCascade() {
+		
+		StringBuffer casstr = new StringBuffer();
+		
 		//Flip it..
 		ArrayList<CascadeNode> nodes = new ArrayList<>();
 		
@@ -148,11 +151,27 @@ public class Cascade implements Streamable {
 			current = current.getParent();
 		}
 		
+		//Only half print it..
+		int levelcounter 	= 0;
+		int oldlevel 		= -1;
 		for(CascadeNode node : nodes) {
-			System.out.println(node);
+			casstr.append(node+"\n");
+			
+//			if(node.getLevel() != oldlevel) {
+//				if(levelcounter!=-1) {
+//					casstr.append(levelcounter+" @ "+oldlevel+"\n");
+//				}
+//				casstr.append(node+"\n");
+//				levelcounter = 0;
+//			}else {
+//				levelcounter++;
+//			}
+//			
+//			//Store..
+//			oldlevel = node.getLevel();
 		}
 		
-		System.out.println("----");
+		return casstr.toString();
 	}
 
 	public void loadDB(File zFile) {

@@ -136,15 +136,15 @@ public class Main extends MessageProcessor {
 		mTxPoWProcessor = new TxPoWProcessor();
 		mTxPoWMiner 	= new TxPoWMiner();
 		
-		//Start the networking..
-		mNetwork = new NetworkManager();
-		
 		//Are we running a private network
 		if(GeneralParams.GENESIS) {
 			//Create a genesis node
 			doGenesis();
 		}
 		
+		//Start the networking..
+		mNetwork = new NetworkManager();
+				
 		//Simulate traffic message ( only if auto mine is set )
 		AUTOMINE_TIMER = MiniNumber.THOUSAND.div(GlobalParams.MINIMA_BLOCK_SPEED).getAsLong();
 		PostTimerMessage(new TimerMessage(AUTOMINE_TIMER, MAIN_AUTOMINE));
@@ -355,8 +355,8 @@ public class Main extends MessageProcessor {
 			event.put("txpow", txpow.toJSON());
 			
 			//And Post it..
-			getNetworkManager().getNotifyManager().PostEvent(event);
-		
+			PostNotifyEvent(event);
+			
 		}else if(zMessage.getMessageType().equals(MAIN_BALANCE)) {
 			
 			//The tip of the TxPoWTree has changed - we have a new block..
@@ -367,8 +367,8 @@ public class Main extends MessageProcessor {
 			event.put("event", "NEWBALANCE");
 			
 			//And Post it..
-			getNetworkManager().getNotifyManager().PostEvent(event);
-		
+			PostNotifyEvent(event);
+			
 		}else if(zMessage.getMessageType().equals(MAIN_CHECKER)) {
 			
 			//Get the Current Tip
@@ -384,6 +384,16 @@ public class Main extends MessageProcessor {
 			
 			//Check again..
 			PostTimerMessage(new TimerMessage(CHECKER_TIMER, MAIN_CHECKER));
+		}
+	}
+	
+	/**
+	 * Post a network message to the webhook listeners
+	 * @param zEvent
+	 */
+	private void PostNotifyEvent(JSONObject zEvent) {
+		if(getNetworkManager() != null) {
+			getNetworkManager().getNotifyManager().PostEvent(zEvent);
 		}
 	}
 }

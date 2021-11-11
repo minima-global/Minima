@@ -26,6 +26,7 @@ import org.minima.system.commands.all.tokencreate;
 import org.minima.system.commands.all.trace;
 import org.minima.system.commands.all.txpow;
 import org.minima.system.commands.all.webhooks;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
@@ -113,6 +114,8 @@ public abstract class Command {
 			try {
 				result = cmd.runCommand();
 			}catch(Exception exc) {
+				MinimaLogger.log(exc);
+				
 				result = cmd.getJSONReply();
 				result.put("status", false);
 				result.put("error", exc.getMessage());

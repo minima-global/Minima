@@ -22,6 +22,7 @@ import org.minima.system.params.GlobalParams;
 import org.minima.utils.Crypto;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MiniFormat;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
 
 public class status extends Command {
@@ -131,7 +132,11 @@ public class status extends Command {
 		
 		//The Cascade
 		JSONObject casc = new JSONObject();
-		casc.put("start", cascade.getTip().getTxPoW().getBlockNumber().getAsLong());
+		if(cascade.getTip() != null) {
+			casc.put("start", cascade.getTip().getTxPoW().getBlockNumber().getAsLong());
+		}else {
+			casc.put("start", -1);
+		}
 		casc.put("length", cascade.getLength());
 		casc.put("weight", cascweight);
 		tree.put("cascade", casc);
@@ -151,7 +156,9 @@ public class status extends Command {
 		
 		//Network..
 		NetworkManager netmanager = Main.getInstance().getNetworkManager();
-		details.put("network", netmanager.getStatus());
+		if(netmanager!=null) {
+			details.put("network", netmanager.getStatus());
+		}
 		
 		//Add all the details
 		ret.put("response", details);
