@@ -93,19 +93,24 @@ public class CryptoPackage implements Streamable {
 	
 	public static void main(String[] zArgs) throws Exception {
 		KeyPair generateKeyPair = EncryptDecrypt.generateKeyPair();
+		
 		byte[] publicKey 		= generateKeyPair.getPublic().getEncoded();
+		MiniData pubk 			= new MiniData(publicKey);
+		
 		byte[] privateKey	 	= generateKeyPair.getPrivate().getEncoded();
 
-		String data = new String("HEELO YOU!! this is a long message alskjd lkasdj lkas jdlkadjslkasjd lkasjdlkasjd lkasjd");
+		MiniData rdata = MiniData.getRandomData(256);
 		CryptoPackage cp = new CryptoPackage();
-		cp.encrypt(data.getBytes(), publicKey);
+		cp.encrypt(rdata.getBytes(), publicKey);
 		
-		System.out.println("Public Key : "+publicKey.length+" "+Arrays.toString(publicKey));
-		System.out.println(cp.getCompleteEncryptedData().to0xString());
+		System.out.println("Public Key : "+pubk.getLength());
+		System.out.println("Data       : "+rdata.getLength());
+		System.out.println("Enc Data   : "+cp.getCompleteEncryptedData().getLength());
 		
 		byte[] dec = cp.decrypt(privateKey);
+		MiniData decdata = new MiniData(dec);
 		
-		System.out.println(new String(dec));
+		System.out.println("Worked     : "+decdata.isEqual(rdata));
 		
 		
 		

@@ -7,11 +7,17 @@ public class MaximaMessage {
 
 	/**
 	 * Who is this message from
+	 * 
+	 * 
+	 * 
 	 */
 	public MiniString mFrom;
 	
 	/**
 	 * Who is it to
+	 * 
+	 * HASH(PUBKEY)@HOST:APPLICATION
+	 * 
 	 */
 	public MiniString mTo;
 	
@@ -19,6 +25,9 @@ public class MaximaMessage {
 	 * The Encrypted Data
 	 */
 	public MiniData mData;
+	
+	
+	public MaximaMessage() {}
 	
 	
 }

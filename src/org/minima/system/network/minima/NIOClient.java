@@ -306,7 +306,7 @@ public class NIOClient {
 		//Write
 		int write = mSocket.write(mBufferOut);
 		if(mTraceON) {
-			MinimaLogger.log("habdleWrite wrote : "+write+" remoining : "+mBufferOut.remaining());
+			MinimaLogger.log("handleWrite wrote : "+write+" remaining : "+mBufferOut.remaining());
 		}
 		
 		//Any left
