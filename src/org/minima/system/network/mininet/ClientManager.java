@@ -85,20 +85,17 @@ public class ClientManager extends MessageProcessor{
 			
 		}else if(zMessage.isMessageType(CLIENT_SENDMSG)) {
 			
-			//Who to..
+			//Who to.. "" for everyone
 			String uid = zMessage.getString("uid");
 			
-			//Send a Message..
-			if(uid.equals("")) {
-				//Send to all..
-				
-			}else {
-				
-				//get the client..
-				
-				
-			}
+			//Type
+			MiniByte type = (MiniByte) zMessage.getObject("type");
 			
+			//What message..
+			Streamable data = (Streamable) zMessage.getObject("data");
+			
+			//Send a Message..
+			sendNetworkMessage(uid, type, data);
 		}
 		
 	}
