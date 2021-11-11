@@ -14,7 +14,7 @@ import org.minima.utils.messages.MessageProcessor;
 public class TxPoWMiner extends MessageProcessor {
 
 	public static final String TXPOWMINER_MINETXPOW 	= "TXPOWMINER_MINETXPOW";
-	public static final String TXPOWMINER_EMPTYTXPOW 	= "TXPOWMINER_EMPTYTXPOW";
+	public static final String TXPOWMINER_MINEPULSE 	= "TXPOWMINER_MINEPULSE";
 	
 	public TxPoWMiner() {
 		super("MINER");
@@ -70,7 +70,7 @@ public class TxPoWMiner extends MessageProcessor {
 			//Post it on..
 			Main.getInstance().PostMessage(new Message(Main.MAIN_TXPOWMINED).addObject("txpow", txpow));
 		
-		}else if(zMessage.isMessageType(TXPOWMINER_EMPTYTXPOW)) {
+		}else if(zMessage.isMessageType(TXPOWMINER_MINEPULSE)) {
 			
 			//Do we have any blocks yet
 			if(MinimaDB.getDB().getTxPoWTree().getTip() != null) {

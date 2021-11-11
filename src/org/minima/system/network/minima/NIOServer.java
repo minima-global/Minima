@@ -15,6 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.minima.objects.base.MiniData;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.messages.Message;
+import org.minima.utils.messages.TimerMessage;
 
 public class NIOServer implements Runnable {
 
@@ -126,8 +127,8 @@ public class NIOServer implements Runnable {
 	        // Set our key's interest OPs to "Accept"
 	        acceptKey.interestOps(SelectionKey.OP_ACCEPT);
 	
-	        //Ok - we are up and running..
-	        mNIOManager.PostMessage(NIOManager.NIO_SERVERSTARTED);
+	        //Ok - we are up and running.. start up the P2P in 5 secs..
+	        mNIOManager.PostTimerMessage(new TimerMessage(5 * 1000, NIOManager.NIO_SERVERSTARTED));
 	        
 	        // This is the main loop
 	        while (!mShutDown) {

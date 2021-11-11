@@ -67,6 +67,9 @@ public class Main extends MessageProcessor {
 	public static final String MAIN_CHECKER 	= "MAIN_CHECKER";
 	MiniData mOldTip 							= MiniData.ZERO_TXPOWID;
 	
+	//Check every 120 seconds..
+	long CHECKER_TIMER							= 1000 * 120;
+	
 	/**
 	 * Notify Users..
 	 */
@@ -156,7 +159,7 @@ public class Main extends MessageProcessor {
 		PostTimerMessage(new TimerMessage(1000*30, MAIN_INCENTIVE));
 		
 		//Debug Checker
-		PostTimerMessage(new TimerMessage(1000*30, MAIN_CHECKER));
+		PostTimerMessage(new TimerMessage(CHECKER_TIMER, MAIN_CHECKER));
 		
 		//Quick Clean up..
 		System.gc();
@@ -287,7 +290,7 @@ public class Main extends MessageProcessor {
 			if(GeneralParams.AUTOMINE) {
 				
 				//Create a TxPoW
-				mTxPoWMiner.PostMessage(TxPoWMiner.TXPOWMINER_EMPTYTXPOW);
+				mTxPoWMiner.PostMessage(TxPoWMiner.TXPOWMINER_MINEPULSE);
 			}
 			
 			//Next Attempt
@@ -319,7 +322,7 @@ public class Main extends MessageProcessor {
 			NIOManager.sendNetworkMessageAll(NIOMessage.MSG_PULSE, pulse);
 		
 			//Mine a TxPoW
-			mTxPoWMiner.PostMessage(TxPoWMiner.TXPOWMINER_EMPTYTXPOW);
+			mTxPoWMiner.PostMessage(TxPoWMiner.TXPOWMINER_MINEPULSE);
 			
 			//And then wait again..
 			PostTimerMessage(new TimerMessage(GeneralParams.USER_PULSE_FREQ, MAIN_PULSE));
@@ -368,15 +371,19 @@ public class Main extends MessageProcessor {
 		
 		}else if(zMessage.getMessageType().equals(MAIN_CHECKER)) {
 			
+			//Get the Current Tip
 			TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
 			
+			//Has it changed
 			if(tip.getTxPoW().getTxPoWIDData().isEqual(mOldTip)) {
 				MinimaLogger.log("Chain tip hasn't changed in 120 seconds "+tip.getTxPoW().getTxPoWID()+" "+tip.getTxPoW().getBlockNumber().toString());
 			}
 			
+			//Keep for the next round
 			mOldTip = tip.getTxPoW().getTxPoWIDData();
 			
-			PostTimerMessage(new TimerMessage(1000*120, MAIN_CHECKER));
+			//Check again..
+			PostTimerMessage(new TimerMessage(CHECKER_TIMER, MAIN_CHECKER));
 		}
 	}
 }

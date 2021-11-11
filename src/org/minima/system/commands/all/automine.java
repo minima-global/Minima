@@ -23,7 +23,7 @@ public class automine extends Command {
 	
 		if(act.equals("single")) {
 			//Send 1 mine message
-			Main.getInstance().getTxPoWMiner().PostMessage(TxPoWMiner.TXPOWMINER_EMPTYTXPOW);
+			Main.getInstance().getTxPoWMiner().PostMessage(TxPoWMiner.TXPOWMINER_MINEPULSE);
 			
 			ret.put("message", "Auto Mining Single TxPoW");
 		}else {

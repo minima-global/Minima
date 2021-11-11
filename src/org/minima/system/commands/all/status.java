@@ -139,6 +139,7 @@ public class status extends Command {
 		//Add the chain details
 		details.put("chain", tree);
 		
+		//Add detailsl about the number of TxPoW we are tracking
 		database = new JSONObject();
 		database.put("mempool", txpdb.getAllUnusedTxns().size());
 		database.put("ramdb", txpdb.getRamSize());
@@ -146,7 +147,7 @@ public class status extends Command {
 		database.put("archivedb", arch.getSize());
 		
 		//Add ther adatabse
-		details.put("database", database);
+		details.put("txpow", database);
 		
 		//Network..
 		NetworkManager netmanager = Main.getInstance().getNetworkManager();
