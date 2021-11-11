@@ -10,7 +10,7 @@ import org.minima.utils.json.JSONObject;
 public class printtree extends Command {
 
 	public printtree() {
-		super("printtree", "(depth:) (cascade:true|false) - Print a tree representation of the blockchain. Depth default 32, Cascade true.");
+		super("printtree", "(depth:) (cascade:true|false) - Print a tree representation of the blockchain. Depth default 32, Cascade false.");
 	}
 	
 	@Override
@@ -22,7 +22,7 @@ public class printtree extends Command {
 		String depthstr = getParam("depth","32");
 		int depth = Integer.parseInt(depthstr);
 		
-		boolean casc = getParam("cascade","true").equals("true");
+		boolean casc = getParam("cascade","false").equals("true");
 		
 		//Print it..
 		if(casc) {
