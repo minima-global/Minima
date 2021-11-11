@@ -170,16 +170,15 @@ public class NIOClient {
  	   		throw new IOException("Socket Closed!");
  	   	}
  	   
- 	   	//Nothing..
- 	   	if(readbytes == 0) {
- 	   		MinimaLogger.log(mUID+" handleRead : 0 bytes read.. Buffer remaining"+mBufferIn.remaining());
- 	   		return;
- 	   	}
- 	   
  	   	//Debug
  		if(mTraceON) {
- 			MinimaLogger.log("[NIOCLIENT] "+mUID+" : START handleRead called "+readbytes);
+ 			MinimaLogger.log("[NIOCLIENT] "+mUID+" : handleRead "+readbytes);
  		}
+ 		
+ 	   	//Nothing..
+ 	   	if(readbytes == 0) {
+ 	   		return;
+ 	   	}
  	   	
  	   	//Ready to read
  	   	mBufferIn.flip();
@@ -229,22 +228,12 @@ public class NIOClient {
 				}
  	   		}
  	   	}
- 	   
- 	   	//Debug
- 		if(mTraceON) {
- 			MinimaLogger.log("[NIOCLIENT] "+mUID+" : FINISH handleRead ");
- 		}
  	   	
 		//ready to read more..
 		mBufferIn.compact();
 	}
 	
 	public void handleWrite() throws IOException {
-		
-		//Debug
- 		if(mTraceON) {
- 			MinimaLogger.log("[NIOCLIENT] "+mUID+" : START handleWrite ");
- 		}
 		
 		//First fill the buffer if it has the space
 		while(mBufferOut.hasRemaining()) {
@@ -318,11 +307,6 @@ public class NIOClient {
 		
 		//Compact..
 		mBufferOut.compact();
-		
-		//Debug
- 		if(mTraceON) {
- 			MinimaLogger.log("[NIOCLIENT] "+mUID+" : FINISH handleWrite ");
- 		}
 	}
 	
 	public void disconnect() {
