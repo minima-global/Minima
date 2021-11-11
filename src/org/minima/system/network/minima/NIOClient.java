@@ -18,7 +18,10 @@ public class NIOClient {
 
 	public static boolean mTraceON = false;
 	
-	public static final int MAX_NIO_BUFFERS = 64 * 1024;
+	/**
+	 * 8K buffer for send and receive..
+	 */
+	public static final int MAX_NIO_BUFFERS = 8 * 1024;
 	
 	String mUID;
 	
@@ -74,7 +77,7 @@ public class NIOClient {
         
         mIncoming	= zIncoming;
         
-        //64k max buffer chunks for read and write
+        //Max buffer chunks for read and write
         mBufferIn 	= ByteBuffer.allocate(MAX_NIO_BUFFERS);
         mBufferOut 	= ByteBuffer.allocate(MAX_NIO_BUFFERS);
         
@@ -301,7 +304,10 @@ public class NIOClient {
 		mBufferOut.flip();
 		
 		//Write
-		mSocket.write(mBufferOut);
+		int write = mSocket.write(mBufferOut);
+		if(mTraceON) {
+			MinimaLogger.log("habdleWrite wrote : "+write+" remoining : "+mBufferOut.remaining());
+		}
 		
 		//Any left
 		synchronized (mMessages) {
