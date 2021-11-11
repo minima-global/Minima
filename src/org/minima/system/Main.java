@@ -19,6 +19,7 @@ import org.minima.system.network.NetworkManager;
 import org.minima.system.network.minima.NIOClient;
 import org.minima.system.network.minima.NIOManager;
 import org.minima.system.network.minima.NIOMessage;
+import org.minima.system.network.minima.NIOServer;
 import org.minima.system.params.GeneralParams;
 import org.minima.system.params.GlobalParams;
 import org.minima.utils.MiniFile;
@@ -229,6 +230,7 @@ public class Main extends MessageProcessor {
 		mNetwork.getSSHManager().setFullLogging(zTrace,zFilter);
 		
 		NIOClient.mTraceON = zTrace;
+		NIOServer.mTraceON = zTrace;
 	}
 	
 	private void doGenesis() {

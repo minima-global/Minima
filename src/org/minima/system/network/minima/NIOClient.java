@@ -164,6 +164,7 @@ public class NIOClient {
 	}
 	
 	public void handleRead() throws IOException {
+		
 		//read in..
  	   	int readbytes = mSocket.read(mBufferIn);
  	   	if(readbytes == -1) {
@@ -172,7 +173,7 @@ public class NIOClient {
  	   
  	   	//Debug
  		if(mTraceON) {
- 			MinimaLogger.log("[NIOCLIENT] "+mUID+" : handleRead "+readbytes);
+ 			MinimaLogger.log("[NIOCLIENT] "+mUID+" read "+readbytes);
  		}
  		
  	   	//Nothing..
@@ -295,12 +296,13 @@ public class NIOClient {
 		//Write
 		int write = mSocket.write(mBufferOut);
 		if(mTraceON) {
-			MinimaLogger.log("handleWrite wrote : "+write+" remaining : "+mBufferOut.remaining());
+			MinimaLogger.log("[NIOCLIENT] "+mUID+" wrote : "+write);
 		}
 		
 		//Any left
 		synchronized (mMessages) {
 			if(!mBufferOut.hasRemaining() && mMessages.size()==0 && mWriteData == null) {
+				//Only interested in RERAD
 				mKey.interestOps(SelectionKey.OP_READ);
 			}
 		}
