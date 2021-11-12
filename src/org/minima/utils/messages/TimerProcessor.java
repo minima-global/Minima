@@ -88,7 +88,7 @@ public class TimerProcessor implements Runnable {
 			}
 			
 			//Small sleep.. 
-			try {Thread.sleep(250);} catch (InterruptedException e) {mRunning = false;}
+			try {Thread.sleep(1000);} catch (InterruptedException e) {mRunning = false;}
 		}
 	}
 
