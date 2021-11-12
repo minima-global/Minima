@@ -68,9 +68,9 @@ public class SwapLinksFunctions {
      */
     public static List<Message> onConnectedLoadBalanceRequest(P2PState state, List<NIOClientInfo> clients) {
         List<Message> msgs = new ArrayList<>();
-        if (state.getMyMinimaAddress() != null && state.getNotAcceptingConnP2PLinks().size() > state.getMaxNumNoneP2PConnections()) {
+        if (state.isAcceptingInLinks() && state.getMyMinimaAddress() != null && state.getNotAcceptingConnP2PLinks().size() > state.getMaxNumNoneP2PConnections() && !state.getInLinks().isEmpty()) {
             InetSocketAddress nextHop = UtilFuncs.selectRandomAddress(new ArrayList<>(state.getInLinks().values()));
-            NIOClientInfo minimaClient = UtilFuncs.getClientFromInetAddressEitherDirection(nextHop, clients);
+            NIOClientInfo minimaClient = UtilFuncs.getClientFromInetAddress(nextHop, state);
             P2PWalkLinks walkLinks = new P2PWalkLinks(true, false, minimaClient.getUID());
             walkLinks.setClientWalk(true);
             msgs.add(new Message(P2PManager.P2P_SEND_MSG).addString("uid", minimaClient.getUID()).addObject("json", walkLinks.toJson()));
@@ -177,7 +177,7 @@ public class SwapLinksFunctions {
     public static List<Message> joinScaleOutLinks(P2PState state, int targetNumLinks, ArrayList<NIOClientInfo> clients) {
         List<Message> sendMsgs = new ArrayList<>();
         InetSocketAddress nextHop = UtilFuncs.selectRandomAddress(new ArrayList<>(state.getOutLinks().values()));
-        NIOClientInfo minimaClient = UtilFuncs.getClientFromInetAddressEitherDirection(nextHop, clients);
+        NIOClientInfo minimaClient = UtilFuncs.getClientFromInetAddress(nextHop, state);
         if (minimaClient != null && state.getOutLinks().size() < targetNumLinks) {
             P2PWalkLinks walkLinksMsg = new P2PWalkLinks(true, true, minimaClient.getUID());
             sendMsgs.add(new Message(P2PManager.P2P_SEND_MSG).addString("uid", minimaClient.getUID()).addObject("json", walkLinksMsg.toJson()));
@@ -189,7 +189,7 @@ public class SwapLinksFunctions {
         List<Message> sendMsgs = new ArrayList<>();
         if (state.isAcceptingInLinks() && state.getInLinks().size() < targetNumLinks) {
             InetSocketAddress nextHop = UtilFuncs.selectRandomAddress(new ArrayList<>(state.getOutLinks().values()));
-            NIOClientInfo minimaClient = UtilFuncs.getClientFromInetAddressEitherDirection(nextHop, clients);
+            NIOClientInfo minimaClient = UtilFuncs.getClientFromInetAddress(nextHop, state);
             if (minimaClient != null) {
                 P2PWalkLinks walkLinksMsg = new P2PWalkLinks(false, false, minimaClient.getUID());
                 sendMsgs.add(new Message(P2PManager.P2P_SEND_MSG).addString("uid", minimaClient.getUID()).addObject("json", walkLinksMsg.toJson()));

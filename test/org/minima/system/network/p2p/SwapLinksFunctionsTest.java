@@ -203,29 +203,5 @@ public class SwapLinksFunctionsTest extends TestCase {
         assertEquals(1, state.getKnownPeers().size());
     }
 
-    public void testOnConnectedLoadBalanceRequest() throws UnknownHostException {
-        P2PState state = QuickState.stateFullLinks(5, 100, 9001);
-        state.setMyMinimaAddress("192.168.0.1");
-        List<NIOClientInfo> clients = QuickClients.generateClientInfoList("60.0.0.", 5, 9001, "inLinkUID", true);
 
-        List<Message> msgs = SwapLinksFunctions.onConnectedLoadBalanceRequest(state, clients);
-        assertEquals(1, msgs.size());
-    }
-
-    public void testJoinScaleOutLinks() throws UnknownHostException {
-        P2PState state = QuickState.stateFullLinks(3, 100, 9001);
-        state.setMyMinimaAddress("192.168.0.1");
-        List<NIOClientInfo> clients = QuickClients.generateClientInfoList("70.0.0.", 5, 9001, "outLinkUID", true);
-        List<Message> msgs = SwapLinksFunctions.joinScaleOutLinks(state, 5, new ArrayList<>(clients));
-        assertEquals(1, msgs.size());
-
-    }
-
-    public void testRequestInLinks() throws UnknownHostException {
-        P2PState state = QuickState.stateFullLinks(3, 100, 9001);
-        state.setMyMinimaAddress("192.168.0.1");
-        List<NIOClientInfo> clients = QuickClients.generateClientInfoList("70.0.0.", 5, 9001, "outLinkUID", true);
-        List<Message> msgs = SwapLinksFunctions.requestInLinks(state, 5, new ArrayList<>(clients));
-        assertEquals(1, msgs.size());
-    }
 }

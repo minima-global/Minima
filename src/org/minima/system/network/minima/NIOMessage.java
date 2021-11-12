@@ -196,7 +196,7 @@ public class NIOMessage implements Runnable {
 				//Do we have it..
 				boolean exists = MinimaDB.getDB().getTxPoWDB().exists(txpow.getTxPoWID());
 				if(exists) {
-					MinimaLogger.log("Received TxPoW we already have : "+txpow.getTxPoWID());
+//					MinimaLogger.log("Received TxPoW we already have : "+txpow.getTxPoWID());
 					return;
 				}
 				

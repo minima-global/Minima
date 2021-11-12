@@ -1,7 +1,9 @@
 package org.minima.system.network.p2p;
 
 import java.net.InetSocketAddress;
+import java.time.Instant;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import org.minima.objects.base.MiniData;
 import org.minima.system.network.p2p.params.P2PParams;
@@ -131,6 +133,10 @@ public class P2PState {
         this.myMinimaAddress = new InetSocketAddress(host, GeneralParams.MINIMA_PORT);
     }
 
+    public void setMyMinimaAddress(InetSocketAddress myMinimaAddress) {
+        this.myMinimaAddress = myMinimaAddress;
+    }
+
     public MiniData getIpReqSecret() {
         return ipReqSecret;
     }
@@ -147,7 +153,7 @@ public class P2PState {
         this.loopDelay = loopDelay;
     }
 
-    public void setLoopDelayToParamValue(){
+    public void setLoopDelayToParamValue() {
         this.loopDelay = P2PParams.LOOP_DELAY;
     }
 
@@ -159,25 +165,27 @@ public class P2PState {
         this.notAcceptingConnP2PLinks = notAcceptingConnP2PLinks;
     }
 
-    public void setMyMinimaAddress(InetSocketAddress myMinimaAddress) {
-        this.myMinimaAddress = myMinimaAddress;
-    }
-
-    public JSONObject toJson(){
+    public JSONObject toJson() {
         JSONObject json = new JSONObject();
-        json.put("address", myMinimaAddress.toString().replace("/",""));
+        json.put("address", myMinimaAddress.toString().replace("/", ""));
+        json.put("timestamp", Instant.ofEpochMilli(System.currentTimeMillis()).toString());
         json.put("out_links", addressListToJSONArray(new ArrayList<>(outLinks.values())));
         json.put("in_links", addressListToJSONArray(new ArrayList<>(inLinks.values())));
         json.put("not_accepting_conn_links", addressListToJSONArray(new ArrayList<>(notAcceptingConnP2PLinks.values())));
         json.put("none_p2p_links", addressListToJSONArray(new ArrayList<>(noneP2PLinks.values())));
+        json.put("knownPeers", addressListToJSONArray(new ArrayList<>(knownPeers)));
         json.put("is_accepting_connections", isAcceptingInLinks);
         return json;
     }
 
-    private JSONArray addressListToJSONArray(ArrayList<InetSocketAddress> addresses){
+    private JSONArray addressListToJSONArray(ArrayList<InetSocketAddress> addresses) {
         JSONArray links = new JSONArray();
-        for (InetSocketAddress inetSocketAddress: addresses){
-            links.add(inetSocketAddress.toString().replaceAll("/",""));
+        if (!addresses.isEmpty()) {
+            for (InetSocketAddress inetSocketAddress : addresses) {
+                if (inetSocketAddress != null) {
+                    links.add(inetSocketAddress.toString().replaceAll("/", ""));
+                }
+            }
         }
         return links;
     }

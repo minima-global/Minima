@@ -35,7 +35,7 @@ public class P2PTestParams {
     /**
      * Time between P2P system assessing if it can receive inbound connections milliseconds
      */
-    public static int NODE_NOT_ACCEPTING_CHECK_DELAY = 600_000;
+    public static int NODE_NOT_ACCEPTING_CHECK_DELAY = 60_000;
 
     /**
      * Time in ms before walk link messages expire
