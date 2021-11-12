@@ -9,34 +9,33 @@ import org.minima.utils.json.JSONObject;
 public class automine extends Command {
 
 	public automine() {
-		super("automine","[type:on|off|single] - Simulate traffic");
+		super("automine","[enable:true|false|single] - Simulate traffic");
 	}
 	
 	@Override
 	public JSONObject runCommand() throws Exception {
 		JSONObject ret = getJSONReply();
 		
-		String act = (String)getParams().get("type");
-		if(act == null) {
-			throw new Exception("Must specify type on/off/single");
-		}
-	
-		if(act.equals("single")) {
+		String enable = getParam("enable","");
+		
+		if(enable.equals("single")) {
 			//Send 1 mine message
 			Main.getInstance().getTxPoWMiner().PostMessage(TxPoWMiner.TXPOWMINER_MINEPULSE);
 			
-			ret.put("message", "Auto Mining Single TxPoW");
-		}else {
+			ret.put("message", "Mining Single PULSE TxPoW");
 		
-			boolean on = true;
-			if(act.equals("off")) {
-				on = false;
-			}
+		}else if(enable.equals("true")) {
+			GeneralParams.AUTOMINE = true;
 			
-			GeneralParams.AUTOMINE = on;
+		}else if(enable.equals("false")) {
+			GeneralParams.AUTOMINE = false;
 			
-			ret.put("message", "Auto Mining "+on);
 		}
+		
+		JSONObject mine = new JSONObject();
+		mine.put("enabled", GeneralParams.AUTOMINE);
+		
+		ret.put("response", mine);
 		
 		return ret;
 	}
