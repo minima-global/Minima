@@ -83,7 +83,7 @@ public class status extends Command {
 		
 		//File Memory
 		long allfiles = MiniFile.getTotalFileSize(new File(GeneralParams.CONFIGURATION_FOLDER));
-		files.put("files", MiniFormat.formatSize(allfiles));
+		files.put("disk", MiniFormat.formatSize(allfiles));
 		
 		JSONObject database = new JSONObject();
 		database.put("txpowdb", MiniFormat.formatSize(txpdb.getSqlFile().length()));
@@ -94,7 +94,7 @@ public class status extends Command {
 		database.put("userdb", MiniFormat.formatSize(MinimaDB.getDB().getUserDBFileSize()));
 		database.put("p2pdb", MiniFormat.formatSize(MinimaDB.getDB().getP2PFileSize()));
 		
-		files.put("database", database);
+		files.put("files", database);
 		
 		details.put("memory", files);
 		
