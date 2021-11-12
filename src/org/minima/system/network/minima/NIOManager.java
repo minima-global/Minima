@@ -49,7 +49,7 @@ public class NIOManager extends MessageProcessor {
 	 */
 	public static final String NIO_CHECKLASTMSG 	= "NIO_CHECKLASTMSG";
 	long LASTREAD_CHECKER 		= 1000 * 60;
-	long MAX_LASTREAD_CHECKER 	= 1000 * 120;
+	long MAX_LASTREAD_CHECKER 	= 1000 * 60 * 3;
 	
 	/**
 	 * How long before a reconnect attempt
@@ -291,7 +291,7 @@ public class NIOManager extends MessageProcessor {
 				if(diff > MAX_LASTREAD_CHECKER) {
 					
 					//Too long a dely.. ?
-					MinimaLogger.log("No recent message (2 mins) from "+conn.getUID()+" disconnect/reconnect ..");
+					MinimaLogger.log("No recent message (3 mins) from "+conn.getUID()+" disconnect/reconnect ..");
 					
 					//Disconnect
 					disconnect(conn.getUID());
