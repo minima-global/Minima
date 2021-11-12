@@ -108,13 +108,29 @@ public class MinimaDB {
 	}
 	
 	public long getCascadeFileSize() {
+		return getDBFileSie("cascade.db");
+	}
+	
+	public long getUserDBFileSize() {
+		return getDBFileSie("userprefs.db");
+	}
+	
+	public long getTxPowTreeFileSize() {
+		return getDBFileSie("chaintree.db");
+	}
+	
+	public long getP2PFileSize() {
+		return getDBFileSie("p2p.db");
+	}
+	
+	private long getDBFileSie(String zFilename) {
 		//Get the base Database folder
 		File basedb = getBaseDBFolder();
 		
-		//The cascade
-		File casc = new File(basedb,"cascade.db");
-		if(casc.exists()) {
-			return casc.length();
+		//The File
+		File file = new File(basedb,zFilename);
+		if(file.exists()) {
+			return file.length();
 		}
 		
 		return 0;
