@@ -15,7 +15,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.minima.objects.base.MiniData;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.messages.Message;
-import org.minima.utils.messages.TimerMessage;
 
 public class NIOServer implements Runnable {
 
@@ -137,7 +136,7 @@ public class NIOServer implements Runnable {
 	        	
 	        	//Logs..
 	        	if(mTraceON) {
-	        		MinimaLogger.log("Waiting for selection..");
+	        		MinimaLogger.log("[NIOSERVER] Waiting for selection..");
 	        	}
 	        	
 	        	//Select something.. 
@@ -222,8 +221,9 @@ public class NIOServer implements Runnable {
 	                    mClients.remove(client.getUID());
 	
 	                    //Small Log..
-	                    MinimaLogger.log("NIOClient:"+client.getUID()+" "+e+" total:"+mClients.size());
-	                    
+	                    if(mTraceON) {
+	                    	MinimaLogger.log("[NIOSERVER] NIOClient:"+client.getUID()+" "+e+" total:"+mClients.size());
+	                    }
 	                    
 	                    //Tell the Network Manager
 	                    Message newclient = new Message(NIOManager.NIO_DISCONNECTED)
@@ -237,7 +237,9 @@ public class NIOServer implements Runnable {
 	        }
 	        
 	        //Notify..
-//            MinimaLogger.log("NIOServer SHUTDOWN");
+	        if(mTraceON) {
+	        	MinimaLogger.log("[NIOServer] SHUTDOWN");
+	        }
             
             //Shut down the socket..
             serversocket.close();
@@ -280,7 +282,9 @@ public class NIOServer implements Runnable {
         mClients.put(nioc.getUID(), nioc);
         
         //log..
-        MinimaLogger.log("NIO Client added : "+nioc.getUID()+" total:"+mClients.size());
+        if(mTraceON) {
+        	MinimaLogger.log("[NIOSERVER] NEW NIOClient:"+nioc.getUID()+" total:"+mClients.size());
+        }
         
         //Post about it..
         Message newclient = new Message(NIOManager.NIO_NEWCONNECTION).addObject("client", nioc);

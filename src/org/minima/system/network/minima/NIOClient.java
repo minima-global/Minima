@@ -54,6 +54,8 @@ public class NIOClient {
 	
 	long mTimeConnected = 0;
 	
+	long mLastMessageRead;
+	
 	/**
 	 * Specify extra info
 	 */
@@ -89,7 +91,8 @@ public class NIOClient {
     	
     	mNIOMAnager = Main.getInstance().getNetworkManager().getNIOManager();
     	
-    	mTimeConnected = System.currentTimeMillis();
+    	mTimeConnected 		= System.currentTimeMillis();
+    	mLastMessageRead 	= mTimeConnected; 
     }
 	
 	public JSONObject toJSON() {
@@ -135,6 +138,10 @@ public class NIOClient {
 	
 	public long getTimeConnected() {
 		return  mTimeConnected;
+	}
+	
+	public long getLastReadTime() {
+		return mLastMessageRead;
 	}
 	
 	public void sendData(MiniData zData) {
@@ -226,6 +233,9 @@ public class NIOClient {
 					
 					//New array required..
 					mReadData = null;
+					
+					//Last message we have received from this client
+					mLastMessageRead = System.currentTimeMillis();
 				}
  	   		}
  	   	}

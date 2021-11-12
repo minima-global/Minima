@@ -87,10 +87,8 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
     }
     
     public void run() {
-    	//Format the time
-    	SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss.SSS");
-
-        //Loop while still running
+    	
+    	//Loop while still running
         while(mRunning){
             //Check for valid mnessage
             Message msg = getNextMessage();
@@ -103,7 +101,7 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
                 	if(mTrace) {
                 		String tracemsg = msg.toString();
                 		if(tracemsg.contains(mTraceFilter)) {
-                			MinimaLogger.log("["+getSize()+"] "+sdf.format(new Date())+" [ "+mMainThread.getName()+" ] \t"+msg);
+                			MinimaLogger.log("["+mMainThread.getName()+"] (stack:"+getSize()+") \t"+msg);
                 		}
                 	}
                 

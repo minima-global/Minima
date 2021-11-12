@@ -43,6 +43,13 @@ public class NIOManager extends MessageProcessor {
 	public static final String NIO_INCOMINGMSG 		= "NIO_NEWMSG";
 	
 	public static final String NIO_TXPOWREQ 		= "NIO_REQTXPOW";
+
+	/**
+	 * Check every minute to see if you have had a message in the last 2 mins..
+	 */
+	public static final String NIO_CHECKLASTMSG 	= "NIO_CHECKLASTMSG";
+	long LASTREAD_CHECKER 		= 1000 * 60;
+	long MAX_LASTREAD_CHECKER 	= 1000 * 120;
 	
 	/**
 	 * How long before a reconnect attempt
@@ -136,6 +143,9 @@ public class NIOManager extends MessageProcessor {
 					}
 				}
 			}
+			
+			//Check how long since last connect for each client..
+			PostTimerMessage(new TimerMessage(LASTREAD_CHECKER, NIO_CHECKLASTMSG));
 			
 		}else if(zMessage.getMessageType().equals(NIO_SHUTDOWN)) {
 			
@@ -267,6 +277,37 @@ public class NIOManager extends MessageProcessor {
 				//Now get it..
 				sendNetworkMessage(clientid, NIOMessage.MSG_TXPOWREQ, new MiniData(txpowid));
 			}
+		
+		}else if(zMessage.getMessageType().equals(NIO_CHECKLASTMSG)) {
+			
+			//Check how long since last connect
+			long timenow = System.currentTimeMillis();
+			
+			//Cycle and see..
+			ArrayList<NIOClient> conns = mNIOServer.getAllNIOClients();
+			for(NIOClient conn : conns) {
+			
+				long diff = timenow - conn.getLastReadTime();
+				if(diff > MAX_LASTREAD_CHECKER) {
+					
+					//Too long a dely.. ?
+					MinimaLogger.log("No recent message (2 mins) from "+conn.getUID()+" disconnect/reconnect ..");
+					
+					//Disconnect
+					disconnect(conn.getUID());
+					
+					//And reconnect in 5 secs if outgoing.. incoming will reconnect anyway
+					if(!conn.isIncoming()) {
+						TimerMessage timedconnect = new TimerMessage(5000, NIO_CONNECT);
+						timedconnect.addString("host", conn.getHost());
+						timedconnect.addInteger("port", conn.getPort());
+						PostTimerMessage(timedconnect);
+					}
+				}
+			}
+			
+			//And Again..
+			PostTimerMessage(new TimerMessage(LASTREAD_CHECKER, NIO_CHECKLASTMSG));
 		}
 	}
 	
@@ -323,8 +364,6 @@ public class NIOManager extends MessageProcessor {
 		timed.addString("client", zClientID);
 		timed.addString("txpowid", zTxPoWID);
 		timed.addString("reason",zReason);
-		
-//		MinimaLogger.log("DELAYED Request : "+zTxPoWID+" "+zReason);
 		
 		Main.getInstance().getNIOManager().PostTimerMessage(timed);
 	}
