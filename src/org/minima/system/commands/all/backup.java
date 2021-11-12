@@ -90,6 +90,15 @@ public class backup extends Command {
 		gzos.close();
 		fos.close();
 		
+		//The total uncompressed size..
+		long total = 	walletfile.length()+
+						txpowdb.length()+
+						archivedb.length()+
+						cascade.length()+
+						chain.length()+
+						userdb.length()+
+						p2pdb.length();
+		
 		//Get all the individual File sizes..
 		JSONObject files = new JSONObject();
 		files.put("wallet", MiniFormat.formatSize(walletfile.length()));
@@ -103,6 +112,7 @@ public class backup extends Command {
 		//And send data
 		JSONObject resp = new JSONObject();
 		resp.put("files", files);
+		resp.put("uncompressed", MiniFormat.formatSize(total));
 		resp.put("file", backupfile.getAbsolutePath());
 		resp.put("size", MiniFormat.formatSize(backupfile.length()));
 		ret.put("backup", resp);
