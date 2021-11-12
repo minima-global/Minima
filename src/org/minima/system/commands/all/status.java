@@ -89,8 +89,8 @@ public class status extends Command {
 		database.put("txpowdb", MiniFormat.formatSize(txpdb.getSqlFile().length()));
 		database.put("archivedb", MiniFormat.formatSize(arch.getSQLFile().length()));
 		database.put("cascade", MiniFormat.formatSize(MinimaDB.getDB().getCascadeFileSize()));
-		database.put("wallet", MiniFormat.formatSize(wallet.getSQLFile().length()));
 		database.put("chaintree", MiniFormat.formatSize(MinimaDB.getDB().getTxPowTreeFileSize()));
+		database.put("wallet", MiniFormat.formatSize(wallet.getSQLFile().length()));
 		database.put("userdb", MiniFormat.formatSize(MinimaDB.getDB().getUserDBFileSize()));
 		database.put("p2pdb", MiniFormat.formatSize(MinimaDB.getDB().getP2PFileSize()));
 		
