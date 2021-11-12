@@ -79,7 +79,6 @@ public class WalkLinksFuncs {
      *
      * @param destinationAddress destination ip for the walkLinks msg
      * @param p2pWalkLinks       the walkLinks message to send on
-     * @param allClients         list of all connected clients
      * @return null if there is no client for the destination Ip
      */
     public static Message createNextHopMsg(InetSocketAddress destinationAddress, P2PWalkLinks p2pWalkLinks, P2PState state) {
@@ -134,6 +133,9 @@ public class WalkLinksFuncs {
         if (address == null){
             address = state.getNoneP2PLinks().get(uid);
         }
+        if (address == null){
+            MinimaLogger.log("No client found for: " + uid);
+        }
         return address;
     }
 
@@ -181,7 +183,6 @@ public class WalkLinksFuncs {
      *
      * @param state        the p2p system state
      * @param p2pWalkLinks the walkLinks Message that is being sent back
-     * @param allClients   all clients this node is connected too
      * @return null if there is no client for the previous or message to be sent back
      */
     public static Message onWalkLinkResponseMsg(P2PState state, P2PWalkLinks p2pWalkLinks) {

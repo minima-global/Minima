@@ -202,6 +202,7 @@ public class P2PManager extends MessageProcessor {
         } else {
             state.setLoopDelay(10_000 + (long) rand.nextInt(3_000));
         }
+        state.getKnownPeers().remove(state.getMyMinimaAddress());
 
         if (!state.isNoConnect()) {
             int numEntryNodes = 1;
@@ -216,11 +217,20 @@ public class P2PManager extends MessageProcessor {
                 } else if (state.getOutLinks().size() < numEntryNodes) {
                     InetSocketAddress connectionAddress = (InetSocketAddress) state.getKnownPeers().toArray()[rand.nextInt(state.getKnownPeers().size())];
                     P2PFunctions.checkConnect(connectionAddress.getHostString(), connectionAddress.getPort());
-                } else {
+                } else if(state.isAcceptingInLinks()){
                     sendMsgs.addAll(SwapLinksFunctions.joinScaleOutLinks(state, P2PParams.TGT_NUM_LINKS, P2PFunctions.getAllConnections()));
                     sendMsgs.addAll(SwapLinksFunctions.requestInLinks(state, P2PParams.TGT_NUM_LINKS, P2PFunctions.getAllConnections()));
                     sendMsgs.addAll(SwapLinksFunctions.onConnectedLoadBalanceRequest(state, P2PFunctions.getAllConnections()));
                 }
+
+                List<NIOClientInfo> clientInfos = P2PFunctions.getAllConnections();
+                for(NIOClientInfo client: clientInfos){
+                    if (!client.isIncoming() && !state.getOutLinks().containsKey(client.getUID())){
+                        sendMsgs.add(new Message(P2P_SEND_DISCONNECT).addString("uid", client.getUID()));
+                        state.getKnownPeers().remove(new InetSocketAddress(client.getHost(), client.getPort()));
+                    }
+                }
+
             } else {
                 MinimaLogger.log("[-] No Known peers!");
             }
