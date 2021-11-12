@@ -102,8 +102,9 @@ public class P2PManager extends MessageProcessor {
         state.getKnownPeers().addAll(peers);
         state.setAcceptingInLinks(GeneralParams.IS_ACCEPTING_IN_LINKS);
 
-        if (!GeneralParams.MINIMA_HOST.isEmpty()) {
+        if (GeneralParams.IS_HOST_SET) {
             state.setMyMinimaAddress(GeneralParams.MINIMA_HOST);
+            state.setHostSet(true);
         }
 
         state.setNoConnect(GeneralParams.NOCONNECT);

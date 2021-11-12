@@ -48,7 +48,7 @@ public class SwapLinksFunctions {
         P2PGreeting greeting = new P2PGreeting(state);
         msgs.add(new Message(P2PManager.P2P_SEND_MSG).addString("uid", uid).addObject("json", greeting.toJson()));
 
-        if (state.getMyMinimaAddress() == null) {
+        if (!state.isHostSet()) {
             JSONObject requestIp = new JSONObject();
             MiniData secret = MiniData.getRandomData(12);
             state.setIpReqSecret(secret);
@@ -167,6 +167,7 @@ public class SwapLinksFunctions {
         if (state.getIpReqSecret().isEqual(secret)) {
             String hostIP = (String) swapLinksMsg.get("res_ip");
             state.setMyMinimaAddress(hostIP);
+            state.setHostSet(true);
             state.getKnownPeers().remove(state.getMyMinimaAddress());
             MinimaLogger.log("[+] Setting My IP: " + hostIP);
         } else {
