@@ -389,6 +389,7 @@ public class Main extends MessageProcessor {
 			
 			//Check again..
 			PostTimerMessage(new TimerMessage(CHECKER_TIMER, MAIN_CHECKER));
+		
 		}
 	}
 	

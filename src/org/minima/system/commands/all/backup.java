@@ -1,0 +1,121 @@
+package org.minima.system.commands.all;
+
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.util.zip.GZIPOutputStream;
+
+import org.minima.database.MinimaDB;
+import org.minima.database.wallet.Wallet;
+import org.minima.objects.base.MiniData;
+import org.minima.system.commands.Command;
+import org.minima.system.params.GeneralParams;
+import org.minima.utils.MiniFile;
+import org.minima.utils.MiniFormat;
+import org.minima.utils.json.JSONObject;
+
+public class backup extends Command {
+
+	public backup() {
+		super("backup","(file:) - Backup the entire system. Uses a timestamped name by default");
+	}
+	
+	@Override
+	public JSONObject runCommand() throws Exception {
+		JSONObject ret = getJSONReply();
+		
+		String file = getParam("file","");
+		if(file.equals("")) {
+			file = "minima-backup-"+System.currentTimeMillis()+".bak.gz";
+		}
+		
+		//Does it exist..
+		File backupfile = new File(file);
+		if(backupfile.exists()) {
+			backupfile.delete();
+		}
+		
+		//Save the current state..
+		MinimaDB.getDB().saveState();
+		
+		///Base folder
+		File base = new File(GeneralParams.CONFIGURATION_FOLDER,"backup");
+		base.mkdirs();
+		
+		//Write the SQL Dbs
+		File walletfile = new File(base,"wallet.bak");
+		MinimaDB.getDB().getWallet().backupToFile(walletfile);
+		MiniData walletata 	= new MiniData(MiniFile.readCompleteFile(walletfile));
+		
+		File txpowdb = new File(base,"txpowdb.bak");
+		MinimaDB.getDB().getTxPoWDB().getSQLDB().backupToFile(txpowdb);
+		MiniData txpowdata	= new MiniData(MiniFile.readCompleteFile(txpowdb));
+		
+		File archivedb = new File(base,"archive.bak");
+		MinimaDB.getDB().getArchive().backupToFile(archivedb);
+		MiniData archivedata = new MiniData(MiniFile.readCompleteFile(archivedb));
+		
+		File cascade = new File(base,"cascade.bak");
+		MinimaDB.getDB().getCascade().saveDB(cascade);
+		MiniData cascadedata = new MiniData(MiniFile.readCompleteFile(cascade));
+		
+		File chain = new File(base,"chaintree.bak");
+		MinimaDB.getDB().getTxPoWTree().saveDB(chain);
+		MiniData chaindata = new MiniData(MiniFile.readCompleteFile(chain));
+		
+		File userdb = new File(base,"userdb.bak");
+		MinimaDB.getDB().getUserDB().saveDB(userdb);
+		MiniData userdata = new MiniData(MiniFile.readCompleteFile(userdb));
+		
+		File p2pdb = new File(base,"p2p.bak");
+		MinimaDB.getDB().getUserDB().saveDB(p2pdb);
+		MiniData p2pdata = new MiniData(MiniFile.readCompleteFile(p2pdb));
+		
+		//Now create the streams to save these
+		FileOutputStream fos 	= new FileOutputStream(backupfile);
+		GZIPOutputStream gzos	= new GZIPOutputStream(fos);
+		DataOutputStream dos 	= new DataOutputStream(gzos);
+				
+		//And now put ALL of those files into a single file..
+		walletata.writeDataStream(dos);
+		txpowdata.writeDataStream(dos);
+		archivedata.writeDataStream(dos);
+		cascadedata.writeDataStream(dos);
+		chaindata.writeDataStream(dos);
+		userdata.writeDataStream(dos);
+		p2pdata.writeDataStream(dos);
+		
+		//All done..
+		dos.close();
+		gzos.close();
+		fos.close();
+		
+		//Get all the individual File sizes..
+		JSONObject files = new JSONObject();
+		files.put("wallet", MiniFormat.formatSize(walletfile.length()));
+		files.put("txpowdb", MiniFormat.formatSize(txpowdb.length()));
+		files.put("archive", MiniFormat.formatSize(archivedb.length()));
+		files.put("cascade", MiniFormat.formatSize(cascade.length()));
+		files.put("chain", MiniFormat.formatSize(chain.length()));
+		files.put("user", MiniFormat.formatSize(userdb.length()));
+		files.put("p2p", MiniFormat.formatSize(p2pdb.length()));
+		
+		//And send data
+		JSONObject resp = new JSONObject();
+		resp.put("files", files);
+		resp.put("file", backupfile.getAbsolutePath());
+		resp.put("size", MiniFormat.formatSize(backupfile.length()));
+		ret.put("backup", resp);
+		
+		//And now clean up..
+		MiniFile.deleteFileOrFolder(GeneralParams.CONFIGURATION_FOLDER, base);
+				
+		return ret;
+	}
+
+	@Override
+	public Command getFunction() {
+		return new backup();
+	}
+
+}

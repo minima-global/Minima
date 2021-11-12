@@ -74,6 +74,26 @@ public abstract class SqlDB {
 		}
 	}
 	
+	public void backupToFile(File zBackupFile) throws SQLException {
+		
+		//Delete file if exists..
+		if(zBackupFile.exists()) {
+			zBackupFile.delete();
+		}
+		
+		//One last statement
+		Statement stmt = mSQLCOnnection.createStatement();
+	
+		//Create the backup Script
+		String backup = String.format("SCRIPT TO '%s'", zBackupFile.getAbsolutePath());
+		
+		//Shut down.. this saves and closes all the data
+		stmt.executeQuery(backup);
+		
+		//That's it..
+		stmt.close();
+	}
+	
 	/**
 	 * Perform the Create SQL
 	 */
