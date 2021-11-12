@@ -3,9 +3,6 @@
  */
 package org.minima.utils.messages;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
 import org.minima.utils.MinimaLogger;
 
 /**

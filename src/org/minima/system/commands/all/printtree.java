@@ -1,10 +1,7 @@
 package org.minima.system.commands.all;
 
-import java.math.BigDecimal;
-
 import org.minima.database.MinimaDB;
 import org.minima.system.commands.Command;
-import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
 
 public class printtree extends Command {

@@ -6,7 +6,6 @@ import java.io.FileOutputStream;
 import java.util.zip.GZIPOutputStream;
 
 import org.minima.database.MinimaDB;
-import org.minima.database.wallet.Wallet;
 import org.minima.objects.base.MiniData;
 import org.minima.system.commands.Command;
 import org.minima.system.params.GeneralParams;
