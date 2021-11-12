@@ -48,6 +48,12 @@ public class status extends Command {
 		ArchiveManager arch = MinimaDB.getDB().getArchive(); 
 		Wallet wallet 		= MinimaDB.getDB().getWallet();
 		
+		//Do we haver any blocks..
+		if(txptree.getTip() == null) {
+			throw new Exception("NO Blocks yet..");
+		}
+				
+		
 		JSONObject details = new JSONObject();
 		details.put("version", GlobalParams.MINIMA_VERSION);
 		

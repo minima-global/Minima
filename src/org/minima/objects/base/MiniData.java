@@ -13,6 +13,7 @@ import java.security.SecureRandom;
 import java.util.Arrays;
 
 import org.minima.utils.BaseConverter;
+import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 
@@ -24,7 +25,10 @@ public class MiniData implements Streamable {
 	
 	public static int MINIMA_MAX_HASH_LENGTH 		= 64;
 	
-	public static int MINIMA_MAX_MINIDATA_LENGTH 	= 1024 * 1024;
+	/**
+	 * 256 MB Max MiniData size
+	 */
+	public static int MINIMA_MAX_MINIDATA_LENGTH 	= 1024 * 1024 * 256;
 	
 	public static final MiniData ZERO_TXPOWID = new MiniData("0x00");
 	
@@ -241,14 +245,15 @@ public class MiniData implements Streamable {
 		
 		//Check against maximum allowed
 		if(len > MINIMA_MAX_MINIDATA_LENGTH) {
-			throw new IOException("Read Error : MiniData Length larger than maximum allowed "+len);
+			throw new IOException("Read Error : MiniData Length larger than maximum allowed (256 MB) "+MiniFormat.formatSize(len));
 		}
 		
 		if(zSize != -1) {
 			if(len != zSize) {
-				throw new IOException("Read Error : MiniData Length not correct as specified "+zSize);
+				throw new IOException("Read Error : MiniData length not correct as specified "+zSize);
 			}
 		}
+		
 		mData = new byte[len];
 		zIn.readFully(mData);
 	}

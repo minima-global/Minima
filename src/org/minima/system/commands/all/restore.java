@@ -34,7 +34,7 @@ public class restore extends Command {
 		//Does it exist..
 		File restorefile = new File(file);
 		if(!restorefile.exists()) {
-			throw new Exception("Restore file doesbn't exist : "+restorefile.getAbsolutePath());
+			throw new Exception("Restore file doesn't exist : "+restorefile.getAbsolutePath());
 		}
 		
 		///Base folder
