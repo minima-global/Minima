@@ -101,9 +101,9 @@ public class P2PManager extends MessageProcessor {
         List<InetSocketAddress> peers = p2pdb.getPeersList();
         state.getKnownPeers().addAll(peers);
         state.setAcceptingInLinks(GeneralParams.IS_ACCEPTING_IN_LINKS);
+        state.setMyMinimaAddress(GeneralParams.MINIMA_HOST);
 
         if (GeneralParams.IS_HOST_SET) {
-            state.setMyMinimaAddress(GeneralParams.MINIMA_HOST);
             state.setHostSet(true);
         }
 
