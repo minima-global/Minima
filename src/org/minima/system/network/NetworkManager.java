@@ -83,13 +83,16 @@ public class NetworkManager {
 	
 	public void calculateHostIP() {
 		
-		//Has it been specified at the commandline..?
-		if(!GeneralParams.MINIMA_HOST.equals("")) {
+		//Has it been specified at the command line..?
+		if(GeneralParams.IS_HOST_SET) {
 			return;
 		}
 		
 		//Cycle through all the network interfaces 
 		try {
+			//Start easy
+			GeneralParams.MINIMA_HOST = "127.0.0.1";
+			
 			boolean found = false;
 		    Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
 	        while (!found && interfaces.hasMoreElements()) {
@@ -107,9 +110,9 @@ public class NetworkManager {
 	                //Only get the IPv4
 	                if(!ip.contains(":")) {
 						// This breaks P2P
-						// GeneralParams.MINIMA_HOST = ip;
+						GeneralParams.MINIMA_HOST = ip;
 	                	
-	                	//If you're on WiFi..
+	                	//If you're on WiFi..this is the one
 	                	if(name.startsWith("wl")) {
 	                		found = true;
 	                		break;

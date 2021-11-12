@@ -34,6 +34,11 @@ public class GeneralParams {
 	public static String MINIMA_HOST = "";
 	
 	/**
+	 * Is the HOST set from command line
+	 */
+	public static boolean IS_HOST_SET = false;
+	
+	/**
 	 * The main Minima port
 	 */
 	public static int MINIMA_PORT = 9001;

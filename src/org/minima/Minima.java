@@ -82,6 +82,7 @@ public class Minima {
 				
 				}else if(arg.equals("-host")) {
 					GeneralParams.MINIMA_HOST = zArgs[counter++];
+					GeneralParams.IS_HOST_SET = true;
 				
 				}else if(arg.equals("-rpc")) {
 					GeneralParams.RPC_PORT = Integer.parseInt(zArgs[counter++]);
