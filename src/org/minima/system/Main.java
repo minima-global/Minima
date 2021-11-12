@@ -107,6 +107,11 @@ public class Main extends MessageProcessor {
 	boolean mShuttingdown = false;
 	
 	/**
+	 * Are we restoring..
+	 */
+	boolean mRestoring = false;
+	
+	/**
 	 * Timer delay for CleanDB messages - every 30 mins
 	 */
 	long CLEANDB_TIMER	= 1000 * 60 * 30;
@@ -203,6 +208,31 @@ public class Main extends MessageProcessor {
 		}		
 	}
 	
+	public void restoreReady() {
+		//we are about to restore..
+		mRestoring = true;
+		
+		//Shut down the network
+		mNetwork.shutdownNetwork();
+				
+		//Stop the Miner
+		mTxPoWMiner.stopMessageProcessor();
+		
+		//Stop the main TxPoW processor
+		mTxPoWProcessor.stopMessageProcessor();
+		while(!mTxPoWProcessor.isShutdownComplete()) {
+			try {Thread.sleep(50);} catch (InterruptedException e) {}
+		}
+		
+		//No More timer Messages
+		TimerProcessor.stopTimerProcessor();
+		
+		//Wait for the networking to finish
+		while(!mNetwork.isShutDownComplete()) {
+			try {Thread.sleep(50);} catch (InterruptedException e) {}
+		}		
+	}
+	
 	public NetworkManager getNetworkManager() {
 		return mNetwork;
 	}
@@ -260,7 +290,7 @@ public class Main extends MessageProcessor {
 	@Override
 	protected void processMessage(Message zMessage) throws Exception {
 		//Are we shutting down
-		if(mShuttingdown) {
+		if(mShuttingdown || mRestoring) {
 			return;
 		}
 		

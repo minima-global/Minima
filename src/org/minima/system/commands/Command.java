@@ -19,6 +19,7 @@ import org.minima.system.commands.all.newaddress;
 import org.minima.system.commands.all.printmmr;
 import org.minima.system.commands.all.printtree;
 import org.minima.system.commands.all.quit;
+import org.minima.system.commands.all.restore;
 import org.minima.system.commands.all.rpc;
 import org.minima.system.commands.all.send;
 import org.minima.system.commands.all.sshtunnel;
@@ -38,7 +39,7 @@ public abstract class Command {
 			new message(), new trace(), new help(), new printtree(), new automine(), new printmmr(), new rpc(),
 			new send(), new balance(), new tokencreate(), new newaddress(), new debugflag(),
 			new incentivecash(), new sshtunnel(), new webhooks(),
-			new backup()};
+			new backup(), new restore()};
 	
 	String mName;
 	String mHelp;

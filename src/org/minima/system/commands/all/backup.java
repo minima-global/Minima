@@ -39,35 +39,35 @@ public class backup extends Command {
 		MinimaDB.getDB().saveState();
 		
 		///Base folder
-		File base = new File(GeneralParams.CONFIGURATION_FOLDER,"backup");
-		base.mkdirs();
+		File backupfolder = new File(GeneralParams.CONFIGURATION_FOLDER,"backup");
+		backupfolder.mkdirs();
 		
 		//Write the SQL Dbs
-		File walletfile = new File(base,"wallet.bak");
+		File walletfile = new File(backupfolder,"wallet.sql");
 		MinimaDB.getDB().getWallet().backupToFile(walletfile);
 		MiniData walletata 	= new MiniData(MiniFile.readCompleteFile(walletfile));
 		
-		File txpowdb = new File(base,"txpowdb.bak");
+		File txpowdb = new File(backupfolder,"txpowdb.sql");
 		MinimaDB.getDB().getTxPoWDB().getSQLDB().backupToFile(txpowdb);
 		MiniData txpowdata	= new MiniData(MiniFile.readCompleteFile(txpowdb));
 		
-		File archivedb = new File(base,"archive.bak");
+		File archivedb = new File(backupfolder,"archive.sql");
 		MinimaDB.getDB().getArchive().backupToFile(archivedb);
 		MiniData archivedata = new MiniData(MiniFile.readCompleteFile(archivedb));
 		
-		File cascade = new File(base,"cascade.bak");
+		File cascade = new File(backupfolder,"cascade.bak");
 		MinimaDB.getDB().getCascade().saveDB(cascade);
 		MiniData cascadedata = new MiniData(MiniFile.readCompleteFile(cascade));
 		
-		File chain = new File(base,"chaintree.bak");
+		File chain = new File(backupfolder,"chaintree.bak");
 		MinimaDB.getDB().getTxPoWTree().saveDB(chain);
 		MiniData chaindata = new MiniData(MiniFile.readCompleteFile(chain));
 		
-		File userdb = new File(base,"userdb.bak");
+		File userdb = new File(backupfolder,"userdb.bak");
 		MinimaDB.getDB().getUserDB().saveDB(userdb);
 		MiniData userdata = new MiniData(MiniFile.readCompleteFile(userdb));
 		
-		File p2pdb = new File(base,"p2p.bak");
+		File p2pdb = new File(backupfolder,"p2p.bak");
 		MinimaDB.getDB().getUserDB().saveDB(p2pdb);
 		MiniData p2pdata = new MiniData(MiniFile.readCompleteFile(p2pdb));
 		
@@ -111,6 +111,7 @@ public class backup extends Command {
 		
 		//And send data
 		JSONObject resp = new JSONObject();
+		resp.put("block", MinimaDB.getDB().getTxPoWTree().getTip().getTxPoW().getBlockNumber());
 		resp.put("files", files);
 		resp.put("uncompressed", MiniFormat.formatSize(total));
 		resp.put("file", backupfile.getAbsolutePath());
@@ -118,7 +119,7 @@ public class backup extends Command {
 		ret.put("backup", resp);
 		
 		//And now clean up..
-		MiniFile.deleteFileOrFolder(GeneralParams.CONFIGURATION_FOLDER, base);
+		MiniFile.deleteFileOrFolder(GeneralParams.CONFIGURATION_FOLDER, backupfolder);
 				
 		return ret;
 	}

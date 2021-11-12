@@ -94,6 +94,23 @@ public abstract class SqlDB {
 		stmt.close();
 	}
 	
+	public void restoreFromFile(File zRestoreFile) throws SQLException {
+		//One last statement
+		Statement stmt = mSQLCOnnection.createStatement();
+	
+		//First wipe everything..
+		stmt.execute("DROP ALL OBJECTS");
+		
+		//Create the backup Script
+		String restore = String.format("RUNSCRIPT FROM '%s'", zRestoreFile.getAbsolutePath());
+		
+		//Shut down.. this saves and closes all the data
+		stmt.execute(restore);
+		
+		//That's it..
+		stmt.close();
+	}
+	
 	/**
 	 * Perform the Create SQL
 	 */
