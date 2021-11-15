@@ -121,11 +121,13 @@ public class NIOMessage implements Runnable {
 				}
 				
 				//Get the welcome message..
-				String welcome = (String) greet.getExtraData().get("welcome");
-				if(welcome != null) {
-					//Tell the NIOServer
-					Main.getInstance().getNIOManager().getNIOServer().setWelcome(mClientUID, welcome);
-				}
+				Main.getInstance().getNIOManager().getNIOServer().setWelcome(mClientUID, "Version : "+greet.getVersion());
+				
+//				String welcome = (String) greet.getExtraData().get("welcome");
+//				if(welcome != null) {
+//					//Tell the NIOServer
+//					Main.getInstance().getNIOManager().getNIOServer().setWelcome(mClientUID, welcome);
+//				}
 				
 				//Create an IBD response to that Greeting..
 				IBD ibd = new IBD();
