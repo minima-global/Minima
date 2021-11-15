@@ -154,11 +154,13 @@ public class NIOClient {
 	
 	public void sendData(MiniData zData) {
 		synchronized (mMessages) {
-			mMessages.add(zData);
-		
-			//And now say we want to write..
-			mKey.interestOps(SelectionKey.OP_READ | SelectionKey.OP_WRITE);
-			mKey.selector().wakeup();
+			if(mKey.isValid()) {
+				mMessages.add(zData);
+			
+				//And now say we want to write..
+				mKey.interestOps(SelectionKey.OP_READ | SelectionKey.OP_WRITE);
+				mKey.selector().wakeup();
+			}
 		}
 	}
 	
@@ -337,8 +339,10 @@ public class NIOClient {
 		//Any left
 		synchronized (mMessages) {
 			if(!mBufferOut.hasRemaining() && mMessages.size()==0 && mWriteData == null) {
-				//Only interested in RERAD
-				mKey.interestOps(SelectionKey.OP_READ);
+				if(mKey.isValid()) {
+					//Only interested in RERAD
+					mKey.interestOps(SelectionKey.OP_READ);
+				}
 			}
 		}
 		
