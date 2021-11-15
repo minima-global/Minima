@@ -29,6 +29,11 @@ public class P2PFunctions {
 	public static final String P2P_DISCONNECTED 	= "P2P_DISCONNECTED";
 	
 	/**
+	 * After many attempts this connection is not working..
+	 */
+	public static final String P2P_NOCONNECT 	= "P2P_NOCONNECT";
+	
+	/**
 	 * P2P message sent from a peer
 	 */
 	public static final String P2P_MESSAGE 			= "P2P_MESSAGE";

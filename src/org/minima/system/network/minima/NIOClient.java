@@ -55,7 +55,6 @@ public class NIOClient {
 	
 	private ArrayList<MiniData> mMessages;
 	
-	
 	NIOManager mNIOMAnager;
 	
 	String mWelcomeMessage = "";
@@ -63,6 +62,8 @@ public class NIOClient {
 	long mTimeConnected = 0;
 	
 	long mLastMessageRead;
+	
+	int mConnectAttempts = 1;
 	
 	/**
 	 * Specify extra info
@@ -150,6 +151,18 @@ public class NIOClient {
 	
 	public long getLastReadTime() {
 		return mLastMessageRead;
+	}
+	
+	public int getConnectAttempts() {
+		return mConnectAttempts;
+	}
+	
+	public void incrementConnectAttempts() {
+		mConnectAttempts++;
+	}
+	
+	public void setConnectAttempts(int zConnectAttempts) {
+		mConnectAttempts = zConnectAttempts;
 	}
 	
 	public void sendData(MiniData zData) {
