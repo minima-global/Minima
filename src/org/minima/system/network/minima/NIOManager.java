@@ -40,10 +40,17 @@ public class NIOManager extends MessageProcessor {
 	public static final String NIO_DISCONNECT 		= "NIO_DISCONNECT";
 	public static final String NIO_DISCONNECTED		= "NIO_DISCONNECTED";
 	
+	public static final String NIO_RECONNECT 		= "NIO_RECONNECT";
+	
 	public static final String NIO_INCOMINGMSG 		= "NIO_NEWMSG";
 	
 	public static final String NIO_TXPOWREQ 		= "NIO_REQTXPOW";
 
+	/**
+	 * How many attempts to reconnect
+	 */
+	public int RECONNECT_ATTEMPTS = 10;
+	
 	/**
 	 * Check every minute to see if you have had a message in the last 2 mins..
 	 */
@@ -184,6 +191,50 @@ public class NIOManager extends MessageProcessor {
 			
 			//Connect in separate thread..
 			connectAttempt(nc);
+		
+		}else if(zMessage.getMessageType().equals(NIO_RECONNECT)) {
+			//Get the client..
+			NIOClient nc = (NIOClient) zMessage.getObject("client");
+			
+			//Increase the connect attempts
+			nc.incrementConnectAttempts();
+			
+			//Do we try to reconnect
+			boolean reconnect = true;
+			
+			//Do we attempt a reconnect..
+			if(nc.getConnectAttempts() > RECONNECT_ATTEMPTS) {
+				//Do we have ANY connections at all..
+				ArrayList<NIOClient> conns = mNIOServer.getAllNIOClients();
+				if(conns.size()>0) {
+					//We have some connections.. so this connection has no excuse..
+					mConnectingClients.remove(nc.getUID());
+					
+					//No reconnect
+					reconnect = false;
+					
+					//Tell the P2P..
+					Message newconn = new Message(P2PFunctions.P2P_NOCONNECT);
+					newconn.addObject("client", nc);
+					newconn.addString("uid", nc.getUID());
+					Main.getInstance().getNetworkManager().getP2PManager().PostMessage(newconn);
+					
+					MinimaLogger.log(nc.getUID()+" Connection Failed no reconnect");
+					
+				}else {
+					
+					//reset connect attempts..
+					nc.setConnectAttempts(1);
+				}
+			}
+			
+			//Try and reconnect
+			if(reconnect) {
+				//Try again..
+				TimerMessage tmsg = new TimerMessage(RECONNECT_TIMER, NIO_CONNECTATTEMPT);
+				tmsg.addObject("client", nc);
+				NIOManager.this.PostTimerMessage(tmsg);
+			}
 			
 		}else if(zMessage.getMessageType().equals(NIO_DISCONNECT)) {
 			//Get the UID
@@ -334,12 +385,12 @@ public class NIOManager extends MessageProcessor {
 					
 				}catch(Exception exc) {
 					//Try again in a minute..
-					MinimaLogger.log("Error connecting to "+zNIOClient.getHost()+":"+zNIOClient.getPort()+" "+exc.toString()+" ..will retry");
+					MinimaLogger.log(zNIOClient.getUID()+" Error connecting attempt "+zNIOClient.getConnectAttempts()+" to "+zNIOClient.getHost()+":"+zNIOClient.getPort()+" "+exc.toString());
 					
-					//Try again..
-					TimerMessage tmsg = new TimerMessage(RECONNECT_TIMER, NIO_CONNECTATTEMPT);
-					tmsg.addObject("client", zNIOClient);
-					NIOManager.this.PostTimerMessage(tmsg);
+					//Do we try to reconnect
+					Message reconn = new Message(NIO_RECONNECT);
+					reconn.addObject("client", zNIOClient);
+					NIOManager.this.PostMessage(reconn);
 				}
 			}
 		};
@@ -381,6 +432,21 @@ public class NIOManager extends MessageProcessor {
 			throw new IOException("Cannot sendNetworkMessage with a NULL Object");
 		}
 		
+		//Create the network message
+		MiniData niodata = createNIOMessage(zType, zObject);
+		
+		//For ALL or for ONE
+		if(!zUID.equals("")) {
+			//Send it..
+			Main.getInstance().getNIOManager().getNIOServer().sendMessage(zUID,niodata);
+		}else {
+			//Send it..
+			Main.getInstance().getNIOManager().getNIOServer().sendMessageAll(niodata);
+		}
+	}
+	
+	public static MiniData createNIOMessage(MiniByte zType, Streamable zObject) throws IOException {
+		
 		//Create a stream to write to
 		ByteArrayOutputStream baos 	= new ByteArrayOutputStream();
 		DataOutputStream dos 		= new DataOutputStream(baos);
@@ -404,13 +470,6 @@ public class NIOManager extends MessageProcessor {
 		//request it..
 		MiniData data = new MiniData(bb);
 		
-		//For ALL or for ONE
-		if(!zUID.equals("")) {
-			//Send it..
-			Main.getInstance().getNIOManager().getNIOServer().sendMessage(zUID,data);
-		}else {
-			//Send it..
-			Main.getInstance().getNIOManager().getNIOServer().sendMessageAll(data);
-		}
+		return data;
 	}
 }

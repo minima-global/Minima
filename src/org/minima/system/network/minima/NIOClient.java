@@ -55,7 +55,6 @@ public class NIOClient {
 	
 	private ArrayList<MiniData> mMessages;
 	
-	
 	NIOManager mNIOMAnager;
 	
 	String mWelcomeMessage = "";
@@ -63,6 +62,8 @@ public class NIOClient {
 	long mTimeConnected = 0;
 	
 	long mLastMessageRead;
+	
+	int mConnectAttempts = 1;
 	
 	/**
 	 * Specify extra info
@@ -152,13 +153,27 @@ public class NIOClient {
 		return mLastMessageRead;
 	}
 	
+	public int getConnectAttempts() {
+		return mConnectAttempts;
+	}
+	
+	public void incrementConnectAttempts() {
+		mConnectAttempts++;
+	}
+	
+	public void setConnectAttempts(int zConnectAttempts) {
+		mConnectAttempts = zConnectAttempts;
+	}
+	
 	public void sendData(MiniData zData) {
 		synchronized (mMessages) {
-			mMessages.add(zData);
-		
-			//And now say we want to write..
-			mKey.interestOps(SelectionKey.OP_READ | SelectionKey.OP_WRITE);
-			mKey.selector().wakeup();
+			if(mKey.isValid()) {
+				mMessages.add(zData);
+			
+				//And now say we want to write..
+				mKey.interestOps(SelectionKey.OP_READ | SelectionKey.OP_WRITE);
+				mKey.selector().wakeup();
+			}
 		}
 	}
 	
@@ -337,8 +352,10 @@ public class NIOClient {
 		//Any left
 		synchronized (mMessages) {
 			if(!mBufferOut.hasRemaining() && mMessages.size()==0 && mWriteData == null) {
-				//Only interested in RERAD
-				mKey.interestOps(SelectionKey.OP_READ);
+				if(mKey.isValid()) {
+					//Only interested in RERAD
+					mKey.interestOps(SelectionKey.OP_READ);
+				}
 			}
 		}
 		
