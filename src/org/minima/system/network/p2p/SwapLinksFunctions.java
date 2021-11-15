@@ -39,21 +39,29 @@ public class SwapLinksFunctions {
         List<Message> msgs = new ArrayList<>();
         //Get the details
 
+        boolean sendMessages = true;
         if (incoming) {
+            InetSocketAddress incomingAddress = new InetSocketAddress(info.getHost(), 0);
+            if (state.getNoneP2PLinks().containsValue(incomingAddress)){
+                msgs.add(new Message(P2PManager.P2P_SEND_DISCONNECT).addString("uid", uid));
+                sendMessages = false;
+            }
             state.getNoneP2PLinks().put(uid, new InetSocketAddress(info.getHost(), 0));
         } else {
             state.getNoneP2PLinks().put(uid, new InetSocketAddress(info.getHost(), info.getPort()));
         }
 
-        P2PGreeting greeting = new P2PGreeting(state);
-        msgs.add(new Message(P2PManager.P2P_SEND_MSG).addString("uid", uid).addObject("json", greeting.toJson()));
+        if (sendMessages) {
+            P2PGreeting greeting = new P2PGreeting(state);
+            msgs.add(new Message(P2PManager.P2P_SEND_MSG).addString("uid", uid).addObject("json", greeting.toJson()));
 
-        if (!state.isHostSet()) {
-            JSONObject requestIp = new JSONObject();
-            MiniData secret = MiniData.getRandomData(12);
-            state.setIpReqSecret(secret);
-            requestIp.put("req_ip", secret.toString());
-            msgs.add(new Message(P2PManager.P2P_SEND_MSG).addString("uid", uid).addObject("json", requestIp));
+            if (!state.isHostSet()) {
+                JSONObject requestIp = new JSONObject();
+                MiniData secret = MiniData.getRandomData(12);
+                state.setIpReqSecret(secret);
+                requestIp.put("req_ip", secret.toString());
+                msgs.add(new Message(P2PManager.P2P_SEND_MSG).addString("uid", uid).addObject("json", requestIp));
+            }
         }
         return msgs;
     }
