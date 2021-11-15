@@ -91,6 +91,10 @@ public class Greeting implements Streamable {
 		return mTopBlock;
 	}
 	
+	public MiniString getVersion() {
+		return mVersion;
+	}
+	
 	public MiniNumber getRootBlock() {
 		if(mTopBlock.isEqual(MiniNumber.MINUSONE)) {
 			return MiniNumber.MINUSONE;

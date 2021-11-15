@@ -110,6 +110,16 @@ public class NIOMessage implements Runnable {
 				//We have received a greeting message
 				Greeting greet = Greeting.ReadFromStream(dis);
 				
+				//What version..
+				if(!greet.getVersion().toString().startsWith("0.100")) {
+					MinimaLogger.log("Greeting with Incompatible Version! "+greet.getVersion().toString());
+					
+					//Disconnect..
+					Main.getInstance().getNIOManager().disconnect(mClientUID);
+					
+					return;
+				}
+				
 				//Get the welcome message..
 				String welcome = (String) greet.getExtraData().get("welcome");
 				if(welcome != null) {
