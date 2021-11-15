@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.StringTokenizer;
 
 import org.minima.system.commands.all.automine;
+import org.minima.system.commands.all.backup;
 import org.minima.system.commands.all.balance;
 import org.minima.system.commands.all.coins;
 import org.minima.system.commands.all.connect;
@@ -18,6 +19,7 @@ import org.minima.system.commands.all.newaddress;
 import org.minima.system.commands.all.printmmr;
 import org.minima.system.commands.all.printtree;
 import org.minima.system.commands.all.quit;
+import org.minima.system.commands.all.restore;
 import org.minima.system.commands.all.rpc;
 import org.minima.system.commands.all.send;
 import org.minima.system.commands.all.sshtunnel;
@@ -36,7 +38,8 @@ public abstract class Command {
 		{   new quit(), new status(), new coins(), new txpow(), new connect(), new disconnect(), new network(),
 			new message(), new trace(), new help(), new printtree(), new automine(), new printmmr(), new rpc(),
 			new send(), new balance(), new tokencreate(), new newaddress(), new debugflag(),
-			new incentivecash(), new sshtunnel(), new webhooks()};
+			new incentivecash(), new sshtunnel(), new webhooks(),
+			new backup(), new restore()};
 	
 	String mName;
 	String mHelp;

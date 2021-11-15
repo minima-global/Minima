@@ -16,12 +16,20 @@ import org.minima.utils.messages.Message;
 
 public class NIOClient {
 
+	/**
+	 * Show debug information
+	 */
 	public static boolean mTraceON = false;
 	
 	/**
-	 * 8K buffer for send and receive..
+	 * 8K buffer for send and receive.. 32KB
 	 */
 	public static final int MAX_NIO_BUFFERS = 32 * 1024;
+
+	/**
+	 * The Maximum size of a single message 32MB
+	 */
+	public static final int MAX_MESSAGE 	= 32 * 1024 * 1024;
 	
 	String mUID;
 	
@@ -201,6 +209,12 @@ public class NIOClient {
  	   				mReadCurrentLimit 		= mBufferIn.getInt();
  	   				mReadCurrentPosition 	= 0;
  	   				
+ 	   				//Check MAX size..
+ 	   				if(mReadCurrentLimit > MAX_MESSAGE) {
+ 	   					//Message too big..
+ 	   					throw new IOException("Message too big for read! "+mReadCurrentLimit);
+ 	   				}
+ 	   				
  	   				mReadData = new byte[mReadCurrentLimit];
  	   			}else {
  	   				//Not enough for the size..
@@ -255,6 +269,17 @@ public class NIOClient {
 				//Get the next packet
 				if(isNextData()) {
 					mWriteData 		= getNextData().getBytes();
+					
+					//Check MAX
+					if(mWriteData.length > MAX_MESSAGE) {
+						//Error Message too Big!
+						MinimaLogger.log("ERROR : Trying to write a message that is too big! "+mWriteData.length);
+					
+						//Hmm.. don't write it..
+						mWriteData = null;
+						break;
+					}
+					
 					mWritePosition 	= 0;
 					mWriteLimit 	= mWriteData.length; 
 					mWriteStart		= false;

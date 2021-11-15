@@ -199,6 +199,14 @@ public class MinimaDB {
 	}
 	
 	public void saveAllDB() {
+		//First the SQL
+		saveSQL();
+		
+		//And the rest
+		saveState();
+	}
+	
+	public void saveSQL() {
 		//We need read lock 
 		readLock(true);
 		
@@ -211,16 +219,8 @@ public class MinimaDB {
 			mArchive.saveDB();
 			mWallet.saveDB();
 			
-			//JsonDBs
-			mUserDB.saveDB(new File(basedb,"userprefs.db"));
-			mP2PDB.saveDB(new File(basedb,"p2p.db"));
-			
-			//Custom
-			mCacscade.saveDB(new File(basedb,"cascade.db"));
-			mTxPoWTree.saveDB(new File(basedb,"chaintree.db"));
-			
 		}catch(Exception exc) {
-			MinimaLogger.log("ERROR saveAllDB "+exc);
+			MinimaLogger.log("ERROR saveSQL "+exc);
 		}
 		
 		//Release the krakken

@@ -69,8 +69,8 @@ public class Main extends MessageProcessor {
 	public static final String MAIN_CHECKER 	= "MAIN_CHECKER";
 	MiniData mOldTip 							= MiniData.ZERO_TXPOWID;
 	
-	//Check every 120 seconds..
-	long CHECKER_TIMER							= 1000 * 120;
+	//Check every 180 seconds..
+	long CHECKER_TIMER							= 1000 * 180;
 	
 	/**
 	 * Notify Users..
@@ -105,6 +105,11 @@ public class Main extends MessageProcessor {
 	 * Are we shutting down..
 	 */
 	boolean mShuttingdown = false;
+	
+	/**
+	 * Are we restoring..
+	 */
+	boolean mRestoring = false;
 	
 	/**
 	 * Timer delay for CleanDB messages - every 30 mins
@@ -203,6 +208,31 @@ public class Main extends MessageProcessor {
 		}		
 	}
 	
+	public void restoreReady() {
+		//we are about to restore..
+		mRestoring = true;
+		
+		//Shut down the network
+		mNetwork.shutdownNetwork();
+				
+		//Stop the Miner
+		mTxPoWMiner.stopMessageProcessor();
+		
+		//Stop the main TxPoW processor
+		mTxPoWProcessor.stopMessageProcessor();
+		while(!mTxPoWProcessor.isShutdownComplete()) {
+			try {Thread.sleep(50);} catch (InterruptedException e) {}
+		}
+		
+		//No More timer Messages
+		TimerProcessor.stopTimerProcessor();
+		
+		//Wait for the networking to finish
+		while(!mNetwork.isShutDownComplete()) {
+			try {Thread.sleep(50);} catch (InterruptedException e) {}
+		}		
+	}
+	
 	public NetworkManager getNetworkManager() {
 		return mNetwork;
 	}
@@ -260,7 +290,7 @@ public class Main extends MessageProcessor {
 	@Override
 	protected void processMessage(Message zMessage) throws Exception {
 		//Are we shutting down
-		if(mShuttingdown) {
+		if(mShuttingdown || mRestoring) {
 			return;
 		}
 		
@@ -381,7 +411,7 @@ public class Main extends MessageProcessor {
 			
 			//Has it changed
 			if(tip.getTxPoW().getTxPoWIDData().isEqual(mOldTip)) {
-				MinimaLogger.log("Chain tip hasn't changed in 120 seconds "+tip.getTxPoW().getTxPoWID()+" "+tip.getTxPoW().getBlockNumber().toString());
+				MinimaLogger.log("Warning : Chain tip hasn't changed in 180 seconds "+tip.getTxPoW().getTxPoWID()+" "+tip.getTxPoW().getBlockNumber().toString());
 			}
 			
 			//Keep for the next round
@@ -389,6 +419,7 @@ public class Main extends MessageProcessor {
 			
 			//Check again..
 			PostTimerMessage(new TimerMessage(CHECKER_TIMER, MAIN_CHECKER));
+		
 		}
 	}
 	

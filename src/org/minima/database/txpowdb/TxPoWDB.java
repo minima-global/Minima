@@ -145,6 +145,10 @@ public class TxPoWDB {
 		return mSqlDB.getSQLFile();
 	}
 	
+	public TxPoWSqlDB getSQLDB() {
+		return mSqlDB;
+	}
+	
 	/**
 	 * Remove OLD TxPoWs from the DB - no longer needed..
 	 * 

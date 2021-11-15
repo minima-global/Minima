@@ -23,7 +23,6 @@ import org.minima.system.params.GlobalParams;
 import org.minima.utils.Crypto;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MiniFormat;
-import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
 
 public class status extends Command {
@@ -47,6 +46,12 @@ public class status extends Command {
 		Cascade	cascade		= MinimaDB.getDB().getCascade();
 		ArchiveManager arch = MinimaDB.getDB().getArchive(); 
 		Wallet wallet 		= MinimaDB.getDB().getWallet();
+		
+		//Do we haver any blocks..
+		if(txptree.getTip() == null) {
+			throw new Exception("NO Blocks yet..");
+		}
+				
 		
 		JSONObject details = new JSONObject();
 		details.put("version", GlobalParams.MINIMA_VERSION);

@@ -110,6 +110,16 @@ public class NIOMessage implements Runnable {
 				//We have received a greeting message
 				Greeting greet = Greeting.ReadFromStream(dis);
 				
+				//What version..
+				if(!greet.getVersion().toString().startsWith("0.100")) {
+					MinimaLogger.log("Greeting with Incompatible Version! "+greet.getVersion().toString());
+					
+					//Disconnect..
+					Main.getInstance().getNIOManager().disconnect(mClientUID);
+					
+					return;
+				}
+				
 				//Get the welcome message..
 				String welcome = (String) greet.getExtraData().get("welcome");
 				if(welcome != null) {
@@ -127,6 +137,9 @@ public class NIOMessage implements Runnable {
 			}else if(type.isEqual(MSG_IBD)) {
 				//IBD received..
 				IBD ibd = IBD.ReadFromStream(dis);
+				
+				//A small message..
+				MinimaLogger.log("IBD Received size:"+MiniFormat.formatSize(data.length)+" blocks:"+ibd.getTxBlocks().size());
 				
 				//Do some checking!
 //				//Sort the Sync blocks - low to high - they should be in the correct order but just in case..

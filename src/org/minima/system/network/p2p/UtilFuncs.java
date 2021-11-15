@@ -1,13 +1,11 @@
 package org.minima.system.network.p2p;
 
 import java.net.InetSocketAddress;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
 import org.minima.system.network.minima.NIOClientInfo;
-import org.minima.utils.MinimaLogger;
 
 public class UtilFuncs {
 

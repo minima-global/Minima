@@ -188,13 +188,15 @@ public class NIOServer implements Runnable {
 	            	SelectionKey key = (SelectionKey) iterator.next();
 	                iterator.remove();
 	
+	                // Get a reference to one of our custom objects
+	                NIOClient client = (NIOClient) key.attachment();
+	                
 	                // skip any invalid / cancelled keys
 	                if (!key.isValid()) {
+	                	MinimaLogger.log("Invalid KEY! from "+client.getUID());
 	                    continue;
 	                }
 	                
-	                // Get a reference to one of our custom objects
-	                NIOClient client = (NIOClient) key.attachment();
 	                try {
 	                	if (key.isAcceptable()) {
 	                		// Accept the socket's connection
