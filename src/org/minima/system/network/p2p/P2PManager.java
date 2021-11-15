@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Random;
 
 import org.minima.database.MinimaDB;
+import org.minima.system.network.minima.NIOClient;
 import org.minima.system.network.minima.NIOClientInfo;
 import org.minima.system.network.p2p.messages.P2PDoSwap;
 import org.minima.system.network.p2p.messages.P2PGreeting;
@@ -287,6 +288,10 @@ public class P2PManager extends MessageProcessor {
         } else if (zMessage.isMessageType(P2P_LOOP)) {
             sendMsgs.addAll(processLoop(state));
             PostTimerMessage(new TimerMessage(state.getLoopDelay(), P2P_LOOP));
+        } else if (zMessage.isMessageType(P2PFunctions.P2P_NOCONNECT)) {
+            NIOClient client  = (NIOClient) zMessage.getObject("client");
+            InetSocketAddress conn = new InetSocketAddress(client.getHost(), client.getPort());
+            state.getKnownPeers().remove(conn);
         } else if (zMessage.isMessageType(P2P_ASSESS_CONNECTIVITY)) {
             sendMsgs.addAll(assessConnectivity(state));
             PostTimerMessage(new TimerMessage(P2PParams.NODE_NOT_ACCEPTING_CHECK_DELAY, P2P_ASSESS_CONNECTIVITY));
