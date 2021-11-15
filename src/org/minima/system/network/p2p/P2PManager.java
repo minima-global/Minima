@@ -256,6 +256,9 @@ public class P2PManager extends MessageProcessor {
         ret.put("numNotAcceptingConnP2PLinks", state.getNotAcceptingConnP2PLinks().size());
         ret.put("numNoneP2PLinks", state.getNoneP2PLinks().size());
         ret.put("numKnownPeers", state.getKnownPeers().size());
+        if (state.getMyMinimaAddress() != null) {
+            ret.put("p2p_state", state.toJson());
+        }
         return ret;
     }
 
