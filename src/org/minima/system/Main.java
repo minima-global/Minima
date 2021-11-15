@@ -77,6 +77,7 @@ public class Main extends MessageProcessor {
 	 */
 	public static final String MAIN_NEWBLOCK 	= "MAIN_NEWBLOCK";
 	public static final String MAIN_BALANCE 	= "MAIN_BALANCE";
+	public static final String MAIN_MINING 		= "MAIN_MINING";
 	
 	/**
 	 * Incentive Cash User ping..
@@ -299,25 +300,28 @@ public class Main extends MessageProcessor {
 			//Get it..
 			TxPoW txpow = (TxPoW) zMessage.getObject("txpow");
 			
+			//Post a message..
+			Message mining = new Message(MAIN_MINING);
+			mining.addBoolean("starting", false);
+			mining.addObject("txpow", txpow);
+			Main.getInstance().PostMessage(mining);
+			
 			//We have mined a TxPoW.. send it out to the network..
 			if(!txpow.isTransaction() && !txpow.isBlock()) {
 				//A PULSE..forward as proof
 				return;
 			}
 			
-//			//Did we find a block 
-//			if(txpow.isBlock()) {
-//				MinimaLogger.log("You found a block! "+txpow.getTxPoWID() );
-//				
-//				//Check it..
-//				TxPoWChecker.checkTxPoW(MinimaDB.getDB().getTxPoWTree().getTip().getMMR(), txpow);
-//			}
-			
-			//New TxPoW!.. add to database and send on to the Processor
-			mTxPoWProcessor.postProcessTxPoW(txpow);
-			
-			//FOR NOW.. ( Should just send the full TxPoW - we just mined it so noone has it)
-			NIOManager.sendNetworkMessageAll(NIOMessage.MSG_TXPOWID, txpow.getTxPoWIDData());
+			//Create an NIO Message - so the message goes through the same checks as any other message
+			MiniData niodata = NIOManager.createNIOMessage(NIOMessage.MSG_TXPOW, txpow);
+
+			//And send
+			Message newniomsg = new Message(NIOManager.NIO_INCOMINGMSG);
+			newniomsg.addString("uid", "0x00");
+			newniomsg.addObject("data", niodata);
+
+			//Post to the NIOManager - which will check it and forward if correct
+			getNetworkManager().getNIOManager().PostMessage(newniomsg);
 		
 		}else if(zMessage.getMessageType().equals(MAIN_AUTOMINE)) {
 			
@@ -400,6 +404,26 @@ public class Main extends MessageProcessor {
 			//Notify The Web Hook Listeners
 			JSONObject event = new JSONObject();
 			event.put("event", "NEWBALANCE");
+			
+			//And Post it..
+			PostNotifyEvent(event);
+				
+		}else if(zMessage.getMessageType().equals(MAIN_MINING)) {
+			
+			//Get the TxPoW
+			TxPoW txpow = (TxPoW) zMessage.getObject("txpow");
+					
+			//Are we starting or stopping..
+			boolean starting = zMessage.getBoolean("starting");
+			
+			//The tip of the TxPoWTree has changed - we have a new block..
+			postMinimaListener(zMessage);
+			
+			//Notify The Web Hook Listeners
+			JSONObject event = new JSONObject();
+			event.put("event", "MINING");
+			event.put("txpow", txpow.toJSON());
+			event.put("starting", starting);
 			
 			//And Post it..
 			PostNotifyEvent(event);

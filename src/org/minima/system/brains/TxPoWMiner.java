@@ -44,6 +44,12 @@ public class TxPoWMiner extends MessageProcessor {
 			//And now start hashing.. 
 			MiniData hash   = null;
 			
+			//Post a message..
+			Message mining = new Message(Main.MAIN_MINING);
+			mining.addBoolean("starting", true);
+			mining.addObject("txpow", txpow);
+			Main.getInstance().PostMessage(mining);
+			
 			//Cycle until done..
 			while(isRunning()) {
 				
@@ -61,8 +67,6 @@ public class TxPoWMiner extends MessageProcessor {
 				//Increment the nonce..
 				nonce = nonce.add(MiniNumber.MINI_UNIT);
 			}
-
-//			MinimaLogger.log("MINED NONCE : "+nonce.toString());
 			
 			//Calculate TxPoWID
 			txpow.calculateTXPOWID();
