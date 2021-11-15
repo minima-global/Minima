@@ -138,6 +138,9 @@ public class NIOMessage implements Runnable {
 				//IBD received..
 				IBD ibd = IBD.ReadFromStream(dis);
 				
+				//A small message..
+				MinimaLogger.log("IBD Received size:"+MiniFormat.formatSize(data.length)+" blocks:"+ibd.getTxBlocks().size());
+				
 				//Do some checking!
 //				//Sort the Sync blocks - low to high - they should be in the correct order but just in case..
 //				Collections.sort(ibd.getSyncBlocks(), new Comparator<TxBlock>() {
