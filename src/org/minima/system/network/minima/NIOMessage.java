@@ -118,6 +118,8 @@ public class NIOMessage implements Runnable {
 					Main.getInstance().getNIOManager().disconnect(mClientUID);
 					
 					return;
+				}else {
+					MinimaLogger.log(mClientUID+" Greeting received from "+greet.getVersion().toString());
 				}
 				
 				//Get the welcome message..
