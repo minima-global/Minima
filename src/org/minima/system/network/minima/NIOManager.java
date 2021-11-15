@@ -49,7 +49,7 @@ public class NIOManager extends MessageProcessor {
 	/**
 	 * How many attempts to reconnect
 	 */
-	public int RECONNECT_ATTEMPTS = 10;
+	public int RECONNECT_ATTEMPTS = 3;
 	
 	/**
 	 * Check every minute to see if you have had a message in the last 2 mins..
