@@ -1,6 +1,7 @@
 package org.minima.system.brains;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 import org.minima.database.mmr.MMR;
 import org.minima.database.mmr.MMRData;
@@ -27,9 +28,29 @@ public class TxPoWChecker {
 	public static boolean checkTxPoWBlock(MMR zParentMMR, TxPoW zTxPoW, ArrayList<TxPoW> zTransactions) {
 		
 		try {
+			//Check all the input coinid are Unique - use the MMR proofs! CoinID could be Eltoo
+			ArrayList<String> allcoinid = new ArrayList<>();
+			if(zTxPoW.isTransaction()) {
+				ArrayList<CoinProof> proofs = zTxPoW.getWitness().getAllCoinProofs();
+				for(CoinProof proof : proofs) {
+					allcoinid.add(proof.getCoin().getCoinID().to0xString());
+				}
+			}
+			for(TxPoW txpow : zTransactions) {
+				if(txpow.isTransaction()) {
+					ArrayList<CoinProof> proofs = txpow.getWitness().getAllCoinProofs();
+					for(CoinProof proof : proofs) {
+						allcoinid.add(proof.getCoin().getCoinID().to0xString());
+					}
+				}
+			}
 			
-			//Check all the input coinid are Unique
-			//..
+			//Convert to unique Set and check equal size
+			HashSet<String> coinset = new HashSet<>(allcoinid);
+			if(coinset.size() != allcoinid.size()) {
+				MinimaLogger.log("Invalid TxPoW Block with non unique CoinID "+zTxPoW.getTxPoWID());
+				return false;
+			}
 			
 			//First check this
 			if(zTxPoW.isTransaction()) {
@@ -105,6 +126,34 @@ public class TxPoWChecker {
 			//Get the Coin Proof
 			CoinProof cproof = mmrproofs.get(i);
 			
+			//Check the CoinProof and Coin in the Transaction Match
+			if(input.getCoinID().isEqual(Coin.COINID_ELTOO)) {
+				
+				//Check is a floating input.. set when the coin was created!
+				if(!cproof.getCoin().isFloating()) {
+					MinimaLogger.log("ELTOO input "+i+" isn't floating "+zTxPoW.getTxPoWID());
+					return false;
+				}
+				
+				//Floating Input check the amount, address, and tokenid match the MMR
+				boolean amount 	= input.getAmount().isEqual(cproof.getCoin().getAmount());
+				boolean address = input.getAddress().isEqual(cproof.getCoin().getAddress());
+				boolean token 	= input.getTokenID().isEqual(cproof.getCoin().getTokenID());
+			
+				if(!amount || !address || ! token) {
+					MinimaLogger.log("ELTOO input doesn't match proof "+zTxPoW.getTxPoWID());
+					return false;
+				}
+				
+			}else {
+				
+				//Check the same CoinID
+				if(!input.getCoinID().isEqual(cproof.getCoin().getCoinID())) {
+					MinimaLogger.log("Coin input "+i+" doesn't match proof "+zTxPoW.getTxPoWID());
+					return false;
+				}
+			}
+			
 			//Check the Coin Proof
 			if(cproof.getCoin().getSpent()) {
 				MinimaLogger.log("Trying to spend spent coin..");
@@ -135,6 +184,9 @@ public class TxPoWChecker {
 			
 			//Is there a token script..
 			//..TODO
+			
+			//Is there a Burn Transaction
+			//.. TODO
 		}
 		
 		//All good
