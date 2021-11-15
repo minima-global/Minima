@@ -111,7 +111,8 @@ public class NIOMessage implements Runnable {
 				Greeting greet = Greeting.ReadFromStream(dis);
 				
 				//What version..
-				if(!greet.getVersion().toString().startsWith("TN-P2P.100")) {
+				//if(!greet.getVersion().toString().startsWith("TN-P2P.100")) {
+				if(!greet.getVersion().toString().startsWith("0.100")) {
 					MinimaLogger.log("Greeting with Incompatible Version! "+greet.getVersion().toString());
 					
 					//Disconnect..
@@ -121,7 +122,7 @@ public class NIOMessage implements Runnable {
 				}
 				
 				//Get the welcome message..
-				Main.getInstance().getNIOManager().getNIOServer().setWelcome(mClientUID, "Version : "+greet.getVersion());
+				Main.getInstance().getNIOManager().getNIOServer().setWelcome(mClientUID, "Minima v"+greet.getVersion());
 //				String welcome = (String) greet.getExtraData().get("welcome");
 //				if(welcome != null) {
 //					//Tell the NIOServer
