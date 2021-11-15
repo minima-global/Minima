@@ -239,14 +239,16 @@ public class NIOMessage implements Runnable {
 						exists = MinimaDB.getDB().getTxPoWDB().exists(txn.to0xString());
 						if(!exists) {
 							//request it.. with a slight delay - as may be in process stack
-							NIOManager.sendDelayedTxPoWReq(mClientUID, txn.to0xString(), txpow.getTxPoWID()+" missing txn");
+							NIOManager.sendNetworkMessage(mClientUID, MSG_TXPOWREQ, txpow.getTxPoWIDData());
+//							NIOManager.sendDelayedTxPoWReq(mClientUID, txn.to0xString(), txpow.getTxPoWID()+" missing txn");
 						}
 					}
 					
 					//Get the parent if we don't have it..
 					exists = MinimaDB.getDB().getTxPoWDB().exists(txpow.getParentID().to0xString());
 					if(!exists) {
-						NIOManager.sendDelayedTxPoWReq(mClientUID, txpow.getParentID().to0xString(), txpow.getTxPoWID()+" missing parent");
+						NIOManager.sendNetworkMessage(mClientUID, MSG_TXPOWREQ, txpow.getParentID());
+//						NIOManager.sendDelayedTxPoWReq(mClientUID, txpow.getParentID().to0xString(), txpow.getTxPoWID()+" missing parent");
 					}
 					
 				}else {

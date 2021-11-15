@@ -16,6 +16,8 @@ public class NIOClientInfo {
 	 */
 	boolean 	mConnected;
 
+	String mWelcome = "no welcome set..";
+	
 	String mUID;
 
 	String mHost;
@@ -34,6 +36,7 @@ public class NIOClientInfo {
 
 	public NIOClientInfo(NIOClient zNIOClient, boolean zConnected) {
 		mNIOClient 	= zNIOClient;
+		mWelcome	= zNIOClient.getWelcomeMessage();
 		mConnected	= zConnected;
 		mHost = zNIOClient.getHost();
 		mPort = zNIOClient.getPort();
@@ -74,6 +77,7 @@ public class NIOClientInfo {
 	public JSONObject toJSON() {
 		JSONObject ret = new JSONObject();
 		
+		ret.put("welcome", mWelcome);
 		ret.put("uid", getUID());
 		ret.put("incoming", isIncoming());
 		ret.put("host", getHost());

@@ -193,7 +193,7 @@ public class NIOServer implements Runnable {
 	                
 	                // skip any invalid / cancelled keys
 	                if (!key.isValid()) {
-	                	MinimaLogger.log("Invalid KEY! from "+client.getUID());
+	                	MinimaLogger.log("[NIOSERVER] Invalid NIO key! from "+client.getUID());
 	                    continue;
 	                }
 	                

@@ -141,6 +141,10 @@ public class NIOClient {
 		return mPort;
 	}
 	
+	public String getWelcomeMessage() {
+		return mWelcomeMessage;
+	}
+	
 	public void setWelcomeMessage(String zWelcome) {
 		mWelcomeMessage = zWelcome;
 	}
