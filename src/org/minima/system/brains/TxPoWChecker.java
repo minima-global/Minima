@@ -10,6 +10,7 @@ import org.minima.kissvm.Contract;
 import org.minima.objects.Coin;
 import org.minima.objects.CoinProof;
 import org.minima.objects.ScriptProof;
+import org.minima.objects.Token;
 import org.minima.objects.Transaction;
 import org.minima.objects.TxBlock;
 import org.minima.objects.TxPoW;
@@ -125,6 +126,16 @@ public class TxPoWChecker {
 			
 			//Get the Coin Proof
 			CoinProof cproof = mmrproofs.get(i);
+			
+			//Check tokenid is correct
+			if(!cproof.getCoin().getTokenID().isEqual(Token.TOKENID_MINIMA)) {
+				
+				//Check the token is correct
+				if(!cproof.getCoin().getTokenID().isEqual(cproof.getCoin().getToken().getTokenID())) {
+					MinimaLogger.log("TokenID in input "+i+" doesn't match token "+zTxPoW.getTxPoWID());
+					return false;
+				}
+			}
 			
 			//Check the CoinProof and Coin in the Transaction Match
 			if(input.getCoinID().isEqual(Coin.COINID_ELTOO)) {
