@@ -97,6 +97,7 @@ public class NIOServer implements Runnable {
 		NIOClient client =  mClients.get(zUID);
 		if(client != null) {
 			client.setWelcomeMessage(zWelcome);
+			client.setValidGreeting(true);
 		}
 	}
 	

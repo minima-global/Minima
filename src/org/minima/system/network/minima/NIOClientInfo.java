@@ -26,6 +26,8 @@ public class NIOClientInfo {
 
 	boolean isIncoming;
 
+	boolean mValidGreeting;
+	
 	public NIOClientInfo(String uid, String zHost, int zPort, boolean zIsIncoming){
 		mConnected = true;
 		mUID = uid;
@@ -37,6 +39,7 @@ public class NIOClientInfo {
 	public NIOClientInfo(NIOClient zNIOClient, boolean zConnected) {
 		mNIOClient 	= zNIOClient;
 		mWelcome	= zNIOClient.getWelcomeMessage();
+		mValidGreeting = zNIOClient.isValidGreeting();
 		mConnected	= zConnected;
 		mHost = zNIOClient.getHost();
 		mPort = zNIOClient.getPort();
@@ -83,6 +86,7 @@ public class NIOClientInfo {
 		ret.put("host", getHost());
 		ret.put("port", getPort());
 		ret.put("isconnected", isConnected());
+		ret.put("valid", mValidGreeting);
 		if (mNIOClient != null) {
 			ret.put("connected", new Date(getTimeConnected()).toString());
 		}

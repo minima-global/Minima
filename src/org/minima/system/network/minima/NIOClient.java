@@ -65,6 +65,8 @@ public class NIOClient {
 	
 	int mConnectAttempts = 1;
 	
+	boolean mValidGreeting = false;
+	
 	/**
 	 * Specify extra info
 	 */
@@ -113,6 +115,7 @@ public class NIOClient {
 		ret.put("host", mHost);
 		ret.put("port", mPort);
 		ret.put("connected", new Date(mTimeConnected).toString());
+		ret.put("valid", mValidGreeting);
 		
 		return ret;
 	}
@@ -139,6 +142,14 @@ public class NIOClient {
 	
 	public int getPort() {
 		return mPort;
+	}
+	
+	public boolean isValidGreeting() {
+		return mValidGreeting;
+	}
+	
+	public void setValidGreeting(boolean zValid) {
+		mValidGreeting = zValid;
 	}
 	
 	public String getWelcomeMessage() {
