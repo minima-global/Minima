@@ -1,9 +1,7 @@
 package org.minima.system.network.p2p;
 
 import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -119,8 +117,14 @@ public class SwapLinksFunctions {
                 .collect(Collectors.toCollection(ArrayList::new));
 
         state.getKnownPeers().addAll(newPeers);
-//        if(state.getKnownPeers().contains(state.getMyMinimaAddress()))
-        // TODO: Limit Set Size
+
+        List<InetSocketAddress> peers = new ArrayList<>(state.getKnownPeers());
+        Collections.shuffle(peers);
+
+        // Added upto 20 peers into the list + outlinks
+        int numLinks = state.getOutLinks().size();
+        state.setKnownPeers(new HashSet<>(peers.subList(0, Math.min(peers.size(), 20 - numLinks))));
+        state.getKnownPeers().addAll(state.getOutLinks().values());
     }
 
     public static boolean processGreeting(P2PState state, P2PGreeting greeting, String uid, NIOClientInfo client, boolean noconnect) {
