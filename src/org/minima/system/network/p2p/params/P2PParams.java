@@ -7,7 +7,7 @@ import java.util.List;
 public class P2PParams {
 
     // P2P Version number (Major - breaking changes. Minor - none breaking changes)
-    public static String VERSION = "dev-1.0";
+    public static String VERSION = "1.0";
 
     /**
      * Desired number of in link and out links to maintain
