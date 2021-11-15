@@ -69,8 +69,8 @@ public class Main extends MessageProcessor {
 	public static final String MAIN_CHECKER 	= "MAIN_CHECKER";
 	MiniData mOldTip 							= MiniData.ZERO_TXPOWID;
 	
-	//Check every 120 seconds..
-	long CHECKER_TIMER							= 1000 * 120;
+	//Check every 180 seconds..
+	long CHECKER_TIMER							= 1000 * 180;
 	
 	/**
 	 * Notify Users..
@@ -411,7 +411,7 @@ public class Main extends MessageProcessor {
 			
 			//Has it changed
 			if(tip.getTxPoW().getTxPoWIDData().isEqual(mOldTip)) {
-				MinimaLogger.log("Chain tip hasn't changed in 120 seconds "+tip.getTxPoW().getTxPoWID()+" "+tip.getTxPoW().getBlockNumber().toString());
+				MinimaLogger.log("Warning : Chain tip hasn't changed in 180 seconds "+tip.getTxPoW().getTxPoWID()+" "+tip.getTxPoW().getBlockNumber().toString());
 			}
 			
 			//Keep for the next round
