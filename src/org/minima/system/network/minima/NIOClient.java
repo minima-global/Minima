@@ -136,8 +136,16 @@ public class NIOClient {
 		return mIncoming;
 	}
 	
+	public void overrideHost(String zHost) {
+		mHost = zHost;
+	}
+	
 	public String getHost() {
 		return mHost;
+	}
+	
+	public void setPort(int zPort) {
+		mPort = zPort;
 	}
 	
 	public int getPort() {

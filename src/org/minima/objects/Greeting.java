@@ -10,6 +10,7 @@ import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
+import org.minima.system.params.GeneralParams;
 import org.minima.system.params.GlobalParams;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
@@ -51,6 +52,13 @@ public class Greeting implements Streamable {
 		try {
 			//Add some extra info
 			getExtraData().put("welcome", MinimaDB.getDB().getUserDB().getWelcome());
+			
+			//What is my Host / Port
+			if(GeneralParams.IS_HOST_SET) {
+				getExtraData().put("host",GeneralParams.MINIMA_HOST);
+			}
+			getExtraData().put("port",""+GeneralParams.MINIMA_PORT);
+			
 			//getExtraData().put("peers", "98.98.45.56:9787,198.198.145.156:9001,");
 			//getExtraData().put("maxima", "98.12.232.156:8009,");
 			
@@ -81,6 +89,10 @@ public class Greeting implements Streamable {
 	
 	public JSONObject getExtraData() {
 		return mExtraData;
+	}
+	
+	public String getExtraDataValue(String zKey) {
+		return (String) mExtraData.get(zKey);
 	}
 	
 	public void setTopBlock(MiniNumber zTopBlock) {

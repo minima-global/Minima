@@ -13,6 +13,7 @@ import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.minima.objects.base.MiniData;
+import org.minima.system.params.GeneralParams;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.messages.Message;
 
@@ -79,6 +80,10 @@ public class NIOServer implements Runnable {
 		mSelector.wakeup();
 	}
 	
+	public NIOClient getClient(String zUID) {
+		return mClients.get(zUID);
+	}
+	
 	public void sendMessage(String zUID, MiniData zData) {
 		NIOClient client =  mClients.get(zUID);
 		if(client != null) {
@@ -93,13 +98,13 @@ public class NIOServer implements Runnable {
 		}
 	}
 	
-	public void setWelcome(String zUID, String zWelcome) {
-		NIOClient client =  mClients.get(zUID);
-		if(client != null) {
-			client.setWelcomeMessage(zWelcome);
-			client.setValidGreeting(true);
-		}
-	}
+//	public void setWelcome(String zUID, String zWelcome) {
+//		NIOClient client =  mClients.get(zUID);
+//		if(client != null) {
+//			client.setWelcomeMessage(zWelcome);
+//			client.setValidGreeting(true);
+//		}
+//	}
 	
 	@Override
 	public void run() {
@@ -198,8 +203,13 @@ public class NIOServer implements Runnable {
 	                    continue;
 	                }
 	                
+	                long timenow = System.currentTimeMillis();
+	                int action = 0;
+	                
 	                try {
 	                	if (key.isAcceptable()) {
+	                		action = 1;
+	                		
 	                		// Accept the socket's connection
 	                        SocketChannel socket = serversocket.accept();
 	                		
@@ -208,11 +218,18 @@ public class NIOServer implements Runnable {
 	                    }
 	
 	                    if (key.isReadable()) {
+	                    	action = 2;
 	                    	client.handleRead();
 	                    }
 	                    
 	                    if (key.isWritable()) {
+	                    	action = 3;
 	                    	client.handleWrite();
+	                    }
+	                    
+	                    long timediff = System.currentTimeMillis() - timenow;
+	                    if(timediff > 1000){
+	                    	MinimaLogger.log("[NIOSERVER] "+client.getUID()+" long key handler "+action+" "+timediff);
 	                    }
 	                    
 	                } catch (Exception e) {
@@ -270,7 +287,7 @@ public class NIOServer implements Runnable {
         InetSocketAddress local  = (InetSocketAddress )zSocketChannel.getLocalAddress();
         int port = 0;
         if(zIncoming) {
-        	port = local.getPort();
+        	port = -1;
         }else {
         	port = remote.getPort();
         }

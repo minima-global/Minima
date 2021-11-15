@@ -107,6 +107,13 @@ public class NIOMessage implements Runnable {
 			
 			//Now find the right message
 			if(type.isEqual(MSG_GREETING)) {
+				//Get the client.. unless an internal message
+				NIOClient nioclient = Main.getInstance().getNIOManager().getNIOServer().getClient(mClientUID);
+				if(nioclient == null) {
+					MinimaLogger.log(mClientUID+" Error null client on Greeting NIOMessage..");
+					return;
+				}
+				
 				//We have received a greeting message
 				Greeting greet = Greeting.ReadFromStream(dis);
 				
@@ -121,8 +128,19 @@ public class NIOMessage implements Runnable {
 					return;
 				}
 				
+				//Get the Host Port..
+				if(greet.getExtraData().containsKey("host")) {
+					nioclient.overrideHost(greet.getExtraDataValue("host"));
+				}
+				
+				if(greet.getExtraData().containsKey("port")) {
+					nioclient.setPort(Integer.parseInt(greet.getExtraDataValue("port")));
+				}
+				
 				//Get the welcome message..
-				Main.getInstance().getNIOManager().getNIOServer().setWelcome(mClientUID, "Minima v"+greet.getVersion());
+				nioclient.setWelcomeMessage("Minima v"+greet.getVersion());
+				nioclient.setValidGreeting(true);
+				
 //				String welcome = (String) greet.getExtraData().get("welcome");
 //				if(welcome != null) {
 //					//Tell the NIOServer
