@@ -2,6 +2,7 @@ package org.minima.system.params;
 
 public class GeneralParams {
 
+	public static boolean IS_MOBILE = false;
 	public static boolean IS_ACCEPTING_IN_LINKS = true;
 	/**
 	 * Is this a private network - don;t connect to any users..

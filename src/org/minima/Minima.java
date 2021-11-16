@@ -137,6 +137,8 @@ public class Minima {
 					GeneralParams.PRIVATE_NETWORK 	= true;
 					TestParams.setTestParams();
 				
+				}else if(arg.equals("-mobile")) {
+					GeneralParams.IS_MOBILE = true;
 				}else if(arg.equals("-help")) {
 					
 					System.out.println("Minima Help");
@@ -145,6 +147,7 @@ public class Minima {
 					System.out.println(" -rpc        : Specify the RPC port");
 					System.out.println(" -conf       : Specify the configuration folder");
 					System.out.println(" -daemon     : Run in daemon mode with no stdin input ( services )");
+					System.out.println(" -mobile     : Sets this device to a mobile device - used for metrics only");
 					System.out.println(" -nop2p      : Disable the automatic P2P system");
 					System.out.println(" -isclient   : Tells the P2P System that this node can't accept incoming connections");
 					System.out.println(" -noconnect  : Stops the P2P system from connecting to other nodes until it's been connected too");

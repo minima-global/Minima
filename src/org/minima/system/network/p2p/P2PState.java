@@ -176,6 +176,7 @@ public class P2PState {
         json.put("address", myMinimaAddress.toString().replace("/", ""));
         json.put("timestamp", Instant.ofEpochMilli(System.currentTimeMillis()).toString());
         json.put("minima_version", GlobalParams.MINIMA_VERSION);
+        json.put("is_mobile", GeneralParams.IS_MOBILE);
         json.put("out_links", addressListToJSONArray(new ArrayList<>(outLinks.values())));
         json.put("in_links", addressListToJSONArray(new ArrayList<>(inLinks.values())));
         json.put("not_accepting_conn_links", addressListToJSONArray(new ArrayList<>(notAcceptingConnP2PLinks.values())));
