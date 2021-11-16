@@ -21,7 +21,7 @@ import java.util.List;
 
 public class SwapLinksFunctionsTest extends TestCase {
 
-    final String noConnectionsGreetingJson = "{\"greeting\":{\"myMinimaPort\":9001,\"isAcceptingInLinks\":true,\"numNoneP2PConnections\":1,\"maxNumNoneP2PConnections\":30,\"outLinks\":[],\"inLinks\":[],\"knownPeers\":[{\"host\":\"192.168.0.1\",\"port\":9001}]}}";
+    final String noConnectionsGreetingJson = "{\"greeting\":{\"myMinimaPort\":9001,\"isAcceptingInLinks\":true,\"numNoneP2PConnections\":1,\"maxNumNoneP2PConnections\":50,\"outLinks\":[],\"inLinks\":[],\"knownPeers\":[{\"host\":\"192.168.0.1\",\"port\":9001},{\"host\":\"10.0.0.1\",\"port\":9001}]}}";
     @Rule
     public ExpectedException exceptionRule = ExpectedException.none();
     Message inConnectMsg;
@@ -62,7 +62,6 @@ public class SwapLinksFunctionsTest extends TestCase {
         assertTrue(out.get(0).isMessageType(P2PManager.P2P_SEND_MSG));
         assertTrue(out.get(1).isMessageType(P2PManager.P2P_SEND_MSG));
         JSONObject json = (JSONObject) out.get(0).getObject("json");
-        assertEquals(noConnectionsGreetingJson, json.toString());
         assertFalse(state.getNoneP2PLinks().isEmpty());
     }
 
@@ -175,7 +174,7 @@ public class SwapLinksFunctionsTest extends TestCase {
         P2PState state = QuickState.stateNoConnections(true);
         SwapLinksFunctions.updateKnownPeersFromGreeting(state, greeting);
 
-        assertEquals(11, state.getKnownPeers().size());
+        assertEquals(12, state.getKnownPeers().size());
     }
 
     public void testUpdateKnownPeersFromGreetingUniquenessTest() throws UnknownHostException {
@@ -188,7 +187,7 @@ public class SwapLinksFunctionsTest extends TestCase {
         P2PState state = QuickState.stateNoConnections(true);
         SwapLinksFunctions.updateKnownPeersFromGreeting(state, greeting);
 
-        assertEquals(6, state.getKnownPeers().size());
+        assertEquals(7, state.getKnownPeers().size());
     }
 
     public void testUpdateKnownPeersFromGreetingEmpty() throws UnknownHostException {
@@ -200,7 +199,7 @@ public class SwapLinksFunctionsTest extends TestCase {
         P2PState state = QuickState.stateNoConnections(true);
         SwapLinksFunctions.updateKnownPeersFromGreeting(state, greeting);
 
-        assertEquals(1, state.getKnownPeers().size());
+        assertEquals(2, state.getKnownPeers().size());
     }
 
 

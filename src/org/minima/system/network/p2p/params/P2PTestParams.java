@@ -14,7 +14,7 @@ public class P2PTestParams {
     /**
      * Desired number of client (nodes that can't accept inbound connections) to maintain
      */
-    public static int TGT_NUM_NONE_P2P_LINKS = 10;
+    public static int TGT_NUM_NONE_P2P_LINKS = 50;
 
     /**
      * Desired number of connections clients should maintain

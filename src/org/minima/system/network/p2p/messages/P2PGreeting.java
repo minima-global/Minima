@@ -61,6 +61,9 @@ public class P2PGreeting {
         this.numNoneP2PConnections = state.getNoneP2PLinks().size();
         this.maxNumNoneP2PConnections = state.getMaxNumNoneP2PConnections();
         this.knownPeers = new ArrayList<>(state.getKnownPeers());
+        if (state.getMyMinimaAddress() != null) {
+            this.knownPeers.add(state.getMyMinimaAddress());
+        }
     }
 
     /**
