@@ -11,6 +11,7 @@ import java.util.Set;
 import org.minima.objects.base.MiniData;
 import org.minima.system.network.p2p.params.P2PParams;
 import org.minima.system.params.GeneralParams;
+import org.minima.system.params.GlobalParams;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
@@ -174,6 +175,7 @@ public class P2PState {
         JSONObject json = new JSONObject();
         json.put("address", myMinimaAddress.toString().replace("/", ""));
         json.put("timestamp", Instant.ofEpochMilli(System.currentTimeMillis()).toString());
+        json.put("minima_version", GlobalParams.MINIMA_VERSION);
         json.put("out_links", addressListToJSONArray(new ArrayList<>(outLinks.values())));
         json.put("in_links", addressListToJSONArray(new ArrayList<>(inLinks.values())));
         json.put("not_accepting_conn_links", addressListToJSONArray(new ArrayList<>(notAcceptingConnP2PLinks.values())));
