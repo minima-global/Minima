@@ -199,17 +199,11 @@ public class NIOServer implements Runnable {
 	                
 	                // skip any invalid / cancelled keys
 	                if (!key.isValid()) {
-	                	MinimaLogger.log("[NIOSERVER] Invalid NIO key! from "+client.getUID());
-	                    continue;
+	                	continue;
 	                }
-	                
-	                long timenow = System.currentTimeMillis();
-	                int action = 0;
 	                
 	                try {
 	                	if (key.isAcceptable()) {
-	                		action = 1;
-	                		
 	                		// Accept the socket's connection
 	                        SocketChannel socket = serversocket.accept();
 	                		
@@ -218,18 +212,11 @@ public class NIOServer implements Runnable {
 	                    }
 	
 	                    if (key.isReadable()) {
-	                    	action = 2;
 	                    	client.handleRead();
 	                    }
 	                    
 	                    if (key.isWritable()) {
-	                    	action = 3;
 	                    	client.handleWrite();
-	                    }
-	                    
-	                    long timediff = System.currentTimeMillis() - timenow;
-	                    if(timediff > 1000){
-	                    	MinimaLogger.log("[NIOSERVER] "+client.getUID()+" long key handler "+action+" "+timediff);
 	                    }
 	                    
 	                } catch (Exception e) {
