@@ -101,4 +101,8 @@ public class NIOClientInfo {
 		
 		return ret;
 	}
+
+	public boolean ismValidGreeting() {
+		return mValidGreeting;
+	}
 }
