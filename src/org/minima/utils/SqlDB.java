@@ -40,9 +40,12 @@ public abstract class SqlDB {
 		
 		//Store this
 		mSQLFile = new File(path+".mv.db");
-				
+		
+		String filename = mSQLFile.getName();
+		
 		try {
 			//Create the connection - IGNORECASE=TRUE?
+//			mSQLCOnnection = DriverManager.getConnection("jdbc:h2:mem:"+filename+";MODE=MySQL", "SA", "");
 			mSQLCOnnection = DriverManager.getConnection("jdbc:h2:"+path+";MODE=MySQL", "SA", "");
 //			mSQLCOnnection = DriverManager.getConnection("jdbc:h2:"+path+";MODE=MySQL;DB_CLOSE_ON_EXIT=FALSE", "SA", "");
 			
