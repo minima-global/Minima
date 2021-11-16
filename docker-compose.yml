@@ -39,7 +39,7 @@ services:
           memory: 400M
   minima_client:
     image: minima:latest
-    command: -test -daemon -isclient -p2pnode minima_one:9001
+    command: -test -daemon -isclient -p2pnode minima_one:9001 -clean
     networks:
       minima_testnet:
         aliases:
@@ -53,7 +53,7 @@ services:
           memory: 500M
   minima_no_p2p:
     image: minima:latest
-    command: -test -daemon -nop2p -connect minima_one:9001
+    command: -test -daemon -nop2p -connect minima_one:9001  -clean
     networks:
       minima_testnet:
         aliases:
