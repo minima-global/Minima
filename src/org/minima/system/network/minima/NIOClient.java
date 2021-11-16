@@ -22,9 +22,9 @@ public class NIOClient {
 	public static boolean mTraceON = false;
 	
 	/**
-	 * 8K buffer for send and receive.. 32KB
+	 * 8K buffer for send and receive.. 8KB
 	 */
-	public static final int MAX_NIO_BUFFERS = 32 * 1024;
+	public static final int MAX_NIO_BUFFERS = 8 * 1024;
 
 	/**
 	 * The Maximum size of a single message 32MB

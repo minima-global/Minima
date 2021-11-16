@@ -9,13 +9,13 @@ networks:
 services:
   minima_one:
     image: minima:latest
-    command: -daemon -genesis -automine -noconnect -test -clean
+    command: -daemon -genesis -automine -noconnect -test -clean -rpcenable
     networks:
       minima_testnet:
         aliases:
           - minima_one
     ports:
-      - "9001:9001"
+      #- "9001:9001"
       - "9002:9002"
     deploy:
       resources:
