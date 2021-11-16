@@ -14,29 +14,29 @@ services:
       minima_testnet:
         aliases:
           - minima_one
-    ports:
+    #ports:
       #- "9001:9001"
-      - "9002:9002"
+      #- "12000-12100:9002"
     deploy:
       resources:
         limits:
           cpus: '1'
           memory: 100M
 
-  minima_peer:
-    image: minima:latest
-    command: -daemon -clean -nop2p -connect 35.246.45.106:9001
-    networks:
-      minima_testnet:
-        aliases:
-          - minima_peer
-    depends_on:
-      - minima_one
-    deploy:
-      resources:
-        limits:
-          cpus: '0.25'
-          memory: 100M
+#  minima_peer:
+#    image: minima:latest
+#    command: -daemon -clean -nop2p -connect 35.246.45.106:9001
+#    networks:
+#      minima_testnet:
+#        aliases:
+#          - minima_peer
+#    depends_on:
+#      - minima_one
+#    deploy:
+#      resources:
+#        limits:
+#          cpus: '0.25'
+#          memory: 100M
 
 #  minima_client:
 #    image: minima:latest
