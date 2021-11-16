@@ -1,4 +1,4 @@
-package org.minima.system.network.minima;
+package org.minima.system.network.nioserver;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -16,12 +16,19 @@ import org.minima.objects.base.MiniData;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.messages.Message;
+import org.minima.utils.messages.MessageProcessor;
 
 public class NIOServer implements Runnable {
 
+	public static final String NIOSERVER_STARTED 		= "NIOSERVER_STARTED";
+	public static final String NIOSERVER_CONNECTED 		= "NIOSERVER_CONNECTED";
+	public static final String NIOSERVER_DISCONNECTED 	= "NIOSERVER_DISCONNECTED";
+	public static final String NIOSERVER_NEWMSG 		= "NIOSERVER_NEWMSG";
+	
+	
 	public static boolean mTraceON = false;
 	
-	NIOManager mNIOManager;
+	MessageProcessor mMessageProcessor;
 	
 	int mPort;
 	
@@ -35,9 +42,9 @@ public class NIOServer implements Runnable {
 	
 	ArrayList<String> mDisconnectChannels;
 	
-	public NIOServer(int zPort, NIOManager zNIOManager) {
+	public NIOServer(int zPort, MessageProcessor zProcessor) {
 		mPort 				= zPort;
-		mNIOManager 		= zNIOManager;
+		mMessageProcessor	= zProcessor;
 		mRegisterChannels	= new ArrayList<>();
 		mDisconnectChannels	= new ArrayList<>();
 	}
@@ -98,14 +105,6 @@ public class NIOServer implements Runnable {
 		}
 	}
 	
-//	public void setWelcome(String zUID, String zWelcome) {
-//		NIOClient client =  mClients.get(zUID);
-//		if(client != null) {
-//			client.setWelcomeMessage(zWelcome);
-//			client.setValidGreeting(true);
-//		}
-//	}
-	
 	@Override
 	public void run() {
 	
@@ -135,7 +134,7 @@ public class NIOServer implements Runnable {
 	        acceptKey.interestOps(SelectionKey.OP_ACCEPT);
 	
 	        //Ok - we are up and running..
-	        mNIOManager.PostMessage(NIOManager.NIO_SERVERSTARTED);
+	        mMessageProcessor.PostMessage(NIOSERVER_STARTED);
 	        
 	        // This is the main loop
 	        while (!mShutDown) {
@@ -173,11 +172,11 @@ public class NIOServer implements Runnable {
 			                    mClients.remove(uid);
 			                    
 			                    //Tell the Network Manager
-			                    Message newclient = new Message(NIOManager.NIO_DISCONNECTED)
+			                    Message newclient = new Message(NIOSERVER_DISCONNECTED)
 			                    		.addObject("client", client)
 			                    		.addBoolean("reconnect", false);
 			                    
-			                    mNIOManager.PostMessage(newclient);
+			                    mMessageProcessor.PostMessage(newclient);
 		        			}
 		        		}
 		        		
@@ -246,12 +245,12 @@ public class NIOServer implements Runnable {
 	                    }
 	                    
 	                    //Tell the Network Manager
-	                    Message newclient = new Message(NIOManager.NIO_DISCONNECTED)
+	                    Message newclient = new Message(NIOSERVER_DISCONNECTED)
 	                    		.addObject("client", client)
 	                    		.addBoolean("reconnect", !client.isIncoming());
 	                    
 	                    //Tell the manager
-	                    mNIOManager.PostMessage(newclient);
+	                    mMessageProcessor.PostMessage(newclient);
 	                }
 	            }
 	        }
@@ -293,7 +292,7 @@ public class NIOServer implements Runnable {
         }
         
         //Create a new NIOCLient
-        NIOClient  nioc = new NIOClient(zIncoming, ipAddress, port, zSocketChannel, selectionkey);
+        NIOClient  nioc = new NIOClient(zIncoming, ipAddress, port, zSocketChannel, selectionkey, mMessageProcessor);
         
         // register with key
         selectionkey.attach(nioc);
@@ -307,8 +306,8 @@ public class NIOServer implements Runnable {
         }
         
         //Post about it..
-        Message newclient = new Message(NIOManager.NIO_NEWCONNECTION).addObject("client", nioc);
-        mNIOManager.PostMessage(newclient);
+        Message newclient = new Message(NIOSERVER_CONNECTED).addObject("client", nioc);
+        mMessageProcessor.PostMessage(newclient);
 	}
 	
 }
