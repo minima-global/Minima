@@ -432,6 +432,10 @@ public class Main extends MessageProcessor {
 			
 			//Get the Current Tip
 			TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
+			if(tip == null) {
+				MinimaLogger.log("No tip found in Main Checker..");
+				return;
+			}
 			
 			//Has it changed
 			if(tip.getTxPoW().getTxPoWIDData().isEqual(mOldTip)) {
