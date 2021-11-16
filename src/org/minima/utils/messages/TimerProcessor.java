@@ -33,7 +33,7 @@ public class TimerProcessor implements Runnable {
 	 */
 	private ArrayList<TimerMessage> mTimerMessages;
 	
-	public TimerProcessor() {
+	private TimerProcessor() {
 		mRunning 		= true;
 		mTimerMessages 	= new ArrayList<TimerMessage>();
 		
