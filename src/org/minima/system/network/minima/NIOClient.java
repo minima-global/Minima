@@ -51,6 +51,8 @@ public class NIOClient {
 	String 			mHost;
 	int 			mPort;
 	
+	int 			mMinimaPort=-1;
+	
 	boolean mIncoming;
 	
 	private ArrayList<MiniData> mMessages;
@@ -114,6 +116,7 @@ public class NIOClient {
 		ret.put("incoming", isIncoming());
 		ret.put("host", mHost);
 		ret.put("port", mPort);
+		ret.put("minimaport", mMinimaPort);
 		ret.put("connected", new Date(mTimeConnected).toString());
 		ret.put("valid", mValidGreeting);
 		
@@ -150,6 +153,14 @@ public class NIOClient {
 	
 	public int getPort() {
 		return mPort;
+	}
+	
+	public void setMinimaPort(int zPort) {
+		mMinimaPort = zPort;
+	}
+	
+	public int getMinimaPort() {
+		return mMinimaPort;
 	}
 	
 	public boolean isValidGreeting() {

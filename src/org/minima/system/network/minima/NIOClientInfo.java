@@ -24,6 +24,8 @@ public class NIOClientInfo {
 
 	int mPort;
 
+	int mMinimaPort;
+	
 	boolean isIncoming;
 
 	boolean mValidGreeting;
@@ -43,6 +45,7 @@ public class NIOClientInfo {
 		mConnected	= zConnected;
 		mHost = zNIOClient.getHost();
 		mPort = zNIOClient.getPort();
+		mMinimaPort = zNIOClient.getMinimaPort();
 		mUID = zNIOClient.getUID();
 		isIncoming = zNIOClient.isIncoming();
 	}
@@ -65,6 +68,10 @@ public class NIOClientInfo {
 		return mPort;
 	}
 	
+	public int getMinimaPort() {
+		return mMinimaPort;
+	}
+	
 	public long getTimeConnected() {
 		return mNIOClient.getTimeConnected();
 	}
@@ -85,6 +92,7 @@ public class NIOClientInfo {
 		ret.put("incoming", isIncoming());
 		ret.put("host", getHost());
 		ret.put("port", getPort());
+		ret.put("minimaport", getMinimaPort());
 		ret.put("isconnected", isConnected());
 		ret.put("valid", mValidGreeting);
 		if (mNIOClient != null) {

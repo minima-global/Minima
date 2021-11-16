@@ -272,12 +272,8 @@ public class NIOServer implements Runnable {
         //What Port..
         InetSocketAddress remote = (InetSocketAddress)zSocketChannel.getRemoteAddress();
         InetSocketAddress local  = (InetSocketAddress )zSocketChannel.getLocalAddress();
-        int port = 0;
-        if(zIncoming) {
-        	port = -1;
-        }else {
-        	port = remote.getPort();
-        }
+        
+        int port = remote.getPort();
         
         //Create a new NIOCLient
         NIOClient  nioc = new NIOClient(zIncoming, ipAddress, port, zSocketChannel, selectionkey);

@@ -128,13 +128,12 @@ public class NIOMessage implements Runnable {
 					return;
 				}
 				
-				//Get the Host Port..
+				//Get the Host / Port..
 				if(greet.getExtraData().containsKey("host")) {
 					nioclient.overrideHost(greet.getExtraDataValue("host"));
 				}
-				
 				if(greet.getExtraData().containsKey("port")) {
-					nioclient.setPort(Integer.parseInt(greet.getExtraDataValue("port")));
+					nioclient.setMinimaPort(Integer.parseInt(greet.getExtraDataValue("port")));
 				}
 				
 				//Get the welcome message..
