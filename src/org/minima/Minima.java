@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Iterator;
 
+import org.minima.database.MinimaDB;
 import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
@@ -68,7 +69,8 @@ public class Minima {
 		GeneralParams.CONFIGURATION_FOLDER = conf.getAbsolutePath(); 
 		
 		//Daemon mode
-		boolean daemon = false;
+		boolean daemon 		= false;
+		boolean rpcenable 	= false;
 		
 		int arglen 	= zArgs.length;
 		if(arglen > 0) {
@@ -86,6 +88,9 @@ public class Minima {
 				
 				}else if(arg.equals("-rpc")) {
 					GeneralParams.RPC_PORT = Integer.parseInt(zArgs[counter++]);
+				
+				}else if(arg.equals("-rpcenable")) {
+					rpcenable = true;
 					
 				}else if(arg.equals("-conf")) {
 					GeneralParams.CONFIGURATION_FOLDER = zArgs[counter++];
@@ -173,6 +178,12 @@ public class Minima {
 		//Main handler..
 		Main main = new Main();
 
+		//Are we enabling RPC..
+		if(rpcenable) {
+			MinimaDB.getDB().getUserDB().setRPCEnabled(true);
+			main.getNetworkManager().startRPC();
+		}
+		
 //		Runtime.getRuntime().addShutdownHook(new Thread()
 //		{
 //			@Override
