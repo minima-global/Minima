@@ -43,7 +43,7 @@ public class TxPoWGenerator {
 		//Current top block
 		TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
 		
-		//Set the parent..
+		//Set the time..
 		txpow.setTimeMilli(new MiniNumber(System.currentTimeMillis()));
 		
 		//Set the Transaction..
