@@ -8,6 +8,7 @@ import java.io.IOException;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
+import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.json.parser.JSONParser;
 import org.minima.utils.json.parser.ParseException;
@@ -17,7 +18,7 @@ public class JsonDB implements Streamable{
 	/**
 	 * Simple parameter JSON
 	 */
-	private JSONObject mParams;
+	protected JSONObject mParams;
 	
 	public JsonDB() {
 		mParams = new JSONObject();
@@ -109,6 +110,21 @@ public class JsonDB implements Streamable{
 		}
 		
 		return (JSONObject)mParams.get(zName);
+	}
+	
+	/**
+	 * JSONArray
+	 */
+	public void setJSONArray(String zName, JSONArray zJSONArray) {
+		mParams.put(zName, zJSONArray);
+	}
+	
+	public JSONArray getJSONArray(String zName ) {
+		if(mParams.get(zName) == null) {
+			return new JSONArray();
+		}
+		
+		return (JSONArray)mParams.get(zName);
 	}
 	
 	/**
