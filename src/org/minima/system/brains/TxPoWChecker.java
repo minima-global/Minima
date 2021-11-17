@@ -30,6 +30,7 @@ public class TxPoWChecker {
 		
 		try {
 			//Check the time of the block is within acceptable limits - 30 minutes..
+			//TODO Need to check Median of last X blocks!
 			MiniNumber maxtimediff 	= new MiniNumber(1000 * 60 * 30); 
 			MiniNumber oldtime 		= zParentTxPoW.getTimeMilli();
 			MiniNumber newtime 		= zTxPoW.getTimeMilli();
