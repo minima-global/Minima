@@ -8,7 +8,7 @@
           <array>
             <string>##BIN##/minima</string>
           </array>
-          <key>StandardOutPath</key>
-          <string>##PREFIX##/logs/##PLIST_NAME##.log</string>
+          <key>KeepAlive</key>
+          <true/>
         </dict>
       </plist>
