@@ -3,6 +3,7 @@ package org.minima.system.network.minima;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.StandardSocketOptions;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
@@ -13,7 +14,6 @@ import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.minima.objects.base.MiniData;
-import org.minima.system.params.GeneralParams;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.messages.Message;
 
@@ -254,6 +254,8 @@ public class NIOServer implements Runnable {
         
         // We also want this socket to be non-blocking so we don't need to follow the thread-per-socket model
         zSocketChannel.configureBlocking(false);
+        zSocketChannel.setOption(StandardSocketOptions.TCP_NODELAY, true);
+        zSocketChannel.setOption(StandardSocketOptions.SO_KEEPALIVE, true);
 
         // Let's also register this socket to our selector:
         SelectionKey selectionkey = zSocketChannel.register(mSelector, SelectionKey.OP_READ | SelectionKey.OP_WRITE);

@@ -197,7 +197,7 @@ public class NetworkManager {
 		mSSHManager.PostMessage(SSHManager.SSHTUNNEL_SHUTDOWN);
 		
 		//And the notify Manager
-		mNotifyManager.PostMessage(NotifyManager.NOTIFY_SHUTDOWN);
+		mNotifyManager.shutDown();
 	}
 	
 	public boolean isShutDownComplete() {
