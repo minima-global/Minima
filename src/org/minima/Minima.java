@@ -277,7 +277,8 @@ public class Minima {
 						System.out.println(" -host       : Specify the host IP");
 						System.out.println(" -port       : Specify the Minima port");
 						System.out.println(" -rpc        : Specify the RPC port");
-						System.out.println(" -conf       : Specify the configuration folder");
+						System.out.println(" -conf       : Specify a configuration file");
+						System.out.println(" -data       : Specify the data folder");
 						System.out.println(" -daemon     : Run in daemon mode with no stdin input ( services )");
 						System.out.println(" -mobile     : Sets this device to a mobile device - used for metrics only");
 						System.out.println(" -nop2p      : Disable the automatic P2P system");
