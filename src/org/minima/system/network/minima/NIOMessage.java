@@ -16,6 +16,8 @@ import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
 import org.minima.system.brains.TxPoWChecker;
 import org.minima.system.network.p2p.P2PFunctions;
+import org.minima.system.params.GeneralParams;
+import org.minima.system.params.GlobalParams;
 import org.minima.utils.ListCheck;
 import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;
@@ -120,7 +122,7 @@ public class NIOMessage implements Runnable {
 				
 				//What version..
 				//if(!greet.getVersion().toString().startsWith("TN-P2P.100")) {
-				if(!greet.getVersion().toString().startsWith("TN-P2P.100.6")) {
+				if(!greet.getVersion().toString().startsWith(GlobalParams.MINIMA_VERSION)) {
 					MinimaLogger.log("Greeting with Incompatible Version! "+greet.getVersion().toString());
 					
 					//Disconnect..

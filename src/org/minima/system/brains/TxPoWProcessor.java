@@ -91,7 +91,7 @@ public class TxPoWProcessor extends MessageProcessor {
 						if(alltrans.size() == numtxns) {
 						
 							//OK - Lets check this block
-							if(TxPoWChecker.checkTxPoWBlock(parentnode.getMMR(), txpow, alltrans)) {
+							if(TxPoWChecker.checkTxPoWBlock(parentnode.getTxPoW(), parentnode.getMMR(), txpow, alltrans)) {
 								
 								//Create a TxBlock..
 								TxBlock txblock = new TxBlock(parentnode.getMMR(), txpow, alltrans);

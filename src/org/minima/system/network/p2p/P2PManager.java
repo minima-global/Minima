@@ -3,7 +3,6 @@ package org.minima.system.network.p2p;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 
@@ -236,12 +235,15 @@ public class P2PManager extends MessageProcessor {
                     }
                 }
 
+                List<String> idsToRemove = new ArrayList<>();
                 for (String uid: state.getNoneP2PLinks().keySet()){
                     NIOClientInfo info = P2PFunctions.getNIOCLientInfo(uid);
                     if (info == null){
-                        state.getNoneP2PLinks().remove(uid);
+                        idsToRemove.add(uid);
                     }
                 }
+
+                idsToRemove.forEach(x -> state.getNoneP2PLinks().remove(x));
 
             } else {
                 MinimaLogger.log("[-] No Known peers!");
