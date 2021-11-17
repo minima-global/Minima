@@ -98,14 +98,6 @@ public class NIOServer implements Runnable {
 		}
 	}
 	
-//	public void setWelcome(String zUID, String zWelcome) {
-//		NIOClient client =  mClients.get(zUID);
-//		if(client != null) {
-//			client.setWelcomeMessage(zWelcome);
-//			client.setValidGreeting(true);
-//		}
-//	}
-	
 	@Override
 	public void run() {
 	
@@ -146,7 +138,7 @@ public class NIOServer implements Runnable {
 	        	}
 	        	
 	        	//Select something.. 
-	        	mSelector.select();
+	        	mSelector.select(30000);
 	        	
 	        	//Are there any Channels to add..
 	        	synchronized (mRegisterChannels) {

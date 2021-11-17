@@ -55,7 +55,7 @@ public class NIOManager extends MessageProcessor {
 	 * Check every minute to see if you have had a message in the last 2 mins..
 	 */
 	public static final String NIO_CHECKLASTMSG 	= "NIO_CHECKLASTMSG";
-	long LASTREAD_CHECKER 		= 1000 * 60;
+	long LASTREAD_CHECKER 		= 1000 * 120;
 	long MAX_LASTREAD_CHECKER 	= 1000 * 60 * 5;
 	
 	/**
@@ -341,7 +341,7 @@ public class NIOManager extends MessageProcessor {
 				long diff = timenow - conn.getLastReadTime();
 				if(diff > MAX_LASTREAD_CHECKER) {
 					
-					//Too long a dely.. ?
+					//Too long a delay..
 					MinimaLogger.log("No recent message (5 mins) from "+conn.getUID()+" disconnect/reconnect ..");
 					
 					//Disconnect

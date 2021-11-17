@@ -1,5 +1,6 @@
 package org.minima.utils.messages;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 
 import org.minima.utils.MinimaLogger;
@@ -30,11 +31,11 @@ public class TimerProcessor implements Runnable {
 	/**
 	 * All the timed messages
 	 */
-	private LinkedList<TimerMessage> mTimerMessages;
+	private ArrayList<TimerMessage> mTimerMessages;
 	
-	public TimerProcessor() {
-		mRunning = true;
-		mTimerMessages = new LinkedList<TimerMessage>();
+	private TimerProcessor() {
+		mRunning 		= true;
+		mTimerMessages 	= new ArrayList<TimerMessage>();
 		
 		mMainThread = new Thread(this);
 		mMainThread.start();
@@ -59,7 +60,7 @@ public class TimerProcessor implements Runnable {
 			//Check the stack for messages..
 			synchronized (mTimerMessages) {
 				//New list to store the ongoing timers
-				LinkedList<TimerMessage> newlist = new LinkedList<TimerMessage>();
+				ArrayList<TimerMessage> newlist = new ArrayList<TimerMessage>();
 				
 				//Current time
 				long time = System.currentTimeMillis();

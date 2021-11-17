@@ -36,6 +36,7 @@ public class NIOMessage implements Runnable {
 	public static final MiniByte MSG_GENMESSAGE = new MiniByte(5);
 	public static final MiniByte MSG_PULSE 		= new MiniByte(6);
 	public static final MiniByte MSG_P2P 		= new MiniByte(7);
+	public static final MiniByte MSG_PING 		= new MiniByte(8);
 	
 	/**
 	 * Helper function that converts to String 
@@ -282,6 +283,10 @@ public class NIOMessage implements Runnable {
 				//Foe now..
 				MinimaLogger.log(mClientUID+":"+msg.toString());
 			
+			}else if(type.isEqual(MSG_PING)) {
+				//Read in a txpow unit.. currently does nothing.. could be 1000's of connections..
+				MiniData txpowid = MiniData.ReadFromStream(dis);
+			
 			}else if(type.isEqual(MSG_P2P)) {
 				
 				//P2P message..
@@ -332,20 +337,23 @@ public class NIOMessage implements Runnable {
 				
 				//Did we find a crossover..
 				if(found) {
+					
 					//Request all the blocks.. in the correct order
 					for(MiniData block : requestlist) {
 						NIOManager.sendDelayedTxPoWReq(mClientUID, block.to0xString(), "PULSE");
 					}
 					
 				}else{
+				
+					//Hmm something funny..
 					MinimaLogger.log("NO CROSSOVER BLOCK FOUND from "+mClientUID+" .. disconnecting");
 					Main.getInstance().getNIOManager().disconnect(mClientUID);
 				}
 				
 			}else {
+				
 				//UNKNOWN MESSAGE..
 				MinimaLogger.log("Unknown Message type received from "+mClientUID+" type:"+type+" size:"+data.length);
-				return;
 			}
 			
 		} catch (Exception e) {
