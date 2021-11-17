@@ -284,7 +284,7 @@ public class NIOMessage implements Runnable {
 				MinimaLogger.log(mClientUID+":"+msg.toString());
 			
 			}else if(type.isEqual(MSG_PING)) {
-				//Read inn the Top Block..
+				//Read in a txpow unit.. currently does nothing.. could be 1000's of connections..
 				MiniData txpowid = MiniData.ReadFromStream(dis);
 			
 			}else if(type.isEqual(MSG_P2P)) {

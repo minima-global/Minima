@@ -445,8 +445,8 @@ public class Main extends MessageProcessor {
 			//Keep for the next round
 			mOldTip = tip.getTxPoW().getTxPoWIDData();
 			
-			//Post  A Ping Message.. The top TxPoWID
-			NIOManager.sendNetworkMessageAll(NIOMessage.MSG_TXPOWID, tip.getTxPoW().getTxPoWIDData());
+			//A Ping Message.. The top TxPoWID
+			NIOManager.sendNetworkMessageAll(NIOMessage.MSG_PING, tip.getTxPoW().getTxPoWIDData());
 			
 			//Check again..
 			PostTimerMessage(new TimerMessage(CHECKER_TIMER, MAIN_CHECKER));

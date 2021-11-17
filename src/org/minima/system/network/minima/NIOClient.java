@@ -387,7 +387,7 @@ public class NIOClient {
 		synchronized (mMessages) {
 			if(!mBufferOut.hasRemaining() && mMessages.size()==0 && mWriteData == null) {
 				if(mKey.isValid()) {
-					//Only interested in RERAD
+					//Only interested in READ
 					mKey.interestOps(SelectionKey.OP_READ);
 				}
 			}
