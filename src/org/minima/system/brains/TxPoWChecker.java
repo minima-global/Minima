@@ -26,9 +26,18 @@ public class TxPoWChecker {
 	/**
 	 * Parallel check all the transactions in this block
 	 */
-	public static boolean checkTxPoWBlock(MMR zParentMMR, TxPoW zTxPoW, ArrayList<TxPoW> zTransactions) {
+	public static boolean checkTxPoWBlock(TxPoW zParentTxPoW, MMR zParentMMR, TxPoW zTxPoW, ArrayList<TxPoW> zTransactions) {
 		
 		try {
+			//Check the time of the block is within acceptable limits - 30 minutes..
+			MiniNumber maxtimediff 	= new MiniNumber(1000 * 60 * 30); 
+			MiniNumber oldtime 		= zParentTxPoW.getTimeMilli();
+			MiniNumber newtime 		= zTxPoW.getTimeMilli();
+			if(newtime.sub(oldtime).abs().isMore(maxtimediff)) {
+				MinimaLogger.log("Invalid TxPoW Block with time difference of more than 30 mins from previous block "+zTxPoW.getTxPoWID());
+				return false;
+			}
+			
 			//Check all the input coinid are Unique - use the MMR proofs! CoinID could be Eltoo
 			ArrayList<String> allcoinid = new ArrayList<>();
 			if(zTxPoW.isTransaction()) {
@@ -76,7 +85,7 @@ public class TxPoWChecker {
 			//Check Correct..
 			MMRData root = node.getMMR().getRoot();
 			if(!root.getData().isEqual(zTxPoW.getMMRRoot()) || !root.getValue().isEqual(zTxPoW.getMMRTotal())) {
-				MinimaLogger.log("ERROR : MMR in TxPOW and calculated don't match! @ "+zTxPoW.getBlockNumber()+" "+zTxPoW.getTxPoWID());
+				MinimaLogger.log("ERROR : MMR in TxPOW block and calculated don't match! @ "+zTxPoW.getBlockNumber()+" "+zTxPoW.getTxPoWID());
 				return false;
 			}
 			

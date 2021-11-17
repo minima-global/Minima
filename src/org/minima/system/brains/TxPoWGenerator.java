@@ -3,6 +3,7 @@ package org.minima.system.brains;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Date;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.mmr.MMRData;
@@ -105,6 +106,13 @@ public class TxPoWGenerator {
 				newdifficulty = MIN_TXPOW_VAL;
 			}
 			
+			if(newdifficulty.compareTo(BigInteger.ZERO)<0) {
+				MinimaLogger.log("SERIOUS ERROR : NEGATIVE DIFFICULTY!");
+				MinimaLogger.log("speed         : "+speed);
+				MinimaLogger.log("speedratio    : "+speedratio);
+				MinimaLogger.log("newdifficulty :"+newdifficulty.toString());
+			}
+			
 			txpow.setBlockDifficulty(new MiniData(newdifficulty));
 		}
 		
@@ -167,6 +175,7 @@ public class TxPoWGenerator {
 		return txpow;
 	}
 	
+	
 	public static MiniNumber getChainSpeed(TxPoWTreeNode zTopBlock, MiniNumber zBlocksBack) {
 		//Which block are we looking for..
 		MiniNumber block = zTopBlock.getTxPoW().getBlockNumber().sub(zBlocksBack);
@@ -190,6 +199,16 @@ public class TxPoWGenerator {
 		
 		MiniNumber speedmilli 	= blockdiff.div(timediff);
 		MiniNumber speedsecs 	= speedmilli.mult(MiniNumber.THOUSAND);
+		
+		if(speedsecs.isLessEqual(MiniNumber.ZERO)) {
+			MinimaLogger.log("SERIOUS ERROR NEGATIVE SPEED AS PAST BLOCK AHEAD OF CURRENT TIME!");
+			MinimaLogger.log(blockpast+" "+new Date(timepast.getAsLong()).toString()+" "+blocknow+" "+new Date(timenow.getAsLong()).toString());
+			
+			MinimaLogger.log("PAST    : "+pastblock.getTxPoW().getTxPoWID()+" "+timepast.getAsLong());
+			MinimaLogger.log("CURRENT : "+zTopBlock.getTxPoW().getTxPoWID()+" "+timenow.getAsLong());
+			
+			return GlobalParams.MINIMA_BLOCK_SPEED;
+		}
 		
 		return speedsecs;
 	}
