@@ -24,6 +24,7 @@ import org.minima.system.commands.all.rpc;
 import org.minima.system.commands.all.send;
 import org.minima.system.commands.all.sshtunnel;
 import org.minima.system.commands.all.status;
+import org.minima.system.commands.all.test;
 import org.minima.system.commands.all.tokencreate;
 import org.minima.system.commands.all.trace;
 import org.minima.system.commands.all.txpow;
@@ -31,6 +32,8 @@ import org.minima.system.commands.all.webhooks;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
+import org.minima.utils.json.parser.JSONParser;
+import org.minima.utils.json.parser.ParseException;
 
 public abstract class Command {
 
@@ -39,7 +42,7 @@ public abstract class Command {
 			new message(), new trace(), new help(), new printtree(), new automine(), new printmmr(), new rpc(),
 			new send(), new balance(), new tokencreate(), new newaddress(), new debugflag(),
 			new incentivecash(), new sshtunnel(), new webhooks(),
-			new backup(), new restore()};
+			new backup(), new restore(), new test()};
 	
 	String mName;
 	String mHelp;
@@ -92,6 +95,10 @@ public abstract class Command {
 		return zDefault;
 	}
 	
+	public JSONObject getJSONParam(String zParamName) {
+		return (JSONObject) mParams.get(zParamName);
+	}
+	
 	public abstract JSONObject runCommand() throws Exception;
 	
 	public abstract Command getFunction();
@@ -135,7 +142,8 @@ public abstract class Command {
 		int commandlen = ALL_COMMANDS.length;
 		
 		//Get the first word..
-		String[] split = splitString(zCommand);
+//		String[] split = splitString(zCommand);
+		String[] split = splitStringJSON(zCommand);
 		
 		//The first is the command..
 		String command = split[0];
@@ -164,11 +172,34 @@ public abstract class Command {
 				return new missingcmd(command,"Invalid parameters for "+command+" @ "+token);
 			}
 			
+			
 			String name  = token.substring(0, index).trim();
 			String value = token.substring(index+1).trim();
 			
-			//Add to JSON..
-			comms.getParams().put(name, value);
+			//Is the value a JSON..or JSONArray..
+			if(value.startsWith("{") && value.endsWith("}")) {
+				
+				MinimaLogger.log("check ing json value: "+value);
+				
+				//It's a JSON..!
+				JSONObject json = null;
+				try {
+					json = (JSONObject) new JSONParser().parse(value);
+				} catch (ParseException e) {
+					return new missingcmd(command,"Invalid JSON parameter for "+command+" @ "+token+" "+e.toString());
+				}
+				
+				//Store this parameter..
+				comms.getParams().put(name, json);
+				
+			}else {
+				
+				//Add normal String parameter to..
+				comms.getParams().put(name, value);
+				
+			}
+			
+			
 		}
 		
 		return comms;
@@ -212,6 +243,73 @@ public abstract class Command {
 				}else {
 					quoted=true;
 				}
+			}else {
+				current += cc;
+			}
+		}
+		
+		//Add the last bit..
+		if(!current.equals("")) {
+			token.add(current.trim());
+		}
+		
+		return token.toArray(new String[0]);
+	}
+	
+	private static String[] splitStringJSON(String zInput) {
+		ArrayList<String> token = new ArrayList<>();
+		String ss = zInput.trim();
+		
+		//Cycle through looking for spaces or quotes..
+		String current = new String();
+		
+		int jsoned 		= 0;
+		boolean quoted 	= false;
+		
+		int len = ss.length();
+		for(int i=0;i<len;i++) {
+			char cc = ss.charAt(i);
+			
+			if(cc == ' ') {
+				//End of the line..
+				if(!quoted && jsoned==0) {
+					
+					//Add current
+					if(!current.equals("")) {
+						token.add(current.trim());
+					}
+						
+					//New Current
+					current = new String();
+					
+				}else {
+					current += cc;
+				}
+			
+			}else if(cc == '{') {
+				jsoned++;
+				current += cc;
+				
+			}else if(cc == '}') {
+				jsoned--;
+				current += cc;
+				
+			}else if(cc == '\"') {
+				if(jsoned>0) {
+					
+					//It's in a JSON.. so keep it..
+					current += cc;
+					
+				}else {
+					//it's a quote!
+					if(quoted) {
+						//It's finished..
+						quoted=false;
+					}else {
+						quoted=true;
+					}
+				}
+				
 			}else {
 				current += cc;
 			}
