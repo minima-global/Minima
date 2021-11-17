@@ -12,11 +12,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.minima.database.MinimaDB;
 import org.minima.objects.Greeting;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.system.Main;
 import org.minima.system.commands.all.connect;
+import org.minima.system.commands.all.sshtunnel;
 import org.minima.system.network.p2p.P2PFunctions;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.MinimaLogger;
@@ -38,7 +40,23 @@ public class NIOManager extends MessageProcessor {
 	public static final String NIO_DISCONNECT 		= "NIO_DISCONNECT";
 	public static final String NIO_DISCONNECTED		= "NIO_DISCONNECTED";
 	
+	public static final String NIO_RECONNECT 		= "NIO_RECONNECT";
+	
 	public static final String NIO_INCOMINGMSG 		= "NIO_NEWMSG";
+	
+	public static final String NIO_TXPOWREQ 		= "NIO_REQTXPOW";
+
+	/**
+	 * How many attempts to reconnect
+	 */
+	public int RECONNECT_ATTEMPTS = 3;
+	
+	/**
+	 * Check every minute to see if you have had a message in the last 2 mins..
+	 */
+	public static final String NIO_CHECKLASTMSG 	= "NIO_CHECKLASTMSG";
+	long LASTREAD_CHECKER 		= 1000 * 120;
+	long MAX_LASTREAD_CHECKER 	= 1000 * 60 * 5;
 	
 	/**
 	 * How long before a reconnect attempt
@@ -113,6 +131,9 @@ public class NIOManager extends MessageProcessor {
 			//The NIOServer has started you can now start up the P2P and pre-connect list
 			Main.getInstance().getNetworkManager().getP2PManager().PostMessage(P2PFunctions.P2P_INIT);
 			
+			//Do we need to start up the SSHTunnel..
+			sshtunnel.startSSHTunnel();
+			
 			//Any nodes to auto connect to.. comma separated list
 			if(!GeneralParams.CONNECT_LIST.equals("")) {
 				
@@ -129,6 +150,9 @@ public class NIOManager extends MessageProcessor {
 					}
 				}
 			}
+			
+			//Check how long since last connect for each client..
+			PostTimerMessage(new TimerMessage(LASTREAD_CHECKER, NIO_CHECKLASTMSG));
 			
 		}else if(zMessage.getMessageType().equals(NIO_SHUTDOWN)) {
 			
@@ -167,6 +191,50 @@ public class NIOManager extends MessageProcessor {
 			
 			//Connect in separate thread..
 			connectAttempt(nc);
+		
+		}else if(zMessage.getMessageType().equals(NIO_RECONNECT)) {
+			//Get the client..
+			NIOClient nc = (NIOClient) zMessage.getObject("client");
+			
+			//Increase the connect attempts
+			nc.incrementConnectAttempts();
+			
+			//Do we try to reconnect
+			boolean reconnect = true;
+			
+			//Do we attempt a reconnect..
+			if(nc.getConnectAttempts() > RECONNECT_ATTEMPTS) {
+				//Do we have ANY connections at all..
+				ArrayList<NIOClient> conns = mNIOServer.getAllNIOClients();
+				if(conns.size()>0) {
+					//We have some connections.. so this connection has no excuse..
+					mConnectingClients.remove(nc.getUID());
+					
+					//No reconnect
+					reconnect = false;
+					
+					//Tell the P2P..
+					Message newconn = new Message(P2PFunctions.P2P_NOCONNECT);
+					newconn.addObject("client", nc);
+					newconn.addString("uid", nc.getUID());
+					Main.getInstance().getNetworkManager().getP2PManager().PostMessage(newconn);
+					
+					MinimaLogger.log(nc.getUID()+" Connection Failed no reconnect");
+					
+				}else {
+					
+					//reset connect attempts..
+					nc.setConnectAttempts(1);
+				}
+			}
+			
+			//Try and reconnect
+			if(reconnect) {
+				//Try again..
+				TimerMessage tmsg = new TimerMessage(RECONNECT_TIMER, NIO_CONNECTATTEMPT);
+				tmsg.addObject("client", nc);
+				NIOManager.this.PostTimerMessage(tmsg);
+			}
 			
 		}else if(zMessage.getMessageType().equals(NIO_DISCONNECT)) {
 			//Get the UID
@@ -239,6 +307,58 @@ public class NIOManager extends MessageProcessor {
 			
 			//Process it.. in a thread pool..
 			THREAD_POOL.execute(niomsg);
+		
+		}else if(zMessage.getMessageType().equals(NIO_TXPOWREQ)) {
+			
+			//Get the TxPoWID
+			String txpowid = zMessage.getString("txpowid");
+			
+			//Which client..
+			String clientid = zMessage.getString("client");
+
+			//Why
+			String reason = zMessage.getString("reason"); 
+			
+			//Check if we have it..
+			if(!MinimaDB.getDB().getTxPoWDB().exists(txpowid)) {
+		
+				//Notify..
+				MinimaLogger.log("Requesting TxPoW "+txpowid+" from "+clientid+" : "+reason);
+				
+				//Now get it..
+				sendNetworkMessage(clientid, NIOMessage.MSG_TXPOWREQ, new MiniData(txpowid));
+			}
+		
+		}else if(zMessage.getMessageType().equals(NIO_CHECKLASTMSG)) {
+			
+			//Check how long since last connect
+			long timenow = System.currentTimeMillis();
+			
+			//Cycle and see..
+			ArrayList<NIOClient> conns = mNIOServer.getAllNIOClients();
+			for(NIOClient conn : conns) {
+			
+				long diff = timenow - conn.getLastReadTime();
+				if(diff > MAX_LASTREAD_CHECKER) {
+					
+					//Too long a delay..
+					MinimaLogger.log("No recent message (5 mins) from "+conn.getUID()+" disconnect/reconnect ..");
+					
+					//Disconnect
+					disconnect(conn.getUID());
+					
+					//And reconnect in 5 secs if outgoing.. incoming will reconnect anyway
+					if(!conn.isIncoming()) {
+						TimerMessage timedconnect = new TimerMessage(5000, NIO_CONNECT);
+						timedconnect.addString("host", conn.getHost());
+						timedconnect.addInteger("port", conn.getPort());
+						PostTimerMessage(timedconnect);
+					}
+				}
+			}
+			
+			//And Again..
+			PostTimerMessage(new TimerMessage(LASTREAD_CHECKER, NIO_CHECKLASTMSG));
 		}
 	}
 	
@@ -265,12 +385,12 @@ public class NIOManager extends MessageProcessor {
 					
 				}catch(Exception exc) {
 					//Try again in a minute..
-					MinimaLogger.log("Error connecting to "+zNIOClient.getHost()+":"+zNIOClient.getPort()+" "+exc.toString()+" ..will retry");
+					MinimaLogger.log(zNIOClient.getUID()+" Error connecting attempt "+zNIOClient.getConnectAttempts()+" to "+zNIOClient.getHost()+":"+zNIOClient.getPort()+" "+exc.toString());
 					
-					//Try again..
-					TimerMessage tmsg = new TimerMessage(RECONNECT_TIMER, NIO_CONNECTATTEMPT);
-					tmsg.addObject("client", zNIOClient);
-					NIOManager.this.PostTimerMessage(tmsg);
+					//Do we try to reconnect
+					Message reconn = new Message(NIO_RECONNECT);
+					reconn.addObject("client", zNIOClient);
+					NIOManager.this.PostMessage(reconn);
 				}
 			}
 		};
@@ -286,12 +406,47 @@ public class NIOManager extends MessageProcessor {
 		Message msg = new Message(NIOManager.NIO_DISCONNECT).addString("uid", zClientUID);
 		PostMessage(msg);
 	}
+
+	/**
+	 * Small delay before actually posting the request.. 2 second..
+	 */
+	public static void sendDelayedTxPoWReq(String zClientID, String zTxPoWID, String zReason) {
+		TimerMessage timed = new TimerMessage(2000, NIO_TXPOWREQ);
+		timed.addString("client", zClientID);
+		timed.addString("txpowid", zTxPoWID);
+		timed.addString("reason",zReason);
+		
+		Main.getInstance().getNIOManager().PostTimerMessage(timed);
+	}
 	
+	/**
+	 * Send network messages
+	 */
 	public static void sendNetworkMessageAll(MiniByte zType, Streamable zObject) throws IOException {
 		sendNetworkMessage("", zType, zObject);
 	}
 	
 	public static void sendNetworkMessage(String zUID, MiniByte zType, Streamable zObject) throws IOException {
+		//Make sure not null
+		if(zObject == null) {
+			throw new IOException("Cannot sendNetworkMessage with a NULL Object");
+		}
+		
+		//Create the network message
+		MiniData niodata = createNIOMessage(zType, zObject);
+		
+		//For ALL or for ONE
+		if(!zUID.equals("")) {
+			//Send it..
+			Main.getInstance().getNIOManager().getNIOServer().sendMessage(zUID,niodata);
+		}else {
+			//Send it..
+			Main.getInstance().getNIOManager().getNIOServer().sendMessageAll(niodata);
+		}
+	}
+	
+	public static MiniData createNIOMessage(MiniByte zType, Streamable zObject) throws IOException {
+		
 		//Create a stream to write to
 		ByteArrayOutputStream baos 	= new ByteArrayOutputStream();
 		DataOutputStream dos 		= new DataOutputStream(baos);
@@ -315,13 +470,6 @@ public class NIOManager extends MessageProcessor {
 		//request it..
 		MiniData data = new MiniData(bb);
 		
-		//For ALL or for ONE
-		if(!zUID.equals("")) {
-			//Send it..
-			Main.getInstance().getNIOManager().getNIOServer().sendMessage(zUID,data);
-		}else {
-			//Send it..
-			Main.getInstance().getNIOManager().getNIOServer().sendMessageAll(data);
-		}
+		return data;
 	}
 }

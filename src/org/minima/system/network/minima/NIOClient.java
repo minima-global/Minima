@@ -10,12 +10,26 @@ import java.util.Date;
 import org.minima.objects.base.MiniData;
 import org.minima.system.Main;
 import org.minima.utils.MiniFormat;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
 
 public class NIOClient {
 
-	public static final int MAX_NIO_BUFFERS = 64 * 1024;
+	/**
+	 * Show debug information
+	 */
+	public static boolean mTraceON = false;
+	
+	/**
+	 * 8K buffer for send and receive.. 8KB
+	 */
+	public static final int MAX_NIO_BUFFERS = 8 * 1024;
+
+	/**
+	 * The Maximum size of a single message 32MB
+	 */
+	public static final int MAX_MESSAGE 	= 32 * 1024 * 1024;
 	
 	String mUID;
 	
@@ -37,16 +51,23 @@ public class NIOClient {
 	String 			mHost;
 	int 			mPort;
 	
+	int 			mMinimaPort=-1;
+	
 	boolean mIncoming;
 	
 	private ArrayList<MiniData> mMessages;
-	
 	
 	NIOManager mNIOMAnager;
 	
 	String mWelcomeMessage = "";
 	
 	long mTimeConnected = 0;
+	
+	long mLastMessageRead;
+	
+	int mConnectAttempts = 1;
+	
+	boolean mValidGreeting = false;
 	
 	/**
 	 * Specify extra info
@@ -71,7 +92,7 @@ public class NIOClient {
         
         mIncoming	= zIncoming;
         
-        //64k max buffer chunks for read and write
+        //Max buffer chunks for read and write
         mBufferIn 	= ByteBuffer.allocate(MAX_NIO_BUFFERS);
         mBufferOut 	= ByteBuffer.allocate(MAX_NIO_BUFFERS);
         
@@ -83,7 +104,8 @@ public class NIOClient {
     	
     	mNIOMAnager = Main.getInstance().getNetworkManager().getNIOManager();
     	
-    	mTimeConnected = System.currentTimeMillis();
+    	mTimeConnected 		= System.currentTimeMillis();
+    	mLastMessageRead 	= mTimeConnected; 
     }
 	
 	public JSONObject toJSON() {
@@ -94,7 +116,9 @@ public class NIOClient {
 		ret.put("incoming", isIncoming());
 		ret.put("host", mHost);
 		ret.put("port", mPort);
+		ret.put("minimaport", mMinimaPort);
 		ret.put("connected", new Date(mTimeConnected).toString());
+		ret.put("valid", mValidGreeting);
 		
 		return ret;
 	}
@@ -115,12 +139,40 @@ public class NIOClient {
 		return mIncoming;
 	}
 	
+	public void overrideHost(String zHost) {
+		mHost = zHost;
+	}
+	
 	public String getHost() {
 		return mHost;
 	}
 	
+	public void setPort(int zPort) {
+		mPort = zPort;
+	}
+	
 	public int getPort() {
 		return mPort;
+	}
+	
+	public void setMinimaPort(int zPort) {
+		mMinimaPort = zPort;
+	}
+	
+	public int getMinimaPort() {
+		return mMinimaPort;
+	}
+	
+	public boolean isValidGreeting() {
+		return mValidGreeting;
+	}
+	
+	public void setValidGreeting(boolean zValid) {
+		mValidGreeting = zValid;
+	}
+	
+	public String getWelcomeMessage() {
+		return mWelcomeMessage;
 	}
 	
 	public void setWelcomeMessage(String zWelcome) {
@@ -131,13 +183,31 @@ public class NIOClient {
 		return  mTimeConnected;
 	}
 	
+	public long getLastReadTime() {
+		return mLastMessageRead;
+	}
+	
+	public int getConnectAttempts() {
+		return mConnectAttempts;
+	}
+	
+	public void incrementConnectAttempts() {
+		mConnectAttempts++;
+	}
+	
+	public void setConnectAttempts(int zConnectAttempts) {
+		mConnectAttempts = zConnectAttempts;
+	}
+	
 	public void sendData(MiniData zData) {
 		synchronized (mMessages) {
-			mMessages.add(zData);
-		
-			//And now say we want to write..
-			mKey.interestOps(SelectionKey.OP_READ | SelectionKey.OP_WRITE);
-			mKey.selector().wakeup();
+			if(mKey.isValid()) {
+				mMessages.add(zData);
+			
+				//And now say we want to write..
+				mKey.interestOps(SelectionKey.OP_READ | SelectionKey.OP_WRITE);
+				mKey.selector().wakeup();
+			}
 		}
 	}
 	
@@ -158,17 +228,23 @@ public class NIOClient {
 	}
 	
 	public void handleRead() throws IOException {
+		
 		//read in..
  	   	int readbytes = mSocket.read(mBufferIn);
  	   	if(readbytes == -1) {
- 		   throw new IOException("Socket Closed!");
+ 	   		throw new IOException("Socket Closed!");
  	   	}
  	   
+ 	   	//Debug
+ 		if(mTraceON) {
+ 			MinimaLogger.log("[NIOCLIENT] "+mUID+" read "+readbytes);
+ 		}
+ 		
  	   	//Nothing..
  	   	if(readbytes == 0) {
- 		   return;
+ 	   		return;
  	   	}
- 	   
+ 	   	
  	   	//Ready to read
  	   	mBufferIn.flip();
  	   	
@@ -182,17 +258,26 @@ public class NIOClient {
  	   				mReadCurrentLimit 		= mBufferIn.getInt();
  	   				mReadCurrentPosition 	= 0;
  	   				
+ 	   				//Check MAX size..
+ 	   				if(mReadCurrentLimit > MAX_MESSAGE) {
+ 	   					//Message too big..
+ 	   					throw new IOException("Message too big for read! "+mReadCurrentLimit);
+ 	   				}
+ 	   				
  	   				mReadData = new byte[mReadCurrentLimit];
  	   			}else {
  	   				//Not enough for the size..
  	   				break;
  	   			}
- 	   		}else {
+ 	   		}
+ 	   		
+ 	   		//We have something..
+ 	   		if(mReadData != null) {
  	   			//How much left to read for this object
-				int readremaining 	= mReadCurrentLimit - mReadCurrentPosition;
+				int readremaining = mReadCurrentLimit - mReadCurrentPosition;
 				   
 				//How much is there still to read
-				int buffread	= mBufferIn.remaining();
+				int buffread = mBufferIn.remaining();
 				if(buffread > readremaining) {
 					buffread = readremaining;
 				}
@@ -211,10 +296,13 @@ public class NIOClient {
 					
 					//New array required..
 					mReadData = null;
+					
+					//Last message we have received from this client
+					mLastMessageRead = System.currentTimeMillis();
 				}
  	   		}
  	   	}
- 	   
+ 	   	
 		//ready to read more..
 		mBufferIn.compact();
 	}
@@ -223,13 +311,24 @@ public class NIOClient {
 		
 		//First fill the buffer if it has the space
 		while(mBufferOut.hasRemaining()) {
-		
+			
 			//Do we have a packet we are working on
 			if(mWriteData == null) {
 				
 				//Get the next packet
 				if(isNextData()) {
 					mWriteData 		= getNextData().getBytes();
+					
+					//Check MAX
+					if(mWriteData.length > MAX_MESSAGE) {
+						//Error Message too Big!
+						MinimaLogger.log("ERROR : Trying to write a message that is too big! "+mWriteData.length);
+					
+						//Hmm.. don't write it..
+						mWriteData = null;
+						break;
+					}
+					
 					mWritePosition 	= 0;
 					mWriteLimit 	= mWriteData.length; 
 					mWriteStart		= false;
@@ -241,12 +340,10 @@ public class NIOClient {
 			
 			//We have data to write
 			if(mWriteData != null) {
-				//How much left in the buffer
-				int remaining 	= mBufferOut.remaining();
-				   
+				
 				//Have we written the size yet
 				if(!mWriteStart) {
-					if(remaining >= 4) {
+					if(mBufferOut.remaining() >= 4) {
 						mBufferOut.putInt(mWriteLimit);
 						mWriteStart = true;
 					}else {
@@ -257,7 +354,7 @@ public class NIOClient {
 				
 				if(mWriteStart) {
 					//How much left in the buffer
-					remaining = mBufferOut.remaining();
+					int remaining = mBufferOut.remaining();
 					
 					//How much left to write
 					int writeremain = mWriteLimit - mWritePosition;
@@ -281,12 +378,18 @@ public class NIOClient {
 		mBufferOut.flip();
 		
 		//Write
-		mSocket.write(mBufferOut);
+		int write = mSocket.write(mBufferOut);
+		if(mTraceON) {
+			MinimaLogger.log("[NIOCLIENT] "+mUID+" wrote : "+write);
+		}
 		
 		//Any left
 		synchronized (mMessages) {
 			if(!mBufferOut.hasRemaining() && mMessages.size()==0 && mWriteData == null) {
-				mKey.interestOps(SelectionKey.OP_READ);
+				if(mKey.isValid()) {
+					//Only interested in READ
+					mKey.interestOps(SelectionKey.OP_READ);
+				}
 			}
 		}
 		

@@ -13,6 +13,7 @@ import java.security.SecureRandom;
 import java.util.Arrays;
 
 import org.minima.utils.BaseConverter;
+import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 
@@ -24,7 +25,10 @@ public class MiniData implements Streamable {
 	
 	public static int MINIMA_MAX_HASH_LENGTH 		= 64;
 	
-	public static int MINIMA_MAX_MINIDATA_LENGTH 	= 1024 * 1024;
+	/**
+	 * 256 MB Max MiniData size
+	 */
+	public static int MINIMA_MAX_MINIDATA_LENGTH 	= 1024 * 1024 * 256;
 	
 	public static final MiniData ZERO_TXPOWID = new MiniData("0x00");
 	
@@ -61,6 +65,33 @@ public class MiniData implements Streamable {
 	 */
 	public MiniData(byte[] zData) {
 		mData = zData;
+	}
+	
+	/**
+	 * Make sure is at least Min Length in size
+	 */
+	public MiniData(byte[] zData, int zMinLength) {
+		
+		//How big is it
+		int len = zData.length;
+		
+		if(len<zMinLength) {
+			byte[] data = new byte[zMinLength];
+			
+			//And the rest..
+			int diff = zMinLength - len;
+			for(int i=0;i<diff;i++) {
+				data[i] = 0;
+			}
+			
+			for(int i=0;i<len;i++) {
+				data[i+diff] = zData[i];
+			}
+			
+			mData = data;
+		}else {
+			mData = zData;
+		}
 	}
 	
 	/**
@@ -214,14 +245,15 @@ public class MiniData implements Streamable {
 		
 		//Check against maximum allowed
 		if(len > MINIMA_MAX_MINIDATA_LENGTH) {
-			throw new IOException("Read Error : MiniData Length larger than maximum allowed "+len);
+			throw new IOException("Read Error : MiniData Length larger than maximum allowed (256 MB) "+MiniFormat.formatSize(len));
 		}
 		
 		if(zSize != -1) {
 			if(len != zSize) {
-				throw new IOException("Read Error : MiniData Length not correct as specified "+zSize);
+				throw new IOException("Read Error : MiniData length not correct as specified "+zSize);
 			}
 		}
+		
 		mData = new byte[len];
 		zIn.readFully(mData);
 	}
@@ -307,5 +339,16 @@ public class MiniData implements Streamable {
 		byte[] data = new byte[len];
 		rand.nextBytes(data);
 		return new MiniData(data);
+	}
+	
+	public static void main(String[] zArgs) {
+		
+		MiniData origdata = MiniData.getRandomData(10);
+		System.out.println("ORIG   : "+origdata.getLength()+" "+origdata.to0xString() +" "+origdata.getDataValue());
+		
+		MiniData lendata = new MiniData(origdata.getBytes(), 16);
+		System.out.println("LENGTH : "+lendata.getLength()+" "+lendata.to0xString() +" "+lendata.getDataValue());
+		
+		
 	}
 }

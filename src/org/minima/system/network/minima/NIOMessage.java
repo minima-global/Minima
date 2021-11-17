@@ -36,6 +36,7 @@ public class NIOMessage implements Runnable {
 	public static final MiniByte MSG_GENMESSAGE = new MiniByte(5);
 	public static final MiniByte MSG_PULSE 		= new MiniByte(6);
 	public static final MiniByte MSG_P2P 		= new MiniByte(7);
+	public static final MiniByte MSG_PING 		= new MiniByte(8);
 	
 	/**
 	 * Helper function that converts to String 
@@ -107,18 +108,44 @@ public class NIOMessage implements Runnable {
 			
 			//Now find the right message
 			if(type.isEqual(MSG_GREETING)) {
+				//Get the client.. unless an internal message
+				NIOClient nioclient = Main.getInstance().getNIOManager().getNIOServer().getClient(mClientUID);
+				if(nioclient == null) {
+					MinimaLogger.log(mClientUID+" Error null client on Greeting NIOMessage..");
+					return;
+				}
+				
 				//We have received a greeting message
 				Greeting greet = Greeting.ReadFromStream(dis);
 				
-				//Message
-				MinimaLogger.log("Greeting received from "+mClientUID+" "+MiniFormat.formatSize(mData.getLength()));
+				//What version..
+				//if(!greet.getVersion().toString().startsWith("TN-P2P.100")) {
+				if(!greet.getVersion().toString().startsWith("TN-P2P.100.6")) {
+					MinimaLogger.log("Greeting with Incompatible Version! "+greet.getVersion().toString());
+					
+					//Disconnect..
+					Main.getInstance().getNIOManager().disconnect(mClientUID);
+					
+					return;
+				}
+				
+				//Get the Host / Port..
+				if(greet.getExtraData().containsKey("host")) {
+					nioclient.overrideHost(greet.getExtraDataValue("host"));
+				}
+				if(greet.getExtraData().containsKey("port")) {
+					nioclient.setMinimaPort(Integer.parseInt(greet.getExtraDataValue("port")));
+				}
 				
 				//Get the welcome message..
-				String welcome = (String) greet.getExtraData().get("welcome");
-				if(welcome != null) {
-					//Tell the NIOServer
-					Main.getInstance().getNIOManager().getNIOServer().setWelcome(mClientUID, welcome);
-				}
+				nioclient.setWelcomeMessage("Minima v"+greet.getVersion());
+				nioclient.setValidGreeting(true);
+				
+//				String welcome = (String) greet.getExtraData().get("welcome");
+//				if(welcome != null) {
+//					//Tell the NIOServer
+//					Main.getInstance().getNIOManager().getNIOServer().setWelcome(mClientUID, welcome);
+//				}
 				
 				//Create an IBD response to that Greeting..
 				IBD ibd = new IBD();
@@ -131,8 +158,8 @@ public class NIOMessage implements Runnable {
 				//IBD received..
 				IBD ibd = IBD.ReadFromStream(dis);
 				
-				//Message
-				MinimaLogger.log("IBD received from "+mClientUID+" "+MiniFormat.formatSize(mData.getLength()));
+				//A small message..
+				MinimaLogger.log("IBD Received size:"+MiniFormat.formatSize(data.length)+" blocks:"+ibd.getTxBlocks().size());
 				
 				//Do some checking!
 //				//Sort the Sync blocks - low to high - they should be in the correct order but just in case..
@@ -185,6 +212,8 @@ public class NIOMessage implements Runnable {
 				if(txpow != null) {
 					//request it..
 					NIOManager.sendNetworkMessage(mClientUID, MSG_TXPOW, txpow);
+				}else {
+					MinimaLogger.log("TxPoW requested from "+mClientUID+" that we don't have.. "+txpowid.to0xString());
 				}
 			
 			}else if(type.isEqual(MSG_TXPOW)) {
@@ -195,11 +224,12 @@ public class NIOMessage implements Runnable {
 //				if(GeneralParams.DEBUGFUNC) {
 //					MinimaLogger.log("DEBUGFUNC active : ignoring this TXPOW @ "+txpow.getBlockNumber()+" "+txpow.getTxPoWID());
 //					return;
-//				}
+//				
 				
 				//Do we have it..
 				boolean exists = MinimaDB.getDB().getTxPoWDB().exists(txpow.getTxPoWID());
 				if(exists) {
+//					MinimaLogger.log("Received TxPoW we already have : "+txpow.getTxPoWID());
 					return;
 				}
 				
@@ -228,16 +258,17 @@ public class NIOMessage implements Runnable {
 					for(MiniData txn : txns) {
 						exists = MinimaDB.getDB().getTxPoWDB().exists(txn.to0xString());
 						if(!exists) {
-							//request it..
-							NIOManager.sendNetworkMessage(mClientUID, MSG_TXPOWREQ, txn);
+							//request it.. with a slight delay - as may be in process stack
+							NIOManager.sendNetworkMessage(mClientUID, MSG_TXPOWREQ, txpow.getTxPoWIDData());
+//							NIOManager.sendDelayedTxPoWReq(mClientUID, txn.to0xString(), txpow.getTxPoWID()+" missing txn");
 						}
 					}
 					
 					//Get the parent if we don't have it..
 					exists = MinimaDB.getDB().getTxPoWDB().exists(txpow.getParentID().to0xString());
 					if(!exists) {
-						//request it..
 						NIOManager.sendNetworkMessage(mClientUID, MSG_TXPOWREQ, txpow.getParentID());
+//						NIOManager.sendDelayedTxPoWReq(mClientUID, txpow.getParentID().to0xString(), txpow.getTxPoWID()+" missing parent");
 					}
 					
 				}else {
@@ -251,6 +282,10 @@ public class NIOMessage implements Runnable {
 				
 				//Foe now..
 				MinimaLogger.log(mClientUID+":"+msg.toString());
+			
+			}else if(type.isEqual(MSG_PING)) {
+				//Read in a txpow unit.. currently does nothing.. could be 1000's of connections..
+				MiniData txpowid = MiniData.ReadFromStream(dis);
 			
 			}else if(type.isEqual(MSG_P2P)) {
 				
@@ -302,21 +337,23 @@ public class NIOMessage implements Runnable {
 				
 				//Did we find a crossover..
 				if(found) {
+					
 					//Request all the blocks.. in the correct order
 					for(MiniData block : requestlist) {
-						MinimaLogger.log("Requesting PULSE TxPoW from "+mClientUID+" "+block.to0xString());
-						NIOManager.sendNetworkMessage(mClientUID, MSG_TXPOWREQ, block);
+						NIOManager.sendDelayedTxPoWReq(mClientUID, block.to0xString(), "PULSE");
 					}
 					
 				}else{
+				
+					//Hmm something funny..
 					MinimaLogger.log("NO CROSSOVER BLOCK FOUND from "+mClientUID+" .. disconnecting");
 					Main.getInstance().getNIOManager().disconnect(mClientUID);
 				}
 				
 			}else {
+				
 				//UNKNOWN MESSAGE..
 				MinimaLogger.log("Unknown Message type received from "+mClientUID+" type:"+type+" size:"+data.length);
-				return;
 			}
 			
 		} catch (Exception e) {

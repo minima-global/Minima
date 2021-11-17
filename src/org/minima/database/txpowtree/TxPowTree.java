@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.Hashtable;
 
 import org.minima.objects.TxPoW;
@@ -253,9 +254,23 @@ public class TxPowTree implements Streamable {
 		return removed;
 	}
 	
-	public void printTree() {
+	public String printTree(int zDepth) {
+		StringBuffer treestr = new StringBuffer();
+		
 		//What is the root block..
-		MiniNumber rootblock = getRoot().getTxPoW().getBlockNumber();
+		TxPoWTreeNode tip = getTip();
+		if(tip == null) {
+			return "";
+		}
+		
+		//Cycle back..
+		for(int i=0;i<zDepth-1;i++) {
+			if(tip.getParent() != null) {
+				tip = tip.getParent();
+			}
+		}
+		
+		MiniNumber rootblock = tip.getTxPoW().getBlockNumber();
 		
 		//First set all the weights to their base weight
 		TxPoWTreeNodeAction printer = new TxPoWTreeNodeAction() {
@@ -273,9 +288,9 @@ public class TxPowTree implements Streamable {
 				int ind 			= indent.getAsInt();
 				for(int i=0;i<ind;i++) {
 					if(i==ind-1) {
-						System.out.print("-->");
+						treestr.append("-->");
 					}else {
-						System.out.print("   ");
+						treestr.append("   ");
 					}
 				}
 				
@@ -285,26 +300,31 @@ public class TxPowTree implements Streamable {
 					numtxns++;
 				}
 				
-				System.out.println(" "+block+" [0/"+txp.getSuperLevel()+"] "+ID+" txns:"+numtxns+"  weight:"+weight+"/"+zNode.getTotalWeight());
+				//Block details
+				treestr.append(" "+block+" [0/"+txp.getSuperLevel()+"] "+ID+" txns:"+numtxns+"  weight:"+weight+"/"+zNode.getTotalWeight()+" @ "+new Date(txp.getTimeMilli().getAsLong()).toString()+"\n");
 			}
 		}; 
 		
 		//Traverse the tree
-		traverseTree(printer);
+		traverseTree(printer, tip);
+		
+		//And return the final string
+		return treestr.toString();
 	}
 	
 	private TxPoWTreeNode traverseTree(TxPoWTreeNodeAction zNodeAction) {
+		return traverseTree(zNodeAction, getRoot());
+	}
+	
+	private TxPoWTreeNode traverseTree(TxPoWTreeNodeAction zNodeAction, TxPoWTreeNode zRoot) {
 		//Create a STACK..
 		Stack stack = new Stack();
 		
-		//Get root wher we start the traverse
-		TxPoWTreeNode root = getRoot();
-		
 		//If nothing on chain return nothing
-		if(root == null) {return null;}
+		if(zRoot == null) {return null;}
 				
 		//Push the root on the stack
-		stack.push(root);
+		stack.push(zRoot);
 		
 		//Now cycle..
 		while(!stack.isEmpty()) {

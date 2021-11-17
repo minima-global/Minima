@@ -173,6 +173,22 @@ public class MiniFile {
 		}
 	}
 	
+	public static long getTotalFileSize(File zFolder) {
+		
+		long tot = 0;
+		
+		File[] files = zFolder.listFiles();
+		for(File file : files) {
+			if(file.isDirectory()) {
+				tot = tot + getTotalFileSize(file);
+			}else {
+				tot += file.length();
+			}
+		}
+		
+		return tot;
+	}
+	
 	public static String getContentType(String zFile) {
 		
 		String ending;

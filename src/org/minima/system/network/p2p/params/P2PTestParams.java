@@ -14,7 +14,7 @@ public class P2PTestParams {
     /**
      * Desired number of client (nodes that can't accept inbound connections) to maintain
      */
-    public static int TGT_NUM_NONE_P2P_LINKS = 20;
+    public static int TGT_NUM_NONE_P2P_LINKS = 50;
 
     /**
      * Desired number of connections clients should maintain
@@ -24,18 +24,18 @@ public class P2PTestParams {
     /**
      * Time between P2P system assessing its state in milliseconds
      */
-    public static int LOOP_DELAY = 20_000;
+    public static int LOOP_DELAY = 5_000;
 
     /**
      * Max additional ms to add to loop delay (mostly useful during testing to ensure all nodes
      * aren't perfectly in sync)
      */
-    public static int LOOP_DELAY_VARIABILITY = 5_000;
+    public static int LOOP_DELAY_VARIABILITY = 3_000;
 
     /**
      * Time between P2P system assessing if it can receive inbound connections milliseconds
      */
-    public static int NODE_NOT_ACCEPTING_CHECK_DELAY = 300_000;
+    public static int NODE_NOT_ACCEPTING_CHECK_DELAY = 60_000;
 
     /**
      * Time in ms before walk link messages expire
@@ -47,15 +47,16 @@ public class P2PTestParams {
      */
     public static int AUTH_KEY_EXPIRY = 300_000;
 
+    public static int METRICS_DELAY = 5_000;
+
+    public static String METRICS_URL = "http://metrics:5000/network";
 
     public static List<InetSocketAddress> DEFAULT_NODE_LIST = Arrays.asList(
-            new InetSocketAddress("127.0.0.1", 9001),
-            new InetSocketAddress("127.0.0.1", 9101)
+            new InetSocketAddress("minima_one", 9001)
     );
 
     public static void setTestParams() {
         P2PParams.DEFAULT_NODE_LIST = DEFAULT_NODE_LIST;
-
         P2PParams.LOOP_DELAY = LOOP_DELAY;
         P2PParams.LOOP_DELAY_VARIABILITY = LOOP_DELAY_VARIABILITY;
         P2PParams.NODE_NOT_ACCEPTING_CHECK_DELAY = NODE_NOT_ACCEPTING_CHECK_DELAY;
@@ -64,6 +65,8 @@ public class P2PTestParams {
         P2PParams.TGT_NUM_LINKS = TGT_NUM_LINKS;
         P2PParams.TGT_NUM_NONE_P2P_LINKS = TGT_NUM_NONE_P2P_LINKS;
         P2PParams.MIN_NUM_CONNECTIONS = MIN_NUM_CONNECTIONS;
+        P2PParams.METRICS_DELAY = METRICS_DELAY;
+        P2PParams.METRICS_URL = METRICS_URL;
     }
 
 

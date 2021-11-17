@@ -1,14 +1,13 @@
 package org.minima.system.network.p2p.params;
 
 import java.net.InetSocketAddress;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public class P2PParams {
 
     // P2P Version number (Major - breaking changes. Minor - none breaking changes)
-    public static String VERSION = "dev-0.1";
+    public static String VERSION = "1.0";
 
     /**
      * Desired number of in link and out links to maintain
@@ -18,7 +17,7 @@ public class P2PParams {
     /**
      * Desired number of client (nodes that can't accept inbound connections) to maintain
      */
-    public static int TGT_NUM_NONE_P2P_LINKS = 20;
+    public static int TGT_NUM_NONE_P2P_LINKS = 50;
 
     /**
      * Desired number of connections clients should maintain
@@ -51,13 +50,12 @@ public class P2PParams {
      */
     public static int AUTH_KEY_EXPIRY = 300_000;
 
+    public static int METRICS_DELAY = 600_000;
 
+    public static String METRICS_URL = "http://35.242.245.96:5000//network";
 
-    public static List<InetSocketAddress> DEFAULT_NODE_LIST = new ArrayList<>();
-
-//            Arrays.asList(
-//            new InetSocketAddress("127.0.0.1", 9999),
-//            new InetSocketAddress("127.0.0.1", 9888)
-//            );
+    public static List<InetSocketAddress> DEFAULT_NODE_LIST = Arrays.asList(
+            new InetSocketAddress("35.242.245.96", 9001)
+            );
 
 }

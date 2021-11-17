@@ -9,18 +9,23 @@ import org.minima.database.wallet.KeyRow;
 import org.minima.objects.Pulse;
 import org.minima.objects.TxBlock;
 import org.minima.objects.TxPoW;
+import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.brains.TxPoWMiner;
 import org.minima.system.brains.TxPoWProcessor;
 import org.minima.system.genesis.GenesisMMR;
 import org.minima.system.genesis.GenesisTxPoW;
 import org.minima.system.network.NetworkManager;
+import org.minima.system.network.minima.NIOClient;
 import org.minima.system.network.minima.NIOManager;
 import org.minima.system.network.minima.NIOMessage;
+import org.minima.system.network.minima.NIOServer;
 import org.minima.system.params.GeneralParams;
 import org.minima.system.params.GlobalParams;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MinimaLogger;
+import org.minima.utils.RPCClient;
+import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageListener;
 import org.minima.utils.messages.MessageProcessor;
@@ -54,10 +59,33 @@ public class Main extends MessageProcessor {
 	 * Main loop messages
 	 */
 	public static final String MAIN_TXPOWMINED 	= "MAIN_TXPOWMINED";
-	public static final String MAIN_AUTOMINE 	= "MAIN_AUTOMINE";
+	public static final String MAIN_AUTOMINE 	= "MAIN_CHECKAUTOMINE";
 	public static final String MAIN_CLEANDB 	= "MAIN_CLEANDB";
 	public static final String MAIN_PULSE 		= "MAIN_PULSE";
+	
+	/**
+	 * Debug Function
+	 */
+	public static final String MAIN_CHECKER 	= "MAIN_CHECKER";
+	MiniData mOldTip 							= MiniData.ZERO_TXPOWID;
+	
+	//Check every 180 seconds..
+	long CHECKER_TIMER							= 1000 * 180;
+	
+	/**
+	 * Notify Users..
+	 */
 	public static final String MAIN_NEWBLOCK 	= "MAIN_NEWBLOCK";
+	public static final String MAIN_BALANCE 	= "MAIN_BALANCE";
+	public static final String MAIN_MINING 		= "MAIN_MINING";
+	
+	/**
+	 * Incentive Cash User ping..
+	 * 
+	 * Every 8 hours
+	 */
+	public static final String MAIN_INCENTIVE 	= "MAIN_INCENTIVE";
+	long IC_TIMER = 1000 * 60 * 60 * 8;
 	
 	/**
 	 * Main TxPoW Processor
@@ -80,14 +108,19 @@ public class Main extends MessageProcessor {
 	boolean mShuttingdown = false;
 	
 	/**
+	 * Are we restoring..
+	 */
+	boolean mRestoring = false;
+	
+	/**
 	 * Timer delay for CleanDB messages - every 30 mins
 	 */
 	long CLEANDB_TIMER	= 1000 * 60 * 30;
 	
 	/**
-	 * Timer for the automine message - twice every blocktime
+	 * Timer for the automine message
 	 */
-	long AUTOMINE_TIMER = 1000 *60;
+	long AUTOMINE_TIMER = 1000 * 60;
 	
 	public Main() {
 		super("MAIN");
@@ -110,7 +143,7 @@ public class Main extends MessageProcessor {
 		//Start the engine..
 		mTxPoWProcessor = new TxPoWProcessor();
 		mTxPoWMiner 	= new TxPoWMiner();
-				
+		
 		//Are we running a private network
 		if(GeneralParams.GENESIS) {
 			//Create a genesis node
@@ -119,7 +152,7 @@ public class Main extends MessageProcessor {
 		
 		//Start the networking..
 		mNetwork = new NetworkManager();
-		
+				
 		//Simulate traffic message ( only if auto mine is set )
 		AUTOMINE_TIMER = MiniNumber.THOUSAND.div(GlobalParams.MINIMA_BLOCK_SPEED).getAsLong();
 		PostTimerMessage(new TimerMessage(AUTOMINE_TIMER, MAIN_AUTOMINE));
@@ -129,6 +162,12 @@ public class Main extends MessageProcessor {
 		
 		//Clean the DB (delete old records)
 		PostTimerMessage(new TimerMessage(CLEANDB_TIMER, MAIN_CLEANDB));
+		
+		//Store the IC User - do fast first time - 30 seconds in.. then every 8 hours
+		PostTimerMessage(new TimerMessage(1000*30, MAIN_INCENTIVE));
+		
+		//Debug Checker
+		PostTimerMessage(new TimerMessage(CHECKER_TIMER, MAIN_CHECKER));
 		
 		//Quick Clean up..
 		System.gc();
@@ -170,6 +209,31 @@ public class Main extends MessageProcessor {
 		}		
 	}
 	
+	public void restoreReady() {
+		//we are about to restore..
+		mRestoring = true;
+		
+		//Shut down the network
+		mNetwork.shutdownNetwork();
+				
+		//Stop the Miner
+		mTxPoWMiner.stopMessageProcessor();
+		
+		//Stop the main TxPoW processor
+		mTxPoWProcessor.stopMessageProcessor();
+		while(!mTxPoWProcessor.isShutdownComplete()) {
+			try {Thread.sleep(50);} catch (InterruptedException e) {}
+		}
+		
+		//No More timer Messages
+		TimerProcessor.stopTimerProcessor();
+		
+		//Wait for the networking to finish
+		while(!mNetwork.isShutDownComplete()) {
+			try {Thread.sleep(50);} catch (InterruptedException e) {}
+		}		
+	}
+	
 	public NetworkManager getNetworkManager() {
 		return mNetwork;
 	}
@@ -186,12 +250,18 @@ public class Main extends MessageProcessor {
 		return mTxPoWMiner;
 	}
 	
-	public void setTrace(boolean zTrace) {
-		setFullLogging(zTrace);
-		mTxPoWProcessor.setFullLogging(zTrace);
-		mTxPoWMiner.setFullLogging(zTrace);
-		mNetwork.getNIOManager().setFullLogging(zTrace);
-		mNetwork.getP2PManager().setFullLogging(zTrace);
+	public void setTrace(boolean zTrace, String zFilter) {
+		setFullLogging(zTrace,zFilter);
+		
+		mTxPoWProcessor.setFullLogging(zTrace,zFilter);
+		mTxPoWMiner.setFullLogging(zTrace,zFilter);
+		
+		mNetwork.getNIOManager().setFullLogging(zTrace,zFilter);
+		mNetwork.getP2PManager().setFullLogging(zTrace,zFilter);
+		mNetwork.getSSHManager().setFullLogging(zTrace,zFilter);
+		
+		NIOClient.mTraceON = zTrace;
+		NIOServer.mTraceON = zTrace;
 	}
 	
 	private void doGenesis() {
@@ -221,7 +291,7 @@ public class Main extends MessageProcessor {
 	@Override
 	protected void processMessage(Message zMessage) throws Exception {
 		//Are we shutting down
-		if(mShuttingdown) {
+		if(mShuttingdown || mRestoring) {
 			return;
 		}
 		
@@ -230,25 +300,28 @@ public class Main extends MessageProcessor {
 			//Get it..
 			TxPoW txpow = (TxPoW) zMessage.getObject("txpow");
 			
+			//Post a message..
+			Message mining = new Message(MAIN_MINING);
+			mining.addBoolean("starting", false);
+			mining.addObject("txpow", txpow);
+			Main.getInstance().PostMessage(mining);
+			
 			//We have mined a TxPoW.. send it out to the network..
 			if(!txpow.isTransaction() && !txpow.isBlock()) {
 				//A PULSE..forward as proof
 				return;
 			}
 			
-//			//Did we find a block 
-//			if(txpow.isBlock()) {
-//				MinimaLogger.log("You found a block! "+txpow.getTxPoWID() );
-//				
-//				//Check it..
-//				TxPoWChecker.checkTxPoW(MinimaDB.getDB().getTxPoWTree().getTip().getMMR(), txpow);
-//			}
-			
-			//New TxPoW!.. add to database and send on to the Processor
-			mTxPoWProcessor.postProcessTxPoW(txpow);
-			
-			//FOR NOW.. ( Should just send the full TxPoW - we just mined it so noone has it)
-			NIOManager.sendNetworkMessageAll(NIOMessage.MSG_TXPOWID, txpow.getTxPoWIDData());
+			//Create an NIO Message - so the message goes through the same checks as any other message
+			MiniData niodata = NIOManager.createNIOMessage(NIOMessage.MSG_TXPOW, txpow);
+
+			//And send
+			Message newniomsg = new Message(NIOManager.NIO_INCOMINGMSG);
+			newniomsg.addString("uid", "0x00");
+			newniomsg.addObject("data", niodata);
+
+			//Post to the NIOManager - which will check it and forward if correct
+			getNetworkManager().getNIOManager().PostMessage(newniomsg);
 		
 		}else if(zMessage.getMessageType().equals(MAIN_AUTOMINE)) {
 			
@@ -256,7 +329,7 @@ public class Main extends MessageProcessor {
 			if(GeneralParams.AUTOMINE) {
 				
 				//Create a TxPoW
-				mTxPoWMiner.PostMessage(TxPoWMiner.TXPOWMINER_EMPTYTXPOW);
+				mTxPoWMiner.PostMessage(TxPoWMiner.TXPOWMINER_MINEPULSE);
 			}
 			
 			//Next Attempt
@@ -288,19 +361,105 @@ public class Main extends MessageProcessor {
 			NIOManager.sendNetworkMessageAll(NIOMessage.MSG_PULSE, pulse);
 		
 			//Mine a TxPoW
-			mTxPoWMiner.PostMessage(TxPoWMiner.TXPOWMINER_EMPTYTXPOW);
+			mTxPoWMiner.PostMessage(TxPoWMiner.TXPOWMINER_MINEPULSE);
 			
 			//And then wait again..
 			PostTimerMessage(new TimerMessage(GeneralParams.USER_PULSE_FREQ, MAIN_PULSE));
 		
+		}else if(zMessage.getMessageType().equals(MAIN_INCENTIVE)) {
+			
+			//Get the User
+			String user = MinimaDB.getDB().getUserDB().getIncentiveCashUserID();
+			
+			//Make sure there is a User specified
+			if(!user.equals("")) {
+				//Call the RPC End point..
+				RPCClient.sendPUT("https://incentivecash.minima.global/api/ping/"+user);
+			}
+			
+			//Do it agin..
+			PostTimerMessage(new TimerMessage(IC_TIMER, MAIN_INCENTIVE));
+			
 		}else if(zMessage.getMessageType().equals(MAIN_NEWBLOCK)) {
+			
+			//Get the TxPoW
+			TxPoW txpow = (TxPoW) zMessage.getObject("txpow");
 			
 			//The tip of the TxPoWTree has changed - we have a new block..
 			postMinimaListener(zMessage);
 			
-			//Notify other sections?
-			//..
+			//Notify The Web Hook Listeners
+			JSONObject event = new JSONObject();
+			event.put("event", "NEWBLOCK");
+			event.put("txpow", txpow.toJSON());
 			
+			//And Post it..
+			PostNotifyEvent(event);
+			
+		}else if(zMessage.getMessageType().equals(MAIN_BALANCE)) {
+			
+			//The tip of the TxPoWTree has changed - we have a new block..
+			postMinimaListener(zMessage);
+			
+			//Notify The Web Hook Listeners
+			JSONObject event = new JSONObject();
+			event.put("event", "NEWBALANCE");
+			
+			//And Post it..
+			PostNotifyEvent(event);
+				
+		}else if(zMessage.getMessageType().equals(MAIN_MINING)) {
+			
+			//Get the TxPoW
+			TxPoW txpow = (TxPoW) zMessage.getObject("txpow");
+					
+			//Are we starting or stopping..
+			boolean starting = zMessage.getBoolean("starting");
+			
+			//The tip of the TxPoWTree has changed - we have a new block..
+			postMinimaListener(zMessage);
+			
+			//Notify The Web Hook Listeners
+			JSONObject event = new JSONObject();
+			event.put("event", "MINING");
+			event.put("txpow", txpow.toJSON());
+			event.put("starting", starting);
+			
+			//And Post it..
+			PostNotifyEvent(event);
+			
+		}else if(zMessage.getMessageType().equals(MAIN_CHECKER)) {
+			
+			//Get the Current Tip
+			TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
+			if(tip == null) {
+				MinimaLogger.log("No tip found in Main Checker..");
+				return;
+			}
+			
+			//Has it changed
+			if(tip.getTxPoW().getTxPoWIDData().isEqual(mOldTip)) {
+				MinimaLogger.log("Warning : Chain tip hasn't changed in 180 seconds "+tip.getTxPoW().getTxPoWID()+" "+tip.getTxPoW().getBlockNumber().toString());
+			}
+			
+			//Keep for the next round
+			mOldTip = tip.getTxPoW().getTxPoWIDData();
+			
+			//A Ping Message.. The top TxPoWID
+			NIOManager.sendNetworkMessageAll(NIOMessage.MSG_PING, tip.getTxPoW().getTxPoWIDData());
+			
+			//Check again..
+			PostTimerMessage(new TimerMessage(CHECKER_TIMER, MAIN_CHECKER));
+		}
+	}
+	
+	/**
+	 * Post a network message to the webhook listeners
+	 * @param zEvent
+	 */
+	private void PostNotifyEvent(JSONObject zEvent) {
+		if(getNetworkManager() != null) {
+			getNetworkManager().getNotifyManager().PostEvent(zEvent);
 		}
 	}
 }

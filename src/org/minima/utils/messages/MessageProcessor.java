@@ -3,9 +3,6 @@
  */
 package org.minima.utils.messages;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
 import org.minima.utils.MinimaLogger;
 
 /**
@@ -32,7 +29,8 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
 	/**
 	 * LOG messages ?
 	 */
-	protected boolean mTrace = false;
+	protected boolean mTrace 		= false;
+	protected String mTraceFilter 	= "";
 	
 	/**
 	 * Processor Name
@@ -53,8 +51,9 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
         mMainThread.start();
     }
     
-    public void setFullLogging(boolean zLogON) {
-    	mTrace = zLogON;
+    public void setFullLogging(boolean zLogON, String zTraceFilter) {
+    	mTrace 			= zLogON;
+    	mTraceFilter 	= zTraceFilter;
     }
     
     public boolean isTrace() {
@@ -85,10 +84,8 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
     }
     
     public void run() {
-    	//Format the time
-    	SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss.SSS");
-
-        //Loop while still running
+    	
+    	//Loop while still running
         while(mRunning){
             //Check for valid mnessage
             Message msg = getNextMessage();
@@ -99,7 +96,10 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
                 try{
                 	//Are we logging  ?
                 	if(mTrace) {
-                		MinimaLogger.log("["+getSize()+"] "+sdf.format(new Date())+" [ "+mMainThread.getName()+" ] \t"+msg);
+                		String tracemsg = msg.toString();
+                		if(tracemsg.contains(mTraceFilter)) {
+                			MinimaLogger.log("["+mMainThread.getName()+"] (stack:"+getSize()+") \t"+msg);
+                		}
                 	}
                 
                 	//Process Message
