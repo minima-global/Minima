@@ -2,6 +2,8 @@ package org.minima.system.params;
 
 public class GeneralParams {
 
+	public static boolean IS_MOBILE = false;
+	public static boolean IS_ACCEPTING_IN_LINKS = true;
 	/**
 	 * Is this a private network - don;t connect to any users..
 	 */
@@ -33,9 +35,19 @@ public class GeneralParams {
 	public static String MINIMA_HOST = "";
 	
 	/**
+	 * Is the HOST set from command line
+	 */
+	public static boolean IS_HOST_SET = false;
+	
+	/**
 	 * The main Minima port
 	 */
 	public static int MINIMA_PORT = 9001;
+	
+	/**
+	 * The Maxima port
+	 */
+	public static int MAXIMA_PORT = 9003;
 	
 	/**
 	 * The Minima RPC port

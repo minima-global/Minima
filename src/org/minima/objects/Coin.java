@@ -23,9 +23,9 @@ public class Coin implements Streamable {
 	public static final MiniData COINID_OUTPUT  = new MiniData("0x00");
 	
 	/**
-	 * Floating Inputs
+	 * Floating Inputs - used for ELTOO
 	 */
-	public static final MiniData COINID_FLOATING_INPUT  = new MiniData("0x01");
+	public static final MiniData COINID_ELTOO  	= new MiniData("0x01");
 	
 	/**
 	 * The GLOBAL UNIQUE CoinID for this coin.

@@ -7,11 +7,10 @@ package org.minima.utils.json;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.nio.charset.Charset;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
-
-import org.minima.objects.base.MiniString;
 
 /**
  * A JSON object. Key value pairs are unordered. JSONObject supports java.util.Map interface.
@@ -93,7 +92,7 @@ public class JSONObject extends LinkedHashMap implements JSONAware, JSONStreamAw
 			writeJSONString(map, writer);
 			
 			//Create a UTF-8 String..
-			return new String(writer.toString().getBytes(MiniString.MINIMA_CHARSET));
+			return new String(writer.toString().getBytes(Charset.forName("UTF-8")));
 			
 			//Old way
 //			return writer.toString();

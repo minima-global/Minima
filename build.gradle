@@ -40,7 +40,7 @@ dependencies {
 
     //implementation 'org.mozilla:rhino:1.7R4'
 
-    //implementation 'com.jcraft:jsch:0.1.55'
+    implementation 'com.jcraft:jsch:0.1.55'
 
 //    implementation group: 'com.h2database', name: 'h2', version: '1.4.200'
 
@@ -79,8 +79,8 @@ tasks.withType(AbstractArchiveTask) {
 }
 
 compileJava {
-	sourceCompatibility = '11'
-    targetCompatibility = '11'
+	sourceCompatibility = '1.8'
+    targetCompatibility = '1.8'
     //options.compilerArgs << '-something'
 }
 

@@ -225,7 +225,7 @@ public class TxPowTreeTest {
 					child2.addChildNode(new TxPoWTreeNode(new TxPoW("0x11", 3, 1)));
 		
 		tree.recalculateTree();
-		tree.printTree();
+		tree.printTree(32);
 		
 		root = tree.getRoot();
 		tip  = tree.getTip();
@@ -235,7 +235,7 @@ public class TxPowTreeTest {
 		
 		tree.setLength(4);
 		tree.recalculateTree();
-		tree.printTree();
+		tree.printTree(32);
 		
 		root = tree.getRoot();
 		tip  = tree.getTip();

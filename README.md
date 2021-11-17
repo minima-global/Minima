@@ -48,7 +48,7 @@ Using the `-clean` parameter deletes any previous data and ensures you can resys
 Use `-conf` to specify an absolute path to a configuration file. Follows the same keys as the parameters i.e. `-port 9008` -> `port=9008`.
 Parameters included as arguments take precedence over those included in configuration file.
 
-And finally `-data` specifies a different folder to store the data files for this second running instance.
+And finally `-data` specifies an absolute path to a different folder to store the data files for this second running instance.
 
 If you compile from scratch - you can use the bin folder.. you need to link the H2 sql db and the rhino javascript library both of which are in the lib folder.
 

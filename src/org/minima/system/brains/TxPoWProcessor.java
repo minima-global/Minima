@@ -11,7 +11,6 @@ import org.minima.database.txpowtree.TxPowTree;
 import org.minima.objects.IBD;
 import org.minima.objects.TxBlock;
 import org.minima.objects.TxPoW;
-import org.minima.objects.base.MiniData;
 import org.minima.system.Main;
 import org.minima.system.params.GlobalParams;
 import org.minima.utils.MinimaLogger;
@@ -196,13 +195,13 @@ public class TxPoWProcessor extends MessageProcessor {
 		Cascade	cascdb		= MinimaDB.getDB().getCascade();
 		ArchiveManager arch = MinimaDB.getDB().getArchive();
 		
-		//What is the current tip..
-		TxPoWTreeNode currenttip = txptree.getTip();
-		
 		//Need to LOCK DB
 		MinimaDB.getDB().writeLock(true);
 		
 		try {
+		
+			//What is the current tip..
+			TxPoWTreeNode currenttip = txptree.getTip();
 			
 			//Recalculate the tree and tip
 			txptree.recalculateTree();
@@ -268,6 +267,16 @@ public class TxPoWProcessor extends MessageProcessor {
 				//And move back up the chain
 				tip = tip.getParent();
 			}
+		
+			//Has the Tip changed..
+			TxPoWTreeNode newtipnode 	= txptree.getTip();
+			
+			//Has the tip changed..
+			if(currenttip!=null && newtipnode!=null) {
+				if(!currenttip.getTxPoW().getTxPoWIDData().isEqual(newtipnode.getTxPoW().getTxPoWIDData())) {
+					Main.getInstance().PostMessage(new Message(Main.MAIN_NEWBLOCK).addObject("txpow", newtipnode.getTxPoW()));
+				}
+			}
 			
 		}catch(Exception exc) {
 			MinimaLogger.log(exc);
@@ -276,15 +285,6 @@ public class TxPoWProcessor extends MessageProcessor {
 		//Unlock..
 		MinimaDB.getDB().writeLock(false);
 		
-		//Has the Tip changed..
-		TxPoWTreeNode newtipnode 	= txptree.getTip();
-		
-		//Has the tip changed..
-		if(currenttip!=null && newtipnode!=null) {
-			if(!currenttip.getTxPoW().getTxPoWIDData().isEqual(newtipnode.getTxPoW().getTxPoWIDData())) {
-				Main.getInstance().PostMessage(new Message(Main.MAIN_NEWBLOCK).addObject("txpow", newtipnode.getTxPoW()));
-			}
-		}
 	}
 	
 	@Override

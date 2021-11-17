@@ -13,11 +13,14 @@ import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.minima.objects.base.MiniData;
+import org.minima.system.params.GeneralParams;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.messages.Message;
 
 public class NIOServer implements Runnable {
 
+	public static boolean mTraceON = false;
+	
 	NIOManager mNIOManager;
 	
 	int mPort;
@@ -77,6 +80,10 @@ public class NIOServer implements Runnable {
 		mSelector.wakeup();
 	}
 	
+	public NIOClient getClient(String zUID) {
+		return mClients.get(zUID);
+	}
+	
 	public void sendMessage(String zUID, MiniData zData) {
 		NIOClient client =  mClients.get(zUID);
 		if(client != null) {
@@ -88,13 +95,6 @@ public class NIOServer implements Runnable {
 		Enumeration<NIOClient> clients = mClients.elements();
 		while(clients.hasMoreElements()) {
 			clients.nextElement().sendData(zData);
-		}
-	}
-	
-	public void setWelcome(String zUID, String zWelcome) {
-		NIOClient client =  mClients.get(zUID);
-		if(client != null) {
-			client.setWelcomeMessage(zWelcome);
 		}
 	}
 	
@@ -132,8 +132,13 @@ public class NIOServer implements Runnable {
 	        // This is the main loop
 	        while (!mShutDown) {
 	        	
+	        	//Logs..
+	        	if(mTraceON) {
+	        		MinimaLogger.log("[NIOSERVER] Waiting for selection..");
+	        	}
+	        	
 	        	//Select something.. 
-	        	mSelector.select();
+	        	mSelector.select(30000);
 	        	
 	        	//Are there any Channels to add..
 	        	synchronized (mRegisterChannels) {
@@ -181,13 +186,14 @@ public class NIOServer implements Runnable {
 	            	SelectionKey key = (SelectionKey) iterator.next();
 	                iterator.remove();
 	
-	                // skip any invalid / cancelled keys
-	                if (!key.isValid()) {
-	                    continue;
-	                }
-	                
 	                // Get a reference to one of our custom objects
 	                NIOClient client = (NIOClient) key.attachment();
+	                
+	                // skip any invalid / cancelled keys
+	                if (!key.isValid()) {
+	                	continue;
+	                }
+	                
 	                try {
 	                	if (key.isAcceptable()) {
 	                		// Accept the socket's connection
@@ -206,13 +212,17 @@ public class NIOServer implements Runnable {
 	                    }
 	                    
 	                } catch (Exception e) {
-	                	MinimaLogger.log("NIOClient:"+client.getUID()+" "+e);
-	                    
+	                	
 	                    // Disconnect the user
 	                    client.disconnect();
 	                    
 	                    //Remove from the list..
 	                    mClients.remove(client.getUID());
+	
+	                    //Small Log..
+	                    if(mTraceON) {
+	                    	MinimaLogger.log("[NIOSERVER] NIOClient:"+client.getUID()+" "+e+" total:"+mClients.size());
+	                    }
 	                    
 	                    //Tell the Network Manager
 	                    Message newclient = new Message(NIOManager.NIO_DISCONNECTED)
@@ -226,7 +236,9 @@ public class NIOServer implements Runnable {
 	        }
 	        
 	        //Notify..
-//            MinimaLogger.log("NIOServer SHUTDOWN");
+	        if(mTraceON) {
+	        	MinimaLogger.log("[NIOServer] SHUTDOWN");
+	        }
             
             //Shut down the socket..
             serversocket.close();
@@ -252,12 +264,8 @@ public class NIOServer implements Runnable {
         //What Port..
         InetSocketAddress remote = (InetSocketAddress)zSocketChannel.getRemoteAddress();
         InetSocketAddress local  = (InetSocketAddress )zSocketChannel.getLocalAddress();
-        int port = 0;
-        if(zIncoming) {
-        	port = local.getPort();
-        }else {
-        	port = remote.getPort();
-        }
+        
+        int port = remote.getPort();
         
         //Create a new NIOCLient
         NIOClient  nioc = new NIOClient(zIncoming, ipAddress, port, zSocketChannel, selectionkey);
@@ -267,6 +275,11 @@ public class NIOServer implements Runnable {
         
         //Add to the total list..
         mClients.put(nioc.getUID(), nioc);
+        
+        //log..
+        if(mTraceON) {
+        	MinimaLogger.log("[NIOSERVER] NEW NIOClient:"+nioc.getUID()+" total:"+mClients.size());
+        }
         
         //Post about it..
         Message newclient = new Message(NIOManager.NIO_NEWCONNECTION).addObject("client", nioc);

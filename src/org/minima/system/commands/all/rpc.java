@@ -1,10 +1,8 @@
 package org.minima.system.commands.all;
 
 import org.minima.database.MinimaDB;
-import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
-import org.minima.system.network.minima.NIOMessage;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.json.JSONObject;
 
@@ -28,7 +26,7 @@ public class rpc extends Command {
 		}
 		
 		//Save the state..
-		MinimaDB.getDB().saveState();
+		MinimaDB.getDB().saveUserDB();
 		
 		//Get the Network manager on it..
 		boolean enabled = MinimaDB.getDB().getUserDB().isRPCEnabled();

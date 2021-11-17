@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
+import org.minima.database.MinimaDB;
 import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
@@ -68,7 +69,7 @@ public class Minima {
 	 */
 	public static void main(String[] zArgs) {
 		
-		//Set the main configuration folder
+		//Set the main data folder
 		File dataFolder = new File(System.getProperty("user.home"),".minima");
 		GeneralParams.DATA_FOLDER = dataFolder.getAbsolutePath();
 
@@ -77,8 +78,9 @@ public class Minima {
 				.configureFrom(zArgs); // executable args override conf file
 
 		//Daemon mode
-		boolean daemon = configurer.daemonMode();
-		
+		boolean daemon = configurer.daemon;
+		boolean rpcenable = configurer.rpcenable;
+
 		MinimaLogger.log("**********************************************");
 		MinimaLogger.log("*  __  __  ____  _  _  ____  __  __    __    *");
 		MinimaLogger.log("* (  \\/  )(_  _)( \\( )(_  _)(  \\/  )  /__\\   *");
@@ -86,10 +88,16 @@ public class Minima {
 		MinimaLogger.log("* (_/\\/\\_)(____)(_)\\_)(____)(_/\\/\\_)(__)(__) *");
 		MinimaLogger.log("*                                            *");
 		MinimaLogger.log("**********************************************");
-		MinimaLogger.log("Welcome to Minima "+GlobalParams.MINIMA_VERSION+" - for assistance type help. Then press enter.");
+		MinimaLogger.log("Welcome to Minima v"+GlobalParams.MINIMA_VERSION+" - for assistance type help. Then press enter.");
 		
 		//Main handler..
 		Main main = new Main();
+
+		//Are we enabling RPC..
+		if(rpcenable) {
+			MinimaDB.getDB().getUserDB().setRPCEnabled(true);
+			main.getNetworkManager().startRPC();
+		}
 
 //		Runtime.getRuntime().addShutdownHook(new Thread()
 //		{
@@ -195,6 +203,7 @@ public class Minima {
 
 	private static class Configurer {
 		private boolean daemon = false;
+		private boolean rpcenable = false;
 
 		private Configurer configureFrom(String[] zArgs) {
 			int arglen = zArgs.length;
@@ -212,9 +221,13 @@ public class Minima {
 
 					} else if (arg.equals("-host")) {
 						GeneralParams.MINIMA_HOST = zArgs[counter++];
+						GeneralParams.IS_HOST_SET = true;
 
 					} else if (arg.equals("-rpc")) {
 						GeneralParams.RPC_PORT = Integer.parseInt(zArgs[counter++]);
+
+					}else if(arg.equals("-rpcenable")) {
+						rpcenable = true;
 
 					} else if (arg.equals("-data")) {
 						GeneralParams.DATA_FOLDER = zArgs[counter++];
@@ -264,20 +277,21 @@ public class Minima {
 						System.out.println(" -host       : Specify the host IP");
 						System.out.println(" -port       : Specify the Minima port");
 						System.out.println(" -rpc        : Specify the RPC port");
-						System.out.println(" -conf       : Specify a configuration file");
-						System.out.println(" -data       : Specify the data folder");
+						System.out.println(" -conf       : Specify a configuration file (absolute)");
+						System.out.println(" -data       : Specify the data folder (absolute) (defaults to .minima/ under user home");
 						System.out.println(" -daemon     : Run in daemon mode with no stdin input ( services )");
+						System.out.println(" -mobile     : Sets this device to a mobile device - used for metrics only");
 						System.out.println(" -nop2p      : Disable the automatic P2P system");
+						System.out.println(" -isclient   : Tells the P2P System that this node can't accept incoming connections");
 						System.out.println(" -noconnect  : Stops the P2P system from connecting to other nodes until it's been connected too");
 						System.out.println(" -p2pnode    : Specify the initial P2P host:port list to connect to");
 						System.out.println(" -automine   : Simulate user traffic to construct the blockchain");
 						System.out.println(" -noautomine : Do not simulate user traffic to construct the blockchain");
-						System.out.println(" -clean      : Wipe configuration folder and all data at startup");
+						System.out.println(" -clean      : Wipe data folder at startup");
 						System.out.println(" -genesis    : Create a genesis block, -clean and -automine");
 						System.out.println(" -connect    : Disable the p2p and manually connect to this list of host:port");
 						System.out.println(" -test       : Use test params");
 						System.out.println(" -help       : Print this help");
-
 						System.exit(1);
 
 					} else {
@@ -289,8 +303,5 @@ public class Minima {
 			return this;
 		}
 
-		public boolean daemonMode() {
-			return daemon;
-		}
 	}
 }

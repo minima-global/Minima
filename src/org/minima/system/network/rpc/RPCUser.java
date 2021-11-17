@@ -5,14 +5,14 @@ import org.minima.utils.json.JSONObject;
 public class RPCUser {
 
 	/**
-	 * The Types of Access and RPC User can have
+	 * The Type of Access an RPC User can have
 	 */
 	public static final int RPC_READ 	= 0;
 	public static final int RPC_WRITE 	= 1;
 	
-	public String mUsername;
-	public String mPassword;
-	public int zAccessType;
+	public String 	mUsername;
+	public String 	mPassword;
+	public int 		mAccessType;
 	
 	public RPCUser() {
 		

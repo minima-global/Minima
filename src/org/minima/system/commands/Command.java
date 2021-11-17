@@ -4,12 +4,14 @@ import java.util.ArrayList;
 import java.util.StringTokenizer;
 
 import org.minima.system.commands.all.automine;
+import org.minima.system.commands.all.backup;
 import org.minima.system.commands.all.balance;
 import org.minima.system.commands.all.coins;
 import org.minima.system.commands.all.connect;
 import org.minima.system.commands.all.debugflag;
 import org.minima.system.commands.all.disconnect;
 import org.minima.system.commands.all.help;
+import org.minima.system.commands.all.incentivecash;
 import org.minima.system.commands.all.message;
 import org.minima.system.commands.all.missingcmd;
 import org.minima.system.commands.all.network;
@@ -17,12 +19,16 @@ import org.minima.system.commands.all.newaddress;
 import org.minima.system.commands.all.printmmr;
 import org.minima.system.commands.all.printtree;
 import org.minima.system.commands.all.quit;
+import org.minima.system.commands.all.restore;
 import org.minima.system.commands.all.rpc;
 import org.minima.system.commands.all.send;
+import org.minima.system.commands.all.sshtunnel;
 import org.minima.system.commands.all.status;
 import org.minima.system.commands.all.tokencreate;
 import org.minima.system.commands.all.trace;
 import org.minima.system.commands.all.txpow;
+import org.minima.system.commands.all.webhooks;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
@@ -31,7 +37,9 @@ public abstract class Command {
 	public static final Command[] ALL_COMMANDS = 
 		{   new quit(), new status(), new coins(), new txpow(), new connect(), new disconnect(), new network(),
 			new message(), new trace(), new help(), new printtree(), new automine(), new printmmr(), new rpc(),
-			new send(), new balance(), new tokencreate(), new newaddress(), new debugflag() };
+			new send(), new balance(), new tokencreate(), new newaddress(), new debugflag(),
+			new incentivecash(), new sshtunnel(), new webhooks(),
+			new backup(), new restore()};
 	
 	String mName;
 	String mHelp;
@@ -109,6 +117,8 @@ public abstract class Command {
 			try {
 				result = cmd.runCommand();
 			}catch(Exception exc) {
+				MinimaLogger.log(exc);
+				
 				result = cmd.getJSONReply();
 				result.put("status", false);
 				result.put("error", exc.getMessage());

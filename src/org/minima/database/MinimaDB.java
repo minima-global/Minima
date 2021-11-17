@@ -107,6 +107,35 @@ public class MinimaDB {
 		mCacscade = zCascade;
 	}
 	
+	public long getCascadeFileSize() {
+		return getDBFileSie("cascade.db");
+	}
+	
+	public long getUserDBFileSize() {
+		return getDBFileSie("userprefs.db");
+	}
+	
+	public long getTxPowTreeFileSize() {
+		return getDBFileSie("chaintree.db");
+	}
+	
+	public long getP2PFileSize() {
+		return getDBFileSie("p2p.db");
+	}
+	
+	private long getDBFileSie(String zFilename) {
+		//Get the base Database folder
+		File basedb = getBaseDBFolder();
+		
+		//The File
+		File file = new File(basedb,zFilename);
+		if(file.exists()) {
+			return file.length();
+		}
+		
+		return 0;
+	}
+	
 	public UserDB getUserDB() {
 		return mUserDB;
 	}
@@ -128,50 +157,74 @@ public class MinimaDB {
 	}
 	
 	public void loadAllDB() {
-		//Get the base Database folder
-		File basedb = getBaseDBFolder();
 		
-		//Set the Archive folder
-		File archsqlfolder = new File(basedb,"archivesql");
-		mArchive.loadDB(new File(archsqlfolder,"archive"));
+		//We need read lock 
+		writeLock(true);
 		
-		//Load the wallet
-		File walletsqlfolder = new File(basedb,"walletsql");
-		mWallet.loadDB(new File(walletsqlfolder,"wallet"));
+		try {
+			
+			//Get the base Database folder
+			File basedb = getBaseDBFolder();
+			
+			//Set the Archive folder
+			File archsqlfolder = new File(basedb,"archivesql");
+			mArchive.loadDB(new File(archsqlfolder,"archive"));
+			
+			//Load the wallet
+			File walletsqlfolder = new File(basedb,"walletsql");
+			mWallet.loadDB(new File(walletsqlfolder,"wallet"));
+			
+			//Load the SQL DB
+			File txpowsqlfolder = new File(basedb,"txpowsql");
+			mTxPoWDB.loadSQLDB(new File(txpowsqlfolder,"txpow"));
+			
+			//Load the User Prefs
+			mUserDB.loadDB(new File(basedb,"userprefs.db"));
+			
+			//Load the Cascade
+			mCacscade.loadDB(new File(basedb,"cascade.db"));
+			
+			//Load the TxPoWTree
+			mTxPoWTree.loadDB(new File(basedb,"chaintree.db"));
+			
+			//And finally..
+			mP2PDB.loadDB(new File(basedb,"p2p.db"));
+			
+		}catch(Exception exc) {
+			MinimaLogger.log("ERROR loadAllDB "+exc);
+		}
 		
-		//Load the SQL DB
-		File txpowsqlfolder = new File(basedb,"txpowsql");
-		mTxPoWDB.loadSQLDB(new File(txpowsqlfolder,"txpow"));
-		
-		//Load the User Prefs
-		mUserDB.loadDB(new File(basedb,"userprefs.db"));
-		
-		//Load the Cascade
-		mCacscade.loadDB(new File(basedb,"cascade.db"));
-		
-		//Load the TxPoWTree
-		mTxPoWTree.loadDB(new File(basedb,"chaintree.db"));
-		
-		//And finally..
-		mP2PDB.loadDB(new File(basedb,"p2p.db"));
+		//Release the krakken
+		writeLock(false);
 	}
 	
 	public void saveAllDB() {
-		//Get the base Database folder
-		File basedb = getBaseDBFolder();
+		//First the SQL
+		saveSQL();
 		
-		//Clean shutdown of SQL DBs
-		mTxPoWDB.saveDB();
-		mArchive.saveDB();
-		mWallet.saveDB();
+		//And the rest
+		saveState();
+	}
+	
+	public void saveSQL() {
+		//We need read lock 
+		readLock(true);
 		
-		//JsonDBs
-		mUserDB.saveDB(new File(basedb,"userprefs.db"));
-		mP2PDB.saveDB(new File(basedb,"p2p.db"));
+		try {
+			//Get the base Database folder
+			File basedb = getBaseDBFolder();
+			
+			//Clean shutdown of SQL DBs
+			mTxPoWDB.saveDB();
+			mArchive.saveDB();
+			mWallet.saveDB();
+			
+		}catch(Exception exc) {
+			MinimaLogger.log("ERROR saveSQL "+exc);
+		}
 		
-		//Custom
-		mCacscade.saveDB(new File(basedb,"cascade.db"));
-		mTxPoWTree.saveDB(new File(basedb,"chaintree.db"));
+		//Release the krakken
+		readLock(false);
 	}
 	
 	public void saveState() {
@@ -197,5 +250,15 @@ public class MinimaDB {
 		
 		//Release the krakken
 		readLock(false);
+	}
+	
+	public void saveUserDB() {
+		
+		//Get the base Database folder
+		File basedb = getBaseDBFolder();
+		
+		//JsonDBs
+		mUserDB.saveDB(new File(basedb,"userprefs.db"));
+		
 	}
 }
