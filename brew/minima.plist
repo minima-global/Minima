@@ -12,5 +12,9 @@
     <true />
     <key>RunAtLoad</key>
     <true />
+    <key>StandardOutPath</key>
+    <string>##HOMEBREW_PREFIX_LOG##/minima.log</string>
+    <key>StandardErrorPath</key>
+    <string>##HOMEBREW_PREFIX_LOG##/minima.log</string>
   </dict>
 </plist>
