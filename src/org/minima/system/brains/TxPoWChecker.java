@@ -379,10 +379,24 @@ public class TxPoWChecker {
 	}
 	
 	
+	
+	
 	/**
 	 * Only check the MMR Proofs
 	 */
-	public static boolean checkWitnessWMMR(MMR zTipMMR, Witness zWitness) throws Exception {
+	public static boolean checkWitnessWMMR(MMR zTipMMR, TxPoW zTxPoW, MiniNumber zBlock) throws Exception {
+		
+		//Check the Transaction..
+		boolean valid = checkWitnessWMMR(zTipMMR, zTxPoW.getWitness());
+		if(!valid) {
+			return false;
+		}
+		
+		//Check the Burn Transaction..
+		return checkWitnessWMMR(zTipMMR, zTxPoW.getBurnWitness());
+	}
+	
+	private static boolean checkWitnessWMMR(MMR zTipMMR, Witness zWitness) throws Exception {
 		//Get the all the MMR Proofs
 		ArrayList<CoinProof> mmrproofs 	= zWitness.getAllCoinProofs();
 		int proofs = mmrproofs.size();
