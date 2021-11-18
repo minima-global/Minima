@@ -16,7 +16,6 @@ import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
 import org.minima.system.brains.TxPoWChecker;
 import org.minima.system.network.p2p.P2PFunctions;
-import org.minima.system.params.GeneralParams;
 import org.minima.system.params.GlobalParams;
 import org.minima.utils.ListCheck;
 import org.minima.utils.MiniFormat;

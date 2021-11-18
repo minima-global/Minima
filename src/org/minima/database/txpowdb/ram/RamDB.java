@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.minima.objects.Coin;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
 import org.minima.system.params.GeneralParams;
@@ -48,6 +49,10 @@ public class RamDB {
 			return curr.getTxPoW();
 		}
 		return null;
+	}
+	
+	public void remove(String zTxPoWID) {
+		mTxPoWDB.remove(zTxPoWID);
 	}
 	
 	public void cleanDB() {
@@ -122,7 +127,21 @@ public class RamDB {
 	/**
 	 * Look for double spend coins..
 	 */
-	public boolean checkForCoinIO(MiniData zCoinID) {
+	public boolean checkForCoinID(MiniData zCoinID) {
+		ArrayList<TxPoW> mempool = getAllUnusedTxns();
+		for(TxPoW txp : mempool) {
+			
+			//Get all the input coins..
+			ArrayList<Coin> inputs = txp.getTransaction().getAllInputs();
+			for(Coin cc : inputs) {
+				
+				//Check it..
+				if(cc.getCoinID().isEqual(zCoinID)) {
+					return true;
+				}
+			}
+		}
+		
 		return false;
 	}
 }

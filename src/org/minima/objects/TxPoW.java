@@ -48,19 +48,22 @@ public class TxPoW implements Streamable {
 	 * These are used internally ONLY
 	 */
 	private String _mTxPOWIDStr   		= "0x00";
-	private MiniData _mTxPOWID      	= new MiniData("0x00");
-	private MiniData _mTransID      	= new MiniData("0x00");
+	private MiniData _mTxPOWID      	= MiniData.ZERO_TXPOWID;
+	private MiniData _mTransID      	= MiniData.ZERO_TXPOWID;
 	protected boolean _mIsBlockPOW  	= false;
 	protected boolean _mIsTxnPOW    	= false;
 	protected int     _mSuperBlock  	= 0;
 	protected long     _mTxPoWSize  	= 0;
 	protected BigDecimal _mBlockWeight 	= BigDecimal.ZERO;
 	
+	/**
+	 * Test Parameters
+	 */
 	protected boolean 	  mIsTesting 		= false;
 	protected MiniNumber _mTestBlockNumber  = MiniNumber.ZERO;
 	protected boolean    _mTestIsBlock  	= true;
 	protected boolean    _mTestIsTxn  		= false;
-	protected MiniData   _mTestParent  		= new MiniData("0x00");
+	protected MiniData   _mTestParent  		= MiniData.ZERO_TXPOWID;
 	protected ArrayList<String> mTestTransactions = new ArrayList<>();
 	
 	/**

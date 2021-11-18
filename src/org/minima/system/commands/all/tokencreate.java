@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.mmr.MMRProof;
+import org.minima.database.txpowdb.TxPoWDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.database.wallet.KeyRow;
 import org.minima.database.wallet.Wallet;
@@ -122,8 +123,16 @@ public class tokencreate extends Command {
 		MiniNumber currentamount 	= MiniNumber.ZERO;
 		ArrayList<Coin> currentcoins = new ArrayList<>();
 		
+		//Get the TxPoWDB
+		TxPoWDB txpdb = MinimaDB.getDB().getTxPoWDB();
+		
 		//Now cycle through..
 		for(Coin coin : relcoins) {
+			
+			//Check if in mempool..
+			if(txpdb.checkMempoolCoins(coin.getCoinID())) {
+				continue;
+			}
 			
 			//Add this coin..
 			currentcoins.add(coin);
@@ -164,14 +173,14 @@ public class tokencreate extends Command {
 		}
 		
 		//Get the block..
-		MiniNumber currentblock = tip.getBlockNUmber();
+		MiniNumber currentblock = tip.getBlockNumber();
 		MiniNumber blockdiff 	= currentblock.sub(minblock);
 		if(blockdiff.isMore(GlobalParams.MINIMA_MMR_PROOF_HISTORY)) {
 			blockdiff = GlobalParams.MINIMA_MMR_PROOF_HISTORY;
 		}
 		
 		//Now get that Block
-		TxPoWTreeNode mmrnode = tip.getPastNode(tip.getBlockNUmber().sub(blockdiff));
+		TxPoWTreeNode mmrnode = tip.getPastNode(tip.getBlockNumber().sub(blockdiff));
 		if(mmrnode == null) {
 			//Not enough blocks..
 			throw new Exception("Not enough blocks in chain to make valid MMR Proofs..");

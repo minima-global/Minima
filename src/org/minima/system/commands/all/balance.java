@@ -60,7 +60,7 @@ public class balance extends Command {
 		}
 			
 		//What is the top block
-		MiniNumber topblock = txptree.getTip().getBlockNUmber();
+		MiniNumber topblock = txptree.getTip().getBlockNumber();
 		
 		//Always show a Minima Balance
 		alltokens.add(Token.TOKENID_MINIMA.to0xString());

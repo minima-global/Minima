@@ -58,11 +58,36 @@ public class TxBlock implements Streamable {
 		
 		//Cycle through the Main Block TxPoW
 		calculateCoins(copymmr,zTxPoW);
-		
-		//Now cycle through the transactions
-		for(TxPoW txpow : zAllTrans) {
-			calculateCoins(copymmr,txpow);
+	
+		//Now cycle through the txns in the block MUST BE THE CORRECT ORDER for MMR root
+		ArrayList<MiniData> txns = zTxPoW.getBlockTransactions();
+		for(MiniData txn : txns) {
+			
+			//Get the correct txpow - the order could be wrong in ther function param
+			TxPoW txp = getTxpoWFromList(txn, zAllTrans);
+			
+			//And now process that
+			calculateCoins(copymmr,txp);
 		}
+		
+		
+//		//Now cycle through the transactions
+//		for(TxPoW txpow : zAllTrans) {
+//			calculateCoins(copymmr,txpow);
+//		}
+	}
+	
+	/**
+	 * Get the transactions in the correct order
+	 */
+	private TxPoW getTxpoWFromList(MiniData zTxPoWID, ArrayList<TxPoW> zAllTrans) {
+		for(TxPoW txp : zAllTrans) {
+			if(txp.getTxPoWIDData().isEqual(zTxPoWID)) {
+				return txp;
+			}
+		}
+		
+		return null;
 	}
 	
 	private void calculateCoins(MMR zPreviousMMR, TxPoW zTxPoW) {

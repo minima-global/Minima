@@ -26,16 +26,13 @@ public class TxPoWChecker {
 	/**
 	 * Parallel check all the transactions in this block
 	 */
-	public static boolean checkTxPoWBlock(TxPoW zParentTxPoW, MMR zParentMMR, TxPoW zTxPoW, ArrayList<TxPoW> zTransactions) {
+	public static boolean checkTxPoWBlock(TxPoWTreeNode zParentNode, TxPoW zTxPoW, ArrayList<TxPoW> zTransactions) {
 		
 		try {
-			//Check the time of the block is within acceptable limits - 30 minutes..
-			//TODO Need to check Median of last X blocks!
-			MiniNumber maxtimediff 	= new MiniNumber(1000 * 60 * 30); 
-			MiniNumber oldtime 		= zParentTxPoW.getTimeMilli();
-			MiniNumber newtime 		= zTxPoW.getTimeMilli();
-			if(newtime.sub(oldtime).abs().isMore(maxtimediff)) {
-				MinimaLogger.log("Invalid TxPoW Block with time difference of more than 30 mins from previous block "+zTxPoW.getTxPoWID());
+			//Check the time of the block is greater than the media time
+			MiniNumber mediantime = TxPoWGenerator.getMedianTime(zParentNode);
+			if(zTxPoW.getTimeMilli().isLess(mediantime)) {
+				MinimaLogger.log("Invalid TxPoW block with millitime less than median "+zTxPoW.getTxPoWID());
 				return false;
 			}
 			
@@ -63,9 +60,12 @@ public class TxPoWChecker {
 				return false;
 			}
 			
+			//Get the Parent MMR
+			MMR parentMMR = zParentNode.getMMR();
+			
 			//First check this
 			if(zTxPoW.isTransaction()) {
-				boolean valid = checkTxPoW(zParentMMR, zTxPoW, zTxPoW.getBlockNumber());
+				boolean valid = checkTxPoW(parentMMR, zTxPoW, zTxPoW.getBlockNumber());
 				if(!valid) {
 					return false;
 				}
@@ -73,14 +73,14 @@ public class TxPoWChecker {
 			
 			//Now check all the internal Transactions
 			for(TxPoW txpow : zTransactions) {
-				boolean valid = checkTxPoW(zParentMMR, txpow, zTxPoW.getBlockNumber());
+				boolean valid = checkTxPoW(parentMMR, txpow, zTxPoW.getBlockNumber());
 				if(!valid) {
 					return false;
 				}
 			}
 			
 			//Construct the MMR.. to see if it is correct..
-			TxBlock txblock 		= new TxBlock(zParentMMR, zTxPoW, zTransactions);
+			TxBlock txblock 		= new TxBlock(parentMMR, zTxPoW, zTransactions);
 			TxPoWTreeNode node 		= new TxPoWTreeNode(txblock, false);
 
 			//Check Correct..
@@ -128,6 +128,9 @@ public class TxPoWChecker {
 			return false;
 		}
 		
+		//List of CoinID used..
+		ArrayList<String> allcoinsused = new ArrayList<>();
+		
 		//Cycle through and check..
 		for(int i=0;i<ins;i++) {
 			
@@ -136,6 +139,14 @@ public class TxPoWChecker {
 			
 			//Get the Coin Proof
 			CoinProof cproof = mmrproofs.get(i);
+			
+			//Check Coin not already used..
+			String coinid = cproof.getCoin().getCoinID().to0xString();
+			if(allcoinsused.contains(coinid)) {
+				MinimaLogger.log("CoinID used more than once @ "+i+" in "+zTxPoW.getTxPoWID());
+				return false;
+			}
+			allcoinsused.add(coinid);
 			
 			//Check tokenid is correct
 			if(!cproof.getCoin().getTokenID().isEqual(Token.TOKENID_MINIMA)) {
@@ -147,7 +158,16 @@ public class TxPoWChecker {
 				}
 			}
 			
-			//Check the CoinProof and Coin in the Transaction Match
+			//Check the CoinProof details and Coin details Match
+			boolean amount 	= input.getAmount().isEqual(cproof.getCoin().getAmount());
+			boolean address = input.getAddress().isEqual(cproof.getCoin().getAddress());
+			boolean token 	= input.getTokenID().isEqual(cproof.getCoin().getTokenID());
+			if(!amount || !address || ! token) {
+				MinimaLogger.log("Input coin doesn't match proof "+zTxPoW.getTxPoWID());
+				return false;
+			}
+			
+			//Check the CoinProof and Coin CoinID in the Transaction Match
 			if(input.getCoinID().isEqual(Coin.COINID_ELTOO)) {
 				
 				//Check is a floating input.. set when the coin was created!
@@ -156,21 +176,11 @@ public class TxPoWChecker {
 					return false;
 				}
 				
-				//Floating Input check the amount, address, and tokenid match the MMR
-				boolean amount 	= input.getAmount().isEqual(cproof.getCoin().getAmount());
-				boolean address = input.getAddress().isEqual(cproof.getCoin().getAddress());
-				boolean token 	= input.getTokenID().isEqual(cproof.getCoin().getTokenID());
-			
-				if(!amount || !address || ! token) {
-					MinimaLogger.log("ELTOO input doesn't match proof "+zTxPoW.getTxPoWID());
-					return false;
-				}
-				
 			}else {
 				
 				//Check the same CoinID
 				if(!input.getCoinID().isEqual(cproof.getCoin().getCoinID())) {
-					MinimaLogger.log("Coin input "+i+" doesn't match proof "+zTxPoW.getTxPoWID());
+					MinimaLogger.log("CoinID input "+i+" doesn't match proof "+zTxPoW.getTxPoWID());
 					return false;
 				}
 			}
