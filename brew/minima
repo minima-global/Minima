@@ -1,4 +1,4 @@
 #!/bin/bash
 
-$(brew --prefix)/opt/openjdk@11/bin/java -jar ##PREFIX##/minima.jar -conf ##HOMEBREW_PREFIX_ETC##/minima.conf "$@" >> ##HOMEBREW_PREFIX_LOG##/minima.log
+##HOMEBREW_PREFIX##/opt/openjdk@11/bin/java -jar ##PREFIX##/minima.jar -conf ##HOMEBREW_PREFIX_ETC##/minima.conf "$@" >> ##HOMEBREW_PREFIX_LOG##/minima.log
     
