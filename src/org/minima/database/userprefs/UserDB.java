@@ -1,7 +1,10 @@
 package org.minima.database.userprefs;
 
+import java.util.ArrayList;
+
 import org.minima.system.params.GlobalParams;
 import org.minima.utils.JsonDB;
+import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
 public class UserDB extends JsonDB{
@@ -61,6 +64,34 @@ public class UserDB extends JsonDB{
 	
 	public JSONObject getSSHTunnelSettings() {
 		return getJSON("sshtunnelsettings", new JSONObject());
+	}
+
+	/**
+	 * Web Hooks
+	 */
+	public void setWebHooks(ArrayList<String> zWebHooks) {
+		
+		//Create one string..
+		JSONArray arr = new JSONArray();
+		for(String hook : zWebHooks) {
+			arr.add(hook);
+		}
+		
+		//Add this..
+		setJSONArray("webhooks", arr);
+	}
+	
+	public ArrayList<String> getWebHooks() {
+		ArrayList<String> ret = new ArrayList<>();
+		
+		JSONArray arr = getJSONArray("webhooks");
+		for(Object hook : arr) {
+			String hk = (String)hook;
+			
+			ret.add(hk);
+		}
+		
+		return ret;
 	}
 	
 }

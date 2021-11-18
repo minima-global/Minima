@@ -2,6 +2,7 @@ package org.minima.system.network.webhooks;
 
 import java.util.ArrayList;
 
+import org.minima.database.MinimaDB;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.RPCClient;
 import org.minima.utils.json.JSONObject;
@@ -10,21 +11,30 @@ import org.minima.utils.messages.MessageProcessor;
 
 public class NotifyManager extends MessageProcessor {
 
-	public static final String NOTIFY_INIT 		= "NOTIFY_INIT";
-	public static final String NOTIFY_SHUTDOWN 	= "NOTIFY_SHUTDOWN";
 	
-	public static final String NOTIFY_POST 		= "NOTIFY_POST";
+	public static final String NOTIFY_POST = "NOTIFY_POST";
 	
 	ArrayList<String> mHooks;
 	
 	public NotifyManager() {
 		super("NOTIFYMANAGER");
 		
-		mHooks = new ArrayList<>();
-		
-		PostMessage(NOTIFY_INIT);
+		//Load the hooks..
+		mHooks = MinimaDB.getDB().getUserDB().getWebHooks();
 	}
 
+	public void shutDown() {
+		
+		//Stop this processor
+		stopMessageProcessor();
+				
+		synchronized (mHooks) {
+		
+			//Save the hooks..
+			MinimaDB.getDB().getUserDB().setWebHooks(mHooks);
+		}
+	}
+	
 	/**
 	 * Post an event to all the listeners
 	 */
@@ -35,39 +45,41 @@ public class NotifyManager extends MessageProcessor {
 	}
 	
 	public ArrayList<String> getAllWebHooks(){
-		return mHooks;
+		ArrayList<String> ret= new ArrayList<>();
+		
+		synchronized (mHooks) {
+			for(String hook : mHooks) {
+				ret.add(new String(hook));
+			}
+		}
+		
+		return ret;
 	}
 	
 	public void addHook(String zHook) {
-		if(!mHooks.contains(zHook) && !zHook.equals("")) {
-			mHooks.add(zHook);
+		synchronized (mHooks) {
+			if(!mHooks.contains(zHook) && !zHook.equals("")) {
+				mHooks.add(zHook);
+			}
 		}
 	}
 	
 	public void removeHook(String zHook) {
-		mHooks.remove(zHook);
+		synchronized (mHooks) {
+			mHooks.remove(zHook);
+		}
 	}
 	
 	public void clearHooks() {
-		mHooks.clear();
+		synchronized (mHooks) {
+			mHooks.clear();
+		}
 	}
 	
 	@Override
 	protected void processMessage(Message zMessage) throws Exception {
 	
-		if(zMessage.isMessageType(NOTIFY_INIT)) {
-			
-			//Load the hooks..
-			//..
-			
-		}else if(zMessage.isMessageType(NOTIFY_SHUTDOWN)) {
-
-			//Save the hooks..
-			//..
-			
-			stopMessageProcessor();
-			
-		}else if(zMessage.isMessageType(NOTIFY_POST)) {
+		if(zMessage.isMessageType(NOTIFY_POST)) {
 			
 			//Get the Message
 			JSONObject data = (JSONObject) zMessage.getObject("data");
@@ -76,7 +88,14 @@ public class NotifyManager extends MessageProcessor {
 			String postmsg = data.toString();
 			
 			//Cycle through and Post to each hook..
-			for(String hook : mHooks) {
+			ArrayList<String> hooks = getAllWebHooks();
+			for(String hook : hooks) {
+				
+				//Check running..
+				if(!isRunning()) {
+					return;
+				}
+				
 				try {
 				
 					//Post it..

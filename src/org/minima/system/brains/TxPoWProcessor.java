@@ -11,6 +11,7 @@ import org.minima.database.txpowtree.TxPowTree;
 import org.minima.objects.IBD;
 import org.minima.objects.TxBlock;
 import org.minima.objects.TxPoW;
+import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
 import org.minima.system.params.GlobalParams;
 import org.minima.utils.MinimaLogger;
@@ -71,8 +72,22 @@ public class TxPoWProcessor extends MessageProcessor {
 			//Get the next txpow
 			TxPoW txpow = (TxPoW) processstack.pop();
 			
-			//Is it a block.. for now that is the only time we crunch
-			if(txpow.isBlock()) {
+			//Check we are at least enough blocks on from the root of the tree.. for speed and difficulty calcs
+			MiniNumber blknum 	= txpow.getBlockNumber();
+			MiniNumber rootnum 	= txptree.getRoot().getBlockNumber();
+			boolean validrange 	= blknum.isMore(rootnum);
+			
+			//More complicated..
+//			boolean highenough 	= blknum.isMore(GlobalParams.MINIMA_BLOCKS_SPEED_CALC);
+//			boolean rootdist   	= blknum.isMoreEqual(rootnum.add(GlobalParams.MINIMA_BLOCKS_SPEED_CALC));
+//			//The check we are in a valid range
+//			boolean validrange  = !highenough || (highenough && rootdist);
+//			if(!validrange) {
+//				MinimaLogger.log("Block too close to tree root to process.. blknum:"+blknum+" root:"+rootnum);
+//			}
+			
+			//Is it a block.. that is the only time we crunch
+			if(txpow.isBlock() && validrange) {
 				
 				//Check not already added
 				TxPoWTreeNode oldnode = txptree.findNode(txpow.getTxPoWID());
@@ -91,7 +106,7 @@ public class TxPoWProcessor extends MessageProcessor {
 						if(alltrans.size() == numtxns) {
 						
 							//OK - Lets check this block
-							if(TxPoWChecker.checkTxPoWBlock(parentnode.getTxPoW(), parentnode.getMMR(), txpow, alltrans)) {
+							if(TxPoWChecker.checkTxPoWBlock(parentnode, txpow, alltrans)) {
 								
 								//Create a TxBlock..
 								TxBlock txblock = new TxBlock(parentnode.getMMR(), txpow, alltrans);

@@ -1,7 +1,6 @@
 package org.minima.utils.messages;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 
 import org.minima.utils.MinimaLogger;
 

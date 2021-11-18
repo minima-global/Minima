@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import org.minima.database.txpowdb.ram.RamDB;
 import org.minima.database.txpowdb.sql.TxPoWSqlDB;
 import org.minima.objects.TxPoW;
+import org.minima.objects.base.MiniData;
 
 /**
  * The Main TxPoW store for the whole app
@@ -180,9 +181,16 @@ public class TxPoWDB {
 	}
 	
 	/**
+	 * Remove a TxPoW from the RamDB (Mempool)
+	 */
+	public void removeMemPoolTxPoW(String zTxPoWID) {
+		mRamDB.remove(zTxPoWID);
+	}
+	
+	/**
 	 * Check for a certain CoinID - double spend
 	 */
-	public boolean checkMempoolCoins(TxPoW zTxPoW) {
-		return false;
+	public boolean checkMempoolCoins(MiniData zCoinID) {
+		return mRamDB.checkForCoinID(zCoinID);
 	}
 }
