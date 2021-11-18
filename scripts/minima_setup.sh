@@ -42,13 +42,6 @@ if ! id -u 9001 > /dev/null 2>&1; then
     chown minima:minima $HOME
 fi
 
-if  ! cat /etc/systemd/journald.conf | grep "Storage=persistent"; then
-tee <<EOF >/dev/null /etc/systemd/journald.conf
-Storage=persistent
-EOF
-systemctl restart systemd-journald
-fi
-
 wget -q -O $HOME"/minima_service.sh" "https://github.com/minima-global/Minima/raw/development-0.100/scripts/minima_service.sh"
 chown minima:minima $HOME"/minima_service.sh"
 chmod +x $HOME"/minima_service.sh"
@@ -60,5 +53,5 @@ $CMD"
 echo "$CRONSTRING" > /etc/cron.daily/minima_$PORT
 chmod a+x /etc/cron.daily/minima_$PORT
 
-CMD="$HOME/minima_service.sh -x $@"
+CMD="$HOME/minima_service.sh $@"
 /bin/sh -c "$CMD"
