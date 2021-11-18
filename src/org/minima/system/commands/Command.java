@@ -10,6 +10,7 @@ import org.minima.system.commands.all.coins;
 import org.minima.system.commands.all.connect;
 import org.minima.system.commands.all.debugflag;
 import org.minima.system.commands.all.disconnect;
+import org.minima.system.commands.all.hashtest;
 import org.minima.system.commands.all.help;
 import org.minima.system.commands.all.incentivecash;
 import org.minima.system.commands.all.message;
@@ -42,7 +43,7 @@ public abstract class Command {
 			new message(), new trace(), new help(), new printtree(), new automine(), new printmmr(), new rpc(),
 			new send(), new balance(), new tokencreate(), new newaddress(), new debugflag(),
 			new incentivecash(), new sshtunnel(), new webhooks(),
-			new backup(), new restore(), new test()};
+			new backup(), new restore(), new test(), new hashtest()};
 	
 	String mName;
 	String mHelp;
