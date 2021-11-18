@@ -127,6 +127,12 @@ public class TxPoWGenerator {
 		//A list of the added coins
 		ArrayList<String> addedcoins = new ArrayList<>();
 		
+		//Add the main transaction inputs..
+		ArrayList<Coin> inputcoins = txpow.getTransaction().getAllInputs();
+		for(Coin cc : inputcoins) {
+			addedcoins.add(cc.getCoinID().to0xString());
+		}
+		
 		//Check them all..
 		int totaladded = 0;
 		for(TxPoW memtxp : mempool) {
@@ -154,10 +160,16 @@ public class TxPoWGenerator {
 					totaladded++;
 					
 					//Add all the input coins
-					ArrayList<Coin> inputcoins = memtxp.getTransaction().getAllInputs();
-					for(Coin cc : inputcoins) {
+					ArrayList<Coin> memtxpinputcoins = memtxp.getTransaction().getAllInputs();
+					for(Coin cc : memtxpinputcoins) {
 						addedcoins.add(cc.getCoinID().to0xString());
 					}
+					
+				}else {
+					
+					//Invalid TxPoW - remove from mempool
+					MinimaLogger.log("Invalid TxPoW in mempool.. removing.. "+memtxp.getTxPoWID());
+					MinimaDB.getDB().getTxPoWDB().removeMemPoolTxPoW(memtxp.getTxPoWID());
 				}
 				
 			}catch(Exception exc) {

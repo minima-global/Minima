@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.mmr.MMRProof;
+import org.minima.database.txpowdb.TxPoWDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.database.wallet.KeyRow;
 import org.minima.database.wallet.Wallet;
@@ -122,8 +123,16 @@ public class tokencreate extends Command {
 		MiniNumber currentamount 	= MiniNumber.ZERO;
 		ArrayList<Coin> currentcoins = new ArrayList<>();
 		
+		//Get the TxPoWDB
+		TxPoWDB txpdb = MinimaDB.getDB().getTxPoWDB();
+		
 		//Now cycle through..
 		for(Coin coin : relcoins) {
+			
+			//Check if in mempool..
+			if(txpdb.checkMempoolCoins(coin.getCoinID())) {
+				continue;
+			}
 			
 			//Add this coin..
 			currentcoins.add(coin);

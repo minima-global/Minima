@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.mmr.MMRProof;
+import org.minima.database.txpowdb.TxPoWDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.database.wallet.KeyRow;
 import org.minima.database.wallet.Wallet;
@@ -23,6 +24,7 @@ import org.minima.system.brains.TxPoWSearcher;
 import org.minima.system.commands.Command;
 import org.minima.system.params.GlobalParams;
 import org.minima.utils.Crypto;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
 
 public class send extends Command {
@@ -51,9 +53,6 @@ public class send extends Command {
 		String tokenid = "0x00";
 		if(getParams().containsKey("tokenid")) {
 			tokenid = (String)getParams().get("tokenid");
-			
-			//Change the SendAmount accordingly..
-			
 		}
 		
 		//get the tip..
@@ -71,6 +70,9 @@ public class send extends Command {
 			}
 		}
 		
+		//Get the TxPoWDB
+		TxPoWDB txpdb = MinimaDB.getDB().getTxPoWDB();
+		
 		//Lets build a transaction..
 		ArrayList<Coin> relcoins = TxPoWSearcher.getRelevantUnspentCoins(tip,tokenid);
 		
@@ -81,6 +83,11 @@ public class send extends Command {
 		//Now cycle through..
 		Token token = null;
 		for(Coin coin : relcoins) {
+			
+			//Check if in mempool..
+			if(txpdb.checkMempoolCoins(coin.getCoinID())) {
+				continue;
+			}
 		
 			//Add this coin..
 			currentcoins.add(coin);
