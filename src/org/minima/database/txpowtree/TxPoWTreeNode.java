@@ -267,7 +267,7 @@ public class TxPoWTreeNode implements Streamable {
 		return getTxBlock().getTxPoW();
 	}
 	
-	public MiniNumber getBlockNUmber() {
+	public MiniNumber getBlockNumber() {
 		return getTxPoW().getBlockNumber();
 	}
 	
