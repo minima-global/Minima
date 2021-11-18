@@ -122,7 +122,7 @@ public class NIOMessage implements Runnable {
 				
 				//What version..
 				//if(!greet.getVersion().toString().startsWith("TN-P2P.100")) {
-				if(!greet.getVersion().toString().startsWith("TN.100")) {
+				if(!greet.getVersion().toString().startsWith("0.100")) {
 					MinimaLogger.log("Greeting with Incompatible Version! "+greet.getVersion().toString());
 					
 					//Disconnect..
