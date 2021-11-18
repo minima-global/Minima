@@ -197,16 +197,13 @@ public class Contract {
 	}
 	
 	public void setGlobals(	MiniNumber zBlock, 
-							TxPoW zTrx, 
+							Transaction zTrx, 
 							int zInput, 
 							MiniNumber zInputBlkCreate, 
 							String zScript) {
 		
-		//The Transaction
-		Transaction trx = zTrx.getTransaction();
-		
 		//Get the Coin
-		Coin cc = trx.getAllInputs().get(zInput);
+		Coin cc = zTrx.getAllInputs().get(zInput);
 		
 		//set the environment
 		setGlobalVariable("@BLKNUM", new NumberValue(zBlock));
@@ -223,8 +220,8 @@ public class Contract {
 		setGlobalVariable("@TOKENID", new HexValue(cc.getTokenID()));
 		setGlobalVariable("@SCRIPT", new StringValue(zScript));
 		
-		setGlobalVariable("@TOTIN", new NumberValue(trx.getAllInputs().size()));
-		setGlobalVariable("@TOTOUT", new NumberValue(trx.getAllOutputs().size()));
+		setGlobalVariable("@TOTIN", new NumberValue(zTrx.getAllInputs().size()));
+		setGlobalVariable("@TOTOUT", new NumberValue(zTrx.getAllOutputs().size()));
 	}
 	
 	public void setGlobalVariable(String zGlobal, Value zValue) {

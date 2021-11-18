@@ -49,7 +49,6 @@ public class TxPoW implements Streamable {
 	 */
 	private String _mTxPOWIDStr   		= "0x00";
 	private MiniData _mTxPOWID      	= MiniData.ZERO_TXPOWID;
-	private MiniData _mTransID      	= MiniData.ZERO_TXPOWID;
 	protected boolean _mIsBlockPOW  	= false;
 	protected boolean _mIsTxnPOW    	= false;
 	protected int     _mSuperBlock  	= 0;
@@ -389,22 +388,11 @@ public class TxPoW implements Streamable {
 	}
 	
 	/**
-	 * Pre-compute the transaction hash
+	 * Compute the transaction hash for both
 	 */
 	public void calculateTransactionID() {
-		_mTransID = Crypto.getInstance().hashObject(mBody.mTransaction);
-	}
-	
-	/**
-	 * Calculate the CoinID of an Output
-	 */
-	public MiniData calculateCoinID(int zOutput) {
-//		//Make sure has been calculated
-//		if(_mTransID.isEqual(MiniData.ZERO_TXPOWID)) {
-//			_mTransID = calculateTransactionID();
-//		}
-		
-		return Crypto.getInstance().hashObjects(_mTransID, new MiniByte(zOutput));
+		mBody.mTransaction.calculateTransactionID();
+		mBody.mBurnTransaction.calculateTransactionID();
 	}
 	
 	/**
@@ -416,10 +404,6 @@ public class TxPoW implements Streamable {
 	
 	public MiniData getTxPoWIDData() {
 		return _mTxPOWID;
-	}
-	
-	public MiniData getTransID() {
-		return _mTransID;
 	}
 	
 	public int getSuperLevel() {

@@ -11,8 +11,10 @@ import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
+import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.utils.Crypto;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
@@ -49,6 +51,11 @@ public class Transaction implements Streamable {
 	 * The State values of the Transaction
 	 */
 	protected ArrayList<StateVariable> mState = new ArrayList<>();
+	
+	/**
+	 * The Transaction ID
+	 */
+	protected MiniData mTransactionID = MiniData.ZERO_TXPOWID;
 	
 	/**
 	 * Constructor
@@ -305,6 +312,24 @@ public class Transaction implements Streamable {
 		return mLinkHash;
 	}
 	
+	/**
+	 * Calculate the TransactionID
+	 */
+	public void calculateTransactionID() {
+		mTransactionID = Crypto.getInstance().hashObject(this);
+	}
+	
+	public MiniData getTransactionID() {
+		return mTransactionID;
+	}
+	
+	/**
+	 * Calculate the CoinID of an Output
+	 */
+	public MiniData calculateCoinID(int zOutput) {
+		return Crypto.getInstance().hashObjects(mTransactionID, new MiniByte(zOutput));
+	}
+	
 	@Override
 	public String toString() {
 		return toJSON().toString();
@@ -335,6 +360,8 @@ public class Transaction implements Streamable {
 		ret.put("state", outs);
 		
 		ret.put("linkhash", mLinkHash.to0xString());
+		
+		ret.put("transactionid", mTransactionID.to0xString());
 		
 		return ret;
 	}
@@ -397,31 +424,7 @@ public class Transaction implements Streamable {
 		}
 		
 		mLinkHash = MiniData.ReadHashFromStream(zIn);
-	}
-	
-	/**
-	 * Get a DEEP copy of this transaction
-	 * @throws IOException 
-	 */
-	public Transaction deepCopy() throws IOException {
-		//First write transaction out to a byte array
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		DataOutputStream dos = new DataOutputStream(baos);
-		writeDataStream(dos);
-		dos.flush();
-		dos.close();
 		
-		//Now read it into a new transaction..
-		byte[] transbytes = baos.toByteArray();
-		ByteArrayInputStream bais = new ByteArrayInputStream(transbytes);
-		DataInputStream dis = new DataInputStream(bais);
-		
-		Transaction deepcopy = new Transaction();
-		deepcopy.readDataStream(dis);
-		
-		dis.close();
-		baos.close();
-		
-		return deepcopy;
+		calculateTransactionID();
 	}
 }
