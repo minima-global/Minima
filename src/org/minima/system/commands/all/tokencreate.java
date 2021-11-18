@@ -164,14 +164,14 @@ public class tokencreate extends Command {
 		}
 		
 		//Get the block..
-		MiniNumber currentblock = tip.getBlockNUmber();
+		MiniNumber currentblock = tip.getBlockNumber();
 		MiniNumber blockdiff 	= currentblock.sub(minblock);
 		if(blockdiff.isMore(GlobalParams.MINIMA_MMR_PROOF_HISTORY)) {
 			blockdiff = GlobalParams.MINIMA_MMR_PROOF_HISTORY;
 		}
 		
 		//Now get that Block
-		TxPoWTreeNode mmrnode = tip.getPastNode(tip.getBlockNUmber().sub(blockdiff));
+		TxPoWTreeNode mmrnode = tip.getPastNode(tip.getBlockNumber().sub(blockdiff));
 		if(mmrnode == null) {
 			//Not enough blocks..
 			throw new Exception("Not enough blocks in chain to make valid MMR Proofs..");
