@@ -1,9 +1,7 @@
 package org.minima.system.commands.all;
 
 import org.minima.database.MinimaDB;
-import org.minima.system.Main;
 import org.minima.system.commands.Command;
-import org.minima.utils.MinimaLogger;
 import org.minima.utils.RPCClient;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.json.parser.JSONParser;
@@ -11,7 +9,7 @@ import org.minima.utils.json.parser.JSONParser;
 public class incentivecash extends Command {
 
 	public incentivecash() {
-		super("incentivecash","(uid:) - Show or Specify your UserID for the Incentive Cash program");
+		super("incentivecash","(uid:) - Show your rewards or specify your UserID for the Incentive Cash program");
 	}
 	
 	@Override
