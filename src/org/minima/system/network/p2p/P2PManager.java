@@ -227,12 +227,15 @@ public class P2PManager extends MessageProcessor {
 
                 List<NIOClientInfo> clientInfos = P2PFunctions.getAllConnections();
                 for (NIOClientInfo client : clientInfos) {
-                    if ((!client.isIncoming() && !state.getOutLinks().containsKey(client.getUID())) || !client.ismValidGreeting()) {
-                        sendMsgs.add(new Message(P2P_SEND_DISCONNECT).addString("uid", client.getUID()));
-                        state.getKnownPeers().remove(new InetSocketAddress(client.getHost(), client.getPort()));
-                    }
-                    if (!client.ismValidGreeting()){
-                        state.getKnownPeers().remove(new InetSocketAddress(client.getHost(), client.getPort()));
+                    if (client.isConnected()) {
+                        if ((!client.isIncoming() && !state.getOutLinks().containsKey(client.getUID())) || !client.ismValidGreeting()) {
+                            sendMsgs.add(new Message(P2P_SEND_DISCONNECT).addString("uid", client.getUID()));
+                            state.getKnownPeers().remove(new InetSocketAddress(client.getHost(), client.getPort()));
+
+                        }
+                        if (!client.ismValidGreeting()) {
+                            state.getKnownPeers().remove(new InetSocketAddress(client.getHost(), client.getPort()));
+                        }
                     }
                 }
 
