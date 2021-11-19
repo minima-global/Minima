@@ -234,7 +234,7 @@ public class NIOMessage implements Runnable {
 				//OK - Some basic checks..
 				if(!TxPoWChecker.checkTxPoWBasic(txpow)) {
 					//These MUST PASS
-					MinimaLogger.log("TxPoW FAILS Basic checks fromm "+mClientUID+" "+txpow.getTxPoWID());
+					MinimaLogger.log("TxPoW FAILS Basic checks from "+mClientUID+" "+txpow.getTxPoWID());
 					return;
 				}
 				
@@ -242,9 +242,6 @@ public class NIOMessage implements Runnable {
 					MinimaLogger.log("Invalid signatures on txpow from "+mClientUID+" "+txpow.getTxPoWID());
 					return;
 				}
-				
-				//Ok - let's add to our database..
-				Main.getInstance().getTxPoWProcessor().postProcessTxPoW(txpow);
 				
 				//Now get the current tip details
 				TxPoWTreeNode tip 	= MinimaDB.getDB().getTxPoWTree().getTip();
@@ -256,16 +253,23 @@ public class NIOMessage implements Runnable {
 				
 				//Check the Scripts - could fail.. BUT not if MONOTONIC.. TODO
 				if(!TxPoWChecker.checkTxPoWScripts(tipmmr, txpow, tiptxpow.getBlockNumber())) {
+					//Could be block related
 					fullyvalid = false;
 					
-					//If Monotonic this is no good.. 
-					//..
+					//Monotonic txn MUST pass the script check or is INVALID - since will never pass..
+					if(txpow.isMonotonic()) {
+						MinimaLogger.log("Error Monotonic TxPoW failed script check from "+mClientUID+" "+txpow.getTxPoWID());
+						return;
+					}
 				}
 				
 				//Check the MMR - could be in a separate branch
 				if(!TxPoWChecker.checkMMR(tipmmr, txpow)) {
 					fullyvalid = false;
 				}
+				
+				//Ok - let's add to our database and process..
+				Main.getInstance().getTxPoWProcessor().postProcessTxPoW(txpow);
 				
 				//Since it's OK.. forward the TxPoWID to the rest of the network..
 				if(fullyvalid) {

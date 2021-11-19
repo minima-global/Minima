@@ -58,6 +58,14 @@ public class Transaction implements Streamable {
 	protected MiniData mTransactionID = MiniData.ZERO_TXPOWID;
 	
 	/**
+	 * Used internally..
+	 * 
+	 * Once you have checked the script you may not need top check it again..
+	 */
+	public boolean mHaveCheckedMonotonic 	= false;
+	public boolean mIsMonotonic 			= false;
+	
+	/**
 	 * Constructor
 	 */
 	public Transaction() {}
@@ -80,6 +88,10 @@ public class Transaction implements Streamable {
 	
 	public ArrayList<Coin> getAllOutputs(){
 		return mOutputs;
+	}
+	
+	public boolean isCheckedMonotonic() {
+		return mHaveCheckedMonotonic && mIsMonotonic;
 	}
 	
 	public MiniNumber sumInputs() {

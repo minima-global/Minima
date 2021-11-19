@@ -379,6 +379,7 @@ public class TxPoWChecker {
 	 * Check the Scripts of a transaction
 	 */
 	public static boolean checkTxPoWScripts(MMR zTipMMR, TxPoW zTxPoW, MiniNumber zBlock) throws Exception {
+		
 		//Check the Transaction..
 		boolean valid = checkTxPoWScripts(zTipMMR, zTxPoW.getTransaction(), zTxPoW.getWitness(), zBlock);
 		if(!valid) {
@@ -390,6 +391,17 @@ public class TxPoWChecker {
 	}
 	
 	private static boolean checkTxPoWScripts(MMR zTipMMR, Transaction zTransaction, Witness zWitness, MiniNumber zBlock) throws Exception {
+		
+		//Are we a valid transaction
+		if(zTransaction.isEmpty()) {
+			return true;
+		}
+		
+		//Do we even need to check this!
+		if(zTransaction.isCheckedMonotonic()) {
+//			MinimaLogger.log("Monotonic transaction! .. skip check");
+			return true;
+		}
 		
 		//Get the coin proofs
 		ArrayList<CoinProof> mmrproofs 	= zWitness.getAllCoinProofs();
@@ -404,6 +416,9 @@ public class TxPoWChecker {
 			//Check the Script Proof
 			ScriptProof prfs =  zWitness.getScript(cproof.getCoin().getAddress());
 			
+			//Are both contracts Monotonic..
+			boolean monotonic = true;
+			
 			//Check the Script
 			String script = prfs.getScript().toString();
 			Contract contract = new Contract(script, 
@@ -414,6 +429,13 @@ public class TxPoWChecker {
 			
 			contract.setGlobals(zBlock, zTransaction, i, cproof.getCoin().getBlockCreated(), script);
 			contract.run();
+			
+			//Monotonic - no @BLKNUM references..
+			if(!contract.isMonotonic()) {
+				monotonic = false;
+			}
+			
+			//Was it a success..
 			if(!contract.isSuccess()) {
 				MinimaLogger.log("Script FAIL "+i+" "+script);
 				return false;
@@ -438,12 +460,21 @@ public class TxPoWChecker {
 					
 					tokcontract.setGlobals(zBlock, zTransaction, i, cproof.getCoin().getBlockCreated(), tokscript);
 					tokcontract.run();
+					
+					if(!contract.isMonotonic()) {
+						monotonic = false;
+					}
+					
 					if(!tokcontract.isSuccess()) {
 						MinimaLogger.log("Token Script FAIL "+i+" "+tokscript);
 						return false;
 					}
 				}
 			}
+			
+			//Was it Montonic..
+			zTransaction.mHaveCheckedMonotonic 	= true;
+			zTransaction.mIsMonotonic 			= monotonic;
 		}
 		
 		return true;

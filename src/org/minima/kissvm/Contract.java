@@ -230,7 +230,7 @@ public class Contract {
 		}
 		
 		//Will this break monotonic
-		if(zGlobal.equals("@BLKNUM") || zGlobal.equals("@BLKDIFF")) {
+		if(zGlobal.equals("@BLKNUM") || zGlobal.equals("@BLKDIFF") || zGlobal.equals("@INBLKNUM")) {
 			mMonotonic = false;
 		}
 		

@@ -128,6 +128,10 @@ public class TxPoW implements Streamable {
 		mHeader.mTxBodyHash = Crypto.getInstance().hashObject(mBody);
 	}
 	
+	public boolean isMonotonic() {
+		return mBody.mTransaction.isCheckedMonotonic() && mBody.mBurnTransaction.isCheckedMonotonic();
+	}
+	
 	public TxBody getTxBody() {
 		return mBody;	
 	}
