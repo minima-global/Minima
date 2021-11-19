@@ -53,9 +53,6 @@ public class Contract {
 	//The previous state variables - accessed from the MMR data
 	ArrayList<StateVariable> mPrevState = new ArrayList<StateVariable>();
 	
-	//A list of all the user-defined variables
-	boolean mFloatingCoin = false;
-	
 	//Is this MonoTonic
 	boolean mMonotonic = true;
 	
@@ -124,8 +121,6 @@ public class Contract {
 		mSignatures = new ArrayList<>();
 		mVariables  = new Hashtable<>();
 		mGlobals    = new Hashtable<>();
-
-		mFloatingCoin = false;
 		
 		mBlock      = null;
 		mSuccess    = false;
@@ -174,7 +169,6 @@ public class Contract {
 			ScriptTokenizer tokenize = new ScriptTokenizer(zRamScript);
 			
 			//Tokenize the script
-//			List<Token> tokens = Token.tokenize(mRamScript);
 			List<ScriptToken> tokens = tokenize.tokenize();
 			
 			int count=0;
@@ -214,9 +208,9 @@ public class Contract {
 //		setGlobalVariable("@PREVBLKHASH", new HexValue(zBlock.getParentID()));
 		
 		setGlobalVariable("@INPUT", new NumberValue(zInput));
+		setGlobalVariable("@COINID", new HexValue(cc.getCoinID()));
 		setGlobalVariable("@AMOUNT", new NumberValue(cc.getAmount()));
 		setGlobalVariable("@ADDRESS", new HexValue(cc.getAddress()));
-		setGlobalVariable("@COINID", new HexValue(cc.getCoinID()));
 		setGlobalVariable("@TOKENID", new HexValue(cc.getTokenID()));
 		setGlobalVariable("@SCRIPT", new StringValue(zScript));
 		
@@ -227,6 +221,20 @@ public class Contract {
 	public void setGlobalVariable(String zGlobal, Value zValue) {
 		mGlobals.put(zGlobal, zValue);
 		traceLog("Global ["+zGlobal+"] : "+zValue);
+	}
+	
+	public Value getGlobal(String zGlobal) throws ExecutionException {
+		Value ret = mGlobals.get(zGlobal);
+		if(ret==null) {
+			throw new ExecutionException("Global not found - "+zGlobal);
+		}
+		
+		//Will this break monotonic
+		if(zGlobal.equals("@BLKNUM") || zGlobal.equals("@BLKDIFF")) {
+			mMonotonic = false;
+		}
+		
+		return ret;
 	}
 	
 	public Hashtable<String, Value> getGlobalVariables() {
@@ -419,16 +427,6 @@ public class Contract {
 		return (BooleanValue)vv;
 	}
 	
-	/**
-	 * DYN State
-	 */
-	public void setFloating(boolean zFloating) {
-		if(zFloating) {
-			mMonotonic = false;
-		}
-		
-		mFloatingCoin = zFloating;
-	}
 	
 	public Value getState(int zStateNum) throws ExecutionException {
 		if(!mTransaction.stateExists(zStateNum)) {
@@ -496,27 +494,6 @@ public class Contract {
 		}
 		
 		traceLog(varlist+"}");
-	}
-	
-	/**
-	 * Get a Global value
-	 * 
-	 * @param zGlobal
-	 * @return the value
-	 * @throws ExecutionException
-	 */
-	public Value getGlobal(String zGlobal) throws ExecutionException {
-		Value ret = mGlobals.get(zGlobal);
-		if(ret==null) {
-			throw new ExecutionException("Global not found - "+zGlobal);
-		}
-		
-		//Will this break monotonic
-		if(zGlobal.equals("@BLKNUM") || zGlobal.equals("@BLKDIFF")) {
-			mMonotonic = false;
-		}
-		
-		return ret;
 	}
 	
 	/**
