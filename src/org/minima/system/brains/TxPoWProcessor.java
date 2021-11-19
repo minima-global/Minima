@@ -223,7 +223,7 @@ public class TxPoWProcessor extends MessageProcessor {
 			
 			//How big..
 			int maxlen = GlobalParams.MINIMA_CASCADE_START_DEPTH.add(GlobalParams.MINIMA_CASCADE_FREQUENCY).getAsInt();
-			if(txptree.getSize() >= maxlen) {
+			if(txptree.getHeaviestBranchLength() >= maxlen) {
 				
 				//Current Tip
 				TxPoWTreeNode tip = txptree.getTip();
