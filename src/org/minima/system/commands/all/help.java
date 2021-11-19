@@ -22,7 +22,7 @@ public class help extends Command {
 		addCommand(details, new trace());
 		addCommand(details, new automine());
 		addCommand(details, new hashtest());
-		addCommand(details, new debugflag());
+//		addCommand(details, new debugflag());
 		
 		addCommand(details, new txpow());
 		addCommand(details, new coins());
