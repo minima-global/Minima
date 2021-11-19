@@ -2,8 +2,16 @@ package org.minima.system.params;
 
 public class GeneralParams {
 
+	/**
+	 * Are you running on a mobile - mainly for metrics
+	 */
 	public static boolean IS_MOBILE = false;
+	
+	/**
+	 * Can you accpet incoming connections.. 
+	 */
 	public static boolean IS_ACCEPTING_IN_LINKS = true;
+	
 	/**
 	 * Is this a private network - don;t connect to any users..
 	 */
