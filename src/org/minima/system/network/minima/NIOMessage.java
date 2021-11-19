@@ -5,7 +5,9 @@ import java.io.DataInputStream;
 import java.util.ArrayList;
 
 import org.minima.database.MinimaDB;
+import org.minima.database.mmr.MMR;
 import org.minima.database.txpowdb.TxPoWDB;
+import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.objects.Greeting;
 import org.minima.objects.IBD;
 import org.minima.objects.Pulse;
@@ -59,6 +61,8 @@ public class NIOMessage implements Runnable {
 			return "PULSE";
 		}else if(zType.isEqual(MSG_P2P)) {
 			return "P2P";
+		}else if(zType.isEqual(MSG_PING)) {
+			return "PING";
 		}
 		
 		return "UNKNOWN";
@@ -221,39 +225,54 @@ public class NIOMessage implements Runnable {
 				//Read the TxPoW
 				TxPoW txpow = TxPoW.ReadFromStream(dis);
 				
-//				//DEBUG HACK
-//				if(GeneralParams.DEBUGFUNC) {
-//					MinimaLogger.log("DEBUGFUNC active : ignoring this TXPOW @ "+txpow.getBlockNumber()+" "+txpow.getTxPoWID());
-//					return;
-//				
-				
 				//Do we have it..
 				boolean exists = MinimaDB.getDB().getTxPoWDB().exists(txpow.getTxPoWID());
 				if(exists) {
-//					MinimaLogger.log("Received TxPoW we already have : "+txpow.getTxPoWID());
 					return;
 				}
 				
 				//OK - Some basic checks..
-				boolean checksigs = TxPoWChecker.checkSignatures(txpow); 
-				if(!checksigs) {
-					MinimaLogger.log("SERIOUS ERROR : Invalid signatures on txpow from "+mClientUID+" "+txpow.getTxPoWID());
+				if(!TxPoWChecker.checkTxPoWBasic(txpow)) {
+					//These MUST PASS
+					MinimaLogger.log("TxPoW FAILS Basic checks fromm "+mClientUID+" "+txpow.getTxPoWID());
 					return;
 				}
 				
-				//More CHECKS.. will ignore if sigs fail, too big. not enough PoW or critical error..
-				//TODO
-				boolean valid = true;
+				if(!TxPoWChecker.checkSignatures(txpow)) {
+					MinimaLogger.log("Invalid signatures on txpow from "+mClientUID+" "+txpow.getTxPoWID());
+					return;
+				}
+				
+				//Ok - let's add to our database..
+				Main.getInstance().getTxPoWProcessor().postProcessTxPoW(txpow);
+				
+				//Now get the current tip details
+				TxPoWTreeNode tip 	= MinimaDB.getDB().getTxPoWTree().getTip();
+				MMR tipmmr 			= tip.getMMR();
+				TxPoW tiptxpow		= tip.getTxPoW();
+				
+				//More CHECKS.. if ALL these pass will forward otherwise may be a branch txpow that we requested
+				boolean fullyvalid = true;
+				
+				//Check the Scripts - could fail.. BUT not if MONOTONIC.. TODO
+				if(!TxPoWChecker.checkTxPoWScripts(tipmmr, txpow, tiptxpow.getBlockNumber())) {
+					fullyvalid = false;
+					
+					//If Monotonic this is no good.. 
+					//..
+				}
+				
+				//Check the MMR - could be in a separate branch
+				if(!TxPoWChecker.checkMMR(tipmmr, txpow)) {
+					fullyvalid = false;
+				}
 				
 				//Since it's OK.. forward the TxPoWID to the rest of the network..
-				if(valid) {
-					
-					//And send to the TxPoWProcessor Processor.. 
-					Main.getInstance().getTxPoWProcessor().postProcessTxPoW(txpow);
+				if(fullyvalid) {
 					
 					//Forward to the network
 					NIOManager.sendNetworkMessageAll(MSG_TXPOWID, txpow.getTxPoWIDData());
-					
+				
 					//Check all the Transactions..
 					ArrayList<MiniData> txns = txpow.getBlockTransactions();
 					for(MiniData txn : txns) {
@@ -261,7 +280,6 @@ public class NIOMessage implements Runnable {
 						if(!exists) {
 							//request it.. with a slight delay - as may be in process stack
 							NIOManager.sendNetworkMessage(mClientUID, MSG_TXPOWREQ, txpow.getTxPoWIDData());
-//							NIOManager.sendDelayedTxPoWReq(mClientUID, txn.to0xString(), txpow.getTxPoWID()+" missing txn");
 						}
 					}
 					
@@ -269,12 +287,7 @@ public class NIOMessage implements Runnable {
 					exists = MinimaDB.getDB().getTxPoWDB().exists(txpow.getParentID().to0xString());
 					if(!exists) {
 						NIOManager.sendNetworkMessage(mClientUID, MSG_TXPOWREQ, txpow.getParentID());
-//						NIOManager.sendDelayedTxPoWReq(mClientUID, txpow.getParentID().to0xString(), txpow.getTxPoWID()+" missing parent");
 					}
-					
-				}else {
-					//An invalid txpow.. hmm..
-					MinimaLogger.log("INVALID TxPoW sent from "+mClientUID+" "+txpow.getTxPoWID());
 				}
 				
 			}else if(type.isEqual(MSG_GENMESSAGE)) {

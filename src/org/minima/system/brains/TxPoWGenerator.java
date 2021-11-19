@@ -149,7 +149,7 @@ public class TxPoWGenerator {
 				}
 				
 				//Check if Valid!
-				if(TxPoWChecker.checkTxPoW(tip.getMMR(), memtxp, txpow.getBlockNumber())) {
+				if(TxPoWChecker.checkTxPoWSimple(tip.getMMR(), memtxp, txpow.getBlockNumber())) {
 					//Add to our list
 					chosentxns.add(memtxp);
 					
