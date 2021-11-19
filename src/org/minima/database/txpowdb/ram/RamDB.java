@@ -128,20 +128,27 @@ public class RamDB {
 	 * Look for double spend coins..
 	 */
 	public boolean checkForCoinID(MiniData zCoinID) {
-		ArrayList<TxPoW> mempool = getAllUnusedTxns();
-		for(TxPoW txp : mempool) {
-			
-			//Get all the input coins..
-			ArrayList<Coin> inputs = txp.getTransaction().getAllInputs();
-			for(Coin cc : inputs) {
+		
+		Enumeration<RamData> alldata = mTxPoWDB.elements();
+		while(alldata.hasMoreElements()) {
+			RamData ram = alldata.nextElement();
+			if(ram.getTxPoW().isTransaction() && !ram.isInCascade()) {
+	
+				//Get the this TxPoW
+				TxPoW txp = ram.getTxPoW();
 				
-				//Check it..
-				if(cc.getCoinID().isEqual(zCoinID)) {
-					return true;
+				//Get all the input coins..
+				ArrayList<Coin> inputs = txp.getTransaction().getAllInputs();
+				for(Coin cc : inputs) {
+					
+					//Check it..
+					if(cc.getCoinID().isEqual(zCoinID)) {
+						return true;
+					}
 				}
 			}
 		}
-		
+
 		return false;
 	}
 }

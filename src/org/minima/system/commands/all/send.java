@@ -29,6 +29,12 @@ import org.minima.utils.json.JSONObject;
 
 public class send extends Command {
 
+	/**
+	 * Small delay between send attempts
+	 */
+	public static long mLastSendAttmpt = 0;
+	public long SEND_DELAY = 1000 * 5;
+	
 	public send() {
 		super("send","[address:] [amount:] (tokenid:) - Send Minima or Tokens to an address");
 	}
@@ -36,6 +42,14 @@ public class send extends Command {
 	@Override
 	public JSONObject runCommand() throws Exception {
 		JSONObject ret = getJSONReply();
+		
+		//When was the last attempt
+		if(System.currentTimeMillis() - mLastSendAttmpt < SEND_DELAY) {
+			ret.put("status", false);
+			ret.put("message", "Please wait a few seconds before attempting to send again..");
+			return ret;
+		}
+		mLastSendAttmpt = System.currentTimeMillis();
 		
 		//Get the details
 		String address = (String)getParams().get("address");
@@ -118,7 +132,9 @@ public class send extends Command {
 		//Did we add enough
 		if(currentamount.isLess(sendamount)) {
 			//Not enough funds..
-			throw new Exception("Insufficient funds.. you only have "+currentamount);
+			ret.put("status", false);
+			ret.put("message", "Insufficient funds.. you only have "+currentamount);
+			return ret;
 		}
 		
 		//What is the change..
