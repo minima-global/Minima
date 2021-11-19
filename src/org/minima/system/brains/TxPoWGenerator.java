@@ -35,7 +35,7 @@ public class TxPoWGenerator {
 	/**
 	 * For Now - Hard set the Min TxPoW Difficulty
 	 */
-	public static final BigInteger MIN_HASHES 		= new BigInteger("100000");
+	public static final BigInteger MIN_HASHES 		= new BigInteger("10000");
 	public static final BigInteger MIN_TXPOW_VAL 	= Crypto.MAX_VAL.divide(MIN_HASHES);
 	public static final MiniData MIN_TXPOWDIFF 		= new MiniData(MIN_TXPOW_VAL);
 	
