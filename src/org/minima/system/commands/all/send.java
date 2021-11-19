@@ -33,7 +33,7 @@ public class send extends Command {
 	 * Small delay between send attempts
 	 */
 	public static long mLastSendAttmpt = 0;
-	public long SEND_DELAY = 1000 * 5;
+	public static long SEND_DELAY = 1000 * 5;
 	
 	public send() {
 		super("send","[address:] [amount:] (tokenid:) - Send Minima or Tokens to an address");

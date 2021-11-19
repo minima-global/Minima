@@ -37,6 +37,14 @@ public class tokencreate extends Command {
 	public JSONObject runCommand() throws Exception {
 		JSONObject ret = getJSONReply();
 		
+		//When was the last attempt
+		if(System.currentTimeMillis() - send.mLastSendAttmpt < send.SEND_DELAY) {
+			ret.put("status", false);
+			ret.put("message", "Please wait a few seconds before attempting to send again..");
+			return ret;
+		}
+		send.mLastSendAttmpt = System.currentTimeMillis();
+		
 		//Required
 		String name 	= (String)getParams().get("name");
 		String amount   = (String)getParams().get("amount");
@@ -147,7 +155,10 @@ public class tokencreate extends Command {
 		//Did we add enough
 		if(currentamount.isLess(sendamount)) {
 			//Not enough funds..
-			throw new Exception("Insufficient funds.. you only have "+currentamount);
+			//Insufficient blocks
+			ret.put("status", false);
+			ret.put("message", "Insufficient funds.. you only have "+currentamount);
+			return ret;
 		}
 		
 		//What is the change..
