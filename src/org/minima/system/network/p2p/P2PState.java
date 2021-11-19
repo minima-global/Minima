@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.minima.database.MinimaDB;
 import org.minima.objects.base.MiniData;
 import org.minima.system.network.p2p.params.P2PParams;
 import org.minima.system.params.GeneralParams;
@@ -176,6 +177,7 @@ public class P2PState {
         json.put("address", myMinimaAddress.toString().replace("/", ""));
         json.put("timestamp", Instant.ofEpochMilli(System.currentTimeMillis()).toString());
         json.put("minima_version", GlobalParams.MINIMA_VERSION);
+        json.put("top_block_number", MinimaDB.getDB().getTxPoWTree().getTip().getBlockNumber());
         json.put("is_mobile", GeneralParams.IS_MOBILE);
         json.put("out_links", addressListToJSONArray(new ArrayList<>(outLinks.values())));
         json.put("in_links", addressListToJSONArray(new ArrayList<>(inLinks.values())));
