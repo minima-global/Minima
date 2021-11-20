@@ -7,7 +7,7 @@ public class GlobalParams {
 	/**
 	 * Which Version
 	 */
-	public static String MINIMA_VERSION = "TN.100.8";
+	public static String MINIMA_VERSION = "0.100.13";
 	
 	/**
 	 * Speed in blocks per second.. 
