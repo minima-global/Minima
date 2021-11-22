@@ -48,19 +48,21 @@ public class TxPoW implements Streamable {
 	 * These are used internally ONLY
 	 */
 	private String _mTxPOWIDStr   		= "0x00";
-	private MiniData _mTxPOWID      	= new MiniData("0x00");
-	private MiniData _mTransID      	= new MiniData("0x00");
+	private MiniData _mTxPOWID      	= MiniData.ZERO_TXPOWID;
 	protected boolean _mIsBlockPOW  	= false;
 	protected boolean _mIsTxnPOW    	= false;
 	protected int     _mSuperBlock  	= 0;
 	protected long     _mTxPoWSize  	= 0;
 	protected BigDecimal _mBlockWeight 	= BigDecimal.ZERO;
 	
+	/**
+	 * Test Parameters
+	 */
 	protected boolean 	  mIsTesting 		= false;
 	protected MiniNumber _mTestBlockNumber  = MiniNumber.ZERO;
 	protected boolean    _mTestIsBlock  	= true;
 	protected boolean    _mTestIsTxn  		= false;
-	protected MiniData   _mTestParent  		= new MiniData("0x00");
+	protected MiniData   _mTestParent  		= MiniData.ZERO_TXPOWID;
 	protected ArrayList<String> mTestTransactions = new ArrayList<>();
 	
 	/**
@@ -124,6 +126,10 @@ public class TxPoW implements Streamable {
 	
 	public void setHeaderBodyHash() {
 		mHeader.mTxBodyHash = Crypto.getInstance().hashObject(mBody);
+	}
+	
+	public boolean isMonotonic() {
+		return mBody.mTransaction.isCheckedMonotonic() && mBody.mBurnTransaction.isCheckedMonotonic();
 	}
 	
 	public TxBody getTxBody() {
@@ -386,22 +392,11 @@ public class TxPoW implements Streamable {
 	}
 	
 	/**
-	 * Pre-compute the transaction hash
+	 * Compute the transaction hash for both
 	 */
 	public void calculateTransactionID() {
-		_mTransID = Crypto.getInstance().hashObject(mBody.mTransaction);
-	}
-	
-	/**
-	 * Calculate the CoinID of an Output
-	 */
-	public MiniData calculateCoinID(int zOutput) {
-//		//Make sure has been calculated
-//		if(_mTransID.isEqual(MiniData.ZERO_TXPOWID)) {
-//			_mTransID = calculateTransactionID();
-//		}
-		
-		return Crypto.getInstance().hashObjects(_mTransID, new MiniByte(zOutput));
+		mBody.mTransaction.calculateTransactionID();
+		mBody.mBurnTransaction.calculateTransactionID();
 	}
 	
 	/**
@@ -413,10 +408,6 @@ public class TxPoW implements Streamable {
 	
 	public MiniData getTxPoWIDData() {
 		return _mTxPOWID;
-	}
-	
-	public MiniData getTransID() {
-		return _mTransID;
 	}
 	
 	public int getSuperLevel() {

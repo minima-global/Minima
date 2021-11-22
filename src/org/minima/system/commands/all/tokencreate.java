@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.mmr.MMRProof;
+import org.minima.database.txpowdb.TxPoWDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.database.wallet.KeyRow;
 import org.minima.database.wallet.Wallet;
@@ -20,6 +21,7 @@ import org.minima.objects.base.MiniString;
 import org.minima.objects.keys.Signature;
 import org.minima.system.Main;
 import org.minima.system.brains.TxPoWGenerator;
+import org.minima.system.brains.TxPoWMiner;
 import org.minima.system.brains.TxPoWSearcher;
 import org.minima.system.commands.Command;
 import org.minima.system.params.GlobalParams;
@@ -122,8 +124,22 @@ public class tokencreate extends Command {
 		MiniNumber currentamount 	= MiniNumber.ZERO;
 		ArrayList<Coin> currentcoins = new ArrayList<>();
 		
+		//Get the TxPoWDB
+		TxPoWDB txpdb 		= MinimaDB.getDB().getTxPoWDB();
+		TxPoWMiner txminer 	= Main.getInstance().getTxPoWMiner();
+		
 		//Now cycle through..
 		for(Coin coin : relcoins) {
+			
+			//Check if we are already using thewm in another Transaction that is being mined
+			if(txminer.checkForMiningCoin(coin.getCoinID().to0xString())) {
+				continue;
+			}
+			
+			//Check if in mempool..
+			if(txpdb.checkMempoolCoins(coin.getCoinID())) {
+				continue;
+			}
 			
 			//Add this coin..
 			currentcoins.add(coin);
@@ -138,7 +154,10 @@ public class tokencreate extends Command {
 		//Did we add enough
 		if(currentamount.isLess(sendamount)) {
 			//Not enough funds..
-			throw new Exception("Insufficient funds.. you only have "+currentamount);
+			//Insufficient blocks
+			ret.put("status", false);
+			ret.put("message", "Insufficient funds.. you only have "+currentamount);
+			return ret;
 		}
 		
 		//What is the change..
@@ -164,14 +183,14 @@ public class tokencreate extends Command {
 		}
 		
 		//Get the block..
-		MiniNumber currentblock = tip.getBlockNUmber();
+		MiniNumber currentblock = tip.getBlockNumber();
 		MiniNumber blockdiff 	= currentblock.sub(minblock);
 		if(blockdiff.isMore(GlobalParams.MINIMA_MMR_PROOF_HISTORY)) {
 			blockdiff = GlobalParams.MINIMA_MMR_PROOF_HISTORY;
 		}
 		
 		//Now get that Block
-		TxPoWTreeNode mmrnode = tip.getPastNode(tip.getBlockNUmber().sub(blockdiff));
+		TxPoWTreeNode mmrnode = tip.getPastNode(tip.getBlockNumber().sub(blockdiff));
 		if(mmrnode == null) {
 			//Not enough blocks..
 			throw new Exception("Not enough blocks in chain to make valid MMR Proofs..");

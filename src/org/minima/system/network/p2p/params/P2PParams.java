@@ -22,7 +22,7 @@ public class P2PParams {
     /**
      * Desired number of connections clients should maintain
      */
-    public static int MIN_NUM_CONNECTIONS = 3;
+    public static int MIN_NUM_CONNECTIONS = 1;
 
     /**
      * Time between P2P system assessing its state in milliseconds
@@ -55,7 +55,17 @@ public class P2PParams {
     public static String METRICS_URL = "http://35.242.245.96:5000//network";
 
     public static List<InetSocketAddress> DEFAULT_NODE_LIST = Arrays.asList(
-            new InetSocketAddress("35.242.245.96", 9001)
+            new InetSocketAddress("34.76.220.73", 9001), // minima-tn100-testnet-vm
+            new InetSocketAddress("34.134.70.105", 9001), // base-testnet-1
+            new InetSocketAddress("34.134.70.105", 9001), // base-testnet-2
+            new InetSocketAddress("34.88.24.8", 9001), // base-testnet-3
+            new InetSocketAddress("104.155.19.103", 9001), // base-testnet-4
+            new InetSocketAddress("34.95.47.143", 9001), // base-testnet-5
+            new InetSocketAddress("34.130.196.123", 9001), // base-testnet-6
+            new InetSocketAddress("34.92.105.237", 9001), // base-testnet-7
+            new InetSocketAddress("34.64.175.169", 9001), // base-testnet-8
+            new InetSocketAddress("34.93.20.120", 9001) // base-testnet-9
+
             );
 
 }

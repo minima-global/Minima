@@ -11,9 +11,6 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.junit.Test;
-import org.minima.objects.Coin;
-import org.minima.objects.StateVariable;
-import org.minima.objects.Transaction;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.json.JSONObject;
@@ -77,12 +74,6 @@ public class TransactionTests {
         t.addStateVariable(new StateVariable(1, HelloWorld));
         assertTrue("Transaction should have state port 1 defined", t.stateExists(1));
         assertTrue("Variable set should match original String", t.getStateValue(1).toString().compareTo(HelloWorld) == 0);
-
-        try {
-            Transaction tcopy = t.deepCopy();
-        } catch (IOException e) {
-            assertFalse("Exception should not throw during transaction deep copy", true);
-        }
 
         try {
             ByteArrayOutputStream bos = new ByteArrayOutputStream();

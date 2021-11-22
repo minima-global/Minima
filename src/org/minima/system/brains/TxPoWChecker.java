@@ -3,8 +3,10 @@ package org.minima.system.brains;
 import java.util.ArrayList;
 import java.util.HashSet;
 
+import org.minima.database.MinimaDB;
 import org.minima.database.mmr.MMR;
 import org.minima.database.mmr.MMRData;
+import org.minima.database.txpowdb.TxPoWDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.kissvm.Contract;
 import org.minima.objects.Coin;
@@ -26,30 +28,50 @@ public class TxPoWChecker {
 	/**
 	 * Parallel check all the transactions in this block
 	 */
-	public static boolean checkTxPoWBlock(TxPoW zParentTxPoW, MMR zParentMMR, TxPoW zTxPoW, ArrayList<TxPoW> zTransactions) {
+	public static boolean checkTxPoWBlock(TxPoWTreeNode zParentNode, TxPoW zTxPoW, ArrayList<TxPoW> zTransactions) {
 		
 		try {
-			//Check the time of the block is within acceptable limits - 30 minutes..
-			//TODO Need to check Median of last X blocks!
-			MiniNumber maxtimediff 	= new MiniNumber(1000 * 60 * 30); 
-			MiniNumber oldtime 		= zParentTxPoW.getTimeMilli();
-			MiniNumber newtime 		= zTxPoW.getTimeMilli();
-			if(newtime.sub(oldtime).abs().isMore(maxtimediff)) {
-				MinimaLogger.log("Invalid TxPoW Block with time difference of more than 30 mins from previous block "+zTxPoW.getTxPoWID());
+			//Check the time of the block is greater than the media time
+			MiniNumber mediantime = TxPoWGenerator.getMedianTime(zParentNode);
+			if(zTxPoW.getTimeMilli().isLess(mediantime)) {
+				MinimaLogger.log("Invalid TxPoW block with millitime less than median "+zTxPoW.getTxPoWID());
 				return false;
 			}
+			
+			//Check the Block Number is correct
+			if(!zTxPoW.getBlockNumber().isEqual(zParentNode.getBlockNumber().increment())) {
+				MinimaLogger.log("Invalid TxPoW block with wrong blocknumber "+zTxPoW.getTxPoWID());
+				return false;
+			}
+			
+			//Check the Magic Numbers are correct
+			//.. TODO
 			
 			//Check all the input coinid are Unique - use the MMR proofs! CoinID could be Eltoo
 			ArrayList<String> allcoinid = new ArrayList<>();
 			if(zTxPoW.isTransaction()) {
+				//Main
 				ArrayList<CoinProof> proofs = zTxPoW.getWitness().getAllCoinProofs();
+				for(CoinProof proof : proofs) {
+					allcoinid.add(proof.getCoin().getCoinID().to0xString());
+				}
+				
+				//Burn
+				proofs = zTxPoW.getBurnWitness().getAllCoinProofs();
 				for(CoinProof proof : proofs) {
 					allcoinid.add(proof.getCoin().getCoinID().to0xString());
 				}
 			}
 			for(TxPoW txpow : zTransactions) {
 				if(txpow.isTransaction()) {
+					//Main
 					ArrayList<CoinProof> proofs = txpow.getWitness().getAllCoinProofs();
+					for(CoinProof proof : proofs) {
+						allcoinid.add(proof.getCoin().getCoinID().to0xString());
+					}
+					
+					//Burn
+					proofs = txpow.getBurnWitness().getAllCoinProofs();
 					for(CoinProof proof : proofs) {
 						allcoinid.add(proof.getCoin().getCoinID().to0xString());
 					}
@@ -63,9 +85,12 @@ public class TxPoWChecker {
 				return false;
 			}
 			
+			//Get the Parent MMR
+			MMR parentMMR = zParentNode.getMMR();
+			
 			//First check this
 			if(zTxPoW.isTransaction()) {
-				boolean valid = checkTxPoW(zParentMMR, zTxPoW, zTxPoW.getBlockNumber());
+				boolean valid = checkTxPoWSimple(parentMMR, zTxPoW, zTxPoW.getBlockNumber());
 				if(!valid) {
 					return false;
 				}
@@ -73,14 +98,14 @@ public class TxPoWChecker {
 			
 			//Now check all the internal Transactions
 			for(TxPoW txpow : zTransactions) {
-				boolean valid = checkTxPoW(zParentMMR, txpow, zTxPoW.getBlockNumber());
+				boolean valid = checkTxPoWSimple(parentMMR, txpow, zTxPoW.getBlockNumber());
 				if(!valid) {
 					return false;
 				}
 			}
 			
 			//Construct the MMR.. to see if it is correct..
-			TxBlock txblock 		= new TxBlock(zParentMMR, zTxPoW, zTransactions);
+			TxBlock txblock 		= new TxBlock(parentMMR, zTxPoW, zTransactions);
 			TxPoWTreeNode node 		= new TxPoWTreeNode(txblock, false);
 
 			//Check Correct..
@@ -100,33 +125,186 @@ public class TxPoWChecker {
 		return true;
 	}
 	
-	public static boolean checkTxPoW(MMR zTipMMR, TxPoW zTxPoW, MiniNumber zBlock) throws Exception {
+//	public static boolean checkTxPoW(MMR zTipMMR, TxPoW zTxPoW, MiniNumber zBlock) throws Exception {
+//		//Get the main Transaction..
+//		Transaction transaction = zTxPoW.getTransaction();
+//		if(transaction.isEmpty()) {
+//			return true;
+//		}
+//		
+//		//Basic tests and Check Values add up..
+//		if(!transaction.checkValid()) {
+//			MinimaLogger.log("Invalid Transaction Inputs and Outputs.. "+transaction.toJSON());
+//			return false;
+//		}
+//		
+//		//Get the Witness
+//		Witness witness = zTxPoW.getWitness();
+//		
+//		//Check the Inputs Coins..
+//		ArrayList<Coin> inputs 			= transaction.getAllInputs();
+//		int ins = inputs.size();
+//		
+//		ArrayList<CoinProof> mmrproofs 	= witness.getAllCoinProofs();
+//		
+//		//Check we have the correct amount..
+//		if(ins != mmrproofs.size()) {
+//			MinimaLogger.log("MISSING MMR Proofs Inputs:"+ins+" MMRProofs:"+mmrproofs.size()+" @ "+zTxPoW.getTxPoWID());
+//			return false;
+//		}
+//		
+//		//List of CoinID used..
+//		ArrayList<String> allcoinsused = new ArrayList<>();
+//		
+//		//Cycle through and check..
+//		for(int i=0;i<ins;i++) {
+//			
+//			//Get the Input
+//			Coin input = inputs.get(i);
+//			
+//			//Get the Coin Proof
+//			CoinProof cproof = mmrproofs.get(i);
+//			
+//			//Check Coin not already used..
+//			String coinid = cproof.getCoin().getCoinID().to0xString();
+//			if(allcoinsused.contains(coinid)) {
+//				MinimaLogger.log("CoinID used more than once @ "+i+" in "+zTxPoW.getTxPoWID());
+//				return false;
+//			}
+//			allcoinsused.add(coinid);
+//			
+//			//Check tokenid is correct
+//			if(!cproof.getCoin().getTokenID().isEqual(Token.TOKENID_MINIMA)) {
+//				
+//				//Check the token is correct
+//				if(!cproof.getCoin().getTokenID().isEqual(cproof.getCoin().getToken().getTokenID())) {
+//					MinimaLogger.log("TokenID in input "+i+" doesn't match token "+zTxPoW.getTxPoWID());
+//					return false;
+//				}
+//			}
+//			
+//			//Check the CoinProof details and Coin details Match
+//			boolean amount 	= input.getAmount().isEqual(cproof.getCoin().getAmount());
+//			boolean address = input.getAddress().isEqual(cproof.getCoin().getAddress());
+//			boolean token 	= input.getTokenID().isEqual(cproof.getCoin().getTokenID());
+//			if(!amount || !address || ! token) {
+//				MinimaLogger.log("Input coin doesn't match proof "+zTxPoW.getTxPoWID());
+//				return false;
+//			}
+//			
+//			//Check the CoinProof and Coin CoinID in the Transaction Match
+//			if(input.getCoinID().isEqual(Coin.COINID_ELTOO)) {
+//				
+//				//Check is a floating input.. set when the coin was created!
+//				if(!cproof.getCoin().isFloating()) {
+//					MinimaLogger.log("ELTOO input "+i+" isn't floating "+zTxPoW.getTxPoWID());
+//					return false;
+//				}
+//				
+//			}else {
+//				
+//				//Check the same CoinID
+//				if(!input.getCoinID().isEqual(cproof.getCoin().getCoinID())) {
+//					MinimaLogger.log("CoinID input "+i+" doesn't match proof "+zTxPoW.getTxPoWID());
+//					return false;
+//				}
+//			}
+//			
+//			//Check the Coin Proof
+//			if(cproof.getCoin().getSpent()) {
+//				MinimaLogger.log("Trying to spend spent coin..");
+//				return false;
+//			}
+//			
+//			boolean validmmr = zTipMMR.checkProofTimeValid(cproof.getCoin().getMMREntryNumber(), cproof.getMMRData(), cproof.getMMRProof());
+//			if(!validmmr) {
+//				MinimaLogger.log("Invalid MMR Proof!");
+//				return false;
+//			}
+//			
+//			//Check the Script Proof
+//			ScriptProof prfs =  witness.getScript(input.getAddress());
+//			if(prfs == null) {
+//				MinimaLogger.log("Script Missing from TxPoW for address "+input.getAddress().to0xString());
+//				return false;
+//			}
+//			
+//			//Check the Script
+//			Contract contract = new Contract(prfs.getScript().toString(), witness.getAllSignatureKeys(), witness, transaction, input.getState());
+//			contract.setGlobals(zBlock, transaction, i, cproof.getCoin().getBlockCreated(), prfs.getScript().toString());
+//			contract.run();
+//			if(!contract.isSuccess()) {
+//				MinimaLogger.log("Script FAIL "+prfs.getScript().toString());
+//				return false;
+//			}
+//			
+//			//Is there a token script..
+//			//..TODO
+//			
+//			//Is there a Burn Transaction
+//			//.. TODO
+//		}
+//		
+//		//All good
+//		return true;
+//	}
+	
+	/**
+	 * Once accepted basic and signature checks are no longer needed..
+	 */
+	public static boolean checkTxPoWSimple(MMR zTipMMR, TxPoW zTxPoW, MiniNumber zBlock) throws Exception {
+	
+		//Check the MMR first - as quicker..
+		boolean valid = checkMMR(zTipMMR, zTxPoW);
+		if(!valid) {
+			return false;
+		}
+		
+		//Now check the scripts
+		return checkTxPoWScripts(zTipMMR, zTxPoW, zBlock);
+	}
+	
+	/**
+	 * Make basic checks of this TxPoW
+	 */
+	public static boolean checkTxPoWBasic(TxPoW zTxPoW) throws Exception {
+		//Check the Transaction..
+		boolean valid = checkTxPoWBasic(zTxPoW.getTxPoWID(), zTxPoW.getTransaction(), zTxPoW.getWitness());
+		if(!valid) {
+			return false;
+		}
+		
+		//Check the Burn Transaction..
+		return checkTxPoWBasic(zTxPoW.getTxPoWID(), zTxPoW.getBurnTransaction(), zTxPoW.getBurnWitness());
+	}
+	
+	private static boolean checkTxPoWBasic(String zTxPoWID, Transaction zTransaction, Witness zWitness) throws Exception {
 		//Get the main Transaction..
-		Transaction transaction = zTxPoW.getTransaction();
-		if(transaction.isEmpty()) {
+		if(zTransaction.isEmpty()) {
 			return true;
 		}
 		
 		//Basic tests and Check Values add up..
-		if(!transaction.checkValid()) {
-			MinimaLogger.log("Invalid Transaction Inputs and Outputs.. "+transaction.toJSON());
+		if(!zTransaction.checkValid()) {
+			MinimaLogger.log("Invalid Transaction Inputs and Outputs.. "+zTransaction.toJSON());
 			return false;
 		}
 		
-		//Get the Witness
-		Witness witness = zTxPoW.getWitness();
-		
 		//Check the Inputs Coins..
-		ArrayList<Coin> inputs 			= transaction.getAllInputs();
+		ArrayList<Coin> inputs 			= zTransaction.getAllInputs();
 		int ins = inputs.size();
 		
-		ArrayList<CoinProof> mmrproofs 	= witness.getAllCoinProofs();
+		//Get  all the coin proofs..
+		ArrayList<CoinProof> mmrproofs 	= zWitness.getAllCoinProofs();
 		
 		//Check we have the correct amount..
 		if(ins != mmrproofs.size()) {
-			MinimaLogger.log("MISSING MMR Proofs Inputs:"+ins+" MMRProofs:"+mmrproofs.size()+" @ "+zTxPoW.getTxPoWID());
+			MinimaLogger.log("MISSING MMR Proofs Inputs:"+ins+" MMRProofs:"+mmrproofs.size()+" @ "+zTxPoWID);
 			return false;
 		}
+		
+		//List of CoinID used..
+		ArrayList<String> allcoinsused = new ArrayList<>();
 		
 		//Cycle through and check..
 		for(int i=0;i<ins;i++) {
@@ -137,32 +315,39 @@ public class TxPoWChecker {
 			//Get the Coin Proof
 			CoinProof cproof = mmrproofs.get(i);
 			
+			//Check Coin not already used..
+			String coinid = cproof.getCoin().getCoinID().to0xString();
+			if(allcoinsused.contains(coinid)) {
+				MinimaLogger.log("CoinID used more than once @ "+i+" in "+zTxPoWID);
+				return false;
+			}
+			allcoinsused.add(coinid);
+			
 			//Check tokenid is correct
 			if(!cproof.getCoin().getTokenID().isEqual(Token.TOKENID_MINIMA)) {
 				
 				//Check the token is correct
 				if(!cproof.getCoin().getTokenID().isEqual(cproof.getCoin().getToken().getTokenID())) {
-					MinimaLogger.log("TokenID in input "+i+" doesn't match token "+zTxPoW.getTxPoWID());
+					MinimaLogger.log("TokenID in input "+i+" doesn't match token "+zTxPoWID);
 					return false;
 				}
 			}
 			
-			//Check the CoinProof and Coin in the Transaction Match
+			//Check the CoinProof details and Coin details Match
+			boolean amount 	= input.getAmount().isEqual(cproof.getCoin().getAmount());
+			boolean address = input.getAddress().isEqual(cproof.getCoin().getAddress());
+			boolean token 	= input.getTokenID().isEqual(cproof.getCoin().getTokenID());
+			if(!amount || !address || ! token) {
+				MinimaLogger.log("Input coin details don't match coinproof "+zTxPoWID);
+				return false;
+			}
+			
+			//Check the CoinProof and Coin CoinID in the Transaction Match
 			if(input.getCoinID().isEqual(Coin.COINID_ELTOO)) {
 				
 				//Check is a floating input.. set when the coin was created!
 				if(!cproof.getCoin().isFloating()) {
-					MinimaLogger.log("ELTOO input "+i+" isn't floating "+zTxPoW.getTxPoWID());
-					return false;
-				}
-				
-				//Floating Input check the amount, address, and tokenid match the MMR
-				boolean amount 	= input.getAmount().isEqual(cproof.getCoin().getAmount());
-				boolean address = input.getAddress().isEqual(cproof.getCoin().getAddress());
-				boolean token 	= input.getTokenID().isEqual(cproof.getCoin().getTokenID());
-			
-				if(!amount || !address || ! token) {
-					MinimaLogger.log("ELTOO input doesn't match proof "+zTxPoW.getTxPoWID());
+					MinimaLogger.log("ELTOO input "+i+" isn't floating "+zTxPoWID);
 					return false;
 				}
 				
@@ -170,7 +355,7 @@ public class TxPoWChecker {
 				
 				//Check the same CoinID
 				if(!input.getCoinID().isEqual(cproof.getCoin().getCoinID())) {
-					MinimaLogger.log("Coin input "+i+" doesn't match proof "+zTxPoW.getTxPoWID());
+					MinimaLogger.log("CoinID input "+i+" doesn't match proof "+zTxPoWID);
 					return false;
 				}
 			}
@@ -181,50 +366,178 @@ public class TxPoWChecker {
 				return false;
 			}
 			
+			//Check the Script Proofs exist for every coin
+			ScriptProof prfs =  zWitness.getScript(input.getAddress());
+			if(prfs == null) {
+				MinimaLogger.log("Script Missing from TxPoW for address "+input.getAddress().to0xString());
+				return false;
+			}
+		}
+		
+		return true;
+	}
+	
+	/**
+	 * Check the Scripts of a transaction
+	 */
+	public static boolean checkTxPoWScripts(MMR zTipMMR, TxPoW zTxPoW, MiniNumber zBlock) throws Exception {
+		
+		//Check the Transaction..
+		boolean valid = checkTxPoWScripts(zTipMMR, zTxPoW.getTransaction(), zTxPoW.getWitness(), zBlock);
+		if(!valid) {
+			return false;
+		}
+		
+		//Check the Burn Transaction..
+		return checkTxPoWScripts(zTipMMR, zTxPoW.getBurnTransaction(), zTxPoW.getBurnWitness(), zBlock);
+	}
+	
+	private static boolean checkTxPoWScripts(MMR zTipMMR, Transaction zTransaction, Witness zWitness, MiniNumber zBlock) throws Exception {
+		
+		//Are we a valid transaction
+		if(zTransaction.isEmpty()) {
+			return true;
+		}
+		
+		//Do we even need to check this!
+		if(zTransaction.isCheckedMonotonic()) {
+//			MinimaLogger.log("Monotonic transaction! .. skip check");
+			return true;
+		}
+		
+		//Get the coin proofs
+		ArrayList<CoinProof> mmrproofs 	= zWitness.getAllCoinProofs();
+		int ins = mmrproofs.size();
+
+		//We are checking it now..
+		zTransaction.mHaveCheckedMonotonic 	= true;
+		zTransaction.mIsMonotonic 			= true;
+		
+		//Cycle through and check..
+		for(int i=0;i<ins;i++) {
+			
+			//Get the Coin Proof
+			CoinProof cproof = mmrproofs.get(i);
+			
+			//Check the Script Proof
+			ScriptProof prfs =  zWitness.getScript(cproof.getCoin().getAddress());
+			
+			//Check the Script
+			String script = prfs.getScript().toString();
+			Contract contract = new Contract(script, 
+											zWitness.getAllSignatureKeys(), 
+											zWitness, 
+											zTransaction, 
+											cproof.getCoin().getState());
+			
+			contract.setGlobals(zBlock, zTransaction, i, cproof.getCoin().getBlockCreated(), script);
+			contract.run();
+			
+			//Monotonic - no @BLKNUM references..
+			if(!contract.isMonotonic()) {
+				zTransaction.mIsMonotonic 	= false;
+			}
+			
+			//Was it a success..
+			if(!contract.isSuccess()) {
+				MinimaLogger.log("Script FAIL "+i+" "+script);
+				return false;
+			}
+			
+			//Is there a token script..
+			if(!cproof.getCoin().getTokenID().isEqual(Token.TOKENID_MINIMA)) {
+				
+				//Get the token..
+				Token tok = cproof.getCoin().getToken();
+				
+				//Is it simple
+				String tokscript = tok.getTokenScript().toString().trim();
+				if(!tokscript.equals("RETURN TRUE")) {
+					
+					//Run it..
+					Contract tokcontract = new Contract(tokscript, 
+														zWitness.getAllSignatureKeys(), 
+														zWitness, 
+														zTransaction, 
+														cproof.getCoin().getState());
+					
+					tokcontract.setGlobals(zBlock, zTransaction, i, cproof.getCoin().getBlockCreated(), tokscript);
+					tokcontract.run();
+					
+					if(!contract.isMonotonic()) {
+						zTransaction.mIsMonotonic 	= false;
+					}
+					
+					if(!tokcontract.isSuccess()) {
+						MinimaLogger.log("Token Script FAIL "+i+" "+tokscript);
+						return false;
+					}
+				}
+			}
+		}
+		
+		return true;
+	}
+	
+	/**
+	 * Check the MMR Proofs
+	 */
+	public static boolean checkMMR(MMR zTipMMR, TxPoW zTxPoW) throws Exception {
+		
+		//Check the Transaction..
+		boolean valid = checkMMR(zTipMMR, zTxPoW.getWitness());
+		if(!valid) {
+			return false;
+		}
+		
+		//Check the Burn Transaction..
+		return checkMMR(zTipMMR, zTxPoW.getBurnWitness());
+	}
+	
+	private static boolean checkMMR(MMR zTipMMR, Witness zWitness) throws Exception {
+		//Get the all the MMR Proofs
+		ArrayList<CoinProof> mmrproofs 	= zWitness.getAllCoinProofs();
+		int proofs = mmrproofs.size();
+		
+		//Cycle through and check..
+		for(int i=0;i<proofs;i++) {
+			
+			//Get the Coin Proof
+			CoinProof cproof = mmrproofs.get(i);
+			
+			//Check the MMR
 			boolean validmmr = zTipMMR.checkProofTimeValid(cproof.getCoin().getMMREntryNumber(), cproof.getMMRData(), cproof.getMMRProof());
 			if(!validmmr) {
 				MinimaLogger.log("Invalid MMR Proof!");
 				return false;
 			}
-			
-			//Check the Script Proof
-			ScriptProof prfs =  witness.getScript(input.getAddress());
-			if(prfs == null) {
-				MinimaLogger.log("Script Missing from TxPoW for address "+input.getAddress().to0xString());
-				return false;
-			}
-			
-			//Check the Script
-			Contract contract = new Contract(prfs.getScript().toString(), witness.getAllSignatureKeys(), witness, transaction, input.getState());
-			contract.setGlobals(zBlock, zTxPoW, i, cproof.getCoin().getBlockCreated(), prfs.getScript().toString());
-			contract.run();
-			if(!contract.isSuccess()) {
-				MinimaLogger.log("Script FAIL "+prfs.getScript().toString());
-				return false;
-			}
-			
-			//Is there a token script..
-			//..TODO
-			
-			//Is there a Burn Transaction
-			//.. TODO
 		}
 		
-		//All good
 		return true;
 	}
 	
 	
 	/**
-	 * This is only done once when you first receive the TxPoW
+	 * Check the signatures
 	 */
 	public static boolean checkSignatures(TxPoW zTxPoW) {
+		//Check the Transaction..
+		boolean valid = checkSignatures(zTxPoW, zTxPoW.getTransaction(), zTxPoW.getWitness());
+		if(!valid) {
+			return false;
+		}
 		
-		//Get the Transaction Hash
-		MiniData transid = zTxPoW.getTransID();
+		//Check the Burn Transaction..
+		return checkSignatures(zTxPoW, zTxPoW.getBurnTransaction(), zTxPoW.getBurnWitness());
+	}
+	
+	private static boolean checkSignatures(TxPoW zTxPoW, Transaction zTransaction, Witness zWitness) {
+		
+		//Check the Main Transaction
+		MiniData transid = zTransaction.getTransactionID();
 		
 		//Now check the signatures..
-		ArrayList<Signature> allsigs = zTxPoW.getWitness().getAllSignatures();
+		ArrayList<Signature> allsigs = zWitness.getAllSignatures();
 		for(Signature sig : allsigs) {
 			
 			//Create a signature scheme checker..
@@ -237,7 +550,36 @@ public class TxPoWChecker {
 				return false;
 			}
 		}
-		
+				
 		return true;
+	}
+	
+	/**
+	 * Check coins for double spend in mempool
+	 */
+	public static boolean checkMemPoolCoins(TxPoW zTxPoW) {
+		
+		TxPoWDB txpdb = MinimaDB.getDB().getTxPoWDB();
+		
+		//Get all the coins..
+		if(!zTxPoW.getTransaction().isEmpty()) {
+			ArrayList<Coin> inputs = zTxPoW.getTransaction().getAllInputs();
+			for(Coin cc : inputs) {
+				if(txpdb.checkMempoolCoins(cc.getCoinID())) {
+					return true;
+				}
+			}
+		}
+		
+		if(!zTxPoW.getBurnTransaction().isEmpty()) {
+			ArrayList<Coin> inputs = zTxPoW.getBurnTransaction().getAllInputs();
+			for(Coin cc : inputs) {
+				if(txpdb.checkMempoolCoins(cc.getCoinID())) {
+					return true;
+				}
+			}
+		}
+		
+		return false;
 	}
 }
