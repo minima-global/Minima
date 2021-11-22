@@ -1,6 +1,9 @@
 package org.minima.system.brains;
 
+import java.util.ArrayList;
+
 import org.minima.database.MinimaDB;
+import org.minima.objects.Coin;
 import org.minima.objects.Transaction;
 import org.minima.objects.TxPoW;
 import org.minima.objects.Witness;
@@ -16,11 +19,24 @@ public class TxPoWMiner extends MessageProcessor {
 	public static final String TXPOWMINER_MINETXPOW 	= "TXPOWMINER_MINETXPOW";
 	public static final String TXPOWMINER_MINEPULSE 	= "TXPOWMINER_MINEPULSE";
 	
+	/**
+	 * A list of coins currently being mined.. to check when creating new transactions 
+	 */
+	ArrayList<String> mMiningCoins;
+	
+	
 	public TxPoWMiner() {
 		super("MINER");
+		
+		mMiningCoins = new ArrayList<>();
 	}
 	
 	public void mineTxPoW(TxPoW zTxPoW) {
+		
+		//Add these coins to our Mining list
+		addMiningCoins(zTxPoW);
+		
+		//Now post a Mining message
 		PostMessage(new Message(TXPOWMINER_MINETXPOW).addObject("txpow", zTxPoW));
 	}
 	
@@ -74,6 +90,9 @@ public class TxPoWMiner extends MessageProcessor {
 			//Post it on..
 			Main.getInstance().PostMessage(new Message(Main.MAIN_TXPOWMINED).addObject("txpow", txpow));
 		
+			//Remove the coins from our mining list
+			removeMiningCoins(txpow);
+			
 		}else if(zMessage.isMessageType(TXPOWMINER_MINEPULSE)) {
 			
 			//Do we have any blocks yet
@@ -88,4 +107,53 @@ public class TxPoWMiner extends MessageProcessor {
 		}
 	}
 
+	/**
+	 * Add these coins to a list so we know we can;t use them when creating a transaction..
+	 */
+	private void addMiningCoins(TxPoW zTxPoW) {
+		
+		//Get all the coins..
+		if(!zTxPoW.getTransaction().isEmpty()) {
+			ArrayList<Coin> inputs = zTxPoW.getTransaction().getAllInputs();
+			for(Coin cc : inputs) {
+				String coinid = cc.getCoinID().to0xString();
+				if(!mMiningCoins.contains(coinid)) {
+					mMiningCoins.add(coinid);
+				}
+			}
+		}
+		
+		if(!zTxPoW.getBurnTransaction().isEmpty()) {
+			ArrayList<Coin> inputs = zTxPoW.getBurnTransaction().getAllInputs();
+			for(Coin cc : inputs) {
+				String coinid = cc.getCoinID().to0xString();
+				if(!mMiningCoins.contains(coinid)) {
+					mMiningCoins.add(coinid);
+				}
+			}
+		}
+	}
+	
+	private void removeMiningCoins(TxPoW zTxPoW) {
+		
+		//Get all the coins..
+		if(!zTxPoW.getTransaction().isEmpty()) {
+			ArrayList<Coin> inputs = zTxPoW.getTransaction().getAllInputs();
+			for(Coin cc : inputs) {
+				mMiningCoins.remove(cc.getCoinID().to0xString());
+			}
+		}
+		
+		if(!zTxPoW.getBurnTransaction().isEmpty()) {
+			ArrayList<Coin> inputs = zTxPoW.getBurnTransaction().getAllInputs();
+			for(Coin cc : inputs) {
+				mMiningCoins.remove(cc.getCoinID().to0xString());
+			}
+		}
+	}
+	
+	public boolean checkForMiningCoin(String zCoinID) {
+		return mMiningCoins.contains(zCoinID);
+	}
+	
 }
