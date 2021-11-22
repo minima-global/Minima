@@ -7,6 +7,7 @@ import org.minima.database.txpowdb.ram.RamDB;
 import org.minima.database.txpowdb.sql.TxPoWSqlDB;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
+import org.minima.utils.MinimaLogger;
 
 /**
  * The Main TxPoW store for the whole app
@@ -42,7 +43,7 @@ public class TxPoWDB {
 	}
 	
 	/**
-	 * Add a TxPoW to the Database
+	 * Add a TxPoW to the Database - both RAM and SQL
 	 */
 	public void addTxPoW(TxPoW zTxPoW) {
 		//Get the ID
@@ -58,6 +59,17 @@ public class TxPoWDB {
 			
 			//Add it to the RAM
 			mRamDB.addTxPoW(zTxPoW);
+		}
+	}
+	
+	public void addSQLTxPoW(TxPoW zTxPoW) {
+		//Get the ID
+		String txpid = zTxPoW.getTxPoWID();
+		
+		//Is it in the SQL
+		if(!mSqlDB.exists(txpid)) {
+			//Add it to the SQL..
+			mSqlDB.addTxPoW(zTxPoW);
 		}
 	}
 	

@@ -30,6 +30,11 @@ public class Wallet extends SqlDB {
 	 */
 	Hashtable<String, TreeKey> mTreeKeys = new Hashtable<>();
 	
+	/**
+	 * Has there been a change to the Key Rows.. otherwise used cached
+	 */
+	boolean mKeyRowChange 					= true;
+	ArrayList<KeyRow> mCachedRelevantKeys 	= new ArrayList<>();
 	
 	public Wallet() {
 		super();
@@ -67,6 +72,8 @@ public class Wallet extends SqlDB {
 			SQL_UPDATE_USES			= mSQLCOnnection.prepareStatement("UPDATE keys SET uses=? WHERE privatekey=?");
 			SQL_GET_USES			= mSQLCOnnection.prepareStatement("SELECT uses FROM keys WHERE privatekey=?");
 			
+			mKeyRowChange = true;
+			
 		} catch (SQLException e) {
 			MinimaLogger.log(e);
 		}
@@ -74,6 +81,9 @@ public class Wallet extends SqlDB {
 	}
 	
 	public synchronized KeyRow createNewKey() {
+		
+		//Change has occurred
+		mKeyRowChange = true;
 		
 		//Create a NEW random seed..
 		MiniData privateseed = MiniData.getRandomData(32);
@@ -123,6 +133,12 @@ public class Wallet extends SqlDB {
 	 * Get all relevant Public Keys and Addresses
 	 */
 	public synchronized ArrayList<KeyRow> getAllRelevant() {
+		
+		//If nop change use the cached version
+		if(!mKeyRowChange) {
+			return mCachedRelevantKeys;
+		}
+		
 		ArrayList<KeyRow> allkeys = new ArrayList<>();
 		
 		try {
@@ -144,6 +160,10 @@ public class Wallet extends SqlDB {
 		} catch (SQLException e) {
 			MinimaLogger.log(e);
 		}
+		
+		//Store for later
+		mCachedRelevantKeys = allkeys;
+		mKeyRowChange		= false;
 		
 		return allkeys;
 	}
@@ -250,6 +270,9 @@ public class Wallet extends SqlDB {
 	}
 	
 	private synchronized void updateUses(String zPrivateKey, int zUses) throws SQLException {		
+		//Change has occurred
+		mKeyRowChange = true;
+				
 		//Get the Query ready
 		SQL_UPDATE_USES.clearParameters();
 	

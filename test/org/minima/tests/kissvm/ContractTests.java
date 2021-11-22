@@ -213,12 +213,6 @@ public class ContractTests {
                 ctr.getBoolParam(0, mf);
             });
         }
-
-        {
-            Contract ctr = new Contract("", "", new Witness(), new Transaction(), null);
-            ctr.setFloating(true);
-            ctr.setFloating(false);
-        }
     }
 
     @Test
