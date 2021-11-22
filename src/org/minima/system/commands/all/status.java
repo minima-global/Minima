@@ -77,7 +77,7 @@ public class status extends Command {
 		BigInteger cascweight 	= MinimaDB.getDB().getCascade().getTotalWeight().toBigInteger();
 		details.put("weight", chainweight.add(cascweight));
 
-		details.put("configuration", GeneralParams.DATA_FOLDER);
+		details.put("data", GeneralParams.DATA_FOLDER);
 
 		JSONObject files = new JSONObject();
 
