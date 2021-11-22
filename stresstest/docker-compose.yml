@@ -9,14 +9,14 @@ networks:
 services:
   minima_one:
     image: minima:latest
-    command: -daemon -clean -nop2p -rpcenable -connect 35.246.45.106:9001
+    command: -daemon -nop2p -rpcenable -genesis -test
     networks:
       minima_testnet:
         aliases:
           - minima_one
-    #ports:
-      #- "9001:9001"
-      #- "12000-12100:9002"
+    ports:
+      - "9001:9001"
+      - "9002:9002"
     deploy:
       resources:
         limits:

@@ -180,4 +180,33 @@ public class status extends Command {
 		return new status();
 	}
 
+	public static void main(String[] zArgs) {
+		
+		BigDecimal blkweightdec 	= new BigDecimal(new MiniData("0x00007318BCC20D3A49F2B0789C7FC4BB4945BB8D54F7E07497069015D31C8BC9").getDataValue());
+		BigDecimal blockWeight 		= Crypto.MAX_VALDEC.divide(blkweightdec, MathContext.DECIMAL32);
+		
+//		BigDecimal blockWeight 		= new BigDecimal(20000);
+		BigDecimal minhashes 		= new BigDecimal(TxPoWGenerator.MIN_HASHES);
+		
+		MiniNumber multiplier 		= new MiniNumber(blockWeight.divide(minhashes)); 
+		
+		MiniNumber blockspers		= GlobalParams.MINIMA_BLOCK_SPEED;
+		MiniNumber pulsespers		= MiniNumber.THOUSAND.div( new MiniNumber(GeneralParams.USER_PULSE_FREQ));
+		MiniNumber ratio 			= blockspers.div(pulsespers);
+		
+		MiniNumber devs 			= multiplier.mult(ratio);
+		
+		System.out.println("blkweight       : "+blockWeight.toString());
+		System.out.println("blockspersecond : "+blockspers.toString());
+		System.out.println("pulsepersecond  : "+pulsespers.toString());
+		System.out.println("ratio           : "+ratio.toString());
+		System.out.println("multiplier      : "+multiplier.toString());
+		System.out.println("devs            : "+devs.toString());
+		
+		
+		
+//		
+	}
+	
+	
 }
