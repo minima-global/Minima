@@ -20,15 +20,16 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.objects.keys.Signature;
 import org.minima.system.Main;
 import org.minima.system.brains.TxPoWGenerator;
+import org.minima.system.brains.TxPoWMiner;
 import org.minima.system.brains.TxPoWSearcher;
 import org.minima.system.commands.Command;
 import org.minima.system.params.GlobalParams;
 import org.minima.utils.Crypto;
-import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
 
 public class send extends Command {
 
+	
 	public send() {
 		super("send","[address:] [amount:] (tokenid:) - Send Minima or Tokens to an address");
 	}
@@ -71,7 +72,8 @@ public class send extends Command {
 		}
 		
 		//Get the TxPoWDB
-		TxPoWDB txpdb = MinimaDB.getDB().getTxPoWDB();
+		TxPoWDB txpdb 		= MinimaDB.getDB().getTxPoWDB();
+		TxPoWMiner txminer 	= Main.getInstance().getTxPoWMiner();
 		
 		//Lets build a transaction..
 		ArrayList<Coin> relcoins = TxPoWSearcher.getRelevantUnspentCoins(tip,tokenid);
@@ -83,6 +85,11 @@ public class send extends Command {
 		//Now cycle through..
 		Token token = null;
 		for(Coin coin : relcoins) {
+			
+			//Check if we are already using thewm in another Transaction that is being mined
+			if(txminer.checkForMiningCoin(coin.getCoinID().to0xString())) {
+				continue;
+			}
 			
 			//Check if in mempool..
 			if(txpdb.checkMempoolCoins(coin.getCoinID())) {
@@ -118,7 +125,9 @@ public class send extends Command {
 		//Did we add enough
 		if(currentamount.isLess(sendamount)) {
 			//Not enough funds..
-			throw new Exception("Insufficient funds.. you only have "+currentamount);
+			ret.put("status", false);
+			ret.put("message", "Insufficient funds.. you only have "+currentamount);
+			return ret;
 		}
 		
 		//What is the change..

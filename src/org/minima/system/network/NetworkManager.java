@@ -147,7 +147,7 @@ public class NetworkManager {
 		
 		//P2P stats
 		if(GeneralParams.P2P_ENABLED) {
-			stats.put("p2p", ((P2PManager)mP2PManager).getStatus());
+			stats.put("p2p", ((P2PManager)mP2PManager).getStatus(false));
 		}else {
 			stats.put("p2p", "disabled");
 		}

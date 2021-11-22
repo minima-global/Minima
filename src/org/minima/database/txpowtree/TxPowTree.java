@@ -10,6 +10,8 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.Hashtable;
 
+import org.minima.database.MinimaDB;
+import org.minima.database.txpowdb.TxPoWDB;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
@@ -388,6 +390,9 @@ public class TxPowTree implements Streamable {
 		mFastLink 	= new Hashtable<>();
 		mLength		= 0;
 		
+		//Get the TxPowDB
+		TxPoWDB txpdb =  MinimaDB.getDB().getTxPoWDB();
+		
 		int len = MiniNumber.ReadFromStream(zIn).getAsInt();
 		for(int i=0;i<len;i++) {
 			//Read in a node..
@@ -395,6 +400,9 @@ public class TxPowTree implements Streamable {
 			
 			//Add to the fast link table..
 			addFastLink(node);
+			
+			//Add the TxPoW to the main TxPoWDB - just SQL not Mempool..
+			txpdb.addSQLTxPoW(node.getTxPoW());
 			
 			//Add it to the tree..
 			if(mRoot == null) {

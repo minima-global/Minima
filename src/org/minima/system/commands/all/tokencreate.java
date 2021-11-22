@@ -21,6 +21,7 @@ import org.minima.objects.base.MiniString;
 import org.minima.objects.keys.Signature;
 import org.minima.system.Main;
 import org.minima.system.brains.TxPoWGenerator;
+import org.minima.system.brains.TxPoWMiner;
 import org.minima.system.brains.TxPoWSearcher;
 import org.minima.system.commands.Command;
 import org.minima.system.params.GlobalParams;
@@ -124,10 +125,16 @@ public class tokencreate extends Command {
 		ArrayList<Coin> currentcoins = new ArrayList<>();
 		
 		//Get the TxPoWDB
-		TxPoWDB txpdb = MinimaDB.getDB().getTxPoWDB();
+		TxPoWDB txpdb 		= MinimaDB.getDB().getTxPoWDB();
+		TxPoWMiner txminer 	= Main.getInstance().getTxPoWMiner();
 		
 		//Now cycle through..
 		for(Coin coin : relcoins) {
+			
+			//Check if we are already using thewm in another Transaction that is being mined
+			if(txminer.checkForMiningCoin(coin.getCoinID().to0xString())) {
+				continue;
+			}
 			
 			//Check if in mempool..
 			if(txpdb.checkMempoolCoins(coin.getCoinID())) {
@@ -147,7 +154,10 @@ public class tokencreate extends Command {
 		//Did we add enough
 		if(currentamount.isLess(sendamount)) {
 			//Not enough funds..
-			throw new Exception("Insufficient funds.. you only have "+currentamount);
+			//Insufficient blocks
+			ret.put("status", false);
+			ret.put("message", "Insufficient funds.. you only have "+currentamount);
+			return ret;
 		}
 		
 		//What is the change..
