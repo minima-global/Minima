@@ -133,6 +133,11 @@ public class ParamConfigurer {
                 GeneralParams.PRIVATE_NETWORK = true;
             }
         }),
+        isclient("isclient", "Tells the P2P System that this node can't accept incoming connections", (args, configurer) -> {
+            if ("true".equals(args)) {
+                GeneralParams.IS_ACCEPTING_IN_LINKS = false;
+            }
+        }),
         mobile("mobile", "Sets this device to a mobile device - used for metrics only", (args, configurer) -> {
             // do nothing
         }),
