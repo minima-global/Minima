@@ -280,7 +280,7 @@ public class P2PManager extends MessageProcessor {
         }
 
         JSONObject ret = new JSONObject();
-        ret.put("address", state.getMyMinimaAddress());
+        ret.put("address", state.getMyMinimaAddress().toString().replace("/", ""));
         ret.put("isAcceptingInLinks", state.isAcceptingInLinks());
         ret.put("numInLinks", state.getInLinks().size());
         ret.put("numOutLinks", state.getOutLinks().size());
