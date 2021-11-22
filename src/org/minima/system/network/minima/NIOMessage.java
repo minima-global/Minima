@@ -32,7 +32,7 @@ public class NIOMessage implements Runnable {
 	 * Base Message types sent over the network
 	 */
 	public static final MiniByte MSG_GREETING 	= new MiniByte(0);
-	public static final MiniByte MSG_IBD 		= new MiniByte(1);
+	public static final MiniByte MSG_IBD 		= new MiniByte(1); // initial blockchain download
 	public static final MiniByte MSG_TXPOWID 	= new MiniByte(2);
 	public static final MiniByte MSG_TXPOWREQ 	= new MiniByte(3);
 	public static final MiniByte MSG_TXPOW 		= new MiniByte(4);
