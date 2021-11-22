@@ -3,8 +3,10 @@ package org.minima.system.brains;
 import java.util.ArrayList;
 import java.util.HashSet;
 
+import org.minima.database.MinimaDB;
 import org.minima.database.mmr.MMR;
 import org.minima.database.mmr.MMRData;
+import org.minima.database.txpowdb.TxPoWDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.kissvm.Contract;
 import org.minima.objects.Coin;
@@ -550,5 +552,34 @@ public class TxPoWChecker {
 		}
 				
 		return true;
+	}
+	
+	/**
+	 * Check coins for double spend in mempool
+	 */
+	public static boolean checkMemPoolCoins(TxPoW zTxPoW) {
+		
+		TxPoWDB txpdb = MinimaDB.getDB().getTxPoWDB();
+		
+		//Get all the coins..
+		if(!zTxPoW.getTransaction().isEmpty()) {
+			ArrayList<Coin> inputs = zTxPoW.getTransaction().getAllInputs();
+			for(Coin cc : inputs) {
+				if(txpdb.checkMempoolCoins(cc.getCoinID())) {
+					return true;
+				}
+			}
+		}
+		
+		if(!zTxPoW.getBurnTransaction().isEmpty()) {
+			ArrayList<Coin> inputs = zTxPoW.getBurnTransaction().getAllInputs();
+			for(Coin cc : inputs) {
+				if(txpdb.checkMempoolCoins(cc.getCoinID())) {
+					return true;
+				}
+			}
+		}
+		
+		return false;
 	}
 }

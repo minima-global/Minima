@@ -263,6 +263,12 @@ public class NIOMessage implements Runnable {
 					}
 				}
 				
+				//Check for mempool coins..
+				if(TxPoWChecker.checkMemPoolCoins(txpow)) {
+					//Same coins in different transaction - could have been requested by us from branch
+					fullyvalid = false;
+				}
+				
 				//Check the MMR - could be in a separate branch
 				if(!TxPoWChecker.checkMMR(tipmmr, txpow)) {
 					fullyvalid = false;
