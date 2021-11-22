@@ -406,6 +406,10 @@ public class TxPoWChecker {
 		//Get the coin proofs
 		ArrayList<CoinProof> mmrproofs 	= zWitness.getAllCoinProofs();
 		int ins = mmrproofs.size();
+
+		//We are checking it now..
+		zTransaction.mHaveCheckedMonotonic 	= true;
+		zTransaction.mIsMonotonic 			= true;
 		
 		//Cycle through and check..
 		for(int i=0;i<ins;i++) {
@@ -415,9 +419,6 @@ public class TxPoWChecker {
 			
 			//Check the Script Proof
 			ScriptProof prfs =  zWitness.getScript(cproof.getCoin().getAddress());
-			
-			//Are both contracts Monotonic..
-			boolean monotonic = true;
 			
 			//Check the Script
 			String script = prfs.getScript().toString();
@@ -432,7 +433,7 @@ public class TxPoWChecker {
 			
 			//Monotonic - no @BLKNUM references..
 			if(!contract.isMonotonic()) {
-				monotonic = false;
+				zTransaction.mIsMonotonic 	= false;
 			}
 			
 			//Was it a success..
@@ -462,7 +463,7 @@ public class TxPoWChecker {
 					tokcontract.run();
 					
 					if(!contract.isMonotonic()) {
-						monotonic = false;
+						zTransaction.mIsMonotonic 	= false;
 					}
 					
 					if(!tokcontract.isSuccess()) {
@@ -471,10 +472,6 @@ public class TxPoWChecker {
 					}
 				}
 			}
-			
-			//Was it Montonic..
-			zTransaction.mHaveCheckedMonotonic 	= true;
-			zTransaction.mIsMonotonic 			= monotonic;
 		}
 		
 		return true;
