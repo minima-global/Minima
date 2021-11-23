@@ -78,6 +78,8 @@ public class SwapLinksFunctions {
      */
     public static List<Message> onConnectedLoadBalanceRequest(P2PState state, List<NIOClientInfo> clients) {
         List<Message> msgs = new ArrayList<>();
+
+
         if (state.isAcceptingInLinks() && state.getMyMinimaAddress() != null && state.getNotAcceptingConnP2PLinks().size() > state.getMaxNumNoneP2PConnections() && !state.getInLinks().isEmpty()) {
             InetSocketAddress nextHop = UtilFuncs.selectRandomAddress(new ArrayList<>(state.getInLinks().values()));
             NIOClientInfo minimaClient = UtilFuncs.getClientFromInetAddress(nextHop, state);
@@ -92,24 +94,12 @@ public class SwapLinksFunctions {
     public static void onDisconnected(P2PState state, Message zMessage) {
         //Get the details
         String uid = zMessage.getString("uid");
-        boolean incoming = zMessage.getBoolean("incoming");
-        boolean reconnect = zMessage.getBoolean("reconnect");
 
         // Remove uid from current connections
-        InetSocketAddress removedAddress = null;
-        if (incoming) {
-
-            removedAddress = state.getInLinks().remove(uid);
-            if (removedAddress == null) {
-                removedAddress = state.getNotAcceptingConnP2PLinks().remove(uid);
-            }
-            if (removedAddress == null) {
-                removedAddress = state.getNoneP2PLinks().remove(uid);
-            }
-        } else {
-            removedAddress = state.getOutLinks().remove(uid);
-        }
-
+        state.getInLinks().remove(uid);
+        state.getNotAcceptingConnP2PLinks().remove(uid);
+        state.getOutLinks().remove(uid);
+        state.getNoneP2PLinks().remove(uid);
     }
 
     public static void updateKnownPeersFromGreeting(P2PState state, P2PGreeting greeting) {
@@ -146,7 +136,7 @@ public class SwapLinksFunctions {
                     state.getInLinks().put(uid, minimaAddress);
                 } else {
                     state.getOutLinks().put(uid, minimaAddress);
-                    if (state.getOutLinks().size() > P2PParams.TGT_NUM_LINKS) {
+                    if (state.getOutLinks().size() > state.getMaxNumP2PConnections()) {
                         P2PFunctions.disconnect(uid);
                         MinimaLogger.log("[-] Too many outgoing connections, disconnecting");
                     }

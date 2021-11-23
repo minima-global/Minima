@@ -1,5 +1,6 @@
 package org.minima.system.network.p2p;
 
+import java.math.BigInteger;
 import java.net.InetSocketAddress;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -8,7 +9,10 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.minima.database.MinimaDB;
+import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniNumber;
 import org.minima.system.network.p2p.params.P2PParams;
 import org.minima.system.params.GeneralParams;
 import org.minima.system.params.GlobalParams;
@@ -54,6 +58,10 @@ public class P2PState {
      */
     private int maxNumNoneP2PConnections = P2PParams.TGT_NUM_NONE_P2P_LINKS;
 
+    /**
+     * The max number of connections this node
+     */
+    private int maxNumP2PConnections = P2PParams.TGT_NUM_LINKS;
 
     /**
      * Doing a discovery connection to one of the default
@@ -183,6 +191,37 @@ public class P2PState {
         json.put("none_p2p_links", addressListToJSONArray(new ArrayList<>(noneP2PLinks.values())));
         json.put("knownPeers", addressListToJSONArray(new ArrayList<>(knownPeers)));
         json.put("is_accepting_connections", isAcceptingInLinks);
+        
+        //Block details..
+        TxPoWTreeNode topnode 	= MinimaDB.getDB().getTxPoWTree().getTip();
+        MiniNumber topblock 	= topnode.getBlockNumber();
+        json.put("top_block_number", topblock);
+        
+        //Get the last 2 mod 50..
+        if(topblock.isMore(MiniNumber.HUNDRED)) {
+        	
+        	//The 2 blocks we are interested in..
+        	MiniNumber current 	= topblock.div(MiniNumber.FIFTY).floor().mult(MiniNumber.FIFTY);
+        	MiniNumber last 	= current.sub(MiniNumber.FIFTY);
+        	
+        	//Get  those details..
+        	String currenthash 	= topnode.getPastNode(current).getTxPoW().getTxPoWID();
+        	String lasthash 	= topnode.getPastNode(last).getTxPoW().getTxPoWID();
+        
+        	json.put("50_block_number", current);
+        	json.put("50_current_hash", currenthash);
+        	json.put("50_last_hash", lasthash);
+    	}else {
+    		json.put("50_block_number", 0);
+        	json.put("50_current_hash", "");
+        	json.put("50_last_hash", "");
+    	}
+        
+        //And finally a total Weight Metric..
+        BigInteger chainweight 	= MinimaDB.getDB().getTxPoWTree().getRoot().getTotalWeight().toBigInteger();
+		BigInteger cascweight 	= MinimaDB.getDB().getCascade().getTotalWeight().toBigInteger();
+		json.put("weight", chainweight.add(cascweight));
+        
         return json;
     }
 
@@ -212,5 +251,13 @@ public class P2PState {
 
     public void setHostSet(boolean hostSet) {
         isHostSet = hostSet;
+    }
+
+    public int getMaxNumP2PConnections() {
+        return maxNumP2PConnections;
+    }
+
+    public void setMaxNumP2PConnections(int maxNumP2PConnections) {
+        this.maxNumP2PConnections = maxNumP2PConnections;
     }
 }
