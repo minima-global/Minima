@@ -20,7 +20,7 @@ public class tokens extends Command {
 		JSONObject ret = getJSONReply();
 		
 		//Get ALL the tokens in the chain..
-		ArrayList<Token> alltokens = TxPoWSearcher.searchAllTokens();
+		ArrayList<Token> alltokens = TxPoWSearcher.getAllTokens();
 		
 		//The return array
 		JSONArray toksarr = new JSONArray();

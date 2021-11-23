@@ -98,7 +98,7 @@ public class TxPoWSearcher {
 		return coinentry;
 	}	
 	
-	public static ArrayList<Token> searchAllTokens() {
+	public static ArrayList<Token> getAllTokens() {
 
 		//The list of Tokens - not including Minima
 		ArrayList<Token> tokens = new ArrayList<>();
