@@ -100,6 +100,18 @@ public abstract class Command {
 		return (JSONObject) mParams.get(zParamName);
 	}
 	
+	public boolean isParamJSON(String zParamName) {
+		if(existsParam(zParamName)) {
+			Object obj = mParams.get(zParamName);
+			if(obj instanceof JSONObject) {
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	
 	public abstract JSONObject runCommand() throws Exception;
 	
 	public abstract Command getFunction();
