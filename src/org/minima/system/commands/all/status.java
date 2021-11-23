@@ -77,6 +77,14 @@ public class status extends Command {
 		BigInteger cascweight 	= MinimaDB.getDB().getCascade().getTotalWeight().toBigInteger();
 		details.put("weight", chainweight.add(cascweight));
 		
+		//Total Minima..
+		MiniNumber minima = MinimaDB.getDB().getTxPoWTree().getTip().getTxPoW().getMMRTotal();
+		details.put("minima", minima);
+		
+		//How many coins..
+		BigDecimal coins = MinimaDB.getDB().getTxPoWTree().getTip().getMMR().getEntryNumber().getBigDecimal();
+		details.put("coins", coins);
+		
 		details.put("configuration", GeneralParams.CONFIGURATION_FOLDER);
 		
 		JSONObject files = new JSONObject();
