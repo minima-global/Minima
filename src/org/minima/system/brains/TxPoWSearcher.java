@@ -87,6 +87,9 @@ public class TxPoWSearcher {
 						
 						//OK - fresh unspent coin
 						coinentry.add(coin);
+						
+						//And no more from now..
+						spentcoins.add(coinid);
 					}
 				}
 			}
