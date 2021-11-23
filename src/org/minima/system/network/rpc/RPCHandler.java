@@ -81,15 +81,20 @@ public class RPCHandler implements Runnable {
 			//Now run this function..
 			JSONArray res = Command.runMultiCommand(fileRequested);
 	    	
-	    	//Get the result.. 
-	    	String result = MiniFormat.JSONPretty(res);
-			
+	    	//Get the result.. is it a multi command or single.. 
+			String result = null;
+			if(res.size() == 1) {
+				result = res.get(0).toString();
+			}else {
+				result = res.toString();
+			}
+	    	
 			//Calculate the size of the response
 			int finallength = result.getBytes(MiniString.MINIMA_CHARSET).length; 
 			
 			// send HTTP Headers
 			out.println("HTTP/1.1 200 OK");
-			out.println("Server: HTTP RPC Server from Minima : 1.2");
+			out.println("Server: HTTP RPC Server from Minima : 1.3");
 			out.println("Date: " + new Date());
 			out.println("Content-type: text/plain");
 			out.println("Content-length: " + finallength);
