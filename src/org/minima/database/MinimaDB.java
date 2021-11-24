@@ -153,7 +153,7 @@ public class MinimaDB {
 	}
 	
 	public File getBaseDBFolder() {
-		return new File(GeneralParams.CONFIGURATION_FOLDER,"databases");
+		return new File(GeneralParams.DATA_FOLDER,"databases");
 	}
 	
 	public void loadAllDB() {
