@@ -1,8 +1,6 @@
 package org.minima.system.commands.all;
 
-import org.minima.objects.base.MiniData;
 import org.minima.system.commands.Command;
-import org.minima.utils.Crypto;
 import org.minima.utils.json.JSONObject;
 
 public class tutorial extends Command {

@@ -1,8 +1,6 @@
 package org.minima.system.commands.all;
 
 import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.Hashtable;
 
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.values.StringValue;
@@ -13,7 +11,6 @@ import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
 import org.minima.system.commands.Command;
-import org.minima.utils.Crypto;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
