@@ -91,7 +91,7 @@ public class tutorial extends Command {
 //				+ "@BLKTIME     : Block time in seconds from Jan 01 1970\n"
 //				+ "@PREVBLKHASH : Hash of the previous Block\n"
 				+ "@INBLOCK     : Block number when this output was created\n"
-				+ "@BLOCKDIFF   : Difference between BLKNUM and INBLKNUM\n"
+				+ "@BLOCKDIFF   : Difference between @BLOCK and INBLOCK\n"
 				+ "@INPUT       : Input number in the transaction\n"
 				+ "@COINID      : CoinID of this input\n"
 				+ "@AMOUNT      : Amount of this input\n"
