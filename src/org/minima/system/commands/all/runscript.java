@@ -1,6 +1,7 @@
 package org.minima.system.commands.all;
 
 import java.util.ArrayList;
+import java.util.Enumeration;
 
 import org.minima.kissvm.Contract;
 import org.minima.objects.Address;
@@ -50,7 +51,24 @@ public class runscript extends Command {
 		Transaction trans = new Transaction();
 		
 		//Add the state variables..
+		for(Object key : state.keySet()) {
+			
+			
+			
+			//Get the state var..
+			
+		}
+		
+		//Add the Previous State variables
 		//..
+		
+		//Add the globals
+		//..
+		
+		//Add the Signatures
+		//..
+		
+		
 		
 		//Create a Contract
 		Contract contract = new Contract(script, new ArrayList<>(), new Witness(), trans, new ArrayList<>(),true);
