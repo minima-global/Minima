@@ -22,8 +22,6 @@ import java.util.List;
 public class SwapLinksFunctionsTest extends TestCase {
 
     final String noConnectionsGreetingJson = "{\"greeting\":{\"myMinimaPort\":9001,\"isAcceptingInLinks\":true,\"numNoneP2PConnections\":1,\"maxNumNoneP2PConnections\":50,\"outLinks\":[],\"inLinks\":[],\"knownPeers\":[{\"host\":\"192.168.0.1\",\"port\":9001},{\"host\":\"10.0.0.1\",\"port\":9001}]}}";
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
     Message inConnectMsg;
     Message outConnectMsg;
 

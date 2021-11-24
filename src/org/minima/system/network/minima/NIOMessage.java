@@ -164,7 +164,7 @@ public class NIOMessage implements Runnable {
 				IBD ibd = IBD.ReadFromStream(dis);
 				
 				//A small message..
-				MinimaLogger.log("IBD Received size:"+MiniFormat.formatSize(data.length)+" blocks:"+ibd.getTxBlocks().size());
+				MinimaLogger.log("[+] Connected to the blockchain Initial Block Download received. size:"+MiniFormat.formatSize(data.length)+" blocks:"+ibd.getTxBlocks().size());
 				
 				//Do some checking!
 //				//Sort the Sync blocks - low to high - they should be in the correct order but just in case..
@@ -368,9 +368,13 @@ public class NIOMessage implements Runnable {
 					}
 					
 				}else{
-				
+					NIOClient nioclient = Main.getInstance().getNIOManager().getNIOServer().getClient(mClientUID);
+					int port = nioclient.getPort();
+					if (nioclient.getMinimaPort() == -1){
+						port = nioclient.getMinimaPort();
+					}
 					//Hmm something funny..
-					MinimaLogger.log("NO CROSSOVER BLOCK FOUND from "+mClientUID+" .. disconnecting");
+					MinimaLogger.log("[!] No Crossover found whilst syncing with new node. They are on a different chain. Please check you are on the correct chain.. disconnecting from "+ nioclient.getHost() + ":" + port);
 					Main.getInstance().getNIOManager().disconnect(mClientUID);
 				}
 				
