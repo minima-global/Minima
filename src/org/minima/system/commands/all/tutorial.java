@@ -115,7 +115,7 @@ public class tutorial extends Command {
 				+ "REV ( HEX )\n"
 				+ "Reverse the data\n"
 				+ "\n"
-				+ "SUBSET ( HEX|SCRIPT NUMBER NUMBER )\n"
+				+ "SUBSET ( HEX NUMBER NUMBER )\n"
 				+ "Return the HEX subset of the data - start - length\n"
 				+ "\n"
 				+ "GET ( NUMBER NUMBER .. NUMBER )\n"
