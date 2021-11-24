@@ -37,7 +37,7 @@ public class tutorial extends Command {
 				+ "Grammar\n"
 				+ "-------\n"
 				+ "\n"
-				+ "ADDRESS     ::= SHA3 ( BLOCK )\n"
+				+ "ADDRESS     ::= KECCAK ( BLOCK )\n"
 				+ "BLOCK       ::= STATEMENT_1 STATEMENT_2 ... STATEMENT_n\n"
 				+ "STATEMENT   ::= LET VARIABLE = EXPRESSION |\n"
 				+ "                LET ( EXPRESSION_1 EXPRESSION_2 ... EXPRESSION_n ) = EXPRESSION |\n"
