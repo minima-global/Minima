@@ -1,5 +1,6 @@
 package org.minima.system.network.p2p;
 
+import java.math.BigInteger;
 import java.net.InetSocketAddress;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -215,6 +216,11 @@ public class P2PState {
         	json.put("50_current_hash", "");
         	json.put("50_last_hash", "");
     	}
+        
+        //And finally a total Weight Metric..
+        BigInteger chainweight 	= MinimaDB.getDB().getTxPoWTree().getRoot().getTotalWeight().toBigInteger();
+		BigInteger cascweight 	= MinimaDB.getDB().getCascade().getTotalWeight().toBigInteger();
+		json.put("weight", chainweight.add(cascweight));
         
         return json;
     }

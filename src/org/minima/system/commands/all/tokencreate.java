@@ -31,22 +31,38 @@ import org.minima.utils.json.JSONObject;
 public class tokencreate extends Command {
 
 	public tokencreate() {
-		super("tokencreate","[name:] [amount:] (decimals:) (script:)  - Create a token");
+		super("tokencreate","[name:] [amount:] (decimals:) (script:)  - Create a token. 'name' can be a JSON Object");
 	}
 	
 	@Override
 	public JSONObject runCommand() throws Exception {
 		JSONObject ret = getJSONReply();
 		
-		//Required
-		String name 	= (String)getParams().get("name");
-		String amount   = (String)getParams().get("amount");
+		//Check the basics..
+		if(!existsParam("name") || !existsParam("amount")) {
+			throw new Exception("MUST specify name and amount");
+		}
 		
-//		//Optional
-//		String description = "";
-//		if(getParams().containsKey("description")) {
-//			description	= (String)getParams().get("description");
-//		}
+		//Is name a JSON
+		String name = null;
+		if(isParamJSON("name")) {
+			
+			//Get the JSON
+			JSONObject jsonname = getJSONParam("name");
+			
+			//Get the String version
+			name = jsonname.toString();
+			
+		}else {
+			
+			//It's a String.. create a JSON
+			JSONObject namejson = new JSONObject();
+			namejson.put("name", getParam("name"));
+			name = namejson.toString();
+		}
+		
+		//The amount is always a MiniNumber
+		String amount   = (String)getParams().get("amount");
 		
 		//How many decimals - can be 0.. for an NFT
 		int decimals = 8;
@@ -86,7 +102,6 @@ public class tokencreate extends Command {
 		
 		//What is the scale..
 		int scale = MiniNumber.MAX_DECIMAL_PLACES - decimals;
-		
 				
 		//Lets create the token..
 		Token createtoken = new Token(Coin.COINID_OUTPUT, 

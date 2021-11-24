@@ -15,9 +15,17 @@ public class test extends Command {
 		JSONObject ret = getJSONReply();
 		
 		//Get a JSON parameter
-		JSONObject json = getJSONParam("json");
+//		JSONObject json = getJSONParam("json");
+//		MinimaLogger.log("JSON Received : "+json.toString());
 		
-		MinimaLogger.log("JSON Received : "+json.toString());
+		if(isParamJSON("jj")) {
+			JSONObject jsonp = getJSONParam("jj");
+			
+			MinimaLogger.log("JSON : "+jsonp.toJSONString());
+			
+		}else {
+			MinimaLogger.log("STRING : "+getParam("jj"));
+		}
 		
 		ret.put("response", "");
 		

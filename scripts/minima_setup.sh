@@ -55,5 +55,5 @@ $CMD"
 echo "$CRONSTRING" > /etc/cron.daily/minima_$PORT
 chmod a+x /etc/cron.daily/minima_$PORT
 
-CMD="$HOME/minima_service.sh $@"
+CMD="$HOME/minima_service.sh -x $@"
 /bin/sh -c "$CMD"

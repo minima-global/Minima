@@ -115,7 +115,7 @@ public class P2PManager extends MessageProcessor {
         if (state.isAcceptingInLinks()) {
             state.setMaxNumP2PConnections(P2PParams.TGT_NUM_LINKS);
         } else {
-            state.setMaxNumNoneP2PConnections(P2PParams.MIN_NUM_CONNECTIONS);
+            state.setMaxNumP2PConnections(P2PParams.MIN_NUM_CONNECTIONS);
         }
 
         InetSocketAddress connectionAddress = null;
@@ -211,16 +211,13 @@ public class P2PManager extends MessageProcessor {
         state.getKnownPeers().remove(state.getMyMinimaAddress());
 
         if (!state.isNoConnect()) {
-            int numEntryNodes = 1;
-            if (!state.isAcceptingInLinks()) {
-                numEntryNodes = P2PParams.MIN_NUM_CONNECTIONS;
-            }
+
             if (!state.getKnownPeers().isEmpty()) {
                 if (state.isDoingDiscoveryConnection()) {
                     // Loop is set to be quite fast at this point to ensure we connect to the network
                     InetSocketAddress connectionAddress = (InetSocketAddress) state.getKnownPeers().toArray()[rand.nextInt(state.getKnownPeers().size())];
                     P2PFunctions.checkConnect(connectionAddress.getHostString(), connectionAddress.getPort());
-                } else if (state.getOutLinks().size() < numEntryNodes) {
+                } else if (state.getOutLinks().size() < state.getMaxNumP2PConnections()) {
                     InetSocketAddress connectionAddress = (InetSocketAddress) state.getKnownPeers().toArray()[rand.nextInt(state.getKnownPeers().size())];
                     P2PFunctions.checkConnect(connectionAddress.getHostString(), connectionAddress.getPort());
                 } else if (state.isAcceptingInLinks()) {
@@ -283,7 +280,7 @@ public class P2PManager extends MessageProcessor {
         }
 
         JSONObject ret = new JSONObject();
-        ret.put("address", state.getMyMinimaAddress());
+        ret.put("address", state.getMyMinimaAddress().toString().replace("/", ""));
         ret.put("isAcceptingInLinks", state.isAcceptingInLinks());
         ret.put("numInLinks", state.getInLinks().size());
         ret.put("numOutLinks", state.getOutLinks().size());
