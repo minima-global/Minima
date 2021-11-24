@@ -17,13 +17,13 @@ import org.minima.utils.Crypto;
  * @author Spartacus Rex
  *
  */
-public class SHA3 extends MinimaFunction {
+public class KECCAK extends MinimaFunction {
 
 	/**
 	 * @param zName
 	 */
-	public SHA3() {
-		super("SHA3");
+	public KECCAK() {
+		super("KECCAK");
 	}
 	
 	/* (non-Javadoc)
@@ -33,10 +33,10 @@ public class SHA3 extends MinimaFunction {
 	public Value runFunction(Contract zContract) throws ExecutionException {
 		checkExactParamNumber(requiredParams());
 		
-		//The Bit Length
-		int bitlength = zContract.getNumberParam(0, this).getNumber().getAsInt();
+//		//The Bit Length
+//		int bitlength = zContract.getNumberParam(0, this).getNumber().getAsInt();
 		
-		Value vv = getParameter(1).getValue(zContract);
+		Value vv = getParameter(0).getValue(zContract);
 		checkIsOfType(vv, Value.VALUE_HEX | Value.VALUE_SCRIPT);
 		
 		byte[] data = null;
@@ -53,12 +53,13 @@ public class SHA3 extends MinimaFunction {
 		}
 	
 		//Check valid..
-		if ( bitlength>512 || bitlength<160 || (bitlength%32!=0) ) {
-			throw new ExecutionException("Bitlength incompatible with SHA3 "+bitlength);
-		}
+//		if ( bitlength>512 || bitlength<160 || (bitlength%32!=0) ) {
+//			throw new ExecutionException("Bitlength incompatible with SHA3 "+bitlength);
+//		}
 		
 		//Perform the SHA3 Operation
-		byte[] ans = Crypto.getInstance().hashData(data,bitlength);
+//		byte[] ans = Crypto.getInstance().hashData(data,bitlength);
+		byte[] ans = Crypto.getInstance().hashData(data);
 		
 		//return the New HEXValue
 		return new HexValue(ans);
@@ -66,11 +67,11 @@ public class SHA3 extends MinimaFunction {
 	
 	@Override
 	public int requiredParams() {
-		return 2;
+		return 1;
 	}
 	
 	@Override
 	public MinimaFunction getNewFunction() {
-		return new SHA3();
+		return new KECCAK();
 	}
 }

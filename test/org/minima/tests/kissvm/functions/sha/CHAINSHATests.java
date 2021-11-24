@@ -12,7 +12,7 @@ import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.exceptions.MinimaParseException;
 import org.minima.kissvm.expressions.ConstantExpression;
 import org.minima.kissvm.functions.MinimaFunction;
-import org.minima.kissvm.functions.sha.CHAINSHA;
+import org.minima.kissvm.functions.sha.PROOF;
 import org.minima.kissvm.values.BooleanValue;
 import org.minima.kissvm.values.HexValue;
 import org.minima.kissvm.values.NumberValue;
@@ -26,7 +26,7 @@ public class CHAINSHATests {
 
     @Test
     public void testConstructors() {
-        CHAINSHA fn = new CHAINSHA();
+        PROOF fn = new PROOF();
         MinimaFunction mf = fn.getNewFunction();
 
         assertEquals("CHAINSHA", mf.getName());
@@ -198,7 +198,7 @@ public class CHAINSHATests {
     public void testInvalidParams() {
         Contract ctr = new Contract("", "", new Witness(), new Transaction(), new ArrayList<>());
 
-        CHAINSHA fn = new CHAINSHA();
+        PROOF fn = new PROOF();
 
         // Invalid param count
         {

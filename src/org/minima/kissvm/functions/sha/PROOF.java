@@ -11,10 +11,10 @@ import org.minima.kissvm.values.HexValue;
 import org.minima.kissvm.values.Value;
 import org.minima.objects.base.MiniData;
 
-public class CHAINSHA extends MinimaFunction {
+public class PROOF extends MinimaFunction {
 
-	public CHAINSHA() {
-		super("CHAINSHA");
+	public PROOF() {
+		super("PROOF");
 	}
 	
 	@Override
@@ -36,7 +36,7 @@ public class CHAINSHA extends MinimaFunction {
 			proof = MMRProof.convertMiniDataVersion(chain.getMiniData());
 		} catch (IOException e) {
 			//Invalid Proof..
-			throw new ExecutionException("Invalid MMRProof at CHAINSHA "+chain.getMiniData().to0xString());
+			throw new ExecutionException("Invalid MMRProof at PROOF "+chain.getMiniData().to0xString());
 		}
 		
 		//And calculate the final chain value..
@@ -53,6 +53,6 @@ public class CHAINSHA extends MinimaFunction {
 	
 	@Override
 	public MinimaFunction getNewFunction() {
-		return new CHAINSHA();
+		return new PROOF();
 	}
 }

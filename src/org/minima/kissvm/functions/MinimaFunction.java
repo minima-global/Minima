@@ -30,9 +30,9 @@ import org.minima.kissvm.functions.number.MAX;
 import org.minima.kissvm.functions.number.MIN;
 import org.minima.kissvm.functions.number.POW;
 import org.minima.kissvm.functions.number.SIGDIG;
-import org.minima.kissvm.functions.sha.CHAINSHA;
+import org.minima.kissvm.functions.sha.PROOF;
 import org.minima.kissvm.functions.sha.SHA2;
-import org.minima.kissvm.functions.sha.SHA3;
+import org.minima.kissvm.functions.sha.KECCAK;
 import org.minima.kissvm.functions.sigs.CHECKSIG;
 import org.minima.kissvm.functions.sigs.MULTISIG;
 import org.minima.kissvm.functions.sigs.SIGNEDBY;
@@ -69,7 +69,7 @@ public abstract class MinimaFunction {
 				new ABS(), new CEIL(), new FLOOR(),new MAX(), new MIN(), new DEC(), new INC(), 
 				new SIGDIG(), new POW(), 
 				new REPLACE(), new SUBSTR(), new UTF8(),
-				new SHA3(), new SHA2(), new CHAINSHA(), new BITSET(), new BITGET(), new BITCOUNT(),
+				new KECCAK(), new SHA2(), new PROOF(), new BITSET(), new BITGET(), new BITCOUNT(),
 				new SIGNEDBY(), new MULTISIG(), new CHECKSIG(),
 				new GETINADDR(), new GETINAMT(), new GETINID(), new GETINTOK(),new VERIFYIN(),
 				new GETOUTADDR(), new GETOUTAMT(), new GETOUTTOK(),new VERIFYOUT(),
