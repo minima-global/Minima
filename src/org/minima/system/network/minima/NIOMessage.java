@@ -32,7 +32,7 @@ public class NIOMessage implements Runnable {
 	 * Base Message types sent over the network
 	 */
 	public static final MiniByte MSG_GREETING 	= new MiniByte(0);
-	public static final MiniByte MSG_IBD 		= new MiniByte(1);
+	public static final MiniByte MSG_IBD 		= new MiniByte(1); // initial blockchain download
 	public static final MiniByte MSG_TXPOWID 	= new MiniByte(2);
 	public static final MiniByte MSG_TXPOWREQ 	= new MiniByte(3);
 	public static final MiniByte MSG_TXPOW 		= new MiniByte(4);
@@ -251,16 +251,16 @@ public class NIOMessage implements Runnable {
 				//More CHECKS.. if ALL these pass will forward otherwise may be a branch txpow that we requested
 				boolean fullyvalid = true;
 				
-				//Check the Scripts - could fail.. BUT not if MONOTONIC.. TODO
+				//Check the Scripts - could fail.. 
 				if(!TxPoWChecker.checkTxPoWScripts(tipmmr, txpow, tiptxpow.getBlockNumber())) {
-					//Could be block related
-					fullyvalid = false;
-					
 					//Monotonic txn MUST pass the script check or is INVALID - since will never pass..
 					if(txpow.isMonotonic()) {
 						MinimaLogger.log("Error Monotonic TxPoW failed script check from "+mClientUID+" "+txpow.getTxPoWID());
 						return;
 					}
+					
+					//Could be block related
+					fullyvalid = false;
 				}
 				
 				//Check for mempool coins..

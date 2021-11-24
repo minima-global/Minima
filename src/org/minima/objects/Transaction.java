@@ -13,6 +13,7 @@ import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.Crypto;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
@@ -62,6 +63,7 @@ public class Transaction implements Streamable {
 	 */
 	public boolean mHaveCheckedMonotonic 	= false;
 	public boolean mIsMonotonic 			= false;
+	public boolean mIsValid					= false;
 	
 	/**
 	 * Constructor
@@ -144,6 +146,21 @@ public class Transaction implements Streamable {
 			return false;
 		}
 		
+		//Check that all the inputs and outputs are valid Minima Values 0 - 1,000,000,000
+		for(Coin cc : mInputs) {
+			if(!cc.getAmount().isValidMinimaValue()) {
+				MinimaLogger.log("Transaction error : Input is invalid Minima Amount");
+				return false;
+			}
+		}
+		
+		for(Coin cc : mOutputs) {
+			if(!cc.getAmount().isValidMinimaValue()) {
+				MinimaLogger.log("Transaction error : Output is invalid Minima Amount");
+				return false;
+			}
+		}
+		
 		//First get a list of all the Ouput tokens..
 		ArrayList<String> tokens = new ArrayList<>();
 		for(Coin cc : mOutputs) {
@@ -178,6 +195,7 @@ public class Transaction implements Streamable {
 			
 			//Do the check..
 			if(inamt.isLess(outamt)) {
+				MinimaLogger.log("Transaction error : Inputs LESS than Outputs");
 				return false;	
 			}
 		}
@@ -193,24 +211,6 @@ public class Transaction implements Streamable {
 						return false;
 					}
 				}
-			}
-		}
-		
-		//Check that all the inputs and outputs are valid Minima Values
-		for(Coin cc : mInputs) {
-			if(!cc.getAmount().isValidMinimaValue()) {
-				return false;
-			}
-			
-			//Inputs MUST be more than ZERO
-			if(cc.getAmount().isLessEqual(MiniNumber.ZERO)) {
-				return false;
-			}
-		}
-		
-		for(Coin cc : mOutputs) {
-			if(!cc.getAmount().isValidMinimaValue()) {
-				return false;
 			}
 		}
 			

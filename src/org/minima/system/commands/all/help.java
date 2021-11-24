@@ -31,6 +31,7 @@ public class help extends Command {
 		addCommand(details, new send());
 		addCommand(details, new balance());
 		
+		addCommand(details, new tokens());
 		addCommand(details, new tokencreate());
 		
 		addCommand(details, new network());

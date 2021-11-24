@@ -75,10 +75,19 @@ public class status extends Command {
 		//The total weight of the chain + cascade
 		BigInteger chainweight 	= txptree.getRoot().getTotalWeight().toBigInteger();
 		BigInteger cascweight 	= MinimaDB.getDB().getCascade().getTotalWeight().toBigInteger();
-		details.put("weight", chainweight.add(cascweight));
 
+		details.put("weight", chainweight.add(cascweight).toString());
+		
+		//Total Minima..
+		MiniNumber minima = MinimaDB.getDB().getTxPoWTree().getTip().getTxPoW().getMMRTotal();
+		details.put("minima", minima);
+		
+		//How many coins..
+		BigDecimal coins = MinimaDB.getDB().getTxPoWTree().getTip().getMMR().getEntryNumber().getBigDecimal();
+		details.put("coins", coins);
+		
 		details.put("data", GeneralParams.DATA_FOLDER);
-
+		
 		JSONObject files = new JSONObject();
 
 		//RAM usage
@@ -110,18 +119,15 @@ public class status extends Command {
 			tree.put("time", new Date(txptree.getTip().getTxPoW().getTimeMilli().getAsLong()).toString());
 			tree.put("hash", txptree.getTip().getTxPoW().getTxPoWID());
 			
-//			tree.put("root", txptree.getRoot().getTxPoW().getTxPoWID());
-//			tree.put("rootblock", txptree.getRoot().getTxPoW().getBlockNumber());
-			
 			//Speed..
 			if(txptree.getTip().getTxPoW().getBlockNumber().isLessEqual(MiniNumber.TWO)){
-				tree.put("speed", "1");
+				tree.put("speed", 1);
 			}else {
 				MiniNumber blocksback = GlobalParams.MINIMA_BLOCKS_SPEED_CALC;
 				if(txptree.getTip().getTxPoW().getBlockNumber().isLessEqual(GlobalParams.MINIMA_BLOCKS_SPEED_CALC)) {
 					blocksback = txptree.getTip().getTxPoW().getBlockNumber().decrement();
 				}
-				tree.put("speed", TxPoWGenerator.getChainSpeed(txptree.getTip(),blocksback).toString());
+				tree.put("speed", TxPoWGenerator.getChainSpeed(txptree.getTip(),blocksback).setSignificantDigits(5));
 			}
 			
 			MiniData difficulty = new MiniData(txptree.getTip().getTxPoW().getBlockDifficulty().getBytes(),32);
@@ -133,7 +139,7 @@ public class status extends Command {
 			
 			//Total weight..
 			BigDecimal weighttree = txptree.getRoot().getTotalWeight();
-			tree.put("weight", chainweight);
+			tree.put("weight", chainweight.toString());
 			
 		}else {
 			tree.put("root", "0x00");
@@ -147,7 +153,7 @@ public class status extends Command {
 			casc.put("start", -1);
 		}
 		casc.put("length", cascade.getLength());
-		casc.put("weight", cascweight);
+		casc.put("weight", cascweight.toString());
 		tree.put("cascade", casc);
 
 		//Add the chain details

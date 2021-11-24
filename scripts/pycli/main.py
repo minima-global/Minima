@@ -26,10 +26,12 @@ def status(show_mobiles, no_summary, full, endpoint):
     top_node_address = ''
     current_hash = ''
     previous_hash = ''
+    valid_addresses = []
     # Step 1 get latest timestamp
     for node in r.json():
         major, minor, build = node['minima_version'].split('.')
         if (major == '0') and (minor == '100') and (int(build) >= 13):
+            valid_addresses.append(node['address'])
             if node['is_mobile'] == 'True':
                 valid_nodes_mobile.append(node)
             else:
@@ -46,7 +48,7 @@ def status(show_mobiles, no_summary, full, endpoint):
                 if node['50_block_number'] > block_number_50:
                     block_number_50 = node['50_block_number']
                     current_hash = node['50_current_hash']
-                    previous_hash = node['50_current_hash']
+                    previous_hash = node['50_last_hash']
             if node['top_block_number'] >= top_block_number:
                 top_node_address = node['address']
 
@@ -61,6 +63,8 @@ def status(show_mobiles, no_summary, full, endpoint):
         'mobile_okay': 0,
         'mobile_not_okay': 0,
     }
+    out_links = 0
+    incoming_links = 0
     for node in valid_nodes:
         status = {}
         status['address'] = node['address']
@@ -71,6 +75,8 @@ def status(show_mobiles, no_summary, full, endpoint):
         status['total_links'] = len(node['in_links']) + len(node['out_links']) + len(node['not_accepting_conn_links']) + len(node['none_p2p_links'])
         status['in_sync'] = True
         status['is_mobile'] = node['is_mobile']
+        out_links += len(node['out_links'])
+        incoming_links += len(node['in_links']) + len(node['not_accepting_conn_links']) + len(node['none_p2p_links'])
         ts = datetime.datetime.fromisoformat(node['timestamp'].split('.')[0].replace('Z', ''))
         max_expected_block_difference = max(((latest_update_time - ts) // datetime.timedelta(seconds=25)) + 2, 2)
         is_okay = True
@@ -125,18 +131,21 @@ def status(show_mobiles, no_summary, full, endpoint):
             else:
                 node_summary['mobile_not_okay'] += 1
 
-    p2p_string = f"\t 🐙 🖥️\t ✅ {node_summary['p2p_okay']}\t"
-    if node_summary['p2p_not_okay'] != 0:
-        p2p_string += f" ❌ {node_summary['p2p_not_okay']}"
-    pc_string = f"\t    🖥️\t ✅ {node_summary['pc_okay']}\t"
-    if node_summary['pc_not_okay'] != 0:
-        pc_string += f" ❌ {node_summary['pc_not_okay']}"
-    mob_string = f"\t    📱\t ✅ {node_summary['mobile_okay']}\t"
-    if node_summary['mobile_not_okay'] != 0:
-        mob_string += f" ❌ {node_summary['mobile_not_okay']}"
-
     if not no_summary:
+        p2p_string = f"\t 🐙 🖥️\t ✅ {node_summary['p2p_okay']}\t"
+        if node_summary['p2p_not_okay'] != 0:
+            p2p_string += f" ❌ {node_summary['p2p_not_okay']}"
+        pc_string = f"\t    🖥️\t ✅ {node_summary['pc_okay']}\t"
+        if node_summary['pc_not_okay'] != 0:
+            pc_string += f" ❌ {node_summary['pc_not_okay']}"
+        mob_string = f"\t    📱\t ✅ {node_summary['mobile_okay']}\t"
+        if node_summary['mobile_not_okay'] != 0:
+            mob_string += f" ❌ {node_summary['mobile_not_okay']}"
+
         click.echo("\t Node Summary")
+        click.echo("\t ------------")
+        click.echo(f"\t Total In:  {incoming_links}")
+        click.echo(f"\t Total Out: {out_links}")
         click.echo("\t ------------")
         click.echo(p2p_string)
         click.echo(pc_string)
@@ -144,7 +153,6 @@ def status(show_mobiles, no_summary, full, endpoint):
         click.echo("\t ------------")
         click.echo(f"\t Total: {len(valid_nodes)}")
         click.echo("")
-
 
     if full:
         click.echo("\t Node Status Report")
@@ -155,6 +163,39 @@ def status(show_mobiles, no_summary, full, endpoint):
             click.echo(node)
 
 
+@cli.command()
+@click.option('--endpoint', help='network data endpoint')
+def network_map(endpoint):
+    r = requests.get(endpoint)
+    valid_addresses = []
+    valid_nodes = []
+    for node in r.json():
+        major, minor, build = node['minima_version'].split('.')
+        if (major == '0') and (minor == '100') and (int(build) >= 13):
+            valid_addresses.append(node['address'])
+            valid_nodes.append(node)
+
+    return_data = []
+    for node in valid_nodes:
+        ret_node = {
+            'address': node['address'],
+            'out_links': [],
+            'in_links': [],
+            'client_links': [],
+        }
+        for link in node['in_links']:
+            if link in valid_addresses:
+                ret_node['in_links'].append(link)
+        for link in node['out_links']:
+            if link in valid_addresses:
+                ret_node['out_links'].append(link)
+        for link in node['not_accepting_conn_links']:
+            ret_node['client_links'].append(link)
+        for link in node['none_p2p_links']:
+            ret_node['client_links'].append(link)
+        return_data.append(ret_node)
+
+    print(str(return_data).replace("'", '"'))
 
 
 if __name__ == '__main__':

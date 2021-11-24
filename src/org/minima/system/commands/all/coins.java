@@ -2,6 +2,8 @@ package org.minima.system.commands.all;
 
 import java.util.ArrayList;
 
+import org.minima.database.MinimaDB;
+import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.objects.Coin;
 import org.minima.objects.base.MiniData;
 import org.minima.system.brains.TxPoWSearcher;
@@ -45,8 +47,11 @@ public class coins extends Command {
 			tokenid = new MiniData(getParam("tokenid", "0x01"));
 		}
 		
+		//Get the tree tip..
+		TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
+		
 		//Run the query
-		ArrayList<Coin> coins = TxPoWSearcher.searchCoins(	relevant, 
+		ArrayList<Coin> coins = TxPoWSearcher.searchCoins(	tip, relevant, 
 															scoinid, coinid, 
 															saddress, address, 
 															stokenid, tokenid);
