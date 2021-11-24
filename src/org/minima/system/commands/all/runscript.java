@@ -5,6 +5,7 @@ import java.util.Enumeration;
 
 import org.minima.kissvm.Contract;
 import org.minima.objects.Address;
+import org.minima.objects.StateVariable;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
@@ -49,21 +50,48 @@ public class runscript extends Command {
 		
 		//The Transaction..
 		Transaction trans = new Transaction();
-		
+				
 		//Add the state variables..
 		for(Object key : state.keySet()) {
 			
+			//The Key is a String
+			String portstr = (String)key; 
 			
+			//The port
+			int port = Integer.parseInt(portstr);
 			
 			//Get the state var..
+			String var = (String) state.get(key);
+
+			//Create a state variable..
+			StateVariable sv = new StateVariable(port, var);
 			
+			//Add to the transaction..
+			trans.addStateVariable(sv);
 		}
 		
 		//Add the Previous State variables
-		//..
+		ArrayList<StateVariable> pstate = new ArrayList<>();
+		for(Object key : prevstate.keySet()) {
+			
+			//The Key is a String
+			String portstr = (String)key; 
+			
+			//The port
+			int port = Integer.parseInt(portstr);
+			
+			//Get the state var..
+			String var = (String) state.get(key);
+
+			//Create a state variable..
+			StateVariable sv = new StateVariable(port, var);
+			
+			//Add to the transaction..
+			pstate.add(sv);
+		}
 		
 		//Add the globals
-		//..
+		
 		
 		//Add the Signatures
 		//..
