@@ -22,6 +22,7 @@ import org.minima.system.commands.all.printtree;
 import org.minima.system.commands.all.quit;
 import org.minima.system.commands.all.restore;
 import org.minima.system.commands.all.rpc;
+import org.minima.system.commands.all.runscript;
 import org.minima.system.commands.all.send;
 import org.minima.system.commands.all.sshtunnel;
 import org.minima.system.commands.all.status;
@@ -44,7 +45,8 @@ public abstract class Command {
 			new message(), new trace(), new help(), new printtree(), new automine(), new printmmr(), new rpc(),
 			new send(), new balance(), new tokencreate(), new tokens(), new newaddress(), new debugflag(),
 			new incentivecash(), new sshtunnel(), new webhooks(),
-			new backup(), new restore(), new test(), new hashtest()};
+			new backup(), new restore(), new test(), new hashtest(),
+			new runscript()};
 	
 	String mName;
 	String mHelp;
@@ -97,14 +99,29 @@ public abstract class Command {
 		return zDefault;
 	}
 	
-	public JSONObject getJSONParam(String zParamName) {
+	public JSONObject getJSONObjectParam(String zParamName) {
 		return (JSONObject) mParams.get(zParamName);
 	}
 	
-	public boolean isParamJSON(String zParamName) {
+	public JSONArray getJSONArrayParam(String zParamName) {
+		return (JSONArray) mParams.get(zParamName);
+	}
+	
+	public boolean isParamJSONObject(String zParamName) {
 		if(existsParam(zParamName)) {
 			Object obj = mParams.get(zParamName);
 			if(obj instanceof JSONObject) {
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	public boolean isParamJSONArray(String zParamName) {
+		if(existsParam(zParamName)) {
+			Object obj = mParams.get(zParamName);
+			if(obj instanceof JSONArray) {
 				return true;
 			}
 		}
@@ -197,6 +214,19 @@ public abstract class Command {
 				JSONObject json = null;
 				try {
 					json = (JSONObject) new JSONParser().parse(value);
+				} catch (ParseException e) {
+					return new missingcmd(command,"Invalid JSON parameter for "+command+" @ "+token+" "+e.toString());
+				}
+				
+				//Store this parameter..
+				comms.getParams().put(name, json);
+			
+			}else if(value.startsWith("[") && value.endsWith("]")) {
+				
+				//It's a JSONArray..!
+				JSONArray json = null;
+				try {
+					json = (JSONArray) new JSONParser().parse(value);
 				} catch (ParseException e) {
 					return new missingcmd(command,"Invalid JSON parameter for "+command+" @ "+token+" "+e.toString());
 				}
@@ -305,7 +335,16 @@ public abstract class Command {
 			}else if(cc == '}') {
 				jsoned--;
 				current += cc;
+			
+			}else if(cc == '[') {
+				jsoned++;
+				current += cc;
 				
+			}else if(cc == ']') {
+				jsoned--;
+				current += cc;
+			
+			
 			}else if(cc == '\"') {
 				if(jsoned>0) {
 					
