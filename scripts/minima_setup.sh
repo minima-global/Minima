@@ -58,4 +58,5 @@ chmod a+x /etc/cron.daily/minima_$PORT
 CMD="$HOME/minima_service.sh -x $@"
 /bin/sh -c "$CMD"
 
+echo "Install complete - showing logs now -  Ctrl-C to exit logs, minima will keep running"
 journalctl -fn 10 -u minima_$PORT
