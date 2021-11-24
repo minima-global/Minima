@@ -61,7 +61,7 @@ chown minima:minima $HOME"/"$MINIMA_JAR_NAME
 chmod +x $HOME"/"$MINIMA_JAR_NAME
 
 if [ ! -d "$HOME/.minima_$PORT" ]; then
-  echo "[+] Creating config directory .minima_${PORT}..."
+  echo "[+] Creating data directory .minima_${PORT}..."
   mkdir $HOME/.minima_$PORT
   chown minima:minima $HOME/.minima_$PORT
 fi
