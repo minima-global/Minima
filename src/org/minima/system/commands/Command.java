@@ -27,6 +27,7 @@ import org.minima.system.commands.all.sshtunnel;
 import org.minima.system.commands.all.status;
 import org.minima.system.commands.all.test;
 import org.minima.system.commands.all.tokencreate;
+import org.minima.system.commands.all.tokens;
 import org.minima.system.commands.all.trace;
 import org.minima.system.commands.all.txpow;
 import org.minima.system.commands.all.webhooks;
@@ -41,7 +42,7 @@ public abstract class Command {
 	public static final Command[] ALL_COMMANDS = 
 		{   new quit(), new status(), new coins(), new txpow(), new connect(), new disconnect(), new network(),
 			new message(), new trace(), new help(), new printtree(), new automine(), new printmmr(), new rpc(),
-			new send(), new balance(), new tokencreate(), new newaddress(), new debugflag(),
+			new send(), new balance(), new tokencreate(), new tokens(), new newaddress(), new debugflag(),
 			new incentivecash(), new sshtunnel(), new webhooks(),
 			new backup(), new restore(), new test(), new hashtest()};
 	
@@ -191,8 +192,6 @@ public abstract class Command {
 			
 			//Is the value a JSON..or JSONArray..
 			if(value.startsWith("{") && value.endsWith("}")) {
-				
-				MinimaLogger.log("check ing json value: "+value);
 				
 				//It's a JSON..!
 				JSONObject json = null;
