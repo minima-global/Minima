@@ -85,7 +85,7 @@ fi
 
 echo "[+] Creating service minima_$PORT"
 
-MINIMA_PARAMS="-daemon -port $PORT -conf $HOME/.minima_$PORT"
+MINIMA_PARAMS="-daemon -port $PORT -data $HOME/.minima_$PORT"
 if [ $CLEAN_FLAG ]; then
   MINIMA_PARAMS="$MINIMA_PARAMS -clean"
 fi

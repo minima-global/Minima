@@ -44,7 +44,7 @@ public class backup extends Command {
 			MinimaDB.getDB().saveState();
 			
 			///Base folder
-			File backupfolder = new File(GeneralParams.CONFIGURATION_FOLDER,"backup");
+			File backupfolder = new File(GeneralParams.DATA_FOLDER,"backup");
 			backupfolder.mkdirs();
 			
 			//Write the SQL Dbs
@@ -124,7 +124,7 @@ public class backup extends Command {
 			ret.put("backup", resp);
 			
 			//And now clean up..
-			MiniFile.deleteFileOrFolder(GeneralParams.CONFIGURATION_FOLDER, backupfolder);
+			MiniFile.deleteFileOrFolder(GeneralParams.DATA_FOLDER, backupfolder);
 			
 		}catch(Exception exc) {
 			MinimaLogger.log(exc);

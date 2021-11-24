@@ -130,14 +130,23 @@ public class Token implements Streamable{
 	public JSONObject toJSON() {
 		JSONObject obj = new JSONObject();
 		
-		obj.put("name", mTokenName.toString());
+		//Is Token Name a JSON
+		if(mTokenName.toString().trim().startsWith("{")) {
+			obj.put("name", mTokenName);
+		}else {
+			
+			//It's just a String
+			obj.put("name", mTokenName.toString());
+		}
+		
 		obj.put("tokenid", mTokenID.to0xString());
+		obj.put("coinid", mCoinID.to0xString());
 		obj.put("total", getTotalTokens().toString());
-		obj.put("decimals", getDecimalPlaces().toString());
+		obj.put("decimals", getDecimalPlaces());
 		obj.put("script", mTokenScript.toString());
 		obj.put("coinid", mCoinID.to0xString());
 		obj.put("totalamount", mTokenMinimaAmount.toString());
-		obj.put("scale", mTokenScale.toString());
+		obj.put("scale", mTokenScale );
 		
 		return obj;
 	}

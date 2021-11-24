@@ -394,24 +394,25 @@ public class TxPoWChecker {
 	
 	private static boolean checkTxPoWScripts(MMR zTipMMR, Transaction zTransaction, Witness zWitness, MiniNumber zBlock) throws Exception {
 		
-		//Are we a valid transaction
-		if(zTransaction.isEmpty()) {
-			return true;
-		}
-		
 		//Do we even need to check this!
 		if(zTransaction.isCheckedMonotonic()) {
-//			MinimaLogger.log("Monotonic transaction! .. skip check");
+			return zTransaction.mIsValid;
+		}
+		
+		//We are checking it now..
+		zTransaction.mHaveCheckedMonotonic 	= true;
+		zTransaction.mIsMonotonic 			= true;
+		zTransaction.mIsValid 				= false;
+		
+		//Are we a valid transaction
+		if(zTransaction.isEmpty()) {
+			zTransaction.mIsValid = true;
 			return true;
 		}
 		
 		//Get the coin proofs
 		ArrayList<CoinProof> mmrproofs 	= zWitness.getAllCoinProofs();
 		int ins = mmrproofs.size();
-
-		//We are checking it now..
-		zTransaction.mHaveCheckedMonotonic 	= true;
-		zTransaction.mIsMonotonic 			= true;
 		
 		//Cycle through and check..
 		for(int i=0;i<ins;i++) {
@@ -435,7 +436,7 @@ public class TxPoWChecker {
 			
 			//Monotonic - no @BLKNUM references..
 			if(!contract.isMonotonic()) {
-				zTransaction.mIsMonotonic 	= false;
+				zTransaction.mIsMonotonic = false;
 			}
 			
 			//Was it a success..
@@ -464,8 +465,8 @@ public class TxPoWChecker {
 					tokcontract.setGlobals(zBlock, zTransaction, i, cproof.getCoin().getBlockCreated(), tokscript);
 					tokcontract.run();
 					
-					if(!contract.isMonotonic()) {
-						zTransaction.mIsMonotonic 	= false;
+					if(!tokcontract.isMonotonic()) {
+						zTransaction.mIsMonotonic = false;
 					}
 					
 					if(!tokcontract.isSuccess()) {
@@ -475,6 +476,9 @@ public class TxPoWChecker {
 				}
 			}
 		}
+		
+		//Transaction is valid
+		zTransaction.mIsValid = true;
 		
 		return true;
 	}

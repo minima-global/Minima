@@ -45,10 +45,10 @@ public class tokencreate extends Command {
 		
 		//Is name a JSON
 		String name = null;
-		if(isParamJSON("name")) {
+		if(isParamJSONObject("name")) {
 			
 			//Get the JSON
-			JSONObject jsonname = getJSONParam("name");
+			JSONObject jsonname = getJSONObjectParam("name");
 			
 			//Get the String version
 			name = jsonname.toString();

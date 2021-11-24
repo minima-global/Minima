@@ -124,6 +124,16 @@ public class balance extends Command {
 				//Get the token
 				Token tok = tokens.get(token);
 				
+				if(tok.getName().toString().trim().startsWith("{")) {
+					
+					//It's a JSON
+					tokbal.put("token", tok.getName());
+				}else {
+					//It's a String
+					tokbal.put("token", tok.getName().toString());
+					
+				}
+				
 				tokbal.put("token", tok.getName());
 				tokbal.put("tokenid", token);
 				tokbal.put("confirmed", tok.getScaledTokenAmount(conf).toString());

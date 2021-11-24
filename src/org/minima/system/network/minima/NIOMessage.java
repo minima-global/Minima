@@ -251,16 +251,16 @@ public class NIOMessage implements Runnable {
 				//More CHECKS.. if ALL these pass will forward otherwise may be a branch txpow that we requested
 				boolean fullyvalid = true;
 				
-				//Check the Scripts - could fail.. BUT not if MONOTONIC.. TODO
+				//Check the Scripts - could fail.. 
 				if(!TxPoWChecker.checkTxPoWScripts(tipmmr, txpow, tiptxpow.getBlockNumber())) {
-					//Could be block related
-					fullyvalid = false;
-					
 					//Monotonic txn MUST pass the script check or is INVALID - since will never pass..
 					if(txpow.isMonotonic()) {
 						MinimaLogger.log("Error Monotonic TxPoW failed script check from "+mClientUID+" "+txpow.getTxPoWID());
 						return;
 					}
+					
+					//Could be block related
+					fullyvalid = false;
 				}
 				
 				//Check for mempool coins..

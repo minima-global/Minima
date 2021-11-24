@@ -1,22 +1,22 @@
 package org.minima;
 
+import org.minima.database.MinimaDB;
+import org.minima.objects.base.MiniString;
+import org.minima.system.Main;
+import org.minima.system.commands.Command;
+import org.minima.system.params.ParamConfigurer;
+import org.minima.system.params.GeneralParams;
+import org.minima.system.params.GlobalParams;
+import org.minima.utils.MiniFormat;
+import org.minima.utils.MinimaLogger;
+import org.minima.utils.json.JSONArray;
+import org.minima.utils.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Iterator;
-
-import org.minima.database.MinimaDB;
-import org.minima.objects.base.MiniString;
-import org.minima.system.Main;
-import org.minima.system.commands.Command;
-import org.minima.system.params.GeneralParams;
-import org.minima.system.params.GlobalParams;
-import org.minima.system.params.TestParams;
-import org.minima.utils.MiniFormat;
-import org.minima.utils.MinimaLogger;
-import org.minima.utils.json.JSONArray;
-import org.minima.utils.json.JSONObject;
 
 public class Minima {
 
@@ -64,111 +64,25 @@ public class Minima {
 	 */
 	public static void main(String[] zArgs) {
 		
-		//Set the main configuration folder
-		File conf = new File(System.getProperty("user.home"),".minima");
-		GeneralParams.CONFIGURATION_FOLDER = conf.getAbsolutePath(); 
-		
-		//Daemon mode
-		boolean daemon 		= false;
-		boolean rpcenable 	= false;
-		
-		int arglen 	= zArgs.length;
-		if(arglen > 0) {
-			int counter	=	0;
-			while(counter<arglen) {
-				String arg 	= zArgs[counter];
-				counter++;
-				
-				if(arg.equals("-port")) {
-					GeneralParams.MINIMA_PORT = Integer.parseInt(zArgs[counter++]);
-				
-				}else if(arg.equals("-host")) {
-					GeneralParams.MINIMA_HOST = zArgs[counter++];
-					GeneralParams.IS_HOST_SET = true;
-				
-				}else if(arg.equals("-rpc")) {
-					GeneralParams.RPC_PORT = Integer.parseInt(zArgs[counter++]);
-				
-				}else if(arg.equals("-rpcenable")) {
-					rpcenable = true;
-					
-				}else if(arg.equals("-conf")) {
-					GeneralParams.CONFIGURATION_FOLDER = zArgs[counter++];
-				
-				}else if(arg.equals("-daemon")) {
-					daemon = true;
-					
-				}else if(arg.equals("-private")) {
-					GeneralParams.PRIVATE_NETWORK 	= true;
-				
-				}else if(arg.equals("-noconnect")) {
-					GeneralParams.NOCONNECT = true;
-					
-				}else if(arg.equals("-nop2p")) {
-					GeneralParams.P2P_ENABLED = false;
-				
-				}else if(arg.equals("-isclient")) {
-					GeneralParams.IS_ACCEPTING_IN_LINKS = false;
+		//Set the main data folder
+		File dataFolder = new File(System.getProperty("user.home"),".minima");
+		GeneralParams.DATA_FOLDER = dataFolder.getAbsolutePath();
 
-				}else if(arg.equals("-p2pnode")) {
-					GeneralParams.P2P_ROOTNODE = zArgs[counter++];
-					
-				}else if(arg.equals("-automine")) {
-					GeneralParams.AUTOMINE = true;
-				
-				}else if(arg.equals("-connect")) {
-					GeneralParams.P2P_ENABLED  = false;
-					GeneralParams.CONNECT_LIST = zArgs[counter++];
-				
-				}else if(arg.equals("-noautomine")) {
-					GeneralParams.AUTOMINE 			= false;
-				
-				}else if(arg.equals("-clean")) {
-					GeneralParams.CLEAN 			= true;
-					
-				}else if(arg.equals("-genesis")) {
-					GeneralParams.CLEAN 			= true;
-					GeneralParams.PRIVATE_NETWORK 	= true;
-					GeneralParams.GENESIS 			= true;
-					GeneralParams.AUTOMINE 			= true;
-					
-				}else if(arg.equals("-test")) {
-					GeneralParams.TEST_PARAMS = true;
-					GeneralParams.PRIVATE_NETWORK 	= true;
-					TestParams.setTestParams();
-				
-				}else if(arg.equals("-mobile")) {
-					GeneralParams.IS_MOBILE = true;
-				}else if(arg.equals("-help")) {
-					
-					System.out.println("Minima Help");
-					System.out.println(" -host       : Specify the host IP");
-					System.out.println(" -port       : Specify the Minima port");
-					System.out.println(" -rpc        : Specify the RPC port");
-					System.out.println(" -conf       : Specify the configuration folder");
-					System.out.println(" -daemon     : Run in daemon mode with no stdin input ( services )");
-					System.out.println(" -mobile     : Sets this device to a mobile device - used for metrics only");
-					System.out.println(" -nop2p      : Disable the automatic P2P system");
-					System.out.println(" -isclient   : Tells the P2P System that this node can't accept incoming connections");
-					System.out.println(" -noconnect  : Stops the P2P system from connecting to other nodes until it's been connected too");
-					System.out.println(" -p2pnode    : Specify the initial P2P host:port list to connect to");
-					System.out.println(" -automine   : Simulate user traffic to construct the blockchain");
-					System.out.println(" -noautomine : Do not simulate user traffic to construct the blockchain");
-					System.out.println(" -clean      : Wipe configuration folder and all data at startup");
-					System.out.println(" -genesis    : Create a genesis block, -clean and -automine");
-					System.out.println(" -connect    : Disable the p2p and manually connect to this list of host:port");
-					System.out.println(" -test       : Use test params");
-					System.out.println(" -help       : Print this help");
-					
-					System.exit(1);
-					
-				}else {
-					System.out.println("Unknown parameter : "+arg);
-					System.exit(1);
-				}
-			}
+		ParamConfigurer configurer = null;
+		try {
+			configurer = new ParamConfigurer()
+					.usingConfFile(zArgs)
+					.usingEnvVariables(System.getenv())
+					.usingProgramArgs(zArgs)
+					.configure();
+		} catch (ParamConfigurer.UnknownArgumentException ex) {
+			System.out.println(ex);
+			System.exit(1);
 		}
-		
+
+		boolean daemon = configurer.isDaemon();
+		boolean rpcenable = configurer.isRpcenable();
+
 		MinimaLogger.log("**********************************************");
 		MinimaLogger.log("*  __  __  ____  _  _  ____  __  __    __    *");
 		MinimaLogger.log("* (  \\/  )(_  _)( \\( )(_  _)(  \\/  )  /__\\   *");
@@ -186,7 +100,7 @@ public class Minima {
 			MinimaDB.getDB().getUserDB().setRPCEnabled(true);
 			main.getNetworkManager().startRPC();
 		}
-		
+
 //		Runtime.getRuntime().addShutdownHook(new Thread()
 //		{
 //			@Override
@@ -262,5 +176,4 @@ public class Minima {
 	    
 	    MinimaLogger.log("Bye bye..");
 	}
-	
 }

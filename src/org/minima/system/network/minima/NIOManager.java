@@ -219,7 +219,7 @@ public class NIOManager extends MessageProcessor {
 					newconn.addString("uid", nc.getUID());
 					Main.getInstance().getNetworkManager().getP2PManager().PostMessage(newconn);
 					
-					MinimaLogger.log(nc.getUID()+" Connection Failed no reconnect");
+					MinimaLogger.log("INFO : "+nc.getUID()+" connection failed - no more reconnect attempts ");
 					
 				}else {
 					
@@ -294,6 +294,8 @@ public class NIOManager extends MessageProcessor {
 			newconn.addBoolean("incoming", nioc.isIncoming());
 			Main.getInstance().getNetworkManager().getP2PManager().PostMessage(newconn);
 			
+			MinimaLogger.log("INFO : "+nioc.getUID()+" connection success @ "+nioc.getHost());
+			
 		}else if(zMessage.getMessageType().equals(NIO_INCOMINGMSG)) {
 			//Who is it from
 			String uid = zMessage.getString("uid");
@@ -323,7 +325,7 @@ public class NIOManager extends MessageProcessor {
 			if(!MinimaDB.getDB().getTxPoWDB().exists(txpowid)) {
 		
 				//Notify..
-				MinimaLogger.log("Requesting TxPoW "+txpowid+" from "+clientid+" : "+reason);
+				MinimaLogger.log("INFO : Requesting TxPoW "+txpowid+" from "+clientid+" : "+reason);
 				
 				//Now get it..
 				sendNetworkMessage(clientid, NIOMessage.MSG_TXPOWREQ, new MiniData(txpowid));
@@ -342,7 +344,7 @@ public class NIOManager extends MessageProcessor {
 				if(diff > MAX_LASTREAD_CHECKER) {
 					
 					//Too long a delay..
-					MinimaLogger.log("No recent message (5 mins) from "+conn.getUID()+" disconnect/reconnect ..");
+					MinimaLogger.log("INFO : No recent message (5 mins) from "+conn.getUID()+" disconnect/reconnect ..");
 					
 					//Disconnect
 					disconnect(conn.getUID());
@@ -385,7 +387,7 @@ public class NIOManager extends MessageProcessor {
 					
 				}catch(Exception exc) {
 					//Try again in a minute..
-					MinimaLogger.log(zNIOClient.getUID()+" Error connecting attempt "+zNIOClient.getConnectAttempts()+" to "+zNIOClient.getHost()+":"+zNIOClient.getPort()+" "+exc.toString());
+//					MinimaLogger.log(zNIOClient.getUID()+" INFO : connecting attempt "+zNIOClient.getConnectAttempts()+" to "+zNIOClient.getHost()+":"+zNIOClient.getPort()+" "+exc.toString());
 					
 					//Do we try to reconnect
 					Message reconn = new Message(NIO_RECONNECT);

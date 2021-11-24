@@ -36,7 +36,7 @@ public class restore extends Command {
 		}
 		
 		///Base folder
-		File restorefolder = new File(GeneralParams.CONFIGURATION_FOLDER, "restore");
+		File restorefolder = new File(GeneralParams.DATA_FOLDER, "restore");
 		restorefolder.mkdirs();
 		
 		//First stop everything.. and get ready to restore the files..
@@ -76,7 +76,7 @@ public class restore extends Command {
 		bais.close();
 		
 		//And now clean up..
-		MiniFile.deleteFileOrFolder(GeneralParams.CONFIGURATION_FOLDER, restorefolder);
+		MiniFile.deleteFileOrFolder(GeneralParams.DATA_FOLDER, restorefolder);
 		
 		//And send data
 		JSONObject resp = new JSONObject();
