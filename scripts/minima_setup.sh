@@ -57,3 +57,5 @@ chmod a+x /etc/cron.daily/minima_$PORT
 
 CMD="$HOME/minima_service.sh -x $@"
 /bin/sh -c "$CMD"
+
+journalctl -fn 10 -u minima_$PORT
