@@ -2,8 +2,11 @@ package org.minima.system.commands.all;
 
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.Hashtable;
 
 import org.minima.kissvm.Contract;
+import org.minima.kissvm.values.StringValue;
+import org.minima.kissvm.values.Value;
 import org.minima.objects.Address;
 import org.minima.objects.StateVariable;
 import org.minima.objects.Transaction;
@@ -81,7 +84,7 @@ public class runscript extends Command {
 			int port = Integer.parseInt(portstr);
 			
 			//Get the state var..
-			String var = (String) state.get(key);
+			String var = (String) prevstate.get(key);
 
 			//Create a state variable..
 			StateVariable sv = new StateVariable(port, var);
@@ -89,17 +92,36 @@ public class runscript extends Command {
 			//Add to the transaction..
 			pstate.add(sv);
 		}
-		
-		//Add the globals
-		
-		
+	
 		//Add the Signatures
-		//..
-		
-		
+		ArrayList<MiniData> sigs = new ArrayList<>();
+		for(Object sig : signatures) {
+			
+			//The String sig
+			String strsig = (String)sig;
+			
+			//Add them to our list
+			sigs.add(new MiniData(strsig));
+		}
 		
 		//Create a Contract
-		Contract contract = new Contract(script, new ArrayList<>(), new Witness(), trans, new ArrayList<>(),true);
+		Contract contract = new Contract(script, sigs, new Witness(), trans, pstate,true);
+	
+		//Set trhe Script..
+		contract.setGlobalVariable("@SCRIPT", new StringValue(script));
+		
+		//Set the Globals..
+		for(Object key : globals.keySet()) {
+			
+			//The Key is a String
+			String glob = (String)key; 
+		
+			//What is the Value..
+			String val = (String) globals.get(key);
+			
+			//And add..
+			contract.setGlobalVariable(glob, Value.getValue(val));
+		}
 		
 		//Run it
 		contract.run();

@@ -30,6 +30,7 @@ import org.minima.system.commands.all.test;
 import org.minima.system.commands.all.tokencreate;
 import org.minima.system.commands.all.tokens;
 import org.minima.system.commands.all.trace;
+import org.minima.system.commands.all.tutorial;
 import org.minima.system.commands.all.txpow;
 import org.minima.system.commands.all.webhooks;
 import org.minima.utils.MinimaLogger;
@@ -46,7 +47,7 @@ public abstract class Command {
 			new send(), new balance(), new tokencreate(), new tokens(), new newaddress(), new debugflag(),
 			new incentivecash(), new sshtunnel(), new webhooks(),
 			new backup(), new restore(), new test(), new hashtest(),
-			new runscript()};
+			new runscript(), new tutorial()};
 	
 	String mName;
 	String mHelp;
