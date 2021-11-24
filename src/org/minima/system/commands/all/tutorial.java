@@ -75,9 +75,10 @@ public class tutorial extends Command {
 				+ "                @SCRIPT | @TOTIN | @TOTOUT\n"
 				+ "FUNCTION    ::= FUNC ( EXPRESSION_1 EXPRESSION_2 .. EXPRESSION_n ) \n"
 				+ "FUNC        ::= CONCAT | LEN | REV | SUBSET | GET |\n"
-				+ "                BOOL | HEX | NUMBER | STRING | REPLACE | SUBSTR |\n"
+				+ "                CLEAN | UTF8 | REPLACE | SUBSTR |\n"
+				+ "                BOOL | HEX | NUMBER | STRING |\n"
 				+ "                ABS | CEIL | FLOOR | MIN | MAX | INC | DEC | SIGDIG | POW |\n"
-				+ "                BITSET | BITGET | BITCOUNT | CHAINSHA | SHA3 | SHA2 |\n"
+				+ "                BITSET | BITGET | BITCOUNT | PROOF | KECCAK | SHA2 |\n"
 				+ "                SIGNEDBY | MULTISIG | CHECKSIG |\n"
 				+ "                GETOUTADDR | GETOUTAMT | GETOUTTOK | VERIFYOUT |\n"
 				+ "                GETINADDR | GETINAMT | GETINTOK | GETINID | VERIFYIN |\n"
@@ -125,6 +126,9 @@ public class tutorial extends Command {
 				+ "\n"
 				+ "SUBSTR ( STRING NUMBER NUMBER )\n"
 				+ "Get the substring\n"
+				+ "\n"
+				+ "CLEAN ( STRING )\n"
+				+ "Return a CLEAN version of the script\n"
 				+ "\n"
 				+ "UTF8 ( HEX )\n"
 				+ "Convert the HEX value of a script value to a string\n"
@@ -267,8 +271,7 @@ public class tutorial extends Command {
 				+ "--\n"
 				+ "\n"
 				+ "ASSERT STATE ( 0 ) EQ INC ( PREVSTATE ( 0 ) )\n"
-				+ "\n"
-				+ "--";
+				+ "\n";
 		
 		//Add balance..
 		ret.put("response", tutorial);
