@@ -396,16 +396,17 @@ public class TxPoWChecker {
 		
 		//Do we even need to check this!
 		if(zTransaction.isCheckedMonotonic()) {
-//			MinimaLogger.log("Monotonic transaction! .. skip check");
-			return true;
+			return zTransaction.mIsValid;
 		}
 		
 		//We are checking it now..
 		zTransaction.mHaveCheckedMonotonic 	= true;
 		zTransaction.mIsMonotonic 			= true;
+		zTransaction.mIsValid 				= false;
 		
 		//Are we a valid transaction
 		if(zTransaction.isEmpty()) {
+			zTransaction.mIsValid = true;
 			return true;
 		}
 		
@@ -435,7 +436,7 @@ public class TxPoWChecker {
 			
 			//Monotonic - no @BLKNUM references..
 			if(!contract.isMonotonic()) {
-				zTransaction.mIsMonotonic 	= false;
+				zTransaction.mIsMonotonic = false;
 			}
 			
 			//Was it a success..
@@ -465,7 +466,7 @@ public class TxPoWChecker {
 					tokcontract.run();
 					
 					if(!tokcontract.isMonotonic()) {
-						zTransaction.mIsMonotonic 	= false;
+						zTransaction.mIsMonotonic = false;
 					}
 					
 					if(!tokcontract.isSuccess()) {
@@ -475,6 +476,9 @@ public class TxPoWChecker {
 				}
 			}
 		}
+		
+		//Transaction is valid
+		zTransaction.mIsValid = true;
 		
 		return true;
 	}
