@@ -18,6 +18,7 @@ public class mmrcreate extends Command {
 	public class mmrleafnode{
 		
 		public int mEntry;
+		public String mInput;
 		public String mData;
 		public MiniData mHash;
 		
@@ -63,7 +64,8 @@ public class mmrcreate extends Command {
 			//Create leafnode
 			mmrleafnode leafnode = new mmrleafnode();
 			leafnode.mEntry = counter;
-			leafnode.mData 	= strdata;
+			leafnode.mInput = strdata;
+			leafnode.mData  = mdata.to0xString();
 			leafnode.mHash 	= hash;
 			
 			//Add them to our list
@@ -85,7 +87,8 @@ public class mmrcreate extends Command {
 			
 			JSONObject jobj = new JSONObject();
 			jobj.put("entry", leaf.mEntry);
-			jobj.put("data", leaf.mData);
+			jobj.put("input", leaf.mInput);
+			jobj.put("data", leaf.mData);	
 //			jobj.put("hash", leaf.mHash);
 			
 			//Get the proof..
