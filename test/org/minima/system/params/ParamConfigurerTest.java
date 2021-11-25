@@ -46,6 +46,7 @@ public class ParamConfigurerTest {
                 "-genesis",
                 "-nop2p",
                 "-noconnect",
+                "-mobile",
                 "-test",
                 "-connect", "124.0.1.9:7777"};
         ParamConfigurer configurer = new ParamConfigurer()
@@ -61,6 +62,7 @@ public class ParamConfigurerTest {
         assertTrue(GeneralParams.IS_HOST_SET);
         assertTrue(GeneralParams.AUTOMINE);
         assertTrue(GeneralParams.NOCONNECT);
+        assertTrue(GeneralParams.IS_MOBILE);
         assertFalse(GeneralParams.P2P_ENABLED);
         assertEquals("124.0.1.9", GeneralParams.P2P_ROOTNODE);
         assertEquals("124.0.1.9:7777", GeneralParams.CONNECT_LIST);
