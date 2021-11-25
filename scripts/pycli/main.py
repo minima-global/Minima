@@ -9,9 +9,39 @@ import pandas
 import plotly.graph_objects as go
 import plotly.express as px
 
+LM_OCEAN = 'rgb(244, 248, 255)'
+LM_LAND = 'rgb(189, 189, 189)'
+LM_LINES = 'rgb(90, 148, 255)'
+LM_NODES = 'rgb(90, 189, 255)'
+LM_SCALE = [
+    'rgb(255, 237, 233)',
+    'rgb(255, 220, 213)',
+    'rgb(255, 185, 171)',
+    'rgb(255, 150, 130)',
+    'rgb(255, 115, 88)',
+    'rgb(255, 81, 47)',
+]
+LM_TEXT = 'black'
+
+DM_OCEAN = 'rgb(54, 58, 58)'
+DM_LAND = 'rgb(189, 189, 189)'
+DM_LINES = 'rgb(90, 148, 255)'
+DM_NODES = 'rgb(90, 148, 255)'
+DM_SCALE = [
+    'rgb(255, 237, 233)',
+    'rgb(255, 220, 213)',
+    'rgb(255, 185, 171)',
+    'rgb(255, 150, 130)',
+    'rgb(255, 115, 88)',
+    'rgb(255, 81, 47)',
+]
+DM_TEXT = 'white'
+
+
 @click.group()
 def cli():
     pass
+
 
 @cli.command()
 @click.option('--show-mobiles/--no-mobiles', default=False, help='Show mobile nodes')
@@ -78,7 +108,8 @@ def status(show_mobiles, no_summary, full, endpoint):
         status['is_mobile'] = node['is_mobile']
         status['has_external_ip'] = node['is_accepting_connections']
         status['num_p2p_links'] = len(node['in_links']) + len(node['out_links'])
-        status['total_links'] = len(node['in_links']) + len(node['out_links']) + len(node['not_accepting_conn_links']) + len(node['none_p2p_links'])
+        status['total_links'] = len(node['in_links']) + len(node['out_links']) + len(
+            node['not_accepting_conn_links']) + len(node['none_p2p_links'])
         status['in_sync'] = True
         status['is_mobile'] = node['is_mobile']
         out_links += len(node['out_links'])
@@ -92,7 +123,8 @@ def status(show_mobiles, no_summary, full, endpoint):
         if (top_block_number - node['top_block_number']) > max_expected_block_difference:
             status['in_sync'] = False
             is_okay = False
-            issues.append(f"Expected min block number: {top_block_number - max_expected_block_difference} actual: {node['top_block_number']}")
+            issues.append(
+                f"Expected min block number: {top_block_number - max_expected_block_difference} actual: {node['top_block_number']}")
         if status['has_external_ip'] == 'True' and status['num_p2p_links'] == 0:
             is_okay = False
             issues.append(f"No P2P Links")
@@ -117,9 +149,10 @@ def status(show_mobiles, no_summary, full, endpoint):
         status_icon = '✅' if is_okay else '❌'
         in_sync = '♻️' if status['in_sync'] else '❌'
         node_icon = '📱' if status['is_mobile'] == 'True' else '🖥️'
-        p2p_node = '🐙' if status['has_external_ip']  == 'True' else '  '
+        p2p_node = '🐙' if status['has_external_ip'] == 'True' else '  '
         if (show_mobiles and (status['is_mobile'] == 'True')) or (status['is_mobile'] != 'True'):
-            node_status.append(f"\t {status_icon}{tip_string}{node_icon}\t{p2p_node}  {status['address']}\t Version: {status['minima_version']} Connections: {status['total_links']}\t In-Sync: {in_sync}\t {issues_string}")
+            node_status.append(
+                f"\t {status_icon}{tip_string}{node_icon}\t{p2p_node}  {status['address']}\t Version: {status['minima_version']} Connections: {status['total_links']}\t In-Sync: {in_sync}\t {issues_string}")
 
         if (status['is_mobile'] != 'True') and (status['has_external_ip'] == 'True'):
             if is_okay:
@@ -162,17 +195,22 @@ def status(show_mobiles, no_summary, full, endpoint):
 
     if full:
         click.echo("\t Node Status Report")
-        click.echo("\t --------------------------------------------------------------------------------------------------------")
-        click.echo(f"\t 🐙 Tip Node: {top_node_address} 50th Tip Block Num: {block_number_50} 50th Tip Hash: {current_hash}")
-        click.echo("\t --------------------------------------------------------------------------------------------------------")
+        click.echo(
+            "\t --------------------------------------------------------------------------------------------------------")
+        click.echo(
+            f"\t 🐙 Tip Node: {top_node_address} 50th Tip Block Num: {block_number_50} 50th Tip Hash: {current_hash}")
+        click.echo(
+            "\t --------------------------------------------------------------------------------------------------------")
         for node in node_status:
             click.echo(node)
+
 
 def map_ip_to_data(geo_data):
     ip_geo_map = {}
     for node in geo_data:
         ip_geo_map[node['query']] = node
     return ip_geo_map
+
 
 @cli.command()
 @click.option('--endpoint', help='network data endpoint')
@@ -205,29 +243,50 @@ def create_map(data, dt):
                         end = node_address
                     yield pandas.DataFrame([
                         {
-                        'start_lat': ip_data_map[start]['lat'],
-                        'start_lon': ip_data_map[start]['lon'],
-                        'end_lat': ip_data_map[end]['lat'],
-                        'end_lon': ip_data_map[end]['lon']
-                         },
+                            'start_lat': ip_data_map[start]['lat'],
+                            'start_lon': ip_data_map[start]['lon'],
+                            'end_lat': ip_data_map[end]['lat'],
+                            'end_lon': ip_data_map[end]['lon']
+                        },
                     ])
 
     df_links = pandas.concat(one())
 
     dfs = pandas.read_csv('https://raw.githubusercontent.com/plotly/datasets/master/2014_world_gdp_with_codes.csv')
 
-
     df_nodes = df.groupby(['lat', 'lon']).first()
     cnt = df.groupby(['lat', 'lon']).count()
-    df_nodes = df_nodes.join(cnt[['status']].rename(columns={'status':'count'}))
-    df_nodes['node_size'] = (((df_nodes['count'] // df_nodes['count'].max()) * 20) + 5) * 1.5
+    df_nodes = df_nodes.join(cnt[['status']].rename(columns={'status': 'count'}))
+    df_nodes['node_size'] = 10 + ((df_nodes['count'] // df_nodes['count'].max()) * 5)
     df_nodes = df_nodes.reset_index()
 
     country_count = df.groupby('country').count()[['query']]
-    df_cnt = df.merge(country_count.rename(columns={'query':'node_count'}), left_on='country', right_index=True, how='left')
+    df_cnt = df.merge(country_count.rename(columns={'query': 'node_count'}), left_on='country', right_index=True,
+                      how='left')
     df_countries = df_cnt.groupby('country').first().reset_index()
 
     # fig = go.Figure()
+    plot(df_countries, df_links, df_nodes, valid_nodes, dt, 'light', True)
+    plot(df_countries, df_links, df_nodes, valid_nodes, dt, 'light', False)
+    plot(df_countries, df_links, df_nodes, valid_nodes, dt, 'dark', True)
+    plot(df_countries, df_links, df_nodes, valid_nodes, dt, 'dark', False)
+
+
+def plot(df_countries, df_links, df_nodes, valid_nodes, dt, color_mode, lines):
+    if color_mode == 'light':
+        OCEAN = LM_OCEAN
+        LAND = LM_LAND
+        LINES = LM_LINES
+        NODES = LM_NODES
+        SCALE = LM_SCALE
+        TEXT = LM_TEXT
+    else:
+        OCEAN = DM_OCEAN
+        LAND = DM_LAND
+        LINES = DM_LINES
+        NODES = DM_NODES
+        SCALE = DM_SCALE
+        TEXT = DM_TEXT
 
     fig = go.Figure(data=go.Choropleth(
         locations=df_countries['country'],
@@ -235,7 +294,7 @@ def create_map(data, dt):
         z=df_countries['node_count'],
         zmax=200,
         text=df_countries['country'],
-        colorscale= px.colors.sequential.Oranges[2:],
+        colorscale=SCALE,
         autocolorscale=False,
         reversescale=False,
         marker_line_color='darkgray',
@@ -243,17 +302,18 @@ def create_map(data, dt):
         colorbar_title='Nodes',
     ))
 
-    for i, row in df_links.iterrows():
-        fig.add_trace(
-            go.Scattergeo(
-                # locationmode='USA-states',
-                lon=[row['start_lon'], row['end_lon']],
-                lat=[row['start_lat'], row['end_lat']],
-                mode='lines',
-                line=dict(width=0.5, color='rgb(240, 240, 240)'),
-                opacity=0.3,
+    if lines:
+        for i, row in df_links.iterrows():
+            fig.add_trace(
+                go.Scattergeo(
+                    # locationmode='USA-states',
+                    lon=[row['start_lon'], row['end_lon']],
+                    lat=[row['start_lat'], row['end_lat']],
+                    mode='lines',
+                    line=dict(width=1, color=LINES),
+                    opacity=1,
+                )
             )
-        )
 
     fig.add_trace(go.Scattergeo(
         # locationmode='USA-states',
@@ -264,56 +324,54 @@ def create_map(data, dt):
         mode='markers',
         marker=dict(
             size=df_nodes['node_size'],
-            color='rgb(0, 0, 0)',
+            color=NODES,
             line=dict(
-                width=3,
-                color='rgba(68, 68, 68, 0)'
+                width=1,
+                color='white'
             )
         )))
 
-
-    fig.add_annotation(x=0.075, y=0.2,
+    fig.add_annotation(x=0.055, y=0.2,
                        text=f"Countries: {len(df_countries)}",
                        showarrow=False,
                        font=dict(
                            family="Courier New, monospace",
-                           size=20,
-                           color="white"
+                           size=40,
+                           color=TEXT
                        ),
                        opacity=1
                        )
 
-    fig.add_annotation(x=0.075, y=0.25,
+    fig.add_annotation(x=0.055, y=0.25,
                        text=f"Node Count: {len(valid_nodes)}",
                        showarrow=False,
                        font=dict(
                            family="Courier New, monospace",
-                           size=20,
-                           color="white"
+                           size=40,
+                           color=TEXT
                        ),
                        opacity=1
                        )
 
-    fig.add_annotation(x=0.075, y=0.3,
-                       text=f"Date: {dt.strftime('%d %b %Y, %H:%M:%S')}",
+    fig.add_annotation(x=0.055, y=0.3,
+                       text=f"Date: {dt.strftime('%d %b %Y')}", #, %H:%M:%S
                        showarrow=False,
                        font=dict(
                            family="Courier New, monospace",
-                           size=20,
-                           color="white"
+                           size=40,
+                           color=TEXT
                        ),
                        opacity=1
                        )
-    fig.add_annotation(x=0.95, y=-0.03,
+    fig.add_annotation(x=1, y=-0.005,
                        text=f"^ Node locations are approximate",
                        showarrow=False,
                        font=dict(
-                            family="Courier New, monospace",
-                            size=16,
-                        ),
+                           family="Courier New, monospace",
+                           size=32,
+                       ),
                        opacity=1
                        )
-
 
     fig.add_trace(go.Scattergeo(
         lon=[-0.139754],
@@ -331,27 +389,28 @@ def create_map(data, dt):
         )))
 
     fig.update_layout(
-        title={
-            'text':f'Minima Global Node Map',
-            'font_size':30,
-            'x': 0.5,
-            # 'xanchor': "center"
-        },
+        # title={
+        #     'text': f'Minima Global Node Map',
+        #     'font_size': 60,
+        #     'x': 0.5,
+        #     # 'xanchor': "center"
+        # },
         showlegend=False,
         geo=dict(
             # scope='north america',
             # projection_type='azimuthal equal area',
             showland=True,
-            landcolor='rgb(145, 145, 145)',
-            countrycolor='rgb(204, 204, 204)',
+            landcolor=LAND,
+            countrycolor='white',
             showocean=True,
             # oceancolor='rgb(49, 122, 255)',
-            oceancolor='rgb(0, 28, 50)',
+            oceancolor=OCEAN,
             showcountries=True
         ),
     )
 
-    fig.write_image(f"{dt.strftime('%Y%m%dT%H%M%S')}.png", width=2000, height=1000)
+    lines_text = '_plus_lines' if lines else ''
+    fig.write_image(f"{dt.strftime('%Y%m%dT%H%M%S')}_{color_mode}{lines_text}.png", width=1920*2, height=1080*2)
 
 
 def geo_locate_ips(ips):
@@ -363,6 +422,7 @@ def geo_locate_ips(ips):
             data=str(ips[(i - 1) * 100:(i * 100)]).replace('"', '').replace("'", '"'))
         geo_data += r.json()
     return geo_data
+
 
 @cli.command()
 @click.option('--endpoint', help='network data endpoint')
@@ -380,11 +440,7 @@ def maps(endpoint):
 
     # geo = requests.get('https://app.ipapi.co/bulk/q=104.155.19.103%0D%0A109.37.159.90%0D%0A116.202.103.231%0D%0A135.181.152.131%0D%0A135.181.92.141%0D%0A139.59.137.30%0D%0A147.182.254.42%0D%0A147.78.66.147%0D%0A152.37.87.57%0D%0A161.97.127.66%0D%0A161.97.84.225%0D%0A164.68.96.105%0D%0A168.119.164.176%0D%0A176.249.17.125%0D%0A176.65.61.156%0D%0A178.150.235.149%0D%0A178.20.47.139%0D%0A185.194.219.116%0D%0A185.194.219.139%0D%0A185.195.27.137%0D%0A&key=&output=json')
 
-
-
-
-
-    files = sorted(glob.glob('*.json'))[-4:]
+    files = sorted(glob.glob('*.json'))[-7:]
     for file in files:
         print(file)
         dt = pandas.to_datetime('-'.join(file.split('.')[0].split('-')[2:])).to_pydatetime()
@@ -396,28 +452,26 @@ def maps(endpoint):
     # import IPython
     # IPython.embed()
 
+
 @cli.command()
 def video():
     import imageio as iio
     from pygifsicle import optimize
 
-    images = list()
-    files = sorted(glob.glob('*.png'))
-    for file in files:
-        im = iio.imread(file)
-        images.append(im)
+    for post_fix in ['_light_plus_lines', '_light', '_dark_plus_lines', '_dark']:
+        images = list()
+        files = sorted(glob.glob(f'*{post_fix}.png'))
+        for file in files:
+            im = iio.imread(file)
+            images.append(im)
 
-    gif_path = "nodemap.gif"
-    with iio.get_writer(gif_path, mode='I', fps=1) as writer:
-        for i in images:
-            writer.append_data(i)
+        gif_path = f"nodemap{post_fix}.gif"
+        with iio.get_writer(gif_path, mode='I', fps=1) as writer:
+            for i in images:
+                writer.append_data(i)
 
-
-
-    optimize(gif_path, "optimized_white.gif")
-
+        optimize(gif_path, f"optimized{post_fix}.gif")
 
 
 if __name__ == '__main__':
     cli()
-
