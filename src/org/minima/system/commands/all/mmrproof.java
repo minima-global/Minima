@@ -1,24 +1,11 @@
 package org.minima.system.commands.all;
 
-import java.util.ArrayList;
-import java.util.Hashtable;
-
-import org.minima.database.MinimaDB;
-import org.minima.database.mmr.MMR;
 import org.minima.database.mmr.MMRData;
-import org.minima.database.mmr.MMREntryNumber;
 import org.minima.database.mmr.MMRProof;
-import org.minima.database.txpowtree.TxPowTree;
-import org.minima.objects.Coin;
-import org.minima.objects.Token;
 import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
-import org.minima.system.brains.TxPoWSearcher;
 import org.minima.system.commands.Command;
-import org.minima.system.params.GlobalParams;
 import org.minima.utils.Crypto;
-import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
 public class mmrproof extends Command {
