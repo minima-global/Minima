@@ -8,12 +8,7 @@
     <array>
       <string>/bin/sh</string>
       <string>-c</string>
-      <string>##BIN##/minima</string>
-      <string>-daemon</string>
-      <string>-data</string>
-      <string>$HOME/.minima-brew</string>
-      <string>-conf</string>
-      <string>##HOMEBREW_PREFIX_ETC##/minima.conf</string>
+      <string>##BIN##/minima -daemon -data $HOME/.minima-brew -conf ##HOMEBREW_PREFIX_ETC##/minima.conf</string>
     </array>
     <key>KeepAlive</key>
     <true />
