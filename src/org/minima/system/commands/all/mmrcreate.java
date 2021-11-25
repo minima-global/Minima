@@ -26,18 +26,18 @@ public class mmrcreate extends Command {
 	}
 	
 	public mmrcreate() {
-		super("mmrcreate","[data:[]] - Create an MMR Tree of data. Data can be STRING / HEX");
+		super("mmrcreate","[nodes:[]] - Create an MMR Tree of data. Nodes can be STRING / HEX");
 	}
 	
 	@Override
 	public JSONObject runCommand() throws Exception{
 		JSONObject ret = getJSONReply();
 		
-		if(!existsParam("data")) {
-			throw new Exception("MUST Specify some data");
+		if(!existsParam("nodes")) {
+			throw new Exception("MUST Specify a nodes JSONArray");
 		}
 		
-		JSONArray mmrdata = getJSONArrayParam("data");
+		JSONArray mmrdata = getJSONArrayParam("nodes");
 		
 		//Create an MMR
 		MMR mmrtree = new MMR();
