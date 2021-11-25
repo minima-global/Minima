@@ -1,0 +1,127 @@
+package org.minima.system.commands.all;
+
+import java.util.ArrayList;
+import java.util.Hashtable;
+
+import org.minima.database.MinimaDB;
+import org.minima.database.mmr.MMR;
+import org.minima.database.mmr.MMRData;
+import org.minima.database.mmr.MMREntryNumber;
+import org.minima.database.mmr.MMRProof;
+import org.minima.database.txpowtree.TxPowTree;
+import org.minima.objects.Coin;
+import org.minima.objects.Token;
+import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniNumber;
+import org.minima.objects.base.MiniString;
+import org.minima.system.brains.TxPoWSearcher;
+import org.minima.system.commands.Command;
+import org.minima.system.params.GlobalParams;
+import org.minima.utils.Crypto;
+import org.minima.utils.json.JSONArray;
+import org.minima.utils.json.JSONObject;
+
+public class mmrcreate extends Command {
+
+	public class mmrleafnode{
+		
+		public int mEntry;
+		public String mData;
+		public MiniData mHash;
+		
+		public mmrleafnode() {}
+	}
+	
+	public mmrcreate() {
+		super("mmrcreate","[data:[]] - Create an MMR Tree of data. Data can be STRING / HEX");
+	}
+	
+	@Override
+	public JSONObject runCommand() throws Exception{
+		JSONObject ret = getJSONReply();
+		
+		if(!existsParam("data")) {
+			throw new Exception("MUST Specify some data");
+		}
+		
+		JSONArray mmrdata = getJSONArrayParam("data");
+		
+		//Create an MMR
+		MMR mmrtree = new MMR();
+		
+		//Add the Signatures
+		int counter=0;
+		ArrayList<mmrleafnode> leafnodes = new ArrayList<>();
+		for(Object data : mmrdata) {
+			
+			//The String sig
+			String strdata = (String)data;
+			
+			//Is it HEX
+			MiniData mdata = null;
+			if(strdata.startsWith("0x")) {
+				mdata = new MiniData(strdata);
+			}else {
+				mdata = new MiniData( new MiniString(strdata).getData() );
+			}
+			
+			//Hash it..
+			MiniData hash = Crypto.getInstance().hashObject(mdata);
+			
+			//Create leafnode
+			mmrleafnode leafnode = new mmrleafnode();
+			leafnode.mEntry = counter;
+			leafnode.mData 	= strdata;
+			leafnode.mHash 	= hash;
+			
+			//Add them to our list
+			leafnodes.add(leafnode);
+			
+			//Increment
+			counter++;
+			
+			//Add to thew MMR
+			mmrtree.addEntry(new MMRData(hash));
+		}
+		
+		//Get the root..
+		MiniData root = mmrtree.getRoot().getData();
+		
+		//Now create the output
+		JSONArray leafdata = new JSONArray();
+		for(mmrleafnode leaf : leafnodes) {
+			
+			JSONObject jobj = new JSONObject();
+			jobj.put("entry", leaf.mEntry);
+			jobj.put("data", leaf.mData);
+//			jobj.put("hash", leaf.mHash);
+			
+			//Get the proof..
+			MMRProof proof = mmrtree.getProof(new MMREntryNumber(leaf.mEntry));
+			
+			//Get as data string
+			MiniData dataproof = MiniData.getMiniDataVersion(proof); 
+			
+			//Add this proof
+			jobj.put("proof", dataproof.to0xString());
+			
+			//Add to the total
+			leafdata.add(jobj);
+		}
+		
+		JSONObject jsonmmr = new JSONObject();
+		jsonmmr.put("leafnodes", leafdata);
+		jsonmmr.put("root", root.to0xString());
+		
+		//Add balance..
+		ret.put("response", jsonmmr);
+		
+		return ret;
+	}
+
+	@Override
+	public Command getFunction() {
+		return new mmrcreate();
+	}
+
+}
