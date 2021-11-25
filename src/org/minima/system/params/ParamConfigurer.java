@@ -1,15 +1,21 @@
 package org.minima.system.params;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
-import java.util.function.BiConsumer;
-
 import static java.nio.file.Files.lines;
 import static java.util.Arrays.stream;
-import static java.util.Optional.*;
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
+import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toMap;
 import static org.minima.system.params.ParamConfigurer.ParamKeys.toParamKey;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.BiConsumer;
 
 public class ParamConfigurer {
 

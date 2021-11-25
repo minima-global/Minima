@@ -1,8 +1,6 @@
 package org.minima.system.commands.all;
 
-import org.minima.objects.base.MiniData;
 import org.minima.system.commands.Command;
-import org.minima.utils.Crypto;
 import org.minima.utils.json.JSONObject;
 
 public class tutorial extends Command {
@@ -39,7 +37,7 @@ public class tutorial extends Command {
 				+ "Grammar\n"
 				+ "-------\n"
 				+ "\n"
-				+ "ADDRESS     ::= SHA3 ( BLOCK )\n"
+				+ "ADDRESS     ::= KECCAK ( BLOCK )\n"
 				+ "BLOCK       ::= STATEMENT_1 STATEMENT_2 ... STATEMENT_n\n"
 				+ "STATEMENT   ::= LET VARIABLE = EXPRESSION |\n"
 				+ "                LET ( EXPRESSION_1 EXPRESSION_2 ... EXPRESSION_n ) = EXPRESSION |\n"
@@ -91,7 +89,7 @@ public class tutorial extends Command {
 //				+ "@BLKTIME     : Block time in seconds from Jan 01 1970\n"
 //				+ "@PREVBLKHASH : Hash of the previous Block\n"
 				+ "@INBLOCK     : Block number when this output was created\n"
-				+ "@BLOCKDIFF   : Difference between BLKNUM and INBLKNUM\n"
+				+ "@BLOCKDIFF   : Difference between @BLOCK and INBLOCK\n"
 				+ "@INPUT       : Input number in the transaction\n"
 				+ "@COINID      : CoinID of this input\n"
 				+ "@AMOUNT      : Amount of this input\n"

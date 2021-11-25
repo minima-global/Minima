@@ -333,8 +333,21 @@ public class P2PManager extends MessageProcessor {
             sendMsgs.addAll(assessConnectivity(state));
             PostTimerMessage(new TimerMessage(P2PParams.NODE_NOT_ACCEPTING_CHECK_DELAY, P2P_ASSESS_CONNECTIVITY));
         } else if (zMessage.isMessageType(P2P_METRICS)) {
-            RPCClient.sendPOST(P2PParams.METRICS_URL, state.toJson().toString());
-            MinimaLogger.log("Posting network data");
+            JSONObject data = state.toJson();
+            int numInbound = 0;
+            int numOutbound = 0;
+            for (NIOClientInfo info : P2PFunctions.getAllConnections()) {
+                if (info.isConnected()) {
+                    if (info.isIncoming()) {
+                        numInbound += 1;
+                    } else {
+                        numOutbound += 1;
+                    }
+                }
+            }
+            data.put("nio_inbound", numInbound);
+            data.put("nio_outbound", numOutbound);
+            RPCClient.sendPOST(P2PParams.METRICS_URL, data.toString());
             PostTimerMessage(new TimerMessage(P2PParams.METRICS_DELAY, P2P_METRICS));
         }
         sendMessages(sendMsgs);

@@ -1,8 +1,6 @@
 package org.minima.system.commands.all;
 
 import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.Hashtable;
 
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.values.StringValue;
@@ -13,7 +11,6 @@ import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
 import org.minima.system.commands.Command;
-import org.minima.utils.Crypto;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
@@ -105,7 +102,7 @@ public class runscript extends Command {
 		}
 		
 		//Create a Contract
-		Contract contract = new Contract(script, sigs, new Witness(), trans, pstate,true);
+		Contract contract = new Contract(script, sigs, new Witness(), trans, pstate);
 	
 		//Set trhe Script..
 		contract.setGlobalVariable("@SCRIPT", new StringValue(script));
@@ -143,6 +140,8 @@ public class runscript extends Command {
 		scriptclean.put("script", cleanscript);
 		scriptclean.put("address", new Address(cleanscript).getAddressData());
 		resp.put("clean", scriptclean);
+		
+		resp.put("trace", contract.getCompleteTraceLog());
 		
 		resp.put("parseok", parse);
 		resp.put("monotonic", monotonic);
