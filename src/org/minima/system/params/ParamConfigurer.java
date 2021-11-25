@@ -39,7 +39,7 @@ public class ParamConfigurer {
                                 pair -> (ParamKeys) pair.left,
                                 pair -> (String) pair.right)));
             } catch (IOException exception) {
-                System.out.println("Enable to read conf file.");
+                System.out.println("Unable to read conf file.");
                 System.exit(1);
             }
         }
@@ -64,7 +64,7 @@ public class ParamConfigurer {
     public ParamConfigurer usingProgramArgs(String[] programArgs) {
 
         int arglen = programArgs.length;
-        int index = 0; // account for executable
+        int index = 0;
             while (index < arglen) {
                 String arg = programArgs[index];
                 final int imuCounter = index;
@@ -139,7 +139,9 @@ public class ParamConfigurer {
             }
         }),
         mobile("mobile", "Sets this device to a mobile device - used for metrics only", (args, configurer) -> {
-            // do nothing
+            if ("true".equals(args)) {
+                GeneralParams.IS_MOBILE = true;
+            }
         }),
         rpcenable("rpcenable", "Enable rpc", (args, configurer) -> {
             if ("true".equals(args)) {
