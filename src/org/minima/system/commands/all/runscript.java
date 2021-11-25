@@ -102,7 +102,7 @@ public class runscript extends Command {
 		}
 		
 		//Create a Contract
-		Contract contract = new Contract(script, sigs, new Witness(), trans, pstate,true);
+		Contract contract = new Contract(script, sigs, new Witness(), trans, pstate);
 	
 		//Set trhe Script..
 		contract.setGlobalVariable("@SCRIPT", new StringValue(script));
@@ -140,6 +140,8 @@ public class runscript extends Command {
 		scriptclean.put("script", cleanscript);
 		scriptclean.put("address", new Address(cleanscript).getAddressData());
 		resp.put("clean", scriptclean);
+		
+		resp.put("trace", contract.getCompleteTraceLog());
 		
 		resp.put("parseok", parse);
 		resp.put("monotonic", monotonic);
