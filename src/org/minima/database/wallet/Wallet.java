@@ -81,6 +81,9 @@ public class Wallet extends SqlDB {
 		
 	}
 	
+	/**
+	 * Create an initial set of keys / addresses to use
+	 */
 	public void initDefaultKeys() {
 		
 		//Get all the keys..
@@ -88,12 +91,12 @@ public class Wallet extends SqlDB {
 		
 		//Check we have the desired amount..
 		int numkeys = allkeys.size();
-		if(numkeys < 32) {
+		if(numkeys < 16) {
 			
 			MinimaLogger.log("Creating initial key set..");
 			
 			//Create the remaining keys
-			int create = 32 - numkeys;
+			int create = 16 - numkeys;
 			for(int i=0;i<create;i++) {
 				createNewKey();
 			}
@@ -114,6 +117,9 @@ public class Wallet extends SqlDB {
 		return allkeys.get(rand);
 	}
 	
+	/**
+	 * Create a NEW key
+	 */
 	public synchronized KeyRow createNewKey() {
 		
 		//Change has occurred
