@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.Random;
 
 import org.minima.objects.Address;
 import org.minima.objects.base.MiniData;
@@ -80,6 +81,39 @@ public class Wallet extends SqlDB {
 		
 	}
 	
+	public void initDefaultKeys() {
+		
+		//Get all the keys..
+		ArrayList<KeyRow> allkeys = getAllRelevant();
+		
+		//Check we have the desired amount..
+		int numkeys = allkeys.size();
+		if(numkeys < 32) {
+			
+			MinimaLogger.log("Creating initial key set..");
+			
+			//Create the remaining keys
+			int create = 32 - numkeys;
+			for(int i=0;i<create;i++) {
+				createNewKey();
+			}
+		}
+	}
+	
+	/**
+	 * Get 1 of your keys at random
+	 */
+	public KeyRow getKey() {
+		//Get all the keys..
+		ArrayList<KeyRow> allkeys = getAllRelevant();
+		int numkeys = allkeys.size();
+		
+		//Now pick a random key..
+		int rand = new Random().nextInt(numkeys);
+		
+		return allkeys.get(rand);
+	}
+	
 	public synchronized KeyRow createNewKey() {
 		
 		//Change has occurred
@@ -149,12 +183,13 @@ public class Wallet extends SqlDB {
 			//Could be multiple results
 			while(rs.next()) {
 				
-				//Get the txpowid
+				//Get the details
 				String publickey = rs.getString("publickey");
 				String address 	 = rs.getString("simpleaddress");
+				String script 	 = rs.getString("script");
 				
 				//Add to our list
-				allkeys.add(new KeyRow("",publickey, address,""));
+				allkeys.add(new KeyRow("",publickey, address, script));
 			}
 			
 		} catch (SQLException e) {

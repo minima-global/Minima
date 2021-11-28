@@ -10,6 +10,7 @@ import org.minima.system.commands.all.coins;
 import org.minima.system.commands.all.connect;
 import org.minima.system.commands.all.debugflag;
 import org.minima.system.commands.all.disconnect;
+import org.minima.system.commands.all.getaddress;
 import org.minima.system.commands.all.hashtest;
 import org.minima.system.commands.all.help;
 import org.minima.system.commands.all.incentivecash;
@@ -46,7 +47,7 @@ public abstract class Command {
 	public static final Command[] ALL_COMMANDS = 
 		{   new quit(), new status(), new coins(), new txpow(), new connect(), new disconnect(), new network(),
 			new message(), new trace(), new help(), new printtree(), new automine(), new printmmr(), new rpc(),
-			new send(), new balance(), new tokencreate(), new tokens(), new newaddress(), new debugflag(),
+			new send(), new balance(), new tokencreate(), new tokens(),new getaddress(), new newaddress(), new debugflag(),
 			new incentivecash(), new sshtunnel(), new webhooks(),
 			new backup(), new restore(), new test(), new hashtest(),
 			new runscript(), new tutorial(), 
