@@ -274,6 +274,13 @@ public class TxPoWChecker {
 			return false;
 		}
 		
+		//Check Burn Transaction Link Hash
+		if(!zTxPoW.getBurnTransaction().isEmpty()) {
+			
+			//..
+			
+		}
+		
 		//Check the Burn Transaction..
 		return checkTxPoWBasic(zTxPoW.getTxPoWID(), zTxPoW.getBurnTransaction(), zTxPoW.getBurnWitness());
 	}

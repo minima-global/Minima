@@ -156,6 +156,9 @@ public class TxPoWProcessor extends MessageProcessor {
 		TxPoWDB txpdb 		= MinimaDB.getDB().getTxPoWDB();
 		TxPowTree txptree 	= MinimaDB.getDB().getTxPoWTree();
 		
+		//Check the TxBlock basics..
+		//..TODO
+		
 		//Add the TxPoW to the database - in case we don't have it
 		txpdb.addTxPoW(zTxBlock.getTxPoW());
 		
