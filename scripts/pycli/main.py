@@ -112,7 +112,9 @@ def status(show_mobiles, no_summary, full, endpoint):
             node['not_accepting_conn_links']) + len(node['none_p2p_links'])
         status['in_sync'] = True
         status['is_mobile'] = node['is_mobile']
+        node_in_links = len(node['out_links'])
         out_links += len(node['out_links'])
+        node_out_links = len(node['in_links']) + len(node['not_accepting_conn_links']) + len(node['none_p2p_links'])
         incoming_links += len(node['in_links']) + len(node['not_accepting_conn_links']) + len(node['none_p2p_links'])
         ts = datetime.datetime.fromisoformat(node['timestamp'].split('.')[0].replace('Z', ''))
         max_expected_block_difference = max(((latest_update_time - ts) // datetime.timedelta(seconds=25)) + 10, 2)
@@ -143,6 +145,14 @@ def status(show_mobiles, no_summary, full, endpoint):
                 issues.append(f"Node is on a different chain - 50th Block Num: {node['50_block_number']}")
         if node['address'] == top_node_address:
             tip_string = '🔺'
+        if 'nio_inbound' in node.keys():
+            if node['nio_inbound'] != node_in_links:
+                is_okay = False
+                issues.append(f"NIO and P2P System reporting different num incoming links. NIO: {node['nio_inbound']} P2P: {node_in_links}")
+
+            if node['nio_outbound'] != node_out_links:
+                is_okay = False
+                issues.append(f"NIO and P2P System reporting different num out links. NIO: {node['nio_outbound']} P2P: {node_out_links}")
 
         issues_string = 'Issues: ' + ', '.join(issues) if len(issues) != 0 else ''
 
@@ -218,15 +228,19 @@ def network_map(endpoint):
     r = requests.get(endpoint)
 
 
-def create_map(data, dt):
+def create_map(data, dt, geo_data):
     valid_addresses = []
     valid_nodes = []
+    ip_data_map = map_ip_to_data(geo_data)
     for node in data:
         valid_addresses.append(node['address'].split(':')[0])
         valid_nodes.append(node)
-    geo_data = geo_locate_ips(valid_addresses)
+    ips_to_get = set(valid_addresses) - set(ip_data_map.keys())
+    new_geo_data = geo_locate_ips(list(ips_to_get))
+    geo_data += new_geo_data
     ip_data_map = map_ip_to_data(geo_data)
     df = pandas.DataFrame(geo_data)
+    df = df.dropna(subset=['lat', 'lon'])
 
     def one():
         for node in valid_nodes:
@@ -241,14 +255,17 @@ def create_map(data, dt):
                     else:
                         start = conn_address
                         end = node_address
-                    yield pandas.DataFrame([
-                        {
-                            'start_lat': ip_data_map[start]['lat'],
-                            'start_lon': ip_data_map[start]['lon'],
-                            'end_lat': ip_data_map[end]['lat'],
-                            'end_lon': ip_data_map[end]['lon']
-                        },
-                    ])
+                    try:
+                        yield pandas.DataFrame([
+                            {
+                                'start_lat': ip_data_map[start]['lat'],
+                                'start_lon': ip_data_map[start]['lon'],
+                                'end_lat': ip_data_map[end]['lat'],
+                                'end_lon': ip_data_map[end]['lon']
+                            },
+                        ])
+                    except Exception:
+                        pass
 
     df_links = pandas.concat(one())
 
@@ -257,7 +274,7 @@ def create_map(data, dt):
     df_nodes = df.groupby(['lat', 'lon']).first()
     cnt = df.groupby(['lat', 'lon']).count()
     df_nodes = df_nodes.join(cnt[['status']].rename(columns={'status': 'count'}))
-    df_nodes['node_size'] = 10 + ((df_nodes['count'] // df_nodes['count'].max()) * 5)
+    df_nodes['node_size'] = 20 + ((df_nodes['count'] // df_nodes['count'].max()) * 5)
     df_nodes = df_nodes.reset_index()
 
     country_count = df.groupby('country').count()[['query']]
@@ -270,6 +287,7 @@ def create_map(data, dt):
     plot(df_countries, df_links, df_nodes, valid_nodes, dt, 'light', False)
     plot(df_countries, df_links, df_nodes, valid_nodes, dt, 'dark', True)
     plot(df_countries, df_links, df_nodes, valid_nodes, dt, 'dark', False)
+    return geo_data
 
 
 def plot(df_countries, df_links, df_nodes, valid_nodes, dt, color_mode, lines):
@@ -410,17 +428,23 @@ def plot(df_countries, df_links, df_nodes, valid_nodes, dt, color_mode, lines):
     )
 
     lines_text = '_plus_lines' if lines else ''
-    fig.write_image(f"{dt.strftime('%Y%m%dT%H%M%S')}_{color_mode}{lines_text}.png", width=1920*2, height=1080*2)
+    line_folder = 'lines' if lines else 'no_lines'
+    fig.write_image(f"images/{color_mode}/{line_folder}/{dt.strftime('%Y%m%dT%H%M%S')}_{color_mode}{lines_text}.png", width=1920*2, height=1080*2)
 
 
 def geo_locate_ips(ips):
+    # print(f"Getting {len(ips)} ips")
     batches = math.ceil(len(ips) / 100)
     geo_data = []
     for i in range(1, batches + 1):
-        r = requests.post(
-            "http://ip-api.com/batch?fields=status,message,country,countryCode,region,regionName,city,lat,lon,query",
-            data=str(ips[(i - 1) * 100:(i * 100)]).replace('"', '').replace("'", '"'))
-        geo_data += r.json()
+        try:
+            r = requests.post(
+                "http://ip-api.com/batch?fields=status,message,country,countryCode,region,regionName,city,lat,lon,query",
+                data=str(ips[(i - 1) * 100:(i * 100)]).replace('"', '').replace("'", '"'))
+            geo_data += r.json()
+        except Exception:
+            print("Hit Issue getting ip data, sleeping for 10s")
+            time.sleep(10)
     return geo_data
 
 
@@ -440,14 +464,14 @@ def maps(endpoint):
 
     # geo = requests.get('https://app.ipapi.co/bulk/q=104.155.19.103%0D%0A109.37.159.90%0D%0A116.202.103.231%0D%0A135.181.152.131%0D%0A135.181.92.141%0D%0A139.59.137.30%0D%0A147.182.254.42%0D%0A147.78.66.147%0D%0A152.37.87.57%0D%0A161.97.127.66%0D%0A161.97.84.225%0D%0A164.68.96.105%0D%0A168.119.164.176%0D%0A176.249.17.125%0D%0A176.65.61.156%0D%0A178.150.235.149%0D%0A178.20.47.139%0D%0A185.194.219.116%0D%0A185.194.219.139%0D%0A185.195.27.137%0D%0A&key=&output=json')
 
-    files = sorted(glob.glob('*.json'))[-7:]
+    files = sorted(glob.glob('data/*.json'), reverse=True)
+    geo_data = []
     for file in files:
         print(file)
         dt = pandas.to_datetime('-'.join(file.split('.')[0].split('-')[2:])).to_pydatetime()
         with open(file) as json_file:
             data = json.load(json_file)
-            create_map(data, dt)
-            time.sleep(2)
+            geo_data = create_map(data, dt, geo_data)
 
     # import IPython
     # IPython.embed()
@@ -458,19 +482,21 @@ def video():
     import imageio as iio
     from pygifsicle import optimize
 
-    for post_fix in ['_light_plus_lines', '_light', '_dark_plus_lines', '_dark']:
-        images = list()
-        files = sorted(glob.glob(f'*{post_fix}.png'))
-        for file in files:
-            im = iio.imread(file)
-            images.append(im)
+    for color in ['dark', 'light']:
+        for lines in ['lines', 'no_lines']:
+            images = list()
+            files = sorted(glob.glob(f'images/{color}/{lines}/*.png'))
+            for file in files:
+                im = iio.imread(file)
+                images.append(im)
 
-        gif_path = f"nodemap{post_fix}.gif"
-        with iio.get_writer(gif_path, mode='I', fps=1) as writer:
-            for i in images:
-                writer.append_data(i)
+            gif_path = f"images/{color}/minima_network_{lines}.mp4"
+            fps = len(images) // 10
+            with iio.get_writer(gif_path, mode='I', fps=fps) as writer:
+                for i in images:
+                    writer.append_data(i)
 
-        optimize(gif_path, f"optimized{post_fix}.gif")
+            # optimize(gif_path, f"images/{color}/minima_network_{lines}_opt.gif")
 
 
 if __name__ == '__main__':

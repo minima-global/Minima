@@ -64,6 +64,8 @@ public class SwapLinksFunctions {
                     msgs.add(new Message(P2PManager.P2P_SEND_MSG).addString("uid", uid).addObject("json", requestIp));
                 }
             }
+        }  else {
+            MinimaLogger.log("[-] ERROR Client is null when processing connected");
         }
         return msgs;
     }
@@ -154,6 +156,8 @@ public class SwapLinksFunctions {
             } else {
                 state.getNotAcceptingConnP2PLinks().put(uid, minimaAddress);
             }
+        } else {
+            MinimaLogger.log("[-] ERROR Client is null when processing greeting: " + greeting.toJson());
         }
         return noconnect;
     }

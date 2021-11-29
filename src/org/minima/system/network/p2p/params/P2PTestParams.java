@@ -14,12 +14,13 @@ public class P2PTestParams {
     /**
      * Desired number of client (nodes that can't accept inbound connections) to maintain
      */
-    public static int TGT_NUM_NONE_P2P_LINKS = 50;
+    public static int TGT_NUM_NONE_P2P_LINKS = 5;
 
     /**
      * Desired number of connections clients should maintain
+     * For testing this number is set higher to test load balancing
      */
-    public static int MIN_NUM_CONNECTIONS = 3;
+    public static int MIN_NUM_CONNECTIONS = 10;
 
     /**
      * Time between P2P system assessing its state in milliseconds
