@@ -64,11 +64,16 @@ def status(show_mobiles, no_summary, full, endpoint, failed_only):
     current_hash = ''
     previous_hash = ''
     valid_addresses = []
+    versions = {}
     # Step 1 get latest timestamp
     for node in r.json():
         major, minor, build = node['minima_version'].split('.')
         if (major == '0') and (minor == '100') and (int(build) >= 13):
             valid_addresses.append(node['address'])
+            if node['minima_version'] in versions.keys():
+                versions[node['minima_version']] += 1
+            else:
+                versions[node['minima_version']] = 1
             if node['is_mobile'] == 'True':
                 valid_nodes_mobile.append(node)
             else:
@@ -161,10 +166,11 @@ def status(show_mobiles, no_summary, full, endpoint, failed_only):
         in_sync = '♻️' if status['in_sync'] else '❌'
         node_icon = '📱' if status['is_mobile'] == 'True' else '🖥️'
         p2p_node = '🐙' if status['has_external_ip'] == 'True' else '  '
+        padding = ' ' * (20 - len(status['address']))
         if (show_mobiles and (status['is_mobile'] == 'True')) or (status['is_mobile'] != 'True'):
             if not failed_only or (failed_only and not is_okay):
                 node_status.append(
-                f"\t {status_icon}{tip_string}{node_icon}\t{p2p_node}  {status['address']}\t Version: {status['minima_version']} Connections: {status['total_links']}\t In-Sync: {in_sync}\t {issues_string}")
+                f"\t {status_icon}{tip_string}{node_icon}\t{p2p_node}  {status['address']}{padding}\t Version: {status['minima_version']} Connections: {status['total_links']}\t In-Sync: {in_sync}\t {issues_string}")
 
         if (status['is_mobile'] != 'True') and (status['has_external_ip'] == 'True'):
             if is_okay:
@@ -197,6 +203,11 @@ def status(show_mobiles, no_summary, full, endpoint, failed_only):
         click.echo("\t ------------")
         click.echo(f"\t Total In:  {incoming_links}")
         click.echo(f"\t Total Out: {out_links}")
+        click.echo("\t ------------")
+        click.echo("\t Versions")
+        click.echo("\t ------------")
+        for key in sorted(versions.keys(), reverse=True):
+            click.echo(f"\t Version: {key} Num: {versions[key]}")
         click.echo("\t ------------")
         click.echo(p2p_string)
         click.echo(pc_string)
@@ -453,19 +464,6 @@ def geo_locate_ips(ips):
 @cli.command()
 @click.option('--endpoint', help='network data endpoint')
 def maps(endpoint):
-    # r = requests.get(endpoint)
-    # valid_addresses = set()
-    # valid_nodes = []
-    # for node in r.json():
-    #     major, minor, build = node['minima_version'].split('.')
-    #     if (major == '0') and (minor == '100') and (int(build) >= 13):
-    #         valid_addresses.add(node['address'].split(':')[0])
-
-    # for node in sorted(valid_addresses):
-    #     print(node)
-
-    # geo = requests.get('https://app.ipapi.co/bulk/q=104.155.19.103%0D%0A109.37.159.90%0D%0A116.202.103.231%0D%0A135.181.152.131%0D%0A135.181.92.141%0D%0A139.59.137.30%0D%0A147.182.254.42%0D%0A147.78.66.147%0D%0A152.37.87.57%0D%0A161.97.127.66%0D%0A161.97.84.225%0D%0A164.68.96.105%0D%0A168.119.164.176%0D%0A176.249.17.125%0D%0A176.65.61.156%0D%0A178.150.235.149%0D%0A178.20.47.139%0D%0A185.194.219.116%0D%0A185.194.219.139%0D%0A185.195.27.137%0D%0A&key=&output=json')
-
     files = sorted(glob.glob('data/*.json'), reverse=True)
     geo_data = []
     for file in files:
@@ -474,9 +472,6 @@ def maps(endpoint):
         with open(file) as json_file:
             data = json.load(json_file)
             geo_data = create_map(data, dt, geo_data)
-
-    # import IPython
-    # IPython.embed()
 
 
 @cli.command()
@@ -500,6 +495,35 @@ def video():
 
             # optimize(gif_path, f"images/{color}/minima_network_{lines}_opt.gif")
 
+
+@cli.command()
+@click.option('--endpoint', help='network data endpoint')
+def network_health(endpoint):
+    import networkx as nx
+    import numpy
+    G = nx.Graph()
+
+
+    r = requests.get(endpoint)
+    valid_addresses = []
+    valid_nodes = []
+    for node in r.json():
+        major, minor, build = node['minima_version'].split('.')
+        if (major == '0') and (minor == '100') and (int(build) >= 13):
+            valid_addresses.append(node['address'])
+            valid_nodes.append(node)
+
+    G.add_nodes_from(valid_addresses)
+
+    for node in valid_nodes:
+        for link in node['out_links']:
+            if link in valid_addresses:
+                G.add_edge(node['address'], link)
+
+    dc = nx.average_degree_connectivity(G)
+    connectivity = numpy.mean(list(dc.values()))
+    diameter = nx.diameter(G)
+    average_clustering = nx.average_clustering(G)
 
 if __name__ == '__main__':
     cli()
