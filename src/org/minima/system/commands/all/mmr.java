@@ -13,7 +13,7 @@ import org.minima.utils.Crypto;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
-public class mmrcreate extends Command {
+public class mmr extends Command {
 
 	public class mmrleafnode{
 		
@@ -25,8 +25,8 @@ public class mmrcreate extends Command {
 		public mmrleafnode() {}
 	}
 	
-	public mmrcreate() {
-		super("mmrcreate","[nodes:[]] - Create an MMR Tree of data. Nodes can be STRING / HEX");
+	public mmr() {
+		super("mmr","[nodes:[]] - Create an MMR Tree of data. Nodes can be STRING / HEX");
 	}
 	
 	@Override
@@ -116,7 +116,7 @@ public class mmrcreate extends Command {
 
 	@Override
 	public Command getFunction() {
-		return new mmrcreate();
+		return new mmr();
 	}
 
 }

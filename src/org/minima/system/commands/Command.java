@@ -16,7 +16,7 @@ import org.minima.system.commands.all.help;
 import org.minima.system.commands.all.incentivecash;
 import org.minima.system.commands.all.message;
 import org.minima.system.commands.all.missingcmd;
-import org.minima.system.commands.all.mmrcreate;
+import org.minima.system.commands.all.mmr;
 import org.minima.system.commands.all.mmrproof;
 import org.minima.system.commands.all.network;
 import org.minima.system.commands.all.newaddress;
@@ -51,7 +51,7 @@ public abstract class Command {
 			new incentivecash(), new sshtunnel(), new webhooks(),
 			new backup(), new restore(), new test(), new hashtest(),
 			new runscript(), new tutorial(), 
-			new mmrcreate(), new mmrproof()};
+			new mmr(), new mmrproof()};
 	
 	String mName;
 	String mHelp;

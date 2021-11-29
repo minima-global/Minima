@@ -38,7 +38,7 @@ public class help extends Command {
 		addCommand(details, new runscript());
 		addCommand(details, new tutorial());
 		
-		addCommand(details, new mmrcreate());
+		addCommand(details, new mmr());
 		addCommand(details, new mmrproof());
 		
 		addCommand(details, new network());
