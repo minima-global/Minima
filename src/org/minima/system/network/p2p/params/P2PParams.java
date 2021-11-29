@@ -22,7 +22,7 @@ public class P2PParams {
     /**
      * Desired number of connections clients should maintain
      */
-    public static int MIN_NUM_CONNECTIONS = 2;
+    public static int MIN_NUM_CONNECTIONS = 3;
 
     /**
      * Time between P2P system assessing its state in milliseconds
