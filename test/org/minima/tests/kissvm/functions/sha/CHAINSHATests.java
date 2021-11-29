@@ -29,12 +29,12 @@ public class CHAINSHATests {
         PROOF fn = new PROOF();
         MinimaFunction mf = fn.getNewFunction();
 
-        assertEquals("CHAINSHA", mf.getName());
+        assertEquals("PROOF", mf.getName());
         assertEquals(0, mf.getParameterNum());
 
         try {
-            mf = MinimaFunction.getFunction("CHAINSHA");
-            assertEquals("CHAINSHA", mf.getName());
+            mf = MinimaFunction.getFunction("PROOF");
+            assertEquals("PROOF", mf.getName());
             assertEquals(0, mf.getParameterNum());
         } catch (MinimaParseException ex) {
             fail();
