@@ -130,6 +130,8 @@ public class Transaction implements Streamable {
 		return tot;
 	}
 	
+	
+	
 	/**
 	 * You only need to check that there are enough Inputs for the Outputs.
 	 * The rest is BURN..
@@ -320,6 +322,13 @@ public class Transaction implements Streamable {
 	 */
 	public MiniData getLinkHash() {
 		return mLinkHash;
+	}
+	
+	/**
+	 * This is only used for the Burn Transaction
+	 */
+	public void setLinkHash(MiniData zLinkHash) {
+		mLinkHash = zLinkHash;				
 	}
 	
 	/**

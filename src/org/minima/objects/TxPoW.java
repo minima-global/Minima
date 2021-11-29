@@ -191,6 +191,14 @@ public class TxPoW implements Streamable {
 		return mBody.mWitness;
 	}
 	
+	public void setBurnTransaction(Transaction zTran) {
+		//Make sure this is set
+		mBody.mTransaction.calculateTransactionID();
+		
+		//Set the Burn..
+		mBody.mBurnTransaction.setLinkHash(mBody.mTransaction.getTransactionID());
+	}
+	
 	public Witness getBurnWitness() {
 		return mBody.mBurnWitness;
 	}
