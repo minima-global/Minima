@@ -253,7 +253,7 @@ public class tutorial extends Command {
 				+ "--\n"
 				+ "\n"
 				+ "LET x = STATE ( 23 )\n"
-				+ "LET shax = SHA3 ( x )\n"
+				+ "LET shax = KECCAK ( x )\n"
 				+ "IF shax EQ 0x6785456.. AND SIGNEDBY ( 0x12345.. ) THEN \n"
 				+ "  RETURN TRUE \n"
 				+ "ENDIF\n"
