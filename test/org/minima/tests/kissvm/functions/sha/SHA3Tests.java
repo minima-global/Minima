@@ -32,12 +32,12 @@ public class SHA3Tests {
         KECCAK fn = new KECCAK();
         MinimaFunction mf = fn.getNewFunction();
 
-        assertEquals("SHA3", mf.getName());
+        assertEquals("KECCAK", mf.getName());
         assertEquals(0, mf.getParameterNum());
 
         try {
-            mf = MinimaFunction.getFunction("SHA3");
-            assertEquals("SHA3", mf.getName());
+            mf = MinimaFunction.getFunction("KECCAK");
+            assertEquals("KECCAK", mf.getName());
             assertEquals(0, mf.getParameterNum());
         } catch (MinimaParseException ex) {
             fail();
@@ -57,7 +57,7 @@ public class SHA3Tests {
                     HexValue Result = new HexValue(Crypto.getInstance().hashData(Param.getRawData(), j));
 
                     MinimaFunction mf = fn.getNewFunction();
-                    mf.addParameter(new ConstantExpression(new NumberValue(j)));
+                    //mf.addParameter(new ConstantExpression(new NumberValue(j)));
                     mf.addParameter(new ConstantExpression(Param));
                     try {
                         Value res = mf.runFunction(ctr);
@@ -78,7 +78,7 @@ public class SHA3Tests {
                     HexValue Result = new HexValue(Crypto.getInstance().hashData(strdata.getBytes(), j));
 
                     MinimaFunction mf = fn.getNewFunction();
-                    mf.addParameter(new ConstantExpression(new NumberValue(j)));
+                    //mf.addParameter(new ConstantExpression(new NumberValue(j)));
                     mf.addParameter(new ConstantExpression(Param));
                     try {
                         Value res = mf.runFunction(ctr);
