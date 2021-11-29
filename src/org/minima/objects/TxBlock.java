@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import org.minima.database.mmr.MMR;
+import org.minima.database.mmr.MMRData;
 import org.minima.database.mmr.MMREntry;
 import org.minima.database.mmr.MMREntryNumber;
 import org.minima.database.mmr.MMRProof;
@@ -269,6 +270,26 @@ public class TxBlock implements Streamable {
 	
 	public ArrayList<MMREntry> getPreviousPeaks(){
 		return mPreviousPeaks;
+	}
+	
+	public MMRData getPreviousMMRRoot() {
+		
+		//Add all the peaks to a new MMR
+		MMR prevmmr = new MMR();
+		for(MMREntry peak : mPreviousPeaks) {
+			prevmmr.setEntry(peak.getRow(), peak.getEntryNumber(), peak.getMMRData());
+		}
+		
+		//Calculate the root
+		return prevmmr.getRoot();
+	}
+	
+	/**
+	 * Check that all the spent coins are in fact UNSPENT and UNIQUE
+	 */
+	public boolean checkDataIntegrity() {
+		//TODO
+		return true;
 	}
 	
 	public ArrayList<CoinProof> getInputCoinProofs(){
