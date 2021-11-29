@@ -27,7 +27,8 @@ public class help extends Command {
 		addCommand(details, new txpow());
 		addCommand(details, new coins());
 		
-		addCommand(details, new newaddress());
+//		addCommand(details, new newaddress());
+		addCommand(details, new getaddress());
 		addCommand(details, new send());
 		addCommand(details, new balance());
 		

@@ -173,7 +173,7 @@ public class MinimaDB {
 			//Load the wallet
 			File walletsqlfolder = new File(basedb,"walletsql");
 			mWallet.loadDB(new File(walletsqlfolder,"wallet"));
-			//mWallet.initDefaultKeys();
+			mWallet.initDefaultKeys();
 			
 			//Load the SQL DB
 			File txpowsqlfolder = new File(basedb,"txpowsql");

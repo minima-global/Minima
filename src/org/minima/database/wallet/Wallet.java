@@ -91,12 +91,12 @@ public class Wallet extends SqlDB {
 		
 		//Check we have the desired amount..
 		int numkeys = allkeys.size();
-		if(numkeys < 16) {
+		if(numkeys < 32) {
 			
 			MinimaLogger.log("Creating initial key set..");
 			
 			//Create the remaining keys
-			int create = 16 - numkeys;
+			int create = 32 - numkeys;
 			for(int i=0;i<create;i++) {
 				createNewKey();
 			}

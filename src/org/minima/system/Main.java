@@ -267,7 +267,7 @@ public class Main extends MessageProcessor {
 	private void doGenesis() {
 		
 		//Create a new key - to receive the genesis funds..
-		KeyRow genkey = MinimaDB.getDB().getWallet().createNewKey();
+		KeyRow genkey = MinimaDB.getDB().getWallet().getKey();
 		
 		//Create the Genesis TxPoW..
 		GenesisTxPoW genesis = new GenesisTxPoW(genkey.getAddress());
