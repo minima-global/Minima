@@ -47,8 +47,9 @@ def cli():
 @click.option('--show-mobiles/--no-mobiles', default=False, help='Show mobile nodes')
 @click.option('--no-summary/--summary', default=False, help='Hide Summary')
 @click.option('--full/--hide-full', default=False, help='Show Full Report')
+@click.option('--failed-only/--all', default=False, help='Show Full Report')
 @click.option('--endpoint', help='network data endpoint')
-def status(show_mobiles, no_summary, full, endpoint):
+def status(show_mobiles, no_summary, full, endpoint, failed_only):
     """Checks the status of the network"""
 
     r = requests.get(endpoint)
@@ -112,9 +113,9 @@ def status(show_mobiles, no_summary, full, endpoint):
             node['not_accepting_conn_links']) + len(node['none_p2p_links'])
         status['in_sync'] = True
         status['is_mobile'] = node['is_mobile']
-        node_in_links = len(node['out_links'])
+        node_out_links = len(node['out_links'])
         out_links += len(node['out_links'])
-        node_out_links = len(node['in_links']) + len(node['not_accepting_conn_links']) + len(node['none_p2p_links'])
+        node_in_links = len(node['in_links']) + len(node['not_accepting_conn_links']) + len(node['none_p2p_links'])
         incoming_links += len(node['in_links']) + len(node['not_accepting_conn_links']) + len(node['none_p2p_links'])
         ts = datetime.datetime.fromisoformat(node['timestamp'].split('.')[0].replace('Z', ''))
         max_expected_block_difference = max(((latest_update_time - ts) // datetime.timedelta(seconds=25)) + 10, 2)
@@ -161,7 +162,8 @@ def status(show_mobiles, no_summary, full, endpoint):
         node_icon = '📱' if status['is_mobile'] == 'True' else '🖥️'
         p2p_node = '🐙' if status['has_external_ip'] == 'True' else '  '
         if (show_mobiles and (status['is_mobile'] == 'True')) or (status['is_mobile'] != 'True'):
-            node_status.append(
+            if not failed_only or (failed_only and not is_okay):
+                node_status.append(
                 f"\t {status_icon}{tip_string}{node_icon}\t{p2p_node}  {status['address']}\t Version: {status['minima_version']} Connections: {status['total_links']}\t In-Sync: {in_sync}\t {issues_string}")
 
         if (status['is_mobile'] != 'True') and (status['has_external_ip'] == 'True'):
