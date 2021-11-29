@@ -19,7 +19,6 @@ import org.minima.system.commands.all.missingcmd;
 import org.minima.system.commands.all.mmr;
 import org.minima.system.commands.all.mmrproof;
 import org.minima.system.commands.all.network;
-import org.minima.system.commands.all.newaddress;
 import org.minima.system.commands.all.printmmr;
 import org.minima.system.commands.all.printtree;
 import org.minima.system.commands.all.quit;
