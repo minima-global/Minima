@@ -154,11 +154,11 @@ def status(show_mobiles, no_summary, full, endpoint, failed_only):
         if 'nio_inbound' in node.keys():
             if node['nio_inbound'] != node_in_links:
                 is_okay = False
-                issues.append(f"NIO and P2P System reporting different num incoming links. NIO: {node['nio_inbound']} P2P: {node_in_links}")
+                issues.append(f"Different num in links reported. NIO: {node['nio_inbound']} P2P: {node_in_links} Diff: {node['nio_inbound'] - node_in_links}")
 
             if node['nio_outbound'] != node_out_links:
                 is_okay = False
-                issues.append(f"NIO and P2P System reporting different num out links. NIO: {node['nio_outbound']} P2P: {node_out_links}")
+                issues.append(f"Different num out links reported. NIO: {node['nio_outbound']} P2P: {node_out_links} Diff: {node['nio_outbound'] - node_out_links}")
 
         issues_string = 'Issues: ' + ', '.join(issues) if len(issues) != 0 else ''
 
