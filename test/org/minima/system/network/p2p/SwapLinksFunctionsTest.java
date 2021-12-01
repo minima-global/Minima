@@ -31,39 +31,6 @@ public class SwapLinksFunctionsTest extends TestCase {
         outConnectMsg = new Message().addString("uid", "uid1").addBoolean("incoming", false);
     }
 
-    public void testOnConnectedInLink() throws UnknownHostException {
-        P2PState state = QuickState.stateNoConnections(true);
-        NIOClientInfo client = new NIOClientInfo("uid1", "192.168.0.1", 9001, true);
-        List<Message> out = SwapLinksFunctions.onConnected(state, "uid1", true, client);
-        assertEquals(1, out.size());
-        assertTrue(out.get(0).isMessageType(P2PManager.P2P_SEND_MSG));
-        JSONObject json = (JSONObject) out.get(0).getObject("json");
-        assertEquals(noConnectionsGreetingJson, json.toString());
-        assertFalse(state.getNoneP2PLinks().isEmpty());
-    }
-
-    public void testOnConnectedOutLink() throws UnknownHostException {
-        P2PState state = QuickState.stateNoConnections(true);
-        NIOClientInfo client = new NIOClientInfo("uid1", "192.168.0.1", 9001, false);
-        List<Message> out = SwapLinksFunctions.onConnected(state, "uid1", false, client);
-        assertEquals(1, out.size());
-        assertTrue(out.get(0).isMessageType(P2PManager.P2P_SEND_MSG));
-        JSONObject json = (JSONObject) out.get(0).getObject("json");
-        assertEquals(noConnectionsGreetingJson, json.toString());
-        assertFalse(state.getNoneP2PLinks().isEmpty());
-    }
-
-    public void testOnConnectedMinimaAddressNotSet() throws UnknownHostException {
-        P2PState state = QuickState.stateNoConnections(false);
-        NIOClientInfo client = new NIOClientInfo("uid1", "192.168.0.1", 9001, false);
-        List<Message> out = SwapLinksFunctions.onConnected(state, "uid1", false, client);
-        assertTrue(out.get(0).isMessageType(P2PManager.P2P_SEND_MSG));
-        assertTrue(out.get(1).isMessageType(P2PManager.P2P_SEND_MSG));
-        JSONObject json = (JSONObject) out.get(0).getObject("json");
-        assertFalse(state.getNoneP2PLinks().isEmpty());
-    }
-
-
     public void testOnDisconnectedKnownPeer() throws UnknownHostException {
         P2PState state = QuickState.stateInLinkKnownPeerOnly();
         Message msg = new Message().addString("uid", "knownPeer").addBoolean("incoming", true).addBoolean("reconnect", false);

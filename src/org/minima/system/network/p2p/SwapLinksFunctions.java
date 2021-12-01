@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.minima.objects.base.MiniData;
+import org.minima.system.network.minima.NIOClient;
 import org.minima.system.network.minima.NIOClientInfo;
 import org.minima.system.network.p2p.messages.P2PGreeting;
 import org.minima.system.network.p2p.messages.P2PWalkLinks;
@@ -31,41 +32,37 @@ public class SwapLinksFunctions {
      * Sends a request for its IP if the node's minima address has not been set yet
      *
      * @param state    the current P2P State
-     * @param uid      the uid of the client that just connected
      * @param incoming if the connection is an incoming one
      * @param info     NIOClientInfo for the client that just connected
      * @return a list of messages to be sent (greeting and possible a request IP message)
      */
-    public static List<Message> onConnected(P2PState state, String uid, boolean incoming, NIOClientInfo info) {
+    public static List<Message> onConnected(P2PState state,boolean incoming, NIOClient info) {
         List<Message> msgs = new ArrayList<>();
         //Get the details
-        if(info != null) {
-            boolean sendMessages = true;
-            if (incoming) {
-                InetSocketAddress incomingAddress = new InetSocketAddress(info.getHost(), 0);
-                if (state.getNoneP2PLinks().containsValue(incomingAddress)) {
-                    msgs.add(new Message(P2PManager.P2P_SEND_DISCONNECT).addString("uid", uid));
-                    sendMessages = false;
-                }
-                state.getNoneP2PLinks().put(uid, new InetSocketAddress(info.getHost(), 0));
-            } else {
-                state.getNoneP2PLinks().put(uid, new InetSocketAddress(info.getHost(), info.getPort()));
+        String uid = info.getUID();
+        boolean sendMessages = true;
+        if (incoming) {
+            InetSocketAddress incomingAddress = new InetSocketAddress(info.getHost(), 0);
+            if (state.getNoneP2PLinks().containsValue(incomingAddress)) {
+                msgs.add(new Message(P2PManager.P2P_SEND_DISCONNECT).addString("uid", uid));
+                sendMessages = false;
             }
+            state.getNoneP2PLinks().put(uid, new InetSocketAddress(info.getHost(), 0));
+        } else {
+            state.getNoneP2PLinks().put(uid, new InetSocketAddress(info.getHost(), info.getPort()));
+        }
 
-            if (sendMessages) {
-                P2PGreeting greeting = new P2PGreeting(state);
-                msgs.add(new Message(P2PManager.P2P_SEND_MSG).addString("uid", uid).addObject("json", greeting.toJson()));
+        if (sendMessages) {
+            P2PGreeting greeting = new P2PGreeting(state);
+            msgs.add(new Message(P2PManager.P2P_SEND_MSG).addString("uid", uid).addObject("json", greeting.toJson()));
 
-                if (!state.isHostSet()) {
-                    JSONObject requestIp = new JSONObject();
-                    MiniData secret = MiniData.getRandomData(12);
-                    state.setIpReqSecret(secret);
-                    requestIp.put("req_ip", secret.toString());
-                    msgs.add(new Message(P2PManager.P2P_SEND_MSG).addString("uid", uid).addObject("json", requestIp));
-                }
+            if (!state.isHostSet()) {
+                JSONObject requestIp = new JSONObject();
+                MiniData secret = MiniData.getRandomData(12);
+                state.setIpReqSecret(secret);
+                requestIp.put("req_ip", secret.toString());
+                msgs.add(new Message(P2PManager.P2P_SEND_MSG).addString("uid", uid).addObject("json", requestIp));
             }
-        }  else {
-            MinimaLogger.log("[-] ERROR Client is null when processing connected");
         }
         return msgs;
     }

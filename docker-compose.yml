@@ -25,7 +25,7 @@ services:
 
   minima_peer:
     image: minima:latest
-    command: -daemon -test -port 9121 -p2pnode minima_one:8001 -clean 
+    command: -daemon -test -port 9121 -p2pnode minima_one:9001 -clean
     networks:
       minima_testnet:
         aliases:

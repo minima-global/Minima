@@ -147,10 +147,8 @@ public class P2PManager extends MessageProcessor {
     }
 
     public static List<Message> connect(Message zMessage, P2PState state) {
-        String uid = zMessage.getString("uid");
-        boolean incoming = zMessage.getBoolean("incoming");
-        NIOClientInfo info = P2PFunctions.getNIOCLientInfo(uid);
-        List<Message> msgs = SwapLinksFunctions.onConnected(state, uid, incoming, info);
+        NIOClient info = (NIOClient) zMessage.getObject("client");
+        List<Message> msgs = SwapLinksFunctions.onConnected(state, info.isIncoming(), info);
         msgs.addAll(SwapLinksFunctions.onConnectedLoadBalanceRequest(state, P2PFunctions.getAllConnections()));
         return msgs;
     }

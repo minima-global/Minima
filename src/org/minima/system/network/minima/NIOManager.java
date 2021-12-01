@@ -292,6 +292,7 @@ public class NIOManager extends MessageProcessor {
 			Message newconn = new Message(P2PFunctions.P2P_CONNECTED);
 			newconn.addString("uid", nioc.getUID());
 			newconn.addBoolean("incoming", nioc.isIncoming());
+			newconn.addObject("client", nioc);
 			Main.getInstance().getNetworkManager().getP2PManager().PostMessage(newconn);
 			
 			MinimaLogger.log("INFO : "+nioc.getUID()+" connection success @ "+nioc.getHost());
