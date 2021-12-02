@@ -85,7 +85,6 @@ public class SwapLinksFunctions {
             P2PWalkLinks walkLinks = new P2PWalkLinks(true, false, minimaClient.getUID());
             walkLinks.setClientWalk(true);
             msgs.add(new Message(P2PManager.P2P_SEND_MSG).addString("uid", minimaClient.getUID()).addObject("json", walkLinks.toJson()));
-            MinimaLogger.log("[+] Sending client load balance request: " + walkLinks.toJson().toString());
         }
         return msgs;
     }

@@ -234,7 +234,6 @@ public class WalkLinksFuncs {
         InetSocketAddress connectTargetAddress = msg.getPathTaken().get(msg.getPathTaken().size() - 1);
         if (!connectTargetAddress.equals(state.getMyMinimaAddress())) {
             state.getKnownPeers().add(connectTargetAddress);
-            MinimaLogger.log("[!] P2P_WALK_LINKS_RESPONSE: CLIENT creating do swap messages");
             returnMessage.addAll(genLoadBalanceDoSwaps(state, connectTargetAddress, msg.getAvailableNoneP2PConnectionSlots()));
 
         } else {
