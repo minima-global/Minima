@@ -3,8 +3,6 @@ version: '3.7'
 networks:
   minima_testnet:
     name: minima_testnet
-  outside_minima_testnet:
-    name: outside_minima_testnet
 
 services:
   minima_one:

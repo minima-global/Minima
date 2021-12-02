@@ -40,6 +40,8 @@ public class P2PParams {
      */
     public static int NODE_NOT_ACCEPTING_CHECK_DELAY = 3600_000;
 
+    public static int SAVE_DATA_DELAY = 3600_000;
+
     /**
      * Time in ms before walk link messages expire
      */

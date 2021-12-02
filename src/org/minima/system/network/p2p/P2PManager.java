@@ -36,6 +36,8 @@ public class P2PManager extends MessageProcessor {
     public static final String P2P_SEND_DISCONNECT = "P2P_SEND_DISCONNECT";
     public static final String P2P_METRICS = "P2P_METRICS";
 
+    public static final String P2P_SAVE_DATA= "P2P_SAVE_DATA";
+
     public static final String ADDRESS_LITERAL = "address";
 
     private static final Random rand = new Random();
@@ -51,6 +53,7 @@ public class P2PManager extends MessageProcessor {
         //And start the loop timer..
         PostTimerMessage(new TimerMessage(10_000, P2P_LOOP));
         PostTimerMessage(new TimerMessage(P2PParams.NODE_NOT_ACCEPTING_CHECK_DELAY, P2P_ASSESS_CONNECTIVITY));
+        PostTimerMessage(new TimerMessage(P2PParams.SAVE_DATA_DELAY, P2P_SAVE_DATA));
     }
 
     protected static List<Message> processWalkLinksMsg(JSONObject zMessage, NIOClientInfo clientInfo, P2PState state) {
@@ -300,6 +303,10 @@ public class P2PManager extends MessageProcessor {
             PostTimerMessage(new TimerMessage(P2PParams.METRICS_DELAY, P2P_METRICS));
         } else if (zMessage.isMessageType(P2PFunctions.P2P_SHUTDOWN)) {
             shutdown();
+        }else if (zMessage.isMessageType(P2P_SAVE_DATA)) {
+            P2PDB p2pdb = MinimaDB.getDB().getP2PDB();
+            p2pdb.setPeersList(new ArrayList<>(state.getKnownPeers()));
+            PostTimerMessage(new TimerMessage(P2PParams.SAVE_DATA_DELAY, P2P_SAVE_DATA));
         } else if (zMessage.isMessageType(P2PFunctions.P2P_CONNECTED)) {
             String uid = zMessage.getString("uid");
             NIOClient client = (NIOClient) zMessage.getObject("client");

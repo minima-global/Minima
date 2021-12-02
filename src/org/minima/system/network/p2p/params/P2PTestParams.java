@@ -38,6 +38,9 @@ public class P2PTestParams {
      */
     public static int NODE_NOT_ACCEPTING_CHECK_DELAY = 60_000;
 
+
+    public static int SAVE_DATA_DELAY = 60_000;
+
     /**
      * Time in ms before walk link messages expire
      */
@@ -68,6 +71,7 @@ public class P2PTestParams {
         P2PParams.MIN_NUM_CONNECTIONS = MIN_NUM_CONNECTIONS;
         P2PParams.METRICS_DELAY = METRICS_DELAY;
         P2PParams.METRICS_URL = METRICS_URL;
+        P2PParams.SAVE_DATA_DELAY = SAVE_DATA_DELAY;
     }
 
 
