@@ -97,26 +97,6 @@ public class SwapLinksFunctionsTest extends TestCase {
         assertEquals(secret, (String) ((JSONObject) respMsg.get("swap_links_p2p")).get("secret"));
     }
 
-    public void testProcessResponseIPMsg() throws UnknownHostException {
-        JSONObject json = new JSONObject();
-        MiniData secret = MiniData.getRandomData(12);
-        P2PState state = QuickState.stateInAndOutLinks(1, 2, 0);
-        state.setMyMinimaAddress("127.0.0.1");
-        state.setIpReqSecret(secret);
-        state.setKnownPeers(new HashSet<>());
-        state.getKnownPeers().add(new InetSocketAddress("147.258.369.1", 9001));
-
-
-        json.put("req_ip", secret.toString());
-        JSONObject respMsg = SwapLinksFunctions.processRequestIPMsg(json, "147.258.369.1");
-        respMsg = (JSONObject) respMsg.get("swap_links_p2p");
-
-        SwapLinksFunctions.processResponseIPMsg(state, respMsg);
-
-        assertEquals(new InetSocketAddress("147.258.369.1", GeneralParams.MINIMA_PORT), state.getMyMinimaAddress());
-        assertTrue(state.getKnownPeers().isEmpty());
-    }
-
     public void testProcessResponseIPMsgIncorrectSecret() throws UnknownHostException {
         JSONObject json = new JSONObject();
         MiniData secret = MiniData.getRandomData(12);

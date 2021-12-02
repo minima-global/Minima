@@ -32,8 +32,8 @@ public class P2PManager extends MessageProcessor {
 
     public static final String P2P_SEND_MSG = "P2P_SEND_MSG";
     public static final String P2P_SEND_MSG_TO_ALL = "P2P_SEND_MSG_TO_ALL";
-    public static final String P2P_SEND_CONNECT = "P2P_CONNECT";
-    public static final String P2P_SEND_DISCONNECT = "P2P_DISCONNECT";
+    public static final String P2P_SEND_CONNECT = "P2P_SEND_CONNECT";
+    public static final String P2P_SEND_DISCONNECT = "P2P_SEND_DISCONNECT";
     public static final String P2P_METRICS = "P2P_METRICS";
     public static final String P2P_CLEANUP_LOST_CONNECTION = "P2P_CLEANUP_LOST_CONNECTION";
 
@@ -177,7 +177,12 @@ public class P2PManager extends MessageProcessor {
                 SwapLinksFunctions.processResponseIPMsg(state, swapLinksMsg);
             }
             if (swapLinksMsg.containsKey("notAcceptingMsg")) {
-                state.getNotAcceptingConnP2PLinks().put(uid, state.getInLinks().remove(uid));
+                state.getInLinks().remove(uid);
+                state.getOutLinks().remove(uid);
+                state.getNotAcceptingConnP2PLinks().remove(uid);
+                state.getNoneP2PLinks().remove(uid);
+
+                state.getNotAcceptingConnP2PLinks().put(uid, state.getAllLinks().get(uid));
             }
             if (swapLinksMsg.containsKey("walk_links")) {
                 sendMsgs.addAll(processWalkLinksMsg(swapLinksMsg, client, state));
@@ -306,6 +311,7 @@ public class P2PManager extends MessageProcessor {
         ret.put("numNotAcceptingConnP2PLinks", state.getNotAcceptingConnP2PLinks().size());
         ret.put("numNoneP2PLinks", state.getNoneP2PLinks().size());
         ret.put("numKnownPeers", state.getKnownPeers().size());
+        ret.put("numAllLinks", state.getAllLinks().size());
         ret.put("nio_inbound", numInbound);
         ret.put("nio_outbound", numOutbound);
         if (fullDetails && state.getMyMinimaAddress() != null && state.isAcceptingInLinks()) {
@@ -336,8 +342,13 @@ public class P2PManager extends MessageProcessor {
         } else if (zMessage.isMessageType(P2PFunctions.P2P_SHUTDOWN)) {
             shutdown();
         } else if (zMessage.isMessageType(P2PFunctions.P2P_CONNECTED)) {
+            String uid = zMessage.getString("uid");
+            NIOClient client = (NIOClient) zMessage.getObject("client");
+            state.getAllLinks().put(uid, new InetSocketAddress(client.getHost(), client.getPort()));
             sendMsgs.addAll(connect(zMessage, state));
         } else if (zMessage.isMessageType(P2PFunctions.P2P_DISCONNECTED)) {
+            String uid = zMessage.getString("uid");
+            state.getAllLinks().remove(uid);
             SwapLinksFunctions.onDisconnected(state, zMessage);
         } else if (zMessage.isMessageType(P2PFunctions.P2P_MESSAGE)) {
             sendMsgs.addAll(processJsonMessages(zMessage, state));
