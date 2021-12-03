@@ -22,6 +22,25 @@ public class StateVariable implements Streamable {
 	public static final MiniByte STATETYPE_BOOL 	= new MiniByte(8);
 	
 	/**
+	 * Create a particular State Variable
+	 */
+	public static StateVariable createStringStateVariable(int zPort, String zString, boolean zKeeper) {
+		//Check within range
+		if(zPort<0 || zPort>255) {
+			throw new IllegalArgumentException("State Variable port MUST be 0-255");
+		}
+		
+		//Create an empty vessel
+		StateVariable sv 	= new StateVariable();
+		sv.mPort 			= new MiniByte(zPort);
+		sv.mType 			= STATETYPE_STRING;
+		sv.mData 			= new MiniString(zString);
+		sv.mKeepMMR 		= new MiniByte(zKeeper);
+		
+		return sv;
+	}
+	
+	/**
 	 * What type is this
 	 */
 	MiniByte mType;
