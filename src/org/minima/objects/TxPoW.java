@@ -133,7 +133,7 @@ public class TxPoW implements Streamable {
 		boolean transmon 	= mBody.mTransaction.isCheckedMonotonic();
 		boolean burnmon 	= true;
 		if(!mBody.mBurnTransaction.isEmpty()) {
-			burnmon = mBody.mBurnTransaction.isCheckedMonotonic();
+			burnmon 		= mBody.mBurnTransaction.isCheckedMonotonic();
 		}
 		
 		return transmon && burnmon;
@@ -411,6 +411,7 @@ public class TxPoW implements Streamable {
 	 */
 	public void calculateTransactionID() {
 		mBody.mTransaction.calculateTransactionID();
+		
 		mBody.mBurnTransaction.calculateTransactionID();
 	}
 	
@@ -487,9 +488,10 @@ public class TxPoW implements Streamable {
 		//The Transaction ID
 		_mIsTxnPOW = false;
 		if(hasBody()) {
+			
 			//Whats the Transaction ID
 			calculateTransactionID();
-		
+			
 			//Valid Transaction
 			if(_mTxPOWID.isLess(getTxnDifficulty()) && !getTransaction().isEmpty()) {
 				_mIsTxnPOW = true;
@@ -504,23 +506,91 @@ public class TxPoW implements Streamable {
 		//What Super Level are we..
 		_mSuperBlock = getSuperLevel(getBlockDifficulty(), _mTxPOWID);
 	
-		//What size are we..
-		try {
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			DataOutputStream dos       = new DataOutputStream(baos);
-			writeDataStream(dos);
-			dos.flush();
-			baos.flush();
+		_mTxPoWSize = 100;
+//		//What size are we..
+//		try {
+//			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+//			DataOutputStream dos       = new DataOutputStream(baos);
+//			writeDataStream(dos);
+//			dos.flush();
+//			baos.flush();
+//			
+//			//Get the Size
+//			_mTxPoWSize = baos.toByteArray().length;
+//			
+//			dos.close();
+//			baos.close();
+//			
+//		} catch (IOException e) {
+//			MinimaLogger.log(e);
+//		}
+	}
+	
+	/**
+	 * This is only done once at creation. TXPOW structures are immutable.
+	 */
+	public void calculateTXPOWIDTest() {
+		//The TXPOW ID
+		_mTxPOWID 		= Crypto.getInstance().hashObject(mHeader);
+		_mTxPOWIDStr 	= _mTxPOWID.to0xString(); 
+		
+		//Valid Block
+		_mIsBlockPOW = _mTxPOWID.isLess(getBlockDifficulty());
+		_mBlockWeight = BigDecimal.ZERO;
+		if(_mIsBlockPOW) {
+//			BigDecimal max = new BigDecimal(Crypto.MAX_VAL);
+//			BigDecimal blk = new BigDecimal(getBlockDifficulty().getDataValue());
+//			
+//			//Divide..
+//			BigDecimal weight = max.divide(blk, MiniNumber.MATH_CONTEXT);
+//			MinimaLogger.log("Weight : "+_mTxPOWIDStr+" "+weight);
+//			
+//			//What is the weight..
+//			_mBlockWeight = weight.toBigInteger();
 			
-			//Get the Size
-			_mTxPoWSize = baos.toByteArray().length;
-			
-			dos.close();
-			baos.close();
-			
-		} catch (IOException e) {
-			MinimaLogger.log(e);
+			BigDecimal blkweightdec = new BigDecimal(getBlockDifficulty().getDataValue());
+			_mBlockWeight 			= Crypto.MAX_VALDEC.divide(blkweightdec, MathContext.DECIMAL32);
 		}
+		
+		//The Transaction ID
+		_mIsTxnPOW = false;
+		if(hasBody()) {
+			
+			//Whats the Transaction ID
+			calculateTransactionID();
+			
+			//Valid Transaction
+			if(_mTxPOWID.isLess(getTxnDifficulty()) && !getTransaction().isEmpty()) {
+				_mIsTxnPOW = true;
+			}
+			
+//			//Must be at least the minimum..
+//			if(getTxnDifficulty().isMore(Magic.MIN_TXPOW_WORK)) {
+//				_mIsTxnPOW = false;
+//			}
+		}
+		
+		//What Super Level are we..
+		_mSuperBlock = getSuperLevel(getBlockDifficulty(), _mTxPOWID);
+	
+		_mTxPoWSize = 100;
+//		//What size are we..
+//		try {
+//			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+//			DataOutputStream dos       = new DataOutputStream(baos);
+//			writeDataStream(dos);
+//			dos.flush();
+//			baos.flush();
+//			
+//			//Get the Size
+//			_mTxPoWSize = baos.toByteArray().length;
+//			
+//			dos.close();
+//			baos.close();
+//			
+//		} catch (IOException e) {
+//			MinimaLogger.log(e);
+//		}
 	}
 	
 	/**

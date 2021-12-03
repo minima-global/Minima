@@ -13,6 +13,7 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
+import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
 public class Coin implements Streamable {
@@ -220,10 +221,6 @@ public class Coin implements Streamable {
 		
 		obj.put("address", mAddress.toString());
 		
-		//Get the MxAddress..
-//		String mxaddr = Address.makeMinimaAddress(mAddress);
-//		obj.put("mxaddress", mxaddr);
-		
 		obj.put("tokenid", mTokenID.toString());
 		if(mToken == null) {
 			obj.put("token", null);
@@ -237,6 +234,13 @@ public class Coin implements Streamable {
 		obj.put("mmrentry", mMMREntryNumber.toString());
 		obj.put("spent", mSpent.isTrue());
 		obj.put("created", mBlockCreated.toString());
+		
+		//Add the state variables
+		JSONArray starr = new JSONArray();
+		for(StateVariable sv : mState) {
+			starr.add(sv.toJSON());
+		}
+		obj.put("state", starr);
 		
 		return obj;
 	}
@@ -291,6 +295,32 @@ public class Coin implements Streamable {
 		for(StateVariable sv : mState) {
 			sv.writeDataStream(zOut);
 		}
+		
+		if(mToken == null) {
+			MiniByte.WriteToStream(zOut, false);
+		}else {
+			MiniByte.WriteToStream(zOut, true);
+			mToken.writeDataStream(zOut);
+		}
+	}
+	
+	public void writeDataStreamTest(DataOutputStream zOut) throws IOException {
+		mCoinID.writeHashToStream(zOut);
+		mAddress.writeHashToStream(zOut);
+		mAmount.writeDataStream(zOut);
+		mTokenID.writeHashToStream(zOut);
+		
+		MiniByte.WriteToStream(zOut, mFloating);
+		MiniByte.WriteToStream(zOut, mStoreState);
+		
+		mMMREntryNumber.writeDataStream(zOut);
+		mSpent.writeDataStream(zOut);
+		mBlockCreated.writeDataStream(zOut);
+		
+//		MiniNumber.WriteToStream(zOut, mState.size());
+//		for(StateVariable sv : mState) {
+//			sv.writeDataStream(zOut);
+//		}
 		
 		if(mToken == null) {
 			MiniByte.WriteToStream(zOut, false);

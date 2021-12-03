@@ -1,5 +1,8 @@
 package org.minima.system.commands.all;
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 
 import org.minima.database.MinimaDB;
@@ -11,6 +14,7 @@ import org.minima.database.wallet.Wallet;
 import org.minima.objects.Coin;
 import org.minima.objects.CoinProof;
 import org.minima.objects.ScriptProof;
+import org.minima.objects.StateVariable;
 import org.minima.objects.Token;
 import org.minima.objects.Transaction;
 import org.minima.objects.TxPoW;
@@ -25,6 +29,9 @@ import org.minima.system.brains.TxPoWSearcher;
 import org.minima.system.commands.Command;
 import org.minima.system.params.GlobalParams;
 import org.minima.utils.Crypto;
+import org.minima.utils.MinimaLogger;
+import org.minima.utils.Streamable;
+import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
 public class send extends Command {
@@ -231,6 +238,8 @@ public class send extends Command {
 				changeamount = token.getScaledMinimaAmount(change);
 			}
 			
+			//Change coin does not store the state
+//			Coin changecoin = new Coin(Coin.COINID_OUTPUT, chgaddress, changeamount, Token.TOKENID_MINIMA,false,false);
 			Coin changecoin = new Coin(Coin.COINID_OUTPUT, chgaddress, changeamount, Token.TOKENID_MINIMA);
 			if(!tokenid.equals("0x00")) {
 				changecoin.resetTokenID(new MiniData(tokenid));
@@ -241,9 +250,38 @@ public class send extends Command {
 			transaction.addOutput(changecoin);
 		}
 		
-		//Calculate the TransactionID..
-		MiniData transid = Crypto.getInstance().hashObject(transaction);
+		//Are there any State Variables
+//		if(existsParam("state")) {
+//			
+//			//Get the state JSONArray
+//			JSONArray state = getJSONArrayParam("state");
+//			for(Object st : state) {
+//				
+//				//They are JSONObjects
+//				JSONObject json = (JSONObject)st;
+//				
+//				int port 		= Integer.parseInt(""+json.get("port"));
+//				String data 	= (String)json.get("data");
+//			
+//				//Create a StateVariable
+//				StateVariable sv = new StateVariable(port, data);
+//				
+//				//Add it..
+//				transaction.addStateVariable(sv);
+//			}
+//		}
 		
+		transaction.addStateVariable(new StateVariable(1, "0xFF"));
+		
+		//Calculate the TransactionID..
+		transaction.calculateTransactionID();
+		MiniData transid = transaction.getTransactionID();
+		
+		//Write out..
+		MiniData trans1 = getMiniDataVersionTEST(transaction);
+		MinimaLogger.log("1:"+trans1.to0xString());
+		
+				
 		//Now that we have constructed the transaction - lets sign it..
 		for(String priv : reqsigs) {
 
@@ -260,15 +298,44 @@ public class send extends Command {
 		//Calculate the size..
 		txpow.calculateTXPOWID();
 		
+		//Write out..
+		MiniData trans2 = getMiniDataVersionTEST(transaction);
+		MinimaLogger.log("2:"+trans2.to0xString());
+		
+		MinimaLogger.log(""+trans1.isEqual(trans2));		
+		
+//		transaction.writeData();
+		
+//		MinimaLogger.log(transaction.toJSON().toJSONString());
+		
 		//All good..
-		ret.put("response", txpow.toJSON());
+//		ret.put("response", txpow.toJSON());
 				
 		//Send it to the Miner..
-		Main.getInstance().getTxPoWMiner().mineTxPoW(txpow);
+//		Main.getInstance().getTxPoWMiner().mineTxPoW(txpow);
 		
 		return ret;
 	}
 
+	public static MiniData getMiniDataVersionTEST(Transaction zTransaction) {
+		ByteArrayOutputStream baos 	= new ByteArrayOutputStream();
+		DataOutputStream dos 		= new DataOutputStream(baos);
+		
+		try {
+			zTransaction.writeDataStreamTest(dos);
+			dos.flush();
+			dos.close();
+			baos.close();
+		
+			return new MiniData(baos.toByteArray());
+			
+		} catch (IOException e) {
+			MinimaLogger.log(e);	
+		}
+		
+		return null;
+	}
+	
 	@Override
 	public Command getFunction() {
 		return new send();
