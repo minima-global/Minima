@@ -13,6 +13,7 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
+import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
 public class Coin implements Streamable {
@@ -233,6 +234,13 @@ public class Coin implements Streamable {
 		
 		obj.put("floating", mFloating);
 		obj.put("storestate", mStoreState);
+		
+		//Add the state variables
+		JSONArray starr = new JSONArray();
+		for(StateVariable sv : mState) {
+			starr.add(sv.toJSON());
+		}
+		obj.put("state", starr);
 		
 		obj.put("mmrentry", mMMREntryNumber.toString());
 		obj.put("spent", mSpent.isTrue());

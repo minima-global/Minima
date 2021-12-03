@@ -11,6 +11,7 @@ import org.minima.database.wallet.Wallet;
 import org.minima.objects.Coin;
 import org.minima.objects.CoinProof;
 import org.minima.objects.ScriptProof;
+import org.minima.objects.StateVariable;
 import org.minima.objects.Token;
 import org.minima.objects.Transaction;
 import org.minima.objects.TxPoW;
@@ -25,6 +26,7 @@ import org.minima.system.brains.TxPoWSearcher;
 import org.minima.system.commands.Command;
 import org.minima.system.params.GlobalParams;
 import org.minima.utils.Crypto;
+import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
 public class send extends Command {
@@ -231,7 +233,8 @@ public class send extends Command {
 				changeamount = token.getScaledMinimaAmount(change);
 			}
 			
-			Coin changecoin = new Coin(Coin.COINID_OUTPUT, chgaddress, changeamount, Token.TOKENID_MINIMA);
+			//Change coin does not keep the state
+			Coin changecoin = new Coin(Coin.COINID_OUTPUT, chgaddress, changeamount, Token.TOKENID_MINIMA,false,false);
 			if(!tokenid.equals("0x00")) {
 				changecoin.resetTokenID(new MiniData(tokenid));
 				changecoin.setToken(token);
@@ -239,6 +242,27 @@ public class send extends Command {
 			
 			//And finally.. add the change output
 			transaction.addOutput(changecoin);
+		}
+		
+		//Are there any State Variables
+		if(existsParam("state")) {
+			
+			//Get the state JSONArray
+			JSONArray state = getJSONArrayParam("state");
+			for(Object st : state) {
+				
+				//They are JSONObjects
+				JSONObject json = (JSONObject)st;
+				
+				int port 		= Integer.parseInt(""+json.get("port"));
+				String data 	= (String)json.get("data");
+			
+				//Create a StateVariable
+				StateVariable sv = new StateVariable(port, data);
+				
+				//Add it..
+				transaction.addStateVariable(sv);
+			}
 		}
 		
 		//Calculate the TransactionID..
