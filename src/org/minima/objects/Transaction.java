@@ -426,45 +426,17 @@ public class Transaction implements Streamable {
 			coin.writeDataStream(zOut);
 		}
 		
-//		//How many state variables..
-//		MiniNumber statelen = new MiniNumber(mState.size());
-//		statelen.writeDataStream(zOut);
-//		for(StateVariable sv : mState) {
-//			sv.writeDataStream(zOut);
-//		}
-		
-		//The Link Hash
-//		mLinkHash.writeHashToStream(zOut);
-	}
-	
-	public void writeDataStreamTest(DataOutputStream zOut) throws IOException {
-//		//Max 255 inputs or outputs
-//		MiniNumber ins = new MiniNumber(mInputs.size());
-//		ins.writeDataStream(zOut);
-//		for(Coin coin : mInputs) {
-//			coin.writeDataStream(zOut);
-//		}
-		
-		MinimaLogger.log("COINS");
-		//Max 255 inputs or outputs
-		MiniNumber outs = new MiniNumber(mOutputs.size());
-		outs.writeDataStream(zOut);
-		for(Coin coin : mOutputs) {
-			MinimaLogger.log("COIN:"+coin.toJSON().toString());
-			coin.writeDataStreamTest(zOut);
+		//How many state variables..
+		MiniNumber statelen = new MiniNumber(mState.size());
+		statelen.writeDataStream(zOut);
+		for(StateVariable sv : mState) {
+			sv.writeDataStream(zOut);
 		}
 		
-//		//How many state variables..
-//		MiniNumber statelen = new MiniNumber(mState.size());
-//		statelen.writeDataStream(zOut);
-//		for(StateVariable sv : mState) {
-//			sv.writeDataStream(zOut);
-//		}
-		
 		//The Link Hash
-//		mLinkHash.writeHashToStream(zOut);
+		mLinkHash.writeHashToStream(zOut);
 	}
-
+	
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
 		mInputs  = new ArrayList<>();

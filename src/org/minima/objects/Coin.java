@@ -317,10 +317,10 @@ public class Coin implements Streamable {
 		mSpent.writeDataStream(zOut);
 		mBlockCreated.writeDataStream(zOut);
 		
-//		MiniNumber.WriteToStream(zOut, mState.size());
-//		for(StateVariable sv : mState) {
-//			sv.writeDataStream(zOut);
-//		}
+		MiniNumber.WriteToStream(zOut, mState.size());
+		for(StateVariable sv : mState) {
+			sv.writeDataStream(zOut);
+		}
 		
 		if(mToken == null) {
 			MiniByte.WriteToStream(zOut, false);
