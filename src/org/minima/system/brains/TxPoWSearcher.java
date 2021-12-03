@@ -31,6 +31,16 @@ public class TxPoWSearcher {
 	
 	}
 	
+	public static Coin searchCoins(	MiniData zCoinID ){
+		
+		ArrayList<Coin> coins = searchCoins(MinimaDB.getDB().getTxPoWTree().getTip(), false, 
+											true, zCoinID, 
+											false, MiniData.ZERO_TXPOWID,
+											false, MiniData.ZERO_TXPOWID);
+		
+		return coins.get(0);
+	}
+	
 	public static ArrayList<Coin> searchCoins(	TxPoWTreeNode zStartNode, boolean zRelevant, 
 												boolean zCheckCoinID, MiniData zCoinID,
 												boolean zCheckAddress, MiniData zAddress,

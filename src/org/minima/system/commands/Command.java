@@ -36,6 +36,8 @@ import org.minima.system.commands.all.trace;
 import org.minima.system.commands.all.tutorial;
 import org.minima.system.commands.all.txpow;
 import org.minima.system.commands.all.webhooks;
+import org.minima.system.commands.txn.txncreate;
+import org.minima.system.commands.txn.txninput;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
@@ -50,7 +52,8 @@ public abstract class Command {
 			new send(), new balance(), new tokencreate(), new tokens(),new getaddress(), new newaddress(), new debugflag(),
 			new incentivecash(), new sshtunnel(), new webhooks(),
 			new backup(), new restore(), new test(), new hashtest(),
-			new runscript(), new tutorial(), 
+			new runscript(), new tutorial(),
+			new txncreate(), new txninput(),
 			new mmrcreate(), new mmrproof()};
 	
 	String mName;
