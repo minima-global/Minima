@@ -11,7 +11,7 @@ SLEEP=''
 RPC=''
 
 print_usage() {
-  printf "Usage: Setups a new minima service for the specified port, default 9121 \n \t -c REQUIRED connection host and port HOST:PORT \n \t -u flag Use unsecure p2p version with rpc ports active \n \t -x flag enable clean flag \n \t -p minima port to use eg. -p 9121 \n \t -h minima home directory eg -h /home/minima \n \t -a use the p2p alphas \n"
+  printf "Usage: Setups a new minima service for the specified port"
 }
 
 while getopts ':xrsc::p:d:h:' flag; do
@@ -44,7 +44,7 @@ if ! id -u 9001 > /dev/null 2>&1; then
     chown minima:minima $HOME
 fi
 
-wget -q -O $HOME"/minima_service.sh" "https://github.com/minima-global/Minima/raw/release-0.100/scripts/minima_service.sh"
+wget -q -O $HOME"/minima_service.sh" "https://github.com/minima-global/Minima/raw/master/scripts/minima_service.sh"
 chown minima:minima $HOME"/minima_service.sh"
 chmod +x $HOME"/minima_service.sh"
 
@@ -52,8 +52,8 @@ CMD="$HOME/minima_service.sh -s $@"
 CRONSTRING="#!/bin/sh
 $CMD"
 
-echo "$CRONSTRING" > /etc/cron.daily/minima_$PORT
-chmod a+x /etc/cron.daily/minima_$PORT
+echo "$CRONSTRING" > /etc/cron.weekly/minima_$PORT
+chmod a+x /etc/cron.weekly/minima_$PORT
 
 CMD="$HOME/minima_service.sh $@"
 /bin/sh -c "$CMD"
