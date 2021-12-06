@@ -21,7 +21,7 @@ public class HexValue extends Value {
 	 * @param zData
 	 */
 	public HexValue(MiniData zData) {
-		this(zData.getData()); 
+		this(zData.getBytes()); 
 	}
 	
 	/**
@@ -77,7 +77,7 @@ public class HexValue extends Value {
 	 * @return
 	 */
 	public byte[] getRawData() {
-		return getMiniData().getData();
+		return getMiniData().getBytes();
 	}
 	
 	@Override

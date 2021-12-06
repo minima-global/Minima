@@ -1,19 +1,61 @@
 package org.minima.utils;
 
+import java.math.BigInteger;
+import java.util.Iterator;
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
+
 import org.minima.objects.base.MiniNumber;
+import org.minima.utils.json.JSONArray;
+import org.minima.utils.json.JSONObject;
 
 public class MiniFormat {
 
-	public static String JSONPretty(String zJSON) {
+	public static String JSONPretty(JSONArray zJSONArray) {
+		Iterator<JSONObject> it = zJSONArray.iterator();
+		
+		boolean arr = false;
+		if(zJSONArray.size()>1) {
+			arr = true;
+		}
+		
+		String result = "";
+		if(arr) {
+			result = "[";
+		}
+		
+		boolean first =true;
+		while(it.hasNext()) {
+			
+			if(!first) {
+				result += ",";
+			}
+			first = false;
+			
+			JSONObject json = it.next();
+			String res = JSONPretty(json);
+			
+			result += res;
+		}
+		
+		if(arr) {
+			result += "]";
+		}
+		
+		return result;
+	}
+	
+	public static String JSONPretty(JSONObject zJSONObj) {
 		//The Work String
-		String work = zJSON.trim();
+		String work = zJSONObj.toString().trim();
 		
 		//Too long clogs it up.. 
 		int len = work.length();
-		if(len>100000) {
-			//TOO LONG...
-			return work;	
-		}
+		
+//		if(len>100000) {
+//			//TOO LONG...
+//			return work;	
+//		}
 		
 		//The Copy
 		String ret       = "";
@@ -99,70 +141,6 @@ public class MiniFormat {
 		return ret;
 	}
 	
-	
-	
-//	public static String PrettyJSON(String zJSON) {
-//		//The Copy
-//		String ret = "";
-//		
-//		//How long
-//		int len  = zJSON.length();
-//		int tabs = 0;
-//		String tabstring = maketabstring(tabs);
-//		
-//		boolean inquotes = false;
-//		for(int i=0;i<len;i++) {
-//			char cc = zJSON.charAt(i);
-//	
-//			//Are we in quotes..
-//			if(cc == '"') {
-//				inquotes = !inquotes;
-//			}
-//			
-//			if(!inquotes) {
-//				if(cc == '{') {
-//					tabs++;
-//					tabstring = maketabstring(tabs);
-//					
-//					ret+= "{\n";
-//					ret += tabstring;
-//					
-//				}else if(cc == '}') {
-//					tabs--;
-//					tabstring = maketabstring(tabs);
-//					
-//					ret += "\n";
-//					ret += tabstring;
-//					ret += "}";
-//				
-//					
-//				}else if(cc == ',') {
-//					ret+= ",\n";
-//					ret += tabstring;
-//					
-//				}else {
-//					ret+= cc;
-//				}
-//			}else {
-//				ret+= cc;
-//			}
-//		}
-//		
-//		return ret;
-//	}
-	
-	/**
-	 * For now do nothing..
-	 * @param zText
-	 * @return
-	 */
-	public static String filterSafeTextEmoji(String zText) {
-		return zText;
-		
-//		String characterFilter = "[^\\x00-\\x7F\\p{L}\\p{M}\\p{N}\\p{P}\\p{Z}\\p{Cf}\\p{Cs}\\s]";
-//		return zText.replaceAll(characterFilter,"");
-	}
-	
 	private static String maketabstring(int zNum) {
 		String ret = "";
 		for(int i=0;i<zNum;i++) {
@@ -179,7 +157,7 @@ public class MiniFormat {
 	
 	public static String zeroPad(int zTotLength, MiniNumber zNumber) {
 		//Get the number..
-		String num       = zNumber.toString();
+		String num       = zNumber.floor().toString();
 		int len          = num.length();
 		int add 		 = zTotLength-len;
 		for(int i=0;i<add;i++) {
@@ -187,6 +165,45 @@ public class MiniFormat {
 		}
 		
 		return num;
+	}
+	
+	public static String ConvertMilliToTime(long zMilli) {
+		
+		long milliseconds = zMilli;
+		
+		long dy = TimeUnit.MILLISECONDS.toDays(milliseconds);
+		
+		long yr = dy / 365;
+		dy %= 365;
+		
+		long mn = dy / 30;
+		dy %= 30;
+		
+		long wk = dy / 7;
+		dy %= 7;
+		
+		long hr = TimeUnit.MILLISECONDS.toHours(milliseconds)
+				- TimeUnit.DAYS.toHours(TimeUnit.MILLISECONDS.toDays(milliseconds));
+		
+		long min = TimeUnit.MILLISECONDS.toMinutes(milliseconds)
+				- TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(milliseconds));
+		
+		long sec = TimeUnit.MILLISECONDS.toSeconds(milliseconds)
+				- TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(milliseconds));
+		
+		long ms = TimeUnit.MILLISECONDS.toMillis(milliseconds)
+				- TimeUnit.SECONDS.toMillis(TimeUnit.MILLISECONDS.toSeconds(milliseconds));
+		
+		return String.format("%d Years %d Months %d Weeks %d Days %d Hours %d Minutes %d Seconds %d Milliseconds", 
+						yr,mn, wk, dy, hr, min, sec, ms);
+	}
+
+	public static String createRandomString(int len) {
+		Random rand = new Random();
+		byte[] data = new byte[len];
+		rand.nextBytes(data);
+		BigInteger bignum = new BigInteger(1,data);
+		return bignum.toString(32).toUpperCase();
 	}
 	
 }

@@ -49,10 +49,16 @@ public class SIGNEDBYTests {
         MiniData SingleSig1 = MiniData.getRandomData(20);
         MiniData SingleSig2 = MiniData.getRandomData(20);
 
+        ArrayList<MiniData> signatures1 = new ArrayList<>();
+        signatures1.add(SingleSig1);
+        
+        ArrayList<MiniData> signatures2 = new ArrayList<>();
+        signatures2.add(SingleSig2);
+        
         SIGNEDBY fn = new SIGNEDBY();
 
         {
-            Contract ctr = new Contract("", SingleSig1.toString(), new Witness(), new Transaction(), new ArrayList<>());
+            Contract ctr = new Contract("", signatures1, new Witness(), new Transaction(), new ArrayList<>());
             MinimaFunction mf = fn.getNewFunction();
             mf.addParameter(new ConstantExpression(new HexValue(SingleSig1)));
             try {
@@ -64,7 +70,7 @@ public class SIGNEDBYTests {
             }
         }
         {
-            Contract ctr = new Contract("", SingleSig1.toString(), new Witness(), new Transaction(), new ArrayList<>());
+            Contract ctr = new Contract("", signatures1, new Witness(), new Transaction(), new ArrayList<>());
             MinimaFunction mf = fn.getNewFunction();
             mf.addParameter(new ConstantExpression(new HexValue(SingleSig2)));
             try {

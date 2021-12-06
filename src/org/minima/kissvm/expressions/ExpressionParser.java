@@ -8,7 +8,7 @@ import java.util.List;
 import org.minima.kissvm.exceptions.MinimaParseException;
 import org.minima.kissvm.functions.MinimaFunction;
 import org.minima.kissvm.tokens.LexicalTokenizer;
-import org.minima.kissvm.tokens.Token;
+import org.minima.kissvm.tokens.ScriptToken;
 import org.minima.kissvm.values.BooleanValue;
 import org.minima.kissvm.values.NumberValue;
 import org.minima.kissvm.values.Value;
@@ -26,7 +26,7 @@ public class ExpressionParser {
 	 * @param zTokens
 	 * @return
 	 */
-	public static Expression getExpression(List<Token> zTokens) throws MinimaParseException{
+	public static Expression getExpression(List<ScriptToken> zTokens) throws MinimaParseException{
 		//Must have some tokens!
 		if(zTokens.size() == 0) {
 			throw new MinimaParseException("Cannot have EMPTY expression");
@@ -60,7 +60,7 @@ public class ExpressionParser {
 		Expression exp = getRelation(zTokens);
 		
 		while(zTokens.hasMoreElements()) {
-			Token tok = zTokens.getNextToken();
+			ScriptToken tok = zTokens.getNextToken();
 			
 			if(tok.getToken().equals("AND")) {
 				exp = new BooleanExpression(exp, getRelation(zTokens), BooleanExpression.BOOLEAN_AND);
@@ -88,7 +88,7 @@ public class ExpressionParser {
 		Expression exp = getLogic(zTokens);
 		
 		while(zTokens.hasMoreElements()) {
-			Token tok = zTokens.getNextToken();
+			ScriptToken tok = zTokens.getNextToken();
 			
 			if(tok.getToken().equals("EQ")) {
 				exp = new BooleanExpression(exp, getLogic(zTokens), BooleanExpression.BOOLEAN_EQ);
@@ -116,7 +116,7 @@ public class ExpressionParser {
 		Expression exp = getAddSub(zTokens);
 		
 		while(zTokens.hasMoreElements()) {
-			Token tok = zTokens.getNextToken();
+			ScriptToken tok = zTokens.getNextToken();
 			
 			if(tok.getToken().equals("&")) {
 				exp = new OperatorExpression(exp,getAddSub(zTokens),OperatorExpression.OPERATOR_AND);
@@ -137,7 +137,7 @@ public class ExpressionParser {
 		Expression exp = getMulDiv(zTokens);
 		
 		while(zTokens.hasMoreElements()) {
-			Token tok = zTokens.getNextToken();
+			ScriptToken tok = zTokens.getNextToken();
 			
 			if(tok.getToken().equals("+")) {
 				exp = new OperatorExpression(exp,getMulDiv(zTokens),OperatorExpression.OPERATOR_ADD);
@@ -162,7 +162,7 @@ public class ExpressionParser {
 		Expression exp = getPrimary(zTokens);
 		
 		while(zTokens.hasMoreElements()) {
-			Token tok = zTokens.getNextToken();
+			ScriptToken tok = zTokens.getNextToken();
 			
 			if(tok.getToken().equals("*")) {
 				exp = new OperatorExpression(exp,getPrimary(zTokens),OperatorExpression.OPERATOR_MUL);
@@ -182,7 +182,7 @@ public class ExpressionParser {
 		Expression exp = null; 
 		
 		//get the Token
-		Token tok = zTokens.getNextToken();
+		ScriptToken tok = zTokens.getNextToken();
 		
 		if(tok.getToken().equals("NOT")) {
 			exp = new BooleanExpression(getPrimary(zTokens), BooleanExpression.BOOLEAN_NOT);
@@ -203,49 +203,49 @@ public class ExpressionParser {
 		Expression exp = null; 
 		
 		//get the Token
-		Token tok = zTokens.getNextToken();
+		ScriptToken tok = zTokens.getNextToken();
 		
-		if(tok.getTokenType() == Token.TOKEN_VALUE) {
+		if(tok.getTokenType() == ScriptToken.TOKEN_VALUE) {
 			exp = new ConstantExpression( Value.getValue(tok.getToken()) ); 
 		
 			//Negative NUmbers handled here..
 		}else if(tok.getToken().equals("-")) {
 			//The next token MUST be a number
-			Token num = zTokens.getNextToken();
+			ScriptToken num = zTokens.getNextToken();
 			
 			//Create a Negative Number 
 			MiniNumber numv = new MiniNumber(num.getToken()).mult(MiniNumber.MINUSONE);
 			exp = new ConstantExpression(new NumberValue(numv));
 			
-		}else if(tok.getTokenType() == Token.TOKEN_GLOBAL) {
+		}else if(tok.getTokenType() == ScriptToken.TOKEN_GLOBAL) {
 			exp = new GlobalExpression(tok.getToken());
 		
-		}else if(tok.getTokenType() == Token.TOKEN_VARIABLE) {
+		}else if(tok.getTokenType() == ScriptToken.TOKEN_VARIABLE) {
 			exp = new VariableExpression(tok.getToken());
 		
-		}else if(tok.getTokenType() == Token.TOKEN_TRUE) {
+		}else if(tok.getTokenType() == ScriptToken.TOKEN_TRUE) {
 			exp = new ConstantExpression(BooleanValue.TRUE);
 		
-		}else if(tok.getTokenType() == Token.TOKEN_FALSE) {
+		}else if(tok.getTokenType() == ScriptToken.TOKEN_FALSE) {
 			exp = new ConstantExpression(BooleanValue.FALSE);
 		
-		}else if(tok.getTokenType() == Token.TOKEN_FUNCTIION) {
+		}else if(tok.getTokenType() == ScriptToken.TOKEN_FUNCTIION) {
 			//Which Function
 			MinimaFunction func = MinimaFunction.getFunction(tok.getToken());
 			
 			//Remove the Front bracket.
-			Token bracket = zTokens.getNextToken();
-			if(bracket.getTokenType() != Token.TOKEN_OPENBRACKET) {
+			ScriptToken bracket = zTokens.getNextToken();
+			if(bracket.getTokenType() != ScriptToken.TOKEN_OPENBRACKET) {
 				throw new MinimaParseException("Missing opening bracket at start of function "+func.getName());
 			}
 			
 			//Now accept variables until you find the closing bracket
 			while(true) {
 				//Have we reached the close bracket
-				Token isclosebracket = zTokens.getNextToken();
+				ScriptToken isclosebracket = zTokens.getNextToken();
 				
 				//It must be a close bracket
-				if(isclosebracket.getTokenType() == Token.TOKEN_CLOSEBRACKET) {
+				if(isclosebracket.getTokenType() == ScriptToken.TOKEN_CLOSEBRACKET) {
 					//That' it then..
 					break;
 					
@@ -264,14 +264,14 @@ public class ExpressionParser {
 			//Now create the Complete Expression
 			exp = new FunctionExpression(func);
 			
-		}else if(tok.getTokenType() == Token.TOKEN_OPENBRACKET) {
+		}else if(tok.getTokenType() == ScriptToken.TOKEN_OPENBRACKET) {
 			//It's a new complete expression
 			exp = getExpression(zTokens);
 			
 			//Next token MUST be a close bracket..
-			Token closebracket = zTokens.getNextToken();
+			ScriptToken closebracket = zTokens.getNextToken();
 			
-			if(closebracket.getTokenType() != Token.TOKEN_CLOSEBRACKET) {
+			if(closebracket.getTokenType() != ScriptToken.TOKEN_CLOSEBRACKET) {
 				throw new MinimaParseException("Missing close bracket. Found : "+closebracket.getToken());
 			}
 			

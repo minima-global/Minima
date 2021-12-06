@@ -8,16 +8,17 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.math.MathContext;
 import java.util.ArrayList;
 
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
-import org.minima.system.txpow.TxPoWMiner;
 import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
-import org.minima.utils.SuperBlockLevels;
 import org.minima.utils.json.JSONObject;
 
 /**
@@ -46,12 +47,66 @@ public class TxPoW implements Streamable {
 	/**
 	 * These are used internally ONLY
 	 */
-	private MiniData _mTxPOWID      = new MiniData("0x00");
-	private MiniData _mTransID      = new MiniData("0x00");
-	protected boolean _mIsBlockPOW  = false;
-	protected boolean _mIsTxnPOW    = false;
-	protected int     _mSuperBlock  = 0;
-	protected long     _mTxPoWSize  = 0;
+	private String _mTxPOWIDStr   		= "0x00";
+	private MiniData _mTxPOWID      	= MiniData.ZERO_TXPOWID;
+	protected boolean _mIsBlockPOW  	= false;
+	protected boolean _mIsTxnPOW    	= false;
+	protected int     _mSuperBlock  	= 0;
+	protected long     _mTxPoWSize  	= 0;
+	protected BigDecimal _mBlockWeight 	= BigDecimal.ZERO;
+	
+	/**
+	 * Test Parameters
+	 */
+	protected boolean 	  mIsTesting 		= false;
+	protected MiniNumber _mTestBlockNumber  = MiniNumber.ZERO;
+	protected boolean    _mTestIsBlock  	= true;
+	protected boolean    _mTestIsTxn  		= false;
+	protected MiniData   _mTestParent  		= MiniData.ZERO_TXPOWID;
+	protected ArrayList<String> mTestTransactions = new ArrayList<>();
+	
+	/**
+	 * TEST Constructor
+	 */
+	public TxPoW(String zTxPoWID, int zBlock, int zWeight) {
+		this(zTxPoWID, zBlock, zWeight, true, "0x00", false);
+	}
+	
+	public TxPoW(String zTxPoWID, int zBlock, int zWeight, boolean zIsBlock, String zParent, boolean zIsTransaction) {
+		mIsTesting 			= true;
+		_mTxPOWIDStr 		= zTxPoWID;
+		_mTestBlockNumber 	= new MiniNumber(zBlock);
+		_mBlockWeight		= new BigDecimal(""+zWeight);
+		_mTestIsBlock 		= zIsBlock;
+		_mTestIsTxn 		= zIsTransaction;
+		_mTestParent 		= new MiniData(zParent);
+		
+		mHeader				= new TxHeader();
+	}
+	
+	//TEST FUNCTION
+	public void addTestTransaction(String zTxPoWID) {
+		mTestTransactions.add(zTxPoWID);
+	}
+	
+	public ArrayList<String> getTransactions(){
+		if(mIsTesting) {
+			return mTestTransactions;
+		}
+		
+		ArrayList<String> ret = new ArrayList<>();
+		
+		//if no body just return an empty list
+		if(!hasBody()) {
+			return ret;	
+		}
+		
+		for(MiniData blk : mBody.mTxPowIDList) {
+			ret.add(blk.to0xString());
+		}
+		
+		return ret;
+	}
 	
 	/**
 	 * Main Constructor
@@ -71,6 +126,17 @@ public class TxPoW implements Streamable {
 	
 	public void setHeaderBodyHash() {
 		mHeader.mTxBodyHash = Crypto.getInstance().hashObject(mBody);
+	}
+	
+	public boolean isMonotonic() {
+		
+		boolean transmon 	= mBody.mTransaction.isCheckedMonotonic();
+		boolean burnmon 	= true;
+		if(!mBody.mBurnTransaction.isEmpty()) {
+			burnmon = mBody.mBurnTransaction.isCheckedMonotonic();
+		}
+		
+		return transmon && burnmon;
 	}
 	
 	public TxBody getTxBody() {
@@ -93,22 +159,10 @@ public class TxPoW implements Streamable {
 		return mHeader.mNonce;
 	}
 	
-	public void setChainID(MiniData zChainID) {
-		mHeader.mChainID = zChainID;
+	public Magic getMagic() {
+		return mHeader.mMagic;
 	}
 	
-	public void setParentChainID(MiniData zChainID) {
-		mHeader.mParentChainID = zChainID;
-	}
-	
-	public MiniData getChainID() {
-		return mHeader.mChainID;
-	}
-	
-	public MiniData getParentChainID() {
-		return mHeader.mParentChainID;
-	}
-		
 	public void setTxDifficulty(MiniData zDifficulty) {
 		mBody.mTxnDifficulty = zDifficulty;
 	}
@@ -141,8 +195,8 @@ public class TxPoW implements Streamable {
 		return mBody.mBurnWitness;
 	}
 	
-	public void addBlockTxPOW(TxPoW zTxPOW) {
-		mBody.mTxPowIDList.add(zTxPOW.getTxPowID());
+	public void addBlockTxPOW(MiniData zTxPOWID) {
+		mBody.mTxPowIDList.add(zTxPOWID);
 	}
 	
 	public ArrayList<MiniData> getBlockTransactions(){
@@ -163,6 +217,10 @@ public class TxPoW implements Streamable {
 	}
 	
 	public MiniData getParentID() {
+		if(mIsTesting) {
+			return _mTestParent;
+		}
+		
 		return getSuperParent(0);
 	}
 
@@ -172,6 +230,10 @@ public class TxPoW implements Streamable {
 	
 	public MiniData getSuperParent(int zLevel) {
 		return mHeader.mSuperParents[zLevel];
+	}
+	
+	public void setTimeMilli() {
+		setTimeMilli(new MiniNumber(System.currentTimeMillis()));
 	}
 	
 	public void setTimeMilli(MiniNumber zMilli) {
@@ -187,11 +249,11 @@ public class TxPoW implements Streamable {
 	}
 	
 	public MiniNumber getBlockNumber() {
+		if(mIsTesting) {
+			return _mTestBlockNumber;
+		}
+		
 		return mHeader.mBlockNumber;
-	}
-	
-	public MiniData getMagic() {
-		return mBody.mMagic.mPRNG;
 	}
 	
 	public MiniData getMMRRoot() {
@@ -213,19 +275,29 @@ public class TxPoW implements Streamable {
 	public JSONObject toJSON() {
 		JSONObject txpow = new JSONObject();
 		
-		txpow.put("txpowid", _mTxPOWID.toString());
-		txpow.put("isblock", _mIsBlockPOW);
-		txpow.put("istransaction", _mIsTxnPOW);
-		txpow.put("superblock", _mSuperBlock);
-		txpow.put("size", getSizeinBytes());
-		
-		txpow.put("header", mHeader.toJSON());
-		
-		txpow.put("hasbody", hasBody());
-		if(hasBody()) {
-			txpow.put("body", mBody.toJSON());	
+		if(mIsTesting) {
+			txpow.put("txpowid", _mTxPOWIDStr);
+			txpow.put("parentid", _mTestParent.to0xString());
+			txpow.put("blocknumber", _mTestBlockNumber);
+			txpow.put("weight", _mBlockWeight);
+			txpow.put("isblock", _mTestIsBlock);
+			txpow.put("istxn", _mTestIsTxn);
+			
 		}else {
-			txpow.put("body", "null");
+			txpow.put("txpowid", _mTxPOWID.toString());
+			txpow.put("isblock", _mIsBlockPOW);
+			txpow.put("istransaction", _mIsTxnPOW);
+			txpow.put("superblock", _mSuperBlock);
+			txpow.put("size", getSizeinBytes());
+			
+			txpow.put("header", mHeader.toJSON());
+			
+			txpow.put("hasbody", hasBody());
+			if(hasBody()) {
+				txpow.put("body", mBody.toJSON());	
+			}else {
+				txpow.put("body", "null");
+			}
 		}
 		
 		return txpow;
@@ -264,9 +336,15 @@ public class TxPoW implements Streamable {
 		calculateTXPOWID();
 	}
 	
+	public static TxPoW ReadFromStream(DataInputStream zIn) throws IOException {
+		TxPoW txp = new TxPoW();
+		txp.readDataStream(zIn);
+		return txp;
+	}
+	
+	
 	/**
-	 * Get a DEEP copy of this transaction
-	 * @throws IOException 
+	 * Get a DEEP copy of this TxPoW
 	 */
 	public TxPoW deepCopy(){
 		try {
@@ -298,16 +376,45 @@ public class TxPoW implements Streamable {
 	}
 	
 	/**
-	 * Used internally
-	 * 
-	 * @return
+	 * Convert a MiniData version into a TxPoW
 	 */
-	public MiniData getTxPowID() {
-		return _mTxPOWID;
+	public static TxPoW convertMiniDataVersion(MiniData zTxpData) {
+		ByteArrayInputStream bais 	= new ByteArrayInputStream(zTxpData.getBytes());
+		DataInputStream dis 		= new DataInputStream(bais);
+		
+		TxPoW txpow = null;
+		
+		try {
+			//Convert data into a TxPoW
+			txpow = TxPoW.ReadFromStream(dis);
+		
+			dis.close();
+			bais.close();
+			
+		} catch (IOException e) {
+			MinimaLogger.log(e);
+		}
+		
+		return txpow;
 	}
 	
-	public MiniData getTransID() {
-		return _mTransID;
+	/**
+	 * Compute the transaction hash for both
+	 */
+	public void calculateTransactionID() {
+		mBody.mTransaction.calculateTransactionID();
+		mBody.mBurnTransaction.calculateTransactionID();
+	}
+	
+	/**
+	 * Used internally
+	 */
+	public String getTxPoWID() {
+		return _mTxPOWIDStr;
+	}
+	
+	public MiniData getTxPoWIDData() {
+		return _mTxPOWID;
 	}
 	
 	public int getSuperLevel() {
@@ -315,15 +422,28 @@ public class TxPoW implements Streamable {
 	}
 	
 	public boolean isBlock() {
+		if(mIsTesting) {
+			return _mTestIsBlock;
+		}
+		
 		return _mIsBlockPOW;
 	}
 	
+	public BigDecimal getWeight() {
+		return _mBlockWeight;
+	}
+	
 	public boolean isTransaction() {
+		if(mIsTesting) {
+			return _mTestIsTxn;
+		}
+		
 		if(!hasBody()) {
 			return false;
 		}
 		
-		return _mIsTxnPOW;
+		return !getTransaction().isEmpty();
+//		return _mIsTxnPOW;
 	}
 	
 	public long getSizeinBytes() {
@@ -335,29 +455,46 @@ public class TxPoW implements Streamable {
 	 */
 	public void calculateTXPOWID() {
 		//The TXPOW ID
-		_mTxPOWID = Crypto.getInstance().hashObject(mHeader);
+		_mTxPOWID 		= Crypto.getInstance().hashObject(mHeader);
+		_mTxPOWIDStr 	= _mTxPOWID.to0xString(); 
 		
 		//Valid Block
 		_mIsBlockPOW = _mTxPOWID.isLess(getBlockDifficulty());
+		_mBlockWeight = BigDecimal.ZERO;
+		if(_mIsBlockPOW) {
+//			BigDecimal max = new BigDecimal(Crypto.MAX_VAL);
+//			BigDecimal blk = new BigDecimal(getBlockDifficulty().getDataValue());
+//			
+//			//Divide..
+//			BigDecimal weight = max.divide(blk, MiniNumber.MATH_CONTEXT);
+//			MinimaLogger.log("Weight : "+_mTxPOWIDStr+" "+weight);
+//			
+//			//What is the weight..
+//			_mBlockWeight = weight.toBigInteger();
+			
+			BigDecimal blkweightdec = new BigDecimal(getBlockDifficulty().getDataValue());
+			_mBlockWeight 			= Crypto.MAX_VALDEC.divide(blkweightdec, MathContext.DECIMAL32);
+		}
 		
 		//The Transaction ID
 		_mIsTxnPOW = false;
 		if(hasBody()) {
 			//Whats the Transaction ID
-			_mTransID = Crypto.getInstance().hashObject(mBody.mTransaction);
+			calculateTransactionID();
 		
 			//Valid Transaction
 			if(_mTxPOWID.isLess(getTxnDifficulty()) && !getTransaction().isEmpty()) {
 				_mIsTxnPOW = true;
 			}
-			//Must be at least the minimum..
-			if(getTxnDifficulty().isMore(TxPoWMiner.BASE_TXN)) {
-				_mIsTxnPOW = false;
-			}
+			
+//			//Must be at least the minimum..
+//			if(getTxnDifficulty().isMore(Magic.MIN_TXPOW_WORK)) {
+//				_mIsTxnPOW = false;
+//			}
 		}
 		
 		//What Super Level are we..
-		_mSuperBlock = SuperBlockLevels.getSuperLevel(getBlockDifficulty(), _mTxPOWID);
+		_mSuperBlock = getSuperLevel(getBlockDifficulty(), _mTxPOWID);
 	
 		//What size are we..
 		try {
@@ -374,7 +511,20 @@ public class TxPoW implements Streamable {
 			baos.close();
 			
 		} catch (IOException e) {
-			e.printStackTrace();
+			MinimaLogger.log(e);
 		}
+	}
+	
+	/**
+	 * This calculates the Log2 of the Difficulty and TxPoW unit..
+	 */
+	public int getSuperLevel(MiniData zBlockDifficulty, MiniData zTxPoWID) {
+		//What is the 
+		BigInteger quot = zBlockDifficulty.getDataValue().divide(zTxPoWID.getDataValue());
+		
+		//Use a clever trick.. the bit length
+		int sup = quot.bitLength()-1;
+		
+		return sup;
 	}
 }

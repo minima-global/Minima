@@ -213,12 +213,6 @@ public class ContractTests {
                 ctr.getBoolParam(0, mf);
             });
         }
-
-        {
-            Contract ctr = new Contract("", "", new Witness(), new Transaction(), null);
-            ctr.setFloating(true);
-            ctr.setFloating(false);
-        }
     }
 
     @Test
@@ -282,7 +276,7 @@ public class ContractTests {
                 ctr.run();
                 assertTrue(ctr.isParseOK());
                 assertTrue(ctr.isException());
-                assertEquals("org.minima.kissvm.exceptions.ExecutionException: MAX instruction number reached! 513", ctr.getException());
+                assertEquals("org.minima.kissvm.exceptions.ExecutionException: MAX instruction number reached! 257", ctr.getException());
             }
         }
 
@@ -297,7 +291,7 @@ public class ContractTests {
                 ctr.run();
                 assertTrue(ctr.isParseOK());
                 assertTrue(ctr.isException());
-                assertEquals("org.minima.kissvm.exceptions.ExecutionException: MAX instruction number reached! 513", ctr.getException());
+                assertEquals("org.minima.kissvm.exceptions.ExecutionException: MAX instruction number reached! 257", ctr.getException());
             }
         }
     }

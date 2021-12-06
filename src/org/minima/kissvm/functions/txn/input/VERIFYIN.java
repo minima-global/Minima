@@ -8,10 +8,10 @@ import org.minima.kissvm.functions.MinimaFunction;
 import org.minima.kissvm.values.BooleanValue;
 import org.minima.kissvm.values.Value;
 import org.minima.objects.Coin;
+import org.minima.objects.Token;
 import org.minima.objects.Transaction;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
-import org.minima.objects.proofs.TokenProof;
 
 /**
  * Verify that the specified output exists in the transaction.
@@ -56,15 +56,14 @@ public class VERIFYIN extends MinimaFunction{
 		MiniNumber inamt = cc.getAmount();
 		
 		//Could be a token Amount!
-		if(!cc.getTokenID().isEqual(Coin.MINIMA_TOKENID)) {
-			//Get the Multiple..
-			TokenProof td = zContract.getWitness().getTokenDetail(cc.getTokenID());
+		if(!cc.getTokenID().isEqual(Token.TOKENID_MINIMA)) {
+			//Get the Token
+			Token td = cc.getToken();
 			if(td == null) {
-				throw new ExecutionException("No Token found for ID "+cc.getTokenID());
+				throw new ExecutionException("No token specified @ Input coin "+input+" "+cc.getTokenID());
 			}
 			
 			inamt = td.getScaledTokenAmount(cc.getAmount());
-//			inamt = cc.getAmount().mult(td.getScaleFactor());
 		}
 		
 		//Check Amount

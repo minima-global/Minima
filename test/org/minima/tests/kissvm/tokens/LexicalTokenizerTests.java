@@ -10,13 +10,13 @@ import java.util.List;
 import org.junit.Test;
 import org.minima.kissvm.exceptions.MinimaParseException;
 import org.minima.kissvm.tokens.LexicalTokenizer;
-import org.minima.kissvm.tokens.Token;
+import org.minima.kissvm.tokens.ScriptToken;
 
 public class LexicalTokenizerTests {
 
     @Test
     public void testConstructors() {
-        LexicalTokenizer lt = new LexicalTokenizer(new ArrayList<Token>());
+        LexicalTokenizer lt = new LexicalTokenizer(new ArrayList<ScriptToken>());
         assertThrows(MinimaParseException.class, () -> {
             lt.getNextToken();
         });
@@ -33,7 +33,7 @@ public class LexicalTokenizerTests {
     public void testGetters() {
         String Script = "a b c d e f g h i j k l m n o p q r s t u v w x y z";
         try {
-            List<Token> tokens = Token.tokenize(Script);
+            List<ScriptToken> tokens = ScriptToken.tokenize(Script);
             LexicalTokenizer lt = new LexicalTokenizer(tokens);
 
             for (int i = 0; i < tokens.size(); i++) {
@@ -41,7 +41,7 @@ public class LexicalTokenizerTests {
                 assertEquals(false, lt.checkAllTokensUsed());
                 assertEquals(true, lt.hasMoreElements());
 
-                Token t;
+                ScriptToken t;
                 try {
                     t = lt.getNextToken();
                     assertEquals(t.getToken(), tokens.get(i).getToken());

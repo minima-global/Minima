@@ -1,297 +1,465 @@
-
 package org.minima.system;
 
+import java.io.File;
 import java.util.ArrayList;
 
-import org.minima.GlobalParams;
-import org.minima.database.prefs.UserPrefs;
-import org.minima.system.brains.BackupManager;
-import org.minima.system.brains.ConsensusBackup;
-import org.minima.system.brains.ConsensusHandler;
-import org.minima.system.brains.SendManager;
-import org.minima.system.input.InputHandler;
-import org.minima.system.network.NetworkHandler;
-import org.minima.system.txpow.TxPoWMiner;
+import org.minima.database.MinimaDB;
+import org.minima.database.txpowtree.TxPoWTreeNode;
+import org.minima.database.wallet.KeyRow;
+import org.minima.objects.Pulse;
+import org.minima.objects.TxBlock;
+import org.minima.objects.TxPoW;
+import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniNumber;
+import org.minima.system.brains.TxPoWMiner;
+import org.minima.system.brains.TxPoWProcessor;
+import org.minima.system.genesis.GenesisMMR;
+import org.minima.system.genesis.GenesisTxPoW;
+import org.minima.system.network.NetworkManager;
+import org.minima.system.network.minima.NIOClient;
+import org.minima.system.network.minima.NIOManager;
+import org.minima.system.network.minima.NIOMessage;
+import org.minima.system.network.minima.NIOServer;
+import org.minima.system.params.GeneralParams;
+import org.minima.system.params.GlobalParams;
+import org.minima.utils.MiniFile;
 import org.minima.utils.MinimaLogger;
-import org.minima.utils.SQLHandler;
+import org.minima.utils.RPCClient;
+import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
+import org.minima.utils.messages.MessageListener;
 import org.minima.utils.messages.MessageProcessor;
+import org.minima.utils.messages.TimerMessage;
+import org.minima.utils.messages.TimerProcessor;
 
 public class Main extends MessageProcessor {
 
 	/**
-	 * Retrieve the Main handler.. from where you can retrieve everything else..
+	 * Static link to the MAIN class
 	 */
-	private static Main mMainHandler;
-	public static Main getMainHandler() {
-		return mMainHandler;
+	private static Main mMainInstance = null;
+	public static Main getInstance() {
+		return mMainInstance;
 	}
 	
-	public static final String SYSTEM_STARTUP 		= "SYSTEM_STARTUP";
-	
-	public static final String SYSTEM_INIT 		    = "SYSTEM_INIT";
-	
-	public static final String SYSTEM_SHUTDOWN 		= "SYSTEM_SHUTDOWN";
-	public static final String SYSTEM_FULLSHUTDOWN 	= "SYSTEM_FULLSHUTDOWN";
-	
-	public static final String SYSTEM_EVENT 		= "SYSTEM_EVENT";
-		
 	/**
-	 * The Input handler
+	 * Is there someone listening to Minima messages
 	 */
-	private InputHandler mInput;
-	
-	/**
-	 * The Network manager
-	 */
-	private NetworkHandler mNetwork;
+	public static MessageListener MINIMA_LISTENER = null;
+	public static void setMinimaListener(MessageListener zListener) {
+		MINIMA_LISTENER = zListener;
+	}
+	public static void postMinimaListener(Message zMessage) {		
+		if(MINIMA_LISTENER != null) {
+			MINIMA_LISTENER.processMessage(zMessage);
+		}
+	}
 	
 	/**
-	 * The Transaction Miner
+	 * Main loop messages
 	 */
-	private TxPoWMiner mTXMiner;
+	public static final String MAIN_TXPOWMINED 	= "MAIN_TXPOWMINED";
+	public static final String MAIN_AUTOMINE 	= "MAIN_CHECKAUTOMINE";
+	public static final String MAIN_CLEANDB 	= "MAIN_CLEANDB";
+	public static final String MAIN_PULSE 		= "MAIN_PULSE";
 	
 	/**
-	 * The Main bottleneck thread that calculates the actual situation
+	 * Debug Function
 	 */
-	private ConsensusHandler mConsensus;
+	public static final String MAIN_CHECKER 	= "MAIN_CHECKER";
+	MiniData mOldTip 							= MiniData.ZERO_TXPOWID;
+	
+	//Check every 180 seconds..
+	long CHECKER_TIMER							= 1000 * 180;
 	
 	/**
-	 * The Enterprise Send Poller
+	 * Notify Users..
 	 */
-	private SendManager mSendManager;
+	public static final String MAIN_NEWBLOCK 	= "MAIN_NEWBLOCK";
+	public static final String MAIN_BALANCE 	= "MAIN_BALANCE";
+	public static final String MAIN_MINING 		= "MAIN_MINING";
 	
 	/**
-	 * The Backup Manager - runs in a separate thread
+	 * Incentive Cash User ping..
+	 * 
+	 * Every 8 hours
 	 */
-	private BackupManager mBackup;
-
-	/**
-	 * User Preferences
-	 */
-	UserPrefs mUserPrefs;
+	public static final String MAIN_INCENTIVE 	= "MAIN_INCENTIVE";
+	long IC_TIMER = 1000 * 60 * 60 * 8;
 	
 	/**
-	 * Default nodes to connect to
+	 * Main TxPoW Processor
 	 */
-	public boolean mAutoConnect        = false;
-	ArrayList<String> mAutoConnectList = new ArrayList<>();
+	TxPoWProcessor 	mTxPoWProcessor;
 	
 	/**
-	 * When did this node start up..
+	 * TxPoW Miner
 	 */
-	long mNodeStartTime;
+	TxPoWMiner 		mTxPoWMiner;
 	
 	/**
-	 * Main Constructor
-	 * @param zPort
-	 * @param zGenesis
+	 * Network Manager
 	 */
-	public Main(String zHost, int zPort, String zConfFolder) {
+	NetworkManager mNetwork;
+	
+	/**
+	 * Are we shutting down..
+	 */
+	boolean mShuttingdown = false;
+	
+	/**
+	 * Are we restoring..
+	 */
+	boolean mRestoring = false;
+	
+	/**
+	 * Timer delay for CleanDB messages - every 30 mins
+	 */
+	long CLEANDB_TIMER	= 1000 * 60 * 30;
+	
+	/**
+	 * Timer for the automine message
+	 */
+	long AUTOMINE_TIMER = 1000 * 60;
+	
+	public Main() {
 		super("MAIN");
+	
+		mMainInstance = this;
+	
+		//Are we deleting previous..
+		if(GeneralParams.CLEAN) {
+			MinimaLogger.log("Wiping previous config files..");
+			//Delete the conf folder
+			MiniFile.deleteFileOrFolder(GeneralParams.DATA_FOLDER, new File(GeneralParams.DATA_FOLDER));
+		}
 		
-		mMainHandler = this;
+		//Create the MinmaDB
+		MinimaDB.createDB();
 		
-		//What time do we start..
-		mNodeStartTime = System.currentTimeMillis();
+		//Load the Databases
+		MinimaDB.getDB().loadAllDB();
 		
-		//Backup manager
-		mBackup     = new BackupManager(zConfFolder);
-
-		//Set the TeMP folder
-		System.setProperty("java.io.tmpdir",BackupManager.getTempFolder().getAbsolutePath());
+		//Start the engine..
+		mTxPoWProcessor = new TxPoWProcessor();
+		mTxPoWMiner 	= new TxPoWMiner();
 		
-		//The guts..
-		mInput 		= new InputHandler();
-		mNetwork 	= new NetworkHandler(zHost, zPort);
-		mTXMiner 	= new TxPoWMiner();
-		mConsensus  = new ConsensusHandler();
-		mSendManager = new SendManager();
+		//Are we running a private network
+		if(GeneralParams.GENESIS) {
+			//Create a genesis node
+			doGenesis();
+		}
 		
-		/**
-		 * Introduction..
-		 */
-		MinimaLogger.setMainHandler(mConsensus);
+		//Start the networking..
+		mNetwork = new NetworkManager();
+				
+		//Simulate traffic message ( only if auto mine is set )
+		AUTOMINE_TIMER = MiniNumber.THOUSAND.div(GlobalParams.MINIMA_BLOCK_SPEED).getAsLong();
+		PostTimerMessage(new TimerMessage(AUTOMINE_TIMER, MAIN_AUTOMINE));
 		
-		MinimaLogger.log("**********************************************");
-		MinimaLogger.log("*  __  __  ____  _  _  ____  __  __    __    *");
-		MinimaLogger.log("* (  \\/  )(_  _)( \\( )(_  _)(  \\/  )  /__\\   *");
-		MinimaLogger.log("*  )    (  _)(_  )  (  _)(_  )    (  /(__)\\  *");
-		MinimaLogger.log("* (_/\\/\\_)(____)(_)\\_)(____)(_/\\/\\_)(__)(__) *");
-		MinimaLogger.log("*                                            *");
-		MinimaLogger.log("**********************************************");
-		MinimaLogger.log("Welcome to Minima. For assistance type help. Then press enter.");
-		MinimaLogger.log("Minima files : "+zConfFolder);
-		MinimaLogger.log("Minima version "+GlobalParams.MINIMA_VERSION);
+		//Set the PULSE message timer.
+		PostTimerMessage(new TimerMessage(GeneralParams.USER_PULSE_FREQ, MAIN_PULSE));
 		
-		//Load the UserPrefs
-		mUserPrefs = new UserPrefs();
-		mUserPrefs.loadDB(mBackup.getUserPrefs());
+		//Clean the DB (delete old records)
+		PostTimerMessage(new TimerMessage(CLEANDB_TIMER, MAIN_CLEANDB));
+		
+		//Store the IC User - do fast first time - 30 seconds in.. then every 8 hours
+		PostTimerMessage(new TimerMessage(1000*30, MAIN_INCENTIVE));
+		
+		//Debug Checker
+		PostTimerMessage(new TimerMessage(CHECKER_TIMER, MAIN_CHECKER));
+		
+		//Quick Clean up..
+		System.gc();
 	}
 	
-	public void setAutoConnect(boolean zAuto) {
-		mAutoConnect = zAuto;
-	}
-	
-	public void clearAutoConnectHostPort(String zHostPort) {
-		mAutoConnectList.clear();
-	}
-	
-	public void addAutoConnectHostPort(String zHostPort) {
-		mAutoConnectList.add(zHostPort);
-	}
-	
-	public long getNodeStartTime() {
-		return mNodeStartTime;
-	}
-	
-	public void setTrace(boolean zTraceON) {
-		setLOG(zTraceON);
+	public void shutdown() {
+		//we are shutting down
+		mShuttingdown = true;
 		
-		mConsensus.setLOG(zTraceON);
-		mNetwork.PostMessage(new Message(NetworkHandler.NETWORK_TRACE).addBoolean("trace", zTraceON));
-		mTXMiner.setLOG(zTraceON);
-		mInput.setLOG(zTraceON);
-		mBackup.setLOG(zTraceON);
+		//Shut down the network
+		mNetwork.shutdownNetwork();
+				
+		//Stop the Miner
+		mTxPoWMiner.stopMessageProcessor();
+		
+		//Stop the main TxPoW processor
+		mTxPoWProcessor.stopMessageProcessor();
+		while(!mTxPoWProcessor.isShutdownComplete()) {
+			try {Thread.sleep(50);} catch (InterruptedException e) {}
+		}
+		
+		//No More timer Messages
+		TimerProcessor.stopTimerProcessor();
+		
+		//Wait for the networking to finish
+		while(!mNetwork.isShutDownComplete()) {
+			try {Thread.sleep(50);} catch (InterruptedException e) {}
+		}
+		
+		//Stop this..
+		stopMessageProcessor();
+				
+		//Now backup the  databases
+		MinimaDB.getDB().saveAllDB();
+		
+		//Wait for it..
+		while(!isShutdownComplete()) {
+			try {Thread.sleep(50);} catch (InterruptedException e) {}
+		}		
 	}
 	
-	public InputHandler getInputHandler() {
-		return mInput;
+	public void restoreReady() {
+		//we are about to restore..
+		mRestoring = true;
+		
+		//Shut down the network
+		mNetwork.shutdownNetwork();
+				
+		//Stop the Miner
+		mTxPoWMiner.stopMessageProcessor();
+		
+		//Stop the main TxPoW processor
+		mTxPoWProcessor.stopMessageProcessor();
+		while(!mTxPoWProcessor.isShutdownComplete()) {
+			try {Thread.sleep(50);} catch (InterruptedException e) {}
+		}
+		
+		//No More timer Messages
+		TimerProcessor.stopTimerProcessor();
+		
+		//Wait for the networking to finish
+		while(!mNetwork.isShutDownComplete()) {
+			try {Thread.sleep(50);} catch (InterruptedException e) {}
+		}		
 	}
 	
-	public NetworkHandler getNetworkHandler() {
+	public NetworkManager getNetworkManager() {
 		return mNetwork;
 	}
 	
-	public ConsensusHandler getConsensusHandler() {
-		return mConsensus;
+	public NIOManager getNIOManager() {
+		return mNetwork.getNIOManager();
 	}
 	
-	public SendManager getSendManaManager() {
-		return mSendManager;
+	public TxPoWProcessor getTxPoWProcessor() {
+		return mTxPoWProcessor;
 	}
 	
-	public BackupManager getBackupManager() {
-		return mBackup;
+	public TxPoWMiner getTxPoWMiner() {
+		return mTxPoWMiner;
 	}
 	
-	public TxPoWMiner getMiner() {
-		return mTXMiner;
-	}
+	public void setTrace(boolean zTrace, String zFilter) {
+		setFullLogging(zTrace,zFilter);
 		
-	public UserPrefs getUserPrefs() {
-		return mUserPrefs;
+		mTxPoWProcessor.setFullLogging(zTrace,zFilter);
+		mTxPoWMiner.setFullLogging(zTrace,zFilter);
+		
+		mNetwork.getNIOManager().setFullLogging(zTrace,zFilter);
+		mNetwork.getP2PManager().setFullLogging(zTrace,zFilter);
+		mNetwork.getSSHManager().setFullLogging(zTrace,zFilter);
+		
+		NIOClient.mTraceON = zTrace;
+		NIOServer.mTraceON = zTrace;
 	}
 	
-	public void privateChain(boolean zNeedGenesis) {
-		//Set the Database backup manager
-		getConsensusHandler().setBackUpManager();
+	private void doGenesis() {
 		
-		if(zNeedGenesis){
-			//Sort the genesis Block
-			mConsensus.genesis();
-		}
+		//Create a new key - to receive the genesis funds..
+		KeyRow genkey = MinimaDB.getDB().getWallet().createNewKey();
 		
-		//Tell miner we are auto mining..
-		mTXMiner.setAutoMining(true);
+		//Create the Genesis TxPoW..
+		GenesisTxPoW genesis = new GenesisTxPoW(genkey.getAddress());
+		
+		//Hard add to the DB
+		MinimaDB.getDB().getTxPoWDB().addTxPoW(genesis);
+		
+		//Create the Genesis TxBlock
+		TxBlock txgenesisblock = new TxBlock(new GenesisMMR(), genesis, new ArrayList<>());
+		
+		//The first root node
+		TxPoWTreeNode gensisnode = new TxPoWTreeNode(txgenesisblock);
+		
+		//Set it
+		MinimaDB.getDB().getTxPoWTree().setRoot(gensisnode);
+		
+		//And set this txpow as main chain..
+		MinimaDB.getDB().getTxPoWDB().setOnMainChain(genesis.getTxPoWID());
 	}
 	
-	public void setAutoMine() {
-		//Tell miner we are auto mining..
-		mTXMiner.setAutoMining(true);
-	}
-	
-	public void setRequireNoInitialSync() {
-		mConsensus.setInitialSyncComplete();
-	}
-		
 	@Override
 	protected void processMessage(Message zMessage) throws Exception {
+		//Are we shutting down
+		if(mShuttingdown || mRestoring) {
+			return;
+		}
 		
-		if (zMessage.isMessageType(SYSTEM_STARTUP) ) {
-			//Set the Database backup manager
-			getConsensusHandler().setBackUpManager();
+		//Process messages
+		if(zMessage.getMessageType().equals(MAIN_TXPOWMINED)) {
+			//Get it..
+			TxPoW txpow = (TxPoW) zMessage.getObject("txpow");
 			
-			//Restore..
-			getConsensusHandler().PostMessage(ConsensusBackup.CONSENSUSBACKUP_RESTORE);
+			//Post a message..
+			Message mining = new Message(MAIN_MINING);
+			mining.addBoolean("starting", false);
+			mining.addObject("txpow", txpow);
+			Main.getInstance().PostMessage(mining);
 			
-		}else if ( zMessage.isMessageType(SYSTEM_INIT) ) {
+			//We have mined a TxPoW.. send it out to the network..
+			if(!txpow.isTransaction() && !txpow.isBlock()) {
+				//A PULSE..forward as proof
+				return;
+			}
 			
-			//Start the network..	
-			mNetwork.PostMessage(NetworkHandler.NETWORK_STARTUP);
+			//Create an NIO Message - so the message goes through the same checks as any other message
+			MiniData niodata = NIOManager.createNIOMessage(NIOMessage.MSG_TXPOW, txpow);
 
-			//And do we do an automatic logon..
-			if(mAutoConnect) {
-				//Connect to the the list of auto connect
-				for(String hostport : mAutoConnectList) {
-					int div     = hostport.indexOf(":");
-					String host = hostport.substring(0,div);
-					int port    = Integer.parseInt(hostport.substring(div+1));
-					
-					//Send a TimedMessage..
-					Message connect  = new Message(NetworkHandler.NETWORK_CONNECT)
-							.addInteger("port", port).addString("host", host);
-					getNetworkHandler().PostMessage(connect);
+			//And send
+			Message newniomsg = new Message(NIOManager.NIO_INCOMINGMSG);
+			newniomsg.addString("uid", "0x00");
+			newniomsg.addObject("data", niodata);
+
+			//Post to the NIOManager - which will check it and forward if correct
+			getNetworkManager().getNIOManager().PostMessage(newniomsg);
+		
+		}else if(zMessage.getMessageType().equals(MAIN_AUTOMINE)) {
+			
+			//Are we auto mining
+			if(GeneralParams.AUTOMINE) {
 				
-					//Small Pause.. 10 seconds..
-					Thread.sleep(10000);
-				}
+				//Create a TxPoW
+				mTxPoWMiner.PostMessage(TxPoWMiner.TXPOWMINER_MINEPULSE);
 			}
 			
-		}else if ( zMessage.isMessageType(SYSTEM_SHUTDOWN) ) {
+			//Next Attempt
+			PostTimerMessage(new TimerMessage(AUTOMINE_TIMER, MAIN_AUTOMINE));
+		
+		}else if(zMessage.getMessageType().equals(MAIN_CLEANDB)) {
 			
-			//make a backup and shutdown message
-			Message backshut = new Message(ConsensusBackup.CONSENSUSBACKUP_BACKUP);
-			backshut.addBoolean("shutdown", true);
+			//Do some house keeping on the DB
+			MinimaDB.getDB().getTxPoWDB().cleanDB();
 			
-			//Keep the response message
-			InputHandler.addResponseMesage(backshut, zMessage);
+			//Same with the ArchiveDB
+			MinimaDB.getDB().getArchive().cleanDB();
 			
-			//Save all the user details..
-			getConsensusHandler().PostMessage(backshut);
+			//Now save the state - in case system crashed..
+			MinimaDB.getDB().saveState();
 			
-		}else if ( zMessage.isMessageType(SYSTEM_FULLSHUTDOWN) ) {
+			//Clean up the RAM Memory
+			System.gc();
 			
-			//Savew ther UserPrefs
-			mUserPrefs.saveDB(mBackup.getUserPrefs());
+			//Do it again..
+			PostTimerMessage(new TimerMessage(CLEANDB_TIMER, MAIN_CLEANDB));
+		
+		}else if(zMessage.getMessageType().equals(MAIN_PULSE)) {
 			
-			//Notify Listeners..
-			mConsensus.updateListeners(new Message(ConsensusHandler.CONSENSUS_NOTIFY_QUIT));
+			//Create Pulse Message
+			Pulse pulse = Pulse.createPulse();
+		
+			//And send it to all your peers..
+			NIOManager.sendNetworkMessageAll(NIOMessage.MSG_PULSE, pulse);
+		
+			//Mine a TxPoW
+			mTxPoWMiner.PostMessage(TxPoWMiner.TXPOWMINER_MINEPULSE);
 			
-			//Gracefull shutdown..
-			mNetwork.PostMessage(NetworkHandler.NETWORK_SHUTDOWN);
+			//And then wait again..
+			PostTimerMessage(new TimerMessage(GeneralParams.USER_PULSE_FREQ, MAIN_PULSE));
+		
+		}else if(zMessage.getMessageType().equals(MAIN_INCENTIVE)) {
 			
-			//Shut the Send Manager
-			mSendManager.PostMessage(SendManager.SENDMANAGER_SHUTDOWN);
+			//Get the User
+			String user = MinimaDB.getDB().getUserDB().getIncentiveCashUserID();
 			
-			//Shut down the individual systems..
-			mInput.stopMessageProcessor();
-			mTXMiner.stopMessageProcessor();
-			mConsensus.stopMessageProcessor();
-			
-			//Wait for the backup machine to finish..
-			while(mBackup.getSize()>0) {
-				MinimaLogger.log("Backup Manager NOT Finished.. waiting.. ");
-				Thread.sleep(1000);
+			//Make sure there is a User specified
+			if(!user.equals("")) {
+				//Call the RPC End point..
+				RPCClient.sendPUT("https://incentivecash.minima.global/api/ping/"+user);
 			}
-			mBackup.stopMessageProcessor();
 			
-			//Shut the database.
-			SQLHandler.CloseSQL();
+			//Do it agin..
+			PostTimerMessage(new TimerMessage(IC_TIMER, MAIN_INCENTIVE));
 			
-			//Wait a second..
-			Thread.sleep(1000);
+		}else if(zMessage.getMessageType().equals(MAIN_NEWBLOCK)) {
 			
-			//And shut this down too..
-			stopMessageProcessor();
+			//Get the TxPoW
+			TxPoW txpow = (TxPoW) zMessage.getObject("txpow");
 			
-			//It's over..
-			InputHandler.endResponse(zMessage, true, "Minima Stopped. Bye Bye..");
+			//The tip of the TxPoWTree has changed - we have a new block..
+			postMinimaListener(zMessage);
+			
+			//Notify The Web Hook Listeners
+			JSONObject event = new JSONObject();
+			event.put("event", "NEWBLOCK");
+			event.put("txpow", txpow.toJSON());
+			
+			//And Post it..
+			PostNotifyEvent(event);
+			
+		}else if(zMessage.getMessageType().equals(MAIN_BALANCE)) {
+			
+			//The tip of the TxPoWTree has changed - we have a new block..
+			postMinimaListener(zMessage);
+			
+			//Notify The Web Hook Listeners
+			JSONObject event = new JSONObject();
+			event.put("event", "NEWBALANCE");
+			
+			//And Post it..
+			PostNotifyEvent(event);
+				
+		}else if(zMessage.getMessageType().equals(MAIN_MINING)) {
+			
+			//Get the TxPoW
+			TxPoW txpow = (TxPoW) zMessage.getObject("txpow");
 					
-		}else {
-			//Unknown Message..
-			MinimaLogger.log("Unknown Message sent to main handler "+zMessage);
+			//Are we starting or stopping..
+			boolean starting = zMessage.getBoolean("starting");
+			
+			//The tip of the TxPoWTree has changed - we have a new block..
+			postMinimaListener(zMessage);
+			
+			//Notify The Web Hook Listeners
+			JSONObject event = new JSONObject();
+			event.put("event", "MINING");
+			event.put("txpow", txpow.toJSON());
+			event.put("starting", starting);
+			
+			//And Post it..
+			PostNotifyEvent(event);
+			
+		}else if(zMessage.getMessageType().equals(MAIN_CHECKER)) {
+			
+			//Get the Current Tip
+			TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
+			if(tip == null) {
+				MinimaLogger.log("No tip found in Main Checker..");
+				return;
+			}
+			
+			//Has it changed
+			if(tip.getTxPoW().getTxPoWIDData().isEqual(mOldTip)) {
+				MinimaLogger.log("Warning : Chain tip hasn't changed in 180 seconds "+tip.getTxPoW().getTxPoWID()+" "+tip.getTxPoW().getBlockNumber().toString());
+			}
+			
+			//Keep for the next round
+			mOldTip = tip.getTxPoW().getTxPoWIDData();
+			
+			//A Ping Message.. The top TxPoWID
+			NIOManager.sendNetworkMessageAll(NIOMessage.MSG_PING, tip.getTxPoW().getTxPoWIDData());
+			
+			//Check again..
+			PostTimerMessage(new TimerMessage(CHECKER_TIMER, MAIN_CHECKER));
 		}
 	}
-
+	
+	/**
+	 * Post a network message to the webhook listeners
+	 * @param zEvent
+	 */
+	private void PostNotifyEvent(JSONObject zEvent) {
+		if(getNetworkManager() != null) {
+			getNetworkManager().getNotifyManager().PostEvent(zEvent);
+		}
+	}
 }
