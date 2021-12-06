@@ -282,19 +282,22 @@ public class NIOManager extends MessageProcessor {
 			//New connection.. 
 			NIOClient nioc = (NIOClient)zMessage.getObject("client");
 		
-			//Create the Greeting..
-			Greeting greet = new Greeting().createGreeting();
+			//Is this an outgoing connection..
+			if(!nioc.isIncoming()) {
+				//Create the Greeting..
+				Greeting greet = new Greeting().createGreeting();
+				
+				//And send it..
+				NIOManager.sendNetworkMessage(nioc.getUID(), NIOMessage.MSG_GREETING, greet);
+			}
 			
-			//And send it..
-			NIOManager.sendNetworkMessage(nioc.getUID(), NIOMessage.MSG_GREETING, greet);
+//			//Tell the P2P..
+//			Message newconn = new Message(P2PFunctions.P2P_CONNECTED);
+//			newconn.addString("uid", nioc.getUID());
+//			newconn.addBoolean("incoming", nioc.isIncoming());
+//			Main.getInstance().getNetworkManager().getP2PManager().PostMessage(newconn);
 			
-			//Tell the P2P..
-			Message newconn = new Message(P2PFunctions.P2P_CONNECTED);
-			newconn.addString("uid", nioc.getUID());
-			newconn.addBoolean("incoming", nioc.isIncoming());
-			Main.getInstance().getNetworkManager().getP2PManager().PostMessage(newconn);
-			
-			MinimaLogger.log("INFO : "+nioc.getUID()+" connection success @ "+nioc.getHost());
+//			MinimaLogger.log("INFO : "+nioc.getUID()+" connection success @ "+nioc.getHost());
 			
 		}else if(zMessage.getMessageType().equals(NIO_INCOMINGMSG)) {
 			//Who is it from

@@ -158,6 +158,12 @@ public class NIOMessage implements Runnable {
 				//Send it
 				NIOManager.sendNetworkMessage(mClientUID, MSG_IBD, ibd);
 				
+				//Tell the P2P..
+				Message newconn = new Message(P2PFunctions.P2P_CONNECTED);
+				newconn.addString("uid", nioclient.getUID());
+				newconn.addBoolean("incoming", nioclient.isIncoming());
+				Main.getInstance().getNetworkManager().getP2PManager().PostMessage(newconn);
+				
 			}else if(type.isEqual(MSG_IBD)) {
 				//IBD received..
 				IBD ibd = IBD.ReadFromStream(dis);
