@@ -39,6 +39,7 @@ public class NIOMessage implements Runnable {
 	public static final MiniByte MSG_PULSE 		= new MiniByte(6);
 	public static final MiniByte MSG_P2P 		= new MiniByte(7);
 	public static final MiniByte MSG_PING 		= new MiniByte(8);
+	public static final MiniByte MSG_MAXIMA 	= new MiniByte(9);
 	
 	/**
 	 * Helper function that converts to String 
@@ -62,6 +63,8 @@ public class NIOMessage implements Runnable {
 			return "P2P";
 		}else if(zType.isEqual(MSG_PING)) {
 			return "PING";
+		}else if(zType.isEqual(MSG_MAXIMA)) {
+			return "MAXIMA";
 		}
 		
 		return "UNKNOWN";
@@ -112,6 +115,8 @@ public class NIOMessage implements Runnable {
 			
 			//Now find the right message
 			if(type.isEqual(MSG_GREETING)) {
+				MinimaLogger.log("GREETING REC! @ "+mClientUID);
+				
 				//Get the client.. unless an internal message
 				NIOClient nioclient = Main.getInstance().getNIOManager().getNIOServer().getClient(mClientUID);
 				if(nioclient == null) {
@@ -131,6 +136,15 @@ public class NIOMessage implements Runnable {
 					Main.getInstance().getNIOManager().disconnect(mClientUID);
 					
 					return;
+				}
+				
+				//Is this an incoming connection.. send a greeting!
+				if(nioclient.isIncoming()) {
+					//Send a greeting..
+					Greeting greetout = new Greeting().createGreeting();
+					
+					//And send it..
+					NIOManager.sendNetworkMessage(nioclient.getUID(), NIOMessage.MSG_GREETING, greetout);
 				}
 				
 				//Get the Host / Port..
@@ -382,6 +396,18 @@ public class NIOMessage implements Runnable {
 					MinimaLogger.log("[!] No Crossover found whilst syncing with new node. They are on a different chain. Please check you are on the correct chain.. disconnecting from "+ nioclient.getHost() + ":" + port);
 					Main.getInstance().getNIOManager().disconnect(mClientUID);
 				}
+				
+			}else if(type.isEqual(MSG_MAXIMA)) {
+				
+				MinimaLogger.log("Maxima Message");
+				
+				//Get the data..
+				MiniData maxmsg = MiniData.ReadFromStream(dis);
+				
+				//And send it on to Maxima..
+				
+				
+				
 				
 			}else {
 				
