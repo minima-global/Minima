@@ -51,7 +51,7 @@ public class P2PTestParams {
      */
     public static int AUTH_KEY_EXPIRY = 300_000;
 
-    public static int METRICS_DELAY = 5_000;
+    public static int METRICS_DELAY = 30_000;
 
     public static String METRICS_URL = "http://metrics:5000/network";
 
