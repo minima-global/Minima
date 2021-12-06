@@ -52,7 +52,7 @@ public class P2PParams {
      */
     public static int AUTH_KEY_EXPIRY = 300_000;
 
-    public static int METRICS_DELAY = 6000_000;
+    public static int METRICS_DELAY = 600_000;
 
     public static String METRICS_URL = "http://35.242.245.96/network";
 
