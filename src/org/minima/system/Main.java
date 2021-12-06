@@ -115,7 +115,7 @@ public class Main extends MessageProcessor {
 	/**
 	 * Timer delay for CleanDB messages - every 30 mins
 	 */
-	long CLEANDB_TIMER	= 1000 * 60 * 30;
+	long CLEANDB_TIMER	= 1000 * 60 * 2;
 	
 	/**
 	 * Timer for the automine message
@@ -340,7 +340,11 @@ public class Main extends MessageProcessor {
 			//Do some house keeping on the DB
 			MinimaDB.getDB().getTxPoWDB().cleanDB();
 			
+			//Get all the 
+			
+			
 			//Same with the ArchiveDB
+			MinimaLogger.log("CLEAN ARCHIVE_DB");
 			MinimaDB.getDB().getArchive().cleanDB();
 			
 			//Now save the state - in case system crashed..

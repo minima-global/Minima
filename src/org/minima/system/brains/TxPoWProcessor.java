@@ -225,6 +225,8 @@ public class TxPoWProcessor extends MessageProcessor {
 			int maxlen = GlobalParams.MINIMA_CASCADE_START_DEPTH.add(GlobalParams.MINIMA_CASCADE_FREQUENCY).getAsInt();
 			if(txptree.getHeaviestBranchLength() >= maxlen) {
 				
+				MinimaLogger.log("CASCADE THE CHAIN!");
+				
 				//Current Tip
 				TxPoWTreeNode tip = txptree.getTip();
 				
@@ -250,6 +252,7 @@ public class TxPoWProcessor extends MessageProcessor {
 					}
 					
 					//Store in the ArchiveManager
+					MinimaLogger.log("ARCHIVE THIS BLOCK : "+txpnode.getTxBlock().getTxPoW().getTxPoWID());
 					arch.saveBlock(txpnode.getTxBlock());
 					
 					//And add to the cascade

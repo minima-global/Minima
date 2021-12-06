@@ -20,7 +20,7 @@ public class ArchiveManager extends SqlDB {
 	/**
 	 * How long does data remains in the Archive DB
 	 */
-	public long MAX_SQL_MILLI = 1000 * 60 * 60 * 24 * GeneralParams.NUMBER_DAYS_ARCHIVE;
+	public static long MAX_SQL_MILLI = 1000 * 60 * 60 * 24 * GeneralParams.NUMBER_DAYS_ARCHIVE;
 	
 	/**
 	 * PreparedStatements
@@ -34,6 +34,8 @@ public class ArchiveManager extends SqlDB {
 	
 	public ArchiveManager() {
 		super();
+		
+		MinimaLogger.log("MAX_SQL_MILLI "+MAX_SQL_MILLI);
 	}
 	
 	@Override
@@ -112,13 +114,17 @@ public class ArchiveManager extends SqlDB {
 			//Set main params
 			SQL_INSERT_SYNCBLOCK.setString(1, zBlock.getTxPoW().getTxPoWID());
 			SQL_INSERT_SYNCBLOCK.setLong(2, zBlock.getTxPoW().getBlockNumber().getAsLong());
-			SQL_INSERT_SYNCBLOCK.setLong(3, System.currentTimeMillis());
+			
+			long timemilli = System.currentTimeMillis();
+			SQL_INSERT_SYNCBLOCK.setLong(3, timemilli);
 			
 			//And finally the actual bytes
 			SQL_INSERT_SYNCBLOCK.setBytes(4, syncdata.getBytes());
 			
 			//Do it.
 			SQL_INSERT_SYNCBLOCK.execute();
+			
+			MinimaLogger.log("ARCHIVE INSERTED @ "+timemilli);
 			
 			return true;
 			
@@ -227,8 +233,15 @@ public class ArchiveManager extends SqlDB {
 	
 	public synchronized int cleanDB() {
 		try {
+			long timenow = System.currentTimeMillis();
+			MinimaLogger.log("CLEAN TIME 	: "+timenow);
+			MinimaLogger.log("MAX_SQL_MILLI : "+MAX_SQL_MILLI);
+			
+			long maxtime = timenow - MAX_SQL_MILLI;
+			MinimaLogger.log("CUT OFF       : "+maxtime);
+			
 			//Current MAX time..
-			long maxtime = System.currentTimeMillis() - MAX_SQL_MILLI;
+			MinimaLogger.log("DELETE ARCHIVE < "+maxtime);
 			
 			//Set the parameters
 			SQL_DELETE_TXBLOCKS.clearParameters();
@@ -247,43 +260,52 @@ public class ArchiveManager extends SqlDB {
 	}
 	
 	public static void main(String[] zArgs) {
-		
-		File testdbfolder 	= new File(System.getProperty("user.home"),"testfolder");
-		File testdb 		= new File(testdbfolder,"sqlsync");
-		
-		ArchiveManager arch = new ArchiveManager();
-		arch.loadDB(testdb);
-		
-		//test insert..
-		TxPoW txp = new TxPoW();
-		txp.setBlockNumber(MiniNumber.ONE);
-		txp.setTimeMilli();
-		txp.calculateTXPOWID();
-		txp.setSuperParent(0, new MiniData("0xFFEEFF"));
-		
-		//Create a SyncBlock
-		TxBlock sb = new TxBlock(null,txp,new ArrayList<>());
-		
-		arch.saveBlock(sb);
-		
-		int rows = arch.getSize();
-		
-		System.out.println("DB Size : "+rows);
-		
-		String txpid = sb.getTxPoW().getTxPoWID();
-		
-		TxBlock lsb = arch.loadBlock(txpid);
-		
-		System.out.println("Sync Loaded : "+lsb.getTxPoW().toString());
-		
-		//Load a range..
-		ArrayList<TxBlock> blocks = arch.loadBlockRange(MiniNumber.ZERO, MiniNumber.ONE);
-		System.out.println("Sync Range : "+blocks.size());
-		
-		//Shut down
-		arch.saveDB();
-	}
 
+		System.out.println(MAX_SQL_MILLI);
+		
+		
+		long TEST_MAX_SQL_MILLI = 1000 * 60 * 60 * 24;
+		System.out.println(TEST_MAX_SQL_MILLI);
+		
+		System.out.println(TEST_MAX_SQL_MILLI * 28);
+		System.out.println(TEST_MAX_SQL_MILLI * GeneralParams.NUMBER_DAYS_ARCHIVE);
+		
+		
+//		File testdbfolder 	= new File(System.getProperty("user.home"),"testfolder");
+//		File testdb 		= new File(testdbfolder,"sqlsync");
+//		
+//		ArchiveManager arch = new ArchiveManager();
+//		arch.loadDB(testdb);
+//		
+//		//test insert..
+//		TxPoW txp = new TxPoW();
+//		txp.setBlockNumber(MiniNumber.ONE);
+//		txp.setTimeMilli();
+//		txp.calculateTXPOWID();
+//		txp.setSuperParent(0, new MiniData("0xFFEEFF"));
+//		
+//		//Create a SyncBlock
+//		TxBlock sb = new TxBlock(null,txp,new ArrayList<>());
+//		
+//		arch.saveBlock(sb);
+//		
+//		int rows = arch.getSize();
+//		
+//		System.out.println("DB Size : "+rows);
+//		
+//		String txpid = sb.getTxPoW().getTxPoWID();
+//		
+//		TxBlock lsb = arch.loadBlock(txpid);
+//		
+//		System.out.println("Sync Loaded : "+lsb.getTxPoW().toString());
+//		
+//		//Load a range..
+//		ArrayList<TxBlock> blocks = arch.loadBlockRange(MiniNumber.ZERO, MiniNumber.ONE);
+//		System.out.println("Sync Range : "+blocks.size());
+//		
+//		//Shut down
+//		arch.saveDB();
+	}
 
 	
 }

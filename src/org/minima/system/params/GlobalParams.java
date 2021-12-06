@@ -28,7 +28,7 @@ public class GlobalParams {
 	/**
 	 * How often do we cascade the chain
 	 */
-	public static MiniNumber MINIMA_CASCADE_FREQUENCY = new MiniNumber(100);
+	public static MiniNumber MINIMA_CASCADE_FREQUENCY = new MiniNumber(3);
 	
 	/**
 	 * Depth before we cascade..
