@@ -16,6 +16,7 @@ import org.minima.system.brains.TxPoWProcessor;
 import org.minima.system.genesis.GenesisMMR;
 import org.minima.system.genesis.GenesisTxPoW;
 import org.minima.system.network.NetworkManager;
+import org.minima.system.network.maxima.Maxima;
 import org.minima.system.network.minima.NIOClient;
 import org.minima.system.network.minima.NIOManager;
 import org.minima.system.network.minima.NIOMessage;
@@ -103,6 +104,11 @@ public class Main extends MessageProcessor {
 	NetworkManager mNetwork;
 	
 	/**
+	 * Maxima
+	 */
+	Maxima mMaxima;
+	
+	/**
 	 * Are we shutting down..
 	 */
 	boolean mShuttingdown = false;
@@ -144,6 +150,9 @@ public class Main extends MessageProcessor {
 		mTxPoWProcessor = new TxPoWProcessor();
 		mTxPoWMiner 	= new TxPoWMiner();
 		
+		//Start up Maxima
+		mMaxima = new Maxima();
+		
 		//Are we running a private network
 		if(GeneralParams.GENESIS) {
 			//Create a genesis node
@@ -179,7 +188,10 @@ public class Main extends MessageProcessor {
 		
 		//Shut down the network
 		mNetwork.shutdownNetwork();
-				
+		
+		//Shut down Maxima
+		mMaxima.stopMessageProcessor();
+		
 		//Stop the Miner
 		mTxPoWMiner.stopMessageProcessor();
 		
@@ -215,6 +227,9 @@ public class Main extends MessageProcessor {
 		
 		//Shut down the network
 		mNetwork.shutdownNetwork();
+		
+		//Shut down Maxima
+		mMaxima.stopMessageProcessor();
 				
 		//Stop the Miner
 		mTxPoWMiner.stopMessageProcessor();
@@ -248,6 +263,10 @@ public class Main extends MessageProcessor {
 	
 	public TxPoWMiner getTxPoWMiner() {
 		return mTxPoWMiner;
+	}
+	
+	public Maxima getMaxima() {
+		return mMaxima;
 	}
 	
 	public void setTrace(boolean zTrace, String zFilter) {

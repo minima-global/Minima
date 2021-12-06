@@ -1,33 +1,23 @@
 package org.minima.system.network.maxima;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
+import org.minima.utils.Streamable;
 
-public class MaximaMessage {
+public class MaximaMessage implements Streamable {
 
-	/**
-	 * The Date in milliseconds from Jan 1 1970
-	 */
-	public MiniNumber mTimeMilli;
-	
 	/**
 	 * Who is this message from
 	 */
 	public MiniString mFromAddress;
 	
 	/**
-	 * What is the FROM Public Key (For encrypting replies)
-	 * 
-	 * You can check the HASH pub key is correct ion the mFromAddress
-	 */
-	public MiniString mFromPublicKey;
-	
-	/**
 	 * Who is it to
-	 * 
-	 * HASH(PUBKEY)@HOST:APPLICATION
-	 * 
 	 */
 	public MiniString mTo;
 	
@@ -36,8 +26,24 @@ public class MaximaMessage {
 	 */
 	public MiniData mData;
 	
+	/**
+	 * The Signature
+	 */
+	public MiniData mSignature;
 	
 	public MaximaMessage() {}
-	
-	
+
+	@Override
+	public void writeDataStream(DataOutputStream zOut) throws IOException {
+		mFromAddress.writeDataStream(zOut);
+		mTo.writeDataStream(zOut);
+		mData.writeDataStream(zOut);
+	}
+
+	@Override
+	public void readDataStream(DataInputStream zIn) throws IOException {
+		mFromAddress = MiniString.ReadFromStream(zIn);
+		mTo = MiniString.ReadFromStream(zIn);
+		mData = MiniData.ReadFromStream(zIn);
+	}
 }
