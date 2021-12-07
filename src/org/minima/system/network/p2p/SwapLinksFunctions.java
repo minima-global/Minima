@@ -136,7 +136,6 @@ public class SwapLinksFunctions {
                     state.getOutLinks().put(uid, minimaAddress);
                     if (state.getOutLinks().size() > state.getMaxNumP2PConnections()) {
                         P2PFunctions.disconnect(uid);
-                        MinimaLogger.log("[-] Too many outgoing connections, disconnecting");
                     }
                 }
 
@@ -152,8 +151,6 @@ public class SwapLinksFunctions {
             } else {
                 state.getNotAcceptingConnP2PLinks().put(uid, minimaAddress);
             }
-        } else {
-            MinimaLogger.log("[-] ERROR Client is null when processing greeting: " + greeting.toJson());
         }
         return noconnect;
     }
@@ -176,8 +173,6 @@ public class SwapLinksFunctions {
             state.setHostSet(true);
             state.getKnownPeers().remove(state.getMyMinimaAddress());
             MinimaLogger.log("[+] Setting My IP: " + hostIP);
-        } else {
-            MinimaLogger.log("[-] Failed to set my ip. Secrets do not match. MySecret: " + state.getIpReqSecret() + " Received secret: " + secret);
         }
     }
 

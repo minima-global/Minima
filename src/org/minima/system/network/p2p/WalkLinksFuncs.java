@@ -88,8 +88,6 @@ public class WalkLinksFuncs {
             retMsg = new Message(P2PManager.P2P_SEND_MSG)
                     .addString("uid", client.getUID())
                     .addObject("json", p2pWalkLinks.toJson());
-        } else {
-            MinimaLogger.log("[-] P2P_WALK_LINKS NIOClientInfo for " + destinationAddress + " does not exist");
         }
         return retMsg;
     }
@@ -133,9 +131,7 @@ public class WalkLinksFuncs {
         if (address == null){
             address = state.getNoneP2PLinks().get(uid);
         }
-        if (address == null){
-            MinimaLogger.log("No client found for: " + uid);
-        }
+
         return address;
     }
 
@@ -219,11 +215,7 @@ public class WalkLinksFuncs {
                 InetSocketAddress connectTargetAddress = walkLinks.getPathTaken().get(walkLinks.getPathTaken().size() - 1);
                 retMsg.add(new Message(P2PManager.P2P_SEND_CONNECT)
                         .addObject("address", connectTargetAddress));
-            } else {
-                MinimaLogger.log("[!] P2P_WALK_LINKS_RESPONSE: Not Connecting as returned own address");
             }
-        } else {
-            MinimaLogger.log("[!] P2P_WALK_LINKS_RESPONSE: Not Connecting already have max numLinks");
         }
 
         return retMsg;
@@ -236,10 +228,7 @@ public class WalkLinksFuncs {
             state.getKnownPeers().add(connectTargetAddress);
             returnMessage.addAll(genLoadBalanceDoSwaps(state, connectTargetAddress, msg.getAvailableNoneP2PConnectionSlots()));
 
-        } else {
-            MinimaLogger.log("[!] P2P_WALK_LINKS_RESPONSE: Not Connecting as returned own address");
         }
-
         return returnMessage;
     }
 
