@@ -117,8 +117,6 @@ public class NIOMessage implements Runnable {
 			
 			//Now find the right message
 			if(type.isEqual(MSG_GREETING)) {
-				MinimaLogger.log("GREETING REC! @ "+mClientUID);
-				
 				//Get the client.. unless an internal message
 				NIOClient nioclient = Main.getInstance().getNIOManager().getNIOServer().getClient(mClientUID);
 				if(nioclient == null) {
