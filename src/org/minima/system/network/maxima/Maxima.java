@@ -23,6 +23,7 @@ import org.minima.utils.MinimaLogger;
 import org.minima.utils.encrypt.CryptoPackage;
 import org.minima.utils.encrypt.EncryptDecrypt;
 import org.minima.utils.encrypt.GenerateKey;
+import org.minima.utils.encrypt.SignVerify;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageProcessor;
@@ -123,7 +124,8 @@ public class Maxima extends MessageProcessor {
 			mm.mData		 = data;
 			
 			//Sign the Data..
-			mm.mSignature	 = MiniData.ZERO_TXPOWID; 
+			byte[] sigBytes  = SignVerify.sign(mPrivate.getBytes(), data.getBytes());
+			mm.mSignature	 = new MiniData(sigBytes); 
 			
 			//Now get the complete Message as a MiniData Package..
 			MiniData mmdata = MiniData.getMiniDataVersion(mm);
@@ -163,6 +165,24 @@ public class Maxima extends MessageProcessor {
 			//Now we have a Message!
 			MinimaLogger.log("MAXIMA : "+mm.toJSON().toString());
 			
+			//Get the public key of the sender..
+			String fromstr 	= mm.mFromAddress.toString();
+			int index		= fromstr.indexOf("@");
+			String pubkstr  = fromstr.substring(0, index);
+			MiniData pubk = null;
+			if(pubkstr.startsWith("Mx")) {
+				pubk = new MiniData(BaseConverter.xdecode32(pubkstr));
+			}else {
+				pubk = new MiniData(pubkstr);
+			}
+			
+			//Check the Signature..
+			boolean valid = SignVerify.verify(pubk.getBytes(), mm.mData.getBytes(), mm.mSignature.getBytes());
+			if(!valid) {
+				MinimaLogger.log("MAXIMA Invalid Signature on message : "+mpkg.mTo.to0xString());
+				return;
+			}
+			
 			//Notify The Web Hook Listeners
 			JSONObject event = new JSONObject();
 			event.put("event", "MAXIMA");
@@ -172,21 +192,26 @@ public class Maxima extends MessageProcessor {
 		}
 	}
 
-	private void sendMaximaMessage(String zHost, int zPort, MiniData zMaxMessage) throws IOException {
+	private void sendMaximaMessage(String zHost, int zPort, MiniData zMaxMessage) {
 		
-		//Open the socket..
-		Socket sock 			= new Socket(zHost, zPort);
+		try {
+			//Open the socket..
+			Socket sock 			= new Socket(zHost, zPort);
+			
+			//Create the streams..
+			OutputStream out 		= sock.getOutputStream();
+			DataOutputStream dos 	= new DataOutputStream(out);
+			
+			//Write the data
+			zMaxMessage.writeDataStream(dos);
+			dos.flush();
+			
+			dos.close();
+			out.close();
 		
-		//Create the streams..
-		OutputStream out 		= sock.getOutputStream();
-		DataOutputStream dos 	= new DataOutputStream(out);
-		
-		//Write the data
-		zMaxMessage.writeDataStream(dos);
-		dos.flush();
-		
-		dos.close();
-		out.close();
+		}catch(Exception exc){
+			MinimaLogger.log("Error sending Maxima message : "+exc.toString());
+		}
 	}
 	
 	public void createMaximaKeys() throws Exception {
