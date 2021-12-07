@@ -74,10 +74,10 @@ def status(show_mobiles, no_summary, full, endpoint, failed_only):
                 versions[node['minima_version']] += 1
             else:
                 versions[node['minima_version']] = 1
-            if node['is_mobile'] == 'True':
+            if node['is_mobile'] == True:
                 valid_nodes_mobile.append(node)
             else:
-                if node['is_accepting_connections'] == 'True':
+                if node['is_accepting_connections'] == True:
                     valid_nodes_p2p.append(node)
                 else:
                     valid_nodes.append(node)
@@ -133,15 +133,15 @@ def status(show_mobiles, no_summary, full, endpoint, failed_only):
             is_okay = False
             issues.append(
                 f"Expected min block number: {top_block_number - max_expected_block_difference} actual: {node['top_block_number']}")
-        if status['has_external_ip'] == 'True' and status['num_p2p_links'] == 0:
+        if status['has_external_ip'] == True and status['num_p2p_links'] == 0:
             is_okay = False
             issues.append(f"No P2P Links")
-        if status['has_external_ip'] == 'True' and len(node['out_links']) > 5:
+        if status['has_external_ip'] == True and len(node['out_links']) > 5:
             is_okay = False
             issues.append(f"Too Many OutLinks - {len(node['out_links'])} expecting 5")
         if status['total_links'] > 100:
             is_okay = False
-            issues.append(f"Warning - more than 100 connections on this node!")
+            issues.append(f"Warning - more than 100 connections on this node! In: {node_in_links} Out: {node_out_links} NIO In: {node['nio_inbound']} NIO Out: {node['nio_outbound']}")
         if status['total_links'] == 0:
             is_okay = False
             issues.append(f"Node is reporting no connections")
@@ -164,25 +164,25 @@ def status(show_mobiles, no_summary, full, endpoint, failed_only):
 
         status_icon = '✅' if is_okay else '❌'
         in_sync = '♻️' if status['in_sync'] else '❌'
-        node_icon = '📱' if status['is_mobile'] == 'True' else '🖥️'
-        p2p_node = '🐙' if status['has_external_ip'] == 'True' else '  '
+        node_icon = '📱' if status['is_mobile'] == True else '🖥️'
+        p2p_node = '🐙' if status['has_external_ip'] == True else '  '
         padding = ' ' * (20 - len(status['address']))
-        if (show_mobiles and (status['is_mobile'] == 'True')) or (status['is_mobile'] != 'True'):
+        if (show_mobiles and (status['is_mobile'] == True)) or (status['is_mobile'] != True):
             if not failed_only or (failed_only and not is_okay):
                 node_status.append(
                 f"\t {status_icon}{tip_string}{node_icon}\t{p2p_node}  {status['address']}{padding}\t Version: {status['minima_version']} Connections: {status['total_links']}\t In-Sync: {in_sync}\t {issues_string}")
 
-        if (status['is_mobile'] != 'True') and (status['has_external_ip'] == 'True'):
+        if (status['is_mobile'] != True) and (status['has_external_ip'] == True):
             if is_okay:
                 node_summary['p2p_okay'] += 1
             else:
                 node_summary['p2p_not_okay'] += 1
-        elif (status['is_mobile'] != 'True') and (status['has_external_ip'] != 'True'):
+        elif (status['is_mobile'] != True) and (status['has_external_ip'] != True):
             if is_okay:
                 node_summary['pc_okay'] += 1
             else:
                 node_summary['pc_not_okay'] += 1
-        elif status['is_mobile'] == 'True':
+        elif status['is_mobile'] == True:
             if is_okay:
                 node_summary['mobile_okay'] += 1
             else:
