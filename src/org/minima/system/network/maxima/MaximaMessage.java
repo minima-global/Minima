@@ -56,6 +56,7 @@ public class MaximaMessage implements Streamable {
 		ret.put("to", mToPublic.to0xString());
 		ret.put("application", mApplication.toString());
 		ret.put("data", mData.to0xString());
+		ret.put("signature", mSignature.to0xString());
 		
 		return ret;
 	}
