@@ -14,11 +14,11 @@ print_usage() {
   printf "Usage: Setups a new minima service for the specified port"
 }
 
-while getopts ':xrsc::p:d:h:' flag; do
+while getopts ':xsc::p:r:d:h:' flag; do
   case "${flag}" in
     s) SLEEP='true';;
     x) CLEAN_FLAG='true';;
-    r) RPC='true';;
+    r) RPC="${OPTARG}";;
     c) CONNECTION_HOST=$(echo $OPTARG | cut -f1 -d:);
        CONNECTION_PORT=$(echo $OPTARG | cut -f2 -d:);;
     p) PORT="${OPTARG}";;
