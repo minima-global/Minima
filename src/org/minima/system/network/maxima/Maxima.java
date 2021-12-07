@@ -14,6 +14,7 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
 import org.minima.objects.keys.TreeKey;
+import org.minima.system.Main;
 import org.minima.system.network.minima.NIOManager;
 import org.minima.system.network.minima.NIOMessage;
 import org.minima.system.params.GeneralParams;
@@ -21,6 +22,7 @@ import org.minima.utils.MinimaLogger;
 import org.minima.utils.encrypt.CryptoPackage;
 import org.minima.utils.encrypt.EncryptDecrypt;
 import org.minima.utils.encrypt.GenerateKey;
+import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageProcessor;
 
@@ -150,6 +152,13 @@ public class Maxima extends MessageProcessor {
 			
 			//Now we have a Message!
 			MinimaLogger.log("MAXIMA : "+mm.toJSON().toString());
+			
+			//Notify The Web Hook Listeners
+			JSONObject event = new JSONObject();
+			event.put("event", "MAXIMA");
+			event.put("message", mm.toJSON());
+			
+			Main.getInstance().PostNotifyEvent(event);
 		}
 	}
 

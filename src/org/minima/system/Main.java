@@ -476,7 +476,7 @@ public class Main extends MessageProcessor {
 	 * Post a network message to the webhook listeners
 	 * @param zEvent
 	 */
-	private void PostNotifyEvent(JSONObject zEvent) {
+	public void PostNotifyEvent(JSONObject zEvent) {
 		if(getNetworkManager() != null) {
 			getNetworkManager().getNotifyManager().PostEvent(zEvent);
 		}
