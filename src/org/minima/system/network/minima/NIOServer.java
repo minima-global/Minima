@@ -132,10 +132,10 @@ public class NIOServer implements Runnable {
 	        // This is the main loop
 	        while (!mShutDown) {
 	        	
-	        	//Logs..
-	        	if(mTraceON) {
-	        		MinimaLogger.log("[NIOSERVER] Waiting for selection..");
-	        	}
+//	        	//Logs..
+//	        	if(mTraceON) {
+//	        		MinimaLogger.log("[NIOSERVER] Waiting for selection..");
+//	        	}
 	        	
 	        	//Select something.. 
 	        	mSelector.select(30000);

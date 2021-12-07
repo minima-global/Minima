@@ -9,7 +9,7 @@ import org.minima.utils.messages.Message;
 public class maxima extends Command {
 
 	public maxima() {
-		super("maxima","[function:info|new|send] (to:) (port:) (data:) - Check your Maxima identity or send a HEX data message. Port is also HEX.");
+		super("maxima","[function:info|send] (to:) (application:) (message:) - Check your Maxima identity or send a message");
 	}
 	
 	@Override
@@ -46,24 +46,37 @@ public class maxima extends Command {
 			
 		}else if(func.equals("send")) {
 			
-			if(!existsParam("to") || !existsParam("port") || !existsParam("data") ) {
-				throw new Exception("MUST specify to, port and data for a send command");
+			if(!existsParam("to") || !existsParam("application") || !existsParam("message") ) {
+				throw new Exception("MUST specify to, application and message for a send command");
 			}
 			
 			//Send a message..
-			String to 	= getParam("to");
-			String port = getParam("port");
-			String data = getParam("data");
+			String fullto 	= getParam("to");
+			int indexp 		= fullto.indexOf("@");
+			int index 		= fullto.indexOf(":");
+			
+			//Get the Public Key
+			String publickey = fullto.substring(0,indexp);
+			
+			//get the host and port..
+			String tohost 	= fullto.substring(indexp+1,index);
+			int toport		= Integer.parseInt(fullto.substring(index+1));	
+			
+			//Which application
+			String application 	= getParam("application");
+			String message 		= getParam("message");
 			
 			//Send to Maxima..
 			Message sender = new Message(Maxima.MAXIMA_SENDMESSAGE);
-			sender.addString("to", to);
-			sender.addString("port", port);
-			sender.addString("data", data);
+			sender.addString("publickey", publickey);
+			sender.addString("tohost", tohost);
+			sender.addInteger("toport", toport);
+			sender.addString("application", application);
+			sender.addString("message", message);
 			
 			max.PostMessage(sender);
 			
-			ret.put("response", "Message sent..");
+			ret.put("response", sender.toString());
 		}
 		
 		return ret;

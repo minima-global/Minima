@@ -17,6 +17,8 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
 import org.minima.system.brains.TxPoWChecker;
+import org.minima.system.network.maxima.Maxima;
+import org.minima.system.network.maxima.MaximaPackage;
 import org.minima.system.network.p2p.P2PFunctions;
 import org.minima.utils.ListCheck;
 import org.minima.utils.MiniFormat;
@@ -405,16 +407,14 @@ public class NIOMessage implements Runnable {
 				}
 				
 			}else if(type.isEqual(MSG_MAXIMA)) {
-				
-				MinimaLogger.log("Maxima Message");
-				
 				//Get the data..
-				MiniData maxmsg = MiniData.ReadFromStream(dis);
+				MaximaPackage maxpkg = MaximaPackage.ReadFromStream(dis);
 				
 				//And send it on to Maxima..
+				Message maxmsg = new Message(Maxima.MAXIMA_RECMESSAGE);
+				maxmsg.addObject("maxpackage", maxpkg);
 				
-				
-				
+				Main.getInstance().getMaxima().PostMessage(maxmsg);
 				
 			}else {
 				

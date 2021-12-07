@@ -1,5 +1,11 @@
 package org.minima.system.network.maxima;
 
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.nio.channels.SocketChannel;
 import java.security.KeyPair;
 
 import org.minima.database.MinimaDB;
@@ -8,6 +14,8 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
 import org.minima.objects.keys.TreeKey;
+import org.minima.system.network.minima.NIOManager;
+import org.minima.system.network.minima.NIOMessage;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.encrypt.CryptoPackage;
@@ -31,19 +39,11 @@ public class Maxima extends MessageProcessor {
 	private static final String MAXIMA_PUBKEY 	= "maxima_publickey";
 	private static final String MAXIMA_PRIVKEY 	= "maxima_privatekey";
 	
-	private static final String MAXIMA_SIGKEY 		= "maxima_treekey";
-	private static final String MAXIMA_SIGKEYUSES 	= "maxima_treekey_uses";
-	
 	/**
-	 * Encryption Keys
+	 * RSA Keys
 	 */
-	MiniData mPublicEncrypt;
-	MiniData mPrivateEncrypt;
-	
-	/**
-	 * Signature Key
-	 */
-	TreeKey mSignatureKey;
+	MiniData mPublic;
+	MiniData mPrivate;
 	
 	boolean mInited = false;
 	
@@ -60,14 +60,12 @@ public class Maxima extends MessageProcessor {
 		
 		//What is your Host..
 		String host = GeneralParams.MINIMA_HOST;
+		int port 	= GeneralParams.MINIMA_PORT;
 		
 		//What is your Encryption Public Key..
-		String encrypt = mPublicEncrypt.to0xString();
+		String rsapub = mPublic.to0xString();
 		
-		//What is your Signature Key
-		String sigpubkey = mSignatureKey.getPublicKey().to0xString();
-		
-		return sigpubkey+":"+encrypt+"@"+host;
+		return rsapub+"@"+host+":"+port;
 	}
 	
 	@Override
@@ -84,15 +82,8 @@ public class Maxima extends MessageProcessor {
 			
 			}else {
 				//Get the data..
-				mPublicEncrypt 	= udb.getData(MAXIMA_PUBKEY, MiniData.ZERO_TXPOWID);
-				mPrivateEncrypt = udb.getData(MAXIMA_PRIVKEY, MiniData.ZERO_TXPOWID);
-				
-				//And now the Signature..
-				MiniData privseed 	= udb.getData(MAXIMA_SIGKEY, MiniData.ZERO_TXPOWID);
-				MiniNumber uses 	= udb.getNumber(MAXIMA_SIGKEYUSES, MiniNumber.ZERO);
-				
-				mSignatureKey = new TreeKey(privseed, 128, 3);
-				mSignatureKey.setUses(uses.getAsInt());
+				mPublic  = udb.getData(MAXIMA_PUBKEY, MiniData.ZERO_TXPOWID);
+				mPrivate = udb.getData(MAXIMA_PRIVKEY, MiniData.ZERO_TXPOWID);
 			}
 			
 			mInited = true;
@@ -100,45 +91,85 @@ public class Maxima extends MessageProcessor {
 		}else if(zMessage.getMessageType().equals(MAXIMA_SENDMESSAGE)) {
 			
 			//Who to
-			String to = zMessage.getString("to");
+			String publickey	= zMessage.getString("publickey");
+			MiniData pubk		= new MiniData(publickey);
 			
-			//Break it down..
-			int index  = to.indexOf(":");
-			int index2 = to.indexOf("@");
-			
-			String encryptkey 	= to.substring(index,index2);
-			String host 		= to.substring(index2+1);
-			
-			//What port..
-			String port = zMessage.getString("port");
+			String tohost 		= zMessage.getString("tohost");
+			int toport			= zMessage.getInteger("toport");
+			String application 	= zMessage.getString("application");
+			String message 		= zMessage.getString("message");
 			
 			//What data
-			String datastr = zMessage.getString("data");
-			MiniData data = new MiniData(datastr);
+			MiniString ds 	= new MiniString(message);
+			MiniData data 	= new MiniData(ds.getData());
+				
+			//First create the Maxima Message
+			MaximaMessage mm = new MaximaMessage();
+			mm.mFromAddress  = new MiniString(getIdentity());
+			mm.mToPublic	 = pubk;
+			mm.mApplication	 = new MiniString(application);
+			mm.mData		 = data;
 			
-			MinimaLogger.log("MAXIMA ENC  : "+encryptkey);
-			MinimaLogger.log("MAXIMA HOST : "+host);
-			MinimaLogger.log("MAXIMA PORT : "+port);
+			//Sign the Data..
+			mm.mSignature	 = MiniData.ZERO_TXPOWID; 
 			
-			//Construct the Maxima Message
+			//Now get the complete Message as a MiniData Package..
+			MiniData mmdata = MiniData.getMiniDataVersion(mm);
+			
+			//Now Encrypt the Whole Thing..
 			CryptoPackage cp = new CryptoPackage();
-			cp.encrypt(data.getBytes(), encryptkey.getBytes());
+			cp.encrypt(mmdata.getBytes(), pubk.getBytes());
 			
-			MaximaMessage maxmsg = new MaximaMessage();
-			maxmsg.mFromAddress = new MiniString(getIdentity());
-			maxmsg.mTo			= new MiniString(to+":"+port);
-			maxmsg.mData		= cp.getCompleteEncryptedData();
+			//Now Construct a MaximaPackage
+			MaximaPackage mp = new MaximaPackage( mm.mToPublic , cp.getCompleteEncryptedData());
 			
-			//Now convert that..
+			//Create the final Message
+			MiniData maxmsg = NIOManager.createNIOMessage(NIOMessage.MSG_MAXIMA, mp);
 			
+			//And send it..
+			sendMaximaMessage(tohost, toport, maxmsg);
 			
 		}else if(zMessage.getMessageType().equals(MAXIMA_RECMESSAGE)) {
 			
+			//received a Message!
+			MaximaPackage mpkg = (MaximaPackage) zMessage.getObject("maxpackage");
 			
+			//Is it for us!
+			if(!mpkg.mTo.isEqual(mPublic)) {
+				MinimaLogger.log("MAXIMA message received to unknown PublicKey : "+mpkg.mTo.to0xString());
+				return;
+			}
+			
+			//Decrypt the data
+			CryptoPackage cp = new CryptoPackage();
+			cp.ConvertMiniDataVersion(mpkg.mData);
+			byte[] data = cp.decrypt(mPrivate.getBytes());
+			
+			//Now get the Decrypted data..
+			MaximaMessage mm = MaximaMessage.ConvertMiniDataVersion(new MiniData(data));
+			
+			//Now we have a Message!
+			MinimaLogger.log("MAXIMA : "+mm.toJSON().toString());
 		}
-		
 	}
 
+	private void sendMaximaMessage(String zHost, int zPort, MiniData zMaxMessage) throws IOException {
+		
+		//Open the socket..
+		Socket sock 			= new Socket(zHost, zPort);
+		
+		//Create the streams..
+		OutputStream out 		= sock.getOutputStream();
+		DataOutputStream dos 	= new DataOutputStream(out);
+		
+		//Write the data
+		zMaxMessage.writeDataStream(dos);
+		dos.flush();
+		
+		dos.close();
+		out.close();
+	}
+	
 	public void createMaximaKeys() throws Exception {
 		
 		//Get the UserDB
@@ -148,29 +179,13 @@ public class Maxima extends MessageProcessor {
 		KeyPair generateKeyPair = GenerateKey.generateKeyPair();
 		
 		byte[] publicKey 		= generateKeyPair.getPublic().getEncoded();
-		MiniData pubk 			= new MiniData(publicKey);
+		mPublic 				= new MiniData(publicKey);
 		
 		byte[] privateKey	 	= generateKeyPair.getPrivate().getEncoded();
-		MiniData privk 			= new MiniData(privateKey);
+		mPrivate 				= new MiniData(privateKey);
 		
 		//Put in the DB..
-		udb.setData(MAXIMA_PUBKEY, pubk);
-		udb.setData(MAXIMA_PRIVKEY, privk);
-		
-		//And Create the Signature Key
-		MiniData rand = MiniData.getRandomData(32);
-		udb.setData(MAXIMA_SIGKEY, rand);
-		udb.setNumber(MAXIMA_SIGKEYUSES, MiniNumber.ZERO);
-		
-		//Get the data..
-		mPublicEncrypt 	= udb.getData(MAXIMA_PUBKEY, MiniData.ZERO_TXPOWID);
-		mPrivateEncrypt = udb.getData(MAXIMA_PRIVKEY, MiniData.ZERO_TXPOWID);
-		
-		//And now the Signature..
-		MiniData privseed 	= udb.getData(MAXIMA_SIGKEY, MiniData.ZERO_TXPOWID);
-		MiniNumber uses 	= udb.getNumber(MAXIMA_SIGKEYUSES, MiniNumber.ZERO);
-		
-		mSignatureKey = new TreeKey(privseed, 128, 3);
-		mSignatureKey.setUses(uses.getAsInt());
+		udb.setData(MAXIMA_PUBKEY, mPublic);
+		udb.setData(MAXIMA_PRIVKEY, mPrivate);
 	}
 }

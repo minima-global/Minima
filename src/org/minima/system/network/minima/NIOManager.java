@@ -297,14 +297,6 @@ public class NIOManager extends MessageProcessor {
 				}
 			}
 			
-//			//Tell the P2P..
-//			Message newconn = new Message(P2PFunctions.P2P_CONNECTED);
-//			newconn.addString("uid", nioc.getUID());
-//			newconn.addBoolean("incoming", nioc.isIncoming());
-//			Main.getInstance().getNetworkManager().getP2PManager().PostMessage(newconn);
-			
-//			MinimaLogger.log("INFO : "+nioc.getUID()+" connection success @ "+nioc.getHost());
-			
 		}else if(zMessage.getMessageType().equals(NIO_INCOMINGMSG)) {
 			//Who is it from
 			String uid = zMessage.getString("uid");
