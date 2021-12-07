@@ -12,6 +12,7 @@ import org.minima.system.params.GeneralParams;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.encrypt.CryptoPackage;
 import org.minima.utils.encrypt.EncryptDecrypt;
+import org.minima.utils.encrypt.GenerateKey;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageProcessor;
 
@@ -144,7 +145,7 @@ public class Maxima extends MessageProcessor {
 		UserDB udb = MinimaDB.getDB().getUserDB();
 		
 		//Create a new new maxima ident..
-		KeyPair generateKeyPair = EncryptDecrypt.generateKeyPair();
+		KeyPair generateKeyPair = GenerateKey.generateKeyPair();
 		
 		byte[] publicKey 		= generateKeyPair.getPublic().getEncoded();
 		MiniData pubk 			= new MiniData(publicKey);

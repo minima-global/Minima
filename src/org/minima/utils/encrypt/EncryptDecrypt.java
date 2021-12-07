@@ -18,71 +18,43 @@ import javax.crypto.spec.SecretKeySpec;
 import org.minima.objects.base.MiniData;
 
 public class EncryptDecrypt {
+	
+    public static byte[] encryptASM(byte[] zPublicKey, byte[] inputData) throws Exception {
 
-	private static final String ASYMETRIC_ALGORITHM = "RSA";
-	private static final String SYMETRIC_ALGORITHM  = "AES";
-
-    public static byte[] encryptASM(byte[] publicKey, byte[] inputData) throws Exception {
-
-        PublicKey key = KeyFactory.getInstance(ASYMETRIC_ALGORITHM)
-                .generatePublic(new X509EncodedKeySpec(publicKey));
-
-        Cipher cipher = Cipher.getInstance(ASYMETRIC_ALGORITHM);
+        PublicKey key = GenerateKey.convertBytesToPublic(zPublicKey);
+        
+        Cipher cipher = GenerateKey.getAsymetricCipher();
         cipher.init(Cipher.ENCRYPT_MODE, key);
 
-        byte[] encryptedBytes = cipher.doFinal(inputData);
-
-        return encryptedBytes;
+        return cipher.doFinal(inputData);
     }
 
-    public static byte[] decryptASM(byte[] privateKey, byte[] encryptedData) throws Exception {
+    public static byte[] decryptASM(byte[] zPrivateKey, byte[] encryptedData) throws Exception {
 
-        PrivateKey key = KeyFactory.getInstance(ASYMETRIC_ALGORITHM)
-        		.generatePrivate(new PKCS8EncodedKeySpec(privateKey));
+        PrivateKey key 	= GenerateKey.convertBytesToPrivate(zPrivateKey);
 
-        Cipher cipher = Cipher.getInstance(ASYMETRIC_ALGORITHM);
+        Cipher cipher 	= GenerateKey.getAsymetricCipher();
         cipher.init(Cipher.DECRYPT_MODE, key);
 
-        byte[] decryptedBytes = cipher.doFinal(encryptedData);
-
-        return decryptedBytes;
-    }
-
-    public static KeyPair generateKeyPair() throws Exception {
-
-        KeyPairGenerator keyGen = KeyPairGenerator.getInstance(ASYMETRIC_ALGORITHM);
-
-        //SecureRandom random = SecureRandom.getInstance("SHA1PRNG", "SUN");
-        SecureRandom random = SecureRandom.getInstanceStrong();
-
-        // 512 is keysize
-        keyGen.initialize(1024, random);
-
-        KeyPair generateKeyPair = keyGen.generateKeyPair();
-        return generateKeyPair;
+        return cipher.doFinal(encryptedData);
     }
     
-    public static byte[] secretKey() throws NoSuchAlgorithmException {
-    	KeyGenerator generator = KeyGenerator.getInstance(SYMETRIC_ALGORITHM);
-    	generator.init(128); // The AES key size in number of bits
-    	SecretKey secKey = generator.generateKey();
-    	return secKey.getEncoded();
-    }
-    
-    public static byte[] encryptSYM(byte[] secretKey, byte[] inputData) throws Exception {
-    	SecretKey sk = new SecretKeySpec(secretKey, SYMETRIC_ALGORITHM);
-    	Cipher aesCipher = Cipher.getInstance(SYMETRIC_ALGORITHM);
+    public static byte[] encryptSYM(byte[] zSecretKey, byte[] inputData) throws Exception {
+    	SecretKey sk 		= GenerateKey.convertSecret(zSecretKey);
+    	
+    	Cipher aesCipher 	= GenerateKey.getSymetricCipher();
 		aesCipher.init(Cipher.ENCRYPT_MODE, sk);
-		byte[] byteCipherText = aesCipher.doFinal(inputData);
-    	return byteCipherText;
+		
+    	return aesCipher.doFinal(inputData);
     }
     
-    public static byte[] decryptSYM(byte[] secretKey, byte[] encryptedData) throws Exception {
-    	SecretKey sk = new SecretKeySpec(secretKey, SYMETRIC_ALGORITHM);
-    	Cipher aesCipher = Cipher.getInstance(SYMETRIC_ALGORITHM);
+    public static byte[] decryptSYM(byte[] zSecretKey, byte[] encryptedData) throws Exception {
+    	SecretKey sk 		= GenerateKey.convertSecret(zSecretKey);
+    	
+    	Cipher aesCipher 	= GenerateKey.getSymetricCipher();
 		aesCipher.init(Cipher.DECRYPT_MODE, sk);
-		byte[] byteCipherText = aesCipher.doFinal(encryptedData);
-    	return byteCipherText;
+		
+    	return aesCipher.doFinal(encryptedData);
     }
     
     public static void main(String[] args) throws Exception {
@@ -101,30 +73,6 @@ public class EncryptDecrypt {
         byte[] decryptedData = decryptASM(privk.getBytes(), encryptedData);
         System.out.println(new String(decryptedData));
 
-//    	for (Provider provider: Security.getProviders()) {
-//		  System.out.println(provider.getName());
-//		  for (String key: provider.stringPropertyNames())
-//		    System.out.println("\t" + key + "\t" + provider.getProperty(key));
-//		}
-	
-//    	Security.addProvider(new BouncyCastleProvider());
-//    	KeyGenerator generator = KeyGenerator.getInstance("AES","BC");
-    	
-    	
-//    	//SYMMETRIC example
-//    	byte[] secret = secretKey();
-//    	MiniData sec = new MiniData(secret);
-//    	System.out.println("SEC : "+sec.getLength()+" "+sec.to0xString());
-//    	
-//    	byte[] encrypted = encryptSYM(secret, "HEELO! - this is the message!! and there is no limit to the length you can encrypt..".getBytes());
-//    	MiniData enc = new MiniData(encrypted);
-//    	System.out.println("ENC : "+enc.to0xString());
-//    	byte[] decrypt = decryptSYM(secret, encrypted);
-//    	System.out.println("DEC : "+new String(decrypt));
-    	
-    	//Now decrypt..
-    	
-    	
     	
     }
 }

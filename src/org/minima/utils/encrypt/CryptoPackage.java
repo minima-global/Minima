@@ -32,8 +32,8 @@ public class CryptoPackage implements Streamable {
 	 * @throws Exception 
 	 */
 	public void encrypt(byte[] zData, byte[] zRSAPublicKey) throws Exception {
-		//Create an AES 256 bit key
-		byte[] secret = EncryptDecrypt.secretKey();
+		//Create an AES key
+		byte[] secret = GenerateKey.secretKey();
     	
 		//Now encrypt the data with the secret
 		byte[] encrypteddata = EncryptDecrypt.encryptSYM(secret, zData);
@@ -91,7 +91,7 @@ public class CryptoPackage implements Streamable {
 	} 
 	
 	public static void main(String[] zArgs) throws Exception {
-		KeyPair generateKeyPair = EncryptDecrypt.generateKeyPair();
+		KeyPair generateKeyPair = GenerateKey.generateKeyPair();
 		
 		byte[] publicKey 		= generateKeyPair.getPublic().getEncoded();
 		MiniData pubk 			= new MiniData(publicKey);

@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.security.Security;
 import java.util.Iterator;
 
 import org.minima.database.MinimaDB;
@@ -83,6 +84,10 @@ public class Minima {
 		boolean daemon = configurer.isDaemon();
 		boolean rpcenable = configurer.isRpcenable();
 
+		//Add bouncy Castle as a security provider
+		Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
+		
+		//Now lets go..
 		MinimaLogger.log("**********************************************");
 		MinimaLogger.log("*  __  __  ____  _  _  ____  __  __    __    *");
 		MinimaLogger.log("* (  \\/  )(_  _)( \\( )(_  _)(  \\/  )  /__\\   *");
@@ -117,7 +122,7 @@ public class Minima {
 			
 			//Loop while running..
 			while (!main.isShutdownComplete()) {
-                try {Thread.sleep(1000);} catch (InterruptedException e) {}
+                try {Thread.sleep(250);} catch (InterruptedException e) {}
             }
 			
 			//All done..

@@ -2,6 +2,8 @@ package org.minima.utils;
 
 import java.math.BigInteger;
 
+import org.minima.objects.base.MiniData;
+
 public class BaseConverter {
 	
 	/**
@@ -177,117 +179,61 @@ public class BaseConverter {
 		return redata;
 	}
 	
+	public static String xencode32(byte[] zData) throws ArithmeticException {
+		
+		//First create a BigInter
+		BigInteger bigint = new BigInteger(1,zData);
+		
+		//Now convert to base32
+		String bigint32 = bigint.toString(32).toLowerCase();  
+		
+		//Replace problematic characters..
+		bigint32 = bigint32.replaceAll("i", "w");
+		bigint32 = bigint32.replaceAll("l", "y");
+		bigint32 = bigint32.replaceAll("o", "z");
+		
+		return "Mx"+bigint32.toUpperCase();
+	}
+	
+	public static byte[] xdecode32(String zBase32) {
+		
+		//First remove the Mx..
+		String b32 = zBase32.toLowerCase();
+		if(b32.startsWith("mx")) {
+			b32 = b32.substring(2);
+		}
+		
+		//Replace problematic characters..
+		b32 = b32.replaceAll("w", "i");
+		b32 = b32.replaceAll("y", "l");
+		b32 = b32.replaceAll("z", "o");
+				
+		//Now create a bigint..
+		BigInteger bigint = new BigInteger(b32, 32);
+		
+		//Now get the HEX version..
+		MiniData hexval = new MiniData("0x"+bigint.toString(16));
+		
+		return hexval.getBytes();
+	}
+	
 	public static void main(String[] zArgs) {
 		
-//		byte[] data = decode16("");
-//		System.out.print(data.length);
+//		MiniData hex = MiniData.getRandomData(3);
+		MiniData hex = new MiniData("0xffdef");
+		String hstr = hex.to0xString(); 
+		System.out.println("HEX : "+hstr.length()+" "+hstr);
 		
-//		for(int i=0;i<64;i++) {
-//			BigInteger ii = new BigInteger(""+i);
-//			System.out.println(i+") "+ii.toString(32));
-//		}
+		String base32 = xencode32(hex.getBytes());
+		System.out.println("B32 : "+base32.length()+" "+base32);
+	
+		byte[] convert = xdecode32(base32);
+		MiniData conv = new MiniData(convert);
+		String convstr = conv.to0xString();
+		System.out.println("COV : "+convstr.length()+" "+convstr);
 		
-		//HEX version
-		String hex = "0764584756847564800198798798798799";
-		System.out.println("HEX    : "+hex);
-		
-		//Base32 version
-		BigInteger len 	= new BigInteger(""+hex.length());
-		String hlen 	= len.toString(16);
-		if(hlen.length() == 1) {
-			hlen = "0"+hlen;
-		}
-		System.out.println("HEXLEN : "+hlen);
-		
-		String newhex = "1"+hlen+hex;
-		System.out.println("NEWHEX : "+newhex);
-		
-		//Now add checksum..
-		String checksum = "0f0fa2c4";
-		newhex = newhex+checksum;
-		System.out.println("CHECKS : "+newhex);
-		
-		//Now convert to Base32
-		BigInteger b32 = new BigInteger(newhex,16);
-		System.out.println("BASE16 : "+b32.toString(16));
-		
-		String mxaddress = b32.toString(32).toUpperCase();
-		System.out.println("BASE32 : "+b32.toString(32).toUpperCase());
-		
-		//Convert back..
-		System.out.println();
-		BigInteger bconv = new BigInteger(mxaddress,32);
-		String conv16  = bconv.toString(16);
-		System.out.println("CONV   : "+conv16);
-		
-		//remove the 1..
-		String norm = conv16.substring(1);
-		System.out.println("NORM   : "+norm);
-		String lens  = norm.substring(0,2);
-		
-		System.out.println("LENS   : "+lens);
-		int il = Integer.parseInt(lens);
-		String val   = norm.substring(2,2+il);
-		
-		System.out.println("VAL    : "+val);
+		System.out.println(conv.isEqual(hex));
 		
 		
-//		BigInteger ii = new BigInteger("0001",16);
-//		System.out.println(ii.toString(32));
-		
-//		String tt = numberToHex(8687);
-//		System.out.println(tt);
-//		
-//		System.out.println(hexToNumber(tt));
-		
-
-//		MiniData hash = MiniData.getRandomData(64);
-//		byte[] hdata = hash.getData();
-//		byte[] checkhash = Crypto.getInstance().hashData(hash.getData());
-//		
-//		byte[] addr = new byte[65];
-//		for(int i=0;i<32;i++) {
-//			addr[i] = hdata[i];
-//		}
-//		
-////		addr[32] = checkhash[0];
-////		addr[33] = checkhash[1];
-////		addr[34] = checkhash[2];
-//		
-//		
-//		String address = "Mx"+encode32(addr);
-//		
-//		System.out.println(hash.to0xString());
-//		System.out.println(address);
-		
-//		//BASE32
-//		byte[] data = new byte[10];
-//		
-//		data[0] = (byte) 1;
-//		data[1] = (byte) 13;
-//		data[2] = (byte) 34;
-//		data[3] = (byte) 44;
-//		data[4] = (byte) 33;
-//		data[5] = (byte) 56;
-//		data[6] = (byte) 99;
-//		data[7] = (byte) 76;
-//		data[8] = (byte) 9;
-//		data[9] = (byte) 12;
-//
-//		String tt = encode32(data);
-//		
-//		System.out.println("32 "+tt);
-//		
-//		byte[] reda = decode32(tt);
-//		
-//		for(int i=0;i<10;i++) {
-//			System.out.println(i+") "+( reda[i] & 255 ) );	
-//		}
-//		
-//		byte[] hh = new byte[2];
-//		hh[0] = (byte) 15;
-//		hh[1] = (byte) 15;
-//		
-//		System.out.println("HEX : "+encode16(hh));	
 	}
 }
