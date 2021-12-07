@@ -18,6 +18,7 @@ import org.minima.system.Main;
 import org.minima.system.network.minima.NIOManager;
 import org.minima.system.network.minima.NIOMessage;
 import org.minima.system.params.GeneralParams;
+import org.minima.utils.BaseConverter;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.encrypt.CryptoPackage;
 import org.minima.utils.encrypt.EncryptDecrypt;
@@ -65,9 +66,12 @@ public class Maxima extends MessageProcessor {
 		int port 	= GeneralParams.MINIMA_PORT;
 		
 		//What is your Encryption Public Key..
-		String rsapub = mPublic.to0xString();
+//		String rsapub = mPublic.to0xString();
 		
-		return rsapub+"@"+host+":"+port;
+		//Base32
+		String b32 = BaseConverter.xencode32(mPublic.getBytes());
+		
+		return b32+"@"+host+":"+port;
 	}
 	
 	@Override
@@ -94,7 +98,13 @@ public class Maxima extends MessageProcessor {
 			
 			//Who to
 			String publickey	= zMessage.getString("publickey");
-			MiniData pubk		= new MiniData(publickey);
+			
+			MiniData pubk = null;
+			if(publickey.startsWith("Mx")) {
+				pubk = new MiniData(BaseConverter.xdecode32(publickey));
+			}else {
+				pubk = new MiniData(publickey);
+			}
 			
 			String tohost 		= zMessage.getString("tohost");
 			int toport			= zMessage.getInteger("toport");
