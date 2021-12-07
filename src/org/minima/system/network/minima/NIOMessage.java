@@ -130,21 +130,13 @@ public class NIOMessage implements Runnable {
 				//What version..
 				//if(!greet.getVersion().toString().startsWith("TN-P2P.100")) {
 				if(!greet.getVersion().toString().startsWith("0.100")) {
+						
 					MinimaLogger.log("Greeting with Incompatible Version! "+greet.getVersion().toString());
 					
 					//Disconnect..
 					Main.getInstance().getNIOManager().disconnect(mClientUID);
 					
 					return;
-				}
-				
-				//Is this an incoming connection.. send a greeting!
-				if(nioclient.isIncoming()) {
-					//Send a greeting..
-					Greeting greetout = new Greeting().createGreeting();
-					
-					//And send it..
-					NIOManager.sendNetworkMessage(nioclient.getUID(), NIOMessage.MSG_GREETING, greetout);
 				}
 				
 				//Get the Host / Port..
@@ -159,6 +151,27 @@ public class NIOMessage implements Runnable {
 				nioclient.setWelcomeMessage("Minima v"+greet.getVersion());
 				nioclient.setValidGreeting(true);
 				
+				//Tell the P2P..
+				Message newconn = new Message(P2PFunctions.P2P_CONNECTED);
+				newconn.addString("uid", nioclient.getUID());
+				newconn.addBoolean("incoming", nioclient.isIncoming());
+				Main.getInstance().getNetworkManager().getP2PManager().PostMessage(newconn);
+				
+				//Is this an incoming connection.. send a greeting!
+				if(nioclient.isIncoming()) {
+					
+					//Only Send this ONCE!
+					if(!nioclient.haveSentGreeting()) {
+						nioclient.setSentGreeting(true);	
+						
+						//Send a greeting..
+						Greeting greetout = new Greeting().createGreeting();
+						
+						//And send it..
+						NIOManager.sendNetworkMessage(nioclient.getUID(), NIOMessage.MSG_GREETING, greetout);
+					}
+				}
+				
 //				String welcome = (String) greet.getExtraData().get("welcome");
 //				if(welcome != null) {
 //					//Tell the NIOServer
@@ -171,12 +184,6 @@ public class NIOMessage implements Runnable {
 				
 				//Send it
 				NIOManager.sendNetworkMessage(mClientUID, MSG_IBD, ibd);
-				
-				//Tell the P2P..
-				Message newconn = new Message(P2PFunctions.P2P_CONNECTED);
-				newconn.addString("uid", nioclient.getUID());
-				newconn.addBoolean("incoming", nioclient.isIncoming());
-				Main.getInstance().getNetworkManager().getP2PManager().PostMessage(newconn);
 				
 			}else if(type.isEqual(MSG_IBD)) {
 				//IBD received..

@@ -284,11 +284,17 @@ public class NIOManager extends MessageProcessor {
 		
 			//Is this an outgoing connection..
 			if(!nioc.isIncoming()) {
-				//Create the Greeting..
-				Greeting greet = new Greeting().createGreeting();
 				
-				//And send it..
-				NIOManager.sendNetworkMessage(nioc.getUID(), NIOMessage.MSG_GREETING, greet);
+				//Only Send this ONCE!
+				if(!nioc.haveSentGreeting()) {
+					nioc.setSentGreeting(true);	
+				
+					//Create the Greeting..
+					Greeting greet = new Greeting().createGreeting();
+					
+					//And send it..
+					NIOManager.sendNetworkMessage(nioc.getUID(), NIOMessage.MSG_GREETING, greet);
+				}
 			}
 			
 //			//Tell the P2P..

@@ -69,6 +69,8 @@ public class NIOClient {
 	
 	boolean mValidGreeting = false;
 	
+	boolean mSentGreeting = false;
+	
 	/**
 	 * Specify extra info
 	 */
@@ -119,6 +121,7 @@ public class NIOClient {
 		ret.put("minimaport", mMinimaPort);
 		ret.put("connected", new Date(mTimeConnected).toString());
 		ret.put("valid", mValidGreeting);
+		ret.put("sentgreeting", mSentGreeting);
 		
 		return ret;
 	}
@@ -169,6 +172,14 @@ public class NIOClient {
 	
 	public void setValidGreeting(boolean zValid) {
 		mValidGreeting = zValid;
+	}
+	
+	public boolean haveSentGreeting() {
+		return mSentGreeting;
+	}
+	
+	public void setSentGreeting(boolean zSent) {
+		mSentGreeting = zSent;
 	}
 	
 	public String getWelcomeMessage() {
