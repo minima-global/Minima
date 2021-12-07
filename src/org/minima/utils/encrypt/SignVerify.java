@@ -11,11 +11,14 @@ import org.minima.objects.base.MiniData;
 
 public class SignVerify {
 
+	public static final String SIGN_ALGO 		= "SHA256withRSA";
+	public static final String SIGN_PROVIDER 	= "BC";
+	
 	public static byte[] sign(byte[] zPrivateKey, byte[] zMessage) throws Exception {
 		
 		PrivateKey privateKey 	= GenerateKey.convertBytesToPrivate(zPrivateKey);
 		
-		Signature signature 	= Signature.getInstance("SHA256withRSA", "BC");
+		Signature signature 	= Signature.getInstance(SIGN_ALGO, SIGN_PROVIDER);
         signature.initSign(privateKey, new SecureRandom());
         signature.update(zMessage);
         		
@@ -26,11 +29,11 @@ public class SignVerify {
 		
 		PublicKey publicKey		= GenerateKey.convertBytesToPublic(zPublicKey);
 		
-		Signature signature1 = Signature.getInstance("SHA256withRSA", "BC");
-        signature1.initVerify(publicKey);
-        signature1.update(zMessage);
+		Signature signature 	= Signature.getInstance(SIGN_ALGO, SIGN_PROVIDER);
+        signature.initVerify(publicKey);
+        signature.update(zMessage);
         
-		return signature1.verify(zSignature);
+		return signature.verify(zSignature);
 	}
 	
 	public static void main(String[] zArgs) throws Exception {

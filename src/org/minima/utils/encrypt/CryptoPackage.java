@@ -5,6 +5,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.security.KeyPair;
+import java.security.Security;
 
 import org.minima.objects.base.MiniData;
 import org.minima.utils.Streamable;
@@ -91,6 +92,9 @@ public class CryptoPackage implements Streamable {
 	} 
 	
 	public static void main(String[] zArgs) throws Exception {
+		//We use Bouncy
+		Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
+		 		
 		KeyPair generateKeyPair = GenerateKey.generateKeyPair();
 		
 		byte[] publicKey 		= generateKeyPair.getPublic().getEncoded();
