@@ -1,19 +1,14 @@
 package org.minima.system.network.maxima;
 
 import java.io.DataOutputStream;
-import java.io.IOException;
 import java.io.OutputStream;
-import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.nio.channels.SocketChannel;
 import java.security.KeyPair;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.userprefs.UserDB;
 import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
-import org.minima.objects.keys.TreeKey;
 import org.minima.system.Main;
 import org.minima.system.network.minima.NIOManager;
 import org.minima.system.network.minima.NIOMessage;
@@ -22,7 +17,6 @@ import org.minima.utils.BaseConverter;
 import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.encrypt.CryptoPackage;
-import org.minima.utils.encrypt.EncryptDecrypt;
 import org.minima.utils.encrypt.GenerateKey;
 import org.minima.utils.encrypt.SignVerify;
 import org.minima.utils.json.JSONObject;
