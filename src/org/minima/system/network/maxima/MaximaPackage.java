@@ -11,12 +11,12 @@ import org.minima.utils.Streamable;
 public class MaximaPackage implements Streamable {
 
 	//What version are we..
-	MiniString mVersion = new MiniString("0.1");
+	MiniString mVersion = new MiniString("1.0");
 	
 	//Who this message is for.. The Public Key ONLY
 	MiniData mTo;
 	
-	//The ENCRYPTED data
+	//The ENCRYPTED data - A MaximaInternal data structure
 	MiniData mData;
 	
 	private MaximaPackage() {};

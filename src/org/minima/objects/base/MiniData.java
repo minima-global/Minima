@@ -52,10 +52,20 @@ public class MiniData implements Streamable {
 	/**
 	 * Throws a NumberFormatException if the HEX String is Invalid
 	 * 
+	 * Can be HEX 0x or Base32 Mx
+	 * 
 	 * @param zHexString
 	 */
 	public MiniData(String zHexString) {
-		this(BaseConverter.decode16(zHexString));
+		
+		//Is it HEX or Base32..
+		if(zHexString.toLowerCase().startsWith("mx")) {
+			mData = BaseConverter.decode32(zHexString);
+		}else {
+			mData = BaseConverter.decode16(zHexString);
+		}
+		
+//		this(BaseConverter.decode16(zHexString));
 	}
 	
 	/**

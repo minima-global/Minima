@@ -9,7 +9,7 @@ import org.minima.utils.messages.Message;
 public class maxima extends Command {
 
 	public maxima() {
-		super("maxima","[function:info|send] (to:) (application:) (message:) - Check your Maxima identity or send a message");
+		super("maxima","[function:info|send] (to:) (application:) (data:) - Check your Maxima identity or send a message / data");
 	}
 	
 	@Override
@@ -34,19 +34,19 @@ public class maxima extends Command {
 			details.put("identity", ident);
 			ret.put("response", details);
 		
-		}else if(func.equals("new")) {
-			
-			//Create a new Maxima Identity..
-			max.createMaximaKeys();
-			
-			//Show details
-			String ident = max.getIdentity();  
-			details.put("identity", ident);
-			ret.put("response", details);
+//		}else if(func.equals("new")) {
+//			
+//			//Create a new Maxima Identity..
+//			max.createMaximaKeys();
+//			
+//			//Show details
+//			String ident = max.getIdentity();  
+//			details.put("identity", ident);
+//			ret.put("response", details);
 			
 		}else if(func.equals("send")) {
 			
-			if(!existsParam("to") || !existsParam("application") || !existsParam("message") ) {
+			if(!existsParam("to") || !existsParam("application") || !existsParam("data") ) {
 				throw new Exception("MUST specify to, application and message for a send command");
 			}
 			
@@ -64,19 +64,20 @@ public class maxima extends Command {
 			
 			//Which application
 			String application 	= getParam("application");
-			String message 		= getParam("message");
+			String data 		= getParam("data");
 			
 			//Send to Maxima..
 			Message sender = new Message(Maxima.MAXIMA_SENDMESSAGE);
 			sender.addString("publickey", publickey);
+			sender.addString("fullto", fullto);
 			sender.addString("tohost", tohost);
 			sender.addInteger("toport", toport);
 			sender.addString("application", application);
-			sender.addString("message", message);
+			sender.addString("data", data);
 			
 			max.PostMessage(sender);
 			
-			ret.put("response", sender.toString());
+			ret.put("response", "Processing message..");
 		}
 		
 		return ret;

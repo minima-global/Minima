@@ -19,6 +19,7 @@ import org.minima.system.network.minima.NIOManager;
 import org.minima.system.network.minima.NIOMessage;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.BaseConverter;
+import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.encrypt.CryptoPackage;
 import org.minima.utils.encrypt.EncryptDecrypt;
@@ -66,11 +67,8 @@ public class Maxima extends MessageProcessor {
 		String host = GeneralParams.MINIMA_HOST;
 		int port 	= GeneralParams.MINIMA_PORT;
 		
-		//What is your Encryption Public Key..
-//		String rsapub = mPublic.to0xString();
-		
 		//Base32
-		String b32 = BaseConverter.xencode32(mPublic.getBytes());
+		String b32 = BaseConverter.encode32(mPublic.getBytes());
 		
 		return b32+"@"+host+":"+port;
 	}
@@ -97,47 +95,52 @@ public class Maxima extends MessageProcessor {
 			
 		}else if(zMessage.getMessageType().equals(MAXIMA_SENDMESSAGE)) {
 			
-			//Who to
+			//Message details
 			String publickey	= zMessage.getString("publickey");
+			MiniData pubk 		= new MiniData(publickey);
 			
-			MiniData pubk = null;
-			if(publickey.startsWith("Mx")) {
-				pubk = new MiniData(BaseConverter.xdecode32(publickey));
-			}else {
-				pubk = new MiniData(publickey);
-			}
-			
+			String fullto 		= zMessage.getString("fullto");
 			String tohost 		= zMessage.getString("tohost");
 			int toport			= zMessage.getInteger("toport");
+			
 			String application 	= zMessage.getString("application");
-			String message 		= zMessage.getString("message");
+			String message 		= zMessage.getString("data");
 			
 			//What data
-			MiniString ds 	= new MiniString(message);
-			MiniData data 	= new MiniData(ds.getData());
-				
-			//First create the Maxima Message
-			MaximaMessage mm = new MaximaMessage();
-			mm.mFromAddress  = new MiniString(getIdentity());
-			mm.mToPublic	 = pubk;
-			mm.mApplication	 = new MiniString(application);
-			mm.mData		 = data;
+			MiniData data = null;
+			if(message.startsWith("0x") || message.startsWith("Mx")) {
+				data 	= new MiniData(message);
+			}else {
+				data 	= new MiniData(new MiniString(message).getData());
+			}
 			
-			//Sign the Data..
-			byte[] sigBytes  = SignVerify.sign(mPrivate.getBytes(), data.getBytes());
-			mm.mSignature	 = new MiniData(sigBytes); 
+			//First create the Complete MaximaMessage
+			MaximaMessage maxima 	= new MaximaMessage();
+			maxima.mFrom 			= new MiniString(getIdentity());
+			maxima.mTo 				= new MiniString(fullto);
+			maxima.mApplication 	= new MiniString(application);
+			maxima.mData 			= data;
 			
-			//Now get the complete Message as a MiniData Package..
-			MiniData mmdata = MiniData.getMiniDataVersion(mm);
+			//Next Sign the Message and create the MaximaInternal message
+			MiniData maxdata		= MiniData.getMiniDataVersion(maxima);
+			byte[] sigBytes  		= SignVerify.sign(mPrivate.getBytes(), maxdata.getBytes());
+			
+			MaximaInternal msign 	= new MaximaInternal();
+			msign.mFrom				= mPublic;
+			msign.mData				= maxdata;
+			msign.mSignature		= new MiniData(sigBytes);
+			
+			//And finally create the encrypted MaximaPackage
+			MiniData maxpkg			= MiniData.getMiniDataVersion(msign);
 			
 			//Now Encrypt the Whole Thing..
 			CryptoPackage cp = new CryptoPackage();
-			cp.encrypt(mmdata.getBytes(), pubk.getBytes());
+			cp.encrypt(maxpkg.getBytes(), pubk.getBytes());
 			
 			//Now Construct a MaximaPackage
-			MaximaPackage mp = new MaximaPackage( mm.mToPublic , cp.getCompleteEncryptedData());
+			MaximaPackage mp = new MaximaPackage( pubk , cp.getCompleteEncryptedData());
 			
-			//Create the final Message
+			//Create the Network Message
 			MiniData maxmsg = NIOManager.createNIOMessage(NIOMessage.MSG_MAXIMA, mp);
 			
 			//And send it..
@@ -160,33 +163,31 @@ public class Maxima extends MessageProcessor {
 			byte[] data = cp.decrypt(mPrivate.getBytes());
 			
 			//Now get the Decrypted data..
-			MaximaMessage mm = MaximaMessage.ConvertMiniDataVersion(new MiniData(data));
-			
-			//Now we have a Message!
-			MinimaLogger.log("MAXIMA : "+mm.toJSON().toString());
-			
-			//Get the public key of the sender..
-			String fromstr 	= mm.mFromAddress.toString();
-			int index		= fromstr.indexOf("@");
-			String pubkstr  = fromstr.substring(0, index);
-			MiniData pubk = null;
-			if(pubkstr.startsWith("Mx")) {
-				pubk = new MiniData(BaseConverter.xdecode32(pubkstr));
-			}else {
-				pubk = new MiniData(pubkstr);
-			}
+			MaximaInternal mm = MaximaInternal.ConvertMiniDataVersion(new MiniData(data));
 			
 			//Check the Signature..
-			boolean valid = SignVerify.verify(pubk.getBytes(), mm.mData.getBytes(), mm.mSignature.getBytes());
+			boolean valid = SignVerify.verify(mm.mFrom.getBytes(), mm.mData.getBytes(), mm.mSignature.getBytes());
 			if(!valid) {
 				MinimaLogger.log("MAXIMA Invalid Signature on message : "+mpkg.mTo.to0xString());
 				return;
 			}
 			
+			//Now convert the data to a Maxima Message
+			MaximaMessage maxmsg 	= MaximaMessage.ConvertMiniDataVersion(mm.mData);
+			
+			//Hash the complete message..
+			MiniData hash = Crypto.getInstance().hashObject(mm.mData);
+			
+			//Now create the final JSON..
+			JSONObject maxjson = maxmsg.toJSON();
+			maxjson.put("msgid", hash.to0xString());
+			
+			MinimaLogger.log("MAXIMA : "+maxjson.toString());
+			
 			//Notify The Web Hook Listeners
 			JSONObject event = new JSONObject();
 			event.put("event", "MAXIMA");
-			event.put("message", mm.toJSON());
+			event.put("message", maxjson);
 			
 			Main.getInstance().PostNotifyEvent(event);
 		}
