@@ -50,7 +50,8 @@ public class Maxima extends MessageProcessor {
 	MiniData mPublic;
 	MiniData mPrivate;
 	
-	boolean mInited = false;
+	private boolean mInited 	= false;
+	public boolean mMaximaLogs 	= false;
 	
 	public Maxima() {
 		super("MAXIMA");
@@ -71,6 +72,16 @@ public class Maxima extends MessageProcessor {
 		String b32 = BaseConverter.encode32(mPublic.getBytes());
 		
 		return b32+"@"+host+":"+port;
+	}
+	
+	public MaximaMessage createMaximaMessage(String zFullTo, String zApplication, MiniData zData) {
+		MaximaMessage maxima 	= new MaximaMessage();
+		maxima.mFrom 			= new MiniString(getIdentity());
+		maxima.mTo 				= new MiniString(zFullTo);
+		maxima.mApplication 	= new MiniString(zApplication);
+		maxima.mData 			= zData;
+		
+		return maxima;
 	}
 	
 	@Override
@@ -97,29 +108,13 @@ public class Maxima extends MessageProcessor {
 			
 			//Message details
 			String publickey	= zMessage.getString("publickey");
-			MiniData pubk 		= new MiniData(publickey);
+			MiniData topubk 	= new MiniData(publickey);
 			
-			String fullto 		= zMessage.getString("fullto");
 			String tohost 		= zMessage.getString("tohost");
 			int toport			= zMessage.getInteger("toport");
 			
-			String application 	= zMessage.getString("application");
-			String message 		= zMessage.getString("data");
-			
-			//What data
-			MiniData data = null;
-			if(message.startsWith("0x") || message.startsWith("Mx")) {
-				data 	= new MiniData(message);
-			}else {
-				data 	= new MiniData(new MiniString(message).getData());
-			}
-			
-			//First create the Complete MaximaMessage
-			MaximaMessage maxima 	= new MaximaMessage();
-			maxima.mFrom 			= new MiniString(getIdentity());
-			maxima.mTo 				= new MiniString(fullto);
-			maxima.mApplication 	= new MiniString(application);
-			maxima.mData 			= data;
+			//Get the Maxima Message
+			MaximaMessage maxima 	= (MaximaMessage) zMessage.getObject("maxima");
 			
 			//Next Sign the Message and create the MaximaInternal message
 			MiniData maxdata		= MiniData.getMiniDataVersion(maxima);
@@ -135,10 +130,10 @@ public class Maxima extends MessageProcessor {
 			
 			//Now Encrypt the Whole Thing..
 			CryptoPackage cp = new CryptoPackage();
-			cp.encrypt(maxpkg.getBytes(), pubk.getBytes());
+			cp.encrypt(maxpkg.getBytes(), topubk.getBytes());
 			
 			//Now Construct a MaximaPackage
-			MaximaPackage mp = new MaximaPackage( pubk , cp.getCompleteEncryptedData());
+			MaximaPackage mp = new MaximaPackage( topubk , cp.getCompleteEncryptedData());
 			
 			//Create the Network Message
 			MiniData maxmsg = NIOManager.createNIOMessage(NIOMessage.MSG_MAXIMA, mp);
@@ -193,7 +188,10 @@ public class Maxima extends MessageProcessor {
 			JSONObject maxjson = maxmsg.toJSON();
 			maxjson.put("msgid", hash.to0xString());
 			
-			MinimaLogger.log("MAXIMA : "+maxjson.toString());
+			//Do we log
+			if(mMaximaLogs) {
+				MinimaLogger.log("MAXIMA RECEIVE : "+maxjson.toString());
+			}
 			
 			//Notify The Web Hook Listeners
 			JSONObject event = new JSONObject();

@@ -1,15 +1,18 @@
 package org.minima.system.commands.all;
 
+import org.minima.objects.base.MiniData;
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
 import org.minima.system.network.maxima.Maxima;
+import org.minima.system.network.maxima.MaximaMessage;
+import org.minima.utils.Crypto;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
 
 public class maxima extends Command {
 
 	public maxima() {
-		super("maxima","[function:info|send] (to:) (application:) (data:) - Check your Maxima identity or send a message / data");
+		super("maxima","[function:info|send] (to:) (application:) (data:) (logs:true|false) - Check your Maxima details, send a message / data, enable logs");
 	}
 	
 	@Override
@@ -25,6 +28,15 @@ public class maxima extends Command {
 			return ret;
 		}
 		
+		//Enable Logs..
+		if(existsParam("logs")) {
+			if(getParam("logs").equals("true")) {
+				max.mMaximaLogs = true;
+			}else {
+				max.mMaximaLogs = false;
+			}
+		}
+		
 		JSONObject details = new JSONObject();
 		
 		if(func.equals("info")) {
@@ -32,6 +44,7 @@ public class maxima extends Command {
 			//Show details
 			String ident = max.getIdentity();  
 			details.put("identity", ident);
+			details.put("logs", max.mMaximaLogs);
 			ret.put("response", details);
 		
 //		}else if(func.equals("new")) {
@@ -66,18 +79,30 @@ public class maxima extends Command {
 			String application 	= getParam("application");
 			String data 		= getParam("data");
 			
+			//Get the complete details..
+			MaximaMessage maxmessage = max.createMaximaMessage(fullto, application, new MiniData(data));
+			
+			//Get the MinData version
+			MiniData maxdata = MiniData.getMiniDataVersion(maxmessage);
+			
+			//Hash it..
+			MiniData hash 	= Crypto.getInstance().hashObject(maxdata);
+			
+			//Convert to JSON
+			JSONObject json = maxmessage.toJSON();
+			json.put("msgid", hash.to0xString());
+			
 			//Send to Maxima..
 			Message sender = new Message(Maxima.MAXIMA_SENDMESSAGE);
+			sender.addObject("maxima", maxmessage);
 			sender.addString("publickey", publickey);
-			sender.addString("fullto", fullto);
 			sender.addString("tohost", tohost);
 			sender.addInteger("toport", toport);
-			sender.addString("application", application);
-			sender.addString("data", data);
 			
+			//Post It!
 			max.PostMessage(sender);
 			
-			ret.put("response", "Processing message..");
+			ret.put("response", json);
 		}
 		
 		return ret;
