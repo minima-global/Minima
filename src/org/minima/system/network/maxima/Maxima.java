@@ -175,6 +175,17 @@ public class Maxima extends MessageProcessor {
 			//Now convert the data to a Maxima Message
 			MaximaMessage maxmsg 	= MaximaMessage.ConvertMiniDataVersion(mm.mData);
 			
+			//Check the message is from the person who signed it!
+			String from 	= maxmsg.mFrom.toString();
+			int index 		= from.indexOf("@");
+			String pubkey 	= from.substring(0,index);
+			MiniData frompubk = new MiniData(pubkey);
+			if(!frompubk.isEqual(mm.mFrom)) {
+				MinimaLogger.log("MAXIMA Message From field signed by incorrect pubkey  from:"
+											+frompubk.to0xString()+" signed:"+mm.mFrom.to0xString());
+				return;
+			}
+			
 			//Hash the complete message..
 			MiniData hash = Crypto.getInstance().hashObject(mm.mData);
 			
