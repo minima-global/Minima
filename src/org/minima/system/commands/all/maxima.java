@@ -1,6 +1,7 @@
 package org.minima.system.commands.all;
 
 import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
 import org.minima.system.network.maxima.Maxima;
@@ -79,8 +80,15 @@ public class maxima extends Command {
 			String application 	= getParam("application");
 			String data 		= getParam("data");
 			
+			MiniData mdata = null;
+			if(data.startsWith("0x") || data.startsWith("Mx")) {
+				mdata = new MiniData(data);
+			}else {
+				mdata = new MiniData(new MiniString(data).getData());
+			}
+			
 			//Get the complete details..
-			MaximaMessage maxmessage = max.createMaximaMessage(fullto, application, new MiniData(data));
+			MaximaMessage maxmessage = max.createMaximaMessage(fullto, application, mdata);
 			
 			//Get the MinData version
 			MiniData maxdata = MiniData.getMiniDataVersion(maxmessage);
