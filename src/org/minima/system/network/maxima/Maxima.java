@@ -184,7 +184,7 @@ public class Maxima extends MessageProcessor {
 			
 			//Do we log
 			if(mMaximaLogs) {
-				MinimaLogger.log("MAXIMA RECEIVE : "+maxjson.toString());
+				MinimaLogger.log("MAXIMA : "+maxjson.toString());
 			}
 			
 			//Notify The Web Hook Listeners
