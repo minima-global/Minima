@@ -80,9 +80,9 @@ public class MaximaMessage implements Streamable {
 	
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
+		mRandom.writeDataStream(zOut);
 		mFrom.writeDataStream(zOut);
 		mTo.writeDataStream(zOut);
-		mRandom.writeDataStream(zOut);
 		mTimeMilli.writeDataStream(zOut);
 		mApplication.writeDataStream(zOut);
 		mData.writeDataStream(zOut);
@@ -90,9 +90,9 @@ public class MaximaMessage implements Streamable {
 
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
+		mRandom			= MiniData.ReadFromStream(zIn);
 		mFrom			= MiniString.ReadFromStream(zIn);
 		mTo				= MiniString.ReadFromStream(zIn);
-		mRandom			= MiniData.ReadFromStream(zIn);
 		mTimeMilli		= MiniNumber.ReadFromStream(zIn);
 		mApplication	= MiniString.ReadFromStream(zIn);
 		mData 			= MiniData.ReadFromStream(zIn);
