@@ -52,7 +52,8 @@ public class MaximaMessage implements Streamable {
 		
 		ret.put("from", mFrom.toString());
 		ret.put("to", mTo.toString());
-		ret.put("time", new Date(mTimeMilli.getAsLong()));
+		ret.put("time", new Date(mTimeMilli.getAsLong()).toString());
+		ret.put("timemilli", mTimeMilli);
 		ret.put("random", mRandom.to0xString());
 		ret.put("application", mApplication.toString());
 		ret.put("data", mData.to0xString());
