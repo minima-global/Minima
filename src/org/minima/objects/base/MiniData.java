@@ -30,7 +30,8 @@ public class MiniData implements Streamable {
 	 */
 	public static int MINIMA_MAX_MINIDATA_LENGTH 	= 1024 * 1024 * 256;
 	
-	public static final MiniData ZERO_TXPOWID = new MiniData("0x00");
+	public static final MiniData ZERO_TXPOWID 	= new MiniData("0x00");
+	public static final MiniData ONE_TXPOWID 	= new MiniData("0x01");
 	
 	/**
 	 * The byte data

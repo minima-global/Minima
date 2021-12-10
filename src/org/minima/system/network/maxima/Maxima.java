@@ -43,6 +43,11 @@ public class Maxima extends MessageProcessor {
 	private static final String MAXIMA_PRIVKEY 	= "maxima_privatekey";
 	
 	/**
+	 * The Respnse message for a Maxima Message
+	 */
+	public static final MiniData MAXIMA_RESPONSE = new MiniData("0x080000000101");
+	
+	/**
 	 * RSA Keys
 	 */
 	MiniData mPublic;
@@ -217,10 +222,16 @@ public class Maxima extends MessageProcessor {
 					zMaxMessage.writeDataStream(dos);
 					dos.flush();
 					
-					//Now get the repnse..
-					MiniData resp = MiniData.ReadFromStream(dis);
-					MinimaLogger.log("MAXIMA RESPONSE "+resp);
+					//Now get a response.. should be ONE_ID.. give it 1 second max.. ( might get a block..)
+					long maxtime = System.currentTimeMillis() + 1000;
+					while(System.currentTimeMillis() < maxtime) {
+						MiniData resp = MiniData.ReadFromStream(dis);
+						if(resp.isEqual(MAXIMA_RESPONSE)) {
+							break;
+						}
+					}
 					
+					//Close the streams..
 					dis.close();
 					in.close();
 					dos.close();
@@ -229,8 +240,6 @@ public class Maxima extends MessageProcessor {
 				}catch(Exception exc){
 					MinimaLogger.log("Error sending Maxima message : "+exc.toString());
 				}
-				
-				MinimaLogger.log("MAXIMA FINISHED");
 			}
 		};
 		
