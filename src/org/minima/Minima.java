@@ -125,6 +125,8 @@ public class Minima {
                 try {Thread.sleep(250);} catch (InterruptedException e) {}
             }
 			
+			MinimaLogger.log("Bye bye..");
+			
 			//All done..
 			System.exit(0);
 	    }
