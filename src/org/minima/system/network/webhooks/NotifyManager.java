@@ -47,7 +47,7 @@ public class NotifyManager extends MessageProcessor {
 	 */
 	public void PostEvent(JSONObject zEvent) {
 		Message msg = new Message(NOTIFY_POST);
-		msg.addObject("data", zEvent);
+		msg.addObject("notify", zEvent);
 		PostMessage(msg);
 	}
 	
@@ -89,7 +89,7 @@ public class NotifyManager extends MessageProcessor {
 		if(zMessage.isMessageType(NOTIFY_POST)) {
 			
 			//Get the Message
-			JSONObject data = (JSONObject) zMessage.getObject("data");
+			JSONObject notify = (JSONObject) zMessage.getObject("notify");
 			
 			//Is some one listening directly
 			MessageListener minilistener = Main.getMinimaListener();
@@ -98,7 +98,7 @@ public class NotifyManager extends MessageProcessor {
 			}
 			
 			//Convert..
-			String postmsg = data.toString();
+			String postmsg = notify.toString();
 			
 			//Cycle through and Post to each hook..
 			ArrayList<String> hooks = getAllWebHooks();
