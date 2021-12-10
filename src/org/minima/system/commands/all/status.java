@@ -75,19 +75,21 @@ public class status extends Command {
 		//The total weight of the chain + cascade
 		BigInteger chainweight 	= txptree.getRoot().getTotalWeight().toBigInteger();
 		BigInteger cascweight 	= MinimaDB.getDB().getCascade().getTotalWeight().toBigInteger();
+
 		details.put("weight", chainweight.add(cascweight).toString());
 		
 		//Total Minima..
 		MiniNumber minima = MinimaDB.getDB().getTxPoWTree().getTip().getTxPoW().getMMRTotal();
 		details.put("minima", minima);
-
+		
 		//How many coins..
 		BigDecimal coins = MinimaDB.getDB().getTxPoWTree().getTip().getMMR().getEntryNumber().getBigDecimal();
 		details.put("coins", coins);
-
-		details.put("data", GeneralParams.DATA_FOLDER);
-		JSONObject files = new JSONObject();
 		
+		details.put("data", GeneralParams.DATA_FOLDER);
+		
+		JSONObject files = new JSONObject();
+
 		//RAM usage
 		long mem 		= Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
 		String memused 	= MiniFormat.formatSize(mem);
@@ -116,7 +118,7 @@ public class status extends Command {
 			tree.put("block", txptree.getTip().getTxPoW().getBlockNumber().getAsLong());
 			tree.put("time", new Date(txptree.getTip().getTxPoW().getTimeMilli().getAsLong()).toString());
 			tree.put("hash", txptree.getTip().getTxPoW().getTxPoWID());
-
+			
 			//Speed..
 			if(txptree.getTip().getTxPoW().getBlockNumber().isLessEqual(MiniNumber.TWO)){
 				tree.put("speed", 1);

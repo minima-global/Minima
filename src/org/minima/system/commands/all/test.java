@@ -2,6 +2,7 @@ package org.minima.system.commands.all;
 
 import org.minima.system.commands.Command;
 import org.minima.utils.MinimaLogger;
+import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
 public class test extends Command {
@@ -18,8 +19,8 @@ public class test extends Command {
 //		JSONObject json = getJSONParam("json");
 //		MinimaLogger.log("JSON Received : "+json.toString());
 		
-		if(isParamJSON("jj")) {
-			JSONObject jsonp = getJSONParam("jj");
+		if(isParamJSONObject("jj")) {
+			JSONObject jsonp = getJSONObjectParam("jj");
 			
 			MinimaLogger.log("JSON : "+jsonp.toJSONString());
 			
@@ -27,7 +28,10 @@ public class test extends Command {
 			MinimaLogger.log("STRING : "+getParam("jj"));
 		}
 		
-		ret.put("response", "");
+		JSONArray jarr = getJSONArrayParam("arr");
+		
+		
+		ret.put("response", jarr);
 		
 		return ret;
 	}

@@ -12,7 +12,7 @@ import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.exceptions.MinimaParseException;
 import org.minima.kissvm.expressions.ConstantExpression;
 import org.minima.kissvm.functions.MinimaFunction;
-import org.minima.kissvm.functions.sha.SHA3;
+import org.minima.kissvm.functions.sha.KECCAK;
 import org.minima.kissvm.values.BooleanValue;
 import org.minima.kissvm.values.HexValue;
 import org.minima.kissvm.values.NumberValue;
@@ -29,15 +29,15 @@ public class SHA3Tests {
 
     @Test
     public void testConstructors() {
-        SHA3 fn = new SHA3();
+        KECCAK fn = new KECCAK();
         MinimaFunction mf = fn.getNewFunction();
 
-        assertEquals("SHA3", mf.getName());
+        assertEquals("KECCAK", mf.getName());
         assertEquals(0, mf.getParameterNum());
 
         try {
-            mf = MinimaFunction.getFunction("SHA3");
-            assertEquals("SHA3", mf.getName());
+            mf = MinimaFunction.getFunction("KECCAK");
+            assertEquals("KECCAK", mf.getName());
             assertEquals(0, mf.getParameterNum());
         } catch (MinimaParseException ex) {
             fail();
@@ -48,7 +48,7 @@ public class SHA3Tests {
     public void testValidParams() {
         Contract ctr = new Contract("", "", new Witness(), new Transaction(), new ArrayList<>());
 
-        SHA3 fn = new SHA3();
+        KECCAK fn = new KECCAK();
 
         {
             for (int i = 0; i < 100; i++) {
@@ -57,7 +57,7 @@ public class SHA3Tests {
                     HexValue Result = new HexValue(Crypto.getInstance().hashData(Param.getRawData(), j));
 
                     MinimaFunction mf = fn.getNewFunction();
-                    mf.addParameter(new ConstantExpression(new NumberValue(j)));
+                    //mf.addParameter(new ConstantExpression(new NumberValue(j)));
                     mf.addParameter(new ConstantExpression(Param));
                     try {
                         Value res = mf.runFunction(ctr);
@@ -78,7 +78,7 @@ public class SHA3Tests {
                     HexValue Result = new HexValue(Crypto.getInstance().hashData(strdata.getBytes(), j));
 
                     MinimaFunction mf = fn.getNewFunction();
-                    mf.addParameter(new ConstantExpression(new NumberValue(j)));
+                    //mf.addParameter(new ConstantExpression(new NumberValue(j)));
                     mf.addParameter(new ConstantExpression(Param));
                     try {
                         Value res = mf.runFunction(ctr);
@@ -97,7 +97,7 @@ public class SHA3Tests {
     public void testInvalidParams() {
         Contract ctr = new Contract("", "", new Witness(), new Transaction(), new ArrayList<>());
 
-        SHA3 fn = new SHA3();
+        KECCAK fn = new KECCAK();
 
         // Invalid param count
         {

@@ -34,6 +34,12 @@ public class help extends Command {
 		addCommand(details, new tokens());
 		addCommand(details, new tokencreate());
 		
+		addCommand(details, new runscript());
+		addCommand(details, new tutorial());
+		
+		addCommand(details, new mmrcreate());
+		addCommand(details, new mmrproof());
+		
 		addCommand(details, new network());
 		addCommand(details, new message());
 		addCommand(details, new connect());

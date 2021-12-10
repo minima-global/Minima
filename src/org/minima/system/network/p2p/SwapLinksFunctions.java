@@ -10,10 +10,10 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.minima.objects.base.MiniData;
+import org.minima.system.network.minima.NIOClient;
 import org.minima.system.network.minima.NIOClientInfo;
 import org.minima.system.network.p2p.messages.P2PGreeting;
 import org.minima.system.network.p2p.messages.P2PWalkLinks;
-import org.minima.system.network.p2p.params.P2PParams;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
@@ -32,19 +32,18 @@ public class SwapLinksFunctions {
      * Sends a request for its IP if the node's minima address has not been set yet
      *
      * @param state    the current P2P State
-     * @param uid      the uid of the client that just connected
      * @param incoming if the connection is an incoming one
      * @param info     NIOClientInfo for the client that just connected
      * @return a list of messages to be sent (greeting and possible a request IP message)
      */
-    public static List<Message> onConnected(P2PState state, String uid, boolean incoming, NIOClientInfo info) {
+    public static List<Message> onConnected(P2PState state,boolean incoming, NIOClient info) {
         List<Message> msgs = new ArrayList<>();
         //Get the details
-
+        String uid = info.getUID();
         boolean sendMessages = true;
         if (incoming) {
             InetSocketAddress incomingAddress = new InetSocketAddress(info.getHost(), 0);
-            if (state.getNoneP2PLinks().containsValue(incomingAddress)){
+            if (state.getNoneP2PLinks().containsValue(incomingAddress)) {
                 msgs.add(new Message(P2PManager.P2P_SEND_DISCONNECT).addString("uid", uid));
                 sendMessages = false;
             }
@@ -86,7 +85,6 @@ public class SwapLinksFunctions {
             P2PWalkLinks walkLinks = new P2PWalkLinks(true, false, minimaClient.getUID());
             walkLinks.setClientWalk(true);
             msgs.add(new Message(P2PManager.P2P_SEND_MSG).addString("uid", minimaClient.getUID()).addObject("json", walkLinks.toJson()));
-            MinimaLogger.log("[+] Sending client load balance request: " + walkLinks.toJson().toString());
         }
         return msgs;
     }
@@ -154,6 +152,8 @@ public class SwapLinksFunctions {
             } else {
                 state.getNotAcceptingConnP2PLinks().put(uid, minimaAddress);
             }
+        } else {
+            MinimaLogger.log("[-] ERROR Client is null when processing greeting: " + greeting.toJson());
         }
         return noconnect;
     }

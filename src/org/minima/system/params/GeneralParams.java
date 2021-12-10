@@ -90,17 +90,17 @@ public class GeneralParams {
 	/**
 	 * How many days do you keep the TxPoW in the SQL DB
 	 */
-	public static int NUMBER_DAYS_SQLTXPOWDB = 2;
+	public static long NUMBER_DAYS_SQLTXPOWDB = 2;
 	
 	/**
 	 * How Many Hours do you keep the TxPOW in the RAM mempool
 	 */
-	public static int NUMBER_HOURS_RAMTXPOWDB = 1;
+	public static long NUMBER_HOURS_RAMTXPOWDB = 1;
 	
 	/**
 	 * How many days do you archive the TxBlocks to resync Users
 	 */
-	public static int NUMBER_DAYS_ARCHIVE = 28;
+	public static long NUMBER_DAYS_ARCHIVE = 28;
 	
 	/**
 	 * Number of seconds before sending a pulse message - every 10 minutes

@@ -63,6 +63,7 @@ public class Transaction implements Streamable {
 	 */
 	public boolean mHaveCheckedMonotonic 	= false;
 	public boolean mIsMonotonic 			= false;
+	public boolean mIsValid					= false;
 	
 	/**
 	 * Constructor

@@ -22,8 +22,6 @@ import java.util.List;
 public class SwapLinksFunctionsTest extends TestCase {
 
     final String noConnectionsGreetingJson = "{\"greeting\":{\"myMinimaPort\":9001,\"isAcceptingInLinks\":true,\"numNoneP2PConnections\":1,\"maxNumNoneP2PConnections\":50,\"outLinks\":[],\"inLinks\":[],\"knownPeers\":[{\"host\":\"192.168.0.1\",\"port\":9001},{\"host\":\"10.0.0.1\",\"port\":9001}]}}";
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
     Message inConnectMsg;
     Message outConnectMsg;
 
@@ -32,39 +30,6 @@ public class SwapLinksFunctionsTest extends TestCase {
         inConnectMsg = new Message().addString("uid", "uid1").addBoolean("incoming", true);
         outConnectMsg = new Message().addString("uid", "uid1").addBoolean("incoming", false);
     }
-
-    public void testOnConnectedInLink() throws UnknownHostException {
-        P2PState state = QuickState.stateNoConnections(true);
-        NIOClientInfo client = new NIOClientInfo("uid1", "192.168.0.1", 9001, true);
-        List<Message> out = SwapLinksFunctions.onConnected(state, "uid1", true, client);
-        assertEquals(1, out.size());
-        assertTrue(out.get(0).isMessageType(P2PManager.P2P_SEND_MSG));
-        JSONObject json = (JSONObject) out.get(0).getObject("json");
-        assertEquals(noConnectionsGreetingJson, json.toString());
-        assertFalse(state.getNoneP2PLinks().isEmpty());
-    }
-
-    public void testOnConnectedOutLink() throws UnknownHostException {
-        P2PState state = QuickState.stateNoConnections(true);
-        NIOClientInfo client = new NIOClientInfo("uid1", "192.168.0.1", 9001, false);
-        List<Message> out = SwapLinksFunctions.onConnected(state, "uid1", false, client);
-        assertEquals(1, out.size());
-        assertTrue(out.get(0).isMessageType(P2PManager.P2P_SEND_MSG));
-        JSONObject json = (JSONObject) out.get(0).getObject("json");
-        assertEquals(noConnectionsGreetingJson, json.toString());
-        assertFalse(state.getNoneP2PLinks().isEmpty());
-    }
-
-    public void testOnConnectedMinimaAddressNotSet() throws UnknownHostException {
-        P2PState state = QuickState.stateNoConnections(false);
-        NIOClientInfo client = new NIOClientInfo("uid1", "192.168.0.1", 9001, false);
-        List<Message> out = SwapLinksFunctions.onConnected(state, "uid1", false, client);
-        assertTrue(out.get(0).isMessageType(P2PManager.P2P_SEND_MSG));
-        assertTrue(out.get(1).isMessageType(P2PManager.P2P_SEND_MSG));
-        JSONObject json = (JSONObject) out.get(0).getObject("json");
-        assertFalse(state.getNoneP2PLinks().isEmpty());
-    }
-
 
     public void testOnDisconnectedKnownPeer() throws UnknownHostException {
         P2PState state = QuickState.stateInLinkKnownPeerOnly();
@@ -130,26 +95,6 @@ public class SwapLinksFunctionsTest extends TestCase {
         json.put("req_ip", secret);
         JSONObject respMsg = SwapLinksFunctions.processRequestIPMsg(json, "147.258.369.1");
         assertEquals(secret, (String) ((JSONObject) respMsg.get("swap_links_p2p")).get("secret"));
-    }
-
-    public void testProcessResponseIPMsg() throws UnknownHostException {
-        JSONObject json = new JSONObject();
-        MiniData secret = MiniData.getRandomData(12);
-        P2PState state = QuickState.stateInAndOutLinks(1, 2, 0);
-        state.setMyMinimaAddress("127.0.0.1");
-        state.setIpReqSecret(secret);
-        state.setKnownPeers(new HashSet<>());
-        state.getKnownPeers().add(new InetSocketAddress("147.258.369.1", 9001));
-
-
-        json.put("req_ip", secret.toString());
-        JSONObject respMsg = SwapLinksFunctions.processRequestIPMsg(json, "147.258.369.1");
-        respMsg = (JSONObject) respMsg.get("swap_links_p2p");
-
-        SwapLinksFunctions.processResponseIPMsg(state, respMsg);
-
-        assertEquals(new InetSocketAddress("147.258.369.1", GeneralParams.MINIMA_PORT), state.getMyMinimaAddress());
-        assertTrue(state.getKnownPeers().isEmpty());
     }
 
     public void testProcessResponseIPMsgIncorrectSecret() throws UnknownHostException {

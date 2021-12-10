@@ -136,15 +136,15 @@ public class Contract {
 		traceLog("Contract   : "+mRamScript);
 		traceLog("Size       : "+mRamScript.length());
 		
+		//Transaction..
+		traceLog("Transaction   : "+mTransaction.toString());
+		traceLog("Witness       : "+mWitness.toString());
+		
 		//Load the Signatures
 		for(MiniData sig : zSignatures) {
 			traceLog("Signature : "+sig.to0xString());
 			mSignatures.add( new HexValue(sig) );
 		}
-		
-		//Transaction..
-		traceLog("Transaction   : "+mTransaction.toString());
-		traceLog("Witness       : "+mWitness.toString());
 		
 		//State Variables
 		ArrayList<StateVariable> svs = mTransaction.getCompleteState();
@@ -152,7 +152,7 @@ public class Contract {
 			traceLog("State["+sv.getPort()+"] : "+sv.toString());
 		}
 
-		//PREVSTATE
+		//Previous State
 		if(zPrevState == null) {
 			mPrevState = new ArrayList<StateVariable>();	
 		}else {
@@ -199,9 +199,9 @@ public class Contract {
 		Coin cc = zTrx.getAllInputs().get(zInput);
 		
 		//set the environment
-		setGlobalVariable("@BLKNUM", new NumberValue(zBlock));
-		setGlobalVariable("@INBLKNUM", new NumberValue(zInputBlkCreate));
-		setGlobalVariable("@BLKDIFF", new NumberValue(zBlock.sub(zInputBlkCreate)));
+		setGlobalVariable("@BLOCK", new NumberValue(zBlock));
+		setGlobalVariable("@INBLOCK", new NumberValue(zInputBlkCreate));
+		setGlobalVariable("@BLOCKDIFF", new NumberValue(zBlock.sub(zInputBlkCreate)));
 		
 //		setGlobalVariable("@BLKTIME", new NumberValue(zBlock.getTimeMilli()));
 //		setGlobalVariable("@PREVBLKHASH", new HexValue(zBlock.getParentID()));

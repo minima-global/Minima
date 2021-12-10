@@ -42,9 +42,23 @@ public abstract class SqlDB {
 		mSQLFile = new File(path+".mv.db");
 				
 		try {
-			//Create the connection - IGNORECASE=TRUE?
-			mSQLCOnnection = DriverManager.getConnection("jdbc:h2:"+path+";MODE=MySQL", "SA", "");
-//			mSQLCOnnection = DriverManager.getConnection("jdbc:h2:"+path+";MODE=MySQL;DB_CLOSE_ON_EXIT=FALSE", "SA", "");
+			//The H2 JDBC URL
+			String h2db = "jdbc:h2:"+path+";MODE=MySQL";
+			
+			//Create the connection
+			mSQLCOnnection = DriverManager.getConnection(h2db, "SA", "");
+			
+			//Save and compact the DB!
+			Statement stmt = mSQLCOnnection.createStatement();
+		
+			//Shut down.. this saves and closes all the data
+			stmt.execute("SHUTDOWN COMPACT");
+
+			//Close the connection
+			mSQLCOnnection.close();
+			
+			//Now open a NEW Connection..
+			mSQLCOnnection = DriverManager.getConnection(h2db, "SA", "");
 			
 			//Auto commit changes
 			mSQLCOnnection.setAutoCommit(true);

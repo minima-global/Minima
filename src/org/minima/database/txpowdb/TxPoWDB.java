@@ -7,7 +7,6 @@ import org.minima.database.txpowdb.ram.RamDB;
 import org.minima.database.txpowdb.sql.TxPoWSqlDB;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
-import org.minima.utils.MinimaLogger;
 
 /**
  * The Main TxPoW store for the whole app

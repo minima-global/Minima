@@ -1,15 +1,21 @@
 package org.minima.system.params;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
-import java.util.function.BiConsumer;
-
 import static java.nio.file.Files.lines;
 import static java.util.Arrays.stream;
-import static java.util.Optional.*;
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
+import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toMap;
 import static org.minima.system.params.ParamConfigurer.ParamKeys.toParamKey;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.BiConsumer;
 
 public class ParamConfigurer {
 
@@ -39,7 +45,7 @@ public class ParamConfigurer {
                                 pair -> (ParamKeys) pair.left,
                                 pair -> (String) pair.right)));
             } catch (IOException exception) {
-                System.out.println("Enable to read conf file.");
+                System.out.println("Unable to read conf file.");
                 System.exit(1);
             }
         }
@@ -64,7 +70,7 @@ public class ParamConfigurer {
     public ParamConfigurer usingProgramArgs(String[] programArgs) {
 
         int arglen = programArgs.length;
-        int index = 0; // account for executable
+        int index = 0;
             while (index < arglen) {
                 String arg = programArgs[index];
                 final int imuCounter = index;
@@ -139,7 +145,9 @@ public class ParamConfigurer {
             }
         }),
         mobile("mobile", "Sets this device to a mobile device - used for metrics only", (args, configurer) -> {
-            // do nothing
+            if ("true".equals(args)) {
+                GeneralParams.IS_MOBILE = true;
+            }
         }),
         rpcenable("rpcenable", "Enable rpc", (args, configurer) -> {
             if ("true".equals(args)) {

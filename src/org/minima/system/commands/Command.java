@@ -10,11 +10,14 @@ import org.minima.system.commands.all.coins;
 import org.minima.system.commands.all.connect;
 import org.minima.system.commands.all.debugflag;
 import org.minima.system.commands.all.disconnect;
+import org.minima.system.commands.all.getaddress;
 import org.minima.system.commands.all.hashtest;
 import org.minima.system.commands.all.help;
 import org.minima.system.commands.all.incentivecash;
 import org.minima.system.commands.all.message;
 import org.minima.system.commands.all.missingcmd;
+import org.minima.system.commands.all.mmrcreate;
+import org.minima.system.commands.all.mmrproof;
 import org.minima.system.commands.all.network;
 import org.minima.system.commands.all.newaddress;
 import org.minima.system.commands.all.printmmr;
@@ -22,6 +25,7 @@ import org.minima.system.commands.all.printtree;
 import org.minima.system.commands.all.quit;
 import org.minima.system.commands.all.restore;
 import org.minima.system.commands.all.rpc;
+import org.minima.system.commands.all.runscript;
 import org.minima.system.commands.all.send;
 import org.minima.system.commands.all.sshtunnel;
 import org.minima.system.commands.all.status;
@@ -29,6 +33,7 @@ import org.minima.system.commands.all.test;
 import org.minima.system.commands.all.tokencreate;
 import org.minima.system.commands.all.tokens;
 import org.minima.system.commands.all.trace;
+import org.minima.system.commands.all.tutorial;
 import org.minima.system.commands.all.txpow;
 import org.minima.system.commands.all.webhooks;
 import org.minima.utils.MinimaLogger;
@@ -42,9 +47,11 @@ public abstract class Command {
 	public static final Command[] ALL_COMMANDS = 
 		{   new quit(), new status(), new coins(), new txpow(), new connect(), new disconnect(), new network(),
 			new message(), new trace(), new help(), new printtree(), new automine(), new printmmr(), new rpc(),
-			new send(), new balance(), new tokencreate(), new tokens(), new newaddress(), new debugflag(),
+			new send(), new balance(), new tokencreate(), new tokens(),new getaddress(), new newaddress(), new debugflag(),
 			new incentivecash(), new sshtunnel(), new webhooks(),
-			new backup(), new restore(), new test(), new hashtest()};
+			new backup(), new restore(), new test(), new hashtest(),
+			new runscript(), new tutorial(), 
+			new mmrcreate(), new mmrproof()};
 	
 	String mName;
 	String mHelp;
@@ -97,14 +104,29 @@ public abstract class Command {
 		return zDefault;
 	}
 	
-	public JSONObject getJSONParam(String zParamName) {
+	public JSONObject getJSONObjectParam(String zParamName) {
 		return (JSONObject) mParams.get(zParamName);
 	}
 	
-	public boolean isParamJSON(String zParamName) {
+	public JSONArray getJSONArrayParam(String zParamName) {
+		return (JSONArray) mParams.get(zParamName);
+	}
+	
+	public boolean isParamJSONObject(String zParamName) {
 		if(existsParam(zParamName)) {
 			Object obj = mParams.get(zParamName);
 			if(obj instanceof JSONObject) {
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	public boolean isParamJSONArray(String zParamName) {
+		if(existsParam(zParamName)) {
+			Object obj = mParams.get(zParamName);
+			if(obj instanceof JSONArray) {
 				return true;
 			}
 		}
@@ -197,6 +219,19 @@ public abstract class Command {
 				JSONObject json = null;
 				try {
 					json = (JSONObject) new JSONParser().parse(value);
+				} catch (ParseException e) {
+					return new missingcmd(command,"Invalid JSON parameter for "+command+" @ "+token+" "+e.toString());
+				}
+				
+				//Store this parameter..
+				comms.getParams().put(name, json);
+			
+			}else if(value.startsWith("[") && value.endsWith("]")) {
+				
+				//It's a JSONArray..!
+				JSONArray json = null;
+				try {
+					json = (JSONArray) new JSONParser().parse(value);
 				} catch (ParseException e) {
 					return new missingcmd(command,"Invalid JSON parameter for "+command+" @ "+token+" "+e.toString());
 				}
@@ -305,7 +340,16 @@ public abstract class Command {
 			}else if(cc == '}') {
 				jsoned--;
 				current += cc;
+			
+			}else if(cc == '[') {
+				jsoned++;
+				current += cc;
 				
+			}else if(cc == ']') {
+				jsoned--;
+				current += cc;
+			
+			
 			}else if(cc == '\"') {
 				if(jsoned>0) {
 					

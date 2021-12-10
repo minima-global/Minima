@@ -129,7 +129,14 @@ public class TxPoW implements Streamable {
 	}
 	
 	public boolean isMonotonic() {
-		return mBody.mTransaction.isCheckedMonotonic() && mBody.mBurnTransaction.isCheckedMonotonic();
+		
+		boolean transmon 	= mBody.mTransaction.isCheckedMonotonic();
+		boolean burnmon 	= true;
+		if(!mBody.mBurnTransaction.isEmpty()) {
+			burnmon = mBody.mBurnTransaction.isCheckedMonotonic();
+		}
+		
+		return transmon && burnmon;
 	}
 	
 	public TxBody getTxBody() {
