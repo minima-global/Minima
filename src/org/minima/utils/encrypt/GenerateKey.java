@@ -28,7 +28,7 @@ public class GenerateKey {
 
 		SecureRandom random 	= SecureRandom.getInstanceStrong();
 		
-        KeyPairGenerator keyGen = KeyPairGenerator.getInstance(ASYMETRIC_ALGORITHM,CRYPTO_PROVIDER);
+        KeyPairGenerator keyGen = KeyPairGenerator.getInstance(ASYMETRIC_ALGORITHM);
         keyGen.initialize(1024, random);
         
         KeyPair generateKeyPair = keyGen.generateKeyPair();
@@ -38,7 +38,7 @@ public class GenerateKey {
 	
 	public static PublicKey convertBytesToPublic(byte[] zPublicKey) throws InvalidKeySpecException, NoSuchAlgorithmException, NoSuchProviderException {
 		
-		KeyFactory kf 			= KeyFactory.getInstance(ASYMETRIC_ALGORITHM,CRYPTO_PROVIDER);
+		KeyFactory kf 			= KeyFactory.getInstance(ASYMETRIC_ALGORITHM);
 		
 		PublicKey publicKey 	= kf.generatePublic(new X509EncodedKeySpec(zPublicKey));
 		
@@ -47,7 +47,7 @@ public class GenerateKey {
 	
 	public static PrivateKey convertBytesToPrivate(byte[] zPrivateKey) throws InvalidKeySpecException, NoSuchAlgorithmException, NoSuchProviderException {
 		
-		KeyFactory kf 			= KeyFactory.getInstance(ASYMETRIC_ALGORITHM,CRYPTO_PROVIDER);
+		KeyFactory kf 			= KeyFactory.getInstance(ASYMETRIC_ALGORITHM);
 		
 		PrivateKey privateKey 	= kf.generatePrivate(new PKCS8EncodedKeySpec(zPrivateKey));
 		
@@ -56,7 +56,7 @@ public class GenerateKey {
 	
 	public static byte[] secretKey() throws Exception {
     	
-		KeyGenerator generator = KeyGenerator.getInstance(SYMETRIC_ALGORITHM,CRYPTO_PROVIDER);
+		KeyGenerator generator = KeyGenerator.getInstance(SYMETRIC_ALGORITHM);
     	generator.init(128); // The AES key size in number of bits
     	
     	SecretKey secKey = generator.generateKey();
@@ -69,11 +69,11 @@ public class GenerateKey {
 	}
 	
 	public static Cipher getAsymetricCipher() throws Exception {
-		return Cipher.getInstance(ASYMETRIC_ALGORITHM, CRYPTO_PROVIDER);
+		return Cipher.getInstance(ASYMETRIC_ALGORITHM);
 	}
 	
 	public static Cipher getSymetricCipher() throws Exception {
-		return Cipher.getInstance(SYMETRIC_ALGORITHM, CRYPTO_PROVIDER);
+		return Cipher.getInstance(SYMETRIC_ALGORITHM);
 	}
 	
 }

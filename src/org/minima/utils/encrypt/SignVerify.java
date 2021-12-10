@@ -18,7 +18,7 @@ public class SignVerify {
 		
 		PrivateKey privateKey 	= GenerateKey.convertBytesToPrivate(zPrivateKey);
 		
-		Signature signature 	= Signature.getInstance(SIGN_ALGO, SIGN_PROVIDER);
+		Signature signature 	= Signature.getInstance(SIGN_ALGO);
         signature.initSign(privateKey, new SecureRandom());
         signature.update(zMessage);
         		
@@ -29,7 +29,7 @@ public class SignVerify {
 		
 		PublicKey publicKey		= GenerateKey.convertBytesToPublic(zPublicKey);
 		
-		Signature signature 	= Signature.getInstance(SIGN_ALGO, SIGN_PROVIDER);
+		Signature signature 	= Signature.getInstance(SIGN_ALGO);
         signature.initVerify(publicKey);
         signature.update(zMessage);
         
