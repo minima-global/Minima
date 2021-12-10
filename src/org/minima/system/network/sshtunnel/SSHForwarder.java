@@ -104,9 +104,11 @@ public class SSHForwarder implements Runnable {
 		//Now stay connected..
 		while(isRunning()) {
 		    try {
-		    	//Connect!..with tmeout
-		    	mSession.connect(30000);
-		       
+		    	if(!mSession.isConnected()) {
+			    	//Connect!..with tmeout
+			    	mSession.connect(30000);
+		    	}
+		    	
 		    	//Port forward - Minima
 		    	mSession.setPortForwardingR("*",mRemotePort, "127.0.0.1", GeneralParams.MINIMA_PORT);
 		    	
