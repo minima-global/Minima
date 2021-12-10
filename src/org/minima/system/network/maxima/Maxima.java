@@ -210,6 +210,7 @@ public class Maxima extends MessageProcessor {
 				try {
 					//Open the socket..
 					Socket sock 			= new Socket(zHost, zPort);
+					sock.setSoTimeout(10000);
 					
 					//Create the streams..
 					OutputStream out 		= sock.getOutputStream();
@@ -244,6 +245,7 @@ public class Maxima extends MessageProcessor {
 		};
 		
 		Thread tt = new Thread(sender);
+		tt.setDaemon(true);
 		tt.start();
 	}
 	
