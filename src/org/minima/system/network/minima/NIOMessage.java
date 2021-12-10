@@ -155,6 +155,7 @@ public class NIOMessage implements Runnable {
 				Message newconn = new Message(P2PFunctions.P2P_CONNECTED);
 				newconn.addString("uid", nioclient.getUID());
 				newconn.addBoolean("incoming", nioclient.isIncoming());
+				newconn.addObject("client", nioclient);
 				Main.getInstance().getNetworkManager().getP2PManager().PostMessage(newconn);
 				
 				//Is this an incoming connection.. send a greeting!
