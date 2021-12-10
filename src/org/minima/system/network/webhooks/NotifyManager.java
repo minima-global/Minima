@@ -3,17 +3,24 @@ package org.minima.system.network.webhooks;
 import java.util.ArrayList;
 
 import org.minima.database.MinimaDB;
+import org.minima.system.Main;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.RPCClient;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
+import org.minima.utils.messages.MessageListener;
 import org.minima.utils.messages.MessageProcessor;
 
 public class NotifyManager extends MessageProcessor {
 
-	
+	/**
+	 * Post a message to all listeners
+	 */
 	public static final String NOTIFY_POST = "NOTIFY_POST";
 	
+	/**
+	 * RPC listeners
+	 */
 	ArrayList<String> mHooks;
 	
 	public NotifyManager() {
@@ -83,6 +90,12 @@ public class NotifyManager extends MessageProcessor {
 			
 			//Get the Message
 			JSONObject data = (JSONObject) zMessage.getObject("data");
+			
+			//Is some one listening directly
+			MessageListener minilistener = Main.getMinimaListener();
+			if(minilistener != null) {
+				minilistener.processMessage(zMessage);
+			}
 			
 			//Convert..
 			String postmsg = data.toString();

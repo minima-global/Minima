@@ -187,12 +187,8 @@ public class Maxima extends MessageProcessor {
 				MinimaLogger.log("MAXIMA : "+maxjson.toString());
 			}
 			
-			//Notify The Web Hook Listeners
-			JSONObject event = new JSONObject();
-			event.put("event", "MAXIMA");
-			event.put("message", maxjson);
-			
-			Main.getInstance().PostNotifyEvent(event);
+			//Notify The Listeners
+			Main.getInstance().PostNotifyEvent("MAXIMA",maxjson);
 		}
 	}
 

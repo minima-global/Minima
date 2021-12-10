@@ -44,16 +44,14 @@ public class Main extends MessageProcessor {
 	}
 	
 	/**
-	 * Is there someone listening to Minima messages
+	 * Is there someone listening to Minima messages (Android)
 	 */
-	public static MessageListener MINIMA_LISTENER = null;
+	private static MessageListener MINIMA_LISTENER = null;
+	public static MessageListener getMinimaListener() {
+		return MINIMA_LISTENER;
+	}
 	public static void setMinimaListener(MessageListener zListener) {
 		MINIMA_LISTENER = zListener;
-	}
-	public static void postMinimaListener(Message zMessage) {		
-		if(MINIMA_LISTENER != null) {
-			MINIMA_LISTENER.processMessage(zMessage);
-		}
 	}
 	
 	/**
@@ -319,15 +317,10 @@ public class Main extends MessageProcessor {
 			//Get it..
 			TxPoW txpow = (TxPoW) zMessage.getObject("txpow");
 			
-			//Post a message..
-			Message mining = new Message(MAIN_MINING);
-			mining.addBoolean("starting", false);
-			mining.addObject("txpow", txpow);
-			Main.getInstance().PostMessage(mining);
-			
 			//We have mined a TxPoW.. send it out to the network..
 			if(!txpow.isTransaction() && !txpow.isBlock()) {
 				//A PULSE..forward as proof
+				//TODO
 				return;
 			}
 			
@@ -404,28 +397,17 @@ public class Main extends MessageProcessor {
 			//Get the TxPoW
 			TxPoW txpow = (TxPoW) zMessage.getObject("txpow");
 			
-			//The tip of the TxPoWTree has changed - we have a new block..
-			postMinimaListener(zMessage);
-			
 			//Notify The Web Hook Listeners
-			JSONObject event = new JSONObject();
-			event.put("event", "NEWBLOCK");
-			event.put("txpow", txpow.toJSON());
+			JSONObject data = new JSONObject();
+			data.put("txpow", txpow.toJSON());
 			
 			//And Post it..
-			PostNotifyEvent(event);
+			PostNotifyEvent("NEWBLOCK", data);
 			
 		}else if(zMessage.getMessageType().equals(MAIN_BALANCE)) {
 			
-			//The tip of the TxPoWTree has changed - we have a new block..
-			postMinimaListener(zMessage);
-			
-			//Notify The Web Hook Listeners
-			JSONObject event = new JSONObject();
-			event.put("event", "NEWBALANCE");
-			
 			//And Post it..
-			PostNotifyEvent(event);
+			PostNotifyEvent("NEWBALANCE", new JSONObject());
 				
 		}else if(zMessage.getMessageType().equals(MAIN_MINING)) {
 			
@@ -435,17 +417,13 @@ public class Main extends MessageProcessor {
 			//Are we starting or stopping..
 			boolean starting = zMessage.getBoolean("starting");
 			
-			//The tip of the TxPoWTree has changed - we have a new block..
-			postMinimaListener(zMessage);
-			
 			//Notify The Web Hook Listeners
-			JSONObject event = new JSONObject();
-			event.put("event", "MINING");
-			event.put("txpow", txpow.toJSON());
-			event.put("starting", starting);
+			JSONObject data = new JSONObject();
+			data.put("txpow", txpow.toJSON());
+			data.put("mining", starting);
 			
 			//And Post it..
-			PostNotifyEvent(event);
+			PostNotifyEvent("MINING", data);
 			
 		}else if(zMessage.getMessageType().equals(MAIN_CHECKER)) {
 			
@@ -473,12 +451,19 @@ public class Main extends MessageProcessor {
 	}
 	
 	/**
-	 * Post a network message to the webhook listeners
-	 * @param zEvent
+	 * Post a network message to the webhook / Android listeners
 	 */
-	public void PostNotifyEvent(JSONObject zEvent) {
+	public void PostNotifyEvent(String zEvent, JSONObject zData) {
 		if(getNetworkManager() != null) {
-			getNetworkManager().getNotifyManager().PostEvent(zEvent);
+			
+			//Create the JSON Message
+			JSONObject notify = new JSONObject();
+			notify.put("event", zEvent);
+			notify.put("data", zData);
+			
+			//And post
+			getNetworkManager().getNotifyManager().PostEvent(notify);
 		}
 	}
+	
 }

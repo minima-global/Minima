@@ -26,7 +26,9 @@ public class MinimaLogger {
 		System.out.println(full_log);
 		
 		//Is there a listener..
-		Main.postMinimaListener(new Message(MINIMA_LOG).addString("log", full_log));	
+		if(Main.getMinimaListener() != null) {
+			Main.getMinimaListener().processMessage(new Message(MINIMA_LOG).addString("log", full_log));
+		}
 	}
 	
 	public static void log(Exception zException){
