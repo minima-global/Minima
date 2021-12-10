@@ -78,7 +78,13 @@ public class maxima extends Command {
 			
 			//Which application
 			String application 	= getParam("application");
-			String data 		= getParam("data");
+			
+			String data = "";
+			if(isParamJSONObject("data")) {
+				data = getJSONObjectParam("data").toString();
+			}else {
+				data = getParam("data");
+			} 
 			
 			MiniData mdata = null;
 			if(data.startsWith("0x") || data.startsWith("Mx")) {
