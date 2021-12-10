@@ -1,9 +1,13 @@
 package org.minima.system.network.maxima;
 
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.security.KeyPair;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.userprefs.UserDB;
@@ -194,24 +198,44 @@ public class Maxima extends MessageProcessor {
 
 	private void sendMaximaMessage(String zHost, int zPort, MiniData zMaxMessage) {
 		
-		try {
-			//Open the socket..
-			Socket sock 			= new Socket(zHost, zPort);
+		Runnable sender = new Runnable() {
 			
-			//Create the streams..
-			OutputStream out 		= sock.getOutputStream();
-			DataOutputStream dos 	= new DataOutputStream(out);
-			
-			//Write the data
-			zMaxMessage.writeDataStream(dos);
-			dos.flush();
-			
-			dos.close();
-			out.close();
+			@Override
+			public void run() {
+				try {
+					//Open the socket..
+					Socket sock 			= new Socket(zHost, zPort);
+					
+					//Create the streams..
+					OutputStream out 		= sock.getOutputStream();
+					DataOutputStream dos 	= new DataOutputStream(out);
+					
+					InputStream in			= sock.getInputStream();
+					DataInputStream dis 	= new DataInputStream(in);
+					
+					//Write the data
+					zMaxMessage.writeDataStream(dos);
+					dos.flush();
+					
+					//Now get the repnse..
+					MiniData resp = MiniData.ReadFromStream(dis);
+					MinimaLogger.log("MAXIMA RESPONSE "+resp);
+					
+					dis.close();
+					in.close();
+					dos.close();
+					out.close();
+				
+				}catch(Exception exc){
+					MinimaLogger.log("Error sending Maxima message : "+exc.toString());
+				}
+				
+				MinimaLogger.log("MAXIMA FINISHED");
+			}
+		};
 		
-		}catch(Exception exc){
-			MinimaLogger.log("Error sending Maxima message : "+exc.toString());
-		}
+		Thread tt = new Thread(sender);
+		tt.start();
 	}
 	
 	public void createMaximaKeys() throws Exception {

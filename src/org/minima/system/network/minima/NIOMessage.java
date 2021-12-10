@@ -414,6 +414,9 @@ public class NIOMessage implements Runnable {
 				
 				Main.getInstance().getMaxima().PostMessage(maxmsg);
 				
+				//Notify that Client that we received the message.. this makes them disconnect
+				NIOManager.sendNetworkMessage(mClientUID, MSG_PING, MiniData.ZERO_TXPOWID);
+				
 			}else {
 				
 				//UNKNOWN MESSAGE..
