@@ -39,6 +39,7 @@ public class NIOManager extends MessageProcessor {
 	
 	public static final String NIO_DISCONNECT 		= "NIO_DISCONNECT";
 	public static final String NIO_DISCONNECTED		= "NIO_DISCONNECTED";
+	public static final String NIO_DISCONNECTALL 	= "NIO_DISCONNECTALL";
 	
 	public static final String NIO_RECONNECT 		= "NIO_RECONNECT";
 	
@@ -235,6 +236,22 @@ public class NIOManager extends MessageProcessor {
 				tmsg.addObject("client", nc);
 				NIOManager.this.PostTimerMessage(tmsg);
 			}
+		
+		}else if(zMessage.getMessageType().equals(NIO_DISCONNECTALL)) {
+			
+			//Disconnect from all the clients..!
+			
+			Enumeration<NIOClient> clients = mConnectingClients.elements();
+			while(clients.hasMoreElements()) {
+				NIOClient nc = clients.nextElement();
+				disconnect(nc.getUID());
+			}
+			
+			ArrayList<NIOClient> conns = mNIOServer.getAllNIOClients();
+			for(NIOClient conn : conns) {
+				disconnect(conn.getUID());
+			}
+			
 			
 		}else if(zMessage.getMessageType().equals(NIO_DISCONNECT)) {
 			//Get the UID

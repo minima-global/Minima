@@ -2,7 +2,9 @@ package org.minima.system.commands.all;
 
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
+import org.minima.system.network.minima.NIOManager;
 import org.minima.utils.json.JSONObject;
+import org.minima.utils.messages.Message;
 
 public class disconnect extends Command {
 
@@ -21,7 +23,13 @@ public class disconnect extends Command {
 			throw new Exception("No uid specified");
 		}
 		
-		Main.getInstance().getNIOManager().disconnect(uid);
+		if(uid.equals("all")) {
+			Message disconnect = new Message(NIOManager.NIO_DISCONNECTALL);
+			Main.getInstance().getNIOManager().PostMessage(disconnect);
+			
+		}else {
+			Main.getInstance().getNIOManager().disconnect(uid);
+		}
 		
 		ret.put("status", true);
 		ret.put("message", "Attempting to disconnect from "+uid);
