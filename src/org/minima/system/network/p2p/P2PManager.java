@@ -27,7 +27,8 @@ public class P2PManager extends MessageProcessor {
     /**
      * A loop message repeated every so often
      */
-    public static final String P2P_LOOP = "P2P_LOOP";
+    public static final String P2P_LOOP 		= "P2P_LOOP";
+    public static final String P2P_LOOP_ONCE 	= "P2P_LOOP_ONCE";
     public static final String P2P_ASSESS_CONNECTIVITY = "P2P_ASSESS_CONNECTIVITY";
 
     public static final String P2P_SEND_MSG = "P2P_SEND_MSG";
@@ -142,6 +143,23 @@ public class P2PManager extends MessageProcessor {
         return msgs;
     }
 
+    //Need this for the SSH Tunnel logic to work..
+    public void resetP2P() {
+    	MinimaLogger.log("[+] P2P Reset in process");
+
+    	//Reset some values..
+        state.setAcceptingInLinks(GeneralParams.IS_ACCEPTING_IN_LINKS);
+        state.setMyMinimaAddress(GeneralParams.MINIMA_HOST);
+        if (GeneralParams.IS_HOST_SET) {
+            state.setHostSet(true);
+        }else {
+        	state.setHostSet(false);
+        }
+        
+        //Run the process loop once..
+        PostMessage(P2P_LOOP_ONCE);
+    }
+    
     public static List<Message> connect(Message zMessage, P2PState state) {
         String uid = zMessage.getString("uid");
         boolean incoming = zMessage.getBoolean("incoming");
@@ -325,6 +343,9 @@ public class P2PManager extends MessageProcessor {
         } else if (zMessage.isMessageType(P2P_LOOP)) {
             sendMsgs.addAll(processLoop(state));
             PostTimerMessage(new TimerMessage(state.getLoopDelay(), P2P_LOOP));
+        } else if (zMessage.isMessageType(P2P_LOOP_ONCE)) {
+        	//Same as Loop but no timer message
+            sendMsgs.addAll(processLoop(state));
         } else if (zMessage.isMessageType(P2PFunctions.P2P_NOCONNECT)) {
             NIOClient client = (NIOClient) zMessage.getObject("client");
             InetSocketAddress conn = new InetSocketAddress(client.getHost(), client.getPort());
