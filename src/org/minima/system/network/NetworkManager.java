@@ -67,7 +67,7 @@ public class NetworkManager {
 		}
 		
 		//The main NIO server manager
-		mNIOManager = new NIOManager();
+		mNIOManager = new NIOManager(this);
 		
 		//Do we start the RPC server
 		if(MinimaDB.getDB().getUserDB().isRPCEnabled()) {

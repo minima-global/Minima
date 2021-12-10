@@ -19,6 +19,7 @@ import org.minima.objects.base.MiniData;
 import org.minima.system.Main;
 import org.minima.system.commands.all.connect;
 import org.minima.system.commands.all.sshtunnel;
+import org.minima.system.network.NetworkManager;
 import org.minima.system.network.p2p.P2PFunctions;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.MinimaLogger;
@@ -65,6 +66,11 @@ public class NIOManager extends MessageProcessor {
 	static final long RECONNECT_TIMER = 30000;
 	
 	/**
+	 * Main Network Manager
+	 */
+	NetworkManager mNetworkManager;
+	
+	/**
 	 * The MAIN Minima Server
 	 */
 	private NIOServer mNIOServer;
@@ -79,8 +85,10 @@ public class NIOManager extends MessageProcessor {
 	 */
 	ExecutorService THREAD_POOL = Executors.newFixedThreadPool(4);
 	
-	public NIOManager() {
+	public NIOManager(NetworkManager zNetManager) {
 		super("NIOMANAGER");
+		
+		mNetworkManager = zNetManager;
 		
 		mConnectingClients = new ConcurrentHashMap<>();
 		
@@ -139,7 +147,7 @@ public class NIOManager extends MessageProcessor {
 			}
 			
 			//The NIOServer has started you can now start up the P2P and pre-connect list
-			Main.getInstance().getNetworkManager().getP2PManager().PostMessage(P2PFunctions.P2P_INIT);
+			mNetworkManager.getP2PManager().PostMessage(P2PFunctions.P2P_INIT);
 			
 			//Any nodes to auto connect to.. comma separated list
 			if(!GeneralParams.CONNECT_LIST.equals("")) {
@@ -224,7 +232,7 @@ public class NIOManager extends MessageProcessor {
 					Message newconn = new Message(P2PFunctions.P2P_NOCONNECT);
 					newconn.addObject("client", nc);
 					newconn.addString("uid", nc.getUID());
-					Main.getInstance().getNetworkManager().getP2PManager().PostMessage(newconn);
+					mNetworkManager.getP2PManager().PostMessage(newconn);
 					
 					MinimaLogger.log("INFO : "+nc.getUID()+" connection failed - no more reconnect attempts ");
 					
@@ -299,7 +307,7 @@ public class NIOManager extends MessageProcessor {
 			newconn.addString("uid", nioc.getUID());
 			newconn.addBoolean("incoming", nioc.isIncoming());
 			newconn.addBoolean("reconnect", reconnect);
-			Main.getInstance().getNetworkManager().getP2PManager().PostMessage(newconn);
+			mNetworkManager.getP2PManager().PostMessage(newconn);
 			
 		}else if(zMessage.getMessageType().equals(NIO_NEWCONNECTION)) {
 			//New connection.. 
