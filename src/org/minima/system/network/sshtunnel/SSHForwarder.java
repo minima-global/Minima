@@ -114,6 +114,7 @@ public class SSHForwarder implements Runnable {
 		    	MinimaLogger.log("SSH Tunnel STARTED Minima @ "+mHost+":"+mRemotePort+" to "+GeneralParams.MINIMA_PORT);
 		    	
 		    	//Set the GeneralParams..
+		    	GeneralParams.IS_ACCEPTING_IN_LINKS = true;
 		    	GeneralParams.IS_HOST_SET = true;
 				GeneralParams.MINIMA_HOST = mHost;
 				GeneralParams.MINIMA_PORT = mRemotePort;
@@ -139,8 +140,9 @@ public class SSHForwarder implements Runnable {
 		mSession = null;
 		
 		//Reset HOST / PORT values
-		GeneralParams.IS_HOST_SET = false;
-		GeneralParams.MINIMA_PORT = 9001;
+		GeneralParams.IS_ACCEPTING_IN_LINKS = false;
+		GeneralParams.IS_HOST_SET 			= false;
+		GeneralParams.MINIMA_PORT 			= 9001;
 		Main.getInstance().getNetworkManager().calculateHostIP();
 		
 		//Tell the User
