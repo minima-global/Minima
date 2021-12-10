@@ -15,11 +15,11 @@ print_usage() {
   printf "Usage: Setups a new minima service for the specified port, default 9121 \n \t -c REQUIRED connection host and port HOST:PORT \n \t -u flag Use unsecure p2p version with rpc ports active, ignored if -a isn't also set \n \t -x flag enable clean flag \n \t -p minima port to use eg. -p 9121 \n \t -h minima home directory eg -h /home/minima \n \t -a use the p2p alphas \n"
 }
 
-while getopts ':xrsc::p:d:h:' flag; do
+while getopts ':xsc::p:r:d:h:' flag; do
   case "${flag}" in
     s) SLEEP='true';;
     x) CLEAN_FLAG='true';;
-    r) RPC='true';;
+    r) RPC="${OPTARG}";;
     c) CONNECTION_HOST=$(echo $OPTARG | cut -f1 -d:);
        CONNECTION_PORT=$(echo $OPTARG | cut -f2 -d:);;
     p) PORT="${OPTARG}";;
@@ -100,7 +100,7 @@ if [ $HOST ]; then
 fi
 
 if [ $RPC ]; then
-  MINIMA_PARAMS="$MINIMA_PARAMS -rpcenable"
+  MINIMA_PARAMS="$MINIMA_PARAMS -rpcenable -rpc $RPC"
 fi
 
 tee <<EOF >/dev/null /etc/systemd/system/minima_$PORT.service

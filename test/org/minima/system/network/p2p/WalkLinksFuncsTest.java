@@ -41,25 +41,6 @@ public class WalkLinksFuncsTest extends TestCase {
         assertTrue(ret.isEmpty());
     }
 
-    public void testOnReturnedWalkMsg() throws UnknownHostException {
-        P2PState state = QuickState.stateInAndOutLinks(4, 5, 9001);
-        state.setMyMinimaAddress("60.0.0.1");
-        List<InetSocketAddress> pathTaken = QuickInetLists.generateInetSockAddrList("60.0.0.", 10, 9001);
-        P2PWalkLinks msgWalkLinks = new P2PWalkLinks(true, false, pathTaken);
-        List<Message> address = WalkLinksFuncs.onReturnedWalkMsg(state, msgWalkLinks, 5);
-        assertNotNull(address);
-        assertEquals(10, state.getKnownPeers().size());
-    }
-
-    public void testOnReturnedWalkMsgConnectingToSelf() throws UnknownHostException {
-        P2PState state = QuickState.stateInAndOutLinks(4, 5, 9001);
-        state.setMyMinimaAddress("60.0.0.1");
-        List<InetSocketAddress> pathTaken = QuickInetLists.generateInetSockAddrList("60.0.0.", 1, 9001);
-        P2PWalkLinks msgWalkLinks = new P2PWalkLinks(true, false, pathTaken);
-        List<Message> address = WalkLinksFuncs.onReturnedWalkMsg(state, msgWalkLinks, 5);
-        assertTrue(address.isEmpty());
-    }
-
     public void testOnReturnedWalkMsgOutLinksFull() throws UnknownHostException {
         P2PState state = QuickState.stateInAndOutLinks(5, 5, 9001);
         state.setMyMinimaAddress("60.0.0.1");

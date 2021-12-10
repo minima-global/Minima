@@ -17,7 +17,7 @@ public class P2PParams {
     /**
      * Desired number of client (nodes that can't accept inbound connections) to maintain
      */
-    public static int TGT_NUM_NONE_P2P_LINKS = 50;
+    public static int TGT_NUM_NONE_P2P_LINKS = 100;
 
     /**
      * Desired number of connections clients should maintain
@@ -40,6 +40,8 @@ public class P2PParams {
      */
     public static int NODE_NOT_ACCEPTING_CHECK_DELAY = 3600_000;
 
+    public static int SAVE_DATA_DELAY = 3600_000;
+
     /**
      * Time in ms before walk link messages expire
      */
@@ -52,7 +54,7 @@ public class P2PParams {
 
     public static int METRICS_DELAY = 600_000;
 
-    public static String METRICS_URL = "http://35.242.245.96:5000//network";
+    public static String METRICS_URL = "http://35.242.245.96/network";
 
     public static List<InetSocketAddress> DEFAULT_NODE_LIST = Arrays.asList(
             new InetSocketAddress("34.76.220.73", 9001), // minima-tn100-testnet-vm

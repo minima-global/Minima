@@ -14,12 +14,13 @@ public class P2PTestParams {
     /**
      * Desired number of client (nodes that can't accept inbound connections) to maintain
      */
-    public static int TGT_NUM_NONE_P2P_LINKS = 50;
+    public static int TGT_NUM_NONE_P2P_LINKS = 5;
 
     /**
      * Desired number of connections clients should maintain
+     * For testing this number is set higher to test load balancing
      */
-    public static int MIN_NUM_CONNECTIONS = 3;
+    public static int MIN_NUM_CONNECTIONS = 10;
 
     /**
      * Time between P2P system assessing its state in milliseconds
@@ -37,6 +38,9 @@ public class P2PTestParams {
      */
     public static int NODE_NOT_ACCEPTING_CHECK_DELAY = 60_000;
 
+
+    public static int SAVE_DATA_DELAY = 60_000;
+
     /**
      * Time in ms before walk link messages expire
      */
@@ -47,7 +51,7 @@ public class P2PTestParams {
      */
     public static int AUTH_KEY_EXPIRY = 300_000;
 
-    public static int METRICS_DELAY = 5_000;
+    public static int METRICS_DELAY = 30_000;
 
     public static String METRICS_URL = "http://metrics:5000/network";
 
@@ -67,6 +71,7 @@ public class P2PTestParams {
         P2PParams.MIN_NUM_CONNECTIONS = MIN_NUM_CONNECTIONS;
         P2PParams.METRICS_DELAY = METRICS_DELAY;
         P2PParams.METRICS_URL = METRICS_URL;
+        P2PParams.SAVE_DATA_DELAY = SAVE_DATA_DELAY;
     }
 
 
