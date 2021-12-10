@@ -46,6 +46,7 @@ public class help extends Command {
 		addCommand(details, new disconnect());
 		addCommand(details, new rpc());
 		addCommand(details, new webhooks());
+		addCommand(details, new sshtunnel());
 		
 		addCommand(details, new backup());
 		addCommand(details, new restore());

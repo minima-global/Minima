@@ -57,7 +57,7 @@ public class GenerateKey {
 	public static byte[] secretKey() throws Exception {
     	
 		KeyGenerator generator = KeyGenerator.getInstance(SYMETRIC_ALGORITHM,CRYPTO_PROVIDER);
-    	generator.init(256); // The AES key size in number of bits
+    	generator.init(128); // The AES key size in number of bits
     	
     	SecretKey secKey = generator.generateKey();
     	

@@ -129,11 +129,17 @@ public class NIOManager extends MessageProcessor {
 		
 		if(zMessage.getMessageType().equals(NIO_SERVERSTARTED)) {
 			
+			//Do we need to start up the SSHTunnel..
+			if(MinimaDB.getDB().getUserDB().isSSHTunnelEnabled()){
+				//Start the SSH Tunnel..
+				sshtunnel.startSSHTunnel();
+			
+				//Wait a few seconds for it to work..
+				Thread.sleep(5000);
+			}
+			
 			//The NIOServer has started you can now start up the P2P and pre-connect list
 			Main.getInstance().getNetworkManager().getP2PManager().PostMessage(P2PFunctions.P2P_INIT);
-			
-			//Do we need to start up the SSHTunnel..
-			sshtunnel.startSSHTunnel();
 			
 			//Any nodes to auto connect to.. comma separated list
 			if(!GeneralParams.CONNECT_LIST.equals("")) {

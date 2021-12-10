@@ -24,8 +24,7 @@ public class disconnect extends Command {
 		}
 		
 		if(uid.equals("all")) {
-			Message disconnect = new Message(NIOManager.NIO_DISCONNECTALL);
-			Main.getInstance().getNIOManager().PostMessage(disconnect);
+			Main.getInstance().getNIOManager().PostMessage(new Message(NIOManager.NIO_DISCONNECTALL));
 			
 		}else {
 			Main.getInstance().getNIOManager().disconnect(uid);

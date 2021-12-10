@@ -50,7 +50,7 @@ public class SSHManager extends MessageProcessor {
 				
 				@Override
 				public boolean isEnabled(int zLevel) {
-					return mTrace;
+					return mLogging;
 				}
 			});
 			

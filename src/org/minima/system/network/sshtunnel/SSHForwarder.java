@@ -1,5 +1,7 @@
 package org.minima.system.network.sshtunnel;
 
+import org.minima.database.MinimaDB;
+import org.minima.system.Main;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.MinimaLogger;
 
@@ -111,6 +113,12 @@ public class SSHForwarder implements Runnable {
 		    	//Log it..
 		    	MinimaLogger.log("SSH Tunnel STARTED Minima @ "+mHost+":"+mRemotePort+" to "+GeneralParams.MINIMA_PORT);
 		    	
+		    	//Set the GeneralParams..
+		    	GeneralParams.IS_HOST_SET = true;
+				GeneralParams.MINIMA_HOST = mHost;
+				GeneralParams.MINIMA_PORT = mRemotePort;
+				
+				//Now make sure we are connected..
 		    	while(mSession.isConnected()) {
 		    		Thread.sleep(1000);
 		    	}
@@ -130,6 +138,12 @@ public class SSHForwarder implements Runnable {
 		//Nullify the Session
 		mSession = null;
 		
+		//Reset HOST / PORT values
+		GeneralParams.IS_HOST_SET = false;
+		GeneralParams.MINIMA_PORT = 9001;
+		Main.getInstance().getNetworkManager().calculateHostIP();
+		
+		//Tell the User
 		MinimaLogger.log("SSH Tunnel STOPPED");
 	}
 
