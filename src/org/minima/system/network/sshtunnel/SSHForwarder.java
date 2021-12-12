@@ -108,7 +108,6 @@ public class SSHForwarder implements Runnable {
 		    	if(mSession.isConnected()) {
 			    	//Stop port forward
 		    		try {
-						//Stop port forwarding
 						mSession.delPortForwardingR(mRemotePort);
 					} catch (JSchException e) {
 						MinimaLogger.log(e);
