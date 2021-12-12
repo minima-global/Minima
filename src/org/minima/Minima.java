@@ -84,9 +84,6 @@ public class Minima {
 		boolean daemon = configurer.isDaemon();
 		boolean rpcenable = configurer.isRpcenable();
 
-		//Add bouncy Castle as a security provider
-		Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
-		
 		//Now lets go..
 		MinimaLogger.log("**********************************************");
 		MinimaLogger.log("*  __  __  ____  _  _  ____  __  __    __    *");
