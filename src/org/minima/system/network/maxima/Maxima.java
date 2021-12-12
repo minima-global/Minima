@@ -107,6 +107,9 @@ public class Maxima extends MessageProcessor {
 			
 			mInited = true;
 			
+			//Save the DB
+			MinimaDB.getDB().saveUserDB();
+			
 		}else if(zMessage.getMessageType().equals(MAXIMA_SENDMESSAGE)) {
 			
 			//Message details
