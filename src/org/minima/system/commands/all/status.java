@@ -84,7 +84,7 @@ public class status extends Command {
 		
 		//How many coins..
 		BigDecimal coins = MinimaDB.getDB().getTxPoWTree().getTip().getMMR().getEntryNumber().getBigDecimal();
-		details.put("coins", coins);
+		details.put("coins", coins.toString());
 		
 		details.put("data", GeneralParams.DATA_FOLDER);
 		
