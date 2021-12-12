@@ -2,11 +2,14 @@ package org.minima.utils.encrypt;
 
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.util.Random;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
 
 import org.minima.objects.base.MiniData;
+import org.minima.utils.MinimaLogger;
 
 public class EncryptDecrypt {
 	
@@ -30,20 +33,23 @@ public class EncryptDecrypt {
         return cipher.doFinal(encryptedData);
     }
     
-    public static byte[] encryptSYM(byte[] zSecretKey, byte[] inputData) throws Exception {
-    	SecretKey sk 		= GenerateKey.convertSecret(zSecretKey);
+    public static byte[] encryptSYM(byte[] zIvParam, byte[] zSecretKey, byte[] inputData) throws Exception {
+    	
+    	SecretKey sk 		= GenerateKey.convertSecret(zSecretKey);    	
+    	IvParameterSpec iv 	= new IvParameterSpec(zIvParam);
     	
     	Cipher aesCipher 	= GenerateKey.getSymetricCipher();
-		aesCipher.init(Cipher.ENCRYPT_MODE, sk);
+		aesCipher.init(Cipher.ENCRYPT_MODE, sk, iv);
 		
     	return aesCipher.doFinal(inputData);
     }
     
-    public static byte[] decryptSYM(byte[] zSecretKey, byte[] encryptedData) throws Exception {
+    public static byte[] decryptSYM(byte[] zIvParam, byte[] zSecretKey, byte[] encryptedData) throws Exception {
     	SecretKey sk 		= GenerateKey.convertSecret(zSecretKey);
+    	IvParameterSpec iv 	= new IvParameterSpec(zIvParam);
     	
     	Cipher aesCipher 	= GenerateKey.getSymetricCipher();
-		aesCipher.init(Cipher.DECRYPT_MODE, sk);
+		aesCipher.init(Cipher.DECRYPT_MODE, sk, iv);
 		
     	return aesCipher.doFinal(encryptedData);
     }

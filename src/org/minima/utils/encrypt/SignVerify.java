@@ -12,7 +12,6 @@ import org.minima.objects.base.MiniData;
 public class SignVerify {
 
 	public static final String SIGN_ALGO 		= "SHA256withRSA";
-	public static final String SIGN_PROVIDER 	= "BC";
 	
 	public static byte[] sign(byte[] zPrivateKey, byte[] zMessage) throws Exception {
 		
