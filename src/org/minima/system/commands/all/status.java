@@ -80,7 +80,7 @@ public class status extends Command {
 		
 		//Total Minima..
 		MiniNumber minima = MinimaDB.getDB().getTxPoWTree().getTip().getTxPoW().getMMRTotal();
-		details.put("minima", minima);
+		details.put("minima", minima.toString());
 		
 		//How many coins..
 		BigDecimal coins = MinimaDB.getDB().getTxPoWTree().getTip().getMMR().getEntryNumber().getBigDecimal();
