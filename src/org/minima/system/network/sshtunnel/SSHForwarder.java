@@ -104,29 +104,29 @@ public class SSHForwarder implements Runnable {
 		//Now stay connected..
 		while(isRunning()) {
 		    try {
-		    	//Make sure clean up on error..
-		    	if(mSession.isConnected()) {
-			    	//Stop port forward
-		    		try {
-						mSession.delPortForwardingR(mRemotePort);
-					} catch (JSchException e) {
-						MinimaLogger.log(e);
-					}
-		    		
-		    		//Disconnect
-			    	mSession.disconnect();
-			    	
-			    	//Small Pause..
-			    	Thread.sleep(1000);
-		    	}
-		    	
-		    	//Now connect
-		    	mSession.connect(30000);
-		    	
-//		    	if(!mSession.isConnected()) {
-//			    	//Connect!..with tmeout
-//		    		mSession.connect(30000);
+//		    	//Make sure clean up on error..
+//		    	if(mSession.isConnected()) {
+//			    	//Stop port forward
+//		    		try {
+//						mSession.delPortForwardingR(mRemotePort);
+//					} catch (JSchException e) {
+//						MinimaLogger.log(e);
+//					}
+//		    		
+//		    		//Disconnect
+//			    	mSession.disconnect();
+//			    	
+//			    	//Small Pause..
+//			    	Thread.sleep(1000);
 //		    	}
+//		    	
+//		    	//Now connect
+//		    	mSession.connect(30000);
+		    	
+		    	if(!mSession.isConnected()) {
+			    	//Connect!..with tmeout
+		    		mSession.connect(20000);
+		    	}
 		    	
 		    	//Port forward - Minima
 		    	mSession.setPortForwardingR("*",mRemotePort, "127.0.0.1", GeneralParams.MINIMA_PORT);
