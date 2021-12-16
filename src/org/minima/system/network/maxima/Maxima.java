@@ -17,6 +17,7 @@ import org.minima.system.Main;
 import org.minima.system.network.minima.NIOManager;
 import org.minima.system.network.minima.NIOMessage;
 import org.minima.system.params.GeneralParams;
+import org.minima.system.params.GlobalParams;
 import org.minima.utils.BaseConverter;
 import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
@@ -26,6 +27,7 @@ import org.minima.utils.encrypt.SignVerify;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageProcessor;
+import org.minima.utils.messages.TimerMessage;
 
 public class Maxima extends MessageProcessor {
 
@@ -35,6 +37,9 @@ public class Maxima extends MessageProcessor {
 	public static final String MAXIMA_INIT 			= "MAXIMA_INIT";
 	public static final String MAXIMA_RECMESSAGE 	= "MAXIMA_RECMESSAGE";
 	public static final String MAXIMA_SENDMESSAGE 	= "MAXIMA_SENDDMESSAGE";
+	
+	public static final String MAXIMA_TEST_MSG 		= "MAXIMA_TEST_MSG";
+	public long MAXIMA_TEST_TIMER					= 1000 * 60 * 10;
 	
 	/**
 	 * UserDB data
@@ -54,11 +59,14 @@ public class Maxima extends MessageProcessor {
 	MiniData mPrivate;
 	
 	private boolean mInited 	= false;
-	public boolean mMaximaLogs 	= false;
+	public boolean mMaximaLogs 	= true;
 	
 	public Maxima() {
 		super("MAXIMA");
 		PostMessage(MAXIMA_INIT);
+		
+		//Start the test message..
+		PostTimerMessage(new TimerMessage(5000, MAXIMA_TEST_MSG));
 	}
 	
 	public boolean isInited() {
@@ -201,6 +209,24 @@ public class Maxima extends MessageProcessor {
 			
 			//Notify The Listeners
 			Main.getInstance().PostNotifyEvent("MAXIMA",maxjson);
+		
+		}else if(zMessage.getMessageType().equals(MAXIMA_TEST_MSG)) {
+			
+			//Get the Maxima Message
+			MaximaMessage maxima 	= createMaximaMessage(getIdentity(), "maxchat", new MiniData("0xFF"));
+			
+			//Send to Maxima..
+			Message sender = new Message(Maxima.MAXIMA_SENDMESSAGE);
+			sender.addObject("maxima", maxima);
+			sender.addString("publickey", mPublic.to0xString());
+			sender.addString("tohost", GeneralParams.MINIMA_HOST);
+			sender.addInteger("toport", GeneralParams.MINIMA_PORT);
+			
+			//Post It!
+			PostMessage(sender);
+			
+			//And again in a minute..
+			PostTimerMessage(new TimerMessage(MAXIMA_TEST_TIMER, MAXIMA_TEST_MSG));
 		}
 	}
 
@@ -227,12 +253,18 @@ public class Maxima extends MessageProcessor {
 					dos.flush();
 					
 					//Now get a response.. should be ONE_ID.. give it 1 second max.. ( might get a block..)
+					boolean valid = false;
 					long maxtime = System.currentTimeMillis() + 1000;
 					while(System.currentTimeMillis() < maxtime) {
 						MiniData resp = MiniData.ReadFromStream(dis);
 						if(resp.isEqual(MAXIMA_RESPONSE)) {
+							valid = true;
 							break;
 						}
+					}
+					
+					if(!valid) {
+						MinimaLogger.log("Warning : Maxima message incorrect reply");
 					}
 					
 					//Close the streams..
