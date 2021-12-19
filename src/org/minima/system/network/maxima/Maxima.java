@@ -66,7 +66,7 @@ public class Maxima extends MessageProcessor {
 		PostMessage(MAXIMA_INIT);
 		
 		//Start the test message..
-		PostTimerMessage(new TimerMessage(5000, MAXIMA_TEST_MSG));
+//		PostTimerMessage(new TimerMessage(5000, MAXIMA_TEST_MSG));
 	}
 	
 	public boolean isInited() {
