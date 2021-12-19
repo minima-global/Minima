@@ -128,6 +128,9 @@ public class SSHForwarder implements Runnable {
 		    		mSession.connect(20000);
 		    	}
 		    	
+		    	//30 second keep alive..
+		    	mSession.setServerAliveInterval(30000);
+		    	
 		    	//Port forward - Minima
 		    	mSession.setPortForwardingR("*",mRemotePort, "127.0.0.1", GeneralParams.MINIMA_PORT);
 		    	
