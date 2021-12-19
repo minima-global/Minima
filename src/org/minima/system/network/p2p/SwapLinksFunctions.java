@@ -153,7 +153,7 @@ public class SwapLinksFunctions {
                 state.getNotAcceptingConnP2PLinks().put(uid, minimaAddress);
             }
         } else {
-            MinimaLogger.log("[-] ERROR Client is null when processing greeting: " + greeting.toJson());
+            MinimaLogger.log("[-] ERROR Client is null UID:"+uid+" when processing greeting: " + greeting.toJson());
         }
         return noconnect;
     }

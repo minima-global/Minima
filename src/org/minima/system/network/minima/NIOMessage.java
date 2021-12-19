@@ -152,6 +152,7 @@ public class NIOMessage implements Runnable {
 				nioclient.setValidGreeting(true);
 				
 				//Tell the P2P..
+				MinimaLogger.log("CONNECTED P2P Client UID : "+nioclient.getUID());
 				Message newconn = new Message(P2PFunctions.P2P_CONNECTED);
 				newconn.addString("uid", nioclient.getUID());
 				newconn.addBoolean("incoming", nioclient.isIncoming());
