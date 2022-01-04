@@ -110,6 +110,11 @@ public class NIOClient {
     	mLastMessageRead 	= mTimeConnected; 
     }
 	
+	@Override
+	public String toString() {
+		return toJSON().toString();
+	}
+	
 	public JSONObject toJSON() {
 		JSONObject ret = new JSONObject();
 		
