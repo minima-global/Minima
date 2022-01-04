@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -43,11 +44,21 @@ public class SwapLinksFunctions {
         boolean sendMessages = true;
         if (incoming) {
             InetSocketAddress incomingAddress = new InetSocketAddress(info.getHost(), 0);
-            if (state.getNoneP2PLinks().containsValue(incomingAddress)) {
-                msgs.add(new Message(P2PManager.P2P_SEND_DISCONNECT).addString("uid", uid));
-                sendMessages = false;
+            
+            if(info.getHost().equals("127.0.0.1")) {
+            	//It's an SSH Forward address with no HOST set.. CREATE RANDOM HOST
+            	Random rand 	= new Random();
+            	String randhost = rand.nextInt(127)+"."+rand.nextInt(127)+"."+rand.nextInt(127)+"."+rand.nextInt(127);
+            	MinimaLogger.log("INCOMING SSH FORWARD ADDRESS 127.0.0.1 now : "+randhost);
+            	state.getNoneP2PLinks().put(uid, new InetSocketAddress(randhost, 0));
+            	
+            }else {
+                if (state.getNoneP2PLinks().containsValue(incomingAddress)) {
+	                msgs.add(new Message(P2PManager.P2P_SEND_DISCONNECT).addString("uid", uid));
+	                sendMessages = false;
+	            }
+	            state.getNoneP2PLinks().put(uid, new InetSocketAddress(info.getHost(), 0));
             }
-            state.getNoneP2PLinks().put(uid, new InetSocketAddress(info.getHost(), 0));
         } else {
             state.getNoneP2PLinks().put(uid, new InetSocketAddress(info.getHost(), info.getPort()));
         }

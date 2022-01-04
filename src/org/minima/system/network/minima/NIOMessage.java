@@ -139,6 +139,13 @@ public class NIOMessage implements Runnable {
 					return;
 				}
 				
+				//Is this a port foprwrad address
+				if(nioclient.getHost().equals("127.0.0.1")) {
+					if(greet.getExtraData().containsKey("host")) {
+						MinimaLogger.log("Greeting from SSH Port with HOST set : "+greet.getExtraDataValue("host"));
+					}
+				}
+				
 				//Get the Host / Port..
 				if(greet.getExtraData().containsKey("host")) {
 					nioclient.overrideHost(greet.getExtraDataValue("host"));
@@ -152,7 +159,7 @@ public class NIOMessage implements Runnable {
 				nioclient.setValidGreeting(true);
 				
 				//Tell the P2P..
-				MinimaLogger.log("CONNECTED P2P Client UID : "+nioclient.getUID()+" @ "+nioclient.getHost()+":"+nioclient.getPort());
+				MinimaLogger.log("CONNECTED P2P Client "+nioclient);
 				Message newconn = new Message(P2PFunctions.P2P_CONNECTED);
 				newconn.addString("uid", nioclient.getUID());
 				newconn.addBoolean("incoming", nioclient.isIncoming());
