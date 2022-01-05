@@ -20,12 +20,15 @@ import org.minima.system.brains.TxPoWChecker;
 import org.minima.system.network.maxima.Maxima;
 import org.minima.system.network.maxima.MaximaPackage;
 import org.minima.system.network.p2p.P2PFunctions;
+import org.minima.system.network.p2p.P2PManager;
+import org.minima.system.params.GeneralParams;
 import org.minima.utils.ListCheck;
 import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.json.parser.JSONParser;
 import org.minima.utils.messages.Message;
+import org.minima.utils.messages.TimerMessage;
 
 public class NIOMessage implements Runnable {
 
@@ -351,16 +354,37 @@ public class NIOMessage implements Runnable {
 				//P2P message..
 				MiniString msg = MiniString.ReadFromStream(dis);
 				
+				//Should not be receiving these..
+				if(!GeneralParams.P2P_ENABLED) {
+					return;
+				}
+				
 				//Convert to JSON
 				JSONObject json = (JSONObject) new JSONParser().parse(msg.toString());
 				
-				//Create the message
-				Message p2p = new Message(P2PFunctions.P2P_MESSAGE);
-				p2p.addString("uid", mClientUID);
-				p2p.addObject("message", json);
+				//Have we received a p2p greeting..?
+				P2PManager p2pmanager = (P2PManager)Main.getInstance().getNetworkManager().getP2PManager();
 				
-				//And forward to thew P2P
-				Main.getInstance().getNetworkManager().getP2PManager().PostMessage(p2p);
+				//Get the Client
+				NIOClient nioclient = Main.getInstance().getNIOManager().getNIOServer().getClient(mClientUID);
+				
+				if(!nioclient.hasReceivedP2PGreeting()) {
+					MinimaLogger.log("RECEIVED P2P MSG BEFORE GREETING.. DELAYING BY 10s.. "+json.toJSONString());
+					
+					//Post with delay
+					TimerMessage p2p = new TimerMessage(10000, P2PFunctions.P2P_MESSAGE);
+					p2p.addString("uid", mClientUID);
+					p2p.addObject("message", json);
+					p2pmanager.PostTimerMessage(p2p);
+					
+				}else {
+					//Post directly
+					Message p2p = new Message(P2PFunctions.P2P_MESSAGE);
+					p2p.addString("uid", mClientUID);
+					p2p.addObject("message", json);
+					p2pmanager.PostMessage(p2p);
+					
+				}
 				
 			}else if(type.isEqual(MSG_PULSE)) {
 				

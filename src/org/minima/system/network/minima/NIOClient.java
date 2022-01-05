@@ -71,6 +71,8 @@ public class NIOClient {
 	
 	boolean mSentGreeting = false;
 	
+	boolean mP2PGreeting = false;
+	
 	/**
 	 * Specify extra info
 	 */
@@ -181,6 +183,14 @@ public class NIOClient {
 	
 	public boolean haveSentGreeting() {
 		return mSentGreeting;
+	}
+	
+	public void setReceivedP2PGreeting() {
+		mP2PGreeting = true;
+	}
+	
+	public boolean hasReceivedP2PGreeting() {
+		return mP2PGreeting;
 	}
 	
 	public void setSentGreeting(boolean zSent) {
