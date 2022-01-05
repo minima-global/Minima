@@ -48,10 +48,8 @@ public class SwapLinksFunctions {
             InetSocketAddress incomingAddress = new InetSocketAddress(info.getHost(), 0);
             
             if(info.getHost().equals("127.0.0.1")) {
-            	//It's an SSH Forward address with no HOST set.. CREATE RANDOM HOST
-            	String randhost = "255.255.255.255";
-            	MinimaLogger.log("INCOMING SSH FORWARD ADDRESS 127.0.0.1 now : "+randhost);
-            	state.getNoneP2PLinks().put(uid, new InetSocketAddress(randhost, 0));
+            	//It's an SSH Forward address with no HOST set..
+            	state.getNoneP2PLinks().put(uid, new InetSocketAddress(info.getHost(), 0));
             	
             }else {
                 if (state.getNoneP2PLinks().containsValue(incomingAddress)) {
@@ -138,7 +136,8 @@ public class SwapLinksFunctions {
             int port = greeting.getMyMinimaPort();
             InetSocketAddress minimaAddress = new InetSocketAddress(host, port);
             
-            MinimaLogger.log("P2P GREETING UID:"+uid+" valid:"+state.getNoneP2PLinks().containsKey(uid)+" @ "+minimaAddress);
+            boolean addtoknown = !host.contains("127.0.0.1");
+            MinimaLogger.log("P2P GREETING UID:"+uid+" valid:"+state.getNoneP2PLinks().containsKey(uid)+" @ "+minimaAddress+" addtoknown:"+addtoknown);
             state.getNoneP2PLinks().remove(uid);
             
             //The NIOClient has received a P2Pgreeting..
@@ -146,7 +145,7 @@ public class SwapLinksFunctions {
             nioclient.setReceivedP2PGreeting();
             
             if (greeting.isAcceptingInLinks()) {
-            	if(!minimaAddress.equals("255.255.255.255")) {
+            	if(addtoknown) {
             		state.getKnownPeers().add(minimaAddress);
             	}
                 
