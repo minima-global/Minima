@@ -138,7 +138,7 @@ public class SwapLinksFunctions {
             int port = greeting.getMyMinimaPort();
             InetSocketAddress minimaAddress = new InetSocketAddress(host, port);
             
-            MinimaLogger.log("P2P GREETING UID:"+uid+" valid:"+state.getNoneP2PLinks().containsKey(uid));
+            MinimaLogger.log("P2P GREETING UID:"+uid+" valid:"+state.getNoneP2PLinks().containsKey(uid)+" @ "+minimaAddress);
             state.getNoneP2PLinks().remove(uid);
             
             //The NIOClient has received a P2Pgreeting..
