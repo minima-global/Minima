@@ -94,7 +94,10 @@ public class NIOServer implements Runnable {
 	public void sendMessageAll(MiniData zData) {
 		Enumeration<NIOClient> clients = mClients.elements();
 		while(clients.hasMoreElements()) {
-			clients.nextElement().sendData(zData);
+			NIOClient nioc = clients.nextElement();
+			if(nioc.isValidGreeting()) {
+				nioc.sendData(zData);
+			}
 		}
 	}
 	
