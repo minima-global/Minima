@@ -140,9 +140,11 @@ public class SwapLinksFunctions {
             MinimaLogger.log("P2P GREETING UID:"+uid+" valid:"+state.getNoneP2PLinks().containsKey(uid)+" @ "+minimaAddress+" addtoknown:"+addtoknown);
             state.getNoneP2PLinks().remove(uid);
             
-            //The NIOClient has received a P2Pgreeting..
-            NIOClient nioclient = Main.getInstance().getNIOManager().getNIOServer().getClient(uid);
-            nioclient.setReceivedP2PGreeting();
+            //The NIOClient has received a P2Pgreeting.. Check if NULL or Tests fail
+            if(Main.getInstance() != null) {
+	            NIOClient nioclient = Main.getInstance().getNIOManager().getNIOServer().getClient(uid);
+	            nioclient.setReceivedP2PGreeting();
+            }
             
             if (greeting.isAcceptingInLinks()) {
             	if(addtoknown) {
