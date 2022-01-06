@@ -48,8 +48,8 @@ public class maxima extends Command {
 		if(func.equals("info")) {
 			
 			//Show details
-			String ident = max.getFullIdentity();  
-			details.put("identity", ident);
+			details.put("identity", max.getFullIdentity());
+			details.put("publickey", max.getPublicKey());
 			details.put("hostset", max.isHostSet());
 			details.put("host", max.getMaximaHost());
 			details.put("clients", max.getMaximaClients());
