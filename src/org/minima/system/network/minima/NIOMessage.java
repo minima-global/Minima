@@ -365,14 +365,20 @@ public class NIOMessage implements Runnable {
 					return;
 				}
 				
+				//Get the Client
+				NIOClient nioclient = Main.getInstance().getNIOManager().getNIOServer().getClient(mClientUID);
+				
+				//Is this one of our Maxima Clients.. ?
+				if(nioclient.isMaximaClient()) {
+					//Don't forward these mnessages..
+					return;
+				}
+				
 				//Convert to JSON
 				JSONObject json = (JSONObject) new JSONParser().parse(msg.toString());
 				
 				//Have we received a p2p greeting..?
 				P2PManager p2pmanager = (P2PManager)Main.getInstance().getNetworkManager().getP2PManager();
-				
-				//Get the Client
-				NIOClient nioclient = Main.getInstance().getNIOManager().getNIOServer().getClient(mClientUID);
 				
 				if(!nioclient.hasReceivedP2PGreeting()) {
 					MinimaLogger.log("RECEIVED P2P MSG BEFORE GREETING.. DELAYING BY 10s.. "+json.toJSONString());
@@ -454,7 +460,7 @@ public class NIOMessage implements Runnable {
 				
 				Main.getInstance().getMaxima().PostMessage(maxmsg);
 				
-				//Notify that Client that we received the message.. this makes them disconnect
+				//Notify that Client that we received the message.. this makes external client disconnect ( internal just a ping )
 				NIOManager.sendNetworkMessage(mClientUID, MSG_PING, MiniData.ONE_TXPOWID);
 				
 			}else {

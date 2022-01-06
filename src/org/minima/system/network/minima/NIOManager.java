@@ -133,6 +133,18 @@ public class NIOManager extends MessageProcessor {
 		return connections;
 	}
 	
+	public NIOClient getMaximaUID(String zMaximaPubKey) {
+		//Who are we connected to..
+		ArrayList<NIOClient> conns = mNIOServer.getAllNIOClients();
+		for(NIOClient conn : conns) {
+			if(conn.isMaximaClient() && conn.getMaximaIdent().equals(zMaximaPubKey)) {
+				return conn;
+			}
+		}
+		
+		return null;
+	}
+	
 	@Override
 	protected void processMessage(Message zMessage) throws Exception {
 		

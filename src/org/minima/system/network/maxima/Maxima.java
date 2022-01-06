@@ -14,6 +14,7 @@ import org.minima.database.userprefs.UserDB;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
+import org.minima.system.network.minima.NIOClient;
 import org.minima.system.network.minima.NIOManager;
 import org.minima.system.network.minima.NIOMessage;
 import org.minima.system.params.GeneralParams;
@@ -229,7 +230,18 @@ public class Maxima extends MessageProcessor {
 				if(mMaximaClients.contains(pubk)) {
 					
 					//Forward it to them!
+					NIOClient client =  Main.getInstance().getNIOManager().getMaximaUID(pubk);
 					
+					//Do we have it
+					if(client != null) {
+						MinimaLogger.log("MAXIMA message forwarded to client Client "+pubk);
+						
+						//Create a MiniData Package
+						Main.getInstance().getNIOManager().sendNetworkMessage(client.getUID(), NIOMessage.MSG_MAXIMA, mpkg);
+						
+					}else {
+						MinimaLogger.log("MAXIMA message received for Client we are not connected to : "+pubk);
+					}
 					
 				}else {
 					MinimaLogger.log("MAXIMA message received to unknown PublicKey : "+mpkg.mTo.to0xString());
