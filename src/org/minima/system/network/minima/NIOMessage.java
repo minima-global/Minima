@@ -168,7 +168,7 @@ public class NIOMessage implements Runnable {
 				nioclient.setValidGreeting(true);
 				
 				//Tell the P2P..
-				MinimaLogger.log("CONNECTED P2P Client "+nioclient);
+//				MinimaLogger.log("CONNECTED P2P Client "+nioclient);
 				Message newconn = new Message(P2PFunctions.P2P_CONNECTED);
 				newconn.addString("uid", nioclient.getUID());
 				newconn.addBoolean("incoming", nioclient.isIncoming());
@@ -385,7 +385,7 @@ public class NIOMessage implements Runnable {
 				P2PManager p2pmanager = (P2PManager)Main.getInstance().getNetworkManager().getP2PManager();
 				
 				if(!nioclient.hasReceivedP2PGreeting()) {
-					MinimaLogger.log("RECEIVED P2P MSG BEFORE GREETING.. DELAYING BY 10s.. "+json.toJSONString());
+//					MinimaLogger.log("RECEIVED P2P MSG BEFORE GREETING.. DELAYING BY 10s.. "+json.toJSONString());
 					
 					//Post with delay
 					TimerMessage p2p = new TimerMessage(10000, P2PFunctions.P2P_MESSAGE);

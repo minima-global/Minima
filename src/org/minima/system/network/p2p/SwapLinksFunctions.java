@@ -52,7 +52,7 @@ public class SwapLinksFunctions {
             	state.getNoneP2PLinks().put(uid, new InetSocketAddress(info.getHost(), 0));
             	
             }else {
-                if (state.getNoneP2PLinks().containsValue(incomingAddress)) {
+                if (state.getNoneP2PLinks().containsValue(incomingAddress) && !info.isMaximaClient()) {
 	                msgs.add(new Message(P2PManager.P2P_SEND_DISCONNECT).addString("uid", uid));
 	                sendMessages = false;
 	            }
@@ -137,7 +137,7 @@ public class SwapLinksFunctions {
             InetSocketAddress minimaAddress = new InetSocketAddress(host, port);
             
             boolean addtoknown = !host.contains("127.0.0.1");
-            MinimaLogger.log("P2P GREETING UID:"+uid+" valid:"+state.getNoneP2PLinks().containsKey(uid)+" @ "+minimaAddress+" addtoknown:"+addtoknown);
+//            MinimaLogger.log("P2P GREETING UID:"+uid+" valid:"+state.getNoneP2PLinks().containsKey(uid)+" @ "+minimaAddress+" addtoknown:"+addtoknown);
             state.getNoneP2PLinks().remove(uid);
             
             //The NIOClient has received a P2Pgreeting.. Check if NULL or Tests fail
@@ -206,7 +206,7 @@ public class SwapLinksFunctions {
             }
             
         } else {
-            MinimaLogger.log("[-] Failed to set my ip. Secrets do not match. MySecret: " + state.getIpReqSecret() + " Received secret: " + secret);
+            MinimaLogger.log("[-] WARNING : Failed to set my ip. Secrets do not match - could be a delay. MySecret: " + state.getIpReqSecret() + " Received secret: " + secret);
         }
     }
 

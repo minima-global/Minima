@@ -337,7 +337,7 @@ public class NIOManager extends MessageProcessor {
 			}
 			
 			//Tell the P2P..
-			MinimaLogger.log("DISCONNECTED P2P Client UID : "+nioc.getUID()+" @ "+nioc.getHost()+":"+nioc.getPort());
+//			MinimaLogger.log("DISCONNECTED P2P Client UID : "+nioc.getUID()+" @ "+nioc.getHost()+":"+nioc.getPort());
 			
 			Message newconn = new Message(P2PFunctions.P2P_DISCONNECTED);
 			newconn.addString("uid", nioc.getUID());

@@ -106,6 +106,10 @@ public class Maxima extends MessageProcessor {
 	public void setMaximaHost(String zHost) {
 		if(zHost.equals("")) {
 			mIsMaxHostSet = false;
+			
+			//Disconnect if need be
+			
+			
 		}else {
 			mIsMaxHostSet = true;
 			mHost = zHost;

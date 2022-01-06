@@ -240,7 +240,7 @@ public class P2PManager extends MessageProcessor {
                 }
 
             } else {
-                MinimaLogger.log("[-] ERROR: No Known peers!");
+                MinimaLogger.log("[-] WARNING : No Known peers ( -clean + delay )");
                 state.setDoingDiscoveryConnection(true);
                 InetSocketAddress connectionAddress = P2PParams.DEFAULT_NODE_LIST.get(rand.nextInt(P2PParams.DEFAULT_NODE_LIST.size()));
                 MinimaLogger.log("[+] Doing discovery connection with default node: " + connectionAddress);
