@@ -133,6 +133,27 @@ public class NIOManager extends MessageProcessor {
 		return connections;
 	}
 	
+	public boolean checkConnected(String zHost) {
+		//Who are we trying to connect to
+		Enumeration<NIOClient> clients = mConnectingClients.elements();
+		while(clients.hasMoreElements()) {
+			NIOClient nc = clients.nextElement();
+			if(zHost.equals(nc.getFullAddress())) {
+				return true;
+			}
+		}
+		
+		//Who are we connected to..
+		ArrayList<NIOClient> conns = mNIOServer.getAllNIOClients();
+		for(NIOClient conn : conns) {
+			if(zHost.equals(conn.getFullAddress())) {
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
 	public NIOClient getMaximaUID(String zMaximaPubKey) {
 		//Who are we connected to..
 		ArrayList<NIOClient> conns = mNIOServer.getAllNIOClients();

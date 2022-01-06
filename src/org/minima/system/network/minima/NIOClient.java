@@ -191,6 +191,10 @@ public class NIOClient {
 		return mMinimaPort;
 	}
 	
+	public String getFullAddress() {
+		return mHost+":"+mPort;
+	}
+	
 	public boolean isValidGreeting() {
 		return mValidGreeting;
 	}

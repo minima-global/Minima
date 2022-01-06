@@ -14,6 +14,7 @@ import org.minima.database.userprefs.UserDB;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
+import org.minima.system.commands.all.connect;
 import org.minima.system.network.minima.NIOClient;
 import org.minima.system.network.minima.NIOManager;
 import org.minima.system.network.minima.NIOMessage;
@@ -39,6 +40,7 @@ public class Maxima extends MessageProcessor {
 	public static final String MAXIMA_INIT 			= "MAXIMA_INIT";
 	public static final String MAXIMA_RECMESSAGE 	= "MAXIMA_RECMESSAGE";
 	public static final String MAXIMA_SENDMESSAGE 	= "MAXIMA_SENDDMESSAGE";
+	public static final String MAXIMA_HOSTCONNECT 	= "MAXIMA_HOSTCONNECT";
 	
 	/**
 	 * UserDB data
@@ -177,6 +179,28 @@ public class Maxima extends MessageProcessor {
 			
 			//Save the DB
 			MinimaDB.getDB().saveUserDB();
+		
+			//Now try and connect to pout host..
+			PostTimerMessage(new TimerMessage(10000, MAXIMA_HOSTCONNECT));
+			
+		}else if(zMessage.getMessageType().equals(MAXIMA_HOSTCONNECT)) {
+			
+			//Connect to the Host
+			if(mIsMaxHostSet) {
+				
+				//Are we already connected
+				if(!Main.getInstance().getNIOManager().checkConnected(mHost)) {
+					
+					MinimaLogger.log("Connecting to our Maxima Host "+mHost);
+					
+					//Connecting to Maxima Host
+					Message connectmsg = connect.createConnectMessage(mHost);
+					Main.getInstance().getNIOManager().PostMessage(connectmsg);
+				}
+			}
+			
+			//Check every minute..
+			PostTimerMessage(new TimerMessage(60000, MAXIMA_HOSTCONNECT));
 			
 		}else if(zMessage.getMessageType().equals(MAXIMA_SENDMESSAGE)) {
 			
@@ -234,10 +258,12 @@ public class Maxima extends MessageProcessor {
 					
 					//Do we have it
 					if(client != null) {
-						MinimaLogger.log("MAXIMA message forwarded to client Client "+pubk);
+						if(mMaximaLogs) {
+							MinimaLogger.log("MAXIMA message forwarded to client Client "+pubk);
+						}
 						
-						//Create a MiniData Package
-						Main.getInstance().getNIOManager().sendNetworkMessage(client.getUID(), NIOMessage.MSG_MAXIMA, mpkg);
+						//Send to the client we are connected to..
+						NIOManager.sendNetworkMessage(client.getUID(), NIOMessage.MSG_MAXIMA, mpkg);
 						
 					}else {
 						MinimaLogger.log("MAXIMA message received for Client we are not connected to : "+pubk);
@@ -293,7 +319,6 @@ public class Maxima extends MessageProcessor {
 			
 			//Notify The Listeners
 			Main.getInstance().PostNotifyEvent("MAXIMA",maxjson);
-		
 		}
 	}
 
