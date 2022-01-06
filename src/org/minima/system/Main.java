@@ -148,9 +148,6 @@ public class Main extends MessageProcessor {
 		mTxPoWProcessor = new TxPoWProcessor();
 		mTxPoWMiner 	= new TxPoWMiner();
 		
-		//Start up Maxima
-		mMaxima = new Maxima();
-		
 		//Are we running a private network
 		if(GeneralParams.GENESIS) {
 			//Create a genesis node
@@ -159,6 +156,9 @@ public class Main extends MessageProcessor {
 		
 		//Start the networking..
 		mNetwork = new NetworkManager();
+		
+		//Start up Maxima
+		mMaxima = new Maxima();
 				
 		//Simulate traffic message ( only if auto mine is set )
 		AUTOMINE_TIMER = MiniNumber.THOUSAND.div(GlobalParams.MINIMA_BLOCK_SPEED).getAsLong();

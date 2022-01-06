@@ -68,6 +68,10 @@ public abstract class Command {
 		return mHelp;
 	}
 	
+	public String getFullHelp() {
+		return mHelp;
+	}
+	
 	public JSONObject getJSONReply() {
 		JSONObject json = new JSONObject();
 		json.put("command", getname());

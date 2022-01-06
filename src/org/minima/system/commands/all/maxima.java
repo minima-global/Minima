@@ -13,7 +13,12 @@ import org.minima.utils.messages.Message;
 public class maxima extends Command {
 
 	public maxima() {
-		super("maxima","[action:info|send] (to:) (application:) (data:) (logs:true|false) - Check your Maxima details, send a message / data, enable logs");
+		super("maxima","[action:info|send|addclient|removeclient|sethost] (to:) (application:) (data:) (logs:true|false) - Check your Maxima details, send a message / data, enable logs");
+	}
+	
+	@Override
+	public String getFullHelp() {
+		return "Maxima is an information transport layer running ontop of Minima";
 	}
 	
 	@Override
@@ -43,8 +48,11 @@ public class maxima extends Command {
 		if(func.equals("info")) {
 			
 			//Show details
-			String ident = max.getIdentity();  
+			String ident = max.getFullIdentity();  
 			details.put("identity", ident);
+			details.put("hostset", max.isHostSet());
+			details.put("host", max.getMaximaHost());
+			details.put("clients", max.getMaximaClients());
 			details.put("logs", max.mMaximaLogs);
 			ret.put("response", details);
 		
@@ -57,7 +65,40 @@ public class maxima extends Command {
 //			String ident = max.getIdentity();  
 //			details.put("identity", ident);
 //			ret.put("response", details);
+		
+		}else if(func.equals("addclient")) {
 			
+			if(!existsParam("data")) {
+				throw new Exception("MUST specify client in the 'data' param");
+			}
+			String client = getParam("data");
+			max.addValidMaximaClient(client);
+			
+			details.put("clients", max.getMaximaClients());
+			ret.put("response", details);
+		
+		}else if(func.equals("removeclient")) {
+			
+			if(!existsParam("data")) {
+				throw new Exception("MUST specify client in the 'data' param");
+			}
+			String client = getParam("data");
+			max.removeValidMaximaClient(client);
+			
+			details.put("clients", max.getMaximaClients());
+			ret.put("response", details);
+		
+		}else if(func.equals("sethost")) {
+			
+			if(!existsParam("data")) {
+				throw new Exception("MUST specify host in the 'data' param");
+			}
+			String host = getParam("data");
+			max.setMaximaHost(host);
+			
+			details.put("host", max.getMaximaHost());
+			ret.put("response", details);
+		
 		}else if(func.equals("send")) {
 			
 			if(!existsParam("to") || !existsParam("application") || !existsParam("data") ) {

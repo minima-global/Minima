@@ -73,6 +73,8 @@ public class NIOClient {
 	
 	boolean mP2PGreeting = false;
 	
+	String mMaximaIdent = "";
+	
 	/**
 	 * Specify extra info
 	 */
@@ -130,6 +132,10 @@ public class NIOClient {
 		ret.put("valid", mValidGreeting);
 		ret.put("sentgreeting", mSentGreeting);
 		
+		if(isMaximaClient()) {
+			ret.put("maxima", mMaximaIdent);
+		}
+		
 		return ret;
 	}
 	
@@ -147,6 +153,18 @@ public class NIOClient {
 	
 	public boolean isIncoming() {
 		return mIncoming;
+	}
+	
+	public boolean isMaximaClient() {
+		return !mMaximaIdent.equals("");
+	}
+	
+	public void setMaximaIdent(String zMaxima) {
+		mMaximaIdent = zMaxima;
+	}
+	
+	public String getMaximaIdent() {
+		return mMaximaIdent;
 	}
 	
 	public void overrideHost(String zHost) {

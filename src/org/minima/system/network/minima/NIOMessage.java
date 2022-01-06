@@ -157,6 +157,12 @@ public class NIOMessage implements Runnable {
 					nioclient.setMinimaPort(Integer.parseInt(greet.getExtraDataValue("port")));
 				}
 				
+				//Is there Maxima Ident..
+				if(greet.getExtraData().containsKey("maxima")) {
+					MinimaLogger.log("Maxima Client Connected "+nioclient);
+					nioclient.setMaximaIdent(greet.getExtraDataValue("maxima"));
+				}
+				
 				//Get the welcome message..
 				nioclient.setWelcomeMessage("Minima v"+greet.getVersion());
 				nioclient.setValidGreeting(true);
