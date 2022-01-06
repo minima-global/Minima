@@ -368,9 +368,13 @@ public class NIOMessage implements Runnable {
 				//Get the Client
 				NIOClient nioclient = Main.getInstance().getNIOManager().getNIOServer().getClient(mClientUID);
 				
-				//Is this one of our Maxima Clients.. ?
+				//Is this one of our Maxima Clients / Hosts.. if so ignore all P2P messages..
+				Maxima max = Main.getInstance().getMaxima();
 				if(nioclient.isMaximaClient()) {
-					//Don't forward these mnessages..
+					//Don't forward these messages..
+					return;
+				}else if(max.isHostSet() && nioclient.getFullAddress().equals(max.getMaximaHost())) {
+					//Don't forward..
 					return;
 				}
 				
