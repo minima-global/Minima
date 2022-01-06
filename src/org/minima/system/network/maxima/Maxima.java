@@ -135,7 +135,16 @@ public class Maxima extends MessageProcessor {
 	}
 	
 	public void addValidMaximaClient(String zClient) {
-		mMaximaClients.add(zClient);
+		
+		//Remove the @ section
+		String client = zClient;
+		if(zClient.contains("@")) {
+			int index 	= zClient.indexOf("@");
+			client 		= zClient.substring(0,index);
+		}
+		
+		//Add
+		mMaximaClients.add(client);
 		
 		MinimaDB.getDB().getUserDB().setJSONArray(MAXIMA_CLIENTS, mMaximaClients);
 		MinimaDB.getDB().saveUserDB();

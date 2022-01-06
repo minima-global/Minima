@@ -49,7 +49,6 @@ public class maxima extends Command {
 			
 			//Show details
 			details.put("identity", max.getFullIdentity());
-			details.put("publickey", max.getPublicKey());
 			details.put("hostset", max.isHostSet());
 			details.put("host", max.getMaximaHost());
 			details.put("clients", max.getMaximaClients());
