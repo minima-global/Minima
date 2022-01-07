@@ -199,11 +199,11 @@ public class SwapLinksFunctions {
             state.getKnownPeers().remove(state.getMyMinimaAddress());
             MinimaLogger.log("[+] Setting My IP: " + hostIP);
             
-            //Set this globally..
-            if(!GeneralParams.IS_HOST_SET) {
-            	GeneralParams.IS_HOST_SET = true;
-            	GeneralParams.MINIMA_HOST = hostIP;
-            }
+//            //Set this globally..
+//            if(!GeneralParams.IS_HOST_SET) {
+//            	GeneralParams.IS_HOST_SET = true;
+//            	GeneralParams.MINIMA_HOST = hostIP;
+//            }
             
         } else {
             MinimaLogger.log("[-] WARNING : Failed to set my ip. Secrets do not match - could be a delay. MySecret: " + state.getIpReqSecret() + " Received secret: " + secret);
