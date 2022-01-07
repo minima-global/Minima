@@ -41,6 +41,7 @@ public class help extends Command {
 		addCommand(details, new mmrproof());
 		
 		addCommand(details, new network());
+		addCommand(details, new maxima());
 		addCommand(details, new message());
 		addCommand(details, new connect());
 		addCommand(details, new disconnect());
