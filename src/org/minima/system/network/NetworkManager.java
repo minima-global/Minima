@@ -162,11 +162,10 @@ public class NetworkManager {
 		if(udb.isSSHTunnelEnabled()) {
 			ssh.put("enabled", true);
 			ssh.put("user", sshsettings.get("username")+"@"+sshsettings.get("host"));
+			stats.put("sshtunnel", ssh);
 		}else {
 			ssh.put("enabled", false);
 		}
-		
-		stats.put("sshtunnel", ssh);
 		
 		return stats;
 	}
