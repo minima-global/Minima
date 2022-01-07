@@ -21,12 +21,6 @@ public class MinimaDB {
 	 */
 	private static MinimaDB mMinimaDB = null;
 	public static void createDB() {
-		if(mMinimaDB == null) {
-			mMinimaDB = new MinimaDB();
-		}
-	}
-	public static void clearDB() {
-		MinimaLogger.log("MinimaDB cleared..");
 		mMinimaDB = new MinimaDB();
 	}
 	public static MinimaDB getDB() {return mMinimaDB;}

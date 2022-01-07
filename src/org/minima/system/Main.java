@@ -129,8 +129,9 @@ public class Main extends MessageProcessor {
 	public Main() {
 		super("MAIN");
 	
-		mMainInstance = this;
-	
+		//Reset the static values
+		mMainInstance 	= this;
+		
 		//Are we deleting previous..
 		if(GeneralParams.CLEAN) {
 			MinimaLogger.log("Wiping previous config files..");
