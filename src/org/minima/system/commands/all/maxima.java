@@ -13,7 +13,8 @@ import org.minima.utils.messages.Message;
 public class maxima extends Command {
 
 	public maxima() {
-		super("maxima","[action:info|send|addclient|removeclient|sethost] (to:) (application:) (data:) (logs:true|false) - Check your Maxima details, send a message / data, enable logs");
+//		super("maxima","[action:info|send|addclient|removeclient|sethost] (to:) (application:) (data:) (logs:true|false) - Check your Maxima details, send a message / data, enable logs");
+		super("maxima","[action:info|send|sethost] (to:) (application:) (data:) (logs:true|false) - Check your Maxima details, send a message / data, enable logs");
 	}
 	
 	@Override

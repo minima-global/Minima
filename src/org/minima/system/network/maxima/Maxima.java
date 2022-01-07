@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.security.KeyPair;
+import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -164,7 +165,18 @@ public class Maxima extends MessageProcessor {
 	}
 	
 	public JSONArray getMaximaClients() {
-		return mMaximaClients;
+		
+		JSONArray ret = new JSONArray();
+		
+		//Get all the connected clientgs..
+		ArrayList<NIOClient> allclients = Main.getInstance().getNIOManager().getNIOServer().getAllNIOClients();
+		for(NIOClient nioc : allclients) {
+			if(nioc.isMaximaClient()) {
+				ret.add(nioc.getMaximaIdent());
+			}
+		}
+		
+		return ret;
 	}
 	
 	@Override
