@@ -108,11 +108,17 @@ public class Maxima extends MessageProcessor {
 			mIsMaxHostSet = false;
 			
 			//Disconnect if need be
+			NIOClient nioc = Main.getInstance().getNIOManager().checkConnected(mHost);
+			if(nioc != null) {
+				Main.getInstance().getNIOManager().disconnect(nioc.getUID());
+			}
 			
+			//Reset
+			mHost = GeneralParams.MINIMA_HOST+":"+GeneralParams.MINIMA_PORT;
 			
 		}else {
-			mIsMaxHostSet = true;
-			mHost = zHost;
+			mIsMaxHostSet 	= true;
+			mHost 			= zHost;
 		}
 		
 		MinimaDB.getDB().getUserDB().setBoolean(MAXIMA_HOSTSET, mIsMaxHostSet);
@@ -202,7 +208,7 @@ public class Maxima extends MessageProcessor {
 			if(mIsMaxHostSet) {
 				
 				//Are we already connected
-				if(!Main.getInstance().getNIOManager().checkConnected(mHost)) {
+				if(Main.getInstance().getNIOManager().checkConnected(mHost) == null) {
 					
 					MinimaLogger.log("Connecting to our Maxima Host "+mHost);
 					
@@ -263,8 +269,8 @@ public class Maxima extends MessageProcessor {
 				//The pubkey Mx version
 				String pubk = BaseConverter.encode32(mpkg.mTo.getBytes());
 				
-				//Check if it one of our allowed clients!
-				if(mMaximaClients.contains(pubk)) {
+				//Check if it one of our allowed clients! - For now allow all..
+//				if(mMaximaClients.contains(pubk)) {
 					
 					//Forward it to them!
 					NIOClient client =  Main.getInstance().getNIOManager().getMaximaUID(pubk);
@@ -278,13 +284,13 @@ public class Maxima extends MessageProcessor {
 						//Send to the client we are connected to..
 						NIOManager.sendNetworkMessage(client.getUID(), NIOMessage.MSG_MAXIMA, mpkg);
 						
-					}else {
+					}else{
 						MinimaLogger.log("MAXIMA message received for Client we are not connected to : "+pubk);
 					}
 					
-				}else {
-					MinimaLogger.log("MAXIMA message received to unknown PublicKey : "+mpkg.mTo.to0xString());
-				}
+//				}else {
+//					MinimaLogger.log("MAXIMA message received to unknown PublicKey : "+mpkg.mTo.to0xString());
+//				}
 				
 				return;
 			}

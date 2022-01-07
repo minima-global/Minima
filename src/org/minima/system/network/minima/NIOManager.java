@@ -133,13 +133,13 @@ public class NIOManager extends MessageProcessor {
 		return connections;
 	}
 	
-	public boolean checkConnected(String zHost) {
+	public NIOClient checkConnected(String zHost) {
 		//Who are we trying to connect to
 		Enumeration<NIOClient> clients = mConnectingClients.elements();
 		while(clients.hasMoreElements()) {
 			NIOClient nc = clients.nextElement();
 			if(zHost.equals(nc.getFullAddress())) {
-				return true;
+				return nc;
 			}
 		}
 		
@@ -147,11 +147,11 @@ public class NIOManager extends MessageProcessor {
 		ArrayList<NIOClient> conns = mNIOServer.getAllNIOClients();
 		for(NIOClient conn : conns) {
 			if(zHost.equals(conn.getFullAddress())) {
-				return true;
+				return conn;
 			}
 		}
 		
-		return false;
+		return null;
 	}
 	
 	public NIOClient getMaximaUID(String zMaximaPubKey) {

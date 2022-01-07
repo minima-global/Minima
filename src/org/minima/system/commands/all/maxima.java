@@ -49,21 +49,26 @@ public class maxima extends Command {
 			
 			//Show details
 			details.put("identity", max.getFullIdentity());
-			details.put("hostset", max.isHostSet());
+			details.put("external", max.isHostSet());
 			details.put("host", max.getMaximaHost());
+			
+			//Get the current client list
+			
+			
+			
 			details.put("clients", max.getMaximaClients());
 			details.put("logs", max.mMaximaLogs);
 			ret.put("response", details);
 		
-//		}else if(func.equals("new")) {
-//			
-//			//Create a new Maxima Identity..
-//			max.createMaximaKeys();
-//			
-//			//Show details
-//			String ident = max.getIdentity();  
-//			details.put("identity", ident);
-//			ret.put("response", details);
+		}else if(func.equals("new")) {
+			
+			//Create a new Maxima Identity..
+			max.createMaximaKeys();
+			
+			//Show details
+			String ident = max.getFullIdentity();  
+			details.put("identity", ident);
+			ret.put("response", details);
 		
 		}else if(func.equals("addclient")) {
 			
