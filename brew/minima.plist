@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <key>Label</key>
+    <string>##PLIST_NAME##</string>
+    <key>ProgramArguments</key>
+    <array>
+      <string>/bin/sh</string>
+      <string>-c</string>
+      <string>##BIN##/minima -daemon -data $HOME/.minima-brew -conf ##HOMEBREW_PREFIX_ETC##/minima.conf</string>
+    </array>
+    <key>KeepAlive</key>
+    <true />
+    <key>RunAtLoad</key>
+    <true />
+    <key>StandardOutPath</key>
+    <string>##HOMEBREW_PREFIX_LOG##/minima.log</string>
+    <key>StandardErrorPath</key>
+    <string>##HOMEBREW_PREFIX_LOG##/minima.log</string>
+  </dict>
+</plist>
