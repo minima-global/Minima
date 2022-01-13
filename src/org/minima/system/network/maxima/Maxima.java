@@ -109,7 +109,7 @@ public class Maxima extends MessageProcessor {
 			mIsMaxHostSet = false;
 			
 			//Disconnect if need be
-			NIOClient nioc = Main.getInstance().getNIOManager().checkConnected(mHost);
+			NIOClient nioc = Main.getInstance().getNIOManager().checkConnected(mHost, false);
 			if(nioc != null) {
 				Main.getInstance().getNIOManager().disconnect(nioc.getUID());
 			}
@@ -220,7 +220,7 @@ public class Maxima extends MessageProcessor {
 			if(mIsMaxHostSet) {
 				
 				//Are we already connected
-				if(Main.getInstance().getNIOManager().checkConnected(mHost) == null) {
+				if(Main.getInstance().getNIOManager().checkConnected(mHost, false) == null) {
 					
 					MinimaLogger.log("Connecting to our Maxima Host "+mHost);
 					
@@ -290,7 +290,7 @@ public class Maxima extends MessageProcessor {
 					//Do we have it
 					if(client != null) {
 						if(mMaximaLogs) {
-							MinimaLogger.log("MAXIMA message forwarded to client Client "+pubk);
+							MinimaLogger.log("MAXIMA message forwarded to client : "+pubk);
 						}
 						
 						//Send to the client we are connected to..

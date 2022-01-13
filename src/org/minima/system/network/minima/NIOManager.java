@@ -133,13 +133,16 @@ public class NIOManager extends MessageProcessor {
 		return connections;
 	}
 	
-	public NIOClient checkConnected(String zHost) {
-		//Who are we trying to connect to
-		Enumeration<NIOClient> clients = mConnectingClients.elements();
-		while(clients.hasMoreElements()) {
-			NIOClient nc = clients.nextElement();
-			if(zHost.equals(nc.getFullAddress())) {
-				return nc;
+	public NIOClient checkConnected(String zHost, boolean zOnlyConnected) {
+		
+		if(!zOnlyConnected) {
+			//Who are we trying to connect to
+			Enumeration<NIOClient> clients = mConnectingClients.elements();
+			while(clients.hasMoreElements()) {
+				NIOClient nc = clients.nextElement();
+				if(zHost.equals(nc.getFullAddress())) {
+					return nc;
+				}
 			}
 		}
 		
@@ -238,9 +241,19 @@ public class NIOManager extends MessageProcessor {
 				return;
 			}
 			
+			//Check not already connected..
+			if(checkConnected(nc.getFullAddress(), true)!=null) {
+				//Already connected..
+				MinimaLogger.log("Warning : Attempting to connect to already connected host "+nc.getFullAddress());
+				return;
+			}
+			
 			//Connect in separate thread..
 			connectAttempt(nc);
-		
+			
+			//Small pause - give it time to connect
+			Thread.sleep(2000);
+			
 		}else if(zMessage.getMessageType().equals(NIO_RECONNECT)) {
 			//Get the client..
 			NIOClient nc = (NIOClient) zMessage.getObject("client");
@@ -426,13 +439,15 @@ public class NIOManager extends MessageProcessor {
 				if(diff > MAX_LASTREAD_CHECKER) {
 					
 					//Too long a delay..
-					MinimaLogger.log("INFO : No recent message (5 mins) from "+conn.getUID()+" disconnect/reconnect ..");
+					MinimaLogger.log("INFO : No recent message (5 mins) from "
+							+conn.getUID()+" disconnect/reconnect incoming:"
+							+conn.isIncoming()+" valid:"+conn.isValidGreeting()+" host:"+conn.getFullAddress());
 					
 					//Disconnect
 					disconnect(conn.getUID());
 					
 					//And reconnect in 5 secs if outgoing.. incoming will reconnect anyway
-					if(!conn.isIncoming()) {
+					if(!conn.isIncoming() && conn.isValidGreeting()) {
 						TimerMessage timedconnect = new TimerMessage(5000, NIO_CONNECT);
 						timedconnect.addString("host", conn.getHost());
 						timedconnect.addInteger("port", conn.getPort());

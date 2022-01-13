@@ -439,8 +439,8 @@ public class NIOMessage implements Runnable {
 					
 					//Request all the blocks.. in the correct order
 					for(MiniData block : requestlist) {
-//						NIOManager.sendNetworkMessage(mClientUID, MSG_TXPOWREQ, block);
-						NIOManager.sendDelayedTxPoWReq(mClientUID, block.to0xString(), "PULSE");
+						NIOManager.sendNetworkMessage(mClientUID, MSG_TXPOWREQ, block);
+//						NIOManager.sendDelayedTxPoWReq(mClientUID, block.to0xString(), "PULSE");
 					}
 					
 				}else{
