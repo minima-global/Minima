@@ -282,21 +282,24 @@ public class NIOMessage implements Runnable {
 				MMR tipmmr 				= tip.getMMR();
 				TxPoW tiptxpow			= tip.getTxPoW();
 				
+				//The block and cascade block
+				MiniNumber cascadeblock = cascade.getBlockNumber();
+				MiniNumber block 		= txpow.getBlockNumber();
+				
 				//Check if is a block and within range of our current tip
 				if(txpow.isBlock()) {
-					MiniNumber cascadeblock = cascade.getBlockNumber();
-					MiniNumber block 		= txpow.getBlockNumber();
+					
+					if(block.isLess(cascadeblock)) {
+						//Block before cascade
+						MinimaLogger.log("Received block before cascade.. "+block+" / "+cascadeblock);
+						return;
+					}
+					
 					double diffdiv = TxPoWChecker.checkDifficulty(tip.getTxPoW().getBlockDifficulty(), txpow.getBlockDifficulty());
 					if(diffdiv < 0.25) {
 						//Block difficulty too low..
 						MinimaLogger.log("Received block with difficulty too low.. "+diffdiv+" "+txpow.getBlockNumber()+" "+txpow.getTxPoWID());
 						return;
-					}else if(block.isLess(cascadeblock)) {
-						//Block before cascade
-						MinimaLogger.log("Received block before cascade.. "+block+" / "+cascadeblock);
-						return;
-					}else {
-//						MinimaLogger.log("Received Valid difficulty block.. "+diffdiv+" "+txpow.getBlockNumber()+" "+txpow.getTxPoWID());
 					}
 				}
 				
@@ -357,7 +360,7 @@ public class NIOMessage implements Runnable {
 						}
 					}
 					
-					//Get the parent if we don't have it..
+					//Get the parent if we don't have it.. and is infront of the Cascade..
 					exists = MinimaDB.getDB().getTxPoWDB().exists(txpow.getParentID().to0xString());
 					if(!exists) {
 						NIOManager.sendNetworkMessage(mClientUID, MSG_TXPOWREQ, txpow.getParentID());
