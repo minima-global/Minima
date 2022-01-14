@@ -287,20 +287,19 @@ public class NIOMessage implements Runnable {
 				MiniNumber block 		= txpow.getBlockNumber();
 				
 				//Check if is a block and within range of our current tip
-				if(txpow.isBlock()) {
-					double diffdiv = TxPoWChecker.checkDifficulty(tip.getTxPoW().getBlockDifficulty(), txpow.getBlockDifficulty());
-					
-					if(block.isLess(cascadeblock)) {
-						//Block before cascade
-						MinimaLogger.log("Received block before cascade.. "+block+" / "+cascadeblock+" difficulty:"+diffdiv);
-						return;
-					}
-					
-					if(diffdiv < 0.25) {
-						//Block difficulty too low..
-						MinimaLogger.log("Received block with difficulty too low.. "+diffdiv+" "+txpow.getBlockNumber()+" "+txpow.getTxPoWID());
-						return;
-					}
+				double blockdiffratio = TxPoWChecker.checkDifficulty(tip.getTxPoW().getBlockDifficulty(), txpow.getBlockDifficulty());
+				
+				//For BOTH txns and blocks
+				if(block.isLess(cascadeblock)) {
+					//Block before cascade
+					MinimaLogger.log("Received block before cascade.. "+block+" / "+cascadeblock+" difficulty:"+blockdiffratio);
+					return;
+				}
+				
+				if(blockdiffratio < 0.25) {
+					//Block difficulty too low..
+					MinimaLogger.log("Received block with difficulty too low.. "+blockdiffratio+" "+txpow.getBlockNumber()+" "+txpow.getTxPoWID());
+					return;
 				}
 				
 				//OK - Some basic checks..
