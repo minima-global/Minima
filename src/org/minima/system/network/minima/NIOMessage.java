@@ -14,6 +14,7 @@ import org.minima.objects.Pulse;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
 import org.minima.system.brains.TxPoWChecker;
@@ -275,6 +276,30 @@ public class NIOMessage implements Runnable {
 					return;
 				}
 				
+				//Now get the current tip details
+				TxPoWTreeNode tip 		= MinimaDB.getDB().getTxPoWTree().getTip();
+				TxPoWTreeNode cascade 	= MinimaDB.getDB().getTxPoWTree().getRoot();
+				MMR tipmmr 				= tip.getMMR();
+				TxPoW tiptxpow			= tip.getTxPoW();
+				
+				//Check if is a block and within range of our current tip
+				if(txpow.isBlock()) {
+					MiniNumber cascadeblock = cascade.getBlockNumber();
+					MiniNumber block 		= txpow.getBlockNumber();
+					double diffdiv = TxPoWChecker.checkDifficulty(tip.getTxPoW().getBlockDifficulty(), txpow.getBlockDifficulty());
+					if(diffdiv < 0.25) {
+						//Block difficulty too low..
+						MinimaLogger.log("Received block with difficulty too low.. "+diffdiv+" "+txpow.getBlockNumber()+" "+txpow.getTxPoWID());
+						return;
+					}else if(block.isLess(cascadeblock)) {
+						//Block before cascade
+						MinimaLogger.log("Received block before cascade.. "+block+" / "+cascadeblock);
+						return;
+					}else {
+						MinimaLogger.log("Received Valid difficulty block.. "+diffdiv+" "+txpow.getBlockNumber()+" "+txpow.getTxPoWID());
+					}
+				}
+				
 				//OK - Some basic checks..
 				if(!TxPoWChecker.checkTxPoWBasic(txpow)) {
 					//These MUST PASS
@@ -286,11 +311,6 @@ public class NIOMessage implements Runnable {
 					MinimaLogger.log("Invalid signatures on txpow from "+mClientUID+" "+txpow.getTxPoWID());
 					return;
 				}
-				
-				//Now get the current tip details
-				TxPoWTreeNode tip 	= MinimaDB.getDB().getTxPoWTree().getTip();
-				MMR tipmmr 			= tip.getMMR();
-				TxPoW tiptxpow		= tip.getTxPoW();
 				
 				//More CHECKS.. if ALL these pass will forward otherwise may be a branch txpow that we requested
 				boolean fullyvalid = true;
