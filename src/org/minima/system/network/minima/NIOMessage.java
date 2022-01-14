@@ -296,7 +296,7 @@ public class NIOMessage implements Runnable {
 						MinimaLogger.log("Received block before cascade.. "+block+" / "+cascadeblock);
 						return;
 					}else {
-						MinimaLogger.log("Received Valid difficulty block.. "+diffdiv+" "+txpow.getBlockNumber()+" "+txpow.getTxPoWID());
+//						MinimaLogger.log("Received Valid difficulty block.. "+diffdiv+" "+txpow.getBlockNumber()+" "+txpow.getTxPoWID());
 					}
 				}
 				
