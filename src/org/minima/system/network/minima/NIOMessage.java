@@ -298,7 +298,7 @@ public class NIOMessage implements Runnable {
 				
 				if(blockdiffratio < 0.25) {
 					//Block difficulty too low..
-					MinimaLogger.log("Received block with difficulty too low.. "+blockdiffratio+" "+txpow.getBlockNumber()+" "+txpow.getTxPoWID());
+					MinimaLogger.log("Received txpow with block difficulty too low.. "+blockdiffratio+" "+txpow.getBlockNumber()+" "+txpow.getTxPoWID());
 					return;
 				}
 				
