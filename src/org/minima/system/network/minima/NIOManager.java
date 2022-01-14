@@ -7,6 +7,7 @@ import java.net.InetSocketAddress;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -80,6 +81,12 @@ public class NIOManager extends MessageProcessor {
 	 * Clients we are trying to connect to
 	 */
 	private ConcurrentHashMap<String, NIOClient> mConnectingClients;
+	
+	/**
+	 * The clients connected awaiting added to NIOServer pool
+	 */
+	Object mSyncObject;
+	HashSet<String> mAwaitingConnect = new HashSet<String>();
 	
 	/**
 	 * Thread pool to manage incoming messages
