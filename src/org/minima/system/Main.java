@@ -145,6 +145,31 @@ public class Main extends MessageProcessor {
 		//Load the Databases
 		MinimaDB.getDB().loadAllDB();
 		
+//		//HACK - make sure you are beyond 100,000 blocks.. or WIPE..
+//		if(true || !GeneralParams.PRIVATE_NETWORK) {
+//			int casclength = MinimaDB.getDB().getCascade().getLength();
+//			if(casclength > 0) {
+//				MiniNumber casctip = MinimaDB.getDB().getCascade().getTip().getTxPoW().getBlockNumber();
+//				
+//				//He's loading stuff..
+//				MinimaLogger.log("Cascade base : "+casctip);
+//				
+//				if(casctip.isLess(new MiniNumber(100000))) {
+//					MinimaLogger.log("INCORRECT SIDECHAIN..  WIPING.. : ");
+//					
+//					MinimaLogger.log("Wiping previous config files..");
+//					//Delete the conf folder
+//					MiniFile.deleteFileOrFolder(GeneralParams.DATA_FOLDER, new File(GeneralParams.DATA_FOLDER));
+//					
+//					//Error exit..
+//					System.exit(1);
+//				}
+//				
+//			}else {
+//				MinimaLogger.log("No Cascade FRESH User..");
+//			}
+//		}
+		
 		//Start the engine..
 		mTxPoWProcessor = new TxPoWProcessor();
 		mTxPoWMiner 	= new TxPoWMiner();
