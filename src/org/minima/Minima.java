@@ -103,15 +103,16 @@ public class Minima {
 			main.getNetworkManager().startRPC();
 		}
 
-//		Runtime.getRuntime().addShutdownHook(new Thread()
-//		{
-//			@Override
-//			public void run()
-//			{
-//				MinimaLogger.log("[!] Safely Shutting Down");
-//				main.shutdown();
-//			}
-//		});
+		//A shutdown hook..
+		Runtime.getRuntime().addShutdownHook(new Thread(){
+			@Override
+			public void run(){
+				MinimaLogger.log("[!] Shutdown Hook..");
+				
+				//Shut down the whole system
+				main.shutdown();
+			}
+		});
 
 		//Daemon mode has no stdin input
 		if(daemon) {
