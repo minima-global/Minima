@@ -65,6 +65,15 @@ def status(show_mobiles, no_summary, full, endpoint, failed_only):
     previous_hash = ''
     valid_addresses = []
     versions = {}
+    issues_summary = {
+        'no_p2p_links': 0,
+        'too_many_out_links': 0,
+        'wrong_50th_hash': 0,
+        'different_in_links': 0,
+        'different_out_links': 0,
+        'too_many_links': 0,
+        'no_connections': 0,
+    }
     # Step 1 get latest timestamp
     for node in r.json():
         major, minor, build = node['minima_version'].split('.')
@@ -107,6 +116,8 @@ def status(show_mobiles, no_summary, full, endpoint, failed_only):
     }
     out_links = 0
     incoming_links = 0
+    block_numbers = []
+
     for node in valid_nodes:
         status = {}
         status['address'] = node['address']
@@ -119,47 +130,47 @@ def status(show_mobiles, no_summary, full, endpoint, failed_only):
         status['in_sync'] = True
         status['is_mobile'] = node['is_mobile']
         node_out_links = len(node['out_links'])
-        out_links += len(node['out_links'])
+        out_links += node['nio_outbound']
         node_in_links = len(node['in_links']) + len(node['not_accepting_conn_links']) + len(node['none_p2p_links'])
-        incoming_links += len(node['in_links']) + len(node['not_accepting_conn_links']) + len(node['none_p2p_links'])
+        incoming_links += node['nio_inbound']
         ts = datetime.datetime.fromisoformat(node['timestamp'].split('.')[0].replace('Z', ''))
         max_expected_block_difference = max(((latest_update_time - ts) // datetime.timedelta(seconds=25)) + 10, 2)
         is_okay = True
         issues = []
         # Validity Rules
         tip_string = '  '
-        if (top_block_number - node['top_block_number']) > max_expected_block_difference:
-            status['in_sync'] = False
-            is_okay = False
-            issues.append(
-                f"Expected min block number: {top_block_number - max_expected_block_difference} actual: {node['top_block_number']}")
         if status['has_external_ip'] == True and status['num_p2p_links'] == 0:
+            issues_summary['no_p2p_links'] += 1
             is_okay = False
             issues.append(f"No P2P Links")
         if status['has_external_ip'] == True and len(node['out_links']) > 5:
             is_okay = False
+            issues_summary['too_many_out_links'] += 1
             issues.append(f"Too Many OutLinks - {len(node['out_links'])} expecting 5")
+        if len({previous_hash, current_hash}.intersection({node['50_current_hash'], node['50_last_hash']})) == 0:
+            status['in_sync'] = False
+            issues_summary['wrong_50th_hash'] += 1
+            is_okay = False
+            issues.append(f"Node is on a different chain - 50th Block Num: {node['50_block_number']}")
+        if node['address'] == top_node_address:
+            tip_string = '🔺'
+        status['total_links'] = node['nio_inbound'] + node['nio_outbound']
+        if node['nio_inbound'] != node_in_links:
+            issues_summary['different_in_links'] += 1
+            is_okay = False
+            issues.append(f"Different num in links reported. NIO: {node['nio_inbound']} P2P: {node_in_links} Diff: {node['nio_inbound'] - node_in_links}")
+        if node['nio_outbound'] != node_out_links:
+            issues_summary['different_out_links'] += 1
+            is_okay = False
+            issues.append(f"Different num out links reported. NIO: {node['nio_outbound']} P2P: {node_out_links} Diff: {node['nio_outbound'] - node_out_links}")
         if status['total_links'] > 100:
+            issues_summary['too_many_links'] += 1
             is_okay = False
             issues.append(f"Warning - more than 100 connections on this node! In: {node_in_links} Out: {node_out_links} NIO In: {node['nio_inbound']} NIO Out: {node['nio_outbound']}")
         if status['total_links'] == 0:
+            issues_summary['no_connections'] += 1
             is_okay = False
             issues.append(f"Node is reporting no connections")
-        if '50_current_hash' in node:
-            if len({previous_hash, current_hash}.intersection({node['50_current_hash'], node['50_last_hash']})) == 0:
-                is_okay = False
-                issues.append(f"Node is on a different chain - 50th Block Num: {node['50_block_number']}")
-        if node['address'] == top_node_address:
-            tip_string = '🔺'
-        if 'nio_inbound' in node.keys():
-            if node['nio_inbound'] != node_in_links:
-                is_okay = False
-                issues.append(f"Different num in links reported. NIO: {node['nio_inbound']} P2P: {node_in_links} Diff: {node['nio_inbound'] - node_in_links}")
-
-            if node['nio_outbound'] != node_out_links:
-                is_okay = False
-                issues.append(f"Different num out links reported. NIO: {node['nio_outbound']} P2P: {node_out_links} Diff: {node['nio_outbound'] - node_out_links}")
-
         issues_string = 'Issues: ' + ', '.join(issues) if len(issues) != 0 else ''
 
         status_icon = '✅' if is_okay else '❌'
@@ -173,29 +184,30 @@ def status(show_mobiles, no_summary, full, endpoint, failed_only):
                 f"\t {status_icon}{tip_string}{node_icon}\t{p2p_node}  {status['address']}{padding}\t Version: {status['minima_version']} Connections: {status['total_links']}\t In-Sync: {in_sync}\t {issues_string}")
 
         if (status['is_mobile'] != True) and (status['has_external_ip'] == True):
-            if is_okay:
+            if len({previous_hash, current_hash}.intersection({node['50_current_hash'], node['50_last_hash']})) != 0:
                 node_summary['p2p_okay'] += 1
             else:
                 node_summary['p2p_not_okay'] += 1
         elif (status['is_mobile'] != True) and (status['has_external_ip'] != True):
-            if is_okay:
+            if len({previous_hash, current_hash}.intersection({node['50_current_hash'], node['50_last_hash']})) != 0:
+                block_numbers.append(node['top_block_number'])
                 node_summary['pc_okay'] += 1
             else:
                 node_summary['pc_not_okay'] += 1
         elif status['is_mobile'] == True:
-            if is_okay:
+            if len({previous_hash, current_hash}.intersection({node['50_current_hash'], node['50_last_hash']})) != 0:
                 node_summary['mobile_okay'] += 1
             else:
                 node_summary['mobile_not_okay'] += 1
 
     if not no_summary:
-        p2p_string = f"\t 🐙 🖥️\t ✅ {node_summary['p2p_okay']}\t"
+        p2p_string = f"\t 🐙 🖥️\t ✅ {node_summary['p2p_okay']:{' '}{'>'}{5}}\t"
         if node_summary['p2p_not_okay'] != 0:
             p2p_string += f" ❌ {node_summary['p2p_not_okay']}"
-        pc_string = f"\t    🖥️\t ✅ {node_summary['pc_okay']}\t"
+        pc_string = f"\t    🖥️\t ✅ {node_summary['pc_okay']:{' '}{'>'}{5}}\t"
         if node_summary['pc_not_okay'] != 0:
             pc_string += f" ❌ {node_summary['pc_not_okay']}"
-        mob_string = f"\t    📱\t ✅ {node_summary['mobile_okay']}\t"
+        mob_string = f"\t    📱\t ✅ {node_summary['mobile_okay']:{' '}{'>'}{5}}\t"
         if node_summary['mobile_not_okay'] != 0:
             mob_string += f" ❌ {node_summary['mobile_not_okay']}"
 
@@ -209,10 +221,15 @@ def status(show_mobiles, no_summary, full, endpoint, failed_only):
         for key in sorted(versions.keys(), reverse=True):
             click.echo(f"\t Version: {key} Num: {versions[key]}")
         click.echo("\t ------------")
+        click.echo("\t Issues")
+        for key in issues_summary:
+            click.echo(f"\t Issue: {key} Num: {issues_summary[key]}")
+        click.echo("\t ------------")
         click.echo(p2p_string)
         click.echo(pc_string)
         click.echo(mob_string)
         click.echo("\t ------------")
+        click.echo(f"\t ✅ {node_summary['p2p_okay'] + node_summary['pc_okay'] + node_summary['mobile_okay']} ❌ {node_summary['p2p_not_okay'] + node_summary['pc_not_okay'] + node_summary['mobile_not_okay']}")
         click.echo(f"\t Total: {len(valid_nodes)}")
         click.echo("")
 
@@ -226,7 +243,6 @@ def status(show_mobiles, no_summary, full, endpoint, failed_only):
             "\t --------------------------------------------------------------------------------------------------------")
         for node in node_status:
             click.echo(node)
-
 
 def map_ip_to_data(geo_data):
     ip_geo_map = {}
@@ -501,6 +517,7 @@ def video():
 def network_health(endpoint):
     import networkx as nx
     import numpy
+    import matplotlib.pyplot as plt
     G = nx.Graph()
 
 
@@ -520,10 +537,46 @@ def network_health(endpoint):
             if link in valid_addresses:
                 G.add_edge(node['address'], link)
 
+
+    nodes_to_remove= []
+    for node, degree in G.degree():
+        if degree == 0:
+            nodes_to_remove.append(node)
+
+    for node in nodes_to_remove:
+        G.remove_node(node)
+
+    # save_graph(G,"network.png")
+
     dc = nx.average_degree_connectivity(G)
     connectivity = numpy.mean(list(dc.values()))
     diameter = nx.diameter(G)
     average_clustering = nx.average_clustering(G)
+    print(f"average_degree_connectivity: {dc}")
+    print(f"connectivity: {connectivity}")
+    print(f"diameter: {diameter}")
+    print(f"average_clustering: {average_clustering}")
+
+def save_graph(graph,file_name):
+    import matplotlib.pyplot as plt
+    import networkx as nx
+    #initialze Figure
+    plt.figure(num=None, figsize=(20, 20), dpi=80)
+    plt.axis('off')
+    fig = plt.figure(1)
+    pos = nx.spring_layout(graph)
+    nx.draw_networkx_nodes(graph,pos)
+    nx.draw_networkx_edges(graph,pos)
+    nx.draw_networkx_labels(graph,pos)
+
+    cut = 1.00
+    xmax = cut * max(xx for xx, yy in pos.values())
+    ymax = cut * max(yy for xx, yy in pos.values())
+    plt.xlim(0, xmax)
+    plt.ylim(0, ymax)
+
+    plt.savefig(file_name, bbox_inches="tight")
+
 
 if __name__ == '__main__':
     cli()

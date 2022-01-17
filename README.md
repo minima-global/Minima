@@ -10,30 +10,30 @@ The project is setup as an Eclipse Java project. You should be able to clone the
 
 If you run it with no parameters it connects to the main Minima testnet.
 
-cd into the JAR folder and run as follows :
+cd into the JAR folder and run as follows (also assigns max 1GB RAM to Minima):
 
 ```
 cd ./jar
 
-java -jar minima.jar
+java -Xmx1G -jar minima.jar
 ```
 
 For a full list of parameters run :
 
 ```
-java -jar minima.jar -help
+java -Xmx1G -jar minima.jar -help
 ```
 
 To start a private test-net
 
 ```
-java -jar minima.jar -private -clean
+java -Xmx1G -jar minima.jar -private -clean
 ```
 
 And to keep your data just start without the -clean
 
 ```
-java -jar minima.jar -private
+java -Xmx1G -jar minima.jar -private
 ```
 
 You can then connect to it from another instance of the app by running :
@@ -142,13 +142,13 @@ docker run minima:latest
 
 ### End to end testing
 
-Requirements: 
+Requirements:
 - Docker
 - jq
 
 Build local Docker image:
 ```
-docker build -t minima:latest . 
+docker build -t minima:latest .
 ```
 
 Start a 3 nodes private Minima network using Docker:
