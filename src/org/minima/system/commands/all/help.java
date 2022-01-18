@@ -1,6 +1,12 @@
 package org.minima.system.commands.all;
 
 import org.minima.system.commands.Command;
+import org.minima.system.commands.txn.txncreate;
+import org.minima.system.commands.txn.txninput;
+import org.minima.system.commands.txn.txnlist;
+import org.minima.system.commands.txn.txnoutput;
+import org.minima.system.commands.txn.txnpost;
+import org.minima.system.commands.txn.txnstate;
 import org.minima.utils.json.JSONObject;
 
 public class help extends Command {
@@ -36,6 +42,13 @@ public class help extends Command {
 		
 		addCommand(details, new runscript());
 		addCommand(details, new tutorial());
+		
+		addCommand(details, new txncreate());
+		addCommand(details, new txnlist());
+		addCommand(details, new txninput());
+		addCommand(details, new txnoutput());
+		addCommand(details, new txnstate());
+		addCommand(details, new txnpost());
 		
 		addCommand(details, new mmrcreate());
 		addCommand(details, new mmrproof());
