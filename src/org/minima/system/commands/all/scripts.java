@@ -39,7 +39,6 @@ public class scripts extends Command {
 			//Put the details in the response..
 			ret.put("response", arr);
 			
-			
 		}else {
 			//Get the script
 			String script = getParam("script");
