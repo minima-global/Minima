@@ -2,6 +2,7 @@ package org.minima.system.commands.txn;
 
 import org.minima.objects.base.MiniData;
 import org.minima.system.commands.Command;
+import org.minima.system.commands.txn.txndb.TxnDB;
 import org.minima.utils.json.JSONObject;
 
 public class txncreate extends Command {
@@ -12,8 +13,7 @@ public class txncreate extends Command {
 	
 	@Override
 	public JSONObject runCommand() throws Exception {
-		JSONObject ret = getJSONReply();
-
+		
 		TxnDB db = TxnDB.getDB();
 		
 		//The transaction
@@ -21,10 +21,8 @@ public class txncreate extends Command {
 		
 		db.createTransaction(id);
 		
-		JSONObject resp = new JSONObject();
-		resp.put("id", id);
-		resp.put("transaction", db.getTransaction(id).toJSON());
-		ret.put("response", resp);
+		JSONObject ret = getJSONReply();
+		ret.put("response", db.getTransactionRow(id).toJSON());
 		
 		return ret;
 	}

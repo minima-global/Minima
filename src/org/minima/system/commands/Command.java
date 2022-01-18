@@ -5,6 +5,8 @@ import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniNumber;
 import org.minima.system.commands.all.automine;
 import org.minima.system.commands.all.backup;
 import org.minima.system.commands.all.balance;
@@ -41,6 +43,8 @@ import org.minima.system.commands.all.txpow;
 import org.minima.system.commands.all.webhooks;
 import org.minima.system.commands.txn.txncreate;
 import org.minima.system.commands.txn.txninput;
+import org.minima.system.commands.txn.txnlist;
+import org.minima.system.commands.txn.txnoutput;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
@@ -56,8 +60,10 @@ public abstract class Command {
 			new incentivecash(), new sshtunnel(), new webhooks(),
 			new backup(), new restore(), new test(), new hashtest(),
 			new runscript(), new tutorial(),
-			new txncreate(), new txninput(),new maxima(),
-			new mmrcreate(), new mmrproof()};
+			
+			new txncreate(), new txninput(),new txnlist(),new txnoutput(),
+			
+			new maxima(),new mmrcreate(), new mmrproof()};
 	
 	String mName;
 	String mHelp;
@@ -103,7 +109,17 @@ public abstract class Command {
 	}
 	
 	public String getParam(String zParamName) {
-		return getParam(zParamName, "");
+		return getParam(zParamName,"");
+	}
+	
+	public MiniNumber getNumberParam(String zParamName) {
+		String num = getParam(zParamName);
+		return new MiniNumber(num);
+	}
+	
+	public MiniData getDataParam(String zParamName) {
+		String hex = getParam(zParamName);
+		return new MiniData(hex);
 	}
 	
 	public String getParam(String zParamName, String zDefault) {

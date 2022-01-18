@@ -1,17 +1,19 @@
 package org.minima.system.commands.txn;
 
 import org.minima.objects.Coin;
+import org.minima.objects.Token;
 import org.minima.objects.Transaction;
 import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniNumber;
 import org.minima.system.brains.TxPoWSearcher;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.txn.txndb.TxnDB;
 import org.minima.utils.json.JSONObject;
 
-public class txninput extends Command {
+public class txnoutput extends Command {
 
-	public txninput() {
-		super("txninput","[id:] [coinid:] - Add a coin as an input to a transaction");
+	public txnoutput() {
+		super("txnoutput","[id:] [amount:] [address:] (tokenid:) (storestate:) - Create a transaction output");
 	}
 	
 	@Override
@@ -21,17 +23,20 @@ public class txninput extends Command {
 		TxnDB db = TxnDB.getDB();
 		
 		//The transaction
-		String id = getParam("id");
+		String id 			= getParam("id");
+		MiniNumber amount	= getNumberParam("amount");
+		MiniData address	= getDataParam("address");
+		MiniData tokenid	= Token.TOKENID_MINIMA;
+		if(existsParam("tokenid")) {
+			tokenid	= getDataParam("tokenid");
+		}
 		
-		//The Coin
-		String coinid = getParam("coinid");
-		
-		//Get the coin
-		Coin cc = TxPoWSearcher.searchCoins(new MiniData(coinid));
+		//Create the Coin..
+		Coin output = new Coin(Coin.COINID_OUTPUT, address, amount, tokenid);
 		
 		//Get the Transaction
 		Transaction trans = db.getTransactionRow(id).getTransaction();
-		trans.addInput(cc);
+		trans.addOutput(output);
 		
 		//Output the current trans..
 		ret.put("response", db.getTransactionRow(id).toJSON());
@@ -41,7 +46,7 @@ public class txninput extends Command {
 
 	@Override
 	public Command getFunction() {
-		return new txninput();
+		return new txnoutput();
 	}
 
 }

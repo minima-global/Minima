@@ -1,4 +1,4 @@
-package org.minima.system.commands.txn;
+package org.minima.system.commands.txn.txndb;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -16,24 +16,35 @@ public class TxnDB implements Streamable {
 		return mTxnDB;
 	}
 	
-	public Hashtable<String, Transaction> mTransactions = new Hashtable<>();
+	public ArrayList<TxnRow> mTransactions = new ArrayList<>();
 	
 	public TxnDB() {}
 	
 	public void createTransaction(String zKey) {
-		mTransactions.put(zKey, new Transaction());
+		mTransactions.add(new TxnRow(zKey, new Transaction()));
 	}
 	
-	public Transaction getTransaction(String zKey) {
-		return mTransactions.get(zKey);
+	public TxnRow getTransactionRow(String zKey) {
+		for(TxnRow txn : mTransactions) {
+			if(txn.getID().equals(zKey)) {
+				return txn;
+			}
+		}
+		return null;
 	}
 	
 	public void deleteTransaction(String zKey) {
-		mTransactions.remove(zKey);
+		ArrayList<TxnRow> transactions = new ArrayList<>();
+		for(TxnRow txn : mTransactions) {
+			if(!txn.getID().equals(zKey)) {
+				transactions.add(txn);
+			}
+		}
+		mTransactions = transactions;
 	}
 	
-	public ArrayList<Transaction> list(){
-		return new ArrayList<Transaction>( mTransactions.values() );
+	public ArrayList<TxnRow> listTxns(){
+		return mTransactions;
 	}
 	
 	public void clearTxns() {
@@ -43,12 +54,10 @@ public class TxnDB implements Streamable {
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
 		
-		
 	}
 
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
-		// TODO Auto-generated method stub
 		
 	}
 	
