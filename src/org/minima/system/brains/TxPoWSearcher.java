@@ -38,7 +38,12 @@ public class TxPoWSearcher {
 											false, MiniData.ZERO_TXPOWID,
 											false, MiniData.ZERO_TXPOWID);
 		
-		return coins.get(0);
+		//Did we find it
+		if(coins.size()>0) {
+			return coins.get(0);
+		}else {
+			return null;
+		}
 	}
 	
 	public static ArrayList<Coin> searchCoins(	TxPoWTreeNode zStartNode, boolean zRelevant, 

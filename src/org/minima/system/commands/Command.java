@@ -110,26 +110,12 @@ public abstract class Command {
 		return mParams.containsKey(zParamName);
 	}
 	
-	public String getParam(String zParamName) {
-		return getParam(zParamName,"");
-	}
-	
-	public boolean getBooleanParam(String zParamName) {
-		String bool = getParam(zParamName,"");
-		if(bool.equals("true")){
-			return  true;
+	public String getParam(String zParamName) throws CommandException {
+		if(!existsParam(zParamName)) {
+			throw new CommandException("param not specified : "+zParamName);
 		}
-		return false;
-	}
-	
-	public MiniNumber getNumberParam(String zParamName) {
-		String num = getParam(zParamName);
-		return new MiniNumber(num);
-	}
-	
-	public MiniData getDataParam(String zParamName) {
-		String hex = getParam(zParamName);
-		return new MiniData(hex);
+		
+		return (String) mParams.get(zParamName);
 	}
 	
 	public String getParam(String zParamName, String zDefault) {
@@ -139,6 +125,26 @@ public abstract class Command {
 		
 		return zDefault;
 	}
+	
+	public boolean getBooleanParam(String zParamName) throws CommandException {
+		String bool = getParam(zParamName);
+		if(bool.equals("true")){
+			return  true;
+		}
+		return false;
+	}
+	
+	public MiniNumber getNumberParam(String zParamName) throws CommandException {
+		String num = getParam(zParamName);
+		return new MiniNumber(num);
+	}
+	
+	public MiniData getDataParam(String zParamName) throws CommandException {
+		String hex = getParam(zParamName);
+		return new MiniData(hex);
+	}
+	
+	
 	
 	public JSONObject getJSONObjectParam(String zParamName) {
 		return (JSONObject) mParams.get(zParamName);
@@ -195,7 +201,14 @@ public abstract class Command {
 			JSONObject result = null;
 			try {
 				result = cmd.runCommand();
+			
+			}catch(CommandException cexc) {
+				result = cmd.getJSONReply();
+				result.put("status", false);
+				result.put("error", cexc.getMessage());
+				
 			}catch(Exception exc) {
+				//Print the full error
 				MinimaLogger.log(exc);
 				
 				result = cmd.getJSONReply();

@@ -1,6 +1,7 @@
 package org.minima.system.commands.txn;
 
 import org.minima.system.commands.Command;
+import org.minima.system.commands.CommandException;
 import org.minima.system.commands.txn.txndb.TxnDB;
 import org.minima.utils.json.JSONObject;
 
@@ -17,6 +18,10 @@ public class txncreate extends Command {
 		
 		//The transaction
 		String id = getParam("id");
+		
+		if(db.getTransactionRow("id") != null) {
+			throw new CommandException("Txn with this ID already exists : "+id);
+		}
 		
 		db.createTransaction(id);
 		
