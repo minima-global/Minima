@@ -41,11 +41,13 @@ public class help extends Command {
 		addCommand(details, new mmrproof());
 		
 		addCommand(details, new network());
+		addCommand(details, new maxima());
 		addCommand(details, new message());
 		addCommand(details, new connect());
 		addCommand(details, new disconnect());
 		addCommand(details, new rpc());
 		addCommand(details, new webhooks());
+		addCommand(details, new sshtunnel());
 		
 		addCommand(details, new backup());
 		addCommand(details, new restore());

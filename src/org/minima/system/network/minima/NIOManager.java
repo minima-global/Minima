@@ -7,6 +7,7 @@ import java.net.InetSocketAddress;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -19,6 +20,8 @@ import org.minima.objects.base.MiniData;
 import org.minima.system.Main;
 import org.minima.system.commands.all.connect;
 import org.minima.system.commands.all.sshtunnel;
+import org.minima.system.network.NetworkManager;
+import org.minima.system.network.maxima.Maxima;
 import org.minima.system.network.p2p.P2PFunctions;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.MinimaLogger;
@@ -39,6 +42,7 @@ public class NIOManager extends MessageProcessor {
 	
 	public static final String NIO_DISCONNECT 		= "NIO_DISCONNECT";
 	public static final String NIO_DISCONNECTED		= "NIO_DISCONNECTED";
+	public static final String NIO_DISCONNECTALL 	= "NIO_DISCONNECTALL";
 	
 	public static final String NIO_RECONNECT 		= "NIO_RECONNECT";
 	
@@ -64,6 +68,11 @@ public class NIOManager extends MessageProcessor {
 	static final long RECONNECT_TIMER = 30000;
 	
 	/**
+	 * Main Network Manager
+	 */
+	NetworkManager mNetworkManager;
+	
+	/**
 	 * The MAIN Minima Server
 	 */
 	private NIOServer mNIOServer;
@@ -74,12 +83,20 @@ public class NIOManager extends MessageProcessor {
 	private ConcurrentHashMap<String, NIOClient> mConnectingClients;
 	
 	/**
+	 * The clients connected awaiting added to NIOServer pool
+	 */
+	Object mSyncObject;
+	HashSet<String> mAwaitingConnect = new HashSet<String>();
+	
+	/**
 	 * Thread pool to manage incoming messages
 	 */
 	ExecutorService THREAD_POOL = Executors.newFixedThreadPool(4);
 	
-	public NIOManager() {
+	public NIOManager(NetworkManager zNetManager) {
 		super("NIOMANAGER");
+		
+		mNetworkManager = zNetManager;
 		
 		mConnectingClients = new ConcurrentHashMap<>();
 		
@@ -123,16 +140,58 @@ public class NIOManager extends MessageProcessor {
 		return connections;
 	}
 	
+	public NIOClient checkConnected(String zHost, boolean zOnlyConnected) {
+		
+		if(!zOnlyConnected) {
+			//Who are we trying to connect to
+			Enumeration<NIOClient> clients = mConnectingClients.elements();
+			while(clients.hasMoreElements()) {
+				NIOClient nc = clients.nextElement();
+				if(zHost.equals(nc.getFullAddress())) {
+					return nc;
+				}
+			}
+		}
+		
+		//Who are we connected to..
+		ArrayList<NIOClient> conns = mNIOServer.getAllNIOClients();
+		for(NIOClient conn : conns) {
+			if(zHost.equals(conn.getFullAddress())) {
+				return conn;
+			}
+		}
+		
+		return null;
+	}
+	
+	public NIOClient getMaximaUID(String zMaximaPubKey) {
+		//Who are we connected to..
+		ArrayList<NIOClient> conns = mNIOServer.getAllNIOClients();
+		for(NIOClient conn : conns) {
+			if(conn.isMaximaClient() && conn.getMaximaIdent().equals(zMaximaPubKey)) {
+				return conn;
+			}
+		}
+		
+		return null;
+	}
+	
 	@Override
 	protected void processMessage(Message zMessage) throws Exception {
 		
 		if(zMessage.getMessageType().equals(NIO_SERVERSTARTED)) {
 			
-			//The NIOServer has started you can now start up the P2P and pre-connect list
-			Main.getInstance().getNetworkManager().getP2PManager().PostMessage(P2PFunctions.P2P_INIT);
-			
 			//Do we need to start up the SSHTunnel..
-			sshtunnel.startSSHTunnel();
+			if(MinimaDB.getDB().getUserDB().isSSHTunnelEnabled()){
+				//Start the SSH Tunnel..
+				sshtunnel.startSSHTunnel();
+			
+				//Wait a few seconds for it to work..
+				Thread.sleep(5000);
+			}
+			
+			//The NIOServer has started you can now start up the P2P and pre-connect list
+			mNetworkManager.getP2PManager().PostMessage(P2PFunctions.P2P_INIT);
 			
 			//Any nodes to auto connect to.. comma separated list
 			if(!GeneralParams.CONNECT_LIST.equals("")) {
@@ -189,9 +248,19 @@ public class NIOManager extends MessageProcessor {
 				return;
 			}
 			
+			//Check not already connected..
+			if(checkConnected(nc.getFullAddress(), true)!=null) {
+				//Already connected..
+				MinimaLogger.log("Warning : Attempting to connect to already connected host "+nc.getFullAddress());
+				return;
+			}
+			
 			//Connect in separate thread..
 			connectAttempt(nc);
-		
+			
+			//Small pause - give it time to connect
+			Thread.sleep(2000);
+			
 		}else if(zMessage.getMessageType().equals(NIO_RECONNECT)) {
 			//Get the client..
 			NIOClient nc = (NIOClient) zMessage.getObject("client");
@@ -217,7 +286,7 @@ public class NIOManager extends MessageProcessor {
 					Message newconn = new Message(P2PFunctions.P2P_NOCONNECT);
 					newconn.addObject("client", nc);
 					newconn.addString("uid", nc.getUID());
-					Main.getInstance().getNetworkManager().getP2PManager().PostMessage(newconn);
+					mNetworkManager.getP2PManager().PostMessage(newconn);
 					
 					MinimaLogger.log("INFO : "+nc.getUID()+" connection failed - no more reconnect attempts ");
 					
@@ -235,6 +304,22 @@ public class NIOManager extends MessageProcessor {
 				tmsg.addObject("client", nc);
 				NIOManager.this.PostTimerMessage(tmsg);
 			}
+		
+		}else if(zMessage.getMessageType().equals(NIO_DISCONNECTALL)) {
+			
+			//Disconnect from all the clients..!
+			
+			Enumeration<NIOClient> clients = mConnectingClients.elements();
+			while(clients.hasMoreElements()) {
+				NIOClient nc = clients.nextElement();
+				disconnect(nc.getUID());
+			}
+			
+			ArrayList<NIOClient> conns = mNIOServer.getAllNIOClients();
+			for(NIOClient conn : conns) {
+				disconnect(conn.getUID());
+			}
+			
 			
 		}else if(zMessage.getMessageType().equals(NIO_DISCONNECT)) {
 			//Get the UID
@@ -272,29 +357,46 @@ public class NIOManager extends MessageProcessor {
 			}
 			
 			//Tell the P2P..
+//			MinimaLogger.log("DISCONNECTED P2P Client UID : "+nioc.getUID()+" @ "+nioc.getHost()+":"+nioc.getPort());
+			
 			Message newconn = new Message(P2PFunctions.P2P_DISCONNECTED);
 			newconn.addString("uid", nioc.getUID());
 			newconn.addBoolean("incoming", nioc.isIncoming());
 			newconn.addBoolean("reconnect", reconnect);
-			Main.getInstance().getNetworkManager().getP2PManager().PostMessage(newconn);
+			mNetworkManager.getP2PManager().PostMessage(newconn);
 			
 		}else if(zMessage.getMessageType().equals(NIO_NEWCONNECTION)) {
 			//New connection.. 
 			NIOClient nioc = (NIOClient)zMessage.getObject("client");
 		
-			//Create the Greeting..
-			Greeting greet = new Greeting().createGreeting();
-			
-			//And send it..
-			NIOManager.sendNetworkMessage(nioc.getUID(), NIOMessage.MSG_GREETING, greet);
-			
-			//Tell the P2P..
-			Message newconn = new Message(P2PFunctions.P2P_CONNECTED);
-			newconn.addString("uid", nioc.getUID());
-			newconn.addBoolean("incoming", nioc.isIncoming());
-			Main.getInstance().getNetworkManager().getP2PManager().PostMessage(newconn);
-			
-			MinimaLogger.log("INFO : "+nioc.getUID()+" connection success @ "+nioc.getHost());
+			//Is this an outgoing connection..
+			if(!nioc.isIncoming()) {
+				
+				//Only Send this ONCE!
+				if(!nioc.haveSentGreeting()) {
+					nioc.setSentGreeting(true);	
+				
+					//Create the Greeting..
+					Greeting greet = new Greeting().createGreeting();
+					
+					//Is this my Maxima Host..
+					Maxima max = Main.getInstance().getMaxima();
+					if(max.isHostSet()) {
+						//Check it..
+						String hostclient = nioc.getHost()+":"+nioc.getPort(); 
+						
+						if(hostclient.equals(max.getMaximaHost())) {
+							MinimaLogger.log("Connected to Maxima Host!");
+							
+							//This is our Maxima Host - add our Maxima Public Key
+							greet.getExtraData().put("maxima", max.getPublicKey());
+						}
+					}
+					
+					//And send it..
+					NIOManager.sendNetworkMessage(nioc.getUID(), NIOMessage.MSG_GREETING, greet);
+				}
+			}
 			
 		}else if(zMessage.getMessageType().equals(NIO_INCOMINGMSG)) {
 			//Who is it from
@@ -344,13 +446,15 @@ public class NIOManager extends MessageProcessor {
 				if(diff > MAX_LASTREAD_CHECKER) {
 					
 					//Too long a delay..
-					MinimaLogger.log("INFO : No recent message (5 mins) from "+conn.getUID()+" disconnect/reconnect ..");
+					MinimaLogger.log("INFO : No recent message (5 mins) from "
+							+conn.getUID()+" disconnect/reconnect incoming:"
+							+conn.isIncoming()+" valid:"+conn.isValidGreeting()+" host:"+conn.getFullAddress());
 					
 					//Disconnect
 					disconnect(conn.getUID());
 					
 					//And reconnect in 5 secs if outgoing.. incoming will reconnect anyway
-					if(!conn.isIncoming()) {
+					if(!conn.isIncoming() && conn.isValidGreeting()) {
 						TimerMessage timedconnect = new TimerMessage(5000, NIO_CONNECT);
 						timedconnect.addString("host", conn.getHost());
 						timedconnect.addInteger("port", conn.getPort());

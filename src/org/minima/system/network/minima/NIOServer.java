@@ -94,7 +94,10 @@ public class NIOServer implements Runnable {
 	public void sendMessageAll(MiniData zData) {
 		Enumeration<NIOClient> clients = mClients.elements();
 		while(clients.hasMoreElements()) {
-			clients.nextElement().sendData(zData);
+			NIOClient nioc = clients.nextElement();
+			if(nioc.isValidGreeting()) {
+				nioc.sendData(zData);
+			}
 		}
 	}
 	
@@ -132,10 +135,10 @@ public class NIOServer implements Runnable {
 	        // This is the main loop
 	        while (!mShutDown) {
 	        	
-	        	//Logs..
-	        	if(mTraceON) {
-	        		MinimaLogger.log("[NIOSERVER] Waiting for selection..");
-	        	}
+//	        	//Logs..
+//	        	if(mTraceON) {
+//	        		MinimaLogger.log("[NIOSERVER] Waiting for selection..");
+//	        	}
 	        	
 	        	//Select something.. 
 	        	mSelector.select(30000);
@@ -265,7 +268,7 @@ public class NIOServer implements Runnable {
 
         //What Port..
         InetSocketAddress remote = (InetSocketAddress)zSocketChannel.getRemoteAddress();
-        InetSocketAddress local  = (InetSocketAddress )zSocketChannel.getLocalAddress();
+//        InetSocketAddress local  = (InetSocketAddress )zSocketChannel.getLocalAddress();
         
         int port = remote.getPort();
         

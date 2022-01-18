@@ -3,7 +3,10 @@ package org.minima.system.commands.all;
 import org.minima.database.MinimaDB;
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
+import org.minima.system.network.minima.NIOManager;
+import org.minima.system.network.p2p.P2PManager;
 import org.minima.system.network.sshtunnel.SSHManager;
+import org.minima.system.params.GeneralParams;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
 
@@ -30,14 +33,28 @@ public class sshtunnel extends Command {
 			//Stop SSH Tunnel.
 			Main.getInstance().getNetworkManager().getSSHManager().PostMessage(SSHManager.SSHTUNNEL_STOP);
 	
+			//Set the GeneralParams.. too default Setting! HACK- should use command line params aswell..
+			GeneralParams.IS_ACCEPTING_IN_LINKS = false;
+			GeneralParams.IS_HOST_SET = false;
+			GeneralParams.MINIMA_PORT = 9001;
+			Main.getInstance().getNetworkManager().calculateHostIP();
+			
+			//Is the P2P Running
+			if(GeneralParams.P2P_ENABLED) {
+				//Close all current connections..
+				Main.getInstance().getNIOManager().PostMessage(new Message(NIOManager.NIO_DISCONNECTALL));
+				
+				//Wait a few seconds..
+				Thread.sleep(3000);
+				
+				//And you need to reset the P2P
+				Main.getInstance().getNetworkManager().getP2PManager().PostMessage(P2PManager.P2P_RESET);
+			}
+			
 			//Stopped..
 			ret.put("response", "SSHTunnel stopped..");
 			
 			return ret;
-		}
-		
-		if(!enable.equals("true")) {
-			throw new Exception("Incorrect value for enable param : "+enable);
 		}
 			
 		//Get all the settings..
@@ -68,7 +85,20 @@ public class sshtunnel extends Command {
 		
 		//Now send a message..
 		startSSHTunnel();
-
+		
+		//Is the P2P Running
+		if(GeneralParams.P2P_ENABLED) {
+			//Close all current connections..
+			Main.getInstance().getNIOManager().PostMessage(new Message(NIOManager.NIO_DISCONNECTALL));
+			
+			//Wait a few seconds..
+			Thread.sleep(3000);
+			
+			//And you need to reset the P2P
+			Main.getInstance().getNetworkManager().getP2PManager().PostMessage(P2PManager.P2P_RESET);
+		}
+		
+		//All done..
 		ret.put("response", "SSHTunnel started..");
 		
 		return ret;

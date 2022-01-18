@@ -59,9 +59,6 @@ public class Greeting implements Streamable {
 			}
 			getExtraData().put("port",""+GeneralParams.MINIMA_PORT);
 			
-			//getExtraData().put("peers", "98.98.45.56:9787,198.198.145.156:9001,");
-			//getExtraData().put("maxima", "98.12.232.156:8009,");
-			
 			//Add the chain..
 			TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
 			if(tip == null) {

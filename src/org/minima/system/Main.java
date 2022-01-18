@@ -16,6 +16,7 @@ import org.minima.system.brains.TxPoWProcessor;
 import org.minima.system.genesis.GenesisMMR;
 import org.minima.system.genesis.GenesisTxPoW;
 import org.minima.system.network.NetworkManager;
+import org.minima.system.network.maxima.Maxima;
 import org.minima.system.network.minima.NIOClient;
 import org.minima.system.network.minima.NIOManager;
 import org.minima.system.network.minima.NIOMessage;
@@ -43,16 +44,14 @@ public class Main extends MessageProcessor {
 	}
 	
 	/**
-	 * Is there someone listening to Minima messages
+	 * Is there someone listening to Minima messages (Android)
 	 */
-	public static MessageListener MINIMA_LISTENER = null;
+	private static MessageListener MINIMA_LISTENER = null;
+	public static MessageListener getMinimaListener() {
+		return MINIMA_LISTENER;
+	}
 	public static void setMinimaListener(MessageListener zListener) {
 		MINIMA_LISTENER = zListener;
-	}
-	public static void postMinimaListener(Message zMessage) {		
-		if(MINIMA_LISTENER != null) {
-			MINIMA_LISTENER.processMessage(zMessage);
-		}
 	}
 	
 	/**
@@ -103,6 +102,11 @@ public class Main extends MessageProcessor {
 	NetworkManager mNetwork;
 	
 	/**
+	 * Maxima
+	 */
+	Maxima mMaxima;
+	
+	/**
 	 * Are we shutting down..
 	 */
 	boolean mShuttingdown = false;
@@ -125,8 +129,9 @@ public class Main extends MessageProcessor {
 	public Main() {
 		super("MAIN");
 	
-		mMainInstance = this;
-	
+		//Reset the static values
+		mMainInstance 	= this;
+		
 		//Are we deleting previous..
 		if(GeneralParams.CLEAN) {
 			MinimaLogger.log("Wiping previous config files..");
@@ -140,6 +145,31 @@ public class Main extends MessageProcessor {
 		//Load the Databases
 		MinimaDB.getDB().loadAllDB();
 		
+//		//HACK - make sure you are beyond 100,000 blocks.. or WIPE..
+//		if(true || !GeneralParams.PRIVATE_NETWORK) {
+//			int casclength = MinimaDB.getDB().getCascade().getLength();
+//			if(casclength > 0) {
+//				MiniNumber casctip = MinimaDB.getDB().getCascade().getTip().getTxPoW().getBlockNumber();
+//				
+//				//He's loading stuff..
+//				MinimaLogger.log("Cascade base : "+casctip);
+//				
+//				if(casctip.isLess(new MiniNumber(100000))) {
+//					MinimaLogger.log("INCORRECT SIDECHAIN..  WIPING.. : ");
+//					
+//					MinimaLogger.log("Wiping previous config files..");
+//					//Delete the conf folder
+//					MiniFile.deleteFileOrFolder(GeneralParams.DATA_FOLDER, new File(GeneralParams.DATA_FOLDER));
+//					
+//					//Error exit..
+//					System.exit(1);
+//				}
+//				
+//			}else {
+//				MinimaLogger.log("No Cascade FRESH User..");
+//			}
+//		}
+		
 		//Start the engine..
 		mTxPoWProcessor = new TxPoWProcessor();
 		mTxPoWMiner 	= new TxPoWMiner();
@@ -152,6 +182,9 @@ public class Main extends MessageProcessor {
 		
 		//Start the networking..
 		mNetwork = new NetworkManager();
+		
+		//Start up Maxima
+		mMaxima = new Maxima();
 				
 		//Simulate traffic message ( only if auto mine is set )
 		AUTOMINE_TIMER = MiniNumber.THOUSAND.div(GlobalParams.MINIMA_BLOCK_SPEED).getAsLong();
@@ -174,12 +207,20 @@ public class Main extends MessageProcessor {
 	}
 	
 	public void shutdown() {
+		//Are we already shutting down..
+		if(mShuttingdown) {
+			return;
+		}
+		
 		//we are shutting down
 		mShuttingdown = true;
 		
 		//Shut down the network
 		mNetwork.shutdownNetwork();
-				
+		
+		//Shut down Maxima
+		mMaxima.stopMessageProcessor();
+		
 		//Stop the Miner
 		mTxPoWMiner.stopMessageProcessor();
 		
@@ -215,6 +256,9 @@ public class Main extends MessageProcessor {
 		
 		//Shut down the network
 		mNetwork.shutdownNetwork();
+		
+		//Shut down Maxima
+		mMaxima.stopMessageProcessor();
 				
 		//Stop the Miner
 		mTxPoWMiner.stopMessageProcessor();
@@ -248,6 +292,10 @@ public class Main extends MessageProcessor {
 	
 	public TxPoWMiner getTxPoWMiner() {
 		return mTxPoWMiner;
+	}
+	
+	public Maxima getMaxima() {
+		return mMaxima;
 	}
 	
 	public void setTrace(boolean zTrace, String zFilter) {
@@ -300,15 +348,10 @@ public class Main extends MessageProcessor {
 			//Get it..
 			TxPoW txpow = (TxPoW) zMessage.getObject("txpow");
 			
-			//Post a message..
-			Message mining = new Message(MAIN_MINING);
-			mining.addBoolean("starting", false);
-			mining.addObject("txpow", txpow);
-			Main.getInstance().PostMessage(mining);
-			
 			//We have mined a TxPoW.. send it out to the network..
 			if(!txpow.isTransaction() && !txpow.isBlock()) {
 				//A PULSE..forward as proof
+				//TODO
 				return;
 			}
 			
@@ -385,28 +428,17 @@ public class Main extends MessageProcessor {
 			//Get the TxPoW
 			TxPoW txpow = (TxPoW) zMessage.getObject("txpow");
 			
-			//The tip of the TxPoWTree has changed - we have a new block..
-			postMinimaListener(zMessage);
-			
 			//Notify The Web Hook Listeners
-			JSONObject event = new JSONObject();
-			event.put("event", "NEWBLOCK");
-			event.put("txpow", txpow.toJSON());
+			JSONObject data = new JSONObject();
+			data.put("txpow", txpow.toJSON());
 			
 			//And Post it..
-			PostNotifyEvent(event);
+			PostNotifyEvent("NEWBLOCK", data);
 			
 		}else if(zMessage.getMessageType().equals(MAIN_BALANCE)) {
 			
-			//The tip of the TxPoWTree has changed - we have a new block..
-			postMinimaListener(zMessage);
-			
-			//Notify The Web Hook Listeners
-			JSONObject event = new JSONObject();
-			event.put("event", "NEWBALANCE");
-			
 			//And Post it..
-			PostNotifyEvent(event);
+			PostNotifyEvent("NEWBALANCE", new JSONObject());
 				
 		}else if(zMessage.getMessageType().equals(MAIN_MINING)) {
 			
@@ -416,17 +448,13 @@ public class Main extends MessageProcessor {
 			//Are we starting or stopping..
 			boolean starting = zMessage.getBoolean("starting");
 			
-			//The tip of the TxPoWTree has changed - we have a new block..
-			postMinimaListener(zMessage);
-			
 			//Notify The Web Hook Listeners
-			JSONObject event = new JSONObject();
-			event.put("event", "MINING");
-			event.put("txpow", txpow.toJSON());
-			event.put("starting", starting);
+			JSONObject data = new JSONObject();
+			data.put("txpow", txpow.toJSON());
+			data.put("mining", starting);
 			
 			//And Post it..
-			PostNotifyEvent(event);
+			PostNotifyEvent("MINING", data);
 			
 		}else if(zMessage.getMessageType().equals(MAIN_CHECKER)) {
 			
@@ -454,12 +482,19 @@ public class Main extends MessageProcessor {
 	}
 	
 	/**
-	 * Post a network message to the webhook listeners
-	 * @param zEvent
+	 * Post a network message to the webhook / Android listeners
 	 */
-	private void PostNotifyEvent(JSONObject zEvent) {
+	public void PostNotifyEvent(String zEvent, JSONObject zData) {
 		if(getNetworkManager() != null) {
-			getNetworkManager().getNotifyManager().PostEvent(zEvent);
+			
+			//Create the JSON Message
+			JSONObject notify = new JSONObject();
+			notify.put("event", zEvent);
+			notify.put("data", zData);
+			
+			//And post
+			getNetworkManager().getNotifyManager().PostEvent(notify);
 		}
 	}
+	
 }

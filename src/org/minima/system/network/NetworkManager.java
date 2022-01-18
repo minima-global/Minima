@@ -67,7 +67,7 @@ public class NetworkManager {
 		}
 		
 		//The main NIO server manager
-		mNIOManager = new NIOManager();
+		mNIOManager = new NIOManager(this);
 		
 		//Do we start the RPC server
 		if(MinimaDB.getDB().getUserDB().isRPCEnabled()) {
@@ -129,15 +129,20 @@ public class NetworkManager {
 		JSONObject stats = new JSONObject();
 		
 		UserDB udb 				= MinimaDB.getDB().getUserDB();
+		
+		stats.put("host", GeneralParams.MINIMA_HOST);
+		stats.put("hostset", GeneralParams.IS_HOST_SET);
+		stats.put("port", GeneralParams.MINIMA_PORT);
+		
 		JSONObject sshsettings = udb.getSSHTunnelSettings();
-		if(udb.isSSHTunnelEnabled()) {
-			stats.put("host", sshsettings.get("host"));
-			stats.put("port", sshsettings.get("remoteport"));
-			
-		}else {
-			stats.put("host", GeneralParams.MINIMA_HOST);
-			stats.put("port", GeneralParams.MINIMA_PORT);
-		}
+//		if(udb.isSSHTunnelEnabled()) {
+//			stats.put("host", sshsettings.get("host"));
+//			stats.put("port", sshsettings.get("remoteport"));
+//			
+//		}else {
+//			stats.put("host", GeneralParams.MINIMA_HOST);
+//			stats.put("port", GeneralParams.MINIMA_PORT);
+//		}
 		
 		stats.put("connecting", mNIOManager.getConnnectingClients());
 		stats.put("connected", mNIOManager.getConnectedClients());
@@ -157,11 +162,10 @@ public class NetworkManager {
 		if(udb.isSSHTunnelEnabled()) {
 			ssh.put("enabled", true);
 			ssh.put("user", sshsettings.get("username")+"@"+sshsettings.get("host"));
+			stats.put("sshtunnel", ssh);
 		}else {
 			ssh.put("enabled", false);
 		}
-		
-		stats.put("sshtunnel", ssh);
 		
 		return stats;
 	}

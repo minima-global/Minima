@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.security.Security;
 import java.util.Iterator;
 
 import org.minima.database.MinimaDB;
@@ -83,6 +84,7 @@ public class Minima {
 		boolean daemon = configurer.isDaemon();
 		boolean rpcenable = configurer.isRpcenable();
 
+		//Now lets go..
 		MinimaLogger.log("**********************************************");
 		MinimaLogger.log("*  __  __  ____  _  _  ____  __  __    __    *");
 		MinimaLogger.log("* (  \\/  )(_  _)( \\( )(_  _)(  \\/  )  /__\\   *");
@@ -101,15 +103,16 @@ public class Minima {
 			main.getNetworkManager().startRPC();
 		}
 
-//		Runtime.getRuntime().addShutdownHook(new Thread()
-//		{
-//			@Override
-//			public void run()
-//			{
-//				MinimaLogger.log("[!] Safely Shutting Down");
-//				main.shutdown();
-//			}
-//		});
+		//A shutdown hook..
+		Runtime.getRuntime().addShutdownHook(new Thread(){
+			@Override
+			public void run(){
+				MinimaLogger.log("[!] Shutdown Hook..");
+				
+				//Shut down the whole system
+				main.shutdown();
+			}
+		});
 
 		//Daemon mode has no stdin input
 		if(daemon) {
@@ -117,8 +120,10 @@ public class Minima {
 			
 			//Loop while running..
 			while (!main.isShutdownComplete()) {
-                try {Thread.sleep(1000);} catch (InterruptedException e) {}
+                try {Thread.sleep(250);} catch (InterruptedException e) {}
             }
+			
+			MinimaLogger.log("Bye bye..");
 			
 			//All done..
 			System.exit(0);

@@ -24,7 +24,7 @@ public class SSHManager extends MessageProcessor {
 	//The SSH Tunnel manager
 	SSHForwarder mSSH = null;
 	
-	boolean mLogging = false;
+	boolean mLogging = true;
 	
 	public SSHManager() {
 		super("SSH_MANAGER");
@@ -50,7 +50,7 @@ public class SSHManager extends MessageProcessor {
 				
 				@Override
 				public boolean isEnabled(int zLevel) {
-					return mTrace;
+					return mLogging;
 				}
 			});
 			
@@ -127,6 +127,9 @@ public class SSHManager extends MessageProcessor {
 		if(mSSH != null) {
 			mSSH.stop();
 			mSSH = null;
+			
+			//Wait for it..
+			try {Thread.sleep(5000);} catch (InterruptedException e) {}
 		}
 	}
 
