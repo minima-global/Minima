@@ -465,6 +465,21 @@ public class Keccak {
 	
 	public static void main(String[] zArgs) {
 
+		//First check the ahshes are the same..
+		for(int t=0;t<1000;t++) {
+			byte[] testdata = MiniData.getRandomData(256).getBytes();
+			
+			MiniData hashedold = new MiniData( Crypto.getInstance().hashData(testdata) );
+			MiniData hashednew = new MiniData( Keccak.hashData(testdata,256) );
+			
+			System.out.println("old:"+hashedold.to0xString()+" new:"+hashednew.to0xString());
+			
+			if(!hashedold.isEqual(hashednew)) {
+				System.out.println("Hashes do not match..");
+			}
+		}
+		
+		
 		int mega = 1000000;
 		
 		//Speed test..
