@@ -45,6 +45,8 @@ import org.minima.system.commands.txn.txncreate;
 import org.minima.system.commands.txn.txninput;
 import org.minima.system.commands.txn.txnlist;
 import org.minima.system.commands.txn.txnoutput;
+import org.minima.system.commands.txn.txnpost;
+import org.minima.system.commands.txn.txnstate;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
@@ -61,7 +63,7 @@ public abstract class Command {
 			new backup(), new restore(), new test(), new hashtest(),
 			new runscript(), new tutorial(),
 			
-			new txncreate(), new txninput(),new txnlist(),new txnoutput(),
+			new txncreate(), new txninput(),new txnlist(),new txnoutput(),new txnstate(),new txnpost(),
 			
 			new maxima(),new mmrcreate(), new mmrproof()};
 	
@@ -110,6 +112,14 @@ public abstract class Command {
 	
 	public String getParam(String zParamName) {
 		return getParam(zParamName,"");
+	}
+	
+	public boolean getBooleanParam(String zParamName) {
+		String bool = getParam(zParamName,"");
+		if(bool.equals("true")){
+			return  true;
+		}
+		return false;
 	}
 	
 	public MiniNumber getNumberParam(String zParamName) {
@@ -195,6 +205,11 @@ public abstract class Command {
 			
 			//Add it..
 			res.add(result);
+			
+			//Stop at a false..
+			if((boolean)result.get("status") == false) {
+				break;
+			}
 		}
 		
 		return res;

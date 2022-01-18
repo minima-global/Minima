@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 
 import org.minima.objects.Transaction;
+import org.minima.system.commands.all.newaddress;
 import org.minima.utils.Streamable;
 
 public class TxnDB implements Streamable {
@@ -20,7 +21,11 @@ public class TxnDB implements Streamable {
 	
 	public TxnDB() {}
 	
-	public void createTransaction(String zKey) {
+	public void createTransaction(String zKey) throws Exception {
+		if(getTransactionRow(zKey) != null) {
+			throw new Exception("Transaction with this ID already exists..");
+		}
+		
 		mTransactions.add(new TxnRow(zKey, new Transaction()));
 	}
 	
