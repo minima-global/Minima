@@ -71,7 +71,7 @@ public class Wallet extends SqlDB {
 			//Create scripts table
 			String scriptsdb = "CREATE TABLE IF NOT EXISTS `scripts` ("
 							 + "  `id` IDENTITY PRIMARY KEY,"
-							 + "  `script` varchar(1024) NOT NULL,"
+							 + "  `script` varchar(8192) NOT NULL,"
 							 + "  `address` varchar(80) NOT NULL"
 							 + ")";
 			
@@ -395,7 +395,7 @@ public class Wallet extends SqlDB {
 			while(rs.next()) {
 				
 				//Get the details
-				String address 	 = rs.getString("simpleaddress");
+				String address 	 = rs.getString("address");
 				String script 	 = rs.getString("script");
 				
 				//Add to our list

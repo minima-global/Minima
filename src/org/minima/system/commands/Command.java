@@ -26,7 +26,7 @@ import org.minima.system.commands.all.mmrcreate;
 import org.minima.system.commands.all.mmrproof;
 import org.minima.system.commands.all.network;
 import org.minima.system.commands.all.newaddress;
-import org.minima.system.commands.all.newscript;
+import org.minima.system.commands.all.scripts;
 import org.minima.system.commands.all.printmmr;
 import org.minima.system.commands.all.printtree;
 import org.minima.system.commands.all.quit;
@@ -63,7 +63,7 @@ public abstract class Command {
 			new send(), new balance(), new tokencreate(), new tokens(),new getaddress(), new newaddress(), new debugflag(),
 			new incentivecash(), new sshtunnel(), new webhooks(),
 			new backup(), new restore(), new test(), new hashtest(),
-			new runscript(), new tutorial(),new keys(),new newscript(),
+			new runscript(), new tutorial(),new keys(),new scripts(),
 			
 			new txncreate(), new txninput(),new txnlist(),new txnoutput(),new txnstate(),new txnpost(),
 			
