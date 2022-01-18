@@ -27,6 +27,12 @@ public class Wallet extends SqlDB {
 	PreparedStatement SQL_UPDATE_USES 				= null;
 	
 	/**
+	 * Scripts DB
+	 */
+	PreparedStatement SQL_ADD_CUSTOM_SCRIPT 		= null;
+	PreparedStatement SQL_LIST_CUSTOM_SCRIPTS 		= null;
+	
+	/**
 	 * A list of previously used TreeKeys.. no need to reinit them if we have them allready
 	 */
 	Hashtable<String, TreeKey> mTreeKeys = new Hashtable<>();
@@ -49,7 +55,7 @@ public class Wallet extends SqlDB {
 			Statement stmt = mSQLCOnnection.createStatement();
 			
 			//Create main table
-			String create = "CREATE TABLE IF NOT EXISTS `keys` ("
+			String create =   "CREATE TABLE IF NOT EXISTS `keys` ("
 							+ "  `id` IDENTITY PRIMARY KEY,"
 							+ "  `basemodifier` bigint NOT NULL,"
 							+ "  `uses` bigint NOT NULL,"
@@ -61,7 +67,17 @@ public class Wallet extends SqlDB {
 			
 			//Run it..
 			stmt.execute(create);
-					
+			
+			//Create scripts table
+			String scriptsdb = "CREATE TABLE IF NOT EXISTS `scripts` ("
+							 + "  `id` IDENTITY PRIMARY KEY,"
+							 + "  `script` varchar(1024) NOT NULL,"
+							 + "  `address` varchar(80) NOT NULL"
+							 + ")";
+			
+			//Run it..
+			stmt.execute(scriptsdb);
+			
 			//All done..
 			stmt.close();
 			
@@ -69,9 +85,12 @@ public class Wallet extends SqlDB {
 			SQL_CREATE_PUBLIC_KEY 	= mSQLCOnnection.prepareStatement("INSERT IGNORE INTO keys ( basemodifier, uses, privatekey, publickey, script, simpleaddress ) VALUES ( ?, ?, ? ,? ,? ,? )");
 			SQL_GET_ALL_RELEVANT	= mSQLCOnnection.prepareStatement("SELECT * FROM keys");
 			SQL_GET_SCRIPT			= mSQLCOnnection.prepareStatement("SELECT * FROM keys WHERE simpleaddress=?");
-			
 			SQL_UPDATE_USES			= mSQLCOnnection.prepareStatement("UPDATE keys SET uses=? WHERE privatekey=?");
 			SQL_GET_USES			= mSQLCOnnection.prepareStatement("SELECT uses FROM keys WHERE privatekey=?");
+			
+			//ScriptsDB
+			SQL_ADD_CUSTOM_SCRIPT	= mSQLCOnnection.prepareStatement("INSERT IGNORE INTO scripts ( script, address ) VALUES ( ?, ? )");
+			SQL_LIST_CUSTOM_SCRIPTS	= mSQLCOnnection.prepareStatement("SELECT * FROM scripts");
 			
 			mKeyRowChange = true;
 			
@@ -323,5 +342,74 @@ public class Wallet extends SqlDB {
 		
 		//Run the query
 		SQL_UPDATE_USES.execute();
+	}
+	
+	/**
+	 * Add a custom script
+	 */
+	public synchronized KeyRow addScript(String zScript) {
+		
+		//And create the simple spend
+		Address addr  	= new Address(zScript);
+		
+		//Now put all this in the DB
+		try {
+			
+			//Get the Query ready
+			SQL_ADD_CUSTOM_SCRIPT.clearParameters();
+		
+			//Set main params
+			SQL_ADD_CUSTOM_SCRIPT.setString(1, zScript);
+			SQL_ADD_CUSTOM_SCRIPT.setString(2, addr.getAddressData().to0xString());
+			
+			//Do it.
+			SQL_ADD_CUSTOM_SCRIPT.execute();
+			
+			return new KeyRow("", "", addr.getAddressData().to0xString(), zScript);
+			
+		} catch (SQLException e) {
+			MinimaLogger.log(e);
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * Get all your custom scripts
+	 */
+	public synchronized ArrayList<KeyRow> getAllCustomScripts() {
+		
+//		//If nop change use the cached version
+//		if(!mKeyRowChange) {
+//			return mCachedRelevantKeys;
+//		}
+		
+		ArrayList<KeyRow> allkeys = new ArrayList<>();
+		
+		try {
+			
+			//Run the query
+			ResultSet rs = SQL_LIST_CUSTOM_SCRIPTS.executeQuery();
+			
+			//Could be multiple results
+			while(rs.next()) {
+				
+				//Get the details
+				String address 	 = rs.getString("simpleaddress");
+				String script 	 = rs.getString("script");
+				
+				//Add to our list
+				allkeys.add(new KeyRow("", "", address, script));
+			}
+			
+		} catch (SQLException e) {
+			MinimaLogger.log(e);
+		}
+		
+//		//Store for later
+//		mCachedRelevantKeys = allkeys;
+//		mKeyRowChange		= false;
+		
+		return allkeys;
 	}
 }
