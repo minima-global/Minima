@@ -8,7 +8,7 @@ import org.minima.utils.json.JSONObject;
 public class txncreate extends Command {
 
 	public txncreate() {
-		super("txncreate","[id:] - create a transaction");
+		super("txncreate","[id:] - Create a transaction");
 	}
 	
 	@Override

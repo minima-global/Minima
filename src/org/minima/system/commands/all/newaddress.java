@@ -9,7 +9,7 @@ import org.minima.utils.json.JSONObject;
 public class newaddress extends Command {
 
 	public newaddress() {
-		super("newaddress","Create a new address to receive funds");
+		super("newaddress","Create a new address or public key");
 	}
 	
 	@Override
