@@ -12,7 +12,7 @@ import org.minima.utils.json.JSONObject;
 public class txninput extends Command {
 
 	public txninput() {
-		super("txninput","[id:] [coinid:] - Add a coin as an input to a transaction");
+		super("txninput","[id:] [coinid:] (floating:true|false) - Add a coin as an input to a transaction");
 	}
 	
 	@Override
@@ -32,6 +32,10 @@ public class txninput extends Command {
 		if(cc == null) {
 			throw new CommandException("CoinID not found : "+coinid);
 		}
+		
+		//Is it a floating input..
+		boolean floating = getBooleanParam("floating",false);
+		cc.setFloating(floating);
 		
 		//Get the Transaction
 		Transaction trans = db.getTransactionRow(id).getTransaction();
