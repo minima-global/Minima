@@ -40,7 +40,7 @@ public class TxPoWSearcher {
 		
 		//Did we find it
 		if(coins.size()>0) {
-			return coins.get(0);
+			return coins.get(0).deepCopy();
 		}else {
 			return null;
 		}
