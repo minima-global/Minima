@@ -28,6 +28,10 @@ public class TxnRow implements Streamable {
 		mWitness		= zWitness;	
 	}
 	
+	public void setID(String zID) {
+		mID = zID;
+	}
+	
 	public String getID() {
 		return mID;
 	}

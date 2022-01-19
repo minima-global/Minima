@@ -10,7 +10,7 @@ import org.minima.utils.json.JSONObject;
 public class txnimport extends Command {
 
 	public txnimport() {
-		super("txnimport","[data:] - Import a transaction");
+		super("txnimport","[data:] (id:) - Import a transaction. Optionally specify the ID");
 	}
 	
 	@Override
@@ -23,6 +23,9 @@ public class txnimport extends Command {
 		
 		//Convert this..
 		TxnRow txnrow = TxnRow.convertMiniDataVersion(new MiniData(data));
+		if(existsParam("id")) {
+			txnrow.setID(getParam("id"));
+		}
 		
 		db.addCompleteTransaction(txnrow);
 		
