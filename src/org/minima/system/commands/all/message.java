@@ -9,7 +9,7 @@ import org.minima.utils.json.JSONObject;
 public class message extends Command {
 
 	public message() {
-		super("message","(uid:uid) [data:message] - Send a message over the network to your peers");
+		super("message","(uid:uid) [data:message] - Send a message over the network to one of your direct peers");
 	}
 	
 	@Override
