@@ -1,11 +1,14 @@
 package org.minima.system.commands.all;
 
 import org.minima.system.commands.Command;
+import org.minima.system.commands.txn.txnclear;
 import org.minima.system.commands.txn.txncreate;
+import org.minima.system.commands.txn.txndelete;
 import org.minima.system.commands.txn.txninput;
 import org.minima.system.commands.txn.txnlist;
 import org.minima.system.commands.txn.txnoutput;
 import org.minima.system.commands.txn.txnpost;
+import org.minima.system.commands.txn.txnsign;
 import org.minima.system.commands.txn.txnstate;
 import org.minima.utils.json.JSONObject;
 
@@ -41,14 +44,18 @@ public class help extends Command {
 		addCommand(details, new tokens());
 		addCommand(details, new tokencreate());
 		
+		addCommand(details, new scripts());
 		addCommand(details, new runscript());
 		addCommand(details, new tutorial());
 		
-		addCommand(details, new txncreate());
 		addCommand(details, new txnlist());
+		addCommand(details, new txncreate());
+		addCommand(details, new txndelete());
 		addCommand(details, new txninput());
 		addCommand(details, new txnoutput());
 		addCommand(details, new txnstate());
+		addCommand(details, new txnsign());
+		addCommand(details, new txnclear());
 		addCommand(details, new txnpost());
 		
 		addCommand(details, new mmrcreate());
@@ -65,7 +72,6 @@ public class help extends Command {
 		
 		addCommand(details, new backup());
 		addCommand(details, new restore());
-		
 		addCommand(details, new incentivecash());
 		
 		addCommand(details, new quit());
@@ -75,6 +81,7 @@ public class help extends Command {
 		return ret;
 	}
 
+	
 	private void addCommand(JSONObject zDetails, Command zCommand) {
 		zDetails.put(getStrOfLength(15,zCommand.getname()), zCommand.getHelp());
 	}
