@@ -38,17 +38,19 @@ public class help extends Command {
 		addCommand(details, new txpow());
 		addCommand(details, new coins());
 		addCommand(details, new keys());
+		addCommand(details, new tokens());
 		
 		addCommand(details, new newaddress());
 		addCommand(details, new send());
 		addCommand(details, new balance());
-		
-		addCommand(details, new tokens());
 		addCommand(details, new tokencreate());
 		
 		addCommand(details, new scripts());
 		addCommand(details, new runscript());
 		addCommand(details, new tutorial());
+		
+		addCommand(details, new mmrcreate());
+		addCommand(details, new mmrproof());
 		
 		addCommand(details, new txnlist());
 		addCommand(details, new txncreate());
@@ -61,9 +63,6 @@ public class help extends Command {
 		addCommand(details, new txnpost());
 		addCommand(details, new txnimport());
 		addCommand(details, new txnexport());
-		
-		addCommand(details, new mmrcreate());
-		addCommand(details, new mmrproof());
 		
 		addCommand(details, new network());
 		addCommand(details, new maxima());
