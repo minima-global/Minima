@@ -2,7 +2,6 @@ package org.minima.system.commands.txn;
 
 import org.minima.objects.base.MiniData;
 import org.minima.system.commands.Command;
-import org.minima.system.commands.CommandException;
 import org.minima.system.commands.txn.txndb.TxnDB;
 import org.minima.system.commands.txn.txndb.TxnRow;
 import org.minima.utils.json.JSONObject;

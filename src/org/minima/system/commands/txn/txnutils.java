@@ -12,11 +12,8 @@ import org.minima.objects.CoinProof;
 import org.minima.objects.ScriptProof;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
-import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
-import org.minima.objects.keys.Signature;
 import org.minima.system.params.GlobalParams;
-import org.minima.utils.Crypto;
 
 public class txnutils {
 

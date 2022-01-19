@@ -1,7 +1,5 @@
 package org.minima.system.commands.txn;
 
-import java.util.ArrayList;
-
 import org.minima.database.MinimaDB;
 import org.minima.database.wallet.KeyRow;
 import org.minima.database.wallet.Wallet;
@@ -14,7 +12,6 @@ import org.minima.system.commands.CommandException;
 import org.minima.system.commands.txn.txndb.TxnDB;
 import org.minima.system.commands.txn.txndb.TxnRow;
 import org.minima.utils.Crypto;
-import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
 public class txnsign extends Command {

@@ -1,9 +1,8 @@
 package org.minima.utils;
 
-import java.nio.*;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
-import org.bouncycastle.crypto.Digest;
-import org.bouncycastle.crypto.digests.KeccakDigest;
 import org.minima.objects.base.MiniData;
 
 /**

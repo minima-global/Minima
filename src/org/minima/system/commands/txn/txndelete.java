@@ -2,7 +2,6 @@ package org.minima.system.commands.txn;
 
 import org.minima.system.commands.Command;
 import org.minima.system.commands.txn.txndb.TxnDB;
-import org.minima.system.commands.txn.txndb.TxnRow;
 import org.minima.utils.json.JSONObject;
 
 public class txndelete extends Command {

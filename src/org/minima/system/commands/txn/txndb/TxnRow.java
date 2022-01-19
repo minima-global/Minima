@@ -6,7 +6,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 import org.minima.objects.Transaction;
-import org.minima.objects.TxPoW;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniString;

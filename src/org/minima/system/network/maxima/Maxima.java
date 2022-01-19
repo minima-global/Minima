@@ -7,8 +7,6 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.security.KeyPair;
 import java.util.ArrayList;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.userprefs.UserDB;
@@ -20,7 +18,6 @@ import org.minima.system.network.minima.NIOClient;
 import org.minima.system.network.minima.NIOManager;
 import org.minima.system.network.minima.NIOMessage;
 import org.minima.system.params.GeneralParams;
-import org.minima.system.params.GlobalParams;
 import org.minima.utils.BaseConverter;
 import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;

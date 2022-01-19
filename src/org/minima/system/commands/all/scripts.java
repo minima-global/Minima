@@ -7,7 +7,6 @@ import org.minima.database.wallet.KeyRow;
 import org.minima.database.wallet.Wallet;
 import org.minima.kissvm.Contract;
 import org.minima.system.commands.Command;
-import org.minima.system.commands.CommandException;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
