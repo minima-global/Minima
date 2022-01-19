@@ -46,6 +46,8 @@ import org.minima.system.commands.all.webhooks;
 import org.minima.system.commands.txn.txnclear;
 import org.minima.system.commands.txn.txncreate;
 import org.minima.system.commands.txn.txndelete;
+import org.minima.system.commands.txn.txnexport;
+import org.minima.system.commands.txn.txnimport;
 import org.minima.system.commands.txn.txninput;
 import org.minima.system.commands.txn.txnlist;
 import org.minima.system.commands.txn.txnoutput;
@@ -70,6 +72,7 @@ public abstract class Command {
 			
 			new txncreate(), new txninput(),new txnlist(), new txnclear(),
 			new txnoutput(),new txnstate(),new txnsign(),new txnpost(),new txndelete(),
+			new txnexport(),new txnimport(),
 			
 			new maxima(),new mmrcreate(), new mmrproof()};
 	

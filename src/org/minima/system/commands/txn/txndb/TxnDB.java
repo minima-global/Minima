@@ -30,6 +30,14 @@ public class TxnDB implements Streamable {
 		mTransactions.add(new TxnRow(zKey, new Transaction(), new Witness()));
 	}
 	
+	public void addCompleteTransaction(TxnRow zRow) {
+		//Remove the old
+		deleteTransaction(zRow.getID());
+		
+		//Add the new
+		mTransactions.add(zRow);
+	}
+	
 	public TxnRow getTransactionRow(String zKey) {
 		for(TxnRow txn : mTransactions) {
 			if(txn.getID().equals(zKey)) {

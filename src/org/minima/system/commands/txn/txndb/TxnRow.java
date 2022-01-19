@@ -1,12 +1,16 @@
 package org.minima.system.commands.txn.txndb;
 
+import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
 import org.minima.objects.Transaction;
+import org.minima.objects.TxPoW;
 import org.minima.objects.Witness;
+import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniString;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONObject;
 
@@ -15,6 +19,8 @@ public class TxnRow implements Streamable {
 	public String mID;
 	public Transaction 	mTransaction;
 	public Witness 		mWitness;
+	
+	private TxnRow() {}
 	
 	public TxnRow(String zID, Transaction zTransaction, Witness zWitness) {
 		mID 			= zID;
@@ -46,6 +52,30 @@ public class TxnRow implements Streamable {
 		return ret;		
 	}
 
+	/**
+	 * Convert a MiniData version into a TxnRow
+	 */
+	public static TxnRow convertMiniDataVersion(MiniData zTxpData) {
+		ByteArrayInputStream bais 	= new ByteArrayInputStream(zTxpData.getBytes());
+		DataInputStream dis 		= new DataInputStream(bais);
+		
+		TxnRow txnrow = null;
+		
+		try {
+			//Convert data
+			txnrow = TxnRow.ReadFromStream(dis);
+		
+			dis.close();
+			bais.close();
+			
+		} catch (IOException e) {
+			MinimaLogger.log(e);
+		}
+		
+		return txnrow;
+	}
+	
+	
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
 		MiniString.WriteToStream(zOut, mID);
@@ -62,5 +92,11 @@ public class TxnRow implements Streamable {
 		
 		mWitness = new Witness();
 		mWitness.readDataStream(zIn);
+	}
+	
+	public static TxnRow ReadFromStream(DataInputStream zIn) throws IOException {
+		TxnRow txp = new TxnRow();
+		txp.readDataStream(zIn);
+		return txp;
 	}
 }
