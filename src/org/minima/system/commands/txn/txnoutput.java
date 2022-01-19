@@ -30,8 +30,10 @@ public class txnoutput extends Command {
 			tokenid	= getDataParam("tokenid");
 		}
 		
+		boolean storestate = getBooleanParam("storestate", true);
+		
 		//Create the Coin..
-		Coin output = new Coin(Coin.COINID_OUTPUT, address, amount, tokenid);
+		Coin output = new Coin(Coin.COINID_OUTPUT, address, amount, tokenid,false,storestate);
 		
 		//Get the Transaction
 		Transaction trans = db.getTransactionRow(id).getTransaction();

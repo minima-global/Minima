@@ -19,7 +19,7 @@ public class txncreate extends Command {
 		//The transaction
 		String id = getParam("id");
 		
-		if(db.getTransactionRow("id") != null) {
+		if(db.getTransactionRow(id) != null) {
 			throw new CommandException("Txn with this ID already exists : "+id);
 		}
 		

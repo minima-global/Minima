@@ -43,11 +43,14 @@ import org.minima.system.commands.all.trace;
 import org.minima.system.commands.all.tutorial;
 import org.minima.system.commands.all.txpow;
 import org.minima.system.commands.all.webhooks;
+import org.minima.system.commands.txn.txnclear;
 import org.minima.system.commands.txn.txncreate;
+import org.minima.system.commands.txn.txndelete;
 import org.minima.system.commands.txn.txninput;
 import org.minima.system.commands.txn.txnlist;
 import org.minima.system.commands.txn.txnoutput;
 import org.minima.system.commands.txn.txnpost;
+import org.minima.system.commands.txn.txnsign;
 import org.minima.system.commands.txn.txnstate;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
@@ -65,7 +68,8 @@ public abstract class Command {
 			new backup(), new restore(), new test(), new hashtest(),
 			new runscript(), new tutorial(),new keys(),new scripts(),
 			
-			new txncreate(), new txninput(),new txnlist(),new txnoutput(),new txnstate(),new txnpost(),
+			new txncreate(), new txninput(),new txnlist(), new txnclear(),
+			new txnoutput(),new txnstate(),new txnsign(),new txnpost(),new txndelete(),
 			
 			new maxima(),new mmrcreate(), new mmrproof()};
 	
@@ -134,6 +138,18 @@ public abstract class Command {
 			return  true;
 		}
 		return false;
+	}
+	
+	public boolean getBooleanParam(String zParamName, boolean zDefault) throws CommandException {
+		if(existsParam(zParamName)) {
+			if(getParam(zParamName).equals("true")){
+				return  true;
+			}else {
+				return false;
+			}
+		}
+		
+		return zDefault;
 	}
 	
 	public MiniNumber getNumberParam(String zParamName) throws CommandException {

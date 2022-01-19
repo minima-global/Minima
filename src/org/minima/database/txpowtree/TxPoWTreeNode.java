@@ -218,7 +218,7 @@ public class TxPoWTreeNode implements Streamable {
 		for(KeyRow wk : zAllRelevant) {
 			
 			//Is the address one of ours..
-			if(zCoin.getAddress().to0xString().equals(wk.getAddress())) {
+			if(wk.trackAddress() && zCoin.getAddress().to0xString().equals(wk.getAddress())) {
 				return true;
 			}
 			
@@ -227,9 +227,12 @@ public class TxPoWTreeNode implements Streamable {
 			for(StateVariable sv : state) {
 				
 				if(sv.getType().isEqual(StateVariable.STATETYPE_HEX)) {
-					
 					String svstr = sv.toString();
-					if(svstr.equals(wk.getPublicKey()) || svstr.equals(wk.getAddress())){
+					
+					//Custom scripts have no public key..
+					if(!wk.getPublicKey().equals("") && svstr.equals(wk.getPublicKey())) {
+						return true;
+					}else if(wk.trackAddress() && svstr.equals(wk.getAddress())){
 						return true;
 					}
 				}

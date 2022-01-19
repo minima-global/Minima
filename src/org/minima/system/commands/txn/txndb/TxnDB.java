@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 
 import org.minima.objects.Transaction;
+import org.minima.objects.Witness;
 import org.minima.system.commands.all.newaddress;
 import org.minima.utils.Streamable;
 
@@ -26,7 +27,7 @@ public class TxnDB implements Streamable {
 			throw new Exception("Transaction with this ID already exists..");
 		}
 		
-		mTransactions.add(new TxnRow(zKey, new Transaction()));
+		mTransactions.add(new TxnRow(zKey, new Transaction(), new Witness()));
 	}
 	
 	public TxnRow getTransactionRow(String zKey) {
@@ -38,14 +39,19 @@ public class TxnDB implements Streamable {
 		return null;
 	}
 	
-	public void deleteTransaction(String zKey) {
+	public boolean deleteTransaction(String zKey) {
+		boolean found = false;
 		ArrayList<TxnRow> transactions = new ArrayList<>();
 		for(TxnRow txn : mTransactions) {
 			if(!txn.getID().equals(zKey)) {
 				transactions.add(txn);
+			}else {
+				found = true;
 			}
 		}
 		mTransactions = transactions;
+		
+		return found;
 	}
 	
 	public ArrayList<TxnRow> listTxns(){

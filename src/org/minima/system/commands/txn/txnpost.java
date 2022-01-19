@@ -1,9 +1,5 @@
 package org.minima.system.commands.txn;
 
-import java.util.ArrayList;
-
-import org.minima.objects.Coin;
-import org.minima.objects.StateVariable;
 import org.minima.objects.Transaction;
 import org.minima.objects.TxPoW;
 import org.minima.objects.Witness;
@@ -11,6 +7,7 @@ import org.minima.system.Main;
 import org.minima.system.brains.TxPoWGenerator;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.txn.txndb.TxnDB;
+import org.minima.system.commands.txn.txndb.TxnRow;
 import org.minima.utils.json.JSONObject;
 
 public class txnpost extends Command {
@@ -26,16 +23,20 @@ public class txnpost extends Command {
 		TxnDB db = TxnDB.getDB();
 		
 		//The transaction
-		String id 			= getParam("id");
+		String id = getParam("id");
+		
+		//Get the row..
+		TxnRow txnrow = db.getTransactionRow(id); 
 		
 		//Get the Transaction
-		Transaction trans = db.getTransactionRow(id).getTransaction();
+		Transaction trans = txnrow.getTransaction();
+		Witness wit		  = txnrow.getWitness();
 		
-		//Create a Witness..
-		Witness witness = txnutils.createWitness(trans);
+		//Set the MMR data and Scripts
+		txnutils.setMMRandScripts(trans, wit);
 		
 		//Now create the TxPoW
-		TxPoW txpow = TxPoWGenerator.generateTxPoW(trans, witness);
+		TxPoW txpow = TxPoWGenerator.generateTxPoW(trans, wit);
 		
 		//Calculate the size..
 		txpow.calculateTXPOWID();

@@ -14,7 +14,7 @@ import org.minima.utils.json.JSONObject;
 public class scripts extends Command {
 
 	public scripts() {
-		super("scripts","[action:list|newscript] (script:) - Create a new custom script to track or list all scripts");
+		super("scripts","[action:list|newscript] (script:) (trackall:true|false)- Create a new custom script to track or list all scripts");
 	}
 	
 	@Override
@@ -42,12 +42,13 @@ public class scripts extends Command {
 		}else {
 			//Get the script
 			String script = getParam("script");
+			boolean track = getBooleanParam("trackall",true);
 			
 			//Clean the script
 			script = Contract.cleanScript(script);
 			
 			//Now add it to the DB
-			KeyRow krow = wallet.addScript(script);
+			KeyRow krow = wallet.addScript(script,track);
 			
 			//Put the details in the response..
 			ret.put("response", krow.toJSON());

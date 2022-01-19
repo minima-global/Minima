@@ -188,7 +188,7 @@ public class send extends Command {
 			
 			//Add the script proofs
 			String scraddress 	= input.getAddress().to0xString();
-			KeyRow keyrow 		= walletdb.getKeysRow(scraddress); 
+			KeyRow keyrow 		= walletdb.getKeysRowFromAddress(scraddress); 
 			if(keyrow == null) {
 				throw new Exception("SERIOUS ERROR script missing for simple address : "+scraddress);
 			}

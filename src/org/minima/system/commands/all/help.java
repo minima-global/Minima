@@ -32,6 +32,7 @@ public class help extends Command {
 		
 		addCommand(details, new txpow());
 		addCommand(details, new coins());
+		addCommand(details, new keys());
 		
 		addCommand(details, new newaddress());
 		addCommand(details, new send());
