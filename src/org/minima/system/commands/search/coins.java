@@ -4,6 +4,8 @@ import java.util.ArrayList;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
+import org.minima.database.wallet.KeyRow;
+import org.minima.database.wallet.Wallet;
 import org.minima.objects.Coin;
 import org.minima.objects.base.MiniData;
 import org.minima.system.brains.TxPoWSearcher;
@@ -14,7 +16,7 @@ import org.minima.utils.json.JSONObject;
 public class coins extends Command {
 
 	public coins() {
-		super("coins","(relevant:true) (coinid:) (address:) (tokenid:) - Search for specific coins");
+		super("coins","(relevant:true) (simple:true) (coinid:) (address:) (tokenid:) - Search for specific coins");
 	}
 	
 	@Override
@@ -28,6 +30,7 @@ public class coins extends Command {
 		
 		//Get the txpowid
 		boolean relevant	= existsParam("relevant");
+		boolean simple		= getBooleanParam("simple",false);
 		
 		boolean scoinid		= existsParam("coinid");
 		MiniData coinid		= MiniData.ZERO_TXPOWID;
@@ -56,9 +59,34 @@ public class coins extends Command {
 															saddress, address, 
 															stokenid, tokenid);
 		
+		
+		//Are we only showing simple Coins..
+		ArrayList<Coin> finalcoins = coins;
+		if(simple) {
+			finalcoins = new ArrayList<>();
+			
+			//Get the wallet..
+			Wallet wallet = MinimaDB.getDB().getWallet();
+			
+			//Get all the keys
+			ArrayList<KeyRow> keys = wallet.getAllRelevant();
+			
+			//Now cycle through the coins
+			for(Coin cc : coins) {
+				for(KeyRow kr : keys) {
+					//Is it a simple key
+					if(!kr.getPublicKey().equals("")) {
+						if(cc.getAddress().isEqual(new MiniData(kr.getAddress()))) {
+							finalcoins.add(cc);
+						}
+					}
+				}
+			}
+		}
+		
 		//Put it all in an array
 		JSONArray coinarr = new JSONArray();
-		for(Coin cc : coins) {
+		for(Coin cc : finalcoins) {
 			coinarr.add(cc.toJSON());
 		}
 		
