@@ -10,6 +10,8 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.system.brains.TxPoWSearcher;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
+import org.minima.system.params.GeneralParams;
+import org.minima.system.params.GlobalParams;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
@@ -38,7 +40,12 @@ public class coinexport extends Command {
 		TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
 		
 		//How far back shall we go..
-		MiniNumber back = tip.getBlockNumber().sub(new MiniNumber(256));
+		MiniNumber history = new MiniNumber(256);
+		if(GeneralParams.TEST_PARAMS) {
+			history = new MiniNumber(8);
+		}
+		
+		MiniNumber back = tip.getBlockNumber().sub(history);
 		if(back.isLess(created)) {
 			back = created;
 		}
@@ -51,8 +58,6 @@ public class coinexport extends Command {
 		
 		//Create the CoinProof..
 		CoinProof cp = new CoinProof(coin, proof);
-		
-		MinimaLogger.log(cp.toJSON().toString());
 		
 		//And create the Data version
 		MiniData dataproof = MiniData.getMiniDataVersion(cp);

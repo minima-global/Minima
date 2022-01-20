@@ -29,6 +29,15 @@ public class coinimport extends Command {
 		//Convert to a coin proof..
 		CoinProof cp = CoinProof.convertMiniDataVersion(new MiniData(data));
 		
+		//Get the tip
+		TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
+				
+		//Now check that proof..
+		boolean valid = tip.getMMR().checkProofTimeValid(cp.getCoin().getMMREntryNumber(), cp.getMMRData(), cp.getMMRProof());
+		if(!valid) {
+			throw new CommandException("Invalid MMR Proof");
+		}
+		
 		ret.put("response", cp.toJSON());
 		
 		return ret;
