@@ -134,7 +134,7 @@ public class tokencreate extends Command {
 		}
 		
 		//Lets build a transaction.. MUST use Minima to create a token!
-		ArrayList<Coin> relcoins = TxPoWSearcher.getRelevantUnspentCoins(tip,"0x00");
+		ArrayList<Coin> relcoins = TxPoWSearcher.getRelevantUnspentCoins(tip,"0x00",true);
 		
 		//The current total
 		MiniNumber currentamount 	= MiniNumber.ZERO;

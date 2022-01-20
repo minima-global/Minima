@@ -331,7 +331,7 @@ public class TxPoWTreeNode implements Streamable {
 	public void copyParentRelevantCoins() {
 		
 		//Now copy all the MMR Coins.. 
-		ArrayList<Coin> unspentcoins = TxPoWSearcher.getRelevantUnspentCoins(getParent());
+		ArrayList<Coin> unspentcoins = TxPoWSearcher.getAllRelevantUnspentCoins(getParent());
 		
 		//We may be adding..
 		mMMR.setFinalized(false);

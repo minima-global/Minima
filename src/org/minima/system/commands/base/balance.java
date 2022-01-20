@@ -45,7 +45,7 @@ public class balance extends Command {
 		ArrayList<Coin> coins = null;
 		try {
 			//Get all the Unspent Coins..
-			coins = TxPoWSearcher.getRelevantUnspentCoins(txptree.getTip());
+			coins = TxPoWSearcher.getAllRelevantUnspentCoins(txptree.getTip());
 		
 		}catch(Exception exc) {
 			texc = exc;

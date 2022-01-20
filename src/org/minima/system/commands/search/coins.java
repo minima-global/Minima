@@ -57,36 +57,11 @@ public class coins extends Command {
 		ArrayList<Coin> coins = TxPoWSearcher.searchCoins(	tip, relevant, 
 															scoinid, coinid, 
 															saddress, address, 
-															stokenid, tokenid);
-		
-		
-		//Are we only showing simple Coins..
-		ArrayList<Coin> finalcoins = coins;
-		if(simple) {
-			finalcoins = new ArrayList<>();
-			
-			//Get the wallet..
-			Wallet wallet = MinimaDB.getDB().getWallet();
-			
-			//Get all the keys
-			ArrayList<KeyRow> keys = wallet.getAllRelevant();
-			
-			//Now cycle through the coins
-			for(Coin cc : coins) {
-				for(KeyRow kr : keys) {
-					//Is it a simple key
-					if(!kr.getPublicKey().equals("")) {
-						if(cc.getAddress().isEqual(new MiniData(kr.getAddress()))) {
-							finalcoins.add(cc);
-						}
-					}
-				}
-			}
-		}
+															stokenid, tokenid, simple);
 		
 		//Put it all in an array
 		JSONArray coinarr = new JSONArray();
-		for(Coin cc : finalcoins) {
+		for(Coin cc : coins) {
 			coinarr.add(cc.toJSON());
 		}
 		

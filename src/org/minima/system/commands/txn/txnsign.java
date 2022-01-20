@@ -15,6 +15,7 @@ import org.minima.objects.keys.Signature;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
 import org.minima.utils.Crypto;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
 
 public class txnsign extends Command {
@@ -51,6 +52,11 @@ public class txnsign extends Command {
 				
 				KeyRow keyrow = walletdb.getKeysRowFromAddress(cc.getAddress().to0xString()); 
 				if(keyrow == null) {
+					txnrow.clearWitness();
+					throw new CommandException("ERROR : Script not found for address : "+cc.getAddress().to0xString());
+				
+					//Is it a simple row..
+				}else if(keyrow.getPublicKey().equals("")) {
 					txnrow.clearWitness();
 					throw new CommandException("NON-Simple coin found at coin : "+cc.getAddress().to0xString());
 				}

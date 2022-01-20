@@ -79,7 +79,7 @@ public class send extends Command {
 		TxPoWMiner txminer 	= Main.getInstance().getTxPoWMiner();
 		
 		//Lets build a transaction..
-		ArrayList<Coin> relcoins = TxPoWSearcher.getRelevantUnspentCoins(tip,tokenid);
+		ArrayList<Coin> relcoins = TxPoWSearcher.getRelevantUnspentCoins(tip,tokenid,true);
 		
 		//The current total
 		MiniNumber currentamount 	= MiniNumber.ZERO;
