@@ -29,6 +29,11 @@ public class coinimport extends Command {
 		//Convert to a coin proof..
 		CoinProof cp = CoinProof.convertMiniDataVersion(new MiniData(data));
 		
+		//Check is UNSPENT..
+		if(cp.getCoin().getSpent()) {
+			throw new CommandException("Coin is spent. Can only import UNSPENT coins.");
+		}
+		
 		//Get the tip
 		TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
 				
@@ -37,6 +42,9 @@ public class coinimport extends Command {
 		if(!valid) {
 			throw new CommandException("Invalid MMR Proof");
 		}
+		
+		//Ok.. now we have to add this to OUR TreeNode MMR..
+		
 		
 		ret.put("response", cp.toJSON());
 		
