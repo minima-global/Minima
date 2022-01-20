@@ -43,6 +43,7 @@ import org.minima.system.commands.search.coins;
 import org.minima.system.commands.search.keys;
 import org.minima.system.commands.search.scripts;
 import org.minima.system.commands.search.txpow;
+import org.minima.system.commands.txn.txncheck;
 import org.minima.system.commands.txn.txnclear;
 import org.minima.system.commands.txn.txncreate;
 import org.minima.system.commands.txn.txndelete;
@@ -72,7 +73,7 @@ public abstract class Command {
 			
 			new txncreate(), new txninput(),new txnlist(), new txnclear(),
 			new txnoutput(),new txnstate(),new txnsign(),new txnpost(),new txndelete(),
-			new txnexport(),new txnimport(),
+			new txnexport(),new txnimport(),new txncheck(),
 			
 			new maxima(),new mmrcreate(), new mmrproof()};
 	

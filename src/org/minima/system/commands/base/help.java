@@ -13,6 +13,7 @@ import org.minima.system.commands.search.coins;
 import org.minima.system.commands.search.keys;
 import org.minima.system.commands.search.scripts;
 import org.minima.system.commands.search.txpow;
+import org.minima.system.commands.txn.txncheck;
 import org.minima.system.commands.txn.txnclear;
 import org.minima.system.commands.txn.txncreate;
 import org.minima.system.commands.txn.txndelete;
@@ -67,6 +68,7 @@ public class help extends Command {
 		addCommand(details, new txnlist());
 		addCommand(details, new txncreate());
 		addCommand(details, new txndelete());
+		addCommand(details, new txncheck());
 		addCommand(details, new txninput());
 		addCommand(details, new txnoutput());
 		addCommand(details, new txnstate());

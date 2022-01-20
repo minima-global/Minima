@@ -1,10 +1,13 @@
 package org.minima.system.commands.txn;
 
+import java.util.ArrayList;
+
 import org.minima.database.MinimaDB;
 import org.minima.database.userprefs.txndb.TxnDB;
 import org.minima.database.userprefs.txndb.TxnRow;
 import org.minima.database.wallet.KeyRow;
 import org.minima.database.wallet.Wallet;
+import org.minima.objects.Coin;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
@@ -17,7 +20,7 @@ import org.minima.utils.json.JSONObject;
 public class txnsign extends Command {
 
 	public txnsign() {
-		super("txnsign","[id:] [publickey:] - Sign a transaction");
+		super("txnsign","[id:] [publickey:0x..|auto] - Sign a transaction");
 	}
 	
 	@Override
@@ -36,19 +39,42 @@ public class txnsign extends Command {
 		
 		//Calculate the TransactionID..
 		MiniData transid = Crypto.getInstance().hashObject(txn);
-		
-		//Get the Private key..
+	
+		//Get the Wallet
 		Wallet walletdb = MinimaDB.getDB().getWallet();
-		KeyRow pubrow 	= walletdb.getKeysRowFromPublicKey(pubk);
-		if(pubrow == null) {
-			throw new CommandException("Public Key not found");
-		}
 		
-		//Use the wallet..
-		Signature signature = walletdb.sign(pubrow.getPrivateKey(), transid);
+		//Are we auto signing.. if all the coin inputs are simple
+		if(pubk.equals("auto")) {
 			
-		//Add it..
-		wit.addSignature(signature);
+			ArrayList<Coin> inputs = txn.getAllInputs();
+			for(Coin cc : inputs) {
+				
+				KeyRow keyrow = walletdb.getKeysRowFromAddress(cc.getAddress().to0xString()); 
+				if(keyrow == null) {
+					txnrow.clearWitness();
+					throw new CommandException("NON-Simple coin found at coin : "+cc.getAddress().to0xString());
+				}
+				
+				//Now sign with that..
+				Signature signature = walletdb.sign(keyrow.getPrivateKey(), transid);
+					
+				//Add it..
+				wit.addSignature(signature);
+			}
+			
+		}else {
+			//Get the Private key..
+			KeyRow pubrow 	= walletdb.getKeysRowFromPublicKey(pubk);
+			if(pubrow == null) {
+				throw new CommandException("Public Key not found : "+pubk);
+			}
+			
+			//Use the wallet..
+			Signature signature = walletdb.sign(pubrow.getPrivateKey(), transid);
+				
+			//Add it..
+			wit.addSignature(signature);
+		}
 		
 		JSONObject resp = new JSONObject();
 		ret.put("response", txnrow.toJSON());
