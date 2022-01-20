@@ -1,4 +1,4 @@
-package org.minima.system.commands.search;
+package org.minima.system.commands.base;
 
 import java.util.ArrayList;
 
@@ -13,7 +13,7 @@ import org.minima.utils.json.JSONObject;
 public class scripts extends Command {
 
 	public scripts() {
-		super("scripts","[action:list|newscript] (script:) (trackall:true|false)- Create a new custom script to track or list all scripts");
+		super("scripts","[action:list|newscript] (trackall:true|false) (script:) - Create a new custom script to track or list all scripts");
 	}
 	
 	@Override
@@ -41,7 +41,7 @@ public class scripts extends Command {
 		}else {
 			//Get the script
 			String script = getParam("script");
-			boolean track = getBooleanParam("trackall",true);
+			boolean track = getBooleanParam("trackall");
 			
 			//Clean the script
 			script = Contract.cleanScript(script);

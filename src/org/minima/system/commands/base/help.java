@@ -11,7 +11,6 @@ import org.minima.system.commands.network.sshtunnel;
 import org.minima.system.commands.network.webhooks;
 import org.minima.system.commands.search.coins;
 import org.minima.system.commands.search.keys;
-import org.minima.system.commands.search.scripts;
 import org.minima.system.commands.search.txpow;
 import org.minima.system.commands.txn.txncheck;
 import org.minima.system.commands.txn.txnclear;
