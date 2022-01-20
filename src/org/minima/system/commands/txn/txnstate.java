@@ -1,9 +1,10 @@
 package org.minima.system.commands.txn;
 
+import org.minima.database.MinimaDB;
+import org.minima.database.userprefs.txndb.TxnDB;
 import org.minima.objects.StateVariable;
 import org.minima.objects.Transaction;
 import org.minima.system.commands.Command;
-import org.minima.system.commands.txn.txndb.TxnDB;
 import org.minima.utils.json.JSONObject;
 
 public class txnstate extends Command {
@@ -16,7 +17,7 @@ public class txnstate extends Command {
 	public JSONObject runCommand() throws Exception {
 		JSONObject ret = getJSONReply();
 
-		TxnDB db = TxnDB.getDB();
+		TxnDB db = MinimaDB.getDB().getCustomTxnDB();
 		
 		//The transaction
 		String id 			= getParam("id");

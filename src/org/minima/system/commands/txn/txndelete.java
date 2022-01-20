@@ -1,7 +1,8 @@
 package org.minima.system.commands.txn;
 
+import org.minima.database.MinimaDB;
+import org.minima.database.userprefs.txndb.TxnDB;
 import org.minima.system.commands.Command;
-import org.minima.system.commands.txn.txndb.TxnDB;
 import org.minima.utils.json.JSONObject;
 
 public class txndelete extends Command {
@@ -14,7 +15,7 @@ public class txndelete extends Command {
 	public JSONObject runCommand() throws Exception {
 		JSONObject ret = getJSONReply();
 
-		TxnDB db = TxnDB.getDB();
+		TxnDB db = MinimaDB.getDB().getCustomTxnDB();
 		
 		String id 	= getParam("id");
 		

@@ -1,8 +1,9 @@
 package org.minima.system.commands.txn;
 
+import org.minima.database.MinimaDB;
+import org.minima.database.userprefs.txndb.TxnDB;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
-import org.minima.system.commands.txn.txndb.TxnDB;
 import org.minima.utils.json.JSONObject;
 
 public class txncreate extends Command {
@@ -14,7 +15,7 @@ public class txncreate extends Command {
 	@Override
 	public JSONObject runCommand() throws Exception {
 		
-		TxnDB db = TxnDB.getDB();
+		TxnDB db = MinimaDB.getDB().getCustomTxnDB();
 		
 		//The transaction
 		String id = getParam("id");

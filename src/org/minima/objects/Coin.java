@@ -230,6 +230,10 @@ public class Coin implements Streamable {
 			obj.put("token", null);
 		}else {
 			obj.put("token", mToken.toJSON());
+			
+			//What is the tokenamount..
+			MiniNumber tokenamt = getToken().getScaledTokenAmount(getAmount());
+			obj.put("tokenamount", tokenamt.toString());
 		}
 		
 		obj.put("floating", mFloating);

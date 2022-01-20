@@ -1,12 +1,13 @@
 package org.minima.system.commands.txn;
 
+import org.minima.database.MinimaDB;
+import org.minima.database.userprefs.txndb.TxnDB;
 import org.minima.objects.Coin;
 import org.minima.objects.Transaction;
 import org.minima.objects.base.MiniData;
 import org.minima.system.brains.TxPoWSearcher;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
-import org.minima.system.commands.txn.txndb.TxnDB;
 import org.minima.utils.json.JSONObject;
 
 public class txninput extends Command {
@@ -19,7 +20,7 @@ public class txninput extends Command {
 	public JSONObject runCommand() throws Exception {
 		JSONObject ret = getJSONReply();
 
-		TxnDB db = TxnDB.getDB();
+		TxnDB db = MinimaDB.getDB().getCustomTxnDB();
 		
 		//The transaction
 		String id = getParam("id");

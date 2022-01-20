@@ -1,4 +1,4 @@
-package org.minima.system.commands.txn.txndb;
+package org.minima.database.userprefs.txndb;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;

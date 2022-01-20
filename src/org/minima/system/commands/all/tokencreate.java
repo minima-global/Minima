@@ -24,6 +24,7 @@ import org.minima.system.brains.TxPoWGenerator;
 import org.minima.system.brains.TxPoWMiner;
 import org.minima.system.brains.TxPoWSearcher;
 import org.minima.system.commands.Command;
+import org.minima.system.commands.CommandException;
 import org.minima.system.params.GlobalParams;
 import org.minima.utils.Crypto;
 import org.minima.utils.json.JSONObject;
@@ -40,7 +41,7 @@ public class tokencreate extends Command {
 		
 		//Check the basics..
 		if(!existsParam("name") || !existsParam("amount")) {
-			throw new Exception("MUST specify name and amount");
+			throw new CommandException("MUST specify name and amount");
 		}
 		
 		//Is name a JSON
@@ -82,7 +83,7 @@ public class tokencreate extends Command {
 		
 		//Now construct the txn..
 		if(name==null || amount==null) {
-			throw new Exception("MUST specify name and amount");
+			throw new CommandException("MUST specify name and amount");
 		}
 		
 		//The actual amount of tokens..
@@ -91,7 +92,7 @@ public class tokencreate extends Command {
 		//Safety check Amount is within tolerant levels.. could use ALL their Minima otherwise..
 		//This is not set by consensus - could be more - just for safety
 		if(totaltoks.isMore(MiniNumber.TRILLION)) {
-			throw new Exception("MAX 1 Trillion coins for a token");
+			throw new CommandException("MAX 1 Trillion coins for a token");
 		}
 		
 		//Decimals as a number
@@ -208,7 +209,7 @@ public class tokencreate extends Command {
 		TxPoWTreeNode mmrnode = tip.getPastNode(tip.getBlockNumber().sub(blockdiff));
 		if(mmrnode == null) {
 			//Not enough blocks..
-			throw new Exception("Not enough blocks in chain to make valid MMR Proofs..");
+			throw new CommandException("Not enough blocks in chain to make valid MMR Proofs..");
 		}
 		
 		//Get the main Wallet
@@ -233,7 +234,7 @@ public class tokencreate extends Command {
 			String scraddress 	= input.getAddress().to0xString();
 			KeyRow keyrow 		= walletdb.getKeysRowFromAddress(scraddress); 
 			if(keyrow == null) {
-				throw new Exception("SERIOUS ERROR script missing for simple address : "+scraddress);
+				throw new CommandException("SERIOUS ERROR script missing for simple address : "+scraddress);
 			}
 			
 			ScriptProof pscr = new ScriptProof(keyrow.getScript());

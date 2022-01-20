@@ -1,6 +1,8 @@
 package org.minima.system.commands.txn;
 
 import org.minima.database.MinimaDB;
+import org.minima.database.userprefs.txndb.TxnDB;
+import org.minima.database.userprefs.txndb.TxnRow;
 import org.minima.database.wallet.KeyRow;
 import org.minima.database.wallet.Wallet;
 import org.minima.objects.Transaction;
@@ -9,8 +11,6 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.keys.Signature;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
-import org.minima.system.commands.txn.txndb.TxnDB;
-import org.minima.system.commands.txn.txndb.TxnRow;
 import org.minima.utils.Crypto;
 import org.minima.utils.json.JSONObject;
 
@@ -24,7 +24,7 @@ public class txnsign extends Command {
 	public JSONObject runCommand() throws Exception {
 		JSONObject ret = getJSONReply();
 
-		TxnDB db = TxnDB.getDB();
+		TxnDB db = MinimaDB.getDB().getCustomTxnDB();
 		
 		String id 	= getParam("id");
 		String pubk	= getParam("publickey");

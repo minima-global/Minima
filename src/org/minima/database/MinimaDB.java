@@ -9,6 +9,7 @@ import org.minima.database.cascade.Cascade;
 import org.minima.database.txpowdb.TxPoWDB;
 import org.minima.database.txpowtree.TxPowTree;
 import org.minima.database.userprefs.UserDB;
+import org.minima.database.userprefs.txndb.TxnDB;
 import org.minima.database.wallet.Wallet;
 import org.minima.system.network.p2p.P2PDB;
 import org.minima.system.params.GeneralParams;
@@ -33,6 +34,7 @@ public class MinimaDB {
 	TxPowTree 		mTxPoWTree;
 	Cascade			mCacscade;
 	UserDB			mUserDB;
+	TxnDB			mTxnDB;
 	Wallet			mWallet;
 	
 	/**
@@ -134,6 +136,10 @@ public class MinimaDB {
 		return mUserDB;
 	}
 	
+	public TxnDB getCustomTxnDB() {
+		return mTxnDB;
+	}
+	
 	public Wallet getWallet() {
 		return mWallet;
 	}
@@ -175,6 +181,10 @@ public class MinimaDB {
 			
 			//Load the User Prefs
 			mUserDB.loadDB(new File(basedb,"userprefs.db"));
+			
+			//Load the custom Txns..
+			mTxnDB = new TxnDB();
+			mTxnDB.loadDB();
 			
 			//Load the Cascade
 			mCacscade.loadDB(new File(basedb,"cascade.db"));
@@ -232,6 +242,7 @@ public class MinimaDB {
 			File basedb = getBaseDBFolder();
 			
 			//JsonDBs
+			mTxnDB.saveDB();
 			mUserDB.saveDB(new File(basedb,"userprefs.db"));
 			mP2PDB.saveDB(new File(basedb,"p2p.db"));
 			
