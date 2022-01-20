@@ -13,7 +13,7 @@ import org.minima.database.userprefs.UserDB;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
-import org.minima.system.commands.all.connect;
+import org.minima.system.commands.network.connect;
 import org.minima.system.network.minima.NIOClient;
 import org.minima.system.network.minima.NIOManager;
 import org.minima.system.network.minima.NIOMessage;
