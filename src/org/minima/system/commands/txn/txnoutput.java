@@ -7,6 +7,7 @@ import org.minima.objects.Token;
 import org.minima.objects.Transaction;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.system.brains.TxPoWSearcher;
 import org.minima.system.commands.Command;
 import org.minima.utils.json.JSONObject;
 
@@ -26,15 +27,27 @@ public class txnoutput extends Command {
 		String id 			= getParam("id");
 		MiniNumber amount	= getNumberParam("amount");
 		MiniData address	= getDataParam("address");
+		boolean storestate 	= getBooleanParam("storestate", true);
+		
+		//Could be a token..
 		MiniData tokenid	= Token.TOKENID_MINIMA;
+		Token token 		= null;
 		if(existsParam("tokenid")) {
 			tokenid	= getDataParam("tokenid");
+			token	= TxPoWSearcher.getToken(tokenid);
 		}
 		
-		boolean storestate = getBooleanParam("storestate", true);
+		//The actual amount
+		MiniNumber miniamount = amount;
+		if(token != null) {
+			miniamount = token.getScaledMinimaAmount(amount);
+		}
 		
 		//Create the Coin..
-		Coin output = new Coin(Coin.COINID_OUTPUT, address, amount, tokenid,false,storestate);
+		Coin output = new Coin(Coin.COINID_OUTPUT, address, miniamount, tokenid,false,storestate);
+		if(token != null) {
+			output.setToken(token);
+		}
 		
 		//Get the Transaction
 		Transaction trans = db.getTransactionRow(id).getTransaction();

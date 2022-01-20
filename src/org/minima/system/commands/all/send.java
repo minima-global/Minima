@@ -24,6 +24,7 @@ import org.minima.system.brains.TxPoWGenerator;
 import org.minima.system.brains.TxPoWMiner;
 import org.minima.system.brains.TxPoWSearcher;
 import org.minima.system.commands.Command;
+import org.minima.system.commands.CommandException;
 import org.minima.system.params.GlobalParams;
 import org.minima.utils.Crypto;
 import org.minima.utils.json.JSONArray;
@@ -45,7 +46,7 @@ public class send extends Command {
 		String amount  = (String)getParams().get("amount");
 		
 		if(address==null || amount==null) {
-			throw new Exception("MUST specify adress and amount");
+			throw new CommandException("MUST specify adress and amount");
 		}
 		
 		//How much are we sending..
@@ -165,7 +166,7 @@ public class send extends Command {
 		TxPoWTreeNode mmrnode = tip.getPastNode(tip.getBlockNumber().sub(blockdiff));
 		if(mmrnode == null) {
 			//Not enough blocks..
-			throw new Exception("Not enough blocks in chain to make valid MMR Proofs..");
+			throw new CommandException("Not enough blocks in chain to make valid MMR Proofs..");
 		}
 		
 		//Get the main Wallet
@@ -190,7 +191,7 @@ public class send extends Command {
 			String scraddress 	= input.getAddress().to0xString();
 			KeyRow keyrow 		= walletdb.getKeysRowFromAddress(scraddress); 
 			if(keyrow == null) {
-				throw new Exception("SERIOUS ERROR script missing for simple address : "+scraddress);
+				throw new CommandException("SERIOUS ERROR script missing for simple address : "+scraddress);
 			}
 			
 			ScriptProof pscr = new ScriptProof(keyrow.getScript());

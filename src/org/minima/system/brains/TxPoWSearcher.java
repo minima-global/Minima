@@ -160,6 +160,33 @@ public class TxPoWSearcher {
 		
 		return tokens;
 	}
+	
+	public static Token getToken(MiniData zTokenID) {
+		
+		//Start node position
+		TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
+		
+		//Now cycle through and get all your coins..
+		while(tip != null) {
+
+			//Get ALL the coins..
+			ArrayList<Coin> coins = tip.getAllCoins();
+			
+			//Get the details..
+			for(Coin coin : coins) {
+				
+				//Is this the one..
+				if(coin.getTokenID().equals(zTokenID)) {
+					return coin.getToken();
+				}
+			}
+			
+			//And move back up the tree
+			tip = tip.getParent();
+		}
+		
+		return null;
+	}
 }
 
 		

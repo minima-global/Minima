@@ -1,4 +1,4 @@
-package org.minima.system.commands.all;
+package org.minima.system.commands.search;
 
 import org.minima.database.MinimaDB;
 import org.minima.objects.TxPoW;

@@ -1,6 +1,10 @@
 package org.minima.system.commands.all;
 
 import org.minima.system.commands.Command;
+import org.minima.system.commands.search.coins;
+import org.minima.system.commands.search.keys;
+import org.minima.system.commands.search.scripts;
+import org.minima.system.commands.search.txpow;
 import org.minima.system.commands.txn.txnclear;
 import org.minima.system.commands.txn.txncreate;
 import org.minima.system.commands.txn.txndelete;
