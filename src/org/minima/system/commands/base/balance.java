@@ -5,6 +5,8 @@ import java.util.Hashtable;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.txpowtree.TxPowTree;
+import org.minima.database.wallet.KeyRow;
+import org.minima.database.wallet.Wallet;
 import org.minima.objects.Coin;
 import org.minima.objects.Token;
 import org.minima.objects.base.MiniNumber;
@@ -38,26 +40,20 @@ public class balance extends Command {
 		Hashtable<String, Token> tokens 			= new Hashtable<>();
 		Hashtable<String, MiniNumber> confirmed 	= new Hashtable<>();
 		Hashtable<String, MiniNumber> unconfirmed 	= new Hashtable<>();
+		Hashtable<String, MiniNumber> sendable 		= new Hashtable<>();
 		
-		//No change allowed whilst we are doing this..
-		MinimaDB.getDB().readLock(true);
-		
-		ArrayList<Coin> coins = null;
-		try {
-			//Get all the Unspent Coins..
-			coins = TxPoWSearcher.getAllRelevantUnspentCoins(txptree.getTip());
-		
-		}catch(Exception exc) {
-			texc = exc;
+		//Get the wallet.. to find the sendable coins..
+		Wallet wdb = MinimaDB.getDB().getWallet();
+		ArrayList<KeyRow> keys 					= wdb.getAllRelevant();
+		ArrayList<String> sendableaddresses 	= new ArrayList<>();
+		for(KeyRow key : keys) {
+			if(!key.getPublicKey().equals("")) {
+				sendableaddresses.add(key.getAddress());
+			}
 		}
 		
-		//No change allowed whilst we are doing this..
-		MinimaDB.getDB().readLock(false);
-		
-		//Check for exception..
-		if(texc != null) {
-			throw texc;
-		}
+		//Get the coins..
+		ArrayList<Coin> coins = TxPoWSearcher.getAllRelevantUnspentCoins(txptree.getTip());
 			
 		//What is the top block
 		MiniNumber topblock = txptree.getTip().getBlockNumber();
@@ -83,9 +79,11 @@ public class balance extends Command {
 			MiniNumber depth = topblock.sub(coin.getBlockCreated());
 			
 			//Which table are we updating
+			boolean isconfirmed = true;
 			Hashtable<String, MiniNumber> current = confirmed;
 			if(depth.isLess(GlobalParams.MINIMA_CONFIRM_DEPTH)) {
 				current = unconfirmed;
+				isconfirmed = false;
 			}
 			
 			//Have we already added..
@@ -95,6 +93,16 @@ public class balance extends Command {
 			}else {
 				current.put(tokenid, total.add(amount));
 			}
+			
+			//Are we adding to the sendable pile..
+			if(isconfirmed && sendableaddresses.contains(coin.getAddress().to0xString())) {
+				total = sendable.get(tokenid); 
+				if(total == null) {
+					sendable.put(tokenid, amount);
+				}else {
+					sendable.put(tokenid, total.add(amount));
+				}
+			}
 		}
 		
 		//Lets print out..
@@ -102,6 +110,7 @@ public class balance extends Command {
 			
 			MiniNumber unconf 	= unconfirmed.get(token);
 			MiniNumber conf 	= confirmed.get(token);
+			MiniNumber send 	= sendable.get(token);
 			
 			if(unconf == null) {
 				unconf = MiniNumber.ZERO;
@@ -109,6 +118,10 @@ public class balance extends Command {
 			
 			if(conf == null) {
 				conf = MiniNumber.ZERO;
+			}
+			
+			if(send == null) {
+				send = MiniNumber.ZERO;
 			}
 			
 			JSONObject tokbal = new JSONObject();
@@ -119,6 +132,7 @@ public class balance extends Command {
 				tokbal.put("tokenid", token);
 				tokbal.put("confirmed", conf.toString());
 				tokbal.put("unconfirmed", unconf.toString());
+				tokbal.put("sendable", send.toString());
 				tokbal.put("total", "1000000000");
 			}else {
 				//Get the token
@@ -138,6 +152,7 @@ public class balance extends Command {
 				tokbal.put("tokenid", token);
 				tokbal.put("confirmed", tok.getScaledTokenAmount(conf).toString());
 				tokbal.put("unconfirmed", tok.getScaledTokenAmount(unconf).toString());
+				tokbal.put("sendable", tok.getScaledTokenAmount(send).toString());
 				tokbal.put("total", tok.getTotalTokens());
 			}
 			
