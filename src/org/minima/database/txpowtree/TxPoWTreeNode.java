@@ -300,6 +300,16 @@ public class TxPoWTreeNode implements Streamable {
 		return mRelevantMMRCoins;
 	}
 	
+	public void removeRelevantCoin(MMREntryNumber zEntry) {
+		ArrayList<MMREntryNumber> newRelevantMMRCoins = new ArrayList<>();
+		for(MMREntryNumber entry : mRelevantMMRCoins) {
+			if(!entry.isEqual(zEntry)) {
+				newRelevantMMRCoins.add(entry);
+			}
+		}
+		mRelevantMMRCoins = newRelevantMMRCoins;
+	}
+	
 	public void addChildNode(TxPoWTreeNode zTxPoWTreeNode) {
 		//Set the parent
 		zTxPoWTreeNode.setParent(this);

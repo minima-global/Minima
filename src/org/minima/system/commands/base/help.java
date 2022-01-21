@@ -64,6 +64,10 @@ public class help extends Command {
 		addCommand(details, new mmrcreate());
 		addCommand(details, new mmrproof());
 		
+		addCommand(details, new coinimport());
+		addCommand(details, new coinexport());
+		addCommand(details, new cointrack());
+		
 		addCommand(details, new txnlist());
 		addCommand(details, new txncreate());
 		addCommand(details, new txndelete());

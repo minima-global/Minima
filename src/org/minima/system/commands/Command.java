@@ -12,6 +12,7 @@ import org.minima.system.commands.base.backup;
 import org.minima.system.commands.base.balance;
 import org.minima.system.commands.base.coinexport;
 import org.minima.system.commands.base.coinimport;
+import org.minima.system.commands.base.cointrack;
 import org.minima.system.commands.base.debugflag;
 import org.minima.system.commands.base.getaddress;
 import org.minima.system.commands.base.hashtest;
@@ -77,7 +78,7 @@ public abstract class Command {
 			new txnoutput(),new txnstate(),new txnsign(),new txnpost(),new txndelete(),
 			new txnexport(),new txnimport(),new txncheck(),
 			
-			new coinimport(), new coinexport(),
+			new coinimport(), new coinexport(),new cointrack(),
 			
 			new maxima(),new mmrcreate(), new mmrproof()};
 	

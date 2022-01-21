@@ -28,7 +28,7 @@ public class coinexport extends Command {
 		
 		String id = getParam("coinid");
 		
-		Coin coin = TxPoWSearcher.searchCoins(new MiniData(id));
+		Coin coin = TxPoWSearcher.searchCoin(new MiniData(id));
 		if(coin == null) {
 			throw new CommandException("Coin not found coinid : "+id);
 		}

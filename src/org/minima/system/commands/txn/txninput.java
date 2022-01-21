@@ -29,7 +29,7 @@ public class txninput extends Command {
 		String coinid = getParam("coinid");
 		
 		//Get the coin
-		Coin cc = TxPoWSearcher.searchCoins(new MiniData(coinid));
+		Coin cc = TxPoWSearcher.searchCoin(new MiniData(coinid));
 		if(cc == null) {
 			throw new CommandException("CoinID not found : "+coinid);
 		}

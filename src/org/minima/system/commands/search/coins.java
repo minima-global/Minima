@@ -16,7 +16,7 @@ import org.minima.utils.json.JSONObject;
 public class coins extends Command {
 
 	public coins() {
-		super("coins","(relevant:true) (simple:true) (coinid:) (address:) (tokenid:) - Search for specific coins");
+		super("coins","(relevant:true) (sendable:true) (coinid:) (address:) (tokenid:) - Search for coins");
 	}
 	
 	@Override
@@ -30,7 +30,7 @@ public class coins extends Command {
 		
 		//Get the txpowid
 		boolean relevant	= existsParam("relevant");
-		boolean simple		= getBooleanParam("simple",false);
+		boolean simple		= getBooleanParam("sendable",false);
 		
 		boolean scoinid		= existsParam("coinid");
 		MiniData coinid		= MiniData.ZERO_TXPOWID;
@@ -65,7 +65,6 @@ public class coins extends Command {
 			coinarr.add(cc.toJSON());
 		}
 		
-		ret.put("status", true);
 		ret.put("response", coinarr);
 	
 		return ret;
