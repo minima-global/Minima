@@ -145,6 +145,33 @@ public class TxPoWSearcher {
 		return finalcoins;
 	}	
 	
+	public static TxPoWTreeNode getTreeNodeForCoin(MiniData zCoinID) {
+		
+		//Start node position
+		TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
+		
+		//Now cycle through and get all your coins..
+		while(tip != null) {
+
+			//Get ALL the coins..
+			ArrayList<Coin> coins = tip.getAllCoins();
+			
+			//Get the details..
+			for(Coin coin : coins) {
+				
+				//Is this the one..
+				if(coin.getCoinID().equals(zCoinID)) {
+					return tip;
+				}
+			}
+			
+			//And move back up the tree
+			tip = tip.getParent();
+		}
+		
+		return null;
+	}
+	
 	public static ArrayList<Token> getAllTokens() {
 
 		//The list of Tokens - not including Minima
@@ -205,7 +232,7 @@ public class TxPoWSearcher {
 			for(Coin coin : coins) {
 				
 				//Is this the one..
-				if(coin.getTokenID().equals(zTokenID)) {
+				if(coin.getTokenID().isEqual(zTokenID)) {
 					return coin.getToken();
 				}
 			}

@@ -182,7 +182,7 @@ public class TxPoWTreeNode implements Streamable {
 			//And add to the MMR
 			mMMR.addEntry(mmrdata);	
 			
-			//Add to the total List of coins fro this block
+			//Add to the total List of coins for this block
 			mCoins.add(newcoin);
 			
 			//Is this Relevant to us..
@@ -242,7 +242,7 @@ public class TxPoWTreeNode implements Streamable {
 		return false;
 	}
 	
-	private void calculateRelevantCoins() {
+	public void calculateRelevantCoins() {
 		
 		//Clear and start again
 		mComputedRelevantCoins = new ArrayList<>();
@@ -280,6 +280,16 @@ public class TxPoWTreeNode implements Streamable {
 	
 	public ArrayList<Coin> getAllCoins(){
 		return mCoins;
+	}
+	
+	public boolean isRelevantEntry(MMREntryNumber zMMREntryNumber) {
+		for(MMREntryNumber entry : mRelevantMMRCoins) {
+			if(entry.isEqual(zMMREntryNumber)) {
+				return true;
+			}
+		}
+		
+		return false;
 	}
 	
 	public ArrayList<Coin> getRelevantCoins(){
