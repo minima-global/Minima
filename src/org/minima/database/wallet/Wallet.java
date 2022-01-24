@@ -143,18 +143,27 @@ public class Wallet extends SqlDB {
 	 * Create a NEW key
 	 */
 	public synchronized KeyRow createNewKey() {
+				
+		//Create a NEW random seed..
+		MiniData privateseed = MiniData.getRandomData(32);
+		
+		return createNewKey(privateseed);
+	}
+	
+	/**
+	 * Create a NEW key
+	 */
+	public synchronized KeyRow createNewKey(MiniData zPrivateSeed) {
 		
 		//Change has occurred
 		mKeyRowChange = true;
 		
-		//Create a NEW random seed..
-		MiniData privateseed = MiniData.getRandomData(32);
-		
 		//Make the TreeKey
-		TreeKey treekey = TreeKey.createDefault(privateseed);
+		TreeKey treekey 	= TreeKey.createDefault(zPrivateSeed);
+		String privstring 	= zPrivateSeed.to0xString();
 		
 		//Add to our list..
-		mTreeKeys.put(privateseed.to0xString(), treekey);
+		mTreeKeys.put(privstring, treekey);
 		
 		//Get the public key
 		MiniData pubkey = treekey.getPublicKey();
@@ -174,7 +183,7 @@ public class Wallet extends SqlDB {
 			//Set main params
 			SQL_CREATE_PUBLIC_KEY.setInt(1, 0); // FOR NOW.. not based off seed phrase
 			SQL_CREATE_PUBLIC_KEY.setInt(2, 0);
-			SQL_CREATE_PUBLIC_KEY.setString(3, privateseed.to0xString());
+			SQL_CREATE_PUBLIC_KEY.setString(3, privstring);
 			SQL_CREATE_PUBLIC_KEY.setString(4, pubkey.to0xString());
 			SQL_CREATE_PUBLIC_KEY.setString(5, script);
 			SQL_CREATE_PUBLIC_KEY.setString(6, addr.getAddressData().to0xString());
@@ -182,7 +191,7 @@ public class Wallet extends SqlDB {
 			//Do it.
 			SQL_CREATE_PUBLIC_KEY.execute();
 			
-			return new KeyRow(privateseed.to0xString(), pubkey.to0xString(), addr.getAddressData().to0xString(), script, true);
+			return new KeyRow(privstring, pubkey.to0xString(), addr.getAddressData().to0xString(), script, true);
 			
 		} catch (SQLException e) {
 			MinimaLogger.log(e);
@@ -212,12 +221,13 @@ public class Wallet extends SqlDB {
 			while(rs.next()) {
 				
 				//Get the details
-				String publickey = rs.getString("publickey");
-				String address 	 = rs.getString("simpleaddress");
-				String script 	 = rs.getString("script");
+				String publickey 	= rs.getString("publickey");
+				String address 	 	= rs.getString("simpleaddress");
+				String script 	 	= rs.getString("script");
+				String privatekey 	= rs.getString("privatekey");
 				
 				//Add to our list
-				allkeys.add(new KeyRow("",publickey, address, script, true));
+				allkeys.add(new KeyRow(privatekey, publickey, address, script, true));
 			}
 			
 		} catch (SQLException e) {
