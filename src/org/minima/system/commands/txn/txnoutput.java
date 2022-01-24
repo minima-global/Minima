@@ -9,12 +9,13 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.brains.TxPoWSearcher;
 import org.minima.system.commands.Command;
+import org.minima.system.commands.CommandException;
 import org.minima.utils.json.JSONObject;
 
 public class txnoutput extends Command {
 
 	public txnoutput() {
-		super("txnoutput","[id:] [amount:] [address:] (tokenid:) (storestate:) - Create a transaction output");
+		super("txnoutput","[id:] [amount:] [address:] (tokenid:) (storestate:) (floating:true|false) - Create a transaction output");
 	}
 	
 	@Override
@@ -28,6 +29,7 @@ public class txnoutput extends Command {
 		MiniNumber amount	= getNumberParam("amount");
 		MiniData address	= getDataParam("address");
 		boolean storestate 	= getBooleanParam("storestate", true);
+		boolean floating	= getBooleanParam("floating", false);
 		
 		//Could be a token..
 		MiniData tokenid	= Token.TOKENID_MINIMA;
@@ -35,6 +37,10 @@ public class txnoutput extends Command {
 		if(existsParam("tokenid")) {
 			tokenid	= getDataParam("tokenid");
 			token	= TxPoWSearcher.getToken(tokenid);
+			
+			if(token == null) {
+				throw new CommandException("Token not found : "+tokenid);
+			}
 		}
 		
 		//The actual amount
@@ -48,6 +54,9 @@ public class txnoutput extends Command {
 		if(token != null) {
 			output.setToken(token);
 		}
+		
+		//Is this a floating coin..
+		output.setFloating(floating);
 		
 		//Get the Transaction
 		Transaction trans = db.getTransactionRow(id).getTransaction();

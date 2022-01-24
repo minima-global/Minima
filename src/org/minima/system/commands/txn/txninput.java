@@ -35,8 +35,15 @@ public class txninput extends Command {
 		}
 		
 		//Is it a floating input..
-		boolean floating = getBooleanParam("floating",false);
-		cc.setFloating(floating);
+		boolean eltoo = getBooleanParam("floating",false);
+		if(eltoo) {
+			//Check thisa coin is floating..
+			if(!cc.isFloating()) {
+				throw new CommandException("Coin cannot be ELTOO as is not floating.. "+cc.toJSON().toString());
+			}
+			
+			cc.resetCoinID(Coin.COINID_ELTOO);
+		}
 		
 		//Get the Transaction
 		Transaction trans = db.getTransactionRow(id).getTransaction();
