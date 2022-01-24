@@ -119,7 +119,7 @@ public class SwapLinksFunctionsTest extends TestCase {
         P2PState state = QuickState.stateNoConnections(true);
         SwapLinksFunctions.updateKnownPeersFromGreeting(state, greeting);
 
-        assertEquals(12, state.getKnownPeers().size());
+        assertEquals(7, state.getKnownPeers().size());
     }
 
     public void testUpdateKnownPeersFromGreetingUniquenessTest() throws UnknownHostException {
