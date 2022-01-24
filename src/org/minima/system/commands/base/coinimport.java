@@ -2,8 +2,6 @@ package org.minima.system.commands.base;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.mmr.MMRData;
-import org.minima.database.mmr.MMREntry;
-import org.minima.database.mmr.MMREntryNumber;
 import org.minima.database.mmr.MMRProof;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.objects.Coin;
@@ -13,9 +11,6 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.system.brains.TxPoWSearcher;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
-import org.minima.utils.Crypto;
-import org.minima.utils.MinimaLogger;
-import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
 public class coinimport extends Command {

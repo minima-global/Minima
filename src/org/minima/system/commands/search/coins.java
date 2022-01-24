@@ -4,8 +4,6 @@ import java.util.ArrayList;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
-import org.minima.database.wallet.KeyRow;
-import org.minima.database.wallet.Wallet;
 import org.minima.objects.Coin;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;

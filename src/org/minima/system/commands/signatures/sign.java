@@ -5,9 +5,7 @@ import org.minima.database.wallet.KeyRow;
 import org.minima.database.wallet.Wallet;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.keys.Signature;
-import org.minima.system.Main;
 import org.minima.system.commands.Command;
-import org.minima.utils.Crypto;
 import org.minima.utils.json.JSONObject;
 
 public class sign extends Command {
