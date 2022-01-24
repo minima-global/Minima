@@ -28,6 +28,12 @@ public class P2PTestParams {
     public static int LOOP_DELAY = 5_000;
 
     /**
+     * Time between updating the device hash_rate in milliseconds
+     */
+    //                                         M    S    millis
+    public static int HASH_RATE_UPDATE_DELAY = 5 * 60 * 1000;
+
+    /**
      * Max additional ms to add to loop delay (mostly useful during testing to ensure all nodes
      * aren't perfectly in sync)
      */
