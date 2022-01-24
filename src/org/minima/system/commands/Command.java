@@ -15,8 +15,8 @@ import org.minima.system.commands.base.coinimport;
 import org.minima.system.commands.base.cointrack;
 import org.minima.system.commands.base.debugflag;
 import org.minima.system.commands.base.getaddress;
+import org.minima.system.commands.base.hash;
 import org.minima.system.commands.base.hashtest;
-import org.minima.system.commands.base.help;
 import org.minima.system.commands.base.incentivecash;
 import org.minima.system.commands.base.missingcmd;
 import org.minima.system.commands.base.mmrcreate;
@@ -46,6 +46,8 @@ import org.minima.system.commands.network.webhooks;
 import org.minima.system.commands.search.coins;
 import org.minima.system.commands.search.keys;
 import org.minima.system.commands.search.txpow;
+import org.minima.system.commands.signatures.sign;
+import org.minima.system.commands.signatures.verify;
 import org.minima.system.commands.txn.txncheck;
 import org.minima.system.commands.txn.txnclear;
 import org.minima.system.commands.txn.txncreate;
@@ -71,7 +73,7 @@ public abstract class Command {
 			new message(), new trace(), new help(), new printtree(), new automine(), new printmmr(), new rpc(),
 			new send(), new balance(), new tokencreate(), new tokens(),new getaddress(), new newaddress(), new debugflag(),
 			new incentivecash(), new sshtunnel(), new webhooks(),
-			new backup(), new restore(), new test(), new hashtest(),
+			new backup(), new restore(), new test(), 
 			new runscript(), new tutorial(),new keys(),new scripts(),
 			
 			new txncreate(), new txninput(),new txnlist(), new txnclear(),
@@ -79,6 +81,8 @@ public abstract class Command {
 			new txnexport(),new txnimport(),new txncheck(),
 			
 			new coinimport(), new coinexport(),new cointrack(),
+			
+			new hash(), new hashtest(), new sign(), new verify(),
 			
 			new maxima(),new mmrcreate(), new mmrproof()};
 	

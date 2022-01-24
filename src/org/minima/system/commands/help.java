@@ -1,6 +1,28 @@
-package org.minima.system.commands.base;
+package org.minima.system.commands;
 
-import org.minima.system.commands.Command;
+import org.minima.system.commands.base.automine;
+import org.minima.system.commands.base.backup;
+import org.minima.system.commands.base.balance;
+import org.minima.system.commands.base.coinexport;
+import org.minima.system.commands.base.coinimport;
+import org.minima.system.commands.base.cointrack;
+import org.minima.system.commands.base.hash;
+import org.minima.system.commands.base.hashtest;
+import org.minima.system.commands.base.incentivecash;
+import org.minima.system.commands.base.mmrcreate;
+import org.minima.system.commands.base.mmrproof;
+import org.minima.system.commands.base.newaddress;
+import org.minima.system.commands.base.printtree;
+import org.minima.system.commands.base.quit;
+import org.minima.system.commands.base.restore;
+import org.minima.system.commands.base.runscript;
+import org.minima.system.commands.base.scripts;
+import org.minima.system.commands.base.send;
+import org.minima.system.commands.base.status;
+import org.minima.system.commands.base.tokencreate;
+import org.minima.system.commands.base.tokens;
+import org.minima.system.commands.base.trace;
+import org.minima.system.commands.base.tutorial;
 import org.minima.system.commands.network.connect;
 import org.minima.system.commands.network.disconnect;
 import org.minima.system.commands.network.maxima;
@@ -12,6 +34,8 @@ import org.minima.system.commands.network.webhooks;
 import org.minima.system.commands.search.coins;
 import org.minima.system.commands.search.keys;
 import org.minima.system.commands.search.txpow;
+import org.minima.system.commands.signatures.sign;
+import org.minima.system.commands.signatures.verify;
 import org.minima.system.commands.txn.txncheck;
 import org.minima.system.commands.txn.txnclear;
 import org.minima.system.commands.txn.txncreate;
@@ -56,6 +80,7 @@ public class help extends Command {
 		addCommand(details, new send());
 		addCommand(details, new balance());
 		addCommand(details, new tokencreate());
+		addCommand(details, new hash());
 		
 		addCommand(details, new scripts());
 		addCommand(details, new runscript());
@@ -67,6 +92,9 @@ public class help extends Command {
 		addCommand(details, new coinimport());
 		addCommand(details, new coinexport());
 		addCommand(details, new cointrack());
+		
+		addCommand(details, new sign());
+		addCommand(details, new verify());
 		
 		addCommand(details, new txnlist());
 		addCommand(details, new txncreate());

@@ -116,7 +116,7 @@ public class Coin implements Streamable {
 	private Coin() {}
 	
 	/**
-	 * Return the same Coin buyt with a new CoinID - output coinid are computed after the fact
+	 * Return the same Coin but with a new CoinID - output coinid are computed after the fact
 	 */
 	public Coin getSameCoinWithCoinID(MiniData zCoinID) {
 		Coin copy = deepCopy();
@@ -127,7 +127,7 @@ public class Coin implements Streamable {
 	/**
 	 * Floating inputs change the CoinID
 	 */
-	private void resetCoinID(MiniData zCoinID) {
+	public void resetCoinID(MiniData zCoinID) {
 		mCoinID = zCoinID;
 	}
 	

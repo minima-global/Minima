@@ -8,6 +8,7 @@ import org.minima.database.wallet.KeyRow;
 import org.minima.database.wallet.Wallet;
 import org.minima.objects.Coin;
 import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniNumber;
 import org.minima.system.brains.TxPoWSearcher;
 import org.minima.system.commands.Command;
 import org.minima.utils.json.JSONArray;
@@ -16,7 +17,7 @@ import org.minima.utils.json.JSONObject;
 public class coins extends Command {
 
 	public coins() {
-		super("coins","(relevant:true) (sendable:true) (coinid:) (address:) (tokenid:) - Search for coins");
+		super("coins","(relevant:true) (sendable:true) (coinid:) (amount:) (address:) (tokenid:) - Search for coins");
 	}
 	
 	@Override
@@ -38,6 +39,12 @@ public class coins extends Command {
 			coinid = new MiniData(getParam("coinid", "0x01"));
 		}
 		
+		boolean samount		= existsParam("amount");
+		MiniNumber amount	= MiniNumber.ZERO;
+		if(samount) {
+			amount = getNumberParam("amount");
+		}
+		
 		boolean saddress	= existsParam("address");
 		MiniData address	= MiniData.ZERO_TXPOWID;
 		if(saddress) {
@@ -55,7 +62,8 @@ public class coins extends Command {
 		
 		//Run the query
 		ArrayList<Coin> coins = TxPoWSearcher.searchCoins(	tip, relevant, 
-															scoinid, coinid, 
+															scoinid, coinid,
+															samount,amount,
 															saddress, address, 
 															stokenid, tokenid, simple);
 		

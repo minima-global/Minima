@@ -13,7 +13,10 @@ import org.minima.objects.ScriptProof;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniNumber;
+import org.minima.system.brains.TxPoWSearcher;
+import org.minima.system.commands.CommandException;
 import org.minima.system.params.GlobalParams;
+import org.minima.utils.MinimaLogger;
 
 public class txnutils {
 
@@ -22,7 +25,28 @@ public class txnutils {
 		TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
 		
 		//Get all the input coins..
-		ArrayList<Coin> inputs = zTransaction.getAllInputs();
+		ArrayList<Coin> baseinputs = zTransaction.getAllInputs();
+		
+		//Are any of the inputs floating
+		ArrayList<Coin> inputs = new ArrayList<>();
+		for(Coin cc : baseinputs) {
+			if(cc.isFloating()) {
+			
+				//Get the MOST recent coin to attach to this transaction..
+				Coin floater = TxPoWSearcher.getFloatingCoin(tip, cc.getAmount(), cc.getAddress(), cc.getTokenID());	
+				
+				if(floater == null) {
+					throw new CommandException("Could not find valid unspent coin for "+cc.toJSON());
+				}
+				
+				MinimaLogger.log("Floating coin found : "+floater.toJSON());
+				
+				inputs.add(floater);
+				
+			}else {
+				inputs.add(cc);
+			}
+		}
 		
 		//Min depth of a coin
 		MiniNumber minblock = MiniNumber.ZERO;
