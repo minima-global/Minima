@@ -9,6 +9,7 @@ import org.minima.database.wallet.Wallet;
 import org.minima.objects.Coin;
 import org.minima.objects.Token;
 import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniNumber;
 
 public class TxPoWSearcher {
 
@@ -17,7 +18,8 @@ public class TxPoWSearcher {
 		
 		//Special search..
 		return searchCoins(zStartNode, true, 
-							false, MiniData.ZERO_TXPOWID, 
+							false, MiniData.ZERO_TXPOWID,
+							false, MiniNumber.ZERO,
 							false, MiniData.ZERO_TXPOWID,
 							false, MiniData.ZERO_TXPOWID,false);
 		
@@ -28,6 +30,7 @@ public class TxPoWSearcher {
 		//Special search..
 		return searchCoins(zStartNode, true, 
 							false, MiniData.ZERO_TXPOWID, 
+							false, MiniNumber.ZERO,
 							false, MiniData.ZERO_TXPOWID,
 							true, new MiniData(zTokenID),
 							zSimpleOnly);
@@ -38,6 +41,7 @@ public class TxPoWSearcher {
 		
 		ArrayList<Coin> coins = searchCoins(MinimaDB.getDB().getTxPoWTree().getTip(), false, 
 											true, zCoinID, 
+											false, MiniNumber.ZERO,
 											false, MiniData.ZERO_TXPOWID,
 											false, MiniData.ZERO_TXPOWID,false);
 		
@@ -49,8 +53,27 @@ public class TxPoWSearcher {
 		}
 	}
 	
+	public static Coin getFloatingCoin(TxPoWTreeNode zStartNode, MiniNumber zAmount, MiniData zAddress, MiniData zTokenID ) {
+		
+		//Special search..
+		ArrayList<Coin> coins =  searchCoins(zStartNode, false, 
+												false, MiniData.ZERO_TXPOWID, 
+												true, zAmount,
+												true, zAddress,
+												true, zTokenID,
+												false);
+		
+		//Did we find it
+		if(coins.size()>0) {
+			return coins.get(0);
+		}else {
+			return null;
+		}
+	}
+	
 	public static ArrayList<Coin> searchCoins(	TxPoWTreeNode zStartNode, boolean zRelevant, 
 												boolean zCheckCoinID, MiniData zCoinID,
+												boolean zCheckAmount, MiniNumber zAmount,
 												boolean zCheckAddress, MiniData zAddress,
 												boolean zCheckTokenID, MiniData zTokenID,
 												boolean zSimpleOnly) {
@@ -84,6 +107,10 @@ public class TxPoWSearcher {
 				}
 				
 				if(zCheckCoinID && !coin.getCoinID().isEqual(zCoinID)) {
+					continue;
+				}
+				
+				if(zCheckAmount && !coin.getAmount().isEqual(zAmount)) {
 					continue;
 				}
 				
