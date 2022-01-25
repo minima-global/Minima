@@ -537,11 +537,12 @@ public class Contract {
 			boolean whites = true;
 			for(ScriptToken tok : tokens) {
 				if(tok.getTokenType() == ScriptToken.TOKEN_COMMAND) {
+					String command = tok.getToken();
 					if(first) {
-						ret.append(tok.getToken()+" ");
+						ret.append(command+" ");
 						first = false;
 					}else {
-						ret.append(" "+tok.getToken()+" ");
+						ret.append(" "+command+" ");
 					}
 					
 					whites = true;

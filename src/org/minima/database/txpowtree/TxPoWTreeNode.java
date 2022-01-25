@@ -182,7 +182,7 @@ public class TxPoWTreeNode implements Streamable {
 			//And add to the MMR
 			mMMR.addEntry(mmrdata);	
 			
-			//Add to the total List of coins fro this block
+			//Add to the total List of coins for this block
 			mCoins.add(newcoin);
 			
 			//Is this Relevant to us..
@@ -218,7 +218,7 @@ public class TxPoWTreeNode implements Streamable {
 		for(KeyRow wk : zAllRelevant) {
 			
 			//Is the address one of ours..
-			if(zCoin.getAddress().to0xString().equals(wk.getAddress())) {
+			if(wk.trackAddress() && zCoin.getAddress().to0xString().equals(wk.getAddress())) {
 				return true;
 			}
 			
@@ -227,9 +227,12 @@ public class TxPoWTreeNode implements Streamable {
 			for(StateVariable sv : state) {
 				
 				if(sv.getType().isEqual(StateVariable.STATETYPE_HEX)) {
-					
 					String svstr = sv.toString();
-					if(svstr.equals(wk.getPublicKey()) || svstr.equals(wk.getAddress())){
+					
+					//Custom scripts have no public key..
+					if(!wk.getPublicKey().equals("") && svstr.equals(wk.getPublicKey())) {
+						return true;
+					}else if(wk.trackAddress() && svstr.equals(wk.getAddress())){
 						return true;
 					}
 				}
@@ -239,7 +242,7 @@ public class TxPoWTreeNode implements Streamable {
 		return false;
 	}
 	
-	private void calculateRelevantCoins() {
+	public void calculateRelevantCoins() {
 		
 		//Clear and start again
 		mComputedRelevantCoins = new ArrayList<>();
@@ -279,12 +282,32 @@ public class TxPoWTreeNode implements Streamable {
 		return mCoins;
 	}
 	
+	public boolean isRelevantEntry(MMREntryNumber zMMREntryNumber) {
+		for(MMREntryNumber entry : mRelevantMMRCoins) {
+			if(entry.isEqual(zMMREntryNumber)) {
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
 	public ArrayList<Coin> getRelevantCoins(){
 		return mComputedRelevantCoins;
 	}
 	
 	public ArrayList<MMREntryNumber> getRelevantCoinsEntries(){
 		return mRelevantMMRCoins;
+	}
+	
+	public void removeRelevantCoin(MMREntryNumber zEntry) {
+		ArrayList<MMREntryNumber> newRelevantMMRCoins = new ArrayList<>();
+		for(MMREntryNumber entry : mRelevantMMRCoins) {
+			if(!entry.isEqual(zEntry)) {
+				newRelevantMMRCoins.add(entry);
+			}
+		}
+		mRelevantMMRCoins = newRelevantMMRCoins;
 	}
 	
 	public void addChildNode(TxPoWTreeNode zTxPoWTreeNode) {
@@ -328,7 +351,7 @@ public class TxPoWTreeNode implements Streamable {
 	public void copyParentRelevantCoins() {
 		
 		//Now copy all the MMR Coins.. 
-		ArrayList<Coin> unspentcoins = TxPoWSearcher.getRelevantUnspentCoins(getParent());
+		ArrayList<Coin> unspentcoins = TxPoWSearcher.getAllRelevantUnspentCoins(getParent());
 		
 		//We may be adding..
 		mMMR.setFinalized(false);

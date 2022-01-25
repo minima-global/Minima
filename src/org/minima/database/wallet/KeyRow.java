@@ -8,12 +8,14 @@ public class KeyRow {
 	public String 	mPubliKey;
 	public String 	mScript;
 	public String 	mSimpleAddress;
+	public boolean  mTrack;
 	
-	public KeyRow(String zPrivKey, String zPubKey, String zAddress, String zScript) {
+	public KeyRow(String zPrivKey, String zPubKey, String zAddress, String zScript, boolean zTrack) {
 		mPrivateKey		= zPrivKey;
 		mPubliKey 		= zPubKey;
 		mSimpleAddress 	= zAddress;
 		mScript			= zScript;
+		mTrack		= zTrack;
 	}
 	
 	public String getPrivateKey() {
@@ -32,12 +34,17 @@ public class KeyRow {
 		return mScript;
 	}
 	
+	public boolean trackAddress() {
+		return mTrack;
+	}
+	
 	public JSONObject toJSON() {
 		JSONObject ret = new JSONObject();
 		
 		ret.put("publickey", getPublicKey());
 		ret.put("script", getScript());
 		ret.put("address", getAddress());
+		ret.put("trackall", mTrack);
 		
 		return ret;
 	}

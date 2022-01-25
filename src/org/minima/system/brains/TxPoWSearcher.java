@@ -4,37 +4,79 @@ import java.util.ArrayList;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
+import org.minima.database.wallet.KeyRow;
+import org.minima.database.wallet.Wallet;
 import org.minima.objects.Coin;
 import org.minima.objects.Token;
 import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniNumber;
 
 public class TxPoWSearcher {
 
 	
-	public static ArrayList<Coin> getRelevantUnspentCoins(TxPoWTreeNode zStartNode) {
+	public static ArrayList<Coin> getAllRelevantUnspentCoins(TxPoWTreeNode zStartNode) {
 		
 		//Special search..
 		return searchCoins(zStartNode, true, 
-							false, MiniData.ZERO_TXPOWID, 
 							false, MiniData.ZERO_TXPOWID,
-							false, MiniData.ZERO_TXPOWID);
+							false, MiniNumber.ZERO,
+							false, MiniData.ZERO_TXPOWID,
+							false, MiniData.ZERO_TXPOWID,false);
 		
 	}
 	
-	public static ArrayList<Coin> getRelevantUnspentCoins(TxPoWTreeNode zStartNode, String zTokenID ) {
+	public static ArrayList<Coin> getRelevantUnspentCoins(TxPoWTreeNode zStartNode, String zTokenID, boolean zSimpleOnly ) {
 		
 		//Special search..
 		return searchCoins(zStartNode, true, 
 							false, MiniData.ZERO_TXPOWID, 
+							false, MiniNumber.ZERO,
 							false, MiniData.ZERO_TXPOWID,
-							true, new MiniData(zTokenID));
+							true, new MiniData(zTokenID),
+							zSimpleOnly);
 	
+	}
+	
+	public static Coin searchCoin(	MiniData zCoinID ){
+		
+		ArrayList<Coin> coins = searchCoins(MinimaDB.getDB().getTxPoWTree().getTip(), false, 
+											true, zCoinID, 
+											false, MiniNumber.ZERO,
+											false, MiniData.ZERO_TXPOWID,
+											false, MiniData.ZERO_TXPOWID,false);
+		
+		//Did we find it
+		if(coins.size()>0) {
+			return coins.get(0);
+		}else {
+			return null;
+		}
+	}
+	
+	public static Coin getFloatingCoin(TxPoWTreeNode zStartNode, MiniNumber zAmount, MiniData zAddress, MiniData zTokenID ) {
+		
+		//Special search..
+		ArrayList<Coin> coins =  searchCoins(zStartNode, false, 
+												false, MiniData.ZERO_TXPOWID, 
+												true, zAmount,
+												true, zAddress,
+												true, zTokenID,
+												false);
+		
+		//Did we find it
+		if(coins.size()>0) {
+			return coins.get(0);
+		}else {
+			return null;
+		}
 	}
 	
 	public static ArrayList<Coin> searchCoins(	TxPoWTreeNode zStartNode, boolean zRelevant, 
 												boolean zCheckCoinID, MiniData zCoinID,
+												boolean zCheckAmount, MiniNumber zAmount,
 												boolean zCheckAddress, MiniData zAddress,
-												boolean zCheckTokenID, MiniData zTokenID) {
+												boolean zCheckTokenID, MiniData zTokenID,
+												boolean zSimpleOnly) {
 		
 		//The list of Coins
 		ArrayList<Coin> coinentry = new ArrayList<>();
@@ -68,6 +110,10 @@ public class TxPoWSearcher {
 					continue;
 				}
 				
+				if(zCheckAmount && !coin.getAmount().isEqual(zAmount)) {
+					continue;
+				}
+				
 				if(zCheckAddress && !coin.getAddress().isEqual(zAddress)) {
 					continue;
 				}
@@ -86,7 +132,7 @@ public class TxPoWSearcher {
 					if(!spentcoins.contains(coinid)) {
 						
 						//OK - fresh unspent coin
-						coinentry.add(coin);
+						coinentry.add(coin.deepCopy());
 						
 						//And no more from now..
 						spentcoins.add(coinid);
@@ -98,8 +144,60 @@ public class TxPoWSearcher {
 			tip = tip.getParent();
 		}
 		
-		return coinentry;
+		//Are we only showing simple Coins..
+		ArrayList<Coin> finalcoins = coinentry;
+		if(zSimpleOnly) {
+			//Fresh List
+			finalcoins = new ArrayList<>();
+			
+			//Get the wallet..
+			Wallet wallet = MinimaDB.getDB().getWallet();
+			
+			//Get all the keys
+			ArrayList<KeyRow> keys = wallet.getAllRelevant();
+			
+			//Now cycle through the coins
+			for(Coin cc : coinentry) {
+				for(KeyRow kr : keys) {
+					//Is it a simple key
+					if(!kr.getPublicKey().equals("")) {
+						if(cc.getAddress().isEqual(new MiniData(kr.getAddress()))) {
+							finalcoins.add(cc);
+						}
+					}
+				}
+			}
+		}
+		
+		return finalcoins;
 	}	
+	
+	public static TxPoWTreeNode getTreeNodeForCoin(MiniData zCoinID) {
+		
+		//Start node position
+		TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
+		
+		//Now cycle through and get all your coins..
+		while(tip != null) {
+
+			//Get ALL the coins..
+			ArrayList<Coin> coins = tip.getAllCoins();
+			
+			//Get the details..
+			for(Coin coin : coins) {
+				
+				//Is this the one..
+				if(coin.getCoinID().equals(zCoinID)) {
+					return tip;
+				}
+			}
+			
+			//And move back up the tree
+			tip = tip.getParent();
+		}
+		
+		return null;
+	}
 	
 	public static ArrayList<Token> getAllTokens() {
 
@@ -144,6 +242,33 @@ public class TxPoWSearcher {
 		}
 		
 		return tokens;
+	}
+	
+	public static Token getToken(MiniData zTokenID) {
+		
+		//Start node position
+		TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
+		
+		//Now cycle through and get all your coins..
+		while(tip != null) {
+
+			//Get ALL the coins..
+			ArrayList<Coin> coins = tip.getAllCoins();
+			
+			//Get the details..
+			for(Coin coin : coins) {
+				
+				//Is this the one..
+				if(coin.getTokenID().isEqual(zTokenID)) {
+					return coin.getToken();
+				}
+			}
+			
+			//And move back up the tree
+			tip = tip.getParent();
+		}
+		
+		return null;
 	}
 }
 

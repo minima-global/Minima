@@ -8,7 +8,6 @@ import java.security.KeyPair;
 import java.security.Security;
 
 import org.minima.objects.base.MiniData;
-import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 
 public class CryptoPackage implements Streamable {

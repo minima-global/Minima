@@ -67,10 +67,10 @@ public class StateVariable implements Streamable {
 	private StateVariable() {}
 	
 	public StateVariable(int zPort, String zData) {
-		this(zPort, zData, MiniByte.TRUE);
+		this(zPort, zData, true);
 	}
 	
-	public StateVariable(int zPort, String zData, MiniByte zKeepMMR) {
+	public StateVariable(int zPort, String zData, boolean zKeepMMR) {
 		//Check within range
 		if(zPort<0 || zPort>255) {
 			throw new IllegalArgumentException("State Variable port MUST be 0-255");
@@ -106,7 +106,7 @@ public class StateVariable implements Streamable {
 		}
 		
 		//Is this value kept in the MMR
-		mKeepMMR = zKeepMMR;
+		mKeepMMR = new MiniByte(zKeepMMR);
 	}
 	
 	public int getPort() {

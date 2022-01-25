@@ -5,40 +5,61 @@ import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.minima.system.commands.all.automine;
-import org.minima.system.commands.all.backup;
-import org.minima.system.commands.all.balance;
-import org.minima.system.commands.all.coins;
-import org.minima.system.commands.all.connect;
-import org.minima.system.commands.all.debugflag;
-import org.minima.system.commands.all.disconnect;
-import org.minima.system.commands.all.getaddress;
-import org.minima.system.commands.all.hashtest;
-import org.minima.system.commands.all.help;
-import org.minima.system.commands.all.incentivecash;
-import org.minima.system.commands.all.maxima;
-import org.minima.system.commands.all.message;
-import org.minima.system.commands.all.missingcmd;
-import org.minima.system.commands.all.mmrcreate;
-import org.minima.system.commands.all.mmrproof;
-import org.minima.system.commands.all.network;
-import org.minima.system.commands.all.newaddress;
-import org.minima.system.commands.all.printmmr;
-import org.minima.system.commands.all.printtree;
-import org.minima.system.commands.all.quit;
-import org.minima.system.commands.all.restore;
-import org.minima.system.commands.all.rpc;
-import org.minima.system.commands.all.runscript;
-import org.minima.system.commands.all.send;
-import org.minima.system.commands.all.sshtunnel;
-import org.minima.system.commands.all.status;
-import org.minima.system.commands.all.test;
-import org.minima.system.commands.all.tokencreate;
-import org.minima.system.commands.all.tokens;
-import org.minima.system.commands.all.trace;
-import org.minima.system.commands.all.tutorial;
-import org.minima.system.commands.all.txpow;
-import org.minima.system.commands.all.webhooks;
+import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniNumber;
+import org.minima.system.commands.base.automine;
+import org.minima.system.commands.base.backup;
+import org.minima.system.commands.base.balance;
+import org.minima.system.commands.base.coinexport;
+import org.minima.system.commands.base.coinimport;
+import org.minima.system.commands.base.cointrack;
+import org.minima.system.commands.base.debugflag;
+import org.minima.system.commands.base.getaddress;
+import org.minima.system.commands.base.hash;
+import org.minima.system.commands.base.hashtest;
+import org.minima.system.commands.base.incentivecash;
+import org.minima.system.commands.base.missingcmd;
+import org.minima.system.commands.base.mmrcreate;
+import org.minima.system.commands.base.mmrproof;
+import org.minima.system.commands.base.newaddress;
+import org.minima.system.commands.base.printmmr;
+import org.minima.system.commands.base.printtree;
+import org.minima.system.commands.base.quit;
+import org.minima.system.commands.base.restore;
+import org.minima.system.commands.base.runscript;
+import org.minima.system.commands.base.scripts;
+import org.minima.system.commands.base.send;
+import org.minima.system.commands.base.status;
+import org.minima.system.commands.base.test;
+import org.minima.system.commands.base.tokencreate;
+import org.minima.system.commands.base.tokens;
+import org.minima.system.commands.base.trace;
+import org.minima.system.commands.base.tutorial;
+import org.minima.system.commands.network.connect;
+import org.minima.system.commands.network.disconnect;
+import org.minima.system.commands.network.maxima;
+import org.minima.system.commands.network.message;
+import org.minima.system.commands.network.network;
+import org.minima.system.commands.network.rpc;
+import org.minima.system.commands.network.sshtunnel;
+import org.minima.system.commands.network.webhooks;
+import org.minima.system.commands.search.coins;
+import org.minima.system.commands.search.keys;
+import org.minima.system.commands.search.txpow;
+import org.minima.system.commands.signatures.sign;
+import org.minima.system.commands.signatures.verify;
+import org.minima.system.commands.txn.txncheck;
+import org.minima.system.commands.txn.txnclear;
+import org.minima.system.commands.txn.txncreate;
+import org.minima.system.commands.txn.txndelete;
+import org.minima.system.commands.txn.txnexport;
+import org.minima.system.commands.txn.txnimport;
+import org.minima.system.commands.txn.txninput;
+import org.minima.system.commands.txn.txnlist;
+import org.minima.system.commands.txn.txnoutput;
+import org.minima.system.commands.txn.txnpost;
+import org.minima.system.commands.txn.txnsign;
+import org.minima.system.commands.txn.txnstate;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
@@ -52,9 +73,18 @@ public abstract class Command {
 			new message(), new trace(), new help(), new printtree(), new automine(), new printmmr(), new rpc(),
 			new send(), new balance(), new tokencreate(), new tokens(),new getaddress(), new newaddress(), new debugflag(),
 			new incentivecash(), new sshtunnel(), new webhooks(),
-			new backup(), new restore(), new test(), new hashtest(),
-			new runscript(), new tutorial(), new maxima(),
-			new mmrcreate(), new mmrproof()};
+			new backup(), new restore(), new test(), 
+			new runscript(), new tutorial(),new keys(),new scripts(),
+			
+			new txncreate(), new txninput(),new txnlist(), new txnclear(),
+			new txnoutput(),new txnstate(),new txnsign(),new txnpost(),new txndelete(),
+			new txnexport(),new txnimport(),new txncheck(),
+			
+			new coinimport(), new coinexport(),new cointrack(),
+			
+			new hash(), new hashtest(), new sign(), new verify(),
+			
+			new maxima(),new mmrcreate(), new mmrproof()};
 	
 	String mName;
 	String mHelp;
@@ -99,8 +129,12 @@ public abstract class Command {
 		return mParams.containsKey(zParamName);
 	}
 	
-	public String getParam(String zParamName) {
-		return getParam(zParamName, "");
+	public String getParam(String zParamName) throws CommandException {
+		if(!existsParam(zParamName)) {
+			throw new CommandException("param not specified : "+zParamName);
+		}
+		
+		return (String) mParams.get(zParamName);
 	}
 	
 	public String getParam(String zParamName, String zDefault) {
@@ -110,6 +144,38 @@ public abstract class Command {
 		
 		return zDefault;
 	}
+	
+	public boolean getBooleanParam(String zParamName) throws CommandException {
+		String bool = getParam(zParamName);
+		if(bool.equals("true")){
+			return  true;
+		}
+		return false;
+	}
+	
+	public boolean getBooleanParam(String zParamName, boolean zDefault) throws CommandException {
+		if(existsParam(zParamName)) {
+			if(getParam(zParamName).equals("true")){
+				return  true;
+			}else {
+				return false;
+			}
+		}
+		
+		return zDefault;
+	}
+	
+	public MiniNumber getNumberParam(String zParamName) throws CommandException {
+		String num = getParam(zParamName);
+		return new MiniNumber(num);
+	}
+	
+	public MiniData getDataParam(String zParamName) throws CommandException {
+		String hex = getParam(zParamName);
+		return new MiniData(hex);
+	}
+	
+	
 	
 	public JSONObject getJSONObjectParam(String zParamName) {
 		return (JSONObject) mParams.get(zParamName);
@@ -166,7 +232,14 @@ public abstract class Command {
 			JSONObject result = null;
 			try {
 				result = cmd.runCommand();
+			
+			}catch(CommandException cexc) {
+				result = cmd.getJSONReply();
+				result.put("status", false);
+				result.put("error", cexc.getMessage());
+				
 			}catch(Exception exc) {
+				//Print the full error
 				MinimaLogger.log(exc);
 				
 				result = cmd.getJSONReply();
@@ -176,6 +249,11 @@ public abstract class Command {
 			
 			//Add it..
 			res.add(result);
+			
+			//Stop at a false..
+			if((boolean)result.get("status") == false) {
+				break;
+			}
 		}
 		
 		return res;

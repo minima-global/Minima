@@ -2,6 +2,7 @@ package org.minima.database.userprefs;
 
 import java.util.ArrayList;
 
+import org.minima.objects.base.MiniData;
 import org.minima.system.params.GlobalParams;
 import org.minima.utils.JsonDB;
 import org.minima.utils.json.JSONArray;
@@ -94,4 +95,15 @@ public class UserDB extends JsonDB{
 		return ret;
 	}
 	
+	
+	/**
+	 * Load Custom Transactions
+	 */
+	public MiniData loadCustomTransactions() {
+		return getData("custom_transactions", MiniData.ZERO_TXPOWID);
+	}
+	
+	public void saveCustomTransactions(MiniData zCompleteDB) {
+		setData("custom_transactions", zCompleteDB);
+	}
 }
