@@ -13,6 +13,7 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
+import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
 public class Coin implements Streamable {
@@ -115,7 +116,7 @@ public class Coin implements Streamable {
 	private Coin() {}
 	
 	/**
-	 * Return the same Coin buyt with a new CoinID - output coinid are computed after the fact
+	 * Return the same Coin but with a new CoinID - output coinid are computed after the fact
 	 */
 	public Coin getSameCoinWithCoinID(MiniData zCoinID) {
 		Coin copy = deepCopy();
@@ -126,7 +127,7 @@ public class Coin implements Streamable {
 	/**
 	 * Floating inputs change the CoinID
 	 */
-	private void resetCoinID(MiniData zCoinID) {
+	public void resetCoinID(MiniData zCoinID) {
 		mCoinID = zCoinID;
 	}
 	
@@ -229,10 +230,21 @@ public class Coin implements Streamable {
 			obj.put("token", null);
 		}else {
 			obj.put("token", mToken.toJSON());
+			
+			//What is the tokenamount..
+			MiniNumber tokenamt = getToken().getScaledTokenAmount(getAmount());
+			obj.put("tokenamount", tokenamt.toString());
 		}
 		
 		obj.put("floating", mFloating);
 		obj.put("storestate", mStoreState);
+		
+		//Add the state variables
+		JSONArray starr = new JSONArray();
+		for(StateVariable sv : mState) {
+			starr.add(sv.toJSON());
+		}
+		obj.put("state", starr);
 		
 		obj.put("mmrentry", mMMREntryNumber.toString());
 		obj.put("spent", mSpent.isTrue());

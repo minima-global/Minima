@@ -1,5 +1,8 @@
 package org.minima.system.brains;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.HashSet;
 
@@ -585,5 +588,21 @@ public class TxPoWChecker {
 		}
 		
 		return false;
+	}
+	
+	/**
+	 * Check the Difficulty of one block with another..
+	 */
+	public static double checkDifficulty(MiniData zTip, MiniData zBlock) {
+		
+		BigInteger tip 		= zTip.getDataValue();
+		BigInteger block 	= zBlock.getDataValue();
+		
+		BigDecimal tipdec 	= new BigDecimal(tip);
+		BigDecimal blockdec = new BigDecimal(block);
+		
+		BigDecimal div 		= tipdec.divide(blockdec, MathContext.DECIMAL32);
+		
+		return div.doubleValue();
 	}
 }

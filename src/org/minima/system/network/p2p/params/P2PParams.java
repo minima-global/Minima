@@ -10,6 +10,11 @@ public class P2PParams {
     public static String VERSION = "1.0";
 
     /**
+     * Max number of peers to keep in the peers list
+     */
+    public static int PEERS_LIST_SIZE = 50;
+
+    /**
      * Desired number of in link and out links to maintain
      */
     public static int TGT_NUM_LINKS = 5;
@@ -28,6 +33,12 @@ public class P2PParams {
      * Time between P2P system assessing its state in milliseconds
      */
     public static int LOOP_DELAY = 600_000;
+
+    /**
+     * Time between updating the device hash_rate in milliseconds
+     */
+    //                                         H    M    S    millis
+    public static int HASH_RATE_UPDATE_DELAY = 12 * 60 * 60 * 1000;
 
     /**
      * Max additional ms to add to loop delay (mostly useful during testing to ensure all nodes

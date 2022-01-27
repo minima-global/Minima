@@ -30,7 +30,8 @@ public class MiniData implements Streamable {
 	 */
 	public static int MINIMA_MAX_MINIDATA_LENGTH 	= 1024 * 1024 * 256;
 	
-	public static final MiniData ZERO_TXPOWID = new MiniData("0x00");
+	public static final MiniData ZERO_TXPOWID 	= new MiniData("0x00");
+	public static final MiniData ONE_TXPOWID 	= new MiniData("0x01");
 	
 	/**
 	 * The byte data
@@ -52,10 +53,20 @@ public class MiniData implements Streamable {
 	/**
 	 * Throws a NumberFormatException if the HEX String is Invalid
 	 * 
+	 * Can be HEX 0x or Base32 Mx
+	 * 
 	 * @param zHexString
 	 */
 	public MiniData(String zHexString) {
-		this(BaseConverter.decode16(zHexString));
+		
+		//Is it HEX or Base32..
+		if(zHexString.toLowerCase().startsWith("mx")) {
+			mData = BaseConverter.decode32(zHexString);
+		}else {
+			mData = BaseConverter.decode16(zHexString);
+		}
+		
+//		this(BaseConverter.decode16(zHexString));
 	}
 	
 	/**

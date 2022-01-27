@@ -60,7 +60,7 @@ public class TxPoWMiner extends MessageProcessor {
 			//And now start hashing.. 
 			MiniData hash   = null;
 			
-			//Post a message..
+			//Post a message.. Mining Started
 			Message mining = new Message(Main.MAIN_MINING);
 			mining.addBoolean("starting", true);
 			mining.addObject("txpow", txpow);
@@ -86,6 +86,12 @@ public class TxPoWMiner extends MessageProcessor {
 			
 			//Calculate TxPoWID
 			txpow.calculateTXPOWID();
+			
+			//Post a message.. Mining Finished
+			Message miningend = new Message(Main.MAIN_MINING);
+			miningend.addBoolean("starting", false);
+			miningend.addObject("txpow", txpow);
+			Main.getInstance().PostMessage(miningend);
 			
 			//Post it on..
 			Main.getInstance().PostMessage(new Message(Main.MAIN_TXPOWMINED).addObject("txpow", txpow));

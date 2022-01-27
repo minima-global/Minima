@@ -224,16 +224,16 @@ public class TxBlock implements Streamable {
 		int num=0;
 		for(Coin newoutput : outputs) {
 			
-			//Set the correct state variables
-			if(newoutput.storeState()) {
-				newoutput.setState(newstate);
-			}
-			
 			//Calculate the Correct CoinID for this coin.. TransactionID already calculated
 			MiniData coinid = zTransaction.calculateCoinID(num);
 			
 			//Create a new coin with correct coinid
 			Coin correctcoin = newoutput.getSameCoinWithCoinID(coinid);
+			
+			//Set the correct state variables
+			if(correctcoin.storeState()) {
+				correctcoin.setState(newstate);
+			}
 			
 			//Is this a create token output..
 			if(newoutput.getTokenID().isEqual(Token.TOKENID_CREATE)) {

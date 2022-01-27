@@ -1,5 +1,6 @@
 package org.minima.objects;
 
+import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -9,6 +10,7 @@ import org.minima.database.mmr.MMRProof;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.Crypto;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONObject;
 
@@ -57,6 +59,29 @@ public class CoinProof implements Streamable {
 		return ret;
 	}
 
+	/**
+	 * Convert a MiniData version into a CoinProof
+	 */
+	public static CoinProof convertMiniDataVersion(MiniData zTxpData) {
+		ByteArrayInputStream bais 	= new ByteArrayInputStream(zTxpData.getBytes());
+		DataInputStream dis 		= new DataInputStream(bais);
+		
+		CoinProof txnrow = null;
+		
+		try {
+			//Convert data
+			txnrow = CoinProof.ReadFromStream(dis);
+		
+			dis.close();
+			bais.close();
+			
+		} catch (IOException e) {
+			MinimaLogger.log(e);
+		}
+		
+		return txnrow;
+	}
+	
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
 		mCoin.writeDataStream(zOut);

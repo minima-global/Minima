@@ -79,6 +79,16 @@ public class P2PState {
 
     private boolean isHostSet = false;
 
+    private float deviceHashRate = 0.0f;
+
+    public float getDeviceHashRate() {
+        return deviceHashRate;
+    }
+
+    public void setDeviceHashRate(float deviceHashRate) {
+        this.deviceHashRate = deviceHashRate;
+    }
+
     public P2PState() {
         // Creates a new empty state
     }

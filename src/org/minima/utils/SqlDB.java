@@ -43,7 +43,7 @@ public abstract class SqlDB {
 				
 		try {
 			//The H2 JDBC URL
-			String h2db = "jdbc:h2:"+path+";MODE=MySQL";
+			String h2db = "jdbc:h2:"+path+";MODE=MySQL;DB_CLOSE_ON_EXIT=FALSE";
 			
 			//Create the connection
 			mSQLCOnnection = DriverManager.getConnection(h2db, "SA", "");
