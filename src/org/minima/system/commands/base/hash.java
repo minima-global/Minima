@@ -1,6 +1,7 @@
 package org.minima.system.commands.base;
 
 import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniString;
 import org.minima.system.commands.Command;
 import org.minima.utils.Crypto;
 import org.minima.utils.json.JSONObject;
@@ -15,7 +16,14 @@ public class hash extends Command {
 	public JSONObject runCommand() throws Exception {
 		JSONObject ret = getJSONReply();
 		
-		MiniData data = getDataParam("data"); 
+		String datastr = getParam("data");
+		
+		MiniData data = null;
+		if(datastr.startsWith("0x")) {
+			data = new MiniData(datastr);
+		}else {
+			data = new MiniData(new MiniString(datastr).getData());
+		}
 		
 		byte[] hash = Crypto.getInstance().hashData(data.getBytes());
 		

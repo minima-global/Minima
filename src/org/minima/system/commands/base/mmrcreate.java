@@ -89,7 +89,7 @@ public class mmrcreate extends Command {
 			jobj.put("entry", leaf.mEntry);
 			jobj.put("input", leaf.mInput);
 			jobj.put("data", leaf.mData);	
-//			jobj.put("hash", leaf.mHash);
+			jobj.put("hash", leaf.mHash);
 			
 			//Get the proof..
 			MMRProof proof = mmrtree.getProof(new MMREntryNumber(leaf.mEntry));

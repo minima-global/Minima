@@ -56,7 +56,7 @@ public class mmrproof extends Command {
 		
 		JSONObject resp = new JSONObject();
 		resp.put("data", strdata);
-//		resp.put("hash", hash);
+		resp.put("hash", hash);
 		resp.put("finaldata", prfcalc.to0xString());
 		resp.put("valid", prfcalc.isEqual(root));
 		
