@@ -139,7 +139,6 @@ public class Token implements Streamable{
 			obj.put("name", mTokenName.toString());
 		}
 		
-		obj.put("tokenid", mTokenID.to0xString());
 		obj.put("coinid", mCoinID.to0xString());
 		obj.put("total", getTotalTokens().toString());
 		obj.put("decimals", getDecimalPlaces());
@@ -147,6 +146,7 @@ public class Token implements Streamable{
 		obj.put("coinid", mCoinID.to0xString());
 		obj.put("totalamount", mTokenMinimaAmount.toString());
 		obj.put("scale", mTokenScale );
+		obj.put("tokenid", mTokenID.to0xString());
 		
 		return obj;
 	}
