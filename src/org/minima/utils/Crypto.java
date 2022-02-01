@@ -11,6 +11,7 @@ import java.math.BigInteger;
 import org.bouncycastle.crypto.Digest;
 import org.bouncycastle.crypto.digests.KeccakDigest;
 import org.bouncycastle.crypto.digests.SHA256Digest;
+import org.bouncycastle.crypto.digests.SHA3Digest;
 import org.minima.objects.base.MiniData;
 
 /**
@@ -48,27 +49,13 @@ public class Crypto {
 		return mCrypto;
 	}
 	
-	public Crypto(){
+	public Crypto(){}
 
-//		Provider[] provs = Security.getProviders();
-//		for(int i=0;i<provs.length;i++){
-//			SimpleLogger.log("Provider "+provs[i].getInfo());
-//		}
-		
-//		try {
-//			mDigest = MessageDigest.getInstance("SHA-256");
-////			mDigest = MessageDigest.getInstance("SHA1");
-////			mDigest = MessageDigest.getInstance("MD5");
-//		} catch (NoSuchAlgorithmException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-	}
-	
-//	private MessageDigest getDigest() throws NoSuchAlgorithmException {
-//		return MessageDigest.getInstance("SHA-256");
-//	}
-	
+	/**
+	 * Default KECCAK hashing
+	 * @param zData
+	 * @return
+	 */
 	public byte[] hashData(byte[] zData){
 		return hashData(zData, HASH_STRENGTH);
 	}
@@ -87,36 +74,53 @@ public class Crypto {
 		return null;
 	}
 	
-//	public byte[] hash(byte[] zLeft, byte[] zRight ){
-//		//Join the 2 arrays..
-//		byte[] joined = new byte[zData1.length+zData2.length];
-//		
-//		//Copy over..
-//		System.arraycopy(zData1, 0, joined, 0, zData1.length);
-//		System.arraycopy(zData2, 0, joined, zData1.length, zData2.length);
-//		
-//		//Now Hash that..
-//		return mDigest.digest(joined);
-//	}
-		
+	/**
+	 * SHA 2
+	 * @param zData
+	 * @return
+	 */
 	public byte[] hashSHA2(byte[] zData){
 		try {
+			
 			//Bouncy..
 			Digest sha2 = new SHA256Digest();
 			byte[] output = new byte[sha2.getDigestSize()];
 			sha2.update(zData, 0, zData.length);
 			sha2.doFinal(output, 0);
-			
 			return output;
 			
-			//Do it..
-//			return getDigest().digest(zData);
+		}catch(Exception exc) {
+			MinimaLogger.log(exc);
+		}
+		return null;
+	}
+	
+	/**
+	 * SHA 3
+	 * @param zData
+	 * @return
+	 */
+	public byte[] hashSHA3(byte[] zData){
+		try {
+			
+			//Bouncy..
+			Digest sha3 = new SHA3Digest(HASH_STRENGTH);
+			byte[] output = new byte[sha3.getDigestSize()];
+			sha3.update(zData, 0, zData.length);
+			sha3.doFinal(output, 0);
+			return output;
+			
 		}catch(Exception exc) {
 			MinimaLogger.log(exc);
 		}
 		return null;
 	}
 
+	/**
+	 * 
+	 * @param zObject
+	 * @return
+	 */
 	public MiniData hashObject(Streamable zObject) {
 		return hashObject(zObject, HASH_STRENGTH);
 	}
