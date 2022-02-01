@@ -9,6 +9,7 @@ import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.exceptions.MinimaParseException;
 import org.minima.kissvm.expressions.Expression;
+import org.minima.kissvm.functions.cast.ADDRESS;
 import org.minima.kissvm.functions.cast.BOOL;
 import org.minima.kissvm.functions.cast.HEX;
 import org.minima.kissvm.functions.cast.NUMBER;
@@ -19,6 +20,7 @@ import org.minima.kissvm.functions.hex.BITGET;
 import org.minima.kissvm.functions.hex.BITSET;
 import org.minima.kissvm.functions.hex.CONCAT;
 import org.minima.kissvm.functions.hex.LEN;
+import org.minima.kissvm.functions.hex.OVERWRITE;
 import org.minima.kissvm.functions.hex.REV;
 import org.minima.kissvm.functions.hex.SUBSET;
 import org.minima.kissvm.functions.number.ABS;
@@ -33,6 +35,7 @@ import org.minima.kissvm.functions.number.SIGDIG;
 import org.minima.kissvm.functions.sha.KECCAK;
 import org.minima.kissvm.functions.sha.PROOF;
 import org.minima.kissvm.functions.sha.SHA2;
+import org.minima.kissvm.functions.sha.SHA3;
 import org.minima.kissvm.functions.sigs.CHECKSIG;
 import org.minima.kissvm.functions.sigs.MULTISIG;
 import org.minima.kissvm.functions.sigs.SIGNEDBY;
@@ -64,12 +67,13 @@ public abstract class MinimaFunction {
 	 */
 	public static MinimaFunction[] ALL_FUNCTIONS = 
 			{ 
-				new CONCAT(), new LEN(), new REV(),new SUBSET(), new GET(),
+				new CONCAT(), new LEN(), new REV(),new SUBSET(), new GET(), new ADDRESS(),
 				new BOOL(), new HEX(), new NUMBER(), new STRING(),
 				new ABS(), new CEIL(), new FLOOR(),new MAX(), new MIN(), new DEC(), new INC(), 
 				new SIGDIG(), new POW(), 
-				new REPLACE(), new SUBSTR(), new UTF8(),
-				new KECCAK(), new SHA2(), new PROOF(), new BITSET(), new BITGET(), new BITCOUNT(),
+				new REPLACE(), new SUBSTR(), new OVERWRITE(), new UTF8(),
+				new KECCAK(), new SHA2(), new SHA3(), new PROOF(), 
+				new BITSET(), new BITGET(), new BITCOUNT(),
 				new SIGNEDBY(), new MULTISIG(), new CHECKSIG(),
 				new GETINADDR(), new GETINAMT(), new GETINID(), new GETINTOK(),new VERIFYIN(),
 				new GETOUTADDR(), new GETOUTAMT(), new GETOUTTOK(),new VERIFYOUT(),
