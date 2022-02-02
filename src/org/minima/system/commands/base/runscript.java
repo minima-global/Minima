@@ -161,7 +161,7 @@ public class runscript extends Command {
 		
 		JSONObject scriptnormal = new JSONObject();
 		scriptnormal.put("script", script);
-		scriptnormal.put("address", new Address(script).getAddressData());
+		scriptnormal.put("address", new Address(script).getAddressData().to0xString());
 		resp.put("script", scriptnormal);
 		
 		JSONObject scriptclean 	= new JSONObject();
