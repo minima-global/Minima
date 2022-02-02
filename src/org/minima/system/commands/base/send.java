@@ -27,14 +27,13 @@ import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
 import org.minima.system.params.GlobalParams;
 import org.minima.utils.Crypto;
-import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
 public class send extends Command {
 
 	
 	public send() {
-		super("send","[address:] [amount:] (tokenid:) - Send Minima or Tokens to an address");
+		super("send","[address:] [amount:] (tokenid:) (state:{}) - Send Minima or Tokens to an address");
 	}
 	
 	@Override
@@ -47,6 +46,11 @@ public class send extends Command {
 		
 		if(address==null || amount==null) {
 			throw new CommandException("MUST specify adress and amount");
+		}
+		
+		JSONObject state = new JSONObject();
+		if(existsParam("state")) {
+			state = getJSONObjectParam("state");
 		}
 		
 		//How much are we sending..
@@ -246,24 +250,22 @@ public class send extends Command {
 		}
 		
 		//Are there any State Variables
-		if(existsParam("state")) {
+		for(Object key : state.keySet()) {
 			
-			//Get the state JSONArray
-			JSONArray state = getJSONArrayParam("state");
-			for(Object st : state) {
-				
-				//They are JSONObjects
-				JSONObject json = (JSONObject)st;
-				
-				int port 		= Integer.parseInt(""+json.get("port"));
-				String data 	= (String)json.get("data");
+			//The Key is a String
+			String portstr = (String)key; 
 			
-				//Create a StateVariable
-				StateVariable sv = new StateVariable(port, data);
-				
-				//Add it..
-				transaction.addStateVariable(sv);
-			}
+			//The port
+			int port = Integer.parseInt(portstr);
+			
+			//Get the state var..
+			String var = (String) state.get(key);
+
+			//Create a state variable..
+			StateVariable sv = new StateVariable(port, var);
+			
+			//Add to the transaction..
+			transaction.addStateVariable(sv);
 		}
 		
 		//Calculate the TransactionID..

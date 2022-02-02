@@ -363,6 +363,7 @@ public class P2PManager extends MessageProcessor {
             float megspeed = speed / 1000000;
 
             state.setDeviceHashRate(megspeed);
+            PostTimerMessage(new TimerMessage(P2PParams.HASH_RATE_UPDATE_DELAY, P2P_UPDATE_HASH_RATE));
         } else if (zMessage.isMessageType(P2P_METRICS)) {
             PostTimerMessage(new TimerMessage(P2PParams.METRICS_DELAY, P2P_METRICS));
             JSONObject data = state.toJson();
