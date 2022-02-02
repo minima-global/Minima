@@ -12,6 +12,7 @@ import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.commands.Command;
+import org.minima.system.commands.CommandException;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
@@ -31,6 +32,10 @@ public class txncheck extends Command {
 		
 		//Get the Transaction..
 		TxnRow txnrow 	= db.getTransactionRow(getParam("id"));
+		if(txnrow == null) {
+			throw new CommandException("Transaction not found : "+id);
+		}
+		
 		Transaction txn = txnrow.getTransaction();
 		Witness wit 	= txnrow.getWitness();
 		

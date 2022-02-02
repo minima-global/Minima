@@ -34,6 +34,10 @@ public class txnsign extends Command {
 		
 		//Get the Transaction..
 		TxnRow txnrow 	= db.getTransactionRow(getParam("id"));
+		if(txnrow == null) {
+			throw new CommandException("Transaction not found : "+id);
+		}
+		
 		Transaction txn = txnrow.getTransaction();
 		Witness wit		= txnrow.getWitness();
 		
