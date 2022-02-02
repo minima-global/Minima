@@ -6,14 +6,16 @@ import org.minima.database.MinimaDB;
 import org.minima.database.wallet.KeyRow;
 import org.minima.database.wallet.Wallet;
 import org.minima.kissvm.Contract;
+import org.minima.objects.Address;
 import org.minima.system.commands.Command;
+import org.minima.system.commands.CommandException;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
 public class scripts extends Command {
 
 	public scripts() {
-		super("scripts","[action:list|newscript] (trackall:true|false) (script:) - Create a new custom script to track or list all scripts");
+		super("scripts","[action:list|clean|addscript] (script:) (track:true|false) - Create a new custom script to track or list all scripts");
 	}
 	
 	@Override
@@ -23,7 +25,7 @@ public class scripts extends Command {
 		//Get the wallet..
 		Wallet wallet = MinimaDB.getDB().getWallet();
 		
-		String action = getParam("action");
+		String action = getParam("action","list");
 		
 		if(action.equals("list")) {
 			
@@ -38,10 +40,27 @@ public class scripts extends Command {
 			//Put the details in the response..
 			ret.put("response", arr);
 			
-		}else {
+		}else if(action.equals("clean")) {
+			
+			String script = getParam("script");
+			
+			//Clean the script
+			String cleanscript = Contract.cleanScript(script);
+			
+			//Create an address
+			Address addr = new Address(cleanscript);
+			
+			JSONObject resp = new JSONObject();
+			resp.put("clean", cleanscript);
+			resp.put("address", addr.getAddressData().to0xString());
+			
+			ret.put("response", resp);
+			
+		}else if(action.equals("addscript")) {
+			
 			//Get the script
 			String script = getParam("script");
-			boolean track = getBooleanParam("trackall");
+			boolean track = getBooleanParam("track",true);
 			
 			//Clean the script
 			script = Contract.cleanScript(script);
@@ -51,8 +70,10 @@ public class scripts extends Command {
 			
 			//Put the details in the response..
 			ret.put("response", krow.toJSON());
-		}
 		
+		}else {
+			throw new CommandException("Invalid action : "+action);
+		}
 		
 		return ret;
 	}

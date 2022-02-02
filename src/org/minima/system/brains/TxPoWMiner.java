@@ -24,7 +24,7 @@ public class TxPoWMiner extends MessageProcessor {
 	/**
 	 * The Large Byte MiniNumber to set the Header up for hashing
 	 */
-	private static MiniNumber START_NONCE_BYTES = new MiniNumber("1000000000000000000.000000000000000000000000000000000000000001");
+	private static MiniNumber START_NONCE_BYTES = new MiniNumber("100000000000000000.00000000000000000000000000000000000000001");
 	
 	/**
 	 * A list of coins currently being mined.. to check when creating new transactions 
