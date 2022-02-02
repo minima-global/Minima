@@ -167,7 +167,7 @@ public class runscript extends Command {
 		JSONObject scriptclean 	= new JSONObject();
 		String cleanscript 		= Contract.cleanScript(script);
 		scriptclean.put("script", cleanscript);
-		scriptclean.put("address", new Address(cleanscript).getAddressData());
+		scriptclean.put("address", new Address(cleanscript).getAddressData().to0xString());
 		resp.put("clean", scriptclean);
 		
 		resp.put("trace", contract.getCompleteTraceLog());
