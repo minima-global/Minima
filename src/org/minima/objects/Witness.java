@@ -62,6 +62,10 @@ public class Witness implements Streamable {
 	/**
 	 * MMR Functions
 	 */
+	public void clearCoinProofs() {
+		mCoinProofs.clear();
+	}
+	
 	public void addCoinProof(CoinProof zProof) {
 		mCoinProofs.add(zProof);
 	}
