@@ -151,7 +151,7 @@ public class runscript extends Command {
 			String val = (String) globals.get(key);
 			
 			//And add..
-			contract.setGlobalVariable(glob, Value.getValue(val));
+			contract.setGlobalVariable(glob.toUpperCase(), Value.getValue(val));
 		}
 		
 		//Run it
