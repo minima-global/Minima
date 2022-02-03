@@ -1,6 +1,7 @@
 package org.minima.system.network.minima;
 
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
@@ -294,7 +295,8 @@ public class NIOClient {
  	   	}
  	   	
  	   	//Ready to read
- 	   	mBufferIn.flip();
+// 	   	mBufferIn.flip();
+ 	   ((Buffer) mBufferIn).flip();
  	   	
  	   	while(mBufferIn.hasRemaining()) {
  	   	
@@ -423,7 +425,8 @@ public class NIOClient {
 		}
 		
 		//Ready to write
-		mBufferOut.flip();
+//		mBufferOut.flip();
+		((Buffer) mBufferOut).flip();
 		
 		//Write
 		int write = mSocket.write(mBufferOut);
