@@ -66,6 +66,13 @@ public class TimerProcessor implements Runnable {
 				
 				//Cycle through all the timers
 				for(TimerMessage tm : mTimerMessages) {
+					
+					//Check for null... strange internittent BUG..
+					if(tm == null) {
+						MinimaLogger.log("Timer Message is NULL.. ?");
+						continue;
+					}
+					
 					//Get the time..
 					if(tm.getTimer()<time) {
 						//Who get's it
