@@ -82,7 +82,8 @@ public class Minima {
 
 		boolean daemon = configurer.isDaemon();
 		boolean rpcenable = configurer.isRpcenable();
-
+		boolean shutdownhook = configurer.isShutDownHook();
+		
 		//Now lets go..
 		MinimaLogger.log("**********************************************");
 		MinimaLogger.log("*  __  __  ____  _  _  ____  __  __    __    *");
@@ -103,15 +104,17 @@ public class Minima {
 		}
 
 		//A shutdown hook..
-		Runtime.getRuntime().addShutdownHook(new Thread(){
-			@Override
-			public void run(){
-				MinimaLogger.log("[!] Shutdown Hook..");
-				
-				//Shut down the whole system
-				main.shutdown();
-			}
-		});
+		if(shutdownhook) {
+			Runtime.getRuntime().addShutdownHook(new Thread(){
+				@Override
+				public void run(){
+					MinimaLogger.log("[!] Shutdown Hook..");
+					
+					//Shut down the whole system
+					main.shutdown();
+				}
+			});
+		}
 
 		//Daemon mode has no stdin input
 		if(daemon) {

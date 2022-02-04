@@ -22,7 +22,8 @@ public class ParamConfigurer {
     private final Map<ParamKeys, String> paramKeysToArg = new HashMap<>();
     private boolean daemon = false;
     private boolean rpcenable = false;
-
+    private boolean mShutdownhook = true;
+    
     public ParamConfigurer usingConfFile(String[] programArgs) {
         List<String> zArgsList = Arrays.asList(programArgs);
         int confArgKeyIndex = zArgsList.indexOf("-" + ParamKeys.conf);
@@ -111,6 +112,10 @@ public class ParamConfigurer {
     public boolean isRpcenable() {
         return rpcenable;
     }
+    
+    public boolean isShutDownHook() {
+        return mShutdownhook;
+    }
 
     enum ParamKeys {
         host("host", "Specify the host IP", (arg, configurer) -> {
@@ -157,6 +162,9 @@ public class ParamConfigurer {
         nop2p("nop2p", "Disable the automatic P2P system", (args, configurer) -> {
             GeneralParams.P2P_ENABLED = false;
         }),
+        noshutdownhook("noshutdownhook", "Do not use the shutdown hook (Android)", (args, configurer) -> {
+        	configurer.mShutdownhook = false;
+        }),
         noconnect("noconnect", "Stops the P2P system from connecting to other nodes until it's been connected too", (args, configurer) -> {
             if ("true".equals(args)) {
                 GeneralParams.NOCONNECT = true;
@@ -200,7 +208,7 @@ public class ParamConfigurer {
         help("help", "Print this help", (args, configurer) -> {
             System.out.println("Minima Help");
             stream(values())
-                    .forEach(pk -> System.out.format("%-15s%-15s%n", new Object[] {"-" + pk.key,pk.helpMsg}));
+                    .forEach(pk -> System.out.format("%-20s%-15s%n", new Object[] {"-" + pk.key,pk.helpMsg}));
             System.exit(1);
         });
 
