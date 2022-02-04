@@ -50,8 +50,17 @@ public class TxnRow implements Streamable {
 	public JSONObject toJSON() {
 		JSONObject ret = new JSONObject();
 		ret.put("id", mID);
+		
+		//Calculate the TransactionID
+		mTransaction.calculateTransactionID();
+		
+		//Now output
 		ret.put("transaction", mTransaction.toJSON());
+		
 		ret.put("witness", mWitness.toJSON());
+		
+		//Now output the full output coins with correct coinid
+		
 		return ret;		
 	}
 
