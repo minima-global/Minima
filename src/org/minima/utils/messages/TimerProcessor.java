@@ -48,7 +48,19 @@ public class TimerProcessor implements Runnable {
 	
 	public void PostMessage(TimerMessage zMessage) {
 		synchronized (mTimerMessages) {
-			mTimerMessages.add(zMessage);
+			if(zMessage != null) {
+				mTimerMessages.add(zMessage);
+			}else {
+				//Intermittent Bug..
+				MinimaLogger.log("NULL TIMER Message attempt:");
+				
+				//Print Stack Strace
+				Throwable tt = new Throwable();
+				for(StackTraceElement stack : tt.getStackTrace()) {
+					//Print it..
+					MinimaLogger.log("     "+stack.toString());
+				}
+			}
 		}
 	}
 	
