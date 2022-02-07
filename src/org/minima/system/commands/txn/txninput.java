@@ -14,7 +14,7 @@ import org.minima.utils.json.JSONObject;
 public class txninput extends Command {
 
 	public txninput() {
-		super("txninput","[id:] [coinid:] (floating:true|false) - Add a coin as an input to a transaction");
+		super("txninput","[id:] (coinid:) (floating:true|false) (coindata:) - Add a coin as an input to a transaction");
 	}
 	
 	@Override
@@ -27,23 +27,39 @@ public class txninput extends Command {
 		String id = getParam("id");
 		
 		//The Coin
-		String coinid = getParam("coinid");
-		
-		//Get the coin
-		Coin cc = TxPoWSearcher.searchCoin(new MiniData(coinid));
-		if(cc == null) {
-			throw new CommandException("CoinID not found : "+coinid);
+		String coinid 		= "";
+		boolean usecoinid 	= false;
+		if(existsParam("coinid")) {
+			usecoinid = true;
+			coinid = getParam("coinid");
+		}else {
+			coinid = getParam("coindata");
 		}
 		
-		//Is it a floating input..
-		boolean eltoo = getBooleanParam("floating",false);
-		if(eltoo) {
-			//Check thisa coin is floating..
-			if(!cc.isFloating()) {
-				throw new CommandException("Coin cannot be ELTOO as is not floating.. "+cc.toJSON().toString());
+		Coin cc = null;
+		if(usecoinid) {
+			//Get the coin
+			cc = TxPoWSearcher.searchCoin(new MiniData(coinid));
+			if(cc == null) {
+				throw new CommandException("CoinID not found : "+coinid);
 			}
 			
-			cc.resetCoinID(Coin.COINID_ELTOO);
+			//Is it a floating input..
+			boolean eltoo = getBooleanParam("floating",false);
+			if(eltoo) {
+				//Check this coin is floating..
+				if(!cc.isFloating()) {
+					throw new CommandException("Coin cannot be ELTOO as is not floating.. "+cc.toJSON().toString());
+				}
+				
+				cc.resetCoinID(Coin.COINID_ELTOO);
+			}
+		}else {
+			//Use the coindata version..
+			cc= Coin.convertMiniDataVersion(new MiniData(coinid));
+			if(cc == null) {
+				throw new CommandException("ERROR importing coin data");
+			}
 		}
 		
 		//Get the Transaction

@@ -4,13 +4,16 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 
+import org.minima.objects.Coin;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniString;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
+import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
 public class TxnRow implements Streamable {
@@ -51,15 +54,20 @@ public class TxnRow implements Streamable {
 		JSONObject ret = new JSONObject();
 		ret.put("id", mID);
 		
-		//Calculate the TransactionID
-		mTransaction.calculateTransactionID();
-		
 		//Now output
 		ret.put("transaction", mTransaction.toJSON());
 		
 		ret.put("witness", mWitness.toJSON());
 		
 		//Now output the full output coins with correct coinid
+		ArrayList<Coin> coinidcoins = mTransaction.getOutputCoinsWithCoinID();
+		JSONArray coinarrfull 	= new JSONArray();
+		JSONArray coinarr 		= new JSONArray();
+		for(Coin cc : coinidcoins) {
+			coinarrfull.add(cc.toJSON());
+			coinarr.add(MiniData.getMiniDataVersion(cc).to0xString());
+		}
+		ret.put("outputcoindata", coinarr);
 		
 		return ret;		
 	}

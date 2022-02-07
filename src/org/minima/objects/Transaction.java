@@ -370,12 +370,40 @@ public class Transaction implements Streamable {
 		ret.put("state", outs);
 		
 		ret.put("linkhash", mLinkHash.to0xString());
-		
+	
+		calculateTransactionID();
 		ret.put("transactionid", mTransactionID.to0xString());
 		
 		return ret;
 	}
 
+	/**
+	 * Calculate the output coins with correct CoinID
+	 * @return
+	 */
+	public ArrayList<Coin> getOutputCoinsWithCoinID(){
+		ArrayList<Coin> ret = new ArrayList<>();
+		
+		//Need this to be correct
+		calculateTransactionID();
+		
+		int output=0;
+		for(Coin coin : mOutputs) {
+			
+			//Create a copy..
+			Coin copycoin = coin.deepCopy();
+			
+			//What is the coinid..
+			MiniData cid = calculateCoinID(output);
+			copycoin.resetCoinID(cid);
+			
+			//add to our list
+			ret.add(copycoin);
+		}
+		
+		return ret;
+	}
+	
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
 		//Max 255 inputs or outputs

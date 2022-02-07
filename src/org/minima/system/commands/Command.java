@@ -327,6 +327,17 @@ public abstract class Command {
 				try {
 					json = (JSONArray) new JSONParser().parse(value);
 				} catch (ParseException e) {
+					
+					//Is this a state variable
+					if(command.equals("txnstate")) {
+						
+						//Could be a String variable.. add normal String parameter to..
+						comms.getParams().put(name, value);
+						
+						continue;
+					}
+					
+					//Otherwise is just a broken JSONArray
 					return new missingcmd(command,"Invalid JSON parameter for "+command+" @ "+token+" "+e.toString());
 				}
 				
@@ -399,7 +410,7 @@ public abstract class Command {
 	
 	private static String[] splitStringJSON(String zInput) {
 		//Are there any JSON in this..
-		if(zInput.length()>10000 && zInput.indexOf("{") == -1) {
+		if(zInput.length()>10000 && zInput.indexOf("{") == -1 && zInput.indexOf("[") == -1) {
 			return splitterQuotedPattern(zInput);
 		}
 		

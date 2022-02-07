@@ -105,10 +105,10 @@ public class Coin implements Streamable {
 	}
 		
 	public Coin(MiniData zCoinID, MiniData zAddress, MiniNumber zAmount, MiniData zTokenID, boolean zFloating, boolean zStoreState) {
-		mCoinID  = zCoinID;
-		mAddress = zAddress;
-		mAmount  = zAmount;
-		mTokenID = zTokenID;
+		mCoinID  	= zCoinID;
+		mAddress 	= zAddress;
+		mAmount  	= zAmount;
+		mTokenID 	= zTokenID;
 		mFloating   = zFloating;
 		mStoreState = zStoreState;
 	}
@@ -246,11 +246,35 @@ public class Coin implements Streamable {
 		}
 		obj.put("state", starr);
 		
-		obj.put("mmrentry", mMMREntryNumber.toString());
 		obj.put("spent", mSpent.isTrue());
+		
+		obj.put("mmrentry", mMMREntryNumber.toString());
 		obj.put("created", mBlockCreated.toString());
 		
 		return obj;
+	}
+	
+	/**
+	 * Convert a MiniData version into a Coin
+	 */
+	public static Coin convertMiniDataVersion(MiniData zTxpData) {
+		ByteArrayInputStream bais 	= new ByteArrayInputStream(zTxpData.getBytes());
+		DataInputStream dis 		= new DataInputStream(bais);
+		
+		Coin txnrow = null;
+		
+		try {
+			//Convert data
+			txnrow = Coin.ReadFromStream(dis);
+		
+			dis.close();
+			bais.close();
+			
+		} catch (IOException e) {
+			MinimaLogger.log(e);
+		}
+		
+		return txnrow;
 	}
 	
 	/**

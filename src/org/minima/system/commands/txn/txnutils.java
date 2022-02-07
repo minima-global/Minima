@@ -30,7 +30,7 @@ public class txnutils {
 		//Are any of the inputs floating
 		ArrayList<Coin> inputs = new ArrayList<>();
 		for(Coin cc : baseinputs) {
-			if(cc.isFloating()) {
+			if(cc.isFloating() && cc.getCoinID().isEqual(Coin.COINID_ELTOO)) {
 			
 				//Get the MOST recent coin to attach to this transaction..
 				Coin floater = TxPoWSearcher.getFloatingCoin(tip, cc.getAmount(), cc.getAddress(), cc.getTokenID());	
@@ -39,12 +39,18 @@ public class txnutils {
 					throw new CommandException("Could not find valid unspent coin for "+cc.toJSON());
 				}
 				
-				MinimaLogger.log("Floating coin found : "+floater.toJSON());
-				
 				inputs.add(floater);
 				
 			}else {
-				inputs.add(cc);
+				
+				//Get the complete coin given the CoinID 
+				//could be a pre-made coin.. so use correct MMREntry / Created 
+				Coin current = TxPoWSearcher.searchCoin(cc.getCoinID());
+				if(current == null) {
+					throw new CommandException("Coin with CoinID not found : "+cc.getCoinID().to0xString());
+				}
+				
+				inputs.add(current);
 			}
 		}
 		
