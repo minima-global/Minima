@@ -1,5 +1,6 @@
 package org.minima.utils;
 
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
@@ -242,7 +243,8 @@ public class Keccak {
 	public ByteBuffer digest(int outSize, boolean direct) {
 		ByteBuffer buffer = direct ? ByteBuffer.allocateDirect(outSize) : ByteBuffer.allocate(outSize);
 		digest(buffer);
-		buffer.flip();
+//		buffer.flip();
+		((Buffer) buffer).flip();
 		return buffer;
 	}
 
