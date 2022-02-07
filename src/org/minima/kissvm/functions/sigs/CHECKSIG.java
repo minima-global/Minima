@@ -33,7 +33,7 @@ public class CHECKSIG extends MinimaFunction {
 		HexValue sig    = zContract.getHexParam(2, this);
 		
 		//Check it..
-		MiniData pubk = new MiniData(pubkey.getMiniData().getBytes());
+		MiniData pubk = pubkey.getMiniData();
 		
 		//Simple checks..
 		if(pubk.getLength() == 0 || sig.getMiniData().getLength()==0) {

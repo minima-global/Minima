@@ -1,10 +1,12 @@
 package org.minima.system.brains;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 
 import org.minima.database.MinimaDB;
 import org.minima.objects.Coin;
 import org.minima.objects.Transaction;
+import org.minima.objects.TxHeader;
 import org.minima.objects.TxPoW;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
@@ -18,6 +20,11 @@ public class TxPoWMiner extends MessageProcessor {
 
 	public static final String TXPOWMINER_MINETXPOW 	= "TXPOWMINER_MINETXPOW";
 	public static final String TXPOWMINER_MINEPULSE 	= "TXPOWMINER_MINEPULSE";
+	
+	/**
+	 * The Large Byte MiniNumber to set the Header up for hashing
+	 */
+	private static MiniNumber START_NONCE_BYTES = new MiniNumber("100000000000000000.00000000000000000000000000000000000000001");
 	
 	/**
 	 * A list of coins currently being mined.. to check when creating new transactions 
@@ -51,14 +58,11 @@ public class TxPoWMiner extends MessageProcessor {
 			//Hard set the Header Body hash - now we are mining it can never change
 			txpow.setHeaderBodyHash();
 			
-			//The Start Nonce..
-			MiniNumber nonce = new MiniNumber(0);
+			//Set the nonce.. we make it a large size in bytes then edit those - no reserialisation
+			txpow.setNonce(START_NONCE_BYTES);
 			
 			//Set the Time..
 			txpow.setTimeMilli(new MiniNumber(System.currentTimeMillis()));
-			
-			//And now start hashing.. 
-			MiniData hash   = null;
 			
 			//Post a message.. Mining Started
 			Message mining = new Message(Main.MAIN_MINING);
@@ -66,23 +70,46 @@ public class TxPoWMiner extends MessageProcessor {
 			mining.addObject("txpow", txpow);
 			Main.getInstance().PostMessage(mining);
 			
+			//Get the byte data
+			byte[] data = MiniData.getMiniDataVersion(txpow.getTxHeader()).getBytes();
+			
 			//Cycle until done..
+			MiniNumber finalnonce 	= MiniNumber.ZERO;
+			BigInteger newnonce 	= BigInteger.ZERO;
 			while(isRunning()) {
 				
-				//Set the nonce..
-				txpow.setNonce(nonce);
+				//Get a nonce to write over the data
+				byte[] noncebytes = newnonce.toByteArray();
+				newnonce 		  = newnonce.add(BigInteger.ONE);
 				
-				//Now Hash it..
-				hash = Crypto.getInstance().hashObject(txpow.getTxHeader());
+				//Copy these into the byte array of the TxHeader 
+				//start 2 numbers in so leading zero is not changed
+				System.arraycopy(noncebytes, 0, data, 4, noncebytes.length);
+				
+				//Hash the data array
+				byte[] hashedbytes = Crypto.getInstance().hashData(data);
+				
+				//Make into a MiniData structure
+				MiniData hash = new MiniData(hashedbytes);
 				
 				//Have we found a valid txpow
 				if(hash.isLess(txpow.getTxnDifficulty())) {
+					
+					//Ok read in the final data..
+					MiniData finaldata = new MiniData(data);
+					
+					//Now convert to a TxHeader
+					TxHeader txh = TxHeader.convertMiniDataVersion(finaldata);
+					
+					//What was the nonce..
+					finalnonce = txh.mNonce;
+					
 					break;
 				}
-				
-				//Increment the nonce..
-				nonce = nonce.add(MiniNumber.MINI_UNIT);
 			}
+			
+			//Now set the final nonce..
+			txpow.setNonce(finalnonce);
 			
 			//Calculate TxPoWID
 			txpow.calculateTXPOWID();

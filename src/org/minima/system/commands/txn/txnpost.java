@@ -9,6 +9,7 @@ import org.minima.objects.Witness;
 import org.minima.system.Main;
 import org.minima.system.brains.TxPoWGenerator;
 import org.minima.system.commands.Command;
+import org.minima.system.commands.CommandException;
 import org.minima.utils.json.JSONObject;
 
 public class txnpost extends Command {
@@ -28,6 +29,9 @@ public class txnpost extends Command {
 		
 		//Get the row..
 		TxnRow txnrow = db.getTransactionRow(id); 
+		if(txnrow == null) {
+			throw new CommandException("Transaction not found : "+id);
+		}
 		
 		//Get the Transaction
 		Transaction trans = txnrow.getTransaction();

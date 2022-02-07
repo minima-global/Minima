@@ -46,6 +46,7 @@ import org.minima.system.commands.txn.txninput;
 import org.minima.system.commands.txn.txnlist;
 import org.minima.system.commands.txn.txnoutput;
 import org.minima.system.commands.txn.txnpost;
+import org.minima.system.commands.txn.txnscript;
 import org.minima.system.commands.txn.txnsign;
 import org.minima.system.commands.txn.txnstate;
 import org.minima.utils.json.JSONObject;
@@ -103,6 +104,7 @@ public class help extends Command {
 		addCommand(details, new txninput());
 		addCommand(details, new txnoutput());
 		addCommand(details, new txnstate());
+		addCommand(details, new txnscript());
 		addCommand(details, new txnsign());
 		addCommand(details, new txnclear());
 		addCommand(details, new txnpost());

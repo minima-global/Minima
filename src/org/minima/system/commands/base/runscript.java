@@ -2,10 +2,12 @@ package org.minima.system.commands.base;
 
 import java.util.ArrayList;
 
+import org.minima.database.mmr.MMRProof;
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.values.StringValue;
 import org.minima.kissvm.values.Value;
 import org.minima.objects.Address;
+import org.minima.objects.ScriptProof;
 import org.minima.objects.StateVariable;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
@@ -17,7 +19,7 @@ import org.minima.utils.json.JSONObject;
 public class runscript extends Command {
 
 	public runscript() {
-		super("runscript","[script:] (state:{}) (prevstate:{}) (globals:{}) (signatures:[])- Run a script with the defined parameters");
+		super("runscript","[script:] (state:{}) (prevstate:{}) (globals:{}) (signatures:[]) (extrascripts:{}) - Run a script with the defined parameters");
 	}
 	
 	@Override
@@ -48,9 +50,15 @@ public class runscript extends Command {
 			signatures = getJSONArrayParam("signatures");
 		}
 		
+		JSONObject extrascripts = new JSONObject();
+		if(existsParam("extrascripts")) {
+			extrascripts = getJSONObjectParam("extrascripts");
+		}
+		
 		//The Transaction..
-		Transaction trans = new Transaction();
-				
+		Transaction trans 	= new Transaction();
+		Witness witness 	= new Witness();
+		
 		//Add the state variables..
 		for(Object key : state.keySet()) {
 			
@@ -101,8 +109,29 @@ public class runscript extends Command {
 			sigs.add(new MiniData(strsig));
 		}
 		
+		//Any extra scripts
+		for(Object key : extrascripts.keySet()) {
+			
+			//Get the state var..
+			String exscript = (String)key;
+			
+			//The Key is a String
+			String proof 		=  (String) extrascripts.get(key);
+			MiniData proofdata 	= new MiniData(proof); 
+			
+			//Make it into an MMRProof..
+			MMRProof scproof = MMRProof.convertMiniDataVersion(proofdata);
+			
+			//Create a ScriptProof..
+			ScriptProof scprf = new ScriptProof(exscript, scproof);
+			
+			//Add to the Witness..
+			witness.addScript(scprf);
+		}
+
+		
 		//Create a Contract
-		Contract contract = new Contract(script, sigs, new Witness(), trans, pstate);
+		Contract contract = new Contract(script, sigs, witness, trans, pstate);
 	
 		//Set trhe Script..
 		contract.setGlobalVariable("@SCRIPT", new StringValue(script));
