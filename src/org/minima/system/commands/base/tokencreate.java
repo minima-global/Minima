@@ -58,6 +58,11 @@ public class tokencreate extends Command {
 			//Get the JSON
 			JSONObject jsonname = getJSONObjectParam("name");
 			
+			//make sure there is a name object
+			if(!jsonname.containsKey("name")) {
+				throw new CommandException("MUST specify a 'name' for the token in the JSON");
+			}
+			
 			//Get the String version
 			name = jsonname.toString();
 			
