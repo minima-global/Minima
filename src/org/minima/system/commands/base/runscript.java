@@ -19,7 +19,7 @@ import org.minima.utils.json.JSONObject;
 public class runscript extends Command {
 
 	public runscript() {
-		super("runscript","[script:] (state:{}) (prevstate:{}) (globals:{}) (signatures:[]) (extrascripts:{}) - Run a script with the defined parameters");
+		super("runscript","[script:] (clean:true|false) (state:{}) (prevstate:{}) (globals:{}) (signatures:[]) (extrascripts:{}) - Run a script with the defined parameters");
 	}
 	
 	@Override
@@ -28,6 +28,11 @@ public class runscript extends Command {
 
 		//Get the script..
 		String script = getParam("script","");
+		
+		boolean clean = getBooleanParam("clean",true);
+		if(clean) {
+			script = Contract.cleanScript(script);
+		}
 		
 		//What is defined..
 		JSONObject state = new JSONObject();
@@ -161,13 +166,13 @@ public class runscript extends Command {
 		
 		JSONObject scriptnormal = new JSONObject();
 		scriptnormal.put("script", script);
-		scriptnormal.put("address", new Address(script).getAddressData());
+		scriptnormal.put("address", new Address(script).getAddressData().to0xString());
 		resp.put("script", scriptnormal);
 		
 		JSONObject scriptclean 	= new JSONObject();
 		String cleanscript 		= Contract.cleanScript(script);
 		scriptclean.put("script", cleanscript);
-		scriptclean.put("address", new Address(cleanscript).getAddressData());
+		scriptclean.put("address", new Address(cleanscript).getAddressData().to0xString());
 		resp.put("clean", scriptclean);
 		
 		resp.put("trace", contract.getCompleteTraceLog());
