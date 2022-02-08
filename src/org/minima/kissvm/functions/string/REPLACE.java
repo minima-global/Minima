@@ -33,7 +33,7 @@ public class REPLACE extends MinimaFunction {
 
 	@Override
 	public int requiredParams() {
-		return 2;
+		return 3;
 	}
 	
 	@Override

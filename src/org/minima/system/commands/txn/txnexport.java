@@ -1,17 +1,20 @@
 package org.minima.system.commands.txn;
 
+import java.io.File;
+
 import org.minima.database.MinimaDB;
 import org.minima.database.userprefs.txndb.TxnDB;
 import org.minima.database.userprefs.txndb.TxnRow;
-import org.minima.objects.base.MiniData;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
+import org.minima.utils.MiniFile;
+import org.minima.utils.MiniFormat;
 import org.minima.utils.json.JSONObject;
 
 public class txnexport extends Command {
 
 	public txnexport() {
-		super("txnexport","[id:] - Export a transaction");
+		super("txnexport","[id:] [file:] - Export a transaction to a file");
 	}
 	
 	@Override
@@ -20,7 +23,8 @@ public class txnexport extends Command {
 
 		TxnDB db = MinimaDB.getDB().getCustomTxnDB();
 		
-		String id = getParam("id");
+		String id   = getParam("id");
+		String file = getParam("file");
 		
 		//Get the Transaction..
 		TxnRow txnrow 	= db.getTransactionRow(getParam("id"));
@@ -28,11 +32,20 @@ public class txnexport extends Command {
 			throw new CommandException("Transaction not found : "+id);
 		}
 		
-		//Export it..
-		MiniData data = MiniData.getMiniDataVersion(txnrow);
+		//Create the file
+		File output = new File(file);
+		if(output.exists()) {
+			output.delete();
+		}
+		
+		//Now export this to a file..
+		MiniFile.writeObjectToFile(output, txnrow);
 		
 		JSONObject resp = new JSONObject();
-		ret.put("response", data.to0xString());
+		resp.put("file", output.getAbsolutePath());
+		resp.put("size", MiniFormat.formatSize(output.length()));
+		
+		ret.put("response", resp);
 		
 		return ret;
 	}

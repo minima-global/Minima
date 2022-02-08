@@ -2,6 +2,7 @@ package org.minima.system.commands.txn;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.userprefs.txndb.TxnDB;
+import org.minima.database.userprefs.txndb.TxnRow;
 import org.minima.objects.Coin;
 import org.minima.objects.Token;
 import org.minima.objects.Transaction;
@@ -59,7 +60,11 @@ public class txnoutput extends Command {
 		output.setFloating(floating);
 		
 		//Get the Transaction
-		Transaction trans = db.getTransactionRow(id).getTransaction();
+		TxnRow txnrow 	= db.getTransactionRow(getParam("id"));
+		if(txnrow == null) {
+			throw new CommandException("Transaction not found : "+id);
+		}
+		Transaction trans = txnrow.getTransaction();
 		trans.addOutput(output);
 		
 		//Output the current trans..

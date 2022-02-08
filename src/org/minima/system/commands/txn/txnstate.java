@@ -2,9 +2,11 @@ package org.minima.system.commands.txn;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.userprefs.txndb.TxnDB;
+import org.minima.database.userprefs.txndb.TxnRow;
 import org.minima.objects.StateVariable;
 import org.minima.objects.Transaction;
 import org.minima.system.commands.Command;
+import org.minima.system.commands.CommandException;
 import org.minima.utils.json.JSONObject;
 
 public class txnstate extends Command {
@@ -29,7 +31,11 @@ public class txnstate extends Command {
 		}
 		
 		//Get the Transaction
-		Transaction trans = db.getTransactionRow(id).getTransaction();
+		TxnRow txnrow 	= db.getTransactionRow(getParam("id"));
+		if(txnrow == null) {
+			throw new CommandException("Transaction not found : "+id);
+		}
+		Transaction trans = txnrow.getTransaction();
 		
 		//Create a state variable..
 		StateVariable sv = new StateVariable(Integer.parseInt(port),value,keeper);

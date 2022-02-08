@@ -76,6 +76,9 @@ public class txnutils {
 		//Get the main Wallet
 		Wallet walletdb = MinimaDB.getDB().getWallet();
 		
+		//Clear the MMR..
+		zWitness.clearCoinProofs();
+		
 		//Add the MMR proofs for the coins..
 		for(Coin input : inputs) {
 			

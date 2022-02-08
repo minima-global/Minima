@@ -44,7 +44,7 @@ public class KeyRow {
 		ret.put("publickey", getPublicKey());
 		ret.put("script", getScript());
 		ret.put("address", getAddress());
-		ret.put("trackall", mTrack);
+		ret.put("track", mTrack);
 		
 		return ret;
 	}

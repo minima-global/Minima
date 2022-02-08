@@ -58,6 +58,7 @@ import org.minima.system.commands.txn.txninput;
 import org.minima.system.commands.txn.txnlist;
 import org.minima.system.commands.txn.txnoutput;
 import org.minima.system.commands.txn.txnpost;
+import org.minima.system.commands.txn.txnscript;
 import org.minima.system.commands.txn.txnsign;
 import org.minima.system.commands.txn.txnstate;
 import org.minima.utils.MinimaLogger;
@@ -78,7 +79,7 @@ public abstract class Command {
 			
 			new txncreate(), new txninput(),new txnlist(), new txnclear(),
 			new txnoutput(),new txnstate(),new txnsign(),new txnpost(),new txndelete(),
-			new txnexport(),new txnimport(),new txncheck(),
+			new txnexport(),new txnimport(),new txncheck(), new txnscript(),
 			
 			new coinimport(), new coinexport(),new cointrack(),
 			
@@ -177,11 +178,19 @@ public abstract class Command {
 	
 	
 	
-	public JSONObject getJSONObjectParam(String zParamName) {
+	public JSONObject getJSONObjectParam(String zParamName) throws CommandException{
+		if(!existsParam(zParamName)) {
+			throw new CommandException("param not specified : "+zParamName);
+		}
+		
 		return (JSONObject) mParams.get(zParamName);
 	}
 	
-	public JSONArray getJSONArrayParam(String zParamName) {
+	public JSONArray getJSONArrayParam(String zParamName) throws CommandException {
+		if(!existsParam(zParamName)) {
+			throw new CommandException("param not specified : "+zParamName);
+		}
+		
 		return (JSONArray) mParams.get(zParamName);
 	}
 	

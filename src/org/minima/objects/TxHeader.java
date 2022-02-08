@@ -1,5 +1,6 @@
 package org.minima.objects;
 
+import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -10,6 +11,7 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.params.GlobalParams;
 import org.minima.utils.Crypto;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
@@ -129,6 +131,7 @@ public class TxHeader implements Streamable {
 		txpow.put("mmr", mMMRRoot.toString());
 		txpow.put("total", mMMRTotal.toString());
 		
+		txpow.put("txbodyhash", mTxBodyHash.to0xString());
 		txpow.put("nonce", mNonce.toString());
 		txpow.put("timemilli", mTimeMilli.toString());
 		txpow.put("date", new Date(mTimeMilli.getAsLong()).toString());
@@ -217,5 +220,34 @@ public class TxHeader implements Streamable {
 		
 		//The TxBody Hash
 		mTxBodyHash = MiniData.ReadHashFromStream(zIn);
+	}
+	
+	public static TxHeader ReadFromStream(DataInputStream zIn) throws IOException {
+		TxHeader txp = new TxHeader();
+		txp.readDataStream(zIn);
+		return txp;
+	}
+	
+	/**
+	 * Convert a MiniData version into a TxHeader
+	 */
+	public static TxHeader convertMiniDataVersion(MiniData zTxpData) {
+		ByteArrayInputStream bais 	= new ByteArrayInputStream(zTxpData.getBytes());
+		DataInputStream dis 		= new DataInputStream(bais);
+		
+		TxHeader txpow = null;
+		
+		try {
+			//Convert data into a TxPoW
+			txpow = TxHeader.ReadFromStream(dis);
+		
+			dis.close();
+			bais.close();
+			
+		} catch (IOException e) {
+			MinimaLogger.log(e);
+		}
+		
+		return txpow;
 	}
 }

@@ -86,9 +86,9 @@ public class mmrcreate extends Command {
 		for(mmrleafnode leaf : leafnodes) {
 			
 			JSONObject jobj = new JSONObject();
-			jobj.put("entry", leaf.mEntry);
+//			jobj.put("entry", leaf.mEntry);
 			jobj.put("input", leaf.mInput);
-			jobj.put("data", leaf.mData);	
+//			jobj.put("data", leaf.mData);	
 //			jobj.put("hash", leaf.mHash);
 			
 			//Get the proof..
@@ -105,7 +105,8 @@ public class mmrcreate extends Command {
 		}
 		
 		JSONObject jsonmmr = new JSONObject();
-		jsonmmr.put("leafnodes", leafdata);
+		jsonmmr.put("nodes", leafdata);
+		jsonmmr.put("total", leafnodes.size());
 		jsonmmr.put("root", root.to0xString());
 		
 		//Add balance..
