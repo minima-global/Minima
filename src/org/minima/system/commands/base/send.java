@@ -27,6 +27,7 @@ import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
 import org.minima.system.params.GlobalParams;
 import org.minima.utils.Crypto;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
 
 public class send extends Command {
@@ -213,7 +214,22 @@ public class send extends Command {
 		
 		//Now make the sendamount correct
 		if(!tokenid.equals("0x00")) {
-			sendamount = token.getScaledMinimaAmount(sendamount);
+			
+			//Convert back and forward to make sure is a valid amount
+			MiniNumber tokenamount 	= token.getScaledMinimaAmount(sendamount); 
+			MiniNumber prectest 	= token.getScaledTokenAmount(tokenamount);
+			
+			if(!prectest.isEqual(sendamount)) {
+				throw new CommandException("Invalid Token amount to send.. "+amount);
+			}
+			
+			sendamount = tokenamount;
+					
+		}else {
+			//Check valid - for Minima..
+			if(!sendamount.isValidMinimaValue()) {
+				throw new CommandException("Invalid Minima amount to send.. "+amount);
+			}
 		}
 		
 		//Create the output
