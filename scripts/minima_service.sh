@@ -52,7 +52,7 @@ if [ ! $PORT ]; then
     PORT='9001'
 fi
 
-DOWNLOAD_URL="https://github.com/minima-global/Minima/raw/release-0.100/jar/minima.jar"
+DOWNLOAD_URL="https://github.com/minima-global/Minima/raw/master/jar/minima.jar"
 MINIMA_JAR_NAME="minima.jar"
 
 echo "[+] Downloading minima from: $DOWNLOAD_URL"
