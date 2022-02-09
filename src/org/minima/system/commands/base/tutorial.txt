@@ -193,3 +193,4 @@ Return the state value stored in the coin MMR data - when the coin was created
 
 SAMESTATE ( NUMBER NUMBER )
 Return TRUE if the previous state and current state are the same for the start and end positions
+
