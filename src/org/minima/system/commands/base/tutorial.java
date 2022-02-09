@@ -6,7 +6,7 @@ import org.minima.utils.json.JSONObject;
 public class tutorial extends Command {
 
 	public tutorial() {
-		super("tutorial","Show a tutorial for Minima scrtipting");
+		super("tutorial","Show the complete Grammar for Minima KISSVM scripting");
 	}
 	
 	@Override
