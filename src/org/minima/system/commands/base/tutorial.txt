@@ -1,0 +1,195 @@
+ADDRESS     ::= ADDRESS ( BLOCK )
+BLOCK       ::= STATEMENT_1 STATEMENT_2 ... STATEMENT_n
+STATEMENT   ::= LET VARIABLE = EXPRESSION |
+                LET ( EXPRESSION_1 EXPRESSION_2 ... EXPRESSION_n ) = EXPRESSION |
+                IF EXPRESSION THEN BLOCK [ELSEIF EXPRESSION THEN BLOCK]* [ELSE
+                BLOCK] ENDIF |
+                WHILE EXPRESSION DO BLOCK ENDWHILE |
+                EXEC EXPRESSION |
+                MAST EXPRESSION |
+                ASSERT EXPRESSION |
+                RETURN EXPRESSION
+EXPRESSION  ::= RELATION
+RELATION    ::= LOGIC AND LOGIC  | LOGIC OR LOGIC  |
+                LOGIC XOR LOGIC  | LOGIC NAND LOGIC |
+                LOGIC NOR LOGIC  | LOGIC NXOR LOGIC | LOGIC
+LOGIC       ::= OPERATION EQ OPERATION  | OPERATION NEQ OPERATION  |
+                OPERATION GT OPERATION  | OPERATION GTE OPERATION  |
+                OPERATION LT OPERATION  | OPERATION LTE OPERATION  | OPERATION
+OPERATION   ::= ADDSUB & ADDSUB | ADDSUB | ADDSUB | ADDSUB ^ ADDSUB | ADDSUB
+ADDSUB      ::= MULDIV + MULDIV | MULDIV - MULDIV | MULDIV % MULDIV |
+                MULDIV << MULDIV | MULDIV >> MULDIV | MULDIV
+MULDIV      ::= PRIME * PRIME | PRIME / PRIME | PRIME
+PRIME       ::= NOT PRIME |  NEG PRIME | NOT BASEUNIT | NEG BASEUNIT | BASEUNIT
+BASEUNIT    ::= VARIABLE | VALUE | -NUMBER | GLOBAL | FUNCTION | ( EXPRESSION )
+VARIABLE    ::= [a-z]+
+VALUE       ::= NUMBER | HEX | STRING | BOOLEAN
+NUMBER      ::= ^[0-9]+(\\\\.[0-9]+)?
+HEX         ::= 0x[0-9a-fA-F]+
+STRING      ::= [UTF8_String]
+BOOLEAN     ::= TRUE | FALSE
+FALSE       ::= 0
+TRUE        ::= NOT FALSE
+GLOBAL      ::= @BLOCK | @INBLOCK | @BLOCKDIFF | @INPUT |
+                @AMOUNT | @ADDRESS | @TOKENID | @COINID |
+                @SCRIPT | @TOTIN | @TOTOUT
+FUNCTION    ::= FUNC ( EXPRESSION_1 EXPRESSION_2 .. EXPRESSION_n )
+FUNC        ::= CONCAT | LEN | REV | SUBSET | GET | OVERWRITE |
+                CLEAN | UTF8 | REPLACE | SUBSTR |
+                BOOL | HEX | NUMBER | STRING | ADDRESS |
+                ABS | CEIL | FLOOR | MIN | MAX | INC | DEC | SIGDIG | POW |
+                BITSET | BITGET | BITCOUNT | PROOF | KECCAK | SHA2 | SHA3 |
+                SIGNEDBY | MULTISIG | CHECKSIG |
+                GETOUTADDR | GETOUTAMT | GETOUTTOK | VERIFYOUT |
+                GETINADDR | GETINAMT | GETINTOK | GETINID | VERIFYIN |
+                STATE | PREVSTATE | SAMESTATE
+
+Globals
+
+@BLOCK       : Block number this transaction is in
+@INBLOCK     : Block number when this output was created
+@BLOCKDIFF   : Difference between @BLOCK and INBLOCK
+@INPUT       : Input number in the transaction
+@COINID      : CoinID of this input
+@AMOUNT      : Amount of this input
+@ADDRESS     : Address of this input
+@TOKENID     : TokenID of this input
+@SCRIPT      : Script for this input
+@TOTIN       : Total number of inputs for this transaction
+@TOTOUT      : Total number of outputs for this transaction
+
+Functions
+
+CONCAT ( HEX_1 HEX_2 ... HEX_n )
+Concatenate the HEX values.
+
+LEN ( HEX|SCRIPT )
+Length of the data
+
+REV ( HEX )
+Reverse the data
+
+SUBSET ( HEX NUMBER NUMBER )
+Return the HEX subset of the data - start - length
+
+OVERWRITE ( HEX NUMBER HEX NUMBER NUMBER)
+Copy bytes from the first HEX and pos to the second HEX and pos, length the last NUMBER
+
+GET ( NUMBER NUMBER .. NUMBER )
+Return the array value set with LET ( EXPRESSION EXPRESSION .. EXPRESSION )
+
+ADDRESS ( STRING )
+Return the address of the script
+
+REPLACE ( STRING STRING STRING )
+Replace in 1st string all occurrence of 2nd string with 3rd
+
+SUBSTR ( STRING NUMBER NUMBER )
+Get the substring                                                                                                                                                                             
+
+CLEAN ( STRING )
+Return a CLEAN version of the script
+
+UTF8 ( HEX )
+Convert the HEX value of a script value to a string
+
+BOOL ( VALUE )
+Convert to TRUE or FALSE value
+
+HEX ( SCRIPT )
+Convert SCRIPT to HEX
+
+NUMBER ( HEX )
+Convert HEX to NUMBER
+
+STRING ( HEX )
+Convert a HEX value to SCRIPT
+
+ABS ( NUMBER )
+Return the absolute value of a number
+
+CEIL ( NUMBER )
+Return the number rounded up
+
+FLOOR ( NUMBER )
+Return the number rounded down
+
+MIN ( NUMBER NUMBER )
+Return the minimum value of the 2 numbers
+
+MAX ( NUMBER NUMBER )
+Return the maximum value of the 2 numbers
+
+INC ( NUMBER )
+Increment a number
+
+DEC ( NUMBER )
+Decrement a number
+
+POW ( NUMBER NUMBER )
+Returns the power of N of a number. N must be a whole number
+
+SIGDIG ( NUMBER NUMBER )
+Set the significant digits of the number
+
+BITSET ( HEX NUMBER BOOLEAN )
+Set the value of the BIT at that Position to 0 or 1
+
+BITGET ( HEX NUMBER )
+Get the BOOLEAN value of the bit at the position
+
+BITCOUNT ( HEX )
+Count the number of bits set in a HEX value
+
+PROOF ( HEX HEX HEX )
+Check the data, mmr proof, and root match. Same as mmrproof on Minima
+
+KECCAK ( HEX|STRING )
+Returns the KECCAK value of the HEX value
+
+SHA2 ( HEX|STRING )
+Returns the SHA2 value of the HEX value
+
+SHA3 ( HEX|STRING )
+Returns the SHA3 value of the HEX value
+
+SIGNEDBY ( HEX )
+Returns true if the transaction is signed by this public key
+
+MULTISIG ( NUMBER HEX1 HEX2 .. HEXn )
+Returns true if the transaction is signed by N of the public keys
+
+CHECKSIG ( HEX HEX HEX)
+Check public key, data and signature
+
+GETOUTADDR ( NUMBER )
+Return the HEX address of the specified output
+
+GETOUTAMT ( NUMBER )
+Return the amount of the specified output
+
+GETOUTTOK ( NUMBER )Return the token id of the specified output
+
+VERIFYOUT ( NUMBER HEX NUMBER HEX )
+Verify the output has the specified  address, amount and tokenid
+
+GETINADDR ( NUMBER )
+Return the HEX address of the specified input
+
+GETINAMT ( NUMBER )
+Return the amount of the specified input
+
+GETINTOK ( NUMBER )
+Return the token id of the specified input
+
+VERIFYIN ( NUMBER HEX NUMBER HEX )
+Verify the input has the specified address, amount and tokenid
+
+STATE ( NUMBER )
+Return the state value for the given number
+
+PREVSTATE ( NUMBER )
+Return the state value stored in the coin MMR data - when the coin was created
+
+SAMESTATE ( NUMBER NUMBER )
+Return TRUE if the previous state and current state are the same for the start and end positions
