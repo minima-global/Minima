@@ -193,9 +193,14 @@ public class MiniFormat {
 		
 		long ms = TimeUnit.MILLISECONDS.toMillis(milliseconds)
 				- TimeUnit.SECONDS.toMillis(TimeUnit.MILLISECONDS.toSeconds(milliseconds));
+
+//		if(yr==0 && mn==0 && wk==0) {
+//			return String.format("%d Days %d Hours %d Minutes %d Seconds", 
+//					dy, hr, min, sec);
+//		}
 		
-		return String.format("%d Years %d Months %d Weeks %d Days %d Hours %d Minutes %d Seconds %d Milliseconds", 
-						yr,mn, wk, dy, hr, min, sec, ms);
+		return String.format("%d Years %d Months %d Weeks %d Days %d Hours %d Minutes %d Seconds", 
+						yr,mn, wk, dy, hr, min, sec);
 	}
 
 	public static String createRandomString(int len) {

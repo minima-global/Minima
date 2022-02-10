@@ -323,6 +323,8 @@ public class NIOMessage implements Runnable {
 					if(txpow.isMonotonic()) {
 						MinimaLogger.log("Error Monotonic TxPoW failed script check from Client:"+mClientUID+" "+txpow.getTxPoWID());
 						return;
+					}else {
+						MinimaLogger.log("NON-Monotonic TxPoW failed script check from Client:"+mClientUID+" "+txpow.getTxPoWID());
 					}
 					
 					//Could be block related
