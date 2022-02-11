@@ -219,6 +219,36 @@ public class TxPoWSearcher {
 		
 		return null;
 	}
+
+	public static ArrayList<TxPoW> searchTxPoWviaAddress(MiniData zAddress) {
+		
+		//Start node position
+		TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
+		
+		//Now cycle through and get all your coins..
+		while(tip != null) {
+
+			//Get ALL the coins..
+			ArrayList<Coin> coins = tip.getAllCoins();
+			
+			//Get the details..
+			for(Coin coin : coins) {
+				
+				//Is this the one..
+				if(coin.getAddress().equals(zAddress)) {
+					
+					//This block has this address somewhere.. find it..
+					
+					return null;
+				}
+			}
+			
+			//And move back up the tree
+			tip = tip.getParent();
+		}
+		
+		return null;
+	}
 	
 	public static ArrayList<Token> getAllTokens() {
 
