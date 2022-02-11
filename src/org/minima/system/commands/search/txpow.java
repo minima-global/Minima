@@ -1,17 +1,21 @@
 package org.minima.system.commands.search;
 
+import java.util.ArrayList;
+
 import org.minima.database.MinimaDB;
 import org.minima.objects.TxPoW;
+import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.brains.TxPoWSearcher;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
+import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
 public class txpow extends Command {
 
 	public txpow() {
-		super("txpow","(txpowid:txpowid) (block:) - Search for a specific TxPoW");
+		super("txpow","(txpowid:txpowid) (block:) (address:) - Search for a specific TxPoW");
 	}
 	
 	@Override
@@ -40,6 +44,19 @@ public class txpow extends Command {
 			}
 			
 			ret.put("response", txpow.toJSON());
+			
+		}else if(existsParam("address")) {
+			
+			String address = getParam("address");
+			
+			ArrayList<TxPoW> txps = TxPoWSearcher.searchTxPoWviaAddress(new MiniData(address));
+			
+			JSONArray txns = new JSONArray();
+			for(TxPoW txp : txps) {
+				txns.add(txp.toJSON());
+			}
+			
+			ret.put("response", txns);
 			
 		}else {
 			throw new CommandException("Must Specify search params");

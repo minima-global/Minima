@@ -3,6 +3,7 @@ package org.minima.system.brains;
 import java.util.ArrayList;
 
 import org.minima.database.MinimaDB;
+import org.minima.database.txpowdb.TxPoWDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.database.wallet.KeyRow;
 import org.minima.database.wallet.Wallet;
@@ -222,8 +223,13 @@ public class TxPoWSearcher {
 
 	public static ArrayList<TxPoW> searchTxPoWviaAddress(MiniData zAddress) {
 		
+		ArrayList<TxPoW> ret = new ArrayList<>();
+		
 		//Start node position
 		TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
+		
+		//The TxPoWDB
+		TxPoWDB txpdb = MinimaDB.getDB().getTxPoWDB();
 		
 		//Now cycle through and get all your coins..
 		while(tip != null) {
@@ -238,8 +244,25 @@ public class TxPoWSearcher {
 				if(coin.getAddress().equals(zAddress)) {
 					
 					//This block has this address somewhere.. find it..
+					TxPoW txblock = tip.getTxPoW();
 					
-					return null;
+					//Search ..
+					if(checkTxPoWForAddress(txblock, zAddress)) {
+						ret.add(txblock);
+					}
+					
+					//Check all the transactions..
+					ArrayList<MiniData> txns = txblock.getBlockTransactions();
+					for(MiniData txn : txns) {
+						
+						//Get this TxPoW..
+						TxPoW txp = txpdb.getTxPoW(txn.to0xString());
+						if(txp != null) {
+							if(checkTxPoWForAddress(txp, zAddress)) {
+								ret.add(txp);
+							}
+						}
+					}
 				}
 			}
 			
@@ -247,7 +270,40 @@ public class TxPoWSearcher {
 			tip = tip.getParent();
 		}
 		
-		return null;
+		return ret;
+	}
+	
+	public static boolean checkTxPoWForAddress(TxPoW zTxPoW, MiniData zAddress) {
+		
+		ArrayList<Coin> coins = zTxPoW.getTransaction().getAllInputs();
+		for(Coin cc : coins) {
+			if(cc.getAddress().isEqual(zAddress)) {
+				return true;
+			}
+		}
+		
+		coins = zTxPoW.getBurnTransaction().getAllInputs();
+		for(Coin cc : coins) {
+			if(cc.getAddress().isEqual(zAddress)) {
+				return true;
+			}
+		}
+		
+		coins = zTxPoW.getTransaction().getAllOutputs();
+		for(Coin cc : coins) {
+			if(cc.getAddress().isEqual(zAddress)) {
+				return true;
+			}
+		}
+		
+		coins = zTxPoW.getBurnTransaction().getAllOutputs();
+		for(Coin cc : coins) {
+			if(cc.getAddress().isEqual(zAddress)) {
+				return true;
+			}
+		}
+		
+		return false;
 	}
 	
 	public static ArrayList<Token> getAllTokens() {
