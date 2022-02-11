@@ -8,6 +8,7 @@ import org.minima.database.wallet.KeyRow;
 import org.minima.database.wallet.Wallet;
 import org.minima.objects.Coin;
 import org.minima.objects.Token;
+import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 
@@ -190,6 +191,26 @@ public class TxPoWSearcher {
 				if(coin.getCoinID().equals(zCoinID)) {
 					return tip;
 				}
+			}
+			
+			//And move back up the tree
+			tip = tip.getParent();
+		}
+		
+		return null;
+	}
+	
+	public static TxPoW getTxPoWBlock(MiniNumber zBlockNumber) {
+		
+		//Start node position
+		TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
+		
+		//Now cycle through and get all your coins..
+		while(tip != null) {
+
+			//Is this the block
+			if(tip.getBlockNumber().isEqual(zBlockNumber)) {
+				return tip.getTxPoW();
 			}
 			
 			//And move back up the tree
