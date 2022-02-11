@@ -79,7 +79,7 @@ public class txninput extends Command {
 			
 			//Is it a floater..
 			if(!eltoo) {
-				throw new CommandException("Coin MUST be floating if no coinid or coindata specofied");
+				throw new CommandException("Coin MUST be floating if no coinid or coindata specified");
 			}
 			
 			//Get the details..
