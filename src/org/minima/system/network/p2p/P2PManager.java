@@ -61,7 +61,7 @@ public class P2PManager extends MessageProcessor {
         PostTimerMessage(new TimerMessage(10_000, P2P_LOOP));
         PostTimerMessage(new TimerMessage(P2PParams.NODE_NOT_ACCEPTING_CHECK_DELAY, P2P_ASSESS_CONNECTIVITY));
         PostTimerMessage(new TimerMessage(P2PParams.SAVE_DATA_DELAY, P2P_SAVE_DATA));
-        PostTimerMessage(new TimerMessage(P2PParams.HASH_RATE_UPDATE_DELAY, P2P_UPDATE_HASH_RATE));
+        PostTimerMessage(new TimerMessage(20_000, P2P_UPDATE_HASH_RATE));
     }
 
     protected static List<Message> processWalkLinksMsg(JSONObject zMessage, NIOClientInfo clientInfo, P2PState state) {
