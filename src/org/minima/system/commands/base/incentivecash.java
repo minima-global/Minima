@@ -36,7 +36,7 @@ public class incentivecash extends Command {
 		//Make sure there is a User specified
 		if(!user.equals("")) {
 			//Call the RPC End point..
-			String reply = RPCClient.sendPUT("https://incentivecash.minima.global/api/ping/"+user);
+			String reply = RPCClient.sendPUT("https://incentivecash.minima.global:8443/api/ping/"+user);
 			
 			//Convert response..
 			JSONObject json = (JSONObject) new JSONParser().parse(reply);
