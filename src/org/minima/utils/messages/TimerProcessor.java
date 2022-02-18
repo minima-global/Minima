@@ -32,9 +32,15 @@ public class TimerProcessor implements Runnable {
 	 */
 	private ArrayList<TimerMessage> mTimerMessages;
 	
+	/**
+	 * Synchronization lock for mTimerMessages
+	 */
+	private Object mMessagesLock;
+	
 	private TimerProcessor() {
 		mRunning 		= true;
 		mTimerMessages 	= new ArrayList<TimerMessage>();
+		mMessagesLock	= new Object();
 		
 		mMainThread = new Thread(this);
 		mMainThread.start();
@@ -47,7 +53,7 @@ public class TimerProcessor implements Runnable {
 	}
 	
 	public void PostMessage(TimerMessage zMessage) {
-		synchronized (mTimerMessages) {
+		synchronized (mMessagesLock) {
 			if(zMessage != null) {
 				mTimerMessages.add(zMessage);
 			}else {
@@ -69,7 +75,7 @@ public class TimerProcessor implements Runnable {
 		while(mRunning) {
 			
 			//Check the stack for messages..
-			synchronized (mTimerMessages) {
+			synchronized (mMessagesLock) {
 				//New list to store the ongoing timers
 				ArrayList<TimerMessage> newlist = new ArrayList<TimerMessage>();
 				
