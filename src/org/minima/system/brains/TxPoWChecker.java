@@ -34,10 +34,18 @@ public class TxPoWChecker {
 	public static boolean checkTxPoWBlock(TxPoWTreeNode zParentNode, TxPoW zTxPoW, ArrayList<TxPoW> zTransactions) {
 		
 		try {
+			
+			//Max time in the future.. 1hour..
+			MiniNumber maxtime = new MiniNumber(System.currentTimeMillis() + (1000 * 60 * 60));
+			
 			//Check the time of the block is greater than the media time
 			MiniNumber mediantime = TxPoWGenerator.getMedianTime(zParentNode);
 			if(zTxPoW.getTimeMilli().isLess(mediantime)) {
-				MinimaLogger.log("Invalid TxPoW block with millitime less than median "+zTxPoW.getTxPoWID());
+				MinimaLogger.log("Invalid TxPoW block with millitime LESS than median "+zTxPoW.getTxPoWID());
+				return false;
+			
+			}else if(zTxPoW.getTimeMilli().isMore(maxtime)) {
+				MinimaLogger.log("Invalid TxPoW block with millitime MORE than 1 hour in future "+zTxPoW.getTxPoWID());
 				return false;
 			}
 			
