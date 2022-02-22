@@ -6,6 +6,7 @@ import org.minima.system.commands.base.balance;
 import org.minima.system.commands.base.coinexport;
 import org.minima.system.commands.base.coinimport;
 import org.minima.system.commands.base.cointrack;
+import org.minima.system.commands.base.file;
 import org.minima.system.commands.base.hash;
 import org.minima.system.commands.base.hashtest;
 import org.minima.system.commands.base.incentivecash;
@@ -82,6 +83,7 @@ public class help extends Command {
 		addCommand(details, new balance());
 		addCommand(details, new tokencreate());
 		addCommand(details, new hash());
+		addCommand(details, new file());
 		
 		addCommand(details, new scripts());
 		addCommand(details, new runscript());
