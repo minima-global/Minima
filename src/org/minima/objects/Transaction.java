@@ -156,7 +156,7 @@ public class Transaction implements Streamable {
 			return false;
 		}
 		
-		//Check that all the inputs and outputs are valid Minima Values 0 - 1,000,000,000
+		//Check that all the inputs and outputs are valid Minima Values >0 - 1,000,000,000
 		for(Coin cc : mInputs) {
 			if(!cc.getAmount().isValidMinimaValue()) {
 				MinimaLogger.log("Transaction error : Input is invalid Minima Amount "+cc.getAmount().toString());
