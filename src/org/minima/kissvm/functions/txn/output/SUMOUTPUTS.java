@@ -54,7 +54,6 @@ public class SUMOUTPUTS extends MinimaFunction {
 			}
 		}
 		
-		
 		//Return the Amount
 		return new NumberValue(total);
 	}
