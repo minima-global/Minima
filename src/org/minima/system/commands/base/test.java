@@ -1,5 +1,6 @@
 package org.minima.system.commands.base;
 
+import org.minima.system.Main;
 import org.minima.system.commands.Command;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
@@ -15,23 +16,15 @@ public class test extends Command {
 	public JSONObject runCommand() throws Exception {
 		JSONObject ret = getJSONReply();
 		
-		//Get a JSON parameter
-//		JSONObject json = getJSONParam("json");
-//		MinimaLogger.log("JSON Received : "+json.toString());
+		MinimaLogger.log("Restarting NIO..");
 		
-		if(isParamJSONObject("jj")) {
-			JSONObject jsonp = getJSONObjectParam("jj");
-			
-			MinimaLogger.log("JSON : "+jsonp.toJSONString());
-			
-		}else {
-			MinimaLogger.log("STRING : "+getParam("jj"));
-		}
+		//Restart the NIO..
+		Main.getInstance().restartNIO();
 		
-		JSONArray jarr = getJSONArrayParam("arr");
+		MinimaLogger.log("Done..");
 		
+		ret.put("response", true);
 		
-		ret.put("response", jarr);
 		
 		return ret;
 	}

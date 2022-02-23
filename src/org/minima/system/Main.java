@@ -261,6 +261,35 @@ public class Main extends MessageProcessor {
 		}		
 	}
 	
+	public void restartNIO() {
+		
+		//Not now..
+		if(mShuttingdown) {
+			return;
+		}
+		
+		//Shut down the NIO..
+		mNetwork.shutdownNetwork();
+			
+		//Wait for the networking to finish
+		while(!mNetwork.isShutDownComplete()) {
+			try {Thread.sleep(50);} catch (InterruptedException e) {}
+		}
+		
+		//Wait a second..
+		MinimaLogger.log("Network Shutdowen complete.. waiting..");
+		try {Thread.sleep(2000);} catch (InterruptedException e) {}
+		
+		//Now restart it..
+		MinimaLogger.log("Network restart..");
+		mNetwork = new NetworkManager();
+		
+		//Wait a sec..
+		try {Thread.sleep(1000);} catch (InterruptedException e) {}
+		
+		//All done..
+	}
+	
 	public long getUptimeMilli() {
 		return System.currentTimeMillis() - mUptimeMilli;
 	}

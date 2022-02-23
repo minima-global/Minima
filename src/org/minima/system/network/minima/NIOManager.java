@@ -221,6 +221,11 @@ public class NIOManager extends MessageProcessor {
 			//Shut down the NIO
 			mNIOServer.shutdown();
 			
+			//Wait for it to stop..
+			while(mNIOServer.isRunning()) {
+				Thread.sleep(50);
+			}
+			
 			//Stop this..
 			stopMessageProcessor();
 		

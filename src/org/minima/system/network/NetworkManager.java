@@ -206,7 +206,10 @@ public class NetworkManager {
 	
 	public boolean isShutDownComplete() {
 		return 		mNIOManager.isShutdownComplete() 
-				&& 	mP2PManager.isShutdownComplete();
+				&& 	mP2PManager.isShutdownComplete()
+				&&  mSSHManager.isShutdownComplete()
+				&&  mP2PManager.isShutdownComplete()
+				&&  mNotifyManager.isShutdownComplete();
 	}
 	
 	public MessageProcessor getP2PManager() {
