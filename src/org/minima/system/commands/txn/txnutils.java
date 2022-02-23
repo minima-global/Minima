@@ -30,7 +30,7 @@ public class txnutils {
 		//Are any of the inputs floating
 		ArrayList<Coin> inputs = new ArrayList<>();
 		for(Coin cc : baseinputs) {
-			if(cc.isFloating() && cc.getCoinID().isEqual(Coin.COINID_ELTOO)) {
+			if(cc.getCoinID().isEqual(Coin.COINID_ELTOO)) {
 			
 				//Get the MOST recent coin to attach to this transaction..
 				Coin floater = TxPoWSearcher.getFloatingCoin(tip, cc.getAmount(), cc.getAddress(), cc.getTokenID());	

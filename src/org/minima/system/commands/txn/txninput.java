@@ -48,11 +48,6 @@ public class txninput extends Command {
 			
 			//Is it a floating input..
 			if(eltoo) {
-				//Check this coin is floating..
-				if(!cc.isFloating()) {
-					throw new CommandException("Coin cannot be ELTOO as is not floating.. "+cc.toJSON().toString());
-				}
-				
 				cc.resetCoinID(Coin.COINID_ELTOO);
 			}
 			
@@ -68,19 +63,9 @@ public class txninput extends Command {
 			
 			//Is it a floating input..
 			if(eltoo) {
-				//Check this coin is floating..
-				if(!cc.isFloating()) {
-					throw new CommandException("Coin cannot be ELTOO as is not floating.. "+cc.toJSON().toString());
-				}
-				
 				cc.resetCoinID(Coin.COINID_ELTOO);
 			}
 		}else {
-			
-			//Is it a floater..
-			if(!eltoo) {
-				throw new CommandException("Coin MUST be floating if no coinid or coindata specified");
-			}
 			
 			//Get the details..
 			String address  = getParam("address");
@@ -88,10 +73,7 @@ public class txninput extends Command {
 			String tokenid  = getParam("tokenid","0x00");
 			
 			//Create a COIN..
-			cc = new Coin(new MiniData(address), new MiniNumber(amount), new MiniData(tokenid));
-			cc.setFloating(true);
-			cc.resetCoinID(Coin.COINID_ELTOO);
-			
+			cc = new Coin(Coin.COINID_ELTOO, new MiniData(address), new MiniNumber(amount), new MiniData(tokenid));
 		}
 		
 		//Get the transaction..

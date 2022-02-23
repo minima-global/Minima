@@ -34,7 +34,7 @@ public class send extends Command {
 
 	
 	public send() {
-		super("send","[address:] [amount:] (floating:) (tokenid:) (state:{}) - Send Minima or Tokens to an address");
+		super("send","[address:] [amount:] (tokenid:) (state:{}) - Send Minima or Tokens to an address");
 	}
 	
 	@Override
@@ -49,9 +49,7 @@ public class send extends Command {
 			throw new CommandException("MUST specify adress and amount");
 		}
 		
-		//Is the coin floating 
-		boolean floating = getBooleanParam("floating",false);
-		
+		//Get the State
 		JSONObject state = new JSONObject();
 		if(existsParam("state")) {
 			state = getJSONObjectParam("state");
@@ -233,7 +231,7 @@ public class send extends Command {
 		}
 		
 		//Create the output
-		Coin recipient = new Coin(Coin.COINID_OUTPUT, sendaddress, sendamount, Token.TOKENID_MINIMA, floating, true);
+		Coin recipient = new Coin(Coin.COINID_OUTPUT, sendaddress, sendamount, Token.TOKENID_MINIMA, true);
 		
 		//Do we need to add the Token..
 		if(!tokenid.equals("0x00")) {
@@ -258,7 +256,7 @@ public class send extends Command {
 			}
 			
 			//Change coin does not keep the state
-			Coin changecoin = new Coin(Coin.COINID_OUTPUT, chgaddress, changeamount, Token.TOKENID_MINIMA,false,false);
+			Coin changecoin = new Coin(Coin.COINID_OUTPUT, chgaddress, changeamount, Token.TOKENID_MINIMA, false);
 			if(!tokenid.equals("0x00")) {
 				changecoin.resetTokenID(new MiniData(tokenid));
 				changecoin.setToken(token);

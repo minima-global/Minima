@@ -16,7 +16,7 @@ import org.minima.utils.json.JSONObject;
 public class txnoutput extends Command {
 
 	public txnoutput() {
-		super("txnoutput","[id:] [amount:] [address:] (tokenid:) (storestate:) (floating:true|false) - Create a transaction output");
+		super("txnoutput","[id:] [amount:] [address:] (tokenid:) (storestate:) - Create a transaction output");
 	}
 	
 	@Override
@@ -30,7 +30,6 @@ public class txnoutput extends Command {
 		MiniNumber amount	= getNumberParam("amount");
 		MiniData address	= getDataParam("address");
 		boolean storestate 	= getBooleanParam("storestate", true);
-		boolean floating	= getBooleanParam("floating", false);
 		
 		//Could be a token..
 		MiniData tokenid	= Token.TOKENID_MINIMA;
@@ -51,13 +50,10 @@ public class txnoutput extends Command {
 		}
 		
 		//Create the Coin..
-		Coin output = new Coin(Coin.COINID_OUTPUT, address, miniamount, tokenid,false,storestate);
+		Coin output = new Coin(Coin.COINID_OUTPUT, address, miniamount, tokenid,storestate);
 		if(token != null) {
 			output.setToken(token);
 		}
-		
-		//Is this a floating coin..
-		output.setFloating(floating);
 		
 		//Get the Transaction
 		TxnRow txnrow 	= db.getTransactionRow(getParam("id"));

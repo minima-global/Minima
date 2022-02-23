@@ -260,7 +260,7 @@ public class tokencreate extends Command {
 		}
 		
 		//Now add the output..
-		Coin recipient = new Coin(sendaddress, sendamount, Token.TOKENID_CREATE);
+		Coin recipient = new Coin(Coin.COINID_OUTPUT, sendaddress, sendamount, Token.TOKENID_CREATE, true);
 		
 		//Set the Create Token Details..
 		recipient.setToken(createtoken);

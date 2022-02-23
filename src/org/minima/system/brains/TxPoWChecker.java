@@ -230,15 +230,7 @@ public class TxPoWChecker {
 			}
 			
 			//Check the CoinProof and Coin CoinID in the Transaction Match
-			if(input.getCoinID().isEqual(Coin.COINID_ELTOO)) {
-				
-				//Check is a floating input.. set when the coin was created!
-				if(!cproof.getCoin().isFloating()) {
-					MinimaLogger.log("ELTOO input "+i+" isn't floating "+zTxPoWID);
-					return false;
-				}
-				
-			}else {
+			if(!input.getCoinID().isEqual(Coin.COINID_ELTOO)) {
 				
 				//Check the same CoinID
 				if(!input.getCoinID().isEqual(cproof.getCoin().getCoinID())) {
