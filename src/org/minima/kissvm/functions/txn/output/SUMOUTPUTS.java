@@ -36,18 +36,21 @@ public class SUMOUTPUTS extends MinimaFunction {
 		ArrayList<Coin> outputs = trans.getAllOutputs();
 		for(Coin cc : outputs) {
 			
-			if(tokenid.isEqual(Token.TOKENID_MINIMA)) {
+			if(cc.getTokenID().isEqual(tokenid)) {
 				
-				//Plain Minima
-				total = total.add(cc.getAmount());
-				
-			}else {
-				
-				//Get the token..
-				Token td = cc.getToken();
-				
-				//Add the scaled amount..
-				total = total.add(td.getScaledTokenAmount(cc.getAmount()));
+				if(tokenid.isEqual(Token.TOKENID_MINIMA)) {
+					
+					//Plain Minima
+					total = total.add(cc.getAmount());
+					
+				}else {
+					
+					//Get the token..
+					Token td = cc.getToken();
+					
+					//Add the scaled amount..
+					total = total.add(td.getScaledTokenAmount(cc.getAmount()));
+				}
 			}
 		}
 		
