@@ -59,8 +59,14 @@ public class TxnRow implements Streamable {
 		
 		ret.put("witness", mWitness.toJSON());
 		
+		//Get the Input Coins..
+		MiniData basecoinid = Coin.COINID_ELTOO;
+		if(mTransaction.getAllInputs().size()>0) {
+			basecoinid = mTransaction.getAllInputs().get(0).getCoinID(); 
+		}
+		
 		//Now output the full output coins with correct coinid
-		ArrayList<Coin> coinidcoins = mTransaction.getOutputCoinsWithCoinID();
+		ArrayList<Coin> coinidcoins = mTransaction.getOutputCoinsWithCoinID(basecoinid);
 		JSONArray coinarrfull 	= new JSONArray();
 		JSONArray coinarr 		= new JSONArray();
 		for(Coin cc : coinidcoins) {

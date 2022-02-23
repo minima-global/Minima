@@ -86,91 +86,6 @@ public class TxBlock implements Streamable {
 		return null;
 	}
 	
-//	private void calculateCoins(MMR zPreviousMMR, TxPoW zTxPoW) {
-//		
-//		//Needs to be a transaction
-//		if(zTxPoW.isTransaction()) {
-//			
-//			//Get all the input coins
-//			ArrayList<CoinProof> coinspent = zTxPoW.getWitness().getAllCoinProofs();
-//			
-//			//And now get all the proofs pointing to the previous block
-//			for(CoinProof csp : coinspent) {
-//				//Get the Coin
-//				Coin coin = csp.getCoin();
-//				
-//				//Get the ENTRY NUmber..
-//				MMREntryNumber entry = coin.getMMREntryNumber();
-//			
-//				//Add this to the MMR - so we can get a proof..
-//				zPreviousMMR.updateEntry(entry, csp.getMMRProof(), csp.getMMRData());
-//				
-//				//The Proof - from the previous block
-//				MMRProof proof = zPreviousMMR.getProofToPeak(entry);
-//			
-//				//Construct the CoinProof
-//				CoinProof cp = new CoinProof(coin, proof);
-//				
-//				//Add to the list..
-//				mSpentCoins.add(cp);
-//			}
-//			
-//			//The state of this Txn
-//			ArrayList<StateVariable> txnstate = zTxPoW.getTransaction().getCompleteState();
-//			
-//			//Create the state all outputs keep..
-//			ArrayList<StateVariable> newstate = new ArrayList<>();
-//			for(StateVariable sv : txnstate) {
-//				if(sv.isKeepMMR()) {
-//					newstate.add(sv);
-//				}
-//			}
-//			
-//			//All the new coins
-//			ArrayList<Coin> outputs = zTxPoW.getTransaction().getAllOutputs();
-//			int num=0;
-//			for(Coin newoutput : outputs) {
-//				
-//				//Set the correct state variables
-//				if(newoutput.storeState()) {
-//					newoutput.setState(newstate);
-//				}
-//				
-//				//Calculate the Correct CoinID for this coin.. TransactionID already calculated
-//				MiniData coinid = zTxPoW.getTransaction().calculateCoinID(num);
-//				
-//				//Create a new coin with correct coinid
-//				Coin correctcoin = newoutput.getSameCoinWithCoinID(coinid);
-//				
-//				//Is this a create token output..
-//				if(newoutput.getTokenID().isEqual(Token.TOKENID_CREATE)) {
-//					
-//					//Get the Create token details..
-//					Token creator = newoutput.getToken();
-//					
-//					//Get the details..
-//					Token newtoken = new Token(	coinid, 
-//												creator.getScale(), 
-//												newoutput.getAmount(), 
-//												creator.getName(),
-//												creator.getTokenScript() ); 
-//					
-//					//Set it..
-//					correctcoin.resetTokenID(newtoken.getTokenID());
-//					
-//					//And set that as the token..
-//					correctcoin.setToken(newtoken);
-//				}
-//				
-//				//Add to our list
-//				mNewCoins.add(correctcoin);
-//				
-//				//Next coin down
-//				num++;
-//			}
-//		}
-//	}
-	
 	/**
 	 * Calculate the MMR for both the main and burn transactions
 	 */
@@ -219,13 +134,21 @@ public class TxBlock implements Streamable {
 			}
 		}
 		
+		//Get the First Coin in the Txn CoinID.. Genesis Transaction is Different
+		MiniData basecoinid = zTransaction.getTransactionID(); 
+//		if(coinspent.size()==0) {
+//			basecoinid = zTransaction.getTransactionID();
+//		}else {
+//			basecoinid = coinspent.get(0).getCoin().getCoinID();
+//		}
+		
 		//All the new coins
 		ArrayList<Coin> outputs = zTransaction.getAllOutputs();
 		int num=0;
 		for(Coin newoutput : outputs) {
 			
 			//Calculate the Correct CoinID for this coin.. TransactionID already calculated
-			MiniData coinid = zTransaction.calculateCoinID(num);
+			MiniData coinid = zTransaction.calculateCoinID(basecoinid,num);
 			
 			//Create a new coin with correct coinid
 			Coin correctcoin = newoutput.getSameCoinWithCoinID(coinid);

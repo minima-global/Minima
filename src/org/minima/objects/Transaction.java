@@ -335,9 +335,15 @@ public class Transaction implements Streamable {
 	
 	/**
 	 * Calculate the CoinID of an Output
+	 * 
+	 * CoinID is calculated for output coins as the hash of the input coinids+output num
+	 * 
+	 * Always use the MMR value as may be ELTOO 0x01 in some transactions..
+	 * 
 	 */
-	public MiniData calculateCoinID(int zOutput) {
-		return Crypto.getInstance().hashObjects(mTransactionID, new MiniByte(zOutput));
+	public MiniData calculateCoinID(MiniData zBaseCoinID, int zOutput) {
+		return Crypto.getInstance().hashObjects(zBaseCoinID, new MiniByte(zOutput));
+//		return Crypto.getInstance().hashObjects(mTransactionID, new MiniByte(zOutput));
 	}
 	
 	@Override
@@ -381,7 +387,7 @@ public class Transaction implements Streamable {
 	 * Calculate the output coins with correct CoinID
 	 * @return
 	 */
-	public ArrayList<Coin> getOutputCoinsWithCoinID(){
+	public ArrayList<Coin> getOutputCoinsWithCoinID(MiniData zBaseCoinID){
 		ArrayList<Coin> ret = new ArrayList<>();
 		
 		//Need this to be correct
@@ -394,8 +400,12 @@ public class Transaction implements Streamable {
 			Coin copycoin = coin.deepCopy();
 			
 			//What is the coinid..
-			MiniData cid = calculateCoinID(output);
-			copycoin.resetCoinID(cid);
+			if(zBaseCoinID.isEqual(Coin.COINID_ELTOO)) {
+				copycoin.resetCoinID(Coin.COINID_OUTPUT);
+			}else {
+				MiniData cid = calculateCoinID(zBaseCoinID, output);
+				copycoin.resetCoinID(cid);
+			}
 			
 			//add to our list
 			ret.add(copycoin);
