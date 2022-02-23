@@ -138,25 +138,35 @@ public class Transaction implements Streamable {
 	public boolean checkValid(){
 		//Basics
 		int ins = mInputs.size();
-		if(ins<1 || ins>256) {
+		if(ins<1) {
 			return false;
 		}
-		int outs = mOutputs.size();
-		if(outs>256) {
+		
+		//Starters - Check total inputs is less than total outputs
+		MiniNumber totalin 	= MiniNumber.ZERO;
+		MiniNumber totalout = MiniNumber.ZERO;
+		for(Coin cc : mInputs) {
+			totalin = totalin.add(cc.getAmount());
+		}
+		for(Coin cc : mOutputs) {
+			totalout = totalout.add(cc.getAmount());
+		}
+		if(totalout.isMore(totalin)) {
+			MinimaLogger.log("Transaction error : Inputs LESS than Outputs "+totalin+"/"+totalout);
 			return false;
 		}
 		
 		//Check that all the inputs and outputs are valid Minima Values 0 - 1,000,000,000
 		for(Coin cc : mInputs) {
 			if(!cc.getAmount().isValidMinimaValue()) {
-				MinimaLogger.log("Transaction error : Input is invalid Minima Amount");
+				MinimaLogger.log("Transaction error : Input is invalid Minima Amount "+cc.getAmount().toString());
 				return false;
 			}
 		}
 		
 		for(Coin cc : mOutputs) {
 			if(!cc.getAmount().isValidMinimaValue()) {
-				MinimaLogger.log("Transaction error : Output is invalid Minima Amount");
+				MinimaLogger.log("Transaction error : Output is invalid Minima Amount "+cc.getAmount().toString());
 				return false;
 			}
 		}
