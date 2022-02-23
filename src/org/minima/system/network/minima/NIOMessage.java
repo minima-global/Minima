@@ -302,6 +302,9 @@ public class NIOMessage implements Runnable {
 					return;
 				}
 				
+				//Start a timer..
+				long timestart = System.currentTimeMillis();
+				
 				//OK - Some basic checks..
 				if(!TxPoWChecker.checkTxPoWBasic(txpow)) {
 					//These MUST PASS
@@ -339,6 +342,14 @@ public class NIOMessage implements Runnable {
 				
 				//Check the MMR - could be in a separate branch
 				if(!TxPoWChecker.checkMMR(tipmmr, txpow)) {
+					fullyvalid = false;
+				}
+				
+				//How long did all that take..
+				long timefinish = System.currentTimeMillis();
+				long timediff 	= timefinish - timestart;
+				if(timediff > 1000) {
+					MinimaLogger.log("Message took a long time ("+timediff+"ms) to process @ "+txpow.getTxPoWID());
 					fullyvalid = false;
 				}
 				
@@ -391,6 +402,10 @@ public class NIOMessage implements Runnable {
 				
 				//Get the Client
 				NIOClient nioclient = Main.getInstance().getNIOManager().getNIOServer().getClient(mClientUID);
+				if(nioclient == null) {
+					MinimaLogger.log(mClientUID+" Error null client on P2P NIOMessage..");
+					return;
+				}
 				
 				//Is this one of our Maxima Clients / Hosts.. if so ignore all P2P messages..
 				Maxima max = Main.getInstance().getMaxima();
@@ -464,7 +479,6 @@ public class NIOMessage implements Runnable {
 					//Request all the blocks.. in the correct order
 					for(MiniData block : requestlist) {
 						NIOManager.sendNetworkMessage(mClientUID, MSG_TXPOWREQ, block);
-//						NIOManager.sendDelayedTxPoWReq(mClientUID, block.to0xString(), "PULSE");
 					}
 					
 				}else{
