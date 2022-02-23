@@ -49,10 +49,12 @@ import org.minima.kissvm.functions.txn.input.GETINADDR;
 import org.minima.kissvm.functions.txn.input.GETINAMT;
 import org.minima.kissvm.functions.txn.input.GETINID;
 import org.minima.kissvm.functions.txn.input.GETINTOK;
+import org.minima.kissvm.functions.txn.input.SUMINPUTS;
 import org.minima.kissvm.functions.txn.input.VERIFYIN;
 import org.minima.kissvm.functions.txn.output.GETOUTADDR;
 import org.minima.kissvm.functions.txn.output.GETOUTAMT;
 import org.minima.kissvm.functions.txn.output.GETOUTTOK;
+import org.minima.kissvm.functions.txn.output.SUMOUTPUTS;
 import org.minima.kissvm.functions.txn.output.VERIFYOUT;
 import org.minima.kissvm.values.Value;
 
@@ -70,7 +72,8 @@ public abstract class MinimaFunction {
 				new CONCAT(), new LEN(), new REV(),new SUBSET(), new GET(), new ADDRESS(),
 				new BOOL(), new HEX(), new NUMBER(), new STRING(),
 				new ABS(), new CEIL(), new FLOOR(),new MAX(), new MIN(), new DEC(), new INC(), 
-				new SIGDIG(), new POW(), 
+				new SIGDIG(), new POW(),
+				new SUMINPUTS(),new SUMOUTPUTS(),
 				new REPLACE(), new SUBSTR(), new OVERWRITE(), new UTF8(),
 				new KECCAK(), new SHA2(), new SHA3(), new PROOF(), 
 				new BITSET(), new BITGET(), new BITCOUNT(),
