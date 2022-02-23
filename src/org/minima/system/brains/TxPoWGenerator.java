@@ -11,6 +11,7 @@ import org.minima.database.MinimaDB;
 import org.minima.database.mmr.MMRData;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.objects.Coin;
+import org.minima.objects.CoinProof;
 import org.minima.objects.Transaction;
 import org.minima.objects.TxBlock;
 import org.minima.objects.TxPoW;
@@ -297,5 +298,53 @@ public class TxPoWGenerator {
 		
 		//Return the middle one!
 		return median;
+	}
+	
+	public static void precomputeTransactionCoinID(Transaction zTransaction) {
+		
+		//Get the inputs.. 
+		ArrayList<Coin> inputs = zTransaction.getAllInputs();
+		
+		//Are there any..
+		if(inputs.size() == 0) {
+			return;
+		}
+		
+		//Get the first coin..
+		Coin firstcoin = inputs.get(0);
+		
+		//Is it an ELTOO input
+		boolean eltoo = false; 
+		if(firstcoin.getCoinID().isEqual(Coin.COINID_ELTOO)) {
+			eltoo = true;
+		}
+		
+		//The base modifier
+		MiniData basecoinid = Crypto.getInstance().hashAllObjects(
+										firstcoin.getCoinID(),
+										firstcoin.getAddress(),
+										firstcoin.getAmount(),
+										firstcoin.getTokenID());
+		
+		//Now cycle..
+		ArrayList<Coin> outputs = zTransaction.getAllOutputs();
+		int num=0;
+		for(Coin output : outputs) {
+			
+			//Calculate the CoinID..
+			if(eltoo) {
+				
+				//Normal
+				output.resetCoinID(Coin.COINID_OUTPUT);
+				
+			}else {
+				
+				//The CoinID
+				MiniData coinid = zTransaction.calculateCoinID(basecoinid, num);
+				output.resetCoinID(coinid);
+			}
+			
+			num++;
+		}
 	}
 }

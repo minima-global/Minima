@@ -10,8 +10,10 @@ import org.minima.database.mmr.MMR;
 import org.minima.database.mmr.MMREntry;
 import org.minima.database.mmr.MMREntryNumber;
 import org.minima.database.mmr.MMRProof;
+import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 
@@ -98,7 +100,12 @@ public class TxBlock implements Streamable {
 	}
 	
 	private void calculateCoins(MMR zPreviousMMR, Transaction zTransaction, Witness zWitness) {
-			
+		
+		//Could be an empty BURN transaction
+		if(zTransaction.isEmpty()) {
+			return;
+		}
+		
 		//Get all the input coins
 		ArrayList<CoinProof> coinspent = zWitness.getAllCoinProofs();
 		
@@ -135,19 +142,30 @@ public class TxBlock implements Streamable {
 		}
 		
 		//Get the First Coin in the Txn CoinID.. Genesis Transaction is Different
-		MiniData basecoinid = zTransaction.getTransactionID(); 
-//		if(coinspent.size()==0) {
-//			basecoinid = zTransaction.getTransactionID();
-//		}else {
-//			basecoinid = coinspent.get(0).getCoin().getCoinID();
-//		}
-		
+		MiniData basecoinid = null; 
+		if(zPreviousMMR.getBlockTime().isEqual(MiniNumber.ONE)) {
+			
+			//Because the first address is different this is always unique
+			basecoinid = zTransaction.getTransactionID();
+		}else {
+			
+			//Get the First Coin..
+			Coin firstcoin = coinspent.get(0).getCoin();
+			
+			//Hash that coin..
+			basecoinid = Crypto.getInstance().hashAllObjects(
+					firstcoin.getCoinID(),
+					firstcoin.getAddress(),
+					firstcoin.getAmount(),
+					firstcoin.getTokenID());
+		}
+	
 		//All the new coins
 		ArrayList<Coin> outputs = zTransaction.getAllOutputs();
 		int num=0;
 		for(Coin newoutput : outputs) {
 			
-			//Calculate the Correct CoinID for this coin.. TransactionID already calculated
+			//Calculate the Correct CoinID for this coin.. 
 			MiniData coinid = zTransaction.calculateCoinID(basecoinid,num);
 			
 			//Create a new coin with correct coinid

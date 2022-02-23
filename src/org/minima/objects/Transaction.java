@@ -336,14 +336,13 @@ public class Transaction implements Streamable {
 	/**
 	 * Calculate the CoinID of an Output
 	 * 
-	 * CoinID is calculated for output coins as the hash of the input coinids+output num
+	 * CoinID is calculated for output coins as the hash of the firstcoin + output num
 	 * 
 	 * Always use the MMR value as may be ELTOO 0x01 in some transactions..
 	 * 
 	 */
 	public MiniData calculateCoinID(MiniData zBaseCoinID, int zOutput) {
-		return Crypto.getInstance().hashObjects(zBaseCoinID, new MiniByte(zOutput));
-//		return Crypto.getInstance().hashObjects(mTransactionID, new MiniByte(zOutput));
+		return Crypto.getInstance().hashObjects(zBaseCoinID, new MiniNumber(zOutput));
 	}
 	
 	@Override
@@ -382,48 +381,15 @@ public class Transaction implements Streamable {
 		
 		return ret;
 	}
-
-	/**
-	 * Calculate the output coins with correct CoinID
-	 * @return
-	 */
-	public ArrayList<Coin> getOutputCoinsWithCoinID(MiniData zBaseCoinID){
-		ArrayList<Coin> ret = new ArrayList<>();
-		
-		//Need this to be correct
-		calculateTransactionID();
-		
-		int output=0;
-		for(Coin coin : mOutputs) {
-			
-			//Create a copy..
-			Coin copycoin = coin.deepCopy();
-			
-			//What is the coinid..
-			if(zBaseCoinID.isEqual(Coin.COINID_ELTOO)) {
-				copycoin.resetCoinID(Coin.COINID_OUTPUT);
-			}else {
-				MiniData cid = calculateCoinID(zBaseCoinID, output);
-				copycoin.resetCoinID(cid);
-			}
-			
-			//add to our list
-			ret.add(copycoin);
-		}
-		
-		return ret;
-	}
 	
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
-		//Max 255 inputs or outputs
 		MiniNumber ins = new MiniNumber(mInputs.size());
 		ins.writeDataStream(zOut);
 		for(Coin coin : mInputs) {
 			coin.writeDataStream(zOut);
 		}
 		
-		//Max 255 inputs or outputs
 		MiniNumber outs = new MiniNumber(mOutputs.size());
 		outs.writeDataStream(zOut);
 		for(Coin coin : mOutputs) {

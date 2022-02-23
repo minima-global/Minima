@@ -181,6 +181,12 @@ public class TxPoWChecker {
 		ArrayList<Coin> inputs 			= zTransaction.getAllInputs();
 		int ins = inputs.size();
 		
+		//MUST be at least 1 input..
+		if(ins==0) {
+			MinimaLogger.log("Transaction MUST have at least 1 input @ "+zTxPoWID);
+			return false;
+		}
+		
 		//Get  all the coin proofs..
 		ArrayList<CoinProof> mmrproofs 	= zWitness.getAllCoinProofs();
 		
