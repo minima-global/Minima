@@ -7,7 +7,7 @@ public class GlobalParams {
 	/**
 	 * Which Version
 	 */
-	public static String MINIMA_VERSION = "0.100.31";
+	public static String MINIMA_VERSION = "0.101.0";
 	
 	/**
 	 * Speed in blocks per second.. 
@@ -44,13 +44,6 @@ public class GlobalParams {
 	 * How Many Cascade Levels
 	 */
 	public static int MINIMA_CASCADE_LEVELS  = 32;
-	
-	/**
-	 * Current default HASH_Strength Used. Can be up to 512.
-	 * All the MINING, TxPoW and MMR data ALWAYS uses 512. But addresses, scripts, and public keys..
-	 * can be set to less. This way signatures and addresses are shorter.
-	 */
-	public static int MINIMA_DEFAULT_HASH_STRENGTH = 256;
 	
 	/**
 	 * Max Proof History - how far back to use a proof of coin..

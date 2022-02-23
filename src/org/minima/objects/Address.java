@@ -37,10 +37,6 @@ public class Address implements Streamable{
 	public Address() {}
 	
 	public Address(String zScript) {
-		this(zScript, GlobalParams.MINIMA_DEFAULT_HASH_STRENGTH);
-	}
-	
-	public Address(String zScript, int zBitLength) {
 		//Convert script..
 		mScript = new MiniString(zScript);
 		
