@@ -268,6 +268,9 @@ public class Main extends MessageProcessor {
 			return;
 		}
 		
+		//Now backup the  databases
+		MinimaDB.getDB().saveAllDB();
+		
 		//Shut down the NIO..
 		mNetwork.shutdownNetwork();
 			
