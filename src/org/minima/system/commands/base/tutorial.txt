@@ -185,6 +185,12 @@ Return the token id of the specified input
 VERIFYIN ( NUMBER HEX NUMBER HEX )
 Verify the input has the specified address, amount and tokenid
 
+SUMINPUTS ( HEX )
+Sum the input values of this token type
+
+SUMOUTPUTS ( HEX )
+Sum the output values of this token type
+
 STATE ( NUMBER )
 Return the state value for the given number
 
