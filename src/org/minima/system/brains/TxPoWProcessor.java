@@ -151,7 +151,7 @@ public class TxPoWProcessor extends MessageProcessor {
 		}
 	}
 	
-	private boolean processSyncBlock(TxBlock zTxBlock) {
+	private boolean processSyncBlock(TxBlock zTxBlock) throws Exception {
 		
 		TxPoWDB txpdb 		= MinimaDB.getDB().getTxPoWDB();
 		TxPowTree txptree 	= MinimaDB.getDB().getTxPoWTree();
@@ -193,8 +193,7 @@ public class TxPoWProcessor extends MessageProcessor {
 				
 				return true;
 			}else {
-				MinimaLogger.log("Invalid SyncBlock as NO PARENT! syncblock:"+zTxBlock.getTxPoW().getBlockNumber());
-				
+				throw new Exception("Invalid SyncBlock as NO PARENT! syncblock:"+zTxBlock.getTxPoW().getBlockNumber()); 
 			}
 		}
 		
@@ -349,7 +348,12 @@ public class TxPoWProcessor extends MessageProcessor {
 			for(TxBlock block : blocks) {
 				
 				//Process it..
-				processSyncBlock(block);
+				try {
+					processSyncBlock(block);
+				}catch(Exception exc) {
+					MinimaLogger.log(exc.toString());
+					break;
+				}
 			}
 			
 			//And now recalculate tree
