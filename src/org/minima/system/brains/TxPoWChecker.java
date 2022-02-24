@@ -219,11 +219,18 @@ public class TxPoWChecker {
 			//Check tokenid is correct
 			if(!cproof.getCoin().getTokenID().isEqual(Token.TOKENID_MINIMA)) {
 				
-				//Check the token is correct
-				if(!cproof.getCoin().getTokenID().isEqual(cproof.getCoin().getToken().getTokenID())) {
-					MinimaLogger.log("TokenID in input "+i+" doesn't match token "+zTxPoWID);
+				//Check the token is correct - in the coin
+				if(!input.getTokenID().isEqual(input.getToken().getTokenID())) {
+					MinimaLogger.log("TokenID in Coin input "+i+" doesn't match token "+zTxPoWID);
 					return false;
 				}
+				
+				//Check the token is correct - in the MMR
+				if(!cproof.getCoin().getTokenID().isEqual(cproof.getCoin().getToken().getTokenID())) {
+					MinimaLogger.log("TokenID in MMR Proof input "+i+" doesn't match token "+zTxPoWID);
+					return false;
+				}
+				
 			}
 			
 			//Check the CoinProof details and Coin details Match
