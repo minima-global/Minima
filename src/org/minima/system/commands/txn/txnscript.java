@@ -5,8 +5,6 @@ import org.minima.database.mmr.MMRProof;
 import org.minima.database.userprefs.txndb.TxnDB;
 import org.minima.database.userprefs.txndb.TxnRow;
 import org.minima.objects.ScriptProof;
-import org.minima.objects.StateVariable;
-import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
 import org.minima.system.commands.Command;
