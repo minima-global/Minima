@@ -1,4 +1,4 @@
-package org.minima.system.commands.base;
+package org.minima.system.commands.persistent;
 
 import java.io.File;
 

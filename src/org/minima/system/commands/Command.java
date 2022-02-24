@@ -14,7 +14,6 @@ import org.minima.system.commands.base.coinexport;
 import org.minima.system.commands.base.coinimport;
 import org.minima.system.commands.base.cointrack;
 import org.minima.system.commands.base.debugflag;
-import org.minima.system.commands.base.file;
 import org.minima.system.commands.base.getaddress;
 import org.minima.system.commands.base.hash;
 import org.minima.system.commands.base.hashtest;
@@ -44,6 +43,8 @@ import org.minima.system.commands.network.network;
 import org.minima.system.commands.network.rpc;
 import org.minima.system.commands.network.sshtunnel;
 import org.minima.system.commands.network.webhooks;
+import org.minima.system.commands.persistent.file;
+import org.minima.system.commands.persistent.sql;
 import org.minima.system.commands.search.coins;
 import org.minima.system.commands.search.keys;
 import org.minima.system.commands.search.txpow;
@@ -75,7 +76,10 @@ public abstract class Command {
 			new message(), new trace(), new help(), new printtree(), new automine(), new printmmr(), new rpc(),
 			new send(), new balance(), new tokencreate(), new tokens(),new getaddress(), new newaddress(), new debugflag(),
 			new incentivecash(), new sshtunnel(), new webhooks(),
-			new backup(), new restore(), new test(), new file(),
+			new backup(), new restore(), new test(), 
+			
+			new file(), new sql(),
+			
 			new runscript(), new tutorial(),new keys(),new scripts(),
 			
 			new txncreate(), new txninput(),new txnlist(), new txnclear(),

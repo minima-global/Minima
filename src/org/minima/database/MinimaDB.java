@@ -6,6 +6,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.minima.database.archive.ArchiveManager;
 import org.minima.database.cascade.Cascade;
+import org.minima.database.minidapps.MiniDAPPDB;
 import org.minima.database.txpowdb.TxPoWDB;
 import org.minima.database.txpowtree.TxPowTree;
 import org.minima.database.userprefs.UserDB;
@@ -38,6 +39,11 @@ public class MinimaDB {
 	Wallet			mWallet;
 	
 	/**
+	 * Temporary
+	 */
+	MiniDAPPDB		mMiniDAPP;
+	
+	/**
 	 * For P2P Information
 	 */
 	P2PDB			mP2PDB;
@@ -57,6 +63,8 @@ public class MinimaDB {
 		mCacscade	= new Cascade();
 		mUserDB		= new UserDB();
 		mWallet		= new Wallet();
+		
+		mMiniDAPP   = new MiniDAPPDB();
 		
 		mP2PDB		= new P2PDB();
 		
@@ -117,6 +125,10 @@ public class MinimaDB {
 	
 	public long getP2PFileSize() {
 		return getDBFileSie("p2p.db");
+	}
+	
+	public MiniDAPPDB getMiniDAPPDB() {
+		return mMiniDAPP;
 	}
 	
 	private long getDBFileSie(String zFilename) {
@@ -195,6 +207,9 @@ public class MinimaDB {
 			//And finally..
 			mP2PDB.loadDB(new File(basedb,"p2p.db"));
 			
+			//Temp MiniDAPP DB
+			mMiniDAPP.loadDB(new File(basedb,"minidapp.db"));
+			
 		}catch(Exception exc) {
 			MinimaLogger.log("ERROR loadAllDB "+exc);
 		}
@@ -224,6 +239,9 @@ public class MinimaDB {
 			mArchive.saveDB();
 			mWallet.saveDB();
 			
+			//Temp
+			mMiniDAPP.saveDB();
+			
 		}catch(Exception exc) {
 			MinimaLogger.log("ERROR saveSQL "+exc);
 		}
@@ -250,6 +268,9 @@ public class MinimaDB {
 			mCacscade.saveDB(new File(basedb,"cascade.db"));
 			mTxPoWTree.saveDB(new File(basedb,"chaintree.db"));
 		
+			//Temp
+			mMiniDAPP.saveDB();
+			
 		}catch(Exception exc) {
 			MinimaLogger.log("ERROR saving state "+exc);
 		}
