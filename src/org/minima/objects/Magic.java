@@ -11,6 +11,12 @@ import org.minima.utils.Crypto;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONObject;
 
+/**
+ * These Numbers define the Minima network capacity
+ * 
+ * @author spartacusrex
+ *
+ */
 public class Magic implements Streamable {
 
 	/**
@@ -20,24 +26,33 @@ public class Magic implements Streamable {
 	public static final MiniNumber CALC_TOTAL 		= new MiniNumber(16384);
 	
 	/**
-	 * Default starting values..
+	 * STATIC non-changeable 
 	 */
-	public static final MiniNumber MAX_TXPOW_SIZE 		= new MiniNumber(32000);
-	public static final MiniNumber MAX_TXPOW_TXNS 	 	= new MiniNumber(100);
+	
+	//Maximum size of a TxPoW unit - 64KB
+	public static final MiniNumber MAX_TXPOW_SIZE 		= new MiniNumber(64*1024);
+	
+	//Maximum number of KISSVM operations when running a script - not max script size (MAST)
+	public static final int MAX_KISSVM_OPERATIONS 		= 1024;
 	
 	/**
-	 * The minimum amount of work for a TxPoW to be allowed across the network
+	 * VARIABLE - these are decided upon with on chain vote
 	 */
+	
+	//Maximum number of Transactions in a block - Minimum 100
+	public static final MiniNumber MIN_TXPOW_TXNS 	 	= new MiniNumber(100);
+	public static final MiniNumber MAX_TXPOW_TXNS 	 	= new MiniNumber(100);
+	
+	//Minimum TxPoW Work that each user must do - Minimum 1000 hashes
 	public static final BigInteger MEGA_VAL 			= Crypto.MAX_VAL.divide(new BigInteger("1000"));	
 	public static final MiniData   MIN_TXPOW_WORK		= new MiniData("0x"+MEGA_VAL.toString(16));
-	
+		
 	/**
 	 * The Current MAGIC numbers.. based on a weighted average of the chain..
 	 * 
 	 * This is ( 9999*the last current values + 1*Desired value ) / 10000
 	 * 
 	 */
-	public MiniNumber mCurrentMaxTxPoWSize;
 	public MiniNumber mCurrentMaxTxnPerBlock;
 	public MiniData   mCurrentMinTxPoWWork;
 	
@@ -46,16 +61,13 @@ public class Magic implements Streamable {
 	 * 
 	 * MUST BE >= x0.5 and <= x2 of the current values.
 	 */
-	public MiniNumber mDesiredMaxTxPoWSize;
 	public MiniNumber mDesiredMaxTxnPerBlock;
 	public MiniData   mDesiredMinTxPoWWork;
 	
 	public Magic() {
-		mCurrentMaxTxPoWSize 			= MAX_TXPOW_SIZE;
 		mCurrentMaxTxnPerBlock			= MAX_TXPOW_TXNS;
 		mCurrentMinTxPoWWork			= MIN_TXPOW_WORK;
 		
-		mDesiredMaxTxPoWSize          	= MAX_TXPOW_SIZE;
 		mDesiredMaxTxnPerBlock        	= MAX_TXPOW_TXNS;
 		mDesiredMinTxPoWWork			= MIN_TXPOW_WORK;
 	}
@@ -63,32 +75,40 @@ public class Magic implements Streamable {
 	public JSONObject toJSON() {
 		JSONObject magic = new JSONObject();
 		
-		magic.put("desiredmaxtxpow", mDesiredMaxTxPoWSize.toString());
 		magic.put("desiredmaxtxn", mDesiredMaxTxnPerBlock.toString());
 		magic.put("desiredmintxpowwork", mDesiredMinTxPoWWork.to0xString());
 		
-		magic.put("maxtxpow", mCurrentMaxTxPoWSize.toString());
 		magic.put("maxtxn", mCurrentMaxTxnPerBlock.toString());
 		magic.put("mintxpowwork", mCurrentMinTxPoWWork.to0xString());
 		
 		return magic;
 	}
 	
+	public boolean checkValid() {
+		
+		//Check desired txns in block
+		if(mDesiredMaxTxnPerBlock.isMore(mCurrentMaxTxnPerBlock.mult(MiniNumber.TWO))) {
+			return false;
+		}else if(mDesiredMaxTxnPerBlock.isLess(mCurrentMaxTxnPerBlock.div(MiniNumber.TWO))) {
+			return false;
+		} 
+		
+		//Check Min TxPoW..
+		
+		
+		return true;
+	}
+	
 	public boolean checkSame(Magic zMagic) {
-		boolean x = mCurrentMaxTxPoWSize.isEqual(zMagic.mCurrentMaxTxPoWSize);
 		boolean y = mCurrentMaxTxnPerBlock.isEqual(zMagic.mCurrentMaxTxnPerBlock);
 		boolean w = mCurrentMinTxPoWWork.isEqual(zMagic.mCurrentMinTxPoWWork);
 		
-		return x && y && w;
+		return y && w;
 	}
 	
 	/**
 	 * Get the Magic Parameters
 	 */
-	public MiniNumber getMaxTxPoWSize() {
-		return mCurrentMaxTxPoWSize;
-	}
-	
 	public MiniNumber getMaxNumTxns() {
 		return mCurrentMaxTxnPerBlock;
 	}
@@ -103,20 +123,16 @@ public class Magic implements Streamable {
 	public void calculateNewCurrent(Magic zParentMagic) {
 		
 		// ( 16383*old + new ) / 16384 .. very simple
-		MiniNumber parent 		= zParentMagic.getMaxTxPoWSize();
-		mCurrentMaxTxPoWSize 	= parent.mult(CALC_WEIGHTED).add(mDesiredMaxTxPoWSize).div(CALC_TOTAL);
-		
-		parent 					= zParentMagic.getMaxNumTxns();
+		MiniNumber parent 		= zParentMagic.getMaxNumTxns();
 		mCurrentMaxTxnPerBlock 	= parent.mult(CALC_WEIGHTED).add(mDesiredMaxTxnPerBlock).div(CALC_TOTAL);
 	
-		//Work is slightly differenbt as is MiniData
+		//Work is slightly different as is MiniData
 		BigInteger oldval = zParentMagic.getMinTxPowWork().getDataValue();
 		BigInteger newval = mDesiredMinTxPoWWork.getDataValue();
 		
 		//Now do the same calculation..
 		BigInteger calc = oldval.multiply(new BigInteger("16383")).add(newval).divide(new BigInteger("16384")); 
-		mCurrentMinTxPoWWork = new MiniData(calc);
-		
+		mCurrentMinTxPoWWork = new MiniData(calc);	
 	}
 	
 	@Override
@@ -126,57 +142,19 @@ public class Magic implements Streamable {
 	
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
-		mCurrentMaxTxPoWSize.writeDataStream(zOut);
 		mCurrentMaxTxnPerBlock.writeDataStream(zOut);
-		new MiniNumber(128).writeDataStream(zOut);
 		mCurrentMinTxPoWWork.writeDataStream(zOut);
-		
-		mDesiredMaxTxPoWSize.writeDataStream(zOut);
 		mDesiredMaxTxnPerBlock.writeDataStream(zOut);
-		new MiniNumber(128).writeDataStream(zOut);
 		mDesiredMinTxPoWWork.writeDataStream(zOut);
 	}
 
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
-		mCurrentMaxTxPoWSize = MiniNumber.ReadFromStream(zIn);
 		mCurrentMaxTxnPerBlock = MiniNumber.ReadFromStream(zIn);
-		
-		//KISS HACK
-		MiniNumber.ReadFromStream(zIn);
-		
 		mCurrentMinTxPoWWork = MiniData.ReadFromStream(zIn);
-		
-		mDesiredMaxTxPoWSize = MiniNumber.ReadFromStream(zIn);
 		mDesiredMaxTxnPerBlock = MiniNumber.ReadFromStream(zIn);
-		
-		//KISS HaCK
-		MiniNumber.ReadFromStream(zIn);
-		
 		mDesiredMinTxPoWWork = MiniData.ReadFromStream(zIn);
 	}
-	
-//	@Override
-//	public void writeDataStream(DataOutputStream zOut) throws IOException {
-//		mCurrentMaxTxPoWSize.writeDataStream(zOut);
-//		mCurrentMaxTxnPerBlock.writeDataStream(zOut);
-//		mCurrentMinTxPoWWork.writeDataStream(zOut);
-//		
-//		mDesiredMaxTxPoWSize.writeDataStream(zOut);
-//		mDesiredMaxTxnPerBlock.writeDataStream(zOut);
-//		mDesiredMinTxPoWWork.writeDataStream(zOut);
-//	}
-//
-//	@Override
-//	public void readDataStream(DataInputStream zIn) throws IOException {
-//		mCurrentMaxTxPoWSize 	= MiniNumber.ReadFromStream(zIn);
-//		mCurrentMaxTxnPerBlock 	= MiniNumber.ReadFromStream(zIn);
-//		mCurrentMinTxPoWWork 	= MiniData.ReadFromStream(zIn);
-//		
-//		mDesiredMaxTxPoWSize 	= MiniNumber.ReadFromStream(zIn);
-//		mDesiredMaxTxnPerBlock 	= MiniNumber.ReadFromStream(zIn);
-//		mDesiredMinTxPoWWork 	= MiniData.ReadFromStream(zIn);
-//	}
 	
 	public static Magic ReadFromStream(DataInputStream zIn) throws IOException {
 		Magic mag = new Magic();
