@@ -9,7 +9,7 @@ import org.minima.utils.MinimaLogger;
 
 public class TreeKey {
 
-	public static final int DEFAULT_KEYSPERLEVEL = 64;
+	public static final int DEFAULT_KEYSPERLEVEL = 32;
 	public static final int DEFAULT_LEVELS 		 = 2;
 	
 	public static TreeKey createDefault(MiniData zPrivateSeed) {
