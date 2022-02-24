@@ -161,8 +161,20 @@ public class TxPoWChecker {
 			return false;
 		}
 		
-		//Check the Burn Transaction..
-		return checkTxPoWBasic(zTxPoW.getTxPoWID(), zTxPoW.getBurnTransaction(), zTxPoW.getBurnWitness());
+		//Is there a BURN transaction..
+		if(!zTxPoW.getBurnTransaction().isEmpty()) {
+			
+			//Check the Link Hash
+			if(!zTxPoW.getBurnTransaction().getLinkHash().isEqual(zTxPoW.getTransaction().getTransactionID())) {
+				MinimaLogger.log("Invalid LinkHash for Burn Transaction "+zTxPoW.getTxPoWID());
+				return false;
+			}
+		
+			//Check the Burn Transaction..
+			return checkTxPoWBasic(zTxPoW.getTxPoWID(), zTxPoW.getBurnTransaction(), zTxPoW.getBurnWitness());
+		}
+		
+		return true;
 	}
 	
 	private static boolean checkTxPoWBasic(String zTxPoWID, Transaction zTransaction, Witness zWitness) throws Exception {
