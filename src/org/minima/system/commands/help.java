@@ -32,6 +32,7 @@ import org.minima.system.commands.network.rpc;
 import org.minima.system.commands.network.sshtunnel;
 import org.minima.system.commands.network.webhooks;
 import org.minima.system.commands.persistent.file;
+import org.minima.system.commands.persistent.sql;
 import org.minima.system.commands.search.coins;
 import org.minima.system.commands.search.keys;
 import org.minima.system.commands.search.txpow;
@@ -83,7 +84,9 @@ public class help extends Command {
 		addCommand(details, new balance());
 		addCommand(details, new tokencreate());
 		addCommand(details, new hash());
+		
 		addCommand(details, new file());
+		addCommand(details, new sql());
 		
 		addCommand(details, new scripts());
 		addCommand(details, new runscript());
