@@ -280,6 +280,9 @@ public class Main extends MessageProcessor {
 			try {Thread.sleep(50);} catch (InterruptedException e) {}
 		}
 		
+		//Save the state.. 
+		MinimaDB.getDB().saveState();
+				
 		//Wait a second..
 		MinimaLogger.log("Network Shutdown complete.. restart in 5 seconds");
 		try {Thread.sleep(5000);} catch (InterruptedException e) {}
