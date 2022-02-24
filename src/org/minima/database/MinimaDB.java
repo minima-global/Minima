@@ -267,9 +267,6 @@ public class MinimaDB {
 			//Custom
 			mCacscade.saveDB(new File(basedb,"cascade.db"));
 			mTxPoWTree.saveDB(new File(basedb,"chaintree.db"));
-		
-			//Temp
-			mMiniDAPP.saveDB();
 			
 		}catch(Exception exc) {
 			MinimaLogger.log("ERROR saving state "+exc);
