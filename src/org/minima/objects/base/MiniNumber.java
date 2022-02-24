@@ -64,6 +64,8 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 	 * Useful numbers
 	 */
 	public static final MiniNumber ZERO 		= new MiniNumber("0");
+	public static final MiniNumber QUARTER 		= new MiniNumber("0.25");
+	public static final MiniNumber HALF 		= new MiniNumber("0.5");
 	public static final MiniNumber ONE 		    = new MiniNumber("1");
 	public static final MiniNumber TWO 		    = new MiniNumber("2");
 	public static final MiniNumber FOUR 		= new MiniNumber("4");
