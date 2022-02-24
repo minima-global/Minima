@@ -217,7 +217,7 @@ public class TxPoWChecker {
 			allcoinsused.add(coinid);
 			
 			//Check tokenid is correct
-			if(!cproof.getCoin().getTokenID().isEqual(Token.TOKENID_MINIMA)) {
+			if(!input.getTokenID().isEqual(Token.TOKENID_MINIMA)) {
 				
 				//Check the token is correct - in the coin
 				if(!input.getTokenID().isEqual(input.getToken().getTokenID())) {

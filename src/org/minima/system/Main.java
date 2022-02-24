@@ -66,6 +66,7 @@ public class Main extends MessageProcessor {
 	public static final String MAIN_AUTOMINE 	= "MAIN_CHECKAUTOMINE";
 	public static final String MAIN_CLEANDB 	= "MAIN_CLEANDB";
 	public static final String MAIN_PULSE 		= "MAIN_PULSE";
+	public static final String MAIN_NETRESTART 	= "MAIN_NETRESTART";
 	
 	/**
 	 * Debug Function
@@ -268,8 +269,8 @@ public class Main extends MessageProcessor {
 			return;
 		}
 		
-		//Now backup the  databases
-		MinimaDB.getDB().saveAllDB();
+		//Log 
+		MinimaLogger.log("Network Shutdown started..");
 		
 		//Shut down the NIO..
 		mNetwork.shutdownNetwork();
@@ -280,17 +281,13 @@ public class Main extends MessageProcessor {
 		}
 		
 		//Wait a second..
-		MinimaLogger.log("Network Shutdowen complete.. waiting..");
-		try {Thread.sleep(2000);} catch (InterruptedException e) {}
+		MinimaLogger.log("Network Shutdown complete.. restart in 5 seconds");
+		try {Thread.sleep(5000);} catch (InterruptedException e) {}
 		
 		//Now restart it..
-		MinimaLogger.log("Network restart..");
 		mNetwork = new NetworkManager();
 		
-		//Wait a sec..
-		try {Thread.sleep(1000);} catch (InterruptedException e) {}
-		
-		//All done..
+		MinimaLogger.log("Network restarted..");
 	}
 	
 	public long getUptimeMilli() {
@@ -474,6 +471,11 @@ public class Main extends MessageProcessor {
 			
 			//And Post it..
 			PostNotifyEvent("MINING", data);
+			
+		}else if(zMessage.getMessageType().equals(MAIN_NETRESTART)) {
+			
+			//Restart the Networking..
+			restartNIO();
 			
 		}else if(zMessage.getMessageType().equals(MAIN_CHECKER)) {
 			
