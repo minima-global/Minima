@@ -216,9 +216,6 @@ public class MinimaDB {
 		readLock(true);
 		
 		try {
-			//Get the base Database folder
-			File basedb = getBaseDBFolder();
-			
 			//Clean shutdown of SQL DBs
 			mTxPoWDB.saveDB();
 			mArchive.saveDB();
@@ -226,6 +223,21 @@ public class MinimaDB {
 			
 		}catch(Exception exc) {
 			MinimaLogger.log("ERROR saveSQL "+exc);
+		}
+		
+		//Release the krakken
+		readLock(false);
+	}
+	
+	public void saveWalletSQL() {
+		//We need read lock 
+		readLock(true);
+		
+		try {
+			mWallet.saveDB();
+			
+		}catch(Exception exc) {
+			MinimaLogger.log("ERROR saveWalletSQL "+exc);
 		}
 		
 		//Release the krakken

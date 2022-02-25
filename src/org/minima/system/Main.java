@@ -190,6 +190,13 @@ public class Main extends MessageProcessor {
 		System.gc();
 	}
 	
+	/**
+	 * Used after a Restore
+	 */
+	public void setHasShutDown() {
+		mShuttingdown = true;
+	}
+	
 	public void shutdown() {
 		//Are we already shutting down..
 		if(mShuttingdown) {
