@@ -71,6 +71,10 @@ public class Token implements Streamable{
 	 * @param zMinimaAmount
 	 * @param zName
 	 */
+	public Token(MiniData zCoindID, MiniNumber zScale, MiniNumber zMinimaAmount, MiniString zName, MiniString zTokenScript) {
+		this(zCoindID, zScale, zMinimaAmount, zName, zTokenScript, MiniNumber.ZERO);
+	}
+	
 	public Token(MiniData zCoindID, MiniNumber zScale, MiniNumber zMinimaAmount, MiniString zName, MiniString zTokenScript, MiniNumber zCreated) {
 				
 		mCoinID 			= zCoindID;
