@@ -121,7 +121,8 @@ public class tokencreate extends Command {
 										new MiniNumber(scale), 
 										colorminima,
 										new MiniString(name),
-										new MiniString(script));
+										new MiniString(script),
+										MiniNumber.ZERO);
 		
 		//The actual amount of Minima that needs to be sent
 		MiniNumber sendamount 	= new MiniNumber(colorminima);

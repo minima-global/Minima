@@ -187,7 +187,8 @@ public class TxBlock implements Streamable {
 											creator.getScale(), 
 											newoutput.getAmount(), 
 											creator.getName(),
-											creator.getTokenScript() ); 
+											creator.getTokenScript(),
+											mTxPoW.getBlockNumber()); 
 				
 				//Set it..
 				correctcoin.resetTokenID(newtoken.getTokenID());
