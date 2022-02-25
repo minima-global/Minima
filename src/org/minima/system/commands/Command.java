@@ -43,6 +43,8 @@ import org.minima.system.commands.network.network;
 import org.minima.system.commands.network.rpc;
 import org.minima.system.commands.network.sshtunnel;
 import org.minima.system.commands.network.webhooks;
+import org.minima.system.commands.persistent.file;
+import org.minima.system.commands.persistent.sql;
 import org.minima.system.commands.search.coins;
 import org.minima.system.commands.search.keys;
 import org.minima.system.commands.search.txpow;
@@ -75,6 +77,9 @@ public abstract class Command {
 			new send(), new balance(), new tokencreate(), new tokens(),new getaddress(), new newaddress(), new debugflag(),
 			new incentivecash(), new sshtunnel(), new webhooks(),
 			new backup(), new restore(), new test(), 
+			
+			new file(), new sql(),
+			
 			new runscript(), new tutorial(),new keys(),new scripts(),
 			
 			new txncreate(), new txninput(),new txnlist(), new txnclear(),

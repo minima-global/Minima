@@ -42,6 +42,8 @@ public class TimerProcessor implements Runnable {
 		mTimerMessages 	= new ArrayList<TimerMessage>();
 		mMessagesLock	= new Object();
 		
+		mMessagesLock = new Object();
+		
 		mMainThread = new Thread(this);
 		mMainThread.start();
 	}

@@ -38,9 +38,9 @@ public class P2PState {
     private Set<InetSocketAddress> knownPeers = new HashSet<>();
 
     /**
-     * The hosts Minima Address
+     * The hosts Minima Address - set a default
      */
-    private InetSocketAddress myMinimaAddress = null;
+    private InetSocketAddress myMinimaAddress = new InetSocketAddress(9001);
 
     /**
      * A secret to send with the ip request message
