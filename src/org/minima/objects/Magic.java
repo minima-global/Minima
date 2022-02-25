@@ -12,7 +12,7 @@ import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONObject;
 
 /**
- * These Numbers define the Minima network capacity
+ * These Numbers define the capacity of the Minima network
  * 
  * @author spartacusrex
  *
@@ -22,52 +22,53 @@ public class Magic implements Streamable {
 	/**
 	 * Used to calculate the weighted averages
 	 */
-	public static final MiniNumber CALC_WEIGHTED 	= new MiniNumber(16383);
-	public static final MiniNumber CALC_TOTAL 		= new MiniNumber(16384);
+	private static final MiniNumber CALC_WEIGHTED		= new MiniNumber(16383);
+	private static final MiniNumber CALC_TOTAL 			= new MiniNumber(16384);
 	
 	/**
-	 * STATIC non-changeable 
+	 * Maximum size of a TxPoW unit..
 	 */
-	
-	//Maximum size of a TxPoW unit - 64KB
 	public static final MiniNumber MAX_TXPOW_SIZE 		= new MiniNumber(64*1024);
 	
-	//Maximum number of KISSVM operations when running a script - not max script size (MAST)
-	public static final int MAX_KISSVM_OPERATIONS 		= 1024;
+	/**
+	 * Maximum Number of executed KISSVM Operations
+	 */
+	public static final MiniNumber MAX_KISSVM_OPERATIONS = new MiniNumber(1024);
 	
 	/**
-	 * VARIABLE - these are decided upon with on chain vote
+	 * Maximum number of Txns per block
 	 */
+	public static final MiniNumber MAX_TXPOW_TXNS		 = new MiniNumber(100);
 	
-	//Maximum number of Transactions in a block - Minimum 100
-	public static final MiniNumber MIN_TXPOW_TXNS 	 	= new MiniNumber(100);
-	public static final MiniNumber MAX_TXPOW_TXNS 	 	= new MiniNumber(100);
-	
-	//Minimum TxPoW Work that each user must do - Minimum 1000 hashes
-	public static final BigInteger MEGA_VAL 			= Crypto.MAX_VAL.divide(new BigInteger("1000"));	
-	public static final MiniData   MIN_TXPOW_WORK		= new MiniData("0x"+MEGA_VAL.toString(16));
+	/**
+	 * Minimum acceptable PoW per TxPoW
+	 */
+	public static final BigInteger MEGA_VAL 			 = Crypto.MAX_VAL.divide(new BigInteger("1000"));	
+	public static final MiniData   MIN_TXPOW_WORK		 = new MiniData("0x"+MEGA_VAL.toString(16));
 		
 	/**
 	 * The Current MAGIC numbers.. based on a weighted average of the chain..
 	 * 
-	 * This is ( 9999*the last current values + 1*Desired value ) / 10000
-	 * 
+	 * This is ( 16383*the last current values + 1*Desired value ) / 16384
 	 */
+	public MiniNumber mCurrentMaxTxPoWSize;
+	public MiniNumber mCurrentMaxKISSVMOps;
 	public MiniNumber mCurrentMaxTxnPerBlock;
 	public MiniData   mCurrentMinTxPoWWork;
 	
-	/**
-	 * The user votes on what he thinks it should be..
-	 * 
-	 * MUST BE >= x0.5 and <= x2 of the current values.
-	 */
+	public MiniNumber mDesiredMaxTxPoWSize;
+	public MiniNumber mDesiredMaxKISSVMOps;
 	public MiniNumber mDesiredMaxTxnPerBlock;
 	public MiniData   mDesiredMinTxPoWWork;
 	
 	public Magic() {
+		mCurrentMaxTxPoWSize			= MAX_TXPOW_SIZE;
+		mCurrentMaxKISSVMOps			= MAX_KISSVM_OPERATIONS;
 		mCurrentMaxTxnPerBlock			= MAX_TXPOW_TXNS;
 		mCurrentMinTxPoWWork			= MIN_TXPOW_WORK;
 		
+		mDesiredMaxTxPoWSize			= MAX_TXPOW_SIZE;
+		mDesiredMaxKISSVMOps			= MAX_KISSVM_OPERATIONS;
 		mDesiredMaxTxnPerBlock        	= MAX_TXPOW_TXNS;
 		mDesiredMinTxPoWWork			= MIN_TXPOW_WORK;
 	}
@@ -75,15 +76,24 @@ public class Magic implements Streamable {
 	public JSONObject toJSON() {
 		JSONObject magic = new JSONObject();
 		
+		magic.put("currentmaxtxpowsize", mCurrentMaxTxPoWSize.toString());
+		magic.put("currentmaxkissvmops", mCurrentMaxKISSVMOps.toString());
+		magic.put("currentmaxtxn", mCurrentMaxTxnPerBlock.toString());
+		magic.put("currentmintxpowwork", mCurrentMinTxPoWWork.to0xString());
+		
+		magic.put("desiredmaxtxpowsize", mDesiredMaxTxPoWSize.toString());
+		magic.put("desiredmaxkissvmops", mDesiredMaxKISSVMOps.toString());
 		magic.put("desiredmaxtxn", mDesiredMaxTxnPerBlock.toString());
 		magic.put("desiredmintxpowwork", mDesiredMinTxPoWWork.to0xString());
-		
-		magic.put("maxtxn", mCurrentMaxTxnPerBlock.toString());
-		magic.put("mintxpowwork", mCurrentMinTxPoWWork.to0xString());
 		
 		return magic;
 	}
 	
+	/**
+	 * The user votes on what he thinks it should be..
+	 * 
+	 * MUST BE >= x0.5 and <= x2 of the current values.
+	 */
 	public boolean checkValid() {
 		
 		//Check desired txns in block
@@ -144,6 +154,7 @@ public class Magic implements Streamable {
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
 		mCurrentMaxTxnPerBlock.writeDataStream(zOut);
 		mCurrentMinTxPoWWork.writeDataStream(zOut);
+		
 		mDesiredMaxTxnPerBlock.writeDataStream(zOut);
 		mDesiredMinTxPoWWork.writeDataStream(zOut);
 	}
@@ -152,6 +163,7 @@ public class Magic implements Streamable {
 	public void readDataStream(DataInputStream zIn) throws IOException {
 		mCurrentMaxTxnPerBlock = MiniNumber.ReadFromStream(zIn);
 		mCurrentMinTxPoWWork = MiniData.ReadFromStream(zIn);
+		
 		mDesiredMaxTxnPerBlock = MiniNumber.ReadFromStream(zIn);
 		mDesiredMinTxPoWWork = MiniData.ReadFromStream(zIn);
 	}
