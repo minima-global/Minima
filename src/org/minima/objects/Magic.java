@@ -28,23 +28,23 @@ public class Magic implements Streamable {
 	/**
 	 * Maximum size of a TxPoW unit..
 	 */
-	public static final MiniNumber MAX_TXPOW_SIZE 		= new MiniNumber(64*1024);
+	private static final MiniNumber MAX_TXPOW_SIZE 		= new MiniNumber(64*1024);
 	
 	/**
 	 * Maximum Number of executed KISSVM Operations
 	 */
-	public static final MiniNumber MAX_KISSVM_OPERATIONS = new MiniNumber(1024);
+	private static final MiniNumber MAX_KISSVM_OPERATIONS = new MiniNumber(1024);
 	
 	/**
 	 * Maximum number of Txns per block
 	 */
-	public static final MiniNumber MAX_TXPOW_TXNS		 = new MiniNumber(100);
+	private static final MiniNumber MAX_TXPOW_TXNS		 = new MiniNumber(100);
 	
 	/**
 	 * Minimum acceptable PoW per TxPoW
 	 */
-	public static final BigInteger MEGA_VAL 			 = Crypto.MAX_VAL.divide(new BigInteger("1000"));	
-	public static final MiniData   MIN_TXPOW_WORK		 = new MiniData("0x"+MEGA_VAL.toString(16));
+	private static final BigInteger MEGA_VAL 			 = Crypto.MAX_VAL.divide(new BigInteger("1000"));	
+	private static final MiniData   MIN_TXPOW_WORK		 = new MiniData("0x"+MEGA_VAL.toString(16));
 		
 	/**
 	 * The Current MAGIC numbers.. based on a weighted average of the chain..
@@ -152,20 +152,28 @@ public class Magic implements Streamable {
 	
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
+		mCurrentMaxTxPoWSize.writeDataStream(zOut);
+		mCurrentMaxKISSVMOps.writeDataStream(zOut);
 		mCurrentMaxTxnPerBlock.writeDataStream(zOut);
 		mCurrentMinTxPoWWork.writeDataStream(zOut);
 		
+		mDesiredMaxTxPoWSize.writeDataStream(zOut);
+		mDesiredMaxKISSVMOps.writeDataStream(zOut);
 		mDesiredMaxTxnPerBlock.writeDataStream(zOut);
 		mDesiredMinTxPoWWork.writeDataStream(zOut);
 	}
 
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
-		mCurrentMaxTxnPerBlock = MiniNumber.ReadFromStream(zIn);
-		mCurrentMinTxPoWWork = MiniData.ReadFromStream(zIn);
+		mCurrentMaxTxPoWSize	= MiniNumber.ReadFromStream(zIn);
+		mCurrentMaxKISSVMOps	= MiniNumber.ReadFromStream(zIn);
+		mCurrentMaxTxnPerBlock 	= MiniNumber.ReadFromStream(zIn);
+		mCurrentMinTxPoWWork 	= MiniData.ReadFromStream(zIn);
 		
-		mDesiredMaxTxnPerBlock = MiniNumber.ReadFromStream(zIn);
-		mDesiredMinTxPoWWork = MiniData.ReadFromStream(zIn);
+		mDesiredMaxTxPoWSize	= MiniNumber.ReadFromStream(zIn);
+		mDesiredMaxKISSVMOps	= MiniNumber.ReadFromStream(zIn);
+		mDesiredMaxTxnPerBlock 	= MiniNumber.ReadFromStream(zIn);
+		mDesiredMinTxPoWWork	= MiniData.ReadFromStream(zIn);
 	}
 	
 	public static Magic ReadFromStream(DataInputStream zIn) throws IOException {
