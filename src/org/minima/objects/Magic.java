@@ -96,12 +96,23 @@ public class Magic implements Streamable {
 	 */
 	public boolean checkValid() {
 		
-		//Check desired txns in block
+		if(mDesiredMaxTxPoWSize.isMore(mCurrentMaxTxPoWSize.mult(MiniNumber.TWO))) {
+			return false;
+		}else if(mDesiredMaxTxPoWSize.isLess(mCurrentMaxTxPoWSize.div(MiniNumber.TWO))) {
+			return false;
+		} 
+		
 		if(mDesiredMaxTxnPerBlock.isMore(mCurrentMaxTxnPerBlock.mult(MiniNumber.TWO))) {
 			return false;
 		}else if(mDesiredMaxTxnPerBlock.isLess(mCurrentMaxTxnPerBlock.div(MiniNumber.TWO))) {
 			return false;
-		} 
+		}
+		
+		if(mDesiredMaxKISSVMOps.isMore(mCurrentMaxKISSVMOps.mult(MiniNumber.TWO))) {
+			return false;
+		}else if(mDesiredMaxKISSVMOps.isLess(mCurrentMaxKISSVMOps.div(MiniNumber.TWO))) {
+			return false;
+		}
 		
 		//Check Min TxPoW..
 		
@@ -110,15 +121,25 @@ public class Magic implements Streamable {
 	}
 	
 	public boolean checkSame(Magic zMagic) {
+		boolean w = mCurrentMaxTxPoWSize.isEqual(zMagic.mCurrentMaxTxPoWSize);
+		boolean x = mCurrentMaxKISSVMOps.isEqual(zMagic.mCurrentMaxKISSVMOps);
 		boolean y = mCurrentMaxTxnPerBlock.isEqual(zMagic.mCurrentMaxTxnPerBlock);
-		boolean w = mCurrentMinTxPoWWork.isEqual(zMagic.mCurrentMinTxPoWWork);
+		boolean z = mCurrentMinTxPoWWork.isEqual(zMagic.mCurrentMinTxPoWWork);
 		
-		return y && w;
+		return w && x && y && z;
 	}
 	
 	/**
 	 * Get the Magic Parameters
 	 */
+	public MiniNumber getMaxTxPoWSize() {
+		return mCurrentMaxTxPoWSize;
+	}
+	
+	public MiniNumber getMaxKISSOps() {
+		return mCurrentMaxKISSVMOps;
+	}
+	
 	public MiniNumber getMaxNumTxns() {
 		return mCurrentMaxTxnPerBlock;
 	}
@@ -132,8 +153,13 @@ public class Magic implements Streamable {
 	 */
 	public void calculateNewCurrent(Magic zParentMagic) {
 		
-		// ( 16383*old + new ) / 16384 .. very simple
-		MiniNumber parent 		= zParentMagic.getMaxNumTxns();
+		MiniNumber parent 		= zParentMagic.getMaxTxPoWSize();
+		mCurrentMaxTxPoWSize	= parent.mult(CALC_WEIGHTED).add(mDesiredMaxTxPoWSize).div(CALC_TOTAL);
+		
+		parent 					= zParentMagic.getMaxKISSOps();
+		mCurrentMaxKISSVMOps	= parent.mult(CALC_WEIGHTED).add(mDesiredMaxKISSVMOps).div(CALC_TOTAL);
+		
+		parent 					= zParentMagic.getMaxNumTxns();
 		mCurrentMaxTxnPerBlock 	= parent.mult(CALC_WEIGHTED).add(mDesiredMaxTxnPerBlock).div(CALC_TOTAL);
 	
 		//Work is slightly different as is MiniData
@@ -141,7 +167,7 @@ public class Magic implements Streamable {
 		BigInteger newval = mDesiredMinTxPoWWork.getDataValue();
 		
 		//Now do the same calculation..
-		BigInteger calc = oldval.multiply(new BigInteger("16383")).add(newval).divide(new BigInteger("16384")); 
+		BigInteger calc = oldval.multiply(CALC_WEIGHTED.getAsBigInteger()).add(newval).divide(CALC_TOTAL.getAsBigInteger()); 
 		mCurrentMinTxPoWWork = new MiniData(calc);	
 	}
 	
@@ -193,7 +219,7 @@ public class Magic implements Streamable {
 		newparam.calculateNewCurrent(oldparam);
 		System.out.println(newparam.toJSON());
 		
-		for(int i=0;i<16384;i++) {
+		for(int i=0;i<100;i++) {
 			
 			newparam.calculateNewCurrent(newparam);
 			
