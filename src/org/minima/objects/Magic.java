@@ -96,26 +96,32 @@ public class Magic implements Streamable {
 	 */
 	public boolean checkValid() {
 		
-		if(mDesiredMaxTxPoWSize.isMore(mCurrentMaxTxPoWSize.mult(MiniNumber.TWO))) {
-			return false;
-		}else if(mDesiredMaxTxPoWSize.isLess(mCurrentMaxTxPoWSize.div(MiniNumber.TWO))) {
+		MiniNumber ratio = mDesiredMaxTxPoWSize.div(mCurrentMaxTxPoWSize);
+		if(ratio.isMore(MiniNumber.TWO) || ratio.isLess(MiniNumber.HALF)) {
 			return false;
 		} 
 		
-		if(mDesiredMaxTxnPerBlock.isMore(mCurrentMaxTxnPerBlock.mult(MiniNumber.TWO))) {
-			return false;
-		}else if(mDesiredMaxTxnPerBlock.isLess(mCurrentMaxTxnPerBlock.div(MiniNumber.TWO))) {
+		ratio = mDesiredMaxTxnPerBlock.div(mCurrentMaxTxnPerBlock);
+		if(ratio.isMore(MiniNumber.TWO) || ratio.isLess(MiniNumber.HALF)) {
 			return false;
 		}
 		
-		if(mDesiredMaxKISSVMOps.isMore(mCurrentMaxKISSVMOps.mult(MiniNumber.TWO))) {
-			return false;
-		}else if(mDesiredMaxKISSVMOps.isLess(mCurrentMaxKISSVMOps.div(MiniNumber.TWO))) {
+		ratio = mDesiredMaxKISSVMOps.div(mCurrentMaxKISSVMOps);
+		if(ratio.isMore(MiniNumber.TWO) || ratio.isLess(MiniNumber.HALF)) {
 			return false;
 		}
 		
 		//Check Min TxPoW..
+		BigInteger two 			= new BigInteger("2");
+		BigInteger currentval 	= mCurrentMinTxPoWWork.getDataValue();
+		BigInteger desiredval 	= mDesiredMinTxPoWWork.getDataValue();
 		
+		//If more than * 2 or less than * 0.5.. return false
+		if(desiredval.compareTo(currentval.multiply(two))>0) {
+			return false;
+		}else if(desiredval.compareTo(currentval.divide(two))<0) {
+			return false;
+		}
 		
 		return true;
 	}
