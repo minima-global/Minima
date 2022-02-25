@@ -50,6 +50,11 @@ public class Token implements Streamable{
 	protected MiniString mTokenScript;
 	
 	/**
+	 * The Block this Token was created in
+	 */
+	protected MiniNumber mTokenCreated;
+	
+	/**
 	 * TokenID created after all the details are set
 	 */
 	protected MiniData mTokenID;
@@ -67,12 +72,17 @@ public class Token implements Streamable{
 	 * @param zName
 	 */
 	public Token(MiniData zCoindID, MiniNumber zScale, MiniNumber zMinimaAmount, MiniString zName, MiniString zTokenScript) {
+		this(zCoindID, zScale, zMinimaAmount, zName, zTokenScript, MiniNumber.ZERO);
+	}
+	
+	public Token(MiniData zCoindID, MiniNumber zScale, MiniNumber zMinimaAmount, MiniString zName, MiniString zTokenScript, MiniNumber zCreated) {
 				
 		mCoinID 			= zCoindID;
 		mTokenName 			= zName;
 		mTokenScale 		= zScale;
 		mTokenMinimaAmount 	= zMinimaAmount;
 		mTokenScript        = new MiniString(zTokenScript.toString()) ;
+		mTokenCreated		= zCreated;
 		
 		calculateTokenID();
 	}
@@ -123,6 +133,10 @@ public class Token implements Streamable{
 		return mCoinID;
 	}
 	
+	public MiniNumber getCreated() {
+		return mTokenCreated;
+	}
+	
 	public MiniData getTokenID() {
 		return mTokenID;
 	}
@@ -144,7 +158,8 @@ public class Token implements Streamable{
 		obj.put("decimals", getDecimalPlaces());
 		obj.put("script", mTokenScript.toString());
 		obj.put("totalamount", mTokenMinimaAmount.toString());
-		obj.put("scale", mTokenScale );
+		obj.put("scale", mTokenScale.toString() );
+		obj.put("created", mTokenCreated.toString());
 		obj.put("tokenid", mTokenID.to0xString());
 		
 		return obj;
@@ -185,6 +200,7 @@ public class Token implements Streamable{
 		mTokenScale.writeDataStream(zOut);
 		mTokenMinimaAmount.writeDataStream(zOut);
 		mTokenName.writeDataStream(zOut);
+		mTokenCreated.writeDataStream(zOut);
 	}
 
 	@Override
@@ -194,6 +210,7 @@ public class Token implements Streamable{
 		mTokenScale 		= MiniNumber.ReadFromStream(zIn);
 		mTokenMinimaAmount	= MiniNumber.ReadFromStream(zIn);
 		mTokenName 			= MiniString.ReadFromStream(zIn);
+		mTokenCreated		= MiniNumber.ReadFromStream(zIn);
 		
 		calculateTokenID();
 	}
