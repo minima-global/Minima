@@ -28,7 +28,7 @@ public class Magic implements Streamable {
 	/**
 	 * Maximum size of a TxPoW unit..
 	 */
-	private static final MiniNumber MAX_TXPOW_SIZE 		= new MiniNumber(64*1024);
+	private static final MiniNumber MAX_TXPOW_SIZE 		= new MiniNumber(32*1024);
 	
 	/**
 	 * Maximum Number of executed KISSVM Operations
@@ -43,7 +43,7 @@ public class Magic implements Streamable {
 	/**
 	 * Minimum acceptable PoW per TxPoW
 	 */
-	private static final BigInteger MEGA_VAL 			 = Crypto.MAX_VAL.divide(new BigInteger("1000"));	
+	private static final BigInteger MEGA_VAL 			 = Crypto.MAX_VAL.divide(new BigInteger("10000"));	
 	private static final MiniData   MIN_TXPOW_WORK		 = new MiniData("0x"+MEGA_VAL.toString(16));
 		
 	/**
@@ -67,9 +67,9 @@ public class Magic implements Streamable {
 		mCurrentMaxTxnPerBlock			= MAX_TXPOW_TXNS;
 		mCurrentMinTxPoWWork			= MIN_TXPOW_WORK;
 		
-		mDesiredMaxTxPoWSize			= MAX_TXPOW_SIZE;
-		mDesiredMaxKISSVMOps			= MAX_KISSVM_OPERATIONS;
-		mDesiredMaxTxnPerBlock        	= MAX_TXPOW_TXNS;
+		mDesiredMaxTxPoWSize			= MAX_TXPOW_SIZE.add(MiniNumber.ONE);
+		mDesiredMaxKISSVMOps			= MAX_KISSVM_OPERATIONS.add(MiniNumber.ONE);
+		mDesiredMaxTxnPerBlock        	= MAX_TXPOW_TXNS.add(MiniNumber.ONE);
 		mDesiredMinTxPoWWork			= MIN_TXPOW_WORK;
 	}
 
@@ -157,24 +157,23 @@ public class Magic implements Streamable {
 	/**
 	 * Calculate the current MAX values by taking a heavily weighted average 
 	 */
-	public void calculateNewCurrent(Magic zParentMagic) {
+	public Magic calculateNewCurrent() {
 		
-		MiniNumber parent 		= zParentMagic.getMaxTxPoWSize();
-		mCurrentMaxTxPoWSize	= parent.mult(CALC_WEIGHTED).add(mDesiredMaxTxPoWSize).div(CALC_TOTAL);
-		
-		parent 					= zParentMagic.getMaxKISSOps();
-		mCurrentMaxKISSVMOps	= parent.mult(CALC_WEIGHTED).add(mDesiredMaxKISSVMOps).div(CALC_TOTAL);
-		
-		parent 					= zParentMagic.getMaxNumTxns();
-		mCurrentMaxTxnPerBlock 	= parent.mult(CALC_WEIGHTED).add(mDesiredMaxTxnPerBlock).div(CALC_TOTAL);
+		Magic ret = new Magic();
+
+		ret.mCurrentMaxTxPoWSize 	= mCurrentMaxTxPoWSize.mult(CALC_WEIGHTED).add(mDesiredMaxTxPoWSize).div(CALC_TOTAL);
+		ret.mCurrentMaxKISSVMOps	= mCurrentMaxKISSVMOps.mult(CALC_WEIGHTED).add(mDesiredMaxKISSVMOps).div(CALC_TOTAL);
+		ret.mCurrentMaxTxnPerBlock 	= mCurrentMaxTxnPerBlock.mult(CALC_WEIGHTED).add(mDesiredMaxTxnPerBlock).div(CALC_TOTAL);
 	
 		//Work is slightly different as is MiniData
-		BigInteger oldval = zParentMagic.getMinTxPowWork().getDataValue();
+		BigInteger oldval = mCurrentMinTxPoWWork.getDataValue();
 		BigInteger newval = mDesiredMinTxPoWWork.getDataValue();
 		
 		//Now do the same calculation..
 		BigInteger calc = oldval.multiply(CALC_WEIGHTED.getAsBigInteger()).add(newval).divide(CALC_TOTAL.getAsBigInteger()); 
-		mCurrentMinTxPoWWork = new MiniData(calc);	
+		ret.mCurrentMinTxPoWWork = new MiniData(calc);	
+		
+		return ret;
 	}
 	
 	@Override
@@ -212,25 +211,5 @@ public class Magic implements Streamable {
 		Magic mag = new Magic();
 		mag.readDataStream(zIn);
 		return mag;
-	}
-	
-	public static void main(String[] zArgs) {
-		
-		Magic oldparam = new Magic();
-		
-		Magic newparam = new Magic();
-		newparam.mDesiredMaxTxnPerBlock = new MiniNumber(200);
-		newparam.mDesiredMinTxPoWWork = new MiniData("0x3189374BC6A7EF9DB22D0E5604189374BC6A7EF9DB22D0E5604189374BC6A7");
-		
-		newparam.calculateNewCurrent(oldparam);
-		System.out.println(newparam.toJSON());
-		
-		for(int i=0;i<100;i++) {
-			
-			newparam.calculateNewCurrent(newparam);
-			
-			System.out.println(i+") "+newparam.toJSON());
-		}
-		
 	}
 }

@@ -14,6 +14,7 @@ import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.kissvm.Contract;
 import org.minima.objects.Coin;
 import org.minima.objects.CoinProof;
+import org.minima.objects.Magic;
 import org.minima.objects.ScriptProof;
 import org.minima.objects.Token;
 import org.minima.objects.Transaction;
@@ -56,7 +57,28 @@ public class TxPoWChecker {
 			}
 			
 			//Check the Magic Numbers are correct
-			//.. TODO
+			Magic oldmag = zParentNode.getTxPoW().getMagic().calculateNewCurrent();
+			
+			//Check these are correct in the new block..
+			Magic cmag = zTxPoW.getMagic();
+			if(!cmag.checkSame(oldmag)) {
+				MinimaLogger.log("Invalid Current Magic numbers in TxPoW "+zTxPoW.getTxPoWID());
+				MinimaLogger.log("OLD:"+oldmag.toJSON().toString());
+				MinimaLogger.log("NEW:"+cmag.toJSON().toString());
+				return false;
+			}
+			
+			//Are the desired magic numbers valid..
+			if(!cmag.checkValid()) {
+				MinimaLogger.log("Invalid Desired Magic numbers in TxPoW "+zTxPoW.getTxPoWID());
+				return false;
+			}
+			
+			//Now check the basics..
+			if(zTxPoW.getTransactions().size() > cmag.getMaxNumTxns().getAsInt()) {
+				MinimaLogger.log("Too many transaction in block TxPoW "+zTxPoW.getTransactions().size()+" "+zTxPoW.getTxPoWID());
+				return false;
+			}
 			
 			//Check all the input coinid are Unique - use the MMR proofs! CoinID could be Eltoo
 			ArrayList<String> allcoinid = new ArrayList<>();
