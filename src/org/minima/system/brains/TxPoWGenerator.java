@@ -58,10 +58,15 @@ public class TxPoWGenerator {
 		
 		//Set the correct Magic Numbers..
 		Magic txpowmagic = tip.getTxPoW().getMagic().calculateNewCurrent();
+		txpow.setMagic(txpowmagic);
 		
 		//Set the TXN Difficulty..
 		MiniNumber userhashrate = MinimaDB.getDB().getUserDB().getHashRate();
-		txpow.setTxDifficulty(calculateDifficultyData(userhashrate));
+		MiniData minhash 		= calculateDifficultyData(userhashrate);
+		if(minhash.isMore(txpowmagic.getMinTxPowWork())) {
+			minhash = txpowmagic.getMinTxPowWork();
+		}
+		txpow.setTxDifficulty(minhash);
 		
 		//Set the details..
 		txpow.setBlockNumber(tip.getTxPoW().getBlockNumber().increment());

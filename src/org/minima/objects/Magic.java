@@ -47,9 +47,6 @@ public class Magic implements Streamable {
 	/**
 	 * Minimum acceptable PoW per TxPoW
 	 */
-	/**
-	 * The Min TxPoW Difficulty ever
-	 */
 	public static final BigInteger MIN_HASHES 		= new BigInteger("10000");
 	public static final BigInteger MIN_TXPOW_VAL 	= Crypto.MAX_VAL.divide(MIN_HASHES);
 	public static final MiniData MIN_TXPOW_WORK 	= new MiniData(MIN_TXPOW_VAL);
@@ -75,7 +72,7 @@ public class Magic implements Streamable {
 		mCurrentMaxTxnPerBlock			= DEFAULT_TXPOW_TXNS;
 		mCurrentMinTxPoWWork			= MIN_TXPOW_WORK;
 		
-		mDesiredMaxTxPoWSize			= DEFAULT_TXPOW_SIZE;
+		mDesiredMaxTxPoWSize			= DEFAULT_TXPOW_SIZE.add(MiniNumber.THOUSAND);
 		mDesiredMaxKISSVMOps			= DEFAULT_KISSVM_OPERATIONS;
 		mDesiredMaxTxnPerBlock        	= DEFAULT_TXPOW_TXNS;
 		mDesiredMinTxPoWWork			= MIN_TXPOW_WORK;

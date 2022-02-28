@@ -56,8 +56,15 @@ public class TxPoWChecker {
 				return false;
 			}
 			
+			//Check Magic numbers
+			Magic txpowmagic = zTxPoW.getMagic();
+			if(!txpowmagic.checkSame(zParentNode.getTxPoW().getMagic().calculateNewCurrent())) {
+				MinimaLogger.log("Incorrect Magic values "+zTxPoW.getBlockTransactions().size()+" "+zTxPoW.getTxPoWID());
+				return false;
+			}
+			
 			//Check Number of Txns..
-			if(zTxPoW.getBlockTransactions().size() > zTxPoW.getMagic().getMaxNumTxns().getAsInt()) {
+			if(zTxPoW.getBlockTransactions().size() > txpowmagic.getMaxNumTxns().getAsInt()) {
 				MinimaLogger.log("Too many transactions in block "+zTxPoW.getBlockTransactions().size()+" "+zTxPoW.getTxPoWID());
 				return false;
 			}
@@ -138,34 +145,6 @@ public class TxPoWChecker {
 		}
 		
 		return true;
-	}
-	
-	/**
-	 * Once accepted basic and signature checks are no longer needed..
-	 */
-	public static boolean checkTxPoWSimple(MMR zTipMMR, TxPoW zTxPoW, TxPoW zBlock) throws Exception {
-		
-		//Check TxPoW is required Minimum..
-		if(zTxPoW.getTxnDifficulty().isMore(zBlock.getMagic().getMinTxPowWork())) {
-			MinimaLogger.log("TxPoW difficulty too low.. "+zTxPoW.getTxPoWID());
-			return false;
-		}
-		
-		//Check Size is acceptable..
-		long size = zTxPoW.getSizeinBytesWithoutBlockTxns();
-		if(size > zBlock.getMagic().getMaxTxPoWSize().getAsLong()) {
-			MinimaLogger.log("TxPoW size too large.. "+size+" "+zTxPoW.getTxPoWID());
-			return false;
-		}
-		
-		//Check the MMR first - as quicker..
-		boolean valid = checkMMR(zTipMMR, zTxPoW);
-		if(!valid) {
-			return false;
-		}
-		
-		//Now check the scripts
-		return checkTxPoWScripts(zTipMMR, zTxPoW, zBlock);
 	}
 	
 	/**
@@ -296,6 +275,34 @@ public class TxPoWChecker {
 		}
 		
 		return true;
+	}
+	
+	/**
+	 * Once accepted basic and signature checks are no longer needed..
+	 */
+	public static boolean checkTxPoWSimple(MMR zTipMMR, TxPoW zTxPoW, TxPoW zBlock) throws Exception {
+		
+		//Check TxPoW is required Minimum..
+		if(zTxPoW.getTxnDifficulty().isMore(zBlock.getMagic().getMinTxPowWork())) {
+			MinimaLogger.log("TxPoW difficulty too low.. "+zTxPoW.getTxPoWID());
+			return false;
+		}
+		
+		//Check Size is acceptable..
+		long size = zTxPoW.getSizeinBytesWithoutBlockTxns();
+		if(size > zBlock.getMagic().getMaxTxPoWSize().getAsLong()) {
+			MinimaLogger.log("TxPoW size too large.. "+size+" "+zTxPoW.getTxPoWID());
+			return false;
+		}
+		
+		//Check the MMR first - as quicker..
+		boolean valid = checkMMR(zTipMMR, zTxPoW);
+		if(!valid) {
+			return false;
+		}
+		
+		//Now check the scripts
+		return checkTxPoWScripts(zTipMMR, zTxPoW, zBlock);
 	}
 	
 	/**

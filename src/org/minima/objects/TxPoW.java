@@ -163,6 +163,10 @@ public class TxPoW implements Streamable {
 		return mHeader.mMagic;
 	}
 	
+	public void setMagic(Magic zMagic) {
+		mHeader.mMagic = zMagic;
+	}
+	
 	public void setTxDifficulty(MiniData zDifficulty) {
 		mBody.mTxnDifficulty = zDifficulty;
 	}
