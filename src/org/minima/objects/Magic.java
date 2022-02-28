@@ -72,7 +72,7 @@ public class Magic implements Streamable {
 		mCurrentMaxTxnPerBlock			= DEFAULT_TXPOW_TXNS;
 		mCurrentMinTxPoWWork			= MIN_TXPOW_WORK;
 		
-		mDesiredMaxTxPoWSize			= DEFAULT_TXPOW_SIZE.add(MiniNumber.THOUSAND);
+		mDesiredMaxTxPoWSize			= DEFAULT_TXPOW_SIZE;
 		mDesiredMaxKISSVMOps			= DEFAULT_KISSVM_OPERATIONS;
 		mDesiredMaxTxnPerBlock        	= DEFAULT_TXPOW_TXNS;
 		mDesiredMinTxPoWWork			= MIN_TXPOW_WORK;
