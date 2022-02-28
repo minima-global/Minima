@@ -12,6 +12,7 @@ import org.minima.database.mmr.MMRData;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.objects.Coin;
 import org.minima.objects.CoinProof;
+import org.minima.objects.Magic;
 import org.minima.objects.Transaction;
 import org.minima.objects.TxBlock;
 import org.minima.objects.TxPoW;
@@ -55,9 +56,12 @@ public class TxPoWGenerator {
 		txpow.setTransaction(zTransaction);
 		txpow.setWitness(zWitness);
 		
+		//Set the correct Magic Numbers..
+		Magic txpowmagic = tip.getTxPoW().getMagic().calculateNewCurrent();
+		
 		//Set the TXN Difficulty..
-//		txpow.setTxDifficulty(MIN_TXPOWDIFF);
-		txpow.setTxDifficulty(calculateDifficultyData(MiniNumber.MILLION));
+		MiniNumber userhashrate = MinimaDB.getDB().getUserDB().getHashRate();
+		txpow.setTxDifficulty(calculateDifficultyData(userhashrate));
 		
 		//Set the details..
 		txpow.setBlockNumber(tip.getTxPoW().getBlockNumber().increment());
@@ -112,11 +116,13 @@ public class TxPoWGenerator {
 				MinimaLogger.log("speed         : "+speed);
 				MinimaLogger.log("speedratio    : "+speedratio);
 				MinimaLogger.log("newdifficulty :"+newdifficulty.toString());
+				
+				//Set the Old value..
+				newdifficulty = tip.getTxPoW().getBlockDifficulty().getDataValue();
 			}
 			
 			txpow.setBlockDifficulty(new MiniData(newdifficulty));
 		}
-		
 		
 		//And add the current mempool txpow..
 		ArrayList<TxPoW> mempool = MinimaDB.getDB().getTxPoWDB().getAllUnusedTxns();
@@ -156,8 +162,17 @@ public class TxPoWGenerator {
 					}
 				}
 				
+				boolean valid = true;
+				if(memtxp.getSizeinBytesWithoutBlockTxns() > txpowmagic.getMaxTxPoWSize().getAsLong()) {
+					MinimaLogger.log("Memepool txn too big.. "+memtxp.getTxPoWID());
+					valid = false;
+				}else if(memtxp.getTxnDifficulty().isMore(txpowmagic.getMinTxPowWork())) {
+					MinimaLogger.log("Memepool txn TxPoW too low.. "+memtxp.getTxPoWID());
+					valid = false;
+				}
+				
 				//Check if Valid!
-				if(TxPoWChecker.checkTxPoWSimple(tip.getMMR(), memtxp, txpow.getBlockNumber())) {
+				if(valid && TxPoWChecker.checkTxPoWSimple(tip.getMMR(), memtxp, txpow)) {
 					//Add to our list
 					chosentxns.add(memtxp);
 					
@@ -184,8 +199,8 @@ public class TxPoWGenerator {
 				MinimaLogger.log("ERROR Checking TxPoW "+memtxp.getTxPoWID()+" "+exc.toString());
 			}
 			
-			//Max allowed.. 1 txn/s - for now..
-			if(totaladded > 50) {
+			//Max allowed..
+			if(totaladded > txpowmagic.getMaxNumTxns().getAsInt()) {
 				break;
 			}
 		}

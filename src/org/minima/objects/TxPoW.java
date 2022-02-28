@@ -449,6 +449,13 @@ public class TxPoW implements Streamable {
 		return _mTxPoWSize;
 	}
 	
+	public long getSizeinBytesWithoutBlockTxns() {
+		
+		long txns = 32 * getBlockTransactions().size();
+		
+		return _mTxPoWSize - txns;
+	}
+	
 	/**
 	 * This is only done once at creation. TXPOW structures are immutable.
 	 */

@@ -14,6 +14,7 @@ import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.kissvm.Contract;
 import org.minima.objects.Coin;
 import org.minima.objects.CoinProof;
+import org.minima.objects.Magic;
 import org.minima.objects.ScriptProof;
 import org.minima.objects.Token;
 import org.minima.objects.Transaction;
@@ -55,8 +56,11 @@ public class TxPoWChecker {
 				return false;
 			}
 			
-			//Check the Magic Numbers are correct
-			//.. TODO
+			//Check Number of Txns..
+			if(zTxPoW.getBlockTransactions().size() > zTxPoW.getMagic().getMaxNumTxns().getAsInt()) {
+				MinimaLogger.log("Too many transactions in block "+zTxPoW.getBlockTransactions().size()+" "+zTxPoW.getTxPoWID());
+				return false;
+			}
 			
 			//Check all the input coinid are Unique - use the MMR proofs! CoinID could be Eltoo
 			ArrayList<String> allcoinid = new ArrayList<>();
@@ -101,7 +105,7 @@ public class TxPoWChecker {
 			
 			//First check this
 			if(zTxPoW.isTransaction()) {
-				boolean valid = checkTxPoWSimple(parentMMR, zTxPoW, zTxPoW.getBlockNumber());
+				boolean valid = checkTxPoWSimple(parentMMR, zTxPoW, zTxPoW);
 				if(!valid) {
 					return false;
 				}
@@ -109,7 +113,7 @@ public class TxPoWChecker {
 			
 			//Now check all the internal Transactions
 			for(TxPoW txpow : zTransactions) {
-				boolean valid = checkTxPoWSimple(parentMMR, txpow, zTxPoW.getBlockNumber());
+				boolean valid = checkTxPoWSimple(parentMMR, txpow, zTxPoW);
 				if(!valid) {
 					return false;
 				}
@@ -139,8 +143,21 @@ public class TxPoWChecker {
 	/**
 	 * Once accepted basic and signature checks are no longer needed..
 	 */
-	public static boolean checkTxPoWSimple(MMR zTipMMR, TxPoW zTxPoW, MiniNumber zBlock) throws Exception {
-	
+	public static boolean checkTxPoWSimple(MMR zTipMMR, TxPoW zTxPoW, TxPoW zBlock) throws Exception {
+		
+		//Check TxPoW is required Minimum..
+		if(zTxPoW.getTxnDifficulty().isMore(zBlock.getMagic().getMinTxPowWork())) {
+			MinimaLogger.log("TxPoW difficulty too low.. "+zTxPoW.getTxPoWID());
+			return false;
+		}
+		
+		//Check Size is acceptable..
+		long size = zTxPoW.getSizeinBytesWithoutBlockTxns();
+		if(size > zBlock.getMagic().getMaxTxPoWSize().getAsLong()) {
+			MinimaLogger.log("TxPoW size too large.. "+size+" "+zTxPoW.getTxPoWID());
+			return false;
+		}
+		
 		//Check the MMR first - as quicker..
 		boolean valid = checkMMR(zTipMMR, zTxPoW);
 		if(!valid) {
@@ -284,7 +301,7 @@ public class TxPoWChecker {
 	/**
 	 * Check the Scripts of a transaction
 	 */
-	public static boolean checkTxPoWScripts(MMR zTipMMR, TxPoW zTxPoW, MiniNumber zBlock) throws Exception {
+	public static boolean checkTxPoWScripts(MMR zTipMMR, TxPoW zTxPoW, TxPoW zBlock) throws Exception {
 		
 		//Check the Transaction..
 		boolean valid = checkTxPoWScripts(zTipMMR, zTxPoW.getTransaction(), zTxPoW.getWitness(), zBlock);
@@ -296,7 +313,7 @@ public class TxPoWChecker {
 		return checkTxPoWScripts(zTipMMR, zTxPoW.getBurnTransaction(), zTxPoW.getBurnWitness(), zBlock);
 	}
 	
-	private static boolean checkTxPoWScripts(MMR zTipMMR, Transaction zTransaction, Witness zWitness, MiniNumber zBlock) throws Exception {
+	private static boolean checkTxPoWScripts(MMR zTipMMR, Transaction zTransaction, Witness zWitness, TxPoW zBlock) throws Exception {
 		
 		//Do we even need to check this!
 		if(zTransaction.isCheckedMonotonic()) {
@@ -313,6 +330,9 @@ public class TxPoWChecker {
 			zTransaction.mIsValid = true;
 			return true;
 		}
+		
+		//Max KISSVM Ops
+		int maxops = zBlock.getMagic().getMaxKISSOps().getAsInt();
 		
 		//Get the coin proofs
 		ArrayList<CoinProof> mmrproofs 	= zWitness.getAllCoinProofs();
@@ -335,7 +355,8 @@ public class TxPoWChecker {
 											zTransaction, 
 											cproof.getCoin().getState());
 			
-			contract.setGlobals(zBlock, zTransaction, i, cproof.getCoin().getBlockCreated(), script);
+			contract.setMaxInstructions(maxops);
+			contract.setGlobals(zBlock.getBlockNumber(), zTransaction, i, cproof.getCoin().getBlockCreated(), script);
 			contract.run();
 			
 			//Monotonic - no @BLKNUM references..
@@ -367,7 +388,8 @@ public class TxPoWChecker {
 														zTransaction, 
 														cproof.getCoin().getState());
 					
-					tokcontract.setGlobals(zBlock, zTransaction, i, cproof.getCoin().getBlockCreated(), tokscript);
+					tokcontract.setMaxInstructions(maxops);
+					tokcontract.setGlobals(zBlock.getBlockNumber(), zTransaction, i, cproof.getCoin().getBlockCreated(), tokscript);
 					tokcontract.run();
 					
 					if(!tokcontract.isMonotonic()) {
