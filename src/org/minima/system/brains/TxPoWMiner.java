@@ -13,6 +13,7 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
 import org.minima.utils.Crypto;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageProcessor;
 
@@ -31,6 +32,10 @@ public class TxPoWMiner extends MessageProcessor {
 	 */
 	ArrayList<String> mMiningCoins;
 	
+	/**
+	 * The last PULSE block we mined..
+	 */
+	MiniNumber mLastPulseBlock = MiniNumber.MINUSONE;
 	
 	public TxPoWMiner() {
 		super("MINER");
@@ -54,6 +59,25 @@ public class TxPoWMiner extends MessageProcessor {
 			
 			//Get the TxPoW
 			TxPoW txpow = (TxPoW) zMessage.getObject("txpow");
+			
+			//Is this an autominer..
+			if(zMessage.exists("automine")) {
+				boolean automine = zMessage.getBoolean("automine");
+				if(automine) {
+					
+					//What is the current tip block..
+					MiniNumber tipblock = MinimaDB.getDB().getTxPoWTree().getTip().getBlockNumber();
+					
+					//Check this pulse block is useful..
+					if(txpow.getBlockNumber().isLessEqual(mLastPulseBlock) || txpow.getBlockNumber().isLessEqual(tipblock)) {
+						MinimaLogger.log("Mining PULSE block too late.. "+txpow.getBlockNumber());
+						return;
+					}
+					
+					//Store this..
+					mLastPulseBlock = txpow.getBlockNumber();
+				}
+			}
 			
 			//Hard set the Header Body hash - now we are mining it can never change
 			txpow.setHeaderBodyHash();
@@ -189,4 +213,25 @@ public class TxPoWMiner extends MessageProcessor {
 		return mMiningCoins.contains(zCoinID);
 	}
 	
+	/**
+	 * Calculate the Hash rate of this node...
+	 */
+	public static MiniNumber calculateHashRate() {
+		
+		MiniNumber hashes 	= MiniNumber.MILLION;
+		int ihashes 		= hashes.getAsInt();
+		
+		long timestart = System.currentTimeMillis();
+		MiniData data = MiniData.getRandomData(32);
+		for(int i=0;i<ihashes;i++) {
+			data = Crypto.getInstance().hashObject(data);
+		}
+		long timediff = System.currentTimeMillis() - timestart;
+		
+		MiniNumber timesecs = new MiniNumber(timediff).div(MiniNumber.THOUSAND);
+		
+		MiniNumber spd = hashes.div(timesecs);
+		
+		return spd;
+	}
 }
