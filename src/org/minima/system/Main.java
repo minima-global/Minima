@@ -154,6 +154,11 @@ public class Main extends MessageProcessor {
 		//Load the Databases
 		MinimaDB.getDB().loadAllDB();
 		
+		//Calculate the User hashrate..
+		MiniNumber hashrate = TxPoWMiner.calculateHashRate();
+		MinimaDB.getDB().getUserDB().setHashRate(hashrate);
+		MinimaLogger.log("Calculate device hash rate : "+hashrate.div(MiniNumber.MILLION).setSignificantDigits(4)+" MHs");
+		
 		//Start the engine..
 		mTxPoWProcessor = new TxPoWProcessor();
 		mTxPoWMiner 	= new TxPoWMiner();
