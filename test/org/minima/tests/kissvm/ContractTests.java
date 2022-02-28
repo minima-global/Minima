@@ -251,13 +251,13 @@ public class ContractTests {
         }
 
         {
-            String Script = "";
-            for (int i = 0; i < Contract.MAX_INSTRUCTIONS; i++) {
+        	String Script = "";
+            Contract ctr = new Contract(Script, "", new Witness(), new Transaction(), new ArrayList<StateVariable>(), true);
+            for (int i = 0; i < ctr.MAX_INSTRUCTIONS; i++) {
                 Script = Script + "LET a = " + i + " ";
             }
 
             {
-                Contract ctr = new Contract(Script, "", new Witness(), new Transaction(), new ArrayList<StateVariable>(), true);
                 ctr.run();
                 assertTrue(ctr.isParseOK());
                 assertFalse(ctr.isException());
@@ -266,13 +266,13 @@ public class ContractTests {
         }
 
         {
-            String Script = "";
-            for (int i = 0; i <= Contract.MAX_INSTRUCTIONS; i++) {
+        	String Script = "";
+            Contract ctr = new Contract(Script, "", new Witness(), new Transaction(), new ArrayList<StateVariable>(), false);
+            for (int i = 0; i <= ctr.MAX_INSTRUCTIONS; i++) {
                 Script = Script + "LET a = " + i + " ";
             }
 
             {
-                Contract ctr = new Contract(Script, "", new Witness(), new Transaction(), new ArrayList<StateVariable>(), false);
                 ctr.run();
                 assertTrue(ctr.isParseOK());
                 assertTrue(ctr.isException());
@@ -281,13 +281,13 @@ public class ContractTests {
         }
 
         {
-            String Script = "";
-            for (int i = 0; i <= Contract.MAX_INSTRUCTIONS; i++) {
+        	String Script = "";
+            Contract ctr = new Contract(Script, "", new Witness(), new Transaction(), new ArrayList<StateVariable>(), true);
+            for (int i = 0; i <= ctr.MAX_INSTRUCTIONS; i++) {
                 Script = Script + "LET a = " + i + " ";
             }
 
             {
-                Contract ctr = new Contract(Script, "", new Witness(), new Transaction(), new ArrayList<StateVariable>(), true);
                 ctr.run();
                 assertTrue(ctr.isParseOK());
                 assertTrue(ctr.isException());

@@ -320,7 +320,7 @@ public class NIOMessage implements Runnable {
 				boolean fullyvalid = true;
 				
 				//Check the Scripts - could fail.. 
-				if(!TxPoWChecker.checkTxPoWScripts(tipmmr, txpow, tiptxpow.getBlockNumber())) {
+				if(!TxPoWChecker.checkTxPoWScripts(tipmmr, txpow, tiptxpow)) {
 					//Monotonic txn MUST pass the script check or is INVALID - since will never pass..
 					if(txpow.isMonotonic()) {
 						MinimaLogger.log("Error Monotonic TxPoW failed script check from Client:"+mClientUID+" "+txpow.getTxPoWID());

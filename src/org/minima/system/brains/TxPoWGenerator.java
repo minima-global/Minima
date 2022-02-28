@@ -12,6 +12,7 @@ import org.minima.database.mmr.MMRData;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.objects.Coin;
 import org.minima.objects.CoinProof;
+import org.minima.objects.Magic;
 import org.minima.objects.Transaction;
 import org.minima.objects.TxBlock;
 import org.minima.objects.TxPoW;
@@ -23,22 +24,6 @@ import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
 
 public class TxPoWGenerator {
-	
-	/**
-	 * TESTER hash difficulty
-	 */
-	public static final MiniData MIN_DIFFICULTY = new MiniData(
-					"0xFFFFFFFFFFFFFFFFFFFF"+
-					  "FFFFFFFFFFFFFFFFFFFF"+
-					  "FFFFFFFFFFFFFFFFFFFF"+
-					  "FFFF");
-	
-	/**
-	 * For Now - Hard set the Min TxPoW Difficulty
-	 */
-	public static final BigInteger MIN_HASHES 		= new BigInteger("10000");
-	public static final BigInteger MIN_TXPOW_VAL 	= Crypto.MAX_VAL.divide(MIN_HASHES);
-	public static final MiniData MIN_TXPOWDIFF 		= new MiniData(MIN_TXPOW_VAL);
 	
 	public static TxPoW generateTxPoW(Transaction zTransaction, Witness zWitness) {
 		//Base
@@ -54,8 +39,21 @@ public class TxPoWGenerator {
 		txpow.setTransaction(zTransaction);
 		txpow.setWitness(zWitness);
 		
+		//Set the Magic numbers
+		Magic txpowmagic = tip.getTxPoW().getMagic().calculateNewCurrent();
+		txpow.setMagic(txpowmagic);
+		
 		//Set the TXN Difficulty..
-		txpow.setTxDifficulty(MIN_TXPOWDIFF);
+		MiniNumber hashspeed = MinimaDB.getDB().getUserDB().getHashRate();
+		MiniData myminwork 	= new MiniData(Crypto.MAX_VAL.divide(hashspeed.getAsBigInteger()));
+		BigInteger currw 	= myminwork .getDataValue();
+		BigInteger tipmin 	= txpowmagic.getMinTxPowWork().getDataValue();
+		if(currw.compareTo(tipmin)>0) {
+			MinimaLogger.log("TXN Diff too low.. setting minimum..");
+			currw = tipmin;
+		}
+		MiniData minwork = new MiniData(currw);
+		txpow.setTxDifficulty(minwork);
 		
 		//Set the details..
 		txpow.setBlockNumber(tip.getTxPoW().getBlockNumber().increment());
@@ -81,7 +79,8 @@ public class TxPoWGenerator {
 		
 		//First couple of blocks 
 		if(topblock.isLessEqual(MiniNumber.TWO)) {
-			txpow.setBlockDifficulty(MIN_TXPOWDIFF);
+			txpow.setBlockDifficulty(Magic.MIN_TXPOW_WORK);
+		
 		}else {
 			MiniNumber blocksback = GlobalParams.MINIMA_BLOCKS_SPEED_CALC;
 			if(topblock.isLessEqual(blocksback)) {
@@ -100,16 +99,19 @@ public class TxPoWGenerator {
 			BigDecimal newdifficultydec = averagedifficultydec.multiply(speedratio.getAsBigDecimal());  
 			BigInteger newdifficulty	= newdifficultydec.toBigInteger();
 			
-			//MUST be more than the MIN TxPoW..
-			if(newdifficulty.compareTo(MIN_TXPOW_VAL)>0) {
-				newdifficulty = MIN_TXPOW_VAL;
+			if(newdifficulty.compareTo(Magic.MIN_TXPOW_WORK.getDataValue())>0) {
+				newdifficulty = Magic.MIN_TXPOW_WORK.getDataValue();
 			}
 			
+			//This SHOULD never happen
 			if(newdifficulty.compareTo(BigInteger.ZERO)<0) {
-				MinimaLogger.log("SERIOUS ERROR : NEGATIVE DIFFICULTY!");
+				MinimaLogger.log("SERIOUS ERROR : NEGATIVE DIFFICULTY! Will use previous blockdiff..");
 				MinimaLogger.log("speed         : "+speed);
 				MinimaLogger.log("speedratio    : "+speedratio);
 				MinimaLogger.log("newdifficulty :"+newdifficulty.toString());
+				
+				//HARD SET
+				newdifficulty = tip.getTxPoW().getBlockDifficulty().getDataValue();
 			}
 			
 			txpow.setBlockDifficulty(new MiniData(newdifficulty));
@@ -149,8 +151,18 @@ public class TxPoWGenerator {
 					}
 				}
 				
+				//Check size and Work.. 
+				boolean valid = true;
+				if(memtxp.getTxnDifficulty().getDataValue().compareTo(txpowmagic.getMinTxPowWork().getDataValue())>0) {
+					//Work too low..
+					valid = false;
+				}else if(memtxp.getSizeinBytesWithoutTransactions() > txpowmagic.getMaxTxPoWSize().getAsInt()) {
+					//Txn size too big..
+					valid = false;
+				}
+				
 				//Check if Valid!
-				if(TxPoWChecker.checkTxPoWSimple(tip.getMMR(), memtxp, txpow.getBlockNumber())) {
+				if(valid && TxPoWChecker.checkTxPoWSimple(tip.getMMR(), memtxp, txpow)) {
 					//Add to our list
 					chosentxns.add(memtxp);
 					
@@ -177,8 +189,8 @@ public class TxPoWGenerator {
 				MinimaLogger.log("ERROR Checking TxPoW "+memtxp.getTxPoWID());
 			}
 			
-			//Max allowed.. 1 txn/s - for now..
-			if(totaladded > 50) {
+			//Max allowed..
+			if(totaladded >= txpowmagic.getMaxNumTxns().getAsInt()) {
 				break;
 			}
 		}

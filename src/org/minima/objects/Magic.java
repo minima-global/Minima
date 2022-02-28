@@ -8,6 +8,7 @@ import java.math.BigInteger;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.Crypto;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONObject;
 
@@ -28,23 +29,30 @@ public class Magic implements Streamable {
 	/**
 	 * Maximum size of a TxPoW unit..
 	 */
-	private static final MiniNumber MAX_TXPOW_SIZE 		= new MiniNumber(32*1024);
+	private static final MiniNumber MINMAX_TXPOW_SIZE 	= new MiniNumber(64*1024);
+	private static final MiniNumber DEFAULT_TXPOW_SIZE 	= new MiniNumber(64*1024);
 	
 	/**
 	 * Maximum Number of executed KISSVM Operations
 	 */
-	private static final MiniNumber MAX_KISSVM_OPERATIONS = new MiniNumber(1024);
+	private static final MiniNumber MINMAX_KISSVM_OPERATIONS 	= new MiniNumber(1024);
+	private static final MiniNumber DEFAULT_KISSVM_OPERATIONS 	= new MiniNumber(1024);
 	
 	/**
 	 * Maximum number of Txns per block
 	 */
-	private static final MiniNumber MAX_TXPOW_TXNS		 = new MiniNumber(100);
+	private static final MiniNumber MINMAX_TXPOW_TXNS	= new MiniNumber(256);
+	private static final MiniNumber DEFAULT_TXPOW_TXNS	= new MiniNumber(256);
 	
 	/**
 	 * Minimum acceptable PoW per TxPoW
 	 */
-	private static final BigInteger MEGA_VAL 			 = Crypto.MAX_VAL.divide(new BigInteger("10000"));	
-	private static final MiniData   MIN_TXPOW_WORK		 = new MiniData("0x"+MEGA_VAL.toString(16));
+	/**
+	 * The Min TxPoW Difficulty ever
+	 */
+	public static final BigInteger MIN_HASHES 		= new BigInteger("10000");
+	public static final BigInteger MIN_TXPOW_VAL 	= Crypto.MAX_VAL.divide(MIN_HASHES);
+	public static final MiniData MIN_TXPOW_WORK 	= new MiniData(MIN_TXPOW_VAL);
 		
 	/**
 	 * The Current MAGIC numbers.. based on a weighted average of the chain..
@@ -62,14 +70,14 @@ public class Magic implements Streamable {
 	public MiniData   mDesiredMinTxPoWWork;
 	
 	public Magic() {
-		mCurrentMaxTxPoWSize			= MAX_TXPOW_SIZE;
-		mCurrentMaxKISSVMOps			= MAX_KISSVM_OPERATIONS;
-		mCurrentMaxTxnPerBlock			= MAX_TXPOW_TXNS;
+		mCurrentMaxTxPoWSize			= DEFAULT_TXPOW_SIZE;
+		mCurrentMaxKISSVMOps			= DEFAULT_KISSVM_OPERATIONS;
+		mCurrentMaxTxnPerBlock			= DEFAULT_TXPOW_TXNS;
 		mCurrentMinTxPoWWork			= MIN_TXPOW_WORK;
 		
-		mDesiredMaxTxPoWSize			= MAX_TXPOW_SIZE.add(MiniNumber.ONE);
-		mDesiredMaxKISSVMOps			= MAX_KISSVM_OPERATIONS.add(MiniNumber.ONE);
-		mDesiredMaxTxnPerBlock        	= MAX_TXPOW_TXNS.add(MiniNumber.ONE);
+		mDesiredMaxTxPoWSize			= DEFAULT_TXPOW_SIZE;
+		mDesiredMaxKISSVMOps			= DEFAULT_KISSVM_OPERATIONS;
+		mDesiredMaxTxnPerBlock        	= DEFAULT_TXPOW_TXNS;
 		mDesiredMinTxPoWWork			= MIN_TXPOW_WORK;
 	}
 
@@ -87,43 +95,6 @@ public class Magic implements Streamable {
 		magic.put("desiredmintxpowwork", mDesiredMinTxPoWWork.to0xString());
 		
 		return magic;
-	}
-	
-	/**
-	 * The user votes on what he thinks it should be..
-	 * 
-	 * MUST BE >= x0.5 and <= x2 of the current values.
-	 */
-	public boolean checkValid() {
-		
-		MiniNumber ratio = mDesiredMaxTxPoWSize.div(mCurrentMaxTxPoWSize);
-		if(ratio.isMore(MiniNumber.TWO) || ratio.isLess(MiniNumber.HALF)) {
-			return false;
-		} 
-		
-		ratio = mDesiredMaxTxnPerBlock.div(mCurrentMaxTxnPerBlock);
-		if(ratio.isMore(MiniNumber.TWO) || ratio.isLess(MiniNumber.HALF)) {
-			return false;
-		}
-		
-		ratio = mDesiredMaxKISSVMOps.div(mCurrentMaxKISSVMOps);
-		if(ratio.isMore(MiniNumber.TWO) || ratio.isLess(MiniNumber.HALF)) {
-			return false;
-		}
-		
-		//Check Min TxPoW..
-		BigInteger two 			= new BigInteger("2");
-		BigInteger currentval 	= mCurrentMinTxPoWWork.getDataValue();
-		BigInteger desiredval 	= mDesiredMinTxPoWWork.getDataValue();
-		
-		//If more than * 2 or less than * 0.5.. return false
-		if(desiredval.compareTo(currentval.multiply(two))>0) {
-			return false;
-		}else if(desiredval.compareTo(currentval.divide(two))<0) {
-			return false;
-		}
-		
-		return true;
 	}
 	
 	public boolean checkSame(Magic zMagic) {
@@ -155,19 +126,85 @@ public class Magic implements Streamable {
 	}
 	
 	/**
-	 * Calculate the current MAX values by taking a heavily weighted average 
+	 * Calculate the current MAX values by taking a heavily weighted average
+	 * 
+	 *  Desired MUST be >= x0.5 and <= x2
+	 *  
 	 */
 	public Magic calculateNewCurrent() {
 		
+		//The New Magic Numbers
 		Magic ret = new Magic();
-
-		ret.mCurrentMaxTxPoWSize 	= mCurrentMaxTxPoWSize.mult(CALC_WEIGHTED).add(mDesiredMaxTxPoWSize).div(CALC_TOTAL);
-		ret.mCurrentMaxKISSVMOps	= mCurrentMaxKISSVMOps.mult(CALC_WEIGHTED).add(mDesiredMaxKISSVMOps).div(CALC_TOTAL);
-		ret.mCurrentMaxTxnPerBlock 	= mCurrentMaxTxnPerBlock.mult(CALC_WEIGHTED).add(mDesiredMaxTxnPerBlock).div(CALC_TOTAL);
-	
+		
+		//TxPoWSize
+		MiniNumber desired 	= mDesiredMaxTxPoWSize;
+		MiniNumber min	 	= mCurrentMaxTxPoWSize.div(MiniNumber.TWO);
+		MiniNumber max	 	= mCurrentMaxTxPoWSize.mult(MiniNumber.TWO);
+		if(desired.isLess(min)) {
+			desired = min;
+		}else if(desired.isMore(max)) {
+			desired = max;
+		
+		}
+		
+		//And finally - this is the minimum limit
+		if(desired.isLess(MINMAX_TXPOW_SIZE)) {
+			desired = MINMAX_TXPOW_SIZE;
+		}
+		
+		ret.mCurrentMaxTxPoWSize 	= mCurrentMaxTxPoWSize.mult(CALC_WEIGHTED).add(desired).div(CALC_TOTAL);
+		
+		//KISSVMOpS
+		desired 	= mDesiredMaxKISSVMOps;
+		min	 		= mCurrentMaxKISSVMOps.div(MiniNumber.TWO);
+		max	 		= mCurrentMaxKISSVMOps.mult(MiniNumber.TWO);
+		if(desired.isLess(min)) {
+			desired = min;
+		}else if(desired.isMore(max)) {
+			desired = max;
+		}
+		
+		//And finally - this is the minimum limit
+		if(desired.isLess(MINMAX_KISSVM_OPERATIONS)) {
+			desired = MINMAX_KISSVM_OPERATIONS;
+		}
+		
+		ret.mCurrentMaxKISSVMOps	= mCurrentMaxKISSVMOps.mult(CALC_WEIGHTED).add(desired).div(CALC_TOTAL);
+		
+		//Txns per block
+		desired 	= mDesiredMaxTxnPerBlock;
+		min	 		= mCurrentMaxTxnPerBlock.div(MiniNumber.TWO);
+		max	 		= mCurrentMaxTxnPerBlock.mult(MiniNumber.TWO);
+		if(desired.isLess(min)) {
+			desired = min;
+		}else if(desired.isMore(max)) {
+			desired = max;
+		}
+		
+		//And finally - this is the minimum limit
+		if(desired.isLess(MINMAX_TXPOW_TXNS)) {
+			desired = MINMAX_TXPOW_TXNS;
+		}
+		
+		ret.mCurrentMaxTxnPerBlock	= mCurrentMaxTxnPerBlock.mult(CALC_WEIGHTED).add(desired).div(CALC_TOTAL);
+		
 		//Work is slightly different as is MiniData
+		BigInteger two 	  = new BigInteger("2");
 		BigInteger oldval = mCurrentMinTxPoWWork.getDataValue();
+		BigInteger minval = oldval.divide(two);
+		BigInteger maxval = oldval.multiply(two);
+		
 		BigInteger newval = mDesiredMinTxPoWWork.getDataValue();
+		if(newval.compareTo(minval)<0) {
+			newval = minval;
+		}else if(newval.compareTo(maxval)>0) {
+			newval = maxval;
+		}
+		
+		//And finally - this is the minimum limit
+		if(newval.compareTo(MIN_TXPOW_VAL) > 0) {
+			newval = MIN_TXPOW_VAL;
+		}
 		
 		//Now do the same calculation..
 		BigInteger calc = oldval.multiply(CALC_WEIGHTED.getAsBigInteger()).add(newval).divide(CALC_TOTAL.getAsBigInteger()); 

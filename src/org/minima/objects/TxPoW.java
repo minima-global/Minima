@@ -163,6 +163,10 @@ public class TxPoW implements Streamable {
 		return mHeader.mMagic;
 	}
 	
+	public void setMagic(Magic zMagic) {
+		mHeader.mMagic = zMagic;
+	}
+	
 	public void setTxDifficulty(MiniData zDifficulty) {
 		mBody.mTxnDifficulty = zDifficulty;
 	}
@@ -448,6 +452,14 @@ public class TxPoW implements Streamable {
 	
 	public long getSizeinBytes() {
 		return _mTxPoWSize;
+	}
+	
+	public long getSizeinBytesWithoutTransactions() {
+		
+		//The transactions are 32 byte hashes.. 
+		long txns = getTransactions().size() * 32;
+		
+		return _mTxPoWSize - txns;
 	}
 	
 	/**

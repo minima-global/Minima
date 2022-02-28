@@ -13,6 +13,7 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
 import org.minima.utils.Crypto;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageProcessor;
 
@@ -187,6 +188,33 @@ public class TxPoWMiner extends MessageProcessor {
 	
 	public boolean checkForMiningCoin(String zCoinID) {
 		return mMiningCoins.contains(zCoinID);
+	}
+	
+	/**
+	 * Calculate the Hashrate of this node...
+	 */
+	public static MiniNumber calculateHashRate() {
+		
+		MiniNumber hashes 	= MiniNumber.MILLION;
+		int ihashes 		= hashes.getAsInt();
+		
+		long timestart = System.currentTimeMillis();
+		MiniData data = MiniData.getRandomData(32);
+		for(int i=0;i<ihashes;i++) {
+			data = Crypto.getInstance().hashObject(data);
+		}
+		long timediff = System.currentTimeMillis() - timestart;
+		
+		MiniNumber timesecs = new MiniNumber(timediff).div(MiniNumber.THOUSAND);
+		
+		MiniNumber spd = hashes.div(timesecs);
+		
+		return spd;
+	}
+	
+	public static void main(String[] zArgs) {
+	
+		MinimaLogger.log("Speed : "+calculateHashRate());
 	}
 	
 }

@@ -35,7 +35,6 @@ public class TxPoWChecker {
 	public static boolean checkTxPoWBlock(TxPoWTreeNode zParentNode, TxPoW zTxPoW, ArrayList<TxPoW> zTransactions) {
 		
 		try {
-			
 			//Max time in the future.. 1hour..
 			MiniNumber maxtime = new MiniNumber(System.currentTimeMillis() + (1000 * 60 * 60));
 			
@@ -52,37 +51,42 @@ public class TxPoWChecker {
 			
 			//Check the Block Number is correct
 			if(!zTxPoW.getBlockNumber().isEqual(zParentNode.getBlockNumber().increment())) {
-				MinimaLogger.log("Invalid TxPoW block with wrong blocknumber "+zTxPoW.getTxPoWID());
+				MinimaLogger.log("Invalid TxPoW block with wrong blocknumber "+zTxPoW.getBlockNumber()+" "+zTxPoW.getTxPoWID());
 				return false;
 			}
-			
-			//Check the Magic Numbers are correct
-			Magic oldmag = zParentNode.getTxPoW().getMagic().calculateNewCurrent();
 			
 			//Check these are correct in the new block..
-			Magic cmag = zTxPoW.getMagic();
-			if(!cmag.checkSame(oldmag)) {
-				MinimaLogger.log("Invalid Current Magic numbers in TxPoW "+zTxPoW.getTxPoWID());
-				MinimaLogger.log("OLD:"+oldmag.toJSON().toString());
-				MinimaLogger.log("NEW:"+cmag.toJSON().toString());
-				return false;
-			}
-			
-			//Are the desired magic numbers valid..
-			if(!cmag.checkValid()) {
-				MinimaLogger.log("Invalid Desired Magic numbers in TxPoW "+zTxPoW.getTxPoWID());
+			Magic currentmagic = zTxPoW.getMagic();
+			if(!currentmagic.checkSame(zParentNode.getTxPoW().getMagic().calculateNewCurrent())) {
+				MinimaLogger.log("Invalid Current Magic numbers in TxPoW @ "+zTxPoW.getBlockNumber()+" "+zTxPoW.getTxPoWID());
 				return false;
 			}
 			
 			//Now check the basics..
-			if(zTxPoW.getTransactions().size() > cmag.getMaxNumTxns().getAsInt()) {
+			if(zTxPoW.getTransactions().size() > currentmagic.getMaxNumTxns().getAsInt()) {
 				MinimaLogger.log("Too many transaction in block TxPoW "+zTxPoW.getTransactions().size()+" "+zTxPoW.getTxPoWID());
+				return false;
+			}
+			
+			//Minimum TXN Difficulty..
+			BigInteger mintxndiff = currentmagic.getMinTxPowWork().getDataValue();
+			
+			//Check the PoW..
+			if(zTxPoW.getTxnDifficulty().getDataValue().compareTo(mintxndiff)>0) {
+				MinimaLogger.log("TXN Diffifulty for block too low..  "+zTxPoW.getTxPoWID());
+				return false;
+			}
+			
+			//Check the Size..
+			if(zTxPoW.getSizeinBytesWithoutTransactions() > currentmagic.getMaxTxPoWSize().getAsInt()) {
+				MinimaLogger.log("TXN block too large  "+zTxPoW.getSizeinBytesWithoutTransactions()+" "+zTxPoW.getTxPoWID());
 				return false;
 			}
 			
 			//Check all the input coinid are Unique - use the MMR proofs! CoinID could be Eltoo
 			ArrayList<String> allcoinid = new ArrayList<>();
 			if(zTxPoW.isTransaction()) {
+				
 				//Main
 				ArrayList<CoinProof> proofs = zTxPoW.getWitness().getAllCoinProofs();
 				for(CoinProof proof : proofs) {
@@ -95,7 +99,21 @@ public class TxPoWChecker {
 					allcoinid.add(proof.getCoin().getCoinID().to0xString());
 				}
 			}
+			
 			for(TxPoW txpow : zTransactions) {
+				
+				//Check the PoW..
+				if(txpow.getTxnDifficulty().getDataValue().compareTo(mintxndiff)>0) {
+					MinimaLogger.log("TXN Diffifulty in block too low..  "+txpow.getTxPoWID());
+					return false;
+				}
+				
+				//Check the Size..
+				if(txpow.getSizeinBytesWithoutTransactions() > currentmagic.getMaxTxPoWSize().getAsInt()) {
+					MinimaLogger.log("TXN in block too large  "+zTxPoW.getSizeinBytes()+" "+zTxPoW.getTxPoWID());
+					return false;
+				}
+				
 				if(txpow.isTransaction()) {
 					//Main
 					ArrayList<CoinProof> proofs = txpow.getWitness().getAllCoinProofs();
@@ -123,7 +141,7 @@ public class TxPoWChecker {
 			
 			//First check this
 			if(zTxPoW.isTransaction()) {
-				boolean valid = checkTxPoWSimple(parentMMR, zTxPoW, zTxPoW.getBlockNumber());
+				boolean valid = checkTxPoWSimple(parentMMR, zTxPoW, zTxPoW);
 				if(!valid) {
 					return false;
 				}
@@ -131,7 +149,7 @@ public class TxPoWChecker {
 			
 			//Now check all the internal Transactions
 			for(TxPoW txpow : zTransactions) {
-				boolean valid = checkTxPoWSimple(parentMMR, txpow, zTxPoW.getBlockNumber());
+				boolean valid = checkTxPoWSimple(parentMMR, txpow, zTxPoW);
 				if(!valid) {
 					return false;
 				}
@@ -161,7 +179,7 @@ public class TxPoWChecker {
 	/**
 	 * Once accepted basic and signature checks are no longer needed..
 	 */
-	public static boolean checkTxPoWSimple(MMR zTipMMR, TxPoW zTxPoW, MiniNumber zBlock) throws Exception {
+	public static boolean checkTxPoWSimple(MMR zTipMMR, TxPoW zTxPoW, TxPoW zTxPoWBlock) throws Exception {
 	
 		//Check the MMR first - as quicker..
 		boolean valid = checkMMR(zTipMMR, zTxPoW);
@@ -170,7 +188,7 @@ public class TxPoWChecker {
 		}
 		
 		//Now check the scripts
-		return checkTxPoWScripts(zTipMMR, zTxPoW, zBlock);
+		return checkTxPoWScripts(zTipMMR, zTxPoW, zTxPoWBlock);
 	}
 	
 	/**
@@ -264,7 +282,6 @@ public class TxPoWChecker {
 					MinimaLogger.log("TokenID in MMR Proof input "+i+" doesn't match token "+zTxPoWID);
 					return false;
 				}
-				
 			}
 			
 			//Check the CoinProof details and Coin details Match
@@ -306,19 +323,19 @@ public class TxPoWChecker {
 	/**
 	 * Check the Scripts of a transaction
 	 */
-	public static boolean checkTxPoWScripts(MMR zTipMMR, TxPoW zTxPoW, MiniNumber zBlock) throws Exception {
+	public static boolean checkTxPoWScripts(MMR zTipMMR, TxPoW zTxPoW, TxPoW zTxPoWBlock) throws Exception {
 		
 		//Check the Transaction..
-		boolean valid = checkTxPoWScripts(zTipMMR, zTxPoW.getTransaction(), zTxPoW.getWitness(), zBlock);
+		boolean valid = checkTxPoWScripts(zTipMMR, zTxPoW.getTransaction(), zTxPoW.getWitness(), zTxPoWBlock);
 		if(!valid) {
 			return false;
 		}
 		
 		//Check the Burn Transaction..
-		return checkTxPoWScripts(zTipMMR, zTxPoW.getBurnTransaction(), zTxPoW.getBurnWitness(), zBlock);
+		return checkTxPoWScripts(zTipMMR, zTxPoW.getBurnTransaction(), zTxPoW.getBurnWitness(), zTxPoWBlock);
 	}
 	
-	private static boolean checkTxPoWScripts(MMR zTipMMR, Transaction zTransaction, Witness zWitness, MiniNumber zBlock) throws Exception {
+	private static boolean checkTxPoWScripts(MMR zTipMMR, Transaction zTransaction, Witness zWitness, TxPoW zTxPoWBlock) throws Exception {
 		
 		//Do we even need to check this!
 		if(zTransaction.isCheckedMonotonic()) {
@@ -357,7 +374,10 @@ public class TxPoWChecker {
 											zTransaction, 
 											cproof.getCoin().getState());
 			
-			contract.setGlobals(zBlock, zTransaction, i, cproof.getCoin().getBlockCreated(), script);
+			//Set the correct VM Ops Limit..
+			int maxvmops = zTxPoWBlock.getMagic().getMaxKISSOps().getAsInt();
+			contract.setMaxInstructions(maxvmops);
+			contract.setGlobals(zTxPoWBlock.getBlockNumber() , zTransaction, i, cproof.getCoin().getBlockCreated(), script);
 			contract.run();
 			
 			//Monotonic - no @BLKNUM references..
@@ -389,7 +409,8 @@ public class TxPoWChecker {
 														zTransaction, 
 														cproof.getCoin().getState());
 					
-					tokcontract.setGlobals(zBlock, zTransaction, i, cproof.getCoin().getBlockCreated(), tokscript);
+					tokcontract.setMaxInstructions(maxvmops);
+					tokcontract.setGlobals(zTxPoWBlock.getBlockNumber(), zTransaction, i, cproof.getCoin().getBlockCreated(), tokscript);
 					tokcontract.run();
 					
 					if(!tokcontract.isMonotonic()) {
