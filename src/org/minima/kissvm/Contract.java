@@ -83,7 +83,7 @@ public class Contract {
 	/**
 	 * Maximum allowed number of KISSVM instructions
 	 */
-	public int MAX_INSTRUCTIONS = 256;
+	public int MAX_INSTRUCTIONS = 1024;
 	
 	/**
 	 * A complete log of the contract execution
