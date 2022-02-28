@@ -25,21 +25,22 @@ import org.minima.utils.MinimaLogger;
 public class TxPoWGenerator {
 	
 	/**
-	 * TESTER hash difficulty
-	 */
-	public static final MiniData MIN_DIFFICULTY = new MiniData(
-					"0xFFFFFFFFFFFFFFFFFFFF"+
-					  "FFFFFFFFFFFFFFFFFFFF"+
-					  "FFFFFFFFFFFFFFFFFFFF"+
-					  "FFFF");
-	
-	/**
 	 * For Now - Hard set the Min TxPoW Difficulty
 	 */
 	public static final BigInteger MIN_HASHES 		= new BigInteger("10000");
 	public static final BigInteger MIN_TXPOW_VAL 	= Crypto.MAX_VAL.divide(MIN_HASHES);
 	public static final MiniData MIN_TXPOWDIFF 		= new MiniData(MIN_TXPOW_VAL);
 	
+	/**
+	 * Calculate a Difficulty Hash for a given hash number
+	 */
+	public static MiniData calculateDifficultyData(MiniNumber zHashes) {
+		return new MiniData(Crypto.MAX_VAL.divide(zHashes.getAsBigInteger()));
+	}
+	
+	/**
+	 * Generate a complete TxPoW
+	 */
 	public static TxPoW generateTxPoW(Transaction zTransaction, Witness zWitness) {
 		//Base
 		TxPoW txpow = new TxPoW();
@@ -55,7 +56,8 @@ public class TxPoWGenerator {
 		txpow.setWitness(zWitness);
 		
 		//Set the TXN Difficulty..
-		txpow.setTxDifficulty(MIN_TXPOWDIFF);
+//		txpow.setTxDifficulty(MIN_TXPOWDIFF);
+		txpow.setTxDifficulty(calculateDifficultyData(MiniNumber.MILLION));
 		
 		//Set the details..
 		txpow.setBlockNumber(tip.getTxPoW().getBlockNumber().increment());
@@ -138,6 +140,11 @@ public class TxPoWGenerator {
 		int totaladded = 0;
 		for(TxPoW memtxp : mempool) {
 			
+			//Is it a transaction
+			if(!memtxp.isTransaction()) {
+				continue;
+			}
+			
 			try {
 				
 				//Check CoinIDs not added already..
@@ -174,7 +181,7 @@ public class TxPoWGenerator {
 				}
 				
 			}catch(Exception exc) {
-				MinimaLogger.log("ERROR Checking TxPoW "+memtxp.getTxPoWID());
+				MinimaLogger.log("ERROR Checking TxPoW "+memtxp.getTxPoWID()+" "+exc.toString());
 			}
 			
 			//Max allowed.. 1 txn/s - for now..
