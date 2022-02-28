@@ -443,7 +443,6 @@ public class TxPoW implements Streamable {
 		}
 		
 		return !getTransaction().isEmpty();
-//		return _mIsTxnPOW;
 	}
 	
 	public long getSizeinBytes() {

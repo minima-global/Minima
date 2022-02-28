@@ -396,7 +396,6 @@ public class Main extends MessageProcessor {
 			
 			//Are we auto mining
 			if(GeneralParams.AUTOMINE) {
-				
 				//Create a TxPoW
 				mTxPoWMiner.PostMessage(TxPoWMiner.TXPOWMINER_MINEPULSE);
 			}
