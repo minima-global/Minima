@@ -386,7 +386,7 @@ public class TxPoWChecker {
 			contract.setGlobals(zBlock.getBlockNumber(), zTransaction, inputnum, cproof.getCoin().getBlockCreated(), script);
 			contract.run();
 			
-			//Monotonic - no @BLKNUM references..
+			//Monotonic - no @BLOCK references..
 			if(!contract.isMonotonic()) {
 				zTransaction.mIsMonotonic = false;
 			}
