@@ -298,6 +298,10 @@ public class NIOMessage implements Runnable {
 				if(blockdiffratio < 0.25) {
 					//Block difficulty too low..
 					MinimaLogger.log("Received txpow with block difficulty too low.. "+blockdiffratio+" "+txpow.getBlockNumber()+" "+txpow.getTxPoWID());
+					
+					//Should not happen - this peer is funky..
+					Main.getInstance().getNIOManager().disconnect(mClientUID);
+					
 					return;
 				}
 				
