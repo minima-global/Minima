@@ -1,16 +1,27 @@
 package org.minima.system.commands.txn;
 
+import java.util.ArrayList;
+
 import org.minima.database.MinimaDB;
 import org.minima.database.userprefs.txndb.TxnDB;
 import org.minima.database.userprefs.txndb.TxnRow;
+import org.minima.database.wallet.KeyRow;
+import org.minima.database.wallet.Wallet;
+import org.minima.objects.Coin;
+import org.minima.objects.Transaction;
+import org.minima.objects.Witness;
+import org.minima.objects.base.MiniData;
+import org.minima.objects.keys.Signature;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
+import org.minima.utils.Crypto;
+import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
-public class txnclear extends Command {
+public class txnmmr extends Command {
 
-	public txnclear() {
-		super("txnclear","[id:] - Clear ALL the Witness data");
+	public txnmmr() {
+		super("txnmmr","[id:] [coinid:0x..|auto] - Add MMR Proofs");
 	}
 	
 	@Override
@@ -19,7 +30,8 @@ public class txnclear extends Command {
 
 		TxnDB db = MinimaDB.getDB().getCustomTxnDB();
 		
-		String id 	= getParam("id");
+		String id 		= getParam("id");
+		String coinid	= getParam("coinid");
 		
 		//Get the Transaction..
 		TxnRow txnrow 	= db.getTransactionRow(getParam("id"));
@@ -27,17 +39,23 @@ public class txnclear extends Command {
 			throw new CommandException("Transaction not found : "+id);
 		}
 		
-		txnrow.clearWitness();
+		if(coinid.equals("auto")) {
+			
+			//Cycle through and add all the MMR proofs we have..
+			
+			
+			
+		}
 		
 		JSONObject resp = new JSONObject();
-		ret.put("response", txnrow.toJSON());
+		ret.put("response", resp);
 		
 		return ret;
 	}
 
 	@Override
 	public Command getFunction() {
-		return new txnclear();
+		return new txnmmr();
 	}
 
 }
