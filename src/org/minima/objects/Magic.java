@@ -7,6 +7,9 @@ import java.math.BigInteger;
 
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.system.brains.TxPoWGenerator;
+import org.minima.system.brains.TxPoWMiner;
+import org.minima.system.commands.base.newaddress;
 import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
@@ -27,29 +30,33 @@ public class Magic implements Streamable {
 	private static final MiniNumber CALC_TOTAL 			= new MiniNumber(16384);
 	
 	/**
-	 * Maximum size of a TxPoW unit..
+	 * These are HARD limits that can NEVER Change
 	 */
-	private static final MiniNumber MINMAX_TXPOW_SIZE 	= new MiniNumber(64*1024);
+	private static final MiniNumber MINMAX_TXPOW_SIZE 			= new MiniNumber(64*1024);
+	private static final MiniNumber MINMAX_KISSVM_OPERATIONS 	= new MiniNumber(1024);
+	private static final MiniNumber MINMAX_TXPOW_TXNS			= new MiniNumber(256);
+	
+	/**
+	 * Minimum acceptable PoW per TxPoW - Also a HARD limit
+	 */
+	public static final BigInteger MIN_TXPOW_VAL 	= Crypto.MAX_VAL.divide(new BigInteger("10000"));
+	public static final MiniData MIN_TXPOW_WORK 	= new MiniData(MIN_TXPOW_VAL);
+	
+	/**
+	 * Default Maximum size of a TxPoW unit.. Can change
+	 */
 	private static final MiniNumber DEFAULT_TXPOW_SIZE 	= new MiniNumber(64*1024);
 	
 	/**
-	 * Maximum Number of executed KISSVM Operations
+	 * Default Maximum Number of executed KISSVM Operations
 	 */
-	private static final MiniNumber MINMAX_KISSVM_OPERATIONS 	= new MiniNumber(1024);
 	private static final MiniNumber DEFAULT_KISSVM_OPERATIONS 	= new MiniNumber(1024);
 	
 	/**
-	 * Maximum number of Txns per block
+	 * Default Maximum number of Txns per block
 	 */
-	private static final MiniNumber MINMAX_TXPOW_TXNS	= new MiniNumber(256);
 	private static final MiniNumber DEFAULT_TXPOW_TXNS	= new MiniNumber(256);
 	
-	/**
-	 * Minimum acceptable PoW per TxPoW
-	 */
-	public static final BigInteger MIN_HASHES 		= new BigInteger("10000");
-	public static final BigInteger MIN_TXPOW_VAL 	= Crypto.MAX_VAL.divide(MIN_HASHES);
-	public static final MiniData MIN_TXPOW_WORK 	= new MiniData(MIN_TXPOW_VAL);
 		
 	/**
 	 * The Current MAGIC numbers.. based on a weighted average of the chain..
