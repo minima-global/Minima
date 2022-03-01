@@ -34,7 +34,7 @@ public class send extends Command {
 
 	
 	public send() {
-		super("send","[address:] [amount:] (tokenid:) (state:{}) - Send Minima or Tokens to an address");
+		super("send","[address:] [amount:] (tokenid:) (state:{}) (burn:)- Send Minima or Tokens to an address");
 	}
 	
 	@Override
@@ -44,6 +44,9 @@ public class send extends Command {
 		//Get the details
 		String address = (String)getParams().get("address");
 		String amount  = (String)getParams().get("amount");
+	
+		//What's the burn..
+		MiniNumber burn = getNumberParam("burn",MiniNumber.ZERO);
 		
 		if(address==null || amount==null) {
 			throw new CommandException("MUST specify adress and amount");
