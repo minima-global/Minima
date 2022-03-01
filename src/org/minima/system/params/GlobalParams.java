@@ -33,7 +33,7 @@ public class GlobalParams {
 	/**
 	 * Depth before we cascade..
 	 */
-	public static MiniNumber MINIMA_CASCADE_START_DEPTH = new MiniNumber(1024);
+	public static MiniNumber MINIMA_CASCADE_START_DEPTH = new MiniNumber(2048);
 	
 	/**
 	 * Number of blocks at each cascade level 
