@@ -18,6 +18,9 @@ import org.minima.utils.json.JSONObject;
 
 public class TxHeader implements Streamable {
 
+	public static MiniData TEST_NET = new MiniData("0x00");
+	public static MiniData MAIN_NET = new MiniData("0x01");
+	
 	/**
 	 * The NONCE - the user definable data you cycle through to change the final hash of this TxPow
 	 */
@@ -26,7 +29,7 @@ public class TxHeader implements Streamable {
 	/**
 	 * The Chain ID - This defines the rules this block was made under, MUST be 0x01.. 
 	 */
-	public MiniData mChainID = new MiniData("0x01");
+	public MiniData mChainID = TEST_NET;
 	
 	/**
 	 * Time Milli - needs to be a MiniNumber as is used in Scripts.. 

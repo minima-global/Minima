@@ -31,6 +31,11 @@ import org.minima.utils.MinimaLogger;
 public class TxPoWChecker {
 
 	/**
+	 * What Network are we currently checking for
+	 */
+	private static MiniData CURRENT_NETWORK = TxHeader.TEST_NET;
+	
+	/**
 	 * Parallel check all the transactions in this block
 	 */
 	public static boolean checkTxPoWBlock(TxPoWTreeNode zParentNode, TxPoW zTxPoW, ArrayList<TxPoW> zTransactions) {
@@ -52,7 +57,7 @@ public class TxPoWChecker {
 			}
 			
 			//Check ChainID
-			if(!zTxPoW.getChainID().isEqual(new MiniData("0x01"))) {
+			if(!zTxPoW.getChainID().isEqual(CURRENT_NETWORK)) {
 				MinimaLogger.log("Wrong Block ChainID! "+zTxPoW.getChainID()+" "+zTxPoW.getTxPoWID());
 				return false;
 			}
@@ -160,7 +165,7 @@ public class TxPoWChecker {
 	public static boolean checkTxPoWBasic(TxPoW zTxPoW) throws Exception {
 		
 		//Check ChainID
-		if(!zTxPoW.getChainID().isEqual(new MiniData("0x01"))) {
+		if(!zTxPoW.getChainID().isEqual(CURRENT_NETWORK)) {
 			MinimaLogger.log("Wrong TxPoW ChainID! "+zTxPoW.getChainID()+" "+zTxPoW.getTxPoWID());
 			return false;
 		}
