@@ -60,9 +60,10 @@ public class TxPoWMiner extends MessageProcessor {
 			//Get the TxPoW
 			TxPoW txpow = (TxPoW) zMessage.getObject("txpow");
 			
-			//Is this an autominer..
+			//Is this an autominer.
+			boolean automine = false;
 			if(zMessage.exists("automine")) {
-				boolean automine = zMessage.getBoolean("automine");
+				automine = zMessage.getBoolean("automine");
 				if(automine) {
 					
 					//What is the current tip block..
