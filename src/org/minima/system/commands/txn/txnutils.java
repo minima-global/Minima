@@ -108,4 +108,54 @@ public class txnutils {
 			zWitness.addScript(pscr);
 		}
 	}
+	
+	public static void setMMRandScripts(Coin zCoin, Witness zWitness) throws Exception {
+		//get the tip..
+		TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
+		
+		//Min depth of a coin
+		MiniNumber minblock = MiniNumber.ZERO;
+		
+		//How deep
+		if(zCoin.getBlockCreated().isMore(minblock)) {
+			minblock = zCoin.getBlockCreated();
+		}		
+		
+		//Get the block..
+		MiniNumber currentblock = tip.getBlockNumber();
+		MiniNumber blockdiff 	= currentblock.sub(minblock);
+		if(blockdiff.isMore(GlobalParams.MINIMA_MMR_PROOF_HISTORY)) {
+			blockdiff = GlobalParams.MINIMA_MMR_PROOF_HISTORY;
+		}
+		
+		//Now get that Block
+		TxPoWTreeNode mmrnode = tip.getPastNode(tip.getBlockNumber().sub(blockdiff));
+		MinimaLogger.log("MMR PROOF "+tip.getBlockNumber()+" / "+mmrnode.getBlockNumber());
+		if(mmrnode == null) {
+			//Not enough blocks..
+			throw new Exception("Not enough blocks in chain to make valid MMR Proofs..");
+		}
+		
+		//Get the main Wallet
+		Wallet walletdb = MinimaDB.getDB().getWallet();
+			
+		//Get the proof..
+		MMRProof proof = mmrnode.getMMR().getProofToPeak(zCoin.getMMREntryNumber());
+		
+		//Create the CoinProof..
+		CoinProof cp = new CoinProof(zCoin, proof);
+		
+		//Add it to the witness data
+		zWitness.addCoinProof(cp);
+		
+		//Add the script proofs
+		String scraddress 	= zCoin.getAddress().to0xString();
+		KeyRow keyrow 		= walletdb.getKeysRowFromAddress(scraddress); 
+		if(keyrow == null) {
+			throw new Exception("SERIOUS ERROR script missing for simple address : "+scraddress);
+		}
+		
+		ScriptProof pscr = new ScriptProof(keyrow.getScript());
+		zWitness.addScript(pscr);
+	}
 }

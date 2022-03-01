@@ -15,7 +15,7 @@ import org.minima.utils.json.JSONObject;
 public class txnpost extends Command {
 
 	public txnpost() {
-		super("txnpost","[id:] - Post a transaction");
+		super("txnpost","[id:] (auto:false) - Post a transaction. Automatically set the scripts and MMR (Defaults to true)");
 	}
 	
 	@Override
@@ -37,8 +37,12 @@ public class txnpost extends Command {
 		Transaction trans = txnrow.getTransaction();
 		Witness wit		  = txnrow.getWitness();
 		
-		//Set the MMR data and Scripts
-		txnutils.setMMRandScripts(trans, wit);
+		//Set the scripts and MMR
+		boolean auto = getBooleanParam("auto", true);
+		if(auto) {
+			//Set the MMR data and Scripts
+			txnutils.setMMRandScripts(trans, wit);
+		}
 		
 		//Now create the TxPoW
 		TxPoW txpow = TxPoWGenerator.generateTxPoW(trans, wit);

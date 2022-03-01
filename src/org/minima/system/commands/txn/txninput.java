@@ -15,7 +15,7 @@ import org.minima.utils.json.JSONObject;
 public class txninput extends Command {
 
 	public txninput() {
-		super("txninput","[id:] (coinid:) (coindata:) (floating:true|false) (address:) (amount:) (tokenid:) - Add a coin as an input to a transaction");
+		super("txninput","[id:] (coinid:) (coindata:) (floating:) (address:) (amount:) (tokenid:) (sciptmmr:true)- Add a coin as an input to a transaction");
 	}
 	
 	@Override
@@ -79,6 +79,13 @@ public class txninput extends Command {
 		//Get the transaction..
 		Transaction trans = txnrow.getTransaction();
 		trans.addInput(cc);
+		
+		//Are we adding the scripts and MMR for this coin..
+		boolean smmr = getBooleanParam("scriptmmr", false);
+		if(smmr) {
+			//Add the details for this coin..
+			txnutils.setMMRandScripts(cc, txnrow.getWitness());
+		}
 		
 		//Output the current trans..
 		ret.put("response", db.getTransactionRow(id).toJSON());

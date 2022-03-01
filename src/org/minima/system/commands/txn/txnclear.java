@@ -10,7 +10,7 @@ import org.minima.utils.json.JSONObject;
 public class txnclear extends Command {
 
 	public txnclear() {
-		super("txnclear","[id:] - Clear the Witness data");
+		super("txnclear","[id:] - Clear ALL the Witness data");
 	}
 	
 	@Override
