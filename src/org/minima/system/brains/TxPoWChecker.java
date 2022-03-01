@@ -219,7 +219,7 @@ public class TxPoWChecker {
 		
 		//Check we have the correct amount..
 		if(ins != mmrproofs.size()) {
-			MinimaLogger.log("MISSING MMR Proofs Inputs:"+ins+" MMRProofs:"+mmrproofs.size()+" @ "+zTxPoWID);
+			MinimaLogger.log("Wrong Number of MMR Proofs Inputs:"+ins+" MMRProofs:"+mmrproofs.size()+" @ "+zTxPoWID);
 			return false;
 		}
 		
