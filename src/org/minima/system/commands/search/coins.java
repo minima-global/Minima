@@ -9,6 +9,7 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.brains.TxPoWSearcher;
 import org.minima.system.commands.Command;
+import org.minima.system.commands.CommandException;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
@@ -23,12 +24,17 @@ public class coins extends Command {
 		JSONObject ret = getJSONReply();
 		
 		//Check a parameter specified
+		boolean hardsetrel = false;
 		if(!existsParam("relevant") && !existsParam("coinid") && !existsParam("address") && !existsParam("tokenid")) {
-			throw new Exception("No parameters specified");
+			hardsetrel = true;
 		}
 		
 		//Get the txpowid
 		boolean relevant	= existsParam("relevant");
+		if(hardsetrel) {
+			relevant = true;
+		}
+		
 		boolean simple		= getBooleanParam("sendable",false);
 		
 		boolean scoinid		= existsParam("coinid");
