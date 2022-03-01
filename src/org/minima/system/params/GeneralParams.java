@@ -100,7 +100,7 @@ public class GeneralParams {
 	/**
 	 * How many days do you archive the TxBlocks to resync Users
 	 */
-	public static long NUMBER_DAYS_ARCHIVE = 28;
+	public static long NUMBER_DAYS_ARCHIVE = 180;
 	
 	/**
 	 * Number of seconds before sending a pulse message - every 10 minutes
