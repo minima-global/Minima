@@ -383,7 +383,8 @@ public class TxPoWChecker {
 											cproof.getCoin().getState());
 			
 			contract.setMaxInstructions(maxops);
-			contract.setGlobals(zBlock.getBlockNumber(), zTransaction, inputnum, cproof.getCoin().getBlockCreated(), script);
+			contract.setGlobals(zBlock.getBlockNumber(), zBlock.getTimeMilli(),
+								zTransaction, inputnum, cproof.getCoin().getBlockCreated(), script);
 			contract.run();
 			
 			//Monotonic - no @BLOCK references..
@@ -416,7 +417,8 @@ public class TxPoWChecker {
 														cproof.getCoin().getState());
 					
 					tokcontract.setMaxInstructions(maxops);
-					tokcontract.setGlobals(zBlock.getBlockNumber(), zTransaction, inputnum, cproof.getCoin().getBlockCreated(), tokscript);
+					tokcontract.setGlobals(	zBlock.getBlockNumber(), zBlock.getTimeMilli(), 
+											zTransaction, inputnum, cproof.getCoin().getBlockCreated(), tokscript);
 					tokcontract.run();
 					
 					if(!tokcontract.isMonotonic()) {

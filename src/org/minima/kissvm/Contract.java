@@ -189,7 +189,8 @@ public class Contract {
 		}
 	}
 	
-	public void setGlobals(	MiniNumber zBlock, 
+	public void setGlobals(	MiniNumber zBlock,
+							MiniNumber zBlockTime,
 							Transaction zTrx, 
 							int zInput, 
 							MiniNumber zInputBlkCreate, 
@@ -200,10 +201,11 @@ public class Contract {
 		
 		//set the environment
 		setGlobalVariable("@BLOCK", new NumberValue(zBlock));
+		setGlobalVariable("@BLOCKTIME", new NumberValue(zBlockTime));
+		
 		setGlobalVariable("@INBLOCK", new NumberValue(zInputBlkCreate));
 		setGlobalVariable("@BLOCKDIFF", new NumberValue(zBlock.sub(zInputBlkCreate)));
 		
-//		setGlobalVariable("@BLKTIME", new NumberValue(zBlock.getTimeMilli()));
 //		setGlobalVariable("@PREVBLKHASH", new HexValue(zBlock.getParentID()));
 		
 		setGlobalVariable("@INPUT", new NumberValue(zInput));
@@ -229,7 +231,10 @@ public class Contract {
 		}
 		
 		//Will this break monotonic
-		if(zGlobal.equals("@BLOCK") || zGlobal.equals("@BLOCKDIFF") || zGlobal.equals("@INBLOCK")) {
+		if(		zGlobal.equals("@BLOCK") || 
+				zGlobal.equals("@BLOCKTIME") ||
+				zGlobal.equals("@BLOCKDIFF") || 
+				zGlobal.equals("@INBLOCK")) {
 			mMonotonic = false;
 		}
 		
