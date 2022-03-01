@@ -159,6 +159,10 @@ public class TxPoW implements Streamable {
 		return mHeader.mNonce;
 	}
 	
+	public MiniData getChainID() {
+		return mHeader.mChainID;
+	}
+	
 	public Magic getMagic() {
 		return mHeader.mMagic;
 	}

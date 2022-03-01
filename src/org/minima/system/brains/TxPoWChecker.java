@@ -19,6 +19,7 @@ import org.minima.objects.ScriptProof;
 import org.minima.objects.Token;
 import org.minima.objects.Transaction;
 import org.minima.objects.TxBlock;
+import org.minima.objects.TxHeader;
 import org.minima.objects.TxPoW;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
@@ -47,6 +48,12 @@ public class TxPoWChecker {
 			
 			}else if(zTxPoW.getTimeMilli().isMore(maxtime)) {
 				MinimaLogger.log("Invalid TxPoW block with millitime MORE than 1 hour in future "+zTxPoW.getTxPoWID());
+				return false;
+			}
+			
+			//Check ChainID
+			if(!zTxPoW.getChainID().isEqual(new MiniData("0x01"))) {
+				MinimaLogger.log("Wrong Block ChainID! "+zTxPoW.getChainID()+" "+zTxPoW.getTxPoWID());
 				return false;
 			}
 			
@@ -151,6 +158,13 @@ public class TxPoWChecker {
 	 * Make basic checks of this TxPoW
 	 */
 	public static boolean checkTxPoWBasic(TxPoW zTxPoW) throws Exception {
+		
+		//Check ChainID
+		if(!zTxPoW.getChainID().isEqual(new MiniData("0x01"))) {
+			MinimaLogger.log("Wrong TxPoW ChainID! "+zTxPoW.getChainID()+" "+zTxPoW.getTxPoWID());
+			return false;
+		}
+		
 		//Check the Transaction..
 		boolean valid = checkTxPoWBasic(zTxPoW.getTxPoWID(), zTxPoW.getTransaction(), zTxPoW.getWitness());
 		if(!valid) {

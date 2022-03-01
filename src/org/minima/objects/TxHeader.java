@@ -24,6 +24,11 @@ public class TxHeader implements Streamable {
 	public MiniNumber mNonce = new MiniNumber(0);
 	
 	/**
+	 * The Chain ID - This defines the rules this block was made under, MUST be 0x01.. 
+	 */
+	public MiniData mChainID = new MiniData("0x01");
+	
+	/**
 	 * Time Milli - needs to be a MiniNumber as is used in Scripts.. 
 	 */
 	public MiniNumber mTimeMilli = new MiniNumber(System.currentTimeMillis());
@@ -83,6 +88,7 @@ public class TxHeader implements Streamable {
 	public JSONObject toJSON() {
 		JSONObject txpow = new JSONObject();
 		
+		txpow.put("chainid", mChainID.toString());
 		txpow.put("block", mBlockNumber.toString());
 		txpow.put("blkdiff", mBlockDifficulty.to0xString());
 		
@@ -142,6 +148,7 @@ public class TxHeader implements Streamable {
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
 		mNonce.writeDataStream(zOut);
+		mChainID.writeDataStream(zOut);
 		mTimeMilli.writeDataStream(zOut);
 		mBlockNumber.writeDataStream(zOut);
 		mBlockDifficulty.writeDataStream(zOut);
@@ -195,6 +202,7 @@ public class TxHeader implements Streamable {
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
 		mNonce           = MiniNumber.ReadFromStream(zIn);
+		mChainID		 = MiniData.ReadFromStream(zIn);
 		mTimeMilli       = MiniNumber.ReadFromStream(zIn);
 		mBlockNumber     = MiniNumber.ReadFromStream(zIn);
 		mBlockDifficulty = MiniData.ReadFromStream(zIn);
