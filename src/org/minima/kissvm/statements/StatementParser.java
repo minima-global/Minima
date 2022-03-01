@@ -11,6 +11,7 @@ import org.minima.kissvm.expressions.ConstantExpression;
 import org.minima.kissvm.expressions.Expression;
 import org.minima.kissvm.expressions.ExpressionParser;
 import org.minima.kissvm.statements.commands.ASSERTstatement;
+import org.minima.kissvm.statements.commands.DEFstatement;
 import org.minima.kissvm.statements.commands.EXECstatement;
 import org.minima.kissvm.statements.commands.IFstatement;
 import org.minima.kissvm.statements.commands.LETstatement;
@@ -130,6 +131,32 @@ public class StatementParser {
 				}else {
 					throw new MinimaParseException("Not a variable or array after LET (.."+var.getToken()+")");
 				}
+				
+			}else if(token.equalsIgnoreCase("DEF")) {
+				//The next token is the function name
+				ScriptToken funcnametok = zTokens.get(currentPosition++);
+				
+				//The Variable name
+				String funcname = funcnametok.getToken();
+				if(!funcname.startsWith("_")) {
+					throw new MinimaParseException("DEF Functions MUST start with _ "+funcname);
+				}
+				
+				//The next token is always =
+				ScriptToken var = zTokens.get(currentPosition++);
+				if(!var.getToken().equals("=")) {
+					throw new MinimaParseException("Incorrect DEF statement, missing = (.."+var.getToken()+")");
+				}
+				
+				//Now find the next Command, and everything in between is the expression
+				List<ScriptToken> deftokens = getTokensToNextCommand(zTokens, currentPosition);
+				currentPosition += deftokens.size();
+				
+				//Now create an expression from those tokens..
+				Expression exp = ExpressionParser.getExpression(deftokens);
+				
+				//And finally create the LET statement..
+				stats.add(new DEFstatement(funcname, exp));
 				
 			}else if(token.equalsIgnoreCase("EXEC")) {
 				//Now find the next Command, and everything in between is the expression
