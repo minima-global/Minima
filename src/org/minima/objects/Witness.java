@@ -73,6 +73,16 @@ public class Witness implements Streamable {
 	public ArrayList<CoinProof> getAllCoinProofs(){
 		return mCoinProofs;
 	}
+	
+	public CoinProof getCoinProof(MiniData zCoinID){
+		for(CoinProof cp : mCoinProofs) {
+			if(cp.getCoin().getCoinID().isEqual(zCoinID)) {
+				return cp;
+			}
+		}
+		
+		return null;
+	}
 
 	/**
 	 * Script Proofs
