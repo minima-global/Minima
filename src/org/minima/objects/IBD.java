@@ -88,7 +88,7 @@ public class IBD implements Streamable {
 							}
 						}
 						
-						//increment the cvounter..
+						//increment the counter..
 						counter++;
 					}
 					
