@@ -124,20 +124,18 @@ public class Wallet extends SqlDB {
 		int numkeys = allkeys.size();
 		if(numkeys < NUMBER_GETADDRESS_KEYS) {
 			
-			long timenow = System.currentTimeMillis();
-			MinimaLogger.log("Creating initial key set.. Please wait..");
-			
 			//Create a few at a time..
 			int diff = NUMBER_GETADDRESS_KEYS - numkeys;
 			if(diff>8) {
 				diff = 8;
 			}
+			
+			//Create the keys
 			for(int i=0;i<diff;i++) {
 				createNewKey(false);
 			}
 			
-			long timediff = System.currentTimeMillis() - timenow;
-			MinimaLogger.log("8 Initial keys created.. total now : "+(numkeys+diff));
+			MinimaLogger.log("8 more initial keys created.. Total now : "+(numkeys+diff));
 		}else {
 			allcreated = true;
 		}
