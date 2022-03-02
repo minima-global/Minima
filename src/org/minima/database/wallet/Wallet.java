@@ -45,6 +45,11 @@ public class Wallet extends SqlDB {
 	Hashtable<String, TreeKey> mTreeKeys = new Hashtable<>();
 	
 	/**
+	 * Stop creating keys if you are
+	 */
+	boolean mShuttingdown = false;
+	
+	/**
 	 * Has there been a change to the Key Rows.. otherwise used cached
 	 */
 	boolean mKeyRowChange 					= true;
@@ -52,6 +57,14 @@ public class Wallet extends SqlDB {
 	
 	public Wallet() {
 		super();
+	}
+	
+	public void shuttiongDown() {
+		mShuttingdown = true;
+	}
+	
+	private boolean isShuttingDown() {
+		return mShuttingdown;
 	}
 	
 	@Override
@@ -132,7 +145,9 @@ public class Wallet extends SqlDB {
 			
 			//Create the keys
 			for(int i=0;i<diff;i++) {
-				createNewKey(false);
+				if(!isShuttingDown()) {
+					createNewKey(false);
+				}
 			}
 			
 			MinimaLogger.log("8 more initial keys created.. Total now : "+(numkeys+diff));
