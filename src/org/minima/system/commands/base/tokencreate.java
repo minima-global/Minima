@@ -297,6 +297,9 @@ public class tokencreate extends Command {
 			transaction.addStateVariable(sv);
 		}
 		
+		//Compute the correct CoinID
+		TxPoWGenerator.precomputeTransactionCoinID(transaction);
+				
 		//Calculate the TransactionID..
 		MiniData transid = Crypto.getInstance().hashObject(transaction);
 		

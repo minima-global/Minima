@@ -12,6 +12,7 @@ import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.keys.Signature;
+import org.minima.system.brains.TxPoWGenerator;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
 import org.minima.utils.Crypto;
@@ -42,6 +43,9 @@ public class txnsign extends Command {
 		Transaction txn = txnrow.getTransaction();
 		Witness wit		= txnrow.getWitness();
 		
+		//Precompute the CoinID
+		TxPoWGenerator.precomputeTransactionCoinID(txn);
+		
 		//Calculate the TransactionID..
 		MiniData transid = Crypto.getInstance().hashObject(txn);
 	
@@ -57,16 +61,11 @@ public class txnsign extends Command {
 				
 				KeyRow keyrow = walletdb.getKeysRowFromAddress(cc.getAddress().to0xString()); 
 				if(keyrow == null) {
-//					txnrow.clearWitness();
-//					throw new CommandException("ERROR : Script not found for address : "+cc.getAddress().to0xString());
 					continue;
-					
+
 					//Is it a simple row..
 				}else if(keyrow.getPublicKey().equals("")) {
-//					txnrow.clearWitness();
-//					throw new CommandException("NON-Simple coin found at coin : "+cc.getAddress().to0xString());
 					continue;
-				
 				}
 				
 				//Add to our list
