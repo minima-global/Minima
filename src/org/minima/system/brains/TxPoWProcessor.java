@@ -75,6 +75,11 @@ public class TxPoWProcessor extends MessageProcessor {
 			//Check we are at least enough blocks on from the root of the tree.. for speed and difficulty calcs
 			MiniNumber blknum 	= txpow.getBlockNumber();
 			MiniNumber rootnum 	= txptree.getRoot().getBlockNumber();
+			MiniNumber tipnum 	= txptree.getTip().getBlockNumber();
+			
+			//Check not too close to root.. if tip is not root.. 
+			//
+			
 			boolean validrange 	= blknum.isMore(rootnum);
 			
 			//More complicated..

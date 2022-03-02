@@ -3,6 +3,7 @@ package org.minima.system.network.minima;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.util.ArrayList;
+import java.util.Date;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.mmr.MMR;
@@ -315,8 +316,15 @@ public class NIOMessage implements Runnable {
 					return;
 				}
 				
+				//Check the Signatures
 				if(!TxPoWChecker.checkSignatures(txpow)) {
 					MinimaLogger.log("Invalid signatures on txpow from "+mClientUID+" "+txpow.getTxPoWID());
+					return;
+				}
+				
+				//Check ChainID
+				if(!txpow.getChainID().isEqual(TxPoWChecker.CURRENT_NETWORK)) {
+					MinimaLogger.log("Wrong Block ChainID! "+txpow.getChainID()+" "+txpow.getTxPoWID());
 					return;
 				}
 				
@@ -334,6 +342,13 @@ public class NIOMessage implements Runnable {
 					}
 					
 					//Could be block related
+					fullyvalid = false;
+				}
+				
+				//Max time in the future.. 2 hours..
+				MiniNumber maxtime = new MiniNumber(System.currentTimeMillis() + (1000 * 60 * 120));
+				if(txpow.getTimeMilli().isMore(maxtime)) {
+					MinimaLogger.log("TxPoW block with millitime MORE than 2 hours in future "+new Date(txpow.getTimeMilli().getAsLong())+" "+txpow.getTxPoWID());
 					fullyvalid = false;
 				}
 				

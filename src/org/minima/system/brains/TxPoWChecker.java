@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 
 import org.minima.database.MinimaDB;
@@ -33,7 +34,7 @@ public class TxPoWChecker {
 	/**
 	 * What Network are we currently checking for
 	 */
-	private static MiniData CURRENT_NETWORK = TxHeader.TEST_NET;
+	public static MiniData CURRENT_NETWORK = TxHeader.TEST_NET;
 	
 	/**
 	 * Parallel check all the transactions in this block
@@ -42,23 +43,10 @@ public class TxPoWChecker {
 		
 		try {
 			
-			//Max time in the future.. 1hour..
-			MiniNumber maxtime = new MiniNumber(System.currentTimeMillis() + (1000 * 60 * 60));
-			
-			//Check the time of the block is greater than the media time
+			//Check the time of the block is greater than the median time
 			TxPoW medianblock 		= TxPoWGenerator.getMedianTimeBlock(zParentNode, 128);
 			if(zTxPoW.getTimeMilli().isLess(medianblock.getTimeMilli())) {
-				MinimaLogger.log("Invalid TxPoW block with millitime LESS than median "+zTxPoW.getTxPoWID());
-				return false;
-			
-			}else if(zTxPoW.getTimeMilli().isMore(maxtime)) {
-				MinimaLogger.log("Invalid TxPoW block with millitime MORE than 1 hour in future "+zTxPoW.getTxPoWID());
-				return false;
-			}
-			
-			//Check ChainID
-			if(!zTxPoW.getChainID().isEqual(CURRENT_NETWORK)) {
-				MinimaLogger.log("Wrong Block ChainID! "+zTxPoW.getChainID()+" "+zTxPoW.getTxPoWID());
+				MinimaLogger.log("Invalid TxPoW block with millitime LESS than median "+new Date(zTxPoW.getTimeMilli().getAsLong())+" "+zTxPoW.getTxPoWID());
 				return false;
 			}
 			

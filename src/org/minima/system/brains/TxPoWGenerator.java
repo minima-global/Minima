@@ -89,6 +89,11 @@ public class TxPoWGenerator {
 		 */
 		MiniNumber topblock = tip.getTxPoW().getBlockNumber();
 		
+		//Get the media Tip block..
+		TxPoW tipblock 	 	= getMedianTimeBlock(tip, 32);
+		MiniNumber topblock = tip.getTxPoW().getBlockNumber();
+		
+		
 		//First couple of blocks 
 		if(topblock.isLessEqual(MiniNumber.TWO)) {
 			txpow.setBlockDifficulty(MIN_TXPOWDIFF);
