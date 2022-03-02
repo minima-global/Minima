@@ -183,8 +183,6 @@ public class txnutils {
 		
 		//How much are we sending..
 		MiniNumber sendamount 	= zAmount;
-		MiniData sendaddress	= new MiniData(walletdb.getDefaultKeyAddress().getAddress());
-		
 		//get the tip..
 		TxPoWTreeNode tip 	= MinimaDB.getDB().getTxPoWTree().getTip();
 		
@@ -299,12 +297,6 @@ public class txnutils {
 		if(!sendamount.isValidMinimaValue()) {
 			throw new CommandException("Invalid Minima amount to send.. "+sendamount.toString());
 		}
-	
-		//Create the output
-		Coin recipient = new Coin(Coin.COINID_OUTPUT, sendaddress, sendamount, Token.TOKENID_MINIMA, true);
-		
-		//Add to the Transaction
-		transaction.addOutput(recipient);
 		
 		//Do we need to send change..
 		if(change.isMore(MiniNumber.ZERO)) {
