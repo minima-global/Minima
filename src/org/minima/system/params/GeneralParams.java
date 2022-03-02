@@ -85,7 +85,7 @@ public class GeneralParams {
 	/**
 	 * How many days do you keep the TxPoW in the SQL DB
 	 */
-	public static long NUMBER_DAYS_SQLTXPOWDB = 2;
+	public static long NUMBER_DAYS_SQLTXPOWDB = 3;
 	
 	/**
 	 * How Many Hours do you keep the TxPOW in the RAM mempool

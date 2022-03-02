@@ -18,7 +18,7 @@ public class GlobalParams {
 	/**
 	 * When checking speed and difficulty only look at this many blocks back
 	 */
-	public static MiniNumber MINIMA_BLOCKS_SPEED_CALC = new MiniNumber(256);
+	public static MiniNumber MINIMA_BLOCKS_SPEED_CALC = new MiniNumber(512);
 	
 	/**
 	 * How deep before we think confirmed..
