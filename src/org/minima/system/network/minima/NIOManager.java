@@ -276,6 +276,8 @@ public class NIOManager extends MessageProcessor {
 			//Do we try to reconnect
 			boolean reconnect = true;
 			
+			MinimaLogger.log("Reconnect attempt : "+nc.getConnectAttempts()+" "+nc.toJSON());
+			
 			//Do we attempt a reconnect..
 			if(nc.getConnectAttempts() > RECONNECT_ATTEMPTS) {
 				//Do we have ANY connections at all..
@@ -297,6 +299,8 @@ public class NIOManager extends MessageProcessor {
 					
 				}else {
 					
+					MinimaLogger.log("Reset Reconnect attempts to 1 ");
+					
 					//reset connect attempts..
 					nc.setConnectAttempts(1);
 				}
@@ -304,6 +308,8 @@ public class NIOManager extends MessageProcessor {
 			
 			//Try and reconnect
 			if(reconnect) {
+				MinimaLogger.log("Do Reconnect");
+				
 				//Try again..
 				TimerMessage tmsg = new TimerMessage(RECONNECT_TIMER, NIO_CONNECTATTEMPT);
 				tmsg.addObject("client", nc);
@@ -496,7 +502,7 @@ public class NIOManager extends MessageProcessor {
 					
 				}catch(Exception exc) {
 					//Try again in a minute..
-//					MinimaLogger.log(zNIOClient.getUID()+" INFO : connecting attempt "+zNIOClient.getConnectAttempts()+" to "+zNIOClient.getHost()+":"+zNIOClient.getPort()+" "+exc.toString());
+					MinimaLogger.log(zNIOClient.getUID()+" INFO : connecting attempt "+zNIOClient.getConnectAttempts()+" to "+zNIOClient.getHost()+":"+zNIOClient.getPort()+" "+exc.toString());
 					
 					//Do we try to reconnect
 					Message reconn = new Message(NIO_RECONNECT);
