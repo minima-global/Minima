@@ -99,19 +99,32 @@ public class TxPoWGenerator {
 				blocksback = topblock.decrement();
 			}
 			
+			//Find a block to use as the base for calculations
+			TxPoWTreeNode current = tip;
+			int counter	=0;
+			int max 	=blocksback.getAsInt(); 
+			while(counter<max && current.getParent()!=null) {
+				current = current.getParent();
+				counter++;
+			}
+			
+			//Now we have a block in the past.. get the median time value block around it
+			TxPoW baseblock 	 = getMedianTimeBlock(current, 32);
+			MiniNumber blockdiff = topblock.sub(baseblock.getBlockNumber()); 
+			
 			//Get current speed
-			MiniNumber speed 		= getChainSpeed(tip, blocksback);
-			MiniNumber speedratio 	= GlobalParams.MINIMA_BLOCK_SPEED.div(speed);
+			MiniNumber speed 				= getChainSpeed(tip, blockdiff);
+			MiniNumber speedratio 			= GlobalParams.MINIMA_BLOCK_SPEED.div(speed);
 			
 			//Get average difficulty over that period
-			BigInteger averagedifficulty 	= getAverageDifficulty(tip, blocksback);
+			BigInteger averagedifficulty 	= getAverageDifficulty(tip, blockdiff);
 			BigDecimal averagedifficultydec	= new BigDecimal(averagedifficulty);
 			
 			//Recalculate..
 			BigDecimal newdifficultydec = averagedifficultydec.multiply(speedratio.getAsBigDecimal());  
 			BigInteger newdifficulty	= newdifficultydec.toBigInteger();
 			
-			//MUST be more than the MIN TxPoW..
+			//MUST be more difficult (lower) than the MIN TxPoW..
 			if(newdifficulty.compareTo(MIN_TXPOW_VAL)>0) {
 				newdifficulty = MIN_TXPOW_VAL;
 			}
@@ -227,6 +240,7 @@ public class TxPoWGenerator {
 	
 	
 	public static MiniNumber getChainSpeed(TxPoWTreeNode zTopBlock, MiniNumber zBlocksBack) {
+		
 		//Which block are we looking for..
 		MiniNumber block = zTopBlock.getTxPoW().getBlockNumber().sub(zBlocksBack);
 		
@@ -286,42 +300,45 @@ public class TxPoWGenerator {
 	}
 	
 	/**
-	 * Get the Median time of the last 128 blocks..
+	 * Get the Median Block based on milli time..
 	 */
-	public static MiniNumber getMedianTime(TxPoWTreeNode zTopBlock) {
+	public static TxPoW getMedianTimeBlock(TxPoWTreeNode zStartBlock, int zBlocksBack) {
 		
-		//Create a list of times..
-		ArrayList<MiniNumber> alltimes = new ArrayList<>();
+		//The block we start checking from
+		TxPoWTreeNode current = zStartBlock;
 		
-		TxPoWTreeNode current = zTopBlock;
+		//Create a list of blocks..
+		ArrayList<TxPoW> allblocks = new ArrayList<>();
+		
 		int counter=0;
-		while(counter<128 && current!=null) {
+		while(counter<zBlocksBack && current!=null) {
 			
 			//Add to our list
-			alltimes.add(current.getTxPoW().getTimeMilli());
+			allblocks.add(current.getTxPoW());
 			
 			//Move back up the tree
 			current = current.getParent();
 			counter++;
 		}
 		
-		//Now sort them..
-		Collections.sort(alltimes, new Comparator<MiniNumber>() {
+		//Now sort them.. by time milli
+		Collections.sort(allblocks, new Comparator<TxPoW>() {
 			@Override
-			public int compare(MiniNumber o1, MiniNumber o2) {
-				return o1.compareTo(o2);
+			public int compare(TxPoW o1, TxPoW o2) {
+				return o1.getTimeMilli().compareTo(o2.getTimeMilli());
 			}
 		});
 		
 		//Now pick the middle one
-		int size = alltimes.size();
+		int size 	= allblocks.size();
+		int middle 	= size/2;
 		
 		//Middle..
-		MiniNumber median = alltimes.get(size/2);
+		TxPoW median = allblocks.get(middle);
 		
-//		String timenow 		= new Date(zTopBlock.getTxPoW().getTimeMilli().getAsLong()).toString();
-//		String timemedian 	= new Date(median.getAsLong()).toString();
-//		MinimaLogger.log("MEDIAN TIME @ "+timenow+" MEDIAN:"+timemedian+" "+counter);
+//		String timenow 		= new Date(zStartBlock.getTxPoW().getTimeMilli().getAsLong()).toString();
+//		String timemedian 	= new Date(median.getTimeMilli().getAsLong()).toString();
+//		MinimaLogger.log("MEDIAN TIME @ "+zStartBlock.getTxPoW().getBlockNumber()+" MEDIAN:"+median.getBlockNumber()+" "+counter+" "+middle);
 		
 		//Return the middle one!
 		return median;

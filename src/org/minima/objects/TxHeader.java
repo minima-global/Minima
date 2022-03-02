@@ -18,8 +18,8 @@ import org.minima.utils.json.JSONObject;
 
 public class TxHeader implements Streamable {
 
-	public static MiniData TEST_NET = new MiniData("0x00");
-	public static MiniData MAIN_NET = new MiniData("0x01");
+	public static MiniData TEST_NET 	= new MiniData("0x00");
+	public static MiniData MAIN_NET 	= new MiniData("0x01");
 	
 	/**
 	 * The NONCE - the user definable data you cycle through to change the final hash of this TxPow

@@ -46,8 +46,8 @@ public class TxPoWChecker {
 			MiniNumber maxtime = new MiniNumber(System.currentTimeMillis() + (1000 * 60 * 60));
 			
 			//Check the time of the block is greater than the media time
-			MiniNumber mediantime = TxPoWGenerator.getMedianTime(zParentNode);
-			if(zTxPoW.getTimeMilli().isLess(mediantime)) {
+			TxPoW medianblock 		= TxPoWGenerator.getMedianTimeBlock(zParentNode, 128);
+			if(zTxPoW.getTimeMilli().isLess(medianblock.getTimeMilli())) {
 				MinimaLogger.log("Invalid TxPoW block with millitime LESS than median "+zTxPoW.getTxPoWID());
 				return false;
 			
