@@ -221,6 +221,9 @@ public class Main extends MessageProcessor {
 		//we are shutting down
 		mShuttingdown = true;
 		
+		//Tell the wallet - in case we are creating default keys
+		MinimaDB.getDB().getWallet().shuttiongDown();
+		
 		//Shut down the network
 		mNetwork.shutdownNetwork();
 		
