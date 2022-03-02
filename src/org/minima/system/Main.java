@@ -74,7 +74,9 @@ public class Main extends MessageProcessor {
 	public static final String MAIN_CHECKER 	= "MAIN_CHECKER";
 	MiniData mOldTip 							= MiniData.ZERO_TXPOWID;
 	
-	//Check every 180 seconds..
+	/**
+	 * Main loop to check various values every 180 seconds..
+	 */
 	long CHECKER_TIMER							= 1000 * 180;
 	
 	/**
@@ -132,6 +134,11 @@ public class Main extends MessageProcessor {
 	 */
 	long AUTOMINE_TIMER = 1000 * 60;
 	
+	/**
+	 * Have all the default keys been created..
+	 */
+	boolean mInitKeysCreated = false;
+	
 	public Main() {
 		super("MAIN");
 	
@@ -160,7 +167,7 @@ public class Main extends MessageProcessor {
 		MinimaLogger.log("Calculate device hash rate : "+hashrate.div(MiniNumber.MILLION).setSignificantDigits(4)+" MHs");
 		
 		//Create the Initial Key Set
-		MinimaDB.getDB().getWallet().initDefaultKeys();
+		mInitKeysCreated = MinimaDB.getDB().getWallet().initDefaultKeys();
 		
 		//Start the engine..
 		mTxPoWProcessor = new TxPoWProcessor();
@@ -349,7 +356,7 @@ public class Main extends MessageProcessor {
 	private void doGenesis() {
 		
 		//Create a new key - to receive the genesis funds..
-		KeyRow genkey = MinimaDB.getDB().getWallet().createNewKey();
+		KeyRow genkey = MinimaDB.getDB().getWallet().createNewKey(true);
 		
 		//Create the Genesis TxPoW..
 		GenesisTxPoW genesis = new GenesisTxPoW(genkey.getAddress());
@@ -495,6 +502,11 @@ public class Main extends MessageProcessor {
 			restartNIO();
 			
 		}else if(zMessage.getMessageType().equals(MAIN_CHECKER)) {
+			
+			//Check the Default keys
+			if(!mInitKeysCreated) {
+				mInitKeysCreated = MinimaDB.getDB().getWallet().initDefaultKeys();
+			}
 			
 			//Get the Current Tip
 			TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();

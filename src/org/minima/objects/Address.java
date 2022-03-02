@@ -6,7 +6,6 @@ import java.io.IOException;
 
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniString;
-import org.minima.system.params.GlobalParams;
 import org.minima.utils.BaseConverter;
 import org.minima.utils.Crypto;
 import org.minima.utils.Streamable;

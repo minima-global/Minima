@@ -13,7 +13,6 @@ import org.minima.system.commands.CommandException;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MiniFormat;
-import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
 
 public class backup extends Command {

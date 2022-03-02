@@ -11,7 +11,6 @@ import org.minima.database.MinimaDB;
 import org.minima.database.mmr.MMRData;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.objects.Coin;
-import org.minima.objects.CoinProof;
 import org.minima.objects.Magic;
 import org.minima.objects.Transaction;
 import org.minima.objects.TxBlock;

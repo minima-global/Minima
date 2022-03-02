@@ -112,7 +112,7 @@ public class TxPoWTreeNode implements Streamable {
 		//Are we checking for relevant data
 		ArrayList<KeyRow> allrel = new ArrayList<>();
 		if(zFindRelevant) {
-			allrel = wallet.getAllRelevant();
+			allrel = wallet.getAllRelevant(false);
 		}
 		
 		//Add all the peaks..

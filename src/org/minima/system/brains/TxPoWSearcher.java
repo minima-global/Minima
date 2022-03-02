@@ -156,7 +156,7 @@ public class TxPoWSearcher {
 			Wallet wallet = MinimaDB.getDB().getWallet();
 			
 			//Get all the keys
-			ArrayList<KeyRow> keys = wallet.getAllRelevant();
+			ArrayList<KeyRow> keys = wallet.getAllRelevant(false);
 			
 			//Now cycle through the coins
 			for(Coin cc : coinentry) {

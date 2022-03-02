@@ -15,7 +15,7 @@ public class KeyRow {
 		mPubliKey 		= zPubKey;
 		mSimpleAddress 	= zAddress;
 		mScript			= zScript;
-		mTrack		= zTrack;
+		mTrack			= zTrack;
 	}
 	
 	public String getPrivateKey() {

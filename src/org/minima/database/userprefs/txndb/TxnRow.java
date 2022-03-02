@@ -12,7 +12,6 @@ import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniString;
 import org.minima.system.brains.TxPoWGenerator;
-import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONArray;

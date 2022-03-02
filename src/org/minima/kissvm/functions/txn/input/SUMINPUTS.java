@@ -4,15 +4,12 @@ import java.util.ArrayList;
 
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
-import org.minima.kissvm.expressions.ConstantExpression;
 import org.minima.kissvm.functions.MinimaFunction;
-import org.minima.kissvm.values.HexValue;
 import org.minima.kissvm.values.NumberValue;
 import org.minima.kissvm.values.Value;
 import org.minima.objects.Coin;
 import org.minima.objects.Token;
 import org.minima.objects.Transaction;
-import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 

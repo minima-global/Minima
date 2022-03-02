@@ -127,7 +127,7 @@ public class tokencreate extends Command {
 		MiniNumber sendamount 	= new MiniNumber(colorminima);
 		
 		//Send it to ourselves
-		KeyRow sendkey 			= MinimaDB.getDB().getWallet().createNewKey();
+		KeyRow sendkey 			= MinimaDB.getDB().getWallet().getDefaultKeyAddress();
 		MiniData sendaddress 	= new MiniData(sendkey.getAddress());
 		
 		//get the tip..
@@ -271,7 +271,7 @@ public class tokencreate extends Command {
 		//Do we need to send change..
 		if(change.isMore(MiniNumber.ZERO)) {
 			//Create a new address
-			KeyRow newwalletaddress = MinimaDB.getDB().getWallet().createNewKey();
+			KeyRow newwalletaddress = MinimaDB.getDB().getWallet().getDefaultKeyAddress();
 			MiniData chgaddress 	= new MiniData(newwalletaddress.getAddress());
 			
 			Coin changecoin = new Coin(Coin.COINID_OUTPUT, chgaddress, change, Token.TOKENID_MINIMA);

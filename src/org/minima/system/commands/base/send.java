@@ -27,7 +27,6 @@ import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
 import org.minima.system.params.GlobalParams;
 import org.minima.utils.Crypto;
-import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
 
 public class send extends Command {
@@ -245,7 +244,7 @@ public class send extends Command {
 		//Do we need to send change..
 		if(change.isMore(MiniNumber.ZERO)) {
 			//Create a new address
-			KeyRow newwalletaddress = MinimaDB.getDB().getWallet().createNewKey();
+			KeyRow newwalletaddress = MinimaDB.getDB().getWallet().getDefaultKeyAddress();
 			MiniData chgaddress = new MiniData(newwalletaddress.getAddress());
 			
 			//Get the scaled token ammount..

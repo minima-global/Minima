@@ -3,7 +3,6 @@ package org.minima.system.commands.base;
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
 import org.minima.utils.MinimaLogger;
-import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
 public class test extends Command {
