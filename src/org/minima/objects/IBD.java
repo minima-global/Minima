@@ -81,6 +81,7 @@ public class IBD implements Streamable {
 						
 						//Only check every 20 blocks.. just send duplicates as this much faster
 						if(counter % 20 == 0) {
+							
 							//Look in DB
 							found = MinimaDB.getDB().getArchive().exists(current.to0xString());
 							if(!found.isEqual(MiniNumber.MINUSONE)) {

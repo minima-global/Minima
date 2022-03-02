@@ -319,6 +319,7 @@ public class TxPoWProcessor extends MessageProcessor {
 			IBD ibd = (IBD) zMessage.getObject("ibd");
 					
 			//Does it have a cascade
+			boolean cascadeadded = false;
 			if(ibd.hasCascade()) {
 				
 				//Do we.. ?
@@ -329,7 +330,13 @@ public class TxPoWProcessor extends MessageProcessor {
 					
 					//Set this cascade
 					try {
+						
+						//Set this for us
 						MinimaDB.getDB().setIBDCascade(ibd.getCascade());
+						
+						//We added their cascade
+						cascadeadded = true;
+						
 					}catch(Exception exc) {
 						MinimaLogger.log(exc);
 					}
@@ -344,12 +351,29 @@ public class TxPoWProcessor extends MessageProcessor {
 			}
 			
 			//Now process the SyncBlocks
+			TxPowTree txptree 		= MinimaDB.getDB().getTxPoWTree();
+			MiniNumber timenow 		= new MiniNumber(System.currentTimeMillis());
+			
+			//Will not accept a TxBlock within an hour of current time.. will ask for full TxPoW blocks 
+			MiniNumber mintimediff 	= new MiniNumber(1000 * 60 * 60);
+			
 			ArrayList<TxBlock> blocks = ibd.getTxBlocks();
 			for(TxBlock block : blocks) {
 				
 				//Process it..
 				try {
-					processSyncBlock(block);
+					
+					//What is the time diff
+					MiniNumber timediff = timenow.sub(block.getTxPoW().getTimeMilli()).abs();
+					
+					//Check if this sync block is too near the current time.. or if we have no blocks yet
+					if(timediff.isMore(mintimediff) || txptree.getTip()==null || cascadeadded) {
+						processSyncBlock(block);	
+					}else {
+//						MinimaLogger.log("TxBlock too close to real time.. skipping.. @ "+block.getTxPoW().getBlockNumber());
+						break;
+					}
+					
 				}catch(Exception exc) {
 					MinimaLogger.log(exc.toString());
 					break;
