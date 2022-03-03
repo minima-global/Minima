@@ -157,9 +157,6 @@ public class TxHeader implements Streamable {
 		mBlockDifficulty.writeDataStream(zOut);
 		
 		//The Super parents are efficiently encoded in RLE
-		MiniByte cascnum = new MiniByte(GlobalParams.MINIMA_CASCADE_LEVELS);
-		cascnum.writeDataStream(zOut);
-		
 		MiniData sparent = null;
 		int counter  = 0;
 		for(int i=0;i<GlobalParams.MINIMA_CASCADE_LEVELS;i++) {
@@ -210,10 +207,9 @@ public class TxHeader implements Streamable {
 		mBlockNumber     = MiniNumber.ReadFromStream(zIn);
 		mBlockDifficulty = MiniData.ReadFromStream(zIn);
 		
-		//How many cascade levels.. will probably NEVER change..
-		MiniByte cascnum = MiniByte.ReadFromStream(zIn);
+		//How many cascade levels..
 		int tot = 0;
-		while(tot<cascnum.getValue()) {
+		while(tot<GlobalParams.MINIMA_CASCADE_LEVELS) {
 			MiniByte len = MiniByte.ReadFromStream(zIn);
 			MiniData sup = MiniData.ReadHashFromStream(zIn);
 			int count = len.getValue();
