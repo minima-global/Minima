@@ -27,6 +27,7 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.keys.Signature;
 import org.minima.objects.keys.TreeKey;
+import org.minima.system.params.GlobalParams;
 import org.minima.utils.MinimaLogger;
 
 public class TxPoWChecker {
@@ -37,22 +38,52 @@ public class TxPoWChecker {
 	public static MiniData CURRENT_NETWORK = TxHeader.TEST_NET;
 	
 	/**
+	 * The Number of blocks to get the MEDIAN block for time checks
+	 */
+	public static int MEDIAN_BLOCK = 128;
+	
+	/**
+	 * The MAX number of milliseconds in the future the Block can be from the Median Block - 2 hrs
+	 */
+	public static MiniNumber MAXMILLI_FUTURE = new MiniNumber(1000 * 60 * 120);
+	
+	/**
 	 * Parallel check all the transactions in this block
 	 */
 	public static boolean checkTxPoWBlock(TxPoWTreeNode zParentNode, TxPoW zTxPoW, ArrayList<TxPoW> zTransactions) {
 		
 		try {
 			
+			//Check ChainID
+			if(!zTxPoW.getChainID().isEqual(TxPoWChecker.CURRENT_NETWORK)) {
+				MinimaLogger.log("Invalid Block ChainID! "+zTxPoW.getChainID()+" "+zTxPoW.getTxPoWID());
+				return false;
+			}
+			
 			//Check the time of the block is greater than the median time
-			TxPoW medianblock 		= TxPoWGenerator.getMedianTimeBlock(zParentNode, 128);
+			TxPoW medianblock = TxPoWGenerator.getMedianTimeBlock(zParentNode, MEDIAN_BLOCK).getTxPoW();
 			if(zTxPoW.getTimeMilli().isLess(medianblock.getTimeMilli())) {
 				MinimaLogger.log("Invalid TxPoW block with millitime LESS than median "+new Date(zTxPoW.getTimeMilli().getAsLong())+" "+zTxPoW.getTxPoWID());
+				return false;
+			
+			}else if(zTxPoW.getTimeMilli().isMore(medianblock.getTimeMilli().add(MAXMILLI_FUTURE))) {
+				MinimaLogger.log("Invalid TxPoW block with millitime MORE than median + 2 hrs "+new Date(zTxPoW.getTimeMilli().getAsLong())+" "+zTxPoW.getTxPoWID());
 				return false;
 			}
 			
 			//Check the Block Number is correct
 			if(!zTxPoW.getBlockNumber().isEqual(zParentNode.getBlockNumber().increment())) {
 				MinimaLogger.log("Invalid TxPoW block with wrong blocknumber "+zTxPoW.getTxPoWID());
+				return false;
+			}
+			
+			//Check Parents..
+			
+			
+			//Check the block difficulty is correct
+			MiniData blockdifficulty = TxPoWGenerator.getBlockDifficulty(zParentNode);
+			if(!zTxPoW.getBlockDifficulty().isEqual(blockdifficulty)) {
+				MinimaLogger.log("Incorrect TxPoW block difficulty "+zTxPoW.getTxPoWID());
 				return false;
 			}
 			
@@ -543,5 +574,35 @@ public class TxPoWChecker {
 		BigDecimal div 		= tipdec.divide(blockdec, MathContext.DECIMAL32);
 		
 		return div.doubleValue();
+	}
+	
+	/**
+	 * Check that all the Parent nodes are correct
+	 */
+	public static boolean checkParents(TxPoWTreeNode zTip, TxPoW zBlock) {
+		
+		//Check the immediate parent
+		MiniData parent = zBlock.getParentID();
+		if(!zTip.getTxPoW().getTxPoWIDData().isEqual(parent)) {
+			return false;
+		}
+		
+		//Cycle through every level and make sure that is correct
+		TxPoWTreeNode current = zTip;
+		for(int i=1;i<GlobalParams.MINIMA_CASCADE_LEVELS;i++) {
+			
+			//Get the Hash of that Parent..
+			parent = zBlock.getSuperParent(i);
+		
+			//Now cycle back and make sure
+			if(current.getTxPoW().getSuperLevel() >= i) {
+				
+				
+			}
+			
+		}
+		
+		
+		return true;
 	}
 }

@@ -309,9 +309,14 @@ public class NIOMessage implements Runnable {
 				//Start a timer..
 				long timestart = System.currentTimeMillis();
 				
+				//Check ChainID
+				if(!txpow.getChainID().isEqual(TxPoWChecker.CURRENT_NETWORK)) {
+					MinimaLogger.log("Wrong Block ChainID! "+txpow.getChainID()+" "+txpow.getTxPoWID());
+					return;
+				}
+				
 				//OK - Some basic checks..
 				if(!TxPoWChecker.checkTxPoWBasic(txpow)) {
-					//These MUST PASS
 					MinimaLogger.log("TxPoW FAILS Basic checks from "+mClientUID+" "+txpow.getTxPoWID());
 					return;
 				}
@@ -319,12 +324,6 @@ public class NIOMessage implements Runnable {
 				//Check the Signatures
 				if(!TxPoWChecker.checkSignatures(txpow)) {
 					MinimaLogger.log("Invalid signatures on txpow from "+mClientUID+" "+txpow.getTxPoWID());
-					return;
-				}
-				
-				//Check ChainID
-				if(!txpow.getChainID().isEqual(TxPoWChecker.CURRENT_NETWORK)) {
-					MinimaLogger.log("Wrong Block ChainID! "+txpow.getChainID()+" "+txpow.getTxPoWID());
 					return;
 				}
 				
@@ -348,7 +347,7 @@ public class NIOMessage implements Runnable {
 				//Max time in the future.. 2 hours..
 				MiniNumber maxtime = new MiniNumber(System.currentTimeMillis() + (1000 * 60 * 120));
 				if(txpow.getTimeMilli().isMore(maxtime)) {
-					MinimaLogger.log("TxPoW block with millitime MORE than 2 hours in future "+new Date(txpow.getTimeMilli().getAsLong())+" "+txpow.getTxPoWID());
+					MinimaLogger.log("TxPoW block received with millitime MORE than 2 hours in future "+new Date(txpow.getTimeMilli().getAsLong())+" "+txpow.getTxPoWID());
 					fullyvalid = false;
 				}
 				
