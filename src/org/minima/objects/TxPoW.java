@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.system.params.GlobalParams;
 import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
@@ -504,7 +505,10 @@ public class TxPoW implements Streamable {
 		
 		//What Super Level are we..
 		_mSuperBlock = getSuperLevel(getBlockDifficulty(), _mTxPOWID);
-	
+		if(_mSuperBlock>=GlobalParams.MINIMA_CASCADE_LEVELS) {
+			_mSuperBlock = GlobalParams.MINIMA_CASCADE_LEVELS-1;
+		}
+		
 		//What size are we..
 		try {
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();

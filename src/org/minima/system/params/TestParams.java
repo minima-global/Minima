@@ -35,7 +35,7 @@ public class TestParams {
 	/**
 	 * Depth before we cascade..
 	 */
-	public static MiniNumber MINIMA_CASCADE_START_DEPTH = new MiniNumber(128);
+	public static MiniNumber MINIMA_CASCADE_START_DEPTH = new MiniNumber(16);
 	
 	
 	/**
@@ -46,7 +46,7 @@ public class TestParams {
 	/**
 	 * How Many Cascade Levels
 	 */
-	public static int MINIMA_CASCADE_LEVELS  = 32;
+	public static int MINIMA_CASCADE_LEVELS  = 16;
 	
 	/**
 	 * Max Proof History - how far back to use a proof of coin..

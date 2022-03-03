@@ -344,20 +344,26 @@ public class TxPoWProcessor extends MessageProcessor {
 			//Will not accept a TxBlock within an hour of current time.. will ask for full TxPoW blocks 
 			MiniNumber mintimediff 	= new MiniNumber(1000 * 60 * 60);
 			
+			//How long is our tree..
+			int additions 	= 0;
+			int treelen 	= txptree.getHeaviestBranchLength();
+			int minlen 		= GlobalParams.MINIMA_BLOCKS_SPEED_CALC.getAsInt()+TxPoWChecker.MEDIAN_BLOCK;
+			
+			//Cycle and add..
 			ArrayList<TxBlock> blocks = ibd.getTxBlocks();
 			for(TxBlock block : blocks) {
 				
 				//Process it..
 				try {
-					
 					//What is the time diff
 					MiniNumber timediff = timenow.sub(block.getTxPoW().getTimeMilli());
 					
 					//Check if this sync block is too near the current time.. or if we have no blocks yet
-					if(timediff.isMore(mintimediff) || txptree.getTip()==null) {
+					if((treelen+additions)<minlen ||  timediff.isMore(mintimediff)) {
 						
 						//It's not near our time.. so process..
 						processSyncBlock(block);	
+						additions++;
 						
 					}else {
 						MinimaLogger.log("TxBlock too close to real time.. skipping.. @ "+block.getTxPoW().getBlockNumber());

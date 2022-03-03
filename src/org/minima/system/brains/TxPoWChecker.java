@@ -8,6 +8,7 @@ import java.util.Date;
 import java.util.HashSet;
 
 import org.minima.database.MinimaDB;
+import org.minima.database.cascade.CascadeNode;
 import org.minima.database.mmr.MMR;
 import org.minima.database.mmr.MMRData;
 import org.minima.database.txpowdb.TxPoWDB;
@@ -78,7 +79,10 @@ public class TxPoWChecker {
 			}
 			
 			//Check Parents..
-			
+			if(!checkParents(zParentNode, zTxPoW)) {
+				MinimaLogger.log("Invalid TxPoW Super Parents "+zTxPoW.getTxPoWID());
+				return false;
+			}
 			
 			//Check the block difficulty is correct
 			MiniData blockdifficulty = TxPoWGenerator.getBlockDifficulty(zParentNode);
@@ -577,31 +581,69 @@ public class TxPoWChecker {
 	}
 	
 	/**
-	 * Check that all the Parent nodes are correct
+	 * Check that all the Super Parent nodes are correct
 	 */
 	public static boolean checkParents(TxPoWTreeNode zTip, TxPoW zBlock) {
 		
-		//Check the immediate parent
-		MiniData parent = zBlock.getParentID();
-		if(!zTip.getTxPoW().getTxPoWIDData().isEqual(parent)) {
-			return false;
-		}
-		
-		//Cycle through every level and make sure that is correct
-		TxPoWTreeNode current = zTip;
-		for(int i=1;i<GlobalParams.MINIMA_CASCADE_LEVELS;i++) {
+		//Cycle back through the chain..
+		int blocksup 			= 0;
+		TxPoWTreeNode current 	= zTip;
+		while(current != null) {
 			
-			//Get the Hash of that Parent..
-			parent = zBlock.getSuperParent(i);
-		
-			//Now cycle back and make sure
-			if(current.getTxPoW().getSuperLevel() >= i) {
+			//Get the TxPoW
+			TxPoW txpow 	= current.getTxPoW();
+			MiniData txdata	= txpow.getTxPoWIDData();
+			int superlevel 	= txpow.getSuperLevel();
+			
+			//Is it more than or equal to current required..
+			while(superlevel>=blocksup) {
+			
+				//The current super parent of the block
+				MiniData superparent = zBlock.getSuperParent(blocksup);
 				
+				//Make sure is valid..
+				if(!superparent.isEqual(txdata)) {
+					return false;
+				}
 				
+				blocksup++;
 			}
 			
+			current = current.getParent();
 		}
 		
+		//Now go through the cascade
+		CascadeNode cnode = MinimaDB.getDB().getCascade().getTip();
+		while(cnode != null) {
+			
+			//Get the TxPoW
+			TxPoW txpow 	= cnode.getTxPoW();
+			MiniData txdata	= txpow.getTxPoWIDData();
+			int superlevel 	= txpow.getSuperLevel();
+			
+			//Is it more than or equal to current required..
+			while(superlevel>=blocksup) {
+			
+				//The current super parent of the block
+				MiniData superparent = zBlock.getSuperParent(blocksup);
+				
+				//Make sure is valid..
+				if(!superparent.isEqual(txdata)) {
+					return false;
+				}
+				
+				blocksup++;
+			}
+			
+			cnode = cnode.getParent();
+		}
+		
+		//Check that the remaining all point to 0x00
+		for(int i=blocksup;i<GlobalParams.MINIMA_CASCADE_LEVELS;i++) {
+			if(!zBlock.getSuperParent(blocksup).isEqual(MiniData.ZERO_TXPOWID)) {
+				return false;
+			}
+		}
 		
 		return true;
 	}
