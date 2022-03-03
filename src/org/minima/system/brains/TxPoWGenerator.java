@@ -246,8 +246,6 @@ public class TxPoWGenerator {
 			TxPoW baseblock 	 = getMedianTimeBlock(current, MEDIAN_BLOCK_CALC).getTxPoW();
 			MiniNumber blockdiff = topblock.sub(baseblock.getBlockNumber()); 
 			
-//			MinimaLogger.log("blockdiff calc gap @ "+zParent.getBlockNumber()+" .. "+usetipblock.getBlockNumber()+"->"+baseblock.getBlockNumber()+" diff:"+blockdiff.toString());
-			
 			//Get current speed
 			MiniNumber speed 				= getChainSpeed(usetipblock, blockdiff);
 			MiniNumber speedratio 			= GlobalParams.MINIMA_BLOCK_SPEED.div(speed);
