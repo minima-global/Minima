@@ -356,7 +356,7 @@ public class TxPoWProcessor extends MessageProcessor {
 					//Check if this sync block is too near the current time.. or if we have no blocks yet
 					if(timediff.isMore(mintimediff) || txptree.getTip()==null) {
 						
-						//It;s not near our time.. so process..
+						//It's not near our time.. so process..
 						processSyncBlock(block);	
 						
 					}else {
