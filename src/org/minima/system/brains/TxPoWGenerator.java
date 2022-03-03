@@ -67,12 +67,10 @@ public class TxPoWGenerator {
 		
 		//If it's wrong set an acceptable time
 		if(!wrongtime) {
-			
 			//Just set the current time
 			txpow.setTimeMilli(timenow);
 			
 		}else {
-			
 			//How much time to add to the median block
 			MiniNumber blocksecs 	= MiniNumber.ONE.div(GlobalParams.MINIMA_BLOCK_SPEED);
 			MiniNumber half 		= new MiniNumber(TxPoWChecker.MEDIAN_BLOCK).div(MiniNumber.TWO); 
@@ -91,7 +89,7 @@ public class TxPoWGenerator {
 		Magic txpowmagic = tip.getTxPoW().getMagic().calculateNewCurrent();
 		txpow.setMagic(txpowmagic);
 		
-		//Set the TXN Difficulty..
+		//Set the TXN Difficulty.. currently 1 second work..
 		MiniNumber userhashrate = MinimaDB.getDB().getUserDB().getHashRate();
 		MiniData minhash 		= calculateDifficultyData(userhashrate);
 		if(minhash.isMore(txpowmagic.getMinTxPowWork())) {
