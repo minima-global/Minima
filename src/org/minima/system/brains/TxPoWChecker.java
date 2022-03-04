@@ -565,22 +565,6 @@ public class TxPoWChecker {
 	}
 	
 	/**
-	 * Check the Difficulty of one block with another..
-	 */
-	public static double checkDifficulty(MiniData zTip, MiniData zBlock) {
-		
-		BigInteger tip 		= zTip.getDataValue();
-		BigInteger block 	= zBlock.getDataValue();
-		
-		BigDecimal tipdec 	= new BigDecimal(tip);
-		BigDecimal blockdec = new BigDecimal(block);
-		
-		BigDecimal div 		= tipdec.divide(blockdec, MathContext.DECIMAL32);
-		
-		return div.doubleValue();
-	}
-	
-	/**
 	 * Check that all the Super Parent nodes are correct
 	 */
 	public static boolean checkParents(TxPoWTreeNode zTip, TxPoW zBlock) {

@@ -2,6 +2,8 @@ package org.minima.system.network.minima;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
+import java.math.BigDecimal;
+import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -279,51 +281,52 @@ public class NIOMessage implements Runnable {
 				//Now get the current tip details
 				TxPoWTreeNode tip 		= MinimaDB.getDB().getTxPoWTree().getTip();
 				TxPoWTreeNode cascade 	= MinimaDB.getDB().getTxPoWTree().getRoot();
-				MMR tipmmr 				= tip.getMMR();
-				TxPoW tiptxpow			= tip.getTxPoW();
 				
 				//The block and cascade block
 				MiniNumber cascadeblock = cascade.getBlockNumber();
 				MiniNumber block 		= txpow.getBlockNumber();
 				
 				//Check if is a block and within range of our current tip
-				double blockdiffratio = TxPoWChecker.checkDifficulty(tip.getTxPoW().getBlockDifficulty(), txpow.getBlockDifficulty());
-				
-				//For BOTH txns and blocks
-				if(block.isLess(cascadeblock)) {
-					//Block before cascade
-					MinimaLogger.log("Received block before cascade.. "+block+" / "+cascadeblock+" difficulty:"+blockdiffratio);
-					return;
-				}
-				
-				if(blockdiffratio < 0.1) {
-					//Block difficulty too low..
-					MinimaLogger.log("Received txpow with block difficulty too low.. "+blockdiffratio+" "+txpow.getBlockNumber()+" "+txpow.getTxPoWID());
-					
-					//Should not happen - this peer is funky..
-					Main.getInstance().getNIOManager().disconnect(mClientUID);
-					
-					return;
-				}
+				BigDecimal tipdec 		= new BigDecimal(tip.getTxPoW().getBlockDifficulty().getDataValue());
+				BigDecimal blockdec 	= new BigDecimal(txpow.getBlockDifficulty().getDataValue());
+				double blockdiffratio 	= tipdec.divide(blockdec, MathContext.DECIMAL32).doubleValue();
 				
 				//Start a timer..
 				long timestart = System.currentTimeMillis();
 				
-				//Check ChainID
-				if(!txpow.getChainID().isEqual(TxPoWChecker.CURRENT_NETWORK)) {
+				//Some BASIC checks that MUST pass..
+				boolean disconnectpeer = false;
+				
+				//NONE of these should fail
+				if(block.isLess(cascadeblock)) {
+					//Block before cascade
+					MinimaLogger.log("Received block before cascade.. "+block+" / "+cascadeblock+" difficulty:"+blockdiffratio);
+					disconnectpeer = true;
+				
+				}else if(blockdiffratio < 0.1) {
+					//Block difficulty too low..
+					MinimaLogger.log("Received txpow with block difficulty too low.. "+blockdiffratio+" "+txpow.getBlockNumber()+" "+txpow.getTxPoWID());
+					disconnectpeer = true;
+				
+				}else if(!txpow.getChainID().isEqual(TxPoWChecker.CURRENT_NETWORK)) {
+					//Check ChainID
 					MinimaLogger.log("Wrong Block ChainID! "+txpow.getChainID()+" "+txpow.getTxPoWID());
-					return;
-				}
+					disconnectpeer = true;
 				
-				//OK - Some basic checks..
-				if(!TxPoWChecker.checkTxPoWBasic(txpow)) {
+				}else if(!TxPoWChecker.checkTxPoWBasic(txpow)) {
+					//Basic checks for valid TxPoW
 					MinimaLogger.log("TxPoW FAILS Basic checks from "+mClientUID+" "+txpow.getTxPoWID());
-					return;
+					disconnectpeer = true;
+				
+				}else if(!TxPoWChecker.checkSignatures(txpow)) {
+					//Check the Signatures
+					MinimaLogger.log("Invalid signatures on txpow from "+mClientUID+" "+txpow.getTxPoWID());
+					disconnectpeer = true;
 				}
 				
-				//Check the Signatures
-				if(!TxPoWChecker.checkSignatures(txpow)) {
-					MinimaLogger.log("Invalid signatures on txpow from "+mClientUID+" "+txpow.getTxPoWID());
+				//Do we disconnect yet.. 
+				if(disconnectpeer) {
+					Main.getInstance().getNIOManager().disconnect(mClientUID);
 					return;
 				}
 				
@@ -331,7 +334,7 @@ public class NIOMessage implements Runnable {
 				boolean fullyvalid = true;
 				
 				//Check the Scripts - could fail.. 
-				if(!TxPoWChecker.checkTxPoWScripts(tipmmr, txpow, tiptxpow)) {
+				if(!TxPoWChecker.checkTxPoWScripts(tip.getMMR(), txpow, tip.getTxPoW())) {
 					//Monotonic txn MUST pass the script check or is INVALID - since will never pass..
 					if(txpow.isMonotonic()) {
 						MinimaLogger.log("Error Monotonic TxPoW failed script check from Client:"+mClientUID+" "+txpow.getTxPoWID());
@@ -358,7 +361,7 @@ public class NIOMessage implements Runnable {
 				}
 				
 				//Check the MMR - could be in a separate branch
-				if(!TxPoWChecker.checkMMR(tipmmr, txpow)) {
+				if(!TxPoWChecker.checkMMR(tip.getMMR(), txpow)) {
 					fullyvalid = false;
 				}
 				
