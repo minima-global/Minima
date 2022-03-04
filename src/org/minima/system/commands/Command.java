@@ -5,6 +5,7 @@ import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.minima.objects.Address;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.commands.base.automine;
@@ -198,6 +199,24 @@ public abstract class Command {
 		}
 		
 		return (JSONArray) mParams.get(zParamName);
+	}
+	
+	public String getAddressParam(String zParamName) throws CommandException {
+		if(!existsParam(zParamName)) {
+			throw new CommandException("param not specified : "+zParamName);
+		}
+
+		String address = getParam(zParamName);
+		if(address.toLowerCase().startsWith("mx")) {
+			//Convert back to normal hex..
+			try {
+				address = Address.convertMinimaAddress(address).to0xString();
+			}catch(IllegalArgumentException exc) {
+				throw new CommandException(exc.toString());
+			}
+		}
+		
+		return address;
 	}
 	
 	public boolean isParamJSONObject(String zParamName) {

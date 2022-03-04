@@ -190,7 +190,6 @@ public class txnutils {
 		ArrayList<Coin> currentcoins = new ArrayList<>();
 		
 		//Now cycle through..
-		Token token = null;
 		for(Coin coin : relcoins) {
 			
 			String coinidstr = coin.getCoinID().to0xString();

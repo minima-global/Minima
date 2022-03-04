@@ -68,7 +68,7 @@ public class txninput extends Command {
 		}else {
 			
 			//Get the details..
-			String address  = getParam("address");
+			String address  = getAddressParam("address");
 			String amount   = getParam("amount");
 			String tokenid  = getParam("tokenid","0x00");
 			

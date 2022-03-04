@@ -28,7 +28,7 @@ public class txnoutput extends Command {
 		//The transaction
 		String id 			= getParam("id");
 		MiniNumber amount	= getNumberParam("amount");
-		MiniData address	= getDataParam("address");
+		MiniData address	= new MiniData(getAddressParam("address"));
 		boolean storestate 	= getBooleanParam("storestate", true);
 		
 		//Could be a token..

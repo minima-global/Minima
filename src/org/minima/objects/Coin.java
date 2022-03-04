@@ -203,7 +203,9 @@ public class Coin implements Streamable {
 		
 		obj.put("coinid", mCoinID.toString());
 		obj.put("amount", mAmount.toString());
+		
 		obj.put("address", mAddress.toString());
+		obj.put("miniaddress", Address.makeMinimaAddress(mAddress));
 		
 		obj.put("tokenid", mTokenID.toString());
 		if(mToken == null) {

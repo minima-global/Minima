@@ -51,7 +51,7 @@ public class coins extends Command {
 		boolean saddress	= existsParam("address");
 		MiniData address	= MiniData.ZERO_TXPOWID;
 		if(saddress) {
-			address = new MiniData(getParam("address", "0x01"));
+			address = new MiniData(getAddressParam("address"));
 		}
 		
 		boolean stokenid	= existsParam("tokenid");

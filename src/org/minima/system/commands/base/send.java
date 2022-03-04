@@ -9,6 +9,7 @@ import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.database.userprefs.txndb.TxnRow;
 import org.minima.database.wallet.KeyRow;
 import org.minima.database.wallet.Wallet;
+import org.minima.objects.Address;
 import org.minima.objects.Coin;
 import org.minima.objects.CoinProof;
 import org.minima.objects.ScriptProof;
@@ -35,16 +36,18 @@ public class send extends Command {
 
 	
 	public send() {
-		super("send","[address:] [amount:] (tokenid:) (state:{}) - Send Minima or Tokens to an address");
+		super("send","[address:Mx..|0x..] [amount:] (tokenid:) (state:{}) - Send Minima or Tokens to an address");
 	}
 	
 	@Override
 	public JSONObject runCommand() throws Exception {
 		JSONObject ret = getJSONReply();
 		
-		//Get the details
-		String address = getParam("address");
-		String amount  = getParam("amount");
+		//Get the address
+		String address 	= getAddressParam("address");
+			
+		//How much to send
+		String amount  	= getParam("amount");
 		
 		//Is there a burn..
 		MiniNumber burn  = getNumberParam("burn",MiniNumber.ZERO);
