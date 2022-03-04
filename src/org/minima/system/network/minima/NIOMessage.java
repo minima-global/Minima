@@ -324,10 +324,12 @@ public class NIOMessage implements Runnable {
 				}
 				
 				//Max time in the future.. 2 hours.. could be OUR clock..
-				MiniNumber maxtime = new MiniNumber(System.currentTimeMillis() + (1000 * 60 * 120));
-				if(txpow.getTimeMilli().isMore(maxtime)) {
-					MinimaLogger.log("TxPoW block received with millitime MORE than 2 hours in future "+new Date(txpow.getTimeMilli().getAsLong())+" "+txpow.getTxPoWID());
-					fullyvalid = false;
+				if(txpow.isBlock()) {
+					MiniNumber maxtime = new MiniNumber(System.currentTimeMillis() + (1000 * 60 * 120));
+					if(txpow.getTimeMilli().isMore(maxtime)) {
+						MinimaLogger.log("TxPoW block received with millitime MORE than 2 hours in future "+new Date(txpow.getTimeMilli().getAsLong())+" "+txpow.getTxPoWID());
+						fullyvalid = false;
+					}
 				}
 				
 				//Check for mempool coins..
