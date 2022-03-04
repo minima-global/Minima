@@ -228,7 +228,7 @@ public class txnutils {
 		//Did we add enough
 		if(currentamount.isLess(sendamount)) {
 			//Not enough funds..
-			throw new CommandException("Not enough funds for the burn..");
+			throw new CommandException("Not enough funds / coins for the burn..");
 		}
 		
 		//What is the change..
