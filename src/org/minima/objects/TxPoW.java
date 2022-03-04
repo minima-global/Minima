@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.system.params.GlobalParams;
 import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
@@ -500,16 +501,14 @@ public class TxPoW implements Streamable {
 			if(_mTxPOWID.isLess(getTxnDifficulty()) && !getTransaction().isEmpty()) {
 				_mIsTxnPOW = true;
 			}
-			
-//			//Must be at least the minimum..
-//			if(getTxnDifficulty().isMore(Magic.MIN_TXPOW_WORK)) {
-//				_mIsTxnPOW = false;
-//			}
 		}
 		
 		//What Super Level are we..
 		_mSuperBlock = getSuperLevel(getBlockDifficulty(), _mTxPOWID);
-	
+		if(_mSuperBlock>=GlobalParams.MINIMA_CASCADE_LEVELS) {
+			_mSuperBlock = GlobalParams.MINIMA_CASCADE_LEVELS-1;
+		}
+		
 		//What size are we..
 		try {
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -532,7 +531,7 @@ public class TxPoW implements Streamable {
 	/**
 	 * This calculates the Log2 of the Difficulty and TxPoW unit..
 	 */
-	public int getSuperLevel(MiniData zBlockDifficulty, MiniData zTxPoWID) {
+	private int getSuperLevel(MiniData zBlockDifficulty, MiniData zTxPoWID) {
 		//What is the 
 		BigInteger quot = zBlockDifficulty.getDataValue().divide(zTxPoWID.getDataValue());
 		

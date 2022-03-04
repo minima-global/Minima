@@ -46,7 +46,7 @@ public class TestParams {
 	/**
 	 * How Many Cascade Levels
 	 */
-	public static int MINIMA_CASCADE_LEVELS  = 32;
+	public static int MINIMA_CASCADE_LEVELS  = 16;
 	
 	/**
 	 * Max Proof History - how far back to use a proof of coin..

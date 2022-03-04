@@ -18,7 +18,7 @@ public class GlobalParams {
 	/**
 	 * When checking speed and difficulty only look at this many blocks back
 	 */
-	public static MiniNumber MINIMA_BLOCKS_SPEED_CALC = new MiniNumber(512);
+	public static MiniNumber MINIMA_BLOCKS_SPEED_CALC = new MiniNumber(256);
 	
 	/**
 	 * How deep before we think confirmed..
@@ -33,7 +33,7 @@ public class GlobalParams {
 	/**
 	 * Depth before we cascade..
 	 */
-	public static MiniNumber MINIMA_CASCADE_START_DEPTH = new MiniNumber(2048);
+	public static MiniNumber MINIMA_CASCADE_START_DEPTH = new MiniNumber(1024);
 	
 	/**
 	 * Number of blocks at each cascade level 
@@ -50,5 +50,12 @@ public class GlobalParams {
 	 * If there is a re-org of more than this the proof will be invalid 
 	 */
 	public static MiniNumber MINIMA_MMR_PROOF_HISTORY = new MiniNumber(256);
-
+	
+	/**
+	 * The MEDIAN time block is taken from this many blocks back
+	 * When calculating the Difficulty of a block ( both from the tip and the previous block )
+	 * This smooths out the time fluctuations for different blocks and removes incorrect times.
+	 */
+	public static int MEDIAN_BLOCK_CALC = 32; 
+	
 }

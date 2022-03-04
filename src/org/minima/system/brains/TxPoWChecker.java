@@ -4,9 +4,11 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 
 import org.minima.database.MinimaDB;
+import org.minima.database.cascade.CascadeNode;
 import org.minima.database.mmr.MMR;
 import org.minima.database.mmr.MMRData;
 import org.minima.database.txpowdb.TxPoWDB;
@@ -26,6 +28,7 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.keys.Signature;
 import org.minima.objects.keys.TreeKey;
+import org.minima.system.params.GlobalParams;
 import org.minima.utils.MinimaLogger;
 
 public class TxPoWChecker {
@@ -33,7 +36,17 @@ public class TxPoWChecker {
 	/**
 	 * What Network are we currently checking for
 	 */
-	private static MiniData CURRENT_NETWORK = TxHeader.TEST_NET;
+	public static MiniData CURRENT_NETWORK = TxHeader.TEST_NET;
+	
+	/**
+	 * The Number of blocks to get the MEDIAN block for time checks
+	 */
+	public static int MEDIAN_TIMECHECK_BLOCK = 128;
+	
+	/**
+	 * The MAX number of milliseconds in the future the Block can be from the Median Block ~2 hrs
+	 */
+	public static MiniNumber MAXMILLI_FUTURE = new MiniNumber(1000 * 50 * MEDIAN_TIMECHECK_BLOCK);
 	
 	/**
 	 * Parallel check all the transactions in this block
@@ -42,29 +55,39 @@ public class TxPoWChecker {
 		
 		try {
 			
-			//Max time in the future.. 1hour..
-			MiniNumber maxtime = new MiniNumber(System.currentTimeMillis() + (1000 * 60 * 60));
-			
-			//Check the time of the block is greater than the media time
-			TxPoW medianblock 		= TxPoWGenerator.getMedianTimeBlock(zParentNode, 128);
-			if(zTxPoW.getTimeMilli().isLess(medianblock.getTimeMilli())) {
-				MinimaLogger.log("Invalid TxPoW block with millitime LESS than median "+zTxPoW.getTxPoWID());
-				return false;
-			
-			}else if(zTxPoW.getTimeMilli().isMore(maxtime)) {
-				MinimaLogger.log("Invalid TxPoW block with millitime MORE than 1 hour in future "+zTxPoW.getTxPoWID());
+			//Check ChainID
+			if(!zTxPoW.getChainID().isEqual(TxPoWChecker.CURRENT_NETWORK)) {
+				MinimaLogger.log("Invalid Block ChainID! "+zTxPoW.getChainID()+" "+zTxPoW.getTxPoWID());
 				return false;
 			}
 			
-			//Check ChainID
-			if(!zTxPoW.getChainID().isEqual(CURRENT_NETWORK)) {
-				MinimaLogger.log("Wrong Block ChainID! "+zTxPoW.getChainID()+" "+zTxPoW.getTxPoWID());
+			//Check the time of the block is greater than the median time
+			TxPoW medianblock = TxPoWGenerator.getMedianTimeBlock(zParentNode, MEDIAN_TIMECHECK_BLOCK).getTxPoW();
+			if(zTxPoW.getTimeMilli().isLess(medianblock.getTimeMilli())) {
+				MinimaLogger.log("Invalid TxPoW block with millitime LESS than median "+new Date(zTxPoW.getTimeMilli().getAsLong())+" "+zTxPoW.getTxPoWID());
+				return false;
+			
+			}else if(zTxPoW.getTimeMilli().isMore(medianblock.getTimeMilli().add(MAXMILLI_FUTURE))) {
+				MinimaLogger.log("Invalid TxPoW block with millitime MORE than median + 2 hrs "+new Date(zTxPoW.getTimeMilli().getAsLong())+" "+zTxPoW.getTxPoWID());
 				return false;
 			}
 			
 			//Check the Block Number is correct
 			if(!zTxPoW.getBlockNumber().isEqual(zParentNode.getBlockNumber().increment())) {
 				MinimaLogger.log("Invalid TxPoW block with wrong blocknumber "+zTxPoW.getTxPoWID());
+				return false;
+			}
+			
+			//Check Parents..
+			if(!checkParents(zParentNode, zTxPoW)) {
+				MinimaLogger.log("Invalid TxPoW Super Parents "+zTxPoW.getTxPoWID());
+				return false;
+			}
+			
+			//Check the block difficulty is correct
+			MiniData blockdifficulty = TxPoWGenerator.getBlockDifficulty(zParentNode);
+			if(!zTxPoW.getBlockDifficulty().isEqual(blockdifficulty)) {
+				MinimaLogger.log("Incorrect TxPoW block difficulty "+zTxPoW.getTxPoWID());
 				return false;
 			}
 			
@@ -542,18 +565,70 @@ public class TxPoWChecker {
 	}
 	
 	/**
-	 * Check the Difficulty of one block with another..
+	 * Check that all the Super Parent nodes are correct
 	 */
-	public static double checkDifficulty(MiniData zTip, MiniData zBlock) {
+	public static boolean checkParents(TxPoWTreeNode zTip, TxPoW zBlock) {
 		
-		BigInteger tip 		= zTip.getDataValue();
-		BigInteger block 	= zBlock.getDataValue();
+		//Cycle back through the chain..
+		int blocksup 			= 0;
+		TxPoWTreeNode current 	= zTip;
+		while(current != null) {
+			
+			//Get the TxPoW
+			TxPoW txpow 	= current.getTxPoW();
+			MiniData txdata	= txpow.getTxPoWIDData();
+			int superlevel 	= txpow.getSuperLevel();
+			
+			//Is it more than or equal to current required..
+			while(superlevel>=blocksup) {
+			
+				//The current super parent of the block
+				MiniData superparent = zBlock.getSuperParent(blocksup);
+				
+				//Make sure is valid..
+				if(!superparent.isEqual(txdata)) {
+					return false;
+				}
+				
+				blocksup++;
+			}
+			
+			current = current.getParent();
+		}
 		
-		BigDecimal tipdec 	= new BigDecimal(tip);
-		BigDecimal blockdec = new BigDecimal(block);
+		//Now go through the cascade
+		CascadeNode cnode = MinimaDB.getDB().getCascade().getTip();
+		while(cnode != null) {
+			
+			//Get the TxPoW
+			TxPoW txpow 	= cnode.getTxPoW();
+			MiniData txdata	= txpow.getTxPoWIDData();
+			int superlevel 	= txpow.getSuperLevel();
+			
+			//Is it more than or equal to current required..
+			while(superlevel>=blocksup) {
+			
+				//The current super parent of the block
+				MiniData superparent = zBlock.getSuperParent(blocksup);
+				
+				//Make sure is valid..
+				if(!superparent.isEqual(txdata)) {
+					return false;
+				}
+				
+				blocksup++;
+			}
+			
+			cnode = cnode.getParent();
+		}
 		
-		BigDecimal div 		= tipdec.divide(blockdec, MathContext.DECIMAL32);
+		//Check that the remaining all point to 0x00
+		for(int i=blocksup;i<GlobalParams.MINIMA_CASCADE_LEVELS;i++) {
+			if(!zBlock.getSuperParent(blocksup).isEqual(MiniData.ZERO_TXPOWID)) {
+				return false;
+			}
+		}
 		
-		return div.doubleValue();
+		return true;
 	}
 }
