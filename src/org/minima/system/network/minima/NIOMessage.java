@@ -347,7 +347,7 @@ public class NIOMessage implements Runnable {
 					fullyvalid = false;
 				}
 				
-				//Max time in the future.. 2 hours..
+				//Max time in the future.. 2 hours.. could be OUR clock..
 				MiniNumber maxtime = new MiniNumber(System.currentTimeMillis() + (1000 * 60 * 120));
 				if(txpow.getTimeMilli().isMore(maxtime)) {
 					MinimaLogger.log("TxPoW block received with millitime MORE than 2 hours in future "+new Date(txpow.getTimeMilli().getAsLong())+" "+txpow.getTxPoWID());
@@ -378,11 +378,12 @@ public class NIOMessage implements Runnable {
 				
 				//Since it's OK.. forward the TxPoWID to the rest of the network..
 				if(fullyvalid) {
-					
 					//Forward to the network
 					NIOManager.sendNetworkMessageAll(MSG_TXPOWID, txpow.getTxPoWIDData());
+				}
 				
-					//Check all the Transactions..
+				//Check all the Transactions.. if it's a block
+				if(txpow.isBlock()) {
 					ArrayList<MiniData> txns = txpow.getBlockTransactions();
 					for(MiniData txn : txns) {
 						exists = MinimaDB.getDB().getTxPoWDB().exists(txn.to0xString());
@@ -392,7 +393,7 @@ public class NIOMessage implements Runnable {
 						}
 					}
 					
-					//Get the parent if we don't have it.. and is infront of the Cascade..
+					//Get the parent if we don't have it..
 					exists = MinimaDB.getDB().getTxPoWDB().exists(txpow.getParentID().to0xString());
 					if(!exists) {
 						NIOManager.sendNetworkMessage(mClientUID, MSG_TXPOWREQ, txpow.getParentID());
