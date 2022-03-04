@@ -359,7 +359,7 @@ public class TxPoWProcessor extends MessageProcessor {
 			//How long is our tree..
 			int additions 	= 0;
 			int treelen 	= txptree.getHeaviestBranchLength();
-			int minlen 		= GlobalParams.MINIMA_BLOCKS_SPEED_CALC.getAsInt()+TxPoWChecker.MEDIAN_BLOCK;
+			int minlen 		= GlobalParams.MINIMA_BLOCKS_SPEED_CALC.getAsInt()+TxPoWChecker.MEDIAN_TIMECHECK_BLOCK;
 			
 			//Cycle and add..
 			ArrayList<TxBlock> blocks = ibd.getTxBlocks();

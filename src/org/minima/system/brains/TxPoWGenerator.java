@@ -32,11 +32,6 @@ public class TxPoWGenerator {
 	public static final MiniData MIN_TXPOWDIFF 		= new MiniData(MIN_TXPOW_VAL);
 	
 	/**
-	 * The MEDIAN time block is taken from this many blocks back
-	 */
-	private static int MEDIAN_BLOCK_CALC = 32; 
-	
-	/**
 	 * Calculate a Difficulty Hash for a given hash number
 	 */
 	public static MiniData calculateDifficultyData(MiniNumber zHashes) {
@@ -58,7 +53,7 @@ public class TxPoWGenerator {
 		
 		//Check time is in acceptable range.. or will be an invalid block.. 
 		boolean wrongtime = false;
-		TxPoW medianblock = TxPoWGenerator.getMedianTimeBlock(tip, TxPoWChecker.MEDIAN_BLOCK).getTxPoW();
+		TxPoW medianblock = TxPoWGenerator.getMedianTimeBlock(tip, TxPoWChecker.MEDIAN_TIMECHECK_BLOCK).getTxPoW();
 		if(timenow.isLess(medianblock.getTimeMilli())) {
 			wrongtime = true;
 		}else if(timenow.isMore(medianblock.getTimeMilli().add(TxPoWChecker.MAXMILLI_FUTURE))) {
@@ -73,7 +68,7 @@ public class TxPoWGenerator {
 		}else {
 			//How much time to add to the median block
 			MiniNumber blocksecs 	= MiniNumber.ONE.div(GlobalParams.MINIMA_BLOCK_SPEED);
-			MiniNumber half 		= new MiniNumber(TxPoWChecker.MEDIAN_BLOCK).div(MiniNumber.TWO); 
+			MiniNumber half 		= new MiniNumber(TxPoWChecker.MEDIAN_TIMECHECK_BLOCK).div(MiniNumber.TWO); 
 			MiniNumber addtime 		= blocksecs.mult(half.add(MiniNumber.ONE)).mult(MiniNumber.THOUSAND);
 			
 			//Median time + 1 hr..
@@ -216,7 +211,7 @@ public class TxPoWGenerator {
 	public static MiniData getBlockDifficulty(TxPoWTreeNode zParent) {
 		
 		//Get the Median Tip Block
-		TxPoWTreeNode usetipblock = getMedianTimeBlock(zParent, MEDIAN_BLOCK_CALC);
+		TxPoWTreeNode usetipblock = getMedianTimeBlock(zParent, GlobalParams.MEDIAN_BLOCK_CALC);
 		
 		//What is the block number..
 		MiniNumber topblock = usetipblock.getTxPoW().getBlockNumber();
@@ -243,7 +238,7 @@ public class TxPoWGenerator {
 			}
 			
 			//Now we have a block in the past.. get the median time value block around it
-			TxPoW baseblock 	 = getMedianTimeBlock(current, MEDIAN_BLOCK_CALC).getTxPoW();
+			TxPoW baseblock 	 = getMedianTimeBlock(current, GlobalParams.MEDIAN_BLOCK_CALC).getTxPoW();
 			MiniNumber blockdiff = topblock.sub(baseblock.getBlockNumber()); 
 			
 			//Get current speed

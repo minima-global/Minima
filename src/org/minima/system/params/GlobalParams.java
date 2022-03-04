@@ -50,5 +50,12 @@ public class GlobalParams {
 	 * If there is a re-org of more than this the proof will be invalid 
 	 */
 	public static MiniNumber MINIMA_MMR_PROOF_HISTORY = new MiniNumber(256);
-
+	
+	/**
+	 * The MEDIAN time block is taken from this many blocks back
+	 * When calculating the Difficulty of a block ( both from the tip and the previous block )
+	 * This smooths out the time fluctuations for different blocks and removes incorrect times.
+	 */
+	public static int MEDIAN_BLOCK_CALC = 32; 
+	
 }
