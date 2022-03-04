@@ -172,12 +172,17 @@ public abstract class Command {
 		return new MiniNumber(num);
 	}
 	
+	public MiniNumber getNumberParam(String zParamName, MiniNumber zDefault) throws CommandException {
+		if(existsParam(zParamName)) {
+			return getNumberParam(zParamName);
+		}
+		return zDefault;
+	}
+	
 	public MiniData getDataParam(String zParamName) throws CommandException {
 		String hex = getParam(zParamName);
 		return new MiniData(hex);
 	}
-	
-	
 	
 	public JSONObject getJSONObjectParam(String zParamName) throws CommandException{
 		if(!existsParam(zParamName)) {
