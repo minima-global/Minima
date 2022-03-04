@@ -213,31 +213,7 @@ public class NIOMessage implements Runnable {
 				//A small message..
 				MinimaLogger.log("[+] Connected to the blockchain Initial Block Download received. size:"+MiniFormat.formatSize(data.length)+" blocks:"+ibd.getTxBlocks().size());
 				
-				//Do some checking!
-//				//Sort the Sync blocks - low to high - they should be in the correct order but just in case..
-//				Collections.sort(ibd.getSyncBlocks(), new Comparator<TxBlock>() {
-//					@Override
-//					public int compare(TxBlock o1, TxBlock o2) {
-//						// TODO Auto-generated method stub
-//						return 0;
-//					}
-//				});
-				
-				//Check all the syncblocks are there with none missng..
-				//..
-				boolean valid = true;
-				
-				//Valid..
-				if(ibd.hasCascade() && !ibd.getCascade().checkCascade()) {
-					MinimaLogger.log("ERROR Invalid Cascade sent from "+mClientUID);
-					
-					//Disconnect..Something fishy..
-					Main.getInstance().getNIOManager().disconnect(mClientUID);
-					
-					return;
-				}
-				
-				//Send to the Processor - with the client in case is invalid.. in which case disconnect
+				//Send to the Processor
 				Main.getInstance().getTxPoWProcessor().postProcessIBD(ibd, mClientUID);
 				
 			}else if(type.isEqual(MSG_TXPOWID)) {

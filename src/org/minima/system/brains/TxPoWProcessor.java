@@ -144,6 +144,7 @@ public class TxPoWProcessor extends MessageProcessor {
 	
 	private boolean processSyncBlock(TxBlock zTxBlock) throws Exception {
 		
+		Cascade cascdb		= MinimaDB.getDB().getDB().getCascade();
 		TxPoWDB txpdb 		= MinimaDB.getDB().getTxPoWDB();
 		TxPowTree txptree 	= MinimaDB.getDB().getTxPoWTree();
 		
@@ -154,7 +155,18 @@ public class TxPoWProcessor extends MessageProcessor {
 		if(txptree.getTip() == null) {
 			
 			//Check the cascade ends where this block begins..
-			//TODO
+			if(cascdb.getTip() != null) {
+				
+				//The block numbers
+				MiniNumber txblknum = zTxBlock.getTxPoW().getBlockNumber();
+				MiniNumber cascblk 	= cascdb.getTip().getTxPoW().getBlockNumber();
+				
+				//Check is 1 less than this block..
+				if(!cascblk.isEqual(txblknum.sub(MiniNumber.ONE))) {
+					//Error cascade should start where this ends..
+					throw new Exception("Invalid SyncBlock Cascade Tip not parent "+txblknum+" casctip:"+cascblk);
+				}			
+			}
 			
 			//Create a new node
 			TxPoWTreeNode newblock = new TxPoWTreeNode(zTxBlock);
@@ -364,6 +376,17 @@ public class TxPoWProcessor extends MessageProcessor {
 						//It's not near our time.. so process..
 						processSyncBlock(block);	
 						additions++;
+					
+						//If we've added a lot of blocks..
+						if(additions > 1000) {
+							
+							//recalculate the Tree..
+							recalculateTree();
+							
+							//Reset these
+							treelen 	= txptree.getHeaviestBranchLength();
+							additions	= 0;
+						}
 						
 					}else {
 						MinimaLogger.log("TxBlock too close to real time.. skipping.. @ "+block.getTxPoW().getBlockNumber());
@@ -372,6 +395,10 @@ public class TxPoWProcessor extends MessageProcessor {
 					
 				}catch(Exception exc) {
 					MinimaLogger.log(exc.toString());
+					
+					//Something funny going on.. disconnect
+					Main.getInstance().getNIOManager().disconnect(uid);
+					
 					break;
 				}
 			}
