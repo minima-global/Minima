@@ -142,7 +142,7 @@ public class TxBlock implements Streamable {
 		
 		//All the Outputs..
 		ArrayList<Coin> outputs = zTransaction.getAllOutputs();
-		if(outputs.size()>0) {
+		if(coinspent.size()>0) {
 			//Get the First Coin in the Txn CoinID.. Genesis Transaction is Different
 			MiniData basecoinid = null; 
 			if(zPreviousMMR.getBlockTime().isEqual(MiniNumber.ONE)) {
