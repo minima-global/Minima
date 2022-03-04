@@ -404,7 +404,7 @@ public class Main extends MessageProcessor {
 			//Make sure there is a User specified
 			if(!user.equals("")) {
 				//Call the RPC End point..
-				RPCClient.sendPUT("https://incentivecash.minima.global/api/ping/"+user);
+				RPCClient.sendPUT("https://incentivecash.minima.global/api/ping/"+user+"?version="+GlobalParams.MINIMA_VERSION);
 			}
 			
 			//Do it agin..
