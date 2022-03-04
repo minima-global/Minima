@@ -42,6 +42,10 @@ public class TxPoWGenerator {
 	 * Generate a complete TxPoW
 	 */
 	public static TxPoW generateTxPoW(Transaction zTransaction, Witness zWitness) {
+		return generateTxPoW(zTransaction, zWitness, null, null);
+	}
+	
+	public static TxPoW generateTxPoW(Transaction zTransaction, Witness zWitness, Transaction zBurnTransaction, Witness zBurnWitness) {
 		//Base
 		TxPoW txpow = new TxPoW();
 		
@@ -79,6 +83,12 @@ public class TxPoWGenerator {
 		//Set the Transaction..
 		txpow.setTransaction(zTransaction);
 		txpow.setWitness(zWitness);
+		
+		//Is there a BURN
+		if(zBurnTransaction != null) {
+			txpow.setBurnTransaction(zBurnTransaction);
+			txpow.setBurnWitness(zBurnWitness);
+		}
 		
 		//Set the correct Magic Numbers..
 		Magic txpowmagic = tip.getTxPoW().getMagic().calculateNewCurrent();
@@ -125,9 +135,17 @@ public class TxPoWGenerator {
 		ArrayList<String> addedcoins = new ArrayList<>();
 		
 		//Add the main transaction inputs..
-		ArrayList<Coin> inputcoins = txpow.getTransaction().getAllInputs();
+		ArrayList<Coin> inputcoins = zTransaction.getAllInputs();
 		for(Coin cc : inputcoins) {
 			addedcoins.add(cc.getCoinID().to0xString());
+		}
+		
+		//Burn Coins
+		if(zBurnTransaction != null) {
+			inputcoins = zBurnTransaction.getAllInputs();
+			for(Coin cc : inputcoins) {
+				addedcoins.add(cc.getCoinID().to0xString());
+			}
 		}
 		
 		//Check them all..

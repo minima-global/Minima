@@ -196,6 +196,14 @@ public class TxPoW implements Streamable {
 		mBody.mWitness = zWitness;
 	}
 	
+	public void setBurnTransaction(Transaction zTran) {
+		mBody.mBurnTransaction = zTran;
+	}
+	
+	public void setBurnWitness(Witness zWitness) {
+		mBody.mBurnWitness = zWitness;
+	}
+	
 	public Witness getWitness() {
 		return mBody.mWitness;
 	}

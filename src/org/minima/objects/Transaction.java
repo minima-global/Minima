@@ -33,7 +33,7 @@ public class Transaction implements Streamable {
 	 * 
 	 * MUST be the Hash of the Transaction if this is a Burn Transaction
 	 */
-	protected MiniData mLinkHash = new MiniData("0x00");
+	protected MiniData mLinkHash = MiniData.ZERO_TXPOWID;
 	
 	/**
 	 * The Inputs that make up the Transaction
@@ -329,6 +329,10 @@ public class Transaction implements Streamable {
 	 */
 	public MiniData getLinkHash() {
 		return mLinkHash;
+	}
+	
+	public void setLinkHash(MiniData zLinkHash) {
+		mLinkHash = zLinkHash;
 	}
 	
 	/**

@@ -138,7 +138,7 @@ public class TxPoWChecker {
 			//Convert to unique Set and check equal size
 			HashSet<String> coinset = new HashSet<>(allcoinid);
 			if(coinset.size() != allcoinid.size()) {
-				MinimaLogger.log("Invalid TxPoW Block with non unique CoinID "+zTxPoW.getTxPoWID());
+				MinimaLogger.log("Invalid TxPoW Block with non unique CoinIDs "+zTxPoW.getTxPoWID());
 				return false;
 			}
 			
@@ -196,6 +196,12 @@ public class TxPoWChecker {
 		//Check the Transaction..
 		boolean valid = checkTxPoWBasic(zTxPoW.getTxPoWID(), zTxPoW.getTransaction(), zTxPoW.getWitness());
 		if(!valid) {
+			return false;
+		}
+		
+		//Check the Link Hash
+		if(!zTxPoW.getTransaction().getLinkHash().isEqual(MiniData.ZERO_TXPOWID)) {
+			MinimaLogger.log("Invalid LinkHash for Transaction ( NOT 0x00 ) "+zTxPoW.getTxPoWID());
 			return false;
 		}
 		
@@ -280,7 +286,6 @@ public class TxPoWChecker {
 					MinimaLogger.log("TokenID in MMR Proof input "+i+" doesn't match token "+zTxPoWID);
 					return false;
 				}
-				
 			}
 			
 			//Check the CoinProof details and Coin details Match

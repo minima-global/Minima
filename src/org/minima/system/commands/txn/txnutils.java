@@ -171,7 +171,7 @@ public class txnutils {
 		zWitness.addScript(pscr);
 	}
 	
-	public static TxnRow createBurnTransaction(MiniNumber zAmount) throws CommandException {
+	public static TxnRow createBurnTransaction(ArrayList<String> zExcludeCoins, MiniData zLinkTransactionID, MiniNumber zAmount) throws CommandException {
 		
 		//The Full Txn..
 		TxnRow txnrow = new TxnRow("temp", new Transaction(), new Witness());
@@ -180,11 +180,10 @@ public class txnutils {
 		TxPoWDB txpdb 		= MinimaDB.getDB().getTxPoWDB();
 		TxPoWMiner txminer 	= Main.getInstance().getTxPoWMiner();
 		Wallet walletdb 	= MinimaDB.getDB().getWallet();
-		
-		//How much are we sending..
-		MiniNumber sendamount 	= zAmount;
-		//get the tip..
 		TxPoWTreeNode tip 	= MinimaDB.getDB().getTxPoWTree().getTip();
+		
+		//How much are we sending.. What are we Burning..
+		MiniNumber sendamount 	= zAmount;
 		
 		//Lets build a transaction..
 		ArrayList<Coin> relcoins = TxPoWSearcher.getRelevantUnspentCoins(tip,"0x00",true);
@@ -197,8 +196,15 @@ public class txnutils {
 		Token token = null;
 		for(Coin coin : relcoins) {
 			
+			String coinidstr = coin.getCoinID().to0xString();
+		
+			//Is it to be excluded..
+			if(zExcludeCoins.contains(coinidstr)) {
+				continue;
+			}
+			
 			//Check if we are already using thewm in another Transaction that is being mined
-			if(txminer.checkForMiningCoin(coin.getCoinID().to0xString())) {
+			if(txminer.checkForMiningCoin(coinidstr)) {
 				continue;
 			}
 			
@@ -206,7 +212,7 @@ public class txnutils {
 			if(txpdb.checkMempoolCoins(coin.getCoinID())) {
 				continue;
 			}
-		
+			
 			//Add this coin..
 			currentcoins.add(coin);
 			
@@ -313,6 +319,9 @@ public class txnutils {
 			//And finally.. add the change output
 			transaction.addOutput(changecoin);
 		}
+		
+		//Set the Link Hash! - as this is a BURN transaction
+		transaction.setLinkHash(zLinkTransactionID);
 		
 		//Compute the correct CoinID
 		TxPoWGenerator.precomputeTransactionCoinID(transaction);

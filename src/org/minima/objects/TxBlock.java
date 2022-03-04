@@ -140,67 +140,70 @@ public class TxBlock implements Streamable {
 			}
 		}
 		
-		//Get the First Coin in the Txn CoinID.. Genesis Transaction is Different
-		MiniData basecoinid = null; 
-		if(zPreviousMMR.getBlockTime().isEqual(MiniNumber.ONE)) {
-			
-			//Because the first address is different this is always unique
-			basecoinid = zTransaction.getTransactionID();
-		}else {
-			
-			//Get the First Coin..
-			Coin firstcoin = coinspent.get(0).getCoin();
-			
-			//Hash that coin..
-			basecoinid = Crypto.getInstance().hashAllObjects(
-					firstcoin.getCoinID(),
-					firstcoin.getAddress(),
-					firstcoin.getAmount(),
-					firstcoin.getTokenID());
-		}
-	
-		//All the new coins
+		//All the Outputs..
 		ArrayList<Coin> outputs = zTransaction.getAllOutputs();
-		int num=0;
-		for(Coin newoutput : outputs) {
-			
-			//Calculate the Correct CoinID for this coin.. 
-			MiniData coinid = zTransaction.calculateCoinID(basecoinid,num);
-			
-			//Create a new coin with correct coinid
-			Coin correctcoin = newoutput.getSameCoinWithCoinID(coinid);
-			
-			//Set the correct state variables
-			if(correctcoin.storeState()) {
-				correctcoin.setState(newstate);
+		if(outputs.size()>0) {
+			//Get the First Coin in the Txn CoinID.. Genesis Transaction is Different
+			MiniData basecoinid = null; 
+			if(zPreviousMMR.getBlockTime().isEqual(MiniNumber.ONE)) {
+				
+				//Because the first address is different this is always unique
+				basecoinid = zTransaction.getTransactionID();
+			}else {
+				
+				//Get the First Coin..
+				Coin firstcoin = coinspent.get(0).getCoin();
+				
+				//Hash that coin..
+				basecoinid = Crypto.getInstance().hashAllObjects(
+						firstcoin.getCoinID(),
+						firstcoin.getAddress(),
+						firstcoin.getAmount(),
+						firstcoin.getTokenID());
 			}
-			
-			//Is this a create token output..
-			if(newoutput.getTokenID().isEqual(Token.TOKENID_CREATE)) {
+		
+			//All the new coins
+			int num=0;
+			for(Coin newoutput : outputs) {
 				
-				//Get the Create token details..
-				Token creator = newoutput.getToken();
+				//Calculate the Correct CoinID for this coin.. 
+				MiniData coinid = zTransaction.calculateCoinID(basecoinid,num);
 				
-				//Get the details..
-				Token newtoken = new Token(	coinid, 
-											creator.getScale(), 
-											newoutput.getAmount(), 
-											creator.getName(),
-											creator.getTokenScript(),
-											mTxPoW.getBlockNumber()); 
+				//Create a new coin with correct coinid
+				Coin correctcoin = newoutput.getSameCoinWithCoinID(coinid);
 				
-				//Set it..
-				correctcoin.resetTokenID(newtoken.getTokenID());
+				//Set the correct state variables
+				if(correctcoin.storeState()) {
+					correctcoin.setState(newstate);
+				}
 				
-				//And set that as the token..
-				correctcoin.setToken(newtoken);
+				//Is this a create token output..
+				if(newoutput.getTokenID().isEqual(Token.TOKENID_CREATE)) {
+					
+					//Get the Create token details..
+					Token creator = newoutput.getToken();
+					
+					//Get the details..
+					Token newtoken = new Token(	coinid, 
+												creator.getScale(), 
+												newoutput.getAmount(), 
+												creator.getName(),
+												creator.getTokenScript(),
+												mTxPoW.getBlockNumber()); 
+					
+					//Set it..
+					correctcoin.resetTokenID(newtoken.getTokenID());
+					
+					//And set that as the token..
+					correctcoin.setToken(newtoken);
+				}
+				
+				//Add to our list
+				mNewCoins.add(correctcoin);
+				
+				//Next coin down
+				num++;
 			}
-			
-			//Add to our list
-			mNewCoins.add(correctcoin);
-			
-			//Next coin down
-			num++;
 		}
 	}
 	
