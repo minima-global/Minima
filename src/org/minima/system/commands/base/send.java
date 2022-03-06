@@ -317,7 +317,7 @@ public class send extends Command {
 		if(burn.isMore(MiniNumber.ZERO)) {
 			
 			//Create a Burn Transaction
-			TxnRow burntxn = txnutils.createBurnTransaction(addedcoinid,transid,MiniNumber.ONE);
+			TxnRow burntxn = txnutils.createBurnTransaction(addedcoinid,transid,burn);
 
 			//Now create a complete TxPOW
 			txpow = TxPoWGenerator.generateTxPoW(transaction, witness, burntxn.getTransaction(), burntxn.getWitness());
