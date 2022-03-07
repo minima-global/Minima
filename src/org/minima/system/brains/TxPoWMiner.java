@@ -71,7 +71,7 @@ public class TxPoWMiner extends MessageProcessor {
 					
 					//Check this pulse block is useful..
 					if(txpow.getBlockNumber().isLessEqual(mLastPulseBlock) || txpow.getBlockNumber().isLessEqual(tipblock)) {
-						MinimaLogger.log("Mining PULSE block too late.. "+txpow.getBlockNumber());
+//						MinimaLogger.log("Mining PULSE block too late.. "+txpow.getBlockNumber());
 						return;
 					}
 					
