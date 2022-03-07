@@ -6,6 +6,7 @@ import org.minima.database.MinimaDB;
 import org.minima.database.mmr.MMRProof;
 import org.minima.database.txpowdb.TxPoWDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
+import org.minima.database.userprefs.txndb.TxnRow;
 import org.minima.database.wallet.KeyRow;
 import org.minima.database.wallet.Wallet;
 import org.minima.objects.Coin;
@@ -26,6 +27,7 @@ import org.minima.system.brains.TxPoWMiner;
 import org.minima.system.brains.TxPoWSearcher;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
+import org.minima.system.commands.txn.txnutils;
 import org.minima.system.params.GlobalParams;
 import org.minima.utils.Crypto;
 import org.minima.utils.json.JSONObject;
@@ -33,7 +35,7 @@ import org.minima.utils.json.JSONObject;
 public class tokencreate extends Command {
 
 	public tokencreate() {
-		super("tokencreate","[name:] [amount:] (decimals:) (script:) (state:{}) - Create a token. 'name' can be a JSON Object");
+		super("tokencreate","[name:] [amount:] (decimals:) (script:) (state:{}) (burn:) - Create a token. 'name' can be a JSON Object");
 	}
 	
 	@Override
@@ -76,6 +78,9 @@ public class tokencreate extends Command {
 		
 		//The amount is always a MiniNumber
 		String amount   = (String)getParams().get("amount");
+		
+		//The burn
+		MiniNumber burn = getNumberParam("burn", MiniNumber.ZERO);
 		
 		//How many decimals - can be 0.. for an NFT
 		int decimals = 8;
@@ -230,8 +235,14 @@ public class tokencreate extends Command {
 		//Create a list of the required signatures
 		ArrayList<String> reqsigs = new ArrayList<>();
 		
+		//Which Coins are added
+		ArrayList<String> addedcoinid = new ArrayList<>();
+				
 		//Add the MMR proofs for the coins..
 		for(Coin input : currentcoins) {
+			
+			//Keep for burn calc
+			addedcoinid.add(input.getCoinID().to0xString());
 			
 			//Get the proof..
 			MMRProof proof = mmrnode.getMMR().getProofToPeak(input.getMMREntryNumber());
@@ -313,8 +324,22 @@ public class tokencreate extends Command {
 			witness.addSignature(signature);
 		}
 		
-		//Now create a complete TxPOW
-		TxPoW txpow = TxPoWGenerator.generateTxPoW(transaction, witness);
+		//The final TxPoW
+		TxPoW txpow = null;
+		
+		//Is there a BURN..
+		if(burn.isMore(MiniNumber.ZERO)) {
+			
+			//Create a Burn Transaction
+			TxnRow burntxn = txnutils.createBurnTransaction(addedcoinid,transaction.getTransactionID(),burn);
+
+			//Now create a complete TxPOW
+			txpow = TxPoWGenerator.generateTxPoW(transaction, witness, burntxn.getTransaction(), burntxn.getWitness());
+		
+		}else {
+			//Now create a complete TxPOW
+			txpow = TxPoWGenerator.generateTxPoW(transaction, witness);
+		}
 		
 		//Calculate the size..
 		txpow.calculateTXPOWID();
