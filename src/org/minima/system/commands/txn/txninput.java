@@ -7,6 +7,7 @@ import org.minima.objects.Coin;
 import org.minima.objects.Transaction;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.system.brains.TxPoWGenerator;
 import org.minima.system.brains.TxPoWSearcher;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
@@ -80,6 +81,9 @@ public class txninput extends Command {
 		Transaction trans = txnrow.getTransaction();
 		trans.addInput(cc);
 		
+		//Calculate the correct CoinID - if possible..
+		TxPoWGenerator.precomputeTransactionCoinID(trans);
+				
 		//Are we adding the scripts and MMR for this coin..
 		boolean smmr = getBooleanParam("scriptmmr", false);
 		if(smmr) {

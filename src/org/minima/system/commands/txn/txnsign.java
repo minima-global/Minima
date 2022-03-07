@@ -47,8 +47,8 @@ public class txnsign extends Command {
 		TxPoWGenerator.precomputeTransactionCoinID(txn);
 		
 		//Calculate the TransactionID..
-		MiniData transid = Crypto.getInstance().hashObject(txn);
-	
+		txn.calculateTransactionID();
+		
 		//Get the Wallet
 		Wallet walletdb = MinimaDB.getDB().getWallet();
 		
@@ -72,7 +72,7 @@ public class txnsign extends Command {
 				foundkeys.add(keyrow.getPublicKey());
 				
 				//Now sign with that..
-				Signature signature = walletdb.sign(keyrow.getPrivateKey(), transid);
+				Signature signature = walletdb.sign(keyrow.getPrivateKey(), txn.getTransactionID());
 					
 				//Add it..
 				wit.addSignature(signature);
@@ -88,7 +88,7 @@ public class txnsign extends Command {
 			foundkeys.add(pubrow.getPublicKey());
 			
 			//Use the wallet..
-			Signature signature = walletdb.sign(pubrow.getPrivateKey(), transid);
+			Signature signature = walletdb.sign(pubrow.getPrivateKey(), txn.getTransactionID());
 				
 			//Add it..
 			wit.addSignature(signature);
