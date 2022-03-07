@@ -124,12 +124,17 @@ public class TxPoWGenerator {
 		//And add the current mempool txpow..
 		ArrayList<TxPoW> mempool = MinimaDB.getDB().getTxPoWDB().getAllUnusedTxns();
 		
+		//Order the mempool txns by BURN..
+		Collections.sort(mempool, new Comparator<TxPoW>() {
+			@Override
+			public int compare(TxPoW o1, TxPoW o2) {
+				return o2.getBurn().compareTo(o1.getBurn());
+			}
+		});
+		
 		//The final TxPoW transactions put in this TxPoW
 		ArrayList<TxPoW> chosentxns = new ArrayList<>();
-		
-		//Order the mempool by BURN..
-		//..
-		
+				
 		//A list of the added coins
 		ArrayList<String> addedcoins = new ArrayList<>();
 		
@@ -146,7 +151,7 @@ public class TxPoWGenerator {
 				addedcoins.add(cc.getCoinID().to0xString());
 			}
 		}
-		
+	
 		//Check them all..
 		int totaladded = 0;
 		for(TxPoW memtxp : mempool) {
@@ -420,5 +425,22 @@ public class TxPoWGenerator {
 			
 			num++;
 		}
+	}
+	
+	public static void main(String[] zArgs) {
+		
+		ArrayList<MiniNumber> nums = new ArrayList<>();
+		nums.add(MiniNumber.ZERO);
+		nums.add(MiniNumber.ONE);
+		nums.add(MiniNumber.TWO);
+		
+		Collections.sort(nums, new Comparator<MiniNumber>() {
+			@Override
+			public int compare(MiniNumber o1, MiniNumber o2) {
+				return o2.compareTo(o1);
+			}
+		});
+		
+		System.out.println(nums.toString());
 	}
 }

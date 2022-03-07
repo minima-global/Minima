@@ -36,7 +36,7 @@ public class send extends Command {
 
 	
 	public send() {
-		super("send","[address:Mx..|0x..] [amount:] (tokenid:) (state:{}) - Send Minima or Tokens to an address");
+		super("send","[address:Mx..|0x..] [amount:] (tokenid:) (state:{}) (burn:) (split:) - Send Minima or Tokens to an address");
 	}
 	
 	@Override
@@ -51,6 +51,15 @@ public class send extends Command {
 		
 		//Is there a burn..
 		MiniNumber burn  = getNumberParam("burn",MiniNumber.ZERO);
+		if(burn.isLess(MiniNumber.ZERO)) {
+			throw new CommandException("Cannot have negative burn "+burn.toString());
+		}
+		
+		//Are we splitting the outputs
+		MiniNumber split = getNumberParam("split", MiniNumber.ONE);
+		if(split.isLess(MiniNumber.ONE) || split.isMore(MiniNumber.TWENTY)) {
+			throw new CommandException("Split outputs from 1 to 20");
+		}
 		
 		//Get the State
 		JSONObject state = new JSONObject();
@@ -239,17 +248,22 @@ public class send extends Command {
 			}
 		}
 		
-		//Create the output
-		Coin recipient = new Coin(Coin.COINID_OUTPUT, sendaddress, sendamount, Token.TOKENID_MINIMA, true);
-		
-		//Do we need to add the Token..
-		if(!tokenid.equals("0x00")) {
-			recipient.resetTokenID(new MiniData(tokenid));
-			recipient.setToken(token);
+		//Are we splitting the outputs
+		int isplit 				= split.getAsInt();
+		MiniNumber splitamount 	= sendamount.div(split);
+		for(int i=0;i<isplit;i++) {
+			//Create the output
+			Coin recipient = new Coin(Coin.COINID_OUTPUT, sendaddress, splitamount, Token.TOKENID_MINIMA, true);
+			
+			//Do we need to add the Token..
+			if(!tokenid.equals("0x00")) {
+				recipient.resetTokenID(new MiniData(tokenid));
+				recipient.setToken(token);
+			}
+			
+			//Add to the Transaction
+			transaction.addOutput(recipient);
 		}
-		
-		//Add to the Transaction
-		transaction.addOutput(recipient);
 		
 		//Do we need to send change..
 		if(change.isMore(MiniNumber.ZERO)) {
@@ -298,13 +312,13 @@ public class send extends Command {
 		TxPoWGenerator.precomputeTransactionCoinID(transaction);
 		
 		//Calculate the TransactionID..
-		MiniData transid = Crypto.getInstance().hashObject(transaction);
+		transaction.calculateTransactionID();
 		
 		//Now that we have constructed the transaction - lets sign it..
 		for(String priv : reqsigs) {
 
 			//Use the wallet..
-			Signature signature = walletdb.sign(priv, transid);
+			Signature signature = walletdb.sign(priv, transaction.getTransactionID());
 			
 			//Add it..
 			witness.addSignature(signature);
@@ -317,7 +331,7 @@ public class send extends Command {
 		if(burn.isMore(MiniNumber.ZERO)) {
 			
 			//Create a Burn Transaction
-			TxnRow burntxn = txnutils.createBurnTransaction(addedcoinid,transid,burn);
+			TxnRow burntxn = txnutils.createBurnTransaction(addedcoinid,transaction.getTransactionID(),burn);
 
 			//Now create a complete TxPOW
 			txpow = TxPoWGenerator.generateTxPoW(transaction, witness, burntxn.getTransaction(), burntxn.getWitness());

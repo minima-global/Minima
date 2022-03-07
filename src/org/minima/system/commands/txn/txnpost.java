@@ -1,21 +1,27 @@
 package org.minima.system.commands.txn;
 
+import java.util.ArrayList;
+
 import org.minima.database.MinimaDB;
 import org.minima.database.userprefs.txndb.TxnDB;
 import org.minima.database.userprefs.txndb.TxnRow;
+import org.minima.objects.CoinProof;
 import org.minima.objects.Transaction;
 import org.minima.objects.TxPoW;
 import org.minima.objects.Witness;
+import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
 import org.minima.system.brains.TxPoWGenerator;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
+import org.minima.utils.Crypto;
 import org.minima.utils.json.JSONObject;
 
 public class txnpost extends Command {
 
 	public txnpost() {
-		super("txnpost","[id:] (auto:false) - Post a transaction. Automatically set the scripts and MMR (Defaults to true)");
+		super("txnpost","[id:] (auto:false) (burn:) - Post a transaction. Automatically set the scripts and MMR (Defaults to true)");
 	}
 	
 	@Override
@@ -25,7 +31,11 @@ public class txnpost extends Command {
 		TxnDB db = MinimaDB.getDB().getCustomTxnDB();
 		
 		//The transaction
-		String id = getParam("id");
+		String id 		= getParam("id");
+		MiniNumber burn = getNumberParam("burn", MiniNumber.ZERO);
+		if(burn.isLess(MiniNumber.ZERO)) {
+			throw new CommandException("Cannot have negative burn "+burn.toString());
+		}
 		
 		//Get the row..
 		TxnRow txnrow = db.getTransactionRow(id); 
@@ -44,8 +54,35 @@ public class txnpost extends Command {
 			txnutils.setMMRandScripts(trans, wit);
 		}
 		
-		//Now create the TxPoW
-		TxPoW txpow = TxPoWGenerator.generateTxPoW(trans, wit);
+		//Compute the correct CoinID
+		TxPoWGenerator.precomputeTransactionCoinID(trans);
+		
+		//Calculate the TransactionID..
+		trans.calculateTransactionID();
+		
+		//The final TxPoW
+		TxPoW txpow = null;
+		
+		//Is there a burn
+		if(burn.isMore(MiniNumber.ZERO)) {
+			
+			//Get all the used coins..
+			ArrayList<String> addedcoinid 	= new ArrayList<>();
+			ArrayList<CoinProof> coins 		= wit.getAllCoinProofs();
+			for(CoinProof cp : coins) {
+				addedcoinid.add(cp.getCoin().getCoinID().to0xString());
+			}
+			
+			//Create a Burn Transaction
+			TxnRow burntxn = txnutils.createBurnTransaction(addedcoinid,trans.getTransactionID(),burn);
+
+			//Now create a complete TxPOW
+			txpow = TxPoWGenerator.generateTxPoW(trans, wit, burntxn.getTransaction(), burntxn.getWitness());
+			
+		}else {
+			//Now create the TxPoW
+			txpow = TxPoWGenerator.generateTxPoW(trans, wit);
+		}
 		
 		//Calculate the size..
 		txpow.calculateTXPOWID();

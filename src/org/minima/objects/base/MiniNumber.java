@@ -71,6 +71,7 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 	public static final MiniNumber EIGHT        = new MiniNumber("8");
 	public static final MiniNumber TWELVE       = new MiniNumber("12");
 	public static final MiniNumber SIXTEEN      = new MiniNumber("16");
+	public static final MiniNumber TWENTY      	= new MiniNumber("20");
 	public static final MiniNumber THIRTYTWO    = new MiniNumber("32");
 	public static final MiniNumber FIFTY    	= new MiniNumber("50");
 	public static final MiniNumber SIXTYFOUR    = new MiniNumber("64");

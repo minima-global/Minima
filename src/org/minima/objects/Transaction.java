@@ -227,6 +227,23 @@ public class Transaction implements Streamable {
 	}
 	
 	/**
+	 * How much Minima is burnt..
+	 */
+	public MiniNumber getBurn() {
+		//Starters - Check total inputs is less than total outputs
+		MiniNumber totalin 	= MiniNumber.ZERO;
+		MiniNumber totalout = MiniNumber.ZERO;
+		for(Coin cc : mInputs) {
+			totalin = totalin.add(cc.getAmount());
+		}
+		for(Coin cc : mOutputs) {
+			totalout = totalout.add(cc.getAmount());
+		}
+		
+		return totalin.sub(totalout);
+	}
+	
+	/**
 	 * Set a state value from 0-255 to a certain value
 	 * MAX 255 VAUES
 	 * 

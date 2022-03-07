@@ -323,13 +323,13 @@ public class txnutils {
 		TxPoWGenerator.precomputeTransactionCoinID(transaction);
 		
 		//Calculate the TransactionID..
-		MiniData transid = Crypto.getInstance().hashObject(transaction);
+		transaction.calculateTransactionID();
 		
 		//Now that we have constructed the transaction - lets sign it..
 		for(String priv : reqsigs) {
 
 			//Use the wallet..
-			Signature signature = walletdb.sign(priv, transid);
+			Signature signature = walletdb.sign(priv, transaction.getTransactionID());
 			
 			//Add it..
 			witness.addSignature(signature);

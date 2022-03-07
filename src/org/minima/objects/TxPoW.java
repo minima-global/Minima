@@ -249,6 +249,10 @@ public class TxPoW implements Streamable {
 		return mHeader.mSuperParents[zLevel];
 	}
 	
+	public MiniNumber getBurn() {
+		return getTransaction().getBurn().add(getBurnTransaction().getBurn());
+	}
+	
 	public void setTimeMilli() {
 		setTimeMilli(new MiniNumber(System.currentTimeMillis()));
 	}

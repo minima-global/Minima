@@ -8,6 +8,7 @@ import org.minima.objects.Token;
 import org.minima.objects.Transaction;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.system.brains.TxPoWGenerator;
 import org.minima.system.brains.TxPoWSearcher;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
@@ -63,6 +64,9 @@ public class txnoutput extends Command {
 		Transaction trans = txnrow.getTransaction();
 		trans.addOutput(output);
 		
+		//Compute the correct CoinID
+		TxPoWGenerator.precomputeTransactionCoinID(trans);
+				
 		//Output the current trans..
 		ret.put("response", db.getTransactionRow(id).toJSON());
 		
