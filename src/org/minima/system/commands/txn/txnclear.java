@@ -27,6 +27,7 @@ public class txnclear extends Command {
 			throw new CommandException("Transaction not found : "+id);
 		}
 		
+		txnrow.getTransaction().clearIsMonotonic();
 		txnrow.clearWitness();
 		
 		JSONObject resp = new JSONObject();

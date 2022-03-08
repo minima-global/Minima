@@ -50,6 +50,7 @@ import org.minima.system.commands.search.keys;
 import org.minima.system.commands.search.txpow;
 import org.minima.system.commands.signatures.sign;
 import org.minima.system.commands.signatures.verify;
+import org.minima.system.commands.txn.txnbasics;
 import org.minima.system.commands.txn.txncheck;
 import org.minima.system.commands.txn.txnclear;
 import org.minima.system.commands.txn.txncreate;
@@ -79,7 +80,7 @@ public abstract class Command {
 			new backup(), new restore(), new test(), new file(),
 			new runscript(), new tutorial(),new keys(),new scripts(),
 			
-			new txncreate(), new txninput(),new txnlist(), new txnclear(),
+			new txnbasics(),new txncreate(), new txninput(),new txnlist(), new txnclear(),
 			new txnoutput(),new txnstate(),new txnsign(),new txnpost(),new txndelete(),
 			new txnexport(),new txnimport(),new txncheck(), new txnscript(),
 			

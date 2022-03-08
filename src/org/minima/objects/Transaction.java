@@ -93,6 +93,10 @@ public class Transaction implements Streamable {
 		return mHaveCheckedMonotonic && mIsMonotonic;
 	}
 	
+	public void clearIsMonotonic() {
+		mHaveCheckedMonotonic = false;
+	}
+	
 	public MiniNumber sumInputs() {
 		MiniNumber tot = MiniNumber.ZERO;
 		for(Coin cc : mInputs) {

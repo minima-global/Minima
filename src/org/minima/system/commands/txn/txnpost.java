@@ -47,6 +47,9 @@ public class txnpost extends Command {
 		Transaction trans = txnrow.getTransaction();
 		Witness wit		  = txnrow.getWitness();
 		
+		//Clear any previous checks..
+		txnrow.getTransaction().clearIsMonotonic();
+		
 		//Set the scripts and MMR
 		boolean auto = getBooleanParam("auto", true);
 		if(auto) {

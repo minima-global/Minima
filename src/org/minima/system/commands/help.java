@@ -38,6 +38,7 @@ import org.minima.system.commands.search.keys;
 import org.minima.system.commands.search.txpow;
 import org.minima.system.commands.signatures.sign;
 import org.minima.system.commands.signatures.verify;
+import org.minima.system.commands.txn.txnbasics;
 import org.minima.system.commands.txn.txncheck;
 import org.minima.system.commands.txn.txnclear;
 import org.minima.system.commands.txn.txncreate;
@@ -103,6 +104,7 @@ public class help extends Command {
 		
 		addCommand(details, new txnlist());
 		addCommand(details, new txncreate());
+		addCommand(details, new txnbasics());
 		addCommand(details, new txndelete());
 		addCommand(details, new txncheck());
 		addCommand(details, new txninput());
