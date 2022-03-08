@@ -11,6 +11,7 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.system.commands.base.automine;
 import org.minima.system.commands.base.backup;
 import org.minima.system.commands.base.balance;
+import org.minima.system.commands.base.burn;
 import org.minima.system.commands.base.coinexport;
 import org.minima.system.commands.base.coinimport;
 import org.minima.system.commands.base.cointrack;
@@ -78,7 +79,7 @@ public abstract class Command {
 			new send(), new balance(), new tokencreate(), new tokens(),new getaddress(), new newaddress(), new debugflag(),
 			new incentivecash(), new sshtunnel(), new webhooks(),
 			new backup(), new restore(), new test(), new file(),
-			new runscript(), new tutorial(),new keys(),new scripts(),
+			new runscript(), new tutorial(),new keys(),new scripts(),new burn(),
 			
 			new txnbasics(),new txncreate(), new txninput(),new txnlist(), new txnclear(),
 			new txnoutput(),new txnstate(),new txnsign(),new txnpost(),new txndelete(),
