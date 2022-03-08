@@ -5,6 +5,7 @@ import org.minima.database.userprefs.txndb.TxnDB;
 import org.minima.database.userprefs.txndb.TxnRow;
 import org.minima.objects.StateVariable;
 import org.minima.objects.Transaction;
+import org.minima.system.brains.TxPoWGenerator;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
 import org.minima.utils.json.JSONObject;
@@ -43,6 +44,9 @@ public class txnstate extends Command {
 		//Add it to the transaction
 		trans.addStateVariable(sv);
 		
+		//Calculate transid
+		trans.calculateTransactionID();
+				
 		//Output the current trans..
 		ret.put("response", db.getTransactionRow(id).toJSON());
 		

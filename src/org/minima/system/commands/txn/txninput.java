@@ -83,7 +83,10 @@ public class txninput extends Command {
 		
 		//Calculate the correct CoinID - if possible..
 		TxPoWGenerator.precomputeTransactionCoinID(trans);
-				
+		
+		//Calculate transid
+		trans.calculateTransactionID();
+		
 		//Are we adding the scripts and MMR for this coin..
 		boolean smmr = getBooleanParam("scriptmmr", false);
 		if(smmr) {

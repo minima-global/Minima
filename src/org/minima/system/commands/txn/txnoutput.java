@@ -67,6 +67,9 @@ public class txnoutput extends Command {
 		//Compute the correct CoinID
 		TxPoWGenerator.precomputeTransactionCoinID(trans);
 				
+		//Calculate transid
+		trans.calculateTransactionID();
+				
 		//Output the current trans..
 		ret.put("response", db.getTransactionRow(id).toJSON());
 		
