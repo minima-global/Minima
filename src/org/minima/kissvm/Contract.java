@@ -380,6 +380,14 @@ public class Contract {
 		return variables;
 	}
 	
+	public void removeVariable(String zName) throws ExecutionException {
+		mVariables.remove(zName);
+	}
+	
+	public boolean existsVariable(String zName) throws ExecutionException {
+		return mVariables.containsKey(zName);
+	}
+	
 	public Value getVariable(String zName) throws ExecutionException {
 		Value ret = mVariables.get(zName);
 		return ret;
@@ -591,7 +599,8 @@ public class Contract {
 	
 	public static void main(String[] zArgs) {
 		
-		String scr = new String("let (a 1 0xFF )  = 4 + -2  let t = concat( 0x00 0x34   0x45  )");
+//		String scr = new String("let (a 1 0xFF )  = 4 + -2  let t = concat( 0x00 0x34   0x45  )");
+		String scr = new String("let x = $1");
 		
 		String clean = Contract.cleanScript(scr);
 		

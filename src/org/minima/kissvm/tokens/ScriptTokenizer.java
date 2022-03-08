@@ -191,6 +191,14 @@ public class ScriptTokenizer {
 				//It's a String
 				tokens.add(new ScriptToken(ScriptToken.TOKEN_VALUE, str));
 				
+				//Is it a function param
+			}else if(nextchar.equals("$")) {
+				//get the next word..
+				String word = getNextWord();
+				
+				//It's a function param
+				tokens.add(new ScriptToken(ScriptToken.TOKEN_FUNCTIIONPARAM, word));
+				
 			}else{
 				//get the next word..
 				String word = getNextWord();
