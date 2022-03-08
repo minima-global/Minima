@@ -30,7 +30,7 @@ STRING      ::= [UTF8_String]
 BOOLEAN     ::= TRUE | FALSE
 FALSE       ::= 0
 TRUE        ::= NOT FALSE
-GLOBAL      ::= @BLOCK | @INBLOCK | @BLOCKDIFF | @INPUT |
+GLOBAL      ::= @BLOCK | @BLOCKTIME | @INBLOCK | @BLOCKDIFF | @INPUT |
                 @AMOUNT | @ADDRESS | @TOKENID | @COINID |
                 @SCRIPT | @TOTIN | @TOTOUT
 FUNCTION    ::= FUNC ( EXPRESSION_1 EXPRESSION_2 .. EXPRESSION_n )
