@@ -25,13 +25,7 @@ public class txnbasics extends Command {
 		
 		//The transaction
 		String id 		= getParam("id");
-		MiniNumber burn = getNumberParam("burn", MiniNumber.ZERO);
-		if(burn.isLess(MiniNumber.ZERO)) {
-			throw new CommandException("Cannot have negative burn "+burn.toString());
-		}
-		
-		//Get the row..
-		TxnRow txnrow = db.getTransactionRow(id); 
+		TxnRow txnrow 	= db.getTransactionRow(id); 
 		if(txnrow == null) {
 			throw new CommandException("Transaction not found : "+id);
 		}
