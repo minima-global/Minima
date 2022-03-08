@@ -15,7 +15,7 @@ import org.minima.kissvm.values.Value;
 
 public class FUNCTION extends MinimaFunction{
 
-	public static String FUNCTION_RETURN = "functionreturn";
+	public static String FUNCTION_RETURN = "returnvalue";
 	
 	public FUNCTION() {
 		super("FUNCTION");
