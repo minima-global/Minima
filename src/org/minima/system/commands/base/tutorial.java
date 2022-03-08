@@ -56,6 +56,7 @@ public class tutorial extends Command {
 				  + "                ABS | CEIL | FLOOR | MIN | MAX | INC | DEC | SIGDIG | POW |\n"
 				  + "                BITSET | BITGET | BITCOUNT | PROOF | KECCAK | SHA2 | SHA3 |\n"
 				  + "                SIGNEDBY | MULTISIG | CHECKSIG |\n"
+				  + "                FUNCTION | SUMINPUT | SUMOUTPUT |\n"
 				  + "                GETOUTADDR | GETOUTAMT | GETOUTTOK | VERIFYOUT |\n"
 				  + "                GETINADDR | GETINAMT | GETINTOK | GETINID | VERIFYIN |\n"
 				  + "                STATE | PREVSTATE | SAMESTATE\n"
@@ -91,7 +92,7 @@ public class tutorial extends Command {
 				  + "OVERWRITE ( HEX NUMBER HEX NUMBER NUMBER)\n"
 				  + "Copy bytes from the first HEX and pos to the second HEX and pos, length the last NUMBER\n"
 				  + "\n"
-				  + "GET ( NUMBER NUMBER .. NUMBER )\n"
+				  + "GET ( VALUE1 VALUE2 .. VALUEn )\n"
 				  + "Return the array value set with LET ( EXPRESSION EXPRESSION .. EXPRESSION )\n"
 				  + "\n"
 				  + "ADDRESS ( STRING )\n"
@@ -215,6 +216,9 @@ public class tutorial extends Command {
 				  + "\n"
 				  + "SAMESTATE ( NUMBER NUMBER )\n"
 				  + "Return TRUE if the previous state and current state are the same for the start and end positions\n"
+				  + "\n"
+				  + "FUNCTION ( STRING VALUE1 VALUE2.. VALUEn )\n"
+				  + "Run the script after replace the $1, $2.. $n variables with the provided parameters and returnvalue has the result\n"
 				  + "";
 		
 		//Add balance..
