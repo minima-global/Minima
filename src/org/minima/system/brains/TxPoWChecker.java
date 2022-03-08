@@ -38,7 +38,7 @@ public class TxPoWChecker {
 	/**
 	 * The Number of blocks to get the MEDIAN block for time checks
 	 */
-	public static int MEDIAN_TIMECHECK_BLOCK = 128;
+	public static int MEDIAN_TIMECHECK_BLOCK = GlobalParams.MEDIAN_BLOCK_CALC * 4;
 	
 	/**
 	 * The MAX number of milliseconds in the future the Block can be from the Median Block ~2 hrs
