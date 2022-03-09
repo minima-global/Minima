@@ -333,6 +333,17 @@ public class TxPoWTreeNode implements Streamable {
 		return mParent;
 	}
 	
+	public TxPoWTreeNode getParent(int zBlocks) {
+		TxPoWTreeNode parent = this;
+		int counter = 0;
+		while(counter<zBlocks && parent.getParent()!=null) {
+			parent = parent.getParent();
+			counter++;
+		}
+		
+		return parent;
+	}
+	
 	public TxPoWTreeNode getPastNode(MiniNumber zBlockNumber) {
 		TxPoWTreeNode parent 	= this;
 		while(parent != null) {

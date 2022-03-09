@@ -232,76 +232,60 @@ public class TxPoWGenerator {
 	
 	public static MiniData getBlockDifficulty(TxPoWTreeNode zParent) {
 		
-		//Get the Median Tip Block
-		TxPoWTreeNode usetipblock = getMedianTimeBlock(zParent, GlobalParams.MEDIAN_BLOCK_CALC);
-		
-		//What is the block number..
-		MiniNumber topblock = usetipblock.getTxPoW().getBlockNumber();
-		
-		//First couple of blocks 
-		if(topblock.isLess(MiniNumber.THREE)) {
+		//Are we just starting out..
+		if(zParent.getBlockNumber().isLess(new MiniNumber(GlobalParams.MEDIAN_BLOCK_CALC))) {
 			return MIN_TXPOWDIFF;
-			
-		}else {
-			
-			//How many blocks back canb we go..
-			MiniNumber blocksback = GlobalParams.MINIMA_BLOCKS_SPEED_CALC;
-			if(topblock.isLessEqual(blocksback)) {
-				blocksback = topblock.decrement();
-			}
-			
-			//Cycle back through the blocks
-			TxPoWTreeNode current = usetipblock;
-			int counter	=0;
-			int max 	=blocksback.getAsInt(); 
-			while(counter<max && current.getParent()!=null) {
-				current = current.getParent();
-				counter++;
-			}
-			
-			//Now we have a block in the past.. get the median time value block around it
-			TxPoW baseblock 	 = getMedianTimeBlock(current, GlobalParams.MEDIAN_BLOCK_CALC).getTxPoW();
-			MiniNumber blockdiff = topblock.sub(baseblock.getBlockNumber()); 
-			
-			//Get current speed
-			MiniNumber speed 				= getChainSpeed(usetipblock, blockdiff);
-			MiniNumber speedratio 			= GlobalParams.MINIMA_BLOCK_SPEED.div(speed);
-			
-			//Get average difficulty over that period
-			BigInteger averagedifficulty 	= getAverageDifficulty(usetipblock, blockdiff);
-			BigDecimal averagedifficultydec	= new BigDecimal(averagedifficulty);
-			
-			//Recalculate..
-			BigDecimal newdifficultydec = averagedifficultydec.multiply(speedratio.getAsBigDecimal());  
-			BigInteger newdifficulty	= newdifficultydec.toBigInteger();
-			
-			//MUST be more difficult (lower) than the MIN TxPoW..
-			if(newdifficulty.compareTo(MIN_TXPOW_VAL)>0) {
-				newdifficulty = MIN_TXPOW_VAL;
-			}
-			
-			//THIS SHOULD NEVER HAPPEN
-			if(newdifficulty.compareTo(BigInteger.ZERO)<0) {
-				MinimaLogger.log("SERIOUS ERROR : NEGATIVE DIFFICULTY!");
-				MinimaLogger.log("speed         : "+speed);
-				MinimaLogger.log("speedratio    : "+speedratio);
-				MinimaLogger.log("newdifficulty :"+newdifficulty.toString());
-				
-				//Set the Old value..
-				newdifficulty = usetipblock.getTxPoW().getBlockDifficulty().getDataValue();
-			}
-			
-			return new MiniData(newdifficulty);
 		}
+		
+		//Start from the parent..
+		TxPoWTreeNode startblock = zParent;
+		
+		//Where to..
+		TxPoWTreeNode endblock 	= zParent.getParent(GlobalParams.MINIMA_BLOCKS_SPEED_CALC.getAsInt());
+		
+		//Now use the Median Times..
+		startblock 	= getMedianTimeBlock(startblock, GlobalParams.MEDIAN_BLOCK_CALC);
+		endblock 	= getMedianTimeBlock(endblock, GlobalParams.MEDIAN_BLOCK_CALC);
+		
+		//Now we have a block in the past.. get the median time value block around it
+		MiniNumber blockdiff = startblock.getBlockNumber().sub(endblock.getBlockNumber()); 
+		
+		//Get current speed
+		MiniNumber speed 				= getChainSpeed(startblock, blockdiff);
+		MiniNumber speedratio 			= GlobalParams.MINIMA_BLOCK_SPEED.div(speed);
+		
+		//Get average difficulty over that period
+		BigInteger averagedifficulty 	= getAverageDifficulty(startblock, blockdiff);
+		BigDecimal averagedifficultydec	= new BigDecimal(averagedifficulty);
+		
+		//Recalculate..
+		BigDecimal newdifficultydec = averagedifficultydec.multiply(speedratio.getAsBigDecimal());  
+		BigInteger newdifficulty	= newdifficultydec.toBigInteger();
+		
+		//MUST be more difficult (lower) than the MIN TxPoW..
+		if(newdifficulty.compareTo(MIN_TXPOW_VAL)>0) {
+			newdifficulty = MIN_TXPOW_VAL;
+		}
+		
+		//THIS SHOULD NEVER HAPPEN
+		if(newdifficulty.compareTo(BigInteger.ZERO)<0) {
+			MinimaLogger.log("SERIOUS ERROR : NEGATIVE DIFFICULTY!");
+			MinimaLogger.log("speed         : "+speed);
+			MinimaLogger.log("speedratio    : "+speedratio);
+			MinimaLogger.log("newdifficulty :"+newdifficulty.toString());
+			
+			//Set the Old value..
+			newdifficulty = startblock.getTxPoW().getBlockDifficulty().getDataValue();
+		}
+		
+		return new MiniData(newdifficulty);
+	
 	}
 	
 	public static MiniNumber getChainSpeed(TxPoWTreeNode zTopBlock, MiniNumber zBlocksBack) {
 		
-		//Which block are we looking for..
-		MiniNumber block = zTopBlock.getTxPoW().getBlockNumber().sub(zBlocksBack);
-		
-		//Get the past block - initially there may be less than that available
-		TxPoWTreeNode pastblock = zTopBlock.getPastNode(block);
+		//Get the past block
+		TxPoWTreeNode pastblock = zTopBlock.getParent(zBlocksBack.getAsInt());
 		
 		MiniNumber blockpast	= pastblock.getTxPoW().getBlockNumber();
 		MiniNumber timepast 	= pastblock.getTxPoW().getTimeMilli();
