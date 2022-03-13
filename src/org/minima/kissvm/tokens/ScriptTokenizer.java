@@ -246,6 +246,11 @@ public class ScriptTokenizer {
 					tokens.add(new ScriptToken(ScriptToken.TOKEN_GLOBAL, uppercase));
 					
 				}else if(isVariable(lowercase)) {
+					//Check length
+					if(lowercase.length() > 32) {
+						throw new MinimaParseException("MAX Variable length is 32 @ "+mPos+" "+word);
+					}
+					
 					//It's a number
 					tokens.add(new ScriptToken(ScriptToken.TOKEN_VARIABLE, lowercase));
 				
