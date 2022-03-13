@@ -37,13 +37,13 @@ public class StatementBlock {
 	public void run(Contract zContract) throws ExecutionException {
 		//Cycle through all the statements
 		for(Statement stat : mStatements) {
+			//This action counts as one instruction
+			zContract.incrementInstructions();
+			
 			//Check for EXIT
 			if(zContract.isSuccessSet()) {
 				return;
 			}
-			
-			//This action counts as one instruction
-			zContract.incrementInstructions();
 			
 			//Trace it
 			zContract.traceLog(stat.toString());
