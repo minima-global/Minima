@@ -246,8 +246,6 @@ public class TxPoWGenerator {
 		//Now use the Median Times..
 		startblock 	= getMedianTimeBlock(startblock, GlobalParams.MEDIAN_BLOCK_CALC);
 		endblock 	= getMedianTimeBlock(endblock, GlobalParams.MEDIAN_BLOCK_CALC);
-		
-		//Now we have a block in the past.. get the median time value block around it
 		MiniNumber blockdiff = startblock.getBlockNumber().sub(endblock.getBlockNumber()); 
 		
 		//Get current speed
