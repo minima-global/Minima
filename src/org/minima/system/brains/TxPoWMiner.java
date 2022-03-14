@@ -71,7 +71,7 @@ public class TxPoWMiner extends MessageProcessor {
 					
 					//Check this pulse block is useful..
 					if(txpow.getBlockNumber().isLessEqual(mLastPulseBlock) || txpow.getBlockNumber().isLessEqual(tipblock)) {
-//						MinimaLogger.log("Mining PULSE block too late.. "+txpow.getBlockNumber());
+						MinimaLogger.log("Mining PULSE block too late.. "+txpow.getBlockNumber());
 						return;
 					}
 					
@@ -85,9 +85,6 @@ public class TxPoWMiner extends MessageProcessor {
 			
 			//Set the nonce.. we make it a large size in bytes then edit those - no reserialisation
 			txpow.setNonce(START_NONCE_BYTES);
-			
-			//Set the Time..
-			txpow.setTimeMilli(new MiniNumber(System.currentTimeMillis()));
 			
 			//Post a message.. Mining Started
 			Message mining = new Message(Main.MAIN_MINING);
