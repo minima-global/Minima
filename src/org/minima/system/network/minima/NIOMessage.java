@@ -273,7 +273,7 @@ public class NIOMessage implements Runnable {
 				boolean disconnectpeer = false;
 				
 				//NONE of these should fail
-				if(block.isLess(cascadeblock)) {
+				if(block.isLessEqual(cascadeblock)) {
 					//Block before cascade
 					MinimaLogger.log("Received block before cascade.. "+block+" / "+cascadeblock+" difficulty:"+blockdiffratio);
 					disconnectpeer = true;

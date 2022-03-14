@@ -2,6 +2,7 @@ package org.minima.system;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Random;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
@@ -395,7 +396,7 @@ public class Main extends MessageProcessor {
 			//We have mined a TxPoW.. send it out to the network..
 			if(!txpow.isTransaction() && !txpow.isBlock()) {
 				//A PULSE..forward as proof
-				//TODO
+				MinimaLogger.log("PULSE no block.. @ "+txpow.getBlockNumber());
 				return;
 			}
 			
@@ -419,7 +420,11 @@ public class Main extends MessageProcessor {
 			}
 			
 			//Next Attempt
-			PostTimerMessage(new TimerMessage(AUTOMINE_TIMER, MAIN_AUTOMINE));
+			long minerdelay = AUTOMINE_TIMER + ( 5000L - (long)new Random().nextInt(10000));
+			if(minerdelay < 5000) {
+				minerdelay = 5000;
+			}
+			PostTimerMessage(new TimerMessage(minerdelay, MAIN_AUTOMINE));
 		
 		}else if(zMessage.getMessageType().equals(MAIN_CLEANDB)) {
 			

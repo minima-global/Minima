@@ -15,12 +15,12 @@ public class TestParams {
 	 * -  0.05  = 20 second block time
 	 * -  0.2   =  5 second block time
 	 */
-	public static MiniNumber MINIMA_BLOCK_SPEED = new MiniNumber("0.2");
+	public static MiniNumber MINIMA_BLOCK_SPEED = new MiniNumber("0.04");
 	
 	/**
 	 * When checking speed and average difficulty only look at this many blocks back
 	 */
-	public static MiniNumber MINIMA_BLOCKS_SPEED_CALC = new MiniNumber(8);
+	public static MiniNumber MINIMA_BLOCKS_SPEED_CALC = new MiniNumber(16);
 	
 	/**
 	 * How deep before we think confirmed..

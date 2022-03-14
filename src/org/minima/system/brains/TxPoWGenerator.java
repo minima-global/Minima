@@ -2,9 +2,11 @@ package org.minima.system.brains;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.mmr.MMRData;
@@ -26,7 +28,7 @@ public class TxPoWGenerator {
 	/**
 	 * For Now - Hard set the Min TxPoW Difficulty
 	 */
-	public static final BigInteger MIN_HASHES 		= new BigInteger("10000");
+	public static final BigInteger MIN_HASHES 		= new BigInteger("750000");
 	public static final BigInteger MIN_TXPOW_VAL 	= Crypto.MAX_VAL.divide(MIN_HASHES);
 	public static final MiniData MIN_TXPOWDIFF 		= new MiniData(MIN_TXPOW_VAL);
 	
@@ -51,11 +53,15 @@ public class TxPoWGenerator {
 		//Current top block
 		TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
 		
+		//Set the block number
+		txpow.setBlockNumber(tip.getTxPoW().getBlockNumber().increment());
+				
 		//Set the time..
-		MiniNumber timenow = new MiniNumber(System.currentTimeMillis());
+		MiniNumber timenow = txpow.getTimeMilli();
 		
 		//Check time is in acceptable range.. or will be an invalid block.. 
 		boolean wrongtime = false;
+		
 		TxPoW medianblock = TxPoWGenerator.getMedianTimeBlock(tip, TxPoWChecker.MEDIAN_TIMECHECK_BLOCK).getTxPoW();
 		if(timenow.isLess(medianblock.getTimeMilli())) {
 			wrongtime = true;
@@ -63,20 +69,38 @@ public class TxPoWGenerator {
 			wrongtime = true;
 		}
 		
-		//If it's wrong set an acceptable time
+		
+		//How much time to add to the median block
+		MiniNumber blocksecs 	= MiniNumber.ONE.div(GlobalParams.MINIMA_BLOCK_SPEED);
+		MiniNumber half 		= new MiniNumber(TxPoWChecker.MEDIAN_TIMECHECK_BLOCK).div(MiniNumber.TWO); 
+		MiniNumber addtime 		= blocksecs.mult(half.add(MiniNumber.ONE)).mult(MiniNumber.THOUSAND);
+		
+		MinimaLogger.log("");
+		MinimaLogger.log("TxPoW block    : "+txpow.getBlockNumber());
+		MinimaLogger.log("TxPoW block    : "+new Date(txpow.getTimeMilli().getAsLong()));
+		MinimaLogger.log("ESTimare       : "+new Date(medianblock.getTimeMilli().add(addtime).getAsLong()));
+		MinimaLogger.log("Median block   : "+new Date(medianblock.getTimeMilli().getAsLong()));
+		MinimaLogger.log("DIFF block     : "+txpow.getBlockNumber().sub(medianblock.getBlockNumber()));
+		
+		MiniNumber difftime 	= txpow.getTimeMilli().sub(medianblock.getTimeMilli());
+		MiniNumber diffblocks 	= difftime.div(new MiniNumber(5000));
+		MinimaLogger.log("DIFF time      : "+difftime);
+		MinimaLogger.log("addsecs        : "+addtime);
+		MinimaLogger.log("DIFF blocks    : "+diffblocks);
+		
 		if(!wrongtime) {
 			//Just set the current time
 			txpow.setTimeMilli(timenow);
 			
 		}else {
-			//How much time to add to the median block
-			MiniNumber blocksecs 	= MiniNumber.ONE.div(GlobalParams.MINIMA_BLOCK_SPEED);
-			MiniNumber half 		= new MiniNumber(TxPoWChecker.MEDIAN_TIMECHECK_BLOCK).div(MiniNumber.TWO); 
-			MiniNumber addtime 		= blocksecs.mult(half.add(MiniNumber.ONE)).mult(MiniNumber.THOUSAND);
+//			//How much time to add to the median block
+//			MiniNumber blocksecs 	= MiniNumber.ONE.div(GlobalParams.MINIMA_BLOCK_SPEED);
+//			MiniNumber half 		= new MiniNumber(TxPoWChecker.MEDIAN_TIMECHECK_BLOCK).div(MiniNumber.TWO); 
+//			MiniNumber addtime 		= blocksecs.mult(half.add(MiniNumber.ONE)).mult(MiniNumber.THOUSAND);
 			
 			//Median time + 1 hr..
 			txpow.setTimeMilli(medianblock.getTimeMilli().add(addtime));
-			MinimaLogger.log("You clock time appears wrong ? Setting acceptable value for TxPoW..");
+			MinimaLogger.log("You clock time appears wrong ? Setting acceptable value for TxPoW @ "+txpow.getBlockNumber()+" "+new Date(txpow.getTimeMilli().getAsLong()));
 		}
 		
 		//Set the Transaction..
@@ -93,17 +117,6 @@ public class TxPoWGenerator {
 		Magic txpowmagic = tip.getTxPoW().getMagic().calculateNewCurrent();
 		txpow.setMagic(txpowmagic);
 		
-		//Set the TXN Difficulty.. currently 1 second work..
-		MiniNumber userhashrate = MinimaDB.getDB().getUserDB().getHashRate();
-		MiniData minhash 		= calculateDifficultyData(userhashrate);
-		if(minhash.isMore(txpowmagic.getMinTxPowWork())) {
-			minhash = txpowmagic.getMinTxPowWork();
-		}
-		txpow.setTxDifficulty(minhash);
-		
-		//Set the details..
-		txpow.setBlockNumber(tip.getTxPoW().getBlockNumber().increment());
-		
 		//Set the parents..
 		for(int i=0;i<GlobalParams.MINIMA_CASCADE_LEVELS;i++) {
 			txpow.setSuperParent(i, tip.getTxPoW().getSuperParent(i));
@@ -118,8 +131,22 @@ public class TxPoWGenerator {
 			txpow.setSuperParent(i, tiptxid);
 		}
 		
-		//Set the block difficulty
-		txpow.setBlockDifficulty(getBlockDifficulty(tip));
+		//Set the TXN Difficulty.. currently 1 second work..
+		MiniNumber userhashrate = MinimaDB.getDB().getUserDB().getHashRate();
+		MiniData minhash 		= calculateDifficultyData(userhashrate);
+		if(minhash.isMore(txpowmagic.getMinTxPowWork())) {
+			minhash = txpowmagic.getMinTxPowWork();
+		}
+		txpow.setTxDifficulty(minhash);
+		
+		//Set the block difficulty - minimum is the TxPoW diff..
+		MiniData blkdiff = getBlockDifficulty(tip);
+		txpow.setBlockDifficulty(blkdiff);
+		
+		BigDecimal txpdec 		= new BigDecimal(minhash.getDataValue());
+		BigDecimal blockdec 	= new BigDecimal(blkdiff.getDataValue());
+		double blockdiffratio 	= txpdec.divide(blockdec, MathContext.DECIMAL32).doubleValue();
+		MinimaLogger.log("Diff Ratio : "+blockdiffratio);
 		
 		//And add the current mempool txpow..
 		ArrayList<TxPoW> mempool = MinimaDB.getDB().getTxPoWDB().getAllUnusedTxns();
@@ -161,6 +188,8 @@ public class TxPoWGenerator {
 				continue;
 			}
 			
+			//Start off assuming it's valid
+			boolean valid = true;
 			try {
 				
 				//Check CoinIDs not added already..
@@ -172,7 +201,7 @@ public class TxPoWGenerator {
 					}
 				}
 				
-				boolean valid = true;
+				//Check against the Magic Numbers
 				if(memtxp.getSizeinBytesWithoutBlockTxns() > txpowmagic.getMaxTxPoWSize().getAsLong()) {
 					MinimaLogger.log("Memepool txn too big.. "+memtxp.getTxPoWID());
 					valid = false;
@@ -196,21 +225,23 @@ public class TxPoWGenerator {
 					ArrayList<Coin> memtxpinputcoins = memtxp.getTransaction().getAllInputs();
 					for(Coin cc : memtxpinputcoins) {
 						addedcoins.add(cc.getCoinID().to0xString());
-					}
-					
-				}else {
-					
-					//Invalid TxPoW - remove from mempool
-					MinimaLogger.log("Invalid TxPoW in mempool.. removing.. "+memtxp.getTxPoWID());
-					MinimaDB.getDB().getTxPoWDB().removeMemPoolTxPoW(memtxp.getTxPoWID());
+					}	
 				}
 				
 			}catch(Exception exc) {
 				MinimaLogger.log("ERROR Checking TxPoW "+memtxp.getTxPoWID()+" "+exc.toString());
+				valid = false;
+			}
+			
+			//Was it valid
+			if(!valid) {
+				//Invalid TxPoW - remove from mempool
+				MinimaLogger.log("Invalid TxPoW in mempool.. removing.. "+memtxp.getTxPoWID());
+				MinimaDB.getDB().getTxPoWDB().removeMemPoolTxPoW(memtxp.getTxPoWID());
 			}
 			
 			//Max allowed..
-			if(totaladded > txpowmagic.getMaxNumTxns().getAsInt()) {
+			if(totaladded >= txpowmagic.getMaxNumTxns().getAsInt()) {
 				break;
 			}
 		}
