@@ -73,7 +73,7 @@ public class TxPoWGenerator {
 			
 			//Median time + 1 hr..
 			txpow.setTimeMilli(medianblock.getTimeMilli().add(addtime));
-			MinimaLogger.log("You clock time appears wrong ? Setting acceptable value for TxPoW @ "+txpow.getBlockNumber()+" "+new Date(txpow.getTimeMilli().getAsLong()));
+			MinimaLogger.log("Your clock time appears wrong ? Setting acceptable value for TxPoW @ "+txpow.getBlockNumber()+" "+new Date(txpow.getTimeMilli().getAsLong()));
 		}
 		
 		//Set the Transaction..
