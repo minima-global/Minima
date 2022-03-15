@@ -512,6 +512,9 @@ public class Main extends MessageProcessor {
 			//Check the Default keys
 			if(!mInitKeysCreated) {
 				mInitKeysCreated = MinimaDB.getDB().getWallet().initDefaultKeys();
+				if(mInitKeysCreated) {
+					MinimaLogger.log("All default getaddress keys created..");
+				}
 			}
 			
 			//Get the Current Tip
