@@ -24,7 +24,6 @@ import org.minima.system.brains.TxPoWMiner;
 import org.minima.system.brains.TxPoWSearcher;
 import org.minima.system.commands.CommandException;
 import org.minima.system.params.GlobalParams;
-import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
 
 public class txnutils {

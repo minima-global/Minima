@@ -5,7 +5,6 @@ import org.minima.database.userprefs.txndb.TxnDB;
 import org.minima.database.userprefs.txndb.TxnRow;
 import org.minima.objects.StateVariable;
 import org.minima.objects.Transaction;
-import org.minima.system.brains.TxPoWGenerator;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
 import org.minima.utils.json.JSONObject;

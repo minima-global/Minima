@@ -9,13 +9,11 @@ import org.minima.objects.CoinProof;
 import org.minima.objects.Transaction;
 import org.minima.objects.TxPoW;
 import org.minima.objects.Witness;
-import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
 import org.minima.system.brains.TxPoWGenerator;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
-import org.minima.utils.Crypto;
 import org.minima.utils.json.JSONObject;
 
 public class txnpost extends Command {
