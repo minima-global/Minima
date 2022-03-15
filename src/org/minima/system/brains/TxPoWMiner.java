@@ -32,11 +32,6 @@ public class TxPoWMiner extends MessageProcessor {
 	 */
 	ArrayList<String> mMiningCoins;
 	
-	/**
-	 * The last PULSE block we mined..
-	 */
-	MiniNumber mLastPulseBlock = MiniNumber.MINUSONE;
-	
 	public TxPoWMiner() {
 		super("MINER");
 		
@@ -59,26 +54,6 @@ public class TxPoWMiner extends MessageProcessor {
 			
 			//Get the TxPoW
 			TxPoW txpow = (TxPoW) zMessage.getObject("txpow");
-			
-			//Is this an autominer.
-			boolean automine = false;
-			if(zMessage.exists("automine")) {
-				automine = zMessage.getBoolean("automine");
-				if(automine) {
-					
-					//What is the current tip block..
-					MiniNumber tipblock = MinimaDB.getDB().getTxPoWTree().getTip().getBlockNumber();
-					
-					//Check this pulse block is useful..
-					if(txpow.getBlockNumber().isLessEqual(mLastPulseBlock) && txpow.getBlockNumber().isLessEqual(tipblock)) {
-						MinimaLogger.log("Mining PULSE block too late.. "+txpow.getBlockNumber());
-						return;
-					}
-					
-					//Store this..
-					mLastPulseBlock = txpow.getBlockNumber();
-				}
-			}
 			
 			//Hard set the Header Body hash - now we are mining it can never change
 			txpow.setHeaderBodyHash();

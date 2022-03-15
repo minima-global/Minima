@@ -26,13 +26,6 @@ import org.minima.utils.MinimaLogger;
 public class TxPoWGenerator {
 	
 	/**
-	 * For Now - Hard set the Min TxPoW Difficulty
-	 */
-	public static final BigInteger MIN_HASHES 		= new BigInteger("750000");
-	public static final BigInteger MIN_TXPOW_VAL 	= Crypto.MAX_VAL.divide(MIN_HASHES);
-	public static final MiniData MIN_TXPOWDIFF 		= new MiniData(MIN_TXPOW_VAL);
-	
-	/**
 	 * Calculate a Difficulty Hash for a given hash number
 	 */
 	public static MiniData calculateDifficultyData(MiniNumber zHashes) {
@@ -69,34 +62,15 @@ public class TxPoWGenerator {
 			wrongtime = true;
 		}
 		
-		
-		//How much time to add to the median block
-		MiniNumber blocksecs 	= MiniNumber.ONE.div(GlobalParams.MINIMA_BLOCK_SPEED);
-		MiniNumber half 		= new MiniNumber(TxPoWChecker.MEDIAN_TIMECHECK_BLOCK).div(MiniNumber.TWO); 
-		MiniNumber addtime 		= blocksecs.mult(half.add(MiniNumber.ONE)).mult(MiniNumber.THOUSAND);
-		
-		MinimaLogger.log("");
-		MinimaLogger.log("TxPoW block    : "+txpow.getBlockNumber());
-		MinimaLogger.log("TxPoW block    : "+new Date(txpow.getTimeMilli().getAsLong()));
-		MinimaLogger.log("ESTimare       : "+new Date(medianblock.getTimeMilli().add(addtime).getAsLong()));
-		MinimaLogger.log("Median block   : "+new Date(medianblock.getTimeMilli().getAsLong()));
-		MinimaLogger.log("DIFF block     : "+txpow.getBlockNumber().sub(medianblock.getBlockNumber()));
-		
-		MiniNumber difftime 	= txpow.getTimeMilli().sub(medianblock.getTimeMilli());
-		MiniNumber diffblocks 	= difftime.div(new MiniNumber(5000));
-		MinimaLogger.log("DIFF time      : "+difftime);
-		MinimaLogger.log("addsecs        : "+addtime);
-		MinimaLogger.log("DIFF blocks    : "+diffblocks);
-		
 		if(!wrongtime) {
 			//Just set the current time
 			txpow.setTimeMilli(timenow);
 			
 		}else {
-//			//How much time to add to the median block
-//			MiniNumber blocksecs 	= MiniNumber.ONE.div(GlobalParams.MINIMA_BLOCK_SPEED);
-//			MiniNumber half 		= new MiniNumber(TxPoWChecker.MEDIAN_TIMECHECK_BLOCK).div(MiniNumber.TWO); 
-//			MiniNumber addtime 		= blocksecs.mult(half.add(MiniNumber.ONE)).mult(MiniNumber.THOUSAND);
+			//How much time to add to the median block
+			MiniNumber blocksecs 	= MiniNumber.ONE.div(GlobalParams.MINIMA_BLOCK_SPEED);
+			MiniNumber half 		= new MiniNumber(TxPoWChecker.MEDIAN_TIMECHECK_BLOCK).div(MiniNumber.TWO); 
+			MiniNumber addtime 		= blocksecs.mult(half.add(MiniNumber.ONE)).mult(MiniNumber.THOUSAND);
 			
 			//Median time + 1 hr..
 			txpow.setTimeMilli(medianblock.getTimeMilli().add(addtime));
@@ -142,11 +116,6 @@ public class TxPoWGenerator {
 		//Set the block difficulty - minimum is the TxPoW diff..
 		MiniData blkdiff = getBlockDifficulty(tip);
 		txpow.setBlockDifficulty(blkdiff);
-		
-		BigDecimal txpdec 		= new BigDecimal(minhash.getDataValue());
-		BigDecimal blockdec 	= new BigDecimal(blkdiff.getDataValue());
-		double blockdiffratio 	= txpdec.divide(blockdec, MathContext.DECIMAL32).doubleValue();
-		MinimaLogger.log("Diff Ratio : "+blockdiffratio);
 		
 		//And add the current mempool txpow..
 		ArrayList<TxPoW> mempool = MinimaDB.getDB().getTxPoWDB().getAllUnusedTxns();
@@ -265,7 +234,7 @@ public class TxPoWGenerator {
 		
 		//Are we just starting out..
 		if(zParent.getBlockNumber().isLess(new MiniNumber(GlobalParams.MEDIAN_BLOCK_CALC))) {
-			return MIN_TXPOWDIFF;
+			return Magic.MIN_TXPOW_WORK;
 		}
 		
 		//Start from the parent..
@@ -283,6 +252,16 @@ public class TxPoWGenerator {
 		MiniNumber speed 				= getChainSpeed(startblock, blockdiff);
 		MiniNumber speedratio 			= GlobalParams.MINIMA_BLOCK_SPEED.div(speed);
 		
+		//Speed should NEVER be negative..
+		if(speed.isLess(MiniNumber.ZERO)) {
+			
+			//Something going on..
+			MinimaLogger.log("SERIOUS ERROR : NEGATIVE CHAIN SPEED! @ "+zParent.getBlockNumber()+" speed:"+speed);
+		
+			//Return the current difficulty..
+			return zParent.getTxPoW().getBlockDifficulty();
+		}
+		
 		//Get average difficulty over that period
 		BigInteger averagedifficulty 	= getAverageDifficulty(startblock, blockdiff);
 		BigDecimal averagedifficultydec	= new BigDecimal(averagedifficulty);
@@ -292,19 +271,8 @@ public class TxPoWGenerator {
 		BigInteger newdifficulty	= newdifficultydec.toBigInteger();
 		
 		//MUST be more difficult (lower) than the MIN TxPoW..
-		if(newdifficulty.compareTo(MIN_TXPOW_VAL)>0) {
-			newdifficulty = MIN_TXPOW_VAL;
-		}
-		
-		//THIS SHOULD NEVER HAPPEN
-		if(newdifficulty.compareTo(BigInteger.ZERO)<0) {
-			MinimaLogger.log("SERIOUS ERROR : NEGATIVE DIFFICULTY!");
-			MinimaLogger.log("speed         : "+speed);
-			MinimaLogger.log("speedratio    : "+speedratio);
-			MinimaLogger.log("newdifficulty :"+newdifficulty.toString());
-			
-			//Set the Old value..
-			newdifficulty = startblock.getTxPoW().getBlockDifficulty().getDataValue();
+		if(newdifficulty.compareTo(Magic.MIN_TXPOW_VAL)>0) {
+			newdifficulty = Magic.MIN_TXPOW_VAL;
 		}
 		
 		return new MiniData(newdifficulty);

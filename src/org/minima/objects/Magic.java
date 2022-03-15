@@ -34,8 +34,11 @@ public class Magic implements Streamable {
 	
 	/**
 	 * Minimum acceptable PoW per TxPoW - Also a HARD limit
+	 * 
+	 * 1 MHash is the minimum..
 	 */
-	public static final BigInteger MIN_TXPOW_VAL 	= Crypto.MAX_VAL.divide(new BigInteger("10000"));
+	public static final MiniNumber MIN_HASHES 		= MiniNumber.MILLION;
+	public static final BigInteger MIN_TXPOW_VAL 	= Crypto.MAX_VAL.divide(MIN_HASHES.getAsBigInteger());
 	public static final MiniData MIN_TXPOW_WORK 	= new MiniData(MIN_TXPOW_VAL);
 	
 	/**

@@ -393,10 +393,8 @@ public class Main extends MessageProcessor {
 			//Get it..
 			TxPoW txpow = (TxPoW) zMessage.getObject("txpow");
 			
-			//We have mined a TxPoW.. send it out to the network..
+			//We have mined a TxPoW.. is it atleast a transaction
 			if(!txpow.isTransaction() && !txpow.isBlock()) {
-				//A PULSE..forward as proof
-				MinimaLogger.log("PULSE no block.. @ "+txpow.getBlockNumber());
 				return;
 			}
 			
@@ -419,7 +417,7 @@ public class Main extends MessageProcessor {
 				mTxPoWMiner.PostMessage(TxPoWMiner.TXPOWMINER_MINEPULSE);
 			}
 			
-			//Next Attempt
+			//Next Attempt +/- 5 secs, minimum 5 secs
 			long minerdelay = AUTOMINE_TIMER + ( 5000L - (long)new Random().nextInt(10000));
 			if(minerdelay < 5000) {
 				minerdelay = 5000;
