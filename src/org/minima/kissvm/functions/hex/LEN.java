@@ -22,12 +22,17 @@ public class LEN extends MinimaFunction{
 		Value val 	= getParameter(0).getValue(zContract);
 		
 		if(val.getValueType() == Value.VALUE_HEX) {
+			
 			HexValue hv = (HexValue)val;
 			int len     = hv.getRawData().length;
+			
 			return new NumberValue(len);
+		
 		}else if(val.getValueType() == Value.VALUE_SCRIPT) {
+			
 			StringValue sv 	= (StringValue)val;
 			int len     	= sv.toString().length();
+			
 			return new NumberValue(len);
 		}
 		
