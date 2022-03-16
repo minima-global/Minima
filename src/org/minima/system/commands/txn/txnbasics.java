@@ -33,8 +33,8 @@ public class txnbasics extends Command {
 		Transaction trans = txnrow.getTransaction();
 		Witness wit		  = txnrow.getWitness();
 		
-		//Set the MMR data and Scripts
-		txnutils.setMMRandScripts(trans, wit);
+		//Set the MMR data and Scripts - for coins you have have
+		txnutils.setMMRandScripts(trans, wit, false);
 		
 		//Compute the correct CoinID
 		TxPoWGenerator.precomputeTransactionCoinID(trans);
@@ -43,7 +43,7 @@ public class txnbasics extends Command {
 		trans.calculateTransactionID();
 				
 		//All good..
-		ret.put("response", trans.toJSON());
+		ret.put("response", txnrow.toJSON());
 		
 		return ret;
 	}

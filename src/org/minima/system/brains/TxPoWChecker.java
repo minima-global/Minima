@@ -269,22 +269,6 @@ public class TxPoWChecker {
 			}
 			allcoinsused.add(coinid);
 			
-			//Check tokenid is correct
-			if(!input.getTokenID().isEqual(Token.TOKENID_MINIMA)) {
-				
-				//Check the token is correct - in the coin
-				if(!input.getTokenID().isEqual(input.getToken().getTokenID())) {
-					MinimaLogger.log("TokenID in Coin input "+i+" doesn't match token "+zTxPoWID);
-					return false;
-				}
-				
-				//Check the token is correct - in the MMR
-				if(!cproof.getCoin().getTokenID().isEqual(cproof.getCoin().getToken().getTokenID())) {
-					MinimaLogger.log("TokenID in MMR Proof input "+i+" doesn't match token "+zTxPoWID);
-					return false;
-				}
-			}
-			
 			//Check the CoinProof details and Coin details Match
 			boolean amount 	= input.getAmount().isEqual(cproof.getCoin().getAmount());
 			boolean address = input.getAddress().isEqual(cproof.getCoin().getAddress());
@@ -300,6 +284,22 @@ public class TxPoWChecker {
 				//Check the same CoinID
 				if(!input.getCoinID().isEqual(cproof.getCoin().getCoinID())) {
 					MinimaLogger.log("CoinID input "+i+" doesn't match proof "+zTxPoWID);
+					return false;
+				}
+			}
+			
+			//Check token is correct
+			if(!input.getTokenID().isEqual(Token.TOKENID_MINIMA)) {
+				
+				//Check the token is correct - in the coin
+				if(!input.getTokenID().isEqual(input.getToken().getTokenID())) {
+					MinimaLogger.log("TokenID in Coin input "+i+" doesn't match token "+zTxPoWID);
+					return false;
+				}
+				
+				//Check the token is correct - in the MMR
+				if(!cproof.getCoin().getTokenID().isEqual(cproof.getCoin().getToken().getTokenID())) {
+					MinimaLogger.log("TokenID in MMR Proof input "+i+" doesn't match token "+zTxPoWID);
 					return false;
 				}
 			}

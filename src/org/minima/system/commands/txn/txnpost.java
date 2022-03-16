@@ -19,7 +19,7 @@ import org.minima.utils.json.JSONObject;
 public class txnpost extends Command {
 
 	public txnpost() {
-		super("txnpost","[id:] (auto:false) (burn:) - Post a transaction. Automatically set the scripts and MMR (Defaults to true)");
+		super("txnpost","[id:] (auto:true) (burn:) - Post a transaction. Automatically set the Scripts and MMR");
 	}
 	
 	@Override
@@ -49,7 +49,7 @@ public class txnpost extends Command {
 		txnrow.getTransaction().clearIsMonotonic();
 		
 		//Set the scripts and MMR
-		boolean auto = getBooleanParam("auto", true);
+		boolean auto = getBooleanParam("auto", false);
 		if(auto) {
 			//Set the MMR data and Scripts
 			txnutils.setMMRandScripts(trans, wit);

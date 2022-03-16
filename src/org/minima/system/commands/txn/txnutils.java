@@ -29,6 +29,10 @@ import org.minima.utils.MinimaLogger;
 public class txnutils {
 
 	public static void setMMRandScripts(Transaction zTransaction, Witness zWitness) throws Exception {
+		setMMRandScripts(zTransaction, zWitness, true);
+	}
+	
+	public static void setMMRandScripts(Transaction zTransaction, Witness zWitness, boolean zExitOnFail) throws Exception {
 		//get the tip..
 		TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
 		
@@ -44,10 +48,12 @@ public class txnutils {
 				Coin floater = TxPoWSearcher.getFloatingCoin(tip, cc.getAmount(), cc.getAddress(), cc.getTokenID());	
 				
 				if(floater == null) {
-					throw new CommandException("Could not find valid unspent coin for "+cc.toJSON());
+					if(zExitOnFail) {
+						throw new CommandException("Could not find valid unspent coin for "+cc.toJSON());
+					}
+				}else {
+					inputs.add(floater);
 				}
-				
-				inputs.add(floater);
 				
 			}else {
 				
@@ -55,10 +61,12 @@ public class txnutils {
 				//could be a pre-made coin.. so use correct MMREntry / Created 
 				Coin current = TxPoWSearcher.searchCoin(cc.getCoinID());
 				if(current == null) {
-					throw new CommandException("Coin with CoinID not found : "+cc.getCoinID().to0xString());
+					if(zExitOnFail) {
+						throw new CommandException("Coin with CoinID not found : "+cc.getCoinID().to0xString());
+					}
+				}else {
+					inputs.add(current);
 				}
-				
-				inputs.add(current);
 			}
 		}
 		
@@ -90,9 +98,6 @@ public class txnutils {
 		//Get the main Wallet
 		Wallet walletdb = MinimaDB.getDB().getWallet();
 		
-		//Clear the MMR..
-		zWitness.clearCoinProofs();
-		
 		//Add the MMR proofs for the coins..
 		for(Coin input : inputs) {
 			
@@ -109,11 +114,13 @@ public class txnutils {
 			String scraddress 	= input.getAddress().to0xString();
 			KeyRow keyrow 		= walletdb.getKeysRowFromAddress(scraddress); 
 			if(keyrow == null) {
-				throw new Exception("SERIOUS ERROR script missing for simple address : "+scraddress);
+				if(zExitOnFail) {
+					throw new Exception("SERIOUS ERROR script missing for simple address : "+scraddress);
+				}
+			}else {
+				ScriptProof pscr = new ScriptProof(keyrow.getScript());
+				zWitness.addScript(pscr);
 			}
-			
-			ScriptProof pscr = new ScriptProof(keyrow.getScript());
-			zWitness.addScript(pscr);
 		}
 	}
 	

@@ -37,10 +37,13 @@ public class txnoutput extends Command {
 		Token token 		= null;
 		if(existsParam("tokenid")) {
 			tokenid	= getDataParam("tokenid");
-			token	= TxPoWSearcher.getToken(tokenid);
 			
-			if(token == null) {
-				throw new CommandException("Token not found : "+tokenid);
+			//Is it Minima..
+			if(!tokenid.isEqual(Token.TOKENID_MINIMA)) {
+				token	= TxPoWSearcher.getToken(tokenid);
+				if(token == null) {
+					throw new CommandException("Token not found : "+tokenid);
+				}
 			}
 		}
 		
