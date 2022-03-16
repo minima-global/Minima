@@ -2,6 +2,7 @@ package org.minima.system.brains;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -117,9 +118,16 @@ public class TxPoWGenerator {
 			minhash = blkdiff;
 		}
 		
-		//Check is acceptable..
+		//Check is acceptable.. if not add 10% as may be changing..
 		if(minhash.isMore(txpowmagic.getMinTxPowWork())) {
-			minhash = txpowmagic.getMinTxPowWork();
+			
+			//Add 10%.. to give yourself some space
+			BigDecimal hashes 	= txpowmagic.getMinTxPowWork().getDataValueDecimal();
+			hashes 				= hashes.divide(new BigDecimal("1.1"), MathContext.DECIMAL128);
+			minhash 			= new MiniData(hashes.toBigInteger());
+			
+			//This could be too low if the Hash value is going up..
+//			minhash = txpowmagic.getMinTxPowWork();
 		}
 		txpow.setTxDifficulty(minhash);
 		
