@@ -257,6 +257,11 @@ public class NIOMessage implements Runnable {
 				TxPoWTreeNode tip 		= MinimaDB.getDB().getTxPoWTree().getTip();
 				TxPoWTreeNode cascade 	= MinimaDB.getDB().getTxPoWTree().getRoot();
 				
+				//Have we got any blocks at all yet..
+				if(tip == null) {
+					return;
+				}
+				
 				//The block and cascade block
 				MiniNumber cascadeblock = cascade.getBlockNumber();
 				MiniNumber block 		= txpow.getBlockNumber();
@@ -297,7 +302,7 @@ public class NIOMessage implements Runnable {
 				//Interesting info.. check this.. probably a timing issue
 				if(blockdiffratio < 0.1) {
 					//Block difficulty too low..
-					MinimaLogger.log("Received txpow with low block difficulty too low.. "+blockdiffratio+" "+txpow.getBlockNumber()+" "+txpow.getTxPoWID());
+					MinimaLogger.log("Received txpow with low block difficulty.. "+blockdiffratio+" "+txpow.getBlockNumber()+" "+txpow.getTxPoWID());
 				}
 				
 				//Do we disconnect yet.. 
