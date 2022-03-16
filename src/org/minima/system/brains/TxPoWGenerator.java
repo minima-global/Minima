@@ -69,7 +69,7 @@ public class TxPoWGenerator {
 			//How much time to add to the median block
 			MiniNumber blocksecs 	= MiniNumber.ONE.div(GlobalParams.MINIMA_BLOCK_SPEED);
 			MiniNumber half 		= new MiniNumber(TxPoWChecker.MEDIAN_TIMECHECK_BLOCK).div(MiniNumber.TWO); 
-			MiniNumber addtime 		= blocksecs.mult(half.add(MiniNumber.ONE)).mult(MiniNumber.THOUSAND);
+			MiniNumber addtime 		= blocksecs.mult(half.add(MiniNumber.TEN)).mult(MiniNumber.THOUSAND);
 			
 			//Median time + 1 hr..
 			txpow.setTimeMilli(medianblock.getTimeMilli().add(addtime));
@@ -104,17 +104,24 @@ public class TxPoWGenerator {
 			txpow.setSuperParent(i, tiptxid);
 		}
 		
+		//Set the block difficulty - minimum is the TxPoW diff..
+		MiniData blkdiff = getBlockDifficulty(tip);
+		txpow.setBlockDifficulty(blkdiff);
+				
 		//Set the TXN Difficulty.. currently 1 second work..
 		MiniNumber userhashrate = MinimaDB.getDB().getUserDB().getHashRate();
 		MiniData minhash 		= calculateDifficultyData(userhashrate);
+		
+		//Check is not MORE than the block difficulty - this only happens at genesis..
+		if(minhash.isLess(blkdiff)) {
+			minhash = blkdiff;
+		}
+		
+		//Check is acceptable..
 		if(minhash.isMore(txpowmagic.getMinTxPowWork())) {
 			minhash = txpowmagic.getMinTxPowWork();
 		}
 		txpow.setTxDifficulty(minhash);
-		
-		//Set the block difficulty - minimum is the TxPoW diff..
-		MiniData blkdiff = getBlockDifficulty(tip);
-		txpow.setBlockDifficulty(blkdiff);
 		
 		//And add the current mempool txpow..
 		ArrayList<TxPoW> mempool = MinimaDB.getDB().getTxPoWDB().getAllUnusedTxns();
@@ -171,10 +178,10 @@ public class TxPoWGenerator {
 				
 				//Check against the Magic Numbers
 				if(memtxp.getSizeinBytesWithoutBlockTxns() > txpowmagic.getMaxTxPoWSize().getAsLong()) {
-					MinimaLogger.log("Memepool txn too big.. "+memtxp.getTxPoWID());
+					MinimaLogger.log("Mempool txn too big.. "+memtxp.getTxPoWID());
 					valid = false;
 				}else if(memtxp.getTxnDifficulty().isMore(txpowmagic.getMinTxPowWork())) {
-					MinimaLogger.log("Memepool txn TxPoW too low.. "+memtxp.getTxPoWID());
+					MinimaLogger.log("Mempool txn TxPoW too low.. "+memtxp.getTxPoWID());
 					valid = false;
 				}
 				
@@ -243,23 +250,25 @@ public class TxPoWGenerator {
 		TxPoWTreeNode endblock 	= zParent.getParent(GlobalParams.MINIMA_BLOCKS_SPEED_CALC.getAsInt());
 		
 		//Now use the Median Times..
-		startblock 	= getMedianTimeBlock(startblock, GlobalParams.MEDIAN_BLOCK_CALC);
-		endblock 	= getMedianTimeBlock(endblock, GlobalParams.MEDIAN_BLOCK_CALC);
-		MiniNumber blockdiff = startblock.getBlockNumber().sub(endblock.getBlockNumber()); 
+		startblock 				= getMedianTimeBlock(startblock, GlobalParams.MEDIAN_BLOCK_CALC);
+		endblock 				= getMedianTimeBlock(endblock, GlobalParams.MEDIAN_BLOCK_CALC);
+		MiniNumber blockdiff 	= startblock.getBlockNumber().sub(endblock.getBlockNumber()); 
+		
+		//In case of serious time error
+		MiniNumber timediff = startblock.getTxPoW().getTimeMilli().sub(endblock.getTxPoW().getTimeMilli());
+		if(timediff.isLessEqual(MiniNumber.ZERO) || blockdiff.isLess(MiniNumber.EIGHT)) {
+			//This should not happen..
+			MinimaLogger.log("SERIOUS TIME ERROR @ "+zParent.getBlockNumber()+" Using latest block diff..");
+			MinimaLogger.log("StartBlock @ "+startblock.getBlockNumber()+" "+new Date(startblock.getTxPoW().getTimeMilli().getAsLong()));
+			MinimaLogger.log("EndBlock   @ "+endblock.getBlockNumber()+" "+new Date(endblock.getTxPoW().getTimeMilli().getAsLong()));
+			
+			//Return the LATEST value..
+			return zParent.getTxBlock().getTxPoW().getBlockDifficulty();
+		}
 		
 		//Get current speed
 		MiniNumber speed 				= getChainSpeed(startblock, blockdiff);
 		MiniNumber speedratio 			= GlobalParams.MINIMA_BLOCK_SPEED.div(speed);
-		
-		//Speed should NEVER be negative..
-		if(speed.isLess(MiniNumber.ZERO)) {
-			
-			//Something going on..
-			MinimaLogger.log("SERIOUS ERROR : NEGATIVE CHAIN SPEED! @ "+zParent.getBlockNumber()+" speed:"+speed);
-		
-			//Return the current difficulty..
-			return zParent.getTxPoW().getBlockDifficulty();
-		}
 		
 		//Get average difficulty over that period
 		BigInteger averagedifficulty 	= getAverageDifficulty(startblock, blockdiff);

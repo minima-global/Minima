@@ -35,9 +35,9 @@ public class Magic implements Streamable {
 	/**
 	 * Minimum acceptable PoW per TxPoW - Also a HARD limit
 	 * 
-	 * 1 MHash is the minimum..
+	 * 0.1 MHash is the minimum..
 	 */
-	public static final MiniNumber MIN_HASHES 		= MiniNumber.MILLION;
+	public static final MiniNumber MIN_HASHES 		= new MiniNumber(100000);
 	public static final BigInteger MIN_TXPOW_VAL 	= Crypto.MAX_VAL.divide(MIN_HASHES.getAsBigInteger());
 	public static final MiniData MIN_TXPOW_WORK 	= new MiniData(MIN_TXPOW_VAL);
 	
@@ -251,5 +251,28 @@ public class Magic implements Streamable {
 		Magic mag = new Magic();
 		mag.readDataStream(zIn);
 		return mag;
+	}
+	
+	public static void main(String[] zArgs) {
+
+		MiniNumber desired 	= new MiniNumber(3000);
+	
+		System.out.println("Start:1024 Desired:"+desired);
+		
+		int days=0;
+		Magic current 		= new Magic();
+//		current.mCurrentMaxKISSVMOps = new MiniNumber(2000);
+		for(int i=0;i<1728*50;i++) {
+			if(i%1000==0) {
+				current.mDesiredMaxKISSVMOps = desired;
+			}
+			
+			current = current.calculateNewCurrent();
+			
+			if(i%50 == 0) {
+				days++;
+				System.out.println(days+") "+current.mCurrentMaxKISSVMOps);
+			}
+		}	
 	}
 }

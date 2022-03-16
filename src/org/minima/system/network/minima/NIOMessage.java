@@ -278,11 +278,6 @@ public class NIOMessage implements Runnable {
 					MinimaLogger.log("Received block before cascade.. "+block+" / "+cascadeblock+" difficulty:"+blockdiffratio);
 					disconnectpeer = true;
 				
-				}else if(blockdiffratio < 0.1) {
-					//Block difficulty too low..
-					MinimaLogger.log("Received txpow with block difficulty too low.. "+blockdiffratio+" "+txpow.getBlockNumber()+" "+txpow.getTxPoWID());
-					disconnectpeer = true;
-				
 				}else if(!txpow.getChainID().isEqual(TxPoWChecker.CURRENT_NETWORK)) {
 					//Check ChainID
 					MinimaLogger.log("Wrong Block ChainID! "+txpow.getChainID()+" "+txpow.getTxPoWID());
@@ -297,6 +292,12 @@ public class NIOMessage implements Runnable {
 					//Check the Signatures
 					MinimaLogger.log("Invalid signatures on txpow from "+mClientUID+" "+txpow.getTxPoWID());
 					disconnectpeer = true;
+				}
+				
+				//Interesting info.. check this.. probably a timing issue
+				if(blockdiffratio < 0.1) {
+					//Block difficulty too low..
+					MinimaLogger.log("Received txpow with low block difficulty too low.. "+blockdiffratio+" "+txpow.getBlockNumber()+" "+txpow.getTxPoWID());
 				}
 				
 				//Do we disconnect yet.. 
