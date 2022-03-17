@@ -218,7 +218,7 @@ public class tutorial extends Command {
 				  + "Return TRUE if the previous state and current state are the same for the start and end positions\n"
 				  + "\n"
 				  + "FUNCTION ( STRING VALUE1 VALUE2.. VALUEn )\n"
-				  + "Run the script after replace the $1, $2.. $n variables with the provided parameters and returnvalue has the result\n"
+				  + "Generic Function. Run the script after replacing $1, $2.. $n with the provided parameters and use returnvalue as the returned result\n"
 				  + "";
 		
 		//Add balance..
