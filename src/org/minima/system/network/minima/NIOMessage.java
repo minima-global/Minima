@@ -278,12 +278,7 @@ public class NIOMessage implements Runnable {
 				boolean disconnectpeer = false;
 				
 				//NONE of these should fail
-				if(block.isLessEqual(cascadeblock)) {
-					//Block before cascade
-					MinimaLogger.log("Received block before cascade.. "+block+" / "+cascadeblock+" difficulty:"+blockdiffratio);
-					disconnectpeer = true;
-				
-				}else if(!txpow.getChainID().isEqual(TxPoWChecker.CURRENT_NETWORK)) {
+				if(!txpow.getChainID().isEqual(TxPoWChecker.CURRENT_NETWORK)) {
 					//Check ChainID
 					MinimaLogger.log("Wrong Block ChainID! "+txpow.getChainID()+" "+txpow.getTxPoWID());
 					disconnectpeer = true;
@@ -299,12 +294,6 @@ public class NIOMessage implements Runnable {
 					disconnectpeer = true;
 				}
 				
-				//Interesting info.. check this.. probably a timing issue
-				if(blockdiffratio < 0.1) {
-					//Block difficulty too low..
-					MinimaLogger.log("Received txpow with low block difficulty.. "+blockdiffratio+" "+txpow.getBlockNumber()+" "+txpow.getTxPoWID());
-				}
-				
 				//Do we disconnect yet.. 
 				if(disconnectpeer) {
 					Main.getInstance().getNIOManager().disconnect(mClientUID);
@@ -313,6 +302,19 @@ public class NIOMessage implements Runnable {
 				
 				//More CHECKS.. if ALL these pass will forward otherwise may be a branch txpow that we requested
 				boolean fullyvalid = true;
+				
+				//Interesting info.. check this.. probably a timing issue
+				if(blockdiffratio < 0.1) {
+					//Block difficulty too low..
+					MinimaLogger.log("Received txpow with low block difficulty.. "+blockdiffratio+" "+txpow.getBlockNumber()+" "+txpow.getTxPoWID());
+					fullyvalid = false;
+				}
+				
+				if(block.isLessEqual(cascadeblock)) {
+					//Block before cascade
+					MinimaLogger.log("Received block before cascade.. "+block+" / "+cascadeblock+" difficulty:"+blockdiffratio);
+					fullyvalid = true;
+				}
 				
 				//Check the Scripts - could fail.. 
 				if(!TxPoWChecker.checkTxPoWScripts(tip.getMMR(), txpow, tip.getTxPoW())) {

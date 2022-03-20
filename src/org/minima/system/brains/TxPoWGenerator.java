@@ -26,6 +26,12 @@ import org.minima.utils.MinimaLogger;
 public class TxPoWGenerator {
 	
 	/**
+	 * The Bounding range for a difficulty change - 10%
+	 */
+	private final static BigDecimal MAX_BOUND_DIFFICULTY = new BigDecimal("1.1");
+	private final static BigDecimal MIN_BOUND_DIFFICULTY = new BigDecimal("0.9");
+	
+	/**
 	 * Calculate a Difficulty Hash for a given hash number
 	 */
 	public static MiniData calculateDifficultyData(MiniNumber zHashes) {
@@ -120,6 +126,9 @@ public class TxPoWGenerator {
 		
 		//Check is acceptable.. if not add 10% as may be changing..
 		if(minhash.isMore(txpowmagic.getMinTxPowWork())) {
+			
+			//Warn them..
+			MinimaLogger.log("WARNING : Your Hashrate is lower than the current Minimum allowed by the network");
 			
 //			//Add 10%.. to give yourself some space
 //			BigDecimal hashes 	= txpowmagic.getMinTxPowWork().getDataValueDecimal();
@@ -247,10 +256,7 @@ public class TxPoWGenerator {
 	public static MiniData getBlockDifficulty(TxPoWTreeNode zParent) {
 		
 		//Are we just starting out..
-//		if(zParent.getBlockNumber().isLess(new MiniNumber(GlobalParams.MEDIAN_BLOCK_CALC))) {
-//			return Magic.MIN_TXPOW_WORK;
-//		}
-		if(zParent.getBlockNumber().isLess(MiniNumber.THREE)) {
+		if(zParent.getBlockNumber().isLess(new MiniNumber(GlobalParams.MEDIAN_BLOCK_CALC))) {
 			return Magic.MIN_TXPOW_WORK;
 		}
 		
@@ -267,7 +273,6 @@ public class TxPoWGenerator {
 		
 		//In case of serious time error
 		MiniNumber timediff = startblock.getTxPoW().getTimeMilli().sub(endblock.getTxPoW().getTimeMilli());
-//		if(timediff.isLessEqual(MiniNumber.ZERO) || blockdiff.isLess(MiniNumber.EIGHT)) {
 		if(timediff.isLessEqual(MiniNumber.ZERO)) {
 			//This should not happen..
 			MinimaLogger.log("SERIOUS TIME ERROR @ "+zParent.getBlockNumber()+" Using latest block diff..");
@@ -296,27 +301,22 @@ public class TxPoWGenerator {
 		}
 		MiniData newdiff = new MiniData(newdifficulty);
 		
-		//Check within 20% bounds..
-		BigDecimal lastdiffdec 	= new BigDecimal(zParent.getTxPoW().getBlockDifficulty().getDataValue());
-		BigDecimal newdiffdec 	= new BigDecimal(newdiff.getDataValue());
-		double blockdiffratio 	= lastdiffdec.divide(newdiffdec, MathContext.DECIMAL32).doubleValue();
-		MinimaLogger.log("NEW DIFF "+newdifficulty+" @ start:"+startblock.getBlockNumber()+" end:"+endblock.getBlockNumber()+" ratio:"+blockdiffratio);
+		//Check within bounds..
+		BigDecimal lastdiffdec 		= new BigDecimal(zParent.getTxPoW().getBlockDifficulty().getDataValue());
+		BigDecimal newdiffdec 		= new BigDecimal(newdiff.getDataValue());
+		BigDecimal blockdiffratio 	= lastdiffdec.divide(newdiffdec, MathContext.DECIMAL32);
 		
-		if(blockdiffratio>1.05) {
-			BigDecimal bound 	= lastdiffdec.divide(new BigDecimal("1.05"), MathContext.DECIMAL32);
-			MiniData testnewdiff = new MiniData(bound.toBigInteger());
+		if(blockdiffratio.compareTo(MAX_BOUND_DIFFICULTY) > 0) {
+			MinimaLogger.log("Increased difficulty change greater than allowed ( "+blockdiffratio+ " ).. Using Bounds");
 			
-			BigDecimal testnewdiffdec 	= new BigDecimal(testnewdiff.getDataValue());
-			double testblockdiffratio 	= lastdiffdec.divide(testnewdiffdec, MathContext.DECIMAL32).doubleValue();
-			MinimaLogger.log("test NEW DIFF "+testblockdiffratio);
+			BigDecimal bound 	= lastdiffdec.divide(MAX_BOUND_DIFFICULTY, MathContext.DECIMAL32);
+			newdiff 			= new MiniData(bound.toBigInteger());
 			
-		}else if(blockdiffratio<0.95) {
-			BigDecimal bound 	 = lastdiffdec.divide(new BigDecimal("0.95"), MathContext.DECIMAL32);
-			MiniData testnewdiff = new MiniData(bound.toBigInteger());
+		}else if(blockdiffratio.compareTo(MIN_BOUND_DIFFICULTY)<0) {
+			MinimaLogger.log("Decreased difficulty change greater than allowed ( "+blockdiffratio+" ).. Using Bounds");
 			
-			BigDecimal testnewdiffdec 	= new BigDecimal(testnewdiff.getDataValue());
-			double testblockdiffratio 	= lastdiffdec.divide(testnewdiffdec, MathContext.DECIMAL32).doubleValue();
-			MinimaLogger.log("test NEW DIFF "+testblockdiffratio);
+			BigDecimal bound 	= lastdiffdec.divide(MIN_BOUND_DIFFICULTY, MathContext.DECIMAL32);
+			newdiff 			= new MiniData(bound.toBigInteger());
 		}
 		
 		return newdiff;
