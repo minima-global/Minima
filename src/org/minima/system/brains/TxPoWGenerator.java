@@ -306,7 +306,7 @@ public class TxPoWGenerator {
 		BigDecimal newdiffdec 		= new BigDecimal(newdiff.getDataValue());
 		BigDecimal blockdiffratio 	= lastdiffdec.divide(newdiffdec, MathContext.DECIMAL32);
 		
-		if(blockdiffratio.compareTo(MAX_BOUND_DIFFICULTY) > 0) {
+		if(blockdiffratio.compareTo(MAX_BOUND_DIFFICULTY)>0) {
 			MinimaLogger.log("Increased difficulty change greater than allowed @ "+startblock.getBlockNumber()+" ( "+blockdiffratio+ " ).. Using Bounds");
 			
 			BigDecimal bound 	= lastdiffdec.divide(MAX_BOUND_DIFFICULTY, MathContext.DECIMAL32);
