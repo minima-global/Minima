@@ -255,8 +255,8 @@ public class TxPoWGenerator {
 	
 	public static MiniData getBlockDifficulty(TxPoWTreeNode zParent) {
 		
-		//Are we just starting out..
-		if(zParent.getBlockNumber().isLess(new MiniNumber(GlobalParams.MEDIAN_BLOCK_CALC))) {
+		//Are we just starting out.. first 8 blocks are minimum difficulty
+		if(zParent.getBlockNumber().isLess(MiniNumber.EIGHT)) {
 			return Magic.MIN_TXPOW_WORK;
 		}
 		
