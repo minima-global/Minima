@@ -294,12 +294,12 @@ public class TxPoWGenerator {
 		//Recalculate..
 		BigDecimal newdifficultydec = averagedifficultydec.multiply(speedratio.getAsBigDecimal());  
 		BigInteger newdifficulty	= newdifficultydec.toBigInteger();
+		MiniData newdiff 			= new MiniData(newdifficulty);
 		
-		//MUST be more difficult (lower) than the MIN TxPoW..
-		if(newdifficulty.compareTo(Magic.MIN_TXPOW_VAL)>0) {
-			newdifficulty = Magic.MIN_TXPOW_VAL;
+		//Check harder than the absolute minimum
+		if(newdiff.isMore(Magic.MIN_TXPOW_WORK)) {
+			newdiff = Magic.MIN_TXPOW_WORK;
 		}
-		MiniData newdiff = new MiniData(newdifficulty);
 		
 		//Check within bounds..
 		BigDecimal lastdiffdec 		= new BigDecimal(zParent.getTxPoW().getBlockDifficulty().getDataValue());
