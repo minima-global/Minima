@@ -76,7 +76,7 @@ public class TxPoWGenerator {
 			//How much time to add to the median block
 			MiniNumber blocksecs 	= MiniNumber.ONE.div(GlobalParams.MINIMA_BLOCK_SPEED);
 			MiniNumber half 		= new MiniNumber(TxPoWChecker.MEDIAN_TIMECHECK_BLOCK).div(MiniNumber.TWO); 
-			MiniNumber addtime 		= blocksecs.mult(half.add(MiniNumber.TEN)).mult(MiniNumber.THOUSAND);
+			MiniNumber addtime 		= blocksecs.mult(half.add(MiniNumber.TWO)).mult(MiniNumber.THOUSAND);
 			
 			//Median time + 1 hr..
 			txpow.setTimeMilli(medianblock.getTimeMilli().add(addtime));
