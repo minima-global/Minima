@@ -320,7 +320,6 @@ public class TxPoWGenerator {
 		}
 		
 		return newdiff;
-	
 	}
 	
 	public static MiniNumber getChainSpeed(TxPoWTreeNode zTopBlock, MiniNumber zBlocksBack) {
