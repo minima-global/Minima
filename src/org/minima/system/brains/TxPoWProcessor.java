@@ -353,8 +353,8 @@ public class TxPoWProcessor extends MessageProcessor {
 			TxPowTree txptree 		= MinimaDB.getDB().getTxPoWTree();
 			MiniNumber timenow 		= new MiniNumber(System.currentTimeMillis());
 			
-			//Will not accept a TxBlock within an hour of current time.. will ask for full TxPoW blocks 
-			MiniNumber mintimediff 	= new MiniNumber(1000 * 60 * 60);
+			//Will not accept a TxBlock within 30 mins of current time.. will ask for full TxPoW blocks 
+			MiniNumber mintimediff 	= new MiniNumber(1000 * 60 * 30);
 			
 			//How long is our tree..
 			int additions 	= 0;
