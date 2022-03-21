@@ -196,15 +196,11 @@ public class P2PState {
         json.put("timestamp", Instant.ofEpochMilli(System.currentTimeMillis()).toString());
         json.put("minima_version", GlobalParams.MINIMA_VERSION);
         json.put("is_mobile", GeneralParams.IS_MOBILE);
-        json.put("out_links", addressListToJSONArray(new ArrayList<>(outLinks.values())));
-        json.put("in_links", addressListToJSONArray(new ArrayList<>(inLinks.values())));
-        json.put("not_accepting_conn_links", addressListToJSONArray(new ArrayList<>(notAcceptingConnP2PLinks.values())));
-        json.put("none_p2p_links", addressListToJSONArray(new ArrayList<>(noneP2PLinks.values())));
-        json.put("all_links", addressListToJSONArray(new ArrayList<>(allLinks.values())));
-        json.put("knownPeers", addressListToJSONArray(new ArrayList<>(knownPeers)));
         json.put("is_accepting_connections", isAcceptingInLinks);
-        json.put("all_links_count", allLinks.size());
         json.put("deviceHashRate", getDeviceHashRate());
+        String user = MinimaDB.getDB().getUserDB().getIncentiveCashUserID();
+        json.put("incentive_cash_id", user);
+
         //Block details..
         TxPoWTreeNode topnode 	= MinimaDB.getDB().getTxPoWTree().getTip();
         MiniNumber topblock 	= topnode.getBlockNumber();
@@ -234,7 +230,7 @@ public class P2PState {
         BigInteger chainweight 	= MinimaDB.getDB().getTxPoWTree().getRoot().getTotalWeight().toBigInteger();
 		BigInteger cascweight 	= MinimaDB.getDB().getCascade().getTotalWeight().toBigInteger();
 		json.put("weight", chainweight.add(cascweight));
-        
+
         return json;
     }
 
