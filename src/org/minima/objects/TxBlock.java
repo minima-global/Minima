@@ -12,6 +12,7 @@ import org.minima.database.mmr.MMREntryNumber;
 import org.minima.database.mmr.MMRProof;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 
@@ -86,91 +87,6 @@ public class TxBlock implements Streamable {
 		return null;
 	}
 	
-//	private void calculateCoins(MMR zPreviousMMR, TxPoW zTxPoW) {
-//		
-//		//Needs to be a transaction
-//		if(zTxPoW.isTransaction()) {
-//			
-//			//Get all the input coins
-//			ArrayList<CoinProof> coinspent = zTxPoW.getWitness().getAllCoinProofs();
-//			
-//			//And now get all the proofs pointing to the previous block
-//			for(CoinProof csp : coinspent) {
-//				//Get the Coin
-//				Coin coin = csp.getCoin();
-//				
-//				//Get the ENTRY NUmber..
-//				MMREntryNumber entry = coin.getMMREntryNumber();
-//			
-//				//Add this to the MMR - so we can get a proof..
-//				zPreviousMMR.updateEntry(entry, csp.getMMRProof(), csp.getMMRData());
-//				
-//				//The Proof - from the previous block
-//				MMRProof proof = zPreviousMMR.getProofToPeak(entry);
-//			
-//				//Construct the CoinProof
-//				CoinProof cp = new CoinProof(coin, proof);
-//				
-//				//Add to the list..
-//				mSpentCoins.add(cp);
-//			}
-//			
-//			//The state of this Txn
-//			ArrayList<StateVariable> txnstate = zTxPoW.getTransaction().getCompleteState();
-//			
-//			//Create the state all outputs keep..
-//			ArrayList<StateVariable> newstate = new ArrayList<>();
-//			for(StateVariable sv : txnstate) {
-//				if(sv.isKeepMMR()) {
-//					newstate.add(sv);
-//				}
-//			}
-//			
-//			//All the new coins
-//			ArrayList<Coin> outputs = zTxPoW.getTransaction().getAllOutputs();
-//			int num=0;
-//			for(Coin newoutput : outputs) {
-//				
-//				//Set the correct state variables
-//				if(newoutput.storeState()) {
-//					newoutput.setState(newstate);
-//				}
-//				
-//				//Calculate the Correct CoinID for this coin.. TransactionID already calculated
-//				MiniData coinid = zTxPoW.getTransaction().calculateCoinID(num);
-//				
-//				//Create a new coin with correct coinid
-//				Coin correctcoin = newoutput.getSameCoinWithCoinID(coinid);
-//				
-//				//Is this a create token output..
-//				if(newoutput.getTokenID().isEqual(Token.TOKENID_CREATE)) {
-//					
-//					//Get the Create token details..
-//					Token creator = newoutput.getToken();
-//					
-//					//Get the details..
-//					Token newtoken = new Token(	coinid, 
-//												creator.getScale(), 
-//												newoutput.getAmount(), 
-//												creator.getName(),
-//												creator.getTokenScript() ); 
-//					
-//					//Set it..
-//					correctcoin.resetTokenID(newtoken.getTokenID());
-//					
-//					//And set that as the token..
-//					correctcoin.setToken(newtoken);
-//				}
-//				
-//				//Add to our list
-//				mNewCoins.add(correctcoin);
-//				
-//				//Next coin down
-//				num++;
-//			}
-//		}
-//	}
-	
 	/**
 	 * Calculate the MMR for both the main and burn transactions
 	 */
@@ -183,7 +99,12 @@ public class TxBlock implements Streamable {
 	}
 	
 	private void calculateCoins(MMR zPreviousMMR, Transaction zTransaction, Witness zWitness) {
-			
+		
+		//Could be an empty BURN transaction
+		if(zTransaction.isEmpty()) {
+			return;
+		}
+		
 		//Get all the input coins
 		ArrayList<CoinProof> coinspent = zWitness.getAllCoinProofs();
 		
@@ -219,47 +140,70 @@ public class TxBlock implements Streamable {
 			}
 		}
 		
-		//All the new coins
+		//All the Outputs..
 		ArrayList<Coin> outputs = zTransaction.getAllOutputs();
-		int num=0;
-		for(Coin newoutput : outputs) {
-			
-			//Calculate the Correct CoinID for this coin.. TransactionID already calculated
-			MiniData coinid = zTransaction.calculateCoinID(num);
-			
-			//Create a new coin with correct coinid
-			Coin correctcoin = newoutput.getSameCoinWithCoinID(coinid);
-			
-			//Set the correct state variables
-			if(correctcoin.storeState()) {
-				correctcoin.setState(newstate);
+		if(coinspent.size()>0) {
+			//Get the First Coin in the Txn CoinID.. Genesis Transaction is Different
+			MiniData basecoinid = null; 
+			if(zPreviousMMR.getBlockTime().isEqual(MiniNumber.ONE)) {
+				
+				//Because the first address is different this is always unique
+				basecoinid = zTransaction.getTransactionID();
+			}else {
+				
+				//Get the First Coin..
+				Coin firstcoin = coinspent.get(0).getCoin();
+				
+				//Hash that coin..
+				basecoinid = Crypto.getInstance().hashAllObjects(
+						firstcoin.getCoinID(),
+						firstcoin.getAddress(),
+						firstcoin.getAmount(),
+						firstcoin.getTokenID());
 			}
-			
-			//Is this a create token output..
-			if(newoutput.getTokenID().isEqual(Token.TOKENID_CREATE)) {
+		
+			//All the new coins
+			int num=0;
+			for(Coin newoutput : outputs) {
 				
-				//Get the Create token details..
-				Token creator = newoutput.getToken();
+				//Calculate the Correct CoinID for this coin.. 
+				MiniData coinid = zTransaction.calculateCoinID(basecoinid,num);
 				
-				//Get the details..
-				Token newtoken = new Token(	coinid, 
-											creator.getScale(), 
-											newoutput.getAmount(), 
-											creator.getName(),
-											creator.getTokenScript() ); 
+				//Create a new coin with correct coinid
+				Coin correctcoin = newoutput.getSameCoinWithCoinID(coinid);
 				
-				//Set it..
-				correctcoin.resetTokenID(newtoken.getTokenID());
+				//Set the correct state variables
+				if(correctcoin.storeState()) {
+					correctcoin.setState(newstate);
+				}
 				
-				//And set that as the token..
-				correctcoin.setToken(newtoken);
+				//Is this a create token output..
+				if(newoutput.getTokenID().isEqual(Token.TOKENID_CREATE)) {
+					
+					//Get the Create token details..
+					Token creator = newoutput.getToken();
+					
+					//Get the details..
+					Token newtoken = new Token(	coinid, 
+												creator.getScale(), 
+												newoutput.getAmount(), 
+												creator.getName(),
+												creator.getTokenScript(),
+												mTxPoW.getBlockNumber()); 
+					
+					//Set it..
+					correctcoin.resetTokenID(newtoken.getTokenID());
+					
+					//And set that as the token..
+					correctcoin.setToken(newtoken);
+				}
+				
+				//Add to our list
+				mNewCoins.add(correctcoin);
+				
+				//Next coin down
+				num++;
 			}
-			
-			//Add to our list
-			mNewCoins.add(correctcoin);
-			
-			//Next coin down
-			num++;
 		}
 	}
 	

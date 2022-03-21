@@ -142,12 +142,12 @@ public class runscript extends Command {
 		//Set trhe Script..
 		contract.setGlobalVariable("@SCRIPT", new StringValue(script));
 		
-		//Is there enough for @BLOCKDIFF
-		if(globals.containsKey("@BLOCK") && globals.containsKey("@INBLOCK") && !globals.containsKey("@BLOCKDIFF")) {
+		//Is there enough for @COINAGE
+		if(globals.containsKey("@BLOCK") && globals.containsKey("@CREATED") && !globals.containsKey("@COINAGE")) {
 			MiniNumber block   		= new MiniNumber((String)globals.get("@BLOCK")); 
-			MiniNumber inblock 		= new MiniNumber((String)globals.get("@INBLOCK"));
+			MiniNumber inblock 		= new MiniNumber((String)globals.get("@CREATED"));
 			MiniNumber blockdiff 	= block.sub(inblock);
-			globals.put("@BLOCKDIFF", blockdiff.toString());
+			globals.put("@COINAGE", blockdiff.toString());
 		}
 		
 		//Set the Globals..

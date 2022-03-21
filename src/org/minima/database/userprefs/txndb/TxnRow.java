@@ -11,6 +11,7 @@ import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniString;
+import org.minima.system.brains.TxPoWGenerator;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONArray;
@@ -54,17 +55,17 @@ public class TxnRow implements Streamable {
 		JSONObject ret = new JSONObject();
 		ret.put("id", mID);
 		
+		//Calculate the correct CoinID - if possible..
+		TxPoWGenerator.precomputeTransactionCoinID(mTransaction);
+		
 		//Now output
 		ret.put("transaction", mTransaction.toJSON());
-		
 		ret.put("witness", mWitness.toJSON());
 		
 		//Now output the full output coins with correct coinid
-		ArrayList<Coin> coinidcoins = mTransaction.getOutputCoinsWithCoinID();
-		JSONArray coinarrfull 	= new JSONArray();
+		ArrayList<Coin> coinidcoins = mTransaction.getAllOutputs();
 		JSONArray coinarr 		= new JSONArray();
 		for(Coin cc : coinidcoins) {
-			coinarrfull.add(cc.toJSON());
 			coinarr.add(MiniData.getMiniDataVersion(cc).to0xString());
 		}
 		ret.put("outputcoindata", coinarr);

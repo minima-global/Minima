@@ -9,8 +9,8 @@ import org.minima.utils.MinimaLogger;
 
 public class TreeKey {
 
-	public static final int DEFAULT_KEYSPERLEVEL = 16;
-	public static final int DEFAULT_LEVELS 		 = 2;
+	public static final int DEFAULT_KEYSPERLEVEL = 64;
+	public static final int DEFAULT_LEVELS 		 = 3;
 	
 	public static TreeKey createDefault(MiniData zPrivateSeed) {
 		return new TreeKey(zPrivateSeed, DEFAULT_KEYSPERLEVEL, DEFAULT_LEVELS);
@@ -232,7 +232,10 @@ public class TreeKey {
 		
 		int maxsigs = 5;
 		
-		TreeKey kt = new TreeKey(seed, 2, 3);
+		long timenow = System.currentTimeMillis();
+		TreeKey kt = new TreeKey(seed, 256, 3);
+		long timediff = System.currentTimeMillis() - timenow;
+		System.out.println("time "+timediff);
 		
 		//Set the pub key
 		MiniData pk = kt.getPublicKey();
@@ -246,13 +249,20 @@ public class TreeKey {
 		
 		for(int i=0;i<maxsigs;i++) {
 			System.out.println();
-			Signature sig = kt.sign(data);
 			
+			timenow = System.currentTimeMillis();
+			Signature sig = kt.sign(data);
+			timediff = System.currentTimeMillis() - timenow;
+			System.out.println("sign time "+timediff);
+			
+			timenow = System.currentTimeMillis();
 			MiniData sigdata = MiniData.getMiniDataVersion(sig);
 			System.out.println("Sig "+i+" : "+sigdata.to0xString(32)+" "+sigdata.getLength());
 			
 			//And verify..
 			MinimaLogger.log("VERIFY : "+ktverify.verify(data, sig));
+			timediff = System.currentTimeMillis() - timenow;
+			System.out.println("verify time "+timediff);
 		}
 		
 //		MinimaLogger.log(convertBase(10, 16).toString());

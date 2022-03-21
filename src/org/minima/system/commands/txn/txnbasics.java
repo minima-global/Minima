@@ -3,16 +3,17 @@ package org.minima.system.commands.txn;
 import org.minima.database.MinimaDB;
 import org.minima.database.userprefs.txndb.TxnDB;
 import org.minima.database.userprefs.txndb.TxnRow;
-import org.minima.objects.StateVariable;
 import org.minima.objects.Transaction;
+import org.minima.objects.Witness;
+import org.minima.system.brains.TxPoWGenerator;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
 import org.minima.utils.json.JSONObject;
 
-public class txnstate extends Command {
+public class txnbasics extends Command {
 
-	public txnstate() {
-		super("txnstate","[id:] [port:] [value:] (keeper:) - Add a state variable");
+	public txnbasics() {
+		super("txnbasics","[id:] - Automatically set the MMR proofs and scripts for a txn");
 	}
 	
 	@Override
@@ -22,39 +23,34 @@ public class txnstate extends Command {
 		TxnDB db = MinimaDB.getDB().getCustomTxnDB();
 		
 		//The transaction
-		String id 			= getParam("id");
-		String port			= getParam("port");
-		String value		= getParam("value");
-		boolean keeper	 	= true;
-		if(existsParam("keeper")) {
-			keeper = getBooleanParam("keeper");
-		}
-		
-		//Get the Transaction
-		TxnRow txnrow 	= db.getTransactionRow(getParam("id"));
+		String id 		= getParam("id");
+		TxnRow txnrow 	= db.getTransactionRow(id); 
 		if(txnrow == null) {
 			throw new CommandException("Transaction not found : "+id);
 		}
+		
+		//Get the Transaction
 		Transaction trans = txnrow.getTransaction();
+		Witness wit		  = txnrow.getWitness();
 		
-		//Create a state variable..
-		StateVariable sv = new StateVariable(Integer.parseInt(port),value,keeper);
+		//Set the MMR data and Scripts - for coins you have have
+		txnutils.setMMRandScripts(trans, wit, false);
 		
-		//Add it to the transaction
-		trans.addStateVariable(sv);
+		//Compute the correct CoinID
+		TxPoWGenerator.precomputeTransactionCoinID(trans);
 		
-		//Calculate transid
+		//Calculate the TransactionID..
 		trans.calculateTransactionID();
 				
-		//Output the current trans..
-		ret.put("response", db.getTransactionRow(id).toJSON());
+		//All good..
+		ret.put("response", txnrow.toJSON());
 		
 		return ret;
 	}
 
 	@Override
 	public Command getFunction() {
-		return new txnstate();
+		return new txnbasics();
 	}
 
 }

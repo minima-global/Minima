@@ -76,11 +76,28 @@ public class IBD implements Streamable {
 					
 					//Find a block in archive that we have..
 					MiniNumber found = MiniNumber.MINUSONE;
+					int counter=0;
 					for(MiniData current : zGreeting.getChain()) {
-						//Look in DB
-						found = MinimaDB.getDB().getArchive().exists(current.to0xString());
-						if(!found.isEqual(MiniNumber.MINUSONE)) {
-							break;
+						
+						//Only check every 20 blocks.. just send duplicates as this much faster
+						if(counter % 20 == 0) {
+							
+							//Look in DB
+							found = MinimaDB.getDB().getArchive().exists(current.to0xString());
+							if(!found.isEqual(MiniNumber.MINUSONE)) {
+								break;
+							}
+						}
+						
+						//increment the counter..
+						counter++;
+					}
+					
+					//Check the very last one.. just in case we skipped it..
+					if(found.isEqual(MiniNumber.MINUSONE)) {
+						int size = zGreeting.getChain().size();
+						if(size>0) {
+							found = MinimaDB.getDB().getArchive().exists(zGreeting.getChain().get(size-1).to0xString());
 						}
 					}
 					

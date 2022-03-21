@@ -44,7 +44,7 @@ public class balance extends Command {
 		
 		//Get the wallet.. to find the sendable coins..
 		Wallet wdb = MinimaDB.getDB().getWallet();
-		ArrayList<KeyRow> keys 					= wdb.getAllRelevant();
+		ArrayList<KeyRow> keys 					= wdb.getAllRelevant(false);
 		ArrayList<String> sendableaddresses 	= new ArrayList<>();
 		for(KeyRow key : keys) {
 			if(!key.getPublicKey().equals("")) {

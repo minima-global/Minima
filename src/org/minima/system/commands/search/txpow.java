@@ -47,7 +47,7 @@ public class txpow extends Command {
 			
 		}else if(existsParam("address")) {
 			
-			String address = getParam("address");
+			String address = getAddressParam("address");
 			
 			ArrayList<TxPoW> txps = TxPoWSearcher.searchTxPoWviaAddress(new MiniData(address));
 			

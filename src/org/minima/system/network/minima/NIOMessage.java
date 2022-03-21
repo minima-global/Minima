@@ -2,10 +2,12 @@ package org.minima.system.network.minima;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
+import java.math.BigDecimal;
+import java.math.MathContext;
 import java.util.ArrayList;
+import java.util.Date;
 
 import org.minima.database.MinimaDB;
-import org.minima.database.mmr.MMR;
 import org.minima.database.txpowdb.TxPoWDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.objects.Greeting;
@@ -132,8 +134,7 @@ public class NIOMessage implements Runnable {
 				Greeting greet = Greeting.ReadFromStream(dis);
 				
 				//What version..
-				//if(!greet.getVersion().toString().startsWith("TN-P2P.100")) {
-				if(!greet.getVersion().toString().startsWith("0.100")) {
+				if(!greet.getVersion().toString().startsWith("0.101")) {
 						
 					MinimaLogger.log("Greeting with Incompatible Version! "+greet.getVersion().toString());
 					
@@ -211,31 +212,7 @@ public class NIOMessage implements Runnable {
 				//A small message..
 				MinimaLogger.log("[+] Connected to the blockchain Initial Block Download received. size:"+MiniFormat.formatSize(data.length)+" blocks:"+ibd.getTxBlocks().size());
 				
-				//Do some checking!
-//				//Sort the Sync blocks - low to high - they should be in the correct order but just in case..
-//				Collections.sort(ibd.getSyncBlocks(), new Comparator<TxBlock>() {
-//					@Override
-//					public int compare(TxBlock o1, TxBlock o2) {
-//						// TODO Auto-generated method stub
-//						return 0;
-//					}
-//				});
-				
-				//Check all the syncblocks are there with none missng..
-				//..
-				boolean valid = true;
-				
-				//Valid..
-				if(ibd.hasCascade() && !ibd.getCascade().checkCascade()) {
-					MinimaLogger.log("ERROR Invalid Cascade sent from "+mClientUID);
-					
-					//Disconnect..Something fishy..
-					Main.getInstance().getNIOManager().disconnect(mClientUID);
-					
-					return;
-				}
-				
-				//Send to the Processor - with the client in case is invalid.. in which case disconnect
+				//Send to the Processor
 				Main.getInstance().getTxPoWProcessor().postProcessIBD(ibd, mClientUID);
 				
 			}else if(type.isEqual(MSG_TXPOWID)) {
@@ -279,46 +256,68 @@ public class NIOMessage implements Runnable {
 				//Now get the current tip details
 				TxPoWTreeNode tip 		= MinimaDB.getDB().getTxPoWTree().getTip();
 				TxPoWTreeNode cascade 	= MinimaDB.getDB().getTxPoWTree().getRoot();
-				MMR tipmmr 				= tip.getMMR();
-				TxPoW tiptxpow			= tip.getTxPoW();
+				
+				//Have we got any blocks at all yet..
+				if(tip == null) {
+					return;
+				}
 				
 				//The block and cascade block
 				MiniNumber cascadeblock = cascade.getBlockNumber();
 				MiniNumber block 		= txpow.getBlockNumber();
 				
 				//Check if is a block and within range of our current tip
-				double blockdiffratio = TxPoWChecker.checkDifficulty(tip.getTxPoW().getBlockDifficulty(), txpow.getBlockDifficulty());
+				BigDecimal tipdec 		= new BigDecimal(tip.getTxPoW().getBlockDifficulty().getDataValue());
+				BigDecimal blockdec 	= new BigDecimal(txpow.getBlockDifficulty().getDataValue());
+				double blockdiffratio 	= tipdec.divide(blockdec, MathContext.DECIMAL32).doubleValue();
 				
-				//For BOTH txns and blocks
-				if(block.isLess(cascadeblock)) {
-					//Block before cascade
-					MinimaLogger.log("Received block before cascade.. "+block+" / "+cascadeblock+" difficulty:"+blockdiffratio);
-					return;
-				}
+				//Start a timer..
+				long timestart = System.currentTimeMillis();
 				
-				if(blockdiffratio < 0.25) {
-					//Block difficulty too low..
-					MinimaLogger.log("Received txpow with block difficulty too low.. "+blockdiffratio+" "+txpow.getBlockNumber()+" "+txpow.getTxPoWID());
-					return;
-				}
+				//Some BASIC checks that MUST pass..
+				boolean disconnectpeer = false;
 				
-				//OK - Some basic checks..
-				if(!TxPoWChecker.checkTxPoWBasic(txpow)) {
-					//These MUST PASS
+				//NONE of these should fail
+				if(!txpow.getChainID().isEqual(TxPoWChecker.CURRENT_NETWORK)) {
+					//Check ChainID
+					MinimaLogger.log("Wrong Block ChainID! "+txpow.getChainID()+" "+txpow.getTxPoWID());
+					disconnectpeer = true;
+				
+				}else if(!TxPoWChecker.checkTxPoWBasic(txpow)) {
+					//Basic checks for valid TxPoW
 					MinimaLogger.log("TxPoW FAILS Basic checks from "+mClientUID+" "+txpow.getTxPoWID());
-					return;
+					disconnectpeer = true;
+				
+				}else if(!TxPoWChecker.checkSignatures(txpow)) {
+					//Check the Signatures
+					MinimaLogger.log("Invalid signatures on txpow from "+mClientUID+" "+txpow.getTxPoWID());
+					disconnectpeer = true;
 				}
 				
-				if(!TxPoWChecker.checkSignatures(txpow)) {
-					MinimaLogger.log("Invalid signatures on txpow from "+mClientUID+" "+txpow.getTxPoWID());
+				//Do we disconnect yet.. 
+				if(disconnectpeer) {
+					Main.getInstance().getNIOManager().disconnect(mClientUID);
 					return;
 				}
 				
 				//More CHECKS.. if ALL these pass will forward otherwise may be a branch txpow that we requested
 				boolean fullyvalid = true;
 				
+				//Interesting info.. check this.. probably a timing issue
+				if(blockdiffratio < 0.1) {
+					//Block difficulty too low..
+					MinimaLogger.log("Received txpow with low block difficulty.. "+blockdiffratio+" "+txpow.getBlockNumber()+" "+txpow.getTxPoWID());
+					fullyvalid = false;
+				}
+				
+				if(block.isLessEqual(cascadeblock)) {
+					//Block before cascade
+					MinimaLogger.log("Received block before cascade.. "+block+" / "+cascadeblock+" difficulty:"+blockdiffratio);
+					fullyvalid = true;
+				}
+				
 				//Check the Scripts - could fail.. 
-				if(!TxPoWChecker.checkTxPoWScripts(tipmmr, txpow, tiptxpow.getBlockNumber())) {
+				if(!TxPoWChecker.checkTxPoWScripts(tip.getMMR(), txpow, tip.getTxPoW())) {
 					//Monotonic txn MUST pass the script check or is INVALID - since will never pass..
 					if(txpow.isMonotonic()) {
 						MinimaLogger.log("Error Monotonic TxPoW failed script check from Client:"+mClientUID+" "+txpow.getTxPoWID());
@@ -331,6 +330,15 @@ public class NIOMessage implements Runnable {
 					fullyvalid = false;
 				}
 				
+				//Max time in the future.. 2 hours.. could be OUR clock..
+				if(txpow.isBlock()) {
+					MiniNumber maxtime = new MiniNumber(System.currentTimeMillis() + (1000 * 60 * 120));
+					if(txpow.getTimeMilli().isMore(maxtime)) {
+						MinimaLogger.log("TxPoW block received with millitime MORE than 2 hours in future "+new Date(txpow.getTimeMilli().getAsLong())+" "+txpow.getTxPoWID());
+						fullyvalid = false;
+					}
+				}
+				
 				//Check for mempool coins..
 				if(TxPoWChecker.checkMemPoolCoins(txpow)) {
 					//Same coins in different transaction - could have been requested by us from branch
@@ -338,7 +346,15 @@ public class NIOMessage implements Runnable {
 				}
 				
 				//Check the MMR - could be in a separate branch
-				if(!TxPoWChecker.checkMMR(tipmmr, txpow)) {
+				if(!TxPoWChecker.checkMMR(tip.getMMR(), txpow)) {
+					fullyvalid = false;
+				}
+				
+				//How long did all that take..
+				long timefinish = System.currentTimeMillis();
+				long timediff 	= timefinish - timestart;
+				if(timediff > 1000) {
+					MinimaLogger.log("Message took a long time ("+timediff+"ms) to process @ "+txpow.getTxPoWID());
 					fullyvalid = false;
 				}
 				
@@ -347,11 +363,12 @@ public class NIOMessage implements Runnable {
 				
 				//Since it's OK.. forward the TxPoWID to the rest of the network..
 				if(fullyvalid) {
-					
 					//Forward to the network
 					NIOManager.sendNetworkMessageAll(MSG_TXPOWID, txpow.getTxPoWIDData());
+				}
 				
-					//Check all the Transactions..
+				//Check all the Transactions.. if it's a block
+				if(txpow.isBlock()) {
 					ArrayList<MiniData> txns = txpow.getBlockTransactions();
 					for(MiniData txn : txns) {
 						exists = MinimaDB.getDB().getTxPoWDB().exists(txn.to0xString());
@@ -361,7 +378,7 @@ public class NIOMessage implements Runnable {
 						}
 					}
 					
-					//Get the parent if we don't have it.. and is infront of the Cascade..
+					//Get the parent if we don't have it..
 					exists = MinimaDB.getDB().getTxPoWDB().exists(txpow.getParentID().to0xString());
 					if(!exists) {
 						NIOManager.sendNetworkMessage(mClientUID, MSG_TXPOWREQ, txpow.getParentID());
@@ -391,6 +408,10 @@ public class NIOMessage implements Runnable {
 				
 				//Get the Client
 				NIOClient nioclient = Main.getInstance().getNIOManager().getNIOServer().getClient(mClientUID);
+				if(nioclient == null) {
+					MinimaLogger.log(mClientUID+" Error null client on P2P NIOMessage..");
+					return;
+				}
 				
 				//Is this one of our Maxima Clients / Hosts.. if so ignore all P2P messages..
 				Maxima max = Main.getInstance().getMaxima();
@@ -464,7 +485,6 @@ public class NIOMessage implements Runnable {
 					//Request all the blocks.. in the correct order
 					for(MiniData block : requestlist) {
 						NIOManager.sendNetworkMessage(mClientUID, MSG_TXPOWREQ, block);
-//						NIOManager.sendDelayedTxPoWReq(mClientUID, block.to0xString(), "PULSE");
 					}
 					
 				}else{

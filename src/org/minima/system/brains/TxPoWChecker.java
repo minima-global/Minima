@@ -1,12 +1,11 @@
 package org.minima.system.brains;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.math.MathContext;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 
 import org.minima.database.MinimaDB;
+import org.minima.database.cascade.CascadeNode;
 import org.minima.database.mmr.MMR;
 import org.minima.database.mmr.MMRData;
 import org.minima.database.txpowdb.TxPoWDB;
@@ -14,20 +13,38 @@ import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.kissvm.Contract;
 import org.minima.objects.Coin;
 import org.minima.objects.CoinProof;
+import org.minima.objects.Magic;
 import org.minima.objects.ScriptProof;
 import org.minima.objects.Token;
 import org.minima.objects.Transaction;
 import org.minima.objects.TxBlock;
+import org.minima.objects.TxHeader;
 import org.minima.objects.TxPoW;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.keys.Signature;
 import org.minima.objects.keys.TreeKey;
+import org.minima.system.params.GlobalParams;
 import org.minima.utils.MinimaLogger;
 
 public class TxPoWChecker {
 
+	/**
+	 * What Network are we currently checking for
+	 */
+	public static MiniData CURRENT_NETWORK = TxHeader.TEST_NET;
+	
+	/**
+	 * The Number of blocks to get the MEDIAN block for time checks
+	 */
+	public static int MEDIAN_TIMECHECK_BLOCK = GlobalParams.MEDIAN_BLOCK_CALC * 4;
+	
+	/**
+	 * The MAX number of milliseconds in the future the Block can be from the Median Block ~2 hrs
+	 */
+	public static MiniNumber MAXMILLI_FUTURE = new MiniNumber(1000 * 50 * MEDIAN_TIMECHECK_BLOCK);
+	
 	/**
 	 * Parallel check all the transactions in this block
 	 */
@@ -35,17 +52,20 @@ public class TxPoWChecker {
 		
 		try {
 			
-			//Max time in the future.. 1hour..
-			MiniNumber maxtime = new MiniNumber(System.currentTimeMillis() + (1000 * 60 * 60));
+			//Check ChainID
+			if(!zTxPoW.getChainID().isEqual(TxPoWChecker.CURRENT_NETWORK)) {
+				MinimaLogger.log("Invalid Block ChainID! "+zTxPoW.getChainID()+" "+zTxPoW.getTxPoWID());
+				return false;
+			}
 			
-			//Check the time of the block is greater than the media time
-			MiniNumber mediantime = TxPoWGenerator.getMedianTime(zParentNode);
-			if(zTxPoW.getTimeMilli().isLess(mediantime)) {
-				MinimaLogger.log("Invalid TxPoW block with millitime LESS than median "+zTxPoW.getTxPoWID());
+			//Check the time of the block is greater than the median time
+			TxPoW medianblock = TxPoWGenerator.getMedianTimeBlock(zParentNode, MEDIAN_TIMECHECK_BLOCK).getTxPoW();
+			if(zTxPoW.getTimeMilli().isLess(medianblock.getTimeMilli())) {
+				MinimaLogger.log("Invalid TxPoW block with millitime LESS than median "+new Date(zTxPoW.getTimeMilli().getAsLong())+" "+zTxPoW.getTxPoWID());
 				return false;
 			
-			}else if(zTxPoW.getTimeMilli().isMore(maxtime)) {
-				MinimaLogger.log("Invalid TxPoW block with millitime MORE than 1 hour in future "+zTxPoW.getTxPoWID());
+			}else if(zTxPoW.getTimeMilli().isMore(medianblock.getTimeMilli().add(MAXMILLI_FUTURE))) {
+				MinimaLogger.log("Invalid TxPoW block with millitime MORE than median + 2 hrs "+new Date(zTxPoW.getTimeMilli().getAsLong())+" "+zTxPoW.getTxPoWID());
 				return false;
 			}
 			
@@ -55,8 +75,31 @@ public class TxPoWChecker {
 				return false;
 			}
 			
-			//Check the Magic Numbers are correct
-			//.. TODO
+			//Check Parents..
+			if(!checkParents(zParentNode, zTxPoW)) {
+				MinimaLogger.log("Invalid TxPoW Super Parents "+zTxPoW.getTxPoWID());
+				return false;
+			}
+			
+			//Check the block difficulty is correct
+			MiniData blockdifficulty = TxPoWGenerator.getBlockDifficulty(zParentNode);
+			if(!zTxPoW.getBlockDifficulty().isEqual(blockdifficulty)) {
+				MinimaLogger.log("Incorrect TxPoW block difficulty "+zTxPoW.getTxPoWID());
+				return false;
+			}
+			
+			//Check Magic numbers
+			Magic txpowmagic = zTxPoW.getMagic();
+			if(!txpowmagic.checkSame(zParentNode.getTxPoW().getMagic().calculateNewCurrent())) {
+				MinimaLogger.log("Incorrect Magic values "+zTxPoW.getBlockTransactions().size()+" "+zTxPoW.getTxPoWID());
+				return false;
+			}
+			
+			//Check Number of Txns..
+			if(zTxPoW.getBlockTransactions().size() > txpowmagic.getMaxNumTxns().getAsInt()) {
+				MinimaLogger.log("Too many transactions in block "+zTxPoW.getBlockTransactions().size()+" "+zTxPoW.getTxPoWID());
+				return false;
+			}
 			
 			//Check all the input coinid are Unique - use the MMR proofs! CoinID could be Eltoo
 			ArrayList<String> allcoinid = new ArrayList<>();
@@ -92,7 +135,7 @@ public class TxPoWChecker {
 			//Convert to unique Set and check equal size
 			HashSet<String> coinset = new HashSet<>(allcoinid);
 			if(coinset.size() != allcoinid.size()) {
-				MinimaLogger.log("Invalid TxPoW Block with non unique CoinID "+zTxPoW.getTxPoWID());
+				MinimaLogger.log("Invalid TxPoW Block with non unique CoinIDs "+zTxPoW.getTxPoWID());
 				return false;
 			}
 			
@@ -101,7 +144,7 @@ public class TxPoWChecker {
 			
 			//First check this
 			if(zTxPoW.isTransaction()) {
-				boolean valid = checkTxPoWSimple(parentMMR, zTxPoW, zTxPoW.getBlockNumber());
+				boolean valid = checkTxPoWSimple(parentMMR, zTxPoW, zTxPoW);
 				if(!valid) {
 					return false;
 				}
@@ -109,7 +152,7 @@ public class TxPoWChecker {
 			
 			//Now check all the internal Transactions
 			for(TxPoW txpow : zTransactions) {
-				boolean valid = checkTxPoWSimple(parentMMR, txpow, zTxPoW.getBlockNumber());
+				boolean valid = checkTxPoWSimple(parentMMR, txpow, zTxPoW);
 				if(!valid) {
 					return false;
 				}
@@ -137,32 +180,42 @@ public class TxPoWChecker {
 	}
 	
 	/**
-	 * Once accepted basic and signature checks are no longer needed..
-	 */
-	public static boolean checkTxPoWSimple(MMR zTipMMR, TxPoW zTxPoW, MiniNumber zBlock) throws Exception {
-	
-		//Check the MMR first - as quicker..
-		boolean valid = checkMMR(zTipMMR, zTxPoW);
-		if(!valid) {
-			return false;
-		}
-		
-		//Now check the scripts
-		return checkTxPoWScripts(zTipMMR, zTxPoW, zBlock);
-	}
-	
-	/**
 	 * Make basic checks of this TxPoW
 	 */
 	public static boolean checkTxPoWBasic(TxPoW zTxPoW) throws Exception {
+		
+		//Check ChainID
+		if(!zTxPoW.getChainID().isEqual(CURRENT_NETWORK)) {
+			MinimaLogger.log("Wrong TxPoW ChainID! "+zTxPoW.getChainID()+" "+zTxPoW.getTxPoWID());
+			return false;
+		}
+		
 		//Check the Transaction..
 		boolean valid = checkTxPoWBasic(zTxPoW.getTxPoWID(), zTxPoW.getTransaction(), zTxPoW.getWitness());
 		if(!valid) {
 			return false;
 		}
 		
-		//Check the Burn Transaction..
-		return checkTxPoWBasic(zTxPoW.getTxPoWID(), zTxPoW.getBurnTransaction(), zTxPoW.getBurnWitness());
+		//Check the Link Hash
+		if(!zTxPoW.getTransaction().getLinkHash().isEqual(MiniData.ZERO_TXPOWID)) {
+			MinimaLogger.log("Invalid LinkHash for Transaction ( NOT 0x00 ) "+zTxPoW.getTxPoWID());
+			return false;
+		}
+		
+		//Is there a BURN transaction..
+		if(!zTxPoW.getBurnTransaction().isEmpty()) {
+			
+			//Check the Link Hash
+			if(!zTxPoW.getBurnTransaction().getLinkHash().isEqual(zTxPoW.getTransaction().getTransactionID())) {
+				MinimaLogger.log("Invalid LinkHash for Burn Transaction "+zTxPoW.getTxPoWID());
+				return false;
+			}
+		
+			//Check the Burn Transaction..
+			return checkTxPoWBasic(zTxPoW.getTxPoWID(), zTxPoW.getBurnTransaction(), zTxPoW.getBurnWitness());
+		}
+		
+		return true;
 	}
 	
 	private static boolean checkTxPoWBasic(String zTxPoWID, Transaction zTransaction, Witness zWitness) throws Exception {
@@ -181,12 +234,18 @@ public class TxPoWChecker {
 		ArrayList<Coin> inputs 			= zTransaction.getAllInputs();
 		int ins = inputs.size();
 		
+		//MUST be at least 1 input..
+		if(ins==0) {
+			MinimaLogger.log("Transaction MUST have at least 1 input @ "+zTxPoWID);
+			return false;
+		}
+		
 		//Get  all the coin proofs..
 		ArrayList<CoinProof> mmrproofs 	= zWitness.getAllCoinProofs();
 		
 		//Check we have the correct amount..
 		if(ins != mmrproofs.size()) {
-			MinimaLogger.log("MISSING MMR Proofs Inputs:"+ins+" MMRProofs:"+mmrproofs.size()+" @ "+zTxPoWID);
+			MinimaLogger.log("Wrong Number of MMR Proofs Inputs:"+ins+" MMRProofs:"+mmrproofs.size()+" @ "+zTxPoWID);
 			return false;
 		}
 		
@@ -210,16 +269,6 @@ public class TxPoWChecker {
 			}
 			allcoinsused.add(coinid);
 			
-			//Check tokenid is correct
-			if(!cproof.getCoin().getTokenID().isEqual(Token.TOKENID_MINIMA)) {
-				
-				//Check the token is correct
-				if(!cproof.getCoin().getTokenID().isEqual(cproof.getCoin().getToken().getTokenID())) {
-					MinimaLogger.log("TokenID in input "+i+" doesn't match token "+zTxPoWID);
-					return false;
-				}
-			}
-			
 			//Check the CoinProof details and Coin details Match
 			boolean amount 	= input.getAmount().isEqual(cproof.getCoin().getAmount());
 			boolean address = input.getAddress().isEqual(cproof.getCoin().getAddress());
@@ -230,19 +279,27 @@ public class TxPoWChecker {
 			}
 			
 			//Check the CoinProof and Coin CoinID in the Transaction Match
-			if(input.getCoinID().isEqual(Coin.COINID_ELTOO)) {
-				
-				//Check is a floating input.. set when the coin was created!
-				if(!cproof.getCoin().isFloating()) {
-					MinimaLogger.log("ELTOO input "+i+" isn't floating "+zTxPoWID);
-					return false;
-				}
-				
-			}else {
+			if(!input.getCoinID().isEqual(Coin.COINID_ELTOO)) {
 				
 				//Check the same CoinID
 				if(!input.getCoinID().isEqual(cproof.getCoin().getCoinID())) {
 					MinimaLogger.log("CoinID input "+i+" doesn't match proof "+zTxPoWID);
+					return false;
+				}
+			}
+			
+			//Check token is correct
+			if(!input.getTokenID().isEqual(Token.TOKENID_MINIMA)) {
+				
+				//Check the token is correct - in the coin
+				if(!input.getTokenID().isEqual(input.getToken().getTokenID())) {
+					MinimaLogger.log("TokenID in Coin input "+i+" doesn't match token "+zTxPoWID);
+					return false;
+				}
+				
+				//Check the token is correct - in the MMR
+				if(!cproof.getCoin().getTokenID().isEqual(cproof.getCoin().getToken().getTokenID())) {
+					MinimaLogger.log("TokenID in MMR Proof input "+i+" doesn't match token "+zTxPoWID);
 					return false;
 				}
 			}
@@ -265,9 +322,37 @@ public class TxPoWChecker {
 	}
 	
 	/**
+	 * Once accepted basic and signature checks are no longer needed..
+	 */
+	public static boolean checkTxPoWSimple(MMR zTipMMR, TxPoW zTxPoW, TxPoW zBlock) throws Exception {
+		
+		//Check TxPoW is required Minimum..
+		if(zTxPoW.getTxnDifficulty().isMore(zBlock.getMagic().getMinTxPowWork())) {
+			MinimaLogger.log("TxPoW difficulty too low.. "+zTxPoW.getTxPoWID());
+			return false;
+		}
+		
+		//Check Size is acceptable..
+		long size = zTxPoW.getSizeinBytesWithoutBlockTxns();
+		if(size > zBlock.getMagic().getMaxTxPoWSize().getAsLong()) {
+			MinimaLogger.log("TxPoW size too large.. "+size+" "+zTxPoW.getTxPoWID());
+			return false;
+		}
+		
+		//Check the MMR first - as quicker..
+		boolean valid = checkMMR(zTipMMR, zTxPoW);
+		if(!valid) {
+			return false;
+		}
+		
+		//Now check the scripts
+		return checkTxPoWScripts(zTipMMR, zTxPoW, zBlock);
+	}
+	
+	/**
 	 * Check the Scripts of a transaction
 	 */
-	public static boolean checkTxPoWScripts(MMR zTipMMR, TxPoW zTxPoW, MiniNumber zBlock) throws Exception {
+	public static boolean checkTxPoWScripts(MMR zTipMMR, TxPoW zTxPoW, TxPoW zBlock) throws Exception {
 		
 		//Check the Transaction..
 		boolean valid = checkTxPoWScripts(zTipMMR, zTxPoW.getTransaction(), zTxPoW.getWitness(), zBlock);
@@ -279,7 +364,7 @@ public class TxPoWChecker {
 		return checkTxPoWScripts(zTipMMR, zTxPoW.getBurnTransaction(), zTxPoW.getBurnWitness(), zBlock);
 	}
 	
-	private static boolean checkTxPoWScripts(MMR zTipMMR, Transaction zTransaction, Witness zWitness, MiniNumber zBlock) throws Exception {
+	private static boolean checkTxPoWScripts(MMR zTipMMR, Transaction zTransaction, Witness zWitness, TxPoW zBlock) throws Exception {
 		
 		//Do we even need to check this!
 		if(zTransaction.isCheckedMonotonic()) {
@@ -296,6 +381,9 @@ public class TxPoWChecker {
 			zTransaction.mIsValid = true;
 			return true;
 		}
+		
+		//Max KISSVM Ops
+		int maxops = zBlock.getMagic().getMaxKISSOps().getAsInt();
 		
 		//Get the coin proofs
 		ArrayList<CoinProof> mmrproofs 	= zWitness.getAllCoinProofs();
@@ -318,7 +406,8 @@ public class TxPoWChecker {
 											zTransaction, 
 											cproof.getCoin().getState());
 			
-			contract.setGlobals(zBlock, zTransaction, i, cproof.getCoin().getBlockCreated(), script);
+			contract.setMaxInstructions(maxops);
+			contract.setGlobals(zBlock.getBlockNumber(), zTransaction, i, cproof.getCoin().getBlockCreated(), script);
 			contract.run();
 			
 			//Monotonic - no @BLKNUM references..
@@ -350,7 +439,8 @@ public class TxPoWChecker {
 														zTransaction, 
 														cproof.getCoin().getState());
 					
-					tokcontract.setGlobals(zBlock, zTransaction, i, cproof.getCoin().getBlockCreated(), tokscript);
+					tokcontract.setMaxInstructions(maxops);
+					tokcontract.setGlobals(zBlock.getBlockNumber(), zTransaction, i, cproof.getCoin().getBlockCreated(), tokscript);
 					tokcontract.run();
 					
 					if(!tokcontract.isMonotonic()) {
@@ -477,18 +567,70 @@ public class TxPoWChecker {
 	}
 	
 	/**
-	 * Check the Difficulty of one block with another..
+	 * Check that all the Super Parent nodes are correct
 	 */
-	public static double checkDifficulty(MiniData zTip, MiniData zBlock) {
+	public static boolean checkParents(TxPoWTreeNode zTip, TxPoW zBlock) {
 		
-		BigInteger tip 		= zTip.getDataValue();
-		BigInteger block 	= zBlock.getDataValue();
+		//Cycle back through the chain..
+		int blocksup 			= 0;
+		TxPoWTreeNode current 	= zTip;
+		while(current != null) {
+			
+			//Get the TxPoW
+			TxPoW txpow 	= current.getTxPoW();
+			MiniData txdata	= txpow.getTxPoWIDData();
+			int superlevel 	= txpow.getSuperLevel();
+			
+			//Is it more than or equal to current required..
+			while(superlevel>=blocksup) {
+			
+				//The current super parent of the block
+				MiniData superparent = zBlock.getSuperParent(blocksup);
+				
+				//Make sure is valid..
+				if(!superparent.isEqual(txdata)) {
+					return false;
+				}
+				
+				blocksup++;
+			}
+			
+			current = current.getParent();
+		}
 		
-		BigDecimal tipdec 	= new BigDecimal(tip);
-		BigDecimal blockdec = new BigDecimal(block);
+		//Now go through the cascade
+		CascadeNode cnode = MinimaDB.getDB().getCascade().getTip();
+		while(cnode != null) {
+			
+			//Get the TxPoW
+			TxPoW txpow 	= cnode.getTxPoW();
+			MiniData txdata	= txpow.getTxPoWIDData();
+			int superlevel 	= txpow.getSuperLevel();
+			
+			//Is it more than or equal to current required..
+			while(superlevel>=blocksup) {
+			
+				//The current super parent of the block
+				MiniData superparent = zBlock.getSuperParent(blocksup);
+				
+				//Make sure is valid..
+				if(!superparent.isEqual(txdata)) {
+					return false;
+				}
+				
+				blocksup++;
+			}
+			
+			cnode = cnode.getParent();
+		}
 		
-		BigDecimal div 		= tipdec.divide(blockdec, MathContext.DECIMAL32);
+		//Check that the remaining all point to 0x00
+		for(int i=blocksup;i<GlobalParams.MINIMA_CASCADE_LEVELS;i++) {
+			if(!zBlock.getSuperParent(blocksup).isEqual(MiniData.ZERO_TXPOWID)) {
+				return false;
+			}
+		}
 		
-		return div.doubleValue();
+		return true;
 	}
 }

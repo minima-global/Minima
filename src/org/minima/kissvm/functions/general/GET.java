@@ -17,9 +17,8 @@ public class GET extends MinimaFunction{
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
 		checkMinParamNumber(requiredParams());
-		checkAllParamsType(Value.VALUE_NUMBER, zContract);
 		
-		//The final Param String to search for
+		//The full parameter String to search for
 		String ps = "";
 		
 		//Get all the parameters

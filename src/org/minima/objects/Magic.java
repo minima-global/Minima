@@ -11,75 +11,102 @@ import org.minima.utils.Crypto;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONObject;
 
+/**
+ * These Numbers define the capacity of the Minima network
+ * 
+ * @author spartacusrex
+ *
+ */
 public class Magic implements Streamable {
 
 	/**
 	 * Used to calculate the weighted averages
 	 */
-	public static final MiniNumber CALC_WEIGHTED 	= new MiniNumber(16383);
-	public static final MiniNumber CALC_TOTAL 		= new MiniNumber(16384);
+	private static final MiniNumber CALC_WEIGHTED		= new MiniNumber(16383);
+	private static final MiniNumber CALC_TOTAL 			= new MiniNumber(16384);
 	
 	/**
-	 * Default starting values..
+	 * These are HARD limits that can NEVER Change
 	 */
-	public static final MiniNumber MAX_TXPOW_SIZE 		= new MiniNumber(32000);
-	public static final MiniNumber MAX_TXPOW_TXNS 	 	= new MiniNumber(100);
+	private static final MiniNumber MINMAX_TXPOW_SIZE 			= new MiniNumber(64*1024);
+	private static final MiniNumber MINMAX_KISSVM_OPERATIONS 	= new MiniNumber(1024);
+	private static final MiniNumber MINMAX_TXPOW_TXNS			= new MiniNumber(256);
 	
 	/**
-	 * The minimum amount of work for a TxPoW to be allowed across the network
+	 * Minimum acceptable PoW per TxPoW - Also a HARD limit
+	 * 
+	 * 0.1 MHash is the minimum..
 	 */
-	public static final BigInteger MEGA_VAL 			= Crypto.MAX_VAL.divide(new BigInteger("1000"));	
-	public static final MiniData   MIN_TXPOW_WORK		= new MiniData("0x"+MEGA_VAL.toString(16));
+	public static final MiniNumber MIN_HASHES 		= new MiniNumber(100000);
+	public static final BigInteger MIN_TXPOW_VAL 	= Crypto.MAX_VAL.divide(MIN_HASHES.getAsBigInteger());
+	public static final MiniData MIN_TXPOW_WORK 	= new MiniData(MIN_TXPOW_VAL);
 	
+	/**
+	 * Default Maximum size of a TxPoW unit.. Can change
+	 */
+	private static final MiniNumber DEFAULT_TXPOW_SIZE 	= new MiniNumber(64*1024);
+	
+	/**
+	 * Default Maximum Number of executed KISSVM Operations
+	 */
+	private static final MiniNumber DEFAULT_KISSVM_OPERATIONS 	= new MiniNumber(1024);
+	
+	/**
+	 * Default Maximum number of Txns per block
+	 */
+	private static final MiniNumber DEFAULT_TXPOW_TXNS	= new MiniNumber(256);
+	
+		
 	/**
 	 * The Current MAGIC numbers.. based on a weighted average of the chain..
 	 * 
-	 * This is ( 9999*the last current values + 1*Desired value ) / 10000
-	 * 
+	 * This is ( 16383*the last current values + 1*Desired value ) / 16384
 	 */
 	public MiniNumber mCurrentMaxTxPoWSize;
+	public MiniNumber mCurrentMaxKISSVMOps;
 	public MiniNumber mCurrentMaxTxnPerBlock;
 	public MiniData   mCurrentMinTxPoWWork;
 	
-	/**
-	 * The user votes on what he thinks it should be..
-	 * 
-	 * MUST BE >= x0.5 and <= x2 of the current values.
-	 */
 	public MiniNumber mDesiredMaxTxPoWSize;
+	public MiniNumber mDesiredMaxKISSVMOps;
 	public MiniNumber mDesiredMaxTxnPerBlock;
 	public MiniData   mDesiredMinTxPoWWork;
 	
 	public Magic() {
-		mCurrentMaxTxPoWSize 			= MAX_TXPOW_SIZE;
-		mCurrentMaxTxnPerBlock			= MAX_TXPOW_TXNS;
+		mCurrentMaxTxPoWSize			= DEFAULT_TXPOW_SIZE;
+		mCurrentMaxKISSVMOps			= DEFAULT_KISSVM_OPERATIONS;
+		mCurrentMaxTxnPerBlock			= DEFAULT_TXPOW_TXNS;
 		mCurrentMinTxPoWWork			= MIN_TXPOW_WORK;
 		
-		mDesiredMaxTxPoWSize          	= MAX_TXPOW_SIZE;
-		mDesiredMaxTxnPerBlock        	= MAX_TXPOW_TXNS;
+		mDesiredMaxTxPoWSize			= DEFAULT_TXPOW_SIZE;
+		mDesiredMaxKISSVMOps			= DEFAULT_KISSVM_OPERATIONS;
+		mDesiredMaxTxnPerBlock        	= DEFAULT_TXPOW_TXNS;
 		mDesiredMinTxPoWWork			= MIN_TXPOW_WORK;
 	}
 
 	public JSONObject toJSON() {
 		JSONObject magic = new JSONObject();
 		
-		magic.put("desiredmaxtxpow", mDesiredMaxTxPoWSize.toString());
+		magic.put("currentmaxtxpowsize", mCurrentMaxTxPoWSize.toString());
+		magic.put("currentmaxkissvmops", mCurrentMaxKISSVMOps.toString());
+		magic.put("currentmaxtxn", mCurrentMaxTxnPerBlock.toString());
+		magic.put("currentmintxpowwork", mCurrentMinTxPoWWork.to0xString());
+		
+		magic.put("desiredmaxtxpowsize", mDesiredMaxTxPoWSize.toString());
+		magic.put("desiredmaxkissvmops", mDesiredMaxKISSVMOps.toString());
 		magic.put("desiredmaxtxn", mDesiredMaxTxnPerBlock.toString());
 		magic.put("desiredmintxpowwork", mDesiredMinTxPoWWork.to0xString());
-		
-		magic.put("maxtxpow", mCurrentMaxTxPoWSize.toString());
-		magic.put("maxtxn", mCurrentMaxTxnPerBlock.toString());
-		magic.put("mintxpowwork", mCurrentMinTxPoWWork.to0xString());
 		
 		return magic;
 	}
 	
 	public boolean checkSame(Magic zMagic) {
-		boolean x = mCurrentMaxTxPoWSize.isEqual(zMagic.mCurrentMaxTxPoWSize);
+		boolean w = mCurrentMaxTxPoWSize.isEqual(zMagic.mCurrentMaxTxPoWSize);
+		boolean x = mCurrentMaxKISSVMOps.isEqual(zMagic.mCurrentMaxKISSVMOps);
 		boolean y = mCurrentMaxTxnPerBlock.isEqual(zMagic.mCurrentMaxTxnPerBlock);
-		boolean w = mCurrentMinTxPoWWork.isEqual(zMagic.mCurrentMinTxPoWWork);
+		boolean z = mCurrentMinTxPoWWork.isEqual(zMagic.mCurrentMinTxPoWWork);
 		
-		return x && y && w;
+		return w && x && y && z;
 	}
 	
 	/**
@@ -87,6 +114,10 @@ public class Magic implements Streamable {
 	 */
 	public MiniNumber getMaxTxPoWSize() {
 		return mCurrentMaxTxPoWSize;
+	}
+	
+	public MiniNumber getMaxKISSOps() {
+		return mCurrentMaxKISSVMOps;
 	}
 	
 	public MiniNumber getMaxNumTxns() {
@@ -98,25 +129,91 @@ public class Magic implements Streamable {
 	}
 	
 	/**
-	 * Calculate the current MAX values by taking a heavily weighted average 
+	 * Calculate the current MAX values by taking a heavily weighted average
+	 * 
+	 *  Desired MUST be >= x0.5 and <= x2
+	 *  
 	 */
-	public void calculateNewCurrent(Magic zParentMagic) {
+	public Magic calculateNewCurrent() {
 		
-		// ( 16383*old + new ) / 16384 .. very simple
-		MiniNumber parent 		= zParentMagic.getMaxTxPoWSize();
-		mCurrentMaxTxPoWSize 	= parent.mult(CALC_WEIGHTED).add(mDesiredMaxTxPoWSize).div(CALC_TOTAL);
+		//The New Magic Numbers
+		Magic ret = new Magic();
 		
-		parent 					= zParentMagic.getMaxNumTxns();
-		mCurrentMaxTxnPerBlock 	= parent.mult(CALC_WEIGHTED).add(mDesiredMaxTxnPerBlock).div(CALC_TOTAL);
-	
-		//Work is slightly differenbt as is MiniData
-		BigInteger oldval = zParentMagic.getMinTxPowWork().getDataValue();
+		//TxPoWSize
+		MiniNumber desired 	= mDesiredMaxTxPoWSize;
+		MiniNumber min	 	= mCurrentMaxTxPoWSize.div(MiniNumber.TWO);
+		MiniNumber max	 	= mCurrentMaxTxPoWSize.mult(MiniNumber.TWO);
+		if(desired.isLess(min)) {
+			desired = min;
+		}else if(desired.isMore(max)) {
+			desired = max;
+		
+		}
+		
+		//And finally - this is the minimum limit
+		if(desired.isLess(MINMAX_TXPOW_SIZE)) {
+			desired = MINMAX_TXPOW_SIZE;
+		}
+		
+		ret.mCurrentMaxTxPoWSize 	= mCurrentMaxTxPoWSize.mult(CALC_WEIGHTED).add(desired).div(CALC_TOTAL);
+		
+		//KISSVMOpS
+		desired 	= mDesiredMaxKISSVMOps;
+		min	 		= mCurrentMaxKISSVMOps.div(MiniNumber.TWO);
+		max	 		= mCurrentMaxKISSVMOps.mult(MiniNumber.TWO);
+		if(desired.isLess(min)) {
+			desired = min;
+		}else if(desired.isMore(max)) {
+			desired = max;
+		}
+		
+		//And finally - this is the minimum limit
+		if(desired.isLess(MINMAX_KISSVM_OPERATIONS)) {
+			desired = MINMAX_KISSVM_OPERATIONS;
+		}
+		
+		ret.mCurrentMaxKISSVMOps	= mCurrentMaxKISSVMOps.mult(CALC_WEIGHTED).add(desired).div(CALC_TOTAL);
+		
+		//Txns per block
+		desired 	= mDesiredMaxTxnPerBlock;
+		min	 		= mCurrentMaxTxnPerBlock.div(MiniNumber.TWO);
+		max	 		= mCurrentMaxTxnPerBlock.mult(MiniNumber.TWO);
+		if(desired.isLess(min)) {
+			desired = min;
+		}else if(desired.isMore(max)) {
+			desired = max;
+		}
+		
+		//And finally - this is the minimum limit
+		if(desired.isLess(MINMAX_TXPOW_TXNS)) {
+			desired = MINMAX_TXPOW_TXNS;
+		}
+		
+		ret.mCurrentMaxTxnPerBlock	= mCurrentMaxTxnPerBlock.mult(CALC_WEIGHTED).add(desired).div(CALC_TOTAL);
+		
+		//Work is slightly different as is MiniData
+		BigInteger two 	  = new BigInteger("2");
+		BigInteger oldval = mCurrentMinTxPoWWork.getDataValue();
+		BigInteger minval = oldval.divide(two);
+		BigInteger maxval = oldval.multiply(two);
+		
 		BigInteger newval = mDesiredMinTxPoWWork.getDataValue();
+		if(newval.compareTo(minval)<0) {
+			newval = minval;
+		}else if(newval.compareTo(maxval)>0) {
+			newval = maxval;
+		}
+		
+		//And finally - this is the minimum limit
+		if(newval.compareTo(MIN_TXPOW_VAL) > 0) {
+			newval = MIN_TXPOW_VAL;
+		}
 		
 		//Now do the same calculation..
-		BigInteger calc = oldval.multiply(new BigInteger("16383")).add(newval).divide(new BigInteger("16384")); 
-		mCurrentMinTxPoWWork = new MiniData(calc);
+		BigInteger calc = oldval.multiply(CALC_WEIGHTED.getAsBigInteger()).add(newval).divide(CALC_TOTAL.getAsBigInteger()); 
+		ret.mCurrentMinTxPoWWork = new MiniData(calc);	
 		
+		return ret;
 	}
 	
 	@Override
@@ -127,56 +224,28 @@ public class Magic implements Streamable {
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
 		mCurrentMaxTxPoWSize.writeDataStream(zOut);
+		mCurrentMaxKISSVMOps.writeDataStream(zOut);
 		mCurrentMaxTxnPerBlock.writeDataStream(zOut);
-		new MiniNumber(128).writeDataStream(zOut);
 		mCurrentMinTxPoWWork.writeDataStream(zOut);
 		
 		mDesiredMaxTxPoWSize.writeDataStream(zOut);
+		mDesiredMaxKISSVMOps.writeDataStream(zOut);
 		mDesiredMaxTxnPerBlock.writeDataStream(zOut);
-		new MiniNumber(128).writeDataStream(zOut);
 		mDesiredMinTxPoWWork.writeDataStream(zOut);
 	}
 
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
-		mCurrentMaxTxPoWSize = MiniNumber.ReadFromStream(zIn);
-		mCurrentMaxTxnPerBlock = MiniNumber.ReadFromStream(zIn);
+		mCurrentMaxTxPoWSize	= MiniNumber.ReadFromStream(zIn);
+		mCurrentMaxKISSVMOps	= MiniNumber.ReadFromStream(zIn);
+		mCurrentMaxTxnPerBlock 	= MiniNumber.ReadFromStream(zIn);
+		mCurrentMinTxPoWWork 	= MiniData.ReadFromStream(zIn);
 		
-		//KISS HACK
-		MiniNumber.ReadFromStream(zIn);
-		
-		mCurrentMinTxPoWWork = MiniData.ReadFromStream(zIn);
-		
-		mDesiredMaxTxPoWSize = MiniNumber.ReadFromStream(zIn);
-		mDesiredMaxTxnPerBlock = MiniNumber.ReadFromStream(zIn);
-		
-		//KISS HaCK
-		MiniNumber.ReadFromStream(zIn);
-		
-		mDesiredMinTxPoWWork = MiniData.ReadFromStream(zIn);
+		mDesiredMaxTxPoWSize	= MiniNumber.ReadFromStream(zIn);
+		mDesiredMaxKISSVMOps	= MiniNumber.ReadFromStream(zIn);
+		mDesiredMaxTxnPerBlock 	= MiniNumber.ReadFromStream(zIn);
+		mDesiredMinTxPoWWork	= MiniData.ReadFromStream(zIn);
 	}
-	
-//	@Override
-//	public void writeDataStream(DataOutputStream zOut) throws IOException {
-//		mCurrentMaxTxPoWSize.writeDataStream(zOut);
-//		mCurrentMaxTxnPerBlock.writeDataStream(zOut);
-//		mCurrentMinTxPoWWork.writeDataStream(zOut);
-//		
-//		mDesiredMaxTxPoWSize.writeDataStream(zOut);
-//		mDesiredMaxTxnPerBlock.writeDataStream(zOut);
-//		mDesiredMinTxPoWWork.writeDataStream(zOut);
-//	}
-//
-//	@Override
-//	public void readDataStream(DataInputStream zIn) throws IOException {
-//		mCurrentMaxTxPoWSize 	= MiniNumber.ReadFromStream(zIn);
-//		mCurrentMaxTxnPerBlock 	= MiniNumber.ReadFromStream(zIn);
-//		mCurrentMinTxPoWWork 	= MiniData.ReadFromStream(zIn);
-//		
-//		mDesiredMaxTxPoWSize 	= MiniNumber.ReadFromStream(zIn);
-//		mDesiredMaxTxnPerBlock 	= MiniNumber.ReadFromStream(zIn);
-//		mDesiredMinTxPoWWork 	= MiniData.ReadFromStream(zIn);
-//	}
 	
 	public static Magic ReadFromStream(DataInputStream zIn) throws IOException {
 		Magic mag = new Magic();
@@ -185,22 +254,25 @@ public class Magic implements Streamable {
 	}
 	
 	public static void main(String[] zArgs) {
+
+		MiniNumber desired 	= new MiniNumber(3000);
+	
+		System.out.println("Start:1024 Desired:"+desired);
 		
-		Magic oldparam = new Magic();
-		
-		Magic newparam = new Magic();
-		newparam.mDesiredMaxTxnPerBlock = new MiniNumber(200);
-		newparam.mDesiredMinTxPoWWork = new MiniData("0x3189374BC6A7EF9DB22D0E5604189374BC6A7EF9DB22D0E5604189374BC6A7");
-		
-		newparam.calculateNewCurrent(oldparam);
-		System.out.println(newparam.toJSON());
-		
-		for(int i=0;i<16384;i++) {
+		int days=0;
+		Magic current 		= new Magic();
+//		current.mCurrentMaxKISSVMOps = new MiniNumber(2000);
+		for(int i=0;i<1728*50;i++) {
+			if(i%1000==0) {
+				current.mDesiredMaxKISSVMOps = desired;
+			}
 			
-			newparam.calculateNewCurrent(newparam);
+			current = current.calculateNewCurrent();
 			
-			System.out.println(i+") "+newparam.toJSON());
-		}
-		
+			if(i%50 == 0) {
+				days++;
+				System.out.println(days+") "+current.mCurrentMaxKISSVMOps);
+			}
+		}	
 	}
 }

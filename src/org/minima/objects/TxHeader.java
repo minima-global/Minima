@@ -18,10 +18,18 @@ import org.minima.utils.json.JSONObject;
 
 public class TxHeader implements Streamable {
 
+	public static MiniData TEST_NET 	= new MiniData("0x00");
+	public static MiniData MAIN_NET 	= new MiniData("0x01");
+	
 	/**
 	 * The NONCE - the user definable data you cycle through to change the final hash of this TxPow
 	 */
 	public MiniNumber mNonce = new MiniNumber(0);
+	
+	/**
+	 * The Chain ID - This defines the rules this block was made under, MUST be 0x01.. 
+	 */
+	public MiniData mChainID = TEST_NET;
 	
 	/**
 	 * Time Milli - needs to be a MiniNumber as is used in Scripts.. 
@@ -83,6 +91,7 @@ public class TxHeader implements Streamable {
 	public JSONObject toJSON() {
 		JSONObject txpow = new JSONObject();
 		
+		txpow.put("chainid", mChainID.toString());
 		txpow.put("block", mBlockNumber.toString());
 		txpow.put("blkdiff", mBlockDifficulty.to0xString());
 		
@@ -142,14 +151,12 @@ public class TxHeader implements Streamable {
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
 		mNonce.writeDataStream(zOut);
+		mChainID.writeDataStream(zOut);
 		mTimeMilli.writeDataStream(zOut);
 		mBlockNumber.writeDataStream(zOut);
 		mBlockDifficulty.writeDataStream(zOut);
 		
 		//The Super parents are efficiently encoded in RLE
-		MiniByte cascnum = new MiniByte(GlobalParams.MINIMA_CASCADE_LEVELS);
-		cascnum.writeDataStream(zOut);
-		
 		MiniData sparent = null;
 		int counter  = 0;
 		for(int i=0;i<GlobalParams.MINIMA_CASCADE_LEVELS;i++) {
@@ -195,14 +202,14 @@ public class TxHeader implements Streamable {
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
 		mNonce           = MiniNumber.ReadFromStream(zIn);
+		mChainID		 = MiniData.ReadFromStream(zIn);
 		mTimeMilli       = MiniNumber.ReadFromStream(zIn);
 		mBlockNumber     = MiniNumber.ReadFromStream(zIn);
 		mBlockDifficulty = MiniData.ReadFromStream(zIn);
 		
-		//How many cascade levels.. will probably NEVER change..
-		MiniByte cascnum = MiniByte.ReadFromStream(zIn);
+		//How many cascade levels..
 		int tot = 0;
-		while(tot<cascnum.getValue()) {
+		while(tot<GlobalParams.MINIMA_CASCADE_LEVELS) {
 			MiniByte len = MiniByte.ReadFromStream(zIn);
 			MiniData sup = MiniData.ReadHashFromStream(zIn);
 			int count = len.getValue();

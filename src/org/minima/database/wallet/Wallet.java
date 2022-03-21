@@ -18,14 +18,20 @@ import org.minima.utils.SqlDB;
 public class Wallet extends SqlDB {
 
 	/**
+	 * How many default keys to create 
+	 */
+	public static int NUMBER_GETADDRESS_KEYS = 64;
+	
+	/**
 	 * PreparedStatements
 	 */
-	PreparedStatement SQL_CREATE_PUBLIC_KEY 		= null;
-	PreparedStatement SQL_GET_ALL_RELEVANT 			= null;
-	PreparedStatement SQL_GET_FADDRESS 				= null;
-	PreparedStatement SQL_GET_FPUBLICKEY 			= null;
-	PreparedStatement SQL_GET_USES 					= null;
-	PreparedStatement SQL_UPDATE_USES 				= null;
+	PreparedStatement SQL_CREATE_PUBLIC_KEY 			= null;
+	PreparedStatement SQL_GET_ALL_NONSINGLE_RELEVANT 	= null;
+	PreparedStatement SQL_GET_ALL_RELEVANT 				= null;
+	PreparedStatement SQL_GET_FADDRESS 					= null;
+	PreparedStatement SQL_GET_FPUBLICKEY 				= null;
+	PreparedStatement SQL_GET_USES 						= null;
+	PreparedStatement SQL_UPDATE_USES 					= null;
 	
 	/**
 	 * Scripts DB
@@ -39,6 +45,11 @@ public class Wallet extends SqlDB {
 	Hashtable<String, TreeKey> mTreeKeys = new Hashtable<>();
 	
 	/**
+	 * Stop creating keys if you are
+	 */
+	boolean mShuttingdown = false;
+	
+	/**
 	 * Has there been a change to the Key Rows.. otherwise used cached
 	 */
 	boolean mKeyRowChange 					= true;
@@ -46,6 +57,14 @@ public class Wallet extends SqlDB {
 	
 	public Wallet() {
 		super();
+	}
+	
+	public void shuttiongDown() {
+		mShuttingdown = true;
+	}
+	
+	private boolean isShuttingDown() {
+		return mShuttingdown;
 	}
 	
 	@Override
@@ -63,7 +82,8 @@ public class Wallet extends SqlDB {
 							+ "  `privatekey` varchar(80) NOT NULL,"
 							+ "  `publickey` varchar(80) NOT NULL,"
 							+ "  `script` varchar(255) NOT NULL,"
-							+ "  `simpleaddress` varchar(80) NOT NULL"
+							+ "  `simpleaddress` varchar(80) NOT NULL,"
+							+ "  `singleuse` int NOT NULL"
 							+ ")";
 			
 			//Run it..
@@ -84,12 +104,13 @@ public class Wallet extends SqlDB {
 			stmt.close();
 			
 			//Create some prepared statements..
-			SQL_CREATE_PUBLIC_KEY 	= mSQLCOnnection.prepareStatement("INSERT IGNORE INTO keys ( basemodifier, uses, privatekey, publickey, script, simpleaddress ) VALUES ( ?, ?, ? ,? ,? ,? )");
-			SQL_GET_ALL_RELEVANT	= mSQLCOnnection.prepareStatement("SELECT * FROM keys");
-			SQL_GET_FADDRESS		= mSQLCOnnection.prepareStatement("SELECT * FROM keys WHERE simpleaddress=?");
-			SQL_GET_FPUBLICKEY		= mSQLCOnnection.prepareStatement("SELECT * FROM keys WHERE publickey=?");
-			SQL_UPDATE_USES			= mSQLCOnnection.prepareStatement("UPDATE keys SET uses=? WHERE privatekey=?");
-			SQL_GET_USES			= mSQLCOnnection.prepareStatement("SELECT uses FROM keys WHERE privatekey=?");
+			SQL_CREATE_PUBLIC_KEY 			= mSQLCOnnection.prepareStatement("INSERT IGNORE INTO keys ( basemodifier, uses, privatekey, publickey, script, simpleaddress, singleuse ) VALUES ( ?, ?, ?, ? ,? ,? ,? )");
+			SQL_GET_ALL_RELEVANT			= mSQLCOnnection.prepareStatement("SELECT * FROM keys");
+			SQL_GET_ALL_NONSINGLE_RELEVANT	= mSQLCOnnection.prepareStatement("SELECT * FROM keys WHERE singleuse=0");
+			SQL_GET_FADDRESS				= mSQLCOnnection.prepareStatement("SELECT * FROM keys WHERE simpleaddress=?");
+			SQL_GET_FPUBLICKEY				= mSQLCOnnection.prepareStatement("SELECT * FROM keys WHERE publickey=?");
+			SQL_UPDATE_USES					= mSQLCOnnection.prepareStatement("UPDATE keys SET uses=? WHERE privatekey=?");
+			SQL_GET_USES					= mSQLCOnnection.prepareStatement("SELECT uses FROM keys WHERE privatekey=?");
 			
 			//ScriptsDB
 			SQL_ADD_CUSTOM_SCRIPT	= mSQLCOnnection.prepareStatement("INSERT IGNORE INTO scripts ( script, address, track ) VALUES ( ?, ? , ? )");
@@ -106,31 +127,43 @@ public class Wallet extends SqlDB {
 	/**
 	 * Create an initial set of keys / addresses to use
 	 */
-	public void initDefaultKeys() {
+	public boolean initDefaultKeys() {
 		
 		//Get all the keys..
-		ArrayList<KeyRow> allkeys = getAllRelevant();
+		ArrayList<KeyRow> allkeys = getAllRelevant(true);
+		boolean allcreated = false;
 		
 		//Check we have the desired amount..
 		int numkeys = allkeys.size();
-		if(numkeys < 16) {
+		if(numkeys < NUMBER_GETADDRESS_KEYS) {
 			
-			MinimaLogger.log("Creating initial key set..");
-			
-			//Create the remaining keys
-			int create = 16 - numkeys;
-			for(int i=0;i<create;i++) {
-				createNewKey();
+			//Create a few at a time..
+			int diff = NUMBER_GETADDRESS_KEYS - numkeys;
+			if(diff>8) {
+				diff = 8;
 			}
+			
+			//Create the keys
+			for(int i=0;i<diff;i++) {
+				if(!isShuttingDown()) {
+					createNewKey(false);
+				}
+			}
+			
+			MinimaLogger.log("8 more initial keys created.. Total now : "+(numkeys+diff));
+		}else {
+			allcreated = true;
 		}
+		
+		return allcreated;
 	}
 	
 	/**
-	 * Get 1 of your keys at random
+	 * Get 1 of your non singleuse keys at random
 	 */
-	public KeyRow getKey() {
+	public KeyRow getDefaultKeyAddress() {
 		//Get all the keys..
-		ArrayList<KeyRow> allkeys = getAllRelevant();
+		ArrayList<KeyRow> allkeys = getAllRelevant(true);
 		int numkeys = allkeys.size();
 		
 		//Now pick a random key..
@@ -142,18 +175,18 @@ public class Wallet extends SqlDB {
 	/**
 	 * Create a NEW key
 	 */
-	public synchronized KeyRow createNewKey() {
+	public synchronized KeyRow createNewKey(boolean zSingleUse) {
 				
 		//Create a NEW random seed..
 		MiniData privateseed = MiniData.getRandomData(32);
 		
-		return createNewKey(privateseed);
+		return createNewKey(privateseed, zSingleUse);
 	}
 	
 	/**
 	 * Create a NEW key
 	 */
-	public synchronized KeyRow createNewKey(MiniData zPrivateSeed) {
+	public synchronized KeyRow createNewKey(MiniData zPrivateSeed, boolean zSingleUse) {
 		
 		//Change has occurred
 		mKeyRowChange = true;
@@ -188,6 +221,13 @@ public class Wallet extends SqlDB {
 			SQL_CREATE_PUBLIC_KEY.setString(5, script);
 			SQL_CREATE_PUBLIC_KEY.setString(6, addr.getAddressData().to0xString());
 			
+			//Is this a Single Use key - not getaddress
+			if(zSingleUse) {
+				SQL_CREATE_PUBLIC_KEY.setInt(7, 1);
+			}else {
+				SQL_CREATE_PUBLIC_KEY.setInt(7, 0);
+			}
+			
 			//Do it.
 			SQL_CREATE_PUBLIC_KEY.execute();
 			
@@ -203,7 +243,7 @@ public class Wallet extends SqlDB {
 	/**
 	 * Get all relevant Public Keys and Addresses
 	 */
-	public synchronized ArrayList<KeyRow> getAllRelevant() {
+	public synchronized ArrayList<KeyRow> getAllRelevant(boolean zOnlyNonSingleKeys) {
 		
 		//If nop change use the cached version
 		if(!mKeyRowChange) {
@@ -215,7 +255,12 @@ public class Wallet extends SqlDB {
 		try {
 			
 			//Run the query
-			ResultSet rs = SQL_GET_ALL_RELEVANT.executeQuery();
+			ResultSet rs = null;
+			if(zOnlyNonSingleKeys) {
+				rs = SQL_GET_ALL_NONSINGLE_RELEVANT.executeQuery();
+			}else {
+				rs = SQL_GET_ALL_RELEVANT.executeQuery();
+			}
 			
 			//Could be multiple results
 			while(rs.next()) {

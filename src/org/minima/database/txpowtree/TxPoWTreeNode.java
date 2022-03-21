@@ -112,7 +112,7 @@ public class TxPoWTreeNode implements Streamable {
 		//Are we checking for relevant data
 		ArrayList<KeyRow> allrel = new ArrayList<>();
 		if(zFindRelevant) {
-			allrel = wallet.getAllRelevant();
+			allrel = wallet.getAllRelevant(false);
 		}
 		
 		//Add all the peaks..
@@ -331,6 +331,17 @@ public class TxPoWTreeNode implements Streamable {
 	
 	public TxPoWTreeNode getParent() {
 		return mParent;
+	}
+	
+	public TxPoWTreeNode getParent(int zBlocks) {
+		TxPoWTreeNode parent = this;
+		int counter = 0;
+		while(counter<zBlocks && parent.getParent()!=null) {
+			parent = parent.getParent();
+			counter++;
+		}
+		
+		return parent;
 	}
 	
 	public TxPoWTreeNode getPastNode(MiniNumber zBlockNumber) {

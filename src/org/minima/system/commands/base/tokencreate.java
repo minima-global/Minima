@@ -6,6 +6,7 @@ import org.minima.database.MinimaDB;
 import org.minima.database.mmr.MMRProof;
 import org.minima.database.txpowdb.TxPoWDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
+import org.minima.database.userprefs.txndb.TxnRow;
 import org.minima.database.wallet.KeyRow;
 import org.minima.database.wallet.Wallet;
 import org.minima.objects.Coin;
@@ -26,14 +27,14 @@ import org.minima.system.brains.TxPoWMiner;
 import org.minima.system.brains.TxPoWSearcher;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
+import org.minima.system.commands.txn.txnutils;
 import org.minima.system.params.GlobalParams;
-import org.minima.utils.Crypto;
 import org.minima.utils.json.JSONObject;
 
 public class tokencreate extends Command {
 
 	public tokencreate() {
-		super("tokencreate","[name:] [amount:] (decimals:) (script:) (state:{}) - Create a token. 'name' can be a JSON Object");
+		super("tokencreate","[name:] [amount:] (decimals:) (script:) (state:{}) (burn:) - Create a token. 'name' can be a JSON Object");
 	}
 	
 	@Override
@@ -76,6 +77,9 @@ public class tokencreate extends Command {
 		
 		//The amount is always a MiniNumber
 		String amount   = (String)getParams().get("amount");
+		
+		//The burn
+		MiniNumber burn = getNumberParam("burn", MiniNumber.ZERO);
 		
 		//How many decimals - can be 0.. for an NFT
 		int decimals = 8;
@@ -127,7 +131,7 @@ public class tokencreate extends Command {
 		MiniNumber sendamount 	= new MiniNumber(colorminima);
 		
 		//Send it to ourselves
-		KeyRow sendkey 			= MinimaDB.getDB().getWallet().createNewKey();
+		KeyRow sendkey 			= MinimaDB.getDB().getWallet().getDefaultKeyAddress();
 		MiniData sendaddress 	= new MiniData(sendkey.getAddress());
 		
 		//get the tip..
@@ -230,8 +234,14 @@ public class tokencreate extends Command {
 		//Create a list of the required signatures
 		ArrayList<String> reqsigs = new ArrayList<>();
 		
+		//Which Coins are added
+		ArrayList<String> addedcoinid = new ArrayList<>();
+				
 		//Add the MMR proofs for the coins..
 		for(Coin input : currentcoins) {
+			
+			//Keep for burn calc
+			addedcoinid.add(input.getCoinID().to0xString());
 			
 			//Get the proof..
 			MMRProof proof = mmrnode.getMMR().getProofToPeak(input.getMMREntryNumber());
@@ -260,7 +270,7 @@ public class tokencreate extends Command {
 		}
 		
 		//Now add the output..
-		Coin recipient = new Coin(sendaddress, sendamount, Token.TOKENID_CREATE);
+		Coin recipient = new Coin(Coin.COINID_OUTPUT, sendaddress, sendamount, Token.TOKENID_CREATE, true);
 		
 		//Set the Create Token Details..
 		recipient.setToken(createtoken);
@@ -271,7 +281,7 @@ public class tokencreate extends Command {
 		//Do we need to send change..
 		if(change.isMore(MiniNumber.ZERO)) {
 			//Create a new address
-			KeyRow newwalletaddress = MinimaDB.getDB().getWallet().createNewKey();
+			KeyRow newwalletaddress = MinimaDB.getDB().getWallet().getDefaultKeyAddress();
 			MiniData chgaddress 	= new MiniData(newwalletaddress.getAddress());
 			
 			Coin changecoin = new Coin(Coin.COINID_OUTPUT, chgaddress, change, Token.TOKENID_MINIMA);
@@ -297,21 +307,38 @@ public class tokencreate extends Command {
 			transaction.addStateVariable(sv);
 		}
 		
+		//Compute the correct CoinID
+		TxPoWGenerator.precomputeTransactionCoinID(transaction);
+				
 		//Calculate the TransactionID..
-		MiniData transid = Crypto.getInstance().hashObject(transaction);
+		transaction.calculateTransactionID();
 		
 		//Now that we have constructed the transaction - lets sign it..
 		for(String priv : reqsigs) {
 
 			//Use the wallet..
-			Signature signature = walletdb.sign(priv, transid);
+			Signature signature = walletdb.sign(priv, transaction.getTransactionID());
 			
 			//Add it..
 			witness.addSignature(signature);
 		}
 		
-		//Now create a complete TxPOW
-		TxPoW txpow = TxPoWGenerator.generateTxPoW(transaction, witness);
+		//The final TxPoW
+		TxPoW txpow = null;
+		
+		//Is there a BURN..
+		if(burn.isMore(MiniNumber.ZERO)) {
+			
+			//Create a Burn Transaction
+			TxnRow burntxn = txnutils.createBurnTransaction(addedcoinid,transaction.getTransactionID(),burn);
+
+			//Now create a complete TxPOW
+			txpow = TxPoWGenerator.generateTxPoW(transaction, witness, burntxn.getTransaction(), burntxn.getWitness());
+		
+		}else {
+			//Now create a complete TxPOW
+			txpow = TxPoWGenerator.generateTxPoW(transaction, witness);
+		}
 		
 		//Calculate the size..
 		txpow.calculateTXPOWID();
