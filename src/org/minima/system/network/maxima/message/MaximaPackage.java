@@ -1,4 +1,4 @@
-package org.minima.system.network.maxima;
+package org.minima.system.network.maxima.message;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -11,13 +11,13 @@ import org.minima.utils.Streamable;
 public class MaximaPackage implements Streamable {
 
 	//What version are we..
-	MiniString mVersion = new MiniString("1.0");
+	public MiniString mVersion = new MiniString("1.0");
 	
 	//Who this message is for.. The Public Key ONLY
-	MiniData mTo;
+	public MiniData mTo;
 	
 	//The ENCRYPTED data - A MaximaInternal data structure
-	MiniData mData;
+	public MiniData mData;
 	
 	private MaximaPackage() {};
 	

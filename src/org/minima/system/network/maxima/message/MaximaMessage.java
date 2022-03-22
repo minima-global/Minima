@@ -1,4 +1,4 @@
-package org.minima.system.network.maxima;
+package org.minima.system.network.maxima.message;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;

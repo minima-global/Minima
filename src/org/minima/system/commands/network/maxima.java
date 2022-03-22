@@ -5,7 +5,7 @@ import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
 import org.minima.system.network.maxima.Maxima;
-import org.minima.system.network.maxima.MaximaMessage;
+import org.minima.system.network.maxima.message.MaximaMessage;
 import org.minima.utils.Crypto;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
