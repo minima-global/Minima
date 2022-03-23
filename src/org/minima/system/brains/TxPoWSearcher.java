@@ -27,6 +27,17 @@ public class TxPoWSearcher {
 		
 	}
 	
+	public static ArrayList<Coin> getAllRelevantSimpleUnspentCoins(TxPoWTreeNode zStartNode) {
+		
+		//Special search..
+		return searchCoins(zStartNode, true, 
+							false, MiniData.ZERO_TXPOWID,
+							false, MiniNumber.ZERO,
+							false, MiniData.ZERO_TXPOWID,
+							false, MiniData.ZERO_TXPOWID,true);
+		
+	}
+
 	public static ArrayList<Coin> getRelevantUnspentCoins(TxPoWTreeNode zStartNode, String zTokenID, boolean zSimpleOnly ) {
 		
 		//Special search..
