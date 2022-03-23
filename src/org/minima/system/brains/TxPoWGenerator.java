@@ -298,7 +298,7 @@ public class TxPoWGenerator {
 		
 		//Check harder than the absolute minimum
 		if(newdiff.isMore(Magic.MIN_TXPOW_WORK)) {
-			MinimaLogger.log("Block Diff so low had to use the Mininum allowed");
+//			MinimaLogger.log("Block Diff so low had to use the Mininum allowed");
 			newdiff = Magic.MIN_TXPOW_WORK;
 		}
 		
