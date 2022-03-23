@@ -52,8 +52,9 @@ public class Wallet extends SqlDB {
 	/**
 	 * Has there been a change to the Key Rows.. otherwise used cached
 	 */
-	boolean mKeyRowChange 					= true;
-	ArrayList<KeyRow> mCachedRelevantKeys 	= new ArrayList<>();
+	boolean mKeyRowChange 							= true;
+	ArrayList<KeyRow> mCachedRelevantNonSingleKeys 	= new ArrayList<>();
+	ArrayList<KeyRow> mCachedRelevantAllKeys 		= new ArrayList<>();
 	
 	public Wallet() {
 		super();
@@ -247,20 +248,22 @@ public class Wallet extends SqlDB {
 		
 		//If nop change use the cached version
 		if(!mKeyRowChange) {
-			return mCachedRelevantKeys;
+			if(zOnlyNonSingleKeys) {
+				return mCachedRelevantNonSingleKeys;
+			}
+			
+			return mCachedRelevantAllKeys;
 		}
 		
-		ArrayList<KeyRow> allkeys = new ArrayList<>();
+		//And now get all the custom scripts..
+		ArrayList<KeyRow> customscripts = getAllCustomScripts();
 		
+		//Do both sets..
+		ArrayList<KeyRow> allkeys = new ArrayList<>();
 		try {
 			
 			//Run the query
-			ResultSet rs = null;
-			if(zOnlyNonSingleKeys) {
-				rs = SQL_GET_ALL_NONSINGLE_RELEVANT.executeQuery();
-			}else {
-				rs = SQL_GET_ALL_RELEVANT.executeQuery();
-			}
+			ResultSet rs = SQL_GET_ALL_NONSINGLE_RELEVANT.executeQuery();
 			
 			//Could be multiple results
 			while(rs.next()) {
@@ -279,15 +282,47 @@ public class Wallet extends SqlDB {
 			MinimaLogger.log(e);
 		}
 		
-		//And now get all the custom scripts..
-		ArrayList<KeyRow> customscripts = getAllCustomScripts();
-		allkeys.addAll(customscripts);
+		//Non single keys
+		mCachedRelevantNonSingleKeys = allkeys;
+		mCachedRelevantNonSingleKeys.addAll(customscripts);
 		
-		//Store for later
-		mCachedRelevantKeys = allkeys;
+		//Now all the keys..
+		allkeys = new ArrayList<>();
+		try {
+			
+			//Run the query
+			ResultSet rs = SQL_GET_ALL_RELEVANT.executeQuery();
+			
+			//Could be multiple results
+			while(rs.next()) {
+				
+				//Get the details
+				String publickey 	= rs.getString("publickey");
+				String address 	 	= rs.getString("simpleaddress");
+				String script 	 	= rs.getString("script");
+				String privatekey 	= rs.getString("privatekey");
+				
+				//Add to our list
+				allkeys.add(new KeyRow(privatekey, publickey, address, script, true));
+			}
+			
+		} catch (SQLException e) {
+			MinimaLogger.log(e);
+		}
+		
+		//All keys
+		mCachedRelevantAllKeys = allkeys;
+		mCachedRelevantAllKeys.addAll(customscripts);
+			
+		//Ok - no key change for now..
 		mKeyRowChange		= false;
 		
-		return allkeys;
+		//What to return
+		if(zOnlyNonSingleKeys) {
+			return mCachedRelevantNonSingleKeys;
+		}
+		
+		return mCachedRelevantAllKeys;
 	}
 	
 	/**
