@@ -91,37 +91,40 @@ public class burn extends Command {
 			}
 			
 			JSONObject block1 = new JSONObject();
-			block1.put("txns", mBurnCount);
-			block1.put("max", mMaxburn);
-			block1.put("med", getMediaValue(mValues));
+			block1.put("txns", mBurnCount.toString());
+			block1.put("total", mBurnTot.toString());
+			block1.put("max", mMaxburn.toString());
+			block1.put("med", getMediaValue(mValues).toString());
 			if(mBurnCount.isMore(MiniNumber.ZERO)) {
-				block1.put("avg", mBurnTot.div(mBurnCount));
+				block1.put("avg", mBurnTot.div(mBurnCount).toString());
 			}else {
-				block1.put("avg", MiniNumber.ZERO);
+				block1.put("avg", MiniNumber.ZERO.toString());
 			}
-			block1.put("min", mMinburn);
+			block1.put("min", mMinburn.toString());
 			
 			JSONObject block10 = new JSONObject();
-			block10.put("txns", mBurnCount10);
-			block10.put("max", mMaxburn10);
-			block10.put("med", getMediaValue(mValues10));
+			block10.put("txns", mBurnCount10.toString());
+			block10.put("total", mBurnTot10.toString());
+			block10.put("max", mMaxburn10.toString());
+			block10.put("med", getMediaValue(mValues10).toString());
 			if(mBurnCount10.isMore(MiniNumber.ZERO)) {
-				block10.put("avg", mBurnTot10.div(mBurnCount10));
+				block10.put("avg", mBurnTot10.div(mBurnCount10).toString());
 			}else {
-				block10.put("avg", MiniNumber.ZERO);
+				block10.put("avg", MiniNumber.ZERO.toString());
 			}
-			block10.put("min", mMinburn10);
+			block10.put("min", mMinburn10.toString());
 			
 			JSONObject block50 = new JSONObject();
-			block50.put("txns", mBurnCount50);
-			block50.put("max", mMaxburn50);
-			block50.put("med", getMediaValue(mValues50));
+			block50.put("txns", mBurnCount50.toString());
+			block50.put("total", mBurnTot50.toString());
+			block50.put("max", mMaxburn50.toString());
+			block50.put("med", getMediaValue(mValues50).toString());
 			if(mBurnCount50.isMore(MiniNumber.ZERO)) {
-				block50.put("avg", mBurnTot50.div(mBurnCount50));
+				block50.put("avg", mBurnTot50.div(mBurnCount50).toString());
 			}else {
-				block50.put("avg", MiniNumber.ZERO);
+				block50.put("avg", MiniNumber.ZERO.toString());
 			}
-			block50.put("min", mMinburn50);
+			block50.put("min", mMinburn50.toString());
 			
 			response.put("1block",block1);
 			response.put("10block",block10);
