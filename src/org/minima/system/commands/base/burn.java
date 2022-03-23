@@ -36,7 +36,7 @@ public class burn extends Command {
 	ArrayList<MiniNumber> mValues50 = new ArrayList<>();
 	
 	public burn() {
-		super("burn","(action:list|default) - View 'burn' metrics or set default");
+		super("burn","View Burn metrics");
 	}
 	
 	@Override

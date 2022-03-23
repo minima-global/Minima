@@ -3,6 +3,7 @@ package org.minima.system.commands;
 import org.minima.system.commands.base.automine;
 import org.minima.system.commands.base.backup;
 import org.minima.system.commands.base.balance;
+import org.minima.system.commands.base.burn;
 import org.minima.system.commands.base.coinexport;
 import org.minima.system.commands.base.coinimport;
 import org.minima.system.commands.base.cointrack;
@@ -69,6 +70,7 @@ public class help extends Command {
 		
 		addCommand(details, new status());
 		addCommand(details, new printtree());
+		addCommand(details, new burn());
 		addCommand(details, new trace());
 		addCommand(details, new automine());
 		addCommand(details, new hashtest());
