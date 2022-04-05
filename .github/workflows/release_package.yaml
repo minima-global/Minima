@@ -8,8 +8,8 @@ on:
   release:
     types: [created]
 
-permissions:
-  contents: read
+#permissions:
+  #contents: read
 
 jobs:
   build:
@@ -29,6 +29,6 @@ jobs:
         run: gradle clean build
       - name: Publish to GitHub Packages
         run: gradle publish
-        with:
-          #USERNAME: ${{ github.actor }}
+        env:
+          USERNAME: ${{ github.actor }}
           TOKEN: ${{ secrets.GITHUB_TOKEN }}
