@@ -5,6 +5,8 @@ on:
     branches: [ dev, feature/* ]
   pull_request:
     branches: [ dev, master ]
+  release:
+    types: [created]
 
 permissions:
   contents: read
@@ -12,6 +14,11 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK 11
@@ -21,3 +28,10 @@ jobs:
           distribution: 'adopt'
       - name: Build And Test
         run: gradle clean build
+        # The USERNAME and TOKEN need to correspond to the credentials environment variables used in
+        # the publishing section of your build.gradle
+     - name: Publish to GitHub Packages
+       run: gradle publish
+       env:
+         USERNAME: ${{ github.actor }}
+         TOKEN: ${{ secrets.GITHUB_TOKEN }}
