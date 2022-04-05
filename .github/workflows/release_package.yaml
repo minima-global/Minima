@@ -20,4 +20,4 @@ jobs:
           java-version: '11'
           distribution: 'adopt'
       - name: Build And Test
-        run: gradle clean publish
+        run: gradle clean build
