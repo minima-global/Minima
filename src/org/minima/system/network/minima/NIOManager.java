@@ -221,6 +221,11 @@ public class NIOManager extends MessageProcessor {
 			//Shut down the NIO
 			mNIOServer.shutdown();
 			
+			//Wait for it to stop..
+			while(mNIOServer.isRunning()) {
+				Thread.sleep(50);
+			}
+			
 			//Stop this..
 			stopMessageProcessor();
 		
@@ -511,18 +516,6 @@ public class NIOManager extends MessageProcessor {
 	public void disconnect(String zClientUID) {
 		Message msg = new Message(NIOManager.NIO_DISCONNECT).addString("uid", zClientUID);
 		PostMessage(msg);
-	}
-
-	/**
-	 * Small delay before actually posting the request.. 2 second..
-	 */
-	public static void sendDelayedTxPoWReq(String zClientID, String zTxPoWID, String zReason) {
-		TimerMessage timed = new TimerMessage(2000, NIO_TXPOWREQ);
-		timed.addString("client", zClientID);
-		timed.addString("txpowid", zTxPoWID);
-		timed.addString("reason",zReason);
-		
-		Main.getInstance().getNIOManager().PostTimerMessage(timed);
 	}
 	
 	/**

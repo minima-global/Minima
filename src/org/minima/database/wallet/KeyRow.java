@@ -1,5 +1,7 @@
 package org.minima.database.wallet;
 
+import org.minima.objects.Address;
+import org.minima.objects.base.MiniData;
 import org.minima.utils.json.JSONObject;
 
 public class KeyRow {
@@ -15,7 +17,7 @@ public class KeyRow {
 		mPubliKey 		= zPubKey;
 		mSimpleAddress 	= zAddress;
 		mScript			= zScript;
-		mTrack		= zTrack;
+		mTrack			= zTrack;
 	}
 	
 	public String getPrivateKey() {
@@ -44,6 +46,7 @@ public class KeyRow {
 		ret.put("publickey", getPublicKey());
 		ret.put("script", getScript());
 		ret.put("address", getAddress());
+		ret.put("miniaddress", Address.makeMinimaAddress(new MiniData(getAddress())));
 		ret.put("track", mTrack);
 		
 		return ret;

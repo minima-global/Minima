@@ -16,7 +16,7 @@ import org.minima.utils.json.JSONObject;
 public class coinimport extends Command {
 
 	public coinimport() {
-		super("coinimport","[data:] - Import a coin, and keep tracking it");
+		super("coinimport","[data:] (track:false) - Import a coin, and keep tracking it");
 	}
 	
 	@Override
@@ -95,9 +95,11 @@ public class coinimport extends Command {
 		//Add to the total List of coins fro this block
 		treenode.getAllCoins().add(newcoin);
 		
-		//And set to relevant..
-		treenode.getRelevantCoins().add(newcoin);
-		treenode.getRelevantCoinsEntries().add(newcoin.getMMREntryNumber());
+		//And set to relevant.. track it..
+		if(getBooleanParam("track", true)) {
+			treenode.getRelevantCoins().add(newcoin);
+			treenode.getRelevantCoinsEntries().add(newcoin.getMMREntryNumber());
+		}
 		
 		//New root..
 		MMRData newroot = treenode.getMMR().getRoot();

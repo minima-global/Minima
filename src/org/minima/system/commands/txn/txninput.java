@@ -7,6 +7,7 @@ import org.minima.objects.Coin;
 import org.minima.objects.Transaction;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.system.brains.TxPoWGenerator;
 import org.minima.system.brains.TxPoWSearcher;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
@@ -15,7 +16,7 @@ import org.minima.utils.json.JSONObject;
 public class txninput extends Command {
 
 	public txninput() {
-		super("txninput","[id:] (coinid:) (coindata:) (floating:true|false) (address:) (amount:) (tokenid:) - Add a coin as an input to a transaction");
+		super("txninput","[id:] (coinid:) (coindata:) (floating:) (address:) (amount:) (tokenid:) (sciptmmr:true)- Add a coin as an input to a transaction");
 	}
 	
 	@Override
@@ -48,11 +49,6 @@ public class txninput extends Command {
 			
 			//Is it a floating input..
 			if(eltoo) {
-				//Check this coin is floating..
-				if(!cc.isFloating()) {
-					throw new CommandException("Coin cannot be ELTOO as is not floating.. "+cc.toJSON().toString());
-				}
-				
 				cc.resetCoinID(Coin.COINID_ELTOO);
 			}
 			
@@ -68,35 +64,35 @@ public class txninput extends Command {
 			
 			//Is it a floating input..
 			if(eltoo) {
-				//Check this coin is floating..
-				if(!cc.isFloating()) {
-					throw new CommandException("Coin cannot be ELTOO as is not floating.. "+cc.toJSON().toString());
-				}
-				
 				cc.resetCoinID(Coin.COINID_ELTOO);
 			}
 		}else {
 			
-			//Is it a floater..
-			if(!eltoo) {
-				throw new CommandException("Coin MUST be floating if no coinid or coindata specified");
-			}
-			
 			//Get the details..
-			String address  = getParam("address");
+			String address  = getAddressParam("address");
 			String amount   = getParam("amount");
 			String tokenid  = getParam("tokenid","0x00");
 			
 			//Create a COIN..
-			cc = new Coin(new MiniData(address), new MiniNumber(amount), new MiniData(tokenid));
-			cc.setFloating(true);
-			cc.resetCoinID(Coin.COINID_ELTOO);
-			
+			cc = new Coin(Coin.COINID_ELTOO, new MiniData(address), new MiniNumber(amount), new MiniData(tokenid));
 		}
 		
 		//Get the transaction..
 		Transaction trans = txnrow.getTransaction();
 		trans.addInput(cc);
+		
+		//Calculate the correct CoinID - if possible..
+		TxPoWGenerator.precomputeTransactionCoinID(trans);
+		
+		//Calculate transid
+		trans.calculateTransactionID();
+		
+		//Are we adding the scripts and MMR for this coin..
+		boolean smmr = getBooleanParam("scriptmmr", false);
+		if(smmr) {
+			//Add the details for this coin..
+			txnutils.setMMRandScripts(cc, txnrow.getWitness());
+		}
 		
 		//Output the current trans..
 		ret.put("response", db.getTransactionRow(id).toJSON());

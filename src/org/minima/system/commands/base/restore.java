@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.zip.GZIPInputStream;
 
 import org.minima.database.MinimaDB;
+import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
@@ -50,13 +51,14 @@ public class restore extends Command {
 		GZIPInputStream gzin 		= new GZIPInputStream(bais);
 		DataInputStream dis 		= new DataInputStream(gzin);
 		
+		//Is this a complete backup..
+		boolean complete = MiniByte.ReadFromStream(dis).isTrue();
+		
 		//The total size of files..
-		long total = 0;
+		long total = 1;
 		
 		//Read in each section..
 		total += readNextBackup(new File(restorefolder,"wallet.sql"), dis);
-		total += readNextBackup(new File(restorefolder,"txpowdb.sql"), dis);
-		total += readNextBackup(new File(restorefolder,"archive.sql"), dis);
 		
 		//The rest write directly 
 		File basedb = MinimaDB.getDB().getBaseDBFolder();
@@ -67,8 +69,23 @@ public class restore extends Command {
 		
 		//Now load the sql
 		MinimaDB.getDB().getWallet().restoreFromFile(new File(restorefolder,"wallet.sql"));
-		MinimaDB.getDB().getTxPoWDB().getSQLDB().restoreFromFile(new File(restorefolder,"txpowdb.sql"));
-		MinimaDB.getDB().getArchive().restoreFromFile(new File(restorefolder,"archive.sql"));
+				
+		//Complete
+		if(complete) {
+			total += readNextBackup(new File(restorefolder,"txpowdb.sql"), dis);
+			total += readNextBackup(new File(restorefolder,"archive.sql"), dis);
+		
+			MinimaDB.getDB().getTxPoWDB().getSQLDB().restoreFromFile(new File(restorefolder,"txpowdb.sql"));
+			MinimaDB.getDB().getArchive().restoreFromFile(new File(restorefolder,"archive.sql"));
+		}else {
+	
+			//Close and Wipe those..
+			MinimaDB.getDB().getTxPoWDB().getSQLDB().saveDB();
+			MinimaDB.getDB().getTxPoWDB().getSQLDB().getSQLFile().delete();
+			
+			MinimaDB.getDB().getArchive().saveDB();
+			MinimaDB.getDB().getArchive().getSQLFile().delete();
+		}
 		
 		//Close up shop..
 		dis.close();
@@ -85,7 +102,14 @@ public class restore extends Command {
 		ret.put("message", "Restart Minima for restore to take effect!");
 		
 		//Now save the Databases..
-		MinimaDB.getDB().saveSQL();
+		if(complete) {
+			MinimaDB.getDB().saveSQL();
+		}else {
+			MinimaDB.getDB().saveWalletSQL();
+		}
+		
+		//Don't do the usual shutdown hook
+		Main.getInstance().setHasShutDown();
 		
 		//And NOW shut down..
 		Main.getInstance().stopMessageProcessor();

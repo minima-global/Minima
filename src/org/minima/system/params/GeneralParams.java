@@ -53,11 +53,6 @@ public class GeneralParams {
 	public static int MINIMA_PORT = 9001;
 	
 	/**
-	 * The Maxima port
-	 */
-	public static int MAXIMA_PORT = 9003;
-	
-	/**
 	 * The Minima RPC port
 	 */
 	public static int RPC_PORT = 9002;
@@ -90,7 +85,7 @@ public class GeneralParams {
 	/**
 	 * How many days do you keep the TxPoW in the SQL DB
 	 */
-	public static long NUMBER_DAYS_SQLTXPOWDB = 2;
+	public static long NUMBER_DAYS_SQLTXPOWDB = 3;
 	
 	/**
 	 * How Many Hours do you keep the TxPOW in the RAM mempool
@@ -100,7 +95,7 @@ public class GeneralParams {
 	/**
 	 * How many days do you archive the TxBlocks to resync Users
 	 */
-	public static long NUMBER_DAYS_ARCHIVE = 28;
+	public static long NUMBER_DAYS_ARCHIVE = 90;
 	
 	/**
 	 * Number of seconds before sending a pulse message - every 10 minutes

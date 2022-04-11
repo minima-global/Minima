@@ -30,7 +30,7 @@ STRING      ::= [UTF8_String]
 BOOLEAN     ::= TRUE | FALSE
 FALSE       ::= 0
 TRUE        ::= NOT FALSE
-GLOBAL      ::= @BLOCK | @INBLOCK | @BLOCKDIFF | @INPUT |
+GLOBAL      ::= @BLOCK | @BLOCKTIME | @CREATED | @COINAGE | @INPUT |
                 @AMOUNT | @ADDRESS | @TOKENID | @COINID |
                 @SCRIPT | @TOTIN | @TOTOUT
 FUNCTION    ::= FUNC ( EXPRESSION_1 EXPRESSION_2 .. EXPRESSION_n )
@@ -40,6 +40,7 @@ FUNC        ::= CONCAT | LEN | REV | SUBSET | GET | OVERWRITE |
                 ABS | CEIL | FLOOR | MIN | MAX | INC | DEC | SIGDIG | POW |
                 BITSET | BITGET | BITCOUNT | PROOF | KECCAK | SHA2 | SHA3 |
                 SIGNEDBY | MULTISIG | CHECKSIG |
+                FUNCTION | SUMINPUT | SUMOUTPUT |
                 GETOUTADDR | GETOUTAMT | GETOUTTOK | VERIFYOUT |
                 GETINADDR | GETINAMT | GETINTOK | GETINID | VERIFYIN |
                 STATE | PREVSTATE | SAMESTATE
@@ -47,8 +48,8 @@ FUNC        ::= CONCAT | LEN | REV | SUBSET | GET | OVERWRITE |
 Globals
 
 @BLOCK       : Block number this transaction is in
-@INBLOCK     : Block number when this output was created
-@BLOCKDIFF   : Difference between @BLOCK and INBLOCK
+@CREATED     : Block number when this coin was created
+@COINAGE     : Difference between @BLOCK and @CREATED
 @INPUT       : Input number in the transaction
 @COINID      : CoinID of this input
 @AMOUNT      : Amount of this input
@@ -75,14 +76,14 @@ Return the HEX subset of the data - start - length
 OVERWRITE ( HEX NUMBER HEX NUMBER NUMBER)
 Copy bytes from the first HEX and pos to the second HEX and pos, length the last NUMBER
 
-GET ( NUMBER NUMBER .. NUMBER )
+GET ( VALUE1 VALUE2 .. VALUEn )
 Return the array value set with LET ( EXPRESSION EXPRESSION .. EXPRESSION )
 
 ADDRESS ( STRING )
 Return the address of the script
 
 REPLACE ( STRING STRING STRING )
-Replace in 1st string all occurrence of 2nd string with 3rd
+Replace in the 1st string all occurrence of 2nd string with 3rd
 
 SUBSTR ( STRING NUMBER NUMBER )
 Get the substring                                                                                                                                                                             
@@ -185,6 +186,12 @@ Return the token id of the specified input
 VERIFYIN ( NUMBER HEX NUMBER HEX )
 Verify the input has the specified address, amount and tokenid
 
+SUMINPUTS ( HEX )
+Sum the input values of this token type
+
+SUMOUTPUTS ( HEX )
+Sum the output values of this token type
+
 STATE ( NUMBER )
 Return the state value for the given number
 
@@ -194,3 +201,5 @@ Return the state value stored in the coin MMR data - when the coin was created
 SAMESTATE ( NUMBER NUMBER )
 Return TRUE if the previous state and current state are the same for the start and end positions
 
+FUNCTION ( STRING VALUE1 VALUE2.. VALUEn )
+Generic Function. Run the script after replacing $1, $2.. $n with the provided parameters and use returnvalue as the returned result 

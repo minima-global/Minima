@@ -3,14 +3,18 @@ package org.minima.system.commands.txn;
 import java.util.ArrayList;
 
 import org.minima.database.MinimaDB;
+import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.database.userprefs.txndb.TxnDB;
 import org.minima.database.userprefs.txndb.TxnRow;
 import org.minima.objects.Coin;
 import org.minima.objects.Token;
 import org.minima.objects.Transaction;
+import org.minima.objects.TxPoW;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.system.brains.TxPoWChecker;
+import org.minima.system.brains.TxPoWGenerator;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
 import org.minima.utils.json.JSONArray;
@@ -114,6 +118,29 @@ public class txncheck extends Command {
 		
 		int sigs = txnrow.getWitness().getAllSignatures().size();
 		details.put("signatures", sigs);
+		
+		//Now some low level checks..
+		TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
+		
+		//Create a TxPoW..
+		TxPoW temp = TxPoWGenerator.generateTxPoW(txn, wit);
+		
+		//Redo any checks..
+		txn.clearIsMonotonic();
+		
+		boolean validbasic 		= TxPoWChecker.checkTxPoWBasic(temp); 
+		boolean validsig 		= TxPoWChecker.checkSignatures(temp); 
+		boolean validmmr 		= TxPoWChecker.checkMMR(tip.getMMR(), temp);
+		boolean validscripts 	= TxPoWChecker.checkTxPoWScripts(tip.getMMR(), temp, tip.getTxPoW());
+
+		JSONObject valid = new JSONObject();
+		valid.put("basic", validbasic);
+		valid.put("signatures", validsig);
+		valid.put("mmrproofs", validmmr);
+		valid.put("scripts", validscripts);
+		
+		details.put("valid", valid);
+		
 		
 		JSONObject resp = new JSONObject();
 		ret.put("response", details);

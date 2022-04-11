@@ -23,6 +23,7 @@ import org.minima.objects.StateVariable;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
+import org.minima.utils.MinimaLogger;
 
 public class ContractTests {
 
@@ -252,12 +253,12 @@ public class ContractTests {
 
         {
             String Script = "";
-            for (int i = 0; i < Contract.MAX_INSTRUCTIONS; i++) {
+            Contract ctr = new Contract(Script, "", new Witness(), new Transaction(), new ArrayList<StateVariable>(), true);
+            for (int i = 0; i < ctr.MAX_INSTRUCTIONS; i++) {
                 Script = Script + "LET a = " + i + " ";
             }
 
             {
-                Contract ctr = new Contract(Script, "", new Witness(), new Transaction(), new ArrayList<StateVariable>(), true);
                 ctr.run();
                 assertTrue(ctr.isParseOK());
                 assertFalse(ctr.isException());
@@ -267,31 +268,33 @@ public class ContractTests {
 
         {
             String Script = "";
-            for (int i = 0; i <= Contract.MAX_INSTRUCTIONS; i++) {
+            Contract ctr = new Contract(Script, "", new Witness(), new Transaction(), new ArrayList<StateVariable>(), true);
+            for (int i = 0; i < ctr.MAX_INSTRUCTIONS+1; i++) {
                 Script = Script + "LET a = " + i + " ";
             }
-
+            ctr = new Contract(Script, "", new Witness(), new Transaction(), new ArrayList<StateVariable>(), true);
             {
-                Contract ctr = new Contract(Script, "", new Witness(), new Transaction(), new ArrayList<StateVariable>(), false);
+            	MinimaLogger.log("RUN THIS.. ");
                 ctr.run();
                 assertTrue(ctr.isParseOK());
                 assertTrue(ctr.isException());
-                assertEquals("org.minima.kissvm.exceptions.ExecutionException: MAX instruction number reached! 257", ctr.getException());
+                assertEquals("org.minima.kissvm.exceptions.ExecutionException: MAX instruction number reached! 1025", ctr.getException());
             }
         }
 
         {
             String Script = "";
-            for (int i = 0; i <= Contract.MAX_INSTRUCTIONS; i++) {
+            Contract ctr = new Contract(Script, "", new Witness(), new Transaction(), new ArrayList<StateVariable>(), true);
+            for (int i = 0; i < ctr.MAX_INSTRUCTIONS+1; i++) {
                 Script = Script + "LET a = " + i + " ";
             }
-
+            ctr = new Contract(Script, "", new Witness(), new Transaction(), new ArrayList<StateVariable>(), true);
+            
             {
-                Contract ctr = new Contract(Script, "", new Witness(), new Transaction(), new ArrayList<StateVariable>(), true);
                 ctr.run();
                 assertTrue(ctr.isParseOK());
                 assertTrue(ctr.isException());
-                assertEquals("org.minima.kissvm.exceptions.ExecutionException: MAX instruction number reached! 257", ctr.getException());
+                assertEquals("org.minima.kissvm.exceptions.ExecutionException: MAX instruction number reached! 1025", ctr.getException());
             }
         }
     }

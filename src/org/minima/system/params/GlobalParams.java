@@ -7,7 +7,7 @@ public class GlobalParams {
 	/**
 	 * Which Version
 	 */
-	public static String MINIMA_VERSION = "0.100.33.1";
+	public static String MINIMA_VERSION = "0.101.0";
 	
 	/**
 	 * Speed in blocks per second.. 
@@ -46,16 +46,16 @@ public class GlobalParams {
 	public static int MINIMA_CASCADE_LEVELS  = 32;
 	
 	/**
-	 * Current default HASH_Strength Used. Can be up to 512.
-	 * All the MINING, TxPoW and MMR data ALWAYS uses 512. But addresses, scripts, and public keys..
-	 * can be set to less. This way signatures and addresses are shorter.
-	 */
-	public static int MINIMA_DEFAULT_HASH_STRENGTH = 256;
-	
-	/**
 	 * Max Proof History - how far back to use a proof of coin..
 	 * If there is a re-org of more than this the proof will be invalid 
 	 */
 	public static MiniNumber MINIMA_MMR_PROOF_HISTORY = new MiniNumber(256);
-
+	
+	/**
+	 * The MEDIAN time block is taken from this many blocks back
+	 * When calculating the Difficulty of a block ( both from the tip and the previous block )
+	 * This smooths out the time fluctuations for different blocks and removes incorrect times.
+	 */
+	public static int MEDIAN_BLOCK_CALC = 32; 
+	
 }

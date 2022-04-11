@@ -9,7 +9,6 @@ import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
-import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.Crypto;
@@ -34,7 +33,7 @@ public class Transaction implements Streamable {
 	 * 
 	 * MUST be the Hash of the Transaction if this is a Burn Transaction
 	 */
-	protected MiniData mLinkHash = new MiniData("0x00");
+	protected MiniData mLinkHash = MiniData.ZERO_TXPOWID;
 	
 	/**
 	 * The Inputs that make up the Transaction
@@ -94,6 +93,10 @@ public class Transaction implements Streamable {
 		return mHaveCheckedMonotonic && mIsMonotonic;
 	}
 	
+	public void clearIsMonotonic() {
+		mHaveCheckedMonotonic = false;
+	}
+	
 	public MiniNumber sumInputs() {
 		MiniNumber tot = MiniNumber.ZERO;
 		for(Coin cc : mInputs) {
@@ -138,25 +141,35 @@ public class Transaction implements Streamable {
 	public boolean checkValid(){
 		//Basics
 		int ins = mInputs.size();
-		if(ins<1 || ins>256) {
-			return false;
-		}
-		int outs = mOutputs.size();
-		if(outs>256) {
+		if(ins<1) {
 			return false;
 		}
 		
-		//Check that all the inputs and outputs are valid Minima Values 0 - 1,000,000,000
+		//Starters - Check total inputs is less than total outputs
+		MiniNumber totalin 	= MiniNumber.ZERO;
+		MiniNumber totalout = MiniNumber.ZERO;
+		for(Coin cc : mInputs) {
+			totalin = totalin.add(cc.getAmount());
+		}
+		for(Coin cc : mOutputs) {
+			totalout = totalout.add(cc.getAmount());
+		}
+		if(totalout.isMore(totalin)) {
+			MinimaLogger.log("Transaction error : Inputs LESS than Outputs "+totalin+"/"+totalout);
+			return false;
+		}
+		
+		//Check that all the inputs and outputs are valid Minima Values >0 - 1,000,000,000
 		for(Coin cc : mInputs) {
 			if(!cc.getAmount().isValidMinimaValue()) {
-				MinimaLogger.log("Transaction error : Input is invalid Minima Amount");
+				MinimaLogger.log("Transaction error : Input is invalid Minima Amount "+cc.getAmount().toString());
 				return false;
 			}
 		}
 		
 		for(Coin cc : mOutputs) {
 			if(!cc.getAmount().isValidMinimaValue()) {
-				MinimaLogger.log("Transaction error : Output is invalid Minima Amount");
+				MinimaLogger.log("Transaction error : Output is invalid Minima Amount "+cc.getAmount().toString());
 				return false;
 			}
 		}
@@ -215,6 +228,23 @@ public class Transaction implements Streamable {
 		}
 			
 		return true;
+	}
+	
+	/**
+	 * How much Minima is burnt..
+	 */
+	public MiniNumber getBurn() {
+		//Starters - Check total inputs is less than total outputs
+		MiniNumber totalin 	= MiniNumber.ZERO;
+		MiniNumber totalout = MiniNumber.ZERO;
+		for(Coin cc : mInputs) {
+			totalin = totalin.add(cc.getAmount());
+		}
+		for(Coin cc : mOutputs) {
+			totalout = totalout.add(cc.getAmount());
+		}
+		
+		return totalin.sub(totalout);
 	}
 	
 	/**
@@ -322,6 +352,10 @@ public class Transaction implements Streamable {
 		return mLinkHash;
 	}
 	
+	public void setLinkHash(MiniData zLinkHash) {
+		mLinkHash = zLinkHash;
+	}
+	
 	/**
 	 * Calculate the TransactionID
 	 */
@@ -335,9 +369,14 @@ public class Transaction implements Streamable {
 	
 	/**
 	 * Calculate the CoinID of an Output
+	 * 
+	 * CoinID is calculated for output coins as the hash of the firstcoin + output num
+	 * 
+	 * Always use the MMR value as may be ELTOO 0x01 in some transactions..
+	 * 
 	 */
-	public MiniData calculateCoinID(int zOutput) {
-		return Crypto.getInstance().hashObjects(mTransactionID, new MiniByte(zOutput));
+	public MiniData calculateCoinID(MiniData zBaseCoinID, int zOutput) {
+		return Crypto.getInstance().hashObjects(zBaseCoinID, new MiniNumber(zOutput));
 	}
 	
 	@Override
@@ -376,44 +415,15 @@ public class Transaction implements Streamable {
 		
 		return ret;
 	}
-
-	/**
-	 * Calculate the output coins with correct CoinID
-	 * @return
-	 */
-	public ArrayList<Coin> getOutputCoinsWithCoinID(){
-		ArrayList<Coin> ret = new ArrayList<>();
-		
-		//Need this to be correct
-		calculateTransactionID();
-		
-		int output=0;
-		for(Coin coin : mOutputs) {
-			
-			//Create a copy..
-			Coin copycoin = coin.deepCopy();
-			
-			//What is the coinid..
-			MiniData cid = calculateCoinID(output);
-			copycoin.resetCoinID(cid);
-			
-			//add to our list
-			ret.add(copycoin);
-		}
-		
-		return ret;
-	}
 	
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
-		//Max 255 inputs or outputs
 		MiniNumber ins = new MiniNumber(mInputs.size());
 		ins.writeDataStream(zOut);
 		for(Coin coin : mInputs) {
 			coin.writeDataStream(zOut);
 		}
 		
-		//Max 255 inputs or outputs
 		MiniNumber outs = new MiniNumber(mOutputs.size());
 		outs.writeDataStream(zOut);
 		for(Coin coin : mOutputs) {

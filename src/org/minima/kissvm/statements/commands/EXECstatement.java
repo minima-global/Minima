@@ -43,6 +43,9 @@ public class EXECstatement implements Statement{
 			
 			//Now run it..
 			mBlock.run(zContract);
+		
+		}catch(ExecutionException exc) {
+			throw exc;
 			
 		}catch(Exception exc) {
 			throw new ExecutionException(exc.toString());			

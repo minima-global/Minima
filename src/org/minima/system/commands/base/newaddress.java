@@ -9,7 +9,7 @@ import org.minima.utils.json.JSONObject;
 public class newaddress extends Command {
 
 	public newaddress() {
-		super("newaddress","Create a new address or public key");
+		super("newaddress","Create a new address or public key that will not be not used for anything else (change address)");
 	}
 	
 	@Override
@@ -20,7 +20,7 @@ public class newaddress extends Command {
 		Wallet wallet = MinimaDB.getDB().getWallet();
 		
 		//Create a new address
-		KeyRow krow = wallet.createNewKey();
+		KeyRow krow = wallet.createNewKey(true);
 			
 		//Put the details in the response..
 		ret.put("response", krow.toJSON());
