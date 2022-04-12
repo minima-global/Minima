@@ -23,7 +23,15 @@ plugins {
     id 'com.github.johnrengelman.shadow' version '6.1.0'
 
     id 'com.palantir.docker' version '0.28.0'
+
+    id 'maven-publish'
 }
+
+group 'org.minima'
+version '0.100.33'
+
+sourceCompatibility = '11'
+targetCompatibility = '11'
 
 repositories {
     // Use jcenter for resolving dependencies.
@@ -101,4 +109,25 @@ docker {
     files tasks.shadowJar, "$rootDir/scripts/installDapps.sh", "$rootDir/dapps/"
     copySpec.from("$buildDir/lib/minima-all.jar",).into(".")
     //"./scripts/installDapps.sh", "./dapps/block.minidapp", "./dapps/wallet.minidapp", "dapps/terminal.minidapp", "dapps/emh.minidapp"
+}
+
+publishing {
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = "https://maven.pkg.github.com/minima-global/Minima"
+            if (System.getenv("VERSION") != '') {
+                version = System.getenv("VERSION")
+            }
+            credentials {
+                username = System.getenv("USERNAME")
+                password = System.getenv("TOKEN")
+            }
+        }
+    }
+    publications {
+        gpr(MavenPublication) {
+            from(components.java)
+        }
+    }
 }
