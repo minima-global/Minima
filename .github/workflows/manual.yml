@@ -11,6 +11,10 @@ on:
         description: Release artifact version
         default: '0.0.1-test'
         required: true
+defaults:
+  run:
+    working-directory: ./
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -29,11 +33,9 @@ jobs:
          distribution: 'adopt'
      - name: Build And Test
        run: ./gradlew clean build
-       working-directory: ./
      - name: Publish Artifact
        if: ${{ github.event.inputs.publish_artifacts == 'true'}}
        run: ./gradlew publish
-       working-directory: ./
        env:
          USERNAME: ${{ github.actor }}
          TOKEN: ${{ secrets.GITHUB_TOKEN }}

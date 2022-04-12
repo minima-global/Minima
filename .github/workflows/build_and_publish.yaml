@@ -2,6 +2,10 @@ name: Build and Release Artifacts
 
 on: [push, pull_request]
 
+defaults:
+  run:
+    working-directory: ./
+
 permissions:
   contents: read
 
@@ -22,11 +26,9 @@ jobs:
           distribution: 'adopt'
       - name: Build And Test
         run: ./gradlew clean build
-        working-directory: ./
       - name: Publish Artifact
         if : ${{contains(github.ref, 'master') }}
         run: ./gradlew publish
-        working-directory: ./
         env:
           USERNAME: ${{ github.actor }}
           TOKEN: ${{ secrets.GITHUB_TOKEN }}
