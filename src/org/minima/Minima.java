@@ -116,7 +116,7 @@ public class Minima {
 			});
 		}
 
-		//Daemon mode has no stdin input
+		//Daemon mode has no stdin input -uses 100% CPU on linux.. ?
 		if(daemon) {
 	    	MinimaLogger.log("Daemon Started..");
 			
