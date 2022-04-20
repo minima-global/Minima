@@ -132,7 +132,10 @@ public class ParamConfigurer {
             // do nothing
         }),
         data("data", "Specify the data folder (absolute) (defaults to .minima/ under user home", (args, configurer) -> {
-            GeneralParams.DATA_FOLDER = args;
+        	//Create the file.. 
+        	GeneralParams.DATA_FOLDER = new File(args).getAbsolutePath();
+//        	GeneralParams.DATA_FOLDER = args;
+        	
         }),
         daemon("daemon", "Run in daemon mode with no stdin input ( services )", (args, configurer) -> {
             if ("true".equals(args)) {

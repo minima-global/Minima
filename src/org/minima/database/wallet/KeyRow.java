@@ -8,6 +8,10 @@ public class KeyRow {
 
 	public String 	mPrivateKey;
 	public String 	mPubliKey;
+	
+	public int mDepth;
+	public int mSize;
+	
 	public String 	mScript;
 	public String 	mSimpleAddress;
 	public boolean  mTrack;

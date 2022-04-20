@@ -75,26 +75,40 @@ public class Wallet extends SqlDB {
 			//Create the various tables..
 			Statement stmt = mSQLCOnnection.createStatement();
 			
-			//Create main table
-			String create =   "CREATE TABLE IF NOT EXISTS `keys` ("
+//			//Create main table
+//			String create =   "CREATE TABLE IF NOT EXISTS `keys` ("
+//							+ "  `id` IDENTITY PRIMARY KEY,"
+//							+ "  `basemodifier` bigint NOT NULL,"
+//							+ "  `uses` bigint NOT NULL,"
+//							+ "  `privatekey` varchar(80) NOT NULL,"
+//							+ "  `publickey` varchar(80) NOT NULL,"
+//							+ "  `script` varchar(255) NOT NULL,"
+//							+ "  `simpleaddress` varchar(80) NOT NULL,"
+//							+ "  `singleuse` int NOT NULL"
+//							+ ")";
+			
+			//Create keys table
+			String createkeys = "CREATE TABLE IF NOT EXISTS `keys` ("
 							+ "  `id` IDENTITY PRIMARY KEY,"
-							+ "  `basemodifier` bigint NOT NULL,"
+							+ "  `size` int NOT NULL,"
+							+ "  `depth` int NOT NULL,"
 							+ "  `uses` bigint NOT NULL,"
-							+ "  `privatekey` varchar(80) NOT NULL,"
-							+ "  `publickey` varchar(80) NOT NULL,"
-							+ "  `script` varchar(255) NOT NULL,"
-							+ "  `simpleaddress` varchar(80) NOT NULL,"
-							+ "  `singleuse` int NOT NULL"
+							+ "  `maxuses` bigint NOT NULL,"
+							+ "  `modifier` bigint NOT NULL,"
+							+ "  `privatekey` varchar(80),"
+							+ "  `publickey` varchar(80) NOT NULL"
 							+ ")";
 			
 			//Run it..
-			stmt.execute(create);
+			stmt.execute(createkeys);
 			
 			//Create scripts table
 			String scriptsdb = "CREATE TABLE IF NOT EXISTS `scripts` ("
 							 + "  `id` IDENTITY PRIMARY KEY,"
 							 + "  `script` varchar(8192) NOT NULL,"
 							 + "  `address` varchar(80) NOT NULL,"
+							 + "  `simple` int NOT NULL,"
+							 + "  `publickey` varchar(80) NOT NULL,"
 							 + "  `track` int NOT NULL"
 							 + ")";
 			
