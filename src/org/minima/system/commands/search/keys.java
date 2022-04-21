@@ -31,7 +31,7 @@ public class keys extends Command {
 			MiniData privdata = getDataParam("import");
 		
 			//Create a new Key
-			wallet.createNewKey(privdata, true);
+			wallet.createNewKey(privdata);
 		}
 		
 		//Get all the keys
