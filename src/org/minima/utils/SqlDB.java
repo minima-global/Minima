@@ -11,7 +11,7 @@ public abstract class SqlDB {
 	/**
 	 * Main Connection to DB
 	 */
-	protected Connection mSQLCOnnection = null;
+	protected Connection mSQLConnection = null;
 	
 	/**
 	 * The actual File used..
@@ -46,22 +46,22 @@ public abstract class SqlDB {
 			String h2db = "jdbc:h2:"+path+";MODE=MySQL;DB_CLOSE_ON_EXIT=FALSE";
 			
 			//Create the connection
-			mSQLCOnnection = DriverManager.getConnection(h2db, "SA", "");
+			mSQLConnection = DriverManager.getConnection(h2db, "SA", "");
 			
 			//Save and compact the DB!
-			Statement stmt = mSQLCOnnection.createStatement();
+			Statement stmt = mSQLConnection.createStatement();
 		
 			//Shut down.. this saves and closes all the data
 			stmt.execute("SHUTDOWN COMPACT");
 
 			//Close the connection
-			mSQLCOnnection.close();
+			mSQLConnection.close();
 			
 			//Now open a NEW Connection..
-			mSQLCOnnection = DriverManager.getConnection(h2db, "SA", "");
+			mSQLConnection = DriverManager.getConnection(h2db, "SA", "");
 			
 			//Auto commit changes
-			mSQLCOnnection.setAutoCommit(true);
+			mSQLConnection.setAutoCommit(true);
 	
 			//Perform Create SQL
 			createSQL();
@@ -75,13 +75,13 @@ public abstract class SqlDB {
 		try {
 		
 			//One last statement
-			Statement stmt = mSQLCOnnection.createStatement();
+			Statement stmt = mSQLConnection.createStatement();
 		
 			//Shut down.. this saves and closes all the data
 			stmt.execute("SHUTDOWN COMPACT");
 
 			//Close the connection
-			mSQLCOnnection.close();
+			mSQLConnection.close();
 		
 		} catch (SQLException e) {
 			MinimaLogger.log(e);
@@ -96,7 +96,7 @@ public abstract class SqlDB {
 		}
 		
 		//One last statement
-		Statement stmt = mSQLCOnnection.createStatement();
+		Statement stmt = mSQLConnection.createStatement();
 	
 		//Create the backup Script
 		String backup = String.format("SCRIPT TO '%s'", zBackupFile.getAbsolutePath());
@@ -110,7 +110,7 @@ public abstract class SqlDB {
 	
 	public void restoreFromFile(File zRestoreFile) throws SQLException {
 		//One last statement
-		Statement stmt = mSQLCOnnection.createStatement();
+		Statement stmt = mSQLConnection.createStatement();
 	
 		//First wipe everything..
 		stmt.execute("DROP ALL OBJECTS");

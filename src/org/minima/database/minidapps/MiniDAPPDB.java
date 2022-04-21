@@ -26,7 +26,7 @@ public class MiniDAPPDB extends SqlDB {
 		try {
 			
 			//Create the various tables..
-			Statement stmt = mSQLCOnnection.createStatement();
+			Statement stmt = mSQLConnection.createStatement();
 		
 			//Execute the SQL..
 			boolean res = stmt.execute(zSQL);

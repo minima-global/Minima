@@ -61,6 +61,10 @@ public class TreeKey {
 		return mPublicKey;
 	}
 	
+	public MiniData getPrivateKey() {
+		return mPrivateSeed;
+	}
+	
 	public int getMaxUses() {
 		return mMaxUses;
 	}
@@ -71,6 +75,14 @@ public class TreeKey {
 	
 	public void setUses(int zUses) {
 		mUses = zUses;
+	}
+	
+	public int getSize() {
+		return mKeysPerLevel;
+	}
+	
+	public int getDepth() {
+		return mLevels;
 	}
 	
 	public Signature sign(MiniData zData) {

@@ -43,7 +43,7 @@ public class TxPoWSqlDB extends SqlDB {
 		try {
 		
 			//Create the various tables..
-			Statement stmt = mSQLCOnnection.createStatement();
+			Statement stmt = mSQLConnection.createStatement();
 			
 			//Create main table
 			String create = "CREATE TABLE IF NOT EXISTS `txpow` ("
@@ -70,14 +70,14 @@ public class TxPoWSqlDB extends SqlDB {
 			
 			//Create some prepared statements..
 			String insert 		= "INSERT IGNORE INTO txpow ( txpowid, isblock, istransaction, parentid, timemilli, txpowdata ) VALUES ( ?, ? ,? ,? ,? ,? )";
-			SQL_INSERT_TXPOW 	= mSQLCOnnection.prepareStatement(insert);
+			SQL_INSERT_TXPOW 	= mSQLConnection.prepareStatement(insert);
 			
 			//Select 
-			SQL_SELECT_TXPOW 	= mSQLCOnnection.prepareStatement("SELECT txpowdata FROM txpow WHERE txpowid=?");
-			SQL_SELECT_CHILDREN	= mSQLCOnnection.prepareStatement("SELECT txpowid FROM txpow WHERE isblock=1 AND parentid=?");
-			SQL_TOTAL_TXPOW		= mSQLCOnnection.prepareStatement("SELECT COUNT(*) AS tot FROM txpow");
-			SQL_DELETE_TXPOW	= mSQLCOnnection.prepareStatement("DELETE FROM txpow WHERE timemilli < ?");
-			SQL_EXISTS			= mSQLCOnnection.prepareStatement("SELECT txpowid FROM txpow WHERE txpowid=?");
+			SQL_SELECT_TXPOW 	= mSQLConnection.prepareStatement("SELECT txpowdata FROM txpow WHERE txpowid=?");
+			SQL_SELECT_CHILDREN	= mSQLConnection.prepareStatement("SELECT txpowid FROM txpow WHERE isblock=1 AND parentid=?");
+			SQL_TOTAL_TXPOW		= mSQLConnection.prepareStatement("SELECT COUNT(*) AS tot FROM txpow");
+			SQL_DELETE_TXPOW	= mSQLConnection.prepareStatement("DELETE FROM txpow WHERE timemilli < ?");
+			SQL_EXISTS			= mSQLConnection.prepareStatement("SELECT txpowid FROM txpow WHERE txpowid=?");
 			
 		} catch (SQLException e) {
 			MinimaLogger.log(e);

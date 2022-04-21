@@ -41,7 +41,7 @@ public class ArchiveManager extends SqlDB {
 		try {
 			
 			//Create the various tables..
-			Statement stmt = mSQLCOnnection.createStatement();
+			Statement stmt = mSQLConnection.createStatement();
 			
 			//Create main table
 			String create = "CREATE TABLE IF NOT EXISTS `syncblock` ("
@@ -66,14 +66,14 @@ public class ArchiveManager extends SqlDB {
 			
 			//Create some prepared statements..
 			String insert 			= "INSERT IGNORE INTO syncblock ( txpowid, block, timemilli, syncdata ) VALUES ( ?, ? ,? ,? )";
-			SQL_INSERT_SYNCBLOCK 	= mSQLCOnnection.prepareStatement(insert);
+			SQL_INSERT_SYNCBLOCK 	= mSQLConnection.prepareStatement(insert);
 			
 			//Select 
-			SQL_FIND_SYNCBLOCK 		= mSQLCOnnection.prepareStatement("SELECT syncdata FROM syncblock WHERE txpowid=?");
-			SQL_EXISTS_SYNCBLOCK	= mSQLCOnnection.prepareStatement("SELECT block FROM syncblock WHERE txpowid=?");
-			SQL_TOTAL_COUNT			= mSQLCOnnection.prepareStatement("SELECT COUNT(*) as tot FROM syncblock");
-			SQL_SELECT_RANGE		= mSQLCOnnection.prepareStatement("SELECT syncdata FROM syncblock WHERE block>? AND block<? ORDER BY block DESC");
-			SQL_DELETE_TXBLOCKS		= mSQLCOnnection.prepareStatement("DELETE FROM syncblock WHERE timemilli < ?");
+			SQL_FIND_SYNCBLOCK 		= mSQLConnection.prepareStatement("SELECT syncdata FROM syncblock WHERE txpowid=?");
+			SQL_EXISTS_SYNCBLOCK	= mSQLConnection.prepareStatement("SELECT block FROM syncblock WHERE txpowid=?");
+			SQL_TOTAL_COUNT			= mSQLConnection.prepareStatement("SELECT COUNT(*) as tot FROM syncblock");
+			SQL_SELECT_RANGE		= mSQLConnection.prepareStatement("SELECT syncdata FROM syncblock WHERE block>? AND block<? ORDER BY block DESC");
+			SQL_DELETE_TXBLOCKS		= mSQLConnection.prepareStatement("DELETE FROM syncblock WHERE timemilli < ?");
 			
 		} catch (SQLException e) {
 			MinimaLogger.log(e);
