@@ -6,6 +6,7 @@ import java.util.Hashtable;
 import org.minima.database.MinimaDB;
 import org.minima.database.txpowtree.TxPowTree;
 import org.minima.database.wallet.KeyRow;
+import org.minima.database.wallet.ScriptRow;
 import org.minima.database.wallet.Wallet;
 import org.minima.objects.Coin;
 import org.minima.objects.Token;
@@ -44,12 +45,10 @@ public class balance extends Command {
 		
 		//Get the wallet.. to find the sendable coins..
 		Wallet wdb = MinimaDB.getDB().getWallet();
-		ArrayList<KeyRow> keys 					= wdb.getAllRelevant(false);
+		ArrayList<ScriptRow> simplescripts 		= wdb.getAllSimpleAddresses();
 		ArrayList<String> sendableaddresses 	= new ArrayList<>();
-		for(KeyRow key : keys) {
-			if(!key.getPublicKey().equals("")) {
-				sendableaddresses.add(key.getAddress());
-			}
+		for(ScriptRow scrow : simplescripts) {
+			sendableaddresses.add(scrow.getAddress());
 		}
 		
 		//Get the coins..

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.wallet.KeyRow;
+import org.minima.database.wallet.ScriptRow;
 import org.minima.database.wallet.Wallet;
 import org.minima.kissvm.Contract;
 import org.minima.objects.Address;
@@ -30,10 +31,10 @@ public class scripts extends Command {
 		if(action.equals("list")) {
 			
 			//Get all the custom scripts
-			ArrayList<KeyRow> allscripts = wallet.getAllCustomScripts();
+			ArrayList<ScriptRow> allscripts = wallet.getAllAddresses();
 			
 			JSONArray arr = new JSONArray();
-			for(KeyRow kr : allscripts) {
+			for(ScriptRow kr : allscripts) {
 				arr.add(kr.toJSON());
 			}
 				
@@ -66,7 +67,7 @@ public class scripts extends Command {
 			script = Contract.cleanScript(script);
 			
 			//Now add it to the DB
-			KeyRow krow = wallet.addScript(script,track);
+			ScriptRow krow = wallet.addScript(script, false, "0x00", track);
 			
 			//Put the details in the response..
 			ret.put("response", krow.toJSON());

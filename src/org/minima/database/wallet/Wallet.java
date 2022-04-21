@@ -287,16 +287,23 @@ public class Wallet extends SqlDB {
 	}
 	
 	/**
-	 * Is this KEY relevant to us
+	 * Is this KEY one of our keys
 	 */
 	public synchronized boolean isKeyRelevant(String zPublicKey) {
 		return true;
 	}
 	
 	/**
-	 * Is this ADDRESS relevant to us
+	 * Is this ADDRESS relevant to us - are we tracking it
 	 */
 	public synchronized boolean isAddressRelevant(String zAddress) {
+		return true;
+	}
+	
+	/**
+	 * Is this ADDRESS a simple address
+	 */
+	public synchronized boolean isAddressSimple(String zAddress) {
 		return true;
 	}
 	

@@ -3,6 +3,7 @@ package org.minima.system.commands.base;
 import org.minima.database.MinimaDB;
 import org.minima.database.wallet.KeyRow;
 import org.minima.database.wallet.Wallet;
+import org.minima.objects.base.MiniData;
 import org.minima.system.commands.Command;
 import org.minima.utils.json.JSONObject;
 
@@ -20,7 +21,7 @@ public class newaddress extends Command {
 		Wallet wallet = MinimaDB.getDB().getWallet();
 		
 		//Create a new address
-		KeyRow krow = wallet.createNewKey(true);
+		KeyRow krow = wallet.createNewKey(MiniData.getRandomData(32));
 			
 		//Put the details in the response..
 		ret.put("response", krow.toJSON());

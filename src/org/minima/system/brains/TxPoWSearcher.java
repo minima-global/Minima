@@ -155,21 +155,47 @@ public class TxPoWSearcher {
 			//Get the wallet..
 			Wallet wallet = MinimaDB.getDB().getWallet();
 			
-			//Get all the keys
-			ArrayList<KeyRow> keys = wallet.getAllRelevant(false);
-			
 			//Now cycle through the coins
 			for(Coin cc : coinentry) {
-				for(KeyRow kr : keys) {
-					//Is it a simple key
-					if(!kr.getPublicKey().equals("")) {
-						if(cc.getAddress().isEqual(new MiniData(kr.getAddress()))) {
-							finalcoins.add(cc);
-						}
-					}
+				
+				//Is it a simple address
+				if(wallet.isAddressSimple(cc.getAddress().to0xString())) {
+					finalcoins.add(cc);
 				}
+				
+//				for(KeyRow kr : keys) {
+//					//Is it a simple key
+//					if(!kr.getPublicKey().equals("")) {
+//						if(cc.getAddress().isEqual(new MiniData(kr.getAddress()))) {
+//							finalcoins.add(cc);
+//						}
+//					}
+//				}
 			}
 		}
+		
+//		if(zSimpleOnly) {
+//			//Fresh List
+//			finalcoins = new ArrayList<>();
+//			
+//			//Get the wallet..
+//			Wallet wallet = MinimaDB.getDB().getWallet();
+//			
+//			//Get all the keys
+//			ArrayList<KeyRow> keys = wallet.getAllRelevant(false);
+//			
+//			//Now cycle through the coins
+//			for(Coin cc : coinentry) {
+//				for(KeyRow kr : keys) {
+//					//Is it a simple key
+//					if(!kr.getPublicKey().equals("")) {
+//						if(cc.getAddress().isEqual(new MiniData(kr.getAddress()))) {
+//							finalcoins.add(cc);
+//						}
+//					}
+//				}
+//			}
+//		}
 		
 		return finalcoins;
 	}	

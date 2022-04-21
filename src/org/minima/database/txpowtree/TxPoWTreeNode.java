@@ -109,11 +109,11 @@ public class TxPoWTreeNode implements Streamable {
 		//Get the Wallet..
 		Wallet wallet = MinimaDB.getDB().getWallet();
 		
-		//Are we checking for relevant data
-		ArrayList<KeyRow> allrel = new ArrayList<>();
-		if(zFindRelevant) {
-			allrel = wallet.getAllRelevant(false);
-		}
+//		//Are we checking for relevant data
+//		ArrayList<KeyRow> allrel = new ArrayList<>();
+//		if(zFindRelevant) {
+//			allrel = wallet.getAllRelevant(false);
+//		}
 		
 		//Add all the peaks..
 		ArrayList<MMREntry> peaks = mTxBlock.getPreviousPeaks();
@@ -151,7 +151,7 @@ public class TxPoWTreeNode implements Streamable {
 			mCoins.add(spentcoin);
 			
 			//Is this Relevant to us..
-			if(checkRelevant(spentcoin, allrel)) {
+			if(checkRelevant(spentcoin, wallet)) {
 				mRelevantMMRCoins.add(entrynumber);
 				
 				//Message..
@@ -186,7 +186,7 @@ public class TxPoWTreeNode implements Streamable {
 			mCoins.add(newcoin);
 			
 			//Is this Relevant to us..
-			if(checkRelevant(output, allrel)) {
+			if(checkRelevant(output, wallet)) {
 				mRelevantMMRCoins.add(entrynumber);
 				
 				//Message..
@@ -212,32 +212,51 @@ public class TxPoWTreeNode implements Streamable {
 	/**
 	 * Check if this coin is relevant to this wallet and therefore should be kept
 	 */
-	private boolean checkRelevant(Coin zCoin, ArrayList<KeyRow> zAllRelevant) {
+	private boolean checkRelevant(Coin zCoin, Wallet zWallet) {
 		
-		//Cycle through ALL the wallet entries..
-		for(KeyRow wk : zAllRelevant) {
+		//Is the coin relevant to us..
+		if(zWallet.isAddressRelevant(zCoin.getAddress().to0xString())) {
+			return true;
+		}
+		
+		//Are any of the state variables relevant to us..
+		ArrayList<StateVariable> state = zCoin.getState();
+		for(StateVariable sv : state) {
 			
-			//Is the address one of ours..
-			if(wk.trackAddress() && zCoin.getAddress().to0xString().equals(wk.getAddress())) {
-				return true;
-			}
-			
-			//Are any of the state variables relevant to us..
-			ArrayList<StateVariable> state = zCoin.getState();
-			for(StateVariable sv : state) {
+			if(sv.getType().isEqual(StateVariable.STATETYPE_HEX)) {
+				String svstr = sv.toString();
 				
-				if(sv.getType().isEqual(StateVariable.STATETYPE_HEX)) {
-					String svstr = sv.toString();
-					
-					//Custom scripts have no public key..
-					if(!wk.getPublicKey().equals("") && svstr.equals(wk.getPublicKey())) {
-						return true;
-					}else if(wk.trackAddress() && svstr.equals(wk.getAddress())){
-						return true;
-					}
+				//Custom scripts have no public key..
+				if(zWallet.isAddressRelevant(svstr) || zWallet.isKeyRelevant(svstr)) {
+					return true;
 				}
 			}
 		}
+		
+//		//Cycle through ALL the wallet entries..
+//		for(KeyRow wk : zAllRelevant) {
+//			
+//			//Is the address one of ours..
+//			if(wk.trackAddress() && zCoin.getAddress().to0xString().equals(wk.getAddress())) {
+//				return true;
+//			}
+//			
+//			//Are any of the state variables relevant to us..
+//			ArrayList<StateVariable> state = zCoin.getState();
+//			for(StateVariable sv : state) {
+//				
+//				if(sv.getType().isEqual(StateVariable.STATETYPE_HEX)) {
+//					String svstr = sv.toString();
+//					
+//					//Custom scripts have no public key..
+//					if(!wk.getPublicKey().equals("") && svstr.equals(wk.getPublicKey())) {
+//						return true;
+//					}else if(wk.trackAddress() && svstr.equals(wk.getAddress())){
+//						return true;
+//					}
+//				}
+//			}
+//		}
 		
 		return false;
 	}
