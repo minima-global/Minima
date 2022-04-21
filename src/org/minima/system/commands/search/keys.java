@@ -35,15 +35,15 @@ public class keys extends Command {
 		}
 		
 		//Get all the keys
-		ArrayList<KeyRow> keys = wallet.getAllRelevant(false);
+		ArrayList<KeyRow> keys = wallet.getAllKeys();
 		
 		JSONArray arr = new JSONArray();
 		for(KeyRow kr : keys) {
 			
 			JSONObject dets = kr.toJSON();
-			if(privkey) {
-				dets.put("privatekey", kr.getPrivateKey());	
-			}
+//			if(privkey) {
+//				dets.put("privatekey", kr.getPrivateKey());	
+//			}
 			
 			arr.add(dets);
 		}

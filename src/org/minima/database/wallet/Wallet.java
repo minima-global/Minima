@@ -307,6 +307,33 @@ public class Wallet extends SqlDB {
 		return true;
 	}
 	
+	/**
+	 * Get all Keys 
+	 */
+	public synchronized ArrayList<KeyRow> getAllKeys() {
+		
+		ArrayList<KeyRow> allkeys = new ArrayList<>();
+		try {
+			
+			//Run the query
+			ResultSet rs = SQL_GET_ALL_KEYS.executeQuery();
+			
+			//Could be multiple results
+			while(rs.next()) {
+				
+				//Get the details
+				KeyRow scrow = new KeyRow(rs);
+				
+				//Add to our list
+				allkeys.add(scrow);
+			}
+			
+		} catch (SQLException e) {
+			MinimaLogger.log(e);
+		}
+		
+		return allkeys;
+	}
 	
 	/**
 	 * Get all relevant Public Keys and Addresses
@@ -474,7 +501,7 @@ public class Wallet extends SqlDB {
 //	}
 	
 	/**
-	 * Get the full row for this address
+	 * Get the public key row for this address - IF it's simple
 	 */
 	public synchronized String getPublicKeyFromAddress(String zAddres) {
 		try {
