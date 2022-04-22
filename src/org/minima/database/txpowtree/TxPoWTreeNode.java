@@ -12,7 +12,6 @@ import org.minima.database.mmr.MMRData;
 import org.minima.database.mmr.MMREntry;
 import org.minima.database.mmr.MMREntryNumber;
 import org.minima.database.mmr.MMRProof;
-import org.minima.database.wallet.KeyRow;
 import org.minima.database.wallet.Wallet;
 import org.minima.objects.Coin;
 import org.minima.objects.CoinProof;

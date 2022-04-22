@@ -6,7 +6,6 @@ import java.util.Random;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
-import org.minima.database.wallet.KeyRow;
 import org.minima.database.wallet.ScriptRow;
 import org.minima.objects.Pulse;
 import org.minima.objects.TxBlock;

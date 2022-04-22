@@ -6,7 +6,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.Random;
 
 import org.minima.objects.Address;
@@ -182,7 +181,7 @@ public class Wallet extends SqlDB {
 	/**
 	 * Get 1 of your default addresses
 	 */
-	public ScriptRow getDefaultKeyAddress() {
+	public ScriptRow getDefaultAddress() {
 		//Get all the default addresses
 		ArrayList<ScriptRow> allkeys = getAllDefaultAddresses();
 		int numkeys = allkeys.size();

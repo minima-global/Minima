@@ -1,13 +1,10 @@
 package org.minima.system.commands.base;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Hashtable;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.txpowtree.TxPowTree;
-import org.minima.database.wallet.KeyRow;
-import org.minima.database.wallet.ScriptRow;
 import org.minima.database.wallet.Wallet;
 import org.minima.objects.Coin;
 import org.minima.objects.Token;

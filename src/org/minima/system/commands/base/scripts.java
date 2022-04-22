@@ -3,7 +3,6 @@ package org.minima.system.commands.base;
 import java.util.ArrayList;
 
 import org.minima.database.MinimaDB;
-import org.minima.database.wallet.KeyRow;
 import org.minima.database.wallet.ScriptRow;
 import org.minima.database.wallet.Wallet;
 import org.minima.kissvm.Contract;

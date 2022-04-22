@@ -3,8 +3,6 @@ package org.minima.database.wallet;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import org.minima.objects.Address;
-import org.minima.objects.base.MiniData;
 import org.minima.utils.json.JSONObject;
 
 public class KeyRow {

@@ -7,7 +7,6 @@ import org.minima.database.mmr.MMRProof;
 import org.minima.database.txpowdb.TxPoWDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.database.userprefs.txndb.TxnRow;
-import org.minima.database.wallet.KeyRow;
 import org.minima.database.wallet.ScriptRow;
 import org.minima.database.wallet.Wallet;
 import org.minima.objects.Coin;
@@ -30,7 +29,6 @@ import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
 import org.minima.system.commands.txn.txnutils;
 import org.minima.system.params.GlobalParams;
-import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
 
 public class tokencreate extends Command {
@@ -134,7 +132,7 @@ public class tokencreate extends Command {
 		MiniNumber sendamount 	= new MiniNumber(colorminima);
 		
 		//Send it to ourselves
-		ScriptRow sendkey 		= MinimaDB.getDB().getWallet().getDefaultKeyAddress();
+		ScriptRow sendkey 		= MinimaDB.getDB().getWallet().getDefaultAddress();
 		MiniData sendaddress 	= new MiniData(sendkey.getAddress());
 		
 		//get the tip..
@@ -283,7 +281,7 @@ public class tokencreate extends Command {
 		//Do we need to send change..
 		if(change.isMore(MiniNumber.ZERO)) {
 			//Create a new address
-			ScriptRow newwalletaddress = MinimaDB.getDB().getWallet().getDefaultKeyAddress();
+			ScriptRow newwalletaddress = MinimaDB.getDB().getWallet().getDefaultAddress();
 			MiniData chgaddress = new MiniData(newwalletaddress.getAddress());
 			
 			Coin changecoin = new Coin(Coin.COINID_OUTPUT, chgaddress, change, Token.TOKENID_MINIMA);

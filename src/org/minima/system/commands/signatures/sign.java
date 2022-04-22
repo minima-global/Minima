@@ -1,7 +1,6 @@
 package org.minima.system.commands.signatures;
 
 import org.minima.database.MinimaDB;
-import org.minima.database.wallet.KeyRow;
 import org.minima.database.wallet.Wallet;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.keys.Signature;

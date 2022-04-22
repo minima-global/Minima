@@ -7,7 +7,6 @@ import org.minima.database.mmr.MMRProof;
 import org.minima.database.txpowdb.TxPoWDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.database.userprefs.txndb.TxnRow;
-import org.minima.database.wallet.KeyRow;
 import org.minima.database.wallet.ScriptRow;
 import org.minima.database.wallet.Wallet;
 import org.minima.objects.Coin;
@@ -306,7 +305,7 @@ public class txnutils {
 		//Do we need to send change..
 		if(change.isMore(MiniNumber.ZERO)) {
 			//Create a new address
-			ScriptRow newwalletaddress = MinimaDB.getDB().getWallet().getDefaultKeyAddress();
+			ScriptRow newwalletaddress = MinimaDB.getDB().getWallet().getDefaultAddress();
 			MiniData chgaddress = new MiniData(newwalletaddress.getAddress());
 			
 			//Get the scaled token ammount..

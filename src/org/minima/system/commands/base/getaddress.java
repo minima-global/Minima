@@ -1,7 +1,6 @@
 package org.minima.system.commands.base;
 
 import org.minima.database.MinimaDB;
-import org.minima.database.wallet.KeyRow;
 import org.minima.database.wallet.ScriptRow;
 import org.minima.database.wallet.Wallet;
 import org.minima.system.commands.Command;
@@ -23,7 +22,7 @@ public class getaddress extends Command {
 		String type = getParam("type","single");
 		
 		//Get an existing address
-		ScriptRow scrow = wallet.getDefaultKeyAddress();
+		ScriptRow scrow = wallet.getDefaultAddress();
 			
 		//Put the details in the response..
 		ret.put("response", scrow.toJSON());
