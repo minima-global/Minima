@@ -88,6 +88,7 @@ public class ScriptRow {
 		ret.put("address", getAddress());
 		ret.put("miniaddress", Address.makeMinimaAddress(new MiniData(getAddress())));
 		ret.put("simple", isSimple());
+		ret.put("default", isDefault());
 		ret.put("publickey", getPublicKey());
 		ret.put("track", isTrack());
 		
