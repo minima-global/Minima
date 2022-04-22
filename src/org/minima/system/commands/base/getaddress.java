@@ -10,7 +10,7 @@ import org.minima.utils.json.JSONObject;
 public class getaddress extends Command {
 
 	public getaddress() {
-		super("getaddress","Get one of your default Minima addresses / keys");
+		super("getaddress","Get one of your default Minima addresses");
 	}
 	
 	@Override

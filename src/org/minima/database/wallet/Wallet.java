@@ -446,33 +446,7 @@ public class Wallet extends SqlDB {
 		return allscripts;
 	}
 	
-//	private synchronized ArrayList<ScriptRow> getAllTrackedAddresses() {
-//		
-//		//Do both sets..
-//		ArrayList<ScriptRow> allscripts = new ArrayList<>();
-//		try {
-//			
-//			//Run the query
-//			ResultSet rs = SQL_LIST_TRACK_SCRIPTS.executeQuery();
-//			
-//			//Could be multiple results
-//			while(rs.next()) {
-//				
-//				//Get the details
-//				ScriptRow scrow = new ScriptRow(rs);
-//				
-//				//Add to our list
-//				allscripts.add(scrow);
-//			}
-//			
-//		} catch (SQLException e) {
-//			MinimaLogger.log(e);
-//		}
-//		
-//		return allscripts;
-//	}
-
-	public synchronized ArrayList<ScriptRow> getAllSimpleAddresses() {
+	private synchronized ArrayList<ScriptRow> getAllSimpleAddresses() {
 		
 		//Do both sets..
 		ArrayList<ScriptRow> allscripts = new ArrayList<>();
@@ -523,7 +497,8 @@ public class Wallet extends SqlDB {
 			}
 			
 			//Create a new TreeKey
-			TreeKey tk = TreeKey.createDefault(new MiniData(key.getPrivateKey()));
+			TreeKey tk = new TreeKey(new MiniData(key.getPrivateKey()), key.getSize(), key.getDepth());
+//			TreeKey tk = TreeKey.createDefault(new MiniData(key.getPrivateKey()));
 			
 			//How many times has this been used.. get from DB
 			int uses = key.getUses();
@@ -549,29 +524,7 @@ public class Wallet extends SqlDB {
 		
 		return null;
 	}
-	
-	/*private synchronized int getUses(String zPrivateKey) throws SQLException {		
-		//Get the Query ready
-		SQL_GET_USES.clearParameters();
-	
-		//Set main params
-		SQL_GET_USES.setString(1, zPrivateKey);
 		
-		//Run the query
-		ResultSet rs = SQL_GET_USES.executeQuery();
-		
-		//Could be multiple results
-		if(rs.next()) {
-			
-			//Get the uses
-			int uses = rs.getInt("uses");
-			
-			return uses;
-		}
-		
-		return 0;
-	}*/
-	
 	private void updateUses(String zPrivateKey, int zUses) throws SQLException {		
 
 		//Get the Query ready

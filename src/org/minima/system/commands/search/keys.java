@@ -7,49 +7,48 @@ import org.minima.database.wallet.KeyRow;
 import org.minima.database.wallet.Wallet;
 import org.minima.objects.base.MiniData;
 import org.minima.system.commands.Command;
+import org.minima.system.commands.CommandException;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
 public class keys extends Command {
 
 	public keys() {
-		super("keys","(private:true|false) (import:) - Get a list of all your public keys and addresses, show private keys or import");
+		super("keys","action:[list|new] - Get a list of all your public keys or create a new key");
 	}
 	
 	@Override
 	public JSONObject runCommand() throws Exception{
 		JSONObject ret = getJSONReply();
 		
-		boolean privkey = getBooleanParam("private",false); 
-		
 		//Get the wallet..
 		Wallet wallet = MinimaDB.getDB().getWallet();
-	
-		if(existsParam("import")) {
-			
-			//Get the private seed
-			MiniData privdata = getDataParam("import");
 		
-			//Create a new Key
-			wallet.createNewKey(privdata);
+		String action = getParam("action", "list");
+		
+		if(action.equals("list")) {
+			
+			//Get all the keys
+			ArrayList<KeyRow> keys = wallet.getAllKeys();
+			
+			JSONArray arr = new JSONArray();
+			for(KeyRow kr : keys) {
+				JSONObject dets = kr.toJSON();
+				arr.add(dets);
+			}
+				
+			//Put the details in the response..
+			ret.put("response", arr);
+			
+		}else if(action.equals("new")) {
+			
+			//Create a new Key..
+			KeyRow krow = wallet.createNewKey(MiniData.getRandomData(32));
+			ret.put("response", krow.toJSON());
+			
+		}else {
+			throw new CommandException("Unknown action : "+action);
 		}
-		
-		//Get all the keys
-		ArrayList<KeyRow> keys = wallet.getAllKeys();
-		
-		JSONArray arr = new JSONArray();
-		for(KeyRow kr : keys) {
-			
-			JSONObject dets = kr.toJSON();
-//			if(privkey) {
-//				dets.put("privatekey", kr.getPrivateKey());	
-//			}
-			
-			arr.add(dets);
-		}
-			
-		//Put the details in the response..
-		ret.put("response", arr);
 		
 		return ret;
 	}
