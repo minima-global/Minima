@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.keys.Signature;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
@@ -42,6 +43,21 @@ public class Witness implements Streamable {
 	 * Signature functions
 	 */
 	public void addSignature(Signature zSigProof) {
+		if(zSigProof == null) {
+			throw new IllegalArgumentException("Cannot add a NULL Signature");
+		}
+		
+		//Check not already added
+		ArrayList<MiniData> allsigskey = getAllSignatureKeys();
+		MiniData rootpubk = zSigProof.getRootPublicKey();
+		for(MiniData sig : allsigskey) {
+			if(sig.isEqual(rootpubk)) {
+				//Allready added
+				MinimaLogger.log("Attempt to add Signature twice for key : "+sig);
+				return;
+			}
+		}
+		
 		mSignatureProofs.add(zSigProof);
 	}
 	
