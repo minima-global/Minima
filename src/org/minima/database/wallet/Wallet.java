@@ -5,6 +5,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Random;
 
@@ -20,7 +21,7 @@ public class Wallet extends SqlDB {
 	/**
 	 * How many default keys to create 
 	 */
-	public static int NUMBER_GETADDRESS_KEYS = 64;
+	public static int NUMBER_GETADDRESS_KEYS = 4;
 	
 	/**
 	 * The MAIN Private seed from which all others are derived.. 
@@ -28,28 +29,28 @@ public class Wallet extends SqlDB {
 	private MiniData mMainPrivateSeed = new MiniData("0x000102"); 
 	
 	/**
-	 * PreparedStatements
+	 * Key SQL
 	 */
 	PreparedStatement SQL_CREATE_PUBLIC_KEY 			= null;
 	PreparedStatement SQL_GET_KEY 						= null;
 	PreparedStatement SQL_GET_ALL_KEYS 					= null;
-	
-	PreparedStatement SQL_GET_USES 						= null;
-	PreparedStatement SQL_UPDATE_USES 					= null;
-	
-//	PreparedStatement SQL_GET_ALL_NONSINGLE_RELEVANT 	= null;
-	PreparedStatement SQL_GET_PUBKEY_FADDRESS 			= null;
-//	PreparedStatement SQL_GET_FPUBLICKEY 				= null;
-	
+	PreparedStatement SQL_UPDATE_KEY_USES 				= null;
 	
 	/**
-	 * Scripts DB
+	 * Scripts SQL
 	 */
 	PreparedStatement SQL_ADD_SCRIPT 			= null;
 	PreparedStatement SQL_LIST_ALL_SCRIPTS 		= null;
 	PreparedStatement SQL_LIST_SIMPLE_SCRIPTS 	= null;
 	PreparedStatement SQL_LIST_TRACK_SCRIPTS 	= null;
 	PreparedStatement SQL_GET_SCRIPT 			= null;
+	
+	/**
+	 * Cached Lists of Data for fast O(1) checking..
+	 */
+	HashSet<String> mAllKeys 			= new HashSet<>();
+	HashSet<String> mAllTrackedAddress 	= new HashSet<>();
+	HashSet<String> mAllSimpleAddress 	= new HashSet<>();
 	
 	/**
 	 * Stop creating keys if you are
@@ -110,12 +111,7 @@ public class Wallet extends SqlDB {
 			SQL_CREATE_PUBLIC_KEY 			= mSQLConnection.prepareStatement("INSERT IGNORE INTO keys ( size, depth, uses, maxuses, modifier, privatekey, publickey ) VALUES ( ?, ?, ?, ? ,? ,? ,? )");
 			SQL_GET_ALL_KEYS				= mSQLConnection.prepareStatement("SELECT * FROM keys");
 			SQL_GET_KEY						= mSQLConnection.prepareStatement("SELECT * FROM keys WHERE publickey=?");
-			
-			SQL_UPDATE_USES					= mSQLConnection.prepareStatement("UPDATE keys SET uses=? WHERE privatekey=?");
-			SQL_GET_USES					= mSQLConnection.prepareStatement("SELECT uses FROM keys WHERE privatekey=?");
-		
-			SQL_GET_PUBKEY_FADDRESS			= mSQLConnection.prepareStatement("SELECT * FROM scripts WHERE simple=1 AND address=?");
-//			SQL_GET_FPUBLICKEY				= mSQLCOnnection.prepareStatement("SELECT * FROM keys WHERE publickey=?");
+			SQL_UPDATE_KEY_USES				= mSQLConnection.prepareStatement("UPDATE keys SET uses=? WHERE privatekey=?");
 			
 			//ScriptsDB
 			SQL_ADD_SCRIPT				= mSQLConnection.prepareStatement("INSERT IGNORE INTO scripts ( script, address, simple, publickey, track ) VALUES ( ? , ? , ? , ? , ? )");
@@ -124,10 +120,26 @@ public class Wallet extends SqlDB {
 			SQL_LIST_TRACK_SCRIPTS		= mSQLConnection.prepareStatement("SELECT * FROM scripts WHERE track<>0");
 			SQL_GET_SCRIPT				= mSQLConnection.prepareStatement("SELECT * FROM scripts WHERE address=?");
 			
+			//Now load up the caches..
+			ArrayList<KeyRow> allkeys = getAllKeys();
+			for(KeyRow key : allkeys) {
+				mAllKeys.add(key.getPublicKey());
+			}
+			
+			ArrayList<ScriptRow> allscripts = getAllAddresses();
+			for(ScriptRow srow : allscripts) {
+				String address = srow.getAddress();
+				if(srow.isTrack()) {
+					mAllTrackedAddress.add(address);
+				}
+				if(srow.isSimple()) {
+					mAllSimpleAddress.add(address);
+				}
+			}
+			
 		} catch (SQLException e) {
 			MinimaLogger.log(e);
 		}
-		
 	}
 	
 	/**
@@ -225,6 +237,9 @@ public class Wallet extends SqlDB {
 			//Do it.
 			SQL_CREATE_PUBLIC_KEY.execute();
 			
+			//Add this Key to our Cache List
+			mAllKeys.add(treekey.getPublicKey().to0xString());
+			
 			return new KeyRow(	treekey.getSize(), treekey.getDepth(), 
 								treekey.getUses(), treekey.getMaxUses(), "0x00", 
 								treekey.getPrivateKey().to0xString(), 
@@ -273,6 +288,16 @@ public class Wallet extends SqlDB {
 			//Do it.
 			SQL_ADD_SCRIPT.execute();
 			
+			//Add to our Cache List for fast checking
+			if(zTrack) {
+				mAllTrackedAddress.add(addr);
+			}
+			
+			if(zSimple) {
+				mAllSimpleAddress.add(addr);
+			}
+			
+			
 			return new ScriptRow(zScript, addr, zSimple, zPublicKey, zTrack);
 			
 		} catch (SQLException e) {
@@ -314,21 +339,27 @@ public class Wallet extends SqlDB {
 	 * Is this KEY one of our keys
 	 */
 	public synchronized boolean isKeyRelevant(String zPublicKey) {
-		return true;
+		boolean ourkey = mAllKeys.contains(zPublicKey);
+		MinimaLogger.log("[WALLET] isKeyRelevant : "+zPublicKey+" "+ourkey);
+		return ourkey;
 	}
 	
 	/**
 	 * Is this ADDRESS relevant to us - are we tracking it
 	 */
 	public synchronized boolean isAddressRelevant(String zAddress) {
-		return true;
+		boolean tracked = mAllTrackedAddress.contains(zAddress);
+		MinimaLogger.log("[WALLET] isAddressRelevant : "+zAddress+" "+tracked);
+		return tracked;
 	}
 	
 	/**
 	 * Is this ADDRESS a simple address
 	 */
 	public synchronized boolean isAddressSimple(String zAddress) {
-		return true;
+		boolean simple = mAllSimpleAddress.contains(zAddress);
+		MinimaLogger.log("[WALLET] isAddressSimple : "+zAddress+" "+simple);
+		return simple;
 	}
 	
 	/**
@@ -415,31 +446,31 @@ public class Wallet extends SqlDB {
 		return allscripts;
 	}
 	
-	private synchronized ArrayList<ScriptRow> getAllTrackedAddresses() {
-		
-		//Do both sets..
-		ArrayList<ScriptRow> allscripts = new ArrayList<>();
-		try {
-			
-			//Run the query
-			ResultSet rs = SQL_LIST_TRACK_SCRIPTS.executeQuery();
-			
-			//Could be multiple results
-			while(rs.next()) {
-				
-				//Get the details
-				ScriptRow scrow = new ScriptRow(rs);
-				
-				//Add to our list
-				allscripts.add(scrow);
-			}
-			
-		} catch (SQLException e) {
-			MinimaLogger.log(e);
-		}
-		
-		return allscripts;
-	}
+//	private synchronized ArrayList<ScriptRow> getAllTrackedAddresses() {
+//		
+//		//Do both sets..
+//		ArrayList<ScriptRow> allscripts = new ArrayList<>();
+//		try {
+//			
+//			//Run the query
+//			ResultSet rs = SQL_LIST_TRACK_SCRIPTS.executeQuery();
+//			
+//			//Could be multiple results
+//			while(rs.next()) {
+//				
+//				//Get the details
+//				ScriptRow scrow = new ScriptRow(rs);
+//				
+//				//Add to our list
+//				allscripts.add(scrow);
+//			}
+//			
+//		} catch (SQLException e) {
+//			MinimaLogger.log(e);
+//		}
+//		
+//		return allscripts;
+//	}
 
 	public synchronized ArrayList<ScriptRow> getAllSimpleAddresses() {
 		
@@ -466,155 +497,6 @@ public class Wallet extends SqlDB {
 		
 		return allscripts;
 	}
-	
-//	/**
-//	 * Get all relevant Public Keys and Addresses
-//	 */
-//	public synchronized ArrayList<KeyRow> getAllRelevant(boolean zOnlyNonSingleKeys) {
-//		
-//		//If nop change use the cached version
-//		if(!mKeyRowChange) {
-//			if(zOnlyNonSingleKeys) {
-//				return mCachedRelevantNonSingleKeys;
-//			}
-//			
-//			return mCachedRelevantAllKeys;
-//		}
-//		
-//		//And now get all the custom scripts..
-//		ArrayList<KeyRow> customscripts = getAllCustomScripts();
-//		
-//		//Do both sets..
-//		ArrayList<KeyRow> allkeys = new ArrayList<>();
-//		try {
-//			
-//			//Run the query
-//			ResultSet rs = SQL_GET_ALL_NONSINGLE_RELEVANT.executeQuery();
-//			
-//			//Could be multiple results
-//			while(rs.next()) {
-//				
-//				//Get the details
-//				String publickey 	= rs.getString("publickey");
-//				String address 	 	= rs.getString("simpleaddress");
-//				String script 	 	= rs.getString("script");
-//				String privatekey 	= rs.getString("privatekey");
-//				
-//				//Add to our list
-//				allkeys.add(new KeyRow(privatekey, publickey, address, script, true));
-//			}
-//			
-//		} catch (SQLException e) {
-//			MinimaLogger.log(e);
-//		}
-//		
-//		//Non single keys
-//		mCachedRelevantNonSingleKeys = allkeys;
-//		mCachedRelevantNonSingleKeys.addAll(customscripts);
-//		
-//		//Now all the keys..
-//		allkeys = new ArrayList<>();
-//		try {
-//			
-//			//Run the query
-//			ResultSet rs = SQL_GET_ALL_KEYS.executeQuery();
-//			
-//			//Could be multiple results
-//			while(rs.next()) {
-//				
-//				//Get the details
-//				String publickey 	= rs.getString("publickey");
-//				String address 	 	= rs.getString("simpleaddress");
-//				String script 	 	= rs.getString("script");
-//				String privatekey 	= rs.getString("privatekey");
-//				
-//				//Add to our list
-//				allkeys.add(new KeyRow(privatekey, publickey, address, script, true));
-//			}
-//			
-//		} catch (SQLException e) {
-//			MinimaLogger.log(e);
-//		}
-//		
-//		//All keys
-//		mCachedRelevantAllKeys = allkeys;
-//		mCachedRelevantAllKeys.addAll(customscripts);
-//			
-//		//Ok - no key change for now..
-//		mKeyRowChange		= false;
-//		
-//		//What to return
-//		if(zOnlyNonSingleKeys) {
-//			return mCachedRelevantNonSingleKeys;
-//		}
-//		
-//		return mCachedRelevantAllKeys;
-//	}
-	
-	/**
-	 * Get the public key row for this address - IF it's simple
-	 */
-//	public synchronized String getPublicKeyFromAddress(String zAddres) {
-//		try {
-//			
-//			//Get the Query ready
-//			SQL_GET_PUBKEY_FADDRESS.clearParameters();
-//		
-//			//Set main params
-//			SQL_GET_PUBKEY_FADDRESS.setString(1, zAddres);
-//			
-//			//Run the query
-//			ResultSet rs = SQL_GET_PUBKEY_FADDRESS.executeQuery();
-//			
-//			//Could be multiple results
-//			if(rs.next()) {
-//				
-//				//Get the publickey
-//				String pubkey = rs.getString("publickey");
-//				
-//				return pubkey;
-//			}
-//			
-//		} catch (SQLException e) {
-//			MinimaLogger.log(e);
-//		}
-//		
-//		return null;
-//	}
-	
-//	/**
-//	 * Get the full row for this address
-//	 */
-//	public synchronized KeyRow getKeysRowFromPublicKey(String zPubk) {
-//		try {
-//			
-//			//Get the Query ready
-//			SQL_GET_FPUBLICKEY.clearParameters();
-//		
-//			//Set main params
-//			SQL_GET_FPUBLICKEY.setString(1, zPubk);
-//			
-//			//Run the query
-//			ResultSet rs = SQL_GET_FPUBLICKEY.executeQuery();
-//			
-//			//Could be multiple results
-//			if(rs.next()) {
-//				
-//				//Get the txpowid
-//				String privkey 	= rs.getString("privatekey");
-//				String pubkey 	= rs.getString("publickey");
-//				String script 	= rs.getString("script");
-//				String address 	= rs.getString("simpleaddress");
-//				
-//				return new KeyRow(privkey, pubkey, address, script, true);
-//			}
-//			
-//		} catch (SQLException e) {
-//			MinimaLogger.log(e);
-//		}
-//		
-//		return null;
-//	}
 	
 	/**
 	 * Sign a piece of data with a specific public key
@@ -693,13 +575,13 @@ public class Wallet extends SqlDB {
 	private void updateUses(String zPrivateKey, int zUses) throws SQLException {		
 
 		//Get the Query ready
-		SQL_UPDATE_USES.clearParameters();
+		SQL_UPDATE_KEY_USES.clearParameters();
 	
 		//Set main params
-		SQL_UPDATE_USES.setInt(1, zUses);
-		SQL_UPDATE_USES.setString(2, zPrivateKey);
+		SQL_UPDATE_KEY_USES.setInt(1, zUses);
+		SQL_UPDATE_KEY_USES.setString(2, zPrivateKey);
 		
 		//Run the query
-		SQL_UPDATE_USES.execute();
+		SQL_UPDATE_KEY_USES.execute();
 	}
 }

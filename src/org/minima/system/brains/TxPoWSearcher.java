@@ -1,6 +1,7 @@
 package org.minima.system.brains;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.txpowdb.TxPoWDB;
@@ -87,7 +88,7 @@ public class TxPoWSearcher {
 		TxPoWTreeNode tip = zStartNode;
 		
 		//A list of spent CoinID..
-		ArrayList<String> spentcoins = new ArrayList<>();
+		HashSet<String> spentcoins = new HashSet<>();
 		
 		//Now cycle through and get all your coins..
 		while(tip != null) {
@@ -162,15 +163,6 @@ public class TxPoWSearcher {
 				if(wallet.isAddressSimple(cc.getAddress().to0xString())) {
 					finalcoins.add(cc);
 				}
-				
-//				for(KeyRow kr : keys) {
-//					//Is it a simple key
-//					if(!kr.getPublicKey().equals("")) {
-//						if(cc.getAddress().isEqual(new MiniData(kr.getAddress()))) {
-//							finalcoins.add(cc);
-//						}
-//					}
-//				}
 			}
 		}
 		
@@ -341,7 +333,7 @@ public class TxPoWSearcher {
 		TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
 		
 		//A list of added tokens
-		ArrayList<String> added = new ArrayList<>();
+		HashSet<String> added = new HashSet<>();
 		
 		//Now cycle through and get all your coins..
 		while(tip != null) {

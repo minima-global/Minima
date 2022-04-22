@@ -109,12 +109,6 @@ public class TxPoWTreeNode implements Streamable {
 		//Get the Wallet..
 		Wallet wallet = MinimaDB.getDB().getWallet();
 		
-//		//Are we checking for relevant data
-//		ArrayList<KeyRow> allrel = new ArrayList<>();
-//		if(zFindRelevant) {
-//			allrel = wallet.getAllRelevant(false);
-//		}
-		
 		//Add all the peaks..
 		ArrayList<MMREntry> peaks = mTxBlock.getPreviousPeaks();
 		for(MMREntry peak : peaks) {
@@ -151,7 +145,7 @@ public class TxPoWTreeNode implements Streamable {
 			mCoins.add(spentcoin);
 			
 			//Is this Relevant to us..
-			if(checkRelevant(spentcoin, wallet)) {
+			if(zFindRelevant && checkRelevant(spentcoin, wallet)) {
 				mRelevantMMRCoins.add(entrynumber);
 				
 				//Message..
@@ -186,7 +180,7 @@ public class TxPoWTreeNode implements Streamable {
 			mCoins.add(newcoin);
 			
 			//Is this Relevant to us..
-			if(checkRelevant(output, wallet)) {
+			if(zFindRelevant && checkRelevant(output, wallet)) {
 				mRelevantMMRCoins.add(entrynumber);
 				
 				//Message..

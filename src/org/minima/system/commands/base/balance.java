@@ -1,6 +1,7 @@
 package org.minima.system.commands.base;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Hashtable;
 
 import org.minima.database.MinimaDB;
@@ -44,12 +45,7 @@ public class balance extends Command {
 		Hashtable<String, MiniNumber> sendable 		= new Hashtable<>();
 		
 		//Get the wallet.. to find the sendable coins..
-		Wallet wdb = MinimaDB.getDB().getWallet();
-		ArrayList<ScriptRow> simplescripts 		= wdb.getAllSimpleAddresses();
-		ArrayList<String> sendableaddresses 	= new ArrayList<>();
-		for(ScriptRow scrow : simplescripts) {
-			sendableaddresses.add(scrow.getAddress());
-		}
+		Wallet walletdb = MinimaDB.getDB().getWallet();
 		
 		//Get the coins..
 		ArrayList<Coin> coins = TxPoWSearcher.getAllRelevantUnspentCoins(txptree.getTip());
@@ -94,7 +90,7 @@ public class balance extends Command {
 			}
 			
 			//Are we adding to the sendable pile..
-			if(isconfirmed && sendableaddresses.contains(coin.getAddress().to0xString())) {
+			if(isconfirmed && walletdb.isAddressSimple(coin.getAddress().to0xString())) {
 				total = sendable.get(tokenid); 
 				if(total == null) {
 					sendable.put(tokenid, amount);
