@@ -64,15 +64,7 @@ public class TxPoWGenerator {
 		TxPoW medianblock = TxPoWGenerator.getMedianTimeBlock(tip, TxPoWChecker.MEDIAN_TIMECHECK_BLOCK).getTxPoW();
 		if(timenow.isLess(medianblock.getTimeMilli())) {
 			wrongtime = true;
-		}else if(timenow.isMore(medianblock.getTimeMilli().add(TxPoWChecker.MAXMILLI_FUTURE))) {
-			wrongtime = true;
-		}
 		
-		if(!wrongtime) {
-			//Just set the current time
-			txpow.setTimeMilli(timenow);
-			
-		}else {
 			//How much time to add to the median block
 			MiniNumber blocksecs 	= MiniNumber.ONE.div(GlobalParams.MINIMA_BLOCK_SPEED);
 			MiniNumber half 		= new MiniNumber(TxPoWChecker.MEDIAN_TIMECHECK_BLOCK).div(MiniNumber.TWO); 
@@ -80,8 +72,37 @@ public class TxPoWGenerator {
 			
 			//Median time + 1 hr..
 			txpow.setTimeMilli(medianblock.getTimeMilli().add(addtime));
-			MinimaLogger.log("Your clock time appears wrong ? Setting acceptable value for TxPoW @ "+txpow.getBlockNumber()+" "+new Date(txpow.getTimeMilli().getAsLong()));
+			MinimaLogger.log("Your clock time appears wrong (too far back - median @ "+medianblock.getBlockNumber()+") ? Setting acceptable value for TxPoW @ "+txpow.getBlockNumber()+" "+new Date(txpow.getTimeMilli().getAsLong()));
+			
+		}else if(timenow.isMore(medianblock.getTimeMilli().add(TxPoWChecker.MAXMILLI_FUTURE))) {
+			wrongtime = true;
+		
+			//Add HALF the time..
+			MiniNumber newtime = medianblock.getTimeMilli().add(TxPoWChecker.MAXMILLI_FUTURE.div(MiniNumber.TWO));
+			
+			//Median time + 1 hr..
+			txpow.setTimeMilli(newtime);
+			MinimaLogger.log("Your clock time appears wrong (too far forward - median @ "+medianblock.getBlockNumber()+") ? Setting acceptable value for TxPoW @ "+txpow.getBlockNumber()+" "+new Date(txpow.getTimeMilli().getAsLong()));
+			
+		}else {
+			//Just set the current time
+			txpow.setTimeMilli(timenow);
 		}
+		
+//		if(!wrongtime) {
+//			//Just set the current time
+//			txpow.setTimeMilli(timenow);
+//			
+//		}else {
+//			//How much time to add to the median block
+//			MiniNumber blocksecs 	= MiniNumber.ONE.div(GlobalParams.MINIMA_BLOCK_SPEED);
+//			MiniNumber half 		= new MiniNumber(TxPoWChecker.MEDIAN_TIMECHECK_BLOCK).div(MiniNumber.TWO); 
+//			MiniNumber addtime 		= blocksecs.mult(half.add(MiniNumber.TWO)).mult(MiniNumber.THOUSAND);
+//			
+//			//Median time + 1 hr..
+//			txpow.setTimeMilli(medianblock.getTimeMilli().add(addtime));
+//			MinimaLogger.log("Your clock time appears wrong ? Setting acceptable value for TxPoW @ "+txpow.getBlockNumber()+" "+new Date(txpow.getTimeMilli().getAsLong()));
+//		}
 		
 		//Set the Transaction..
 		txpow.setTransaction(zTransaction);
