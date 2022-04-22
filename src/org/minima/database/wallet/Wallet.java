@@ -150,7 +150,7 @@ public class Wallet extends SqlDB {
 	public boolean initDefaultKeys() {
 		
 		//Get all the keys..
-		ArrayList<ScriptRow> allscripts = getAllSimpleAddresses();
+		ArrayList<ScriptRow> allscripts = getAllDefaultAddresses();
 		boolean allcreated = false;
 		
 		//Check we have the desired amount..
@@ -170,7 +170,7 @@ public class Wallet extends SqlDB {
 				}
 			}
 			
-			MinimaLogger.log("8 more initial keys created.. Total now : "+(numkeys+diff));
+			MinimaLogger.log(diff+" more initial keys created.. Total now : "+(numkeys+diff));
 		}else {
 			allcreated = true;
 		}
@@ -435,32 +435,6 @@ public class Wallet extends SqlDB {
 			
 			//Run the query
 			ResultSet rs = SQL_LIST_ALL_SCRIPTS.executeQuery();
-			
-			//Could be multiple results
-			while(rs.next()) {
-				
-				//Get the details
-				ScriptRow scrow = new ScriptRow(rs);
-				
-				//Add to our list
-				allscripts.add(scrow);
-			}
-			
-		} catch (SQLException e) {
-			MinimaLogger.log(e);
-		}
-		
-		return allscripts;
-	}
-	
-	private synchronized ArrayList<ScriptRow> getAllSimpleAddresses() {
-		
-		//Do both sets..
-		ArrayList<ScriptRow> allscripts = new ArrayList<>();
-		try {
-			
-			//Run the query
-			ResultSet rs = SQL_LIST_SIMPLE_SCRIPTS.executeQuery();
 			
 			//Could be multiple results
 			while(rs.next()) {
