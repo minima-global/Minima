@@ -97,6 +97,7 @@ public class Wallet extends SqlDB {
 							 + "  `script` varchar(8192) NOT NULL,"
 							 + "  `address` varchar(80) NOT NULL,"
 							 + "  `simple` int NOT NULL,"
+							 + "  `defaultaddress` int NOT NULL,"
 							 + "  `publickey` varchar(80) NOT NULL,"
 							 + "  `track` int NOT NULL"
 							 + ")";
@@ -114,7 +115,7 @@ public class Wallet extends SqlDB {
 			SQL_UPDATE_KEY_USES				= mSQLConnection.prepareStatement("UPDATE keys SET uses=? WHERE privatekey=?");
 			
 			//ScriptsDB
-			SQL_ADD_SCRIPT				= mSQLConnection.prepareStatement("INSERT IGNORE INTO scripts ( script, address, simple, publickey, track ) VALUES ( ? , ? , ? , ? , ? )");
+			SQL_ADD_SCRIPT				= mSQLConnection.prepareStatement("INSERT IGNORE INTO scripts ( script, address, simple, defaultaddress, publickey, track ) VALUES ( ? , ? , ? , ? , ? , ? )");
 			SQL_LIST_ALL_SCRIPTS		= mSQLConnection.prepareStatement("SELECT * FROM scripts");
 			SQL_LIST_SIMPLE_SCRIPTS		= mSQLConnection.prepareStatement("SELECT * FROM scripts WHERE simple<>0");
 			SQL_LIST_TRACK_SCRIPTS		= mSQLConnection.prepareStatement("SELECT * FROM scripts WHERE track<>0");
@@ -164,7 +165,7 @@ public class Wallet extends SqlDB {
 			//Create the keys
 			for(int i=0;i<diff;i++) {
 				if(!isShuttingDown()) {
-					createNewSimpleAddress();
+					createNewSimpleAddress(true);
 				}
 			}
 			
@@ -193,7 +194,7 @@ public class Wallet extends SqlDB {
 	/**
 	 * Create a NEW Simple Address
 	 */
-	public synchronized ScriptRow createNewSimpleAddress() {
+	public synchronized ScriptRow createNewSimpleAddress(boolean zDefault) {
 				
 		//Create a NEW random seed..
 		MiniData privateseed = MiniData.getRandomData(32);
@@ -205,7 +206,7 @@ public class Wallet extends SqlDB {
 		String script = new String("RETURN SIGNEDBY("+key.getPublicKey()+")");
 		
 		//Now add to the database..
-		return addScript(script, true, key.getPublicKey(), true);
+		return addScript(script, true, zDefault, key.getPublicKey(), true);
 	}
 	
 	/**
@@ -255,7 +256,7 @@ public class Wallet extends SqlDB {
 	/**
 	 * Add a custom script
 	 */
-	public synchronized ScriptRow addScript(String zScript, boolean zSimple, String zPublicKey, boolean zTrack) {
+	public synchronized ScriptRow addScript(String zScript, boolean zSimple, boolean zDefault, String zPublicKey, boolean zTrack) {
 		
 		//Create the address
 		String addr = new Address(zScript).getAddressData().to0xString();
@@ -277,12 +278,18 @@ public class Wallet extends SqlDB {
 				SQL_ADD_SCRIPT.setInt(3, 0);
 			}
 			
-			SQL_ADD_SCRIPT.setString(4, zPublicKey);
+			if(zDefault) {
+				SQL_ADD_SCRIPT.setInt(4, 1);
+			}else {
+				SQL_ADD_SCRIPT.setInt(4, 0);
+			}
+			
+			SQL_ADD_SCRIPT.setString(5, zPublicKey);
 			
 			if(zTrack) {
-				SQL_ADD_SCRIPT.setInt(5, 1);
+				SQL_ADD_SCRIPT.setInt(6, 1);
 			}else {
-				SQL_ADD_SCRIPT.setInt(5, 0);
+				SQL_ADD_SCRIPT.setInt(6, 0);
 			}
 			
 			//Do it.
@@ -297,8 +304,7 @@ public class Wallet extends SqlDB {
 				mAllSimpleAddress.add(addr);
 			}
 			
-			
-			return new ScriptRow(zScript, addr, zSimple, zPublicKey, zTrack);
+			return new ScriptRow(zScript, addr, zSimple, zDefault, zPublicKey, zTrack);
 			
 		} catch (SQLException e) {
 			MinimaLogger.log(e);

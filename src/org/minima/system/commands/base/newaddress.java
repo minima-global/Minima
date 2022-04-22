@@ -22,7 +22,7 @@ public class newaddress extends Command {
 		Wallet wallet = MinimaDB.getDB().getWallet();
 		
 		//Create a new address
-		ScriptRow srow = wallet.createNewSimpleAddress();
+		ScriptRow srow = wallet.createNewSimpleAddress(false);
 			
 		//Put the details in the response..
 		ret.put("response", srow.toJSON());

@@ -67,7 +67,7 @@ public class scripts extends Command {
 			script = Contract.cleanScript(script);
 			
 			//Now add it to the DB
-			ScriptRow krow = wallet.addScript(script, false, "0x00", track);
+			ScriptRow krow = wallet.addScript(script, false, false, "0x00", track);
 			
 			//Put the details in the response..
 			ret.put("response", krow.toJSON());

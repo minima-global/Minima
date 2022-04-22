@@ -13,6 +13,9 @@ public class ScriptRow {
 	public String 	mAddress;
 	
 	public boolean  mSimple;
+	
+	public boolean  mDefault;
+	
 	public String  	mPublicKey;
 	
 	public boolean  mTrack;
@@ -28,6 +31,13 @@ public class ScriptRow {
 			mSimple = true;
 		}
 		
+		int def  = zResults.getInt("defaultaddress");
+		if(def == 0) {
+			mDefault = false;
+		}else {
+			mDefault = true;
+		}
+		
 		mPublicKey 	= zResults.getString("publickey");
 		
 		int track  = zResults.getInt("track");
@@ -38,10 +48,11 @@ public class ScriptRow {
 		}
 	}
 	
-	public ScriptRow(String zScript, String zAddress, boolean zSimple, String zPublicKey, boolean zTrack) {
+	public ScriptRow(String zScript, String zAddress, boolean zSimple, boolean zDefault, String zPublicKey, boolean zTrack) {
 		mScript 	= zScript;
 		mAddress 	= zAddress;
 		mSimple 	= zSimple;
+		mDefault	= zDefault;
 		mPublicKey 	= zPublicKey;
 		mTrack		= zTrack;
 	}
@@ -56,6 +67,10 @@ public class ScriptRow {
 	
 	public boolean isSimple() {
 		return mSimple;
+	}
+	
+	public boolean isDefault() {
+		return mDefault;
 	}
 	
 	public String getPublicKey() {
