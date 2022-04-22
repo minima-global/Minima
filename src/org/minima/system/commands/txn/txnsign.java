@@ -6,6 +6,7 @@ import org.minima.database.MinimaDB;
 import org.minima.database.userprefs.txndb.TxnDB;
 import org.minima.database.userprefs.txndb.TxnRow;
 import org.minima.database.wallet.KeyRow;
+import org.minima.database.wallet.ScriptRow;
 import org.minima.database.wallet.Wallet;
 import org.minima.objects.Coin;
 import org.minima.objects.Transaction;
@@ -26,7 +27,7 @@ public class txnsign extends Command {
 	@Override
 	public JSONObject runCommand() throws Exception {
 		JSONObject ret = getJSONReply();
-/*
+
 		TxnDB db = MinimaDB.getDB().getCustomTxnDB();
 		
 		String id 	= getParam("id");
@@ -57,36 +58,36 @@ public class txnsign extends Command {
 			ArrayList<Coin> inputs = txn.getAllInputs();
 			for(Coin cc : inputs) {
 				
-				KeyRow keyrow = walletdb.getKeysRowFromAddress(cc.getAddress().to0xString()); 
-				if(keyrow == null) {
+				//Get the Public Key for this address if possible
+				ScriptRow scrow = walletdb.getScriptFromAddress(cc.getAddress().to0xString());
+				if(scrow == null) {
 					continue;
-
-					//Is it a simple row..
-				}else if(keyrow.getPublicKey().equals("")) {
+				}else if(!scrow.isSimple()) {
 					continue;
 				}
 				
 				//Add to our list
-				foundkeys.add(keyrow.getPublicKey());
+				foundkeys.add(scrow.getPublicKey());
 				
 				//Now sign with that..
-				Signature signature = walletdb.sign(keyrow.getPrivateKey(), txn.getTransactionID());
+				Signature signature = walletdb.signData(scrow.getPublicKey(), txn.getTransactionID());
 					
 				//Add it..
 				wit.addSignature(signature);
 			}
 			
 		}else {
-			//Get the Private key..
-			KeyRow pubrow 	= walletdb.getKeysRowFromPublicKey(pubk);
+			//Check we have it
+			KeyRow pubrow = walletdb.getKeyFromPublic(pubk);
 			if(pubrow == null) {
 				throw new CommandException("Public Key not found : "+pubk);
 			}
 			
+			//Add to our list
 			foundkeys.add(pubrow.getPublicKey());
 			
 			//Use the wallet..
-			Signature signature = walletdb.sign(pubrow.getPrivateKey(), txn.getTransactionID());
+			Signature signature = walletdb.signData(pubrow.getPublicKey(), txn.getTransactionID());
 				
 			//Add it..
 			wit.addSignature(signature);
@@ -96,7 +97,6 @@ public class txnsign extends Command {
 		resp.put("keys", foundkeys);
 		
 		ret.put("response", resp);
-	*/
 		
 		return ret;
 	}
