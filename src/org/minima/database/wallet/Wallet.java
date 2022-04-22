@@ -182,7 +182,8 @@ public class Wallet extends SqlDB {
 	 */
 	public ScriptRow getDefaultKeyAddress() {
 		//Get all the keys..
-		ArrayList<ScriptRow> allkeys = getAllSimpleAddresses();
+		//CHANGE TPO ALL DEFAULT ADDRESSES
+		ArrayList<ScriptRow> allkeys = getAll SimpleAddresses();
 		int numkeys = allkeys.size();
 		
 		//Now pick a random key..
