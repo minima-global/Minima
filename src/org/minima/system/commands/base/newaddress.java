@@ -21,7 +21,7 @@ public class newaddress extends Command {
 		//Get the wallet..
 		Wallet wallet = MinimaDB.getDB().getWallet();
 		
-		//Create a new address
+		//Create a new address - not a default address!
 		ScriptRow srow = wallet.createNewSimpleAddress(false);
 			
 		//Put the details in the response..

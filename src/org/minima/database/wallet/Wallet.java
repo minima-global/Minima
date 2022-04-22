@@ -21,7 +21,7 @@ public class Wallet extends SqlDB {
 	/**
 	 * How many default keys to create 
 	 */
-	public static int NUMBER_GETADDRESS_KEYS = 4;
+	public static int NUMBER_GETADDRESS_KEYS = 1;
 	
 	/**
 	 * The MAIN Private seed from which all others are derived.. 
@@ -43,6 +43,7 @@ public class Wallet extends SqlDB {
 	PreparedStatement SQL_LIST_ALL_SCRIPTS 		= null;
 	PreparedStatement SQL_LIST_SIMPLE_SCRIPTS 	= null;
 	PreparedStatement SQL_LIST_TRACK_SCRIPTS 	= null;
+	PreparedStatement SQL_LIST_DEFAULT_SCRIPTS 	= null;
 	PreparedStatement SQL_GET_SCRIPT 			= null;
 	
 	/**
@@ -119,6 +120,7 @@ public class Wallet extends SqlDB {
 			SQL_LIST_ALL_SCRIPTS		= mSQLConnection.prepareStatement("SELECT * FROM scripts");
 			SQL_LIST_SIMPLE_SCRIPTS		= mSQLConnection.prepareStatement("SELECT * FROM scripts WHERE simple<>0");
 			SQL_LIST_TRACK_SCRIPTS		= mSQLConnection.prepareStatement("SELECT * FROM scripts WHERE track<>0");
+			SQL_LIST_DEFAULT_SCRIPTS	= mSQLConnection.prepareStatement("SELECT * FROM scripts WHERE defaultaddress<>0");
 			SQL_GET_SCRIPT				= mSQLConnection.prepareStatement("SELECT * FROM scripts WHERE address=?");
 			
 			//Now load up the caches..
@@ -181,9 +183,8 @@ public class Wallet extends SqlDB {
 	 * Get 1 of your default addresses
 	 */
 	public ScriptRow getDefaultKeyAddress() {
-		//Get all the keys..
-		//CHANGE TPO ALL DEFAULT ADDRESSES
-		ArrayList<ScriptRow> allkeys = getAll SimpleAddresses();
+		//Get all the default addresses
+		ArrayList<ScriptRow> allkeys = getAllDefaultAddresses();
 		int numkeys = allkeys.size();
 		
 		//Now pick a random key..
@@ -461,6 +462,32 @@ public class Wallet extends SqlDB {
 			
 			//Run the query
 			ResultSet rs = SQL_LIST_SIMPLE_SCRIPTS.executeQuery();
+			
+			//Could be multiple results
+			while(rs.next()) {
+				
+				//Get the details
+				ScriptRow scrow = new ScriptRow(rs);
+				
+				//Add to our list
+				allscripts.add(scrow);
+			}
+			
+		} catch (SQLException e) {
+			MinimaLogger.log(e);
+		}
+		
+		return allscripts;
+	}
+	
+	private synchronized ArrayList<ScriptRow> getAllDefaultAddresses() {
+		
+		//Do both sets..
+		ArrayList<ScriptRow> allscripts = new ArrayList<>();
+		try {
+			
+			//Run the query
+			ResultSet rs = SQL_LIST_DEFAULT_SCRIPTS.executeQuery();
 			
 			//Could be multiple results
 			while(rs.next()) {
