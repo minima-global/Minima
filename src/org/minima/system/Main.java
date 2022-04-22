@@ -7,6 +7,7 @@ import java.util.Random;
 import org.minima.database.MinimaDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.database.wallet.KeyRow;
+import org.minima.database.wallet.ScriptRow;
 import org.minima.objects.Pulse;
 import org.minima.objects.TxBlock;
 import org.minima.objects.TxPoW;
@@ -359,11 +360,11 @@ public class Main extends MessageProcessor {
 	
 	private void doGenesis() {
 		
-		//Create a new key - to receive the genesis funds..
-		KeyRow genkey = MinimaDB.getDB().getWallet().createNewKey(true);
+		//Create a new address - to receive the genesis funds..
+		ScriptRow scrow = MinimaDB.getDB().getWallet().createNewSimpleAddress();
 		
 		//Create the Genesis TxPoW..
-		GenesisTxPoW genesis = new GenesisTxPoW(genkey.getAddress());
+		GenesisTxPoW genesis = new GenesisTxPoW(scrow.getAddress());
 		
 		//Hard add to the DB
 		MinimaDB.getDB().getTxPoWDB().addTxPoW(genesis);

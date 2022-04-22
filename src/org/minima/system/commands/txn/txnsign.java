@@ -26,7 +26,7 @@ public class txnsign extends Command {
 	@Override
 	public JSONObject runCommand() throws Exception {
 		JSONObject ret = getJSONReply();
-
+/*
 		TxnDB db = MinimaDB.getDB().getCustomTxnDB();
 		
 		String id 	= getParam("id");
@@ -96,6 +96,7 @@ public class txnsign extends Command {
 		resp.put("keys", foundkeys);
 		
 		ret.put("response", resp);
+	*/
 		
 		return ret;
 	}

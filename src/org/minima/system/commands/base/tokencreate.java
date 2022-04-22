@@ -40,7 +40,7 @@ public class tokencreate extends Command {
 	@Override
 	public JSONObject runCommand() throws Exception {
 		JSONObject ret = getJSONReply();
-		
+/*		
 		//Check the basics..
 		if(!existsParam("name") || !existsParam("amount")) {
 			throw new CommandException("MUST specify name and amount");
@@ -348,7 +348,8 @@ public class tokencreate extends Command {
 				
 		//Send it to the Miner..
 		Main.getInstance().getTxPoWMiner().mineTxPoW(txpow);
-		
+	
+		*/
 		return ret;
 	}
 

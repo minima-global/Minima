@@ -8,6 +8,7 @@ import org.minima.database.txpowdb.TxPoWDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.database.userprefs.txndb.TxnRow;
 import org.minima.database.wallet.KeyRow;
+import org.minima.database.wallet.ScriptRow;
 import org.minima.database.wallet.Wallet;
 import org.minima.objects.Coin;
 import org.minima.objects.CoinProof;
@@ -211,18 +212,19 @@ public class send extends Command {
 			
 			//Add the script proofs
 			String scraddress 	= input.getAddress().to0xString();
-			KeyRow keyrow 		= walletdb.getKeysRowFromAddress(scraddress); 
-			if(keyrow == null) {
+			
+			//Get the ScriptRow..
+			ScriptRow srow = walletdb.getScriptFromAddress(scraddress);
+			if(srow == null) {
 				throw new CommandException("SERIOUS ERROR script missing for simple address : "+scraddress);
 			}
-			
-			ScriptProof pscr = new ScriptProof(keyrow.getScript());
+			ScriptProof pscr = new ScriptProof(srow.getScript());
 			witness.addScript(pscr);
 			
-			//Add this address to the list we need to sign as..
-			String priv = keyrow.getPrivateKey();
-			if(!reqsigs.contains(priv)) {
-				reqsigs.add(priv);
+			//Add this address / public key to the list we need to sign as..
+			String pubkey = srow.getPublicKey();
+			if(!reqsigs.contains(pubkey)) {
+				reqsigs.add(pubkey);
 			}
 		}
 		
@@ -266,7 +268,7 @@ public class send extends Command {
 		//Do we need to send change..
 		if(change.isMore(MiniNumber.ZERO)) {
 			//Create a new address
-			KeyRow newwalletaddress = MinimaDB.getDB().getWallet().getDefaultKeyAddress();
+			ScriptRow newwalletaddress = MinimaDB.getDB().getWallet().getDefaultKeyAddress();
 			MiniData chgaddress = new MiniData(newwalletaddress.getAddress());
 			
 			//Get the scaled token ammount..
@@ -313,10 +315,10 @@ public class send extends Command {
 		transaction.calculateTransactionID();
 		
 		//Now that we have constructed the transaction - lets sign it..
-		for(String priv : reqsigs) {
+		for(String pubkey : reqsigs) {
 
 			//Use the wallet..
-			Signature signature = walletdb.sign(priv, transaction.getTransactionID());
+			Signature signature = walletdb.signData(pubkey, transaction.getTransactionID());
 			
 			//Add it..
 			witness.addSignature(signature);

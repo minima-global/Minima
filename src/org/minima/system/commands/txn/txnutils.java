@@ -32,7 +32,7 @@ public class txnutils {
 	}
 	
 	public static void setMMRandScripts(Transaction zTransaction, Witness zWitness, boolean zExitOnFail) throws Exception {
-		//get the tip..
+/*		//get the tip..
 		TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
 		
 		//Get all the input coins..
@@ -121,11 +121,12 @@ public class txnutils {
 				zWitness.addScript(pscr);
 			}
 		}
+		*/
 	}
 	
 	public static void setMMRandScripts(Coin zCoin, Witness zWitness) throws Exception {
 		//get the tip..
-		TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
+/*		TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
 		
 		//Min depth of a coin
 		MiniNumber minblock = MiniNumber.ZERO;
@@ -170,10 +171,11 @@ public class txnutils {
 		
 		ScriptProof pscr = new ScriptProof(keyrow.getScript());
 		zWitness.addScript(pscr);
-	}
+*/
+		}
 	
 	public static TxnRow createBurnTransaction(ArrayList<String> zExcludeCoins, MiniData zLinkTransactionID, MiniNumber zAmount) throws CommandException {
-		
+	/*	
 		//The Full Txn..
 		TxnRow txnrow = new TxnRow("temp", new Transaction(), new Witness());
 		
@@ -340,5 +342,7 @@ public class txnutils {
 		}
 		
 		return txnrow;
+		*/
+		return null;
 	}
 }

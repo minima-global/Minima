@@ -17,7 +17,7 @@ public class sign extends Command {
 	@Override
 	public JSONObject runCommand() throws Exception {
 		JSONObject ret = getJSONReply();
-		
+	/*	
 		MiniData data = getDataParam("data");
 		MiniData pubk = getDataParam("publickey");
 		
@@ -29,7 +29,7 @@ public class sign extends Command {
 		Signature signature = wallet.sign(kr.getPrivateKey(), data);
 		
 		ret.put("response", MiniData.getMiniDataVersion(signature).to0xString());
-		
+	*/
 		return ret;
 	}
 
