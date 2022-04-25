@@ -15,6 +15,7 @@ import org.minima.system.commands.base.burn;
 import org.minima.system.commands.base.coinexport;
 import org.minima.system.commands.base.coinimport;
 import org.minima.system.commands.base.cointrack;
+import org.minima.system.commands.base.consolidate;
 import org.minima.system.commands.base.debugflag;
 import org.minima.system.commands.base.getaddress;
 import org.minima.system.commands.base.hash;
@@ -82,7 +83,7 @@ public abstract class Command {
 			new incentivecash(), new sshtunnel(), new webhooks(),
 
 			new sql(),new file(),
-			new vault(),
+			new vault(), new consolidate(),
 			new backup(), new restore(), new test(), 
 			new runscript(), new tutorial(),new keys(),new scripts(),new burn(),
 			
