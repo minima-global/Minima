@@ -25,6 +25,7 @@ public class vault extends Command {
 			
 			JSONObject json = new JSONObject();
 			json.put("seed", baseseed.to0xString());
+			json.put("locked", baseseed.isEqual(MiniData.ZERO_TXPOWID));
 			
 			ret.put("response", json);
 		
@@ -50,7 +51,14 @@ public class vault extends Command {
 			MiniData seed = getDataParam("seed");
 			
 			//And now recreate the private keys
-			MinimaDB.getDB().getWallet().resetBaseSeed(seed);
+			boolean ok = MinimaDB.getDB().getWallet().resetBaseSeed(seed);
+
+			if(!ok) {
+				throw new CommandException("Error updating Private keys.. please try again");
+			}
+
+			//And set the key in the UserDB
+			MinimaDB.getDB().getUserDB().setBasePrivateSeed(seed.to0xString());
 			
 			ret.put("response", "All private keys restored!");
 		}

@@ -165,7 +165,7 @@ public class Wallet extends SqlDB {
 	}
 	
 	public boolean isBaseSeedAvailable() {
-		return mMainPrivateSeed.isEqual(MiniData.ZERO_TXPOWID);
+		return !mMainPrivateSeed.isEqual(MiniData.ZERO_TXPOWID);
 	}
 	
 	public void wipeBaseSeed() throws SQLException {
@@ -178,6 +178,9 @@ public class Wallet extends SqlDB {
 	
 	public boolean resetBaseSeed(MiniData zBaseSeed) {
 		
+		//reset the base seed
+		mMainPrivateSeed = zBaseSeed;
+						
 		//Get all the keys..
 		ArrayList<KeyRow> keys = getAllKeys();
 		
