@@ -318,6 +318,30 @@ public class TxPoWChecker {
 			}
 		}
 		
+		//Check Output Tokens
+		ArrayList<Coin> outputs = zTransaction.getAllOutputs();
+		for(Coin cc : outputs) {
+			if(!cc.getTokenID().isEqual(Token.TOKENID_MINIMA) && !cc.getTokenID().isEqual(Token.TOKENID_CREATE)) {
+				
+				if(cc.getToken() == null) {
+					MinimaLogger.log("Incorrect output token with NULL token..");
+					return false;
+				
+				}else if(!cc.getToken().getTokenID().isEqual(cc.getTokenID())) {
+					
+					MinimaLogger.log("Incorrect output token with different tokenid..");
+					return false;
+				}
+			
+			}else if(cc.getTokenID().isEqual(Token.TOKENID_CREATE)) {
+				
+				if(cc.getToken() == null) {
+					MinimaLogger.log("Incorrect output token for create token with NULL token..");
+					return false;
+				}
+			}
+		}
+		
 		return true;
 	}
 	
