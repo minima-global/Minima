@@ -112,7 +112,7 @@ public class Wallet extends SqlDB {
 			SQL_CREATE_PUBLIC_KEY 			= mSQLConnection.prepareStatement("INSERT IGNORE INTO keys ( size, depth, uses, maxuses, modifier, privatekey, publickey ) VALUES ( ?, ?, ?, ? ,? ,? ,? )");
 			SQL_GET_ALL_KEYS				= mSQLConnection.prepareStatement("SELECT * FROM keys");
 			SQL_GET_KEY						= mSQLConnection.prepareStatement("SELECT * FROM keys WHERE publickey=?");
-			SQL_UPDATE_KEY_USES				= mSQLConnection.prepareStatement("UPDATE keys SET uses=? WHERE privatekey=?");
+			SQL_UPDATE_KEY_USES				= mSQLConnection.prepareStatement("UPDATE keys SET uses=? WHERE publickey=?");
 			
 			//ScriptsDB
 			SQL_ADD_SCRIPT				= mSQLConnection.prepareStatement("INSERT IGNORE INTO scripts ( script, address, simple, defaultaddress, publickey, track ) VALUES ( ? , ? , ? , ? , ? , ? )");
@@ -347,7 +347,7 @@ public class Wallet extends SqlDB {
 	 */
 	public synchronized boolean isKeyRelevant(String zPublicKey) {
 		boolean ourkey = mAllKeys.contains(zPublicKey);
-		MinimaLogger.log("[WALLET] isKeyRelevant : "+zPublicKey+" "+ourkey);
+//		MinimaLogger.log("[WALLET] isKeyRelevant : "+zPublicKey+" "+ourkey);
 		return ourkey;
 	}
 	
@@ -356,7 +356,7 @@ public class Wallet extends SqlDB {
 	 */
 	public synchronized boolean isAddressRelevant(String zAddress) {
 		boolean tracked = mAllTrackedAddress.contains(zAddress);
-		MinimaLogger.log("[WALLET] isAddressRelevant : "+zAddress+" "+tracked);
+//		MinimaLogger.log("[WALLET] isAddressRelevant : "+zAddress+" "+tracked);
 		return tracked;
 	}
 	
@@ -365,7 +365,7 @@ public class Wallet extends SqlDB {
 	 */
 	public synchronized boolean isAddressSimple(String zAddress) {
 		boolean simple = mAllSimpleAddress.contains(zAddress);
-		MinimaLogger.log("[WALLET] isAddressSimple : "+zAddress+" "+simple);
+//		MinimaLogger.log("[WALLET] isAddressSimple : "+zAddress+" "+simple);
 		return simple;
 	}
 	
@@ -505,7 +505,6 @@ public class Wallet extends SqlDB {
 			
 			//Create a new TreeKey
 			TreeKey tk = new TreeKey(new MiniData(key.getPrivateKey()), key.getSize(), key.getDepth());
-//			TreeKey tk = TreeKey.createDefault(new MiniData(key.getPrivateKey()));
 			
 			//How many times has this been used.. get from DB
 			int uses = key.getUses();
@@ -520,7 +519,7 @@ public class Wallet extends SqlDB {
 			uses = tk.getUses();
 			
 			//Update the DB..
-			updateUses(key.getPrivateKey(), uses);
+			updateUses(uses, key.getPublicKey());
 			
 			//And finally return the sig..
 			return signature;
@@ -532,14 +531,14 @@ public class Wallet extends SqlDB {
 		return null;
 	}
 		
-	private void updateUses(String zPrivateKey, int zUses) throws SQLException {		
+	private void updateUses(int zUses, String zPublicKey) throws SQLException {		
 
 		//Get the Query ready
 		SQL_UPDATE_KEY_USES.clearParameters();
 	
 		//Set main params
 		SQL_UPDATE_KEY_USES.setInt(1, zUses);
-		SQL_UPDATE_KEY_USES.setString(2, zPrivateKey);
+		SQL_UPDATE_KEY_USES.setString(2, zPublicKey);
 		
 		//Run the query
 		SQL_UPDATE_KEY_USES.execute();
