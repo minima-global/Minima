@@ -81,13 +81,17 @@ public class balance extends Command {
 			
 			//Have we already added..
 			MiniNumber total 	= current.get(tokenid); 
-			MiniNumber totcoin 	= totalcoins.get(tokenid); 
-			
 			if(total == null) {
 				current.put(tokenid, amount);
-				totalcoins.put(tokenid, MiniNumber.ONE);
 			}else {
 				current.put(tokenid, total.add(amount));
+			}
+			
+			//Total coins.
+			MiniNumber totcoin 	= totalcoins.get(tokenid); 
+			if(totcoin == null) {
+				totalcoins.put(tokenid, MiniNumber.ONE);
+			}else {
 				totalcoins.put(tokenid, totcoin.increment());
 			}
 			
