@@ -18,12 +18,16 @@ import org.minima.utils.json.JSONObject;
 public class balance extends Command {
 
 	public balance() {
-		super("balance","Show your total balance of Minima and tokens");
+		super("balance","(address:) (confirmations:) - Show your total balance of Minima and tokens");
 	}
 	
 	@Override
 	public JSONObject runCommand() throws Exception{
 		JSONObject ret = getJSONReply();
+		
+		//Is there a specified address
+		String address 				= getParam("address","");
+		MiniNumber confirmations 	= getNumberParam("confirmations", GlobalParams.MINIMA_CONFIRM_DEPTH);
 		
 		//Get all the coins you own..
 		TxPowTree txptree = MinimaDB.getDB().getTxPoWTree();
@@ -53,9 +57,17 @@ public class balance extends Command {
 		
 		//Always show a Minima Balance
 		alltokens.add(Token.TOKENID_MINIMA.to0xString());
+		totalcoins.put(Token.TOKENID_MINIMA.to0xString(), MiniNumber.ZERO);
 		
 		//Add them to out balance..
 		for(Coin coin : coins) {
+			
+			//Are we checking this coin..
+			if(!address.equals("")) {
+				if(!coin.getAddress().to0xString().equals(address)) {
+					continue;
+				}
+			}
 			
 			//The Value..
 			MiniNumber amount = coin.getAmount();
@@ -74,7 +86,7 @@ public class balance extends Command {
 			//Which table are we updating
 			boolean isconfirmed = true;
 			Hashtable<String, MiniNumber> current = confirmed;
-			if(depth.isLess(GlobalParams.MINIMA_CONFIRM_DEPTH)) {
+			if(depth.isLess(confirmations)) {
 				current = unconfirmed;
 				isconfirmed = false;
 			}
