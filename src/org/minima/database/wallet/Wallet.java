@@ -12,6 +12,7 @@ import org.minima.objects.Address;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.keys.Signature;
 import org.minima.objects.keys.TreeKey;
+import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.SqlDB;
 
@@ -23,9 +24,9 @@ public class Wallet extends SqlDB {
 	public static int NUMBER_GETADDRESS_KEYS = 1;
 	
 	/**
-	 * The MAIN Private seed from which all others are derived.. 
+	 * The MAIN Private seed from which all others are derived..
 	 */
-	private MiniData mMainPrivateSeed = new MiniData("0x000102"); 
+	private MiniData mMainPrivateSeed = MiniData.ZERO_TXPOWID; 
 	
 	/**
 	 * Key SQL
@@ -34,6 +35,9 @@ public class Wallet extends SqlDB {
 	PreparedStatement SQL_GET_KEY 						= null;
 	PreparedStatement SQL_GET_ALL_KEYS 					= null;
 	PreparedStatement SQL_UPDATE_KEY_USES 				= null;
+	
+	PreparedStatement SQL_WIPE_PRIVATE_KEYS 			= null;
+	PreparedStatement SQL_UPDATE_PRIVATE_KEYS 			= null;
 	
 	/**
 	 * Scripts SQL
@@ -114,6 +118,10 @@ public class Wallet extends SqlDB {
 			SQL_GET_KEY						= mSQLConnection.prepareStatement("SELECT * FROM keys WHERE publickey=?");
 			SQL_UPDATE_KEY_USES				= mSQLConnection.prepareStatement("UPDATE keys SET uses=? WHERE publickey=?");
 			
+			//Base Seed functions
+			SQL_WIPE_PRIVATE_KEYS			= mSQLConnection.prepareStatement("UPDATE keys SET privatekey='0x00' WHERE privatekey!='0x00'");
+			SQL_UPDATE_PRIVATE_KEYS			= mSQLConnection.prepareStatement("UPDATE keys SET privatekey=? WHERE publickey=?");
+			
 			//ScriptsDB
 			SQL_ADD_SCRIPT				= mSQLConnection.prepareStatement("INSERT IGNORE INTO scripts ( script, address, simple, defaultaddress, publickey, track ) VALUES ( ? , ? , ? , ? , ? , ? )");
 			SQL_LIST_ALL_SCRIPTS		= mSQLConnection.prepareStatement("SELECT * FROM scripts");
@@ -142,6 +150,62 @@ public class Wallet extends SqlDB {
 		} catch (SQLException e) {
 			MinimaLogger.log(e);
 		}
+	}
+	
+	/**
+	 * The BASE seed is used to generate all the keys..
+	 */
+	
+	public MiniData getBaseSeed() {
+		return mMainPrivateSeed;
+	}
+	
+	public MiniData initBaseSeed(MiniData zBaseSeed) {
+		return mMainPrivateSeed = zBaseSeed;
+	}
+	
+	public boolean isBaseSeedAvailable() {
+		return mMainPrivateSeed.isEqual(MiniData.ZERO_TXPOWID);
+	}
+	
+	public void wipeBaseSeed() throws SQLException {
+		//Wipe the DB
+		SQL_WIPE_PRIVATE_KEYS.execute();
+		
+		//reset the base seed
+		mMainPrivateSeed = MiniData.ZERO_TXPOWID;
+	}
+	
+	public boolean resetBaseSeed(MiniData zBaseSeed) {
+		
+		//Get all the keys..
+		ArrayList<KeyRow> keys = getAllKeys();
+		
+		try {
+			
+			//Now cycle through..
+			for(KeyRow key : keys) {
+				
+				//Get the modifier..
+				MiniData modifier = new MiniData(key.getModifier());
+			
+				//Now create a random private seed using the modifier
+				MiniData privseed 	= Crypto.getInstance().hashObjects(zBaseSeed, modifier);
+				
+				//And now update the DB..
+				SQL_UPDATE_PRIVATE_KEYS.clearParameters();
+				SQL_UPDATE_PRIVATE_KEYS.setString(1, privseed.to0xString());
+				SQL_UPDATE_PRIVATE_KEYS.setString(2, key.getPublicKey());
+				SQL_UPDATE_PRIVATE_KEYS.execute();
+			}
+		
+		} catch (SQLException e) {
+			MinimaLogger.log(e);
+			
+			return false;
+		}
+		
+		return true;
 	}
 	
 	/**
@@ -195,13 +259,10 @@ public class Wallet extends SqlDB {
 	/**
 	 * Create a NEW Simple Address
 	 */
-	public synchronized ScriptRow createNewSimpleAddress(boolean zDefault) {
-				
-		//Create a NEW random seed..
-		MiniData privateseed = MiniData.getRandomData(32);
+	public ScriptRow createNewSimpleAddress(boolean zDefault) {
 		
 		//Now create a new KEY
-		KeyRow key = createNewKey(privateseed);
+		KeyRow key = createNewKey();
 		
 		//Now create a simple address..
 		String script = new String("RETURN SIGNEDBY("+key.getPublicKey()+")");
@@ -213,10 +274,21 @@ public class Wallet extends SqlDB {
 	/**
 	 * Create a NEW key
 	 */
-	public synchronized KeyRow createNewKey(MiniData zPrivateSeed) {
+	public synchronized KeyRow createNewKey() {
+		
+		//Check we can create new keys
+		if(!isBaseSeedAvailable()) {
+			throw new IllegalArgumentException("KeysDB LOCKED. Base SEED missing..");
+		}
+		
+		//Create a random modifier..
+		MiniData modifier 	= MiniData.getRandomData(32);
+		
+		//Now create a random private seed using the modifier
+		MiniData privseed 	= Crypto.getInstance().hashObjects(mMainPrivateSeed, modifier);
 		
 		//Make the TreeKey
-		TreeKey treekey 	= TreeKey.createDefault(zPrivateSeed);
+		TreeKey treekey 	= TreeKey.createDefault(privseed);
 		
 		//Now put all this in the DB
 		try {
@@ -231,7 +303,7 @@ public class Wallet extends SqlDB {
 			SQL_CREATE_PUBLIC_KEY.setInt(4, treekey.getMaxUses());
 			
 			//NULL Modifier for now..
-			SQL_CREATE_PUBLIC_KEY.setString(5, "0x00");
+			SQL_CREATE_PUBLIC_KEY.setString(5, modifier.to0xString());
 			
 			SQL_CREATE_PUBLIC_KEY.setString(6, treekey.getPrivateKey().to0xString());
 			SQL_CREATE_PUBLIC_KEY.setString(7, treekey.getPublicKey().to0xString());

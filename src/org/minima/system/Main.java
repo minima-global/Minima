@@ -162,6 +162,18 @@ public class Main extends MessageProcessor {
 		//Load the Databases
 		MinimaDB.getDB().loadAllDB();
 		
+		//Set the Base Private seed if needed..
+		if(MinimaDB.getDB().getUserDB().getBasePrivateSeed().equals("")) {
+			MinimaLogger.log("Generating Base Private Seed Key");
+			
+			//Not set yet..
+			MinimaDB.getDB().getUserDB().setBasePrivateSeed(MiniData.getRandomData(32).to0xString());
+		}
+		
+		//Get the base private seed..
+		String basepriv = MinimaDB.getDB().getUserDB().getBasePrivateSeed();
+		MinimaDB.getDB().getWallet().initBaseSeed(new MiniData(basepriv));
+		
 		//Calculate the User hashrate..
 		MiniNumber hashrate = TxPoWMiner.calculateHashRate();
 		MinimaDB.getDB().getUserDB().setHashRate(hashrate);

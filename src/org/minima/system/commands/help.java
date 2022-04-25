@@ -25,6 +25,7 @@ import org.minima.system.commands.base.tokencreate;
 import org.minima.system.commands.base.tokens;
 import org.minima.system.commands.base.trace;
 import org.minima.system.commands.base.tutorial;
+import org.minima.system.commands.base.vault;
 import org.minima.system.commands.network.connect;
 import org.minima.system.commands.network.disconnect;
 import org.minima.system.commands.network.maxima;
@@ -130,6 +131,8 @@ public class help extends Command {
 		addCommand(details, new sshtunnel());
 		
 		addCommand(details, new backup());
+		addCommand(details, new restore());
+		addCommand(details, new vault());
 		addCommand(details, new restore());
 		addCommand(details, new incentivecash());
 		

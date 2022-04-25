@@ -37,6 +37,7 @@ import org.minima.system.commands.base.tokencreate;
 import org.minima.system.commands.base.tokens;
 import org.minima.system.commands.base.trace;
 import org.minima.system.commands.base.tutorial;
+import org.minima.system.commands.base.vault;
 import org.minima.system.commands.network.connect;
 import org.minima.system.commands.network.disconnect;
 import org.minima.system.commands.network.maxima;
@@ -81,6 +82,7 @@ public abstract class Command {
 			new incentivecash(), new sshtunnel(), new webhooks(),
 
 			new sql(),new file(),
+			new vault(),
 			new backup(), new restore(), new test(), 
 			new runscript(), new tutorial(),new keys(),new scripts(),new burn(),
 			

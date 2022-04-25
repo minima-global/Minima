@@ -43,7 +43,7 @@ public class keys extends Command {
 		}else if(action.equals("new")) {
 			
 			//Create a new Key..
-			KeyRow krow = wallet.createNewKey(MiniData.getRandomData(32));
+			KeyRow krow = wallet.createNewKey();
 			ret.put("response", krow.toJSON());
 			
 		}else {
