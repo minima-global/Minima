@@ -40,6 +40,7 @@ public class balance extends Command {
 		Hashtable<String, MiniNumber> confirmed 	= new Hashtable<>();
 		Hashtable<String, MiniNumber> unconfirmed 	= new Hashtable<>();
 		Hashtable<String, MiniNumber> sendable 		= new Hashtable<>();
+		Hashtable<String, MiniNumber> totalcoins 	= new Hashtable<>();
 		
 		//Get the wallet.. to find the sendable coins..
 		Wallet walletdb = MinimaDB.getDB().getWallet();
@@ -79,11 +80,15 @@ public class balance extends Command {
 			}
 			
 			//Have we already added..
-			MiniNumber total = current.get(tokenid); 
+			MiniNumber total 	= current.get(tokenid); 
+			MiniNumber totcoin 	= totalcoins.get(tokenid); 
+			
 			if(total == null) {
 				current.put(tokenid, amount);
+				totalcoins.put(tokenid, MiniNumber.ONE);
 			}else {
 				current.put(tokenid, total.add(amount));
+				totalcoins.put(tokenid, totcoin.increment());
 			}
 			
 			//Are we adding to the sendable pile..
@@ -103,6 +108,7 @@ public class balance extends Command {
 			MiniNumber unconf 	= unconfirmed.get(token);
 			MiniNumber conf 	= confirmed.get(token);
 			MiniNumber send 	= sendable.get(token);
+			MiniNumber totcoins = totalcoins.get(token);
 			
 			if(unconf == null) {
 				unconf = MiniNumber.ZERO;
@@ -125,6 +131,7 @@ public class balance extends Command {
 				tokbal.put("confirmed", conf.toString());
 				tokbal.put("unconfirmed", unconf.toString());
 				tokbal.put("sendable", send.toString());
+				tokbal.put("coins", totcoins.toString());
 				tokbal.put("total", "1000000000");
 			}else {
 				//Get the token
@@ -145,6 +152,7 @@ public class balance extends Command {
 				tokbal.put("confirmed", tok.getScaledTokenAmount(conf).toString());
 				tokbal.put("unconfirmed", tok.getScaledTokenAmount(unconf).toString());
 				tokbal.put("sendable", tok.getScaledTokenAmount(send).toString());
+				tokbal.put("coins", totcoins.toString());
 				tokbal.put("total", tok.getTotalTokens());
 			}
 			
