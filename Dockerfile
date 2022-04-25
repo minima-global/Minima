@@ -10,7 +10,7 @@ RUN groupadd -g 1000 minima
 RUN useradd -r -u 1000 -g 1000 -d $HOME minima
 
 # Copy in startup script, minima and dapps
-COPY minima-all.jar minima/minima.jar
+COPY jar/minima-all.jar minima/minima.jar
 
 # Get other permissions right, too
 RUN mkdir -p $HOME/.minima
