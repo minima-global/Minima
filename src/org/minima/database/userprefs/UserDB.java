@@ -16,6 +16,17 @@ public class UserDB extends JsonDB{
 	}
 	
 	/**
+	 * The BASE private seed key modifier
+	 */
+	public String getBasePrivateSeedModifier() {
+		return getString("baseprivateseed", "");
+	}
+	
+	public void setBasePrivateSeedModifier(String zBaseSeed) {
+		setString("baseprivateseed", zBaseSeed);
+	}
+	
+	/**
 	 * Set your Welcome message
 	 */
 	public void setWelcome(String zWelcome) {
