@@ -116,7 +116,7 @@ public class BaseConverter {
 	public static void main(String[] zArgs) {
 		
 //		MiniData hex = MiniData.getRandomData(3);
-		MiniData hex = new MiniData("0xffdef");
+		MiniData hex = new MiniData("0x000001");
 		String hstr = hex.to0xString(); 
 		System.out.println("HEX : "+hstr.length()+" "+hstr);
 		

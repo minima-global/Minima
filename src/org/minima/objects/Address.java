@@ -8,6 +8,7 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniString;
 import org.minima.utils.BaseConverter;
 import org.minima.utils.Crypto;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONObject;
 
@@ -109,21 +110,25 @@ public class Address implements Streamable{
 	public static String makeMinimaAddress(MiniData zAddress){
 		//The Original data
 		byte[] data = zAddress.getBytes();
+		int addrlen = data.length;
 		
 		//First hash it to add some checksum digits..
 		byte[] hash = Crypto.getInstance().hashData(data);
 		
-		//Now create one big byte array - address + first 4 bytes of hash
-		byte[] tot16 = new byte[data.length + 4];
+		//Now create one big byte array - address + length + first 4 bytes of hash
+		byte[] tot16 = new byte[addrlen + 5];
 		
 		//Copy the old..
 		for(int i=0;i<data.length;i++) {
 			tot16[i] = data[i];
 		}
 		
+		//Add the length
+		tot16[data.length] = (byte)addrlen;
+		
 		//Add the checksum..
 		for(int i=0;i<4;i++) {
-			tot16[data.length+i] = hash[i];
+			tot16[data.length+1+i] = hash[i];
 		}
 		
 		//Now convert the whole thing to Base 32
@@ -135,18 +140,23 @@ public class Address implements Streamable{
 	public static MiniData convertMinimaAddress(String zMinimAddress) throws IllegalArgumentException {
 		
 		//First convert the whole thing back..
-		byte[] decode = BaseConverter.decode32(zMinimAddress);
+		byte[] decode 	= BaseConverter.decode32(zMinimAddress);
+		int len 		= decode.length;
+		int datalen 	= len-5;
 		
-		//Now grab the fron and back..
-		int len = decode.length;
-		
-		//Create the byte arrays
+		//The checksum is the last 4 bytes
 		byte[] checksum = new byte[4];
-		byte[] data 	= new byte[len-4];
-		
-		//Copy correct..
-		System.arraycopy(decode, 0, data, 0, len-4);
 		System.arraycopy(decode, len-4, checksum, 0, 4);
+		
+		//The actual data length
+		int origlen		= decode[len-5];
+		byte[] data 	= new byte[origlen];
+		for(int i=0;i<origlen;i++) {
+			data[i] = 0;
+		}
+		
+		//Copy correct data..
+		System.arraycopy(decode, 0, data, origlen-datalen, datalen);
 		
 		//Now check the hash
 		byte[] hash = Crypto.getInstance().hashData(data);
@@ -162,13 +172,15 @@ public class Address implements Streamable{
 	}
 	
 	public static void main(String[] zArgs) throws Exception {
-		MiniData tt = MiniData.getRandomData(32);
+//		MiniData tt = MiniData.getRandomData(32);
+		
+		MiniData tt = new MiniData("0x00FFFEEFF00");
+		System.out.println("Address   : "+tt.to0xString());
 		
 		String madd 	= Address.makeMinimaAddress(tt);
-		MiniData conv 	= Address.convertMinimaAddress(madd);
-		
-		System.out.println("Address   : "+tt.to0xString());
 		System.out.println("MxAddress : "+madd);
+		
+		MiniData conv 	= Address.convertMinimaAddress(madd);
 		System.out.println("Converted : "+conv.to0xString());
 		
 	}
