@@ -26,7 +26,7 @@ public class VERIFYOUT extends MinimaFunction{
 	
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
-		checkExactParamNumber(requiredParams());
+		checkMinParamNumber(requiredParams());
 		
 		//Which Output
 		int output = zContract.getNumberParam(0, this).getNumber().getAsInt();
@@ -35,6 +35,12 @@ public class VERIFYOUT extends MinimaFunction{
 		MiniData address  = new MiniData(zContract.getHexParam(1, this).getRawData());
 		MiniNumber amount = zContract.getNumberParam(2, this).getNumber();
 		MiniData tokenid  = new MiniData(zContract.getHexParam(3, this).getRawData());
+		
+		//Is there a keep state variable
+		boolean keepstate = true;
+		if(getParameterNum() == 5) {
+			keepstate = zContract.getBoolParam(4, this).isTrue();
+		}
 		
 		//Check an output exists..
 		Transaction trans = zContract.getTransaction();
@@ -47,6 +53,11 @@ public class VERIFYOUT extends MinimaFunction{
 		
 		//Get it..
 		Coin cc = outs.get(output);
+		
+		//Check Keep State
+		if(cc.storeState() != keepstate) {
+			throw new ExecutionException("Output NOT keeping state when required");
+		}
 		
 		//Now Check
 		boolean addr = address.isEqual(cc.getAddress());  
@@ -75,6 +86,11 @@ public class VERIFYOUT extends MinimaFunction{
 		
 		//Return if all true
 		return new BooleanValue( ver );
+	}
+	
+	@Override
+	public boolean isRequiredMinimumParameterNumber() {
+		return true;
 	}
 	
 	@Override
