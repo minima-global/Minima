@@ -1,6 +1,8 @@
 package org.minima.system.commands.base;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.mmr.MMRProof;
@@ -9,6 +11,7 @@ import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.database.userprefs.txndb.TxnRow;
 import org.minima.database.wallet.ScriptRow;
 import org.minima.database.wallet.Wallet;
+import org.minima.objects.Address;
 import org.minima.objects.Coin;
 import org.minima.objects.CoinProof;
 import org.minima.objects.ScriptProof;
@@ -28,6 +31,7 @@ import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
 import org.minima.system.commands.txn.txnutils;
 import org.minima.system.params.GlobalParams;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
 
 public class send extends Command {
@@ -42,11 +46,14 @@ public class send extends Command {
 		JSONObject ret = getJSONReply();
 		
 		//Get the address
-		String address 	= getAddressParam("address");
-			
-		//How much to send
-		String amount  	= getParam("amount");
+		MiniData sendaddress	= new MiniData(getAddressParam("address"));
 		
+		//How much to send
+		MiniNumber sendamount 	= getNumberParam("amount");
+		
+		//What is the Token
+		String tokenid = getParam("tokenid", "0x00");
+				
 		//Is there a burn..
 		MiniNumber burn  = getNumberParam("burn",MiniNumber.ZERO);
 		if(burn.isLess(MiniNumber.ZERO)) {
@@ -63,16 +70,6 @@ public class send extends Command {
 		JSONObject state = new JSONObject();
 		if(existsParam("state")) {
 			state = getJSONObjectParam("state");
-		}
-		
-		//How much are we sending..
-		MiniNumber sendamount 	= new MiniNumber(amount);
-		MiniData sendaddress	= new MiniData(address);
-		
-		//What is the Token
-		String tokenid = "0x00";
-		if(getParams().containsKey("tokenid")) {
-			tokenid = (String)getParams().get("tokenid");
 		}
 		
 		//get the tip..
@@ -97,9 +94,23 @@ public class send extends Command {
 		//Lets build a transaction..
 		ArrayList<Coin> relcoins = TxPoWSearcher.getRelevantUnspentCoins(tip,tokenid,true);
 		
+		//Are there any coins at all..
+		if(relcoins.size()<1) {
+			throw new CommandException("No Coins of tokenid:"+tokenid+" available!");
+		}
+		
+		//Lets select the correct coins..
+		MiniNumber findamount = sendamount;
+		if(tokenid != "0x00") {
+			findamount 	= relcoins.get(0).getToken().getScaledMinimaAmount(sendamount);
+		}
+		
+		//Now search for the best coin selection..
+		relcoins = selectCoins(relcoins, findamount);
+		
 		//The current total
-		MiniNumber currentamount 	= MiniNumber.ZERO;
-		ArrayList<Coin> currentcoins = new ArrayList<>();
+		MiniNumber currentamount 		= MiniNumber.ZERO;
+		ArrayList<Coin> currentcoins 	= new ArrayList<>();
 		
 		//Now cycle through..
 		Token token = null;
@@ -235,7 +246,7 @@ public class send extends Command {
 			MiniNumber prectest 	= token.getScaledTokenAmount(tokenamount);
 			
 			if(!prectest.isEqual(sendamount)) {
-				throw new CommandException("Invalid Token amount to send.. "+amount);
+				throw new CommandException("Invalid Token amount to send.. "+sendamount);
 			}
 			
 			sendamount = tokenamount;
@@ -243,7 +254,7 @@ public class send extends Command {
 		}else {
 			//Check valid - for Minima..
 			if(!sendamount.isValidMinimaValue()) {
-				throw new CommandException("Invalid Minima amount to send.. "+amount);
+				throw new CommandException("Invalid Minima amount to send.. "+sendamount);
 			}
 		}
 		
@@ -357,4 +368,79 @@ public class send extends Command {
 		return new send();
 	}
 
+	
+	/**
+	 * Coin Selection Algorithm..
+	 * 
+	 * Which coins to use when sending a transaction
+	 * Expects all the coins to be of the same tokenid
+	 */
+	public static ArrayList<Coin> selectCoins(ArrayList<Coin> zAllCoins, MiniNumber zAmountRequired){
+		ArrayList<Coin> ret = new ArrayList<>();
+		
+		//Get the TxPoWDB
+		TxPoWDB txpdb 		= MinimaDB.getDB().getTxPoWDB();
+		TxPoWMiner txminer 	= Main.getInstance().getTxPoWMiner();
+		
+		//First sort the coins by size..
+		Collections.sort(zAllCoins, new Comparator<Coin>() {
+			@Override
+			public int compare(Coin zCoin1, Coin zCoin2) {
+				MiniNumber amt1 = zCoin1.getAmount();
+				MiniNumber amt2 = zCoin2.getAmount();
+				return amt2.compareTo(amt1);
+			}
+		});
+
+		//Now go through and pick a coin big enough.. but keep looking for smaller coins  
+		boolean found    = false;
+		Coin currentcoin = null;
+		for(Coin coin : zAllCoins) {
+			
+			//Check if we are already using thewm in another Transaction that is being mined
+			if(txminer.checkForMiningCoin(coin.getCoinID().to0xString())) {
+				continue;
+			}
+			
+			//Check if in mempool..
+			if(txpdb.checkMempoolCoins(coin.getCoinID())) {
+				continue;
+			}
+			
+			if(coin.getAmount().isMoreEqual(zAmountRequired)) {
+				found = true;
+				currentcoin = coin;
+			}else {
+				//Not big enough - all others will be smaller..
+				break;
+			}
+		}
+		
+		//Did we find one..
+		MiniNumber tot = MiniNumber.ZERO;
+		if(found) {
+			ret.add(currentcoin);
+			tot = currentcoin.getAmount();
+		}else {
+			//Will need to add up multiple coins..
+			for(Coin coin : zAllCoins) {
+				ret.add(coin);
+				tot = tot.add(coin.getAmount());
+				
+				if(tot.isMoreEqual(zAmountRequired)) {
+					break;
+				}
+			}
+		}
+		
+		MinimaLogger.log("COINSELECT : "+ zAllCoins.size()+" "+ret.size());
+		
+		//Did we reach the required amount..
+		if(tot.isMoreEqual(zAmountRequired)) {
+			return ret;
+		}
+		
+		//Not enough funds
+		return new ArrayList<Coin>();
+	}
 }
