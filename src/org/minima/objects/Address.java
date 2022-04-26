@@ -149,7 +149,7 @@ public class Address implements Streamable{
 		System.arraycopy(decode, len-4, checksum, 0, 4);
 		
 		//The actual data length
-		int origlen		= decode[len-5];
+		int origlen		= decode[len-5] & 0xFF;
 		byte[] data 	= new byte[origlen];
 		for(int i=0;i<origlen;i++) {
 			data[i] = 0;
@@ -172,7 +172,7 @@ public class Address implements Streamable{
 	}
 	
 	public static void main(String[] zArgs) throws Exception {
-//		MiniData tt = MiniData.getRandomData(32);
+//		MiniData tt = MiniData.getRandomData(160);
 		
 		MiniData tt = new MiniData("0x00FFFEEFF00");
 		System.out.println("Address   : "+tt.to0xString());
