@@ -134,7 +134,7 @@ public class NIOMessage implements Runnable {
 				Greeting greet = Greeting.ReadFromStream(dis);
 				
 				//What version..
-				if(!greet.getVersion().toString().startsWith("0.101")) {
+				if(!greet.getVersion().toString().startsWith("0.102")) {
 						
 					MinimaLogger.log("Greeting with Incompatible Version! "+greet.getVersion().toString());
 					
