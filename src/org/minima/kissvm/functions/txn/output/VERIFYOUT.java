@@ -56,7 +56,7 @@ public class VERIFYOUT extends MinimaFunction{
 		
 		//Check Keep State
 		if(cc.storeState() != keepstate) {
-			throw new ExecutionException("Output NOT keeping state when required");
+			return BooleanValue.FALSE;
 		}
 		
 		//Now Check
