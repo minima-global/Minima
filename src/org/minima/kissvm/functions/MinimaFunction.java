@@ -55,6 +55,7 @@ import org.minima.kissvm.functions.txn.input.SUMINPUTS;
 import org.minima.kissvm.functions.txn.input.VERIFYIN;
 import org.minima.kissvm.functions.txn.output.GETOUTADDR;
 import org.minima.kissvm.functions.txn.output.GETOUTAMT;
+import org.minima.kissvm.functions.txn.output.GETOUTKEEPSTATE;
 import org.minima.kissvm.functions.txn.output.GETOUTTOK;
 import org.minima.kissvm.functions.txn.output.SUMOUTPUTS;
 import org.minima.kissvm.functions.txn.output.VERIFYOUT;
@@ -81,7 +82,7 @@ public abstract class MinimaFunction {
 				new BITSET(), new BITGET(), new BITCOUNT(),
 				new SIGNEDBY(), new MULTISIG(), new CHECKSIG(),
 				new GETINADDR(), new GETINAMT(), new GETINID(), new GETINTOK(),new VERIFYIN(),
-				new GETOUTADDR(), new GETOUTAMT(), new GETOUTTOK(),new VERIFYOUT(),
+				new GETOUTADDR(), new GETOUTAMT(), new GETOUTTOK(),new GETOUTKEEPSTATE(), new VERIFYOUT(),
 				new STATE(), new PREVSTATE(), new SAMESTATE()
 			};
 	
