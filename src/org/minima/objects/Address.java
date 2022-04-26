@@ -174,8 +174,10 @@ public class Address implements Streamable{
 	public static void main(String[] zArgs) throws Exception {
 //		MiniData tt = MiniData.getRandomData(160);
 		
-		MiniData tt = new MiniData("0x00FFFEEFF00");
-		System.out.println("Address   : "+tt.to0xString());
+		
+		MiniData tt = new MiniData("0x00000000FFFEEFF00");
+		Address addr = new Address(tt);
+		System.out.println("Address   : "+tt.to0xString()+" "+addr.toString());
 		
 		String madd 	= Address.makeMinimaAddress(tt);
 		System.out.println("MxAddress : "+madd);
