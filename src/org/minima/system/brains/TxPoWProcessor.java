@@ -353,8 +353,12 @@ public class TxPoWProcessor extends MessageProcessor {
 			TxPowTree txptree 		= MinimaDB.getDB().getTxPoWTree();
 			MiniNumber timenow 		= new MiniNumber(System.currentTimeMillis());
 			
-			//If our chain is up to date we don't accept TxBlock at all.. only full blocks
-			
+			//If our chain is up to date (within 4 hrs) we don't accept TxBlock at all.. only full blocks
+			MiniNumber notxblocktimediff = new MiniNumber(1000 * 60 * 240);
+			if(txptree.getTip().getTxPoW().getTimeMilli().sub(timenow).abs().isLess(notxblocktimediff)) {
+				MinimaLogger.log("Your chain tip is up to date - no TxBlocks accepted - only FULL TxPoW");
+				return;
+			}
 			
 			//Will not accept a TxBlock within 30 mins of current time.. will ask for full TxPoW blocks 
 			MiniNumber mintimediff 	= new MiniNumber(1000 * 60 * 30);
@@ -377,6 +381,7 @@ public class TxPoWProcessor extends MessageProcessor {
 					if((treelen+additions)<minlen ||  timediff.isMore(mintimediff)) {
 						
 						//It's not near our time.. so process..
+						MinimaLogger.log("Process Sync block "+block.getTxPoW().getBlockNumber());
 						processSyncBlock(block);	
 						additions++;
 					
