@@ -1,6 +1,8 @@
 package org.minima.system.commands.base;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.mmr.MMRProof;
@@ -51,23 +53,36 @@ public class consolidate extends Command {
 		
 		//Lets build a transaction..
 		ArrayList<Coin> relcoins 	= TxPoWSearcher.getRelevantUnspentCoins(tip,tokenid,true);
-		int COIN_SIZE 				= relcoins.size();
+		
+		//Sort coins via same address - since they require the same signature
+		Collections.sort(relcoins, new Comparator<Coin>() {
+			@Override
+			public int compare(Coin zCoin1, Coin zCoin2) {
+				return zCoin1.getAddress().getDataValue().compareTo(zCoin2.getAddress().getDataValue());
+			}
+		});
+		
+		int COIN_SIZE = relcoins.size();
 		if(COIN_SIZE<2) {
 			throw new CommandException("Not enough coins ("+COIN_SIZE+") to consolidate");
 		}
 		
-		int MAX_COINS			=2;
+		int MAX_COINS			= 5;
 		TxPoW txpow 			= null;
 		
 		//Keep building a bigger and bigger transaction..
+		int coincounter				= 0;
+		MiniNumber currentamount 	= MiniNumber.ZERO;
+		Token token 				= null;
+		
 		while(true) {
 			//The current total
-			MiniNumber currentamount 	= MiniNumber.ZERO;
-			ArrayList<Coin> currentcoins = new ArrayList<>();
+			ArrayList<Coin> currentcoins 	= new ArrayList<>();
+			currentamount 					= MiniNumber.ZERO;
+			token 							= null;
+			coincounter						= 0;
 			
 			//Now cycle through..
-			Token token = null;
-			int coincounter=0;
 			for(Coin coin : relcoins) {
 				
 				String coinidstr = coin.getCoinID().to0xString();
@@ -203,7 +218,7 @@ public class consolidate extends Command {
 			//How large is the transaction..
 			long size = txpow.getSizeinBytes();
 			if(size>40000 || MAX_COINS==COIN_SIZE) {
-				MinimaLogger.log("Consolidate finished.. size:"+size+" coins:"+coincounter+"/"+COIN_SIZE);
+				MinimaLogger.log("Consolidate coins.. txpow size:"+size+" coins:"+coincounter+"/"+COIN_SIZE);
 				break;
 			}
 			
@@ -212,8 +227,21 @@ public class consolidate extends Command {
 			MAX_COINS++;
 		}
 		
+		JSONObject resp = new JSONObject();
+		resp.put("tokenid", tokenid);
+		resp.put("allcoins", COIN_SIZE);
+		resp.put("consolidated", coincounter);
+		
+		MiniNumber sendamount = currentamount;
+		if(token!=null) {
+			sendamount = token.getScaledTokenAmount(currentamount);
+		}
+		
+		resp.put("amount", sendamount.toString());
+		resp.put("size", txpow.getSizeinBytes());
+		
 		//All good..
-		ret.put("response", txpow.toJSON());
+		ret.put("response", resp);
 				
 		//Send it to the Miner..
 		Main.getInstance().getTxPoWMiner().mineTxPoW(txpow);
