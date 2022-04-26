@@ -38,7 +38,7 @@ public class VERIFYOUT extends MinimaFunction{
 		
 		//Is there a keep state variable
 		boolean keepstate = true;
-		if(getParameterNum() == 5) {
+		if(getParameterNum() > 4) {
 			keepstate = zContract.getBoolParam(4, this).isTrue();
 		}
 		
