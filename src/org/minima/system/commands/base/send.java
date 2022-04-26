@@ -433,8 +433,6 @@ public class send extends Command {
 			}
 		}
 		
-		MinimaLogger.log("COINSELECT : "+ zAllCoins.size()+" "+ret.size());
-		
 		//Did we reach the required amount..
 		if(tot.isMoreEqual(zAmountRequired)) {
 			return ret;
