@@ -143,15 +143,8 @@ public class TxBlock implements Streamable {
 				basecoinid = zTransaction.getTransactionID();
 			}else {
 				
-				//Get the First Coin..
-				Coin firstcoin = coinspent.get(0).getCoin();
-				
-				//Hash that coin..
-				basecoinid = Crypto.getInstance().hashAllObjects(
-						firstcoin.getCoinID(),
-						firstcoin.getAddress(),
-						firstcoin.getAmount(),
-						firstcoin.getTokenID());
+				//First coinid
+				basecoinid = coinspent.get(0).getCoin().getCoinID();
 			}
 		
 			//All the new coins

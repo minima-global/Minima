@@ -445,11 +445,7 @@ public class TxPoWGenerator {
 		}
 		
 		//The base modifier
-		MiniData basecoinid = Crypto.getInstance().hashAllObjects(
-										firstcoin.getCoinID(),
-										firstcoin.getAddress(),
-										firstcoin.getAmount(),
-										firstcoin.getTokenID());
+		MiniData basecoinid = firstcoin.getCoinID();
 		
 		//Now cycle..
 		ArrayList<Coin> outputs = zTransaction.getAllOutputs();
