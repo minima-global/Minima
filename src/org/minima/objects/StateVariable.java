@@ -35,7 +35,6 @@ public class StateVariable implements Streamable {
 		sv.mPort 			= new MiniByte(zPort);
 		sv.mType 			= STATETYPE_STRING;
 		sv.mData 			= new MiniString(zString);
-		sv.mKeepMMR 		= new MiniByte(zKeeper);
 		
 		return sv;
 	}
@@ -56,21 +55,11 @@ public class StateVariable implements Streamable {
 	MiniString mData; 
 	
 	/**
-	 * Is this State variable a KEEPER - in the MMR
-	 * A large signature would not be a keeper..
-	 */
-	MiniByte mKeepMMR;
-	
-	/**
 	 * Constructors
 	 */
 	private StateVariable() {}
 	
 	public StateVariable(int zPort, String zData) {
-		this(zPort, zData, true);
-	}
-	
-	public StateVariable(int zPort, String zData, boolean zKeepMMR) {
 		//Check within range
 		if(zPort<0 || zPort>255) {
 			throw new IllegalArgumentException("State Variable port MUST be 0-255");
@@ -104,9 +93,6 @@ public class StateVariable implements Streamable {
 			mData = new MiniString(new MiniNumber(zData).toString());	
 			mType = STATETYPE_NUMBER;
 		}
-		
-		//Is this value kept in the MMR
-		mKeepMMR = new MiniByte(zKeepMMR);
 	}
 	
 	public int getPort() {
@@ -121,16 +107,11 @@ public class StateVariable implements Streamable {
 		return mData;
 	}
 	
-	public boolean isKeepMMR() {
-		return mKeepMMR.isTrue();
-	}
-	
 	public JSONObject toJSON() {
 		JSONObject ret = new JSONObject();
 		ret.put("port", mPort);
 		ret.put("type", mType);
 		ret.put("data", mData.toString());
-		ret.put("keeper", mKeepMMR.isTrue());
 		return ret;
 	}
 	
@@ -163,8 +144,6 @@ public class StateVariable implements Streamable {
 		}else if(mType.isEqual(STATETYPE_STRING)) {
 			mData.writeDataStream(zOut);
 		}
-		
-		mKeepMMR.writeDataStream(zOut);
 	}
 
 	@Override
@@ -192,8 +171,6 @@ public class StateVariable implements Streamable {
 			mData = MiniString.ReadFromStream(zIn);
 		
 		}
-		
-		mKeepMMR = MiniByte.ReadFromStream(zIn);
 	}
 	
 	public static StateVariable ReadFromStream(DataInputStream zIn) throws IOException{

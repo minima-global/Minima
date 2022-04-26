@@ -12,7 +12,7 @@ import org.minima.utils.json.JSONObject;
 public class txnstate extends Command {
 
 	public txnstate() {
-		super("txnstate","[id:] [port:] [value:] (keeper:) - Add a state variable");
+		super("txnstate","[id:] [port:] [value:] - Add a state variable");
 	}
 	
 	@Override
@@ -25,10 +25,6 @@ public class txnstate extends Command {
 		String id 			= getParam("id");
 		String port			= getParam("port");
 		String value		= getParam("value");
-		boolean keeper	 	= true;
-		if(existsParam("keeper")) {
-			keeper = getBooleanParam("keeper");
-		}
 		
 		//Get the Transaction
 		TxnRow txnrow 	= db.getTransactionRow(getParam("id"));
@@ -38,7 +34,7 @@ public class txnstate extends Command {
 		Transaction trans = txnrow.getTransaction();
 		
 		//Create a state variable..
-		StateVariable sv = new StateVariable(Integer.parseInt(port),value,keeper);
+		StateVariable sv = new StateVariable(Integer.parseInt(port),value);
 		
 		//Add it to the transaction
 		trans.addStateVariable(sv);

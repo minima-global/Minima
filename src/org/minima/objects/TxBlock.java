@@ -132,14 +132,6 @@ public class TxBlock implements Streamable {
 		//The state of this Txn
 		ArrayList<StateVariable> txnstate = zTransaction.getCompleteState();
 		
-		//Create the state all outputs keep..
-		ArrayList<StateVariable> newstate = new ArrayList<>();
-		for(StateVariable sv : txnstate) {
-			if(sv.isKeepMMR()) {
-				newstate.add(sv);
-			}
-		}
-		
 		//All the Outputs..
 		ArrayList<Coin> outputs = zTransaction.getAllOutputs();
 		if(coinspent.size()>0) {
@@ -174,7 +166,7 @@ public class TxBlock implements Streamable {
 				
 				//Set the correct state variables
 				if(correctcoin.storeState()) {
-					correctcoin.setState(newstate);
+					correctcoin.setState(txnstate);
 				}
 				
 				//Is this a create token output..
