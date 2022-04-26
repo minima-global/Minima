@@ -431,7 +431,12 @@ public class TxPoWChecker {
 											cproof.getCoin().getState());
 			
 			contract.setMaxInstructions(maxops);
-			contract.setGlobals(zBlock.getBlockNumber(), zTransaction, i, cproof.getCoin().getBlockCreated(), script);
+			contract.setGlobals(zBlock.getBlockNumber(), 
+								zBlock.getTimeMilli(), 
+								zTransaction, 
+								i, 
+								cproof.getCoin().getBlockCreated(), 
+								script);
 			contract.run();
 			
 			//Monotonic - no @BLKNUM references..
@@ -464,7 +469,12 @@ public class TxPoWChecker {
 														cproof.getCoin().getState());
 					
 					tokcontract.setMaxInstructions(maxops);
-					tokcontract.setGlobals(zBlock.getBlockNumber(), zTransaction, i, cproof.getCoin().getBlockCreated(), tokscript);
+					tokcontract.setGlobals(	zBlock.getBlockNumber(), 
+											zBlock.getTimeMilli(), 
+											zTransaction, 
+											i, 
+											cproof.getCoin().getBlockCreated(), 
+											tokscript);
 					tokcontract.run();
 					
 					if(!tokcontract.isMonotonic()) {
