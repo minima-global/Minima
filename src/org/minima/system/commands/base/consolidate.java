@@ -36,20 +36,27 @@ import org.minima.utils.json.JSONObject;
 public class consolidate extends Command {
 
 	public consolidate() {
-		super("consolidate","[tokenid:] - Consolidate coins by sending them back to yourself");
+		super("consolidate","[tokenid:] (coinage:) - Consolidate coins by sending them back to yourself");
 	}
 	
 	@Override
 	public JSONObject runCommand() throws Exception {
 		JSONObject ret = getJSONReply();
 		
+		//The tokenid
 		String tokenid = getParam("tokenid");
+		
+		//How old must the coins
+		MiniNumber coinage = getNumberParam("coinage", GlobalParams.MINIMA_CONFIRM_DEPTH);
 		
 		//Get the DBs
 		TxPoWDB txpdb 		= MinimaDB.getDB().getTxPoWDB();
 		TxPoWMiner txminer 	= Main.getInstance().getTxPoWMiner();
 		Wallet walletdb 	= MinimaDB.getDB().getWallet();
-		TxPoWTreeNode tip 	= MinimaDB.getDB().getTxPoWTree().getTip().getParent(3);
+		TxPoWTreeNode tip 	= MinimaDB.getDB().getTxPoWTree().getTip();
+		
+		//Current block
+		MiniNumber tipblock = tip.getBlockNumber();
 		
 		//Lets build a transaction..
 		ArrayList<Coin> relcoins 	= TxPoWSearcher.getRelevantUnspentCoins(tip,tokenid,true);
@@ -97,6 +104,14 @@ public class consolidate extends Command {
 					continue;
 				}
 				
+				//Check the Coin Age is enough
+				if(tipblock.sub(coin.getBlockCreated()).isLess(coinage)) {
+					MinimaLogger.log("TIP : "+tipblock);
+					MinimaLogger.log("CREATED : "+coin.getBlockCreated());
+					MinimaLogger.log("Coin missed : "+tipblock.sub(coin.getBlockCreated()));
+					continue;
+				}
+				
 				//Add this coin..
 				currentcoins.add(coin);
 				
@@ -113,6 +128,11 @@ public class consolidate extends Command {
 				if(coincounter>=MAX_COINS) {
 					break;
 				}
+			}
+			
+			//Any coins..
+			if(coincounter == 0) {
+				throw new CommandException("No coins found of that age..");
 			}
 			
 			//Lets construct a txn..
@@ -245,7 +265,7 @@ public class consolidate extends Command {
 				
 		//Send it to the Miner..
 		Main.getInstance().getTxPoWMiner().mineTxPoW(txpow);
-
+		
 		return ret;
 	}
 
