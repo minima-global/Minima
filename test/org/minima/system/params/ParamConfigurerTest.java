@@ -60,7 +60,7 @@ public class ParamConfigurerTest {
         assertEquals(4444, GeneralParams.RPC_PORT);
         assertEquals("124.0.1.10", GeneralParams.MINIMA_HOST);
         assertTrue(GeneralParams.IS_HOST_SET);
-        assertTrue(GeneralParams.AUTOMINE);
+//        assertTrue(GeneralParams.AUTOMINE);
         assertTrue(GeneralParams.NOCONNECT);
         assertTrue(GeneralParams.IS_MOBILE);
         assertFalse(GeneralParams.P2P_ENABLED);
@@ -71,7 +71,7 @@ public class ParamConfigurerTest {
         assertTrue(GeneralParams.CLEAN);
         assertTrue(GeneralParams.PRIVATE_NETWORK);
         assertTrue( GeneralParams.GENESIS);
-        assertTrue(GeneralParams.AUTOMINE);
+//        assertTrue(GeneralParams.AUTOMINE);
         assertTrue(GeneralParams.TEST_PARAMS);
         assertEquals(TestParams.MINIMA_BLOCK_SPEED, GlobalParams.MINIMA_BLOCK_SPEED);
 

@@ -176,14 +176,14 @@ public class ParamConfigurer {
         p2pnode("p2pnode", "Specify the initial P2P host:port list to connect to", (args, configurer) -> {
             GeneralParams.P2P_ROOTNODE = args;
         }),
-        automine("automine", "Simulate user traffic to construct the blockchain", (args, configurer) -> {
-            if ("true".equals(args)) {
-                GeneralParams.AUTOMINE = true;
-            }
-        }),
-        noautomine("noautomine", "Do not simulate user traffic to construct the blockchain", (args, configurer) -> {
-            GeneralParams.AUTOMINE = false;
-        }),
+//        automine("automine", "Simulate user traffic to construct the blockchain", (args, configurer) -> {
+//            if ("true".equals(args)) {
+//                GeneralParams.AUTOMINE = true;
+//            }
+//        }),
+//        noautomine("noautomine", "Do not simulate user traffic to construct the blockchain", (args, configurer) -> {
+//            GeneralParams.AUTOMINE = false;
+//        }),
         connect("connect", "Disable the p2p and manually connect to this list of host:port", (args, configurer) -> {
             GeneralParams.P2P_ENABLED = false;
             GeneralParams.CONNECT_LIST = args;
@@ -198,7 +198,7 @@ public class ParamConfigurer {
                 GeneralParams.CLEAN = true;
                 GeneralParams.PRIVATE_NETWORK = true;
                 GeneralParams.GENESIS = true;
-                GeneralParams.AUTOMINE = true;
+//                GeneralParams.AUTOMINE = true;
             }
         }),
         test("test", "Use test params", (args, configurer) -> {

@@ -18,24 +18,24 @@ public class automine extends Command {
 		
 		String enable = getParam("enable","");
 		
-		if(enable.equals("single")) {
-			//Send 1 mine message
-			Main.getInstance().getTxPoWMiner().PostMessage(TxPoWMiner.TXPOWMINER_MINEPULSE);
-			
-			ret.put("message", "Mining Single PULSE TxPoW");
-		
-		}else if(enable.equals("true")) {
-			GeneralParams.AUTOMINE = true;
-			
-		}else if(enable.equals("false")) {
-			GeneralParams.AUTOMINE = false;
-			
-		}
-		
-		JSONObject mine = new JSONObject();
-		mine.put("enabled", GeneralParams.AUTOMINE);
-		
-		ret.put("response", mine);
+//		if(enable.equals("single")) {
+//			//Send 1 mine message
+//			Main.getInstance().getTxPoWMiner().PostMessage(TxPoWMiner.TXPOWMINER_MINEPULSE);
+//			
+//			ret.put("message", "Mining Single PULSE TxPoW");
+//		
+//		}else if(enable.equals("true")) {
+//			GeneralParams.AUTOMINE = true;
+//			
+//		}else if(enable.equals("false")) {
+//			GeneralParams.AUTOMINE = false;
+//			
+//		}
+//		
+//		JSONObject mine = new JSONObject();
+//		mine.put("enabled", GeneralParams.AUTOMINE);
+//		
+//		ret.put("response", mine);
 		
 		return ret;
 	}

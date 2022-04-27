@@ -133,7 +133,7 @@ public class Main extends MessageProcessor {
 	/**
 	 * Timer for the automine message
 	 */
-	long AUTOMINE_TIMER = 1000 * 60;
+	long AUTOMINE_TIMER = 1000 * 50;
 	
 	/**
 	 * Have all the default keys been created..
@@ -423,19 +423,26 @@ public class Main extends MessageProcessor {
 		
 		}else if(zMessage.getMessageType().equals(MAIN_AUTOMINE)) {
 			
-			//Are we auto mining
-			if(GeneralParams.AUTOMINE) {
-				//Create a TxPoW
-				mTxPoWMiner.PostMessage(TxPoWMiner.TXPOWMINER_MINEPULSE);
+			//Create a TxPoW
+			mTxPoWMiner.PostMessage(TxPoWMiner.TXPOWMINER_MINEPULSE);
+			
+			//TESTNET - has a small random delay as block speed faster
+			if(GeneralParams.TEST_PARAMS) {
+				//Next Attempt +/- 5 secs, minimum 5 secs
+				long minerdelay = AUTOMINE_TIMER + ( 5000L - (long)new Random().nextInt(10000));
+				if(minerdelay < 5000) {
+					minerdelay = 5000;
+				}
+				
+				//Post the Next AUTOMINE message
+				PostTimerMessage(new TimerMessage(minerdelay, MAIN_AUTOMINE));
+			
+			}else {
+				
+				//Post the Next AUTOMINE message
+				PostTimerMessage(new TimerMessage(AUTOMINE_TIMER, MAIN_AUTOMINE));
 			}
 			
-			//Next Attempt +/- 5 secs, minimum 5 secs
-			long minerdelay = AUTOMINE_TIMER + ( 5000L - (long)new Random().nextInt(10000));
-			if(minerdelay < 5000) {
-				minerdelay = 5000;
-			}
-			PostTimerMessage(new TimerMessage(minerdelay, MAIN_AUTOMINE));
-		
 		}else if(zMessage.getMessageType().equals(MAIN_CLEANDB)) {
 			
 			//Do some house keeping on the DB
@@ -461,8 +468,8 @@ public class Main extends MessageProcessor {
 			//And send it to all your peers..
 			NIOManager.sendNetworkMessageAll(NIOMessage.MSG_PULSE, pulse);
 		
-			//Mine a TxPoW
-			mTxPoWMiner.PostMessage(TxPoWMiner.TXPOWMINER_MINEPULSE);
+//			//Mine a TxPoW
+//			mTxPoWMiner.PostMessage(TxPoWMiner.TXPOWMINER_MINEPULSE);
 			
 			//And then wait again..
 			PostTimerMessage(new TimerMessage(GeneralParams.USER_PULSE_FREQ, MAIN_PULSE));

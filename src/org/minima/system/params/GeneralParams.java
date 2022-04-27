@@ -17,11 +17,11 @@ public class GeneralParams {
 	 */
 	public static boolean PRIVATE_NETWORK = false;
 	
-	/**
-	 * Are we automining a TxPoW every block
-	 */
-	public static boolean AUTOMINE = false;
-	
+//	/**
+//	 * Are we automining a TxPoW every block
+//	 */
+//	public static boolean AUTOMINE = false;
+//	
 	/**
 	 * Are we creating the genesis block 
 	 */
