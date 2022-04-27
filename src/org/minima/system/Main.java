@@ -476,6 +476,9 @@ public class Main extends MessageProcessor {
 		
 		}else if(zMessage.getMessageType().equals(MAIN_INCENTIVE)) {
 			
+			//Do it agin..
+			PostTimerMessage(new TimerMessage(IC_TIMER, MAIN_INCENTIVE));
+			
 			//Get the User
 			String user = MinimaDB.getDB().getUserDB().getIncentiveCashUserID();
 			
@@ -485,8 +488,6 @@ public class Main extends MessageProcessor {
 				RPCClient.sendPUT("https://incentivecash.minima.global/api/ping/"+user+"?version="+GlobalParams.MINIMA_VERSION);
 			}
 			
-			//Do it agin..
-			PostTimerMessage(new TimerMessage(IC_TIMER, MAIN_INCENTIVE));
 			
 		}else if(zMessage.getMessageType().equals(MAIN_NEWBLOCK)) {
 			
