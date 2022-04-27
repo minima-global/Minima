@@ -1,4 +1,4 @@
-package org.minima.kissvm.functions.cast;
+package org.minima.kissvm.functions.general;
 
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
