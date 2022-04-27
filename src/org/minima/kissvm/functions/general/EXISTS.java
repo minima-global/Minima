@@ -19,6 +19,9 @@ public class EXISTS extends MinimaFunction{
 	public Value runFunction(Contract zContract) throws ExecutionException {
 		checkMinParamNumber(requiredParams());
 		
+		//MUST all be NUMBERS..
+		checkAllParamsType(Value.VALUE_NUMBER, zContract);
+				
 		//The full parameter String to search for
 		String ps = "";
 		
