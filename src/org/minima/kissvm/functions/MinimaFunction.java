@@ -10,10 +10,12 @@ import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.exceptions.MinimaParseException;
 import org.minima.kissvm.expressions.Expression;
 import org.minima.kissvm.functions.cast.ADDRESS;
+import org.minima.kissvm.functions.cast.ASCII;
 import org.minima.kissvm.functions.cast.BOOL;
 import org.minima.kissvm.functions.cast.HEX;
 import org.minima.kissvm.functions.cast.NUMBER;
 import org.minima.kissvm.functions.cast.STRING;
+import org.minima.kissvm.functions.cast.UTF8;
 import org.minima.kissvm.functions.general.EXISTS;
 import org.minima.kissvm.functions.general.FUNCTION;
 import org.minima.kissvm.functions.general.GET;
@@ -47,7 +49,6 @@ import org.minima.kissvm.functions.state.STATE;
 import org.minima.kissvm.functions.string.CLEAN;
 import org.minima.kissvm.functions.string.REPLACE;
 import org.minima.kissvm.functions.string.SUBSTR;
-import org.minima.kissvm.functions.string.UTF8;
 import org.minima.kissvm.functions.txn.input.GETINADDR;
 import org.minima.kissvm.functions.txn.input.GETINAMT;
 import org.minima.kissvm.functions.txn.input.GETINID;
@@ -74,11 +75,11 @@ public abstract class MinimaFunction {
 	public static MinimaFunction[] ALL_FUNCTIONS = 
 			{ 
 				new CONCAT(), new LEN(), new REV(),new SUBSET(), new GET(), new EXISTS(), new ADDRESS(),
-				new BOOL(), new HEX(), new NUMBER(), new STRING(),
+				new BOOL(), new HEX(), new NUMBER(), new STRING(),new ASCII(),new UTF8(),
 				new ABS(), new CEIL(), new FLOOR(),new MAX(), new MIN(), new DEC(), new INC(), 
 				new SIGDIG(), new POW(), new FUNCTION(),
 				new SUMINPUTS(),new SUMOUTPUTS(), new CLEAN(), 
-				new REPLACE(), new SUBSTR(), new OVERWRITE(), new UTF8(),
+				new REPLACE(), new SUBSTR(), new OVERWRITE(), 
 				new KECCAK(), new SHA2(), new SHA3(), new PROOF(), 
 				new BITSET(), new BITGET(), new BITCOUNT(),
 				new SIGNEDBY(), new MULTISIG(), new CHECKSIG(),

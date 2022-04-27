@@ -1,4 +1,6 @@
-package org.minima.kissvm.functions.string;
+package org.minima.kissvm.functions.cast;
+
+import java.nio.charset.Charset;
 
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
@@ -13,10 +15,10 @@ import org.minima.objects.base.MiniString;
  * 
  * @author spartacusrex
  */
-public class UTF8 extends MinimaFunction {
+public class ASCII extends MinimaFunction {
 
-	public UTF8() {
-		super("UTF8");
+	public ASCII() {
+		super("ASCII");
 	}
 
 	@Override
@@ -26,8 +28,8 @@ public class UTF8 extends MinimaFunction {
 		//Get the HEX value
 		HexValue hex = zContract.getHexParam(0, this);
 		
-		//Now create a UTF8 String
-		String newstr = new String(hex.getRawData(), MiniString.MINIMA_CHARSET);
+		//Now create a ASCII String
+		String newstr = new String(hex.getRawData(), Charset.forName("ASCII"));
 		
 		return new StringValue(newstr);	
 	}
@@ -39,6 +41,6 @@ public class UTF8 extends MinimaFunction {
 	
 	@Override
 	public MinimaFunction getNewFunction() {
-		return new UTF8();
+		return new ASCII();
 	}
 }
