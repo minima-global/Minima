@@ -118,8 +118,7 @@ public class ParamConfigurer {
     }
 
     enum ParamKeys {
-    	data("data", "Specify the data folder (absolute) (defaults to .minima/ under user home", (args, configurer) -> {
-        	//Create the file.. 
+    	data("data", "Specify the data folder (defaults to .minima/ under user home", (args, configurer) -> {
         	GeneralParams.DATA_FOLDER = new File(args).getAbsolutePath();
         }),
     	host("host", "Specify the host IP", (arg, configurer) -> {
