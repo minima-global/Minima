@@ -142,11 +142,11 @@ public class ParamConfigurer {
                 configurer.daemon = true;
             }
         }),
-        private1("private", "Use a private network", (args, configurer) -> {
-            if ("true".equals(args)) {
-                GeneralParams.PRIVATE_NETWORK = true;
-            }
-        }),
+//        private1("private", "Use a private network", (args, configurer) -> {
+//            if ("true".equals(args)) {
+//                GeneralParams.PRIVATE_NETWORK = true;
+//            }
+//        }),
         isclient("isclient", "Tells the P2P System that this node can't accept incoming connections", (args, configurer) -> {
             if ("true".equals(args)) {
                 GeneralParams.IS_ACCEPTING_IN_LINKS = false;
@@ -196,15 +196,16 @@ public class ParamConfigurer {
         genesis("genesis", "Create a genesis block, -clean and -automine", (args, configurer) -> {
             if ("true".equals(args)) {
                 GeneralParams.CLEAN = true;
-                GeneralParams.PRIVATE_NETWORK = true;
+//                GeneralParams.PRIVATE_NETWORK = true;
                 GeneralParams.GENESIS = true;
 //                GeneralParams.AUTOMINE = true;
             }
         }),
-        test("test", "Use test params", (args, configurer) -> {
+        test("test", "Use test params on a private network", (args, configurer) -> {
             if ("true".equals(args)) {
-                GeneralParams.TEST_PARAMS = true;
-                GeneralParams.PRIVATE_NETWORK = true;
+                GeneralParams.TEST_PARAMS 		= true;
+//                GeneralParams.PRIVATE_NETWORK 	= true;
+                GeneralParams.P2P_ENABLED 		= false;
                 TestParams.setTestParams();
             }
         }),

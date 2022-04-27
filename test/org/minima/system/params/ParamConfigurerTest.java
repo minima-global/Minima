@@ -69,7 +69,7 @@ public class ParamConfigurerTest {
         assertTrue(configurer.isRpcenable());
         assertTrue(configurer.isDaemon());
         assertTrue(GeneralParams.CLEAN);
-        assertTrue(GeneralParams.PRIVATE_NETWORK);
+//        assertTrue(GeneralParams.PRIVATE_NETWORK);
         assertTrue( GeneralParams.GENESIS);
 //        assertTrue(GeneralParams.AUTOMINE);
         assertTrue(GeneralParams.TEST_PARAMS);

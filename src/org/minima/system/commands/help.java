@@ -1,6 +1,5 @@
 package org.minima.system.commands;
 
-import org.minima.system.commands.base.automine;
 import org.minima.system.commands.base.backup;
 import org.minima.system.commands.base.balance;
 import org.minima.system.commands.base.burn;

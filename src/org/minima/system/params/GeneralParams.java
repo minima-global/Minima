@@ -12,11 +12,11 @@ public class GeneralParams {
 	 */
 	public static boolean IS_ACCEPTING_IN_LINKS = true;
 	
-	/**
-	 * Is this a private network - don;t connect to any users..
-	 */
-	public static boolean PRIVATE_NETWORK = false;
-	
+//	/**
+//	 * Is this a private network - don;t connect to any users..
+//	 */
+//	public static boolean PRIVATE_NETWORK = false;
+//	
 //	/**
 //	 * Are we automining a TxPoW every block
 //	 */
