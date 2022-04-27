@@ -203,7 +203,7 @@ public class ParamConfigurer {
             if ("true".equals(args)) {
                 GeneralParams.TEST_PARAMS 		= true;
 //                GeneralParams.PRIVATE_NETWORK 	= true;
-                GeneralParams.P2P_ENABLED 		= false;
+//                GeneralParams.P2P_ENABLED 		= false;
                 TestParams.setTestParams();
             }
         }),
