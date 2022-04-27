@@ -118,7 +118,11 @@ public class ParamConfigurer {
     }
 
     enum ParamKeys {
-        host("host", "Specify the host IP", (arg, configurer) -> {
+    	data("data", "Specify the data folder (absolute) (defaults to .minima/ under user home", (args, configurer) -> {
+        	//Create the file.. 
+        	GeneralParams.DATA_FOLDER = new File(args).getAbsolutePath();
+        }),
+    	host("host", "Specify the host IP", (arg, configurer) -> {
             GeneralParams.MINIMA_HOST = arg;
             GeneralParams.IS_HOST_SET = true;
         }),
@@ -128,14 +132,13 @@ public class ParamConfigurer {
         rpc("rpc", "Specify the RPC port", (arg, configurer) -> {
             GeneralParams.RPC_PORT = Integer.parseInt(arg);
         }),
+        rpcenable("rpcenable", "Enable rpc", (args, configurer) -> {
+            if ("true".equals(args)) {
+                configurer.rpcenable = true;
+            }
+        }),
         conf("conf", "Specify a configuration file (absolute)", (args, configurer) -> {
             // do nothing
-        }),
-        data("data", "Specify the data folder (absolute) (defaults to .minima/ under user home", (args, configurer) -> {
-        	//Create the file.. 
-        	GeneralParams.DATA_FOLDER = new File(args).getAbsolutePath();
-//        	GeneralParams.DATA_FOLDER = args;
-        	
         }),
         daemon("daemon", "Run in daemon mode with no stdin input ( services )", (args, configurer) -> {
             if ("true".equals(args)) {
@@ -155,11 +158,6 @@ public class ParamConfigurer {
         mobile("mobile", "Sets this device to a mobile device - used for metrics only", (args, configurer) -> {
             if ("true".equals(args)) {
                 GeneralParams.IS_MOBILE = true;
-            }
-        }),
-        rpcenable("rpcenable", "Enable rpc", (args, configurer) -> {
-            if ("true".equals(args)) {
-                configurer.rpcenable = true;
             }
         }),
         nop2p("nop2p", "Disable the automatic P2P system", (args, configurer) -> {
