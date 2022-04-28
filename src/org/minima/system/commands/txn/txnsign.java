@@ -15,6 +15,7 @@ import org.minima.objects.keys.Signature;
 import org.minima.system.brains.TxPoWGenerator;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
@@ -63,6 +64,7 @@ public class txnsign extends Command {
 				if(scrow == null) {
 					continue;
 				}else if(!scrow.isSimple()) {
+					MinimaLogger.log("Address found but not simple : "+cc.getAddress().to0xString());
 					continue;
 				}
 				
