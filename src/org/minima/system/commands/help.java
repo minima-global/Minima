@@ -6,6 +6,7 @@ import org.minima.system.commands.base.burn;
 import org.minima.system.commands.base.coinexport;
 import org.minima.system.commands.base.coinimport;
 import org.minima.system.commands.base.cointrack;
+import org.minima.system.commands.base.consolidate;
 import org.minima.system.commands.base.getaddress;
 import org.minima.system.commands.base.hash;
 import org.minima.system.commands.base.hashtest;
@@ -86,6 +87,8 @@ public class help extends Command {
 		addCommand(details, new send());
 		addCommand(details, new balance());
 		addCommand(details, new tokencreate());
+		addCommand(details, new consolidate());
+		
 		addCommand(details, new hash());
 		
 //		addCommand(details, new file());
