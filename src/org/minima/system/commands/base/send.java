@@ -132,8 +132,6 @@ public class send extends Command {
 			if(tokenid.equals("0x00")) {
 				currentamount = currentamount.add(coin.getAmount());
 			}else {
-				MinimaLogger.log("TOPKEN : "+tokenid);
-				
 				//Store it..
 				if(token == null) {
 					token = coin.getToken();
