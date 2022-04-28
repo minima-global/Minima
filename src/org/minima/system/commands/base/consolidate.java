@@ -103,9 +103,6 @@ public class consolidate extends Command {
 				
 				//Check the Coin Age is enough
 				if(tipblock.sub(coin.getBlockCreated()).isLess(coinage)) {
-					MinimaLogger.log("TIP : "+tipblock);
-					MinimaLogger.log("CREATED : "+coin.getBlockCreated());
-					MinimaLogger.log("Coin missed : "+tipblock.sub(coin.getBlockCreated()));
 					continue;
 				}
 				
