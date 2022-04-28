@@ -30,6 +30,7 @@ import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
 import org.minima.system.commands.txn.txnutils;
 import org.minima.system.params.GlobalParams;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
 
 public class send extends Command {
@@ -99,7 +100,7 @@ public class send extends Command {
 		
 		//Lets select the correct coins..
 		MiniNumber findamount = sendamount;
-		if(tokenid != "0x00") {
+		if(!tokenid.equals("0x00")) {
 			findamount 	= relcoins.get(0).getToken().getScaledMinimaAmount(sendamount);
 		}
 		
@@ -131,6 +132,8 @@ public class send extends Command {
 			if(tokenid.equals("0x00")) {
 				currentamount = currentamount.add(coin.getAmount());
 			}else {
+				MinimaLogger.log("TOPKEN : "+tokenid);
+				
 				//Store it..
 				if(token == null) {
 					token = coin.getToken();
