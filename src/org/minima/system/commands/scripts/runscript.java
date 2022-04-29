@@ -1,4 +1,4 @@
-package org.minima.system.commands.base;
+package org.minima.system.commands.scripts;
 
 import java.util.ArrayList;
 

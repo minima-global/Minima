@@ -29,8 +29,6 @@ import org.minima.system.commands.base.printmmr;
 import org.minima.system.commands.base.printtree;
 import org.minima.system.commands.base.quit;
 import org.minima.system.commands.base.restore;
-import org.minima.system.commands.base.runscript;
-import org.minima.system.commands.base.scripts;
 import org.minima.system.commands.base.send;
 import org.minima.system.commands.base.status;
 import org.minima.system.commands.base.test;
@@ -49,6 +47,9 @@ import org.minima.system.commands.network.sshtunnel;
 import org.minima.system.commands.network.webhooks;
 import org.minima.system.commands.persistent.file;
 import org.minima.system.commands.persistent.sql;
+import org.minima.system.commands.scripts.newscript;
+import org.minima.system.commands.scripts.runscript;
+import org.minima.system.commands.scripts.scripts;
 import org.minima.system.commands.search.coins;
 import org.minima.system.commands.search.keys;
 import org.minima.system.commands.search.txpow;
@@ -85,7 +86,9 @@ public abstract class Command {
 			new sql(),new file(),
 			new vault(), new consolidate(),
 			new backup(), new restore(), new test(), 
-			new runscript(), new tutorial(),new keys(),new scripts(),new burn(),
+			new runscript(), new tutorial(),new keys(),
+			new scripts(), new newscript(),
+			new burn(),
 			
 			new txnbasics(),new txncreate(), new txninput(),new txnlist(), new txnclear(),
 			new txnoutput(),new txnstate(),new txnsign(),new txnpost(),new txndelete(),

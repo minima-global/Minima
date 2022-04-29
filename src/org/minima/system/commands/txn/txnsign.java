@@ -52,7 +52,9 @@ public class txnsign extends Command {
 		//Get the Wallet
 		Wallet walletdb = MinimaDB.getDB().getWallet();
 		
-		JSONArray foundkeys = new JSONArray();
+		JSONArray foundkeys 		= new JSONArray();
+		JSONArray nonsimplekeys 	= new JSONArray();
+		
 		//Are we auto signing.. if all the coin inputs are simple
 		if(pubk.equals("auto")) {
 			
@@ -64,7 +66,7 @@ public class txnsign extends Command {
 				if(scrow == null) {
 					continue;
 				}else if(!scrow.isSimple()) {
-					MinimaLogger.log("Address found but not simple : "+cc.getAddress().to0xString());
+					nonsimplekeys.add(scrow.getAddress());
 					continue;
 				}
 				
@@ -97,6 +99,11 @@ public class txnsign extends Command {
 		
 		JSONObject resp = new JSONObject();
 		resp.put("keys", foundkeys);
+	
+		//Did we find any that were not simple
+		if(nonsimplekeys.size()>0) {
+			resp.put("nonsimple", nonsimplekeys);
+		}
 		
 		ret.put("response", resp);
 		

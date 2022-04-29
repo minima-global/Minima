@@ -12,7 +12,7 @@ import org.minima.utils.json.JSONObject;
 public class tokens extends Command {
 
 	public tokens() {
-		super("tokens","List all tokens on the chain");
+		super("tokens","(tokenid:) - List tokens on the chain");
 	}
 	
 	@Override
@@ -22,26 +22,38 @@ public class tokens extends Command {
 		//Get ALL the tokens in the chain..
 		ArrayList<Token> alltokens = TxPoWSearcher.getAllTokens();
 		
-		//The return array
-		JSONArray toksarr = new JSONArray();
+		String tokenid = getParam("tokenid","");
 		
-		//First add Minima..
-		JSONObject minima = new JSONObject();
-		minima.put("name", "Minima");
-		minima.put("tokenid", "0x00");
-		minima.put("total", "1000000000");
-		minima.put("decimals", MiniNumber.MAX_DECIMAL_PLACES);
-		minima.put("scale", 1);
-		toksarr.add(minima);
-		
-		for(Token tok : alltokens) {
+		if(tokenid.equals("")) {
+			//The return array
+			JSONArray toksarr = new JSONArray();
 			
-			//Add to our list
-			toksarr.add(tok.toJSON());
+			//First add Minima..
+			JSONObject minima = new JSONObject();
+			minima.put("name", "Minima");
+			minima.put("tokenid", "0x00");
+			minima.put("total", "1000000000");
+			minima.put("decimals", MiniNumber.MAX_DECIMAL_PLACES);
+			minima.put("scale", 1);
+			toksarr.add(minima);
+			
+			for(Token tok : alltokens) {
+				//Add to our list
+				toksarr.add(tok.toJSON());
+			}
+			
+			ret.put("response", toksarr);
+		
+		}else {
+			
+			for(Token tok : alltokens) {
+				if(tok.getTokenID().to0xString().equals(tokenid)) {
+					ret.put("response", tok.toJSON());
+					break;
+				}
+			}
 			
 		}
-		
-		ret.put("response", toksarr);
 		
 		return ret;
 	}

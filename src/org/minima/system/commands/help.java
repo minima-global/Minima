@@ -17,8 +17,6 @@ import org.minima.system.commands.base.newaddress;
 import org.minima.system.commands.base.printtree;
 import org.minima.system.commands.base.quit;
 import org.minima.system.commands.base.restore;
-import org.minima.system.commands.base.runscript;
-import org.minima.system.commands.base.scripts;
 import org.minima.system.commands.base.send;
 import org.minima.system.commands.base.status;
 import org.minima.system.commands.base.tokencreate;
@@ -34,6 +32,9 @@ import org.minima.system.commands.network.network;
 import org.minima.system.commands.network.rpc;
 import org.minima.system.commands.network.sshtunnel;
 import org.minima.system.commands.network.webhooks;
+import org.minima.system.commands.scripts.newscript;
+import org.minima.system.commands.scripts.runscript;
+import org.minima.system.commands.scripts.scripts;
 import org.minima.system.commands.search.coins;
 import org.minima.system.commands.search.keys;
 import org.minima.system.commands.search.txpow;
@@ -95,6 +96,7 @@ public class help extends Command {
 //		addCommand(details, new sql());
 		
 		addCommand(details, new scripts());
+		addCommand(details, new newscript());
 		addCommand(details, new runscript());
 		addCommand(details, new tutorial());
 		
