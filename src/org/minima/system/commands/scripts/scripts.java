@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import org.minima.database.MinimaDB;
 import org.minima.database.wallet.ScriptRow;
 import org.minima.database.wallet.Wallet;
-import org.minima.kissvm.Contract;
 import org.minima.objects.Address;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
