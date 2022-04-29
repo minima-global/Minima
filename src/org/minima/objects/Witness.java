@@ -48,17 +48,9 @@ public class Witness implements Streamable {
 		}
 		
 		//Check not already added
-		ArrayList<MiniData> allsigskey = getAllSignatureKeys();
-		MiniData rootpubk = zSigProof.getRootPublicKey();
-		for(MiniData sig : allsigskey) {
-			if(sig.isEqual(rootpubk)) {
-				//Allready added
-				MinimaLogger.log("Attempt to add Signature twice for key : "+sig);
-				return;
-			}
+		if(!isSignedBy(zSigProof.getRootPublicKey().to0xString())) {
+			mSignatureProofs.add(zSigProof);
 		}
-		
-		mSignatureProofs.add(zSigProof);
 	}
 	
 	public ArrayList<Signature> getAllSignatures(){
@@ -73,6 +65,16 @@ public class Witness implements Streamable {
 			pubkeys.add(sigproof.getRootPublicKey());
 		}
 		return pubkeys;
+	}
+	
+	public boolean isSignedBy(String zPublicKey) {
+		ArrayList<MiniData> allkeys = getAllSignatureKeys();
+		for(MiniData key : allkeys) {
+			if(key.to0xString().equals(zPublicKey)) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	/**

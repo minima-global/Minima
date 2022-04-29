@@ -52,8 +52,11 @@ public class txnsign extends Command {
 		//Get the Wallet
 		Wallet walletdb = MinimaDB.getDB().getWallet();
 		
+		JSONArray notfoundkeys 		= new JSONArray();
 		JSONArray foundkeys 		= new JSONArray();
 		JSONArray nonsimplekeys 	= new JSONArray();
+		
+		JSONObject resp = new JSONObject();
 		
 		//Are we auto signing.. if all the coin inputs are simple
 		if(pubk.equals("auto")) {
@@ -64,20 +67,24 @@ public class txnsign extends Command {
 				//Get the Public Key for this address if possible
 				ScriptRow scrow = walletdb.getScriptFromAddress(cc.getAddress().to0xString());
 				if(scrow == null) {
+					notfoundkeys.add(scrow.getAddress());
 					continue;
 				}else if(!scrow.isSimple()) {
 					nonsimplekeys.add(scrow.getAddress());
 					continue;
 				}
 				
-				//Add to our list
-				foundkeys.add(scrow.getPublicKey());
-				
-				//Now sign with that..
-				Signature signature = walletdb.signData(scrow.getPublicKey(), txn.getTransactionID());
+				//Don't try again if already signed..
+				if(!wit.isSignedBy(scrow.getPublicKey())) {
+					//Add to our list
+					foundkeys.add(scrow.getPublicKey());
 					
-				//Add it..
-				wit.addSignature(signature);
+					//Now sign with that..
+					Signature signature = walletdb.signData(scrow.getPublicKey(), txn.getTransactionID());
+						
+					//Add it..
+					wit.addSignature(signature);
+				}
 			}
 			
 		}else {
@@ -97,12 +104,17 @@ public class txnsign extends Command {
 			wit.addSignature(signature);
 		}
 		
-		JSONObject resp = new JSONObject();
+		//The keys that were found and used
 		resp.put("keys", foundkeys);
 	
 		//Did we find any that were not simple
 		if(nonsimplekeys.size()>0) {
 			resp.put("nonsimple", nonsimplekeys);
+		}
+		
+		//Did we not find any
+		if(notfoundkeys.size()>0) {
+			resp.put("notfound", notfoundkeys);
 		}
 		
 		ret.put("response", resp);
