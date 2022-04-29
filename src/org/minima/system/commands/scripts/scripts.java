@@ -27,6 +27,14 @@ public class scripts extends Command {
 		
 		//Is there an address
 		String address = getParam("address","");
+		if(address.toLowerCase().startsWith("mx")) {
+			//Convert back to normal hex..
+			try {
+				address = Address.convertMinimaAddress(address).to0xString();
+			}catch(IllegalArgumentException exc) {
+				throw new CommandException(exc.toString());
+			}
+		}
 		
 		if(address.equals("")) {
 			
