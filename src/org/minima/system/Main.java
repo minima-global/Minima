@@ -426,10 +426,10 @@ public class Main extends MessageProcessor {
 			//Create a TxPoW
 			mTxPoWMiner.PostMessage(TxPoWMiner.TXPOWMINER_MINEPULSE);
 			
-			//TESTNET - has a small random delay as block speed faster
+			//TESTNET - has a small random delay as block speed faster - so no constant overlap
 			if(GeneralParams.TEST_PARAMS) {
 				//Next Attempt +/- 5 secs, minimum 5 secs
-				long minerdelay = AUTOMINE_TIMER + ( 5000L - (long)new Random().nextInt(10000));
+				long minerdelay = AUTOMINE_TIMER + ( 2500L - (long)new Random().nextInt(5000));
 				if(minerdelay < 5000) {
 					minerdelay = 5000;
 				}
