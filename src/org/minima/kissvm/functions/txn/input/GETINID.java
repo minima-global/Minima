@@ -32,17 +32,14 @@ public class GETINID extends MinimaFunction {
 			throw new ExecutionException("Input number out of range "+input+"/"+ins.size());
 		}
 		
-//		//Get it..
-//		Coin cc = ins.get(input);
-//		
-//		//Return the address	
-//		return new HexValue(cc.getCoinID());
-				
-		//Get the Witness CoinID - as is correct
-		Coin witcc = zContract.getWitness().getAllCoinProofs().get(input).getCoin();
+		//Get it..
+		Coin cc = ins.get(input);
+		
+		//Use the witness data
+		cc = zContract.getWitness().getAllCoinProofs().get(input).getCoin();
 		
 		//Return the address	
-		return new HexValue(witcc.getCoinID());
+		return new HexValue(cc.getCoinID());
 	}
 
 	@Override
