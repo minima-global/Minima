@@ -12,6 +12,7 @@ import org.minima.system.commands.base.automine;
 import org.minima.system.commands.base.backup;
 import org.minima.system.commands.base.balance;
 import org.minima.system.commands.base.burn;
+import org.minima.system.commands.base.coincheck;
 import org.minima.system.commands.base.coinexport;
 import org.minima.system.commands.base.coinimport;
 import org.minima.system.commands.base.cointrack;
@@ -94,7 +95,7 @@ public abstract class Command {
 			new txnoutput(),new txnstate(),new txnsign(),new txnpost(),new txndelete(),
 			new txnexport(),new txnimport(),new txncheck(), new txnscript(),
 			
-			new coinimport(), new coinexport(),new cointrack(),
+			new coinimport(), new coinexport(),new cointrack(), new coincheck(),
 			
 			new hash(), new hashtest(), new sign(), new verify(),
 			
