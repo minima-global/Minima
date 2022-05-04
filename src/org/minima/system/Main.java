@@ -17,7 +17,7 @@ import org.minima.system.brains.TxPoWProcessor;
 import org.minima.system.genesis.GenesisMMR;
 import org.minima.system.genesis.GenesisTxPoW;
 import org.minima.system.network.NetworkManager;
-import org.minima.system.network.maxima.Maxima;
+import org.minima.system.network.maxima.MaximaManager;
 import org.minima.system.network.minima.NIOClient;
 import org.minima.system.network.minima.NIOManager;
 import org.minima.system.network.minima.NIOMessage;
@@ -113,7 +113,7 @@ public class Main extends MessageProcessor {
 	/**
 	 * Maxima
 	 */
-	Maxima mMaxima;
+	MaximaManager mMaxima;
 	
 	/**
 	 * Are we shutting down..
@@ -196,7 +196,7 @@ public class Main extends MessageProcessor {
 		mNetwork = new NetworkManager();
 		
 		//Start up Maxima
-		mMaxima = new Maxima();
+		mMaxima = new MaximaManager();
 				
 		//Simulate traffic message ( only if auto mine is set )
 		AUTOMINE_TIMER = MiniNumber.THOUSAND.div(GlobalParams.MINIMA_BLOCK_SPEED).getAsLong();
@@ -351,7 +351,7 @@ public class Main extends MessageProcessor {
 		return mTxPoWMiner;
 	}
 	
-	public Maxima getMaxima() {
+	public MaximaManager getMaxima() {
 		return mMaxima;
 	}
 	

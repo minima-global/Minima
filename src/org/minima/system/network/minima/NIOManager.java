@@ -21,7 +21,6 @@ import org.minima.system.Main;
 import org.minima.system.commands.network.connect;
 import org.minima.system.commands.network.sshtunnel;
 import org.minima.system.network.NetworkManager;
-import org.minima.system.network.maxima.Maxima;
 import org.minima.system.network.p2p.P2PFunctions;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.MinimaLogger;
@@ -384,19 +383,19 @@ public class NIOManager extends MessageProcessor {
 					//Create the Greeting..
 					Greeting greet = new Greeting().createGreeting();
 					
-					//Is this my Maxima Host..
-					Maxima max = Main.getInstance().getMaxima();
-					if(max.isHostSet()) {
-						//Check it..
-						String hostclient = nioc.getHost()+":"+nioc.getPort(); 
-						
-						if(hostclient.equals(max.getMaximaHost())) {
-							MinimaLogger.log("Connected to Maxima Host!");
-							
-							//This is our Maxima Host - add our Maxima Public Key
-							greet.getExtraData().put("maxima", max.getPublicKey());
-						}
-					}
+//					//Is this my Maxima Host..
+//					Maxima max = Main.getInstance().getMaxima();
+//					if(max.isHostSet()) {
+//						//Check it..
+//						String hostclient = nioc.getHost()+":"+nioc.getPort(); 
+//						
+//						if(hostclient.equals(max.getMaximaHost())) {
+//							MinimaLogger.log("Connected to Maxima Host!");
+//							
+//							//This is our Maxima Host - add our Maxima Public Key
+//							greet.getExtraData().put("maxima", max.getPublicKey());
+//						}
+//					}
 					
 					//And send it..
 					NIOManager.sendNetworkMessage(nioc.getUID(), NIOMessage.MSG_GREETING, greet);
