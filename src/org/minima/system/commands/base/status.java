@@ -25,6 +25,7 @@ import org.minima.system.params.GlobalParams;
 import org.minima.utils.Crypto;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MiniFormat;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
 
 public class status extends Command {
@@ -70,12 +71,15 @@ public class status extends Command {
 			userhashrate = Magic.MIN_HASHES;
 		}
 		MiniNumber ratio 			= new MiniNumber(blockWeight).div(userhashrate);
-		MiniNumber pulsespeed 		= MiniNumber.THOUSAND.div(new MiniNumber(GeneralParams.USER_PULSE_FREQ));
+		
+//		MinimaLogger.log("blkweight    : "+blockWeight);
+//		MinimaLogger.log("userhashrate : "+userhashrate);
+//		MinimaLogger.log("ratio        : "+ratio.toString());
+//		MiniNumber pulsespeed 		= MiniNumber.THOUSAND.div(new MiniNumber(GeneralParams.USER_PULSE_FREQ));
+//		MiniNumber usersperpulse 	= MiniNumber.ONE.div(new MiniNumber(""+pulsespeed).div(GlobalParams.MINIMA_BLOCK_SPEED));
+//		MiniNumber totaldevs 		= usersperpulse.mult(ratio).floor();
 
-		MiniNumber usersperpulse 	= MiniNumber.ONE.div(new MiniNumber(""+pulsespeed).div(GlobalParams.MINIMA_BLOCK_SPEED));
-		MiniNumber totaldevs 		= usersperpulse.mult(ratio).floor();
-
-		details.put("devices", totaldevs.getAsLong());
+		details.put("devices", ratio.ceil().toString());
 
 		//The Current total Length of the Minima Chain
 		long totallength = txptree.getHeaviestBranchLength()+cascade.getLength();
