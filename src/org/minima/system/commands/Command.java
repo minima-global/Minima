@@ -12,6 +12,7 @@ import org.minima.system.commands.base.automine;
 import org.minima.system.commands.base.backup;
 import org.minima.system.commands.base.balance;
 import org.minima.system.commands.base.burn;
+import org.minima.system.commands.base.coincheck;
 import org.minima.system.commands.base.coinexport;
 import org.minima.system.commands.base.coinimport;
 import org.minima.system.commands.base.cointrack;
@@ -33,6 +34,7 @@ import org.minima.system.commands.base.send;
 import org.minima.system.commands.base.status;
 import org.minima.system.commands.base.test;
 import org.minima.system.commands.base.tokencreate;
+import org.minima.system.commands.base.tokenvalidate;
 import org.minima.system.commands.base.trace;
 import org.minima.system.commands.base.tutorial;
 import org.minima.system.commands.base.vault;
@@ -80,7 +82,7 @@ public abstract class Command {
 	public static final Command[] ALL_COMMANDS = 
 		{   new quit(), new status(), new coins(), new txpow(), new connect(), new disconnect(), new network(),
 			new message(), new trace(), new help(), new printtree(), new automine(), new printmmr(), new rpc(),
-			new send(), new balance(), new tokencreate(), new tokens(),new getaddress(), new newaddress(), new debugflag(),
+			new send(), new balance(), new tokencreate(), new tokenvalidate(), new tokens(),new getaddress(), new newaddress(), new debugflag(),
 			new incentivecash(), new sshtunnel(), new webhooks(),
 
 			new sql(),new file(),
@@ -94,7 +96,7 @@ public abstract class Command {
 			new txnoutput(),new txnstate(),new txnsign(),new txnpost(),new txndelete(),
 			new txnexport(),new txnimport(),new txncheck(), new txnscript(),
 			
-			new coinimport(), new coinexport(),new cointrack(),
+			new coinimport(), new coinexport(),new cointrack(), new coincheck(),
 			
 			new hash(), new hashtest(), new sign(), new verify(),
 			

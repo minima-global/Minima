@@ -34,7 +34,7 @@ import org.minima.utils.json.JSONObject;
 public class tokencreate extends Command {
 
 	public tokencreate() {
-		super("tokencreate","[name:] [amount:] (decimals:) (script:) (state:{}) (burn:) - Create a token. 'name' can be a JSON Object");
+		super("tokencreate","[name:] [amount:] (decimals:) (script:) (state:{}) (signtoken:) (webvalidate:) (burn:) - Create a token. 'name' can be a JSON Object");
 	}
 	
 	@Override
@@ -53,26 +53,22 @@ public class tokencreate extends Command {
 		}
 		
 		//Is name a JSON
-		String name = null;
+		JSONObject jsonname = null;
 		if(isParamJSONObject("name")) {
 			
 			//Get the JSON
-			JSONObject jsonname = getJSONObjectParam("name");
+			jsonname = getJSONObjectParam("name");
 			
 			//make sure there is a name object
 			if(!jsonname.containsKey("name")) {
 				throw new CommandException("MUST specify a 'name' for the token in the JSON");
 			}
 			
-			//Get the String version
-			name = jsonname.toString();
-			
 		}else {
 			
 			//It's a String.. create a JSON
-			JSONObject namejson = new JSONObject();
-			namejson.put("name", getParam("name"));
-			name = namejson.toString();
+			jsonname = new JSONObject();
+			jsonname.put("name", getParam("name"));
 		}
 		
 		//The amount is always a MiniNumber
@@ -98,7 +94,7 @@ public class tokencreate extends Command {
 		}
 		
 		//Now construct the txn..
-		if(name==null || amount==null) {
+		if(jsonname==null || amount==null) {
 			throw new CommandException("MUST specify name and amount");
 		}
 		
@@ -120,13 +116,6 @@ public class tokencreate extends Command {
 		
 		//What is the scale..
 		int scale = MiniNumber.MAX_DECIMAL_PLACES - decimals;
-				
-		//Lets create the token..
-		Token createtoken = new Token(Coin.COINID_OUTPUT, 
-										new MiniNumber(scale), 
-										colorminima,
-										new MiniString(name),
-										new MiniString(script));
 		
 		//The actual amount of Minima that needs to be sent
 		MiniNumber sendamount 	= new MiniNumber(colorminima);
@@ -272,6 +261,43 @@ public class tokencreate extends Command {
 		//Now add the output..
 		Coin recipient = new Coin(Coin.COINID_OUTPUT, sendaddress, sendamount, Token.TOKENID_CREATE, true);
 		
+		//Is there a Web Validation URL
+		if(existsParam("webvalidate")) {
+			
+			//Add to the description
+			jsonname.put("webvalidate", getParam("webvalidate"));
+		}
+		
+		//Are we signing the token..
+		if(existsParam("signtoken")) {
+		
+			//What is the coinid of the first input..
+			MiniData firstcoinid = transaction.getAllInputs().get(0).getCoinID();
+			
+			//Calculate the CoinID.. It's the first output
+			MiniData tokencoinid = transaction.calculateCoinID(firstcoinid, 0);
+			
+			//Get the Public Key
+			String sigpubkey = getParam("signtoken");
+			
+			//Now sign the coinid..
+			Signature sig = walletdb.signData(sigpubkey, tokencoinid);
+			
+			//Get the MiniData version..
+			MiniData sigdata = MiniData.getMiniDataVersion(sig);
+			
+			//Get the Pubkey.. add it to the JSON
+			jsonname.put("signedby", sigpubkey);
+			jsonname.put("signature", sigdata.to0xString());
+		}
+		
+		//Let's create the token..
+		Token createtoken = new Token(Coin.COINID_OUTPUT, 
+										new MiniNumber(scale), 
+										colorminima,
+										new MiniString(jsonname.toString()),
+										new MiniString(script));
+		
 		//Set the Create Token Details..
 		recipient.setToken(createtoken);
 		
@@ -309,7 +335,7 @@ public class tokencreate extends Command {
 		
 		//Compute the correct CoinID
 		TxPoWGenerator.precomputeTransactionCoinID(transaction);
-				
+		
 		//Calculate the TransactionID..
 		transaction.calculateTransactionID();
 		

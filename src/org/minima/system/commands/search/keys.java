@@ -13,7 +13,7 @@ import org.minima.utils.json.JSONObject;
 public class keys extends Command {
 
 	public keys() {
-		super("keys","action:[list|new] - Get a list of all your public keys or create a new key");
+		super("keys","(action:list|new) - Get a list of all your public keys or create a new key");
 	}
 	
 	@Override

@@ -20,6 +20,7 @@ import org.minima.system.commands.base.restore;
 import org.minima.system.commands.base.send;
 import org.minima.system.commands.base.status;
 import org.minima.system.commands.base.tokencreate;
+import org.minima.system.commands.base.tokenvalidate;
 import org.minima.system.commands.base.trace;
 import org.minima.system.commands.base.tutorial;
 import org.minima.system.commands.base.vault;
@@ -88,6 +89,7 @@ public class help extends Command {
 		addCommand(details, new send());
 		addCommand(details, new balance());
 		addCommand(details, new tokencreate());
+		addCommand(details, new tokenvalidate());
 		addCommand(details, new consolidate());
 		
 		addCommand(details, new hash());

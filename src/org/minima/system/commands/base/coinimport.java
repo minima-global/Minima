@@ -74,7 +74,7 @@ public class coinimport extends Command {
 		//Ok.. now we have to add this to OUR TreeNode MMR..
 		TxPoWTreeNode treenode = tip.getPastNode(coinblock);
 		if(treenode==null) {
-			throw new CommandException("TreeNode at Blocktime not found : "+coinblock);
+			throw new CommandException("TreeNode at Blocktime not found (proof too old): "+coinblock);
 		}
 		
 		//Checker..
