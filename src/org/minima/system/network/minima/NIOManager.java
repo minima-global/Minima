@@ -21,6 +21,7 @@ import org.minima.system.Main;
 import org.minima.system.commands.network.connect;
 import org.minima.system.commands.network.sshtunnel;
 import org.minima.system.network.NetworkManager;
+import org.minima.system.network.maxima.MaximaManager;
 import org.minima.system.network.p2p.P2PFunctions;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.MinimaLogger;
@@ -60,6 +61,12 @@ public class NIOManager extends MessageProcessor {
 	public static final String NIO_CHECKLASTMSG 	= "NIO_CHECKLASTMSG";
 	long LASTREAD_CHECKER 		= 1000 * 120;
 	long MAX_LASTREAD_CHECKER 	= 1000 * 60 * 5;
+	
+	/**
+	 * Nuclear check to see if the networking is behaving itself 
+	 */
+	public static final String NIO_HEALTHCHECK 	= "NIO_HEALTHCHECK";
+	long NIO_HEALTHCHECK_TIMER 	= 1000 * 60 * 20;
 	
 	/**
 	 * How long before a reconnect attempt
@@ -263,7 +270,7 @@ public class NIOManager extends MessageProcessor {
 			connectAttempt(nc);
 			
 			//Small pause - give it time to connect
-			Thread.sleep(2000);
+			Thread.sleep(1000);
 			
 		}else if(zMessage.getMessageType().equals(NIO_RECONNECT)) {
 			//Get the client..
@@ -295,6 +302,7 @@ public class NIOManager extends MessageProcessor {
 					MinimaLogger.log("INFO : "+nc.getUID()+" connection failed - no more reconnect attempts ");
 					
 				}else {
+					MinimaLogger.log("INFO : "+nc.getUID()+" Resetting reconnect attempts (no other connections) for "+nc.getFullAddress());
 					
 					//reset connect attempts..
 					nc.setConnectAttempts(1);
@@ -361,16 +369,19 @@ public class NIOManager extends MessageProcessor {
 			}
 			
 			//Tell the P2P..
-//			MinimaLogger.log("DISCONNECTED P2P Client UID : "+nioc.getUID()+" @ "+nioc.getHost()+":"+nioc.getPort());
-			
 			Message newconn = new Message(P2PFunctions.P2P_DISCONNECTED);
 			newconn.addString("uid", nioc.getUID());
 			newconn.addBoolean("incoming", nioc.isIncoming());
 			newconn.addBoolean("reconnect", reconnect);
 			mNetworkManager.getP2PManager().PostMessage(newconn);
 
-			//Tel MAXIMA
-			Main.getInstance().getMaxima().PostMessage(zMessage);
+			//Tell MAXIMA
+			Message maxconn = new Message(MaximaManager.MAXIMA_DISCONNECTED);
+			maxconn.addObject("nioclient", nioc);
+			maxconn.addString("uid", nioc.getUID());
+			maxconn.addBoolean("incoming", nioc.isIncoming());
+			maxconn.addBoolean("reconnect", reconnect);
+			Main.getInstance().getMaxima().PostMessage(maxconn);
 			
 		}else if(zMessage.getMessageType().equals(NIO_NEWCONNECTION)) {
 			//New connection.. 
@@ -386,24 +397,17 @@ public class NIOManager extends MessageProcessor {
 					//Create the Greeting..
 					Greeting greet = new Greeting().createGreeting();
 					
-//					//Is this my Maxima Host..
-//					Maxima max = Main.getInstance().getMaxima();
-//					if(max.isHostSet()) {
-//						//Check it..
-//						String hostclient = nioc.getHost()+":"+nioc.getPort(); 
-//						
-//						if(hostclient.equals(max.getMaximaHost())) {
-//							MinimaLogger.log("Connected to Maxima Host!");
-//							
-//							//This is our Maxima Host - add our Maxima Public Key
-//							greet.getExtraData().put("maxima", max.getPublicKey());
-//						}
-//					}
-					
 					//And send it..
 					NIOManager.sendNetworkMessage(nioc.getUID(), NIOMessage.MSG_GREETING, greet);
 				}
 			}
+			
+			//Tell MAXIMA
+			Message maxconn = new Message(MaximaManager.MAXIMA_CONNECTED);
+			maxconn.addObject("nioclient", nioc);
+			maxconn.addString("uid", nioc.getUID());
+			maxconn.addBoolean("incoming", nioc.isIncoming());
+			Main.getInstance().getMaxima().PostMessage(maxconn);
 			
 		}else if(zMessage.getMessageType().equals(NIO_INCOMINGMSG)) {
 			//Who is it from
@@ -472,6 +476,25 @@ public class NIOManager extends MessageProcessor {
 			
 			//And Again..
 			PostTimerMessage(new TimerMessage(LASTREAD_CHECKER, NIO_CHECKLASTMSG));
+			
+			
+		
+		}else if(zMessage.getMessageType().equals(NIO_HEALTHCHECK)) {
+			
+			//Check the number of Connecting Clients.. if too great.. restart the networking..
+			if(getConnnectingClients() > 25 ) {
+				
+				//Log..
+				MinimaLogger.log("Too Many connecting clients.. restarting networking");
+				
+				//Something not right..
+				Message netstart = new Message(Main.MAIN_NETRESTART);
+				netstart.addBoolean("repeat", false);
+				Main.getInstance().PostMessage(netstart);
+			}
+			
+			//DO a health check on the state of the networking
+			PostTimerMessage(new TimerMessage(NIO_HEALTHCHECK_TIMER, NIO_HEALTHCHECK));
 		}
 	}
 	

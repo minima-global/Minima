@@ -19,6 +19,8 @@ public class MaximaHost {
 	MiniData mPublic;
 	MiniData mPrivate;
 	
+	long mLastSeen=0;
+	
 	public MaximaHost() {}
 	
 	public MaximaHost(String zHost) {

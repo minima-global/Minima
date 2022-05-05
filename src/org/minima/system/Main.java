@@ -67,7 +67,12 @@ public class Main extends MessageProcessor {
 	public static final String MAIN_AUTOMINE 	= "MAIN_CHECKAUTOMINE";
 	public static final String MAIN_CLEANDB 	= "MAIN_CLEANDB";
 	public static final String MAIN_PULSE 		= "MAIN_PULSE";
+	
+	/**
+	 * Network Restart - every 24.5 hours
+	 */
 	public static final String MAIN_NETRESTART 	= "MAIN_NETRESTART";
+//	public static long MAIN_NETRESTART_TIMER 	= (1000 * 60 * 60 * 24) + (1000 * 60 * 30);
 	
 	/**
 	 * Debug Function
@@ -210,6 +215,9 @@ public class Main extends MessageProcessor {
 		
 		//Store the IC User - do fast first time - 30 seconds in.. then every 8 hours
 		PostTimerMessage(new TimerMessage(1000*30, MAIN_INCENTIVE));
+	
+		//Restart the networking every 24 hours..
+//		PostTimerMessage(new TimerMessage(MAIN_NETRESTART_TIMER, MAIN_NETRESTART));
 		
 		//Debug Checker
 		PostTimerMessage(new TimerMessage(CHECKER_TIMER, MAIN_CHECKER));
@@ -308,7 +316,7 @@ public class Main extends MessageProcessor {
 		}
 		
 		//Log 
-		MinimaLogger.log("Network Shutdown started..");
+		MinimaLogger.log("Periodic Network Shutdown started..");
 		
 		//Shut down the NIO..
 		mNetwork.shutdownNetwork();

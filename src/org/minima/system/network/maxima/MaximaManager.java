@@ -121,14 +121,34 @@ public class MaximaManager extends MessageProcessor {
 			
 			//Save the DB
 			MinimaDB.getDB().saveUserDB();
+			
+			MinimaLogger.log("MAXIMA publickey "+mPublic.getLength()+" "+mPublic.to0xString());
+			MinimaLogger.log("MAXIMA privatekey "+mPrivate.getLength()+" "+mPublic.to0xString());
 		
-			//Now try and connect to pout host..
-//			PostTimerMessage(new TimerMessage(10000, MAXIMA_LOOP));
+		}else if(zMessage.getMessageType().equals(MAXIMA_CONNECTED)) {
+		
+			//Get the client
+			NIOClient nioc = (NIOClient) zMessage.getObject("nioclient");
 			
-		}else if(zMessage.getMessageType().equals(MAXIMA_LOOP)) {
+			//is it an outgoing.. ONLY outgoing can be used for MAXIMA
+			if(!nioc.isIncoming()) {
+				MinimaLogger.log("MAXIMA outgoing connection : "+nioc.getFullAddress());
 			
-			//Check every minute..
-//			PostTimerMessage(new TimerMessage(60000, MAXIMA_LOOP));
+				//OK.. 
+				
+			}
+			
+			
+			
+		}else if(zMessage.getMessageType().equals(MAXIMA_DISCONNECTED)) {
+			
+			//Get the client
+			NIOClient nioc = (NIOClient) zMessage.getObject("nioclient");
+			
+			//is it an outgoing.. ONLY outgoing can be used for MAXIMA
+			if(!nioc.isIncoming()) {
+				MinimaLogger.log("MAXIMA outgoing disconnection : "+nioc.getFullAddress());
+			}
 			
 		}else if(zMessage.getMessageType().equals(MAXIMA_SENDMESSAGE)) {
 			

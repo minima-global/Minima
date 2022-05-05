@@ -6,10 +6,6 @@ public class MaximaContact {
 
 	public String mName;
 	
-	public String mDescription;
-	
-	public MiniData mImage;
-	
 	public MiniData mPublicKey;
 	
 	public String mCurrentHost;

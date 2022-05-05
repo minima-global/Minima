@@ -42,6 +42,22 @@ public class network extends Command {
 			//Add to the response
 			ret.put("response", "Restarting..");
 		
+		}else if(action.equals("loggingon")) {
+		
+			Main.getInstance().getNetworkManager().getNIOManager().setFullLogging(true, "");
+			Main.getInstance().getNetworkManager().getP2PManager().setFullLogging(true, "");
+			
+			//Add to the response
+			ret.put("response", "Full Network logging ON");
+		
+		}else if(action.equals("loggingoff")) {
+			
+			Main.getInstance().getNetworkManager().getNIOManager().setFullLogging(false, "");
+			Main.getInstance().getNetworkManager().getP2PManager().setFullLogging(false, "");
+			
+			//Add to the response
+			ret.put("response", "Full Network logging OFF");
+		
 		}else {
 			throw new CommandException("Invalid action");
 		}

@@ -354,7 +354,7 @@ public class TxPoWProcessor extends MessageProcessor {
 			MiniNumber timenow 		= new MiniNumber(System.currentTimeMillis());
 			
 			//If our chain is up to date (within 4 hrs) we don't accept TxBlock at all.. only full blocks
-			if(txptree.getTip() != null) {
+			if(txptree.getTip() != null && ibd.getTxBlocks().size()>0) {
 				MiniNumber notxblocktimediff = new MiniNumber(1000 * 60 * 240);
 				if(txptree.getTip().getTxPoW().getTimeMilli().sub(timenow).abs().isLess(notxblocktimediff)) {
 					MinimaLogger.log("Your chain tip is up to date - no TxBlocks accepted - only FULL TxPoW");

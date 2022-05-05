@@ -13,6 +13,11 @@ public class MaximaDB extends SqlDB {
 	 * PreparedStatements
 	 */
 	PreparedStatement SQL_INSERT_MAXIMA_HOST 		= null;
+	PreparedStatement SQL_UPDATE_MAXIMA_HOST 		= null;
+	PreparedStatement SQL_SELECT_MAXIMA_HOST 		= null;
+	PreparedStatement SQL_SELECT_ALL_HOSTS 			= null;
+	
+	
 	PreparedStatement SQL_INSERT_MAXIMA_CONTACT 	= null;
 	
 	public MaximaDB() {
@@ -26,30 +31,37 @@ public class MaximaDB extends SqlDB {
 			//Create the various tables..
 			Statement stmt = mSQLConnection.createStatement();
 
-//			//Create main table
-//			String create = "CREATE TABLE IF NOT EXISTS `syncblock` ("
-//							+ "  `id` IDENTITY PRIMARY KEY,"
-//							+ "  `txpowid` varchar(80) NOT NULL UNIQUE,"
-//							+ "  `block` bigint NOT NULL UNIQUE,"
-//							+ "  `timemilli` bigint NOT NULL,"
-//							+ "  `syncdata` blob NOT NULL"
-//							+ ")";
-//			
-//			//Run it..
-//			stmt.execute(create);
-//			
-//			//Create some fast indexes..
-//			String index = "CREATE INDEX IF NOT EXISTS fastsearch ON syncblock ( txpowid, block )";
-//					
-//			//Run it..
-//			stmt.execute(index);
-//			
+			//Create hosts table
+			String hosts = "CREATE TABLE IF NOT EXISTS `hosts` ("
+							+ "  `id` IDENTITY PRIMARY KEY,"
+							+ "  `host` varchar(255) NOT NULL UNIQUE,"
+							+ "  `publickey` blob NOT NULL,"
+							+ "  `privatekey` blob NOT NULL,"
+							+ "  `lastseen` bigint NOT NULL"
+							+ ")";
+			
+			//Run it..
+			stmt.execute(hosts);
+
+			//Create contacts table
+			String contacts = "CREATE TABLE IF NOT EXISTS `contacts` ("
+							+ "  `id` IDENTITY PRIMARY KEY,"
+							+ "  `name` varchar(255) NOT NULL UNIQUE,"
+							+ "  `publickey` blob NOT NULL,"
+							+ "  `currenthost` varchar(255) NOT NULL,"
+							+ "  `currentpublickey` blob NOT NULL"
+							+ ")";
+			
+			//Run it..
+			stmt.execute(contacts);
 			
 			//All done..
 			stmt.close();
-//			
-//			//Create some prepared statements..
-//			String insert 			= "INSERT IGNORE INTO syncblock ( txpowid, block, timemilli, syncdata ) VALUES ( ?, ? ,? ,? )";
+			
+			//Create some prepared statements..
+			SQL_INSERT_MAXIMA_HOST	= mSQLConnection.prepareStatement("INSERT IGNORE INTO hosts ( host, publickey, privatekey, lastseen ) VALUES ( ?, ? ,? ,? )");
+			
+//			String insert 			= "";
 //			SQL_INSERT_SYNCBLOCK 	= mSQLConnection.prepareStatement(insert);
 //			
 //			//Select 
