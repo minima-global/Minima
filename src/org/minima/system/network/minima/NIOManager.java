@@ -485,10 +485,10 @@ public class NIOManager extends MessageProcessor {
 		}else if(zMessage.getMessageType().equals(NIO_HEALTHCHECK)) {
 			
 			//Check the number of Connecting Clients.. if too great.. restart the networking..
-			if(getConnnectingClients() > 25 ) {
+			if(getConnnectingClients() > 20 ) {
 				
 				//Log..
-				MinimaLogger.log("Too Many connecting clients.. restarting networking");
+				MinimaLogger.log("Too Many connecting clients "+getConnectedClients()+".. restarting networking");
 				
 				//Something not right..
 				Message netstart = new Message(Main.MAIN_NETRESTART);
