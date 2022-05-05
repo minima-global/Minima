@@ -123,12 +123,12 @@ public class MaximaManager extends MessageProcessor {
 			MinimaDB.getDB().saveUserDB();
 		
 			//Now try and connect to pout host..
-			PostTimerMessage(new TimerMessage(10000, MAXIMA_LOOP));
+//			PostTimerMessage(new TimerMessage(10000, MAXIMA_LOOP));
 			
 		}else if(zMessage.getMessageType().equals(MAXIMA_LOOP)) {
 			
 			//Check every minute..
-			PostTimerMessage(new TimerMessage(60000, MAXIMA_LOOP));
+//			PostTimerMessage(new TimerMessage(60000, MAXIMA_LOOP));
 			
 		}else if(zMessage.getMessageType().equals(MAXIMA_SENDMESSAGE)) {
 			

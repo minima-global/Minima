@@ -368,6 +368,9 @@ public class NIOManager extends MessageProcessor {
 			newconn.addBoolean("incoming", nioc.isIncoming());
 			newconn.addBoolean("reconnect", reconnect);
 			mNetworkManager.getP2PManager().PostMessage(newconn);
+
+			//Tel MAXIMA
+			Main.getInstance().getMaxima().PostMessage(zMessage);
 			
 		}else if(zMessage.getMessageType().equals(NIO_NEWCONNECTION)) {
 			//New connection.. 
