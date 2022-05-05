@@ -319,28 +319,4 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 	public static void WriteToStream(DataOutputStream zOut, int zNumber) throws IOException{
 		new MiniNumber(zNumber).writeDataStream(zOut);
 	}
-
-	public static void main(String[] zArgs) {
-		
-//		MiniNumber num = MiniNumber.MAXIMUM.add(MiniNumber.MINI_UNIT);
-		MiniNumber num = MiniNumber.MAXIMUM;
-		System.out.println("Number : "+num);
-		
-		MiniData md = MiniData.getMiniDataVersion(num);
-		System.out.println("HEX NUm : "+md.getLength()+" "+md.to0xString());
-		
-		num = MiniNumber.MAXIMUM.sub(MiniNumber.MINI_UNIT);
-		System.out.println("Number : "+num);
-		
-		md = MiniData.getMiniDataVersion(num);
-		System.out.println("HEX NUm : "+md.getLength()+" "+md.to0xString());
-		
-		num = MiniNumber.MAXIMUM.mult(MiniNumber.MINUSONE).add(MiniNumber.MINI_UNIT);
-		System.out.println("Number : "+num);
-		
-		md = MiniData.getMiniDataVersion(num);
-		System.out.println("HEX NUm : "+md.getLength()+" "+md.to0xString());
-		
-		
-	}
 }
