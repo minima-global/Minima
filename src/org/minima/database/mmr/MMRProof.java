@@ -183,10 +183,8 @@ public class MMRProof implements Streamable {
 		ByteArrayInputStream bais 	= new ByteArrayInputStream(zMMRProof.getBytes());
 		DataInputStream dis 		= new DataInputStream(bais);
 		
-		MMRProof proof = null;
-		
-		//Convert data into a TxPoW
-		proof = MMRProof.ReadFromStream(dis);
+		//read in the proof
+		MMRProof proof = MMRProof.ReadFromStream(dis);
 	
 		dis.close();
 		bais.close();
