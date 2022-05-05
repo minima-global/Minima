@@ -219,6 +219,9 @@ public class NIOManager extends MessageProcessor {
 			//Check how long since last connect for each client..
 			PostTimerMessage(new TimerMessage(LASTREAD_CHECKER, NIO_CHECKLASTMSG));
 			
+			//DO a health check on the state of the networking
+			PostTimerMessage(new TimerMessage(NIO_HEALTHCHECK_TIMER, NIO_HEALTHCHECK));
+			
 		}else if(zMessage.getMessageType().equals(NIO_SHUTDOWN)) {
 			
 			//Stop the Thread pool
@@ -491,10 +494,12 @@ public class NIOManager extends MessageProcessor {
 				Message netstart = new Message(Main.MAIN_NETRESTART);
 				netstart.addBoolean("repeat", false);
 				Main.getInstance().PostMessage(netstart);
-			}
+				
+			}else {
 			
-			//DO a health check on the state of the networking
-			PostTimerMessage(new TimerMessage(NIO_HEALTHCHECK_TIMER, NIO_HEALTHCHECK));
+				//DO a health check on the state of the networking
+				PostTimerMessage(new TimerMessage(NIO_HEALTHCHECK_TIMER, NIO_HEALTHCHECK));
+			}
 		}
 	}
 	
