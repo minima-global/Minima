@@ -34,7 +34,7 @@ import org.minima.utils.json.JSONObject;
 public class tokencreate extends Command {
 
 	public tokencreate() {
-		super("tokencreate","[name:] [amount:] (decimals:) (script:) (state:{}) (burn:) - Create a token. 'name' can be a JSON Object");
+		super("tokencreate","[name:] [amount:] (decimals:) (script:) (state:{}) (signtoken:) (webvalidate:) (burn:) - Create a token. 'name' can be a JSON Object");
 	}
 	
 	@Override
@@ -260,6 +260,13 @@ public class tokencreate extends Command {
 		
 		//Now add the output..
 		Coin recipient = new Coin(Coin.COINID_OUTPUT, sendaddress, sendamount, Token.TOKENID_CREATE, true);
+		
+		//Is there a Web Validation URL
+		if(existsParam("webvalidate")) {
+			
+			//Add to the description
+			jsonname.put("webvalidate", getParam("webvalidate"));
+		}
 		
 		//Are we signing the token..
 		if(existsParam("signtoken")) {
