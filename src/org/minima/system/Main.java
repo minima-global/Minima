@@ -316,7 +316,7 @@ public class Main extends MessageProcessor {
 		}
 		
 		//Lock the DB
-		MinimaDB.getDB().writeLock(true);
+		MinimaDB.getDB().readLock(true);
 		
 		try {
 			//Log 
@@ -350,7 +350,7 @@ public class Main extends MessageProcessor {
 		}finally {
 			
 			//UNLock the DB
-			MinimaDB.getDB().writeLock(false);
+			MinimaDB.getDB().readLock(false);
 		}
 	}
 	
