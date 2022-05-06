@@ -21,7 +21,7 @@ public class MaximaDB extends SqlDB {
 	PreparedStatement SQL_UPDATE_MAXIMA_HOST 		= null;
 	PreparedStatement SQL_SELECT_MAXIMA_HOST 		= null;
 	PreparedStatement SQL_SELECT_ALL_HOSTS 			= null;
-	
+	PreparedStatement SQL_DELETE_OLD_HOSTS 			= null;
 	
 	PreparedStatement SQL_INSERT_MAXIMA_CONTACT 	= null;
 	
