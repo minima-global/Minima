@@ -315,28 +315,43 @@ public class Main extends MessageProcessor {
 			return;
 		}
 		
-		//Log 
-		MinimaLogger.log("Periodic Network Shutdown started..");
+		//Lock the DB
+		MinimaDB.getDB().writeLock(true);
 		
-		//Shut down the NIO..
-		mNetwork.shutdownNetwork();
+		try {
+			//Log 
+			MinimaLogger.log("Network Shutdown started..");
 			
-		//Wait for the networking to finish
-		while(!mNetwork.isShutDownComplete()) {
-			try {Thread.sleep(50);} catch (InterruptedException e) {}
-		}
-		
-		//Save the state.. 
-		MinimaDB.getDB().saveState();
+			//Shut down the NIO..
+			mNetwork.shutdownNetwork();
 				
-		//Wait a second..
-		MinimaLogger.log("Network Shutdown complete.. restart in 5 seconds");
-		try {Thread.sleep(5000);} catch (InterruptedException e) {}
-		
-		//Now restart it..
-		mNetwork = new NetworkManager();
-		
-		MinimaLogger.log("Network restarted..");
+			//Wait for the networking to finish
+			while(!mNetwork.isShutDownComplete()) {
+				try {Thread.sleep(50);} catch (InterruptedException e) {}
+			}
+			
+			//Save the state.. 
+			MinimaDB.getDB().saveState();
+					
+			//Wait a second..
+			MinimaLogger.log("Network Shutdown complete.. restart in 5 seconds");
+			try {Thread.sleep(5000);} catch (InterruptedException e) {}
+			
+			//Now restart it..
+			mNetwork = new NetworkManager();
+			
+			MinimaLogger.log("Network restarted..");
+			
+		}catch(Exception exc) {
+			
+			//Uh oh..
+			MinimaLogger.log("[!] Error retstarting Network.. Restart Minima!");
+			
+		}finally {
+			
+			//UNLock the DB
+			MinimaDB.getDB().writeLock(false);
+		}
 	}
 	
 	public long getUptimeMilli() {
