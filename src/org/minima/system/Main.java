@@ -345,7 +345,7 @@ public class Main extends MessageProcessor {
 		}catch(Exception exc) {
 			
 			//Uh oh..
-			MinimaLogger.log("[!] Error retstarting Network.. Restart Minima!");
+			MinimaLogger.log("[!] Error restarting Network.. Restart Minima!");
 			
 		}finally {
 			
