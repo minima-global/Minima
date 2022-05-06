@@ -11,5 +11,7 @@ public class MaximaContact {
 	public String mCurrentHost;
 	public String mCurrentHostPublicKey;
 	
-	
+	public MaximaContact() {
+		
+	}
 }

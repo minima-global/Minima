@@ -8,6 +8,8 @@ import java.net.Socket;
 import java.security.KeyPair;
 
 import org.minima.database.MinimaDB;
+import org.minima.database.maxima.MaximaDB;
+import org.minima.database.maxima.MaximaHost;
 import org.minima.database.userprefs.UserDB;
 import org.minima.objects.Address;
 import org.minima.objects.base.MiniData;
@@ -43,13 +45,15 @@ public class MaximaManager extends MessageProcessor {
 	public static final String MAXIMA_DISCONNECTED 	= "MAXIMA_DISCONNECTED";
 	
 	/**
-	 * Checker loop function
+	 * Checker loop function - every 5 mins
 	 */
 	public static final String MAXIMA_LOOP 			= "MAXIMA_LOOP";
+	long MAXIMA_LOOP_DELAY = 1000 * 60 * 5;
 	
 	/**
 	 * Messages
 	 */
+	public static final String MAXIMA_CTRLMESSAGE 	= "MAXIMA_CTRLMESSAGE";
 	public static final String MAXIMA_RECMESSAGE 	= "MAXIMA_RECMESSAGE";
 	public static final String MAXIMA_SENDMESSAGE 	= "MAXIMA_SENDDMESSAGE";
 	
@@ -108,10 +112,11 @@ public class MaximaManager extends MessageProcessor {
 			
 			//Do we have an account already..
 			if(!udb.exists(MAXIMA_PUBKEY)) {
+				
+				MinimaLogger.log("Creating Maxima Keys..");
 				createMaximaKeys();
 			
 			}else {
-				//Get the data..
 				mPublic  = udb.getData(MAXIMA_PUBKEY, MiniData.ZERO_TXPOWID);
 				mPrivate = udb.getData(MAXIMA_PRIVKEY, MiniData.ZERO_TXPOWID);
 			}
@@ -122,9 +127,18 @@ public class MaximaManager extends MessageProcessor {
 			//Save the DB
 			MinimaDB.getDB().saveUserDB();
 			
-			MinimaLogger.log("MAXIMA publickey "+mPublic.getLength()+" "+mPublic.to0xString());
-			MinimaLogger.log("MAXIMA privatekey "+mPrivate.getLength()+" "+mPublic.to0xString());
+			//Post a LOOP message that updates all my contacts just in case..
+			PostTimerMessage(new TimerMessage(MAXIMA_LOOP_DELAY, MAXIMA_LOOP));
 		
+		}else if(zMessage.getMessageType().equals(MAXIMA_LOOP)) {
+			
+			//Tell all contacts how to get in touch with you..
+			//..
+			
+			//Post a LOOP message that updates all my contacts just in case..
+			PostTimerMessage(new TimerMessage(MAXIMA_LOOP_DELAY, MAXIMA_LOOP));
+			
+			
 		}else if(zMessage.getMessageType().equals(MAXIMA_CONNECTED)) {
 		
 			//Get the client
@@ -132,13 +146,35 @@ public class MaximaManager extends MessageProcessor {
 			
 			//is it an outgoing.. ONLY outgoing can be used for MAXIMA
 			if(!nioc.isIncoming()) {
-				MinimaLogger.log("MAXIMA outgoing connection : "+nioc.getFullAddress());
-			
-				//OK.. 
+				//Get the MaximaDB
+				MaximaDB mxdb = MinimaDB.getDB().getMaximaDB();
 				
+				//OK.. Do we hav this node in our list..
+				MaximaHost mxhost = mxdb.loadHost(nioc.getFullAddress());
+				
+				//Do we have something..
+				if(mxhost == null) {
+					MinimaLogger.log("MAXIMA NEW connection : "+nioc.getFullAddress());
+					
+					//Create a new Host
+					mxhost = new MaximaHost(nioc.getFullAddress());
+					mxhost.createKeys();
+					
+					//Now insert this into the DB
+					mxdb.newHost(mxhost);
+				}else{
+					MinimaLogger.log("MAXIMA EXISTING connection : "+nioc.getFullAddress());
+					
+					//Update our details..
+					mxhost.updateLastSeen();
+					mxdb.updateHost(mxhost);
+				}
+				
+				//So we know the details.. Post them to him.. so he knows who we are..
+				MaximaCTRLMessage maxmess = new MaximaCTRLMessage(MaximaCTRLMessage.MAXIMACTRL_TYPE_ID);
+				maxmess.setData(mxhost.getPublicKey());
+				NIOManager.sendNetworkMessage(nioc.getUID(), NIOMessage.MSG_MAXIMA_CTRL, maxmess);
 			}
-			
-			
 			
 		}else if(zMessage.getMessageType().equals(MAXIMA_DISCONNECTED)) {
 			
@@ -148,6 +184,28 @@ public class MaximaManager extends MessageProcessor {
 			//is it an outgoing.. ONLY outgoing can be used for MAXIMA
 			if(!nioc.isIncoming()) {
 				MinimaLogger.log("MAXIMA outgoing disconnection : "+nioc.getFullAddress());
+				
+				//Do we need to update Users who contact us through them..
+				//?
+			}
+		
+		}else if(zMessage.getMessageType().equals(MAXIMA_CTRLMESSAGE)) {
+			
+			//Received a control message from a client
+			MaximaCTRLMessage msg = (MaximaCTRLMessage) zMessage.getObject("maximactrl");
+			
+			if(msg.getType().isEqual(MaximaCTRLMessage.MAXIMACTRL_TYPE_ID)) {
+				
+				//Get the NIOClient
+				NIOClient nioc = (NIOClient) zMessage.getObject("nioclient");
+				
+				//Set the ID for this Connection
+				MiniData pubkey = msg.getData();
+
+				//And Set..
+				nioc.setMaximaIdent(pubkey.to0xString());
+				
+				MinimaLogger.log("MAXIMA address : "+pubkey.to0xString()+"@"+nioc.getFullAddress());
 			}
 			
 		}else if(zMessage.getMessageType().equals(MAXIMA_SENDMESSAGE)) {

@@ -1,6 +1,9 @@
 package org.minima.database.maxima;
 
 import java.security.KeyPair;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Date;
 
 import org.minima.objects.base.MiniData;
 import org.minima.utils.encrypt.GenerateKey;
@@ -19,12 +22,18 @@ public class MaximaHost {
 	MiniData mPublic;
 	MiniData mPrivate;
 	
-	long mLastSeen=0;
+	long mLastSeen = System.currentTimeMillis();
 	
 	public MaximaHost() {}
 	
 	public MaximaHost(String zHost) {
 		mHost = zHost;
+	}
+	
+	public MaximaHost(ResultSet zSQLResult) throws SQLException {
+		mHost 		= zSQLResult.getString("host");
+		mPublic		= new MiniData(zSQLResult.getBytes("publickey"));
+		mPrivate 	= new MiniData(zSQLResult.getBytes("privatekey"));
 	}
 	
 	public MaximaHost(String zHost, MiniData zPublic, MiniData zPrivate) {
@@ -55,12 +64,17 @@ public class MaximaHost {
 		mPublic		= zPublic;
 	}
 	
+	public void updateLastSeen() {
+		mLastSeen = System.currentTimeMillis();
+	}
+	
 	public JSONObject toJSON() {
 		JSONObject ret = new JSONObject();
 		
 		ret.put("host", mHost);
 		ret.put("private", mPrivate.to0xString());
 		ret.put("public", mPublic.to0xString());
+		ret.put("lastseen", new Date(mLastSeen));
 		
 		return ret;
 	}
@@ -75,5 +89,9 @@ public class MaximaHost {
 	
 	public MiniData getPrivateKey() {
 		return mPrivate;
+	}
+	
+	public long getLastSeen() {
+		return mLastSeen;
 	}
 }

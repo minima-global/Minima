@@ -381,8 +381,6 @@ public class NIOManager extends MessageProcessor {
 			//Tell MAXIMA
 			Message maxconn = new Message(MaximaManager.MAXIMA_DISCONNECTED);
 			maxconn.addObject("nioclient", nioc);
-			maxconn.addString("uid", nioc.getUID());
-			maxconn.addBoolean("incoming", nioc.isIncoming());
 			maxconn.addBoolean("reconnect", reconnect);
 			Main.getInstance().getMaxima().PostMessage(maxconn);
 			

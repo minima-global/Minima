@@ -6,6 +6,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.minima.database.archive.ArchiveManager;
 import org.minima.database.cascade.Cascade;
+import org.minima.database.maxima.MaximaDB;
 import org.minima.database.minidapps.MiniDAPPDB;
 import org.minima.database.txpowdb.TxPoWDB;
 import org.minima.database.txpowtree.TxPowTree;
@@ -37,6 +38,7 @@ public class MinimaDB {
 	UserDB			mUserDB;
 	TxnDB			mTxnDB;
 	Wallet			mWallet;
+	MaximaDB	 	mMaximaDB;
 	
 	/**
 	 * Temporary
@@ -63,6 +65,7 @@ public class MinimaDB {
 		mCacscade	= new Cascade();
 		mUserDB		= new UserDB();
 		mWallet		= new Wallet();
+		mMaximaDB	= new MaximaDB();
 		
 		mMiniDAPP   = new MiniDAPPDB();
 		
@@ -160,6 +163,10 @@ public class MinimaDB {
 		return mArchive;
 	}
 	
+	public MaximaDB getMaximaDB() {
+		return mMaximaDB;
+	}
+	
 	public P2PDB getP2PDB() {
 		return mP2PDB;
 	}
@@ -185,11 +192,14 @@ public class MinimaDB {
 			//Load the wallet
 			File walletsqlfolder = new File(basedb,"walletsql");
 			mWallet.loadDB(new File(walletsqlfolder,"wallet"));
-			//mWallet.initDefaultKeys();
 			
 			//Load the SQL DB
 			File txpowsqlfolder = new File(basedb,"txpowsql");
 			mTxPoWDB.loadSQLDB(new File(txpowsqlfolder,"txpow"));
+			
+			//Load the MaximaDB
+			File maxsqlfolder = new File(basedb,"maximasql");
+			mMaximaDB.loadDB(new File(maxsqlfolder,"maxima"));
 			
 			//Load the User Prefs
 			mUserDB.loadDB(new File(basedb,"userprefs.db"));
@@ -235,6 +245,7 @@ public class MinimaDB {
 			mTxPoWDB.saveDB();
 			mArchive.saveDB();
 			mWallet.saveDB();
+			mMaximaDB.saveDB();
 			
 			//Temp
 			mMiniDAPP.saveDB();

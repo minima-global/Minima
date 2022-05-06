@@ -132,10 +132,7 @@ public class NIOClient {
 		ret.put("connected", new Date(mTimeConnected).toString());
 		ret.put("valid", mValidGreeting);
 		ret.put("sentgreeting", mSentGreeting);
-		
-		if(isMaximaClient()) {
-			ret.put("maxima", mMaximaIdent);
-		}
+		ret.put("maxima", mMaximaIdent);
 		
 		return ret;
 	}

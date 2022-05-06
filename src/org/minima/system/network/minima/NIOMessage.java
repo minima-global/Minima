@@ -20,6 +20,8 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
 import org.minima.system.brains.TxPoWChecker;
+import org.minima.system.network.maxima.MaximaCTRLMessage;
+import org.minima.system.network.maxima.MaximaManager;
 import org.minima.system.network.p2p.P2PFunctions;
 import org.minima.system.network.p2p.P2PManager;
 import org.minima.system.params.GeneralParams;
@@ -36,16 +38,18 @@ public class NIOMessage implements Runnable {
 	/**
 	 * Base Message types sent over the network
 	 */
-	public static final MiniByte MSG_GREETING 	= new MiniByte(0);
-	public static final MiniByte MSG_IBD 		= new MiniByte(1); // initial blockchain download
-	public static final MiniByte MSG_TXPOWID 	= new MiniByte(2);
-	public static final MiniByte MSG_TXPOWREQ 	= new MiniByte(3);
-	public static final MiniByte MSG_TXPOW 		= new MiniByte(4);
-	public static final MiniByte MSG_GENMESSAGE = new MiniByte(5);
-	public static final MiniByte MSG_PULSE 		= new MiniByte(6);
-	public static final MiniByte MSG_P2P 		= new MiniByte(7);
-	public static final MiniByte MSG_PING 		= new MiniByte(8);
-	public static final MiniByte MSG_MAXIMA 	= new MiniByte(9);
+	public static final MiniByte MSG_GREETING 		= new MiniByte(0);
+	public static final MiniByte MSG_IBD 			= new MiniByte(1); // initial blockchain download
+	public static final MiniByte MSG_TXPOWID 		= new MiniByte(2);
+	public static final MiniByte MSG_TXPOWREQ 		= new MiniByte(3);
+	public static final MiniByte MSG_TXPOW 			= new MiniByte(4);
+	public static final MiniByte MSG_GENMESSAGE 	= new MiniByte(5);
+	public static final MiniByte MSG_PULSE 			= new MiniByte(6);
+	public static final MiniByte MSG_P2P 			= new MiniByte(7);
+	public static final MiniByte MSG_PING 			= new MiniByte(8);
+	
+	public static final MiniByte MSG_MAXIMA_CTRL	= new MiniByte(9);
+	public static final MiniByte MSG_MAXIMA 		= new MiniByte(10);
 	
 	/**
 	 * Helper function that converts to String 
@@ -69,6 +73,8 @@ public class NIOMessage implements Runnable {
 			return "P2P";
 		}else if(zType.isEqual(MSG_PING)) {
 			return "PING";
+		}else if(zType.isEqual(MSG_MAXIMA_CTRL)) {
+			return "MAXIMA_CTRL";
 		}else if(zType.isEqual(MSG_MAXIMA)) {
 			return "MAXIMA";
 		}
@@ -157,11 +163,11 @@ public class NIOMessage implements Runnable {
 					nioclient.setMinimaPort(Integer.parseInt(greet.getExtraDataValue("port")));
 				}
 				
-				//Is there Maxima Ident..
-				if(greet.getExtraData().containsKey("maxima")) {
-					MinimaLogger.log("Maxima Client Connected "+nioclient);
-					nioclient.setMaximaIdent(greet.getExtraDataValue("maxima"));
-				}
+//				//Is there Maxima Ident..
+//				if(greet.getExtraData().containsKey("maxima")) {
+//					MinimaLogger.log("Maxima Client Connected "+nioclient);
+//					nioclient.setMaximaIdent(greet.getExtraDataValue("maxima"));
+//				}
 				
 				//Get the welcome message..
 				nioclient.setWelcomeMessage("Minima v"+greet.getVersion());
@@ -491,10 +497,26 @@ public class NIOMessage implements Runnable {
 					if (nioclient.getMinimaPort() == -1){
 						port = nioclient.getMinimaPort();
 					}
+					
 					//Hmm something funny..
 					MinimaLogger.log("[!] No Crossover found whilst syncing with new node. They are on a different chain. Please check you are on the correct chain.. disconnecting from "+ nioclient.getHost() + ":" + port);
 					Main.getInstance().getNIOManager().disconnect(mClientUID);
 				}
+				
+			}else if(type.isEqual(MSG_MAXIMA_CTRL)) {
+				
+				//Get the message
+				MaximaCTRLMessage msg = MaximaCTRLMessage.ReadFromStream(dis);
+				
+				//Get the client
+				NIOClient nioclient = Main.getInstance().getNIOManager().getNIOServer().getClient(mClientUID);
+				
+				//And post it to the Maxima Manager..
+				Message maxmsg = new Message(MaximaManager.MAXIMA_CTRLMESSAGE);
+				maxmsg.addObject("nioclient", nioclient);
+				maxmsg.addObject("maximactrl", msg);
+				
+				Main.getInstance().getMaxima().PostMessage(maxmsg);
 				
 			}else if(type.isEqual(MSG_MAXIMA)) {
 				
