@@ -272,9 +272,6 @@ public class NIOManager extends MessageProcessor {
 			//Connect in separate thread..
 			connectAttempt(nc);
 			
-			//Small pause - give it time to connect
-			Thread.sleep(1000);
-			
 		}else if(zMessage.getMessageType().equals(NIO_RECONNECT)) {
 			//Get the client..
 			NIOClient nc = (NIOClient) zMessage.getObject("client");
