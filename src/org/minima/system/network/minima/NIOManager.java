@@ -479,8 +479,6 @@ public class NIOManager extends MessageProcessor {
 			
 			//And Again..
 			PostTimerMessage(new TimerMessage(LASTREAD_CHECKER, NIO_CHECKLASTMSG));
-			
-			
 		
 		}else if(zMessage.getMessageType().equals(NIO_HEALTHCHECK)) {
 			
