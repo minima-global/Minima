@@ -22,6 +22,7 @@ import org.minima.system.Main;
 import org.minima.system.brains.TxPoWChecker;
 import org.minima.system.network.maxima.MaximaCTRLMessage;
 import org.minima.system.network.maxima.MaximaManager;
+import org.minima.system.network.maxima.message.MaximaPackage;
 import org.minima.system.network.p2p.P2PFunctions;
 import org.minima.system.network.p2p.P2PManager;
 import org.minima.system.params.GeneralParams;
@@ -520,17 +521,17 @@ public class NIOMessage implements Runnable {
 				
 			}else if(type.isEqual(MSG_MAXIMA)) {
 				
-//				//Get the data..
-//				MaximaPackage maxpkg = MaximaPackage.ReadFromStream(dis);
-//				
-//				//And send it on to Maxima..
-//				Message maxmsg = new Message(Maxima.MAXIMA_RECMESSAGE);
-//				maxmsg.addObject("maxpackage", maxpkg);
-//				
-//				Main.getInstance().getMaxima().PostMessage(maxmsg);
-//				
-//				//Notify that Client that we received the message.. this makes external client disconnect ( internal just a ping )
-//				NIOManager.sendNetworkMessage(mClientUID, MSG_PING, MiniData.ONE_TXPOWID);
+				//Get the data..
+				MaximaPackage maxpkg = MaximaPackage.ReadFromStream(dis);
+				
+				//And send it on to Maxima..
+				Message maxmsg = new Message(MaximaManager.MAXIMA_RECMESSAGE);
+				maxmsg.addObject("maxpackage", maxpkg);
+				
+				Main.getInstance().getMaxima().PostMessage(maxmsg);
+				
+				//Notify that Client that we received the message.. this makes external client disconnect ( internal just a ping )
+				NIOManager.sendNetworkMessage(mClientUID, MSG_PING, MiniData.ONE_TXPOWID);
 				
 			}else {
 				

@@ -171,10 +171,9 @@ public class NIOManager extends MessageProcessor {
 	}
 	
 	public NIOClient getMaximaUID(String zMaximaPubKey) {
-		//Who are we connected to..
 		ArrayList<NIOClient> conns = mNIOServer.getAllNIOClients();
 		for(NIOClient conn : conns) {
-			if(conn.isMaximaClient() && conn.getMaximaIdent().equals(zMaximaPubKey)) {
+			if(conn.getMaximaIdent().equals(zMaximaPubKey)) {
 				return conn;
 			}
 		}

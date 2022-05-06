@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.security.KeyPair;
+import java.util.ArrayList;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.maxima.MaximaDB;
@@ -13,6 +14,7 @@ import org.minima.database.maxima.MaximaHost;
 import org.minima.database.userprefs.UserDB;
 import org.minima.objects.Address;
 import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
 import org.minima.system.network.maxima.message.MaximaInternal;
 import org.minima.system.network.maxima.message.MaximaMessage;
@@ -20,7 +22,6 @@ import org.minima.system.network.maxima.message.MaximaPackage;
 import org.minima.system.network.minima.NIOClient;
 import org.minima.system.network.minima.NIOManager;
 import org.minima.system.network.minima.NIOMessage;
-import org.minima.utils.BaseConverter;
 import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.encrypt.CryptoPackage;
@@ -74,6 +75,8 @@ public class MaximaManager extends MessageProcessor {
 	MiniData mPublic;
 	MiniData mPrivate;
 	
+	String mMaximaAddress;
+	
 	private boolean mInited 	= false;
 	public boolean mMaximaLogs 	= true;
 
@@ -87,23 +90,25 @@ public class MaximaManager extends MessageProcessor {
 		return mInited;
 	}
 	
-	public String getPublicKey() {
-		Address addr = new Address(mPublic);
-		return addr.getMinimaAddress();
+	public String getMaximaIdentity() {
+		return mMaximaAddress;
 	}
 	
-//	public MaximaMessage createMaximaMessage(String zFullTo, String zApplication, MiniData zData) {
-//		MaximaMessage maxima 	= new MaximaMessage();
-//		maxima.mFrom 			= new MiniString(getFullIdentity());
-//		maxima.mTo 				= new MiniString(zFullTo);
-//		maxima.mApplication 	= new MiniString(zApplication);
-//		maxima.mData 			= zData;
-//		
-//		return maxima;
-//	}
+	public MaximaMessage createMaximaMessage(String zFullTo, String zApplication, MiniData zData) {
+		MaximaMessage maxima 	= new MaximaMessage();
+		maxima.mFrom 			= new MiniString(getMaximaIdentity());
+		maxima.mTo 				= new MiniString(zFullTo);
+		maxima.mApplication 	= new MiniString(zApplication);
+		maxima.mData 			= zData;
+		
+		return maxima;
+	}
 	
 	@Override
 	protected void processMessage(Message zMessage) throws Exception {
+		
+		//Get the MaximaDB
+		MaximaDB maxdb = MinimaDB.getDB().getMaximaDB();
 		
 		if(zMessage.getMessageType().equals(MAXIMA_INIT)) {
 			
@@ -119,8 +124,11 @@ public class MaximaManager extends MessageProcessor {
 			}else {
 				mPublic  = udb.getData(MAXIMA_PUBKEY, MiniData.ZERO_TXPOWID);
 				mPrivate = udb.getData(MAXIMA_PRIVKEY, MiniData.ZERO_TXPOWID);
+			
+				//Convert to a Maxima Address
+				mMaximaAddress = Address.makeMinimaAddress(mPublic);
 			}
-	
+			
 			//We are inited
 			mInited = true;
 			
@@ -138,7 +146,6 @@ public class MaximaManager extends MessageProcessor {
 			//Post a LOOP message that updates all my contacts just in case..
 			PostTimerMessage(new TimerMessage(MAXIMA_LOOP_DELAY, MAXIMA_LOOP));
 			
-			
 		}else if(zMessage.getMessageType().equals(MAXIMA_CONNECTED)) {
 		
 			//Get the client
@@ -146,11 +153,9 @@ public class MaximaManager extends MessageProcessor {
 			
 			//is it an outgoing.. ONLY outgoing can be used for MAXIMA
 			if(!nioc.isIncoming()) {
-				//Get the MaximaDB
-				MaximaDB mxdb = MinimaDB.getDB().getMaximaDB();
 				
 				//OK.. Do we hav this node in our list..
-				MaximaHost mxhost = mxdb.loadHost(nioc.getFullAddress());
+				MaximaHost mxhost = maxdb.loadHost(nioc.getFullAddress());
 				
 				//Do we have something..
 				if(mxhost == null) {
@@ -161,13 +166,13 @@ public class MaximaManager extends MessageProcessor {
 					mxhost.createKeys();
 					
 					//Now insert this into the DB
-					mxdb.newHost(mxhost);
+					maxdb.newHost(mxhost);
 				}else{
 					MinimaLogger.log("MAXIMA EXISTING connection : "+nioc.getFullAddress());
 					
 					//Update our details..
 					mxhost.updateLastSeen();
-					mxdb.updateHost(mxhost);
+					maxdb.updateHost(mxhost);
 				}
 				
 				//So we know the details.. Post them to him.. so he knows who we are..
@@ -202,10 +207,13 @@ public class MaximaManager extends MessageProcessor {
 				//Set the ID for this Connection
 				MiniData pubkey = msg.getData();
 
-				//And Set..
-				nioc.setMaximaIdent(pubkey.to0xString());
+				//Whats the maxima version
+				String mxaddress = Address.makeMinimaAddress(pubkey);
 				
-				MinimaLogger.log("MAXIMA address : "+pubkey.to0xString()+"@"+nioc.getFullAddress());
+				//And Set..
+				nioc.setMaximaIdent(mxaddress);
+				
+				MinimaLogger.log("MAXIMA forward address from "+nioc.getFullAddress()+" "+mxaddress);
 			}
 			
 		}else if(zMessage.getMessageType().equals(MAXIMA_SENDMESSAGE)) {
@@ -250,34 +258,37 @@ public class MaximaManager extends MessageProcessor {
 			//received a Message!
 			MaximaPackage mpkg = (MaximaPackage) zMessage.getObject("maxpackage");
 			
-			//Is it for us?
-			if(!mpkg.mTo.isEqual(mPublic)) {
+			
+			//Is it for us
+			MiniData privatekey = null;
+			ArrayList<MaximaHost> allhosts = maxdb.getAllHosts();
+			for(MaximaHost host : allhosts) {
+				if(host.getPublicKey().isEqual(mpkg.mTo)) {
+					privatekey = host.getPrivateKey(); 
+				}
+			}
+			
+			//If we don't find it..
+			if(privatekey == null) {
 				
 				//The pubkey Mx version
-				String pubk = BaseConverter.encode32(mpkg.mTo.getBytes());
+				String tomaxima = Address.makeMinimaAddress(mpkg.mTo);
 				
-				//Check if it one of our allowed clients! - For now allow all..
-//				if(mMaximaClients.contains(pubk)) {
-					
-					//Forward it to them!
-					NIOClient client =  Main.getInstance().getNIOManager().getMaximaUID(pubk);
-					
-					//Do we have it
-					if(client != null) {
-						if(mMaximaLogs) {
-							MinimaLogger.log("MAXIMA message forwarded to client : "+pubk);
-						}
-						
-						//Send to the client we are connected to..
-						NIOManager.sendNetworkMessage(client.getUID(), NIOMessage.MSG_MAXIMA, mpkg);
-						
-					}else{
-						MinimaLogger.log("MAXIMA message received for Client we are not connected to : "+pubk);
+				//Forward it to them
+				NIOClient client =  Main.getInstance().getNIOManager().getMaximaUID(tomaxima);
+				
+				//Do we have it
+				if(client != null) {
+					if(mMaximaLogs) {
+						MinimaLogger.log("MAXIMA message forwarded to client : "+tomaxima);
 					}
 					
-//				}else {
-//					MinimaLogger.log("MAXIMA message received to unknown PublicKey : "+mpkg.mTo.to0xString());
-//				}
+					//Send to the client we are connected to..
+					NIOManager.sendNetworkMessage(client.getUID(), NIOMessage.MSG_MAXIMA, mpkg);
+					
+				}else{
+					MinimaLogger.log("MAXIMA message received for Client we are not connected to : "+tomaxima);
+				}
 				
 				return;
 			}
@@ -285,7 +296,7 @@ public class MaximaManager extends MessageProcessor {
 			//Decrypt the data
 			CryptoPackage cp = new CryptoPackage();
 			cp.ConvertMiniDataVersion(mpkg.mData);
-			byte[] data = cp.decrypt(mPrivate.getBytes());
+			byte[] data = cp.decrypt(privatekey.getBytes());
 			
 			//Now get the Decrypted data..
 			MaximaInternal mm = MaximaInternal.ConvertMiniDataVersion(new MiniData(data));
@@ -337,7 +348,7 @@ public class MaximaManager extends MessageProcessor {
 				try {
 					//Open the socket..
 					Socket sock 			= new Socket(zHost, zPort);
-					sock.setSoTimeout(10000);
+					sock.setSoTimeout(20000);
 					
 					//Create the streams..
 					OutputStream out 		= sock.getOutputStream();
@@ -395,6 +406,9 @@ public class MaximaManager extends MessageProcessor {
 		
 		byte[] privateKey	 	= generateKeyPair.getPrivate().getEncoded();
 		mPrivate 				= new MiniData(privateKey);
+	
+		//Convert to a Maxima Address
+		mMaximaAddress = Address.makeMinimaAddress(mPublic);
 		
 		//Put in the DB..
 		udb.setData(MAXIMA_PUBKEY, mPublic);

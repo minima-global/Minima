@@ -22,6 +22,13 @@ public class MaximaDB extends SqlDB {
 	
 	PreparedStatement SQL_INSERT_MAXIMA_CONTACT 	= null;
 	
+	
+	/**
+	 * A Cached list of the Hosts
+	 */
+	boolean mCacheValid 				= false;
+	ArrayList<MaximaHost> mCachedHosts 	= null;
+	
 	public MaximaDB() {
 		super();
 	}
@@ -67,6 +74,9 @@ public class MaximaDB extends SqlDB {
 			SQL_UPDATE_MAXIMA_HOST	= mSQLConnection.prepareStatement("UPDATE hosts SET publickey=?, privatekey=?, lastseen=? WHERE host=?");
 			SQL_DELETE_OLD_HOSTS	= mSQLConnection.prepareStatement("DELETE FROM hosts WHERE lastseen < ?");
 
+			//Load all the hosts
+			getAllHosts();
+			
 		} catch (SQLException e) {
 			MinimaLogger.log(e);
 		}
@@ -74,6 +84,9 @@ public class MaximaDB extends SqlDB {
 
 	public synchronized boolean newHost(MaximaHost zHost) {
 		try {
+			
+			//Cache no longer valid
+			mCacheValid = false;
 			
 			//Get the Query ready
 			SQL_INSERT_MAXIMA_HOST.clearParameters();
@@ -123,8 +136,14 @@ public class MaximaDB extends SqlDB {
 		return null;
 	}
 	
-	public synchronized ArrayList<MaximaHost> loadAllHosts() {
+	public synchronized ArrayList<MaximaHost> getAllHosts() {
 		
+		//Is it cached
+		if(mCacheValid) {
+			return mCachedHosts;
+		}
+		
+		//Get the current list
 		ArrayList<MaximaHost> hosts = new ArrayList<>();
 		
 		try {
@@ -149,12 +168,18 @@ public class MaximaDB extends SqlDB {
 			MinimaLogger.log(e);
 		}
 		
+		//Now the cache is valid
+		mCacheValid 	= true;
+		mCachedHosts 	= hosts;
+		
 		return hosts;
 	}
 	
 	public synchronized boolean updateHost(MaximaHost zMXHost) {
 		
 		try {
+			
+			mCacheValid 	= false;
 			
 			//Set search params
 			SQL_UPDATE_MAXIMA_HOST.clearParameters();
