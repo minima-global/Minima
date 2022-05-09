@@ -94,8 +94,13 @@ public class MaximaManager extends MessageProcessor {
 		return mMaximaAddress;
 	}
 	
+	public MiniData getPublicKey() {
+		return mPublic;
+	}
+	
 	public MaximaMessage createMaximaMessage(String zFullTo, String zApplication, MiniData zData) {
 		MaximaMessage maxima 	= new MaximaMessage();
+		
 		maxima.mFrom 			= new MiniString(getMaximaIdentity());
 		maxima.mTo 				= new MiniString(zFullTo);
 		maxima.mApplication 	= new MiniString(zApplication);
@@ -211,7 +216,7 @@ public class MaximaManager extends MessageProcessor {
 				String mxaddress = Address.makeMinimaAddress(pubkey);
 				
 				//And Set..
-				nioc.setMaximaIdent(mxaddress);
+				nioc.setMaximaIdent(pubkey.to0xString());
 				
 				MinimaLogger.log("MAXIMA forward address from "+nioc.getFullAddress()+" "+mxaddress);
 			}

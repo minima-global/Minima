@@ -111,12 +111,7 @@ public class maxima extends Command {
 				data = getParam("data");
 			} 
 			
-			MiniData mdata = null;
-			if(data.startsWith("0x") || data.startsWith("Mx")) {
-				mdata = new MiniData(data);
-			}else {
-				mdata = new MiniData(new MiniString(data).getData());
-			}
+			MiniData mdata = new MiniData(data);
 			
 			//Get the complete details..
 			MaximaMessage maxmessage = max.createMaximaMessage(fullto, application, mdata);
