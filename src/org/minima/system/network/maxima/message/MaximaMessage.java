@@ -26,14 +26,14 @@ public class MaximaMessage implements Streamable {
 	public MiniNumber mTimeMilli = new MiniNumber(System.currentTimeMillis());
 	
 	/**
-	 * Who it is From
+	 * Who it is From - the Public Key
 	 */
-	public MiniString mFrom;
+	public MiniData mFrom;
 	
 	/**
 	 * Who it is to
 	 */
-	public MiniString mTo;
+	public MiniData mTo;
 	
 	/**
 	 * The Application / Port that this message is aimed at
@@ -50,8 +50,8 @@ public class MaximaMessage implements Streamable {
 	public JSONObject toJSON() {
 		JSONObject ret = new JSONObject();
 		
-		ret.put("from", mFrom.toString());
-		ret.put("to", mTo.toString());
+		ret.put("from", mFrom.to0xString());
+		ret.put("to", mTo.to0xString());
 		ret.put("time", new Date(mTimeMilli.getAsLong()).toString());
 		ret.put("timemilli", mTimeMilli);
 		ret.put("random", mRandom.to0xString());
@@ -92,8 +92,8 @@ public class MaximaMessage implements Streamable {
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
 		mRandom			= MiniData.ReadFromStream(zIn);
-		mFrom			= MiniString.ReadFromStream(zIn);
-		mTo				= MiniString.ReadFromStream(zIn);
+		mFrom			= MiniData.ReadFromStream(zIn);
+		mTo				= MiniData.ReadFromStream(zIn);
 		mTimeMilli		= MiniNumber.ReadFromStream(zIn);
 		mApplication	= MiniString.ReadFromStream(zIn);
 		mData 			= MiniData.ReadFromStream(zIn);

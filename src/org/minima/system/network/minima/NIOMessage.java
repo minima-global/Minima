@@ -146,6 +146,12 @@ public class NIOMessage implements Runnable {
 						
 					MinimaLogger.log("Greeting with Incompatible Version! "+greet.getVersion().toString());
 					
+					//Tell the P2P..
+					Message newconn = new Message(P2PFunctions.P2P_NOCONNECT);
+					newconn.addObject("client", nioclient);
+					newconn.addString("uid", nioclient.getUID());
+					Main.getInstance().getNetworkManager().getP2PManager().PostMessage(newconn);
+					
 					//Disconnect..
 					Main.getInstance().getNIOManager().disconnect(mClientUID);
 					

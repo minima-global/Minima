@@ -12,6 +12,7 @@ import org.minima.system.Main;
 import org.minima.system.commands.Command;
 import org.minima.system.network.maxima.MaximaManager;
 import org.minima.system.network.maxima.message.MaximaMessage;
+import org.minima.system.params.GeneralParams;
 import org.minima.utils.Crypto;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
@@ -58,6 +59,7 @@ public class maxima extends Command {
 			
 			//Show details
 			details.put("identity", max.getMaximaIdentity());
+			details.put("localhost", GeneralParams.MINIMA_HOST);
 			
 			//Get all the current hosts
 			ArrayList<MaximaHost> hosts = maxdb.getAllHosts();
@@ -96,6 +98,9 @@ public class maxima extends Command {
 			
 			//Get the Public Key
 			String publickey = fullto.substring(0,indexp);
+			if(publickey.startsWith("Mx")) {
+				publickey = Address.convertMinimaAddress(publickey).to0xString();
+			}
 			
 			//get the host and port..
 			String tohost 	= fullto.substring(indexp+1,index);
@@ -104,17 +109,18 @@ public class maxima extends Command {
 			//Which application
 			String application 	= getParam("application");
 			
-			String data = "";
+			MiniData mdata 	= null;
 			if(isParamJSONObject("data")) {
-				data = getJSONObjectParam("data").toString();
+			
+				MiniString datastr = new MiniString(getJSONObjectParam("data").toString());
+				mdata = new MiniData(datastr.getData());
 			}else {
-				data = getParam("data");
+				
+				mdata = getDataParam("data");
 			} 
 			
-			MiniData mdata = new MiniData(data);
-			
 			//Get the complete details..
-			MaximaMessage maxmessage = max.createMaximaMessage(fullto, application, mdata);
+			MaximaMessage maxmessage = max.createMaximaMessage(publickey, application, mdata);
 			
 			//Get the MinData version
 			MiniData maxdata = MiniData.getMiniDataVersion(maxmessage);

@@ -266,10 +266,10 @@ public class NIOManager extends MessageProcessor {
 				return;
 			}
 			
-			//Check not already connected..
-			if(checkConnected(nc.getFullAddress(), true)!=null) {
-				//Already connected..
-				MinimaLogger.log("Warning : Attempting to connect to already connected host "+nc.getFullAddress());
+			//How many connections - if too many stop.. 
+			if(getConnnectingClients() > 10) {
+				MinimaLogger.log("Too many 'connecting' attempts - not connecting to "+nc.getFullAddress());
+				mConnectingClients.remove(nc.getUID());
 				return;
 			}
 			

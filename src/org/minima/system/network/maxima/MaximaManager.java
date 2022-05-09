@@ -98,11 +98,11 @@ public class MaximaManager extends MessageProcessor {
 		return mPublic;
 	}
 	
-	public MaximaMessage createMaximaMessage(String zFullTo, String zApplication, MiniData zData) {
+	public MaximaMessage createMaximaMessage(String zTo, String zApplication, MiniData zData) {
 		MaximaMessage maxima 	= new MaximaMessage();
 		
-		maxima.mFrom 			= new MiniString(getMaximaIdentity());
-		maxima.mTo 				= new MiniString(zFullTo);
+		maxima.mFrom 			= getPublicKey();
+		maxima.mTo 				= new MiniData(zTo);
 		maxima.mApplication 	= new MiniString(zApplication);
 		maxima.mData 			= zData;
 		
@@ -263,13 +263,20 @@ public class MaximaManager extends MessageProcessor {
 			//received a Message!
 			MaximaPackage mpkg = (MaximaPackage) zMessage.getObject("maxpackage");
 			
-			
 			//Is it for us
 			MiniData privatekey = null;
 			ArrayList<MaximaHost> allhosts = maxdb.getAllHosts();
 			for(MaximaHost host : allhosts) {
 				if(host.getPublicKey().isEqual(mpkg.mTo)) {
-					privatekey = host.getPrivateKey(); 
+					privatekey = host.getPrivateKey();
+					break;
+				}
+			}
+			
+			//Is it straight to us..
+			if(privatekey == null) {
+				if(mpkg.mTo.equals(mPublic)) {
+					privatekey = mPrivate;
 				}
 			}
 			
@@ -317,13 +324,9 @@ public class MaximaManager extends MessageProcessor {
 			MaximaMessage maxmsg 	= MaximaMessage.ConvertMiniDataVersion(mm.mData);
 			
 			//Check the message is from the person who signed it!
-			String from 	= maxmsg.mFrom.toString();
-			int index 		= from.indexOf("@");
-			String pubkey 	= from.substring(0,index);
-			MiniData frompubk = new MiniData(pubkey);
-			if(!frompubk.isEqual(mm.mFrom)) {
+			if(!maxmsg.mFrom.isEqual(mm.mFrom)) {
 				MinimaLogger.log("MAXIMA Message From field signed by incorrect pubkey  from:"
-											+frompubk.to0xString()+" signed:"+mm.mFrom.to0xString());
+											+maxmsg.mFrom.to0xString()+" signed:"+mm.mFrom.to0xString());
 				return;
 			}
 			
