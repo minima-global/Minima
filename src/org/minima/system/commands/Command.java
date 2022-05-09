@@ -43,6 +43,7 @@ import org.minima.system.commands.network.disconnect;
 import org.minima.system.commands.network.maxima;
 import org.minima.system.commands.network.message;
 import org.minima.system.commands.network.network;
+import org.minima.system.commands.network.ping;
 import org.minima.system.commands.network.rpc;
 import org.minima.system.commands.network.sshtunnel;
 import org.minima.system.commands.network.webhooks;
@@ -85,6 +86,7 @@ public abstract class Command {
 			new send(), new balance(), new tokencreate(), new tokenvalidate(), new tokens(),new getaddress(), new newaddress(), new debugflag(),
 			new incentivecash(), new sshtunnel(), new webhooks(),
 
+			new ping(),
 			new sql(),new file(),
 			new vault(), new consolidate(),
 			new backup(), new restore(), new test(), 

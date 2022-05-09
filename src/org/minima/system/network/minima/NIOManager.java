@@ -1,9 +1,14 @@
 package org.minima.system.network.minima;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -592,5 +597,61 @@ public class NIOManager extends MessageProcessor {
 		MiniData data = new MiniData(bb);
 		
 		return data;
+	}
+	
+	/**
+	 * A special PING message to  chjeck a valid connection..
+	 */
+	public static Greeting sendPingMessage(String zHost, int zPort) {
+		
+		Greeting greet = null;
+		
+		try {
+			//Create the Network Message
+			MiniData msg = NIOManager.createNIOMessage(NIOMessage.MSG_SINGLE_PING, MiniData.ZERO_TXPOWID);
+			
+			//Open the socket..
+			Socket sock 			= new Socket(zHost, zPort);
+			sock.setSoTimeout(20000);
+			
+			//Create the streams..
+			OutputStream out 		= sock.getOutputStream();
+			DataOutputStream dos 	= new DataOutputStream(out);
+			
+			InputStream in			= sock.getInputStream();
+			DataInputStream dis 	= new DataInputStream(in);
+			
+			//Write the data
+			msg.writeDataStream(dos);
+			dos.flush();
+			
+			//Load the message
+			MiniData resp = MiniData.ReadFromStream(dis);
+			
+			//Close the streams..
+			dis.close();
+			in.close();
+			dos.close();
+			out.close();
+			
+			//Convert
+			ByteArrayInputStream bais 	= new ByteArrayInputStream(resp.getBytes());
+			DataInputStream bdis 		= new DataInputStream(bais);
+
+			//What Type..
+			MiniByte type = MiniByte.ReadFromStream(bdis);
+			
+			//Load the greeting
+			greet = Greeting.ReadFromStream(bdis);
+			
+			bdis.close();
+			bais.close();
+		
+		}catch(Exception exc){
+			greet = null;
+			MinimaLogger.log("Error sending Single Ping message : "+exc.toString());
+		}
+		
+		return greet;
 	}
 }

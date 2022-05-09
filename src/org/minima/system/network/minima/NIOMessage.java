@@ -52,6 +52,9 @@ public class NIOMessage implements Runnable {
 	public static final MiniByte MSG_MAXIMA_CTRL	= new MiniByte(9);
 	public static final MiniByte MSG_MAXIMA 		= new MiniByte(10);
 	
+	public static final MiniByte MSG_SINGLE_PING 	= new MiniByte(11);
+	public static final MiniByte MSG_SINGLE_PONG 	= new MiniByte(12);
+	
 	/**
 	 * Helper function that converts to String 
 	 */
@@ -164,18 +167,11 @@ public class NIOMessage implements Runnable {
 					nioclient.setMinimaPort(Integer.parseInt(greet.getExtraDataValue("port")));
 				}
 				
-//				//Is there Maxima Ident..
-//				if(greet.getExtraData().containsKey("maxima")) {
-//					MinimaLogger.log("Maxima Client Connected "+nioclient);
-//					nioclient.setMaximaIdent(greet.getExtraDataValue("maxima"));
-//				}
-				
 				//Get the welcome message..
 				nioclient.setWelcomeMessage("Minima v"+greet.getVersion());
 				nioclient.setValidGreeting(true);
 				
 				//Tell the P2P..
-//				MinimaLogger.log("CONNECTED P2P Client "+nioclient);
 				Message newconn = new Message(P2PFunctions.P2P_CONNECTED);
 				newconn.addString("uid", nioclient.getUID());
 				newconn.addBoolean("incoming", nioclient.isIncoming());
@@ -533,6 +529,27 @@ public class NIOMessage implements Runnable {
 				//Notify that Client that we received the message.. this makes external client disconnect ( internal just a ping )
 				NIOManager.sendNetworkMessage(mClientUID, MSG_PING, MiniData.ONE_TXPOWID);
 				
+			}else if(type.isEqual(MSG_SINGLE_PING)) {
+				
+				//Get the Data Object..
+				MiniData datapacket = MiniData.ReadFromStream(dis);
+				
+				//Now send some useful info back 
+				Greeting pinggreet = new Greeting();
+				pinggreet.getExtraData().put("welcome", "hi there!");
+				
+				TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
+				
+				pinggreet.getExtraData().put("topblock", tip.getBlockNumber().toString());
+				pinggreet.getExtraData().put("tophash", tip.getTxPoW().getTxPoWID());
+				
+				TxPoWTreeNode tip50 = MinimaDB.getDB().getTxPoWTree().getTip().getParent(50);
+				pinggreet.getExtraData().put("50block", tip50.getBlockNumber().toString());
+				pinggreet.getExtraData().put("50hash", tip50.getTxPoW().getTxPoWID());
+				
+				//Send this back to them.. 
+				NIOManager.sendNetworkMessage(mClientUID, MSG_SINGLE_PONG, pinggreet);
+			
 			}else {
 				
 				//UNKNOWN MESSAGE..
