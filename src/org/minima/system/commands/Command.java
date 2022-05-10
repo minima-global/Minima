@@ -84,8 +84,11 @@ public abstract class Command {
 		{   new quit(), new status(), new coins(), new txpow(), new connect(), new disconnect(), new network(),
 			new message(), new trace(), new help(), new printtree(), new automine(), new printmmr(), new rpc(),
 			new send(), new balance(), new tokencreate(), new tokenvalidate(), new tokens(),new getaddress(), new newaddress(), new debugflag(),
-			new incentivecash(), new sshtunnel(), new webhooks(),
+			new incentivecash(), new webhooks(),
 
+			//Removed code..
+//			new sshtunnel(), 
+			
 			new ping(),
 			new sql(),new file(),
 			new vault(), new consolidate(),
