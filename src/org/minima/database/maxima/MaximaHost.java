@@ -5,6 +5,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
 
+import org.minima.objects.Address;
 import org.minima.objects.base.MiniData;
 import org.minima.utils.encrypt.GenerateKey;
 import org.minima.utils.json.JSONObject;
@@ -42,12 +43,6 @@ public class MaximaHost {
 		mPrivate 	= zPrivate;
 	}
 	
-	public MaximaHost(JSONObject zDetails) {
-		mHost 		= (String) zDetails.get("host");
-		mPrivate	= new MiniData( (String) zDetails.get("private") );
-		mPublic		= new MiniData( (String) zDetails.get("public") );
-	}
-	
 	public void createKeys() throws Exception {
 		//Create a new new maxima ident..
 		KeyPair generateKeyPair = GenerateKey.generateKeyPair();
@@ -71,10 +66,13 @@ public class MaximaHost {
 	public JSONObject toJSON() {
 		JSONObject ret = new JSONObject();
 		
+		String maxaddress = Address.makeMinimaAddress(getPublicKey());
+		
 		ret.put("host", mHost);
-		ret.put("private", mPrivate.to0xString());
+//		ret.put("private", mPrivate.to0xString());
 		ret.put("public", mPublic.to0xString());
 		ret.put("lastseen", new Date(mLastSeen));
+		ret.put("address", maxaddress+"@"+mHost);
 		
 		return ret;
 	}

@@ -111,6 +111,20 @@ public class MaximaDB extends SqlDB {
 	
 	public synchronized MaximaHost loadHost(String zHost) {
 		
+		//Is it cached
+		if(mCacheValid) {
+			
+			//Cycle through our current list
+			ArrayList<MaximaHost> allhosts = getAllHosts();
+			for(MaximaHost host : allhosts) {
+				if(host.getHost().equals(zHost)) {
+					return host;
+				}
+			}
+			
+			return null;
+		}
+		
 		try {
 			
 			//Set search params
@@ -131,6 +145,19 @@ public class MaximaDB extends SqlDB {
 			
 		} catch (SQLException e) {
 			MinimaLogger.log(e);
+		}
+		
+		return null;
+	}
+	
+	public synchronized MaximaHost loadHostFromPublicKey(String zPublicKey) {
+		
+		//Cycle through our current list
+		ArrayList<MaximaHost> allhosts = getAllHosts();
+		for(MaximaHost host : allhosts) {
+			if(host.getPublicKey().to0xString().equals(zPublicKey)) {
+				return host;
+			}
 		}
 		
 		return null;
@@ -169,8 +196,8 @@ public class MaximaDB extends SqlDB {
 		}
 		
 		//Now the cache is valid
-		mCacheValid 	= true;
 		mCachedHosts 	= hosts;
+		mCacheValid 	= true;
 		
 		return hosts;
 	}

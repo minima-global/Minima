@@ -10,6 +10,7 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
+import org.minima.system.commands.CommandException;
 import org.minima.system.network.maxima.MaximaManager;
 import org.minima.system.network.maxima.message.MaximaMessage;
 import org.minima.system.params.GeneralParams;
@@ -57,33 +58,38 @@ public class maxima extends Command {
 		
 		if(func.equals("info")) {
 			
+			String fullhost = GeneralParams.MINIMA_HOST+":"+GeneralParams.MINIMA_PORT;
+			
 			//Show details
 			details.put("identity", max.getMaximaIdentity());
-			details.put("localhost", GeneralParams.MINIMA_HOST);
+			details.put("localhost", fullhost);
+			details.put("localidentity", max.getMaximaIdentity()+"@"+fullhost);
+			details.put("logs", max.mMaximaLogs);
 			
 			//Get all the current hosts
 			ArrayList<MaximaHost> hosts = maxdb.getAllHosts();
 			JSONArray allhosts = new JSONArray();
 			for(MaximaHost host : hosts) {
-				String maxaddress = Address.makeMinimaAddress(host.getPublicKey());
-				allhosts.add(maxaddress+"@"+host.getHost());
+				allhosts.add(host.toJSON());
 			}
 			details.put("hosts", allhosts);
 			
 			//Get all the current contacts
+			//..
 			
-			details.put("logs", max.mMaximaLogs);
 			ret.put("response", details);
 		
 		}else if(func.equals("new")) {
 			
-			//Create a new Maxima Identity..
-			max.createMaximaKeys();
+			throw new CommandException("Supported Soon..");
 			
-			//Show details
-			String ident = max.getMaximaIdentity();  
-			details.put("identity", ident);
-			ret.put("response", details);
+//			//Create a new Maxima Identity..
+//			max.createMaximaKeys();
+//			
+//			//Show details
+//			String ident = max.getMaximaIdentity();  
+//			details.put("identity", ident);
+//			ret.put("response", details);
 
 		}else if(func.equals("send")) {
 			

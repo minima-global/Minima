@@ -159,7 +159,7 @@ public class MaximaManager extends MessageProcessor {
 			//is it an outgoing.. ONLY outgoing can be used for MAXIMA
 			if(!nioc.isIncoming()) {
 				
-				//OK.. Do we hav this node in our list..
+				//OK.. Do we have this node in our list..
 				MaximaHost mxhost = maxdb.loadHost(nioc.getFullAddress());
 				
 				//Do we have something..
@@ -204,21 +204,16 @@ public class MaximaManager extends MessageProcessor {
 			//Received a control message from a client
 			MaximaCTRLMessage msg = (MaximaCTRLMessage) zMessage.getObject("maximactrl");
 			
+			//Get the NIOClient
+			NIOClient nioc = (NIOClient) zMessage.getObject("nioclient");
+			
 			if(msg.getType().isEqual(MaximaCTRLMessage.MAXIMACTRL_TYPE_ID)) {
-				
-				//Get the NIOClient
-				NIOClient nioc = (NIOClient) zMessage.getObject("nioclient");
 				
 				//Set the ID for this Connection
 				MiniData pubkey = msg.getData();
 
-				//Whats the maxima version
-				String mxaddress = Address.makeMinimaAddress(pubkey);
-				
 				//And Set..
 				nioc.setMaximaIdent(pubkey.to0xString());
-				
-				MinimaLogger.log("MAXIMA forward address from "+nioc.getFullAddress()+" "+mxaddress);
 			}
 			
 		}else if(zMessage.getMessageType().equals(MAXIMA_SENDMESSAGE)) {
@@ -263,28 +258,29 @@ public class MaximaManager extends MessageProcessor {
 			//received a Message!
 			MaximaPackage mpkg = (MaximaPackage) zMessage.getObject("maxpackage");
 			
-			//Is it for us
+			//Private key tpo decode the message
 			MiniData privatekey = null;
-			ArrayList<MaximaHost> allhosts = maxdb.getAllHosts();
-			for(MaximaHost host : allhosts) {
-				if(host.getPublicKey().isEqual(mpkg.mTo)) {
-					privatekey = host.getPrivateKey();
-					break;
-				}
-			}
+			
+			//The pubkey it is encrypted with
+			String tomaxima = mpkg.mTo.to0xString();
 			
 			//Is it straight to us..
+			if(mpkg.mTo.equals(mPublic)) {
+				//It's directly sent to us..
+				privatekey = mPrivate;
+			}
+			
+			//Is it for us - check the Maxhosts..
 			if(privatekey == null) {
-				if(mpkg.mTo.equals(mPublic)) {
-					privatekey = mPrivate;
+				//Get the maxima Host
+				MaximaHost host = maxdb.loadHostFromPublicKey(tomaxima);
+				if(host != null) {
+					privatekey = host.getPrivateKey();
 				}
 			}
 			
 			//If we don't find it..
 			if(privatekey == null) {
-				
-				//The pubkey Mx version
-				String tomaxima = Address.makeMinimaAddress(mpkg.mTo);
 				
 				//Forward it to them
 				NIOClient client =  Main.getInstance().getNIOManager().getMaximaUID(tomaxima);
