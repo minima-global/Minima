@@ -9,6 +9,8 @@ public class MaximaContact {
 	
 	public String 	mName;
 	
+	public MiniData mExtraData;
+	
 	public MiniData mPublicKey;
 	
 	/**

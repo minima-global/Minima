@@ -121,11 +121,11 @@ public class NIOManager extends MessageProcessor {
 		return mNIOServer;
 	}
 	
-	public int getConnectedClients() {
+	public int getNumberOfConnectedClients() {
 		return mNIOServer.getNetClientSize();
 	}
 	
-	public int getConnnectingClients() {
+	public int getNumberOfConnnectingClients() {
 		return mConnectingClients.size();
 	}
 	
@@ -267,7 +267,7 @@ public class NIOManager extends MessageProcessor {
 			}
 			
 			//How many connections - if too many stop.. 
-			if(getConnnectingClients() > 10) {
+			if(getNumberOfConnnectingClients() > 10) {
 				MinimaLogger.log("Too many 'connecting' attempts - not connecting to "+nc.getFullAddress());
 				mConnectingClients.remove(nc.getUID());
 				
@@ -495,10 +495,10 @@ public class NIOManager extends MessageProcessor {
 		}else if(zMessage.getMessageType().equals(NIO_HEALTHCHECK)) {
 			
 			//Check the number of Connecting Clients.. if too great.. restart the networking..
-			if(getConnnectingClients() > 20 ) {
+			if(getNumberOfConnnectingClients() > 20 ) {
 				
 				//Log..
-				MinimaLogger.log("Too Many connecting clients "+getConnectedClients()+".. restarting networking");
+				MinimaLogger.log("Too Many connecting clients "+getNumberOfConnectedClients()+".. restarting networking");
 				
 				//Something not right..
 				Message netstart = new Message(Main.MAIN_NETRESTART);

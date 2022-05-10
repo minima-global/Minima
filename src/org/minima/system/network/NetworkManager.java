@@ -144,8 +144,8 @@ public class NetworkManager {
 //			stats.put("port", GeneralParams.MINIMA_PORT);
 //		}
 		
-		stats.put("connecting", mNIOManager.getConnnectingClients());
-		stats.put("connected", mNIOManager.getConnectedClients());
+		stats.put("connecting", mNIOManager.getNumberOfConnnectingClients());
+		stats.put("connected", mNIOManager.getNumberOfConnectedClients());
 		
 		//RPC Stats
 		stats.put("rpc", MinimaDB.getDB().getUserDB().isRPCEnabled());

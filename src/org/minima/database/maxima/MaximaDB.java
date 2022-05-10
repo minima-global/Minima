@@ -55,10 +55,13 @@ public class MaximaDB extends SqlDB {
 			//Create contacts table
 			String contacts = "CREATE TABLE IF NOT EXISTS `contacts` ("
 							+ "  `id` IDENTITY PRIMARY KEY,"
-							+ "  `name` varchar(255) NOT NULL UNIQUE,"
+							+ "  `name` varchar(255) NOT NULL,"
+							+ "  `extradata` blob NOT NULL,"
 							+ "  `publickey` blob NOT NULL,"
 							+ "  `currenthost` varchar(255) NOT NULL,"
-							+ "  `currentpublickey` blob NOT NULL"
+							+ "  `currentpublickey` blob NOT NULL,"
+							+ "  `mycurrenthost` varchar(255) NOT NULL,"
+							+ "  `mycurrentpublickey` blob NOT NULL"
 							+ ")";
 			
 			//Run it..
