@@ -224,7 +224,7 @@ public class NIOManager extends MessageProcessor {
 			PostTimerMessage(new TimerMessage(LASTREAD_CHECKER, NIO_CHECKLASTMSG));
 			
 			//DO a health check on the state of the networking
-			PostTimerMessage(new TimerMessage(NIO_HEALTHCHECK_TIMER, NIO_HEALTHCHECK));
+			//PostTimerMessage(new TimerMessage(NIO_HEALTHCHECK_TIMER, NIO_HEALTHCHECK));
 			
 		}else if(zMessage.getMessageType().equals(NIO_SHUTDOWN)) {
 			
@@ -270,6 +270,13 @@ public class NIOManager extends MessageProcessor {
 			if(getConnnectingClients() > 10) {
 				MinimaLogger.log("Too many 'connecting' attempts - not connecting to "+nc.getFullAddress());
 				mConnectingClients.remove(nc.getUID());
+				
+				//Tell Maxima just in case..
+				Message maxconn = new Message(MaximaManager.MAXIMA_DISCONNECTED);
+				maxconn.addObject("nioclient", nc);
+				maxconn.addBoolean("reconnect", false);
+				Main.getInstance().getMaxima().PostMessage(maxconn);
+				
 				return;
 			}
 			
@@ -319,6 +326,12 @@ public class NIOManager extends MessageProcessor {
 				TimerMessage tmsg = new TimerMessage(RECONNECT_TIMER, NIO_CONNECTATTEMPT);
 				tmsg.addObject("client", nc);
 				NIOManager.this.PostTimerMessage(tmsg);
+			}else {
+				//Tell MAXIMA
+				Message maxconn = new Message(MaximaManager.MAXIMA_DISCONNECTED);
+				maxconn.addObject("nioclient", nc);
+				maxconn.addBoolean("reconnect", false);
+				Main.getInstance().getMaxima().PostMessage(maxconn);
 			}
 		
 		}else if(zMessage.getMessageType().equals(NIO_DISCONNECTALL)) {

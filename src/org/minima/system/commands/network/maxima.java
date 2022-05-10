@@ -141,12 +141,34 @@ public class maxima extends Command {
 			//Send to Maxima..
 			Message sender = new Message(MaximaManager.MAXIMA_SENDMESSAGE);
 			sender.addObject("maxima", maxmessage);
+			
+			sender.addObject("mypublickey", max.getPublicKey());
+			sender.addObject("myprivatekey", max.getPrivateKey());
+			
 			sender.addString("publickey", publickey);
 			sender.addString("tohost", tohost);
 			sender.addInteger("toport", toport);
 			
+			//Now construct a complete Maxima Data packet
+			try {
+				//Create the packet
+				MiniData maxpacket = MaximaManager.constructMaximaData(sender);
+			
+				//And Send it..
+				boolean valid = MaximaManager.sendMaxPacket(tohost, toport, maxpacket);
+				json.put("delivered", valid);
+				if(!valid) {
+					json.put("error", "Not delivered");
+				}
+				
+			}catch(Exception exc){
+				//Something wrong
+				json.put("delivered", false);
+				json.put("error", exc.toString());
+			}
+			
 			//Post It!
-			max.PostMessage(sender);
+//			max.PostMessage(sender);
 			
 			ret.put("response", json);
 		}

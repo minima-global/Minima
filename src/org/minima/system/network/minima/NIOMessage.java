@@ -420,16 +420,6 @@ public class NIOMessage implements Runnable {
 					return;
 				}
 				
-//				//Is this one of our Maxima Clients / Hosts.. if so ignore all P2P messages..
-//				Maxima max = Main.getInstance().getMaxima();
-//				if(nioclient.isMaximaClient()) {
-//					//Don't forward these messages..
-//					return;
-//				}else if(max.isHostSet() && nioclient.getFullAddress().equals(max.getMaximaHost())) {
-//					//Don't forward..
-//					return;
-//				}
-				
 				//Convert to JSON
 				JSONObject json = (JSONObject) new JSONParser().parse(msg.toString());
 				
@@ -526,14 +516,19 @@ public class NIOMessage implements Runnable {
 				//Get the data..
 				MaximaPackage maxpkg = MaximaPackage.ReadFromStream(dis);
 				
+				//Get the client
+				NIOClient nioclient = Main.getInstance().getNIOManager().getNIOServer().getClient(mClientUID);
+				
 				//And send it on to Maxima..
 				Message maxmsg = new Message(MaximaManager.MAXIMA_RECMESSAGE);
+				maxmsg.addObject("nioclient", nioclient);
 				maxmsg.addObject("maxpackage", maxpkg);
 				
+				//Send to the Maxima Manager
 				Main.getInstance().getMaxima().PostMessage(maxmsg);
 				
 				//Notify that Client that we received the message.. this makes external client disconnect ( internal just a ping )
-				NIOManager.sendNetworkMessage(mClientUID, MSG_PING, MiniData.ONE_TXPOWID);
+//				NIOManager.sendNetworkMessage(mClientUID, MSG_PING, MiniData.ONE_TXPOWID);
 				
 			}else if(type.isEqual(MSG_SINGLE_PING)) {
 				
