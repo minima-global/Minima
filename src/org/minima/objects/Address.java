@@ -120,9 +120,9 @@ public class Address implements Streamable{
 		
 		//First hash it to for checksum digits..
 		byte[] hash 		= Crypto.getInstance().hashData(data);
-		byte[] last4bytes	= new byte[4];
+		byte[] checksum		= new byte[4];
 		for(int i=0;i<4;i++) {
-			last4bytes[i] = hash[hash.length-4+i]; 
+			checksum[i] = hash[i]; 
 		}
 		
 		//Now write this info to stream
@@ -139,8 +139,8 @@ public class Address implements Streamable{
 		    //the data itself..
 			dos.write(data);
 			
-			//the last 4 bytes of the hash
-			dos.write(last4bytes);
+			//4 bytes of the hash
+			dos.write(checksum);
 			
 			//Close the Streams
 			dos.close();
@@ -154,9 +154,7 @@ public class Address implements Streamable{
 		byte[] origdata = bos.toByteArray();
 		
 		//Now convert the whole thing to Base 32
-		String b32 = BaseConverter.encode32(origdata);
-		
-		return b32;
+		return BaseConverter.encode32(origdata);
 	}
 	
 	public static MiniData convertMinimaAddress(String zMinimAddress) throws IllegalArgumentException {
@@ -165,8 +163,8 @@ public class Address implements Streamable{
 		byte[] decode 	= BaseConverter.decode32(zMinimAddress);
 
 		//Now read in the data..
-		ByteArrayInputStream bais = new ByteArrayInputStream(decode);
-		DataInputStream dis = new DataInputStream(bais);
+		ByteArrayInputStream bais 	= new ByteArrayInputStream(decode);
+		DataInputStream dis 		= new DataInputStream(bais);
 		
 		byte[] data;
 		byte[] checksum = new byte[4];
@@ -201,7 +199,7 @@ public class Address implements Streamable{
 		
 		//Check the first 4 bytes..
 		for(int i=0;i<4;i++) {
-			if(hash[hash.length-4+i] != checksum[i]) {
+			if(hash[i] != checksum[i]) {
 				throw new IllegalArgumentException("Invalid MxAddress - checksum wrong for "+zMinimAddress);
 			}
 		}
@@ -212,7 +210,7 @@ public class Address implements Streamable{
 	public static void main(String[] zArgs) throws Exception {
 		
 		MiniData tt = MiniData.getRandomData(64);
-//		MiniData tt = new MiniData("0x1");
+//		MiniData tt = new MiniData("0x001");
 		
 		Address addr = new Address(tt);
 		System.out.println("Address   : "+addr.toString());
