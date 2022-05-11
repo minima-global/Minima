@@ -124,10 +124,7 @@ public class MaximaManager extends MessageProcessor {
 	}
 	
 	public String getLocalHost() {
-		//Your local IP address
-		String fullhost = GeneralParams.MINIMA_HOST+":"+GeneralParams.MINIMA_PORT;
-		
-		return getMaximaIdentity()+"@"+fullhost;
+		return getMaximaIdentity()+"@"+GeneralParams.MINIMA_HOST+":"+GeneralParams.MINIMA_PORT;
 	}
 	
 	public String getRandomHostAddress() {
