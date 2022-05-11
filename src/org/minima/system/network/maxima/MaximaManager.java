@@ -8,6 +8,7 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.security.KeyPair;
 import java.util.ArrayList;
+import java.util.Random;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.maxima.MaximaDB;
@@ -24,6 +25,7 @@ import org.minima.system.network.minima.NIOClient;
 import org.minima.system.network.minima.NIOClientInfo;
 import org.minima.system.network.minima.NIOManager;
 import org.minima.system.network.minima.NIOMessage;
+import org.minima.system.params.GeneralParams;
 import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.encrypt.CryptoPackage;
@@ -121,6 +123,23 @@ public class MaximaManager extends MessageProcessor {
 		return mMaxContacts;
 	}
 	
+	public String getLocalHost() {
+		//Your local IP address
+		String fullhost = GeneralParams.MINIMA_HOST+":"+GeneralParams.MINIMA_PORT;
+		
+		return getMaximaIdentity()+"@"+fullhost;
+	}
+	
+	public String getRandomHostAddress() {
+		//Get all the current hosts
+		ArrayList<MaximaHost> hosts = MinimaDB.getDB().getMaximaDB().getAllHosts();
+		if(hosts.size() ==0) {
+			return getLocalHost();
+		}
+		
+		return hosts.get(new Random().nextInt(hosts.size())).getAddress();
+	}
+	
 	public MaximaMessage createMaximaMessage(String zTo, String zApplication, MiniData zData) {
 		MaximaMessage maxima 	= new MaximaMessage();
 		
@@ -159,8 +178,6 @@ public class MaximaManager extends MessageProcessor {
 			
 			//We are inited
 			mInited = true;
-			
-			MinimaLogger.log("LENGTH "+mPublic.getLength());
 			
 			//Save the DB
 			MinimaDB.getDB().saveUserDB();

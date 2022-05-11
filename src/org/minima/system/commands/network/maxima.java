@@ -166,7 +166,7 @@ public class maxima extends Command {
 			String contact = getParam("contact");
 
 			//What data..
-			JSONObject contactinfo 	= max.getContactsManager().getContactInfo();
+			JSONObject contactinfo 	= max.getContactsManager().getContactInfo(true);
 			MiniString datastr 		= new MiniString(contactinfo.toString());
 			MiniData mdata 			= new MiniData(datastr.getData());
 			
@@ -209,7 +209,7 @@ public class maxima extends Command {
 		
 		return ret;
 	}
-
+	
 	public static Message createSendMessage(String zFullTo, String zApplication, MiniData zData) {
 		
 		MaximaManager max = Main.getInstance().getMaxima();
