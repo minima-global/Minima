@@ -13,6 +13,7 @@ import org.minima.objects.TxBlock;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
+import org.minima.system.params.GeneralParams;
 import org.minima.system.params.GlobalParams;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Stack;
@@ -355,7 +356,10 @@ public class TxPoWProcessor extends MessageProcessor {
 			
 			//If our chain is up to date (within 4 hrs) we don't accept TxBlock at all.. only full blocks
 			if(txptree.getTip() != null && ibd.getTxBlocks().size()>0) {
-				MiniNumber notxblocktimediff = new MiniNumber(1000 * 60 * 240);
+				MiniNumber notxblocktimediff = new MiniNumber(1000 * 60 * 180);
+				if(GeneralParams.TEST_PARAMS) {
+					notxblocktimediff = new MiniNumber(1000 * 60 * 5);
+				}
 				if(txptree.getTip().getTxPoW().getTimeMilli().sub(timenow).abs().isLess(notxblocktimediff)) {
 					MinimaLogger.log("Your chain tip is up to date - no TxBlocks accepted - only FULL TxPoW");
 					return;
