@@ -25,6 +25,8 @@ public class MaximaHost {
 	
 	long mLastSeen = System.currentTimeMillis();
 	
+	int mConnected;
+	
 	public MaximaHost() {}
 	
 	public MaximaHost(String zHost) {
@@ -35,6 +37,8 @@ public class MaximaHost {
 		mHost 		= zSQLResult.getString("host");
 		mPublic		= new MiniData(zSQLResult.getBytes("publickey"));
 		mPrivate 	= new MiniData(zSQLResult.getBytes("privatekey"));
+		mLastSeen	= zSQLResult.getLong("lastseen");
+		mConnected	= zSQLResult.getInt("connected");
 	}
 	
 	public MaximaHost(String zHost, MiniData zPublic, MiniData zPrivate) {
@@ -70,7 +74,8 @@ public class MaximaHost {
 //		ret.put("private", mPrivate.to0xString());
 		ret.put("public", mPublic.to0xString());
 		ret.put("lastseen", new Date(mLastSeen));
-		ret.put("address", getAddress());
+		ret.put("connected", isConnected());
+		ret.put("address", getMaximaAddress());
 		
 		return ret;
 	}
@@ -90,8 +95,20 @@ public class MaximaHost {
 	public long getLastSeen() {
 		return mLastSeen;
 	}
+
+	public void setConnected(int zConnected) {
+		mConnected = zConnected;
+	}
 	
-	public String getAddress() {
+	public int getConnected() {
+		return mConnected;
+	}
+	
+	public boolean isConnected() {
+		return mConnected != 0;
+	}
+	
+	public String getMaximaAddress() {
 		return Address.makeMinimaAddress(getPublicKey())+"@"+mHost;
 	}
 }

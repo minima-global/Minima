@@ -46,6 +46,7 @@ public class MaximaDB extends SqlDB {
 							+ "  `host` varchar(255) NOT NULL UNIQUE,"
 							+ "  `publickey` blob NOT NULL,"
 							+ "  `privatekey` blob NOT NULL,"
+							+ "  `connected` int NOT NULL,"
 							+ "  `lastseen` bigint NOT NULL"
 							+ ")";
 			
@@ -73,8 +74,8 @@ public class MaximaDB extends SqlDB {
 			//Create some prepared statements..
 			SQL_SELECT_MAXIMA_HOST	= mSQLConnection.prepareStatement("SELECT * FROM hosts WHERE host=?");
 			SQL_SELECT_ALL_HOSTS	= mSQLConnection.prepareStatement("SELECT * FROM hosts");
-			SQL_INSERT_MAXIMA_HOST	= mSQLConnection.prepareStatement("INSERT IGNORE INTO hosts ( host, publickey, privatekey, lastseen ) VALUES ( ?, ? ,? ,? )");
-			SQL_UPDATE_MAXIMA_HOST	= mSQLConnection.prepareStatement("UPDATE hosts SET publickey=?, privatekey=?, lastseen=? WHERE host=?");
+			SQL_INSERT_MAXIMA_HOST	= mSQLConnection.prepareStatement("INSERT IGNORE INTO hosts ( host, publickey, privatekey, connected, lastseen ) VALUES ( ?, ? , ? ,? ,? )");
+			SQL_UPDATE_MAXIMA_HOST	= mSQLConnection.prepareStatement("UPDATE hosts SET publickey=?, privatekey=?, connected=?, lastseen=? WHERE host=?");
 			SQL_DELETE_OLD_HOSTS	= mSQLConnection.prepareStatement("DELETE FROM hosts WHERE lastseen < ?");
 
 			//Load all the hosts
@@ -98,7 +99,8 @@ public class MaximaDB extends SqlDB {
 			SQL_INSERT_MAXIMA_HOST.setString(1, zHost.getHost());
 			SQL_INSERT_MAXIMA_HOST.setBytes(2, zHost.getPublicKey().getBytes());
 			SQL_INSERT_MAXIMA_HOST.setBytes(3, zHost.getPrivateKey().getBytes());
-			SQL_INSERT_MAXIMA_HOST.setLong(4, zHost.getLastSeen());
+			SQL_INSERT_MAXIMA_HOST.setInt(4, 1);
+			SQL_INSERT_MAXIMA_HOST.setLong(5, zHost.getLastSeen());
 			
 			//Do it.
 			SQL_INSERT_MAXIMA_HOST.execute();
@@ -216,9 +218,9 @@ public class MaximaDB extends SqlDB {
 			
 			SQL_UPDATE_MAXIMA_HOST.setBytes(1, zMXHost.getPublicKey().getBytes());
 			SQL_UPDATE_MAXIMA_HOST.setBytes(2, zMXHost.getPrivateKey().getBytes());
-			SQL_UPDATE_MAXIMA_HOST.setLong(3, zMXHost.getLastSeen());
-			
-			SQL_UPDATE_MAXIMA_HOST.setString(4, zMXHost.getHost());
+			SQL_UPDATE_MAXIMA_HOST.setInt(3, zMXHost.getConnected());
+			SQL_UPDATE_MAXIMA_HOST.setLong(4, zMXHost.getLastSeen());
+			SQL_UPDATE_MAXIMA_HOST.setString(5, zMXHost.getHost());
 			
 			//Run the query
 			SQL_UPDATE_MAXIMA_HOST.execute();

@@ -74,7 +74,7 @@ public class maxima extends Command {
 			//Pick one host at random as a potential contact point
 			if(hosts.size()>0) {
 				MaximaHost randomhost = hosts.get(new Random().nextInt(hosts.size()));
-				details.put("contact", randomhost.getAddress());
+				details.put("contact", randomhost.getMaximaAddress());
 			}else {
 				details.put("contact", "");
 			}

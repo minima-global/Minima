@@ -133,11 +133,21 @@ public class MaximaManager extends MessageProcessor {
 	public String getRandomHostAddress() {
 		//Get all the current hosts
 		ArrayList<MaximaHost> hosts = MinimaDB.getDB().getMaximaDB().getAllHosts();
-		if(hosts.size() ==0) {
+		
+		//Only the connected ones..
+		ArrayList<MaximaHost> connctedhosts = new ArrayList<>();
+		for(MaximaHost host : hosts) {
+			if(host.isConnected()) {
+				connctedhosts.add(host);
+			}
+		}
+		
+		//Are there any..
+		if(connctedhosts.size() == 0) {
 			return getLocalHost();
 		}
 		
-		return hosts.get(new Random().nextInt(hosts.size())).getAddress();
+		return connctedhosts.get(new Random().nextInt(connctedhosts.size())).getMaximaAddress();
 	}
 	
 	public MaximaMessage createMaximaMessage(String zTo, String zApplication, MiniData zData) {
@@ -231,6 +241,7 @@ public class MaximaManager extends MessageProcessor {
 					
 					//Update our details..
 					mxhost.updateLastSeen();
+					mxhost.setConnected(1);
 					maxdb.updateHost(mxhost);
 				}
 				
@@ -259,9 +270,20 @@ public class MaximaManager extends MessageProcessor {
 					//Ok - lets find another host..
 					String host = nioc.getFullAddress();
 					
-					//Which contacts used that host
+					//Which contacts used that host - reassign them
+					//..
 					
+					//Delete from Hosts DB
+					//..
 					
+				}else {
+					
+					//OK.. Do we have this node in our list..
+					MaximaHost mxhost = maxdb.loadHost(nioc.getFullAddress());
+					if(mxhost != null) {
+						mxhost.setConnected(0);
+						maxdb.updateHost(mxhost);
+					}
 				}
 			}
 		
@@ -399,7 +421,7 @@ public class MaximaManager extends MessageProcessor {
 			if(application.equals("**contact_ctrl**")) {
 				
 				//Process this internally..
-				Message contactmessage = new Message(MaximaContactManager.MAXCONTACTS_MESSAGE);
+				Message contactmessage = new Message(MaximaContactManager.MAXCONTACTS_RECMESSAGE);
 				contactmessage.addObject("maxmessage", maxjson);
 				
 				getContactsManager().PostMessage(contactmessage);

@@ -11,7 +11,8 @@ import org.minima.utils.messages.MessageProcessor;
 
 public class MaximaContactManager extends MessageProcessor {
 
-	public static final String MAXCONTACTS_MESSAGE = "MAXCONTACTS_MESSAGE";
+	public static final String MAXCONTACTS_RECMESSAGE 	= "MAXCONTACTS_RECMESSAGE";
+	public static final String MAXCONTACTS_SENDMESSAGE 	= "MAXCONTACTS_SENDMESSAGE";
 	
 	MaximaManager mManager;
 	
@@ -34,7 +35,7 @@ public class MaximaContactManager extends MessageProcessor {
 	@Override
 	protected void processMessage(Message zMessage) throws Exception {
 		
-		if(zMessage.getMessageType().equals(MAXCONTACTS_MESSAGE)) {
+		if(zMessage.getMessageType().equals(MAXCONTACTS_RECMESSAGE)) {
 			
 			//get the max json
 			JSONObject maxjson = (JSONObject) zMessage.getObject("maxmessage");
