@@ -142,7 +142,7 @@ public class Address implements Streamable{
 			//the last 4 bytes of the hash
 			dos.write(last4bytes);
 			
-			//Close the reams
+			//Close the Streams
 			dos.close();
 			bos.close();
 		    
@@ -188,7 +188,7 @@ public class Address implements Streamable{
 			//And the checksum
 			dis.readFully(checksum); 
 			
-			//Close the reams
+			//Close the Streams
 			dis.close();
 			bais.close();
 		    
