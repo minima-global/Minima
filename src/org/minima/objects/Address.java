@@ -109,73 +109,6 @@ public class Address implements Streamable{
 	
 	/**
 	 * Convert an address into a Minima Checksum Base32 address
-	 */
-//	public static String makeMinimaAddress(MiniData zAddress){
-//		//The Original data
-//		byte[] data = zAddress.getBytes();
-//		int addrlen = data.length;
-//		
-//		//First hash it to add some checksum digits..
-//		byte[] hash = Crypto.getInstance().hashData(data);
-//		
-//		//Now create one big byte array - address + length + first 4 bytes of hash
-//		byte[] tot16 = new byte[addrlen + 5];
-//		
-//		//Copy the old..
-//		for(int i=0;i<data.length;i++) {
-//			tot16[i] = data[i];
-//		}
-//		
-//		//Add the length
-//		tot16[data.length] = (byte)addrlen;
-//		
-//		//Add the checksum..
-//		for(int i=0;i<4;i++) {
-//			tot16[data.length+1+i] = hash[i];
-//		}
-//		
-//		//Now convert the whole thing to Base 32
-//		String b32 = BaseConverter.encode32(tot16);
-//		
-//		return b32;
-//	}
-//	
-//	public static MiniData convertMinimaAddress(String zMinimAddress) throws IllegalArgumentException {
-//		
-//		//First convert the whole thing back..
-//		byte[] decode 	= BaseConverter.decode32(zMinimAddress);
-//		int len 		= decode.length;
-//		int datalen 	= len-5;
-//		
-//		//The checksum is the last 4 bytes
-//		byte[] checksum = new byte[4];
-//		System.arraycopy(decode, len-4, checksum, 0, 4);
-//		
-//		//The actual data length
-//		int origlen		= decode[len-5] & 0xFF;
-//		byte[] data 	= new byte[origlen];
-//		for(int i=0;i<origlen;i++) {
-//			data[i] = 0;
-//		}
-//		
-//		//Copy correct data..
-//		System.arraycopy(decode, 0, data, origlen-datalen, datalen);
-//		
-//		//Now check the hash
-//		byte[] hash = Crypto.getInstance().hashData(data);
-//		
-//		//Check the first 4 bytes..
-//		for(int i=0;i<4;i++) {
-//			if(hash[i] != checksum[i]) {
-//				throw new IllegalArgumentException("Invalid MxAddress - checksum wrong for "+zMinimAddress);
-//			}
-//		}
-//		
-//		return new MiniData(data);
-//	}
-	
-	/**
-	 * Convert an address into a Minima Checksum Base32 address
 	 * 
 	 * MAX - 64K
 	 */
@@ -214,8 +147,7 @@ public class Address implements Streamable{
 			bos.close();
 		    
 	    } catch (IOException e) {
-			MinimaLogger.log(e);
-			return null;
+	    	throw new IllegalArgumentException("Invalid MxAddress - "+e.toString());
 		}
 	    
 		//Get the bytes
@@ -261,8 +193,7 @@ public class Address implements Streamable{
 			bais.close();
 		    
 	    } catch (IOException e) {
-			MinimaLogger.log(e);
-			return null;
+	    	throw new IllegalArgumentException("Invalid MxAddress - "+e.toString());
 		}
 		
 		//Now check the hash
@@ -291,6 +222,9 @@ public class Address implements Streamable{
 		
 		MiniData conv 	= Address.convertMinimaAddress(madd);
 		System.out.println("Converted : "+conv.to0xString());
+		
+//		conv 	= Address.convertMinimaAddress("Mx1010CAGPCN14YDBKQ9AARA7S1EH76M39W712URVZPV4K57K8P042VK91HFVY789F0E7NFVNZRPEYPJ4WUQYFKMJUEK7ETZZG4SFE0BMT8BTM12ZTG");
+//		System.out.println("Hard Converted : "+conv.to0xString());
 		
 	}
 	
