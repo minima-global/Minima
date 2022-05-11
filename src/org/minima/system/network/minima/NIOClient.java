@@ -153,6 +153,10 @@ public class NIOClient {
 		return mIncoming;
 	}
 	
+	public boolean isOutgoing() {
+		return !mIncoming;
+	}
+	
 	public boolean isMaximaClient() {
 		return !mMaximaIdent.equals("");
 	}

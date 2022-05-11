@@ -66,13 +66,11 @@ public class MaximaHost {
 	public JSONObject toJSON() {
 		JSONObject ret = new JSONObject();
 		
-		String maxaddress = Address.makeMinimaAddress(getPublicKey());
-		
 		ret.put("host", mHost);
 //		ret.put("private", mPrivate.to0xString());
 		ret.put("public", mPublic.to0xString());
 		ret.put("lastseen", new Date(mLastSeen));
-		ret.put("address", maxaddress+"@"+mHost);
+		ret.put("address", getAddress());
 		
 		return ret;
 	}
@@ -91,5 +89,9 @@ public class MaximaHost {
 	
 	public long getLastSeen() {
 		return mLastSeen;
+	}
+	
+	public String getAddress() {
+		return Address.makeMinimaAddress(getPublicKey())+"@"+mHost;
 	}
 }

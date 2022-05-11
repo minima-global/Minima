@@ -1,6 +1,7 @@
 package org.minima.system.commands.network;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.maxima.MaximaDB;
@@ -22,7 +23,7 @@ import org.minima.utils.messages.Message;
 public class maxima extends Command {
 
 	public maxima() {
-		super("maxima","[action:info|send] (to:) (application:) (data:) (logs:true|false) - Check your Maxima details, send a message / data, enable logs");
+		super("maxima","[action:info|send|contact] (contact:) (to:) (application:) (data:) (logs:true|false) - Check your Maxima details, send a message / data, enable logs");
 	}
 	
 	@Override
@@ -58,16 +59,23 @@ public class maxima extends Command {
 		
 		if(func.equals("info")) {
 			
+			//Your local IP address
 			String fullhost = GeneralParams.MINIMA_HOST+":"+GeneralParams.MINIMA_PORT;
 			
+			//Get all the current hosts
+			ArrayList<MaximaHost> hosts = maxdb.getAllHosts();
+			
 			//Show details
-			details.put("identity", max.getMaximaIdentity());
+			details.put("publickey", max.getPublicKey().to0xString());
 			details.put("localhost", fullhost);
 			details.put("localidentity", max.getMaximaIdentity()+"@"+fullhost);
 			details.put("logs", max.mMaximaLogs);
 			
-			//Get all the current hosts
-			ArrayList<MaximaHost> hosts = maxdb.getAllHosts();
+			//Pick one host at random as a potential contact point
+			MaximaHost randomhost = hosts.get(new Random().nextInt(hosts.size()));
+			details.put("contact", randomhost.getAddress());
+			
+			//Add ALL Hosts
 			JSONArray allhosts = new JSONArray();
 			for(MaximaHost host : hosts) {
 				allhosts.add(host.toJSON());
@@ -171,6 +179,15 @@ public class maxima extends Command {
 //			max.PostMessage(sender);
 			
 			ret.put("response", json);
+		
+		}else if(func.equals("contact")) {
+			
+			//Get the contact address
+			String contact = getParam("contact");
+			
+			//Now we send him a special message introducing ourselves..
+			
+			
 		}
 		
 		return ret;

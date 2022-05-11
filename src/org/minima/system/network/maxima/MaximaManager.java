@@ -210,21 +210,22 @@ public class MaximaManager extends MessageProcessor {
 			//Get the client
 			NIOClient nioc = (NIOClient) zMessage.getObject("nioclient");
 			
+			//Is there a reconnect
+			boolean reconnect = zMessage.getBoolean("resonnect");
+			
 			//is it an outgoing.. ONLY outgoing can be used for MAXIMA
-			if(!nioc.isIncoming()) {
-				//Is there a reconnect
-				boolean reconnect = zMessage.getBoolean("resonnect");
+			if(nioc.isOutgoing()) {
 				
 				MinimaLogger.log("MAXIMA outgoing disconnection : "+nioc.getFullAddress()+" "+reconnect);
 				
 				//Do we need to update Users who contact us through them..
-				if(reconnect) {
+				if(!reconnect) {
 					
-					//We are going to attempt a reconnect.. check in 2 minutes..
+					//Ok - lets find another host..
+					String host = nioc.getFullAddress();
 					
-				}else {
+					//Which contacts used that host
 					
-					//No reconnect.. notify and update any contacts that use this host..
 					
 				}
 			}
