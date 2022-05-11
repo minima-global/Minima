@@ -249,7 +249,7 @@ public class Main extends MessageProcessor {
 		mNetwork.shutdownNetwork();
 		
 		//Shut down Maxima
-		mMaxima.stopMessageProcessor();
+		mMaxima.shutdown();
 		
 		//Stop the Miner
 		mTxPoWMiner.stopMessageProcessor();
@@ -288,7 +288,7 @@ public class Main extends MessageProcessor {
 		mNetwork.shutdownNetwork();
 		
 		//Shut down Maxima
-		mMaxima.stopMessageProcessor();
+		mMaxima.shutdown();
 				
 		//Stop the Miner
 		mTxPoWMiner.stopMessageProcessor();

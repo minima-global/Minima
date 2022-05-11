@@ -83,10 +83,22 @@ public class MaximaManager extends MessageProcessor {
 	private boolean mInited 	= false;
 	public boolean mMaximaLogs 	= true;
 
+	/**
+	 * The Contacts Manager
+	 */
+	MaximaContactManager mMaxContacts;
+	
 	public MaximaManager() {
 		super("MAXIMA");
 		
+		mMaxContacts = new MaximaContactManager(this);
+		
 		PostMessage(MAXIMA_INIT);
+	}
+	
+	public void shutdown() {
+		mMaxContacts.stopMessageProcessor();
+		stopMessageProcessor();
 	}
 	
 	public boolean isInited() {
@@ -103,6 +115,10 @@ public class MaximaManager extends MessageProcessor {
 	
 	public MiniData getPrivateKey() {
 		return mPrivate;
+	}
+	
+	public MaximaContactManager getContactsManager() {
+		return mMaxContacts;
 	}
 	
 	public MaximaMessage createMaximaMessage(String zTo, String zApplication, MiniData zData) {
@@ -143,6 +159,8 @@ public class MaximaManager extends MessageProcessor {
 			
 			//We are inited
 			mInited = true;
+			
+			MinimaLogger.log("LENGTH "+mPublic.getLength());
 			
 			//Save the DB
 			MinimaDB.getDB().saveUserDB();
@@ -211,7 +229,7 @@ public class MaximaManager extends MessageProcessor {
 			NIOClient nioc = (NIOClient) zMessage.getObject("nioclient");
 			
 			//Is there a reconnect
-			boolean reconnect = zMessage.getBoolean("resonnect");
+			boolean reconnect = zMessage.getBoolean("reconnect");
 			
 			//is it an outgoing.. ONLY outgoing can be used for MAXIMA
 			if(nioc.isOutgoing()) {
@@ -359,8 +377,20 @@ public class MaximaManager extends MessageProcessor {
 			//Notify that Client that we received the message.. this makes external client disconnect ( internal just a ping )
 			maximaMessageStatus(nioc,true);
 			
-			//Notify The Listeners
-			Main.getInstance().PostNotifyEvent("MAXIMA",maxjson);
+			//Is it a special contact message
+			String application = (String) maxjson.get("application");
+			if(application.equals("**contact_ctrl**")) {
+				
+				//Process this internally..
+				Message contactmessage = new Message(MaximaContactManager.MAXCONTACTS_MESSAGE);
+				contactmessage.addObject("maxmessage", maxjson);
+				
+				getContactsManager().PostMessage(contactmessage);
+				
+			}else {
+				//Notify The Listeners
+				Main.getInstance().PostNotifyEvent("MAXIMA",maxjson);
+			}
 		}
 	}
 	

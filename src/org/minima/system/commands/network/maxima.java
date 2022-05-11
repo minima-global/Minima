@@ -72,8 +72,12 @@ public class maxima extends Command {
 			details.put("logs", max.mMaximaLogs);
 			
 			//Pick one host at random as a potential contact point
-			MaximaHost randomhost = hosts.get(new Random().nextInt(hosts.size()));
-			details.put("contact", randomhost.getAddress());
+			if(hosts.size()>0) {
+				MaximaHost randomhost = hosts.get(new Random().nextInt(hosts.size()));
+				details.put("contact", randomhost.getAddress());
+			}else {
+				details.put("contact", "");
+			}
 			
 			//Add ALL Hosts
 			JSONArray allhosts = new JSONArray();
@@ -107,55 +111,31 @@ public class maxima extends Command {
 			
 			//Send a message..
 			String fullto 	= getParam("to");
-			int indexp 		= fullto.indexOf("@");
-			int index 		= fullto.indexOf(":");
-			
-			//Get the Public Key
-			String publickey = fullto.substring(0,indexp);
-			if(publickey.startsWith("Mx")) {
-				publickey = Address.convertMinimaAddress(publickey).to0xString();
-			}
-			
-			//get the host and port..
-			String tohost 	= fullto.substring(indexp+1,index);
-			int toport		= Integer.parseInt(fullto.substring(index+1));	
 			
 			//Which application
 			String application 	= getParam("application");
-			
+
+			//What data
 			MiniData mdata 	= null;
 			if(isParamJSONObject("data")) {
-			
 				MiniString datastr = new MiniString(getJSONObjectParam("data").toString());
 				mdata = new MiniData(datastr.getData());
 			}else {
-				
 				mdata = getDataParam("data");
 			} 
 			
-			//Get the complete details..
-			MaximaMessage maxmessage = max.createMaximaMessage(publickey, application, mdata);
+			//Now convert into the correct message..
+			Message sender = createSendMessage(fullto, application, mdata);
 			
-			//Get the MinData version
-			MiniData maxdata = MiniData.getMiniDataVersion(maxmessage);
-			
-			//Hash it..
-			MiniData hash 	= Crypto.getInstance().hashObject(maxdata);
+			//Get the message
+			MaximaMessage maxmessage = (MaximaMessage) sender.getObject("maxima");
 			
 			//Convert to JSON
 			JSONObject json = maxmessage.toJSON();
-			json.put("msgid", hash.to0xString());
+			json.put("msgid", sender.getString("msgid"));
 			
-			//Send to Maxima..
-			Message sender = new Message(MaximaManager.MAXIMA_SENDMESSAGE);
-			sender.addObject("maxima", maxmessage);
-			
-			sender.addObject("mypublickey", max.getPublicKey());
-			sender.addObject("myprivatekey", max.getPrivateKey());
-			
-			sender.addString("publickey", publickey);
-			sender.addString("tohost", tohost);
-			sender.addInteger("toport", toport);
+			String tohost 	= sender.getString("tohost");
+			int toport 		= sender.getInteger("toport");
 			
 			//Now construct a complete Maxima Data packet
 			try {
@@ -184,15 +164,97 @@ public class maxima extends Command {
 			
 			//Get the contact address
 			String contact = getParam("contact");
+
+			//What data..
+			JSONObject contactinfo 	= max.getContactsManager().getContactInfo();
+			MiniString datastr 		= new MiniString(contactinfo.toString());
+			MiniData mdata 			= new MiniData(datastr.getData());
 			
-			//Now we send him a special message introducing ourselves..
+			//Now convert into the correct message..
+			Message sender = createSendMessage(contact, "**contact_ctrl**", mdata);
 			
+			//Get the message
+			MaximaMessage maxmessage = (MaximaMessage) sender.getObject("maxima");
+			
+			//Who to..
+			String tohost 	= sender.getString("tohost");
+			int toport 		= sender.getInteger("toport");
+			
+			//Now construct a complete Maxima Data packet
+			JSONObject json = maxmessage.toJSON();
+			json.put("msgid", sender.getString("msgid"));
+			try {
+				//Create the packet
+				MiniData maxpacket = MaximaManager.constructMaximaData(sender);
+			
+				//And Send it..
+				boolean valid = MaximaManager.sendMaxPacket(tohost, toport, maxpacket);
+				json.put("delivered", valid);
+				if(!valid) {
+					json.put("error", "Not delivered");
+				}
+				
+			}catch(Exception exc){
+				//Something wrong
+				json.put("delivered", false);
+				json.put("error", exc.toString());
+			}
+			
+			//Post It!
+//			max.PostMessage(sender);
+			
+			ret.put("response", json);
 			
 		}
 		
 		return ret;
 	}
 
+	public static Message createSendMessage(String zFullTo, String zApplication, MiniData zData) {
+		
+		MaximaManager max = Main.getInstance().getMaxima();
+		
+		//Send a message..
+		String fullto 	= zFullTo;
+		int indexp 		= fullto.indexOf("@");
+		int index 		= fullto.indexOf(":");
+		
+		//Get the Public Key
+		String publickey = fullto.substring(0,indexp);
+		if(publickey.startsWith("Mx")) {
+			publickey = Address.convertMinimaAddress(publickey).to0xString();
+		}
+		
+		//get the host and port..
+		String tohost 	= fullto.substring(indexp+1,index);
+		int toport		= Integer.parseInt(fullto.substring(index+1));	
+		
+		//Get the complete details..
+		MaximaMessage maxmessage = max.createMaximaMessage(publickey, zApplication, zData);
+		
+		//Get the MinData version
+		MiniData maxdata = MiniData.getMiniDataVersion(maxmessage);
+		
+		//Hash it..
+		MiniData hash 	= Crypto.getInstance().hashObject(maxdata);
+		
+		//Send to Maxima..
+		Message sender = new Message(MaximaManager.MAXIMA_SENDMESSAGE);
+		sender.addObject("maxima", maxmessage);
+		
+		sender.addObject("mypublickey", max.getPublicKey());
+		sender.addObject("myprivatekey", max.getPrivateKey());
+		
+		sender.addString("publickey", publickey);
+		sender.addString("tohost", tohost);
+		sender.addInteger("toport", toport);
+		
+		sender.addString("msgid", hash.to0xString());
+		
+		return sender;
+	}
+	
+	
 	@Override
 	public Command getFunction() {
 		return new maxima();
