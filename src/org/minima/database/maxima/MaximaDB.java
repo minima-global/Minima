@@ -17,6 +17,7 @@ public class MaximaDB extends SqlDB {
 	 */
 	PreparedStatement SQL_INSERT_MAXIMA_HOST 		= null;
 	PreparedStatement SQL_UPDATE_MAXIMA_HOST 		= null;
+	PreparedStatement SQL_UPDATE_ALL_NOTCONECTED 	= null;
 	PreparedStatement SQL_SELECT_MAXIMA_HOST 		= null;
 	PreparedStatement SQL_SELECT_ALL_HOSTS 			= null;
 	PreparedStatement SQL_DELETE_HOST 				= null;
@@ -80,6 +81,7 @@ public class MaximaDB extends SqlDB {
 			SQL_UPDATE_MAXIMA_HOST	= mSQLConnection.prepareStatement("UPDATE hosts SET publickey=?, privatekey=?, connected=?, lastseen=? WHERE host=?");
 			SQL_DELETE_HOST			= mSQLConnection.prepareStatement("DELETE FROM hosts WHERE host=?");
 			SQL_DELETE_OLD_HOSTS	= mSQLConnection.prepareStatement("DELETE FROM hosts WHERE lastseen < ?");
+			SQL_UPDATE_ALL_NOTCONECTED = mSQLConnection.prepareStatement("UPDATE hosts SET connected=0");
 			
 			SQL_INSERT_MAXIMA_CONTACT 	= mSQLConnection.prepareStatement("INSERT IGNORE INTO contacts "
 					+ "( name, extradata, publickey, currentaddress, myaddress ) VALUES ( ?, ?, ?, ?, ? )");
@@ -89,6 +91,9 @@ public class MaximaDB extends SqlDB {
 			SQL_UPDATE_CONTACT			= mSQLConnection.prepareStatement("UPDATE contacts SET "
 					+ "name=?, extradata=?, currentaddress=?, myaddress=? WHERE publickey=?");
 			
+			//All Host are not connected
+			allHostNotConnected();
+			
 			//Load all the hosts
 			getAllHosts();
 			
@@ -97,6 +102,24 @@ public class MaximaDB extends SqlDB {
 		}
 	}
 
+	private synchronized void allHostNotConnected() {
+		
+		try {
+			
+			mHostCacheValid 	= false;
+			
+			//Set search params
+			SQL_UPDATE_ALL_NOTCONECTED.clearParameters();
+			
+			//Run the query
+			SQL_UPDATE_ALL_NOTCONECTED.execute();
+			
+		} catch (SQLException e) {
+			MinimaLogger.log(e);
+		}
+	
+	}
+	
 	public synchronized boolean newHost(MaximaHost zHost) {
 		try {
 			

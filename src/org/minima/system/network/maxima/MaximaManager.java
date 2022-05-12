@@ -51,10 +51,10 @@ public class MaximaManager extends MessageProcessor {
 	public static final String MAXIMA_DISCONNECTED 	= "MAXIMA_DISCONNECTED";
 	
 	/**
-	 * Checker loop function - every 5 mins
+	 * Checker loop function - every 10 mins
 	 */
 	public static final String MAXIMA_LOOP 			= "MAXIMA_LOOP";
-	long MAXIMA_LOOP_DELAY = 1000 * 60 * 1;
+	long MAXIMA_LOOP_DELAY = 1000 * 60 * 10;
 	
 	/**
 	 * Messages
@@ -62,6 +62,7 @@ public class MaximaManager extends MessageProcessor {
 	public static final String MAXIMA_CTRLMESSAGE 	= "MAXIMA_CTRLMESSAGE";
 	public static final String MAXIMA_RECMESSAGE 	= "MAXIMA_RECMESSAGE";
 	public static final String MAXIMA_SENDMESSAGE 	= "MAXIMA_SENDDMESSAGE";
+	public static final String MAXIMA_RESEND 		= "MAXIMA_RESEND";
 	
 	/**
 	 * UserDB data
@@ -191,9 +192,20 @@ public class MaximaManager extends MessageProcessor {
 			MinimaDB.getDB().saveUserDB();
 			
 			//Post a LOOP message that updates all my contacts just in case..
-			PostTimerMessage(new TimerMessage(MAXIMA_LOOP_DELAY, MAXIMA_LOOP));
+			PostTimerMessage(new TimerMessage(1000 * 60 * 2, MAXIMA_LOOP));
 		
 		}else if(zMessage.getMessageType().equals(MAXIMA_LOOP)) {
+			
+			//Resend all your details to your contacts
+			PostMessage(MAXIMA_RESEND);
+			
+			//Delete really old MaxHosts
+			//..
+			
+			//Post a LOOP message that updates all my contacts just in case..
+			PostTimerMessage(new TimerMessage(MAXIMA_LOOP_DELAY, MAXIMA_LOOP));
+		
+		}else if(zMessage.getMessageType().equals(MAXIMA_RESEND)) {
 			
 			//Get all your contacts
 			ArrayList<MaximaContact> allcontacts = maxdb.getAllContacts();
@@ -210,12 +222,6 @@ public class MaximaManager extends MessageProcessor {
 				
 				getContactsManager().PostMessage(update);
 			}
-			
-			//Delete really old MaxHosts
-			//..
-			
-			//Post a LOOP message that updates all my contacts just in case..
-			PostTimerMessage(new TimerMessage(MAXIMA_LOOP_DELAY, MAXIMA_LOOP));
 			
 		}else if(zMessage.getMessageType().equals(MAXIMA_CONNECTED)) {
 		
