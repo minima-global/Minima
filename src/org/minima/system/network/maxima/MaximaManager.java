@@ -266,6 +266,13 @@ public class MaximaManager extends MessageProcessor {
 			//Is there a reconnect
 			boolean reconnect = zMessage.getBoolean("reconnect");
 			
+			//OK.. Do we have this node in our list..
+			MaximaHost mxhost = maxdb.loadHost(nioc.getFullAddress());
+			if(mxhost != null) {
+				mxhost.setConnected(0);
+				maxdb.updateHost(mxhost);
+			}
+			
 			//is it an outgoing.. ONLY outgoing can be used for MAXIMA
 			if(nioc.isOutgoing()) {
 				
@@ -274,23 +281,31 @@ public class MaximaManager extends MessageProcessor {
 				//Do we need to update Users who contact us through them..
 				if(!reconnect) {
 					
-					//Ok - lets find another host..
+					//Ok - lets reset contacts that use this host
 					String host = nioc.getFullAddress();
 					
 					//Which contacts used that host - reassign them
-					//..
+					ArrayList<MaximaContact> allcontacts = maxdb.getAllContacts();
+					for(MaximaContact contact : allcontacts) {
+						
+						//Only reset those that use this address
+						if(contact.getMyAddress().contains(host)) {
+						
+							//Update them with a new address..
+							String publickey = contact.getPublicKey();
+							String address	 = contact.getCurrentAddress();
+							
+							//Now send a message updating them
+							Message update = new Message(MaximaContactManager.MAXCONTACTS_UPDATEINFO);
+							update.addString("publickey", publickey);
+							update.addString("address", address);
+							
+							getContactsManager().PostMessage(update);
+						}
+					}
 					
 					//Delete from Hosts DB
 					maxdb.deleteHost(nioc.getFullAddress());
-					
-				}else {
-					
-					//OK.. Do we have this node in our list..
-					MaximaHost mxhost = maxdb.loadHost(nioc.getFullAddress());
-					if(mxhost != null) {
-						mxhost.setConnected(0);
-						maxdb.updateHost(mxhost);
-					}
 				}
 			}
 		
