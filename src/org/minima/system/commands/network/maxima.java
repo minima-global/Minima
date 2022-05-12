@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import org.minima.database.MinimaDB;
+import org.minima.database.maxima.MaximaContact;
 import org.minima.database.maxima.MaximaDB;
 import org.minima.database.maxima.MaximaHost;
 import org.minima.objects.Address;
@@ -12,6 +13,7 @@ import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
+import org.minima.system.network.maxima.MaximaContactManager;
 import org.minima.system.network.maxima.MaximaManager;
 import org.minima.system.network.maxima.message.MaximaMessage;
 import org.minima.system.params.GeneralParams;
@@ -62,24 +64,16 @@ public class maxima extends Command {
 			//Your local IP address
 			String fullhost = GeneralParams.MINIMA_HOST+":"+GeneralParams.MINIMA_PORT;
 			
-			//Get all the current hosts
-			ArrayList<MaximaHost> hosts = maxdb.getAllHosts();
 			
 			//Show details
+			details.put("logs", max.mMaximaLogs);
 			details.put("publickey", max.getPublicKey().to0xString());
 			details.put("localhost", fullhost);
 			details.put("localidentity", max.getMaximaIdentity()+"@"+fullhost);
-			details.put("logs", max.mMaximaLogs);
-			
-			//Pick one host at random as a potential contact point
-			if(hosts.size()>0) {
-				MaximaHost randomhost = hosts.get(new Random().nextInt(hosts.size()));
-				details.put("contact", randomhost.getMaximaAddress());
-			}else {
-				details.put("contact", "");
-			}
+			details.put("contact", max.getLocalMaximaAddress());
 			
 			//Add ALL Hosts
+			ArrayList<MaximaHost> hosts = maxdb.getAllHosts();
 			JSONArray allhosts = new JSONArray();
 			for(MaximaHost host : hosts) {
 				allhosts.add(host.toJSON());
@@ -87,7 +81,12 @@ public class maxima extends Command {
 			details.put("hosts", allhosts);
 			
 			//Get all the current contacts
-			//..
+			ArrayList<MaximaContact> contacts = maxdb.getAllContacts();
+			JSONArray allcontacts = new JSONArray();
+			for(MaximaContact contact : contacts) {
+				allcontacts.add(contact.toJSON());
+			}
+			details.put("contacts", allcontacts);
 			
 			ret.put("response", details);
 		
@@ -166,12 +165,12 @@ public class maxima extends Command {
 			String contact = getParam("contact");
 
 			//What data..
-			JSONObject contactinfo 	= max.getContactsManager().getContactInfo(true);
+			JSONObject contactinfo 	= max.getContactsManager().getMaximaInfo();
 			MiniString datastr 		= new MiniString(contactinfo.toString());
 			MiniData mdata 			= new MiniData(datastr.getData());
 			
 			//Now convert into the correct message..
-			Message sender = createSendMessage(contact, "**contact_ctrl**", mdata);
+			Message sender = createSendMessage(contact, MaximaContactManager.CONTACT_APPLICATION, mdata);
 			
 			//Get the message
 			MaximaMessage maxmessage = (MaximaMessage) sender.getObject("maxima");
@@ -200,11 +199,7 @@ public class maxima extends Command {
 				json.put("error", exc.toString());
 			}
 			
-			//Post It!
-//			max.PostMessage(sender);
-			
 			ret.put("response", json);
-			
 		}
 		
 		return ret;

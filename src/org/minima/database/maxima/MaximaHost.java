@@ -97,6 +97,7 @@ public class MaximaHost {
 	}
 
 	public void setConnected(int zConnected) {
+		updateLastSeen();
 		mConnected = zConnected;
 	}
 	

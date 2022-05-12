@@ -1,66 +1,92 @@
 package org.minima.database.maxima;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 import org.minima.objects.base.MiniData;
 import org.minima.utils.json.JSONObject;
 
 public class MaximaContact {
 
-	public String 	mUID;
+	public int 		mUID;
 	
 	public String 	mName;
 	
 	public MiniData mExtraData;
 	
-	public MiniData mPublicKey;
+	/**
+	 * The actual MAIN public Key of the Contact
+	 */
+	public String mPublicKey;
 	
 	/**
 	 * Where you contact them
 	 */
-	public String 	mCurrentHost;
-	public MiniData mCurrentHostPublicKey;
+	public String 	mCurrentAddress;
 	
 	/**
 	 * Where they contact you
 	 */
-	public String 	mMyCurrentHost;
-	public MiniData mMyCurrentHostPublicKey;
+	public String 	mMyCurrentAddress;
 	
-	public MaximaContact(String zName, MiniData zPublicKey) {
+	public MaximaContact(String zName, String zPublicKey) {
 		mName 		= zName;
 		mPublicKey	= zPublicKey;
 	}
 	
-	public void setCurrentHost(String zHost) {
-		mCurrentHost = zHost;
+	public MaximaContact(ResultSet zSQLResult) throws SQLException {
+		mUID			= zSQLResult.getInt("id");
+		mName			= zSQLResult.getString("name");
+		mExtraData		= new MiniData(zSQLResult.getBytes("extradata"));
+		mPublicKey		= zSQLResult.getString("publickey");
+		mCurrentAddress	= zSQLResult.getString("currentaddress");
+		mMyCurrentAddress	= zSQLResult.getString("myaddress");
 	}
 	
-	public void setCurrentPublicKey(MiniData zCurrentPublicKey) {
-		mCurrentHostPublicKey = zCurrentPublicKey;
+	public void setExtraData(MiniData zExtra){
+		mExtraData = zExtra;
+	}
+	
+	public void setCurrentAddress(String zAddress) {
+		mCurrentAddress = zAddress;
+	}
+	
+	public void setMyAddress(String zMyAddress) {
+		mMyCurrentAddress = zMyAddress;
+	}
+	
+	public int getUID() {
+		return mUID;
 	}
 	
 	public String getName() {
 		return mName;
 	}
 	
-	public MiniData getPublicKey() {
+	public MiniData getExtraData() {
+		return mExtraData;
+	}
+	
+	public String getPublicKey() {
 		return mPublicKey;
 	}
 	
-	public String getCurrentHost() {
-		return mCurrentHost;
+	public String getCurrentAddress() {
+		return mCurrentAddress;
 	}
 	
-	public MiniData getCurrentPublicKey() {
-		return mCurrentHostPublicKey;
+	public String getMyAddress() {
+		return mMyCurrentAddress;
 	}
 	
 	public JSONObject toJSON() {
 		JSONObject json = new JSONObject();
 		
+		json.put("id", mUID);
 		json.put("name", mName);
-		json.put("publickey", mPublicKey.to0xString());
-		json.put("host", mCurrentHost);
-		json.put("hostkey", mCurrentHostPublicKey.to0xString());
+		json.put("publickey", mPublicKey);
+		json.put("currentaddress", mCurrentAddress);
+		json.put("myaddress", mMyCurrentAddress);
 		
 		return json;
 	}

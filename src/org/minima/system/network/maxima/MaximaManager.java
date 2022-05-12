@@ -53,7 +53,7 @@ public class MaximaManager extends MessageProcessor {
 	 * Checker loop function - every 5 mins
 	 */
 	public static final String MAXIMA_LOOP 			= "MAXIMA_LOOP";
-	long MAXIMA_LOOP_DELAY = 1000 * 60 * 3;
+	long MAXIMA_LOOP_DELAY = 1000 * 60 * 5;
 	
 	/**
 	 * Messages
@@ -123,11 +123,11 @@ public class MaximaManager extends MessageProcessor {
 		return mMaxContacts;
 	}
 	
-	public String getLocalHost() {
+	public String getLocalMaximaAddress() {
 		return getMaximaIdentity()+"@"+GeneralParams.MINIMA_HOST+":"+GeneralParams.MINIMA_PORT;
 	}
 	
-	public String getRandomHostAddress() {
+	public String getRandomMaximaAddress() {
 		//Get all the current hosts
 		ArrayList<MaximaHost> hosts = MinimaDB.getDB().getMaximaDB().getAllHosts();
 		
@@ -141,7 +141,7 @@ public class MaximaManager extends MessageProcessor {
 		
 		//Are there any..
 		if(connctedhosts.size() == 0) {
-			return getLocalHost();
+			return getLocalMaximaAddress();
 		}
 		
 		return connctedhosts.get(new Random().nextInt(connctedhosts.size())).getMaximaAddress();
@@ -237,7 +237,6 @@ public class MaximaManager extends MessageProcessor {
 					MinimaLogger.log("MAXIMA EXISTING connection : "+nioc.getFullAddress());
 					
 					//Update our details..
-					mxhost.updateLastSeen();
 					mxhost.setConnected(1);
 					maxdb.updateHost(mxhost);
 				}
@@ -271,7 +270,7 @@ public class MaximaManager extends MessageProcessor {
 					//..
 					
 					//Delete from Hosts DB
-					//..
+					maxdb.deleteHost(nioc.getFullAddress());
 					
 				}else {
 					
@@ -415,7 +414,7 @@ public class MaximaManager extends MessageProcessor {
 			
 			//Is it a special contact message
 			String application = (String) maxjson.get("application");
-			if(application.equals("**contact_ctrl**")) {
+			if(application.equals(MaximaContactManager.CONTACT_APPLICATION)) {
 				
 				//Process this internally..
 				Message contactmessage = new Message(MaximaContactManager.MAXCONTACTS_RECMESSAGE);
