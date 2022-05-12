@@ -112,13 +112,12 @@ public class MaximaContactManager extends MessageProcessor {
 			String address 	 = zMessage.getString("address");
 			
 			//Send a Contact info message to a user
-			JSONObject contactinfo 	= getMaximaInfo();
+			JSONObject contactinfo	= getMaximaInfo();
 			
 			//Now Update Our DB..
 			MaximaContact mxcontact = maxdb.loadContact(publickey);
 			mxcontact.setMyAddress((String)contactinfo.get("address"));
 			maxdb.updateContact(mxcontact);
-			MinimaLogger.log("Update DB "+mxcontact.toJSON());
 			
 			MiniString str			= new MiniString(contactinfo.toString());
 			MiniData mdata 			= new MiniData(str.getData());
