@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import org.minima.database.MinimaDB;
+import org.minima.database.maxima.MaximaContact;
 import org.minima.database.maxima.MaximaDB;
 import org.minima.database.maxima.MaximaHost;
 import org.minima.database.userprefs.UserDB;
@@ -53,7 +54,7 @@ public class MaximaManager extends MessageProcessor {
 	 * Checker loop function - every 5 mins
 	 */
 	public static final String MAXIMA_LOOP 			= "MAXIMA_LOOP";
-	long MAXIMA_LOOP_DELAY = 1000 * 60 * 5;
+	long MAXIMA_LOOP_DELAY = 1000 * 60 * 1;
 	
 	/**
 	 * Messages
@@ -194,19 +195,23 @@ public class MaximaManager extends MessageProcessor {
 		
 		}else if(zMessage.getMessageType().equals(MAXIMA_LOOP)) {
 			
-			//Check all your connections /. maxhosts and update the lastseen in the db
-			ArrayList<NIOClientInfo> allclient = Main.getInstance().getNIOManager().getAllConnectionInfo();
-			for(NIOClientInfo client : allclient) {
-				if(client.isConnected()) {
-					
-					
-				}
+			//Get all your contacts
+			ArrayList<MaximaContact> allcontacts = maxdb.getAllContacts();
+			for(MaximaContact contact : allcontacts) {
+				
+				//Update them with a new address..
+				String publickey = contact.getPublicKey();
+				String address	 = contact.getCurrentAddress();
+				
+				//Now send a message updating them
+				Message update = new Message(MaximaContactManager.MAXCONTACTS_UPDATEINFO);
+				update.addString("publickey", publickey);
+				update.addString("address", address);
+				
+				getContactsManager().PostMessage(update);
 			}
 			
-			//Check and tell all contacts how to get in touch with you..
-			//..
-			
-			//Delete old MaxHosts
+			//Delete really old MaxHosts
 			//..
 			
 			//Post a LOOP message that updates all my contacts just in case..

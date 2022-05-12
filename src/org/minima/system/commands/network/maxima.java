@@ -68,9 +68,8 @@ public class maxima extends Command {
 			//Show details
 			details.put("logs", max.mMaximaLogs);
 			details.put("publickey", max.getPublicKey().to0xString());
-			details.put("localhost", fullhost);
-			details.put("localidentity", max.getMaximaIdentity()+"@"+fullhost);
-			details.put("contact", max.getLocalMaximaAddress());
+			details.put("localidentity", max.getLocalMaximaAddress());
+			details.put("contact", max.getRandomMaximaAddress());
 			
 			//Add ALL Hosts
 			ArrayList<MaximaHost> hosts = maxdb.getAllHosts();
