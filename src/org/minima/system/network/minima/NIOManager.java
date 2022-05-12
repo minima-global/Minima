@@ -369,7 +369,7 @@ public class NIOManager extends MessageProcessor {
 			
 			//Lost a connection
 			NIOClient nioc = (NIOClient)zMessage.getObject("client");
-			if(reconnect && !nioc.isIncoming()) {
+			if(reconnect && nioc.isOutgoing()) {
 				String host = nioc.getHost();
 				int port 	= nioc.getPort();
 				
