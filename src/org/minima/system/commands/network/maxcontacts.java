@@ -25,7 +25,7 @@ import org.minima.utils.messages.Message;
 public class maxcontacts extends Command {
 
 	public maxcontacts() {
-		super("maxcontacts","[action:list|myname|add|remove] (name:) (address:) (publickey:) - Manage your Maxima contacts");
+		super("maxcontacts","[action:list|myname|add|remove] (name:) (address:) (id:) - Manage your Maxima contacts");
 	}
 	
 	@Override

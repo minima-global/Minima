@@ -184,11 +184,13 @@ public class MaximaContactManager extends MessageProcessor {
 			String host = myaddress.substring(index+1);
 			
 			//Get the client
-			MaximaHost mxhost 	= maxdb.loadHost(host);
+			MaximaHost mxhost = maxdb.loadHost(host);
 			
 			//Reset that host PubKey.. and Update DB
-			mxhost.createKeys();
-			maxdb.updateHost(mxhost);
+			if(mxhost != null) {
+				mxhost.createKeys();
+				maxdb.updateHost(mxhost);
+			}
 			
 			//Delete the contact
 			maxdb.deleteContact(id);
@@ -202,7 +204,7 @@ public class MaximaContactManager extends MessageProcessor {
 				NIOManager.sendNetworkMessage(nioc.getUID(), NIOMessage.MSG_MAXIMA_CTRL, maxmess);
 			}
 			
-			//And finally Refresh ALL users..
+			//Refresh ALL users..
 			mManager.PostMessage(MaximaManager.MAXIMA_REFRESH);
 			
 			//Send him a message saying we have deleted him..
