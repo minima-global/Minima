@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.util.Date;
 
 import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniNumber;
 import org.minima.utils.json.JSONObject;
 
 public class MaximaContact {
@@ -34,6 +35,14 @@ public class MaximaContact {
 	 * Last Seen
 	 */
 	long mLastSeen;
+	
+	/**
+	 * Block values to check you are on the same chain
+	 */
+	MiniNumber 	mTopBlock 	= MiniNumber.ZERO;
+	MiniNumber 	mCheckBlock	= MiniNumber.ZERO;;
+	MiniData 	mCheckHash	= MiniData.ZERO_TXPOWID;
+	
 	
 	public MaximaContact(String zName, String zPublicKey) {
 		mName 		= zName;
@@ -90,6 +99,12 @@ public class MaximaContact {
 		return mLastSeen;
 	}
 	
+	public void setBlockDetails(MiniNumber zTipBlock, MiniNumber zTipBlock50, MiniData zT50Hash) {
+		mTopBlock 		= zTipBlock;
+		mCheckBlock 	= zTipBlock50;
+		mCheckHash	= zT50Hash;
+	}
+	
 	public JSONObject toJSON() {
 		JSONObject json = new JSONObject();
 		
@@ -98,6 +113,11 @@ public class MaximaContact {
 		json.put("publickey", mPublicKey);
 		json.put("currentaddress", mCurrentAddress);
 		json.put("myaddress", mMyCurrentAddress);
+		
+//		json.put("tipblock", mCurrentBlock.toString());
+//		json.put("checkblock", mCurrentBlock50.toString());
+//		json.put("checkhash", mCurrentBlock50Hash.to0xString());
+		
 		json.put("lastseen", mLastSeen);
 		json.put("date", new Date(mLastSeen).toString());
 		

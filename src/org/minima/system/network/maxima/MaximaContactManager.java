@@ -4,6 +4,7 @@ import org.minima.database.MinimaDB;
 import org.minima.database.maxima.MaximaContact;
 import org.minima.database.maxima.MaximaDB;
 import org.minima.database.maxima.MaximaHost;
+import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
@@ -48,11 +49,20 @@ public class MaximaContactManager extends MessageProcessor {
 			ret.put("address", "");
 			
 		}else {
+			
+			//Get some info about the chain
+			TxPoWTreeNode tip 	= MinimaDB.getDB().getTxPoWTree().getTip();
+			TxPoWTreeNode tip50	= tip.getParent(50);
+			
 			ret.put("intro", zIntro);
 			ret.put("name", MinimaDB.getDB().getUserDB().getMaximaName());
 			ret.put("extradata", "0x00");
 			ret.put("publickey", mManager.getPublicKey().to0xString());
 			ret.put("address", mManager.getRandomMaximaAddress());
+			ret.put("topblock",tip.getBlockNumber().toString());
+			ret.put("checkblock",tip50.getBlockNumber().toString());
+			ret.put("checkhash",tip50.getTxPoW().getTxPoWID());
+			
 		}
 		
 		return ret;
@@ -121,7 +131,6 @@ public class MaximaContactManager extends MessageProcessor {
 			}else{
 				mxcontact.setExtraData(checkcontact.getExtraData());
 				mxcontact.setMyAddress(checkcontact.getMyAddress());
-				
 				maxdb.updateContact(mxcontact);
 			}
 			
