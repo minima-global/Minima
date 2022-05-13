@@ -186,6 +186,17 @@ public class NIOManager extends MessageProcessor {
 		return null;
 	}
 	
+	public NIOClient getNIOClient(String zHost) {
+		ArrayList<NIOClient> conns = mNIOServer.getAllNIOClients();
+		for(NIOClient conn : conns) {
+			if(conn.getFullAddress().equals(zHost)) {
+				return conn;
+			}
+		}
+		
+		return null;
+	}
+	
 	@Override
 	protected void processMessage(Message zMessage) throws Exception {
 		
