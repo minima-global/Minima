@@ -32,6 +32,7 @@ public class MaximaDB extends SqlDB {
 	PreparedStatement SQL_SELECT_CONTACT_PUBLICKEY 	= null;
 	PreparedStatement SQL_SELECT_CONTACT_ID 		= null;
 	PreparedStatement SQL_UPDATE_CONTACT 			= null;
+	PreparedStatement SQL_DELETE_CONTACT 			= null;
 	
 	/**
 	 * A Cached list
@@ -97,6 +98,8 @@ public class MaximaDB extends SqlDB {
 			
 			SQL_UPDATE_CONTACT			= mSQLConnection.prepareStatement("UPDATE contacts SET "
 					+ "name=?, extradata=?, currentaddress=?, myaddress=?, lastseen=? WHERE publickey=?");
+			
+			SQL_DELETE_CONTACT			= mSQLConnection.prepareStatement("DELETE FROM contacts WHERE id=?");
 			
 			//All Host are not connected
 			allHostNotConnected();
@@ -427,6 +430,27 @@ public class MaximaDB extends SqlDB {
 			
 			//Run the query
 			SQL_UPDATE_CONTACT.execute();
+			
+			return true;
+			
+		} catch (SQLException e) {
+			MinimaLogger.log(e);
+		}
+		
+		return false;
+	}
+	
+	public synchronized boolean deleteContact(int zID) {
+		
+		try {
+			
+			//Set search params
+			SQL_DELETE_CONTACT.clearParameters();
+			
+			SQL_DELETE_CONTACT.setLong(1, zID);
+			
+			//Run the query
+			SQL_DELETE_CONTACT.execute();
 			
 			return true;
 			

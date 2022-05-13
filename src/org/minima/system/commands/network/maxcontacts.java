@@ -61,6 +61,9 @@ public class maxcontacts extends Command {
 		}else if(func.equals("myname")) {
 			
 			String name = getParam("name");
+			name = name.replace("\"", "");
+			name = name.replace("'", "");
+			name = name.replace(";", "");
 			
 			MinimaDB.getDB().getUserDB().setMaximaName(name);
 			
@@ -72,7 +75,7 @@ public class maxcontacts extends Command {
 			String address 	= getParam("address");
 
 			//What data..
-			JSONObject contactinfo 	= max.getContactsManager().getMaximaInfo(true);
+			JSONObject contactinfo 	= max.getContactsManager().getMaximaContactInfo(true,false);
 			MiniString datastr 		= new MiniString(contactinfo.toString());
 			MiniData mdata 			= new MiniData(datastr.getData());
 			

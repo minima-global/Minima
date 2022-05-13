@@ -230,7 +230,7 @@ public class MaximaManager extends MessageProcessor {
 			NIOClient nioc = (NIOClient) zMessage.getObject("nioclient");
 			
 			//is it an outgoing.. ONLY outgoing can be used for MAXIMA
-			if(!nioc.isIncoming()) {
+			if(nioc.isOutgoing()) {
 				
 				//OK.. Do we have this node in our list..
 				MaximaHost mxhost = maxdb.loadHost(nioc.getFullAddress());

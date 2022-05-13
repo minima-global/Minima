@@ -6,7 +6,11 @@ import org.minima.database.maxima.MaximaDB;
 import org.minima.database.maxima.MaximaHost;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniString;
+import org.minima.system.Main;
 import org.minima.system.commands.network.maxima;
+import org.minima.system.network.minima.NIOClient;
+import org.minima.system.network.minima.NIOManager;
+import org.minima.system.network.minima.NIOMessage;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
@@ -31,13 +35,25 @@ public class MaximaContactManager extends MessageProcessor {
 		mManager = zManager;
 	}
 	
-	public JSONObject getMaximaInfo(boolean zIntro) {
+	public JSONObject getMaximaContactInfo(boolean zIntro, boolean zDelete) {
 		JSONObject ret = new JSONObject();
 		
-		ret.put("intro", zIntro);
-		ret.put("name", MinimaDB.getDB().getUserDB().getMaximaName());
-		ret.put("publickey", mManager.getPublicKey().to0xString());
-		ret.put("address", mManager.getRandomMaximaAddress());
+		ret.put("delete", zDelete);
+		
+		if(zDelete) {
+			ret.put("intro", false);
+			ret.put("name", "");
+			ret.put("extradata", "0x00");
+			ret.put("publickey", mManager.getPublicKey().to0xString());
+			ret.put("address", "");
+			
+		}else {
+			ret.put("intro", zIntro);
+			ret.put("name", MinimaDB.getDB().getUserDB().getMaximaName());
+			ret.put("extradata", "0x00");
+			ret.put("publickey", mManager.getPublicKey().to0xString());
+			ret.put("address", mManager.getRandomMaximaAddress());
+		}
 		
 		return ret;
 	}
@@ -73,27 +89,36 @@ public class MaximaContactManager extends MessageProcessor {
 			
 			//OK - lets get his current address
 			boolean intro		= (boolean)contactjson.get("intro");
+			boolean delete		= (boolean)contactjson.get("delete");
 			String name 		= (String) contactjson.get("name");
+			name = name.replace("\"", "");
+			name = name.replace("'", "");
+			name = name.replace(";", "");
+			
 			String address 		= (String) contactjson.get("address");
 			
 			//Create a Contact - if not there already
 			MaximaContact checkcontact = maxdb.loadContactFromPublicKey(publickey);
 			
+			//Are we being deleted..
+			if(delete) {
+				MinimaLogger.log("DELETED contact request from : "+publickey);
+				if(checkcontact != null) {
+					maxdb.deleteContact(checkcontact.getUID());
+				}
+				
+				return;
+			}
+			
+			MaximaContact mxcontact = new MaximaContact(name, publickey);
+			mxcontact.setCurrentAddress(address);
+			
 			if(checkcontact == null) {
-//				MinimaLogger.log("NEW CONTACT : "+contactjson.toString());
-				
-				MaximaContact mxcontact = new MaximaContact(name, publickey);
 				mxcontact.setExtraData(new MiniData("0x00"));
-				mxcontact.setCurrentAddress(address);
 				mxcontact.setMyAddress("newcontact");
-				
 				maxdb.newContact(mxcontact);
 				
 			}else{
-//				MinimaLogger.log("UPDATE CONTACT : "+contactjson.toString());
-				
-				MaximaContact mxcontact = new MaximaContact(name, publickey);
-				mxcontact.setCurrentAddress(address);
 				mxcontact.setExtraData(checkcontact.getExtraData());
 				mxcontact.setMyAddress(checkcontact.getMyAddress());
 				
@@ -110,17 +135,25 @@ public class MaximaContactManager extends MessageProcessor {
 			
 		}else if(zMessage.getMessageType().equals(MAXCONTACTS_UPDATEINFO)) {
 			
+			//Are we deleting..
+			boolean delete = false;
+			if(zMessage.exists("delete")) {
+				delete = zMessage.getBoolean("delete");
+			}
+			
 			//Who To..
 			String publickey = zMessage.getString("publickey");
 			String address 	 = zMessage.getString("address");
 			
 			//Send a Contact info message to a user
-			JSONObject contactinfo	= getMaximaInfo(false);
+			JSONObject contactinfo	= getMaximaContactInfo(false,delete);
 			
 			//Now Update Our DB..
-			MaximaContact mxcontact = maxdb.loadContactFromPublicKey(publickey);
-			mxcontact.setMyAddress((String)contactinfo.get("address"));
-			maxdb.updateContact(mxcontact);
+			if(!delete) {
+				MaximaContact mxcontact = maxdb.loadContactFromPublicKey(publickey);
+				mxcontact.setMyAddress((String)contactinfo.get("address"));
+				maxdb.updateContact(mxcontact);
+			}
 			
 			MiniString str			= new MiniString(contactinfo.toString());
 			MiniData mdata 			= new MiniData(str.getData());
@@ -134,9 +167,50 @@ public class MaximaContactManager extends MessageProcessor {
 		}else if(zMessage.getMessageType().equals(MAXCONTACTS_DELETECONTACT)) {
 			
 			//Few steps here..
+			int id = zMessage.getInteger("id");
 			
+			//Get that contact
+			MaximaContact mcontact = maxdb.loadContactFromID(id);
+			if(mcontact == null) {
+				MinimaLogger.log("Trying to remove unknown Contact ID : "+id);
+				return;
+			}
 			
+			//Where are WE 
+			String myaddress = mcontact.getMyAddress();
 			
+			//Get the host..
+			int index 	= myaddress.indexOf("@");
+			String host = myaddress.substring(index+1);
+			
+			//Get the client
+			MaximaHost mxhost 	= maxdb.loadHost(host);
+			
+			//Reset that host PubKey.. and Update DB
+			mxhost.createKeys();
+			maxdb.updateHost(mxhost);
+			
+			//Delete the contact
+			maxdb.deleteContact(id);
+			
+			//Tell them
+			NIOClient nioc = Main.getInstance().getNIOManager().getNIOClient(host); 
+			if(nioc != null) {
+				//So we know the details.. Post them to him.. so he knows who we are..
+				MaximaCTRLMessage maxmess = new MaximaCTRLMessage(MaximaCTRLMessage.MAXIMACTRL_TYPE_ID);
+				maxmess.setData(mxhost.getPublicKey());
+				NIOManager.sendNetworkMessage(nioc.getUID(), NIOMessage.MSG_MAXIMA_CTRL, maxmess);
+			}
+			
+			//And finally Refresh ALL users..
+			mManager.PostMessage(MaximaManager.MAXIMA_REFRESH);
+			
+			//Send him a message saying we have deleted him..
+			Message msg = new Message(MAXCONTACTS_UPDATEINFO);
+			msg.addBoolean("delete", true);
+			msg.addString("publickey", mcontact.getPublicKey());
+			msg.addString("address", mcontact.getCurrentAddress());
+			PostMessage(msg);
 		}
 		
 	}
