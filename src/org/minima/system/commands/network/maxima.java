@@ -25,7 +25,7 @@ import org.minima.utils.messages.Message;
 public class maxima extends Command {
 
 	public maxima() {
-		super("maxima","[action:info|send|contact] (contact:) (to:) (application:) (data:) (logs:true|false) - Check your Maxima details, send a message / data, enable logs");
+		super("maxima","[action:info|hosts|send|refresh] (id:)|(to:) (application:) (data:) (logs:true|false) - Check your Maxima details, send a message / data, enable logs");
 	}
 	
 	@Override
@@ -64,12 +64,16 @@ public class maxima extends Command {
 			//Your local IP address
 			String fullhost = GeneralParams.MINIMA_HOST+":"+GeneralParams.MINIMA_PORT;
 			
-			
 			//Show details
 			details.put("logs", max.mMaximaLogs);
+			details.put("name", MinimaDB.getDB().getUserDB().getMaximaName());
 			details.put("publickey", max.getPublicKey().to0xString());
 			details.put("localidentity", max.getLocalMaximaAddress());
 			details.put("contact", max.getRandomMaximaAddress());
+			
+			ret.put("response", details);
+		
+		}else if(func.equals("hosts")) {
 			
 			//Add ALL Hosts
 			ArrayList<MaximaHost> hosts = maxdb.getAllHosts();
@@ -79,16 +83,13 @@ public class maxima extends Command {
 			}
 			details.put("hosts", allhosts);
 			
-			//Get all the current contacts
-			ArrayList<MaximaContact> contacts = maxdb.getAllContacts();
-			JSONArray allcontacts = new JSONArray();
-			for(MaximaContact contact : contacts) {
-				allcontacts.add(contact.toJSON());
-			}
-			details.put("contacts", allcontacts);
-			
 			ret.put("response", details);
-		
+		}else if(func.equals("refresh")) {
+			
+			//Send a contact update message to all contacts
+			max.PostMessage(MaximaManager.MAXIMA_REFRESH);
+			ret.put("response", "Update message sent to all contacts");
+			
 		}else if(func.equals("new")) {
 			
 			throw new CommandException("Supported Soon..");
@@ -103,12 +104,28 @@ public class maxima extends Command {
 
 		}else if(func.equals("send")) {
 			
-			if(!existsParam("to") || !existsParam("application") || !existsParam("data") ) {
+			if(!(existsParam("to") || existsParam("id"))  || !existsParam("application") || !existsParam("data") ) {
 				throw new Exception("MUST specify to, application and data for a send command");
 			}
 			
 			//Send a message..
-			String fullto 	= getParam("to");
+			String fullto = null;
+			if(existsParam("to")) {
+				fullto 	= getParam("to");
+			}else {
+				
+				//Load the contact from the id..
+				String id = getParam("id");
+				
+				//Load the contact
+				MaximaContact mcontact = maxdb.loadContactFromID(Integer.parseInt(id));
+				if(mcontact == null) {
+					throw new CommandException("No Contact found fro ID : "+id);
+				}
+				
+				//Get the address
+				fullto = mcontact.getCurrentAddress();
+			}
 			
 			//Which application
 			String application 	= getParam("application");
@@ -155,48 +172,6 @@ public class maxima extends Command {
 			
 			//Post It!
 //			max.PostMessage(sender);
-			
-			ret.put("response", json);
-		
-		}else if(func.equals("contact")) {
-			
-			//Get the contact address
-			String contact = getParam("contact");
-
-			//What data..
-			JSONObject contactinfo 	= max.getContactsManager().getMaximaInfo();
-			MiniString datastr 		= new MiniString(contactinfo.toString());
-			MiniData mdata 			= new MiniData(datastr.getData());
-			
-			//Now convert into the correct message..
-			Message sender = createSendMessage(contact, MaximaContactManager.CONTACT_APPLICATION, mdata);
-			
-			//Get the message
-			MaximaMessage maxmessage = (MaximaMessage) sender.getObject("maxima");
-			
-			//Who to..
-			String tohost 	= sender.getString("tohost");
-			int toport 		= sender.getInteger("toport");
-			
-			//Now construct a complete Maxima Data packet
-			JSONObject json = maxmessage.toJSON();
-			json.put("msgid", sender.getString("msgid"));
-			try {
-				//Create the packet
-				MiniData maxpacket = MaximaManager.constructMaximaData(sender);
-			
-				//And Send it..
-				boolean valid = MaximaManager.sendMaxPacket(tohost, toport, maxpacket);
-				json.put("delivered", valid);
-				if(!valid) {
-					json.put("error", "Not delivered");
-				}
-				
-			}catch(Exception exc){
-				//Something wrong
-				json.put("delivered", false);
-				json.put("error", exc.toString());
-			}
 			
 			ret.put("response", json);
 		}

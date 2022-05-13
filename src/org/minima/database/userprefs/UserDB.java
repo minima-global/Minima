@@ -129,4 +129,15 @@ public class UserDB extends JsonDB{
 	public MiniNumber getHashRate() {
 		return getNumber("hashrate", MiniNumber.MILLION);
 	}
+	
+	/**
+	 * Get set the User Maxima Details..
+	 */
+	public void setMaximaName(String zName) {
+		setString("maximaname", zName);
+	}
+	
+	public String getMaximaName() {
+		return getString("maximaname", "noname");
+	}
 }

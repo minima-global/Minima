@@ -2,6 +2,7 @@ package org.minima.database.maxima;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Date;
 
 import org.minima.objects.base.MiniData;
 import org.minima.utils.json.JSONObject;
@@ -29,6 +30,11 @@ public class MaximaContact {
 	 */
 	public String 	mMyCurrentAddress;
 	
+	/**
+	 * Last Seen
+	 */
+	long mLastSeen;
+	
 	public MaximaContact(String zName, String zPublicKey) {
 		mName 		= zName;
 		mPublicKey	= zPublicKey;
@@ -41,6 +47,7 @@ public class MaximaContact {
 		mPublicKey		= zSQLResult.getString("publickey");
 		mCurrentAddress	= zSQLResult.getString("currentaddress");
 		mMyCurrentAddress	= zSQLResult.getString("myaddress");
+		mLastSeen		= zSQLResult.getLong("lastseen");
 	}
 	
 	public void setExtraData(MiniData zExtra){
@@ -79,6 +86,10 @@ public class MaximaContact {
 		return mMyCurrentAddress;
 	}
 	
+	public long getLastSeen() {
+		return mLastSeen;
+	}
+	
 	public JSONObject toJSON() {
 		JSONObject json = new JSONObject();
 		
@@ -87,6 +98,8 @@ public class MaximaContact {
 		json.put("publickey", mPublicKey);
 		json.put("currentaddress", mCurrentAddress);
 		json.put("myaddress", mMyCurrentAddress);
+		json.put("lastseen", mLastSeen);
+		json.put("date", new Date(mLastSeen).toString());
 		
 		return json;
 	}

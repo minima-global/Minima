@@ -16,14 +16,14 @@ import org.minima.utils.messages.MessageProcessor;
 
 public class MaximaContactManager extends MessageProcessor {
 
-	public static final String CONTACT_APPLICATION 		= "**contact_ctrl**";
+	public static final String CONTACT_APPLICATION 		 = "**maxima_contact_ctrl**";
 	
-	public static final String MAXCONTACTS_RECMESSAGE 	= "MAXCONTACTS_RECMESSAGE";
-	public static final String MAXCONTACTS_UPDATEINFO 	= "MAXCONTACTS_SENDMESSAGE";
+	public static final String MAXCONTACTS_RECMESSAGE 	 = "MAXCONTACTS_RECMESSAGE";
+	public static final String MAXCONTACTS_UPDATEINFO 	 = "MAXCONTACTS_SENDMESSAGE";
+	
+	public static final String MAXCONTACTS_DELETECONTACT = "MAXCONTACTS_DELETECONTACT";
 	
 	MaximaManager mManager;
-	
-	String mMyName = MiniData.getRandomData(8).to0xString();
 	
 	public MaximaContactManager(MaximaManager zManager) {
 		super("MAXIMA_CONTACTS");
@@ -31,10 +31,11 @@ public class MaximaContactManager extends MessageProcessor {
 		mManager = zManager;
 	}
 	
-	public JSONObject getMaximaInfo() {
+	public JSONObject getMaximaInfo(boolean zIntro) {
 		JSONObject ret = new JSONObject();
 		
-		ret.put("name", mMyName);
+		ret.put("intro", zIntro);
+		ret.put("name", MinimaDB.getDB().getUserDB().getMaximaName());
 		ret.put("publickey", mManager.getPublicKey().to0xString());
 		ret.put("address", mManager.getRandomMaximaAddress());
 		
@@ -71,26 +72,28 @@ public class MaximaContactManager extends MessageProcessor {
 			}
 			
 			//OK - lets get his current address
+			boolean intro		= (boolean)contactjson.get("intro");
+			String name 		= (String) contactjson.get("name");
 			String address 		= (String) contactjson.get("address");
 			
 			//Create a Contact - if not there already
-			MaximaContact checkcontact = maxdb.loadContact(publickey);
+			MaximaContact checkcontact = maxdb.loadContactFromPublicKey(publickey);
 			
 			if(checkcontact == null) {
-				MinimaLogger.log("NEW CONTACT : "+contactjson.toString());
+//				MinimaLogger.log("NEW CONTACT : "+contactjson.toString());
 				
-				MaximaContact mxcontact = new MaximaContact((String)contactjson.get("name"), publickey);
+				MaximaContact mxcontact = new MaximaContact(name, publickey);
 				mxcontact.setExtraData(new MiniData("0x00"));
-				mxcontact.setCurrentAddress((String)contactjson.get("address"));
+				mxcontact.setCurrentAddress(address);
 				mxcontact.setMyAddress("newcontact");
 				
 				maxdb.newContact(mxcontact);
 				
-			}else {
-				MinimaLogger.log("UPDATE CONTACT : "+contactjson.toString());
+			}else{
+//				MinimaLogger.log("UPDATE CONTACT : "+contactjson.toString());
 				
-				MaximaContact mxcontact = new MaximaContact((String)contactjson.get("name"), publickey);
-				mxcontact.setCurrentAddress((String)contactjson.get("address"));
+				MaximaContact mxcontact = new MaximaContact(name, publickey);
+				mxcontact.setCurrentAddress(address);
 				mxcontact.setExtraData(checkcontact.getExtraData());
 				mxcontact.setMyAddress(checkcontact.getMyAddress());
 				
@@ -98,7 +101,7 @@ public class MaximaContactManager extends MessageProcessor {
 			}
 			
 			//Send them a contact message aswell..
-			if(checkcontact == null) {
+			if(intro || checkcontact == null) {
 				Message msg = new Message(MAXCONTACTS_UPDATEINFO);
 				msg.addString("publickey", publickey);
 				msg.addString("address", address);
@@ -112,10 +115,10 @@ public class MaximaContactManager extends MessageProcessor {
 			String address 	 = zMessage.getString("address");
 			
 			//Send a Contact info message to a user
-			JSONObject contactinfo	= getMaximaInfo();
+			JSONObject contactinfo	= getMaximaInfo(false);
 			
 			//Now Update Our DB..
-			MaximaContact mxcontact = maxdb.loadContact(publickey);
+			MaximaContact mxcontact = maxdb.loadContactFromPublicKey(publickey);
 			mxcontact.setMyAddress((String)contactinfo.get("address"));
 			maxdb.updateContact(mxcontact);
 			
@@ -127,6 +130,13 @@ public class MaximaContactManager extends MessageProcessor {
 			
 			//Post it on the stack
 			mManager.PostMessage(sender);	
+		
+		}else if(zMessage.getMessageType().equals(MAXCONTACTS_DELETECONTACT)) {
+			
+			//Few steps here..
+			
+			
+			
 		}
 		
 	}

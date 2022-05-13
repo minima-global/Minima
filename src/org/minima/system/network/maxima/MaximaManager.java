@@ -62,7 +62,7 @@ public class MaximaManager extends MessageProcessor {
 	public static final String MAXIMA_CTRLMESSAGE 	= "MAXIMA_CTRLMESSAGE";
 	public static final String MAXIMA_RECMESSAGE 	= "MAXIMA_RECMESSAGE";
 	public static final String MAXIMA_SENDMESSAGE 	= "MAXIMA_SENDDMESSAGE";
-	public static final String MAXIMA_RESEND 		= "MAXIMA_RESEND";
+	public static final String MAXIMA_REFRESH 		= "MAXIMA_REFRESH";
 	
 	/**
 	 * UserDB data
@@ -148,6 +148,7 @@ public class MaximaManager extends MessageProcessor {
 		
 		return connctedhosts.get(new Random().nextInt(connctedhosts.size())).getMaximaAddress();
 	}
+
 	
 	public MaximaMessage createMaximaMessage(String zTo, String zApplication, MiniData zData) {
 		MaximaMessage maxima 	= new MaximaMessage();
@@ -197,15 +198,15 @@ public class MaximaManager extends MessageProcessor {
 		}else if(zMessage.getMessageType().equals(MAXIMA_LOOP)) {
 			
 			//Resend all your details to your contacts
-			PostMessage(MAXIMA_RESEND);
+			PostMessage(MAXIMA_REFRESH);
 			
-			//Delete really old MaxHosts
-			//..
+			//Delete really old MaxHosts - not seen for 7 days
+			maxdb.deleteOldHosts();
 			
 			//Post a LOOP message that updates all my contacts just in case..
 			PostTimerMessage(new TimerMessage(MAXIMA_LOOP_DELAY, MAXIMA_LOOP));
 		
-		}else if(zMessage.getMessageType().equals(MAXIMA_RESEND)) {
+		}else if(zMessage.getMessageType().equals(MAXIMA_REFRESH)) {
 			
 			//Get all your contacts
 			ArrayList<MaximaContact> allcontacts = maxdb.getAllContacts();
@@ -445,8 +446,14 @@ public class MaximaManager extends MessageProcessor {
 				//Process this internally..
 				Message contactmessage = new Message(MaximaContactManager.MAXCONTACTS_RECMESSAGE);
 				contactmessage.addObject("maxmessage", maxjson);
-				
 				getContactsManager().PostMessage(contactmessage);
+				
+				//Update DB - this host is being used..
+				MaximaHost host = maxdb.loadHost(nioc.getFullAddress());
+				if(host != null) {
+					host.updateLastSeen();
+					maxdb.updateHost(host);
+				}
 				
 			}else {
 				//Notify The Listeners

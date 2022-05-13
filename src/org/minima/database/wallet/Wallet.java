@@ -12,6 +12,7 @@ import org.minima.objects.Address;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.keys.Signature;
 import org.minima.objects.keys.TreeKey;
+import org.minima.system.params.GeneralParams;
 import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.SqlDB;
@@ -63,6 +64,11 @@ public class Wallet extends SqlDB {
 	
 	public Wallet() {
 		super();
+		
+		//Are we testing..
+		if(GeneralParams.TEST_PARAMS) {
+			NUMBER_GETADDRESS_KEYS = 8;
+		}
 	}
 	
 	public void shuttiongDown() {

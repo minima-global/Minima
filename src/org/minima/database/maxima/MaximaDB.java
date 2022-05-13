@@ -13,26 +13,31 @@ import org.minima.utils.SqlDB;
 public class MaximaDB extends SqlDB {
 
 	/**
+	 * 7 days then we can delete
+	 */
+	public static long MAX_HOST_INACTIVE = 1000 * 60 * 60 * 24 * 7;
+	
+	/**
 	 * PreparedStatements
 	 */
 	PreparedStatement SQL_INSERT_MAXIMA_HOST 		= null;
 	PreparedStatement SQL_UPDATE_MAXIMA_HOST 		= null;
 	PreparedStatement SQL_UPDATE_ALL_NOTCONECTED 	= null;
-	PreparedStatement SQL_SELECT_MAXIMA_HOST 		= null;
 	PreparedStatement SQL_SELECT_ALL_HOSTS 			= null;
 	PreparedStatement SQL_DELETE_HOST 				= null;
 	PreparedStatement SQL_DELETE_OLD_HOSTS 			= null;
 	
 	PreparedStatement SQL_INSERT_MAXIMA_CONTACT 	= null;
 	PreparedStatement SQL_SELECT_ALL_CONTACTS 		= null;
-	PreparedStatement SQL_SELECT_CONTACT 			= null;
+	PreparedStatement SQL_SELECT_CONTACT_PUBLICKEY 	= null;
+	PreparedStatement SQL_SELECT_CONTACT_ID 		= null;
 	PreparedStatement SQL_UPDATE_CONTACT 			= null;
 	
 	/**
 	 * A Cached list
 	 */
-	boolean mHostCacheValid 			= false;
-	ArrayList<MaximaHost> mCachedHosts 	= null;
+	boolean mHostCacheValid 				= false;
+	ArrayList<MaximaHost> mCachedHosts 		 = null;
 	
 	public MaximaDB() {
 		super();
@@ -65,7 +70,8 @@ public class MaximaDB extends SqlDB {
 							+ "  `extradata` blob NOT NULL,"
 							+ "  `publickey` varchar(512) NOT NULL UNIQUE,"
 							+ "  `currentaddress` varchar(512) NOT NULL,"
-							+ "  `myaddress` varchar(512) NOT NULL"
+							+ "  `myaddress` varchar(512) NOT NULL,"
+							+ "  `lastseen` bigint NOT NULL"
 							+ ")";
 			
 			//Run it..
@@ -75,21 +81,22 @@ public class MaximaDB extends SqlDB {
 			stmt.close();
 			
 			//Create some prepared statements..
-			SQL_SELECT_MAXIMA_HOST	= mSQLConnection.prepareStatement("SELECT * FROM hosts WHERE host=?");
 			SQL_SELECT_ALL_HOSTS	= mSQLConnection.prepareStatement("SELECT * FROM hosts");
 			SQL_INSERT_MAXIMA_HOST	= mSQLConnection.prepareStatement("INSERT IGNORE INTO hosts ( host, publickey, privatekey, connected, lastseen ) VALUES ( ?, ? , ? ,? ,? )");
 			SQL_UPDATE_MAXIMA_HOST	= mSQLConnection.prepareStatement("UPDATE hosts SET publickey=?, privatekey=?, connected=?, lastseen=? WHERE host=?");
 			SQL_DELETE_HOST			= mSQLConnection.prepareStatement("DELETE FROM hosts WHERE host=?");
-			SQL_DELETE_OLD_HOSTS	= mSQLConnection.prepareStatement("DELETE FROM hosts WHERE lastseen < ?");
+			SQL_DELETE_OLD_HOSTS	= mSQLConnection.prepareStatement("DELETE FROM hosts WHERE connected=0 AND lastseen < ?");
 			SQL_UPDATE_ALL_NOTCONECTED = mSQLConnection.prepareStatement("UPDATE hosts SET connected=0");
 			
 			SQL_INSERT_MAXIMA_CONTACT 	= mSQLConnection.prepareStatement("INSERT IGNORE INTO contacts "
-					+ "( name, extradata, publickey, currentaddress, myaddress ) VALUES ( ?, ?, ?, ?, ? )");
-			SQL_SELECT_ALL_CONTACTS		= mSQLConnection.prepareStatement("SELECT * FROM contacts");
-			SQL_SELECT_CONTACT			= mSQLConnection.prepareStatement("SELECT * FROM contacts WHERE publickey=?");
+					+ "( name, extradata, publickey, currentaddress, myaddress, lastseen ) VALUES ( ?, ?, ?, ?, ?, ? )");
+			
+			SQL_SELECT_ALL_CONTACTS		 = mSQLConnection.prepareStatement("SELECT * FROM contacts");
+			SQL_SELECT_CONTACT_PUBLICKEY = mSQLConnection.prepareStatement("SELECT * FROM contacts WHERE publickey=?");
+			SQL_SELECT_CONTACT_ID 		 = mSQLConnection.prepareStatement("SELECT * FROM contacts WHERE id=?");
 			
 			SQL_UPDATE_CONTACT			= mSQLConnection.prepareStatement("UPDATE contacts SET "
-					+ "name=?, extradata=?, currentaddress=?, myaddress=? WHERE publickey=?");
+					+ "name=?, extradata=?, currentaddress=?, myaddress=?, lastseen=? WHERE publickey=?");
 			
 			//All Host are not connected
 			allHostNotConnected();
@@ -102,6 +109,9 @@ public class MaximaDB extends SqlDB {
 		}
 	}
 
+	/**
+	 * At startup none are connected..
+	 */
 	private synchronized void allHostNotConnected() {
 		
 		try {
@@ -150,43 +160,16 @@ public class MaximaDB extends SqlDB {
 	
 	public synchronized MaximaHost loadHost(String zHost) {
 		
-		//Is it cached
-		if(mHostCacheValid) {
-			
-			//Cycle through our current list
-			ArrayList<MaximaHost> allhosts = getAllHosts();
-			for(MaximaHost host : allhosts) {
-				if(host.getHost().equals(zHost)) {
-					return host;
-				}
+		//Cycle through our current list
+		ArrayList<MaximaHost> allhosts = getAllHosts();
+		for(MaximaHost host : allhosts) {
+			if(host.getHost().equals(zHost)) {
+				return host;
 			}
-			
-			return null;
-		}
-		
-		try {
-			
-			//Set search params
-			SQL_SELECT_MAXIMA_HOST.clearParameters();
-			SQL_SELECT_MAXIMA_HOST.setString(1, zHost);
-			
-			//Run the query
-			ResultSet rs = SQL_SELECT_MAXIMA_HOST.executeQuery();
-			
-			//Is there a valid result.. ?
-			if(rs.next()) {
-				
-				//Get the details..
-				MaximaHost mxhost = new MaximaHost(rs);
-				
-				return mxhost;
-			}
-			
-		} catch (SQLException e) {
-			MinimaLogger.log(e);
 		}
 		
 		return null;
+		
 	}
 	
 	public synchronized MaximaHost loadHostFromPublicKey(String zPublicKey) {
@@ -291,6 +274,32 @@ public class MaximaDB extends SqlDB {
 		return false;
 	}
 	
+	public synchronized boolean deleteOldHosts() {
+		
+		try {
+			
+			mHostCacheValid 	= false;
+			
+			//Set search params
+			SQL_DELETE_OLD_HOSTS.clearParameters();
+			
+			//The latest a host can be updated..
+			long minmilli = System.currentTimeMillis() - MAX_HOST_INACTIVE;
+			
+			SQL_DELETE_OLD_HOSTS.setLong(1, minmilli);
+			
+			//Run the query
+			SQL_DELETE_OLD_HOSTS.execute();
+			
+			return true;
+			
+		} catch (SQLException e) {
+			MinimaLogger.log(e);
+		}
+		
+		return false;
+	}
+	
 	public synchronized boolean newContact(MaximaContact zContact) {
 		try {
 			
@@ -303,6 +312,7 @@ public class MaximaDB extends SqlDB {
 			SQL_INSERT_MAXIMA_CONTACT.setString(3, zContact.getPublicKey());
 			SQL_INSERT_MAXIMA_CONTACT.setString(4, zContact.getCurrentAddress());
 			SQL_INSERT_MAXIMA_CONTACT.setString(5, zContact.getMyAddress());
+			SQL_INSERT_MAXIMA_CONTACT.setLong(6, System.currentTimeMillis());
 			
 			//Do it.
 			SQL_INSERT_MAXIMA_CONTACT.execute();
@@ -346,16 +356,43 @@ public class MaximaDB extends SqlDB {
 		return contacts;
 	}
 
-	public synchronized MaximaContact loadContact(String zPublicKey) {
+	public synchronized MaximaContact loadContactFromPublicKey(String zPublicKey) {
 		
 		try {
 			
 			//Set search params
-			SQL_SELECT_CONTACT.clearParameters();
-			SQL_SELECT_CONTACT.setString(1, zPublicKey);
+			SQL_SELECT_CONTACT_PUBLICKEY.clearParameters();
+			SQL_SELECT_CONTACT_PUBLICKEY.setString(1, zPublicKey);
 			
 			//Run the query
-			ResultSet rs = SQL_SELECT_CONTACT.executeQuery();
+			ResultSet rs = SQL_SELECT_CONTACT_PUBLICKEY.executeQuery();
+			
+			//Is there a valid result.. ?
+			if(rs.next()) {
+				
+				//Get the details..
+				MaximaContact mxcontact = new MaximaContact(rs);
+				
+				return mxcontact;
+			}
+			
+		} catch (SQLException e) {
+			MinimaLogger.log(e);
+		}
+		
+		return null;
+	}
+	
+	public synchronized MaximaContact loadContactFromID(int zID) {
+		
+		try {
+			
+			//Set search params
+			SQL_SELECT_CONTACT_ID.clearParameters();
+			SQL_SELECT_CONTACT_ID.setLong(1, zID);
+			
+			//Run the query
+			ResultSet rs = SQL_SELECT_CONTACT_ID.executeQuery();
 			
 			//Is there a valid result.. ?
 			if(rs.next()) {
@@ -384,8 +421,9 @@ public class MaximaDB extends SqlDB {
 			SQL_UPDATE_CONTACT.setBytes(2, zContact.getExtraData().getBytes());
 			SQL_UPDATE_CONTACT.setString(3, zContact.getCurrentAddress());
 			SQL_UPDATE_CONTACT.setString(4, zContact.getMyAddress());
+			SQL_UPDATE_CONTACT.setLong(5, System.currentTimeMillis());
 			
-			SQL_UPDATE_CONTACT.setString(5, zContact.getPublicKey());
+			SQL_UPDATE_CONTACT.setString(6, zContact.getPublicKey());
 			
 			//Run the query
 			SQL_UPDATE_CONTACT.execute();
