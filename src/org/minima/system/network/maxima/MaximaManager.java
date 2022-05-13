@@ -85,7 +85,7 @@ public class MaximaManager extends MessageProcessor {
 	String mMaximaAddress;
 	
 	private boolean mInited 	= false;
-	public boolean mMaximaLogs 	= true;
+	public boolean mMaximaLogs 	= false;
 
 	/**
 	 * The Contacts Manager
