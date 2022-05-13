@@ -26,6 +26,7 @@ import org.minima.system.commands.base.tutorial;
 import org.minima.system.commands.base.vault;
 import org.minima.system.commands.network.connect;
 import org.minima.system.commands.network.disconnect;
+import org.minima.system.commands.network.maxcontacts;
 import org.minima.system.commands.network.maxima;
 import org.minima.system.commands.network.message;
 import org.minima.system.commands.network.network;
@@ -129,6 +130,7 @@ public class help extends Command {
 		
 		addCommand(details, new network());
 		addCommand(details, new maxima());
+		addCommand(details, new maxcontacts());
 		addCommand(details, new message());
 		addCommand(details, new connect());
 		addCommand(details, new disconnect());

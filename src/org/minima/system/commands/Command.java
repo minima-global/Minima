@@ -40,6 +40,7 @@ import org.minima.system.commands.base.tutorial;
 import org.minima.system.commands.base.vault;
 import org.minima.system.commands.network.connect;
 import org.minima.system.commands.network.disconnect;
+import org.minima.system.commands.network.maxcontacts;
 import org.minima.system.commands.network.maxima;
 import org.minima.system.commands.network.message;
 import org.minima.system.commands.network.network;
@@ -105,7 +106,9 @@ public abstract class Command {
 			
 			new hash(), new hashtest(), new sign(), new verify(),
 			
-			new maxima(),new mmrcreate(), new mmrproof()};
+			new maxima(), new maxcontacts(),
+			
+			new mmrcreate(), new mmrproof()};
 	
 	String mName;
 	String mHelp;
