@@ -498,6 +498,12 @@ public class NIOMessage implements Runnable {
 				
 			}else if(type.isEqual(MSG_MAXIMA_CTRL)) {
 				
+				//Make sure acceptable length
+				if(mData.getLength() > 65535) {
+					MinimaLogger.log("Maxima CTRL message too Large! from "+mClientUID);
+					return;
+				}
+				
 				//Get the message
 				MaximaCTRLMessage msg = MaximaCTRLMessage.ReadFromStream(dis);
 				
@@ -512,6 +518,12 @@ public class NIOMessage implements Runnable {
 				Main.getInstance().getMaxima().PostMessage(maxmsg);
 				
 			}else if(type.isEqual(MSG_MAXIMA)) {
+				
+				//Make sure acceptable length
+				if(mData.getLength() > 65535) {
+					MinimaLogger.log("Maxima message too Large! from "+mClientUID);
+					return;
+				}
 				
 				//Get the data..
 				MaximaPackage maxpkg = MaximaPackage.ReadFromStream(dis);
