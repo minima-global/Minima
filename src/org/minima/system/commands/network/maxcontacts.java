@@ -1,25 +1,19 @@
 package org.minima.system.commands.network;
 
 import java.util.ArrayList;
-import java.util.Random;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.maxima.MaximaContact;
 import org.minima.database.maxima.MaximaDB;
-import org.minima.database.maxima.MaximaHost;
 import org.minima.database.txpowtree.TxPoWTreeNode;
-import org.minima.objects.Address;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
-import org.minima.system.commands.CommandException;
 import org.minima.system.network.maxima.MaximaContactManager;
 import org.minima.system.network.maxima.MaximaManager;
 import org.minima.system.network.maxima.message.MaximaMessage;
-import org.minima.system.params.GeneralParams;
-import org.minima.utils.Crypto;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
