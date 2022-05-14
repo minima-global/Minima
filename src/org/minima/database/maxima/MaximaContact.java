@@ -10,7 +10,7 @@ import org.minima.utils.json.JSONObject;
 
 public class MaximaContact {
 
-	public int 		mUID;
+	public int 		mUID = 0;
 	
 	public String 	mName;
 	
@@ -40,7 +40,7 @@ public class MaximaContact {
 	 * Block values to check you are on the same chain
 	 */
 	MiniNumber 	mTopBlock 	= MiniNumber.ZERO;
-	MiniNumber 	mCheckBlock	= MiniNumber.ZERO;;
+	MiniNumber 	mCheckBlock	= MiniNumber.ZERO;
 	MiniData 	mCheckHash	= MiniData.ZERO_TXPOWID;
 	
 	
@@ -57,6 +57,16 @@ public class MaximaContact {
 		mCurrentAddress	= zSQLResult.getString("currentaddress");
 		mMyCurrentAddress	= zSQLResult.getString("myaddress");
 		mLastSeen		= zSQLResult.getLong("lastseen");
+	}
+	
+	public MaximaContact(MaximaContact zContact) {
+		mUID				= zContact.getUID();
+		mName				= zContact.getName();
+		mExtraData			= zContact.getExtraData();
+		mPublicKey			= zContact.getPublicKey();
+		mCurrentAddress		= zContact.getCurrentAddress();
+		mMyCurrentAddress	= zContact.getMyAddress();
+		mLastSeen			= zContact.getLastSeen();
 	}
 	
 	public void setExtraData(MiniData zExtra){
@@ -102,7 +112,7 @@ public class MaximaContact {
 	public void setBlockDetails(MiniNumber zTipBlock, MiniNumber zTipBlock50, MiniData zT50Hash) {
 		mTopBlock 		= zTipBlock;
 		mCheckBlock 	= zTipBlock50;
-		mCheckHash	= zT50Hash;
+		mCheckHash		= zT50Hash;
 	}
 	
 	public JSONObject toJSON() {
