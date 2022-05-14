@@ -7,8 +7,10 @@ import org.minima.database.MinimaDB;
 import org.minima.database.maxima.MaximaContact;
 import org.minima.database.maxima.MaximaDB;
 import org.minima.database.maxima.MaximaHost;
+import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.objects.Address;
 import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
@@ -45,6 +47,8 @@ public class maxcontacts extends Command {
 		//What are we doing
 		String func = getParam("action", "list");
 		
+		//Get the Tree tip - to check the contacts
+		TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
 		
 		JSONObject details = new JSONObject();
 		
@@ -54,7 +58,22 @@ public class maxcontacts extends Command {
 			ArrayList<MaximaContact> contacts = maxdb.getAllContacts();
 			JSONArray allcontacts = new JSONArray();
 			for(MaximaContact contact : contacts) {
-				allcontacts.add(contact.toJSON());
+				
+				//Check the tree tip
+				JSONObject extradata = contact.getExtraData(); 
+				MiniNumber checkblock = new MiniNumber((String)extradata.get("checkblock"));
+				MiniData   checkhash  = new MiniData((String)extradata.get("checkhash"));
+				
+				//Check it..
+				TxPoWTreeNode checknode = tip.getPastNode(checkblock);
+				MiniData nodehash		= checknode.getTxPoW().getTxPoWIDData();
+				
+				//The contact
+				JSONObject conjson = contact.toJSON();
+				conjson.put("samechain", nodehash.isEqual(checkhash));
+				
+				//And add..
+				allcontacts.add(conjson);
 			}
 			details.put("contacts", allcontacts);
 			

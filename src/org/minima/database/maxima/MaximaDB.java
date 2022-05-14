@@ -311,7 +311,11 @@ public class MaximaDB extends SqlDB {
 		
 			//Set main params
 			SQL_INSERT_MAXIMA_CONTACT.setString(1, zContact.getName());
-			SQL_INSERT_MAXIMA_CONTACT.setBytes(2, zContact.getExtraData().getBytes());
+			
+			//Extra data
+			MiniData extradata = MaximaContact.convertJSONObjectToData(zContact.getExtraData());
+			SQL_INSERT_MAXIMA_CONTACT.setBytes(2, extradata.getBytes());
+			
 			SQL_INSERT_MAXIMA_CONTACT.setString(3, zContact.getPublicKey());
 			SQL_INSERT_MAXIMA_CONTACT.setString(4, zContact.getCurrentAddress());
 			SQL_INSERT_MAXIMA_CONTACT.setString(5, zContact.getMyAddress());
@@ -421,7 +425,11 @@ public class MaximaDB extends SqlDB {
 			SQL_UPDATE_CONTACT.clearParameters();
 			
 			SQL_UPDATE_CONTACT.setString(1, zContact.getName());
-			SQL_UPDATE_CONTACT.setBytes(2, zContact.getExtraData().getBytes());
+			
+			//Extra Data a little different
+			MiniData extradata = MaximaContact.convertJSONObjectToData(zContact.getExtraData());
+			SQL_UPDATE_CONTACT.setBytes(2, extradata.getBytes());
+			
 			SQL_UPDATE_CONTACT.setString(3, zContact.getCurrentAddress());
 			SQL_UPDATE_CONTACT.setString(4, zContact.getMyAddress());
 			SQL_UPDATE_CONTACT.setLong(5, System.currentTimeMillis());

@@ -6,6 +6,7 @@ import org.minima.database.maxima.MaximaDB;
 import org.minima.database.maxima.MaximaHost;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
 import org.minima.system.commands.network.maxima;
@@ -44,7 +45,6 @@ public class MaximaContactManager extends MessageProcessor {
 		if(zDelete) {
 			ret.put("intro", false);
 			ret.put("name", "");
-			ret.put("extradata", "0x00");
 			ret.put("publickey", mManager.getPublicKey().to0xString());
 			ret.put("address", "");
 			
@@ -56,13 +56,13 @@ public class MaximaContactManager extends MessageProcessor {
 			
 			ret.put("intro", zIntro);
 			ret.put("name", MinimaDB.getDB().getUserDB().getMaximaName());
-			ret.put("extradata", "0x00");
 			ret.put("publickey", mManager.getPublicKey().to0xString());
 			ret.put("address", mManager.getRandomMaximaAddress());
+			
+			//Extra Data
 			ret.put("topblock",tip.getBlockNumber().toString());
 			ret.put("checkblock",tip50.getBlockNumber().toString());
 			ret.put("checkhash",tip50.getTxPoW().getTxPoWID());
-			
 		}
 		
 		return ret;
@@ -100,12 +100,20 @@ public class MaximaContactManager extends MessageProcessor {
 			//OK - lets get his current address
 			boolean intro		= (boolean)contactjson.get("intro");
 			boolean delete		= (boolean)contactjson.get("delete");
+			
+			//Their Address
+			String address 		= (String) contactjson.get("address");
+			
+			//Few checks on name
 			String name 		= (String) contactjson.get("name");
 			name = name.replace("\"", "");
 			name = name.replace("'", "");
 			name = name.replace(";", "");
 			
-			String address 		= (String) contactjson.get("address");
+			//The ExtraData
+			MiniNumber topblock 	= new MiniNumber((String) contactjson.get("topblock"));
+			MiniNumber checkblock 	= new MiniNumber((String) contactjson.get("checkblock"));
+			MiniData checkhash 		= new MiniData((String) contactjson.get("checkhash"));
 			
 			//Create a Contact - if not there already
 			MaximaContact checkcontact = maxdb.loadContactFromPublicKey(publickey);
@@ -124,12 +132,13 @@ public class MaximaContactManager extends MessageProcessor {
 			mxcontact.setCurrentAddress(address);
 			
 			if(checkcontact == null) {
-				mxcontact.setExtraData(new MiniData("0x00"));
 				mxcontact.setMyAddress("newcontact");
+				mxcontact.setBlockDetails(topblock, checkblock, checkhash);
 				maxdb.newContact(mxcontact);
 				
 			}else{
 				mxcontact.setExtraData(checkcontact.getExtraData());
+				mxcontact.setBlockDetails(topblock, checkblock, checkhash);
 				mxcontact.setMyAddress(checkcontact.getMyAddress());
 				maxdb.updateContact(mxcontact);
 			}
