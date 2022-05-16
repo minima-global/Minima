@@ -1,4 +1,4 @@
-package org.minima.system.commands.network;
+package org.minima.system.commands.maxima;
 
 import java.util.ArrayList;
 

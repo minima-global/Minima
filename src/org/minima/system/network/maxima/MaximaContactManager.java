@@ -9,7 +9,7 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
-import org.minima.system.commands.network.maxima;
+import org.minima.system.commands.maxima.maxima;
 import org.minima.system.network.minima.NIOClient;
 import org.minima.system.network.minima.NIOManager;
 import org.minima.system.network.minima.NIOMessage;
