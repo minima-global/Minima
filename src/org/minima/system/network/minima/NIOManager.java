@@ -309,8 +309,6 @@ public class NIOManager extends MessageProcessor {
 				//Do we have ANY connections at all..
 				ArrayList<NIOClient> conns = mNIOServer.getAllNIOClients();
 				if(conns.size()>0) {
-					//We have some connections.. so this connection has no excuse..
-					mConnectingClients.remove(nc.getUID());
 					
 					//No reconnect
 					reconnect = false;
@@ -333,12 +331,13 @@ public class NIOManager extends MessageProcessor {
 			
 			//Try and reconnect
 			if(reconnect) {
+				
 				//Try again..
 				TimerMessage tmsg = new TimerMessage(RECONNECT_TIMER, NIO_CONNECTATTEMPT);
 				tmsg.addObject("client", nc);
 				NIOManager.this.PostTimerMessage(tmsg);
 			
-			}else {
+			}else{
 				
 				//We are no  longer attempting to connect
 				mConnectingClients.remove(nc.getUID());
