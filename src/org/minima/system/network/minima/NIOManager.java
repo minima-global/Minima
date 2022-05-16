@@ -277,19 +277,19 @@ public class NIOManager extends MessageProcessor {
 				return;
 			}
 			
-			//How many connections - if too many stop.. 
-			if(getNumberOfConnnectingClients() > 10) {
-				MinimaLogger.log("Too many 'connecting' attempts - not connecting to "+nc.getFullAddress());
-				mConnectingClients.remove(nc.getUID());
-				
-				//Tell Maxima just in case..
-				Message maxconn = new Message(MaximaManager.MAXIMA_DISCONNECTED);
-				maxconn.addObject("nioclient", nc);
-				maxconn.addBoolean("reconnect", false);
-				Main.getInstance().getMaxima().PostMessage(maxconn);
-				
-				return;
-			}
+//			//How many connections - if too many stop.. 
+//			if(getNumberOfConnnectingClients() > 10) {
+//				MinimaLogger.log("Too many 'connecting' attempts - not connecting to "+nc.getFullAddress());
+//				mConnectingClients.remove(nc.getUID());
+//				
+//				//Tell Maxima just in case..
+//				Message maxconn = new Message(MaximaManager.MAXIMA_DISCONNECTED);
+//				maxconn.addObject("nioclient", nc);
+//				maxconn.addBoolean("reconnect", false);
+//				Main.getInstance().getMaxima().PostMessage(maxconn);
+//				
+//				return;
+//			}
 			
 			//Connect in separate thread..
 			connectAttempt(nc);
@@ -337,7 +337,12 @@ public class NIOManager extends MessageProcessor {
 				TimerMessage tmsg = new TimerMessage(RECONNECT_TIMER, NIO_CONNECTATTEMPT);
 				tmsg.addObject("client", nc);
 				NIOManager.this.PostTimerMessage(tmsg);
+			
 			}else {
+				
+				//We are no  longer attempting to connect
+				mConnectingClients.remove(nc.getUID());
+				
 				//Tell MAXIMA
 				Message maxconn = new Message(MaximaManager.MAXIMA_DISCONNECTED);
 				maxconn.addObject("nioclient", nc);
@@ -360,12 +365,11 @@ public class NIOManager extends MessageProcessor {
 				disconnect(conn.getUID());
 			}
 			
-			
 		}else if(zMessage.getMessageType().equals(NIO_DISCONNECT)) {
 			//Get the UID
 			String uid = zMessage.getString("uid");
 			
-			//Disconnect from as user
+			//Remove from connecting..
 			mConnectingClients.remove(uid);
 			
 			//And the connected as well..
@@ -413,6 +417,9 @@ public class NIOManager extends MessageProcessor {
 			//New connection.. 
 			NIOClient nioc = (NIOClient)zMessage.getObject("client");
 		
+			//We are no  longer attempting to connect
+			mConnectingClients.remove(nioc.getUID());
+			
 			//Is this an outgoing connection..
 			if(!nioc.isIncoming()) {
 				
