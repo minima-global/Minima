@@ -172,6 +172,9 @@ public class maxima extends Command {
 //			max.PostMessage(sender);
 			
 			ret.put("response", json);
+		
+		}else {
+			throw new CommandException("Unknown Action : "+func);
 		}
 		
 		return ret;
