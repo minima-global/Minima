@@ -47,6 +47,11 @@ public class MaximaContactManager extends MessageProcessor {
 			ret.put("publickey", mManager.getPublicKey().to0xString());
 			ret.put("address", "");
 			
+			//Extra Data
+			ret.put("topblock",MiniNumber.ZERO.toString());
+			ret.put("checkblock",MiniNumber.ZERO.toString());
+			ret.put("checkhash",MiniData.ZERO_TXPOWID.toString());
+			
 		}else {
 			
 			//Get some info about the chain
@@ -87,6 +92,7 @@ public class MaximaContactManager extends MessageProcessor {
 			
 			//Convert to a JSON
 			MiniString datastr 		= new MiniString(dat.getBytes());
+			
 			JSONObject contactjson 	= (JSONObject) new JSONParser().parse(datastr.toString());
 			
 			//Process this special contacts message..
@@ -109,11 +115,6 @@ public class MaximaContactManager extends MessageProcessor {
 			name = name.replace("'", "");
 			name = name.replace(";", "");
 			
-			//The ExtraData
-			MiniNumber topblock 	= new MiniNumber((String) contactjson.get("topblock"));
-			MiniNumber checkblock 	= new MiniNumber((String) contactjson.get("checkblock"));
-			MiniData checkhash 		= new MiniData((String) contactjson.get("checkhash"));
-			
 			//Create a Contact - if not there already
 			MaximaContact checkcontact = maxdb.loadContactFromPublicKey(publickey);
 			
@@ -126,6 +127,11 @@ public class MaximaContactManager extends MessageProcessor {
 				
 				return;
 			}
+			
+			//The ExtraData
+			MiniNumber topblock 	= new MiniNumber((String) contactjson.get("topblock"));
+			MiniNumber checkblock 	= new MiniNumber((String) contactjson.get("checkblock"));
+			MiniData checkhash 		= new MiniData((String) contactjson.get("checkhash"));
 			
 			MaximaContact mxcontact = new MaximaContact(name, publickey);
 			mxcontact.setCurrentAddress(address);

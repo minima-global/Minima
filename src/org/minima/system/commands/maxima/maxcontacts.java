@@ -11,6 +11,7 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
+import org.minima.system.commands.CommandException;
 import org.minima.system.network.maxima.MaximaContactManager;
 import org.minima.system.network.maxima.MaximaManager;
 import org.minima.system.network.maxima.message.MaximaMessage;
@@ -135,6 +136,8 @@ public class maxcontacts extends Command {
 			max.getContactsManager().PostMessage(remove);
 			
 			details.put("contact", id);
+		}else {
+			throw new CommandException("Unknonw action : "+func);
 		}
 		
 		ret.put("response", details);
