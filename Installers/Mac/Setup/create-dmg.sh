@@ -1,7 +1,7 @@
 #!/bin/sh
 
 create-dmg \
-  --volname "minima-app-1.101" \
+  --volname "minima-0.101" \
   --volicon "minima.icns" \
   --app-drop-link 200 50 \
   --window-size 600 400 \
