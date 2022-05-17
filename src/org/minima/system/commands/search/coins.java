@@ -23,12 +23,17 @@ public class coins extends Command {
 		JSONObject ret = getJSONReply();
 		
 		//Check a parameter specified
+		boolean hardsetrel = false;
 		if(!existsParam("relevant") && !existsParam("coinid") && !existsParam("address") && !existsParam("tokenid")) {
-			throw new Exception("No parameters specified");
+			hardsetrel = true;
 		}
 		
 		//Get the txpowid
 		boolean relevant	= existsParam("relevant");
+		if(hardsetrel) {
+			relevant = true;
+		}
+		
 		boolean simple		= getBooleanParam("sendable",false);
 		
 		boolean scoinid		= existsParam("coinid");
@@ -46,7 +51,7 @@ public class coins extends Command {
 		boolean saddress	= existsParam("address");
 		MiniData address	= MiniData.ZERO_TXPOWID;
 		if(saddress) {
-			address = new MiniData(getParam("address", "0x01"));
+			address = new MiniData(getAddressParam("address"));
 		}
 		
 		boolean stokenid	= existsParam("tokenid");

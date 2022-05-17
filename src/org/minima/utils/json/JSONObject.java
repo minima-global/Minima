@@ -106,6 +106,7 @@ public class JSONObject extends LinkedHashMap implements JSONAware, JSONStreamAw
 		return toJSONString(this);
 	}
 	
+	@Override
 	public String toString(){
 		return toJSONString();
 	}

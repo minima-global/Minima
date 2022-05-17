@@ -2,6 +2,7 @@ package org.minima.system;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Random;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
@@ -66,6 +67,7 @@ public class Main extends MessageProcessor {
 	public static final String MAIN_AUTOMINE 	= "MAIN_CHECKAUTOMINE";
 	public static final String MAIN_CLEANDB 	= "MAIN_CLEANDB";
 	public static final String MAIN_PULSE 		= "MAIN_PULSE";
+	public static final String MAIN_NETRESTART 	= "MAIN_NETRESTART";
 	
 	/**
 	 * Debug Function
@@ -73,7 +75,9 @@ public class Main extends MessageProcessor {
 	public static final String MAIN_CHECKER 	= "MAIN_CHECKER";
 	MiniData mOldTip 							= MiniData.ZERO_TXPOWID;
 	
-	//Check every 180 seconds..
+	/**
+	 * Main loop to check various values every 180 seconds..
+	 */
 	long CHECKER_TIMER							= 1000 * 180;
 	
 	/**
@@ -131,6 +135,11 @@ public class Main extends MessageProcessor {
 	 */
 	long AUTOMINE_TIMER = 1000 * 60;
 	
+	/**
+	 * Have all the default keys been created..
+	 */
+	boolean mInitKeysCreated = false;
+	
 	public Main() {
 		super("MAIN");
 	
@@ -152,6 +161,14 @@ public class Main extends MessageProcessor {
 		
 		//Load the Databases
 		MinimaDB.getDB().loadAllDB();
+		
+		//Calculate the User hashrate..
+		MiniNumber hashrate = TxPoWMiner.calculateHashRate();
+		MinimaDB.getDB().getUserDB().setHashRate(hashrate);
+		MinimaLogger.log("Calculate device hash rate : "+hashrate.div(MiniNumber.MILLION).setSignificantDigits(4)+" MHs");
+		
+		//Create the Initial Key Set
+		mInitKeysCreated = MinimaDB.getDB().getWallet().initDefaultKeys();
 		
 		//Start the engine..
 		mTxPoWProcessor = new TxPoWProcessor();
@@ -189,6 +206,13 @@ public class Main extends MessageProcessor {
 		System.gc();
 	}
 	
+	/**
+	 * Used after a Restore
+	 */
+	public void setHasShutDown() {
+		mShuttingdown = true;
+	}
+	
 	public void shutdown() {
 		//Are we already shutting down..
 		if(mShuttingdown) {
@@ -197,6 +221,9 @@ public class Main extends MessageProcessor {
 		
 		//we are shutting down
 		mShuttingdown = true;
+		
+		//Tell the wallet - in case we are creating default keys
+		MinimaDB.getDB().getWallet().shuttiongDown();
 		
 		//Shut down the network
 		mNetwork.shutdownNetwork();
@@ -261,6 +288,37 @@ public class Main extends MessageProcessor {
 		}		
 	}
 	
+	public void restartNIO() {
+		
+		//Not now..
+		if(mShuttingdown) {
+			return;
+		}
+		
+		//Log 
+		MinimaLogger.log("Network Shutdown started..");
+		
+		//Shut down the NIO..
+		mNetwork.shutdownNetwork();
+			
+		//Wait for the networking to finish
+		while(!mNetwork.isShutDownComplete()) {
+			try {Thread.sleep(50);} catch (InterruptedException e) {}
+		}
+		
+		//Save the state.. 
+		MinimaDB.getDB().saveState();
+				
+		//Wait a second..
+		MinimaLogger.log("Network Shutdown complete.. restart in 5 seconds");
+		try {Thread.sleep(5000);} catch (InterruptedException e) {}
+		
+		//Now restart it..
+		mNetwork = new NetworkManager();
+		
+		MinimaLogger.log("Network restarted..");
+	}
+	
 	public long getUptimeMilli() {
 		return System.currentTimeMillis() - mUptimeMilli;
 	}
@@ -302,7 +360,7 @@ public class Main extends MessageProcessor {
 	private void doGenesis() {
 		
 		//Create a new key - to receive the genesis funds..
-		KeyRow genkey = MinimaDB.getDB().getWallet().createNewKey();
+		KeyRow genkey = MinimaDB.getDB().getWallet().createNewKey(true);
 		
 		//Create the Genesis TxPoW..
 		GenesisTxPoW genesis = new GenesisTxPoW(genkey.getAddress());
@@ -335,10 +393,8 @@ public class Main extends MessageProcessor {
 			//Get it..
 			TxPoW txpow = (TxPoW) zMessage.getObject("txpow");
 			
-			//We have mined a TxPoW.. send it out to the network..
+			//We have mined a TxPoW.. is it atleast a transaction
 			if(!txpow.isTransaction() && !txpow.isBlock()) {
-				//A PULSE..forward as proof
-				//TODO
 				return;
 			}
 			
@@ -357,13 +413,16 @@ public class Main extends MessageProcessor {
 			
 			//Are we auto mining
 			if(GeneralParams.AUTOMINE) {
-				
 				//Create a TxPoW
 				mTxPoWMiner.PostMessage(TxPoWMiner.TXPOWMINER_MINEPULSE);
 			}
 			
-			//Next Attempt
-			PostTimerMessage(new TimerMessage(AUTOMINE_TIMER, MAIN_AUTOMINE));
+			//Next Attempt +/- 5 secs, minimum 5 secs
+			long minerdelay = AUTOMINE_TIMER + ( 5000L - (long)new Random().nextInt(10000));
+			if(minerdelay < 5000) {
+				minerdelay = 5000;
+			}
+			PostTimerMessage(new TimerMessage(minerdelay, MAIN_AUTOMINE));
 		
 		}else if(zMessage.getMessageType().equals(MAIN_CLEANDB)) {
 			
@@ -404,7 +463,7 @@ public class Main extends MessageProcessor {
 			//Make sure there is a User specified
 			if(!user.equals("")) {
 				//Call the RPC End point..
-				RPCClient.sendPUT("https://incentivecash.minima.global/api/ping/"+user);
+				RPCClient.sendPUT("https://incentivecash.minima.global/api/ping/"+user+"?version="+GlobalParams.MINIMA_VERSION);
 			}
 			
 			//Do it agin..
@@ -443,7 +502,20 @@ public class Main extends MessageProcessor {
 			//And Post it..
 			PostNotifyEvent("MINING", data);
 			
+		}else if(zMessage.getMessageType().equals(MAIN_NETRESTART)) {
+			
+			//Restart the Networking..
+			restartNIO();
+			
 		}else if(zMessage.getMessageType().equals(MAIN_CHECKER)) {
+			
+			//Check the Default keys
+			if(!mInitKeysCreated) {
+				mInitKeysCreated = MinimaDB.getDB().getWallet().initDefaultKeys();
+				if(mInitKeysCreated) {
+					MinimaLogger.log("All default getaddress keys created..");
+				}
+			}
 			
 			//Get the Current Tip
 			TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();

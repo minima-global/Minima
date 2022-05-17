@@ -77,15 +77,6 @@ public class TxPoWProcessor extends MessageProcessor {
 			MiniNumber rootnum 	= txptree.getRoot().getBlockNumber();
 			boolean validrange 	= blknum.isMore(rootnum);
 			
-			//More complicated..
-//			boolean highenough 	= blknum.isMore(GlobalParams.MINIMA_BLOCKS_SPEED_CALC);
-//			boolean rootdist   	= blknum.isMoreEqual(rootnum.add(GlobalParams.MINIMA_BLOCKS_SPEED_CALC));
-//			//The check we are in a valid range
-//			boolean validrange  = !highenough || (highenough && rootdist);
-//			if(!validrange) {
-//				MinimaLogger.log("Block too close to tree root to process.. blknum:"+blknum+" root:"+rootnum);
-//			}
-			
 			//Is it a block.. that is the only time we crunch
 			if(txpow.isBlock() && validrange) {
 				
@@ -151,8 +142,9 @@ public class TxPoWProcessor extends MessageProcessor {
 		}
 	}
 	
-	private boolean processSyncBlock(TxBlock zTxBlock) {
+	private boolean processSyncBlock(TxBlock zTxBlock) throws Exception {
 		
+		Cascade cascdb		= MinimaDB.getDB().getDB().getCascade();
 		TxPoWDB txpdb 		= MinimaDB.getDB().getTxPoWDB();
 		TxPowTree txptree 	= MinimaDB.getDB().getTxPoWTree();
 		
@@ -163,7 +155,18 @@ public class TxPoWProcessor extends MessageProcessor {
 		if(txptree.getTip() == null) {
 			
 			//Check the cascade ends where this block begins..
-			//TODO
+			if(cascdb.getTip() != null) {
+				
+				//The block numbers
+				MiniNumber txblknum = zTxBlock.getTxPoW().getBlockNumber();
+				MiniNumber cascblk 	= cascdb.getTip().getTxPoW().getBlockNumber();
+				
+				//Check is 1 less than this block..
+				if(!cascblk.isEqual(txblknum.sub(MiniNumber.ONE))) {
+					//Error cascade should start where this ends..
+					throw new Exception("Invalid SyncBlock Cascade Tip not parent "+txblknum+" casctip:"+cascblk);
+				}			
+			}
 			
 			//Create a new node
 			TxPoWTreeNode newblock = new TxPoWTreeNode(zTxBlock);
@@ -193,8 +196,7 @@ public class TxPoWProcessor extends MessageProcessor {
 				
 				return true;
 			}else {
-				MinimaLogger.log("Invalid SyncBlock as NO PARENT! syncblock:"+zTxBlock.getTxPoW().getBlockNumber());
-				
+				throw new Exception("Invalid SyncBlock as NO PARENT! syncblock:"+zTxBlock.getTxPoW().getBlockNumber()); 
 			}
 		}
 		
@@ -330,7 +332,10 @@ public class TxPoWProcessor extends MessageProcessor {
 					
 					//Set this cascade
 					try {
+						
+						//Set this for us
 						MinimaDB.getDB().setIBDCascade(ibd.getCascade());
+						
 					}catch(Exception exc) {
 						MinimaLogger.log(exc);
 					}
@@ -345,11 +350,57 @@ public class TxPoWProcessor extends MessageProcessor {
 			}
 			
 			//Now process the SyncBlocks
+			TxPowTree txptree 		= MinimaDB.getDB().getTxPoWTree();
+			MiniNumber timenow 		= new MiniNumber(System.currentTimeMillis());
+			
+			//Will not accept a TxBlock within 30 mins of current time.. will ask for full TxPoW blocks 
+			MiniNumber mintimediff 	= new MiniNumber(1000 * 60 * 30);
+			
+			//How long is our tree..
+			int additions 	= 0;
+			int treelen 	= txptree.getHeaviestBranchLength();
+			int minlen 		= GlobalParams.MINIMA_BLOCKS_SPEED_CALC.getAsInt()+TxPoWChecker.MEDIAN_TIMECHECK_BLOCK;
+			
+			//Cycle and add..
 			ArrayList<TxBlock> blocks = ibd.getTxBlocks();
 			for(TxBlock block : blocks) {
 				
 				//Process it..
-				processSyncBlock(block);
+				try {
+					//What is the time diff
+					MiniNumber timediff = timenow.sub(block.getTxPoW().getTimeMilli());
+					
+					//Check if this sync block is too near the current time.. or if we have no blocks yet
+					if((treelen+additions)<minlen ||  timediff.isMore(mintimediff)) {
+						
+						//It's not near our time.. so process..
+						processSyncBlock(block);	
+						additions++;
+					
+						//If we've added a lot of blocks..
+						if(additions > 1000) {
+							
+							//recalculate the Tree..
+							recalculateTree();
+							
+							//Reset these
+							treelen 	= txptree.getHeaviestBranchLength();
+							additions	= 0;
+						}
+						
+					}else {
+						MinimaLogger.log("TxBlock too close to real time.. skipping.. @ "+block.getTxPoW().getBlockNumber());
+						break;
+					}
+					
+				}catch(Exception exc) {
+					MinimaLogger.log(exc.toString());
+					
+					//Something funny going on.. disconnect
+					Main.getInstance().getNIOManager().disconnect(uid);
+					
+					break;
+				}
 			}
 			
 			//And now recalculate tree

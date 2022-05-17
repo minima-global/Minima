@@ -59,6 +59,9 @@ public class OperatorExpression implements Expression{
 	public Value getValue(Contract zContract) throws ExecutionException {
 		Value ret = null;
 		
+		//This action counts as one instruction
+		zContract.incrementInstructions();
+				
 		Value lval = mLeft.getValue(zContract);
 		Value rval = mRight.getValue(zContract);
 						
@@ -205,9 +208,6 @@ public class OperatorExpression implements Expression{
 		default :
 			throw new ExecutionException("UNKNOWN operator");		
 		}
-		
-		//This action counts as one instruction
-		zContract.incrementInstructions();
 				
 		//And trace it..
 		zContract.traceLog(toString()+" returns:"+ret.toString());

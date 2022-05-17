@@ -80,11 +80,11 @@ public class StateVariable implements Streamable {
 		mPort = new MiniByte(zPort);
 		
 		//Set the Data
-		if(zData.startsWith("Mx")) {
+		if(zData.toLowerCase().startsWith("mx")) {
 			mData = new MiniString(Address.convertMinimaAddress(zData).to0xString());
 			mType = STATETYPE_HEX;
 		
-		}else if(zData.startsWith("0x")) {
+		}else if(zData.toLowerCase().startsWith("0x")) {
 			mData = new MiniString(new MiniData(zData).to0xString());
 			mType = STATETYPE_HEX;
 		

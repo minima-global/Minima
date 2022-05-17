@@ -83,7 +83,7 @@ public class Contract {
 	/**
 	 * Maximum allowed number of KISSVM instructions
 	 */
-	public static int MAX_INSTRUCTIONS = 256;
+	public int MAX_INSTRUCTIONS = 1024;
 	
 	/**
 	 * A complete log of the contract execution
@@ -200,11 +200,9 @@ public class Contract {
 		
 		//set the environment
 		setGlobalVariable("@BLOCK", new NumberValue(zBlock));
-		setGlobalVariable("@INBLOCK", new NumberValue(zInputBlkCreate));
-		setGlobalVariable("@BLOCKDIFF", new NumberValue(zBlock.sub(zInputBlkCreate)));
 		
-//		setGlobalVariable("@BLKTIME", new NumberValue(zBlock.getTimeMilli()));
-//		setGlobalVariable("@PREVBLKHASH", new HexValue(zBlock.getParentID()));
+		setGlobalVariable("@CREATED", new NumberValue(zInputBlkCreate));
+		setGlobalVariable("@COINAGE", new NumberValue(zBlock.sub(zInputBlkCreate)));
 		
 		setGlobalVariable("@INPUT", new NumberValue(zInput));
 		setGlobalVariable("@COINID", new HexValue(cc.getCoinID()));
@@ -229,7 +227,7 @@ public class Contract {
 		}
 		
 		//Will this break monotonic
-		if(zGlobal.equals("@BLOCK") || zGlobal.equals("@BLOCKDIFF") || zGlobal.equals("@INBLOCK")) {
+		if(zGlobal.equals("@BLOCK") || zGlobal.equals("@COINAGE") || zGlobal.equals("@CREATED")) {
 			mMonotonic = false;
 		}
 		
@@ -378,6 +376,14 @@ public class Contract {
 		}
 		
 		return variables;
+	}
+	
+	public void removeVariable(String zName) throws ExecutionException {
+		mVariables.remove(zName);
+	}
+	
+	public boolean existsVariable(String zName) throws ExecutionException {
+		return mVariables.containsKey(zName);
 	}
 	
 	public Value getVariable(String zName) throws ExecutionException {
@@ -591,7 +597,8 @@ public class Contract {
 	
 	public static void main(String[] zArgs) {
 		
-		String scr = new String("let (a 1 0xFF )  = 4 + -2  let t = concat( 0x00 0x34   0x45  )");
+//		String scr = new String("let (a 1 0xFF )  = 4 + -2  let t = concat( 0x00 0x34   0x45  )");
+		String scr = new String("let x = $1");
 		
 		String clean = Contract.cleanScript(scr);
 		

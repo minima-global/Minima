@@ -12,11 +12,13 @@ import org.minima.database.cascade.Cascade;
 import org.minima.database.txpowdb.TxPoWDB;
 import org.minima.database.txpowtree.TxPowTree;
 import org.minima.database.wallet.Wallet;
+import org.minima.objects.Magic;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
 import org.minima.system.brains.TxPoWGenerator;
 import org.minima.system.commands.Command;
+import org.minima.system.commands.CommandException;
 import org.minima.system.network.NetworkManager;
 import org.minima.system.params.GeneralParams;
 import org.minima.system.params.GlobalParams;
@@ -49,9 +51,8 @@ public class status extends Command {
 
 		//Do we haver any blocks..
 		if(txptree.getTip() == null) {
-			throw new Exception("NO Blocks yet..");
+			throw new CommandException("No Blocks yet..");
 		}
-
 
 		JSONObject details = new JSONObject();
 		details.put("version", GlobalParams.MINIMA_VERSION);
@@ -63,7 +64,12 @@ public class status extends Command {
 		BigDecimal blkweightdec 	= new BigDecimal(txptree.getTip().getTxPoW().getBlockDifficulty().getDataValue());
 		BigDecimal blockWeight 		= Crypto.MAX_VALDEC.divide(blkweightdec, MathContext.DECIMAL32);
 
-		MiniNumber ratio 			= new MiniNumber(blockWeight).div(new MiniNumber(TxPoWGenerator.MIN_HASHES));
+		//What is the user hashrate..
+		MiniNumber userhashrate 	= MinimaDB.getDB().getUserDB().getHashRate();
+		if(userhashrate.isLess(Magic.MIN_HASHES)) {
+			userhashrate = Magic.MIN_HASHES;
+		}
+		MiniNumber ratio 			= new MiniNumber(blockWeight).div(userhashrate);
 		MiniNumber pulsespeed 		= MiniNumber.THOUSAND.div(new MiniNumber(GeneralParams.USER_PULSE_FREQ));
 
 		MiniNumber usersperpulse 	= MiniNumber.ONE.div(new MiniNumber(""+pulsespeed).div(GlobalParams.MINIMA_BLOCK_SPEED));

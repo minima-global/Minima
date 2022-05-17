@@ -36,9 +36,6 @@ public class CoinTests {
 
         Coin c = new Coin(coinId, coinAddress, two, tokenId);
         // System.out.println("Coin created values - " + c.toJSON());
-        assertFalse("Floating should be false", c.isFloating());
-        c.setFloating(true);
-        assertTrue("Floating should be true", c.isFloating());
         // System.out.println("Coin id value - " + c.mCoinID);
 //        c.resetCoinID(coinId2);
         assertTrue("Token id should equal", c.getTokenID().equals(tokenId));
@@ -60,7 +57,6 @@ public class CoinTests {
             MiniData tokenId = new MiniData("123");
 
             Coin c = new Coin(coinId, coinAddress, twelve, tokenId);
-            c.setFloating(true);
             // System.out.println("coin  value before write " + c.toString());
 
             ByteArrayOutputStream bos = new ByteArrayOutputStream();

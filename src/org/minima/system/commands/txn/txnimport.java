@@ -14,7 +14,7 @@ import org.minima.utils.json.JSONObject;
 public class txnimport extends Command {
 
 	public txnimport() {
-		super("txnimport","[file:] (id:) - Import a transaction. Optionally specify the ID");
+		super("txnimport","(id:) (file:) (data:) - Import a transaction as a file or HEX data. Optionally specify the ID");
 	}
 	
 	@Override
@@ -23,28 +23,50 @@ public class txnimport extends Command {
 
 		TxnDB db = MinimaDB.getDB().getCustomTxnDB();
 		
-		String file = getParam("file");
-		File ff = new File(file);
-		if(!ff.exists()) {
-			throw new CommandException("File does not exist : "+ff.getAbsolutePath());
+		if(existsParam("file")) {
+			String file = getParam("file");
+			File ff = new File(file);
+			if(!ff.exists()) {
+				throw new CommandException("File does not exist : "+ff.getAbsolutePath());
+			}
+			
+			//Load it in..
+			byte[] txndata = MiniFile.readCompleteFile(ff);
+			
+			//Convert to MiniData
+			MiniData minitxn = new MiniData(txndata);
+			
+			//Convert this..
+			TxnRow txnrow = TxnRow.convertMiniDataVersion(minitxn);
+			if(existsParam("id")) {
+				txnrow.setID(getParam("id"));
+			}
+			
+			db.addCompleteTransaction(txnrow);
+			
+			JSONObject resp = new JSONObject();
+			ret.put("response", txnrow.toJSON());
+			
+		}else if(existsParam("data")){
+			
+			//Get the HEX data
+			MiniData dv = getDataParam("data");
+			
+			//Convert to a TxnRow
+			TxnRow tx 	= TxnRow.convertMiniDataVersion(dv);
+			if(existsParam("id")) {
+				tx.setID(getParam("id"));
+			}
+			
+			//Add to the DB
+			db.addCompleteTransaction(tx);
+			
+			JSONObject resp = new JSONObject();
+			ret.put("response", tx.toJSON());
+			
+		}else {
+			throw new CommandException("Must specify file or data");
 		}
-		
-		//Load it in..
-		byte[] txndata = MiniFile.readCompleteFile(ff);
-		
-		//Convert to MiniData
-		MiniData minitxn = new MiniData(txndata);
-		
-		//Convert this..
-		TxnRow txnrow = TxnRow.convertMiniDataVersion(minitxn);
-		if(existsParam("id")) {
-			txnrow.setID(getParam("id"));
-		}
-		
-		db.addCompleteTransaction(txnrow);
-		
-		JSONObject resp = new JSONObject();
-		ret.put("response", txnrow.toJSON());
 		
 		return ret;
 	}

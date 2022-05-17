@@ -16,12 +16,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.minima.objects.base.MiniData;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.messages.Message;
+import org.minima.utils.messages.MessageProcessor;
 
 public class NIOServer implements Runnable {
 
 	public static boolean mTraceON = false;
 	
-	NIOManager mNIOManager;
+	MessageProcessor mNIOManager;
 	
 	int mPort;
 	
@@ -35,7 +36,9 @@ public class NIOServer implements Runnable {
 	
 	ArrayList<String> mDisconnectChannels;
 	
-	public NIOServer(int zPort, NIOManager zNIOManager) {
+	boolean mIsRunning = false;
+	
+	public NIOServer(int zPort, MessageProcessor zNIOManager) {
 		mPort 				= zPort;
 		mNIOManager 		= zNIOManager;
 		mRegisterChannels	= new ArrayList<>();
@@ -101,10 +104,17 @@ public class NIOServer implements Runnable {
 		}
 	}
 	
+	public boolean isRunning() {
+		return mIsRunning;
+	}
+	
 	@Override
 	public void run() {
 	
 		try {
+			//We are running
+			mIsRunning = true;
+			
 			// Bind to 0.0.0.0 address which is the local network stack
 	        InetAddress addr = InetAddress.getByName("0.0.0.0");
 	
@@ -134,11 +144,6 @@ public class NIOServer implements Runnable {
 	        
 	        // This is the main loop
 	        while (!mShutDown) {
-	        	
-//	        	//Logs..
-//	        	if(mTraceON) {
-//	        		MinimaLogger.log("[NIOSERVER] Waiting for selection..");
-//	        	}
 	        	
 	        	//Select something.. 
 	        	mSelector.select(30000);
@@ -238,17 +243,25 @@ public class NIOServer implements Runnable {
 	            }
 	        }
 	        
-	        //Notify..
-	        if(mTraceON) {
-	        	MinimaLogger.log("[NIOServer] SHUTDOWN");
-	        }
-            
-            //Shut down the socket..
-            serversocket.close();
+			//Shut down the socket..
+			serversocket.close();
 	        
+			//Disconnect all clients..
+			Enumeration<NIOClient> clients = mClients.elements();
+			while(clients.hasMoreElements()) {
+				clients.nextElement().disconnect();
+			}
+			
+			//Need to call this to shut down properly
+			mSelector.selectNow();
+			
 		}catch(Exception exc) {
 			MinimaLogger.log(exc);
 		}
+		
+		//Not running anymore..
+		MinimaLogger.log("[NIOServer] SHUTDOWN");
+		mIsRunning = false;
 	}
 
 	private void addChannel(boolean zIncoming, SocketChannel zSocketChannel) throws IOException {
@@ -289,6 +302,47 @@ public class NIOServer implements Runnable {
         //Post about it..
         Message newclient = new Message(NIOManager.NIO_NEWCONNECTION).addObject("client", nioc);
         mNIOManager.PostMessage(newclient);
+	}
+	
+	public static void main(String[] zArgs) throws Exception {
+		
+		NIOServer nio = new NIOServer(9002, new MessageProcessor("hello") {
+			@Override
+			protected void processMessage(Message zMessage) throws Exception {
+				MinimaLogger.log(zMessage.toString());
+			}
+		});
+		
+		Thread tt = new Thread(nio);
+		tt.start();
+		
+		MinimaLogger.log("Started.. waiting..");
+		Thread.sleep(2000);
+		
+		MinimaLogger.log("Stopping..");
+		nio.shutdown();
+		Thread.sleep(2000);
+		
+		//Now start again..
+		nio = new NIOServer(9002, new MessageProcessor("hello") {
+			@Override
+			protected void processMessage(Message zMessage) throws Exception {
+				MinimaLogger.log(zMessage.toString());
+			}
+		});
+		
+		tt = new Thread(nio);
+		tt.start();
+		
+		MinimaLogger.log("Started again.. waiting..");
+		Thread.sleep(2000);
+		
+		MinimaLogger.log("Stopping..");
+		nio.shutdown();
+		Thread.sleep(2000);
+		
+		
+		System.exit(0);
 	}
 	
 }

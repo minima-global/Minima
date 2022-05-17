@@ -31,11 +31,11 @@ public class keys extends Command {
 			MiniData privdata = getDataParam("import");
 		
 			//Create a new Key
-			wallet.createNewKey(privdata);
+			wallet.createNewKey(privdata, true);
 		}
 		
 		//Get all the keys
-		ArrayList<KeyRow> keys = wallet.getAllRelevant();
+		ArrayList<KeyRow> keys = wallet.getAllRelevant(false);
 		
 		JSONArray arr = new JSONArray();
 		for(KeyRow kr : keys) {

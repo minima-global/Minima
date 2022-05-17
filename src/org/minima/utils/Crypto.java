@@ -201,12 +201,8 @@ public class Crypto {
 			//Get the Data..
 			ByteArrayOutputStream baos 	= new ByteArrayOutputStream();
 			DataOutputStream dos 		= new DataOutputStream(baos);
-			
-//			System.out.println("***HASH_ALL_OBJECTS START");
+		
 			for(Streamable object : zObjects) {
-				//Notify..
-//				System.out.println(object.toString()+",");
-				
 				//Write to the stream
 				object.writeDataStream(dos);
 			}

@@ -191,6 +191,14 @@ public class ScriptTokenizer {
 				//It's a String
 				tokens.add(new ScriptToken(ScriptToken.TOKEN_VALUE, str));
 				
+				//Is it a function param
+			}else if(nextchar.equals("$")) {
+				//get the next word..
+				String word = getNextWord();
+				
+				//It's a function param
+				tokens.add(new ScriptToken(ScriptToken.TOKEN_FUNCTIIONPARAM, word));
+				
 			}else{
 				//get the next word..
 				String word = getNextWord();
@@ -238,6 +246,11 @@ public class ScriptTokenizer {
 					tokens.add(new ScriptToken(ScriptToken.TOKEN_GLOBAL, uppercase));
 					
 				}else if(isVariable(lowercase)) {
+					//Check length
+					if(lowercase.length() > 32) {
+						throw new MinimaParseException("MAX Variable length is 32 @ "+mPos+" "+word);
+					}
+					
 					//It's a number
 					tokens.add(new ScriptToken(ScriptToken.TOKEN_VARIABLE, lowercase));
 				

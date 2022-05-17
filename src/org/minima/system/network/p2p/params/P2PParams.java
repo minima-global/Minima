@@ -65,20 +65,15 @@ public class P2PParams {
 
     public static int METRICS_DELAY = 600_000;
 
-    public static String METRICS_URL = "http://35.242.245.96/network";
+    public static String METRICS_URL = "http://35.187.82.116/network";
 
     public static List<InetSocketAddress> DEFAULT_NODE_LIST = Arrays.asList(
-            new InetSocketAddress("34.76.220.73", 9001), // minima-tn100-testnet-vm
-            new InetSocketAddress("34.134.70.105", 9001), // base-testnet-1
-            new InetSocketAddress("34.134.70.105", 9001), // base-testnet-2
-            new InetSocketAddress("34.88.24.8", 9001), // base-testnet-3
-            new InetSocketAddress("104.155.19.103", 9001), // base-testnet-4
-            new InetSocketAddress("34.95.47.143", 9001), // base-testnet-5
-            new InetSocketAddress("34.130.196.123", 9001), // base-testnet-6
-            new InetSocketAddress("34.92.105.237", 9001), // base-testnet-7
-            new InetSocketAddress("34.64.175.169", 9001), // base-testnet-8
-            new InetSocketAddress("34.93.20.120", 9001) // base-testnet-9
-
+            new InetSocketAddress("35.189.237.10", 9001), // v101-genesis-node
+            new InetSocketAddress("34.92.63.200", 9001), // v101-asia-hong-kong
+            new InetSocketAddress("34.93.179.55", 9001), // v101-asia-india
+            new InetSocketAddress("34.65.164.213", 9001), // v101-eu-zurich
+            new InetSocketAddress("34.151.221.133", 9001), // v101-southamerica-east
+            new InetSocketAddress("34.67.254.187", 9001) // v101-usa-central
             );
 
 }

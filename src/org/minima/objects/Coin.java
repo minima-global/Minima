@@ -59,11 +59,6 @@ public class Coin implements Streamable {
 	MiniData  mTokenID;
 
 	/**
-	 * Floating Input Coins can be attached to any coin with the correct address, amount and tokenid.
-	 */
-	boolean mFloating = false;
-
-	/**
 	 * Output coins can choose to not store the state data and save space - change outputs for instance need no state
 	 */
 	boolean mStoreState = true;
@@ -97,19 +92,18 @@ public class Coin implements Streamable {
 	 * Main Constructor
 	 */
 	public Coin(MiniData zAddress, MiniNumber zAmount, MiniData zTokenID) {
-		this(Coin.COINID_OUTPUT, zAddress, zAmount, zTokenID, false, true);
+		this(Coin.COINID_OUTPUT, zAddress, zAmount, zTokenID, true);
 	}
 	
 	public Coin(MiniData zCoinID, MiniData zAddress, MiniNumber zAmount, MiniData zTokenID) {
-		this(zCoinID, zAddress, zAmount, zTokenID, false, true);
+		this(zCoinID, zAddress, zAmount, zTokenID, true);
 	}
 		
-	public Coin(MiniData zCoinID, MiniData zAddress, MiniNumber zAmount, MiniData zTokenID, boolean zFloating, boolean zStoreState) {
+	public Coin(MiniData zCoinID, MiniData zAddress, MiniNumber zAmount, MiniData zTokenID, boolean zStoreState) {
 		mCoinID  	= zCoinID;
 		mAddress 	= zAddress;
 		mAmount  	= zAmount;
 		mTokenID 	= zTokenID;
-		mFloating   = zFloating;
 		mStoreState = zStoreState;
 	}
 	
@@ -167,14 +161,6 @@ public class Coin implements Streamable {
 		return mBlockCreated;
 	}
 	
-	public void setFloating(boolean zFloating) {
-		mFloating = zFloating;
-	}
-	
-	public boolean isFloating() {
-		return mFloating;
-	}
-	
 	/**
 	 * Do we store the state for this coin
 	 * @return
@@ -216,14 +202,10 @@ public class Coin implements Streamable {
 		JSONObject obj = new JSONObject();
 		
 		obj.put("coinid", mCoinID.toString());
-		
 		obj.put("amount", mAmount.toString());
 		
 		obj.put("address", mAddress.toString());
-		
-		//Get the MxAddress..
-//		String mxaddr = Address.makeMinimaAddress(mAddress);
-//		obj.put("mxaddress", mxaddr);
+		obj.put("miniaddress", Address.makeMinimaAddress(mAddress));
 		
 		obj.put("tokenid", mTokenID.toString());
 		if(mToken == null) {
@@ -236,7 +218,6 @@ public class Coin implements Streamable {
 			obj.put("tokenamount", tokenamt.toString());
 		}
 		
-		obj.put("floating", mFloating);
 		obj.put("storestate", mStoreState);
 		
 		//Add the state variables
@@ -247,7 +228,6 @@ public class Coin implements Streamable {
 		obj.put("state", starr);
 		
 		obj.put("spent", mSpent.isTrue());
-		
 		obj.put("mmrentry", mMMREntryNumber.toString());
 		obj.put("created", mBlockCreated.toString());
 		
@@ -316,7 +296,6 @@ public class Coin implements Streamable {
 		mAmount.writeDataStream(zOut);
 		mTokenID.writeHashToStream(zOut);
 		
-		MiniByte.WriteToStream(zOut, mFloating);
 		MiniByte.WriteToStream(zOut, mStoreState);
 		
 		mMMREntryNumber.writeDataStream(zOut);
@@ -343,7 +322,6 @@ public class Coin implements Streamable {
 		mAmount   		= MiniNumber.ReadFromStream(zIn);
 		mTokenID  		= MiniData.ReadHashFromStream(zIn);
 		
-		mFloating   	= MiniByte.ReadFromStream(zIn).isTrue();
 		mStoreState 	= MiniByte.ReadFromStream(zIn).isTrue();
 		
 		mMMREntryNumber = MMREntryNumber.ReadFromStream(zIn);

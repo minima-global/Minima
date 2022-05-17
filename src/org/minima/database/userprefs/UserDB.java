@@ -3,6 +3,7 @@ package org.minima.database.userprefs;
 import java.util.ArrayList;
 
 import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniNumber;
 import org.minima.system.params.GlobalParams;
 import org.minima.utils.JsonDB;
 import org.minima.utils.json.JSONArray;
@@ -105,5 +106,16 @@ public class UserDB extends JsonDB{
 	
 	public void saveCustomTransactions(MiniData zCompleteDB) {
 		setData("custom_transactions", zCompleteDB);
+	}
+	
+	/**
+	 * Get and Set the user hashrate
+	 */
+	public void setHashRate(MiniNumber zHashesPerSec) {
+		setNumber("hashrate", zHashesPerSec);
+	}
+	
+	public MiniNumber getHashRate() {
+		return getNumber("hashrate", MiniNumber.MILLION);
 	}
 }

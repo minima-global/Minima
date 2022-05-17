@@ -43,6 +43,9 @@ public class txnstate extends Command {
 		//Add it to the transaction
 		trans.addStateVariable(sv);
 		
+		//Calculate transid
+		trans.calculateTransactionID();
+				
 		//Output the current trans..
 		ret.put("response", db.getTransactionRow(id).toJSON());
 		

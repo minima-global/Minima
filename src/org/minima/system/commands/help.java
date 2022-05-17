@@ -3,9 +3,11 @@ package org.minima.system.commands;
 import org.minima.system.commands.base.automine;
 import org.minima.system.commands.base.backup;
 import org.minima.system.commands.base.balance;
+import org.minima.system.commands.base.burn;
 import org.minima.system.commands.base.coinexport;
 import org.minima.system.commands.base.coinimport;
 import org.minima.system.commands.base.cointrack;
+import org.minima.system.commands.base.getaddress;
 import org.minima.system.commands.base.hash;
 import org.minima.system.commands.base.hashtest;
 import org.minima.system.commands.base.incentivecash;
@@ -31,13 +33,12 @@ import org.minima.system.commands.network.network;
 import org.minima.system.commands.network.rpc;
 import org.minima.system.commands.network.sshtunnel;
 import org.minima.system.commands.network.webhooks;
-import org.minima.system.commands.persistent.file;
-import org.minima.system.commands.persistent.sql;
 import org.minima.system.commands.search.coins;
 import org.minima.system.commands.search.keys;
 import org.minima.system.commands.search.txpow;
 import org.minima.system.commands.signatures.sign;
 import org.minima.system.commands.signatures.verify;
+import org.minima.system.commands.txn.txnbasics;
 import org.minima.system.commands.txn.txncheck;
 import org.minima.system.commands.txn.txnclear;
 import org.minima.system.commands.txn.txncreate;
@@ -69,6 +70,7 @@ public class help extends Command {
 		
 		addCommand(details, new status());
 		addCommand(details, new printtree());
+		addCommand(details, new burn());
 		addCommand(details, new trace());
 		addCommand(details, new automine());
 		addCommand(details, new hashtest());
@@ -79,14 +81,15 @@ public class help extends Command {
 		addCommand(details, new tokens());
 		addCommand(details, new keys());
 		
+		addCommand(details, new getaddress());
 		addCommand(details, new newaddress());
 		addCommand(details, new send());
 		addCommand(details, new balance());
 		addCommand(details, new tokencreate());
 		addCommand(details, new hash());
 		
-		addCommand(details, new file());
-		addCommand(details, new sql());
+//		addCommand(details, new file());
+//		addCommand(details, new sql());
 		
 		addCommand(details, new scripts());
 		addCommand(details, new runscript());
@@ -104,6 +107,7 @@ public class help extends Command {
 		
 		addCommand(details, new txnlist());
 		addCommand(details, new txncreate());
+		addCommand(details, new txnbasics());
 		addCommand(details, new txndelete());
 		addCommand(details, new txncheck());
 		addCommand(details, new txninput());

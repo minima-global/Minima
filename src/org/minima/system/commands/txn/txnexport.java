@@ -5,6 +5,7 @@ import java.io.File;
 import org.minima.database.MinimaDB;
 import org.minima.database.userprefs.txndb.TxnDB;
 import org.minima.database.userprefs.txndb.TxnRow;
+import org.minima.objects.base.MiniData;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
 import org.minima.utils.MiniFile;
@@ -14,7 +15,7 @@ import org.minima.utils.json.JSONObject;
 public class txnexport extends Command {
 
 	public txnexport() {
-		super("txnexport","[id:] [file:] - Export a transaction to a file");
+		super("txnexport","[id:] (file:) - Export a transaction as HEX or to a file");
 	}
 	
 	@Override
@@ -24,7 +25,6 @@ public class txnexport extends Command {
 		TxnDB db = MinimaDB.getDB().getCustomTxnDB();
 		
 		String id   = getParam("id");
-		String file = getParam("file");
 		
 		//Get the Transaction..
 		TxnRow txnrow 	= db.getTransactionRow(getParam("id"));
@@ -32,20 +32,33 @@ public class txnexport extends Command {
 			throw new CommandException("Transaction not found : "+id);
 		}
 		
-		//Create the file
-		File output = new File(file);
-		if(output.exists()) {
-			output.delete();
+		if(existsParam("file")) {
+			//The File.. 
+			String file = getParam("file");
+			
+			//Create the file
+			File output = new File(file);
+			if(output.exists()) {
+				output.delete();
+			}
+			
+			//Now export this to a file..
+			MiniFile.writeObjectToFile(output, txnrow);
+			
+			JSONObject resp = new JSONObject();
+			resp.put("file", output.getAbsolutePath());
+			resp.put("size", MiniFormat.formatSize(output.length()));
+			
+			ret.put("response", resp);
+		}else {
+			
+			//Output to HEX..
+			MiniData dv = MiniData.getMiniDataVersion(txnrow);
+			
+			JSONObject resp = new JSONObject();
+			resp.put("data", dv.to0xString());
+			ret.put("response", resp);
 		}
-		
-		//Now export this to a file..
-		MiniFile.writeObjectToFile(output, txnrow);
-		
-		JSONObject resp = new JSONObject();
-		resp.put("file", output.getAbsolutePath());
-		resp.put("size", MiniFormat.formatSize(output.length()));
-		
-		ret.put("response", resp);
 		
 		return ret;
 	}

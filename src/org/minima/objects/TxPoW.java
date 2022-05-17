@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.system.params.GlobalParams;
 import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
@@ -159,8 +160,16 @@ public class TxPoW implements Streamable {
 		return mHeader.mNonce;
 	}
 	
+	public MiniData getChainID() {
+		return mHeader.mChainID;
+	}
+	
 	public Magic getMagic() {
 		return mHeader.mMagic;
+	}
+	
+	public void setMagic(Magic zMagic) {
+		mHeader.mMagic = zMagic;
 	}
 	
 	public void setTxDifficulty(MiniData zDifficulty) {
@@ -185,6 +194,14 @@ public class TxPoW implements Streamable {
 	
 	public void setWitness(Witness zWitness) {
 		mBody.mWitness = zWitness;
+	}
+	
+	public void setBurnTransaction(Transaction zTran) {
+		mBody.mBurnTransaction = zTran;
+	}
+	
+	public void setBurnWitness(Witness zWitness) {
+		mBody.mBurnWitness = zWitness;
 	}
 	
 	public Witness getWitness() {
@@ -230,6 +247,10 @@ public class TxPoW implements Streamable {
 	
 	public MiniData getSuperParent(int zLevel) {
 		return mHeader.mSuperParents[zLevel];
+	}
+	
+	public MiniNumber getBurn() {
+		return getTransaction().getBurn().add(getBurnTransaction().getBurn());
 	}
 	
 	public void setTimeMilli() {
@@ -443,11 +464,17 @@ public class TxPoW implements Streamable {
 		}
 		
 		return !getTransaction().isEmpty();
-//		return _mIsTxnPOW;
 	}
 	
 	public long getSizeinBytes() {
 		return _mTxPoWSize;
+	}
+	
+	public long getSizeinBytesWithoutBlockTxns() {
+		
+		long txns = 32 * getBlockTransactions().size();
+		
+		return _mTxPoWSize - txns;
 	}
 	
 	/**
@@ -486,16 +513,14 @@ public class TxPoW implements Streamable {
 			if(_mTxPOWID.isLess(getTxnDifficulty()) && !getTransaction().isEmpty()) {
 				_mIsTxnPOW = true;
 			}
-			
-//			//Must be at least the minimum..
-//			if(getTxnDifficulty().isMore(Magic.MIN_TXPOW_WORK)) {
-//				_mIsTxnPOW = false;
-//			}
 		}
 		
 		//What Super Level are we..
 		_mSuperBlock = getSuperLevel(getBlockDifficulty(), _mTxPOWID);
-	
+		if(_mSuperBlock>=GlobalParams.MINIMA_CASCADE_LEVELS) {
+			_mSuperBlock = GlobalParams.MINIMA_CASCADE_LEVELS-1;
+		}
+		
 		//What size are we..
 		try {
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -518,7 +543,7 @@ public class TxPoW implements Streamable {
 	/**
 	 * This calculates the Log2 of the Difficulty and TxPoW unit..
 	 */
-	public int getSuperLevel(MiniData zBlockDifficulty, MiniData zTxPoWID) {
+	private int getSuperLevel(MiniData zBlockDifficulty, MiniData zTxPoWID) {
 		//What is the 
 		BigInteger quot = zBlockDifficulty.getDataValue().divide(zTxPoWID.getDataValue());
 		

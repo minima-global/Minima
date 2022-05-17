@@ -31,7 +31,6 @@ public class TxPoWMiner extends MessageProcessor {
 	 */
 	ArrayList<String> mMiningCoins;
 	
-	
 	public TxPoWMiner() {
 		super("MINER");
 		
@@ -60,9 +59,6 @@ public class TxPoWMiner extends MessageProcessor {
 			
 			//Set the nonce.. we make it a large size in bytes then edit those - no reserialisation
 			txpow.setNonce(START_NONCE_BYTES);
-			
-			//Set the Time..
-			txpow.setTimeMilli(new MiniNumber(System.currentTimeMillis()));
 			
 			//Post a message.. Mining Started
 			Message mining = new Message(Main.MAIN_MINING);
@@ -189,4 +185,25 @@ public class TxPoWMiner extends MessageProcessor {
 		return mMiningCoins.contains(zCoinID);
 	}
 	
+	/**
+	 * Calculate the Hash rate of this node...
+	 */
+	public static MiniNumber calculateHashRate() {
+		
+		MiniNumber hashes 	= MiniNumber.MILLION;
+		int ihashes 		= hashes.getAsInt();
+		
+		long timestart = System.currentTimeMillis();
+		MiniData data = MiniData.getRandomData(32);
+		for(int i=0;i<ihashes;i++) {
+			data = Crypto.getInstance().hashObject(data);
+		}
+		long timediff = System.currentTimeMillis() - timestart;
+		
+		MiniNumber timesecs = new MiniNumber(timediff).div(MiniNumber.THOUSAND);
+		
+		MiniNumber spd = hashes.div(timesecs);
+		
+		return spd;
+	}
 }

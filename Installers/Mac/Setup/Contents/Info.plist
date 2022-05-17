@@ -1,0 +1,32 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "https://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>English</string>
+	<key>CFBundleExecutable</key>
+	<string>minima</string>
+	<key>CFBundleIconFile</key>
+	<string>minima.icns</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>NSAppleScriptEnabled</key>
+	<string>YES</string>
+        <key>CFBundleShortVersionString</key>
+        <string>1.101</string>
+        <key>CFBundleVersion</key>
+        <string>1.101</string>
+        <key>CFBundleSignature</key>
+        <string>????</string>
+        <key>CFBundleVersion</key>
+        <string>1.101</string>
+        <key>NSHumanReadableCopyright</key>
+        <string>Copyright (C) 2022</string>
+        <key>NSHighResolutionCapable</key>
+        <string>true</string>
+        <key>NSMicrophoneUsageDescription</key>
+        <string>The application minima is requesting access to the microphone.</string>
+</dict>
+</plist>
