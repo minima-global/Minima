@@ -28,8 +28,6 @@ public class TxPoWGenerator {
 	/**
 	 * The Bounding range for a difficulty change +/- 10% per block
 	 */
-//	private final static BigDecimal MAX_BOUND_DIFFICULTY = new BigDecimal("1.1");
-//	private final static BigDecimal MIN_BOUND_DIFFICULTY = new BigDecimal("0.9");
 	private final static MiniNumber MAX_SPBOUND_DIFFICULTY = new MiniNumber("1.1");
 	private final static MiniNumber MIN_SPBOUND_DIFFICULTY = new MiniNumber("0.9");
 	
