@@ -268,11 +268,11 @@ public class TxPoWGenerator {
 		
 		//Check Bounds..
 		if(speedratio.isMore(MAX_SPBOUND_DIFFICULTY)) {
-			MinimaLogger.log("MAX speedratio bound hit : "+speedratio+" setting to "+MAX_SPBOUND_DIFFICULTY);
+//			MinimaLogger.log("MAX speedratio bound hit : "+speedratio+" setting to "+MAX_SPBOUND_DIFFICULTY);
 			speedratio = MAX_SPBOUND_DIFFICULTY;
 			
 		}else if(speedratio.isLess(MIN_SPBOUND_DIFFICULTY)) {
-			MinimaLogger.log("MIN speedratio bound hit : "+speedratio+" setting to "+MIN_SPBOUND_DIFFICULTY);
+//			MinimaLogger.log("MIN speedratio bound hit : "+speedratio+" setting to "+MIN_SPBOUND_DIFFICULTY);
 			speedratio = MIN_SPBOUND_DIFFICULTY;
 		}
 		

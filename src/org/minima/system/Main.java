@@ -430,10 +430,10 @@ public class Main extends MessageProcessor {
 				return;
 			}
 			
-			//DId we find a block..
-			if(txpow.isBlock()) {
-				MinimaLogger.log("You found a block! "+txpow.getBlockNumber()+" "+txpow.getTxPoWID());
-			}
+			//Did we find a block..
+//			if(txpow.isBlock()) {
+//				MinimaLogger.log("You found a block! "+txpow.getBlockNumber()+" "+txpow.getTxPoWID());
+//			}
 			
 			//Create an NIO Message - so the message goes through the same checks as any other message
 			MiniData niodata = NIOManager.createNIOMessage(NIOMessage.MSG_TXPOW, txpow);
