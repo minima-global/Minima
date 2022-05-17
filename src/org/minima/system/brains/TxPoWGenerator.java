@@ -26,10 +26,12 @@ import org.minima.utils.MinimaLogger;
 public class TxPoWGenerator {
 	
 	/**
-	 * The Bounding range for a difficulty change - 10%
+	 * The Bounding range for a difficulty change +/- 10% per block
 	 */
-	private final static BigDecimal MAX_BOUND_DIFFICULTY = new BigDecimal("1.1");
-	private final static BigDecimal MIN_BOUND_DIFFICULTY = new BigDecimal("0.9");
+//	private final static BigDecimal MAX_BOUND_DIFFICULTY = new BigDecimal("1.1");
+//	private final static BigDecimal MIN_BOUND_DIFFICULTY = new BigDecimal("0.9");
+	private final static MiniNumber MAX_SPBOUND_DIFFICULTY = new MiniNumber("1.1");
+	private final static MiniNumber MIN_SPBOUND_DIFFICULTY = new MiniNumber("0.9");
 	
 	/**
 	 * Calculate a Difficulty Hash for a given hash number
@@ -54,55 +56,9 @@ public class TxPoWGenerator {
 		
 		//Set the block number
 		txpow.setBlockNumber(tip.getTxPoW().getBlockNumber().increment());
-				
-		//Set the time..
-		MiniNumber timenow = txpow.getTimeMilli();
-		
-		//Check time is in acceptable range.. or will be an invalid block.. 
-		boolean wrongtime = false;
-		
-		TxPoW medianblock = TxPoWGenerator.getMedianTimeBlock(tip, TxPoWChecker.MEDIAN_TIMECHECK_BLOCK).getTxPoW();
-		if(timenow.isLess(medianblock.getTimeMilli())) {
-			wrongtime = true;
-		
-			//How much time to add to the median block
-			MiniNumber blocksecs 	= MiniNumber.ONE.div(GlobalParams.MINIMA_BLOCK_SPEED);
-			MiniNumber half 		= new MiniNumber(TxPoWChecker.MEDIAN_TIMECHECK_BLOCK).div(MiniNumber.TWO); 
-			MiniNumber addtime 		= blocksecs.mult(half.add(MiniNumber.TWO)).mult(MiniNumber.THOUSAND);
 			
-			//Median time + 1 hr..
-			txpow.setTimeMilli(medianblock.getTimeMilli().add(addtime));
-			MinimaLogger.log("Your clock time appears wrong (too far back - median @ "+medianblock.getBlockNumber()+") ? Setting acceptable value for TxPoW @ "+txpow.getBlockNumber()+" "+new Date(txpow.getTimeMilli().getAsLong()));
-			
-		}else if(timenow.isMore(medianblock.getTimeMilli().add(TxPoWChecker.MAXMILLI_FUTURE))) {
-			wrongtime = true;
-		
-			//Add HALF the time..
-			MiniNumber newtime = medianblock.getTimeMilli().add(TxPoWChecker.MAXMILLI_FUTURE.div(MiniNumber.TWO));
-			
-			//Median time + 1 hr..
-			txpow.setTimeMilli(newtime);
-			MinimaLogger.log("Your clock time appears wrong (too far forward - median @ "+medianblock.getBlockNumber()+") ? Setting acceptable value for TxPoW @ "+txpow.getBlockNumber()+" "+new Date(txpow.getTimeMilli().getAsLong()));
-			
-		}else {
-			//Just set the current time
-			txpow.setTimeMilli(timenow);
-		}
-		
-//		if(!wrongtime) {
-//			//Just set the current time
-//			txpow.setTimeMilli(timenow);
-//			
-//		}else {
-//			//How much time to add to the median block
-//			MiniNumber blocksecs 	= MiniNumber.ONE.div(GlobalParams.MINIMA_BLOCK_SPEED);
-//			MiniNumber half 		= new MiniNumber(TxPoWChecker.MEDIAN_TIMECHECK_BLOCK).div(MiniNumber.TWO); 
-//			MiniNumber addtime 		= blocksecs.mult(half.add(MiniNumber.TWO)).mult(MiniNumber.THOUSAND);
-//			
-//			//Median time + 1 hr..
-//			txpow.setTimeMilli(medianblock.getTimeMilli().add(addtime));
-//			MinimaLogger.log("Your clock time appears wrong ? Setting acceptable value for TxPoW @ "+txpow.getBlockNumber()+" "+new Date(txpow.getTimeMilli().getAsLong()));
-//		}
+		//Set the current time
+		txpow.setTimeMilli( new MiniNumber(System.currentTimeMillis()) );
 		
 		//Set the Transaction..
 		txpow.setTransaction(zTransaction);
@@ -274,6 +230,9 @@ public class TxPoWGenerator {
 		return txpow;
 	}
 	
+	/**
+	 * Get the next Block Difficulty - using bounds..
+	 */
 	public static MiniData getBlockDifficulty(TxPoWTreeNode zParent) {
 		
 		//Are we just starting out.. first 8 blocks are minimum difficulty
@@ -288,15 +247,15 @@ public class TxPoWGenerator {
 		TxPoWTreeNode endblock 	= zParent.getParent(GlobalParams.MINIMA_BLOCKS_SPEED_CALC.getAsInt());
 		
 		//Now use the Median Times..
-		startblock 				= getMedianTimeBlock(startblock, GlobalParams.MEDIAN_BLOCK_CALC);
-		endblock 				= getMedianTimeBlock(endblock, GlobalParams.MEDIAN_BLOCK_CALC);
+		startblock 				= getMedianTimeBlock(startblock);
+		endblock 				= getMedianTimeBlock(endblock);
 		MiniNumber blockdiff 	= startblock.getBlockNumber().sub(endblock.getBlockNumber()); 
 		
 		//In case of serious time error
 		MiniNumber timediff = startblock.getTxPoW().getTimeMilli().sub(endblock.getTxPoW().getTimeMilli());
 		if(timediff.isLessEqual(MiniNumber.ZERO)) {
 			//This should not happen..
-			MinimaLogger.log("SERIOUS TIME ERROR @ "+zParent.getBlockNumber()+" Using latest block diff..");
+			MinimaLogger.log("SERIOUS NEGATIVE TIME ERROR @ "+zParent.getBlockNumber()+" Using latest block diff..");
 			MinimaLogger.log("StartBlock @ "+startblock.getBlockNumber()+" "+new Date(startblock.getTxPoW().getTimeMilli().getAsLong()));
 			MinimaLogger.log("EndBlock   @ "+endblock.getBlockNumber()+" "+new Date(endblock.getTxPoW().getTimeMilli().getAsLong()));
 			
@@ -305,8 +264,20 @@ public class TxPoWGenerator {
 		}
 		
 		//Get current speed
-		MiniNumber speed 				= getChainSpeed(startblock, blockdiff);
-		MiniNumber speedratio 			= GlobalParams.MINIMA_BLOCK_SPEED.div(speed);
+		MiniNumber speed 		= getChainSpeed(startblock, blockdiff);
+		
+		//What is the speed ratio.. what we use to decide the NEW difficulty
+		MiniNumber speedratio 	= GlobalParams.MINIMA_BLOCK_SPEED.div(speed);
+		
+		//Check Bounds..
+		if(speedratio.isMore(MAX_SPBOUND_DIFFICULTY)) {
+			MinimaLogger.log("MAX speedratio bound hit : "+speedratio+" setting to "+MAX_SPBOUND_DIFFICULTY);
+			speedratio = MAX_SPBOUND_DIFFICULTY;
+			
+		}else if(speedratio.isLess(MIN_SPBOUND_DIFFICULTY)) {
+			MinimaLogger.log("MIN speedratio bound hit : "+speedratio+" setting to "+MIN_SPBOUND_DIFFICULTY);
+			speedratio = MIN_SPBOUND_DIFFICULTY;
+		}
 		
 		//Get average difficulty over that period
 		BigInteger averagedifficulty 	= getAverageDifficulty(startblock, blockdiff);
@@ -314,46 +285,26 @@ public class TxPoWGenerator {
 		
 		//Recalculate..
 		BigDecimal newdifficultydec = averagedifficultydec.multiply(speedratio.getAsBigDecimal());  
-		BigInteger newdifficulty	= newdifficultydec.toBigInteger();
-		MiniData newdiff 			= new MiniData(newdifficulty);
+		MiniData newdiff 			= new MiniData(newdifficultydec.toBigInteger());
 		
 		//Check harder than the absolute minimum
 		if(newdiff.isMore(Magic.MIN_TXPOW_WORK)) {
-//			MinimaLogger.log("Block Diff so low had to use the Mininum allowed");
 			newdiff = Magic.MIN_TXPOW_WORK;
-		}
-		
-		//Check within bounds..
-		BigDecimal lastdiffdec 		= new BigDecimal(zParent.getTxPoW().getBlockDifficulty().getDataValue());
-		BigDecimal newdiffdec 		= new BigDecimal(newdiff.getDataValue());
-		BigDecimal blockdiffratio 	= lastdiffdec.divide(newdiffdec, MathContext.DECIMAL32);
-		
-		if(blockdiffratio.compareTo(MAX_BOUND_DIFFICULTY)>0) {
-//			MinimaLogger.log("Increased difficulty change greater than allowed @ "+startblock.getBlockNumber()+" ( "+blockdiffratio+ " ).. Using Bounds");
-			
-			BigDecimal bound 	= lastdiffdec.divide(MAX_BOUND_DIFFICULTY, MathContext.DECIMAL32);
-			newdiff 			= new MiniData(bound.toBigInteger());
-			
-		}else if(blockdiffratio.compareTo(MIN_BOUND_DIFFICULTY)<0) {
-//			MinimaLogger.log("Decreased difficulty change greater than allowed @ "+startblock.getBlockNumber()+" ( "+blockdiffratio+" ).. Using Bounds");
-			
-			BigDecimal bound 	= lastdiffdec.divide(MIN_BOUND_DIFFICULTY, MathContext.DECIMAL32);
-			newdiff 			= new MiniData(bound.toBigInteger());
 		}
 		
 		return newdiff;
 	}
 	
-	public static MiniNumber getChainSpeed(TxPoWTreeNode zTopBlock, MiniNumber zBlocksBack) {
+	public static MiniNumber getChainSpeed(TxPoWTreeNode zStartBlock, MiniNumber zBlocksBack) {
 		
 		//Get the past block
-		TxPoWTreeNode pastblock = zTopBlock.getParent(zBlocksBack.getAsInt());
+		TxPoWTreeNode pastblock = zStartBlock.getParent(zBlocksBack.getAsInt());
 		
 		MiniNumber blockpast	= pastblock.getTxPoW().getBlockNumber();
 		MiniNumber timepast 	= pastblock.getTxPoW().getTimeMilli();
 		
-		MiniNumber blocknow		= zTopBlock.getTxPoW().getBlockNumber();
-		MiniNumber timenow 		= zTopBlock.getTxPoW().getTimeMilli();
+		MiniNumber blocknow		= zStartBlock.getTxPoW().getBlockNumber();
+		MiniNumber timenow 		= zStartBlock.getTxPoW().getTimeMilli();
 		
 		MiniNumber blockdiff 	= blocknow.sub(blockpast);
 		MiniNumber timediff 	= timenow.sub(timepast);
@@ -391,7 +342,7 @@ public class TxPoWGenerator {
 	/**
 	 * Get the Median Block based on milli time..
 	 */
-	public static TxPoWTreeNode getMedianTimeBlock(TxPoWTreeNode zStartBlock, int zBlocksBack) {
+	public static TxPoWTreeNode getMedianTimeBlock(TxPoWTreeNode zStartBlock) {
 		
 		//The block we start checking from
 		TxPoWTreeNode current = zStartBlock;
@@ -400,7 +351,7 @@ public class TxPoWGenerator {
 		ArrayList<TxPoWTreeNode> allblocks = new ArrayList<>();
 		
 		int counter=0;
-		while(counter<zBlocksBack && current!=null) {
+		while(counter<GlobalParams.MEDIAN_BLOCK_CALC && current!=null) {
 			
 			//Add to our list
 			allblocks.add(current);

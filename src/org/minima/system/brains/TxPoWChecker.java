@@ -36,16 +36,6 @@ public class TxPoWChecker {
 	public static MiniData CURRENT_NETWORK = TxHeader.TEST_NET;
 	
 	/**
-	 * The Number of blocks to get the MEDIAN block for time checks
-	 */
-	public static int MEDIAN_TIMECHECK_BLOCK = GlobalParams.MEDIAN_BLOCK_CALC * 4;
-	
-	/**
-	 * The MAX number of milliseconds in the future the Block can be from the Median Block ~2 hrs
-	 */
-	public static MiniNumber MAXMILLI_FUTURE = new MiniNumber(1000 * 50 * MEDIAN_TIMECHECK_BLOCK);
-	
-	/**
 	 * Parallel check all the transactions in this block
 	 */
 	public static boolean checkTxPoWBlock(TxPoWTreeNode zParentNode, TxPoW zTxPoW, ArrayList<TxPoW> zTransactions) {
@@ -55,17 +45,6 @@ public class TxPoWChecker {
 			//Check ChainID
 			if(!zTxPoW.getChainID().isEqual(TxPoWChecker.CURRENT_NETWORK)) {
 				MinimaLogger.log("Invalid Block ChainID! "+zTxPoW.getChainID()+" "+zTxPoW.getTxPoWID());
-				return false;
-			}
-			
-			//Check the time of the block is greater than the median time
-			TxPoW medianblock = TxPoWGenerator.getMedianTimeBlock(zParentNode, MEDIAN_TIMECHECK_BLOCK).getTxPoW();
-			if(zTxPoW.getTimeMilli().isLess(medianblock.getTimeMilli())) {
-				MinimaLogger.log("Invalid TxPoW block with millitime LESS than median "+new Date(zTxPoW.getTimeMilli().getAsLong())+" "+zTxPoW.getTxPoWID());
-				return false;
-			
-			}else if(zTxPoW.getTimeMilli().isMore(medianblock.getTimeMilli().add(MAXMILLI_FUTURE))) {
-				MinimaLogger.log("Invalid TxPoW block with millitime MORE than median + 2 hrs "+new Date(zTxPoW.getTimeMilli().getAsLong())+" "+zTxPoW.getTxPoWID());
 				return false;
 			}
 			
