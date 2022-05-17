@@ -1,7 +1,6 @@
 package org.minima.system.brains;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashSet;
 
 import org.minima.database.MinimaDB;
@@ -22,7 +21,6 @@ import org.minima.objects.TxHeader;
 import org.minima.objects.TxPoW;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniNumber;
 import org.minima.objects.keys.Signature;
 import org.minima.objects.keys.TreeKey;
 import org.minima.system.params.GlobalParams;
