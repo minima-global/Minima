@@ -29,21 +29,5 @@ else
 	exit 1
 fi
 
-if [ ! -d "$HOME/.minima" ]; then
-	mkdir $MINIMA_FOLDER
-	chmod u+x .minima
-fi
-
-if [ ! -f "$MINIMA_FOLDER/minima.sh" ]; then
-	cd $MINIMA_FOLDER
-
-	cp $DIR/../Resources/minima.sh $MINIMA_FOLDER
-	chmod +x $MINIMA_FOLDER/minima.sh
-	
-	echo 'alias minima='$MINIMA_FOLDER'/minima.sh' >>~/.bash_profile
-	echo 'alias minima='$MINIMA_FOLDER'/minima.sh' >>~/.zshrc
-
-fi
-
 # Run the application
 exec $_java -jar "$DIR/$APP_JAR" $VM_ARGS
