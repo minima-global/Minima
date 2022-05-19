@@ -26,6 +26,7 @@ import org.minima.system.network.maxima.message.MaximaPackage;
 import org.minima.system.network.p2p.P2PFunctions;
 import org.minima.system.network.p2p.P2PManager;
 import org.minima.system.params.GeneralParams;
+import org.minima.system.params.GlobalParams;
 import org.minima.utils.ListCheck;
 import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;
@@ -142,9 +143,17 @@ public class NIOMessage implements Runnable {
 				Greeting greet = Greeting.ReadFromStream(dis);
 				
 				//What version..
-				if(!greet.getVersion().toString().startsWith("0.102")) {
-						
-					MinimaLogger.log("Greeting with Incompatible Version! "+greet.getVersion().toString());
+				boolean testcheck = true;
+				String greetstr = greet.getVersion().toString();
+				if(GeneralParams.TEST_PARAMS && !greetstr.contains("TEST")) {
+					testcheck = false;
+				}else if(!GeneralParams.TEST_PARAMS && greetstr.contains("TEST")) {
+					testcheck = false;
+				} 
+				
+				if(!testcheck || !greetstr.startsWith("0.102")) {
+					
+					MinimaLogger.log("Greeting with Incompatible Version! "+greet.getVersion().toString()+" .. we are "+GlobalParams.MINIMA_VERSION);
 					
 					//Tell the P2P..
 					Message newconn = new Message(P2PFunctions.P2P_NOCONNECT);
@@ -152,8 +161,26 @@ public class NIOMessage implements Runnable {
 					newconn.addString("uid", nioclient.getUID());
 					Main.getInstance().getNetworkManager().getP2PManager().PostMessage(newconn);
 					
-					//Disconnect..
-					Main.getInstance().getNIOManager().disconnect(mClientUID);
+					//Are we incoming..
+					if(nioclient.isIncoming() && !nioclient.haveSentGreeting()) {
+						nioclient.setSentGreeting(true);
+						
+						//Send them a greeting so THEY disconnect
+						Greeting greetout = new Greeting().createGreeting();
+						
+						//And send it..
+						NIOManager.sendNetworkMessage(nioclient.getUID(), NIOMessage.MSG_GREETING, greetout);
+						
+						//Disconnect in with a small pause
+						TimerMessage msg = new TimerMessage(2000,NIOManager.NIO_DISCONNECT);
+						msg.addString("uid", mClientUID);
+						Main.getInstance().getNIOManager().PostTimerMessage(msg);
+					
+					}else{
+					
+						//Just disconnect, you've already sent the Greeting - permanently ( no reconnect )
+						Main.getInstance().getNIOManager().disconnect(mClientUID);
+					}
 					
 					return;
 				}

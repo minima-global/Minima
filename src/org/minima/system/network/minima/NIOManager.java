@@ -375,6 +375,10 @@ public class NIOManager extends MessageProcessor {
 			mNIOServer.disconnect(uid);
 			
 		}else if(zMessage.getMessageType().equals(NIO_DISCONNECTED)) {
+			
+			//Which nioclient
+			NIOClient nioc = (NIOClient)zMessage.getObject("client");
+			
 			//Do we reconnect
 			boolean reconnect = false;
 			if(zMessage.exists("reconnect")) {
@@ -382,7 +386,6 @@ public class NIOManager extends MessageProcessor {
 			}
 			
 			//Lost a connection
-			NIOClient nioc = (NIOClient)zMessage.getObject("client");
 			if(reconnect && nioc.isOutgoing()) {
 				String host = nioc.getHost();
 				int port 	= nioc.getPort();
@@ -401,6 +404,7 @@ public class NIOManager extends MessageProcessor {
 			
 			//Tell the P2P..
 			Message newconn = new Message(P2PFunctions.P2P_DISCONNECTED);
+			newconn.addObject("nioclient", nioc);
 			newconn.addString("uid", nioc.getUID());
 			newconn.addBoolean("incoming", nioc.isIncoming());
 			newconn.addBoolean("reconnect", reconnect);
