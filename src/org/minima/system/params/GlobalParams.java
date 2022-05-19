@@ -55,7 +55,9 @@ public class GlobalParams {
 	 * The MEDIAN time block is taken from this many blocks back
 	 * When calculating the Difficulty of a block ( both from the tip and the previous block )
 	 * This smooths out the time fluctuations for different blocks and removes incorrect times.
+	 * 
+	 * 64 blocks means the block 1/2 hour ago.
 	 */
-	public static int MEDIAN_BLOCK_CALC = 32; 
+	public static int MEDIAN_BLOCK_CALC = 64; 
 	
 }
