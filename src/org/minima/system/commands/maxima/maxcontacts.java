@@ -22,7 +22,7 @@ import org.minima.utils.messages.Message;
 public class maxcontacts extends Command {
 
 	public maxcontacts() {
-		super("maxcontacts","[action:list|myname|add|remove] (name:) (address:) (id:) - Manage your Maxima contacts");
+		super("maxcontacts","[action:list|myname|add|remove] (name:) (contact:) (id:) - Manage your Maxima contacts");
 	}
 	
 	@Override
@@ -86,7 +86,7 @@ public class maxcontacts extends Command {
 		}else if(func.equals("add")) {
 			
 			//Get the contact address
-			String address 	= getParam("address");
+			String address 	= getParam("contact");
 
 			//What data..
 			JSONObject contactinfo 	= max.getContactsManager().getMaximaContactInfo(true,false);
@@ -135,7 +135,7 @@ public class maxcontacts extends Command {
 			remove.addInteger("id", Integer.parseInt(id));
 			max.getContactsManager().PostMessage(remove);
 			
-			details.put("contact", id);
+			details.put("removed", id);
 		}else {
 			throw new CommandException("Unknonw action : "+func);
 		}

@@ -5,6 +5,7 @@ import org.minima.database.maxima.MaximaContact;
 import org.minima.database.maxima.MaximaDB;
 import org.minima.database.maxima.MaximaHost;
 import org.minima.database.txpowtree.TxPoWTreeNode;
+import org.minima.objects.Address;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
@@ -43,11 +44,12 @@ public class MaximaContactManager extends MessageProcessor {
 		
 		if(zDelete) {
 			ret.put("intro", false);
-			ret.put("name", "");
 			ret.put("publickey", mManager.getPublicKey().to0xString());
 			ret.put("address", "");
 			
 			//Extra Data
+			ret.put("name", "");
+			ret.put("minimaaddress", "Mx00");
 			ret.put("topblock",MiniNumber.ZERO.toString());
 			ret.put("checkblock",MiniNumber.ZERO.toString());
 			ret.put("checkhash",MiniData.ZERO_TXPOWID.toString());
@@ -59,11 +61,16 @@ public class MaximaContactManager extends MessageProcessor {
 			TxPoWTreeNode tip50	= tip.getParent(50);
 			
 			ret.put("intro", zIntro);
-			ret.put("name", MinimaDB.getDB().getUserDB().getMaximaName());
 			ret.put("publickey", mManager.getPublicKey().to0xString());
 			ret.put("address", mManager.getRandomMaximaAddress());
 			
 			//Extra Data
+			ret.put("name", MinimaDB.getDB().getUserDB().getMaximaName());
+			
+			String address 		= MinimaDB.getDB().getWallet().getDefaultAddress().getAddress();
+			String mxaddress 	= Address.makeMinimaAddress(new MiniData(address)); 
+			ret.put("minimaaddress", mxaddress);
+			
 			ret.put("topblock",tip.getBlockNumber().toString());
 			ret.put("checkblock",tip50.getBlockNumber().toString());
 			ret.put("checkhash",tip50.getTxPoW().getTxPoWID());
@@ -129,20 +136,27 @@ public class MaximaContactManager extends MessageProcessor {
 			}
 			
 			//The ExtraData
+			String mxaddress		= (String) contactjson.get("minimaaddress");
 			MiniNumber topblock 	= new MiniNumber((String) contactjson.get("topblock"));
 			MiniNumber checkblock 	= new MiniNumber((String) contactjson.get("checkblock"));
 			MiniData checkhash 		= new MiniData((String) contactjson.get("checkhash"));
 			
-			MaximaContact mxcontact = new MaximaContact(name, publickey);
+			MaximaContact mxcontact = new MaximaContact(publickey);
 			mxcontact.setCurrentAddress(address);
 			
 			if(checkcontact == null) {
+				mxcontact.setname(name);
+				mxcontact.setMinimaAddress(mxaddress);
 				mxcontact.setMyAddress("newcontact");
 				mxcontact.setBlockDetails(topblock, checkblock, checkhash);
 				maxdb.newContact(mxcontact);
 				
 			}else{
 				mxcontact.setExtraData(checkcontact.getExtraData());
+				
+				//Overwrite the new details
+				mxcontact.setname(name);
+				mxcontact.setMinimaAddress(mxaddress);
 				mxcontact.setBlockDetails(topblock, checkblock, checkhash);
 				mxcontact.setMyAddress(checkcontact.getMyAddress());
 				maxdb.updateContact(mxcontact);

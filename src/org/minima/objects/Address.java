@@ -106,9 +106,7 @@ public class Address implements Streamable{
 	}
 	
 	/**
-	 * Convert an address into a Minima Checksum Base32 address
-	 * 
-	 * MAX - 64K
+	 * Convert an address into a Minima Checksum Base32 address - MAX 32k
 	 */
 	public static String makeMinimaAddress(MiniData zAddress){
 		
@@ -207,7 +205,7 @@ public class Address implements Streamable{
 	
 	public static void main(String[] zArgs) throws Exception {
 		
-		MiniData tt = MiniData.getRandomData(64);
+		MiniData tt = MiniData.getRandomData(320);
 //		MiniData tt = new MiniData("0x001");
 		
 		Address addr = new Address(tt);

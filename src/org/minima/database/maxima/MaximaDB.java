@@ -67,7 +67,6 @@ public class MaximaDB extends SqlDB {
 			//Create contacts table
 			String contacts = "CREATE TABLE IF NOT EXISTS `contacts` ("
 							+ "  `id` IDENTITY PRIMARY KEY,"
-							+ "  `name` varchar(255) NOT NULL,"
 							+ "  `extradata` blob NOT NULL,"
 							+ "  `publickey` varchar(512) NOT NULL UNIQUE,"
 							+ "  `currentaddress` varchar(512) NOT NULL,"
@@ -90,14 +89,14 @@ public class MaximaDB extends SqlDB {
 			SQL_UPDATE_ALL_NOTCONECTED = mSQLConnection.prepareStatement("UPDATE hosts SET connected=0");
 			
 			SQL_INSERT_MAXIMA_CONTACT 	= mSQLConnection.prepareStatement("INSERT IGNORE INTO contacts "
-					+ "( name, extradata, publickey, currentaddress, myaddress, lastseen ) VALUES ( ?, ?, ?, ?, ?, ? )");
+					+ "( extradata, publickey, currentaddress, myaddress, lastseen ) VALUES ( ?, ?, ?, ?, ? )");
 			
 			SQL_SELECT_ALL_CONTACTS		 = mSQLConnection.prepareStatement("SELECT * FROM contacts");
 			SQL_SELECT_CONTACT_PUBLICKEY = mSQLConnection.prepareStatement("SELECT * FROM contacts WHERE publickey=?");
 			SQL_SELECT_CONTACT_ID 		 = mSQLConnection.prepareStatement("SELECT * FROM contacts WHERE id=?");
 			
 			SQL_UPDATE_CONTACT			= mSQLConnection.prepareStatement("UPDATE contacts SET "
-					+ "name=?, extradata=?, currentaddress=?, myaddress=?, lastseen=? WHERE publickey=?");
+					+ "extradata=?, currentaddress=?, myaddress=?, lastseen=? WHERE publickey=?");
 			
 			SQL_DELETE_CONTACT			= mSQLConnection.prepareStatement("DELETE FROM contacts WHERE id=?");
 			
@@ -308,18 +307,15 @@ public class MaximaDB extends SqlDB {
 			
 			//Get the Query ready
 			SQL_INSERT_MAXIMA_CONTACT.clearParameters();
-		
-			//Set main params
-			SQL_INSERT_MAXIMA_CONTACT.setString(1, zContact.getName());
 			
 			//Extra data
 			MiniData extradata = MaximaContact.convertJSONObjectToData(zContact.getExtraData());
-			SQL_INSERT_MAXIMA_CONTACT.setBytes(2, extradata.getBytes());
+			SQL_INSERT_MAXIMA_CONTACT.setBytes(1, extradata.getBytes());
 			
-			SQL_INSERT_MAXIMA_CONTACT.setString(3, zContact.getPublicKey());
-			SQL_INSERT_MAXIMA_CONTACT.setString(4, zContact.getCurrentAddress());
-			SQL_INSERT_MAXIMA_CONTACT.setString(5, zContact.getMyAddress());
-			SQL_INSERT_MAXIMA_CONTACT.setLong(6, System.currentTimeMillis());
+			SQL_INSERT_MAXIMA_CONTACT.setString(2, zContact.getPublicKey());
+			SQL_INSERT_MAXIMA_CONTACT.setString(3, zContact.getCurrentAddress());
+			SQL_INSERT_MAXIMA_CONTACT.setString(4, zContact.getMyAddress());
+			SQL_INSERT_MAXIMA_CONTACT.setLong(5, System.currentTimeMillis());
 			
 			//Do it.
 			SQL_INSERT_MAXIMA_CONTACT.execute();
@@ -424,17 +420,15 @@ public class MaximaDB extends SqlDB {
 			//Set search params
 			SQL_UPDATE_CONTACT.clearParameters();
 			
-			SQL_UPDATE_CONTACT.setString(1, zContact.getName());
-			
 			//Extra Data a little different
 			MiniData extradata = MaximaContact.convertJSONObjectToData(zContact.getExtraData());
-			SQL_UPDATE_CONTACT.setBytes(2, extradata.getBytes());
+			SQL_UPDATE_CONTACT.setBytes(1, extradata.getBytes());
 			
-			SQL_UPDATE_CONTACT.setString(3, zContact.getCurrentAddress());
-			SQL_UPDATE_CONTACT.setString(4, zContact.getMyAddress());
-			SQL_UPDATE_CONTACT.setLong(5, System.currentTimeMillis());
+			SQL_UPDATE_CONTACT.setString(2, zContact.getCurrentAddress());
+			SQL_UPDATE_CONTACT.setString(3, zContact.getMyAddress());
+			SQL_UPDATE_CONTACT.setLong(4, System.currentTimeMillis());
 			
-			SQL_UPDATE_CONTACT.setString(6, zContact.getPublicKey());
+			SQL_UPDATE_CONTACT.setString(5, zContact.getPublicKey());
 			
 			//Run the query
 			SQL_UPDATE_CONTACT.execute();

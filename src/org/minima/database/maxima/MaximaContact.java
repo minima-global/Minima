@@ -14,12 +14,10 @@ import org.minima.utils.json.parser.ParseException;
 
 public class MaximaContact {
 
-	public int 		mUID = 0;
-	
 	/**
-	 * The Name defined by the user ( not you )
+	 * Unique database ID
 	 */
-	public String 	mName;
+	public int 		mUID = 0;
 	
 	/**
 	 * Extra data can be stored with the contact as a aJSON
@@ -46,16 +44,16 @@ public class MaximaContact {
 	 */
 	long mLastSeen;
 	
-	public MaximaContact(String zName, String zPublicKey) {
-		mName 		= zName;
+	public MaximaContact(String zPublicKey) {
 		mPublicKey	= zPublicKey;
 		mExtraData 	= new JSONObject();
+		setname("noname");
+		setMinimaAddress("Mx00");
 		setBlockDetails(MiniNumber.ZERO, MiniNumber.ZERO, MiniData.ZERO_TXPOWID);
 	}
 	
 	public MaximaContact(ResultSet zSQLResult) throws SQLException {
 		mUID			= zSQLResult.getInt("id");
-		mName			= zSQLResult.getString("name");
 		mPublicKey		= zSQLResult.getString("publickey");
 		mCurrentAddress	= zSQLResult.getString("currentaddress");
 		mMyCurrentAddress	= zSQLResult.getString("myaddress");
@@ -70,6 +68,8 @@ public class MaximaContact {
 			
 			//Create a default
 			mExtraData = new JSONObject();
+			setname("noname");
+			setMinimaAddress("Mx00");
 			setBlockDetails(MiniNumber.ZERO, MiniNumber.ZERO, MiniData.ZERO_TXPOWID);
 		} 
 	}
@@ -90,8 +90,20 @@ public class MaximaContact {
 		return mUID;
 	}
 	
+	public void setMinimaAddress(String zMxAddress) {
+		mExtraData.put("minimaaddress", zMxAddress);
+	}
+	
+	public String getMinimaAddress() {
+		return (String)mExtraData.get("minimaaddress");
+	}
+	
+	public void setname(String zName) {
+		mExtraData.put("name", zName);
+	}
+	
 	public String getName() {
-		return mName;
+		return (String)mExtraData.get("name");
 	}
 	
 	public JSONObject getExtraData() {
@@ -124,7 +136,6 @@ public class MaximaContact {
 		JSONObject json = new JSONObject();
 		
 		json.put("id", mUID);
-		json.put("name", mName);
 		json.put("publickey", mPublicKey);
 		json.put("currentaddress", mCurrentAddress);
 		json.put("myaddress", mMyCurrentAddress);
