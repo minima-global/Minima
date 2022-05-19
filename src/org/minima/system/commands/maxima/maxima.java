@@ -23,7 +23,7 @@ import org.minima.utils.messages.Message;
 public class maxima extends Command {
 
 	public maxima() {
-		super("maxima","[action:info|hosts|send|refresh] (id:)|(to:) (application:) (data:) (logs:true|false) - Check your Maxima details, send a message / data, enable logs");
+		super("maxima","[action:info|hosts|send|refresh] (id:)|(to:)|(publickey:) (application:) (data:) (logs:true|false) - Check your Maxima details, send a message / data, enable logs");
 	}
 	
 	@Override
@@ -102,7 +102,7 @@ public class maxima extends Command {
 
 		}else if(func.equals("send")) {
 			
-			if(!(existsParam("to") || existsParam("id"))  || !existsParam("application") || !existsParam("data") ) {
+			if(!(existsParam("to") || existsParam("id")|| existsParam("publickey"))  || !existsParam("application") || !existsParam("data") ) {
 				throw new Exception("MUST specify to, application and data for a send command");
 			}
 			
@@ -110,6 +110,21 @@ public class maxima extends Command {
 			String fullto = null;
 			if(existsParam("to")) {
 				fullto 	= getParam("to");
+				
+			}else if(existsParam("publickey")) {
+				
+				//Load the contact from the public key..
+				String pubkey = getParam("publickey");
+				
+				//Load the contact
+				MaximaContact mcontact = maxdb.loadContactFromPublicKey(pubkey);
+				if(mcontact == null) {
+					throw new CommandException("No Contact found for publickey : "+pubkey);
+				}
+				
+				//Get the address
+				fullto = mcontact.getCurrentAddress();
+			
 			}else {
 				
 				//Load the contact from the id..
@@ -118,7 +133,7 @@ public class maxima extends Command {
 				//Load the contact
 				MaximaContact mcontact = maxdb.loadContactFromID(Integer.parseInt(id));
 				if(mcontact == null) {
-					throw new CommandException("No Contact found fro ID : "+id);
+					throw new CommandException("No Contact found for ID : "+id);
 				}
 				
 				//Get the address
