@@ -105,7 +105,10 @@ public class SwapLinksFunctions {
             NIOClientInfo minimaClient = UtilFuncs.getClientFromInetAddress(nextHop, state);
             P2PWalkLinks walkLinks = new P2PWalkLinks(true, false, minimaClient.getUID());
             walkLinks.setClientWalk(true);
-            msgs.add(new Message(P2PManager.P2P_SEND_MSG).addString("uid", minimaClient.getUID()).addObject("json", walkLinks.toJson()));
+            int multipleOverMax = state.getInLinks().size() / state.getMaxNumP2PConnections();
+            for (int i=0; i < multipleOverMax; i++) {
+                msgs.add(new Message(P2PManager.P2P_SEND_MSG).addString("uid", minimaClient.getUID()).addObject("json", walkLinks.toJson()));
+            }
         }
         return msgs;
     }

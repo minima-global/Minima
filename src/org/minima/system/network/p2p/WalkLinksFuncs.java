@@ -249,7 +249,7 @@ public class WalkLinksFuncs {
         List<Message> retMessages = new ArrayList<>();
         if (state.getNotAcceptingConnP2PLinks().size() > state.getMaxNumNoneP2PConnections()) {
             int numClientsToSend = state.getMaxNumNoneP2PConnections() / 2;
-            int numSwaps = Math.min(Math.min(numClientsToSend, maxClientsCanReceive), state.getNotAcceptingConnP2PLinks().size());
+            int numSwaps = Math.min(numClientsToSend, maxClientsCanReceive);
             for (int i = 0; i < numSwaps; i++) {
                 // Send a DOSWAP message to numSwaps clients
                 List<String> nonP2PLinkUIDs = new ArrayList<>(state.getNotAcceptingConnP2PLinks().keySet());
