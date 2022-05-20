@@ -105,6 +105,7 @@ public class SwapLinksFunctions {
             NIOClientInfo minimaClient = UtilFuncs.getClientFromInetAddress(nextHop, state);
             P2PWalkLinks walkLinks = new P2PWalkLinks(true, false, minimaClient.getUID());
             walkLinks.setClientWalk(true);
+            // Send out multiple load balance request messages if node is highly overloaded
             int multipleOverMax = state.getInLinks().size() / state.getMaxNumP2PConnections();
             for (int i=0; i < multipleOverMax; i++) {
                 msgs.add(new Message(P2PManager.P2P_SEND_MSG).addString("uid", minimaClient.getUID()).addObject("json", walkLinks.toJson()));
