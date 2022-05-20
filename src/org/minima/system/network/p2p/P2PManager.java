@@ -41,7 +41,6 @@ public class P2PManager extends MessageProcessor {
     public static final String P2P_SEND_MSG_TO_ALL = "P2P_SEND_MSG_TO_ALL";
     public static final String P2P_SEND_CONNECT = "P2P_SEND_CONNECT";
     public static final String P2P_SEND_DISCONNECT = "P2P_SEND_DISCONNECT";
-    public static final String P2P_METRICS = "P2P_METRICS";
 
     public static final String P2P_SAVE_DATA = "P2P_SAVE_DATA";
 
@@ -63,6 +62,8 @@ public class P2PManager extends MessageProcessor {
         PostTimerMessage(new TimerMessage(P2PParams.SAVE_DATA_DELAY, P2P_SAVE_DATA));
         PostTimerMessage(new TimerMessage(20_000, P2P_UPDATE_HASH_RATE));
     }
+
+
 
     protected static List<Message> processWalkLinksMsg(JSONObject zMessage, NIOClientInfo clientInfo, P2PState state) {
         P2PWalkLinks p2pWalkLinks = P2PWalkLinks.readFromJSON(zMessage);
@@ -312,7 +313,6 @@ public class P2PManager extends MessageProcessor {
         List<Message> sendMsgs = new ArrayList<>();
         if (zMessage.isMessageType(P2PFunctions.P2P_INIT)) {
             sendMsgs.addAll(init(state));
-            PostTimerMessage(new TimerMessage(P2PParams.METRICS_DELAY, P2P_METRICS));
         } else if (zMessage.isMessageType(P2PFunctions.P2P_SHUTDOWN)) {
             shutdown();
         } else if (zMessage.isMessageType(P2P_SAVE_DATA)) {
@@ -372,10 +372,6 @@ public class P2PManager extends MessageProcessor {
 
             state.setDeviceHashRate(megspeed);
             PostTimerMessage(new TimerMessage(P2PParams.HASH_RATE_UPDATE_DELAY, P2P_UPDATE_HASH_RATE));
-        } else if (zMessage.isMessageType(P2P_METRICS)) {
-            PostTimerMessage(new TimerMessage(P2PParams.METRICS_DELAY, P2P_METRICS));
-            RPCClient.sendPOST(P2PParams.METRICS_URL, state.toJson().toString(), "application/json");
-            MinimaLogger.log("[+] Metrics sent");
         }
         sendMessages(sendMsgs);
     }
