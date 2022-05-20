@@ -211,6 +211,13 @@ public class NIOMessage implements Runnable {
 				newconn.addObject("client", nioclient);
 				Main.getInstance().getNetworkManager().getP2PManager().PostMessage(newconn);
 				
+				//Tell MAXIMA
+				Message maxconn = new Message(MaximaManager.MAXIMA_CONNECTED);
+				maxconn.addObject("nioclient", nioclient);
+				maxconn.addString("uid", nioclient.getUID());
+				maxconn.addBoolean("incoming", nioclient.isIncoming());
+				Main.getInstance().getMaxima().PostMessage(maxconn);
+				
 				//Is this an incoming connection.. send a greeting!
 				if(nioclient.isIncoming()) {
 					

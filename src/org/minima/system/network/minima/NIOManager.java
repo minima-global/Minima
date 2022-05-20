@@ -438,13 +438,6 @@ public class NIOManager extends MessageProcessor {
 				}
 			}
 			
-			//Tell MAXIMA
-			Message maxconn = new Message(MaximaManager.MAXIMA_CONNECTED);
-			maxconn.addObject("nioclient", nioc);
-			maxconn.addString("uid", nioc.getUID());
-			maxconn.addBoolean("incoming", nioc.isIncoming());
-			Main.getInstance().getMaxima().PostMessage(maxconn);
-			
 		}else if(zMessage.getMessageType().equals(NIO_INCOMINGMSG)) {
 			//Who is it from
 			String uid = zMessage.getString("uid");

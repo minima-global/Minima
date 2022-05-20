@@ -103,7 +103,7 @@ public class maxima extends Command {
 		}else if(func.equals("send")) {
 			
 			if(!(existsParam("to") || existsParam("id")|| existsParam("publickey"))  || !existsParam("application") || !existsParam("data") ) {
-				throw new Exception("MUST specify to, application and data for a send command");
+				throw new Exception("MUST specify to|id|publickey, application and data for a send command");
 			}
 			
 			//Send a message..
