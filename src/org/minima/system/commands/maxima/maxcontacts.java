@@ -124,15 +124,16 @@ public class maxcontacts extends Command {
 				
 				json.put("delivered", valid);
 				if(!valid) {
-					if(validresp.isEqual(MaximaManager.MAXIMA_RESPONSE_FAIL)) {
-						json.put("error", "Not delivered");
-					}else if(validresp.isEqual(MaximaManager.MAXIMA_RESPONSE_TOOBIG)) {
+					
+					if(validresp.isEqual(MaximaManager.MAXIMA_RESPONSE_TOOBIG)) {
 						json.put("error", "Maxima Mesasge too big");
 					}else if(validresp.isEqual(MaximaManager.MAXIMA_RESPONSE_UNKNOWN)) {
 						json.put("error", "Unkonw Address");
 					}else if(validresp.isEqual(MaximaManager.MAXIMA_RESPONSE_WRONGHASH)) {
 						json.put("error", "TxPoW Hash wrong");
-					} 
+					}else {
+						json.put("error", "Not delivered");
+					}
 				}
 				
 			}catch(Exception exc){

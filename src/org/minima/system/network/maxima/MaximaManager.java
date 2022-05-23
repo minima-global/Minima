@@ -579,15 +579,16 @@ public class MaximaManager extends MessageProcessor {
 					
 					if(!validresp.isEqual(MAXIMA_RESPONSE_OK)) {
 						
-						if(validresp.isEqual(MaximaManager.MAXIMA_RESPONSE_FAIL)) {
-							MinimaLogger.log("Warning : Maxima message not delivered to.. "+zHost+"@"+zPort);
-						}else if(validresp.isEqual(MaximaManager.MAXIMA_RESPONSE_TOOBIG)) {
+						if(validresp.isEqual(MaximaManager.MAXIMA_RESPONSE_TOOBIG)) {
 							MinimaLogger.log("Warning : Maxima message too big not delivered to.. "+zHost+"@"+zPort);
 						}else if(validresp.isEqual(MaximaManager.MAXIMA_RESPONSE_UNKNOWN)) {
 							MinimaLogger.log("Warning : Maxima message Unkonw Address not delivered to.. "+zHost+"@"+zPort);
 						}else if(validresp.isEqual(MaximaManager.MAXIMA_RESPONSE_WRONGHASH)) {
 							MinimaLogger.log("Warning : Maxima message TxPoW Hash wrong not delivered to.. "+zHost+"@"+zPort);
-						} 
+						}else {
+							MinimaLogger.log("Warning : Maxima message not delivered to.. "+zHost+"@"+zPort);
+						}
+						
 					}
 					
 				}catch(Exception exc){
