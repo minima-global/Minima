@@ -145,6 +145,7 @@ public class TxHeader implements Streamable {
 		txpow.put("mmr", mMMRRoot.toString());
 		txpow.put("total", mMMRTotal.toString());
 		
+		txpow.put("customhash", mCustomHash.to0xString());
 		txpow.put("txbodyhash", mTxBodyHash.to0xString());
 		txpow.put("nonce", mNonce.toString());
 		txpow.put("timemilli", mTimeMilli.toString());
