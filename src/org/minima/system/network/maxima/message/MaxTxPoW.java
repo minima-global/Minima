@@ -3,6 +3,8 @@ package org.minima.system.network.maxima.message;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.MathContext;
 
 import org.minima.database.MinimaDB;
 import org.minima.objects.Magic;
@@ -93,8 +95,17 @@ public class MaxTxPoW implements Streamable {
 		//Now set the custom hash
 		txpow.setCustomHash(msghash);
 		
-		//Get the Minimum alolowed work..
+		//Get the Minimum allowed work..
 		Magic magic = MinimaDB.getDB().getTxPoWTree().getTip().getTxPoW().getMagic();
+		
+		//Min Difficulty
+		MiniData minwork = magic.getMinTxPowWork();
+		
+		//Add 10%.. to give yourself some space
+		BigDecimal hashes 	= minwork.getDataValueDecimal();
+		hashes 				= hashes.divide(new BigDecimal("1.1"), MathContext.DECIMAL64);
+		MiniData minhash 	= new MiniData(hashes.toBigInteger());
+		txpow.setTxDifficulty(minhash);
 		
 		//Now Mine it..
 		Main.getInstance().getTxPoWMiner().MineTxPoW(txpow);

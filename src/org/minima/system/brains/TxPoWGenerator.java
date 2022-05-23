@@ -2,6 +2,7 @@ package org.minima.system.brains;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -104,13 +105,13 @@ public class TxPoWGenerator {
 			//Warn them..
 			MinimaLogger.log("WARNING : Your Hashrate is lower than the current Minimum allowed by the network");
 			
-//			//Add 10%.. to give yourself some space
-//			BigDecimal hashes 	= txpowmagic.getMinTxPowWork().getDataValueDecimal();
-//			hashes 				= hashes.divide(new BigDecimal("1.1"), MathContext.DECIMAL128);
-//			minhash 			= new MiniData(hashes.toBigInteger());
+			//Add 10%.. to give yourself some space
+			BigDecimal hashes 	= txpowmagic.getMinTxPowWork().getDataValueDecimal();
+			hashes 				= hashes.divide(new BigDecimal("1.1"), MathContext.DECIMAL64);
+			minhash 			= new MiniData(hashes.toBigInteger());
 			
 			//This could be too low if the Hash value is going up..
-			minhash = txpowmagic.getMinTxPowWork();
+//			minhash = txpowmagic.getMinTxPowWork();
 		}
 		txpow.setTxDifficulty(minhash);
 		
