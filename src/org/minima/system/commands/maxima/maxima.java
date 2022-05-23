@@ -171,10 +171,23 @@ public class maxima extends Command {
 				MiniData maxpacket = MaximaManager.constructMaximaData(sender);
 			
 				//And Send it..
-				boolean valid = MaximaManager.sendMaxPacket(tohost, toport, maxpacket);
+				MiniData validresp = MaximaManager.sendMaxPacket(tohost, toport, maxpacket);
+				boolean valid = true;
+				if(!validresp.isEqual(MaximaManager.MAXIMA_RESPONSE_OK)) {
+					valid = false;
+				}
+				
 				json.put("delivered", valid);
 				if(!valid) {
-					json.put("error", "Not delivered");
+					if(validresp.isEqual(MaximaManager.MAXIMA_RESPONSE_FAIL)) {
+						json.put("error", "Not delivered");
+					}else if(validresp.isEqual(MaximaManager.MAXIMA_RESPONSE_TOOBIG)) {
+						json.put("error", "Maxima Mesasge too big");
+					}else if(validresp.isEqual(MaximaManager.MAXIMA_RESPONSE_UNKNOWN)) {
+						json.put("error", "Unkonw Address");
+					}else if(validresp.isEqual(MaximaManager.MAXIMA_RESPONSE_WRONGHASH)) {
+						json.put("error", "TxPoW Hash wrong");
+					} 
 				}
 				
 			}catch(Exception exc){

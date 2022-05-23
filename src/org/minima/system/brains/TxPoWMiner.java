@@ -13,6 +13,7 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
 import org.minima.utils.Crypto;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageProcessor;
 
@@ -205,5 +206,67 @@ public class TxPoWMiner extends MessageProcessor {
 		MiniNumber spd = hashes.div(timesecs);
 		
 		return spd;
+	}
+	
+	/**
+	 * Mine a TxPoW - Used to Mine Maxima Messages
+	 */
+	public void MineTxPoW(TxPoW zTxPoW) {
+		
+		//Hard set the Header Body hash - now we are mining it can never change
+		zTxPoW.setHeaderBodyHash();
+		
+		//Set the nonce.. we make it a large size in bytes then edit those - no reserialisation
+		zTxPoW.setNonce(START_NONCE_BYTES);
+		
+		//Get the byte data
+		byte[] data = MiniData.getMiniDataVersion(zTxPoW.getTxHeader()).getBytes();
+		
+		//Cycle until done..
+		MiniNumber finalnonce 	= MiniNumber.ZERO;
+		BigInteger newnonce 	= BigInteger.ZERO;
+		while(true) {
+			
+			//Get a nonce to write over the data
+			byte[] noncebytes = newnonce.toByteArray();
+			newnonce 		  = newnonce.add(BigInteger.ONE);
+			
+			//Copy these into the byte array of the TxHeader 
+			//start 2 numbers in so leading zero is not changed
+			System.arraycopy(noncebytes, 0, data, 4, noncebytes.length);
+			
+			//Hash the data array
+			byte[] hashedbytes = Crypto.getInstance().hashData(data);
+			
+			//Make into a MiniData structure
+			MiniData hash = new MiniData(hashedbytes);
+			
+			//Have we found a valid txpow
+			if(hash.isLess(zTxPoW.getTxnDifficulty())) {
+				
+				//Ok read in the final data..
+				MiniData finaldata = new MiniData(data);
+				
+				//Now convert to a TxHeader
+				TxHeader txh = TxHeader.convertMiniDataVersion(finaldata);
+				
+				//What was the nonce..
+				finalnonce = txh.mNonce;
+				
+				break;
+			}
+		}
+		
+		//Now set the final nonce..
+		zTxPoW.setNonce(finalnonce);
+		
+		//Calculate TxPoWID
+		zTxPoW.calculateTXPOWID();
+		
+		//Post it on.. it might be a block!
+		Main.getInstance().PostMessage(new Message(Main.MAIN_TXPOWMINED).addObject("txpow", zTxPoW));
+		
+		//Remove the coins from our mining list
+		removeMiningCoins(zTxPoW);
 	}
 }

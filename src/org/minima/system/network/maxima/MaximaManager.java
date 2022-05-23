@@ -19,6 +19,7 @@ import org.minima.objects.Address;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
+import org.minima.system.network.maxima.message.MaxTxPoW;
 import org.minima.system.network.maxima.message.MaximaInternal;
 import org.minima.system.network.maxima.message.MaximaMessage;
 import org.minima.system.network.maxima.message.MaximaPackage;
@@ -72,8 +73,17 @@ public class MaximaManager extends MessageProcessor {
 	/**
 	 * The Response message for a Maxima Message
 	 */
-	public static final MiniData MAXIMA_RESPONSE_OK 	= new MiniData("0x080000000101");
-	public static final MiniData MAXIMA_RESPONSE_FAIL 	= new MiniData("0x080000000100");
+	public static final MiniData MAXIMA_FAIL 		= new MiniData("0x00");
+	public static final MiniData MAXIMA_OK 			= new MiniData("0x01");
+	public static final MiniData MAXIMA_UNKNOWN 	= new MiniData("0x02");
+	public static final MiniData MAXIMA_TOOBIG 		= new MiniData("0x03");
+	public static final MiniData MAXIMA_WRONGHASH 	= new MiniData("0x04");
+	
+	public static final MiniData MAXIMA_RESPONSE_FAIL 		= new MiniData("0x080000000100");
+	public static final MiniData MAXIMA_RESPONSE_OK 		= new MiniData("0x080000000101");
+	public static final MiniData MAXIMA_RESPONSE_UNKNOWN 	= new MiniData("0x080000000102");
+	public static final MiniData MAXIMA_RESPONSE_TOOBIG 	= new MiniData("0x080000000103");
+	public static final MiniData MAXIMA_RESPONSE_WRONGHASH 	= new MiniData("0x080000000104");
 	
 	/**
 	 * RSA Keys
@@ -336,8 +346,11 @@ public class MaximaManager extends MessageProcessor {
 			
 		}else if(zMessage.getMessageType().equals(MAXIMA_RECMESSAGE)) {
 			
+			//Get the MaxTxPoW
+			MaxTxPoW mxtxpow 	= (MaxTxPoW) zMessage.getObject("maxtxpow");
+			
 			//received a Message!
-			MaximaPackage mpkg = (MaximaPackage) zMessage.getObject("maxpackage");
+			MaximaPackage mpkg 	= mxtxpow.getMaximaPackage();
 			
 			//Get the NIOClient
 			NIOClient nioc = (NIOClient) zMessage.getObject("nioclient");
@@ -376,16 +389,16 @@ public class MaximaManager extends MessageProcessor {
 					}
 					
 					//Send to the client we are connected to..
-					NIOManager.sendNetworkMessage(client.getUID(), NIOMessage.MSG_MAXIMA, mpkg);
+					NIOManager.sendNetworkMessage(client.getUID(), NIOMessage.MSG_MAXIMA_TXPOW, mxtxpow);
 					
 					//Notify that Client that we received the message.. this makes external client disconnect ( internal just a ping )
-					maximaMessageStatus(nioc,true);
+					maximaMessageStatus(nioc,MAXIMA_OK);
 					
 				}else{
 					MinimaLogger.log("MAXIMA message received for Client we are not connected to : "+tomaxima);
 				
 					//Notify that Client of the fail.. this makes external client disconnect ( internal just a ping )
-					maximaMessageStatus(nioc,false);
+					maximaMessageStatus(nioc,MAXIMA_UNKNOWN);
 				}
 				
 				return;
@@ -405,7 +418,7 @@ public class MaximaManager extends MessageProcessor {
 				MinimaLogger.log("MAXIMA Invalid Signature on message : "+mpkg.mTo.to0xString());
 				
 				//Notify that Client of the fail.. this makes external client disconnect ( internal just a ping )
-				maximaMessageStatus(nioc,false);
+				maximaMessageStatus(nioc,MAXIMA_FAIL);
 				
 				return;
 			}
@@ -418,7 +431,7 @@ public class MaximaManager extends MessageProcessor {
 				MinimaLogger.log("MAXIMA Message From field signed by incorrect pubkey  from:"+maxmsg.mFrom.to0xString()+" signed:"+mm.mFrom.to0xString());
 				
 				//Notify that Client of the fail.. this makes external client disconnect ( internal just a ping )
-				maximaMessageStatus(nioc,false);
+				maximaMessageStatus(nioc,MAXIMA_FAIL);
 				
 				return;
 			}
@@ -436,7 +449,7 @@ public class MaximaManager extends MessageProcessor {
 			}
 			
 			//Notify that Client that we received the message.. this makes external client disconnect ( internal just a ping )
-			maximaMessageStatus(nioc,true);
+			maximaMessageStatus(nioc,MAXIMA_OK);
 			
 			//Is it a special contact message
 			String application = (String) maxjson.get("application");
@@ -461,12 +474,9 @@ public class MaximaManager extends MessageProcessor {
 		}
 	}
 	
-	private void maximaMessageStatus(NIOClient zClient, boolean zValid) throws IOException {
-		if(zValid) {
-			NIOManager.sendNetworkMessage(zClient.getUID(), NIOMessage.MSG_PING, MiniData.ONE_TXPOWID);
-		}else{
-			NIOManager.sendNetworkMessage(zClient.getUID(), NIOMessage.MSG_PING, MiniData.ZERO_TXPOWID);
-		}
+	private void maximaMessageStatus(NIOClient zClient, MiniData zStatus) throws IOException {
+		//Send this Maxima response
+		NIOManager.sendNetworkMessage(zClient.getUID(), NIOMessage.MSG_PING, zStatus);
 	}
 	
 	public static MiniData constructMaximaData(Message zMessage) throws Exception {
@@ -500,11 +510,14 @@ public class MaximaManager extends MessageProcessor {
 		//Now Construct a MaximaPackage
 		MaximaPackage mp = new MaximaPackage( topubk , cp.getCompleteEncryptedData());
 		
+		//Now create a MaxTxPow
+		MaxTxPoW mxtxpow = MaxTxPoW.createMaxTxPoW(mp);
+		
 		//Create the Network Message
-		return NIOManager.createNIOMessage(NIOMessage.MSG_MAXIMA, mp);
+		return NIOManager.createNIOMessage(NIOMessage.MSG_MAXIMA_TXPOW, mxtxpow);
 	}
 	
-	public static boolean sendMaxPacket(String zHost, int zPort, MiniData zMaxMessage) throws IOException {
+	public static MiniData sendMaxPacket(String zHost, int zPort, MiniData zMaxMessage) throws IOException {
 		
 		//Open the socket..
 		Socket sock = new Socket(zHost, zPort);
@@ -522,15 +535,24 @@ public class MaximaManager extends MessageProcessor {
 		dos.flush();
 		
 		//Now get a response.. should be ONE_ID.. give it 10 second max.. ( might get a block..)
-		boolean valid = false;
+		MiniData valid = MAXIMA_RESPONSE_FAIL;
 		long maxtime = System.currentTimeMillis() + 10000;
 		while(System.currentTimeMillis() < maxtime) {
 			MiniData resp = MiniData.ReadFromStream(dis);
 			if(resp.isEqual(MAXIMA_RESPONSE_OK)) {
-				valid = true;
+				valid = resp;
 				break;
 			}else if(resp.isEqual(MAXIMA_RESPONSE_FAIL)) {
-				valid = false;
+				valid = resp;
+				break;
+			}else if(resp.isEqual(MAXIMA_RESPONSE_TOOBIG)) {
+				valid = resp;
+				break;
+			}else if(resp.isEqual(MAXIMA_RESPONSE_UNKNOWN)) {
+				valid = resp;
+				break;
+			}else if(resp.isEqual(MAXIMA_RESPONSE_WRONGHASH)) {
+				valid = resp;
 				break;
 			}
 		}
@@ -553,10 +575,19 @@ public class MaximaManager extends MessageProcessor {
 				try {
 					
 					//Send the message
-					boolean valid = sendMaxPacket(zHost,zPort,zMaxMessage);
+					MiniData validresp = sendMaxPacket(zHost,zPort,zMaxMessage);
 					
-					if(!valid) {
-						MinimaLogger.log("Warning : Maxima message not delivered to.. "+zHost+"@"+zPort);
+					if(!validresp.isEqual(MAXIMA_RESPONSE_OK)) {
+						
+						if(validresp.isEqual(MaximaManager.MAXIMA_RESPONSE_FAIL)) {
+							MinimaLogger.log("Warning : Maxima message not delivered to.. "+zHost+"@"+zPort);
+						}else if(validresp.isEqual(MaximaManager.MAXIMA_RESPONSE_TOOBIG)) {
+							MinimaLogger.log("Warning : Maxima message too big not delivered to.. "+zHost+"@"+zPort);
+						}else if(validresp.isEqual(MaximaManager.MAXIMA_RESPONSE_UNKNOWN)) {
+							MinimaLogger.log("Warning : Maxima message Unkonw Address not delivered to.. "+zHost+"@"+zPort);
+						}else if(validresp.isEqual(MaximaManager.MAXIMA_RESPONSE_WRONGHASH)) {
+							MinimaLogger.log("Warning : Maxima message TxPoW Hash wrong not delivered to.. "+zHost+"@"+zPort);
+						} 
 					}
 					
 				}catch(Exception exc){

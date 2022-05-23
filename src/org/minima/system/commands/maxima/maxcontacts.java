@@ -15,6 +15,7 @@ import org.minima.system.commands.CommandException;
 import org.minima.system.network.maxima.MaximaContactManager;
 import org.minima.system.network.maxima.MaximaManager;
 import org.minima.system.network.maxima.message.MaximaMessage;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
@@ -59,13 +60,17 @@ public class maxcontacts extends Command {
 				MiniNumber checkblock = new MiniNumber((String)extradata.get("checkblock"));
 				MiniData   checkhash  = new MiniData((String)extradata.get("checkhash"));
 				
-				//Check it..
-				TxPoWTreeNode checknode = tip.getPastNode(checkblock);
-				MiniData nodehash		= checknode.getTxPoW().getTxPoWIDData();
-				
 				//The contact
 				JSONObject conjson = contact.toJSON();
-				conjson.put("samechain", nodehash.isEqual(checkhash));
+				
+				//Check it..
+				TxPoWTreeNode checknode = tip.getPastNode(checkblock);
+				if(checknode != null) {
+					MiniData nodehash		= checknode.getTxPoW().getTxPoWIDData();
+					conjson.put("samechain", nodehash.isEqual(checkhash));
+				}else {
+					conjson.put("samechain", false);
+				}
 				
 				//And add..
 				allcontacts.add(conjson);
@@ -111,10 +116,23 @@ public class maxcontacts extends Command {
 				MiniData maxpacket = MaximaManager.constructMaximaData(sender);
 			
 				//And Send it..
-				boolean valid = MaximaManager.sendMaxPacket(tohost, toport, maxpacket);
+				MiniData validresp = MaximaManager.sendMaxPacket(tohost, toport, maxpacket);
+				boolean valid = true;
+				if(!validresp.isEqual(MaximaManager.MAXIMA_RESPONSE_OK)) {
+					valid = false;
+				}
+				
 				json.put("delivered", valid);
 				if(!valid) {
-					json.put("error", "Not delivered");
+					if(validresp.isEqual(MaximaManager.MAXIMA_RESPONSE_FAIL)) {
+						json.put("error", "Not delivered");
+					}else if(validresp.isEqual(MaximaManager.MAXIMA_RESPONSE_TOOBIG)) {
+						json.put("error", "Maxima Mesasge too big");
+					}else if(validresp.isEqual(MaximaManager.MAXIMA_RESPONSE_UNKNOWN)) {
+						json.put("error", "Unkonw Address");
+					}else if(validresp.isEqual(MaximaManager.MAXIMA_RESPONSE_WRONGHASH)) {
+						json.put("error", "TxPoW Hash wrong");
+					} 
 				}
 				
 			}catch(Exception exc){

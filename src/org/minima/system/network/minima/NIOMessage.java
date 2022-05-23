@@ -22,12 +22,14 @@ import org.minima.system.Main;
 import org.minima.system.brains.TxPoWChecker;
 import org.minima.system.network.maxima.MaximaCTRLMessage;
 import org.minima.system.network.maxima.MaximaManager;
+import org.minima.system.network.maxima.message.MaxTxPoW;
 import org.minima.system.network.maxima.message.MaximaPackage;
 import org.minima.system.network.p2p.P2PFunctions;
 import org.minima.system.network.p2p.P2PManager;
 import org.minima.system.params.GeneralParams;
 import org.minima.system.params.GlobalParams;
 import org.minima.utils.ListCheck;
+import org.minima.utils.MiniFile;
 import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
@@ -51,7 +53,7 @@ public class NIOMessage implements Runnable {
 	public static final MiniByte MSG_PING 			= new MiniByte(8);
 	
 	public static final MiniByte MSG_MAXIMA_CTRL	= new MiniByte(9);
-	public static final MiniByte MSG_MAXIMA 		= new MiniByte(10);
+	public static final MiniByte MSG_MAXIMA_TXPOW 		= new MiniByte(10);
 	
 	public static final MiniByte MSG_SINGLE_PING 	= new MiniByte(11);
 	public static final MiniByte MSG_SINGLE_PONG 	= new MiniByte(12);
@@ -80,7 +82,7 @@ public class NIOMessage implements Runnable {
 			return "PING";
 		}else if(zType.isEqual(MSG_MAXIMA_CTRL)) {
 			return "MAXIMA_CTRL";
-		}else if(zType.isEqual(MSG_MAXIMA)) {
+		}else if(zType.isEqual(MSG_MAXIMA_TXPOW)) {
 			return "MAXIMA";
 		}
 		
@@ -551,16 +553,33 @@ public class NIOMessage implements Runnable {
 				
 				Main.getInstance().getMaxima().PostMessage(maxmsg);
 				
-			}else if(type.isEqual(MSG_MAXIMA)) {
+			}else if(type.isEqual(MSG_MAXIMA_TXPOW)) {
 				
-				//Make sure acceptable length
-				if(mData.getLength() > 65535) {
-					MinimaLogger.log("Maxima message too Large! from "+mClientUID);
+				//Convert to a MaxTxPOW
+				MaxTxPoW mxtxpow = MaxTxPoW.ReadFromStream(dis);
+				
+				//Check the TxPoW unit is correct
+				if(!mxtxpow.checkValidTxPoW()) {
+					MinimaLogger.log("Invalid Maxima message : Incorrect TxPoW Hash from "+mClientUID);
+
+					//Tell them it's a fail!
+					NIOManager.sendNetworkMessage(mClientUID, MSG_PING, MaximaManager.MAXIMA_WRONGHASH);
+					
 					return;
 				}
+								
+				//How large is the Maxima Package
+				MiniData mp = MiniData.getMiniDataVersion(mxtxpow.getMaximaPackage());
 				
-				//Get the data..
-				MaximaPackage maxpkg = MaximaPackage.ReadFromStream(dis);
+				//Make sure acceptable length - 256K
+				if(mp.getLength() > 262144) {
+					MinimaLogger.log("Maxima message too Large! from "+mClientUID+" "+MiniFormat.formatSize(mp.getLength()));
+					
+					//Tell them it's a fail!
+					NIOManager.sendNetworkMessage(mClientUID, MSG_PING, MaximaManager.MAXIMA_TOOBIG);
+					
+					return;
+				}
 				
 				//Get the client
 				NIOClient nioclient = Main.getInstance().getNIOManager().getNIOServer().getClient(mClientUID);
@@ -568,13 +587,26 @@ public class NIOMessage implements Runnable {
 				//And send it on to Maxima..
 				Message maxmsg = new Message(MaximaManager.MAXIMA_RECMESSAGE);
 				maxmsg.addObject("nioclient", nioclient);
-				maxmsg.addObject("maxpackage", maxpkg);
+				maxmsg.addObject("maxtxpow", mxtxpow);
 				
 				//Send to the Maxima Manager
 				Main.getInstance().getMaxima().PostMessage(maxmsg);
 				
-				//Notify that Client that we received the message.. this makes external client disconnect ( internal just a ping )
-//				NIOManager.sendNetworkMessage(mClientUID, MSG_PING, MiniData.ONE_TXPOWID);
+				//Is it a block or a transaction..
+				TxPoW txpow = mxtxpow.getTxPoW();
+				if(txpow.isTransaction() || txpow.isBlock()) {
+					
+					//And Now post the TxPoW on the stack..
+					MiniData niodata = NIOManager.createNIOMessage(NIOMessage.MSG_TXPOW, txpow);
+
+					//And send
+					Message newniomsg = new Message(NIOManager.NIO_INCOMINGMSG);
+					newniomsg.addString("uid", mClientUID);
+					newniomsg.addObject("data", niodata);
+
+					//Post to the NIOManager - which will check it and forward if correct
+					Main.getInstance().getNetworkManager().getNIOManager().PostMessage(newniomsg);
+				}
 				
 			}else if(type.isEqual(MSG_SINGLE_PING)) {
 				
