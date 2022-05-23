@@ -49,7 +49,7 @@ services:
       resources:
         limits:
           cpus: '0.25'
-          memory: 300M
+          memory: 1000M
   minima_no_p2p:
     image: minima:latest
     command: -test -daemon -nop2p -connect minima_one:9001

@@ -258,7 +258,11 @@ public class P2PManager extends MessageProcessor {
                     // Loop is set to be quite fast at this point to ensure we connect to the network
                     InetSocketAddress connectionAddress = (InetSocketAddress) state.getKnownPeers().toArray()[rand.nextInt(state.getKnownPeers().size())];
                     sendMsgs.add(new Message(P2PManager.P2P_SEND_CONNECT).addObject(ADDRESS_LITERAL, connectionAddress));
-                } else if (state.getOutLinks().size() < 2) {
+
+                // If there are fewer connections than the min number of connections connect using the peers list
+                // Min number of connections is the param clients use, so clients will always connect using the peers list
+                // Then be load balanced
+                } else if (state.getOutLinks().size() < P2PParams.MIN_NUM_CONNECTIONS) {
                     InetSocketAddress connectionAddress = (InetSocketAddress) state.getKnownPeers().toArray()[rand.nextInt(state.getKnownPeers().size())];
                     sendMsgs.add(new Message(P2PManager.P2P_SEND_CONNECT).addObject(ADDRESS_LITERAL, connectionAddress));
                 } else if (state.isAcceptingInLinks()) {
@@ -278,9 +282,7 @@ public class P2PManager extends MessageProcessor {
                 }
             }
         }
-//        JSONObject status = getStatus();
-//        status.remove("p2p_state");
-//        MinimaLogger.log(status.toString());
+
         return sendMsgs;
     }
 
@@ -385,8 +387,6 @@ public class P2PManager extends MessageProcessor {
         P2PDB p2pdb = MinimaDB.getDB().getP2PDB();
         p2pdb.setVersion();
         p2pdb.setPeersList(new ArrayList<>(state.getKnownPeers()));
-
-        //I save the DB.. you don't do it..!
 
         //And finish with..
         stopMessageProcessor();
