@@ -293,6 +293,14 @@ public class TxPoW implements Streamable {
 		mHeader.mMMRTotal= zTotal;
 	}
 	
+	public MiniData getCustomHash() {
+		return mHeader.mCustomHash;
+	}
+	
+	public void setCustomHash(MiniData zCustomHash) {
+		mHeader.mCustomHash = zCustomHash;
+	}
+	
 	public JSONObject toJSON() {
 		JSONObject txpow = new JSONObject();
 		
