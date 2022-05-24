@@ -200,22 +200,21 @@ public class P2PManager extends MessageProcessor {
         //Get the message..
         List<Message> sendMsgs = new ArrayList<>();
         JSONObject message = (JSONObject) zMessage.getObject("message");
-        String uid = zMessage.getString("uid");
-        NIOClientInfo client = P2PFunctions.getNIOCLientInfo(uid);
+        NIOClientInfo client = (NIOClientInfo) zMessage.getObject("client");
+        String uid = client.getUID();
 
         JSONObject swapLinksMsg = (JSONObject) message.get("swap_links_p2p");
         if (swapLinksMsg != null) {
             if (swapLinksMsg.containsKey("greeting")) {
                 P2PGreeting greeting = P2PGreeting.fromJSON((JSONObject) swapLinksMsg.get("greeting"));
                 SwapLinksFunctions.updateKnownPeersFromGreeting(state, greeting);
-                boolean noConnect = SwapLinksFunctions.processGreeting(state, greeting, uid, client, state.isNoConnect());
+                boolean noConnect = SwapLinksFunctions.processGreeting(state, greeting, client, state.isNoConnect());
                 if (!noConnect) {
                     state.setNoConnect(false);
                 }
             }
             if (swapLinksMsg.containsKey("req_ip")) {
-                // TODO: null pointer error
-                P2PFunctions.sendP2PMessage(uid, SwapLinksFunctions.processRequestIPMsg(swapLinksMsg, P2PFunctions.getNIOCLientInfo(uid).getHost()));
+                P2PFunctions.sendP2PMessage(uid, SwapLinksFunctions.processRequestIPMsg(swapLinksMsg, client.getHost()));
             }
             if (swapLinksMsg.containsKey("res_ip")) {
                 SwapLinksFunctions.processResponseIPMsg(state, swapLinksMsg);
@@ -272,7 +271,6 @@ public class P2PManager extends MessageProcessor {
                 }
 
             } else {
-                MinimaLogger.log("[-] WARNING : No Known peers ( -clean + delay )");
                 state.setDoingDiscoveryConnection(true);
                 InetSocketAddress connectionAddress = P2PParams.DEFAULT_NODE_LIST.get(rand.nextInt(P2PParams.DEFAULT_NODE_LIST.size()));
                 MinimaLogger.log("[+] Doing discovery connection with default node: " + connectionAddress);

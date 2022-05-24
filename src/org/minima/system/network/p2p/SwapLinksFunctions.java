@@ -126,9 +126,10 @@ public class SwapLinksFunctions {
         state.getKnownPeers().addAll(state.getOutLinks().values());
     }
 
-    public static boolean processGreeting(P2PState state, P2PGreeting greeting, String uid, NIOClientInfo client, boolean noconnect) {
+    public static boolean processGreeting(P2PState state, P2PGreeting greeting, NIOClientInfo client, boolean noconnect) {
 
         if (client != null) {
+            String uid = client.getUID();
             String host = client.getHost();
             int port = greeting.getMyMinimaPort();
             InetSocketAddress minimaAddress = new InetSocketAddress(host, port);
@@ -140,7 +141,9 @@ public class SwapLinksFunctions {
             //The NIOClient has received a P2Pgreeting.. Check if NULL or Tests fail
             if(Main.getInstance() != null) {
 	            NIOClient nioclient = Main.getInstance().getNIOManager().getNIOServer().getClient(uid);
-	            nioclient.setReceivedP2PGreeting();
+                if (nioclient != null){
+	                nioclient.setReceivedP2PGreeting();
+                }
             }
 
             if (greeting.isAcceptingInLinks()) {
@@ -156,7 +159,6 @@ public class SwapLinksFunctions {
                     state.getOutLinks().put(uid, minimaAddress);
                     if (state.getOutLinks().size() > state.getMaxNumP2PConnections()) {
                         P2PFunctions.disconnect(uid);
-                        MinimaLogger.log("[-] Too many outgoing connections, disconnecting");
                     }
                 }
 
@@ -173,7 +175,7 @@ public class SwapLinksFunctions {
                 state.getNotAcceptingConnP2PLinks().put(uid, minimaAddress);
             }
         } else {
-            MinimaLogger.log("[-] ERROR Client is null UID:"+uid+" when processing greeting: " + greeting.toJson());
+            MinimaLogger.log("[-] ERROR Client is null when processing greeting: " + greeting.toJson());
         }
         return noconnect;
     }
@@ -197,15 +199,8 @@ public class SwapLinksFunctions {
             state.getKnownPeers().remove(state.getMyMinimaAddress());
             MinimaLogger.log("[+] Setting My IP: " + hostIP);
 
-//            //Set this globally..
-//            if(!GeneralParams.IS_HOST_SET) {
-//            	GeneralParams.IS_HOST_SET = true;
-//            	GeneralParams.MINIMA_HOST = hostIP;
-//            }
-
-        } else {
-            MinimaLogger.log("[-] WARNING : Failed to set my ip. Secrets do not match - could be a delay. MySecret: " + state.getIpReqSecret() + " Received secret: " + secret);
         }
+
     }
 
     public static List<Message> joinScaleOutLinks(P2PState state, int targetNumLinks, ArrayList<NIOClientInfo> clients) {
