@@ -248,8 +248,9 @@ public class WalkLinksFuncs {
 
         List<Message> retMessages = new ArrayList<>();
         if (state.getNotAcceptingConnP2PLinks().size() > state.getMaxNumNoneP2PConnections()) {
-            int numClientsToSend = state.getMaxNumNoneP2PConnections() / 2;
-            int numSwaps = Math.min(Math.min(numClientsToSend, maxClientsCanReceive), state.getNotAcceptingConnP2PLinks().size());
+            // Either maxClientsCanReceive or 1/2 MaxNoneP2pConnections a node can handle number of swaps
+            // Using 1/2 MaxNoneP2pConnections to prevent essential just swapping clients between nodes when not needed
+            int numSwaps = Math.min(maxClientsCanReceive, state.getMaxNumNoneP2PConnections() / 2);
             for (int i = 0; i < numSwaps; i++) {
                 // Send a DOSWAP message to numSwaps clients
                 List<String> nonP2PLinkUIDs = new ArrayList<>(state.getNotAcceptingConnP2PLinks().keySet());

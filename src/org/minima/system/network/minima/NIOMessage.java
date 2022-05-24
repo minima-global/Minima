@@ -455,6 +455,7 @@ public class NIOMessage implements Runnable {
 					MinimaLogger.log(mClientUID+" Error null client on P2P NIOMessage..");
 					return;
 				}
+				NIOClientInfo clientInfo = new NIOClientInfo(nioclient, true);
 				
 				//Convert to JSON
 				JSONObject json = (JSONObject) new JSONParser().parse(msg.toString());
@@ -468,6 +469,7 @@ public class NIOMessage implements Runnable {
 					//Post with delay
 					TimerMessage p2p = new TimerMessage(10000, P2PFunctions.P2P_MESSAGE);
 					p2p.addString("uid", mClientUID);
+					p2p.addObject("client", clientInfo);
 					p2p.addObject("message", json);
 					p2pmanager.PostTimerMessage(p2p);
 					
@@ -475,6 +477,7 @@ public class NIOMessage implements Runnable {
 					//Post directly
 					Message p2p = new Message(P2PFunctions.P2P_MESSAGE);
 					p2p.addString("uid", mClientUID);
+					p2p.addObject("client", clientInfo);
 					p2p.addObject("message", json);
 					p2pmanager.PostMessage(p2p);
 					

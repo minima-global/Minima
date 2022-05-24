@@ -234,20 +234,6 @@ public class P2PState {
         return json;
     }
 
-    private JSONArray addressListToJSONArray(ArrayList<InetSocketAddress> addresses) {
-        JSONArray links = new JSONArray();
-        if (!addresses.isEmpty()) {
-            for (InetSocketAddress inetSocketAddress : addresses) {
-                if (inetSocketAddress != null) {
-                    links.add(inetSocketAddress.toString().replaceAll("/", ""));
-                } else {
-                    links.add("nullAddress:9001");
-                }
-            }
-        }
-        return links;
-    }
-
     public boolean isNoConnect() {
         return noConnect;
     }
