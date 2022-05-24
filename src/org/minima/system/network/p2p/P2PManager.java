@@ -200,9 +200,16 @@ public class P2PManager extends MessageProcessor {
         //Get the message..
         List<Message> sendMsgs = new ArrayList<>();
         JSONObject message = (JSONObject) zMessage.getObject("message");
-        NIOClientInfo client = (NIOClientInfo) zMessage.getObject("client");
-        String uid = client.getUID();
-
+        
+        //Get the UID and CURRENT client info..
+        String uid 				= zMessage.getString("uid");
+        NIOClientInfo client 	= P2PFunctions.getNIOCLientInfo(uid);
+        if(client == null) {
+        	MinimaLogger.log("[!] P2P NULL NioClient @ "+uid);
+        	sendMsgs.add(new Message(P2P_SEND_DISCONNECT).addString("uid", uid));
+        	return sendMsgs;
+        }
+        
         JSONObject swapLinksMsg = (JSONObject) message.get("swap_links_p2p");
         if (swapLinksMsg != null) {
             if (swapLinksMsg.containsKey("greeting")) {
