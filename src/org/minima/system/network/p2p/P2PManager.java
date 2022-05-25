@@ -167,9 +167,9 @@ public class P2PManager extends MessageProcessor {
             state.getKnownPeers().remove(conn);
             P2PFunctions.log_debug("[-] Unable to connect to peer removing from peers list");
             if (state.getInLinks().containsValue(conn)){
-                for (Map.Entry<String, InetSocketAddress> entry : state.getOutLinks().entrySet()) {
+                for (Map.Entry<String, InetSocketAddress> entry : state.getInLinks().entrySet()) {
                     if (entry.getValue().equals(conn)){
-                        state.getOutLinks().remove(entry.getKey());
+                        state.getInLinks().remove(entry.getKey());
                         state.getNotAcceptingConnP2PLinks().put(entry.getKey(), state.getAllLinks().get(entry.getKey()));
                     }
                 }
