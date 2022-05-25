@@ -23,6 +23,7 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 public class P2PManager extends MessageProcessor {
 
@@ -61,6 +62,9 @@ public class P2PManager extends MessageProcessor {
         PostTimerMessage(new TimerMessage(P2PParams.NODE_NOT_ACCEPTING_CHECK_DELAY, P2P_ASSESS_CONNECTIVITY));
         PostTimerMessage(new TimerMessage(P2PParams.SAVE_DATA_DELAY, P2P_SAVE_DATA));
         PostTimerMessage(new TimerMessage(20_000, P2P_UPDATE_HASH_RATE));
+    }
+    public Set<InetSocketAddress> getPeers(){
+        return state.getKnownPeers();
     }
 
     protected static List<Message> init(P2PState state) {
@@ -358,19 +362,21 @@ public class P2PManager extends MessageProcessor {
         }
 
         JSONObject ret = new JSONObject();
-        ret.put("deviceHashRate", state.getDeviceHashRate());
-        ret.put("address", state.getMyMinimaAddress().toString().replace("/", ""));
-        ret.put("isAcceptingInLinks", state.isAcceptingInLinks());
-        ret.put("numInLinks", state.getInLinks().size());
-        ret.put("numOutLinks", state.getOutLinks().size());
-        ret.put("numNotAcceptingConnP2PLinks", state.getNotAcceptingConnP2PLinks().size());
-        ret.put("numNoneP2PLinks", state.getNoneP2PLinks().size());
-        ret.put("numKnownPeers", state.getKnownPeers().size());
-        ret.put("numAllLinks", state.getAllLinks().size());
-        ret.put("nio_inbound", numInbound);
-        ret.put("nio_outbound", numOutbound);
-        if (fullDetails && state.getMyMinimaAddress() != null && state.isAcceptingInLinks()) {
+
+        if (fullDetails) {
             ret.put("p2p_state", state.toJson());
+        } else {
+            ret.put("deviceHashRate", state.getDeviceHashRate());
+            ret.put("address", state.getMyMinimaAddress().toString().replace("/", ""));
+            ret.put("isAcceptingInLinks", state.isAcceptingInLinks());
+            ret.put("numInLinks", state.getInLinks().size());
+            ret.put("numOutLinks", state.getOutLinks().size());
+            ret.put("numNotAcceptingConnP2PLinks", state.getNotAcceptingConnP2PLinks().size());
+            ret.put("numNoneP2PLinks", state.getNoneP2PLinks().size());
+            ret.put("numKnownPeers", state.getKnownPeers().size());
+            ret.put("numAllLinks", state.getAllLinks().size());
+            ret.put("nio_inbound", numInbound);
+            ret.put("nio_outbound", numOutbound);
         }
 
         return ret;

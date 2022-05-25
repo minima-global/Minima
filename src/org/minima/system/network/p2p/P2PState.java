@@ -13,6 +13,7 @@ import org.minima.database.MinimaDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.system.network.p2p.messages.InetSocketAddressIO;
 import org.minima.system.network.p2p.params.P2PParams;
 import org.minima.system.params.GeneralParams;
 import org.minima.system.params.GlobalParams;
@@ -192,44 +193,20 @@ public class P2PState {
 
     public JSONObject toJson() {
         JSONObject json = new JSONObject();
-        json.put("address", myMinimaAddress.toString().replace("/", ""));
-        json.put("timestamp", Instant.ofEpochMilli(System.currentTimeMillis()).toString());
-        json.put("minima_version", GlobalParams.MINIMA_VERSION);
+        if (myMinimaAddress != null) {
+            json.put("address", myMinimaAddress.toString().replace("/", ""));
+        } else {
+            json.put("address", "not set");
+        }
         json.put("is_mobile", GeneralParams.IS_MOBILE);
         json.put("is_accepting_connections", isAcceptingInLinks);
-        json.put("deviceHashRate", getDeviceHashRate());
-        String user = MinimaDB.getDB().getUserDB().getIncentiveCashUserID();
-        json.put("incentive_cash_id", user);
 
-        //Block details..
-        TxPoWTreeNode topnode 	= MinimaDB.getDB().getTxPoWTree().getTip();
-        MiniNumber topblock 	= topnode.getBlockNumber();
-        json.put("top_block_number", topblock);
-        
-        //Get the last 2 mod 50..
-        if(topblock.isMore(MiniNumber.HUNDRED)) {
-
-        	//The 2 blocks we are interested in..
-        	MiniNumber current 	= topblock.div(MiniNumber.FIFTY).floor().mult(MiniNumber.FIFTY);
-        	MiniNumber last 	= current.sub(MiniNumber.FIFTY);
-
-        	//Get  those details..
-        	String currenthash 	= topnode.getPastNode(current).getTxPoW().getTxPoWID();
-        	String lasthash 	= topnode.getPastNode(last).getTxPoW().getTxPoWID();
-
-        	json.put("50_block_number", current);
-        	json.put("50_current_hash", currenthash);
-        	json.put("50_last_hash", lasthash);
-    	}else {
-    		json.put("50_block_number", 0);
-        	json.put("50_current_hash", "");
-        	json.put("50_last_hash", "");
-    	}
-        
-        //And finally a total Weight Metric..
-        BigInteger chainweight 	= MinimaDB.getDB().getTxPoWTree().getRoot().getTotalWeight().toBigInteger();
-		BigInteger cascweight 	= MinimaDB.getDB().getCascade().getTotalWeight().toBigInteger();
-		json.put("weight", chainweight.add(cascweight));
+        json.put("InLinks", InetSocketAddressIO.addressesListToJSONArray(new ArrayList<>(getInLinks().values())));
+        json.put("OutLinks", InetSocketAddressIO.addressesListToJSONArray(new ArrayList<>(getOutLinks().values())));
+        json.put("NotAcceptingConnP2PLinks", InetSocketAddressIO.addressesListToJSONArray(new ArrayList<>(getNotAcceptingConnP2PLinks().values())));
+        json.put("NoneP2PLinks", InetSocketAddressIO.addressesListToJSONArray(new ArrayList<>(getNoneP2PLinks().values())));
+        json.put("numAllLinks", getAllLinks().size());
+        json.put("numKnownPeers", getKnownPeers().size());
 
         return json;
     }
