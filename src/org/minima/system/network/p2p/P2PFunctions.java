@@ -57,7 +57,7 @@ public class P2PFunctions {
         Main.getInstance().getNIOManager().PostMessage(msg);
     }
 
-    public static void checkConnect(String zHost, int zPort) {
+    public static boolean checkConnect(String zHost, int zPort) {
         //Connect Message
         Message msg = new Message(NIOManager.NIO_CONNECT);
         msg.addString("host", zHost);
@@ -75,7 +75,9 @@ public class P2PFunctions {
         if (doConnect) {
             //Call the NIOManager
             connect(zHost, zPort);
+            P2PFunctions.log_debug("[!] P2P requesting NIO connection to: " + zHost + ":" + zPort);
         }
+        return doConnect;
     }
 
     /**
