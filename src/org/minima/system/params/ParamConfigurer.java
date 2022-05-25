@@ -1,5 +1,8 @@
 package org.minima.system.params;
 
+import org.minima.system.network.p2p.P2PFunctions;
+import org.minima.system.network.p2p.params.P2PParams;
+
 import static java.nio.file.Files.lines;
 import static java.util.Arrays.stream;
 import static java.util.Optional.empty;
@@ -172,6 +175,12 @@ public class ParamConfigurer {
         }),
         p2pnode("p2pnode", "Specify the initial P2P host:port list to connect to", (args, configurer) -> {
             GeneralParams.P2P_ROOTNODE = args;
+        }),
+        p2ploglevelinfo("p2p-log-level-info", "Set the P2P log level to info", (args, configurer) -> {
+            P2PParams.LOG_LEVEL = P2PFunctions.Level.INFO;
+        }),
+        p2plogleveldebug("p2p-log-level-debug", "Set the P2P log level to info", (args, configurer) -> {
+            P2PParams.LOG_LEVEL = P2PFunctions.Level.DEBUG;
         }),
 //        automine("automine", "Simulate user traffic to construct the blockchain", (args, configurer) -> {
 //            if ("true".equals(args)) {

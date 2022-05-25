@@ -1,5 +1,7 @@
 package org.minima.system.network.p2p.params;
 
+import org.minima.system.network.p2p.P2PFunctions;
+
 import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.List;
@@ -9,6 +11,10 @@ public class P2PParams {
     // P2P Version number (Major - breaking changes. Minor - none breaking changes)
     public static String VERSION = "1.0";
 
+    /**
+     * P2P Log level
+     */
+    public static P2PFunctions.Level LOG_LEVEL = P2PFunctions.Level.NODE_RUNNER_MSG;
     /**
      * Max number of peers to keep in the peers list
      */

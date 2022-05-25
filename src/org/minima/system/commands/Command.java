@@ -8,36 +8,7 @@ import java.util.regex.Pattern;
 import org.minima.objects.Address;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
-import org.minima.system.commands.base.automine;
-import org.minima.system.commands.base.backup;
-import org.minima.system.commands.base.balance;
-import org.minima.system.commands.base.burn;
-import org.minima.system.commands.base.coincheck;
-import org.minima.system.commands.base.coinexport;
-import org.minima.system.commands.base.coinimport;
-import org.minima.system.commands.base.cointrack;
-import org.minima.system.commands.base.consolidate;
-import org.minima.system.commands.base.debugflag;
-import org.minima.system.commands.base.getaddress;
-import org.minima.system.commands.base.hash;
-import org.minima.system.commands.base.hashtest;
-import org.minima.system.commands.base.incentivecash;
-import org.minima.system.commands.base.missingcmd;
-import org.minima.system.commands.base.mmrcreate;
-import org.minima.system.commands.base.mmrproof;
-import org.minima.system.commands.base.newaddress;
-import org.minima.system.commands.base.printmmr;
-import org.minima.system.commands.base.printtree;
-import org.minima.system.commands.base.quit;
-import org.minima.system.commands.base.restore;
-import org.minima.system.commands.base.send;
-import org.minima.system.commands.base.status;
-import org.minima.system.commands.base.test;
-import org.minima.system.commands.base.tokencreate;
-import org.minima.system.commands.base.tokenvalidate;
-import org.minima.system.commands.base.trace;
-import org.minima.system.commands.base.tutorial;
-import org.minima.system.commands.base.vault;
+import org.minima.system.commands.base.*;
 import org.minima.system.commands.maxima.maxcontacts;
 import org.minima.system.commands.maxima.maxima;
 import org.minima.system.commands.network.connect;
@@ -84,7 +55,7 @@ public abstract class Command {
 		{   new quit(), new status(), new coins(), new txpow(), new connect(), new disconnect(), new network(),
 			new message(), new trace(), new help(), new printtree(), new automine(), new printmmr(), new rpc(),
 			new send(), new balance(), new tokencreate(), new tokenvalidate(), new tokens(),new getaddress(), new newaddress(), new debugflag(),
-			new incentivecash(), new webhooks(),
+			new incentivecash(), new webhooks(), new peers(), new p2pstate(),
 
 			//Removed code..
 //			new sshtunnel(), 
