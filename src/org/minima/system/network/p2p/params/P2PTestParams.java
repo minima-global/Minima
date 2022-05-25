@@ -1,11 +1,18 @@
 package org.minima.system.network.p2p.params;
 
+import org.minima.system.network.p2p.P2PFunctions;
+
 import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.List;
 
 public class P2PTestParams {
-    
+
+    /**
+     * P2P Log level
+     */
+    public static P2PFunctions.Level LOG_LEVEL = P2PFunctions.Level.DEBUG;
+
     /**
      * Desired number of in link and out links to maintain
      */
@@ -79,6 +86,7 @@ public class P2PTestParams {
         P2PParams.METRICS_URL = METRICS_URL;
         P2PParams.SAVE_DATA_DELAY = SAVE_DATA_DELAY;
         P2PParams.HASH_RATE_UPDATE_DELAY = HASH_RATE_UPDATE_DELAY;
+        P2PParams.LOG_LEVEL = LOG_LEVEL;
     }
 
 
