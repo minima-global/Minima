@@ -23,7 +23,7 @@ import org.minima.utils.messages.Message;
 public class maxcontacts extends Command {
 
 	public maxcontacts() {
-		super("maxcontacts","[action:list|myname|add|remove] (name:) (contact:) (id:) - Manage your Maxima contacts");
+		super("maxcontacts","[action:list|myname|add|remove|search] (name:) (contact:) (id:) (publickey:) - Manage your Maxima contacts");
 	}
 	
 	@Override
@@ -158,6 +158,41 @@ public class maxcontacts extends Command {
 			max.getContactsManager().PostMessage(remove);
 			
 			details.put("removed", id);
+		
+		}else if(func.equals("search")) {
+			
+			MaximaContact chosen = null;
+			
+			if(existsParam("publickey")) {
+				String pubkey = getParam("publickey");
+				ArrayList<MaximaContact> contacts = maxdb.getAllContacts();
+				for(MaximaContact contact : contacts) {
+					if(contact.getPublicKey().equals(pubkey)) {
+						chosen = contact;
+						break;
+					}
+				}
+				
+			}else if(existsParam("id")) {
+				int id = getNumberParam("id").getAsInt();
+				ArrayList<MaximaContact> contacts = maxdb.getAllContacts();
+				for(MaximaContact contact : contacts) {
+					if(contact.getUID() == id) {
+						chosen = contact;
+						break;
+					}
+				}
+				
+			}else{
+				throw new CommandException("Must specify id or publickey");
+			}
+			
+			if(chosen == null) {
+				throw new CommandException("MaxContact not found");
+			}
+			
+			details.put("contact", chosen.toJSON());
+			
 		}else {
 			throw new CommandException("Unknonw action : "+func);
 		}
