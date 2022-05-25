@@ -168,6 +168,7 @@ public class P2PManager extends MessageProcessor {
             NIOClient client = (NIOClient) zMessage.getObject("client");
             InetSocketAddress conn = new InetSocketAddress(client.getHost(), client.getPort());
             state.getKnownPeers().remove(conn);
+            P2PFunctions.log_debug("[-] Unable to connect to peer removing from peers list");
         } else if (zMessage.isMessageType(P2P_ASSESS_CONNECTIVITY)) {
             sendMsgs.addAll(assessConnectivity(state));
             PostTimerMessage(new TimerMessage(P2PParams.NODE_NOT_ACCEPTING_CHECK_DELAY, P2P_ASSESS_CONNECTIVITY));
