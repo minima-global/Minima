@@ -102,14 +102,14 @@ public class P2PManager extends MessageProcessor {
                 int port = Integer.parseInt(GeneralParams.P2P_ROOTNODE.split(":")[1]);
                 connectionAddress = new InetSocketAddress(host, port);
                 state.getKnownPeers().add(connectionAddress);
-                P2PFunctions.log_debug("[+] Connecting to specified node: " + connectionAddress);
+                P2PFunctions.log_info("[+] Connecting to specified node: " + connectionAddress);
             } else if (!peers.isEmpty()) {
                 connectionAddress = peers.get(rand.nextInt(peers.size()));
-                P2PFunctions.log_debug("[+] Connecting to saved node: " + connectionAddress);
+                P2PFunctions.log_info("[+] Connecting to saved node: " + connectionAddress);
             } else {
                 state.setDoingDiscoveryConnection(true);
                 connectionAddress = P2PParams.DEFAULT_NODE_LIST.get(rand.nextInt(P2PParams.DEFAULT_NODE_LIST.size()));
-                P2PFunctions.log_debug("[+] Doing discovery connection with default node: " + connectionAddress);
+                P2PFunctions.log_info("[+] Doing discovery connection with default node: " + connectionAddress);
             }
         }
         if (connectionAddress != null) {

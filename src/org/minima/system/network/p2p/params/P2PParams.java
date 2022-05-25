@@ -14,7 +14,7 @@ public class P2PParams {
     /**
      * P2P Log level
      */
-    public static P2PFunctions.Level LOG_LEVEL = P2PFunctions.Level.DEBUG;
+    public static P2PFunctions.Level LOG_LEVEL = P2PFunctions.Level.NODE_RUNNER_MSG;
     /**
      * Max number of peers to keep in the peers list
      */

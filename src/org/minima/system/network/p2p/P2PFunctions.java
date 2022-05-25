@@ -138,13 +138,13 @@ public class P2PFunctions {
     }
 
     public static void log_info(String message) {
-        if (P2PParams.LOG_LEVEL == Level.INFO) {
+        if (P2PParams.LOG_LEVEL == Level.INFO || P2PParams.LOG_LEVEL == Level.DEBUG) {
             MinimaLogger.log("[I] " + message);
         }
     }
 
     public static void log_debug(String message) {
-        if (P2PParams.LOG_LEVEL == Level.INFO || P2PParams.LOG_LEVEL == Level.DEBUG) {
+        if (P2PParams.LOG_LEVEL == Level.DEBUG ) {
             MinimaLogger.log("[D] " + message);
         }
     }
