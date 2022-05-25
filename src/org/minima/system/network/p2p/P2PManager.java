@@ -166,12 +166,16 @@ public class P2PManager extends MessageProcessor {
             InetSocketAddress conn = new InetSocketAddress(client.getHost(), client.getPort());
             state.getKnownPeers().remove(conn);
             P2PFunctions.log_debug("[-] Unable to connect to peer removing from peers list");
+            List<String> uidsToRemove = new ArrayList<>();
             if (state.getInLinks().containsValue(conn)){
                 for (Map.Entry<String, InetSocketAddress> entry : state.getInLinks().entrySet()) {
                     if (entry.getValue().equals(conn)){
-                        state.getInLinks().remove(entry.getKey());
-                        state.getNotAcceptingConnP2PLinks().put(entry.getKey(), state.getAllLinks().get(entry.getKey()));
+                        uidsToRemove.add(entry.getKey());
                     }
+                }
+                for(String uid: uidsToRemove){
+                    state.getInLinks().remove(uid);
+                    state.getNotAcceptingConnP2PLinks().put(uid, state.getAllLinks().get(uid));
                 }
 
             }
