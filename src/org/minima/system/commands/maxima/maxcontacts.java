@@ -88,6 +88,9 @@ public class maxcontacts extends Command {
 			
 			details.put("name", name);
 			
+			//Refresh
+			max.PostMessage(MaximaManager.MAXIMA_REFRESH);
+			
 		}else if(func.equals("add")) {
 			
 			//Get the contact address
