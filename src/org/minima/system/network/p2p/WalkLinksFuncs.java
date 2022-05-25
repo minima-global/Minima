@@ -214,9 +214,15 @@ public class WalkLinksFuncs {
         List<Message> retMsg = new ArrayList<>();
         if (state.getOutLinks().size() < tgtNumOutLinks) {
             if (!walkLinks.getPathTaken().get(walkLinks.getPathTaken().size() - 1).equals(state.getMyMinimaAddress())) {
-                InetSocketAddress connectTargetAddress = walkLinks.getPathTaken().get(walkLinks.getPathTaken().size() - 1);
-                P2PFunctions.log_debug("Walk to scale out-links returned. Connecting to node: " + connectTargetAddress);
-                retMsg.add(new Message(P2PManager.P2P_SEND_CONNECT).addObject("address", connectTargetAddress));
+                boolean doConnect = false;
+                while (!doConnect && walkLinks.getPathTaken().size() > 1) {
+                    InetSocketAddress connectTargetAddress = walkLinks.getPathTaken().get(walkLinks.getPathTaken().size() - 1);
+
+                    P2PFunctions.log_debug("[+] Walk to scale out-links returned. Path: " + walkLinks.getPathTaken() + " Connecting to node: " + connectTargetAddress);
+                    doConnect = P2PFunctions.checkConnect(connectTargetAddress.getHostString(), connectTargetAddress.getPort());
+                    walkLinks.getPathTaken().remove(connectTargetAddress);
+                }
+//                retMsg.add(new Message(P2PManager.P2P_SEND_CONNECT).addObject("address", connectTargetAddress));
             } else {
                 P2PFunctions.log_debug("[!] P2P_WALK_LINKS_RESPONSE: Not Connecting as returned own address");
             }
