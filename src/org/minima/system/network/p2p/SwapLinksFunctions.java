@@ -205,11 +205,14 @@ public class SwapLinksFunctions {
 
     public static List<Message> joinScaleOutLinks(P2PState state, int targetNumLinks, ArrayList<NIOClientInfo> clients) {
         List<Message> sendMsgs = new ArrayList<>();
-        InetSocketAddress nextHop = UtilFuncs.selectRandomAddress(new ArrayList<>(state.getOutLinks().values()));
-        NIOClientInfo minimaClient = UtilFuncs.getClientFromInetAddress(nextHop, state);
-        if (minimaClient != null && state.getOutLinks().size() < targetNumLinks) {
-            P2PWalkLinks walkLinksMsg = new P2PWalkLinks(true, true, minimaClient.getUID());
-            sendMsgs.add(new Message(P2PManager.P2P_SEND_MSG).addString("uid", minimaClient.getUID()).addObject("json", walkLinksMsg.toJson()));
+        if (state.getOutLinks().size() < targetNumLinks) {
+            MinimaLogger.log("Attempting to scale outlinks");
+            InetSocketAddress nextHop = UtilFuncs.selectRandomAddress(new ArrayList<>(state.getOutLinks().values()));
+            NIOClientInfo minimaClient = UtilFuncs.getClientFromInetAddress(nextHop, state);
+            if (minimaClient != null) {
+                P2PWalkLinks walkLinksMsg = new P2PWalkLinks(true, true, minimaClient.getUID());
+                sendMsgs.add(new Message(P2PManager.P2P_SEND_MSG).addString("uid", minimaClient.getUID()).addObject("json", walkLinksMsg.toJson()));
+            }
         }
         return sendMsgs;
     }
@@ -217,6 +220,7 @@ public class SwapLinksFunctions {
     public static List<Message> requestInLinks(P2PState state, int targetNumLinks, ArrayList<NIOClientInfo> clients) {
         List<Message> sendMsgs = new ArrayList<>();
         if (state.isAcceptingInLinks() && state.getInLinks().size() < targetNumLinks) {
+            MinimaLogger.log("Attempting to scale inlinks");
             InetSocketAddress nextHop = UtilFuncs.selectRandomAddress(new ArrayList<>(state.getOutLinks().values()));
             NIOClientInfo minimaClient = UtilFuncs.getClientFromInetAddress(nextHop, state);
             if (minimaClient != null) {

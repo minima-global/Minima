@@ -217,8 +217,8 @@ public class WalkLinksFuncs {
                 state.getKnownPeers().addAll(walkLinks.getPathTaken());
                 state.getKnownPeers().remove(state.getMyMinimaAddress());
                 InetSocketAddress connectTargetAddress = walkLinks.getPathTaken().get(walkLinks.getPathTaken().size() - 1);
-                retMsg.add(new Message(P2PManager.P2P_SEND_CONNECT)
-                        .addObject("address", connectTargetAddress));
+                MinimaLogger.log("Walk to scale out-links returned. Connecting to node: " + connectTargetAddress);
+                retMsg.add(new Message(P2PManager.P2P_SEND_CONNECT).addObject("address", connectTargetAddress));
             } else {
                 MinimaLogger.log("[!] P2P_WALK_LINKS_RESPONSE: Not Connecting as returned own address");
             }

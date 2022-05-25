@@ -9,6 +9,7 @@ import org.minima.system.Main;
 import org.minima.system.network.minima.NIOClientInfo;
 import org.minima.system.network.minima.NIOManager;
 import org.minima.system.network.minima.NIOMessage;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
 
@@ -61,6 +62,7 @@ public class P2PFunctions {
 		List<NIOClientInfo> clients = getAllConnections();
 		for (NIOClientInfo client : clients) {
 			if (!client.isConnected() && client.getHost().equals(zHost) && client.getPort() == zPort) {
+				MinimaLogger.log("Check connect failed already attempting to connect too:" + zHost +":"+zPort);
 				doConnect = false;
 			}
 		}

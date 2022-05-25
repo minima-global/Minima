@@ -191,6 +191,7 @@ public class P2PManager extends MessageProcessor {
             state.setAcceptingInLinks(false);
             JSONObject notAcceptingMsg = new JSONObject();
             notAcceptingMsg.put("notAcceptingMsg", false);
+            state.setMaxNumP2PConnections(P2PParams.MIN_NUM_CONNECTIONS);
             sendmsgs.add(new Message(P2PManager.P2P_SEND_MSG_TO_ALL).addObject("json", notAcceptingMsg));
         }
         return sendmsgs;
@@ -268,11 +269,12 @@ public class P2PManager extends MessageProcessor {
                 // If there are fewer connections than the min number of connections connect using the peers list
                 // Min number of connections is the param clients use, so clients will always connect using the peers list
                 // Then be load balanced
-                } else if (state.getOutLinks().size() < P2PParams.MIN_NUM_CONNECTIONS) {
+                } else if (state.getOutLinks().size() < 1) {
                     InetSocketAddress connectionAddress = (InetSocketAddress) state.getKnownPeers().toArray()[rand.nextInt(state.getKnownPeers().size())];
                     sendMsgs.add(new Message(P2PManager.P2P_SEND_CONNECT).addObject(ADDRESS_LITERAL, connectionAddress));
-                } else if (state.isAcceptingInLinks()) {
+                } else if (state.getOutLinks().size() < state.getMaxNumP2PConnections()) {
                     sendMsgs.addAll(SwapLinksFunctions.joinScaleOutLinks(state, state.getMaxNumP2PConnections(), P2PFunctions.getAllConnections()));
+                } else if (state.isAcceptingInLinks()) {
                     sendMsgs.addAll(SwapLinksFunctions.requestInLinks(state, state.getMaxNumP2PConnections(), P2PFunctions.getAllConnections()));
                     sendMsgs.addAll(SwapLinksFunctions.onConnectedLoadBalanceRequest(state, P2PFunctions.getAllConnections()));
                 }
@@ -305,10 +307,13 @@ public class P2PManager extends MessageProcessor {
 
     protected static List<Message> processReturningMessage(P2PWalkLinks p2pWalkLinks, P2PState state) {
         List<Message> msgs = new ArrayList<>();
+        // If are at the node that sent the request
         if (state.getMyMinimaAddress().equals(p2pWalkLinks.getPathTaken().get(0))) {
+            // if this is an in-link walk for node balancing
             if (p2pWalkLinks.isClientWalk()) {
                 msgs.addAll(WalkLinksFuncs.onReturnedLoadBalanceWalkMsg(state, p2pWalkLinks));
             } else {
+                // Else it's an in-link walk for scaling out-links
                 msgs.addAll(WalkLinksFuncs.onReturnedWalkMsg(state, p2pWalkLinks, state.getMaxNumP2PConnections()));
             }
         } else {

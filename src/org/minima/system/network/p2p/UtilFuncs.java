@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
 import org.minima.system.network.minima.NIOClientInfo;
+import org.minima.utils.MinimaLogger;
 
 public class UtilFuncs {
 
@@ -40,7 +41,8 @@ public class UtilFuncs {
         if (!addresses.isEmpty()) {
             int idx = 0;
             if (addresses.size() > 1) {
-                idx = ThreadLocalRandom.current().nextInt(addresses.size() - 1);
+                idx = ThreadLocalRandom.current().nextInt(addresses.size());
+                MinimaLogger.log("Bound: " + addresses.size() + " Random number: " + idx);
             }
             returnAddress = addresses.get(idx);
         }
