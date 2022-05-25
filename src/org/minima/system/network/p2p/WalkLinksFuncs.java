@@ -214,8 +214,6 @@ public class WalkLinksFuncs {
         List<Message> retMsg = new ArrayList<>();
         if (state.getOutLinks().size() < tgtNumOutLinks) {
             if (!walkLinks.getPathTaken().get(walkLinks.getPathTaken().size() - 1).equals(state.getMyMinimaAddress())) {
-                state.getKnownPeers().addAll(walkLinks.getPathTaken());
-                state.getKnownPeers().remove(state.getMyMinimaAddress());
                 InetSocketAddress connectTargetAddress = walkLinks.getPathTaken().get(walkLinks.getPathTaken().size() - 1);
                 P2PFunctions.log_debug("Walk to scale out-links returned. Connecting to node: " + connectTargetAddress);
                 retMsg.add(new Message(P2PManager.P2P_SEND_CONNECT).addObject("address", connectTargetAddress));
