@@ -426,7 +426,7 @@ public class MaximaDB extends SqlDB {
 			
 			SQL_UPDATE_CONTACT.setString(2, zContact.getCurrentAddress());
 			SQL_UPDATE_CONTACT.setString(3, zContact.getMyAddress());
-			SQL_UPDATE_CONTACT.setLong(4, System.currentTimeMillis());
+			SQL_UPDATE_CONTACT.setLong(4, zContact.getLastSeen());
 			
 			SQL_UPDATE_CONTACT.setString(5, zContact.getPublicKey());
 			

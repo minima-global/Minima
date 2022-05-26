@@ -42,7 +42,7 @@ public class MaximaContact {
 	/**
 	 * Last Seen
 	 */
-	long mLastSeen;
+	long mLastSeen = System.currentTimeMillis();
 	
 	public MaximaContact(String zPublicKey) {
 		mPublicKey	= zPublicKey;
@@ -120,6 +120,10 @@ public class MaximaContact {
 	
 	public String getMyAddress() {
 		return mMyCurrentAddress;
+	}
+	
+	public void setLastSeen(long zLastSeen) {
+		mLastSeen = zLastSeen;
 	}
 	
 	public long getLastSeen() {

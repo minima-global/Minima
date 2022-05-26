@@ -159,6 +159,8 @@ public class MaximaContactManager extends MessageProcessor {
 				mxcontact.setMinimaAddress(mxaddress);
 				mxcontact.setBlockDetails(topblock, checkblock, checkhash);
 				mxcontact.setMyAddress(checkcontact.getMyAddress());
+				mxcontact.setLastSeen(System.currentTimeMillis());
+				
 				maxdb.updateContact(mxcontact);
 			}
 			
