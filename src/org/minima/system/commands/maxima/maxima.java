@@ -23,7 +23,7 @@ import org.minima.utils.messages.Message;
 public class maxima extends Command {
 
 	public maxima() {
-		super("maxima","[action:info|hosts|send|refresh] (id:)|(to:)|(publickey:) (application:) (data:) (logs:true|false) - Check your Maxima details, send a message / data, enable logs");
+		super("maxima","[action:info|setname|hosts|send|refresh] (name:) (id:)|(to:)|(publickey:) (application:) (data:) (logs:true|false) - Check your Maxima details, send a message / data, enable logs");
 	}
 	
 	@Override
@@ -71,6 +71,22 @@ public class maxima extends Command {
 			
 			ret.put("response", details);
 		
+		}else if(func.equals("setname")) {
+			
+			String name = getParam("name");
+			name = name.replace("\"", "");
+			name = name.replace("'", "");
+			name = name.replace(";", "");
+			
+			MinimaDB.getDB().getUserDB().setMaximaName(name);
+			
+			details.put("name", name);
+			
+			ret.put("response", details);
+			
+			//Refresh
+			max.PostMessage(MaximaManager.MAXIMA_REFRESH);
+			
 		}else if(func.equals("hosts")) {
 			
 			//Add ALL Hosts
