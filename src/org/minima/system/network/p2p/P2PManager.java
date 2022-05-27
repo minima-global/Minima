@@ -20,10 +20,7 @@ import org.minima.utils.messages.TimerMessage;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 public class P2PManager extends MessageProcessor {
 
@@ -169,6 +166,19 @@ public class P2PManager extends MessageProcessor {
             InetSocketAddress conn = new InetSocketAddress(client.getHost(), client.getPort());
             state.getKnownPeers().remove(conn);
             P2PFunctions.log_debug("[-] Unable to connect to peer removing from peers list");
+            List<String> uidsToRemove = new ArrayList<>();
+            if (state.getInLinks().containsValue(conn)){
+                for (Map.Entry<String, InetSocketAddress> entry : state.getInLinks().entrySet()) {
+                    if (entry.getValue().equals(conn)){
+                        uidsToRemove.add(entry.getKey());
+                    }
+                }
+                for(String uid: uidsToRemove){
+                    state.getInLinks().remove(uid);
+                    state.getNotAcceptingConnP2PLinks().put(uid, state.getAllLinks().get(uid));
+                }
+
+            }
         } else if (zMessage.isMessageType(P2P_ASSESS_CONNECTIVITY)) {
             sendMsgs.addAll(assessConnectivity(state));
             PostTimerMessage(new TimerMessage(P2PParams.NODE_NOT_ACCEPTING_CHECK_DELAY, P2P_ASSESS_CONNECTIVITY));
@@ -390,7 +400,6 @@ public class P2PManager extends MessageProcessor {
                     if (msg.isMessageType(P2P_SEND_CONNECT)) {
                         InetSocketAddress address = (InetSocketAddress) msg.getObject(ADDRESS_LITERAL);
                         P2PFunctions.checkConnect(address.getHostString(), address.getPort());
-                        P2PFunctions.log_debug("[!] P2P requesting NIO connection to: " + address.getHostString() + ":" + address.getPort() + " Current outlinks: " + state.getOutLinks().size());
                     } else if (msg.isMessageType(P2P_SEND_DISCONNECT)) {
                         String uid = msg.getString("uid");
                         P2PFunctions.disconnect(uid);

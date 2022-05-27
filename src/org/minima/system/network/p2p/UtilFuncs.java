@@ -3,13 +3,13 @@ package org.minima.system.network.p2p;
 import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.Random;
 
 import org.minima.system.network.minima.NIOClientInfo;
-import org.minima.utils.MinimaLogger;
 
 public class UtilFuncs {
 
+    private static final Random rnd = new Random();
     private UtilFuncs(){}
 
     public static NIOClientInfo searchLinksMapForAddress(InetSocketAddress address, Map<String, InetSocketAddress> links){
@@ -38,10 +38,11 @@ public class UtilFuncs {
 
     public static InetSocketAddress selectRandomAddress(List<InetSocketAddress> addresses) {
         InetSocketAddress returnAddress = null;
+
         if (!addresses.isEmpty()) {
             int idx = 0;
             if (addresses.size() > 1) {
-                idx = ThreadLocalRandom.current().nextInt(addresses.size());
+                idx = rnd.nextInt(addresses.size());
                 P2PFunctions.log_debug("Bound: " + addresses.size() + " Random number: " + idx);
             }
             returnAddress = addresses.get(idx);
