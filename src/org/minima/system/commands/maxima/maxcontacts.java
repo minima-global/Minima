@@ -23,7 +23,7 @@ import org.minima.utils.messages.Message;
 public class maxcontacts extends Command {
 
 	public maxcontacts() {
-		super("maxcontacts","[action:list|myname|add|remove|search] (name:) (contact:) (id:) (publickey:) - Manage your Maxima contacts");
+		super("maxcontacts","[action:list|add|remove|search] (contact:) (id:) (publickey:) - Manage your Maxima contacts");
 	}
 	
 	@Override
@@ -44,7 +44,8 @@ public class maxcontacts extends Command {
 		String func = getParam("action", "list");
 		
 		//Get the Tree tip - to check the contacts
-		TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
+		TxPoWTreeNode tip 	= MinimaDB.getDB().getTxPoWTree().getTip();
+		MiniNumber topblock = tip.getBlockNumber(); 
 		
 		JSONObject details = new JSONObject();
 		
@@ -62,6 +63,9 @@ public class maxcontacts extends Command {
 				
 				//The contact
 				JSONObject conjson = contact.toJSON();
+				
+				//Add some info..
+				conjson.put("chaintip", topblock.toString());
 				
 				//Check it..
 				TxPoWTreeNode checknode = tip.getPastNode(checkblock);
