@@ -9,7 +9,11 @@ public class TimerProcessor implements Runnable {
 	/**
 	 * Static function for all Timed Messages
 	 */
-	private static TimerProcessor mTimerProcessor = new TimerProcessor();
+	private static TimerProcessor mTimerProcessor= null;
+	public static void createTimerProcessor(){
+		mTimerProcessor = new TimerProcessor();
+	}
+	
 	public static TimerProcessor getTimerProcessor() {
 		return mTimerProcessor;
 	}

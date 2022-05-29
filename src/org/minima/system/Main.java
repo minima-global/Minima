@@ -154,6 +154,9 @@ public class Main extends MessageProcessor {
 		//Reset the static values
 		mMainInstance 	= this;
 		
+		//Create the timer processor
+		TimerProcessor.createTimerProcessor();
+		
 		//Are we deleting previous..
 		if(GeneralParams.CLEAN) {
 			MinimaLogger.log("Wiping previous config files..");
@@ -215,9 +218,6 @@ public class Main extends MessageProcessor {
 		
 		//Store the IC User - do fast first time - 30 seconds in.. then every 8 hours
 		PostTimerMessage(new TimerMessage(1000*30, MAIN_INCENTIVE));
-	
-		//Restart the networking every 24 hours..
-//		PostTimerMessage(new TimerMessage(MAIN_NETRESTART_TIMER, MAIN_NETRESTART));
 		
 		//Debug Checker
 		PostTimerMessage(new TimerMessage(CHECKER_TIMER, MAIN_CHECKER));
@@ -268,11 +268,11 @@ public class Main extends MessageProcessor {
 			try {Thread.sleep(50);} catch (InterruptedException e) {}
 		}
 		
-		//Stop this..
-		stopMessageProcessor();
-				
 		//Now backup the  databases
 		MinimaDB.getDB().saveAllDB();
+				
+		//Stop this..
+		stopMessageProcessor();
 		
 		//Wait for it..
 		while(!isShutdownComplete()) {

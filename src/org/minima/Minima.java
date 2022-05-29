@@ -127,8 +127,8 @@ public class Minima {
 			
 			MinimaLogger.log("Bye bye..");
 			
-			//All done..
-			System.exit(0);
+			//All done.. The shutdown hook will exit the system..
+			return;
 	    }
 		
 		//Listen for input
@@ -149,8 +149,10 @@ public class Minima {
 	            	//Run it..
 	            	JSONArray res = Command.runMultiCommand(input);
 	            	
-	            	//Print it out 
-	            	System.out.println(MiniFormat.JSONPretty(res));
+	            	//Print it out
+	            	if(!input.equals("quit")) {
+	            		System.out.println(MiniFormat.JSONPretty(res));
+	            	}
 	            	
 	                //Is it quit..
 	            	boolean quit = false;
