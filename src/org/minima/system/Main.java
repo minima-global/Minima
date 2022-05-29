@@ -242,42 +242,49 @@ public class Main extends MessageProcessor {
 		//we are shutting down
 		mShuttingdown = true;
 		
-		//Tell the wallet - in case we are creating default keys
-		MinimaDB.getDB().getWallet().shuttiongDown();
-		
-		//Shut down the network
-		mNetwork.shutdownNetwork();
-		
-		//Shut down Maxima
-		mMaxima.shutdown();
-		
-		//Stop the Miner
-		mTxPoWMiner.stopMessageProcessor();
-		
-		//Stop the main TxPoW processor
-		mTxPoWProcessor.stopMessageProcessor();
-		while(!mTxPoWProcessor.isShutdownComplete()) {
-			try {Thread.sleep(50);} catch (InterruptedException e) {}
-		}
-		
 		//No More timer Messages
 		TimerProcessor.stopTimerProcessor();
 		
-		//Wait for the networking to finish
-		while(!mNetwork.isShutDownComplete()) {
-			try {Thread.sleep(50);} catch (InterruptedException e) {}
+		try {
+			
+			//Tell the wallet - in case we are creating default keys
+			MinimaDB.getDB().getWallet().shuttiongDown();
+			
+			//Shut down the network
+			mNetwork.shutdownNetwork();
+			
+			//Shut down Maxima
+			mMaxima.shutdown();
+			
+			//Stop the Miner
+			mTxPoWMiner.stopMessageProcessor();
+			
+			//Stop the main TxPoW processor
+			mTxPoWProcessor.stopMessageProcessor();
+			while(!mTxPoWProcessor.isShutdownComplete()) {
+				try {Thread.sleep(50);} catch (InterruptedException e) {}
+			}
+			
+			//Wait for the networking to finish
+			while(!mNetwork.isShutDownComplete()) {
+				try {Thread.sleep(50);} catch (InterruptedException e) {}
+			}
+			
+			//Now backup the  databases
+			MinimaDB.getDB().saveAllDB();
+					
+			//Stop this..
+			stopMessageProcessor();
+			
+			//Wait for it..
+			while(!isShutdownComplete()) {
+				try {Thread.sleep(50);} catch (InterruptedException e) {}
+			}
+		
+		}catch(Exception exc) {
+			MinimaLogger.log("ERROR Shutting down..");
+			MinimaLogger.log(exc);
 		}
-		
-		//Now backup the  databases
-		MinimaDB.getDB().saveAllDB();
-				
-		//Stop this..
-		stopMessageProcessor();
-		
-		//Wait for it..
-		while(!isShutdownComplete()) {
-			try {Thread.sleep(50);} catch (InterruptedException e) {}
-		}		
 	}
 	
 	public void restoreReady() {
