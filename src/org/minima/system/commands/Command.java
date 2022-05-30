@@ -288,7 +288,6 @@ public abstract class Command {
 		int commandlen = ALL_COMMANDS.length;
 		
 		//Get the first word..
-//		String[] split = splitString(zCommand);
 		String[] split = splitStringJSON(zCommand);
 		
 		//The first is the command..
@@ -362,71 +361,26 @@ public abstract class Command {
 				
 			}else {
 				
+				//Should not have any "..
+				if(value.startsWith("\"")) {
+					value = value.substring(1);
+				}
+				
+				if(value.endsWith("\"")) {
+					value = value.substring(0,value.length()-1);
+				}
+				
 				//Add normal String parameter to..
 				comms.getParams().put(name, value);
-				
 			}
-			
-			
 		}
 		
 		return comms;
 	}
-
-	/**
-	 * Split the input string keeping quoted sections as single units
-	 * 
-	 * @param zString
-	 * @return
-	 */
-	private static String[] splitString(String zInput) {
-		ArrayList<String> token = new ArrayList<>();
-		String ss = zInput.trim();
-		
-		//Cycle through looking for spaces or quotes..
-		String current = new String();
-		boolean quoted = false;
-		int len = ss.length();
-		for(int i=0;i<len;i++) {
-			char cc = ss.charAt(i);
-			
-			if(cc == ' ') {
-				//End of the line..
-				if(!quoted) {
-					//Add current
-					if(!current.equals("")) {
-						token.add(current.trim());
-					}
-						
-					//New Current
-					current = new String();
-				}else {
-					current += cc;
-				}
-			}else if(cc == '\"') {
-				//it's a quote!
-				if(quoted) {
-					//It's finished..
-					quoted=false;
-				}else {
-					quoted=true;
-				}
-			}else {
-				current += cc;
-			}
-		}
-		
-		//Add the last bit..
-		if(!current.equals("")) {
-			token.add(current.trim());
-		}
-		
-		return token.toArray(new String[0]);
-	}
 	
 	private static String[] splitStringJSON(String zInput) {
-		//Are there any JSON in this..
-		if(zInput.length()>10000 && zInput.indexOf("{") == -1 && zInput.indexOf("[") == -1) {
+		//Are there any JSON in this.. if not use super fast method..
+		if(zInput.indexOf("{") == -1 && zInput.indexOf("[") == -1) {
 			return splitterQuotedPattern(zInput);
 		}
 		
