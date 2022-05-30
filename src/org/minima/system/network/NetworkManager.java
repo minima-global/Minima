@@ -148,7 +148,10 @@ public class NetworkManager {
 		stats.put("connected", mNIOManager.getNumberOfConnectedClients());
 		
 		//RPC Stats
-		stats.put("rpc", MinimaDB.getDB().getUserDB().isRPCEnabled());
+		JSONObject rpcjson = new JSONObject();
+		rpcjson.put("enabled", MinimaDB.getDB().getUserDB().isRPCEnabled());
+		rpcjson.put("port", GeneralParams.RPC_PORT);
+		stats.put("rpc", rpcjson);
 		
 		//P2P stats
 		if(GeneralParams.P2P_ENABLED) {
