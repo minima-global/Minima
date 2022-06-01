@@ -379,13 +379,19 @@ public abstract class Command {
 	}
 	
 	private static String[] splitStringJSON(boolean zForceNormal, String zInput) {
+		
 		//Are there any JSON in this.. if not use super fast method..
 		if(!zForceNormal) {
+			//If it's big use the fast one.. but can have issues if : used weirdly.. :( 
 			if(zInput.indexOf("{") == -1 && zInput.indexOf("[") == -1) {
-				return splitterQuotedPattern(zInput);
+				String[] fastres = splitterQuotedPattern(zInput);
+				if(fastres != null) {
+					return fastres;
+				}
 			}
 		}
 		
+		//Normal method..
 		ArrayList<String> token = new ArrayList<>();
 		String ss = zInput.trim();
 		
@@ -463,6 +469,8 @@ public abstract class Command {
 	
 	/**
 	 * Very Fast splitter that doesn;t work for JSON inputs.. just normal name value pairs..
+	 * 
+	 * If something weird happens return null .. and other method used..
 	 */
 	public static String[] splitterQuotedPattern(String zInput) {
 		ArrayList<String> token = new ArrayList<>();
@@ -485,18 +493,28 @@ public abstract class Command {
 	    ArrayList<String> finaltokens = new ArrayList<>();
 	    boolean first 		= true; 
 	    boolean namefound	= false;
-	    String nvpair = "";
+	    String nvpair 		= new String("");
+	    
 	    for(String tok : token) {
 	    	
-	    	//First one is just the command
 	    	if(first){
+	    		//First one is just the command
 	    		first = false;
 	    		finaltokens.add(tok);
+	    		
 	    	}else {
 		    	//Have we found the name yet
 		    	if(!namefound) {
-		    		namefound 	= true;
+		    		
+		    		//CHECK ..
+		    		if(tok.trim().equals(":")) {
+		    			//Hmm. should not HAPPEN!.. use slow method
+		    			return null;
+		    		}
+		    		
+		    		namefound 	 = true;
 		    		nvpair 		= new String(tok);
+		    		
 		    	}else {
 		    		if(tok.trim().equals(":")) {
 		    			nvpair+=":";
@@ -534,10 +552,10 @@ public abstract class Command {
 	
 	public static void main(String[] zArgs) {
 		
+//		String tester2 = "connect host:128.0.0.1:9009";
 //		String tester2 = "runscript script:\"RETURN TRUE\" state:{\"0\":\"123\"}";
-		
 		String tester2 = "runscript script:\"RETURN TRUE\" data:0x00 application:\"max solo yolo\"";
-		//String tester2 = "maxima action:setname name:\"Spartacus Rex\"";
+//		String tester2 = "maxcontacts action:add contacts:Mx223423:9001:90 hh:oo";
 
 		System.out.println("\nOLD WAY\n");
 		String [] split = splitStringJSON(true, tester2);
@@ -547,7 +565,7 @@ public abstract class Command {
 		
 		System.out.println("\nNEW WAY\n");
 		
-		split = splitterQuotedPattern(tester2);
+		split = splitStringJSON(false, tester2);
 		for(int i=0;i<split.length;i++) {
 			System.out.println(i+") "+split[i]);
 		}
