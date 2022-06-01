@@ -355,8 +355,8 @@ public class NIOMessage implements Runnable {
 				
 				if(block.isLessEqual(cascadeblock)) {
 					//Block before cascade
-					MinimaLogger.log("Received block before cascade.. "+block+" / "+cascadeblock+" difficulty:"+blockdiffratio);
-					fullyvalid = true;
+					MinimaLogger.log("Received block before cascade.. "+block+" / "+cascadeblock+" difficulty:"+blockdiffratio+" from "+mClientUID);
+					fullyvalid = false;
 				}
 				
 				//Check the Scripts - could fail.. 
