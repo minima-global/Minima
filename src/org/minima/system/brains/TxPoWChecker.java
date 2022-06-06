@@ -21,6 +21,7 @@ import org.minima.objects.TxHeader;
 import org.minima.objects.TxPoW;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniNumber;
 import org.minima.objects.keys.Signature;
 import org.minima.objects.keys.TreeKey;
 import org.minima.system.params.GlobalParams;
@@ -32,6 +33,11 @@ public class TxPoWChecker {
 	 * What Network are we currently checking for
 	 */
 	public static MiniData CURRENT_NETWORK = TxHeader.TEST_NET;
+	
+	/**
+	 * Max Time in future for Block time.. 24hrs..
+	 */
+	public static MiniNumber MAX_TIME_FUTURE = new MiniNumber(1000 * 60 * 60 * 24); 
 	
 	/**
 	 * Parallel check all the transactions in this block
@@ -55,6 +61,17 @@ public class TxPoWChecker {
 			//Check Parents..
 			if(!checkParents(zParentNode, zTxPoW)) {
 				MinimaLogger.log("Invalid TxPoW Super Parents "+zTxPoW.getTxPoWID());
+				return false;
+			}
+			
+			//Check TimeMilli is acceptable..
+			TxPoWTreeNode median = TxPoWGenerator.getMedianTimeBlock(zParentNode, GlobalParams.MEDIAN_BLOCK_CALC*2);
+			MiniNumber maxtime 	 = median.getTxPoW().getTimeMilli().add(MAX_TIME_FUTURE); 
+			if(zTxPoW.getTimeMilli().isLess(median.getTxPoW().getTimeMilli())) {
+				MinimaLogger.log("Invalid TxPoW TimeMilli less than median 1 hr back "+zTxPoW.getTxPoWID());
+				return false;
+			}else if(zTxPoW.getTimeMilli().isMore(maxtime)) {
+				MinimaLogger.log("Invalid TxPoW TimeMilli motre than 24 hrs in future "+zTxPoW.getTxPoWID());
 				return false;
 			}
 			
