@@ -20,7 +20,7 @@ import org.minima.utils.json.JSONArray;
  * @author spartacusrex
  *
  */
-public class CommandHandler implements Runnable {
+public class CMDHandler implements Runnable {
 
 	/**
 	 * The Net Socket
@@ -31,7 +31,7 @@ public class CommandHandler implements Runnable {
 	 * Main Constructor
 	 * @param zSocket
 	 */
-	public CommandHandler(Socket zSocket) {
+	public CMDHandler(Socket zSocket) {
 		//Store..
 		mSocket = zSocket;
 	}

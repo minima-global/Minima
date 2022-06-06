@@ -11,7 +11,7 @@ import org.minima.database.userprefs.UserDB;
 import org.minima.system.network.minima.NIOManager;
 import org.minima.system.network.p2p.P2PFunctions;
 import org.minima.system.network.p2p.P2PManager;
-import org.minima.system.network.rpc.CommandHandler;
+import org.minima.system.network.rpc.CMDHandler;
 import org.minima.system.network.rpc.HTTPServer;
 import org.minima.system.network.sshtunnel.SSHManager;
 import org.minima.system.network.webhooks.NotifyManager;
@@ -182,7 +182,7 @@ public class NetworkManager {
 				
 				@Override
 				public Runnable getSocketHandler(Socket zSocket) {
-					return new CommandHandler(zSocket);
+					return new CMDHandler(zSocket);
 				}
 			};
 			
