@@ -1,4 +1,4 @@
-package org.minima.system.network.rpc;
+package org.minima.system.mds.polling;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -7,12 +7,14 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.URLDecoder;
 import java.util.Date;
+import java.util.Random;
 import java.util.StringTokenizer;
 
 import org.minima.objects.base.MiniString;
 import org.minima.system.commands.Command;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
+import org.minima.utils.json.JSONObject;
 
 /**
  * This class handles a single request then exits
@@ -20,19 +22,22 @@ import org.minima.utils.json.JSONArray;
  * @author spartacusrex
  *
  */
-public class CommandHandler implements Runnable {
+public class PollHandler implements Runnable {
 
 	/**
 	 * The Net Socket
 	 */
 	Socket mSocket;
 	
+	PollStack mPollStack;
+	
 	/**
 	 * Main Constructor
 	 * @param zSocket
 	 */
-	public CommandHandler(Socket zSocket) {
+	public PollHandler(PollStack zStack, Socket zSocket) {
 		//Store..
+		mPollStack 	= zStack;
 		mSocket = zSocket;
 	}
 
@@ -77,41 +82,53 @@ public class CommandHandler implements Runnable {
 			//And finally URL decode..
 			fileRequested = URLDecoder.decode(fileRequested,"UTF-8").trim();
 			
-			//Get the Headers..
-			int contentlength = 0;
-			while(input != null && !input.trim().equals("")) {
-				//MinimaLogger.log("RPC : "+input);
-				int ref = input.indexOf("Content-Length:"); 
-				if(ref != -1) {
-					//Get it..
-					int start     = input.indexOf(":");
-					contentlength = Integer.parseInt(input.substring(start+1).trim());
-				}	
-				input = in.readLine();
+			//MinimaLogger.log(fileRequested);
+			
+			//Get the series and counter
+			int index 			= fileRequested.indexOf("&");
+			String fullseries 	= fileRequested.substring(0,index);
+			index 				= fullseries.indexOf("=");
+			String series		= fullseries.substring(index+1);
+			String fullcounter 	= fileRequested.substring(index+1);
+			index 				= fullcounter.indexOf("=");
+			String strcounter	= fullcounter.substring(index+1);
+			int counter 		= Integer.parseInt(strcounter);
+			
+			//The returned data..
+			JSONObject res = new JSONObject();
+			res.put("series", mPollStack.getSeries());
+			res.put("counter", mPollStack.getCounter());
+			res.put("status", false);
+			
+			//Are we on the correct series.. 
+			if(mPollStack.getSeries().equals(series)) {
+				
+				int clocksecs 	= 0;
+				PollMessage msg = null;
+				while(msg == null && clocksecs<30) {
+					//Get the message..
+					msg = mPollStack.getMessage(counter);
+					if(msg !=null) {
+						break;
+					}
+					
+					//Wait 1 second and try again 
+					Thread.sleep(1000);
+					clocksecs++;
+				}
+				
+				//Did we get a message
+				if(msg != null) {
+					res.put("status", true);
+					res.put("response", msg.toJSON());
+				}
 			}
 			
-			//Is it a POST request
-			if(method.equals("POST")) {
-				//Get the POST data..
-				char[] cbuf = new char[contentlength];
-				
-				//Lets see..
-				in.read(cbuf);
-				
-				//Set this..
-				fileRequested = new String(cbuf);
-			}
+			//Put the latest counter
+			res.put("counter", mPollStack.getCounter());
 			
-			//Now run this function..
-			JSONArray res = Command.runMultiCommand(fileRequested);
-	    	
-	    	//Get the result.. is it a multi command or single.. 
-			String result = null;
-			if(res.size() == 1) {
-				result = res.get(0).toString();
-			}else {
-				result = res.toString();
-			}
+			//Do we have any new messages..
+			String result = res.toJSONString();
 	    	
 			//Calculate the size of the response
 			int finallength = result.getBytes(MiniString.MINIMA_CHARSET).length; 
@@ -128,7 +145,7 @@ public class CommandHandler implements Runnable {
 			out.flush(); // flush character output stream buffer
 			
 		} catch (Exception ioe) {
-			MinimaLogger.log("RPCHANDLER : "+ioe+" "+firstline);
+			MinimaLogger.log("POLLHANDLER : "+ioe+" "+firstline);
 			
 		} finally {
 			try {

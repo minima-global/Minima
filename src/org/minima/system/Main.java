@@ -615,15 +615,23 @@ public class Main extends MessageProcessor {
 	 * Post a network message to the webhook / Android listeners
 	 */
 	public void PostNotifyEvent(String zEvent, JSONObject zData) {
+		
+		//Create the JSON Message
+		JSONObject notify = new JSONObject();
+		notify.put("event", zEvent);
+		notify.put("data", zData);
+		
 		if(getNetworkManager() != null) {
-			
-			//Create the JSON Message
-			JSONObject notify = new JSONObject();
-			notify.put("event", zEvent);
-			notify.put("data", zData);
-			
 			//And post
 			getNetworkManager().getNotifyManager().PostEvent(notify);
+		}
+		
+		//Tell the MDS..
+		if(getMDSManager() != null) {
+			Message poll = new Message(MDSManager.MDS_POLLMESSAGE);
+			poll.addObject("poll", notify);
+			
+			getMDSManager().PostMessage(poll);
 		}
 	}
 	

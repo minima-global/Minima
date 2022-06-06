@@ -93,8 +93,11 @@ public class MDSFileHandler implements Runnable {
 			
 			if(fileRequested.equals("")) {
 				
+				String webpage = createIndexPage();
+				MinimaLogger.log("PAGE : "+webpage);
+				
 				//It's the root file..
-				byte[] file = createIndexPage().getBytes();
+				byte[] file = webpage.getBytes();
 	
 				//Calculate the size of the response
 				int finallength = file.length;
@@ -113,7 +116,7 @@ public class MDSFileHandler implements Runnable {
 	
 				if(!webfile.exists()) {
 		    		
-		    		MinimaLogger.log("HTTP : unknown file requested "+fileRequested);
+		    		MinimaLogger.log("HTTP : unknown file requested "+fileRequested+" "+webfile.getAbsolutePath());
 		    		
 		    		dos.writeBytes("HTTP/1.0 404 OK\r\n");
 					dos.writeBytes("\r\n");
@@ -163,6 +166,9 @@ public class MDSFileHandler implements Runnable {
 			page += "No MiniDAPPs Installed yet..<br><br>";
 		}else {
 			for(MiniDAPP dapp : dapps) {
+				
+				page += "<b>"+dapp.mName+"</b><br>";
+				page += "<a href='./"+dapp.mUID+"/index.html'>"+dapp.mUID+"</a><br>";
 				page += dapp.toJSON()+"<br><br>";
 			}
 		}

@@ -4,9 +4,12 @@ import java.io.File;
 import java.net.Socket;
 
 import org.minima.system.network.rpc.MDSFileHandler;
+import org.minima.system.mds.polling.PollHandler;
+import org.minima.system.mds.polling.PollStack;
 import org.minima.system.network.rpc.HTTPServer;
 import org.minima.system.params.GeneralParams;
 import org.minima.system.params.GlobalParams;
+import org.minima.utils.Stack;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageProcessor;
@@ -14,18 +17,19 @@ import org.minima.utils.messages.MessageProcessor;
 public class MDSManager extends MessageProcessor {
 
 	public static final String MDS_INIT 		= "MDS_INIT";
-	
-	public static final String MDS_INSTALL 		= "MDS_INSTALL";
-	public static final String MDS_UNINSTALL 	= "MDS_UNINSTALL";
-	
-	public static final String MDS_REFRESH 		= "MDS_REFRESH";
+	public static final String MDS_POLLMESSAGE 	= "MDS_POLLMESSAGE";
 	
 	HTTPServer mMDSServer;
+	HTTPServer mPollServer;
 	
 	File mMDSRootFile; 
 	
+	PollStack mPollStack;
+	
 	public MDSManager() {
 		super("MDS");
+		
+		mPollStack = new PollStack();
 		
 		PostMessage(MDS_INIT);
 	}
@@ -34,6 +38,7 @@ public class MDSManager extends MessageProcessor {
 		
 		//Shut down the server
 		mMDSServer.stop();
+		mPollServer.stop();
 		
 		stopMessageProcessor();
 	}
@@ -61,38 +66,25 @@ public class MDSManager extends MessageProcessor {
 				
 				@Override
 				public Runnable getSocketHandler(Socket zSocket) {
-					return new MDSFileHandler(mMDSRootFile, zSocket);
+					return new MDSFileHandler( new File(mMDSRootFile,"web") , zSocket);
+				}
+			};
+			
+			//The Polling Server
+			mPollServer = new HTTPServer(9004) {
+				@Override
+				public Runnable getSocketHandler(Socket zSocket) {
+					return new PollHandler(mPollStack, zSocket);
 				}
 			};
 		
-		}else if(zMessage.getMessageType().equals(MDS_REFRESH)) {
+		}else if(zMessage.getMessageType().equals(MDS_POLLMESSAGE)) {
 			
-			//Load the MiniDAPPs..
-			File webfolder = new File(mMDSRootFile,"web");
+			// Add a message to the POll..
+			JSONObject poll = (JSONObject) zMessage.getObject("poll");
 			
-			//List the folders
-			File[] files = webfolder.listFiles();
-			if(files != null) {
-				for(int i=0;i<files.length;i++) {
-
-					if(files[i].isDirectory()) {
-						
-						
-						
-						
-					}
-					
-				}
-			}
-			
-			
-		}else if(zMessage.getMessageType().equals(MDS_INSTALL)) {
-		
-			//Load the file..
-			
-		}else if(zMessage.getMessageType().equals(MDS_UNINSTALL)) {
-			
-			
+			//Add to the Poll Stack
+			mPollStack.addMessage(poll);
 		}
 		
 	}
