@@ -1,4 +1,4 @@
-package org.minima.system.network.rpc;
+package org.minima.system.mds;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;

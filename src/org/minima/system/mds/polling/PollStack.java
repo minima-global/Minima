@@ -3,12 +3,11 @@ package org.minima.system.mds.polling;
 import java.util.ArrayList;
 
 import org.minima.objects.base.MiniData;
-import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
 
 public class PollStack {
 
-	public static final int MAX_MESSAGES = 10;
+	public static final int MAX_MESSAGES = 50;
 	
 	String mSeries;
 	
@@ -52,7 +51,7 @@ public class PollStack {
 	public synchronized PollMessage getMessage(int zMessageCounter){		
 		
 		//Are there any messages
-		if(mCounter>=zMessageCounter) {
+		if(mCounter>zMessageCounter) {
 			
 			//Cycle through and add them..
 			for(PollMessage pmsg : mMessages) {

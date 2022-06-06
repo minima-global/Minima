@@ -1,17 +1,11 @@
 package org.minima.database.minidapps;
 
-import java.io.File;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 
-import org.minima.objects.TxBlock;
-import org.minima.objects.TxPoW;
-import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniNumber;
-import org.minima.system.params.GeneralParams;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.SqlDB;
 

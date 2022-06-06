@@ -8,7 +8,6 @@ import org.minima.database.archive.ArchiveManager;
 import org.minima.database.cascade.Cascade;
 import org.minima.database.maxima.MaximaDB;
 import org.minima.database.minidapps.MDSDB;
-import org.minima.database.minidapps.MiniDAPPDB;
 import org.minima.database.txpowdb.TxPoWDB;
 import org.minima.database.txpowtree.TxPowTree;
 import org.minima.database.userprefs.UserDB;

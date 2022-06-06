@@ -1,7 +1,5 @@
 package org.minima.system.commands.persistent;
 
-import org.minima.database.MinimaDB;
-import org.minima.database.minidapps.MiniDAPPDB;
 import org.minima.system.commands.Command;
 import org.minima.utils.json.JSONObject;
 
