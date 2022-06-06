@@ -71,7 +71,7 @@ public class TxPoWChecker {
 				MinimaLogger.log("Invalid TxPoW TimeMilli less than median 1 hr back "+zTxPoW.getTxPoWID());
 				return false;
 			}else if(zTxPoW.getTimeMilli().isMore(maxtime)) {
-				MinimaLogger.log("Invalid TxPoW TimeMilli motre than 24 hrs in future "+zTxPoW.getTxPoWID());
+				MinimaLogger.log("Invalid TxPoW TimeMilli more than 24 hrs in future "+zTxPoW.getTxPoWID());
 				return false;
 			}
 			
