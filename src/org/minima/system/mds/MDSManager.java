@@ -38,12 +38,14 @@ public class MDSManager extends MessageProcessor {
 		stopMessageProcessor();
 	}
 	
-	public JSONObject getMDSList() {		
-		JSONObject ret = new JSONObject();
-		
-		
-		
-		return ret;
+	public File getRootFolder() {
+		return mMDSRootFile;
+	}
+	
+	public File getWebFolder(String zUID) {
+		File web 	= new File(mMDSRootFile, "web");
+		File dapp 	= new File(web, zUID);
+		return dapp;
 	}
 	
 	@Override

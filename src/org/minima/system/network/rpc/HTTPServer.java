@@ -35,7 +35,7 @@ public abstract class HTTPServer implements Runnable{
 			MinimaLogger.log(e);
 		}
 		
-		MinimaLogger.log("HTTP Server stopped");
+		MinimaLogger.log("HTTP Server stopped @ "+mPort);
 	}
 	
 	public void start() {
@@ -63,6 +63,7 @@ public abstract class HTTPServer implements Runnable{
 				
 				//Run in a new Thread
 				Thread rpcthread = new Thread(handler, "Socket Handler @ "+getPort());
+				rpcthread.setDaemon(true);
 				rpcthread.start();
 			}
 			

@@ -42,6 +42,7 @@ import org.minima.system.commands.base.tutorial;
 import org.minima.system.commands.base.vault;
 import org.minima.system.commands.maxima.maxcontacts;
 import org.minima.system.commands.maxima.maxima;
+import org.minima.system.commands.mds.mds;
 import org.minima.system.commands.network.connect;
 import org.minima.system.commands.network.disconnect;
 import org.minima.system.commands.network.message;
@@ -90,6 +91,8 @@ public abstract class Command {
 
 			//Removed code..
 //			new sshtunnel(), 
+			
+			new mds(),
 			
 			new ping(),
 			new sql(),new file(),

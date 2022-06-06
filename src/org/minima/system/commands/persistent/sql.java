@@ -15,17 +15,17 @@ public class sql extends Command {
 	public JSONObject runCommand() throws Exception {
 		JSONObject ret = getJSONReply();
 		
-		//Get the SQL
-		String sql = getParam("sql");
-		
-		//Get the MiniDAPP DB
-		MiniDAPPDB db = MinimaDB.getDB().getMiniDAPPDB();
-		
-		//Run the SQL..
-		JSONObject results = db.executeSQL(sql);
-		
-		//Add them..
-		ret.put("response", results);
+//		//Get the SQL
+//		String sql = getParam("sql");
+//		
+//		//Get the MiniDAPP DB
+//		MiniDAPPDB db = MinimaDB.getDB().getMiniDAPPDB();
+//		
+//		//Run the SQL..
+//		JSONObject results = db.executeSQL(sql);
+//		
+//		//Add them..
+//		ret.put("response", results);
 		
 				
 		return ret;

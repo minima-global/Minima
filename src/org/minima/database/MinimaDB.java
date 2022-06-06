@@ -7,6 +7,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.minima.database.archive.ArchiveManager;
 import org.minima.database.cascade.Cascade;
 import org.minima.database.maxima.MaximaDB;
+import org.minima.database.minidapps.MDSDB;
 import org.minima.database.minidapps.MiniDAPPDB;
 import org.minima.database.txpowdb.TxPoWDB;
 import org.minima.database.txpowtree.TxPowTree;
@@ -39,11 +40,7 @@ public class MinimaDB {
 	TxnDB			mTxnDB;
 	Wallet			mWallet;
 	MaximaDB	 	mMaximaDB;
-	
-	/**
-	 * Temporary
-	 */
-	MiniDAPPDB		mMiniDAPP;
+	MDSDB			mMDSDB;
 	
 	/**
 	 * For P2P Information
@@ -66,8 +63,7 @@ public class MinimaDB {
 		mUserDB		= new UserDB();
 		mWallet		= new Wallet();
 		mMaximaDB	= new MaximaDB();
-		
-		mMiniDAPP   = new MiniDAPPDB();
+		mMDSDB   	= new MDSDB();
 		
 		mP2PDB		= new P2PDB();
 		
@@ -130,9 +126,13 @@ public class MinimaDB {
 		return getDBFileSie("p2p.db");
 	}
 	
-	public MiniDAPPDB getMiniDAPPDB() {
-		return mMiniDAPP;
+	public MDSDB getMDSDB() {
+		return mMDSDB;
 	}
+	
+//	public MiniDAPPDB getMiniDAPPDB() {
+//		return mMiniDAPP;
+//	}
 	
 	private long getDBFileSie(String zFilename) {
 		//Get the base Database folder
@@ -201,6 +201,10 @@ public class MinimaDB {
 			File maxsqlfolder = new File(basedb,"maximasql");
 			mMaximaDB.loadDB(new File(maxsqlfolder,"maxima"));
 			
+			//Load ther MDS DB
+			File mdssqlfolder = new File(basedb,"mdssql");
+			mMDSDB.loadDB(new File(mdssqlfolder,"mds"));
+			
 			//Load the User Prefs
 			mUserDB.loadDB(new File(basedb,"userprefs.db"));
 			
@@ -216,9 +220,6 @@ public class MinimaDB {
 			
 			//And finally..
 			mP2PDB.loadDB(new File(basedb,"p2p.db"));
-			
-			//Temp MiniDAPP DB
-			mMiniDAPP.loadDB(new File(basedb,"minidapp.db"));
 			
 		}catch(Exception exc) {
 			MinimaLogger.log("ERROR loadAllDB "+exc);
@@ -246,9 +247,7 @@ public class MinimaDB {
 			mArchive.saveDB();
 			mWallet.saveDB();
 			mMaximaDB.saveDB();
-			
-			//Temp
-			mMiniDAPP.saveDB();
+			mMDSDB.saveDB();
 			
 		}catch(Exception exc) {
 			MinimaLogger.log("ERROR saveSQL "+exc);
