@@ -8,14 +8,14 @@ import java.net.SocketException;
 
 import org.minima.utils.MinimaLogger;
 
-public class RPCServer implements Runnable{
+public abstract class HTTPServer implements Runnable{
 
 	ServerSocket mServerSocket;
 	int mPort;
 	
 	boolean mRunning = true;
 	
-	public RPCServer(int zPort) {
+	public HTTPServer(int zPort) {
 		mPort = zPort;
 		start();
 	}
@@ -35,15 +35,17 @@ public class RPCServer implements Runnable{
 			MinimaLogger.log(e);
 		}
 		
-		MinimaLogger.log("RPC Server stopped");
+		MinimaLogger.log("HTTP Server stopped");
 	}
 	
 	public void start() {
 		Thread runner = new Thread(this);
 		runner.start();
 		
-		MinimaLogger.log("RPC Server started on port : "+mPort);
+		MinimaLogger.log("HTTP Server started on port : "+mPort);
 	}
+	
+	public abstract Runnable getSocketHandler(Socket zSocket);
 	
 	@Override
 	public void run() {
@@ -56,11 +58,11 @@ public class RPCServer implements Runnable{
 				//Listen in for connections
 				Socket clientsock = mServerSocket.accept();
 				
-				//create a new RPC Handler ..
-				RPCHandler rpc = new RPCHandler(clientsock);
+				//Get the Handler..
+				Runnable handler = getSocketHandler(clientsock);
 				
 				//Run in a new Thread
-				Thread rpcthread = new Thread(rpc, "RPC Client");
+				Thread rpcthread = new Thread(handler, "Socket Handler @ "+getPort());
 				rpcthread.start();
 			}
 			

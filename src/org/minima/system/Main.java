@@ -16,6 +16,7 @@ import org.minima.system.brains.TxPoWMiner;
 import org.minima.system.brains.TxPoWProcessor;
 import org.minima.system.genesis.GenesisMMR;
 import org.minima.system.genesis.GenesisTxPoW;
+import org.minima.system.mds.MDSManager;
 import org.minima.system.network.NetworkManager;
 import org.minima.system.network.maxima.MaximaManager;
 import org.minima.system.network.minima.NIOClient;
@@ -121,6 +122,11 @@ public class Main extends MessageProcessor {
 	MaximaManager mMaxima;
 	
 	/**
+	 * MDS
+	 */
+	MDSManager mMDS;
+	
+	/**
 	 * Are we shutting down..
 	 */
 	boolean mShuttingdown = false;
@@ -205,7 +211,10 @@ public class Main extends MessageProcessor {
 		
 		//Start up Maxima
 		mMaxima = new MaximaManager();
-				
+		
+		//Start MDS
+		mMDS = new MDSManager();
+		
 		//Simulate traffic message ( only if auto mine is set )
 		AUTOMINE_TIMER = MiniNumber.THOUSAND.div(GlobalParams.MINIMA_BLOCK_SPEED).getAsLong();
 		PostTimerMessage(new TimerMessage(AUTOMINE_TIMER, MAIN_AUTOMINE));
@@ -256,6 +265,9 @@ public class Main extends MessageProcessor {
 			//Shut down Maxima
 			mMaxima.shutdown();
 			
+			//ShutDown MDS
+			mMDS.shutdown();
+			
 			//Stop the Miner
 			mTxPoWMiner.stopMessageProcessor();
 			
@@ -296,6 +308,9 @@ public class Main extends MessageProcessor {
 		
 		//Shut down Maxima
 		mMaxima.shutdown();
+		
+		//ShutDown MDS
+		mMDS.shutdown();
 				
 		//Stop the Miner
 		mTxPoWMiner.stopMessageProcessor();
@@ -380,6 +395,10 @@ public class Main extends MessageProcessor {
 	
 	public MaximaManager getMaxima() {
 		return mMaxima;
+	}
+	
+	public MDSManager getMDSManager() {
+		return mMDS;
 	}
 	
 	public void setTrace(boolean zTrace, String zFilter) {

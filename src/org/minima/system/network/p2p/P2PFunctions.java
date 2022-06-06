@@ -1,5 +1,9 @@
 package org.minima.system.network.p2p;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
 import org.minima.system.network.minima.NIOClientInfo;
@@ -9,10 +13,6 @@ import org.minima.system.network.p2p.params.P2PParams;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class P2PFunctions {
 

@@ -2,6 +2,7 @@ package org.minima.system.network;
 
 import java.net.InetAddress;
 import java.net.NetworkInterface;
+import java.net.Socket;
 import java.net.SocketException;
 import java.util.Enumeration;
 
@@ -10,7 +11,8 @@ import org.minima.database.userprefs.UserDB;
 import org.minima.system.network.minima.NIOManager;
 import org.minima.system.network.p2p.P2PFunctions;
 import org.minima.system.network.p2p.P2PManager;
-import org.minima.system.network.rpc.RPCServer;
+import org.minima.system.network.rpc.CommandHandler;
+import org.minima.system.network.rpc.HTTPServer;
 import org.minima.system.network.sshtunnel.SSHManager;
 import org.minima.system.network.webhooks.NotifyManager;
 import org.minima.system.params.GeneralParams;
@@ -34,7 +36,7 @@ public class NetworkManager {
 	/**
 	 * The RPC server
 	 */
-	RPCServer mRPCServer = null;
+	HTTPServer mRPCServer = null;
 	
 	/**
 	 * The SSH Tunnel Manager
@@ -176,9 +178,14 @@ public class NetworkManager {
 	public void startRPC() {
 		if(mRPCServer == null) {
 			//Start The RPC server
-			mRPCServer = new RPCServer(GeneralParams.RPC_PORT);
-		}else {
-			//Already started..
+			mRPCServer = new HTTPServer(GeneralParams.RPC_PORT) {
+				
+				@Override
+				public Runnable getSocketHandler(Socket zSocket) {
+					return new CommandHandler(zSocket);
+				}
+			};
+			
 		}
 	}
 	

@@ -1,10 +1,10 @@
 package org.minima.system.network.p2p.params;
 
-import org.minima.system.network.p2p.P2PFunctions;
-
 import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.List;
+
+import org.minima.system.network.p2p.P2PFunctions;
 
 public class P2PParams {
 

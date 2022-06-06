@@ -1,8 +1,5 @@
 package org.minima.system.params;
 
-import org.minima.system.network.p2p.P2PFunctions;
-import org.minima.system.network.p2p.params.P2PParams;
-
 import static java.nio.file.Files.lines;
 import static java.util.Arrays.stream;
 import static java.util.Optional.empty;
@@ -19,6 +16,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiConsumer;
+
+import org.minima.system.network.p2p.P2PFunctions;
+import org.minima.system.network.p2p.params.P2PParams;
 
 public class ParamConfigurer {
 

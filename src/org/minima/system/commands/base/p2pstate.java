@@ -3,10 +3,7 @@ package org.minima.system.commands.base;
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
 import org.minima.system.network.p2p.P2PManager;
-import org.minima.system.network.p2p.messages.InetSocketAddressIO;
 import org.minima.utils.json.JSONObject;
-
-import java.util.ArrayList;
 
 public class p2pstate extends Command {
 

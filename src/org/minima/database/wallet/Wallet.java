@@ -553,7 +553,7 @@ public class Wallet extends SqlDB {
 				allscripts.add(scrow);
 			}
 			
-		} catch (SQLException e) {
+		} catch (Exception e) {
 			MinimaLogger.log(e);
 		}
 		
