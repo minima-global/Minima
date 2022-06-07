@@ -38,7 +38,7 @@ public class maxima extends Command {
 		String func = getParam("action", "info");
 		
 		MaximaManager max = Main.getInstance().getMaxima();
-		if(!max.isInited()) {
+		if(max == null || !max.isInited()) {
 			ret.put("status", false);
 			ret.put("message", "Maxima still starting up..");
 			return ret;

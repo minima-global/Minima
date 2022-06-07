@@ -13,6 +13,7 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
 import org.minima.utils.Crypto;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageProcessor;
 
@@ -188,10 +189,9 @@ public class TxPoWMiner extends MessageProcessor {
 	/**
 	 * Calculate the Hash rate of this node...
 	 */
-	public static MiniNumber calculateHashRate() {
+	public static MiniNumber calculateHashRate(MiniNumber zHashes) {
 		
-		MiniNumber hashes 	= MiniNumber.MILLION;
-		int ihashes 		= hashes.getAsInt();
+		int ihashes = zHashes.getAsInt();
 		
 		long timestart = System.currentTimeMillis();
 		MiniData data = MiniData.getRandomData(32);
@@ -200,9 +200,12 @@ public class TxPoWMiner extends MessageProcessor {
 		}
 		long timediff = System.currentTimeMillis() - timestart;
 		
+		
 		MiniNumber timesecs = new MiniNumber(timediff).div(MiniNumber.THOUSAND);
 		
-		MiniNumber spd = hashes.div(timesecs);
+		MiniNumber spd 		= zHashes.div(timesecs);
+		
+//		MinimaLogger.log("Did "+ihashes+" in "+timesecs+ " speed:"+spd);
 		
 		return spd;
 	}

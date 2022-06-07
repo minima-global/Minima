@@ -188,8 +188,12 @@ public class Main extends MessageProcessor {
 		String basepriv = MinimaDB.getDB().getUserDB().getBasePrivateSeed();
 		MinimaDB.getDB().getWallet().initBaseSeed(new MiniData(basepriv));
 		
-		//Calculate the User hashrate..
-		MiniNumber hashrate = TxPoWMiner.calculateHashRate();
+		//Calculate the User hashrate.. start her up as seems to make a difference.. initialises..
+		TxPoWMiner.calculateHashRate(new MiniNumber(10000));
+		
+		//Now do the actual check..
+		MiniNumber hashcheck = new MiniNumber("250000");
+		MiniNumber hashrate = TxPoWMiner.calculateHashRate(hashcheck);
 		MinimaDB.getDB().getUserDB().setHashRate(hashrate);
 		MinimaLogger.log("Calculate device hash rate : "+hashrate.div(MiniNumber.MILLION).setSignificantDigits(4)+" MHs");
 		

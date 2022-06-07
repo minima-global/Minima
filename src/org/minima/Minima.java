@@ -61,7 +61,11 @@ public class Minima {
     	if(zPrettyJSON) {
     		result = MiniFormat.JSONPretty(res);
     	}else {
-    		result = res.toJSONString();
+    		if(res.size() == 1) {
+    			result = res.get(0).toString();
+    		}else {
+    			result = res.toJSONString();
+    		}
     	}
     	
 		return result;

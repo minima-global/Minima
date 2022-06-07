@@ -42,7 +42,9 @@ public class mds extends Command {
 				arr.add(md.toJSON());
 			}
 
-			ret.put("minidapps", arr);
+			JSONObject mds = new JSONObject();
+			mds.put("minidapps", arr);
+			ret.put("response", mds);
 		
 		}else if(action.equals("install")) {
 		
@@ -78,7 +80,9 @@ public class mds extends Command {
 			//Now add to the DB
 			db.insertMiniDAPP(md);
 			
-			ret.put("installed", md.toJSON());
+			JSONObject mds = new JSONObject();
+			mds.put("installed", md.toJSON());
+			ret.put("response", mds);
 			
 		}else if(action.equals("uninstall")) {
 
@@ -91,7 +95,9 @@ public class mds extends Command {
 			//And from the DB
 			db.deleteMiniDAPP(uid);
 			
-			ret.put("uninstalled", uid);
+			JSONObject mds = new JSONObject();
+			mds.put("uninstalled", uid);
+			ret.put("response", mds);
 			
 		}else if(action.equals("reload")) {
 			
@@ -125,7 +131,9 @@ public class mds extends Command {
 				}
 			}
 			
-			ret.put("minidapps", arr);
+			JSONObject mds = new JSONObject();
+			mds.put("minidapps", arr);
+			ret.put("response", mds);
 		}
 		
 		return ret;

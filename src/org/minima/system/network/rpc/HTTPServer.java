@@ -35,14 +35,14 @@ public abstract class HTTPServer implements Runnable{
 			MinimaLogger.log(e);
 		}
 		
-		MinimaLogger.log("HTTP Server stopped @ "+mPort);
+		//MinimaLogger.log("HTTP Server stopped @ "+mPort);
 	}
 	
 	public void start() {
 		Thread runner = new Thread(this);
 		runner.start();
 		
-		MinimaLogger.log("HTTP Server started on port : "+mPort);
+		//MinimaLogger.log("HTTP Server started on port : "+mPort);
 	}
 	
 	public abstract Runnable getSocketHandler(Socket zSocket);
