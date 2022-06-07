@@ -44,7 +44,12 @@ public class Minima {
 	/**
 	 * Run a command on Minima and return the result
 	 */
+	
 	public String runMinimaCMD(String zInput){
+		return runMinimaCMD(zInput, true);
+	}
+	
+	public String runMinimaCMD(String zInput, boolean zPrettyJSON){
 		//trim it..
 		String input = zInput.trim();
     	
@@ -52,7 +57,12 @@ public class Minima {
     	JSONArray res = Command.runMultiCommand(input);
     	
     	//Get the result.. 
-    	String result = MiniFormat.JSONPretty(res);
+    	String result = null;
+    	if(zPrettyJSON) {
+    		result = MiniFormat.JSONPretty(res);
+    	}else {
+    		result = res.toJSONString();
+    	}
     	
 		return result;
 	}
