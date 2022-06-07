@@ -94,7 +94,6 @@ public class MDSFileHandler implements Runnable {
 			if(fileRequested.equals("")) {
 				
 				String webpage = createIndexPage();
-				MinimaLogger.log("PAGE : "+webpage);
 				
 				//It's the root file..
 				byte[] file = webpage.getBytes();
@@ -155,7 +154,10 @@ public class MDSFileHandler implements Runnable {
 
 	public String createIndexPage() {
 		
-		String page = "<html><head><title>MDS</title></head><body>";
+		String page = "<html><head><title>MDS</title></head><body>"
+				+ "<center>"
+				+ "<br><br>"
+				+ "<h2>MDS</h2>";
 		
 		MDSDB db = MinimaDB.getDB().getMDSDB();
 		
@@ -165,15 +167,27 @@ public class MDSFileHandler implements Runnable {
 		if(dapps.size() == 0) {
 			page += "No MiniDAPPs Installed yet..<br><br>";
 		}else {
+			
+			page += "<table width='400' border=0>";
+			
 			for(MiniDAPP dapp : dapps) {
 				
-				page += "<b>"+dapp.mName+"</b><br>";
-				page += "<a href='./"+dapp.mUID+"/index.html'>"+dapp.mUID+"</a><br>";
-				page += dapp.toJSON()+"<br><br>";
+				String base = "./"+dapp.mUID+"/";
+				
+				page +=   "<tr>"
+						+ "<td rowspan=2 width=10><img width='50' src='"+base+dapp.mIcon+"'></td>"
+						+ "<td>&nbsp;&nbsp;<font size=+2><a href='"+base+"/index.html'>"+dapp.mName+"</a></font></td>"
+						+ "</tr>"
+						+ "<tr>"
+						+ "<td>&nbsp;&nbsp;"+dapp.mDescription+"</td>"
+						+ "</tr>"
+						+ "<tr><td>&nbsp;</td></tr>";
 			}
+			
+			page += "</table>";
 		}
 		
-		page += "</body></html>";
+		page += "</center></body></html>";
 		
 		return page;
 	}

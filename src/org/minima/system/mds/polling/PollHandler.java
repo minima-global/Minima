@@ -102,7 +102,7 @@ public class PollHandler implements Runnable {
 				
 				int clocksecs 	= 0;
 				PollMessage msg = null;
-				while(msg == null && clocksecs<30) {
+				while(msg == null && clocksecs<60) {
 					//Get the message..
 					msg = mPollStack.getMessage(counter);
 					if(msg !=null) {

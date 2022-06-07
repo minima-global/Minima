@@ -34,6 +34,7 @@ public class MDSDB extends SqlDB {
 							+ "  `uid` varchar(80) NOT NULL,"
 							+ "  `name` varchar(256) NOT NULL,"
 							+ "  `icon` varchar(256) NOT NULL,"
+							+ "  `version` varchar(256) NOT NULL,"
 							+ "  `description` varchar(512) NOT NULL"
 							+ ")";
 			
@@ -44,7 +45,7 @@ public class MDSDB extends SqlDB {
 			stmt.close();
 			
 			//Create some prepared statements..
-			String insert 			= "INSERT IGNORE INTO minidapps ( uid, name, icon, description ) VALUES ( ?, ? ,? ,? )";
+			String insert 			= "INSERT IGNORE INTO minidapps ( uid, name, icon, version, description ) VALUES ( ?, ? ,? ,? ,? )";
 			SQL_INSERT_MINIDAPP 	= mSQLConnection.prepareStatement(insert);
 			
 			SQL_DELETE_MINIDAPP		= mSQLConnection.prepareStatement("DELETE FROM minidapps WHERE uid = ?");
@@ -65,7 +66,8 @@ public class MDSDB extends SqlDB {
 			SQL_INSERT_MINIDAPP.setString(1, zDapp.mUID);
 			SQL_INSERT_MINIDAPP.setString(2, zDapp.mName);
 			SQL_INSERT_MINIDAPP.setString(3, zDapp.mIcon);
-			SQL_INSERT_MINIDAPP.setString(4, zDapp.mDescription);
+			SQL_INSERT_MINIDAPP.setString(4, zDapp.mVersion);
+			SQL_INSERT_MINIDAPP.setString(5, zDapp.mDescription);
 			
 			//Do it.
 			SQL_INSERT_MINIDAPP.execute();

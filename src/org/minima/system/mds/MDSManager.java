@@ -44,10 +44,8 @@ public class MDSManager extends MessageProcessor {
 		return mMDSRootFile;
 	}
 	
-	public File getWebFolder(String zUID) {
-		File web 	= new File(mMDSRootFile, "web");
-		File dapp 	= new File(web, zUID);
-		return dapp;
+	public File getWebFolder() {
+		return new File(mMDSRootFile, "web");
 	}
 	
 	@Override
