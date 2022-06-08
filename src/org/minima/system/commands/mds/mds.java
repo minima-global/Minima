@@ -68,8 +68,14 @@ public class mds extends Command {
 			ZipExtractor.unzip(fis, dest);
 			fis.close();
 			
+			//Is there a conf file..
+			File conf = new File(dest,"dapp.conf");
+			if(!conf.exists()) {
+				throw new CommandException("No dapp.conf file found");
+			}
+			
 			//Load the Conf file.. to get the data
-			MiniString data = new MiniString(MiniFile.readCompleteFile(new File(dest,"dapp.conf"))); 	
+			MiniString data = new MiniString(MiniFile.readCompleteFile(conf)); 	
 			
 			//Now create the JSON..
 			JSONObject json = (JSONObject) new JSONParser().parse(data.toString());
