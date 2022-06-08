@@ -33,14 +33,14 @@ var MDS = {
 		//Store this for websocket push messages
 		MDS_MAIN_CALLBACK = callback;
 
-		//Hard set for now..
-		MDS.rpchost 	= "http://127.0.0.1:9002/";
-		MDS.pollhost 	= "http://127.0.0.1:9004/";
+		//Get the Host.. without the port
+		var host = window.location.hostname;
 		
-		//What is the host
-		//var endid   	= window.location.href.indexOf("/",10);
-		//MDS.rpchost 	= window.location.href.substring(0,endid)+"/mds/command";
-		//MDS.sqlhost 	= window.location.href.substring(0,endid)+"/mds/data";
+		MDS.rpchost 	= "http://"+host+":9002/";
+		MDS.log("MDS RPCHOST  : "+MDS.rpchost);
+		
+		MDS.pollhost 	= "http://"+host+":9004/";
+		MDS.log("MDS POLLHOST : "+MDS.pollhost);
 		
 		//Info.. 
 		MDS.log("MDS RPCHOST : "+MDS.rpchost);
