@@ -26,6 +26,7 @@ import org.minima.system.commands.base.tutorial;
 import org.minima.system.commands.base.vault;
 import org.minima.system.commands.maxima.maxcontacts;
 import org.minima.system.commands.maxima.maxima;
+import org.minima.system.commands.mds.mds;
 import org.minima.system.commands.network.connect;
 import org.minima.system.commands.network.disconnect;
 import org.minima.system.commands.network.message;
@@ -136,6 +137,8 @@ public class help extends Command {
 		addCommand(details, new rpc());
 		addCommand(details, new webhooks());
 //		addCommand(details, new sshtunnel());
+		
+		addCommand(details, new mds());
 		
 		addCommand(details, new backup());
 		addCommand(details, new restore());
