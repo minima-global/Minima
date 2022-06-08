@@ -11,6 +11,7 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
+import org.minima.system.commands.CommandException;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.ZipExtractor;
@@ -87,10 +88,14 @@ public class mds extends Command {
 		}else if(action.equals("uninstall")) {
 
 			String uid = getParam("uid");
+			if(!uid.startsWith("0x")) {
+				throw new CommandException("Invalid UID for MiniDAPP");
+			}
 			
 			//Start deleting..
-			File dest 	= Main.getInstance().getMDSManager().getWebFolder();
-			MiniFile.deleteFileOrFolder(dest.getAbsolutePath(), dest);
+			File dest 		= Main.getInstance().getMDSManager().getWebFolder();
+			File minidapp 	= new File(dest,uid); 
+			MiniFile.deleteFileOrFolder(minidapp.getAbsolutePath(), minidapp);
 			
 			//And from the DB
 			db.deleteMiniDAPP(uid);
