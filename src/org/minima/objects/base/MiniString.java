@@ -10,7 +10,7 @@ import org.minima.utils.Streamable;
 public class MiniString implements Streamable {
 
 	/**
-	 * Default Minima Charset
+	 *  Minima Charset
 	 */
 	public static Charset MINIMA_CHARSET = Charset.forName("UTF-8");
 	
@@ -19,16 +19,20 @@ public class MiniString implements Streamable {
 	 */
 	String mString;
 	
-	public MiniString(MiniString zString) {
-		this(zString.toString());
-	}
-	
 	public MiniString(String zString) {
-		mString = new String(zString.getBytes(MINIMA_CHARSET));
+		this(zString.getBytes(MINIMA_CHARSET));
 	}
 	
 	public MiniString(byte[] zBytesData) {
-		mString = new String(zBytesData);
+		mString = new String(zBytesData,MINIMA_CHARSET);
+	}
+	
+	public MiniString(MiniString zString) {
+		mString = zString.toString();
+	}
+	
+	public boolean isEqual(String zString) {
+		return toString().equals(zString);
 	}
 	
 	@Override
@@ -37,23 +41,29 @@ public class MiniString implements Streamable {
 	}
 	
 	public byte[] getData() {
-		return mString.getBytes();
+		return mString.getBytes(MINIMA_CHARSET);
 	}
 	
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
-		zOut.writeUTF(mString);
+		MiniData strdata = new MiniData(getData());
+		strdata.writeDataStream(zOut);
 	}
 
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
-		mString = zIn.readUTF();
+		MiniData strdata = MiniData.ReadFromStream(zIn);
+		mString = new String(strdata.getBytes(),MINIMA_CHARSET);
 	}
 	
 	public static MiniString ReadFromStream(DataInputStream zIn) throws IOException{
 		MiniString data = new MiniString("");
 		data.readDataStream(zIn);
 		return data;
+	}
+	
+	public static void WriteToStream(DataOutputStream zOut, String zString) throws IOException{
+		new MiniString(zString).writeDataStream(zOut);
 	}
 }
 

@@ -5,7 +5,9 @@ package org.minima.utils;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.concurrent.TimeUnit;
+
+import org.minima.objects.base.MiniData;
+import org.minima.system.params.GlobalParams;
 
 /**
  * @author Spartacus Rex
@@ -24,6 +26,35 @@ public class Maths {
 //	public static String getDataAsString(byte[] zData){
 //		return "0x"+new BigInteger(1,zData).toString(16).toUpperCase();
 //	}
+	
+	/**
+	 * Get the Cascade Level of this Hash Value.. in comparison to what it needed to be
+	 * @param zDifficulty
+	 * @param zActual
+	 * @return
+	 */
+	public static int getSuperLevel(MiniData zDifficulty, MiniData zActual) {
+		BigInteger supbig = zDifficulty.getDataValue().divide(zActual.getDataValue());
+		
+		int ll2 = (int) Maths.log2BI(supbig);
+		if(ll2<0) {
+			ll2 = 0;
+		}
+		
+//		//Now do a check to see if it's half way or not..
+//		BigInteger low  = zDifficulty.getDataValue().multiply(TWO.pow(ll2));
+//		BigInteger high = zDifficulty.getDataValue().multiply(TWO.pow(ll2+1));
+//		BigInteger mid  = low.add(high).divide(TWO);
+//		if(zActual.getDataValue().compareTo(mid)>0) {
+//			ll2++;
+//		}
+		
+		if(ll2 > GlobalParams.MINIMA_CASCADE_LEVELS-1) {
+			ll2 = GlobalParams.MINIMA_CASCADE_LEVELS-1;
+		}
+		
+		return ll2;
+	}
 	
 	public static double log2BI(BigInteger val)
 	{
@@ -57,35 +88,24 @@ public class Maths {
 	    // bases, correct the result, NOT this number!
 	}
 	
-	public static String ConvertMilliToTime(long zMilli) {
+	public static void main(String[] zArgs) {
 		
-		long milliseconds = zMilli;
+		BigInteger size = new BigInteger("255");
 		
-		long dy = TimeUnit.MILLISECONDS.toDays(milliseconds);
+		MiniData diff 	= new MiniData(size);
 		
-		long yr = dy / 365;
-		dy %= 365;
+		for(int i=1;i<=size.intValue();i++) {
+			BigInteger val  = new BigInteger(""+i);
+			MiniData txpow 	= new MiniData(val);
 		
-		long mn = dy / 30;
-		dy %= 30;
-		
-		long wk = dy / 7;
-		dy %= 7;
-		
-		long hr = TimeUnit.MILLISECONDS.toHours(milliseconds)
-				- TimeUnit.DAYS.toHours(TimeUnit.MILLISECONDS.toDays(milliseconds));
-		
-		long min = TimeUnit.MILLISECONDS.toMinutes(milliseconds)
-				- TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(milliseconds));
-		
-		long sec = TimeUnit.MILLISECONDS.toSeconds(milliseconds)
-				- TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(milliseconds));
-		
-		long ms = TimeUnit.MILLISECONDS.toMillis(milliseconds)
-				- TimeUnit.SECONDS.toMillis(TimeUnit.MILLISECONDS.toSeconds(milliseconds));
-		
-		return String.format("%d Years %d Months %d Weeks %d Days %d Hours %d Minutes %d Seconds %d Milliseconds", 
-						yr,mn, wk, dy, hr, min, sec, ms);
-	}	
+			BigInteger supbig = diff.getDataValue().divide(txpow.getDataValue());
+			int tester = supbig.bitLength()-1;
+			int myway = (int) Maths.log2BI(supbig);
+			
+//			if(tester != myway) {
+				System.out.println(txpow.to0xString()+" new:"+tester+" old:"+myway);
+//			}
+		}
+	}
 	
 }

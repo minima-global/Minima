@@ -4,24 +4,25 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.List;
-import java.util.StringTokenizer;
 
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.exceptions.MinimaParseException;
 import org.minima.kissvm.functions.MinimaFunction;
 import org.minima.kissvm.statements.StatementBlock;
 import org.minima.kissvm.statements.StatementParser;
-import org.minima.kissvm.tokens.Token;
-import org.minima.kissvm.tokens.Tokenizer;
+import org.minima.kissvm.tokens.ScriptToken;
+import org.minima.kissvm.tokens.ScriptTokenizer;
 import org.minima.kissvm.values.BooleanValue;
 import org.minima.kissvm.values.HexValue;
 import org.minima.kissvm.values.NumberValue;
 import org.minima.kissvm.values.StringValue;
 import org.minima.kissvm.values.Value;
+import org.minima.objects.Coin;
 import org.minima.objects.StateVariable;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniNumber;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
 
@@ -51,9 +52,6 @@ public class Contract {
 	//The previous state variables - accessed from the MMR data
 	ArrayList<StateVariable> mPrevState = new ArrayList<StateVariable>();
 	
-	//A list of all the user-defined variables
-	boolean mFloatingCoin = false;
-	
 	//Is this MonoTonic
 	boolean mMonotonic = true;
 	
@@ -81,7 +79,11 @@ public class Contract {
 	 * The Number Of Instructions!
 	 */
 	int mNumInstructions;
-	public static final int MAX_INSTRUCTIONS = 512;
+	
+	/**
+	 * Maximum allowed number of KISSVM instructions
+	 */
+	public static int MAX_INSTRUCTIONS = 256;
 	
 	/**
 	 * A complete log of the contract execution
@@ -90,13 +92,21 @@ public class Contract {
 	
 	/**
 	 * Main Constructor
-	 * @param zRamScript - the RamScript in ASCII
+	 * @param zRamScript - the RamScript
 	 */
-	public Contract(String zRamScript, String zSigs, Witness zWitness, Transaction zTransaction, ArrayList<StateVariable> zPrevState) {	
-		this(zRamScript, zSigs, zWitness, zTransaction, zPrevState, false);
+	public Contract(String zRamScript, String zSignatures, Witness zWitness, Transaction zTransaction, ArrayList<StateVariable> zPrevState) {	
+		this(zRamScript, new ArrayList<>(), zWitness, zTransaction, zPrevState, false);
 	}
 	
-	public Contract(String zRamScript, String zSigs, Witness zWitness, Transaction zTransaction, ArrayList<StateVariable> zPrevState, boolean zTrace) {
+	public Contract(String zRamScript, String zSignatures, Witness zWitness, Transaction zTransaction, ArrayList<StateVariable> zPrevState, boolean zTraceON) {	
+		this(zRamScript, new ArrayList<>(), zWitness, zTransaction, zPrevState, zTraceON);
+	}
+	
+	public Contract(String zRamScript, ArrayList<MiniData> zSignatures, Witness zWitness, Transaction zTransaction, ArrayList<StateVariable> zPrevState) {	
+		this(zRamScript, zSignatures, zWitness, zTransaction, zPrevState, false);
+	}
+	
+	public Contract(String zRamScript, ArrayList<MiniData> zSignatures, Witness zWitness, Transaction zTransaction, ArrayList<StateVariable> zPrevState, boolean zTrace) {
 		//Trace?
 		mCompleteLog ="";
 		mTraceON     = zTrace;
@@ -110,8 +120,6 @@ public class Contract {
 		mSignatures = new ArrayList<>();
 		mVariables  = new Hashtable<>();
 		mGlobals    = new Hashtable<>();
-
-		mFloatingCoin = false;
 		
 		mBlock      = null;
 		mSuccess    = false;
@@ -128,45 +136,42 @@ public class Contract {
 		traceLog("Contract   : "+mRamScript);
 		traceLog("Size       : "+mRamScript.length());
 		
-		//Load the Signatures
-		StringTokenizer strtok = new StringTokenizer(zSigs, "#");
-		while(strtok.hasMoreTokens()) {
-			String sig = strtok.nextToken().trim();
-			traceLog("Signature : "+sig);
-			mSignatures.add( (HexValue)Value.getValue(sig) );
-		}
-		
 		//Transaction..
 		traceLog("Transaction   : "+mTransaction.toString());
 		traceLog("Witness       : "+mWitness.toString());
 		
+		//Load the Signatures
+		for(MiniData sig : zSignatures) {
+			traceLog("Signature : "+sig.to0xString());
+			mSignatures.add( new HexValue(sig) );
+		}
+		
 		//State Variables
 		ArrayList<StateVariable> svs = mTransaction.getCompleteState();
 		for(StateVariable sv : svs) {
-			traceLog("State["+sv.getPort()+"] : "+sv.getValue().toString());
+			traceLog("State["+sv.getPort()+"] : "+sv.toString());
 		}
 
-		//PREVSTATE
+		//Previous State
 		if(zPrevState == null) {
 			mPrevState = new ArrayList<StateVariable>();	
 		}else {
 			mPrevState = zPrevState;
 			for(StateVariable sv : mPrevState) {
-				traceLog("PrevState["+sv.getPort()+"] : "+sv.getValue().toString());
+				traceLog("PrevState["+sv.getPort()+"] : "+sv.toString());
 			}	
 		}
 		
 		//Parse the tokens
 		try {
 			//Tokenize the script
-			Tokenizer tokenize = new Tokenizer(zRamScript);
+			ScriptTokenizer tokenize = new ScriptTokenizer(zRamScript);
 			
 			//Tokenize the script
-//			List<Token> tokens = Token.tokenize(mRamScript);
-			List<Token> tokens = tokenize.tokenize();
+			List<ScriptToken> tokens = tokenize.tokenize();
 			
 			int count=0;
-			for(Token tok : tokens) {
+			for(ScriptToken tok : tokens) {
 				traceLog((count++)+") Token : ["+tok.getTokenTypeString()+"] "+tok.getToken());
 			}
 		
@@ -184,9 +189,51 @@ public class Contract {
 		}
 	}
 	
+	public void setGlobals(	MiniNumber zBlock, 
+							Transaction zTrx, 
+							int zInput, 
+							MiniNumber zInputBlkCreate, 
+							String zScript) {
+		
+		//Get the Coin
+		Coin cc = zTrx.getAllInputs().get(zInput);
+		
+		//set the environment
+		setGlobalVariable("@BLOCK", new NumberValue(zBlock));
+		setGlobalVariable("@INBLOCK", new NumberValue(zInputBlkCreate));
+		setGlobalVariable("@BLOCKDIFF", new NumberValue(zBlock.sub(zInputBlkCreate)));
+		
+//		setGlobalVariable("@BLKTIME", new NumberValue(zBlock.getTimeMilli()));
+//		setGlobalVariable("@PREVBLKHASH", new HexValue(zBlock.getParentID()));
+		
+		setGlobalVariable("@INPUT", new NumberValue(zInput));
+		setGlobalVariable("@COINID", new HexValue(cc.getCoinID()));
+		setGlobalVariable("@AMOUNT", new NumberValue(cc.getAmount()));
+		setGlobalVariable("@ADDRESS", new HexValue(cc.getAddress()));
+		setGlobalVariable("@TOKENID", new HexValue(cc.getTokenID()));
+		setGlobalVariable("@SCRIPT", new StringValue(zScript));
+		
+		setGlobalVariable("@TOTIN", new NumberValue(zTrx.getAllInputs().size()));
+		setGlobalVariable("@TOTOUT", new NumberValue(zTrx.getAllOutputs().size()));
+	}
+	
 	public void setGlobalVariable(String zGlobal, Value zValue) {
 		mGlobals.put(zGlobal, zValue);
 		traceLog("Global ["+zGlobal+"] : "+zValue);
+	}
+	
+	public Value getGlobal(String zGlobal) throws ExecutionException {
+		Value ret = mGlobals.get(zGlobal);
+		if(ret==null) {
+			throw new ExecutionException("Global not found - "+zGlobal);
+		}
+		
+		//Will this break monotonic
+		if(zGlobal.equals("@BLKNUM") || zGlobal.equals("@BLKDIFF") || zGlobal.equals("@INBLKNUM")) {
+			mMonotonic = false;
+		}
+		
+		return ret;
 	}
 	
 	public Hashtable<String, Value> getGlobalVariables() {
@@ -237,6 +284,10 @@ public class Contract {
 		return mNumInstructions;
 	}
 	
+	public void setMaxInstructions(int zMax) {
+		MAX_INSTRUCTIONS = zMax;
+	}
+	
 	public void run() {
 		if(!mParseOK) {
 			traceLog("Script parse FAILED. Please fix and retry.");
@@ -251,7 +302,7 @@ public class Contract {
 			
 		} catch (Exception e) {
 			if(mTraceON) {
-				e.printStackTrace();
+				MinimaLogger.log(e);
 			}
 			
 			mException = true;
@@ -375,16 +426,6 @@ public class Contract {
 		return (BooleanValue)vv;
 	}
 	
-	/**
-	 * DYN State
-	 */
-	public void setFloating(boolean zFloating) {
-		if(zFloating) {
-			mMonotonic = false;
-		}
-		
-		mFloatingCoin = zFloating;
-	}
 	
 	public Value getState(int zStateNum) throws ExecutionException {
 		if(!mTransaction.stateExists(zStateNum)) {
@@ -392,10 +433,7 @@ public class Contract {
 		}
 
 		//Get it from the Transaction..
-		String stateval = mTransaction.getStateValue(zStateNum).getValue().toString();
-		
-		//Clean it
-//		String clean = cleanScript(stateval);
+		String stateval = mTransaction.getStateValue(zStateNum).toString();
 		
 		//Clean it..
 		return Value.getValue(stateval);
@@ -406,7 +444,7 @@ public class Contract {
 		for(StateVariable sv : mPrevState) {
 			if(sv.getPort() == zPrev) {
 				//Clean it..
-				String stateval = sv.getValue().toString();
+				String stateval = sv.toString();
 				
 				//Work it out
 				return Value.getValue(stateval);
@@ -458,24 +496,6 @@ public class Contract {
 	}
 	
 	/**
-	 * Get a Global value
-	 * 
-	 * @param zGlobal
-	 * @return the value
-	 * @throws ExecutionException
-	 */
-	public Value getGlobal(String zGlobal) throws ExecutionException {
-		mMonotonic = false;
-		
-		Value ret = mGlobals.get(zGlobal);
-		if(ret==null) {
-			throw new ExecutionException("Global not found - "+zGlobal);
-		}
-		
-		return ret;
-	}
-	
-	/**
 	 * Check if this transaction has been signed by this public key
 	 * @param zSignature
 	 * @return
@@ -507,26 +527,27 @@ public class Contract {
 		String script = zScript.replaceAll("\\s+"," ").trim();
 		
 		//First CONVERT..
-		Tokenizer tokz = new Tokenizer(script, true);
+		ScriptTokenizer tokz = new ScriptTokenizer(script, true);
 		try {
 			//Get the list of Tokens..
-			ArrayList<Token> tokens = tokz.tokenize();
+			ArrayList<ScriptToken> tokens = tokz.tokenize();
 		
 			//Now add them correctly..
 			boolean first = true;
 			boolean whites = true;
-			for(Token tok : tokens) {
-				if(tok.getTokenType() == Token.TOKEN_COMMAND) {
+			for(ScriptToken tok : tokens) {
+				if(tok.getTokenType() == ScriptToken.TOKEN_COMMAND) {
+					String command = tok.getToken();
 					if(first) {
-						ret.append(tok.getToken()+" ");
+						ret.append(command+" ");
 						first = false;
 					}else {
-						ret.append(" "+tok.getToken()+" ");
+						ret.append(" "+command+" ");
 					}
 					
 					whites = true;
 					
-				}else if(Tokenizer.BOOLEAN_TOKENS_LIST.contains(tok.getToken())) {
+				}else if(ScriptTokenizer.BOOLEAN_TOKENS_LIST.contains(tok.getToken())) {
 					ret.append(" "+tok.getToken()+" ");
 				
 					whites = true;
@@ -546,7 +567,7 @@ public class Contract {
 					String strtok = tok.getToken();
 					
 					//Is it an end of word or whitespace..
-					if(Tokenizer.isWhiteSpace(strtok) || Tokenizer.mAllEOW.contains(strtok)) {
+					if(ScriptTokenizer.isWhiteSpace(strtok) || ScriptTokenizer.mAllEOW.contains(strtok)) {
 						ret.append(tok.getToken());
 						whites = true;
 					}else {
@@ -561,7 +582,7 @@ public class Contract {
 			}
 		
 		} catch (MinimaParseException e) {
-			MinimaLogger.log("Clean Script Error @ "+zScript,e);
+			MinimaLogger.log("Clean Script Error @ "+zScript+" "+e);
 			return zScript;
 		}
 		

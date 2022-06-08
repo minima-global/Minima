@@ -2,7 +2,7 @@
 
 This is the main repository for the Minima application.
 
-Minima is a new cryptocurrency with an emphasis on every user being able to run a full and complete node. The system uses a UTXO model like Bitcoin, but data is stored in an MMR Proof DB, where every user only keeps track of their own coins, rather than all users keeping track of all coins. The scripting is simple yet advanced, taking all the wonderful ideas that people would like to see on Bitcoin, like covenants, a simple state machine, MAST (merkelized abstract syntax trees), quantum secure signatures, and merkle proof checks.. use `tutorial` in the app to see the scripting.
+Minima is a new blockchain with an emphasis on every user being able to run a full and complete node. The system uses a UTXO model like Bitcoin, but data is stored in an MMR Proof DB, where every user only keeps track of their own coins, rather than all users keeping track of all coins. The scripting is simple yet advanced, taking all the wonderful ideas that people would like to see on Bitcoin, like covenants, a simple state machine, MAST (merkelized abstract syntax trees), quantum secure signatures, and merkle proof checks.. use `tutorial` in the app to see the scripting.
 
 The White Paper is included in this repo. Nothing makes me happier than people who can be bothered to read it.
 
@@ -10,44 +10,45 @@ The project is setup as an Eclipse Java project. You should be able to clone the
 
 If you run it with no parameters it connects to the main Minima testnet.
 
-cd into the JAR folder and run as follows :
+cd into the JAR folder and run as follows (also assigns max 1GB RAM to Minima):
 
 ```
 cd ./jar
 
-java -jar minima.jar
+java -Xmx1G -jar minima.jar
 ```
 
 For a full list of parameters run :
 
 ```
-java -jar minima.jar -help
+java -Xmx1G -jar minima.jar -help
 ```
 
 To start a private test-net
 
 ```
-java -jar minima.jar -private -clean
+java -Xmx1G -jar minima.jar -private -clean
 ```
 
 And to keep your data just start without the -clean
 
 ```
-java -jar minima.jar -private
+java -Xmx1G -jar minima.jar -private
 ```
 
 You can then connect to it from another instance of the app by running :
 
 ```
-java -jar minima.jar -connect 127.0.0.1 9001 -port 9010 -clean -conf minimaconf2
+java -jar minima.jar -connect 127.0.0.1 9001 -port 9010 -clean -data minimadata2
 ```
 Note that this will set the base port of the 2nd instance to 9010.. otherwise the app will not allow you to start, as the ports will already be in use.
 
 Using the `-clean` parameter deletes any previous data and ensures you can resysnc to the current chain.
 
-Use `-cleanhard` to wipe all the MiniDAPPs as well.
+Use `-conf` to specify an absolute path to a configuration file. Follows the same keys as the parameters i.e. `-port 9008` -> `port=9008`.
+Parameters included as arguments take precedence over those included in configuration file.
 
-And finally `-conf` specifies a different folder to store the data files for this second running instance.
+And finally `-data` specifies an absolute path to a different folder to store the data files for this second running instance.
 
 If you compile from scratch - you can use the bin folder.. you need to link the H2 sql db and the rhino javascript library both of which are in the lib folder.
 
@@ -141,13 +142,13 @@ docker run minima:latest
 
 ### End to end testing
 
-Requirements: 
+Requirements:
 - Docker
 - jq
 
 Build local Docker image:
 ```
-docker build -t minima:latest . 
+docker build -t minima:latest .
 ```
 
 Start a 3 nodes private Minima network using Docker:

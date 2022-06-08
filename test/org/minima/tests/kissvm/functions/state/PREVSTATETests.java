@@ -68,19 +68,19 @@ public class PREVSTATETests {
                     Value res = mf.runFunction(ctr);
                     if (i % 4 == 0) {
                         assertEquals(Value.VALUE_BOOLEAN, res.getValueType());
-                        assertEquals(Value.getValue(PrevStates.get(i).getValue().toString()).toString(), ((BooleanValue) res).toString());
+                        assertEquals(Value.getValue(PrevStates.get(i).toString()).toString(), ((BooleanValue) res).toString());
                     }
                     if (i % 4 == 1) {
                         assertEquals(Value.VALUE_HEX, res.getValueType());
-                        assertEquals(Value.getValue(PrevStates.get(i).getValue().toString()).toString(), ((HexValue) res).toString());
+                        assertEquals(Value.getValue(PrevStates.get(i).toString()).toString(), ((HexValue) res).toString());
                     }
                     if (i % 4 == 2) {
                         assertEquals(Value.VALUE_NUMBER, res.getValueType());
-                        assertEquals(Value.getValue(PrevStates.get(i).getValue().toString()).toString(), ((NumberValue) res).toString());
+                        assertEquals(Value.getValue(PrevStates.get(i).toString()).toString(), ((NumberValue) res).toString());
                     }
                     if (i % 4 == 3) {
                         assertEquals(Value.VALUE_SCRIPT, res.getValueType());
-                        assertEquals(Value.getValue(PrevStates.get(i).getValue().toString()).toString(), ((StringValue) res).toString());
+                        assertEquals(Value.getValue(PrevStates.get(i).toString()).toString(), ((StringValue) res).toString());
                     }
 
                 } catch (ExecutionException ex) {

@@ -3,10 +3,9 @@ package org.minima.database.mmr;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 
-import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
-import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONObject;
 
@@ -15,19 +14,13 @@ public class MMREntry implements Streamable {
 	/**
 	 * Global MMR position
 	 */
-	
-	MiniNumber mEntryNumber;
-	int mRow;
-	
-	/**
-	 * The blocktime..
-	 */
-	MiniNumber mBlockTime = new MiniNumber(0);
+	MMREntryNumber 	mEntryNumber;
+	int 		mRow;
 	
 	/**
 	 * The data stored here
 	 */
-	MMRData    mData;
+	MMRData    mMMRData;
 	
 	/**
 	 * Valid entry
@@ -40,75 +33,22 @@ public class MMREntry implements Streamable {
 	 * @param zRow
 	 * @param zEntry
 	 */
-	public MMREntry(int zRow, MiniNumber zEntry) {
-		mRow = zRow;
-		mEntryNumber = zEntry;
-		mIsEmpty = true;
+	private MMREntry() {}
+	
+	public MMREntry(int zRow, MMREntryNumber zEntry) {
+		mRow 			= zRow;
+		mEntryNumber 	= zEntry;
+		mIsEmpty 		= true;
 	}
 	
-	public boolean isEmpty() {
-		return mIsEmpty;
+	public MMREntry(int zRow, MMREntryNumber zEntry, MMRData zMMRData) {
+		mRow 			= zRow;
+		mEntryNumber 	= zEntry;
+		mMMRData 		= zMMRData;
+		mIsEmpty 		= false;
 	}
 	
-	public boolean checkPosition(int zRow, MiniNumber zEntry) {
-		return (zRow == mRow) && zEntry.isEqual(mEntryNumber);
-	}
-	
-	public boolean checkPosition(MMREntry zEntry) {
-		return (zEntry.getRow() == mRow) && zEntry.getEntryNumber().isEqual(mEntryNumber);
-	}
-	
-	public void setData(MMRData zData) {
-		mData    = zData;
-		mIsEmpty = false;
-	}
-	
-	public void clearData() {
-		mIsEmpty = true;
-		mData    = null;
-	}
-	
-	public MMRData getData() {
-		return mData;
-	}
-	
-	public void setBlockTime(MiniNumber zBlockTime) {
-		mBlockTime = zBlockTime;
-	}
-	
-	public MiniNumber getBlockTime() {
-		return mBlockTime;
-	}
-	
-	public MiniData getHashValue() {
-		if(isEmpty()) {
-			MinimaLogger.log("ERROR NULL Entry : "+this);
-		}
-		return mData.getFinalHash();
-	}
-	
-	public JSONObject toJSON() {
-		JSONObject ret = new JSONObject();
-		
-		ret.put("block", mBlockTime.toString());
-		ret.put("row", mRow);
-		ret.put("entry", mEntryNumber.toString());
-		ret.put("data", mData.toJSON());
-		
-		return ret;
-	}
-	
-	@Override
-	public String toString() {
-		return "BLKTIME:"+mBlockTime+" R:"+mRow+" E:"+mEntryNumber+" D:"+mData;
-	}
-	
-	/**
-	 * 
-	 * UTILITY FUNCTIONS FOR NAVIGATING THE MMR
-	 * 
-	 */
-	public MiniNumber getEntryNumber() {
+	public MMREntryNumber getEntryNumber() {
 		return mEntryNumber;
 	}
 	
@@ -116,6 +56,47 @@ public class MMREntry implements Streamable {
 		return mRow;
 	}
 	
+	public MMRData getMMRData() {
+		return mMMRData;
+	}
+	
+	public boolean isEmpty() {
+		return mIsEmpty;
+	}
+	
+	public boolean checkPosition(MMREntry zEntry) {
+		return (zEntry.getRow() == mRow) && zEntry.getEntryNumber().isEqual(mEntryNumber);
+	}
+	
+	public boolean checkPosition(ArrayList<MMREntry> zMultipleEntries) {
+		for(MMREntry entry : zMultipleEntries) {
+			if(checkPosition(entry)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public JSONObject toJSON() {
+		JSONObject ret = new JSONObject();
+		
+		ret.put("row", mRow);
+		ret.put("entry", mEntryNumber.toString());
+		ret.put("data", mMMRData.toJSON());
+		
+		return ret;
+	}
+	
+	@Override
+	public String toString() {
+		return toJSON().toString();
+	}
+	
+	/**
+	 * 
+	 * UTILITY FUNCTIONS FOR NAVIGATING THE MMR
+	 * 
+	 */
 	public int getParentRow() {
 		return mRow+1;
 	}
@@ -125,22 +106,22 @@ public class MMREntry implements Streamable {
 	}
 	
 	public boolean isLeft() {
-		return mEntryNumber.modulo(MiniNumber.TWO).isEqual(MiniNumber.ZERO);
+		return mEntryNumber.modulo(MMREntryNumber.TWO).isEqual(MMREntryNumber.ZERO);
 	}
 	
 	public boolean isRight() {
 		return !isLeft();
 	}
 	
-//	public MiniInteger getLeftSibling() {
-//		return mEntryNumber.decrement();
-//	}
-//	
-//	public MiniInteger getRightSibling() {
-//		return mEntryNumber.increment();
-//	}
+	public MMREntryNumber getLeftSibling() {
+		return mEntryNumber.decrement();
+	}
 	
-	public MiniNumber getSibling() {
+	public MMREntryNumber getRightSibling() {
+		return mEntryNumber.increment();
+	}
+	
+	public MMREntryNumber getSibling() {
 		if(isLeft()) {
 			return mEntryNumber.increment();
 		}else {
@@ -148,36 +129,44 @@ public class MMREntry implements Streamable {
 		}
 	}
 	
-	public MiniNumber getParentEntry() {
-		return mEntryNumber.div(MiniNumber.TWO).floor();
+	public MMREntryNumber getParentEntry() {
+		return mEntryNumber.div2().floor();
 	}
 	
-	public MiniNumber getLeftChildEntry() {
-		return mEntryNumber.mult(MiniNumber.TWO);
+	public MMREntryNumber getLeftChildEntry() {
+		return mEntryNumber.mult2();
 	}
 	
-	public MiniNumber getRightChildEntry() {
-		return getLeftChildEntry().add(MiniNumber.ONE);
+	public MMREntryNumber getRightChildEntry() {
+		return getLeftChildEntry().increment();
 	}
 
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
-		//Entry number
-		mEntryNumber.writeDataStream(zOut);
-		
 		//The Row..
 		MiniNumber row = new MiniNumber(mRow);
 		row.writeDataStream(zOut);
 		
-		//And finally the data
-		mData.writeDataStream(zOut);
+		//Entry number
+		mEntryNumber.writeDataStream(zOut);
+		
+		//And finally the data - always write both value and hash
+		mMMRData.setHashSum(true);
+		mMMRData.writeDataStream(zOut);
 	}
 
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
-		mEntryNumber = MiniNumber.ReadFromStream(zIn);
+		mIsEmpty 	 = false;
 		mRow         = MiniNumber.ReadFromStream(zIn).getAsInt();
-		mData        = MMRData.ReadFromStream(zIn);
-		mIsEmpty     = false;
+		mEntryNumber = MMREntryNumber.ReadFromStream(zIn);
+		mMMRData     = MMRData.ReadFromStream(true,zIn);
 	}
+	
+	public static MMREntry ReadFromStream(DataInputStream zIn) throws IOException{
+		MMREntry entry = new MMREntry();
+		entry.readDataStream(zIn);
+		return entry;	
+	}
+	
 }

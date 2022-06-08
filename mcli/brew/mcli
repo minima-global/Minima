@@ -1,0 +1,3 @@
+#!/bin/bash
+
+##HOMEBREW_PREFIX##/opt/openjdk@11/bin/java -jar ##PREFIX##/mcli.jar "$@"

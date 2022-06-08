@@ -1,383 +1,425 @@
 package org.minima.system.network.maxima;
 
-import java.io.File;
-import java.net.URLEncoder;
-import java.nio.charset.Charset;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.Socket;
+import java.security.KeyPair;
 import java.util.ArrayList;
 
+import org.minima.database.MinimaDB;
+import org.minima.database.userprefs.UserDB;
 import org.minima.objects.base.MiniData;
-import org.minima.objects.keys.MultiKey;
+import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
-import org.minima.system.brains.BackupManager;
-import org.minima.system.input.InputHandler;
-import org.minima.system.network.maxima.db.MaximaDB;
-import org.minima.system.network.maxima.db.MaximaUser;
+import org.minima.system.commands.network.connect;
+import org.minima.system.network.minima.NIOClient;
+import org.minima.system.network.minima.NIOManager;
+import org.minima.system.network.minima.NIOMessage;
+import org.minima.system.params.GeneralParams;
+import org.minima.utils.BaseConverter;
+import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
-import org.minima.utils.encryption.CryptoPackage;
+import org.minima.utils.encrypt.CryptoPackage;
+import org.minima.utils.encrypt.GenerateKey;
+import org.minima.utils.encrypt.SignVerify;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
-import org.minima.utils.json.parser.JSONParser;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageProcessor;
+import org.minima.utils.messages.TimerMessage;
 
 public class Maxima extends MessageProcessor {
 
-	public static final String MAXIMA_INIT      = "MAXIMA_INIT";
-	public static final String MAXIMA_SHUTDOWN  = "MAXIMA_SHUTDOWN";
+	/**
+	 * Maxima Messages
+	 */
+	public static final String MAXIMA_INIT 			= "MAXIMA_INIT";
+	public static final String MAXIMA_RECMESSAGE 	= "MAXIMA_RECMESSAGE";
+	public static final String MAXIMA_SENDMESSAGE 	= "MAXIMA_SENDDMESSAGE";
+	public static final String MAXIMA_HOSTCONNECT 	= "MAXIMA_HOSTCONNECT";
 	
-	public static final String MAXIMA_FUNCTION  = "MAXIMA_FUNCTION";
+	/**
+	 * UserDB data
+	 */
+	private static final String MAXIMA_PUBKEY 	= "maxima_publickey";
+	private static final String MAXIMA_PRIVKEY 	= "maxima_privatekey";
 	
-	public static final String MAXIMA_INFO 		= "MAXIMA_INFO";
-	public static final String MAXIMA_NEW 		= "MAXIMA_NEW";
+	private static final String MAXIMA_CLIENTS 	= "maxima_clients";
 	
-	public static final String MAXIMA_LISTCONTACTS  = "MAXIMA_LISTCONTACTS";
-	public static final String MAXIMA_ADDCONTACT    = "MAXIMA_ADDCONTACT";
-	public static final String MAXIMA_REMOVECONTACT = "MAXIMA_REMOVECONTACT";
+	private static final String MAXIMA_HOSTSET 	= "maxima_hostset";
+	private static final String MAXIMA_HOST 	= "maxima_host";
 	
-	public static final String MAXIMA_RECMSG    = "MAXIMA_RECMSG";
-	public static final String MAXIMA_SENDMSG   = "MAXIMA_SENDMSG";
+	/**
+	 * The Respnse message for a Maxima Message
+	 */
+	public static final MiniData MAXIMA_RESPONSE = new MiniData("0x080000000101");
 	
-	MaximaServer mServer;
+	/**
+	 * RSA Keys
+	 */
+	MiniData mPublic;
+	MiniData mPrivate;
 	
-	MaximaDB mMaximaDB;
+	private boolean mInited 	= false;
+	public boolean mMaximaLogs 	= true;
+	
+	/**
+	 * Who are we forwarding messages to
+	 */
+	JSONArray mMaximaClients = new JSONArray();
+
+	/**
+	 * Who is Hosting
+	 */
+	boolean mIsMaxHostSet = false;
+	String mHost;
 	
 	public Maxima() {
-		super("MAXIMA_PROCESSOR");
-			
+		super("MAXIMA");
+		
 		PostMessage(MAXIMA_INIT);
 	}
 	
-	public void stop() {
-		PostMessage(MAXIMA_SHUTDOWN);
+	public boolean isInited() {
+		return mInited;
 	}
 	
-	public String getMaximaFullIdentity() {
-		String host  = Main.getMainHandler().getNetworkHandler().getMiniMaxiHost();
-		int port     = Main.getMainHandler().getNetworkHandler().getMaximaPort();
-		String ident = mMaximaDB.getAccount().getPublicKey().to0xString()+"@"+host+":"+port;
-		
-		return ident;
+	public String getPublicKey() {
+		return BaseConverter.encode32(mPublic.getBytes());
+	}
+	
+	public boolean isHostSet() {
+		return mIsMaxHostSet;
 	}
 	
 	public String getMaximaHost() {
-		String host = Main.getMainHandler().getNetworkHandler().getMiniMaxiHost();
-		int port    = Main.getMainHandler().getNetworkHandler().getMaximaPort();
-		return host+":"+port;
+		if(mIsMaxHostSet) {
+			return mHost;
+		}
+		return GeneralParams.MINIMA_HOST+":"+GeneralParams.MINIMA_PORT;
 	}
-	
-	public String getIdentOnly(String zFullIdentity) {
-		int index = zFullIdentity.indexOf("@");
-		return zFullIdentity.substring(0, index);
-	}
-	
-	public String getHostOnly(String zFullIdentity) {
-		int index = zFullIdentity.indexOf("@");
-		return zFullIdentity.substring(index+1);
-	}
-	
-	private MaximaUser addUpdateUser(String zFrom) {
-		String ident   = getIdentOnly(zFrom);
-		String host    = getHostOnly(zFrom);
-		long timestamp = System.currentTimeMillis();
-		
-		//Does that user allready exist
-		MaximaUser maxuser = mMaximaDB.getUser(ident);
-		if(maxuser == null) {
-			//Add a new User
-			maxuser = new MaximaUser(ident, host);
-			mMaximaDB.addUser(maxuser);
+
+	public void setMaximaHost(String zHost) {
+		if(zHost.equals("")) {
+			mIsMaxHostSet = false;
+			
+			//Disconnect if need be
+			NIOClient nioc = Main.getInstance().getNIOManager().checkConnected(mHost, false);
+			if(nioc != null) {
+				Main.getInstance().getNIOManager().disconnect(nioc.getUID());
+			}
+			
+			//Reset
+			mHost = GeneralParams.MINIMA_HOST+":"+GeneralParams.MINIMA_PORT;
+			
 		}else {
-			//Update Host and timestamp
-			maxuser.setHost(host);
+			mIsMaxHostSet 	= true;
+			mHost 			= zHost;
 		}
 		
-		return maxuser;
+		MinimaDB.getDB().getUserDB().setBoolean(MAXIMA_HOSTSET, mIsMaxHostSet);
+		MinimaDB.getDB().getUserDB().setString(MAXIMA_HOST, mHost);
+		MinimaDB.getDB().saveUserDB();
+	}
+	
+	public String getFullIdentity() {
+		return getPublicKey()+"@"+getMaximaHost();
+	}
+	
+	public MaximaMessage createMaximaMessage(String zFullTo, String zApplication, MiniData zData) {
+		MaximaMessage maxima 	= new MaximaMessage();
+		maxima.mFrom 			= new MiniString(getFullIdentity());
+		maxima.mTo 				= new MiniString(zFullTo);
+		maxima.mApplication 	= new MiniString(zApplication);
+		maxima.mData 			= zData;
+		
+		return maxima;
+	}
+	
+	public void addValidMaximaClient(String zClient) {
+		
+		//Remove the @ section
+		String client = zClient;
+		if(zClient.contains("@")) {
+			int index 	= zClient.indexOf("@");
+			client 		= zClient.substring(0,index);
+		}
+		
+		//Add
+		mMaximaClients.add(client);
+		
+		MinimaDB.getDB().getUserDB().setJSONArray(MAXIMA_CLIENTS, mMaximaClients);
+		MinimaDB.getDB().saveUserDB();
+	}
+	
+	public void removeValidMaximaClient(String zClient) {
+		mMaximaClients.remove(zClient);
+		
+		MinimaDB.getDB().getUserDB().setJSONArray(MAXIMA_CLIENTS, mMaximaClients);
+		MinimaDB.getDB().saveUserDB();
+	}
+	
+	public JSONArray getMaximaClients() {
+		
+		JSONArray ret = new JSONArray();
+		
+		//Get all the connected clientgs..
+		ArrayList<NIOClient> allclients = Main.getInstance().getNIOManager().getNIOServer().getAllNIOClients();
+		for(NIOClient nioc : allclients) {
+			if(nioc.isMaximaClient()) {
+				ret.add(nioc.getMaximaIdent());
+			}
+		}
+		
+		return ret;
 	}
 	
 	@Override
 	protected void processMessage(Message zMessage) throws Exception {
+		
 		if(zMessage.getMessageType().equals(MAXIMA_INIT)) {
-			int port = Main.getMainHandler().getNetworkHandler().getMaximaPort();
 			
-			//For now..
-			mMaximaDB = new MaximaDB();
+			//Get the UserDB
+			UserDB udb = MinimaDB.getDB().getUserDB();
 			
-			//Get the MaximaDB
-			BackupManager bk = Main.getMainHandler().getBackupManager();
-			File maxim = new File(bk.getMaximaFolder(),"maxima.db");
-			if(maxim.exists()) {
-				mMaximaDB.loadDB(maxim);
+			//Do we have an account already..
+			if(!udb.exists(MAXIMA_PUBKEY)) {
+				createMaximaKeys();
+			
 			}else {
-				//New Data..
-				mMaximaDB.newAccount();
+				//Get the data..
+				mPublic  = udb.getData(MAXIMA_PUBKEY, MiniData.ZERO_TXPOWID);
+				mPrivate = udb.getData(MAXIMA_PRIVKEY, MiniData.ZERO_TXPOWID);
 			}
 			
-			//Start the server
-			mServer = new MaximaServer(port);
-			Thread max = new Thread(mServer, "Maxima Server");
-			max.setDaemon(true);
-			max.start();
+			//Is the Host HARD set
+			mIsMaxHostSet = udb.getBoolean(MAXIMA_HOSTSET, false); 
+			
+			//The Host
+			mHost = udb.getString(MAXIMA_HOST, GeneralParams.MINIMA_HOST+":"+GeneralParams.MINIMA_PORT);
+			
+			//Get the valid client list
+			mMaximaClients = udb.getJSONArray(MAXIMA_CLIENTS);
+			
+			mInited = true;
+			
+			//Save the DB
+			MinimaDB.getDB().saveUserDB();
 		
-		}else if(zMessage.getMessageType().equals(MAXIMA_SHUTDOWN)) {
-			if(mServer != null) {
-				mServer.stop();
-			}
+			//Now try and connect to pout host..
+			PostTimerMessage(new TimerMessage(10000, MAXIMA_HOSTCONNECT));
 			
-			//Save the DB..
-			BackupManager bk = Main.getMainHandler().getBackupManager();
-			File maxim = new File(bk.getMaximaFolder(),"maxima.db");
-			mMaximaDB.saveDB(maxim);
+		}else if(zMessage.getMessageType().equals(MAXIMA_HOSTCONNECT)) {
 			
-			//Stop this 
-			stopMessageProcessor();
-			
-		}else if(zMessage.getMessageType().equals(MAXIMA_FUNCTION)) {
-			String func = zMessage.getString("function");
-			
-			if(func.equals("send")) {
-				Message sender = new Message(MAXIMA_SENDMSG);
-				sender.addString("to", zMessage.getString("to"));
-				sender.addString("message", zMessage.getString("message"));
-				InputHandler.addResponseMesage(sender, zMessage);
-			
-				PostMessage(sender);
-				return;
-			
-			}else if(func.equals("receive")) {
-				Message sender = new Message(MAXIMA_RECMSG);
-				sender.addString("message", zMessage.getString("message"));
-				InputHandler.addResponseMesage(sender, zMessage);
-			
-				PostMessage(sender);
-				return;
-			
-			}else if(func.equals("add")) {
-				Message sender = new Message(MAXIMA_ADDCONTACT);
-				sender.addString("maximauser", zMessage.getString("maximauser"));
-				InputHandler.addResponseMesage(sender, zMessage);
-				PostMessage(sender);
-				return;
-			
-			}else if(func.equals("info")) {
-				Message info = new Message(MAXIMA_INFO);
-				InputHandler.addResponseMesage(info, zMessage);
-				PostMessage(info);
-				return;
-			
-			}else if(func.equals("list")) {
-				Message info = new Message(MAXIMA_LISTCONTACTS);
-				InputHandler.addResponseMesage(info, zMessage);
-				PostMessage(info);
-				return;
-			
-			}else if(func.equals("new")) {
-				Message info = new Message(MAXIMA_NEW);
-				InputHandler.addResponseMesage(info, zMessage);
-				PostMessage(info);
-				return;
-			}
+			//Connect to the Host
+			if(mIsMaxHostSet) {
 				
-			InputHandler.endResponse(zMessage, false, "Invalid maxima function : "+func);
-		
-		}else if(zMessage.getMessageType().equals(MAXIMA_INFO)) {
-			InputHandler.getResponseJSON(zMessage).put("key", mMaximaDB.getAccount().toJSON());
-			InputHandler.getResponseJSON(zMessage).put("identity", getMaximaFullIdentity());
-//			InputHandler.getResponseJSON(zMessage).put("rsa", mMaximaDB.getPublicRSA().to0xString());
-			InputHandler.endResponse(zMessage, true, "Maxima Info");
+				//Are we already connected
+				if(Main.getInstance().getNIOManager().checkConnected(mHost, false) == null) {
 					
-		}else if(zMessage.getMessageType().equals(MAXIMA_NEW)) {
-			//Create a NEW key.. for now always new..
-			mMaximaDB.newAccount();
-			
-			//Print out some info
-			Message info = new Message(MAXIMA_INFO);
-			InputHandler.addResponseMesage(info, zMessage);
-			PostMessage(info);
-			
-		}else if(zMessage.getMessageType().equals(MAXIMA_ADDCONTACT)) {
-			String user = zMessage.getString("maximauser");
-			
-			//Does that user allready exist
-			MaximaUser maxuser = addUpdateUser(user);
-			
-			InputHandler.getResponseJSON(zMessage).put("user", maxuser.toJSON());
-			InputHandler.endResponse(zMessage, true, "User added");
-			
-		}else if(zMessage.getMessageType().equals(MAXIMA_REMOVECONTACT)) {
-		
-		}else if(zMessage.getMessageType().equals(MAXIMA_LISTCONTACTS)) {
-			JSONObject resp = InputHandler.getResponseJSON(zMessage);
-		
-			JSONArray allusers = new JSONArray();
-			ArrayList<MaximaUser> users = mMaximaDB.getAllUsers();
-			for(MaximaUser mx : users) {
-				allusers.add(mx.toJSON());
+					MinimaLogger.log("Connecting to our Maxima Host "+mHost);
+					
+					//Connecting to Maxima Host
+					Message connectmsg = connect.createConnectMessage(mHost);
+					Main.getInstance().getNIOManager().PostMessage(connectmsg);
+				}
 			}
 			
-			resp.put("total", allusers.size());
-			resp.put("contacts", allusers);
-			InputHandler.endResponse(zMessage, true, "");
-		
-		}else if(zMessage.getMessageType().equals(MAXIMA_RECMSG)) {
-			String datastr	= zMessage.getString("message");
-			MiniData data   = new MiniData(datastr);
-			String json     = new String(data.getData(), Charset.forName("UTF-8"));
+			//Check every minute..
+			PostTimerMessage(new TimerMessage(60000, MAXIMA_HOSTCONNECT));
 			
-			//Convert Message to JSON
-			JSONObject msg = (JSONObject) new JSONParser().parse(json);
+		}else if(zMessage.getMessageType().equals(MAXIMA_SENDMESSAGE)) {
 			
-			//Get the payload..
-			String version   = (String) msg.get("version");
-			String to        = (String) msg.get("to");
-			String encrypted = (String) msg.get("encrypted");
+			//Message details
+			String publickey	= zMessage.getString("publickey");
+			MiniData topubk 	= new MiniData(publickey);
 			
-			//Signature
-			String sig       = (String) msg.get("signature");
-			MiniData sigdata = new MiniData(sig);
-
-			//Get the payload..
-			MiniData pd = new MiniData((String)msg.get("payload"));
+			String tohost 		= zMessage.getString("tohost");
+			int toport			= zMessage.getInteger("toport");
 			
-			//Is it encrypted..
-			JSONObject payload = null;
-			if(encrypted.equals("NONE")) {
-				//Convert to a string..
-				String pds = new String(pd.getData(),Charset.forName("UTF-8"));
+			//Get the Maxima Message
+			MaximaMessage maxima 	= (MaximaMessage) zMessage.getObject("maxima");
+			
+			//Next Sign the Message and create the MaximaInternal message
+			MiniData maxdata		= MiniData.getMiniDataVersion(maxima);
+			byte[] sigBytes  		= SignVerify.sign(mPrivate.getBytes(), maxdata.getBytes());
+			
+			MaximaInternal msign 	= new MaximaInternal();
+			msign.mFrom				= mPublic;
+			msign.mData				= maxdata;
+			msign.mSignature		= new MiniData(sigBytes);
+			
+			//And finally create the encrypted MaximaPackage
+			MiniData maxpkg			= MiniData.getMiniDataVersion(msign);
+			
+			//Now Encrypt the Whole Thing..
+			CryptoPackage cp = new CryptoPackage();
+			cp.encrypt(maxpkg.getBytes(), topubk.getBytes());
+			
+			//Now Construct a MaximaPackage
+			MaximaPackage mp = new MaximaPackage( topubk , cp.getCompleteEncryptedData());
+			
+			//Create the Network Message
+			MiniData maxmsg = NIOManager.createNIOMessage(NIOMessage.MSG_MAXIMA, mp);
+			
+			//And send it..
+			sendMaximaMessage(tohost, toport, maxmsg);
+			
+		}else if(zMessage.getMessageType().equals(MAXIMA_RECMESSAGE)) {
+			
+			//received a Message!
+			MaximaPackage mpkg = (MaximaPackage) zMessage.getObject("maxpackage");
+			
+			//Is it for us?
+			if(!mpkg.mTo.isEqual(mPublic)) {
 				
-				//And finally convert to a JSON
-				payload = (JSONObject) new JSONParser().parse(pds);
-			}else {
-				//Decrypt..
-				CryptoPackage cp = new CryptoPackage();
-				cp.ConvertCompleteData(pd);
+				//The pubkey Mx version
+				String pubk = BaseConverter.encode32(mpkg.mTo.getBytes());
 				
-				//Now decrypt..
-				byte[] decdata = cp.decrypt(mMaximaDB.getPrivateRSA().getData());
+				//Check if it one of our allowed clients! - For now allow all..
+//				if(mMaximaClients.contains(pubk)) {
+					
+					//Forward it to them!
+					NIOClient client =  Main.getInstance().getNIOManager().getMaximaUID(pubk);
+					
+					//Do we have it
+					if(client != null) {
+						if(mMaximaLogs) {
+							MinimaLogger.log("MAXIMA message forwarded to client : "+pubk);
+						}
+						
+						//Send to the client we are connected to..
+						NIOManager.sendNetworkMessage(client.getUID(), NIOMessage.MSG_MAXIMA, mpkg);
+						
+					}else{
+						MinimaLogger.log("MAXIMA message received for Client we are not connected to : "+pubk);
+					}
+					
+//				}else {
+//					MinimaLogger.log("MAXIMA message received to unknown PublicKey : "+mpkg.mTo.to0xString());
+//				}
 				
-				//Convert to a string..
-				String pds = new String(decdata,Charset.forName("UTF-8"));
-				
-				//And finally convert to a JSON
-				payload = (JSONObject) new JSONParser().parse(pds);
-			}
-			
-			//Who is it from..
-			String from 		= (String) payload.get("from");
-			String pubkey       = getIdentOnly(from);
-			MiniData pubkeydata = new MiniData(pubkey);
-			
-			//Lets verify the signature
-			MultiKey ver = new MultiKey(pubkeydata);
-			boolean valid = ver.verify(pd, sigdata);
-
-			//Is it valid..
-			if(!valid) {
-				MinimaLogger.log("INVALID MAXIMA : "+msg);
-				InputHandler.endResponse(zMessage, false, "Invalid Message");
-			}else {
-				//Add the USER..
-				MaximaUser maxuser = addUpdateUser(from);
-				
-				//Set the RSA..
-				maxuser.setRSAPubKeyHex((String)payload.get("rsa"));
-				
-				//Sign the message Yourself
-				//..
-				
-				MinimaLogger.log("MAXIMA "+from+" @ "+payload.get("port")+" > "+payload.get("data"));
-				InputHandler.endResponse(zMessage, true, "Valid Message");
-			}
-			
-		}else if(zMessage.getMessageType().equals(MAXIMA_SENDMSG)) {
-			//Get the details..
-			String to_port = zMessage.getString("to");
-			String to      = new String(to_port);
-			
-			//Is there a Port..
-			String port = "minima";
-			int portind = to.indexOf(":");
-			if(portind != -1) {
-				to = to_port.substring(0,portind); 
-				port = to_port.substring(portind+1);
-			}
-			
-			//Get the maximauser
-			MaximaUser user = mMaximaDB.getUser(to);
-			if(user==null) {
-				InputHandler.endResponse(zMessage, false, "User not found");
 				return;
 			}
 			
-			//Are we encrypting
-			String encrypt = "NONE";
-			if(!user.getRSAPubKeyHex().equals("0x00")) {
-				encrypt = "RSA/AES";
+			//Decrypt the data
+			CryptoPackage cp = new CryptoPackage();
+			cp.ConvertMiniDataVersion(mpkg.mData);
+			byte[] data = cp.decrypt(mPrivate.getBytes());
+			
+			//Now get the Decrypted data..
+			MaximaInternal mm = MaximaInternal.ConvertMiniDataVersion(new MiniData(data));
+			
+			//Check the Signature..
+			boolean valid = SignVerify.verify(mm.mFrom.getBytes(), mm.mData.getBytes(), mm.mSignature.getBytes());
+			if(!valid) {
+				MinimaLogger.log("MAXIMA Invalid Signature on message : "+mpkg.mTo.to0xString());
+				return;
 			}
 			
-			//Get the host for this User
-			String fullto = "http://"+user.getHost();
+			//Now convert the data to a Maxima Message
+			MaximaMessage maxmsg 	= MaximaMessage.ConvertMiniDataVersion(mm.mData);
 			
-			//Get the message
-			String message	= zMessage.getString("message");
-			
-			//Construct a JSON Object..
-			JSONObject msg = new JSONObject();
-			msg.put("version", "1.0");
-			msg.put("to", user.getPublicKey());
-			msg.put("encrypted", encrypt);
-			
-				//The content
-				JSONObject data = new JSONObject();
-				data.put("from", getMaximaFullIdentity());
-				data.put("rsa", mMaximaDB.getPublicRSA().to0xString());
-				data.put("to", to);
-				data.put("port", port);
-				data.put("data", message);
-			
-			//Copy this content..
-			String content = new String(data.toString());
-			JSONObject contjson = (JSONObject) new JSONParser().parse(content);
-				
-			//The actual data we send..
-			MiniData senddata = new MiniData(data.toString().getBytes("UTF-8"));
-	
-			//Are we encrypting this..
-			if(encrypt.equals("RSA/AES")) {
-				//We encrypt..
-				MiniData paydata = new MiniData(data.toString().getBytes("UTF-8"));
-
-				//Create a crypt package
-				CryptoPackage cp = new CryptoPackage();
-
-				//Encrypt..
-				cp.encrypt(paydata.getData(), new MiniData(user.getRSAPubKeyHex()).getData());
-				
-				//Encrypt.. with THEIR public key
-				senddata =  cp.getCompleteEncryptedData();
+			//Check the message is from the person who signed it!
+			String from 	= maxmsg.mFrom.toString();
+			int index 		= from.indexOf("@");
+			String pubkey 	= from.substring(0,index);
+			MiniData frompubk = new MiniData(pubkey);
+			if(!frompubk.isEqual(mm.mFrom)) {
+				MinimaLogger.log("MAXIMA Message From field signed by incorrect pubkey  from:"
+											+frompubk.to0xString()+" signed:"+mm.mFrom.to0xString());
+				return;
 			}
-				
-			//Add the data
-			msg.put("payload", senddata.to0xString());
 			
-			//Sign the message
-			MiniData sig = mMaximaDB.getAccount().sign(senddata);
-			msg.put("signature", sig.to0xString());
+			//Hash the complete message..
+			MiniData hash = Crypto.getInstance().hashObject(mm.mData);
 			
-			//Encode it..
-			String enc = URLEncoder.encode(new String(msg.toString()),"UTF-8").trim();
+			//Now create the final JSON..
+			JSONObject maxjson = maxmsg.toJSON();
+			maxjson.put("msgid", hash.to0xString());
 			
-			//Store the message
-			InputHandler.getResponseJSON(zMessage).put("to", user.getCompleteAddress());
-			InputHandler.getResponseJSON(zMessage).put("encryption", encrypt);
-			InputHandler.getResponseJSON(zMessage).put("message", contjson);
+			//Do we log
+			if(mMaximaLogs) {
+				MinimaLogger.log("MAXIMA : "+maxjson.toString());
+			}
 			
-			//Create a Separate Thread to send the message
-			MaximaSender sender = new MaximaSender(zMessage, fullto, enc);
-			Thread runner = new Thread(sender);
-			runner.setDaemon(true);
-			runner.start();
+			//Notify The Listeners
+			Main.getInstance().PostNotifyEvent("MAXIMA",maxjson);
 		}
-		
 	}
 
+	private void sendMaximaMessage(String zHost, int zPort, MiniData zMaxMessage) {
+		
+		Runnable sender = new Runnable() {
+			
+			@Override
+			public void run() {
+				try {
+					//Open the socket..
+					Socket sock 			= new Socket(zHost, zPort);
+					sock.setSoTimeout(10000);
+					
+					//Create the streams..
+					OutputStream out 		= sock.getOutputStream();
+					DataOutputStream dos 	= new DataOutputStream(out);
+					
+					InputStream in			= sock.getInputStream();
+					DataInputStream dis 	= new DataInputStream(in);
+					
+					//Write the data
+					zMaxMessage.writeDataStream(dos);
+					dos.flush();
+					
+					//Now get a response.. should be ONE_ID.. give it 1 second max.. ( might get a block..)
+					boolean valid = false;
+					long maxtime = System.currentTimeMillis() + 1000;
+					while(System.currentTimeMillis() < maxtime) {
+						MiniData resp = MiniData.ReadFromStream(dis);
+						if(resp.isEqual(MAXIMA_RESPONSE)) {
+							valid = true;
+							break;
+						}
+					}
+					
+					if(!valid) {
+						MinimaLogger.log("Warning : Maxima message incorrect reply");
+					}
+					
+					//Close the streams..
+					dis.close();
+					in.close();
+					dos.close();
+					out.close();
+				
+				}catch(Exception exc){
+					MinimaLogger.log("Error sending Maxima message : "+exc.toString());
+				}
+			}
+		};
+		
+		Thread tt = new Thread(sender);
+		tt.setDaemon(true);
+		tt.start();
+	}
+	
+	public void createMaximaKeys() throws Exception {
+		
+		//Get the UserDB
+		UserDB udb = MinimaDB.getDB().getUserDB();
+		
+		//Create a new new maxima ident..
+		KeyPair generateKeyPair = GenerateKey.generateKeyPair();
+		
+		byte[] publicKey 		= generateKeyPair.getPublic().getEncoded();
+		mPublic 				= new MiniData(publicKey);
+		
+		byte[] privateKey	 	= generateKeyPair.getPrivate().getEncoded();
+		mPrivate 				= new MiniData(privateKey);
+		
+		//Put in the DB..
+		udb.setData(MAXIMA_PUBKEY, mPublic);
+		udb.setData(MAXIMA_PRIVKEY, mPrivate);
+	}
 }

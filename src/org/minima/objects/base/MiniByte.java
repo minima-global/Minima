@@ -11,8 +11,8 @@ public class MiniByte implements Streamable{
 	/**
 	 * Global True False
 	 */
-	public static final MiniByte TRUE  = new MiniByte(1);
 	public static final MiniByte FALSE = new MiniByte(0);
+	public static final MiniByte TRUE  = new MiniByte(1);
 	
 	byte mVal;
 	
@@ -75,5 +75,9 @@ public class MiniByte implements Streamable{
 		MiniByte data = new MiniByte();
 		data.readDataStream(zIn);
 		return data;
+	}
+	
+	public static void WriteToStream(DataOutputStream zOut, boolean zData) throws IOException{
+		new MiniByte(zData).writeDataStream(zOut);
 	}
 }

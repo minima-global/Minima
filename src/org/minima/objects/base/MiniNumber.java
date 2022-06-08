@@ -43,7 +43,7 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 	 * 
 	 * 2^64 - 1 or as HEX 0xFFFFFFFFFFFFFFFF
 	 */
-	public static final BigDecimal MAX_MININUMBER = new BigDecimal(2).pow(64,MATH_CONTEXT).subtract(BigDecimal.ONE,MATH_CONTEXT);
+	public static final BigDecimal MAX_MININUMBER = new BigDecimal(2).pow(64).subtract(BigDecimal.ONE);
 	
 	/**
 	 * The Minimum value any MiniNumber can be..
@@ -54,6 +54,11 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 	 * The smallest unit possible
 	 */
 	public static final MiniNumber MINI_UNIT = new MiniNumber("1E-"+MAX_DECIMAL_PLACES);
+
+	/**
+	 * The Maximum possible MiniNumber
+	 */
+	public static final MiniNumber MAXIMUM 	 = new MiniNumber(MAX_MININUMBER);
 	
 	/**
 	 * Useful numbers
@@ -66,6 +71,7 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 	public static final MiniNumber TWELVE       = new MiniNumber("12");
 	public static final MiniNumber SIXTEEN      = new MiniNumber("16");
 	public static final MiniNumber THIRTYTWO    = new MiniNumber("32");
+	public static final MiniNumber FIFTY    	= new MiniNumber("50");
 	public static final MiniNumber SIXTYFOUR    = new MiniNumber("64");
 	public static final MiniNumber TWOFIVESIX   = new MiniNumber("256");
 	public static final MiniNumber FIVEONE12    = new MiniNumber("512");
@@ -269,27 +275,31 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 	 */
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
-		//Write out the scale..
-		zOut.writeInt(mNumber.scale());
 		
-		//And now the unscaled value..
+		//Write out the scale.. +/-127 - never more than 1 byte in size though  
+		int scale = mNumber.scale();
+		zOut.writeByte(scale);
+		
+		//And now the unscaled value.. never larger than..29
 		byte[] data = mNumber.unscaledValue().toByteArray();
-		int len = data.length;
-		zOut.writeInt(len);
+		zOut.writeByte(data.length);
+		
+		//WRITE THE DATA
 		zOut.write(data);
 	}
 
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
+		
 		//Read in the scale
-		int scale = zIn.readInt();
+		int scale = (int)zIn.readByte();
 		
 		//Read in the byte array for unscaled BigInteger
-		int len = zIn.readInt();
-		if(len > 64 || len<1) {
+		int len = (int)zIn.readByte();
+		if(len > 32 || len<0) {
 			throw new IOException("ERROR reading MiniNumber - input too large or negative "+len);
 		}
-		
+			
 		byte[] data = new byte[len];
 		zIn.readFully(data);
 		
@@ -297,20 +307,38 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 		BigInteger unscaled = new BigInteger(data);
 		mNumber = new BigDecimal(unscaled,scale,MATH_CONTEXT);
 	}
-
+	
 	public static MiniNumber ReadFromStream(DataInputStream zIn) throws IOException{
 		MiniNumber data = new MiniNumber();
 		data.readDataStream(zIn);
 		return data;
 	}
-
-	public static void main(String[] zargs) {
-		MiniNumber tt = MiniNumber.MINI_UNIT;
-		
-		System.out.println("Smallest : "+tt+" "+tt.getNumber().scale());
-		
-		System.out.println("TEN      : "+new MiniNumber("1E1"));
-		System.out.println("HUNDRED  : "+new MiniNumber("1E2"));
-	}
 	
+	public static void WriteToStream(DataOutputStream zOut, int zNumber) throws IOException{
+		new MiniNumber(zNumber).writeDataStream(zOut);
+	}
+
+	public static void main(String[] zArgs) {
+		
+//		MiniNumber num = MiniNumber.MAXIMUM.add(MiniNumber.MINI_UNIT);
+		MiniNumber num = MiniNumber.MAXIMUM;
+		System.out.println("Number : "+num);
+		
+		MiniData md = MiniData.getMiniDataVersion(num);
+		System.out.println("HEX NUm : "+md.getLength()+" "+md.to0xString());
+		
+		num = MiniNumber.MAXIMUM.sub(MiniNumber.MINI_UNIT);
+		System.out.println("Number : "+num);
+		
+		md = MiniData.getMiniDataVersion(num);
+		System.out.println("HEX NUm : "+md.getLength()+" "+md.to0xString());
+		
+		num = MiniNumber.MAXIMUM.mult(MiniNumber.MINUSONE).add(MiniNumber.MINI_UNIT);
+		System.out.println("Number : "+num);
+		
+		md = MiniData.getMiniDataVersion(num);
+		System.out.println("HEX NUm : "+md.getLength()+" "+md.to0xString());
+		
+		
+	}
 }

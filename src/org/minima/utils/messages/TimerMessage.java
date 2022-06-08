@@ -1,8 +1,6 @@
 package org.minima.utils.messages;
 
-import org.minima.utils.MinimaLogger;
-
-public class TimerMessage extends Message implements Runnable {
+public class TimerMessage extends Message {
 
 	//The timer value
 	private long mTimer;
@@ -25,41 +23,11 @@ public class TimerMessage extends Message implements Runnable {
 		mProcessor = zProcessor;
 	}
 	
+	public MessageProcessor getProcessor() {
+		return mProcessor;
+	}
+	
 	public long getTimer() {
 		return mTimer;
-	}
-
-	@Override
-	public void run() {
-		try {
-			//Safety check..
-			long timenow = System.currentTimeMillis();
-			
-			//Sleep until ready..
-			Thread.sleep(mDelay);
-		
-			//Safety check
-			long timeafter = System.currentTimeMillis();
-			long diff = timeafter-timenow;
-			if(diff > mDelay*2) {
-				MinimaLogger.log("Timer Message Delay OVER twice as long as requested.. "+diff+"/"+mDelay+" "+toString());
-			}
-			
-//			//Nice and easy - 2 second intervals..
-//			while( mProcessor.isRunning() && System.currentTimeMillis() < mTimer) {
-//				Thread.sleep(2000);	
-//			}
-			
-		} catch (InterruptedException e) {
-			MinimaLogger.log("Timer Message Interrupted.. "+toString());
-			return;
-		}
-		
-		//And Post..
-		if(mProcessor.isRunning()) {
-			mProcessor.PostMessage(this);
-		} else {
-			MinimaLogger.log("Timer Message NOT run as processor shutdown.. "+toString());
-		}
 	}
 }

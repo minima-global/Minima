@@ -12,9 +12,8 @@ import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.Arrays;
 
-import org.minima.system.network.base.MinimaReader;
 import org.minima.utils.BaseConverter;
-import org.minima.utils.Crypto;
+import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 
@@ -24,12 +23,25 @@ import org.minima.utils.Streamable;
  */
 public class MiniData implements Streamable {
 	
-	public static final MiniData ZERO_TXPOWID = new MiniData("0x00");
+	public static int MINIMA_MAX_HASH_LENGTH 		= 64;
+	
+	/**
+	 * 256 MB Max MiniData size
+	 */
+	public static int MINIMA_MAX_MINIDATA_LENGTH 	= 1024 * 1024 * 256;
+	
+	public static final MiniData ZERO_TXPOWID 	= new MiniData("0x00");
+	public static final MiniData ONE_TXPOWID 	= new MiniData("0x01");
 	
 	/**
 	 * The byte data
 	 */
 	protected byte[] mData;
+	
+	/**
+	 * The BigInteger version
+	 */
+	BigInteger mDataValue = null;
 	
 	/**
 	 * Default Empty Constructor
@@ -41,10 +53,20 @@ public class MiniData implements Streamable {
 	/**
 	 * Throws a NumberFormatException if the HEX String is Invalid
 	 * 
+	 * Can be HEX 0x or Base32 Mx
+	 * 
 	 * @param zHexString
 	 */
 	public MiniData(String zHexString) {
-		this(BaseConverter.decode16(zHexString));
+		
+		//Is it HEX or Base32..
+		if(zHexString.toLowerCase().startsWith("mx")) {
+			mData = BaseConverter.decode32(zHexString);
+		}else {
+			mData = BaseConverter.decode16(zHexString);
+		}
+		
+//		this(BaseConverter.decode16(zHexString));
 	}
 	
 	/**
@@ -54,6 +76,33 @@ public class MiniData implements Streamable {
 	 */
 	public MiniData(byte[] zData) {
 		mData = zData;
+	}
+	
+	/**
+	 * Make sure is at least Min Length in size
+	 */
+	public MiniData(byte[] zData, int zMinLength) {
+		
+		//How big is it
+		int len = zData.length;
+		
+		if(len<zMinLength) {
+			byte[] data = new byte[zMinLength];
+			
+			//And the rest..
+			int diff = zMinLength - len;
+			for(int i=0;i<diff;i++) {
+				data[i] = 0;
+			}
+			
+			for(int i=0;i<len;i++) {
+				data[i+diff] = zData[i];
+			}
+			
+			mData = data;
+		}else {
+			mData = zData;
+		}
 	}
 	
 	/**
@@ -82,12 +131,16 @@ public class MiniData implements Streamable {
 		return mData.length;
 	}
 	
-	public byte[] getData() {
+	public byte[] getBytes() {
 		return mData;
 	}
 	
 	public BigInteger getDataValue() {
-		return new BigInteger(1,mData);
+		if(mDataValue == null) {
+			mDataValue = new BigInteger(1,mData);
+		}
+		
+		return mDataValue;
 	}
 	
 	public BigDecimal getDataValueDecimal() {
@@ -106,7 +159,7 @@ public class MiniData implements Streamable {
 		}
 		
 		//Get both data sets..
-		byte[] data = zCompare.getData();
+		byte[] data = zCompare.getBytes();
 		
 		//Check the data..
 		for(int i=0;i<len;i++) {
@@ -148,16 +201,16 @@ public class MiniData implements Streamable {
 	
 	public MiniData concat(MiniData zConcat) {
 		int locallen  = getLength();
-		int concatlen = zConcat.getData().length; 
+		int concatlen = zConcat.getBytes().length; 
 				
 		int totlen   = locallen+concatlen;
 		byte[] total = new byte[totlen]; 
 		
 		//First copy local..
-		System.arraycopy(getData(), 0, total, 0, locallen);
+		System.arraycopy(getBytes(), 0, total, 0, locallen);
 		
 		//Then the new..
-		System.arraycopy(zConcat.getData(), 0, total, locallen, concatlen);
+		System.arraycopy(zConcat.getBytes(), 0, total, locallen, concatlen);
 		
 		return new MiniData(total);
 	}
@@ -202,15 +255,16 @@ public class MiniData implements Streamable {
 		int len = zIn.readInt();
 		
 		//Check against maximum allowed
-		if(len > MinimaReader.MAX_INTRO) {
-			throw new IOException("Read Error : MiniData Length larger than maximum allowed "+len);
+		if(len > MINIMA_MAX_MINIDATA_LENGTH) {
+			throw new IOException("Read Error : MiniData Length larger than maximum allowed (256 MB) "+MiniFormat.formatSize(len));
 		}
 		
 		if(zSize != -1) {
 			if(len != zSize) {
-				throw new IOException("Read Error : MiniData Length not correct as specified "+zSize);
+				throw new IOException("Read Error : MiniData length not correct as specified "+zSize);
 			}
 		}
+		
 		mData = new byte[len];
 		zIn.readFully(mData);
 	}
@@ -236,8 +290,8 @@ public class MiniData implements Streamable {
 	 * Special Functions to input output HASH data..
 	 */
 	public void writeHashToStream(DataOutputStream zOut) throws IOException {
-		if(mData.length > Crypto.MINIMA_MAX_HASH_LENGTH) {
-			throw new IOException("Write Error : HASH Length greater than 64! "+mData.length);
+		if(mData.length > MINIMA_MAX_HASH_LENGTH) {
+			throw new IOException("Write Error : HASH Length greater than "+MINIMA_MAX_HASH_LENGTH+"! "+mData.length);
 		}
 		
 		zOut.writeInt(mData.length);
@@ -246,8 +300,8 @@ public class MiniData implements Streamable {
 
 	public void readHashFromStream(DataInputStream zIn) throws IOException {
 		int len = zIn.readInt();
-		if(len > Crypto.MINIMA_MAX_HASH_LENGTH) {
-			throw new IOException("Read Error : HASH Length greater then 64! "+len);
+		if(len > MINIMA_MAX_HASH_LENGTH) {
+			throw new IOException("Read Error : HASH Length greater than "+MINIMA_MAX_HASH_LENGTH+"! "+len);
 		}else if(len<0) {
 			throw new IOException("Read Error : HASH Length less than 0! "+len);
 		}
@@ -262,9 +316,13 @@ public class MiniData implements Streamable {
 		return data;
 	}
 	
+	public static void WriteToStream(DataOutputStream zOut, byte[] zData) throws IOException{
+		new MiniData(zData).writeDataStream(zOut);
+	}
+	
 	public static MiniData getMiniDataVersion(Streamable zObject) {
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		DataOutputStream dos = new DataOutputStream(baos);
+		ByteArrayOutputStream baos 	= new ByteArrayOutputStream();
+		DataOutputStream dos 		= new DataOutputStream(baos);
 		
 		try {
 			zObject.writeDataStream(dos);
@@ -296,13 +354,12 @@ public class MiniData implements Streamable {
 	
 	public static void main(String[] zArgs) {
 		
-		MiniData dd = new MiniData(BigInteger.ONE.multiply(new BigInteger("-1")));
-		System.out.println(dd.getDataValue()+" "+dd.to0xString());
+		MiniData origdata = MiniData.getRandomData(10);
+		System.out.println("ORIG   : "+origdata.getLength()+" "+origdata.to0xString() +" "+origdata.getDataValue());
 		
-		MiniData ff = dd.shiftr(1);
+		MiniData lendata = new MiniData(origdata.getBytes(), 16);
+		System.out.println("LENGTH : "+lendata.getLength()+" "+lendata.to0xString() +" "+lendata.getDataValue());
 		
-		System.out.println(dd.getDataValue()+" "+ff.getDataValue()+" "+ff.shiftr(1).getDataValue());
-		System.out.println(dd.to0xString()+" "+ff.to0xString()+" "+ff.shiftr(1).to0xString());
 		
 	}
 }

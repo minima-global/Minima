@@ -7,6 +7,7 @@ import java.util.ArrayList;
 
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.utils.Crypto;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
@@ -14,9 +15,15 @@ import org.minima.utils.json.JSONObject;
 public class TxBody implements Streamable {
 
 	/**
+	 * A Random number so that everyone is working on a different TxPoW in the pulse 
+	 * (since there is no coinbase..)
+	 */
+	public MiniData 	mPRNG = MiniData.getRandomData(32);
+
+	/**
 	 * The Difficulty for this TXPOW to be valid.
 	 */
-	public MiniData 	mTxnDifficulty = new MiniData();
+	public MiniData 	mTxnDifficulty = Crypto.MAX_HASH;
 	
 	/**
 	 * The Transaction the user is trying to send
@@ -44,11 +51,6 @@ public class TxBody implements Streamable {
 	 */
 	public ArrayList<MiniData> mTxPowIDList;
 	
-	/**
-	 * MAGIC numbers that set the chain parameters
-	 */
-	public Magic mMagic = new Magic();
-	
 	public TxBody() {
 		//List of the transctions in this block
 		mTxPowIDList = new ArrayList<>();
@@ -57,7 +59,10 @@ public class TxBody implements Streamable {
 	public JSONObject toJSON() {
 		JSONObject txpow = new JSONObject();
 		
+		txpow.put("prng", mPRNG.to0xString());
+		
 		txpow.put("txndiff", mTxnDifficulty.to0xString());
+		
 		txpow.put("txn", mTransaction.toJSON());
 		txpow.put("witness", mWitness.toJSON());
 		
@@ -72,13 +77,13 @@ public class TxBody implements Streamable {
 		}
 		txpow.put("txnlist", txns);
 		
-		txpow.put("magic", mMagic.toJSON());
-		
 		return txpow;
 	}
 
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
+		mPRNG.writeHashToStream(zOut);
+		
 		mTxnDifficulty.writeDataStream(zOut);
 		mTransaction.writeDataStream(zOut);
 		mWitness.writeDataStream(zOut);
@@ -92,12 +97,12 @@ public class TxBody implements Streamable {
 		for(MiniData txpowid : mTxPowIDList) {
 			txpowid.writeHashToStream(zOut);
 		}
-		
-		mMagic.writeDataStream(zOut);
 	}
 
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
+		mPRNG = MiniData.ReadHashFromStream(zIn);
+		
 		mTxnDifficulty  = MiniData.ReadFromStream(zIn);
 		mTransaction.readDataStream(zIn);
 		mWitness.readDataStream(zIn);
@@ -111,7 +116,5 @@ public class TxBody implements Streamable {
 		for(int i=0;i<len;i++) {
 			mTxPowIDList.add(MiniData.ReadHashFromStream(zIn));
 		}
-		
-		mMagic.readDataStream(zIn);
 	}
 }

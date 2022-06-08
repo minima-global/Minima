@@ -1,15 +1,17 @@
 package org.minima.objects;
 
+import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Date;
 
-import org.minima.GlobalParams;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.system.params.GlobalParams;
 import org.minima.utils.Crypto;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
@@ -42,30 +44,19 @@ public class TxHeader implements Streamable {
 	public MiniData[] mSuperParents;
 	
 	/**
-	 * A Chain ID. Useful when running side-chains, as only this TokenID will be valid to POS mine it. 
-	 * 0x00 is the main chain
+	 * MAGIC numbers that set the chain parameters
 	 */
-	public MiniData mChainID      = new MiniData("0x00");
-	
-	/**
-	 * Every Side chain has a parent chain
-	 */
-	public MiniData mParentChainID = new MiniData("0x00");
+	public Magic mMagic = new Magic();
 	
 	/**
 	 * The MMR Root!
 	 */
-	public MiniData mMMRRoot = new MiniData();
+	public MiniData mMMRRoot = new MiniData("0x00");
 	
 	/**
 	 * The Total Sum Of All coins in the system
 	 */
 	public MiniNumber mMMRTotal = MiniNumber.ZERO;
-	
-	/**
-	 * The hash of the MMR peaks - taking position into account..
-	 */
-	public MiniData mMMRPeaks = new MiniData();
 	
 	/**
 	 * The HASH of the TxBody
@@ -135,13 +126,12 @@ public class TxHeader implements Streamable {
 		}
 		txpow.put("superparents", supers);
 		
-		txpow.put("chainid", mChainID.toString());
-		txpow.put("parentchainid", mParentChainID.toString());
+		txpow.put("magic", mMagic.toJSON());
 		
 		txpow.put("mmr", mMMRRoot.toString());
 		txpow.put("total", mMMRTotal.toString());
-		txpow.put("mmrpeaks", mMMRPeaks.toString());
 		
+		txpow.put("txbodyhash", mTxBodyHash.to0xString());
 		txpow.put("nonce", mNonce.toString());
 		txpow.put("timemilli", mTimeMilli.toString());
 		txpow.put("date", new Date(mTimeMilli.getAsLong()).toString());
@@ -155,9 +145,6 @@ public class TxHeader implements Streamable {
 		mTimeMilli.writeDataStream(zOut);
 		mBlockNumber.writeDataStream(zOut);
 		mBlockDifficulty.writeDataStream(zOut);
-		
-		mChainID.writeHashToStream(zOut);
-		mParentChainID.writeHashToStream(zOut);
 		
 		//The Super parents are efficiently encoded in RLE
 		MiniByte cascnum = new MiniByte(GlobalParams.MINIMA_CASCADE_LEVELS);
@@ -197,7 +184,9 @@ public class TxHeader implements Streamable {
 		//Write out the MMR DB
 		mMMRRoot.writeHashToStream(zOut);
 		mMMRTotal.writeDataStream(zOut);
-		mMMRPeaks.writeDataStream(zOut);
+		
+		//Write the Magic Number
+		mMagic.writeDataStream(zOut);
 		
 		//Write the Boddy Hash
 		mTxBodyHash.writeHashToStream(zOut);
@@ -209,9 +198,6 @@ public class TxHeader implements Streamable {
 		mTimeMilli       = MiniNumber.ReadFromStream(zIn);
 		mBlockNumber     = MiniNumber.ReadFromStream(zIn);
 		mBlockDifficulty = MiniData.ReadFromStream(zIn);
-		
-		mChainID         = MiniData.ReadHashFromStream(zIn);
-		mParentChainID   = MiniData.ReadHashFromStream(zIn);
 		
 		//How many cascade levels.. will probably NEVER change..
 		MiniByte cascnum = MiniByte.ReadFromStream(zIn);
@@ -228,9 +214,40 @@ public class TxHeader implements Streamable {
 		//read in the MMR state..
 		mMMRRoot  = MiniData.ReadHashFromStream(zIn);
 		mMMRTotal = MiniNumber.ReadFromStream(zIn);
-		mMMRPeaks = MiniData.ReadHashFromStream(zIn);
+		
+		//Read the Magic..
+		mMagic	= Magic.ReadFromStream(zIn);
 		
 		//The TxBody Hash
 		mTxBodyHash = MiniData.ReadHashFromStream(zIn);
+	}
+	
+	public static TxHeader ReadFromStream(DataInputStream zIn) throws IOException {
+		TxHeader txp = new TxHeader();
+		txp.readDataStream(zIn);
+		return txp;
+	}
+	
+	/**
+	 * Convert a MiniData version into a TxHeader
+	 */
+	public static TxHeader convertMiniDataVersion(MiniData zTxpData) {
+		ByteArrayInputStream bais 	= new ByteArrayInputStream(zTxpData.getBytes());
+		DataInputStream dis 		= new DataInputStream(bais);
+		
+		TxHeader txpow = null;
+		
+		try {
+			//Convert data into a TxPoW
+			txpow = TxHeader.ReadFromStream(dis);
+		
+			dis.close();
+			bais.close();
+			
+		} catch (IOException e) {
+			MinimaLogger.log(e);
+		}
+		
+		return txpow;
 	}
 }

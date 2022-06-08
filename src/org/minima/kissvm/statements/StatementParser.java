@@ -18,7 +18,7 @@ import org.minima.kissvm.statements.commands.MASTstatement;
 import org.minima.kissvm.statements.commands.RETURNstatement;
 import org.minima.kissvm.statements.commands.WHILEstatement;
 import org.minima.kissvm.tokens.LexicalTokenizer;
-import org.minima.kissvm.tokens.Token;
+import org.minima.kissvm.tokens.ScriptToken;
 import org.minima.kissvm.values.BooleanValue;
 
 /**
@@ -34,7 +34,7 @@ public class StatementParser {
 	 * @param zTokens
 	 * @return the list of Statements
 	 */
-	public static StatementBlock parseTokens(List<Token> zTokens) throws Exception{
+	public static StatementBlock parseTokens(List<ScriptToken> zTokens) throws Exception{
 		List<Statement> stats = new ArrayList<>();
 		
 		//Cycle..
@@ -44,36 +44,36 @@ public class StatementParser {
 		while(currentPosition<totaltokens) {
 		
 			//Get the current token
-			Token tok = zTokens.get(currentPosition++);
+			ScriptToken tok = zTokens.get(currentPosition++);
 			
 			String token 	= tok.getToken();
 			int type 		= tok.getTokenType();
 			
-			if(type != Token.TOKEN_COMMAND) {
+			if(type != ScriptToken.TOKEN_COMMAND) {
 				throw new MinimaParseException("Invalid Token where there should be a COMMMAND - "+token); 
 			}
 			
 			//Cycle through commands
 			if(token.equalsIgnoreCase("LET")) {
 				//The next token is either the variable name or an array position..
-				Token var = zTokens.get(currentPosition++);
+				ScriptToken var = zTokens.get(currentPosition++);
 				
 				//Is it a simple variable LET or an ARRAY set LET
-				if(var.getTokenType() == Token.TOKEN_OPENBRACKET) {
+				if(var.getTokenType() == ScriptToken.TOKEN_OPENBRACKET) {
 					//Get the tokens to the equals signn
-					List<Token> arraypos = getTokensToNextEquals(zTokens, currentPosition);
+					List<ScriptToken> arraypos = getTokensToNextEquals(zTokens, currentPosition);
 					currentPosition += arraypos.size();
 					
 					//Check the last token is a close bracket
 					int arrsize = arraypos.size();
 					var = arraypos.get(arrsize-1);
-					if(var.getTokenType() != Token.TOKEN_CLOSEBRACKET) {
+					if(var.getTokenType() != ScriptToken.TOKEN_CLOSEBRACKET) {
 						throw new MinimaParseException("Incorrect LET statement, missing ) .. "+var.getToken()+")");
 					}
 					
 					//The next token is always =
 					var = zTokens.get(currentPosition++);
-					if(var.getTokenType() != Token.TOKEN_OPERATOR && !var.getToken().equals("=")) {
+					if(var.getTokenType() != ScriptToken.TOKEN_OPERATOR && !var.getToken().equals("=")) {
 						throw new MinimaParseException("Incorrect LET statement, missing = (.."+var.getToken()+")");
 					}
 	
@@ -98,7 +98,7 @@ public class StatementParser {
 					}
 					
 					//Now find the next Command, and everything in between is the expression
-					List<Token> lettokens = getTokensToNextCommand(zTokens, currentPosition);
+					List<ScriptToken> lettokens = getTokensToNextCommand(zTokens, currentPosition);
 					currentPosition += lettokens.size();
 					
 					//Now create an expression from those tokens..
@@ -107,7 +107,7 @@ public class StatementParser {
 					//And finally create the LET statement..
 					stats.add(new LETstatement(exps, exp));
 					
-				}else if(var.getTokenType() == Token.TOKEN_VARIABLE) {
+				}else if(var.getTokenType() == ScriptToken.TOKEN_VARIABLE) {
 					//The Variable name
 					String varname = var.getToken();
 					
@@ -118,7 +118,7 @@ public class StatementParser {
 					}
 				
 					//Now find the next Command, and everything in between is the expression
-					List<Token> lettokens = getTokensToNextCommand(zTokens, currentPosition);
+					List<ScriptToken> lettokens = getTokensToNextCommand(zTokens, currentPosition);
 					currentPosition += lettokens.size();
 					
 					//Now create an expression from those tokens..
@@ -133,7 +133,7 @@ public class StatementParser {
 				
 			}else if(token.equalsIgnoreCase("EXEC")) {
 				//Now find the next Command, and everything in between is the expression
-				List<Token> exectokens = getTokensToNextCommand(zTokens, currentPosition);
+				List<ScriptToken> exectokens = getTokensToNextCommand(zTokens, currentPosition);
 				currentPosition += exectokens.size();
 				
 				//Now create an expression from those tokens..
@@ -144,7 +144,7 @@ public class StatementParser {
 					
 			}else if(token.equalsIgnoreCase("MAST")) {
 				//Now find the next Command, and everything in between is the expression
-				List<Token> masttokens = getTokensToNextCommand(zTokens, currentPosition);
+				List<ScriptToken> masttokens = getTokensToNextCommand(zTokens, currentPosition);
 				currentPosition += masttokens.size();
 				
 				//Now create an expression from those tokens..
@@ -158,7 +158,7 @@ public class StatementParser {
 				IFstatement ifsx = new IFstatement();
 				
 				//Get the IFConditional
-				List<Token> conditiontokens = getTokensToNextCommand(zTokens, currentPosition);
+				List<ScriptToken> conditiontokens = getTokensToNextCommand(zTokens, currentPosition);
 				
 				//Now create an expression from those tokens..
 				Expression IFcondition = ExpressionParser.getExpression(conditiontokens);
@@ -167,7 +167,7 @@ public class StatementParser {
 				currentPosition += conditiontokens.size() + 1;
 				
 				//Now get the Expression..
-				List<Token> actiontokens = getElseOrElseIfOrEndIF(zTokens, currentPosition,true);
+				List<ScriptToken> actiontokens = getElseOrElseIfOrEndIF(zTokens, currentPosition,true);
 				
 				//Increment
 				currentPosition += actiontokens.size();
@@ -229,7 +229,7 @@ public class StatementParser {
 										
 			}else if(token.equalsIgnoreCase("WHILE")) {
 				//Get the WHILE Conditional - stop at the next THEN
-				List<Token> conditiontokens = getTokensToNextCommand(zTokens, currentPosition);
+				List<ScriptToken> conditiontokens = getTokensToNextCommand(zTokens, currentPosition);
 				
 				//Now create an expression from those tokens..
 				Expression WHILEcondition = ExpressionParser.getExpression(conditiontokens);
@@ -238,7 +238,7 @@ public class StatementParser {
 				currentPosition += conditiontokens.size() + 1;
 				
 				//Now get the Expression..
-				List<Token> actiontokens = getEndWHILE(zTokens, currentPosition);
+				List<ScriptToken> actiontokens = getEndWHILE(zTokens, currentPosition);
 				
 				//Increment
 				currentPosition += actiontokens.size();
@@ -257,7 +257,7 @@ public class StatementParser {
 				
 			}else if(token.equalsIgnoreCase("ASSERT")) {
 				//The Next tokens are the Expression..
-				List<Token> returntokens = getTokensToNextCommand(zTokens, currentPosition);
+				List<ScriptToken> returntokens = getTokensToNextCommand(zTokens, currentPosition);
 				currentPosition += returntokens.size();
 				
 				//Now create an expression from those tokens..
@@ -268,7 +268,7 @@ public class StatementParser {
 			
 			}else if(token.equalsIgnoreCase("RETURN")) {
 				//The Next tokens are the Expression..
-				List<Token> returntokens = getTokensToNextCommand(zTokens, currentPosition);
+				List<ScriptToken> returntokens = getTokensToNextCommand(zTokens, currentPosition);
 				currentPosition += returntokens.size();
 				
 				//Now create an expression from those tokens..
@@ -329,8 +329,8 @@ public class StatementParser {
 		return rettokens;
 	}*/
 	
-	private static List<Token> getElseOrElseIfOrEndIF(List<Token> zTokens, int zCurrentPosition, boolean zElseAlso){
-		List<Token> rettokens = new ArrayList<>();
+	private static List<ScriptToken> getElseOrElseIfOrEndIF(List<ScriptToken> zTokens, int zCurrentPosition, boolean zElseAlso){
+		List<ScriptToken> rettokens = new ArrayList<>();
 		
 		int currentpos  = zCurrentPosition;
 		int total 		= zTokens.size();
@@ -339,30 +339,30 @@ public class StatementParser {
 		while(currentpos<total) {
 			
 			//Get the next token
-			Token tok = zTokens.get(currentpos);
+			ScriptToken tok = zTokens.get(currentpos);
 			
-			if(tok.getTokenType() == Token.TOKEN_COMMAND && tok.getToken().equals("ENDIF")) {
+			if(tok.getTokenType() == ScriptToken.TOKEN_COMMAND && tok.getToken().equals("ENDIF")) {
 				//We've found the end to the current depth IF
 				rettokens.add(tok);
 				break;
 			
-			}else if(zElseAlso && (tok.getTokenType() == Token.TOKEN_COMMAND && tok.getToken().equals("ELSEIF")) ) {
+			}else if(zElseAlso && (tok.getTokenType() == ScriptToken.TOKEN_COMMAND && tok.getToken().equals("ELSEIF")) ) {
 				//We've found the end to the current depth IF
 				rettokens.add(tok);
 				break;
 			
-			}else if(zElseAlso && (tok.getTokenType() == Token.TOKEN_COMMAND && tok.getToken().equals("ELSE")) ) {
+			}else if(zElseAlso && (tok.getTokenType() == ScriptToken.TOKEN_COMMAND && tok.getToken().equals("ELSE")) ) {
 				//We've found the end to the current depth IF
 				rettokens.add(tok);
 				break;
 				
-			}else if(tok.getTokenType() == Token.TOKEN_COMMAND && tok.getToken().equals("IF")) {
+			}else if(tok.getTokenType() == ScriptToken.TOKEN_COMMAND && tok.getToken().equals("IF")) {
 				//Add it..
 				rettokens.add(tok);
 				currentpos++;
 				
 				//Go down One Level
-				List<Token> toks = getElseOrElseIfOrEndIF(zTokens, currentpos, false);
+				List<ScriptToken> toks = getElseOrElseIfOrEndIF(zTokens, currentpos, false);
 			
 				rettokens.addAll(toks);
 				currentpos += toks.size();
@@ -383,8 +383,8 @@ public class StatementParser {
 	 * @param zCurrentPosition
 	 * @return
 	 */
-	private static List<Token> getEndWHILE(List<Token> zTokens, int zCurrentPosition){
-		List<Token> rettokens = new ArrayList<>();
+	private static List<ScriptToken> getEndWHILE(List<ScriptToken> zTokens, int zCurrentPosition){
+		List<ScriptToken> rettokens = new ArrayList<>();
 		
 		int currentpos  = zCurrentPosition;
 		int total 		= zTokens.size();
@@ -393,20 +393,20 @@ public class StatementParser {
 		while(currentpos<total) {
 			
 			//Get the next token
-			Token tok = zTokens.get(currentpos);
+			ScriptToken tok = zTokens.get(currentpos);
 			
-			if(tok.getTokenType() == Token.TOKEN_COMMAND && tok.getToken().equals("ENDWHILE")) {
+			if(tok.getTokenType() == ScriptToken.TOKEN_COMMAND && tok.getToken().equals("ENDWHILE")) {
 				//We've found the end to the current depth IF
 				rettokens.add(tok);
 				break;
 				
-			}else if(tok.getTokenType() == Token.TOKEN_COMMAND && tok.getToken().equals("WHILE")) {
+			}else if(tok.getTokenType() == ScriptToken.TOKEN_COMMAND && tok.getToken().equals("WHILE")) {
 				//Add it..
 				rettokens.add(tok);
 				currentpos++;
 				
 				//Go down One Level
-				List<Token> toks = getEndWHILE(zTokens, currentpos);
+				List<ScriptToken> toks = getEndWHILE(zTokens, currentpos);
 			
 				rettokens.addAll(toks);
 				currentpos += toks.size();
@@ -429,14 +429,14 @@ public class StatementParser {
 	 * @param zCurrentPosition
 	 * @return The list of tokens
 	 */
-	private static List<Token> getTokensToNextCommand(List<Token> zTokens, int zCurrentPosition){
-		List<Token> rettokens = new ArrayList<>();
+	private static List<ScriptToken> getTokensToNextCommand(List<ScriptToken> zTokens, int zCurrentPosition){
+		List<ScriptToken> rettokens = new ArrayList<>();
 		
 		int ret   = zCurrentPosition;
 		int total = zTokens.size();
 		while(ret<total) {
-			Token tok = zTokens.get(ret);
-			if(tok.getTokenType() == Token.TOKEN_COMMAND) {
+			ScriptToken tok = zTokens.get(ret);
+			if(tok.getTokenType() == ScriptToken.TOKEN_COMMAND) {
 				break;
 			}else {
 				//Add it to the list
@@ -456,14 +456,14 @@ public class StatementParser {
 	 * @param zCurrentPosition
 	 * @return
 	 */
-	private static List<Token> getTokensToNextEquals(List<Token> zTokens, int zCurrentPosition){
-		List<Token> rettokens = new ArrayList<>();
+	private static List<ScriptToken> getTokensToNextEquals(List<ScriptToken> zTokens, int zCurrentPosition){
+		List<ScriptToken> rettokens = new ArrayList<>();
 		
 		int ret   = zCurrentPosition;
 		int total = zTokens.size();
 		while(ret<total) {
-			Token tok = zTokens.get(ret);
-			if(tok.getTokenType() == Token.TOKEN_OPERATOR && tok.getToken().equals("=")) {
+			ScriptToken tok = zTokens.get(ret);
+			if(tok.getTokenType() == ScriptToken.TOKEN_OPERATOR && tok.getToken().equals("=")) {
 				break;
 			}else {
 				//Add it to the list

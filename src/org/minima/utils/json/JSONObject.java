@@ -7,6 +7,7 @@ package org.minima.utils.json;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.nio.charset.Charset;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -89,7 +90,12 @@ public class JSONObject extends LinkedHashMap implements JSONAware, JSONStreamAw
 		
 		try {
 			writeJSONString(map, writer);
-			return writer.toString();
+			
+			//Create a UTF-8 String..
+			return new String(writer.toString().getBytes(Charset.forName("UTF-8")));
+			
+			//Old way
+//			return writer.toString();
 		} catch (IOException e) {
 			// This should never happen with a StringWriter
 			throw new RuntimeException(e);

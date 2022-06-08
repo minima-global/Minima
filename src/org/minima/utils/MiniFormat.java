@@ -1,19 +1,61 @@
 package org.minima.utils;
 
+import java.math.BigInteger;
+import java.util.Iterator;
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
+
 import org.minima.objects.base.MiniNumber;
+import org.minima.utils.json.JSONArray;
+import org.minima.utils.json.JSONObject;
 
 public class MiniFormat {
 
-	public static String JSONPretty(String zJSON) {
+	public static String JSONPretty(JSONArray zJSONArray) {
+		Iterator<JSONObject> it = zJSONArray.iterator();
+		
+		boolean arr = false;
+		if(zJSONArray.size()>1) {
+			arr = true;
+		}
+		
+		String result = "";
+		if(arr) {
+			result = "[";
+		}
+		
+		boolean first =true;
+		while(it.hasNext()) {
+			
+			if(!first) {
+				result += ",";
+			}
+			first = false;
+			
+			JSONObject json = it.next();
+			String res = JSONPretty(json);
+			
+			result += res;
+		}
+		
+		if(arr) {
+			result += "]";
+		}
+		
+		return result;
+	}
+	
+	public static String JSONPretty(JSONObject zJSONObj) {
 		//The Work String
-		String work = zJSON.trim();
+		String work = zJSONObj.toString().trim();
 		
 		//Too long clogs it up.. 
 		int len = work.length();
-		if(len>100000) {
-			//TOO LONG...
-			return work;	
-		}
+		
+//		if(len>100000) {
+//			//TOO LONG...
+//			return work;	
+//		}
 		
 		//The Copy
 		String ret       = "";
@@ -99,58 +141,6 @@ public class MiniFormat {
 		return ret;
 	}
 	
-	
-	
-//	public static String PrettyJSON(String zJSON) {
-//		//The Copy
-//		String ret = "";
-//		
-//		//How long
-//		int len  = zJSON.length();
-//		int tabs = 0;
-//		String tabstring = maketabstring(tabs);
-//		
-//		boolean inquotes = false;
-//		for(int i=0;i<len;i++) {
-//			char cc = zJSON.charAt(i);
-//	
-//			//Are we in quotes..
-//			if(cc == '"') {
-//				inquotes = !inquotes;
-//			}
-//			
-//			if(!inquotes) {
-//				if(cc == '{') {
-//					tabs++;
-//					tabstring = maketabstring(tabs);
-//					
-//					ret+= "{\n";
-//					ret += tabstring;
-//					
-//				}else if(cc == '}') {
-//					tabs--;
-//					tabstring = maketabstring(tabs);
-//					
-//					ret += "\n";
-//					ret += tabstring;
-//					ret += "}";
-//				
-//					
-//				}else if(cc == ',') {
-//					ret+= ",\n";
-//					ret += tabstring;
-//					
-//				}else {
-//					ret+= cc;
-//				}
-//			}else {
-//				ret+= cc;
-//			}
-//		}
-//		
-//		return ret;
-//	}
-	
 	private static String maketabstring(int zNum) {
 		String ret = "";
 		for(int i=0;i<zNum;i++) {
@@ -167,7 +157,7 @@ public class MiniFormat {
 	
 	public static String zeroPad(int zTotLength, MiniNumber zNumber) {
 		//Get the number..
-		String num       = zNumber.toString();
+		String num       = zNumber.floor().toString();
 		int len          = num.length();
 		int add 		 = zTotLength-len;
 		for(int i=0;i<add;i++) {
@@ -177,14 +167,43 @@ public class MiniFormat {
 		return num;
 	}
 	
-	public static void main(String[] zArgs) {
+	public static String ConvertMilliToTime(long zMilli) {
 		
-//		String test = "{\"version\":0.4,\"milliuptime\":2450,\"stringuptime\":\"0 Years 0 Months 0 Weeks 0 Days 0 Hours 0 Minutes 2 Seconds 450 Milliseconds\",\"conf\":\"\\/home\\/spartacusrex\\/minima\\/minima\",\"host\":\"0.0.0.0\",\"port\":9001,\"pulse\":true,\"root\":{\"block\":0,\"isblock\":true,\"txpowid\":\"0x8C73A2FF132C3242E83FA2F6AD389884A3170C0D5AE283BDEC89DD08151DD8E8\",\"parent\":\"0x0000000000000000000000000000000000000000000000000000000000000000\",\"blkdiff\":0,\"txndiff\":0,\"txn\":{\"inputs\":[],\"outputs\":[]},\"witness\":params[] pubk[] scripts[],\"txnlist\":[],\"nonce\":256,\"mmr\":\"0x7094AA8139BFBCC37CA832CADD5BB49ECCB2C54C6C1C6FC8DBAB354BA052BF66\",\"timemilli\":1573815008746},\"tip\":{\"block\":7,\"isblock\":true,\"txpowid\":\"0x188CF963491A7ED735CC60217C29598F86631503F4A7BB228AE9CAA3C85EF2EA\",\"parent\":\"0x8F50F40A85EABC440C10AB0781C39C41B3F44DC1A793C176AC4ECEB80F680AFE\",\"blkdiff\":0,\"txndiff\":0,\"txn\":{\"inputs\":[],\"outputs\":[]},\"witness\":params[] pubk[] scripts[],\"txnlist\":[],\"nonce\":-2804983266292932580,\"mmr\":\"0x7094AA8139BFBCC37CA832CADD5BB49ECCB2C54C6C1C6FC8DBAB354BA052BF66\",\"timemilli\":1573815011101},\"chainspeed\":2.9723991507431,\"lastblock\":7,\"totalpow\":8}";
+		long milliseconds = zMilli;
 		
-		String test = "[{\"version\": \"0.8, , 7.67\",\"milliuptime\": 2450, googoo : [23,34,45] }]";
+		long dy = TimeUnit.MILLISECONDS.toDays(milliseconds);
 		
-		String pretty = JSONPretty(test);
+		long yr = dy / 365;
+		dy %= 365;
 		
-		System.out.println(pretty);
+		long mn = dy / 30;
+		dy %= 30;
+		
+		long wk = dy / 7;
+		dy %= 7;
+		
+		long hr = TimeUnit.MILLISECONDS.toHours(milliseconds)
+				- TimeUnit.DAYS.toHours(TimeUnit.MILLISECONDS.toDays(milliseconds));
+		
+		long min = TimeUnit.MILLISECONDS.toMinutes(milliseconds)
+				- TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(milliseconds));
+		
+		long sec = TimeUnit.MILLISECONDS.toSeconds(milliseconds)
+				- TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(milliseconds));
+		
+		long ms = TimeUnit.MILLISECONDS.toMillis(milliseconds)
+				- TimeUnit.SECONDS.toMillis(TimeUnit.MILLISECONDS.toSeconds(milliseconds));
+		
+		return String.format("%d Years %d Months %d Weeks %d Days %d Hours %d Minutes %d Seconds %d Milliseconds", 
+						yr,mn, wk, dy, hr, min, sec, ms);
 	}
+
+	public static String createRandomString(int len) {
+		Random rand = new Random();
+		byte[] data = new byte[len];
+		rand.nextBytes(data);
+		BigInteger bignum = new BigInteger(1,data);
+		return bignum.toString(32).toUpperCase();
+	}
+	
 }
