@@ -30,7 +30,7 @@ plugins {
 sourceCompatibility = JavaVersion.VERSION_11
 
 group 'org.minima'
-version '0.98.15'
+version '0.100.32'
 
 
 repositories {
