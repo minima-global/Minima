@@ -43,7 +43,6 @@ public class UtilFuncs {
             int idx = 0;
             if (addresses.size() > 1) {
                 idx = rnd.nextInt(addresses.size());
-                P2PFunctions.log_debug("Bound: " + addresses.size() + " Random number: " + idx);
             }
             returnAddress = addresses.get(idx);
         }
