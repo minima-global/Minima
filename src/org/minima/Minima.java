@@ -121,8 +121,6 @@ public class Minima {
 			MinimaDB.getDB().getUserDB().setRPCEnabled(true);
 			main.getNetworkManager().startRPC();
 		}
-
-		
 		
 		//A shutdown hook..
 		if(shutdownhook) {
