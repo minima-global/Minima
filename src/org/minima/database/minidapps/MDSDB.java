@@ -49,7 +49,7 @@ public class MDSDB extends SqlDB {
 			SQL_INSERT_MINIDAPP 	= mSQLConnection.prepareStatement(insert);
 			
 			SQL_DELETE_MINIDAPP		= mSQLConnection.prepareStatement("DELETE FROM minidapps WHERE uid = ?");
-			SQL_LIST_MINIDAPPS		= mSQLConnection.prepareStatement("SELECT * FROM minidapps");
+			SQL_LIST_MINIDAPPS		= mSQLConnection.prepareStatement("SELECT * FROM minidapps ORDER BY name ASC");
 			
 		} catch (SQLException e) {
 			MinimaLogger.log(e);
