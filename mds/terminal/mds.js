@@ -33,17 +33,21 @@ var MDS = {
 		//Store this for websocket push messages
 		MDS_MAIN_CALLBACK = callback;
 
-		//Get the Host.. without the port
+		//Get the host and port..
 		var host = window.location.hostname;
+		var port =  Math.floor(window.location.port);
 		
-		MDS.rpchost 	= "http://"+host+":9002/";
+		var rpcport  = port-1;
+		var pollport = port+1;
+		
+		MDS.rpchost 	= "http://"+host+":"+rpcport+"/";
 		MDS.log("MDS RPCHOST  : "+MDS.rpchost);
 		
-		MDS.pollhost 	= "http://"+host+":9004/";
+		MDS.log("MDS MDSHOST  : http://"+window.location.host);
+		
+		MDS.pollhost 	= "http://"+host+":"+pollport+"/";
 		MDS.log("MDS POLLHOST : "+MDS.pollhost);
 		
-		//Info.. 
-		MDS.log("MDS RPCHOST : "+MDS.rpchost);
 		
 		//Start the Long Poll listener
 		PollListener();
