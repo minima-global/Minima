@@ -51,8 +51,13 @@ public class mds extends Command {
 		
 			String file = getParam("file");
 			
+			File minidapp = new File(file);
+			if(!minidapp.exists()) {
+				throw new CommandException("MiniDAPP not found.. : "+file);
+			}
+			
 			//Now start
-			FileInputStream fis = new FileInputStream(file);
+			FileInputStream fis = new FileInputStream(minidapp);
 			
 			//Where is it going..
 			String rand = MiniData.getRandomData(16).to0xString();
@@ -100,7 +105,11 @@ public class mds extends Command {
 			
 			//Start deleting..
 			File dest 		= Main.getInstance().getMDSManager().getWebFolder();
-			File minidapp 	= new File(dest,uid); 
+			File minidapp 	= new File(dest,uid);
+			if(!minidapp.exists()) {
+				throw new CommandException("MiniDAPP not found.. : "+minidapp.getAbsolutePath());
+			}
+			
 			MiniFile.deleteFileOrFolder(minidapp.getAbsolutePath(), minidapp);
 			
 			//And from the DB
