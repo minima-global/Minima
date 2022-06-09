@@ -39,7 +39,6 @@ public class ParamConfigurerTest {
                 "-rpcenable",
                 "-daemon",
                 "-host", "124.0.1.10",
-                "-rpc", "4444",
                 "-data", "mydaatafolder",
                 "-p2pnode", "124.0.1.9",
                 "-genesis",
@@ -56,7 +55,6 @@ public class ParamConfigurerTest {
 
         assertEquals(8888, GeneralParams.MINIMA_PORT);
 //        assertEquals("mydaatafolder", GeneralParams.DATA_FOLDER);
-        assertEquals(4444, GeneralParams.RPC_PORT);
         assertEquals("124.0.1.10", GeneralParams.MINIMA_HOST);
         assertTrue(GeneralParams.IS_HOST_SET);
 //        assertTrue(GeneralParams.AUTOMINE);
@@ -99,7 +97,6 @@ public class ParamConfigurerTest {
         envVarMap.put("MINIMA_CONNECT", "124.0.1.9:7777");
         envVarMap.put("MINIMA_RPCENABLE", "TRUE");
         envVarMap.put("MINIMA_DAEMON", "true");
-        envVarMap.put("minima_rpc", "1111");
         envVarMap.put("MINIMA_NOCONNECT", "something");
         envVarMap.put("OTHER_PROG_NOCONNECT", "something");
 
@@ -110,7 +107,6 @@ public class ParamConfigurerTest {
                 .usingProgramArgs(progArgs)
                 .configure();
 
-        assertEquals(1111, GeneralParams.RPC_PORT);
         assertEquals(8888, GeneralParams.MINIMA_PORT);
         assertFalse(GeneralParams.NOCONNECT);
         assertEquals("124.0.1.9:7777", GeneralParams.CONNECT_LIST);

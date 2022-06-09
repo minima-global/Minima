@@ -98,6 +98,11 @@ public class Minima {
 		boolean rpcenable = configurer.isRpcenable();
 		boolean shutdownhook = configurer.isShutDownHook();
 		
+		//Set the Ports.. If Minima port has changed
+		GeneralParams.RPC_PORT 	= GeneralParams.MINIMA_PORT+1;
+		GeneralParams.MDS_PORT 	= GeneralParams.MINIMA_PORT+2;
+		GeneralParams.POLL_PORT = GeneralParams.MINIMA_PORT+3;
+		
 		//Now lets go..
 		MinimaLogger.log("**********************************************");
 		MinimaLogger.log("*  __  __  ____  _  _  ____  __  __    __    *");
@@ -116,7 +121,7 @@ public class Minima {
 			MinimaDB.getDB().getUserDB().setRPCEnabled(true);
 			main.getNetworkManager().startRPC();
 		}
-
+		
 		//A shutdown hook..
 		if(shutdownhook) {
 			Runtime.getRuntime().addShutdownHook(new Thread(){

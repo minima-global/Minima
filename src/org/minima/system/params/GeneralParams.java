@@ -12,16 +12,6 @@ public class GeneralParams {
 	 */
 	public static boolean IS_ACCEPTING_IN_LINKS = true;
 	
-//	/**
-//	 * Is this a private network - don;t connect to any users..
-//	 */
-//	public static boolean PRIVATE_NETWORK = false;
-//	
-//	/**
-//	 * Are we automining a TxPoW every block
-//	 */
-//	public static boolean AUTOMINE = false;
-//	
 	/**
 	 * Are we creating the genesis block 
 	 */
@@ -55,7 +45,22 @@ public class GeneralParams {
 	/**
 	 * The Minima RPC port
 	 */
-	public static int RPC_PORT = 9002;
+	public static int RPC_PORT = MINIMA_PORT+1;
+	
+	/**
+	 * The MDS webserver
+	 */
+	public static int MDS_PORT = MINIMA_PORT+2;
+	
+	/**
+	 * The MDS Polling Server
+	 */
+	public static int POLL_PORT = MINIMA_PORT+3;
+	
+	/**
+	 * MDS ENabled
+	 */
+	public static boolean MDS_ENABLED = true;
 	
 	/**
 	 * Test Params or Main Params

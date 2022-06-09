@@ -131,12 +131,17 @@ public class ParamConfigurer {
         port("port", "Specify the Minima port", (arg, configurer) -> {
             GeneralParams.MINIMA_PORT = Integer.parseInt(arg);
         }),
-        rpc("rpc", "Specify the RPC port", (arg, configurer) -> {
-            GeneralParams.RPC_PORT = Integer.parseInt(arg);
-        }),
+//        rpc("rpc", "Specify the RPC port", (arg, configurer) -> {
+//            GeneralParams.RPC_PORT = Integer.parseInt(arg);
+//        }),
         rpcenable("rpcenable", "Enable rpc", (args, configurer) -> {
             if ("true".equals(args)) {
                 configurer.rpcenable = true;
+            }
+        }),
+        mdsdisable("mdsdisable", "Disable MDS", (args, configurer) -> {
+            if ("true".equals(args)) {
+            	GeneralParams.MDS_ENABLED = false;
             }
         }),
         conf("conf", "Specify a configuration file (absolute)", (args, configurer) -> {
@@ -147,11 +152,6 @@ public class ParamConfigurer {
                 configurer.daemon = true;
             }
         }),
-//        private1("private", "Use a private network", (args, configurer) -> {
-//            if ("true".equals(args)) {
-//                GeneralParams.PRIVATE_NETWORK = true;
-//            }
-//        }),
         isclient("isclient", "Tells the P2P System that this node can't accept incoming connections", (args, configurer) -> {
             if ("true".equals(args)) {
                 GeneralParams.IS_ACCEPTING_IN_LINKS = false;
