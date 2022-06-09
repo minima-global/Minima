@@ -341,6 +341,10 @@ public class TxPoWGenerator {
 	 * Get the Median Block based on milli time..
 	 */
 	public static TxPoWTreeNode getMedianTimeBlock(TxPoWTreeNode zStartBlock) {
+		return getMedianTimeBlock(zStartBlock, GlobalParams.MEDIAN_BLOCK_CALC);
+	}
+	
+	public static TxPoWTreeNode getMedianTimeBlock(TxPoWTreeNode zStartBlock, int zBlocksBack) {
 		
 		//The block we start checking from
 		TxPoWTreeNode current = zStartBlock;
@@ -349,7 +353,7 @@ public class TxPoWGenerator {
 		ArrayList<TxPoWTreeNode> allblocks = new ArrayList<>();
 		
 		int counter=0;
-		while(counter<GlobalParams.MEDIAN_BLOCK_CALC && current!=null) {
+		while(counter<zBlocksBack && current!=null) {
 			
 			//Add to our list
 			allblocks.add(current);

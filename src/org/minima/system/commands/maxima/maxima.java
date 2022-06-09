@@ -16,7 +16,6 @@ import org.minima.system.network.maxima.MaximaManager;
 import org.minima.system.network.maxima.message.MaximaMessage;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.Crypto;
-import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
@@ -39,7 +38,7 @@ public class maxima extends Command {
 		String func = getParam("action", "info");
 		
 		MaximaManager max = Main.getInstance().getMaxima();
-		if(!max.isInited()) {
+		if(max == null || !max.isInited()) {
 			ret.put("status", false);
 			ret.put("message", "Maxima still starting up..");
 			return ret;

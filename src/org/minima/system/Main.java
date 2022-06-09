@@ -16,6 +16,7 @@ import org.minima.system.brains.TxPoWMiner;
 import org.minima.system.brains.TxPoWProcessor;
 import org.minima.system.genesis.GenesisMMR;
 import org.minima.system.genesis.GenesisTxPoW;
+import org.minima.system.mds.MDSManager;
 import org.minima.system.network.NetworkManager;
 import org.minima.system.network.maxima.MaximaManager;
 import org.minima.system.network.minima.NIOClient;
@@ -121,6 +122,11 @@ public class Main extends MessageProcessor {
 	MaximaManager mMaxima;
 	
 	/**
+	 * MDS
+	 */
+	MDSManager mMDS;
+	
+	/**
 	 * Are we shutting down..
 	 */
 	boolean mShuttingdown = false;
@@ -182,8 +188,12 @@ public class Main extends MessageProcessor {
 		String basepriv = MinimaDB.getDB().getUserDB().getBasePrivateSeed();
 		MinimaDB.getDB().getWallet().initBaseSeed(new MiniData(basepriv));
 		
-		//Calculate the User hashrate..
-		MiniNumber hashrate = TxPoWMiner.calculateHashRate();
+		//Calculate the User hashrate.. start her up as seems to make a difference.. initialises..
+		TxPoWMiner.calculateHashRate(new MiniNumber(10000));
+		
+		//Now do the actual check..
+		MiniNumber hashcheck = new MiniNumber("250000");
+		MiniNumber hashrate = TxPoWMiner.calculateHashRate(hashcheck);
 		MinimaDB.getDB().getUserDB().setHashRate(hashrate);
 		MinimaLogger.log("Calculate device hash rate : "+hashrate.div(MiniNumber.MILLION).setSignificantDigits(4)+" MHs");
 		
@@ -205,7 +215,10 @@ public class Main extends MessageProcessor {
 		
 		//Start up Maxima
 		mMaxima = new MaximaManager();
-				
+		
+		//Start MDS
+		mMDS = new MDSManager();
+		
 		//Simulate traffic message ( only if auto mine is set )
 		AUTOMINE_TIMER = MiniNumber.THOUSAND.div(GlobalParams.MINIMA_BLOCK_SPEED).getAsLong();
 		PostTimerMessage(new TimerMessage(AUTOMINE_TIMER, MAIN_AUTOMINE));
@@ -256,6 +269,9 @@ public class Main extends MessageProcessor {
 			//Shut down Maxima
 			mMaxima.shutdown();
 			
+			//ShutDown MDS
+			mMDS.shutdown();
+			
 			//Stop the Miner
 			mTxPoWMiner.stopMessageProcessor();
 			
@@ -296,6 +312,9 @@ public class Main extends MessageProcessor {
 		
 		//Shut down Maxima
 		mMaxima.shutdown();
+		
+		//ShutDown MDS
+		mMDS.shutdown();
 				
 		//Stop the Miner
 		mTxPoWMiner.stopMessageProcessor();
@@ -380,6 +399,10 @@ public class Main extends MessageProcessor {
 	
 	public MaximaManager getMaxima() {
 		return mMaxima;
+	}
+	
+	public MDSManager getMDSManager() {
+		return mMDS;
 	}
 	
 	public void setTrace(boolean zTrace, String zFilter) {
@@ -596,15 +619,23 @@ public class Main extends MessageProcessor {
 	 * Post a network message to the webhook / Android listeners
 	 */
 	public void PostNotifyEvent(String zEvent, JSONObject zData) {
+		
+		//Create the JSON Message
+		JSONObject notify = new JSONObject();
+		notify.put("event", zEvent);
+		notify.put("data", zData);
+		
 		if(getNetworkManager() != null) {
-			
-			//Create the JSON Message
-			JSONObject notify = new JSONObject();
-			notify.put("event", zEvent);
-			notify.put("data", zData);
-			
 			//And post
 			getNetworkManager().getNotifyManager().PostEvent(notify);
+		}
+		
+		//Tell the MDS..
+		if(getMDSManager() != null) {
+			Message poll = new Message(MDSManager.MDS_POLLMESSAGE);
+			poll.addObject("poll", notify);
+			
+			getMDSManager().PostMessage(poll);
 		}
 	}
 	

@@ -20,7 +20,7 @@ import org.minima.utils.json.JSONArray;
  * @author spartacusrex
  *
  */
-public class RPCHandler implements Runnable {
+public class CMDHandler implements Runnable {
 
 	/**
 	 * The Net Socket
@@ -31,7 +31,7 @@ public class RPCHandler implements Runnable {
 	 * Main Constructor
 	 * @param zSocket
 	 */
-	public RPCHandler(Socket zSocket) {
+	public CMDHandler(Socket zSocket) {
 		//Store..
 		mSocket = zSocket;
 	}
@@ -76,6 +76,31 @@ public class RPCHandler implements Runnable {
 			
 			//And finally URL decode..
 			fileRequested = URLDecoder.decode(fileRequested,"UTF-8").trim();
+			
+			//Get the Headers..
+			int contentlength = 0;
+			while(input != null && !input.trim().equals("")) {
+				//MinimaLogger.log("RPC : "+input);
+				int ref = input.indexOf("Content-Length:"); 
+				if(ref != -1) {
+					//Get it..
+					int start     = input.indexOf(":");
+					contentlength = Integer.parseInt(input.substring(start+1).trim());
+				}	
+				input = in.readLine();
+			}
+			
+			//Is it a POST request
+			if(method.equals("POST")) {
+				//Get the POST data..
+				char[] cbuf = new char[contentlength];
+				
+				//Lets see..
+				in.read(cbuf);
+				
+				//Set this..
+				fileRequested = new String(cbuf);
+			}
 			
 			//Now run this function..
 			JSONArray res = Command.runMultiCommand(fileRequested);
