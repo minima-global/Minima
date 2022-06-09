@@ -15,6 +15,7 @@ import org.minima.database.MinimaDB;
 import org.minima.database.minidapps.MDSDB;
 import org.minima.database.minidapps.MiniDAPP;
 import org.minima.objects.base.MiniString;
+import org.minima.system.mds.hub.MDSHub;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MinimaLogger;
 
@@ -93,7 +94,7 @@ public class MDSFileHandler implements Runnable {
 			
 			if(fileRequested.equals("")) {
 				
-				String webpage = createIndexPage();
+				String webpage = MDSHub.createHubPage();
 				
 				//It's the root file..
 				byte[] file = webpage.getBytes();
@@ -152,7 +153,7 @@ public class MDSFileHandler implements Runnable {
 		}	
 	}
 
-	public String createIndexPage() {
+	/*public String createIndexPage() {
 		
 		String page = "<html><head><title>MDS</title></head><body>"
 				+ "<center>"
@@ -190,6 +191,6 @@ public class MDSFileHandler implements Runnable {
 		page += "</center></body></html>";
 		
 		return page;
-	}
+	}*/
 	
 }
