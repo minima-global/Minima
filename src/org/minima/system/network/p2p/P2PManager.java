@@ -50,13 +50,22 @@ public class P2PManager extends MessageProcessor {
     private static final Random rand = new Random();
     private final P2PState state = new P2PState();
 
+    /**
+     * Separate thread for checking peers
+     */
+    P2PPeersChecker mPeersChecker;
+    
     public P2PManager() {
         super("P2PMANAGER");
-
+        
         if (GeneralParams.TEST_PARAMS) {
             MinimaLogger.log("[+] P2P System using Test Params");
             P2PTestParams.setTestParams();
         }
+
+        //Start the Peers checker..
+        mPeersChecker = new P2PPeersChecker();
+        
         //And start the loop timer..
         PostTimerMessage(new TimerMessage(10_000, P2P_LOOP));
         PostTimerMessage(new TimerMessage(P2PParams.NODE_NOT_ACCEPTING_CHECK_DELAY, P2P_ASSESS_CONNECTIVITY));
@@ -422,6 +431,9 @@ public class P2PManager extends MessageProcessor {
         p2pdb.setVersion();
         p2pdb.setPeersList(new ArrayList<>(state.getKnownPeers()));
 
+        //Stop the peers checker
+        mPeersChecker.stopMessageProcessor();
+        
         //And finish with..
         stopMessageProcessor();
     }

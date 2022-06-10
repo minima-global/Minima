@@ -4,8 +4,10 @@ import java.util.ArrayList;
 
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
+import org.minima.system.commands.CommandException;
 import org.minima.system.network.p2p.P2PManager;
 import org.minima.system.network.p2p.messages.InetSocketAddressIO;
+import org.minima.system.params.GeneralParams;
 import org.minima.utils.json.JSONObject;
 
 public class peers extends Command {
@@ -18,8 +20,17 @@ public class peers extends Command {
 	public JSONObject runCommand() throws Exception{
 		JSONObject ret = getJSONReply();
 
+		//Is the P2P Enable..
+		if(!GeneralParams.P2P_ENABLED) {
+			throw new CommandException("P2P System not enabled");
+		}
+		
+		
 		P2PManager p2PManager = (P2PManager) Main.getInstance().getNetworkManager().getP2PManager();
-		ret.put("peers-list", InetSocketAddressIO.addressesListToJSONArray(new ArrayList<>(p2PManager.getPeers())));
+		
+		JSONObject resp = new JSONObject();
+		resp.put("peers-list", InetSocketAddressIO.addressesListToJSONArray(new ArrayList<>(p2PManager.getPeers())));
+		ret.put("response", resp);
 		
 		return ret;
 	}

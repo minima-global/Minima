@@ -91,10 +91,10 @@ public class MaximaContactManager extends MessageProcessor {
 			JSONObject maxjson = (JSONObject) zMessage.getObject("maxmessage");
 			
 			//Get the public key
-			String publickey = (String) maxjson.get("from");
+			String publickey = maxjson.getString("from");
 			
 			//Get the data
-			String data 	= (String) maxjson.get("data");
+			String data 	= maxjson.getString("data");
 			MiniData dat 	= new MiniData(data);
 			
 			//Convert to a JSON
@@ -143,26 +143,21 @@ public class MaximaContactManager extends MessageProcessor {
 			
 			MaximaContact mxcontact = new MaximaContact(publickey);
 			mxcontact.setCurrentAddress(address);
+			mxcontact.setname(name);
+			mxcontact.setMinimaAddress(mxaddress);
+			mxcontact.setBlockDetails(topblock, checkblock, checkhash);
+			mxcontact.setLastSeen(System.currentTimeMillis());
 			
 			if(checkcontact == null) {
-				mxcontact.setname(name);
-				mxcontact.setMinimaAddress(mxaddress);
-				mxcontact.setMyAddress("newcontact");
-				mxcontact.setBlockDetails(topblock, checkblock, checkhash);
-				mxcontact.setLastSeen(System.currentTimeMillis());
-				
+				//New Contact
 				maxdb.newContact(mxcontact);
 				
 			}else{
-				mxcontact.setExtraData(checkcontact.getExtraData());
-				
 				//Overwrite the new details
-				mxcontact.setname(name);
-				mxcontact.setMinimaAddress(mxaddress);
-				mxcontact.setBlockDetails(topblock, checkblock, checkhash);
+				mxcontact.setExtraData(checkcontact.getExtraData());
 				mxcontact.setMyAddress(checkcontact.getMyAddress());
-				mxcontact.setLastSeen(System.currentTimeMillis());
-				
+
+				//Update the DB 
 				maxdb.updateContact(mxcontact);
 			}
 			
@@ -187,17 +182,17 @@ public class MaximaContactManager extends MessageProcessor {
 			String address 	 = zMessage.getString("address");
 			
 			//Send a Contact info message to a user
-			JSONObject contactinfo	= getMaximaContactInfo(false,delete);
+			JSONObject mycontactinfo	= getMaximaContactInfo(false,delete);
 			
 			//Now Update Our DB..
 			if(!delete) {
 				MaximaContact mxcontact = maxdb.loadContactFromPublicKey(publickey);
-				mxcontact.setMyAddress((String)contactinfo.get("address"));
+				mxcontact.setMyAddress((String)mycontactinfo.get("address"));
 				maxdb.updateContact(mxcontact);
 			}
 			
-			MiniString str			= new MiniString(contactinfo.toString());
-			MiniData mdata 			= new MiniData(str.getData());
+			MiniString str			= new MiniString(mycontactinfo.toString());
+			MiniData mdata 			= new MiniData(mycontactinfo.toString().getBytes(MiniString.MINIMA_CHARSET));
 			
 			//Now convert into the correct message..
 			Message sender = maxima.createSendMessage(address, CONTACT_APPLICATION , mdata);

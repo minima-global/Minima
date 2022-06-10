@@ -5,6 +5,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.security.KeyPair;
 import java.util.ArrayList;
@@ -19,6 +20,7 @@ import org.minima.objects.Address;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
+import org.minima.system.commands.maxima.maxima;
 import org.minima.system.network.maxima.message.MaxTxPoW;
 import org.minima.system.network.maxima.message.MaximaInternal;
 import org.minima.system.network.maxima.message.MaximaMessage;
@@ -63,6 +65,12 @@ public class MaximaManager extends MessageProcessor {
 	public static final String MAXIMA_RECMESSAGE 	= "MAXIMA_RECMESSAGE";
 	public static final String MAXIMA_SENDMESSAGE 	= "MAXIMA_SENDDMESSAGE";
 	public static final String MAXIMA_REFRESH 		= "MAXIMA_REFRESH";
+	
+	/**
+	 * Send a message to CHECK Maxima is working on connect
+	 */
+	public static final String MAXIMA_SENDCHKCONNECT 	= "MAXIMA_SENDCHKCONNECT";
+	public static final String MAXIMA_CHKCONECT_APP 	= "**maxima_check_connect**";
 	
 	/**
 	 * UserDB data
@@ -254,19 +262,52 @@ public class MaximaManager extends MessageProcessor {
 					
 					//Now insert this into the DB
 					maxdb.newHost(mxhost);
-				}else{
+				}else {
 					MinimaLogger.log("MAXIMA EXISTING connection : "+nioc.getFullAddress());
-					
-					//Update our details..
-					mxhost.setConnected(1);
-					maxdb.updateHost(mxhost);
 				}
 				
 				//So we know the details.. Post them to him.. so he knows who we are..
 				MaximaCTRLMessage maxmess = new MaximaCTRLMessage(MaximaCTRLMessage.MAXIMACTRL_TYPE_ID);
 				maxmess.setData(mxhost.getPublicKey());
 				NIOManager.sendNetworkMessage(nioc.getUID(), NIOMessage.MSG_MAXIMA_CTRL, maxmess);
+				
+				//And now post a check message..
+				String to 			= mxhost.getMaximaAddress();
+				String uid			= nioc.getUID();
+				
+				//Are we ready to mine a message
+				if(MinimaDB.getDB().getTxPoWTree().getTip() != null){
+					//Send Immediately..
+					Message check = new Message(MAXIMA_SENDCHKCONNECT);
+					check.addString("to", to);
+					check.addString("uid", uid);
+					PostMessage(check);
+					
+				}else {
+					
+					MinimaLogger.log("TIMED Maxima connect as no chain yet.. : "+nioc.getFullAddress());
+					
+					//With Delay
+					TimerMessage check = new TimerMessage(10000,MAXIMA_SENDCHKCONNECT);
+					check.addString("to", to);
+					check.addString("uid", uid);
+					PostTimerMessage(check);
+				}
 			}
+		
+		}else if(zMessage.getMessageType().equals(MAXIMA_SENDCHKCONNECT)) {
+			
+			//Send a check Connect message
+			String to 			= zMessage.getString("to");
+			String application 	= MAXIMA_CHKCONECT_APP;
+			MiniData data 		= new MiniData(zMessage.getString("uid").getBytes());
+			
+			//Create a HELLO message
+			Message chkconnect = maxima.createSendMessage(to,application,data);
+			
+			//Send it..
+			PostMessage(chkconnect);
+			
 			
 		}else if(zMessage.getMessageType().equals(MAXIMA_DISCONNECTED)) {
 			
@@ -298,9 +339,14 @@ public class MaximaManager extends MessageProcessor {
 					ArrayList<MaximaContact> allcontacts = maxdb.getAllContacts();
 					for(MaximaContact contact : allcontacts) {
 						
+						//Check if contact needs updating..
+						//MinimaLogger.log("Check Contact for "+host+" "+contact.getMyAddress());
+						
 						//Only reset those that use this address
 						if(contact.getMyAddress().contains(host)) {
 						
+							MinimaLogger.log("MAXIMA Updating contact on disconnected host : "+contact.getName());
+							
 							//Update them with a new address..
 							String publickey = contact.getPublicKey();
 							String address	 = contact.getCurrentAddress();
@@ -467,10 +513,32 @@ public class MaximaManager extends MessageProcessor {
 					maxdb.updateHost(host);
 				}
 				
+			}else if(application.equals(MAXIMA_CHKCONECT_APP)) {
+				
+				//Get the Data
+				MiniData maxdata = new MiniData(maxjson.getString("data"));
+				String uid = new String(maxdata.getBytes());
+				
+				//Check Valid..
+				if(!uid.equals(nioc.getUID())) {
+					MinimaLogger.log("INVALID MAXCHECK REC:"+uid+" FROM:"+nioc.getUID());
+					return;
+				}
+				
+				MinimaLogger.log("MAXIMA HOST accepted : "+nioc.getFullAddress());
+				
+				//Get the HOST
+				MaximaHost mxhost = maxdb.loadHost(nioc.getFullAddress());
+				
+				//Now we can use this as one of Our Addresses
+				mxhost.setConnected(1);
+				maxdb.updateHost(mxhost);
+				
 			}else {
 				//Notify The Listeners
 				Main.getInstance().PostNotifyEvent("MAXIMA",maxjson);
 			}
+		
 		}
 	}
 	
@@ -520,7 +588,12 @@ public class MaximaManager extends MessageProcessor {
 	public static MiniData sendMaxPacket(String zHost, int zPort, MiniData zMaxMessage) throws IOException {
 		
 		//Open the socket..
-		Socket sock = new Socket(zHost, zPort);
+		Socket sock = new Socket();
+
+		//3 seconds to connect
+		sock.connect(new InetSocketAddress(zHost, zPort), 5000);
+		
+		//10 seconds to read
 		sock.setSoTimeout(10000);
 		
 		//Create the streams..
@@ -580,19 +653,19 @@ public class MaximaManager extends MessageProcessor {
 					if(!validresp.isEqual(MAXIMA_RESPONSE_OK)) {
 						
 						if(validresp.isEqual(MaximaManager.MAXIMA_RESPONSE_TOOBIG)) {
-							MinimaLogger.log("Warning : Maxima message too big not delivered to.. "+zHost+"@"+zPort);
+							MinimaLogger.log("Warning : Maxima message too big not delivered to.. "+zHost+":"+zPort);
 						}else if(validresp.isEqual(MaximaManager.MAXIMA_RESPONSE_UNKNOWN)) {
-							MinimaLogger.log("Warning : Maxima message Unkonw Address not delivered to.. "+zHost+"@"+zPort);
+							MinimaLogger.log("Warning : Maxima message Unkown Address not delivered to.. "+zHost+":"+zPort);
 						}else if(validresp.isEqual(MaximaManager.MAXIMA_RESPONSE_WRONGHASH)) {
-							MinimaLogger.log("Warning : Maxima message TxPoW Hash wrong not delivered to.. "+zHost+"@"+zPort);
+							MinimaLogger.log("Warning : Maxima message TxPoW Hash wrong not delivered to.. "+zHost+":"+zPort);
 						}else {
-							MinimaLogger.log("Warning : Maxima message not delivered to.. "+zHost+"@"+zPort);
+							MinimaLogger.log("Warning : Maxima message not delivered to.. "+zHost+":"+zPort);
 						}
 						
 					}
 					
 				}catch(Exception exc){
-					MinimaLogger.log("Error sending Maxima message : "+exc.toString());
+					MinimaLogger.log("Error sending Maxima message to "+zHost+":"+zPort+" :"+exc.toString());
 				}
 			}
 		};
