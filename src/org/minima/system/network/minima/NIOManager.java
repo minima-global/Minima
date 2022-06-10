@@ -627,7 +627,7 @@ public class NIOManager extends MessageProcessor {
 	}
 	
 	/**
-	 * A special PING message to  chjeck a valid connection..
+	 * A special PING message to  check a valid connection..
 	 */
 	public static Greeting sendPingMessage(String zHost, int zPort) {
 		
@@ -638,8 +638,13 @@ public class NIOManager extends MessageProcessor {
 			MiniData msg = NIOManager.createNIOMessage(NIOMessage.MSG_SINGLE_PING, MiniData.ZERO_TXPOWID);
 			
 			//Open the socket..
-			Socket sock 			= new Socket(zHost, zPort);
-			sock.setSoTimeout(20000);
+			Socket sock = new Socket();
+			
+			//3 seconds to connect
+			sock.connect(new InetSocketAddress(zHost, zPort), 3000);
+			
+			//10 seconds to read
+			sock.setSoTimeout(10000);
 			
 			//Create the streams..
 			OutputStream out 		= sock.getOutputStream();
