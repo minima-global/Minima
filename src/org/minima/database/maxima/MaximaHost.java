@@ -15,17 +15,17 @@ public class MaximaHost {
 	/**
 	 * The Host
 	 */
-	public String mHost;
+	public String mHost = "";
 	
 	/**
 	 * RSA Keys used with this host
 	 */
-	MiniData mPublic;
-	MiniData mPrivate;
+	MiniData mPublic 	= MiniData.ZERO_TXPOWID;
+	MiniData mPrivate	= MiniData.ZERO_TXPOWID;
 	
 	long mLastSeen = System.currentTimeMillis();
 	
-	int mConnected;
+	int mConnected = 0;
 	
 	public MaximaHost() {}
 	

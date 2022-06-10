@@ -145,7 +145,7 @@ public class MaximaDB extends SqlDB {
 			SQL_INSERT_MAXIMA_HOST.setString(1, zHost.getHost());
 			SQL_INSERT_MAXIMA_HOST.setBytes(2, zHost.getPublicKey().getBytes());
 			SQL_INSERT_MAXIMA_HOST.setBytes(3, zHost.getPrivateKey().getBytes());
-			SQL_INSERT_MAXIMA_HOST.setInt(4, 1);
+			SQL_INSERT_MAXIMA_HOST.setInt(4, zHost.getConnected());
 			SQL_INSERT_MAXIMA_HOST.setLong(5, zHost.getLastSeen());
 			
 			//Do it.

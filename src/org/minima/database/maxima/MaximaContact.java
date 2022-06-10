@@ -22,22 +22,22 @@ public class MaximaContact {
 	/**
 	 * Extra data can be stored with the contact as a aJSON
 	 */
-	public JSONObject mExtraData;
+	public JSONObject mExtraData = new JSONObject();
 	
 	/**
 	 * The actual MAIN public Key of the Contact
 	 */
-	public String mPublicKey;
+	public String mPublicKey = "0x00";
 	
 	/**
 	 * Where you contact them
 	 */
-	public String 	mCurrentAddress;
+	public String 	mCurrentAddress 	= "Mx00";
 	
 	/**
 	 * Where they contact you
 	 */
-	public String 	mMyCurrentAddress;
+	public String 	mMyCurrentAddress	= "Mx00";
 	
 	/**
 	 * Last Seen
@@ -46,7 +46,6 @@ public class MaximaContact {
 	
 	public MaximaContact(String zPublicKey) {
 		mPublicKey	= zPublicKey;
-		mExtraData 	= new JSONObject();
 		setname("noname");
 		setMinimaAddress("Mx00");
 		setBlockDetails(MiniNumber.ZERO, MiniNumber.ZERO, MiniData.ZERO_TXPOWID);

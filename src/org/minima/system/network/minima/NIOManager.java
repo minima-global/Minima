@@ -385,6 +385,11 @@ public class NIOManager extends MessageProcessor {
 				reconnect = zMessage.getBoolean("reconnect");
 			}
 			
+			//Is it a vaid client..
+			if(!nioc.isValidGreeting()) {
+				reconnect = false;
+			}
+			
 			//Lost a connection
 			if(reconnect && nioc.isOutgoing()) {
 				String host = nioc.getHost();
@@ -548,6 +553,8 @@ public class NIOManager extends MessageProcessor {
 					//we connected.. 
 					NIOManager.this.mNIOServer.regsiterNewSocket(sc);
 					
+					MinimaLogger.log("Connected attempt success to "+zNIOClient.getFullAddress());
+					
 				}catch(Exception exc) {
 					//Try again in a minute..
 //					MinimaLogger.log(zNIOClient.getUID()+" INFO : connecting attempt "+zNIOClient.getConnectAttempts()+" to "+zNIOClient.getHost()+":"+zNIOClient.getPort()+" "+exc.toString());
@@ -639,7 +646,7 @@ public class NIOManager extends MessageProcessor {
 			
 			//Open the socket..
 			Socket sock = new Socket();
-			
+
 			//3 seconds to connect
 			sock.connect(new InetSocketAddress(zHost, zPort), 3000);
 			
