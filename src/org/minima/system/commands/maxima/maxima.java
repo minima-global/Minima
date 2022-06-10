@@ -183,17 +183,26 @@ public class maxima extends Command {
 			
 			//Now construct a complete Maxima Data packet
 			try {
+				//Get some time values..
+				long timenow = System.currentTimeMillis();
+				
 				//Create the packet
 				MiniData maxpacket = MaximaManager.constructMaximaData(sender);
-			
+				long creation = System.currentTimeMillis();
+				
 				//And Send it..
 				MiniData validresp = MaximaManager.sendMaxPacket(tohost, toport, maxpacket);
+				long sending = System.currentTimeMillis();
+				
 				boolean valid = true;
 				if(!validresp.isEqual(MaximaManager.MAXIMA_RESPONSE_OK)) {
 					valid = false;
 				}
 				
 				json.put("delivered", valid);
+				json.put("creation", creation-timenow);
+				json.put("sending", sending-creation);
+				
 				if(!valid) {
 					if(validresp.isEqual(MaximaManager.MAXIMA_RESPONSE_TOOBIG)) {
 						json.put("error", "Maxima Mesasge too big");
