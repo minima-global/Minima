@@ -67,8 +67,8 @@ public class MaximaContactManager extends MessageProcessor {
 			//Extra Data
 			ret.put("name", MinimaDB.getDB().getUserDB().getMaximaName());
 			
-			String address 		= MinimaDB.getDB().getWallet().getDefaultAddress().getAddress();
-			String mxaddress 	= Address.makeMinimaAddress(new MiniData(address)); 
+			String minimaaddress = MinimaDB.getDB().getWallet().getDefaultAddress().getAddress();
+			String mxaddress 	 = Address.makeMinimaAddress(new MiniData(minimaaddress)); 
 			ret.put("minimaaddress", mxaddress);
 			
 			ret.put("topblock",tip.getBlockNumber().toString());
@@ -143,24 +143,29 @@ public class MaximaContactManager extends MessageProcessor {
 			
 			MaximaContact mxcontact = new MaximaContact(publickey);
 			mxcontact.setCurrentAddress(address);
-			mxcontact.setname(name);
-			mxcontact.setMinimaAddress(mxaddress);
-			mxcontact.setBlockDetails(topblock, checkblock, checkhash);
 			mxcontact.setLastSeen(System.currentTimeMillis());
 			
 			if(checkcontact == null) {
 				//New Contact
+				mxcontact.setname(name);
+				mxcontact.setMinimaAddress(mxaddress);
+				mxcontact.setBlockDetails(topblock, checkblock, checkhash);
+				
 				maxdb.newContact(mxcontact);
 				
 			}else{
-				//Overwrite the new details
+				//Set this FIRST
 				mxcontact.setExtraData(checkcontact.getExtraData());
 				mxcontact.setMyAddress(checkcontact.getMyAddress());
-
-				//Update the DB 
+				
+				//Overwrite with the new details
+				mxcontact.setname(name);
+				mxcontact.setMinimaAddress(mxaddress);
+				mxcontact.setBlockDetails(topblock, checkblock, checkhash);
+				
 				maxdb.updateContact(mxcontact);
 			}
-			
+						
 			//Send them a contact message aswell..
 			if(intro || checkcontact == null) {
 				Message msg = new Message(MAXCONTACTS_UPDATEINFO);
