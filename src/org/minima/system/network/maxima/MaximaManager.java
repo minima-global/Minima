@@ -521,7 +521,7 @@ public class MaximaManager extends MessageProcessor {
 		
 		//Open the socket..
 		Socket sock = new Socket(zHost, zPort);
-		sock.setSoTimeout(10000);
+		sock.setSoTimeout(30000);
 		
 		//Create the streams..
 		OutputStream out 		= sock.getOutputStream();
@@ -580,19 +580,19 @@ public class MaximaManager extends MessageProcessor {
 					if(!validresp.isEqual(MAXIMA_RESPONSE_OK)) {
 						
 						if(validresp.isEqual(MaximaManager.MAXIMA_RESPONSE_TOOBIG)) {
-							MinimaLogger.log("Warning : Maxima message too big not delivered to.. "+zHost+"@"+zPort);
+							MinimaLogger.log("Warning : Maxima message too big not delivered to.. "+zHost+":"+zPort);
 						}else if(validresp.isEqual(MaximaManager.MAXIMA_RESPONSE_UNKNOWN)) {
-							MinimaLogger.log("Warning : Maxima message Unkonw Address not delivered to.. "+zHost+"@"+zPort);
+							MinimaLogger.log("Warning : Maxima message Unkown Address not delivered to.. "+zHost+":"+zPort);
 						}else if(validresp.isEqual(MaximaManager.MAXIMA_RESPONSE_WRONGHASH)) {
-							MinimaLogger.log("Warning : Maxima message TxPoW Hash wrong not delivered to.. "+zHost+"@"+zPort);
+							MinimaLogger.log("Warning : Maxima message TxPoW Hash wrong not delivered to.. "+zHost+":"+zPort);
 						}else {
-							MinimaLogger.log("Warning : Maxima message not delivered to.. "+zHost+"@"+zPort);
+							MinimaLogger.log("Warning : Maxima message not delivered to.. "+zHost+":"+zPort);
 						}
 						
 					}
 					
 				}catch(Exception exc){
-					MinimaLogger.log("Error sending Maxima message : "+exc.toString());
+					MinimaLogger.log("Error sending Maxima message to "+zHost+":"+zPort+" :"+exc.toString());
 				}
 			}
 		};

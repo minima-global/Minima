@@ -638,8 +638,8 @@ public class NIOManager extends MessageProcessor {
 			MiniData msg = NIOManager.createNIOMessage(NIOMessage.MSG_SINGLE_PING, MiniData.ZERO_TXPOWID);
 			
 			//Open the socket..
-			Socket sock 			= new Socket(zHost, zPort);
-			sock.setSoTimeout(20000);
+			Socket sock = new Socket();
+			sock.connect(new InetSocketAddress(zHost, zPort), 10000);
 			
 			//Create the streams..
 			OutputStream out 		= sock.getOutputStream();
