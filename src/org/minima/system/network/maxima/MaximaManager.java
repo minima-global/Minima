@@ -262,6 +262,8 @@ public class MaximaManager extends MessageProcessor {
 					
 					//Now insert this into the DB
 					maxdb.newHost(mxhost);
+				}else {
+					MinimaLogger.log("MAXIMA EXISTING connection : "+nioc.getFullAddress());
 				}
 				
 				//So we know the details.. Post them to him.. so he knows who we are..
