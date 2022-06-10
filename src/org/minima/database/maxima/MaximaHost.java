@@ -73,7 +73,7 @@ public class MaximaHost {
 		ret.put("host", mHost);
 //		ret.put("private", mPrivate.to0xString());
 		ret.put("public", mPublic.to0xString());
-		ret.put("lastseen", new Date(mLastSeen));
+		ret.put("lastseen", new Date(mLastSeen).toString());
 		ret.put("connected", isConnected());
 		ret.put("address", getMaximaAddress());
 		
