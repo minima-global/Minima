@@ -221,9 +221,6 @@ public class maxima extends Command {
 				json.put("error", exc.toString());
 			}
 			
-			//Post It!
-//			max.PostMessage(sender);
-			
 			ret.put("response", json);
 		
 		}else {
