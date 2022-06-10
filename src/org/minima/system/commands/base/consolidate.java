@@ -71,7 +71,8 @@ public class consolidate extends Command {
 			throw new CommandException("Not enough coins ("+COIN_SIZE+") to consolidate");
 		}
 		
-		int MAX_COINS			= 5;
+		int MAX_COINS = 5;
+		
 		TxPoW txpow 			= null;
 		
 		//Keep building a bigger and bigger transaction..
@@ -79,7 +80,8 @@ public class consolidate extends Command {
 		MiniNumber currentamount 	= MiniNumber.ZERO;
 		Token token 				= null;
 		
-		while(true) {
+		int loopcounter=0;
+		while(loopcounter<10) {
 			//The current total
 			ArrayList<Coin> currentcoins 	= new ArrayList<>();
 			currentamount 					= MiniNumber.ZERO;
@@ -231,7 +233,7 @@ public class consolidate extends Command {
 		
 			//How large is the transaction..
 			long size = txpow.getSizeinBytes();
-			if(size>40000 || MAX_COINS==COIN_SIZE) {
+			if(size>40000 || coincounter>=COIN_SIZE || COIN_SIZE>=MAX_COINS) {
 				MinimaLogger.log("Consolidate coins.. txpow size:"+size+" coins:"+coincounter+"/"+COIN_SIZE);
 				break;
 			}
@@ -239,6 +241,7 @@ public class consolidate extends Command {
 			//Run again
 			MinimaLogger.log("TxPoW built with "+coincounter+"/"+COIN_SIZE+" coins, size "+size+".. attempt to add more coins..");
 			MAX_COINS++;
+			loopcounter++;
 		}
 		
 		JSONObject resp = new JSONObject();
