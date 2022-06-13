@@ -246,8 +246,26 @@ public class MaximaManager extends MessageProcessor {
 			//Get the client
 			NIOClient nioc = (NIOClient) zMessage.getObject("nioclient");
 			
+			//Is this an internal IP
+			String fullhost 	= nioc.getFullAddress(); 
+			boolean invalidip	 = false;
+			
+			if(!GeneralParams.ALLOW_ALL_IP) {
+				invalidip 	= 	fullhost.startsWith("127.") || 
+								fullhost.startsWith("10.")  || 
+								fullhost.startsWith("100.") ||
+								fullhost.startsWith("169.") ||
+								fullhost.startsWith("172.") ||
+								fullhost.startsWith("192.");
+			}
+			
+			//Warn..
+			if(invalidip && nioc.isOutgoing()) {
+				MinimaLogger.log("Invalid IP for MAXIMA host ( is internal ) "+nioc.getFullAddress()+" ..re-enable with -allowallip");
+			}
+			
 			//is it an outgoing.. ONLY outgoing can be used for MAXIMA
-			if(nioc.isOutgoing()) {
+			if(!invalidip && nioc.isOutgoing()) {
 				
 				//OK.. Do we have this node in our list..
 				MaximaHost mxhost = maxdb.loadHost(nioc.getFullAddress());
@@ -325,9 +343,11 @@ public class MaximaManager extends MessageProcessor {
 			}
 			
 			//is it an outgoing.. ONLY outgoing can be used for MAXIMA
-			if(nioc.isOutgoing()) {
+			if(nioc.isOutgoing() && mxhost != null) {
 				
-				MinimaLogger.log("MAXIMA outgoing disconnection : "+nioc.getFullAddress()+" "+reconnect);
+				if(mxhost != null) {
+					MinimaLogger.log("MAXIMA outgoing disconnection : "+nioc.getFullAddress()+" "+reconnect);
+				}
 				
 				//Do we need to update Users who contact us through them..
 				if(!reconnect) {

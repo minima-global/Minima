@@ -78,6 +78,11 @@ public class GeneralParams {
 	public static String P2P_ROOTNODE = "";
 	
 	/**
+	 * Are all IP allowed for Maxima Hosts
+	 */
+	public static boolean ALLOW_ALL_IP = false;
+	
+	/**
 	 * Manual list of Minima nodes to connect to
 	 */
 	public static boolean NOCONNECT = false;
