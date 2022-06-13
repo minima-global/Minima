@@ -49,6 +49,7 @@ public class MaximaContact {
 		setname("noname");
 		setMinimaAddress("Mx00");
 		setBlockDetails(MiniNumber.ZERO, MiniNumber.ZERO, MiniData.ZERO_TXPOWID);
+		setMLS("");
 	}
 	
 	public MaximaContact(ResultSet zSQLResult) throws SQLException {
@@ -70,6 +71,7 @@ public class MaximaContact {
 			setname("noname");
 			setMinimaAddress("Mx00");
 			setBlockDetails(MiniNumber.ZERO, MiniNumber.ZERO, MiniData.ZERO_TXPOWID);
+			setMLS("");
 		} 
 	}
 	
@@ -94,7 +96,7 @@ public class MaximaContact {
 	}
 	
 	public String getMinimaAddress() {
-		return (String)mExtraData.get("minimaaddress");
+		return mExtraData.getString("minimaaddress");
 	}
 	
 	public void setname(String zName) {
@@ -102,7 +104,7 @@ public class MaximaContact {
 	}
 	
 	public String getName() {
-		return (String)mExtraData.get("name");
+		return mExtraData.getString("name");
 	}
 	
 	public JSONObject getExtraData() {
@@ -133,6 +135,14 @@ public class MaximaContact {
 		mExtraData.put("topblock", zTipBlock.toString());
 		mExtraData.put("checkblock", zTipBlock50.toString());
 		mExtraData.put("checkhash", zT50Hash.to0xString());
+	}
+	
+	public void setMLS(String zMLS) {
+		mExtraData.put("mls",zMLS);
+	}
+	
+	public String getMLS() {
+		return mExtraData.getString("mls");
 	}
 	
 	public JSONObject toJSON() {

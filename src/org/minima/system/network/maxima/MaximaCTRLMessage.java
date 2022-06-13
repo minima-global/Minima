@@ -12,7 +12,8 @@ import org.minima.utils.Streamable;
 
 public class MaximaCTRLMessage implements Streamable {
 
-	public static final MiniByte MAXIMACTRL_TYPE_ID = new MiniByte(0);
+	public static final MiniByte MAXIMACTRL_TYPE_ID 	= new MiniByte(0);
+	public static final MiniByte MAXIMACTRL_TYPE_MLS 	= new MiniByte(1);
 	
 	MiniByte mTye;
 	

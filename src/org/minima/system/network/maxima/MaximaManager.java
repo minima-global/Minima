@@ -18,6 +18,7 @@ import org.minima.database.maxima.MaximaHost;
 import org.minima.database.userprefs.UserDB;
 import org.minima.objects.Address;
 import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
 import org.minima.system.commands.maxima.maxima;
@@ -73,10 +74,22 @@ public class MaximaManager extends MessageProcessor {
 	public static final String MAXIMA_CHKCONECT_APP 	= "**maxima_check_connect**";
 	
 	/**
+	 * Maxima Location Service Message
+	 */
+	public static final String MAXIMA_MLS_SET 	= "**maxima_mls_set**";
+	public static final String MAXIMA_MLS_GET 	= "**maxima_mls_get**";
+	
+	/**
 	 * UserDB data
 	 */
-	private static final String MAXIMA_PUBKEY 	= "maxima_publickey";
-	private static final String MAXIMA_PRIVKEY 	= "maxima_privatekey";
+	private static final String MAXIMA_PUBKEY 		= "maxima_publickey";
+	private static final String MAXIMA_PRIVKEY 		= "maxima_privatekey";
+	
+	private static final String MAXIMA_MLSPUBKEY 	= "maxima_mlspublickey";
+	private static final String MAXIMA_MLSPRIVKEY 	= "maxima_mlsprivatekey";
+	private static final String MAXIMA_MLSHOST 		= "maxima_mlshost";
+	private static final String MAXIMA_MLSTIME 		= "maxima_mlstime";
+	private static final String MAXIMA_OLDMLSHOST 	= "maxima_oldmlshost";
 	
 	/**
 	 * The Response message for a Maxima Message
@@ -98,8 +111,15 @@ public class MaximaManager extends MessageProcessor {
 	 */
 	MiniData mPublic;
 	MiniData mPrivate;
-	
 	String mMaximaAddress;
+	
+	/**
+	 * MLS Keys
+	 */
+	MLSService mMLSService = new MLSService();
+	MiniData mMLSPublic;
+	MiniData mMLSPrivate;
+	String mMaximaMLSAddress;
 	
 	private boolean mInited 	= false;
 	public boolean mMaximaLogs 	= false;
@@ -144,6 +164,15 @@ public class MaximaManager extends MessageProcessor {
 	
 	public String getLocalMaximaAddress() {
 		return getMaximaIdentity()+"@"+GeneralParams.MINIMA_HOST+":"+GeneralParams.MINIMA_PORT;
+	}
+	
+	public String getMLSHost() {
+		String mls = mMLSService.getMLSServer();
+		if(mls.equals("")) {
+			return mMaximaMLSAddress+"@"+GeneralParams.MINIMA_HOST+":"+GeneralParams.MINIMA_PORT;
+		}
+		
+		return mls;
 	}
 	
 	public String getRandomMaximaAddress() {
@@ -191,8 +220,6 @@ public class MaximaManager extends MessageProcessor {
 			
 			//Do we have an account already..
 			if(!udb.exists(MAXIMA_PUBKEY)) {
-				
-				MinimaLogger.log("Creating Maxima Keys..");
 				createMaximaKeys();
 			
 			}else {
@@ -202,6 +229,27 @@ public class MaximaManager extends MessageProcessor {
 				//Convert to a Maxima Address
 				mMaximaAddress = Address.makeMinimaAddress(mPublic);
 			}
+			
+			//Check MLS Keys
+			if(!udb.exists(MAXIMA_MLSPUBKEY)) {
+				createMaximaMLSKeys();
+			
+			}else {
+				mMLSPublic  = udb.getData(MAXIMA_MLSPUBKEY, MiniData.ZERO_TXPOWID);
+				mMLSPrivate = udb.getData(MAXIMA_MLSPRIVKEY, MiniData.ZERO_TXPOWID);
+			
+				//Convert to a Maxima Address
+				mMaximaMLSAddress = Address.makeMinimaAddress(mMLSPublic);
+			}
+			
+			MinimaLogger.log("MAX : "+mMaximaAddress);
+			MinimaLogger.log("MLS : "+mMaximaMLSAddress);
+			
+			//Hard set the MLSService
+			String oldserver 	= udb.getString(MAXIMA_OLDMLSHOST, "");
+			String server 		= udb.getString(MAXIMA_MLSHOST, "");
+			long mlstime		= udb.getNumber(MAXIMA_MLSTIME, MiniNumber.ZERO).getAsLong();
+			mMLSService.hardSetMLSNode(oldserver, server, mlstime);
 			
 			//We are inited
 			mInited = true;
@@ -256,6 +304,7 @@ public class MaximaManager extends MessageProcessor {
 								fullhost.startsWith("100.") ||
 								fullhost.startsWith("169.") ||
 								fullhost.startsWith("172.") ||
+								fullhost.startsWith("198.") ||
 								fullhost.startsWith("192.");
 			}
 			
@@ -313,6 +362,13 @@ public class MaximaManager extends MessageProcessor {
 					PostTimerMessage(check);
 				}
 			}
+			
+			//Send him our MLS details..
+			if(nioc.isIncoming()) {
+				MaximaCTRLMessage maxmls = new MaximaCTRLMessage(MaximaCTRLMessage.MAXIMACTRL_TYPE_MLS);
+				maxmls.setData(new MiniData(mMaximaMLSAddress.getBytes()));
+				NIOManager.sendNetworkMessage(nioc.getUID(), NIOMessage.MSG_MAXIMA_CTRL, maxmls);
+			}
 		
 		}else if(zMessage.getMessageType().equals(MAXIMA_SENDCHKCONNECT)) {
 			
@@ -322,11 +378,10 @@ public class MaximaManager extends MessageProcessor {
 			MiniData data 		= new MiniData(zMessage.getString("uid").getBytes());
 			
 			//Create a HELLO message
-			Message chkconnect = maxima.createSendMessage(to,application,data);
+			Message chkconnect 	= maxima.createSendMessage(to,application,data);
 			
 			//Send it..
 			PostMessage(chkconnect);
-			
 			
 		}else if(zMessage.getMessageType().equals(MAXIMA_DISCONNECTED)) {
 			
@@ -401,6 +456,14 @@ public class MaximaManager extends MessageProcessor {
 
 				//And Set..
 				nioc.setMaximaIdent(pubkey.to0xString());
+			
+			}else if(msg.getType().isEqual(MaximaCTRLMessage.MAXIMACTRL_TYPE_MLS)) {
+				
+				//Set the ID for this Connection
+				String mlsaddress = new String(msg.getData().getBytes());
+				
+				//Set this as his MLS address
+				nioc.setMaximaMLS(mlsaddress+"@"+nioc.getFullAddress());
 			}
 			
 		}else if(zMessage.getMessageType().equals(MAXIMA_SENDMESSAGE)) {
@@ -554,6 +617,21 @@ public class MaximaManager extends MessageProcessor {
 				//Now we can use this as one of Our Addresses
 				mxhost.setConnected(1);
 				maxdb.updateHost(mxhost);
+				
+				//OK.. add to our list
+				if(nioc.isMaximaMLS()) {
+					if(mMLSService.newMLSNode(nioc.getMaximaMLS())) {
+						//Changed.. set new in DB
+						UserDB udb = MinimaDB.getDB().getUserDB();
+						udb.setString(MAXIMA_OLDMLSHOST, mMLSService.getOldMLSServer());
+						udb.setString(MAXIMA_MLSHOST, mMLSService.getMLSServer());
+						udb.setNumber(MAXIMA_MLSTIME, new MiniNumber(mMLSService.getMLSTime()));	
+					}
+				}
+				
+			}else if(application.equals(MAXIMA_MLS_SET)) {
+				
+				//This User is trying to set his
 				
 			}else {
 				//Notify The Listeners
@@ -716,5 +794,27 @@ public class MaximaManager extends MessageProcessor {
 		//Put in the DB..
 		udb.setData(MAXIMA_PUBKEY, mPublic);
 		udb.setData(MAXIMA_PRIVKEY, mPrivate);
+	}
+	
+	private void createMaximaMLSKeys() throws Exception {
+		
+		//Get the UserDB
+		UserDB udb = MinimaDB.getDB().getUserDB();
+		
+		//Create a new new maxima ident..
+		KeyPair generateKeyPair = GenerateKey.generateKeyPair();
+		
+		byte[] publicKey 		= generateKeyPair.getPublic().getEncoded();
+		mMLSPublic 				= new MiniData(publicKey);
+		
+		byte[] privateKey	 	= generateKeyPair.getPrivate().getEncoded();
+		mMLSPrivate 			= new MiniData(privateKey);
+	
+		//Convert to a Maxima Address
+		mMaximaMLSAddress 		= Address.makeMinimaAddress(mMLSPublic);
+		
+		//Put in the DB..
+		udb.setData(MAXIMA_MLSPUBKEY, mMLSPublic);
+		udb.setData(MAXIMA_MLSPRIVKEY, mMLSPrivate);
 	}
 }

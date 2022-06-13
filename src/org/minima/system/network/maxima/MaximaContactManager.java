@@ -53,6 +53,7 @@ public class MaximaContactManager extends MessageProcessor {
 			ret.put("topblock",MiniNumber.ZERO.toString());
 			ret.put("checkblock",MiniNumber.ZERO.toString());
 			ret.put("checkhash",MiniData.ZERO_TXPOWID.toString());
+			ret.put("mls","");
 			
 		}else {
 			
@@ -74,6 +75,7 @@ public class MaximaContactManager extends MessageProcessor {
 			ret.put("topblock",tip.getBlockNumber().toString());
 			ret.put("checkblock",tip50.getBlockNumber().toString());
 			ret.put("checkhash",tip50.getTxPoW().getTxPoWID());
+			ret.put("mls",mManager.getMLSHost());
 		}
 		
 		return ret;
@@ -140,6 +142,7 @@ public class MaximaContactManager extends MessageProcessor {
 			MiniNumber topblock 	= new MiniNumber((String) contactjson.get("topblock"));
 			MiniNumber checkblock 	= new MiniNumber((String) contactjson.get("checkblock"));
 			MiniData checkhash 		= new MiniData((String) contactjson.get("checkhash"));
+			String mls				= contactjson.getString("mls");
 			
 			MaximaContact mxcontact = new MaximaContact(publickey);
 			mxcontact.setCurrentAddress(address);
@@ -150,6 +153,7 @@ public class MaximaContactManager extends MessageProcessor {
 				mxcontact.setname(name);
 				mxcontact.setMinimaAddress(mxaddress);
 				mxcontact.setBlockDetails(topblock, checkblock, checkhash);
+				mxcontact.setMLS(mls);
 				
 				maxdb.newContact(mxcontact);
 				
@@ -162,6 +166,7 @@ public class MaximaContactManager extends MessageProcessor {
 				mxcontact.setname(name);
 				mxcontact.setMinimaAddress(mxaddress);
 				mxcontact.setBlockDetails(topblock, checkblock, checkhash);
+				mxcontact.setMLS(mls);
 				
 				maxdb.updateContact(mxcontact);
 			}
