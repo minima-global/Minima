@@ -26,6 +26,8 @@ import org.minima.system.network.maxima.message.MaxTxPoW;
 import org.minima.system.network.maxima.message.MaximaInternal;
 import org.minima.system.network.maxima.message.MaximaMessage;
 import org.minima.system.network.maxima.message.MaximaPackage;
+import org.minima.system.network.maxima.mls.MLSPacketSET;
+import org.minima.system.network.maxima.mls.MLSService;
 import org.minima.system.network.minima.NIOClient;
 import org.minima.system.network.minima.NIOManager;
 import org.minima.system.network.minima.NIOMessage;
@@ -105,6 +107,11 @@ public class MaximaManager extends MessageProcessor {
 	public static final MiniData MAXIMA_RESPONSE_UNKNOWN 	= new MiniData("0x080000000102");
 	public static final MiniData MAXIMA_RESPONSE_TOOBIG 	= new MiniData("0x080000000103");
 	public static final MiniData MAXIMA_RESPONSE_WRONGHASH 	= new MiniData("0x080000000104");
+	
+	/**
+	 * The MLS message is a little different..
+	 */
+	public static final MiniData MAXIMA_MLS_START 	= new MiniData("0x05");
 	
 	/**
 	 * RSA Keys
@@ -273,6 +280,9 @@ public class MaximaManager extends MessageProcessor {
 		
 		}else if(zMessage.getMessageType().equals(MAXIMA_REFRESH)) {
 			
+			//A list of all your contacts public keys
+			ArrayList<String> validpubkeys = new ArrayList<>();
+			
 			//Get all your contacts
 			ArrayList<MaximaContact> allcontacts = maxdb.getAllContacts();
 			for(MaximaContact contact : allcontacts) {
@@ -287,7 +297,20 @@ public class MaximaManager extends MessageProcessor {
 				update.addString("address", address);
 				
 				getContactsManager().PostMessage(update);
+				
+				//Keep this for MLS
+				validpubkeys.add(publickey);
 			}
+			
+			//Create an MLSPacket
+			MLSPacketSET mlspack = new MLSPacketSET(getRandomMaximaAddress());
+			for(String pubkey : validpubkeys) {
+				mlspack.addValidPublicKey(pubkey);
+			}
+			
+			//Send the message - to BOTH hosts.. old and new
+			PostMessage(maxima.createSendMessage(getMLSHost(),MAXIMA_MLS_SET,MiniData.getMiniDataVersion(mlspack)));
+			//..
 			
 		}else if(zMessage.getMessageType().equals(MAXIMA_CONNECTED)) {
 		
@@ -495,7 +518,10 @@ public class MaximaManager extends MessageProcessor {
 			if(mpkg.mTo.equals(mPublic)) {
 				//It's directly sent to us..
 				privatekey = mPrivate;
-			}
+			}else if(mpkg.mTo.equals(mMLSPublic)) {
+				//It's an MLS message
+				privatekey = mMLSPrivate;
+			} 
 			
 			//Is it for us - check the Maxhosts..
 			if(privatekey == null) {
@@ -578,11 +604,15 @@ public class MaximaManager extends MessageProcessor {
 				MinimaLogger.log("MAXIMA : "+maxjson.toString());
 			}
 			
+			//Where is it headed
+			String application = (String) maxjson.get("application");
+			
 			//Notify that Client that we received the message.. this makes external client disconnect ( internal just a ping )
-			maximaMessageStatus(nioc,MAXIMA_OK);
+			if(!application.equals(MAXIMA_MLS_GET)) {
+				maximaMessageStatus(nioc,MAXIMA_OK);
+			}
 			
 			//Is it a special contact message
-			String application = (String) maxjson.get("application");
 			if(application.equals(MaximaContactManager.CONTACT_APPLICATION)) {
 				
 				//Process this internally..
@@ -632,6 +662,18 @@ public class MaximaManager extends MessageProcessor {
 			}else if(application.equals(MAXIMA_MLS_SET)) {
 				
 				//This User is trying to set his
+				MinimaLogger.log("REC : MLS Set message.");
+			
+			}else if(application.equals(MAXIMA_MLS_GET)) {
+				
+				//Which user are we looking for..
+				MiniData pubkey = new MiniData(maxjson.getString("data"));
+				
+				//Check the MLS service for this 
+				MLSPacketSET mlspack = mMLSService.getData(pubkey.to0xString());
+				
+				//is THIS user allowed to see this data
+				//..
 				
 			}else {
 				//Notify The Listeners
@@ -759,8 +801,7 @@ public class MaximaManager extends MessageProcessor {
 							MinimaLogger.log("Warning : Maxima message TxPoW Hash wrong not delivered to.. "+zHost+":"+zPort);
 						}else {
 							MinimaLogger.log("Warning : Maxima message not delivered to.. "+zHost+":"+zPort);
-						}
-						
+						}	
 					}
 					
 				}catch(Exception exc){

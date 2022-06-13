@@ -1,4 +1,6 @@
-package org.minima.system.network.maxima;
+package org.minima.system.network.maxima.mls;
+
+import java.util.Hashtable;
 
 import org.minima.utils.MinimaLogger;
 
@@ -8,6 +10,9 @@ public class MLSService {
 	String mMLSServer 		= "";
 	
 	String mOldMLSServer 	= "";
+	
+	//Where we store all the info..
+	Hashtable<String, MLSPacketSET> mCurrentMLS = new Hashtable<>();
 	
 	public MLSService() {}
 	
@@ -48,5 +53,13 @@ public class MLSService {
 	
 	public String getOldMLSServer() {
 		return mOldMLSServer;
+	}
+	
+	public void addMLSData(String zPublicKey, MLSPacketSET zData) {
+		mCurrentMLS.put(zPublicKey, zData);
+	}
+	
+	public MLSPacketSET getData(String zPublicKey) {
+		return mCurrentMLS.get(zPublicKey);
 	}
 }
