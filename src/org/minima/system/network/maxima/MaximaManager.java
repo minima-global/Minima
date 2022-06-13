@@ -262,6 +262,7 @@ public class MaximaManager extends MessageProcessor {
 			//Warn..
 			if(invalidip && nioc.isOutgoing()) {
 				MinimaLogger.log("Invalid IP for MAXIMA host ( is internal ) "+nioc.getFullAddress()+" ..re-enable with -allowallip");
+				return;
 			}
 			
 			//is it an outgoing.. ONLY outgoing can be used for MAXIMA
@@ -343,7 +344,7 @@ public class MaximaManager extends MessageProcessor {
 			}
 			
 			//is it an outgoing.. ONLY outgoing can be used for MAXIMA
-			if(nioc.isOutgoing() && mxhost != null) {
+			if(nioc.isOutgoing()) {
 				
 				if(mxhost != null) {
 					MinimaLogger.log("MAXIMA outgoing disconnection : "+nioc.getFullAddress()+" "+reconnect);
