@@ -8,17 +8,25 @@ import java.util.Hashtable;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.minidapps.MiniDAPP;
+import org.minima.objects.base.MiniString;
 import org.minima.system.mds.polling.PollHandler;
 import org.minima.system.mds.polling.PollStack;
+import org.minima.system.mds.runnable.ConsoleJS;
+import org.minima.system.mds.runnable.MDSJS;
 import org.minima.system.mds.sql.MiniDAPPDB;
 import org.minima.system.mds.sql.SQLHandler;
 import org.minima.system.network.rpc.HTTPServer;
 import org.minima.system.params.GeneralParams;
+import org.minima.utils.MiniFile;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.SqlDB;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageProcessor;
+import org.mozilla.javascript.Context;
+import org.mozilla.javascript.ContextFactory;
+import org.mozilla.javascript.Scriptable;
+import org.mozilla.javascript.ScriptableObject;
 
 public class MDSManager extends MessageProcessor {
 
@@ -44,6 +52,11 @@ public class MDSManager extends MessageProcessor {
 	 * Valid MiniDAPPs
 	 */
 	ArrayList<String> mValid = new ArrayList<>();
+	
+	/**
+	 * All the current Contexts
+	 */
+	ArrayList<MDSJS> mRunnables = new ArrayList();
 	
 	/**
 	 * Main Constructor
@@ -86,6 +99,10 @@ public class MDSManager extends MessageProcessor {
 	
 	public File getWebFolder() {
 		return new File(mMDSRootFile, "web");
+	}
+	
+	public File getMiniDAPPFolder(String zUID) {
+		return new File(getWebFolder(), zUID);
 	}
 	
 	public JSONObject runSQL(String zUID, String zSQL) {
@@ -185,13 +202,22 @@ public class MDSManager extends MessageProcessor {
 			
 		}else if(zMessage.getMessageType().equals(MDS_POLLMESSAGE)) {
 			
-			// Add a message to the POll..
-			JSONObject poll = (JSONObject) zMessage.getObject("poll");
+//			//Send message to the runnable..
+//			for(MDSJS mds : mRunnables) {
+//				
+//				//Do Something..
+//				mds.callMainCallback();
+//			}
 			
-			//Add to the Poll Stack
-			mPollStack.addMessage(poll);
+//			// Add a message to the POll..
+//			JSONObject poll = (JSONObject) zMessage.getObject("poll");
+//			
+//			//Add to the Poll Stack
+//			mPollStack.addMessage(poll);
 		
 		}else if(zMessage.getMessageType().equals(MDS_MINIDAPPS_CHANGED)) {
+			
+			mRunnables.clear();
 			
 			//Scan through and see what we have..
 			ArrayList<MiniDAPP> dapps = MinimaDB.getDB().getMDSDB().getAllMiniDAPPs();
@@ -201,10 +227,34 @@ public class MDSManager extends MessageProcessor {
 				mValid.add(dapp.mUID);
 				
 				//Is there a service.js class
+				File service = new File(getMiniDAPPFolder(dapp.mUID),"service.js");
+				if(service.exists()) {
+					
+					//Load the file..
+					byte[] serv = MiniFile.readCompleteFile(service);
+					String code = new String(serv,MiniString.MINIMA_CHARSET);
+					
+					//Load it into the servcei runner..
+					Context ctx = Context.enter();
+					ctx.setOptimizationLevel(-1);
+					ctx.setLanguageVersion(Context.VERSION_1_5);
+					
+					Scriptable scope = ctx.initStandardObjects();
+					
+					ScriptableObject.putProperty(scope, "console", Context.javaToJS(new ConsoleJS(), scope));
+					
+					//Create an MDSJS object
+					MDSJS mdsjs = new MDSJS(ctx,scope);
+					ScriptableObject.putProperty(scope, "MDS", Context.javaToJS(mdsjs, scope));
+					
+					ctx.evaluateString(scope, code, "<minidapp_"+dapp.mUID+">", 1, null);
 				
+					mRunnables.add(mdsjs);
+					
+					//Test run..
+					mdsjs.callMainCallback();
+				}
 			}
-			
-			
 		}
 		
 	}
