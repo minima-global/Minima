@@ -201,19 +201,18 @@ public class MDSManager extends MessageProcessor {
 			PostMessage(MDS_MINIDAPPS_CHANGED);
 			
 		}else if(zMessage.getMessageType().equals(MDS_POLLMESSAGE)) {
+
+			// Add a message to the POll..
+			JSONObject poll = (JSONObject) zMessage.getObject("poll");
 			
-//			//Send message to the runnable..
-//			for(MDSJS mds : mRunnables) {
-//				
-//				//Do Something..
-//				mds.callMainCallback();
-//			}
+			//Send message to the runnable..
+			for(MDSJS mds : mRunnables) {
+				//Send to the runnable
+				mds.callMainCallback(poll);
+			}
 			
-//			// Add a message to the POll..
-//			JSONObject poll = (JSONObject) zMessage.getObject("poll");
-//			
-//			//Add to the Poll Stack
-//			mPollStack.addMessage(poll);
+			//Add to the Poll Stack
+			mPollStack.addMessage(poll);
 		
 		}else if(zMessage.getMessageType().equals(MDS_MINIDAPPS_CHANGED)) {
 			
@@ -247,12 +246,11 @@ public class MDSManager extends MessageProcessor {
 					MDSJS mdsjs = new MDSJS(ctx,scope);
 					ScriptableObject.putProperty(scope, "MDS", Context.javaToJS(mdsjs, scope));
 					
+					//Add the main code to the Runnable
 					ctx.evaluateString(scope, code, "<minidapp_"+dapp.mUID+">", 1, null);
 				
+					//Add to our list
 					mRunnables.add(mdsjs);
-					
-					//Test run..
-					mdsjs.callMainCallback();
 				}
 			}
 		}
