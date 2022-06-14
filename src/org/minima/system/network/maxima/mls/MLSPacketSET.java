@@ -12,6 +12,8 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
+import org.minima.utils.json.JSONArray;
+import org.minima.utils.json.JSONObject;
 
 public class MLSPacketSET implements Streamable {
 
@@ -28,8 +30,34 @@ public class MLSPacketSET implements Streamable {
 		mValidPubKeys 	= new ArrayList<>();
 	}
 	
+	public long getMilliTime(){
+		return mTimeMilli;
+	}
+	
+	public String getMaximaAddress() {
+		return mMaximaIdentity.toString();
+	}
+	
+	public boolean isValidPublicKey(String zPublicKey) {
+		return mValidPubKeys.contains(zPublicKey);
+	}
+	
 	public void addValidPublicKey(String zPublicKey) {
 		mValidPubKeys.add(zPublicKey);
+	}
+	
+	public JSONObject toJSON() {
+		JSONObject ret = new JSONObject();
+		
+		ret.put("maximaidentity", mMaximaIdentity);
+		
+		JSONArray valid = new JSONArray();
+		for(String vv : mValidPubKeys) {
+			valid.add(vv);
+		}
+		ret.put("valid", valid);
+		
+		return ret;
 	}
 	
 	@Override

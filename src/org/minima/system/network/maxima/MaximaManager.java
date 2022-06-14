@@ -1,5 +1,6 @@
 package org.minima.system.network.maxima;
 
+import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -17,6 +18,7 @@ import org.minima.database.maxima.MaximaDB;
 import org.minima.database.maxima.MaximaHost;
 import org.minima.database.userprefs.UserDB;
 import org.minima.objects.Address;
+import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
@@ -26,6 +28,7 @@ import org.minima.system.network.maxima.message.MaxTxPoW;
 import org.minima.system.network.maxima.message.MaximaInternal;
 import org.minima.system.network.maxima.message.MaximaMessage;
 import org.minima.system.network.maxima.message.MaximaPackage;
+import org.minima.system.network.maxima.mls.MLSPacketGET;
 import org.minima.system.network.maxima.mls.MLSPacketSET;
 import org.minima.system.network.maxima.mls.MLSService;
 import org.minima.system.network.minima.NIOClient;
@@ -56,10 +59,10 @@ public class MaximaManager extends MessageProcessor {
 	public static final String MAXIMA_DISCONNECTED 	= "MAXIMA_DISCONNECTED";
 	
 	/**
-	 * Checker loop function - every 10 mins
+	 * Checker loop function - every 20 mins
 	 */
 	public static final String MAXIMA_LOOP 			= "MAXIMA_LOOP";
-	long MAXIMA_LOOP_DELAY = 1000 * 60 * 10;
+	long MAXIMA_LOOP_DELAY = 1000 * 60 * 20;
 	
 	/**
 	 * Messages
@@ -68,6 +71,7 @@ public class MaximaManager extends MessageProcessor {
 	public static final String MAXIMA_RECMESSAGE 	= "MAXIMA_RECMESSAGE";
 	public static final String MAXIMA_SENDMESSAGE 	= "MAXIMA_SENDDMESSAGE";
 	public static final String MAXIMA_REFRESH 		= "MAXIMA_REFRESH";
+	public static final String MAXIMA_GETREQ 		= "MAXIMA_GETREQ";
 	
 	/**
 	 * Send a message to CHECK Maxima is working on connect
@@ -78,8 +82,8 @@ public class MaximaManager extends MessageProcessor {
 	/**
 	 * Maxima Location Service Message
 	 */
-	public static final String MAXIMA_MLS_SET 	= "**maxima_mls_set**";
-	public static final String MAXIMA_MLS_GET 	= "**maxima_mls_get**";
+	public static final String MAXIMA_MLS_SETAPP 	= "**maxima_mls_set**";
+	public static final String MAXIMA_MLS_GETAPP 	= "**maxima_mls_get**";
 	
 	/**
 	 * UserDB data
@@ -107,11 +111,6 @@ public class MaximaManager extends MessageProcessor {
 	public static final MiniData MAXIMA_RESPONSE_UNKNOWN 	= new MiniData("0x080000000102");
 	public static final MiniData MAXIMA_RESPONSE_TOOBIG 	= new MiniData("0x080000000103");
 	public static final MiniData MAXIMA_RESPONSE_WRONGHASH 	= new MiniData("0x080000000104");
-	
-	/**
-	 * The MLS message is a little different..
-	 */
-	public static final MiniData MAXIMA_MLS_START 	= new MiniData("0x05");
 	
 	/**
 	 * RSA Keys
@@ -175,6 +174,15 @@ public class MaximaManager extends MessageProcessor {
 	
 	public String getMLSHost() {
 		String mls = mMLSService.getMLSServer();
+		if(mls.equals("")) {
+			return mMaximaMLSAddress+"@"+GeneralParams.MINIMA_HOST+":"+GeneralParams.MINIMA_PORT;
+		}
+		
+		return mls;
+	}
+	
+	public String getOldMLSHost() {
+		String mls = mMLSService.getOldMLSServer();
 		if(mls.equals("")) {
 			return mMaximaMLSAddress+"@"+GeneralParams.MINIMA_HOST+":"+GeneralParams.MINIMA_PORT;
 		}
@@ -249,9 +257,6 @@ public class MaximaManager extends MessageProcessor {
 				mMaximaMLSAddress = Address.makeMinimaAddress(mMLSPublic);
 			}
 			
-			MinimaLogger.log("MAX : "+mMaximaAddress);
-			MinimaLogger.log("MLS : "+mMaximaMLSAddress);
-			
 			//Hard set the MLSService
 			String oldserver 	= udb.getString(MAXIMA_OLDMLSHOST, "");
 			String server 		= udb.getString(MAXIMA_MLSHOST, "");
@@ -275,6 +280,9 @@ public class MaximaManager extends MessageProcessor {
 			//Delete really old MaxHosts - not seen for 7 days
 			maxdb.deleteOldHosts();
 			
+			//Flush the MLS
+			mMLSService.flushList();
+			
 			//Post a LOOP message that updates all my contacts just in case..
 			PostTimerMessage(new TimerMessage(MAXIMA_LOOP_DELAY, MAXIMA_LOOP));
 		
@@ -283,9 +291,23 @@ public class MaximaManager extends MessageProcessor {
 			//A list of all your contacts public keys
 			ArrayList<String> validpubkeys = new ArrayList<>();
 			
+			//The Min Time before we do an MLS lookup - 1 hr..
+			long mintime = System.currentTimeMillis() - (1000 * 60 * 60);
+			
 			//Get all your contacts
 			ArrayList<MaximaContact> allcontacts = maxdb.getAllContacts();
 			for(MaximaContact contact : allcontacts) {
+				
+				//Have we heard from them lately
+				if(contact.getLastSeen() < mintime) {
+					
+					//Send an MLS GET req..
+					String mls = contact.getMLS();
+					if(!mls.equals("")) {
+						Message getreq = maxima.createSendMessage(mls,MAXIMA_MLS_GETAPP,new MiniData(contact.getPublicKey()));
+						PostMessage(getreq);
+					}
+				}
 				
 				//Update them with a new address..
 				String publickey = contact.getPublicKey();
@@ -309,8 +331,8 @@ public class MaximaManager extends MessageProcessor {
 			}
 			
 			//Send the message - to BOTH hosts.. old and new
-			PostMessage(maxima.createSendMessage(getMLSHost(),MAXIMA_MLS_SET,MiniData.getMiniDataVersion(mlspack)));
-			//..
+			PostMessage(maxima.createSendMessage(getMLSHost(),MAXIMA_MLS_SETAPP,MiniData.getMiniDataVersion(mlspack)));
+			PostMessage(maxima.createSendMessage(getOldMLSHost(),MAXIMA_MLS_SETAPP,MiniData.getMiniDataVersion(mlspack)));
 			
 		}else if(zMessage.getMessageType().equals(MAXIMA_CONNECTED)) {
 		
@@ -497,6 +519,23 @@ public class MaximaManager extends MessageProcessor {
 			//And send it.. in a separate thread
 			sendMaximaMessage(zMessage.getString("tohost"), zMessage.getInteger("toport"), maxmsg);
 			
+		}else if(zMessage.getMessageType().equals(MAXIMA_GETREQ)) {
+			//Get the MLS Packet
+			MLSPacketGET mls = (MLSPacketGET) zMessage.getObject("mlsget");
+			
+			//Set these details..
+			MaximaContact contact = maxdb.loadContactFromPublicKey(mls.getPublicKey());
+			
+			//Set the new Maxima Address
+			contact.setCurrentAddress(mls.getAddress());
+			
+			//And update the DB
+			maxdb.updateContact(contact);
+			
+			if(mMaximaLogs) {
+				MinimaLogger.log("MLSGET Contact updated : "+contact.toJSON().toString());
+			}
+			
 		}else if(zMessage.getMessageType().equals(MAXIMA_RECMESSAGE)) {
 			
 			//Get the MaxTxPoW
@@ -608,7 +647,7 @@ public class MaximaManager extends MessageProcessor {
 			String application = (String) maxjson.get("application");
 			
 			//Notify that Client that we received the message.. this makes external client disconnect ( internal just a ping )
-			if(!application.equals(MAXIMA_MLS_GET)) {
+			if(!application.equals(MAXIMA_MLS_GETAPP)) {
 				maximaMessageStatus(nioc,MAXIMA_OK);
 			}
 			
@@ -659,21 +698,47 @@ public class MaximaManager extends MessageProcessor {
 					}
 				}
 				
-			}else if(application.equals(MAXIMA_MLS_SET)) {
+			}else if(application.equals(MAXIMA_MLS_SETAPP)) {
 				
-				//This User is trying to set his
-				MinimaLogger.log("REC : MLS Set message.");
-			
-			}else if(application.equals(MAXIMA_MLS_GET)) {
+				//Get the package
+				MiniData mlssetdata = new MiniData(maxjson.getString("data"));
+				
+				//Convert it..
+				MLSPacketSET mls = MLSPacketSET.convertMiniDataVersion(mlssetdata);
+				
+				//Add to the MLSService
+				mMLSService.addMLSData(maxmsg.mFrom.to0xString(), mls);
+				
+			}else if(application.equals(MAXIMA_MLS_GETAPP)) {
 				
 				//Which user are we looking for..
-				MiniData pubkey = new MiniData(maxjson.getString("data"));
+				String pubkey = new MiniData(maxjson.getString("data")).to0xString();
 				
 				//Check the MLS service for this 
-				MLSPacketSET mlspack = mMLSService.getData(pubkey.to0xString());
+				MLSPacketSET mlspack = mMLSService.getData(pubkey);
 				
-				//is THIS user allowed to see this data
-				//..
+				//Do we have data
+				if(mlspack == null) {
+					MinimaLogger.log("Unknown publickey in MLSService "+pubkey);
+					maximaMessageStatus(nioc,MAXIMA_UNKNOWN);
+					return;
+				}
+				
+				//Is THIS user allowed to see this data
+				if(!mlspack.isValidPublicKey(maxmsg.mFrom.to0xString())) {
+					MinimaLogger.log("Invalid MLS request for "+pubkey+" by "+maxmsg.mFrom.to0xString());
+					maximaMessageStatus(nioc,MAXIMA_UNKNOWN);
+					return;
+				}
+				
+				//Create a response..
+				MLSPacketGET mlsget = new MLSPacketGET(pubkey,mlspack.getMaximaAddress());
+				
+				//Convert to a MiniData structure
+				MiniData mlsdata = MiniData.getMiniDataVersion(mlsget);
+				
+				//Send that
+				maximaMessageStatus(nioc,mlsdata);
 				
 			}else {
 				//Notify The Listeners
@@ -768,6 +833,35 @@ public class MaximaManager extends MessageProcessor {
 			}else if(resp.isEqual(MAXIMA_RESPONSE_WRONGHASH)) {
 				valid = resp;
 				break;
+			}else {
+				
+				//Is it an MLS Get Package..
+				try {
+					
+					ByteArrayInputStream bais 	= new ByteArrayInputStream(resp.getBytes());
+					DataInputStream respdis 	= new DataInputStream(bais);
+					
+					//What Type..
+					MiniByte type = MiniByte.ReadFromStream(respdis);
+					MiniData data = MiniData.ReadFromStream(respdis);
+					
+					//Convert
+					MLSPacketGET mls = MLSPacketGET.convertMiniDataVersion(data);
+					
+					//Post This on Maxima..
+					Message max = new Message(MAXIMA_GETREQ);
+					max.addObject("mlsget", mls);
+					Main.getInstance().getMaxima().PostMessage(max);	
+
+					respdis.close();
+					bais.close();
+					
+					valid = MAXIMA_RESPONSE_OK;
+					break;
+					
+				}catch(Exception exc){
+					MinimaLogger.log("No Convert MLS GET Package : "+exc);
+				}
 			}
 		}
 		
@@ -791,18 +885,33 @@ public class MaximaManager extends MessageProcessor {
 					//Send the message
 					MiniData validresp = sendMaxPacket(zHost,zPort,zMaxMessage);
 					
-					if(!validresp.isEqual(MAXIMA_RESPONSE_OK)) {
-						
-						if(validresp.isEqual(MaximaManager.MAXIMA_RESPONSE_TOOBIG)) {
-							MinimaLogger.log("Warning : Maxima message too big not delivered to.. "+zHost+":"+zPort);
-						}else if(validresp.isEqual(MaximaManager.MAXIMA_RESPONSE_UNKNOWN)) {
-							MinimaLogger.log("Warning : Maxima message Unkown Address not delivered to.. "+zHost+":"+zPort);
-						}else if(validresp.isEqual(MaximaManager.MAXIMA_RESPONSE_WRONGHASH)) {
-							MinimaLogger.log("Warning : Maxima message TxPoW Hash wrong not delivered to.. "+zHost+":"+zPort);
-						}else {
-							MinimaLogger.log("Warning : Maxima message not delivered to.. "+zHost+":"+zPort);
-						}	
-					}
+//					if(!validresp.isEqual(MAXIMA_RESPONSE_OK)) {
+//						
+//						if(validresp.isEqual(MaximaManager.MAXIMA_RESPONSE_TOOBIG)) {
+//							MinimaLogger.log("Warning : Maxima message too big not delivered to.. "+zHost+":"+zPort);
+//						}else if(validresp.isEqual(MaximaManager.MAXIMA_RESPONSE_UNKNOWN)) {
+//							MinimaLogger.log("Warning : Maxima message Unkown Address not delivered to.. "+zHost+":"+zPort);
+//						}else if(validresp.isEqual(MaximaManager.MAXIMA_RESPONSE_WRONGHASH)) {
+//							MinimaLogger.log("Warning : Maxima message TxPoW Hash wrong not delivered to.. "+zHost+":"+zPort);
+//						}else {
+//							MinimaLogger.log("Warning : Maxima message not delivered to.. "+zHost+":"+zPort);
+//						}	
+//					}
+					
+					if(validresp.isEqual(MaximaManager.MAXIMA_RESPONSE_OK)) {
+						//All fine.. 
+					}else if(validresp.isEqual(MaximaManager.MAXIMA_RESPONSE_FAIL)) {
+						MinimaLogger.log("Warning : Maxima message not delivered to.. "+zHost+":"+zPort);
+					}else if(validresp.isEqual(MaximaManager.MAXIMA_RESPONSE_TOOBIG)) {
+						MinimaLogger.log("Warning : Maxima message too big not delivered to.. "+zHost+":"+zPort);
+					}else if(validresp.isEqual(MaximaManager.MAXIMA_RESPONSE_UNKNOWN)) {
+						MinimaLogger.log("Warning : Maxima message Unkown Address not delivered to.. "+zHost+":"+zPort);
+					}else if(validresp.isEqual(MaximaManager.MAXIMA_RESPONSE_WRONGHASH)) {
+						MinimaLogger.log("Warning : Maxima message TxPoW Hash wrong not delivered to.. "+zHost+":"+zPort);
+					}else {
+						//It's an MLS GET packet
+						MinimaLogger.log("MLS GET package!.. ");
+					}	
 					
 				}catch(Exception exc){
 					MinimaLogger.log("Error sending Maxima message to "+zHost+":"+zPort+" :"+exc.toString());
@@ -837,6 +946,9 @@ public class MaximaManager extends MessageProcessor {
 		udb.setData(MAXIMA_PRIVKEY, mPrivate);
 	}
 	
+	/**
+	 * MLS Functions
+	 */
 	private void createMaximaMLSKeys() throws Exception {
 		
 		//Get the UserDB
