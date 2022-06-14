@@ -194,7 +194,7 @@ public class TxPoWMiner extends MessageProcessor {
 		int ihashes = zHashes.getAsInt();
 		
 		long timestart = System.currentTimeMillis();
-		MiniData data = MiniData.getRandomData(32);
+		MiniData data = MiniData.getRandomData(512);
 		for(int i=0;i<ihashes;i++) {
 			data = Crypto.getInstance().hashObject(data);
 		}
