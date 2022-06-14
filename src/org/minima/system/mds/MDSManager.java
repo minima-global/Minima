@@ -11,7 +11,6 @@ import org.minima.database.minidapps.MiniDAPP;
 import org.minima.objects.base.MiniString;
 import org.minima.system.mds.polling.PollHandler;
 import org.minima.system.mds.polling.PollStack;
-import org.minima.system.mds.runnable.ConsoleJS;
 import org.minima.system.mds.runnable.MDSJS;
 import org.minima.system.mds.sql.MiniDAPPDB;
 import org.minima.system.mds.sql.SQLHandler;
@@ -19,12 +18,10 @@ import org.minima.system.network.rpc.HTTPServer;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MinimaLogger;
-import org.minima.utils.SqlDB;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageProcessor;
 import org.mozilla.javascript.Context;
-import org.mozilla.javascript.ContextFactory;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 
@@ -250,9 +247,8 @@ public class MDSManager extends MessageProcessor {
 					ctx.setOptimizationLevel(-1);
 					ctx.setLanguageVersion(Context.VERSION_1_5);
 					
+					//Create the Scope
 					Scriptable scope = ctx.initStandardObjects();
-					
-					ScriptableObject.putProperty(scope, "console", Context.javaToJS(new ConsoleJS(), scope));
 					
 					//Create an MDSJS object
 					MDSJS mdsjs = new MDSJS(this, dapp.mUID, ctx, scope);

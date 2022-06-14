@@ -8,12 +8,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.net.URLDecoder;
-import java.util.ArrayList;
 import java.util.StringTokenizer;
 
-import org.minima.database.MinimaDB;
-import org.minima.database.minidapps.MDSDB;
-import org.minima.database.minidapps.MiniDAPP;
 import org.minima.objects.base.MiniString;
 import org.minima.system.mds.hub.MDSHub;
 import org.minima.utils.MiniFile;
