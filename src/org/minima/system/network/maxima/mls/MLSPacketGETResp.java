@@ -10,16 +10,18 @@ import org.minima.objects.base.MiniString;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 
-public class MLSPacketGET implements Streamable {
+public class MLSPacketGETResp implements Streamable {
 
+	String mRandomUID;
 	String mPublicKey;
 	String mCurrentAddress;
 
-	private MLSPacketGET() {}
+	private MLSPacketGETResp() {}
 	
-	public MLSPacketGET(String zPublicKey, String zMaximaAddress){
+	public MLSPacketGETResp(String zPublicKey, String zMaximaAddress, String zRandomUID){
 		mPublicKey		= zPublicKey;
 		mCurrentAddress = zMaximaAddress;
+		mRandomUID		= zRandomUID;
 	}
 	
 	public String getPublicKey() {
@@ -29,21 +31,27 @@ public class MLSPacketGET implements Streamable {
 	public String getAddress() {
 		return mCurrentAddress;
 	}
+
+	public String getRandomUID() {
+		return mRandomUID;
+	}
 	
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
 		MiniString.WriteToStream(zOut, mPublicKey);
 		MiniString.WriteToStream(zOut, mCurrentAddress);
+		MiniString.WriteToStream(zOut, mRandomUID);
 	}
 
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
 		mPublicKey 		= MiniString.ReadFromStream(zIn).toString();
 		mCurrentAddress = MiniString.ReadFromStream(zIn).toString();
+		mRandomUID		= MiniString.ReadFromStream(zIn).toString();
 	}
 	
-	public static MLSPacketGET ReadFromStream(DataInputStream zIn) throws IOException {
-		MLSPacketGET mls = new MLSPacketGET();
+	public static MLSPacketGETResp ReadFromStream(DataInputStream zIn) throws IOException {
+		MLSPacketGETResp mls = new MLSPacketGETResp();
 		mls.readDataStream(zIn);
 		return mls;
 	}
@@ -51,14 +59,14 @@ public class MLSPacketGET implements Streamable {
 	/**
 	 * Convert a MiniData version into a MLSPacketGET
 	 */
-	public static MLSPacketGET convertMiniDataVersion(MiniData zTxpData) {
+	public static MLSPacketGETResp convertMiniDataVersion(MiniData zTxpData) {
 		ByteArrayInputStream bais 	= new ByteArrayInputStream(zTxpData.getBytes());
 		DataInputStream dis 		= new DataInputStream(bais);
 		
-		MLSPacketGET mls = null;
+		MLSPacketGETResp mls = null;
 		
 		try {
-			mls = MLSPacketGET.ReadFromStream(dis);
+			mls = MLSPacketGETResp.ReadFromStream(dis);
 		
 			dis.close();
 			bais.close();
