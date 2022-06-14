@@ -877,10 +877,15 @@ public class MaximaManager extends MessageProcessor {
 					//Convert
 					MLSPacketGETResp mls = MLSPacketGETResp.convertMiniDataVersion(data);
 					
+					//Ok - it's read
+					valid = MAXIMA_RESPONSE_OK;
+					
 					//Check ther Random UID - security
 					if(!mls.getRandomUID().equals(MLS_RANDOM_UID)) {
 						MinimaLogger.log("Invalid MLS GET RandomUID! from "+sock.getInetAddress().toString());
-					}else {
+						valid = MAXIMA_RESPONSE_FAIL;
+					
+					}else{
 						//Post this on Maxima..
 						Message max = new Message(MAXIMA_GETREQ);
 						max.addObject("mlsget", mls);
@@ -890,7 +895,6 @@ public class MaximaManager extends MessageProcessor {
 					respdis.close();
 					bais.close();
 					
-					valid = MAXIMA_RESPONSE_OK;
 					break;
 					
 				}catch(Exception exc){
