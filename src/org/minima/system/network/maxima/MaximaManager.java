@@ -528,10 +528,10 @@ public class MaximaManager extends MessageProcessor {
 			}else if(msg.getType().isEqual(MaximaCTRLMessage.MAXIMACTRL_TYPE_MLS)) {
 				
 				//Set the ID for this Connection
-				String mlsaddress = new String(msg.getData().getBytes());
+				String mlspubkey = new String(msg.getData().getBytes());
 				
 				//Set this as his MLS address
-				nioc.setMaximaMLS(mlsaddress+"@"+nioc.getFullAddress());
+				nioc.setMaximaMLS(mlspubkey+"@"+nioc.getFullAddress());
 			}
 			
 		}else if(zMessage.getMessageType().equals(MAXIMA_SENDMESSAGE)) {
@@ -879,7 +879,7 @@ public class MaximaManager extends MessageProcessor {
 					
 					//Check ther Random UID - security
 					if(!mls.getRandomUID().equals(MLS_RANDOM_UID)) {
-						MinimaLogger.log("Invalid GET RandomUID! from "+sock.getInetAddress().toString());
+						MinimaLogger.log("Invalid MLS GET RandomUID! from "+sock.getInetAddress().toString());
 					}else {
 						//Post this on Maxima..
 						Message max = new Message(MAXIMA_GETREQ);
