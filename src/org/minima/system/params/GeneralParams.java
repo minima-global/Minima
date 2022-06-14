@@ -58,6 +58,11 @@ public class GeneralParams {
 	public static int POLL_PORT = MINIMA_PORT+3;
 	
 	/**
+	 * The MDS SQL Server
+	 */
+	public static int SQL_PORT = MINIMA_PORT+4;
+	
+	/**
 	 * MDS ENabled
 	 */
 	public static boolean MDS_ENABLED = true;

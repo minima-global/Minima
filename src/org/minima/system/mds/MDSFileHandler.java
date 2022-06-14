@@ -90,6 +90,14 @@ public class MDSFileHandler implements Runnable {
 			
 			//And finally URL decode..
 			fileRequested 		= URLDecoder.decode(fileRequested,"UTF-8").trim();
+			
+			//Remove the params..
+			int index = fileRequested.indexOf("?");
+			if(index!=-1) {
+				fileRequested = fileRequested.substring(0,index);
+			}
+			
+			//Now get the content type
 			String contenttype 	= MiniFile.getContentType(fileRequested);
 			
 			if(fileRequested.equals("")) {
