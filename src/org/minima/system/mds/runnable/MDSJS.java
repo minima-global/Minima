@@ -59,7 +59,7 @@ public class MDSJS {
 	 * Simple Log
 	 */
 	public void log(String zMessage) {
-		MinimaLogger.log("MDS "+mMiniDAPPID+" : "+zMessage);
+		MinimaLogger.log("MDS_"+mMiniDAPPID+"> "+zMessage);
 	}
 	
 	/**
