@@ -243,11 +243,11 @@ public class MDSManager extends MessageProcessor {
 					ScriptableObject.putProperty(scope, "console", Context.javaToJS(new ConsoleJS(), scope));
 					
 					//Create an MDSJS object
-					MDSJS mdsjs = new MDSJS(ctx,scope);
+					MDSJS mdsjs = new MDSJS(this, dapp.mUID, ctx, scope);
 					ScriptableObject.putProperty(scope, "MDS", Context.javaToJS(mdsjs, scope));
 					
 					//Add the main code to the Runnable
-					ctx.evaluateString(scope, code, "<minidapp_"+dapp.mUID+">", 1, null);
+					ctx.evaluateString(scope, code, "<mds_"+dapp.mUID+">", 1, null);
 				
 					//Add to our list
 					mRunnables.add(mdsjs);

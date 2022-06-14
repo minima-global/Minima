@@ -1,6 +1,8 @@
 package org.minima.system.mds.runnable;
 
 import org.minima.system.commands.Command;
+import org.minima.system.mds.MDSManager;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.mozilla.javascript.Callable;
@@ -13,25 +15,30 @@ public class MDSJS {
 
 	/**
 	 * Required to create the Native JSON
-	 * @author spartacusrex
-	 *
 	 */
-	public class NullCallable implements Callable{
+	private class NullCallable implements Callable{
 	    @Override
 	    public Object call(Context context, Scriptable scope, Scriptable holdable, Object[] objects){
 	        return objects[1];
 	    }
 	}
 	
+	String mMiniDAPPID;
 	Context mContext;
 	Scriptable 	mScope;
 	Function mMainCallback;
+	MDSManager mMDS;
 	
-	public MDSJS(Context zContext, Scriptable zScope) {
+	public MDSJS(MDSManager zMDS, String zMiniDAPPID, Context zContext, Scriptable zScope) {
+		mMDS		= zMDS;
+		mMiniDAPPID	= zMiniDAPPID;
 		mContext 	= zContext;
 		mScope 		= zScope;
 	}
 	
+	/**
+	 * Main Callback for Minima events
+	 */
 	public void callMainCallback(JSONObject zEvent) {
 
 		//Forward the message as a Native JS JSONObject
@@ -42,6 +49,13 @@ public class MDSJS {
 			//Call the main MDS Function in JS
 			mMainCallback.call(mContext, mScope, mScope, args);
 		}
+	}
+	
+	/**
+	 * Simple Log
+	 */
+	public void log(String zMessage) {
+		MinimaLogger.log("MDS "+mMiniDAPPID+" : "+zMessage);
 	}
 	
 	/**
@@ -63,6 +77,10 @@ public class MDSJS {
 	/**
 	 * The Main CMD function
 	 */
+	public void cmd(String zCommand) {
+		cmd(zCommand, null);
+	}
+	
 	public void cmd(String zCommand, Function zCallback) {
 	
 		//Run the command
@@ -76,6 +94,10 @@ public class MDSJS {
 			result = res.toString();
 		}
 		
+		if(zCallback == null) {
+			return;
+		}
+		
 		//The argumnets
 		Object[] args = { NativeJSON.parse(mContext, mScope, result.toString(), new NullCallable()) };
 		
@@ -83,4 +105,26 @@ public class MDSJS {
 		zCallback.call(mContext, mScope, mScope, args);
 	}
 	
+	/**
+	 * SQL Function
+	 */
+	public void sql(String zCommand) {
+		sql(zCommand, null);
+	}
+	
+	public void sql(String zSQL, Function zCallback) {
+		
+		//Run the SQL
+		JSONObject sqlresult = mMDS.runSQL(mMiniDAPPID, zSQL);
+		
+		if(zCallback == null) {
+			return;
+		}
+		
+		//The argumnets
+		Object[] args = { NativeJSON.parse(mContext, mScope, sqlresult.toString(), new NullCallable()) };
+		
+		//Call the main MDS Function in JS
+		zCallback.call(mContext, mScope, mScope, args);
+	}
 }
