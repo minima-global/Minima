@@ -216,6 +216,12 @@ public class MDSManager extends MessageProcessor {
 		
 		}else if(zMessage.getMessageType().equals(MDS_MINIDAPPS_CHANGED)) {
 			
+			//Shut down all the Context Objkects..
+			for(MDSJS mds : mRunnables) {
+				mds.shutdown();
+			}
+			
+			//Now clear
 			mRunnables.clear();
 			
 			//Scan through and see what we have..

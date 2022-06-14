@@ -36,6 +36,10 @@ public class MDSJS {
 		mScope 		= zScope;
 	}
 	
+	public void shutdown() {
+		mContext.exit();
+	}
+	
 	/**
 	 * Main Callback for Minima events
 	 */
