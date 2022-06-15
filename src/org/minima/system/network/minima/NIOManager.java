@@ -24,7 +24,6 @@ import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.system.Main;
 import org.minima.system.commands.network.connect;
-import org.minima.system.commands.network.sshtunnel;
 import org.minima.system.network.NetworkManager;
 import org.minima.system.network.maxima.MaximaManager;
 import org.minima.system.network.p2p.P2PFunctions;
@@ -201,15 +200,6 @@ public class NIOManager extends MessageProcessor {
 	protected void processMessage(Message zMessage) throws Exception {
 		
 		if(zMessage.getMessageType().equals(NIO_SERVERSTARTED)) {
-			
-			//Do we need to start up the SSHTunnel..
-			if(MinimaDB.getDB().getUserDB().isSSHTunnelEnabled()){
-				//Start the SSH Tunnel..
-				sshtunnel.startSSHTunnel();
-			
-				//Wait a few seconds for it to work..
-				Thread.sleep(5000);
-			}
 			
 			//The NIOServer has started you can now start up the P2P and pre-connect list
 			mNetworkManager.getP2PManager().PostMessage(P2PFunctions.P2P_INIT);
