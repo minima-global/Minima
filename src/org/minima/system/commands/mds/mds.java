@@ -76,6 +76,10 @@ public class mds extends Command {
 			//Is there a conf file..
 			File conf = new File(dest,"dapp.conf");
 			if(!conf.exists()) {
+				
+				//Delete the install
+				MiniFile.deleteFileOrFolder(dest.getAbsolutePath(), dest);	
+				
 				throw new CommandException("No dapp.conf file found");
 			}
 			

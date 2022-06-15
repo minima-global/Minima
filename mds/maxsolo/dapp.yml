@@ -1,8 +1,0 @@
-name: "MaxSolo"
-version: "0.7"
-description: "1-to-1 chat app running over Maxima"
-indexAssetPath: "index.html"
-initAssetPath: "init.js"
-subscriptions:
-  MAXIMA:
-     jsAssetPath: "backend.js"

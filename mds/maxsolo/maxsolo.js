@@ -136,7 +136,7 @@ function sidebarclick(publickey){
 		loadMessages(publickey);
 	}else{
 		//Jump to a new MainView Page
-		window.location = "chatwindow.html?publickey="+publickey;	
+		window.location = "chatwindow.html?publickey="+publickey+"&uid="+MDS.minidappuid;	
 	}
 }
 
@@ -218,6 +218,9 @@ function sendMessage(){
 	data.message  	= msg;
 	data.filedata  	= "";
 	
+	//Disable send until finished
+	document.getElementById("sendbutton").disabled = true;
+	
 	//Send this..
 	sendData(data)
 }
@@ -236,6 +239,9 @@ function sendImage(imagedata){
 	data.message 	= "";
 	data.filedata  	= imagedata;
 	//data.filedata  	= "data:image/png;base64, iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==";
+	
+	//Disable send until finished
+	document.getElementById("sendbutton").disabled = true;
 	
 	//Send this..
 	sendData(data)
@@ -270,6 +276,9 @@ function sendData(jsondata){
 				
 			});			
 		}
+		
+		//Enable send button again
+		document.getElementById("sendbutton").disabled = false;
 	});
 }
 
