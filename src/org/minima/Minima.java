@@ -42,6 +42,13 @@ public class Minima {
 	}
 	
 	/**
+	 * Get ther Main class
+	 */
+	public static Main getMain() {
+		return Main.getInstance();
+	}
+	
+	/**
 	 * Run a command on Minima and return the result
 	 */
 	
