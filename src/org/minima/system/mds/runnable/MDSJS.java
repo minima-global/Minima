@@ -23,17 +23,34 @@ public class MDSJS {
 	    }
 	}
 	
-	String mMiniDAPPID;
+	/**
+	 * Which MiniDAPP does this Contect apply to
+	 */
+	String 		mMiniDAPPID;
+	String 		mMiniDAPPName;
+	
+	/**
+	 * JS Context and Scope
+	 */
 	Context mContext;
 	Scriptable 	mScope;
+	
+	/**
+	 * Maxin MInima callback
+	 */
 	Function mMainCallback;
+	
+	/**
+	 * Maxin MDS manager - for SQL calls
+	 */
 	MDSManager mMDS;
 	
-	public MDSJS(MDSManager zMDS, String zMiniDAPPID, Context zContext, Scriptable zScope) {
-		mMDS		= zMDS;
-		mMiniDAPPID	= zMiniDAPPID;
-		mContext 	= zContext;
-		mScope 		= zScope;
+	public MDSJS(MDSManager zMDS, String zMiniDAPPID, String zMiniName,  Context zContext, Scriptable zScope) {
+		mMDS			= zMDS;
+		mMiniDAPPID		= zMiniDAPPID;
+		mMiniDAPPName	= zMiniName;
+		mContext 		= zContext;
+		mScope 			= zScope;
 	}
 	
 	public void shutdown() {
@@ -47,11 +64,9 @@ public class MDSJS {
 
 		//Forward the message as a Native JS JSONObject
 		if(mMainCallback != null) {
-			//The argumnets
-			Object[] args = { NativeJSON.parse(mContext, mScope, zEvent.toString(), new NullCallable()) };
 			
 			//Call the main MDS Function in JS
-			mMainCallback.call(mContext, mScope, mScope, args);
+			mMainCallback.call(mContext, mScope, mScope, makeNativeJSONArgs(zEvent));
 		}
 	}
 	
@@ -59,7 +74,7 @@ public class MDSJS {
 	 * Simple Log
 	 */
 	public void log(String zMessage) {
-		MinimaLogger.log("MDS_"+mMiniDAPPID+"> "+zMessage);
+		MinimaLogger.log("MDS_"+mMiniDAPPName+"_"+mMiniDAPPID+" > "+zMessage);
 	}
 	
 	/**
@@ -103,7 +118,7 @@ public class MDSJS {
 		}
 		
 		//The argumnets
-		Object[] args = { NativeJSON.parse(mContext, mScope, result.toString(), new NullCallable()) };
+		Object[] args = { NativeJSON.parse(mContext, mScope, result, new NullCallable()) };
 		
 		//Call the main MDS Function in JS
 		zCallback.call(mContext, mScope, mScope, args);
@@ -125,10 +140,18 @@ public class MDSJS {
 			return;
 		}
 		
-		//The argumnets
-		Object[] args = { NativeJSON.parse(mContext, mScope, sqlresult.toString(), new NullCallable()) };
-		
 		//Call the main MDS Function in JS
-		zCallback.call(mContext, mScope, mScope, args);
+		zCallback.call(mContext, mScope, mScope, makeNativeJSONArgs(sqlresult));
+	}
+	
+	/**
+	 * Helper to create a JS JSON
+	 */
+	public Object[] makeNativeJSONArgs(JSONObject zJSON) {
+		
+		//Create the Native JSON Object
+		Object[] args =  { NativeJSON.parse(mContext, mScope, zJSON.toString(), new NullCallable()) };
+		
+		return args;
 	}
 }

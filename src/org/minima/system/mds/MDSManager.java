@@ -88,8 +88,7 @@ public class MDSManager extends MessageProcessor {
 		//Save all the DBs
 		Enumeration<MiniDAPPDB> dbs = mSqlDB.elements();
 		while(dbs.hasMoreElements()) {
-			MiniDAPPDB db = dbs.nextElement();
-			db.saveDB();
+			dbs.nextElement().saveDB();
 		}
 		
 		stopMessageProcessor();
@@ -110,7 +109,7 @@ public class MDSManager extends MessageProcessor {
 	public JSONObject runSQL(String zUID, String zSQL) {
 		
 		//Check / convert the UID..
-		if(!mValid.contains(zUID)) {
+		if(!mValid.contains(zUID) && !zUID.equals("0x00")) {
 			
 			//Invalid..
 			JSONObject fail = new JSONObject();
@@ -147,7 +146,8 @@ public class MDSManager extends MessageProcessor {
 				//Now create the actual sql db
 				db.loadDB(new File(dbfolder3,"sqldb"));
 				
-				MinimaLogger.log("SQL DB initialised for MiniDAPP : "+minidappid);
+				//Notify the first time
+//				MinimaLogger.log("SQL DB initialised for MiniDAPP : "+minidappid);
 				
 				//Add to the List
 				mSqlDB.put(minidappid, db);
@@ -207,13 +207,18 @@ public class MDSManager extends MessageProcessor {
 			// Add a message to the POll..
 			JSONObject poll = (JSONObject) zMessage.getObject("poll");
 			
-			//Send message to the runnable..
+			//Send message to the runnables first..
 			for(MDSJS mds : mRunnables) {
-				//Send to the runnable
-				mds.callMainCallback(poll);
+				try {
+				
+					//Send to the runnable
+					mds.callMainCallback(poll);
+				}catch(Exception exc) {
+					MinimaLogger.log(exc);
+				}
 			}
 			
-			//Add to the Poll Stack
+			//Add then to the Poll Stack - web minidapps
 			mPollStack.addMessage(poll);
 		
 		}else if(zMessage.getMessageType().equals(MDS_MINIDAPPS_CHANGED)) {
@@ -238,30 +243,35 @@ public class MDSManager extends MessageProcessor {
 				File service = new File(getMiniDAPPFolder(dapp.mUID),"service.js");
 				if(service.exists()) {
 					
-					//Load the file..
-					byte[] serv = MiniFile.readCompleteFile(service);
-					String code = new String(serv,MiniString.MINIMA_CHARSET);
+					try {
+						//Load the file..
+						byte[] serv = MiniFile.readCompleteFile(service);
+						String code = new String(serv,MiniString.MINIMA_CHARSET);
+						
+						//Load it into the servcei runner..
+						Context ctx = Context.enter();
+						ctx.setOptimizationLevel(-1);
+						ctx.setLanguageVersion(Context.VERSION_1_5);
+						
+						//Create the Scope
+						Scriptable scope = ctx.initStandardObjects();
+						
+						//Create an MDSJS object
+						MDSJS mdsjs = new MDSJS(this, dapp.mUID, dapp.mName, ctx, scope);
+						ScriptableObject.putProperty(scope, "MDS", Context.javaToJS(mdsjs, scope));
+						
+						//Add the DECIMAL.js code..
+						ctx.evaluateString(scope, DECIMALJS, "<decimaljs_"+dapp.mUID+">", 1, null);
+						
+						//Add the main code to the Runnable
+						ctx.evaluateString(scope, code, "<mds_"+dapp.mUID+">", 1, null);
 					
-					//Load it into the servcei runner..
-					Context ctx = Context.enter();
-					ctx.setOptimizationLevel(-1);
-					ctx.setLanguageVersion(Context.VERSION_1_5);
+						//Add to our list
+						mRunnables.add(mdsjs);
 					
-					//Create the Scope
-					Scriptable scope = ctx.initStandardObjects();
-					
-					//Create an MDSJS object
-					MDSJS mdsjs = new MDSJS(this, dapp.mUID, ctx, scope);
-					ScriptableObject.putProperty(scope, "MDS", Context.javaToJS(mdsjs, scope));
-					
-					//Add the DECIMAL.js code..
-					ctx.evaluateString(scope, DECIMALJS, "<decimaljs_"+dapp.mUID+">", 1, null);
-					
-					//Add the main code to the Runnable
-					ctx.evaluateString(scope, code, "<mds_"+dapp.mUID+">", 1, null);
-				
-					//Add to our list
-					mRunnables.add(mdsjs);
+					}catch(Exception exc) {
+						MinimaLogger.log("ERROR starting service "+dapp.mName+" "+exc);
+					}
 				}
 			}
 		}

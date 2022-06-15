@@ -77,10 +77,15 @@
 				
 				//Move forward
 	        	histcounter++;
-	            if(histcounter>HISTORY.length-1){
-	            	histcounter = HISTORY.length-1;
+	            if(histcounter>HISTORY.length){
+	            	histcounter = HISTORY.length;
+	            	
 	            }else{
-	            	addText(HISTORY[histcounter]);	
+	            	if(histcounter == HISTORY.length){
+	            		addText("");
+	            	}else{
+	            		addText(HISTORY[histcounter]);	
+	            	}
 	            }
 	            
             	break;
