@@ -377,6 +377,16 @@ public class Main extends MessageProcessor {
 		}
 	}
 	
+	//Every 50 seconds - the normal blockspeed
+	public void setNormalAutoMineSpeed() {
+		AUTOMINE_TIMER = 1000 * 50;
+	}
+	
+	//Every 500 seconds - for Android when not plugged in
+	public void setLowPowAutoMineSpeed() {
+		AUTOMINE_TIMER = 1000 * 500;
+	}
+	
 	public long getUptimeMilli() {
 		return System.currentTimeMillis() - mUptimeMilli;
 	}
