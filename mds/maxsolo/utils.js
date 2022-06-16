@@ -35,7 +35,7 @@ function showDiv(id,show) {
 
 function showNotification(from, message){
 	
-	//Only show if we can''t see it..
+	/*//Only show if we can''t see it..
 	if(document.visibilityState !== "visible") {
 	     
 		// If it's okay let's create a notification
@@ -45,7 +45,7 @@ function showNotification(from, message){
 			  icon: './minimalogo.png'
 			});
 	    }
-	}
+	}*/
 	
 }
 

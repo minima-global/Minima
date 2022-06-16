@@ -307,7 +307,7 @@ function startChat(){
 				loadRooms();
 			}else{
 				//Jump to a new MainView Page
-				window.location = "chatwindow.html?publickey="+pkey;
+				window.location = "chatwindow.html?publickey="+pkey+"&uid="+MDS.minidappuid;
 			}	
 		});	
 	

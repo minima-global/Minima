@@ -52,8 +52,13 @@ var MDS = {
 		var host = window.location.hostname;
 		var port =  Math.floor(window.location.port);
 		
+		MDS.log("Location : "+window.location);
+		MDS.log("Host     : "+host);
+		MDS.log("port     : "+port);
+		
 		//Get ther MiniDAPP UID
 		MDS.minidappuid = MDS.form.getParams("uid");
+		MDS.log("MDS UID param : "+MDS.minidappuid);
 		
 		//HARD SET if debug mode - running from a file
 		if(MDS.DEBUG_HOST != null){
@@ -61,17 +66,16 @@ var MDS = {
 			MDS.log("DEBUG Settings Found..");
 			
 			host=MDS.DEBUG_HOST;
-			port=MDS.DEBUG_PORT;
-			
-			if(MDS.minidappuid == null){
-				MDS.minidappuid = MDS.DEBUG_MINIDAPPID;
-			}	
+			port=MDS.DEBUG_PORT;	
+		}
+		
+		if(MDS.minidappuid == null){
+			MDS.minidappuid = MDS.DEBUG_MINIDAPPID;
 		}
 		
 		//Is one specified..
-		if(MDS.minidappuid == null){
-			alert("No Valid MiniDAPP ID specified.. Please go back to the HUB.");
-			return;
+		if(MDS.minidappuid == "0x00"){
+			MDS.log("No MiniDAPP UID specified.. using test value");
 		}
 		
 		MDS.log("MDS UID  : "+MDS.minidappuid);
