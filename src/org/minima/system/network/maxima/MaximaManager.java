@@ -146,12 +146,14 @@ public class MaximaManager extends MessageProcessor {
 	MaximaContactManager mMaxContacts;
 	
 	/**
-	 * Thread pool to manage Sending Messages
+	 * Message Sender
 	 */
-	ExecutorService MAX_THREAD_POOL = Executors.newFixedThreadPool(4);
+	MaxMsgHandler mMaxSender;
 	
 	public MaximaManager() {
 		super("MAXIMA");
+		
+		mMaxSender = new MaxMsgHandler();
 		
 		mMaxContacts = new MaximaContactManager(this);
 		
@@ -161,7 +163,7 @@ public class MaximaManager extends MessageProcessor {
 	public void shutdown() {
 		mMaxContacts.stopMessageProcessor();
 		
-		MAX_THREAD_POOL.shutdownNow();
+		mMaxSender.stopMessageProcessor();
 		
 		stopMessageProcessor();
 	}
@@ -546,11 +548,9 @@ public class MaximaManager extends MessageProcessor {
 			
 		}else if(zMessage.getMessageType().equals(MAXIMA_SENDMESSAGE)) {
 		
-			//Create  Sender..
-			MaxSender maxsend = new MaxSender(zMessage);
-			
-			//Use Our Thread Pool
-			MAX_THREAD_POOL.execute(maxsend);
+			Message msg = new Message(MaxMsgHandler.MAX_SEND_MESSAGE);
+			msg.addObject("msg", zMessage);
+			mMaxSender.PostMessage(msg);
 			
 		}else if(zMessage.getMessageType().equals(MAXIMA_MLSGET_RESP)) {
 			//Get the MLS Packet
@@ -823,8 +823,17 @@ public class MaximaManager extends MessageProcessor {
 		//Now Construct a MaximaPackage
 		MaximaPackage mp = new MaximaPackage( topubk , cp.getCompleteEncryptedData());
 		
+		//Time it..
+		long timenow = System.currentTimeMillis();
+		
 		//Now create a MaxTxPow
 		MaxTxPoW mxtxpow = MaxTxPoW.createMaxTxPoW(mp);
+		
+		//Message if took a long time
+		long timediff = System.currentTimeMillis() - timenow;
+		if(timediff>5000) {
+			MinimaLogger.log("Maxima Construct took more than 5 seconds.. "+timediff);
+		}
 		
 		//Create the Network Message
 		return NIOManager.createNIOMessage(NIOMessage.MSG_MAXIMA_TXPOW, mxtxpow);
@@ -839,7 +848,7 @@ public class MaximaManager extends MessageProcessor {
 		sock.connect(new InetSocketAddress(zHost, zPort), 5000);
 		
 		//10 seconds to read
-		sock.setSoTimeout(10000);
+		sock.setSoTimeout(30000);
 		
 		//Create the streams..
 		OutputStream out 		= sock.getOutputStream();

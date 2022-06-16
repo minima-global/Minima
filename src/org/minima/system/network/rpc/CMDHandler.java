@@ -105,7 +105,7 @@ public class CMDHandler implements Runnable {
 			//Now run this function..
 			JSONArray res = Command.runMultiCommand(fileRequested);
 	    	
-	    	//Get the result.. is it a multi command or single.. 
+			//Get the result.. is it a multi command or single.. 
 			String result = null;
 			if(res.size() == 1) {
 				result = res.get(0).toString();
@@ -126,6 +126,7 @@ public class CMDHandler implements Runnable {
 			out.println(); // blank line between headers and content, very important !
 			out.println(result);
 			out.flush(); // flush character output stream buffer
+			
 			
 		} catch (Exception ioe) {
 			MinimaLogger.log("RPCHANDLER : "+ioe+" "+firstline);
