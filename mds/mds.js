@@ -33,6 +33,9 @@ var MDS = {
 	DEBUG_HOST : null,
 	DEBUG_PORT : -1,
 	
+	//An allowed TEST Minidapp ID for SQL - can be overridden
+	DEBUG_MINIDAPPID : "0x00",
+	
 	/**
 	 * Minima Startup - with the callback function used for all Minima messages
 	 */
@@ -49,20 +52,30 @@ var MDS = {
 		var host = window.location.hostname;
 		var port =  Math.floor(window.location.port);
 		
+		MDS.log("Location : "+window.location);
+		MDS.log("Host     : "+host);
+		MDS.log("port     : "+port);
+		
 		//Get ther MiniDAPP UID
-		var urluid = MDS.form.getParams("uid");
-		if(urluid == null){
-			MDS.log("No MiniDAPP uid specified in URL.. using 0x00");
-			MDS.minidappuid = "0x00";	
-		}else{
-			MDS.minidappuid = urluid;	
-		}
+		MDS.minidappuid = MDS.form.getParams("uid");
+		MDS.log("MDS UID param : "+MDS.minidappuid);
 		
 		//HARD SET if debug mode - running from a file
 		if(MDS.DEBUG_HOST != null){
+			
 			MDS.log("DEBUG Settings Found..");
+			
 			host=MDS.DEBUG_HOST;
 			port=MDS.DEBUG_PORT;	
+		}
+		
+		if(MDS.minidappuid == null){
+			MDS.minidappuid = MDS.DEBUG_MINIDAPPID;
+		}
+		
+		//Is one specified..
+		if(MDS.minidappuid == "0x00"){
+			MDS.log("No MiniDAPP UID specified.. using test value");
 		}
 		
 		MDS.log("MDS UID  : "+MDS.minidappuid);
