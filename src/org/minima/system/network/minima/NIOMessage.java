@@ -598,9 +598,9 @@ public class NIOMessage implements Runnable {
 					//And Now post the TxPoW on the stack..
 					MiniData niodata = NIOManager.createNIOMessage(NIOMessage.MSG_TXPOW, txpow);
 
-					//And send
+					//And post on out stack
 					Message newniomsg = new Message(NIOManager.NIO_INCOMINGMSG);
-					newniomsg.addString("uid", mClientUID);
+					newniomsg.addString("uid", "0x00");
 					newniomsg.addObject("data", niodata);
 
 					//Post to the NIOManager - which will check it and forward if correct

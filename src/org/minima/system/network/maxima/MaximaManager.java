@@ -11,6 +11,8 @@ import java.net.Socket;
 import java.security.KeyPair;
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.maxima.MaximaContact;
@@ -72,7 +74,7 @@ public class MaximaManager extends MessageProcessor {
 	public static final String MAXIMA_RECMESSAGE 	= "MAXIMA_RECMESSAGE";
 	public static final String MAXIMA_SENDMESSAGE 	= "MAXIMA_SENDDMESSAGE";
 	public static final String MAXIMA_REFRESH 		= "MAXIMA_REFRESH";
-	public static final String MAXIMA_GETREQ 		= "MAXIMA_GETREQ";
+	public static final String MAXIMA_MLSGET_RESP 		= "MAXIMA_GETREQ";
 	
 	/**
 	 * Send a message to CHECK Maxima is working on connect
@@ -143,6 +145,11 @@ public class MaximaManager extends MessageProcessor {
 	 */
 	MaximaContactManager mMaxContacts;
 	
+	/**
+	 * Thread pool to manage Sending Messages
+	 */
+	ExecutorService MAX_THREAD_POOL = Executors.newFixedThreadPool(4);
+	
 	public MaximaManager() {
 		super("MAXIMA");
 		
@@ -153,6 +160,9 @@ public class MaximaManager extends MessageProcessor {
 	
 	public void shutdown() {
 		mMaxContacts.stopMessageProcessor();
+		
+		MAX_THREAD_POOL.shutdownNow();
+		
 		stopMessageProcessor();
 	}
 	
@@ -535,14 +545,14 @@ public class MaximaManager extends MessageProcessor {
 			}
 			
 		}else if(zMessage.getMessageType().equals(MAXIMA_SENDMESSAGE)) {
+		
+			//Create  Sender..
+			MaxSender maxsend = new MaxSender(zMessage);
 			
-			//Create the Network Message
-			MiniData maxmsg = constructMaximaData(zMessage);
+			//Use Our Thread Pool
+			MAX_THREAD_POOL.execute(maxsend);
 			
-			//And send it.. in a separate thread
-			sendMaximaMessage(zMessage.getString("tohost"), zMessage.getInteger("toport"), maxmsg);
-			
-		}else if(zMessage.getMessageType().equals(MAXIMA_GETREQ)) {
+		}else if(zMessage.getMessageType().equals(MAXIMA_MLSGET_RESP)) {
 			//Get the MLS Packet
 			MLSPacketGETResp mls = (MLSPacketGETResp) zMessage.getObject("mlsget");
 			
@@ -887,7 +897,7 @@ public class MaximaManager extends MessageProcessor {
 					
 					}else{
 						//Post this on Maxima..
-						Message max = new Message(MAXIMA_GETREQ);
+						Message max = new Message(MAXIMA_MLSGET_RESP);
 						max.addObject("mlsget", mls);
 						Main.getInstance().getMaxima().PostMessage(max);
 					}
@@ -910,42 +920,6 @@ public class MaximaManager extends MessageProcessor {
 		out.close();
 		
 		return valid;
-	}
-	
-	private void sendMaximaMessage(String zHost, int zPort, MiniData zMaxMessage) {
-		
-		Runnable sender = new Runnable() {
-			
-			@Override
-			public void run() {
-				try {
-					
-					//Send the message
-					MiniData validresp = sendMaxPacket(zHost,zPort,zMaxMessage);
-					
-					if(validresp.isEqual(MaximaManager.MAXIMA_RESPONSE_OK)) {
-						//All fine.. 
-					}else if(validresp.isEqual(MaximaManager.MAXIMA_RESPONSE_FAIL)) {
-						MinimaLogger.log("Warning : Maxima message not delivered to.. "+zHost+":"+zPort);
-					}else if(validresp.isEqual(MaximaManager.MAXIMA_RESPONSE_TOOBIG)) {
-						MinimaLogger.log("Warning : Maxima message too big not delivered to.. "+zHost+":"+zPort);
-					}else if(validresp.isEqual(MaximaManager.MAXIMA_RESPONSE_UNKNOWN)) {
-						MinimaLogger.log("Warning : Maxima message Unkown Address not delivered to.. "+zHost+":"+zPort);
-					}else if(validresp.isEqual(MaximaManager.MAXIMA_RESPONSE_WRONGHASH)) {
-						MinimaLogger.log("Warning : Maxima message TxPoW Hash wrong not delivered to.. "+zHost+":"+zPort);
-					}else {
-						MinimaLogger.log("Unknown Maxima response message "+validresp.to0xString());
-					}	
-					
-				}catch(Exception exc){
-					MinimaLogger.log("Error sending Maxima message to "+zHost+":"+zPort+" :"+exc.toString());
-				}
-			}
-		};
-		
-		Thread tt = new Thread(sender);
-		tt.setDaemon(true);
-		tt.start();
 	}
 	
 	private void createMaximaKeys() throws Exception {

@@ -101,7 +101,7 @@ public class NIOManager extends MessageProcessor {
 	/**
 	 * Thread pool to manage incoming messages
 	 */
-	ExecutorService THREAD_POOL = Executors.newFixedThreadPool(4);
+	ExecutorService THREAD_POOL = Executors.newFixedThreadPool(8);
 	
 	public NIOManager(NetworkManager zNetManager) {
 		super("NIOMANAGER");
