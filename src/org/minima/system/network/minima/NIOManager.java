@@ -309,10 +309,10 @@ public class NIOManager extends MessageProcessor {
 					newconn.addString("uid", nc.getUID());
 					mNetworkManager.getP2PManager().PostMessage(newconn);
 					
-					MinimaLogger.log("INFO : "+nc.getUID()+" connection failed - no more reconnect attempts ");
+					MinimaLogger.log("INFO : "+nc.getUID()+"@"+nc.getFullAddress()+" connection failed - no more reconnect attempts ");
 					
 				}else {
-					MinimaLogger.log("INFO : "+nc.getUID()+" Resetting reconnect attempts (no other connections) for "+nc.getFullAddress());
+					MinimaLogger.log("INFO : "+nc.getUID()+"@"+nc.getFullAddress()+" Resetting reconnect attempts (no other connections) for "+nc.getFullAddress());
 					
 					//reset connect attempts..
 					nc.setConnectAttempts(1);
