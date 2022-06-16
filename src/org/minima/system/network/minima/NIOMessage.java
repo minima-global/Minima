@@ -101,14 +101,16 @@ public class NIOMessage implements Runnable {
 	 * Is Trace on 
 	 */
 	boolean mTrace = false;
-	
+	String mFilter  = "";
+ 	
 	public NIOMessage(String zClientUID, MiniData zData) {
 		mClientUID 	= zClientUID;
 		mData 		= zData;
 	}
 	
-	public void setTrace(boolean zTrace) {
+	public void setTrace(boolean zTrace, String zFilter) {
 		mTrace = zTrace;
+		mFilter = zFilter;
 	}
 	
 	@Override
@@ -126,7 +128,7 @@ public class NIOMessage implements Runnable {
 			MiniByte type = MiniByte.ReadFromStream(dis);
 			
 			//Output some info
-			if(mTrace) {
+			if(mTrace && "NIOMessage".contains(mFilter)) {
 				MinimaLogger.log("[NIOMessage] uid:"+mClientUID+" type:"+convertMessageType(type)+" size:"+MiniFormat.formatSize(data.length));
 			}
 			
@@ -598,9 +600,9 @@ public class NIOMessage implements Runnable {
 					//And Now post the TxPoW on the stack..
 					MiniData niodata = NIOManager.createNIOMessage(NIOMessage.MSG_TXPOW, txpow);
 
-					//And send
+					//And post on out stack
 					Message newniomsg = new Message(NIOManager.NIO_INCOMINGMSG);
-					newniomsg.addString("uid", mClientUID);
+					newniomsg.addString("uid", "0x00");
 					newniomsg.addObject("data", niodata);
 
 					//Post to the NIOManager - which will check it and forward if correct

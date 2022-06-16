@@ -12,8 +12,8 @@ import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
+import org.minima.system.mds.MDSManager;
 import org.minima.utils.MiniFile;
-import org.minima.utils.MinimaLogger;
 import org.minima.utils.ZipExtractor;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
@@ -76,6 +76,10 @@ public class mds extends Command {
 			//Is there a conf file..
 			File conf = new File(dest,"dapp.conf");
 			if(!conf.exists()) {
+				
+				//Delete the install
+				MiniFile.deleteFileOrFolder(dest.getAbsolutePath(), dest);	
+				
 				throw new CommandException("No dapp.conf file found");
 			}
 			
@@ -95,6 +99,9 @@ public class mds extends Command {
 			JSONObject mds = new JSONObject();
 			mds.put("installed", md.toJSON());
 			ret.put("response", mds);
+			
+			//There has been a change
+			Main.getInstance().getMDSManager().PostMessage(MDSManager.MDS_MINIDAPPS_CHANGED);
 			
 		}else if(action.equals("uninstall")) {
 
@@ -118,6 +125,9 @@ public class mds extends Command {
 			JSONObject mds = new JSONObject();
 			mds.put("uninstalled", uid);
 			ret.put("response", mds);
+			
+			//There has been a change
+			Main.getInstance().getMDSManager().PostMessage(MDSManager.MDS_MINIDAPPS_CHANGED);
 			
 		}else if(action.equals("reload")) {
 			
@@ -154,6 +164,9 @@ public class mds extends Command {
 			JSONObject mds = new JSONObject();
 			mds.put("minidapps", arr);
 			ret.put("response", mds);
+			
+			//There has been a change
+			Main.getInstance().getMDSManager().PostMessage(MDSManager.MDS_MINIDAPPS_CHANGED);
 		}
 		
 		return ret;

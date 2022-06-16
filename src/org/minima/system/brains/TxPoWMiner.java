@@ -13,7 +13,6 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
 import org.minima.utils.Crypto;
-import org.minima.utils.MinimaLogger;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageProcessor;
 
@@ -194,7 +193,7 @@ public class TxPoWMiner extends MessageProcessor {
 		int ihashes = zHashes.getAsInt();
 		
 		long timestart = System.currentTimeMillis();
-		MiniData data = MiniData.getRandomData(32);
+		MiniData data = MiniData.getRandomData(512);
 		for(int i=0;i<ihashes;i++) {
 			data = Crypto.getInstance().hashObject(data);
 		}

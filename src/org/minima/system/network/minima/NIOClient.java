@@ -75,6 +75,7 @@ public class NIOClient {
 	boolean mP2PGreeting = false;
 	
 	String mMaximaIdent = "";
+	String mMaximaMLS 	= "";
 	
 	/**
 	 * Specify extra info
@@ -133,6 +134,7 @@ public class NIOClient {
 		ret.put("valid", mValidGreeting);
 		ret.put("sentgreeting", mSentGreeting);
 		ret.put("maxima", mMaximaIdent);
+		ret.put("maximamls", mMaximaMLS);
 		
 		return ret;
 	}
@@ -167,6 +169,18 @@ public class NIOClient {
 	
 	public String getMaximaIdent() {
 		return mMaximaIdent;
+	}
+	
+	public boolean isMaximaMLS() {
+		return !mMaximaMLS.equals("");
+	}
+	
+	public void setMaximaMLS(String zMaximaMLS) {
+		mMaximaMLS = zMaximaMLS;
+	}
+	
+	public String getMaximaMLS() {
+		return mMaximaMLS;	
 	}
 	
 	public void overrideHost(String zHost) {

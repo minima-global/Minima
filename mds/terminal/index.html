@@ -9,7 +9,7 @@
 	<title>TERMINAL</title>
 </head>
 
-<body>
+<body style='margin:0;'>
 
 <script type="text/javascript">
 
@@ -77,10 +77,15 @@
 				
 				//Move forward
 	        	histcounter++;
-	            if(histcounter>HISTORY.length-1){
-	            	histcounter = HISTORY.length-1;
+	            if(histcounter>HISTORY.length){
+	            	histcounter = HISTORY.length;
+	            	
 	            }else{
-	            	addText(HISTORY[histcounter]);	
+	            	if(histcounter == HISTORY.length){
+	            		addText("");
+	            	}else{
+	            		addText(HISTORY[histcounter]);	
+	            	}
 	            }
 	            
             	break;
@@ -142,7 +147,7 @@
 
 <center>
 
-<textarea spellcheck="false" style="width:100%;height:99%;background-color:#000000;color:#FFFFFF;" id="terminal"></textarea>
+<textarea spellcheck="false" style="resize:none;width:100%;height:100%;background-color:#000000;color:#FFFFFF;" id="terminal"></textarea>
 
 <div id="logsbox">
 	Minima Logs <input type="checkbox" id="minimalogs">

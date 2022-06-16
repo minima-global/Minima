@@ -20,8 +20,21 @@ var MDS = {
 	//Polling server for messages
 	pollhost : "",
 	
+	//SQL host
+	sqlhost : "",
+	
+	//The MiniDAPP UID
+	minidappuid : "",
+	
 	//Is logging RPC enabled
 	logging : false,
+	
+	//When debuggin you can hard set the Host and port
+	DEBUG_HOST : null,
+	DEBUG_PORT : -1,
+	
+	//An allowed TEST Minidapp ID for SQL - can be overridden
+	DEBUG_MINIDAPPID : "0x00",
 	
 	/**
 	 * Minima Startup - with the callback function used for all Minima messages
@@ -30,24 +43,57 @@ var MDS = {
 		//Log a little..
 		MDS.log("Initialising MDS..");
 		
-		//Store this for websocket push messages
-		MDS_MAIN_CALLBACK = callback;
-
+		//Is logging enabled.. via the URL
+		if(MDS.form.getParams("MDS_LOGGING") != null){
+			MDS.logging = true;
+		}
+		
 		//Get the host and port..
 		var host = window.location.hostname;
 		var port =  Math.floor(window.location.port);
 		
-		var rpcport  = port-1;
-		var pollport = port+1;
+		//Get ther MiniDAPP UID
+		MDS.minidappuid = MDS.form.getParams("uid");
+		
+		//HARD SET if debug mode - running from a file
+		if(MDS.DEBUG_HOST != null){
+			
+			MDS.log("DEBUG Settings Found..");
+			
+			host=MDS.DEBUG_HOST;
+			port=MDS.DEBUG_PORT;
+			
+			if(MDS.minidappuid == null){
+				MDS.minidappuid = MDS.DEBUG_MINIDAPPID;
+			}	
+		}
+		
+		//Is one specified..
+		if(MDS.minidappuid == null){
+			alert("No Valid MiniDAPP ID specified.. Please go back to the HUB.");
+			return;
+		}
+		
+		MDS.log("MDS UID  : "+MDS.minidappuid);
+		
+		//The ports..
+		var rpcport  	= port-1;
+		var pollport 	= port+1;
+		var sqlport 	= port+2;
 		
 		MDS.rpchost 	= "http://"+host+":"+rpcport+"/";
 		MDS.log("MDS RPCHOST  : "+MDS.rpchost);
 		
-		MDS.log("MDS MDSHOST  : http://"+window.location.host);
+		MDS.log("MDS MDSHOST  : http://"+host+":"+port+"/");
 		
 		MDS.pollhost 	= "http://"+host+":"+pollport+"/";
 		MDS.log("MDS POLLHOST : "+MDS.pollhost);
 		
+		MDS.sqlhost 	= "http://"+host+":"+sqlport+"/";
+		MDS.log("MDS SQLHOST : "+MDS.sqlhost);
+		
+		//Store this for poll messages
+		MDS_MAIN_CALLBACK = callback;
 		
 		//Start the Long Poll listener
 		PollListener();
@@ -69,6 +115,14 @@ var MDS = {
 	cmd : function(command, callback){
 		//Send via POST
 		httpPostAsync(MDS.rpchost, command, callback);
+	},
+	
+	/**
+	 * Runs a SQL command on this MiniDAPPs SQL Database
+	 */
+	sql : function(command, callback){
+		//Send via POST
+		httpPostAsync(MDS.sqlhost+"uid="+MDS.minidappuid, command, callback);
 	},
 	
 	/**

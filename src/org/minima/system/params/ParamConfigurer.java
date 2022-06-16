@@ -139,6 +139,11 @@ public class ParamConfigurer {
                 configurer.rpcenable = true;
             }
         }),
+        allowallip("allowallip", "Allow all IP for Maxima", (args, configurer) -> {
+            if ("true".equals(args)) {
+            	GeneralParams.ALLOW_ALL_IP = true;
+            }
+        }),
         mdsdisable("mdsdisable", "Disable MDS", (args, configurer) -> {
             if ("true".equals(args)) {
             	GeneralParams.MDS_ENABLED = false;

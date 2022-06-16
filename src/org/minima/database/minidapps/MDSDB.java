@@ -17,6 +17,7 @@ public class MDSDB extends SqlDB {
 	PreparedStatement SQL_INSERT_MINIDAPP 		= null;
 	PreparedStatement SQL_DELETE_MINIDAPP 		= null;
 	PreparedStatement SQL_LIST_MINIDAPPS 		= null;
+	PreparedStatement SQL_GET_MINIDAPP 			= null;
 	
 	public MDSDB() {
 		super();
@@ -50,6 +51,7 @@ public class MDSDB extends SqlDB {
 			
 			SQL_DELETE_MINIDAPP		= mSQLConnection.prepareStatement("DELETE FROM minidapps WHERE uid = ?");
 			SQL_LIST_MINIDAPPS		= mSQLConnection.prepareStatement("SELECT * FROM minidapps ORDER BY name ASC");
+			SQL_GET_MINIDAPP		= mSQLConnection.prepareStatement("SELECT * FROM minidapps WHERE uid = ?");
 			
 		} catch (SQLException e) {
 			MinimaLogger.log(e);
@@ -86,7 +88,7 @@ public class MDSDB extends SqlDB {
 			//Set the parameters
 			SQL_DELETE_MINIDAPP.clearParameters();
 			
-			//Set the time milli
+			//Set the UID
 			SQL_DELETE_MINIDAPP.setString(1, zUID);
 			
 			//Run the query
@@ -124,5 +126,32 @@ public class MDSDB extends SqlDB {
 		}
 		
 		return dapps;
+	}
+	
+	public MiniDAPP getMiniDAPP(String zUID){
+
+		try {
+			
+			//Set Search params
+			SQL_GET_MINIDAPP.clearParameters();
+			
+			//Set the UID
+			SQL_GET_MINIDAPP.setString(1, zUID);
+			
+			//Run the query
+			ResultSet rs = SQL_GET_MINIDAPP.executeQuery();
+			
+			//Multiple results
+			if(rs.next()) {
+			
+				//Get the MiniDAPP
+				return new MiniDAPP(rs);
+			}
+			
+		} catch (SQLException e) {
+			MinimaLogger.log(e);
+		}
+		
+		return null;
 	}
 }

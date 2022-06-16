@@ -42,6 +42,13 @@ public class Minima {
 	}
 	
 	/**
+	 * Get ther Main class
+	 */
+	public static Main getMain() {
+		return Main.getInstance();
+	}
+	
+	/**
 	 * Run a command on Minima and return the result
 	 */
 	
@@ -102,6 +109,7 @@ public class Minima {
 		GeneralParams.RPC_PORT 	= GeneralParams.MINIMA_PORT+1;
 		GeneralParams.MDS_PORT 	= GeneralParams.MINIMA_PORT+2;
 		GeneralParams.POLL_PORT = GeneralParams.MINIMA_PORT+3;
+		GeneralParams.SQL_PORT  = GeneralParams.MINIMA_PORT+4;
 		
 		//Now lets go..
 		MinimaLogger.log("**********************************************");

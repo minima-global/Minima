@@ -431,12 +431,16 @@ public class send extends Command {
 			}
 		}
 		
-		//Did we reach the required amount..
-		if(tot.isMoreEqual(zAmountRequired)) {
-			return ret;
-		}
 		
-		//Not enough funds
-		return new ArrayList<Coin>();
+		//Return wghat we have..
+		return ret;
+		
+//		//Did we reach the required amount..
+//		if(tot.isMoreEqual(zAmountRequired)) {
+//			return ret;
+//		}
+//		
+//		//Not enough funds
+//		return new ArrayList<Coin>();
 	}
 }

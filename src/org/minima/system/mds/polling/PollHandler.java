@@ -142,7 +142,7 @@ public class PollHandler implements Runnable {
 			out.flush(); // flush character output stream buffer
 			
 		} catch (Exception ioe) {
-			MinimaLogger.log("POLLHANDLER : "+ioe+" "+firstline);
+			MinimaLogger.log(ioe);
 			
 		} finally {
 			try {

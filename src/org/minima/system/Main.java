@@ -235,6 +235,17 @@ public class Main extends MessageProcessor {
 		//Debug Checker
 		PostTimerMessage(new TimerMessage(CHECKER_TIMER, MAIN_CHECKER));
 		
+		//Is there a Top block..
+		TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
+		if(tip != null) {
+			//Notify The Web Hook Listeners
+			JSONObject data = new JSONObject();
+			data.put("txpow", tip.getTxPoW().toJSON());
+			
+			//And Post it..
+			PostNotifyEvent("NEWBLOCK", data);
+		}
+		
 		//Quick Clean up..
 		System.gc();
 	}
@@ -377,6 +388,16 @@ public class Main extends MessageProcessor {
 		}
 	}
 	
+	//Every 50 seconds - the normal blockspeed
+	public void setNormalAutoMineSpeed() {
+		AUTOMINE_TIMER = 1000 * 50;
+	}
+	
+	//Every 500 seconds - for Android when not plugged in
+	public void setLowPowAutoMineSpeed() {
+		AUTOMINE_TIMER = 1000 * 500;
+	}
+	
 	public long getUptimeMilli() {
 		return System.currentTimeMillis() - mUptimeMilli;
 	}
@@ -413,10 +434,11 @@ public class Main extends MessageProcessor {
 		
 		mNetwork.getNIOManager().setFullLogging(zTrace,zFilter);
 		mNetwork.getP2PManager().setFullLogging(zTrace,zFilter);
-		mNetwork.getSSHManager().setFullLogging(zTrace,zFilter);
 		
-		NIOClient.mTraceON = zTrace;
-		NIOServer.mTraceON = zTrace;
+		mMaxima.setFullLogging(zTrace, zFilter);
+		
+//		NIOClient.mTraceON = zTrace;
+//		NIOServer.mTraceON = zTrace;
 	}
 	
 	private void doGenesis() {
@@ -542,7 +564,6 @@ public class Main extends MessageProcessor {
 				//Call the RPC End point..
 				RPCClient.sendPUT("https://incentivecash.minima.global/api/ping/"+user+"?version="+GlobalParams.MINIMA_VERSION);
 			}
-			
 			
 		}else if(zMessage.getMessageType().equals(MAIN_NEWBLOCK)) {
 			
