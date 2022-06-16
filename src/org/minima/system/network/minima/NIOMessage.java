@@ -101,14 +101,16 @@ public class NIOMessage implements Runnable {
 	 * Is Trace on 
 	 */
 	boolean mTrace = false;
-	
+	String mFilter  = "";
+ 	
 	public NIOMessage(String zClientUID, MiniData zData) {
 		mClientUID 	= zClientUID;
 		mData 		= zData;
 	}
 	
-	public void setTrace(boolean zTrace) {
+	public void setTrace(boolean zTrace, String zFilter) {
 		mTrace = zTrace;
+		mFilter = zFilter;
 	}
 	
 	@Override
@@ -126,7 +128,7 @@ public class NIOMessage implements Runnable {
 			MiniByte type = MiniByte.ReadFromStream(dis);
 			
 			//Output some info
-			if(mTrace) {
+			if(mTrace && "NIOMessage".contains(mFilter)) {
 				MinimaLogger.log("[NIOMessage] uid:"+mClientUID+" type:"+convertMessageType(type)+" size:"+MiniFormat.formatSize(data.length));
 			}
 			

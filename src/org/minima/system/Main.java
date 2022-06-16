@@ -435,8 +435,10 @@ public class Main extends MessageProcessor {
 		mNetwork.getNIOManager().setFullLogging(zTrace,zFilter);
 		mNetwork.getP2PManager().setFullLogging(zTrace,zFilter);
 		
-		NIOClient.mTraceON = zTrace;
-		NIOServer.mTraceON = zTrace;
+		mMaxima.setFullLogging(zTrace, zFilter);
+		
+//		NIOClient.mTraceON = zTrace;
+//		NIOServer.mTraceON = zTrace;
 	}
 	
 	private void doGenesis() {

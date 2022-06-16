@@ -28,6 +28,9 @@ public class MaxSender implements Runnable {
 	@Override
 	public void run() {
 		
+//		String uid = MiniData.getRandomData(8).to0xString();
+//		MinimaLogger.log("MAX SENDER STARTED : "+uid);
+		
 		//Who to..
 		String host 	= mMessage.getString("tohost");
 		int port		= mMessage.getInteger("toport");
@@ -57,5 +60,7 @@ public class MaxSender implements Runnable {
 		} catch (Exception e) {
 			MinimaLogger.log(host+":"+port+" "+e.toString());
 		}
+		
+//		MinimaLogger.log("MAX SENDER STOPPED : "+uid);
 	}
 }
