@@ -218,6 +218,7 @@ function httpPostAsync(theUrl, params, callback){
         }
     }
     xmlHttp.open("POST", theUrl, true); // true for asynchronous 
+	xmlHttp.overrideMimeType('text/plain; charset=UTF-8');
     //xmlHttp.setRequestHeader('Content-Type', 'application/json');    
 	xmlHttp.send(params);
 }
