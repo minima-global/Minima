@@ -166,7 +166,7 @@ function PollListener(){
 	
 	//MDS.log("START POLL");
 	httpGetAsyncPoll(MDS.pollhost+"series="+PollSeries+"&counter="+PollCounter,function(msg){
-		//MDS.log("END POLL : "+JSON.stringify(msg));
+		MDS.log("POLLMSG : "+JSON.stringify(msg));
 		
 		//Are we on the right Series..
 		if(PollSeries != msg.series){
@@ -177,11 +177,16 @@ function PollListener(){
 			
 		}else{
 			
-			//Get the current counter..
-			PollCounter = msg.response.counter+1;
-			
-			//And Post the message..
-			MDSPostMessage(msg.response.message);	
+			//Is there a message ?
+			if(msg.status == true){
+				
+				//Get the current counter..
+				PollCounter = msg.response.counter+1;
+				
+				//And Post the message..
+				MDSPostMessage(msg.response.message);	
+				
+			}	
 		}
 		
 		//And around we go again..
