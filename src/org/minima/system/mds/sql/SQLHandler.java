@@ -125,31 +125,42 @@ public class SQLHandler implements Runnable {
 				
 			}else {
 				
-				//Get the POST data..
-				char[] cbuf = new char[contentlength];
+				//How much data
+				char[] cbuf 	= new char[contentlength];
 				
-				//Lets see..
-				in.read(cbuf);
+				//Read it all in
+				//Read it ALL in
+				int len,total=0;
+				while( (len = in.read(cbuf,total,contentlength-total)) != -1) {
+					total += len;
+					if(total == contentlength) {
+						break;
+					}
+				}
+				
+				if(total != contentlength) {
+					MinimaLogger.log("SQLHANDLER : Read wrong amount "+len+"/"+contentlength);	
+				}
 				
 				//Set this..
 				String data = new String(cbuf);
 				
 				//Run the SQL
 				JSONObject sqlresult = mMDS.runSQL(uid, data);
-				MiniString result = new MiniString(sqlresult.toString()); 
+				String result 		 = sqlresult.toString(); 
 		    	
 				//Calculate the size of the response
-				int finallength = result.getData().length; 
+				int finallength = result.getBytes(MiniString.MINIMA_CHARSET).length;
 				
 				// send HTTP Headers
 				out.println("HTTP/1.1 200 OK");
-				out.println("Server: HTTP RPC Server from Minima : 1.3");
+				out.println("Server: HTTP SQL Server from Minima : 1.3");
 				out.println("Date: " + new Date());
 				out.println("Content-type: text/plain");
 				out.println("Content-length: " + finallength);
 				out.println("Access-Control-Allow-Origin: *");
 				out.println(); // blank line between headers and content, very important !
-				out.println(result.toString());
+				out.println(result);
 				out.flush(); // flush character output stream buffer
 			}
 			

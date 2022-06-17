@@ -13,6 +13,7 @@ import org.minima.objects.base.MiniString;
 import org.minima.system.commands.Command;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
+import org.minima.utils.json.JSONObject;
 
 /**
  * This class handles a single request then exits
@@ -95,24 +96,42 @@ public class CMDHandler implements Runnable {
 				//Get the POST data..
 				char[] cbuf = new char[contentlength];
 				
-				//Lets see..
-				in.read(cbuf);
+				//Read it ALL in
+				int len,total=0;
+				while( (len = in.read(cbuf,total,contentlength-total)) != -1) {
+					total += len;
+					if(total == contentlength) {
+						break;
+					}
+				}
+				
+				if(total != contentlength) {
+					MinimaLogger.log("CMDHANDLER : Read wrong amount "+len+"/"+contentlength);	
+				}
 				
 				//Set this..
 				fileRequested = new String(cbuf);
 			}
 			
-			//Now run this function..
-			JSONArray res = Command.runMultiCommand(fileRequested);
-	    	
-			//Get the result.. is it a multi command or single.. 
-			String result = null;
-			if(res.size() == 1) {
-				result = res.get(0).toString();
-			}else {
-				result = res.toString();
+			JSONObject statfalse = new JSONObject();
+			statfalse.put("status", false);
+			String result = statfalse.toJSONString();
+			try {
+				//Now run this function..
+				JSONArray res = Command.runMultiCommand(fileRequested);
+		    	
+				//Get the result.. is it a multi command or single.. 
+				if(res.size() == 1) {
+					result = res.get(0).toString();
+				}else {
+					result = res.toString();
+				}
+				
+			}catch(Exception exc) {
+				MinimaLogger.log("ERROR CMDHANDLER : "+fileRequested+" "+exc);
+				
 			}
-	    	
+			
 			//Calculate the size of the response
 			int finallength = result.getBytes(MiniString.MINIMA_CHARSET).length; 
 			
@@ -129,7 +148,8 @@ public class CMDHandler implements Runnable {
 			
 			
 		} catch (Exception ioe) {
-			MinimaLogger.log("RPCHANDLER : "+ioe+" "+firstline);
+			MinimaLogger.log("CMDHANDLER : "+ioe+" "+firstline);
+			MinimaLogger.log(ioe);
 			
 		} finally {
 			try {
