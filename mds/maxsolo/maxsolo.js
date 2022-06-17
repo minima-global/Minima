@@ -62,8 +62,10 @@ function insertMessage(roomname, frompubkey, name, type, message, filedata, call
 	//Url encode the message
 	let encoded = encodeURIComponent(message).replace("'", "%27");
 	
-	MDS.sql("INSERT INTO messages (roomname, publickey,username,type,message,filedata,date) VALUES "
-			+"('"+roomname+"','"+frompubkey+"','"+name+"','"+type+"','"+encoded+"','"+filedata+"', "+Date.now()+")", function(resp){
+	var fullsql = "INSERT INTO messages (roomname, publickey,username,type,message,filedata,date) VALUES "
+			+"('"+roomname+"','"+frompubkey+"','"+name+"','"+type+"','"+encoded+"','"+filedata+"', "+Date.now()+")";
+	
+	MDS.sql(fullsql, function(resp){
 				
 				//WE have the reply..
 				callback();	
@@ -253,7 +255,7 @@ function sendData(jsondata){
 	var datastr = JSON.stringify(jsondata);
 	
 	//And now convert to HEX
-	var hexstr = "0x"+utf8ToHex(datastr).toUpperCase();
+	var hexstr = "0x"+utf8ToHex(datastr).toUpperCase().trim();
 	
 	//Create the function..
 	fullfunc = "maxima action:send publickey:"+CURRENT_ROOM_PUBLICKEY+" application:maxsolo data:"+hexstr;
