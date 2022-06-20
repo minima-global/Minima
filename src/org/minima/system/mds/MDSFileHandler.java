@@ -114,6 +114,9 @@ public class MDSFileHandler implements Runnable {
 				//Get the password..
 				String pass 	= getPassword(fileRequested);
 				
+				//PAUSE - this prevents fast checking of passwords
+				Thread.sleep(2000);
+				
 				//Check this is the correct password..
 				String webpage = null;
 				if(!pass.equals("minima")) {
@@ -152,7 +155,7 @@ public class MDSFileHandler implements Runnable {
 	
 				if(!webfile.exists()) {
 		    		
-		    		MinimaLogger.log("HTTP : unknown file requested "+fileRequested+" "+webfile.getAbsolutePath());
+		    		//MinimaLogger.log("HTTP : unknown file requested "+fileRequested+" "+webfile.getAbsolutePath());
 		    		
 		    		dos.writeBytes("HTTP/1.0 404 OK\r\n");
 					dos.writeBytes("\r\n");
