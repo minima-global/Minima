@@ -114,16 +114,6 @@ public abstract class HTTPSServer implements Runnable {
 				Thread rpcthread = new Thread(handler, "Socket Handler @ "+getPort());
 				rpcthread.setDaemon(true);
 				rpcthread.start();
-				
-//            	if(mServerType == TYPE_FILE) {
-//            		FileHandler handler = new FileHandler(sslSocket);
-//                    Thread runner = new Thread(handler);
-//                    runner.start();
-//            	}else{
-//            		CommandHandler handler = new CommandHandler(sslSocket);
-//                    Thread runner = new Thread(handler);
-//                    runner.start();
-//            	}
             }
         } catch (Exception ex){
         	if(!mShutdown) {
