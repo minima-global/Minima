@@ -12,6 +12,8 @@ import java.util.StringTokenizer;
 
 import org.minima.objects.base.MiniString;
 import org.minima.system.mds.hub.MDSHub;
+import org.minima.system.mds.hub.MDSHubError;
+import org.minima.system.mds.hub.MDSHubLogon;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MinimaLogger;
 
@@ -87,18 +89,11 @@ public class MDSFileHandler implements Runnable {
 			//And finally URL decode..
 			fileRequested 		= URLDecoder.decode(fileRequested,"UTF-8").trim();
 			
-			//Remove the params..
-			int index = fileRequested.indexOf("?");
-			if(index!=-1) {
-				fileRequested = fileRequested.substring(0,index);
-			}
-			
-			//Now get the content type
-			String contenttype 	= MiniFile.getContentType(fileRequested);
+			MinimaLogger.log("FILE REQ : "+fileRequested);
 			
 			if(fileRequested.equals("")) {
 				
-				String webpage = MDSHub.createHubPage();
+				String webpage = MDSHubLogon.createHubPage();
 				
 				//It's the root file..
 				byte[] file = webpage.getBytes();
@@ -112,9 +107,46 @@ public class MDSFileHandler implements Runnable {
 				dos.writeBytes("\r\n");
 				dos.write(file, 0, finallength);
 				dos.flush();
+			
+			}else if(fileRequested.startsWith("login.html")){
+				
+				//Get the password..
+				String pass 	= getPassword(fileRequested);
+				
+				//Check this is the correct password..
+				String webpage = null;
+				if(!pass.equals("minima")) {
+					MinimaLogger.log("Incorrect Password : "+pass);
+					webpage 	= MDSHubError.createHubPage();
+				}else {
+					webpage 	= MDSHub.createHubPage();
+				}
+				
+				//It's the root file..
+				byte[] file = webpage.getBytes();
+	
+				//Calculate the size of the response
+				int finallength = file.length;
+	            
+				dos.writeBytes("HTTP/1.0 200 OK\r\n");
+				dos.writeBytes("Content-Type: text/html\r\n");
+				dos.writeBytes("Content-Length: " + finallength + "\r\n");
+				dos.writeBytes("\r\n");
+				dos.write(file, 0, finallength);
+				dos.flush();
+	
 				
 			}else {
 			
+				//Remove the params..
+				int index = fileRequested.indexOf("?");
+				if(index!=-1) {
+					fileRequested = fileRequested.substring(0,index);
+				}
+			
+				//Now get the content type
+				String contenttype 	= MiniFile.getContentType(fileRequested);
+				
 				//Now get the file..
 				File webfile = new File(mRoot, fileRequested);
 	
@@ -155,46 +187,20 @@ public class MDSFileHandler implements Runnable {
 				MinimaLogger.log(e);
 			} 	
 		}	
-	}
-
-	/*public String createIndexPage() {
+	}	
+	
+	private String getPassword(String zURL) {
 		
-		String page = "<html><head><title>MDS</title></head><body>"
-				+ "<center>"
-				+ "<br><br>"
-				+ "<h2>MDS</h2>";
-		
-		MDSDB db = MinimaDB.getDB().getMDSDB();
-		
-		//List the current MDS apps..
-		ArrayList<MiniDAPP> dapps = db.getAllMiniDAPPs();
-		
-		if(dapps.size() == 0) {
-			page += "No MiniDAPPs Installed yet..<br><br>";
-		}else {
+		int index = zURL.indexOf("?");
+		if(index != -1) {
 			
-			page += "<table width='400' border=0>";
+			String fullpass = zURL.substring(index+1);
+			index 			= fullpass.indexOf("=");
+			String pass 	= fullpass.substring(index+1); 
 			
-			for(MiniDAPP dapp : dapps) {
-				
-				String base = "./"+dapp.mUID+"/";
-				
-				page +=   "<tr>"
-						+ "<td rowspan=2 width=10><img width='50' src='"+base+dapp.mIcon+"'></td>"
-						+ "<td>&nbsp;&nbsp;<font size=+2><a href='"+base+"/index.html'>"+dapp.mName+"</a></font></td>"
-						+ "</tr>"
-						+ "<tr>"
-						+ "<td>&nbsp;&nbsp;"+dapp.mDescription+"</td>"
-						+ "</tr>"
-						+ "<tr><td>&nbsp;</td></tr>";
-			}
-			
-			page += "</table>";
+			return pass;
 		}
 		
-		page += "</center></body></html>";
-		
-		return page;
-	}*/
-	
+		return "";
+	}
 }
