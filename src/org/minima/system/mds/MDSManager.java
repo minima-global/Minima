@@ -33,13 +33,9 @@ public class MDSManager extends MessageProcessor {
 	public static final String MDS_POLLMESSAGE 			= "MDS_POLLMESSAGE";
 	public static final String MDS_MINIDAPPS_CHANGED 	= "MDS_MINIDAPPS_CHANGED";
 	
-	//The Main File server
-	HTTPServer mMDSFileServer;
-	
-	//The Command Server
-	HTTPServer mMDSComplete;
-	
-	HTTPSServer mSSLServer;
+	//The Main File and Command server
+	HTTPSServer mMDSFileServer;
+	HTTPSServer mMDSCommand;
 	
 	File mMDSRootFile; 
 	
@@ -86,9 +82,8 @@ public class MDSManager extends MessageProcessor {
 		
 		//Shut down the server
 		if(GeneralParams.MDS_ENABLED) {
-//			mMDSFileServer.stop();
-			mMDSComplete.stop();
-			mSSLServer.shutdown();
+			mMDSFileServer.shutdown();
+			mMDSCommand.shutdown();
 		}
 		
 		//Save all the DBs
@@ -179,32 +174,24 @@ public class MDSManager extends MessageProcessor {
 			//What is the root folder
 			mMDSRootFile = new File(GeneralParams.DATA_FOLDER,"mds");
 			
-//			//Create a new Server
-//			mMDSFileServer = new HTTPServer(GeneralParams.MDSFILE_PORT) {
-//				
-//				@Override
-//				public Runnable getSocketHandler(Socket zSocket) {
-//					return new MDSFileHandler( new File(mMDSRootFile,"web") , zSocket);
-//				}
-//			};
-			
-			//The Complete Server
-			mMDSComplete = new HTTPServer(GeneralParams.MDSCOMMAND_PORT) {
-				
-				@Override
-				public Runnable getSocketHandler(Socket zSocket) {
-					return new MDSCompleteHandler(zSocket, MDSManager.this, mPollStack);
-				}
-			};
-			
 			//Create an SSL server
-			mSSLServer = new HTTPSServer(GeneralParams.MDSFILE_PORT) {
+			mMDSFileServer = new HTTPSServer(GeneralParams.MDSFILE_PORT) {
 				
 				@Override
 				public Runnable getSocketHandler(SSLSocket zSocket) {
 					return new MDSFileHandler( new File(mMDSRootFile,"web") , zSocket);
 				}
 			};
+			
+			//The Complete Server
+			mMDSCommand = new HTTPSServer(GeneralParams.MDSCOMMAND_PORT) {
+				
+				@Override
+				public Runnable getSocketHandler(SSLSocket zSocket) {
+					return new MDSCompleteHandler(zSocket, MDSManager.this, mPollStack);
+				}
+			};
+			
 			
 			//Scan for MiniDApps
 			PostMessage(MDS_MINIDAPPS_CHANGED);

@@ -9,6 +9,9 @@ import java.net.URLDecoder;
 import java.util.Date;
 import java.util.StringTokenizer;
 
+import javax.net.ssl.SSLException;
+import javax.net.ssl.SSLHandshakeException;
+
 import org.minima.objects.base.MiniString;
 import org.minima.system.mds.MDSManager;
 import org.minima.system.mds.polling.PollStack;
@@ -189,6 +192,8 @@ public class MDSCompleteHandler implements Runnable {
 				out.flush(); // flush character output stream buffer
 			}
 			
+		}catch(SSLHandshakeException exc) {
+		}catch(SSLException exc) {
 		} catch (Exception ioe) {
 			MinimaLogger.log(ioe);
 			
