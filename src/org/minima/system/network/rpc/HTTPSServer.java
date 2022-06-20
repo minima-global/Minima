@@ -101,7 +101,7 @@ public abstract class HTTPSServer implements Runnable {
             // Create server socket
             mSSLServerSocket = (SSLServerSocket) sslServerSocketFactory.createServerSocket(this.mPort);
              
-            MinimaLogger.log("SSL server started on port "+mPort);
+            //MinimaLogger.log("SSL server started on port "+mPort);
             while(!mShutdown){
                 
             	//Get the socket

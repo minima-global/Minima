@@ -73,6 +73,8 @@ public class MDSManager extends MessageProcessor {
 		if(!GeneralParams.MDS_ENABLED) {
 			MinimaLogger.log("MDS disabled");
 			return;
+		}else {
+			MinimaLogger.log("MDS enabled");
 		}
 		
 		PostMessage(MDS_INIT);
