@@ -150,16 +150,10 @@ public class MDSCompleteHandler implements Runnable {
 				String result = null;
 				if(command.equals("sql")) {
 				
-					//Is it a CMD / SQL / FILE / FUNC ..
-					MinimaLogger.log("COMPLETE REQ : "+command+" "+params);
-					
 					SQLcommand sql = new SQLcommand(mMDS);
 					result = sql.runCommand(uid, data);
 					
 				}else if(command.equals("cmd")) {
-					
-					//Is it a CMD / SQL / FILE / FUNC ..
-					MinimaLogger.log("COMPLETE REQ : "+command+" "+params);
 					
 					CMDcommand cmd = new CMDcommand();
 					result = cmd.runCommand(uid, data);

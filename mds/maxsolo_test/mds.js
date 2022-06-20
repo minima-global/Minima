@@ -75,7 +75,7 @@ var MDS = {
 		MDS.log("MDS UID  : "+MDS.minidappuid);
 		
 		//The ports..
-		var mainport 	= port+2;
+		var mainport 	= port+1;
 		
 		MDS.log("MDS FILEHOST  : http://"+host+":"+port+"/");
 		
