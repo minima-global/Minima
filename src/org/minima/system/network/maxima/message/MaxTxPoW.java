@@ -17,6 +17,7 @@ import org.minima.system.Main;
 import org.minima.system.brains.TxPoWGenerator;
 import org.minima.utils.Crypto;
 import org.minima.utils.Streamable;
+import org.minima.utils.messages.Message;
 
 public class MaxTxPoW implements Streamable {
 
@@ -109,6 +110,9 @@ public class MaxTxPoW implements Streamable {
 		//Now Mine it..
 		Main.getInstance().getTxPoWMiner().MineTxPoW(txpow);
 		
+		//Post it on.. it might be a block!
+		Main.getInstance().PostMessage(new Message(Main.MAIN_TXPOWMINED).addObject("txpow", txpow));
+				
 		//Now create a MaxTxPoW complete unit
 		return new MaxTxPoW(zMaxima, txpow);
 	}

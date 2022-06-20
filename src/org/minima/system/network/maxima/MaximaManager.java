@@ -792,7 +792,7 @@ public class MaximaManager extends MessageProcessor {
 		NIOManager.sendNetworkMessage(zClient.getUID(), NIOMessage.MSG_PING, zStatus);
 	}
 	
-	public static synchronized MiniData constructMaximaData(Message zMessage) throws Exception {
+	public static MiniData constructMaximaData(Message zMessage) throws Exception {
 		//Message details
 		String publickey	= zMessage.getString("publickey");
 		MiniData topubk 	= new MiniData(publickey);

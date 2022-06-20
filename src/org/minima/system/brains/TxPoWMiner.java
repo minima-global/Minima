@@ -57,58 +57,14 @@ public class TxPoWMiner extends MessageProcessor {
 			//Hard set the Header Body hash - now we are mining it can never change
 			txpow.setHeaderBodyHash();
 			
-			//Set the nonce.. we make it a large size in bytes then edit those - no reserialisation
-			txpow.setNonce(START_NONCE_BYTES);
-			
 			//Post a message.. Mining Started
 			Message mining = new Message(Main.MAIN_MINING);
 			mining.addBoolean("starting", true);
 			mining.addObject("txpow", txpow);
 			Main.getInstance().PostMessage(mining);
 			
-			//Get the byte data
-			byte[] data = MiniData.getMiniDataVersion(txpow.getTxHeader()).getBytes();
-			
-			//Cycle until done..
-			MiniNumber finalnonce 	= MiniNumber.ZERO;
-			BigInteger newnonce 	= BigInteger.ZERO;
-			while(isRunning()) {
-				
-				//Get a nonce to write over the data
-				byte[] noncebytes = newnonce.toByteArray();
-				newnonce 		  = newnonce.add(BigInteger.ONE);
-				
-				//Copy these into the byte array of the TxHeader 
-				//start 2 numbers in so leading zero is not changed
-				System.arraycopy(noncebytes, 0, data, 4, noncebytes.length);
-				
-				//Hash the data array
-				byte[] hashedbytes = Crypto.getInstance().hashData(data);
-				
-				//Make into a MiniData structure
-				MiniData hash = new MiniData(hashedbytes);
-				
-				//Have we found a valid txpow
-				if(hash.isLess(txpow.getTxnDifficulty())) {
-					
-					//Ok read in the final data..
-					MiniData finaldata = new MiniData(data);
-					
-					//Now convert to a TxHeader
-					TxHeader txh = TxHeader.convertMiniDataVersion(finaldata);
-					
-					//What was the nonce..
-					finalnonce = txh.mNonce;
-					
-					break;
-				}
-			}
-			
-			//Now set the final nonce..
-			txpow.setNonce(finalnonce);
-			
-			//Calculate TxPoWID
-			txpow.calculateTXPOWID();
+			//Mine it..
+			MineTxPoW(txpow);
 			
 			//Post a message.. Mining Finished
 			Message miningend = new Message(Main.MAIN_MINING);
@@ -212,7 +168,7 @@ public class TxPoWMiner extends MessageProcessor {
 	/**
 	 * Mine a TxPoW - Used to Mine Maxima Messages
 	 */
-	public void MineTxPoW(TxPoW zTxPoW) {
+	public synchronized void MineTxPoW(TxPoW zTxPoW) {
 		
 		//Hard set the Header Body hash - now we are mining it can never change
 		zTxPoW.setHeaderBodyHash();
@@ -263,11 +219,5 @@ public class TxPoWMiner extends MessageProcessor {
 		
 		//Calculate TxPoWID
 		zTxPoW.calculateTXPOWID();
-		
-		//Post it on.. it might be a block!
-		Main.getInstance().PostMessage(new Message(Main.MAIN_TXPOWMINED).addObject("txpow", zTxPoW));
-		
-		//Remove the coins from our mining list
-		removeMiningCoins(zTxPoW);
 	}
 }
