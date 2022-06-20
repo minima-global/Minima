@@ -31,7 +31,7 @@ public class MDSManager extends MessageProcessor {
 	public static final String MDS_MINIDAPPS_CHANGED 	= "MDS_MINIDAPPS_CHANGED";
 	
 	//The Main File server
-	HTTPServer mMDSServer;
+	HTTPServer mMDSFileServer;
 	
 	//The Command Server
 	HTTPServer mMDSComplete;
@@ -81,7 +81,7 @@ public class MDSManager extends MessageProcessor {
 		
 		//Shut down the server
 		if(GeneralParams.MDS_ENABLED) {
-			mMDSServer.stop();
+			mMDSFileServer.stop();
 			mMDSComplete.stop();
 		}
 		
@@ -174,7 +174,7 @@ public class MDSManager extends MessageProcessor {
 			mMDSRootFile = new File(GeneralParams.DATA_FOLDER,"mds");
 			
 			//Create a new Server
-			mMDSServer = new HTTPServer(GeneralParams.MDSFILE_PORT) {
+			mMDSFileServer = new HTTPServer(GeneralParams.MDSFILE_PORT) {
 				
 				@Override
 				public Runnable getSocketHandler(Socket zSocket) {
@@ -189,7 +189,6 @@ public class MDSManager extends MessageProcessor {
 				public Runnable getSocketHandler(Socket zSocket) {
 					return new MDSCompleteHandler(zSocket, MDSManager.this, mPollStack);
 				}
-				
 			};
 			
 			//Scan for MiniDApps
@@ -206,6 +205,7 @@ public class MDSManager extends MessageProcessor {
 				
 					//Send to the runnable
 					mds.callMainCallback(poll);
+					
 				}catch(Exception exc) {
 					MinimaLogger.log(exc);
 				}
@@ -244,7 +244,7 @@ public class MDSManager extends MessageProcessor {
 						//Load it into the servcei runner..
 						Context ctx = Context.enter();
 						ctx.setOptimizationLevel(-1);
-						ctx.setLanguageVersion(Context.VERSION_1_5);
+						ctx.setLanguageVersion(Context.VERSION_1_7);
 						
 						//Create the Scope
 						Scriptable scope = ctx.initStandardObjects();

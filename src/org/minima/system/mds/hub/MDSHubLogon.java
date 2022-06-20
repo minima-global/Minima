@@ -24,6 +24,8 @@ public class MDSHubLogon {
 			+ "	\n"
 			+ "</form>\n"
 			+ "\n"
+			+ "<br>\n"
+			+ "Use 'minima' for now.."
 			+ "</center>\n"
 			+ "\n"
 			+ "\n"

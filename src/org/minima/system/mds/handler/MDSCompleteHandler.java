@@ -163,10 +163,10 @@ public class MDSCompleteHandler implements Runnable {
 					POLLcommand poll = new POLLcommand(mPollStack);
 					result = poll.runCommand(uid, data);
 					
-				}else {
+				}else{
 					
 					//Is it a CMD / SQL / FILE / FUNC ..
-					MinimaLogger.log("COMPLETE FILE REQ : "+command+" "+params);
+					MinimaLogger.log("ERROR COMPLETE FILE REQ : "+command+" "+params);
 					
 					//Invalid command
 					JSONObject error = new JSONObject();
