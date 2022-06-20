@@ -1,8 +1,6 @@
 package org.minima.system.network.rpc;
 
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.net.Socket;
 import java.security.KeyStore;
 
 import javax.net.ssl.KeyManager;
