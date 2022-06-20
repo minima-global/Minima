@@ -9,11 +9,10 @@ import java.util.Hashtable;
 import org.minima.database.MinimaDB;
 import org.minima.database.minidapps.MiniDAPP;
 import org.minima.objects.base.MiniString;
-import org.minima.system.mds.polling.PollHandler;
+import org.minima.system.mds.handler.MDSCompleteHandler;
 import org.minima.system.mds.polling.PollStack;
 import org.minima.system.mds.runnable.MDSJS;
 import org.minima.system.mds.sql.MiniDAPPDB;
-import org.minima.system.mds.sql.SQLHandler;
 import org.minima.system.network.rpc.HTTPServer;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.MiniFile;
@@ -31,9 +30,11 @@ public class MDSManager extends MessageProcessor {
 	public static final String MDS_POLLMESSAGE 			= "MDS_POLLMESSAGE";
 	public static final String MDS_MINIDAPPS_CHANGED 	= "MDS_MINIDAPPS_CHANGED";
 	
+	//The Main File server
 	HTTPServer mMDSServer;
-	HTTPServer mPollServer;
-	HTTPServer mSQLServer;
+	
+	//The Command Server
+	HTTPServer mMDSComplete;
 	
 	File mMDSRootFile; 
 	
@@ -81,8 +82,7 @@ public class MDSManager extends MessageProcessor {
 		//Shut down the server
 		if(GeneralParams.MDS_ENABLED) {
 			mMDSServer.stop();
-			mPollServer.stop();
-			mSQLServer.stop();
+			mMDSComplete.stop();
 		}
 		
 		//Save all the DBs
@@ -174,7 +174,7 @@ public class MDSManager extends MessageProcessor {
 			mMDSRootFile = new File(GeneralParams.DATA_FOLDER,"mds");
 			
 			//Create a new Server
-			mMDSServer = new HTTPServer(GeneralParams.MDS_PORT) {
+			mMDSServer = new HTTPServer(GeneralParams.MDSFILE_PORT) {
 				
 				@Override
 				public Runnable getSocketHandler(Socket zSocket) {
@@ -182,21 +182,14 @@ public class MDSManager extends MessageProcessor {
 				}
 			};
 			
-			//The Polling Server
-			mPollServer = new HTTPServer(GeneralParams.POLL_PORT) {
-				@Override
-				public Runnable getSocketHandler(Socket zSocket) {
-					return new PollHandler(mPollStack, zSocket);
-				}
-			};
-			
-			//The SQL Server
-			mSQLServer = new HTTPServer(GeneralParams.SQL_PORT) {
+			//The Complete Server
+			mMDSComplete = new HTTPServer(GeneralParams.MDSCOMMAND_PORT) {
 				
 				@Override
 				public Runnable getSocketHandler(Socket zSocket) {
-					return new SQLHandler(zSocket, MDSManager.this);
+					return new MDSCompleteHandler(zSocket, MDSManager.this, mPollStack);
 				}
+				
 			};
 			
 			//Scan for MiniDApps

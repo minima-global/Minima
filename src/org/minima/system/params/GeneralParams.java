@@ -50,17 +50,12 @@ public class GeneralParams {
 	/**
 	 * The MDS webserver
 	 */
-	public static int MDS_PORT = MINIMA_PORT+2;
+	public static int MDSFILE_PORT = MINIMA_PORT+2;
 	
 	/**
-	 * The MDS Polling Server
+	 * The MDS Command Server
 	 */
-	public static int POLL_PORT = MINIMA_PORT+3;
-	
-	/**
-	 * The MDS SQL Server
-	 */
-	public static int SQL_PORT = MINIMA_PORT+4;
+	public static int MDSCOMMAND_PORT = MINIMA_PORT+3;
 	
 	/**
 	 * MDS ENabled

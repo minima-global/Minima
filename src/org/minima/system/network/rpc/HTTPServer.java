@@ -42,7 +42,7 @@ public abstract class HTTPServer implements Runnable{
 		Thread runner = new Thread(this);
 		runner.start();
 		
-		//MinimaLogger.log("HTTP Server started on port : "+mPort);
+		MinimaLogger.log("HTTP Server started on port : "+mPort);
 	}
 	
 	public abstract Runnable getSocketHandler(Socket zSocket);

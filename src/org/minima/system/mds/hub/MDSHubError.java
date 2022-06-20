@@ -1,11 +1,5 @@
 package org.minima.system.mds.hub;
 
-import java.util.ArrayList;
-
-import org.minima.database.MinimaDB;
-import org.minima.database.minidapps.MDSDB;
-import org.minima.database.minidapps.MiniDAPP;
-
 public class MDSHubError {
 
 	public static final String HUB_START ="<html>\n"

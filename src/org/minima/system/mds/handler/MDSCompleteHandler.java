@@ -1,4 +1,4 @@
-package org.minima.system.mds.sql;
+package org.minima.system.mds.handler;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -11,6 +11,7 @@ import java.util.StringTokenizer;
 
 import org.minima.objects.base.MiniString;
 import org.minima.system.mds.MDSManager;
+import org.minima.system.mds.polling.PollStack;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
 
@@ -20,7 +21,7 @@ import org.minima.utils.json.JSONObject;
  * @author spartacusrex
  *
  */
-public class SQLHandler implements Runnable {
+public class MDSCompleteHandler implements Runnable {
 
 	/**
 	 * The Net Socket
@@ -33,13 +34,19 @@ public class SQLHandler implements Runnable {
 	MDSManager mMDS;
 	
 	/**
+	 * The POLL Stack
+	 */
+	PollStack mPollStack;
+	
+	/**
 	 * Main Constructor
 	 * @param zSocket
 	 */
-	public SQLHandler(Socket zSocket, MDSManager zMDS) {
+	public MDSCompleteHandler(Socket zSocket, MDSManager zMDS, PollStack zPollStack) {
 		//Store..
-		mSocket = zSocket;
-		mMDS	= zMDS;
+		mSocket 	= zSocket;
+		mMDS		= zMDS;
+		mPollStack	= zPollStack;
 	}
 
 	@Override
@@ -83,13 +90,18 @@ public class SQLHandler implements Runnable {
 			//And finally URL decode..
 			fileRequested = URLDecoder.decode(fileRequested,"UTF-8").trim();
 			
+			//Get the command / params only
+			int index 		= fileRequested.indexOf("?");
+			String command 	= fileRequested.substring(0,index);
+			String params 	= fileRequested.substring(index+1);
+			
 			//Get the UID
 			String uid = "";
-			StringTokenizer strtok = new StringTokenizer(fileRequested,"&");
+			StringTokenizer strtok = new StringTokenizer(params,"&");
 			while(strtok.hasMoreElements()) {
 				String tok = strtok.nextToken();
 				
-				int index 		= tok.indexOf("=");
+				index 			= tok.indexOf("=");
 				String param 	= tok.substring(0,index);
 				String value 	= tok.substring(index+1,tok.length());
 				
@@ -114,16 +126,10 @@ public class SQLHandler implements Runnable {
 			//Is it a POST request
 			if(!method.equals("POST") || uid.equals("")) {
 				
-				// send HTTP Headers
-				out.println("HTTP/1.1 500 OK");
-				out.println("Server: HTTP RPC Server from Minima : 1.3");
-				out.println("Date: " + new Date());
-				out.println("Content-type: text/plain");
-				out.println("Access-Control-Allow-Origin: *");
-				out.println(); // blank line between headers and content, very important !
-				out.flush(); // flush character output stream buffer
+				//Not a valid request
+				throw new Exception("Invalid request no UID or not POST");
 				
-			}else {
+			}else{
 				
 				//How much data
 				char[] cbuf 	= new char[contentlength];
@@ -138,17 +144,42 @@ public class SQLHandler implements Runnable {
 					}
 				}
 				
-				if(total != contentlength) {
-					MinimaLogger.log("SQLHANDLER : Read wrong amount "+len+"/"+contentlength);	
-				}
-				
 				//Set this..
 				String data = new String(cbuf);
 				
-				//Run the SQL
-				JSONObject sqlresult = mMDS.runSQL(uid, data);
-				String result 		 = sqlresult.toString(); 
-		    	
+				String result = null;
+				if(command.equals("sql")) {
+				
+					//Is it a CMD / SQL / FILE / FUNC ..
+					MinimaLogger.log("COMPLETE REQ : "+command+" "+params);
+					
+					SQLcommand sql = new SQLcommand(mMDS);
+					result = sql.runCommand(uid, data);
+					
+				}else if(command.equals("cmd")) {
+					
+					//Is it a CMD / SQL / FILE / FUNC ..
+					MinimaLogger.log("COMPLETE REQ : "+command+" "+params);
+					
+					CMDcommand cmd = new CMDcommand();
+					result = cmd.runCommand(uid, data);
+					
+				}else if(command.equals("poll")) {
+					
+					POLLcommand poll = new POLLcommand(mPollStack);
+					result = poll.runCommand(uid, data);
+					
+				}else {
+					
+					//Is it a CMD / SQL / FILE / FUNC ..
+					MinimaLogger.log("COMPLETE FILE REQ : "+command+" "+params);
+					
+					//Invalid command
+					JSONObject error = new JSONObject();
+					error.put("status", false);
+				}
+				
+				
 				//Calculate the size of the response
 				int finallength = result.getBytes(MiniString.MINIMA_CHARSET).length;
 				
@@ -166,6 +197,16 @@ public class SQLHandler implements Runnable {
 			
 		} catch (Exception ioe) {
 			MinimaLogger.log(ioe);
+			
+			// send HTTP Headers
+			out.println("HTTP/1.1 500 OK");
+			out.println("Server: HTTP RPC Server from Minima : 1.3");
+			out.println("Date: " + new Date());
+			out.println("Content-type: text/plain");
+			out.println("Access-Control-Allow-Origin: *");
+			out.println(); // blank line between headers and content, very important !
+			out.flush(); // flush character output stream buffer
+			
 			
 		} finally {
 			try {

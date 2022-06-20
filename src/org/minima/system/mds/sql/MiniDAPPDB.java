@@ -2,7 +2,6 @@ package org.minima.system.mds.sql;
 
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
 import java.sql.Statement;
 
 import org.minima.utils.MinimaLogger;
@@ -84,10 +83,12 @@ public class MiniDAPPDB extends SqlDB {
 			//Close the statement
 			stmt.close();
 						
-		} catch (SQLException e) {
+		} catch (Exception e) {
 			MinimaLogger.log("MiniDAPPSQL : "+e.toString());
 			
 			results.put("status", false);
+			results.put("count",0);
+			results.put("rows", new JSONArray());
 			results.put("results", false);
 			results.put("error", e.toString());
 		}	
