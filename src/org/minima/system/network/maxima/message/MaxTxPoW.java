@@ -17,7 +17,6 @@ import org.minima.system.Main;
 import org.minima.system.brains.TxPoWGenerator;
 import org.minima.utils.Crypto;
 import org.minima.utils.Streamable;
-import org.minima.utils.messages.Message;
 
 public class MaxTxPoW implements Streamable {
 

@@ -11,8 +11,6 @@ import java.net.Socket;
 import java.security.KeyPair;
 import java.util.ArrayList;
 import java.util.Random;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.maxima.MaximaContact;

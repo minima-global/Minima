@@ -102,15 +102,15 @@ public class MDSHub {
 			
 			for(MiniDAPP dapp : dapps) {
 				
-				String base = "./"+dapp.mUID+"/";
+				String base = "./"+dapp.getUID()+"/";
 				
 				page +=   "<li>\r\n"
-						+ "                <a class=\"list-item-container\" href='"+base+"index.html?uid="+dapp.mUID+"' target=\"_blank\" rel=\"noopener noreferrer\">\r\n"
-						+ "                    <img width='50' src='"+base+dapp.mIcon+"'>\r\n"
+						+ "                <a class=\"list-item-container\" href='"+base+"index.html?uid="+dapp.getUID()+"' target=\"_blank\" rel=\"noopener noreferrer\">\r\n"
+						+ "                    <img width='50' src='"+base+dapp.getIcon()+"'>\r\n"
 						+ "\r\n"
 						+ "                    <div class=list-item-right>\r\n"
-						+ "                        <div class=\"app-title\">"+dapp.mName+"</div>\r\n"
-						+ "                        <div>"+dapp.mDescription+"</div>\r\n"
+						+ "                        <div class=\"app-title\">"+dapp.getName()+"</div>\r\n"
+						+ "                        <div>"+dapp.getDescription()+"</div>\r\n"
 						+ "                    </div>\r\n"
 						+ "                </a>\r\n"
 						+ "            </li>";

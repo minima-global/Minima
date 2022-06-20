@@ -87,11 +87,10 @@ public class mds extends Command {
 			MiniString data = new MiniString(MiniFile.readCompleteFile(conf)); 	
 			
 			//Now create the JSON..
-			JSONObject json = (JSONObject) new JSONParser().parse(data.toString());
+			JSONObject jsonconf = (JSONObject) new JSONParser().parse(data.toString());
 			
 			//Create the MiniDAPP
-			MiniDAPP md = new MiniDAPP(rand, json.getString("name"), 
-					json.getString("icon"), json.getString("version"), json.getString("description"));
+			MiniDAPP md = new MiniDAPP(rand, jsonconf);
 			
 			//Now add to the DB
 			db.insertMiniDAPP(md);
@@ -147,11 +146,10 @@ public class mds extends Command {
 					MiniString data = new MiniString(MiniFile.readCompleteFile(new File(dapp,"dapp.conf"))); 	
 					
 					//Now create the JSON..
-					JSONObject json = (JSONObject) new JSONParser().parse(data.toString());
+					JSONObject jsonconf = (JSONObject) new JSONParser().parse(data.toString());
 					
 					//Create the MiniDAPP
-					MiniDAPP md = new MiniDAPP(uid, json.getString("name"), 
-							json.getString("icon"), json.getString("version"), json.getString("description"));
+					MiniDAPP md = new MiniDAPP(uid, jsonconf);
 					
 					//Now add to the DB
 					db.insertMiniDAPP(md);

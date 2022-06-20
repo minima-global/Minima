@@ -6,10 +6,9 @@ import java.util.Date;
 
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
-import org.minima.objects.base.MiniString;
 import org.minima.utils.MinimaLogger;
+import org.minima.utils.SqlDB;
 import org.minima.utils.json.JSONObject;
-import org.minima.utils.json.parser.JSONParser;
 import org.minima.utils.json.parser.ParseException;
 
 public class MaximaContact {
@@ -62,7 +61,7 @@ public class MaximaContact {
 		//Extra Data is a JSONOBject stored as bytes
 		MiniData extrabytes = new MiniData(zSQLResult.getBytes("extradata")); 
 		try {
-			mExtraData	= convertDataToJSONObject(extrabytes);
+			mExtraData	= SqlDB.convertDataToJSONObject(extrabytes);
 		} catch (ParseException e) {
 			MinimaLogger.log(e);
 			
@@ -157,27 +156,5 @@ public class MaximaContact {
 		json.put("extradata", mExtraData);
 		
 		return json;
-	}
-	
-	public static JSONObject convertDataToJSONObject(MiniData zData) throws ParseException {
-		
-		//First convert the Data back into a String
-		MiniString str = new MiniString(zData.getBytes());
-		
-		//And now convert that String into a JSONOBject
-		JSONObject json = (JSONObject) new JSONParser().parse(str.toString());
-		
-		return json;
-	}
-	
-	public static MiniData convertJSONObjectToData(JSONObject zJSON) {
-		
-		//First convert the Data back into a String
-		MiniString str = new MiniString(zJSON.toString());
-		
-		//And now convert that String into a MiniData
-		MiniData data = new MiniData(str.getData());
-		
-		return data;
 	}
 }

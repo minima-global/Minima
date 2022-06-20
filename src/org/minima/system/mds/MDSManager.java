@@ -237,10 +237,10 @@ public class MDSManager extends MessageProcessor {
 			for(MiniDAPP dapp : dapps) {
 			
 				//Add to our valid list
-				mValid.add(dapp.mUID);
+				mValid.add(dapp.getUID());
 				
 				//Is there a service.js class
-				File service = new File(getMiniDAPPFolder(dapp.mUID),"service.js");
+				File service = new File(getMiniDAPPFolder(dapp.getUID()),"service.js");
 				if(service.exists()) {
 					
 					try {
@@ -257,20 +257,20 @@ public class MDSManager extends MessageProcessor {
 						Scriptable scope = ctx.initStandardObjects();
 						
 						//Create an MDSJS object
-						MDSJS mdsjs = new MDSJS(this, dapp.mUID, dapp.mName, ctx, scope);
+						MDSJS mdsjs = new MDSJS(this, dapp.getUID(), dapp.getName(), ctx, scope);
 						ScriptableObject.putProperty(scope, "MDS", Context.javaToJS(mdsjs, scope));
 						
 						//Add the DECIMAL.js code..
-						ctx.evaluateString(scope, DECIMALJS, "<decimaljs_"+dapp.mUID+">", 1, null);
+						ctx.evaluateString(scope, DECIMALJS, "<decimaljs_"+dapp.getUID()+">", 1, null);
 						
 						//Add the main code to the Runnable
-						ctx.evaluateString(scope, code, "<mds_"+dapp.mUID+">", 1, null);
+						ctx.evaluateString(scope, code, "<mds_"+dapp.getUID()+">", 1, null);
 					
 						//Add to our list
 						mRunnables.add(mdsjs);
 					
 					}catch(Exception exc) {
-						MinimaLogger.log("ERROR starting service "+dapp.mName+" "+exc);
+						MinimaLogger.log("ERROR starting service "+dapp.getName()+" "+exc);
 					}
 				}
 			}
