@@ -373,7 +373,7 @@ public class tokencreate extends Command {
 		ret.put("response", txpow.getTransaction().toJSON());
 				
 		//Send it to the Miner..
-		Main.getInstance().getTxPoWMiner().mineTxPoW(txpow);
+		Main.getInstance().getTxPoWMiner().mineTxPoWAsync(txpow);
 	
 		return ret;
 	}
