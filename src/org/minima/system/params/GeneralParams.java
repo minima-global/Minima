@@ -60,7 +60,7 @@ public class GeneralParams {
 	/**
 	 * MDS ENabled
 	 */
-	public static boolean MDS_ENABLED = true;
+	public static boolean MDS_ENABLED = false;
 	
 	/**
 	 * Test Params or Main Params
