@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
+import javax.net.ssl.SSLSocket;
+
 import org.minima.database.MinimaDB;
 import org.minima.database.minidapps.MiniDAPP;
 import org.minima.objects.base.MiniString;
@@ -13,6 +15,7 @@ import org.minima.system.mds.handler.MDSCompleteHandler;
 import org.minima.system.mds.polling.PollStack;
 import org.minima.system.mds.runnable.MDSJS;
 import org.minima.system.mds.sql.MiniDAPPDB;
+import org.minima.system.network.rpc.HTTPSServer;
 import org.minima.system.network.rpc.HTTPServer;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.MiniFile;
@@ -35,6 +38,8 @@ public class MDSManager extends MessageProcessor {
 	
 	//The Command Server
 	HTTPServer mMDSComplete;
+	
+	HTTPSServer mSSLServer;
 	
 	File mMDSRootFile; 
 	
@@ -81,8 +86,9 @@ public class MDSManager extends MessageProcessor {
 		
 		//Shut down the server
 		if(GeneralParams.MDS_ENABLED) {
-			mMDSFileServer.stop();
+//			mMDSFileServer.stop();
 			mMDSComplete.stop();
+			mSSLServer.shutdown();
 		}
 		
 		//Save all the DBs
@@ -173,14 +179,14 @@ public class MDSManager extends MessageProcessor {
 			//What is the root folder
 			mMDSRootFile = new File(GeneralParams.DATA_FOLDER,"mds");
 			
-			//Create a new Server
-			mMDSFileServer = new HTTPServer(GeneralParams.MDSFILE_PORT) {
-				
-				@Override
-				public Runnable getSocketHandler(Socket zSocket) {
-					return new MDSFileHandler( new File(mMDSRootFile,"web") , zSocket);
-				}
-			};
+//			//Create a new Server
+//			mMDSFileServer = new HTTPServer(GeneralParams.MDSFILE_PORT) {
+//				
+//				@Override
+//				public Runnable getSocketHandler(Socket zSocket) {
+//					return new MDSFileHandler( new File(mMDSRootFile,"web") , zSocket);
+//				}
+//			};
 			
 			//The Complete Server
 			mMDSComplete = new HTTPServer(GeneralParams.MDSCOMMAND_PORT) {
@@ -188,6 +194,15 @@ public class MDSManager extends MessageProcessor {
 				@Override
 				public Runnable getSocketHandler(Socket zSocket) {
 					return new MDSCompleteHandler(zSocket, MDSManager.this, mPollStack);
+				}
+			};
+			
+			//Create an SSL server
+			mSSLServer = new HTTPSServer(GeneralParams.MDSFILE_PORT) {
+				
+				@Override
+				public Runnable getSocketHandler(SSLSocket zSocket) {
+					return new MDSFileHandler( new File(mMDSRootFile,"web") , zSocket);
 				}
 			};
 			

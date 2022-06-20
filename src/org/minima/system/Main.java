@@ -32,6 +32,7 @@ import org.minima.utils.messages.MessageListener;
 import org.minima.utils.messages.MessageProcessor;
 import org.minima.utils.messages.TimerMessage;
 import org.minima.utils.messages.TimerProcessor;
+import org.minima.utils.ssl.SSLManager;
 
 public class Main extends MessageProcessor {
 
@@ -173,6 +174,9 @@ public class Main extends MessageProcessor {
 		
 		//Load the Databases
 		MinimaDB.getDB().loadAllDB();
+		
+		//Create the SSL Keystore..
+		SSLManager.makeKeyFile();
 		
 		//Set the Base Private seed if needed..
 		if(MinimaDB.getDB().getUserDB().getBasePrivateSeed().equals("")) {

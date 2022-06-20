@@ -10,6 +10,8 @@ import java.net.Socket;
 import java.net.URLDecoder;
 import java.util.StringTokenizer;
 
+import javax.net.ssl.SSLHandshakeException;
+
 import org.minima.objects.base.MiniString;
 import org.minima.system.mds.hub.MDSHub;
 import org.minima.system.mds.hub.MDSHubError;
@@ -171,6 +173,8 @@ public class MDSFileHandler implements Runnable {
 					dos.flush();
 		    	}
 			}
+		
+		}catch(SSLHandshakeException exc) {
 			
 		}catch(Exception exc) {
 			MinimaLogger.log(exc);
