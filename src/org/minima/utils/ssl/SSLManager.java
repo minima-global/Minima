@@ -12,6 +12,8 @@ import java.security.cert.X509Certificate;
 
 import javax.net.ssl.KeyManagerFactory;
 
+import org.minima.database.MinimaDB;
+import org.minima.objects.base.MiniData;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.MinimaLogger;
 
@@ -36,6 +38,10 @@ public class SSLManager {
 			if(!sslfile.exists()) {
 				MinimaLogger.log("Generating SSL Keystore.. "+KeyStore.getDefaultType());
 				
+				//Set a Random Key
+				String keystorepass = MiniData.getRandomData(32).to0xString(); 
+				MinimaDB.getDB().getUserDB().setString("sslkeystorepass", keystorepass);
+				
 				// Create Key
 		        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
 		        keyPairGenerator.initialize(4096);
@@ -45,7 +51,7 @@ public class SSLManager {
 
 		        // Save the File
 		        OutputStream fos = new FileOutputStream(sslfile);
-		        createkeystore.store(fos, "MINIMAPWD".toCharArray());
+		        createkeystore.store(fos, keystorepass.toCharArray());
 		        fos.flush();
 		        fos.close();
 			}else {
@@ -60,10 +66,13 @@ public class SSLManager {
 	
 	public static KeyStore getSSLKeyStore() {
 		try {
+			//Get the keystore pass
+			String keystorepass = MinimaDB.getDB().getUserDB().getString("sslkeystorepass", null);
+			
 			// Load the keystore
 	        KeyStore loadedKeyStore = KeyStore.getInstance(KeyStore.getDefaultType());
 	        InputStream fis = new FileInputStream(getKeystroeFile());
-	        loadedKeyStore.load(fis, "MINIMAPWD".toCharArray());
+	        loadedKeyStore.load(fis, keystorepass.toCharArray());
 	        fis.close();
 			
 			return loadedKeyStore;
@@ -77,9 +86,12 @@ public class SSLManager {
 	
 	public static KeyManagerFactory getSSLKeyFactory(KeyStore zKeyStore) {
 		try {
+			//Get the keystore pass
+			String keystorepass = MinimaDB.getDB().getUserDB().getString("sslkeystorepass", null);
+			
 //			KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
 			KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
-			keyManagerFactory.init(zKeyStore, "MINIMAPWD".toCharArray());
+			keyManagerFactory.init(zKeyStore, keystorepass.toCharArray());
 
 			return keyManagerFactory;
 			

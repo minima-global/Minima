@@ -14,6 +14,7 @@ import org.bouncycastle.operator.DigestCalculator;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.bc.BcDigestCalculatorProvider;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+import org.minima.database.MinimaDB;
 
 import java.math.BigInteger;
 import java.security.KeyPair;
@@ -24,7 +25,9 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 
 public final class SelfSignedCertGenerator {
@@ -68,6 +71,12 @@ public final class SelfSignedCertGenerator {
                         .addExtension(Extension.authorityKeyIdentifier, false, createAuthorityKeyId(keyPair.getPublic()))
                         .addExtension(Extension.basicConstraints, true, new BasicConstraints(true));
 
+        //Add SAN
+        List<GeneralName> generalNames = new ArrayList();
+        generalNames.add(new GeneralName(GeneralName.iPAddress, "127.0.0.1"));
+        generalNames.add(new GeneralName(GeneralName.dNSName, "localhost"));
+        certificateBuilder.addExtension(Extension.subjectAlternativeName, true, new GeneralNames(generalNames.toArray(new GeneralName[]{})));
+        
         return new JcaX509CertificateConverter()
                 .setProvider(new BouncyCastleProvider()).getCertificate(certificateBuilder.build(contentSigner));
     }
@@ -104,9 +113,12 @@ public final class SelfSignedCertGenerator {
     }
 
     public static KeyStore createKeystore(X509Certificate cert, PrivateKey key) throws Exception {
-        KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+    	//Get the keystore pass
+		String keystorepass = MinimaDB.getDB().getUserDB().getString("sslkeystorepass", null);
+		
+    	KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
         keyStore.load(null, null);
-        keyStore.setKeyEntry(CERTIFICATE_ALIAS, key, "MINIMAPWD".toCharArray(), new java.security.cert.Certificate[]{cert});
+        keyStore.setKeyEntry(CERTIFICATE_ALIAS, key, keystorepass.toCharArray(), new java.security.cert.Certificate[]{cert});
         return keyStore;
     }
 }
