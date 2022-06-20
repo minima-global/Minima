@@ -89,8 +89,6 @@ public class MDSFileHandler implements Runnable {
 			//And finally URL decode..
 			fileRequested 		= URLDecoder.decode(fileRequested,"UTF-8").trim();
 			
-			MinimaLogger.log("FILE REQ : "+fileRequested);
-			
 			if(fileRequested.equals("")) {
 				
 				String webpage = MDSHubLogon.createHubPage();
@@ -135,7 +133,6 @@ public class MDSFileHandler implements Runnable {
 				dos.write(file, 0, finallength);
 				dos.flush();
 	
-				
 			}else {
 			
 				//Remove the params..
