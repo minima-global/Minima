@@ -15,13 +15,7 @@ var MDS_MAIN_CALLBACK = null;
 var MDS = {
 	
 	//RPC Host for Minima
-	rpchost : "",
-	
-	//Polling server for messages
-	pollhost : "",
-	
-	//SQL host
-	sqlhost : "",
+	mainhost : "",
 	
 	//The MiniDAPP UID
 	minidappuid : "",
@@ -81,20 +75,12 @@ var MDS = {
 		MDS.log("MDS UID  : "+MDS.minidappuid);
 		
 		//The ports..
-		var rpcport  	= port-1;
-		var pollport 	= port+1;
-		var sqlport 	= port+2;
+		var mainport 	= port+1;
 		
-		MDS.rpchost 	= "http://"+host+":"+rpcport+"/";
-		MDS.log("MDS RPCHOST  : "+MDS.rpchost);
+		MDS.log("MDS FILEHOST  : http://"+host+":"+port+"/");
 		
-		MDS.log("MDS MDSHOST  : http://"+host+":"+port+"/");
-		
-		MDS.pollhost 	= "http://"+host+":"+pollport+"/";
-		MDS.log("MDS POLLHOST : "+MDS.pollhost);
-		
-		MDS.sqlhost 	= "http://"+host+":"+sqlport+"/";
-		MDS.log("MDS SQLHOST : "+MDS.sqlhost);
+		MDS.mainhost 	= "http://"+host+":"+mainport+"/";
+		MDS.log("MDS MAINHOST : "+MDS.mainhost);
 		
 		//Store this for poll messages
 		MDS_MAIN_CALLBACK = callback;
@@ -118,7 +104,7 @@ var MDS = {
 	 */
 	cmd : function(command, callback){
 		//Send via POST
-		httpPostAsync(MDS.rpchost, command, callback);
+		httpPostAsync(MDS.mainhost+"cmd?"+"uid="+MDS.minidappuid, command, callback);
 	},
 	
 	/**
@@ -126,7 +112,7 @@ var MDS = {
 	 */
 	sql : function(command, callback){
 		//Send via POST
-		httpPostAsync(MDS.sqlhost+"uid="+MDS.minidappuid, command, callback);
+		httpPostAsync(MDS.mainhost+"sql?"+"uid="+MDS.minidappuid, command, callback);
 	},
 	
 	/**
@@ -164,9 +150,11 @@ var PollCounter = 0;
 var PollSeries  = 0;
 function PollListener(){
 	
-	//MDS.log("START POLL");
-	httpGetAsyncPoll(MDS.pollhost+"series="+PollSeries+"&counter="+PollCounter,function(msg){
-		//MDS.log("POLLMSG : "+JSON.stringify(msg));
+	//The POLL host
+	pollhost = MDS.mainhost+"poll?"+"uid="+MDS.minidappuid;
+	polldata = "series="+PollSeries+"&counter="+PollCounter;
+	
+	httpPostAsyncPoll(pollhost,polldata,function(msg){
 		
 		//Are we on the right Series..
 		if(PollSeries != msg.series){
@@ -185,7 +173,6 @@ function PollListener(){
 				
 				//And Post the message..
 				MDSPostMessage(msg.response.message);	
-				
 			}	
 		}
 		
@@ -235,7 +222,7 @@ function httpPostAsync(theUrl, params, callback){
  * @param callback
  * @returns
  */
-function httpGetAsync(theUrl, callback)
+/*function httpGetAsync(theUrl, callback)
 {	
     var xmlHttp = new XMLHttpRequest();
     xmlHttp.onreadystatechange = function() { 
@@ -256,20 +243,34 @@ function httpGetAsync(theUrl, callback)
     }
 	xmlHttp.open("GET", theUrl, true); // true for asynchronous 
     xmlHttp.send(null);
-}
+}*/
 
-function httpGetAsyncPoll(theUrl, callback)
-{	
-    var xmlHttp = new XMLHttpRequest();
+function httpPostAsyncPoll(theUrl, params, callback){
+	//Do we log it..
+	if(MDS.logging){
+		MDS.log("POST_POLL_RPC:"+theUrl+" PARAMS:"+params);
+	}
+
+	var xmlHttp = new XMLHttpRequest();
     xmlHttp.onreadystatechange = function() { 
         if (xmlHttp.readyState == 4 && xmlHttp.status == 200){
-        	callback(JSON.parse(xmlHttp.responseText));
+			//Do we log it..
+        	if(MDS.logging){
+        		MDS.log("RESPONSE:"+xmlHttp.responseText);
+        	}
+
+        	//Send it to the callback function..
+        	if(callback){
+        		callback(JSON.parse(xmlHttp.responseText));
+        	}
         }
     }
-	xmlHttp.addEventListener('error', function(ev){
+    xmlHttp.addEventListener('error', function(ev){
 		MDS.log("Error Polling - reconnect in 10s");
 		setTimeout(function(){PollListener();},10000);
 	});
-	xmlHttp.open("GET", theUrl, true); // true for asynchronous 
-    xmlHttp.send(null);
+    xmlHttp.open("POST", theUrl, true); // true for asynchronous 
+	xmlHttp.overrideMimeType('text/plain; charset=UTF-8');
+    //xmlHttp.setRequestHeader('Content-Type', 'application/json');    
+	xmlHttp.send(params);
 }
