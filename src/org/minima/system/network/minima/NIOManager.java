@@ -24,7 +24,6 @@ import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.system.Main;
 import org.minima.system.commands.network.connect;
-import org.minima.system.commands.network.sshtunnel;
 import org.minima.system.network.NetworkManager;
 import org.minima.system.network.maxima.MaximaManager;
 import org.minima.system.network.p2p.P2PFunctions;
@@ -102,7 +101,7 @@ public class NIOManager extends MessageProcessor {
 	/**
 	 * Thread pool to manage incoming messages
 	 */
-	ExecutorService THREAD_POOL = Executors.newFixedThreadPool(4);
+	ExecutorService THREAD_POOL = Executors.newFixedThreadPool(8);
 	
 	public NIOManager(NetworkManager zNetManager) {
 		super("NIOMANAGER");
@@ -201,15 +200,6 @@ public class NIOManager extends MessageProcessor {
 	protected void processMessage(Message zMessage) throws Exception {
 		
 		if(zMessage.getMessageType().equals(NIO_SERVERSTARTED)) {
-			
-			//Do we need to start up the SSHTunnel..
-			if(MinimaDB.getDB().getUserDB().isSSHTunnelEnabled()){
-				//Start the SSH Tunnel..
-				sshtunnel.startSSHTunnel();
-			
-				//Wait a few seconds for it to work..
-				Thread.sleep(5000);
-			}
 			
 			//The NIOServer has started you can now start up the P2P and pre-connect list
 			mNetworkManager.getP2PManager().PostMessage(P2PFunctions.P2P_INIT);
@@ -319,10 +309,10 @@ public class NIOManager extends MessageProcessor {
 					newconn.addString("uid", nc.getUID());
 					mNetworkManager.getP2PManager().PostMessage(newconn);
 					
-					MinimaLogger.log("INFO : "+nc.getUID()+" connection failed - no more reconnect attempts ");
+					MinimaLogger.log("INFO : "+nc.getUID()+"@"+nc.getFullAddress()+" connection failed - no more reconnect attempts ");
 					
 				}else {
-					MinimaLogger.log("INFO : "+nc.getUID()+" Resetting reconnect attempts (no other connections) for "+nc.getFullAddress());
+					MinimaLogger.log("INFO : "+nc.getUID()+"@"+nc.getFullAddress()+" Resetting reconnect attempts (no other connections) for "+nc.getFullAddress());
 					
 					//reset connect attempts..
 					nc.setConnectAttempts(1);
@@ -452,7 +442,7 @@ public class NIOManager extends MessageProcessor {
 			
 			//Create a handler task
 			NIOMessage niomsg = new NIOMessage(uid, data);
-			niomsg.setTrace(isTrace());
+			niomsg.setTrace(isTrace(), mTraceFilter);
 			
 			//Process it.. in a thread pool..
 			THREAD_POOL.execute(niomsg);
@@ -636,7 +626,7 @@ public class NIOManager extends MessageProcessor {
 	/**
 	 * A special PING message to  check a valid connection..
 	 */
-	public static Greeting sendPingMessage(String zHost, int zPort) {
+	public static Greeting sendPingMessage(String zHost, int zPort, boolean suppressErrorMessage) {
 		
 		Greeting greet = null;
 		
@@ -688,7 +678,9 @@ public class NIOManager extends MessageProcessor {
 		
 		}catch(Exception exc){
 			greet = null;
-			MinimaLogger.log("Error sending Single Ping message : "+exc.toString());
+			if (!suppressErrorMessage) {
+				MinimaLogger.log("Error sending Single Ping message : " + exc.toString());
+			}
 		}
 		
 		return greet;

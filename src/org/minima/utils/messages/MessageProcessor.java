@@ -95,16 +95,22 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
                 //Process that message
                 try{
                 	//Are we logging  ?
+                	long timenow = 0;
                 	if(mTrace) {
-                		String tracemsg = msg.toString();
-                		if(tracemsg.contains(mTraceFilter)) {
-                			MinimaLogger.log("["+mMainThread.getName()+"] (stack:"+getSize()+") \t"+msg);
-                		}
+                		timenow = System.currentTimeMillis();
                 	}
                 
                 	//Process Message
                     processMessage(msg);
                 
+                    if(mTrace) {
+                    	long timediff = System.currentTimeMillis() - timenow;
+                    	String tracemsg = msg.toString();
+                		if(tracemsg.contains(mTraceFilter)) {
+                			MinimaLogger.log("["+mMainThread.getName()+"] (stack:"+getSize()+") time:"+timediff+" \t"+msg);
+                		}
+                    }
+                    
                 }catch(Error noclass){
                 	MinimaLogger.log("**SERIOUS SETUP ERROR "+msg.getMessageType()+" "+noclass.toString());
                 	

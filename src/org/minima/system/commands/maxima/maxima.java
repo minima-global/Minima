@@ -66,6 +66,7 @@ public class maxima extends Command {
 			details.put("logs", max.mMaximaLogs);
 			details.put("name", MinimaDB.getDB().getUserDB().getMaximaName());
 			details.put("publickey", max.getPublicKey().to0xString());
+			details.put("mls", max.getMLSHost());
 			details.put("localidentity", max.getLocalMaximaAddress());
 			details.put("contact", max.getRandomMaximaAddress());
 			

@@ -13,7 +13,6 @@ import org.minima.system.network.p2p.P2PFunctions;
 import org.minima.system.network.p2p.P2PManager;
 import org.minima.system.network.rpc.CMDHandler;
 import org.minima.system.network.rpc.HTTPServer;
-import org.minima.system.network.sshtunnel.SSHManager;
 import org.minima.system.network.webhooks.NotifyManager;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.MinimaLogger;
@@ -37,11 +36,6 @@ public class NetworkManager {
 	 * The RPC server
 	 */
 	HTTPServer mRPCServer = null;
-	
-	/**
-	 * The SSH Tunnel Manager
-	 */
-	SSHManager mSSHManager;
 	
 	/**
 	 * The Web Hooks for Minima messages
@@ -75,9 +69,6 @@ public class NetworkManager {
 		if(MinimaDB.getDB().getUserDB().isRPCEnabled()) {
 			startRPC();
 		}
-		
-		//Start the SSH Tunnel manager
-		mSSHManager = new SSHManager();
 		
 		//Notifucation of Events
 		mNotifyManager = new NotifyManager();
@@ -207,16 +198,12 @@ public class NetworkManager {
 		//Send a message to the P2P
 		mP2PManager.PostMessage(P2PFunctions.P2P_SHUTDOWN);
 		
-		//And the SSH
-		mSSHManager.PostMessage(SSHManager.SSHTUNNEL_SHUTDOWN);
-		
 		//And the notify Manager
 		mNotifyManager.shutDown();
 	}
 	
 	public boolean isShutDownComplete() {
 		return 		mNIOManager.isShutdownComplete() 
-				&&  mSSHManager.isShutdownComplete()
 				&&  mP2PManager.isShutdownComplete()
 				&&  mNotifyManager.isShutdownComplete();
 	}
@@ -227,10 +214,6 @@ public class NetworkManager {
 	
 	public NIOManager getNIOManager() {
 		return mNIOManager;
-	}
-	
-	public SSHManager getSSHManager() {
-		return mSSHManager;
 	}
 	
 	public NotifyManager getNotifyManager() {

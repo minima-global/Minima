@@ -1,0 +1,128 @@
+body {
+    font-family:monospace;
+}
+
+.sidebartable {
+    border: 1px solid black;
+  	border-radius: 10px;
+  	padding:5px;
+  	
+  	position:absolute;
+	top:0;
+	bottom:0;
+	left: 0; 
+  	right: 0; 
+  	margin-top: auto;
+  	margin-bottom: auto;
+  	margin-left: auto; 
+  	margin-right: auto;
+  	z-index:0;
+  	width:80%;
+  	height:80%;
+  
+}
+
+.nosidebartable {
+    border: 1px solid black;
+  	border-radius: 10px;
+  	padding:5px;
+  	z-index:0;
+  	width:100%;
+  	height:100%;
+}
+
+.sidebar{
+	width:100%;
+  	height:100%;
+  	overflow-y:auto;
+}
+
+.sidebarroom {
+    border: 1px solid black;
+  	border-radius: 10px;
+  	padding:5px;
+  	
+  	width:100%;
+  	height:100;
+  	
+  	cursor:pointer;
+}
+
+.sidebarroom:hover{
+  background-color: #eee;
+}
+
+.mainview{
+	border: 1px solid black;
+  	border-radius: 10px;
+  	padding:5px;
+  	vertical-align:top;
+  	font-size:16px;
+  	
+}
+
+.chatwindow{
+	width:100%;
+	height:100%;
+	vertical-align:top;
+	overflow-y: auto;
+	word-break: break-word;	
+}
+
+.chatline{
+	border: 1px solid black;
+  	border-radius: 10px;
+  	padding:5px;
+  	height:40;
+}
+
+.chatline {
+    border: 1px solid black;
+  	border-radius: 10px;
+  	padding:5px;
+  	font-size:20px;
+}
+
+.solobutton {
+    background-color: #eee;
+    border: 1px solid black;
+  	border-radius: 10px;
+  	padding:5px;
+  	font-size:20px;
+}
+
+.solobutton:hover {
+    background-color: #eee;
+    border: 1px solid green;
+  	border-radius: 10px;
+  	padding:5px;
+  	font-size:20px;
+}
+
+.solobutton:active {
+    background-color: #eee;
+    border: 1px solid red;
+  	border-radius: 10px;
+  	padding:5px;
+  	font-size:20px;
+}
+
+#sendmoney {
+	position:absolute;
+	top:0;
+	bottom:0;
+	left: 0; 
+  	right: 0; 
+  	margin-top: auto;
+  	margin-bottom: auto;
+  	margin-left: auto; 
+  	margin-right: auto; 
+    background-color: #fff;
+    border: 2px solid black;
+  	border-radius: 10px;
+  	padding:16px;
+  	font-size:18px;
+  	width:380;
+  	height:200;
+  	z-index:1;
+}

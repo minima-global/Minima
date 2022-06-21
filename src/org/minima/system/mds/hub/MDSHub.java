@@ -105,7 +105,7 @@ public class MDSHub {
 				String base = "./"+dapp.mUID+"/";
 				
 				page +=   "<li>\r\n"
-						+ "                <a class=\"list-item-container\" href='"+base+"index.html' target=\"_blank\" rel=\"noopener noreferrer\">\r\n"
+						+ "                <a class=\"list-item-container\" href='"+base+"index.html?uid="+dapp.mUID+"' target=\"_blank\" rel=\"noopener noreferrer\">\r\n"
 						+ "                    <img width='50' src='"+base+dapp.mIcon+"'>\r\n"
 						+ "\r\n"
 						+ "                    <div class=list-item-right>\r\n"

@@ -1,4 +1,4 @@
-package org.minima.database.minidapps;
+package org.minima.system.mds.sql;
 
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -19,9 +19,13 @@ public class MiniDAPPDB extends SqlDB {
 	@Override
 	protected void createSQL() {}
 	
-	public JSONObject executeSQL(String zSQL) {
+	/**
+	 * Only one thread can access the db at a atime
+	 */
+	public synchronized JSONObject executeSQL(String zSQL) {
 		
 		JSONObject results = new JSONObject();
+		results.put("sql", zSQL);
 		
 		try {
 			
@@ -51,7 +55,16 @@ public class MiniDAPPDB extends SqlDB {
 					for(int i=1;i<=columnnum;i++) {
 						String column = rsmd.getColumnName(i);
 						Object obj    = resset.getObject(i);
-						row.put(column, obj.toString());					
+						
+						//Treat some type special
+						if(rsmd.getColumnClassName(i).equals("java.sql.Clob")) {
+							java.sql.Clob clob = (java.sql.Clob)obj;
+                        	String strvalue = clob.getSubString(1, (int) clob.length());
+                        	row.put(column, strvalue);
+						
+						}else {
+							row.put(column, obj.toString());
+						}					
 					}
 					allrows.add(row);
 				}
@@ -72,7 +85,11 @@ public class MiniDAPPDB extends SqlDB {
 			stmt.close();
 						
 		} catch (SQLException e) {
-			MinimaLogger.log(e);
+			MinimaLogger.log("MiniDAPPSQL : "+e.toString());
+			
+			results.put("status", false);
+			results.put("results", false);
+			results.put("error", e.toString());
 		}	
 		
 		return results;

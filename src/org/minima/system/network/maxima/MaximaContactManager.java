@@ -53,6 +53,7 @@ public class MaximaContactManager extends MessageProcessor {
 			ret.put("topblock",MiniNumber.ZERO.toString());
 			ret.put("checkblock",MiniNumber.ZERO.toString());
 			ret.put("checkhash",MiniData.ZERO_TXPOWID.toString());
+			ret.put("mls","");
 			
 		}else {
 			
@@ -67,13 +68,14 @@ public class MaximaContactManager extends MessageProcessor {
 			//Extra Data
 			ret.put("name", MinimaDB.getDB().getUserDB().getMaximaName());
 			
-			String address 		= MinimaDB.getDB().getWallet().getDefaultAddress().getAddress();
-			String mxaddress 	= Address.makeMinimaAddress(new MiniData(address)); 
+			String minimaaddress = MinimaDB.getDB().getWallet().getDefaultAddress().getAddress();
+			String mxaddress 	 = Address.makeMinimaAddress(new MiniData(minimaaddress)); 
 			ret.put("minimaaddress", mxaddress);
 			
 			ret.put("topblock",tip.getBlockNumber().toString());
 			ret.put("checkblock",tip50.getBlockNumber().toString());
 			ret.put("checkhash",tip50.getTxPoW().getTxPoWID());
+			ret.put("mls",mManager.getMLSHost());
 		}
 		
 		return ret;
@@ -140,27 +142,35 @@ public class MaximaContactManager extends MessageProcessor {
 			MiniNumber topblock 	= new MiniNumber((String) contactjson.get("topblock"));
 			MiniNumber checkblock 	= new MiniNumber((String) contactjson.get("checkblock"));
 			MiniData checkhash 		= new MiniData((String) contactjson.get("checkhash"));
+			String mls				= contactjson.getString("mls");
 			
 			MaximaContact mxcontact = new MaximaContact(publickey);
 			mxcontact.setCurrentAddress(address);
-			mxcontact.setname(name);
-			mxcontact.setMinimaAddress(mxaddress);
-			mxcontact.setBlockDetails(topblock, checkblock, checkhash);
 			mxcontact.setLastSeen(System.currentTimeMillis());
 			
 			if(checkcontact == null) {
 				//New Contact
+				mxcontact.setname(name);
+				mxcontact.setMinimaAddress(mxaddress);
+				mxcontact.setBlockDetails(topblock, checkblock, checkhash);
+				mxcontact.setMLS(mls);
+				
 				maxdb.newContact(mxcontact);
 				
 			}else{
-				//Overwrite the new details
+				//Set this FIRST
 				mxcontact.setExtraData(checkcontact.getExtraData());
 				mxcontact.setMyAddress(checkcontact.getMyAddress());
-
-				//Update the DB 
+				
+				//Overwrite with the new details
+				mxcontact.setname(name);
+				mxcontact.setMinimaAddress(mxaddress);
+				mxcontact.setBlockDetails(topblock, checkblock, checkhash);
+				mxcontact.setMLS(mls);
+				
 				maxdb.updateContact(mxcontact);
 			}
-			
+						
 			//Send them a contact message aswell..
 			if(intro || checkcontact == null) {
 				Message msg = new Message(MAXCONTACTS_UPDATEINFO);

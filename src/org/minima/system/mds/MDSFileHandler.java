@@ -8,12 +8,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.net.URLDecoder;
-import java.util.ArrayList;
 import java.util.StringTokenizer;
 
-import org.minima.database.MinimaDB;
-import org.minima.database.minidapps.MDSDB;
-import org.minima.database.minidapps.MiniDAPP;
 import org.minima.objects.base.MiniString;
 import org.minima.system.mds.hub.MDSHub;
 import org.minima.utils.MiniFile;
@@ -90,6 +86,14 @@ public class MDSFileHandler implements Runnable {
 			
 			//And finally URL decode..
 			fileRequested 		= URLDecoder.decode(fileRequested,"UTF-8").trim();
+			
+			//Remove the params..
+			int index = fileRequested.indexOf("?");
+			if(index!=-1) {
+				fileRequested = fileRequested.substring(0,index);
+			}
+			
+			//Now get the content type
 			String contenttype 	= MiniFile.getContentType(fileRequested);
 			
 			if(fileRequested.equals("")) {

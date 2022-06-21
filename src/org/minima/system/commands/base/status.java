@@ -26,6 +26,7 @@ import org.minima.system.params.GlobalParams;
 import org.minima.utils.Crypto;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MiniFormat;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
 
 public class status extends Command {
@@ -144,9 +145,13 @@ public class status extends Command {
 				//Now use the Median Times..
 				TxPoWTreeNode startblock 	= TxPoWGenerator.getMedianTimeBlock(treestartblock);
 				TxPoWTreeNode endblock 	 	= TxPoWGenerator.getMedianTimeBlock(treeendblock);
-				MiniNumber blockdiff 		= startblock.getBlockNumber().sub(endblock.getBlockNumber()); 
 				
-				MiniNumber speed 			= TxPoWGenerator.getChainSpeed(startblock, blockdiff);
+				MiniNumber blockdiff 		= startblock.getBlockNumber().sub(endblock.getBlockNumber()); 
+				if(blockdiff.isEqual(MiniNumber.ZERO)) {
+					throw new CommandException("ZERO blockdiff on speed check.. start:"+startblock.getBlockNumber()+" end:"+endblock.getBlockNumber());
+				}
+				
+				MiniNumber speed = TxPoWGenerator.getChainSpeed(startblock, blockdiff);
 				tree.put("speed", speed.setSignificantDigits(5));
 			}
 			

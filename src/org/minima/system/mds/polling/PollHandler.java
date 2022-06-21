@@ -132,7 +132,7 @@ public class PollHandler implements Runnable {
 			
 			// send HTTP Headers
 			out.println("HTTP/1.1 200 OK");
-			out.println("Server: HTTP RPC Server from Minima : 1.3");
+			out.println("Server: HTTP POLL Server from Minima : 1.3");
 			out.println("Date: " + new Date());
 			out.println("Content-type: text/plain");
 			out.println("Content-length: " + finallength);
@@ -142,7 +142,7 @@ public class PollHandler implements Runnable {
 			out.flush(); // flush character output stream buffer
 			
 		} catch (Exception ioe) {
-			MinimaLogger.log("POLLHANDLER : "+ioe+" "+firstline);
+			MinimaLogger.log(ioe);
 			
 		} finally {
 			try {

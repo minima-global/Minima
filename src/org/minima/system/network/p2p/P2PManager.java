@@ -37,12 +37,13 @@ public class P2PManager extends MessageProcessor {
      */
     public static final String P2P_LOOP = "P2P_LOOP";
     public static final String P2P_ASSESS_CONNECTIVITY = "P2P_ASSESS_CONNECTIVITY";
-    public static final String P2P_UPDATE_HASH_RATE = "P2P_UPDATE_HASH_RATE";
     public static final String P2P_SEND_MSG = "P2P_SEND_MSG";
     public static final String P2P_SEND_MSG_TO_ALL = "P2P_SEND_MSG_TO_ALL";
     public static final String P2P_SEND_CONNECT = "P2P_SEND_CONNECT";
     public static final String P2P_SEND_DISCONNECT = "P2P_SEND_DISCONNECT";
 
+    public static final String P2P_ADD_PEER = "P2P_ADD_PEER";
+    public static final String P2P_REMOVE_PEER = "P2P_REMOVE_PEER";
     public static final String P2P_SAVE_DATA = "P2P_SAVE_DATA";
 
     public static final String ADDRESS_LITERAL = "address";
@@ -64,19 +65,18 @@ public class P2PManager extends MessageProcessor {
         }
 
         //Start the Peers checker..
-        mPeersChecker = new P2PPeersChecker();
+        mPeersChecker = new P2PPeersChecker(this);
         
         //And start the loop timer..
         PostTimerMessage(new TimerMessage(10_000, P2P_LOOP));
         PostTimerMessage(new TimerMessage(P2PParams.NODE_NOT_ACCEPTING_CHECK_DELAY, P2P_ASSESS_CONNECTIVITY));
         PostTimerMessage(new TimerMessage(P2PParams.SAVE_DATA_DELAY, P2P_SAVE_DATA));
-        PostTimerMessage(new TimerMessage(20_000, P2P_UPDATE_HASH_RATE));
     }
     public Set<InetSocketAddress> getPeers(){
         return state.getKnownPeers();
     }
 
-    protected static List<Message> init(P2PState state) {
+    protected List<Message> init(P2PState state) {
         List<Message> msgs = new ArrayList<>();
         //Get the P2P DB
         P2PDB p2pdb = MinimaDB.getDB().getP2PDB();
@@ -89,7 +89,9 @@ public class P2PManager extends MessageProcessor {
         MinimaLogger.log("[+] P2P Version: " + P2PParams.VERSION);
 
         List<InetSocketAddress> peers = p2pdb.getPeersList();
-        state.getKnownPeers().addAll(peers);
+        for(InetSocketAddress peer: peers){
+            mPeersChecker.PostMessage(new Message(P2PPeersChecker.PEERS_ADDPEERS).addObject("address", peer));
+        }
         state.setAcceptingInLinks(GeneralParams.IS_ACCEPTING_IN_LINKS);
         state.setMyMinimaAddress(GeneralParams.MINIMA_HOST);
 
@@ -114,7 +116,7 @@ public class P2PManager extends MessageProcessor {
                 String host = GeneralParams.P2P_ROOTNODE.split(":")[0];
                 int port = Integer.parseInt(GeneralParams.P2P_ROOTNODE.split(":")[1]);
                 connectionAddress = new InetSocketAddress(host, port);
-                state.getKnownPeers().add(connectionAddress);
+                mPeersChecker.PostMessage(new Message(P2PPeersChecker.PEERS_ADDPEERS).addObject("address", connectionAddress));
                 P2PFunctions.log_info("[+] Connecting to specified node: " + connectionAddress);
             } else if (!peers.isEmpty()) {
                 connectionAddress = peers.get(rand.nextInt(peers.size()));
@@ -147,7 +149,8 @@ public class P2PManager extends MessageProcessor {
             NIOClient client = (NIOClient) zMessage.getObject("client");
             state.getAllLinks().put(uid, new InetSocketAddress(client.getHost(), client.getPort()));
             sendMsgs.addAll(connect(zMessage, state));
-            if (!client.isIncoming()) {
+            if (!client.isIncoming() && !state.isDoingDiscoveryConnection()) {
+                state.setStartupComplete(true);
                 P2PFunctions.log_debug("[+] P2P_CONNECTED to: " + client.getHost() + ":" + client.getPort() + " - " + uid + " Current outlinks: " + state.getOutLinks().size() + " Excluding this connection as accounting is when we get the greeting");
                 P2PFunctions.log_node_runner("[+] Successfully connected to the network current links: " + (state.getAllLinks().size()));
             }
@@ -194,22 +197,14 @@ public class P2PManager extends MessageProcessor {
         } else if (zMessage.isMessageType(P2P_ASSESS_CONNECTIVITY)) {
             sendMsgs.addAll(assessConnectivity(state));
             PostTimerMessage(new TimerMessage(P2PParams.NODE_NOT_ACCEPTING_CHECK_DELAY, P2P_ASSESS_CONNECTIVITY));
-        } else if (zMessage.isMessageType(P2P_UPDATE_HASH_RATE)) {
-            final int hashes = 1000000;
-            long timestart = System.currentTimeMillis();
-
-            MiniData data = MiniData.getRandomData(32);
-            for (int i = 0; i < hashes; i++) {
-                data = Crypto.getInstance().hashObject(data);
+        } else if (zMessage.isMessageType(P2P_REMOVE_PEER)) {
+            InetSocketAddress address = (InetSocketAddress) zMessage.getObject("address");
+            state.getKnownPeers().remove(address);
+        } else if (zMessage.isMessageType(P2P_ADD_PEER)) {
+            if(state.getKnownPeers().size() < 250) {
+                InetSocketAddress address = (InetSocketAddress) zMessage.getObject("address");
+                state.getKnownPeers().add(address);
             }
-
-            long timediff = System.currentTimeMillis() - timestart;
-
-            float speed = (hashes * 1000) / timediff;
-            float megspeed = speed / 1000000;
-
-            state.setDeviceHashRate(megspeed);
-            PostTimerMessage(new TimerMessage(P2PParams.HASH_RATE_UPDATE_DELAY, P2P_UPDATE_HASH_RATE));
         }
         sendMessages(sendMsgs);
     }
@@ -226,7 +221,7 @@ public class P2PManager extends MessageProcessor {
         return sendmsgs;
     }
 
-    protected static List<Message> processJsonMessages(Message zMessage, P2PState state) throws IOException {
+    protected List<Message> processJsonMessages(Message zMessage, P2PState state) throws IOException {
         //Get the message..
         List<Message> sendMsgs = new ArrayList<>();
         JSONObject message = (JSONObject) zMessage.getObject("message");
@@ -244,7 +239,13 @@ public class P2PManager extends MessageProcessor {
         if (swapLinksMsg != null) {
             if (swapLinksMsg.containsKey("greeting")) {
                 P2PGreeting greeting = P2PGreeting.fromJSON((JSONObject) swapLinksMsg.get("greeting"));
-                SwapLinksFunctions.updateKnownPeersFromGreeting(state, greeting);
+                for(InetSocketAddress address: greeting.getKnownPeers()){
+                    mPeersChecker.PostMessage(new Message(P2PPeersChecker.PEERS_ADDPEERS).addObject("address", address));
+                }
+                // See if the connection the clients address has come from is a valid peer
+                InetSocketAddress minimaAddress = new InetSocketAddress(client.getHost(),  greeting.getMyMinimaPort());
+                mPeersChecker.PostMessage(new Message(P2PPeersChecker.PEERS_ADDPEERS).addObject("address", minimaAddress));
+
                 boolean noConnect = SwapLinksFunctions.processGreeting(state, greeting, client, state.isNoConnect());
                 if (!noConnect) {
                     state.setNoConnect(false);
@@ -309,7 +310,7 @@ public class P2PManager extends MessageProcessor {
                 }
 
             } else {
-                if (state.getAllLinks().size() == 0){
+                if (state.getAllLinks().size() == 0 && state.isStartupComplete()){
                     P2PFunctions.log_node_runner("[!] Node is not connected to the network. Attempting to join the network again now. Please check your not has an internet connection.");
                 }
                 state.setDoingDiscoveryConnection(true);
@@ -389,7 +390,6 @@ public class P2PManager extends MessageProcessor {
         if (fullDetails) {
             ret.put("p2p_state", state.toJson());
         } else {
-            ret.put("deviceHashRate", state.getDeviceHashRate());
             ret.put("address", state.getMyMinimaAddress().toString().replace("/", ""));
             ret.put("isAcceptingInLinks", state.isAcceptingInLinks());
             ret.put("numInLinks", state.getInLinks().size());
