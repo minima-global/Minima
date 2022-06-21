@@ -106,25 +106,6 @@ public class SwapLinksFunctions {
         state.getNoneP2PLinks().remove(uid);
     }
 
-    public static void updateKnownPeersFromGreeting(P2PState state, P2PGreeting greeting) {
-        List<InetSocketAddress> newPeers = Stream.of(greeting.getInLinks(), greeting.getKnownPeers())
-                .flatMap(Collection::stream)
-                .distinct()
-                .filter(x -> x.getPort() != 0)
-                .filter(x -> !x.equals(state.getMyMinimaAddress()))
-                .collect(Collectors.toCollection(ArrayList::new));
-
-        state.getKnownPeers().addAll(newPeers);
-
-        List<InetSocketAddress> peers = new ArrayList<>(state.getKnownPeers());
-        Collections.shuffle(peers);
-
-        // Added upto 20 peers into the list + outlinks
-        int numOutLinks = state.getOutLinks().size();
-        state.setKnownPeers(new HashSet<>(peers.subList(0, Math.min(peers.size(), P2PParams.PEERS_LIST_SIZE - numOutLinks))));
-        state.getKnownPeers().addAll(state.getOutLinks().values());
-    }
-
     public static boolean processGreeting(P2PState state, P2PGreeting greeting, NIOClientInfo client, boolean noconnect) {
 
         if (client != null) {
@@ -146,9 +127,6 @@ public class SwapLinksFunctions {
             }
 
             if (greeting.isAcceptingInLinks()) {
-            	if(addtoknown) {
-            		state.getKnownPeers().add(minimaAddress);
-            	}
 
                 // Peers are assumed to not be P2P Links until we get a valid P2P Greeting
 

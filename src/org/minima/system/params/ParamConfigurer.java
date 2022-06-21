@@ -19,6 +19,7 @@ import java.util.function.BiConsumer;
 
 import org.minima.system.network.p2p.P2PFunctions;
 import org.minima.system.network.p2p.params.P2PParams;
+import org.minima.utils.MinimaLogger;
 
 public class ParamConfigurer {
 
@@ -131,9 +132,11 @@ public class ParamConfigurer {
         port("port", "Specify the Minima port", (arg, configurer) -> {
             GeneralParams.MINIMA_PORT = Integer.parseInt(arg);
         }),
-//        rpc("rpc", "Specify the RPC port", (arg, configurer) -> {
+        rpc("rpc", "Specify the RPC port", (arg, configurer) -> {
 //            GeneralParams.RPC_PORT = Integer.parseInt(arg);
-//        }),
+            MinimaLogger.log("-rpc is no longer in use. Your RPC port is: " + GeneralParams.RPC_PORT);
+
+        }),
         rpcenable("rpcenable", "Enable rpc", (args, configurer) -> {
             if ("true".equals(args)) {
                 configurer.rpcenable = true;
