@@ -119,7 +119,7 @@ public class MDSManager extends MessageProcessor {
 	}
 	
 	public boolean checkMiniHUBPasword(String zPassword) {
-		return mMiniHUBPassword.replace("-", "").trim().equalsIgnoreCase(zPassword.replace("-", "").trim());
+		return mMiniHUBPassword.replace("-", "").equalsIgnoreCase(zPassword.replace("-", "").trim());
 	}
 	
 	/**
