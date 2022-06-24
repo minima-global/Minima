@@ -44,6 +44,7 @@ public class mds extends Command {
 			}
 
 			JSONObject mds = new JSONObject();
+			mds.put("password", Main.getInstance().getMDSManager().getMiniHUBPasword());
 			mds.put("minidapps", arr);
 			ret.put("response", mds);
 		

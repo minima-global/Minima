@@ -113,6 +113,12 @@ public class MDSCompleteHandler implements Runnable {
 				}
 			}
 			
+			//Convert ther sessionid
+			String minidappid = mMDS.convertSessionID(uid);
+			if(minidappid == null) {
+				throw new Exception("Invalid session id for MiniDAPP "+uid);
+			}
+			
 			//Get the Headers..
 			int contentlength = 0;
 			while(input != null && !input.trim().equals("")) {
@@ -154,17 +160,17 @@ public class MDSCompleteHandler implements Runnable {
 				if(command.equals("sql")) {
 				
 					SQLcommand sql = new SQLcommand(mMDS);
-					result = sql.runCommand(uid, data);
+					result = sql.runCommand(minidappid, data);
 					
 				}else if(command.equals("cmd")) {
 					
 					CMDcommand cmd = new CMDcommand();
-					result = cmd.runCommand(uid, data);
+					result = cmd.runCommand(minidappid, data);
 					
 				}else if(command.equals("poll")) {
 					
 					POLLcommand poll = new POLLcommand(mPollStack);
-					result = poll.runCommand(uid, data);
+					result = poll.runCommand(minidappid, data);
 					
 				}else{
 					

@@ -33,13 +33,19 @@ public class MDSFileHandler implements Runnable {
 	File mRoot;
 	
 	/**
+	 * The MDS Manager
+	 */
+	MDSManager mMDS;
+	
+	/**
 	 * Main Constructor
 	 * @param zSocket
 	 */
-	public MDSFileHandler(File zRootFolder, Socket zSocket) {
+	public MDSFileHandler(File zRootFolder, Socket zSocket, MDSManager zMDS) {
 		//Store..
 		mSocket = zSocket;
 		mRoot 	= zRootFolder;
+		mMDS 	= zMDS;
 	}
 	
 	@Override
@@ -115,15 +121,15 @@ public class MDSFileHandler implements Runnable {
 				String pass 	= getPassword(fileRequested);
 				
 				//PAUSE - this prevents fast checking of passwords
-				Thread.sleep(2000);
+//				Thread.sleep(2000);
 				
 				//Check this is the correct password..
 				String webpage = null;
-				if(!pass.equals("minima")) {
+				if(!mMDS.checkMiniHUBPasword(pass)) {
 					MinimaLogger.log("Incorrect Password : "+pass);
 					webpage 	= MDSHubError.createHubPage();
 				}else {
-					webpage 	= MDSHub.createHubPage();
+					webpage 	= MDSHub.createHubPage(mMDS);
 				}
 				
 				//It's the root file..
