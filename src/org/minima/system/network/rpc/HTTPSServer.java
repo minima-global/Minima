@@ -72,7 +72,7 @@ public abstract class HTTPSServer implements Runnable {
             KeyManager[] km = keyManagerFactory.getKeyManagers();
              
             // Create trust manager
-            TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance("SunX509");
+            TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
             trustManagerFactory.init(keyStore);
             TrustManager[] tm = trustManagerFactory.getTrustManagers();
              

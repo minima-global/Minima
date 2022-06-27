@@ -89,8 +89,8 @@ public class SSLManager {
 			//Get the keystore pass
 			String keystorepass = MinimaDB.getDB().getUserDB().getString("sslkeystorepass", null);
 			
-//			KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-			KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
+			KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+//			KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
 			keyManagerFactory.init(zKeyStore, keystorepass.toCharArray());
 
 			return keyManagerFactory;
