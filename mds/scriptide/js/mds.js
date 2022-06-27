@@ -77,9 +77,9 @@ var MDS = {
 		//The ports..
 		var mainport 	= port+1;
 		
-		MDS.log("MDS FILEHOST  : http://"+host+":"+port+"/");
+		MDS.log("MDS FILEHOST  : https://"+host+":"+port+"/");
 		
-		MDS.mainhost 	= "http://"+host+":"+mainport+"/";
+		MDS.mainhost 	= "https://"+host+":"+mainport+"/";
 		MDS.log("MDS MAINHOST : "+MDS.mainhost);
 		
 		//Store this for poll messages
