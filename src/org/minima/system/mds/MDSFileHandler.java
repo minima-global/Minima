@@ -65,23 +65,25 @@ public class MDSFileHandler implements Runnable {
 	        DataOutputStream dos 			= new DataOutputStream(outputStream);
 	        
 	        // get first line of the request from the client
-			String input = bufferedReader.readLine();
-			if (input == null){
-				input = "";
-			}
-			
-			//Get the first line..
-			String firstline = new String(input);
-			if(firstline.trim().equals("")) {
-				//Nothing to do..
-				inputStream.close();
-				outputStream.close();
-				mSocket.close();
-				return;
-			}
-			
+	     	String input = bufferedReader.readLine();
+ 			int counter = 0;
+ 			while(input == null && counter<100){
+ 				//Wait a sec
+ 				Thread.sleep(1000);
+ 				
+ 				input = bufferedReader.readLine();
+ 				counter++;
+ 			}
+ 			
+ 			//Is it still NULL
+ 			if(input == null) {
+ 				throw new IllegalArgumentException("Invalid NULL MDS File request ");
+ 			}
+ 			
 			// we parse the request with a string tokenizer
 			StringTokenizer parse = new StringTokenizer(input);
+			
+			//Get the method..
 			String method = parse.nextToken().toUpperCase(); // we get the HTTP method of the client
 			
 			// we get file requested
@@ -214,6 +216,8 @@ public class MDSFileHandler implements Runnable {
 		
 		}catch(SSLHandshakeException exc) {
 		}catch(SSLException exc) {
+		}catch(IllegalArgumentException exc) {
+			
 		}catch(Exception exc) {
 			MinimaLogger.log(exc);
 			
