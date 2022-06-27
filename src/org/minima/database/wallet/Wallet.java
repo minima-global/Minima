@@ -221,6 +221,10 @@ public class Wallet extends SqlDB {
 	 * Create an initial set of keys / addresses to use
 	 */
 	public boolean initDefaultKeys() {
+		return initDefaultKeys(8);
+	}
+	
+	public boolean initDefaultKeys(int zMaxNum) {
 		
 		//Get all the keys..
 		ArrayList<ScriptRow> allscripts = getAllDefaultAddresses();
@@ -232,8 +236,8 @@ public class Wallet extends SqlDB {
 			
 			//Create a few at a time..
 			int diff = NUMBER_GETADDRESS_KEYS - numkeys;
-			if(diff>8) {
-				diff = 8;
+			if(diff>zMaxNum) {
+				diff = zMaxNum;
 			}
 			
 			//Create the keys
