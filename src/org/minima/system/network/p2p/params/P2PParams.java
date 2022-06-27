@@ -9,7 +9,7 @@ import org.minima.system.network.p2p.P2PFunctions;
 public class P2PParams {
 
     // P2P Version number (Major - breaking changes. Minor - none breaking changes)
-    public static String VERSION = "1.0";
+    public static String VERSION = "1.1";
 
     /**
      * P2P Log level

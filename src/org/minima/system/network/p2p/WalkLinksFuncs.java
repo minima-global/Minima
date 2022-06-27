@@ -237,7 +237,6 @@ public class WalkLinksFuncs {
         List<Message> returnMessage = new ArrayList<>();
         InetSocketAddress connectTargetAddress = msg.getPathTaken().get(msg.getPathTaken().size() - 1);
         if (!connectTargetAddress.equals(state.getMyMinimaAddress())) {
-            state.getKnownPeers().add(connectTargetAddress);
             returnMessage.addAll(genLoadBalanceDoSwaps(state, connectTargetAddress, msg.getAvailableNoneP2PConnectionSlots()));
 
         } else {

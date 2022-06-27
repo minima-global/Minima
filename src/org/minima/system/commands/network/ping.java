@@ -34,7 +34,7 @@ public class ping extends Command {
 		}
 		
 		//Call the ping function..
-		Greeting greet = Main.getInstance().getNIOManager().sendPingMessage(ip, port);
+		Greeting greet = Main.getInstance().getNIOManager().sendPingMessage(ip, port, false);
 		JSONObject resp = new JSONObject();
 		resp.put("host", ip);
 		resp.put("port", port);

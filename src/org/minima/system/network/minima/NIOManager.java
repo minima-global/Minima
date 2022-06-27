@@ -626,7 +626,7 @@ public class NIOManager extends MessageProcessor {
 	/**
 	 * A special PING message to  check a valid connection..
 	 */
-	public static Greeting sendPingMessage(String zHost, int zPort) {
+	public static Greeting sendPingMessage(String zHost, int zPort, boolean suppressErrorMessage) {
 		
 		Greeting greet = null;
 		
@@ -678,7 +678,9 @@ public class NIOManager extends MessageProcessor {
 		
 		}catch(Exception exc){
 			greet = null;
-			MinimaLogger.log("Error sending Single Ping message : "+exc.toString());
+			if (!suppressErrorMessage) {
+				MinimaLogger.log("Error sending Single Ping message : " + exc.toString());
+			}
 		}
 		
 		return greet;

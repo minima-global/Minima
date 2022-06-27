@@ -65,6 +65,11 @@ public class P2PState {
     private boolean doingDiscoveryConnection = false;
 
     /**
+     * IS P2P system still starting up?
+     */
+    private boolean startupComplete = false;
+
+    /**
      * The loop delay for the p2p manager
      */
     private long loopDelay = P2PParams.LOOP_DELAY;
@@ -72,16 +77,6 @@ public class P2PState {
     private boolean noConnect = false;
 
     private boolean isHostSet = false;
-
-    private float deviceHashRate = 0.0f;
-
-    public float getDeviceHashRate() {
-        return deviceHashRate;
-    }
-
-    public void setDeviceHashRate(float deviceHashRate) {
-        this.deviceHashRate = deviceHashRate;
-    }
 
     public P2PState() {
         // Creates a new empty state
@@ -234,5 +229,13 @@ public class P2PState {
 
     public void setAllLinks(Map<String, InetSocketAddress> allLinks) {
         this.allLinks = allLinks;
+    }
+
+    public boolean isStartupComplete() {
+        return startupComplete;
+    }
+
+    public void setStartupComplete(boolean startupComplete) {
+        this.startupComplete = startupComplete;
     }
 }
