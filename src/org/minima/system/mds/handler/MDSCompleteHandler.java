@@ -57,7 +57,6 @@ public class MDSCompleteHandler implements Runnable {
 		// we manage our particular client connection
 		BufferedReader in 	 		 	= null; 
 		PrintWriter out 	 			= null; 
-		String firstline = "no first line..";
 		
 		try {
 			// Input Stream
@@ -68,18 +67,27 @@ public class MDSCompleteHandler implements Runnable {
 			
 			// get first line of the request from the client
 			String input = in.readLine();
-			if (input == null){
-				input = "";
+			int counter = 0;
+			while(input == null && counter<100){
+				//Wait a sec
+				Thread.sleep(1000);
+				
+				input = in.readLine();
+				counter++;
 			}
 			
-			//Get the first line..
-			firstline = new String(input);
+			//Is it still NULL
+			if(input == null) {
+				throw new IllegalArgumentException("Invalid NULL MDS request ");
+			}
 			
 			// we parse the request with a string tokenizer
 			StringTokenizer parse = new StringTokenizer(input);
+			
+			//Get the METHOD
 			String method = parse.nextToken().toUpperCase(); // we get the HTTP method of the client
 			
-			// we get file requested
+			//Get the requested file
 			String fileRequested = parse.nextToken();
 			
 			//Remove slashes..
@@ -116,6 +124,15 @@ public class MDSCompleteHandler implements Runnable {
 			//Convert ther sessionid
 			String minidappid = mMDS.convertSessionID(uid);
 			if(minidappid == null) {
+				// send HTTP Headers
+				out.println("HTTP/1.1 200 OK");
+				out.println("Server: HTTP SQL Server from Minima : 1.3");
+				out.println("Date: " + new Date());
+				out.println("Content-type: text/plain");
+				out.println("Access-Control-Allow-Origin: *");
+				out.println(); // blank line between headers and content, very important !
+				out.flush(); // flush character output stream buffer
+				
 				throw new Exception("Invalid session id for MiniDAPP "+uid);
 			}
 			
@@ -199,7 +216,11 @@ public class MDSCompleteHandler implements Runnable {
 			
 		}catch(SSLHandshakeException exc) {
 		}catch(SSLException exc) {
-		} catch (Exception ioe) {
+		
+		}catch(IllegalArgumentException exc) {
+			//MinimaLogger.log(exc);
+			
+		}catch(Exception ioe) {
 			MinimaLogger.log(ioe);
 			
 			// send HTTP Headers

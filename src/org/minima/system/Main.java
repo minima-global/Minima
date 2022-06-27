@@ -228,8 +228,8 @@ public class Main extends MessageProcessor {
 		//Set the PULSE message timer.
 		PostTimerMessage(new TimerMessage(GeneralParams.USER_PULSE_FREQ, MAIN_PULSE));
 		
-		//Clean the DB (delete old records) - 3 minutes after start..
-		PostTimerMessage(new TimerMessage(3 * 60 * 1000, MAIN_CLEANDB));
+		//Clean the DB (delete old records) - first time after 5 secs..
+		PostTimerMessage(new TimerMessage(5 * 1000, MAIN_CLEANDB));
 		
 		//Store the IC User - do fast first time - 30 seconds in.. then every 8 hours
 		PostTimerMessage(new TimerMessage(1000*30, MAIN_INCENTIVE));
