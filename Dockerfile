@@ -1,3 +1,11 @@
+FROM openjdk:11 as builder
+
+# Copy minima sources and build
+COPY . /app
+WORKDIR /app
+RUN ./gradlew shadowJar
+RUN mv /app/build/libs/minima*-all.jar /app/build/libs/minima-all.jar
+
 FROM openjdk:11
 
 ENV HOME=/home/minima
@@ -9,8 +17,8 @@ WORKDIR $LOCAL
 RUN groupadd -g 1000 minima
 RUN useradd -r -u 1000 -g 1000 -d $HOME minima
 
-# Copy in startup script, minima and dapps
-COPY minima-all.jar minima/minima.jar
+# Copy minima jar from builder
+COPY --from=builder /app/build/libs/minima-all.jar minima/minima.jar
 
 # Get other permissions right, too
 RUN mkdir -p $HOME/.minima
