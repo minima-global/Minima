@@ -293,8 +293,6 @@ public class MinimaDB {
 			MinimaLogger.log("ERROR saving state "+exc);
 		}
 		
-		MinimaLogger.log("Minima State saved!");
-		
 		//Release the krakken
 		readLock(false);
 	}
