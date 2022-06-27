@@ -64,7 +64,7 @@ public class MiniDAPP {
 	}
 	
 	public String getDescription() {
-		return mConfData.getString("description", "no_descrition");
+		return mConfData.getString("description", "no_description");
 	}
 	
 	public String getIcon() {
