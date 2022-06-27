@@ -5,7 +5,7 @@ public class MDSHubLogon {
 	public static final String HUB_START ="<html>\r\n"
 			+ "\r\n"
 			+ "<head>\r\n"
-			+ "	<title>MDS Logon</title>\r\n"
+			+ "	<title>MDS Login</title>\r\n"
 			+ "	\r\n"
 			+ "	<style type=\"text/css\">\r\n"
 			+ "	\r\n"
