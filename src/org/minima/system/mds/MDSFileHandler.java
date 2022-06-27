@@ -117,11 +117,39 @@ public class MDSFileHandler implements Runnable {
 			
 			}else if(fileRequested.startsWith("login.html")){
 				
+				//PASSWORD passed in POST data
+				int contentlength = 0;
+				while(input != null && !input.trim().equals("")) {
+					//MinimaLogger.log("RPC : "+input);
+					int ref = input.indexOf("Content-Length:"); 
+					if(ref != -1) {
+						//Get it..
+						int start     = input.indexOf(":");
+						contentlength = Integer.parseInt(input.substring(start+1).trim());
+					}	
+					input = bufferedReader.readLine();
+				}
+				
+				//How much data
+				char[] cbuf 	= new char[contentlength];
+				
+				//Read it ALL in
+				int len,total=0;
+				while( (len = bufferedReader.read(cbuf,total,contentlength-total)) != -1) {
+					total += len;
+					if(total == contentlength) {
+						break;
+					}
+				}
+				
+				//Here is the login attempt
+				String data = new String(cbuf);
+				
 				//Get the password..
-				String pass 	= getPassword(fileRequested);
+				String pass = getPasswordFromPost(data);
 				
 				//PAUSE - this prevents fast checking of passwords
-//				Thread.sleep(2000);
+				Thread.sleep(1000);
 				
 				//Check this is the correct password..
 				String webpage = null;
@@ -200,7 +228,7 @@ public class MDSFileHandler implements Runnable {
 		}	
 	}	
 	
-	private String getPassword(String zURL) {
+	private String getPasswordFromURL(String zURL) {
 		
 		int index = zURL.indexOf("?");
 		if(index != -1) {
@@ -213,5 +241,13 @@ public class MDSFileHandler implements Runnable {
 		}
 		
 		return "";
+	}
+	
+	private String getPasswordFromPost(String zData) {
+		
+		int index 		= zData.indexOf("=");
+		String pass 	= zData.substring(index+1); 
+		
+		return pass;
 	}
 }

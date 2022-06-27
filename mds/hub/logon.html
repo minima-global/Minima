@@ -34,11 +34,11 @@
 	<h2>MDS Login</h2>
 	<br>
 	
-	<form action="login.html" method="get">
+	<form action="login.html" method="post">
 	
 		<input type="password" name="password"/>
 		
-		<input type="submit" value="login"/>
+		<input style="width:100;" type="submit" value="login" onClick="this.form.submit(); this.disabled=true; this.value='Checking…';"/>
 		
 	</form>
 

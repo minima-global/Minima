@@ -143,7 +143,6 @@ public class MDSCompleteHandler implements Runnable {
 				//How much data
 				char[] cbuf 	= new char[contentlength];
 				
-				//Read it all in
 				//Read it ALL in
 				int len,total=0;
 				while( (len = in.read(cbuf,total,contentlength-total)) != -1) {
