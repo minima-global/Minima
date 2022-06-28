@@ -1,5 +1,8 @@
 package org.minima.system.commands.base;
 
+import org.minima.database.MinimaDB;
+import org.minima.database.archive.ArchiveManager;
+import org.minima.objects.TxBlock;
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
 import org.minima.utils.MinimaLogger;
@@ -15,15 +18,22 @@ public class test extends Command {
 	public JSONObject runCommand() throws Exception {
 		JSONObject ret = getJSONReply();
 		
-		MinimaLogger.log("Restarting NIO..");
 		
-		//Restart the NIO..
-		Main.getInstance().restartNIO();
+		//Get the archive db
+		ArchiveManager arch = MinimaDB.getDB().getArchive();
 		
-		MinimaLogger.log("Done..");
+		JSONObject resp = new JSONObject();
 		
-		ret.put("response", true);
+		TxBlock lastblock = arch.loadLastBlock();
+		if(lastblock != null) {
+			resp.put("found", true);
+			resp.put("block", lastblock.getTxPoW().getBlockNumber().toString());
+			resp.put("hash", lastblock.getTxPoW().getTxPoWID());
+		}else {
+			resp.put("found", false);
+		}
 		
+		ret.put("response", resp);
 		
 		return ret;
 	}
