@@ -96,7 +96,7 @@ public class MDSDB extends SqlDB {
 		}
 	}
 	
-	public ArrayList<MiniDAPP> getAllMiniDAPPs(){
+	public synchronized ArrayList<MiniDAPP> getAllMiniDAPPs(){
 
 		ArrayList<MiniDAPP> dapps = new ArrayList<>();
 		
@@ -125,7 +125,7 @@ public class MDSDB extends SqlDB {
 		return dapps;
 	}
 	
-	public MiniDAPP getMiniDAPP(String zUID){
+	public synchronized MiniDAPP getMiniDAPP(String zUID){
 
 		try {
 			
