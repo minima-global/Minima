@@ -239,7 +239,7 @@ public class MDSCompleteHandler implements Runnable {
 				out.close();
 				mSocket.close(); // we close socket connection
 			} catch (Exception e) {
-				MinimaLogger.log(e);
+//				MinimaLogger.log(e);
 			} 	
 		}	
 	}
