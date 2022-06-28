@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 
+import org.minima.database.mmr.MMR;
 import org.minima.objects.TxBlock;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
@@ -335,8 +336,9 @@ public class ArchiveManager extends SqlDB {
 		txp.setSuperParent(0, new MiniData("0xFFEEFF"));
 		
 		//Create a SyncBlock
-		TxBlock sb = new TxBlock(null,txp,new ArrayList<>());
+		TxBlock sb = new TxBlock(txp);
 		
+		arch.saveBlock(sb);
 		arch.saveBlock(sb);
 		
 		int rows = arch.getSize();
