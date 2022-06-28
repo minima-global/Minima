@@ -19,7 +19,7 @@ import org.minima.utils.MinimaLogger;
 
 public class SSLManager {
 
-	public static File getKeystroeFile() {
+	public static File getKeystoreFile() {
 		//Where are we storing the key file..
 		File sslkeyfolder 	= new File(GeneralParams.DATA_FOLDER,"ssl"); 
 		sslkeyfolder.mkdirs();
@@ -33,7 +33,7 @@ public class SSLManager {
 		
 		try {
 			
-			File sslfile = getKeystroeFile();
+			File sslfile = getKeystoreFile();
 			
 			if(!sslfile.exists()) {
 				MinimaLogger.log("Generating SSL Keystore.. "+KeyStore.getDefaultType());
@@ -71,7 +71,7 @@ public class SSLManager {
 			
 			// Load the keystore
 	        KeyStore loadedKeyStore = KeyStore.getInstance(KeyStore.getDefaultType());
-	        InputStream fis = new FileInputStream(getKeystroeFile());
+	        InputStream fis = new FileInputStream(getKeystoreFile());
 	        loadedKeyStore.load(fis, keystorepass.toCharArray());
 	        fis.close();
 			
