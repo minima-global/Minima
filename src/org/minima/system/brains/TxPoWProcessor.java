@@ -13,17 +13,20 @@ import org.minima.objects.TxBlock;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
+import org.minima.system.network.minima.NIOManager;
 import org.minima.system.params.GeneralParams;
 import org.minima.system.params.GlobalParams;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Stack;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageProcessor;
+import org.minima.utils.messages.TimerMessage;
 
 public class TxPoWProcessor extends MessageProcessor {
 	
 	private static final String TXPOWPROCESSOR_PROCESSTXPOW 		= "TXP_PROCESSTXPOW";
-	private static final String TXPOWPROCESSOR_PROCESSIBD 			= "TXP_PROCESSIBD";
+	private static final String TXPOWPROCESSOR_PROCESS_IBD 			= "TXP_PROCESS_IBD";
+	private static final String TXPOWPROCESSOR_PROCESS_SYNCIBD 		= "TXP_PROCESS_SYNCIBD";
 	
 	public TxPoWProcessor() {
 		super("TXPOWPROCESSOR");
@@ -45,7 +48,15 @@ public class TxPoWProcessor extends MessageProcessor {
 	 */
 	public void postProcessIBD(IBD zIBD, String zClientUID) {
 		//Post a message on the single threaded stack
-		PostMessage(new Message(TXPOWPROCESSOR_PROCESSIBD).addObject("ibd", zIBD).addString("uid", zClientUID));
+		PostMessage(new Message(TXPOWPROCESSOR_PROCESS_IBD).addObject("ibd", zIBD).addString("uid", zClientUID));
+	}
+	
+	/**
+	 * Main Entry point for Sync IBD messages
+	 */
+	public void postProcessSyncIBD(IBD zIBD, String zClientUID) {
+		//Post a message on the single threaded stack
+		PostMessage(new Message(TXPOWPROCESSOR_PROCESS_SYNCIBD).addObject("ibd", zIBD).addString("uid", zClientUID));
 	}
 	
 	/**
@@ -315,7 +326,8 @@ public class TxPoWProcessor extends MessageProcessor {
 			//Process it..
 			processTxPoW(txp);
 			
-		}else if(zMessage.isMessageType(TXPOWPROCESSOR_PROCESSIBD)) {
+		}else if(zMessage.isMessageType(TXPOWPROCESSOR_PROCESS_IBD)) {
+			
 			//Get the client - in case is invalid..
 			String uid = zMessage.getString("uid");
 			
@@ -362,6 +374,10 @@ public class TxPoWProcessor extends MessageProcessor {
 				}
 				if(txptree.getTip().getTxPoW().getTimeMilli().sub(timenow).abs().isLess(notxblocktimediff)) {
 					MinimaLogger.log("Your chain tip is up to date - no TxBlocks accepted - only FULL TxPoW");
+					
+					//Ask to sync the TxBlocks
+					askToSyncTxBlocks(uid);
+					
 					return;
 				}
 			}
@@ -401,6 +417,65 @@ public class TxPoWProcessor extends MessageProcessor {
 			
 			//And now recalculate tree
 			recalculateTree();
+			
+			//Ask to sync the TxBlocks
+			askToSyncTxBlocks(uid);
+		
+		}else if(zMessage.isMessageType(TXPOWPROCESSOR_PROCESS_SYNCIBD)) {
+			
+			//Get the client - in case is invalid..
+			String uid = zMessage.getString("uid");
+			
+			//Get the IBD
+			IBD ibd = (IBD) zMessage.getObject("ibd");
+			
+			//Get the sync blocks
+			ArrayList<TxBlock> blocks = ibd.getTxBlocks();
+			if(blocks.size() == 0) {
+				//No sync blocks
+				return;
+			}
+			
+			//Get the ArchiveDB
+			ArchiveManager arch = MinimaDB.getDB().getArchive();
+			
+			//Get the last block I have..
+			TxBlock lastblock 	= arch.loadLastBlock();
+			TxPoW lastpow 		= null;
+			if(lastblock == null) {
+				//Use the TxPoWTree
+				lastpow = MinimaDB.getDB().getTxPoWTree().getRoot().getTxPoW();
+			}else {
+				lastpow = lastblock.getTxPoW();
+			}
+			
+			//Cycle through and add..
+			for(TxBlock block : blocks) {
+				
+				//Check the parent hash is correct
+				if(block.getTxPoW().getTxPoWIDData().isEqual(lastpow.getParentID())) {
+					//We can store it..
+					arch.saveBlock(block);
+				}else {
+					MinimaLogger.log("Invalid block parent in TxBlock sync.. @ "+block.getTxPoW().getBlockNumber());
+					return;
+				}
+				
+				//we have a new last pow..
+				lastpow = block.getTxPoW();
+			}
+			
+			//Ask to sync the TxBlocks
+			askToSyncTxBlocks(uid);
 		}
+	}
+	
+	/**
+	 * Send a SYNC TxBlock message
+	 */
+	public void askToSyncTxBlocks(String zClientID) {
+		Message synctxblock = new Message(NIOManager.NIO_SYNCTXBLOCK);
+		synctxblock.addString("client", zClientID);
+		Main.getInstance().getNetworkManager().getNIOManager().PostMessage(synctxblock);
 	}
 }

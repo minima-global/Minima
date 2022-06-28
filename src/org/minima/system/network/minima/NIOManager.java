@@ -13,13 +13,17 @@ import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.Random;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.minima.database.MinimaDB;
+import org.minima.database.archive.ArchiveManager;
 import org.minima.objects.Greeting;
+import org.minima.objects.TxBlock;
+import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.system.Main;
@@ -51,8 +55,9 @@ public class NIOManager extends MessageProcessor {
 	public static final String NIO_RECONNECT 		= "NIO_RECONNECT";
 	
 	public static final String NIO_INCOMINGMSG 		= "NIO_NEWMSG";
-	
 	public static final String NIO_TXPOWREQ 		= "NIO_REQTXPOW";
+
+	public static final String NIO_SYNCTXBLOCK 		= "NIO_SYNCTXBLOCK";
 
 	/**
 	 * How many attempts to reconnect
@@ -145,6 +150,21 @@ public class NIOManager extends MessageProcessor {
 		for(NIOClient conn : conns) {
 			NIOClientInfo ninfo = new NIOClientInfo(conn, true);
 			connections.add(ninfo);
+		}
+		
+		return connections;
+	}
+	
+	public ArrayList<NIOClient> getAllValidConnectedClients() {
+		//A list of all the connections
+		ArrayList<NIOClient> connections = new ArrayList<>();
+		
+		//Who are we connected to..
+		ArrayList<NIOClient> conns = mNIOServer.getAllNIOClients();
+		for(NIOClient conn : conns) {
+			if(conn.isValidGreeting()) {
+				connections.add(conn);
+			}
 		}
 		
 		return connections;
@@ -468,6 +488,26 @@ public class NIOManager extends MessageProcessor {
 				sendNetworkMessage(clientid, NIOMessage.MSG_TXPOWREQ, new MiniData(txpowid));
 			}
 		
+		}else if(zMessage.getMessageType().equals(NIO_SYNCTXBLOCK)) {
+			
+			//Which client..
+			String clientid = zMessage.getString("client");
+
+			//Get the archive db
+			ArchiveManager arch = MinimaDB.getDB().getArchive();
+			
+			//What is my last block
+			TxBlock lastblock 	= arch.loadLastBlock();
+			TxPoW lastpow 		= null;
+			if(lastblock == null) {
+				lastpow = MinimaDB.getDB().getTxPoWTree().getRoot().getTxPoW();
+			}else {
+				lastpow = lastblock.getTxPoW();
+			}
+			
+			//Send a message asking for a sync
+			sendNetworkMessage(clientid, NIOMessage.MSG_TXBLOCK_REQ, lastpow);
+			
 		}else if(zMessage.getMessageType().equals(NIO_CHECKLASTMSG)) {
 			
 			//Check how long since last connect
