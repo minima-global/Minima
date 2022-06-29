@@ -23,7 +23,7 @@ public class P2PParams {
     /**
      * Desired number of in link and out links to maintain
      */
-    public static int TGT_NUM_LINKS = 5;
+    public static int TGT_NUM_LINKS = 3;
 
     /**
      * Desired number of client (nodes that can't accept inbound connections) to maintain
@@ -33,7 +33,7 @@ public class P2PParams {
     /**
      * Desired number of connections clients should maintain
      */
-    public static int MIN_NUM_CONNECTIONS = 2;
+    public static int MIN_NUM_CONNECTIONS = 1;
 
     /**
      * Time between P2P system assessing its state in milliseconds
