@@ -227,7 +227,7 @@ public class MDSFileHandler implements Runnable {
 				outputStream.close();
 				mSocket.close(); // we close socket connection
 			} catch (Exception e) {
-				MinimaLogger.log(e);
+//				MinimaLogger.log(e);
 			} 	
 		}	
 	}	
