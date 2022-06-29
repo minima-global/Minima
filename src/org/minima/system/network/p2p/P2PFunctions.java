@@ -108,6 +108,17 @@ public class P2PFunctions {
         return Main.getInstance().getNetworkManager().getNIOManager().getAllConnectionInfo();
     }
 
+    public static ArrayList<NIOClientInfo> getAllConnectedConnections() {
+        ArrayList<NIOClientInfo> activeConnections = new ArrayList<>();
+        for (NIOClientInfo nci: Main.getInstance().getNetworkManager().getNIOManager().getAllConnectionInfo()) {
+            if (nci.isConnected()){
+                activeConnections.add(nci);
+            }
+        }
+        return activeConnections;
+    }
+
+
     /**
      * Get a specific Client.. you can set and get extra data..
      */
