@@ -145,9 +145,7 @@
 							<input class="solobutton" type="submit" value="Start Chat" onclick="startChat();"/>
 							</div>
 						</td> 
-						<td style="width:33%;">
-							<font size="+2"><b>MAXSOLO</b></font>
-						</td>
+						
 						<td style="width:33%;">
 							<div style="font-size:20px;" id="divname2">Not Connected..</div>
 						</td>
@@ -175,17 +173,19 @@
 <script type="text/javascript">
 	
 	//Ask for permission..
-	//var permission = Notification.requestPermission();
-
+	if (Notification.permission !== "granted") {
+		var permission = Notification.requestPermission();	
+	}
+	
 	//Reload the page on resize
 	/*window.onresize = () => {
 	  location.reload();
 	}*/
 	
-	/*
-	MDS.DEBUG_HOST 			= "192.168.5.52";
+	
+	/*MDS.DEBUG_HOST 			= "127.0.0.1";
 	MDS.DEBUG_PORT		 	= 9003;
-	MDS.DEBUG_MINIDAPPID 	= "0xF60CA191CBDDD956039E45B96A8BF84B";
+	MDS.DEBUG_MINIDAPPID 	= "0xC39F95FF43B0D6C87AECBADA6FEDCB5D1436521EA0E942A99EDAEFF3F676A9F6";
 	*/
 	
 	//Hide the Money

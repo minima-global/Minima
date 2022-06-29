@@ -66,11 +66,9 @@ function insertMessage(roomname, frompubkey, name, type, message, filedata, call
 			+"('"+roomname+"','"+frompubkey+"','"+name+"','"+type+"','"+encoded+"','"+filedata+"', "+Date.now()+")";
 	
 	MDS.sql(fullsql, function(resp){
-				
-				//WE have the reply..
-				callback();	
-				
-			});
+		//WE have the reply..
+		callback();	
+	});
 }
 
 function loadRooms(){
@@ -98,7 +96,7 @@ function loadRooms(){
 			let decoded = decodeURIComponent(sqlrow.MESSAGE).replace("%27", "'");;
 		
 			//Start
-			rowtable += "<tr><td "+selected+" class='sidebarroom' onclick='sidebarclick(\""+sqlrow.PUBLICKEY+"\")'><font size='+3'><b>"+sqlrow.ROOMNAME+"</b></font><br><br>";
+			rowtable += "<tr><td "+selected+" class='sidebarroom' onclick='sidebarclick(\""+sqlrow.PUBLICKEY+"\",\""+sqlrow.ROOMNAME+"\")'><font size='+3'><b>"+sqlrow.ROOMNAME+"</b></font><br><br>";
 			
 			//Is it unread
 			if(sqlrow.TYPE == "text"){
@@ -126,7 +124,7 @@ function loadRooms(){
 	});
 }
 
-function sidebarclick(publickey){
+function sidebarclick(publickey, roomname){
 	
 	//Are we there already
 	if(CURRENT_ROOM_PUBLICKEY == publickey){
@@ -137,8 +135,11 @@ function sidebarclick(publickey){
 		//Just render into the Main View
 		loadMessages(publickey);
 	}else{
+		//Urlencode the name..
+		encroomname = encodeURIComponent(roomname);
+		
 		//Jump to a new MainView Page
-		window.location = "chatwindow.html?publickey="+publickey+"&uid="+MDS.minidappuid;	
+		window.location = "chatwindow.html?publickey="+publickey+"&uid="+MDS.minidappuid+"&roomname="+encroomname;	
 	}
 }
 
@@ -336,12 +337,16 @@ function sendMoney(){
 		return;
 	}
 	
+	//Disable send until finished
+	document.getElementById("sendbutton").disabled = true;
+			
 	//First load the full contact details..
 	MDS.cmd("maxcontacts action:search publickey:"+CURRENT_ROOM_PUBLICKEY,function(resp){
 		
 		//did we find him..
 		if(resp.status == false){
 			alert("User not found ?");
+			document.getElementById("sendbutton").disabled = false;
 			return;
 		}
 	
@@ -360,6 +365,7 @@ function sendMoney(){
 			if(resp.status == false){
 				MDS.log(JSON.stringify(resp));
 				alert("ERROR : "+resp.message);
+				document.getElementById("sendbutton").disabled = false;
 				return;
 			}
 			
@@ -368,7 +374,7 @@ function sendMoney(){
 			data.type 		= "text";
 			data.message  	= "!! I just sent you "+tokenamount+" "+tokenname+" !!";
 			data.filedata  	= "";
-			
+		
 			//Send this..
 			sendData(data)	
 		});

@@ -54,6 +54,12 @@
 		<table class="nosidebartable">
 		
 			<tr>
+				<td class="chatline" id="chatwindowuser">
+					USERNAME
+				</td>
+			</tr>
+		
+			<tr>
 				<td> 
 				
 					<table style="height:100%;width:100%">
@@ -103,7 +109,10 @@
 <script type="text/javascript">
 		
 	//Ask for permission..
-	//var permission = Notification.requestPermission();
+	//Ask for permission..
+	if (Notification.permission !== "granted") {
+		var permission = Notification.requestPermission();	
+	}
 
 	//Hide the Money
 	showDiv('sendmoney',false);
@@ -117,6 +126,11 @@
 	    	sendMessage(); 
 	    }
 	});
+	
+	/*MDS.DEBUG_HOST 			= "127.0.0.1";
+	MDS.DEBUG_PORT		 	= 9003;
+	MDS.DEBUG_MINIDAPPID 	= "0xC39F95FF43B0D6C87AECBADA6FEDCB5D1436521EA0E942A99EDAEFF3F676A9F6";
+	*/
 	
 	//Initialise MiFi
 	MDS.init(function(msg){
@@ -163,6 +177,10 @@
 			
 			//Get the room..
 			pubkey = MDS.form.getParams("publickey");
+			
+			//Set the room name
+			roomname = MDS.form.getParams("roomname");
+			document.getElementById("chatwindowuser").innerHTML = "<b>"+roomname+"</b>";
 			
 			//Load the messages..
 			loadMessages(pubkey);

@@ -1,16 +1,22 @@
 body {
-    font-family:monospace;
+    font-family: Manrope;
+}
+
+@font-face {
+	font-family: Manrope;
+	src: url('./Manrope-Regular.ttf');
 }
 
 .sidebartable {
-    border: 1px solid black;
-  	border-radius: 10px;
-  	padding:5px;
+	
+		border: 1px solid #EDEDED;
+  	border-radius: 8px;
+  	padding: 8px 8px;
   	
   	position:absolute;
-	top:0;
-	bottom:0;
-	left: 0; 
+		top:0;
+		bottom:0;
+		left: 0; 
   	right: 0; 
   	margin-top: auto;
   	margin-bottom: auto;
@@ -23,8 +29,8 @@ body {
 }
 
 .nosidebartable {
-    border: 1px solid black;
-  	border-radius: 10px;
+    border: 0.5px solid #EDEDED;
+  	border-radius: 8px;
   	padding:5px;
   	z-index:0;
   	width:100%;
@@ -38,13 +44,13 @@ body {
 }
 
 .sidebarroom {
-    border: 1px solid black;
-  	border-radius: 10px;
-  	padding:5px;
+    border: 0.5px solid #EDEDED;
+  	border-radius: 8px;
   	
   	width:100%;
-  	height:100;
-  	
+  	height:40px;
+		padding: 8px;
+  	font-size: 14px;
   	cursor:pointer;
 }
 
@@ -53,11 +59,11 @@ body {
 }
 
 .mainview{
-	border: 1px solid black;
-  	border-radius: 10px;
-  	padding:5px;
+		border: 0.5px solid #EDEDED;
+  	border-radius: 8px;
+  	padding: 8px 8px;
   	vertical-align:top;
-  	font-size:16px;
+  	font-size: 14px;
   	
 }
 
@@ -70,59 +76,73 @@ body {
 }
 
 .chatline{
-	border: 1px solid black;
-  	border-radius: 10px;
-  	padding:5px;
+		border: 0.5px solid #EDEDED;
+  	border-radius: 8px;
+  	padding:8px 8px;
   	height:40;
+	}
+.chatline-edit {
+	background: #EDEDED;
+}
+.chatline-edit:focus {
+	outline: 0.5px solid #EDEDED!important;
+	background: #fff;
+}
+.chatline-edit:active {
+	border: 0.5px solid #EDEDED!important;
 }
 
 .chatline {
-    border: 1px solid black;
-  	border-radius: 10px;
-  	padding:5px;
-  	font-size:20px;
+		border: 0.5px solid #EDEDED;
+  	border-radius: 8px;
+  	padding:8px 8px;
+  	font-size:14px;
 }
 
 .solobutton {
     background-color: #eee;
-    border: 1px solid black;
-  	border-radius: 10px;
-  	padding:5px;
-  	font-size:20px;
+    border: 0.5px solid #EDEDED;
+  	border-radius: 8px;
+  	padding: 8px 8px;
+  	font-size: 14px;
+}
+.solobutton-edit {
+	background: #fff;
+}
+.solobutton-edit:focus {
+	border: 0.5px solid #EDEDED;
 }
 
 .solobutton:hover {
-    background-color: #eee;
-    border: 1px solid green;
-  	border-radius: 10px;
-  	padding:5px;
-  	font-size:20px;
+	 	cursor: pointer;
+    color: #fff;
+		background-color: #16181C;
+  	border-radius: 8px;
+  	padding: 8px 8px;
+		border-color: #16181C;
 }
 
 .solobutton:active {
-    background-color: #eee;
-    border: 1px solid red;
-  	border-radius: 10px;
-  	padding:5px;
-  	font-size:20px;
+  	opacity: 0.8;
+		font-style: italic;
 }
 
 #sendmoney {
-	position:absolute;
-	top:0;
-	bottom:0;
-	left: 0; 
+		position:absolute;
+		top:0;
+		bottom:0;
+		left: 0; 
   	right: 0; 
   	margin-top: auto;
   	margin-bottom: auto;
   	margin-left: auto; 
   	margin-right: auto; 
     background-color: #fff;
-    border: 2px solid black;
+    border: 0.5px solid #EDEDED;
   	border-radius: 10px;
   	padding:16px;
   	font-size:18px;
-  	width:380;
+  	width:340;
   	height:200;
   	z-index:1;
 }
