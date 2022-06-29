@@ -42,7 +42,7 @@ public class MDSHubLogon {
 			+ "	\r\n"
 			+ "		<input type=\"password\" name=\"password\"/>\r\n"
 			+ "		\r\n"
-			+ "		<input style=\"width:100;\" type=\"submit\" value=\"login\" onClick=\"this.form.submit(); this.disabled=true; this.value='Checking…';\"/>\r\n"
+			+ "		<input style=\"width:100;\" type=\"submit\" value=\"login\" onClick=\"this.form.submit(); this.disabled=true; this.value='Checking..';\"/>\r\n"
 			+ "		\r\n"
 			+ "	</form>\r\n"
 			+ "\r\n"
