@@ -452,13 +452,20 @@ public class TxPoWProcessor extends MessageProcessor {
 			//Cycle through and add..
 			for(TxBlock block : blocks) {
 				
-				//Check the parent hash is correct
-				if(block.getTxPoW().getTxPoWIDData().isEqual(lastpow.getParentID())) {
-					//We can store it..
-					arch.saveBlock(block);
-				}else {
-					MinimaLogger.log("Invalid block parent in TxBlock sync.. @ "+block.getTxPoW().getBlockNumber());
-					return;
+				//What is the last current block number we know of..
+				MiniNumber lastnum = lastpow.getBlockNumber();
+				
+				//Check the block number is correct.. could be an asynchronous miss-alignment
+				if(block.getTxPoW().getBlockNumber().isEqual(lastnum.decrement())) {
+				
+					//Check the parent hash is correct
+					if(block.getTxPoW().getTxPoWIDData().isEqual(lastpow.getParentID())) {
+						//We can store it..
+						arch.saveBlock(block);
+					}else {
+						MinimaLogger.log("[-] Invalid block parent in TxBlock sync.. @ "+block.getTxPoW().getBlockNumber()+" from "+uid);
+						return;
+					}
 				}
 				
 				//we have a new last pow..
