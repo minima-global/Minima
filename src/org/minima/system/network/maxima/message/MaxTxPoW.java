@@ -108,7 +108,7 @@ public class MaxTxPoW implements Streamable {
 		
 		//Now Mine it..
 		Main.getInstance().getTxPoWMiner().MineTxPoW(txpow);
-		
+				
 		//Now create a MaxTxPoW complete unit
 		return new MaxTxPoW(zMaxima, txpow);
 	}

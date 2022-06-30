@@ -3,41 +3,79 @@ package org.minima.database.minidapps;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.minima.objects.base.MiniData;
+import org.minima.utils.MinimaLogger;
+import org.minima.utils.SqlDB;
 import org.minima.utils.json.JSONObject;
+import org.minima.utils.json.parser.ParseException;
 
 public class MiniDAPP {
 
-	public String 	mUID;
-	public String 	mName;
-	public String 	mIcon;
-	public String 	mVersion;
-	public String 	mDescription;
+	/**
+	 * The Random UID of the MiniDAPP
+	 */
+	private String 	mUID;
 	
-	public MiniDAPP(String zUID, String zName, String zIcon, String zVersion, String zDescription) {
+	/**
+	 * The Complete JSON conf file 
+	 */
+	private JSONObject mConfData = new JSONObject();
+	
+	
+	public MiniDAPP(String zUID, JSONObject zConf) {
 		mUID 			= zUID;
-		mName 			= zName;
-		mIcon 			= zIcon;
-		mVersion		= zVersion;
-		mDescription 	= zDescription;
+		mConfData		= zConf;
 	}
 	
 	public MiniDAPP(ResultSet zResultSet) throws SQLException {
 		mUID 			= zResultSet.getString("uid");
-		mName 			= zResultSet.getString("name");
-		mIcon 			= zResultSet.getString("icon");
-		mVersion 		= zResultSet.getString("version");
-		mDescription 	= zResultSet.getString("description");
+		
+		//Extra Data is a JSONOBject stored as bytes
+		MiniData confbytes = new MiniData(zResultSet.getBytes("confdata")); 
+		try {
+			mConfData	= SqlDB.convertDataToJSONObject(confbytes);
+		} catch (ParseException e) {
+			MinimaLogger.log(e);
+			
+			//Create a default
+			mConfData = new JSONObject();
+		} 
 	}
 	
 	public JSONObject toJSON() {
 		JSONObject ret = new JSONObject();
 		
 		ret.put("uid", mUID);
-		ret.put("name", mName);
-		ret.put("icon", mIcon);
-		ret.put("version", mVersion);
-		ret.put("description", mDescription);
+		ret.put("conf", mConfData);
 		
 		return ret;
+	}
+	
+	public String getUID() {
+		return mUID;
+	}
+	
+	public JSONObject getConfData() {
+		return mConfData;
+	}
+	
+	public String getName() {
+		return mConfData.getString("name", "no_name");
+	}
+	
+	public String getDescription() {
+		return mConfData.getString("description", "no_description");
+	}
+	
+	public String getIcon() {
+		return mConfData.getString("icon", "");
+	}
+	
+	public String getVersion() {
+		return mConfData.getString("version", "no_version");
+	}
+	
+	public String getBrowser() {
+		return mConfData.getString("browser", "internal");
 	}
 }

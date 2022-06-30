@@ -261,7 +261,7 @@ public class consolidate extends Command {
 		ret.put("response", resp);
 				
 		//Send it to the Miner..
-		Main.getInstance().getTxPoWMiner().mineTxPoW(txpow);
+		Main.getInstance().getTxPoWMiner().mineTxPoWAsync(txpow);
 		
 		return ret;
 	}

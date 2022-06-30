@@ -19,10 +19,8 @@ import org.minima.system.genesis.GenesisTxPoW;
 import org.minima.system.mds.MDSManager;
 import org.minima.system.network.NetworkManager;
 import org.minima.system.network.maxima.MaximaManager;
-import org.minima.system.network.minima.NIOClient;
 import org.minima.system.network.minima.NIOManager;
 import org.minima.system.network.minima.NIOMessage;
-import org.minima.system.network.minima.NIOServer;
 import org.minima.system.params.GeneralParams;
 import org.minima.system.params.GlobalParams;
 import org.minima.utils.MiniFile;
@@ -34,6 +32,7 @@ import org.minima.utils.messages.MessageListener;
 import org.minima.utils.messages.MessageProcessor;
 import org.minima.utils.messages.TimerMessage;
 import org.minima.utils.messages.TimerProcessor;
+import org.minima.utils.ssl.SSLManager;
 
 public class Main extends MessageProcessor {
 
@@ -70,10 +69,9 @@ public class Main extends MessageProcessor {
 	public static final String MAIN_PULSE 		= "MAIN_PULSE";
 	
 	/**
-	 * Network Restart - every 24.5 hours
+	 * Network Restart
 	 */
 	public static final String MAIN_NETRESTART 	= "MAIN_NETRESTART";
-//	public static long MAIN_NETRESTART_TIMER 	= (1000 * 60 * 60 * 24) + (1000 * 60 * 30);
 	
 	/**
 	 * Debug Function
@@ -176,6 +174,9 @@ public class Main extends MessageProcessor {
 		//Load the Databases
 		MinimaDB.getDB().loadAllDB();
 		
+		//Create the SSL Keystore..
+		SSLManager.makeKeyFile();
+		
 		//Set the Base Private seed if needed..
 		if(MinimaDB.getDB().getUserDB().getBasePrivateSeed().equals("")) {
 			MinimaLogger.log("Generating Base Private Seed Key");
@@ -198,7 +199,7 @@ public class Main extends MessageProcessor {
 		MinimaLogger.log("Calculate device hash rate : "+hashrate.div(MiniNumber.MILLION).setSignificantDigits(4)+" MHs");
 		
 		//Create the Initial Key Set
-		mInitKeysCreated = MinimaDB.getDB().getWallet().initDefaultKeys();
+		mInitKeysCreated = MinimaDB.getDB().getWallet().initDefaultKeys(2);
 		
 		//Start the engine..
 		mTxPoWProcessor = new TxPoWProcessor();
@@ -226,25 +227,18 @@ public class Main extends MessageProcessor {
 		//Set the PULSE message timer.
 		PostTimerMessage(new TimerMessage(GeneralParams.USER_PULSE_FREQ, MAIN_PULSE));
 		
-		//Clean the DB (delete old records) - 3 minutes after start..
-		PostTimerMessage(new TimerMessage(3 * 60 * 1000, MAIN_CLEANDB));
+		//Clean the DB (delete old records)
+		if(GeneralParams.GENESIS) {
+			PostTimerMessage(new TimerMessage(5 * 1000, MAIN_CLEANDB));
+		}else {
+			PostTimerMessage(new TimerMessage(60 * 1000, MAIN_CLEANDB));
+		}
 		
 		//Store the IC User - do fast first time - 30 seconds in.. then every 8 hours
 		PostTimerMessage(new TimerMessage(1000*30, MAIN_INCENTIVE));
 		
 		//Debug Checker
 		PostTimerMessage(new TimerMessage(CHECKER_TIMER, MAIN_CHECKER));
-		
-		//Is there a Top block..
-		TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
-		if(tip != null) {
-			//Notify The Web Hook Listeners
-			JSONObject data = new JSONObject();
-			data.put("txpow", tip.getTxPoW().toJSON());
-			
-			//And Post it..
-			PostNotifyEvent("NEWBLOCK", data);
-		}
 		
 		//Quick Clean up..
 		System.gc();

@@ -51,10 +51,13 @@ public class NIOMessage implements Runnable {
 	public static final MiniByte MSG_PING 			= new MiniByte(8);
 	
 	public static final MiniByte MSG_MAXIMA_CTRL	= new MiniByte(9);
-	public static final MiniByte MSG_MAXIMA_TXPOW 		= new MiniByte(10);
+	public static final MiniByte MSG_MAXIMA_TXPOW 	= new MiniByte(10);
 	
 	public static final MiniByte MSG_SINGLE_PING 	= new MiniByte(11);
 	public static final MiniByte MSG_SINGLE_PONG 	= new MiniByte(12);
+	
+	public static final MiniByte MSG_TXBLOCK_REQ 	= new MiniByte(13);
+	public static final MiniByte MSG_TXBLOCK_RESP 	= new MiniByte(14);
 	
 	/**
 	 * Helper function that converts to String 
@@ -630,6 +633,33 @@ public class NIOMessage implements Runnable {
 				//Send this back to them.. 
 				NIOManager.sendNetworkMessage(mClientUID, MSG_SINGLE_PONG, pinggreet);
 			
+			}else if(type.isEqual(MSG_TXBLOCK_REQ)) {
+				
+				//Get the Hash of the Block
+				TxPoW lastblock = TxPoW.ReadFromStream(dis);
+				
+				//Create an IBD of the blocks we hjave before this one..
+				IBD syncibd = new IBD();
+				syncibd.createSyncIBD(lastblock);
+				
+				//And send it..
+				NIOManager.sendNetworkMessage(mClientUID, MSG_TXBLOCK_RESP, syncibd);
+				
+			}else if(type.isEqual(MSG_TXBLOCK_RESP)) {
+				
+				//Load the IBD..
+				IBD syncibd = IBD.ReadFromStream(dis);
+				
+				//Are there any blocks..
+				if(syncibd.getTxBlocks().size() > 0) {
+				
+					//And post this on..
+					MinimaLogger.log("[+] Received Sync IBD. size:"+MiniFormat.formatSize(data.length)+" blocks:"+syncibd.getTxBlocks().size());
+					
+					//Send to the Processor
+					Main.getInstance().getTxPoWProcessor().postProcessSyncIBD(syncibd, mClientUID);
+				}
+				
 			}else {
 				
 				//UNKNOWN MESSAGE..

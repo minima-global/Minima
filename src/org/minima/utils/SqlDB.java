@@ -6,6 +6,12 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniString;
+import org.minima.utils.json.JSONObject;
+import org.minima.utils.json.parser.JSONParser;
+import org.minima.utils.json.parser.ParseException;
+
 public abstract class SqlDB {
 
 	/**
@@ -130,4 +136,28 @@ public abstract class SqlDB {
 	 */
 	protected abstract void createSQL();
 	
+	/**
+	 * Utility Functions
+	 */
+	public static JSONObject convertDataToJSONObject(MiniData zData) throws ParseException {
+		
+		//First convert the Data back into a String
+		MiniString str = new MiniString(zData.getBytes());
+		
+		//And now convert that String into a JSONOBject
+		JSONObject json = (JSONObject) new JSONParser().parse(str.toString());
+		
+		return json;
+	}
+	
+	public static MiniData convertJSONObjectToData(JSONObject zJSON) {
+		
+		//First convert the Data back into a String
+		MiniString str = new MiniString(zJSON.toString());
+		
+		//And now convert that String into a MiniData
+		MiniData data = new MiniData(str.getData());
+		
+		return data;
+	}
 }

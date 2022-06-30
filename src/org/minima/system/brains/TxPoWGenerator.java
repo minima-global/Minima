@@ -239,23 +239,32 @@ public class TxPoWGenerator {
 		}
 		
 		//Start from the parent..
-		TxPoWTreeNode startblock = zParent;
+		TxPoWTreeNode startblock 	= zParent;
+		MiniNumber origstart 		= startblock.getBlockNumber();
 		
 		//Where to..
-		TxPoWTreeNode endblock 	= zParent.getParent(GlobalParams.MINIMA_BLOCKS_SPEED_CALC.getAsInt());
+		TxPoWTreeNode endblock 		= zParent.getParent(GlobalParams.MINIMA_BLOCKS_SPEED_CALC.getAsInt());
+		MiniNumber origend 			= endblock.getBlockNumber();
 		
 		//Now use the Median Times..
 		startblock 				= getMedianTimeBlock(startblock);
 		endblock 				= getMedianTimeBlock(endblock);
 		MiniNumber blockdiff 	= startblock.getBlockNumber().sub(endblock.getBlockNumber()); 
 		
+		//If the start and end are the same..
+		if(startblock.getBlockNumber().isEqual(endblock.getBlockNumber())) {
+			//Must be the root of the tree.. Return the LATEST value..
+			return zParent.getTxBlock().getTxPoW().getBlockDifficulty();
+		}
+		
 		//In case of serious time error
 		MiniNumber timediff = startblock.getTxPoW().getTimeMilli().sub(endblock.getTxPoW().getTimeMilli());
 		if(timediff.isLessEqual(MiniNumber.ZERO)) {
 			//This should not happen..
 			MinimaLogger.log("SERIOUS NEGATIVE TIME ERROR @ "+zParent.getBlockNumber()+" Using latest block diff..");
-			MinimaLogger.log("StartBlock @ "+startblock.getBlockNumber()+" "+new Date(startblock.getTxPoW().getTimeMilli().getAsLong()));
-			MinimaLogger.log("EndBlock   @ "+endblock.getBlockNumber()+" "+new Date(endblock.getTxPoW().getTimeMilli().getAsLong()));
+			MinimaLogger.log("StartBlock @ "+origstart+"/"+startblock.getBlockNumber()+" "+new Date(startblock.getTxPoW().getTimeMilli().getAsLong()));
+			MinimaLogger.log("EndBlock   @ "+origend+"/"+endblock.getBlockNumber()+" "+new Date(endblock.getTxPoW().getTimeMilli().getAsLong()));
+			MinimaLogger.log("Root node : "+MinimaDB.getDB().getTxPoWTree().getRoot().getBlockNumber());
 			
 			//Return the LATEST value..
 			return zParent.getTxBlock().getTxPoW().getBlockDifficulty();

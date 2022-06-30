@@ -1,0 +1,323 @@
+<html>
+
+<head>
+
+	<!-- Set the View Port -->
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<!--   The MINIMA MDS Javascript Library -->
+	<script type="text/javascript" src="mds.js"></script>
+	
+	<!--   MaxSolo -->
+	<script type="text/javascript" src="maxsolo.js"></script>
+	
+	<!--   Utils -->
+	<script type="text/javascript" src="utils.js"></script>
+	
+	<!--  STYLE -->
+	<link rel="stylesheet" type="text/css" href="maxsolo.css">
+	
+	<title>MAXSOLO</title>
+</head>
+
+<body>
+
+<div class="container">
+	
+	<div id="sendmoney" class="sendmoney">
+	
+		<table style="font-size:18; width:100%;height:100%" border=0>
+			<tr><td style="font-size:28;text-align:center;" colspan=2><b>Send Money</b><br><br></td></tr>
+			<tr>
+				<td style="text-align:right;">Token : </td> 
+				<td>
+				<select id="tokens">
+				</select>
+				</td>
+			</tr>
+			
+			<tr>
+				<td style="text-align:right;">Amount : </td>
+				<td><input type="number" id='amountofmoney' maxlength='64'></td>
+			</tr>
+			
+			<tr>
+				<td style="text-align:left;"><br><input class="solobutton" type="submit" value="Cancel" onclick="showDiv('sendmoney',false);"/></td>
+				<td style="text-align:right;"><br><input class="solobutton" type="submit" value="Send" onclick="sendMoney();"/></td>
+			</tr>
+		</table>
+		
+	</div>
+	
+	<div id="sidebarview">
+	
+		<table class="sidebartable">
+			
+			<tr>
+				<td colspan=2 style='height:10;'> 
+		
+					<table style="font-size:16px;text-align:center; width: 100%;" border=0><tr>
+						<td style="width:33%;text-align:left;" nowrap>
+							<div id="contactselectid">
+							<select class="solobutton" name="Contacts" id="maxcontacts">
+							</select>
+							
+							<input class="solobutton" type="submit" value="Start Chat" onclick="startChat();"/>
+							</div>
+						</td> 
+						<td style="width:33%;">
+							<font size="+2"><b>MAXSOLO</b></font>
+						</td>
+						<td style="width:33%;">
+							<div style="font-size:20px;" id="divname">Not Connected..</div>
+						</td>
+					</tr></table>
+					
+				</td>
+			
+			</tr>
+			
+			
+			<tr>
+				
+				<td style="width:300;"> 
+					<div id="sidebar" class="sidebar">
+					</div>
+				</td>
+			
+				<td>  
+					
+					<table style="height:100%;width:100%">
+					
+						<tr>
+							<td class="mainview">
+							
+								<div id="chatwindow" class="chatwindow">
+									No Room selected yet..
+								</div>
+							
+							</td>
+						</tr>
+						
+						<tr>
+							<td class="chatline" nowrap>
+							
+								<table width=100% border=0>
+									<tr>
+										<td width=5% nowrap>
+											<input class="solobutton" type=submit value=' $$ ' name='$$' onclick="showDiv('sendmoney',true);">
+											<input type="file" name="uploadfile" id="image-upload" accept="image/*" style="display:none;" onChange="checkImageFile(this);"/>
+											<label class="solobutton" for="image-upload">IMG</label>	
+										</td>
+										<td width=90%><input style='width:100%;' class="chatline" id='chatline' maxlength='255'></td>
+										<td width=5% style='text-align:right;'>
+											<input class="solobutton" type=submit value=' Send ' id='sendbutton' name='Send' onclick='sendMessage();'>
+										</td>
+									</tr>
+								</table>
+								
+							</td>
+						</tr>
+					
+					</table>
+					
+				</td>
+				
+			</tr>
+		</table>
+		
+	</center>
+		
+	</div>
+	
+	<div id="allsidebarview">
+	
+		<table class="nosidebartable">
+			<tr>
+				<td style='height:10;'> 
+					
+					<table style="font-size:16px;text-align:center; width: 100%;" border=0><tr>
+						<td style="width:33%;text-align:left;" nowrap>
+							<div id="contactselectid2">
+							<select class="solobutton" name="Contacts" id="maxcontacts2">
+							</select>
+							
+							<input class="solobutton" type="submit" value="Start Chat" onclick="startChat();"/>
+							</div>
+						</td> 
+						
+						<td style="width:33%;">
+							<div style="font-size:20px;" id="divname2">Not Connected..</div>
+						</td>
+					</tr></table>
+						
+				</td>
+			</tr>
+			
+			<tr>
+				<td> 
+				
+					<div id="allsidebar" class="sidebar">
+					</div>
+				
+				</td>
+			</tr>
+		
+		</table>
+		
+	</div>
+	
+</div>
+
+
+<script type="text/javascript">
+	
+	//Ask for permission..
+	if (Notification.permission !== "granted") {
+		var permission = Notification.requestPermission();	
+	}
+	
+	//Reload the page on resize
+	/*window.onresize = () => {
+	  location.reload();
+	}*/
+	
+	
+	/*MDS.DEBUG_HOST 			= "127.0.0.1";
+	MDS.DEBUG_PORT		 	= 9003;
+	MDS.DEBUG_MINIDAPPID 	= "0xC39F95FF43B0D6C87AECBADA6FEDCB5D1436521EA0E942A99EDAEFF3F676A9F6";
+	*/
+	
+	//Hide the Money
+	showDiv('sendmoney',false);
+	
+	//Which mode are we in..
+	if(window.innerWidth > 800){
+		RENDER_STYLE = "sidebar";
+		document.getElementById("allsidebarview").style.display="none";
+		document.getElementById("sidebarview").style.display="block";
+	}else{
+		RENDER_STYLE = "allsidebar";
+		document.getElementById("allsidebarview").style.display="block";
+		document.getElementById("sidebarview").style.display="none";
+	}
+	
+	//Listen for Enter on Chat line..
+	document.getElementById("chatline").addEventListener("keyup", ({key}) => {
+	    if (key === "Enter") {
+	    	sendMessage(); 
+	    }
+	});
+	
+	//Initialise MiFi
+	MDS.init(function(msg){
+		//MDS.log(JSON.stringify(msg));
+		
+		if(msg.event == "inited"){
+			
+			//Get My name
+			MDS.cmd("maxima",function(result){
+				//Get my name..
+				MY_NAME = result.response.name;
+				MDS.log("User : "+MY_NAME);
+				
+				if(RENDER_STYLE=="sidebar"){
+					document.getElementById("divname").innerHTML = "<b>"+MY_NAME+"</b>";	
+				}else{
+					document.getElementById("divname2").innerHTML = "<b>"+MY_NAME+"</b>";	
+				}
+			});
+			
+			//Get My Contacts
+			MDS.cmd("maxcontacts",function(result){
+				//Create the select dongle
+				var select = document.getElementById('maxcontacts');
+				if(RENDER_STYLE!="sidebar"){
+					select = document.getElementById('maxcontacts2');	
+				}
+				
+				//Add each contact
+				contacts = result.response.contacts;
+				
+				//Do we have any contacts
+				if(contacts.length==0){
+					MDS.log("No contacts available..");
+					document.getElementById('contactselectid').innerHTML = "No Maxima Contacts..";
+					document.getElementById('contactselectid2').innerHTML = "No Maxima Contacts..";
+					return;
+				}
+				
+				//Add the contacts
+				for(var i = 0; i < contacts.length; i++) {
+					var opt = document.createElement('option');
+				    opt.value  		= contacts[i].publickey;
+				    opt.innerHTML 	= contacts[i].extradata.name;
+				    select.appendChild(opt);
+				}
+			});
+			
+			//Get My Tokens
+			MDS.cmd("balance",function(result){
+				//Create the select dongle
+				var select = document.getElementById('tokens');
+				while (select.hasChildNodes()) {
+					select.removeChild(select.firstChild);
+				}
+				
+				//Add each contact
+				balance = result.response;
+				
+				//Add the contacts
+				for(var i = 0; i < balance.length; i++) {
+					var opt = document.createElement('option');
+					
+					if(balance[i].tokenid == "0x00"){
+						opt.value  		= balance[i].tokenid;
+					    opt.innerHTML 	= balance[i].token;	
+					}else{
+						opt.value  		= balance[i].tokenid;
+					    opt.innerHTML 	= balance[i].token.name;
+					}
+					
+				    select.appendChild(opt);
+				}
+			});
+			
+			
+			//Testing.. 
+			/*MDS.sql("DROP table messages");
+			
+			//Run some SQL
+			MDS.sql("CREATE TABLE IF NOT EXISTS `messages` ( "
+					+"  `id` IDENTITY PRIMARY KEY, "
+					+"  `roomname` varchar(160) NOT NULL, "
+					+"  `publickey` varchar(512) NOT NULL, "
+					+"  `username` varchar(160) NOT NULL, "
+					+"  `type` varchar(64) NOT NULL, "
+					+"  `message` varchar(512) NOT NULL, "
+					+"  `filedata` clob(256K) NOT NULL, "
+					+"  `customid` varchar(128) NOT NULL DEFAULT '0x00', "
+					+"  `state` varchar(128) NOT NULL DEFAULT '', "
+					+"  `read` int NOT NULL DEFAULT 0, "
+					+"  `date` bigint NOT NULL "
+					+" )",function(sqlmsg){
+						MDS.log(JSON.stringify(sqlmsg));
+					});
+			*/
+			
+			//Load the rooms..
+			loadRooms();
+			
+		}else if(msg.event == "MAXIMA"){
+			
+			//Process this message
+			processMaximaEvent(msg);
+			
+		}
+	});
+	
+</script>
+
+</body>
+
+</html>

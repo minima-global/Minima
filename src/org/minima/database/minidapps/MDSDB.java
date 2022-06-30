@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 
+import org.minima.objects.base.MiniData;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.SqlDB;
 
@@ -33,10 +34,7 @@ public class MDSDB extends SqlDB {
 			//Create main table
 			String create = "CREATE TABLE IF NOT EXISTS `minidapps` ("
 							+ "  `uid` varchar(80) NOT NULL,"
-							+ "  `name` varchar(256) NOT NULL,"
-							+ "  `icon` varchar(256) NOT NULL,"
-							+ "  `version` varchar(256) NOT NULL,"
-							+ "  `description` varchar(512) NOT NULL"
+							+ "  `confdata` blob NOT NULL"
 							+ ")";
 			
 			//Run it..
@@ -46,11 +44,11 @@ public class MDSDB extends SqlDB {
 			stmt.close();
 			
 			//Create some prepared statements..
-			String insert 			= "INSERT IGNORE INTO minidapps ( uid, name, icon, version, description ) VALUES ( ?, ? ,? ,? ,? )";
+			String insert 			= "INSERT IGNORE INTO minidapps ( uid, confdata ) VALUES ( ?, ? )";
 			SQL_INSERT_MINIDAPP 	= mSQLConnection.prepareStatement(insert);
 			
 			SQL_DELETE_MINIDAPP		= mSQLConnection.prepareStatement("DELETE FROM minidapps WHERE uid = ?");
-			SQL_LIST_MINIDAPPS		= mSQLConnection.prepareStatement("SELECT * FROM minidapps ORDER BY name ASC");
+			SQL_LIST_MINIDAPPS		= mSQLConnection.prepareStatement("SELECT * FROM minidapps");
 			SQL_GET_MINIDAPP		= mSQLConnection.prepareStatement("SELECT * FROM minidapps WHERE uid = ?");
 			
 		} catch (SQLException e) {
@@ -65,11 +63,10 @@ public class MDSDB extends SqlDB {
 			SQL_INSERT_MINIDAPP.clearParameters();
 		
 			//Set main params
-			SQL_INSERT_MINIDAPP.setString(1, zDapp.mUID);
-			SQL_INSERT_MINIDAPP.setString(2, zDapp.mName);
-			SQL_INSERT_MINIDAPP.setString(3, zDapp.mIcon);
-			SQL_INSERT_MINIDAPP.setString(4, zDapp.mVersion);
-			SQL_INSERT_MINIDAPP.setString(5, zDapp.mDescription);
+			SQL_INSERT_MINIDAPP.setString(1, zDapp.getUID());
+			
+			MiniData confdata = convertJSONObjectToData(zDapp.getConfData());
+			SQL_INSERT_MINIDAPP.setBytes(2, confdata.getBytes());
 			
 			//Do it.
 			SQL_INSERT_MINIDAPP.execute();
@@ -99,7 +96,7 @@ public class MDSDB extends SqlDB {
 		}
 	}
 	
-	public ArrayList<MiniDAPP> getAllMiniDAPPs(){
+	public synchronized ArrayList<MiniDAPP> getAllMiniDAPPs(){
 
 		ArrayList<MiniDAPP> dapps = new ArrayList<>();
 		
@@ -128,7 +125,7 @@ public class MDSDB extends SqlDB {
 		return dapps;
 	}
 	
-	public MiniDAPP getMiniDAPP(String zUID){
+	public synchronized MiniDAPP getMiniDAPP(String zUID){
 
 		try {
 			

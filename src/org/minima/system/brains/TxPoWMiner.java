@@ -37,10 +37,13 @@ public class TxPoWMiner extends MessageProcessor {
 		mMiningCoins = new ArrayList<>();
 	}
 	
-	public void mineTxPoW(TxPoW zTxPoW) {
+	public void mineTxPoWAsync(TxPoW zTxPoW) {
 		
 		//Add these coins to our Mining list
 		addMiningCoins(zTxPoW);
+		
+		//Hard set the Header Body hash - now we are mining it can never change
+		zTxPoW.setHeaderBodyHash();
 		
 		//Now post a Mining message
 		PostMessage(new Message(TXPOWMINER_MINETXPOW).addObject("txpow", zTxPoW));
@@ -212,7 +215,7 @@ public class TxPoWMiner extends MessageProcessor {
 	/**
 	 * Mine a TxPoW - Used to Mine Maxima Messages
 	 */
-	public void MineTxPoW(TxPoW zTxPoW) {
+	public synchronized void MineTxPoW(TxPoW zTxPoW) {
 		
 		//Hard set the Header Body hash - now we are mining it can never change
 		zTxPoW.setHeaderBodyHash();
@@ -264,9 +267,9 @@ public class TxPoWMiner extends MessageProcessor {
 		//Calculate TxPoWID
 		zTxPoW.calculateTXPOWID();
 		
-		//Post it on.. it might be a block!
+		//Post it on..
 		Main.getInstance().PostMessage(new Message(Main.MAIN_TXPOWMINED).addObject("txpow", zTxPoW));
-		
+
 		//Remove the coins from our mining list
 		removeMiningCoins(zTxPoW);
 	}

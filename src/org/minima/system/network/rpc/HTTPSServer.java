@@ -1,6 +1,5 @@
 package org.minima.system.network.rpc;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.security.KeyStore;
 
@@ -14,8 +13,9 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 
 import org.minima.utils.MinimaLogger;
+import org.minima.utils.ssl.SSLManager;
  
-public class HTTPSServer implements Runnable {
+public abstract class HTTPSServer implements Runnable {
     
 	public static int TYPE_FILE = 0;
 	public static int TYPE_RPC 	= 1;
@@ -25,13 +25,10 @@ public class HTTPSServer implements Runnable {
     
     SSLServerSocket mSSLServerSocket = null;
     
-    int mServerType;
-    
-    public HTTPSServer(int port, int zType){
+    public HTTPSServer(int port){
         //Port and type
     	mPort 		= port;
-        mServerType = zType;
-        
+    	
         //Run it..
 		Thread tt = new Thread(this);
 		tt.start();
@@ -53,19 +50,29 @@ public class HTTPSServer implements Runnable {
 		}
     }
     
+    public abstract Runnable getSocketHandler(SSLSocket zSocket);
+	
     // Create the and initialize the SSLContext
     private SSLContext createSSLContext(){
         try{
-            KeyStore keyStore = KeyStore.getInstance("JKS");
-            keyStore.load(new FileInputStream("testkey.jks"),"password".toCharArray());
-             
-            // Create key manager
-            KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
-            keyManagerFactory.init(keyStore, "password".toCharArray());
+//            KeyStore keyStore = KeyStore.getInstance("JKS");
+//            keyStore.load(new FileInputStream("testkey.jks"),"password".toCharArray());
+//             
+//            // Create key manager
+//            KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
+//            keyManagerFactory.init(keyStore, "password".toCharArray());
+            
+        	//Get the Key store
+        	KeyStore keyStore = SSLManager.getSSLKeyStore();
+        	
+            //Get the Factory
+            KeyManagerFactory keyManagerFactory = SSLManager.getSSLKeyFactory(keyStore);
+            
+            //Get the Key manager
             KeyManager[] km = keyManagerFactory.getKeyManagers();
              
             // Create trust manager
-            TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance("SunX509");
+            TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
             trustManagerFactory.init(keyStore);
             TrustManager[] tm = trustManagerFactory.getTrustManagers();
              
@@ -92,21 +99,19 @@ public class HTTPSServer implements Runnable {
             // Create server socket
             mSSLServerSocket = (SSLServerSocket) sslServerSocketFactory.createServerSocket(this.mPort);
              
-            MinimaLogger.log("SSL server started on port "+mPort);
+            //MinimaLogger.log("SSL server started on port "+mPort);
             while(!mShutdown){
                 
             	//Get the socket
             	SSLSocket sslSocket = (SSLSocket) mSSLServerSocket.accept();
                 
-//            	if(mServerType == TYPE_FILE) {
-//            		FileHandler handler = new FileHandler(sslSocket);
-//                    Thread runner = new Thread(handler);
-//                    runner.start();
-//            	}else{
-//            		CommandHandler handler = new CommandHandler(sslSocket);
-//                    Thread runner = new Thread(handler);
-//                    runner.start();
-//            	}
+            	//Get the Handler..
+				Runnable handler = getSocketHandler(sslSocket);
+				
+				//Run in a new Thread
+				Thread rpcthread = new Thread(handler, "Socket Handler @ "+getPort());
+				rpcthread.setDaemon(true);
+				rpcthread.start();
             }
         } catch (Exception ex){
         	if(!mShutdown) {

@@ -325,7 +325,7 @@ public abstract class Command {
 		String[] split = splitStringJSON(false,zCommand);
 		
 		//The first is the command..
-		String command = split[0];
+		String command = split[0].toLowerCase();
 		
 		Command comms = null;
 		for(int i=0;i<commandlen;i++) {

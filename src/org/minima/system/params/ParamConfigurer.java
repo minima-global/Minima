@@ -147,9 +147,9 @@ public class ParamConfigurer {
             	GeneralParams.ALLOW_ALL_IP = true;
             }
         }),
-        mdsdisable("mdsdisable", "Disable MDS", (args, configurer) -> {
+        mdsenable("mdsenable", "Enable MDS", (args, configurer) -> {
             if ("true".equals(args)) {
-            	GeneralParams.MDS_ENABLED = false;
+            	GeneralParams.MDS_ENABLED = true;
             }
         }),
         conf("conf", "Specify a configuration file (absolute)", (args, configurer) -> {

@@ -1,21 +1,23 @@
 package org.minima.system.mds;
 
 import java.io.File;
-import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
+import javax.net.ssl.SSLSocket;
+
 import org.minima.database.MinimaDB;
 import org.minima.database.minidapps.MiniDAPP;
+import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniString;
-import org.minima.system.mds.polling.PollHandler;
+import org.minima.system.mds.handler.MDSCompleteHandler;
 import org.minima.system.mds.polling.PollStack;
 import org.minima.system.mds.runnable.MDSJS;
 import org.minima.system.mds.sql.MiniDAPPDB;
-import org.minima.system.mds.sql.SQLHandler;
-import org.minima.system.network.rpc.HTTPServer;
+import org.minima.system.network.rpc.HTTPSServer;
 import org.minima.system.params.GeneralParams;
+import org.minima.utils.BaseConverter;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
@@ -31,9 +33,9 @@ public class MDSManager extends MessageProcessor {
 	public static final String MDS_POLLMESSAGE 			= "MDS_POLLMESSAGE";
 	public static final String MDS_MINIDAPPS_CHANGED 	= "MDS_MINIDAPPS_CHANGED";
 	
-	HTTPServer mMDSServer;
-	HTTPServer mPollServer;
-	HTTPServer mSQLServer;
+	//The Main File and Command server
+	HTTPSServer mMDSFileServer;
+	HTTPSServer mMDSCommand;
 	
 	File mMDSRootFile; 
 	
@@ -53,7 +55,12 @@ public class MDSManager extends MessageProcessor {
 	/**
 	 * Valid MiniDAPPs
 	 */
-	ArrayList<String> mValid = new ArrayList<>();
+	Hashtable<String, String> mSessionID 	= new Hashtable<>();
+	
+	/**
+	 * The BASE MiniDAPP Password for the MiniHUB
+	 */
+	String mMiniHUBPassword = null;
 	
 	/**
 	 * All the current Contexts
@@ -71,6 +78,8 @@ public class MDSManager extends MessageProcessor {
 		if(!GeneralParams.MDS_ENABLED) {
 			MinimaLogger.log("MDS disabled");
 			return;
+		}else {
+			MinimaLogger.log("MDS enabled");
 		}
 		
 		PostMessage(MDS_INIT);
@@ -80,9 +89,8 @@ public class MDSManager extends MessageProcessor {
 		
 		//Shut down the server
 		if(GeneralParams.MDS_ENABLED) {
-			mMDSServer.stop();
-			mPollServer.stop();
-			mSQLServer.stop();
+			mMDSFileServer.shutdown();
+			mMDSCommand.shutdown();
 		}
 		
 		//Save all the DBs
@@ -106,17 +114,49 @@ public class MDSManager extends MessageProcessor {
 		return new File(getWebFolder(), zUID);
 	}
 	
+	public String getMiniHUBPasword() {
+		return mMiniHUBPassword;
+	}
+	
+	public boolean checkMiniHUBPasword(String zPassword) {
+		return mMiniHUBPassword.replace("-", "").equalsIgnoreCase(zPassword.replace("-", "").trim());
+	}
+	
+	/**
+	 * Return the MINIDAPPID for a given SESSIONID
+	 */
+	public String convertSessionID(String zSessionID) {
+		return mSessionID.get(zSessionID);
+	}
+	
+	/**
+	 * Return the SESSIONID for a given MINIDAPPID
+	 */
+	public String convertMiniDAPPID(String zMiniDAPPID) {
+		
+		Enumeration<String> keys = mSessionID.keys();
+		while(keys.hasMoreElements()) {
+			String sessionid 	= keys.nextElement();
+			String minidapp 	= mSessionID.get(sessionid);
+			if(minidapp.equals(zMiniDAPPID)) {
+				return sessionid;
+			}
+		}
+		
+		return "";
+	}
+	
 	public JSONObject runSQL(String zUID, String zSQL) {
 		
-		//Check / convert the UID..
-		if(!mValid.contains(zUID) && !zUID.equals("0x00")) {
-			
-			//Invalid..
-			JSONObject fail = new JSONObject();
-			fail.put("status", false);
-			fail.put("error", "MiniDAPP not found : "+zUID);
-			return fail;
-		}
+//		//Check / convert the UID..
+//		if(!mValid.contains(zUID) && !zUID.equals("0x00")) {
+//			
+//			//Invalid..
+//			JSONObject fail = new JSONObject();
+//			fail.put("status", false);
+//			fail.put("error", "MiniDAPP not found : "+zUID);
+//			return fail;
+//		}
 		
 		String minidappid = zUID;
 		
@@ -173,31 +213,24 @@ public class MDSManager extends MessageProcessor {
 			//What is the root folder
 			mMDSRootFile = new File(GeneralParams.DATA_FOLDER,"mds");
 			
-			//Create a new Server
-			mMDSServer = new HTTPServer(GeneralParams.MDS_PORT) {
+			//Create an SSL server
+			mMDSFileServer = new HTTPSServer(GeneralParams.MDSFILE_PORT) {
 				
 				@Override
-				public Runnable getSocketHandler(Socket zSocket) {
-					return new MDSFileHandler( new File(mMDSRootFile,"web") , zSocket);
+				public Runnable getSocketHandler(SSLSocket zSocket) {
+					return new MDSFileHandler( new File(mMDSRootFile,"web") , zSocket, MDSManager.this);
 				}
 			};
 			
-			//The Polling Server
-			mPollServer = new HTTPServer(GeneralParams.POLL_PORT) {
+			//The Complete Server
+			mMDSCommand = new HTTPSServer(GeneralParams.MDSCOMMAND_PORT) {
+				
 				@Override
-				public Runnable getSocketHandler(Socket zSocket) {
-					return new PollHandler(mPollStack, zSocket);
+				public Runnable getSocketHandler(SSLSocket zSocket) {
+					return new MDSCompleteHandler(zSocket, MDSManager.this, mPollStack);
 				}
 			};
 			
-			//The SQL Server
-			mSQLServer = new HTTPServer(GeneralParams.SQL_PORT) {
-				
-				@Override
-				public Runnable getSocketHandler(Socket zSocket) {
-					return new SQLHandler(zSocket, MDSManager.this);
-				}
-			};
 			
 			//Scan for MiniDApps
 			PostMessage(MDS_MINIDAPPS_CHANGED);
@@ -213,6 +246,7 @@ public class MDSManager extends MessageProcessor {
 				
 					//Send to the runnable
 					mds.callMainCallback(poll);
+					
 				}catch(Exception exc) {
 					MinimaLogger.log(exc);
 				}
@@ -228,19 +262,21 @@ public class MDSManager extends MessageProcessor {
 				mds.shutdown();
 			}
 			
+			//Create a NEW Main Password..
+			MiniData password 	= MiniData.getRandomData(32);
+			String b32			= BaseConverter.encode32(password.getBytes());
+			mMiniHUBPassword	= b32.substring(2,6)+"-"+b32.substring(7,11)+"-"+b32.substring(12,16);
+			
 			//Now clear
 			mRunnables.clear();
-			mValid.clear();
+			mSessionID.clear();
 			
 			//Scan through and see what we have..
 			ArrayList<MiniDAPP> dapps = MinimaDB.getDB().getMDSDB().getAllMiniDAPPs();
 			for(MiniDAPP dapp : dapps) {
-			
-				//Add to our valid list
-				mValid.add(dapp.mUID);
 				
 				//Is there a service.js class
-				File service = new File(getMiniDAPPFolder(dapp.mUID),"service.js");
+				File service = new File(getMiniDAPPFolder(dapp.getUID()),"service.js");
 				if(service.exists()) {
 					
 					try {
@@ -251,28 +287,32 @@ public class MDSManager extends MessageProcessor {
 						//Load it into the servcei runner..
 						Context ctx = Context.enter();
 						ctx.setOptimizationLevel(-1);
-						ctx.setLanguageVersion(Context.VERSION_1_5);
+						ctx.setLanguageVersion(Context.VERSION_1_7);
 						
 						//Create the Scope
 						Scriptable scope = ctx.initStandardObjects();
 						
 						//Create an MDSJS object
-						MDSJS mdsjs = new MDSJS(this, dapp.mUID, dapp.mName, ctx, scope);
+						MDSJS mdsjs = new MDSJS(this, dapp.getUID(), dapp.getName(), ctx, scope);
 						ScriptableObject.putProperty(scope, "MDS", Context.javaToJS(mdsjs, scope));
 						
 						//Add the DECIMAL.js code..
-						ctx.evaluateString(scope, DECIMALJS, "<decimaljs_"+dapp.mUID+">", 1, null);
+						ctx.evaluateString(scope, DECIMALJS, "<decimaljs_"+dapp.getUID()+">", 1, null);
 						
 						//Add the main code to the Runnable
-						ctx.evaluateString(scope, code, "<mds_"+dapp.mUID+">", 1, null);
+						ctx.evaluateString(scope, code, "<mds_"+dapp.getUID()+">", 1, null);
 					
 						//Add to our list
 						mRunnables.add(mdsjs);
 					
 					}catch(Exception exc) {
-						MinimaLogger.log("ERROR starting service "+dapp.mName+" "+exc);
+						MinimaLogger.log("ERROR starting service "+dapp.getName()+" "+exc);
 					}
 				}
+				
+				//Now add a uniques random SessionID
+				String sessionid = MiniData.getRandomData(32).to0xString();
+				mSessionID.put(sessionid, dapp.getUID());
 			}
 		}
 		

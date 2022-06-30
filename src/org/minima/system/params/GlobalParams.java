@@ -7,7 +7,7 @@ public class GlobalParams {
 	/**
 	 * Which Version
 	 */
-	public static String MINIMA_VERSION = "0.102.15";
+	public static String MINIMA_VERSION = "0.102.16";
 	
 	/**
 	 * Speed in blocks per second.. 

@@ -106,10 +106,9 @@ public class Minima {
 		boolean shutdownhook = configurer.isShutDownHook();
 		
 		//Set the Ports.. If Minima port has changed
-		GeneralParams.RPC_PORT 	= GeneralParams.MINIMA_PORT+1;
-		GeneralParams.MDS_PORT 	= GeneralParams.MINIMA_PORT+2;
-		GeneralParams.POLL_PORT = GeneralParams.MINIMA_PORT+3;
-		GeneralParams.SQL_PORT  = GeneralParams.MINIMA_PORT+4;
+		GeneralParams.RPC_PORT 			= GeneralParams.MINIMA_PORT+1;
+		GeneralParams.MDSFILE_PORT 		= GeneralParams.MINIMA_PORT+2;
+		GeneralParams.MDSCOMMAND_PORT 	= GeneralParams.MINIMA_PORT+3;
 		
 		//Now lets go..
 		MinimaLogger.log("**********************************************");

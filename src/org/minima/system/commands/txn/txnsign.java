@@ -66,7 +66,7 @@ public class txnsign extends Command {
 				//Get the Public Key for this address if possible
 				ScriptRow scrow = walletdb.getScriptFromAddress(cc.getAddress().to0xString());
 				if(scrow == null) {
-					notfoundkeys.add(scrow.getAddress());
+					notfoundkeys.add(cc.getAddress().to0xString());
 					continue;
 				}else if(!scrow.isSimple()) {
 					nonsimplekeys.add(scrow.getAddress());
