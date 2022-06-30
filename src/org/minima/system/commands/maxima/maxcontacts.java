@@ -22,7 +22,7 @@ import org.minima.utils.messages.Message;
 public class maxcontacts extends Command {
 
 	public maxcontacts() {
-		super("maxcontacts","[action:list|add|remove|search] (contact:) (id:) (publickey:) - Manage your Maxima contacts");
+		super("maxcontacts","[action:list|mls|add|remove|search] (contact:) (id:) (publickey:) - Manage your Maxima contacts");
 	}
 	
 	@Override
@@ -79,6 +79,15 @@ public class maxcontacts extends Command {
 				allcontacts.add(conjson);
 			}
 			details.put("contacts", allcontacts);
+			
+		}else if(func.equals("mls")) {
+			
+			//Send a message refreshing the MLS details
+			Message mls = new Message(MaximaManager.MAXIMA_CHECK_MLS);
+			mls.addBoolean("force", true);
+			Main.getInstance().getMaxima().PostMessage(mls);
+
+			details.put("mls", "Refreshing all contacts via MLS service");
 			
 		}else if(func.equals("myname")) {
 			

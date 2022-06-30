@@ -9,6 +9,7 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniString;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
+import org.minima.utils.json.JSONObject;
 
 public class MLSPacketGETResp implements Streamable {
 
@@ -34,6 +35,16 @@ public class MLSPacketGETResp implements Streamable {
 
 	public String getRandomUID() {
 		return mRandomUID;
+	}
+	
+	public JSONObject toJSON() {
+		JSONObject json = new JSONObject();
+		
+		json.put("publickey", getPublicKey());
+		json.put("address", getAddress());
+		json.put("ranmdomuid", getRandomUID());
+		
+		return json;
 	}
 	
 	@Override

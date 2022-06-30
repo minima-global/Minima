@@ -72,7 +72,7 @@ public class MaximaManager extends MessageProcessor {
 	public static final String MAXIMA_RECMESSAGE 	= "MAXIMA_RECMESSAGE";
 	public static final String MAXIMA_SENDMESSAGE 	= "MAXIMA_SENDDMESSAGE";
 	public static final String MAXIMA_REFRESH 		= "MAXIMA_REFRESH";
-	public static final String MAXIMA_MLSGET_RESP 		= "MAXIMA_GETREQ";
+	public static final String MAXIMA_MLSGET_RESP 	= "MAXIMA_GETREQ";
 	
 	/**
 	 * Send a message to CHECK Maxima is working on connect
@@ -90,6 +90,7 @@ public class MaximaManager extends MessageProcessor {
 	/**
 	 * MLS Checker loop function - every 1 hr
 	 */
+	public static final String MAXIMA_CHECK_MLS 	= "MAXIMA_CHECK_MLS";
 	public static final String MAXIMA_LOOP_MLS 		= "MAXIMA_LOOP_MLS";
 	long MAXIMA_LOOP_MLS_DELAY = 1000 * 60 * 60;
 	
@@ -298,22 +299,36 @@ public class MaximaManager extends MessageProcessor {
 			
 		}else if(zMessage.getMessageType().equals(MAXIMA_LOOP_MLS)) {
 			
+			//Check the MLS servers
+			PostMessage(MAXIMA_CHECK_MLS);
+			
+			//Post a LOOP message that updates all my contacts just in case..
+			PostTimerMessage(new TimerMessage(MAXIMA_LOOP_MLS_DELAY, MAXIMA_LOOP_MLS));
+			
+		}else if(zMessage.getMessageType().equals(MAXIMA_CHECK_MLS)) {
+			
+			//Are we forcing
+			boolean force = zMessage.getBoolean("force",false);
+			
 			//Flush the MLS
 			mMLSService.flushList();
 			
-			//The Min Time before we do an MLS lookup - 1 hr..
-			long mintime = System.currentTimeMillis() - (1000 * 60 * 60);
+			//The Min Time before we do an MLS lookup - 30 mins..
+			long mintime = System.currentTimeMillis() - (1000 * 60 * 30);
 			
 			//Get all your contacts
 			ArrayList<MaximaContact> allcontacts = maxdb.getAllContacts();
 			for(MaximaContact contact : allcontacts) {
 				
 				//Have we heard from them lately
-				if(contact.getLastSeen() < mintime) {
+				if(force || contact.getLastSeen() < mintime) {
 					
 					//Send an MLS GET req..
 					String mls = contact.getMLS();
 					if(!mls.equals("")) {
+						
+						//Log it.. 
+						MinimaLogger.log("MLS check "+contact.getName()+" @ "+contact.getCurrentAddress()+" mls:"+mls);	
 						
 						//Create a Get req
 						MLSPacketGETReq req = new MLSPacketGETReq(contact.getPublicKey(), MLS_RANDOM_UID);
@@ -326,9 +341,6 @@ public class MaximaManager extends MessageProcessor {
 					}
 				}
 			}
-		
-			//Post a LOOP message that updates all my contacts just in case..
-			PostTimerMessage(new TimerMessage(MAXIMA_LOOP_MLS_DELAY, MAXIMA_LOOP_MLS));
 			
 		}else if(zMessage.getMessageType().equals(MAXIMA_LOOP)) {
 			
@@ -569,9 +581,8 @@ public class MaximaManager extends MessageProcessor {
 			update.addString("address", contact.getCurrentAddress());
 			getContactsManager().PostMessage(update);
 			
-			if(mMaximaLogs) {
-				MinimaLogger.log("MLSGET Contact updated : "+contact.toJSON().toString());
-			}
+			//Log it..
+			MinimaLogger.log("MLSGET address updated for "+contact.getName()+" "+contact.getCurrentAddress());
 			
 		}else if(zMessage.getMessageType().equals(MAXIMA_RECMESSAGE)) {
 			
@@ -776,6 +787,8 @@ public class MaximaManager extends MessageProcessor {
 				MiniData mlsdata = MiniData.getMiniDataVersion(mlsget);
 				
 				//Send that
+				MinimaLogger.log("MLS Req received : replying "+mlsget.toJSON());
+				
 				maximaMessageStatus(nioc,mlsdata);
 				
 			}else {

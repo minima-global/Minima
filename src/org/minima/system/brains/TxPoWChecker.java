@@ -78,7 +78,7 @@ public class TxPoWChecker {
 			//Check the block difficulty is correct
 			MiniData blockdifficulty = TxPoWGenerator.getBlockDifficulty(zParentNode);
 			if(!zTxPoW.getBlockDifficulty().isEqual(blockdifficulty)) {
-				MinimaLogger.log("Incorrect TxPoW block difficulty "+zTxPoW.getTxPoWID());
+				MinimaLogger.log("Incorrect TxPoW block difficulty @ "+zTxPoW.getBlockNumber()+" "+zTxPoW.getTxPoWID());
 				return false;
 			}
 			
