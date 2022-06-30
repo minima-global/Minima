@@ -313,6 +313,13 @@ public class P2PManager extends MessageProcessor {
                 if (state.getAllLinks().size() == 0 && state.isStartupComplete()){
                     P2PFunctions.log_node_runner("[!] Node is not connected to the network. Attempting to join the network again now. Please check your not has an internet connection.");
                 }
+                if (state.getKnownPeers().size() == 0 && !state.isStartupComplete()){
+                    P2PDB p2pdb = MinimaDB.getDB().getP2PDB();
+                    List<InetSocketAddress> peers = p2pdb.getPeersList();
+                    for(InetSocketAddress peer: peers){
+                        mPeersChecker.PostMessage(new Message(P2PPeersChecker.PEERS_ADDPEERS).addObject("address", peer));
+                    }
+                }
                 state.setDoingDiscoveryConnection(true);
                 InetSocketAddress connectionAddress = P2PParams.DEFAULT_NODE_LIST.get(rand.nextInt(P2PParams.DEFAULT_NODE_LIST.size()));
                 P2PFunctions.log_debug("[+] Doing discovery connection with default node: " + connectionAddress);
@@ -429,7 +436,9 @@ public class P2PManager extends MessageProcessor {
         //Write stuff to P2P DB..
         P2PDB p2pdb = MinimaDB.getDB().getP2PDB();
         p2pdb.setVersion();
-        p2pdb.setPeersList(new ArrayList<>(state.getKnownPeers()));
+        if (state.getKnownPeers().size() > 0){
+            p2pdb.setPeersList(new ArrayList<>(state.getKnownPeers()));
+        }
 
         //Stop the peers checker
         mPeersChecker.stopMessageProcessor();

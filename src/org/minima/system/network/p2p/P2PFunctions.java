@@ -1,8 +1,11 @@
 package org.minima.system.network.p2p;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.util.*;
 
 import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
@@ -64,6 +67,15 @@ public class P2PFunctions {
         msg.addInteger("port", zPort);
 
         boolean doConnect = true;
+        try {
+            Set<String> localAddresses = getAllNetworkInterfaceAddresses();
+            if (localAddresses.contains(zHost) || zHost.startsWith("127")){
+                doConnect = false;
+            }
+        } catch (Exception e){
+            MinimaLogger.log("[-] Error getting local addresses");
+        }
+
         List<NIOClientInfo> clients = getAllConnections();
         for (NIOClientInfo client : clients) {
             if (!client.isConnected() && client.getHost().equals(zHost) && client.getPort() == zPort) {
@@ -95,6 +107,17 @@ public class P2PFunctions {
     public static ArrayList<NIOClientInfo> getAllConnections() {
         return Main.getInstance().getNetworkManager().getNIOManager().getAllConnectionInfo();
     }
+
+    public static ArrayList<NIOClientInfo> getAllConnectedConnections() {
+        ArrayList<NIOClientInfo> activeConnections = new ArrayList<>();
+        for (NIOClientInfo nci: Main.getInstance().getNetworkManager().getNIOManager().getAllConnectionInfo()) {
+            if (nci.isConnected()){
+                activeConnections.add(nci);
+            }
+        }
+        return activeConnections;
+    }
+
 
     /**
      * Get a specific Client.. you can set and get extra data..
@@ -149,6 +172,18 @@ public class P2PFunctions {
         if (P2PParams.LOG_LEVEL == Level.DEBUG ) {
             MinimaLogger.log("[D] " + message);
         }
+    }
+
+    public static Set<String> getAllNetworkInterfaceAddresses() throws SocketException {
+        Enumeration<NetworkInterface> nets = NetworkInterface.getNetworkInterfaces();
+        Set<String> hostnames = new HashSet<>();
+        for (NetworkInterface nif: Collections.list(nets)){
+            Enumeration<InetAddress> addresses = nif.getInetAddresses();
+            for (InetAddress address: Collections.list(addresses)) {
+                hostnames.add(address.getHostName());
+            }
+        }
+        return hostnames;
     }
 
 
