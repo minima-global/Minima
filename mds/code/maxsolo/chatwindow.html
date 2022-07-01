@@ -109,7 +109,6 @@
 <script type="text/javascript">
 		
 	//Ask for permission..
-	//Ask for permission..
 	if (Notification.permission !== "granted") {
 		var permission = Notification.requestPermission();	
 	}
@@ -177,10 +176,12 @@
 			
 			//Get the room..
 			pubkey = MDS.form.getParams("publickey");
+			MDS.log("Chat window public key : "+pubkey);
 			
 			//Set the room name
 			roomname = MDS.form.getParams("roomname");
 			document.getElementById("chatwindowuser").innerHTML = "<b>"+roomname+"</b>";
+			MDS.log("Room Name : "+roomname);
 			
 			//Load the messages..
 			loadMessages(pubkey);

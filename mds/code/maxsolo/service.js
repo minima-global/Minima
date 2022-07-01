@@ -56,10 +56,13 @@ MDS.init(function(msg){
 				
 			//And create the actual JSON
 			var maxjson = JSON.parse(jsonstr);
+			
+			//URL encode the message and deal with apostrophe..
+			let encoded = encodeURIComponent(maxjson.message).replace("'", "%27");
 				
 			//insert into the DB
 			var msgsql = "INSERT INTO messages (roomname,publickey,username,type,message,filedata,date) VALUES "
-					+"('"+maxjson.username+"','"+pubkey+"','"+maxjson.username+"','"+maxjson.type+"','"+maxjson.message+"','"+maxjson.filedata+"', "+Date.now()+")";
+					+"('"+maxjson.username+"','"+pubkey+"','"+maxjson.username+"','"+maxjson.type+"','"+encoded+"','"+maxjson.filedata+"', "+Date.now()+")";
 	
 			//Insert into DB
 			MDS.sql(msgsql);				

@@ -274,8 +274,8 @@ function sendData(jsondata){
 			insertMessage(CURRENT_ROOM_NAME, CURRENT_ROOM_PUBLICKEY, MY_NAME, 
 					jsondata.type, jsondata.message, jsondata.filedata, function(){
 				
-			//Load all the messages
-			loadMessages(CURRENT_ROOM_PUBLICKEY);	
+				//Load all the messages
+				loadMessages(CURRENT_ROOM_PUBLICKEY);	
 				
 			});			
 		}
@@ -303,18 +303,21 @@ function startChat(){
 		//Insert a message to start the room ( Could check if room already started!)
 		insertMessage(pname, pkey, MY_NAME, "text", "Start Room..","", function(){
 			if(RENDER_STYLE=="sidebar"){
+		
 				//And Set that room..
 				loadMessages(pkey)
 				
 				//Load the rooms..
 				loadRooms();
+		
 			}else{
+				//Urlencode the name..
+				encroomname = encodeURIComponent(pname);
+			
 				//Jump to a new MainView Page
-				window.location = "chatwindow.html?publickey="+pkey+"&uid="+MDS.minidappuid;
+				window.location = "chatwindow.html?publickey="+pkey+"&uid="+MDS.minidappuid+"&roomname="+encroomname;
 			}	
 		});	
-	
-		
 	}
 }
 
