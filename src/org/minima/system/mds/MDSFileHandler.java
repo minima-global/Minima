@@ -113,6 +113,7 @@ public class MDSFileHandler implements Runnable {
 				dos.writeBytes("HTTP/1.0 200 OK\r\n");
 				dos.writeBytes("Content-Type: text/html\r\n");
 				dos.writeBytes("Content-Length: " + finallength + "\r\n");
+				dos.writeBytes("Access-Control-Allow-Origin: *\r\n");
 				dos.writeBytes("\r\n");
 				dos.write(file, 0, finallength);
 				dos.flush();
@@ -171,6 +172,7 @@ public class MDSFileHandler implements Runnable {
 				dos.writeBytes("HTTP/1.0 200 OK\r\n");
 				dos.writeBytes("Content-Type: text/html\r\n");
 				dos.writeBytes("Content-Length: " + finallength + "\r\n");
+				dos.writeBytes("Access-Control-Allow-Origin: *\r\n");
 				dos.writeBytes("\r\n");
 				dos.write(file, 0, finallength);
 				dos.flush();
@@ -208,6 +210,7 @@ public class MDSFileHandler implements Runnable {
 					dos.writeBytes("HTTP/1.0 200 OK\r\n");
 					dos.writeBytes("Content-Type: "+contenttype+"\r\n");
 					dos.writeBytes("Content-Length: " + finallength + "\r\n");
+					dos.writeBytes("Access-Control-Allow-Origin: *\r\n");
 					dos.writeBytes("\r\n");
 					dos.write(file, 0, finallength);
 					dos.flush();
