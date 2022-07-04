@@ -205,6 +205,13 @@ public class NIOMessage implements Runnable {
 					nioclient.setMinimaPort(Integer.parseInt(greet.getExtraDataValue("port")));
 				}
 				
+//				//Is there a maxima mls..
+//				if(greet.getExtraData().containsKey("maximamls")) {
+//					String mls = greet.getExtraData().getString("maximamls"); 
+//					MinimaLogger.log("MLS rec : "+mls);
+//					nioclient.setMaximaMLS(mls+"@"+nioclient.getFullAddress());
+//				}
+				
 				//Get the welcome message..
 				nioclient.setWelcomeMessage("Minima v"+greet.getVersion());
 				nioclient.setValidGreeting(true);

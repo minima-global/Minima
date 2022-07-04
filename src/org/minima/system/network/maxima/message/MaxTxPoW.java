@@ -35,6 +35,11 @@ public class MaxTxPoW implements Streamable {
 	 */
 	TxPoW mTxPoW;
 	
+	/**
+	 * Max time to build a Maxima message - 15 seconds
+	 */
+	static long mMaxTimeMilli = 15000; 
+	
 	private MaxTxPoW() {}
 	
 	public MaxTxPoW(MaximaPackage zMaxima, TxPoW zTxPoW) {
@@ -107,8 +112,11 @@ public class MaxTxPoW implements Streamable {
 		txpow.setTxDifficulty(minhash);
 		
 		//Now Mine it..
-		Main.getInstance().getTxPoWMiner().MineTxPoW(txpow);
-				
+		boolean valid = Main.getInstance().getTxPoWMiner().MineMaxTxPoW(txpow,mMaxTimeMilli);
+		if(!valid) {
+			return null;
+		}
+		
 		//Now create a MaxTxPoW complete unit
 		return new MaxTxPoW(zMaxima, txpow);
 	}

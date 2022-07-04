@@ -10,6 +10,7 @@ import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
+import org.minima.system.Main;
 import org.minima.system.params.GeneralParams;
 import org.minima.system.params.GlobalParams;
 import org.minima.utils.MinimaLogger;
@@ -58,6 +59,9 @@ public class Greeting implements Streamable {
 				getExtraData().put("host",GeneralParams.MINIMA_HOST);
 			}
 			getExtraData().put("port",""+GeneralParams.MINIMA_PORT);
+			
+			//Add My Maxima MLS identity
+//			getExtraData().put("maximamls",Main.getInstance().getMaxima().getMaximaMLSIdentity());
 			
 			//Add the chain..
 			TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
