@@ -145,8 +145,11 @@ public class P2PManager extends MessageProcessor {
             p2pdb.setPeersList(new ArrayList<>(state.getKnownPeers()));
             PostTimerMessage(new TimerMessage(P2PParams.SAVE_DATA_DELAY, P2P_SAVE_DATA));
         } else if (zMessage.isMessageType(P2PFunctions.P2P_CONNECTED)) {
-            String uid = zMessage.getString("uid");
-            NIOClient client = (NIOClient) zMessage.getObject("client");
+        	String uid = zMessage.getString("uid");
+            
+        	MinimaLogger.log("PROCESS P2P_CONNECTED "+uid);
+            
+        	NIOClient client = (NIOClient) zMessage.getObject("client");
             state.getAllLinks().put(uid, new InetSocketAddress(client.getHost(), client.getPort()));
             sendMsgs.addAll(connect(zMessage, state));
             if (!client.isIncoming() && !state.isDoingDiscoveryConnection()) {
@@ -154,6 +157,7 @@ public class P2PManager extends MessageProcessor {
                 P2PFunctions.log_debug("[+] P2P_CONNECTED to: " + client.getHost() + ":" + client.getPort() + " - " + uid + " Current outlinks: " + state.getOutLinks().size() + " Excluding this connection as accounting is when we get the greeting");
                 P2PFunctions.log_node_runner("[+] Successfully connected to the network current links: " + (state.getAllLinks().size()));
             }
+            
         } else if (zMessage.isMessageType(P2PFunctions.P2P_DISCONNECTED)) {
             String uid = zMessage.getString("uid");
             state.getAllLinks().remove(uid);
@@ -163,9 +167,12 @@ public class P2PManager extends MessageProcessor {
             }
         } else if (zMessage.isMessageType(P2PFunctions.P2P_MESSAGE)) {
             sendMsgs.addAll(processJsonMessages(zMessage, state));
+       
         } else if (zMessage.isMessageType(P2P_LOOP)) {
-            sendMsgs.addAll(processLoop(state));
-            PostTimerMessage(new TimerMessage(state.getLoopDelay(), P2P_LOOP));
+            
+        	sendMsgs.addAll(processLoop(state));
+        	MinimaLogger.log("P2P_LOOP "+state.getLoopDelay());
+        	PostTimerMessage(new TimerMessage(state.getLoopDelay(), P2P_LOOP));
 
         } else if (zMessage.isMessageType(P2P_RESET)) {
             P2PFunctions.log_debug("[+] P2P Reset in process");
@@ -284,7 +291,7 @@ public class P2PManager extends MessageProcessor {
         if (state.getOutLinks().size() >= state.getMaxNumP2PConnections()) {
             state.setLoopDelay(P2PParams.LOOP_DELAY + (long) rand.nextInt(P2PParams.LOOP_DELAY_VARIABILITY));
         } else {
-            state.setLoopDelay(10_000 + (long) rand.nextInt(3_000));
+//            state.setLoopDelay(10_000 + (long) rand.nextInt(3_000));
         }
         state.getKnownPeers().remove(state.getMyMinimaAddress());
 

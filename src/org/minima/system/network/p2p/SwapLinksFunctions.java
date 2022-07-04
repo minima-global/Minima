@@ -16,6 +16,7 @@ import org.minima.system.network.minima.NIOClientInfo;
 import org.minima.system.network.p2p.messages.P2PGreeting;
 import org.minima.system.network.p2p.messages.P2PWalkLinks;
 import org.minima.system.network.p2p.params.P2PParams;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
 
@@ -114,6 +115,8 @@ public class SwapLinksFunctions {
             int port = greeting.getMyMinimaPort();
             InetSocketAddress minimaAddress = new InetSocketAddress(host, port);
 
+            MinimaLogger.log("P2P Processing Greeting "+uid);
+            
             boolean addtoknown = !host.contains("127.0.0.1");
 //            P2PFunctions.log_debug("P2P GREETING UID:"+uid+" valid:"+state.getNoneP2PLinks().containsKey(uid)+" @ "+minimaAddress+" addtoknown:"+addtoknown);
             state.getNoneP2PLinks().remove(uid);
@@ -122,8 +125,13 @@ public class SwapLinksFunctions {
             if(Main.getInstance() != null) {
 	            NIOClient nioclient = Main.getInstance().getNIOManager().getNIOServer().getClient(uid);
                 if (nioclient != null){
+                	MinimaLogger.log("P2P Have now Rec Greeting "+uid);
 	                nioclient.setReceivedP2PGreeting();
+                }else{
+                	MinimaLogger.log("NULL NIO client at P2P Greeting "+uid);
                 }
+            }else {
+            	MinimaLogger.log("NULL Main at P2P Greeting "+uid);
             }
 
             if (greeting.isAcceptingInLinks()) {
@@ -135,7 +143,8 @@ public class SwapLinksFunctions {
                 } else {
                     state.getOutLinks().put(uid, minimaAddress);
                     if (state.getOutLinks().size() > state.getMaxNumP2PConnections()) {
-                        P2PFunctions.disconnect(uid);
+                    	MinimaLogger.log("P2P Disconnect "+uid+" outlinks>maxlinks");
+                    	P2PFunctions.disconnect(uid);
                     }
                 }
 
@@ -146,6 +155,7 @@ public class SwapLinksFunctions {
 
                 if (state.isDoingDiscoveryConnection()) {
                     state.setDoingDiscoveryConnection(false);
+                    MinimaLogger.log("P2P Disconnect "+uid+" isDoingDiscoveryConnection()");
                     P2PFunctions.disconnect(uid);
                 }
             } else {

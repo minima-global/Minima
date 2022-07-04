@@ -48,6 +48,11 @@ public class P2PFunctions {
     public static final String P2P_MESSAGE = "P2P_MESSAGE";
 
     /**
+     * The Local InetAddresses
+     */
+    private static Set<String> mLocalAddresses = null;
+    
+    /**
      * Connect to a Host and port if we don't already have a pending connection
      */
     public static void connect(String zHost, int zPort) {
@@ -60,6 +65,7 @@ public class P2PFunctions {
         Main.getInstance().getNIOManager().PostMessage(msg);
     }
 
+    
     public static boolean checkConnect(String zHost, int zPort) {
         //Connect Message
         Message msg = new Message(NIOManager.NIO_CONNECT);
@@ -68,8 +74,10 @@ public class P2PFunctions {
 
         boolean doConnect = true;
         try {
-            Set<String> localAddresses = getAllNetworkInterfaceAddresses();
-            if (localAddresses.contains(zHost) || zHost.startsWith("127")){
+        	if(mLocalAddresses == null) {
+        		mLocalAddresses = getAllNetworkInterfaceAddresses();
+        	}
+            if (mLocalAddresses.contains(zHost) || zHost.startsWith("127")){
                 doConnect = false;
             }
         } catch (Exception e){

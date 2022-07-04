@@ -473,16 +473,25 @@ public class NIOMessage implements Runnable {
 				//Have we received a p2p greeting..?
 				P2PManager p2pmanager = (P2PManager)Main.getInstance().getNetworkManager().getP2PManager();
 				
+				boolean isgreeting = json.toString().contains("greeting");
+				
 				if(!nioclient.hasReceivedP2PGreeting()) {
-//					MinimaLogger.log("RECEIVED P2P MSG BEFORE GREETING.. DELAYING BY 10s.. "+json.toJSONString());
+					MinimaLogger.log("RECEIVED P2P MSG BEFORE GREETING.. Posting on Stack.. "+mClientUID+" "+json.toString());
+					
+//					Message p2p = new Message(P2PFunctions.P2P_MESSAGE);
+//					p2p.addString("uid", mClientUID);
+//					p2p.addObject("message", json);
+//					nioclient.getP2PStack().PostMessage(p2p);
 					
 					//Post with delay
-					TimerMessage p2p = new TimerMessage(10000, P2PFunctions.P2P_MESSAGE);
+					TimerMessage p2p = new TimerMessage(5000, P2PFunctions.P2P_MESSAGE);
 					p2p.addString("uid", mClientUID);
 					p2p.addObject("message", json);
 					p2pmanager.PostTimerMessage(p2p);
 					
 				}else {
+					MinimaLogger.log("RECEIVED P2P MSG.. "+mClientUID+" isgreeting:"+isgreeting);
+					
 					//Post directly
 					Message p2p = new Message(P2PFunctions.P2P_MESSAGE);
 					p2p.addString("uid", mClientUID);

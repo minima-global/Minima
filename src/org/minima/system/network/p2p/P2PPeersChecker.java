@@ -2,11 +2,13 @@ package org.minima.system.network.p2p;
 
 import org.minima.objects.Greeting;
 import org.minima.system.network.minima.NIOManager;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageProcessor;
 import org.minima.utils.messages.TimerMessage;
 
 import java.net.InetSocketAddress;
+import java.net.SocketException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -40,13 +42,25 @@ public class P2PPeersChecker extends MessageProcessor {
 
     private final P2PManager p2PManager;
 
+    Set<String> mLocalAddresses;
+    
     public P2PPeersChecker(P2PManager manager) {
         super("PEERS_CHECKER");
         p2PManager = manager;
         //FOR NOW - turm full logs on
 
-        setFullLogging(false, "");
+        setFullLogging(true, "");
 
+        try {
+			mLocalAddresses = P2PFunctions.getAllNetworkInterfaceAddresses();
+		} catch (SocketException e) {
+			MinimaLogger.log(e);
+			
+			//Set a default
+			mLocalAddresses = new HashSet<String>();
+			mLocalAddresses.add("127.0.0.1");
+		}
+        
         //Do some Initialisation..
         PostMessage(PEERS_INIT);
 
@@ -64,11 +78,16 @@ public class P2PPeersChecker extends MessageProcessor {
             // When a new peer address is added - check if the address is already in the verified
             // or unverified peers list. If it is not, add to the unverified list and request a check if it's contactable
             InetSocketAddress address = (InetSocketAddress) zMessage.getObject("address");
-            Set<String> localAddresses = P2PFunctions.getAllNetworkInterfaceAddresses();
+//            Set<String> localAddresses = P2PFunctions.getAllNetworkInterfaceAddresses();
 
-            if (!localAddresses.contains(address.getHostString()) && !address.getHostString().startsWith("127")) {
+            MinimaLogger.log("TRY to ADD_PEER to check.. "+address);
+            
+            if (!mLocalAddresses.contains(address.getHostString()) && !address.getHostString().startsWith("127")) {
                 if (!unverifiedPeers.contains(address) && !verifiedPeers.contains(address)) {
                     unverifiedPeers.add(address);
+                    
+                    MinimaLogger.log("ADD_PEER to check.. "+address);
+                    
                     Message msg = new Message(PEERS_CHECKPEERS).addObject("address", address);
                     PostMessage(msg);
 
@@ -79,8 +98,14 @@ public class P2PPeersChecker extends MessageProcessor {
 
         } else if (zMessage.getMessageType().equals(PEERS_CHECKPEERS)) {
             InetSocketAddress address = (InetSocketAddress) zMessage.getObject("address");
-            if (P2PFunctions.getAllConnectedConnections().size() > 0) {
-                Greeting greet = NIOManager.sendPingMessage(address.getHostString(), address.getPort(), true);
+            
+            MinimaLogger.log("PEERS CHECK.. "+address);
+            
+//            if (P2PFunctions.getAllConnectedConnections().size() > 0) {
+              
+            	MinimaLogger.log("PEERS CHECK : "+address.toString());
+            
+            	Greeting greet = NIOManager.sendPingMessage(address.getHostString(), address.getPort(), false);
                 if (greet != null) {
                     unverifiedPeers.remove(address);
                     if (verifiedPeers.size() < 250) {
@@ -106,11 +131,11 @@ public class P2PPeersChecker extends MessageProcessor {
                     Message msg = new Message(P2PManager.P2P_REMOVE_PEER).addObject("address", address);
                     p2PManager.PostMessage(msg);
                 }
-            } else {
-                TimerMessage tmsg = new TimerMessage(1_000, PEERS_CHECKPEERS);
-                tmsg.addObject("address", address);
-                PostMessage(tmsg);
-            }
+//            } else {
+//                TimerMessage tmsg = new TimerMessage(1_000, PEERS_CHECKPEERS);
+//                tmsg.addObject("address", address);
+//                PostMessage(tmsg);
+//            }
 
         } else if (zMessage.getMessageType().equals(PEERS_LOOP)) {
             // Check all the verified Peers again

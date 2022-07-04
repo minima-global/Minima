@@ -14,6 +14,7 @@ import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
+import org.minima.utils.messages.MessageStack;
 
 public class NIOClient {
 
@@ -76,6 +77,11 @@ public class NIOClient {
 	
 	String mMaximaIdent = "";
 	String mMaximaMLS 	= "";
+	
+	MessageStack mP2PStack = new MessageStack();
+	public MessageStack getP2PStack() {
+		return mP2PStack;
+	}
 	
 	/**
 	 * Specify extra info
