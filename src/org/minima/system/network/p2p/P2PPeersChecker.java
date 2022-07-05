@@ -64,7 +64,7 @@ public class P2PPeersChecker extends MessageProcessor {
             // When a new peer address is added - check if the address is already in the verified
             // or unverified peers list. If it is not, add to the unverified list and request a check if it's contactable
             InetSocketAddress address = (InetSocketAddress) zMessage.getObject("address");
-            Set<String> localAddresses = P2PFunctions.getAllNetworkInterfaceAddresses();
+            Set<String> localAddresses = P2PFunctions.getLocalAddresses();
 
             if (!localAddresses.contains(address.getHostString()) && !address.getHostString().startsWith("127")) {
                 if (!unverifiedPeers.contains(address) && !verifiedPeers.contains(address)) {

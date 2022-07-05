@@ -48,6 +48,25 @@ public class P2PFunctions {
     public static final String P2P_MESSAGE = "P2P_MESSAGE";
 
     /**
+     * A list of Network Interfaces
+     */
+    private static Set<String> mLocalAddresses = null;
+    public static Set<String> getLocalAddresses() {
+    	if(mLocalAddresses == null) {
+    		try {
+				mLocalAddresses = getAllNetworkInterfaceAddresses();
+			} catch (SocketException e) {
+				mLocalAddresses = new HashSet<String>();
+				mLocalAddresses.add("localhost");
+				mLocalAddresses.add("127.0.0.1");
+				mLocalAddresses.add("127.0.1.1");
+			}
+    	}
+    	
+    	return mLocalAddresses;
+    }
+    
+    /**
      * Connect to a Host and port if we don't already have a pending connection
      */
     public static void connect(String zHost, int zPort) {
@@ -68,7 +87,7 @@ public class P2PFunctions {
 
         boolean doConnect = true;
         try {
-            Set<String> localAddresses = getAllNetworkInterfaceAddresses();
+            Set<String> localAddresses = getLocalAddresses();
             if (localAddresses.contains(zHost) || zHost.startsWith("127")){
                 doConnect = false;
             }
@@ -174,7 +193,7 @@ public class P2PFunctions {
         }
     }
 
-    public static Set<String> getAllNetworkInterfaceAddresses() throws SocketException {
+    private static Set<String> getAllNetworkInterfaceAddresses() throws SocketException {
         Enumeration<NetworkInterface> nets = NetworkInterface.getNetworkInterfaces();
         Set<String> hostnames = new HashSet<>();
         for (NetworkInterface nif: Collections.list(nets)){
