@@ -86,8 +86,14 @@ public class Minima {
 	public static void main(String[] zArgs) {
 		
 		//Set the main data folder
-		File dataFolder = new File(System.getProperty("user.home"),".minima");
-		GeneralParams.DATA_FOLDER = dataFolder.getAbsolutePath();
+		File dataFolder 	= new File(System.getProperty("user.home"),".minima");
+		
+		//Depends on the VERSION
+		File minimafolder 			= new File(dataFolder,GlobalParams.MINIMA_BASE_VERSION);
+		minimafolder.mkdirs();
+		
+		//Set this globally
+		GeneralParams.DATA_FOLDER 	= minimafolder.getAbsolutePath();
 
 		ParamConfigurer configurer = null;
 		try {

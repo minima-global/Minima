@@ -123,7 +123,15 @@ public class ParamConfigurer {
 
     enum ParamKeys {
     	data("data", "Specify the data folder (defaults to .minima/ under user home", (args, configurer) -> {
-        	GeneralParams.DATA_FOLDER = new File(args).getAbsolutePath();
+    		//Get that folder
+    		File dataFolder 	= new File(args);
+    				
+    		//Depends on the Base Minima Version
+    		File minimafolder 	= new File(dataFolder,GlobalParams.MINIMA_BASE_VERSION);
+    		minimafolder.mkdirs();
+    		
+    		//Set this globally
+    		GeneralParams.DATA_FOLDER 	= minimafolder.getAbsolutePath();
         }),
     	host("host", "Specify the host IP", (arg, configurer) -> {
             GeneralParams.MINIMA_HOST = arg;

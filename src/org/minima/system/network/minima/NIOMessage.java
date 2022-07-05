@@ -156,7 +156,7 @@ public class NIOMessage implements Runnable {
 					testcheck = false;
 				} 
 				
-				if(!testcheck || !greetstr.startsWith("0.102")) {
+				if(!testcheck || !greetstr.startsWith(GlobalParams.MINIMA_BASE_VERSION)) {
 					
 					MinimaLogger.log("Greeting with Incompatible Version! "+greet.getVersion().toString()+" .. we are "+GlobalParams.MINIMA_VERSION);
 					
