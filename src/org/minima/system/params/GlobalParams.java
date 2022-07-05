@@ -5,7 +5,7 @@ import org.minima.objects.base.MiniNumber;
 public class GlobalParams {
 
 	/**
-	 * Which Version
+	 * Which Version fo Minima are we running
 	 */
 	public static String MINIMA_BASE_VERSION 	= "0.103";
 	public static String MINIMA_BUILD_NUMBER 	= "0";
