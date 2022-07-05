@@ -1,13 +1,6 @@
 package org.minima.system.network.maxima;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.InetSocketAddress;
-import java.net.Socket;
 import java.security.KeyPair;
 import java.util.ArrayList;
 import java.util.Random;
@@ -18,7 +11,6 @@ import org.minima.database.maxima.MaximaDB;
 import org.minima.database.maxima.MaximaHost;
 import org.minima.database.userprefs.UserDB;
 import org.minima.objects.Address;
-import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;

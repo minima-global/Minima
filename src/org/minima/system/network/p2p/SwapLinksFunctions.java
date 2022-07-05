@@ -2,12 +2,7 @@ package org.minima.system.network.p2p;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.minima.objects.base.MiniData;
 import org.minima.system.Main;
@@ -15,7 +10,6 @@ import org.minima.system.network.minima.NIOClient;
 import org.minima.system.network.minima.NIOClientInfo;
 import org.minima.system.network.p2p.messages.P2PGreeting;
 import org.minima.system.network.p2p.messages.P2PWalkLinks;
-import org.minima.system.network.p2p.params.P2PParams;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
 

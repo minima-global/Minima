@@ -2,10 +2,14 @@ package org.minima.system.network.p2p;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
