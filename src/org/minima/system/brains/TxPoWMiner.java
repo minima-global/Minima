@@ -13,6 +13,7 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
 import org.minima.utils.Crypto;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageProcessor;
 
@@ -112,6 +113,11 @@ public class TxPoWMiner extends MessageProcessor {
 			
 			//Calculate TxPoWID
 			txpow.calculateTXPOWID();
+			
+			//Make a log..
+			if(txpow.isTransaction()) {
+				MinimaLogger.log("Transaction Mined : "+txpow.getTxPoWID());
+			}
 			
 			//Post a message.. Mining Finished
 			Message miningend = new Message(Main.MAIN_MINING);
@@ -215,7 +221,7 @@ public class TxPoWMiner extends MessageProcessor {
 	/**
 	 * Mine a TxPoW - Used to Mine Maxima Messages
 	 */
-	public synchronized void MineTxPoW(TxPoW zTxPoW) {
+	public boolean MineMaxTxPoW(TxPoW zTxPoW, long zTimeLimit) {
 		
 		//Hard set the Header Body hash - now we are mining it can never change
 		zTxPoW.setHeaderBodyHash();
@@ -226,9 +232,13 @@ public class TxPoWMiner extends MessageProcessor {
 		//Get the byte data
 		byte[] data = MiniData.getMiniDataVersion(zTxPoW.getTxHeader()).getBytes();
 		
+		//What is the time..
+		long timenow = System.currentTimeMillis();
+		
 		//Cycle until done..
 		MiniNumber finalnonce 	= MiniNumber.ZERO;
 		BigInteger newnonce 	= BigInteger.ZERO;
+		int counter				= 0;
 		while(true) {
 			
 			//Get a nonce to write over the data
@@ -259,6 +269,20 @@ public class TxPoWMiner extends MessageProcessor {
 				
 				break;
 			}
+			
+			//Check time yet..
+			counter++;
+			if(counter>10000) {
+				long timediff = System.currentTimeMillis() - timenow;
+				if(timediff > zTimeLimit) {
+						
+					//No good - took too long..
+					return false;
+				}
+				
+				//Reset
+				counter = 0;
+			}
 		}
 		
 		//Now set the final nonce..
@@ -272,5 +296,8 @@ public class TxPoWMiner extends MessageProcessor {
 
 		//Remove the coins from our mining list
 		removeMiningCoins(zTxPoW);
+		
+		//Found it..
+		return true;
 	}
 }

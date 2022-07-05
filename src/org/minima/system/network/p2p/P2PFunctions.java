@@ -2,10 +2,14 @@ package org.minima.system.network.p2p;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
@@ -48,6 +52,25 @@ public class P2PFunctions {
     public static final String P2P_MESSAGE = "P2P_MESSAGE";
 
     /**
+     * A list of Network Interfaces
+     */
+    private static Set<String> mLocalAddresses = null;
+    public static Set<String> getLocalAddresses() {
+    	if(mLocalAddresses == null) {
+    		try {
+				mLocalAddresses = getAllNetworkInterfaceAddresses();
+			} catch (SocketException e) {
+				mLocalAddresses = new HashSet<String>();
+				mLocalAddresses.add("localhost");
+				mLocalAddresses.add("127.0.0.1");
+				mLocalAddresses.add("127.0.1.1");
+			}
+    	}
+    	
+    	return mLocalAddresses;
+    }
+    
+    /**
      * Connect to a Host and port if we don't already have a pending connection
      */
     public static void connect(String zHost, int zPort) {
@@ -68,7 +91,7 @@ public class P2PFunctions {
 
         boolean doConnect = true;
         try {
-            Set<String> localAddresses = getAllNetworkInterfaceAddresses();
+            Set<String> localAddresses = getLocalAddresses();
             if (localAddresses.contains(zHost) || zHost.startsWith("127")){
                 doConnect = false;
             }
@@ -174,7 +197,7 @@ public class P2PFunctions {
         }
     }
 
-    public static Set<String> getAllNetworkInterfaceAddresses() throws SocketException {
+    private static Set<String> getAllNetworkInterfaceAddresses() throws SocketException {
         Enumeration<NetworkInterface> nets = NetworkInterface.getNetworkInterfaces();
         Set<String> hostnames = new HashSet<>();
         for (NetworkInterface nif: Collections.list(nets)){

@@ -1,13 +1,6 @@
 package org.minima.system.network.maxima;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.InetSocketAddress;
-import java.net.Socket;
 import java.security.KeyPair;
 import java.util.ArrayList;
 import java.util.Random;
@@ -18,7 +11,6 @@ import org.minima.database.maxima.MaximaDB;
 import org.minima.database.maxima.MaximaHost;
 import org.minima.database.userprefs.UserDB;
 import org.minima.objects.Address;
-import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
@@ -135,6 +127,7 @@ public class MaximaManager extends MessageProcessor {
 	MiniData mMLSPublic;
 	MiniData mMLSPrivate;
 	String mMaximaMLSAddress;
+	boolean mHaveContacts = false;
 	
 	private boolean mInited 	= false;
 	public boolean mMaximaLogs 	= false;
@@ -152,9 +145,8 @@ public class MaximaManager extends MessageProcessor {
 	public MaximaManager() {
 		super("MAXIMA");
 		
-		mMaxSender = new MaxMsgHandler();
-		
-		mMaxContacts = new MaximaContactManager(this);
+		mMaxSender 		= new MaxMsgHandler(this);
+		mMaxContacts 	= new MaximaContactManager(this);
 		
 		PostMessage(MAXIMA_INIT);
 	}
@@ -173,6 +165,10 @@ public class MaximaManager extends MessageProcessor {
 	
 	public String getMaximaIdentity() {
 		return mMaximaAddress;
+	}
+	
+	public String getMaximaMLSIdentity() {
+		return mMaximaMLSAddress;
 	}
 	
 	public MiniData getPublicKey() {
@@ -378,9 +374,20 @@ public class MaximaManager extends MessageProcessor {
 				mlspack.addValidPublicKey(pubkey);
 			}
 			
-			//Send the message - to BOTH hosts.. old and new
-			PostMessage(maxima.createSendMessage(getMLSHost(),MAXIMA_MLS_SETAPP,MiniData.getMiniDataVersion(mlspack)));
-			PostMessage(maxima.createSendMessage(getOldMLSHost(),MAXIMA_MLS_SETAPP,MiniData.getMiniDataVersion(mlspack)));
+			//No need to send if no contacts - send one to clear then not again
+			if(allcontacts.size() > 0) {
+				//Send the message - to BOTH hosts.. old and new
+				MinimaLogger.log("SEND MLS Update");
+				PostMessage(maxima.createSendMessage(getMLSHost(),MAXIMA_MLS_SETAPP,MiniData.getMiniDataVersion(mlspack)));
+				PostMessage(maxima.createSendMessage(getOldMLSHost(),MAXIMA_MLS_SETAPP,MiniData.getMiniDataVersion(mlspack)));
+				mHaveContacts = true;
+			}else {
+				if(mHaveContacts) {
+					PostMessage(maxima.createSendMessage(getMLSHost(),MAXIMA_MLS_SETAPP,MiniData.getMiniDataVersion(mlspack)));
+					PostMessage(maxima.createSendMessage(getOldMLSHost(),MAXIMA_MLS_SETAPP,MiniData.getMiniDataVersion(mlspack)));
+				}
+				mHaveContacts = false;
+			}
 			
 		}else if(zMessage.getMessageType().equals(MAXIMA_CONNECTED)) {
 		
@@ -498,35 +505,33 @@ public class MaximaManager extends MessageProcessor {
 					MinimaLogger.log("MAXIMA outgoing disconnection : "+nioc.getFullAddress()+" "+reconnect);
 				}
 				
-				//Do we need to update Users who contact us through them..
-				if(!reconnect) {
+				//Ok - lets reset contacts that use this host
+				String host = nioc.getFullAddress();
+				
+				//Which contacts used that host - reassign them
+				ArrayList<MaximaContact> allcontacts = maxdb.getAllContacts();
+				for(MaximaContact contact : allcontacts) {
 					
-					//Ok - lets reset contacts that use this host
-					String host = nioc.getFullAddress();
+					//Only reset those that use this address
+					if(contact.getMyAddress().contains(host)) {
 					
-					//Which contacts used that host - reassign them
-					ArrayList<MaximaContact> allcontacts = maxdb.getAllContacts();
-					for(MaximaContact contact : allcontacts) {
+						MinimaLogger.log("MAXIMA Updating contact on disconnected host : "+contact.getName());
 						
-						//Only reset those that use this address
-						if(contact.getMyAddress().contains(host)) {
+						//Update them with a new address..
+						String publickey = contact.getPublicKey();
+						String address	 = contact.getCurrentAddress();
 						
-							MinimaLogger.log("MAXIMA Updating contact on disconnected host : "+contact.getName());
-							
-							//Update them with a new address..
-							String publickey = contact.getPublicKey();
-							String address	 = contact.getCurrentAddress();
-							
-							//Now send a message updating them
-							Message update = new Message(MaximaContactManager.MAXCONTACTS_UPDATEINFO);
-							update.addString("publickey", publickey);
-							update.addString("address", address);
-							
-							getContactsManager().PostMessage(update);
-						}
+						//Now send a message updating them
+						Message update = new Message(MaximaContactManager.MAXCONTACTS_UPDATEINFO);
+						update.addString("publickey", publickey);
+						update.addString("address", address);
+						
+						getContactsManager().PostMessage(update);
 					}
-					
-					//Delete from Hosts DB
+				}
+				
+				//Delete from Hosts DB
+				if(!reconnect) {
 					maxdb.deleteHost(nioc.getFullAddress());
 				}
 			}
@@ -743,6 +748,9 @@ public class MaximaManager extends MessageProcessor {
 						udb.setString(MAXIMA_OLDMLSHOST, mMLSService.getOldMLSServer());
 						udb.setString(MAXIMA_MLSHOST, mMLSService.getMLSServer());
 						udb.setNumber(MAXIMA_MLSTIME, new MiniNumber(mMLSService.getMLSTime()));	
+								
+						//Save this..
+						MinimaDB.getDB().saveUserDB();
 					}
 				}
 				
@@ -801,145 +809,6 @@ public class MaximaManager extends MessageProcessor {
 	private void maximaMessageStatus(NIOClient zClient, MiniData zStatus) throws IOException {
 		//Send this Maxima response
 		NIOManager.sendNetworkMessage(zClient.getUID(), NIOMessage.MSG_PING, zStatus);
-	}
-	
-	public static MiniData constructMaximaData(Message zMessage) throws Exception {
-		//Message details
-		String publickey	= zMessage.getString("publickey");
-		MiniData topubk 	= new MiniData(publickey);
-		
-		String tohost 		= zMessage.getString("tohost");
-		int toport			= zMessage.getInteger("toport");
-		
-		//Get the Maxima Message
-		MaximaMessage maxima 	= (MaximaMessage) zMessage.getObject("maxima");
-		
-		//Next Sign the Message and create the MaximaInternal message
-		MiniData maxdata		= MiniData.getMiniDataVersion(maxima);
-		MiniData privatekey		= (MiniData) zMessage.getObject("myprivatekey");
-		byte[] sigBytes  		= SignVerify.sign(privatekey.getBytes(), maxdata.getBytes());
-		
-		MaximaInternal msign 	= new MaximaInternal();
-		msign.mFrom				= (MiniData) zMessage.getObject("mypublickey");
-		msign.mData				= maxdata;
-		msign.mSignature		= new MiniData(sigBytes);
-		
-		//And finally create the encrypted MaximaPackage
-		MiniData maxpkg			= MiniData.getMiniDataVersion(msign);
-		
-		//Now Encrypt the Whole Thing..
-		CryptoPackage cp = new CryptoPackage();
-		cp.encrypt(maxpkg.getBytes(), topubk.getBytes());
-		
-		//Now Construct a MaximaPackage
-		MaximaPackage mp = new MaximaPackage( topubk , cp.getCompleteEncryptedData());
-		
-		//Time it..
-		long timenow = System.currentTimeMillis();
-		
-		//Now create a MaxTxPow
-		MaxTxPoW mxtxpow = MaxTxPoW.createMaxTxPoW(mp);
-		
-		//Message if took a long time
-		long timediff = System.currentTimeMillis() - timenow;
-		if(timediff>5000) {
-			MinimaLogger.log("Maxima Construct took more than 5 seconds.. "+timediff);
-		}
-		
-		//Create the Network Message
-		return NIOManager.createNIOMessage(NIOMessage.MSG_MAXIMA_TXPOW, mxtxpow);
-	}
-	
-	public static MiniData sendMaxPacket(String zHost, int zPort, MiniData zMaxMessage) throws IOException {
-		
-		//Open the socket..
-		Socket sock = new Socket();
-
-		//3 seconds to connect
-		sock.connect(new InetSocketAddress(zHost, zPort), 5000);
-		
-		//10 seconds to read
-		sock.setSoTimeout(20000);
-		
-		//Create the streams..
-		OutputStream out 		= sock.getOutputStream();
-		DataOutputStream dos 	= new DataOutputStream(out);
-		
-		InputStream in			= sock.getInputStream();
-		DataInputStream dis 	= new DataInputStream(in);
-		
-		//Write the data
-		zMaxMessage.writeDataStream(dos);
-		dos.flush();
-		
-		//Now get a response.. should be ONE_ID.. give it 10 second max.. ( might get a block..)
-		MiniData valid = MAXIMA_RESPONSE_FAIL;
-		long maxtime = System.currentTimeMillis() + 10000;
-		while(System.currentTimeMillis() < maxtime) {
-			MiniData resp = MiniData.ReadFromStream(dis);
-			if(resp.isEqual(MAXIMA_RESPONSE_OK)) {
-				valid = resp;
-				break;
-			}else if(resp.isEqual(MAXIMA_RESPONSE_FAIL)) {
-				valid = resp;
-				break;
-			}else if(resp.isEqual(MAXIMA_RESPONSE_TOOBIG)) {
-				valid = resp;
-				break;
-			}else if(resp.isEqual(MAXIMA_RESPONSE_UNKNOWN)) {
-				valid = resp;
-				break;
-			}else if(resp.isEqual(MAXIMA_RESPONSE_WRONGHASH)) {
-				valid = resp;
-				break;
-			}else {
-				
-				//Is it an MLS Get Package..
-				try {
-					
-					ByteArrayInputStream bais 	= new ByteArrayInputStream(resp.getBytes());
-					DataInputStream respdis 	= new DataInputStream(bais);
-					
-					//What Type..
-					MiniByte type = MiniByte.ReadFromStream(respdis);
-					MiniData data = MiniData.ReadFromStream(respdis);
-					
-					//Convert
-					MLSPacketGETResp mls = MLSPacketGETResp.convertMiniDataVersion(data);
-					
-					//Ok - it's read
-					valid = MAXIMA_RESPONSE_OK;
-					
-					//Check ther Random UID - security
-					if(!mls.getRandomUID().equals(MLS_RANDOM_UID)) {
-						MinimaLogger.log("Invalid MLS GET RandomUID! from "+sock.getInetAddress().toString());
-						valid = MAXIMA_RESPONSE_FAIL;
-					
-					}else{
-						//Post this on Maxima..
-						Message max = new Message(MAXIMA_MLSGET_RESP);
-						max.addObject("mlsget", mls);
-						Main.getInstance().getMaxima().PostMessage(max);
-					}
-					
-					respdis.close();
-					bais.close();
-					
-					break;
-					
-				}catch(Exception exc){
-					MinimaLogger.log("Could not convert MLS GET Package : "+exc);
-				}
-			}
-		}
-		
-		//Close the streams..
-		dis.close();
-		in.close();
-		dos.close();
-		out.close();
-		
-		return valid;
 	}
 	
 	private void createMaximaKeys() throws Exception {

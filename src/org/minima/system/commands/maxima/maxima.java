@@ -12,6 +12,7 @@ import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
+import org.minima.system.network.maxima.MaxMsgHandler;
 import org.minima.system.network.maxima.MaximaManager;
 import org.minima.system.network.maxima.message.MaximaMessage;
 import org.minima.system.params.GeneralParams;
@@ -188,11 +189,15 @@ public class maxima extends Command {
 				long timenow = System.currentTimeMillis();
 				
 				//Create the packet
-				MiniData maxpacket = MaximaManager.constructMaximaData(sender);
+				MiniData maxpacket = MaxMsgHandler.constructMaximaData(sender);
+				if(maxpacket == null) {
+					throw new Exception("Could not build Maxima message in time..");
+				}
+				
 				long creation = System.currentTimeMillis();
 				
 				//And Send it..
-				MiniData validresp = MaximaManager.sendMaxPacket(tohost, toport, maxpacket);
+				MiniData validresp = MaxMsgHandler.sendMaxPacket(tohost, toport, maxpacket);
 				long sending = System.currentTimeMillis();
 				
 				boolean valid = true;

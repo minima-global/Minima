@@ -125,7 +125,7 @@ public class MDSCompleteHandler implements Runnable {
 			String minidappid = mMDS.convertSessionID(uid);
 			if(minidappid == null) {
 				// send HTTP Headers
-				out.println("HTTP/1.1 200 OK");
+				out.println("HTTP/1.1 500 OK");
 				out.println("Server: HTTP SQL Server from Minima : 1.3");
 				out.println("Date: " + new Date());
 				out.println("Content-type: text/plain");
@@ -196,8 +196,9 @@ public class MDSCompleteHandler implements Runnable {
 					//Invalid command
 					JSONObject error = new JSONObject();
 					error.put("status", false);
+					
+					result = error.toString(); 
 				}
-				
 				
 				//Calculate the size of the response
 				int finallength = result.getBytes(MiniString.MINIMA_CHARSET).length;

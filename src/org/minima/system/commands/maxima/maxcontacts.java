@@ -12,6 +12,7 @@ import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
+import org.minima.system.network.maxima.MaxMsgHandler;
 import org.minima.system.network.maxima.MaximaContactManager;
 import org.minima.system.network.maxima.MaximaManager;
 import org.minima.system.network.maxima.message.MaximaMessage;
@@ -128,10 +129,13 @@ public class maxcontacts extends Command {
 			json.put("msgid", sender.getString("msgid"));
 			try {
 				//Create the packet
-				MiniData maxpacket = MaximaManager.constructMaximaData(sender);
-			
+				MiniData maxpacket = MaxMsgHandler.constructMaximaData(sender);
+				if(maxpacket == null) {
+					throw new Exception("Could not build Maxima message in time..");
+				}
+				
 				//And Send it..
-				MiniData validresp = MaximaManager.sendMaxPacket(tohost, toport, maxpacket);
+				MiniData validresp = MaxMsgHandler.sendMaxPacket(tohost, toport, maxpacket);
 				boolean valid = true;
 				if(!validresp.isEqual(MaximaManager.MAXIMA_RESPONSE_OK)) {
 					valid = false;

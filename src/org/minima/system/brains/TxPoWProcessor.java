@@ -20,7 +20,6 @@ import org.minima.utils.MinimaLogger;
 import org.minima.utils.Stack;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageProcessor;
-import org.minima.utils.messages.TimerMessage;
 
 public class TxPoWProcessor extends MessageProcessor {
 	

@@ -1,14 +1,14 @@
 package org.minima.system.network.p2p;
 
+import java.net.InetSocketAddress;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.minima.objects.Greeting;
 import org.minima.system.network.minima.NIOManager;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageProcessor;
 import org.minima.utils.messages.TimerMessage;
-
-import java.net.InetSocketAddress;
-import java.util.HashSet;
-import java.util.Set;
 
 public class P2PPeersChecker extends MessageProcessor {
 
@@ -64,7 +64,7 @@ public class P2PPeersChecker extends MessageProcessor {
             // When a new peer address is added - check if the address is already in the verified
             // or unverified peers list. If it is not, add to the unverified list and request a check if it's contactable
             InetSocketAddress address = (InetSocketAddress) zMessage.getObject("address");
-            Set<String> localAddresses = P2PFunctions.getAllNetworkInterfaceAddresses();
+            Set<String> localAddresses = P2PFunctions.getLocalAddresses();
 
             if (!localAddresses.contains(address.getHostString()) && !address.getHostString().startsWith("127")) {
                 if (!unverifiedPeers.contains(address) && !verifiedPeers.contains(address)) {
