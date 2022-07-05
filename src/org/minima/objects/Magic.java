@@ -35,9 +35,9 @@ public class Magic implements Streamable {
 	/**
 	 * Minimum acceptable PoW per TxPoW - Also a HARD limit
 	 * 
-	 * 0.1 MHash is the minimum..
+	 * 10 KHashes is the minimum..also for Maxima messages
 	 */
-	public static final MiniNumber MIN_HASHES 		= new MiniNumber(100000);
+	public static final MiniNumber MIN_HASHES 		= new MiniNumber(10000);
 	public static final BigInteger MIN_TXPOW_VAL 	= Crypto.MAX_VAL.divide(MIN_HASHES.getAsBigInteger());
 	public static final MiniData MIN_TXPOW_WORK 	= new MiniData(MIN_TXPOW_VAL);
 	
