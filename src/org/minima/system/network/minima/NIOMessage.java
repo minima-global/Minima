@@ -660,8 +660,11 @@ public class NIOMessage implements Runnable {
 				//Are there any blocks..
 				if(syncibd.getTxBlocks().size() > 0) {
 				
+					//Top block
+					MiniNumber top = syncibd.getTxBlocks().get(0).getTxPoW().getBlockNumber(); 
+					
 					//And post this on..
-					MinimaLogger.log("[+] Received Sync IBD. size:"+MiniFormat.formatSize(data.length)+" blocks:"+syncibd.getTxBlocks().size());
+					MinimaLogger.log("[+] Received Sync IBD. size:"+MiniFormat.formatSize(data.length)+" blocks:"+syncibd.getTxBlocks().size()+" top:"+top);
 					
 					//Send to the Processor
 					Main.getInstance().getTxPoWProcessor().postProcessSyncIBD(syncibd, mClientUID);
