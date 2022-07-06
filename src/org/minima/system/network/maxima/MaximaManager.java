@@ -459,9 +459,7 @@ public class MaximaManager extends MessageProcessor {
 					PostMessage(check);
 					
 				}else {
-					
 					MinimaLogger.log("TIMED Maxima connect as no chain yet.. : "+nioc.getFullAddress());
-					
 					//With Delay
 					TimerMessage check = new TimerMessage(10000,MAXIMA_SENDCHKCONNECT);
 					check.addString("to", to);
@@ -507,6 +505,9 @@ public class MaximaManager extends MessageProcessor {
 				
 				//Ok - lets reset contacts that use this host
 				String host = nioc.getFullAddress();
+			
+				//A list of all your contacts public keys
+				ArrayList<String> validpubkeys = new ArrayList<>();
 				
 				//Which contacts used that host - reassign them
 				ArrayList<MaximaContact> allcontacts = maxdb.getAllContacts();
@@ -528,14 +529,37 @@ public class MaximaManager extends MessageProcessor {
 						
 						getContactsManager().PostMessage(update);
 					}
+					
+					//Store for the MLS
+					validpubkeys.add(contact.getPublicKey());
 				}
 				
 				//Delete from Hosts DB
 				if(!reconnect) {
 					maxdb.deleteHost(nioc.getFullAddress());
 				}
+			
+				//Create an MLSPacket
+				MLSPacketSET mlspack = new MLSPacketSET(getRandomMaximaAddress());
+				for(String pubkey : validpubkeys) {
+					mlspack.addValidPublicKey(pubkey);
+				}
+				
+				//Refresh My MLS hosts..
+				if(allcontacts.size() > 0) {
+					//Send the message - to BOTH hosts.. old and new
+					PostMessage(maxima.createSendMessage(getMLSHost(),MAXIMA_MLS_SETAPP,MiniData.getMiniDataVersion(mlspack)));
+					PostMessage(maxima.createSendMessage(getOldMLSHost(),MAXIMA_MLS_SETAPP,MiniData.getMiniDataVersion(mlspack)));
+					mHaveContacts = true;
+				}else {
+					if(mHaveContacts) {
+						PostMessage(maxima.createSendMessage(getMLSHost(),MAXIMA_MLS_SETAPP,MiniData.getMiniDataVersion(mlspack)));
+						PostMessage(maxima.createSendMessage(getOldMLSHost(),MAXIMA_MLS_SETAPP,MiniData.getMiniDataVersion(mlspack)));
+					}
+					mHaveContacts = false;
+				}
 			}
-		
+			
 		}else if(zMessage.getMessageType().equals(MAXIMA_CTRLMESSAGE)) {
 			
 			//Received a control message from a client
