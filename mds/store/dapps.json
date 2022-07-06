@@ -1,30 +1,16 @@
 {
 	"name":"Minima Global",
 	"description":"Official Minima DAPPs",
-	"icon":"http://10.0.2.2/mysites/dappstore/berserkyo.png",
+	"icon":"https://raw.githubusercontent.com/minima-global/Minima/dev-spartacus/mds/store/minima_logo.png",
 	"version":"0.1",
 	
 	"dapps":[
 		{
-			"file":"http://10.0.2.2/mysites/dappstore/terminal/terminal-1.91.mds.zip",
+			"file":"https://raw.githubusercontent.com/minima-global/Minima/dev-spartacus/mds/store/files/terminal/terminal-1.91.mds.zip",
+			"icon":"https://raw.githubusercontent.com/minima-global/Minima/dev-spartacus/icons/terminal.png",
 			"name":"Terminal",
-			"icon":"http://10.0.2.2/mysites/dappstore/terminal/terminal.png",
 			"description": "Terminal CLI for Minima",
 			"version" : "1.91"
-		},
-		{
-			"file":"terminal-1.91.mds.zip",
-			"name":"Terminal2",
-			"icon":"http://10.0.2.2/mysites/dappstore/terminal/terminal.png",
-			"description": "Terminal CLI for Minima",
-			"version" : "1.91"
-		},
-		{
-			"file":"terminal-1.91.mds.zip",
-			"name":"Terminal3",
-			"icon":"http://10.0.2.2/mysites/dappstore/terminal/terminal.png",
-			"description": "Terminal CLI for Minima",
-			"version" : "1.91"
-		}	
+		}
 	]
 }
