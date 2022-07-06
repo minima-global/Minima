@@ -104,7 +104,6 @@ public class P2PPeersChecker extends MessageProcessor {
                     }
                 }
                  
-                
                 //What to do now..
                 if (validversion) {
                     unverifiedPeers.remove(address);
@@ -132,8 +131,11 @@ public class P2PPeersChecker extends MessageProcessor {
                     Message msg = new Message(P2PManager.P2P_REMOVE_PEER).addObject("address", address);
                     p2PManager.PostMessage(msg);
                 }
+                
             } else {
-                TimerMessage tmsg = new TimerMessage(1_000, PEERS_CHECKPEERS);
+            	
+            	//Check again in 10 seconds
+                TimerMessage tmsg = new TimerMessage(10_000, PEERS_CHECKPEERS);
                 tmsg.addObject("address", address);
                 PostMessage(tmsg);
             }
@@ -144,7 +146,6 @@ public class P2PPeersChecker extends MessageProcessor {
                 Message msg = new Message(PEERS_CHECKPEERS).addObject("address", address);
                 PostMessage(msg);
             }
-
 
             //Do it again ..
             PostTimerMessage(new TimerMessage(PEERS_LOOP_TIMER, PEERS_LOOP));
