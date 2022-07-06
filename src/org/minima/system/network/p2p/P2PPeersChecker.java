@@ -6,6 +6,8 @@ import java.util.Set;
 
 import org.minima.objects.Greeting;
 import org.minima.system.network.minima.NIOManager;
+import org.minima.system.params.GeneralParams;
+import org.minima.system.params.GlobalParams;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageProcessor;
 import org.minima.utils.messages.TimerMessage;
@@ -80,8 +82,31 @@ public class P2PPeersChecker extends MessageProcessor {
         } else if (zMessage.getMessageType().equals(PEERS_CHECKPEERS)) {
             InetSocketAddress address = (InetSocketAddress) zMessage.getObject("address");
             if (P2PFunctions.getAllConnectedConnections().size() > 0) {
-                Greeting greet = NIOManager.sendPingMessage(address.getHostString(), address.getPort(), true);
+                
+            	//Get a Greeting if possible
+            	Greeting greet = NIOManager.sendPingMessage(address.getHostString(), address.getPort(), true);
+                
+                //Check is the correct version..
+                boolean validversion = false;
                 if (greet != null) {
+                
+                	boolean testcheck = true;
+                    String greetstr = greet.getVersion().toString();
+                    if(GeneralParams.TEST_PARAMS && !greetstr.contains("TEST")) {
+                        testcheck = false;
+                    }else if(!GeneralParams.TEST_PARAMS && greetstr.contains("TEST")) {
+                        testcheck = false;
+                    } 
+                    
+                    //Is it correct
+                    if(testcheck && greetstr.startsWith(GlobalParams.MINIMA_BASE_VERSION)) {
+                    	validversion = true;
+                    }
+                }
+                 
+                
+                //What to do now..
+                if (validversion) {
                     unverifiedPeers.remove(address);
                     if (verifiedPeers.size() < 250) {
                         verifiedPeers.add(address);
@@ -89,7 +114,7 @@ public class P2PPeersChecker extends MessageProcessor {
                         p2PManager.PostMessage(msg);
                     }
                 } else {
-                    if (verifiedPeers.contains(address)) {
+                	if (verifiedPeers.contains(address)) {
                         verifiedPeers.remove(address);
                         if (verifiedPeers.size() == 0) {
                             P2PFunctions.log_node_runner("[-] All addresses removed from verified peers list - Check node has internet connection");
@@ -103,6 +128,7 @@ public class P2PPeersChecker extends MessageProcessor {
                     } else {
                         unverifiedPeers.remove(address);
                     }
+                    
                     Message msg = new Message(P2PManager.P2P_REMOVE_PEER).addObject("address", address);
                     p2PManager.PostMessage(msg);
                 }
