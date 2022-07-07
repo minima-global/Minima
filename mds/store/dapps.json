@@ -7,7 +7,7 @@
 	"dapps":[
 		{
 			"file":"https://raw.githubusercontent.com/minima-global/Minima/dev-spartacus/mds/store/files/terminal/terminal-1.91.mds.zip",
-			"icon":"https://raw.githubusercontent.com/minima-global/Minima/dev-spartacus/icons/terminal.png",
+			"icon":"https://raw.githubusercontent.com/minima-global/Minima/dev-spartacus/mds/store/icons/terminal.png",
 			"name":"Terminal",
 			"description": "Terminal CLI for Minima",
 			"version" : "1.91"
