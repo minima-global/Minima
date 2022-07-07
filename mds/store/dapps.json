@@ -22,7 +22,7 @@
 		{
 			"file":"https://raw.githubusercontent.com/minima-global/Minima/dev-spartacus/mds/store/files/wallet-0.1.5.mds.zip",
 			"icon":"https://raw.githubusercontent.com/minima-global/Minima/dev-spartacus/mds/store/icons/wallet.png",
-			"name":"News Feed",
+			"name":"Wallet",
 			"description": "Official Minima wallet",
 			"version" : "0.1.5"
 		},
