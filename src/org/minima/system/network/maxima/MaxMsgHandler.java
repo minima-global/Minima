@@ -13,6 +13,7 @@ import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.system.Main;
 import org.minima.system.network.maxima.message.MaxTxPoW;
+import org.minima.system.network.maxima.message.MaximaErrorMsg;
 import org.minima.system.network.maxima.message.MaximaInternal;
 import org.minima.system.network.maxima.message.MaximaMessage;
 import org.minima.system.network.maxima.message.MaximaPackage;
@@ -175,10 +176,14 @@ public class MaxMsgHandler extends MessageProcessor {
 				break;
 			}else{
 				
+				//Try a couple of different messages..
+				boolean found 	= true;
+				byte[] msgdata 	= resp.getBytes();	 
+				
 				//Is it an MLS Get Package..
 				try {
 					
-					ByteArrayInputStream bais 	= new ByteArrayInputStream(resp.getBytes());
+					ByteArrayInputStream bais 	= new ByteArrayInputStream(msgdata);
 					DataInputStream respdis 	= new DataInputStream(bais);
 					
 					//What Type..
@@ -209,7 +214,39 @@ public class MaxMsgHandler extends MessageProcessor {
 					break;
 					
 				}catch(Exception exc){
-					MinimaLogger.log("Could not convert MLS GET Package : "+exc);
+					found = false;
+					//MinimaLogger.log("Could not convert MLS GET Package : "+exc);
+				}
+				
+				//Is it an error Message
+				if(!found) {
+					
+					try {
+						ByteArrayInputStream bais 	= new ByteArrayInputStream(msgdata);
+						DataInputStream respdis 	= new DataInputStream(bais);
+						
+						//What Type..
+						MiniByte type = MiniByte.ReadFromStream(respdis);
+						MiniData data = MiniData.ReadFromStream(respdis);
+						
+						//Convert
+						MaximaErrorMsg error = MaximaErrorMsg.convertMiniDataVersion(data);
+						
+						//Print this Out!
+						MinimaLogger.log("MAXIMA SEND ERROR "+error.getError().toString());
+						
+						//Ok - it's read
+						valid = MaximaManager.MAXIMA_RESPONSE_FAIL;
+						
+						respdis.close();
+						bais.close();
+						
+						break;
+						
+					}catch(Exception exc){
+						found = false;
+						//MinimaLogger.log("Could not convert MLS GET Package : "+exc);
+					}
 				}
 			}
 		}
