@@ -6,11 +6,18 @@
 	
 	"dapps":[
 		{
-			"file":"https://raw.githubusercontent.com/minima-global/Minima/dev-spartacus/mds/store/files/terminal/terminal-1.91.mds.zip",
+			"file":"https://raw.githubusercontent.com/minima-global/Minima/dev-spartacus/mds/store/files/terminal-1.91.mds.zip",
 			"icon":"https://raw.githubusercontent.com/minima-global/Minima/dev-spartacus/mds/store/icons/terminal.png",
 			"name":"Terminal",
 			"description": "Terminal CLI for Minima",
 			"version" : "1.91"
+		},
+		{
+			"file":"https://raw.githubusercontent.com/minima-global/Minima/dev-spartacus/mds/store/files/news-1.0.mds.zip",
+			"icon":"https://raw.githubusercontent.com/minima-global/Minima/dev-spartacus/mds/store/icons/news.png",
+			"name":"Nerws Feed",
+			"description": "Keep up to date with Minima News",
+			"version" : "1.0"
 		}
 	]
 }
