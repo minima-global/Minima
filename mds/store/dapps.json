@@ -2,7 +2,7 @@
 	"name":"Minima Global",
 	"description":"Official Minima DAPPs",
 	"icon":"https://raw.githubusercontent.com/minima-global/Minima/dev-spartacus/mds/store/minima_logo.png",
-	"version":"0.1",
+	"version":"1.0",
 	
 	"dapps":[
 		{
@@ -17,14 +17,14 @@
 			"icon":"https://raw.githubusercontent.com/minima-global/Minima/dev-spartacus/mds/store/icons/block.png",
 			"name":"Block",
 			"description": "Explore the Minima blockchain",
-			"version" : "1.0"
+			"version" : "0.1.5"
 		},
 		{
 			"file":"https://raw.githubusercontent.com/minima-global/Minima/dev-spartacus/mds/store/files/wallet-0.1.5.mds.zip",
 			"icon":"https://raw.githubusercontent.com/minima-global/Minima/dev-spartacus/mds/store/icons/wallet.png",
 			"name":"News Feed",
 			"description": "Official Minima wallet",
-			"version" : "1.0"
+			"version" : "0.1.5"
 		},
 		{
 			"file":"https://raw.githubusercontent.com/minima-global/Minima/dev-spartacus/mds/store/files/terminal-1.91.mds.zip",
