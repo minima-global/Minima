@@ -19,11 +19,16 @@ import org.minima.utils.MinimaLogger;
 
 public class SSLManager {
 
+	public static File getSSLFolder() {
+		return new File(GeneralParams.DATA_FOLDER,"ssl"); 
+	}
+	
 	public static File getKeystoreFile() {
 		//Where are we storing the key file..
-		File sslkeyfolder 	= new File(GeneralParams.DATA_FOLDER,"ssl"); 
+		File sslkeyfolder = getSSLFolder(); 
 		sslkeyfolder.mkdirs();
 		
+		//The actual Key Store..
 		File sslkeyfile 	= new File(sslkeyfolder,"sslkeystore"); 
 		
 		return sslkeyfile;

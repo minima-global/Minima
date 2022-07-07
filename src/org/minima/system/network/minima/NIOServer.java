@@ -14,6 +14,7 @@ import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.minima.objects.base.MiniData;
+import org.minima.system.Main;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageProcessor;
@@ -124,8 +125,23 @@ public class NIOServer implements Runnable {
 	        // Configure the socket to be non-blocking as part of the new-IO library (NIO)
 	        serversocket.configureBlocking(false);
 	
+	        try {
+	        	
+	            // Bind our socket to the local port
+	            serversocket.socket().bind(new InetSocketAddress(addr.getHostName(), mPort));
+            
+	        }catch(IOException exc) {
+                
+	        	//Serious enough to shut down..
+	        	MinimaLogger.log("[!] NIO ERROR - MAIN PORT " + mPort + " ALREADY IN USE. SHUTTING DOWN");
+                
+                //Shut down..
+                System.exit(1);
+                return;
+            }
+        
 	        // Bind our socket to the local port
-	        serversocket.socket().bind(new InetSocketAddress(addr.getHostName(), mPort));
+//	        serversocket.socket().bind(new InetSocketAddress(addr.getHostName(), mPort));
 	
 	        // Reuse the address so more than one connection can come in
 	        serversocket.socket().setReuseAddress(true);
