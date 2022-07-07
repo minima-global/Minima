@@ -17,6 +17,7 @@ import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
 import org.minima.system.commands.maxima.maxima;
 import org.minima.system.network.maxima.message.MaxTxPoW;
+import org.minima.system.network.maxima.message.MaximaErrorMsg;
 import org.minima.system.network.maxima.message.MaximaInternal;
 import org.minima.system.network.maxima.message.MaximaMessage;
 import org.minima.system.network.maxima.message.MaximaPackage;
@@ -627,205 +628,224 @@ public class MaximaManager extends MessageProcessor {
 			//Private key tpo decode the message
 			MiniData privatekey = null;
 			
-			//The pubkey it is encrypted with
-			String tomaxima = mpkg.mTo.to0xString();
+			//Put the WHOLE thing in a try catch incase there is an ERROR.. remote debugging..
+			try {
 			
-			//Is it straight to us..
-			if(mpkg.mTo.equals(mPublic)) {
-				//It's directly sent to us..
-				privatekey = mPrivate;
-			}else if(mpkg.mTo.equals(mMLSPublic)) {
-				//It's an MLS message
-				privatekey = mMLSPrivate;
-			} 
-			
-			//Is it for us - check the Maxhosts..
-			if(privatekey == null) {
-				//Get the maxima Host
-				MaximaHost host = maxdb.loadHostFromPublicKey(tomaxima);
-				if(host != null) {
-					privatekey = host.getPrivateKey();
+				//The pubkey it is encrypted with
+				String tomaxima = mpkg.mTo.to0xString();
+				
+				//Is it straight to us..
+				if(mpkg.mTo.equals(mPublic)) {
+					//It's directly sent to us..
+					privatekey = mPrivate;
+				}else if(mpkg.mTo.equals(mMLSPublic)) {
+					//It's an MLS message
+					privatekey = mMLSPrivate;
+				} 
+				
+				//Is it for us - check the Maxhosts..
+				if(privatekey == null) {
+					//Get the maxima Host
+					MaximaHost host = maxdb.loadHostFromPublicKey(tomaxima);
+					if(host != null) {
+						privatekey = host.getPrivateKey();
+					}
 				}
-			}
-			
-			//If we don't find it..
-			if(privatekey == null) {
 				
-				//Forward it to them
-				NIOClient client =  Main.getInstance().getNIOManager().getMaximaUID(tomaxima);
-				
-				//Do we have it
-				if(client != null) {
-					if(mMaximaLogs) {
-						MinimaLogger.log("MAXIMA message forwarded to client : "+tomaxima);
+				//If we don't find it..
+				if(privatekey == null) {
+					
+					//Forward it to them
+					NIOClient client =  Main.getInstance().getNIOManager().getMaximaUID(tomaxima);
+					
+					//Do we have it
+					if(client != null) {
+						if(mMaximaLogs) {
+							MinimaLogger.log("MAXIMA message forwarded to client : "+tomaxima);
+						}
+						
+						//Send to the client we are connected to..
+						NIOManager.sendNetworkMessage(client.getUID(), NIOMessage.MSG_MAXIMA_TXPOW, mxtxpow);
+						
+						//Notify that Client that we received the message.. this makes external client disconnect ( internal just a ping )
+						maximaMessageStatus(nioc,MAXIMA_OK);
+						
+					}else{
+						MinimaLogger.log("MAXIMA message received for Client we are not connected to : "+tomaxima);
+					
+						//Notify that Client of the fail.. this makes external client disconnect ( internal just a ping )
+						maximaMessageStatus(nioc,MAXIMA_UNKNOWN);
 					}
 					
-					//Send to the client we are connected to..
-					NIOManager.sendNetworkMessage(client.getUID(), NIOMessage.MSG_MAXIMA_TXPOW, mxtxpow);
-					
-					//Notify that Client that we received the message.. this makes external client disconnect ( internal just a ping )
-					maximaMessageStatus(nioc,MAXIMA_OK);
-					
-				}else{
-					MinimaLogger.log("MAXIMA message received for Client we are not connected to : "+tomaxima);
+					return;
+				}
 				
+				//Decrypt the data
+				CryptoPackage cp = new CryptoPackage();
+				cp.ConvertMiniDataVersion(mpkg.mData);
+				byte[] data = cp.decrypt(privatekey.getBytes());
+				
+				//Now get the Decrypted data..
+				MaximaInternal mm = MaximaInternal.ConvertMiniDataVersion(new MiniData(data));
+				
+				//Check the Signature..
+				boolean valid = SignVerify.verify(mm.mFrom.getBytes(), mm.mData.getBytes(), mm.mSignature.getBytes());
+				if(!valid) {
+					MinimaLogger.log("MAXIMA Invalid Signature on message : "+mpkg.mTo.to0xString());
+					
 					//Notify that Client of the fail.. this makes external client disconnect ( internal just a ping )
-					maximaMessageStatus(nioc,MAXIMA_UNKNOWN);
-				}
-				
-				return;
-			}
-			
-			//Decrypt the data
-			CryptoPackage cp = new CryptoPackage();
-			cp.ConvertMiniDataVersion(mpkg.mData);
-			byte[] data = cp.decrypt(privatekey.getBytes());
-			
-			//Now get the Decrypted data..
-			MaximaInternal mm = MaximaInternal.ConvertMiniDataVersion(new MiniData(data));
-			
-			//Check the Signature..
-			boolean valid = SignVerify.verify(mm.mFrom.getBytes(), mm.mData.getBytes(), mm.mSignature.getBytes());
-			if(!valid) {
-				MinimaLogger.log("MAXIMA Invalid Signature on message : "+mpkg.mTo.to0xString());
-				
-				//Notify that Client of the fail.. this makes external client disconnect ( internal just a ping )
-				maximaMessageStatus(nioc,MAXIMA_FAIL);
-				
-				return;
-			}
-			
-			//Now convert the data to a Maxima Message
-			MaximaMessage maxmsg 	= MaximaMessage.ConvertMiniDataVersion(mm.mData);
-			
-			//Check the message is from the person who signed it!
-			if(!maxmsg.mFrom.isEqual(mm.mFrom)) {
-				MinimaLogger.log("MAXIMA Message From field signed by incorrect pubkey  from:"+maxmsg.mFrom.to0xString()+" signed:"+mm.mFrom.to0xString());
-				
-				//Notify that Client of the fail.. this makes external client disconnect ( internal just a ping )
-				maximaMessageStatus(nioc,MAXIMA_FAIL);
-				
-				return;
-			}
-			
-			//Hash the complete message..
-			MiniData hash = Crypto.getInstance().hashObject(mm.mData);
-			
-			//Now create the final JSON..
-			JSONObject maxjson = maxmsg.toJSON();
-			maxjson.put("msgid", hash.to0xString());
-			
-			//Do we log
-			if(mMaximaLogs) {
-				MinimaLogger.log("MAXIMA : "+maxjson.toString());
-			}
-			
-			//Where is it headed
-			String application = (String) maxjson.get("application");
-			
-			//Notify that Client that we received the message.. this makes external client disconnect ( internal just a ping )
-			if(!application.equals(MAXIMA_MLS_GETAPP)) {
-				maximaMessageStatus(nioc,MAXIMA_OK);
-			}
-			
-			//Is it a special contact message
-			if(application.equals(MaximaContactManager.CONTACT_APPLICATION)) {
-				
-				//Process this internally..
-				Message contactmessage = new Message(MaximaContactManager.MAXCONTACTS_RECMESSAGE);
-				contactmessage.addObject("maxmessage", maxjson);
-				getContactsManager().PostMessage(contactmessage);
-				
-				//Update DB - this host is being used..
-				MaximaHost host = maxdb.loadHost(nioc.getFullAddress());
-				if(host != null) {
-					host.updateLastSeen();
-					maxdb.updateHost(host);
-				}
-				
-			}else if(application.equals(MAXIMA_CHKCONECT_APP)) {
-				
-				//Get the Data
-				MiniData maxdata = new MiniData(maxjson.getString("data"));
-				String uid = new String(maxdata.getBytes());
-				
-				//Check Valid..
-				if(!uid.equals(nioc.getUID())) {
-					MinimaLogger.log("INVALID MAXCHECK REC:"+uid+" FROM:"+nioc.getUID());
+					maximaMessageStatus(nioc,MAXIMA_FAIL);
+					
 					return;
 				}
 				
-				MinimaLogger.log("MAXIMA HOST accepted : "+nioc.getFullAddress());
+				//Now convert the data to a Maxima Message
+				MaximaMessage maxmsg 	= MaximaMessage.ConvertMiniDataVersion(mm.mData);
 				
-				//Get the HOST
-				MaximaHost mxhost = maxdb.loadHost(nioc.getFullAddress());
+				//Check the message is from the person who signed it!
+				if(!maxmsg.mFrom.isEqual(mm.mFrom)) {
+					MinimaLogger.log("MAXIMA Message From field signed by incorrect pubkey  from:"+maxmsg.mFrom.to0xString()+" signed:"+mm.mFrom.to0xString());
+					
+					//Notify that Client of the fail.. this makes external client disconnect ( internal just a ping )
+					maximaMessageStatus(nioc,MAXIMA_FAIL);
+					
+					return;
+				}
 				
-				//Now we can use this as one of Our Addresses
-				mxhost.setConnected(1);
-				maxdb.updateHost(mxhost);
+				//Hash the complete message..
+				MiniData hash = Crypto.getInstance().hashObject(mm.mData);
 				
-				//OK.. add to our list
-				if(nioc.isMaximaMLS()) {
-					if(mMLSService.newMLSNode(nioc.getMaximaMLS())) {
-						//Changed.. set new in DB
-						UserDB udb = MinimaDB.getDB().getUserDB();
-						udb.setString(MAXIMA_OLDMLSHOST, mMLSService.getOldMLSServer());
-						udb.setString(MAXIMA_MLSHOST, mMLSService.getMLSServer());
-						udb.setNumber(MAXIMA_MLSTIME, new MiniNumber(mMLSService.getMLSTime()));	
-								
-						//Save this..
-						MinimaDB.getDB().saveUserDB();
+				//Now create the final JSON..
+				JSONObject maxjson = maxmsg.toJSON();
+				maxjson.put("msgid", hash.to0xString());
+				
+				//Do we log
+				if(mMaximaLogs) {
+					MinimaLogger.log("MAXIMA : "+maxjson.toString());
+				}
+				
+				//Where is it headed
+				String application = (String) maxjson.get("application");
+				
+				//Notify that Client that we received the message.. this makes external client disconnect ( internal just a ping )
+				if(!application.equals(MAXIMA_MLS_GETAPP)) {
+					maximaMessageStatus(nioc,MAXIMA_OK);
+				}
+				
+				//Is it a special contact message
+				if(application.equals(MaximaContactManager.CONTACT_APPLICATION)) {
+					
+					//Process this internally..
+					Message contactmessage = new Message(MaximaContactManager.MAXCONTACTS_RECMESSAGE);
+					contactmessage.addObject("maxmessage", maxjson);
+					getContactsManager().PostMessage(contactmessage);
+					
+					//Update DB - this host is being used..
+					MaximaHost host = maxdb.loadHost(nioc.getFullAddress());
+					if(host != null) {
+						host.updateLastSeen();
+						maxdb.updateHost(host);
 					}
+					
+				}else if(application.equals(MAXIMA_CHKCONECT_APP)) {
+					
+					//Get the Data
+					MiniData maxdata = new MiniData(maxjson.getString("data"));
+					String uid = new String(maxdata.getBytes());
+					
+					//Check Valid..
+					if(!uid.equals(nioc.getUID())) {
+						MinimaLogger.log("INVALID MAXCHECK REC:"+uid+" FROM:"+nioc.getUID());
+						return;
+					}
+					
+					MinimaLogger.log("MAXIMA HOST accepted : "+nioc.getFullAddress());
+					
+					//Get the HOST
+					MaximaHost mxhost = maxdb.loadHost(nioc.getFullAddress());
+					
+					//Now we can use this as one of Our Addresses
+					mxhost.setConnected(1);
+					maxdb.updateHost(mxhost);
+					
+					//OK.. add to our list
+					if(nioc.isMaximaMLS()) {
+						if(mMLSService.newMLSNode(nioc.getMaximaMLS())) {
+							//Changed.. set new in DB
+							UserDB udb = MinimaDB.getDB().getUserDB();
+							udb.setString(MAXIMA_OLDMLSHOST, mMLSService.getOldMLSServer());
+							udb.setString(MAXIMA_MLSHOST, mMLSService.getMLSServer());
+							udb.setNumber(MAXIMA_MLSTIME, new MiniNumber(mMLSService.getMLSTime()));	
+									
+							//Save this..
+							MinimaDB.getDB().saveUserDB();
+						}
+					}
+					
+				}else if(application.equals(MAXIMA_MLS_SETAPP)) {
+					
+					//Get the package
+					MiniData mlssetdata = new MiniData(maxjson.getString("data"));
+					
+					//Convert it..
+					MLSPacketSET mls = MLSPacketSET.convertMiniDataVersion(mlssetdata);
+					
+					//Add to the MLSService
+					mMLSService.addMLSData(maxmsg.mFrom.to0xString(), mls);
+					
+				}else if(application.equals(MAXIMA_MLS_GETAPP)) {
+					
+					//Get the data
+					MiniData reqdata 	= new MiniData(maxjson.getString("data"));
+					MLSPacketGETReq req = MLSPacketGETReq.convertMiniDataVersion(reqdata);
+					
+					//Check the MLS service for this 
+					MLSPacketSET mlspack = mMLSService.getData(req.getPublicKey());
+					
+					//Do we have data
+					if(mlspack == null) {
+						MinimaLogger.log("Unknown publickey in MLSService "+req.getPublicKey());
+						maximaMessageStatus(nioc,MAXIMA_UNKNOWN);
+						return;
+					}
+					
+					//Is THIS user allowed to see this data
+					if(!mlspack.isValidPublicKey(maxmsg.mFrom.to0xString())) {
+						MinimaLogger.log("Invalid MLS request for "+req.getPublicKey()+" by "+maxmsg.mFrom.to0xString());
+						maximaMessageStatus(nioc,MAXIMA_UNKNOWN);
+						return;
+					}
+					
+					//Create a response..
+					MLSPacketGETResp mlsget = new MLSPacketGETResp(req.getPublicKey(),mlspack.getMaximaAddress(),req.getRandomUID());
+					
+					//Convert to a MiniData structure
+					MiniData mlsdata = MiniData.getMiniDataVersion(mlsget);
+					
+					//Send that
+					MinimaLogger.log("MLS Req received : replying "+mlsget.toJSON());
+					
+					maximaMessageStatus(nioc,mlsdata);
+					
+				}else {
+					//Notify The Listeners
+					Main.getInstance().PostNotifyEvent("MAXIMA",maxjson);
+				}
+			
+			}catch(Exception Exc) {
+				MinimaLogger.log(Exc);
+				
+				//Get the complete StackTrace..
+				String trace = Exc.toString()+"--";
+				for(StackTraceElement stack : Exc.getStackTrace()) {
+					//Print it..
+					trace += stack.toString()+"--";
 				}
 				
-			}else if(application.equals(MAXIMA_MLS_SETAPP)) {
-				
-				//Get the package
-				MiniData mlssetdata = new MiniData(maxjson.getString("data"));
-				
-				//Convert it..
-				MLSPacketSET mls = MLSPacketSET.convertMiniDataVersion(mlssetdata);
-				
-				//Add to the MLSService
-				mMLSService.addMLSData(maxmsg.mFrom.to0xString(), mls);
-				
-			}else if(application.equals(MAXIMA_MLS_GETAPP)) {
-				
-				//Get the data
-				MiniData reqdata 	= new MiniData(maxjson.getString("data"));
-				MLSPacketGETReq req = MLSPacketGETReq.convertMiniDataVersion(reqdata);
-				
-				//Check the MLS service for this 
-				MLSPacketSET mlspack = mMLSService.getData(req.getPublicKey());
-				
-				//Do we have data
-				if(mlspack == null) {
-					MinimaLogger.log("Unknown publickey in MLSService "+req.getPublicKey());
-					maximaMessageStatus(nioc,MAXIMA_UNKNOWN);
-					return;
-				}
-				
-				//Is THIS user allowed to see this data
-				if(!mlspack.isValidPublicKey(maxmsg.mFrom.to0xString())) {
-					MinimaLogger.log("Invalid MLS request for "+req.getPublicKey()+" by "+maxmsg.mFrom.to0xString());
-					maximaMessageStatus(nioc,MAXIMA_UNKNOWN);
-					return;
-				}
-				
-				//Create a response..
-				MLSPacketGETResp mlsget = new MLSPacketGETResp(req.getPublicKey(),mlspack.getMaximaAddress(),req.getRandomUID());
-				
-				//Convert to a MiniData structure
-				MiniData mlsdata = MiniData.getMiniDataVersion(mlsget);
-				
-				//Send that
-				MinimaLogger.log("MLS Req received : replying "+mlsget.toJSON());
-				
-				maximaMessageStatus(nioc,mlsdata);
-				
-			}else {
-				//Notify The Listeners
-				Main.getInstance().PostNotifyEvent("MAXIMA",maxjson);
+				//And send this..
+				MaximaErrorMsg error 	= new MaximaErrorMsg(trace);
+				MiniData errdata 		= MiniData.getMiniDataVersion(error);
+				maximaMessageStatus(nioc,errdata);
 			}
 		}
 	}

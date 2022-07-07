@@ -83,7 +83,7 @@ public class MLSPacketGETResp implements Streamable {
 			bais.close();
 			
 		} catch (IOException e) {
-			MinimaLogger.log(e);
+			//MinimaLogger.log(e);
 		}
 		
 		return mls;
