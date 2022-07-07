@@ -6,18 +6,32 @@
 	
 	"dapps":[
 		{
+			"file":"https://raw.githubusercontent.com/minima-global/Minima/dev-spartacus/mds/store/files/news-1.0.mds.zip",
+			"icon":"https://raw.githubusercontent.com/minima-global/Minima/dev-spartacus/mds/store/icons/news.png",
+			"name":"News Feed",
+			"description": "Keep up to date with Minima News",
+			"version" : "1.0"
+		},
+		{
+			"file":"https://raw.githubusercontent.com/minima-global/Minima/dev-spartacus/mds/store/files/block-0.1.5.mds.zip",
+			"icon":"https://raw.githubusercontent.com/minima-global/Minima/dev-spartacus/mds/store/icons/block.png",
+			"name":"Block",
+			"description": "Explore the Minima blockchain",
+			"version" : "1.0"
+		},
+		{
+			"file":"https://raw.githubusercontent.com/minima-global/Minima/dev-spartacus/mds/store/files/wallet-0.1.5.mds.zip",
+			"icon":"https://raw.githubusercontent.com/minima-global/Minima/dev-spartacus/mds/store/icons/wallet.png",
+			"name":"News Feed",
+			"description": "Official Minima wallet",
+			"version" : "1.0"
+		},
+		{
 			"file":"https://raw.githubusercontent.com/minima-global/Minima/dev-spartacus/mds/store/files/terminal-1.91.mds.zip",
 			"icon":"https://raw.githubusercontent.com/minima-global/Minima/dev-spartacus/mds/store/icons/terminal.png",
 			"name":"Terminal",
 			"description": "Terminal CLI for Minima",
 			"version" : "1.91"
-		},
-		{
-			"file":"https://raw.githubusercontent.com/minima-global/Minima/dev-spartacus/mds/store/files/news-1.0.mds.zip",
-			"icon":"https://raw.githubusercontent.com/minima-global/Minima/dev-spartacus/mds/store/icons/news.png",
-			"name":"Nerws Feed",
-			"description": "Keep up to date with Minima News",
-			"version" : "1.0"
 		}
 	]
 }
