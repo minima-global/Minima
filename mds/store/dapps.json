@@ -32,6 +32,27 @@
 			"name":"Terminal",
 			"description": "Terminal CLI for Minima",
 			"version" : "1.91"
+		},
+		{
+			"file":"https://raw.githubusercontent.com/minima-global/Minima/dev-spartacus/mds/store/files/helpdocs-0.1.1.mds.zip",
+			"icon":"https://raw.githubusercontent.com/minima-global/Minima/dev-spartacus/mds/store/icons/helpdocs.png",
+			"name":"Help Docs",
+			"description": "Help Docs",
+			"version" : "0.1.1"
+		},
+		{
+			"file":"https://raw.githubusercontent.com/minima-global/Minima/dev-spartacus/mds/store/files/maxsolo-1.83.mds.zip",
+			"icon":"https://raw.githubusercontent.com/minima-global/Minima/dev-spartacus/mds/store/icons/maxsolo.png",
+			"name":"MaxSolo",
+			"description": "P2P chat app running over Maxima",
+			"version" : "1.83"
+		},
+		{
+			"file":"https://raw.githubusercontent.com/minima-global/Minima/dev-spartacus/mds/store/files/scriptide-1.7.mds.zip",
+			"icon":"https://raw.githubusercontent.com/minima-global/Minima/dev-spartacus/mds/store/icons/scriptide.png",
+			"name":"Script IDE",
+			"description": "Minima Script IDE",
+			"version" : "1.7"
 		}
 	]
 }
