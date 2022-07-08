@@ -30,6 +30,7 @@ import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
 import org.minima.system.commands.txn.txnutils;
 import org.minima.system.params.GlobalParams;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
 
 public class send extends Command {
@@ -51,7 +52,10 @@ public class send extends Command {
 		
 		//What is the Token
 		String tokenid = getParam("tokenid", "0x00");
-				
+		
+		//Show extra info..
+		boolean debug = getBooleanParam("debug", false);
+		
 		//Is there a burn..
 		MiniNumber burn  = getNumberParam("burn",MiniNumber.ZERO);
 		if(burn.isLess(MiniNumber.ZERO)) {
@@ -103,12 +107,19 @@ public class send extends Command {
 			findamount 	= relcoins.get(0).getToken().getScaledMinimaAmount(sendamount);
 		}
 		
-		//Now search for the best coin selection..
-		relcoins = selectCoins(relcoins, findamount);
+		//Now search for the best coin selection.. leave for Now!..
+//		relcoins = selectCoins(relcoins, findamount, debug);
 		
 		//The current total
 		MiniNumber currentamount 		= MiniNumber.ZERO;
 		ArrayList<Coin> currentcoins 	= new ArrayList<>();
+		
+		if(debug) {
+			MinimaLogger.log("Coins that will be used for transaction");
+			for(Coin coin : relcoins) {
+				MinimaLogger.log("Coin : "+coin.getAmount()+" "+coin.getCoinID().to0xString());
+			}
+		}
 		
 		//Now cycle through..
 		Token token = null;
@@ -116,11 +127,17 @@ public class send extends Command {
 			
 			//Check if we are already using thewm in another Transaction that is being mined
 			if(txminer.checkForMiningCoin(coin.getCoinID().to0xString())) {
+				if(debug) {
+					MinimaLogger.log("Coin being mined : "+coin.getAmount()+" "+coin.getCoinID().to0xString());
+				}
 				continue;
 			}
 			
 			//Check if in mempool..
 			if(txpdb.checkMempoolCoins(coin.getCoinID())) {
+				if(debug) {
+					MinimaLogger.log("Coin in mempool : "+coin.getAmount()+" "+coin.getCoinID().to0xString());
+				}
 				continue;
 			}
 		
@@ -143,11 +160,14 @@ public class send extends Command {
 				currentamount = currentamount.add(amt);
 			}
 			
+			if(debug) {
+				MinimaLogger.log("Coin added : "+coin.getAmount()+" "+coin.getCoinID().to0xString()+" total:"+currentamount);
+			}
+			
 			//Do we have enough..
 			if(currentamount.isMoreEqual(sendamount)) {
 				break;
 			}
-		
 		}
 		
 		//Did we add enough
@@ -373,7 +393,12 @@ public class send extends Command {
 	 * Which coins to use when sending a transaction
 	 * Expects all the coins to be of the same tokenid
 	 */
+	
 	public static ArrayList<Coin> selectCoins(ArrayList<Coin> zAllCoins, MiniNumber zAmountRequired){
+		return selectCoins(zAllCoins, zAmountRequired, false);
+	}
+	
+	public static ArrayList<Coin> selectCoins(ArrayList<Coin> zAllCoins, MiniNumber zAmountRequired, boolean zDebug){
 		ArrayList<Coin> ret = new ArrayList<>();
 		
 		//Get the TxPoWDB
@@ -390,6 +415,14 @@ public class send extends Command {
 			}
 		});
 
+		//Are we debugging..
+		if(zDebug) {
+			MinimaLogger.log("Coin Selection coins");
+			for(Coin coin : zAllCoins) {
+				MinimaLogger.log("Coin found : "+coin.getAmount()+" "+coin.getCoinID().to0xString());
+			}
+		}
+		
 		//Now go through and pick a coin big enough.. but keep looking for smaller coins  
 		boolean found    = false;
 		Coin currentcoin = null;
@@ -397,11 +430,17 @@ public class send extends Command {
 			
 			//Check if we are already using thewm in another Transaction that is being mined
 			if(txminer.checkForMiningCoin(coin.getCoinID().to0xString())) {
+				if(zDebug) {
+					MinimaLogger.log("Coin being mined : "+coin.getCoinID().to0xString());
+				}
 				continue;
 			}
 			
 			//Check if in mempool..
 			if(txpdb.checkMempoolCoins(coin.getCoinID())) {
+				if(zDebug) {
+					MinimaLogger.log("Coin in mempool : "+coin.getCoinID().to0xString());
+				}
 				continue;
 			}
 			
@@ -420,17 +459,29 @@ public class send extends Command {
 			ret.add(currentcoin);
 			tot = currentcoin.getAmount();
 		}else {
-			//Will need to add up multiple coins..
-			for(Coin coin : zAllCoins) {
-				ret.add(coin);
-				tot = tot.add(coin.getAmount());
-				
-				if(tot.isMoreEqual(zAmountRequired)) {
-					break;
-				}
+//			//Will need to add up multiple coins..
+//			for(Coin coin : zAllCoins) {
+//				ret.add(coin);
+//				tot = tot.add(coin.getAmount());
+//				
+//				if(tot.isMoreEqual(zAmountRequired)) {
+//					break;
+//				}
+//			}
+			
+			if(zDebug) {
+				MinimaLogger.log("Returning all coins..");
 			}
+			
+			//Return them all..
+			return zAllCoins;
 		}
 		
+		if(zDebug) {
+			for(Coin cc : ret) {
+				MinimaLogger.log("Coin returned : "+cc.getAmount()+" "+cc.getCoinID().to0xString());
+			}
+		}
 		
 		//Return wghat we have..
 		return ret;
