@@ -619,20 +619,26 @@ public class MaximaManager extends MessageProcessor {
 			//Get the MaxTxPoW
 			MaxTxPoW mxtxpow 	= (MaxTxPoW) zMessage.getObject("maxtxpow");
 			
-			//received a Message!
-			MaximaPackage mpkg 	= mxtxpow.getMaximaPackage();
-			
 			//Get the NIOClient
-			NIOClient nioc = (NIOClient) zMessage.getObject("nioclient");
-			
-			//Private key tpo decode the message
-			MiniData privatekey = null;
+			NIOClient nioc 		= (NIOClient) zMessage.getObject("nioclient");
 			
 			//Put the WHOLE thing in a try catch incase there is an ERROR.. remote debugging..
 			try {
+				
+				//received a Message!
+				MaximaPackage mpkg 	= mxtxpow.getMaximaPackage();
 			
+				//Private key tpo decode the message
+				MiniData privatekey = null;
+				
 				//The pubkey it is encrypted with
 				String tomaxima = mpkg.mTo.to0xString();
+				
+				//Debug Remote Function
+				if(tomaxima.equals("0x30819F300D06092A864886F70D010101050003818D00308189028181008366F357B1054F76FF4B7B352D1464D7EACBCB7FFA5B2E638D5E358D1314AD3184743364CFD40C8A15FFF10E1EA49E5825B6ACCE3391E1D4B23650BDA27C42EBA5BA389CE2FA89C62BBBC6B62F6076FB6E8385FCC261815FB5D4B0BB9603FAB1BEF9D12F694003C2CF3D9461429BA78F30343A0422371041BDFBC4C7D189102B0203010001")) {
+					maximaMessageErrorStatus(nioc, "DEBUG_1");
+					return;
+				}
 				
 				//Is it straight to us..
 				if(mpkg.mTo.equals(mPublic)) {
@@ -650,6 +656,12 @@ public class MaximaManager extends MessageProcessor {
 					if(host != null) {
 						privatekey = host.getPrivateKey();
 					}
+				}
+				
+				//Debug Remote Function
+				if(tomaxima.equals("0x30819F300D06092A864886F70D010101050003818D0030818902818100A595C607021AA5B0B7E5919CA428E3F0B45B6D129A2CBD815569BBA4160890391E71FD5270586FB0AC77BE617449BC299C0FC44CE72D5D45E6F3E5BA00CA16012CCD16A82AAE753DB8581C267C9F1D3C2B1FC4EE331B825A2583F50240BCFDA51269A7D75566CD665781092D3634F3E3B516ECC250A562D933A347AA57780B0F0203010001")) {
+					maximaMessageErrorStatus(nioc, "DEBUG_2");
+					return;
 				}
 				
 				//If we don't find it..
@@ -677,6 +689,12 @@ public class MaximaManager extends MessageProcessor {
 						maximaMessageStatus(nioc,MAXIMA_UNKNOWN);
 					}
 					
+					return;
+				}
+				
+				//Debug Remote Function
+				if(tomaxima.equals("0x30819F300D06092A864886F70D010101050003818D0030818902818100B4A664963EE2787C38EFCDCE21849E336F574B02659D55530FBA7F87382780DEA989CDE368F374C7A17515320F4A0DF9529F4F6958539C0A9D1D06096722E298D08C543FE6E2D8FC847F9193BAFCF849BAE36EF9936A24531FA794B48A103316F936BA6261B92A70E0D0F23D308E26EE0C05DE568756C9DDD65D2AA5BA33241B0203010001")) {
+					maximaMessageErrorStatus(nioc, "DEBUG_3");
 					return;
 				}
 				
@@ -843,11 +861,16 @@ public class MaximaManager extends MessageProcessor {
 				}
 				
 				//And send this..
-				MaximaErrorMsg error 	= new MaximaErrorMsg(trace);
-				MiniData errdata 		= MiniData.getMiniDataVersion(error);
-				maximaMessageStatus(nioc,errdata);
+				maximaMessageErrorStatus(nioc, trace);
 			}
 		}
+	}
+	
+	private void maximaMessageErrorStatus(NIOClient zClient, String zMessage) throws IOException {
+		//And send this..
+		MaximaErrorMsg error 	= new MaximaErrorMsg(zMessage);
+		MiniData errdata 		= MiniData.getMiniDataVersion(error);
+		maximaMessageStatus(zClient,errdata);
 	}
 	
 	private void maximaMessageStatus(NIOClient zClient, MiniData zStatus) throws IOException {
