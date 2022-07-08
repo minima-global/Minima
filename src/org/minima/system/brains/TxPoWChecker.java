@@ -110,6 +110,7 @@ public class TxPoWChecker {
 					allcoinid.add(proof.getCoin().getCoinID().to0xString());
 				}
 			}
+			
 			for(TxPoW txpow : zTransactions) {
 				if(txpow.isTransaction()) {
 					//Main
@@ -181,6 +182,29 @@ public class TxPoWChecker {
 		//Check ChainID
 		if(!zTxPoW.getChainID().isEqual(CURRENT_NETWORK)) {
 			MinimaLogger.log("Wrong TxPoW ChainID! "+zTxPoW.getChainID()+" "+zTxPoW.getTxPoWID());
+			return false;
+		}
+		
+		//Check unique coins in transaction and burn transaction
+		ArrayList<String> allcoinid = new ArrayList<>();
+		if(zTxPoW.isTransaction()) {
+			//Main
+			ArrayList<CoinProof> proofs = zTxPoW.getWitness().getAllCoinProofs();
+			for(CoinProof proof : proofs) {
+				allcoinid.add(proof.getCoin().getCoinID().to0xString());
+			}
+			
+			//Burn
+			proofs = zTxPoW.getBurnWitness().getAllCoinProofs();
+			for(CoinProof proof : proofs) {
+				allcoinid.add(proof.getCoin().getCoinID().to0xString());
+			}
+		}
+		
+		//Convert to unique Set and check equal size
+		HashSet<String> coinset = new HashSet<>(allcoinid);
+		if(coinset.size() != allcoinid.size()) {
+			MinimaLogger.log("Invalid TxPoW Transaction / Burn with non unique CoinIDs "+zTxPoW.getTxPoWID());
 			return false;
 		}
 		

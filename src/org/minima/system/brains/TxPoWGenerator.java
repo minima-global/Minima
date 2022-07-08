@@ -12,6 +12,7 @@ import org.minima.database.MinimaDB;
 import org.minima.database.mmr.MMRData;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.objects.Coin;
+import org.minima.objects.CoinProof;
 import org.minima.objects.Magic;
 import org.minima.objects.Transaction;
 import org.minima.objects.TxBlock;
@@ -62,7 +63,7 @@ public class TxPoWGenerator {
 		txpow.setTransaction(zTransaction);
 		txpow.setWitness(zWitness);
 		
-		//Is there a BURN
+		//Is there a BURN - otherwise use the default empty one
 		if(zBurnTransaction != null) {
 			txpow.setBurnTransaction(zBurnTransaction);
 			txpow.setBurnWitness(zBurnWitness);
@@ -132,20 +133,18 @@ public class TxPoWGenerator {
 		//A list of the added coins
 		ArrayList<String> addedcoins = new ArrayList<>();
 		
-		//Add the main transaction inputs..
-		ArrayList<Coin> inputcoins = zTransaction.getAllInputs();
-		for(Coin cc : inputcoins) {
-			addedcoins.add(cc.getCoinID().to0xString());
+		//Main
+		ArrayList<CoinProof> proofs = txpow.getWitness().getAllCoinProofs();
+		for(CoinProof proof : proofs) {
+			addedcoins.add(proof.getCoin().getCoinID().to0xString());
+		}
+
+		//Burn
+		proofs = txpow.getBurnWitness().getAllCoinProofs();
+		for(CoinProof proof : proofs) {
+			addedcoins.add(proof.getCoin().getCoinID().to0xString());
 		}
 		
-		//Burn Coins
-		if(zBurnTransaction != null) {
-			inputcoins = zBurnTransaction.getAllInputs();
-			for(Coin cc : inputcoins) {
-				addedcoins.add(cc.getCoinID().to0xString());
-			}
-		}
-	
 		//Check them all..
 		int totaladded = 0;
 		for(TxPoW memtxp : mempool) {
@@ -159,10 +158,22 @@ public class TxPoWGenerator {
 			boolean valid = true;
 			try {
 				
-				//Check CoinIDs not added already..
-				ArrayList<Coin> inputs = memtxp.getTransaction().getAllInputs();
-				for(Coin cc : inputs) {
-					if(addedcoins.contains(cc.getCoinID().to0xString())) {
+				//Input coin checkers - For the CoinProofs as CoinID may be ELTOO
+				ArrayList<CoinProof> inputs;
+				
+				//Check CoinIDs not added already.. for Transaction
+				inputs = memtxp.getWitness().getAllCoinProofs();
+				for(CoinProof proof : inputs) {
+					if(addedcoins.contains(proof.getCoin().getCoinID().to0xString())) {
+						//Coin already added in previous TxPoW
+						continue;
+					}
+				}
+				
+				//Check CoinIDs not added already.. for Burn Transaction
+				inputs = memtxp.getBurnWitness().getAllCoinProofs();
+				for(CoinProof proof : inputs) {
+					if(addedcoins.contains(proof.getCoin().getCoinID().to0xString())) {
 						//Coin already added in previous TxPoW
 						continue;
 					}
@@ -188,10 +199,16 @@ public class TxPoWGenerator {
 					//One more to the total..
 					totaladded++;
 					
-					//Add all the input coins
-					ArrayList<Coin> memtxpinputcoins = memtxp.getTransaction().getAllInputs();
-					for(Coin cc : memtxpinputcoins) {
-						addedcoins.add(cc.getCoinID().to0xString());
+					//Add all the input coins - from transaction
+					ArrayList<CoinProof> memtxpinputcoins = memtxp.getWitness().getAllCoinProofs();
+					for(CoinProof cc : memtxpinputcoins) {
+						addedcoins.add(cc.getCoin().getCoinID().to0xString());
+					}
+					
+					//Add all the input coins - from burn transaction
+					memtxpinputcoins = memtxp.getBurnWitness().getAllCoinProofs();
+					for(CoinProof cc : memtxpinputcoins) {
+						addedcoins.add(cc.getCoin().getCoinID().to0xString());
 					}	
 				}
 				
