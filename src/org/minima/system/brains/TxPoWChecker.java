@@ -133,6 +133,10 @@ public class TxPoWChecker {
 			HashSet<String> coinset = new HashSet<>(allcoinid);
 			if(coinset.size() != allcoinid.size()) {
 				MinimaLogger.log("Invalid TxPoW Block with non unique CoinIDs "+zTxPoW.getTxPoWID());
+				for(String coin : allcoinid) {
+					MinimaLogger.log("Coins : "+coin);
+				}
+				
 				return false;
 			}
 			
