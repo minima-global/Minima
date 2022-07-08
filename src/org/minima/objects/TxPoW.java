@@ -471,7 +471,7 @@ public class TxPoW implements Streamable {
 			return false;
 		}
 		
-		return !getTransaction().isEmpty();
+		return !getTransaction().isEmpty() || !getBurnTransaction().isEmpty();
 	}
 	
 	public long getSizeinBytes() {
