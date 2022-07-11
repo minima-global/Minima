@@ -177,11 +177,15 @@ public class P2PManager extends MessageProcessor {
 
         } else if (zMessage.isMessageType(P2P_RANDOM_CONNECT)) {
             
-        	//Get a Random peer..
-        	InetSocketAddress connectionAddress = (InetSocketAddress) state.getKnownPeers().toArray()[rand.nextInt(state.getKnownPeers().size())];
-            
-        	//Connect to them..
-        	sendMsgs.add(new Message(P2PManager.P2P_SEND_CONNECT).addObject(ADDRESS_LITERAL, connectionAddress));
+        	//Check we have some peers
+        	if(state.getKnownPeers().size()>0) {
+	        	
+        		//Get a Random peer..
+	        	InetSocketAddress connectionAddress = (InetSocketAddress) state.getKnownPeers().toArray()[rand.nextInt(state.getKnownPeers().size())];
+	            
+	        	//Connect to them..
+	        	sendMsgs.add(new Message(P2PManager.P2P_SEND_CONNECT).addObject(ADDRESS_LITERAL, connectionAddress));
+        	}
         	
         } else if (zMessage.isMessageType(P2PFunctions.P2P_NOCONNECT)) {
             NIOClient client = (NIOClient) zMessage.getObject("client");
