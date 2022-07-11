@@ -1,6 +1,7 @@
 package org.minima.system.network.maxima;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.security.KeyPair;
 import java.util.ArrayList;
 import java.util.Random;
@@ -28,6 +29,7 @@ import org.minima.system.network.maxima.mls.MLSService;
 import org.minima.system.network.minima.NIOClient;
 import org.minima.system.network.minima.NIOManager;
 import org.minima.system.network.minima.NIOMessage;
+import org.minima.system.network.p2p.P2PManager;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
@@ -61,11 +63,12 @@ public class MaximaManager extends MessageProcessor {
 	/**
 	 * Messages
 	 */
-	public static final String MAXIMA_CTRLMESSAGE 	= "MAXIMA_CTRLMESSAGE";
-	public static final String MAXIMA_RECMESSAGE 	= "MAXIMA_RECMESSAGE";
-	public static final String MAXIMA_SENDMESSAGE 	= "MAXIMA_SENDDMESSAGE";
-	public static final String MAXIMA_REFRESH 		= "MAXIMA_REFRESH";
-	public static final String MAXIMA_MLSGET_RESP 	= "MAXIMA_GETREQ";
+	public static final String MAXIMA_CTRLMESSAGE 		= "MAXIMA_CTRLMESSAGE";
+	public static final String MAXIMA_RECMESSAGE 		= "MAXIMA_RECMESSAGE";
+	public static final String MAXIMA_SENDMESSAGE 		= "MAXIMA_SENDDMESSAGE";
+	public static final String MAXIMA_REFRESH 			= "MAXIMA_REFRESH";
+	public static final String MAXIMA_MLSGET_RESP 		= "MAXIMA_GETREQ";
+	public static final String MAXIMA_CHECK_CONNECTED 	= "MAXIMA_CHECK_CONNECTED";
 	
 	/**
 	 * Send a message to CHECK Maxima is working on connect
@@ -471,16 +474,60 @@ public class MaximaManager extends MessageProcessor {
 			
 		}else if(zMessage.getMessageType().equals(MAXIMA_SENDCHKCONNECT)) {
 			
+			//Get the NIO Client uid
+			String uid = zMessage.getString("uid");
+			
 			//Send a check Connect message
 			String to 			= zMessage.getString("to");
 			String application 	= MAXIMA_CHKCONECT_APP;
-			MiniData data 		= new MiniData(zMessage.getString("uid").getBytes());
+			MiniData data 		= new MiniData(uid.getBytes());
 			
 			//Create a HELLO message
 			Message chkconnect 	= maxima.createSendMessage(to,application,data);
 			
 			//Send it..
 			PostMessage(chkconnect);
+			
+			//AND - send a message that 
+			TimerMessage checkconnected = new TimerMessage(30000, MAXIMA_CHECK_CONNECTED);
+			checkconnected.addString("uid", uid);
+			PostTimerMessage(checkconnected);
+			
+		}else if(zMessage.getMessageType().equals(MAXIMA_CHECK_CONNECTED)) {
+			
+			//Check that IF this host is connected to us - it is a valid Maxima host
+			String uid = zMessage.getString("uid");
+			
+			//Get the NIO Client..
+			NIOClient nioc =  Main.getInstance().getNIOManager().getNIOClientFromUID(uid);
+			
+			//Is it valid..
+			if(nioc != null) {
+				
+				//Ok - we should be connected..
+				MaximaHost mxhost = maxdb.loadHost(nioc.getFullAddress());
+				
+				//Are we connected..
+				MinimaLogger.log("MAXIMA Check if connected : "+nioc.getFullAddress()+" "+mxhost.getConnected());
+				
+				//If not connected..
+				if(mxhost.getConnected() == 0) {
+					
+					MinimaLogger.log("MAXIMA disconnecting from "+nioc.getFullAddress()+" reconnecting to random host");
+					
+					//Disconnect
+					Main.getInstance().getNIOManager().disconnect(uid);
+					
+					//Disconnect this and reconnect to a random peer..
+					Main.getInstance().getNetworkManager().getP2PManager().PostMessage(P2PManager.P2P_RANDOM_CONNECT);
+				
+					//And send a message.. to refresh.. ?
+					//..
+				}
+				
+			}else {
+				MinimaLogger.log("MAXIMA check if connected : HOST NOT AVAILABLE.. "+uid);
+			}
 			
 		}else if(zMessage.getMessageType().equals(MAXIMA_DISCONNECTED)) {
 			
