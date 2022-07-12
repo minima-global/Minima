@@ -68,6 +68,8 @@ public class MaximaManager extends MessageProcessor {
 	public static final String MAXIMA_REFRESH 			= "MAXIMA_REFRESH";
 	public static final String MAXIMA_MLSGET_RESP 		= "MAXIMA_GETREQ";
 	public static final String MAXIMA_CHECK_CONNECTED 	= "MAXIMA_CHECK_CONNECTED";
+	public static final String MAXIMA_CHECK_MLS 		= "MAXIMA_CHECK_MLS";
+	public static final String MAXIMA_REFRESH_TIMER 	= "MAXIMA_REFRESH_TIMER";
 	
 	/**
 	 * Send a message to CHECK Maxima is working on connect
@@ -81,13 +83,6 @@ public class MaximaManager extends MessageProcessor {
 	public static final String MAXIMA_MLS_SETAPP 	= "**maxima_mls_set**";
 	public static final String MAXIMA_MLS_GETAPP 	= "**maxima_mls_get**";
 	public static String MLS_RANDOM_UID 			= "";
-	
-	/**
-	 * MLS Checker loop function - every 1 hr
-	 */
-	public static final String MAXIMA_CHECK_MLS 	= "MAXIMA_CHECK_MLS";
-	public static final String MAXIMA_LOOP_MLS 		= "MAXIMA_LOOP_MLS";
-	long MAXIMA_LOOP_MLS_DELAY = 1000 * 60 * 60;
 	
 	/**
 	 * UserDB data
@@ -293,16 +288,24 @@ public class MaximaManager extends MessageProcessor {
 			//Post a LOOP message that updates all my contacts just in case..
 			PostTimerMessage(new TimerMessage(1000 * 60 * 2, MAXIMA_LOOP));
 			
-			//MLS Checker
-			PostTimerMessage(new TimerMessage(1000 * 60 * 3, MAXIMA_LOOP_MLS));
+		}else if(zMessage.getMessageType().equals(MAXIMA_LOOP)) {
 			
-		}else if(zMessage.getMessageType().equals(MAXIMA_LOOP_MLS)) {
-			
-			//Check the MLS servers
+			//Check the MLS servers - for Users we have not seen in a while..
 			PostMessage(MAXIMA_CHECK_MLS);
 			
+			//Resend all your details to your contacts
+			PostMessage(MAXIMA_REFRESH_TIMER);
+			
+			//Delete really old MaxHosts - not seen for 7 days
+			maxdb.deleteOldHosts();
+			
 			//Post a LOOP message that updates all my contacts just in case..
-			PostTimerMessage(new TimerMessage(MAXIMA_LOOP_MLS_DELAY, MAXIMA_LOOP_MLS));
+			PostTimerMessage(new TimerMessage(MAXIMA_LOOP_DELAY, MAXIMA_LOOP));
+		
+		}else if(zMessage.getMessageType().equals(MAXIMA_REFRESH_TIMER)) {
+			
+			//Wait 20 seconds..
+			PostTimerMessage(new TimerMessage(30000, MAXIMA_REFRESH));
 			
 		}else if(zMessage.getMessageType().equals(MAXIMA_CHECK_MLS)) {
 			
@@ -312,8 +315,8 @@ public class MaximaManager extends MessageProcessor {
 			//Flush the MLS
 			mMLSService.flushList();
 			
-			//The Min Time before we do an MLS lookup - 30 mins..
-			long mintime = System.currentTimeMillis() - (1000 * 60 * 30);
+			//The Min Time before we do an MLS lookup - 45 mins.. 2 loops
+			long mintime = System.currentTimeMillis() - (1000 * 60 * 45);
 			
 			//Get all your contacts
 			ArrayList<MaximaContact> allcontacts = maxdb.getAllContacts();
@@ -340,22 +343,8 @@ public class MaximaManager extends MessageProcessor {
 					}
 				}
 			}
-			
-		}else if(zMessage.getMessageType().equals(MAXIMA_LOOP)) {
-			
-			//Resend all your details to your contacts
-			PostMessage(MAXIMA_REFRESH);
-			
-			//Delete really old MaxHosts - not seen for 7 days
-			maxdb.deleteOldHosts();
-			
-			//Post a LOOP message that updates all my contacts just in case..
-			PostTimerMessage(new TimerMessage(MAXIMA_LOOP_DELAY, MAXIMA_LOOP));
 		
 		}else if(zMessage.getMessageType().equals(MAXIMA_REFRESH)) {
-			
-			//A list of all your contacts public keys
-			ArrayList<String> validpubkeys = new ArrayList<>();
 			
 			//Get all your contacts
 			ArrayList<MaximaContact> allcontacts = maxdb.getAllContacts();
@@ -366,31 +355,10 @@ public class MaximaManager extends MessageProcessor {
 				update.addString("publickey", contact.getPublicKey());
 				update.addString("address", contact.getCurrentAddress());
 				getContactsManager().PostMessage(update);
-				
-				//Keep this for MLS
-				validpubkeys.add(contact.getPublicKey());
 			}
 			
-			//Create an MLSPacket
-			MLSPacketSET mlspack = new MLSPacketSET(getRandomMaximaAddress());
-			for(String pubkey : validpubkeys) {
-				mlspack.addValidPublicKey(pubkey);
-			}
-			
-			//No need to send if no contacts - send one to clear then not again
-			if(allcontacts.size() > 0) {
-				//Send the message - to BOTH hosts.. old and new
-				MinimaLogger.log("SEND MLS Update");
-				PostMessage(maxima.createSendMessage(getMLSHost(),MAXIMA_MLS_SETAPP,MiniData.getMiniDataVersion(mlspack)));
-				PostMessage(maxima.createSendMessage(getOldMLSHost(),MAXIMA_MLS_SETAPP,MiniData.getMiniDataVersion(mlspack)));
-				mHaveContacts = true;
-			}else {
-				if(mHaveContacts) {
-					PostMessage(maxima.createSendMessage(getMLSHost(),MAXIMA_MLS_SETAPP,MiniData.getMiniDataVersion(mlspack)));
-					PostMessage(maxima.createSendMessage(getOldMLSHost(),MAXIMA_MLS_SETAPP,MiniData.getMiniDataVersion(mlspack)));
-				}
-				mHaveContacts = false;
-			}
+			//Update the MLS servers
+			updateMLSServers();
 			
 		}else if(zMessage.getMessageType().equals(MAXIMA_CONNECTED)) {
 		
@@ -550,9 +518,6 @@ public class MaximaManager extends MessageProcessor {
 				//Ok - lets reset contacts that use this host
 				String host = nioc.getFullAddress();
 			
-				//A list of all your contacts public keys
-				ArrayList<String> validpubkeys = new ArrayList<>();
-				
 				//Which contacts used that host - reassign them
 				ArrayList<MaximaContact> allcontacts = maxdb.getAllContacts();
 				for(MaximaContact contact : allcontacts) {
@@ -573,9 +538,6 @@ public class MaximaManager extends MessageProcessor {
 						
 						getContactsManager().PostMessage(update);
 					}
-					
-					//Store for the MLS
-					validpubkeys.add(contact.getPublicKey());
 				}
 				
 				//Delete from Hosts DB
@@ -583,25 +545,8 @@ public class MaximaManager extends MessageProcessor {
 					maxdb.deleteHost(nioc.getFullAddress());
 				}
 			
-				//Create an MLSPacket
-				MLSPacketSET mlspack = new MLSPacketSET(getRandomMaximaAddress());
-				for(String pubkey : validpubkeys) {
-					mlspack.addValidPublicKey(pubkey);
-				}
-				
-				//Refresh My MLS hosts..
-				if(allcontacts.size() > 0) {
-					//Send the message - to BOTH hosts.. old and new
-					PostMessage(maxima.createSendMessage(getMLSHost(),MAXIMA_MLS_SETAPP,MiniData.getMiniDataVersion(mlspack)));
-					PostMessage(maxima.createSendMessage(getOldMLSHost(),MAXIMA_MLS_SETAPP,MiniData.getMiniDataVersion(mlspack)));
-					mHaveContacts = true;
-				}else {
-					if(mHaveContacts) {
-						PostMessage(maxima.createSendMessage(getMLSHost(),MAXIMA_MLS_SETAPP,MiniData.getMiniDataVersion(mlspack)));
-						PostMessage(maxima.createSendMessage(getOldMLSHost(),MAXIMA_MLS_SETAPP,MiniData.getMiniDataVersion(mlspack)));
-					}
-					mHaveContacts = false;
-				}
+				//Update the MLS
+				updateMLSServers();
 			}
 			
 		}else if(zMessage.getMessageType().equals(MAXIMA_CTRLMESSAGE)) {
@@ -843,6 +788,9 @@ public class MaximaManager extends MessageProcessor {
 						}
 					}
 					
+					//Update the MLS
+					updateMLSServers();
+					
 				}else if(application.equals(MAXIMA_MLS_SETAPP)) {
 					
 					//Get the package
@@ -966,5 +914,40 @@ public class MaximaManager extends MessageProcessor {
 		//Put in the DB..
 		udb.setData(MAXIMA_MLSPUBKEY, mMLSPublic);
 		udb.setData(MAXIMA_MLSPRIVKEY, mMLSPrivate);
+	}
+	
+	/**
+	 * Update the MLS servers
+	 */
+	public void updateMLSServers(){
+		//A list of all your contacts public keys
+		ArrayList<String> validpubkeys = new ArrayList<>();
+		
+		//Which contacts used that host - reassign them
+		ArrayList<MaximaContact> allcontacts = MinimaDB.getDB().getMaximaDB().getAllContacts();
+		for(MaximaContact contact : allcontacts) {
+			//Store for the MLS
+			validpubkeys.add(contact.getPublicKey());
+		}
+		
+		//Create an MLSPacket
+		MLSPacketSET mlspack = new MLSPacketSET(getRandomMaximaAddress());
+		for(String pubkey : validpubkeys) {
+			mlspack.addValidPublicKey(pubkey);
+		}
+		
+		//Refresh My MLS hosts..
+		if(allcontacts.size() > 0) {
+			//Send the message - to BOTH hosts.. old and new
+			PostMessage(maxima.createSendMessage(getMLSHost(),MAXIMA_MLS_SETAPP,MiniData.getMiniDataVersion(mlspack)));
+			PostMessage(maxima.createSendMessage(getOldMLSHost(),MAXIMA_MLS_SETAPP,MiniData.getMiniDataVersion(mlspack)));
+			mHaveContacts = true;
+		}else {
+			if(mHaveContacts) {
+				PostMessage(maxima.createSendMessage(getMLSHost(),MAXIMA_MLS_SETAPP,MiniData.getMiniDataVersion(mlspack)));
+				PostMessage(maxima.createSendMessage(getOldMLSHost(),MAXIMA_MLS_SETAPP,MiniData.getMiniDataVersion(mlspack)));
+			}
+			mHaveContacts = false;
+		}
 	}
 }
