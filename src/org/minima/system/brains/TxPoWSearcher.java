@@ -368,6 +368,15 @@ public class TxPoWSearcher {
 		return tokens;
 	}
 	
+	/**
+	 * A temporary list of imported tokens.. 
+	 */
+	private static ArrayList<Token> mImportedTokens = new ArrayList<>();
+	
+	public static void importToken(Token zToken) {
+		mImportedTokens.add(zToken);
+	}
+	
 	public static Token getToken(MiniData zTokenID) {
 		
 		//Start node position
@@ -390,6 +399,15 @@ public class TxPoWSearcher {
 			
 			//And move back up the tree
 			tip = tip.getParent();
+		}
+		
+		//Have not found it on chain.. search the imported tokens.. 
+		for(Token tok : mImportedTokens) {
+			
+			//Check the tokenid
+			if(tok.getTokenID().isEqual(zTokenID)) {
+				return tok;
+			}
 		}
 		
 		return null;
