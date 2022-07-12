@@ -31,6 +31,7 @@ import org.minima.system.commands.base.peers;
 import org.minima.system.commands.base.printmmr;
 import org.minima.system.commands.base.printtree;
 import org.minima.system.commands.base.quit;
+import org.minima.system.commands.base.random;
 import org.minima.system.commands.base.restore;
 import org.minima.system.commands.base.send;
 import org.minima.system.commands.base.status;
@@ -61,6 +62,7 @@ import org.minima.system.commands.search.tokens;
 import org.minima.system.commands.search.txpow;
 import org.minima.system.commands.signatures.sign;
 import org.minima.system.commands.signatures.verify;
+import org.minima.system.commands.txn.txnauto;
 import org.minima.system.commands.txn.txnbasics;
 import org.minima.system.commands.txn.txncheck;
 import org.minima.system.commands.txn.txnclear;
@@ -94,7 +96,7 @@ public abstract class Command {
 			
 			new mds(),
 			
-			new ping(),
+			new ping(), new random(),
 			new sql(),new file(),
 			new vault(), new consolidate(),
 			new backup(), new restore(), new test(), 
@@ -104,7 +106,7 @@ public abstract class Command {
 			
 			new txnbasics(),new txncreate(), new txninput(),new txnlist(), new txnclear(),
 			new txnoutput(),new txnstate(),new txnsign(),new txnpost(),new txndelete(),
-			new txnexport(),new txnimport(),new txncheck(), new txnscript(),
+			new txnexport(),new txnimport(),new txncheck(), new txnscript(), new txnauto(),
 			
 			new coinimport(), new coinexport(),new cointrack(), new coincheck(),
 			

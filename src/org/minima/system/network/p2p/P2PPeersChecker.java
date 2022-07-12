@@ -2,6 +2,7 @@ package org.minima.system.network.p2p;
 
 import java.net.InetSocketAddress;
 import java.util.HashSet;
+import java.util.Random;
 import java.util.Set;
 
 import org.minima.objects.Greeting;
@@ -33,9 +34,13 @@ public class P2PPeersChecker extends MessageProcessor {
      * Peers looper called every 6 hours..
      */
     public static final String PEERS_LOOP = "PEERS_LOOP";
-
     long PEERS_LOOP_TIMER = 1000 * 60 * 60 * 6;
 
+    /**
+     * Max number of Wanted Verified Peers
+     */
+    public int MAX_VERIFIED_PEERS = 250; 
+    
     private final Set<InetSocketAddress> unverifiedPeers = new HashSet<>();
 
     private final Set<InetSocketAddress> verifiedPeers = new HashSet<>();
@@ -107,11 +112,17 @@ public class P2PPeersChecker extends MessageProcessor {
                 //What to do now..
                 if (validversion) {
                     unverifiedPeers.remove(address);
-                    if (verifiedPeers.size() < 250) {
-                        verifiedPeers.add(address);
-                        Message msg = new Message(P2PManager.P2P_ADD_PEER).addObject("address", address);
-                        p2PManager.PostMessage(msg);
+                    
+                    //Are we at capacity
+                    if (verifiedPeers.size() > MAX_VERIFIED_PEERS) {
+                    	removeRandomItem(verifiedPeers);
                     }
+
+                    //Add to our List
+                    verifiedPeers.add(address);
+                    Message msg = new Message(P2PManager.P2P_ADD_PEER).addObject("address", address);
+                    p2PManager.PostMessage(msg);
+                    
                 } else {
                 	if (verifiedPeers.contains(address)) {
                         verifiedPeers.remove(address);
@@ -153,4 +164,27 @@ public class P2PPeersChecker extends MessageProcessor {
 
     }
 
+    /**
+     * Remove 1 random element from this set
+     */
+    private void removeRandomItem(Set<InetSocketAddress> zSet) {
+    	int size = zSet.size();
+    	int item = new Random().nextInt(size); // In real life, the Random object should be rather more shared than this
+    	
+    	Object chosen = null; 
+    	int i = 0;
+    	for(Object obj : zSet){
+    	    if (i == item) {
+    	    	chosen = obj;
+    	    	break;
+    	    }
+    	    i++;
+    	}
+    	
+    	//And remove this..
+    	if(chosen != null) {
+    		zSet.remove(chosen);
+    	}
+    }
+    
 }

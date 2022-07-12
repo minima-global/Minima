@@ -215,6 +215,17 @@ public class NIOManager extends MessageProcessor {
 		return null;
 	}
 	
+	public NIOClient getNIOClientFromUID(String zUID) {
+		ArrayList<NIOClient> conns = mNIOServer.getAllNIOClients();
+		for(NIOClient conn : conns) {
+			if(conn.getUID().equals(zUID)) {
+				return conn;
+			}
+		}
+		
+		return null;
+	}
+	
 	@Override
 	protected void processMessage(Message zMessage) throws Exception {
 		
