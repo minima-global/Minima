@@ -304,8 +304,8 @@ public class MaximaManager extends MessageProcessor {
 		
 		}else if(zMessage.getMessageType().equals(MAXIMA_REFRESH_TIMER)) {
 			
-			//Wait 20 seconds..
-			PostTimerMessage(new TimerMessage(30000, MAXIMA_REFRESH));
+			//Wait 60 seconds.. then refresh Users
+			PostTimerMessage(new TimerMessage(60000, MAXIMA_REFRESH));
 			
 		}else if(zMessage.getMessageType().equals(MAXIMA_CHECK_MLS)) {
 			
@@ -356,9 +356,6 @@ public class MaximaManager extends MessageProcessor {
 				update.addString("address", contact.getCurrentAddress());
 				getContactsManager().PostMessage(update);
 			}
-			
-			//Update the MLS servers
-			updateMLSServers();
 			
 		}else if(zMessage.getMessageType().equals(MAXIMA_CONNECTED)) {
 		
@@ -515,6 +512,9 @@ public class MaximaManager extends MessageProcessor {
 					MinimaLogger.log("MAXIMA outgoing disconnection : "+nioc.getFullAddress()+" "+reconnect);
 				}
 				
+				//Update the MLS Servers
+				updateMLSServers();
+				
 				//Ok - lets reset contacts that use this host
 				String host = nioc.getFullAddress();
 			
@@ -544,9 +544,6 @@ public class MaximaManager extends MessageProcessor {
 				if(!reconnect) {
 					maxdb.deleteHost(nioc.getFullAddress());
 				}
-			
-				//Update the MLS
-				updateMLSServers();
 			}
 			
 		}else if(zMessage.getMessageType().equals(MAXIMA_CTRLMESSAGE)) {
