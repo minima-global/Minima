@@ -346,6 +346,9 @@ public class MaximaManager extends MessageProcessor {
 		
 		}else if(zMessage.getMessageType().equals(MAXIMA_REFRESH)) {
 			
+			//Update the MLS Servers
+			updateMLSServers();
+			
 			//Get all your contacts
 			ArrayList<MaximaContact> allcontacts = maxdb.getAllContacts();
 			for(MaximaContact contact : allcontacts) {
