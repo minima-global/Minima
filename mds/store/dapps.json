@@ -20,11 +20,11 @@
 			"version" : "0.1.5"
 		},
 		{
-			"file":"https://raw.githubusercontent.com/minima-global/Minima/dev-spartacus/mds/store/files/wallet-0.1.5.mds.zip",
+			"file":"https://raw.githubusercontent.com/minima-global/Minima/dev-spartacus/mds/store/files/wallet_1.6.2.mds.zip",
 			"icon":"https://raw.githubusercontent.com/minima-global/Minima/dev-spartacus/mds/store/icons/wallet.png",
 			"name":"Wallet",
 			"description": "Official Minima wallet",
-			"version" : "0.1.5"
+			"version" : "1.6.2"
 		},
 		{
 			"file":"https://raw.githubusercontent.com/minima-global/Minima/dev-spartacus/mds/store/files/terminal-1.91.mds.zip",
