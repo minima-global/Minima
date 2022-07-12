@@ -115,7 +115,13 @@ public class P2PPeersChecker extends MessageProcessor {
                     
                     //Are we at capacity
                     if (verifiedPeers.size() > MAX_VERIFIED_PEERS) {
-                    	removeRandomItem(verifiedPeers);
+                    	InetSocketAddress removed =  removeRandomItem(verifiedPeers);
+                    	
+                    	//Remove from our list
+                    	if(removed != null) {
+	                    	Message msg = new Message(P2PManager.P2P_REMOVE_PEER).addObject("address", removed);
+	                        p2PManager.PostMessage(msg);
+                    	}
                     }
 
                     //Add to our List
@@ -167,10 +173,13 @@ public class P2PPeersChecker extends MessageProcessor {
     /**
      * Remove 1 random element from this set
      */
-    private void removeRandomItem(Set<InetSocketAddress> zSet) {
+    private InetSocketAddress removeRandomItem(Set<InetSocketAddress> zSet) {
     	int size = zSet.size();
-    	int item = new Random().nextInt(size); // In real life, the Random object should be rather more shared than this
+    	if(size == 0) {
+    		return  null;
+    	}
     	
+    	int item = new Random().nextInt(size); // In real life, the Random object should be rather more shared than this
     	Object chosen = null; 
     	int i = 0;
     	for(Object obj : zSet){
@@ -184,7 +193,10 @@ public class P2PPeersChecker extends MessageProcessor {
     	//And remove this..
     	if(chosen != null) {
     		zSet.remove(chosen);
+    		return (InetSocketAddress) chosen;
     	}
+    	
+    	return null;
     }
     
 }
