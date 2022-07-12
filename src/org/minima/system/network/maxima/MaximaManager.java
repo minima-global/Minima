@@ -182,7 +182,7 @@ public class MaximaManager extends MessageProcessor {
 	}
 	
 	public String getLocalMaximaAddress() {
-		return getMaximaIdentity()+"@"+GeneralParams.MINIMA_HOST+":"+GeneralParams.MINIMA_PORT;
+		return getMaximaMLSIdentity()+"@"+GeneralParams.MINIMA_HOST+":"+GeneralParams.MINIMA_PORT;
 	}
 	
 	public String getMLSHost() {
@@ -286,7 +286,7 @@ public class MaximaManager extends MessageProcessor {
 			MinimaDB.getDB().saveUserDB();
 			
 			//Post a LOOP message that updates all my contacts just in case..
-			PostTimerMessage(new TimerMessage(1000 * 60 * 2, MAXIMA_LOOP));
+			PostTimerMessage(new TimerMessage(1000 * 60 * 3, MAXIMA_LOOP));
 			
 		}else if(zMessage.getMessageType().equals(MAXIMA_LOOP)) {
 			
@@ -345,9 +345,6 @@ public class MaximaManager extends MessageProcessor {
 			}
 		
 		}else if(zMessage.getMessageType().equals(MAXIMA_REFRESH)) {
-			
-			//Update the MLS servers
-			updateMLSServers();
 			
 			//Get all your contacts
 			ArrayList<MaximaContact> allcontacts = maxdb.getAllContacts();
@@ -936,16 +933,19 @@ public class MaximaManager extends MessageProcessor {
 			mlspack.addValidPublicKey(pubkey);
 		}
 		
+		//Get the MiniData version
+		MiniData mlspackdata = MiniData.getMiniDataVersion(mlspack);
+		
 		//Refresh My MLS hosts..
 		if(allcontacts.size() > 0) {
 			//Send the message - to BOTH hosts.. old and new
-			PostMessage(maxima.createSendMessage(getMLSHost(),MAXIMA_MLS_SETAPP,MiniData.getMiniDataVersion(mlspack)));
-			PostMessage(maxima.createSendMessage(getOldMLSHost(),MAXIMA_MLS_SETAPP,MiniData.getMiniDataVersion(mlspack)));
+			PostMessage(maxima.createSendMessage(getMLSHost(),MAXIMA_MLS_SETAPP,mlspackdata));
+			PostMessage(maxima.createSendMessage(getOldMLSHost(),MAXIMA_MLS_SETAPP,mlspackdata));
 			mHaveContacts = true;
 		}else {
 			if(mHaveContacts) {
-				PostMessage(maxima.createSendMessage(getMLSHost(),MAXIMA_MLS_SETAPP,MiniData.getMiniDataVersion(mlspack)));
-				PostMessage(maxima.createSendMessage(getOldMLSHost(),MAXIMA_MLS_SETAPP,MiniData.getMiniDataVersion(mlspack)));
+				PostMessage(maxima.createSendMessage(getMLSHost(),MAXIMA_MLS_SETAPP,mlspackdata));
+				PostMessage(maxima.createSendMessage(getOldMLSHost(),MAXIMA_MLS_SETAPP,mlspackdata));
 			}
 			mHaveContacts = false;
 		}

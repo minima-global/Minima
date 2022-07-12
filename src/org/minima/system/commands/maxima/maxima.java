@@ -100,10 +100,15 @@ public class maxima extends Command {
 			details.put("hosts", allhosts);
 			
 			ret.put("response", details);
+			
 		}else if(func.equals("refresh")) {
 			
-			//Send a contact update message to all contacts
-			max.PostMessage(MaximaManager.MAXIMA_REFRESH);
+			//Refresh all the MLS servers
+			max.PostMessage(MaximaManager.MAXIMA_CHECK_MLS);
+			
+			//Send a contact update message to all contacts - after the MLS Update
+			max.PostMessage(MaximaManager.MAXIMA_REFRESH_TIMER);
+			
 			ret.put("response", "Update message sent to all contacts");
 			
 		}else if(func.equals("new")) {
