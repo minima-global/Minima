@@ -1,7 +1,6 @@
 package org.minima.system.network.maxima;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.security.KeyPair;
 import java.util.ArrayList;
 import java.util.Random;
