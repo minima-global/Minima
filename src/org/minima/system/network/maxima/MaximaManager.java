@@ -519,9 +519,6 @@ public class MaximaManager extends MessageProcessor {
 					
 					//Disconnect this and reconnect to a random peer..
 					Main.getInstance().getNetworkManager().getP2PManager().PostMessage(P2PManager.P2P_RANDOM_CONNECT);
-				
-					//And send a message.. to refresh.. ?
-					//..
 				}
 				
 			}else {
