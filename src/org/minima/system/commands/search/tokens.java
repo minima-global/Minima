@@ -21,9 +21,6 @@ public class tokens extends Command {
 	public JSONObject runCommand() throws Exception {
 		JSONObject ret = getJSONReply();
 		
-		//Get ALL the tokens in the chain..
-		ArrayList<Token> alltokens = TxPoWSearcher.getAllTokens();
-		
 		String tokenid = getParam("tokenid","");
 		String action  = getParam("action", "");
 		
@@ -71,6 +68,9 @@ public class tokens extends Command {
 				minima.put("decimals", MiniNumber.MAX_DECIMAL_PLACES);
 				minima.put("scale", 1);
 				toksarr.add(minima);
+			
+				//Get ALL the tokens in the chain..
+				ArrayList<Token> alltokens = TxPoWSearcher.getAllTokens();
 				
 				for(Token tok : alltokens) {
 					//Add to our list
@@ -81,12 +81,12 @@ public class tokens extends Command {
 			
 			}else {
 				
-				for(Token tok : alltokens) {
-					if(tok.getTokenID().to0xString().equals(tokenid)) {
-						ret.put("response", tok.toJSON());
-						break;
-					}
+				//Search for one token..
+				Token tok = TxPoWSearcher.getToken(new MiniData(tokenid));
+				if(tok == null) {
+					throw new CommandException("Token not found : "+tokenid);
 				}
+				ret.put("response", tok.toJSON());
 				
 			}
 		}
