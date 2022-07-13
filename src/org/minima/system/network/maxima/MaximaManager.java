@@ -315,8 +315,8 @@ public class MaximaManager extends MessageProcessor {
 			//Flush the MLS
 			mMLSService.flushList();
 			
-			//The Min Time before we do an MLS lookup - 50 mins.. 2 loops
-			long mintime = System.currentTimeMillis() - (1000 * 60 * 50);
+			//The Min Time before we do an MLS lookup - 30 mins.. 1 loop
+			long mintime = System.currentTimeMillis() - (1000 * 60 * 30);
 			
 			//Get all your contacts
 			ArrayList<MaximaContact> allcontacts = maxdb.getAllContacts();
