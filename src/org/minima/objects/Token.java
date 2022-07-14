@@ -1,5 +1,6 @@
 package org.minima.objects;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -9,6 +10,7 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
 import org.minima.utils.Crypto;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONObject;
 
@@ -213,6 +215,29 @@ public class Token implements Streamable{
 		mTokenCreated		= MiniNumber.ReadFromStream(zIn);
 		
 		calculateTokenID();
+	}
+	
+	/**
+	 * Convert a MiniData version into a Token
+	 */
+	public static Token convertMiniDataVersion(MiniData zTxpData) {
+		ByteArrayInputStream bais 	= new ByteArrayInputStream(zTxpData.getBytes());
+		DataInputStream dis 		= new DataInputStream(bais);
+		
+		Token tok = null;
+		
+		try {
+			//Convert data into a TxPoW
+			tok = Token.ReadFromStream(dis);
+		
+			dis.close();
+			bais.close();
+			
+		} catch (IOException e) {
+			MinimaLogger.log(e);
+		}
+		
+		return tok;
 	}
 	
 	public static Token ReadFromStream(DataInputStream zIn) throws IOException{

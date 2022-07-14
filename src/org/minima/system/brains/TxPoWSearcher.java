@@ -15,6 +15,10 @@ import org.minima.objects.base.MiniNumber;
 
 public class TxPoWSearcher {
 
+	/**
+	 * A temporary list of imported tokens.. 
+	 */
+	private static ArrayList<Token> mImportedTokens = new ArrayList<>();
 	
 	public static ArrayList<Coin> getAllRelevantUnspentCoins(TxPoWTreeNode zStartNode) {
 		
@@ -365,10 +369,41 @@ public class TxPoWSearcher {
 			tip = tip.getParent();
 		}
 		
+		//Search the imported tokens.. 
+		for(Token tok : mImportedTokens) {
+			
+			//Get the TokenID
+			String tokenid = tok.getTokenID().to0xString();
+			
+			//Have we added it already
+			if(!added.contains(tokenid)) {
+				
+				//Add to our list
+				added.add(tokenid);
+				
+				//And add to our main array
+				tokens.add(tok);
+			}
+		}
+		
 		return tokens;
 	}
 	
+	
+	public static void importToken(Token zToken) {
+		mImportedTokens.add(zToken);
+	}
+	
 	public static Token getToken(MiniData zTokenID) {
+		
+		//Search the imported tokens first as faster.. 
+		for(Token tok : mImportedTokens) {
+			
+			//Check the tokenid
+			if(tok.getTokenID().isEqual(zTokenID)) {
+				return tok;
+			}
+		}
 		
 		//Start node position
 		TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();

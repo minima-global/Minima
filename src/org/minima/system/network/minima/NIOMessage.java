@@ -557,12 +557,16 @@ public class NIOMessage implements Runnable {
 				//Get the client
 				NIOClient nioclient = Main.getInstance().getNIOManager().getNIOServer().getClient(mClientUID);
 				
-				//And post it to the Maxima Manager..
-				Message maxmsg = new Message(MaximaManager.MAXIMA_CTRLMESSAGE);
-				maxmsg.addObject("nioclient", nioclient);
-				maxmsg.addObject("maximactrl", msg);
-				
-				Main.getInstance().getMaxima().PostMessage(maxmsg);
+				//Check not null
+				if(nioclient != null) {
+					
+					//And post it to the Maxima Manager..
+					Message maxmsg = new Message(MaximaManager.MAXIMA_CTRLMESSAGE);
+					maxmsg.addObject("nioclient", nioclient);
+					maxmsg.addObject("maximactrl", msg);
+					
+					Main.getInstance().getMaxima().PostMessage(maxmsg);
+				}
 				
 			}else if(type.isEqual(MSG_MAXIMA_TXPOW)) {
 				

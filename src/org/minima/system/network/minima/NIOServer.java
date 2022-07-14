@@ -14,7 +14,6 @@ import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.minima.objects.base.MiniData;
-import org.minima.system.Main;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageProcessor;

@@ -3,56 +3,92 @@ package org.minima.system.commands.search;
 import java.util.ArrayList;
 
 import org.minima.objects.Token;
+import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.brains.TxPoWSearcher;
 import org.minima.system.commands.Command;
+import org.minima.system.commands.CommandException;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
 public class tokens extends Command {
 
 	public tokens() {
-		super("tokens","(tokenid:) - List tokens on the chain");
+		super("tokens","(tokenid:) (action:import|export) (data:) - List, import or export tokens on the chain");
 	}
 	
 	@Override
 	public JSONObject runCommand() throws Exception {
 		JSONObject ret = getJSONReply();
 		
-		//Get ALL the tokens in the chain..
-		ArrayList<Token> alltokens = TxPoWSearcher.getAllTokens();
-		
 		String tokenid = getParam("tokenid","");
+		String action  = getParam("action", "");
 		
-		if(tokenid.equals("")) {
-			//The return array
-			JSONArray toksarr = new JSONArray();
+		if(action.equals("export")) {
 			
-			//First add Minima..
-			JSONObject minima = new JSONObject();
-			minima.put("name", "Minima");
-			minima.put("tokenid", "0x00");
-			minima.put("total", "1000000000");
-			minima.put("decimals", MiniNumber.MAX_DECIMAL_PLACES);
-			minima.put("scale", 1);
-			toksarr.add(minima);
-			
-			for(Token tok : alltokens) {
-				//Add to our list
-				toksarr.add(tok.toJSON());
+			//Export a token..
+			Token tok = TxPoWSearcher.getToken(new MiniData(tokenid));
+			if(tok == null) {
+				throw new CommandException("Token not found : "+tokenid);
 			}
 			
-			ret.put("response", toksarr);
+			//Ok  - now convert to MiniData..
+			MiniData tokdata = MiniData.getMiniDataVersion(tok);
+			
+			JSONObject resp = new JSONObject();
+			resp.put("tokenid", tokenid);
+			resp.put("data", tokdata.to0xString());
+			ret.put("response", resp);
 		
+		}else if(action.equals("import")) {
+			
+			String data 		= getParam("data");
+			MiniData tokendata 	= new MiniData(data);
+			Token newtok 		= Token.convertMiniDataVersion(tokendata);
+			
+			//Add this..
+			TxPoWSearcher.importToken(newtok);
+			
+			JSONObject resp = new JSONObject();
+			resp.put("token", newtok.toJSON());
+			ret.put("response", resp);
+			
 		}else {
 			
-			for(Token tok : alltokens) {
-				if(tok.getTokenID().to0xString().equals(tokenid)) {
-					ret.put("response", tok.toJSON());
-					break;
-				}
-			}
+			if(tokenid.equals("")) {
+				
+				//The return array
+				JSONArray toksarr = new JSONArray();
+				
+				//First add Minima..
+				JSONObject minima = new JSONObject();
+				minima.put("name", "Minima");
+				minima.put("tokenid", "0x00");
+				minima.put("total", "1000000000");
+				minima.put("decimals", MiniNumber.MAX_DECIMAL_PLACES);
+				minima.put("scale", 1);
+				toksarr.add(minima);
 			
+				//Get ALL the tokens in the chain..
+				ArrayList<Token> alltokens = TxPoWSearcher.getAllTokens();
+				
+				for(Token tok : alltokens) {
+					//Add to our list
+					toksarr.add(tok.toJSON());
+				}
+				
+				ret.put("response", toksarr);
+			
+			}else {
+				
+				//Search for one token..
+				Token tok = TxPoWSearcher.getToken(new MiniData(tokenid));
+				if(tok == null) {
+					throw new CommandException("Token not found : "+tokenid);
+				}
+				ret.put("response", tok.toJSON());
+				
+			}
 		}
 		
 		return ret;

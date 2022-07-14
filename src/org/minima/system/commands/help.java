@@ -16,6 +16,7 @@ import org.minima.system.commands.base.mmrproof;
 import org.minima.system.commands.base.newaddress;
 import org.minima.system.commands.base.printtree;
 import org.minima.system.commands.base.quit;
+import org.minima.system.commands.base.random;
 import org.minima.system.commands.base.restore;
 import org.minima.system.commands.base.send;
 import org.minima.system.commands.base.status;
@@ -94,6 +95,7 @@ public class help extends Command {
 		addCommand(details, new consolidate());
 		
 		addCommand(details, new hash());
+		addCommand(details, new random());
 		
 //		addCommand(details, new file());
 //		addCommand(details, new sql());
